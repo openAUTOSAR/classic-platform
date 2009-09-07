@@ -1,0 +1,71 @@
+LOCAL &cmd
+ENTRY &cmd
+IF !SIMULATOR()
+  GOSUB &cmd
+ENDDO
+
+open:
+  FLASH.Auto ALL
+  RETURN
+
+//-------------------------------------------------------------
+close:
+  FLASH.Auto OFF
+  RETURN
+
+
+//-------------------------------------------------------------
+init:
+
+&flashbase=0x00000000
+&shadowbase=0x00ff8000
+&rambase=0x40000000
+&flashdriver="tbd.bin"
+&flashsize=0x000100000
+
+
+; initialize internal SRAM
+Data.Set EA:0x40000000--0x4000ffff %quad 0
+
+; setup MMU for flash, RAM and register access
+MMU.TLB1.SET 0x1 0xC0000500 0xFFF0000A 0xFFF0003F
+MMU.TLB1.SET 0x2 0xC0000400 0x40000008 0x4000003F
+MMU.TLB1.SET 0x3 0xC0000700 0x00000000 0x0000003F
+
+;========================================================================
+; Check SIU_MIDR register to select flash driver depending on processor 
+; revision
+&flashdriver="~~/demo/powerpc/flash/quad/h7fb5510.bin"
+
+;========================================================================
+; Flash declaration
+
+FLASH.RESet
+
+FLASH.Create 1. (&flashbase+0x00000000)++0x03fff TARGET Quad 0. ; L0
+FLASH.Create 1. (&flashbase+0x00004000)++0x03fff TARGET Quad 1. ; L1
+FLASH.Create 1. (&flashbase+0x00008000)++0x03fff TARGET Quad 2. ; L2
+FLASH.Create 1. (&flashbase+0x0000C000)++0x03fff TARGET Quad 3. ; L3
+FLASH.Create 1. (&flashbase+0x00010000)++0x03fff TARGET Quad 4. ; L4
+FLASH.Create 1. (&flashbase+0x00014000)++0x03fff TARGET Quad 5. ; L5
+FLASH.Create 1. (&flashbase+0x00018000)++0x03fff TARGET Quad 6. ; L6
+FLASH.Create 1. (&flashbase+0x0001C000)++0x03fff TARGET Quad 7. ; L7
+FLASH.Create 1. (&flashbase+0x00020000)++0x0ffff TARGET Quad 8. ; L8
+FLASH.Create 1. (&flashbase+0x00030000)++0x0ffff TARGET Quad 9. ; L9
+FLASH.Create 2. (&flashbase+0x00040000)++0x1ffff TARGET Quad 0. ; M0
+FLASH.Create 2. (&flashbase+0x00060000)++0x1ffff TARGET Quad 1. ; M1
+&flashaddr=&flashbase+0x00080000
+&Hx=0.
+while &flashaddr<(&flashbase+0x000100000)
+(
+  FLASH.Create 3. &flashaddr++0x1ffff TARGET Quad &Hx ; H0..H3
+  &flashaddr=&flashaddr+0x20000
+  &Hx=&Hx+1.
+)
+; Shadow row
+FLASH.Create 4. (&shadowbase+0x00000000)++0x7fff NOP Quad
+
+FLASH.TARGET E:&rambase E:&rambase+0x2000 0x1000 &flashdriver
+RETURN
+
+

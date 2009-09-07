@@ -1,0 +1,177 @@
+// File to load and save configuration settings to file
+//
+// Commands: 
+// load - load config
+// save - save present configuration 
+// debug - print some useful data
+
+// global configuration macros
+GLOBAL &cfg_project_path_g
+GLOBAL &cfg_loadfile_g
+GLOBAL &cfg_cpu_g
+
+// Global macros
+LOCAL &data_file
+LOCAL &user &cpu
+&user=os.env("username")
+//&cpu=CPU()
+//&data_file="~~~\cfg_t32_"+"&user"+"_"+"&cfg_cpu_g"+".txt" 
+//&global_file="~~~\cfg_t32"
+&data_file="~~~\cfg_t32.txt"
+//+"&cfg_cpu_g"+".txt"
+
+
+LOCAL &cmd
+ENTRY &cmd
+GOSUB &cmd
+enddo
+
+
+rm:
+    rm &data_file
+    RETURN 
+   
+//--------------------------------------------------------------------
+
+load:
+
+  print "loading config from &data_file"
+      
+  if OS.FILE(&data_file) 
+  (
+    OPEN #1 &data_file /read
+    READ #1 &cfg_project_path_g		
+    READ #1 &cfg_loadfile_g	
+    READ #1 &cfg_cpu_g	
+    CLOSE #1
+  ) 
+  ELSE 
+  (
+    &cfg_project_path_g=""
+    &cfg_loadfile_g=""
+    &cfg_cpu_g=""
+  )
+  RETURN
+
+//--------------------------------------------------------------------
+
+//--------------------------------------------------------------------
+
+save:
+  print "Saving config to &data_file"
+  OPEN #1 &data_file /create
+  WRITE #1 "&cfg_project_path_g" 
+  WRITE #1 "&cfg_loadfile_g"
+  WRITE #1 "&cfg_cpu_g"
+  CLOSE #1
+  RETURN
+
+#--------------------------------------------------------------------
+debug:
+  gosub load
+  print "DEBUG: &data_file"
+  print "       project_path: &cfg_project_path_g"
+  print "       load file:    &cfg_loadfile_g"
+  print "       cpu:          &cfg_cpu_g"
+  RETURN
+
+
+//--------------------------------------------------------------------
+
+dialog_cpu:
+  dialog
+(&          
+        HEADER "Select cpu"
+        POS 0. 0. 14.
+	      BUTTON "mpc5516" "jumpto mpc5516"
+        POS 0. 1. 14.
+	      BUTTON "mpc5554" "jumpto mpc5554"
+        POS 0. 2. 14.
+          BUTTON "arm" "jumpto arm"
+        CLOSE "jumpto win_close2"
+)
+   stop
+mpc5516:
+  &cfg_cpu_g="mpc5516"
+  jumpto win_close2
+mpc5554:
+  &cfg_cpu_g="mpc5554"
+  jumpto win_close2
+arm:
+  &cfg_cpu_g="arm"
+  jumpto win_close2
+win_close2:
+  dialog.end
+
+  ENDDO
+
+//--------------------------------------------------------------------
+
+
+
+dialog_project:
+  LOCAL &path
+// &closewin
+//  &closewin=0.
+
+  dialog
+(&
+        pos 1. 1. 14.
+        text "CPU:"
+        pos 1. 2. 10.
+CPU:   PULLDOWN "mpc5516,mpc5554,CortexM3"
+        (
+        )
+        HEADER "Project config"
+        pos 1. 3. 14.
+        text "Project root:"
+        pos 1. 4. 50.
+P_PATH: EDIT "&cfg_project_path_g" ""
+        pos 51. 4. 3.
+        BUTTON "..."
+        (  
+           Dialog.Setdir P_PATH "&cfg_project_path_g/*"
+        )         
+        pos 35. 6. 10.
+        DEFBUTTON "Set" "jumpto save_close"
+        pos 45. 6. 10.
+    	DEFBUTTON "Cancel" "jumpto win_close"
+        CLOSE "jumpto win_close"
+)
+  stop
+save_close:
+  &cfg_cpu_g=dialog.string(CPU)
+  &cfg_project_path_g=dialog.string(P_PATH)
+  do config save
+win_close:
+  dialog.end
+
+// 
+
+  enddo
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

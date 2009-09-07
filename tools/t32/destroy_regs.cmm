@@ -1,0 +1,14 @@
+// Write pattern into regs. Check if they look the same after.
+LOCAL &i
+LOCAL &val
+&i=0.
+&val=0x00
+while &i<=31.
+(
+   spe.s R&i &val   
+   print &i
+   &i=&i+1.
+   &val=(&val<<8)+&i 
+)
+enddo
+

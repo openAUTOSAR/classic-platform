@@ -1,0 +1,11 @@
+
+
+Test board. 
+=======================================================
+
+The regression test board comes in different variants.
+
+
+This file supports:
+- EVB5516
+ 

@@ -1,0 +1,47 @@
+;Default startup program for TRACE32
+;
+;This startup program can be modified according to your needs.
+
+;choose hex mode for input
+ radix hex
+
+;Add some extra buttons to the toolbar
+
+ menu.rp
+ (
+  add
+  toolbar
+  (
+   separator
+   toolitem "Source/List" "list" "Data.List"
+   toolitem "Memory Dump" "dump" "Data.dump"
+   toolitem "Register" "reg" "Register"
+   separator
+   toolitem "Watch" ":varwatch" "Var.Watch"
+   toolitem "Stack" ":varframe" "Var.Frame /l /c"
+   toolitem "Automatic Watch" ":varref" "Var.Ref"
+   separator
+   toolitem "List Breakpoints" "break" "Break.List"
+   toolitem "List Symbols" "symbols" "sYmbol.Browse"
+   separator
+  )
+ )
+
+ if language()!=""
+ (
+  local &menuname
+  &menuname="~~/t32"+language()
+  menu.rp &menuname
+ )
+
+;Recall and Define History File
+ autostore , history bookmark
+
+ ;cd c:\projects\autosar\scripts
+ ;cd c:\projects\per\t32
+ ;cd c:\projects\autosar\t32
+ ;cd c:\projects\autosar\tools\t32
+ ;do start
+
+ enddo
+

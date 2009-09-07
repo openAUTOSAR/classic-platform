@@ -1,0 +1,76 @@
+
+
+include scripts/config.mk
+export ARCH
+
+Q?=@
+export Q
+export TOPDIR = $(CURDIR)
+export RELEASE = n
+export PATH
+export BUILD_TREE=n
+export RELEASE_TREE=y
+
+
+USE_DBG_PRINTF?=y
+
+# Directories we can build
+subdir-y += examples/simple
+
+# Cmd.exe fix 
+PATH := /usr/bin/:$(PATH) 
+find := $(shell which find)
+
+all:
+
+ifneq ($(MAKECMDGOALS),clean) 
+	ifeq ($(ARCH),)  
+	  $(error no ARCH=[ppc55xx], $(ARCH))
+	endif
+	
+	ifeq ($(ARCH),)
+	  ARCH_LIST = ppc55xx ppc5xx win32
+	else 
+	  ARCH_LIST = $(ARCH)
+	endif
+endif
+
+
+export CFG_MCU 
+export CFG_CPU
+export MCU
+export def-y=$(CFG_ARCH_$(ARCH)) $(CFG_MCU) $(CFG_CPU)
+
+objdir = obj_$(ARCH)
+
+
+builddir-y = $(filter $(MAKECMDGOALS),$(subdir-y)) 
+
+.PHONY: $(builddir-y)
+.PHONY: clean
+
+.PHONY: help
+help:
+	@echo "make [all|clean] ARCH=[ppc55xx]"
+
+export def-y
+
+# The interesting things in this makefile( uses ideas from http://make.paulandlesley.org/ ) 
+# 
+# We descend into the object directories and build the. That way it's easier to build
+# multi-arch support and we don't have to use objdir everywhere. 
+# 
+# ROOTDIR - The top-most directory ( this directory ) 
+# SUBDIR  - The subdirectory we decend into
+
+$(builddir-y):
+	+@[ -d $@/$(objdir) ] || mkdir -p $@/$(objdir)
+	$(Q)$(MAKE) -r -C $@/$(objdir) -f $(CURDIR)/scripts/rules.mk  ROOTDIR=$(CURDIR) SUBDIR=$@ all
+	
+clean:
+	@echo "Clean:"
+	@echo "  Removing objectfiles and libs for ARCH=$(ARCH)"
+	$(Q)find $(foreach tmp, $(ARCH_LIST),$(addsuffix /obj_$(tmp),$(subdir-y))) -type f -name '*' | xargs rm -f
+
+
+

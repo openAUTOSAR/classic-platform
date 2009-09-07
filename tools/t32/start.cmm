@@ -1,0 +1,134 @@
+LOCAL &exe_dir &cpu &proj_path
+//ENTRY &cpu
+
+//do ~~/t32.cmm
+winclear 
+&proj_path=os.pwd()
+do t32.cmm
+
+print "Current project path:" "&proj_path"  
+
+do config load
+//do config debug 
+
+
+IF "&cfg_cpu_g"==""
+(
+  do config dialog_project
+)
+
+IF "&cfg_project_path_g"==""
+(
+  &cfg_project_path_g="&proj_path"  
+  do config dialog_project
+)
+
+//do config debug 
+
+&cpu="&cfg_cpu_g"
+
+winpos 0% 70% 50% 30%
+area
+
+sys.down
+
+;reset
+//GLOBAL &cfg_project_path_g
+//GLOBAL &cfg_base_load_file_g
+
+&exe_dir=os.ppd()
+cd &exe_dir
+
+//do config load
+//do config dialog
+
+sys.cpu &cpu
+
+IF SIMULATOR() 
+(
+  IF CPU()!="CortexM3"
+  (
+    do sim_mpc55xx
+  )
+)
+ELSE 
+(
+    sys.bdmclock 10000000.
+)
+
+
+// Setup flash
+SYStem.Up  	
+do flash init
+	
+
+IF !SIMULATOR() 
+( 
+  break.select program onchip
+)
+
+
+// Setup how to view variables and code
+setup.var %SYMBOL.on %HEX.on %decimal.on %index.on
+setup.tabsize 2.
+
+menu.rp autosar.men
+
+//winclear
+winpos 0% 0% 50% 68%
+w.d.l
+winpos 50% 0% 50% 50%
+w.v.f /l /c
+winpos 0% 70% 50% 30%
+area
+
+area.select
+//area.reset
+//w.v.w
+//v.aw flags ast
+
+print "## Welcome to Arc-Core simulator environment for T32   ##"
+print "## Select example to load from the menu Arc-Core->Load ##"
+print ""
+
+
+enddo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

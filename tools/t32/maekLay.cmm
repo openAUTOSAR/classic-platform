@@ -1,0 +1,30 @@
+// t32 Tue Oct 28 09:38:28 2008
+
+ B::
+ 
+ TOOLBAR ON
+ STATUSBAR ON
+ WINPAGE.RESET
+ 
+ WINCLEAR
+ WINPOS 0.375 0.25 97. 25. 13. 1. W001
+ WINTABS 10. 10. 25. 62.
+ ws.d.l
+ 
+ WINPOS 0.125 41.625 75. 14. 0. 0. W000
+ ws.area
+ 
+ WINPOS 97.75 38.688 77. 20. 0. 0. W002
+ ws.r /spotlight
+ 
+ WINPOS 97.75 30.813 80. 6. 23. 1. W003
+ WINTABS 13. 0. 0. 0. 0. 0. 0.
+ ws.b.l
+ 
+ WINPOS 81.375 0.3125 74. 25. 0. 1. W005
+ WINTABS 26. 26.
+ sYmbol.Browse
+ 
+ WINPAGE.SELECT P000     
+ 
+ ENDDO

@@ -1,0 +1,27 @@
+winclear my_term
+WinPOS 60% 0% 50% 30. 1. 1. my_term
+term.size 80. 300.
+term.scroll on
+term.mode ASCII
+
+IF CPUFAMILY()=="ARM"
+(
+  term.METHOD SE e:address.offset(v.address(t32_outport)) e:0
+  term.view
+)
+ELSE
+(
+  term.view e:address.offset(v.address(t32_outport)) e:0
+  term.write e:address.offset(v.address(t32_outport))  hoppsan.log 
+)
+
+enddo
+
+
+
+
+
+
+
+
+

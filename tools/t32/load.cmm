@@ -1,0 +1,88 @@
+
+LOCAL &cmd &arg1 &arg2
+ENTRY &cmd &arg1 &arg2
+gosub &cmd
+
+enddo
+
+
+//-------------------------------------------------------------
+// a file dialog
+dialog:
+  LOCAL &file
+  dialog.file "&cfg_project_path_g"/*.elf
+  ENTRY &file
+  print "&file"
+  RETURN
+
+
+//-------------------------------------------------------------
+load:
+  LOCAL &file
+  dialog.file "&cfg_project_path_g"/*.elf
+  ENTRY &file
+  
+  IF OS.FILE(&file) 
+    &cfg_loadfile_g="&file"
+    
+  do config save   
+  do flash open
+  data.load.elf &cfg_loadfile_g /CYGDRIVE /GNU 
+  do flash close
+  print "&cfg_loadfile_g"
+  
+  enddo
+
+//-------------------------------------------------------------  
+reload:
+  print "&cfg_loadfile_g"
+  sys.up
+  r.reset  
+  do flash init
+  do flash open
+  data.load.elf &cfg_loadfile_g /GNU 
+// /CYGDRIVE
+  do flash close
+  enddo
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

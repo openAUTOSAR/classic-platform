@@ -1,0 +1,64 @@
+
+# incoming 
+# SUBDIR - also the same as the MAKECMDGOAL
+# ROOTDIR 
+
+# environment should handle
+# Targets
+#   pc: gcc(_WIN32), ppc: gcc(_PPC) and diab(_PPC) 
+
+CFG_ARCH_$(ARCH):=y
+
+RELDIR := $(subst $(TOPDIR)/,,$(CURDIR))
+
+dummy:
+
+COMPILER?=gcc
+include $(ROOTDIR)/scripts/cc_$(COMPILER).mk
+
+# Create the target name... 
+target := $(subst /,_,$(SUBDIR))
+
+# Get object files
+include ../makefile
+
+# build- targets are "end" target that the included makefile want's to build
+all:	$(build-lib-y) $(build-exe-y)
+
+# Determine what kind of filetype to build from  
+VPATH += ../src
+VPATH += ..
+
+inc-y += ../include
+
+.SUFFIXES:
+
+# Extremly simple depencendy stuff
+-include $(subst .o,.d,$(obj-y))
+
+# Compile
+%.o: %.c
+	@echo "  >> CC $<"
+	$(CC) -c $(CFLAGS) -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
+
+# Assembler
+%.o: %.s
+	$(AS) $(ASFLAGS) -o $@ $<
+	
+# PP Assembler	
+%.s: %.S
+	@echo " >> CPP $<"
+	$(CPP) -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
+	
+# lib	
+$(build-lib-y): $(dep-y) $(obj-y)
+	@echo "  >> AR $(RELDIR)/$@"   
+	$(AR) -r -o $@ $(obj-y) 2> /dev/null
+	$(Q)cp $@ ../lib
+
+# exe
+$(build-exe-y): $(obj-y) $(sim-y) $(libitem-y)
+	@echo "  >> LD $(RELDIR)/$@"   
+	$(LD) $(LDFLAGS) $(ldcmdfile-y) -o $@ $(obj-y) $(libpath-y) --start-group $(lib-y) $(libitem-y) --end-group $(LDMAPFILE)
+	@echo "  >>>>>>>  DONE  <<<<<<<<<"
+	

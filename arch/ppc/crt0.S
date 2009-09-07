@@ -1,0 +1,86 @@
+#include "asm_ppc.h"
+
+.section ".rcw","ax"
+.global _resetconfiguration
+_resetconfiguration:
+	.byte  0x00   #no watchdog
+	.byte  0x5A   #Boot identifier
+	.byte  0x00
+	.byte  0x00
+	.long _start
+
+
+	.text
+	.align		4
+
+	.globl	_start
+	.type	_start,@function
+
+	// Good information about the E500 is freescale doc: E500ABIUG.pdf
+_start:
+	// Set up the reserved registers in EABI: r1,r2 and r13
+
+	// r1, stack pointer
+	lis	r1,__SP_INIT@h
+	ori	r1,r1,__SP_INIT@l
+
+	// r13, base of .sdata
+	lis	r13,_SDA_BASE_@h
+	ori	r13,r13,_SDA_BASE_@l
+
+	// r2, base of .sdata2 and .sbss2
+	lis	r2,_SDA2_BASE_@h
+	ori	r2,r2,_SDA2_BASE_@l
+
+	// make space for initial backchain..
+	subi    r1,r1,16
+
+	// Copy initialized data from ROM to RAM
+	lis		r3,__DATA_ROM@h
+	ori		r3,r3,__DATA_ROM@l
+	lis		r4,__DATA_RAM@h
+	ori		r4,r4,__DATA_RAM@l
+	lis		r5,__DATA_END@h
+	ori		r5,r5,__DATA_END@l
+
+	cmplw	r3,r4
+	beq		skip_data
+	cmplw	r4,r5
+	beq		skip_data
+	subi	r3,r3,1
+	subi	r4,r4,1
+1:
+	lbzu	r6,1(r3)
+	stbu	r6,1(r4)
+	cmplw	r4,r5
+	bne+	1b
+skip_data:
+
+	# Clear uninitialized data( holds both bss and sbss )
+	lis		r3,__BSS_START@h
+	ori		r3,r3,__BSS_START@l
+	lis		r4,__BSS_END@h
+	ori		r4,r4,__BSS_END@l
+	cmplw	r3,r4
+	beq		3f
+	li		r0,0
+	subi	r3,r3,1
+2:
+	stbu	r0,1(r3)
+	cmplw	r3,r4
+	bne+	2b
+3:
+
+	# Call main() with argc set to 1 and argv ignored
+	li	r3,1
+	bl	main
+
+	# Call exit() with the return value from main() as argument
+	b	exit
+
+	.globl	_exit
+_exit:
+	b	_exit
+
+
+	.end

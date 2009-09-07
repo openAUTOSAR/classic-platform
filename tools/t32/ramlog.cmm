@@ -1,0 +1,9 @@
+area.clear RAMLOG
+AREA.Create RAMLOG
+AREA.Select RAMLOG
+AREA RAMLOG
+Data.STRING v.range(ramlog)
+// Select standard area again..
+area.select A000
+enddo
+

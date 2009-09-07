@@ -1,0 +1,11 @@
+
+
+PBI=SIM
+
+; Printer settings
+PRINTER=WINDOWS
+
+
+; Screen fonts
+SCREEN=
+FONT=SMALL

@@ -1,0 +1,110 @@
+
+CFG_ARCH_$(ARCH):=y
+
+RELDIR := $(subst $(TOPDIR)/,,$(CURDIR))
+
+-include $(ROOTDIR)/boards/$(BOARDDIR)/config.mk
+
+ARCH_PATH-y = arch/$(ARCH_FAM)/$(ARCH)
+
+# Include compiler generic and arch specific
+COMPILER?=gcc
+include $(ROOTDIR)/scripts/cc_$(COMPILER).mk
+#include $(ROOTDIR)/$(ARCH_PATH-y)/scripts/gcc.mk
+
+# Create the target name... 
+target := $(subst /,_,$(SUBDIR))
+
+# Get object files
+include ../makefile
+
+inc-y += $(ROOTDIR)/include
+inc-$(CFG_PPC) += $(ROOTDIR)/include/ppc 
+# Build config.mk from config.h 
+$(ROOTDIR)/boards/$(BOARDDIR)/config.mk: $(ROOTDIR)/boards/$(BOARDDIR)/config.h $(ROOTDIR)/board_config.mk
+	@echo Generating config for $(BOARDDIR)
+	$(CC) -E -dM $(ROOTDIR)/boards/$(BOARDDIR)/config.h -o config_$(BOARDDIR).h
+	@$(SED) -n -f $(ROOTDIR)/scripts/define2make.sed config_$(BOARDDIR).h > $@
+#	@$(SED) -n -f $(ROOTDIR)/scripts/define2make.sed config_$(BOARDDIR).h > $@ 
+
+
+# build- targets are "end" target that the included makefile want's to build
+all: $(ROOTDIR)/boards/$(BOARDDIR)/config.mk $(build-lib-y) $(build-exe-y)
+
+# Determine what kind of filetype to build from  
+VPATH += $(ROOTDIR)/$(SUBDIR)/src
+VPATH += $(ROOTDIR)/$(SUBDIR)
+
+inc-y += ../include
+
+.SUFFIXES:
+
+# Simple depencendy stuff
+-include $(subst .o,.d,$(obj-y))
+# Some dependency for xxx_offset.c/h also
+-include $(subst .h,.d,$(dep-y))
+
+# Compile
+%.o: %.c
+	@echo "  >> CC $<"
+	$(Q)$(CC) -c $(CFLAGS) -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
+	
+#	 $(subst /cygdrive/c/,c:/,$<)
+
+# Assembler
+%.o: %.s
+	$(Q)$(AS) $(ASFLAGS) -o $@ $<
+	
+# PP Assembler	
+%.s: %.S
+	@echo " >> CPP $<"
+	$(Q)$(CPP) -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
+	
+#$(warning RULES $(target) $(ARCH) $(MCU) $(build-lib-y))	
+	
+# lib	
+$(build-lib-y): $(dep-y) $(obj-y)
+	@echo "  >> AR $(RELDIR)/$@"   
+	$(Q)$(AR) -r -o $@ $(obj-y) 2> /dev/null
+
+#	$(Q)cp $@ ../lib
+
+#	@echo "  >> LD $(RELDIR)/$@"
+# exe
+$(build-exe-y): $(obj-y) $(sim-y) $(libitem-y) 
+	@echo "  >> LD $@"
+	$(LD) $(LDFLAGS) $(ldcmdfile-y) -o $@ $(libpath-y) --start-group $(obj-y) $(lib-y) $(libitem-y) --end-group $(LDMAPFILE)
+	@echo "  >>>>>>>  DONE  <<<<<<<<<"
+	
+
+$(size-exe-y): $(build-exe-y)
+	$(Q)$(OBJDUMP) -h $<
+	@echo TODO: Parse the file....
+#
+# Installation
+#	
+#
+#$(foreach obj,$(obj-y),$(shell cp $(obj) $(INSTALL_PATH)))
+#
+#define mkdir
+#+@[ -d $@/$(objdir) ] || mkdir -p $@/$(objdir)
+#endef
+include $(ROOTDIR)/scripts/rules_install.mk
+
+install:
+	$(Q)$(call cmd_mkdir,$(install-mkdir-y))
+	$(Q)$(call cmd_install_dir,$(install-dir-y))	
+	$(Q)$(call cmd_install_file,$(install-file-y))
+
+
+#
+#	@echo $(install-dir-y)
+#	@echo $(call split,$(install-dir-y))
+#	@echo $(word 1,$(call split,$(install-dir-y)))
+#	$(foreach dir, $(install-dir-y), $(shell cp -r $(word 1,$(call split,$(dir))) $(INSTALL_PATH)/$(word 2,$(call split,$(dir)))))
+#	$(foreach file, $(install-file-y), $(shell cp $(word 1,$(call split,$(file))) $(INSTALL_PATH)/$(word 2,$(call split,$(file)))))
+#
+#
+#	@echo $(word 1,$(subst \,, ,$(install-dir-y)))
+#	$(foreach dir,$(install-dir-y),$(shell cp $(word 1,$(subst , ,$(dir))) $(INSTALL_PATH)/$(word 2,$(dir)))) 
+	

@@ -1,0 +1,96 @@
+/* -------------------------------- Arctic Core ------------------------------
+ * Arctic Core - the open source AUTOSAR platform http://arccore.com
+ *
+ * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
+ *
+ * This source code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ * -------------------------------- Arctic Core ------------------------------*/
+
+
+
+
+
+
+
+
+#ifndef EEP_H_
+#define EEP_H_
+
+#include "Std_Types.h"
+#include "MemIf_Types.h"
+
+/* Standard info */
+#define EEP_VENDOR_ID             1
+#define EEP_MODULE_ID						 MODULE_ID_EEP
+#define EEP_SW_MAJOR_VERSION      1
+#define EEP_SW_MINOR_VERSION      0
+#define EEP_SW_PATCH_VERSION      1
+#define EEP_AR_MAJOR_VERSION      2
+#define EEP_AR_MINOR_VERSION      2
+#define EEP_AR_PATCH_VERSION      1
+
+typedef uint32 Eep_AddressType;
+typedef Eep_AddressType Eep_LengthType;
+
+/* Development errors */
+// API parameter checking
+#define EEP_E_PARAM_CONFIG			0x10
+#define EEP_E_PARAM_ADDRESS			0x11
+#define EEP_E_PARAM_DATA 			  0x12
+#define EEP_E_PARAM_LENGTH			0x13
+// EEPROM state checking
+#define EEP_E_UNINIT				    0x20
+#define EEP_E_BUSY					    0x21
+
+/* Service id's for fls functions */
+#define EEP_INIT_ID					    0x00
+#define EEP_SETMODE_ID          0x01
+#define EEP_READ_ID             0x02
+#define EEP_WRITE_ID            0x03
+#define EEP_ERASE_ID            0x04
+#define EEP_COMPARE_ID          0x05
+#define EEP_CANCEL_ID           0x06
+#define EEP_GETSTATUS_ID        0x07
+#define EEP_GETJOBSTATUS_ID     0x08
+#define EEP_GETVERSIONINFO_ID   0x0A
+
+
+#include "Eep_Cfg.h"
+
+void Eep_Init( const Eep_ConfigType *ConfigPtr );
+Std_ReturnType Eep_Erase(	Eep_AddressType   EepromAddress,
+                  			Eep_LengthType    Length );
+
+
+Std_ReturnType Eep_Write (    Eep_AddressType   EepromAddress,
+			                  const uint8         *SourceAddressPtr,
+			                  Eep_LengthType    Length );
+
+void Eep_Cancel( void );
+MemIf_StatusType 	Eep_GetStatus(	void );
+MemIf_JobResultType Eep_GetJobResult( void );
+
+void Eep_MainFunction( void );
+
+Std_ReturnType Eep_Read (	Eep_AddressType EepromAddress,
+							uint8 *TargetAddressPtr,
+							Eep_LengthType Length );
+
+Std_ReturnType Eep_Compare( Eep_AddressType EepromAddress,
+							uint8 *TargetAddressPtr,
+							Eep_LengthType Length );
+
+void Eep_SetMode( MemIf_ModeType Mode );
+
+#if ( EEP_VERSION_INFO_API == STD_ON )
+#define Eep_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,EEP)
+#endif
+
+#endif /*EEP_H_*/
