@@ -18,6 +18,10 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include "Std_Types.h"
+#include "Ramlog.h"
 //#include "clibsupport_gcc.h"
 
 #if defined(CFG_ARM)
@@ -63,12 +67,7 @@ static volatile char g_TConn __attribute__ ((section (".winidea_port")));
 static volatile char t32_outport __attribute__ ((section (".t32_outport")));
 
 
-int arc_putchar(int c) {
-	char cc = c;
-	write( 1,&cc,1);
 
-	return 0;
-}
 
 void t32_writebyte(char c)
 {
@@ -223,6 +222,13 @@ int write(  int fd, char *buf, int nbytes)
 	}
 
 	return (nbytes);
+}
+
+int arc_putchar(int c) {
+	char cc = c;
+	write( 1,&cc,1);
+
+	return 0;
 }
 
 /* If we use malloc and it runs out of memory it calls sbrk()

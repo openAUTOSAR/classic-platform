@@ -14,13 +14,6 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
-
-
 #include "Os.h"
 #include "sys.h"
 #include <stdlib.h>
@@ -36,7 +29,6 @@
 #include "alarm_i.h"
 #include "sched_table_i.h"
 #include "Trace.h"
-
 
 
 extern void Oil_GetInterruptStackInfo( stack_t *stack );
@@ -216,7 +208,7 @@ void noooo( void ) {
 	while(1);
 }
 
-extern EcuM_Init();
+extern void EcuM_Init();
 int main( void )
 {
 	EcuM_Init();

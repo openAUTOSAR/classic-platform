@@ -15,11 +15,6 @@
 
 
 
-
-
-
-
-
 /*
  * Ramlog.h
  *
@@ -33,6 +28,7 @@
 #include "xtoa.h"
 
 void ramlog_puts( char *str );
+void ramlog_chr( char c );
 
 /*
  * Fast ramlog functions
