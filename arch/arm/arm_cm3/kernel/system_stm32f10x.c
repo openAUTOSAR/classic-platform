@@ -255,6 +255,7 @@ void SystemInit (void)
   */
 static void SetSysClock(void)
 {
+#if !defined(CFG_SIMULATOR)
 #ifdef SYSCLK_FREQ_HSE
   SetSysClockToHSE();
 #elif defined SYSCLK_FREQ_24MHz
@@ -267,6 +268,7 @@ static void SetSysClock(void)
   SetSysClockTo56();  
 #elif defined SYSCLK_FREQ_72MHz
   SetSysClockTo72();
+#endif
 #endif
  
  /* If none of the define above is enabled, the HSI is used as System clock
@@ -911,6 +913,7 @@ static void SetSysClockTo72(void)
 
     /* Enable PLL */
     RCC->CR |= RCC_CR_PLLON;
+
 
     /* Wait till PLL is ready */
     while((RCC->CR & RCC_CR_PLLRDY) == 0)

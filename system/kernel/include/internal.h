@@ -13,19 +13,12 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
 #ifndef INTERNAL_H_
 #define INTERNAL_H_
 
 #include <assert.h>
 #include "Ramlog.h"
-
+#include "simple_printf.h"
 
 extern uint32 os_dbg_mask;
 

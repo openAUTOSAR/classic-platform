@@ -3,8 +3,9 @@
 HOST := $(shell uname)
 export prefix
 
+cygpath:= $(shell cygpath -m $(shell which cygpath))
 # If we are using codesourcery and cygwin..
-export CYGPATH=c:/cygwin/bin/cygpath
+export CYGPATH=$(cygpath)
 
 # ---------------------------------------------------------------------------
 # Compiler

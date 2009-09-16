@@ -13,19 +13,13 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
 #ifndef TASK_I_H_
 #define TASK_I_H_
 
 #include <stdlib.h>
 #include <assert.h>
 #include "internal.h"
+#include "Ramlog.h"
 
 static inline void os_pcb_print_rq( void ) {
 	pcb_t *i_pcb;

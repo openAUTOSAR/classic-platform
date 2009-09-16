@@ -100,6 +100,7 @@
 #define SAVE_ALL_GPR(_x,_y)
 #define RESTORE_ALL_GPR(_x,_y)
 
+#if 0
 #define C_SIZE			16
 #define C_SP_OFF		0
 #define C_CONTEXT_OFF	4
@@ -107,8 +108,22 @@
 #define C_CR_OFF		12
 
 #define C_CONTEXT_OFFS 10
+#endif
 
-#define SC_SIZE			32
+// NVREGS: r4+r5+r6+r7+r8+r10+r11+lr = 8*4
+#define NVGPR_SIZE		32
+// VGPR: 9*4 = 36
+#define VGPR_SIZE		36
+// SP + context
+#define C_SIZE			8
+
+//...
+#define VGPR_LR_OFF		(C_SIZE+28)
+#define C_CONTEXT_OFFS  4
+#define C_SP_OFF 		0
+
+
+#define SC_SIZE			(NVGPR_SIZE+C_SIZE)
 
 #if !defined(_ASSEMBLER_)
 

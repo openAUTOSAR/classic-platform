@@ -32,12 +32,16 @@ _Minimum_Stack_Size = 0x100 ;
 /*
 Linker subscript for STM32F10x definitions with 512K Flash and 1024K RAM */
 
+ENTRY(Reset_Handler)
+
 /* Memory Spaces Definitions */
 
 MEMORY
 {
-  RAM (xrw) : ORIGIN = 0x68000000, LENGTH = 64K
-  FLASH (rx) : ORIGIN = 0x0000000, LENGTH = 512K
+	/* ST32F103, 128K flash, 20K RAM */
+
+  RAM (xrw) : ORIGIN = 0x20000000, LENGTH = 20K
+  FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 128K
   FLASHB1 (rx) : ORIGIN = 0x00000000, LENGTH = 0
   EXTMEMB0 (rx) : ORIGIN = 0x00000000, LENGTH = 0
   EXTMEMB1 (rx) : ORIGIN = 0x00000000, LENGTH = 0
@@ -46,8 +50,7 @@ MEMORY
 }
 
 /* higher address of the user mode stack */
-_estack = 0x68100000;
-
+_estack = 0x20005000;
 
 
 /* include the sections management sub-script for FLASH mode */

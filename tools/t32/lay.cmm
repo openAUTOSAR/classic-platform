@@ -7,20 +7,18 @@
  WINPAGE.RESET
  
  WINCLEAR
- WINPOS 78.714 50.538 72. 24. 12. 1. W002
- WINTABS 13. 0. 0. 0. 0. 0. 0.
- ws.b.l
+ WINPOS 0% 0% 50% 69%
+ d.l
+
+ WINPOS 0% 70% 50% 30%
+ area
+
+ WINPOS 50% 0% 50% 30%
+ var.ref
  
- WINPOS 146.57 50.692 89. 22. 0. 0. W005
- ws.Var.View %open Det_RamLog
- 
- WINPOS 1.8571 50.154 83. 28. 0. 0. W001
- ws.area
- 
- WINPOS 2.2857 0.076923 134. 62. 13. 1. W000
- WINTABS 10. 10. 25. 62.
- ws.d.l
- 
+ do term
+
  WINPAGE.SELECT P000     
  
  ENDDO
+

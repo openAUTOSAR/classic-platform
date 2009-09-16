@@ -20,7 +20,8 @@ if [ "aa $CROSS_COMPILE aa" == "aa  aa" ]; then
   fi
 fi;
 
-export BDIR=system/kernel/testsystem
+#export BDIR=system/kernel/testsystem
+export BDIR=examples/tiny
 make BOARDDIR=et_stm32_stamp clean
 make BOARDDIR=et_stm32_stamp all
 if [ $? -ne 0 ]; then quit 1

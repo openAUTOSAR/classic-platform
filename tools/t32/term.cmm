@@ -1,5 +1,5 @@
 winclear my_term
-WinPOS 60% 0% 50% 30. 1. 1. my_term
+WinPOS 50% 50% 50% 50% 1. 1. my_term
 term.size 80. 300.
 term.scroll on
 term.mode ASCII
@@ -16,6 +16,7 @@ ELSE
 )
 
 enddo
+
 
 
 

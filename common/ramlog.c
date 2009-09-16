@@ -13,22 +13,16 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-
 #include <stdio.h>
 #include <stdarg.h>
+#include "simple_printf.h"
 
-extern int simple_sprintf(char *, const char *format, ...);
 
-#define CONFIG_RAMLOG_SIZE  2000
+#ifndef CFG_RAMLOG_SIZE
+#define CFG_RAMLOG_SIZE  2000
+#endif
 
-static unsigned char ramlog[CONFIG_RAMLOG_SIZE] __attribute__ ((section (".ramlog")));
+static unsigned char ramlog[CFG_RAMLOG_SIZE] __attribute__ ((section (".ramlog")));
 static unsigned ramlog_curr __attribute__ ((section (".ramlog")));
 static unsigned ramlog_session __attribute__ ((section (".ramlog")));
 
@@ -37,7 +31,7 @@ static FILE *ramlogFile = 0;
 
 void ramlog_chr( char c ) {
   ramlog[ramlog_curr++] = c;
-  if( ramlog_curr >= 2000 ) {
+  if( ramlog_curr >= CFG_RAMLOG_SIZE ) {
 	  ramlog_curr = 0;
   }
 }
@@ -64,7 +58,7 @@ void ramlog_printf( const char *format, ... ) {
 void ramlog_init()
 {
 	char buf[32];
-    if( ramlog_curr>CONFIG_RAMLOG_SIZE)
+    if( ramlog_curr>CFG_RAMLOG_SIZE)
     {
       ramlog_curr = 0;
       ramlog_session = 0;

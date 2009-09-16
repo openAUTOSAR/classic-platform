@@ -102,6 +102,11 @@ void *os_arch_get_stack_usage( pcb_t * );
 _Bool os_arch_stack_endmark_ok( pcb_t *);
 #endif
 
+static inline void os_arch_stack_set_endmark( pcb_t *pcb ) {
+	uint8_t *end = pcb->stack.top;
+	*end = STACK_PATTERN;
+}
+
 static inline _Bool os_arch_stack_endmark_ok( pcb_t *pcb ) {
 	uint8_t *end = pcb->stack.top;
 	return ( *end == STACK_PATTERN);

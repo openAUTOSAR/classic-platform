@@ -18,6 +18,7 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <stdlib.h>
+#include "Ramlog.h"
 //#include "clibsupport_gcc.h"
 
 #if defined(CFG_ARM)
@@ -214,12 +215,14 @@ int write(  int fd, char *buf, int nbytes)
 	}
 	else
 	{
+#if defined(USE_RAMLOG)
 		/* RAMLOG support */
 		if(fd == FILE_RAMLOG) {
 		  	for (int i = 0; i < nbytes; i++) {
 				ramlog_chr (*(buf + i));
 		  	}
 		}
+#endif
 	}
 
 	return (nbytes);
@@ -233,7 +236,9 @@ extern char _end[];
 
 //static char *curbrk = _end;
 
+#ifndef HEAPSIZE
 #define HEAPSIZE 16000
+#endif
 unsigned char _heap[HEAPSIZE];
 
 caddr_t sbrk( int incr )

@@ -111,7 +111,9 @@ void os_swap_context(pcb_t *old_pcb, pcb_t *new_pcb ) {
  * Called when a task is to be run for the first time.
  */
 void os_swap_context_to(pcb_t *old_pcb, pcb_t *new_pcb ) {
- os_arch_swap_context_to(old_pcb,new_pcb);
+
+
+	os_arch_swap_context_to(old_pcb,new_pcb);
 	/* TODO: When do we return here ?? */
 }
 

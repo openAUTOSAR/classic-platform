@@ -27,10 +27,10 @@ load:
     
   do config save   
   do flash open
-  data.load.elf &cfg_loadfile_g /CYGDRIVE /GNU 
+  data.load.elf &cfg_loadfile_g c /CYGDRIVE /GNU 
   do flash close
   print "&cfg_loadfile_g"
-  
+
   enddo
 
 //-------------------------------------------------------------  
@@ -40,11 +40,47 @@ reload:
   r.reset  
   do flash init
   do flash open
-  data.load.elf &cfg_loadfile_g /GNU 
+  data.load.elf &cfg_loadfile_g /GNU /CYGDRIVE
 // /CYGDRIVE
   do flash close
+
+  GOSUB postload_&cfg_cpu_g
+
   enddo
+
+postload_CortexM3:
+  r.s MSP 0x20005000
+  RETURN
+
+postload_MPC5516:
+postload_MPC5554:
+  RETURN
+
+//-------------------------------------------------------------
+
+path_fast:
+  y.spath.SETRECURSEDIR &cfg_project_path_g
+  RETURN
+
+//-------------------------------------------------------------
+path:
+  y.spath.reset
+  y.spath + &cfg_project_path_g/arch/arm/arm_cm3/kernel
+  y.spath + &cfg_project_path_g/arch/arm/arm_cm3/drivers
+  y.spath + &cfg_project_path_g/system/kernel
+  y.spath.SETRECURSEDIR &cfg_project_path_g
+  RETURN
+
+
+
+
+
+
+
+
     
+
+
 
 
 

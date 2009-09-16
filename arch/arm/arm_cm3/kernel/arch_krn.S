@@ -12,8 +12,6 @@
 	.fpu softvfp
 	.thumb
 
-	.global os_arch_swap_context_to
-	.global os_arch_swap_context
 	.section .text
 /* r0 - pcb for old task
  * r1 pcb for new task
@@ -26,21 +24,31 @@
  * ----------    <- JABBA
  *
  */
+ 	.global os_arch_swap_context
+ 	.type	os_arch_swap_context_to, %function
 os_arch_swap_context:
     mov     r0, sp
-    push    {r0,r4-r8,r10,r11,lr}
-
+    push    {r4-r8,r10,r11,lr}
 
     // Store c-frame
     sub.w   sp,sp,#C_SIZE
-    mov.w   r4,#SC_PATTERN
 
-    str     r4,[sp,#4]
+    mov.w   r4,#SC_PATTERN
+    str     r4,[sp,#C_CONTEXT_OFFS]
+    str     r0,[sp,#C_SP_OFF]
+	// ---> We have saved NVGPR+C
+
     // store old stack for old task
     str     sp,[r0,#PCB_STACK_CURR_P]
+
+// R1 - new PCB
+	.global os_arch_swap_context_to
+	.type	os_arch_swap_context_to, %function
 os_arch_swap_context_to:
+
     // Get stack for new task
-    ldr     sp,[r1,#PCB_STACK_CURR_P]
+    ldr 	r2,[r1,#PCB_STACK_CURR_P]
+    msr		msp,r2
 
 // TODO: Fix this for all arch's..call pre,post hooks. Done here or after?
 // Set new current pcb
@@ -48,7 +56,7 @@ os_arch_swap_context_to:
     str     r1,[r5,#SYS_CURR_PCB_P]
 
 // Restore C context
-    ldr     r6,[sp,#4]
+    ldr     r6,[sp,#C_CONTEXT_OFFS]
     cmp     r6,#SC_PATTERN
     beq     os_sc_restore
     cmp     r6,#LC_PATTERN
@@ -59,13 +67,14 @@ os_stack_problem:
 
 os_sc_restore:
     add.w   sp,sp,#C_SIZE
+
     pop     {r4-r8,r10,r11,lr}
         // ehh, we are in handler mode so a bx instruction works here
     bx      lr
 
 os_lc_restore:
     add.w   sp,sp,#C_SIZE
-    pop     {r4-r8,r10,r11,lr}
+    pop     {lr,r11,r10,r8,r7,r6,r5,r4}
     // ehh, we are in handler mode so a bx instruction works here
     bx      lr
 

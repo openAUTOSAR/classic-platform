@@ -6,6 +6,9 @@ RELDIR := $(subst $(TOPDIR)/,,$(CURDIR))
 # Create the target name... 
 target := $(subst /,_,$(SUBDIR))
 
+#goal=$(subst /cygdrive/c/,c:/,$(abspath $@))
+goal=$@
+
 #===== MODULE CONFIGURATION =====
 include $(ROOTDIR)/boards/$(BOARDDIR)/build_config.mk
 -include ../build_config.mk
@@ -79,19 +82,16 @@ inc-y += ../include
 # Compile
 %.o: %.c
 	@echo "  >> CC $<"
-	$(Q)$(CC) -c $(CFLAGS) -o $(abspath $@) $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $(realpath $<)
+	$(Q)$(CC) -c $(CFLAGS) -o $(goal) $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $(realpath $<)
 
 # Assembler
 
 %.o: %.s
 	@echo "  >> AS $< $(ASFLAGS)"
-	$(Q)$(AS) $(ASFLAGS) -o $@ $<
+	$(Q)$(AS) $(ASFLAGS) -o $(goal) $<
 	
-#$(Q)$(AS) -o /cygdrive/c/apa.o $<
-
-
 # PP Assembler	
-.SECONDARY %.s:
+#.SECONDARY %.s:
 
 %.s: %.S
 	@echo " >> CPP $<"

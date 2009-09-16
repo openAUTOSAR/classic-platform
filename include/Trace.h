@@ -23,6 +23,7 @@
 #ifndef TRACE_H_
 #define TRACE_H_
 
+#include "simple_printf.h"
 /**
  *
  * NOTE!!!!
@@ -57,11 +58,6 @@
 #ifndef DEBUG_LVL
 #define DEBUG_LVL		2
 #endif
-
-extern int simple_printf(const char *format, ...);
-
-//#define USE_DEBUG
-//#define USE_TRACE
 
 #define CH_ISR		0
 #define CH_PROC		1

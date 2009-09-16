@@ -2,7 +2,7 @@
 
 #VPATH += $(ROOTDIR)/arch/arm/arm_cm3/kernel
 vpath-y += $(ARCH_PATH-y)/kernel
-#obj-y += asm_sample.o
+obj-y += asm_sample.o
 obj-y += arch_krn.o
 
 

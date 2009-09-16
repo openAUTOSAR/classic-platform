@@ -69,30 +69,22 @@ IF !SIMULATOR()
 
 
 // Setup how to view variables and code
-setup.var %SYMBOL.on %HEX.on %decimal.on %index.on
+setup.var %SYMBOL.on %HEX.on %decimal.on %index.on %string.on
 setup.tabsize 2.
 
 menu.rp autosar.men
 
-//winclear
-winpos 0% 0% 50% 68%
-w.d.l
-winpos 50% 0% 50% 50%
-w.v.f /l /c
 winpos 0% 70% 50% 30%
 area
 
 area.select
-//area.reset
-//w.v.w
-//v.aw flags ast
-
 print "## Welcome to Arc-Core simulator environment for T32   ##"
-print "## Select example to load from the menu Arc-Core->Load ##"
 print ""
 
 
 enddo
+
+
 
 
 

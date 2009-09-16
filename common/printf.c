@@ -14,16 +14,9 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
-
-
-//#include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include "simple_printf.h"
 
 #define BUF_SIZE	60
 

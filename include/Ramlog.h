@@ -13,24 +13,18 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-/*
- * Ramlog.h
- *
- *  Created on: 2009-apr-19
- *      Author: mahi
- */
-
 #ifndef RAMLOG_H_
 #define RAMLOG_H_
 
+#include <stdint.h>
 #include "xtoa.h"
+
+#if !defined(USE_RAMLOG)
+#define ramlog_str( _x)
+#define ramlog_dec( _x)
+#define ramlog_hex( _x)
+
+#else
 
 void ramlog_puts( char *str );
 
@@ -52,10 +46,17 @@ static inline void ramlog_hex( uint32_t val ) {
   ultoa(val,str,16);
   ramlog_str(str);
 }
+#endif
+
 
 /*
  * var args ramlog functions
  */
+#if defined(USE_RAMLOG_PRINTF)
 int ramlog_printf(const char *format, ...);
+#else
+#define ramlog_printf(format,...)
+#endif
 
 #endif /* RAMLOG_H_ */
+

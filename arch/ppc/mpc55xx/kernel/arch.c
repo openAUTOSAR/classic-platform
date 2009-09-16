@@ -15,12 +15,6 @@
 
 
 
-
-
-
-
-
-
 #include "types.h"
 #include "Cpu.h"
 #include "asm_ppc.h"
@@ -136,10 +130,12 @@ void os_arch_setup_context( pcb_t *pcb ) {
 
 	// Check that the stack size is enough
 	#define STACK_SIZE_MIN	(SC_SIZE + 16*2 )
+
 	if( pcb->stack.size < (STACK_SIZE_MIN) ) {
 		os_arch_stack_to_small(pcb, STACK_SIZE_MIN);
 	}
 
+#if 0
 	// Fill stack with a nice pattern STACK_PATTERN
 	{
 		uint8_t *p = pcb->stack.curr;
@@ -151,6 +147,7 @@ void os_arch_setup_context( pcb_t *pcb ) {
 			*p = STACK_PATTERN;
 		}
 	}
+#endif
 
 	msr = MSR_EE;
 
@@ -176,6 +173,8 @@ void os_arch_setup_context( pcb_t *pcb ) {
 			context[C_LR_OFF/4] = (uint32_t)os_proc_start_basic;
 		}
 	}
+
+	os_arch_stack_set_endmark(pcb);
 }
 
 
