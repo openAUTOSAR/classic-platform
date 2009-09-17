@@ -10,7 +10,7 @@ CFG=ARM ARM_CM3 BRD_ET_STM32_STAMP SIMULATOR
 
 # What buildable modules does this board have, 
 # default or private
-MOD_AVAIL=KERNEL MCU T32_TERM
+MOD_AVAIL=KERNEL MCU T32_TERM SIMPLE_PRINTF RAMLOG
 
 # Needed by us
 MOD_USE=KERNEL MCU

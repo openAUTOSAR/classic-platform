@@ -157,7 +157,7 @@ vpath-$(USE_PDUR) += $(ROOTDIR)/communication/PduR
 # Common
 obj-y += xtoa.o
 obj-$(USE_RAMLOG) += ramlog.o
-obj-$(USE_PRINTF) += printf.o
+obj-$(USE_SIMPLE_PRINTF) += printf.o
 VPATH += $(ROOTDIR)/common
 
 obj-y += newlib_port.o
