@@ -61,7 +61,6 @@ static StatusType GetResource_( resource_obj_t * rid ) {
 
 	if( rid->nr == RES_SCHEDULER ) {
 		// Lock the sheduler
-#warning Check this
 		os_sys.scheduler_lock = 1;
 		//simple_printf("RES_SCHEDULER, NOT supported yet\n");
 		//while(1);
@@ -92,7 +91,6 @@ ok:
 StatusType ReleaseResource( ResourceType ResID) {
     StatusType rv = E_OK;
 	if( ResID == RES_SCHEDULER ) {
-        #warning check this
 		os_sys.scheduler_lock=0;
 	} else {
 	    resource_obj_t *rid = Oil_GetResource(ResID);

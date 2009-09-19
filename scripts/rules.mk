@@ -81,24 +81,24 @@ inc-y += ../include
 
 # Compile
 %.o: %.c
-	@echo "  >> CC $<"
+	@echo "  >> CC $(notdir $<)"
 	$(Q)$(CC) -c $(CFLAGS) -o $(goal) $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $(realpath $<)
 
 # Assembler
 
 %.o: %.s
-	@echo "  >> AS $< $(ASFLAGS)"
+	@echo "  >> AS $(notdir $<)  $(ASFLAGS)"
 	$(Q)$(AS) $(ASFLAGS) -o $(goal) $<
 	
 # PP Assembler	
 #.SECONDARY %.s:
 
 %.s: %.S
-	@echo " >> CPP $<"
+	@echo "  >> CPP $(notdir $<)"
 	$(Q)$(CPP) -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
 %.s: %.ps
-	@echo " >> CPP $<"
+	@echo "  >> CPP $(notdir $<)"
 	$(Q)$(CPP) -x assembler-with-cpp -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
 
@@ -106,19 +106,19 @@ inc-y += ../include
 	
 .PHONY $(ROOTDIR)/libs:
 $(ROOTDIR)/libs:
-	mkdir -p $@
+	$(Q)mkdir -p $@
 
 dep-y += $(ROOTDIR)/libs
 	
 # lib	
 $(build-lib-y): $(dep-y) $(obj-y)
-	@echo "  >> AR $(RELDIR)/$@"   
+	@echo "  >> AR $@"   
 	$(Q)$(AR) -r -o $@ $(obj-y) 2> /dev/null
 
 # Could use readelf -S instead of parsing the *.map file.
 $(build-exe-y): $(obj-y) $(sim-y) $(libitem-y) 
 	@echo "  >> LD $@"
-	$(LD) $(LDFLAGS) $(ldcmdfile-y) -o $@ $(libpath-y) --start-group $(obj-y) $(lib-y) $(libitem-y) --end-group $(LDMAPFILE)
+	$(Q)$(LD) $(LDFLAGS) $(ldcmdfile-y) -o $@ $(libpath-y) --start-group $(obj-y) $(lib-y) $(libitem-y) --end-group $(LDMAPFILE)
 	@echo "Image size: (decimal)"
 	@gawk --non-decimal-data 	'/^\.text/ { print "  text:"  $$3+0 " bytes"; rom+=$$3 };\
 	 							/^\.data/ { print "  data:"  $$3+0 " bytes"; rom+=$$3; ram+=$$3}; \
