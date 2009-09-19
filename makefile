@@ -28,7 +28,7 @@
 #export ARCH_FAM
 #export BOARDDIR
 
-UNAME:=$(shell uname)
+export UNAME:=$(shell uname)
 
 ifneq ($(findstring Darwin,$(UNAME)),)
   SHELL:=/bin/bash

@@ -2,7 +2,7 @@
 
 #VPATH += $(ROOTDIR)/arch/arm/arm_cm3/kernel
 vpath-y += $(ARCH_PATH-y)/kernel
-obj-y += asm_sample.o
+#obj-y += asm_sample.o
 obj-y += arch_krn.o
 
 
@@ -39,7 +39,7 @@ dep-$(CFG_ARM_CM3) += arch_offset.h
 %_offset.h: %_offset.c
 	@echo "  >> generating $@ from $<"
 	$(Q)$(CC) -S $(CFLAGS) -o $(@:.h=.s) $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
-	gawk '/.*define/ { print $$1 " " $$2 " " gensub("#","","g",$$3) }' $(@:.h=.s)  > $@
+	$(Q)gawk '/.*define/ { print $$1 " " $$2 " " gensub("#","","g",$$3) }' $(@:.h=.s)  > $@
 
 # Assembler offsets
 asm_offset.h: asm_offset.c

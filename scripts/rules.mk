@@ -97,6 +97,11 @@ inc-y += ../include
 	@echo " >> CPP $<"
 	$(Q)$(CPP) -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
+%.s: %.ps
+	@echo " >> CPP $<"
+	$(Q)$(CPP) -x assembler-with-cpp -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
+
+
 #	@cat $@ 
 	
 .PHONY $(ROOTDIR)/libs:
