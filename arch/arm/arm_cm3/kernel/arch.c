@@ -30,6 +30,7 @@
 #include "arch_offset.h"
 #include "stm32f10x.h"
 #include "core_cm3.h"
+#include "arch.h"
 
 /**
  * Function make sure that we switch to supervisor mode(rfi) before
@@ -63,6 +64,7 @@ void os_arch_setup_context( pcb_t *pcb ) {
 	} else if( pcb->proc_type == PROC_BASIC ) {
 		context[VGPR_LR_OFF/4] = (uint32_t)os_proc_start_basic;
 	}
+	os_arch_stack_set_endmark(pcb);
 // os_arch_setup_context_asm(pcb->stack.curr,NULL);
 }
 

@@ -34,6 +34,7 @@
 #include "hooks.h"
 #include "swap.h"
 #include "stm32f10x.h"
+#include "misc.h"
 #include "int_ctrl.h"
 
 extern void * intc_vector_tbl[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
@@ -105,11 +106,19 @@ void IntCtrl_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector, u
  */
 void IntCtrl_AttachIsr2(TaskType tid,void *int_ctrl,uint32_t vector ) {
 	pcb_t *pcb;
+	NVIC_InitTypeDef irqInit;
+
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
+
+	irqInit.NVIC_IRQChannel = vector;
+	irqInit.NVIC_IRQChannelPreemptionPriority = 4;
+	irqInit.NVIC_IRQChannelSubPriority = 4;
+	irqInit.NVIC_IRQChannelCmd = ENABLE;
 
 	pcb = os_find_task(tid);
 
 	// TODO: Same as for AttachIsr1
-
+	NVIC_Init(&irqInit);
 }
 
 

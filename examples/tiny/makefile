@@ -25,7 +25,11 @@ libitem-y += $(ROOTDIR)/libs/libkernel_$(ARCH_MCU).a
 ldcmdfile-y = -T $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
 
 # What I want to build
-build-exe-y = simple.elf
+build-exe-y = tiny.elf
+build-hex-y = tiny.hex
+
+
+
 
 
 

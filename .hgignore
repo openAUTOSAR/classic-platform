@@ -1,0 +1,16 @@
+# use glob syntax.
+syntax: glob
+
+*.d
+*.o
+*.elf
+*.map
+*.hex
+*.bak
+*~
+
+# switch to regexp syntax.
+syntax: regexp
+^.*obj_.*\.[h|c|s]
+
+

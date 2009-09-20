@@ -33,6 +33,8 @@ def-y+=CC_KERNEL
 dep-y += asm_offset.h
 dep-y += kernel_offset.h
 dep-$(CFG_ARM_CM3) += arch_offset.h
+obj-$(CFG_ARM_CM3) += misc.o
+
 
 # ARM assembler generates "define STACK_APA $12". The extra '$' we want to go.
 # Assembler offsets

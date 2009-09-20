@@ -64,7 +64,7 @@ config:
 	@echo $(MOD) ${def-y}
 
 # build- targets are "end" target that the included makefile want's to build
-all: $(build-lib-y) $(build-exe-y)
+all: $(build-lib-y) $(build-exe-y) $(build-hex-y)
 
 # Determine what kind of filetype to build from  
 VPATH += $(ROOTDIR)/$(SUBDIR)/src
@@ -93,11 +93,7 @@ inc-y += ../include
 # PP Assembler	
 #.SECONDARY %.s:
 
-%.s: %.S
-	@echo "  >> CPP $(notdir $<)"
-	$(Q)$(CPP) -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
-
-%.s: %.ps
+%.s: %.sx
 	@echo "  >> CPP $(notdir $<)"
 	$(Q)$(CPP) -x assembler-with-cpp -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
@@ -114,6 +110,10 @@ dep-y += $(ROOTDIR)/libs
 $(build-lib-y): $(dep-y) $(obj-y)
 	@echo "  >> AR $@"   
 	$(Q)$(AR) -r -o $@ $(obj-y) 2> /dev/null
+
+$(build-hex-y): $(build-exe-y)
+	@echo "  >> OBJCOPY $@"   
+	$(Q)$(CROSS_COMPILE)objcopy -O ihex $< $@
 
 # Could use readelf -S instead of parsing the *.map file.
 $(build-exe-y): $(obj-y) $(sim-y) $(libitem-y) 

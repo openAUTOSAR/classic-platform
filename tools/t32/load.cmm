@@ -27,7 +27,7 @@ load:
     
   do config save   
   do flash open
-  data.load.elf &cfg_loadfile_g c /CYGDRIVE /GNU 
+  data.load.elf &cfg_loadfile_g /CYGDRIVE /GNU 
   do flash close
   print "&cfg_loadfile_g"
 
@@ -79,6 +79,7 @@ path:
 
 
     
+
 
 
 

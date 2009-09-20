@@ -44,6 +44,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "misc.h"
 
+#define assert_param(expr) ((void)0)
+
 /** @addtogroup STM32F10x_StdPeriph_Driver
   * @{
   */
