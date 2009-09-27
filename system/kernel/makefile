@@ -3,8 +3,9 @@
 #VPATH += $(ROOTDIR)/arch/arm/arm_cm3/kernel
 vpath-y += $(ARCH_PATH-y)/kernel
 #obj-y += asm_sample.o
+#CFLAGS_asm_sample.o += -O3
 obj-y += arch_krn.o
-
+#obj-y += stm32f10x_it.o
 
 # object files 
 obj-y += event.o

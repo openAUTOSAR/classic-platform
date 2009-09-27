@@ -32,6 +32,7 @@
 #include "core_cm3.h"
 #include "arch.h"
 
+
 /**
  * Function make sure that we switch to supervisor mode(rfi) before
  * we call a task for the first time.
@@ -40,6 +41,7 @@
 void os_arch_first_call( void )
 {
 	// TODO: make switch here... for now just call func.
+	Irq_Enable();
 	os_sys.curr_pcb->entry();
 }
 

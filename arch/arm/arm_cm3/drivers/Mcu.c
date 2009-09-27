@@ -420,7 +420,9 @@ uint32_t McuE_GetSystemClock(void)
    * System clock calculation
    *
    */
-  uint32_t f_sys = 0;
+
+  // TODO: This of course wrong....
+  uint32_t f_sys = 72000000UL;
 #if 0
   uint32  extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePoint;
 

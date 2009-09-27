@@ -72,7 +72,7 @@ void IntCtrl_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector, u
  * @param int_ctrl  The interrupt controller, The is NULL for now.
  * @param vector 	The vector to attach to
  */
-void IntCtrl_AttachIsr2(TaskType tid,void *int_ctrl,uint32_t vector );
+void IntCtrl_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector );
 
 /**
  * Generates a soft interrupt

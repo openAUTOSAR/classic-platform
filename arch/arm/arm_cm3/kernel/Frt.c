@@ -40,7 +40,7 @@
 void Frt_Init( void ) {
 	TaskType tid;
 	tid = Os_CreateIsr(OsTick,6/*prio*/,"OsTick");
-	IntCtrl_AttachIsr2(tid,NULL,7);
+	IntCtrl_AttachIsr2(tid,NULL, SysTick_IRQn);
 }
 
 /**

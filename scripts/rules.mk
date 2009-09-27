@@ -64,7 +64,14 @@ config:
 	@echo $(MOD) ${def-y}
 
 # build- targets are "end" target that the included makefile want's to build
-all: $(build-lib-y) $(build-exe-y) $(build-hex-y)
+all: $(build-exe-y) $(build-hex-y) $(build-lib-y) post_process
+
+$(ROOTDIR)/binaries:
+	@mkdir -p $@
+
+.PHONY post_process:
+post_process: $(ROOTDIR)/binaries
+	@cp $(build-lib-y) $(build-exe-y) $(build-hex-y) $(ROOTDIR)/binaries 
 
 # Determine what kind of filetype to build from  
 VPATH += $(ROOTDIR)/$(SUBDIR)/src

@@ -23,6 +23,27 @@
 // How many errors to keep in error log.
 #define ERROR_LOG_SIZE 20
 
+extern void IntCtrl_Entry( void *);
+
+#if 0
+__attribute__((__interrupt__)) void SysTick_Handler(void)
+{
+	IntCtrl_Entry((void *)__get_MSP());
+}
+#endif
+
+void HardFault_Handler(void)
+{
+
+	/* Read 0xE000ED2C , Hard Fault Status Register
+	 * 30 - Forced
+	 * 1  - Vecttbl..
+	 * */
+  while (1)
+  {
+  }
+}
+
 
 /**
  * Just an example of a basic task.

@@ -486,8 +486,10 @@ int simple_printf(const char *format, ...);
 
 
 TaskType Os_CreateIsr( void  (*entry)(void), uint8_t prio, const char *name );
+#if 0
 void IntCtrl_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector,uint8_t prio);
-void IntCtrl_AttachIsr2(TaskType tid,void *int_ctrl, uint32_t vector );
+void IntCtrl_AttachIsr2(TaskType tid,void *int_ctrl, IrqType vector );
+#endif
 
 
 #endif /*OS_H_*/
