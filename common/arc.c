@@ -5,7 +5,7 @@
  *      Author: mahi
  */
 
-#include "os.h"
+#include "Os.h"
 #include "arc.h"
 
 #define ENTRY(_x)  [_x] = OS_STRSTR__(_x)
