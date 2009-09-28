@@ -9,7 +9,6 @@ obj-y += Gpt_Cfg.o
 obj-y += Mcu.o
 obj-y += Mcu_Cfg.o
 obj-y += Mcu_Exceptions.o
-obj-y += Mcu_IntcVectors.o
 
 # Can
 obj-y += Can.o
@@ -96,7 +95,7 @@ libitem-y += $(ROOTDIR)/embunit/embUnit/obj_$(ARCH)/libembunit.a
 libitem-y += $(ROOTDIR)/embunit/textui/obj_$(ARCH)/libtextui.a
 
 #linkfile
-ldcmdfile-$(CFG_MPC55XX) = -T $(ROOTDIR)/arch/$(ARCH)/scripts/linkscript_gcc.ldf
+ldcmdfile-$(CFG_MPC55XX) = $(ROOTDIR)/arch/$(ARCH)/scripts/linkscript_gcc.ldf
 
 build-exe-y = ../../../$(target)_$(ARCH).$(TE)
 

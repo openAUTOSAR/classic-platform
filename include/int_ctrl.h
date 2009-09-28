@@ -14,19 +14,6 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
-
-/*
- * int_ctrl.h
- *
- *  Created on: Jul 31, 2009
- *      Author: mahi
- */
-
 #ifndef INT_CTRL_H_
 #define INT_CTRL_H_
 

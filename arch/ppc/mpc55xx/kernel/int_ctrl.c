@@ -61,16 +61,16 @@ static void dump_exception_regs( uint32_t *regs );
 
 typedef void (*f_t)( uint32_t *);
 typedef void (*func_t)();
-//extern vfunc_t intc_vector_tbl[];
+//extern vfunc_t IntCtrl_VectorTable[];
 extern void exception_tbl(void);
 
 
 
 #if defined(USE_KERNEL)
-extern void * intc_vector_tbl[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
+extern void * IntCtrl_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
 extern uint8 intc_type_tbl[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
 #else
-extern func_t intc_vector_tbl[];
+extern func_t IntCtrl_VectorTable[];
 #endif
 
 // write 0 to pop INTC stack
@@ -132,11 +132,11 @@ void IntCtrl_Init( void ) {
 
 
 	  // Check alignment requirements for the INTC table
-	  assert( (((uint32_t)&intc_vector_tbl[0]) & 0x7ff) == 0 );
+	  assert( (((uint32_t)&IntCtrl_VectorTable[0]) & 0x7ff) == 0 );
 	#if defined(CFG_MPC5516)
-	  INTC.IACKR_PRC0.R = (uint32_t) & intc_vector_tbl[0]; // Set INTC ISR vector table
+	  INTC.IACKR_PRC0.R = (uint32_t) & IntCtrl_VectorTable[0]; // Set INTC ISR vector table
 	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
-	  INTC.IACKR.R = (uint32_t) & intc_vector_tbl[0]; // Set INTC ISR vector table
+	  INTC.IACKR.R = (uint32_t) & IntCtrl_VectorTable[0]; // Set INTC ISR vector table
 	#endif
 	  // Pop the FIFO queue
 	  for (int i = 0; i < 15; i++)
@@ -212,18 +212,18 @@ void *IntCtrl_Entry( void *stack_p )
 
 	if( intc_type_tbl[vector] == PROC_ISR1 ) {
 		// It's a function, just call it.
-		((func_t)intc_vector_tbl[vector])();
+		((func_t)IntCtrl_VectorTable[vector])();
 		return stack;
 	} else {
 		// It's a PCB
 		// Let the kernel handle the rest,
-		return Os_Isr(stack, (void *)intc_vector_tbl[vector]);
+		return Os_Isr(stack, (void *)IntCtrl_VectorTable[vector]);
 	}
 
 
 #else
 		//read address
-	t = (func_t)intc_vector_tbl[vector];
+	t = (func_t)IntCtrl_VectorTable[vector];
 
 	if( t == ((void *)0) )
 	{
@@ -257,7 +257,7 @@ void *IntCtrl_Entry( void *stack_p )
  * @param prio
  */
 void IntCtrl_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector,uint8_t prio) {
-	intc_vector_tbl[vector] = (void *)entry;
+	IntCtrl_VectorTable[vector] = (void *)entry;
 	intc_type_tbl[vector] = PROC_ISR1;
 
 	if (vector < INTC_NUMBER_OF_INTERRUPTS) {
@@ -287,7 +287,7 @@ void IntCtrl_AttachIsr2(TaskType tid,void *int_ctrl,uint32_t vector ) {
 	pcb_t *pcb;
 
 	pcb = os_find_task(tid);
-	intc_vector_tbl[vector] = (void *)pcb;
+	IntCtrl_VectorTable[vector] = (void *)pcb;
 	intc_type_tbl[vector] = PROC_ISR2;
 
 	if (vector < INTC_NUMBER_OF_INTERRUPTS) {
@@ -325,18 +325,18 @@ void IntCtrl_InstallVector(void(*func)(), IrqType vector,
 {
   VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_INTCVECTORINSTALL_SERVICE_ID, MCU_E_UNINIT );
   DEBUG(DEBUG_LOW,"Installing INTC vector:%d,prio:%d,cpu,%d\n",vector,priority,cpu);
-  intc_vector_tbl[vector] = func;
+  IntCtrl_VectorTable[vector] = func;
 
   if (vector <= MLB_SERVICE_REQUEST)
   {
     INTC.PSR[vector].B.PRC_SEL = cpu;
     INTC.PSR[vector].B.PRI = priority;
 
-    intc_vector_tbl[vector] = func;
+    IntCtrl_VectorTable[vector] = func;
   } else if ((vector >= CRITICAL_INPUT_EXCEPTION)
       && (vector <= DEBUG_EXCEPTION))
   {
-    intc_vector_tbl[vector] = func;
+    IntCtrl_VectorTable[vector] = func;
   } else
   {
     /* Invalid vector! */
@@ -555,7 +555,7 @@ static void dump_exception_regs( uint32_t *regs ) {
 #endif
 
 #if !defined(USE_KERNEL)
-func_t intc_vector_tbl[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS] __attribute__ ((aligned (0x800))) = {
+func_t IntCtrl_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS] __attribute__ ((aligned (0x800))) = {
  dummy, dummy, dummy, dummy, dummy, /* ISRs 00 - 04 */
  dummy, dummy, dummy, dummy, dummy, /* ISRs 05 - 09 */
  dummy, dummy, dummy, dummy, dummy, /* ISRs 10 - 14 */

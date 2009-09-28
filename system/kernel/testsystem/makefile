@@ -39,8 +39,8 @@ VPATH += $(ROOTDIR)/$(SUBDIR)/config
 libitem-y += $(ROOTDIR)/libs/libkernel_$(ARCH_MCU).a
 
 #linkfile
-ldcmdfile-y = -T $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
-#ldcmdfile-y = -T $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
+ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
+#ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
 
 inc-y += ..
 inc-y += $(ROOTDIR)/system/kernel/$(objdir)

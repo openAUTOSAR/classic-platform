@@ -7,7 +7,6 @@ function quit {
     exit $1
 }
 
-
 oo="aa $CROSS_COMPILE aa";
 echo "oo = $oo";
 if [ "aa $CROSS_COMPILE aa" == "aa  aa" ]; then
@@ -15,7 +14,7 @@ if [ "aa $CROSS_COMPILE aa" == "aa  aa" ]; then
   echo $os
   if [ "$os" == "Darwin" ]; then
     export CROSS_COMPILE=/opt/arm-elf/bin/arm-elf-
-  else
+  else  
     export CROSS_COMPILE=/cygdrive/c/devtools/CodeSourcery/Lite/bin/arm-none-eabi-
   fi
 fi;

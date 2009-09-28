@@ -482,7 +482,7 @@ int simple_printf(const char *format, ...);
 #define ARRAY_SIZE(_x) sizeof(_x)/sizeof((_x)[0])
 
 #define OS_STR__(x)	#x
-#define OS_STRSTR__(x) STR__(x)
+#define OS_STRSTR__(x) OS_STR__(x)
 
 
 TaskType Os_CreateIsr( void  (*entry)(void), uint8_t prio, const char *name );

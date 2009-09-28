@@ -8,6 +8,7 @@ Copyright RAISONANCE S.A.S. 2008
 /* Common part of the linker scripts for STM32 devices*/
 
 
+
 /* default stack sizes. 
 
 These are used by the startup in order to allocate stacks for the different modes.
@@ -43,10 +44,6 @@ MEMORY
   RAM (xrw) : ORIGIN = 0x20000000, LENGTH = 20K
   FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 128K
   FLASHB1 (rx) : ORIGIN = 0x00000000, LENGTH = 0
-  EXTMEMB0 (rx) : ORIGIN = 0x00000000, LENGTH = 0
-  EXTMEMB1 (rx) : ORIGIN = 0x00000000, LENGTH = 0
-  EXTMEMB2 (rx) : ORIGIN = 0x00000000, LENGTH = 0
-  EXTMEMB3 (rx) : ORIGIN = 0x00000000, LENGTH = 0
 }
 
 /* higher address of the user mode stack */
@@ -107,6 +104,13 @@ SECTIONS
     The program executes knowing that the data is in the RAM
     but the loader puts the initial values in the FLASH (inidata).
     It is one task of the startup to copy the initial values from FLASH to RAM. */
+
+/*
+	.heap : 
+	{
+		*(.heap)
+	} >RAM
+*/
     .data  : AT ( _sidata )
     {
 	    . = ALIGN(4);
@@ -129,6 +133,7 @@ SECTIONS
 	    . = ALIGN(4);
         /* This is used by the startup in order to initialize the .bss secion */
         _sbss = .;
+        *(.heap)
         
         *(.bss)
         *(.t32_outport)
@@ -172,43 +177,7 @@ SECTIONS
     /* this is the EXTMEM */
     /* the C or assembly source must explicitly place the code or data there
     using the "section" attribute */
-    
-    /* EXTMEM Bank0 */
-    .eb0text :
-    {
-        *(.eb0text)                   /* remaining code */
-        *(.eb0rodata)                 /* read-only data (constants) */
-        *(.eb0rodata*)
-    } >EXTMEMB0
-    
-    /* EXTMEM Bank1 */
-    .eb1text :
-    {
-        *(.eb1text)                   /* remaining code */
-        *(.eb1rodata)                 /* read-only data (constants) */
-        *(.eb1rodata*)
-    } >EXTMEMB1
-    
-    /* EXTMEM Bank2 */
-    .eb2text :
-    {
-        *(.eb2text)                   /* remaining code */
-        *(.eb2rodata)                 /* read-only data (constants) */
-        *(.eb2rodata*)
-    } >EXTMEMB2
-    
-    /* EXTMEM Bank0 */
-    .eb3text :
-    {
-        *(.eb3text)                   /* remaining code */
-        *(.eb3rodata)                 /* read-only data (constants) */
-        *(.eb3rodata*)
-    } >EXTMEMB3
-    
-    
-    
-    /* after that it's only debugging information. */
-    
+           
     /* remove the debugging information from the standard libraries */
 
     /DISCARD/ :

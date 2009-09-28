@@ -27,7 +27,6 @@ inc-$(USE_DMA) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers
 obj-$(USE_MCU) += Mcu.o
 obj-$(USE_MCU) += Mcu_Cfg.o
 obj-$(CFG_MPC55XX)-$(USE_MCU) += Mcu_Exceptions.o
-#obj-$(USE_MCU) += Mcu_IntcVectors.o
 
 # Flash
 obj-$(USE_FLS) += Fls.o
@@ -156,8 +155,11 @@ vpath-$(USE_PDUR) += $(ROOTDIR)/communication/PduR
 
 # Common
 obj-y += xtoa.o
+obj-y += arc.o
+#obj-y += malloc.o
 obj-$(USE_RAMLOG) += ramlog.o
 obj-$(USE_SIMPLE_PRINTF) += printf.o
+
 VPATH += $(ROOTDIR)/common
 
 obj-y += newlib_port.o

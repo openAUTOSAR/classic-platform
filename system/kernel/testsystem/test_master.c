@@ -28,9 +28,11 @@
 #if defined(USE_GPT)
 #include "Gpt.h"
 #endif
+#include "simple_printf.h"
 
 #define USE_DEBUG
 #include "Trace.h"
+#include "arc.h"
 
 extern void etask_sup_l_basic_02( void );
 extern void etask_sup_m_basic_02( void );
@@ -180,11 +182,17 @@ void StartupHook( void ) {
 
 void ShutdownHook( StatusType Error ) {
 //	dbg_printf("## ShutdownHook\n");
-	while(1);
+	const char *err;
+	err = Arc_StatusToString(Error);
+	while(1) {
+		err = err;
+	}
 }
 
 void ErrorHook( StatusType Error ) {
 //	dbg_printf("## ErrorHook err=%d\n",Error);
+	const char *err;
+	err = Arc_StatusToString(Error);
 	while(1);
 }
 

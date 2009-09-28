@@ -244,7 +244,15 @@ extern char _end[];
 #ifndef HEAPSIZE
 #define HEAPSIZE 16000
 #endif
-unsigned char _heap[HEAPSIZE];
+
+/*
+ * The heap sadly have alignment that depends on the pagesize that
+ * you compile malloc newlib with. From what I can tell from the
+ * code that is a pagesize of 4096.
+ */
+
+unsigned char _heap[HEAPSIZE] __attribute__((aligned (4)));
+//__attribute__((section(".heap")));
 
 caddr_t sbrk( int incr )
 {
