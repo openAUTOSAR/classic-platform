@@ -116,8 +116,8 @@ GEN_COUNTER_HEAD {
 #define ALARM_USE
 
 GEN_ALARM_HEAD {
-	GEN_ALARM(	0,"Alarm1",OS_TICK_COUNTER,
-				1,100,10,0,		/*active,start,cycle,app_mask */
+	GEN_ALARM(	0,"Alarm_4ms",OS_TICK_COUNTER,
+				1,100,2,0,		/*active,start,cycle,app_mask */
 				ALARM_ACTION_SETEVENT, TASK_ID_etask_1, 2, 0 ),
 };
 

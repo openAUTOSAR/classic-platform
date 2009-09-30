@@ -13,6 +13,18 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/*
+ * DESCRIPTION
+ *
+ *   This example shows a quick demo of tasks and an alarm.
+ *   1. etask_1 sets and event in etask_2.
+ *   2. etask_2 then activates btask_3.
+ *   3. Periodically an alarm triggers an event to etask_1 --> GOTO 1.
+ *
+ */
+
+
+
 
 #include "Os.h"
 #include "Mcu.h"
@@ -24,13 +36,6 @@
 #define ERROR_LOG_SIZE 20
 
 extern void IntCtrl_Entry( void *);
-
-#if 0
-__attribute__((__interrupt__)) void SysTick_Handler(void)
-{
-	IntCtrl_Entry((void *)__get_MSP());
-}
-#endif
 
 void HardFault_Handler(void)
 {
@@ -70,13 +75,16 @@ void etask_1( void ) {
 	volatile float tryFloatingPoint = 0.0F;
 	StackInfoType si;
 	TaskType currTask;
+	TickType tick;
 
+//    ramlog_printf("hej\n");
 
 	dbg_printf("etask_1 start\n");
 	for(;;) {
 		SetEvent(TASK_ID_etask_2,1);
 		WaitEvent(2);
 		ClearEvent(2);
+		tick = GetOsTick();
 		tryFloatingPoint += 1.0F;
 		GetTaskID(&currTask);
 		Os_GetStackInfo(currTask,&si);
@@ -84,6 +92,7 @@ void etask_1( void ) {
 
 	}
 }
+
 
 /**
  * An extended task that receives events from someone
@@ -126,10 +135,9 @@ void StartupHook( void ) {
 	uint32_t sys_freq = McuE_GetSystemClock();
 
 	dbg_printf("## StartupHook\n");
-
 	dbg_printf("Sys clock %d Hz\n",sys_freq);
-	Frt_Init();
-	Frt_Start(sys_freq/1000);
+	Frt_Init();   
+	Frt_Start( sys_freq / (1000000UL/OS_TICK_DURATION_IN_US));
 }
 
 void ShutdownHook( StatusType Error ) {

@@ -22,7 +22,12 @@
 #include <stdio.h>
 #include "Std_Types.h"
 #include "Ramlog.h"
-//#include "clibsupport_gcc.h"
+
+#if defined(CFG_ARM_CM3)
+#include "irq.h"
+#include "core_cm3.h"
+#endif
+
 
 #if defined(CFG_ARM)
 #define open	_open

@@ -7,7 +7,8 @@ RELDIR := $(subst $(TOPDIR)/,,$(CURDIR))
 target := $(subst /,_,$(SUBDIR))
 
 #goal=$(subst /cygdrive/c/,c:/,$(abspath $@))
-goal=$@
+goal=$(abspath $@)
+#goal=$@
 
 #===== MODULE CONFIGURATION =====
 include $(ROOTDIR)/boards/$(BOARDDIR)/build_config.mk
@@ -63,12 +64,13 @@ config:
 	@echo "example modules:" $(MOD_USE)
 	@echo $(MOD) ${def-y}
 
-# build- targets are "end" target that the included makefile want's to build
-all: $(build-exe-y) $(build-hex-y) $(build-lib-y)
-	@cp -v $(build-lib-y) $(build-exe-y) $(build-hex-y) $(ROOTDIR)/binaries
 
 $(ROOTDIR)/binaries:
 	@mkdir -p $@
+
+# build- targets are "end" target that the included makefile want's to build
+all: $(build-exe-y) $(build-hex-y) $(build-lib-y) $(ROOTDIR)/binaries
+	@cp -v $(build-lib-y) $(build-exe-y) $(build-hex-y) $(ROOTDIR)/binaries
 
 #.PHONY post_process:
 #post_process:: $(ROOTDIR)/binaries
@@ -90,7 +92,7 @@ inc-y += ../include
 # Compile
 %.o: %.c
 	@echo "  >> CC $(notdir $<)"
-	$(Q)$(CC) -c $(CFLAGS) -o $(goal) $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $(realpath $<)
+	$(Q)$(CC) -c $(CFLAGS) -o $(goal) $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
 
 # Assembler
 
