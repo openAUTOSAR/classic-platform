@@ -32,6 +32,7 @@
 
 
 extern void Oil_GetInterruptStackInfo( stack_t *stack );
+extern uint32_t McuE_GetSystemClock( void );
 sys_t os_sys;
 
 /**
@@ -181,6 +182,14 @@ static void os_start( void ) {
 			SetAbsAlarm(j,autoPtr->alarmtime, autoPtr->cycletime);
 		}
 	}
+
+	// Activate the systick interrupt
+	{
+		uint32_t sys_freq = McuE_GetSystemClock();
+		Frt_Init();
+		Frt_Start(sys_freq/OS_TICK_FREQ);
+	}
+
 
 	// Swap in prio proc.
 	{

@@ -51,10 +51,10 @@ void EcuM_Init( void )
 {
 	internal_data.current_state = ECUM_STATE_STARTUP_ONE;
 
-	// Initialise drivers that are needed to determine PostBuild configuration
+	// Initialize drivers that are needed to determine PostBuild configuration
 	EcuM_AL_DriverInitZero();
 
-	// Initialise the OS
+	// Initialize the OS
 	InitOS();
 
 	// Enable interrupts
@@ -64,10 +64,10 @@ void EcuM_Init( void )
 	// Determine PostBuild configuration
 	internal_data.config = EcuM_DeterminePbConfiguration();
 
-	// Check consistensy of PB configuration
+	// Check consistency of PB configuration
 	// TODO
 
-	// Initialise drivers needed before the OS-starts
+	// Initialize drivers needed before the OS-starts
 	EcuM_AL_DriverInitOne(internal_data.config);
 
 	// Determine the reset/wakeup reason
@@ -77,7 +77,7 @@ void EcuM_Init( void )
 	internal_data.shutdown_target = internal_data.config->EcuMDefaultShutdownTarget;
 	internal_data.shutdown_mode = internal_data.config->EcuMDefaultShutdownMode;
 
-	// Set default appliaction mode
+	// Set default application mode
 	internal_data.app_mode = internal_data.config->EcuMDefaultAppMode;
 
 	internal_data.initiated = TRUE;
@@ -94,7 +94,7 @@ void EcuM_StartupTwo()
 
 	internal_data.current_state = ECUM_STATE_STARTUP_TWO;
 
-	// Initialse the BSW scheduler
+	// Initialize the BSW scheduler
 	// TODO SchM_Init();
 
 	// Initialize drivers that don't need NVRAM data
@@ -118,7 +118,7 @@ void EcuM_StartupTwo()
 	}
 #endif
 
-	// Initialse drivers that need NVRAM data
+	// Initialize drivers that need NVRAM data
 	EcuM_AL_DriverInitThree(internal_data.config);
 
 	// Indicate mode change to RTE
