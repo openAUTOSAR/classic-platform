@@ -173,8 +173,6 @@ void StartupHook( void ) {
 #ifdef USE_MCU
 	uint32_t sys_freq = McuE_GetSystemClock();
 	dbg_printf("Sys clock %d Hz\n",sys_freq);
-	Frt_Init();
-	Frt_Start(sys_freq/1000);
 #endif
 }
 
