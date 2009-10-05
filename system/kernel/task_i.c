@@ -136,15 +136,17 @@ pcb_t *os_find_task( TaskType tid ) {
  * @param pcb
  */
 TaskType os_add_task( pcb_t *pcb ) {
+	long msr;
 
-	DisableAllInterrupts();
+	Irq_Save(msr);
+//	DisableAllInterrupts();
 
 	pcb->pid = os_sys.task_cnt;
 	// Add to list of PCB's
 	TAILQ_INSERT_TAIL(& os_sys.pcb_head,pcb,pcb_list);
 	os_sys.task_cnt++;
-	EnableAllInterrupts();
-
+//	EnableAllInterrupts();
+	Irq_Restore(msr);
 	return pcb->pid;
 }
 
