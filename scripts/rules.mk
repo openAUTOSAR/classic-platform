@@ -7,8 +7,8 @@ RELDIR := $(subst $(TOPDIR)/,,$(CURDIR))
 target := $(subst /,_,$(SUBDIR))
 
 #goal=$(subst /cygdrive/c/,c:/,$(abspath $@))
-goal=$(abspath $@)
-#goal=$@
+#goal=$(abspath $@)
+goal=$@
 
 #===== MODULE CONFIGURATION =====
 include $(ROOTDIR)/boards/$(BOARDDIR)/build_config.mk
