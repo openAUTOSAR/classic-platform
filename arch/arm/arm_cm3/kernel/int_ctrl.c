@@ -35,7 +35,7 @@ void IntCtrl_EOI( void ) {
 
 }
 
-#define ICSR_VECTACTIVE		0x1f
+#define ICSR_VECTACTIVE		0x1ff
 
 /**
  * Get Active ISR number field.
