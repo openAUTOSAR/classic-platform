@@ -47,7 +47,7 @@ void os_arch_first_call( void )
 
 void *os_arch_get_stackptr( void ) {
 
-	return __get_MSP();
+	return (void *)__get_MSP();
 }
 
 unsigned int os_arch_get_sc_size( void ) {

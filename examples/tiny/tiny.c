@@ -176,6 +176,9 @@ void ErrorHook( StatusType Error ) {
 		TickType increment = OSError_SetRelAlarm_Increment;
 		TickType cycle = OSError_SetRelAlarm_Cycle;
 		// ... Handle this some way.
+		(void)alarm_id;
+		(void)increment;
+		(void)cycle;
 		break;
 	}
 	/*

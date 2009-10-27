@@ -5,7 +5,7 @@ ARCH_FAM=arm
 ARCH_MCU=arm_cm3
 
 # CFG (y/n) macros
-CFG=ARM ARM_CM3 BRD_ET_STM32_STAMP
+CFG=ARM ARM_CM3 BRD_ET_STM32_STAMP STM32_
 
 # What buildable modules does this board have, 
 # default or private

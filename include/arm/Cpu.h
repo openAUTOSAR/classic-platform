@@ -43,4 +43,6 @@ static inline void _Irq_Restore(unsigned mask) {
 	__set_PRIMASK(mask);
 }
 
+#define CallService(index,param)
+
 #endif /* CPU_H_ */

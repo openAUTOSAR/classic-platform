@@ -1,10 +1,13 @@
 
 obj-$(CFG_PPC) += crt0.o
 vpath-$(CFG_ARM_CM3) += $(ARCH_PATH-y)kernel
-# This is not true, md=medium,ld=low,hd=high  
-obj-$(CFG_ARM_CM3) += startup_stm32f10x_md.o
 obj-$(CFG_ARM_CM3) += system_stm32f10x.o
 obj-$(CFG_ARM_CM3) += core_cm3.o
+
+obj-$(CFG_STM32_MD) += startup_stm32f10x_md.o
+obj-$(CFG_STM32_LD) += startup_stm32f10x_ld.o
+obj-$(CFG_STM32_HD) += startup_stm32f10x_hd.o
+obj-$(CFG_STM32_CL) += startup_stm32f10x_cl.o
 
 #Ecu
 #obj-y += EcuM_$(BOARDDIR).o
