@@ -245,7 +245,6 @@ void StartOS( AppModeType Mode ) {
 
 }
 
-
 /**
  * OS shutdown
  *
@@ -258,7 +257,9 @@ void ShutdownOS( StatusType Error ) {
 		os_sys.hooks->ShutdownHook(Error);
 	}
 	/* TODO: */
-	while(1);
+	while(1) {
+
+	}
 
 }
 

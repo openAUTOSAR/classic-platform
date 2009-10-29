@@ -36,6 +36,9 @@
  *   Args
  *     r0-r3
  *
+ * RETURN
+ *   ?? r0?
+ *
  *   Non-volatile regs (saved by function call)
  *     r4-r8,r10,r11 and SP
  *
@@ -110,7 +113,7 @@
 #define C_CONTEXT_OFFS 10
 #endif
 
-// NVREGS: r4+r5+r6+r7+r8+r10+r11+lr = 8*4
+// NVREGS: r4+r5+r6+r7+r8++r10+r11+lr = 9*4 = 36
 #define NVGPR_SIZE		32
 // VGPR: 9*4 = 36
 #define VGPR_SIZE		36
@@ -118,7 +121,7 @@
 #define C_SIZE			8
 
 //...
-#define VGPR_LR_OFF		(C_SIZE+28)
+#define VGPR_LR_OFF		(C_SIZE+NVGPR_SIZE-4)
 #define C_CONTEXT_OFFS  4
 #define C_SP_OFF 		0
 

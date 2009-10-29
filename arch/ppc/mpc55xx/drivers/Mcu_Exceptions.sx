@@ -17,7 +17,7 @@
          _inst    _label;
 
 
-		.extern intc_vector_tbl
+		.extern IntCtrl_VectorTable
 
 		.section .text
 //---------------------------------------------------------------

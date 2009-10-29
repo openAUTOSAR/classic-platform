@@ -12,6 +12,9 @@ obj-y += test_framework.o
 
 obj-y += Os_Cfg.o
 
+# Not supported yet...
+#obj-$(CFG_ARM_CM3) += test_sup_irq.o
+
 # Grab the board the board files.
 include $(ROOTDIR)/boards/board_common.mk
 
@@ -39,8 +42,8 @@ VPATH += $(ROOTDIR)/$(SUBDIR)/config
 libitem-y += $(ROOTDIR)/libs/libkernel_$(ARCH_MCU).a
 
 #linkfile
-ldcmdfile-y = -T $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
-#ldcmdfile-y = -T $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
+ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
+#ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
 
 inc-y += ..
 inc-y += $(ROOTDIR)/system/kernel/$(objdir)

@@ -34,13 +34,13 @@
 #include "Modules.h"
 
 #define DET_MODULE_ID            MODULE_ID_DET
-
+#define DET_VENDOR_ID            1
 #define DET_SW_MAJOR_VERSION     1
 #define DET_SW_MINOR_VERSION     0
 #define DET_SW_PATCH_VERSION     0
 #define DET_AR_MAJOR_VERSION     2
-#define DET_AR_MINOR_VERSION     0
-#define DET_AR_PATCH_VERSION     1
+#define DET_AR_MINOR_VERSION     2
+#define DET_AR_PATCH_VERSION     2
 
 // Error codes
 #define DET_E_CBK_REGISTRATION_FAILED 0x01
@@ -77,4 +77,6 @@ void Det_DeInit( void );
 #endif
 void Det_ReportError( uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 ErrorId);
 void Det_Start( void );
+#define Det_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,DET)
+
 #endif /*_DET_H_*/

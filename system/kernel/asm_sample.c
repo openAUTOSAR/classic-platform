@@ -24,9 +24,15 @@
  *
  */
 
-void __attribute__((__interrupt__)) interrupt( void ) {
+void apa(void *);
 
+void interrupt(void) __attribute__((__interrupt__));
+
+void interrupt( void ) {
+
+	apa((void *)0x123);
 }
+
 
 void func1( int a ) {
 
@@ -36,12 +42,13 @@ int func2( void ) {
 	int a;
 	a = 3;
 
+	func1(5);
+
 	return 2;
 }
 
 
 void func( void ) {
-	func1(5);
 	func2();
 }
 

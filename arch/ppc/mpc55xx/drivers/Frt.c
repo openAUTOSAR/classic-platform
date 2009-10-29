@@ -13,24 +13,11 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-/*
- * timer.c
- *
- *  Created on: 2009-jan-17
- *      Author: mahi
- */
-
 #include "Os.h"
 #include "sys.h"
 #include "pcb.h"
 #include "internal.h"
+#include "int_ctrl.h"
 
 /**
  * Init of free running timer.

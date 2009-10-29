@@ -91,7 +91,7 @@ GEN_PCB_LIST()
 uint8_t os_interrupt_stack[OS_INTERRUPT_STACK_SIZE] __attribute__ ((aligned (0x10)));
 
 // The vector table
-void * intc_vector_tbl[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS] __attribute__ ((aligned (0x1000),section(".data")))= {
+void * IntCtrl_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS] __attribute__ ((aligned (0x1000),section(".data")))= {
 };
 
 // The type of vector

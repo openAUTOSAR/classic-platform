@@ -1,10 +1,13 @@
 
 obj-$(CFG_PPC) += crt0.o
 vpath-$(CFG_ARM_CM3) += $(ARCH_PATH-y)kernel
-# This is not true, md=medium,ld=low,hd=high  
-obj-$(CFG_ARM_CM3) += startup_stm32f10x_md.o
 obj-$(CFG_ARM_CM3) += system_stm32f10x.o
 obj-$(CFG_ARM_CM3) += core_cm3.o
+
+obj-$(CFG_STM32_MD) += startup_stm32f10x_md.o
+obj-$(CFG_STM32_LD) += startup_stm32f10x_ld.o
+obj-$(CFG_STM32_HD) += startup_stm32f10x_hd.o
+obj-$(CFG_STM32_CL) += startup_stm32f10x_cl.o
 
 #Ecu
 #obj-y += EcuM_$(BOARDDIR).o
@@ -27,7 +30,6 @@ inc-$(USE_DMA) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers
 obj-$(USE_MCU) += Mcu.o
 obj-$(USE_MCU) += Mcu_Cfg.o
 obj-$(CFG_MPC55XX)-$(USE_MCU) += Mcu_Exceptions.o
-#obj-$(USE_MCU) += Mcu_IntcVectors.o
 
 # Flash
 obj-$(USE_FLS) += Fls.o
@@ -156,8 +158,11 @@ vpath-$(USE_PDUR) += $(ROOTDIR)/communication/PduR
 
 # Common
 obj-y += xtoa.o
+obj-y += arc.o
+#obj-y += malloc.o
 obj-$(USE_RAMLOG) += ramlog.o
 obj-$(USE_SIMPLE_PRINTF) += printf.o
+
 VPATH += $(ROOTDIR)/common
 
 obj-y += newlib_port.o
