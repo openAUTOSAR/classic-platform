@@ -54,7 +54,7 @@
 }
 
 
-#define GEN_TASK_HEAD rom_pcb_t rom_pcb_list[] =
+#define GEN_TASK_HEAD const rom_pcb_t rom_pcb_list[] =
 
 
 #define GEN_ETASK( _id, _priority, 	_autostart, _timing_protection, _application_id, _resource_int_p ) \

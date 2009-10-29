@@ -63,13 +63,12 @@ void *IntCtrl_Entry( void *stack_p )
 	Irq_Disable();
 	stack = (uint32_t *)stack_p;
 
-//	uint32_t exc_vector = (EXC_OFF_FROM_BOTTOM+EXC_VECTOR_OFF)  / sizeof(uint32_t);
-
-	// 0. Set the default handler here....
-	// 1. Grab the vector from the interrupt controller
-	//    INT_CTRL_ST[VECTACTIVE]
-	// 2. IntCtrl_Tbl[vector] is odd -> ISR1
-	//    IntCtrl_Tbl[vector] is even-> ISR2
+	/* 0. Set the default handler here....
+	 * 1. Grab the vector from the interrupt controller
+	 *    INT_CTRL_ST[VECTACTIVE]
+	 * 2. IntCtrl_Tbl[vector] is odd -> ISR1
+	 *    IntCtrl_Tbl[vector] is even-> ISR2
+	 */
 
 	vector = NVIC_GetActiveVector();
 
@@ -130,12 +129,14 @@ void IntCtrl_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
 
 
 /**
- * Generates a soft interrupt
+ * Generates a soft interrupt, ie sets pending bit.
+ * This could also be implemented using ISPR regs.
+ *
  * @param vector
  */
 void IntCtrl_GenerateSoftInt( IrqType vector ) {
 
-	// NVIC_STIR
+	NVIC->STIR = (vector + 16);
 }
 
 /**
