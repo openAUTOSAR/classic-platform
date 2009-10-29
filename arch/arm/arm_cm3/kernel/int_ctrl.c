@@ -24,11 +24,10 @@
 #include "int_ctrl.h"
 #include "core_cm3.h"
 
-extern void *IntCtrl_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
+extern void *Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
 
 void IntCtrl_Init( void ) {
-
-
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 }
 
 void IntCtrl_EOI( void ) {
@@ -72,7 +71,7 @@ void *IntCtrl_Entry( void *stack_p )
 
 	vector = NVIC_GetActiveVector();
 
-	stack = Os_Isr(stack, (void *)IntCtrl_VectorTable[vector]);
+	stack = Os_Isr(stack, (void *)Irq_VectorTable[vector]);
 	Irq_Enable();
 	return stack;
 }
@@ -100,6 +99,11 @@ void IntCtrl_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector, u
    */
 }
 
+static inline int osPrioToCpuPio( uint8_t prio ) {
+	assert(prio<32);
+	return prio>>1;
+}
+
 
 /**
  * Attach a ISR type 2 to the interrupt controller.
@@ -113,13 +117,11 @@ void IntCtrl_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
 	NVIC_InitTypeDef irqInit;
 
 	pcb = os_find_task(tid);
-	IntCtrl_VectorTable[vector+16] = (void *)pcb;
-
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
+	Irq_VectorTable[vector+16] = (void *)pcb;
 
 	irqInit.NVIC_IRQChannel = vector;
-	irqInit.NVIC_IRQChannelPreemptionPriority = 4;
-	irqInit.NVIC_IRQChannelSubPriority = 4;
+	irqInit.NVIC_IRQChannelPreemptionPriority = osPrioToCpuPio(pcb->prio);
+	irqInit.NVIC_IRQChannelSubPriority = 0;
 	irqInit.NVIC_IRQChannelCmd = ENABLE;
 
 

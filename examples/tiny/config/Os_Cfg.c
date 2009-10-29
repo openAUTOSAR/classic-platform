@@ -90,16 +90,10 @@ GEN_PCB_LIST()
 
 uint8_t os_interrupt_stack[OS_INTERRUPT_STACK_SIZE] __attribute__ ((aligned (0x10)));
 
-// The vector table
-void * IntCtrl_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS] __attribute__ ((aligned (0x1000),section(".data")))= {
+GEN_IRQ_VECTOR_TABLE_HEAD {};
+GEN_IRQ_ISR_TYPE_TABLE_HEAD {};
+GEN_IRQ_PRIORITY_TABLE_HEAD {};
 
-};
-
-#if 0
-// The type of vector
-uint8 intc_type_tbl[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS] = {
-};
-#endif
 
 // --- COUNTERS ---
 GEN_COUNTER_HEAD {
