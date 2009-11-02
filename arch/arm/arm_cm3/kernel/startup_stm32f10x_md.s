@@ -118,7 +118,31 @@ Infinite_Loop:
 	.type	g_pfnVectors, %object
 	.size	g_pfnVectors, .-g_pfnVectors
     
+#if 1
+
+	.extern Irq_Handler
+
+	.word	_estack
+	.word	Reset_Handler
+	.word	NMI_Handler
+	.word	HardFault_Handler
+	.word	MemManage_Handler
+	.word	BusFault_Handler
+	.word	UsageFault_Handler
+	.word	0
+	.word	0
+	.word	0
+	.word	0
+	.word	SVC_Handler
+	.word	DebugMon_Handler
+	.word	0
+	.word	PendSV_Handler
+	.word   Irq_Handler+1
+	.rept   83
+	.word	Irq_Handler+1
+	.endr
     
+#else
 g_pfnVectors:
 	.word	_estack
 	.word	Reset_Handler
@@ -353,4 +377,4 @@ g_pfnVectors:
 	.weak	USBWakeUp_IRQHandler
 	.thumb_set USBWakeUp_IRQHandler,Default_Handler
 
-
+#endif

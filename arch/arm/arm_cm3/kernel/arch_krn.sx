@@ -14,13 +14,13 @@
 
 	.section .text
 
- 	.global SysTick_Handler
+ 	.global Irq_Handler
+    .type	Irq_Handler, %function
 
 #define IRQ_ENABLE() 		cpsie 	i
 #define IRQ_DISABLE()		cpsid 	i
 
-
-SysTick_Handler:
+Irq_Handler:
     push    {r4-r8,r10,r11,lr}
     sub.w   sp,sp,#C_SIZE
     mov.w   r4,#LC_PATTERN

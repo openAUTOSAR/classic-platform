@@ -65,9 +65,10 @@ void *IntCtrl_Entry( void *stack_p )
 	/* 0. Set the default handler here....
 	 * 1. Grab the vector from the interrupt controller
 	 *    INT_CTRL_ST[VECTACTIVE]
-	 * 2. IntCtrl_Tbl[vector] is odd -> ISR1
-	 *    IntCtrl_Tbl[vector] is even-> ISR2
+	 * 2. Irq_VectorTable[vector] is odd -> ISR1
+	 *    Irq_VectorTable[vector] is even-> ISR2
 	 */
+
 
 	vector = NVIC_GetActiveVector();
 
