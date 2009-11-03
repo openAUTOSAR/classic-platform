@@ -58,6 +58,8 @@
  extern "C" {
 #endif 
   
+#define assert_param(expr) ((void)0)
+
 /** @addtogroup Library_configuration_section
   * @{
   */

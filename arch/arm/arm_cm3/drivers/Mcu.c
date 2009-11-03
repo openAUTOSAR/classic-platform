@@ -209,6 +209,7 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
 
 
   SystemInit();
+  Set_System();
 
   Irq_Enable();
 

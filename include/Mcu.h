@@ -64,9 +64,9 @@ typedef enum {
 } Mcu_ModeType;
 
 //TODO
-typedef uint8 Mcu_RamSectionType;
+typedef uint8_t Mcu_RamSectionType;
 
-typedef uint32 Mcu_RawResetType;
+typedef uint32_t Mcu_RawResetType;
 
 typedef enum {
 	MCU_POWER_ON_RESET,
