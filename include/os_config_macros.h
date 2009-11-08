@@ -289,7 +289,7 @@ struct os_conf_global_hooks_s os_conf_global_hooks = { \
 		 void * Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS] =
 
 #define GEN_IRQ_ISR_TYPE_TABLE_HEAD \
-		 void * Irq_IsrTypeTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS]  =
+		 uint8_t Irq_IsrTypeTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS]  =
 
 #define GEN_IRQ_PRIORITY_TABLE_HEAD \
 		 uint8_t Irq_PriorityTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS]  =
