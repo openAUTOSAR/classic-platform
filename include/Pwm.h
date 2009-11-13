@@ -16,6 +16,10 @@
 #ifndef PWM_H_
 #define PWM_H_
 
+#define PWM_SW_MAJOR_VERSION	1
+#define PWM_SW_MINOR_VERSION	0
+#define PWM_SW_PATCH_VERSION	0
+
 /*
  * PWM094: Std_VersionInfoType shall be imported from Std_Types.h
  */

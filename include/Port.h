@@ -23,16 +23,17 @@
 #ifndef PORT_H_
 #define PORT_H_
 
-#include "Port_Cfg.h"
-#if PORT_VERSION_INFO_API == STD_ON
-
 #define PORT_SW_MAJOR_VERSION    	1 
 #define PORT_SW_MINOR_VERSION   	0 
 #define PORT_SW_PATCH_VERSION    	0 
+
 #define PORT_AR_MAJOR_VERSION     3
 #define PORT_AR_MINOR_VERSION     0 
 #define PORT_AR_PATCH_VERSION     2 
 
+#include "Port_Cfg.h"
+
+#if PORT_VERSION_INFO_API == STD_ON
 void Port_GetVersionInfo( Std_VersionInfoType *versionInfo );
 #endif 
 
