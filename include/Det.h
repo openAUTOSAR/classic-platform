@@ -29,18 +29,21 @@
 
 #ifndef _DET_H_
 #define _DET_H_
-#include "Std_Types.h"
-#include "Det_Cfg.h"
-#include "Modules.h"
 
 #define DET_MODULE_ID            MODULE_ID_DET
 #define DET_VENDOR_ID            1
+
 #define DET_SW_MAJOR_VERSION     1
 #define DET_SW_MINOR_VERSION     0
 #define DET_SW_PATCH_VERSION     0
+
 #define DET_AR_MAJOR_VERSION     2
 #define DET_AR_MINOR_VERSION     2
 #define DET_AR_PATCH_VERSION     2
+
+#include "Std_Types.h"
+#include "Det_Cfg.h"
+#include "Modules.h"
 
 // Error codes
 #define DET_E_CBK_REGISTRATION_FAILED 0x01

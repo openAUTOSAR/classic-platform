@@ -127,16 +127,18 @@ typedef enum
 	ECUM_BOOT_TARGET_BOOTLOADER = 1, // The Ecu will boot into the bootloader
 } EcuM_BootTargetType;
 
-#include "EcuM_Cfg.h"
 
-#if ( ECUM_VERSION_INFO_API == STD_ON)
 #define ECUM_SW_MAJOR_VERSION    	1
 #define ECUM_SW_MINOR_VERSION   	0
 #define ECUM_SW_PATCH_VERSION    	0
+
 #define ECUM_AR_MAJOR_VERSION     1
 #define ECUM_AR_MINOR_VERSION     2
 #define ECUM_AR_PATCH_VERSION     2
 
+#include "EcuM_Cfg.h"
+
+#if ( ECUM_VERSION_INFO_API == STD_ON)
 void EcuM_GetVersionInfo( Std_VersionInfoType *versionInfo );
 #endif
 

@@ -23,6 +23,13 @@
 #ifndef LINSM_H_
 #define LINSM_H_
 
+#define LINSM_SW_MAJOR_VERSION    1
+#define LINSM_SW_MINOR_VERSION    0
+#define LINSM_SW_PATCH_VERSION    0
+#define LINSM_AR_MAJOR_VERSION    1
+#define LINSM_AR_MINOR_VERSION    0
+#define LINSM_AR_PATCH_VERSION    1
+
 #include "ComStack_Types.h"
 #include "Std_Types.h"
 #include "LinSM_Cfg.h"
@@ -30,15 +37,6 @@
 #include "Com.h"
 #include "ComM_Types.h"
 #include "LinIf.h"
-
-#if (LINSM_VERSION_INFO_API == STD_ON)
-
-#define LINSM_SW_MAJOR_VERSION    1
-#define LINSM_SW_MINOR_VERSION    0
-#define LINSM_SW_PATCH_VERSION    0
-#define LINSM_AR_MAJOR_VERSION    1
-#define LINSM_AR_MINOR_VERSION    0
-#define LINSM_AR_PATCH_VERSION    1
 
 #define LINSM_INIT_SERVICE_ID 0x01
 #define LINSM_REQUEST_COM_MODE_SERVICE_ID 0x10
@@ -66,6 +64,7 @@ typedef enum {
 	LINSM_GOTO_SLEEP,
 }LinSM_StatusType;
 
+#if (LINSM_VERSION_INFO_API == STD_ON)
 void LinSM_GetVersionInfo( Std_VersionInfoType *versionInfo );
 #define LinSM_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,LINSM)
 #endif

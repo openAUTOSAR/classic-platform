@@ -27,19 +27,20 @@
 #include "PduR.h"
 #include "Com.h"
 
-
-#include "Det.h"
-#include "CanIf_Types.h"
-#include "CanIf_Cfg.h"
-
 #define CANIF_VENDOR_ID          1
 #define CANIF_MODULE_ID          MODULE_ID_CANIF
 #define CANIF_AR_MAJOR_VERSION   3
 #define CANIF_AR_MINOR_VERSION   0
 #define CANIF_AR_PATCH_VERSION   2
-#define CANIF_SW_MAJOR_VERSION   0
-#define CANIF_SW_MINOR_VERSION   1
+
+#define CANIF_SW_MAJOR_VERSION   1
+#define CANIF_SW_MINOR_VERSION   0
 #define CANIF_SW_PATCH_VERSION   0
+
+#include "Det.h"
+#include "CanIf_Types.h"
+#include "CanIf_Cfg.h"
+
 
 // Service IDs
 #define CANIF_INIT_ID                0x01

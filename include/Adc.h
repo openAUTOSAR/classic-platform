@@ -23,8 +23,9 @@
 #define ADC_AR_MAJOR_VERSION  		3
 #define ADC_AR_MINOR_VERSION 		0
 #define ADC_AR_PATCH_VERSION		3
-#define ADC_SW_MAJOR_VERSION  		0
-#define ADC_SW_MINOR_VERSION 		1
+
+#define ADC_SW_MAJOR_VERSION  		1
+#define ADC_SW_MINOR_VERSION 		0
 #define ADC_SW_PATCH_VERSION		0
 
 /* Std-type */

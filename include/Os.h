@@ -27,7 +27,9 @@
 #ifndef OS_H_
 #define OS_H_
 
-
+#define OS_SW_MAJOR_VERSION    1
+#define OS_SW_MINOR_VERSION    0
+#define OS_SW_PATCH_VERSION    0
 
 #include "Std_Types.h"
 #if !defined(CC_KERNEL)
