@@ -20,7 +20,6 @@
  * PWM094: Std_VersionInfoType shall be imported from Std_Types.h
  */
 #include "Std_Types.h"
-#include "Pwm_Cfg.h"
 
 /*
  * PWM003: The detection of development errors is configurable (ON/OFF) at pre-
@@ -80,6 +79,7 @@ typedef enum {
 
 typedef void (*Pwm_NotificationHandlerType)();
 
+#include "Pwm_Cfg.h"
 
 extern const Pwm_ConfigType PwmConfig;
 

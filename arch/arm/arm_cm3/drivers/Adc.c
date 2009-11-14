@@ -9,6 +9,7 @@
 #include "Det.h"
 #if defined(USE_KERNEL)
 #include "Os.h"
+#include "int_ctrl.h"
 #endif
 
 
@@ -28,6 +29,8 @@ static Std_ReturnType Adc_CheckReadGroup (Adc_GroupType group);
 static Std_ReturnType Adc_CheckStartGroupConversion (Adc_GroupType group);
 static Std_ReturnType Adc_CheckInit (const Adc_ConfigType *ConfigPtr);
 static Std_ReturnType Adc_CheckSetupResultBuffer (Adc_GroupType group);
+
+static void Adc_Group0ConversionComplete (void);
 
 
 static Adc_StateType adcState = ADC_UNINIT;
@@ -237,7 +240,7 @@ Adc_StatusType Adc_GetGroupStatus (Adc_GroupType group)
 }
 
 
-void Adc_Group0ConversionComplete (void)
+static void Adc_Group0ConversionComplete (void)
 {
   /* ISR for DMA. Clear interrupt flag.  */
   DMA_ClearFlag(DMA1_FLAG_TC1);

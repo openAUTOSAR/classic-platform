@@ -12,11 +12,14 @@
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
-
+/*
+ * Adc_Cfg.h
+ *
+ *  Created on: 2009-okt-02
+ *      Author: Fredrik
+ */
 #ifndef ADC_CFG_H_
 #define ADC_CFG_H_
-
-#include "Dma.h"
 
 #define ADC_PRIORITY_HW                   0
 #define ADC_PRIORITY_HW_SW                1
@@ -33,27 +36,43 @@
 #define ADC_VERSION_API                   STD_ON            /* Not implemented. */
 
 typedef uint16_t Adc_ValueGroupType;
+/* Group definitions. */
 
-
-/* Non-standard type */
-typedef union
+typedef enum
 {
-  vuint32_t R;
-  struct
-  {
-    vuint32_t EOQ:1;
-    vuint32_t PAUSE:1;
-    vuint32_t :4;
-    vuint32_t BN:1;
-    vuint32_t CAL:1;
-    vuint32_t MESSAGE_TAG:4;
-    vuint32_t LST:2;
-    vuint32_t TSR:1;
-    vuint32_t FMT:1;
-    vuint32_t CHANNEL_NUMBER:8;
-    vuint32_t :8;
-   } B;
-}Adc_CommandType;
+  ADC_GROUP0,
+  ADC_NBR_OF_GROUPS
+}Adc_GroupType;
+
+typedef enum
+{
+  ADC_CH0,
+  ADC_CH1,
+  ADC_CH2,
+  ADC_CH3,
+  ADC_CH4,
+  ADC_CH5,
+  ADC_CH6,
+  ADC_CH7,
+  ADC_CH8,
+  ADC_CH9,
+  ADC_CH10,
+  ADC_CH11,
+  ADC_CH12,
+  ADC_CH13,
+  ADC_CH14,
+  ADC_CH15,
+  ADC_NBR_OF_CHANNELS,
+}Adc_ChannelType;
+
+typedef enum
+{
+	  ADC_TEST_BOARD_POT,
+	  ADC_TEST_BOARD_POT2,
+	  ADC_TEST_BOARD_POT3,
+	  ADC_TEST_BOARD_POT4,
+  ADC_NBR_OF_GROUP0_CHANNELS,
+}Adc_Group0SignalType;
 
 /* Std-type, supplier defined */
 typedef enum
@@ -112,54 +131,30 @@ typedef struct
 /* Std-type, supplier defined */
 typedef enum
 {
-  ADC_REFERENCE_VOLTAGE_GROUND,
-  ADC_REFERENCE_VOLTAGE_5V,
-}Adc_VoltageSourceType;
-
-/* Std-type, supplier defined */
-typedef enum
-{
   ADC_CONVERSION_TIME_2_CLOCKS,
   ADC_CONVERSION_TIME_8_CLOCKS,
   ADC_CONVERSION_TIME_64_CLOCKS,
   ADC_CONVERSION_TIME_128_CLOCKS
 }Adc_ConversionTimeType;
 
-/* Non-standard type */
-typedef enum
-{
-  ADC_CALIBRATION_DISABLED,
-  ADC_CALIBRATION_ENABLED
-}Adc_CalibrationType;
-
-/* Std-type, supplier defined */
-typedef enum
-{
-  ADC_RESOLUTION_12BITS
-}Adc_ResolutionType;
-
-/* Non-standard type */
-/* Channel definitions. */
+/* Channel definitions, std container */
 typedef struct
 {
   Adc_ConversionTimeType adcChannelConvTime;
-  Adc_VoltageSourceType  adcChannelRefVoltSrcLow;
-  Adc_VoltageSourceType  adcChannelRefVoltSrcHigh;
-  Adc_ResolutionType     adcChannelResolution;
-  Adc_CalibrationType    adcChannelCalibrationEnable;
-}Adc_ChannelConfigurationType;
+  // NOT SUPPORTED Adc_VoltageSourceType  adcChannelRefVoltSrcLow;
+  // NOT SUPPORTED Adc_VoltageSourceType  adcChannelRefVoltSrcHigh;
+  // NOT SUPPORTED Adc_ResolutionType     adcChannelResolution;
+  // NOT SUPPORTED Adc_CalibrationType    adcChannelCalibrationEnable;
+} Adc_ChannelConfigurationType;
 
-
-/* TODO list timer sources here. */
-/* Std-type, supplier defined */
-typedef enum
+/* Used ?? */
+typedef struct
 {
-  ADC_NO_TIMER,
-}Adc_HwTriggerTimerType;
+  uint8 				notifictionEnable;
+  Adc_ValueGroupType *	resultBufferPtr;
+  Adc_StatusType 		groupStatus;
+} Adc_GroupStatus;
 
-
-/* Std-type, supplier defined */
-typedef uint16_t Adc_StreamNumSampleType;
 
 /* Std-type, supplier defined */
 typedef enum
@@ -167,10 +162,31 @@ typedef enum
   ADC_CONV_MODE_DISABLED,
   ADC_CONV_MODE_ONESHOT   = 1,
   ADC_CONV_MODE_CONTINOUS = 9,
-}Adc_GroupConvModeType;
+} Adc_GroupConvModeType;
 
+/* Implementation specific */
+typedef struct
+{
+  // NOT SUPPORTED  Adc_GroupAccessModeType      accessMode;
+  Adc_GroupConvModeType        conversionMode;
+  Adc_TriggerSourceType        triggerSrc;
+  // NOT SUPPORTED  Adc_HwTriggerSignalType      hwTriggerSignal;
+  // NOT SUPPORTED  Adc_HwTriggerTimerType       hwTriggerTimer;
+  void                         (*groupCallback)(void);
+  // NOT SUPPORTED  Adc_StreamBufferModeType     streamBufferMode;
+  // NOT SUPPORTED  Adc_StreamNumSampleType      streamNumSamples;
+  const Adc_ChannelType        *channelList;
+  Adc_ValueGroupType           *resultBuffer;
+  // NOT SUPPORTED  Adc_CommandType              *commandBuffer;
+  Adc_ChannelType              numberOfChannels;
+  Adc_GroupStatus              *status;
+  // NOT SUPPORTED  Dma_ChannelType              dmaCommandChannel;
+  // NOT SUPPORTED  Dma_ChannelType              dmaResultChannel;
+  // NOT SUPPORTED  const struct tcd_t *		   groupDMACommands;
+  // NOT SUPPORTED  const struct tcd_t *		   groupDMAResults;
+} Adc_GroupDefType;
 
-/* Impl. specific */
+/* Non-standard type */
 typedef struct
 {
   const Adc_HWConfigurationType*      hwConfigPtr;
@@ -178,116 +194,9 @@ typedef struct
   const uint16_t                      nbrOfChannels;
   const Adc_GroupDefType*             groupConfigPtr;
   const uint16_t                      nbrOfGroups;
-}Adc_ConfigType;
+} Adc_ConfigType;
 
 extern const Adc_ConfigType AdcConfig [];
 
-
-/* Used ?? */
-typedef struct
-{
-  uint8 notifictionEnable;
-  Adc_ValueGroupType *resultBufferPtr;
-  Adc_StatusType groupStatus;
-}Adc_GroupStatus;
-
-/* Implementation specific */
-typedef struct
-{
-  Adc_GroupAccessModeType      accessMode;
-  Adc_GroupConvModeType        conversionMode;
-  Adc_TriggerSourceType        triggerSrc;
-  Adc_HwTriggerSignalType      hwTriggerSignal;
-  Adc_HwTriggerTimerType       hwTriggerTimer;
-  void                         (*groupCallback)(void);
-  Adc_StreamBufferModeType     streamBufferMode;
-  Adc_StreamNumSampleType      streamNumSamples;
-  const Adc_ChannelType        *channelList;
-  Adc_ValueGroupType           *resultBuffer;
-  Adc_CommandType              *commandBuffer;
-  Adc_ChannelType              numberOfChannels;
-  Adc_GroupStatus              *status;
-  Dma_ChannelType              dmaCommandChannel;
-  Dma_ChannelType              dmaResultChannel;
-  const struct tcd_t           *groupDMACommands;
-  const struct tcd_t           *groupDMAResults;
-}Adc_GroupDefType;
-
-/* Group definitions. */
-
-typedef enum
-{
-  ADC_GROUP0,
-  ADC_GROUP1,
-  ADC_GROUP2,
-  ADC_GROUP3,
-  ADC_NBR_OF_GROUPS
-}Adc_GroupType;
-
-typedef enum
-{
-  ADC_CH0,
-  ADC_CH1,
-  ADC_CH2,
-  ADC_CH3,
-  ADC_CH4,
-  ADC_CH5,
-  ADC_CH6,
-  ADC_CH7,
-  ADC_CH8,
-  ADC_CH9,
-  ADC_CH10,
-  ADC_CH11,
-  ADC_CH12,
-  ADC_CH13,
-  ADC_CH14,
-  ADC_CH15,
-  ADC_CH16,
-  ADC_CH17,
-  ADC_CH18,
-  ADC_CH19,
-  ADC_CH20,
-  ADC_NBR_OF_CHANNELS,
-}Adc_ChannelType;
-
-typedef enum
-{
-  ADC_TEST_BOARD_AIN1,
-  ADC_TEST_BOARD_AIN2,
-  ADC_TEST_BOARD_AIN3,
-  ADC_TEST_BOARD_AIN4,
-  ADC_TEST_BOARD_AIN5,
-  ADC_TEST_BOARD_AIN6,
-  ADC_TEST_BOARD_AIN7,
-  ADC_NBR_OF_GROUP0_CHANNELS,
-}Adc_Group0SignalType;
-
-typedef enum
-{
-  ADC_GROUP1_CH1,
-  ADC_GROUP1_CH2,
-  ADC_GROUP1_CH3,
-  ADC_GROUP1_CH4,
-  ADC_NBR_OF_GROUP1_CHANNELS,
-}Adc_Group1SignalType;
-
-typedef enum
-{
-  ADC_GROUP2_CH0,
-  ADC_GROUP2_CH1,
-  ADC_GROUP2_CH2,
-  ADC_NBR_OF_GROUP2_CHANNELS,
-}Adc_Group2Signals;
-
-typedef enum
-{
-  ADC_GROUP3_CH0,
-  ADC_GROUP3_CH1,
-  ADC_GROUP3_CH2,
-  ADC_NBR_OF_GROUP3_CHANNELS,
-}Adc_Group3Signals;
-
-extern const struct tcd_t AdcGroupDMACommandConfig [ADC_NBR_OF_GROUPS];
-extern const struct tcd_t AdcGroupDMAResultConfig [ADC_NBR_OF_GROUPS];
 
 #endif /*ADC_CFG_H_*/

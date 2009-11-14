@@ -1,4 +1,4 @@
-/* -------------------------------- Arctic Core ------------------------------
+7/* -------------------------------- Arctic Core ------------------------------
  * Arctic Core - the open source AUTOSAR platform http://arccore.com
  *
  * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
