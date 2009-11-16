@@ -40,6 +40,8 @@
 #include "alist_i.h"
 #include "Mcu.h"
 
+OsTickType OsTickFreq = 1000;
+
 // ##################################    DEBUG     #################################
 // All output on as standard
 uint32 os_dbg_mask =

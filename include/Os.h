@@ -286,7 +286,7 @@ typedef struct OsDriver_s {
 /*-------------------------------------------------------------------
  * Free running timer
  *-----------------------------------------------------------------*/
-#define OS_TICK_FREQ		1000	// Frequency of the os tick
+typedef const uint32 OsTickType;
 void Frt_Init( void );
 void Frt_Start(uint32_t period_ticks);
 uint32_t Frt_GetTimeElapsed( void );

@@ -30,6 +30,8 @@
 
 extern void dec_exception( void );
 
+OsTickType OsTickFreq = 1000;
+
 GEN_APPLICATION_HEAD {
 	GEN_APPLICATON(BLINKER_APP_ID,"BlinkerApp",true,NULL,NULL,NULL , 0,0,0,0,0,0 )
 };

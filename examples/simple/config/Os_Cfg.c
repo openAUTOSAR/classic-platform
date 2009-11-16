@@ -25,6 +25,8 @@
 
 extern void dec_exception( void );
 
+OsTickType OsTickFreq = 1000;
+
 // atleast 1
 #define SERVICE_CNT 1
 

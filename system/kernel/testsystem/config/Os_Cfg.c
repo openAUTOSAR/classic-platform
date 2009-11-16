@@ -96,6 +96,8 @@
 #include "alist_i.h"
 #include "Mcu.h"
 
+OsTickType OsTickFreq = 1000;
+
 extern void dec_exception( void );
 
 // atleast 1
