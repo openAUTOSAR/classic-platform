@@ -13,6 +13,24 @@
 	.thumb
 
 	.section .text
+
+ 	.global Irq_Handler
+    .type	Irq_Handler, %function
+
+#define IRQ_ENABLE() 		cpsie 	i
+#define IRQ_DISABLE()		cpsid 	i
+
+Irq_Handler:
+    push    {r4-r8,r10,r11,lr}
+    sub.w   sp,sp,#C_SIZE
+    mov.w   r4,#LC_PATTERN
+    str     r4,[sp,#C_CONTEXT_OFFS]    
+    mov 	r0,sp			// stack as first arg
+    bl      IntCtrl_Entry
+    mov     sp, r0			// pop from returned stack
+    b 		os_lc_restore
+	
+	
 /* r0 - pcb for old task
  * r1 pcb for new task
  *
@@ -73,12 +91,14 @@ os_sc_restore:
 
     pop     {r4-r8,r10,r11,lr}
         // ehh, we are in handler mode so a bx instruction works here
+    IRQ_ENABLE()
     bx      lr
 
 os_lc_restore:
     add.w   sp,sp,#C_SIZE
     pop     {r4-r8,r10,r11,lr}
     // ehh, we are in handler mode so a bx instruction works here
+    IRQ_ENABLE()
     bx      lr
 
 

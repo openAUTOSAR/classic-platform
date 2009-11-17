@@ -22,7 +22,12 @@
 #include <stdio.h>
 #include "Std_Types.h"
 #include "Ramlog.h"
-//#include "clibsupport_gcc.h"
+
+#if defined(CFG_ARM_CM3)
+#include "irq.h"
+#include "core_cm3.h"
+#endif
+
 
 #if defined(CFG_ARM)
 #define open	_open
@@ -244,7 +249,15 @@ extern char _end[];
 #ifndef HEAPSIZE
 #define HEAPSIZE 16000
 #endif
-unsigned char _heap[HEAPSIZE];
+
+/*
+ * The heap sadly have alignment that depends on the pagesize that
+ * you compile malloc newlib with. From what I can tell from the
+ * code that is a pagesize of 4096.
+ */
+
+unsigned char _heap[HEAPSIZE] __attribute__((aligned (4)));
+//__attribute__((section(".heap")));
 
 caddr_t sbrk( int incr )
 {

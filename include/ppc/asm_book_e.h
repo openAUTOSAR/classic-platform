@@ -303,7 +303,7 @@
     addi  sp,sp,EXC_SIZE;
 
 
-#define CALL_HANDLER() CALL_HANDLER_(intc_vector_tbl)
+#define CALL_HANDLER() CALL_HANDLER_(Irq_VectorTable)
 
 //-------------------------------------------------------------------
 

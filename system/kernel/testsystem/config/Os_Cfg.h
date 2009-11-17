@@ -46,7 +46,11 @@
 
 #define TASK_ID_os_tick					8
 
+#if defined(USE_SIMPLE_PRINTF)
 #define PRIO_STACK_SIZE		1024
+#else
+#define PRIO_STACK_SIZE		330
+#endif
 
 #define STACK_SIZE_OsIdle					ALIGN_16(PRIO_STACK_SIZE)
 #define STACK_SIZE_etask_master				ALIGN_16(PRIO_STACK_SIZE)

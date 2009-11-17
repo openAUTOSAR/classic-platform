@@ -23,11 +23,6 @@
 #ifndef LIN_H_
 #define LIN_H_
 
-#include "Std_Types.h"
-#include "Lin_Cfg.h"
-#include "ComStack_Types.h"
-
-#if (LIN_VERSION_INFO_API == STD_ON)
 
 #define LIN_SW_MAJOR_VERSION    1
 #define LIN_SW_MINOR_VERSION   	0
@@ -36,6 +31,11 @@
 #define LIN_AR_MINOR_VERSION    2
 #define LIN_AR_PATCH_VERSION    1
 
+#include "Std_Types.h"
+#include "Lin_Cfg.h"
+#include "ComStack_Types.h"
+
+#if (LIN_VERSION_INFO_API == STD_ON)
 void Lin_GetVersionInfo( Std_VersionInfoType *versionInfo );
 #define Lin_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,LIN)
 #endif

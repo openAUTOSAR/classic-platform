@@ -118,7 +118,56 @@ Infinite_Loop:
 	.type	g_pfnVectors, %object
 	.size	g_pfnVectors, .-g_pfnVectors
     
+#if 1
+
+	.extern Irq_Handler
+
+	.word	_estack
+	.word	Reset_Handler
+	.word	NMI_Handler
+	.word	HardFault_Handler
+	.word	MemManage_Handler
+	.word	BusFault_Handler
+	.word	UsageFault_Handler
+	.word	0
+	.word	0
+	.word	0
+	.word	0
+	.word	SVC_Handler
+	.word	DebugMon_Handler
+	.word	0
+	.word	PendSV_Handler
+	.word   Irq_Handler+1		/* SysTick */
+	.rept   83
+	.word	Irq_Handler+1
+	.endr
     
+      .weak	NMI_Handler
+	.thumb_set NMI_Handler,Default_Handler
+
+  	.weak	HardFault_Handler
+	.thumb_set HardFault_Handler,Default_Handler
+
+  	.weak	MemManage_Handler
+	.thumb_set MemManage_Handler,Default_Handler
+
+  	.weak	BusFault_Handler
+	.thumb_set BusFault_Handler,Default_Handler
+
+	.weak	UsageFault_Handler
+	.thumb_set UsageFault_Handler,Default_Handler
+
+	.weak	SVC_Handler
+	.thumb_set SVC_Handler,Default_Handler
+
+	.weak	DebugMon_Handler
+	.thumb_set DebugMon_Handler,Default_Handler
+
+	.weak	PendSV_Handler
+	.thumb_set PendSV_Handler,Default_Handler
+
+
+#else
 g_pfnVectors:
 	.word	_estack
 	.word	Reset_Handler
@@ -353,4 +402,4 @@ g_pfnVectors:
 	.weak	USBWakeUp_IRQHandler
 	.thumb_set USBWakeUp_IRQHandler,Default_Handler
 
-
+#endif

@@ -30,6 +30,8 @@
 
 extern void dec_exception( void );
 
+OsTickType OsTickFreq = 1000;
+
 GEN_APPLICATION_HEAD {
 	GEN_APPLICATON(BLINKER_APP_ID,"BlinkerApp",true,NULL,NULL,NULL , 0,0,0,0,0,0 )
 };
@@ -88,14 +90,9 @@ GEN_PCB_LIST()
 // --- INTERRUPTS ---
 uint8_t os_interrupt_stack[OS_INTERRUPT_STACK_SIZE] __attribute__ ((aligned (0x10)));
 
-// The vector table
-void * intc_vector_tbl[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS] __attribute__ ((aligned (0x0800),section(".data")))= {
-};
-
-// The type of vector
-uint8 intc_type_tbl[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS] = {
-};
-
+GEN_IRQ_VECTOR_TABLE_HEAD {};
+GEN_IRQ_ISR_TYPE_TABLE_HEAD {};
+GEN_IRQ_PRIORITY_TABLE_HEAD {};
 
 // --- COUNTERS ---
 GEN_COUNTER_HEAD {

@@ -23,6 +23,10 @@
 #ifndef MCU_H_
 #define MCU_H_
 
+#define MCU_SW_MAJOR_VERSION	1
+#define MCU_SW_MINOR_VERSION	0
+#define MCU_SW_PATCH_VERSION	0
+
 #include "Cpu.h"
 #include "irq.h"
 //#include "mpc55xx_aos.h"
@@ -64,9 +68,9 @@ typedef enum {
 } Mcu_ModeType;
 
 //TODO
-typedef uint8 Mcu_RamSectionType;
+typedef uint8_t Mcu_RamSectionType;
 
-typedef uint32 Mcu_RawResetType;
+typedef uint32_t Mcu_RawResetType;
 
 typedef enum {
 	MCU_POWER_ON_RESET,

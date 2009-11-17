@@ -23,20 +23,21 @@
 #ifndef LINIF_H_
 #define LINIF_H_
 
-#include "Std_Types.h"
-#include "LinIf_Cfg.h"
-#include "LinIf_Types.h"
-#include "ComStack_Types.h"
-#include "ComM_Types.h"
-
-#if (LINIF_VERSION_INFO_API == STD_ON)
-
 #define LINIF_SW_MAJOR_VERSION    1
 #define LINIF_SW_MINOR_VERSION    0
 #define LINIF_SW_PATCH_VERSION    0
 #define LINIF_AR_MAJOR_VERSION    2
 #define LINIF_AR_MINOR_VERSION    0
 #define LINIF_AR_PATCH_VERSION    1
+
+#include "Std_Types.h"
+#include "LinIf_Cfg.h"
+#include "LinIf_Types.h"
+#include "ComStack_Types.h"
+#include "ComM_Types.h"
+
+
+
 
 /* --- Service IDs --- */
 #define LINIF_INIT_SERVICE_ID               0x00
@@ -58,6 +59,7 @@
 #define LINIF_E_NC_NO_RESPONSE 0x53 //Assigned by DEM
 #define LINIF_E_CHANNEL_X_SLAVE_Y 0x54 //Assigned by DEM
 
+#if (LINIF_VERSION_INFO_API == STD_ON)
 void LinIf_GetVersionInfo( Std_VersionInfoType *versionInfo );
 #define LinIf_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,LINIF)
 #endif

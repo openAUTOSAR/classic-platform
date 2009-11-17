@@ -8,7 +8,7 @@
 
 
 #linkfile
-#ldcmdfile-$(CFG_MPC55XX) = -T $(ROOTDIR)/arch/$(ARCH)/scripts/linkscript_gcc.ldf
+#ldcmdfile-$(CFG_MPC55XX) = $(ROOTDIR)/arch/$(ARCH)/scripts/linkscript_gcc.ldf
 
 #build-exe-y = ../../../$(target)_$(ARCH).$(TE)
 

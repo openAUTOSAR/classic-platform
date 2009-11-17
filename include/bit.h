@@ -1,3 +1,4 @@
+
 /* -------------------------------- Arctic Core ------------------------------
  * Arctic Core - the open source AUTOSAR platform http://arccore.com
  *
@@ -14,42 +15,40 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 /*
- * Just a sample file to generate some assembler constructs if you are
- * really bad at it.
- *
- * Add it to makefile and then examin it with objdump.
- *
- * Example:
- * ${CROSS_COMPILE}objdump -S system/kernel/obj_et_stm32_stamp/asm_sample.o
- *
+ * Bit manipulation functions, NOT tested..
  */
 
-void apa(void *);
+#ifndef BIT_H_
+#define BIT_H_
 
-void interrupt(void) __attribute__((__interrupt__));
+/**
+ * @param aPtr 	Ptr to an array of unsigned chars.
+ * @param num	The bit number to get.
+ * @return
+ */
+static inline int Bit_Get(uint8_t *aPtr, int num ) {
+	return (aPtr[num / 8] >> (num % 8)) & 1;
+}
 
-void interrupt( void ) {
+/**
+ *
+ * @param aPtr
+ * @param num
+ * @return
+ */
+static inline void Bit_Set(uint8_t *aPtr, int num ) {
+	aPtr[num / 8] |=  (1<<(num % 8));
+}
 
-	apa((void *)0x123);
+/**
+ *
+ * @param aPtr
+ * @param num
+ * @return
+ */
+static inline void Bit_Clear(uint8_t *aPtr, int num ) {
+	aPtr[num / 8] &=  ~(1<<(num % 8));
 }
 
 
-void func1( int a ) {
-
-}
-
-int func2( void ) {
-	int a;
-	a = 3;
-
-	func1(5);
-
-	return 2;
-}
-
-
-void func( void ) {
-	func2();
-}
-
-
+#endif /* BIT_H_ */

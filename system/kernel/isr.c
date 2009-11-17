@@ -73,8 +73,8 @@ void *Os_Isr( void *stack, void *pcb_p ) {
 		// assert(0);
 		while(1);
 	}
-	//Irq_Enable(); // Added by Mattias
-	//Irq_Enable();
+
+	Irq_Enable();
 	pcb->entry();
 	Irq_Disable();
 

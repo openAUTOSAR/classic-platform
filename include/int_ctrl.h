@@ -14,26 +14,21 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
-
-/*
- * int_ctrl.h
- *
- *  Created on: Jul 31, 2009
- *      Author: mahi
- */
-
 #ifndef INT_CTRL_H_
 #define INT_CTRL_H_
 
 #include "irq.h"
+#include "bit.h"
 
 typedef void ( * func_t)(void);
 
+extern uint8_t Irq_PriorityTable[];
+extern uint8_t Irq_IsrTypeTable[];
+
+#define ISR_TYPE_1			0
+#define ISR_TYPE_2			1
+
+typedef _Bool IsrType;
 
 /**
  * Init the interrupt controller
@@ -72,7 +67,7 @@ void IntCtrl_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector, u
  * @param int_ctrl  The interrupt controller, The is NULL for now.
  * @param vector 	The vector to attach to
  */
-void IntCtrl_AttachIsr2(TaskType tid,void *int_ctrl,uint32_t vector );
+void IntCtrl_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector );
 
 /**
  * Generates a soft interrupt
@@ -85,6 +80,32 @@ void IntCtrl_GenerateSoftInt( IrqType vector );
  * @return
  */
 uint8_t IntCtrl_GetCurrentPriority( Cpu_t cpu);
+
+
+/**
+ * Set the priority in the interrupt controller for vector
+ */
+void IntCtrl_SetPriority( Cpu_t cpu,  IrqType vector, uint8_t prio );
+
+/**
+ *
+ * @param vector
+ * @param type
+ */
+static inline void IntCtrl_SetIsrType( IrqType vector, IsrType type ) {
+	Irq_IsrTypeTable[vector + IRQ_INTERRUPT_OFFSET ] = type;
+}
+
+/**
+ *
+ * @param vector
+ * @return 0 - Isr1
+ *         1 - Isr2
+ */
+static inline IsrType IntCtrl_GetIsrType( IrqType vector )  {
+	return Irq_IsrTypeTable[vector + IRQ_INTERRUPT_OFFSET ];
+}
+
 
 #if 0
 typedef struct {

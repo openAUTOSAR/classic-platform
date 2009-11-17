@@ -13,20 +13,6 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-/*
- * irq.h
- *
- *  Created on: 4 aug 2009
- *      Author: mahi
- */
-
 #ifndef IRQ_H_
 #define IRQ_H_
 
@@ -34,7 +20,23 @@
 
 typedef IRQn_Type IrqType;
 
-#define NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS (USBWakeUp_IRQn+15)
+/* Offset from start of exceptions to interrupts
+ * Exceptions have negative offsets while interrupts have positive
+ */
+#define IRQ_INTERRUPT_OFFSET  16
+
+/* Total number of interrupts and exceptions
+ */
+
+#if   defined(STM32F10X_LD) || defined(STM32F10X_MD)
+#define NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS (USBWakeUp_IRQn+IRQ_INTERRUPT_OFFSET)
+#elif defined(STM32F10X_HD)
+#define NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS (DMA2_Channel4_5_IRQn+IRQ_INTERRUPT_OFFSET)
+#elif defined(STM32F10X_CL)
+#define NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS (OTG_FS_IRQn+IRQ_INTERRUPT_OFFSET)
+#else
+#error No device selected
+#endif
 
 typedef enum {
 	CPU_0=0,
