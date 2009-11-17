@@ -65,8 +65,8 @@ typedef struct {
  */
 void setZero(void *ptr, uint16 nrOfBytes);
 ChecksumType calcChecksum(void *data, uint16 nrOfBytes);
-void storePreInitEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus);
-void storeEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus);
+void handlePreInitEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus);
+void handleEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus);
 void updateEventStatusRec(Dem_EventIdType eventId, Dem_EventStatusType eventStatus, boolean createIfNotExist);
 void mergeEventStatusRec(EventRecType *eventRec);
 void getEventStatusRec(Dem_EventIdType eventId, EventStatusRecType *eventStatusRec);
@@ -425,14 +425,14 @@ void Dem_ReportErrorStatus( Dem_EventIdType eventId, Dem_EventStatusType eventSt
 		case DEM_PREINITIALIZED:
 			// Update status and check if is to be stored
 			if ((eventStatus == DEM_EVENT_STATUS_PASSED) || (eventStatus == DEM_EVENT_STATUS_FAILED)) {
-				storePreInitEvent(eventId, eventStatus);
+				handlePreInitEvent(eventId, eventStatus);
 			}
 			break;
 
 		case DEM_INITIALIZED:
 			// Handle report
 			if ((eventStatus == DEM_EVENT_STATUS_PASSED) || (eventStatus == DEM_EVENT_STATUS_FAILED)) {
-				storeEvent(eventId, eventStatus);
+				handleEvent(eventId, eventStatus);
 			}
 			break;
 
@@ -460,6 +460,10 @@ void Dem_ReportErrorStatus( Dem_EventIdType eventId, Dem_EventStatusType eventSt
 /******************
  * Help functions *
  ******************/
+/*
+ * Procedure:	setZero
+ * Description:	Fill the *ptr to *(ptr+nrOfBytes-1) area with zeroes
+ */
 void setZero(void *ptr, uint16 nrOfBytes){
 	uint8 *clrPtr = (uint8*)ptr;
 
@@ -467,6 +471,10 @@ void setZero(void *ptr, uint16 nrOfBytes){
 	memcpy(clrPtr+1, clrPtr, nrOfBytes-1);
 }
 
+/*
+ * Procedure:	calcChecksum
+ * Description:	Calculate checksum over *data to *(data+nrOfBytes-1) area
+ */
 ChecksumType calcChecksum(void *data, uint16 nrOfBytes)
 {
 	uint16 i;
@@ -479,6 +487,11 @@ ChecksumType calcChecksum(void *data, uint16 nrOfBytes)
 	return sum;
 }
 
+/*
+ * Procedure:	updateEventStatusRec
+ * Description:	Update the status of "eventId", if not exist and "createIfNotExist" is
+ * 				true a new record is created
+ */
 void updateEventStatusRec(Dem_EventIdType eventId, Dem_EventStatusType eventStatus, boolean createIfNotExist)
 {
 	uint16 i;
@@ -518,7 +531,10 @@ void updateEventStatusRec(Dem_EventIdType eventId, Dem_EventStatusType eventStat
 	McuE_ExitCriticalSection(state);
 }
 
-
+/*
+ * Procedure:	mergeEventStatusRec
+ * Description:	Update the occurrence counter of status, if not exist a new record is created
+ */
 void mergeEventStatusRec(EventRecType *eventRec)
 {
 	uint16 i;
@@ -551,7 +567,10 @@ void mergeEventStatusRec(EventRecType *eventRec)
 	McuE_ExitCriticalSection(state);
 }
 
-
+/*
+ * Procedure:	getEventStatusRec
+ * Description:	Returns the status record of "eventId" in "eventStatusRec"
+ */
 void getEventStatusRec(Dem_EventIdType eventId, EventStatusRecType *eventStatusRec)
 {
 	uint16 i;
@@ -575,6 +594,11 @@ void getEventStatusRec(Dem_EventIdType eventId, EventStatusRecType *eventStatusR
 }
 
 
+/*
+ * Procedure:	lookupEventIdParameter
+ * Description:	Returns the pointer to event id parameters of "eventId" in "*eventIdParam",
+ * 				if not found NULL is returned.
+ */
 void lookupEventIdParameter(Dem_EventIdType eventId, Dem_EventParameterType **eventIdParam)
 {
 	uint16 i;
@@ -609,6 +633,11 @@ void updateFreezeFrameOccurrencePreInit(EventRecType *EventBuffer)
 	// TODO: Fill out
 }
 
+/*
+ * Procedure:	getExtendedData
+ * Description:	Collects the extended data according to "eventParam" and return it in "extData",
+ * 				if not found eventId is set to DEM_EVENT_ID_NULL.
+ */
 void getExtendedData(Dem_EventParameterType *eventParam, ExtDataRecType *extData)
 {
 	uint16 i;
@@ -646,6 +675,10 @@ void getExtendedData(Dem_EventParameterType *eventParam, ExtDataRecType *extData
 }
 
 
+/*
+ * Procedure:	storeExtendedDataPreInit
+ * Description:	Store the extended data pointed by "extendedData" to the "preInitExtDataBuffer"
+ */
 void storeExtendedDataPreInit(Dem_EventParameterType *eventParam, ExtDataRecType *extendedData)
 {
 	uint16 i;
@@ -664,6 +697,11 @@ void storeExtendedDataPreInit(Dem_EventParameterType *eventParam, ExtDataRecType
 }
 
 
+/*
+ * Procedure:	storeEventPriMem
+ * Description:	Store the event data of "eventStatus->eventId" in "priMemEventBuffer",
+ * 				if non existent a new entry is created.
+ */
 void storeEventPriMem(Dem_EventParameterType *eventParam, EventStatusRecType *eventStatus)
 {
 	uint16 i;
@@ -696,6 +734,11 @@ void storeEventPriMem(Dem_EventParameterType *eventParam, EventStatusRecType *ev
 }
 
 
+/*
+ * Procedure:	storeEventEvtMem
+ * Description:	Store the event data of "eventStatus->eventId" in event memory according to
+ * 				"eventParam" destination option.
+ */
 void storeEventEvtMem(Dem_EventParameterType *eventParam, EventStatusRecType *eventStatus)
 {
 	uint16 i;
@@ -719,6 +762,10 @@ void storeEventEvtMem(Dem_EventParameterType *eventParam, EventStatusRecType *ev
 }
 
 
+/*
+ * Procedure:	storeExtendedDataPriMem
+ * Description:	Creates new an extended data record in "priMemExtDataBuffer".
+ */
 void storeExtendedDataPriMem(Dem_EventParameterType *eventParam, ExtDataRecType *extendedData)
 {
 	uint16 i;
@@ -737,6 +784,11 @@ void storeExtendedDataPriMem(Dem_EventParameterType *eventParam, ExtDataRecType 
 }
 
 
+/*
+ * Procedure:	storeExtendedDataEvtMem
+ * Description:	Store the extended data in event memory according to
+ * 				"eventParam" destination option
+ */
 void storeExtendedDataEvtMem(Dem_EventParameterType *eventParam, ExtDataRecType *extendedData)
 {
 	uint16 i;
@@ -766,6 +818,11 @@ void storeFreezeFrameDataPriMem(Dem_EventParameterType *eventParam, FreezeFrameR
 }
 
 
+/*
+ * Procedure:	storeFreezeFrameDataEvtMem
+ * Description:	Store the freeze frame data in event memory according to
+ * 				"eventParam" destination option
+ */
 void storeFreezeFrameDataEvtMem(Dem_EventParameterType *eventParam, FreezeFrameRecType *freezeFrame)
 {
 	uint16 i;
@@ -789,7 +846,12 @@ void storeFreezeFrameDataEvtMem(Dem_EventParameterType *eventParam, FreezeFrameR
 }
 
 
-void storePreInitEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus)
+/*
+ * Procedure:	handlePreInitEvent
+ * Description:	Handle the updating of event status and storing of
+ * 				event related data in preInit buffers.
+ */
+void handlePreInitEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus)
 {
 	Dem_EventParameterType *eventParam;
 	EventStatusRecType eventStatusLocal;
@@ -826,7 +888,12 @@ void storePreInitEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus)
 }
 
 
-void storeEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus)
+/*
+ * Procedure:	handleEvent
+ * Description:	Handle the updating of event status and storing of
+ * 				event related data in event memory.
+ */
+void handleEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus)
 {
 	Dem_EventParameterType *eventParam;
 	EventStatusRecType eventStatusLocal;

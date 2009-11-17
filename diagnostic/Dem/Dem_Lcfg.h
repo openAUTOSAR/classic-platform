@@ -113,10 +113,10 @@ typedef struct {
 	Dem_PidOrDidType *PidOrDid;									// (0.255)
 
 	// Available classes of freeze frames (freeze frame kind + Ports,PIDs and DIDs)
-	Dem_FreezeFrameClassType *FreezeFrameClass;				// (0..255)
+	Dem_FreezeFrameClassType *FreezeFrameClass;					// (0..255)
 
-	Dem_IndicatorType *Indication;							// (0..255)
-	Dem_NvramBlockIdType *NvramBlockId;						// (0..*)
+	Dem_IndicatorType *Indication;								// (0..255)
+	Dem_NvramBlockIdType *NvramBlockId;							// (0..*)
 	Dem_OperationCycleTgtType	*OperationCycleTgt;				// (0..*)
 } Dem_GeneralType;
 #endif
@@ -140,9 +140,9 @@ typedef struct {
 	uint32								DTC;						// (Pre+Post)	(1)
 	uint8								DTCFunctionUnit;			// (Pre+Post)	(1)
 	Dem_DTCKindType						DTCKind;					// (Pre+Post)	(1)
-	// Dem_DTCSeverity												// (0..1)  Optional
 	Dem_CallbackDTCStatusChangedType	*CallbackDTCStatusChanged;	// (0..*)
 	Dem_CallbackInitMForFType			*CallbackInitMForF;			// (0..*)
+	// Dem_DTCSeverityType				DTCSeverity					// (0..1)  Optional
 } Dem_DTCClassType;
 
 // 10.2.5 DemCallbackEventStatusChanged
@@ -176,7 +176,7 @@ typedef struct {
 
 // 10.2.12 DemEventParameter
 typedef struct {
-	uint16								EventID;												// (Pre)(1)
+	uint16								EventID;						// (Pre)(1)
 	Dem_EventKindType					EventKind;						// (--)	(1)
 	Dem_EventClassType					*EventClass;					// (--)	(1)
 	Dem_ExtendedDataClassType			*ExtendedDataClassRef;			// (--) (0..1)

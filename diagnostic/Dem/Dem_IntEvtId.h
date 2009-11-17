@@ -28,11 +28,9 @@
  * NB! Must be unique for each event
  */
 enum {
-	DEM_EVENT_ID_NULL = 0,			// Do not change!!!
-	DEM_EVENT_ID_TEMP_HIGH,
-	DEM_EVENT_ID_TEMP_LOW,
-	DEM_EVENT_ID_BLOW,
-	DEM_EVENT_ID_ETC_ETC
+	// NB! Event IDs below DEM_SWC_EVENT_ID_START not allowed!
+	DEM_EVENT_ID_SWC_START = DEM_EVENT_ID_LAST_FOR_BSW,
+	SWC_EVENT_ID_NN
 };
 
 

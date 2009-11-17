@@ -29,7 +29,6 @@
  */
 typedef uint16 Dem_EventIdType;
 
-
 /*
  * DemDTCKindType
  */
@@ -45,7 +44,6 @@ typedef uint8 Dem_DTCOriginType;
 #define	DEM_DTC_ORIGIN_PERMANENT_MEMORY	0x03
 #define	DEM_DTC_ORIGIN_PRIMARY_MEMORY	0x02
 #define	DEM_DTC_ORIGIN_SECONDARY_MEMORY	0x01
-
 
 /*
  * DemEventStatusExtendedType

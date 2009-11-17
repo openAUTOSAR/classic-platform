@@ -74,6 +74,7 @@ void Dem_PreInit( void );
 void Dem_Init( void );
 void Dem_shutdown( void );
 
+
 /*
  * Interface for basic software scheduler
  */
@@ -96,9 +97,11 @@ Std_ReturnType Dem_GetFaultDetectionCounter(Dem_EventIdType eventId, sint8 *coun
  */
 void Dem_ReportErrorStatus( Dem_EventIdType eventId ,uint8 eventStatus );
 
+
 /*
  * Interface DCM <-> DEM (8.3.5)
  */
+
 
 /*
  * OBD-specific Interfaces (8.3.6)
