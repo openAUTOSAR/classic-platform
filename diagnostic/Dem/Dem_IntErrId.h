@@ -24,6 +24,9 @@
 #define DEM_INTERRID_H_
 
 #endif /*DEM_INTERRID_H_*/
+/*
+ * Definition of event IDs used by BSW
+ */
 
 /* Added by Mattias Ekberg 2008-10-20 while implementing the PDU router. The value of PDUR_E_INSTANCE_LOST can
    be changed without affecting the PDU router.*/

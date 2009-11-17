@@ -23,4 +23,17 @@
 #ifndef DEMINTEVTID_H_
 #define DEMINTEVTID_H_
 
+/*
+ * Definition of event IDs used by SW-C
+ * NB! Must be unique for each event
+ */
+enum {
+	DEM_EVENT_ID_NULL = 0,			// Do not change!!!
+	DEM_EVENT_ID_TEMP_HIGH,
+	DEM_EVENT_ID_TEMP_LOW,
+	DEM_EVENT_ID_BLOW,
+	DEM_EVENT_ID_ETC_ETC
+};
+
+
 #endif /*DEMINTEVTID_H_*/
