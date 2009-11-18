@@ -60,22 +60,6 @@ typedef struct {
 	ChecksumType		checksum;
 } ExtDataRecType;
 
-/*
- * Prototypes of local functions
- */
-void setZero(void *ptr, uint16 nrOfBytes);
-ChecksumType calcChecksum(void *data, uint16 nrOfBytes);
-void handlePreInitEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus);
-void handleEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus);
-void updateEventStatusRec(Dem_EventIdType eventId, Dem_EventStatusType eventStatus, boolean createIfNotExist);
-void mergeEventStatusRec(EventRecType *eventRec);
-void getEventStatusRec(Dem_EventIdType eventId, EventStatusRecType *eventStatusRec);
-void lookupEventIdParameter(Dem_EventIdType eventId, Dem_EventParameterType **eventIdParam);
-void storeEventEvtMem(Dem_EventParameterType *eventParam, EventStatusRecType *eventStatus);
-void storeExtendedDataEvtMem(Dem_EventParameterType *eventParam, ExtDataRecType *extendedData);
-void storeFreezeFrameDataEvtMem(Dem_EventParameterType *eventParam, FreezeFrameRecType *freezeFrame);
-void updateFreezeFrameOccurrencePreInit(EventRecType *EventBuffer);
-
 
 // State variable
 typedef enum
@@ -124,342 +108,6 @@ static FreezeFrameRecType	priMemFreezeFrameBuffer[DEM_MAX_NUMBER_FF_DATA_PRI_MEM
 static ExtDataRecType		priMemExtDataBuffer[DEM_MAX_NUMBER_EXT_DATA_PRI_MEM];
 
 
-/*********************************************
- * Interface for upper layer modules (8.3.1) *
- *********************************************/
-
-/*
- * Procedure:	Dem_GetVersionInfo
- * Reentrant:	Yes
- */
-#if (DEM_VERSION_INFO_API == STD_ON)
-void Dem_GetVersionInfo(Std_VersionInfoType *versionInfo) {
-	memcpy(versionInfo, &_Dem_VersionInfo, sizeof(Std_VersionInfoType));
-}
-#endif /* DEM_VERSION_INFO_API */
-
-
-/***********************************************
- * Interface ECU State Manager <-> DEM (8.3.2) *
- ***********************************************/
-
-/*
- * Procedure:	Dem_PreInit
- * Reentrant:	No
- */
-void Dem_PreInit( void ) {
-	int i, j;
-
-	// TODO: Make a proper initializion via the function call
-	ConfigSet = DEM_Config.ConfigSet;
-
-	// Initialize the event status buffer
-	for (i=0; i<DEM_MAX_NUMBER_EVENT; i++) {
-		eventStatusBuffer[i].eventId = DEM_EVENT_ID_NULL;
-		eventStatusBuffer[i].occurrence = 0;
-		eventStatusBuffer[i].eventStatus = DEM_EVENT_STATUS_PASSED;
-		eventStatusBuffer[i].eventStatusChanged = FALSE;
-	}
-
-	for (i=0; i<DEM_MAX_NUMBER_FF_DATA_PRE_INIT; i++) {
-		preInitFreezeFrameBuffer[i].checksum = 0;
-		preInitFreezeFrameBuffer[i].eventId = DEM_EVENT_ID_NULL;
-		preInitFreezeFrameBuffer[i].occurrence = 0;
-		for (j=0; j<DEM_MAX_SIZE_FF_DATA;j++)
-			preInitFreezeFrameBuffer[i].data[j] = 0;
-	}
-
-	for (i=0; i<DEM_MAX_NUMBER_EXT_DATA_PRE_INIT; i++) {
-		preInitExtDataBuffer[i].checksum = 0;
-		preInitExtDataBuffer[i].eventId = DEM_EVENT_ID_NULL;
-		for (j=0; j<DEM_MAX_SIZE_EXT_DATA;j++)
-			preInitExtDataBuffer[i].data[j] = 0;
-	}
-	_demState = DEM_PREINITIALIZED;
-}
-
-
-/*
- * Procedure:	Dem_Init
- * Reentrant:	No
- */
-void Dem_Init( void )
-{
-	uint16 i;
-	ChecksumType cSum;
-	EventStatusRecType eventStatusLocal;
-	Dem_EventParameterType *eventParam;
-
-	/*
-	 *  Validate and read out saved error log from non volatile memory
-	 */
-
-	// Validate event records stored in primary memory
-	for (i=0; i<DEM_MAX_NUMBER_EVENT_PRI_MEM; i++) {
-		cSum = calcChecksum(&priMemEventBuffer[i], sizeof(EventRecType)-sizeof(ChecksumType));
-		if ((cSum != priMemEventBuffer[i].checksum) || priMemEventBuffer[i].eventId == DEM_EVENT_ID_NULL) {
-			// Not valid, clear the record
-			setZero(&priMemEventBuffer[i], sizeof(EventRecType));
-		}
-		else {
-			// Valid, update current status
-			mergeEventStatusRec(&priMemEventBuffer[i]);
-
-			// Update occurrence counter on pre init stored freeze frames
-			updateFreezeFrameOccurrencePreInit(&priMemEventBuffer[i]);
-		}
-	}
-
-	// Validate extended data records stored in primary memory
-	for (i=0; i<DEM_MAX_NUMBER_EXT_DATA_PRI_MEM; i++) {
-		cSum = calcChecksum(&priMemExtDataBuffer[i], sizeof(ExtDataRecType)-sizeof(ChecksumType));
-		if ((cSum != priMemExtDataBuffer[i].checksum) || priMemExtDataBuffer[i].eventId == DEM_EVENT_ID_NULL) {
-			// Unlegal record, clear the record
-			setZero(&priMemExtDataBuffer[i], sizeof(ExtDataRecType));
-		}
-	}
-
-	// Validate freeze frame records stored in primary memory
-	for (i=0; i<DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++) {
-		cSum = calcChecksum(&priMemFreezeFrameBuffer[i], sizeof(FreezeFrameRecType)-sizeof(ChecksumType));
-		if ((cSum != priMemFreezeFrameBuffer[i].checksum) || (priMemFreezeFrameBuffer[i].eventId == DEM_EVENT_ID_NULL)) {
-			// Wrong checksum, clear the record
-			setZero(&priMemFreezeFrameBuffer[i], sizeof(FreezeFrameRecType));
-		}
-	}
-
-	/*
-	 *  Handle errors stored in temporary buffer (if any)
-	 */
-
-	// Transfer updated event data to event memory
-	for (i=0; i<DEM_MAX_NUMBER_EVENT; i++) {
-		if (eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) {
-			// Update the event memory
-			lookupEventIdParameter(eventStatusBuffer[i].eventId, &eventParam);
-			storeEventEvtMem(eventParam, &eventStatusBuffer[i]);
-		}
-	}
-
-	// Transfer extended data to event memory if necessary
-	for (i=0; i < DEM_MAX_NUMBER_EXT_DATA_PRE_INIT; i++) {
-		if (preInitExtDataBuffer[i].eventId !=  DEM_EVENT_ID_NULL) {
-			getEventStatusRec(preInitExtDataBuffer[i].eventId, &eventStatusLocal);
-			// Check if new or old error event
-			if (eventStatusLocal.occurrence == 1) {
-				// It has not been stored before so store it.
-				lookupEventIdParameter(preInitExtDataBuffer[i].eventId, &eventParam);
-				storeExtendedDataEvtMem(eventParam, &preInitExtDataBuffer[i]);
-			}
-		}
-	}
-
-	// Transfer freeze frames to event memory
-	for (i=0; i < DEM_MAX_NUMBER_FF_DATA_PRE_INIT; i++) {
-		if (preInitFreezeFrameBuffer[i].eventId != DEM_EVENT_ID_NULL) {
-			lookupEventIdParameter(preInitFreezeFrameBuffer[i].eventId, &eventParam);
-			storeFreezeFrameDataEvtMem(eventParam, &preInitFreezeFrameBuffer[i]);
-		}
-	}
-	
-	_demState = DEM_INITIALIZED;
-}
-
-
-/*
- * Procedure:	Dem_shutdown
- * Reentrant:	No
- */
-void Dem_shutdown( void ) {
-	// Save error log to non volatile memory
-	// TODO: Save error log to NV-RAM
-
-	_demState = DEM_UNINITIALIZED;
-}
-
-
-/*
- * Interface for basic software scheduler
- */
-void Dem_MainFunction( void ){
-
-}
-
-
-/***************************************************
- * Interface SW-Components via RTE <-> DEM (8.3.3) *
- ***************************************************/
-
-/*
- * Procedure:	Dem_SetEventStatus
- * Reentrant:	Yes
- */
-Std_ReturnType Dem_SetEventStatus(Dem_EventIdType eventId, Dem_EventStatusType eventStatus) {
-	Std_ReturnType _returnCode = E_OK;
-
-	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
-	{
-		// TODO:
-	}
-	else
-	{
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DEM, 0, DEM_SETEVENTSTATUS_ID, DEM_E_UNINIT);
-		_returnCode = E_NOT_OK;
-#endif
-	}
-
-	return _returnCode;
-}
-
-
-Std_ReturnType Dem_ResetEventStatus(Dem_EventIdType eventId) {
-	Std_ReturnType _returnCode = E_OK;
-
-	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
-	{
-		// TODO:
-	}
-	else
-	{
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DEM, 0, DEM_RESETEVENTSTATUS_ID, DEM_E_UNINIT);
-		_returnCode = E_NOT_OK;
-#endif
-	}
-
-	return _returnCode;
-}
-
-
-Std_ReturnType Dem_GetEventStatus(Dem_EventIdType eventId, Dem_EventStatusExtendedType *eventStatusExtended) {
-	Std_ReturnType _returnCode = E_OK;
-
-	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
-	{
-		*eventStatusExtended = 0; // TODO
-
-	}
-	else
-	{
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DEM, 0, DEM_GETEVENTSTATUS_ID, DEM_E_UNINIT);
-		_returnCode = E_NOT_OK;
-#endif
-	}
-
-	return _returnCode;
-}
-
-
-Std_ReturnType Dem_GetEventFailed(Dem_EventIdType eventId, boolean *eventFailed) {
-	Std_ReturnType _returnCode = E_OK;
-
-	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
-	{
-		*eventFailed = FALSE; // TODO:
-
-	}
-	else
-	{
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DEM, 0, DEM_GETEVENTFAILED_ID, DEM_E_UNINIT);
-		_returnCode = E_NOT_OK;
-#endif
-	}
-
-	return _returnCode;
-}
-
-
-Std_ReturnType Dem_GetEventTested(Dem_EventIdType eventId, boolean *eventTested) {
-	Std_ReturnType _returnCode = E_OK;
-
-	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
-	{
-		*eventTested = FALSE; // TODO:
-
-	}
-	else
-	{
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DEM, 0, DEM_GETEVENTTESTED_ID, DEM_E_UNINIT);
-		_returnCode = E_NOT_OK;
-#endif
-	}
-
-	return _returnCode;
-}
-
-
-Std_ReturnType Dem_GetFaultDetectionCounter(Dem_EventIdType eventId, sint8 *counter) {
-	Std_ReturnType _returnCode = E_OK;
-
-	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
-	{
-		*counter = 0;	// TODO:
-	}
-	else
-	{
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DEM, 0, DEM_GETFAULTDETECTIONCOUNTER_ID, DEM_E_UNINIT);
-		_returnCode = E_NOT_OK;
-#endif
-	}
-
-	return _returnCode;
-}
-
-
-/********************************************
- * Interface BSW-Components <-> DEM (8.3.4) *
- ********************************************/
-
-/*
- * Procedure:	Dem_ReportErrorStatus
- * Reentrant:	Yes
- */
-void Dem_ReportErrorStatus( Dem_EventIdType eventId, Dem_EventStatusType eventStatus ) {
-
-	switch (_demState) {
-		case DEM_PREINITIALIZED:
-			// Update status and check if is to be stored
-			if ((eventStatus == DEM_EVENT_STATUS_PASSED) || (eventStatus == DEM_EVENT_STATUS_FAILED)) {
-				handlePreInitEvent(eventId, eventStatus);
-			}
-			break;
-
-		case DEM_INITIALIZED:
-			// Handle report
-			if ((eventStatus == DEM_EVENT_STATUS_PASSED) || (eventStatus == DEM_EVENT_STATUS_FAILED)) {
-				handleEvent(eventId, eventStatus);
-			}
-			break;
-
-		case DEM_UNINITIALIZED:
-		default:
-			// Uninitialized can not do anything
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-			Det_ReportError(MODULE_ID_DEM, 0, DEM_REPORTERRORSTATUS_ID, DEM_E_UNINIT);
-#endif
-			break;
-
-	} // switch (_demState)
-}
-
-/*********************************
- * Interface DCM <-> DEM (8.3.5) *
- *********************************/
-
-/***********************************
- * OBD-specific Interfaces (8.3.6) *
- ***********************************/
-
-
-
-/******************
- * Help functions *
- ******************/
 /*
  * Procedure:	setZero
  * Description:	Fill the *ptr to *(ptr+nrOfBytes-1) area with zeroes
@@ -469,6 +117,17 @@ void setZero(void *ptr, uint16 nrOfBytes){
 
 	*clrPtr = 0x00;
 	memcpy(clrPtr+1, clrPtr, nrOfBytes-1);
+}
+
+/*
+ * Procedure:	zeroPriMemBuffers
+ * Description:	Fill the primary buffers with zeroes
+ */
+void zeroPriMemBuffers(void)
+{
+	setZero(priMemEventBuffer, sizeof(priMemEventBuffer));
+	setZero(priMemFreezeFrameBuffer, sizeof(priMemFreezeFrameBuffer));
+	setZero(priMemExtDataBuffer, sizeof(priMemExtDataBuffer));
 }
 
 /*
@@ -929,3 +588,385 @@ void handleEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus)
 		} // if (eventStatusLocal.eventStatusChanged)
 	} // if (eventStatus == DEM_EVENT_STATUS_FAILED)
 }
+
+void getEventStatus(Dem_EventIdType eventId, Dem_EventStatusExtendedType *eventStatusExtended)
+{
+	EventStatusRecType eventStatusLocal;
+
+	// Clear status
+	*eventStatusExtended = 0;
+
+	// Get recorded status
+	getEventStatusRec(eventId, &eventStatusLocal);
+	if (eventStatusLocal.eventId == eventId) {
+		if (eventStatusLocal.eventStatus == DEM_EVENT_STATUS_FAILED) {
+			*eventStatusExtended |= DEM_TEST_FAILED;
+		}
+	}
+	else {
+		// Event Id not found, assume ok.
+	}
+}
+
+void getEventFailed(Dem_EventIdType eventId, boolean *eventFailed)
+{
+	EventStatusRecType eventStatusLocal;
+
+	// Get recorded status
+	getEventStatusRec(eventId, &eventStatusLocal);
+	if (eventStatusLocal.eventId == eventId) {
+		if (eventStatusLocal.eventStatus == DEM_EVENT_STATUS_FAILED) {
+			*eventFailed = TRUE;
+		}
+		else {
+			*eventFailed = FALSE;
+		}
+	}
+	else {
+		// Event Id not found, assume ok.
+		*eventFailed = FALSE;
+	}
+}
+
+
+//==============================================================================//
+//																				//
+//					  E X T E R N A L   F U N C T I O N S						//
+//																				//
+//==============================================================================//
+
+/*********************************************
+ * Interface for upper layer modules (8.3.1) *
+ *********************************************/
+
+/*
+ * Procedure:	Dem_GetVersionInfo
+ * Reentrant:	Yes
+ */
+#if (DEM_VERSION_INFO_API == STD_ON)
+void Dem_GetVersionInfo(Std_VersionInfoType *versionInfo) {
+	memcpy(versionInfo, &_Dem_VersionInfo, sizeof(Std_VersionInfoType));
+}
+#endif /* DEM_VERSION_INFO_API */
+
+
+/***********************************************
+ * Interface ECU State Manager <-> DEM (8.3.2) *
+ ***********************************************/
+
+/*
+ * Procedure:	Dem_PreInit
+ * Reentrant:	No
+ */
+void Dem_PreInit( void ) {
+	int i, j;
+
+	// TODO: Make a proper initializion via the function call
+	ConfigSet = DEM_Config.ConfigSet;
+
+	// Initialize the event status buffer
+	for (i=0; i<DEM_MAX_NUMBER_EVENT; i++) {
+		eventStatusBuffer[i].eventId = DEM_EVENT_ID_NULL;
+		eventStatusBuffer[i].occurrence = 0;
+		eventStatusBuffer[i].eventStatus = DEM_EVENT_STATUS_PASSED;
+		eventStatusBuffer[i].eventStatusChanged = FALSE;
+	}
+
+	for (i=0; i<DEM_MAX_NUMBER_FF_DATA_PRE_INIT; i++) {
+		preInitFreezeFrameBuffer[i].checksum = 0;
+		preInitFreezeFrameBuffer[i].eventId = DEM_EVENT_ID_NULL;
+		preInitFreezeFrameBuffer[i].occurrence = 0;
+		for (j=0; j<DEM_MAX_SIZE_FF_DATA;j++)
+			preInitFreezeFrameBuffer[i].data[j] = 0;
+	}
+
+	for (i=0; i<DEM_MAX_NUMBER_EXT_DATA_PRE_INIT; i++) {
+		preInitExtDataBuffer[i].checksum = 0;
+		preInitExtDataBuffer[i].eventId = DEM_EVENT_ID_NULL;
+		for (j=0; j<DEM_MAX_SIZE_EXT_DATA;j++)
+			preInitExtDataBuffer[i].data[j] = 0;
+	}
+	_demState = DEM_PREINITIALIZED;
+}
+
+
+/*
+ * Procedure:	Dem_Init
+ * Reentrant:	No
+ */
+void Dem_Init( void )
+{
+	uint16 i;
+	ChecksumType cSum;
+	EventStatusRecType eventStatusLocal;
+	Dem_EventParameterType *eventParam;
+
+	/*
+	 *  Validate and read out saved error log from non volatile memory
+	 */
+
+	// Validate event records stored in primary memory
+	for (i=0; i<DEM_MAX_NUMBER_EVENT_PRI_MEM; i++) {
+		cSum = calcChecksum(&priMemEventBuffer[i], sizeof(EventRecType)-sizeof(ChecksumType));
+		if ((cSum != priMemEventBuffer[i].checksum) || priMemEventBuffer[i].eventId == DEM_EVENT_ID_NULL) {
+			// Not valid, clear the record
+			setZero(&priMemEventBuffer[i], sizeof(EventRecType));
+		}
+		else {
+			// Valid, update current status
+			mergeEventStatusRec(&priMemEventBuffer[i]);
+
+			// Update occurrence counter on pre init stored freeze frames
+			updateFreezeFrameOccurrencePreInit(&priMemEventBuffer[i]);
+		}
+	}
+
+	// Validate extended data records stored in primary memory
+	for (i=0; i<DEM_MAX_NUMBER_EXT_DATA_PRI_MEM; i++) {
+		cSum = calcChecksum(&priMemExtDataBuffer[i], sizeof(ExtDataRecType)-sizeof(ChecksumType));
+		if ((cSum != priMemExtDataBuffer[i].checksum) || priMemExtDataBuffer[i].eventId == DEM_EVENT_ID_NULL) {
+			// Unlegal record, clear the record
+			setZero(&priMemExtDataBuffer[i], sizeof(ExtDataRecType));
+		}
+	}
+
+	// Validate freeze frame records stored in primary memory
+	for (i=0; i<DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++) {
+		cSum = calcChecksum(&priMemFreezeFrameBuffer[i], sizeof(FreezeFrameRecType)-sizeof(ChecksumType));
+		if ((cSum != priMemFreezeFrameBuffer[i].checksum) || (priMemFreezeFrameBuffer[i].eventId == DEM_EVENT_ID_NULL)) {
+			// Wrong checksum, clear the record
+			setZero(&priMemFreezeFrameBuffer[i], sizeof(FreezeFrameRecType));
+		}
+	}
+
+	/*
+	 *  Handle errors stored in temporary buffer (if any)
+	 */
+
+	// Transfer updated event data to event memory
+	for (i=0; i<DEM_MAX_NUMBER_EVENT; i++) {
+		if (eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) {
+			// Update the event memory
+			lookupEventIdParameter(eventStatusBuffer[i].eventId, &eventParam);
+			storeEventEvtMem(eventParam, &eventStatusBuffer[i]);
+		}
+	}
+
+	// Transfer extended data to event memory if necessary
+	for (i=0; i < DEM_MAX_NUMBER_EXT_DATA_PRE_INIT; i++) {
+		if (preInitExtDataBuffer[i].eventId !=  DEM_EVENT_ID_NULL) {
+			getEventStatusRec(preInitExtDataBuffer[i].eventId, &eventStatusLocal);
+			// Check if new or old error event
+			if (eventStatusLocal.occurrence == 1) {
+				// It has not been stored before so store it.
+				lookupEventIdParameter(preInitExtDataBuffer[i].eventId, &eventParam);
+				storeExtendedDataEvtMem(eventParam, &preInitExtDataBuffer[i]);
+			}
+		}
+	}
+
+	// Transfer freeze frames to event memory
+	for (i=0; i < DEM_MAX_NUMBER_FF_DATA_PRE_INIT; i++) {
+		if (preInitFreezeFrameBuffer[i].eventId != DEM_EVENT_ID_NULL) {
+			lookupEventIdParameter(preInitFreezeFrameBuffer[i].eventId, &eventParam);
+			storeFreezeFrameDataEvtMem(eventParam, &preInitFreezeFrameBuffer[i]);
+		}
+	}
+
+	_demState = DEM_INITIALIZED;
+}
+
+
+/*
+ * Procedure:	Dem_shutdown
+ * Reentrant:	No
+ */
+void Dem_shutdown( void ) {
+	// Save error log to non volatile memory
+	// TODO: Save error log to NV-RAM
+
+	_demState = DEM_UNINITIALIZED;
+}
+
+
+/*
+ * Interface for basic software scheduler
+ */
+void Dem_MainFunction( void ){
+
+}
+
+
+/***************************************************
+ * Interface SW-Components via RTE <-> DEM (8.3.3) *
+ ***************************************************/
+
+/*
+ * Procedure:	Dem_SetEventStatus
+ * Reentrant:	Yes
+ */
+Std_ReturnType Dem_SetEventStatus(Dem_EventIdType eventId, Dem_EventStatusType eventStatus) {
+	Std_ReturnType _returnCode = E_OK;
+
+	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
+	{
+		handleEvent(eventId, eventStatus);
+	}
+	else
+	{
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
+		Det_ReportError(MODULE_ID_DEM, 0, DEM_SETEVENTSTATUS_ID, DEM_E_UNINIT);
+		_returnCode = E_NOT_OK;
+#endif
+	}
+
+	return _returnCode;
+}
+
+
+/*
+ * Procedure:	Dem_ResetEventStatus
+ * Reentrant:	Yes
+ */
+Std_ReturnType Dem_ResetEventStatus(Dem_EventIdType eventId) {
+	Std_ReturnType _returnCode = E_OK;
+
+	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
+	{
+		updateEventStatusRec(eventId, DEM_EVENT_STATUS_PASSED, FALSE);
+	}
+	else
+	{
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
+		Det_ReportError(MODULE_ID_DEM, 0, DEM_RESETEVENTSTATUS_ID, DEM_E_UNINIT);
+		_returnCode = E_NOT_OK;
+#endif
+	}
+
+	return _returnCode;
+}
+
+
+Std_ReturnType Dem_GetEventStatus(Dem_EventIdType eventId, Dem_EventStatusExtendedType *eventStatusExtended) {
+	Std_ReturnType _returnCode = E_OK;
+
+	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
+	{
+		getEventStatus(eventId, eventStatusExtended);
+	}
+	else
+	{
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
+		Det_ReportError(MODULE_ID_DEM, 0, DEM_GETEVENTSTATUS_ID, DEM_E_UNINIT);
+		_returnCode = E_NOT_OK;
+#endif
+	}
+
+	return _returnCode;
+}
+
+
+Std_ReturnType Dem_GetEventFailed(Dem_EventIdType eventId, boolean *eventFailed) {
+	Std_ReturnType _returnCode = E_OK;
+
+	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
+	{
+		getEventFailed(eventId, eventFailed);
+	}
+	else
+	{
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
+		Det_ReportError(MODULE_ID_DEM, 0, DEM_GETEVENTFAILED_ID, DEM_E_UNINIT);
+		_returnCode = E_NOT_OK;
+#endif
+	}
+
+	return _returnCode;
+}
+
+
+Std_ReturnType Dem_GetEventTested(Dem_EventIdType eventId, boolean *eventTested) {
+	Std_ReturnType _returnCode = E_OK;
+
+	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
+	{
+		*eventTested = FALSE; // TODO:
+
+	}
+	else
+	{
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
+		Det_ReportError(MODULE_ID_DEM, 0, DEM_GETEVENTTESTED_ID, DEM_E_UNINIT);
+		_returnCode = E_NOT_OK;
+#endif
+	}
+
+	return _returnCode;
+}
+
+
+Std_ReturnType Dem_GetFaultDetectionCounter(Dem_EventIdType eventId, sint8 *counter) {
+	Std_ReturnType _returnCode = E_OK;
+
+	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
+	{
+		*counter = 0;	// TODO:
+	}
+	else
+	{
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
+		Det_ReportError(MODULE_ID_DEM, 0, DEM_GETFAULTDETECTIONCOUNTER_ID, DEM_E_UNINIT);
+		_returnCode = E_NOT_OK;
+#endif
+	}
+
+	return _returnCode;
+}
+
+
+/********************************************
+ * Interface BSW-Components <-> DEM (8.3.4) *
+ ********************************************/
+
+/*
+ * Procedure:	Dem_ReportErrorStatus
+ * Reentrant:	Yes
+ */
+void Dem_ReportErrorStatus( Dem_EventIdType eventId, Dem_EventStatusType eventStatus ) {
+
+	switch (_demState) {
+		case DEM_PREINITIALIZED:
+			// Update status and check if is to be stored
+			if ((eventStatus == DEM_EVENT_STATUS_PASSED) || (eventStatus == DEM_EVENT_STATUS_FAILED)) {
+				handlePreInitEvent(eventId, eventStatus);
+			}
+			break;
+
+		case DEM_INITIALIZED:
+			// Handle report
+			if ((eventStatus == DEM_EVENT_STATUS_PASSED) || (eventStatus == DEM_EVENT_STATUS_FAILED)) {
+				handleEvent(eventId, eventStatus);
+			}
+			break;
+
+		case DEM_UNINITIALIZED:
+		default:
+			// Uninitialized can not do anything
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
+			Det_ReportError(MODULE_ID_DEM, 0, DEM_REPORTERRORSTATUS_ID, DEM_E_UNINIT);
+#endif
+			break;
+
+	} // switch (_demState)
+}
+
+/*********************************
+ * Interface DCM <-> DEM (8.3.5) *
+ *********************************/
+
+/***********************************
+ * OBD-specific Interfaces (8.3.6) *
+ ***********************************/
+
+
+
