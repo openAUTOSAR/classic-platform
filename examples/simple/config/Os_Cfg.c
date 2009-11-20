@@ -100,12 +100,14 @@ uint8 intc_type_tbl[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS] = {
 
 // --- COUNTERS ---
 GEN_COUNTER_HEAD {
-	GEN_COUNTER(	OS_TICK_COUNTER,
-					"OS_TICK_COUNTER",
+	GEN_COUNTER(	COUNTER_ID_OsTick,
+					"COUNTER_ID_OsTick",
 					COUNTER_TYPE_HARD,
 					COUNTER_UNIT_NANO,
 					0xffff,1,1,0 ),
 };
+
+CounterType Os_Arc_OsTickCounter = COUNTER_ID_OsTick;
 
 // --- MESSAGES ---
 
@@ -113,7 +115,7 @@ GEN_COUNTER_HEAD {
 #define ALARM_USE
 
 GEN_ALARM_HEAD {
-	GEN_ALARM(	0,"Alarm1",OS_TICK_COUNTER,
+	GEN_ALARM(	0,"Alarm1",COUNTER_ID_OsTick,
 				1,100,10,0,		/*active,start,cycle,app_mask */
 				ALARM_ACTION_SETEVENT, TASK_ID_etask_1, 2, 0 ),
 };

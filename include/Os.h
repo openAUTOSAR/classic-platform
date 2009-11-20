@@ -292,7 +292,7 @@ uint32_t Frt_GetTimeElapsed( void );
 /*-------------------------------------------------------------------
  * Counters
  *-----------------------------------------------------------------*/
-typedef uint16 CounterType;
+typedef sint16 CounterType;
 
 typedef uint32 TickType;
 typedef TickType *TickRefType;
@@ -447,8 +447,8 @@ TickType GetOsTick();
 void OsTick(void);
 void OsIdle(void);
 
-/* The OS always have counter 0 */
-#define OS_TICK_COUNTER		0
+/* The id of the counter driven by the os tick, or -1 if not used */
+extern CounterType Os_Arc_OsTickCounter;
 
 // Generate conversion macro'
 // Todo
