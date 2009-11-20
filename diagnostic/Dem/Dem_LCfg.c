@@ -45,7 +45,7 @@ void ExtendedDataRecord3GetFunc(uint8 *Data) {
 /*
  * Classes of extended data record
  */
-Dem_ExtendedDataRecordClassType ExtendedDataRecordClassList[] = {
+const Dem_ExtendedDataRecordClassType ExtendedDataRecordClassList[] = {
 		{
 			.RecordNumber = 1,	// Unique!
 			.DataSize = 1,
@@ -66,14 +66,14 @@ Dem_ExtendedDataRecordClassType ExtendedDataRecordClassList[] = {
 /*
  * Classes of extended data
  */
-Dem_ExtendedDataClassType ExtendedDataClass1 = {
+const Dem_ExtendedDataClassType ExtendedDataClass1 = {
 		.ExtendedDataRecordClassRef = {
 			&ExtendedDataRecordClassList[0],
-			NULL
+			NULL	// End of list mark
 		}
 };
 
-Dem_ExtendedDataClassType ExtendedDataClass2 = {
+const Dem_ExtendedDataClassType ExtendedDataClass2 = {
 		.ExtendedDataRecordClassRef = {
 			&ExtendedDataRecordClassList[0],
 			&ExtendedDataRecordClassList[1],
@@ -85,7 +85,7 @@ Dem_ExtendedDataClassType ExtendedDataClass2 = {
 /*
  * Classes of freeze frames
  */
-Dem_FreezeFrameClassType FreezeFrameClassList[] = {
+const Dem_FreezeFrameClassType FreezeFrameClassList[] = {
 		{
 				.FFKind = DEM_FREEZE_FRAME_NON_OBD,
 //				.FFRecordNum;	// Optional
@@ -101,7 +101,7 @@ Dem_FreezeFrameClassType FreezeFrameClassList[] = {
 /*
  * Classes of event
  */
-Dem_EventClassType EventClass1 = {
+const Dem_EventClassType EventClass1 = {
 		.ConsiderPtoStatus = FALSE,
 		.EventDestination = {
 				NULL
@@ -110,7 +110,7 @@ Dem_EventClassType EventClass1 = {
 		.HealingAllowed = FALSE
 };
 
-Dem_EventClassType EventClass2 = {
+const Dem_EventClassType EventClass2 = {
 		.ConsiderPtoStatus = FALSE,
 		.EventDestination = {
 				DEM_DTC_ORIGIN_PRIMARY_MEMORY,
@@ -120,7 +120,7 @@ Dem_EventClassType EventClass2 = {
 		.HealingAllowed = FALSE
 };
 
-Dem_EventParameterType EventParameter[] = {
+const Dem_EventParameterType EventParameter[] = {
 		{
 				.EventID = DEM_EVENT_ID_TEMP_HIGH,
 				.EventKind = DEM_EVENT_KIND_SWC,
@@ -152,24 +152,19 @@ Dem_EventParameterType EventParameter[] = {
 				.DTCClass = NULL
 		},
 		{
-				.EcoreEOL  = 1
+				.EcoreEOL  = TRUE
 		}
 
 };
 
-Dem_ConfigSetType DEM_ConfigSet = {
+const Dem_ConfigSetType DEM_ConfigSet = {
 		.EventParameter = EventParameter,
-//		.DTCClassType = NULL,
-//		.GroupOfDtc = NULL,
-//		.OemIdClass = NULL
+//		.DTCClassType = NULL,		TODO: Add later
+//		.GroupOfDtc = NULL,			TODO: Add later
+//		.OemIdClass = NULL			TODO: Add later
 };
 
 
-Dem_ConfigType DEM_Config = {
+const Dem_ConfigType DEM_Config = {
 	.ConfigSet = &DEM_ConfigSet,
 };
-
-
-
-
-

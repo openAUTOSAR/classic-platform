@@ -35,12 +35,12 @@ typedef void (*Dem_CallbackGetExtDataRecordFncType)( uint8 *ExtendedDataRecord )
 
 
 /*
- * DemGeneralType types
+ * DemGeneral types
  */
 
 // 10.2.25 DemEnableCondition
 typedef struct {
-	boolean	EnableConditionStatus;		// (Pre+Post)
+	boolean EnableConditionStatus;		// (Pre+Post)
 	// uint16	EnableConditionID;		// (Pre+Post) Optional
 } Dem_EnableConditionType;
 
@@ -56,12 +56,12 @@ typedef struct {
 
 // 10.2.13 DemExtendedDataClass
 typedef struct {
-	Dem_ExtendedDataRecordClassType *ExtendedDataRecordClassRef[DEM_MAX_NR_OF_RECORDS_IN_EXTENDED_DATA+1]; // (--)	(1..253)
+	const Dem_ExtendedDataRecordClassType *const ExtendedDataRecordClassRef[DEM_MAX_NR_OF_RECORDS_IN_EXTENDED_DATA+1]; // (--)	(1..253)
 } Dem_ExtendedDataClassType;
 
 // 10.2.8 DemPidOrDid
 typedef struct {
-	boolean				PidOrDidUsePort;		// (--)			(0..1)
+	boolean				PidOrDidUsePort;		// (--)			(1)
 	uint8				PidOrDidSize;			// (Pre+Post)	(1)
 	uint16				DidIdentifier;			// (---)		(0..1)
 	FunctionNameDefType	DidConditionCheckReadFnc;// (Pre)		(0..1)
@@ -75,7 +75,7 @@ typedef struct {
 typedef struct {
 	Dem_FreezeFrameKindType FFKind;			// (Pre+Post)	(1)
 //	uint8					FFRecordNumber;	// (Pre+Post)	(1) Optional
-//	Dem_PidOrDidType 		*FFIdClassRef; 	// (Pre+Post)	(1..255) Optional?
+//	const Dem_PidOrDidType 	*FFIdClassRef; 	// (Pre+Post)	(1..255) Optional?
 } Dem_FreezeFrameClassType;
 
 // 10.2.4 DemIndicator
@@ -93,34 +93,6 @@ typedef struct {
 	Dem_OperationCycleType	OperationCycle;		// (Pre)	(1)
 } Dem_OperationCycleTgtType;
 
-#if 0
-// 10.2.3 DemGeneral
-/*
- * This structure is probably not needed because all members
- * are only accessed via the Dem_ConfigSet.
- */
-typedef struct {
-	// Initial status after power up for storing events
-	Dem_EnableConditionType	*EnableCondition;					// (0..255)
-
-	// Available types of records for extended data
-	Dem_ExtendedDataRecordClassType	*ExtendedDataRecordClass;	// (0..253)
-
-	// Available classes of extended data (set of extended data records)
-	Dem_ExtendedDataClassType *ExtendedDataClass;				// (0..*)
-
-	// Available types of ports, PIDs or DISs
-	Dem_PidOrDidType *PidOrDid;									// (0.255)
-
-	// Available classes of freeze frames (freeze frame kind + Ports,PIDs and DIDs)
-	Dem_FreezeFrameClassType *FreezeFrameClass;					// (0..255)
-
-	Dem_IndicatorType *Indication;								// (0..255)
-	Dem_NvramBlockIdType *NvramBlockId;							// (0..*)
-	Dem_OperationCycleTgtType	*OperationCycleTgt;				// (0..*)
-} Dem_GeneralType;
-#endif
-
 /*
  * DemConfigSetType types
  */
@@ -137,12 +109,12 @@ typedef struct {
 
 // 10.2.17 DemDTCClass
 typedef struct {
-	uint32								DTC;						// (Pre+Post)	(1)
-	uint8								DTCFunctionUnit;			// (Pre+Post)	(1)
-	Dem_DTCKindType						DTCKind;					// (Pre+Post)	(1)
-	Dem_CallbackDTCStatusChangedType	*CallbackDTCStatusChanged;	// (0..*)
-	Dem_CallbackInitMForFType			*CallbackInitMForF;			// (0..*)
-	// Dem_DTCSeverityType				DTCSeverity					// (0..1)  Optional
+	uint32									DTC;						// (Pre+Post)	(1)
+	uint8									DTCFunctionUnit;			// (Pre+Post)	(1)
+	Dem_DTCKindType							DTCKind;					// (Pre+Post)	(1)
+	const Dem_CallbackDTCStatusChangedType	*CallbackDTCStatusChanged;	// (0..*)
+	const Dem_CallbackInitMForFType			*CallbackInitMForF;			// (0..*)
+	// Dem_DTCSeverityType					DTCSeverity					// (0..1)  Optional
 } Dem_DTCClassType;
 
 // 10.2.5 DemCallbackEventStatusChanged
@@ -157,15 +129,15 @@ typedef struct {
 
 // 10.2.14 DemEventClass
 typedef struct {
-	boolean	ConsiderPtoStatus;						// (--) 		(1)
-	Dem_DTCOriginType EventDestination[DEM_MAX_NR_OF_EVENT_DESTINATION+1];	// (Pre+Post)	(0..4)
-	uint8	EventPriority;							// (Pre+Post)	(1)
-	boolean	FFPrestorageSupported;					// (Pre+Post)	(1)
-	boolean	HealingAllowed;							// (Pre+Post)	(1)
-//	uint8	HealingCycleCounter;					// (Pre+Post)	(0..1) Optional
-//	Dem_EnableConditionType	*EnableConditionRef;	// (Pre+Post)	(0..*) Optional
-//	Dem_OperationCycleTgtType *HealingCycleRef;		// (Pre+Post)	(0..1) Optional
-	Dem_OperationCycleTgtType	*OperationCycleRef;	// (Pre+Post)	(0..1)
+	boolean	ConsiderPtoStatus;								// (--) 		(1)
+	const Dem_DTCOriginType EventDestination[DEM_MAX_NR_OF_EVENT_DESTINATION+1];	// (Pre+Post)	(0..4)
+	uint8	EventPriority;									// (Pre+Post)	(1)
+	boolean	FFPrestorageSupported;							// (Pre+Post)	(1)
+	boolean	HealingAllowed;									// (Pre+Post)	(1)
+//	uint8	HealingCycleCounter;							// (Pre+Post)	(0..1) Optional
+//	const Dem_EnableConditionType	*EnableConditionRef;	// (Pre+Post)	(0..*) Optional
+//	const Dem_OperationCycleTgtType *HealingCycleRef;		// (Pre+Post)	(0..1) Optional
+	const Dem_OperationCycleTgtType	*OperationCycleRef;		// (Pre+Post)	(0..1)
 	/*
 	 * TODO: Fill out
 	 * Dem_IndicatorAttribute
@@ -176,15 +148,15 @@ typedef struct {
 
 // 10.2.12 DemEventParameter
 typedef struct {
-	uint16								EventID;						// (Pre)(1)
-	Dem_EventKindType					EventKind;						// (--)	(1)
-	Dem_EventClassType					*EventClass;					// (--)	(1)
-	Dem_ExtendedDataClassType			*ExtendedDataClassRef;			// (--) (0..1)
-	Dem_FreezeFrameClassType			*FreezeFrameClassRef;			// (--)	(0..255)
-	Dem_CallbackInitMforEType			*CallbackInitMforE;				// (--)	(0..1)
-	Dem_CallbackEventStatusChangedType	*CallbackEventStatusChanged;	// (Pre)(0..*)
-	Dem_DTCClassType					*DTCClass;						// (--)	(0..1)
-	uint8 								EcoreEOL;
+	uint16										EventID;					// (Pre)(1)
+	Dem_EventKindType							EventKind;					// (--)	(1)
+	const Dem_EventClassType					*EventClass;				// (--)	(1)
+	const Dem_ExtendedDataClassType				*ExtendedDataClassRef;		// (--) (0..1)
+	const Dem_FreezeFrameClassType				*FreezeFrameClassRef;		// (--)	(0..255)
+	const Dem_CallbackInitMforEType				*CallbackInitMforE;			// (--)	(0..1)
+	const Dem_CallbackEventStatusChangedType	*CallbackEventStatusChanged;// (Pre)(0..*)
+	const Dem_DTCClassType						*DTCClass;					// (--)	(0..1)
+	boolean										EcoreEOL;
 } Dem_EventParameterType;
 
 // 10.2.19 DemGroupOfDTC
@@ -199,22 +171,22 @@ typedef struct {
 
 // 10.2.9 DemConfigSet
 typedef struct {
-	Dem_EventParameterType 	*EventParameter;	// (0..65535)
-	Dem_DTCClassType		*DTCClassType;		// (1..16777214)
-	Dem_GroupOfDtcType		*GroupOfDtc;		// (1.16777214)
-	Dem_OemIdClassType		*OemIdClass;		// (0..*)
+	const Dem_EventParameterType	*EventParameter;	// (0..65535)
+	const Dem_DTCClassType 			*DTCClassType;		// (1..16777214)
+	const Dem_GroupOfDtcType		*GroupOfDtc;		// (1.16777214)
+	const Dem_OemIdClassType		*OemIdClass;		// (0..*)
 } Dem_ConfigSetType;
 
 // 10.2.2 Dem
 typedef struct {
-	Dem_ConfigSetType *ConfigSet;	//	(1)
+	const Dem_ConfigSetType *ConfigSet;	//	(1)
 } Dem_ConfigType;
 
 
 /*
  * Make the DEM_Config visible for others.
  */
-extern Dem_ConfigType DEM_Config;
+extern const Dem_ConfigType DEM_Config;
 
 
 #endif /*DEM_LCFG_H_*/

@@ -23,6 +23,13 @@
 #ifndef DEM_H_
 #define DEM_H_
 
+#define DEM_SW_MAJOR_VERSION    1
+#define DEM_SW_MINOR_VERSION   	0
+#define DEM_SW_PATCH_VERSION    0
+#define DEM_AR_MAJOR_VERSION    3
+#define DEM_AR_MINOR_VERSION    0
+#define DEM_AR_PATCH_VERSION    1
+
 #include "Dem_Types.h"
 #include "Dem_Cfg.h"
 #include "Dem_Lcfg.h"
@@ -33,21 +40,41 @@
 
 #if (DEM_DEV_ERROR_DETECT == STD_ON)
 // Error codes produced by this module
-#define DEM_E_PARAM_CONFIG		0x10
-#define DEM_E_PARAM_ADDRESS		0x11
-#define DEM_E_PARAM_DATA		0x12
-#define DEM_E_PARAM_LENGTH		0x13
-#define DEM_E_UNINIT			0x20
-#define DEM_E_NODATAAVAILABLE	0x30
+#define DEM_E_CONFIG_PTR_INVALID			0x01
+#define DEM_E_PARAM_CONFIG					0x10
+#define DEM_E_PARAM_ADDRESS					0x11
+#define DEM_E_PARAM_DATA					0x12
+#define DEM_E_PARAM_LENGTH					0x13
+#define DEM_E_UNINIT						0x20
+#define DEM_E_NODATAAVAILABLE				0x30
+
+#define DEM_E_EVENT_STATUS_BUFF_FULL		0x40
+#define DEM_E_EXT_DATA_TO_BIG				0x41
+#define DEM_E_PRE_INIT_EXT_DATA_BUFF_FULL	0x42
+#define DEM_E_PRI_MEM_EVENT_BUFF_FULL		0x43
+#define DEM_E_PRI_MEM_EXT_DATA_BUFF_FULL	0x44
+
+#define DEM_E_NOT_IMPLEMENTED_YET			0xff
 
 // Service ID in this module
-#define DEM_SETEVENTSTATUS_ID			(0x10)
-#define DEM_RESETEVENTSTATUS_ID			(0x11)
-#define DEM_GETEVENTSTATUS_ID			(0x12)
-#define DEM_GETEVENTFAILED_ID			(0x13)
-#define DEM_GETEVENTTESTED_ID			(0x14)
-#define DEM_GETFAULTDETECTIONCOUNTER_ID (0x15)
-#define DEM_REPORTERRORSTATUS_ID 		(0x20)
+#define DEM_PREINIT_ID					0x01
+#define DEM_INIT_ID						0x02
+#define DEM_SETEVENTSTATUS_ID			0x10
+#define DEM_RESETEVENTSTATUS_ID			0x11
+#define DEM_GETEVENTSTATUS_ID			0x12
+#define DEM_GETEVENTFAILED_ID			0x13
+#define DEM_GETEVENTTESTED_ID			0x14
+#define DEM_GETFAULTDETECTIONCOUNTER_ID 0x15
+#define DEM_REPORTERRORSTATUS_ID 		0x20
+
+#define DEM_UPDATE_EVENT_STATUS_ID		0x40
+#define DEM_MERGE_EVENT_STATUS_ID		0x41
+#define DEM_GET_EXTENDED_DATA_ID		0x42
+#define DEM_STORE_EXT_DATA_PRE_INIT_ID	0x43
+#define DEM_STORE_EVENT_PRI_MEM_ID		0x44
+#define DEM_STORE_EXT_DATA_PRI_MEM_ID	0x45
+
+#define DEM_GLOBAL_ID					0xff
 
 #endif
 
@@ -57,13 +84,6 @@
  */
 
 #if (DEM_VERSION_INFO_API == STD_ON)
-#define DEM_SW_MAJOR_VERSION    0	// TODO: What numbers here?
-#define DEM_SW_MINOR_VERSION   	0
-#define DEM_SW_PATCH_VERSION    1
-#define DEM_AR_MAJOR_VERSION    3
-#define DEM_AR_MINOR_VERSION    0
-#define DEM_AR_PATCH_VERSION    1
-
 void Dem_GetVersionInfo(Std_VersionInfoType *versionInfo);
 #endif /* DEM_VERSION_INFO_API */
 
@@ -95,7 +115,7 @@ Std_ReturnType Dem_GetFaultDetectionCounter(Dem_EventIdType eventId, sint8 *coun
 /*
  * Interface BSW-Components <-> DEM (8.3.4)
  */
-void Dem_ReportErrorStatus( Dem_EventIdType eventId ,uint8 eventStatus );
+void Dem_ReportErrorStatus(Dem_EventIdType eventId ,uint8 eventStatus);
 
 
 /*
