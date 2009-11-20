@@ -124,10 +124,11 @@ StatusType TerminateTask( void ) {
 	pcb_t *curr_pcb = os_get_curr_pcb();
 	pcb_t *new_pcb;
 	StatusType rv = E_OK;
+	uint32_t flags;
 
 	os_std_printf(D_TASK,"TerminateTask %s\n",curr_pcb->name);
 
-	Irq_Disable();
+	Irq_Save(flags);
 
 	os_pcb_make_suspended(curr_pcb);
 
@@ -136,7 +137,7 @@ StatusType TerminateTask( void ) {
 	assert(new_pcb!=NULL);
 	os_swap_context(curr_pcb,new_pcb);
 
-	Irq_Enable();
+	Irq_Restore(flags);
 	// It must find something here...otherwise something is very wrong..
 	assert(0);
 
@@ -149,11 +150,13 @@ StatusType TerminateTask( void ) {
 
 StatusType ChainTask( TaskType TaskId ) {
 	StatusType rv;
-	Irq_Disable();
+	uint32_t flags;
+
+	Irq_Save(flags);
 	rv = ActivateTask(TaskId);
 	/* TODO: more more here..*/
 	TerminateTask();
-	Irq_Enable();
+	Irq_Restore(flags);
 
 	if (rv != E_OK) goto err;
 
@@ -174,8 +177,9 @@ StatusType Schedule( void ) {
 	pcb_t *pcb;
 	pcb_t *curr_pcb = get_curr_pcb();
 	StatusType rv = E_OK;
+	uint32_t flags;
 
-	Irq_Disable();
+	Irq_Save(flags);
 	/* Try to find higher prio task that is ready, if none, continue */
 	pcb = os_find_top_prio_proc();
 
@@ -185,7 +189,7 @@ StatusType Schedule( void ) {
 		os_pcb_running_to_ready(curr_pcb);
 		os_swap_context(curr_pcb,pcb);
 	}
-	Irq_Enable();
+	Irq_Restore(flags);
 
 	// Prevent label warning. Remove this when proper error handling is implemented.
 	if (0) goto err;

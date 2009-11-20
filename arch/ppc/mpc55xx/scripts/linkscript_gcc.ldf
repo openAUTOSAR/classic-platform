@@ -39,7 +39,7 @@ SECTIONS
 /* mpc5554, align 64K. mpc5516, 4k */
     .exception_tbl ALIGN(0x10000) :
     {
-      *(.isrvectbl)
+      *(.isr_vector)
     } > flash
 
 	/* Read-only data section. */

@@ -83,6 +83,7 @@ Mcu_GlobalType Mcu_Global =
 
 //-------------------------------------------------------------------
 
+#if 0
 static void Mcu_LossOfLock( void  ) {
 #if ( MCU_DEV_ERROR_DETECT == STD_ON )
 	/* Should report MCU_E_CLOCK_FAILURE with DEM here.... but
@@ -96,17 +97,7 @@ static void Mcu_LossOfLock( void  ) {
 //	FMPLL.SYNSR.B.LOLF = 1;
 
 }
-
-//-------------------------------------------------------------------
-static void Mcu_LossOfCLock( void  ) {
-
-	/* Should report MCU_E_CLOCK_FAILURE with DEM here */
-
-	Mcu_Global.stats.lossOfClockCnt++;
-	// Clear interrupt
-//	FMPLL.SYNSR.B.LOCF = 1;
-}
-
+#endif
 
 #define SPR_PIR 286
 #define SPR_PVR 287
@@ -178,7 +169,7 @@ static core_info_t *Mcu_IdentifyCore(uint32 pvr)
 static uint32 Mcu_CheckCpu( void ) {
 
   uint32 pvr;
-  uint32 pir;
+  //uint32 pir;
   cpu_info_t *cpuType;
   core_info_t *coreType;
 
@@ -420,7 +411,9 @@ uint32_t McuE_GetSystemClock(void)
    * System clock calculation
    *
    */
-  uint32_t f_sys = 0;
+
+  // TODO: This of course wrong....
+  uint32_t f_sys = 72000000UL;
 #if 0
   uint32  extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePoint;
 

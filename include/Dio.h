@@ -59,16 +59,18 @@ typedef uint32 Dio_LevelType;
 
 typedef uint16 Dio_PortLevelType;
 
-#include "Dio_Cfg.h"
+#define DIO_SW_MAJOR_VERSION	1
+#define DIO_SW_MINOR_VERSION	0
+#define DIO_SW_PATCH_VERSION	0
 
-#if ( DIO_VERSION_INFO_API == STD_ON)
-#define DIO_SW_MAJOR_VERSION    	1 
-#define DIO_SW_MINOR_VERSION   	0 
-#define DIO_SW_PATCH_VERSION    	0 
 #define DIO_AR_MAJOR_VERSION     2
 #define DIO_AR_MINOR_VERSION     2 
 #define DIO_AR_PATCH_VERSION     1 
 
+#include "Dio_Cfg.h"
+
+
+#if ( DIO_VERSION_INFO_API == STD_ON)
 void Dio_GetVersionInfo( Std_VersionInfoType *versionInfo );
 #endif
 

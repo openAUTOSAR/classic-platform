@@ -30,7 +30,7 @@ inc-y += $(ROOTDIR)/components/blinker
 libitem-y += $(ROOTDIR)/libs/libkernel_$(ARCH_MCU).a
 
 #linkfile
-ldcmdfile-y = -T $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
+ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
 
 # What I want to build
 build-exe-y = blinker_node.elf

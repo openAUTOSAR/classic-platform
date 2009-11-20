@@ -621,13 +621,15 @@ typedef enum {
 
 
 #if defined(CFG_MPC5516)
-typedef enum {
-	CPU_Z1=0,
-	CPU_Z0,
-} Cpu_t;
-#else
-typedef uint8_t Cpu_t;
+#define CPU_Z1 	0
+#define CPU_Z0		1
 #endif
 
+typedef enum {
+	CPU_CORE0,
+	CPU_CORE1,
+} Cpu_t;
+
+#define IRQ_INTERRUPT_OFFSET		0
 
 #endif /* IRQ_H_ */

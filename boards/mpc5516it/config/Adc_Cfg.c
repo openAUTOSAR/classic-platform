@@ -15,11 +15,6 @@
 
 
 
-
-
-
-
-
 #include "Adc.h"
 #include "Dma.h"
 #include "mpc5516.h"

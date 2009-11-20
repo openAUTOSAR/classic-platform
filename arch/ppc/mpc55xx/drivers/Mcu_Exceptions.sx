@@ -16,9 +16,6 @@
          cmpwi  0,_reg,0; \
          _inst    _label;
 
-
-		.extern intc_vector_tbl
-
 		.section .text
 //---------------------------------------------------------------
 // just a small decrementer exception to trigger soft interrupt

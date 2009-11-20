@@ -50,8 +50,14 @@ void btask_3( void );
 
 // NOT GENERATED( for test system only )
 #define SYSTEM_COUNTER_PERIOD				100
+#define OS_TICK_DURATION_IN_US				2000
 
+#if defined(USE_SIMPLE_PRINTF)
+#define PRIO_STACK_SIZE						600
+#else
 #define PRIO_STACK_SIZE						200
+#endif
+
 #define OS_INTERRUPT_STACK_SIZE				200
 
 // Just define them if you want to use them.

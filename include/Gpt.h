@@ -66,19 +66,21 @@ typedef enum
   GPT_MODE_SLEEP
 } Gpt_ModeType;
 
-#include "Gpt_Cfg.h"
-
-#if (GPT_VERSION_INFO_API == STD_ON)
 
 #define GPT_VENDOR_ID             1
 #define GPT_MODULE_ID         		 1
-#define GPT_SW_MAJOR_VERSION    	1
+
+#define GPT_SW_MAJOR_VERSION	1
 #define GPT_SW_MINOR_VERSION   	0
-#define GPT_SW_PATCH_VERSION    	0
+#define GPT_SW_PATCH_VERSION	0
+
 #define GPT_AR_MAJOR_VERSION     2
 #define GPT_AR_MINOR_VERSION     2
 #define GPT_AR_PATCH_VERSION     1
 
+#include "Gpt_Cfg.h"
+
+#if (GPT_VERSION_INFO_API == STD_ON)
 #define Gpt_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,GPT)
 #endif
 

@@ -22,17 +22,27 @@
 
 #define SIMULATOR() (0==0)
 
-
-//#define isync()  		asm volatile(" isync");
-//#define sync()   		asm volatile(" sync");
-//#define msync() 		asm volatile(" msync");
-
 /* Call intrinsic functions directly */
 #define Irq_Disable()					__disable_irq()
 #define Irq_Enable()					__enable_irq()
 
 /* TODO: This is of course wrong */
-#define Irq_Save(_flags)     			__disable_irq();
-#define Irq_Restore(_flags)				__enable_irq();
+#define Irq_Save(_flags)     			_flags =_Irq_Save();
+#define Irq_Restore(_flags)			_Irq_Restore(_flags);
+
+static inline unsigned long _Irq_Save(void)
+{
+   unsigned long val = __get_PRIMASK();
+   Irq_Disable();
+   return val;
+}
+
+/*-----------------------------------------------------------------*/
+
+static inline void _Irq_Restore(unsigned mask) {
+	__set_PRIMASK(mask);
+}
+
+#define CallService(index,param)
 
 #endif /* CPU_H_ */

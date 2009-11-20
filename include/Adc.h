@@ -13,168 +13,22 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
 #ifndef ADC_H_
 #define ADC_H_
 
 #include "Std_Types.h"
-#include "Dma.h"
-#include "Adc_Cfg.h"
 
-typedef uint16_t Adc_ValueGroupType;
+#define ADC_VENDOR_ID			    1
+#define ADC_MODULE_ID			    MODULE_ID_ADC
+#define ADC_AR_MAJOR_VERSION  		3
+#define ADC_AR_MINOR_VERSION 		0
+#define ADC_AR_PATCH_VERSION		3
 
-typedef union
-{
-  vuint32_t R;
-  struct
-  {
-    vuint32_t EOQ:1;
-    vuint32_t PAUSE:1;
-    vuint32_t :4;
-    vuint32_t BN:1;
-    vuint32_t CAL:1;
-    vuint32_t MESSAGE_TAG:4;
-    vuint32_t LST:2;
-    vuint32_t TSR:1;
-    vuint32_t FMT:1;
-    vuint32_t CHANNEL_NUMBER:8;
-    vuint32_t :8;
-   } B;
-}Adc_CommandType;
+#define ADC_SW_MAJOR_VERSION  		1
+#define ADC_SW_MINOR_VERSION 		0
+#define ADC_SW_PATCH_VERSION		0
 
-typedef enum
-{
-  ADC_SYSTEM_CLOCK
-}Adc_ClockSourceType;
-
-typedef enum
-{
-  ADC_SYSTEM_CLOCK_DISABLED,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_1,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_2,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_4,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_6,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_8,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_10,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_12,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_14,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_16,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_18,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_20,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_22,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_24,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_26,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_28,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_30,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_32,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_34,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_36,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_38,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_40,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_42,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_44,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_46,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_48,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_50,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_52,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_54,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_56,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_58,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_60,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_62,
-  ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_64,
-}Adc_PrescaleType;
-
-typedef struct
-{
-  Adc_ClockSourceType clockSource;
-  uint8_t             hwUnitId;
-  Adc_PrescaleType    adcPrescale;
-}Adc_HWConfigurationType;
-
-typedef enum
-{
-  ADC_REFERENCE_VOLTAGE_GROUND,
-  ADC_REFERENCE_VOLTAGE_5V,
-}Adc_VoltageSourceType;
-
-typedef enum
-{
-  ADC_CONVERSION_TIME_2_CLOCKS,
-  ADC_CONVERSION_TIME_8_CLOCKS,
-  ADC_CONVERSION_TIME_64_CLOCKS,
-  ADC_CONVERSION_TIME_128_CLOCKS
-}Adc_ConversionTimeType;
-
-typedef enum
-{
-  ADC_CALIBRATION_DISABLED,
-  ADC_CALIBRATION_ENABLED
-}Adc_CalibrationType;
-
-typedef enum
-{
-  ADC_RESOLUTION_12BITS
-}Adc_ResolutionType;
-
-/* Channel definitions. */
-typedef struct
-{
-  Adc_ConversionTimeType adcChannelConvTime;
-  Adc_VoltageSourceType  adcChannelRefVoltSrcLow;
-  Adc_VoltageSourceType  adcChannelRefVoltSrcHigh;
-  Adc_ResolutionType     adcChannelResolution;
-  Adc_CalibrationType    adcChannelCalibrationEnable;
-}Adc_ChannelConfigurationType;
-
-typedef enum
-{
-  ADC_ACCESS_MODE_SINGLE,
-  ADC_ACCESS_MODE_STREAMING
-}Adc_GroupAccessModeType;
-
-typedef enum
-{
-  ADC_TRIGG_SRC_HW,
-  ADC_TRIGG_SRC_SW,
-}Adc_TriggerSourceType;
-
-typedef enum
-{
-  ADC_NO_HW_TRIG,
-  ADC_HW_TRIG_BOTH_EDGES,
-  ADC_HW_TRIG_FALLING_EDGE,
-  ADC_HW_TRIG_RISING_EDGE,
-}Adc_HwTriggerSignalType;
-
-/* TODO list timer sources here. */
-typedef enum
-{
-  ADC_NO_TIMER,
-}Adc_HwTriggerTimerType;
-
-typedef enum
-{
-  ADC_NO_STREAMING,
-  ADC_STREAM_BUFFER_CIRCULAR,
-  ADC_STREAM_BUFFER_LINEAR,
-}Adc_StreamBufferModeType;
-
-typedef uint16_t Adc_StreamNumSampleType;
-
-typedef enum
-{
-  ADC_CONV_MODE_DISABLED,
-  ADC_CONV_MODE_ONESHOT   = 1,
-  ADC_CONV_MODE_CONTINOUS = 9,
-}Adc_GroupConvModeType;
-
+/* Std-type */
 typedef enum
 {
   ADC_IDLE,
@@ -182,35 +36,6 @@ typedef enum
   ADC_COMPLETED,
   ADC_STREAM_COMPLETED,
 }Adc_StatusType;
-
-typedef struct
-{
-  uint8 notifictionEnable;
-  Adc_ValueGroupType *resultBufferPtr;
-  Adc_StatusType groupStatus;
-}Adc_GroupStatus;
-
-
-typedef struct
-{
-  Adc_GroupAccessModeType      accessMode;
-  Adc_GroupConvModeType        conversionMode;
-  Adc_TriggerSourceType        triggerSrc;
-  Adc_HwTriggerSignalType      hwTriggerSignal;
-  Adc_HwTriggerTimerType       hwTriggerTimer;
-  void                         (*groupCallback)(void);
-  Adc_StreamBufferModeType     streamBufferMode;
-  Adc_StreamNumSampleType      streamNumSamples;
-  const Adc_ChannelType        *channelList;
-  Adc_ValueGroupType           *resultBuffer;
-  Adc_CommandType              *commandBuffer;
-  Adc_ChannelType              numberOfChannels;
-  Adc_GroupStatus              *status;
-  Dma_ChannelType              dmaCommandChannel;
-  Dma_ChannelType              dmaResultChannel;
-  const struct tcd_t           *groupDMACommands;
-  const struct tcd_t           *groupDMAResults;
-}Adc_GroupDefType;
 
 
 /* Det error that the adc can produce. */
@@ -246,17 +71,39 @@ typedef enum
   ADC_SETUPRESULTBUFFER_ID = 0x0C,
 }Adc_APIServiceIDType;
 
-
-typedef struct
+/*
+ * Std-types
+ *
+ */
+typedef enum
 {
-  const Adc_HWConfigurationType*      hwConfigPtr;
-  const Adc_ChannelConfigurationType* channelConfigPtr;
-  const uint16_t                      nbrOfChannels;
-  const Adc_GroupDefType*             groupConfigPtr;
-  const uint16_t                      nbrOfGroups;
-}Adc_ConfigType;
+  ADC_ACCESS_MODE_SINGLE,
+  ADC_ACCESS_MODE_STREAMING
+}Adc_GroupAccessModeType;
 
-extern const Adc_ConfigType AdcConfig [];
+typedef enum
+{
+  ADC_TRIGG_SRC_HW,
+  ADC_TRIGG_SRC_SW,
+}Adc_TriggerSourceType;
+
+
+typedef enum
+{
+  ADC_NO_HW_TRIG,
+  ADC_HW_TRIG_BOTH_EDGES,
+  ADC_HW_TRIG_FALLING_EDGE,
+  ADC_HW_TRIG_RISING_EDGE,
+}Adc_HwTriggerSignalType;
+
+typedef enum
+{
+  ADC_NO_STREAMING,
+  ADC_STREAM_BUFFER_CIRCULAR,
+  ADC_STREAM_BUFFER_LINEAR,
+}Adc_StreamBufferModeType;
+
+#include "Adc_Cfg.h"
 
 /* Function interface. */
 Std_ReturnType Adc_Init (const Adc_ConfigType *ConfigPtr);

@@ -40,6 +40,8 @@
 #include "alist_i.h"
 #include "Mcu.h"
 
+OsTickType OsTickFreq = 1000;
+
 // ##################################    DEBUG     #################################
 // All output on as standard
 uint32 os_dbg_mask =
@@ -164,13 +166,9 @@ uint8_t pcb_list[PCB_T_SIZE*ARRAY_SIZE(rom_pcb_list)];
 
 uint8_t os_interrupt_stack[OS_INTERRUPT_STACK_SIZE] __attribute__ ((aligned (0x10)));
 
-// The vector table
-void * intc_vector_tbl[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS] __attribute__ ((aligned (0x1000),section(".data")))= {
-};
-
-// The type of vector
-uint8 intc_type_tbl[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS] = {
-};
+GEN_IRQ_VECTOR_TABLE_HEAD {};
+GEN_IRQ_ISR_TYPE_TABLE_HEAD {};
+GEN_IRQ_PRIORITY_TABLE_HEAD {};
 
 
 // ##################################    HOOKS    ##################################

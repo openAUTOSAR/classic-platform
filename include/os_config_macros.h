@@ -54,7 +54,7 @@
 }
 
 
-#define GEN_TASK_HEAD rom_pcb_t rom_pcb_list[] =
+#define GEN_TASK_HEAD const rom_pcb_t rom_pcb_list[] =
 
 
 #define GEN_ETASK( _id, _priority, 	_autostart, _timing_protection, _application_id, _resource_int_p ) \
@@ -140,6 +140,31 @@
 	.owner = (-1),								\
 }
 
+/**
+ * _id
+ *      NOT_USED
+ * _name
+ *    Name of the alarm, string
+ *
+ * _type
+ *   COUNTER_TYPE_HARD or COUNTER_TYPE_SOFT
+ *
+ * _unit
+ *   COUNTER_UNIT_TICKS or COUNTER_UNIT_NANO
+ *
+ * _maxallowedvalue
+ *    0xffffffffUL
+ *
+ * _ticksperbase
+ *    1
+ *
+ * _mincycle
+ *    Say 10000
+
+ * _gpt_ch
+ *    NOT USED. Set to 0
+ */
+
 #define GEN_COUNTER_HEAD counter_obj_t counter_list[] =
 #define GEN_COUNTER( _id, _name, _type, _unit, 	\
 					_maxallowedvalue, 			\
@@ -156,6 +181,44 @@
 }
 
 #define GEN_ALARM_HEAD alarm_obj_t alarm_list[] =
+
+/**
+ * _id
+ *    NOT USED
+ *
+ * _name
+ *    Name of the alarm, string
+ *
+ * _counter_id
+ *    The id of the counter to drive the alarm
+ *
+ * _autostart_active
+ *     If the alarm should be auto-started.
+ *
+ * _autostart_alarmtime
+ *     Only used if active = 1
+ *
+ * _autostart_cycletime
+ *     Only used if active = 1
+ *
+ * _autostart_application_mode_mask
+ *     Set to 0 for now
+ *
+ * _X_type       - Any of:
+ * 					ALARM_ACTION_ACTIVATETASK
+ * 					ALARM_ACTION_SETEVENT
+ * 					ALARM_ACTION_ALARMCALLBACK
+ * 					ALARM_ACTION_INCREMENTCOUNTER
+ *
+ * _X_task_id    - The task ID to activate if _X_type is:
+ * 					ALARM_ACTION_ACTIVATETASK or
+ * 					ALARM_ACTION_SETEVENT
+ *
+ * _X_event_id   - The event ID if type is ALARM_ACTION_SETEVENT
+ *
+ * _X_counter_id - The counter ID if type is ALARM_ACTION_INCREMENTCOUNTER
+ *
+ */
 #define GEN_ALARM( _id, _name, _counter_id,	\
 			_autostart_active,				\
 			_autostart_alarmtime,			\
@@ -222,6 +285,14 @@ struct os_conf_global_hooks_s os_conf_global_hooks = { \
 		.PostTaskHook = _posttask,		\
 };
 
+#define GEN_IRQ_VECTOR_TABLE_HEAD 	\
+		 void * Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS] =
+
+#define GEN_IRQ_ISR_TYPE_TABLE_HEAD \
+		 uint8_t Irq_IsrTypeTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS]  =
+
+#define GEN_IRQ_PRIORITY_TABLE_HEAD \
+		 uint8_t Irq_PriorityTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS]  =
 
 #define ALIGN_16(x) (((x)>>4)<<4)
 

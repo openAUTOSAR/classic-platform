@@ -27,7 +27,9 @@
 #ifndef OS_H_
 #define OS_H_
 
-
+#define OS_SW_MAJOR_VERSION    1
+#define OS_SW_MINOR_VERSION    0
+#define OS_SW_PATCH_VERSION    0
 
 #include "Std_Types.h"
 #if !defined(CC_KERNEL)
@@ -284,7 +286,7 @@ typedef struct OsDriver_s {
 /*-------------------------------------------------------------------
  * Free running timer
  *-----------------------------------------------------------------*/
-#define OS_TICK_FREQ		1000	// Frequency of the os tick
+typedef const uint32 OsTickType;
 void Frt_Init( void );
 void Frt_Start(uint32_t period_ticks);
 uint32_t Frt_GetTimeElapsed( void );
@@ -483,12 +485,14 @@ int simple_printf(const char *format, ...);
 #define ARRAY_SIZE(_x) sizeof(_x)/sizeof((_x)[0])
 
 #define OS_STR__(x)	#x
-#define OS_STRSTR__(x) STR__(x)
+#define OS_STRSTR__(x) OS_STR__(x)
 
 
 TaskType Os_CreateIsr( void  (*entry)(void), uint8_t prio, const char *name );
+#if 0
 void IntCtrl_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector,uint8_t prio);
-void IntCtrl_AttachIsr2(TaskType tid,void *int_ctrl, uint32_t vector );
+void IntCtrl_AttachIsr2(TaskType tid,void *int_ctrl, IrqType vector );
+#endif
 
 
 #endif /*OS_H_*/
