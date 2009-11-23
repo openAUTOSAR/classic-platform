@@ -41,8 +41,12 @@ inc-$(CFG_MPC55XX) +=  $(ROOTDIR)/$(ARCH_PATH-y)/delivery/mpc5500_h7f/include
 # Can
 obj-$(USE_CAN) += Can.o
 obj-$(USE_CAN) += Can_Lcfg.o
+
+# CanIf
 obj-$(USE_CANIF) += CanIf.o
 obj-$(USE_CANIF) += CanIf_Cfg.o
+vpath-$(USE_CANIF) += $(ROOTDIR)/communication/CanIf
+inc-$(USE_CANIF) += $(ROOTDIR)/communication/CanIf
 
 obj-$(USE_DIO) += Dio.o
 obj-$(USE_DIO) += Dio_Lcfg.o

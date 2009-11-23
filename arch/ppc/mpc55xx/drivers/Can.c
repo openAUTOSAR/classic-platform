@@ -33,6 +33,7 @@
 #include <string.h>
 #if defined(USE_KERNEL)
 #include "Os.h"
+#include "int_ctrl.h"
 #endif
 
 
