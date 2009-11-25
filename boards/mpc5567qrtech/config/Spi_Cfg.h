@@ -23,8 +23,8 @@
 #ifndef SPI_CFG_H_
 #define SPI_CFG_H_
 
-#include "Dma_Cfg.h"
-#include "Mcu_Cfg.h"
+#include "Dma.h"
+#include "Mcu.h"
 
 #define DSPI_CTRL_A	0
 #define DSPI_CTRL_B	1
