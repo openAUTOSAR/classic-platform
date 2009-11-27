@@ -24,7 +24,7 @@
 #define COM_H_
 
 #include "Std_Types.h"
-#include "Com_Types.h"
+#include "ComStack_Types.h"
 #include "Com_EcoreTypes.h"
 
 
@@ -37,6 +37,7 @@
 #define COM_SW_PATCH_VERSION   0
 
 #include "Com_Cfg.h"
+#include "Com_Types.h"
 #include "Com_PbCfg.h"
 #include "Com_Com.h"
 #include "Com_Sched.h"
