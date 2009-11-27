@@ -25,6 +25,22 @@
 
 #include "Can.h"
 
+// Identifiers for the elements in CanIfControllerConfig[]
+// This is the ConfigurationIndex in CanIf_InitController()
+typedef enum {
+	CANIF_CHANNEL_0_CONFIG_0 = 0,
+
+	CANIF_CHANNEL_1_CONFIG_0 = 1,
+
+	CANIF_CHANNEL_CONFIGURATION_CNT
+} CanIf_Arc_ConfigurationIndexType;
+
+typedef enum {
+	CANIF_CHANNEL_0,
+	CANIF_CHANNEL_1,
+	CANIF_CHANNEL_CNT,
+} CanIf_Arc_ChannelIdType;
+
 typedef enum {
 	CANIF_SOFTFILTER_TYPE_BINARY = 0,  // Not supported
 	CANIF_SOFTFILTER_TYPE_INDEX,  // Not supported
@@ -117,7 +133,7 @@ typedef struct {
 
 	//	Reference to controller Id to which the HRH belongs to. A controller can
 	//	contain one or more HRHs.
-	uint8 CanIfCanControllerHrhIdRef;
+	CanIf_Arc_ChannelIdType CanIfCanControllerHrhIdRef;
 
 	//	The parameter refers to a particular HRH object in the CAN Driver Module
 	//	configuration. The HRH id is unique in a given CAN Driver. The HRH Ids
@@ -144,7 +160,7 @@ typedef struct {
 
   // Reference to controller Id to which the HTH belongs to. A controller
   // can contain one or more HTHs
-  uint8 CanIfCanControllerIdRef;
+  CanIf_Arc_ChannelIdType CanIfCanControllerIdRef;
 
   //  The parameter refers to a particular HTH object in the CAN Driver Module
   //  configuration. The HTH id is unique in a given CAN Driver. The HTH Ids
@@ -323,7 +339,8 @@ typedef enum {
 typedef struct {
 	CanIf_WakeupSupportType WakeupSupport;  // Not used
 
-	CanControllerIdType CanIfControllerIdRef;
+	// CanIf-specific id of the controller
+	CanIf_Arc_ChannelIdType CanIfControllerIdRef;
 
 	const char CanIfDriverNameRef[8]; // Not used
 
@@ -431,6 +448,9 @@ typedef struct {
 	//	Transceiver Driver.
 	//  Multiplicity: 1..*
 	const CanIf_TransceiverConfigType *TransceiverConfig;
+
+	// ArcCore: Contains the mapping from CanIf-specific Channels to Can Controllers
+	const CanControllerIdType			*Arc_ChannelToControllerMap;
 } CanIf_ConfigType;
 
 
