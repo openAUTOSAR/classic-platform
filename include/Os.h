@@ -449,9 +449,6 @@ TickType GetOsTick();
 void OsTick(void);
 void OsIdle(void);
 
-/* The id of the counter driven by the os tick, or -1 if not used */
-extern CounterType Os_Arc_OsTickCounter;
-
 // Generate conversion macro'
 // Todo
 #define OS_TICK2NS_OS_TICK_COUNTER(_x)

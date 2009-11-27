@@ -287,6 +287,11 @@ StatusType GetElapsedCounterValue( CounterType counter_id, TickRefType val, Tick
  * Non-Autosar stuff
  */
 
+/* The id of the counter driven by the os tick, or -1 if not used.
+ * Using weak linking to set default value -1 if not set by config.
+ */
+CounterType Os_Arc_OsTickCounter __attribute__((weak)) = -1;
+
 void OsTick( void ) {
 	// if not used, os_tick_counter < 0
 	if (Os_Arc_OsTickCounter >= 0) {
