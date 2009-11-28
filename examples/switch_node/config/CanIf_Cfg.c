@@ -62,10 +62,10 @@ const CanIf_DispatchConfigType CanIfDispatchConfig =
 const CanIf_HthConfigType CanIfHthConfigData[] =
 {
   {
-    .CanIfHthType = CAN_ECORE_HANDLE_TYPE_BASIC,
+    .CanIfHthType = CAN_ARC_HANDLE_TYPE_BASIC,
     .CanIfCanControllerIdRef = CANIF_CHANNEL_0,
     .CanIfHthIdSymRef = CAN_HTH_A_1, // Ref to the HTH
-    .CanIfEcoreEOL = 0,
+    .CanIf_Arc_EOL = 0,
   },
 };
 
@@ -73,11 +73,11 @@ const CanIf_HthConfigType CanIfHthConfigData[] =
 const CanIf_HrhConfigType CanIfHrhConfigData[] =
 {
   {
-    .CanIfHrhType = CAN_ECORE_HANDLE_TYPE_BASIC,
+    .CanIfHrhType = CAN_ARC_HANDLE_TYPE_BASIC,
     .CanIfSoftwareFilterHrh = TRUE,   // Disable software filtering
     .CanIfCanControllerHrhIdRef = CANIF_CHANNEL_0,
     .CanIfHrhIdSymRef = CAN_HRH_A_1, // Ref to the HRH
-    .CanIfEcoreEOL = 0,
+    .CanIf_Arc_EOL = 0,
   },
 };
 //-------------------------------------------------------------------
@@ -117,7 +117,7 @@ const CanIf_InitHohConfigType CanIfHohConfigData[] =
     .CanConfigSet = &CanConfigSetData,
     .CanIfHrhConfig = CanIfHrhConfigData,
     .CanIfHthConfig = CanIfHthConfigData,
-    .CanIfEcoreEOL = 1,
+    .CanIf_Arc_EOL = 1,
   },
 };
 

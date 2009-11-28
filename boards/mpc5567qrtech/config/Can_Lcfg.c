@@ -52,24 +52,24 @@ Can_FilterMaskType Can_FilterMaskConfigData = 0;
 const Can_HardwareObjectType CanHardwareObjectConfig_CTRL_A[] =
 {
   {
-    .CanHandleType =    CAN_ECORE_HANDLE_TYPE_BASIC,
+    .CanHandleType =    CAN_ARC_HANDLE_TYPE_BASIC,
     .CanIdType =        CAN_ID_TYPE_EXTENDED,
     .CanObjectType =    CAN_OBJECT_TYPE_RECEIVE,
     .CanObjectId =      CAN_HRH_A_1,
     .CanFilterMaskRef = &Can_FilterMaskConfigData,
-    // Ecore
-    .CanEcoreMbMask = 0x00ff0000,
-    .CanEcoreEOL = 0,
+    // ArcCore
+    .Can_Arc_MbMask = 0x00ff0000,
+    .Can_Arc_EOL = 0,
   },
   {
-    .CanHandleType =    CAN_ECORE_HANDLE_TYPE_BASIC,
+    .CanHandleType =    CAN_ARC_HANDLE_TYPE_BASIC,
     .CanIdType =        CAN_ID_TYPE_EXTENDED,
     .CanObjectType =    CAN_OBJECT_TYPE_TRANSMIT,
     .CanObjectId =      CAN_HTH_A_1,
     .CanFilterMaskRef = &Can_FilterMaskConfigData,
-    // Ecore
-    .CanEcoreMbMask =   0xff000000,
-    .CanEcoreEOL = 1,
+    // ArcCore
+    .Can_Arc_MbMask =   0xff000000,
+    .Can_Arc_EOL = 1,
   },
 };
 
@@ -77,24 +77,24 @@ const Can_HardwareObjectType CanHardwareObjectConfig_CTRL_A[] =
 const Can_HardwareObjectType CanHardwareObjectConfig_CTRL_C[] =
 {
   {
-    .CanHandleType =    CAN_ECORE_HANDLE_TYPE_BASIC,
+    .CanHandleType =    CAN_ARC_HANDLE_TYPE_BASIC,
     .CanIdType =        CAN_ID_TYPE_STANDARD,
     .CanObjectType =    CAN_OBJECT_TYPE_RECEIVE,
     .CanObjectId =      CAN_HRH_C_1,
     .CanFilterMaskRef = &Can_FilterMaskConfigData,
-    // Ecore
-    .CanEcoreMbMask =   0x00ff0000,
-    .CanEcoreEOL = 0,
+    // ArcCore
+    .Can_Arc_MbMask =   0x00ff0000,
+    .Can_Arc_EOL = 0,
   },
   {
-    .CanHandleType =    CAN_ECORE_HANDLE_TYPE_BASIC,
+    .CanHandleType =    CAN_ARC_HANDLE_TYPE_BASIC,
     .CanIdType =        CAN_ID_TYPE_STANDARD,
     .CanObjectType =    CAN_OBJECT_TYPE_TRANSMIT,
     .CanObjectId =      CAN_HTH_C_1,
     .CanFilterMaskRef = &Can_FilterMaskConfigData,
-    // Ecore
-    .CanEcoreMbMask =   0xff000000,
-    .CanEcoreEOL = 1,
+    // ArcCore
+    .Can_Arc_MbMask =   0xff000000,
+    .Can_Arc_EOL = 1,
   },
 };
 
@@ -110,15 +110,15 @@ const Can_ControllerConfigType CanControllerConfigData[] =
     .CanControllerPropSeg = 4,
     .CanControllerSeg1 =    4,
     .CanControllerSeg2 =    4,
-    .CanBusOffProcessing =  CAN_ECORE_PROCESS_TYPE_INTERRUPT,
-    .CanRxProcessing =      CAN_ECORE_PROCESS_TYPE_INTERRUPT,
-    .CanTxProcessing =      CAN_ECORE_PROCESS_TYPE_INTERRUPT,
-    .CanWakeupProcessing =  CAN_ECORE_PROCESS_TYPE_INTERRUPT,
+    .CanBusOffProcessing =  CAN_ARC_PROCESS_TYPE_INTERRUPT,
+    .CanRxProcessing =      CAN_ARC_PROCESS_TYPE_INTERRUPT,
+    .CanTxProcessing =      CAN_ARC_PROCESS_TYPE_INTERRUPT,
+    .CanWakeupProcessing =  CAN_ARC_PROCESS_TYPE_INTERRUPT,
     .CanCpuClockRef = PERIPHERAL_CLOCK_FLEXCAN_A,
-    // Ecore
-    .CanEcoreHoh = &CanHardwareObjectConfig_CTRL_A[0],
-    .CanEcoreLoopback = 0,
-    .CanEcoreFifo = 0,
+    // ArcCore
+    .Can_Arc_Hoh = &CanHardwareObjectConfig_CTRL_A[0],
+    .Can_Arc_Loopback = 0,
+    .Can_Arc_Fifo = 0,
 
   },{
     .CanControllerActivation = TRUE,
@@ -127,15 +127,15 @@ const Can_ControllerConfigType CanControllerConfigData[] =
     .CanControllerPropSeg = 4,
     .CanControllerSeg1 =    4,
     .CanControllerSeg2 =    4,
-    .CanBusOffProcessing =  CAN_ECORE_PROCESS_TYPE_INTERRUPT,
-    .CanRxProcessing =      CAN_ECORE_PROCESS_TYPE_INTERRUPT,
-    .CanTxProcessing =      CAN_ECORE_PROCESS_TYPE_INTERRUPT,
-    .CanWakeupProcessing =  CAN_ECORE_PROCESS_TYPE_INTERRUPT,
+    .CanBusOffProcessing =  CAN_ARC_PROCESS_TYPE_INTERRUPT,
+    .CanRxProcessing =      CAN_ARC_PROCESS_TYPE_INTERRUPT,
+    .CanTxProcessing =      CAN_ARC_PROCESS_TYPE_INTERRUPT,
+    .CanWakeupProcessing =  CAN_ARC_PROCESS_TYPE_INTERRUPT,
     .CanCpuClockRef = PERIPHERAL_CLOCK_FLEXCAN_C,
-    // Ecore
-    .CanEcoreHoh = &CanHardwareObjectConfig_CTRL_C[0],
-    .CanEcoreLoopback = 1,
-    .CanEcoreFifo = 0,
+    // ArcCore
+    .Can_Arc_Hoh = &CanHardwareObjectConfig_CTRL_C[0],
+    .Can_Arc_Loopback = 1,
+    .Can_Arc_Fifo = 0,
   }
 };
 
@@ -148,7 +148,7 @@ const Can_CallbackType CanCallbackConfigData = {
     CanIf_ControllerBusOff,
     CanIf_TxConfirmation,
     NULL, //CanIf_ControllerWakeup,
-    CanIf_EcoreError,
+    CanIf_Arc_Error,
 };
 
 /* Configset configuration information

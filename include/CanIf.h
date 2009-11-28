@@ -66,7 +66,7 @@
 #define CANIF_CONTROLLER_BUSOFF_ID    0x16
 
 #define CANIF_SETWAKEUPEVENT_ID       0x40
-#define CANIF_ECOREERROR_ID           0x41
+#define CANIF_ARCERROR_ID           0x41
 
 void CanIf_Init(const CanIf_ConfigType *ConfigPtr);
 

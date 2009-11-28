@@ -107,7 +107,7 @@ void Mcu_SetMode( const Mcu_ModeType McuMode );
 
 typedef uint32_t imask_t;
 
-/* ecore extensions */
+/* ArcCore extensions */
 void IntCtrl_InstallVector(void (*func)(), IrqType vector, uint8_t priority, Cpu_t cpu );
 void IntCtrl_GenerateSoftInt( IrqType vector );
 uint8_t IntCtrl_GetCurrentPriority( Cpu_t cpu);

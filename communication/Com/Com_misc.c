@@ -34,9 +34,9 @@ void Com_CopyFromSignal(const ComSignal_type *signal, void *Destination) {
 	uint8 destByte;
 
 	// Pointer to a byte of the source and dest respectively.
-	ComGetEcoreSignal(signal->ComHandleId);
-	ComGetEcoreIPdu(EcoreSignal->ComIPduHandleId);
-	uint8 *source = (uint8 *)EcoreIPdu->ComIPduDataPtr;
+	ComGetArcSignal(signal->ComHandleId);
+	ComGetArcIPdu(Arc_Signal->ComIPduHandleId);
+	uint8 *source = (uint8 *)Arc_IPdu->ComIPduDataPtr;
 	uint8 *dest = (uint8 *)Destination;
 
 	uint8 signBit = 0;
@@ -90,9 +90,9 @@ void Com_CopyFromSignal(const ComSignal_type *signal, void *Destination) {
 
 
 void Com_CopyToSignal(ComSignal_type *signal, const void *Source) {
-	ComGetEcoreSignal(signal->ComHandleId);
-	ComGetEcoreIPdu(EcoreSignal->ComIPduHandleId);
-	Com_CopyData(EcoreIPdu->ComIPduDataPtr, Source, signal->ComBitSize, signal->ComBitPosition, 0);
+	ComGetArcSignal(signal->ComHandleId);
+	ComGetArcIPdu(Arc_Signal->ComIPduHandleId);
+	Com_CopyData(Arc_IPdu->ComIPduDataPtr, Source, signal->ComBitSize, signal->ComBitPosition, 0);
 }
 
 uint8 Com_CopyData(void *Destination, const void *Source, uint8 numBits, uint8 destOffset, uint8 sourceOffset) {
@@ -126,7 +126,7 @@ uint8 Com_CopyData(void *Destination, const void *Source, uint8 numBits, uint8 d
 
 
 uint8 Com_Filter(ComSignal_type *signal) {
-	ComGetEcoreSignal(signal->ComHandleId);
+	ComGetArcSignal(signal->ComHandleId);
 	const ComFilter_type * filter = &signal->ComFilter;
 	uint8 success = 0;
 	if (filter->ComFilterAlgorithm == ALWAYS) {
@@ -143,20 +143,20 @@ uint8 Com_Filter(ComSignal_type *signal) {
 			success = filter->ComFilterPeriodFactor;
 
 		} else {
-			if (filter->ComFilterEcoreN == 0) {
+			if (filter->ComFilterArcN == 0) {
 				success = 1;
 			} else {
 				success = 0;
 			}
-			EcoreSignal->ComFilter.ComFilterEcoreN++;
-			if (filter->ComFilterEcoreN >= filter->ComFilterPeriodFactor) {
-				EcoreSignal->ComFilter.ComFilterEcoreN = 0;
+			Arc_Signal->ComFilter.ComFilterArcN++;
+			if (filter->ComFilterArcN >= filter->ComFilterPeriodFactor) {
+				Arc_Signal->ComFilter.ComFilterArcN = 0;
 			}
 		}
 
 	} else if (filter->ComFilterAlgorithm == NEW_IS_OUTSIDE) {
-		if ((filter->ComFilterMin > filter->ComFilterEcoreNewValue)
-				|| (filter->ComFilterEcoreNewValue > filter->ComFilterMax)) {
+		if ((filter->ComFilterMin > filter->ComFilterArcNewValue)
+				|| (filter->ComFilterArcNewValue > filter->ComFilterMax)) {
 			success = 1;
 		} else {
 			success = 0;
@@ -164,8 +164,8 @@ uint8 Com_Filter(ComSignal_type *signal) {
 
 
 	} else if (filter->ComFilterAlgorithm == NEW_IS_WITHIN) {
-		if (filter->ComFilterMin <= filter->ComFilterEcoreNewValue
-		 && filter->ComFilterEcoreNewValue <= filter->ComFilterMax) {
+		if (filter->ComFilterMin <= filter->ComFilterArcNewValue
+		 && filter->ComFilterArcNewValue <= filter->ComFilterMax) {
 			success = 1;
 		} else {
 			success = 0;
@@ -173,22 +173,22 @@ uint8 Com_Filter(ComSignal_type *signal) {
 
 
 	} else if (filter->ComFilterAlgorithm == MASKED_NEW_DIFFERS_MASKED_OLD) {
-		if ((filter->ComFilterEcoreNewValue & filter->ComFilterMask)
-				!= (filter->ComFilterEcoreNewValue & filter->ComFilterMask)) {
+		if ((filter->ComFilterArcNewValue & filter->ComFilterMask)
+				!= (filter->ComFilterArcNewValue & filter->ComFilterMask)) {
 			success = 1;
 		} else {
 			success = 0;
 		}
 
 	} else if (filter->ComFilterAlgorithm == MASKED_NEW_DIFFERS_X) {
-		if ((filter->ComFilterEcoreNewValue & filter->ComFilterMask) != filter->ComFilterX) {
+		if ((filter->ComFilterArcNewValue & filter->ComFilterMask) != filter->ComFilterX) {
 			success = 1;
 		} else {
 			success = 0;
 		}
 
 	} else if (filter->ComFilterAlgorithm == MASKED_NEW_EQUALS_X) {
-		if ((filter->ComFilterEcoreNewValue & filter->ComFilterMask) == filter->ComFilterX) {
+		if ((filter->ComFilterArcNewValue & filter->ComFilterMask) == filter->ComFilterX) {
 			success = 1;
 		} else {
 			success = 0;
@@ -196,7 +196,7 @@ uint8 Com_Filter(ComSignal_type *signal) {
 	}
 
 	if (success) {
-		EcoreSignal->ComFilter.ComFilterEcoreOldValue = filter->ComFilterEcoreNewValue;
+		Arc_Signal->ComFilter.ComFilterArcOldValue = filter->ComFilterArcNewValue;
 		return 1;
 	} else return 0;
 }

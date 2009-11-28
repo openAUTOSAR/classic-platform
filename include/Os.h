@@ -15,15 +15,6 @@
 
 
 
-
-
-
-
-
-/*
- * (C) Copyright 2008 ecore, www.ecore.se
- */
-
 #ifndef OS_H_
 #define OS_H_
 
@@ -443,7 +434,7 @@ StatusType SendMessage( MessageType message_id, ApplicationDataRef dataRef );
 StatusType ReceiveMessage( MessageType message_id, ApplicationDataRef dataRef );
 
 /*
- * ecore extensions
+ * ArcCore extensions
  */
 TickType GetOsTick();
 void OsTick(void);

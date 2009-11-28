@@ -92,7 +92,7 @@ typedef struct {
 	void (*RxIndication)(void *); //(const Can_PduType *);
 	void (*ControllerBusOff)(uint8);
 	void (*ControllerWakeup)(uint8);
-	void (*EcoreError)(uint8,uint32);
+	void (*Arc_Error)(uint8,uint32);
 } CanIf_CallbackType;
 
 
@@ -123,7 +123,7 @@ typedef struct {
 typedef struct {
 	//	Defines the HRH type i.e, whether its a BasicCan or FullCan. If BasicCan is
 	//	configured, software filtering is enabled.
-  Can_EcoreHohType CanIfHrhType;
+  Can_Arc_HohType CanIfHrhType;
 
 	//	Selects the hardware receive objects by using the HRH range/list from
 	//	CAN Driver configuration to define, for which HRH a software filtering has
@@ -139,14 +139,14 @@ typedef struct {
 	//	configuration. The HRH id is unique in a given CAN Driver. The HRH Ids
 	//	are defined in the CAN Driver Module and hence it is derived from CAN
 	//	Driver Configuration.
-	Can_EcoreHRHType CanIfHrhIdSymRef ;
+	Can_Arc_HRHType CanIfHrhIdSymRef ;
 
 	//	Defines the parameters required for configuraing multiple
 	//	CANID ranges for a given same HRH.
 	const CanIf_HrhRangeConfigType *CanIfHrhRangeConfig;
 
   // End Of List. Set to TRUE is this is the last object in the list.
-  boolean CanIfEcoreEOL;
+  boolean CanIf_Arc_EOL;
 } CanIf_HrhConfigType;
 
 //-------------------------------------------------------------------
@@ -156,7 +156,7 @@ typedef struct {
 
 typedef struct {
   //  Defines the HTH type i.e, whether its a BasicCan or FullCan.
-  Can_EcoreHohType CanIfHthType;
+  Can_Arc_HohType CanIfHthType;
 
   // Reference to controller Id to which the HTH belongs to. A controller
   // can contain one or more HTHs
@@ -166,10 +166,10 @@ typedef struct {
   //  configuration. The HTH id is unique in a given CAN Driver. The HTH Ids
   //  are defined in the CAN Driver Module and hence it is derived from CAN
   //  Driver Configuration.
-  Can_EcoreHTHType CanIfHthIdSymRef ;
+  Can_Arc_HTHType CanIfHthIdSymRef ;
 
   // End Of List. Set to TRUE is this is the last object in the list.
-  boolean CanIfEcoreEOL;
+  boolean CanIf_Arc_EOL;
 } CanIf_HthConfigType;
 
 //-------------------------------------------------------------------
@@ -189,7 +189,7 @@ typedef struct {
   const CanIf_HthConfigType *CanIfHthConfig;
 
   // End Of List. Set to TRUE is this is the last object in the list.
-  boolean CanIfEcoreEOL;
+  boolean CanIf_Arc_EOL;
 } CanIf_InitHohConfigType;
 
 //-------------------------------------------------------------------
@@ -317,7 +317,7 @@ typedef struct {
 
 	// Acceptance filters, 1 - care, 0 - don't care.
 	// Is enabled by the CanIfSoftwareFilterMask in CanIf_HrhConfigType
-	// Ecore exension
+	// ArcCore exension
 	uint32 CanIfCanRxPduCanIdMask;
 
 } CanIf_RxPduConfigType;
@@ -383,8 +383,8 @@ typedef struct {
 	//  Multiplicity: 0..1
 	void (*CanIfWakeupValidNotification)();
 
-	// Ecore ext.
-	void (*CanIfErrorNotificaton)(uint8,Can_EcoreErrorType);
+	// ArcCore ext.
+	void (*CanIfErrorNotificaton)(uint8,Can_Arc_ErrorType);
 
 } CanIf_DispatchConfigType;
 

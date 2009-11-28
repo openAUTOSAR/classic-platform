@@ -122,9 +122,9 @@ typedef struct {
 	uint32 ComFilterX;
 
 
-	uint32 ComFilterEcoreN;
-	uint32 ComFilterEcoreNewValue;
-	uint32 ComFilterEcoreOldValue;
+	uint32 ComFilterArcN;
+	uint32 ComFilterArcNewValue;
+	uint32 ComFilterArcOldValue;
 
 } ComFilter_type;
 
@@ -224,7 +224,7 @@ typedef struct {
 	 *
 	 * Comment: This is initialized by Com_Init() and should not be configured.
 	 */
-	//void *ComEcoreShadowBuffer;
+	//void *Com_Arc_ShadowBuffer;
 
 
 	/* IPDU id of the IPDU that this signal belongs to.
@@ -235,7 +235,7 @@ typedef struct {
 	//const uint8 ComIPduHandleId;
 	//const uint8 ComSignalUpdated;
 
-	const uint8 ComEcoreEOL;
+	const uint8 Com_Arc_EOL;
 } ComGroupSignal_type;
 
 typedef struct {
@@ -368,7 +368,7 @@ typedef struct {
 	 *   - Receive
 	 *   - Not required.
 	 */
-	//const uint32 ComEcoreDeadlineCounter;
+	//const uint32 Com_Arc_DeadlineCounter;
 	const uint32 ComTimeoutFactor;
 
 	/* Timeout notification function
@@ -388,11 +388,11 @@ typedef struct {
 	 *   - Send and receive.
 	 *   - Not required.
 	 *
-	 * Comment: Range 0 to 63. If update bit is used for this signal, then the corresponding parameter ComSignalEcoreUseUpdateBit
+	 * Comment: Range 0 to 63. If update bit is used for this signal, then the corresponding parameter ComSignalArcUseUpdateBit
 	 *          needs to be set to one.
 	 */
 	const uint8 ComUpdateBitPosition;
-	const uint8 ComSignalEcoreUseUpdateBit;
+	const uint8 ComSignalArcUseUpdateBit;
 
 	/* Filter for this signal
 	 *
@@ -404,10 +404,10 @@ typedef struct {
 
 
 	/**** SIGNAL GROUP DATA ****/
-	const uint8 ComEcoreIsSignalGroup;
+	const uint8 Com_Arc_IsSignalGroup;
 	const ComGroupSignal_type *ComGroupSignal[COM_MAX_NR_SIGNALS_PER_SIGNAL_GROUP];
-	//void *ComEcoreShadowBuffer;
-	//void *ComEcoreIPduDataPtr;
+	//void *Com_Arc_ShadowBuffer;
+	//void *Com_Arc_IPduDataPtr;
 
 
 	/* Pointer to the data storage of this signals IPDU.
@@ -425,7 +425,7 @@ typedef struct {
 	//const uint8 ComSignalUpdated;
 
 
-	const uint8 ComEcoreEOL;
+	const uint8 Com_Arc_EOL;
 } ComSignal_type;
 
 
@@ -524,7 +524,7 @@ typedef struct ComIPduGroup_type {
 	// reference to the group that this group possibly belongs to.
 	//struct ComIPduGroup_type *ComIPduGroupRef;
 
-	const uint8 ComEcoreEOL;
+	const uint8 Com_Arc_EOL;
 } ComIPduGroup_type;
 
 
@@ -607,7 +607,7 @@ typedef struct {
 	 *
 	 * Comment: These are internal variables and should not be configured.
 	 */
-	//ComTxIPduTimer_type ComEcoreTxIPduTimers;
+	//ComTxIPduTimer_type Com_Arc_TxIPduTimers;
 
 	/* Pointer to data storage of this IPDU.
 	 *
@@ -626,7 +626,7 @@ typedef struct {
 	 *
 	 * Comment: It probably makes little sense not to define at least one signal for each IPDU.
 	 */
-	//const uint8 ComEcoreNIPduSignalGroupRef;
+	//const uint8 Com_Arc_NIPduSignalGroupRef;
 	const ComSignal_type *ComIPduSignalGroupRef[COM_MAX_NR_SIGNALS_PER_IPDU];
 
 
@@ -644,10 +644,10 @@ typedef struct {
 	/*
 	 * The following two variables are used to control the per I-PDU based Rx/Tx-deadline monitoring.
 	 */
-	//const uint32 ComEcoreDeadlineCounter;
-	//const uint32 ComEcoreTimeoutFactor;
+	//const uint32 Com_Arc_DeadlineCounter;
+	//const uint32 Com_Arc_TimeoutFactor;
 
-	const uint8 ComEcoreEOL;
+	const uint8 Com_Arc_EOL;
 
 } ComIPdu_type;
 
@@ -667,7 +667,7 @@ typedef struct {
 	// IPDU definitions. At least one
 	const ComIPdu_type *ComIPdu;
 
-	//uint16 ComEcoreNIPdu;
+	//uint16 Com_Arc_NIPdu;
 
 	// IPDU group definitions
 	const ComIPduGroup_type *ComIPduGroup;

@@ -50,7 +50,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComTimeoutNotification = NULL,
 		.ComTransferProperty = TRIGGERED,
 		.ComUpdateBitPosition = 0,
-		.ComSignalEcoreUseUpdateBit = 0,
+		.ComSignalArcUseUpdateBit = 0,
 		.ComFilter = {
 			.ComFilterAlgorithm = ALWAYS,
 			.ComFilterMask = 0,
@@ -80,7 +80,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComTimeoutNotification = NULL,
 		.ComTransferProperty = TRIGGERED,
 		.ComUpdateBitPosition = 0,
-		.ComSignalEcoreUseUpdateBit = 0,
+		.ComSignalArcUseUpdateBit = 0,
 		.ComFilter = {
 			.ComFilterAlgorithm = ALWAYS,
 			.ComFilterMask = 0,
@@ -110,7 +110,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComTimeoutNotification = NULL,
 		.ComTransferProperty = TRIGGERED,
 		.ComUpdateBitPosition = 0,
-		.ComSignalEcoreUseUpdateBit = 0,
+		.ComSignalArcUseUpdateBit = 0,
 		.ComFilter = {
 			.ComFilterAlgorithm = ALWAYS,
 			.ComFilterMask = 0,
@@ -140,7 +140,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComTimeoutNotification = NULL,
 		.ComTransferProperty = TRIGGERED,
 		.ComUpdateBitPosition = 0,
-		.ComSignalEcoreUseUpdateBit = 0,
+		.ComSignalArcUseUpdateBit = 0,
 		.ComFilter = {
 			.ComFilterAlgorithm = ALWAYS,
 			.ComFilterMask = 0,
@@ -174,7 +174,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComTimeoutNotification = NULL,
 		.ComTransferProperty = TRIGGERED,
 		.ComUpdateBitPosition = 0,
-		.ComSignalEcoreUseUpdateBit = 0,
+		.ComSignalArcUseUpdateBit = 0,
 		.ComFilter = {
 			.ComFilterAlgorithm = ALWAYS,
 			.ComFilterMask = 0,
@@ -204,7 +204,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComTimeoutNotification = NULL,
 		.ComTransferProperty = TRIGGERED,
 		.ComUpdateBitPosition = 0,
-		.ComSignalEcoreUseUpdateBit = 0,
+		.ComSignalArcUseUpdateBit = 0,
 		.ComFilter = {
 			.ComFilterAlgorithm = ALWAYS,
 			.ComFilterMask = 0,
@@ -234,7 +234,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComTimeoutNotification = NULL,
 		.ComTransferProperty = TRIGGERED,
 		.ComUpdateBitPosition = 0,
-		.ComSignalEcoreUseUpdateBit = 0,
+		.ComSignalArcUseUpdateBit = 0,
 		.ComFilter = {
 			.ComFilterAlgorithm = ALWAYS,
 			.ComFilterMask = 0,
@@ -264,7 +264,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComTimeoutNotification = NULL,
 		.ComTransferProperty = TRIGGERED,
 		.ComUpdateBitPosition = 0,
-		.ComSignalEcoreUseUpdateBit = 0,
+		.ComSignalArcUseUpdateBit = 0,
 		.ComFilter = {
 			.ComFilterAlgorithm = ALWAYS,
 			.ComFilterMask = 0,
@@ -296,7 +296,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComTimeoutNotification = NULL,
 		.ComTransferProperty = TRIGGERED,
 		.ComUpdateBitPosition = 0,
-		.ComSignalEcoreUseUpdateBit = 0,
+		.ComSignalArcUseUpdateBit = 0,
 		.ComFilter = {
 			.ComFilterAlgorithm = ALWAYS,
 			.ComFilterMask = 0,
@@ -326,7 +326,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComTimeoutNotification = NULL,
 		.ComTransferProperty = TRIGGERED,
 		.ComUpdateBitPosition = 0,
-		.ComSignalEcoreUseUpdateBit = 0,
+		.ComSignalArcUseUpdateBit = 0,
 		.ComFilter = {
 			.ComFilterAlgorithm = ALWAYS,
 			.ComFilterMask = 0,
@@ -356,7 +356,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComTimeoutNotification = NULL,
 		.ComTransferProperty = TRIGGERED,
 		.ComUpdateBitPosition = 0,
-		.ComSignalEcoreUseUpdateBit = 0,
+		.ComSignalArcUseUpdateBit = 0,
 		.ComFilter = {
 			.ComFilterAlgorithm = ALWAYS,
 			.ComFilterMask = 0,
@@ -386,7 +386,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComTimeoutNotification = NULL,
 		.ComTransferProperty = TRIGGERED,
 		.ComUpdateBitPosition = 0,
-		.ComSignalEcoreUseUpdateBit = 0,
+		.ComSignalArcUseUpdateBit = 0,
 		.ComFilter = {
 			.ComFilterAlgorithm = ALWAYS,
 			.ComFilterMask = 0,
@@ -418,7 +418,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComTimeoutNotification = NULL,
 		.ComTransferProperty = TRIGGERED,
 		.ComUpdateBitPosition = 0,
-		.ComSignalEcoreUseUpdateBit = 0,
+		.ComSignalArcUseUpdateBit = 0,
 		.ComFilter = {
 			.ComFilterAlgorithm = ALWAYS,
 			.ComFilterMask = 0,
@@ -448,7 +448,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComTimeoutNotification = NULL,
 		.ComTransferProperty = TRIGGERED,
 		.ComUpdateBitPosition = 0,
-		.ComSignalEcoreUseUpdateBit = 0,
+		.ComSignalArcUseUpdateBit = 0,
 		.ComFilter = {
 			.ComFilterAlgorithm = ALWAYS,
 			.ComFilterMask = 0,
@@ -478,7 +478,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComTimeoutNotification = NULL,
 		.ComTransferProperty = TRIGGERED,
 		.ComUpdateBitPosition = 0,
-		.ComSignalEcoreUseUpdateBit = 0,
+		.ComSignalArcUseUpdateBit = 0,
 		.ComFilter = {
 			.ComFilterAlgorithm = ALWAYS,
 			.ComFilterMask = 0,
@@ -508,7 +508,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComTimeoutNotification = NULL,
 		.ComTransferProperty = TRIGGERED,
 		.ComUpdateBitPosition = 0,
-		.ComSignalEcoreUseUpdateBit = 0,
+		.ComSignalArcUseUpdateBit = 0,
 		.ComFilter = {
 			.ComFilterAlgorithm = ALWAYS,
 			.ComFilterMask = 0,
@@ -520,7 +520,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		}
 	},
 	{
-		.ComEcoreEOL  = 1
+		.Com_Arc_EOL  = 1
 	}
 };
 
@@ -530,7 +530,7 @@ ComIPduGroup_type PCAN_ComIPduGroup[] = {
 		.ComIPduGroupHandleId = 0
 	},
 	{
-		.ComEcoreEOL  = 1
+		.Com_Arc_EOL  = 1
 	}
 };
 
@@ -633,7 +633,7 @@ ComIPdu_type PCAN_ComIPdu[] = {
 	},
 
 	{
-		.ComEcoreEOL  = 1
+		.Com_Arc_EOL  = 1
 	}
 };
 
@@ -687,7 +687,7 @@ ComSignal_type HardwareTest_ComSignal[] = {
 		.ComTimeoutNotification = NULL,
 		.ComTransferProperty = TRIGGERED,
 		.ComUpdateBitPosition = 16,
-		.ComSignalEcoreUseUpdateBit = 1,
+		.ComSignalArcUseUpdateBit = 1,
 		.ComFilter = {
 			.ComFilterAlgorithm = ALWAYS,
 			.ComFilterMask = 0,
@@ -717,7 +717,7 @@ ComSignal_type HardwareTest_ComSignal[] = {
 		.ComTimeoutNotification = NULL,
 		.ComTransferProperty = TRIGGERED,
 		.ComUpdateBitPosition = 16,
-		.ComSignalEcoreUseUpdateBit = 1,
+		.ComSignalArcUseUpdateBit = 1,
 		.ComFilter = {
 			.ComFilterAlgorithm = ALWAYS,
 			.ComFilterMask = 0,
@@ -749,8 +749,8 @@ ComSignal_type HardwareTest_ComSignal[] = {
 		//.ComTimeoutNotification = NULL,
 		//.ComTransferProperty = TRIGGERED,
 		.ComUpdateBitPosition = 42,
-		.ComSignalEcoreUseUpdateBit = 1,
-		.ComEcoreIsSignalGroup = 1,
+		.ComSignalArcUseUpdateBit = 1,
+		.Com_Arc_IsSignalGroup = 1,
 		.ComGroupSignal = {
 			&HardwareTest_ComGroupSignal[0],
 			&HardwareTest_ComGroupSignal[1],
@@ -766,7 +766,7 @@ ComSignal_type HardwareTest_ComSignal[] = {
 		}*/
 	},
 	{
-		.ComEcoreEOL  = 1
+		.Com_Arc_EOL  = 1
 	}
 };
 
@@ -782,7 +782,7 @@ ComIPduGroup_type HardwareTest_ComIPduGroup[] = {
 		.ComIPduGroupHandleId = 2
 	},
 	{
-		.ComEcoreEOL  = 1
+		.Com_Arc_EOL  = 1
 	}
 };
 
@@ -848,7 +848,7 @@ ComIPdu_type HardwareTest_ComIPdu[] = {
 		},
 	},
 	{
-		.ComEcoreEOL  = 1
+		.Com_Arc_EOL  = 1
 	}
 };
 

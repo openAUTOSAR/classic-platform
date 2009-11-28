@@ -84,7 +84,7 @@ typedef struct
   CanIf_ChannelPrivateType channelData[CANIF_CHANNEL_CNT];
 } CanIf_GlobalType;
 
-static CanIf_Arc_ChannelIdType CanIf_Arc_FindHrhChannel( Can_EcoreHRHType hrh )
+static CanIf_Arc_ChannelIdType CanIf_Arc_FindHrhChannel( Can_Arc_HRHType hrh )
 {
   const CanIf_HrhConfigType *hrhConfig;
 
@@ -96,7 +96,7 @@ static CanIf_Arc_ChannelIdType CanIf_Arc_FindHrhChannel( Can_EcoreHRHType hrh )
     hrhConfig++;
     if (hrhConfig->CanIfHrhIdSymRef == hrh)
       return hrhConfig->CanIfCanControllerHrhIdRef;
-  } while(!hrhConfig->CanIfEcoreEOL);
+  } while(!hrhConfig->CanIf_Arc_EOL);
 
   DET_REPORTERROR(MODULE_ID_CANIF, 0, CANIF_RXINDICATION_ID, CANIF_E_PARAM_HRH);
 
@@ -552,15 +552,15 @@ void CanIf_SetDynamicTxId(PduIdType CanTxPduId, Can_IdType CanId)
   }
 
   // Check that this is a dymanic PDU
-  if (txEntry->CanIfCanTxPduType != ECORE_PDU_TYPE_DYNAMIC)
+  if (txEntry->CanIfCanTxPduType != ARC_PDU_TYPE_DYNAMIC)
   {
     VALIDATE_NO_RV(FALSE, CANIF_SETDYNAMICTX_ID, CANIF_E_INVALID_TXPDUID);
     return;
   }
 
   // Check that this is an extended or standard id
-  if (((CanId & 0x80000000) && (txEntry->CanIfTxPduIdCanIdType == ECORE_CAN_ID_TYPE_29)) ||
-      (((CanId & 0x80000000) == 0) && (txEntry->CanIfTxPduIdCanIdType == ECORE_CAN_ID_TYPE_11)))
+  if (((CanId & 0x80000000) && (txEntry->CanIfTxPduIdCanIdType == ARC_CAN_ID_TYPE_29)) ||
+      (((CanId & 0x80000000) == 0) && (txEntry->CanIfTxPduIdCanIdType == ARC_CAN_ID_TYPE_11)))
   {
     // Update the CanID
     //txEntry->CanIfCanTxPduIdCanId = CanId;  // TODO How do we fix this from a const pointer
@@ -702,7 +702,7 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
     if (entry->CanIfCanRxPduHrhRef->CanIfHrhIdSymRef == Hrh)
     {
       // Software filtering
-      if (entry->CanIfCanRxPduHrhRef->CanIfHrhType == CAN_ECORE_HANDLE_TYPE_BASIC)
+      if (entry->CanIfCanRxPduHrhRef->CanIfHrhType == CAN_ARC_HANDLE_TYPE_BASIC)
       {
         if (entry->CanIfCanRxPduHrhRef->CanIfSoftwareFilterHrh)
         {
@@ -822,13 +822,13 @@ void CanIf_SetWakeupEvent(uint8 Controller)
   // Not supported
 }
 
-void CanIf_EcoreError(uint8 Controller, Can_EcoreErrorType Error)
+void CanIf_Arc_Error(uint8 Controller, Can_Arc_ErrorType Error)
 {
   // We call this a CanIf channel. Hopefully makes it easier to follow.
   CanIf_Arc_ChannelIdType channel = Controller;
 
-  VALIDATE_NO_RV( CanIf_Global.initRun, CANIF_ECOREERROR_ID, CANIF_E_UNINIT );
-  VALIDATE_NO_RV( channel < CANIF_CHANNEL_CNT, CANIF_ECOREERROR_ID, CANIF_E_PARAM_CONTROLLER );
+  VALIDATE_NO_RV( CanIf_Global.initRun, CANIF_ARCERROR_ID, CANIF_E_UNINIT );
+  VALIDATE_NO_RV( channel < CANIF_CHANNEL_CNT, CANIF_ARCERROR_ID, CANIF_E_PARAM_CONTROLLER );
 
   if (CanIf_ConfigPtr->DispatchConfig->CanIfErrorNotificaton != NULL)
   {

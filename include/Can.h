@@ -58,7 +58,7 @@ typedef struct {
 	uint32 boffCnt;
 	uint32 fifoOverflow;
 	uint32 fifoWarning;
-} Can_EcoreStatisticsType;
+} Can_Arc_StatisticsType;
 
 
 // uint16: if only Standard IDs are used
@@ -111,7 +111,7 @@ typedef union {
          volatile uint32_t TXWRN:1;
          volatile uint32_t RXWRN:1;
      } B;
- } Can_EcoreErrorType;
+ } Can_Arc_ErrorType;
 
 // Each controller has 32 hth's, so the division of 32 will give the
 // controller.
@@ -133,7 +133,7 @@ void Can_EnableControllerInterrupts( uint8 controller );
 // Hth - for Flexcan, the hardware message box number... .We don't care
 
 
-Can_ReturnType Can_Write( Can_EcoreHTHType hth, Can_PduType *pduInfo );
+Can_ReturnType Can_Write( Can_Arc_HTHType hth, Can_PduType *pduInfo );
 
 void Can_Cbk_CheckWakeup( uint8 controller );
 void Can_MainFunction_Write( void );
@@ -141,6 +141,6 @@ void Can_MainFunction_Read( void );
 void Can_MainFunction_BusOff( void );
 void Can_MainFunction_Wakeup( void );
 
-void Can_EcoreGetStatistics( uint8 controller, Can_EcoreStatisticsType * stat);
+void Can_Arc_GetStatistics( uint8 controller, Can_Arc_StatisticsType * stat);
 
 #endif /*CAN_H_*/

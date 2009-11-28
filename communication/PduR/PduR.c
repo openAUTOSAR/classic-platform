@@ -82,7 +82,7 @@ void PduR_Init (const PduR_PBConfigType* ConfigPtr) {
 	int bufferNr = 0;
 	int i = 0;
 	PduRRoutingPath_type *path;
-	for (i = 0; !PduRConfig->PduRRoutingTable->PduRRoutingPath[i].PduREcoreEOL && !failed; i++) {
+	for (i = 0; !PduRConfig->PduRRoutingTable->PduRRoutingPath[i].PduR_Arc_EOL && !failed; i++) {
 		PduRConfig->PduRRoutingTable->NRoutingPaths++;
 		path = &PduRConfig->PduRRoutingTable->PduRRoutingPath[i];
 
