@@ -68,7 +68,7 @@
 #define RES_ID_INT_1		1
 #define RES_ID_EXT_1		2
 
-// OS_TICK_COUNTER located in Os.h
+#define COUNTER_ID_OsTick		0
 // Driver all alarms
 #define COUNTER_ID_soft_1		1
 // Drives scheduletable 0
