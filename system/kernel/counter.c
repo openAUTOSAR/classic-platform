@@ -280,25 +280,33 @@ StatusType GetElapsedCounterValue( CounterType counter_id, TickRefType val, Tick
  * The OsTick():
  * 1. The Decrementer is setup by Frt_Start(period_ticks)
  * 2. Frt_Init() setup INTC[7] to trigger OsTick
- * 3. OsTick() then increment counter 0
- *    ( COUNTER_ID_OS_TICK = OS_TICK_COUNTER )
+ * 3. OsTick() then increment counter os_tick_counter if used
  */
 
 /*
  * Non-Autosar stuff
  */
 
+/* The id of the counter driven by the os tick, or -1 if not used.
+ * Using weak linking to set default value -1 if not set by config.
+ */
+CounterType Os_Arc_OsTickCounter __attribute__((weak)) = -1;
+
 void OsTick( void ) {
-	counter_obj_t *c_p = Oil_GetCounter(OS_TICK_COUNTER);
+	// if not used, os_tick_counter < 0
+	if (Os_Arc_OsTickCounter >= 0) {
 
-	os_sys.tick++;
+		counter_obj_t *c_p = Oil_GetCounter(Os_Arc_OsTickCounter);
 
-	IncCounter(c_p);
+		os_sys.tick++;
 
-//	os_sys.tick = c_p->val;
+		IncCounter(c_p);
 
-	check_alarms(c_p);
-	check_stbl(c_p);
+	//	os_sys.tick = c_p->val;
+
+		check_alarms(c_p);
+		check_stbl(c_p);
+	}
 }
 
 #if 0

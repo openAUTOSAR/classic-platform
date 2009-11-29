@@ -157,8 +157,8 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 void EcuM_AL_DriverInitThree(const EcuM_ConfigType ConfigPtr)
 {
 #if defined(USE_CANIF)
-	// Startup the CAN interafce; due to the missing COM manager
-	CanIf_InitController(CAN_CTRL_A, 0);
-	CanIf_SetControllerMode(CAN_CTRL_A, CANIF_CS_STARTED);
+	// Startup the CAN interface; due to the missing COM manager
+	CanIf_InitController(CANIF_CHANNEL_0, CANIF_CHANNEL_0_CONFIG_0);
+	CanIf_SetControllerMode(CANIF_CHANNEL_0, CANIF_CS_STARTED);
 #endif
 }

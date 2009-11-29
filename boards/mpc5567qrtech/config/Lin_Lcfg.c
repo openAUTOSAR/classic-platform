@@ -20,8 +20,8 @@
 
 
 
-#include "Mcu_Cfg.h"
-#include "Lin_Cfg.h"
+#include "Mcu.h"
+#include "Lin.h"
 
 const Lin_ChannelConfigType LinChannelConfigData[] = {
 	{

@@ -37,7 +37,7 @@
  */
 ComGroupSignal_type ComGroupSignal[] = {
 	{
-		.ComEcoreEOL = 1
+		.Com_Arc_EOL = 1
 	}
 };
 
@@ -60,11 +60,11 @@ ComSignal_type ComSignal[] = {
 		.ComBitSize = 16,
 		.ComSignalEndianess = BIG_ENDIAN,
 		.ComSignalType = UINT16,
-		.ComEcoreIsSignalGroup = 0,
+		.Com_Arc_IsSignalGroup = 0,
 
 	},
 	{
-		.ComEcoreEOL = 1
+		.Com_Arc_EOL = 1
 	}
 };
 
@@ -78,7 +78,7 @@ ComIPduGroup_type ComIPduGroup[] = {
 	},
 
 	{
-		.ComEcoreEOL  = 1
+		.Com_Arc_EOL  = 1
 	}
 };
 
@@ -105,7 +105,7 @@ ComIPdu_type ComIPdu[] = {
 	},
 
 	{
-		.ComEcoreEOL = 1
+		.Com_Arc_EOL = 1
 	}
 };
 

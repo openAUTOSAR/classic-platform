@@ -33,27 +33,28 @@
 #include <string.h>
 #if defined(USE_KERNEL)
 #include "Os.h"
+#include "int_ctrl.h"
 #endif
 
 
 /* CONFIGURATION NOTES
  * ------------------------------------------------------------------
- * - CanHandleType must be CAN_ECORE_HANDLE_TYPE_BASIC
- *   i.e. CanHandleType=CAN_ECORE_HANDLE_TYPE_FULL NOT supported
+ * - CanHandleType must be CAN_ARC_HANDLE_TYPE_BASIC
+ *   i.e. CanHandleType=CAN_ARC_HANDLE_TYPE_FULL NOT supported
  *   i.e CanIdValue is NOT supported
- * - All CanXXXProcessing must be CAN_ECORE_PROCESS_TYPE_INTERRUPT
- *   ie CAN_ECORE_PROCESS_TYPE_POLLED not supported
- * - To select the Mailboxes to use in the CAN controller use CanEcoreMbMask
+ * - All CanXXXProcessing must be CAN_ARC_PROCESS_TYPE_INTERRUPT
+ *   ie CAN_ARC_PROCESS_TYPE_POLLED not supported
+ * - To select the Mailboxes to use in the CAN controller use Can_Arc_MbMask
  * - HOH's for Tx are global and Rx are for each controller
  * - CanControllerTimeQuanta is NOT used. The other CanControllerXXX selects
  *   the proper time-quanta
- * - CanEcoreMbMask for Tx HOH must NOT overlap CanEcoreMbMask for Rx.
+ * - Can_Arc_MbMask for Tx HOH must NOT overlap Can_Arc_MbMask for Rx.
  * - ONLY global mask is supported( NOT 14,15 and individual )
  * - Numbering the CanObjectId for Tx:
  *     To do this correctly there are a number of things that are good to know
  *     1. HTH's have unique numbers.
  *     2. One HTH/HRH is maped to one HOH
- *     3. The extension CanEcoreMbMask binds FULL CAN boxes together.
+ *     3. The extension Can_Arc_MbMask binds FULL CAN boxes together.
  *
  *     Example:
  *
@@ -63,7 +64,7 @@
  *      1    F   0  1
  *      ..
  *      16   B   0  16  |
- *                  17  |    The use of CanEcoreMbMask=0x000f0000 binds these to HTH 16
+ *                  17  |    The use of Can_Arc_MbMask=0x000f0000 binds these to HTH 16
  *                  18  |    ( bits 16 to 19 set here )
  *                  19  |
  *           ...
@@ -201,12 +202,12 @@ typedef struct FLEXCAN_tag flexcan_t;
 #endif
 
 // Mapping between HRH and Controller//HOH
-typedef struct Can_EcoreObjectHOHMapStruct
+typedef struct Can_Arc_ObjectHOHMapStruct
 {
   uint32 HxHRef;    // Reference to HRH or HTH
   CanControllerIdType CanControllerRef;    // Reference to controller
   const Can_HardwareObjectType* CanHOHRef;       // Reference to HOH.
-} Can_EcoreObjectHOHMapType;
+} Can_Arc_ObjectHOHMapType;
 
 /* Type for holding global information used by the driver */
 typedef struct {
@@ -225,7 +226,7 @@ typedef struct {
 
   // This is a map that maps the HTH:s with the controller and Hoh. It is built
   // during Can_Init and is used to make things faster during a transmit.
-  Can_EcoreObjectHOHMapType CanHTHMap[NUM_OF_HTHS];
+  Can_Arc_ObjectHOHMapType CanHTHMap[NUM_OF_HTHS];
 } Can_GlobalType;
 
 // Global config
@@ -240,14 +241,14 @@ typedef struct {
   CanIf_ControllerModeType state;
   uint32		lock_cnt;
   // Interrupt masks that is for all Mb's in this controller
-  uint32 		CanEcoreRxMbMask;
-  uint32 		CanEcoreTxMbMask;
+  uint32 		Can_Arc_RxMbMask;
+  uint32 		Can_Arc_TxMbMask;
 
   // Used at IFLG in controller at startup
   uint32 		iflagStart;
 
   // Statistics
-  Can_EcoreStatisticsType stats;
+  Can_Arc_StatisticsType stats;
 
   // Data stored for Txconfirmation callbacks to CanIf
   PduIdType swPduHandles[MAX_NUM_OF_MAILBOXES];
@@ -298,10 +299,10 @@ Can_UnitType CanUnit[CAN_CONTROLLER_CNT] =
  * @param hth The transmit handle
  * @returns Ptr to the Hoh
  */
-static const Can_HardwareObjectType * Can_FindHoh( Can_EcoreHTHType hth , uint32* controller)
+static const Can_HardwareObjectType * Can_FindHoh( Can_Arc_HTHType hth , uint32* controller)
 {
   const Can_HardwareObjectType *hohObj;
-  const Can_EcoreObjectHOHMapType *map;
+  const Can_Arc_ObjectHOHMapType *map;
   const Can_ControllerConfigType *canHwConfig;
 
   map = &Can_Global.CanHTHMap[hth];
@@ -374,7 +375,7 @@ void Can_F_BusOff( void  ) {	Can_BusOff(CAN_CTRL_F); }
 
 static void Can_Err( int unit ) {
   flexcan_t *canHw = GET_CONTROLLER(unit);
-  Can_EcoreErrorType err;
+  Can_Arc_ErrorType err;
   ESRType esr;
   err.R = 0;
 
@@ -389,9 +390,9 @@ static void Can_Err( int unit ) {
   err.B.RXWRN = esr.B.RXWRN;
   err.B.TXWRN = esr.B.TXWRN;
 
-  if (GET_CALLBACKS()->EcoreError != NULL)
+  if (GET_CALLBACKS()->Arc_Error != NULL)
   {
-    GET_CALLBACKS()->EcoreError(unit, err );
+    GET_CALLBACKS()->Arc_Error(unit, err );
   }
   // Clear ERRINT
   canHw->ESR.B.ERRINT = 1;
@@ -404,7 +405,7 @@ static void Can_AbortTx( flexcan_t *canHw, Can_UnitType *canUnit ) {
   uint8 mbNr;
 
 	// Find our Tx boxes.
-  mbMask = canUnit->CanEcoreTxMbMask;
+  mbMask = canUnit->Can_Arc_TxMbMask;
 
   // Loop over the Mb's set to abort
   for (; mbMask; mbMask&=~(1<<mbNr)) {
@@ -429,8 +430,8 @@ static void Can_AbortTx( flexcan_t *canHw, Can_UnitType *canUnit ) {
   }
 
   // Ack tx interrupts
-  canHw->IFRL.R = canUnit->CanEcoreTxMbMask;
-  canUnit->iflagStart = canUnit->CanEcoreTxMbMask;
+  canHw->IFRL.R = canUnit->Can_Arc_TxMbMask;
+  canUnit->iflagStart = canUnit->Can_Arc_TxMbMask;
 }
 
 //-------------------------------------------------------------------
@@ -443,7 +444,7 @@ static void Can_AbortTx( flexcan_t *canHw, Can_UnitType *canUnit ) {
 static void Can_BusOff( int unit ) {
   flexcan_t *canHw = GET_CONTROLLER(unit);
   Can_UnitType *canUnit = GET_PRIVATE_DATA(unit);
-  Can_EcoreErrorType err;
+  Can_Arc_ErrorType err;
   err.R = 0;
 
   if ( canHw->ESR.B.TWRNINT )
@@ -462,9 +463,9 @@ static void Can_BusOff( int unit ) {
 
   if (err.R != 0)
   {
-    if (GET_CALLBACKS()->EcoreError != NULL)
+    if (GET_CALLBACKS()->Arc_Error != NULL)
     {
-      GET_CALLBACKS()->EcoreError( unit, err );
+      GET_CALLBACKS()->Arc_Error( unit, err );
     }
   }
 
@@ -544,12 +545,12 @@ static void Can_Isr(int unit) {
       //
 
       // Rx
-      hohObj= canHwConfig->CanEcoreHoh;
+      hohObj= canHwConfig->Can_Arc_Hoh;
       --hohObj;
       do {
         ++hohObj;
 
-        mbMask = hohObj->CanEcoreMbMask & iFlagLow;
+        mbMask = hohObj->Can_Arc_MbMask & iFlagLow;
 
         if (hohObj->CanObjectType == CAN_OBJECT_TYPE_RECEIVE)
         {
@@ -583,17 +584,17 @@ static void Can_Isr(int unit) {
             canHw->IFRL.R = (1<<mbNr);
           }
         }
-      } while ( !hohObj->CanEcoreEOL);
+      } while ( !hohObj->Can_Arc_EOL);
 
       // Tx
-      hohObj= canHwConfig->CanEcoreHoh;
+      hohObj= canHwConfig->Can_Arc_Hoh;
       --hohObj;
       do {
         ++hohObj;
 
         if (hohObj->CanObjectType == CAN_OBJECT_TYPE_TRANSMIT)
         {
-          mbMask = hohObj->CanEcoreMbMask & iFlagLow;
+          mbMask = hohObj->Can_Arc_MbMask & iFlagLow;
 
           // Loop over the Mb's for this Hoh
           for (; mbMask; mbMask&=~(1<<mbNr)) {
@@ -610,7 +611,7 @@ static void Can_Isr(int unit) {
             canHw->IFRL.R = (1<<mbNr);
           }
         }
-      } while ( !hohObj->CanEcoreEOL);
+      } while ( !hohObj->Can_Arc_EOL);
 #if defined(CFG_MPC5516) || defined(CFG_MPC5517)
     } // FIFO code
 #endif
@@ -620,7 +621,7 @@ static void Can_Isr(int unit) {
     // - Interupt on a masked box
   }
 
-  if (canHwConfig->CanEcoreFifo) {
+  if (canHwConfig->Can_Arc_Fifo) {
   	/* Note
   	 * NOT tested at all
   	 */
@@ -680,7 +681,7 @@ void Can_Init( const Can_ConfigType *config ) {
   Can_Global.initRun = CAN_READY;
 
 
-  for (int configId=0; configId < CAN_ECORE_CTRL_CONFIG_CNT; configId++) {
+  for (int configId=0; configId < CAN_ARC_CTRL_CONFIG_CNT; configId++) {
     canHwConfig = GET_CONTROLLER_CONFIG(configId);
     ctlrId = canHwConfig->CanControllerId;
 
@@ -694,13 +695,13 @@ void Can_Init( const Can_ConfigType *config ) {
     canUnit->lock_cnt = 0;
 
     // Clear stats
-    memset(&canUnit->stats, 0, sizeof(Can_EcoreStatisticsType));
+    memset(&canUnit->stats, 0, sizeof(Can_Arc_StatisticsType));
 
     Can_InitController(ctlrId, canHwConfig);
 
     // Loop through all Hoh:s and map them into the HTHMap
     const Can_HardwareObjectType* hoh;
-    hoh = canHwConfig->CanEcoreHoh;
+    hoh = canHwConfig->Can_Arc_Hoh;
     hoh--;
     do
     {
@@ -712,7 +713,7 @@ void Can_Init( const Can_ConfigType *config ) {
         Can_Global.CanHTHMap[hoh->CanObjectId].CanHOHRef = hoh;
         Can_Global.CanHTHMap[hoh->CanObjectId].HxHRef = hoh->CanObjectId;
       }
-    } while (!hoh->CanEcoreEOL);
+    } while (!hoh->Can_Arc_EOL);
 
     // Note!
     // Could install handlers depending on HW objects to trap more errors
@@ -761,7 +762,7 @@ void Can_DeInit()
   const Can_ControllerConfigType *canHwConfig;
   uint32 ctlrId;
 
-  for (int configId=0; configId < CAN_ECORE_CTRL_CONFIG_CNT; configId++) {
+  for (int configId=0; configId < CAN_ARC_CTRL_CONFIG_CNT; configId++) {
     canHwConfig = GET_CONTROLLER_CONFIG(configId);
     ctlrId = canHwConfig->CanControllerId;
 
@@ -773,7 +774,7 @@ void Can_DeInit()
     canUnit->lock_cnt = 0;
 
     // Clear stats
-    memset(&canUnit->stats, 0, sizeof(Can_EcoreStatisticsType));
+    memset(&canUnit->stats, 0, sizeof(Can_Arc_StatisticsType));
   }
 
   Can_Global.config = NULL;
@@ -822,7 +823,7 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
 #if defined(CFG_MPC5516) || defined(CFG_MPC5517)
   // Note!
   // FIFO implemenation not tested
-  if( config->CanEcoreFifo ) {
+  if( config->Can_Arc_Fifo ) {
     canHw->MCR.B.FEN = 1;	// Enable FIFO
     canHw->MCR.B.IDAM = 0; 	// We want extended id's to match with
   }
@@ -833,7 +834,7 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
   canHw->MCR.B.MAXMB = MAX_NUM_OF_MAILBOXES - 1;
 
   /* Disable selfreception */
-  canHw->MCR.B.SRXDIS = !config->CanEcoreLoopback;
+  canHw->MCR.B.SRXDIS = !config->Can_Arc_Loopback;
 
   // Clock calucation
   // -------------------------------------------------------------------
@@ -865,13 +866,13 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
   canHw->CR.B.PSEG1 = config->CanControllerSeg1;
   canHw->CR.B.PSEG2 = config->CanControllerSeg2;
   canHw->CR.B.SMP = 	1;	// 3 samples better than 1 ??
-  canHw->CR.B.LPB =	config->CanEcoreLoopback;
+  canHw->CR.B.LPB =	config->Can_Arc_Loopback;
   canHw->CR.B.BOFFREC = 1;  // Disable bus off recovery
 
 #if defined(CFG_MPC5516) || defined(CFG_MPC5517)
   // Check if we use individual masks. If so accept anything(=0) for now
   if( canHw->MCR.B.BCC ) {
-    i = (config->CanEcoreFifo ? 8 : 0 );
+    i = (config->Can_Arc_Fifo ? 8 : 0 );
     for(;i<63;i++) {
       canHw->RXIMR[i].R = 0;
     }
@@ -879,7 +880,7 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
 #else
 #endif
   // Set the id's
-  if( config->CanEcoreFifo ) {
+  if( config->Can_Arc_Fifo ) {
     // Clear ID's in FIFO also, MUST set extended bit here
     uint32_t *fifoId = (uint32_t*)(((uint8_t *)canHw)+0xe0);
     for(int k=0;k<8;k++) {
@@ -888,7 +889,7 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
   }
 
   // Mark all slots as inactive( depending on fifo )
-  i = (config->CanEcoreFifo ? 8 : 0 );
+  i = (config->Can_Arc_Fifo ? 8 : 0 );
   for(; i < 63; i++) {
     //canHw->BUF[i].CS.B.CODE = 0;
     canHw->BUF[i].CS.R = 0;
@@ -902,12 +903,12 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
     Can_FilterMaskType mask = 0xffffffff;
 
     // Rx
-    hohObj = canHwConfig->CanEcoreHoh;
+    hohObj = canHwConfig->Can_Arc_Hoh;
     --hohObj;
     do {
       ++hohObj;
 
-      mbMask = hohObj->CanEcoreMbMask;
+      mbMask = hohObj->Can_Arc_MbMask;
       mbNr = 0;
 
       if (hohObj->CanObjectType == CAN_OBJECT_TYPE_RECEIVE)
@@ -928,16 +929,16 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
         }
 
         // Add to global mask
-        canUnit->CanEcoreRxMbMask |= hohObj->CanEcoreMbMask;
+        canUnit->Can_Arc_RxMbMask |= hohObj->Can_Arc_MbMask;
         if( hohObj->CanFilterMaskRef != NULL  ) {
           mask &= *hohObj->CanFilterMaskRef;
         }
       }
       else
       {
-        canUnit->CanEcoreTxMbMask |= hohObj->CanEcoreMbMask;
+        canUnit->Can_Arc_TxMbMask |= hohObj->Can_Arc_MbMask;
       }
-    } while( !hohObj->CanEcoreEOL );
+    } while( !hohObj->Can_Arc_EOL );
 
 
     // Set global mask
@@ -947,7 +948,7 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
     canHw->RX15MASK.R = 0;
   }
 
-  canUnit->iflagStart = canUnit->CanEcoreTxMbMask;
+  canUnit->iflagStart = canUnit->Can_Arc_TxMbMask;
 
   canUnit->state = CANIF_CS_STOPPED;
   Can_EnableControllerInterrupts(cId);
@@ -1064,18 +1065,18 @@ void Can_EnableControllerInterrupts( uint8 controller ) {
   canHw->IMRH.R = 0;
   canHw->IMRL.R = 0;
 
-  if( canHwConfig->CanRxProcessing == CAN_ECORE_PROCESS_TYPE_INTERRUPT ) {
+  if( canHwConfig->CanRxProcessing == CAN_ARC_PROCESS_TYPE_INTERRUPT ) {
     /* Turn on the interrupt mailboxes */
-    canHw->IMRL.R = canUnit->CanEcoreRxMbMask;
+    canHw->IMRL.R = canUnit->Can_Arc_RxMbMask;
   }
 
-  if( canHwConfig->CanTxProcessing == CAN_ECORE_PROCESS_TYPE_INTERRUPT ) {
+  if( canHwConfig->CanTxProcessing == CAN_ARC_PROCESS_TYPE_INTERRUPT ) {
     /* Turn on the interrupt mailboxes */
-    canHw->IMRL.R |= canUnit->CanEcoreTxMbMask;
+    canHw->IMRL.R |= canUnit->Can_Arc_TxMbMask;
   }
 
   // BusOff here represents all errors and warnings
-  if( canHwConfig->CanBusOffProcessing == CAN_ECORE_PROCESS_TYPE_INTERRUPT ) {
+  if( canHwConfig->CanBusOffProcessing == CAN_ARC_PROCESS_TYPE_INTERRUPT ) {
     canHw->MCR.B.WRNEN = 1;  	/* Turn On warning int */
 
     canHw->CR.B.ERRMSK = 1;  	/* Enable error interrupt */
@@ -1087,7 +1088,7 @@ void Can_EnableControllerInterrupts( uint8 controller ) {
   return;
 }
 
-Can_ReturnType Can_Write( Can_EcoreHTHType hth, Can_PduType *pduInfo ) {
+Can_ReturnType Can_Write( Can_Arc_HTHType hth, Can_PduType *pduInfo ) {
   uint16_t timer;
   uint32_t iflag;
   Can_ReturnType rv = CAN_OK;
@@ -1110,7 +1111,7 @@ Can_ReturnType Can_Write( Can_EcoreHTHType hth, Can_PduType *pduInfo ) {
 
   canHw = GET_CONTROLLER(controller);
   oldMsr = McuE_EnterCriticalSection();
-  iflag = canHw->IFRL.R & canUnit->CanEcoreTxMbMask;
+  iflag = canHw->IFRL.R & canUnit->Can_Arc_TxMbMask;
 
   // check for any free box
   // Normally we would just use the iflag to get the free box
@@ -1193,7 +1194,7 @@ void Can_MainFunction_Wakeup( void ) {
  * @param stats Pointer to data to copy statistics to
  */
 
-void Can_EcoreGetStatistics( uint8 controller, Can_EcoreStatisticsType *stats)
+void Can_Arc_GetStatistics( uint8 controller, Can_Arc_StatisticsType *stats)
 {
   Can_UnitType *canUnit = GET_PRIVATE_DATA(controller);
   *stats = canUnit->stats;
@@ -1221,7 +1222,7 @@ Can_ReturnType Can_SetControllerMode( uint8 Controller, Can_StateTransitionType 
 	return E_OK;
 }
 
-Can_ReturnType Can_Write( Can_EcoreHTHType hth, Can_PduType *pduInfo )
+Can_ReturnType Can_Write( Can_Arc_HTHType hth, Can_PduType *pduInfo )
 {
 	// Write to mailbox on controller here.
 	DEBUG(DEBUG_MEDIUM, "Can_Write(stub): Received data ");
@@ -1261,7 +1262,7 @@ void Can_MainFunction_Read( void ){}
 void Can_MainFunction_BusOff( void ){}
 void Can_MainFunction_Wakeup( void ){}
 
-void Can_EcoreGetStatistics( uint8 controller, Can_EcoreStatisticsType * stat){}
+void Can_Arc_GetStatistics( uint8 controller, Can_Arc_StatisticsType * stat){}
 
 #endif
 

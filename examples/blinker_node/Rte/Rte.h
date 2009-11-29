@@ -17,18 +17,26 @@
 
 
 
-
-
-
 /*
  * RTE.h
  *
- *  Created on: 2009-jul-10
- *      Author: rosa
+ *      Author: tojo
  */
 
 #ifndef RTE_H_
 #define RTE_H_
 #include "RTE_blinker.h"
+
+// Select DIO channel
+#if defined(CFG_BRD_MPC5516IT)
+#define LED_CHANNEL		LEDS_LED5
+
+#elif defined(CFG_BRD_MPC5567QRTECH)
+#define LED_CHANNEL		LED_K2
+
+#else
+#warning "Unknown board or CFG_BRD_* undefined"
+
+#endif
 
 #endif /* RTE_H_ */

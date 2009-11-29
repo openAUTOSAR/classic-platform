@@ -141,9 +141,10 @@ void ErrorHook( StatusType Error ) {
 	case OSServiceId_SetRelAlarm:
 	{
 		// Read the arguments to the faulty functions...
+		/* (Commented to remove warnings)
 		AlarmType alarm_id = OSError_SetRelAlarm_AlarmId;
 		TickType increment = OSError_SetRelAlarm_Increment;
-		TickType cycle = OSError_SetRelAlarm_Cycle;
+		TickType cycle = OSError_SetRelAlarm_Cycle;	*/
 		// ... Handle this some way.
 		break;
 	}

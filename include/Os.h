@@ -15,15 +15,6 @@
 
 
 
-
-
-
-
-
-/*
- * (C) Copyright 2008 ecore, www.ecore.se
- */
-
 #ifndef OS_H_
 #define OS_H_
 
@@ -286,7 +277,7 @@ typedef struct OsDriver_s {
 /*-------------------------------------------------------------------
  * Free running timer
  *-----------------------------------------------------------------*/
-#define OS_TICK_FREQ		1000	// Frequency of the os tick
+typedef const uint32 OsTickType;
 void Frt_Init( void );
 void Frt_Start(uint32_t period_ticks);
 uint32_t Frt_GetTimeElapsed( void );
@@ -294,7 +285,7 @@ uint32_t Frt_GetTimeElapsed( void );
 /*-------------------------------------------------------------------
  * Counters
  *-----------------------------------------------------------------*/
-typedef uint16 CounterType;
+typedef sint16 CounterType;
 
 typedef uint32 TickType;
 typedef TickType *TickRefType;
@@ -443,14 +434,11 @@ StatusType SendMessage( MessageType message_id, ApplicationDataRef dataRef );
 StatusType ReceiveMessage( MessageType message_id, ApplicationDataRef dataRef );
 
 /*
- * ecore extensions
+ * ArcCore extensions
  */
 TickType GetOsTick();
 void OsTick(void);
 void OsIdle(void);
-
-/* The OS always have counter 0 */
-#define OS_TICK_COUNTER		0
 
 // Generate conversion macro'
 // Todo

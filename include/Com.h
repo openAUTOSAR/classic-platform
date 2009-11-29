@@ -24,8 +24,8 @@
 #define COM_H_
 
 #include "Std_Types.h"
-#include "Com_Types.h"
-#include "Com_EcoreTypes.h"
+#include "ComStack_Types.h"
+#include "Com_Arc_Types.h"
 
 
 #ifdef COM_DEV_ERROR_DETECT
@@ -37,13 +37,14 @@
 #define COM_SW_PATCH_VERSION   0
 
 #include "Com_Cfg.h"
+#include "Com_Types.h"
 #include "Com_PbCfg.h"
 #include "Com_Com.h"
 #include "Com_Sched.h"
 
 const Com_ConfigType * ComConfig;
 
-ComEcoreConfig_type ComEcoreConfig;
+Com_Arc_Config_type Com_Arc_Config;
 
 
 
@@ -55,13 +56,13 @@ ComEcoreConfig_type ComEcoreConfig;
 
 // Define macro for parameter check.
 #define PduIdCheck(PduId,ApiId,...) \
-	if (PduId >= ComEcoreConfig.ComNIPdu) { \
+	if (PduId >= Com_Arc_Config.ComNIPdu) { \
 		DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, ApiId, COM_INVALID_PDU_ID); \
 		return __VA_ARGS__; \
 	} \
 
 #define COM_VALIDATE_SIGNAL(SignalId, ApiId, ...) \
-	if (ComConfig->ComSignal[SignalId].ComEcoreIsSignalGroup) { \
+	if (ComConfig->ComSignal[SignalId].Com_Arc_IsSignalGroup) { \
 		DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, ApiId, COM_ERROR_SIGNAL_IS_SIGNALGROUP); \
 		return __VA_ARGS__; \
 	} \
@@ -84,20 +85,20 @@ ComEcoreConfig_type ComEcoreConfig;
 #define ComGetSignal(SignalId) \
 	const ComSignal_type * Signal = &ComConfig->ComSignal[SignalId]\
 
-#define ComGetEcoreSignal(SignalId) \
-	ComEcoreSignal_type * EcoreSignal = &ComEcoreConfig.ComSignal[SignalId]\
+#define ComGetArcSignal(SignalId) \
+	Com_Arc_Signal_type * Arc_Signal = &Com_Arc_Config.ComSignal[SignalId]\
 
 #define ComGetIPdu(IPduId) \
 	const ComIPdu_type *IPdu = &ComConfig->ComIPdu[IPduId]\
 
-#define ComGetEcoreIPdu(IPduId) \
-	ComEcoreIPdu_type *EcoreIPdu = &ComEcoreConfig.ComIPdu[IPduId]\
+#define ComGetArcIPdu(IPduId) \
+	Com_Arc_IPdu_type *Arc_IPdu = &Com_Arc_Config.ComIPdu[IPduId]\
 
 #define ComGetGroupSignal(GroupSignalId) \
 	const ComGroupSignal_type *GroupSignal = &ComConfig->ComGroupSignal[GroupSignalId]\
 
-#define ComGetEcoreGroupSignal(GroupSignalId) \
-	ComEcoreGroupSignal_type *EcoreGroupSignal = &ComEcoreConfig.ComGroupSignal[GroupSignalId]\
+#define ComGetArcGroupSignal(GroupSignalId) \
+	Com_Arc_GroupSignal_type *Arc_GroupSignal = &Com_Arc_Config.ComGroupSignal[GroupSignalId]\
 
 //-------------------------------------------------------------------
 // From OSEK_VDX spec...

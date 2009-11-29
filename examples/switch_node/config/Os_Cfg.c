@@ -40,6 +40,8 @@
 #include "alist_i.h"
 #include "Mcu.h"
 
+OsTickType OsTickFreq = 1000;
+
 // ##################################    DEBUG     #################################
 // All output on as standard
 uint32 os_dbg_mask = 0;
@@ -79,6 +81,8 @@ counter_obj_t counter_list[] = {
 		.alarm_base.mincycle = 0,
 	},
 };
+
+CounterType Os_Arc_OsTickCounter = COUNTER_ID_OsTick;
 
 // ##################################    ALARMS     ################################
 alarm_obj_t alarm_list[] = {

@@ -30,7 +30,7 @@
 #ifndef OS_CFG_H_
 #define OS_CFG_H_
 
-/* os_config.h */
+#define COUNTER_ID_OsTick				0
 
 #define APPLICATION_ID_application_1	0
 #define APPLICATION_CNT					1

@@ -21,45 +21,45 @@
 
 
 typedef struct {
-	uint32 ComFilterEcoreN;
-	uint32 ComFilterEcoreNewValue;
-	uint32 ComFilterEcoreOldValue;
-} ComEcoreFilter_type;
+	uint32 ComFilterArcN;
+	uint32 ComFilterArcNewValue;
+	uint32 ComFilterArcOldValue;
+} Com_Arc_Filter_type;
 
 typedef struct {
 
-	ComEcoreFilter_type ComFilter;
+	Com_Arc_Filter_type ComFilter;
 
-	uint32 ComEcoreDeadlineCounter;
+	uint32 Com_Arc_DeadlineCounter;
 	uint32 ComTimeoutFactor;
 	void *ComIPduDataPtr;
 
 	uint8 ComIPduHandleId;
 	uint8 ComSignalUpdated;
-	//uint8 ComEcoreEOL;
-	//uint8 ComEcoreIsSignalGroup;
+	//uint8 Com_Arc_EOL;
+	//uint8 Com_Arc_IsSignalGroup;
 
 	/* For signal groups */
-	void *ComEcoreShadowBuffer;
+	void *Com_Arc_ShadowBuffer;
 
-} ComEcoreSignal_type;
+} Com_Arc_Signal_type;
 
 
 typedef struct {
-	void *ComEcoreShadowBuffer;
+	void *Com_Arc_ShadowBuffer;
 	//uint8 ComIPduHandleId;
 
 	uint8 ComSignalUpdated;
-	uint8 ComEcoreEOL;
-} ComEcoreGroupSignal_type;
+	uint8 Com_Arc_EOL;
+} Com_Arc_GroupSignal_type;
 
 
 /*
 typedef struct {
-	void *ComEcoreShadowBuffer;
-	void *ComEcoreIPduDataPtr;
-	uint8 ComEcoreEOL;
-} ComEcoreSignalGroup_type;
+	void *Com_Arc_ShadowBuffer;
+	void *Com_Arc_IPduDataPtr;
+	uint8 Com_Arc_EOL;
+} Com_Arc_SignalGroup_type;
 */
 
 typedef struct {
@@ -67,27 +67,27 @@ typedef struct {
 	uint32 ComTxModeRepetitionPeriodTimer;
 	uint32 ComTxIPduMinimumDelayTimer;
 	uint32 ComTxModeTimePeriodTimer;
-} ComEcoreTxIPduTimer_type;
+} Com_Arc_TxIPduTimer_type;
 
 typedef struct {
 
-	ComEcoreTxIPduTimer_type ComEcoreTxIPduTimers;
+	Com_Arc_TxIPduTimer_type Com_Arc_TxIPduTimers;
 	void *ComIPduDataPtr;
 
-	uint8 ComEcoreNIPduSignalGroupRef;
+	uint8 Com_Arc_NIPduSignalGroupRef;
 
 	uint8 NComIPduSignalRef;
 
-	uint8 ComEcoreIpduStarted;
+	uint8 Com_Arc_IpduStarted;
 
-} ComEcoreIPdu_type;
+} Com_Arc_IPdu_type;
 
 typedef struct {
 	uint16 ComNIPdu;
-	ComEcoreIPdu_type *ComIPdu; // Only used in PduIdCheck()
-	//ComEcoreIPduGroup_type *ComIPduGroup;
-	ComEcoreSignal_type *ComSignal;
-	//ComEcoreSignalGroup_type *ComSignalGroup;
-	ComEcoreGroupSignal_type *ComGroupSignal;
+	Com_Arc_IPdu_type *ComIPdu; // Only used in PduIdCheck()
+	//Com_Arc_IPduGroup_type *ComIPduGroup;
+	Com_Arc_Signal_type *ComSignal;
+	//Com_Arc_SignalGroup_type *ComSignalGroup;
+	Com_Arc_GroupSignal_type *ComGroupSignal;
 	PduInfoType OutgoingPdu;
-} ComEcoreConfig_type;
+} Com_Arc_Config_type;

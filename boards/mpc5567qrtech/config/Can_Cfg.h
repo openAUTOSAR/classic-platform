@@ -24,7 +24,7 @@
 #define CAN_CFG_H_
 
 // Number of controller configs
-#define CAN_ECORE_CTRL_CONFIG_CNT   2
+#define CAN_ARC_CTRL_CONFIG_CNT   2
 
 #define CAN_DEV_ERROR_DETECT          STD_ON
 #define CAN_VERSION_INFO_API          STD_ON
@@ -72,9 +72,9 @@ typedef enum {
 } Can_ObjectTypeType;
 
 typedef enum {
-  CAN_ECORE_HANDLE_TYPE_BASIC,
-  CAN_ECORE_HANDLE_TYPE_FULL
-} Can_EcoreHohType;
+  CAN_ARC_HANDLE_TYPE_BASIC,
+  CAN_ARC_HANDLE_TYPE_FULL
+} Can_Arc_HohType;
 
 // HTH definitions
 // Due to effiency: Start with index 0 and don't use any holes in the enumeration
@@ -82,7 +82,7 @@ typedef enum {
   CAN_HTH_A_1 = 0,
   CAN_HTH_C_1,
   NUM_OF_HTHS
-} Can_EcoreHTHType;
+} Can_Arc_HTHType;
 
 // HRH definitions
 // Due to effiency: Start with index 0 and don't use any holes in the enumeration
@@ -90,7 +90,7 @@ typedef enum {
   CAN_HRH_A_1 = 0,
   CAN_HRH_C_1,
   NUM_OF_HRHS
-} Can_EcoreHRHType;
+} Can_Arc_HRHType;
 
 // Non-standard type
 typedef struct {
@@ -99,7 +99,7 @@ typedef struct {
   void (*ControllerBusOff)(uint8);
   void (*TxConfirmation)(PduIdType);
   void (*ControllerWakeup)(uint8);
-  void (*EcoreError)(uint8,Can_EcoreErrorType);
+  void (*Arc_Error)(uint8,Can_Arc_ErrorType);
 } Can_CallbackType;
 
 /*
@@ -150,7 +150,7 @@ typedef uint32 Can_FilterMaskType;
 //Objects.
 typedef struct Can_HardwareObjectStruct {
   // Specifies the type (Full-CAN or Basic-CAN) of a hardware object.
-  Can_EcoreHohType CanHandleType;
+  Can_Arc_HohType CanHandleType;
 
   // Specifies whether the IdValue is of type - standard identifier - extended
   // identifier - mixed mode ImplementationType: Can_IdType
@@ -175,10 +175,10 @@ typedef struct Can_HardwareObjectStruct {
 
   // A "1" in this mask tells the driver that that HW Message Box should be
   // occupied by this Hoh. A "1" in bit 31(ppc) occupies Mb 0 in HW.
-  uint32 CanEcoreMbMask;
+  uint32 Can_Arc_MbMask;
 
   // End Of List. Set to TRUE is this is the last object in the list.
-  boolean CanEcoreEOL;
+  boolean Can_Arc_EOL;
 
 } Can_HardwareObjectType;
 
@@ -187,16 +187,16 @@ typedef struct Can_HardwareObjectStruct {
  * CanController container
  */
 typedef enum {
-  CAN_ECORE_PROCESS_TYPE_INTERRUPT,
-  CAN_ECORE_PROCESS_TYPE_POLLING,
-} Can_EcoreProcessType;
+  CAN_ARC_PROCESS_TYPE_INTERRUPT,
+  CAN_ARC_PROCESS_TYPE_POLLING,
+} Can_Arc_ProcessType;
 
 typedef struct {
 
   //  Enables / disables API Can_MainFunction_BusOff() for handling busoff
   //  events in polling mode.
   // INTERRUPT or POLLING
-  Can_EcoreProcessType CanBusOffProcessing;
+  Can_Arc_ProcessType CanBusOffProcessing;
 
   // Defines if a CAN controller is used in the configuration.
   boolean CanControllerActivation;
@@ -225,15 +225,15 @@ typedef struct {
 
   //  Enables / disables API Can_MainFunction_Read() for handling PDU
   //  reception events in polling mode.
-  Can_EcoreProcessType CanRxProcessing;
+  Can_Arc_ProcessType CanRxProcessing;
 
   //  Enables / disables API Can_MainFunction_Write() for handling PDU
   //  transmission events in polling mode.
-  Can_EcoreProcessType CanTxProcessing;
+  Can_Arc_ProcessType CanTxProcessing;
 
   //  Enables / disables API Can_MainFunction_Wakeup() for handling wakeup
   //  events in polling mode.
-  Can_EcoreProcessType CanWakeupProcessing;
+  Can_Arc_ProcessType CanWakeupProcessing;
 
   //  Reference to the CPU clock configuration, which is set in the MCU driver
   //  configuration
@@ -245,16 +245,16 @@ typedef struct {
   uint32 CanWakeupSourceRef;
 
   //
-  // Ecore stuff
+  // ArcCore stuff
   //
 
   // List of Hoh id's that belong to this controller
-  const Can_HardwareObjectType  *CanEcoreHoh;
+  const Can_HardwareObjectType  *Can_Arc_Hoh;
 
-  boolean CanEcoreLoopback;
+  boolean Can_Arc_Loopback;
 
   // Set this to use the fifo
-  boolean CanEcoreFifo;
+  boolean Can_Arc_Fifo;
 
 } Can_ControllerConfigType;
 

@@ -31,7 +31,6 @@
 /*
  * ADC callback. This function is called each time the switches are read.
  */
-static uint8 ModeSwitchCounter = 0; // Add some delay to the mode switch
 static Adc_ValueGroupType switchValues[ADC_NBR_OF_SWITCH_CHANNELS];
 void switch_node_switches_callback(void) {
 

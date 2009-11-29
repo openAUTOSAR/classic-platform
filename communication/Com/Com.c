@@ -33,14 +33,14 @@
 
 const Com_ConfigType * ComConfig;
 
-ComEcoreIPdu_type ComEcoreIPdu[COM_MAX_NR_IPDU];
-ComEcoreSignal_type ComEcoreSignal[COM_MAX_NR_SIGNAL];
-ComEcoreGroupSignal_type ComEcoreGroupSignal[COM_MAX_NR_GROUPSIGNAL];
+Com_Arc_IPdu_type Com_Arc_IPdu[COM_MAX_NR_IPDU];
+Com_Arc_Signal_type Com_Arc_Signal[COM_MAX_NR_SIGNAL];
+Com_Arc_GroupSignal_type Com_Arc_GroupSignal[COM_MAX_NR_GROUPSIGNAL];
 
-ComEcoreConfig_type ComEcoreConfig = {
-	.ComIPdu = ComEcoreIPdu,
-	.ComSignal = ComEcoreSignal,
-	.ComGroupSignal = ComEcoreGroupSignal
+Com_Arc_Config_type Com_Arc_Config = {
+	.ComIPdu = Com_Arc_IPdu,
+	.ComSignal = Com_Arc_Signal,
+	.ComGroupSignal = Com_Arc_GroupSignal
 };
 
 
@@ -54,18 +54,18 @@ void Com_Init(const Com_ConfigType *config ) {
 	uint32 earliestDeadline;
 	uint32 firstTimeout;
 
-	ComEcoreConfig.OutgoingPdu.SduDataPtr = malloc(8);
+	Com_Arc_Config.OutgoingPdu.SduDataPtr = malloc(8);
 
 	// Initialize each IPdu
 	//ComIPdu_type *IPdu;
-	//ComEcoreIPdu_type *EcoreIPdu;
+	//Com_Arc_IPdu_type *Arc_IPdu;
 	const ComSignal_type *Signal;
 	const ComGroupSignal_type *GroupSignal;
-	for (int i = 0; !ComConfig->ComIPdu[i].ComEcoreEOL; i++) {
-		ComEcoreConfig.ComNIPdu++;
+	for (int i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
+		Com_Arc_Config.ComNIPdu++;
 
 		ComGetIPdu(i);
-		ComGetEcoreIPdu(i);
+		ComGetArcIPdu(i);
 
 		if (i >= COM_MAX_NR_IPDU) {
 			DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_TOO_MANY_IPDU);
@@ -76,8 +76,8 @@ void Com_Init(const Com_ConfigType *config ) {
 		// If this is a TX and cyclic IPdu, configure the first deadline.
 		if (IPdu->ComIPduDirection == SEND &&
 				(IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeMode == PERIODIC || IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeMode == MIXED)) {
-			//IPdu->ComEcoreTxIPduTimers.ComTxModeTimePeriodTimer = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeTimeOffsetFactor;
-			EcoreIPdu->ComEcoreTxIPduTimers.ComTxModeTimePeriodTimer = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeTimeOffsetFactor;
+			//IPdu->Com_Arc_TxIPduTimers.ComTxModeTimePeriodTimer = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeTimeOffsetFactor;
+			Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeTimePeriodTimer = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeTimeOffsetFactor;
 		}
 
 
@@ -86,23 +86,23 @@ void Com_Init(const Com_ConfigType *config ) {
 		firstTimeout = -1;
 
 		// Reserve memory for all defined signals.
-		EcoreIPdu->ComIPduDataPtr = malloc(IPdu->ComIPduSize);
-		if (EcoreIPdu->ComIPduDataPtr == NULL) {
+		Arc_IPdu->ComIPduDataPtr = malloc(IPdu->ComIPduSize);
+		if (Arc_IPdu->ComIPduDataPtr == NULL) {
 			failure = 1;
 		}
 
 		// Initialize the memory with the default value.
 		if (IPdu->ComIPduDirection == SEND) {
-			memset(EcoreIPdu->ComIPduDataPtr, IPdu->ComTxIPdu.ComTxIPduUnusedAreasDefault, IPdu->ComIPduSize);
+			memset(Arc_IPdu->ComIPduDataPtr, IPdu->ComTxIPdu.ComTxIPduUnusedAreasDefault, IPdu->ComIPduSize);
 		}
 
 		// For each signal in this PDU.
 		for (int j = 0; IPdu->ComIPduSignalRef[j] != NULL; j++) {
 			Signal = IPdu->ComIPduSignalRef[j];
-			ComGetEcoreSignal(Signal->ComHandleId);
+			ComGetArcSignal(Signal->ComHandleId);
 
 			// If this signal already has been configured this is most likely an error.
-			if (EcoreSignal->ComIPduDataPtr != NULL) {
+			if (Arc_Signal->ComIPduDataPtr != NULL) {
 				DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_SIGNAL_CONFIGURATION);
 				failure = 1;
 			}
@@ -110,10 +110,10 @@ void Com_Init(const Com_ConfigType *config ) {
 			// Configure signal deadline monitoring if used.
 			if (Signal->ComTimeoutFactor > 0) {
 
-				if (Signal->ComSignalEcoreUseUpdateBit) {
+				if (Signal->ComSignalArcUseUpdateBit) {
 					// This signal uses an update bit, and hence has its own deadline monitoring.
-					EcoreSignal->ComEcoreDeadlineCounter = Signal->ComFirstTimeoutFactor; // Configure the deadline counter
-					EcoreSignal->ComTimeoutFactor = Signal->ComTimeoutFactor;
+					Arc_Signal->Com_Arc_DeadlineCounter = Signal->ComFirstTimeoutFactor; // Configure the deadline counter
+					Arc_Signal->ComTimeoutFactor = Signal->ComTimeoutFactor;
 
 				} else {
 					// This signal does not use an update bit, and should therefore use per I-PDU deadline monitoring.
@@ -128,39 +128,39 @@ void Com_Init(const Com_ConfigType *config ) {
 			}
 
 			// Increment helper counters
-		    EcoreIPdu->NComIPduSignalRef = j + 1;
+		    Arc_IPdu->NComIPduSignalRef = j + 1;
 
-			//IPdu->ComEcoreNIPduSignalGroupRef = j + 1;
+			//IPdu->Com_Arc_NIPduSignalGroupRef = j + 1;
 
-			EcoreSignal->ComIPduDataPtr = EcoreIPdu->ComIPduDataPtr;
-			EcoreSignal->ComIPduHandleId = i;
+			Arc_Signal->ComIPduDataPtr = Arc_IPdu->ComIPduDataPtr;
+			Arc_Signal->ComIPduHandleId = i;
 
 			// Clear update bits
-			if (Signal->ComSignalEcoreUseUpdateBit) {
-				clearBit(EcoreIPdu->ComIPduDataPtr, Signal->ComUpdateBitPosition);
+			if (Signal->ComSignalArcUseUpdateBit) {
+				clearBit(Arc_IPdu->ComIPduDataPtr, Signal->ComUpdateBitPosition);
 			}
 
 			// If this signal is a signal group
-			if (Signal->ComEcoreIsSignalGroup) {
-				EcoreSignal->ComEcoreShadowBuffer = malloc(IPdu->ComIPduSize);
+			if (Signal->Com_Arc_IsSignalGroup) {
+				Arc_Signal->Com_Arc_ShadowBuffer = malloc(IPdu->ComIPduSize);
 
-				if (EcoreSignal->ComEcoreShadowBuffer == NULL) {
+				if (Arc_Signal->Com_Arc_ShadowBuffer == NULL) {
 					failure = 1;
 				}
 
 				// For each group signal of this signal group.
 				for(int h = 0; Signal->ComGroupSignal[h] != NULL; h++) {
 					GroupSignal = Signal->ComGroupSignal[h];
-					ComGetEcoreGroupSignal(GroupSignal->ComHandleId);
+					ComGetArcGroupSignal(GroupSignal->ComHandleId);
 					// Set pointer to shadow buffer
-					EcoreGroupSignal->ComEcoreShadowBuffer = EcoreSignal->ComEcoreShadowBuffer;
+					Arc_GroupSignal->Com_Arc_ShadowBuffer = Arc_Signal->Com_Arc_ShadowBuffer;
 					// Initialize group signal data.
-					Com_CopyData(EcoreIPdu->ComIPduDataPtr, &GroupSignal->ComSignalInitValue, GroupSignal->ComBitSize, GroupSignal->ComBitPosition, 0);
+					Com_CopyData(Arc_IPdu->ComIPduDataPtr, &GroupSignal->ComSignalInitValue, GroupSignal->ComBitSize, GroupSignal->ComBitPosition, 0);
 				}
 
 			} else {
 				// Initialize signal data.
-				Com_CopyData(EcoreIPdu->ComIPduDataPtr, &Signal->ComSignalInitValue, Signal->ComBitSize, Signal->ComBitPosition, 0);
+				Com_CopyData(Arc_IPdu->ComIPduDataPtr, &Signal->ComSignalInitValue, Signal->ComBitSize, Signal->ComBitPosition, 0);
 			}
 
 			// Check filter configuration
@@ -199,11 +199,11 @@ void Com_Init(const Com_ConfigType *config ) {
 		// Configure per I-PDU based deadline monitoring.
 		for (int j = 0; IPdu->ComIPduSignalRef[j] != NULL; j++) {
 			Signal = IPdu->ComIPduSignalRef[j];
-			ComGetEcoreSignal(Signal->ComHandleId);
+			ComGetArcSignal(Signal->ComHandleId);
 
-			if (Signal->ComTimeoutFactor > 0 && !Signal->ComSignalEcoreUseUpdateBit) {
-				EcoreSignal->ComTimeoutFactor = earliestDeadline;
-				EcoreSignal->ComEcoreDeadlineCounter = firstTimeout;
+			if (Signal->ComTimeoutFactor > 0 && !Signal->ComSignalArcUseUpdateBit) {
+				Arc_Signal->ComTimeoutFactor = earliestDeadline;
+				Arc_Signal->Com_Arc_DeadlineCounter = firstTimeout;
 			}
 		}
 	}
@@ -212,7 +212,7 @@ void Com_Init(const Com_ConfigType *config ) {
 	// An error occurred.
 	if (failure) {
 		// Free allocated memory
-		for (int i = 0; !ComConfig->ComIPdu[i].ComEcoreEOL; i++) {
+		for (int i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
 			// Release memory for all defined signals.
 			//free(ComConfig->ComIPdu[i].ComIPduDataPtr);
 		}
@@ -229,17 +229,17 @@ void Com_DeInit( void ) {
 }
 
 void Com_IpduGroupStart(Com_PduGroupIdType IpduGroupId,boolean Initialize) {
-	for (int i = 0; !ComConfig->ComIPdu[i].ComEcoreEOL; i++) {
+	for (int i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
 		if (ComConfig->ComIPdu[i].ComIPduGroupRef == IpduGroupId) {
-			ComEcoreConfig.ComIPdu[i].ComEcoreIpduStarted = 1;
+			Com_Arc_Config.ComIPdu[i].Com_Arc_IpduStarted = 1;
 		}
 	}
 }
 
 void Com_IpduGroupStop(Com_PduGroupIdType IpduGroupId) {
-	for (int i = 0; !ComConfig->ComIPdu[i].ComEcoreEOL; i++) {
+	for (int i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
 		if (ComConfig->ComIPdu[i].ComIPduGroupRef == IpduGroupId) {
-			ComEcoreConfig.ComIPdu[i].ComEcoreIpduStarted = 0;
+			Com_Arc_Config.ComIPdu[i].Com_Arc_IpduStarted = 0;
 		}
 	}
 }

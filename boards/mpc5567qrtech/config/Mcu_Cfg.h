@@ -33,7 +33,6 @@
 #define MCU_VERSION_INFO_API 	STD_ON
 
 #include "Std_Types.h"
-#include "Mcu_Cfg.h"
 
 /* FMPLL modes( atleast in 5553/5554 ) */
 
