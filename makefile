@@ -21,13 +21,6 @@
 #   >make BOARDDIR=mpc551xsim BDIR=system/kernel,examples/simple clean
 #
 
-
-
-#-include board_config.mk
-#export ARCH
-#export ARCH_FAM
-#export BOARDDIR
-
 export UNAME:=$(shell uname)
 
 ifneq ($(findstring Darwin,$(UNAME)),)
@@ -45,10 +38,6 @@ export TOPDIR = $(CURDIR)
 export RELEASE = n
 export PATH
 
-#ifeq (${BDIR},)
-#	-include saved_config.mk
-#endif
-
 ifneq ($(filter clean_all,$(MAKECMDGOALS)),clean_all)
   ifeq (${BOARDDIR},)
     $(error BOARDDIR is empty) 
@@ -62,12 +51,6 @@ export BUILD_TREE=y
 export RELEASE_TREE=n
 
 override BDIR := system/kernel ${BDIR} 
-#BDIR += system/kernel/testsystem
-
-# Misc
-#subdir-y += ecum
-# Drivers
-
 
 # Tools
 # Ugly thing to make things work under cmd.exe 
@@ -75,10 +58,6 @@ PATH := /usr/bin/:$(PATH)
 find := $(shell which find)
 
 export objdir = obj_$(BOARDDIR)
-
-#comma = ,
-#empty = 
-#space = $(empty) $(empty)  
 
 .PHONY: clean
 .PHONY: release
@@ -101,7 +80,6 @@ help:
 	@echo "  CROSS_COMPILE =$(CROSS_COMPILE)"
 	@echo ""
 	
-def-$(USE_T32_SIM) += USE_T32_SIM
 def-$(USE_DBG_PRINTF) += USE_DBG_PRINTF
 
 
@@ -110,26 +88,15 @@ export CFG_CPU
 export MCU
 export def-y+=$(CFG_ARCH_$(ARCH)) $(CFG_MCU) $(CFG_CPU)
 
-BASEDIR = $(TOPDIR)/$(MOD)
-
 # We descend into the object directories and build the. That way it's easier to build
 # multi-arch support and we don't have to use objdir everywhere.
 # ROOTDIR - The top-most directory
 # SUBDIR - The current subdirectory it's building.
 
-test:
-	make embUnit/textui embunit/embUnit drivers/test all
-
 comma:= ,
 split = $(subst $(comma), ,$(1))
-
-
-#dir_cmd_goals := $(filter-out %_config config testa all install uninstall clean test save,$(MAKECMDGOALS))
 dir_cmd_goals  := $(call split,$(BDIR))
-
 cmd_cmd_goals := $(filter clean all install,$(MAKECMDGOALS))
-
-#$(error $(dir_cmd_goals) $(MAKECMDGOALS))
 
 libs:
 	mkdir -p $@
@@ -147,10 +114,6 @@ $(dir_cmd_goals) :: show_build FORCE
 	+@[ -d $@/$(objdir) ] || mkdir -p $@/$(objdir)
 	@chmod 777 $@/$(objdir)
 	$(Q)$(MAKE) -r  -C $@/$(objdir) -f $(CURDIR)/scripts/rules.mk  ROOTDIR=$(CURDIR) SUBDIR=$@ $(cmd_cmd_goals)
-
-
-# --no-print-directory
-
 .PHONY: test	
 
 FORCE:
