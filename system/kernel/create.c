@@ -56,10 +56,13 @@ TaskType Os_CreateIsr( void (*entry)(void ), uint8_t prio, const char *name )
 	strncpy(pcb->name,name,TASK_NAME_SIZE);
 	pcb->vector = -1;
 	pcb->prio = prio;
+	/* TODO: map to interrupt controller priority */
+	assert(prio<=OS_TASK_PRIORITY_MAX);
 	pcb->proc_type  = PROC_ISR2;
 	pcb->state = ST_SUSPENDED;
 	pcb->entry = entry;
 	pcb->stack.top = &stackTop;
+
 
 	return os_add_task(pcb);
 }
