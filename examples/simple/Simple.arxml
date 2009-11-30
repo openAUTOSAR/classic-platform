@@ -7,18 +7,17 @@
       <ADMIN-DATA>
         <DOC-REVISIONS>
           <DOC-REVISION>
-            <REVISION-LABEL></REVISION-LABEL>
             <ISSUED-BY/>
           </DOC-REVISION>
         </DOC-REVISIONS>
         <SDGS>
           <SDG GID="Autocore::Options">
             <SD GID="ARCCORE_FORMAT_VERSION">1.1.0</SD>
-            <SD GID="MCU">MPC551x</SD>
+            <SD GID="MCU">Undefined MCU</SD>
             <SD GID="LOCAL_VALIDATION">ON</SD>
             <SD GID="AUTHOR"></SD>
             <SD GID="COPYRIGHT"></SD>
-            <SD GID="GENDIR"></SD>
+            <SD GID="GENDIR">/Simple/config</SD>
           </SDG>
         </SDGS>
       </ADMIN-DATA>
