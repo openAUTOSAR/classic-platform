@@ -25,7 +25,7 @@
 
 /*
  * Definition of event IDs used by SW-C
- * NB! Must be unique for each event
+ * NB! Must be unique for each event!
  */
 enum {
 	// NB! Event IDs below DEM_SWC_EVENT_ID_START not allowed!

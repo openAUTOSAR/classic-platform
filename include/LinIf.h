@@ -55,9 +55,6 @@
 #define LINIF_E_PARAMETER_POINTER 0x40
 #define LINIF_E_SCHEDULE_OVERFLOW 0x50
 #define LINIF_E_SCHEDULE_REQUEST_ERROR 0x51
-#define LINIF_E_RESPONSE 0x52 //Assigned
-#define LINIF_E_NC_NO_RESPONSE 0x53 //Assigned by DEM
-#define LINIF_E_CHANNEL_X_SLAVE_Y 0x54 //Assigned by DEM
 
 #if (LINIF_VERSION_INFO_API == STD_ON)
 void LinIf_GetVersionInfo( Std_VersionInfoType *versionInfo );

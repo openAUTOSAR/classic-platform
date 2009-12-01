@@ -50,7 +50,7 @@ typedef struct {
 typedef struct {
 	Dem_EventIdType		eventId;
 	uint16				occurrence;
-	sint16				data[DEM_MAX_SIZE_FF_DATA];
+	sint8				data[DEM_MAX_SIZE_FF_DATA];
 	ChecksumType		checksum;
 } FreezeFrameRecType;
 

@@ -53,8 +53,8 @@
 #include "Fls.h"
 #include "Fls_SST25xx.h"
 #include "Spi.h"
-//#include "Dem.h"
 #include "Det.h"
+#include "Dem.h"
 #include <stdlib.h>
 #include <assert.h>
 //#include <stdio.h>
@@ -725,7 +725,7 @@ void Fls_SST25xx_MainFunction( void )
 			} else if( jobResult == SPI_SEQ_OK ) {
 
 				if( memcmp(Fls_SST25xx_CompareBuffer,gJob->targetAddr, readSize) != 0 ) {
-					DET_REPORTERROR(MODULE_ID_FLS,0, 0x6, FLS_E_COMPARE_FAILED );
+					Dem_ReportErrorStatus(FLS_E_COMPARE_FAILED, DEM_EVENT_STATUS_FAILED);
 					FEE_JOB_ERROR_NOTIFICATION();
 					return;
 				}
@@ -761,7 +761,7 @@ void Fls_SST25xx_MainFunction( void )
         Fls_SST25xx_Global.jobType = FLS_SST25XX_NONE;
         Fls_SST25xx_Global.status = MEMIF_IDLE;
 
-				DET_REPORTERROR(MODULE_ID_FLS,0, 0x6, FLS_E_COMPARE_FAILED );
+				Dem_ReportErrorStatus(FLS_E_COMPARE_FAILED, DEM_EVENT_STATUS_FAILED);
 				FEE_JOB_ERROR_NOTIFICATION();
 			}
 		}
@@ -787,13 +787,13 @@ void Fls_SST25xx_MainFunction( void )
 
       	switch(Fls_SST25xx_Global.jobType) {
       	case FLS_SST25XX_ERASE:
-					DET_REPORTERROR(MODULE_ID_FLS,0, 0x6, FLS_E_ERASED_FAILED );
+					Dem_ReportErrorStatus(FLS_E_ERASED_FAILED, DEM_EVENT_STATUS_FAILED);
 					break;
       	case FLS_SST25XX_READ:
-					DET_REPORTERROR(MODULE_ID_FLS,0, 0x6, FLS_E_READ_FAILED );
+					Dem_ReportErrorStatus(FLS_E_READ_FAILED, DEM_EVENT_STATUS_FAILED);
 					break;
       	case FLS_SST25XX_WRITE:
-					DET_REPORTERROR(MODULE_ID_FLS,0, 0x6, FLS_E_WRITE_FAILED );
+					Dem_ReportErrorStatus(FLS_E_WRITE_FAILED, DEM_EVENT_STATUS_FAILED);
 					break;
       	default:
       		assert(0);

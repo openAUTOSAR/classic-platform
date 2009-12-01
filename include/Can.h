@@ -42,8 +42,6 @@
 // Init transition for current mode
 #define CAN_E_TRANSITION       0x06
 
-#define CAN_E_TIMEOUT          0x10  // Should be defined by DEM
-
 
 #include "Std_Types.h"
 #include "CanIf_Types.h"

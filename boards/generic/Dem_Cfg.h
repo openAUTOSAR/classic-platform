@@ -47,9 +47,9 @@
 /*
  * Size limitations of storage area
  */
-#define DEM_MAX_SIZE_FF_DATA					10	// Max number of 16bits words in one freezeframe
-#define DEM_MAX_SIZE_EXT_DATA					10	// Max number of 16bits words in one extended data record
-#define DEM_MAX_NUMBER_EVENT					10	// Max number of events to keep status on
+#define DEM_MAX_SIZE_FF_DATA					 10	// Max number of bytes in one freeze frame
+#define DEM_MAX_SIZE_EXT_DATA					 10	// Max number of bytes in one extended data record
+#define DEM_MAX_NUMBER_EVENT					100	// Max number of events to keep status on
 
 #define DEM_MAX_NUMBER_EVENT_PRE_INIT			(DEM_BSW_ERROR_BUFFER_SIZE)	// Max number of events status to keep before init
 #define DEM_MAX_NUMBER_FF_DATA_PRE_INIT			(DEM_BSW_ERROR_BUFFER_SIZE)	// Max number of freeze frames to store before init

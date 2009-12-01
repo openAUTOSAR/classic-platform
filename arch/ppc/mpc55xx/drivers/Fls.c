@@ -59,6 +59,7 @@
 #include <assert.h>
 #include <string.h>
 #include "Det.h"
+#include "Dem.h"
 #include "h7f_types.h"
 #include "Cpu.h"
 #include "mpc55xx.h"
@@ -664,7 +665,7 @@ void Fls_MainFunction( void )
         Fls_Global.jobResultType = MEMIF_JOB_FAILED;
         Fls_Global.jobType = FLS_JOB_NONE;
         Fls_Global.status = MEMIF_IDLE;
-        DET_REPORTERROR(MODULE_ID_FLS,0, 0x6, FLS_E_WRITE_FAILED );
+		Dem_ReportErrorStatus(FLS_E_WRITE_FAILED, DEM_EVENT_STATUS_FAILED);
         FEE_JOB_ERROR_NOTIFICATION();
       }
       break;
@@ -705,7 +706,7 @@ void Fls_MainFunction( void )
         Fls_Global.jobResultType = MEMIF_JOB_FAILED;
         Fls_Global.jobType = FLS_JOB_NONE;
         Fls_Global.status = MEMIF_IDLE;
-        DET_REPORTERROR(MODULE_ID_FLS,0, 0x6, FLS_E_WRITE_FAILED );
+		Dem_ReportErrorStatus(FLS_E_WRITE_FAILED, DEM_EVENT_STATUS_FAILED);
         FEE_JOB_ERROR_NOTIFICATION();
       }
 

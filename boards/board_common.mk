@@ -207,4 +207,4 @@ inc-y += $(ROOTDIR)/drivers/test
 # And last the generic board
 #
 inc-y += $(ROOTDIR)/boards/generic
-
+vpath-y += $(ROOTDIR)/boards/generic

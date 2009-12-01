@@ -172,7 +172,7 @@ typedef struct {
 // 10.2.9 DemConfigSet
 typedef struct {
 	const Dem_EventParameterType	*EventParameter;	// (0..65535)
-	const Dem_DTCClassType 			*DTCClassType;		// (1..16777214)
+	const Dem_DTCClassType 			*DTCClass;			// (1..16777214)
 	const Dem_GroupOfDtcType		*GroupOfDtc;		// (1.16777214)
 	const Dem_OemIdClassType		*OemIdClass;		// (0..*)
 } Dem_ConfigSetType;

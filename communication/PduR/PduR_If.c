@@ -58,7 +58,7 @@ void PduR_LoIfRxIndication(PduIdType PduId, const uint8* SduPtr) {
 		if (route->PduRDestPdu.TxBufferRef->TxConfP) { // Transfer confirmation pending.
 			// Enqueue the new I-PDU. This will flush the buffer if it is full according to the buffer specification.
 			PduR_BufferQueue(route->PduRDestPdu.TxBufferRef, SduPtr);
-			// TODO report PDUR_E_INSTANCE_LOST to DEM if needed.
+			// TODO report PDUR_E_PDU_INSTANCE_LOST to DEM if needed.
 		}
 
 		if (!route->PduRDestPdu.TxBufferRef->TxConfP) { // No transfer confirmation pending (anymore).
@@ -81,7 +81,7 @@ void PduR_LoIfRxIndication(PduIdType PduId, const uint8* SduPtr) {
 		if (route->PduRDestPdu.TxBufferRef->TxConfP) { // Transfer confirmation pending.
 			DEBUG(DEBUG_LOW,"\tTransfer confirmation pending.\n");
 			PduR_BufferQueue(route->PduRDestPdu.TxBufferRef, SduPtr);
-			// TODO report PDUR_E_INSTANCE_LOST to DEM if needed.
+			// TODO report PDUR_E_PDU_INSTANCE_LOST to DEM if needed.
 
 		}
 
@@ -99,10 +99,8 @@ void PduR_LoIfRxIndication(PduIdType PduId, const uint8* SduPtr) {
 
 
 			} else {
-				// TODO report PDUR_E_INSTANCE_LOST to DEM.
-				//Dem_ReportErrorStatus(PDUR_E_INSTANCE_LOST, 0);
-				DET_REPORTERROR(PDUR_MODULE_ID, PDUR_INSTANCE_ID, 0x00, PDUR_E_PDU_INSTANCE_LOST);
-				DEBUG(DEBUG_LOW,"\tTransmission failed. PDUR_E_INSTANCE_LOST\n");
+				Dem_ReportErrorStatus(PDUR_E_PDU_INSTANCE_LOST, DEM_EVENT_STATUS_FAILED);
+				DEBUG(DEBUG_LOW,"\tTransmission failed. PDUR_E_PDU_INSTANCE_LOST\n");
 			}
 		}
 	}

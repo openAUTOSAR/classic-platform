@@ -23,6 +23,7 @@
 #include "Std_Types.h"
 #include "Mcu.h"
 #include "Det.h"
+#include "Dem.h"
 #include <assert.h>
 #include "cpu.h"
 #include <string.h>
@@ -86,10 +87,7 @@ Mcu_GlobalType Mcu_Global =
 #if 0
 static void Mcu_LossOfLock( void  ) {
 #if ( MCU_DEV_ERROR_DETECT == STD_ON )
-	/* Should report MCU_E_CLOCK_FAILURE with DEM here.... but
-	 * we do the next best thing. Report with Det with API = 0
-	 */
-	Det_ReportError(MODULE_ID_MCU,0,0,MCU_E_PLL_NOT_LOCKED);
+	Dem_ReportErrorStatus(MCU_E_CLOCK_FAILURE, DEM_EVENT_STATUS_FAILED);
 #endif
 
 	Mcu_Global.stats.lossOfLockCnt++;

@@ -172,7 +172,6 @@ typedef enum {
 #define LIN_E_INVALID_CHANNEL			0x02
 #define LIN_E_INVALID_POINTER			0x03
 #define LIN_E_STATE_TRANSITION			0x04
-#define LIN_E_TIMEOUT					0x05 //TODO Assigned by DEM
 
 void Lin_Init( const Lin_ConfigType* Config );
 
