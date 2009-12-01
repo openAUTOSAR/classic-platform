@@ -156,7 +156,7 @@ typedef struct {
 	const Dem_CallbackInitMforEType				*CallbackInitMforE;			// (--)	(0..1)
 	const Dem_CallbackEventStatusChangedType	*CallbackEventStatusChanged;// (Pre)(0..*)
 	const Dem_DTCClassType						*DTCClass;					// (--)	(0..1)
-	boolean										EcoreEOL;
+	boolean										Arc_EOL;
 } Dem_EventParameterType;
 
 // 10.2.19 DemGroupOfDTC

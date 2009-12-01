@@ -50,12 +50,14 @@ typedef struct {
 typedef struct {
 	Dem_EventIdType		eventId;
 	uint16				occurrence;
+	uint16				dataSize;
 	sint8				data[DEM_MAX_SIZE_FF_DATA];
 	ChecksumType		checksum;
 } FreezeFrameRecType;
 
 typedef struct {
 	Dem_EventIdType		eventId;
+	uint16				dataSize;
 	uint8				data[DEM_MAX_SIZE_EXT_DATA];
 	ChecksumType		checksum;
 } ExtDataRecType;
@@ -263,7 +265,7 @@ void lookupEventIdParameter(Dem_EventIdType eventId, const Dem_EventParameterTyp
 	*eventIdParam = NULL;
 
 	// Lookup the correct event id parameters
-	for (i=0; !configSet->EventParameter[i].EcoreEOL; i++) {
+	for (i=0; !configSet->EventParameter[i].Arc_EOL; i++) {
 		if (configSet->EventParameter[i].EventID == eventId) {
 			*eventIdParam = &configSet->EventParameter[i];
 			return;
@@ -324,10 +326,12 @@ void getExtendedData(const Dem_EventParameterType *eventParam, ExtDataRecType *e
 	// Check if any data has been stored
 	if (storeIndex != 0) {
 		extData->eventId = eventParam->EventID;
+		extData->dataSize = storeIndex;
 		extData->checksum = calcChecksum(extData, sizeof(ExtDataRecType)-sizeof(ChecksumType));
 	}
 	else {
 		extData->eventId = DEM_EVENT_ID_NULL;
+		extData->dataSize = storeIndex;
 		extData->checksum = 0;
 	}
 }
@@ -687,6 +691,7 @@ void Dem_PreInit(void)
 		preInitFreezeFrameBuffer[i].checksum = 0;
 		preInitFreezeFrameBuffer[i].eventId = DEM_EVENT_ID_NULL;
 		preInitFreezeFrameBuffer[i].occurrence = 0;
+		preInitFreezeFrameBuffer[i].dataSize = 0;
 		for (j=0; j<DEM_MAX_SIZE_FF_DATA;j++)
 			preInitFreezeFrameBuffer[i].data[j] = 0;
 	}
@@ -694,6 +699,7 @@ void Dem_PreInit(void)
 	for (i=0; i<DEM_MAX_NUMBER_EXT_DATA_PRE_INIT; i++) {
 		preInitExtDataBuffer[i].checksum = 0;
 		preInitExtDataBuffer[i].eventId = DEM_EVENT_ID_NULL;
+		preInitExtDataBuffer[i].dataSize = 0;
 		for (j=0; j<DEM_MAX_SIZE_EXT_DATA;j++)
 			preInitExtDataBuffer[i].data[j] = 0;
 	}

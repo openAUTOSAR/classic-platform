@@ -152,7 +152,7 @@ const Dem_EventParameterType EventParameter[] = {
 				.DTCClass = NULL
 		},
 		{
-				.EcoreEOL  = TRUE
+				.Arc_EOL  = TRUE
 		}
 
 };
