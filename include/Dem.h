@@ -65,6 +65,7 @@
 #define DEM_GETEVENTFAILED_ID			0x13
 #define DEM_GETEVENTTESTED_ID			0x14
 #define DEM_GETFAULTDETECTIONCOUNTER_ID 0x15
+#define DEM_SETOPERATIONCYCLESTATE_ID	0x16
 #define DEM_REPORTERRORSTATUS_ID 		0x20
 
 #define DEM_UPDATE_EVENT_STATUS_ID		0x40
@@ -110,6 +111,8 @@ Std_ReturnType Dem_GetEventStatus(Dem_EventIdType eventId, Dem_EventStatusExtend
 Std_ReturnType Dem_GetEventFailed(Dem_EventIdType eventId, boolean *eventFailed);
 Std_ReturnType Dem_GetEventTested(Dem_EventIdType eventId, boolean *eventTested);
 Std_ReturnType Dem_GetFaultDetectionCounter(Dem_EventIdType eventId, sint8 *counter);
+
+Std_ReturnType Dem_SetOperationCycleState(Dem_OperationCycleType OperationCycleId, Dem_OperationCycleStateType CycleState);
 
 
 /*

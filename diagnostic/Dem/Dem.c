@@ -34,11 +34,14 @@ typedef uint16 ChecksumType;
 
 // For keeping track of the events status
 typedef struct {
-	Dem_EventIdType		eventId;
-	uint16				occurrence;
-	Dem_EventStatusType	eventStatus;
-	boolean				eventStatusChanged;
+	Dem_EventIdType				eventId;
+	uint16						occurrence;
+	Dem_EventStatusType			eventStatus;
+	boolean						eventStatusChanged;
+	Dem_OperationCycleType		operationCycleId;
+	Dem_EventStatusExtendedType	eventStatusExtended;
 } EventStatusRecType;
+
 
 // Types for storing different event data on event memory
 typedef struct {
@@ -91,6 +94,11 @@ static Std_VersionInfoType _Dem_VersionInfo =
 };
 #endif /* DEM_VERSION_INFO_API */
 
+/*
+ * Allocation of operation cycle state list
+ */
+
+static Dem_OperationCycleStateType operationCycleStateList[DEM_OPERATION_CYCLE_TYPE_ENDMARK];
 /*
  * Allocation of local event status buffer
  */
@@ -154,36 +162,26 @@ ChecksumType calcChecksum(void *data, uint16 nrOfBytes)
  * Description:	Update the status of "eventId", if not exist and "createIfNotExist" is
  * 				true a new record is created
  */
-void updateEventStatusRec(Dem_EventIdType eventId, Dem_EventStatusType eventStatus, boolean createIfNotExist)
+void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_EventStatusType eventStatus, boolean createIfNotExist, EventStatusRecType *eventStatusRec)
 {
 	uint16 i;
 	imask_t state = McuE_EnterCriticalSection();
 
 	// Lookup event ID
-	for (i=0; (eventStatusBuffer[i].eventId != eventId) && (i < DEM_MAX_NUMBER_EVENT); i++);
+	for (i=0; (eventStatusBuffer[i].eventId != eventParam->EventID) && (i < DEM_MAX_NUMBER_EVENT); i++);
 
-	if (i < DEM_MAX_NUMBER_EVENT) {
-		// Update event found
-		if	 (eventStatusBuffer[i].eventStatus != eventStatus) {
-			if (eventStatus == DEM_EVENT_STATUS_FAILED)
-				eventStatusBuffer[i].occurrence++;
-			eventStatusBuffer[i].eventStatus = eventStatus;
-			eventStatusBuffer[i].eventStatusChanged = TRUE;
-		}
-		else {
-			eventStatusBuffer[i].eventStatusChanged = FALSE;
-		}
-	}
-	else if (createIfNotExist) {
+	if ((i == DEM_MAX_NUMBER_EVENT) && (createIfNotExist)) {
 		// Search for free position
 		for (i=0; (eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) && (i < DEM_MAX_NUMBER_EVENT); i++);
 
 		if (i < DEM_MAX_NUMBER_EVENT) {
-			// Create new event
-			eventStatusBuffer[i].eventId = eventId;
-			eventStatusBuffer[i].occurrence = 1;
-			eventStatusBuffer[i].eventStatus = eventStatus;
-			eventStatusBuffer[i].eventStatusChanged = TRUE;
+			// Create new event record
+			eventStatusBuffer[i].eventId = eventParam->EventID;
+			eventStatusBuffer[i].occurrence = 0;
+			eventStatusBuffer[i].eventStatus = DEM_EVENT_STATUS_PASSED;
+			eventStatusBuffer[i].eventStatusChanged = FALSE;
+			eventStatusBuffer[i].operationCycleId = eventParam->EventClass->OperationCycleRef;
+			eventStatusBuffer[i].eventStatusExtended = DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE;
 		}
 		else {
 			// Error: Event status buffer full
@@ -191,8 +189,45 @@ void updateEventStatusRec(Dem_EventIdType eventId, Dem_EventStatusType eventStat
 		}
 	}
 
+	if (i < DEM_MAX_NUMBER_EVENT) {
+		// Update event record
+		eventStatusBuffer[i].eventStatusExtended &= ~(DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE);
+
+		if (eventStatus == DEM_EVENT_STATUS_FAILED) {
+			eventStatusBuffer[i].eventStatusExtended |= (DEM_TEST_FAILED | DEM_TEST_FAILED_THIS_OPERATION_CYCLE | DEM_TEST_FAILED_SINCE_LAST_CLEAR);
+			if	 (eventStatusBuffer[i].eventStatus != eventStatus) {
+				eventStatusBuffer[i].occurrence++;
+			}
+		}
+
+		if (eventStatus == DEM_EVENT_STATUS_PASSED) {
+			eventStatusBuffer[i].eventStatusExtended &= ~DEM_TEST_FAILED;
+		}
+
+		if	 (eventStatusBuffer[i].eventStatus != eventStatus) {
+			eventStatusBuffer[i].eventStatus = eventStatus;
+			eventStatusBuffer[i].eventStatusChanged = TRUE;
+		}
+		else {
+			eventStatusBuffer[i].eventStatusChanged = FALSE;
+		}
+
+		// Copy the record
+		memcpy(eventStatusRec, &eventStatusBuffer[i], sizeof(EventStatusRecType));
+	}
+	else {
+		// Copy an empty record to return data
+		eventStatusRec->eventId = DEM_EVENT_ID_NULL;
+		eventStatusRec->eventStatus = DEM_EVENT_STATUS_PASSED;
+		eventStatusRec->occurrence = 0;
+		eventStatusBuffer[i].eventStatusChanged = FALSE;
+		eventStatusBuffer[i].eventStatusExtended = DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE | DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR;
+	}
+
+
 	McuE_ExitCriticalSection(state);
 }
+
 
 /*
  * Procedure:	mergeEventStatusRec
@@ -246,7 +281,6 @@ void getEventStatusRec(Dem_EventIdType eventId, EventStatusRecType *eventStatusR
 		memcpy(eventStatusRec, &eventStatusBuffer[i], sizeof(EventStatusRecType));
 	}
 	else {
-		// Create a new record
 		eventStatusRec->eventId = DEM_EVENT_ID_NULL;
 		eventStatusRec->eventStatus = DEM_EVENT_STATUS_PASSED;
 		eventStatusRec->occurrence = 0;
@@ -527,33 +561,51 @@ void handlePreInitEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus
 	FreezeFrameRecType freezeFrameLocal;
 	ExtDataRecType extendedDataLocal;
 
-	if (eventStatus == DEM_EVENT_STATUS_PASSED) {
-		updateEventStatusRec(eventId, eventStatus, FALSE);
-	}
+	// Find configuration for this event
+	lookupEventIdParameter(eventId, &eventParam);
+	if (eventParam != NULL) {
+		if (eventParam->EventClass->OperationCycleRef < DEM_OPERATION_CYCLE_TYPE_ENDMARK) {
+			if (operationCycleStateList[eventParam->EventClass->OperationCycleRef] == DEM_CYCLE_STATE_START) {
+				if (eventStatus == DEM_EVENT_STATUS_PASSED) {
+					updateEventStatusRec(eventParam, eventStatus, FALSE, &eventStatusLocal);
+				}
+				else {
+					updateEventStatusRec(eventParam, eventStatus, TRUE, &eventStatusLocal);
+				}
 
-	if (eventStatus == DEM_EVENT_STATUS_FAILED) {
-		updateEventStatusRec(eventId, eventStatus, TRUE);
-		getEventStatusRec(eventId, &eventStatusLocal);
-		if (eventStatusLocal.eventStatusChanged)
-		{
-			lookupEventIdParameter(eventId, &eventParam);
-			if (eventParam != NULL) {
-				// Collect freeze frame data
-				getFreezeFrameData(eventParam, &freezeFrameLocal);
-				storeFreezeFrameDataPreInit(eventParam, &freezeFrameLocal);
+				if (eventStatusLocal.eventStatusChanged) {
 
-				// Check if first time -> store extended data
-				if (eventStatusLocal.occurrence == 1) {
-					// Collect extended data
-					getExtendedData(eventParam, &extendedDataLocal);
-					if (extendedDataLocal.eventId != DEM_EVENT_ID_NULL)
-					{
-						storeExtendedDataPreInit(eventParam, &extendedDataLocal);
+					if (eventStatusLocal.eventStatus == DEM_EVENT_STATUS_FAILED) {
+						// Collect freeze frame data
+						getFreezeFrameData(eventParam, &freezeFrameLocal);
+						storeFreezeFrameDataPreInit(eventParam, &freezeFrameLocal);
+
+						// Check if first time -> store extended data
+						if (eventStatusLocal.occurrence == 1) {
+							// Collect extended data
+							getExtendedData(eventParam, &extendedDataLocal);
+							if (extendedDataLocal.eventId != DEM_EVENT_ID_NULL)
+							{
+								storeExtendedDataPreInit(eventParam, &extendedDataLocal);
+							}
+						}
 					}
 				}
-			} // EventId params found
-		} // if (eventStatusLocal.eventStatusChanged)
-	} // if (eventStatus == DEM_EVENT_STATUS_FAILED)
+			}
+			else {
+				// Operation cycle not started
+				// TODO: Report error?
+			}
+		}
+		else {
+			// Operation cycle not set
+			// TODO: Report error?
+		}
+	}
+	else {
+		// Event ID not configured
+		// TODO: Report error?
+	}
 }
 
 
@@ -562,59 +614,72 @@ void handlePreInitEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus
  * Description:	Handle the updating of event status and storing of
  * 				event related data in event memory.
  */
-void handleEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus)
+Std_ReturnType handleEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus)
 {
+	Std_ReturnType returnCode = E_OK;
 	const Dem_EventParameterType *eventParam;
 	EventStatusRecType eventStatusLocal;
 	FreezeFrameRecType freezeFrameLocal;
 	ExtDataRecType extendedDataLocal;
 
-	if (eventStatus == DEM_EVENT_STATUS_PASSED) {
-		updateEventStatusRec(eventId, eventStatus, FALSE);
-	}
+	// Find configuration for this event
+	lookupEventIdParameter(eventId, &eventParam);
+	if (eventParam != NULL) {
+		if (eventParam->EventClass->OperationCycleRef < DEM_OPERATION_CYCLE_TYPE_ENDMARK) {
+			if (operationCycleStateList[eventParam->EventClass->OperationCycleRef] == DEM_CYCLE_STATE_START) {
+				updateEventStatusRec(eventParam, eventStatus, TRUE, &eventStatusLocal);
 
-	if (eventStatus == DEM_EVENT_STATUS_FAILED) {
-		updateEventStatusRec(eventId, eventStatus, TRUE);
-		getEventStatusRec(eventId, &eventStatusLocal);
-		if (eventStatusLocal.eventStatusChanged)
-		{
-			lookupEventIdParameter(eventId, &eventParam);
-			if (eventParam != NULL) {
-				storeEventEvtMem(eventParam, &eventStatusLocal);
-				// Collect freeze frame data
-				getFreezeFrameData(eventParam, &freezeFrameLocal);
-				storeFreezeFrameDataEvtMem(eventParam, &freezeFrameLocal);
+				if (eventStatusLocal.eventStatusChanged) {
 
-				// Check if first time -> store extended data
-				if (eventStatusLocal.occurrence == 1) {
-					// Collect extended data
-					getExtendedData(eventParam, &extendedDataLocal);
-					if (extendedDataLocal.eventId != DEM_EVENT_ID_NULL)
-					{
-						storeExtendedDataEvtMem(eventParam, &extendedDataLocal);
+					if (eventStatusLocal.eventStatus == DEM_EVENT_STATUS_FAILED) {
+						storeEventEvtMem(eventParam, &eventStatusLocal);
+						// Collect freeze frame data
+						getFreezeFrameData(eventParam, &freezeFrameLocal);
+						storeFreezeFrameDataEvtMem(eventParam, &freezeFrameLocal);
+
+						// Check if first time -> store extended data
+						if (eventStatusLocal.occurrence == 1) {
+							// Collect extended data
+							getExtendedData(eventParam, &extendedDataLocal);
+							if (extendedDataLocal.eventId != DEM_EVENT_ID_NULL)
+							{
+								storeExtendedDataEvtMem(eventParam, &extendedDataLocal);
+							}
+						}
 					}
 				}
-			} // EventId params found
-		} // if (eventStatusLocal.eventStatusChanged)
-	} // if (eventStatus == DEM_EVENT_STATUS_FAILED)
+			}
+			else {
+				// Operation cycle not started
+				returnCode = E_NOT_OK;
+			}
+		}
+		else {
+			// Operation cycle not set
+			returnCode = E_NOT_OK;
+		}
+	}
+	else {
+		// Event ID not configured
+		returnCode = E_NOT_OK;
+	}
+
+	return returnCode;
 }
+
 
 void getEventStatus(Dem_EventIdType eventId, Dem_EventStatusExtendedType *eventStatusExtended)
 {
 	EventStatusRecType eventStatusLocal;
 
-	// Clear status
-	*eventStatusExtended = 0;
-
 	// Get recorded status
 	getEventStatusRec(eventId, &eventStatusLocal);
 	if (eventStatusLocal.eventId == eventId) {
-		if (eventStatusLocal.eventStatus == DEM_EVENT_STATUS_FAILED) {
-			*eventStatusExtended |= DEM_TEST_FAILED;
-		}
+		*eventStatusExtended = eventStatusLocal.eventStatusExtended;
 	}
 	else {
-		// Event Id not found, assume ok.
+		// Event Id not found, no report received.
+		*eventStatusExtended = DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE | DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR;
 	}
 }
 
@@ -625,7 +690,7 @@ void getEventFailed(Dem_EventIdType eventId, boolean *eventFailed)
 	// Get recorded status
 	getEventStatusRec(eventId, &eventStatusLocal);
 	if (eventStatusLocal.eventId == eventId) {
-		if (eventStatusLocal.eventStatus == DEM_EVENT_STATUS_FAILED) {
+		if (eventStatusLocal.eventStatusExtended & DEM_TEST_FAILED) {
 			*eventFailed = TRUE;
 		}
 		else {
@@ -637,6 +702,27 @@ void getEventFailed(Dem_EventIdType eventId, boolean *eventFailed)
 		*eventFailed = FALSE;
 	}
 }
+
+void getEventTested(Dem_EventIdType eventId, boolean *eventTested)
+{
+	EventStatusRecType eventStatusLocal;
+
+	// Get recorded status
+	getEventStatusRec(eventId, &eventStatusLocal);
+	if (eventStatusLocal.eventId == eventId) {
+		if ( !(eventStatusLocal.eventStatusExtended & DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE)) {
+			*eventTested = TRUE;
+		}
+		else {
+			*eventTested = FALSE;
+		}
+	}
+	else {
+		// Event Id not found, not tested.
+		*eventTested = FALSE;
+	}
+}
+
 
 
 //==============================================================================//
@@ -679,10 +765,16 @@ void Dem_PreInit(void)
 		configSet = DEM_Config.ConfigSet;
 	}
 
+	// Initializion of operation cycle states.
+	for (i=0; i<DEM_OPERATION_CYCLE_TYPE_ENDMARK; i++) {
+		operationCycleStateList[i] = DEM_CYCLE_STATE_END;
+	}
+
 	// Initialize the event status buffer
 	for (i=0; i<DEM_MAX_NUMBER_EVENT; i++) {
 		eventStatusBuffer[i].eventId = DEM_EVENT_ID_NULL;
 		eventStatusBuffer[i].occurrence = 0;
+		eventStatusBuffer[i].eventStatusExtended = DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE | DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR;
 		eventStatusBuffer[i].eventStatus = DEM_EVENT_STATUS_PASSED;
 		eventStatusBuffer[i].eventStatusChanged = FALSE;
 	}
@@ -828,7 +920,7 @@ Std_ReturnType Dem_SetEventStatus(Dem_EventIdType eventId, Dem_EventStatusType e
 
 	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
 	{
-		handleEvent(eventId, eventStatus);
+		_returnCode = handleEvent(eventId, eventStatus);
 	}
 	else
 	{
@@ -848,11 +940,16 @@ Std_ReturnType Dem_SetEventStatus(Dem_EventIdType eventId, Dem_EventStatusType e
  */
 Std_ReturnType Dem_ResetEventStatus(Dem_EventIdType eventId)
 {
+	const Dem_EventParameterType *eventParam;
+	EventStatusRecType eventStatusLocal;
 	Std_ReturnType _returnCode = E_OK;
 
 	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
 	{
-		updateEventStatusRec(eventId, DEM_EVENT_STATUS_PASSED, FALSE);
+		lookupEventIdParameter(eventId, &eventParam);
+		if (eventParam != NULL) {
+			updateEventStatusRec(eventParam, DEM_EVENT_STATUS_PASSED, FALSE, &eventStatusLocal);
+		}
 	}
 	else
 	{
@@ -912,9 +1009,7 @@ Std_ReturnType Dem_GetEventTested(Dem_EventIdType eventId, boolean *eventTested)
 
 	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
 	{
-		*eventTested = FALSE; // TODO:
-		Det_ReportError(MODULE_ID_DEM, 0, DEM_GLOBAL_ID, DEM_E_NOT_IMPLEMENTED_YET);
-
+		getEventTested(eventId, eventTested);
 	}
 	else
 	{
@@ -949,6 +1044,57 @@ Std_ReturnType Dem_GetFaultDetectionCounter(Dem_EventIdType eventId, sint8 *coun
 }
 
 
+Std_ReturnType Dem_SetOperationCycleState(Dem_OperationCycleType operationCycleId, Dem_OperationCycleStateType cycleState)
+{
+	uint16 i;
+	Std_ReturnType _returnCode = E_OK;
+
+	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
+	{
+		if (operationCycleId < DEM_OPERATION_CYCLE_TYPE_ENDMARK) {
+			switch (cycleState)
+			{
+			case DEM_CYCLE_STATE_START:
+				operationCycleStateList[operationCycleId] = cycleState;
+				// Lookup event ID
+				for (i=0; i < DEM_MAX_NUMBER_EVENT; i++) {
+					if ((eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) && (eventStatusBuffer[i].operationCycleId == operationCycleId)) {
+						eventStatusBuffer[i].eventStatusExtended &= ~DEM_TEST_FAILED_THIS_OPERATION_CYCLE;
+						eventStatusBuffer[i].eventStatusExtended |= DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE;
+					}
+				}
+				break;
+
+			case DEM_CYCLE_STATE_END:
+				operationCycleStateList[operationCycleId] = cycleState;
+				break;
+			default:
+	#if (DEM_DEV_ERROR_DETECT == STD_ON)
+			Det_ReportError(MODULE_ID_DEM, 0, DEM_SETOPERATIONCYCLESTATE_ID, DEM_E_PARAM_DATA);
+			_returnCode = E_NOT_OK;
+	#endif
+				break;
+			}
+		}
+		else {
+	#if (DEM_DEV_ERROR_DETECT == STD_ON)
+			Det_ReportError(MODULE_ID_DEM, 0, DEM_SETOPERATIONCYCLESTATE_ID, DEM_E_PARAM_DATA);
+			_returnCode = E_NOT_OK;
+	#endif
+		}
+	}
+	else
+	{
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
+		Det_ReportError(MODULE_ID_DEM, 0, DEM_SETOPERATIONCYCLESTATE_ID, DEM_E_UNINIT);
+		_returnCode = E_NOT_OK;
+#endif
+	}
+
+	return _returnCode;
+}
+
+
 /********************************************
  * Interface BSW-Components <-> DEM (8.3.4) *
  ********************************************/
@@ -971,7 +1117,7 @@ void Dem_ReportErrorStatus( Dem_EventIdType eventId, Dem_EventStatusType eventSt
 		case DEM_INITIALIZED:
 			// Handle report
 			if ((eventStatus == DEM_EVENT_STATUS_PASSED) || (eventStatus == DEM_EVENT_STATUS_FAILED)) {
-				handleEvent(eventId, eventStatus);
+				(void)handleEvent(eventId, eventStatus);
 			}
 			break;
 

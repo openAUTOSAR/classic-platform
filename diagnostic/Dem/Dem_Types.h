@@ -49,23 +49,34 @@ typedef uint8 Dem_DTCOriginType;
  * DemEventStatusExtendedType
  */
 typedef uint8 Dem_EventStatusExtendedType;
-#define	DEM_WARNING_INDICATOR_REQUESTED 			0x80
-#define	DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE 0x40
-#define	DEM_TEST_FAILED_SINCE_LAST_CLEAR 			0x20
-#define	DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR 	0x10
-#define	DEM_CONFIRMED_DTC 							0x08
-#define	DEM_PENDING_DTC 							0x04
-#define	DEM_TEST_FAILED_THIS_OPERATION_CYCLE 		0x02
 #define	DEM_TEST_FAILED 							0x01
+#define	DEM_TEST_FAILED_THIS_OPERATION_CYCLE 		0x02
+#define	DEM_PENDING_DTC 							0x04
+#define	DEM_CONFIRMED_DTC 							0x08
+#define	DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR 	0x10
+#define	DEM_TEST_FAILED_SINCE_LAST_CLEAR 			0x20
+#define	DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE 0x40
+#define	DEM_WARNING_INDICATOR_REQUESTED 			0x80
 
 /*
  * DemOperationCycleType
  */
 typedef uint8 Dem_OperationCycleType;	// TODO: Check type and values
-#define DEM_IGNITION	0x01			// Ignition ON/OF Cycle
-#define	DEM_OBD_DCY		0x02			// OBD Driving Cycle
-#define	DEM_POWER		0x03			// Power ON/OFF Cycle
-#define	DEM_WARMUP		0x04			// OBD Warm up Cycle
+enum {
+	DEM_IGNITION,	// Ignition ON/OF Cycle
+	DEM_OBD_DCY,	// OBD Driving Cycle
+	DEM_POWER,		// Power ON/OFF Cycle
+	DEM_WARMUP,		// OBD Warm up Cycle
+
+	DEM_OPERATION_CYCLE_TYPE_ENDMARK
+};
+
+/*
+ * Dem_OperationCycleStateType
+ */
+typedef uint8 Dem_OperationCycleStateType;
+#define DEM_CYCLE_STATE_START		1
+#define DEM_CYCLE_STATE_END			2
 
 /*
  * DemFreezeFrameKindType
@@ -101,13 +112,6 @@ typedef uint32 Dem_DTCType;
 typedef uint8 Dem_InitMonitorKindType;
 #define DEM_INIT_MONITOR_CLEAR		1
 #define DEM_INIT_MONITOR_RESTART	2
-
-/*
- * Dem_OperationCycleSTateType
- */
-typedef uint8 Dem_OperationCycleSTateType;
-#define DEM_CYCLE_STATE_START		1
-#define DEM_CYCLE_STATE_END			2
 
 /*
  * Dem_FaultDetectionCpunterType

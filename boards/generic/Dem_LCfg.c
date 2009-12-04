@@ -107,7 +107,8 @@ const Dem_EventClassType EventClass1 = {
 				NULL
 		},
 		.FFPrestorageSupported = FALSE,
-		.HealingAllowed = FALSE
+		.HealingAllowed = FALSE,
+		.OperationCycleRef = DEM_IGNITION
 };
 
 const Dem_EventClassType EventClass2 = {
@@ -117,7 +118,8 @@ const Dem_EventClassType EventClass2 = {
 				NULL
 		},
 		.FFPrestorageSupported = FALSE,
-		.HealingAllowed = FALSE
+		.HealingAllowed = FALSE,
+		.OperationCycleRef = DEM_POWER
 };
 
 const Dem_EventParameterType EventParameter[] = {

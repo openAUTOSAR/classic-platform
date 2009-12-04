@@ -88,11 +88,6 @@ typedef struct {
 	// TODO: Fill out
 } Dem_NvramBlockIdType;
 
-// 10.2.11	DemOperationCycleTgt
-typedef struct {
-	Dem_OperationCycleType	OperationCycle;		// (Pre)	(1)
-} Dem_OperationCycleTgtType;
-
 /*
  * DemConfigSetType types
  */
@@ -131,13 +126,13 @@ typedef struct {
 typedef struct {
 	boolean	ConsiderPtoStatus;								// (--) 		(1)
 	const Dem_DTCOriginType EventDestination[DEM_MAX_NR_OF_EVENT_DESTINATION+1];	// (Pre+Post)	(0..4)
-	uint8	EventPriority;									// (Pre+Post)	(1)
-	boolean	FFPrestorageSupported;							// (Pre+Post)	(1)
-	boolean	HealingAllowed;									// (Pre+Post)	(1)
-//	uint8	HealingCycleCounter;							// (Pre+Post)	(0..1) Optional
-//	const Dem_EnableConditionType	*EnableConditionRef;	// (Pre+Post)	(0..*) Optional
-//	const Dem_OperationCycleTgtType *HealingCycleRef;		// (Pre+Post)	(0..1) Optional
-	const Dem_OperationCycleTgtType	*OperationCycleRef;		// (Pre+Post)	(0..1)
+	uint8					EventPriority;									// (Pre+Post)	(1)
+	boolean					FFPrestorageSupported;							// (Pre+Post)	(1)
+	boolean					HealingAllowed;									// (Pre+Post)	(1)
+	Dem_OperationCycleType	OperationCycleRef;								// (Pre+Post)	(1)
+//	uint8					HealingCycleCounter;							// (Pre+Post)	(0..1) Optional
+//	const Dem_EnableConditionType	*EnableConditionRef;					// (Pre+Post)	(0..*) Optional
+//	const Dem_OperationCycleTgtType *HealingCycleRef;						// (Pre+Post)	(0..1) Optional
 	/*
 	 * TODO: Fill out
 	 * Dem_IndicatorAttribute
