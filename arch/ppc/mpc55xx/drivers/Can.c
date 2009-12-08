@@ -28,7 +28,9 @@
 #include "Mcu.h"
 #include "CanIf_Cbk.h"
 #include "Det.h"
+#if defined(USE_DEM)
 #include "Dem.h"
+#endif
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -156,11 +158,15 @@
 #define DET_REPORTERROR(_x,_y,_z,_q)
 #endif
 
+#if defined(USE_DEM)
 #define VALIDATE_DEM_NO_RV(_exp,_err ) \
         if( !(_exp) ) { \
           Dem_ReportErrorStatus(_err, DEM_EVENT_STATUS_FAILED); \
           return; \
         }
+#else
+#define VALIDATE_DEM_NO_RV(_exp,_err )
+#endif
 
 //-------------------------------------------------------------------
 

@@ -28,8 +28,9 @@
 #include "Std_Types.h"
 #include "Det.h"
 //#include "MemIf_Types.h"
-// TODO: not yet #include "Dem.h"
-
+#if defined(USE_DEM)
+#include "Dem.h"
+#endif
 // SW ans Autosar spec versions
 #define FLS_SW_MAJOR_VERSION    	1
 #define FLS_SW_MINOR_VERSION   		0

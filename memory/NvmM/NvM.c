@@ -23,7 +23,9 @@
 
 #include "NvM.h"
 #include "Rte.h"
+#if defined(USE_DEM)
 #include "Dem.h"
+#endif
 //#include "Crc.h"
 
 void NvM_Init( void ){

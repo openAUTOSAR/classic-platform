@@ -23,7 +23,9 @@
 #include "Std_Types.h"
 #include "Mcu.h"
 #include "Det.h"
+#if defined(USE_DEM)
 #include "Dem.h"
+#endif
 #include <assert.h>
 #include "cpu.h"
 #include <string.h>
@@ -86,7 +88,7 @@ Mcu_GlobalType Mcu_Global =
 
 #if 0
 static void Mcu_LossOfLock( void  ) {
-#if ( MCU_DEV_ERROR_DETECT == STD_ON )
+#if defined(USE_DEM)
 	Dem_ReportErrorStatus(MCU_E_CLOCK_FAILURE, DEM_EVENT_STATUS_FAILED);
 #endif
 

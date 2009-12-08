@@ -99,7 +99,9 @@ void PduR_LoIfRxIndication(PduIdType PduId, const uint8* SduPtr) {
 
 
 			} else {
+#if defined(USE_DEM)
 				Dem_ReportErrorStatus(PDUR_E_PDU_INSTANCE_LOST, DEM_EVENT_STATUS_FAILED);
+#endif
 				DEBUG(DEBUG_LOW,"\tTransmission failed. PDUR_E_PDU_INSTANCE_LOST\n");
 			}
 		}

@@ -91,7 +91,9 @@ void EcuM_Init( void ) {
 //	Mcu_GetResetReason();
 #if 0
 	Det_Init();
+#if defined(USE_DEM)
 	Dem_PreInit();
+#endif
 	EcuM_AL_DriverInitOne();
 #endif
 
@@ -127,6 +129,7 @@ void EcuM_Init( void ) {
 	NvM_WriteAll();
 	NvM_CancelWriteAll();
 
+#if defined(USE_DEM)
 	Dem_PreInit();
 	Dem_Init();
 	{
@@ -134,6 +137,7 @@ void EcuM_Init( void ) {
 		Dem_EventStatusType status = 0;
 		Dem_ReportErrorStatus(id,status);
 	}
+#endif
 	Rte_Start();
 	Rte_Stop();
 #endif
