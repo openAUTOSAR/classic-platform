@@ -20,7 +20,7 @@ echo "   <board>        - mpc551xsim | ..."
 echo "   <example>      - simple | tiny | ..."
 echo ""
 echo "example:"
-echo " $build_example all PPC mpc551xsim simple"
+echo " $build_example all PPC mpc551xsim examples/simple"
 quit 1;
 fi 
 
@@ -28,7 +28,7 @@ SCRIPT_DIR=`dirname $0`
 ARCH=$2
 source ${SCRIPT_DIR}/guess_cc.sh
 
-export BDIR=examples/$4
+export BDIR=$4
 make BOARDDIR=$3 $1 
 if [ $? -ne 0 ]; then quit 1
 fi

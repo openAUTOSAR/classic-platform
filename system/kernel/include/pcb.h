@@ -95,11 +95,27 @@ typedef struct pcb_s {
 	event_t 	ev_wait;				// TASK
 	event_t 	ev_set;					// TASK
 
-	scheduling_t scheduling;	// TASK
+	enum OsTaskSchedule scheduling;	// TASK
 
-	// A task can hold only one internal resource
-	//ResourceType	resource_internal;	// TASK
-	resource_obj_t *resource_int_p;
+	// OsTaskActivation
+	// The limit from OsTaskActivation
+	uint8_t activationLimit;
+	// The number of queued activation of a task
+	uint8_t activations;
+
+	// A task can hold only one internal resource and only i f
+	// OsTaskSchedule == FULL
+	resource_obj_t *resource_int_p;		// TASK
+
+	// What resources this task have access to
+	// Typically (1<<RES_xxx) | (1<<RES_yyy)
+	uint32_t resourceAccess;
+
+	// What resource that are currently held by this task
+	// Typically (1<<RES_xxx) | (1<<RES_yyy)
+	uint32_t resourceHolds;
+
+	TAILQ_HEAD(,resource_obj_s) resource_head; // TASK
 
 	struct rom_pcb_s *pcb_rom_p;
 

@@ -55,9 +55,9 @@ typedef struct sys_s {
 	/* List of all pcb's,
 	 * Only needed for non-static configuration of the kernel
 	 */
-	TAILQ_HEAD(tailq2,pcb_s) pcb_head;
+	TAILQ_HEAD(,pcb_s) pcb_head;
 	/* Ready queue */
-	TAILQ_HEAD(tailq,pcb_s) ready_head;
+	TAILQ_HEAD(,pcb_s) ready_head;
 } sys_t;
 
 extern sys_t os_sys;

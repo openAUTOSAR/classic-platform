@@ -187,7 +187,6 @@ pcb_t *os_find_top_prio_proc( void ){
 	return top_prio_pcb;
 }
 
-
 /**
  * Used at startup to initialize a pcb. Is sometimes
  * used to restore the state of a basic process.

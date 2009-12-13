@@ -271,6 +271,8 @@ StatusType ReleaseResource( ResourceType ResID);
 //DeclareResource(RES_SCHEDULER);
 #define OS_TASK_PRIORITY_MIN	0
 #define OS_TASK_PRIORITY_MAX	31
+// logical prio higher than normal tasks
+#define OS_RES_SCHEDULER_PRIO	32
 
 typedef struct OsDriver_s {
 	int	OsGptChannelRef;

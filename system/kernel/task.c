@@ -14,13 +14,6 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
-
-
 #include "Os.h"
 #include "pcb.h"
 #include "sys.h"
@@ -37,10 +30,10 @@ StatusType GetTaskState(TaskType TaskId, TaskStateRefType State) {
 
 	// TODO: Lazy impl. for now */
 	switch(curr_state) {
-	case ST_RUNNING: *State = TASK_STATE_RUNNING;  break;
-	case ST_WAITING: *State = TASK_STATE_WAITING;  break;
-	case ST_SUSPENDED: *State = TASK_STATE_SUSPENDED;  break;
-	case ST_READY: *State = TASK_STATE_READY;  break;
+	case ST_RUNNING: 	*State = TASK_STATE_RUNNING;  	break;
+	case ST_WAITING: 	*State = TASK_STATE_WAITING;  	break;
+	case ST_SUSPENDED: 	*State = TASK_STATE_SUSPENDED;  break;
+	case ST_READY: 		*State = TASK_STATE_READY;  	break;
 	}
 
 	// Prevent label warning. Remove when proper error handling is implemented.
@@ -92,6 +85,7 @@ StatusType ActivateTask( TaskType TaskID ) {
 		goto err;
 	}
 
+#if 0
 	if( os_pcb_get_state(pcb) != ST_SUSPENDED ) {
 		ramlog_str("#E_OS_LIMIT\n");
 		ramlog_str(pcb->name);
@@ -103,15 +97,24 @@ StatusType ActivateTask( TaskType TaskID ) {
 		goto err;
 
 	} else {
-		/* TODO: This makes some things double.. cleanup is needed */
-		os_pcb_make_virgin(pcb);
+#endif
+	if( pcb->activations == pcb->activationLimit ) {
+		return E_OS_LIMIT;
+	} else {
+		pcb->activations++;
+		if( os_pcb_get_state(pcb) == ST_READY ) {
+			/* We do nothing */
+		} else {
+			/* TODO: This makes some things double.. cleanup is needed */
+			os_pcb_make_virgin(pcb);
+		}
 	}
 
 	os_pcb_make_ready(pcb);
 	Irq_Restore(msr);
 
 	// Following chapter 4.6.1 in OSEK/VDX here it seems we should re-schedule.
-	if( (pcb->scheduling == SCHEDULING_FULL) &&  (os_sys.int_nest_cnt == 0) ) {
+	if( (pcb->scheduling == FULL) &&  (os_sys.int_nest_cnt == 0) ) {
 		Schedule();
 	}
 
@@ -127,6 +130,11 @@ StatusType TerminateTask( void ) {
 	uint32_t flags;
 
 	os_std_printf(D_TASK,"TerminateTask %s\n",curr_pcb->name);
+
+	if( os_sys.int_nest_cnt != 0 ) {
+		rv =  E_OS_CALLEVEL;
+		goto err;
+	}
 
 	Irq_Save(flags);
 
@@ -152,6 +160,11 @@ StatusType ChainTask( TaskType TaskId ) {
 	StatusType rv;
 	uint32_t flags;
 
+	if( os_sys.int_nest_cnt != 0 ) {
+		rv =  E_OS_CALLEVEL;
+		goto err;
+	}
+
 	Irq_Save(flags);
 	rv = ActivateTask(TaskId);
 	/* TODO: more more here..*/
@@ -172,12 +185,31 @@ StatusType ChainTask( TaskType TaskId ) {
  * TODO: The OSEK spec says a lot of strange things under "particulareties"
  * that I don't understand
  *
+ * See OSEK/VDX 13.2.3.4
+ *
  */
 StatusType Schedule( void ) {
 	pcb_t *pcb;
 	pcb_t *curr_pcb = get_curr_pcb();
 	StatusType rv = E_OK;
 	uint32_t flags;
+
+	/* We need to figure out if we have an internal resource,
+	 * otherwise no re-scheduling.
+	 * NON  - Have internal resource prio OS_RES_SCHEDULER_PRIO (32+)
+	 * FULL - Assigned internal resource OR
+	 *        No assigned internal resource.
+	 * */
+	if( os_get_resource_int_p() == NULL ) {
+		/* We do nothing */
+		return E_OK;
+	}
+
+	/* Check that we are not calling from interrupt context */
+	if( os_sys.int_nest_cnt != 0 ) {
+		rv =  E_OS_CALLEVEL;
+		goto err;
+	}
 
 	Irq_Save(flags);
 	/* Try to find higher prio task that is ready, if none, continue */

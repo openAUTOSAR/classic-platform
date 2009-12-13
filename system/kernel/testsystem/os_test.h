@@ -81,5 +81,6 @@ void btask_sup_h( void ) SECTION_SUP;
 DECLARE_TASKS(01);
 DECLARE_TASKS(02);
 DECLARE_TASKS(03);
+DECLARE_TASKS(04);
 
 #endif /* OS_TEST_H_ */

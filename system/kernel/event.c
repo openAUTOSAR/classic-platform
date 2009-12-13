@@ -57,6 +57,11 @@ StatusType WaitEvent( EventMaskType Mask ) {
 	pcb_t *curr_pcb = get_curr_pcb();
 	StatusType rv = E_OK;
 
+	if( os_sys.int_nest_cnt != 0 ) {
+		rv =  E_OS_CALLEVEL;
+		goto err;
+	}
+
 	/* Remove from ready queue */
 	Irq_Disable();
 
@@ -143,6 +148,12 @@ StatusType GetEvent( TaskType TaskId, EventMaskRefType Mask) {
 StatusType ClearEvent( EventMaskType Mask) {
     StatusType rv = E_OK;
 	pcb_t *pcb;
+
+	if( os_sys.int_nest_cnt != 0 ) {
+		rv =  E_OS_CALLEVEL;
+		goto err;
+	}
+
 	pcb = get_curr_pcb();
 	pcb->ev_set &= ~Mask;
 

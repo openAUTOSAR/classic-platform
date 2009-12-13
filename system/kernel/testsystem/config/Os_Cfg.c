@@ -13,15 +13,6 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-
-
 /*
  * Configuration
  * ------------------------------------------------
@@ -84,6 +75,7 @@
  *
  *
  */
+#define OS_CFG_API_VERSION 2
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -136,26 +128,31 @@ GEN_RESOURCE_HEAD {
 // Internal resources
 	GEN_RESOURCE(1,RESOURCE_TYPE_INTERNAL,8, APPLICATION_ID_application_1,(1<<TASK_ID_etask_sup_l)),
 // external resource
-	GEN_RESOURCE(2,RESOURCE_TYPE_STANDARD,0,0,0),
+	GEN_RESOURCE(2,RESOURCE_TYPE_STANDARD,3,0,0),
+// external resource
+	GEN_RESOURCE(3,RESOURCE_TYPE_STANDARD,4,0,0),
+// external resource
+	GEN_RESOURCE(4,RESOURCE_TYPE_STANDARD,5,0,0),
+
 };
 
 //-------------------------------------------------------------------
 
 GEN_TASK_HEAD {
 
-	GEN_ETASK(OsIdle,0,true/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/),
+	GEN_ETASK(OsIdle,0,true/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0 ),
 
 /* extended */
-	GEN_ETASK(etask_master,1,true/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/),
+	GEN_ETASK(etask_master,1,true/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0 ),
 
-	GEN_ETASK(etask_sup_l,2,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/),
-	GEN_ETASK(etask_sup_m,3,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/),
-	GEN_ETASK(etask_sup_h,4,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/),
+	GEN_ETASK(etask_sup_l,2,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0 ),
+	GEN_ETASK(etask_sup_m,3,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0 ),
+	GEN_ETASK(etask_sup_h,4,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0 ),
 
 /* basic */
-	GEN_BTASK(btask_sup_l,2,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/),
-	GEN_BTASK(btask_sup_m,3,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/),
-	GEN_BTASK(btask_sup_h,4,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/),
+	GEN_BTASK(btask_sup_l,2,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0 ),
+	GEN_BTASK(btask_sup_m,3,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0 ),
+	GEN_BTASK(btask_sup_h,4,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0 ),
 
 	GEN_ISR_2(  TASK_ID_os_tick, "dec", OsTick, /*prio*/ 11, /*type*/ PROC_ISR2,  INTC_VECTOR_EXCEPTION_DEC , NULL, APPLICATION_ID_application_1),
 #if 0

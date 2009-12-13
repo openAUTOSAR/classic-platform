@@ -13,14 +13,6 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-
 #include "types.h"
 #include "Os.h"
 #include "assert.h"
@@ -32,6 +24,42 @@
 #include "task_i.h"
 #include "ext_config.h"
 
+/* INFO
+ * - If OsTaskSchedule = NON, Task it not preemptable, no internal resource may be assigned to a task
+ *                       (cause it already have one of prio 32)
+ *                       FULL, Task is preemptable
+ * - On Schedule() .... This service has no influence on tasks with no internal resource
+ *                      assigned (preemptable tasks).
+ *
+ * OSEK on internal resources:
+ * - Non preemptable tasks are a special group with an internal resource of the
+ *   same priority as RES_SCHEDULER assigned
+ *
+ *
+ * Assign RES_SCHEDULER with prio 32.
+ * Assign internal resources to NON preemptable task.
+ *
+ * So that leaves us with:
+ * - NON
+ *   - Cannot assign internal resource.
+ *     It automatically gets internal resource with same prio as RES_SCHEDULER
+ *
+ * - FULL
+ *   - Assigned. Used for grouping tasks.
+ *   - No assigned.
+ *
+ * What does that mean?
+ * - It's probably OK to do a GetResource(RES_SCHEDULER) from a NON task (although pointless)
+ * - GetResource(<any>) from a NON task is wrong
+ *
+ * Generation/Implementation:
+ * - Resources to 32. Alloc with .resourceAlloc = ((1<<RES_1) |(1<<RES_2));
+ * - Keep allocated resources as stack to comply with LIFO order.
+ * - A linked resource is just another name for an existing resource. See OsResource in Autosar SWS OS.
+ *   This means that no resource object should be generated, just the define in Os_Cfg.h
+ * - A task with Scheduling=NON does have priority (although it's internal priority is 32)
+ *
+ */
 
 #define valid_standard_id() (rid->nr < Oil_GetResourceCnt()) //&& !(rid->type == RESOURCE_TYPE_INTERNAL) )
 #define valid_internal_id() (rid->nr < Oil_GetResourceCnt()) //&& (rid->type == RESOURCE_TYPE_INTERNAL) )
@@ -81,6 +109,11 @@ static StatusType GetResource_( resource_obj_t * rid ) {
 
 	rid->owner = get_curr_pid();
 	rid->old_task_prio = os_pcb_set_prio(os_get_curr_pcb() ,rid->ceiling_priority);
+
+	if( rid->type != RESOURCE_TYPE_INTERNAL ) {
+		TAILQ_INSERT_TAIL(&os_get_curr_pcb()->resource_head, rid, listEntry);
+	}
+
 	goto ok;
 err:
 	ERRORHOOK(rv);
@@ -110,12 +143,13 @@ StatusType ReleaseResource_( resource_obj_t * rid ) {
 
         // Release it...
         rid->owner = (TaskType) (-1);
+        TAILQ_REMOVE(&os_get_curr_pcb()->resource_head, rid, listEntry);
         os_pcb_set_prio(os_get_curr_pcb(), rid->old_task_prio);
-
         return E_OK;
 	}
 }
 
+#if 0
 // TODO: Remove this function later.. this is done in oil generator
 //       instead.
 void os_resource_calc_attributes( void ) {
@@ -127,6 +161,7 @@ void os_resource_calc_attributes( void ) {
 //		rsrc
 	}
 }
+#endif
 
 //
 void os_resource_get_internal( void ) {
@@ -148,6 +183,3 @@ void os_resource_release_internal( void ) {
 	}
 	//ReleaseResource(os_get_curr_pcb()->resource_internal);
 }
-
-
-

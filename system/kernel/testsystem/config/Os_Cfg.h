@@ -66,7 +66,10 @@
 //#define TASK_ID_isr_soft7				4
 
 #define RES_ID_INT_1		1
-#define RES_ID_EXT_1		2
+#define RES_ID_ext_prio_3	2
+#define RES_ID_ext_prio_4	3
+#define RES_ID_ext_prio_5	5
+
 
 #define COUNTER_ID_OsTick		0
 // Driver all alarms

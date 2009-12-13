@@ -69,6 +69,48 @@ static void os_counter_init( void ) {
 }
 
 /**
+ *
+ * @param pcb_p
+ * @return
+ */
+static os_resource_init( void ) {
+	//TAILQ_INIT(&pcb_p->resource_head);
+	pcb_t *pcb_p;
+	resource_obj_t rsrc_p;
+	int topPrio;
+
+	/* Calculate ceiling priority
+	 * We make this as simple as possible. The ceiling priority
+	 * is set to the same priority as the highest priority task that
+	 * access it.
+	 * */
+	for( int i=0; i < Oil_GetResourceCnt(); i++) {
+		rsrc_p = Oil_GetResource(i);
+		topPrio = 0;
+
+		for( int pi; pi < Oil_GetTaskCnt(); pi++) {
+
+			pcb_p = os_get_pcb(pi);
+			if(pcb_p->resourceAccess & (1<<i) ) {
+				topPrio = MAX(topPrio,pcb_p->prio);
+			}
+		}
+		rsrc_p->ceiling_priority = topPrio;
+	}
+
+	/* Assign an internal resource with prio 32 to the tasks
+	 * with scheduling=NON
+	 */
+	for( int i; i < Oil_GetTaskCnt(); i++) {
+		pcb_p = os_get_pcb(pi);
+		if(pcb_p->scheduling == NON ) {
+
+		}
+	}
+}
+
+
+/**
  * Copy rom pcb data(r_pcb) to ram data
  *
  * @param 	pcb		ram data
@@ -100,6 +142,7 @@ static void os_pcb_rom_copy( pcb_t *pcb, rom_pcb_t *r_pcb ) {
 	pcb->pcb_rom_p = r_pcb;
 	pcb->resource_int_p = r_pcb->resource_int_p;
 	pcb->scheduling = r_pcb->scheduling;
+	pcb->resourceAccess = r_pcb->resourceAccess;
 //	pcb->app = &app_list[r_pcb->app];
 //	pcb->app_mask = app_mask[r_pcb->app];
 	strncpy(pcb->name,r_pcb->name,16);
@@ -138,6 +181,7 @@ void InitOS( void ) {
 	// Init counter.. with alarms and schedule tables
 	os_counter_init();
 	os_stbl_init();
+	os_resource_init();
 
 	// Put all tasks in the pcb list
 	// Put the one that belong in the ready queue there
@@ -145,7 +189,9 @@ void InitOS( void ) {
 	// TODO: Isn't this just EXTENED tasks ???
 	for( i=0; i < Oil_GetTaskCnt(); i++) {
 		tmp_pcb = os_get_pcb(i);
+
 		assert(tmp_pcb->prio<=OS_TASK_PRIORITY_MAX);
+
 		os_pcb_rom_copy(tmp_pcb,os_get_rom_pcb(i));
 		if( !(tmp_pcb->proc_type & PROC_ISR) ) {
 			os_pcb_make_virgin(tmp_pcb);

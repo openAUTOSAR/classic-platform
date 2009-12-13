@@ -13,20 +13,6 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-/*
- * isr.c
- *
- *  Created on: Jul 13, 2009
- *      Author: mahi
- */
-
 #include <stdint.h>
 #include "sys.h"
 #include "pcb.h"
@@ -67,8 +53,8 @@ void *Os_Isr( void *stack, void *pcb_p ) {
 
 	PRETASKHOOK();
 
-	// We should not get here if we're SCHEDULING_NONE
-	if( pcb->scheduling == SCHEDULING_NONE) {
+	// We should not get here if we're NON
+	if( pcb->scheduling == NON) {
 		// TODO:
 		// assert(0);
 		while(1);
@@ -87,7 +73,7 @@ void *Os_Isr( void *stack, void *pcb_p ) {
 
 	// TODO: Check stack check marker....
 	// We have preempted a task
-	if( (os_sys.int_nest_cnt == 0) ) { //&& is_idle_task() ) {
+	if( (os_sys.int_nest_cnt == 0) && (os_sys.scheduler_lock==0) ) { //&& is_idle_task() ) {
 		/* If we get here:
 		 * - the preempted task is saved with large context.
 		 * - We are on interrupt stack..( this function )

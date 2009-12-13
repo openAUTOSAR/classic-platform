@@ -60,7 +60,6 @@
  */
 
 
-
 /**
  * Swap context, from one pcb to another
  */
@@ -103,6 +102,35 @@ void os_swap_context(pcb_t *old_pcb, pcb_t *new_pcb ) {
 	os_resource_get_internal();
 	PRETASKHOOK();
 }
+
+pcb_t *OsFindTopPrioTask( void ) {
+
+
+}
+
+/**
+ * Unconditional dispatch.
+ * Used by:
+ *   ActivateTask()
+ *   WaitEvent()
+ *
+ *
+ */
+void OsDispatch( void ) {
+	uint32_t flags;
+	pcb_t pcbPtr;
+
+	assert(os_sys.int_nest_cnt == 0);
+	assert(os_sys.scheduler_lock == 0 );
+
+	Irq_Save(flags);
+	pcbPtr = os_find_top_prio_proc();
+	if( )
+
+
+	Irq_Restore(flags);
+}
+
 
 // We come here from
 // - os_init

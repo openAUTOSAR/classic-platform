@@ -7,7 +7,8 @@
 obj-y += test_master.o
 obj-y += test_sup_01.o
 obj-y += test_sup_02.o
-obj-y += test_sup_03.o	
+obj-y += test_sup_03.o
+obj-y += test_sup_04.o	
 obj-y += test_framework.o
 
 obj-y += Os_Cfg.o

@@ -14,19 +14,6 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
-
-/*
- * kernel.h
- *
- *  Created on: 23 aug 2009
- *      Author: mahi
- */
-
 #ifndef KERNEL_H_
 #define KERNEL_H_
 
@@ -49,17 +36,6 @@ typedef struct os_conf_global_hooks_s {
 	PreTaskHookType PreTaskHook;
 	PostTaskHookType PostTaskHook;
 } os_conf_global_hooks_t;
-
-
-
-/* Application hooks */
-/*
-typedef struct os_application_hooks_s {
-	void (*StartupHook)( void );
-	void (*ShutdownHook)( Std_ReturnType Error );
-	void (*ErrorHook)( Std_ReturnType Error );
-} os_application_hooks_t;
-*/
 
 /*-----------------------------------------------------------------*/
 
@@ -106,13 +82,6 @@ typedef struct message_notification_s {
 	EventMaskType 		event_id;
 } message_notification_t;
 
-#if 0
-// TODO: Do a untion of all types here ???
-typedef struct {
-	void *cdata;
-} message_tx_t;
-#endif
-
 
 typedef struct message_obj_s {
 	message_property_t		property;		// send/recieve...
@@ -124,23 +93,13 @@ typedef struct message_obj_s {
 } message_obj_t;
 
 
-typedef enum scheduling_e {
-	SCHEDULING_FULL,
-	SCHEDULING_NONE
-} scheduling_t;
+/* OsTask/OsTaskSchedule */
+enum OsTaskSchedule {
+	FULL,
+	NON
+};
 
 /*-----------------------------------------------------------------*/
-
-#if 0
-typedef enum {
-//	PROC_BG,
-//	PROC_INT,
-	PROC_BASIC,
-	PROC_EXTENDED,
-	PROC_ISR1,
-	PROC_ISR2,
-} proc_type_t;
-#endif
 
 typedef uint8_t proc_type_t;
 
@@ -228,7 +187,8 @@ typedef struct resource_obj_s {
 	// used only if type is RESOURCE_TYPE_LINKED
 	ResourceType    linked_resource;
 
-//	resource_property_t	resource_property;
+	/* List of resources for each task. */
+	TAILQ_ENTRY(resource_obj_s) listEntry;
 
 } resource_obj_t;
 
@@ -298,7 +258,8 @@ typedef struct rom_pcb_s {
 	int				vector; 				// ISR
 	ApplicationType application_id;
 	char 		 	name[16];
-	scheduling_t scheduling;
+	enum OsTaskSchedule scheduling;
+	uint32_t 		resourceAccess;
 //	uint64			execution_budget;
 //	uint32			count_limit;
 //	uint64			time_limit;

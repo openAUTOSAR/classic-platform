@@ -57,6 +57,9 @@
 #define GEN_TASK_HEAD const rom_pcb_t rom_pcb_list[] =
 
 
+
+#if !defined(OS_CFG_API_VERSION)
+
 #define GEN_ETASK( _id, _priority, 	_autostart, _timing_protection, _application_id, _resource_int_p ) \
 {									\
 	.pid = TASK_ID_##_id,           \
@@ -70,6 +73,8 @@
 	.timing_protection = _timing_protection,\
 	.application_id = _application_id,		\
 	.resource_int_p = _resource_int_p, \
+	.scheduling = FULL, \
+	.resourceAccess = -1UL \
 }
 
 #define GEN_BTASK( _id, _priority, 	_autostart, _timing_protection, _application_id, _resource_int_p ) \
@@ -85,7 +90,49 @@
 	.timing_protection = _timing_protection,\
 	.application_id = _application_id,		\
 	.resource_int_p = _resource_int_p, \
+	.scheduling = FULL, \
+	.resourceAccess = -1UL \
 }
+#else
+
+#define GEN_ETASK( _id, _priority, _autostart, _timing_protection, _application_id, \
+                   _resource_int_p, _scheduling, _resource_mask, _activation ) \
+{									\
+	.pid = TASK_ID_##_id,           \
+	.name = #_id,					\
+	.entry = _id,				\
+	.prio = _priority,				\
+	.proc_type = PROC_EXTENDED,		\
+	.stack.size = sizeof stack_##_id,	\
+	.stack.top = stack_##_id,		\
+	.autostart = _autostart,		\
+	.timing_protection = _timing_protection,\
+	.application_id = _application_id,		\
+	.resource_int_p = _resource_int_p, \
+	.scheduling = _scheduling, \
+	.resourceAccess = _resource_mask \
+	.activationLimit = _activation, \
+}
+
+#define GEN_BTASK( _id, _priority, _autostart, _timing_protection, _application_id, \
+                    _resource_int_p, _scheduling, _resource_mask, _activation ) \
+{									\
+	.pid = TASK_ID_##_id,           \
+	.name = #_id,					\
+	.entry = _id,				\
+	.prio = _priority,				\
+	.proc_type = PROC_BASIC,		\
+	.stack.size = sizeof stack_##_id,	\
+	.stack.top = stack_##_id,		\
+	.autostart = _autostart,		\
+	.timing_protection = _timing_protection,\
+	.application_id = _application_id,		\
+	.resource_int_p = _resource_int_p, \
+	.scheduling = _scheduling, \
+	.resourceAccess = _resource_mask, \
+	.activationLimit = _activation, \
+}
+#endif
 
 
 #define GEN_TASK( _id, _name, _entry, _priority, _process_type, _stack_size, _stack_top, \

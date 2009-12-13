@@ -57,6 +57,7 @@ TaskType test_activate_pid_list[] =
 /* 01*/	TASK_ID_etask_sup_l,
 /* 02*/	TASK_ID_etask_sup_l,
 /* 03*/	TASK_ID_etask_sup_l,
+/* 04*/	TASK_ID_etask_sup_l,
 };
 
 static int test_case = 0;
@@ -89,6 +90,7 @@ test_func_t etask_sup_matrix[][3] = {
 /* 01*/	{ etask_sup_l_01, etask_sup_m_01, etask_sup_h_01},
 /* 02*/	{ etask_sup_l_02, etask_sup_m_02, etask_sup_h_02},
 /* 03*/	{ etask_sup_l_03, etask_sup_m_03, NULL},
+/* 04*/	{ etask_sup_l_04, etask_sup_m_04, NULL},
 }; // __attribute__ ((section(".data_app_2")));
 
 #define TEST_BASIC(nr) \
