@@ -71,7 +71,7 @@ void IntCtrl_Init( void ) {
 	  ramlog_dec(20);
 
 	  // TODO: The 5516 simulator still thinks it's a 5554 so setup the rest
-#if (defined(CFG_SIMULATOR) && defined(CFG_MPC5516)) || defined(CFG_MPC5567) || defined(CFG_MPC5554)
+#if (defined(CFG_SIMULATOR) && defined(CFG_MPC5516)) || defined(CFG_MPC5567) || defined(CFG_MPC5554) || defined(CFG_MPC5633)
 	    set_spr(SPR_IVOR0,((uint32_t)&exception_tbl+0x0) );
 	    set_spr(SPR_IVOR1,((uint32_t)&exception_tbl+0x10) );
 	    set_spr(SPR_IVOR2,((uint32_t)&exception_tbl+0x20) );
@@ -112,7 +112,7 @@ void IntCtrl_Init( void ) {
 	#if defined(CFG_MPC5516)
 	  INTC.MCR.B.HVEN_PRC0 = 0; // Soft vector mode
 	  INTC.MCR.B.VTES_PRC0 = 0; // 4 byte offset between entries
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5633)
 	  INTC.MCR.B.HVEN = 0; // Soft vector mode
 	  INTC.MCR.B.VTES = 0; // 4 byte offset between entries
 	#endif
@@ -124,7 +124,7 @@ void IntCtrl_Init( void ) {
 	  assert( (((uint32_t)&Irq_VectorTable[0]) & 0x7ff) == 0 );
 	#if defined(CFG_MPC5516)
 	  INTC.IACKR_PRC0.R = (uint32_t) & Irq_VectorTable[0]; // Set INTC ISR vector table
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5633)
 	  INTC.IACKR.R = (uint32_t) & Irq_VectorTable[0]; // Set INTC ISR vector table
 	#endif
 #endif
@@ -133,7 +133,7 @@ void IntCtrl_Init( void ) {
 	  {
 	#if defined(CFG_MPC5516)
 	    INTC.EOIR_PRC0.R = 0;
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5633)
 	    INTC.EOIR.R = 0;
 	#endif
 	  }
@@ -141,7 +141,7 @@ void IntCtrl_Init( void ) {
 	  // Accept interrupts
 	#if defined(CFG_MPC5516)
 	  INTC.CPR_PRC0.B.PRI = 0;
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5633)
 	  INTC.CPR.B.PRI = 0;
 	#endif
 
@@ -152,7 +152,7 @@ void IntCtrl_EOI( void ) {
 #if defined(CFG_MPC5516)
 	struct INTC_tag *intc = &INTC;
 	intc->EOIR_PRC0.R = 0;
-#elif defined(CFG_MPC5554)||defined(CFG_MPC5567)
+#elif defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC5633)
 	volatile struct INTC_tag *intc = &INTC;
 	intc->EOIR.R = 0;
 #endif
@@ -182,7 +182,7 @@ void *IntCtrl_Entry( void *stack_p )
 #if defined(CFG_MPC5516)
 		struct INTC_tag *intc = &INTC;
 		vector = (intc->IACKR_PRC0.B.INTVEC_PRC0);
-#elif defined(CFG_MPC5554)||defined(CFG_MPC5567)
+#elif defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC5633)
 		volatile struct INTC_tag *intc = &INTC;
 		vector = (intc->IACKR.B.INTVEC);
 #endif
@@ -371,7 +371,7 @@ uint8_t IntCtrl_GetCurrentPriority( Cpu_t cpu) {
 	} else if ( cpu == CPU_Z0 ) {
 		prio = INTC.CPR_PRC1.B.PRI;
 	}
-#elif defined(CFG_MPC5554)||defined(CFG_MPC5567)
+#elif defined(CFG_MPC5554)||defined(CFG_MPC5567)|| defined(CFG_MPC5633)
 	prio = INTC.CPR.B.PRI;
 #endif
 

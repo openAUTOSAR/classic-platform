@@ -37,6 +37,8 @@
 #include "mpc5516.h"
 #elif defined(CFG_MPC5567)
 #include "mpc5567.h"
+#elif defined(CFG_MPC5633)
+#include "mpc563m.h"
 #else
 #error NO MCU SELECTED!!!!
 #endif
