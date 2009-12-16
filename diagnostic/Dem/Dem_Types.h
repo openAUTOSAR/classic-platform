@@ -88,7 +88,7 @@ typedef uint8 Dem_FreezeFrameKindType;	// TODO: Check type and values
 /*
  * DemEventKindType
  */
-typedef uint8 Dem_EventKindType;			// TODO: Check type and values
+typedef uint8 Dem_EventKindType;		// TODO: Check type and values
 #define DEM_EVENT_KIND_BSW		0x01
 #define DEM_EVENT_KIND_SWC		0x02
 
@@ -114,11 +114,6 @@ typedef uint8 Dem_InitMonitorKindType;
 #define DEM_INIT_MONITOR_RESTART	2
 
 /*
- * Dem_FaultDetectionCpunterType
- */
-typedef sint8 Dem_FaultDetectionCounterType;
-
-/*
  * Dem_IndicatorStatusType
  */
 typedef uint8 Dem_IndicatorStatusType;
@@ -127,6 +122,21 @@ typedef uint8 Dem_IndicatorStatusType;
 #define DEM_INDICATOR_BLINKING		2
 #define DEM_INDICATOR_BLINK_CONT	3
 
+/*
+ * Dem_FaultDetectionCpunterType
+ */
+typedef sint8 Dem_FaultDetectionCounterType;
+
+/*
+ * Dem_PreDebounceNameType
+ */
+typedef uint8 Dem_PreDebounceNameType;
+enum {
+	DEM_NO_PRE_DEBOUNCE,
+	DEM_PRE_DEBOUNCE_COUNTER_BASED,
+	DEM_PRE_DEBOUNCE_FREQUENCY_BASED,
+	DEM_PRE_DEBOUNCE_TIME_BASED
+};
 
 
 #endif /*DEM_TYPES_H_*/

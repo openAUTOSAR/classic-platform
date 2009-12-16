@@ -74,7 +74,7 @@ typedef enum
   DEM_INITIALIZED
 } Dem_StateType;
 
-static Dem_StateType _demState = DEM_UNINITIALIZED;
+static Dem_StateType demState = DEM_UNINITIALIZED;
 
 // Help pointer to configuration set
 static const Dem_ConfigSetType *configSet;
@@ -126,8 +126,11 @@ void setZero(void *ptr, uint16 nrOfBytes)
 {
 	uint8 *clrPtr = (uint8*)ptr;
 
-	*clrPtr = 0x00;
-	memcpy(clrPtr+1, clrPtr, nrOfBytes-1);
+	if (nrOfBytes > 0)
+	{
+		*clrPtr = 0x00;
+		memcpy(clrPtr+1, clrPtr, nrOfBytes-1);
+	}
 }
 
 /*
@@ -149,9 +152,9 @@ ChecksumType calcChecksum(void *data, uint16 nrOfBytes)
 {
 	uint16 i;
 	uint8 *ptr = (uint8*)data;
-	ChecksumType sum=0;
+	ChecksumType sum = 0;
 
-	for (i=0; i<nrOfBytes; i++)
+	for (i = 0; i < nrOfBytes; i++)
 		sum += *ptr++;
 	sum ^= 0xaaaa;
 	return sum;
@@ -168,11 +171,11 @@ void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_EventSta
 	imask_t state = McuE_EnterCriticalSection();
 
 	// Lookup event ID
-	for (i=0; (eventStatusBuffer[i].eventId != eventParam->EventID) && (i < DEM_MAX_NUMBER_EVENT); i++);
+	for (i = 0; (eventStatusBuffer[i].eventId != eventParam->EventID) && (i < DEM_MAX_NUMBER_EVENT); i++);
 
 	if ((i == DEM_MAX_NUMBER_EVENT) && (createIfNotExist)) {
 		// Search for free position
-		for (i=0; (eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) && (i < DEM_MAX_NUMBER_EVENT); i++);
+		for (i = 0; (eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) && (i < DEM_MAX_NUMBER_EVENT); i++);
 
 		if (i < DEM_MAX_NUMBER_EVENT) {
 			// Create new event record
@@ -239,7 +242,7 @@ void mergeEventStatusRec(EventRecType *eventRec)
 	imask_t state = McuE_EnterCriticalSection();
 
 	// Lookup event ID
-	for (i=0; (eventStatusBuffer[i].eventId != eventRec->eventId) && (i < DEM_MAX_NUMBER_EVENT); i++);
+	for (i = 0; (eventStatusBuffer[i].eventId != eventRec->eventId) && (i < DEM_MAX_NUMBER_EVENT); i++);
 
 	if (i < DEM_MAX_NUMBER_EVENT) {
 		// Update occurrence counter, rest of pre init state is kept.
@@ -248,7 +251,7 @@ void mergeEventStatusRec(EventRecType *eventRec)
 	}
 	else {
 		// Search for free position
-		for (i=0; (eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) && (i < DEM_MAX_NUMBER_EVENT); i++);
+		for (i = 0; (eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) && (i < DEM_MAX_NUMBER_EVENT); i++);
 
 		if (i < DEM_MAX_NUMBER_EVENT) {
 			// Create new event, from stored event
@@ -274,7 +277,7 @@ void getEventStatusRec(Dem_EventIdType eventId, EventStatusRecType *eventStatusR
 {
 	uint16 i;
 	// Lookup event ID
-	for (i=0; (eventStatusBuffer[i].eventId != eventId) && (i < DEM_MAX_NUMBER_EVENT); i++);
+	for (i = 0; (eventStatusBuffer[i].eventId != eventId) && (i < DEM_MAX_NUMBER_EVENT); i++);
 
 	if (i < DEM_MAX_NUMBER_EVENT) {
 		// Copy the record
@@ -299,7 +302,7 @@ void lookupEventIdParameter(Dem_EventIdType eventId, const Dem_EventParameterTyp
 	*eventIdParam = NULL;
 
 	// Lookup the correct event id parameters
-	for (i=0; !configSet->EventParameter[i].Arc_EOL; i++) {
+	for (i = 0; !configSet->EventParameter[i].Arc_EOL; i++) {
 		if (configSet->EventParameter[i].EventID == eventId) {
 			*eventIdParam = &configSet->EventParameter[i];
 			return;
@@ -333,6 +336,7 @@ void updateFreezeFrameOccurrencePreInit(EventRecType *EventBuffer)
  */
 void getExtendedData(const Dem_EventParameterType *eventParam, ExtDataRecType *extData)
 {
+	Std_ReturnType callbackReturnCode;
 	uint16 i;
 	uint16 storeIndex = 0;
 	uint16 recordSize;
@@ -343,10 +347,14 @@ void getExtendedData(const Dem_EventParameterType *eventParam, ExtDataRecType *e
 	// Check if any pointer to extended data class
 	if (eventParam->ExtendedDataClassRef != NULL) {
 		// Request extended data and copy it to the buffer
-		for (i=0; (i<DEM_MAX_NR_OF_RECORDS_IN_EXTENDED_DATA) && (eventParam->ExtendedDataClassRef->ExtendedDataRecordClassRef[i] != NULL); i++) {
+		for (i = 0; (i < DEM_MAX_NR_OF_RECORDS_IN_EXTENDED_DATA) && (eventParam->ExtendedDataClassRef->ExtendedDataRecordClassRef[i] != NULL); i++) {
 			recordSize = eventParam->ExtendedDataClassRef->ExtendedDataRecordClassRef[i]->DataSize;
-			if ((storeIndex+recordSize) <= DEM_MAX_SIZE_EXT_DATA) {
-				eventParam->ExtendedDataClassRef->ExtendedDataRecordClassRef[i]->CallbackGetExtDataRecord(&extData->data[storeIndex]);
+			if ((storeIndex + recordSize) <= DEM_MAX_SIZE_EXT_DATA) {
+				callbackReturnCode = eventParam->ExtendedDataClassRef->ExtendedDataRecordClassRef[i]->CallbackGetExtDataRecord(&extData->data[storeIndex]);
+				if (callbackReturnCode != E_OK) {
+					// Callback data currently not available, clear space.
+					setZero(&extData->data[storeIndex], recordSize);
+				}
 				storeIndex += recordSize;
 			}
 			else {
@@ -381,9 +389,9 @@ void storeExtendedDataPreInit(const Dem_EventParameterType *eventParam, ExtDataR
 	imask_t state = McuE_EnterCriticalSection();
 
 	// Lookup first free position
-	for (i=0; (preInitExtDataBuffer[i].eventId !=0) && (i<DEM_MAX_NUMBER_EXT_DATA_PRE_INIT); i++);
+	for (i = 0; (preInitExtDataBuffer[i].eventId !=0) && (i<DEM_MAX_NUMBER_EXT_DATA_PRE_INIT); i++);
 
-	if (i<DEM_MAX_NUMBER_EXT_DATA_PRE_INIT) {
+	if (i < DEM_MAX_NUMBER_EXT_DATA_PRE_INIT) {
 		memcpy(&preInitExtDataBuffer[i], extendedData, sizeof(ExtDataRecType));
 	}
 	else {
@@ -407,7 +415,7 @@ void storeEventPriMem(const Dem_EventParameterType *eventParam, EventStatusRecTy
 
 
 	// Lookup event ID
-	for (i=0; (priMemEventBuffer[i].eventId != eventStatus->eventId) && (i < DEM_MAX_NUMBER_EVENT_ENTRY_PRI); i++);
+	for (i = 0; (priMemEventBuffer[i].eventId != eventStatus->eventId) && (i < DEM_MAX_NUMBER_EVENT_ENTRY_PRI); i++);
 
 	if (i < DEM_MAX_NUMBER_EVENT_ENTRY_PRI) {
 		// Update event found
@@ -442,7 +450,7 @@ void storeEventEvtMem(const Dem_EventParameterType *eventParam, EventStatusRecTy
 {
 	uint16 i;
 
-	for (i=0; (i < DEM_MAX_NR_OF_EVENT_DESTINATION) && (eventParam->EventClass->EventDestination[i] != NULL); i++) {
+	for (i = 0; (i < DEM_MAX_NR_OF_EVENT_DESTINATION) && (eventParam->EventClass->EventDestination[i] != NULL); i++) {
 		switch (eventParam->EventClass->EventDestination[i])
 		{
 		case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
@@ -472,7 +480,7 @@ void storeExtendedDataPriMem(const Dem_EventParameterType *eventParam, ExtDataRe
 	imask_t state = McuE_EnterCriticalSection();
 
 	// Lookup first free position
-	for (i=0; (priMemExtDataBuffer[i].eventId != DEM_EVENT_ID_NULL) && (i<DEM_MAX_NUMBER_EXT_DATA_PRI_MEM); i++);
+	for (i = 0; (priMemExtDataBuffer[i].eventId != DEM_EVENT_ID_NULL) && (i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM); i++);
 	if (i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM) {
 		memcpy(&priMemExtDataBuffer[i], extendedData, sizeof(ExtDataRecType));
 	}
@@ -494,7 +502,7 @@ void storeExtendedDataEvtMem(const Dem_EventParameterType *eventParam, ExtDataRe
 {
 	uint16 i;
 
-	for (i=0; (i < DEM_MAX_NR_OF_EVENT_DESTINATION) && (eventParam->EventClass->EventDestination[i] != NULL); i++) {
+	for (i = 0; (i < DEM_MAX_NR_OF_EVENT_DESTINATION) && (eventParam->EventClass->EventDestination[i] != NULL); i++) {
 		switch (eventParam->EventClass->EventDestination[i])
 		{
 		case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
@@ -529,7 +537,7 @@ void storeFreezeFrameDataEvtMem(const Dem_EventParameterType *eventParam, Freeze
 {
 	uint16 i;
 
-	for (i=0; (i < DEM_MAX_NR_OF_EVENT_DESTINATION) && (eventParam->EventClass->EventDestination[i] != NULL); i++) {
+	for (i = 0; (i < DEM_MAX_NR_OF_EVENT_DESTINATION) && (eventParam->EventClass->EventDestination[i] != NULL); i++) {
 		switch (eventParam->EventClass->EventDestination[i])
 		{
 		case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
@@ -668,6 +676,10 @@ Std_ReturnType handleEvent(Dem_EventIdType eventId, Dem_EventStatusType eventSta
 }
 
 
+/*
+ * Procedure:	getEventStatus
+ * Description:	Returns the extended event status bitmask of eventId in "eventStatusExtended".
+ */
 void getEventStatus(Dem_EventIdType eventId, Dem_EventStatusExtendedType *eventStatusExtended)
 {
 	EventStatusRecType eventStatusLocal;
@@ -683,6 +695,10 @@ void getEventStatus(Dem_EventIdType eventId, Dem_EventStatusExtendedType *eventS
 	}
 }
 
+/*
+ * Procedure:	getEventFailed
+ * Description:	Returns the TRUE or FALSE of "eventId" in "eventFailed" depending on current status.
+ */
 void getEventFailed(Dem_EventIdType eventId, boolean *eventFailed)
 {
 	EventStatusRecType eventStatusLocal;
@@ -703,6 +719,11 @@ void getEventFailed(Dem_EventIdType eventId, boolean *eventFailed)
 	}
 }
 
+/*
+ * Procedure:	getEventTested
+ * Description:	Returns the TRUE or FALSE of "eventId" in "eventTested" depending on
+ * 				current status the "test not completed this operation cycle" bit.
+ */
 void getEventTested(Dem_EventIdType eventId, boolean *eventTested)
 {
 	EventStatusRecType eventStatusLocal;
@@ -723,6 +744,46 @@ void getEventTested(Dem_EventIdType eventId, boolean *eventTested)
 	}
 }
 
+/*
+ * Procedure:	getFaultDetectionCounter
+ * Description:	Returns pre debounce counter of "eventId" in "counter" and return value E_OK if
+ * 			the counter was available else E_NOT_OK.
+ */
+Std_ReturnType getFaultDetectionCounter(Dem_EventIdType eventId, sint8 *counter)
+{
+	Std_ReturnType returnCode = E_NOT_OK;
+	const Dem_EventParameterType *eventParam;
+
+	lookupEventIdParameter(eventId, &eventParam);
+	if (eventParam != NULL) {
+		if (eventParam->EventClass->PreDebounceAlgorithmClass != NULL) {
+			switch (eventParam->EventClass->PreDebounceAlgorithmClass->PreDebounceName)
+			{
+			case DEM_NO_PRE_DEBOUNCE:
+				if (eventParam->EventClass->PreDebounceAlgorithmClass->PreDebounceAlgorithm.PreDebounceMonitorInternal != NULL) {
+					returnCode = eventParam->EventClass->PreDebounceAlgorithmClass->PreDebounceAlgorithm.PreDebounceMonitorInternal->CallbackGetFDCnt(counter);
+				}
+				break;
+
+			case DEM_PRE_DEBOUNCE_COUNTER_BASED:
+			case DEM_PRE_DEBOUNCE_FREQUENCY_BASED:
+			case DEM_PRE_DEBOUNCE_TIME_BASED:
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
+				Det_ReportError(MODULE_ID_DEM, 0, DEM_GETFAULTDETECTIONCOUNTER_ID, DEM_E_NOT_IMPLEMENTED_YET);
+#endif
+				break;
+
+			default:
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
+				Det_ReportError(MODULE_ID_DEM, 0, DEM_GETFAULTDETECTIONCOUNTER_ID, DEM_E_PARAM_DATA);
+#endif
+				break;
+			}
+		}
+	}
+
+	return returnCode;
+}
 
 
 //==============================================================================//
@@ -766,12 +827,12 @@ void Dem_PreInit(void)
 	}
 
 	// Initializion of operation cycle states.
-	for (i=0; i<DEM_OPERATION_CYCLE_TYPE_ENDMARK; i++) {
+	for (i = 0; i < DEM_OPERATION_CYCLE_TYPE_ENDMARK; i++) {
 		operationCycleStateList[i] = DEM_CYCLE_STATE_END;
 	}
 
 	// Initialize the event status buffer
-	for (i=0; i<DEM_MAX_NUMBER_EVENT; i++) {
+	for (i = 0; i < DEM_MAX_NUMBER_EVENT; i++) {
 		eventStatusBuffer[i].eventId = DEM_EVENT_ID_NULL;
 		eventStatusBuffer[i].occurrence = 0;
 		eventStatusBuffer[i].eventStatusExtended = DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE | DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR;
@@ -779,23 +840,23 @@ void Dem_PreInit(void)
 		eventStatusBuffer[i].eventStatusChanged = FALSE;
 	}
 
-	for (i=0; i<DEM_MAX_NUMBER_FF_DATA_PRE_INIT; i++) {
+	for (i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRE_INIT; i++) {
 		preInitFreezeFrameBuffer[i].checksum = 0;
 		preInitFreezeFrameBuffer[i].eventId = DEM_EVENT_ID_NULL;
 		preInitFreezeFrameBuffer[i].occurrence = 0;
 		preInitFreezeFrameBuffer[i].dataSize = 0;
-		for (j=0; j<DEM_MAX_SIZE_FF_DATA;j++)
+		for (j = 0; j < DEM_MAX_SIZE_FF_DATA;j++)
 			preInitFreezeFrameBuffer[i].data[j] = 0;
 	}
 
-	for (i=0; i<DEM_MAX_NUMBER_EXT_DATA_PRE_INIT; i++) {
+	for (i = 0; i < DEM_MAX_NUMBER_EXT_DATA_PRE_INIT; i++) {
 		preInitExtDataBuffer[i].checksum = 0;
 		preInitExtDataBuffer[i].eventId = DEM_EVENT_ID_NULL;
 		preInitExtDataBuffer[i].dataSize = 0;
-		for (j=0; j<DEM_MAX_SIZE_EXT_DATA;j++)
+		for (j = 0; j < DEM_MAX_SIZE_EXT_DATA;j++)
 			preInitExtDataBuffer[i].data[j] = 0;
 	}
-	_demState = DEM_PREINITIALIZED;
+	demState = DEM_PREINITIALIZED;
 }
 
 
@@ -815,7 +876,7 @@ void Dem_Init(void)
 	 */
 
 	// Validate event records stored in primary memory
-	for (i=0; i<DEM_MAX_NUMBER_EVENT_PRI_MEM; i++) {
+	for (i = 0; i < DEM_MAX_NUMBER_EVENT_PRI_MEM; i++) {
 		cSum = calcChecksum(&priMemEventBuffer[i], sizeof(EventRecType)-sizeof(ChecksumType));
 		if ((cSum != priMemEventBuffer[i].checksum) || priMemEventBuffer[i].eventId == DEM_EVENT_ID_NULL) {
 			// Not valid, clear the record
@@ -831,7 +892,7 @@ void Dem_Init(void)
 	}
 
 	// Validate extended data records stored in primary memory
-	for (i=0; i<DEM_MAX_NUMBER_EXT_DATA_PRI_MEM; i++) {
+	for (i = 0; i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM; i++) {
 		cSum = calcChecksum(&priMemExtDataBuffer[i], sizeof(ExtDataRecType)-sizeof(ChecksumType));
 		if ((cSum != priMemExtDataBuffer[i].checksum) || priMemExtDataBuffer[i].eventId == DEM_EVENT_ID_NULL) {
 			// Unlegal record, clear the record
@@ -840,7 +901,7 @@ void Dem_Init(void)
 	}
 
 	// Validate freeze frame records stored in primary memory
-	for (i=0; i<DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++) {
+	for (i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++) {
 		cSum = calcChecksum(&priMemFreezeFrameBuffer[i], sizeof(FreezeFrameRecType)-sizeof(ChecksumType));
 		if ((cSum != priMemFreezeFrameBuffer[i].checksum) || (priMemFreezeFrameBuffer[i].eventId == DEM_EVENT_ID_NULL)) {
 			// Wrong checksum, clear the record
@@ -853,7 +914,7 @@ void Dem_Init(void)
 	 */
 
 	// Transfer updated event data to event memory
-	for (i=0; i<DEM_MAX_NUMBER_EVENT; i++) {
+	for (i = 0; i < DEM_MAX_NUMBER_EVENT; i++) {
 		if (eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) {
 			// Update the event memory
 			lookupEventIdParameter(eventStatusBuffer[i].eventId, &eventParam);
@@ -862,7 +923,7 @@ void Dem_Init(void)
 	}
 
 	// Transfer extended data to event memory if necessary
-	for (i=0; i < DEM_MAX_NUMBER_EXT_DATA_PRE_INIT; i++) {
+	for (i = 0; i < DEM_MAX_NUMBER_EXT_DATA_PRE_INIT; i++) {
 		if (preInitExtDataBuffer[i].eventId !=  DEM_EVENT_ID_NULL) {
 			getEventStatusRec(preInitExtDataBuffer[i].eventId, &eventStatusLocal);
 			// Check if new or old error event
@@ -875,14 +936,14 @@ void Dem_Init(void)
 	}
 
 	// Transfer freeze frames to event memory
-	for (i=0; i < DEM_MAX_NUMBER_FF_DATA_PRE_INIT; i++) {
+	for (i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRE_INIT; i++) {
 		if (preInitFreezeFrameBuffer[i].eventId != DEM_EVENT_ID_NULL) {
 			lookupEventIdParameter(preInitFreezeFrameBuffer[i].eventId, &eventParam);
 			storeFreezeFrameDataEvtMem(eventParam, &preInitFreezeFrameBuffer[i]);
 		}
 	}
 
-	_demState = DEM_INITIALIZED;
+	demState = DEM_INITIALIZED;
 }
 
 
@@ -893,7 +954,7 @@ void Dem_Init(void)
 void Dem_shutdown(void)
 {
 
-	_demState = DEM_UNINITIALIZED;
+	demState = DEM_UNINITIALIZED;
 }
 
 
@@ -916,21 +977,21 @@ void Dem_MainFunction(void)
  */
 Std_ReturnType Dem_SetEventStatus(Dem_EventIdType eventId, Dem_EventStatusType eventStatus)
 {
-	Std_ReturnType _returnCode = E_OK;
+	Std_ReturnType returnCode = E_OK;
 
-	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
+	if (demState == DEM_INITIALIZED) // No action is taken if the module is not started
 	{
-		_returnCode = handleEvent(eventId, eventStatus);
+		returnCode = handleEvent(eventId, eventStatus);
 	}
 	else
 	{
 #if (DEM_DEV_ERROR_DETECT == STD_ON)
 		Det_ReportError(MODULE_ID_DEM, 0, DEM_SETEVENTSTATUS_ID, DEM_E_UNINIT);
-		_returnCode = E_NOT_OK;
+		returnCode = E_NOT_OK;
 #endif
 	}
 
-	return _returnCode;
+	return returnCode;
 }
 
 
@@ -942,9 +1003,9 @@ Std_ReturnType Dem_ResetEventStatus(Dem_EventIdType eventId)
 {
 	const Dem_EventParameterType *eventParam;
 	EventStatusRecType eventStatusLocal;
-	Std_ReturnType _returnCode = E_OK;
+	Std_ReturnType returnCode = E_OK;
 
-	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
+	if (demState == DEM_INITIALIZED) // No action is taken if the module is not started
 	{
 		lookupEventIdParameter(eventId, &eventParam);
 		if (eventParam != NULL) {
@@ -955,19 +1016,19 @@ Std_ReturnType Dem_ResetEventStatus(Dem_EventIdType eventId)
 	{
 #if (DEM_DEV_ERROR_DETECT == STD_ON)
 		Det_ReportError(MODULE_ID_DEM, 0, DEM_RESETEVENTSTATUS_ID, DEM_E_UNINIT);
-		_returnCode = E_NOT_OK;
 #endif
+		returnCode = E_NOT_OK;
 	}
 
-	return _returnCode;
+	return returnCode;
 }
 
 
 Std_ReturnType Dem_GetEventStatus(Dem_EventIdType eventId, Dem_EventStatusExtendedType *eventStatusExtended)
 {
-	Std_ReturnType _returnCode = E_OK;
+	Std_ReturnType returnCode = E_OK;
 
-	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
+	if (demState == DEM_INITIALIZED) // No action is taken if the module is not started
 	{
 		getEventStatus(eventId, eventStatusExtended);
 	}
@@ -975,19 +1036,19 @@ Std_ReturnType Dem_GetEventStatus(Dem_EventIdType eventId, Dem_EventStatusExtend
 	{
 #if (DEM_DEV_ERROR_DETECT == STD_ON)
 		Det_ReportError(MODULE_ID_DEM, 0, DEM_GETEVENTSTATUS_ID, DEM_E_UNINIT);
-		_returnCode = E_NOT_OK;
 #endif
+		returnCode = E_NOT_OK;
 	}
 
-	return _returnCode;
+	return returnCode;
 }
 
 
 Std_ReturnType Dem_GetEventFailed(Dem_EventIdType eventId, boolean *eventFailed)
 {
-	Std_ReturnType _returnCode = E_OK;
+	Std_ReturnType returnCode = E_OK;
 
-	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
+	if (demState == DEM_INITIALIZED) // No action is taken if the module is not started
 	{
 		getEventFailed(eventId, eventFailed);
 	}
@@ -995,19 +1056,19 @@ Std_ReturnType Dem_GetEventFailed(Dem_EventIdType eventId, boolean *eventFailed)
 	{
 #if (DEM_DEV_ERROR_DETECT == STD_ON)
 		Det_ReportError(MODULE_ID_DEM, 0, DEM_GETEVENTFAILED_ID, DEM_E_UNINIT);
-		_returnCode = E_NOT_OK;
 #endif
+		returnCode = E_NOT_OK;
 	}
 
-	return _returnCode;
+	return returnCode;
 }
 
 
 Std_ReturnType Dem_GetEventTested(Dem_EventIdType eventId, boolean *eventTested)
 {
-	Std_ReturnType _returnCode = E_OK;
+	Std_ReturnType returnCode = E_OK;
 
-	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
+	if (demState == DEM_INITIALIZED) // No action is taken if the module is not started
 	{
 		getEventTested(eventId, eventTested);
 	}
@@ -1015,41 +1076,40 @@ Std_ReturnType Dem_GetEventTested(Dem_EventIdType eventId, boolean *eventTested)
 	{
 #if (DEM_DEV_ERROR_DETECT == STD_ON)
 		Det_ReportError(MODULE_ID_DEM, 0, DEM_GETEVENTTESTED_ID, DEM_E_UNINIT);
-		_returnCode = E_NOT_OK;
 #endif
+		returnCode = E_NOT_OK;
 	}
 
-	return _returnCode;
+	return returnCode;
 }
 
 
 Std_ReturnType Dem_GetFaultDetectionCounter(Dem_EventIdType eventId, sint8 *counter)
 {
-	Std_ReturnType _returnCode = E_OK;
+	Std_ReturnType returnCode = E_OK;
 
-	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
+	if (demState == DEM_INITIALIZED) // No action is taken if the module is not started
 	{
-		*counter = 0;	// TODO:
-		Det_ReportError(MODULE_ID_DEM, 0, DEM_GLOBAL_ID, DEM_E_NOT_IMPLEMENTED_YET);
+		returnCode = getFaultDetectionCounter(eventId, counter);
 	}
 	else
 	{
 #if (DEM_DEV_ERROR_DETECT == STD_ON)
 		Det_ReportError(MODULE_ID_DEM, 0, DEM_GETFAULTDETECTIONCOUNTER_ID, DEM_E_UNINIT);
-		_returnCode = E_NOT_OK;
 #endif
+		returnCode = E_NOT_OK;
 	}
 
-	return _returnCode;
+	return returnCode;
 }
 
 
 Std_ReturnType Dem_SetOperationCycleState(Dem_OperationCycleType operationCycleId, Dem_OperationCycleStateType cycleState)
 {
 	uint16 i;
-	Std_ReturnType _returnCode = E_OK;
+	Std_ReturnType returnCode = E_OK;
 
-	if (_demState == DEM_INITIALIZED) // No action is taken if the module is not started
+	if (demState == DEM_INITIALIZED) // No action is taken if the module is not started
 	{
 		if (operationCycleId < DEM_OPERATION_CYCLE_TYPE_ENDMARK) {
 			switch (cycleState)
@@ -1057,7 +1117,7 @@ Std_ReturnType Dem_SetOperationCycleState(Dem_OperationCycleType operationCycleI
 			case DEM_CYCLE_STATE_START:
 				operationCycleStateList[operationCycleId] = cycleState;
 				// Lookup event ID
-				for (i=0; i < DEM_MAX_NUMBER_EVENT; i++) {
+				for (i = 0; i < DEM_MAX_NUMBER_EVENT; i++) {
 					if ((eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) && (eventStatusBuffer[i].operationCycleId == operationCycleId)) {
 						eventStatusBuffer[i].eventStatusExtended &= ~DEM_TEST_FAILED_THIS_OPERATION_CYCLE;
 						eventStatusBuffer[i].eventStatusExtended |= DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE;
@@ -1069,29 +1129,29 @@ Std_ReturnType Dem_SetOperationCycleState(Dem_OperationCycleType operationCycleI
 				operationCycleStateList[operationCycleId] = cycleState;
 				break;
 			default:
-	#if (DEM_DEV_ERROR_DETECT == STD_ON)
-			Det_ReportError(MODULE_ID_DEM, 0, DEM_SETOPERATIONCYCLESTATE_ID, DEM_E_PARAM_DATA);
-			_returnCode = E_NOT_OK;
-	#endif
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
+				Det_ReportError(MODULE_ID_DEM, 0, DEM_SETOPERATIONCYCLESTATE_ID, DEM_E_PARAM_DATA);
+#endif
+				returnCode = E_NOT_OK;
 				break;
 			}
 		}
 		else {
-	#if (DEM_DEV_ERROR_DETECT == STD_ON)
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
 			Det_ReportError(MODULE_ID_DEM, 0, DEM_SETOPERATIONCYCLESTATE_ID, DEM_E_PARAM_DATA);
-			_returnCode = E_NOT_OK;
-	#endif
+#endif
+			returnCode = E_NOT_OK;
 		}
 	}
 	else
 	{
 #if (DEM_DEV_ERROR_DETECT == STD_ON)
 		Det_ReportError(MODULE_ID_DEM, 0, DEM_SETOPERATIONCYCLESTATE_ID, DEM_E_UNINIT);
-		_returnCode = E_NOT_OK;
 #endif
+		returnCode = E_NOT_OK;
 	}
 
-	return _returnCode;
+	return returnCode;
 }
 
 
@@ -1106,7 +1166,7 @@ Std_ReturnType Dem_SetOperationCycleState(Dem_OperationCycleType operationCycleI
 void Dem_ReportErrorStatus( Dem_EventIdType eventId, Dem_EventStatusType eventStatus )
 {
 
-	switch (_demState) {
+	switch (demState) {
 		case DEM_PREINITIALIZED:
 			// Update status and check if is to be stored
 			if ((eventStatus == DEM_EVENT_STATUS_PASSED) || (eventStatus == DEM_EVENT_STATUS_FAILED)) {
@@ -1129,7 +1189,7 @@ void Dem_ReportErrorStatus( Dem_EventIdType eventId, Dem_EventStatusType eventSt
 #endif
 			break;
 
-	} // switch (_demState)
+	} // switch (demState)
 }
 
 /*********************************

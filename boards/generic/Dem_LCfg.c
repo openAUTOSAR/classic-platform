@@ -27,19 +27,33 @@
  */
 
 // Read extended data callback function declarations
-void ExtendedDataRecord1GetFunc(uint8 *Data) {
+Std_ReturnType GetExtendedDataRecord_0x01(uint8 *Data) {
 	*Data = 11;
+
+	return E_OK;
 }
 
-void ExtendedDataRecord2GetFunc(uint8 *Data) {
+Std_ReturnType GetExtendedDataRecord_0x02(uint8 *Data) {
 	Data[0] = 21;
 	Data[1] = 22;
+
+	return E_OK;
 }
 
-void ExtendedDataRecord3GetFunc(uint8 *Data) {
+Std_ReturnType GetExtendedDataRecord_0x03(uint8 *Data) {
 	Data[0] = 31;
 	Data[1] = 32;
 	Data[2] = 33;
+
+	return E_OK;
+}
+
+// Read fault detection counter callback function declarations
+Std_ReturnType GetFaultDetectionCounter1(sint8 *EventIdFaultDetectionCounter)
+{
+	*EventIdFaultDetectionCounter = -11;
+
+	return E_OK;
 }
 
 /*
@@ -49,17 +63,17 @@ const Dem_ExtendedDataRecordClassType ExtendedDataRecordClassList[] = {
 		{
 			.RecordNumber = 1,	// Unique!
 			.DataSize = 1,
-			.CallbackGetExtDataRecord = ExtendedDataRecord1GetFunc
+			.CallbackGetExtDataRecord = GetExtendedDataRecord_0x01
 		},
 		{
 			.RecordNumber = 2,
 			.DataSize = 3,
-			.CallbackGetExtDataRecord = ExtendedDataRecord3GetFunc
+			.CallbackGetExtDataRecord = GetExtendedDataRecord_0x03
 		},
 		{
 			.RecordNumber = 3,
 			.DataSize = 2,
-			.CallbackGetExtDataRecord = ExtendedDataRecord2GetFunc
+			.CallbackGetExtDataRecord = GetExtendedDataRecord_0x02
 		}
 };
 
@@ -99,6 +113,21 @@ const Dem_FreezeFrameClassType FreezeFrameClassList[] = {
 };
 
 /*
+ * Classes of PreDebounce algorithms
+ */
+const Dem_PreDebounceMonitorInternalType PreDebounceMonitorInternal1 = {
+		.CallbackGetFDCnt = &GetFaultDetectionCounter1
+};
+
+const Dem_PreDebounceAlgorithmClassType PreDebounceAlgorithmClass1 = {
+		.PreDebounceName = DEM_NO_PRE_DEBOUNCE,
+		.PreDebounceAlgorithm = {
+				.PreDebounceMonitorInternal = &PreDebounceMonitorInternal1
+		}
+};
+
+
+/*
  * Classes of event
  */
 const Dem_EventClassType EventClass1 = {
@@ -108,7 +137,8 @@ const Dem_EventClassType EventClass1 = {
 		},
 		.FFPrestorageSupported = FALSE,
 		.HealingAllowed = FALSE,
-		.OperationCycleRef = DEM_IGNITION
+		.OperationCycleRef = DEM_IGNITION,
+		.PreDebounceAlgorithmClass = &PreDebounceAlgorithmClass1
 };
 
 const Dem_EventClassType EventClass2 = {
@@ -119,7 +149,8 @@ const Dem_EventClassType EventClass2 = {
 		},
 		.FFPrestorageSupported = FALSE,
 		.HealingAllowed = FALSE,
-		.OperationCycleRef = DEM_POWER
+		.OperationCycleRef = DEM_POWER,
+		.PreDebounceAlgorithmClass = NULL
 };
 
 const Dem_EventParameterType EventParameter[] = {

@@ -26,13 +26,38 @@
 #include "Dem_Types.h"
 
 
-typedef void *(*FunctionNameDefType)( uint16 x, uint8 y , uint8 z);	// TODO: Define this properly
-
 /*
  * Callback function prototypes
  */
-typedef void (*Dem_CallbackGetExtDataRecordFncType)( uint8 *ExtendedDataRecord );
 
+// InitMonitorForEvent
+typedef Std_ReturnType (*Dem_CallbackInitMonitorForEventFncType)(Dem_InitMonitorKindType InitMonitorKind);
+
+// InitMonitorForFunction
+typedef Std_ReturnType (*Dem_CallbackInitMonitorForFunctionFncType)(void);
+
+// EventStatusChanged
+typedef Std_ReturnType (*Dem_CallbackEventStatusChangedFncType)(Dem_EventStatusExtendedType EventStatusOld, Dem_EventStatusExtendedType EventStatusNew);
+
+// DTCStatusChanged
+typedef Std_ReturnType (*Dem_CallbackDTCStatusChangedFncType)(uint8 DTCStatusOld, uint8 DTCStatusNew);
+
+// DIDServices
+#if 1	// Until DCM is available
+typedef uint8 Dcm_NegativeResponseCodeType;
+#endif
+typedef Std_ReturnType (*Dem_CallbackConditionCheckReadFncType)(Dcm_NegativeResponseCodeType *Nrc);
+typedef Std_ReturnType (*Dem_CallbackReadDataFncType)(uint8 *Data);
+typedef Std_ReturnType (*Dem_CallbackReadDataLength)(uint16 *DidLength);
+
+// GetExtendedDataRecord
+typedef Std_ReturnType (*Dem_CallbackGetExtDataRecordFncType)(uint8 *ExtendedDataRecord);
+
+// GetFaultDetectionCounter
+typedef Std_ReturnType (*Dem_CallbackGetFaultDetectionCounterFncType)(sint8 *EventIdFaultDetectionCounter);
+
+// GetPIDValue
+typedef Std_ReturnType (*Dem_CallbackGetPIDValueFncType)(uint8 *DataValueBuffer);
 
 /*
  * DemGeneral types
@@ -40,47 +65,44 @@ typedef void (*Dem_CallbackGetExtDataRecordFncType)( uint8 *ExtendedDataRecord )
 
 // 10.2.25 DemEnableCondition
 typedef struct {
-	boolean EnableConditionStatus;		// (Pre+Post)
-	// uint16	EnableConditionID;		// (Pre+Post) Optional
+	boolean EnableConditionStatus;		//
+	// uint16	EnableConditionID;		// Optional
 } Dem_EnableConditionType;
 
 // 10.2.30 DemExtendedDataRecordClass
 typedef struct {
-	// Unique number of the record
-	uint16	RecordNumber;						// (Pre+Post)	(1)
-	// Size of data
-	uint16	DataSize;							// (Pre+Post)	(1)
-	// Callback function
+	uint16	RecordNumber;						// (1)
+	uint16	DataSize;							// (1)
 	Dem_CallbackGetExtDataRecordFncType	CallbackGetExtDataRecord;// (1)
 } Dem_ExtendedDataRecordClassType;
 
 // 10.2.13 DemExtendedDataClass
 typedef struct {
-	const Dem_ExtendedDataRecordClassType *const ExtendedDataRecordClassRef[DEM_MAX_NR_OF_RECORDS_IN_EXTENDED_DATA+1]; // (--)	(1..253)
+	const Dem_ExtendedDataRecordClassType *const ExtendedDataRecordClassRef[DEM_MAX_NR_OF_RECORDS_IN_EXTENDED_DATA+1]; // (1..253)
 } Dem_ExtendedDataClassType;
 
 // 10.2.8 DemPidOrDid
 typedef struct {
-	boolean				PidOrDidUsePort;		// (--)			(1)
-	uint8				PidOrDidSize;			// (Pre+Post)	(1)
-	uint16				DidIdentifier;			// (---)		(0..1)
-	FunctionNameDefType	DidConditionCheckReadFnc;// (Pre)		(0..1)
-	FunctionNameDefType	DidReadDataLengthFnc;	// (Pre)		(0..1)
-	FunctionNameDefType	DidReadFnc;				// (Pre)		(0..1)
-	uint8				PidIndentifier;			// (Pre+Post)	(0..1)
-	FunctionNameDefType	PidReadFnc;				// (Pre)		(0..1)
+	boolean									PidOrDidUsePort;			// (1)
+	uint8									PidOrDidSize;				// (1)
+	uint16									DidIdentifier;				// (0..1)
+	Dem_CallbackConditionCheckReadFncType	DidConditionCheckReadFnc;	// (0..1)
+	Dem_CallbackReadDataLength				DidReadDataLengthFnc;		// (0..1)
+	Dem_CallbackReadDataFncType				DidReadFnc;					// (0..1)
+	uint8									PidIndentifier;				// (0..1)
+	Dem_CallbackGetPIDValueFncType			PidReadFnc;					// (0..1)
 } Dem_PidOrDidType;
 
 // 10.2.18 DemFreezeFrameClass
 typedef struct {
-	Dem_FreezeFrameKindType FFKind;			// (Pre+Post)	(1)
-//	uint8					FFRecordNumber;	// (Pre+Post)	(1) Optional
-//	const Dem_PidOrDidType 	*FFIdClassRef; 	// (Pre+Post)	(1..255) Optional?
+	Dem_FreezeFrameKindType FFKind;			// (1)
+//	uint8					FFRecordNumber;	// (1) Optional
+//	const Dem_PidOrDidType 	*FFIdClassRef; 	// (1..255) Optional?
 } Dem_FreezeFrameClassType;
 
 // 10.2.4 DemIndicator
 typedef struct {
-	uint16	Indicator;		// (Pre)	(1)
+	uint16	Indicator;		// (1)
 } Dem_IndicatorType;
 
 // 10.2.28 DemNvramBlockId
@@ -94,19 +116,19 @@ typedef struct {
 
 // 10.2.6 DemCallbackDTCStatusChanged
 typedef struct {
-	FunctionNameDefType CallbackDTCStatusChangedFnc;	// (Pre)	(0..1)
+	Dem_CallbackDTCStatusChangedFncType CallbackDTCStatusChangedFnc;	// (0..1)
 } Dem_CallbackDTCStatusChangedType;
 
 // 10.2.26 DemCallbackInitMForF
 typedef struct {
-	FunctionNameDefType	CallbackInitMForF;			// (Pre)	(0..1)
+	Dem_CallbackInitMonitorForFunctionFncType	CallbackInitMForF;		// (0..1)
 } Dem_CallbackInitMForFType;
 
 // 10.2.17 DemDTCClass
 typedef struct {
-	uint32									DTC;						// (Pre+Post)	(1)
-	uint8									DTCFunctionUnit;			// (Pre+Post)	(1)
-	Dem_DTCKindType							DTCKind;					// (Pre+Post)	(1)
+	uint32									DTC;						// (1)
+	uint8									DTCFunctionUnit;			// (1)
+	Dem_DTCKindType							DTCKind;					// (1)
 	const Dem_CallbackDTCStatusChangedType	*CallbackDTCStatusChanged;	// (0..*)
 	const Dem_CallbackInitMForFType			*CallbackInitMForF;			// (0..*)
 	// Dem_DTCSeverityType					DTCSeverity					// (0..1)  Optional
@@ -114,43 +136,72 @@ typedef struct {
 
 // 10.2.5 DemCallbackEventStatusChanged
 typedef struct {
-	FunctionNameDefType	CallbackEventStatusChangedFnc;	// (Pre)	(0..1)
+	Dem_CallbackEventStatusChangedFncType	CallbackEventStatusChangedFnc;	// (0..1)
 } Dem_CallbackEventStatusChangedType;
 
 // 10.2.27 DemCallbackInitMForE
 typedef struct {
-	FunctionNameDefType	CallbackInitMForEFnc;	// (--)	(0..1)
+	Dem_CallbackInitMonitorForEventFncType	CallbackInitMForEFnc;	// (0..1)
 } Dem_CallbackInitMforEType;
+
+typedef struct {
+	Dem_IndicatorStatusType	IndicatorBehaviour;			// (1)
+	Dem_IndicatorType		*LinkedIndicator;			// (1)
+} Dem_IndicatorAttributeType;
+
+typedef struct {
+	Dem_CallbackGetFaultDetectionCounterFncType	CallbackGetFDCnt;	// (1)
+} Dem_PreDebounceMonitorInternalType;
+
+typedef struct {
+	// TODO: Fill out
+} Dem_PreDebounceCounterBasedType;
+
+typedef struct {
+	// TODO: Fill out
+} Dem_PreDebounceFrequencyBasedType;
+
+typedef struct {
+	// TODO: Fill out
+} Dem_PreDebounceTimeBasedType;
+
+typedef struct {
+	Dem_PreDebounceNameType		PreDebounceName;						// (1)
+	union {
+	const Dem_PreDebounceMonitorInternalType	*PreDebounceMonitorInternal;	// (0..1)
+	const Dem_PreDebounceCounterBasedType		*PreDebounceCouterBased;		// (0..1)
+	const Dem_PreDebounceFrequencyBasedType	*PreDebounceFrequencyBased;		// (0..1)
+	const Dem_PreDebounceTimeBasedType		*PreDebounceTimeBased;			// (0..1)
+	} PreDebounceAlgorithm;
+} Dem_PreDebounceAlgorithmClassType;
 
 // 10.2.14 DemEventClass
 typedef struct {
-	boolean	ConsiderPtoStatus;								// (--) 		(1)
-	const Dem_DTCOriginType EventDestination[DEM_MAX_NR_OF_EVENT_DESTINATION+1];	// (Pre+Post)	(0..4)
-	uint8					EventPriority;									// (Pre+Post)	(1)
-	boolean					FFPrestorageSupported;							// (Pre+Post)	(1)
-	boolean					HealingAllowed;									// (Pre+Post)	(1)
-	Dem_OperationCycleType	OperationCycleRef;								// (Pre+Post)	(1)
-//	uint8					HealingCycleCounter;							// (Pre+Post)	(0..1) Optional
-//	const Dem_EnableConditionType	*EnableConditionRef;					// (Pre+Post)	(0..*) Optional
-//	const Dem_OperationCycleTgtType *HealingCycleRef;						// (Pre+Post)	(0..1) Optional
-	/*
-	 * TODO: Fill out
-	 * Dem_IndicatorAttribute
-	 * Dem_OEMSPecific
-	 * Dem_PredebounceAlgorithmClass
-	 */
+	boolean					ConsiderPtoStatus;										// (1)
+	const Dem_DTCOriginType EventDestination[DEM_MAX_NR_OF_EVENT_DESTINATION+1];	// (0..4)
+	uint8					EventPriority;											// (1)
+	boolean					FFPrestorageSupported;									// (1)
+	boolean					HealingAllowed;											// (1)
+	Dem_OperationCycleType	OperationCycleRef;										// (1)
+//	uint8					HealingCycleCounter;									// (0..1) Optional
+//	const Dem_EnableConditionType	*EnableConditionRef;							// (0..*) Optional
+//	const Dem_OperationCycleTgtType *HealingCycleRef;								// (0..1) Optional
+	const Dem_PreDebounceAlgorithmClassType	*PreDebounceAlgorithmClass;					// (0..255) (Only one supported)
+	const Dem_IndicatorAttributeType			*IndicatorAttribute;						// (0..255)
+//	Dem_OEMSPecific
+
 } Dem_EventClassType;
 
 // 10.2.12 DemEventParameter
 typedef struct {
-	uint16										EventID;					// (Pre)(1)
-	Dem_EventKindType							EventKind;					// (--)	(1)
-	const Dem_EventClassType					*EventClass;				// (--)	(1)
-	const Dem_ExtendedDataClassType				*ExtendedDataClassRef;		// (--) (0..1)
-	const Dem_FreezeFrameClassType				*FreezeFrameClassRef;		// (--)	(0..255)
-	const Dem_CallbackInitMforEType				*CallbackInitMforE;			// (--)	(0..1)
-	const Dem_CallbackEventStatusChangedType	*CallbackEventStatusChanged;// (Pre)(0..*)
-	const Dem_DTCClassType						*DTCClass;					// (--)	(0..1)
+	uint16										EventID;					// (1)
+	Dem_EventKindType							EventKind;					// (1)
+	const Dem_EventClassType					*EventClass;				// (1)
+	const Dem_ExtendedDataClassType				*ExtendedDataClassRef;		// (0..1)
+	const Dem_FreezeFrameClassType				*FreezeFrameClassRef;		// (0..255)
+	const Dem_CallbackInitMforEType				*CallbackInitMforE;			// (0..1)
+	const Dem_CallbackEventStatusChangedType	*CallbackEventStatusChanged;// (0..*)
+	const Dem_DTCClassType						*DTCClass;					// (0..1)
 	boolean										Arc_EOL;
 } Dem_EventParameterType;
 
