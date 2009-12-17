@@ -207,7 +207,7 @@ void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_EventSta
 			eventStatusBuffer[i].eventStatusExtended &= ~DEM_TEST_FAILED;
 		}
 
-		if	 (eventStatusBuffer[i].eventStatus != eventStatus) {
+		if (eventStatusBuffer[i].eventStatus != eventStatus) {
 			eventStatusBuffer[i].eventStatus = eventStatus;
 			eventStatusBuffer[i].eventStatusChanged = TRUE;
 		}
@@ -573,36 +573,30 @@ void handlePreInitEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus
 	lookupEventIdParameter(eventId, &eventParam);
 	if (eventParam != NULL) {
 		if (eventParam->EventClass->OperationCycleRef < DEM_OPERATION_CYCLE_TYPE_ENDMARK) {
-			if (operationCycleStateList[eventParam->EventClass->OperationCycleRef] == DEM_CYCLE_STATE_START) {
-				if (eventStatus == DEM_EVENT_STATUS_PASSED) {
-					updateEventStatusRec(eventParam, eventStatus, FALSE, &eventStatusLocal);
-				}
-				else {
-					updateEventStatusRec(eventParam, eventStatus, TRUE, &eventStatusLocal);
-				}
+			if (eventStatus == DEM_EVENT_STATUS_PASSED) {
+				updateEventStatusRec(eventParam, eventStatus, FALSE, &eventStatusLocal);
+			}
+			else {
+				updateEventStatusRec(eventParam, eventStatus, TRUE, &eventStatusLocal);
+			}
 
-				if (eventStatusLocal.eventStatusChanged) {
+			if (eventStatusLocal.eventStatusChanged) {
 
-					if (eventStatusLocal.eventStatus == DEM_EVENT_STATUS_FAILED) {
-						// Collect freeze frame data
-						getFreezeFrameData(eventParam, &freezeFrameLocal);
-						storeFreezeFrameDataPreInit(eventParam, &freezeFrameLocal);
+				if (eventStatusLocal.eventStatus == DEM_EVENT_STATUS_FAILED) {
+					// Collect freeze frame data
+					getFreezeFrameData(eventParam, &freezeFrameLocal);
+					storeFreezeFrameDataPreInit(eventParam, &freezeFrameLocal);
 
-						// Check if first time -> store extended data
-						if (eventStatusLocal.occurrence == 1) {
-							// Collect extended data
-							getExtendedData(eventParam, &extendedDataLocal);
-							if (extendedDataLocal.eventId != DEM_EVENT_ID_NULL)
-							{
-								storeExtendedDataPreInit(eventParam, &extendedDataLocal);
-							}
+					// Check if first time -> store extended data
+					if (eventStatusLocal.occurrence == 1) {
+						// Collect extended data
+						getExtendedData(eventParam, &extendedDataLocal);
+						if (extendedDataLocal.eventId != DEM_EVENT_ID_NULL)
+						{
+							storeExtendedDataPreInit(eventParam, &extendedDataLocal);
 						}
 					}
 				}
-			}
-			else {
-				// Operation cycle not started
-				// TODO: Report error?
 			}
 		}
 		else {
