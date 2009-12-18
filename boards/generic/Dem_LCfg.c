@@ -22,174 +22,49 @@
 
 #include "Dem.h"
 
-/*
- * DEM Configuration
- */
+/*********************
+ * DEM Configuration *
+ *********************/
 
-// Read extended data callback function declarations
-Std_ReturnType GetExtendedDataRecord_0x01(uint8 *Data) {
-	*Data = 11;
-
-	return E_OK;
-}
-
-Std_ReturnType GetExtendedDataRecord_0x02(uint8 *Data) {
-	Data[0] = 21;
-	Data[1] = 22;
-
-	return E_OK;
-}
-
-Std_ReturnType GetExtendedDataRecord_0x03(uint8 *Data) {
-	Data[0] = 31;
-	Data[1] = 32;
-	Data[2] = 33;
-
-	return E_OK;
-}
-
-// Read fault detection counter callback function declarations
-Std_ReturnType GetFaultDetectionCounter1(sint8 *EventIdFaultDetectionCounter)
-{
-	*EventIdFaultDetectionCounter = -11;
-
-	return E_OK;
-}
 
 /*
  * Classes of extended data record
  */
-const Dem_ExtendedDataRecordClassType ExtendedDataRecordClassList[] = {
-		{
-			.RecordNumber = 1,	// Unique!
-			.DataSize = 1,
-			.CallbackGetExtDataRecord = GetExtendedDataRecord_0x01
-		},
-		{
-			.RecordNumber = 2,
-			.DataSize = 3,
-			.CallbackGetExtDataRecord = GetExtendedDataRecord_0x03
-		},
-		{
-			.RecordNumber = 3,
-			.DataSize = 2,
-			.CallbackGetExtDataRecord = GetExtendedDataRecord_0x02
-		}
-};
+
 
 /*
  * Classes of extended data
  */
-const Dem_ExtendedDataClassType ExtendedDataClass1 = {
-		.ExtendedDataRecordClassRef = {
-			&ExtendedDataRecordClassList[0],
-			NULL	// End of list mark
-		}
-};
 
-const Dem_ExtendedDataClassType ExtendedDataClass2 = {
-		.ExtendedDataRecordClassRef = {
-			&ExtendedDataRecordClassList[0],
-			&ExtendedDataRecordClassList[1],
-			&ExtendedDataRecordClassList[2],
-			NULL	// End of list mark
-		}
-};
 
 /*
  * Classes of freeze frames
  */
-const Dem_FreezeFrameClassType FreezeFrameClassList[] = {
-		{
-				.FFKind = DEM_FREEZE_FRAME_NON_OBD,
-//				.FFRecordNum;	// Optional
-//				.FFIdClassRef; // Optional
-		},
-		{
-				.FFKind = DEM_FREEZE_FRAME_NON_OBD,
-//				.FFRecordNum;	// Optional
-//				.FFIdClassRef; // Optional
-		}
-};
+
 
 /*
  * Classes of PreDebounce algorithms
  */
-const Dem_PreDebounceMonitorInternalType PreDebounceMonitorInternal1 = {
-		.CallbackGetFDCnt = &GetFaultDetectionCounter1
-};
-
-const Dem_PreDebounceAlgorithmClassType PreDebounceAlgorithmClass1 = {
-		.PreDebounceName = DEM_NO_PRE_DEBOUNCE,
-		.PreDebounceAlgorithm = {
-				.PreDebounceMonitorInternal = &PreDebounceMonitorInternal1
-		}
-};
 
 
 /*
  * Classes of event
  */
-const Dem_EventClassType EventClass1 = {
-		.ConsiderPtoStatus = FALSE,
-		.EventDestination = {
-				NULL
-		},
-		.FFPrestorageSupported = FALSE,
-		.HealingAllowed = FALSE,
-		.OperationCycleRef = DEM_IGNITION,
-		.PreDebounceAlgorithmClass = &PreDebounceAlgorithmClass1
-};
 
-const Dem_EventClassType EventClass2 = {
-		.ConsiderPtoStatus = FALSE,
-		.EventDestination = {
-				DEM_DTC_ORIGIN_PRIMARY_MEMORY,
-				NULL
-		},
-		.FFPrestorageSupported = FALSE,
-		.HealingAllowed = FALSE,
-		.OperationCycleRef = DEM_POWER,
-		.PreDebounceAlgorithmClass = NULL
-};
 
+/*
+ * Event parameter list
+ */
 const Dem_EventParameterType EventParameter[] = {
-		{
-				.EventID = DEM_EVENT_ID_TEMP_HIGH,
-				.EventKind = DEM_EVENT_KIND_SWC,
-				.EventClass = &EventClass2,
-				.ExtendedDataClassRef = NULL,
-				.FreezeFrameClassRef = NULL,
-				.CallbackInitMforE = NULL,
-				.CallbackEventStatusChanged = NULL,
-				.DTCClass = NULL
-		},
-		{
-				.EventID = DEM_EVENT_ID_TEMP_LOW,
-				.EventKind = DEM_EVENT_KIND_SWC,
-				.EventClass = &EventClass1,
-				.ExtendedDataClassRef = &ExtendedDataClass1,
-				.FreezeFrameClassRef = NULL,
-				.CallbackInitMforE = NULL,
-				.CallbackEventStatusChanged = NULL,
-				.DTCClass = NULL
-		},
-		{
-				.EventID = DEM_EVENT_ID_BLOW,
-				.EventKind = DEM_EVENT_KIND_BSW,
-				.EventClass = &EventClass2,
-				.ExtendedDataClassRef = &ExtendedDataClass2,
-				.FreezeFrameClassRef = NULL,
-				.CallbackInitMforE = NULL,
-				.CallbackEventStatusChanged = NULL,
-				.DTCClass = NULL
-		},
 		{
 				.Arc_EOL  = TRUE
 		}
-
 };
 
+
+/*
+ * DEM's config set
+ */
 const Dem_ConfigSetType DEM_ConfigSet = {
 		.EventParameter = EventParameter,
 //		.DTCClassType = NULL,		TODO: Add later
@@ -197,7 +72,9 @@ const Dem_ConfigSetType DEM_ConfigSet = {
 //		.OemIdClass = NULL			TODO: Add later
 };
 
-
+/*
+ * DEM's config
+ */
 const Dem_ConfigType DEM_Config = {
 	.ConfigSet = &DEM_ConfigSet,
 };

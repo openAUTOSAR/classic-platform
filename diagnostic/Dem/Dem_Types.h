@@ -61,14 +61,16 @@ typedef uint8 Dem_EventStatusExtendedType;
 /*
  * DemOperationCycleType
  */
-typedef uint8 Dem_OperationCycleType;	// TODO: Check type and values
+typedef uint8 Dem_OperationCycleIdType;	// TODO: Check type and values
 enum {
+	DEM_ACTIVE,		// Started by DEM on Dem_PreInit and stopped on Dem_Shutdown
+
 	DEM_POWER,		// Power ON/OFF Cycle
 	DEM_IGNITION,	// Ignition ON/OF Cycle
 	DEM_WARMUP,		// OBD Warm up Cycle
 	DEM_OBD_DCY,	// OBD Driving Cycle
 
-	DEM_OPERATION_CYCLE_TYPE_ENDMARK
+	DEM_OPERATION_CYCLE_ID_ENDMARK
 };
 
 /*

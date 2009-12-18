@@ -51,12 +51,12 @@
 #define DEM_MAX_SIZE_EXT_DATA					 10	// Max number of bytes in one extended data record
 #define DEM_MAX_NUMBER_EVENT					100	// Max number of events to keep status on
 
-#define DEM_MAX_NUMBER_EVENT_PRE_INIT			(DEM_BSW_ERROR_BUFFER_SIZE)	// Max number of events status to keep before init
-#define DEM_MAX_NUMBER_FF_DATA_PRE_INIT			(DEM_BSW_ERROR_BUFFER_SIZE)	// Max number of freeze frames to store before init
-#define DEM_MAX_NUMBER_EXT_DATA_PRE_INIT		(DEM_BSW_ERROR_BUFFER_SIZE)	// Max number of extended data to store before init
+#define DEM_MAX_NUMBER_EVENT_PRE_INIT			 20	// Max number of events status to keep before init
+#define DEM_MAX_NUMBER_FF_DATA_PRE_INIT			 20	// Max number of freeze frames to store before init
+#define DEM_MAX_NUMBER_EXT_DATA_PRE_INIT		 20	// Max number of extended data to store before init
 
 #define DEM_MAX_NUMBER_EVENT_PRI_MEM			(DEM_MAX_NUMBER_EVENT_ENTRY_PRI)	// Max number of events status to store in primary memory
-#define DEM_MAX_NUMBER_FF_DATA_PRI_MEM			(DEM_MAX_NUMBER_EVENT_ENTRY_PRI)	// Max number of freeze frames to store in primary memory
-#define DEM_MAX_NUMBER_EXT_DATA_PRI_MEM			(DEM_MAX_NUMBER_EVENT_ENTRY_PRI)	// Max number of extended data to store in primary memory
+#define DEM_MAX_NUMBER_FF_DATA_PRI_MEM			5									// Max number of freeze frames to store in primary memory
+#define DEM_MAX_NUMBER_EXT_DATA_PRI_MEM			5									// Max number of extended data to store in primary memory
 
 #endif /*DEM_CFG_H_*/

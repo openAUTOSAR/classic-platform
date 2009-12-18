@@ -177,17 +177,17 @@ typedef struct {
 
 // 10.2.14 DemEventClass
 typedef struct {
-	boolean					ConsiderPtoStatus;										// (1)
-	const Dem_DTCOriginType EventDestination[DEM_MAX_NR_OF_EVENT_DESTINATION+1];	// (0..4)
-	uint8					EventPriority;											// (1)
-	boolean					FFPrestorageSupported;									// (1)
-	boolean					HealingAllowed;											// (1)
-	Dem_OperationCycleType	OperationCycleRef;										// (1)
+	boolean						ConsiderPtoStatus;									// (1)
+	const Dem_DTCOriginType 	EventDestination[DEM_MAX_NR_OF_EVENT_DESTINATION+1];// (0..4)
+	uint8						EventPriority;										// (1)
+	boolean						FFPrestorageSupported;								// (1)
+	boolean						HealingAllowed;										// (1)
+	Dem_OperationCycleIdType	OperationCycleRef;									// (1)
 //	uint8					HealingCycleCounter;									// (0..1) Optional
 //	const Dem_EnableConditionType	*EnableConditionRef;							// (0..*) Optional
 //	const Dem_OperationCycleTgtType *HealingCycleRef;								// (0..1) Optional
-	const Dem_PreDebounceAlgorithmClassType	*PreDebounceAlgorithmClass;					// (0..255) (Only one supported)
-	const Dem_IndicatorAttributeType			*IndicatorAttribute;						// (0..255)
+	const Dem_PreDebounceAlgorithmClassType	*PreDebounceAlgorithmClass;				// (0..255) (Only one supported)
+	const Dem_IndicatorAttributeType			*IndicatorAttribute;				// (0..255)
 //	Dem_OEMSPecific
 
 } Dem_EventClassType;

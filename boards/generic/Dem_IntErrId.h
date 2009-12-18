@@ -32,10 +32,6 @@
 enum {
 	// Event IDs from DEM module
 	DEM_EVENT_ID_NULL = 0,			// Do not change this entry!!!
-	DEM_EVENT_ID_TEMP_HIGH,
-	DEM_EVENT_ID_TEMP_LOW,
-	DEM_EVENT_ID_BLOW,
-	DEM_EVENT_ID_ETC_ETC,
 
 	// Event IDs from MCU
 	MCU_E_CLOCK_FAILURE,

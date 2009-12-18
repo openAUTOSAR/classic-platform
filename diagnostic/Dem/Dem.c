@@ -38,7 +38,7 @@ typedef struct {
 	uint16						occurrence;
 	Dem_EventStatusType			eventStatus;
 	boolean						eventStatusChanged;
-	Dem_OperationCycleType		operationCycleId;
+	Dem_OperationCycleIdType	operationCycleId;
 	Dem_EventStatusExtendedType	eventStatusExtended;
 } EventStatusRecType;
 
@@ -98,7 +98,7 @@ static Std_VersionInfoType _Dem_VersionInfo =
  * Allocation of operation cycle state list
  */
 
-static Dem_OperationCycleStateType operationCycleStateList[DEM_OPERATION_CYCLE_TYPE_ENDMARK];
+static Dem_OperationCycleStateType operationCycleStateList[DEM_OPERATION_CYCLE_ID_ENDMARK];
 /*
  * Allocation of local event status buffer
  */
@@ -572,31 +572,37 @@ void handlePreInitEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus
 	// Find configuration for this event
 	lookupEventIdParameter(eventId, &eventParam);
 	if (eventParam != NULL) {
-		if (eventParam->EventClass->OperationCycleRef < DEM_OPERATION_CYCLE_TYPE_ENDMARK) {
-			if (eventStatus == DEM_EVENT_STATUS_PASSED) {
-				updateEventStatusRec(eventParam, eventStatus, FALSE, &eventStatusLocal);
-			}
-			else {
-				updateEventStatusRec(eventParam, eventStatus, TRUE, &eventStatusLocal);
-			}
+		if (eventParam->EventClass->OperationCycleRef < DEM_OPERATION_CYCLE_ID_ENDMARK) {
+			if (operationCycleStateList[eventParam->EventClass->OperationCycleRef] == DEM_CYCLE_STATE_START) {
+				if (eventStatus == DEM_EVENT_STATUS_PASSED) {
+					updateEventStatusRec(eventParam, eventStatus, FALSE, &eventStatusLocal);
+				}
+				else {
+					updateEventStatusRec(eventParam, eventStatus, TRUE, &eventStatusLocal);
+				}
 
-			if (eventStatusLocal.eventStatusChanged) {
+				if (eventStatusLocal.eventStatusChanged) {
 
-				if (eventStatusLocal.eventStatus == DEM_EVENT_STATUS_FAILED) {
-					// Collect freeze frame data
-					getFreezeFrameData(eventParam, &freezeFrameLocal);
-					storeFreezeFrameDataPreInit(eventParam, &freezeFrameLocal);
+					if (eventStatusLocal.eventStatus == DEM_EVENT_STATUS_FAILED) {
+						// Collect freeze frame data
+						getFreezeFrameData(eventParam, &freezeFrameLocal);
+						storeFreezeFrameDataPreInit(eventParam, &freezeFrameLocal);
 
-					// Check if first time -> store extended data
-					if (eventStatusLocal.occurrence == 1) {
-						// Collect extended data
-						getExtendedData(eventParam, &extendedDataLocal);
-						if (extendedDataLocal.eventId != DEM_EVENT_ID_NULL)
-						{
-							storeExtendedDataPreInit(eventParam, &extendedDataLocal);
+						// Check if first time -> store extended data
+						if (eventStatusLocal.occurrence == 1) {
+							// Collect extended data
+							getExtendedData(eventParam, &extendedDataLocal);
+							if (extendedDataLocal.eventId != DEM_EVENT_ID_NULL)
+							{
+								storeExtendedDataPreInit(eventParam, &extendedDataLocal);
+							}
 						}
 					}
 				}
+			}
+			else {
+				// Operation cycle not started
+				// TODO: Report error?
 			}
 		}
 		else {
@@ -627,7 +633,7 @@ Std_ReturnType handleEvent(Dem_EventIdType eventId, Dem_EventStatusType eventSta
 	// Find configuration for this event
 	lookupEventIdParameter(eventId, &eventParam);
 	if (eventParam != NULL) {
-		if (eventParam->EventClass->OperationCycleRef < DEM_OPERATION_CYCLE_TYPE_ENDMARK) {
+		if (eventParam->EventClass->OperationCycleRef < DEM_OPERATION_CYCLE_ID_ENDMARK) {
 			if (operationCycleStateList[eventParam->EventClass->OperationCycleRef] == DEM_CYCLE_STATE_START) {
 				updateEventStatusRec(eventParam, eventStatus, TRUE, &eventStatusLocal);
 
@@ -779,6 +785,51 @@ Std_ReturnType getFaultDetectionCounter(Dem_EventIdType eventId, sint8 *counter)
 	return returnCode;
 }
 
+/*
+ * Procedure:	setOperationCycleState
+ * Description:	Change the operation state of "operationCycleId" to "cycleState" and updates stored
+ * 				event connected to this cycle id.
+ * 				Returns E_OK if operation was successful else E_NOT_OK.
+ */
+Std_ReturnType setOperationCycleState(Dem_OperationCycleIdType operationCycleId, Dem_OperationCycleStateType cycleState)
+{
+	uint16 i;
+	Std_ReturnType returnCode = E_OK;
+
+	if (operationCycleId < DEM_OPERATION_CYCLE_ID_ENDMARK) {
+		switch (cycleState)
+		{
+		case DEM_CYCLE_STATE_START:
+			operationCycleStateList[operationCycleId] = cycleState;
+			// Lookup event ID
+			for (i = 0; i < DEM_MAX_NUMBER_EVENT; i++) {
+				if ((eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) && (eventStatusBuffer[i].operationCycleId == operationCycleId)) {
+					eventStatusBuffer[i].eventStatusExtended &= ~DEM_TEST_FAILED_THIS_OPERATION_CYCLE;
+					eventStatusBuffer[i].eventStatusExtended |= DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE;
+				}
+			}
+			break;
+
+		case DEM_CYCLE_STATE_END:
+			operationCycleStateList[operationCycleId] = cycleState;
+			break;
+		default:
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
+			Det_ReportError(MODULE_ID_DEM, 0, DEM_SETOPERATIONCYCLESTATE_ID, DEM_E_PARAM_DATA);
+#endif
+			returnCode = E_NOT_OK;
+			break;
+		}
+	}
+	else {
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
+		Det_ReportError(MODULE_ID_DEM, 0, DEM_SETOPERATIONCYCLESTATE_ID, DEM_E_PARAM_DATA);
+#endif
+		returnCode = E_NOT_OK;
+		}
+
+	return returnCode;
+}
 
 //==============================================================================//
 //																				//
@@ -821,7 +872,7 @@ void Dem_PreInit(void)
 	}
 
 	// Initializion of operation cycle states.
-	for (i = 0; i < DEM_OPERATION_CYCLE_TYPE_ENDMARK; i++) {
+	for (i = 0; i < DEM_OPERATION_CYCLE_ID_ENDMARK; i++) {
 		operationCycleStateList[i] = DEM_CYCLE_STATE_END;
 	}
 
@@ -850,6 +901,9 @@ void Dem_PreInit(void)
 		for (j = 0; j < DEM_MAX_SIZE_EXT_DATA;j++)
 			preInitExtDataBuffer[i].data[j] = 0;
 	}
+
+	setOperationCycleState(DEM_ACTIVE, DEM_CYCLE_STATE_START);
+
 	demState = DEM_PREINITIALIZED;
 }
 
@@ -945,8 +999,9 @@ void Dem_Init(void)
  * Procedure:	Dem_shutdown
  * Reentrant:	No
  */
-void Dem_shutdown(void)
+void Dem_Shutdown(void)
 {
+	setOperationCycleState(DEM_ACTIVE, DEM_CYCLE_STATE_END);
 
 	demState = DEM_UNINITIALIZED;
 }
@@ -1098,44 +1153,14 @@ Std_ReturnType Dem_GetFaultDetectionCounter(Dem_EventIdType eventId, sint8 *coun
 }
 
 
-Std_ReturnType Dem_SetOperationCycleState(Dem_OperationCycleType operationCycleId, Dem_OperationCycleStateType cycleState)
+Std_ReturnType Dem_SetOperationCycleState(Dem_OperationCycleIdType operationCycleId, Dem_OperationCycleStateType cycleState)
 {
-	uint16 i;
 	Std_ReturnType returnCode = E_OK;
 
 	if (demState == DEM_INITIALIZED) // No action is taken if the module is not started
 	{
-		if (operationCycleId < DEM_OPERATION_CYCLE_TYPE_ENDMARK) {
-			switch (cycleState)
-			{
-			case DEM_CYCLE_STATE_START:
-				operationCycleStateList[operationCycleId] = cycleState;
-				// Lookup event ID
-				for (i = 0; i < DEM_MAX_NUMBER_EVENT; i++) {
-					if ((eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) && (eventStatusBuffer[i].operationCycleId == operationCycleId)) {
-						eventStatusBuffer[i].eventStatusExtended &= ~DEM_TEST_FAILED_THIS_OPERATION_CYCLE;
-						eventStatusBuffer[i].eventStatusExtended |= DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE;
-					}
-				}
-				break;
+		returnCode = setOperationCycleState(operationCycleId, cycleState);
 
-			case DEM_CYCLE_STATE_END:
-				operationCycleStateList[operationCycleId] = cycleState;
-				break;
-			default:
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-				Det_ReportError(MODULE_ID_DEM, 0, DEM_SETOPERATIONCYCLESTATE_ID, DEM_E_PARAM_DATA);
-#endif
-				returnCode = E_NOT_OK;
-				break;
-			}
-		}
-		else {
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-			Det_ReportError(MODULE_ID_DEM, 0, DEM_SETOPERATIONCYCLESTATE_ID, DEM_E_PARAM_DATA);
-#endif
-			returnCode = E_NOT_OK;
-		}
 	}
 	else
 	{

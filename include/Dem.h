@@ -93,7 +93,7 @@ void Dem_GetVersionInfo(Std_VersionInfoType *versionInfo);
  */
 void Dem_PreInit( void );
 void Dem_Init( void );
-void Dem_shutdown( void );
+void Dem_Shutdown( void );
 
 
 /*
@@ -111,7 +111,7 @@ Std_ReturnType Dem_GetEventStatus(Dem_EventIdType eventId, Dem_EventStatusExtend
 Std_ReturnType Dem_GetEventFailed(Dem_EventIdType eventId, boolean *eventFailed);
 Std_ReturnType Dem_GetEventTested(Dem_EventIdType eventId, boolean *eventTested);
 Std_ReturnType Dem_GetFaultDetectionCounter(Dem_EventIdType eventId, sint8 *counter);
-Std_ReturnType Dem_SetOperationCycleState(Dem_OperationCycleType OperationCycleId, Dem_OperationCycleStateType CycleState);
+Std_ReturnType Dem_SetOperationCycleState(Dem_OperationCycleIdType OperationCycleId, Dem_OperationCycleStateType CycleState);
 
 
 /*
