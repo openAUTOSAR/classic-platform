@@ -20,11 +20,18 @@
 
 
 
-#ifndef DEM_INTERRID_H_
-#define DEM_INTERRID_H_
+#ifndef DEMINTEVTID_H_
+#define DEMINTEVTID_H_
 
-#endif /*DEM_INTERRID_H_*/
+/*
+ * Definition of event IDs used by SW-C
+ * NB! Must be unique for each event!
+ */
+enum {
+	// NB! Event IDs below DEM_SWC_EVENT_ID_START not allowed!
+	DEM_EVENT_ID_SWC_START = DEM_EVENT_ID_LAST_FOR_BSW
 
-/* Added by Mattias Ekberg 2008-10-20 while implementing the PDU router. The value of PDUR_E_INSTANCE_LOST can
-   be changed without affecting the PDU router.*/
-#define PDUR_E_INSTANCE_LOST 0
+};
+
+
+#endif /*DEMINTEVTID_H_*/

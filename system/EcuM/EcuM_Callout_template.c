@@ -26,6 +26,9 @@
 
 #include "EcuM.h"
 #include "Det.h"
+#if defined(USE_DEM)
+#include "Dem.h"
+#endif
 #if defined(USE_MCU)
 #include "Mcu.h"
 #endif
@@ -52,6 +55,12 @@ void EcuM_AL_DriverInitZero()
 {
 	Det_Init();
     Det_Start();
+
+#if defined(USE_DEM)
+	// Preinitialize DEM
+	Dem_PreInit();
+#endif
+
 }
 
 EcuM_ConfigType* EcuM_DeterminePbConfiguration()
@@ -150,6 +159,11 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 #if defined(USE_COM)
 	// Setup COM layer
 	Com_Init(ConfigPtr->ComConfig);
+#endif
+
+#if defined(USE_DEM)
+	// Initialize DEM
+	Dem_Init();
 #endif
 
 }

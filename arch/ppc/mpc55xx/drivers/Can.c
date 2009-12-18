@@ -28,6 +28,9 @@
 #include "Mcu.h"
 #include "CanIf_Cbk.h"
 #include "Det.h"
+#if defined(USE_DEM)
+#include "Dem.h"
+#endif
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -154,6 +157,16 @@
 #define VALIDATE(_exp,_api,_err )
 #define VALIDATE_NO_RV(_exp,_api,_err )
 #define DET_REPORTERROR(_x,_y,_z,_q)
+#endif
+
+#if defined(USE_DEM)
+#define VALIDATE_DEM_NO_RV(_exp,_err ) \
+        if( !(_exp) ) { \
+          Dem_ReportErrorStatus(_err, DEM_EVENT_STATUS_FAILED); \
+          return; \
+        }
+#else
+#define VALIDATE_DEM_NO_RV(_exp,_err )
 #endif
 
 //-------------------------------------------------------------------
@@ -854,9 +867,9 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
   tq = 1 + tq1 + tq2;
 
   // Check TQ limitations..
-  VALIDATE_NO_RV(( (tq1>=4) && (tq1<=16)), 0x2, CAN_E_TIMEOUT ); // Actually should be sent to DEM
-  VALIDATE_NO_RV(( (tq2>=2) && (tq2<=8)), 0x2, CAN_E_TIMEOUT );  // but this is the next best thing
-  VALIDATE_NO_RV(( (tq>8) && (tq<25 )), 0x2, CAN_E_TIMEOUT );
+  VALIDATE_DEM_NO_RV(( (tq1>=4) && (tq1<=16)), CAN_E_TIMEOUT );
+  VALIDATE_DEM_NO_RV(( (tq2>=2) && (tq2<=8)), CAN_E_TIMEOUT );
+  VALIDATE_DEM_NO_RV(( (tq>8) && (tq<25 )), CAN_E_TIMEOUT );
 
   // Assume we're using the peripheral clock instead of the crystal.
   clock = McuE_GetPeripheralClock(config->CanCpuClockRef);

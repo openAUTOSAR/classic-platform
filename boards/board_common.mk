@@ -132,6 +132,13 @@ inc-$(USE_PDUR) += $(ROOTDIR)/communication/PduR
 inc-$(USE_COM) += $(ROOTDIR)/communication/PduR
 vpath-$(USE_PDUR) += $(ROOTDIR)/communication/PduR
 
+#Dem
+obj-$(USE_DEM) += Dem.o
+obj-$(USE_DEM) += Dem_LCfg.o
+inc-$(USE_DEM) += $(ROOTDIR)/diagnostic/Dem
+vpath-$(USE_DEM) += $(ROOTDIR)/diagnostic/Dem
+
+
 #tests
 #obj-y += RunTests.o
 #obj-$(USE_CAN) += can_test.o
@@ -204,4 +211,4 @@ inc-y += $(ROOTDIR)/drivers/test
 # And last the generic board
 #
 inc-y += $(ROOTDIR)/boards/generic
-
+vpath-y += $(ROOTDIR)/boards/generic

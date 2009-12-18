@@ -28,8 +28,9 @@
 #include "Std_Types.h"
 #include "Det.h"
 //#include "MemIf_Types.h"
-// TODO: not yet #include "Dem.h"
-
+#if defined(USE_DEM)
+#include "Dem.h"
+#endif
 // SW ans Autosar spec versions
 #define FLS_SW_MAJOR_VERSION    	1
 #define FLS_SW_MINOR_VERSION   		0
@@ -51,13 +52,6 @@
 #define FLS_E_VERIFY_ERASE_FAILED	0x07
 // Write verification (compare) failed
 #define FLS_E_VERIFY_WRITE_FAILED	0x08
-
-// These should be assigned by the DEM module
-#define FLS_E_ERASED_FAILED 0x09
-#define FLS_E_WRITE_FAILED 0x0A
-#define FLS_E_READ_FAILED 0x0B
-#define FLS_E_COMPARE_FAILED 0x0C
-#define FLS_E_UNEXPECTED_FLASH_ID 0x0D
 
 // Service id's for fls functions
 #define FLS_INIT_ID					0x00
