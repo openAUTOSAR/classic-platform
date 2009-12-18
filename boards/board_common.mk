@@ -188,14 +188,6 @@ vpath-y += $(ROOTDIR)/boards/$(BOARDDIR)/config
 vpath-y += $(ROOTDIR)/diagnostic/Dem
 vpath-y += $(ROOTDIR)/diagnostic/Det
 
-
-VPATH += $(vpath-y)
-
-#$(error $(VPATH))
-
-# libs needed by us
-#build-lib-y += $(ROOTDIR)/libs/libboard_$(BOARDDIR).a
-
 # include files need by us
 inc-y += $(ROOTDIR)/include
 inc-y += $(ROOTDIR)/kernel/test
@@ -212,3 +204,10 @@ inc-y += $(ROOTDIR)/drivers/test
 #
 inc-y += $(ROOTDIR)/boards/generic
 vpath-y += $(ROOTDIR)/boards/generic
+
+
+VPATH += $(vpath-y)
+#$(error $(VPATH))
+
+# libs needed by us
+#build-lib-y += $(ROOTDIR)/libs/libboard_$(BOARDDIR).a
