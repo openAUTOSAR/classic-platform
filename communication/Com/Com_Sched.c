@@ -33,25 +33,25 @@
 void Com_MainFunctionRx() {
 	//DEBUG(DEBUG_MEDIUM, "Com_MainFunctionRx() excecuting\n");
 	const ComSignal_type *signal;
-	for (int i = 0; !ComConfig->ComSignal[i].ComEcoreEOL; i++) {
+	for (int i = 0; !ComConfig->ComSignal[i].Com_Arc_EOL; i++) {
 		signal = &ComConfig->ComSignal[i];
-		ComGetEcoreSignal(signal->ComHandleId);
-		ComGetEcoreIPdu(EcoreSignal->ComIPduHandleId);
+		ComGetArcSignal(signal->ComHandleId);
+		ComGetArcIPdu(Arc_Signal->ComIPduHandleId);
 
 		// Monitor signal reception deadline
-		if (EcoreIPdu->ComEcoreIpduStarted && EcoreSignal->ComTimeoutFactor > 0) {
+		if (Arc_IPdu->Com_Arc_IpduStarted && Arc_Signal->ComTimeoutFactor > 0) {
 
 			// Decrease deadline monitoring timer.
-			timerDec(EcoreSignal->ComEcoreDeadlineCounter);
+			timerDec(Arc_Signal->Com_Arc_DeadlineCounter);
 
 			// Check if a timeout has occurred.
-			if (EcoreSignal->ComEcoreDeadlineCounter == 0) {
+			if (Arc_Signal->Com_Arc_DeadlineCounter == 0) {
 				if (signal->ComRxDataTimeoutAction == COM_TIMEOUT_DATA_ACTION_REPLACE) {
 					// Replace signal data.
 					uint32 signalInitData;
 					memset(&signalInitData, signal->ComSignalInitValue, sizeof(uint32));
 
-					Com_CopyData(EcoreIPdu->ComIPduDataPtr, &signalInitData, signal->ComBitSize, signal->ComBitPosition, 0);
+					Com_CopyData(Arc_IPdu->ComIPduDataPtr, &signalInitData, signal->ComBitSize, signal->ComBitPosition, 0);
 
 				}
 
@@ -61,13 +61,13 @@ void Com_MainFunctionRx() {
 				}
 
 				// Restart timer
-				EcoreSignal->ComEcoreDeadlineCounter = EcoreSignal->ComTimeoutFactor;
+				Arc_Signal->Com_Arc_DeadlineCounter = Arc_Signal->ComTimeoutFactor;
 			}
 		}
 
-		if (EcoreSignal->ComSignalUpdated) {
+		if (Arc_Signal->ComSignalUpdated) {
 			ComConfig->ComSignal[i].ComNotification();
-			EcoreSignal->ComSignalUpdated = 0;
+			Arc_Signal->ComSignalUpdated = 0;
 		}
 	}
 }
@@ -77,65 +77,65 @@ void Com_MainFunctionTx() {
 	//DEBUG(DEBUG_MEDIUM, "Com_MainFunctionTx() excecuting\n");
 	// Decrease timers.
 	const ComIPdu_type *IPdu;
-	for (int i = 0; !ComConfig->ComIPdu[i].ComEcoreEOL; i++) {
+	for (int i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
 		IPdu = &ComConfig->ComIPdu[i];
-		ComGetEcoreIPdu(i);
+		ComGetArcIPdu(i);
 
 		// Is this a IPdu that should be transmitted?
-		if (IPdu->ComIPduDirection == SEND && EcoreIPdu->ComEcoreIpduStarted) {
+		if (IPdu->ComIPduDirection == SEND && Arc_IPdu->Com_Arc_IpduStarted) {
 			// Decrease minimum delay timer
-			timerDec(EcoreIPdu->ComEcoreTxIPduTimers.ComTxIPduMinimumDelayTimer);
+			timerDec(Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduMinimumDelayTimer);
 
 			// If IPDU has periodic or mixed transmission mode.
 			if (IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeMode == PERIODIC
 				|| IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeMode == MIXED) {
 
-				timerDec(EcoreIPdu->ComEcoreTxIPduTimers.ComTxModeTimePeriodTimer);
+				timerDec(Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeTimePeriodTimer);
 
 				// Is it time for a direct transmission?
 				if (IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeMode == MIXED
-					&& EcoreIPdu->ComEcoreTxIPduTimers.ComTxIPduNumberOfRepetitionsLeft > 0) {
+					&& Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduNumberOfRepetitionsLeft > 0) {
 
-					timerDec(EcoreIPdu->ComEcoreTxIPduTimers.ComTxModeRepetitionPeriodTimer);
+					timerDec(Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeRepetitionPeriodTimer);
 
 					// Is it time for a transmission?
-					if (EcoreIPdu->ComEcoreTxIPduTimers.ComTxModeRepetitionPeriodTimer == 0
-						&& EcoreIPdu->ComEcoreTxIPduTimers.ComTxIPduMinimumDelayTimer == 0) {
+					if (Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeRepetitionPeriodTimer == 0
+						&& Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduMinimumDelayTimer == 0) {
 
 						Com_TriggerIPduSend(IPdu->ComIPduRxHandleId);
 
 						// Reset periodic timer
-						EcoreIPdu->ComEcoreTxIPduTimers.ComTxModeRepetitionPeriodTimer = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeRepetitionPeriodFactor;
+						Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeRepetitionPeriodTimer = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeRepetitionPeriodFactor;
 
 						// Register this nth-transmission.
-						EcoreIPdu->ComEcoreTxIPduTimers.ComTxIPduNumberOfRepetitionsLeft--;
+						Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduNumberOfRepetitionsLeft--;
 					}
 				}
 
 				// Is it time for a cyclic transmission?
-				if (EcoreIPdu->ComEcoreTxIPduTimers.ComTxModeTimePeriodTimer == 0 && EcoreIPdu->ComEcoreTxIPduTimers.ComTxIPduMinimumDelayTimer == 0) {
+				if (Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeTimePeriodTimer == 0 && Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduMinimumDelayTimer == 0) {
 
 					Com_TriggerIPduSend(IPdu->ComIPduRxHandleId); // Send IPDU!
 
 					// Reset periodic timer.
-					EcoreIPdu->ComEcoreTxIPduTimers.ComTxModeTimePeriodTimer = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeTimePeriodFactor;
+					Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeTimePeriodTimer = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeTimePeriodFactor;
 				}
 
 			// If IPDU has direct transmission mode.
 			} else if (IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeMode == DIRECT) {
 				// Do we need to transmit anything?
-				if (EcoreIPdu->ComEcoreTxIPduTimers.ComTxIPduNumberOfRepetitionsLeft > 0) {
-					timerDec(EcoreIPdu->ComEcoreTxIPduTimers.ComTxModeRepetitionPeriodTimer);
+				if (Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduNumberOfRepetitionsLeft > 0) {
+					timerDec(Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeRepetitionPeriodTimer);
 
 					// Is it time for a transmission?
-					if (EcoreIPdu->ComEcoreTxIPduTimers.ComTxModeRepetitionPeriodTimer == 0 && EcoreIPdu->ComEcoreTxIPduTimers.ComTxIPduMinimumDelayTimer == 0) {
+					if (Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeRepetitionPeriodTimer == 0 && Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduMinimumDelayTimer == 0) {
 						Com_TriggerIPduSend(IPdu->ComIPduRxHandleId);
 
 						// Reset periodic timer
-						EcoreIPdu->ComEcoreTxIPduTimers.ComTxModeRepetitionPeriodTimer = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeRepetitionPeriodFactor;
+						Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeRepetitionPeriodTimer = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeRepetitionPeriodFactor;
 
 						// Register this nth-transmission.
-						EcoreIPdu->ComEcoreTxIPduTimers.ComTxIPduNumberOfRepetitionsLeft--;
+						Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduNumberOfRepetitionsLeft--;
 					}
 				}
 
@@ -148,7 +148,7 @@ void Com_MainFunctionTx() {
 
 	// Send scheduled packages.
 	// Cyclic
-	for (int i = 0; !ComConfig->ComIPdu[i].ComEcoreEOL; i++) {
+	for (int i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
 		if (ComConfig->ComIPdu[i].ComIPduDirection == SEND) {
 
 		}

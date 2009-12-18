@@ -316,13 +316,13 @@ typedef enum {
   FLS_JOB_ERASE,
   FLS_JOB_READ,
   FLS_JOB_WRITE,
-} Fls_EcoreJobType;
+} Fls_Arc_JobType;
 
 #if 0
 typedef struct {
   MemIf_StatusType    status;
   MemIf_JobResultType jobResultType;
-  Fls_EcoreJobType	jobType;
+  Fls_Arc_JobType	jobType;
   MemIf_AddressType   sourceAddr;
   uint8 *targetAddr;
   MemIf_LengthType length;
@@ -354,7 +354,7 @@ typedef struct {
 
   MemIf_StatusType    status;
   MemIf_JobResultType jobResultType;
-  Fls_EcoreJobType	jobType;
+  Fls_Arc_JobType	jobType;
   MemIf_AddressType   sourceAddr;
   uint8 *targetAddr;
   MemIf_LengthType length;

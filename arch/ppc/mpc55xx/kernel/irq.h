@@ -64,7 +64,7 @@ typedef enum
   EDMA_INTL_INT13,
   EDMA_INTL_INT14,
   EDMA_INTL_INT15,		// 26
-#if defined(CFG_MPC5554)||defined(CFG_MPC5567)
+#if defined(CFG_MPC5554)||defined(CFG_MPC5567)||defined(CFG_MPC5633)
   EDMA_INTL_INT16,
   EDMA_INTL_INT17,
   EDMA_INTL_INT18,
@@ -146,7 +146,7 @@ typedef enum
   EMISOS200_FLAG_F21,
   EMISOS200_FLAG_F22,
   EMISOS200_FLAG_F23,	// 16-81
-#elif defined(CFG_MPC5554)||defined(CFG_MPC5567)
+#elif defined(CFG_MPC5554)||defined(CFG_MPC5567)||defined(CFG_MPC5633)
   ETPU_GLOBAL,		// 54-67
   ETPU_A_CIS_0,
   ETPU_A_CIS_1,
@@ -232,7 +232,7 @@ typedef enum
   DSPI_B_ISR_TFFF,
   DSPI_B_ISR_TCF,
   DSPI_B_ISR_RFDF,
-#elif defined(CFG_MPC5554)||defined(CFG_MPC5567)
+#elif defined(CFG_MPC5554)||defined(CFG_MPC5567)||defined(CFG_MPC5633)
   DSPI_B_COMB,		// 54-131
   DSPI_B_ISR_EOQF,
   DSPI_B_ISR_TFFF,
@@ -467,7 +467,7 @@ typedef enum
   RESERVED_SPACE_BEFORE_EXCEPTIONS25,
 #endif
 
-#if defined(CFG_MPC5554)||defined(CFG_MPC5567)
+#if defined(CFG_MPC5554)||defined(CFG_MPC5567)||defined(CFG_MPC5633)
   /* FlexCAN C */
   FLEXCAN_C_ESR_BOFF_INT = 173,
   FLEXCAN_C_ESR_ERR_INT,
@@ -573,7 +573,7 @@ typedef enum
 
   DUMMY_DUMMY = 319,
 
-#endif /* defined(CFG_MPC5554)||defined(CFG_MPC5567) */
+#endif /* defined(CFG_MPC5554)||defined(CFG_MPC5567)||defined(CFG_MPC5633) */
 
   CRITICAL_INPUT_EXCEPTION,
   MACHINE_CHECK_EXCEPTION,

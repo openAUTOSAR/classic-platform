@@ -27,17 +27,25 @@
 extern const Can_ControllerConfigType CanControllerConfigData[];
 extern const Can_ConfigSetType CanConfigSetData;
 
+// Contains the mapping from CanIf-specific Channels to Can Controllers
+const CanControllerIdType CanIf_Arc_ChannelToControllerMap[CANIF_CHANNEL_CNT] = {
+		CAN_CTRL_A, // CANIF_CHANNEL_0
+		CAN_CTRL_C, // CANIF_CHANNEL_1
+};
 
-// Container that gets slamed into CanIf_InitController()
-// Inits ALL controllers
-// Multiplicity 1..*
 const CanIf_ControllerConfigType CanIfControllerConfig[] =
 {
-  { // This is the ConfigurationIndex in CanIf_InitController()
+  { // CANIF_CHANNEL_0_CONFIG_0
     .WakeupSupport = CANIF_WAKEUP_SUPPORT_NO_WAKEUP,
-    .CanIfControllerIdRef = CAN_CTRL_A,
+    .CanIfControllerIdRef = CANIF_CHANNEL_0,
     .CanIfDriverNameRef = "FLEXCAN",  // Not used
     .CanIfInitControllerRef = &CanControllerConfigData[0],
+  },
+  { // CANIF_CHANNEL_1_CONFIG_0
+    .WakeupSupport = CANIF_WAKEUP_SUPPORT_NO_WAKEUP,
+    .CanIfControllerIdRef = CANIF_CHANNEL_1,
+    .CanIfDriverNameRef = "FLEXCAN",  // Not used
+    .CanIfInitControllerRef = &CanControllerConfigData[1],
   },
 };
 
@@ -54,10 +62,10 @@ const CanIf_DispatchConfigType CanIfDispatchConfig =
 const CanIf_HthConfigType CanIfHthConfigData[] =
 {
   {
-    .CanIfHthType = CAN_ECORE_HANDLE_TYPE_BASIC,
-    .CanIfCanControllerIdRef = CAN_CTRL_A,
+    .CanIfHthType = CAN_ARC_HANDLE_TYPE_BASIC,
+    .CanIfCanControllerIdRef = CANIF_CHANNEL_0,
     .CanIfHthIdSymRef = CAN_HTH_A_1, // Ref to the HTH
-    .CanIfEcoreEOL = 0,
+    .CanIf_Arc_EOL = 0,
   },
 };
 
@@ -65,11 +73,11 @@ const CanIf_HthConfigType CanIfHthConfigData[] =
 const CanIf_HrhConfigType CanIfHrhConfigData[] =
 {
   {
-    .CanIfHrhType = CAN_ECORE_HANDLE_TYPE_BASIC,
+    .CanIfHrhType = CAN_ARC_HANDLE_TYPE_BASIC,
     .CanIfSoftwareFilterHrh = TRUE,   // Disable software filtering
-    .CanIfCanControllerHrhIdRef = CAN_CTRL_A,
+    .CanIfCanControllerHrhIdRef = CANIF_CHANNEL_0,
     .CanIfHrhIdSymRef = CAN_HRH_A_1, // Ref to the HRH
-    .CanIfEcoreEOL = 0,
+    .CanIf_Arc_EOL = 0,
   },
 };
 //-------------------------------------------------------------------
@@ -109,7 +117,7 @@ const CanIf_InitHohConfigType CanIfHohConfigData[] =
     .CanConfigSet = &CanConfigSetData,
     .CanIfHrhConfig = CanIfHrhConfigData,
     .CanIfHthConfig = CanIfHthConfigData,
-    .CanIfEcoreEOL = 1,
+    .CanIf_Arc_EOL = 1,
   },
 };
 
@@ -136,5 +144,6 @@ CanIf_ConfigType CanIf_Config =
   .DispatchConfig = &CanIfDispatchConfig,
   .InitConfig = &CanIfInitConfig,
   .TransceiverConfig = NULL, // Not used
+  .Arc_ChannelToControllerMap = CanIf_Arc_ChannelToControllerMap,
 };
 

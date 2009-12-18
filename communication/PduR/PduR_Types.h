@@ -79,7 +79,7 @@ typedef struct {
 
 typedef struct {
 	/*
-	 * Not part of autosar standard. Added by Ecore.
+	 * Not part of autosar standard. Added by ArcCore.
 	 */
 	int BufferId;
 	PduR_DataProvisionType BufferType;
@@ -156,7 +156,7 @@ typedef struct {
 
 
 typedef struct {
-	uint8 PduREcoreDummy; // Needed in order to compile without errors.
+	uint8 PduR_Arc_Dummy; // Needed in order to compile without errors.
 	PduRDefaultValueElement_type *PduRDefaultValueElement;
 } PduRDefaultValue_type;
 
@@ -165,7 +165,7 @@ typedef struct {
 	 * Not part of standard
 	 */
 	PduR_FctPtrType *FctPtrs;
-	uint8 PduREcoreEOL;
+	uint8 PduR_Arc_EOL;
 	uint8 PduR_GatewayMode;
 
 	/*

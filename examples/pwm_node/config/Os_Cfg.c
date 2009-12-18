@@ -88,20 +88,22 @@ GEN_IRQ_PRIORITY_TABLE_HEAD {};
 
 // --- COUNTERS ---
 GEN_COUNTER_HEAD {
-	GEN_COUNTER(	OS_TICK_COUNTER,
-					"OS_TICK_COUNTER",
+	GEN_COUNTER(	COUNTER_ID_OsTick,
+					"COUNTER_ID_OsTick",
 					COUNTER_TYPE_HARD,
 					COUNTER_UNIT_NANO,
 					0xffff,1,1,0 ),
 };
+
+CounterType Os_Arc_OsTickCounter = COUNTER_ID_OsTick;
 
 // --- ALARMS ---
 GEN_ALARM_HEAD {
 	{
 		.expire_val	= 25,
 		.active		= FALSE,
-		.counter = &counter_list[OS_TICK_COUNTER],
-		.counter_id = OS_TICK_COUNTER,
+		.counter = &counter_list[COUNTER_ID_OsTick],
+		.counter_id = COUNTER_ID_OsTick,
 		.action =
 		{
 				.type = ALARM_ACTION_ACTIVATETASK,
@@ -112,8 +114,8 @@ GEN_ALARM_HEAD {
 	{
 		.expire_val	= 100,
 		.active		= FALSE,
-		.counter = &counter_list[OS_TICK_COUNTER],
-		.counter_id = OS_TICK_COUNTER,
+		.counter = &counter_list[COUNTER_ID_OsTick],
+		.counter_id = COUNTER_ID_OsTick,
 		.action =
 		{
 				.type = ALARM_ACTION_ACTIVATETASK,
@@ -128,13 +130,13 @@ GEN_HOOKS( StartupHook, ProtectionHook, ShutdownHook, ErrorHook, PreTaskHook, Po
 
 // --- MISC ---
 uint32 os_dbg_mask = 0;
-
-//	D_MASTER_PRINT |\
-//	D_ISR_MASTER_PRINT |\
-//	D_STDOUT |\
-//	D_ISR_STDOUT |
-//	D_ALARM | D_TASK;
-
+/*
+	D_MASTER_PRINT |\
+	D_ISR_MASTER_PRINT |\
+	D_STDOUT |\
+	D_ISR_STDOUT |
+	D_ALARM | D_TASK;
+*/
 
 #include "os_config_funcs.h"
 

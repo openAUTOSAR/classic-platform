@@ -23,9 +23,9 @@
 #ifndef SPI_CFG_H_
 #define SPI_CFG_H_
 
-#include "Dma_Cfg.h"
+#include "Dma.h"
 #include "mpc55xx.h"
-#include "Mcu_Cfg.h"
+#include "Mcu.h"
 
 #define DSPI_CTRL_A	0
 #define DSPI_CTRL_B	1
@@ -182,9 +182,9 @@ typedef enum
 
 typedef enum
 {
-  SPI_ECORE_TRANSFER_START_LSB,
-  SPI_ECORE_TRANSFER_START_MSB,
-} Spi_EcoreTransferStartType;
+  SPI_ARC_TRANSFER_START_LSB,
+  SPI_ARC_TRANSFER_START_MSB,
+} Spi_Arc_TransferStartType;
 
 
 typedef enum {
@@ -217,7 +217,7 @@ typedef struct
   Spi_NumberOfDataType SpiIbNBuffers;
 
   // This parameter defines the first starting bit for transmission.
-  Spi_EcoreTransferStartType SpiTransferStart;
+  Spi_Arc_TransferStartType SpiTransferStart;
 
   //
   _Bool SpiDmaNoIncreaseSrc;
@@ -289,7 +289,7 @@ typedef struct
   // Timing between PCS and first edge of SCK. Unit ns.
   uint32 SpiTimeCs2Clk;
 
-  // Ecore extension...
+  // ArcCore extension...
   // The controller ID(0..3)
   //uint32 SpiControllerId;
 

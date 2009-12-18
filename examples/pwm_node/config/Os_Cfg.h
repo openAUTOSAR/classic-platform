@@ -46,6 +46,9 @@ void Startup( void );
 void bTask25( void );
 void bTask100( void );
 
+// COUNTERS
+#define COUNTER_ID_OsTick					0
+
 // ALARMS
 #define ALARM_USE
 #define ALARM_ID_bTask25					0

@@ -21,11 +21,11 @@
 
 
 #include "Os.h"
+#include "Mcu.h"
 #include <stdio.h>
 #include <assert.h>
 #define USE_TRACE	1
 #include "Trace.h"
-//#include "Hooks.h"
 
 
 #if 0
@@ -34,7 +34,6 @@
 #if !defined(USE_SIMULATOR)
 // Quick fix
 //#include "kernel_offset.h"
-#include "Mcu.h"
 
 extern uint8_t pcb_list[];
 

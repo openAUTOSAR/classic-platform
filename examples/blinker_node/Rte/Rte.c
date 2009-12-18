@@ -23,13 +23,12 @@
 /*
  * RTE.c
  *
- *  Created on: 2009-jul-10
- *      Author: rosa
+ *      Author: tojo
  */
 
 #include "Dio.h"
-
+#include "Rte.h"
 
 void RTE_blinker_blink(uint8 arg){
-	Dio_WriteChannel(LED_K2, arg);
+	Dio_WriteChannel(LED_CHANNEL, arg);
 }

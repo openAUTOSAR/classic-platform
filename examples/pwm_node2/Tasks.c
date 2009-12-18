@@ -28,7 +28,7 @@
 #include "Trace.h"
 #include "Com.h"
 #include "Adc.h"
-
+#include "pwm_node2_helpers.h"
 
 void OsIdle( void ) {
 	for(;;);

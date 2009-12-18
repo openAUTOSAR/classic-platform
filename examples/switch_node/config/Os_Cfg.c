@@ -82,6 +82,8 @@ counter_obj_t counter_list[] = {
 	},
 };
 
+CounterType Os_Arc_OsTickCounter = COUNTER_ID_OsTick;
+
 // ##################################    ALARMS     ################################
 alarm_obj_t alarm_list[] = {
 	{

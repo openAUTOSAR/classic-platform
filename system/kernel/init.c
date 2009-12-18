@@ -145,6 +145,7 @@ void InitOS( void ) {
 	// TODO: Isn't this just EXTENED tasks ???
 	for( i=0; i < Oil_GetTaskCnt(); i++) {
 		tmp_pcb = os_get_pcb(i);
+		assert(tmp_pcb->prio<=OS_TASK_PRIORITY_MAX);
 		os_pcb_rom_copy(tmp_pcb,os_get_rom_pcb(i));
 		if( !(tmp_pcb->proc_type & PROC_ISR) ) {
 			os_pcb_make_virgin(tmp_pcb);

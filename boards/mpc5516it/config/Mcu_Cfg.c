@@ -23,7 +23,7 @@
 #ifndef MCU_CFG_C_
 #define MCU_CFG_C_
 
-#include "Mcu_Cfg.h"
+#include "Mcu.h"
 
 Mcu_RamSectorSettingConfigType Mcu_RamSectorSettingConfigData[] = {
   {

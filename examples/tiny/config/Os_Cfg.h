@@ -46,8 +46,7 @@ void btask_3( void );
 
 //#define TASK_ID_os_tick					8
 
-
-// OS_TICK_COUNTER located in Os.h
+#define COUNTER_ID_OsTick				0
 
 // NOT GENERATED( for test system only )
 #define SYSTEM_COUNTER_PERIOD				100

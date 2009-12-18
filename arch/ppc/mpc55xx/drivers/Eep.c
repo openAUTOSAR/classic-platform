@@ -121,7 +121,7 @@ typedef enum {
   EEP_ERASE,
   EEP_READ,
   EEP_WRITE,
-} Eep_EcoreJobType;
+} Eep_Arc_JobType;
 
 /* Spi job state */
 typedef enum {
@@ -136,7 +136,7 @@ typedef struct {
 	Eep_AddressType eepAddr;
 	uint32 left;
 	Job_StateType state;
-	Eep_EcoreJobType mainState;
+	Eep_Arc_JobType mainState;
 	Spi_SequenceType currSeq;
 	uint32 chunkSize;
 } Eep_JobInfoType;
@@ -155,7 +155,7 @@ typedef struct {
   // Status of driver
   MemIf_StatusType    status;
   MemIf_JobResultType jobResultType;
-  Eep_EcoreJobType    jobType;
+  Eep_Arc_JobType    jobType;
 
   // Saved information from API calls.
   MemIf_AddressType   e2Addr;

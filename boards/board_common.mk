@@ -41,8 +41,12 @@ inc-$(CFG_MPC55XX) +=  $(ROOTDIR)/$(ARCH_PATH-y)/delivery/mpc5500_h7f/include
 # Can
 obj-$(USE_CAN) += Can.o
 obj-$(USE_CAN) += Can_Lcfg.o
+
+# CanIf
 obj-$(USE_CANIF) += CanIf.o
 obj-$(USE_CANIF) += CanIf_Cfg.o
+vpath-$(USE_CANIF) += $(ROOTDIR)/communication/CanIf
+inc-$(USE_CANIF) += $(ROOTDIR)/communication/CanIf
 
 obj-$(USE_DIO) += Dio.o
 obj-$(USE_DIO) += Dio_Lcfg.o
@@ -184,14 +188,6 @@ vpath-y += $(ROOTDIR)/boards/$(BOARDDIR)/config
 vpath-y += $(ROOTDIR)/diagnostic/Dem
 vpath-y += $(ROOTDIR)/diagnostic/Det
 
-
-VPATH += $(vpath-y)
-
-#$(error $(VPATH))
-
-# libs needed by us
-#build-lib-y += $(ROOTDIR)/libs/libboard_$(BOARDDIR).a
-
 # include files need by us
 inc-y += $(ROOTDIR)/include
 inc-y += $(ROOTDIR)/kernel/test
@@ -208,3 +204,10 @@ inc-y += $(ROOTDIR)/drivers/test
 #
 inc-y += $(ROOTDIR)/boards/generic
 vpath-y += $(ROOTDIR)/boards/generic
+
+
+VPATH += $(vpath-y)
+#$(error $(VPATH))
+
+# libs needed by us
+#build-lib-y += $(ROOTDIR)/libs/libboard_$(BOARDDIR).a

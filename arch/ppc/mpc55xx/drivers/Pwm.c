@@ -49,7 +49,7 @@
 #endif
 #include "Mcu.h"
 
-#if PWM_DEV_EROR_DETECT==ON
+#if PWM_DEV_EROR_DETECT==STD_ON
 	#define PWM_VALIDATE(_exp, _errid) \
 		if (!(_exp)) { \
 			Pwm_ReportError(_errid); \
@@ -75,7 +75,7 @@ static Pwm_ModuleStateType Pwm_ModuleState = PWM_STATE_UNINITIALIZED;
 typedef struct {
 	Pwm_ChannelClassType Class;
 
-	#if PWM_NOTIFICATION_SUPPORTED==ON
+	#if PWM_NOTIFICATION_SUPPORTED==STD_ON
 		Pwm_NotificationHandlerType NotificationRoutine;
 		Pwm_EdgeNotificationType NotificationState;
 	#endif
@@ -88,7 +88,7 @@ Pwm_ChannelStructType ChannelRuntimeStruct[16];
 void inline Pwm_InitChannel(Pwm_ChannelType Channel);
 void inline Pwm_DeInitChannel(Pwm_ChannelType Channel);
 
-#if PWM_NOTIFICATION_SUPPORTED==ON
+#if PWM_NOTIFICATION_SUPPORTED==STD_ON
 static void Pwm_Isr(void);
 #endif
 
@@ -96,7 +96,7 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
     Pwm_ChannelType channel_iterator;
 
     Pwm_VALIDATE_UNINITIALIZED();
-    #if PWM_DEV_EROR_DETECT==ON
+    #if PWM_DEV_EROR_DETECT==STD_ON
         /*
          * PWM046: If development error detection is enabled for the Pwm module,
          * the function Pwm_Init shall raise development error PWM_E_PARAM_CONFIG
@@ -114,7 +114,7 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
         #endif
     #endif
 
-    #if PWM_NOTIFICATION_SUPPORTED==ON
+    #if PWM_NOTIFICATION_SUPPORTED==STD_ON
         // Create a task for our interrupt service routine.
         TaskType tid = Os_CreateIsr(Pwm_Isr, PWM_ISR_PRIORITY /*prio*/, "PwmIsr");
     #endif
@@ -141,7 +141,7 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
                 (void*) &ConfigPtr->Channels[channel_iterator].r,
                 sizeof(Pwm_ChannelRegisterType));
 
-        #if PWM_NOTIFICATION_SUPPORTED==ON
+        #if PWM_NOTIFICATION_SUPPORTED==STD_ON
                 /*
                  * PWM052: The function Pwm_Init shall disable all notifications.
                  *
@@ -157,7 +157,7 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
     }
 }
 
-#if PWM_DEINIT_API==ON
+#if PWM_DEINIT_API==STD_ON
 
 // TODO: Test that this function in fact turns the channel off.
 void inline Pwm_DeInitChannel(Pwm_ChannelType Channel) {
@@ -174,7 +174,7 @@ void inline Pwm_DeInitChannel(Pwm_ChannelType Channel) {
     /*
      * PWM052: The function Pwm_DeInit shall disable all notifications.
      */
-    #if PWM_NOTIFICATION_SUPPORTED==ON
+    #if PWM_NOTIFICATION_SUPPORTED==STD_ON
         Pwm_DisableNotification(Channel);
     #endif
 }
@@ -205,7 +205,7 @@ void Pwm_GetVersionInfo(Std_VersionInfoType* VersionInfo) {
  * PWM083: The function Pwm_SetPeriodAndDuty shall be pre compile time
  * changeable ON/OFF by the configuration parameter PwmSetPeriodAndDuty.
  */
-#if PWM_SET_PERIOD_AND_DUTY==ON
+#if PWM_SET_PERIOD_AND_DUTY==STD_ON
 	void Pwm_SetPeriodAndDuty(Pwm_ChannelType Channel, Pwm_PeriodType Period,
 			Pwm_DutyCycleType DutyCycle) {
 
@@ -279,7 +279,7 @@ void Pwm_SetOutputToIdle(Pwm_ChannelType Channel) {
  * PWM085: The function Pwm_GetOutputState shall be pre compile configurable
  * ON/OFF by the configuration parameter PwmGetOutputState
  */
-#if PWM_GET_OUTPUT_STATE==ON
+#if PWM_GET_OUTPUT_STATE==STD_ON
 	/*
 	 * PWM022: The function Pwm_GetOutputState shall read the internal state
 	 * of the PWM output signal and return it.
@@ -312,7 +312,7 @@ void Pwm_SetOutputToIdle(Pwm_ChannelType Channel) {
 	}
 #endif
 
-#if PWM_NOTIFICATION_SUPPORTED==ON
+#if PWM_NOTIFICATION_SUPPORTED==STD_ON
 	void Pwm_DisableNotification(Pwm_ChannelType Channel) {
 		Pwm_VALIDATE_CHANNEL(Channel);
 		Pwm_VALIDATE_INITIALIZED();
@@ -360,4 +360,4 @@ void Pwm_SetOutputToIdle(Pwm_ChannelType Channel) {
 		}
 	}
 
-#endif /* PWM_NOTIFICATION_SUPPORED == ON */
+#endif /* PWM_NOTIFICATION_SUPPORED == STD_ON */

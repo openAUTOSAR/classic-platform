@@ -21,7 +21,6 @@
 
 
 
-#include "Adc.h"
 #include "Com.h"
 #include "Trace.h"
 #include "RTE_fading_led.h"
@@ -29,7 +28,7 @@
 
 uint16 rx_data = 0;
 
-void can_node_receive(void) {
+void pwm_node2_receive(void) {
 	Com_ReceiveSignal(SetLedLevelRx, &rx_data);
 	fading_led_set_level(rx_data);
 }

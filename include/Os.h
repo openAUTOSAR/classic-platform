@@ -15,15 +15,6 @@
 
 
 
-
-
-
-
-
-/*
- * (C) Copyright 2008 ecore, www.ecore.se
- */
-
 #ifndef OS_H_
 #define OS_H_
 
@@ -278,6 +269,8 @@ StatusType ReleaseResource( ResourceType ResID);
 
 #define	RES_SCHEDULER 0
 //DeclareResource(RES_SCHEDULER);
+#define OS_TASK_PRIORITY_MIN	0
+#define OS_TASK_PRIORITY_MAX	31
 
 typedef struct OsDriver_s {
 	int	OsGptChannelRef;
@@ -294,7 +287,7 @@ uint32_t Frt_GetTimeElapsed( void );
 /*-------------------------------------------------------------------
  * Counters
  *-----------------------------------------------------------------*/
-typedef uint16 CounterType;
+typedef sint16 CounterType;
 
 typedef uint32 TickType;
 typedef TickType *TickRefType;
@@ -443,14 +436,11 @@ StatusType SendMessage( MessageType message_id, ApplicationDataRef dataRef );
 StatusType ReceiveMessage( MessageType message_id, ApplicationDataRef dataRef );
 
 /*
- * ecore extensions
+ * ArcCore extensions
  */
 TickType GetOsTick();
 void OsTick(void);
 void OsIdle(void);
-
-/* The OS always have counter 0 */
-#define OS_TICK_COUNTER		0
 
 // Generate conversion macro'
 // Todo

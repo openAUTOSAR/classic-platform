@@ -260,7 +260,7 @@ typedef struct {
 
 
 GEN_COUNTER_HEAD {
-	GEN_COUNTER(COUNTER_ID_os_tick,	"OS_TICK_COUNTER",COUNTER_TYPE_HARD,
+	GEN_COUNTER(COUNTER_ID_os_tick,	"COUNTER_ID_OsTick",COUNTER_TYPE_HARD,
 				COUNTER_UNIT_NANO, 0xffff,1,1,0 ),
 	GEN_COUNTER(COUNTER_ID_soft_1,	"counter_soft_1",COUNTER_TYPE_SOFT,
 				COUNTER_UNIT_NANO, 10,1,1,0),
@@ -268,13 +268,15 @@ GEN_COUNTER_HEAD {
 				COUNTER_UNIT_NANO, 100,1,1,0),
 };
 
+CounterType Os_Arc_OsTickCounter = COUNTER_ID_OsTick;
+
 //-------------------------------------------------------------------
 
 #ifdef ALARM_USE
 GEN_ALARM_HEAD {
 	{
-		.counter = &counter_list[OS_TICK_COUNTER],
-		.counter_id = OS_TICK_COUNTER,
+		.counter = &counter_list[COUNTER_ID_OsTick],
+		.counter_id = COUNTER_ID_OsTick,
 		.action =
 		{
 				.type = ALARM_ACTION_ACTIVATETASK,
@@ -284,8 +286,8 @@ GEN_ALARM_HEAD {
 	},
 		{
 		/* Set EVENT_1 in etask_sup_m, driven by soft counter */
-		.counter = &counter_list[OS_TICK_COUNTER],
-		.counter_id = OS_TICK_COUNTER,
+		.counter = &counter_list[COUNTER_ID_OsTick],
+		.counter_id = COUNTER_ID_OsTick,
 		.action = {
 				.type = ALARM_ACTION_SETEVENT,
 				.task_id = TASK_ID_etask_sup_m,

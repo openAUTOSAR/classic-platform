@@ -263,7 +263,7 @@ typedef enum {
   FLS_SST25XX_ERASE,
   FLS_SST25XX_READ,
   FLS_SST25XX_WRITE,
-} Fls_SST25xx_EcoreJobType;
+} Fls_SST25xx_Arc_JobType;
 
 /* Spi job state */
 typedef enum {
@@ -278,7 +278,7 @@ typedef struct {
 	Fls_AddressType flsAddr;
 	uint32 left;
 	Job_StateType state;
-	Fls_SST25xx_EcoreJobType mainState;
+	Fls_SST25xx_Arc_JobType mainState;
 	Spi_SequenceType currSeq;
 	uint32 chunkSize;
 } Fls_SST25xx_JobInfoType;
@@ -292,7 +292,7 @@ typedef struct {
   // Status of driver
   MemIf_StatusType status;
   MemIf_JobResultType jobResultType;
-  Fls_SST25xx_EcoreJobType jobType;
+  Fls_SST25xx_Arc_JobType jobType;
 
   // Saved information from API calls.
   Fls_AddressType flsAddr;

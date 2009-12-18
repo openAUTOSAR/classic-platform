@@ -30,7 +30,7 @@
 #ifndef OS_CFG_H_
 #define OS_CFG_H_
 
-/* os_config.h */
+#define COUNTER_ID_OsTick				0
 
 #define APPLICATION_ID_application_1	0
 #define APPLICATION_CNT					1
@@ -47,7 +47,7 @@ void btask_3( void );
 //#define TASK_ID_os_tick					8
 
 
-// OS_TICK_COUNTER located in Os.h
+// COUNTER_ID_OsTick located in Os.h
 
 // NOT GENERATED( for test system only )
 #define SYSTEM_COUNTER_PERIOD				100
