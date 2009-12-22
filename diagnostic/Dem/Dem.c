@@ -381,22 +381,32 @@ void getExtendedData(const Dem_EventParameterType *eventParam, ExtDataRecType *e
 
 /*
  * Procedure:	storeExtendedDataPreInit
- * Description:	Store the extended data pointed by "extendedData" to the "preInitExtDataBuffer"
+ * Description:	Store the extended data pointed by "extendedData" to the "preInitExtDataBuffer",
+ * 				if non existent a new entry is created.
  */
 void storeExtendedDataPreInit(const Dem_EventParameterType *eventParam, ExtDataRecType *extendedData)
 {
 	uint16 i;
 	imask_t state = McuE_EnterCriticalSection();
 
-	// Lookup first free position
-	for (i = 0; (preInitExtDataBuffer[i].eventId !=0) && (i<DEM_MAX_NUMBER_EXT_DATA_PRE_INIT); i++);
+	// Check if already stored
+	for (i = 0; (preInitExtDataBuffer[i].eventId != eventParam->EventID) && (i<DEM_MAX_NUMBER_EXT_DATA_PRE_INIT); i++);
 
 	if (i < DEM_MAX_NUMBER_EXT_DATA_PRE_INIT) {
+		// Yes, overwrite existing
 		memcpy(&preInitExtDataBuffer[i], extendedData, sizeof(ExtDataRecType));
 	}
 	else {
-		// Error: Pre init extended data buffer full
-		Det_ReportError(MODULE_ID_DEM, 0, DEM_STORE_EXT_DATA_PRE_INIT_ID, DEM_E_PRE_INIT_EXT_DATA_BUFF_FULL);
+		// No, lookup first free position
+		for (i = 0; (preInitExtDataBuffer[i].eventId !=0) && (i<DEM_MAX_NUMBER_EXT_DATA_PRE_INIT); i++);
+
+		if (i < DEM_MAX_NUMBER_EXT_DATA_PRE_INIT) {
+			memcpy(&preInitExtDataBuffer[i], extendedData, sizeof(ExtDataRecType));
+		}
+		else {
+			// Error: Pre init extended data buffer full
+			Det_ReportError(MODULE_ID_DEM, 0, DEM_STORE_EXT_DATA_PRE_INIT_ID, DEM_E_PRE_INIT_EXT_DATA_BUFF_FULL);
+		}
 	}
 
 	McuE_ExitCriticalSection(state);
@@ -472,21 +482,31 @@ void storeEventEvtMem(const Dem_EventParameterType *eventParam, EventStatusRecTy
 
 /*
  * Procedure:	storeExtendedDataPriMem
- * Description:	Creates new an extended data record in "priMemExtDataBuffer".
+ * Description:	Store the extended data pointed by "extendedData" to the "priMemExtDataBuffer",
+ * 				if non existent a new entry is created.
  */
 void storeExtendedDataPriMem(const Dem_EventParameterType *eventParam, ExtDataRecType *extendedData)
 {
 	uint16 i;
 	imask_t state = McuE_EnterCriticalSection();
 
-	// Lookup first free position
-	for (i = 0; (priMemExtDataBuffer[i].eventId != DEM_EVENT_ID_NULL) && (i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM); i++);
+	// Check if already stored
+	for (i = 0; (priMemExtDataBuffer[i].eventId != eventParam->EventID) && (i<DEM_MAX_NUMBER_EXT_DATA_PRI_MEM); i++);
+
 	if (i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM) {
+		// Yes, overwrite existing
 		memcpy(&priMemExtDataBuffer[i], extendedData, sizeof(ExtDataRecType));
 	}
 	else {
-		// Error: Pri mem extended data buffer full
-		Det_ReportError(MODULE_ID_DEM, 0, DEM_STORE_EXT_DATA_PRI_MEM_ID, DEM_E_PRI_MEM_EXT_DATA_BUFF_FULL);
+		// No, lookup first free position
+		for (i = 0; (priMemExtDataBuffer[i].eventId != DEM_EVENT_ID_NULL) && (i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM); i++);
+		if (i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM) {
+			memcpy(&priMemExtDataBuffer[i], extendedData, sizeof(ExtDataRecType));
+		}
+		else {
+			// Error: Pri mem extended data buffer full
+			Det_ReportError(MODULE_ID_DEM, 0, DEM_STORE_EXT_DATA_PRI_MEM_ID, DEM_E_PRI_MEM_EXT_DATA_BUFF_FULL);
+		}
 	}
 
 	McuE_ExitCriticalSection(state);
@@ -586,16 +606,14 @@ void handlePreInitEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus
 					if (eventStatusLocal.eventStatus == DEM_EVENT_STATUS_FAILED) {
 						// Collect freeze frame data
 						getFreezeFrameData(eventParam, &freezeFrameLocal);
-						storeFreezeFrameDataPreInit(eventParam, &freezeFrameLocal);
+						if (freezeFrameLocal.eventId != DEM_EVENT_ID_NULL) {
+							storeFreezeFrameDataPreInit(eventParam, &freezeFrameLocal);
+						}
 
-						// Check if first time -> store extended data
-						if (eventStatusLocal.occurrence == 1) {
-							// Collect extended data
-							getExtendedData(eventParam, &extendedDataLocal);
-							if (extendedDataLocal.eventId != DEM_EVENT_ID_NULL)
-							{
-								storeExtendedDataPreInit(eventParam, &extendedDataLocal);
-							}
+						// Collect extended data
+						getExtendedData(eventParam, &extendedDataLocal);
+						if (extendedDataLocal.eventId != DEM_EVENT_ID_NULL) {
+							storeExtendedDataPreInit(eventParam, &extendedDataLocal);
 						}
 					}
 				}
@@ -643,16 +661,15 @@ Std_ReturnType handleEvent(Dem_EventIdType eventId, Dem_EventStatusType eventSta
 						storeEventEvtMem(eventParam, &eventStatusLocal);
 						// Collect freeze frame data
 						getFreezeFrameData(eventParam, &freezeFrameLocal);
-						storeFreezeFrameDataEvtMem(eventParam, &freezeFrameLocal);
+						if (freezeFrameLocal.eventId != DEM_EVENT_ID_NULL) {
+							storeFreezeFrameDataEvtMem(eventParam, &freezeFrameLocal);
+						}
 
-						// Check if first time -> store extended data
-						if (eventStatusLocal.occurrence == 1) {
-							// Collect extended data
-							getExtendedData(eventParam, &extendedDataLocal);
-							if (extendedDataLocal.eventId != DEM_EVENT_ID_NULL)
-							{
-								storeExtendedDataEvtMem(eventParam, &extendedDataLocal);
-							}
+						// Collect extended data
+						getExtendedData(eventParam, &extendedDataLocal);
+						if (extendedDataLocal.eventId != DEM_EVENT_ID_NULL)
+						{
+							storeExtendedDataEvtMem(eventParam, &extendedDataLocal);
 						}
 					}
 				}
@@ -885,6 +902,7 @@ void Dem_PreInit(void)
 		eventStatusBuffer[i].eventStatusChanged = FALSE;
 	}
 
+	// Initialize the pre init buffers
 	for (i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRE_INIT; i++) {
 		preInitFreezeFrameBuffer[i].checksum = 0;
 		preInitFreezeFrameBuffer[i].eventId = DEM_EVENT_ID_NULL;
@@ -916,7 +934,6 @@ void Dem_Init(void)
 {
 	uint16 i;
 	ChecksumType cSum;
-	EventStatusRecType eventStatusLocal;
 	const Dem_EventParameterType *eventParam;
 
 	/*
@@ -927,7 +944,7 @@ void Dem_Init(void)
 	for (i = 0; i < DEM_MAX_NUMBER_EVENT_PRI_MEM; i++) {
 		cSum = calcChecksum(&priMemEventBuffer[i], sizeof(EventRecType)-sizeof(ChecksumType));
 		if ((cSum != priMemEventBuffer[i].checksum) || priMemEventBuffer[i].eventId == DEM_EVENT_ID_NULL) {
-			// Not valid, clear the record
+			// Unlegal record, clear the record
 			setZero(&priMemEventBuffer[i], sizeof(EventRecType));
 		}
 		else {
@@ -952,7 +969,7 @@ void Dem_Init(void)
 	for (i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++) {
 		cSum = calcChecksum(&priMemFreezeFrameBuffer[i], sizeof(FreezeFrameRecType)-sizeof(ChecksumType));
 		if ((cSum != priMemFreezeFrameBuffer[i].checksum) || (priMemFreezeFrameBuffer[i].eventId == DEM_EVENT_ID_NULL)) {
-			// Wrong checksum, clear the record
+			// Unlegal record, clear the record
 			setZero(&priMemFreezeFrameBuffer[i], sizeof(FreezeFrameRecType));
 		}
 	}
@@ -973,13 +990,8 @@ void Dem_Init(void)
 	// Transfer extended data to event memory if necessary
 	for (i = 0; i < DEM_MAX_NUMBER_EXT_DATA_PRE_INIT; i++) {
 		if (preInitExtDataBuffer[i].eventId !=  DEM_EVENT_ID_NULL) {
-			getEventStatusRec(preInitExtDataBuffer[i].eventId, &eventStatusLocal);
-			// Check if new or old error event
-			if (eventStatusLocal.occurrence == 1) {
-				// It has not been stored before so store it.
-				lookupEventIdParameter(preInitExtDataBuffer[i].eventId, &eventParam);
-				storeExtendedDataEvtMem(eventParam, &preInitExtDataBuffer[i]);
-			}
+			lookupEventIdParameter(preInitExtDataBuffer[i].eventId, &eventParam);
+			storeExtendedDataEvtMem(eventParam, &preInitExtDataBuffer[i]);
 		}
 	}
 
