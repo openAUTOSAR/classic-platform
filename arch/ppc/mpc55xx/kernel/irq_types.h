@@ -14,21 +14,6 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
-
-/*
- * irq.h
- *
- * Defines some additional types used for mpc55xx
- *
- *  Created on: Jul 13, 2009
- *      Author: mahi
- */
-
 #ifndef IRQ_H
 #define IRQ_H
 

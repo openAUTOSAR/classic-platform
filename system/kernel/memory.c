@@ -13,12 +13,7 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
+#error Do not use this file, SC3 or SC4 is not supported yet.
 
 
 #include "Os.h"
@@ -26,28 +21,28 @@
 
 /* See 8.4.4 */
 AccessType CheckISRMemoryAccess( ISRType ISRID,
-								MemoryStartAddressType Address, 
-								MemorySizeType Size ) 
+								MemoryStartAddressType Address,
+								MemorySizeType Size )
 {
 	// get hold of application memory space
-	
-		
+
+
 }
 
 AccessType CheckTaskMemoryAccess( 	TaskType TaskID,
-									MemoryStartAddressType Address, 
-									MemorySizeType Size ) 
+									MemoryStartAddressType Address,
+									MemorySizeType Size )
 {
 
-		
+
 }
 
 /* Object access
- * 
- * 
- * resource 
- * 
- * 
+ *
+ *
+ * resource
+ *
+ *
  */
 
 
@@ -60,37 +55,37 @@ ObjectAccessType CheckObjectAccess( ApplicationType ApplID,
 {
 	uint32 app_mask = (1<<ApplID);
 	uint32 rv;
-		
+
 	/* TODO: check id */
 	switch( ObjectType ) {
 	case OBJECT_ALARM:
-		rv =  ((alarm_obj_t *)object)->app_mask & (app_mask);
+		rv =  ((OsAlarmType *)object)->app_mask & (app_mask);
 		break;
 	case OBJECT_COUNTER:
-		rv =  ((counter_obj_t *)object)->app_mask & (app_mask);		
+		rv =  ((OsCounterType *)object)->app_mask & (app_mask);
 		break;
-	case OBJECT_ISR:	
+	case OBJECT_ISR:
 		break;
 	case OBJECT_MESSAGE:
-	case OBJECT_RESOURCE:		
+	case OBJECT_RESOURCE:
 	case OBJECT_SCHEDULETABLE:
 		break;
 	case OBJECT_TASK:
-		rv = ((counter_obj_t *)object)->app_mask & (app_mask);
+		rv = ((OsCounterType *)object)->app_mask & (app_mask);
 		break;
 	default:
-		break;	
+		break;
 	}
-	
-		
-	
-	
+
+
+
+
 	return ACCESS;
 }
 
 /* return application id for object */
 ApplicationType CheckObjectOwnership( ObjectTypeType ObjectType,
-									void *object ) 
+									void *object )
 {
 	switch( ObjectType ) {
 	case OBJECT_ALARM:
@@ -103,6 +98,6 @@ ApplicationType CheckObjectOwnership( ObjectTypeType ObjectType,
 	default:
 		break;
 	}
-	
+
 	return (-1);
-}									
+}

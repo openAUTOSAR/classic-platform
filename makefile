@@ -35,7 +35,8 @@ USE_DBG_PRINTF?=y
 Q?=@
 export Q
 export TOPDIR = $(CURDIR)
-export RELEASE = n
+export CFG_RELEASE = n
+export CFG_DEBUG = y
 export PATH
 
 ifneq ($(filter clean_all,$(MAKECMDGOALS)),clean_all)
@@ -46,9 +47,6 @@ endif
 
 USE_T32_SIM?=n
 export USE_T32_SIM
-
-export BUILD_TREE=y
-export RELEASE_TREE=n
 
 override BDIR := system/kernel ${BDIR} 
 

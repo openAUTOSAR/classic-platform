@@ -52,7 +52,7 @@ void btask_3( void );
 // NOT GENERATED( for test system only )
 #define SYSTEM_COUNTER_PERIOD				100
 
-#define PRIO_STACK_SIZE						2600
+#define PRIO_STACK_SIZE						5000 //2600
 #define OS_INTERRUPT_STACK_SIZE				2048
 
 // Just define them if you want to use them.

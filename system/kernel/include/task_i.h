@@ -19,10 +19,11 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "internal.h"
+#include "simple_printf.h"
 #include "Ramlog.h"
 
 static inline void os_pcb_print_rq( void ) {
-	pcb_t *i_pcb;
+	OsPcbType *i_pcb;
 	int cnt = 0;
 
 	TAILQ_FOREACH(i_pcb,&os_sys.ready_head,ready_list) {
@@ -33,7 +34,7 @@ static inline void os_pcb_print_rq( void ) {
 }
 
 // schedule()
-static inline void os_pcb_running_to_ready( pcb_t *pcb ) {
+static inline void Os_TaskRunningToReady( OsPcbType *pcb ) {
 	assert(pcb->state == ST_RUNNING );
 	pcb->state = ST_READY;
 }
@@ -41,8 +42,7 @@ static inline void os_pcb_running_to_ready( pcb_t *pcb ) {
 
 // ActivateTask(pid)
 // SetEvent(pid)
-// os_pcb_make_virgin(pcb_t*)
-static inline void os_pcb_make_ready( pcb_t *pcb ) {
+static inline void Os_TaskMakeReady( OsPcbType *pcb ) {
 	if( pcb->state != ST_READY ) {
 		pcb->state = ST_READY;
 		TAILQ_INSERT_TAIL(& os_sys.ready_head,pcb,ready_list);
@@ -51,7 +51,7 @@ static inline void os_pcb_make_ready( pcb_t *pcb ) {
 }
 
 // WaitEvent
-static inline void os_pcb_make_waiting( pcb_t *pcb )
+static inline void Os_TaskMakeWaiting( OsPcbType *pcb )
 {
 	assert( pcb->state & (ST_READY|ST_RUNNING) );
 
@@ -61,7 +61,7 @@ static inline void os_pcb_make_waiting( pcb_t *pcb )
 }
 
 // Terminate task
-static inline void os_pcb_make_suspended( pcb_t *pcb )
+static inline void Os_TaskMakeSuspended( OsPcbType *pcb )
 	{
 	assert( pcb->state & (ST_READY|ST_RUNNING) );
 	pcb->state = ST_SUSPENDED;
@@ -75,25 +75,49 @@ static inline void os_pcb_make_suspended( pcb_t *pcb )
  *
  * @params pcb Ptr to pcb
  */
-static inline void os_pcb_make_running( pcb_t *pcb ) {
+static inline void Os_TaskMakeRunning( OsPcbType *pcb ) {
 	pcb->state = ST_RUNNING;
 }
 
-
-_Bool os_pcb_pid_valid( pcb_t *restrict pcb );
-void os_proc_start_extended( void );
-void os_proc_start_basic( void );
-void os_setup_context( pcb_t *pcb );
-pcb_t  *os_find_top_prio_proc( void );
-
-void os_pcb_make_virgin( pcb_t *pcb );
+_Bool os_pcb_pid_valid( OsPcbType *restrict pcb );
+void Os_TaskStartExtended( void );
+void Os_TaskStartBasic( void );
+void Os_ContextInit( OsPcbType *pcb );
+OsPcbType *Os_TaskGetTop( void );
 
 // Added by Mattias in order to avoid compiler warning
-TaskType os_add_task( pcb_t *pcb );
+TaskType Os_AddTask( OsPcbType *pcb );
 
 #if 0 // Not used any more
-pcb_t  *os_find_higher_priority_task( prio_t prio );
+OsPcbType  *os_find_higher_priority_task( OsPriorityType prio );
 #endif
+
+
+
+
+extern OsPcbType pcb_list[];
+extern const OsRomPcbType rom_pcb_list[];
+
+static inline OsPcbType * os_get_pcb( OsTaskidType pid ) {
+	return &pcb_list[pid];
+}
+
+static inline const OsRomPcbType * os_get_rom_pcb( OsTaskidType pid ) {
+	return &rom_pcb_list[pid];
+}
+
+static inline OsPriorityType os_pcb_set_prio( OsPcbType *pcb, OsPriorityType new_prio ) {
+	OsPriorityType 	old_prio;
+	old_prio = pcb->prio;
+	pcb->prio = new_prio;
+	//simple_printf("set_prio of %s to %d from %d\n",pcb->name,new_prio,pcb->prio);
+	return old_prio;
+}
+
+#define os_pcb_get_state(pcb) ((pcb)->state)
+
+void os_swap_context(OsPcbType *old_pcb, OsPcbType *new_pcb );
+void Os_TaskSwapContextTo(OsPcbType *old_pcb, OsPcbType *new_pcb );
 
 
 #endif /*TASK_I_H_*/

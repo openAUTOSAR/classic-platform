@@ -41,6 +41,10 @@ typedef void (*test_func_t)( void );
 extern int test_suite;
 extern int test_nr;
 
+#define TASK_ID_ILL			99
+#define RES_ID_ILL			99
+#define ALARM_ID_ILL		99
+
 #if 1
 #define SECTION_SUP
 #define SECTION_USER

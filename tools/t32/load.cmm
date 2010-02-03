@@ -52,8 +52,10 @@ postload_CortexM3:
   r.s MSP 0x20005000
   RETURN
 
-postload_MPC5516:
+postload_mpc5516:
 postload_MPC5554:
+postload_MPC5554:
+postload_mpc5633M:
   RETURN
 
 //-------------------------------------------------------------
@@ -79,6 +81,7 @@ path:
 
 
     
+
 
 
 

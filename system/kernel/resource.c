@@ -13,16 +13,8 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-#include "types.h"
 #include "Os.h"
-#include "assert.h"
-#include "sys.h"
-#include "stdlib.h"
-#include "kernel.h"
 #include "internal.h"
-#include "hooks.h"
-#include "task_i.h"
-#include "ext_config.h"
 
 /* INFO
  * - If OsTaskSchedule = NON, Task it not preemptable, no internal resource may be assigned to a task
@@ -57,7 +49,7 @@
  * - Keep allocated resources as stack to comply with LIFO order.
  * - A linked resource is just another name for an existing resource. See OsResource in Autosar SWS OS.
  *   This means that no resource object should be generated, just the define in Os_Cfg.h
- * - A task with Scheduling=NON does have priority (although it's internal priority is 32)
+ * - A task with Scheduling=NON have priority (although it's internal priority is 32)
  *
  */
 
@@ -65,11 +57,11 @@
 #define valid_internal_id() (rid->nr < Oil_GetResourceCnt()) //&& (rid->type == RESOURCE_TYPE_INTERNAL) )
 
 
-static StatusType GetResource_( resource_obj_t * );
-StatusType ReleaseResource_( resource_obj_t * );
+static StatusType GetResource_( OsResourceType * );
+StatusType ReleaseResource_( OsResourceType * );
 
 StatusType GetResource( ResourceType ResID ) {
-	resource_obj_t *rid = Oil_GetResource(ResID);
+	OsResourceType *rid = Oil_GetResource(ResID);
 	StatusType rv = GetResource_(rid);
 
 	if (rv != E_OK)
@@ -84,23 +76,24 @@ StatusType GetResourceInternal( ResourceType ResID ) {
 }
 #endif
 
-static StatusType GetResource_( resource_obj_t * rid ) {
+static StatusType GetResource_( OsResourceType * rid ) {
 	StatusType rv = E_OK;
 
 	if( rid->nr == RES_SCHEDULER ) {
-		// Lock the sheduler
+		// Lock the scheduler
 		os_sys.scheduler_lock = 1;
-		//simple_printf("RES_SCHEDULER, NOT supported yet\n");
-		//while(1);
 	}
-	// Check if valid resource
+
+	/* Check if valid resource */
 	if( !valid_standard_id() ) {
 		rv = E_OS_ID;
 		goto err;
 	}
 	// Check that the resource does not belong to another application or task
 	if(	( (os_task_nr_to_mask(get_curr_pid()) & rid->task_mask ) == 0 )
+#if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
 		|| ( get_curr_application_id() !=  rid->application_owner_id)
+#endif
 		|| ( rid->owner != (TaskType)(-1)))
 	{
 		rv = E_OS_ACCESS;
@@ -108,10 +101,10 @@ static StatusType GetResource_( resource_obj_t * rid ) {
 	}
 
 	rid->owner = get_curr_pid();
-	rid->old_task_prio = os_pcb_set_prio(os_get_curr_pcb() ,rid->ceiling_priority);
+	rid->old_task_prio = os_pcb_set_prio(Os_TaskGetCurrent() ,rid->ceiling_priority);
 
 	if( rid->type != RESOURCE_TYPE_INTERNAL ) {
-		TAILQ_INSERT_TAIL(&os_get_curr_pcb()->resource_head, rid, listEntry);
+		TAILQ_INSERT_TAIL(&Os_TaskGetCurrent()->resource_head, rid, listEntry);
 	}
 
 	goto ok;
@@ -126,7 +119,7 @@ StatusType ReleaseResource( ResourceType ResID) {
 	if( ResID == RES_SCHEDULER ) {
 		os_sys.scheduler_lock=0;
 	} else {
-	    resource_obj_t *rid = Oil_GetResource(ResID);
+	    OsResourceType *rid = Oil_GetResource(ResID);
 	    rv = ReleaseResource_(rid);
 	}
 
@@ -136,50 +129,41 @@ StatusType ReleaseResource( ResourceType ResID) {
 	OS_STD_END_1(OSServiceId_ReleaseResource,ResID);
 }
 
-StatusType ReleaseResource_( resource_obj_t * rid ) {
+StatusType ReleaseResource_( OsResourceType * rid ) {
 	if (!valid_standard_id()) {
 		return E_OS_ID;
 	} else {
 
         // Release it...
         rid->owner = (TaskType) (-1);
-        TAILQ_REMOVE(&os_get_curr_pcb()->resource_head, rid, listEntry);
-        os_pcb_set_prio(os_get_curr_pcb(), rid->old_task_prio);
+        TAILQ_REMOVE(&Os_TaskGetCurrent()->resource_head, rid, listEntry);
+        os_pcb_set_prio(Os_TaskGetCurrent(), rid->old_task_prio);
         return E_OK;
 	}
 }
 
-#if 0
-// TODO: Remove this function later.. this is done in oil generator
-//       instead.
-void os_resource_calc_attributes( void ) {
-	// Calc ceiling
-//	ResourceType *rsrc;
-	for( int i=0;i<Oil_GetResourceCnt();i++) {
-//		rsrc = Oil_GetResource();
-		/* TODO: Do this when there's more time */
-//		rsrc
-	}
+
+void Os_ResourceReleaseAll( uint32_t mask ) {
+
 }
-#endif
 
 //
-void os_resource_get_internal( void ) {
-	resource_obj_t *rt = os_get_resource_int_p();
+void Os_ResourceGetInternal( void ) {
+	OsResourceType *rt = os_get_resource_int_p();
 
 	if( rt != NULL ) {
 		//simple_printf("Get IR proc:%s prio:%d old_task_prio:%d\n",get_curr_pcb()->name, rt->ceiling_priority,rt->old_task_prio);
 		GetResource_(rt);
 	}
-	//GetResourceInternal(os_get_curr_pcb()->resource_internal);
+	//GetResourceInternal(Os_TaskGetCurrent()->resource_internal);
 }
 
-void os_resource_release_internal( void ) {
-	resource_obj_t *rt = os_get_resource_int_p();
+void Os_ResourceReleaseInternal( void ) {
+	OsResourceType *rt = os_get_resource_int_p();
 
 	if(  rt != NULL ) {
 		//simple_printf("Rel IR proc:%s prio:%d old_task_prio:%d\n",get_curr_pcb()->name,rt->ceiling_priority,rt->old_task_prio);
 		ReleaseResource_(rt);
 	}
-	//ReleaseResource(os_get_curr_pcb()->resource_internal);
+	//ReleaseResource(Os_TaskGetCurrent()->resource_internal);
 }

@@ -24,7 +24,7 @@
 #include "Ramlog.h"
 
 #if defined(CFG_ARM_CM3)
-#include "irq.h"
+#include "irq_types.h"
 #include "core_cm3.h"
 #endif
 

@@ -13,30 +13,11 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-
-#include "Os.h"
-#include "types.h"
-#include "counter_i.h"
-#include "ext_config.h"
-#include "alarm_i.h"
 #include <assert.h>
 #include <stdlib.h>
-#include "hooks.h"
-#include "sched_table_i.h"
+#include "Os.h"
 #include "internal.h"
-
-#define MIN(_x,_y) (((_x) < (_y)) ? (_x) : (_y))
-#define MAX(_x,_y) (((_x) > (_y)) ? (_x) : (_y))
-
-
-#define COUNTER_MAX(x) 			(x)->counter->alarm_base.maxallowedvalue
+#include "arc.h"
 
 #define COUNTER_STD_END 	\
 		goto ok;		\
@@ -47,50 +28,41 @@
 
 
 /* Accessor functions */
-static inline Stbl_AdjustableExpPointType *getAdjExpPoint( sched_table_t *stblPtr ) {
+#if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
+static inline OsSchTblAdjExpPointType *getAdjExpPoint( OsSchTblType *stblPtr ) {
 	return &stblPtr->adjExpPoint;
 }
+#endif
 
-static inline struct sched_table_autostart_s *getAutoStart( sched_table_t *stblPtr ) {
+
+static inline struct OsSchTblAutostart *getAutoStart( OsSchTblType *stblPtr ) {
 	return &stblPtr->autostart;
 }
 
-static inline struct sched_table_sync_s *getSync( sched_table_t *stblPtr ) {
+#if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
+static inline struct OsScheduleTableSync *getSync( OsSchTblType *stblPtr ) {
 	return &stblPtr->sync;
 }
+#endif
 
-
-/**
- *
- * @param curr
- * @param max
- * @param add
- * @return
- */
-static TickType os_calc_modulo( TickType curr, TickType max, TickType add ) {
-	TickType diff = max - curr;
-//	return (diff > add ) ? (curr + add) :
-//							(add - curr);
-	return (add>diff) ? (add-diff) : (curr+add);
-}
 
 /**
  *
  * @param a_obj
  */
-static void AlarmProcess( alarm_obj_t *a_obj ) {
+static void AlarmProcess( OsAlarmType *a_obj ) {
 	if( a_obj->cycletime == 0 ) {
 		a_obj->active = 0;
 	} else {
 		// Calc new expire value..
-		a_obj->expire_val = os_calc_modulo(	a_obj->expire_val,
-											COUNTER_MAX(a_obj),
+		a_obj->expire_val = Os_CounterCalcModulo( a_obj->expire_val,
+											Os_CounterGetMaxValue(a_obj->counter),
 											a_obj->cycletime);
 	}
 }
 
-static void check_alarms( counter_obj_t *c_p ) {
-	alarm_obj_t *a_obj;
+static void check_alarms( OsCounterType *c_p ) {
+	OsAlarmType *a_obj;
 
 	SLIST_FOREACH(a_obj,&c_p->alarm_head,alarm_list) {
 		if( a_obj->active && (c_p->val == a_obj->expire_val) ) {
@@ -103,7 +75,7 @@ static void check_alarms( counter_obj_t *c_p ) {
 			switch( a_obj->action.type ) {
 			case ALARM_ACTION_ACTIVATETASK:
 				if( ActivateTask(a_obj->action.task_id) != E_OK ) {
-					assert(0);
+					/* We actually do thing here, See 0S321 */
 				}
 				AlarmProcess(a_obj);
 				break;
@@ -117,7 +89,9 @@ static void check_alarms( counter_obj_t *c_p ) {
 			case ALARM_ACTION_ALARMCALLBACK:
 				/* TODO: not done */
 				break;
+
 			case ALARM_ACTION_INCREMENTCOUNTER:
+				/** @req OS301 */
 				/* Huh,, recursive....*/
 				IncrementCounter(a_obj->action.counter_id);
 				break;
@@ -133,8 +107,11 @@ static void check_alarms( counter_obj_t *c_p ) {
  *
  * @param c_p Pointer to counter object
  */
-static void check_stbl( counter_obj_t *c_p ) {
-	sched_table_t *sched_obj;
+
+/** @req OS002 */
+/** @req OS007 */
+static void check_stbl(OsCounterType *c_p) {
+	OsSchTblType *sched_obj;
 
 	/* Iterate through the schedule tables */
 	SLIST_FOREACH(sched_obj,&c_p->sched_head,sched_list) {
@@ -143,6 +120,7 @@ static void check_stbl( counter_obj_t *c_p ) {
 			continue;
 		}
 
+#if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 		if( sched_obj->sync.syncStrategy == IMPLICIT ) {
 			// ....
 
@@ -166,29 +144,32 @@ static void check_stbl( counter_obj_t *c_p ) {
 				sched_obj->state = SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS;
 			}
 		}
+#endif
 
 		/* Check if the expire point have been hit */
 		if( (sched_obj->state == SCHEDULETABLE_RUNNING ||
 				SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS ) &&
-				(c_p->val >= sched_obj->expire_val) ) {
-			sched_action_t * action;
+				(c_p->val >= sched_obj->expire_val) )
+		{
+			OsScheduleTableActionType * action;
 
 			action = SA_LIST_GET(&sched_obj->action_list,sched_obj->expire_curr_index);
 
 			switch( action->type ) {
-				case SCHEDULE_ACTION_ACTIVATETASK:
+			case SCHEDULE_ACTION_ACTIVATETASK:
 				ActivateTask(action->task_id);
 				break;
 
-				case SCHEDULE_ACTION_SETEVENT:
+			case SCHEDULE_ACTION_SETEVENT:
 				SetEvent( action->task_id, action->event_id);
 				break;
 
-				default:
+			default:
+				/** @req OS407 */
 				assert(0);
-			}
+		}
 			// Calc new expire val
-			os_stbl_calc_expire(sched_obj);
+			Os_SchTblCalcExpire(sched_obj);
 		}
 
 	}
@@ -200,7 +181,7 @@ static void check_stbl( counter_obj_t *c_p ) {
  *
  * @param counter Ptr to a counter object
  */
-static void IncCounter( counter_obj_t *counter ) {
+static void IncCounter( OsCounterType *counter ) {
 	// Check for wrap of type
 	if( (counter->val+1) < (counter->val) ) {
 		counter->val = 0;		// This wraps
@@ -213,67 +194,102 @@ static void IncCounter( counter_obj_t *counter ) {
 	}
 }
 
+
+#define IsCounterValid(_counterId)   ((_counterId) <= Oil_GetCounterCnt())
+
 /**
  *
  * @param counter_id
  * @return
  */
 
+/** @req OS399 */
 StatusType IncrementCounter( CounterType counter_id ) {
 	StatusType rv = E_OK;
-
-	/* Check the alarms associated with this timer */
-	counter_obj_t *counter;
+	OsCounterType *counter;
 	counter = Oil_GetCounter(counter_id);
 
-	/* Check param */
+	/** @req OS376 */
+	if( !IsCounterValid(counter_id) ) {
+		rv = E_OS_ID;
+		goto err;
+	}
 
+	/* Check param */
+	/** @req OS285 */
 	if( ( counter->type != COUNTER_TYPE_SOFT ) ||
 		( counter_id >= Oil_GetCounterCnt() ) ) {
 		rv =  E_OS_ID;
 		goto err;
 	}
 
+	/** @req OS286 */
 	IncCounter(counter);
 
-	/* TODO: the other alarm_base.xxx values are still not done */
 	check_alarms(counter);
 	check_stbl(counter);
 
+	/** @req OS321 */
 	COUNTER_STD_END;
-}
-
-
-TickType GetCounterValue_( counter_obj_t *c_p ) {
-	if( c_p->type == COUNTER_TYPE_HARD ) {
-		/* Grab the GPT */
-#if 0
-		// TODO: Move this outside the OS??
-		// Is this the HW value??
-		// No good way to check if something went wrong here. Can check for != 0
-		// but that can really happen
-		return (TickType)Gpt_GetTimeElapsed(c_p->driver.OsGptChannelRef );
-#else
-		return Frt_GetTimeElapsed();
-#endif
-	} else {
-		return c_p->val;
-	}
 }
 
 
 StatusType GetCounterValue( CounterType counter_id , TickRefType tick_ref)
 {
-	counter_obj_t *counter;
-	counter = Oil_GetCounter(counter_id);
+	StatusType rv = E_OK;
+	OsCounterType *cPtr;
+	cPtr = Oil_GetCounter(counter_id);
 
-	*tick_ref = GetCounterValue_(counter);
-	return E_OK;
+	/** @req OS376 */
+	if( !IsCounterValid(counter_id) ) {
+		rv = E_OS_ID;
+		goto err;
+	}
+
+	/** @req OS377 */
+	if( cPtr->type == COUNTER_TYPE_HARD ) {
+		if( cPtr->driver == NULL ) {
+			/* It's OSINTERNAL */
+			*tick_ref = os_sys.tick;
+		} else {
+#if 0
+		/* We support only GPT for now */
+		*tick_ref  = (TickType)Gpt_GetTimeElapsed(cPtr->driver.OsGptChannelRef);
+#endif
+
+		}
+	} else {
+		*tick_ref = cPtr->val;
+	}
+
+	COUNTER_STD_END;
 }
 
 StatusType GetElapsedCounterValue( CounterType counter_id, TickRefType val, TickRefType elapsed_val)
 {
-	return E_OK;
+	StatusType rv = E_OK;
+	OsCounterType *cPtr;
+	TickType tick;
+
+	cPtr = Oil_GetCounter(counter_id);
+
+	/** @req OS381 */
+	if( !IsCounterValid(counter_id) ) {
+		rv = E_OS_ID;
+		goto err;
+	}
+
+	/** @req OS391 */
+	if( *val > Os_CounterGetMaxValue(cPtr) ) {
+		rv = E_OS_VALUE;
+		goto err;
+	}
+
+	GetCounterValue(counter_id,&tick);
+
+#warning missing....OS382
+
+	COUNTER_STD_END;
 }
 
 /*
@@ -296,7 +312,7 @@ void OsTick( void ) {
 	// if not used, os_tick_counter < 0
 	if (Os_Arc_OsTickCounter >= 0) {
 
-		counter_obj_t *c_p = Oil_GetCounter(Os_Arc_OsTickCounter);
+		OsCounterType *c_p = Oil_GetCounter(Os_Arc_OsTickCounter);
 
 		os_sys.tick++;
 
@@ -309,23 +325,7 @@ void OsTick( void ) {
 	}
 }
 
-#if 0
-void OsIdle( void ) {
-	for(;;);
-}
-#endif
-
 TickType GetOsTick( void ) {
 	return get_os_tick();
 }
 
-#if 0
-StatusType InitCounter(AlarmType alarm_id ) {
-
-	return E_OK;
-}
-
-StatusType StartCounter( AlarmType alarm_id ) {
-	return E_OK;
-}
-#endif

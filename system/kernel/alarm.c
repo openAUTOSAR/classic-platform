@@ -13,26 +13,10 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-
-
-#include "Os.h"
-#include "types.h"
-#include "counter_i.h"
-#include "ext_config.h"
-#include "alarm_i.h"
 #include <assert.h>
 #include <stdlib.h>
-#include "hooks.h"
+#include "Os.h"
 #include "internal.h"
-#include "alarm_i.h"
-
 
 /**
  * The system service  GetAlarmBase  reads the alarm base
@@ -90,7 +74,7 @@ StatusType GetAlarm(AlarmType AlarmId, TickRefType Tick) {
 
 StatusType SetRelAlarm(AlarmType AlarmId, TickType Increment, TickType Cycle){
 	StatusType rv = E_OK;
-	alarm_obj_t *a_obj;
+	OsAlarmType *a_obj;
 
 	ALARM_CHECK_ID(AlarmId);
 
@@ -104,7 +88,7 @@ StatusType SetRelAlarm(AlarmType AlarmId, TickType Increment, TickType Cycle){
 		(Cycle < COUNTER_MIN_CYCLE(a_obj)) ||
 		(Cycle > COUNTER_MAX(a_obj)) )
 	{
-		/* See SWS, OS304 */
+		/** @req OS304 */
 		rv =  E_OS_VALUE;
 		goto err;
 	}
@@ -136,7 +120,7 @@ StatusType SetRelAlarm(AlarmType AlarmId, TickType Increment, TickType Cycle){
 
 StatusType SetAbsAlarm(AlarmType AlarmId, TickType Start, TickType Cycle) {
 
-	alarm_obj_t *a_p;
+	OsAlarmType *a_p;
 	long flags;
 	StatusType rv = E_OK;
 
@@ -175,7 +159,7 @@ StatusType SetAbsAlarm(AlarmType AlarmId, TickType Start, TickType Cycle) {
 
 StatusType CancelAlarm(AlarmType AlarmId) {
 	StatusType rv = E_OK;
-	alarm_obj_t *a_obj;
+	OsAlarmType *a_obj;
 	long flags;
 
 	ALARM_CHECK_ID(AlarmId);

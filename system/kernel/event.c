@@ -13,23 +13,10 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-
-#include "Os.h"
-#include "pcb.h"
-#include "sys/queue.h"
-#include "sys.h"
+#include <sys/queue.h>
 #include <stdlib.h>
+#include "Os.h"
 #include "internal.h"
-#include "swap.h"
-#include "task_i.h"
-#include "hooks.h"
 
 #define VALIDATE_W_RV(_exp,_rv) \
 	if( (_exp) ) { \
@@ -54,7 +41,7 @@
 
 StatusType WaitEvent( EventMaskType Mask ) {
 
-	pcb_t *curr_pcb = get_curr_pcb();
+	OsPcbType *curr_pcb = get_curr_pcb();
 	StatusType rv = E_OK;
 
 	if( os_sys.int_nest_cnt != 0 ) {
@@ -65,17 +52,13 @@ StatusType WaitEvent( EventMaskType Mask ) {
 	/* Remove from ready queue */
 	Irq_Disable();
 
-	// Reschedule if mask not set already
+	// OSEK/VDX footnote 5. The call of WaitEvent does not lead to a waiting state if one of the events passed in the event mask to
+    // WaitEvent is already set. In this case WaitEvent does not lead to a rescheduling.
 	if( !(curr_pcb->ev_set & Mask) ) {
 
 		curr_pcb->ev_wait = Mask;
-		os_pcb_make_waiting(curr_pcb);
-		{
-			pcb_t *pcb;
-			pcb = os_find_top_prio_proc();
-			assert(pcb!=NULL);
-			os_swap_context(curr_pcb,pcb);
-		}
+		Os_TaskMakeWaiting(curr_pcb);
+		Os_Dispatch(0);
 	}
 
 	Irq_Enable();
@@ -100,10 +83,18 @@ StatusType WaitEvent( EventMaskType Mask ) {
 
 StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 	StatusType rv = E_OK;
-	pcb_t *dest_pcb;
+	OsPcbType *dest_pcb;
+	OsPcbType *currPcbPtr;
+	uint32_t flags;
 
 	dest_pcb = os_get_pcb(TaskID);
-	Irq_Disable();
+
+#warning OS327 Scalability class 3 and 4 should always use extended status
+
+	if( TaskID  >= Oil_GetTaskCnt() ) {
+		rv = E_OS_ID;
+		goto err;
+	}
 
 	if( (dest_pcb->state & ST_SUSPENDED ) ) {
 		rv = E_OS_STATE;
@@ -115,21 +106,45 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 		goto err;
 	}
 
-	// If at least one of the events match, taskID from waiting to ready
-	// (if not already)
-	if( Mask & dest_pcb->ev_wait ) {
-		os_pcb_make_ready(dest_pcb);
+	Irq_Save(flags);
+
+	/* Calling  SetEvent  causes  the  task  <TaskID>  to be  transferred
+	 * to  the  ready  state,  if  it  was  waiting  for  at  least one of the
+	 * events specified in <Mask>.
+	 *
+	 * OSEK/VDX 4.6.1,  rescheduling is performed in all of the following cases:
+	 * ..
+	 * Setting an event to a waiting task at task level (e.g. system service SetEvent,
+	 * see chapter 13.5.3.1, message notification mechanism, alarm expiration, if event setting
+	 * defined, see chapter 9.2)
+	 * ... */
+	if( (Mask & dest_pcb->ev_wait) ) {
+		/* We have a an event match */
+		if( dest_pcb->state & ST_WAITING) {
+			Os_TaskMakeReady(dest_pcb);
+
+			currPcbPtr = Os_TaskGetCurrent();
+			/* Checking "4.6.2  Non preemptive scheduling" it does not dispatch if NON  */
+			if( (os_sys.int_nest_cnt == 0) &&
+				(currPcbPtr->scheduling == FULL) )
+			{
+				Os_Dispatch(0);
+			}
+
+		}  else if(dest_pcb->state & ST_READY ) {
+			/* Hmm, we do nothing */
+		}
 	}
 
 	dest_pcb->ev_set |= Mask;
-	Irq_Enable();
+	Irq_Restore(flags);
 
 	OS_STD_END_2(OSServiceId_SetEvent,TaskID, Mask);
 }
 
 StatusType GetEvent( TaskType TaskId, EventMaskRefType Mask) {
 
-	pcb_t *dest_pcb;
+	OsPcbType *dest_pcb;
 	StatusType rv = E_OK;
 
 	dest_pcb = os_get_pcb(TaskId);
@@ -147,7 +162,7 @@ StatusType GetEvent( TaskType TaskId, EventMaskRefType Mask) {
 
 StatusType ClearEvent( EventMaskType Mask) {
     StatusType rv = E_OK;
-	pcb_t *pcb;
+	OsPcbType *pcb;
 
 	if( os_sys.int_nest_cnt != 0 ) {
 		rv =  E_OS_CALLEVEL;

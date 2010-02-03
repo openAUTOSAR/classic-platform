@@ -13,27 +13,21 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-
-/*
- * Hold macros for the generator
- */
 #ifndef _OS_CONFIG_MACROS_H
 #define _OS_CONFIG_MACROS_H
 
 #define false		0
 #define true		1
 
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(_x)		(sizeof(_x)/sizeof((_x)[0]))
+#endif
+
+
 // +1 here.. easy to have a reference..
 #define GEN_TRUSTEDFUNCTIONS_LIST trusted_func_t os_cfg_trusted_list[SERVICE_CNT];
 
-#define GEN_APPLICATION_HEAD rom_app_t rom_app_list[] =
+#define GEN_APPLICATION_HEAD OsRomApplicationType rom_app_list[] =
 
 #define GEN_APPLICATON(	_id,_name,_trusted,_startuphook,_shutdownhook, \
 						_errorhook,_isr_mask,_scheduletable_mask, _alarm_mask, \
@@ -54,11 +48,11 @@
 }
 
 
-#define GEN_TASK_HEAD const rom_pcb_t rom_pcb_list[] =
+#define GEN_TASK_HEAD const OsRomPcbType rom_pcb_list[] =
 
 
 
-#if !defined(OS_CFG_API_VERSION)
+#if !(  OS_CFG_API_VERSION)
 
 #define GEN_ETASK( _id, _priority, 	_autostart, _timing_protection, _application_id, _resource_int_p ) \
 {									\
@@ -96,7 +90,7 @@
 #else
 
 #define GEN_ETASK( _id, _priority, _autostart, _timing_protection, _application_id, \
-                   _resource_int_p, _scheduling, _resource_mask, _activation ) \
+                   _resource_int_p, _scheduling, _resource_mask ) \
 {									\
 	.pid = TASK_ID_##_id,           \
 	.name = #_id,					\
@@ -110,8 +104,8 @@
 	.application_id = _application_id,		\
 	.resource_int_p = _resource_int_p, \
 	.scheduling = _scheduling, \
-	.resourceAccess = _resource_mask \
-	.activationLimit = _activation, \
+	.resourceAccess = _resource_mask, \
+	.activationLimit = 1, \
 }
 
 #define GEN_BTASK( _id, _priority, _autostart, _timing_protection, _application_id, \
@@ -174,9 +168,10 @@
 	.vector = _vector,              \
 }
 
-#define GEN_PCB_LIST()	uint8_t pcb_list[PCB_T_SIZE*ARRAY_SIZE(rom_pcb_list)];
+//#define GEN_PCB_LIST()	uint8_t pcb_list[PCB_T_SIZE*ARRAY_SIZE(rom_pcb_list)];
+#define GEN_PCB_LIST()	OsPcbType pcb_list[ARRAY_SIZE(rom_pcb_list)];
 
-#define GEN_RESOURCE_HEAD resource_obj_t resource_list[] =
+#define GEN_RESOURCE_HEAD OsResourceType resource_list[] =
 #define GEN_RESOURCE( _id, _type, _ceiling_priority, _application_id, _task_mask) \
 {												\
 	.nr= _id,									\
@@ -212,7 +207,7 @@
  *    NOT USED. Set to 0
  */
 
-#define GEN_COUNTER_HEAD counter_obj_t counter_list[] =
+#define GEN_COUNTER_HEAD OsCounterType counter_list[] =
 #define GEN_COUNTER( _id, _name, _type, _unit, 	\
 					_maxallowedvalue, 			\
 					_ticksperbase, 				\
@@ -224,10 +219,13 @@
 	.alarm_base.maxallowedvalue = _maxallowedvalue,	\
 	.alarm_base.tickperbase = _ticksperbase,		\
 	.alarm_base.mincycle = _mincycle,				\
-	.driver.OsGptChannelRef = _gpt_ch  \
 }
+#if 0
+	// For now...
+	.driver.OsGptChannelRef = _gpt_ch
+#endif
 
-#define GEN_ALARM_HEAD alarm_obj_t alarm_list[] =
+#define GEN_ALARM_HEAD OsAlarmType alarm_list[] =
 
 /**
  * _id
@@ -293,7 +291,7 @@
 	},										\
 }
 
-#define GEN_SCHEDULETABLE_HEAD sched_table_t sched_list[] =
+#define GEN_SCHEDULETABLE_HEAD OsSchTblType sched_list[] =
 #define GEN_SCHEDULETABLE(  _id, _name, _counter, _repeating, _length, _application_mask, \
 							_action_cnt, _action_expire_ref, \
 							_autostart_active, _autostart_type, _autostart_rel_offset, _autostart_appmode, \
@@ -322,8 +320,9 @@
 	} \
 }
 
+#if (  OS_SC3 == STD_ON) || (  OS_SC4 == STD_ON)
 #define GEN_HOOKS( _startup, _protection, _shutdown, _error, _pretask, _posttask ) \
-struct os_conf_global_hooks_s os_conf_global_hooks = { \
+struct OsHooks os_conf_global_hooks = { \
 		.StartupHook = _startup, 		\
 		.ProtectionHook = _protection, 	\
 		.ShutdownHook = _shutdown,		\
@@ -331,6 +330,18 @@ struct os_conf_global_hooks_s os_conf_global_hooks = { \
 		.PreTaskHook = _pretask,		\
 		.PostTaskHook = _posttask,		\
 };
+#else
+#define GEN_HOOKS( _startup, _protection, _shutdown, _error, _pretask, _posttask ) \
+struct OsHooks os_conf_global_hooks = { \
+		.StartupHook = _startup, 		\
+		.ShutdownHook = _shutdown,		\
+		.ErrorHook = _error,			\
+		.PreTaskHook = _pretask,		\
+		.PostTaskHook = _posttask,		\
+};
+
+#endif
+
 
 #define GEN_IRQ_VECTOR_TABLE_HEAD 	\
 		 void * Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS] =
@@ -354,6 +365,16 @@ struct os_conf_global_hooks_s os_conf_global_hooks = { \
 #undef MESSAGE_CNT
 #undef EVENT_CNT
 #undef SERVICE_CNT
+
+/*
+ * OsOs container
+ */
+#define OS_SC1 					STD_ON 		/* | OS_SC2 | OS_SC3 | OS_SC4 */
+#define OS_STACK_MONITORING		STD_ON
+#define OS_STATUS_EXTENDED			STD_ON 		/* OS_STATUS_STANDARD */
+#define OS_USE_GET_SERVICE_ID		STD_ON
+#define OS_USE_PARAMETER_ACCESS	STD_ON
+#define OS_RES_SCHEDULER			STD_ON
 
 #endif
 

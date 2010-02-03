@@ -15,20 +15,9 @@
 
 
 
-
-
-
-
-
-/*
- * Os_Cfg.h
- *
- *  Created on: 2008-dec-22
- *      Author: mahi
- */
-
 #ifndef OS_CFG_H_
 #define OS_CFG_H_
+
 
 /* os_config.h */
 

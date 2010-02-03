@@ -13,14 +13,6 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-
 /* A steal in an idea from
  * http://blogs.sun.com/nickstephen/entry/some_assembly_required_-_down
  * According to blog original BSD license..
@@ -30,26 +22,17 @@
  */
 
 #include <stddef.h>
+#include "internal.h"
 
 #define DECLARE(sym,val) \
 	__asm("#define\t" #sym "\t%0" : : "n" ((val)))
 
-#include "pcb.h"
-#include "sys.h"
-#include "kernel.h"
-
 void  asm_foo(void) {
-	DECLARE(PCB_STACK_CURR_P,	offsetof(pcb_t, stack));
-	DECLARE(PCB_ENTRY_P,		offsetof(pcb_t, entry));
+	DECLARE(PCB_STACK_CURR_P,	offsetof(OsPcbType, stack));
+	DECLARE(PCB_ENTRY_P,		offsetof(OsPcbType, entry));
 	DECLARE(SYS_CURR_PCB_P,		offsetof(sys_t, curr_pcb));
 	DECLARE(SYS_INT_NEST_CNT, offsetof(sys_t, int_nest_cnt));
 	DECLARE(SYS_INT_STACK, offsetof(sys_t, int_stack));
-
-/*
-	DECLARE(SYS_HOOK_P,	offsetof(sys_t, hooks));
-	DECLARE(HOOKS_PRETASK_P,	offsetof(structos_conf_global_hooks_s, PreTaskHook));
-*/
-//	DECLARE(SYS_HOOK_POSTTASK_P,offsetof(sys_t, PostTaskHook));
 }
 
 

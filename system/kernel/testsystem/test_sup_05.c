@@ -27,7 +27,7 @@
 //#include <stdio.h>
 #include <assert.h>
 #include "os_test.h"
-#include "int_ctrl.h"
+#include "irq.h"
 
 #if 0
 void isr_l(void ) {
@@ -38,7 +38,7 @@ void isr_l(void ) {
 	case 5:
 		test_nr++;
 		/* Trigger higher prio interrupt */
-		IntCtrl_GenerateSoftInt(EXTI1_IRQn);
+		Irq_GenerateSoftInt(EXTI1_IRQn);
 		TEST_ASSERT(test_nr==8);
 		break;
 	default:
@@ -54,7 +54,7 @@ void isr_m(void ) {
 	case 6:
 		test_nr++;
 		/* Trigger higher prio interrupt */
-		IntCtrl_GenerateSoftInt(EXTI2_IRQn);
+		Irq_GenerateSoftInt(EXTI2_IRQn);
 		TEST_ASSERT(test_nr==7);
 		test_nr++;
 		break;
@@ -156,7 +156,7 @@ void etask_sup_m_04( void ) {
  * Example: Two tasks, main with prio 2 and slave with prio 1,activate 2.
  */
 
-void ActivationQuee(void) {
+void ActivationQueue(void) {
 	{
 	  StatusType rv;
 	  /* Queue up */

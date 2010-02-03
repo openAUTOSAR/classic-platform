@@ -14,18 +14,17 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 #include "Os.h"
-#include "sys.h"
-#include "pcb.h"
 #include "internal.h"
-#include "int_ctrl.h"
+#include "irq.h"
+#include "arc.h"
 
 /**
  * Init of free running timer.
  */
 void Frt_Init( void ) {
 	TaskType tid;
-	tid = Os_CreateIsr(OsTick,6/*prio*/,"OsTick");
-	IntCtrl_AttachIsr2(tid,NULL,7);
+	tid = Os_Arc_CreateIsr(OsTick,6/*prio*/,"OsTick");
+	Irq_AttachIsr2(tid,NULL,7);
 }
 
 /**
@@ -65,6 +64,7 @@ void Frt_Start(uint32_t period_ticks) {
  * @return
  */
 
+/** @req OS383 */
 uint32_t Frt_GetTimeElapsed( void )
 {
 	uint32_t timer = get_spr(SPR_DECAR) - get_spr(SPR_DEC);

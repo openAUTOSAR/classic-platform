@@ -30,6 +30,7 @@ OsTickType OsTickFreq = 1000;
 // atleast 1
 #define SERVICE_CNT 1
 
+#if (  OS_SC3 == STD_ON) || (  OS_SC4==STD_ON)
 GEN_TRUSTEDFUNCTIONS_LIST
 
 //--- APPLICATIONS ----
@@ -41,6 +42,7 @@ GEN_APPLICATION_HEAD {
 					true,
 					NULL,NULL,NULL , 0,0,0,0,0,0 )
 };
+#endif
 
 // --- RESOURCES ---
 

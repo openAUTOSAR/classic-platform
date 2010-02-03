@@ -28,7 +28,7 @@
 #define MCU_SW_PATCH_VERSION	0
 
 #include "Cpu.h"
-#include "irq.h"
+#include "irq_types.h"
 //#include "mpc55xx_aos.h"
 
 /* Service ID's */
@@ -108,9 +108,9 @@ void Mcu_SetMode( const Mcu_ModeType McuMode );
 typedef uint32_t imask_t;
 
 /* ArcCore extensions */
-void IntCtrl_InstallVector(void (*func)(), IrqType vector, uint8_t priority, Cpu_t cpu );
-void IntCtrl_GenerateSoftInt( IrqType vector );
-uint8_t IntCtrl_GetCurrentPriority( Cpu_t cpu);
+void Irq_InstallVector(void (*func)(), IrqType vector, uint8_t priority, Cpu_t cpu );
+void Irq_GenerateSoftInt( IrqType vector );
+uint8_t Irq_GetCurrentPriority( Cpu_t cpu);
 uint32_t McuE_GetSystemClock( void );
 #if defined(CFG_MPC55XX)
 uint32_t McuE_GetPeripheralClock( McuE_PeriperalClock_t type );

@@ -29,7 +29,7 @@
 #include "Cpu.h"
 #include "Ramlog.h"
 #include "Os.h"
-#include "int_ctrl.h"
+#include "irq.h"
 
 //#define USE_TRACE 1
 //#define USE_DEBUG 1
@@ -255,22 +255,20 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
   //
   Mcu_ConfigureFlash();
 
-  Irq_Enable();
-
   Mcu_Global.config = configPtr;
   Mcu_Global.initRun = 1;
 
   if( Mcu_Global.config->McuClockSrcFailureNotification == TRUE  ){
   	// Enable loss of lock interrupt
 
-	IntCtrl_AttachIsr1(Mcu_LossOfLock, NULL, PLL_SYNSR_LOLF,10 );
+	Irq_AttachIsr1(Mcu_LossOfLock, NULL, PLL_SYNSR_LOLF,10 );
 #if defined(CFG_MPC5516)
 //  	FMPLL.SYNCR.B.LOCIRQ = 1; TODO: Kolla denna bortkommentering med Mårten.
   	FMPLL.ESYNCR2.B.LOLIRQ = 1;
 #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
   	FMPLL.SYNCR.B.LOLIRQ = 1;
 #endif
-	IntCtrl_AttachIsr1(Mcu_LossOfCLock, NULL, PLL_SYNSR_LOCF,10 );
+	Irq_AttachIsr1(Mcu_LossOfCLock, NULL, PLL_SYNSR_LOCF,10 );
 #if defined(CFG_MPC5516)
 //  	FMPLL.SYNCR.B.LOCIRQ = 1; TODO: Kolla denna bortkommentering med Mårten.
   	FMPLL.ESYNCR2.B.LOCIRQ = 1;

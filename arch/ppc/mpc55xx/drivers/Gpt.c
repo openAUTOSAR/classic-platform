@@ -186,7 +186,7 @@ void Gpt_Init(const Gpt_ConfigType *config)
     {
       if (cfg->GptNotification != NULL)
       {
-        IntCtrl_InstallVector(Gpt_Isr, PIT_PITFLG_RTIF + ch, 1, CPU_Z1);
+        Irq_InstallVector(Gpt_Isr, PIT_PITFLG_RTIF + ch, 1, CPU_Z1);
       }
     }
 #if defined(USE_KERNEL)
@@ -195,7 +195,7 @@ void Gpt_Init(const Gpt_ConfigType *config)
     else if (ch == GPT_CHANNEL_DEC)
     {
       // Decrementer event is default an exception. Use software interrupt 7 as wrapper.
-      IntCtrl_InstallVector(config[i].GptNotification, INTC_SSCIR0_CLR7, 1, CPU_Z1);
+      Irq_InstallVector(config[i].GptNotification, INTC_SSCIR0_CLR7, 1, CPU_Z1);
     }
 #endif
 

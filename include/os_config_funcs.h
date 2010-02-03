@@ -12,20 +12,19 @@
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
-
-
-
-
-
-
-
-
-
 /*
  * This file only be use with the Os_Cfg.c file and os_config_macros.h
  */
 #include "kernel.h"
 #include "Os_Cfg.h"
+
+/** @req OS327 */
+#if (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
+#if (OS_STATUS_STANDARD == STD_ON )
+#error req OS327 not fullfilled
+#endif
+#endif
+
 
 // COUNTER, RESOURCE, TSAK, must be at least 1
 #define COUNTER_CNT				ARRAY_SIZE(counter_list)
@@ -81,13 +80,15 @@ trusted_func_t oil_trusted_func_list[SERVICE_CNT];
 #endif
 
 /*-----------------------------------------------------------------*/
+#if (  OS_SC3 == STD_ON) || (  OS_SC4==STD_ON)
 int Oil_GetApplCnt(void) {
 	return APPLICATION_CNT;
 }
 
-rom_app_t *Oil_GetApplObj( ApplicationType application_id ) {
+OsRomApplicationType *Oil_GetApplObj( ApplicationType application_id ) {
 	return &rom_app_list[application_id];
 }
+#endif
 
 /*-----------------------------------------------------------------*/
 int Oil_GetTaskCnt(void) {
@@ -95,7 +96,7 @@ int Oil_GetTaskCnt(void) {
 }
 /*-----------------------------------------------------------------*/
 
-resource_obj_t *Oil_GetResource( ResourceType resource ) {
+OsResourceType *Oil_GetResource( ResourceType resource ) {
 	return &resource_list[resource];
 }
 
@@ -105,13 +106,13 @@ int Oil_GetResourceCnt() {
 
 /*-----------------------------------------------------------------*/
 
-counter_obj_t *Oil_GetCounter(CounterType count_id) {
+OsCounterType *Oil_GetCounter(CounterType count_id) {
 	return &counter_list[count_id];
 }
 
 uint32 Oil_GetCounterCnt(void ) {
 	return COUNTER_CNT;
-//	return sizeof(counter_list)/sizeof(counter_obj_t);
+//	return sizeof(counter_list)/sizeof(OsCounterType);
 }
 /*-----------------------------------------------------------------*/
 
@@ -119,7 +120,7 @@ uint32 Oil_GetSchedCnt(  void ) {
 	return SCHEDULETABLE_CNT;
 }
 
-sched_table_t *Oil_GetSched( ScheduleTableType sched_id ) {
+OsSchTblType *Oil_GetSched( ScheduleTableType sched_id ) {
 #if defined(SCHEDULETABLE_USE)
 	if(sched_id < SCHEDULETABLE_CNT) {
 		return &sched_list[sched_id];
@@ -137,7 +138,7 @@ uint32 Oil_GetAlarmCnt(void) {
 	return ALARM_CNT;
 }
 
-alarm_obj_t *Oil_GetAlarmObj( AlarmType alarm_id ) {
+OsAlarmType *Oil_GetAlarmObj( AlarmType alarm_id ) {
 #if defined(ALARM_USE)
 	if( alarm_id < ALARM_CNT) {
 	  return &alarm_list[alarm_id];
@@ -165,7 +166,8 @@ StatusType Oil_GetAlarmBase(AlarmType alarm_id, AlarmBaseRefType info) {
 
 /*-----------------------------------------------------------------*/
 
-message_obj_t *Oil_GetMessage(MessageType message_id) {
+#if 0
+OsMessageType *Oil_GetMessage(MessageType message_id) {
 #if MESSAGE_CNT!=0
 	return &message_list[message_id];
 #else
@@ -176,17 +178,20 @@ message_obj_t *Oil_GetMessage(MessageType message_id) {
 uint32 Oil_GetMessageCnt(void ) {
 	return MESSAGE_CNT;
 }
+#endif
 
 /*-----------------------------------------------------------------*/
 
+#if (  OS_SC3 == STD_ON) || (  OS_SC4 == STD_ON)
 uint32 Oil_GetServiceCnt( void ) {
 	return SERVICE_CNT;
 }
+#endif
 
 
 /*-----------------------------------------------------------------*/
 
-void Oil_GetInterruptStackInfo( stack_t *stack ) {
+void Oil_GetInterruptStackInfo( OsStackType *stack ) {
 	stack->top = os_interrupt_stack;
 	stack->size = sizeof(os_interrupt_stack);
 }

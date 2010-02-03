@@ -1003,11 +1003,11 @@ static void Spi_InitController( uint32 unit ) {
 	spiHw->MCR.B.MDIS = 0;
 
 #if defined(__DMA_INT)
-	IntCtrl_InstallVector(Spi_Isr_DMA, 16 , 1, CPU_Z1);
+	Irq_InstallVector(Spi_Isr_DMA, 16 , 1, CPU_Z1);
 #endif
 
 	// Install EOFQ int..
-	IntCtrl_InstallVector(Spi_Isr_Info[unit].entry, Spi_Isr_Info[unit].vector,
+	Irq_InstallVector(Spi_Isr_Info[unit].entry, Spi_Isr_Info[unit].vector,
 	                       Spi_Global.configPtr->SpiHwConfig[unit].IsrPriority, Spi_Isr_Info[unit].cpu);
 }
 

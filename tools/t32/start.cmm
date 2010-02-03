@@ -27,8 +27,8 @@ IF "&cfg_project_path_g"==""
 
 &cpu="&cfg_cpu_g"
 
-winpos 0% 70% 50% 30%
-area
+//winpos 0% 70% 50% 30%
+//area
 
 sys.down
 
@@ -83,6 +83,7 @@ print ""
 
 
 enddo
+
 
 
 

@@ -13,16 +13,13 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-#include "typedefs.h"
+#include "internal.h"
 #include "asm_book_e.h"
-#include "irq.h"
+#include "irq_types.h"
 #include "mpc55xx.h"
 #if !defined(USE_KERNEL)
 #include "Mcu.h"
 #endif
-#include <assert.h>
-#include "Ramlog.h"
-//#include <stdio.h>
 
 #if defined(USE_KERNEL)
 #include "pcb.h"
@@ -30,7 +27,6 @@
 #include "internal.h"
 #include "task_i.h"
 #include "hooks.h"
-#include "swap.h"
 
 #if 0
 #define INTC_SSCIR0_CLR7					7
@@ -42,7 +38,7 @@
 
 #include "Trace.h"
 #endif
-#include "int_ctrl.h"
+#include "irq.h"
 
 static void dump_exception_regs( uint32_t *regs );
 
@@ -61,7 +57,7 @@ extern func_t Irq_VectorTable[];
 #endif
 
 // write 0 to pop INTC stack
-void IntCtrl_Init( void ) {
+void Irq_Init( void ) {
 	  // Check alignment for the exception table
 	  assert(((uint32)exception_tbl & 0xfff)==0);
 	  set_spr(SPR_IVPR,(uint32)exception_tbl);
@@ -148,7 +144,7 @@ void IntCtrl_Init( void ) {
 }
 
 
-void IntCtrl_EOI( void ) {
+void Irq_EOI( void ) {
 #if defined(CFG_MPC5516)
 	struct INTC_tag *intc = &INTC;
 	intc->EOIR_PRC0.R = 0;
@@ -166,7 +162,7 @@ void IntCtrl_EOI( void ) {
  * The stack holds C, NVGPR, VGPR and the EXC frame.
  *
  */
-void *IntCtrl_Entry( void *stack_p )
+void *Irq_Entry( void *stack_p )
 {
 	uint32_t vector;
 	uint32_t *stack = (uint32_t *)stack_p;
@@ -200,7 +196,7 @@ void *IntCtrl_Entry( void *stack_p )
 
 #if defined(USE_KERNEL)
 
-	if( IntCtrl_GetIsrType(vector) == ISR_TYPE_1 ) {
+	if( Irq_GetIsrType(vector) == ISR_TYPE_1 ) {
 		// It's a function, just call it.
 		((func_t)Irq_VectorTable[vector])();
 		return stack;
@@ -246,7 +242,7 @@ static inline int osPrioToCpuPio( uint8_t prio ) {
 	return prio>>1;		// Os have 32 -> 16
 }
 
-void IntCtrl_SetPriority( Cpu_t cpu,  IrqType vector, uint8_t prio ) {
+void Irq_SetPriority( Cpu_t cpu,  IrqType vector, uint8_t prio ) {
 #if defined(CFG_MPC5516)
 	INTC.PSR[vector].B.PRC_SEL = cpu;
 #endif
@@ -263,12 +259,12 @@ void IntCtrl_SetPriority( Cpu_t cpu,  IrqType vector, uint8_t prio ) {
  * @param vector
  * @param prio
  */
-void IntCtrl_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector,uint8_t prio) {
+void Irq_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector,uint8_t prio) {
 	Irq_VectorTable[vector] = (void *)entry;
-	IntCtrl_SetIsrType(vector, ISR_TYPE_1);
+	Irq_SetIsrType(vector, ISR_TYPE_1);
 
 	if (vector < INTC_NUMBER_OF_INTERRUPTS) {
-		IntCtrl_SetPriority(CPU_CORE0,vector + IRQ_INTERRUPT_OFFSET, osPrioToCpuPio(prio));
+		Irq_SetPriority(CPU_CORE0,vector + IRQ_INTERRUPT_OFFSET, osPrioToCpuPio(prio));
 	} else if ((vector >= CRITICAL_INPUT_EXCEPTION) && (vector
 			<= DEBUG_EXCEPTION)) {
 	} else {
@@ -285,15 +281,15 @@ void IntCtrl_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector,ui
  * @param int_ctrl
  * @param vector
  */
-void IntCtrl_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
-	pcb_t *pcb;
+void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
+	OsPcbType *pcb;
 
 	pcb = os_find_task(tid);
 	Irq_VectorTable[vector] = (void *)pcb;
 	Irq_IsrTypeTable[vector] = PROC_ISR2;
 
 	if (vector < INTC_NUMBER_OF_INTERRUPTS) {
-		IntCtrl_SetPriority(CPU_CORE0,vector + + IRQ_INTERRUPT_OFFSET, osPrioToCpuPio(pcb->prio));
+		Irq_SetPriority(CPU_CORE0,vector + + IRQ_INTERRUPT_OFFSET, osPrioToCpuPio(pcb->prio));
 	} else if ((vector >= CRITICAL_INPUT_EXCEPTION) && (vector
 			<= DEBUG_EXCEPTION)) {
 	} else {
@@ -317,7 +313,7 @@ void IntCtrl_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
  * @param cpu
  */
 
-void IntCtrl_InstallVector(void(*func)(), IrqType vector,
+void Irq_InstallVector(void(*func)(), IrqType vector,
     uint8_t priority, Cpu_t cpu)
 {
   VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_INTCVECTORINSTALL_SERVICE_ID, MCU_E_UNINIT );
@@ -348,7 +344,7 @@ void IntCtrl_InstallVector(void(*func)(), IrqType vector,
  * Generates a soft interrupt
  * @param vector
  */
-void IntCtrl_GenerateSoftInt( IrqType vector ) {
+void Irq_GenerateSoftInt( IrqType vector ) {
 	if( vector > INTC_SSCIR0_CLR7 ) {
 		assert(0);
 	}
@@ -361,7 +357,7 @@ void IntCtrl_GenerateSoftInt( IrqType vector ) {
  * @param cpu
  * @return
  */
-uint8_t IntCtrl_GetCurrentPriority( Cpu_t cpu) {
+uint8_t Irq_GetCurrentPriority( Cpu_t cpu) {
 
 	uint8_t prio;
 

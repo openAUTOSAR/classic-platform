@@ -28,7 +28,7 @@
 #include "EcuM_Cbk.h"
 #include "Mcu.h"
 #include "Det.h"
-#include "int_ctrl.h"
+#include "irq.h"
 
 EcuM_GobalType internal_data;
 
@@ -58,7 +58,7 @@ void EcuM_Init( void )
 	InitOS();
 
 	// Enable interrupts
-	IntCtrl_Init();
+	Irq_Init();
 
 
 	// Determine PostBuild configuration

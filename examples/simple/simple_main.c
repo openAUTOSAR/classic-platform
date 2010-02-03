@@ -16,6 +16,7 @@
 
 #include "Os.h"
 #include "Mcu.h"
+#include "arc.h"
 
 #define USE_DEBUG
 #include "Trace.h"
@@ -34,7 +35,7 @@ void btask_3( void ) {
 	dbg_printf("[%08d] btask_3 start\n", GetOsTick() );
 
 	GetTaskID(&currTask);
-	Os_GetStackInfo(currTask,&si);
+	Os_Arc_GetStackInfo(currTask,&si);
 	dbg_printf("btask_3: Stack usage %d%%\n",OS_STACK_USAGE(&si));
 
 	TerminateTask();
@@ -58,7 +59,7 @@ void etask_1( void ) {
 		ClearEvent(2);
 		tryFloatingPoint += 1.0F;
 		GetTaskID(&currTask);
-		Os_GetStackInfo(currTask,&si);
+		Os_Arc_GetStackInfo(currTask,&si);
 		dbg_printf("etask_1: Stack usage %d%% \n",OS_STACK_USAGE(&si));
 
 	}
@@ -79,7 +80,7 @@ void etask_2( void ) {
 			StackInfoType si;
 			TaskType currTask;
 			GetTaskID(&currTask);
-			Os_GetStackInfo(currTask,&si);
+			Os_Arc_GetStackInfo(currTask,&si);
 			dbg_printf("etask_1: Stack usage %d%% \n",OS_STACK_USAGE(&si));
 		}
 	}

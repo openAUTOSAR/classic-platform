@@ -92,17 +92,22 @@ OsTickType OsTickFreq = 1000;
 
 extern void dec_exception( void );
 
+#if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
 // atleast 1
 #define SERVICE_CNT 1
 
 GEN_TRUSTEDFUNCTIONS_LIST
+#endif
 
 
 //-------------------------------------------------------------------
 
+#if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
 GEN_APPLICATION_HEAD {
 	GEN_APPLICATON(0,"application_1",true,NULL,NULL,NULL , 0,0,0,0,0,0 )
 };
+#endif
+
 //-------------------------------------------------------------------
 
 #define ALIGN_16(x) (((x)>>4)<<4)
@@ -143,16 +148,16 @@ GEN_TASK_HEAD {
 	GEN_ETASK(OsIdle,0,true/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0 ),
 
 /* extended */
-	GEN_ETASK(etask_master,1,true/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0 ),
+	GEN_ETASK(etask_master,1,true/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, NON, 0),
 
 	GEN_ETASK(etask_sup_l,2,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0 ),
 	GEN_ETASK(etask_sup_m,3,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0 ),
 	GEN_ETASK(etask_sup_h,4,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0 ),
 
 /* basic */
-	GEN_BTASK(btask_sup_l,2,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0 ),
-	GEN_BTASK(btask_sup_m,3,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0 ),
-	GEN_BTASK(btask_sup_h,4,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0 ),
+	GEN_BTASK(btask_sup_l,2,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0, 1 ),
+	GEN_BTASK(btask_sup_m,3,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0, 1 ),
+	GEN_BTASK(btask_sup_h,4,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0, 1 ),
 
 	GEN_ISR_2(  TASK_ID_os_tick, "dec", OsTick, /*prio*/ 11, /*type*/ PROC_ISR2,  INTC_VECTOR_EXCEPTION_DEC , NULL, APPLICATION_ID_application_1),
 #if 0
@@ -193,11 +198,12 @@ GEN_IRQ_PRIORITY_TABLE_HEAD {};
 //-------------------------------------------------------------------
 
 // Generate as <type> <msg_name>_data
+#if 0
 #ifdef ALARM_USE
 int MsgRx_1_data;
 int MsgTx_1_data;
 
-message_obj_t message_list[] = {
+OsMessageType message_list[] = {
 {
 	.property = RECEIVE_UNQUEUED_INTERNAL,
 	.data = &MsgRx_1_data,
@@ -221,12 +227,13 @@ message_obj_t message_list[] = {
 
 MESSAGE_CLASS(rx1,int,,,);
 #endif
+#endif
 
 /*
 typedef struct {
 	message_type_t type;		// RECEIVE_UNQUEUED_INTERNAL, RECEIVE_QUEUE_INTERNAL
 	MessageType send_id;
-	message_notification_t *notification;
+	OsMessageNotificationType *notification;
 	void *queue_data;
 	uint32 	queue_size;
 } message_rx_t;
@@ -316,7 +323,7 @@ GEN_ALARM_HEAD {
 #if defined(SCHEDULETABLE_USE)
 
 
-sched_action_t sched_expire_list_0[] = {
+OsScheduleTableActionType sched_expire_list_0[] = {
 	{
 		.type = SCHEDULE_ACTION_ACTIVATETASK,
 		.offset = 5,
@@ -330,7 +337,7 @@ sched_action_t sched_expire_list_0[] = {
 };
 
 
-sched_action_t sched_expire_list_1[] = {
+OsScheduleTableActionType sched_expire_list_1[] = {
 	{
 		.type = SCHEDULE_ACTION_ACTIVATETASK,
 		.offset = 2,
@@ -344,7 +351,7 @@ GEN_SCHEDULETABLE_HEAD {
 			0,						// id
 			"stable0",				// name
 		    COUNTER_ID_soft_2,		// counter
-			1,						// periodic
+		    REPEATING,				// periodic
 			SCHEDULETABLE_DURATION_1,	// duration
 			0,						// app_mask
 			ARRAY_SIZE(sched_expire_list_0),				// action count
@@ -358,7 +365,7 @@ GEN_SCHEDULETABLE_HEAD {
 			1,						// id
 			"stable1",				// name
 			COUNTER_ID_soft_2,		// counter
-			1,						// periodic
+			REPEATING,				// periodic
 			SCHEDULETABLE_DURATION_2,	// duration
 			0,						// app_mask
 			ARRAY_SIZE(sched_expire_list_1),				// action count
@@ -374,9 +381,11 @@ GEN_SCHEDULETABLE_HEAD {
 
 // --- HOOKS ---
 
-struct os_conf_global_hooks_s os_conf_global_hooks = {
+struct OsHooks os_conf_global_hooks = {
 		.StartupHook = StartupHook,
+#if (  OS_SC2 == STD_ON ) || ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
 		.ProtectionHook = ProtectionHook,
+#endif
 		.ShutdownHook = ShutdownHook,
 		.ErrorHook = ErrorHook,
 		.PreTaskHook = PreTaskHook,

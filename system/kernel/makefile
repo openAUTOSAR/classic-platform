@@ -10,24 +10,26 @@ obj-y += arch_krn.o
 # object files 
 obj-y += event.o
 obj-y += init.o
-obj-y += trusted.o
+#obj-y += trusted.o
 obj-y += arch.o
 obj-y += task.o
-obj-y += task_i.o
+#obj-y += task_i.o
 obj-y += resource.o
-obj-y += swap.o
+#obj-y += swap.o
 obj-y += alarm.o
 obj-y += sched_table.o
 obj-y += counter.o
-obj-y += com_internal.o
-obj-y += create.o
+#obj-y += com_internal.o
+#obj-y += create.o
 obj-y += Frt.o
-obj-y += stack.o
+#obj-y += stack.o
 obj-y += isr.o
+obj-y += os_arctest.o
 
 
 # These are VERY cpu dependent.. remove
-obj-y += int_ctrl.o
+#obj-y += int_ctrl.o
+obj-y += irq.o
 
 # We are compiling the kernel
 def-y+=CC_KERNEL

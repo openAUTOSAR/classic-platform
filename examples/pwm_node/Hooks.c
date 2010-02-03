@@ -90,7 +90,7 @@ void PostTaskHook( void ) {
 }
 
 #if 0
-struct os_conf_global_hooks_s os_conf_global_hooks = {
+struct OsHooks os_conf_global_hooks = {
 		.StartupHook = StartupHook,
 		.ProtectionHook = ProtectionHook,
 		.ShutdownHook = ShutdownHook,

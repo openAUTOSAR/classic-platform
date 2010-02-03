@@ -14,36 +14,31 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-#include "Os.h"
-#include "sys.h"
 #include <stdlib.h>
 #include <string.h>
-#include "ext_config.h"
-//#include "Pool.h"
-//#include "ppc_asm.h"
-#include "arch.h"
-#include "kernel.h"
-#include "swap.h"
-#include "hooks.h"
-#include "task_i.h"
-#include "alarm_i.h"
-#include "sched_table_i.h"
+#include "Os.h"
+#include "internal.h"
+#include "arc.h"
 #include "Trace.h"
+#include "arch.h"
 
-
-extern void Oil_GetInterruptStackInfo( stack_t *stack );
+extern void Oil_GetInterruptStackInfo( OsStackType *stack );
 extern uint32_t McuE_GetSystemClock( void );
 extern OsTickType OsTickFreq;
 
 sys_t os_sys;
 
+Os_IntCounterType Os_IntDisableAllCnt;
+Os_IntCounterType Os_IntSuspendAllCnt;
+Os_IntCounterType Os_IntSuspendOsCnt;
+
 /**
  * Initialize alarms and schedule-tables for the counters
  */
 static void os_counter_init( void ) {
-	counter_obj_t *counter;
-	alarm_obj_t *alarm_obj;
-	sched_table_t *sched_obj;
+	OsCounterType *counter;
+	OsAlarmType *alarm_obj;
+	OsSchTblType *sched_obj;
 	/* Create a list from the counter to the alarms */
 	for(int i=0; i < Oil_GetCounterCnt() ; i++) {
 		counter = Oil_GetCounter(i);
@@ -73,10 +68,10 @@ static void os_counter_init( void ) {
  * @param pcb_p
  * @return
  */
-static os_resource_init( void ) {
+static void os_resource_init( void ) {
 	//TAILQ_INIT(&pcb_p->resource_head);
-	pcb_t *pcb_p;
-	resource_obj_t rsrc_p;
+	OsPcbType *pcb_p;
+	OsResourceType *rsrc_p;
 	int topPrio;
 
 	/* Calculate ceiling priority
@@ -102,9 +97,9 @@ static os_resource_init( void ) {
 	 * with scheduling=NON
 	 */
 	for( int i; i < Oil_GetTaskCnt(); i++) {
-		pcb_p = os_get_pcb(pi);
+		pcb_p = os_get_pcb(i);
 		if(pcb_p->scheduling == NON ) {
-
+			pcb_p->prio = OS_RES_SCHEDULER_PRIO;
 		}
 	}
 }
@@ -117,12 +112,12 @@ static os_resource_init( void ) {
  * @param 	r_pcb	rom data
  */
 
-static void os_pcb_rom_copy( pcb_t *pcb, rom_pcb_t *r_pcb ) {
+static void os_pcb_rom_copy( OsPcbType *pcb, const OsRomPcbType *r_pcb ) {
 
 #if 0 //?????
 	// Check to that the memory is ok
 	{
-		int cnt = sizeof(pcb_t);
+		int cnt = sizeof(OsPcbType);
 		for(int i=0;i<cnt;i++) {
 			if( *((unsigned char *)pcb) != 0 ) {
 				while(1);
@@ -131,10 +126,12 @@ static void os_pcb_rom_copy( pcb_t *pcb, rom_pcb_t *r_pcb ) {
 	}
 #endif
 
-//	memset(pcb,sizeof(pcb_t),0);
+//	memset(pcb,sizeof(OsPcbType),0);
 	pcb->pid = r_pcb->pid;
 	pcb->prio = r_pcb->prio;
+#if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
 	pcb->application = Oil_GetApplObj(r_pcb->application_id);
+#endif
 	pcb->entry = r_pcb->entry;
 	pcb->proc_type = r_pcb->proc_type;
 	pcb->autostart =  r_pcb->autostart;
@@ -143,6 +140,7 @@ static void os_pcb_rom_copy( pcb_t *pcb, rom_pcb_t *r_pcb ) {
 	pcb->resource_int_p = r_pcb->resource_int_p;
 	pcb->scheduling = r_pcb->scheduling;
 	pcb->resourceAccess = r_pcb->resourceAccess;
+	pcb->activationLimit = r_pcb->activationLimit;
 //	pcb->app = &app_list[r_pcb->app];
 //	pcb->app_mask = app_mask[r_pcb->app];
 	strncpy(pcb->name,r_pcb->name,16);
@@ -157,8 +155,8 @@ static _Bool init_os_called = 0;
 
 void InitOS( void ) {
 	int i;
-	pcb_t *tmp_pcb;
-	stack_t int_stack;
+	OsPcbType *tmp_pcb;
+	OsStackType int_stack;
 
 	init_os_called = 1;
 
@@ -180,7 +178,7 @@ void InitOS( void ) {
 
 	// Init counter.. with alarms and schedule tables
 	os_counter_init();
-	os_stbl_init();
+	Os_SchTblInit();
 	os_resource_init();
 
 	// Put all tasks in the pcb list
@@ -194,10 +192,10 @@ void InitOS( void ) {
 
 		os_pcb_rom_copy(tmp_pcb,os_get_rom_pcb(i));
 		if( !(tmp_pcb->proc_type & PROC_ISR) ) {
-			os_pcb_make_virgin(tmp_pcb);
+			Os_ContextInit(tmp_pcb);
 		}
 
-		os_add_task(tmp_pcb);
+		Os_AddTask(tmp_pcb);
 
 		DEBUG(DEBUG_LOW,"pid:%d name:%s prio:%d\n",tmp_pcb->pid,tmp_pcb->name,tmp_pcb->prio);
 	}
@@ -206,16 +204,13 @@ void InitOS( void ) {
 }
 
 static void os_start( void ) {
-	pcb_t *tmp_pcb;
+	OsPcbType *tmp_pcb;
 
 	assert(init_os_called);
 
-	/* find highest prio process and run it */
-	tmp_pcb = os_find_top_prio_proc();
-
 	/* TODO: fix ugly */
 	/* Call the startup hook */
-	extern struct os_conf_global_hooks_s os_conf_global_hooks;
+	extern struct OsHooks os_conf_global_hooks;
 	os_sys.hooks = &os_conf_global_hooks;
 	if( os_sys.hooks->StartupHook!=NULL ) {
 		os_sys.hooks->StartupHook();
@@ -223,10 +218,10 @@ static void os_start( void ) {
 
 	/* handle autostart */
 	for(int j=0; j < Oil_GetAlarmCnt(); j++ ) {
-		alarm_obj_t *alarmPtr;
+		OsAlarmType *alarmPtr;
 		alarmPtr = Oil_GetAlarmObj(j);
 		if(alarmPtr->autostart.active) {
-			alarm_autostart_t *autoPtr = &alarmPtr->autostart;
+			OsAlarmAutostartType *autoPtr = &alarmPtr->autostart;
 
 			SetAbsAlarm(j,autoPtr->alarmtime, autoPtr->cycletime);
 		}
@@ -239,6 +234,19 @@ static void os_start( void ) {
 		Frt_Start(sys_freq/OsTickFreq);
 	}
 
+	/* Find highest Autostart task */
+	{
+		OsPcbType *iterPcbPtr;
+		OsPriorityType topPrio = 0;
+
+		TAILQ_FOREACH(iterPcbPtr,& os_sys.pcb_head,pcb_list) {
+			if(	iterPcbPtr->autostart ) {
+				if( iterPcbPtr->prio > topPrio ) {
+					tmp_pcb = iterPcbPtr;
+				}
+			}
+ 		}
+	}
 
 	// Swap in prio proc.
 	{
@@ -246,7 +254,7 @@ static void os_start( void ) {
 		os_sys.curr_pcb = tmp_pcb;
 		// NOTE! We don't go for os_swap_context() here..
 		// first arg(NULL) is dummy only
-		os_swap_context_to(NULL,tmp_pcb);
+		Os_TaskSwapContextTo(NULL,tmp_pcb);
 		// We should not return here
 		assert(0);
 	}
@@ -279,19 +287,21 @@ int main( void )
  * @param Mode - Application mode to start in
  *
  */
-void StartOS( AppModeType Mode ) {
+void StartOS(AppModeType Mode) {
 
 	/* Check link file */
-	if( TEST_DATA != test_data ) {
+	if (TEST_DATA != test_data) {
 		noooo();
 	}
 
-	if( test_bss != 0 ) {
+	if (test_bss != 0) {
 		noooo();
 	}
 
- os_start();
+	os_start();
 
+	/** @req OS424 */
+	assert(0);
 }
 
 /**
@@ -300,15 +310,16 @@ void StartOS( AppModeType Mode ) {
  * @param Error - Reason for shutdown
  */
 
+/** @req OS071 */
 void ShutdownOS( StatusType Error ) {
 
 	if( os_sys.hooks->ShutdownHook != NULL ) {
 		os_sys.hooks->ShutdownHook(Error);
 	}
-	/* TODO: */
-	while(1) {
 
-	}
+	Irq_Disable();
+	/** @req OS425 */
+	while(1) {	}
 
 }
 

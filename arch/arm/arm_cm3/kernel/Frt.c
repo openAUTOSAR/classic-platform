@@ -19,15 +19,15 @@
 #include "internal.h"
 #include "stm32f10x.h"
 #include "core_cm3.h"
-#include "int_ctrl.h"
+#include "irq.h"
 
 /**
  * Init of free running timer.
  */
 void Frt_Init( void ) {
 	TaskType tid;
-	tid = Os_CreateIsr(OsTick,6/*prio*/,"OsTick");
-	IntCtrl_AttachIsr2(tid,NULL, SysTick_IRQn);
+	tid = Os_Arc_CreateIsr(OsTick,6/*prio*/,"OsTick");
+	Irq_AttachIsr2(tid,NULL, SysTick_IRQn);
 }
 
 /**

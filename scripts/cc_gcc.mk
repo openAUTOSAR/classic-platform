@@ -14,7 +14,8 @@ endif
 # CCFLAGS - compile flags
 
 CC	= 	$(CROSS_COMPILE)gcc
-cflags-y += -O0
+cflags-$(CFG_RELEASE) += -O3
+cflags-$(CFG_DEBUG) += -O0
 #cflags-y += -O0
 #cflags-y += -O3
 

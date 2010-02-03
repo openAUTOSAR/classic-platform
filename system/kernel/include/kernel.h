@@ -19,153 +19,64 @@
 
 #include <sys/queue.h>
 #include "Os.h"
-#include "counter_i.h"
-#include "alarm_i.h"
-#include "sched_table_i.h"
 
+#if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
 typedef void ( * trusted_func_t)( TrustedFunctionIndexType , TrustedFunctionParameterRefType );
+#endif
 
-/*-----------------------------------------------------------------*/
-/* Global Hooks( non-application specific ) */
 
-typedef struct os_conf_global_hooks_s {
-	ProtectionHookType ProtectionHook;
-	StartupHookType StartupHook;
-	ShutdownHookType ShutdownHook;
-	ErrorHookType ErrorHook;
-	PreTaskHookType PreTaskHook;
-	PostTaskHookType PostTaskHook;
-} os_conf_global_hooks_t;
-
-/*-----------------------------------------------------------------*/
-
-/*
- * The only information about the COM that is valid is
- * in the COM specification ..SWS_COM.pdf.
+/* STD container : OsOs. OSEK properties
+ * Class: ALL
  *
- * The most important requirements are COM010 and COM013
+ * OsScalabilityClass:			0..1 SC1,SC2,SC3,SC4
+ * OsStackMonitoring:			1    Stack monitoring of tasks/category 2
+ * OsStatus                 	1    EXTENDED or STANDARD status
+ * OsUseGetServiceId			1    We can use the  OSErrorGetServiceId() function
+ * OsUseParameterAccess			1    We save the parameters in OSError_XX_YY()
+ * OsUseResScheduler			1
+ * OsHooks[C]               	1
  *
- * Com_Init()
- * Com_DeInit()
+ * From OSEK/VDX oil:
  *
- * No error hooks..
- * No. GetMessageStatus()
- * No. SendZeroMessage()
- * No. SendDynamicMessage(), RecieveDynamicMessage()
+ * OS ExampleOS {
+ *   STATUS = STANDARD;
+ *   STARTUPHOOK = TRUE;
+ *   ERRORHOOK = TRUE;
+ *   SHUTDOWNHOOK = TRUE;
+ *   PRETASKHOOK = FALSE;
+ *   POSTTASKHOOK = FALSE;
+ *   USEGETSERVICEID = FALSE;
+ *   USEPARAMETERACCESS = FALSE;
+ *   USERESSCHEDULER = TRUE;
+ * };
  *
- * See http://www.altium.com/files/AltiumDesigner6/LearningGuides/GU0102%20TSK51x%20TSK52x%20RTOS.pdf
- *
- * Yes. SendMessage()
- *
+ * OS_SC1 | OS_SC2 | OS_SC3 | OS_SC4
+ * OS_STACK_MONITORING
+ * OS_STATUS_EXTENDED  / OS_STATUS_STANDARD
+ * OS_USE_GET_SERVICE_ID
+ * OS_USE_PARAMETER_ACCESS
+ * OS_RES_SCHEDULER
  * */
-
-typedef enum message_property_e {
-	// ???
-	SEND_STATIC_INTERNAL,
-	// messages are not consumed during read
-	RECEIVE_UNQUEUED_INTERNAL,
-	// We have an internal queue
-	RECEIVE_QUEUE_INTERNAL,
-} message_property_t;
-
-
-
-typedef enum message_notification_action_e {
-	MESSAGE_NOTIFICATION_ACTION_NONE=0,
-	MESSAGE_NOTIFICATION_ACTION_ACTIVATETASK,
-	MESSAGE_NOTIFICATION_ACTION_SETEVENT,
-} message_notification_action_t;
-
-typedef struct message_notification_s {
-	message_notification_action_t type;
-	TaskType 			task_id;
-	EventMaskType 		event_id;
-} message_notification_t;
-
-
-typedef struct message_obj_s {
-	message_property_t		property;		// send/recieve...
-	int 					q_size; 		// 0-Not queued
-	message_notification_t 	notification;
-	// TODO: This is not a good solution but it will have to do for now
-	void *data;
-	int data_size;
-} message_obj_t;
-
-
-/* OsTask/OsTaskSchedule */
-enum OsTaskSchedule {
-	FULL,
-	NON
-};
-
-/*-----------------------------------------------------------------*/
-
-typedef uint8_t proc_type_t;
-
-#define PROC_PRIO		0x1
-#define PROC_BASIC		0x1
-#define PROC_EXTENDED	0x3
-
-#define PROC_ISR		0x4
-#define PROC_ISR1		0x4
-#define PROC_ISR2		0xc
-
-
-typedef struct {
-	void   		*curr;	// Current stack ptr( at swap time )
-	void   		*top;	// Top of the stack( low address )
-	uint32		size;	// The size of the stack
-} stack_t;
-
-typedef struct rom_app_s {
-	uint32 	application_id;
-	char 	name[16];
-	uint8	trusted;
-
-	/* hooks */
-	void (*StartupHook)( void );
-	void (*ShutdownHook)( Std_ReturnType Error );
-	void (*ErrorHook)( Std_ReturnType Error );
-
-	uint32 isr_mask;
-	uint32 scheduletable_mask;
-	uint32 alarm_mask;
-	uint32 counter_mask;
-	uint32 resource_mask;
-	uint32 message_mask;
-
-} rom_app_t;
-
-/*-----------------------------------------------------------------*/
-
-typedef struct lockingtime_obj_s {
-	char id[16];
-	int resource;
-	int resource_clock_time;
-	int all_interrupt_clock_time;
-	int os_interrupt_clock_time;
-	int locking_type;
-} lockingtime_obj_t;
 
 
 typedef enum {
-	// the normal behaviour
+	/* External resource */
 	RESOURCE_TYPE_STANDARD,
-	// ??
+	/* ?? */
 	RESOURCE_TYPE_LINKED,
-	// Used for grouping tasks
+	/* Internal resource */
 	RESOURCE_TYPE_INTERNAL
-} resource_type_t;
+} OsResourceTypeType;
 
 typedef struct  {
-	resource_type_t type;
-	// used only if type is RESOURCE_TYPE_LINKED
+
+	OsResourceTypeType type;
+	/* used only if type is RESOURCE_TYPE_LINKED */
 	ResourceType    linked_resource;
-} resource_property_t;
+} OsResourcePropertyType;
 
 /*-----------------------------------------------------------------*/
-typedef struct resource_obj_s {
+typedef struct OsResource {
 	char id[16];
 	// The running number, starting at RES_SCHEDULER=0
 	int nr;
@@ -183,35 +94,22 @@ typedef struct resource_obj_s {
 	// Owner of the resource...
 	TaskType owner;
 
-	resource_type_t type;
+	OsResourceTypeType type;
 	// used only if type is RESOURCE_TYPE_LINKED
 	ResourceType    linked_resource;
 
 	/* List of resources for each task. */
-	TAILQ_ENTRY(resource_obj_s) listEntry;
+	TAILQ_ENTRY(OsResource) listEntry;
 
-} resource_obj_t;
+} OsResourceType;
 
 typedef enum {
 	LOCK_TYPE_RESOURCE,
 	LOCK_TYPE_INTERRUPT,
-} lock_type_t;
+} OsLocktypeType;
 
-/*
-typedef struct {
-	ResourceType resource;
-	uint64 locktime;
-} resource_locktime_t;
-
-typedef struct {
-	uint64 all;
-	uint64 os;
-} interrupt_locktime_t;
-*/
-
-typedef struct lockingtime_s {
-//	lock_type_t type;
-	lock_type_t type;
+typedef struct OsLockingtime {
+	OsLocktypeType type;
 	union {
 		struct {
 			ResourceType id;
@@ -223,12 +121,9 @@ typedef struct lockingtime_s {
 			uint64 os;
 		} interrupt;
 	} u;
-//		resource_locktime_t resource;
-//		interrupt_locktime_t interrupt;
-//	} locktime;
-} lockingtime_t;
+} OsLockingtimeType;
 
-typedef struct timing_protection_s {
+typedef struct OsTimingProtection {
 	// ROM, worst case execution budget in ns
 	uint64	execution_budget;
 	// ROM, the frame in ns that timelimit may execute in.
@@ -236,98 +131,19 @@ typedef struct timing_protection_s {
 	// ROM, time in ns that the task/isr may with a timeframe.
 	uint64 timelimit;
 	// ROM, resource/interrupt locktimes
-	lockingtime_t *lockingtime;
-
-//	interrupt_locktime_t interrupt_locktime;
-	// ROM, resource lock times
-//	const resource_locktime_t *resource_locktime_list;
-//	lockingtime_t *lockingtime;
-} timing_protection_t;
+	OsLockingtimeType *lockingtime;
+} OsTimingProtectionType;
 
 
-/*-----------------------------------------------------------------*/
-
-typedef struct rom_pcb_s {
-	TaskType	 	pid;
-	uint8		 	prio;
-	uint32			app_mask;
-	void 			(*entry)();
-	proc_type_t  	proc_type;
-	uint8	 	 	autostart;
-	stack_t 	 	stack;
-	int				vector; 				// ISR
-	ApplicationType application_id;
-	char 		 	name[16];
-	enum OsTaskSchedule scheduling;
-	uint32_t 		resourceAccess;
-//	uint64			execution_budget;
-//	uint32			count_limit;
-//	uint64			time_limit;
-	// pointer to internal resource
-	// NULL if none
-	resource_obj_t	*resource_int_p;
-	timing_protection_t	*timing_protection;
-//	lockingtime_obj_t
-} rom_pcb_t;
-
+#include "counter_i.h"
+#include "alarm_i.h"
+#include "sched_table_i.h"
+#include "application.h"
+#include "pcb.h"
+#include "sys.h"
 
 /*-----------------------------------------------------------------*/
 
-typedef struct sched_action_s {
-	int   			type;  		// 0 - activate task, 1 - event
-	uint64 			offset;  	// for debug only???
-	uint64    		delta;   	// delta to next action
-	TaskType 		task_id;
-	EventMaskType event_id;		// used only if event..
-} sched_action_t;
-
-/*-----------------------------------------------------------------*/
-
-
-/*
-
-typedef enum message_type_e {
-	// ???
-	SEND_STATIC_INTERNAL,
-	// messages are not consumed during read
-	RECEIVE_UNQUEUED_INTERNAL,
-	// We have an internal queue
-	RECEIVE_QUEUE_INTERNAL,
-} message_type_t;
-*/
-
-#if 0
-typedef struct message_obj_s {
-	char name[16];
-	message_type_t type;
-	void *
-	char name[16];
-	uint32 	accessingapplications_mask;
-	// TODO:  Below types are NOT OK !!!!!!!
-	void*	cdatatype;
-	void*	initialvalue;
-	uint32 	queuesize;
-	message_property_t messageproperty;
-	void *	callbackroutine;
-	uint32 	callbackMessage;
-	void*	flagname;
-	uint32 	notification;
-
-} message_obj_t;
-#endif
-
-
-
-/*-----------------------------------------------------------------*/
-
-
-typedef struct memory_s {
-	uint32_t flags;
-	/* ptr to start of memory region */
-	void  	*start;
-	/* size in bytes */
-	uint32_t size;
-} memory_t;
 
 /*-----------------------------------------------------------------*/
 /*
@@ -335,28 +151,26 @@ typedef struct memory_s {
  *
  */
 
-#define OS_DBG_MASTER_PRINT			(1<<0)
-#define OS_DBG_ISR_MASTER_PRINT		(1<<1)
+#define OS_DBG_MASTER_PRINT		(1<<0)
+#define OS_DBG_ISR_MASTER_PRINT	(1<<1)
 #define OS_DBG_STDOUT				(1<<2)
 #define OS_DBG_ISR_STDOUT			(1<<3)
 
 // Enable print dbg_XXXX (not dbg_isr_XXX though)
-#define D_MASTER_PRINT			(1<<0)
+#define D_MASTER_PRINT				(1<<0)
 // Enable print for all dbg_isr_XXX
-#define D_ISR_MASTER_PRINT		(1<<1)
+#define D_ISR_MASTER_PRINT			(1<<1)
 // print to STDOUT. If not set it prints to ramlog
-#define D_STDOUT				(1<<2)
-#define D_RAMLOG				0
+#define D_STDOUT					(1<<2)
+#define D_RAMLOG					0
 // print to STDOUT, If not set print to ramlog
-#define D_ISR_STDOUT			(1<<3)
-#define D_ISR_RAMLOG			0
+#define D_ISR_STDOUT				(1<<3)
+#define D_ISR_RAMLOG				0
 
 #define D_TASK						(1<<16)
-#define D_ALARM						(1<<18)
+#define D_ALARM					(1<<18)
 
-#define OS_DBG_TASK					(1<<16)
+#define OS_DBG_TASK				(1<<16)
 #define OS_DBG_ALARM				(1<<18)
-
-
 
 #endif /* KERNEL_H_ */
