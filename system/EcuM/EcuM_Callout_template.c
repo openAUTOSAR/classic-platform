@@ -50,6 +50,9 @@
 #if defined(USE_PWM)
 #include "Pwm.h"
 #endif
+#if defined(USE_IOHWAB)
+#include "IoHwAb.h"
+#endif
 
 void EcuM_AL_DriverInitZero()
 {
@@ -159,6 +162,11 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 #if defined(USE_COM)
 	// Setup COM layer
 	Com_Init(ConfigPtr->ComConfig);
+#endif
+	
+#if defined(USE_IOHWAB)
+	// Setup IO Hardware Abstraction
+	IoHwAb_Init();
 #endif
 
 #if defined(USE_DEM)

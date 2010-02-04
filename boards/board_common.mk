@@ -132,6 +132,9 @@ inc-$(USE_PDUR) += $(ROOTDIR)/communication/PduR
 inc-$(USE_COM) += $(ROOTDIR)/communication/PduR
 vpath-$(USE_PDUR) += $(ROOTDIR)/communication/PduR
 
+# IO Hardware Abstraction
+obj-$(USE_IOHWAB) += IoHwAb.o
+
 #Dem
 obj-$(USE_DEM) += Dem.o
 obj-$(USE_DEM) += Dem_LCfg.o
