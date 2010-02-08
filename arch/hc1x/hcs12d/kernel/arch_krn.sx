@@ -1,0 +1,105 @@
+
+
+#define _ASSEMBLER_
+#include "kernel_offset.h"
+//#include "arch_offset.h"
+//#include "stack.h"
+
+.extern os_sys
+
+	.section .text
+
+ 	.global Irq_Handler
+    .type	Irq_Handler, %function
+
+#define IRQ_ENABLE() 		cpsie 	i
+#define IRQ_DISABLE()		cpsid 	i
+
+Irq_Handler:
+/*
+    push    {r4-r8,r10,r11,lr}
+    sub.w   sp,sp,#C_SIZE
+    mov.w   r4,#LC_PATTERN
+    str     r4,[sp,#C_CONTEXT_OFFS]
+    mov 	r0,sp			// stack as first arg
+    bl      Irq_Entry
+    mov     sp, r0			// pop from returned stack
+    b 		os_lc_restore
+*/
+
+/* r0 - pcb for old task
+ * r1 pcb for new task
+ *
+ * -------------- higher addr
+ * r4-r8,etc
+ * -------
+ * 4 - Large or Small context indicator
+ * 0 - ?
+ * ----------    <- JABBA
+ *
+ */
+ 	.global Os_ArchSwapContext
+ 	.type	Os_ArchSwapContext, %function
+Os_ArchSwapContext:
+/*
+//    mov     r2, sp
+    push    {r4-r8,r10,r11,lr}
+
+    // Store c-frame
+    sub.w   sp,sp,#C_SIZE
+
+    mov.w   r4,#SC_PATTERN
+    str     r4,[sp,#C_CONTEXT_OFFS]
+//    str     r2,[sp,#C_SP_OFF]
+	// ---> We have saved NVGPR+C
+
+    // store old stack for old task
+    mov.w	r4,sp
+    str     r4,[r0,#PCB_STACK_CURR_P]
+*/
+// R1 - new PCB
+	.global Os_ArchSwapContextTo
+	.type	Os_ArchSwapContextTo, %function
+Os_ArchSwapContextTo:
+/*
+    // Get stack for new task
+    ldr 	r2,[r1,#PCB_STACK_CURR_P]
+//    msr		msp,r2
+    mov.w 	sp,r2
+
+
+// TODO: Fix this for all arch's..call pre,post hooks. Done here or after?
+// Set new current pcb
+    ldr     r5,= os_sys
+    str     r1,[r5,#SYS_CURR_PCB_P]
+
+// Restore C context
+    ldr     r6,[sp,#C_CONTEXT_OFFS]
+    cmp     r6,#SC_PATTERN
+    beq     os_sc_restore
+    cmp     r6,#LC_PATTERN
+    beq     os_lc_restore
+*/
+os_stack_problem:
+// TODO: Jump to error handler
+//    b os_stack_problem
+
+os_sc_restore:
+/*
+    add.w   sp,sp,#C_SIZE
+
+    pop     {r4-r8,r10,r11,lr}
+        // ehh, we are in handler mode so a bx instruction works here
+    IRQ_ENABLE()
+    bx      lr
+*/
+os_lc_restore:
+/*
+    add.w   sp,sp,#C_SIZE
+    pop     {r4-r8,r10,r11,lr}
+    // ehh, we are in handler mode so a bx instruction works here
+    IRQ_ENABLE()
+    bx      lr
+*/
+
+

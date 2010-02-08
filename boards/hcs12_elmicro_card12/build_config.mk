@@ -1,0 +1,15 @@
+
+# ARCH defines
+ARCH=hcs12d
+ARCH_FAM=hc1x
+ARCH_MCU=MC912DG128A
+
+# CFG (y/n) macros
+CFG=HC1X HCS12D MC912DG128A BRD_HCS12_ELMICRO_CARD12 SIMULATOR
+
+# What buildable modules does this board have, 
+# default or private
+MOD_AVAIL=KERNEL MCU T32_TERM WINIDEA_TERM SIMPLE_PRINTF
+
+# Needed by us
+MOD_USE=KERNEL MCU

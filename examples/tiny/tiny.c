@@ -16,6 +16,7 @@
 
 #include "Os.h"
 #include "Mcu.h"
+#include "arc.h"
 
 #define USE_DEBUG
 #include "Trace.h"

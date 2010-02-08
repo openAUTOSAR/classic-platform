@@ -24,7 +24,7 @@
 /**
  * Init of free running timer.
  */
-void Frt_Init( void ) {
+void Os_SysTickInit( void ) {
 	TaskType tid;
 	tid = Os_Arc_CreateIsr(OsTick,6/*prio*/,"OsTick");
 	Irq_AttachIsr2(tid,NULL, SysTick_IRQn);
@@ -37,7 +37,7 @@ void Frt_Init( void ) {
  *
  */
 
-void Frt_Start(uint32_t period_ticks) {
+void Os_SysTickStart(uint32_t period_ticks) {
 
 	SysTick_Config(period_ticks);
 
@@ -62,7 +62,7 @@ void Frt_Start(uint32_t period_ticks) {
  * @return
  */
 
-uint32_t Frt_GetTimeElapsed( void )
+uint32_t Os_SysTickGetTimeElapsed( void )
 {
 	return (SysTick->VAL);
 }

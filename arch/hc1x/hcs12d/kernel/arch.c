@@ -1,0 +1,58 @@
+/* -------------------------------- Arctic Core ------------------------------
+ * Arctic Core - the open source AUTOSAR platform http://arccore.com
+ *
+ * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
+ *
+ * This source code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ * -------------------------------- Arctic Core ------------------------------*/
+
+#include "internal.h"
+#include "context.h"
+
+/**
+ * Function make sure that we switch to supervisor mode(rfi) before
+ * we call a task for the first time.
+ */
+
+void os_arch_first_call( void )
+{
+	// TODO: make switch here... for now just call func.
+	Irq_Enable();
+	os_sys.curr_pcb->entry();
+}
+
+void *Os_ArchGetStackPtr( void ) {
+
+//	return (void *)__get_MSP();
+}
+
+unsigned int Os_ArchGetScSize( void ) {
+	return SC_SIZE;
+}
+
+
+void os_arch_setup_context( OsPcbType *pcb ) {
+	// TODO: Add lots of things here, see ppc55xx
+	uint32_t *context = (uint32_t *)pcb->stack.curr;
+	context[C_CONTEXT_OFFS/4] = SC_PATTERN;
+
+	/* Set LR to start function */
+	if( pcb->proc_type == PROC_EXTENDED ) {
+		context[VGPR_LR_OFF/4] = (uint32_t)Os_TaskStartExtended;
+	} else if( pcb->proc_type == PROC_BASIC ) {
+		context[VGPR_LR_OFF/4] = (uint32_t)Os_TaskStartBasic;
+	}
+	os_arch_stack_set_endmark(pcb);
+// os_arch_setup_context_asm(pcb->stack.curr,NULL);
+}
+
+void os_arch_init( void ) {
+	// nothing to do here, yet :)
+}

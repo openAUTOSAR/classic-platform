@@ -21,7 +21,7 @@
 /**
  * Init of free running timer.
  */
-void Frt_Init( void ) {
+void Os_SysTickInit( void ) {
 	TaskType tid;
 	tid = Os_Arc_CreateIsr(OsTick,6/*prio*/,"OsTick");
 	Irq_AttachIsr2(tid,NULL,7);
@@ -34,7 +34,7 @@ void Frt_Init( void ) {
  *                     on PowerPC often driver by the CPU clock or some platform clock.
  *
  */
-void Frt_Start(uint32_t period_ticks) {
+void Os_SysTickStart(uint32_t period_ticks) {
 	uint32_t tmp;
 
 	// Enable the TB
@@ -65,7 +65,7 @@ void Frt_Start(uint32_t period_ticks) {
  */
 
 /** @req OS383 */
-uint32_t Frt_GetTimeElapsed( void )
+uint32_t Os_SysTickGetTimeElapsed( void )
 {
 	uint32_t timer = get_spr(SPR_DECAR) - get_spr(SPR_DEC);
 	return (timer);

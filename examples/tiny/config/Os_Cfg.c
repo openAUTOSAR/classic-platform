@@ -30,17 +30,8 @@ OsTickType OsTickFreq = 1000;
 // atleast 1
 #define SERVICE_CNT 1
 
-GEN_TRUSTEDFUNCTIONS_LIST
-
 //--- APPLICATIONS ----
 
-GEN_APPLICATION_HEAD {
-
-	GEN_APPLICATON(	0,
-					"application_1",
-					true,
-					NULL,NULL,NULL , 0,0,0,0,0,0 )
-};
 
 // --- RESOURCES ---
 

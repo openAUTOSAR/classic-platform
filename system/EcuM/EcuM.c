@@ -102,7 +102,7 @@ void EcuM_StartupTwo()
 
 #if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
 	// Start timer to wait for NVM job to complete
-	timer = Frt_GetTimeElapsed();
+	timer = Os_SysTickGetTimeElapsed();
 #endif
 
 	// Prepare the system to startup RTE
@@ -112,7 +112,7 @@ void EcuM_StartupTwo()
 
 #if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
 	// Wait for the NVM job to terminate
-	while(Frt_GetTimeElapsed()-timer < internal_data.config.EcuMNvramReadAllTimeout)
+	while(Os_SysTickGetTimeElapsed()-timer < internal_data.config.EcuMNvramReadAllTimeout)
 	{
 		//TODO
 	}

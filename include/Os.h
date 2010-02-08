@@ -273,9 +273,9 @@ typedef struct OsDriver_s {
  * Free running timer
  *-----------------------------------------------------------------*/
 typedef const uint32 OsTickType;
-void Frt_Init( void );
-void Frt_Start(uint32_t period_ticks);
-uint32_t Frt_GetTimeElapsed( void );
+void Os_SysTickInit( void );
+void Os_SysTickStart(uint32_t period_ticks);
+uint32_t Os_SysTickGetTimeElapsed( void );
 
 /*-------------------------------------------------------------------
  * Counters

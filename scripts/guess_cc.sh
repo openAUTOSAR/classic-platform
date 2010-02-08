@@ -28,6 +28,8 @@ elif [ "$ARCH" == "ARM" ]; then
 	else
 	  echo No default path for $UNAME set. Quitting.
 	fi
+elif [ "$ARCH" == "HCS12" ]; then
+	COMPILER=/opt/m6812-elf/bin/m6812-elf-
 else
 	echo baaaad
 fi

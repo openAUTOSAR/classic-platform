@@ -294,8 +294,8 @@ StatusType GetElapsedCounterValue( CounterType counter_id, TickRefType val, Tick
 
 /*
  * The OsTick():
- * 1. The Decrementer is setup by Frt_Start(period_ticks)
- * 2. Frt_Init() setup INTC[7] to trigger OsTick
+ * 1. The Decrementer is setup by Os_SysTickStart(period_ticks)
+ * 2. Os_SysTickInit() setup INTC[7] to trigger OsTick
  * 3. OsTick() then increment counter os_tick_counter if used
  */
 

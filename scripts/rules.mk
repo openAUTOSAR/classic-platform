@@ -54,8 +54,9 @@ include $(ROOTDIR)/scripts/cc_$(COMPILER).mk
 include ../makefile
 
 inc-y += $(ROOTDIR)/include
-inc-$(CFG_PPC) += $(ROOTDIR)/include/ppc
-inc-$(CFG_ARM) += $(ROOTDIR)/include/arm
+#inc-$(CFG_PPC) += $(ROOTDIR)/include/ppc
+#inc-$(CFG_ARM) += $(ROOTDIR)/include/arm
+inc-y += $(ROOTDIR)/include/$(ARCH_FAM)
 
 .PHONY config:
 

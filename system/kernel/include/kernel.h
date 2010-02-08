@@ -167,10 +167,10 @@ typedef struct OsTimingProtection {
 #define D_ISR_STDOUT				(1<<3)
 #define D_ISR_RAMLOG				0
 
-#define D_TASK						(1<<16)
-#define D_ALARM					(1<<18)
+#define D_TASK						(1<<13)
+#define D_ALARM					(1<<14)
 
-#define OS_DBG_TASK				(1<<16)
-#define OS_DBG_ALARM				(1<<18)
+#define OS_DBG_TASK				(1<<13)
+#define OS_DBG_ALARM				(1<<14)
 
 #endif /* KERNEL_H_ */

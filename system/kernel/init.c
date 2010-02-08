@@ -230,8 +230,8 @@ static void os_start( void ) {
 	// Activate the systick interrupt
 	{
 		uint32_t sys_freq = McuE_GetSystemClock();
-		Frt_Init();
-		Frt_Start(sys_freq/OsTickFreq);
+		Os_SysTickInit();
+		Os_SysTickStart(sys_freq/OsTickFreq);
 	}
 
 	/* Find highest Autostart task */
