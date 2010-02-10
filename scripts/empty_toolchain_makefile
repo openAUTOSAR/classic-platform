@@ -1,0 +1,29 @@
+
+inc: all
+
+clean: all
+
+all:
+	@echo ""
+	@echo "***"
+	@echo "* You are building Arctic Core using the Empty Toolchain."
+	@echo "* This toolchain is designed to produce nothing, but to integrate well with Arctic Studio."
+	@echo "* "
+	@echo "* You are probably seeing this message for one of the following reasons:"
+	@echo "*       1. You are using the Arctic Studio 'Build All' command."
+	@echo "*          There is no harm in this. However, if you don't want to see this message, you can build just your own project"
+	@echo "*          by marking your project in the Project Explorer and using the 'Build Project' command instead."
+	@echo "* "
+	@echo "*       2. You have 'Build automatically' activated."
+	@echo "*          There is no harm in this either. Just deselect it in the Project menu to stop rebuilding on every save."
+	@echo "* "
+	@echo "*       3. Your workspace setup is wrong."
+	@echo "*          If you are developing an application for Arctic Core you should put all your code in a separate C-project."
+	@echo "*          This project should then reference the Arctic Core source code project. Please refer to"
+	@echo "*          http://arccore.com/wiki/Quick-start_Tutorial for instructions on setting up your workspace."
+	@echo "* "
+	@echo "* Arctic Studio keeps a separate console for each of the projects in the workspace. To view the log for another project"
+	@echo "* simply select that project in the Project Explorer."
+	@echo "* "
+	@echo "*** DONE"
+
