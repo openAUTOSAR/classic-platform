@@ -383,7 +383,7 @@ GEN_SCHEDULETABLE_HEAD {
 
 struct OsHooks os_conf_global_hooks = {
 		.StartupHook = StartupHook,
-#if (  OS_SC2 == STD_ON ) || ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
+#if (  OS_SC2 == STD_ON ) || ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
 		.ProtectionHook = ProtectionHook,
 #endif
 		.ShutdownHook = ShutdownHook,

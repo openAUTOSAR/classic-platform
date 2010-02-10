@@ -27,7 +27,7 @@
 // +1 here.. easy to have a reference..
 #define GEN_TRUSTEDFUNCTIONS_LIST trusted_func_t os_cfg_trusted_list[SERVICE_CNT];
 
-#define GEN_APPLICATION_HEAD OsRomApplicationType rom_app_list[] =
+#define GEN_APPLICATION_HEAD const OsRomApplicationType rom_app_list[] =
 
 #define GEN_APPLICATON(	_id,_name,_trusted,_startuphook,_shutdownhook, \
 						_errorhook,_isr_mask,_scheduletable_mask, _alarm_mask, \
@@ -321,6 +321,7 @@
 }
 
 #if (  OS_SC3 == STD_ON) || (  OS_SC4 == STD_ON)
+#error BEPA
 #define GEN_HOOKS( _startup, _protection, _shutdown, _error, _pretask, _posttask ) \
 struct OsHooks os_conf_global_hooks = { \
 		.StartupHook = _startup, 		\

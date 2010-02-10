@@ -57,6 +57,8 @@ obj-$(USE_PORT) += Port_Cfg.o
 obj-$(USE_ADC) += Adc.o
 obj-$(USE_ADC) += Adc_Cfg.o
 
+# Include the kernel
+include $(ROOTDIR)/system/kernel/makefile
 
 # Spi
 obj-$(USE_SPI) += Spi.o
@@ -170,8 +172,6 @@ VPATH += $(ROOTDIR)/common
 
 obj-y += newlib_port.o
 obj-y += $(obj-y-y)
-
-#def-y += CC_KERNEL
 
 vpath-y += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
 vpath-y += $(ROOTDIR)/$(ARCH_PATH-y)/drivers

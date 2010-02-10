@@ -15,9 +15,9 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include "os_config_macros.h"
 #include "Platform_Types.h"
 #include "Os.h"				// includes Os_Cfg.h
+#include "os_config_macros.h"
 #include "kernel.h"
 #include "kernel_offset.h"
 #include "alist_i.h"

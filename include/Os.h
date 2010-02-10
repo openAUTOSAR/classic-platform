@@ -24,9 +24,7 @@
 
 #include <assert.h>
 #include "Std_Types.h"
-#if !defined(CC_KERNEL)
 #include "Os_Cfg.h"
-#endif
 #include "MemMap.h"
 #include "Cpu.h"
 

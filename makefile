@@ -48,7 +48,7 @@ endif
 USE_T32_SIM?=n
 export USE_T32_SIM
 
-override BDIR := system/kernel ${BDIR} 
+# override BDIR := system/kernel ${BDIR} 
 
 # Tools
 # Ugly thing to make things work under cmd.exe 
@@ -63,10 +63,10 @@ export objdir = obj_$(BOARDDIR)
 .PHONY: help
 help:
 	@echo "Make kernel and a simple example"
-	@echo "  > make BOARDDIR=mpc551xsim CROSS_COMPILE=/opt/powerpc-eabi/bin/powerpc-eabi- BDIR=system/kernel,examples/simple all"
+	@echo "  > make BOARDDIR=mpc551xsim CROSS_COMPILE=/opt/powerpc-eabi/bin/powerpc-eabi- BDIR=examples/simple all"
 	@echo ""
 	@echo "Save the config (CROSS_COMPILE and BDIR)"
-	@echo "  > make BOARDDIR=mpc551xsim CROSS_COMPILE=/opt/powerpc-eabi/bin/powerpc-eabi- BDIR=system/kernel,examples/simple save"
+	@echo "  > make BOARDDIR=mpc551xsim CROSS_COMPILE=/opt/powerpc-eabi/bin/powerpc-eabi- BDIR=examples/simple save"
 	@echo ""
 	@echo "Clean"
 	@echo "  > make clean"

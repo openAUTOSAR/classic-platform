@@ -78,7 +78,7 @@ typedef sint8 OsPriorityType;
  * */
 
 typedef struct OsHooks {
-#if (  OS_SC2 == STD_ON ) || ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
+#if (  OS_SC2 == STD_ON ) || ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
 	ProtectionHookType 	ProtectionHook;
 #endif
 	StartupHookType 	StartupHook;
@@ -178,13 +178,13 @@ typedef struct OsPcb {
 /*-----------------------------------------------------------------*/
 
 typedef struct OsRomPcb {
-	TaskType	 	pid;
-	uint8		 	prio;
+	OsTaskidType	pid;
+	OsPriorityType	prio;
 	uint32			app_mask;
 	void 			(*entry)();
 	proc_type_t  	proc_type;
 	uint8	 	 	autostart;
-	OsStackType 	 	stack;
+	OsStackType 	stack;
 	int				vector; 				// ISR
 	ApplicationType application_id;
 	char 		 	name[16];

@@ -127,7 +127,7 @@ $(build-hex-y): $(build-exe-y)
 	$(Q)$(CROSS_COMPILE)objcopy -O ihex $< $@
 
 # Could use readelf -S instead of parsing the *.map file.
-$(build-exe-y): $(obj-y) $(sim-y) $(libitem-y) $(ldcmdfile-y)
+$(build-exe-y): $(dep-y) $(obj-y) $(sim-y) $(libitem-y) $(ldcmdfile-y)
 	@echo "  >> LD $@"
 	$(Q)$(LD) $(LDFLAGS) -T $(ldcmdfile-y) -o $@ $(libpath-y) --start-group $(obj-y) $(lib-y) $(libitem-y) --end-group $(LDMAPFILE)
 	@echo "Image size: (decimal)"
