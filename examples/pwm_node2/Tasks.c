@@ -27,7 +27,6 @@
 #include <assert.h>
 #include "Trace.h"
 #include "Com.h"
-#include "Adc.h"
 #include "pwm_node2_helpers.h"
 
 void OsIdle( void ) {
@@ -40,7 +39,7 @@ void ComTask( void ) {
 	Com_MainFunctionTx();
 	Com_MainFunctionRx();
 
-	can_node_receive();
+	pwm_node2_receive();
 }
 
 /*
