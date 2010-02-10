@@ -13,12 +13,12 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** @addtogroup EcuM ECU State Manager
+ *  @{ */
 
-
-
-
-
-
+/** @file EcuM.h
+ * API and type definitions for ECU State Manager.
+ */
 
 #ifndef ECUM_H_
 #define ECUM_H_
@@ -29,7 +29,8 @@
 #include "ComStack_Types.h"
 #endif
 
-// Error codes produced by this module
+/** @name Error Codes */
+//@{
 #define ECUM_E_NOT_INITIATED (0x10)
 #define ECUM_E_SERVICE_DISABLED (0x11)
 #define ECUM_E_NULL_POINTER (0x12)
@@ -38,8 +39,10 @@
 #define ECUM_E_MISMATCHED_RUN_RELEASE (0x15)
 #define ECUM_E_STATE_PAR_OUT_OF_RANGE (0x16)
 #define ECUM_E_UNKNOWN_WAKEUP_SOURCE (0x17)
+//@}
 
-// Service ID in this module
+/** @name Service id's */
+//@{
 #define ECUM_GETSTATE_ID (0x07)
 #define ECUM_SELECTAPPMODE_ID (0x0f)
 #define ECUM_GETAPPMODE_ID (0x11)
@@ -47,6 +50,7 @@
 #define ECUM_GET_BOOTARGET_ID (0x13)
 #define ECUM_MAINFUNCTION_ID (0x18)
 
+/** Possible states */
 typedef enum {
 	ECUM_STATE_APP_RUN = 0x32,
 	ECUM_STATE_SHUTDOWN = 0x40,
@@ -75,32 +79,32 @@ typedef enum {
 typedef uint8 EcuM_UserType;
 
 enum {
-	//	Internal reset of µC (bit 2)
-	//	The internal reset typically only resets the µC
-	//	core but not peripherals or memory
-	//	controllers. The exact behavior is hardware
-	//	specific.
-	//	This source may also indicate an unhandled
-	//	exception.
+	/** Internal reset of µC (bit 2).
+	 *  The internal reset typically only resets the µC
+	 *  core but not peripherals or memory
+	 *  controllers. The exact behavior is hardware
+	 *  specific.
+	 *  This source may also indicate an unhandled
+	 *  exception. */
 	ECUM_WKSOURCE_INTERNAL_RESET = 0x04,
 
-	//	Reset by external watchdog (bit 4), if
-	//	detection supported by hardware
+	/** Reset by external watchdog (bit 4), if
+	 *  detection supported by hardware */
 	ECUM_WKSOURCE_EXTERNAL_WDG = 0x10,
 
-	// Reset by internal watchdog (bit 3)
+	/** Reset by internal watchdog (bit 3) */
 	ECUM_WKSOURCE_INTERNAL_WDG = 0x08,
 
-	// Power cycle (bit 0)
+	/** Power cycle (bit 0) */
 	ECUM_WKSOURCE_POWER = 0x01,
 
-	// ~0 to the power of 29
+	/** ~0 to the power of 29 */
 	ECUM_WKSOURCE_ALL_SOURCES = 0x3FFFFFFF,
 
-	// Hardware reset (bit 1).
-	// If hardware cannot distinguish between a
-	// power cycle and a reset reason, then this
-	// shall be the default wakeup source
+	/** Hardware reset (bit 1).
+	 *  If hardware cannot distinguish between a
+	 *  power cycle and a reset reason, then this
+	 *  shall be the default wakeup source */
 	ECUM_WKSOURCE_RESET = 0x02,
 };
 
@@ -108,23 +112,23 @@ typedef uint32 EcuM_WakeupSourceType;
 
 typedef enum
 {
-	ECUM_WKSTATUS_NONE = 0, // No pending wakeup event was detected
-	ECUM_WKSTATUS_PENDING = 1, // The wakeup event was detected but not yet validated
-	ECUM_WKSTATUS_VALIDATED = 2, // The wakeup event is valid
-	ECUM_WKSTATUS_EXPIRED = 3, // The wakeup event has not been validated and has expired therefore
+	ECUM_WKSTATUS_NONE = 0,        /**< No pending wakeup event was detected */
+	ECUM_WKSTATUS_PENDING = 1,     /**< The wakeup event was detected but not yet validated */
+	ECUM_WKSTATUS_VALIDATED = 2,   /**< The wakeup event is valid */
+	ECUM_WKSTATUS_EXPIRED = 3,     /**< The wakeup event has not been validated and has expired therefore */
 } EcuM_WakeupStatusType;
 
 typedef enum
 {
-	ECUM_WWKACT_RUN = 0, // Initialization into RUN state
-	ECUM_WKACT_TTII = 2, // Execute time triggered increased inoperation protocol and shutdown
-	ECUM_WKACT_SHUTDOWN = 3, // Immediate shutdown
+	ECUM_WWKACT_RUN = 0,       /**< Initialization into RUN state */
+	ECUM_WKACT_TTII = 2,       /**< Execute time triggered increased inoperation protocol and shutdown */
+	ECUM_WKACT_SHUTDOWN = 3,   /**< Immediate shutdown */
 } EcuM_WakeupReactionType;
 
 typedef enum
 {
-	ECUM_BOOT_TARGET_APP = 0, // The Ecu will boot into the application
-	ECUM_BOOT_TARGET_BOOTLOADER = 1, // The Ecu will boot into the bootloader
+	ECUM_BOOT_TARGET_APP = 0,          /**< The Ecu will boot into the application */
+	ECUM_BOOT_TARGET_BOOTLOADER = 1,   /**< The Ecu will boot into the bootloader */
 } EcuM_BootTargetType;
 
 
@@ -184,3 +188,4 @@ void EcuM_OnGoOffTwo( void );
 void EcuM_AL_SwitchOff( void );
 
 #endif /*ECUM_H_*/
+/** @} */

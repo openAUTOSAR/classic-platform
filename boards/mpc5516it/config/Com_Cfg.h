@@ -14,10 +14,12 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
+/** @addtogroup Com COM module
+ *  @{ */
 
-
-
-
+/** @file Com_Cfg.h
+ * Definitions of configuration parameters for the COM module.
+ */
 
 
 #ifndef COM_CFG_H_
@@ -28,13 +30,18 @@
 
 #define COM_DEV_ERROR_DETECT
 
-
+/** Max number of I-PDUs allowed in the configuration. */
 #define COM_MAX_NR_IPDU 30
+/** Max number of signals allowed in the configuration. */
 #define COM_MAX_NR_SIGNAL 30
+/** Max number of group signals allowed in the configuration. */
 #define COM_MAX_NR_GROUPSIGNAL 30
 
+/** Max number of signals allowed per I-PDU. */
 #define COM_MAX_NR_SIGNALS_PER_IPDU 10
+/** Max number of signal groups allowed per I-PDU. */
 #define COM_MAX_NR_SIGNALGROUPS_PER_IPDU 10
+/** Max number of group signals allowd per signal group. */
 #define COM_MAX_NR_SIGNALS_PER_SIGNAL_GROUP 10
 
 
@@ -50,15 +57,11 @@
 
 #define CPU_ENDIANESS BIG_ENDIAN
 
-/*
- * ComGeneral pre-compile time configuration parameters.
- */
+
 #define ComConfigurationTimeBase
 #define ComConfigurationUseDet
 #define ComVersionInfoApi
 
 
-
-
-
 #endif /*COM_CFG_H_*/
+/** @} */

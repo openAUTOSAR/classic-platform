@@ -13,29 +13,30 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** @addtogroup Mcu MCU Driver
+ *  @{ */
 
-
-
-
-
-
+/** @file Mcu_Cfg.h
+ *  Definitions of configuration parameters for MCU Driver.
+ */
 
 #ifndef MCU_CFG_H_
 #define MCU_CFG_H_
 
 #include "mpc55xx.h"
 
+/** Enable Development Error Trace */
 #define MCU_DEV_ERROR_DETECT 	STD_ON
-// Preprocessor switch to enable / disable the use of the function
-// Mcu_PerformReset()
+/** Enable/disable the use of the function Mcu_PerformReset() */
 #define MCU_PERFORM_RESET_API 	STD_ON
-
+/** Build version info API */
 #define MCU_VERSION_INFO_API 	STD_ON
 
 #include "Std_Types.h"
 
 /* FMPLL modes( atleast in 5553/5554 ) */
 
+/** HW specific PLL modes */
 typedef enum {
 	MCU_FMPLL_BYPASS = 0,
 	MCU_FMPLL_EXTERNAL_REF,
@@ -43,6 +44,7 @@ typedef enum {
 	MCU_FMPLL_DUAL_CONTROLLER_MODE,
 } Mcu_FMPLLmode_t;
 
+/** Symbolic names for clock settings */
 typedef enum {
   MCU_CLOCKTYPE_EXT_REF_80MHZ = 0,
   MCU_CLOCKTYPE_EXT_REF_66MHZ,
@@ -52,91 +54,89 @@ typedef enum {
 	//MCU_CLOCKTYPE_DUAL_CONTROLLER_MODE,
 } Mcu_ClockType;
 
-
+/** Defines clock settings */
 typedef struct {
-	// This container defines a reference point in the Mcu Clock tree
-	// It defines the frequency which then can be used by other modules
-	// as an input value. Lower multiplicity is 1, as even in the
-	// simplest case (only one frequency is used), there is one
-	// frequency to be defined.
+	/** PLL input frequency for this clock setting. */
 	uint32 McuClockReferencePoint;
 
-  // Phase locked loop configuration parameters for MPC551x.
+  /** PLL configuration parameter for MPC551x. */
   uint8 PllEprediv;
+  /** PLL configuration parameter for MPC551x. */
   uint8 PllEmfd;
+  /** PLL configuration parameter for MPC551x. */
   uint8 PllErfd;
 } Mcu_ClockSettingConfigType;
 
+/** Not used */
 typedef struct {
-	// The parameter represents the MCU Mode settings
+	/** The parameter represents the MCU Mode settings */
 	uint32 McuMode;
 } Mcu_ModeSettingConfigType;
 
+/** Not used */
 typedef struct {
-	// This parameter shall represent the Data pre-setting to be initialized
+	/** This parameter shall represent the Data pre-setting to be initialized */
 	uint32 McuRamDefaultValue;
 
-	// This parameter shall represent the MCU RAM section base address
+	/** This parameter shall represent the MCU RAM section base address */
 	uint32 McuRamSectionBaseAddress;
 
-	// This parameter shall represent the MCU RAM Section size
+	/** This parameter shall represent the MCU RAM Section size */
 	uint32 McuRamSectionSize;
 
 } Mcu_RamSectorSettingConfigType;
 
 
-// This container defines a reference point in the Mcu Clock tree. It defines
-// the frequency which then can be used by other modules as an input value.
-// Lower multiplicity is 1, as even in the simplest case (only one frequency is
-// used), there is one frequency to be defined.
+/** Not used */
 typedef struct {
 
-	//	This is the frequency for the specific instance of the McuClockReference-
-	//	Point container. It shall be givn in Hz.
+	/** This is the frequency for the specific instance of the McuClockReference-
+	 *  Point container. It shall be given in Hz. */
 	uint32 McuClockReferencePointFrequency;
 
 } Mcu_ClockReferencePointType;
 
+/** Top level configuration container */
 typedef struct {
-	//	Enables/Disables clock failure notification. In case this feature is not supported
-	//	by HW the setting should be disabled.
+	/** Enables/Disables clock failure notification. In case this feature is not supported
+	 *  by HW the setting should be disabled. */
 	uint8	McuClockSrcFailureNotification;
 
-	//	This parameter shall represent the number of Modes available for the
-	//	MCU. calculationFormula = Number of configured McuModeSettingConf
+	/** This parameter shall represent the number of Modes available for the
+	 *  MCU. calculationFormula = Number of configured McuModeSettingConf */
 	uint8 McuNumberOfMcuModes;
 
-  //  This parameter shall represent the number of RAM sectors available for
-  //  the MCU. calculationFormula = Number of configured McuRamSectorSet-
-  //  tingConf
+  /** This parameter shall represent the number of RAM sectors available for
+   *  the MCU. calculationFormula = Number of configured McuRamSectorSet-
+   *  tingConf */
   uint8 McuRamSectors;
 
-  //  This parameter shall represent the number of clock setting available for
-  //  the MCU.
+  /** This parameter shall represent the number of clock setting available for
+   *  the MCU. */
   uint8 McuClockSettings;
 
-  // This parameter defines the default clock settings that should be used
-  // It is an index into the McuClockSettingsConfig
+  /** This parameter defines the default clock settings that should be used
+   *  It is an index into the McuClockSettingsConfig */
   Mcu_ClockType McuDefaultClockSettings;
 
-	//	This parameter relates to the MCU specific reset configuration. This ap-
-	//	plies to the function Mcu_PerformReset, which performs a microcontroller
-	//	reset using the hardware feature of the microcontroller.
+	/** This parameter relates to the MCU specific reset configuration. This ap-
+	 *  plies to the function Mcu_PerformReset, which performs a microcontroller
+	 *  reset using the hardware feature of the microcontroller. */
 	uint32 McuResetSetting;
 
-	//	This container contains the configuration (parameters) for the
-	//	Clock settings of the MCU. Please see MCU031 for more in-
-	//	formation on the MCU clock settings.
+	/** This container contains the configuration (parameters) for the
+	 *  Clock settings of the MCU. Please see MCU031 for more in-
+	 *  formation on the MCU clock settings. */
 	Mcu_ClockSettingConfigType * McuClockSettingConfig;
 
-	//	This container contains the configuration (parameters) for the
-	//	Mode setting of the MCU. Please see MCU035 for more information
-	//  on the MCU mode settings.
+	/** This container contains the configuration (parameters) for the
+	 *  Mode setting of the MCU. Please see MCU035 for more information
+	 *  on the MCU mode settings. */
 	Mcu_ModeSettingConfigType  *McuModeSettingConfig;
 
-	//	This container contains the configuration (parameters) for the
-	//	RAM Sector setting. Please see MCU030 for more information
-	//	on RAM sec-tor settings.
+	/** This container contains the configuration (parameters) for the
+	 *  RAM Sector setting. Please see MCU030 for more information
+	 *  on RAM sector settings. */
 	Mcu_RamSectorSettingConfigType *McuRamSectorSettingConfig;
 
 } Mcu_ConfigType;
@@ -146,3 +146,4 @@ extern const Mcu_ConfigType McuConfigData[];
 #define MCU_DEFAULT_CONFIG McuConfigData[0]
 
 #endif /*MCU_CFG_H_*/
+/** @} */

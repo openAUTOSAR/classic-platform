@@ -13,12 +13,12 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** @addtogroup Mcu MCU Driver
+ *  @{ */
 
-
-
-
-
-
+/** @file Mcu.h
+ * API and type definitions for MCU Driver.
+ */
 
 #ifndef MCU_H_
 #define MCU_H_
@@ -31,7 +31,8 @@
 #include "irq.h"
 //#include "mpc55xx_aos.h"
 
-/* Service ID's */
+/** @name Service id's */
+//@{
 #define MCU_INIT_SERVICE_ID                 0x00
 #define MCU_INITRAMSECTION_SERVICE_ID       0x01
 #define MCU_INITCLOCK_SERVICE_ID            0x02
@@ -43,18 +44,21 @@
 #define MCU_SETMODE_SERVICE_ID              0x08
 #define MCU_GETVERSIONINFO_SERVICE_ID       0x09
 #define MCU_INTCVECTORINSTALL_SERVICE_ID    0x0A // Not in spec but follows pattern
+//@}
 
-/* Development error codes */
+/** @name Error Codes */
+//@{
 #define MCU_E_PARAM_CONFIG                  0x0A
 #define MCU_E_PARAM_CLOCK                   0x0B
 #define MCU_E_PARAM_MODE                    0x0C
 #define MCU_E_PARAM_RAMSECTION              0x0D
 #define MCU_E_PLL_NOT_LOCKED                0x0E
 #define MCU_E_UNINIT                        0x0F
+//@}
 
 /* Specific return values */
-#define MCU_GETRESETRAWVALUE_NORESETREG_RV  0x00 // MCU006
-#define MCU_GETRESETRAWVALUE_UNINIT_RV      0xffffffff // MCU135
+#define MCU_GETRESETRAWVALUE_NORESETREG_RV  0x00 /**< MCU006 */
+#define MCU_GETRESETRAWVALUE_UNINIT_RV      0xffffffff /**< MCU135 */
 
 typedef enum {
 	MCU_PLL_LOCKED,
@@ -123,3 +127,4 @@ void McuE_DisableInterrupts(void);
 
 
 #endif /*MCU_H_*/
+/** @} */

@@ -13,30 +13,26 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** @addtogroup Det DET
+ *  @{ */
 
-
-
-
-
-
-
-/*
- * Development Error Tracer driver
- *
- * Specification: Autosar v2.0.1, Final
- *
+/** @file Det_Cfg.h
+ *  Definitions of configuration parameters for DET.
+ *  Specification: Autosar v2.0.1, Final
  */
+
 #ifndef _DET_CFG_H_
 #define _DET_CFG_H_
 
-#define DET_ENABLE_CALLBACKS STD_ON  // Enable to use callback on errors
-#define DET_USE_RAMLOG       STD_ON  // Enable to log DET errors to ramlog
-#define DET_WRAP_RAMLOG      STD_ON  // The ramlog wraps around when reaching the end
-#define DET_USE_STDERR       STD_ON // Enable to get DET errors on stderr
+#define DET_ENABLE_CALLBACKS STD_ON  /**< Enable to use callback on errors */
+#define DET_USE_RAMLOG       STD_ON  /**< Enable to log DET errors to ramlog */
+#define DET_WRAP_RAMLOG      STD_ON  /**< The ramlog wraps around when reaching the end */
+#define DET_USE_STDERR       STD_ON  /**< Enable to get DET errors on stderr */
 
-#define DET_DEINIT_API       STD_ON // Enable/Disable the Det_DeInit function
+#define DET_DEINIT_API       STD_ON  /**< Enable/Disable the Det_DeInit function */
 
-#define DET_RAMLOG_SIZE (32)        // Number of entries in ramlog
-#define DET_NUMBER_OF_CALLBACKS (5) // Number of callbacks
+#define DET_RAMLOG_SIZE (32)         /**< Number of entries in ramlog */
+#define DET_NUMBER_OF_CALLBACKS (5)  /**< Number of callbacks */
 
 #endif /*_DET_CFG_H_*/
+/** @} */

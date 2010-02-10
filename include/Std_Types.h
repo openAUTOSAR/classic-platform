@@ -13,13 +13,12 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** @addtogroup General General
+ *  @{ */
 
-
-
-
-
-
-
+/** @file Std_Types.h
+ *  Definitions of General types.
+ */
 
 #ifndef _STD_TYPES_H
 #define _STD_TYPES_H
@@ -51,20 +50,20 @@ typedef struct {
 	uint16 vendorID;
 	uint16 moduleID;
 	uint8  instanceID;
-	/* Vendor numbers */
-	uint8 sw_major_version;
-	uint8 sw_minor_version;
-	uint8 sw_patch_version;
-	/* Autosar spec. numbers */
-	uint8 ar_major_version;
-	uint8 ar_minor_version;
-	uint8 ar_patch_version;
+
+	uint8 sw_major_version;    /**< Vendor numbers */
+	uint8 sw_minor_version;    /**< Vendor numbers */
+	uint8 sw_patch_version;    /**< Vendor numbers */
+
+	uint8 ar_major_version;    /**< Autosar spec. numbers */
+	uint8 ar_minor_version;    /**< Autosar spec. numbers */
+	uint8 ar_patch_version;    /**< Autosar spec. numbers */
 } Std_VersionInfoType;
 
-/* make compare number... #if blabla > 10203  ( 1.2.3 ) */
+/** make compare number... #if version > 10203  ( 1.2.3 ) */
 #define STD_GET_VERSION (_major,_minor,_patch) (_major * 10000 + _minor * 100 + _patch)
 
-/* Non-standard macro */
+/** Create Std_VersionInfoType */
 #define STD_GET_VERSION_INFO(_vi,_module) \
 	((_vi)->vendorID =  _module ## _VENDOR_ID);\
 	((_vi)->moduleID = _module ## _MODULE_ID);\
@@ -81,34 +80,32 @@ typedef struct {
 #define STATUSTYPEDEFINED
 typedef enum {
 	E_OK = 0,
-	/* STD OSEK */
-	E_OS_ACCESS = 1,
-	E_OS_CALLEVEL = 2,
-	E_OS_ID	= 3,
-	E_OS_LIMIT = 4,
-	E_OS_NOFUNC = 5,
-	E_OS_RESOURCE = 6,
-	E_OS_STATE = 7,
-	E_OS_VALUE = 8,
+	E_OS_ACCESS = 1,               /**< STD OSEK */
+	E_OS_CALLEVEL = 2,             /**< STD OSEK */
+	E_OS_ID	= 3,                   /**< STD OSEK */
+	E_OS_LIMIT = 4,                /**< STD OSEK */
+	E_OS_NOFUNC = 5,               /**< STD OSEK */
+	E_OS_RESOURCE = 6,             /**< STD OSEK */
+	E_OS_STATE = 7,                /**< STD OSEK */
+	E_OS_VALUE = 8,                /**< STD OSEK */
 
-	/* AUTOSAR, see 7.10 */
-	E_OS_SERVICEID,
-	E_OS_RATE ,
-	E_OS_ILLEGAL_ADDRESS ,
-	E_OS_MISSINGEND ,
-	E_OS_DISABLEDINT ,
-	E_OS_STACKFAULT ,
-	E_OS_PROTECTION_MEMORY ,
-	E_OS_PROTECTION_TIME ,
-	E_OS_PROTECTION_LOCKED ,
-	E_OS_PROTECTION_EXCEPTION ,
-	E_OS_PROTECTION_RATE,
+	E_OS_SERVICEID,                /**< AUTOSAR, see 7.10 */
+	E_OS_RATE ,                    /**< AUTOSAR, see 7.10 */
+	E_OS_ILLEGAL_ADDRESS ,         /**< AUTOSAR, see 7.10 */
+	E_OS_MISSINGEND ,              /**< AUTOSAR, see 7.10 */
+	E_OS_DISABLEDINT ,             /**< AUTOSAR, see 7.10 */
+	E_OS_STACKFAULT ,              /**< AUTOSAR, see 7.10 */
+	E_OS_PROTECTION_MEMORY ,       /**< AUTOSAR, see 7.10 */
+	E_OS_PROTECTION_TIME ,         /**< AUTOSAR, see 7.10 */
+	E_OS_PROTECTION_LOCKED ,       /**< AUTOSAR, see 7.10 */
+	E_OS_PROTECTION_EXCEPTION ,    /**< AUTOSAR, see 7.10 */
+	E_OS_PROTECTION_RATE,          /**< AUTOSAR, see 7.10 */
 
 	/* COM.. TODO: move ?? */
 	E_COM_ID,
 
 
-	/* Implementation specific */
+	/** Implementation specific */
 	E_OS_SYS_APA,
 
 	E_NOT_OK,
@@ -138,3 +135,4 @@ typedef unsigned char StatusType;
 
 
 #endif
+/** @} */

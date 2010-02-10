@@ -13,44 +13,60 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** @addtogroup Can CAN Driver
+ *  @{ */
 
-
-
-
-
-
+/** @file Can_Cfg.h
+ * Definitions of configuration parameters for CAN Driver.
+ */
 
 #ifndef CAN_CFG_H_
 #define CAN_CFG_H_
 
-// Number of controller configs
+/** Number of controller configs. */
 #define CAN_ARC_CTRL_CONFIG_CNT   2
 
+/** Enable Development Error Trace. */
 #define CAN_DEV_ERROR_DETECT          STD_ON
+/** Build version info API. */
 #define CAN_VERSION_INFO_API          STD_ON
-#define CAN_MULTIPLEXED_TRANSMISSION  STD_ON    // Makes no differens in the code
-#define CAN_WAKEUP_SUPPORT            STD_OFF   // Not supported
-#define CAN_HW_TRANSMIT_CANCELLATION   STD_OFF  // Not supported
-
-// loop cnt.. very strange timeout
+/** Not supported. */
+#define CAN_MULTIPLEXED_TRANSMISSION  STD_OFF
+/** Not supported. */
+#define CAN_WAKEUP_SUPPORT            STD_OFF
+/** Not supported. */
+#define CAN_HW_TRANSMIT_CANCELLATION   STD_OFF
+/** Not supported. */
 #define CAN_TIMEOUT_DURATION          100
 
 #define INTERRUPT               0
 #define POLLING                 1
 
 // Can controller
+/** Bus off handling. Polling not supported */
 #define CAN_BUSOFF_PROCESSING         INTERRUPT  // INTERRUPT/POLLING
+/** Not supported. */
 #define CAN_CONTROLLER_ACTIVATION     OFF
+/** Not used. @see Can_ControllerConfigType */
 #define CAN_CONTROLLER_BAUD_RATE      125000
+/** Not used. @see CanControllerIdType */
 #define CAN_DRIVER_CONTROLLER_ID      0
+/** Not used. @see Can_ControllerConfigType */
 #define CAN_CONTROLLER_PROP_SEG       4
+/** Not used. @see Can_ControllerConfigType */
 #define CAN_CONTROLLER_PHASE1_SEG     4
+/** Not used. @see Can_ControllerConfigType */
 #define CAN_CONTROLLER_PHASE2_SEG     4
+/** Not used. @see Can_ControllerConfigType */
 #define CAN_CONTROLLER_TIME_QUANTA    4
+/** Rx handling. Polling not supported. */
 #define CAN_RX_PROCESSING             INTERRUPT
+/** Tx handling. Polling not supported. */
 #define CAN_TX_PROCESSING             INTERRUPT
+/** Wakeup handling. Polling not supported. */
 #define CAN_WAKEUP_PROCESSING         INTERRUPT
 
+/** Available HW controllers. */
 typedef enum {
   CAN_CTRL_A = 0,
   CAN_CTRL_B,
@@ -61,17 +77,20 @@ typedef enum {
   CAN_CONTROLLER_CNT  
 }CanControllerIdType;
 
+/** CAN id types. */
 typedef enum {
   CAN_ID_TYPE_EXTENDED,
   CAN_ID_TYPE_MIXED,
   CAN_ID_TYPE_STANDARD,
 } Can_IdTypeType;
 
+/** CAN HW object types. */
 typedef enum {
   CAN_OBJECT_TYPE_RECEIVE,
   CAN_OBJECT_TYPE_TRANSMIT,
 } Can_ObjectTypeType;
 
+/** HW object Can type. Full not supported. */
 typedef enum {
   CAN_ARC_HANDLE_TYPE_BASIC,
   CAN_ARC_HANDLE_TYPE_FULL
@@ -79,6 +98,7 @@ typedef enum {
 
 // HTH definitions
 // Due to effiency: Start with index 0 and don't use any holes in the enumeration
+/** Transmit object id:s */
 typedef enum {
   CAN_HTH_A_1 = 0,
   CAN_HTH_C_1,
@@ -87,6 +107,7 @@ typedef enum {
 
 // HRH definitions
 // Due to effiency: Start with index 0 and don't use any holes in the enumeration
+/** Receive object id:s */
 typedef enum {
   CAN_HRH_A_1 = 0,
   CAN_HRH_C_1,
@@ -94,23 +115,24 @@ typedef enum {
 } Can_Arc_HRHType;
 
 // Non-standard type
+/** Container for callback configuration. */
 typedef struct {
-  void (*CancelTxConfirmation)( const Can_PduType *);
-  void (*RxIndication)( uint8 ,Can_IdType ,uint8 , const uint8 * );
-  void (*ControllerBusOff)(uint8);
-  void (*TxConfirmation)(PduIdType);
-  void (*ControllerWakeup)(uint8);
-  void (*Arc_Error)(uint8,Can_Arc_ErrorType);
+  void (*CancelTxConfirmation)( const Can_PduType *);               /**< Not supported. */
+  void (*RxIndication)( uint8 ,Can_IdType ,uint8 , const uint8 * ); /**< Called on successful reception of a PDU. */
+  void (*ControllerBusOff)(uint8);                                  /**< Called on BusOff. */
+  void (*TxConfirmation)(PduIdType);                                /**< Called on successful transmission of a PDU. */
+  void (*ControllerWakeup)(uint8);                                  /**< Not supported. */
+  void (*Arc_Error)(uint8,Can_Arc_ErrorType);                       /**< Called on HW error. */
 } Can_CallbackType;
 
 /*
  * CanGeneral Container
  */
 
-// This container contains the parameters related each CAN Driver Unit.
+/** Container for parameters related to the CAN Driver. */
 typedef struct {
-  //  Specifies the InstanceId of this module instance. If only one instance is
-  //  present it shall have the Id 0
+  /** Specifies the InstanceId of this module instance. If only one instance is
+   *  present it shall have the Id 0 */
   int CanIndex;
 
 #if 0 // This is only used by the config tool
@@ -138,47 +160,44 @@ typedef struct {
 } Can_GeneralType;
 
 
-/*
- * CanFilterMask container
- */
+/** Type for Can id filter mask */
 typedef uint32 Can_FilterMaskType;
 
 /*
  * CanHardwareObject container
  */
 
-//This container contains the configuration (parameters) of CAN Hardware
-//Objects.
+/** Container for CAN Hardware Object parameters */
 typedef struct Can_HardwareObjectStruct {
-  // Specifies the type (Full-CAN or Basic-CAN) of a hardware object.
+  /** Specifies the type (Full-CAN or Basic-CAN) of a hardware object. */
   Can_Arc_HohType CanHandleType;
 
-  // Specifies whether the IdValue is of type - standard identifier - extended
-  // identifier - mixed mode ImplementationType: Can_IdType
+  /** Specifies whether the IdValue is of type - standard identifier - extended
+   *  identifier - mixed mode */
   Can_IdTypeType CanIdType;
 
-  //  Specifies (together with the filter mask) the identifiers range that passes
-  //  the hardware filter.
+  /** Specifies (together with the filter mask) the identifiers range that passes
+   *  the hardware filter. */
   uint32 CanIdValue;
 
-  //  Holds the handle ID of HRH or HTH. The value of this parameter is unique
-  //  in a given CAN Driver, and it should start with 0 and continue without any
-  //  gaps. The HRH and HTH Ids are defined under two different name-spaces.
-  //  Example: HRH0-0, HRH1-1, HTH0-2, HTH1-3
+  /** Holds the handle ID of HRH or HTH. The value of this parameter is unique
+   *  in a given CAN Driver, and it should start with 0 and continue without any
+   *  gaps. The HRH and HTH Ids are defined under two different name-spaces.
+   *  Example: HRH0-0, HRH1-1, HTH0-2, HTH1-3 */
   uint32 CanObjectId;
 
-  // Specifies if the HardwareObject is used as Transmit or as Receive object
+  /** Specifies if the HardwareObject is used as Transmit or as Receive object */
   Can_ObjectTypeType CanObjectType;
 
-  // Reference to the filter mask that is used for hardware filtering togerther
-  // with the CAN_ID_VALUE
+  /** Reference to the filter mask that is used for hardware filtering togerther
+   *  with the CAN_ID_VALUE */
   Can_FilterMaskType *CanFilterMaskRef;
 
-  // A "1" in this mask tells the driver that that HW Message Box should be
-  // occupied by this Hoh. A "1" in bit 31(ppc) occupies Mb 0 in HW.
+  /** A "1" in this mask tells the driver that that HW Message Box should be
+   *  occupied by this Hoh. A "1" in bit 31(ppc) occupies Mb 0 in HW. */
   uint32 Can_Arc_MbMask;
 
-  // End Of List. Set to TRUE is this is the last object in the list.
+  /** End Of List. Set to TRUE if this is the last object in the list. */
   boolean Can_Arc_EOL;
 
 } Can_HardwareObjectType;
@@ -192,78 +211,77 @@ typedef enum {
   CAN_ARC_PROCESS_TYPE_POLLING,
 } Can_Arc_ProcessType;
 
+/** Container for configuration of a controller. */
 typedef struct {
 
-  //  Enables / disables API Can_MainFunction_BusOff() for handling busoff
-  //  events in polling mode.
-  // INTERRUPT or POLLING
+  /** Enables / disables API Can_MainFunction_BusOff() for handling busoff
+   *  events in polling mode. Polling not supported. */
   Can_Arc_ProcessType CanBusOffProcessing;
 
-  // Defines if a CAN controller is used in the configuration.
+  /** Defines if a CAN controller is used in the configuration. */
   boolean CanControllerActivation;
 
-  // Specifies the buadrate of the controller in kbps.
+  /** Specifies the buadrate of the controller in kbps. */
   uint32 CanControllerBaudRate;
 
-  //  This parameter provides the controller ID which is unique in a given CAN
-  //  Driver. The value for this parameter starts with 0 and continue without any
-  //  gaps.
+  /** This parameter provides the controller ID which is unique in a given CAN
+   *  Driver. The value for this parameter starts with 0 and continue without any
+   *  gaps. */
   CanControllerIdType CanControllerId;
 
-  // Specifies propagation delay in time quantas.
+  /** Specifies propagation delay in time quantas. */
   uint32 CanControllerPropSeg;
 
-  // Specifies phase segment 1 in time quantas.
+  /** Specifies phase segment 1 in time quantas. */
   uint32 CanControllerSeg1;
 
-  // Specifies phase segment 2 in time quantas.
+  /** Specifies phase segment 2 in time quantas. */
   uint32 CanControllerSeg2;
 
-  //  Specifies the time quanta for the controller. The calculation of the resulting
-  //  prescaler value depending on module clocking and time quanta shall be
-  //  done offline Hardware specific.
+  /** Specifies the time quanta for the controller. The calculation of the resulting
+   *  prescaler value depending on module clocking and time quanta shall be
+   *  done offline Hardware specific. */
   uint32 CanControllerTimeQuanta;
 
-  //  Enables / disables API Can_MainFunction_Read() for handling PDU
-  //  reception events in polling mode.
+  /** Enables / disables API Can_MainFunction_Read() for handling PDU
+   *  reception events in polling mode. Polling not supported. */
   Can_Arc_ProcessType CanRxProcessing;
 
-  //  Enables / disables API Can_MainFunction_Write() for handling PDU
-  //  transmission events in polling mode.
+  /** Enables / disables API Can_MainFunction_Write() for handling PDU
+   *  transmission events in polling mode. Polling not supported. */
   Can_Arc_ProcessType CanTxProcessing;
 
-  //  Enables / disables API Can_MainFunction_Wakeup() for handling wakeup
-  //  events in polling mode.
+  /** Enables / disables API Can_MainFunction_Wakeup() for handling wakeup
+   *  events in polling mode. Polling not supported. */
   Can_Arc_ProcessType CanWakeupProcessing;
 
-  //  Reference to the CPU clock configuration, which is set in the MCU driver
-  //  configuration
+  /** Reference to the CPU clock configuration, which is set in the MCU driver
+   *  configuration */
   uint32 CanCpuClockRef;
 
-  //  This parameter contains a reference to the Wakeup Source for this
-  //  controller as defined in the ECU State Manager. Implementation Type:
-  //  reference to EcuM_WakeupSourceType
+  /** This parameter contains a reference to the Wakeup Source for this
+   *  controller as defined in the ECU State Manager. Implementation Type:
+   *  reference to EcuM_WakeupSourceType. Not supported. */
   uint32 CanWakeupSourceRef;
 
   //
   // ArcCore stuff
   //
 
-  // List of Hoh id's that belong to this controller
+  /** List of Hardware Object id's that belong to this controller. */
   const Can_HardwareObjectType  *Can_Arc_Hoh;
 
+  /** Enable controller self reception. */
   boolean Can_Arc_Loopback;
 
-  // Set this to use the fifo
+  /** Set this to use the fifo */
   boolean Can_Arc_Fifo;
 
 } Can_ControllerConfigType;
 
 
 
-/*
- * CanConfigSet container
- */
+/** Container for controller parameters. */
 typedef struct {
   const Can_ControllerConfigType *CanController;
   
@@ -271,23 +289,22 @@ typedef struct {
   const Can_CallbackType *CanCallbacks;
 } Can_ConfigSetType;
 
-
+/** Top level container for parameters. */
 typedef struct {
-  // This is the multiple configuration set container for CAN Driver
-  // Multiplicity 1..*
+  /** Controller parameters. */
   const Can_ConfigSetType   *CanConfigSet;
-  // This container contains the parameters related each CAN
-  // Driver Unit.
-  // Multiplicity 1..*
+  /** Driver parameters. */
   const Can_GeneralType   *CanGeneral;
-
 
 } Can_ConfigType;
 
-
+/** Top level container for parameters. */
 extern const Can_ConfigType CanConfigData;
+/** For direct access to controller list */
 extern const Can_ControllerConfigType CanControllerConfigData[];
+/** Container for controller parameters. */
 extern const Can_ConfigSetType Can_ConfigSet;
 
 
 #endif /*CAN_CFG_H_*/
+/** @} */
