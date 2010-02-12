@@ -24,6 +24,7 @@
 #define DEM_LCFG_H_
 
 #include "Dem_Types.h"
+#include "Dcm_Types.h"
 
 
 /*
@@ -43,9 +44,6 @@ typedef Std_ReturnType (*Dem_CallbackEventStatusChangedFncType)(Dem_EventStatusE
 typedef Std_ReturnType (*Dem_CallbackDTCStatusChangedFncType)(uint8 DTCStatusOld, uint8 DTCStatusNew);
 
 // DIDServices
-#if 1	// Until DCM is available
-typedef uint8 Dcm_NegativeResponseCodeType;
-#endif
 typedef Std_ReturnType (*Dem_CallbackConditionCheckReadFncType)(Dcm_NegativeResponseCodeType *Nrc);
 typedef Std_ReturnType (*Dem_CallbackReadDataFncType)(uint8 *Data);
 typedef Std_ReturnType (*Dem_CallbackReadDataLength)(uint16 *DidLength);
@@ -170,8 +168,8 @@ typedef struct {
 	union {
 	const Dem_PreDebounceMonitorInternalType	*PreDebounceMonitorInternal;	// (0..1)
 	const Dem_PreDebounceCounterBasedType		*PreDebounceCouterBased;		// (0..1)
-	const Dem_PreDebounceFrequencyBasedType	*PreDebounceFrequencyBased;		// (0..1)
-	const Dem_PreDebounceTimeBasedType		*PreDebounceTimeBased;			// (0..1)
+	const Dem_PreDebounceFrequencyBasedType		*PreDebounceFrequencyBased;		// (0..1)
+	const Dem_PreDebounceTimeBasedType			*PreDebounceTimeBased;			// (0..1)
 	} PreDebounceAlgorithm;
 } Dem_PreDebounceAlgorithmClassType;
 
@@ -187,7 +185,7 @@ typedef struct {
 //	const Dem_EnableConditionType	*EnableConditionRef;							// (0..*) Optional
 //	const Dem_OperationCycleTgtType *HealingCycleRef;								// (0..1) Optional
 	const Dem_PreDebounceAlgorithmClassType	*PreDebounceAlgorithmClass;				// (0..255) (Only one supported)
-	const Dem_IndicatorAttributeType			*IndicatorAttribute;				// (0..255)
+	const Dem_IndicatorAttributeType		*IndicatorAttribute;					// (0..255)
 //	Dem_OEMSPecific
 
 } Dem_EventClassType;

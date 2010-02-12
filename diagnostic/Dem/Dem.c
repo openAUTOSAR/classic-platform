@@ -882,7 +882,9 @@ void Dem_PreInit(void)
 	int i, j;
 
 	if (DEM_Config.ConfigSet == NULL) {
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
 		Det_ReportError(MODULE_ID_DEM, 0, DEM_PREINIT_ID, DEM_E_CONFIG_PTR_INVALID);
+#endif
 		return;
 	} else {
 		configSet = DEM_Config.ConfigSet;
