@@ -13,6 +13,13 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** @addtogroup Pwm PWM Driver
+ *  @{ */
+
+/** @file Pwm.h
+ * API and type definitions for PWM Driver.
+ */
+
 #ifndef PWM_H_
 #define PWM_H_
 
@@ -46,10 +53,10 @@
 /**************************************************************
  *  Type definitions
  **************************************************************/
-// PWM002: Development error values are of type uint8
+/** PWM002: Development error values are of type uint8 */
 typedef uint8 Pwm_ErrorType;
 
-/*
+/**
  * PWM058: The width of the duty cycle parameter is 16 bits
  *
  * PWM059: The PWM module shall comply with the following scaling scheme
@@ -102,26 +109,28 @@ extern const Pwm_ConfigType PwmConfig;
 /*
  * Constants
  *****************/
-
-/* Pwm_Init called with the wrong parameter */
+/** @name Error Codes */
+//@{
+/** Pwm_Init called with the wrong parameter */
 //const Pwm_ErrorType PWM_E_PARAM_CONFIG = 0x10;
 #define PWM_E_PARAM_CONFIG 			0x10
 
-/* PWM is not initialized yet */
+/** PWM is not initialized yet */
 //const Pwm_ErrorType PWM_E_UNINIT = 0x11;
 #define PWM_E_UNINIT 					0x11
 
-/* Invalid PWM channel identifier */
+/** Invalid PWM channel identifier */
 //const Pwm_ErrorType PWM_E_PARAM_CHANNEL = 0x12;
 #define PWM_E_PARAM_CHANNEL 			0x12
 
-/* Use of unauthorized service on PWM channel configured fixed period */
+/** Use of unauthorized service on PWM channel configured fixed period */
 //const Pwm_ErrorType PWM_E_PERIOD_UNCHANGEABLE = 0x13;
 #define PWM_E_PERIOD_UNCHANGEABLE 		0x13
 
-/* Pwm_Init called when already initialized */
+/** Pwm_Init called when already initialized */
 //const Pwm_ErrorType PWM_E_ALREADY_INITIALIZED = 0x14;
 #define PWM_E_ALREADY_INITIALIZED 		0x14
+//@}
 
 /*
  * Implemented functions
@@ -158,3 +167,4 @@ void Pwm_EnableNotification(Pwm_ChannelType ChannelNumber,
 #endif
 
 #endif /* PWM_H_ */
+/** @} */

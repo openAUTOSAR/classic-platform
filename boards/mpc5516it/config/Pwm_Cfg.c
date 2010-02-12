@@ -20,41 +20,27 @@
 
 
 
-#include "Os.h"
-
-#include "EcuM.h"
-#include <stdio.h>
-#include <assert.h>
-#include "Trace.h"
-#include "Com.h"
-#include "pwm_node2_helpers.h"
-
-void OsIdle( void ) {
-	for(;;);
-}
-
-
-void ComTask( void ) {
-	// Run COM scheduled functions.
-	Com_MainFunctionTx();
-	Com_MainFunctionRx();
-
-	pwm_node2_receive();
-}
-
 /*
- * This is the startup task. It is activated once immediately after the OS i started.
+ * Pwm_Cfg.c
+ *
+ *  Created on: 2009-jul-09
+ *      Author: nian
  */
-void StartupTask( void ) {
 
-	// Call second phase of startup sequence.
-	EcuM_StartupTwo();
+#include "Pwm.h"
+#include "Pwm_Cfg.h"
 
-	// Make sure that the right PDU-groups are ready for communication.
-	Com_IpduGroupStart(RxGroup, 0);
+extern void MyPwmNotificationRoutine(void);
 
-	// End of startup_task().
-//	TerminateTask();
-}
-
-
+const Pwm_ConfigType PwmConfig = {
+	.Channels = {
+	        PWM_CHANNEL_CONFIG(PWM_CHANNEL_1, 3000, 0x6000, PWM_CHANNEL_PRESCALER_4, PWM_HIGH),
+	        PWM_CHANNEL_CONFIG(PWM_CHANNEL_2, 2000, 0x2000, PWM_CHANNEL_PRESCALER_2, PWM_LOW)
+	},
+#if PWM_NOTIFICATION_SUPPORTED==STD_ON
+	.NotificationHandlers = {
+			MyPwmNotificationRoutine, // PWM_CHANNEL_1
+			NULL                      // PWM_CHANNEL_2
+	}
+#endif
+};

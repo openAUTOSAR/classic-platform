@@ -154,6 +154,7 @@ void Port_GetVersionInfo(Std_VersionInfoType* versionInfo)
 void Port_SetPinMode(Port_PinType Pin, Port_PinModeType Mode)
 {
   VALIDATE_STATE_INIT(PORT_SET_PIN_MODE_ID);
+  VALIDATE_PARAM_PIN(Pin, PORT_SET_PIN_MODE_ID);
   //The pad configuration registers (SIU_PCR) in the SIU allow software control of the static electrical
   //characteristics of external pins. The PCRs can select the multiplexed function of a pin, selection of pullup
   //or pulldown devices, the slew rate of I/O signals, open drain mode for output pins, and hysteresis.

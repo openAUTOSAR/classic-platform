@@ -13,12 +13,12 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** @addtogroup Gpt GPT Driver
+ *  @{ */
 
-
-
-
-
-
+/** @file Gpt.h
+ * API and type definitions for GPT Driver.
+ */
 
 #ifndef GPT_H_
 #define GPT_H_
@@ -26,7 +26,8 @@
 #include "Std_Types.h"
 //#include "EcuM.h"  mahi: What for ???
 
-/* ERROR CODES */
+/** @name Error Codes */
+//@{
 #define GPT_E_UNINIT                        0x0a
 #define GPT_E_BUSY 				                  0x0b
 #define GPT_E_NOT_STARTED 			            0x0c
@@ -35,8 +36,10 @@
 #define GPT_E_PARAM_VALUE 			            0x15
 #define GPT_E_PARAM_MODE 			              0x1f
 #define GPT_E_PARAM_CONFIG                  0x0e // TODO: Not in spec. Find real value
+//@}
 
-/* SERVICE_ID's */
+/** @name Service id's */
+//@{
 #define GPT_INIT_SERVICE_ID                 0x01
 #define GPT_DEINIT_SERVICE_ID               0x02
 #define GPT_GETTIMEELAPSED_SERVICE_ID       0x03
@@ -49,11 +52,15 @@
 #define GPT_DISABLEWAKEUP_SERVICE_ID        0x0a
 #define GPT_ENABLEWAKEUP_SERVICE_ID         0x0b
 #define GPT_CBK_CHECKWAKEUP_SERVICE_ID      0x0c
+//@}
 
+/** Channel id type */
 typedef uint8_t Gpt_ChannelType;
 
+/** Channel time value type */
 typedef uint32_t Gpt_ValueType;
 
+/** Channel behavior */
 typedef enum
 {
   GPT_MODE_ONESHOT=0,
@@ -119,3 +126,4 @@ void Gpt_Cbk_CheckWakeup( EcuM_WakeupSourceType wakeupSource );
 #endif
 
 #endif /*GPT_H_*/
+/** @} */

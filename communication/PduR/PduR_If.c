@@ -23,6 +23,7 @@
 #include <string.h>
 #include "PduR_If.h"
 #include "Trace.h"
+#include "Dem.h"
 
 #ifndef PDUR_ZERO_COST_OPERATION
 

@@ -13,6 +13,13 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** @addtogroup Adc ADC Driver
+ *  @{ */
+
+/** @file Adc.h
+ * API and type definitions for ADC Driver.
+ */
+
 #ifndef ADC_H_
 #define ADC_H_
 
@@ -28,7 +35,7 @@
 #define ADC_SW_MINOR_VERSION 		0
 #define ADC_SW_PATCH_VERSION		0
 
-/* Std-type */
+/** Group status. */
 typedef enum
 {
   ADC_IDLE,
@@ -38,7 +45,7 @@ typedef enum
 }Adc_StatusType;
 
 
-/* Det error that the adc can produce. */
+/* DET errors that the ADC can produce. */
 typedef enum
 {
   ADC_E_UNINIT              = 0x0A,
@@ -53,7 +60,7 @@ typedef enum
   ADC_E_BUFFER_UNINIT       = 0x19
 }Adc_DetErrorType;
 
-/* API service ID's */
+/** API service ID's */
 typedef enum
 {
   ADC_INIT_ID = 0x00,
@@ -75,19 +82,21 @@ typedef enum
  * Std-types
  *
  */
+/** Access mode to group conversion results (Not supported). */
 typedef enum
 {
   ADC_ACCESS_MODE_SINGLE,
   ADC_ACCESS_MODE_STREAMING
 }Adc_GroupAccessModeType;
 
+/** Group trigger source (Not supported). */
 typedef enum
 {
   ADC_TRIGG_SRC_HW,
   ADC_TRIGG_SRC_SW,
 }Adc_TriggerSourceType;
 
-
+/** HW trigger edge (Not supported). */
 typedef enum
 {
   ADC_NO_HW_TRIG,
@@ -96,6 +105,7 @@ typedef enum
   ADC_HW_TRIG_RISING_EDGE,
 }Adc_HwTriggerSignalType;
 
+/** Stream buffer type (Not supported). */
 typedef enum
 {
   ADC_NO_STREAMING,
@@ -106,22 +116,33 @@ typedef enum
 #include "Adc_Cfg.h"
 
 /* Function interface. */
+/** Initializes the ADC hardware units and driver. */
 Std_ReturnType Adc_Init (const Adc_ConfigType *ConfigPtr);
 #if (ADC_DEINIT_API == STD_ON)
+/** Returns all ADC HW Units to a state comparable to their power on reset state. */
 Std_ReturnType Adc_DeInit (const Adc_ConfigType *ConfigPtr);
 #endif
+/** Sets up the result buffer for a group. */
 Std_ReturnType Adc_SetupResultBuffer (Adc_GroupType group, Adc_ValueGroupType *bufferPtr);
 #if (ADC_ENABLE_START_STOP_GROUP_API == STD_ON)
+/** Starts the conversion of all channels of the requested ADC Channel group. */
 void           Adc_StartGroupConversion (Adc_GroupType group);
 //void           Adc_StopGroupConversion (Adc_GroupType group);
 #endif
 #if (ADC_READ_GROUP_API == STD_ON)
+/** Reads results from last conversion into buffer */
 Std_ReturnType Adc_ReadGroup (Adc_GroupType group, Adc_ValueGroupType *dataBufferPtr);
 #endif
 #if (ADC_GRP_NOTIF_CAPABILITY == STD_ON)
+/** Enables the notification mechanism for the requested ADC Channel group. */
 void           Adc_EnableGroupNotification (Adc_GroupType group);
+/** Disables the notification mechanism for the requested ADC Channel group. */
 void           Adc_DisableGroupNotification (Adc_GroupType group);
 #endif
+/** Returns the conversion status of the requested ADC Channel group. */
 Adc_StatusType Adc_GetGroupStatus (Adc_GroupType group);
 
 #endif /*ADC_H_*/
+
+/** @} */
+
