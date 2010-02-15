@@ -13,12 +13,12 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** @addtogroup Lin LIN Driver
+ *  @{ */
 
-
-
-
-
-
+/** @file Lin.h
+ * API and type definitions for LIN Driver.
+ */
 
 #ifndef LIN_H_
 #define LIN_H_
@@ -47,34 +47,34 @@ void Lin_GetVersionInfo( Std_VersionInfoType *versionInfo );
 typedef struct {
 } Lin_ConfigType;
 
-/* Represents all valid protected Identifier used by Lin_SendHeader(). */
+/** Represents all valid protected Identifier used by Lin_SendHeader(). */
 typedef uint8 Lin_FramePidType;
 
-/* This type is used to specify the Checksum model to be used for the LIN Frame. */
+/** This type is used to specify the Checksum model to be used for the LIN Frame. */
 typedef enum {
 	LIN_ENHANCED_CS,
 	LIN_CLASSIC_CS,
 } Lin_FrameCsModelType;
 
-// This type is used to specify whether the frame processor is required to transmit the
-// response part of the LIN frame.
+/** This type is used to specify whether the frame processor is required to transmit the
+ *  response part of the LIN frame. */
 typedef enum {
-	// Response is generated from this (master) node
+	/** Response is generated from this (master) node */
 	LIN_MASTER_RESPONSE=0,
-	// Response is generated from a remote slave node
+	/** Response is generated from a remote slave node */
 	LIN_SLAVE_RESPONSE,
-	//	Response is generated from one slave to another slave,
-	//	for the master the response will be anonymous, it does not
-	//	have to receive the response.
+	/** Response is generated from one slave to another slave,
+	 *  for the master the response will be anonymous, it does not
+	 *  have to receive the response. */
 	IN_SLAVE_TO_SLAVE,
 
 } Lin_FrameResponseType;
 
-// This type is used to specify the number of SDU data bytes to copy.
+/** This type is used to specify the number of SDU data bytes to copy. */
 typedef uint8 Lin_FrameDIType;
 
-// This Type is used to provide PID, checksum model, data length and SDU pointer
-// from the LIN Interface to the LIN driver.
+/** This Type is used to provide PID, checksum model, data length and SDU pointer
+ *  from the LIN Interface to the LIN driver. */
 typedef struct {
 	Lin_FrameCsModelType Cs;
 	Lin_FramePidType  Pid;
@@ -89,71 +89,72 @@ typedef enum {
 }Lin_DriverStatusType;
 
 typedef enum {
-	// LIN frame operation return value.
-	// Development or production error occurred
+	/** LIN frame operation return value.
+	 *  Development or production error occurred */
 	LIN_NOT_OK,
 
-	//	LIN frame operation return value.
-	//	Successful transmission.
+	/** LIN frame operation return value.
+	 *  Successful transmission. */
 	LIN_TX_OK,
 
-	//	LIN frame operation return value.
-	//	Ongoing transmission (Header or Response).
+	/** LIN frame operation return value.
+	 *  Ongoing transmission (Header or Response). */
 	LIN_TX_BUSY,
 
-	//	LIN frame operation return value.
-	//	Erroneous header transmission such as:
-	//	- Mismatch between sent and read back data
-	//	- Identifier parity error or
-	//	- Physical bus error
+	/** LIN frame operation return value.
+	 *  Erroneous header transmission such as:
+	 *  - Mismatch between sent and read back data
+	 *  - Identifier parity error or
+	 *  - Physical bus error */
 	LIN_TX_HEADER_ERRORLIN,
 
-	//	LIN frame operation return value.
-	//	Erroneous response transmission such as:
-	//	- Mismatch between sent and read back data
-	//	- Physical bus error
+	/** LIN frame operation return value.
+	 *  Erroneous response transmission such as:
+	 *  - Mismatch between sent and read back data
+	 *  - Physical bus error */
 	LIN_TX_ERROR,
 
-	//	LIN frame operation return value.
-	//	Reception of correct response.
+	/** LIN frame operation return value.
+	 *  Reception of correct response. */
 	LIN_RX_OK,
 
-	//	LIN frame operation return value. Ongoing reception: at
-	//	least one response byte has been received, but the
-	//	checksum byte has not been received.
+	/** LIN frame operation return value. Ongoing reception: at
+	 *  least one response byte has been received, but the
+	 *  checksum byte has not been received. */
 	LIN_RX_BUSY,
 
-	//	LIN frame operation return value.
-	//	Erroneous response reception such as:
-	//	- Framing error
-	//	- Overrun error
-	//	- Checksum error or
-	//	- Short response
+	/** LIN frame operation return value.
+	 *  Erroneous response reception such as:
+	 *  - Framing error
+	 *  - Overrun error
+	 *  - Checksum error or
+	 *  - Short response */
 	LIN_RX_ERROR,
 
 
-	//	LIN frame operation return value.
-	//	No response byte has been received so far.
+	/** LIN frame operation return value.
+	 *  No response byte has been received so far. */
 	LIN_RX_NO_RESPONSE,
 
-	//	LIN channel state return value.
-	//	LIN channel not initialized.
+	/** LIN channel state return value.
+	 *  LIN channel not initialized. */
 	LIN_CH_UNINIT,
 
-	//	LIN channel state return value.
-	//	Normal operation; the related LIN channel is ready to
-	//	transmit next header. No data from previous frame
-	//	available (e.g. after initialization)
+	/** LIN channel state return value.
+	 *  Normal operation; the related LIN channel is ready to
+	 *  transmit next header. No data from previous frame
+	 *  available (e.g. after initialization) */
 	LIN_CH_OPERATIONAL,
 
-	//	LIN channel state return value.
-	//	Sleep mode operation; in this mode wake-up detection
-	//	from slave nodes is enabled.
+	/** LIN channel state return value.
+	 *  Sleep mode operation; in this mode wake-up detection
+	 *  from slave nodes is enabled. */
 	LIN_CH_SLEEP
 
 } Lin_StatusType;
 
-/* --- Service IDs --- */
+/** @name Service id's */
+//@{
 #define LIN_INIT_SERVICE_ID               0x00
 #define LIN_GETVERSIONINFO_SERVICE_ID     0x01
 #define LIN_WAKEUPVALIDATION_SERVICE_ID   0x0A
@@ -165,14 +166,16 @@ typedef enum {
 #define LIN_WAKE_UP_SERVICE_ID            0x07
 #define LIN_GETSTATUS_SERVICE_ID          0x08
 #define LIN_GO_TO_SLEEP_INTERNAL_SERVICE_ID 0x09
+//@}
 
-/* --- Error codes --- */
+/** @name Error Codes */
+//@{
 #define LIN_E_UNINIT                    0x00
 #define LIN_E_CHANNEL_UNINIT			0x01
 #define LIN_E_INVALID_CHANNEL			0x02
 #define LIN_E_INVALID_POINTER			0x03
 #define LIN_E_STATE_TRANSITION			0x04
-#define LIN_E_TIMEOUT					0x05 //TODO Assigned by DEM
+//@}
 
 void Lin_Init( const Lin_ConfigType* Config );
 
@@ -197,7 +200,7 @@ Std_ReturnType Lin_WakeUp( uint8 Channel );
 Lin_StatusType Lin_GetStatus( uint8 Channel, uint8** Lin_SduPtr );
 
 #endif
-
+/** @} */
 
 
 

@@ -23,6 +23,7 @@
 #ifndef DMA_CFG_H_
 #define DMA_CFG_H_
 
+/** Channel id's. HW specific. */
 typedef enum
 {
   DMA_ADC_GROUP0_RESULT_CHANNEL,

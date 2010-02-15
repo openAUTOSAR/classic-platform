@@ -15,11 +15,12 @@
 
 
 
+/** @addtogroup Dio DIO Driver
+ *  @{ */
 
-
-
-
-
+/** @file Dio_Cfg.h
+ * Definitions of configuration parameters for the DIO Driver.
+ */
 #ifndef DIO_CFG_H_
 #define DIO_CFG_H_
 
@@ -27,7 +28,7 @@
 #define DIO_DEV_ERROR_DETECT 	STD_ON
 #define DIO_END_OF_LIST  -1
 
-// MPC5516 physical
+/** HW specific DIO port definitions. */
 typedef enum
 {
   DIO_PORT_A = 0,
@@ -42,7 +43,11 @@ typedef enum
   DIO_PORT_K
 } Dio_PortTypesType;
 
+/** @name DIO channels
+ *  HW specific dio channels.
+ */
 //	Pin Name	GPIO(PCR)Num
+//@{
 #define DIO_CHANNEL_A0 		0
 #define DIO_CHANNEL_A1		1
 #define DIO_CHANNEL_A2		2
@@ -198,6 +203,7 @@ typedef enum
 
 #define DIO_CHANNEL_K0		144
 #define DIO_CHANNEL_K1		145
+//@}
 
 // Channels	
 extern const Dio_ChannelType DioChannelConfigData[];

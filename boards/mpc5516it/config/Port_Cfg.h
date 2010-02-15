@@ -13,22 +13,26 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** @addtogroup Port Port Driver
+ *  @{ */
 
-
-
-
-
-
+/** @file Port_Cfg.h
+ *  Definitions of configuration parameters for Port Driver.
+ */
 
 #ifndef PORT_CFG_H_
 #define PORT_CFG_H_
 
 #include "Std_Types.h"
 
+/** Build version info API */
 #define PORT_VERSION_INFO_API				STD_ON
+/** Enable Development Error Trace */
 #define PORT_DEV_ERROR_DETECT				STD_ON
+/** Build change pin direction API */
 #define PORT_PIN_DIRECTION_CHANGES_ALLOWED	STD_ON
 
+/** HW specific symbolic names of pins */
 typedef enum
 {
   PA0,
@@ -179,6 +183,8 @@ typedef enum
   PK1
 } Port_PinType;
 
+/** @name HW specific register bits. */
+//@{
 #define   BIT0    (1<<15)
 #define   BIT1    (1<<14)
 #define   BIT2    (1<<13)
@@ -221,21 +227,27 @@ typedef enum
 // Should be this out of reset
 #define    PCR_RESET    (0)
 #define PCR_BOOTCFG   (IBE_ENABLE|PULL_DOWN)
-
+//@}
 
 #define EVB_TEST_CONFIG  (&PortConfigData)
 
-
+/** Top level configuration container */
 typedef struct
 {
+  /** Total number of pins */
   uint16_t padCnt;
+  /** List of pin configurations */
   const uint16_t *padConfig;
+  /** Total number of pin default levels */
   uint16_t outCnt;
+  /** List of pin default levels */
   const uint8_t *outConfig;
 //  uint16_t inCnt;
 //  const uint8_t *inConfig;
 } Port_ConfigType;
 
+/** Instance of the top level configuration container */
 extern const Port_ConfigType PortConfigData;
 
 #endif /*PORT_CFG_H_*/
+/** @} */

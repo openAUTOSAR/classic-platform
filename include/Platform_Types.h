@@ -13,12 +13,12 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** @addtogroup General General
+ *  @{ */
 
-
-
-
-
-
+/** @file Platform_Types.h
+ * General platform type definitions.
+ */
 
 #ifndef _PLATFORM_TYPES_H_
 #define _PLATFORM_TYPES_H_
@@ -48,3 +48,4 @@ typedef float               float32;
 typedef double              float64;  
 
 #endif
+/** @} */

@@ -13,12 +13,12 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** @addtogroup LinIf LIN Interface
+ *  @{ */
 
-
-
-
-
-
+/** @file LinIf_Cfg.h
+ *  Definitions of configuration parameters for LIN Interface.
+ */
 
 #ifndef LINIF_CFG_H_
 #define LINIF_CFG_H_
@@ -33,41 +33,41 @@ enum {
   PDU_MSG_LIN_RX_2,
 };
 
-/* Switches the Development Error Detection and Notification
+/** Switches the Development Error Detection and Notification
 ON or OFF. */
 #define LINIF_DEV_ERROR_DETECT STD_ON
 
-/* States if multiple drivers are included in the LIN Interface or not. The
- * reason for this parameter is to reduce the size of LIN Interface if multiple
- * drivers are not used. */
+/** States if multiple drivers are included in the LIN Interface or not. The
+ *  reason for this parameter is to reduce the size of LIN Interface if multiple
+ *  drivers are not used. */
 #define LINIF_MULTIPLE_DRIVER_SUPPORT STD_OFF
 
-/* States if the node configuration commands Assign NAD and Conditional
- * Change NAD are supported. */
+/** States if the node configuration commands Assign NAD and Conditional
+ *  Change NAD are supported. */
 #define LINIF_OPTIONAL_REQUEST_SUPPORTED STD_OFF
 
-/* States if the TP is included in the LIN Interface or not. The reason for this
- * parameter is to reduce the size of LIN Interface if the TP is not used. */
+/** States if the TP is included in the LIN Interface or not. The reason for this
+ *  parameter is to reduce the size of LIN Interface if the TP is not used. */
 #define LINIF_TP_SUPPORTED STD_OFF
 
-/* Switches the LinIf_GetVersionInfo function ON or OFF. */
+/** Switches the LinIf_GetVersionInfo function ON or OFF. */
 #define LINIF_VERSION_INFO_API STD_ON
 
 typedef struct {
-	/* Switches the Development Error Detection and Notification
-	ON or OFF. */
+	/** Switches the Development Error Detection and Notification
+	 *  ON or OFF. */
 	boolean LinIfDevErrorDetect;
-	/* States if multiple drivers are included in the LIN Interface or not. The
-	 * reason for this parameter is to reduce the size of LIN Interface if multiple
-	 * drivers are not used. */
+	/** States if multiple drivers are included in the LIN Interface or not. The
+	 *  reason for this parameter is to reduce the size of LIN Interface if multiple
+	 *  drivers are not used. */
 	boolean LinIfMultipleDriversSupported;
-	/* States if the node configuration commands Assign NAD and Conditional
-	 * Change NAD are supported. */
+	/** States if the node configuration commands Assign NAD and Conditional
+	 *  Change NAD are supported. */
 	boolean LinIfNcOptionalRequestSupported;
-	/* States if the TP is included in the LIN Interface or not. The reason for this
-	 * parameter is to reduce the size of LIN Interface if the TP is not used. */
+	/** States if the TP is included in the LIN Interface or not. The reason for this
+	 *  parameter is to reduce the size of LIN Interface if the TP is not used. */
 	boolean LinIfTpSupported;
-	/* Switches the LinIf_GetVersionInfo function ON or OFF. */
+	/** Switches the LinIf_GetVersionInfo function ON or OFF. */
 	boolean LinIfVersionInfoApi;
 }LinIf_GeneralType;
 
@@ -204,3 +204,4 @@ extern const LinIf_FrameType LinIfFrameCfg[];
 #define LINIF_SCH_CNT 2
 
 #endif /*LINIF_CFG_H_*/
+/** @} */

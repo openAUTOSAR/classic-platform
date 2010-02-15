@@ -25,6 +25,9 @@
 #include "Std_Types.h"
 #include "Mcu.h"
 #include "Det.h"
+#if defined(USE_DEM)
+#include "Dem.h"
+#endif
 #include "mpc55xx.h"
 #include "Cpu.h"
 #include "Ramlog.h"
@@ -101,11 +104,8 @@ Mcu_GlobalType Mcu_Global =
 //-------------------------------------------------------------------
 
 static void Mcu_LossOfLock( void  ) {
-#if ( MCU_DEV_ERROR_DETECT == STD_ON )
-	/* Should report MCU_E_CLOCK_FAILURE with DEM here.... but
-	 * we do the next best thing. Report with Det with API = 0
-	 */
-	Det_ReportError(MODULE_ID_MCU,0,0,MCU_E_PLL_NOT_LOCKED);
+#if defined(USE_DEM)
+	Dem_ReportErrorStatus(MCU_E_CLOCK_FAILURE, DEM_EVENT_STATUS_FAILED);
 #endif
 
 	Mcu_Global.stats.lossOfLockCnt++;
@@ -128,9 +128,10 @@ static void Mcu_LossOfCLock( void  ) {
 #define SPR_PIR 286
 #define SPR_PVR 287
 
-#define CORE_PVR_E200Z1   0x81440000UL
-#define CORE_PVR_E200Z0   0x81710000UL
-#define CORE_PVR_E200Z6   0x81170000UL
+#define CORE_PVR_E200Z1   	0x81440000UL
+#define CORE_PVR_E200Z0   	0x81710000UL
+#define CORE_PVR_E200Z3 	0x81120000UL
+#define CORE_PVR_E200Z6   	0x81170000UL
 
 
 typedef struct {
@@ -159,6 +160,11 @@ cpu_info_t cpu_info_list[] =
 	.name = "MPC5567",
 	.pvr = CORE_PVR_E200Z6,
     }
+#elif defined(CFG_MPC5633)
+    {
+    .name = "MPC563X",
+    .pvr = CORE_PVR_E200Z3,
+    },
 #endif
 };
 
@@ -177,6 +183,11 @@ core_info_t core_info_list[] = {
 	.name = "CORE_E200Z6",
 	.pvr = CORE_PVR_E200Z6,
     }
+#elif defined(CFG_MPC5633)
+    {
+    .name = "CORE_E200Z3",
+    .pvr = CORE_PVR_E200Z3,
+    },
 #endif
 };
 
@@ -487,12 +498,13 @@ uint32_t McuE_GetSystemClock(void)
    *
    * 5516 -  f_sys = extal * (emfd+16) / ( (eprediv+1) * ( erfd+1 ));
    * 5567 -  f_sys = extal * (emfd+4) / ( (eprediv+1) * ( 2^erfd ));
+   * 563x -  We run in legacy mode = 5567
    */
 #if defined(CFG_MPC5516)
   uint32_t eprediv = FMPLL.ESYNCR1.B.EPREDIV;
   uint32_t emfd = FMPLL.ESYNCR1.B.EMFD;
   uint32_t erfd = FMPLL.ESYNCR2.B.ERFD;
-#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
+#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5633)
   uint32_t eprediv = FMPLL.SYNCR.B.PREDIV;
   uint32_t emfd = FMPLL.SYNCR.B.MFD;
   uint32_t erfd = FMPLL.SYNCR.B.RFD;

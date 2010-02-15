@@ -20,11 +20,27 @@
 
 
 
-#ifndef DEM_INTERRID_H_
-#define DEM_INTERRID_H_
+/*
+ * Pwm_Cfg.c
+ *
+ *  Created on: 2009-jul-09
+ *      Author: nian
+ */
 
-#endif /*DEM_INTERRID_H_*/
+#include "Pwm.h"
+#include "Pwm_Cfg.h"
 
-/* Added by Mattias Ekberg 2008-10-20 while implementing the PDU router. The value of PDUR_E_INSTANCE_LOST can
-   be changed without affecting the PDU router.*/
-#define PDUR_E_INSTANCE_LOST 0
+extern void MyPwmNotificationRoutine(void);
+
+const Pwm_ConfigType PwmConfig = {
+	.Channels = {
+	        PWM_CHANNEL_CONFIG(PWM_CHANNEL_1, 3000, 0x6000, PWM_CHANNEL_PRESCALER_4, PWM_HIGH),
+	        PWM_CHANNEL_CONFIG(PWM_CHANNEL_2, 2000, 0x2000, PWM_CHANNEL_PRESCALER_2, PWM_LOW)
+	},
+#if PWM_NOTIFICATION_SUPPORTED==STD_ON
+	.NotificationHandlers = {
+			MyPwmNotificationRoutine, // PWM_CHANNEL_1
+			NULL                      // PWM_CHANNEL_2
+	}
+#endif
+};

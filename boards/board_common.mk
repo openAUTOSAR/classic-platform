@@ -134,6 +134,16 @@ inc-$(USE_PDUR) += $(ROOTDIR)/communication/PduR
 inc-$(USE_COM) += $(ROOTDIR)/communication/PduR
 vpath-$(USE_PDUR) += $(ROOTDIR)/communication/PduR
 
+# IO Hardware Abstraction
+obj-$(USE_IOHWAB) += IoHwAb.o
+
+#Dem
+obj-$(USE_DEM) += Dem.o
+obj-$(USE_DEM) += Dem_LCfg.o
+inc-$(USE_DEM) += $(ROOTDIR)/diagnostic/Dem
+vpath-$(USE_DEM) += $(ROOTDIR)/diagnostic/Dem
+
+
 #tests
 #obj-y += RunTests.o
 #obj-$(USE_CAN) += can_test.o
@@ -181,14 +191,6 @@ vpath-y += $(ROOTDIR)/boards/$(BOARDDIR)/config
 vpath-y += $(ROOTDIR)/diagnostic/Dem
 vpath-y += $(ROOTDIR)/diagnostic/Det
 
-
-VPATH += $(vpath-y)
-
-#$(error $(VPATH))
-
-# libs needed by us
-#build-lib-y += $(ROOTDIR)/libs/libboard_$(BOARDDIR).a
-
 # include files need by us
 inc-y += $(ROOTDIR)/include
 inc-y += $(ROOTDIR)/kernel/test
@@ -204,4 +206,11 @@ inc-y += $(ROOTDIR)/drivers/test
 # And last the generic board
 #
 inc-y += $(ROOTDIR)/boards/generic
+vpath-y += $(ROOTDIR)/boards/generic
 
+
+VPATH += $(vpath-y)
+#$(error $(VPATH))
+
+# libs needed by us
+#build-lib-y += $(ROOTDIR)/libs/libboard_$(BOARDDIR).a

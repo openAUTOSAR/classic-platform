@@ -23,6 +23,9 @@
 #include "Std_Types.h"
 #include "Mcu.h"
 #include "Det.h"
+#if defined(USE_DEM)
+#include "Dem.h"
+#endif
 #include <assert.h>
 #include "cpu.h"
 #include <string.h>
@@ -85,11 +88,8 @@ Mcu_GlobalType Mcu_Global =
 
 #if 0
 static void Mcu_LossOfLock( void  ) {
-#if ( MCU_DEV_ERROR_DETECT == STD_ON )
-	/* Should report MCU_E_CLOCK_FAILURE with DEM here.... but
-	 * we do the next best thing. Report with Det with API = 0
-	 */
-	Det_ReportError(MODULE_ID_MCU,0,0,MCU_E_PLL_NOT_LOCKED);
+#if defined(USE_DEM)
+	Dem_ReportErrorStatus(MCU_E_CLOCK_FAILURE, DEM_EVENT_STATUS_FAILED);
 #endif
 
 	Mcu_Global.stats.lossOfLockCnt++;
@@ -102,8 +102,9 @@ static void Mcu_LossOfLock( void  ) {
 #define SPR_PIR 286
 #define SPR_PVR 287
 
-#define CORE_PVR_E200Z1   0x81440000UL
-#define CORE_PVR_E200Z0   0x81710000UL
+#define CORE_PVR_E200Z1   	0x81440000UL
+#define CORE_PVR_E200Z0   	0x81710000UL
+#define CORE_PVR_E200Z3 	0x81120000UL
 
 
 typedef struct {
@@ -125,6 +126,10 @@ cpu_info_t cpu_info_list[] = {
     .name = "MPC5516",
     .pvr = CORE_PVR_E200Z0,
     },
+    {
+    .name = "MPC563X",
+    .pvr = CORE_PVR_E200Z3,
+    },
 };
 
 core_info_t core_info_list[] = {
@@ -135,6 +140,10 @@ core_info_t core_info_list[] = {
     {
     .name = "CORE_E200Z1",
     .pvr = CORE_PVR_E200Z1,
+    },
+    {
+    .name = "CORE_E200Z3",
+    .pvr = CORE_PVR_E200Z3,
     },
 };
 

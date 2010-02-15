@@ -15,9 +15,12 @@
 
 
 
+/** @addtogroup Com COM module
+ *  @{ */
 
-
-
+/** @file Com_Types.h
+ * Definitions of configuration types and parameters for the COM module.
+ */
 
 
 #ifndef COM_TYPES_H_
@@ -111,532 +114,292 @@ typedef enum {
 	type == SINT16  ? sizeof(sint16) : \
 	type == SINT32  ? sizeof(sint32) : sizeof(boolean)) \
 
-
+/** Filter configuration type.
+ * NOT SUPPORTED
+ */
 typedef struct {
+	/** The algorithm that this filter uses. */
 	ComFilterAlgorithm_type ComFilterAlgorithm;
+	/** Filter mask. */
 	uint32 ComFilterMask;
+	/** Max value for filter. */
 	uint32 ComFilterMax;
+	/** Min value for filter. */
 	uint32 ComFilterMin;
+	/** Offset for filter. */
 	uint32 ComFilterOffset;
 	uint32 ComFilterPeriodFactor;
 	uint32 ComFilterX;
-
-
 	uint32 ComFilterArcN;
 	uint32 ComFilterArcNewValue;
 	uint32 ComFilterArcOldValue;
 
 } ComFilter_type;
 
-
+/** Configuration structure for group signals */
 typedef struct {
-	/* Starting position (bit) of the signal within the IPDU.
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Required.
-	 *
-	 * Comment: Range 0 to 63.
+	/** Starting position (bit) of the signal within the IPDU.
+	 * Range 0 to 63.
 	 */
 	const uint8 ComBitPosition;
 
-	/* The size of the signal in bits.
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Required.
-	 *
-	 * Comment: Range 0 to 64.
+	/** The size of the signal in bits.
+	 * Range 0 to 64.
 	 */
 	const uint8 ComBitSize;
 
-	/* Identifier for the signal.
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Required.
-	 *
-	 * Comment: Should be the same value as the index in the COM signal array.
+	/** Identifier for the signal.
+	 * Should be the same value as the index in the COM signal array.
 	 */
 	const uint8 ComHandleId;
 
-	/* Callback function used when an invalid signal is received.
-	 *
-	 * Context:
-	 *   - Receive.
-	 *   - Not required.
-	 */
-	// ComInvalidNotification;
-
-	/*
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Not required.
-	 */
-	//uint8 ComSignalDataInvalidValue;
-
-	/* Defines the endianess of the signal's network representation.
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Required.
-	 */
+	/** Defines the endianess of the signal's network representation. */
 	const ComSignalEndianess_type ComSignalEndianess;
 
-	/*
-	 * Value used to initialized this signal.
-	 *
-	 * Context:
-	 *   - Send
-	 *   - Required
-	 */
+	/** Value used to initialize this signal. */
 	const uint32 ComSignalInitValue;
 
-	/* The number of bytes if the signal has type UINT8_N;
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Required if type of signal is UINT8_N
-	 *
-	 * Comment: Range 1 to 8.
+	/** The number of bytes if the signal has type UINT8_N;
+	 * Range 1 to 8.
 	 */
 	const uint8 ComSignalLength;
 
-	/* Defines the type of the signal
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Required.
-	 */
+	/** Defines the type of the signal. */
 	const Com_SignalType ComSignalType;
 
 
-	/* Filter for this signal
-	 *
-	 * Context:
-	 *   - Send.
-	 *   - Required.
+	/** Filter for this signal.
+	 * NOT SUPPORTED
 	 */
 	const ComFilter_type ComFilter;
 
 	/* Pointer to the shadow buffer of the signal group that this group signal is contained in.
 	 *
-	 * Comment: This is initialized by Com_Init() and should not be configured.
+	 * This is initialized by Com_Init() and should not be configured.
 	 */
 	//void *Com_Arc_ShadowBuffer;
 
+	/* Callback function used when an invalid signal is received. */
+	// ComInvalidNotification;
+	//uint8 ComSignalDataInvalidValue;
 
 	/* IPDU id of the IPDU that this signal belongs to.
 	 *
-	 * Comment: This is initialized by Com_Init() and should not be configured.
+	 * This is initialized by Com_Init() and should not be configured.
 	 */
 
 	//const uint8 ComIPduHandleId;
 	//const uint8 ComSignalUpdated;
 
+	/** Marks the end of list for the configuration array. */
 	const uint8 Com_Arc_EOL;
 } ComGroupSignal_type;
 
+
+/** Configuration structure for signals and signal groups. */
 typedef struct {
 
-	/* Starting position (bit) of the signal within the IPDU.
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Required.
-	 *
-	 * Comment: Range 0 to 63.
+	/** Starting position (bit) of the signal within the IPDU.
+	 * Range 0 to 63.
 	 */
 	const uint8 ComBitPosition;
 
-	/* The size of the signal in bits.
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Required.
-	 *
-	 * Comment: Range 0 to 64.
+	/** The size of the signal in bits.
+	 * Range 0 to 63.
 	 */
 	const uint8 ComBitSize;
 
-
-	/* Action to be taken if an invalid signal is received.
-	 *
-	 * Context:
-	 *   -
-	 */
-	// ComDataInvalidAction;
-
-	/* Notification function for error notification.
-	 *
-	 * Context:
-	 *   - Send.
-	 *   - Not required.
-	 *
-	 */
+	/** Notification function for error notification. */
 	void (*ComErrorNotification) (void);
 
-	/* First timeout period for deadline monitoring.
-	 *
-	 * Context:
-	 *   - Receive
-	 *   - Not required.
-	 */
+	/** First timeout period for deadline monitoring. */
 	const uint32 ComFirstTimeoutFactor;
 
-	/* Identifier for the signal.
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Required.
-	 *
-	 * Comment: Should be the same value as the index in the COM signal array.
+	/** Identifier for the signal.
+	 * Should be the same value as the index in the COM signal array.
 	 */
 	const uint8 ComHandleId;
 
-	/* Callback function used when an invalid signal is received.
-	 *
-	 * Context:
-	 *   - Receive.
-	 *   - Not required.
-	 */
-	// ComInvalidNotification;
-
-	/* Tx and Rx notification function.
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Not required.
-	 */
+	/** Tx and Rx notification function. */
 	void (*ComNotification) (void);
 
-	/* Action to be performed when a reception timeout occurs.
-	 *
-	 * Context:
-	 *   - Receive.
-	 *   - Required.
-	 */
+	/** Action to be performed when a reception timeout occurs. */
 	const ComRxDataTimeoutAction_type ComRxDataTimeoutAction;
 
-	/*
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Not required.
-	 */
-	//uint8 ComSignalDataInvalidValue;
-
-	/* Defines the endianess of the signal's network representation.
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Required.
-	 */
+	/** Defines the endianess of the signal's network representation. */
 	const ComSignalEndianess_type ComSignalEndianess;
 
-	/*
-	 * Value used to initialized this signal.
-	 *
-	 * Context:
-	 *   - Send
-	 *   - Required
-	 */
+	/** Value used to initialized this signal. */
 	const uint32 ComSignalInitValue;
 
-	/* The number of bytes if the signal has type UINT8_N;
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Required if type of signal is UINT8_N
-	 *
-	 * Comment: Range 1 to 8.
+	/** The number of bytes if the signal has type UINT8_N;
+	 * Range 1 to 8.
 	 */
 	const uint8 ComSignalLength;
 
-	/* Defines the type of the signal
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Required.
-	 */
+	/** Defines the type of the signal. */
 	const Com_SignalType ComSignalType;
 
-	/* Timeout period for deadline monitoring.
-	 *
-	 * Context:
-	 *   - Receive
-	 *   - Not required.
-	 */
-	//const uint32 Com_Arc_DeadlineCounter;
+	/** Timeout period for deadline monitoring. */
 	const uint32 ComTimeoutFactor;
 
-	/* Timeout notification function
-	 *
-	 * Context:
-	 *   - Receive and send
-	 *   - Not required.
-	 */
+	/** Timeout notification function. */
 	void (*ComTimeoutNotification) (void);
 
 	const ComTransferProperty_type ComTransferProperty;
 
-	/*
-	 * The bit position in the PDU for this signals update bit.
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Not required.
-	 *
-	 * Comment: Range 0 to 63. If update bit is used for this signal, then the corresponding parameter ComSignalArcUseUpdateBit
-	 *          needs to be set to one.
+	/** The bit position in the PDU for this signal's update bit.
+	 * Range 0 to 63.
+	 * Only applicable if an update bit is used. NULL otherwise.
 	 */
 	const uint8 ComUpdateBitPosition;
+
+	/** Marks if this signal uses an update bit.
+	 * Should be set to one if an update bit is used.
+	 */
 	const uint8 ComSignalArcUseUpdateBit;
 
-	/* Filter for this signal
-	 *
-	 * Context:
-	 *   - Send.
-	 *   - Required.
+	/** Filter for this signal.
+	 * NOT SUPPORTED.
 	 */
 	const ComFilter_type ComFilter;
 
-
-	/**** SIGNAL GROUP DATA ****/
+	/** Marks if this signal is a signal group.
+	 * Should be set to 1 if the signal is a signal group.
+	 */
 	const uint8 Com_Arc_IsSignalGroup;
+
+	/** Array of group signals.
+	 * Only applicable if this signal is a signal group.
+	 */
 	const ComGroupSignal_type *ComGroupSignal[COM_MAX_NR_SIGNALS_PER_SIGNAL_GROUP];
+
+
 	//void *Com_Arc_ShadowBuffer;
 	//void *Com_Arc_IPduDataPtr;
 
-
 	/* Pointer to the data storage of this signals IPDU.
-	 *
-	 * Comment: This is initialized by Com_Init() and should not be configured.
+	 * This is initialized by Com_Init() and should not be configured.
 	 */
 	//const void *ComIPduDataPtr;
 
 	/* IPDU id of the IPDU that this signal belongs to.
-	 *
-	 * Comment: This is initialized by Com_Init() and should not be configured.
+	 * This is initialized by Com_Init() and should not be configured.
 	 */
 
 	//const uint8 ComIPduHandleId;
 	//const uint8 ComSignalUpdated;
 
+	/* Callback function used when an invalid signal is received.
+	 */
+	// ComInvalidNotification;
 
+	//uint8 ComSignalDataInvalidValue;
+
+	/* Action to be taken if an invalid signal is received.
+	 */
+	// ComDataInvalidAction;
+
+	/** Marks the end of list for the signal configuration array. */
 	const uint8 Com_Arc_EOL;
 } ComSignal_type;
 
 
+
+/** Configuration structure for Tx-mode for I-PDUs. */
 typedef struct {
-	/* Transmission mode for this IPdu.
-	 *
-	 * Context:
-	 *   - Send.
-	 *   - Required.
-	 */
+
+	/** Transmission mode for this IPdu. */
 	const ComTxModeMode_type ComTxModeMode;
 
-	/* Defines the number of times this IPdu will be sent in each IPdu cycle.
-	 *
-	 * Context:
-	 *   - Send.
-	 *   - Required for transmission modes DIRECT/N-times and MIXED.
-	 *
-	 * Comment: Should be set to 0 for DIRECT transmission mode and >0 for DIRECT/N-times mode.
+	/** Defines the number of times this IPdu will be sent in each IPdu cycle.
+	 * Should be set to 0 for DIRECT transmission mode and >0 for DIRECT/N-times mode.
 	 */
 	const uint8 ComTxModeNumberOfRepetitions;
 
-	/* Defines the period of the transmissions in DIRECT/N-times and MIXED
-	 * transmission modes.
-	 *
-	 * Context:
-	 *   - Send.
-	 *   - Required for DIRECT/N-times and MIXED transmission modes.
-	 */
+	/** Defines the period of the transmissions in DIRECT/N-times and MIXED transmission modes. */
 	const uint32 ComTxModeRepetitionPeriodFactor;
 
-	/* Time before first transmission of this IPDU. (i.e. between the ipdu group start
-	 * and this IPDU is sent for the first time.
-	 *
-	 * Context:
-	 *   - Send.
-	 *   - Required for all transmission modes except NONE.
-	 */
+	/** Time before first transmission of this IPDU. (i.e. between the ipdu group start and this IPDU is sent for the first time. */
 	const uint32 ComTxModeTimeOffsetFactor;
 
-	/* Period of cyclic transmission.
-	 *
-	 * Context:
-	 *   - Send.
-	 *   - Required for CYCLIC and MIXED transmission mode.
-	 */
+	/** Period of cyclic transmission. */
 	const uint32 ComTxModeTimePeriodFactor;
 } ComTxMode_type;
 
-
+/** Extra configuration structure for Tx I-PDUs. */
 typedef struct {
 
-	/* Minimum delay between successive transmissions of the IPdu.
-	 *
-	 * Context:
-	 *   - Send.
-	 *   - Not required.
-	 */
+	/** Minimum delay between successive transmissions of the IPdu. */
 	const uint32 ComTxIPduMinimumDelayFactor;
 
-	/* COM will fill unused areas within an IPdu with this bit patter.
-	 *
-	 * Context:
-	 *   - Send.
-	 *   - Required.
+	/** COM will fill unused areas within an IPdu with this bit patter.
 	 */
 	const uint8 ComTxIPduUnusedAreasDefault;
 
-	/* Transmission modes for this IPdu.
-	 *
-	 * Context:
-	 *   - Send.
-	 *   - Not required.
-	 *
-	 * Comment: TMS is not implemented so only one static transmission
-	 *          mode is supported.
+	/** Transmission modes for the IPdu.
+	 * TMS is not implemented so only one static transmission mode is supported.
 	 */
 	const ComTxMode_type ComTxModeTrue;
-	//ComTxMode_type ComTxModeFalse;
 
+	//ComTxMode_type ComTxModeFalse;
 } ComTxIPdu_type;
 
-/*
-typedef struct {
-	uint8  ComTxIPduNumberOfRepetitionsLeft;
-	uint32 ComTxModeRepetitionPeriodTimer;
-	uint32 ComTxIPduMinimumDelayTimer;
-	uint32 ComTxModeTimePeriodTimer;
-} ComTxIPduTimer_type;
-*/
 
+/** Configuration structure for I-PDU groups */
 typedef struct ComIPduGroup_type {
-	// ID of this group. 0-31.
+	/** ID of this group.
+	 * Range 0 to 31.
+	 */
 	const uint8 ComIPduGroupHandleId;
 
 	// reference to the group that this group possibly belongs to.
 	//struct ComIPduGroup_type *ComIPduGroupRef;
 
+	/** Marks the end of list for the I-PDU group configuration array. */
 	const uint8 Com_Arc_EOL;
 } ComIPduGroup_type;
 
 
+/** Configuration structure for an I-PDU. */
 typedef struct {
 
-	/* Callout function of this IPDU.
+	/** Callout function of this IPDU.
 	 * The callout function is an optional function used both on sender and receiver side.
 	 * If configured, it determines whether an IPdu is considered for further processing. If
 	 * the callout return false the IPdu will not be received/sent.
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Not required.
 	 */
 	boolean (*ComIPduCallout)(PduIdType PduId, const uint8 *IPduData);
 
 
-	/* The ID of this IPDU.
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Required.
-	 *
-	 * Comment:
-	 */
+	/** The ID of this IPDU. */
 	const uint8 ComIPduRxHandleId;
 
-	/* Signal processing mode for this IPDU.
-	 *
-	 * Context:
-	 *   - Receive.
-	 *   - Required.
-	 */
+	/** Signal processing mode for this IPDU. */
 	const Com_IPduSignalProcessingMode ComIPduSignalProcessing;
 
-	/* Size of the IPDU in bytes. 0-8 for CAN and LIN and 0-256 for FlexRay.
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Required.
+	/** Size of the IPDU in bytes.
+	 * Range 0-8 for CAN and LIN and 0-256 for FlexRay.
 	 */
 	const uint8 ComIPduSize;
 
-	/* The direction of the IPDU. Receive or Send.
-	 *
-	 * Context:
-	 *   - Receive or send.
-	 *   - Required.
-	 */
+	/** The direction of the IPDU. Receive or Send. */
 	const Com_IPduDirection ComIPduDirection;
 
-	/* Reference to the IPDU group that this IPDU belongs to.
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Required.
-	 */
+	/** Reference to the IPDU group that this IPDU belongs to. */
 	const uint8 ComIPduGroupRef;
 
-	/* Reference to global PDU structure. ???
-	 *
-	 * No global PDU structure defined so this variable is left out.
-	 */
-	// PduIdRef
-
-	/* Container of transmission related parameters.
-	 *
-	 * Context:
-	 * 	 - Send
-	 *   - Required.
-	 */
+	/** Container of transmission related parameters. */
 	const ComTxIPdu_type ComTxIPdu;
 
-	/* Transmission related timers and parameters.
-	 *
-	 * Context:
-	 *   - Send
-	 *   - Not required.
-	 *   - Not part of the AUTOSAR standard.
-	 *
-	 * Comment: These are internal variables and should not be configured.
+	/** References to all signal groups contained in this IPDU.
+	 * It probably makes little sense not to define at least one signal or signal group for each IPDU.
 	 */
-	//ComTxIPduTimer_type Com_Arc_TxIPduTimers;
-
-	/* Pointer to data storage of this IPDU.
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *
-	 * Comment: this memory will be initialized dynamically in Com_Init();
-	 */
-	//void *ComIPduDataPtr;
-
-	/* References to all signals contained in this IPDU.
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Not required.
-	 *
-	 * Comment: It probably makes little sense not to define at least one signal for each IPDU.
-	 */
-	//const uint8 Com_Arc_NIPduSignalGroupRef;
 	const ComSignal_type *ComIPduSignalGroupRef[COM_MAX_NR_SIGNALS_PER_IPDU];
 
 
-	/* References to all signals contained in this IPDU.
-	 *
-	 * Context:
-	 *   - Send and receive.
-	 *   - Not required.
-	 *
-	 * Comment: It probably makes little sense not to define at least one signal for each IPDU.
+	/** References to all signals contained in this IPDU.
+	 * It probably makes little sense not to define at least one signal or signal group for each IPDU.
 	 */
 	//const uint8 NComIPduSignalRef;
 	const ComSignal_type *ComIPduSignalRef[COM_MAX_NR_SIGNALS_PER_IPDU];
@@ -647,15 +410,26 @@ typedef struct {
 	//const uint32 Com_Arc_DeadlineCounter;
 	//const uint32 Com_Arc_TimeoutFactor;
 
+	/* Transmission related timers and parameters.
+	 * These are internal variables and should not be configured.
+	 */
+	//ComTxIPduTimer_type Com_Arc_TxIPduTimers;
+
+	/* Pointer to data storage of this IPDU.
+	 */
+	//void *ComIPduDataPtr;
+
+
+	/** Marks the end of list for this configuration array. */
 	const uint8 Com_Arc_EOL;
 
 } ComIPdu_type;
 
 
-// Contains configuration specific configuration parameters. Exists once per configuration.
+/** Top-level configuration container for COM. Exists once per configuration. */
 typedef struct {
 
-	// The ID of this configuration. This is returned by Com_GetConfigurationId();
+	/** The ID of this configuration. This is returned by Com_GetConfigurationId(); */
 	const uint8 ComConfigurationId;
 
 	/*
@@ -664,23 +438,24 @@ typedef struct {
 	ComGwMapping_type ComGwMapping[];
 	 */
 
-	// IPDU definitions. At least one
+	/** IPDU definitions */
 	const ComIPdu_type *ComIPdu;
 
 	//uint16 Com_Arc_NIPdu;
 
-	// IPDU group definitions
+	/** IPDU group definitions */
 	const ComIPduGroup_type *ComIPduGroup;
 
-	// Signal definitions
+	/** Signal definitions */
 	const ComSignal_type *ComSignal;
 
 	// Signal group definitions
 	//ComSignalGroup_type *ComSignalGroup;
 
-	// Group signal definitions
+	/** Group signal definitions */
 	const ComGroupSignal_type *ComGroupSignal;
 
 } Com_ConfigType;
 
 #endif /*COM_TYPES_H_*/
+/** @} */

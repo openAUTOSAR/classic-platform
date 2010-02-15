@@ -26,6 +26,9 @@
 
 
 #include "Det.h"
+#if defined(USE_DEM)
+#include "Dem.h"
+#endif
 #include "PduR.h"
 #include "PduR_Com.h"
 #include "PduR_CanIf.h"
@@ -152,8 +155,9 @@ void PduR_BufferQueue(PduRTxBuffer_type *Buffer, const uint8 * SduPtr) {
 
 	if (PduR_BufferIsFull(Buffer)) { // Buffer is full
 		PduR_BufferFlush(Buffer);
-		DET_REPORTERROR(PDUR_MODULE_ID, PDUR_INSTANCE_ID, 0x00, PDUR_E_PDU_INSTANCE_LOST);
-
+#if defined(USE_DEM)
+		Dem_ReportErrorStatus(PDUR_E_PDU_INSTANCE_LOST, DEM_EVENT_STATUS_FAILED);
+#endif
 
 	} else {
 		// Copy data to last place in buffer
@@ -257,7 +261,7 @@ Std_ReturnType LinIf_Transmit(PduIdType LinTxPduId,const PduInfoType* PduInfoPtr
 #include "LinIf.h"
 #endif
 
-
+#include "Com.h"
 
 PduR_FctPtrType PduR_StdLinFctPtrs = {
 	.TargetIndicationFctPtr = Com_RxIndication,
@@ -265,6 +269,8 @@ PduR_FctPtrType PduR_StdLinFctPtrs = {
 	.TargetConfirmationFctPtr = Com_TxConfirmation,
 	.TargetTriggerTransmitFctPtr = Com_TriggerTransmit,
 };
+
+
 
 PduR_FctPtrType PduR_StdCanFctPtrs = {
 	.TargetIndicationFctPtr = Com_RxIndication,

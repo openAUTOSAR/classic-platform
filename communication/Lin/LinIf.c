@@ -29,6 +29,9 @@
 #include "LinSM_Cbk.h"
 #include "PduR_LinIf.h"
 #include "Det.h"
+#if defined(USE_DEM)
+#include "Dem.h"
+#endif
 
 /* Development error macros. */
 #if ( LINIF_DEV_ERROR_DETECT == STD_ON )
@@ -208,14 +211,18 @@ void LinIf_MainFunction()
 					if(Lin_GetStatus(LinIfChannelCfg[chIndex].LinIfChannelId, &Lin_SduPtr) == LIN_RX_OK){
 						PduR_LinIfRxIndication(ptrFrame->LinIfTxTargetPduId,Lin_SduPtr);
 					}else{// RX_ERROR or BUSY
-				        Det_ReportError(MODULE_ID_LINIF,0,LINIF_MAINFUNCTION_SERVICE_ID,LINIF_E_RESPONSE);
+#if defined(USE_DEM)
+				        Dem_ReportErrorStatus(LINIF_E_RESPONSE, DEM_EVENT_STATUS_FAILED);
+#endif
 					}
 				} else if(ptrFrame->LinIfPduDirection == LinIfTxPdu){
 					Lin_StatusType status = Lin_GetStatus(LinIfChannelCfg[chIndex].LinIfChannelId, &Lin_SduPtr);
 					if(status == LIN_TX_OK){
 						PduR_LinIfTxConfirmation(ptrFrame->LinIfTxTargetPduId);
 					}else{// TX_ERROR or BUSY
-				        Det_ReportError(MODULE_ID_LINIF,0,LINIF_MAINFUNCTION_SERVICE_ID,LINIF_E_RESPONSE);
+#if defined(USE_DEM)
+				        Dem_ReportErrorStatus(LINIF_E_RESPONSE, DEM_EVENT_STATUS_FAILED);
+#endif
 					}
 				}
 				// Update index after getting status of last frame

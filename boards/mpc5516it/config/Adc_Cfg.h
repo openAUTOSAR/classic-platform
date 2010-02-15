@@ -13,29 +13,48 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** @addtogroup Adc ADC Driver
+ *  @{ */
+
+/** @file Adc_Cfg.h
+ * Definitions of configuration parameters for ADC Driver.
+ */
+
 #ifndef ADC_CFG_H_
 #define ADC_CFG_H_
 
 #include "Dma.h"
 
+/** HW priority mechanism only. @see ADC_PRIORITY_IMPLEMENTATION */
 #define ADC_PRIORITY_HW                   0
+/** HW and SW priority mechanism. @see ADC_PRIORITY_IMPLEMENTATION  */
 #define ADC_PRIORITY_HW_SW                1
+/** No priority mechanism. @see ADC_PRIORITY_IMPLEMENTATION  */
 #define ADC_PRIORITY_NONE                 2
 
+/** Build DeInit API */
 #define ADC_DEINIT_API                    STD_ON
+/** Enable Development Error Trace */
 #define ADC_DEV_ERROR_DETECT              STD_ON
+/** Not supported. */
 #define ADC_ENABLE_QUEUING                STD_ON
+/** Build Start/Stop group API. */
 #define ADC_ENABLE_START_STOP_GROUP_API   STD_ON
+/** Enable group conversion notification. */
 #define ADC_GRP_NOTIF_CAPABILITY          STD_ON
-#define ADC_HW_TRIGGER_API                STD_OFF           /* Not implemented. */
+/** Not supported. */
+#define ADC_HW_TRIGGER_API                STD_OFF
+/** Implemented priority mechanism. */
 #define ADC_PRIORITY_IMPLEMENTATION       ADC_PRIORITY_HW
+/** Build Read group API */
 #define ADC_READ_GROUP_API                STD_ON
-#define ADC_VERSION_API                   STD_ON            /* Not implemented. */
+/** Build version info API (Not supported) */
+#define ADC_VERSION_API                   STD_ON
 
 typedef uint16_t Adc_ValueGroupType;
 
 
-/* Non-standard type */
+/** HW specific data type. */
 typedef union
 {
   vuint32_t R;
@@ -55,14 +74,14 @@ typedef union
    } B;
 }Adc_CommandType;
 
-/* Std-type, supplier defined */
+/** Type of clock input for the conversion unit. */
 typedef enum
 {
   ADC_SYSTEM_CLOCK
 }Adc_ClockSourceType;
 
 
-/* Std-type, supplier defined */
+/** Clock prescaler factor. */
 typedef enum
 {
   ADC_SYSTEM_CLOCK_DISABLED,
@@ -101,7 +120,7 @@ typedef enum
   ADC_SYSTEM_CLOCK_DIVIDE_FACTOR_64,
 }Adc_PrescaleType;
 
-/* Non-standard type */
+/** Container for HW setup. */
 typedef struct
 {
   Adc_ClockSourceType clockSource;
@@ -109,14 +128,14 @@ typedef struct
   Adc_PrescaleType    adcPrescale;
 }Adc_HWConfigurationType;
 
-/* Std-type, supplier defined */
+/** Reference voltage source. */
 typedef enum
 {
   ADC_REFERENCE_VOLTAGE_GROUND,
   ADC_REFERENCE_VOLTAGE_5V,
 }Adc_VoltageSourceType;
 
-/* Std-type, supplier defined */
+/** Duration of conversion. */
 typedef enum
 {
   ADC_CONVERSION_TIME_2_CLOCKS,
@@ -125,21 +144,20 @@ typedef enum
   ADC_CONVERSION_TIME_128_CLOCKS
 }Adc_ConversionTimeType;
 
-/* Non-standard type */
+/** Enable/disable calibration. */
 typedef enum
 {
   ADC_CALIBRATION_DISABLED,
   ADC_CALIBRATION_ENABLED
 }Adc_CalibrationType;
 
-/* Std-type, supplier defined */
+/** Channel resolution. */
 typedef enum
 {
   ADC_RESOLUTION_12BITS
 }Adc_ResolutionType;
 
-/* Non-standard type */
-/* Channel definitions. */
+/** Container for channel configuration. */
 typedef struct
 {
   Adc_ConversionTimeType adcChannelConvTime;
@@ -151,26 +169,26 @@ typedef struct
 
 
 /* TODO list timer sources here. */
-/* Std-type, supplier defined */
+/** Not supported. */
 typedef enum
 {
   ADC_NO_TIMER,
 }Adc_HwTriggerTimerType;
 
 
-/* Std-type, supplier defined */
+/** Not supported. */
 typedef uint16_t Adc_StreamNumSampleType;
 
-/* Std-type, supplier defined */
+/** Channel conversion mode. */
 typedef enum
 {
   ADC_CONV_MODE_DISABLED,
-  ADC_CONV_MODE_ONESHOT   = 1,
-  ADC_CONV_MODE_CONTINOUS = 9,
+  ADC_CONV_MODE_ONESHOT   = 1,  /**< A single conversion. */
+  ADC_CONV_MODE_CONTINOUS = 9,  /**< Conversions performed continuously. */
 }Adc_GroupConvModeType;
 
 
-/* Impl. specific */
+/** Container for module initialization parameters. */
 typedef struct
 {
   const Adc_HWConfigurationType*      hwConfigPtr;
@@ -183,7 +201,7 @@ typedef struct
 extern const Adc_ConfigType AdcConfig [];
 
 
-/* Used ?? */
+/** Container for groups status info. */
 typedef struct
 {
   uint8 notifictionEnable;
@@ -191,7 +209,7 @@ typedef struct
   Adc_StatusType groupStatus;
 }Adc_GroupStatus;
 
-/* Implementation specific */
+/** Container for group setup. */
 typedef struct
 {
   Adc_GroupAccessModeType      accessMode;
@@ -215,6 +233,7 @@ typedef struct
 
 /* Group definitions. */
 
+/** ID of group */
 typedef enum
 {
   ADC_GROUP0,
@@ -224,6 +243,7 @@ typedef enum
   ADC_NBR_OF_GROUPS
 }Adc_GroupType;
 
+/** ID of channel */
 typedef enum
 {
   ADC_CH0,
@@ -287,7 +307,10 @@ typedef enum
   ADC_NBR_OF_GROUP3_CHANNELS,
 }Adc_Group3Signals;
 
+/** HW specific command configarations. */
 extern const struct tcd_t AdcGroupDMACommandConfig [ADC_NBR_OF_GROUPS];
+/** HW specific result buffer configarations. */
 extern const struct tcd_t AdcGroupDMAResultConfig [ADC_NBR_OF_GROUPS];
 
 #endif /*ADC_CFG_H_*/
+/** @} */

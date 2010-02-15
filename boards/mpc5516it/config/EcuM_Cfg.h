@@ -13,20 +13,25 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** @addtogroup EcuM ECU State Manager
+ *  @{ */
 
-
-
-
-
-
+/** @file EcuM_Cfg.h
+ *  Definitions of configuration parameters for ECU State Manager.
+ *  Initialization sequences are defined in EcuM_Callout_template.c
+ */
 
 #ifndef ECUM_CFG_H_
 #define ECUM_CFG_H_
 
+/** Build version info API */
 #define ECUM_VERSION_INFO_API STD_ON
+/** Using NVRAM Manager */
 #define ECUM_INCLUDE_NVRAM_MGR STD_OFF
+/** Enable Development Error Trace */
 #define ECUM_DEV_ERROR_DETECT STD_ON
 
 #include "EcuM_Generated_Types.h"
 
 #endif /*ECUM_CFG_H_*/
+/** @} */
