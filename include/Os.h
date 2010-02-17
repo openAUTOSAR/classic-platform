@@ -18,7 +18,7 @@
 #ifndef OS_H_
 #define OS_H_
 
-#define OS_SW_MAJOR_VERSION    1
+#define OS_SW_MAJOR_VERSION    2
 #define OS_SW_MINOR_VERSION    0
 #define OS_SW_PATCH_VERSION    0
 
