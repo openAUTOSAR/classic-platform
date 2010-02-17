@@ -125,11 +125,12 @@ typedef struct {
 // 10.2.17 DemDTCClass
 typedef struct {
 	uint32									DTC;						// (1)
-	uint8									DTCFunctionUnit;			// (1)
+	uint8									DTCFunctionalUnit;			// (1)
 	Dem_DTCKindType							DTCKind;					// (1)
 	const Dem_CallbackDTCStatusChangedType	*CallbackDTCStatusChanged;	// (0..*)
 	const Dem_CallbackInitMForFType			*CallbackInitMForF;			// (0..*)
 	// Dem_DTCSeverityType					DTCSeverity					// (0..1)  Optional
+	boolean									Arc_EOL;
 } Dem_DTCClassType;
 
 // 10.2.5 DemCallbackEventStatusChanged
@@ -199,7 +200,7 @@ typedef struct {
 	const Dem_FreezeFrameClassType				*FreezeFrameClassRef;		// (0..255)
 	const Dem_CallbackInitMforEType				*CallbackInitMforE;			// (0..1)
 	const Dem_CallbackEventStatusChangedType	*CallbackEventStatusChanged;// (0..*)
-	const Dem_DTCClassType						*DTCClass;					// (0..1)
+	const Dem_DTCClassType						*DTCClassRef;				// (0..1)
 	boolean										Arc_EOL;
 } Dem_EventParameterType;
 

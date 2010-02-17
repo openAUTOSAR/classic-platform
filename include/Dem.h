@@ -54,6 +54,7 @@
 #define DEM_E_PRI_MEM_EVENT_BUFF_FULL		0x43
 #define DEM_E_PRI_MEM_EXT_DATA_BUFF_FULL	0x44
 
+#define DEM_E_UNEXPECTED_EXECUTION			0xfe
 #define DEM_E_NOT_IMPLEMENTED_YET			0xff
 
 // Service ID in this module
@@ -67,6 +68,7 @@
 #define DEM_GETFAULTDETECTIONCOUNTER_ID 0x15
 #define DEM_SETOPERATIONCYCLESTATE_ID	0x16
 #define DEM_REPORTERRORSTATUS_ID 		0x20
+#define DEM_CLEAR_DTC_ID				0x21
 
 #define DEM_UPDATE_EVENT_STATUS_ID		0x40
 #define DEM_MERGE_EVENT_STATUS_ID		0x41
@@ -123,6 +125,7 @@ void Dem_ReportErrorStatus(Dem_EventIdType eventId ,uint8 eventStatus);
 /*
  * Interface DCM <-> DEM (8.3.5)
  */
+Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin);
 
 
 /*

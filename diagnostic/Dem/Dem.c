@@ -161,6 +161,50 @@ ChecksumType calcChecksum(void *data, uint16 nrOfBytes)
 }
 
 /*
+ * Procedure:	checkDtcKind
+ * Description:	Return TRUE if "dtcKind" match the events DTCKind or "dtcKind"
+ * 				is "DEM_DTC_KIND_ALL_DTCS" otherwise FALSE.
+ */
+boolean checkDtcKind(Dem_DTCKindType dtcKind, const Dem_EventParameterType *eventParam)
+{
+	boolean result = FALSE;
+
+	if (dtcKind == DEM_DTC_KIND_ALL_DTCS) {
+		result = TRUE;
+	}
+	else {
+		if (eventParam->DTCClassRef != NULL) {
+			if (eventParam->DTCClassRef->DTCKind == dtcKind) {
+				result = TRUE;
+			}
+		}
+	}
+	return result;
+}
+
+/*
+ * Procedure:	checkDtcGroup
+ * Description:	Return TRUE if "dtc" match the events DTC or "dtc" is
+ * 				"DEM_DTC_GROUP_ALL_DTCS" otherwise FALSE.
+ */
+boolean checkDtcGroup(uint32 dtc, const Dem_EventParameterType *eventParam)
+{
+	boolean result = FALSE;
+
+	if (dtc == DEM_DTC_GROUP_ALL_DTCS) {
+		result = TRUE;
+	}
+	else {
+		if (eventParam->DTCClassRef != NULL) {
+			if (eventParam->DTCClassRef->DTC == dtc) {
+				result = TRUE;
+			}
+		}
+	}
+	return result;
+}
+
+/*
  * Procedure:	updateEventStatusRec
  * Description:	Update the status of "eventId", if not exist and "createIfNotExist" is
  * 				true a new record is created
@@ -188,7 +232,9 @@ void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_EventSta
 		}
 		else {
 			// Error: Event status buffer full
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
 			Det_ReportError(MODULE_ID_DEM, 0, DEM_UPDATE_EVENT_STATUS_ID, DEM_E_EVENT_STATUS_BUFF_FULL);
+#endif
 		}
 	}
 
@@ -262,12 +308,35 @@ void mergeEventStatusRec(EventRecType *eventRec)
 		}
 		else {
 			// Error: Event status buffer full
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
 			Det_ReportError(MODULE_ID_DEM, 0, DEM_MERGE_EVENT_STATUS_ID, DEM_E_EVENT_STATUS_BUFF_FULL);
+#endif
 		}
 	}
 
 	McuE_ExitCriticalSection(state);
 }
+
+/*
+ * Procedure:	deleteEventStatusRec
+ * Description:	Delete the status record of "eventParam->eventId" from "eventStatusBuffer".
+ */
+void deleteEventStatusRec(const Dem_EventParameterType *eventParam)
+{
+	uint16 i;
+	imask_t state = McuE_EnterCriticalSection();
+
+	// Lookup event ID
+	for (i = 0; (eventStatusBuffer[i].eventId != eventParam->EventID) && (i < DEM_MAX_NUMBER_EVENT); i++);
+
+	if (i < DEM_MAX_NUMBER_EVENT) {
+		// Delete event record
+		setZero(&eventStatusBuffer[i], sizeof(EventStatusRecType));
+	}
+
+	McuE_ExitCriticalSection(state);
+}
+
 
 /*
  * Procedure:	getEventStatusRec
@@ -359,7 +428,9 @@ void getExtendedData(const Dem_EventParameterType *eventParam, ExtDataRecType *e
 			}
 			else {
 				// Error: Size of extended data record is bigger than reserved space.
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
 				Det_ReportError(MODULE_ID_DEM, 0, DEM_GET_EXTENDED_DATA_ID, DEM_E_EXT_DATA_TO_BIG);
+#endif
 				break;	// Break the loop
 			}
 		}
@@ -405,7 +476,9 @@ void storeExtendedDataPreInit(const Dem_EventParameterType *eventParam, ExtDataR
 		}
 		else {
 			// Error: Pre init extended data buffer full
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
 			Det_ReportError(MODULE_ID_DEM, 0, DEM_STORE_EXT_DATA_PRE_INIT_ID, DEM_E_PRE_INIT_EXT_DATA_BUFF_FULL);
+#endif
 		}
 	}
 
@@ -443,8 +516,32 @@ void storeEventPriMem(const Dem_EventParameterType *eventParam, EventStatusRecTy
 		}
 		else {
 			// Error: Pri mem event buffer full
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
 			Det_ReportError(MODULE_ID_DEM, 0, DEM_STORE_EVENT_PRI_MEM_ID, DEM_E_PRI_MEM_EVENT_BUFF_FULL);
+#endif
 		}
+	}
+
+	McuE_ExitCriticalSection(state);
+}
+
+
+/*
+ * Procedure:	deleteEventPriMem
+ * Description:	Delete the event data of "eventParam->eventId" from "priMemEventBuffer".
+ */
+void deleteEventPriMem(const Dem_EventParameterType *eventParam)
+{
+	uint16 i;
+	imask_t state = McuE_EnterCriticalSection();
+
+
+	// Lookup event ID
+	for (i = 0; (priMemEventBuffer[i].eventId != eventParam->EventID) && (i < DEM_MAX_NUMBER_EVENT_ENTRY_PRI); i++);
+
+	if (i < DEM_MAX_NUMBER_EVENT_ENTRY_PRI) {
+		// Delete event found
+		setZero(&priMemEventBuffer[i], sizeof(EventRecType));
 	}
 
 	McuE_ExitCriticalSection(state);
@@ -471,7 +568,9 @@ void storeEventEvtMem(const Dem_EventParameterType *eventParam, EventStatusRecTy
 		case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
 		case DEM_DTC_ORIGIN_MIRROR_MEMORY:
 			// Not yet supported
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
 			Det_ReportError(MODULE_ID_DEM, 0, DEM_GLOBAL_ID, DEM_E_NOT_IMPLEMENTED_YET);
+#endif
 			break;
 		default:
 			break;
@@ -505,8 +604,31 @@ void storeExtendedDataPriMem(const Dem_EventParameterType *eventParam, ExtDataRe
 		}
 		else {
 			// Error: Pri mem extended data buffer full
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
 			Det_ReportError(MODULE_ID_DEM, 0, DEM_STORE_EXT_DATA_PRI_MEM_ID, DEM_E_PRI_MEM_EXT_DATA_BUFF_FULL);
+#endif
 		}
+	}
+
+	McuE_ExitCriticalSection(state);
+}
+
+
+/*
+ * Procedure:	deleteExtendedDataPriMem
+ * Description:	Delete the extended data of "eventParam->eventId" from "priMemExtDataBuffer".
+ */
+void deleteExtendedDataPriMem(const Dem_EventParameterType *eventParam)
+{
+	uint16 i;
+	imask_t state = McuE_EnterCriticalSection();
+
+	// Check if already stored
+	for (i = 0; (priMemExtDataBuffer[i].eventId != eventParam->EventID) && (i<DEM_MAX_NUMBER_EXT_DATA_PRI_MEM); i++);
+
+	if (i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM) {
+		// Yes, clear record
+		setZero(&priMemExtDataBuffer[i], sizeof(ExtDataRecType));
 	}
 
 	McuE_ExitCriticalSection(state);
@@ -533,7 +655,9 @@ void storeExtendedDataEvtMem(const Dem_EventParameterType *eventParam, ExtDataRe
 		case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
 		case DEM_DTC_ORIGIN_MIRROR_MEMORY:
 			// Not yet supported
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
 			Det_ReportError(MODULE_ID_DEM, 0, DEM_GLOBAL_ID, DEM_E_NOT_IMPLEMENTED_YET);
+#endif
 			break;
 		default:
 			break;
@@ -543,6 +667,12 @@ void storeExtendedDataEvtMem(const Dem_EventParameterType *eventParam, ExtDataRe
 
 
 void storeFreezeFrameDataPriMem(const Dem_EventParameterType *eventParam, FreezeFrameRecType *freezeFrame)
+{
+	// TODO: Fill out
+}
+
+
+void deleteFreezeFrameDataPriMem(const Dem_EventParameterType *eventParam)
 {
 	// TODO: Fill out
 }
@@ -568,7 +698,9 @@ void storeFreezeFrameDataEvtMem(const Dem_EventParameterType *eventParam, Freeze
 		case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
 		case DEM_DTC_ORIGIN_MIRROR_MEMORY:
 			// Not yet supported
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
 			Det_ReportError(MODULE_ID_DEM, 0, DEM_GLOBAL_ID, DEM_E_NOT_IMPLEMENTED_YET);
+#endif
 			break;
 		default:
 			break;
@@ -1228,6 +1360,63 @@ void Dem_ReportErrorStatus( Dem_EventIdType eventId, Dem_EventStatusType eventSt
 /*********************************
  * Interface DCM <-> DEM (8.3.5) *
  *********************************/
+Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin)
+{
+	Dem_ReturnClearDTCType result = DEM_CLEAR_OK;
+	Dem_EventIdType eventId;
+	const Dem_EventParameterType *eventParam;
+	uint16 i, j;
+
+	// Loop through the event buffer
+	for (i = 0; i < DEM_MAX_NUMBER_EVENT; i++) {
+		eventId = eventStatusBuffer[i].eventId;
+		if (eventId != DEM_EVENT_ID_NULL) {
+			lookupEventIdParameter(eventId, &eventParam);
+			if (eventParam != NULL) {
+				if (checkDtcKind(dtcKind, eventParam)) {
+					if (checkDtcGroup(dtc, eventParam)) {
+						for (j = 0; (j < DEM_MAX_NR_OF_EVENT_DESTINATION) && (eventParam->EventClass->EventDestination[j] != dtcOrigin); j++);
+						if (j < DEM_MAX_NR_OF_EVENT_DESTINATION) {
+							// Yes! All conditions met.
+							switch (dtcOrigin)
+							{
+							case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
+								deleteEventPriMem(eventParam);
+								deleteFreezeFrameDataPriMem(eventParam);
+								deleteExtendedDataPriMem(eventParam);
+								deleteEventStatusRec(eventParam);		// TODO: Shall this be done or just resetting the status?
+								break;
+
+							case DEM_DTC_ORIGIN_SECONDARY_MEMORY:
+							case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
+							case DEM_DTC_ORIGIN_MIRROR_MEMORY:
+								// Not yet supported
+								result = DEM_CLEAR_WRONG_DTCORIGIN;
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
+								Det_ReportError(MODULE_ID_DEM, 0, DEM_CLEAR_DTC_ID, DEM_E_NOT_IMPLEMENTED_YET);
+#endif
+								break;
+							default:
+								break;
+							}
+						}
+					}
+
+				}
+			}
+			else {
+				// Fatal error, no event parameters found for the stored event!
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
+			Det_ReportError(MODULE_ID_DEM, 0, DEM_CLEAR_DTC_ID, DEM_E_UNEXPECTED_EXECUTION);
+#endif
+			}
+
+
+		}
+	}
+	return result;
+}
+
 
 /***********************************
  * OBD-specific Interfaces (8.3.6) *

@@ -30,6 +30,13 @@
 typedef uint16 Dem_EventIdType;
 
 /*
+ * Dem_DTCGroupType
+ */
+typedef uint32 Dem_DTCGroupType;
+#define	DEM_DTC_GROUP_ALL_DTCS			0xffffff
+
+
+/*
  * DemDTCKindType
  */
 typedef uint8 Dem_DTCKindType;
@@ -40,10 +47,10 @@ typedef uint8 Dem_DTCKindType;
  * DemDTCOriginType
  */
 typedef uint8 Dem_DTCOriginType;
-#define	DEM_DTC_ORIGIN_MIRROR_MEMORY	0x04
-#define	DEM_DTC_ORIGIN_PERMANENT_MEMORY	0x03
-#define	DEM_DTC_ORIGIN_PRIMARY_MEMORY	0x02
 #define	DEM_DTC_ORIGIN_SECONDARY_MEMORY	0x01
+#define	DEM_DTC_ORIGIN_PRIMARY_MEMORY	0x02
+#define	DEM_DTC_ORIGIN_PERMANENT_MEMORY	0x03
+#define	DEM_DTC_ORIGIN_MIRROR_MEMORY	0x04
 
 /*
  * DemEventStatusExtendedType
@@ -81,14 +88,14 @@ typedef uint8 Dem_OperationCycleStateType;
 #define DEM_CYCLE_STATE_END			2
 
 /*
- * DemFreezeFrameKindType
+ * Dem_FreezeFrameKindType
  */
 typedef uint8 Dem_FreezeFrameKindType;	// TODO: Check type and values
 #define	DEM_FREEZE_FRAME_NON_OBD 	0x01
 #define DEM_FREEZE_FRAME_OBD		0x02
 
 /*
- * DemEventKindType
+ * Dem_EventKindType
  */
 typedef uint8 Dem_EventKindType;		// TODO: Check type and values
 #define DEM_EVENT_KIND_BSW		0x01
@@ -139,6 +146,151 @@ enum {
 	DEM_PRE_DEBOUNCE_FREQUENCY_BASED,
 	DEM_PRE_DEBOUNCE_TIME_BASED
 };
+
+/*
+ * Dem_ReturnSetDTCFilterType
+ */
+typedef uint8 Dem_ReturnSetDTCFilterType;
+#define DEM_FILTER_ACCEPTED	0x00
+#define DEM_WRONG_FILTER	0x01
+
+/*
+ * Dem_ReturnGetStatusOfDTCType
+ */
+typedef uint8 Dem_ReturnGetStatusOfDtcType;
+#define DEM_STATUS_OK						0x00
+#define DEM_STATUS_WRONG_DTC				0x01
+#define DEM_STATUS_WRONG_DTCORIGIN			0x02
+#define DEM_STATUS_FAILED					0x04
+#define DEM_STATUS_WRONG_DTCKIND			0x03
+
+/*
+ * Dem_ReturnGetNextFilteredDTCType
+ */
+typedef uint8 Dem_ReturnGetNextFilteredDTCType;
+#define DEM_FILTERED_OK						0x00
+#define DEM_FILTERED_NO_MATCHING_DTC		0x01
+#define DEM_FILTERED_WRONG_DTCKIND			0x02
+#define DEM_FILTERED_PENDING				0x03
+
+/*
+ * Dem_ReturnGetNumberOfFilteredDTCType
+ */
+typedef uint8 Dem_ReturnGetNumberOfFilteredDTCType;
+#define DEM_NUMBER_OK						0x00
+#define DEM_NUMBER_FAILED					0x01
+#define DEM_NUMBER_PENDING					0x02
+
+/*
+ * Dem_ReturnClearDTCType
+ */
+typedef uint8 Dem_ReturnClearDTCType;
+#define DEM_CLEAR_OK						0x00
+#define DEM_CLEAR_WRONG_DTC					0x01
+#define DEM_CLEAR_WRONG_DTCORIGIN			0x02
+#define DEM_CLEAR_WRONG_DTCKIND				0x03
+#define DEM_CLEAR_FAILED					0x04
+#define DEM_DTC_PENDING						0x05
+
+/*
+ * Dem_ReturnControlDTCStorageType
+ */
+typedef uint8 Dem_ReturnControlDTCStorageType;
+#define DEM_CONTROL_DTC_STORAGE_OK			0x00
+#define DEM_CONTROL_DTC_STORAGE_N_OK		0x01
+#define DEM_CONTROL_DTC_WRONG_DTCGROUP		0x02
+
+/*
+ * Dem_ReturnControlEventUpdateType
+ */
+typedef uint8 Dem_ReturnControlEventUpdateType;
+#define DEM_CONTROL_EVENT_UPDATE_OK			0x00
+#define DEM_CONTROL_EVENT_N_OK				0x01
+#define DEM_CONTROL_EVENT_WRONG_DTCGROUP	0x02
+
+/*
+ * Den_ReturnGetDTCOfFreezeframeRecordType
+ */
+typedef uint8 Den_ReturnGetDTCOfFreezeframeRecordType;
+#define DEM_GET_DTCOFFF_OK					0x00
+#define DEM_GET_DTCOFFF_WRONG_RECORD		0x01
+#define DEM_GET_DTCOFFF_NO_DTC_FOR_RECORD	0x02
+#define DEM_GET_DTCOFFF_WRONG_DTCKIND		0x03
+
+/*
+ * Dem_GetFreezeFameDataIdentifierByDTCType
+ */
+typedef uint8 Dem_GetFreezeFameDataIdentifierByDTCType;
+#define DEM_GET_ID_OK						0x00
+#define DEM_GET_ID_WRONG_DTC				0x01
+#define DEM_GET_ID_WRONG_DTCORIGIN			0x02
+#define DEM_GET_ID_WRONG_DTCKIND			0x03
+#define DEM_GET_ID_WRONG_FF_TYPE			0x04
+
+/*
+ * Dem_ReturnGetExtendedDataRecordByDTCType
+ */
+typedef uint8 Dem_ReturnGetExtendedDataRecordByDTCType;
+#define DEM_RECORD_OK						0x00
+#define DEM_RECORD_WRONG_DTC				0x01
+#define DEM_RECORD_WRONG_DTCORIGIN			0x02
+#define DEM_RECORD_DTCKIND					0x03
+#define DEM_RECORD_NUMBER					0x04
+#define DEM_RECORD_BUFFERSIZE				0x05
+#define DEM_RECORD_PENDING					0x06
+
+/*
+ * Dem_ReturnGetDTCByOccurenceTimeType
+ */
+typedef uint8 Dem_ReturnGetDTCByOccurenceTimeType;
+#define DEM_OCCURR_OK						0x00
+#define DEM_OCCURR_WRONG_DTCKIND			0x01
+#define DEM_OCCURR_FAILED					0x02
+
+/*
+ * Dem_ReturnGetFreezeFrameDataByDTCType
+ */
+typedef uint8 Dem_ReturnGetFreezeFrameDataByDTCType;
+#define DEM_GET_FFDATABYDTC_OK				0x00
+#define DEM_GET_FFDATABYDTC_WRONG_DTC		0x01
+#define DEM_GET_FFDATABYDTC_WRONG_DTCORIGIN	0x02
+#define DEM_GET_FFDATABYDTC_WRONG_DTCKIND	0x03
+#define DEM_GET_FFDATABYDTC_RECORDNUMBER	0x04
+#define DEM_GET_FFDATABYDTC_WRONG_DATAID	0x05
+#define DEM_GET_FFDATABYDTC_BUFFERSIZE		0x06
+#define DEM_GET_ID_PENDING					0x07
+
+/*
+ * Dem_ReturnGetSizeOfExtendedDataRecordByDTCType
+ */
+typedef uint8 Dem_ReturnGetSizeOfExtendedDataRecordByDTCType;
+#define DEM_GET_SIZEOFEDRBYDTC_OK			0x00
+#define DEM_GET_SIZEOFEDRBYDTC_W_DTC		0x01
+#define DEM_GET_SIZEOFEDRBYDTC_W_DTCOR		0x02
+#define DEM_GET_SIZEOFEDRBYDTC_W_DTCKI		0x03
+#define DEM_GET_SIZEOFEDRBYDTC_W_RNUM		0x04
+#define DEM_GET_SIZEOFEDRBYDTC_PENDING		0x05
+
+/*
+ * Dem_ReturnGetSizeOfFreezeFrameType
+ */
+typedef uint8 Dem_ReturnGetSizeOfFreezeFrameType;
+#define DEM_GET_SIZEOFFF_OK					0x00
+#define DEM_GET_SIZEOFFF_WRONG_DTC			0x01
+#define DEM_GET_SIZEOFFF_WRONG_DTCOR		0x02
+#define DEM_GET_SIZEOFFF_WRONG_DTCKIND		0x03
+#define DEM_GET_SIZEOFFF_WRONG_RNUM			0x04
+#define DEM_GET_SIZEOFFF_PENDING			0x05
+
+/*
+ * Dem_ReturnGetSeverityOfDTCType
+ */
+typedef uint8 Dem_ReturnGetSeverityOfDTCType;
+#define DEM_GET_SEVERITYOFDTC_OK			0x00
+#define DEM_GET_SEVERITYOFDTC_WRONG_DTC		0x01
+#define DEM_GET_SEVERITYOFDTC_WRONG_ORIGIN	0x02
+#define DEM_GET_SEVERITYOFDTC_NOSEVERITY	0x03
+
 
 
 #endif /*DEM_TYPES_H_*/

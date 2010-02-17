@@ -28,6 +28,7 @@
 #include "ComM_Dcm.h"
 #include "PduR_Dcm.h"
 #include "ComStack_Types.h"
+#include "Mcu.h"
 
 /*
  * Local types
@@ -124,12 +125,13 @@ void DsdHandleRequest(void);
 void DslHandleResponseTransmission(void);
 void DslResponseSuppressed(void);
 
-void DspDiagnosticSessionControl(void);
-void DspTesterPresent(void);
+void DspUdsDiagnosticSessionControl(void);
+void DspUdsEcuReset(void);
+void DspUdsClearDiagnosticInformation(void);
+void DspUdsTesterPresent(void);
 void DsdDspProcessingDone(Dcm_NegativeResponseCodeType responseCode);
-void DspDcmConfirmation(void);
-void DsdDataConfirmation(void);
-
+void DspDcmConfirmation(PduIdType confirmPduId);
+void DsdDataConfirmation(PduIdType confirmPduId);
 
 /*
  * Procedure:	...
@@ -514,7 +516,7 @@ void Dcm_TxConfirmation(PduIdType dcmTxPduId, NotifResultType result)
 		txBufferPointer = NULL;
 
 		// Inform DSD about the transmission completion
-		DsdDataConfirmation();	/** @req DCM117 **/ /** @req DCM235 **/
+		DsdDataConfirmation(dcmTxPduId);	/** @req DCM117 **/ /** @req DCM235 **/
 	}
 	else {
 		// TODO: What to do?
@@ -607,13 +609,15 @@ void DsdSelectServiceFunction(uint8 sid)
 	switch (sid)	 /** @req DCM221 **/
 	{
 	case SID_DIAGNOSTIC_SESSION_CONTROL:
-		DspDiagnosticSessionControl();
+		DspUdsDiagnosticSessionControl();
 		break;
 
 	case SID_ECU_RESET:
+		DspUdsEcuReset();
 		break;
 
 	case SID_CLEAR_DIAGNOSTIC_INFORMATION:
+		DspUdsClearDiagnosticInformation();
 		break;
 
 	case SID_READ_DTC_INFORMATION:
@@ -644,7 +648,7 @@ void DsdSelectServiceFunction(uint8 sid)
 		break;
 
 	case SID_TESTER_PRESENT:
-		DspTesterPresent();
+		DspUdsTesterPresent();
 		break;
 
 	case SID_CONTROL_DTC_SETTING:
@@ -735,7 +739,7 @@ void DsdDspProcessingDone(Dcm_NegativeResponseCodeType responseCode)
 			dslDsdPduTransmit = TRUE;	/** @req DCM114 **/ /** @req DCM225 **/ /** @req DCM232.2 **/
 		}
 		else {
-			DspDcmConfirmation();	/** @req DCM236 **/ /** @req DCM240 **/
+			DspDcmConfirmation(commonVars.activePduId);	/** @req DCM236 **/ /** @req DCM240 **/
 			DslResponseSuppressed();
 		}
 	}
@@ -745,9 +749,9 @@ void DsdDspProcessingDone(Dcm_NegativeResponseCodeType responseCode)
 
 }
 
-void DsdDataConfirmation(void)
+void DsdDataConfirmation(PduIdType confirmPduId)
 {
-	DspDcmConfirmation();	/** @req DCM236 **/
+	DspDcmConfirmation(confirmPduId);	/** @req DCM236 **/
 }
 
 
@@ -755,6 +759,9 @@ void DsdDataConfirmation(void)
 /*******
  * DSP *
  *******/
+boolean dspResetPending = FALSE;
+PduIdType dspResetPduId = DCM_PDU_ID_NONE;
+
 void DspInit(void)
 {
 
@@ -781,7 +788,7 @@ Std_ReturnType AskApplicationForSessionPermission(Dcm_SesCtrlType newSessionLeve
 	return returnCode;
 }
 
-void DspDiagnosticSessionControl(void)
+void DspUdsDiagnosticSessionControl(void)
 {
 	// @req DCM250 **/
 	Dcm_SesCtrlType reqSessionType;
@@ -818,8 +825,76 @@ void DspDiagnosticSessionControl(void)
 	}
 }
 
+void DspUdsEcuReset(void)
+{
+	// @req DCM260 **/
+	uint8 reqResetType;
 
-void DspTesterPresent(void)
+	if (commonVars.pduRxData->SduLength == 2) {
+		reqResetType = commonVars.pduRxData->SduDataPtr[1];
+
+		switch (reqResetType)
+		{
+		case 0x01:	// Hard reset
+			// TODO: Ask application for permission (Dcm373) (Dcm375) (Dcm377)
+
+			// Schedule the reset
+			dspResetPending = TRUE;
+			dspResetPduId = DCM_PDU_ID_UDS_TX;
+
+			// Create positive response
+			/** @req DCM039.1 **/
+			commonVars.pduTxData->SduDataPtr[1] = reqResetType;
+			commonVars.pduTxData->SduLength = 2;
+			DsdDspProcessingDone(DCM_E_POSITIVERESPONSE); /** @req DCM269.3 **/
+			break;
+
+		default:
+			DsdDspProcessingDone(DCM_E_SUBFUNCTIONNOTSUPPORTED);	/** @req DCM273.3 **/
+			break;
+		}
+	}
+	else {
+		// Wrong length
+		DsdDspProcessingDone(DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT);	/** @req DCM272.3 **/
+	}
+
+}
+
+
+void DspUdsClearDiagnosticInformation(void)
+{
+	uint32 dtc;
+	Dem_ReturnClearDTCType result;
+
+	if (commonVars.pduRxData->SduLength == 4) {
+		dtc = (commonVars.pduRxData->SduDataPtr[1] << 16) | (commonVars.pduRxData->SduDataPtr[2] << 8) | commonVars.pduRxData->SduDataPtr[3];
+
+		result = Dem_ClearDTC(dtc, DEM_DTC_KIND_ALL_DTCS, DEM_DTC_ORIGIN_PRIMARY_MEMORY);
+
+		switch (result)
+		{
+		case DEM_CLEAR_OK:
+			// Create positive response
+			/** @req DCM039.1 **/
+			commonVars.pduTxData->SduLength = 1;
+			DsdDspProcessingDone(DCM_E_POSITIVERESPONSE); /** @req DCM269.4 **/
+			break;
+
+		default:
+			DsdDspProcessingDone(DCM_E_REQUESTOUTOFRANGE);
+			break;
+		}
+	}
+	else {
+		// Wrong length
+		DsdDspProcessingDone(DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT);	/** @req DCM272.1 **/
+	}
+}
+
+
+
+void DspUdsTesterPresent(void)
 {
 	if (commonVars.pduRxData->SduLength == 2) {
 		switch (commonVars.pduRxData->SduDataPtr[1])
@@ -845,9 +920,14 @@ void DspTesterPresent(void)
 }
 
 
-void DspDcmConfirmation(void)
+void DspDcmConfirmation(PduIdType confirmPduId)
 {
-	// TODO: What to do here?
+	if (dspResetPending) {
+		if (confirmPduId == dspResetPduId) {
+			dspResetPending = FALSE;
+			Mcu_PerformReset();
+		}
+	}
 }
 
 
