@@ -243,7 +243,7 @@ void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_EventSta
 		eventStatusBuffer[i].eventStatusExtended &= ~(DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE);
 
 		if (eventStatus == DEM_EVENT_STATUS_FAILED) {
-			eventStatusBuffer[i].eventStatusExtended |= (DEM_TEST_FAILED | DEM_TEST_FAILED_THIS_OPERATION_CYCLE | DEM_TEST_FAILED_SINCE_LAST_CLEAR);
+			eventStatusBuffer[i].eventStatusExtended |= (DEM_TEST_FAILED | DEM_TEST_FAILED_THIS_OPERATION_CYCLE | DEM_TEST_FAILED_SINCE_LAST_CLEAR | DEM_PENDING_DTC);
 			if	 (eventStatusBuffer[i].eventStatus != eventStatus) {
 				eventStatusBuffer[i].occurrence++;
 			}
@@ -961,6 +961,14 @@ Std_ReturnType setOperationCycleState(Dem_OperationCycleIdType operationCycleId,
 
 		case DEM_CYCLE_STATE_END:
 			operationCycleStateList[operationCycleId] = cycleState;
+			// Lookup event ID
+			for (i = 0; i < DEM_MAX_NUMBER_EVENT; i++) {
+				if ((eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) && (eventStatusBuffer[i].operationCycleId == operationCycleId)) {
+					if (!(eventStatusBuffer[i].eventStatusExtended & DEM_TEST_FAILED_THIS_OPERATION_CYCLE) && !(eventStatusBuffer[i].eventStatusExtended & DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE)) {
+						eventStatusBuffer[i].eventStatusExtended &= ~DEM_PENDING_DTC;		// Clear pendingDTC bit
+					}
+				}
+			}
 			break;
 		default:
 #if (DEM_DEV_ERROR_DETECT == STD_ON)
