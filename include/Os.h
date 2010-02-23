@@ -45,6 +45,7 @@ typedef TaskStateType *TaskStateRefType;
 
 /* FIXME: OSMEMORY_IS__ , see 8.2*/
 
+#define OSDEFAULTAPPMODE  1
 
 #define INVALID_OSAPPLICATION (-1)
 

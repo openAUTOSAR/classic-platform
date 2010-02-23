@@ -63,6 +63,10 @@ static inline TickType Os_CounterGetMaxValue(OsCounterType *cPtr ) {
 	return cPtr->alarm_base.maxallowedvalue;
 }
 
+static inline TickType Os_CounterGetMinCycle(OsCounterType *cPtr ) {
+	return cPtr->alarm_base.mincycle;
+}
+
 static inline TickType Os_CounterGetValue( OsCounterType *cPtr ) {
 	return cPtr->val;
 }

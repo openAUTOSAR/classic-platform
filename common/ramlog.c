@@ -13,6 +13,21 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/**
+ * A very simple ramlog.
+ *
+ * Features:
+ * - Prints to a ram space in section ".ramlog"
+ * - The size is configurable using CFG_RAMLOG_SIZE (default is 1000)
+ * - The ramlog section should not be cleared by the linkfile if one wants
+ *   to have a ramlog that survives reset.
+ *
+ * Assumes some c-lib support:
+ * - The clib support should be able to open a file called "ramlog".
+ * - Printing to that file will print to the ramlog.
+ *
+ */
+
 #include <stdio.h>
 #include <stdarg.h>
 #include "simple_printf.h"
@@ -29,6 +44,10 @@ static unsigned ramlog_session __attribute__ ((section (".ramlog")));
 static FILE *ramlogFile = 0;
 
 
+/**
+ * Print a char to the ramlog
+ * @param c
+ */
 void ramlog_chr( char c ) {
   ramlog[ramlog_curr++] = c;
   if( ramlog_curr >= CFG_RAMLOG_SIZE ) {
@@ -36,6 +55,10 @@ void ramlog_chr( char c ) {
   }
 }
 
+/**
+ * Print a string to the ramlog
+ * @param str
+ */
 void ramlog_puts( char *str ) {
 
   while(*str!=0) {
@@ -44,6 +67,11 @@ void ramlog_puts( char *str ) {
   ramlog_chr('\n');
 }
 
+/**
+ * Formatted print for the ramlog.
+ *
+ * @param format The format string.
+ */
 void ramlog_printf( const char *format, ... ) {
 
 	// Fast and ugly ramlog support.
@@ -55,6 +83,10 @@ void ramlog_printf( const char *format, ... ) {
 	va_end(args);
 }
 
+
+/**
+ * Initialize the ramlog. Must be called before any other ramlog functions.
+ */
 void ramlog_init()
 {
 	char buf[32];

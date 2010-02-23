@@ -15,9 +15,9 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include "os_config_macros.h"
 #include "Platform_Types.h"
 #include "Os.h"				// includes Os_Cfg.h
+#include "os_config_macros.h"
 #include "kernel.h"
 #include "kernel_offset.h"
 #include "alist_i.h"
@@ -104,9 +104,11 @@ CounterType Os_Arc_OsTickCounter = COUNTER_ID_OsTick;
 // --- ALARMS ---
 #define ALARM_USE
 
+GEN_ALARM_AUTOSTART( 0, ALARM_AUTOSTART_ABSOLUTE, 100, 2 , OSDEFAULTAPPMODE );
+
 GEN_ALARM_HEAD {
 	GEN_ALARM(	0,"Alarm_4ms",COUNTER_ID_OsTick,
-				1,100,2,0,		/*active,start,cycle,app_mask */
+				GEN_ALARM_AUTOSTART_NAME(0),
 				ALARM_ACTION_SETEVENT, TASK_ID_etask_1, 2, 0 ),
 };
 

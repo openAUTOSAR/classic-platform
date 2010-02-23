@@ -114,9 +114,11 @@ CounterType Os_Arc_OsTickCounter = COUNTER_ID_OsTick;
 // --- ALARMS ---
 #define ALARM_USE
 
+GEN_ALARM_AUTOSTART( 0, ALARM_AUTOSTART_ABSOLUTE, 100, 10, OSDEFAULTAPPMODE );
+
 GEN_ALARM_HEAD {
 	GEN_ALARM(	0,"Alarm1",COUNTER_ID_OsTick,
-				1,100,10,0,		/*active,start,cycle,app_mask */
+				GEN_ALARM_AUTOSTART_NAME(0),
 				ALARM_ACTION_SETEVENT, TASK_ID_etask_1, 2, 0 ),
 };
 

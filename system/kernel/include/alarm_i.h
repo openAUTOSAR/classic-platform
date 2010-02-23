@@ -59,6 +59,15 @@ typedef struct OsAlarmAction {
 	CounterType 		counter_id;
 } OsAlarmActionType;
 
+
+enum OsAlarmAutostartTypeType {
+	// Start with SetAbsAlarm()
+	ALARM_AUTOSTART_ABSOLUTE,
+	// Start with SetRelAlarm()
+	ALARM_AUTOSTART_RELATIVE,
+};
+
+
 /* STD container : OsAlarmAutostart
  * OsAlarmAlarmTime: 	 		1    Int
  * OsAlarmAutoStartType: 		1    Int, ABSOLUTE, RELATIVE
@@ -66,10 +75,10 @@ typedef struct OsAlarmAction {
  * OsAlarmAppModeRef: 	 		1..*
  */
 typedef struct OsAlarmAutostart {
-	_Bool  active;
-	uint32 alarmtime;
-	uint32 cycletime;
-	uint32 appmode_mask;
+	uint32 alarmTime;
+	enum OsAlarmAutostartTypeType autostartType;
+	uint32 cycleTime;
+	uint32 appModeRef;
 } OsAlarmAutostartType;
 
 /* STD container : OsAlarm
@@ -87,7 +96,7 @@ typedef struct OsAlarm {
 	/* cycle, 0 = no cycle */
 	uint32 alarmtime;
 	uint32 cycletime;
-	uint32 appmode_mask;
+//	uint32 appmode_mask;
 
 	uint32 app_mask;
 
@@ -99,7 +108,7 @@ typedef struct OsAlarm {
 	OsAlarmActionType action;
 
 	/* Autostart */
-	OsAlarmAutostartType autostart;
+	const struct OsAlarmAutostart *autostartPtr;
 
 	/* List of alarms connected to the same counter */
 	SLIST_ENTRY(OsAlarm) alarm_list;

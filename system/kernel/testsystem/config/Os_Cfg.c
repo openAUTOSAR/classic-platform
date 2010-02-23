@@ -79,14 +79,14 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include "os_config_macros.h"
 #include "Platform_Types.h"
 #include "Os.h"				// includes Os_Cfg.h
-#include "os_test.h"
+#include "os_config_macros.h"
 #include "kernel.h"
 #include "kernel_offset.h"
 #include "alist_i.h"
 #include "Mcu.h"
+#include "os_test.h"
 
 OsTickType OsTickFreq = 1000;
 
@@ -102,7 +102,7 @@ GEN_TRUSTEDFUNCTIONS_LIST
 
 //-------------------------------------------------------------------
 
-#if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
+#if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
 GEN_APPLICATION_HEAD {
 	GEN_APPLICATON(0,"application_1",true,NULL,NULL,NULL , 0,0,0,0,0,0 )
 };
@@ -322,44 +322,41 @@ GEN_ALARM_HEAD {
 
 #if defined(SCHEDULETABLE_USE)
 
-
-OsScheduleTableActionType sched_expire_list_0[] = {
-	{
-		.type = SCHEDULE_ACTION_ACTIVATETASK,
-		.offset = 5,
-		.task_id = TASK_ID_etask_sup_m,
-	},{
-		.type = SCHEDULE_ACTION_SETEVENT,
-		.offset = 7,
-		.task_id = TASK_ID_etask_sup_m,
-		.event_id = EVENT_2,
-	}
+// ---- Table 0 -----
+GEN_SCHTBL_TASK_LIST_HEAD( 0, 5 ) {
+	TASK_ID_etask_sup_m
 };
 
-
-OsScheduleTableActionType sched_expire_list_1[] = {
-	{
-		.type = SCHEDULE_ACTION_ACTIVATETASK,
-		.offset = 2,
-		.task_id = TASK_ID_etask_sup_m,
-	}
+GEN_SCHTBL_EVENT_LIST_HEAD( 0, 7 ) {
+	{ EVENT_2, TASK_ID_etask_sup_m },
 };
 
+GEN_SCHTBL_EXPIRY_POINT_HEAD( 0 ) {
+	GEN_SCHTBL_EXPIRY_POINT_W_TASK(  0, 5 ),
+	GEN_SCHTBL_EXPIRY_POINT_W_EVENT( 0, 7 )
+};
 
-GEN_SCHEDULETABLE_HEAD {
+// ---- Table 1 -----
+GEN_SCHTBL_TASK_LIST_HEAD(1,2) {
+	TASK_ID_etask_sup_m ,
+};
+
+GEN_SCHTBL_EXPIRY_POINT_HEAD( 1 ) {
+	GEN_SCHTBL_EXPIRY_POINT_W_TASK( 1, 2 )
+};
+
+GEN_SCHTBL_AUTOSTART(0,SCHTBL_AUTOSTART_ABSOLUTE, 100, OSDEFAULTAPPMODE );
+
+GEN_SCHTBL_HEAD {
 	GEN_SCHEDULETABLE(
-			0,						// id
-			"stable0",				// name
-		    COUNTER_ID_soft_2,		// counter
-		    REPEATING,				// periodic
-			SCHEDULETABLE_DURATION_1,	// duration
-			0,						// app_mask
-			ARRAY_SIZE(sched_expire_list_0),				// action count
-			sched_expire_list_0, 	// expire ref
-			0,0,0,0, 				// autostart
-			NONE,0,					// sync
-			0,0 					// adjExpPoint
+			0,						      // id
+			"stable0",				      // name
+		    COUNTER_ID_soft_2,		      // counter
+		    REPEATING,				      // periodic
+			SCHEDULETABLE_DURATION_1,	  // duration
+			GEN_SCHTBL_AUTOSTART_NAME(0)
 			),
+
 
 	GEN_SCHEDULETABLE(
 			1,						// id
@@ -367,12 +364,7 @@ GEN_SCHEDULETABLE_HEAD {
 			COUNTER_ID_soft_2,		// counter
 			REPEATING,				// periodic
 			SCHEDULETABLE_DURATION_2,	// duration
-			0,						// app_mask
-			ARRAY_SIZE(sched_expire_list_1),				// action count
-			sched_expire_list_1,	// expire ref
-			0,0,0,0, 				// autostart
-			NONE,0,					// sync
-			0,0 					// adjExpPoint
+			NULL
 			),
 };
 
