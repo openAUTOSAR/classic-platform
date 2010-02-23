@@ -105,6 +105,4 @@
 #define EVENT_1	(1<<1)
 #define EVENT_2 (1<<2)
 
-
-
 #endif /* OS_CFG_H_ */

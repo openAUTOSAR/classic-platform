@@ -42,28 +42,50 @@ enum OsScheduleTableSyncStrategy {
 
 enum OsScheduleTableAutostartType {
 	// Start with StartScheduleTableAbs()
-	ABSOLUTE,
+	SCHTBL_AUTOSTART_ABSOLUTE,
 	// Start with StartScheduleTableRel()
-	RELATIVE,
+	SCHTBL_AUTOSTART_RELATIVE,
 	// Start with StartScheduleTableSyncon()
-	SYNCHRONE,
+	SCHTBL_AUTOSTART_SYNCHRONE,
 };
 
 
-typedef struct OsScheduleTableAction {
-	// 0 - activate task, 1 - event
-	/** @req OS402 */
-	/** @req OS403 */
-	int   			type;
-  	// for debug only???
+/* STD container: OsScheduleTableEventSetting
+ * OsScheduleTableSetEventRef: 		1
+ * OsScheduleTableSetEventTaskRef:	1
+*/
+typedef struct OsScheduleTableEventSetting {
+	EventMaskType 	event;
+	TaskType     task;
+} OsScheduleTableEventSettingType;
+
+/* OsScheduleTableTaskActivation */
+
+/* STD container: OsScheduleTableExpiryPoint
+ * OsScheduleTblExpPointOffset: 	1    Int
+ * OsScheduleTableEventSetting:		0..*
+ * OsScheduleTableTaskActivation:	0..*
+ * OsScheduleTblAdjustableExpPoint:	0..1
+ * */
+
+/** @req OS402 */
+/** @req OS403 */
+typedef struct OsScheduleTableExpiryPoint {
+  	/* The expiry point offset, OsScheduleTblExpPointOffset */
 	uint64 			offset;
    	// delta to next action
 	/** @req OS404 */
 	uint64    		delta;
-	TaskType 		task_id;
-	// used only if event..
-	EventMaskType event_id;
-} OsScheduleTableActionType;
+
+	/* List of events to activate */
+	const TaskType 		*taskList;
+	uint8_t 		taskListCnt;
+
+	/* List of events to activate */
+	const OsScheduleTableEventSettingType *eventList;
+	uint8_t 		eventListCnt;
+} OsScheduleTableExpiryPointType;
+
 
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 typedef struct OsScheduleTableSync {
@@ -100,10 +122,10 @@ typedef struct OsSchTblAdjExpPoint {
  * OsScheduleTableAppModeRef 		1..* Ref to OsAppMode
  */
 struct OsSchTblAutostart {
-	_Bool active;
 	enum OsScheduleTableAutostartType type;
-	uint32_t relOffset;
-	uint32_t appModeRef;	// TODO
+	/* offset applies to both rel and abs */
+	TickType offset;
+	uint32_t appMode;	// TODO
 };
 
 
@@ -118,81 +140,65 @@ struct OsSchTblAutostart {
  */
 
 typedef struct OsSchTbl {
+	/* OsScheduleTableDuration */
+	TickType duration;
 
-// Configuration
-
-	// OsScheduleTableDuration
-	int duration;
-
-	// If true, the schedule is periodic, OS009
-	// OsScheduleTableRepeating , 0 - SINGLE_SHOT
+	char *name;
+	/* If true, the schedule is periodic, OS009
+	 * OsScheduleTableRepeating , 0 - SINGLE_SHOT */
+	/** @req OS413 */
 	_Bool repeating;
-
-	// Application mask
-	uint32 app_mask;
 
 	// pointer to this tables counter
 	// OsScheduleTableCounterRef
 	/** @req OS409 */
 	struct OsCounter *counter;
 
-	struct OsSchTblAutostart autostart;
+	/* OsScheduleTableAutostart[C] */
+	struct OsSchTblAutostart *autostartPtr;
 
 	/* NULL if NONE, and non-NULL if EXPLICIT and IMPLICIT */
 	struct OsScheduleTableSync *sync;
 
+#if (OS_SC3 == STD_ON ) || (OS_SC4 == STD_ON )
+	uint32 app_mask;
+#endif
+
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 	struct OsSchTblAdjExpPoint adjExpPoint;
 #endif
-
-// Private stuff
-
-	uint32_t finalOffset;
-
-	uint32_t initialOffset;
-	// Name...
-	char *name;
-
-	// ??
 // RAM
-	uint64 length;
 
 	uint32 id;
 
 	/* The current index into the expire list
-	 * The value is updated at each expire point.
-	 * */
+	 * The value is updated at each expire point. */
 	int expire_curr_index;
 
 	/* When this table expires the next time
 	 * This value should be compared to the counter that drives
 	 * the counter to check if it has expired.
-	 * The value is updated at each expire point.
-	 */
+	 * The value is updated at each expire point. */
 	TickType expire_val;
 
-	// if true, the table is active
-	//_Bool active;
 	ScheduleTableStatusType state;
 
-	// Pointer to next schedule table, if any
-	// (don't use normal lists here since we have no list head)
+	/* Pointer to next schedule table, if any
+	 * (don't use normal lists here since we have no list head) */
 	struct OsSchTbl *next;
 
-	/* Head of static action list */
-	SA_LIST_HEAD(alist,OsScheduleTableAction) action_list;
+	/* Head of static expire point list
+	 * OsScheduleTableExpiryPoint[C] */
+	SA_LIST_HEAD(alist,OsScheduleTableExpiryPoint) expirePointList;
 
-	/* Entry in the list of schedule tables connected to a specfic
+	/* Entry in the list of schedule tables connected to a specific
 	 * counter  */
 	SLIST_ENTRY(OsSchTbl) sched_list;
-
-	// TableDuration
-	//
 
 } OsSchTblType;
 
 /*
-#define os_stbl_get_action(x) 		SA_LIST_GET(&(x)->action_list,(x)->expire_curr_index)
+#define os_stbl_get_action(x) 		SA_LIST_GET(&(x)->expirePointList,(x)->expire_curr_index)
 #define os_stbl_get_action_type(x) os_stbl_get_action(x)->type
 #define os_stbl_get_action_offset(x) os_stbl_get_action(x)->offset
 #define os_stbl_get_action_pid(x) os_stbl_get_action(x)->pid
@@ -201,14 +207,15 @@ typedef struct OsSchTbl {
 
 void Os_SchTblInit( void );
 void Os_SchTblCalcExpire( OsSchTblType *stbl );
+void Os_SchTblCheck(OsCounterType *c_p);
 
 static inline TickType Os_SchTblGetInitialOffset( OsSchTblType *sPtr ) {
-	return SA_LIST_GET(&sPtr->action_list,0)->offset;
+	return SA_LIST_GET(&sPtr->expirePointList,0)->offset;
 }
 
 static inline TickType Os_SchTblGetFinalOffset( OsSchTblType *sPtr ) {
 	return (sPtr->duration -
-			SA_LIST_GET(&sPtr->action_list, SA_LIST_CNT(&sPtr->action_list))->offset);
+			SA_LIST_GET(&sPtr->expirePointList, SA_LIST_CNT(&sPtr->expirePointList)-1)->offset);
 }
 
 

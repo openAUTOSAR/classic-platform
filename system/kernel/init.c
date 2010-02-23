@@ -220,10 +220,14 @@ static void os_start( void ) {
 	for(int j=0; j < Oil_GetAlarmCnt(); j++ ) {
 		OsAlarmType *alarmPtr;
 		alarmPtr = Oil_GetAlarmObj(j);
-		if(alarmPtr->autostart.active) {
-			OsAlarmAutostartType *autoPtr = &alarmPtr->autostart;
+		if(alarmPtr->autostartPtr != NULL ) {
+			OsAlarmAutostartType *autoPtr = alarmPtr->autostartPtr;
 
-			SetAbsAlarm(j,autoPtr->alarmtime, autoPtr->cycletime);
+			if( autoPtr->autostartType == ALARM_AUTOSTART_ABSOLUTE ) {
+				SetAbsAlarm(j,autoPtr->alarmTime, autoPtr->cycleTime);
+			} else {
+				SetRelAlarm(j,autoPtr->alarmTime, autoPtr->cycleTime);
+			}
 		}
 	}
 

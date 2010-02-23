@@ -19,6 +19,8 @@ cflags-$(CFG_DEBUG) += -O0
 #cflags-y += -O0
 #cflags-y += -O3
 
+#cflags-y += -ffunction-sections
+
 ifneq ($(filter -O2 -O3 -O1,$(cflags-y)),) 
 	cflags-y += -fno-schedule-insns -fno-schedule-insns2
 endif
@@ -89,6 +91,7 @@ TE = elf
 LDMAPFILE = -M > $(subst .$(TE),.map, $@)
 
 libitem-y += $(libitem-yy)
+#LDFLAGS += --gc-section
 
 # ---------------------------------------------------------------------------
 # Assembler

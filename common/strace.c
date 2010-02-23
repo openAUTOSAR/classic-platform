@@ -12,14 +12,6 @@
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
-
-
-
-
-
-
-
-
 /*
  * strace.c
  *
@@ -28,7 +20,6 @@
  *
  * System trace...
  * Idea to trace
- *
  *
  * Inspiration:
  *   http://ltt.polymtl.ca/tracingwiki/index.php/TracingBook

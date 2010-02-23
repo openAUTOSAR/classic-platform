@@ -158,9 +158,11 @@ int open(const char *name, int flags, int mode){
 	(void)flags;
 	(void)mode;
 
+#if defined(USE_RAMLOG)
 	if( strcmp(name,"ramlog") == 0 ) {
 		return FILE_RAMLOG;
 	}
+#endif
 
     return -1;
 }

@@ -36,7 +36,7 @@ static inline OsSchTblAdjExpPointType *getAdjExpPoint( OsSchTblType *stblPtr ) {
 
 
 static inline struct OsSchTblAutostart *getAutoStart( OsSchTblType *stblPtr ) {
-	return &stblPtr->autostart;
+	return stblPtr->autostartPtr;
 }
 
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
@@ -102,79 +102,6 @@ static void check_alarms( OsCounterType *c_p ) {
 	}
 }
 
-/**
- * Go through the schedule tables connected to this counter
- *
- * @param c_p Pointer to counter object
- */
-
-/** @req OS002 */
-/** @req OS007 */
-static void check_stbl(OsCounterType *c_p) {
-	OsSchTblType *sched_obj;
-
-	/* Iterate through the schedule tables */
-	SLIST_FOREACH(sched_obj,&c_p->sched_head,sched_list) {
-
-		if( sched_obj->state == SCHEDULETABLE_STOPPED ) {
-			continue;
-		}
-
-#if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
-		if( sched_obj->sync.syncStrategy == IMPLICIT ) {
-			// ....
-
-		} else {
-			int adj;
-			// Handle EXPLICIT
-			if( sched_obj->sync.deviation > 0 ) {
-				// The sync counter was set back ==
-				// we have more time to complete the table
-				adj = MIN(sched_obj->sync.deviation, getAdjExpPoint(sched_obj)->maxAdvance );
-				sched_obj->sync.deviation -= adj;
-
-			} else if( sched_obj->sync.deviation < 0 ) {
-				// The sync counter was set forward ==
-				// we have less time to complete the table
-				adj = MIN((-sched_obj->sync.deviation), getAdjExpPoint(sched_obj)->maxRetard);
-				sched_obj->sync.deviation -= adj;
-
-			} else {
-				// all is well
-				sched_obj->state = SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS;
-			}
-		}
-#endif
-
-		/* Check if the expire point have been hit */
-		if( (sched_obj->state == SCHEDULETABLE_RUNNING ||
-				SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS ) &&
-				(c_p->val >= sched_obj->expire_val) )
-		{
-			OsScheduleTableActionType * action;
-
-			action = SA_LIST_GET(&sched_obj->action_list,sched_obj->expire_curr_index);
-
-			switch( action->type ) {
-			case SCHEDULE_ACTION_ACTIVATETASK:
-				ActivateTask(action->task_id);
-				break;
-
-			case SCHEDULE_ACTION_SETEVENT:
-				SetEvent( action->task_id, action->event_id);
-				break;
-
-			default:
-				/** @req OS407 */
-				assert(0);
-		}
-			// Calc new expire val
-			Os_SchTblCalcExpire(sched_obj);
-		}
-
-	}
-}
-
 
 /**
  * Increment a counter. Checks for wraps.
@@ -227,13 +154,14 @@ StatusType IncrementCounter( CounterType counter_id ) {
 	IncCounter(counter);
 
 	check_alarms(counter);
-	check_stbl(counter);
+	Os_SchTblCheck(counter);
 
 	/** @req OS321 */
 	COUNTER_STD_END;
 }
 
 
+/** @req OS383 */
 StatusType GetCounterValue( CounterType counter_id , TickRefType tick_ref)
 {
 	StatusType rv = E_OK;
@@ -265,6 +193,7 @@ StatusType GetCounterValue( CounterType counter_id , TickRefType tick_ref)
 	COUNTER_STD_END;
 }
 
+/** @req OS392 */
 StatusType GetElapsedCounterValue( CounterType counter_id, TickRefType val, TickRefType elapsed_val)
 {
 	StatusType rv = E_OK;
@@ -287,7 +216,8 @@ StatusType GetElapsedCounterValue( CounterType counter_id, TickRefType val, Tick
 
 	GetCounterValue(counter_id,&tick);
 
-#warning missing....OS382
+	/** @req OS382 */
+	*elapsed_val = tick - *val;
 
 	COUNTER_STD_END;
 }
@@ -321,7 +251,7 @@ void OsTick( void ) {
 	//	os_sys.tick = c_p->val;
 
 		check_alarms(c_p);
-		check_stbl(c_p);
+		Os_SchTblCheck(c_p);
 	}
 }
 

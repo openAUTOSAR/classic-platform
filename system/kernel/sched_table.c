@@ -91,22 +91,49 @@ enum OsScheduleTableSyncStrategy getSyncStrategy( OsSchTblType *stblPtr ) {
  *
  * @return
  */
-static void ScheduleTableConsistenyCheck( OsSchTblType *s_p ) {
+static void ScheduleTableConsistenyCheck( OsSchTblType *sTblPtr ) {
 
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 	/** @req OS440 */
-	if( s_p->sync.syncStrategy == IMPLICIT ) {
-		assert( s_p->duration == (s_p->counter->alarm_base.maxallowedvalue +1) );
+	if( sTblPtr->sync.syncStrategy == IMPLICIT ) {
+		assert( sTblPtr->duration == (sTblPtr->counter->alarm_base.maxallowedvalue +1) );
 	}
 
 	/** @req OS431 */
-	if( s_p->sync.syncStrategy == EXPLICIT ) {
-		assert( s_p->duration <= (s_p->counter->alarm_base.maxallowedvalue +1) );
+	if( sTblPtr->sync.syncStrategy == EXPLICIT ) {
+		assert( sTblPtr->duration <= (sTblPtr->counter->alarm_base.maxallowedvalue +1) );
 	}
 #endif
 
 	/** @req OS401 */
-	assert(SA_LIST_CNT(&s_p->action_list)>=1);
+	assert(SA_LIST_CNT(&sTblPtr->expirePointList)>=1);
+
+
+
+	{
+		int iter;
+		TickType delta = 0;
+		TickType minCycle = Os_CounterGetMinCycle(sTblPtr->counter);
+		TickType maxValue =  Os_CounterGetMaxValue(sTblPtr->counter);
+
+		/* - start at offset=0
+		 * - X expiry points = SA_LIST_CNT
+		 * - Final offset.
+		 */
+		/** @req OS443 */
+		/** @req OS408 */
+		for(iter=0; iter  <  SA_LIST_CNT(&sTblPtr->expirePointList) ; iter++) {
+			delta = SA_LIST_GET(&sTblPtr->expirePointList,iter)->offset - delta;
+			assert( delta >=  minCycle );
+			assert( delta <=  maxValue );
+		}
+
+		/* Final */
+		/** @req OS444 */
+		delta = sTblPtr->duration - SA_LIST_GET(&sTblPtr->expirePointList,iter)->offset;
+		assert( delta >=  minCycle );
+		assert( delta <=  maxValue );
+	}
 
 }
 
@@ -449,6 +476,80 @@ StatusType SetScheduleTableAsync( ScheduleTableType sid ) {
 }
 #endif
 
+
+
+/**
+ * Go through the schedule tables connected to this counter
+ *
+ * @param c_p Pointer to counter object
+ */
+void Os_SchTblCheck(OsCounterType *c_p) {
+	/** @req OS002 */
+	/** @req OS007 */
+
+	OsSchTblType *sched_obj;
+
+	/* Iterate through the schedule tables */
+	SLIST_FOREACH(sched_obj,&c_p->sched_head,sched_list) {
+
+		if( sched_obj->state == SCHEDULETABLE_STOPPED ) {
+			continue;
+		}
+
+#if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
+		if( sched_obj->sync.syncStrategy == IMPLICIT ) {
+			// ....
+
+		} else {
+			int adj;
+			// Handle EXPLICIT
+			if( sched_obj->sync.deviation > 0 ) {
+				// The sync counter was set back ==
+				// we have more time to complete the table
+				adj = MIN(sched_obj->sync.deviation, getAdjExpPoint(sched_obj)->maxAdvance );
+				sched_obj->sync.deviation -= adj;
+
+			} else if( sched_obj->sync.deviation < 0 ) {
+				// The sync counter was set forward ==
+				// we have less time to complete the table
+				adj = MIN((-sched_obj->sync.deviation), getAdjExpPoint(sched_obj)->maxRetard);
+				sched_obj->sync.deviation -= adj;
+
+			} else {
+				// all is well
+				sched_obj->state = SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS;
+			}
+		}
+#endif
+
+		/* Check if the expire point have been hit */
+		if( (sched_obj->state == SCHEDULETABLE_RUNNING ||
+				SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS ) &&
+				(c_p->val >= sched_obj->expire_val) )
+		{
+			OsScheduleTableExpiryPointType * action;
+			int i;
+
+			action = SA_LIST_GET(&sched_obj->expirePointList,sched_obj->expire_curr_index);
+
+			/** @req OS407 */
+			/** @req OS412 */
+
+			/* According to OS412 activate tasks before events */
+			for(i=0; i< action->taskListCnt;i++ ) {
+				ActivateTask(action->taskList[i]);
+			}
+
+			for(i=0; i< action->eventListCnt;i++ ) {
+				SetEvent( action->eventList[i].task, action->eventList[i].event);
+			}
+			// Calc new expire val
+			Os_SchTblCalcExpire(sched_obj);
+		}
+
+	}
+}
+
 /*
  *start e   e       e  delta stop
  * |----|---|-------|---------|
@@ -468,20 +569,20 @@ StatusType SetScheduleTableAsync( ScheduleTableType sid ) {
  * counter I will miss to update the delta values
  */
 static void os_stbl_action_calc_delta( OsSchTblType *stbl ) {
-	OsScheduleTableActionType * first;
-	OsScheduleTableActionType * second;
+	OsScheduleTableExpiryPointType * first;
+	OsScheduleTableExpiryPointType * second;
 //	ALIST_DECL_ITER(iter);
 	int iter;
 
 	// calculate the delta to next action
 
-	for(iter=1; iter <  SA_LIST_CNT(&stbl->action_list) ;iter++) {
-		first = SA_LIST_GET(&stbl->action_list,iter-1);
-		second = SA_LIST_GET(&stbl->action_list,iter);
+	for(iter=1; iter <  SA_LIST_CNT(&stbl->expirePointList) ;iter++) {
+		first = SA_LIST_GET(&stbl->expirePointList,iter-1);
+		second = SA_LIST_GET(&stbl->expirePointList,iter);
 		first->delta = second->offset - first->offset;
 	}
 	// calculate the last delta( to countes max value )
-	first = SA_LIST_GET(&stbl->action_list, SA_LIST_CNT(&stbl->action_list)-1);
+	first = SA_LIST_GET(&stbl->expirePointList, SA_LIST_CNT(&stbl->expirePointList)-1);
 	first->delta = stbl->counter->alarm_base.maxallowedvalue - first->offset;
 }
 
@@ -516,7 +617,7 @@ void Os_SchTblCalcExpire( OsSchTblType *stbl ) {
 	OsSchTblType *nextStblPtr;
 
 
-	if( (stbl->expire_curr_index) == SA_LIST_CNT(&stbl->action_list) ) {
+	if( (stbl->expire_curr_index) == SA_LIST_CNT(&stbl->expirePointList) ) {
 		/* We are at the last expiry point */
 		finalOffset = Os_SchTblGetFinalOffset(stbl);
 
@@ -527,7 +628,8 @@ void Os_SchTblCalcExpire( OsSchTblType *stbl ) {
 
 		stbl->expire_curr_index++;
 
-	} else if( (stbl->expire_curr_index) > SA_LIST_CNT(&stbl->action_list) ) {
+	} else if( (stbl->expire_curr_index) > SA_LIST_CNT(&stbl->expirePointList) ) {
+		/* At final offset */
 
 		/** @req OS194 */
 		if( (stbl->repeating == REPEATING) || (stbl->next != NULL) ) {
@@ -542,6 +644,8 @@ void Os_SchTblCalcExpire( OsSchTblType *stbl ) {
 				stbl->state = SCHEDULETABLE_STOPPED;
 				nextStblPtr->state = SCHEDULETABLE_RUNNING;
 			} else {
+				/** @req OS414 */
+
 				/* REPEATING */
 				assert( stbl->repeating == REPEATING );
 				initalOffset = Os_SchTblGetInitialOffset(stbl);
@@ -560,7 +664,7 @@ void Os_SchTblCalcExpire( OsSchTblType *stbl ) {
 		}
 	} else {
 
-		delta = SA_LIST_GET(&stbl->action_list,stbl->expire_curr_index)->delta;
+		delta = SA_LIST_GET(&stbl->expirePointList,stbl->expire_curr_index)->delta;
 
 		stbl->expire_val =	Os_CounterCalcModulo(
 						Os_CounterGetValue(stbl->counter),

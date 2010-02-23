@@ -13,20 +13,6 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-/*
- * os_test.h
- *
- *  Created on: 2009-jan-08
- *      Author: mahi
- */
-
 #ifndef OS_TEST_H_
 #define OS_TEST_H_
 

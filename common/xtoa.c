@@ -13,71 +13,81 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-
 #include <stdlib.h>
 /**
- * Ansi C "itoa" based on Kernighan & Ritchie's "Ansi C"
- * with slight modification to optimize for specific architecture:
+ * K & R itoa
  */
 
 void strreverse(char* begin, char* end) {
 
-  char aux;
+	char c;
 
-  while (end > begin) {
-    aux = *end, *end-- = *begin, *begin++ = aux;
-  }
+	while (end > begin) {
+		c = *end;
+		*end-- = *begin;
+		*begin++ = c;
+	}
 }
 
+/**
+ * Convert a number to a string
+ *
+ * @param val		The value to convert
+ * @param str		Pointer to a space where to put the string
+ * @param base		The base
+ * @param negative	If negative or not.
+ */
+void xtoa( unsigned long val, char* str, int base, int negative) {
+	static char num[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+	char* wstr = str;
+	int value = (int) val;
 
-// int to string
-void xtoa(unsigned long val, char* str, int base,int negative) {
-  static char num[] = "0123456789abcdefghijklmnopqrstuvwxyz";
-  char* wstr = str;
-  int value = (int)val;
+	div_t res;
 
-  div_t res;
+	// Validate base
+	if (base < 2 || base > 35) {
+		*wstr = '\0';
+		return;
+	}
 
-  // Validate base
-  if (base < 2 || base > 35) {
-    *wstr = '\0';
-    return;
-  }
+	// Check sign
+	if (negative) {
+		value = -value;
+	}
 
-  // Check sign
-  if ( negative ) {
-    value = -value;
-  }
+	do {
+		res = div(value, base);
+		*wstr++ = num[res.rem];
+	} while ((value = res.quot));
 
-  do {
-    res = div(value, base);
-    *wstr++ = num[res.rem];
-  } while ((value = res.quot));
+	if (negative)
+		*wstr++ = '-';
 
-  if (negative)
-    *wstr++ = '-';
+	*wstr = '\0';
 
-  *wstr = '\0';
-
-  // Reverse string
-  strreverse(str, wstr - 1);
+	// Reverse string
+	strreverse(str, wstr - 1);
 }
 
-
-// unsigned long to string
+/**
+ * Converts an unsigned long to a string
+ *
+ * @param value  The value to convert
+ * @param str    Pointer to the string
+ * @param base   The base
+ */
 void ultoa(unsigned long value, char* str, int base) {
-  xtoa(value,str,base,0);
+	xtoa(value, str, base, 0);
 }
 
-// int to string
+/**
+ * Converts an integer to a string
+ *
+ * @param value The value to convert
+ * @param str   Pointer to the string to write to
+ * @param base  The base
+ */
 void itoa(int value, char* str, int base) {
-  xtoa(value,str,base,(value<0));
+	xtoa(value, str, base, (value < 0));
 }
 

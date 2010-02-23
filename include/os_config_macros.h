@@ -13,6 +13,13 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/* Configure "rules"
+ * - Don't pollute the namespace with the generator tools. The tools should
+ *   ONLY know the GEN_xxx macros.
+ * - If something is a container with multiplicity 1 and above, make it a pointer.
+ * - ...
+ */
+
 #ifndef _OS_CONFIG_MACROS_H
 #define _OS_CONFIG_MACROS_H
 
@@ -225,6 +232,25 @@
 	.driver.OsGptChannelRef = _gpt_ch
 #endif
 
+
+#define	GEN_ALARM_AUTOSTART_NAME(_id)    &(Os_AlarmAutoStart_ ## _id)
+
+/**
+ * _id
+ * _type
+ * _alarms_time
+ * _cycle_time
+ * _app_mode
+ */
+#define GEN_ALARM_AUTOSTART(_id, _type, _alarm_time, _cycle_time, _app_mode ) \
+		const OsAlarmAutostartType Os_AlarmAutoStart_ ## _id = \
+		{ \
+			.autostartType = _type, \
+			.alarmTime = _alarm_time, \
+			.cycleTime = _cycle_time, \
+			.appModeRef = _app_mode \
+		}
+
 #define GEN_ALARM_HEAD OsAlarmType alarm_list[] =
 
 /**
@@ -237,17 +263,7 @@
  * _counter_id
  *    The id of the counter to drive the alarm
  *
- * _autostart_active
- *     If the alarm should be auto-started.
- *
- * _autostart_alarmtime
- *     Only used if active = 1
- *
- * _autostart_cycletime
- *     Only used if active = 1
- *
- * _autostart_application_mode_mask
- *     Set to 0 for now
+ * _autostart_ref
  *
  * _X_type       - Any of:
  * 					ALARM_ACTION_ACTIVATETASK
@@ -265,10 +281,7 @@
  *
  */
 #define GEN_ALARM( _id, _name, _counter_id,	\
-			_autostart_active,				\
-			_autostart_alarmtime,			\
-			_autostart_cycletime,			\
-			_autostart_application_mode_mask,\
+		    _autostart_ref,                 \
 			_action_type,					\
 			_action_task_id,				\
 			_action_event_id,				\
@@ -277,12 +290,7 @@
 	.name = _name,							\
 	.counter = &counter_list[_counter_id],	\
 	.counter_id = _counter_id,				\
-	.autostart = {							\
-		.active = _autostart_active,		\
-		.alarmtime = _autostart_alarmtime,	\
-		.cycletime = _autostart_cycletime,	\
-		.appmode_mask = _autostart_application_mode_mask,	\
-	},										\
+	.autostartPtr = _autostart_ref,            \
 	.action = {								\
 		.type = _action_type,				\
 		.task_id = _action_task_id,			\
@@ -291,37 +299,98 @@
 	},										\
 }
 
-#define GEN_SCHEDULETABLE_HEAD OsSchTblType sched_list[] =
-#define GEN_SCHEDULETABLE(  _id, _name, _counter, _repeating, _length, _application_mask, \
-							_action_cnt, _action_expire_ref, \
-							_autostart_active, _autostart_type, _autostart_rel_offset, _autostart_appmode, \
-							_sync_strategy, _sync_explicit_precision , \
-							_adj_max_advance,_adj_max_retard  ) \
-{												\
-	.name = _name,						\
-	.counter = &counter_list[_counter],	\
-	.repeating = _repeating,			\
-	.length = _length,					\
-	.app_mask = _application_mask,		\
-	.action_list = SA_LIST_HEAD_INITIALIZER(_action_cnt,_action_expire_ref), \
-	.autostart = { \
-		.active = _autostart_active,		\
-		.type = _autostart_type,	\
-		.relOffset = _autostart_rel_offset,	\
-		.appModeRef = _autostart_appmode,	\
-	}, \
-	.sync = { \
-		.syncStrategy = _sync_strategy,		\
-		.explicitPrecision = _sync_explicit_precision,	\
-	}, \
-	.adjExpPoint = { \
-		.maxAdvance = _adj_max_advance,		\
-		.maxRetard = _adj_max_retard,	\
-	} \
+/*
+ *---------------------- SCHEDULE TABLES -----------------------------------
+ */
+
+#define GEN_SCHTBL_EXPIRY_POINT_HEAD(_id ) \
+		OsScheduleTableExpiryPointType Os_SchTblExpPointList_##_id[] =
+
+#define GEN_SCHTBL_EXPIRY_POINT_W_TASK_EVENT(_id, _offset ) 										\
+	{																			\
+		.offset      = _offset,													\
+		.taskList    = Os_SchTblTaskList_ ## _id ## _ ## _offset,				\
+		.taskListCnt = ARRAY_SIZE(Os_SchTblTaskList_ ## _id ## _ ## _offset),	\
+		.eventList   = Os_SchTblEventList_ ## _id ## _ ## _offset,				\
+		.eventListCnt    = ARRAY_SIZE(Os_SchTblEventList_ ## _id ## _ ## _offset)	\
+	}
+
+#define GEN_SCHTBL_EXPIRY_POINT_W_TASK(_id, _offset ) 							\
+	{																			\
+		.offset      = _offset,													\
+		.taskList    = Os_SchTblTaskList_ ## _id ## _ ## _offset,				\
+		.taskListCnt = ARRAY_SIZE(Os_SchTblTaskList_ ## _id ## _ ## _offset),	\
+	}
+
+#define GEN_SCHTBL_EXPIRY_POINT_W_EVENT(_id, _offset ) 							\
+	{																			\
+		.offset      = _offset,													\
+		.eventList   = Os_SchTblEventList_ ## _id ## _ ## _offset,				\
+		.eventListCnt    = ARRAY_SIZE(Os_SchTblEventList_ ## _id ## _ ## _offset)	\
+	}
+
+#define	GEN_SCHTBL_TASK_LIST_HEAD( _id, _offset ) \
+		const TaskType Os_SchTblTaskList_ ## _id ## _ ## _offset[] =
+
+#define	GEN_SCHTBL_EVENT_LIST_HEAD( _id, _offset ) \
+		const OsScheduleTableEventSettingType Os_SchTblEventList_ ## _id ## _ ## _offset[] =
+
+#define GEN_SCHTBL_AUTOSTART(_id, _type, _offset, _app_mode ) \
+		const struct OsSchTblAutostart Os_SchTblAutoStart_ ## _id = \
+		{ \
+			.type = _type, \
+			.offset = _offset, \
+			.appMode = _app_mode, \
+		}
+
+#define GEN_SCHTBL_AUTOSTART_NAME(_id)	&(Os_SchTblAutoStart_ ## _id)
+
+#define GEN_SCHTBL_HEAD OsSchTblType sched_list[] =
+
+/**
+ * _id
+ *    NOT USED
+ *
+ * _name
+ *    Name of the alarm, string
+ *
+ * _counter_ref
+ *    Pointer to the counter that drives the table
+ *
+ * _repeating
+ *   SINGLE_SHOT or REPEATING
+ *
+ * _duration
+ *   The duration of the schedule table
+ *
+ * _autostart_ref
+ *   Pointer to autostart configuration.
+ *   If autostart is desired set name to GEN_SCHTBL_AUTOSTART_NAME(<id>). It also
+ *   requires that GEN_SCHTBL_AUTOSTART(...) is set.
+ *   Set to NULL if not autostart configuration is desired.
+ *
+ * The usage of the macro requires that GEN_SCHTBL_EXPIRY_POINT_HEAD(<id>) is also
+ * set.
+ */
+
+#define GEN_SCHEDULETABLE(  _id, _name, _counter_id, _repeating, \
+							_duration,       \
+							_autostart_ref ) \
+{											 \
+	.name = _name,						     \
+	.counter = &counter_list[_counter_id],	     \
+	.repeating = _repeating,			     \
+	.duration = _duration,					 \
+	.expirePointList = {                     \
+	  .data = (void *)( Os_SchTblExpPointList_ ## _id ), \
+	  .cnt = ARRAY_SIZE(Os_SchTblExpPointList_ ## _id), \
+	 }, \
+	.autostartPtr = _autostart_ref, 			 \
 }
 
+
 #if (  OS_SC3 == STD_ON) || (  OS_SC4 == STD_ON)
-#error BEPA
+#error OLD or NOT implemented
 #define GEN_HOOKS( _startup, _protection, _shutdown, _error, _pretask, _posttask ) \
 struct OsHooks os_conf_global_hooks = { \
 		.StartupHook = _startup, 		\
