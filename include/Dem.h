@@ -114,6 +114,7 @@ Std_ReturnType Dem_GetEventFailed(Dem_EventIdType eventId, boolean *eventFailed)
 Std_ReturnType Dem_GetEventTested(Dem_EventIdType eventId, boolean *eventTested);
 Std_ReturnType Dem_GetFaultDetectionCounter(Dem_EventIdType eventId, sint8 *counter);
 Std_ReturnType Dem_SetOperationCycleState(Dem_OperationCycleIdType OperationCycleId, Dem_OperationCycleStateType CycleState);
+Std_ReturnType Dem_GetDTCOfEvent(Dem_EventIdType eventId, Dem_DTCKindType dtcKind, uint32* dtcOfEvent);
 
 
 /*
@@ -126,6 +127,19 @@ void Dem_ReportErrorStatus(Dem_EventIdType eventId ,uint8 eventStatus);
  * Interface DCM <-> DEM (8.3.5)
  */
 Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin);
+
+Dem_ReturnSetDTCFilterType Dem_SetDTCFilter(uint8 dtcStatusMask,
+		Dem_DTCKindType dtcKind,
+		Dem_DTCOriginType dtcOrigin,
+		Dem_FilterWithSeverityType filterWithSeverity,
+		Dem_DTCSeverityType dtcSeverityMask,
+		Dem_FilterForFDCType filterForFaultDetectionCounter);
+
+Dem_ReturnGetNumberOfFilteredDTCType Dem_GetNumberOfFilteredDtc(uint16* numberOfFilteredDTC);
+
+Dem_ReturnGetNextFilteredDTCType Dem_GetNextFilteredDTC(uint32* dtc, Dem_EventStatusExtendedType* dtcStatus);
+
+Dem_ReturnGetStatusOfDTCType Dem_GetStatusOfDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin, Dem_EventStatusExtendedType* dtcStatus);
 
 
 /*

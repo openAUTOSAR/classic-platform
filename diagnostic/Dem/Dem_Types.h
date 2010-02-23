@@ -148,6 +148,29 @@ enum {
 };
 
 /*
+ * Dem_FilterWithSeverityType
+ */
+typedef uint8 Dem_FilterWithSeverityType;
+#define DEM_FILTER_WITH_SEVERITY_YES    0x00
+#define DEM_FILTER_WITH_SEVERITY_NO     0x01
+
+/*
+ * Dem_FilterForFDCType
+ */
+typedef uint8 Dem_FilterForFDCType;
+#define DEM_FILTER_FOR_FDC_YES          0x00
+#define DEM_FILTER_FOR_FDC_NO           0x01
+
+/*
+ * Dem_DTCSeverityType
+ */
+typedef uint8 Dem_DTCSeverityType;
+#define DEM_SEVERITY_NO_SEVERITY        0x00 // No severity information available
+#define DEM_SEVERITY_MAINTENANCE_ONLY   0x20
+#define DEM_SEVERITY_CHECK_AT_NEXT_FALT 0x40
+#define DEM_SEVERITY_CHECK_IMMEDIATELY  0x80
+
+/*
  * Dem_ReturnSetDTCFilterType
  */
 typedef uint8 Dem_ReturnSetDTCFilterType;
@@ -157,7 +180,7 @@ typedef uint8 Dem_ReturnSetDTCFilterType;
 /*
  * Dem_ReturnGetStatusOfDTCType
  */
-typedef uint8 Dem_ReturnGetStatusOfDtcType;
+typedef uint8 Dem_ReturnGetStatusOfDTCType;
 #define DEM_STATUS_OK						0x00
 #define DEM_STATUS_WRONG_DTC				0x01
 #define DEM_STATUS_WRONG_DTCORIGIN			0x02

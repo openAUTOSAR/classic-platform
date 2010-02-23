@@ -35,10 +35,10 @@ typedef uint16 ChecksumType;
 // For keeping track of the events status
 typedef struct {
 	Dem_EventIdType				eventId;
+	const Dem_EventParameterType *eventParamRef;
 	uint16						occurrence;
 	Dem_EventStatusType			eventStatus;
 	boolean						eventStatusChanged;
-	Dem_OperationCycleIdType	operationCycleId;
 	Dem_EventStatusExtendedType	eventStatusExtended;
 } EventStatusRecType;
 
@@ -133,6 +133,7 @@ void setZero(void *ptr, uint16 nrOfBytes)
 	}
 }
 
+
 /*
  * Procedure:	zeroPriMemBuffers
  * Description:	Fill the primary buffers with zeroes
@@ -143,6 +144,7 @@ void zeroPriMemBuffers(void)
 	setZero(priMemFreezeFrameBuffer, sizeof(priMemFreezeFrameBuffer));
 	setZero(priMemExtDataBuffer, sizeof(priMemExtDataBuffer));
 }
+
 
 /*
  * Procedure:	calcChecksum
@@ -159,6 +161,7 @@ ChecksumType calcChecksum(void *data, uint16 nrOfBytes)
 	sum ^= 0xaaaa;
 	return sum;
 }
+
 
 /*
  * Procedure:	checkDtcKind
@@ -182,6 +185,7 @@ boolean checkDtcKind(Dem_DTCKindType dtcKind, const Dem_EventParameterType *even
 	return result;
 }
 
+
 /*
  * Procedure:	checkDtcGroup
  * Description:	Return TRUE if "dtc" match the events DTC or "dtc" is
@@ -204,6 +208,28 @@ boolean checkDtcGroup(uint32 dtc, const Dem_EventParameterType *eventParam)
 	return result;
 }
 
+
+/*
+ * Procedure:	lookupEventIdParameter
+ * Description:	Returns the pointer to event id parameters of "eventId" in "*eventIdParam",
+ * 				if not found NULL is returned.
+ */
+void lookupEventIdParameter(Dem_EventIdType eventId, const Dem_EventParameterType **const eventIdParam)
+{
+	uint16 i;
+	*eventIdParam = NULL;
+
+	// Lookup the correct event id parameters
+	for (i = 0; !configSet->EventParameter[i].Arc_EOL; i++) {
+		if (configSet->EventParameter[i].EventID == eventId) {
+			*eventIdParam = &configSet->EventParameter[i];
+			return;
+		}
+	}
+	// Id not found return with NULL pointer
+}
+
+
 /*
  * Procedure:	updateEventStatusRec
  * Description:	Update the status of "eventId", if not exist and "createIfNotExist" is
@@ -224,10 +250,10 @@ void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_EventSta
 		if (i < DEM_MAX_NUMBER_EVENT) {
 			// Create new event record
 			eventStatusBuffer[i].eventId = eventParam->EventID;
+			eventStatusBuffer[i].eventParamRef = eventParam;
 			eventStatusBuffer[i].occurrence = 0;
 			eventStatusBuffer[i].eventStatus = DEM_EVENT_STATUS_PASSED;
 			eventStatusBuffer[i].eventStatusChanged = FALSE;
-			eventStatusBuffer[i].operationCycleId = eventParam->EventClass->OperationCycleRef;
 			eventStatusBuffer[i].eventStatusExtended = DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE;
 		}
 		else {
@@ -302,6 +328,7 @@ void mergeEventStatusRec(EventRecType *eventRec)
 		if (i < DEM_MAX_NUMBER_EVENT) {
 			// Create new event, from stored event
 			eventStatusBuffer[i].eventId = eventRec->eventId;
+			lookupEventIdParameter(eventRec->eventId, &eventStatusBuffer[i].eventParamRef);
 			eventStatusBuffer[i].occurrence = eventRec->occurrence;
 			eventStatusBuffer[i].eventStatus = DEM_EVENT_STATUS_PASSED;
 			eventStatusBuffer[i].eventStatusChanged = FALSE;
@@ -316,6 +343,7 @@ void mergeEventStatusRec(EventRecType *eventRec)
 
 	McuE_ExitCriticalSection(state);
 }
+
 
 /*
  * Procedure:	deleteEventStatusRec
@@ -360,27 +388,6 @@ void getEventStatusRec(Dem_EventIdType eventId, EventStatusRecType *eventStatusR
 }
 
 
-/*
- * Procedure:	lookupEventIdParameter
- * Description:	Returns the pointer to event id parameters of "eventId" in "*eventIdParam",
- * 				if not found NULL is returned.
- */
-void lookupEventIdParameter(Dem_EventIdType eventId, const Dem_EventParameterType **const eventIdParam)
-{
-	uint16 i;
-	*eventIdParam = NULL;
-
-	// Lookup the correct event id parameters
-	for (i = 0; !configSet->EventParameter[i].Arc_EOL; i++) {
-		if (configSet->EventParameter[i].EventID == eventId) {
-			*eventIdParam = &configSet->EventParameter[i];
-			return;
-		}
-	}
-	// Id not found return with NULL pointer
-}
-
-
 void getFreezeFrameData(const Dem_EventParameterType *eventParam, FreezeFrameRecType *freezeFrame)
 {
 	// TODO: Fill out
@@ -397,6 +404,7 @@ void updateFreezeFrameOccurrencePreInit(EventRecType *EventBuffer)
 {
 	// TODO: Fill out
 }
+
 
 /*
  * Procedure:	getExtendedData
@@ -844,6 +852,7 @@ void getEventStatus(Dem_EventIdType eventId, Dem_EventStatusExtendedType *eventS
 	}
 }
 
+
 /*
  * Procedure:	getEventFailed
  * Description:	Returns the TRUE or FALSE of "eventId" in "eventFailed" depending on current status.
@@ -867,6 +876,7 @@ void getEventFailed(Dem_EventIdType eventId, boolean *eventFailed)
 		*eventFailed = FALSE;
 	}
 }
+
 
 /*
  * Procedure:	getEventTested
@@ -893,10 +903,11 @@ void getEventTested(Dem_EventIdType eventId, boolean *eventTested)
 	}
 }
 
+
 /*
  * Procedure:	getFaultDetectionCounter
  * Description:	Returns pre debounce counter of "eventId" in "counter" and return value E_OK if
- * 			the counter was available else E_NOT_OK.
+ * 				the counter was available else E_NOT_OK.
  */
 Std_ReturnType getFaultDetectionCounter(Dem_EventIdType eventId, sint8 *counter)
 {
@@ -934,6 +945,7 @@ Std_ReturnType getFaultDetectionCounter(Dem_EventIdType eventId, sint8 *counter)
 	return returnCode;
 }
 
+
 /*
  * Procedure:	setOperationCycleState
  * Description:	Change the operation state of "operationCycleId" to "cycleState" and updates stored
@@ -952,7 +964,7 @@ Std_ReturnType setOperationCycleState(Dem_OperationCycleIdType operationCycleId,
 			operationCycleStateList[operationCycleId] = cycleState;
 			// Lookup event ID
 			for (i = 0; i < DEM_MAX_NUMBER_EVENT; i++) {
-				if ((eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) && (eventStatusBuffer[i].operationCycleId == operationCycleId)) {
+				if ((eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) && (eventStatusBuffer[i].eventParamRef->EventClass->OperationCycleRef == operationCycleId)) {
 					eventStatusBuffer[i].eventStatusExtended &= ~DEM_TEST_FAILED_THIS_OPERATION_CYCLE;
 					eventStatusBuffer[i].eventStatusExtended |= DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE;
 				}
@@ -963,7 +975,7 @@ Std_ReturnType setOperationCycleState(Dem_OperationCycleIdType operationCycleId,
 			operationCycleStateList[operationCycleId] = cycleState;
 			// Lookup event ID
 			for (i = 0; i < DEM_MAX_NUMBER_EVENT; i++) {
-				if ((eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) && (eventStatusBuffer[i].operationCycleId == operationCycleId)) {
+				if ((eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) && (eventStatusBuffer[i].eventParamRef->EventClass->OperationCycleRef == operationCycleId)) {
 					if (!(eventStatusBuffer[i].eventStatusExtended & DEM_TEST_FAILED_THIS_OPERATION_CYCLE) && !(eventStatusBuffer[i].eventStatusExtended & DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE)) {
 						eventStatusBuffer[i].eventStatusExtended &= ~DEM_PENDING_DTC;		// Clear pendingDTC bit
 					}
@@ -987,6 +999,7 @@ Std_ReturnType setOperationCycleState(Dem_OperationCycleIdType operationCycleId,
 
 	return returnCode;
 }
+
 
 //==============================================================================//
 //																				//
@@ -1227,6 +1240,10 @@ Std_ReturnType Dem_ResetEventStatus(Dem_EventIdType eventId)
 }
 
 
+/*
+ * Procedure:	Dem_GetEventStatus
+ * Reentrant:	Yes
+ */
 Std_ReturnType Dem_GetEventStatus(Dem_EventIdType eventId, Dem_EventStatusExtendedType *eventStatusExtended)
 {
 	Std_ReturnType returnCode = E_OK;
@@ -1247,6 +1264,10 @@ Std_ReturnType Dem_GetEventStatus(Dem_EventIdType eventId, Dem_EventStatusExtend
 }
 
 
+/*
+ * Procedure:	Dem_GetEventFailed
+ * Reentrant:	Yes
+ */
 Std_ReturnType Dem_GetEventFailed(Dem_EventIdType eventId, boolean *eventFailed)
 {
 	Std_ReturnType returnCode = E_OK;
@@ -1267,6 +1288,10 @@ Std_ReturnType Dem_GetEventFailed(Dem_EventIdType eventId, boolean *eventFailed)
 }
 
 
+/*
+ * Procedure:	Dem_GetEventTested
+ * Reentrant:	Yes
+ */
 Std_ReturnType Dem_GetEventTested(Dem_EventIdType eventId, boolean *eventTested)
 {
 	Std_ReturnType returnCode = E_OK;
@@ -1287,6 +1312,10 @@ Std_ReturnType Dem_GetEventTested(Dem_EventIdType eventId, boolean *eventTested)
 }
 
 
+/*
+ * Procedure:	Dem_GetFaultDetectionCounter
+ * Reentrant:	No
+ */
 Std_ReturnType Dem_GetFaultDetectionCounter(Dem_EventIdType eventId, sint8 *counter)
 {
 	Std_ReturnType returnCode = E_OK;
@@ -1307,6 +1336,10 @@ Std_ReturnType Dem_GetFaultDetectionCounter(Dem_EventIdType eventId, sint8 *coun
 }
 
 
+/*
+ * Procedure:	Dem_SetOperationCycleState
+ * Reentrant:	No
+ */
 Std_ReturnType Dem_SetOperationCycleState(Dem_OperationCycleIdType operationCycleId, Dem_OperationCycleStateType cycleState)
 {
 	Std_ReturnType returnCode = E_OK;
@@ -1321,6 +1354,34 @@ Std_ReturnType Dem_SetOperationCycleState(Dem_OperationCycleIdType operationCycl
 #if (DEM_DEV_ERROR_DETECT == STD_ON)
 		Det_ReportError(MODULE_ID_DEM, 0, DEM_SETOPERATIONCYCLESTATE_ID, DEM_E_UNINIT);
 #endif
+		returnCode = E_NOT_OK;
+	}
+
+	return returnCode;
+}
+
+
+/*
+ * Procedure:	Dem_GetDTCOfEvent
+ * Reentrant:	Yes
+ */
+Std_ReturnType Dem_GetDTCOfEvent(Dem_EventIdType eventId, Dem_DTCKindType dtcKind, uint32* dtcOfEvent)
+{
+	Std_ReturnType returnCode = E_NO_DTC_AVAILABLE;
+	const Dem_EventParameterType *eventParam;
+
+	lookupEventIdParameter(eventId, &eventParam);
+
+	if (eventParam != NULL) {
+		if (checkDtcKind(dtcKind, eventParam)) {
+			if (eventParam->DTCClassRef != NULL) {
+				*dtcOfEvent = eventParam->DTCClassRef->DTC;
+				returnCode = E_OK;
+			}
+		}
+	}
+	else {
+		// Event Id not found
 		returnCode = E_NOT_OK;
 	}
 
@@ -1368,6 +1429,10 @@ void Dem_ReportErrorStatus( Dem_EventIdType eventId, Dem_EventStatusType eventSt
 /*********************************
  * Interface DCM <-> DEM (8.3.5) *
  *********************************/
+/*
+ * Procedure:	Dem_ClearDTC
+ * Reentrant:	No
+ */
 Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin)
 {
 	Dem_ReturnClearDTCType result = DEM_CLEAR_OK;
@@ -1379,7 +1444,7 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
 	for (i = 0; i < DEM_MAX_NUMBER_EVENT; i++) {
 		eventId = eventStatusBuffer[i].eventId;
 		if (eventId != DEM_EVENT_ID_NULL) {
-			lookupEventIdParameter(eventId, &eventParam);
+			eventParam = eventStatusBuffer[i].eventParamRef;
 			if (eventParam != NULL) {
 				if (checkDtcKind(dtcKind, eventParam)) {
 					if (checkDtcGroup(dtc, eventParam)) {
@@ -1409,7 +1474,6 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
 							}
 						}
 					}
-
 				}
 			}
 			else {
@@ -1418,10 +1482,9 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
 			Det_ReportError(MODULE_ID_DEM, 0, DEM_CLEAR_DTC_ID, DEM_E_UNEXPECTED_EXECUTION);
 #endif
 			}
-
-
 		}
 	}
+
 	return result;
 }
 

@@ -124,6 +124,7 @@ typedef unsigned char StatusType;
 
 #define E_NOT_OK				1
 
+#define E_NO_DTC_AVAILABLE		2
 #define E_SESSION_NOT_ALLOWED	4
 #define E_PROTOCOL_NOT_ALLOWED	5
 #define E_REQUEST_NOT_ACCEPTED	8
