@@ -32,6 +32,16 @@
 
 typedef uint16 ChecksumType;
 
+// DtcFilterType
+typedef struct {
+	Dem_EventStatusExtendedType dtcStatusMask;
+	Dem_DTCKindType				dtcKind;
+	Dem_DTCOriginType			dtcOrigin;
+	Dem_FilterWithSeverityType	filterWithSeverity;
+	Dem_DTCSeverityType			dtcSeverityMask;
+	Dem_FilterForFDCType		filterForFaultDetectionCounter;
+} DtcFilterType;
+
 // For keeping track of the events status
 typedef struct {
 	Dem_EventIdType				eventId;
@@ -95,10 +105,15 @@ static Std_VersionInfoType _Dem_VersionInfo =
 #endif /* DEM_VERSION_INFO_API */
 
 /*
+ * Allocation of DTC filter params
+ */
+static DtcFilterType dtcFilter;
+
+/*
  * Allocation of operation cycle state list
  */
-
 static Dem_OperationCycleStateType operationCycleStateList[DEM_OPERATION_CYCLE_ID_ENDMARK];
+
 /*
  * Allocation of local event status buffer
  */
@@ -332,6 +347,7 @@ void mergeEventStatusRec(EventRecType *eventRec)
 			eventStatusBuffer[i].occurrence = eventRec->occurrence;
 			eventStatusBuffer[i].eventStatus = DEM_EVENT_STATUS_PASSED;
 			eventStatusBuffer[i].eventStatusChanged = FALSE;
+			eventStatusBuffer[i].eventStatusExtended = DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE | DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR;
 		}
 		else {
 			// Error: Event status buffer full
@@ -1158,6 +1174,14 @@ void Dem_Init(void)
 		}
 	}
 
+	// Init the dtc filter
+	dtcFilter.dtcStatusMask = 0x00;										// All allowed
+	dtcFilter.dtcKind = DEM_DTC_KIND_ALL_DTCS;							// All kinds of DTCs
+	dtcFilter.dtcOrigin = DEM_DTC_ORIGIN_PRIMARY_MEMORY;				// Primary memory
+	dtcFilter.filterWithSeverity = DEM_FILTER_WITH_SEVERITY_NO;			// No Severity filtering
+	dtcFilter.dtcSeverityMask = DEM_SEVERITY_NO_SEVERITY;				// Not used when filterWithSeverity is FALSE
+	dtcFilter.filterForFaultDetectionCounter = DEM_FILTER_FOR_FDC_NO;	// No fault detection counter filtering
+
 	demState = DEM_INITIALIZED;
 }
 
@@ -1429,6 +1453,72 @@ void Dem_ReportErrorStatus( Dem_EventIdType eventId, Dem_EventStatusType eventSt
 /*********************************
  * Interface DCM <-> DEM (8.3.5) *
  *********************************/
+/*
+ * Procedure:	Dem_SetDTCFilter
+ * Reentrant:	No
+ */
+Dem_ReturnSetDTCFilterType Dem_SetDTCFilter(uint8 dtcStatusMask,
+		Dem_DTCKindType dtcKind,
+		Dem_DTCOriginType dtcOrigin,
+		Dem_FilterWithSeverityType filterWithSeverity,
+		Dem_DTCSeverityType dtcSeverityMask,
+		Dem_FilterForFDCType filterForFaultDetectionCounter) {
+
+	Dem_ReturnSetDTCFilterType returnCode = DEM_WRONG_FILTER;
+
+	// Check dtcKind parameter
+	if ((dtcKind == DEM_DTC_KIND_ALL_DTCS) || (dtcKind ==  DEM_DTC_KIND_EMISSON_REL_DTCS)) {
+
+		// Check dtcOrigin parameter
+		if ((dtcOrigin == DEM_DTC_ORIGIN_SECONDARY_MEMORY) || (dtcOrigin == DEM_DTC_ORIGIN_PRIMARY_MEMORY)
+			|| (dtcOrigin == DEM_DTC_ORIGIN_PERMANENT_MEMORY) || (dtcOrigin == DEM_DTC_ORIGIN_MIRROR_MEMORY)) {
+
+			// Check filterWithSeverity and dtcSeverityMask parameter
+			if ((filterWithSeverity == DEM_FILTER_WITH_SEVERITY_NO)
+				|| ((filterWithSeverity == DEM_FILTER_WITH_SEVERITY_YES) && !(dtcSeverityMask & ~(DEM_SEVERITY_MAINTENANCE_ONLY | DEM_SEVERITY_CHECK_AT_NEXT_FALT | DEM_SEVERITY_CHECK_IMMEDIATELY)))){
+
+				// Check filterForFaultDetectionCounter parameter
+				if ((filterForFaultDetectionCounter == DEM_FILTER_FOR_FDC_YES) || (filterForFaultDetectionCounter ==  DEM_FILTER_FOR_FDC_NO)) {
+					// Yes all parameters correct, set the new filters.
+					dtcFilter.dtcStatusMask = dtcStatusMask;
+					dtcFilter.dtcKind = dtcKind;
+					dtcFilter.dtcOrigin = dtcOrigin;
+					dtcFilter.filterWithSeverity = filterWithSeverity;
+					dtcFilter.dtcSeverityMask = dtcSeverityMask;
+					dtcFilter.filterForFaultDetectionCounter = filterForFaultDetectionCounter;
+
+					returnCode = DEM_FILTER_ACCEPTED;
+				}
+			}
+		}
+	}
+
+	return returnCode;
+}
+
+/*
+ * Procedure:	Dem_GetStatusOfDTC
+ * Reentrant:	No
+ */
+Dem_ReturnGetStatusOfDTCType Dem_GetStatusOfDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin, Dem_EventStatusExtendedType* status) {
+	Dem_ReturnGetStatusOfDTCType returnCode = DEM_STATUS_FAILED;
+	uint16 i;
+
+	for (i = 0; (i < DEM_MAX_NUMBER_EVENT) && (returnCode != DEM_STATUS_OK); i++) {
+		if (eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) {
+			if (eventStatusBuffer[i].eventParamRef->DTCClassRef != NULL) {
+				if (eventStatusBuffer[i].eventParamRef->DTCClassRef->DTC == dtc) {
+					*status = eventStatusBuffer[i].eventStatusExtended;
+					returnCode = DEM_STATUS_OK;
+				}
+			}
+		}
+	}
+
+	return returnCode;
+}
+
+
 /*
  * Procedure:	Dem_ClearDTC
  * Reentrant:	No
