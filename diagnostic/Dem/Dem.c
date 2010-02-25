@@ -225,6 +225,53 @@ boolean checkDtcGroup(uint32 dtc, const Dem_EventParameterType *eventParam)
 
 
 /*
+ * Procedure:	checkDtcOrigin
+ * Description:	Return TRUE if "dtcOrigin" match any of the events DTCOrigin otherwise FALSE.
+ */
+boolean checkDtcOrigin(Dem_DTCOriginType dtcOrigin, const Dem_EventParameterType *eventParam)
+{
+	boolean result = FALSE;
+	uint16 i;
+
+	for (i = 0; (i < DEM_MAX_NR_OF_EVENT_DESTINATION) && (eventParam->EventClass->EventDestination[i] != dtcOrigin); i++);
+
+	if (i < DEM_MAX_NR_OF_EVENT_DESTINATION) {
+		result = TRUE;
+	}
+
+	return result;
+}
+
+
+/*
+ * Procedure:	checkDtcSeverityMask
+ * Description:	Return TRUE if "dtcSeverityMask" match any of the events DTC severity otherwise FALSE.
+ */
+boolean checkDtcSeverityMask(Dem_DTCSeverityType dtcSeverityMask, const Dem_EventParameterType *eventParam)
+{
+	boolean result = TRUE;
+
+	// TODO: This function is optional, may be implemented here.
+
+	return result;
+}
+
+
+/*
+ * Procedure:	checkDtcFaultDetectionCounterMask
+ * Description:	TBD.
+ */
+boolean checkDtcFaultDetectionCounter(const Dem_EventParameterType *eventParam)
+{
+	boolean result = TRUE;
+
+	// TODO: Not implemented yet.
+
+	return result;
+}
+
+
+/*
  * Procedure:	lookupEventIdParameter
  * Description:	Returns the pointer to event id parameters of "eventId" in "*eventIdParam",
  * 				if not found NULL is returned.
@@ -401,6 +448,42 @@ void getEventStatusRec(Dem_EventIdType eventId, EventStatusRecType *eventStatusR
 		eventStatusRec->eventStatus = DEM_EVENT_STATUS_PASSED;
 		eventStatusRec->occurrence = 0;
 	}
+}
+
+
+/*
+ * Procedure:	matchEventWithDtcFilter
+ * Description:	Returns TRUE if the event pointed by "event" fulfill
+ * 				the "dtcFilter" global filter settings.
+ */
+boolean matchEventWithDtcFilter(const EventStatusRecType *eventRec)
+{
+	boolean dtcMatch = FALSE;
+
+	// Check status
+	if ((dtcFilter.dtcStatusMask == 0x00) || (eventRec->eventStatusExtended & dtcFilter.dtcStatusMask)) {
+
+		// Check dtcKind
+		if (checkDtcKind(dtcFilter.dtcKind, eventRec->eventParamRef)) {
+
+			// Check dtcOrigin
+			if (checkDtcOrigin(dtcFilter.dtcOrigin, eventRec->eventParamRef)) {
+
+				// Check severity
+				if ((dtcFilter.filterWithSeverity == DEM_FILTER_WITH_SEVERITY_NO)
+					|| ((dtcFilter.filterWithSeverity == DEM_FILTER_WITH_SEVERITY_YES) && checkDtcSeverityMask(dtcFilter.dtcSeverityMask, eventRec->eventParamRef))) {
+
+					// Check fault detection counter
+					if ((dtcFilter.filterForFaultDetectionCounter == DEM_FILTER_FOR_FDC_NO)
+						|| ((dtcFilter.filterWithSeverity == DEM_FILTER_FOR_FDC_YES) && checkDtcFaultDetectionCounter(eventRec->eventParamRef))) {
+						dtcMatch = TRUE;
+					}
+				}
+			}
+		}
+	}
+
+	return dtcMatch;
 }
 
 
@@ -1454,6 +1537,26 @@ void Dem_ReportErrorStatus( Dem_EventIdType eventId, Dem_EventStatusType eventSt
  * Interface DCM <-> DEM (8.3.5) *
  *********************************/
 /*
+ * Procedure:	Dem_GetDTCAvailabilityMask
+ * Reentrant:	No
+ */
+Std_ReturnType Dem_GetDTCAvailabilityMask(uint8 *dtcStatusMask)
+{
+	*dtcStatusMask = 	DEM_TEST_FAILED
+						| DEM_TEST_FAILED_THIS_OPERATION_CYCLE
+						| DEM_PENDING_DTC
+//						| DEM_CONFIRMED_DTC					TODO: Add support for this bit
+						| DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR
+						| DEM_TEST_FAILED_SINCE_LAST_CLEAR
+						| DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE
+//						| DEM_WARNING_INDICATOR_REQUESTED	TODO: Add support for this bit
+						;
+
+	return E_OK;
+}
+
+
+/*
  * Procedure:	Dem_SetDTCFilter
  * Reentrant:	No
  */
@@ -1465,29 +1568,36 @@ Dem_ReturnSetDTCFilterType Dem_SetDTCFilter(uint8 dtcStatusMask,
 		Dem_FilterForFDCType filterForFaultDetectionCounter) {
 
 	Dem_ReturnSetDTCFilterType returnCode = DEM_WRONG_FILTER;
+	Std_ReturnType result;
+	uint8 supStatusMask;
 
-	// Check dtcKind parameter
-	if ((dtcKind == DEM_DTC_KIND_ALL_DTCS) || (dtcKind ==  DEM_DTC_KIND_EMISSON_REL_DTCS)) {
+	// Check the dtcStatusMask
+	result = Dem_GetDTCAvailabilityMask(&supStatusMask);
+	if ((result == E_OK) && !(dtcStatusMask & ~supStatusMask)) {
 
-		// Check dtcOrigin parameter
-		if ((dtcOrigin == DEM_DTC_ORIGIN_SECONDARY_MEMORY) || (dtcOrigin == DEM_DTC_ORIGIN_PRIMARY_MEMORY)
-			|| (dtcOrigin == DEM_DTC_ORIGIN_PERMANENT_MEMORY) || (dtcOrigin == DEM_DTC_ORIGIN_MIRROR_MEMORY)) {
+		// Check dtcKind parameter
+		if ((dtcKind == DEM_DTC_KIND_ALL_DTCS) || (dtcKind ==  DEM_DTC_KIND_EMISSON_REL_DTCS)) {
 
-			// Check filterWithSeverity and dtcSeverityMask parameter
-			if ((filterWithSeverity == DEM_FILTER_WITH_SEVERITY_NO)
-				|| ((filterWithSeverity == DEM_FILTER_WITH_SEVERITY_YES) && !(dtcSeverityMask & ~(DEM_SEVERITY_MAINTENANCE_ONLY | DEM_SEVERITY_CHECK_AT_NEXT_FALT | DEM_SEVERITY_CHECK_IMMEDIATELY)))){
+			// Check dtcOrigin parameter
+			if ((dtcOrigin == DEM_DTC_ORIGIN_SECONDARY_MEMORY) || (dtcOrigin == DEM_DTC_ORIGIN_PRIMARY_MEMORY)
+				|| (dtcOrigin == DEM_DTC_ORIGIN_PERMANENT_MEMORY) || (dtcOrigin == DEM_DTC_ORIGIN_MIRROR_MEMORY)) {
 
-				// Check filterForFaultDetectionCounter parameter
-				if ((filterForFaultDetectionCounter == DEM_FILTER_FOR_FDC_YES) || (filterForFaultDetectionCounter ==  DEM_FILTER_FOR_FDC_NO)) {
-					// Yes all parameters correct, set the new filters.
-					dtcFilter.dtcStatusMask = dtcStatusMask;
-					dtcFilter.dtcKind = dtcKind;
-					dtcFilter.dtcOrigin = dtcOrigin;
-					dtcFilter.filterWithSeverity = filterWithSeverity;
-					dtcFilter.dtcSeverityMask = dtcSeverityMask;
-					dtcFilter.filterForFaultDetectionCounter = filterForFaultDetectionCounter;
+				// Check filterWithSeverity and dtcSeverityMask parameter
+				if ((filterWithSeverity == DEM_FILTER_WITH_SEVERITY_NO)
+					|| ((filterWithSeverity == DEM_FILTER_WITH_SEVERITY_YES) && !(dtcSeverityMask & ~(DEM_SEVERITY_MAINTENANCE_ONLY | DEM_SEVERITY_CHECK_AT_NEXT_FALT | DEM_SEVERITY_CHECK_IMMEDIATELY)))){
 
-					returnCode = DEM_FILTER_ACCEPTED;
+					// Check filterForFaultDetectionCounter parameter
+					if ((filterForFaultDetectionCounter == DEM_FILTER_FOR_FDC_YES) || (filterForFaultDetectionCounter ==  DEM_FILTER_FOR_FDC_NO)) {
+						// Yes all parameters correct, set the new filters.
+						dtcFilter.dtcStatusMask = dtcStatusMask;
+						dtcFilter.dtcKind = dtcKind;
+						dtcFilter.dtcOrigin = dtcOrigin;
+						dtcFilter.filterWithSeverity = filterWithSeverity;
+						dtcFilter.dtcSeverityMask = dtcSeverityMask;
+						dtcFilter.filterForFaultDetectionCounter = filterForFaultDetectionCounter;
+
+						returnCode = DEM_FILTER_ACCEPTED;
+					}
 				}
 			}
 		}
@@ -1495,6 +1605,7 @@ Dem_ReturnSetDTCFilterType Dem_SetDTCFilter(uint8 dtcStatusMask,
 
 	return returnCode;
 }
+
 
 /*
  * Procedure:	Dem_GetStatusOfDTC
@@ -1516,6 +1627,30 @@ Dem_ReturnGetStatusOfDTCType Dem_GetStatusOfDTC(uint32 dtc, Dem_DTCKindType dtcK
 	}
 
 	return returnCode;
+}
+
+
+/*
+ * Procedure:	Dem_GetNumberOfFilteredDtc
+ * Reentrant:	No
+ */
+Dem_ReturnGetNumberOfFilteredDTCType Dem_GetNumberOfFilteredDtc(uint16 *numberOfFilteredDTC) {
+	uint16 i;
+	uint16 numberOfFaults = 0;
+
+	//Dem_DisableEventStatusUpdate();
+
+	for (i = 0; i < DEM_MAX_NUMBER_EVENT; i++) {
+		if (matchEventWithDtcFilter(&eventStatusBuffer[i])) {
+			numberOfFaults++;
+		}
+	}
+
+	//Dem_EnableEventStatusUpdate();
+
+	*numberOfFilteredDTC = numberOfFaults;
+
+	return DEM_NUMBER_OK;
 }
 
 
