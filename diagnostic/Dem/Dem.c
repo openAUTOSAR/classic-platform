@@ -1655,12 +1655,54 @@ Dem_ReturnGetNumberOfFilteredDTCType Dem_GetNumberOfFilteredDtc(uint16 *numberOf
 
 
 /*
+ * Procedure:	Dem_GetNextFilteredDTC
+ * Reentrant:	No
+ */
+Dem_ReturnGetNextFilteredDTCType Dem_GetNextFilteredDTC(uint32 *dtc, Dem_EventStatusExtendedType *dtcStatus)
+{
+	static uint16 faultIndex = DEM_MAX_NUMBER_EVENT;
+	Dem_ReturnGetNextFilteredDTCType returnCode = DEM_FILTERED_OK;
+	boolean dtcFound = FALSE;
+
+	// TODO: This job should be done in an more advanced way according to Dem288
+	while (!dtcFound && (faultIndex != 0)) {
+		faultIndex--;
+		if (eventStatusBuffer[faultIndex].eventId != DEM_EVENT_ID_NULL) {
+			if (matchEventWithDtcFilter(&eventStatusBuffer[faultIndex])) {
+				if (eventStatusBuffer[faultIndex].eventParamRef->DTCClassRef != NULL) {
+					*dtc = eventStatusBuffer[faultIndex].eventParamRef->DTCClassRef->DTC;
+					*dtcStatus = eventStatusBuffer[faultIndex].eventStatusExtended;
+					dtcFound = TRUE;
+				}
+			}
+		}
+	}
+
+	if (!dtcFound) {
+		faultIndex = DEM_MAX_NUMBER_EVENT;
+		returnCode = DEM_FILTERED_NO_MATCHING_DTC;
+	}
+
+	return returnCode;
+}
+
+
+/*
+ * Procedure:	Dem_GetTranslationType
+ * Reentrant:	No
+ */
+Dem_ReturnTypeOfDtcSupportedType Dem_GetTranslationType(void)
+{
+	return DEM_TYPE_OF_DTC_SUPPORTED;
+}
+
+/*
  * Procedure:	Dem_ClearDTC
  * Reentrant:	No
  */
 Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin)
 {
-	Dem_ReturnClearDTCType result = DEM_CLEAR_OK;
+	Dem_ReturnClearDTCType returnCode = DEM_CLEAR_OK;
 	Dem_EventIdType eventId;
 	const Dem_EventParameterType *eventParam;
 	uint16 i, j;
@@ -1689,7 +1731,7 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
 							case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
 							case DEM_DTC_ORIGIN_MIRROR_MEMORY:
 								// Not yet supported
-								result = DEM_CLEAR_WRONG_DTCORIGIN;
+								returnCode = DEM_CLEAR_WRONG_DTCORIGIN;
 #if (DEM_DEV_ERROR_DETECT == STD_ON)
 								Det_ReportError(MODULE_ID_DEM, 0, DEM_CLEAR_DTC_ID, DEM_E_NOT_IMPLEMENTED_YET);
 #endif
@@ -1710,7 +1752,7 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
 		}
 	}
 
-	return result;
+	return returnCode;
 }
 
 

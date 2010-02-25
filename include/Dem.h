@@ -143,6 +143,8 @@ Dem_ReturnGetNumberOfFilteredDTCType Dem_GetNumberOfFilteredDtc(uint16* numberOf
 
 Dem_ReturnGetNextFilteredDTCType Dem_GetNextFilteredDTC(uint32* dtc, Dem_EventStatusExtendedType* dtcStatus);
 
+Dem_ReturnTypeOfDtcSupportedType Dem_GetTranslationType(void);
+
 
 
 /*

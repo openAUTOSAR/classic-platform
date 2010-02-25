@@ -25,6 +25,15 @@
 #include "Std_Types.h"
 
 /*
+ * DTC storage types
+ */
+typedef uint8 Dem_ReturnTypeOfDtcSupportedType;
+#define DEM_ISO15031_6		0x00
+#define DEM_ISO14229_1		0x01
+#define DEM_SAEJ1939_73		0x02
+#define DEM_ISO_11992_4		0x03
+
+/*
  * Dem_EventIdType
  */
 typedef uint16 Dem_EventIdType;
