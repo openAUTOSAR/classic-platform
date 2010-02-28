@@ -437,7 +437,6 @@ StatusType GetTaskID( TaskRefType task_id ) {
 }
 
 ISRType GetISRID( void ) {
-	OsPcbType *pPtr;
 
 	/** @req OS264 */
 	if(os_sys.int_nest_cnt == 0 ) {
@@ -447,6 +446,13 @@ ISRType GetISRID( void ) {
 	/** @req OS263 */
 	return (ISRType)Os_TaskGetCurrent()->pid;
 }
+
+#define TASK_CHECK_ID(x) 				\
+	if( (x) > Oil_GetTaskCnt()) { \
+		rv = E_OS_ID;					\
+		goto err; 						\
+	}
+
 
 /**
  * The task <TaskID> is transferred from the suspended state into
@@ -479,16 +485,15 @@ StatusType ActivateTask( TaskType TaskID ) {
 
 	os_isr_printf(D_TASK,"ActivateTask %s\n",pcb->name);
 
-	if( !os_pcb_pid_valid(pcb) ) {
-		rv = E_OS_ID;
-		goto err;
-	}
+#if (OS_STATUS_EXTENDED == STD_ON )
+	TASK_CHECK_ID(TaskID);
 
 	/* @req OS093 ActivateTask */
 	if( Os_IrqAnyDisabled() ) {
 		rv = E_OS_DISABLEDINT;
 		goto err;
 	}
+#endif
 
 	Irq_Save(msr);
 
@@ -569,10 +574,12 @@ StatusType TerminateTask( void ) {
 
 	os_std_printf(D_TASK,"TerminateTask %s\n",curr_pcb->name);
 
+#if (OS_STATUS_EXTENDED == STD_ON )
 	if( os_sys.int_nest_cnt != 0 ) {
 		rv =  E_OS_CALLEVEL;
 		goto err;
 	}
+#endif
 
 	Irq_Save(flags);
 
@@ -617,10 +624,14 @@ StatusType ChainTask( TaskType TaskId ) {
 	StatusType rv;
 	uint32_t flags;
 
+#if (OS_STATUS_EXTENDED == STD_ON )
+	TASK_CHECK_ID(TaskId);
+
 	if( os_sys.int_nest_cnt != 0 ) {
 		rv =  E_OS_CALLEVEL;
 		goto err;
 	}
+#endif
 
 	Irq_Save(flags);
 	rv = ActivateTask(TaskId);

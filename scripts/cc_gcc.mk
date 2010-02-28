@@ -15,19 +15,14 @@ endif
 
 CC	= 	$(CROSS_COMPILE)gcc
 cflags-$(CFG_RELEASE) += -O3
-cflags-$(CFG_DEBUG) += -O0
-#cflags-y += -O0
-#cflags-y += -O3
+cflags-$(CFG_DEBUG) += -g -O0
 
+# Remove sections if needed.. may be problems with other compilers here.
 #cflags-y += -ffunction-sections
 
 ifneq ($(filter -O2 -O3 -O1,$(cflags-y)),) 
 	cflags-y += -fno-schedule-insns -fno-schedule-insns2
 endif
-
-# Remove sections if needed.. may be problems with other compilers here.
-#cflags-$(CFG_MPC55XX)  += -ffunction-sections
-
 
 #cflags-y 		+= -c 
 #cflags-y 		+= -fno-common
@@ -39,6 +34,7 @@ cflags-y 		+= -MMD
 # Warnings
 cflags-y          += -Wall
 cflags-y          += -Winline	# warn if inline failed
+#cflags-y          += -pedantic
 
 # Conformance
 cflags-y          += -fno-strict-aliasing

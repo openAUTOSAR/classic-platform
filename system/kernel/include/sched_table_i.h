@@ -72,10 +72,11 @@ typedef struct OsScheduleTableEventSetting {
 /** @req OS403 */
 typedef struct OsScheduleTableExpiryPoint {
   	/* The expiry point offset, OsScheduleTblExpPointOffset */
+	/** @req OS404 */
 	uint64 			offset;
    	// delta to next action
-	/** @req OS404 */
-	uint64    		delta;
+
+	//uint64    		delta;
 
 	/* List of events to activate */
 	const TaskType 		*taskList;
@@ -155,7 +156,7 @@ typedef struct OsSchTbl {
 	struct OsCounter *counter;
 
 	/* OsScheduleTableAutostart[C] */
-	struct OsSchTblAutostart *autostartPtr;
+	const struct OsSchTblAutostart *autostartPtr;
 
 	/* NULL if NONE, and non-NULL if EXPLICIT and IMPLICIT */
 	struct OsScheduleTableSync *sync;

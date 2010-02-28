@@ -35,7 +35,7 @@ static inline OsSchTblAdjExpPointType *getAdjExpPoint( OsSchTblType *stblPtr ) {
 #endif
 
 
-static inline struct OsSchTblAutostart *getAutoStart( OsSchTblType *stblPtr ) {
+static inline const struct OsSchTblAutostart *getAutoStart( OsSchTblType *stblPtr ) {
 	return stblPtr->autostartPtr;
 }
 
@@ -198,7 +198,7 @@ StatusType GetElapsedCounterValue( CounterType counter_id, TickRefType val, Tick
 {
 	StatusType rv = E_OK;
 	OsCounterType *cPtr;
-	TickType tick;
+	TickType tick = 0;
 
 	cPtr = Oil_GetCounter(counter_id);
 
@@ -218,6 +218,9 @@ StatusType GetElapsedCounterValue( CounterType counter_id, TickRefType val, Tick
 
 	/** @req OS382 */
 	*elapsed_val = tick - *val;
+
+	/** @req OS460 */
+	*val = tick;
 
 	COUNTER_STD_END;
 }

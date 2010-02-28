@@ -187,7 +187,7 @@ void ErrorHook( StatusType Error ) {
 //	dbg_printf("## ErrorHook err=%d\n",Error);
 	const char *err;
 	err = Arc_StatusToString(Error);
-	while(1);
+//	while(1);
 }
 
 void PreTaskHook( void ) {

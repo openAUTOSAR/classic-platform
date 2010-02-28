@@ -72,7 +72,7 @@ void etask_sup_l_01(void) {
 
 			/* Activate higher prio task to do the test */
 			rv = ActivateTask(TASK_ID_btask_sup_h);
-			TEST_ASSERT(rv=E_OK);
+			TEST_ASSERT(rv == E_OK);
 
 			/* Was it run activation times? */
 			TEST_ASSERT(btaskRunCnt == Os_ArcTest_GetTaskActivationLimit(TASK_ID_btask_sup_m));
@@ -83,7 +83,7 @@ void etask_sup_l_01(void) {
 			 * Terminate a task that still holds resources
 			 * */
 			rv = ActivateTask(TASK_ID_btask_sup_h);
-			TEST_ASSERT(rv=E_OK);
+			TEST_ASSERT(rv == E_OK);
 			break;
 		case 11:
 			/*@req E_OS_CALLEVEL TerminateTask */
@@ -156,7 +156,7 @@ void btask_sup_m_01( void ) {
 		break;
 	case 10:
 		rv = GetResource(RES_ID_ext_prio_3);
-		TEST_ASSERT(rv=E_OK);
+		TEST_ASSERT(rv == E_OK);
 
 		rv = TerminateTask();
 		TEST_ASSERT(rv==E_OS_RESOURCE);

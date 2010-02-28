@@ -35,8 +35,10 @@ USE_DBG_PRINTF?=y
 Q?=@
 export Q
 export TOPDIR = $(CURDIR)
+export CFG_DEBUG ?= n
+ifeq ($(CFG_DEBUG),n)
 export CFG_RELEASE = y
-export CFG_DEBUG = n
+endif
 export PATH
 
 ifneq ($(filter clean_all,$(MAKECMDGOALS)),clean_all)

@@ -19,10 +19,9 @@
 
 #include "internal.h"
 
+int Os_ArcTest_GetTaskActivationLimit( TaskType TaskId ) {
 
-int Os_ArcTest_GetTaskActivationLimit( TaskType task ) {
-
-	return 0;
+	return os_get_pcb(TaskId)->activationLimit;
 }
 
 /**
@@ -32,6 +31,8 @@ int Os_ArcTest_GetTaskActivationLimit( TaskType task ) {
  */
 
 void Os_ArcTest_SetIrqNestLevel( int level ) {
+
+	os_sys.int_nest_cnt = level;
 
 	return;
 }

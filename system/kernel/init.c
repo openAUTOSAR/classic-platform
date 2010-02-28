@@ -129,7 +129,7 @@ static void os_pcb_rom_copy( OsPcbType *pcb, const OsRomPcbType *r_pcb ) {
 //	memset(pcb,sizeof(OsPcbType),0);
 	pcb->pid = r_pcb->pid;
 	pcb->prio = r_pcb->prio;
-#if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
+#if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
 	pcb->application = Oil_GetApplObj(r_pcb->application_id);
 #endif
 	pcb->entry = r_pcb->entry;
@@ -221,7 +221,7 @@ static void os_start( void ) {
 		OsAlarmType *alarmPtr;
 		alarmPtr = Oil_GetAlarmObj(j);
 		if(alarmPtr->autostartPtr != NULL ) {
-			OsAlarmAutostartType *autoPtr = alarmPtr->autostartPtr;
+			const OsAlarmAutostartType *autoPtr = alarmPtr->autostartPtr;
 
 			if( autoPtr->autostartType == ALARM_AUTOSTART_ABSOLUTE ) {
 				SetAbsAlarm(j,autoPtr->alarmTime, autoPtr->cycleTime);

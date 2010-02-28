@@ -15,8 +15,8 @@ REBOL [
 ]
 
 usage: does [
-; do/args %scripts/req_extract.r ["diff" "OS" "req" "Class=1"]
-  print "Usage: do/args %extract_req [ ^"<cmd>^" ^"[....]^" ]"
+; do/args %req_extract.r ["diff" "OS" "req" "Class=1,Component=Code"]
+  print "Usage: do/args %req_extract.r [ ^"<cmd>^" ^"[....]^" ]"
   print "       req.sh diff OS req ^"Class=1^""
   print "  <cmd> = (diff|ls) "
   print "    diff <module> (code|test) <filter>"

@@ -359,7 +359,7 @@ void Irq_GenerateSoftInt( IrqType vector ) {
  */
 uint8_t Irq_GetCurrentPriority( Cpu_t cpu) {
 
-	uint8_t prio;
+	uint8_t prio = 0;
 
 #if defined(CFG_MPC5516)
 	if( cpu == CPU_Z1 ) {

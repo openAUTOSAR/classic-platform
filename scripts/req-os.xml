@@ -38,10 +38,8 @@ system shall disable all interrupts and enter an endless loop.</ns1:Description>
 		<ns1:Class>1,2,3,4</ns1:Class>
 		<ns1:Component>code</ns1:Component>
 		<ns1:Verification>code</ns1:Verification>
-		<ns1:Description>The Operating System shall provide the services DisableAllInterrupts(),
-EnableAllInterrupts(),  SuspendAllInterrupts(),  ResumeAllInterrupts()
-prior to calling StartOS() and after calling ShutdownOS(). (It is assumed that the
-static variables of these functions are initialized).</ns1:Description>
+		<ns1:Description>The Operating System shall provide the services DisableAllInterrupts(), EnableAllInterrupts(),  SuspendAllInterrupts(),  ResumeAllInterrupts()
+prior to calling StartOS() and after calling ShutdownOS(). (It is assumed that the static variables of these functions are initialized).</ns1:Description>
 	</ns1:Req>
 	<ns1:Req id="OS301">
 		<ns1:Class>1,2,3,4</ns1:Class>
@@ -361,7 +359,7 @@ be greater than (Offset + OsCounterMinCycle) of the pervious expiry point.</ns1:
 be less than the duration of the schedule table.</ns1:Description>
 	</ns1:Req>
 	<ns1:Req id="OS438">
-		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Class>2,4</ns1:Class>
 		<ns1:Component>code</ns1:Component>
 		<ns1:Verification>code</ns1:Verification>
 		<ns1:Description>A schedule table shall define a precision bound with a value in the range 0
@@ -390,7 +388,7 @@ after a synchronization count is provided.</ns1:Description>
 OsScheduleTblExplicitPrecision threshold.</ns1:Description>
 	</ns1:Req>
 	<ns1:Req id="OS419">
-		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Class>2,4</ns1:Class>
 		<ns1:Component>code</ns1:Component>
 		<ns1:Verification>code</ns1:Verification>
 		<ns1:Description>The OS shall set the state of an explicitly synchronized schedule table to
@@ -398,7 +396,7 @@ OsScheduleTblExplicitPrecision threshold.</ns1:Description>
 OsScheduleTblExplicitPrecision threshold.</ns1:Description>
 	</ns1:Req>
 	<ns1:Req id="OS420">
-		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Class>2,4</ns1:Class>
 		<ns1:Component>code</ns1:Component>
 		<ns1:Verification>code</ns1:Verification>
 		<ns1:Description>If the deviation is negative and the next expiry point is adjustable then the
@@ -406,7 +404,7 @@ OS shall set the delay to the next expiry point to
 Delay+min(OsScheduleTableMaxAdvance,Deviation)</ns1:Description>
 	</ns1:Req>
 	<ns1:Req id="OS421">
-		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Class>2,4</ns1:Class>
 		<ns1:Component>code</ns1:Component>
 		<ns1:Verification>code</ns1:Verification>
 		<ns1:Description>If the deviation is positive and the next expiry point is adjustable then the OS
@@ -414,14 +412,14 @@ shall set the delay to the next expiry point to Delay-
 min(OsScheduleTableMaxRetard, Deviation)</ns1:Description>
 	</ns1:Req>
 	<ns1:Req id="OS422">
-		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Class>2,4</ns1:Class>
 		<ns1:Component>code</ns1:Component>
 		<ns1:Verification>code</ns1:Verification>
 		<ns1:Description>The OS shall provide a service to cancel synchronization being performed at
 adjustable expiry points on a schedule table.</ns1:Description>
 	</ns1:Req>
 	<ns1:Req id="OS227">
-		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Class>2,4</ns1:Class>
 		<ns1:Component>code</ns1:Component>
 		<ns1:Verification>code</ns1:Verification>
 		<ns1:Description>The Operating System shall extend the service from OS359 to query the
@@ -435,14 +433,14 @@ state of a schedule table with respect to synchronization.</ns1:Description>
 stack faults of Task(s)/Category 2 OsIsr(s).</ns1:Description>
 	</ns1:Req>
 	<ns1:Req id="OS068">
-		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Class>1,2</ns1:Class>
 		<ns1:Component>code</ns1:Component>
 		<ns1:Verification>code</ns1:Verification>
 		<ns1:Description>If a stack fault is detected by stack monitoring AND the configured scalability
 class is 1 or 2, the Operating System shall call the ShutdownOS() service with the status E_OS_STACKFAULT.</ns1:Description>
 	</ns1:Req>
 	<ns1:Req id="OS396">
-		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Class>3,4</ns1:Class>
 		<ns1:Component>code</ns1:Component>
 		<ns1:Verification>code</ns1:Verification>
 		<ns1:Description>If a stack fault is detected by stack monitoring AND the configured scalability
@@ -450,7 +448,7 @@ class is 3 or 4, the Operating System shall call the  ProtectionHook() with the
 status E_OS_STACKFAULT.</ns1:Description>
 	</ns1:Req>
 	<ns1:Req id="OS445">
-		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Class>3,4</ns1:Class>
 		<ns1:Component>code</ns1:Component>
 		<ns1:Verification>code</ns1:Verification>
 		<ns1:Description>The Operating System shall support OS-Applications which are a
@@ -1435,7 +1433,7 @@ the previous “next” schedule table and the old “next” schedule table sta
 SCHEDULETABLE_STOPPED.</ns1:Description>
 	</ns1:Req>
 	<ns1:Req id="OS363">
-		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Class>2,4</ns1:Class>
 		<ns1:Component>code</ns1:Component>
 		<ns1:Verification>code</ns1:Verification>
 		<ns1:Description>The synchronization strategy of the &lt;ScheduleTableID_To&gt; shall come into

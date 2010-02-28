@@ -25,6 +25,7 @@
  /** @req OS411 */
  /** @req OS347 */
  /** @req OS358 */
+ /** @req OS428 */
 
 /*
  * How Autosar sees the scheduletable
@@ -130,7 +131,7 @@ static void ScheduleTableConsistenyCheck( OsSchTblType *sTblPtr ) {
 
 		/* Final */
 		/** @req OS444 */
-		delta = sTblPtr->duration - SA_LIST_GET(&sTblPtr->expirePointList,iter)->offset;
+		delta = sTblPtr->duration - SA_LIST_GET(&sTblPtr->expirePointList,iter-1)->offset;
 		assert( delta >=  minCycle );
 		assert( delta <=  maxValue );
 	}
@@ -162,12 +163,11 @@ StatusType StartScheduleTableRel(ScheduleTableType sid, TickType offset) {
 	}
 #endif
 
-#if (OS_STATUS_EXTENDED == STD_ON )
-
 	max_offset = Os_CounterGetMaxValue(s_tbl->counter);
+#if (OS_STATUS_EXTENDED == STD_ON )
 	/** @req OS276 */
 	/** @req OS332 */
-	if( (offset == 0) || ((offset + Os_SchTblGetInitialOffset()) > max_offset ) ) {
+	if( (offset == 0) || ((offset + Os_SchTblGetInitialOffset(s_tbl)) > max_offset ) ) {
 		rv = E_OS_VALUE;
 		goto err;
 	}
@@ -195,6 +195,7 @@ StatusType StartScheduleTableAbs(ScheduleTableType sid, TickType start ){
 
 	/** @req OS348 */
 	SCHED_CHECK_ID(sid);
+	sTblPtr =  Oil_GetSched(sid);
 
 	/** @req OS349 */
 	if( start > Os_CounterGetMaxValue(sTblPtr->counter) ) {
@@ -550,42 +551,6 @@ void Os_SchTblCheck(OsCounterType *c_p) {
 	}
 }
 
-/*
- *start e   e       e  delta stop
- * |----|---|-------|---------|
- *
- *
- *  |   s   e    e   cm   e
- *  |---|---|----|---|----|----------|
- *      1   2    3   4    5
- *  e-expiry point
- * cm-counter max( restart from 0)
- *  s-call to StartScheduleTableRel()
- */
-
-
-/* TODO: Remove when we have a stable generator. The reason for this
- * funcion is that I'm afraid of if I change the maxallowedvalue for the
- * counter I will miss to update the delta values
- */
-static void os_stbl_action_calc_delta( OsSchTblType *stbl ) {
-	OsScheduleTableExpiryPointType * first;
-	OsScheduleTableExpiryPointType * second;
-//	ALIST_DECL_ITER(iter);
-	int iter;
-
-	// calculate the delta to next action
-
-	for(iter=1; iter <  SA_LIST_CNT(&stbl->expirePointList) ;iter++) {
-		first = SA_LIST_GET(&stbl->expirePointList,iter-1);
-		second = SA_LIST_GET(&stbl->expirePointList,iter);
-		first->delta = second->offset - first->offset;
-	}
-	// calculate the last delta( to countes max value )
-	first = SA_LIST_GET(&stbl->expirePointList, SA_LIST_CNT(&stbl->expirePointList)-1);
-	first->delta = stbl->counter->alarm_base.maxallowedvalue - first->offset;
-}
-
 /**
  *
  */
@@ -593,7 +558,6 @@ void Os_SchTblInit( void ) {
 	OsSchTblType *s_p;
 	for( int i=0; i < Oil_GetSchedCnt();i++ ) {
 		s_p = Oil_GetSched(i);
-		os_stbl_action_calc_delta(s_p);
 
 		ScheduleTableConsistenyCheck(s_p);
 	}
@@ -615,22 +579,31 @@ void Os_SchTblCalcExpire( OsSchTblType *stbl ) {
 	TickType initalOffset;
 	TickType finalOffset;
 	OsSchTblType *nextStblPtr;
+	_Bool handleLast = 0;
 
 
 	if( (stbl->expire_curr_index) == SA_LIST_CNT(&stbl->expirePointList) ) {
 		/* We are at the last expiry point */
 		finalOffset = Os_SchTblGetFinalOffset(stbl);
 
-		stbl->expire_val =	Os_CounterCalcModulo(
-						Os_CounterGetValue(stbl->counter),
-						Os_CounterGetMaxValue(stbl->counter),
-						finalOffset );
+		if (finalOffset != 0) {
+			stbl->expire_val =	Os_CounterCalcModulo(
+							Os_CounterGetValue(stbl->counter),
+							Os_CounterGetMaxValue(stbl->counter),
+							finalOffset );
 
-		stbl->expire_curr_index++;
+			stbl->expire_curr_index++;
+		} else {
+			/* Only single shot may have an offset of 0 */
+			assert(stbl->repeating == SINGLE_SHOT);
+			handleLast = 1;
+		}
+	}
 
-	} else if( (stbl->expire_curr_index) > SA_LIST_CNT(&stbl->expirePointList) ) {
+	if( handleLast ||
+		( (stbl->expire_curr_index) > SA_LIST_CNT(&stbl->expirePointList) ) )
+	{
 		/* At final offset */
-
 		/** @req OS194 */
 		if( (stbl->repeating == REPEATING) || (stbl->next != NULL) ) {
 			if( stbl->next != NULL ) {
@@ -664,7 +637,8 @@ void Os_SchTblCalcExpire( OsSchTblType *stbl ) {
 		}
 	} else {
 
-		delta = SA_LIST_GET(&stbl->expirePointList,stbl->expire_curr_index)->delta;
+		delta = SA_LIST_GET(&stbl->expirePointList,stbl->expire_curr_index+1) -
+				SA_LIST_GET(&stbl->expirePointList,stbl->expire_curr_index) ;
 
 		stbl->expire_val =	Os_CounterCalcModulo(
 						Os_CounterGetValue(stbl->counter),

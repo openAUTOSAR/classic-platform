@@ -227,7 +227,7 @@ static inline TickType get_os_tick( void ) {
 	return os_sys.tick;
 }
 
-#if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
+#if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
 static inline OsApplicationType *get_curr_application( void ) {
 	return get_curr_pcb()->application;
 }

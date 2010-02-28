@@ -91,7 +91,7 @@ static StatusType GetResource_( OsResourceType * rid ) {
 	}
 	// Check that the resource does not belong to another application or task
 	if(	( (os_task_nr_to_mask(get_curr_pid()) & rid->task_mask ) == 0 )
-#if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
+#if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
 		|| ( get_curr_application_id() !=  rid->application_owner_id)
 #endif
 		|| ( rid->owner != (TaskType)(-1)))
