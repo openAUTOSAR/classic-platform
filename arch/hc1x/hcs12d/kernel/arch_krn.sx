@@ -80,6 +80,15 @@ Os_ArchSwapContextTo:
     cmp     r6,#LC_PATTERN
     beq     os_lc_restore
 */
+
+// Os_ArchSwapContextToW(currPcbPtr ,pcbPtr, pcbPtr->stack.curr );
+	.global Os_ArchSwapContextToW
+	.type	Os_ArchSwapContextToW, %function
+Os_ArchSwapContextToW:
+/*
+
+*/
+
 os_stack_problem:
 // TODO: Jump to error handler
 //    b os_stack_problem

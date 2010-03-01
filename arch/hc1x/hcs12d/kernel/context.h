@@ -84,9 +84,9 @@
 
 //...
 #define VGPR_LR_OFF		(C_SIZE+NVGPR_SIZE-4)
-#define C_CONTEXT_OFFS  4
+#define C_CONTEXT_OFF   4
 #define C_SP_OFF 		0
-
+#define C_LR_OFF		16 // TODO: value is from ppc
 
 #define SC_SIZE			(NVGPR_SIZE+C_SIZE)
 

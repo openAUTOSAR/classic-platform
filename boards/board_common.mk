@@ -1,4 +1,5 @@
 obj-$(CFG_PPC) += crt0.o
+obj-$(CFG_HCS12D) += crt0.o
 vpath-$(CFG_ARM_CM3) += $(ARCH_PATH-y)kernel
 obj-$(CFG_ARM_CM3) += system_stm32f10x.o
 obj-$(CFG_ARM_CM3) += core_cm3.o

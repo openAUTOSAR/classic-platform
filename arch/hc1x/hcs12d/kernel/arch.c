@@ -41,7 +41,7 @@ unsigned int Os_ArchGetScSize( void ) {
 void os_arch_setup_context( OsPcbType *pcb ) {
 	// TODO: Add lots of things here, see ppc55xx
 	uint32_t *context = (uint32_t *)pcb->stack.curr;
-	context[C_CONTEXT_OFFS/4] = SC_PATTERN;
+	context[C_CONTEXT_OFF/4] = SC_PATTERN;
 
 	/* Set LR to start function */
 	if( pcb->proc_type == PROC_EXTENDED ) {
@@ -49,9 +49,28 @@ void os_arch_setup_context( OsPcbType *pcb ) {
 	} else if( pcb->proc_type == PROC_BASIC ) {
 		context[VGPR_LR_OFF/4] = (uint32_t)Os_TaskStartBasic;
 	}
-	os_arch_stack_set_endmark(pcb);
+	Os_StackSetEndmark(pcb);
 // os_arch_setup_context_asm(pcb->stack.curr,NULL);
 }
+
+/**
+ *
+ * @param pcbPtr
+ */
+
+void OsArch_SetTaskEntry(OsPcbType *pcbPtr ) {
+	uint32_t *context = (uint32_t *)pcbPtr->stack.curr;
+
+	context[C_CONTEXT_OFF/4] = SC_PATTERN;
+
+	/* Set LR to start function */
+	if( pcbPtr->proc_type == PROC_EXTENDED ) {
+		context[C_LR_OFF/4] = (uint32_t)Os_TaskStartExtended;
+	} else if( pcbPtr->proc_type == PROC_BASIC ) {
+		context[C_LR_OFF/4] = (uint32_t)Os_TaskStartBasic;
+	}
+}
+
 
 void os_arch_init( void ) {
 	// nothing to do here, yet :)

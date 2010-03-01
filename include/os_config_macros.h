@@ -23,6 +23,8 @@
 #ifndef _OS_CONFIG_MACROS_H
 #define _OS_CONFIG_MACROS_H
 
+#include "Std_Types.h"
+
 #define false		0
 #define true		1
 

@@ -69,10 +69,8 @@ static volatile char g_TConn __attribute__ ((section (".winidea_port")));
  */
 
 // This must be in un-cached space....
+#ifdef USE_T32_TERM
 static volatile char t32_outport __attribute__ ((section (".t32_outport")));
-
-
-
 
 void t32_writebyte(char c)
 {
@@ -83,7 +81,7 @@ void t32_writebyte(char c)
 	while (t32_outport != 0 ) ; /* wait until port is free */
 	t32_outport = c; /* send character */
 }
-
+#endif
 /*
  * clib support
  */
