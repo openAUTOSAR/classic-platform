@@ -185,8 +185,7 @@ typedef struct {
 /*
  *	Container for all runtime parameters for 15765 implementation.
  */
-CanTp_RunTimeDataType CanTpRunTimeData = {
-		.initRun = FALSE,
+CanTp_RunTimeDataType CanTpRunTimeData = { .initRun = FALSE,
 		.internalState = CANTP_OFF };
 
 /*
@@ -335,7 +334,7 @@ void initTx15765RuntimeData(const CanTp_TxNSduType *txConfigParams,
 
 // - - - - - - - - - - - - - -
 
-BufReq_ReturnType copyToSduRouterBuffer(const CanTp_RxNSduType *rxConfig,
+BufReq_ReturnType saveSduPayloadData(const CanTp_RxNSduType *rxConfig,
 		CanTp_ChannelPrivateType *rxRuntime, uint8 *data,
 		PduLengthType dataLength) {
 
@@ -352,10 +351,11 @@ BufReq_ReturnType copyToSduRouterBuffer(const CanTp_RxNSduType *rxConfig,
 		if (copyCount < dataLength) {
 			// We need to request a new buffer from the SDUR.
 			// qqq: TODO: We should do a timeout here.
-			ret = PduR_CanTpProvideRxBuffer(rxConfig->CanTpRxPduId,
+			ret
+					= PduR_CanTpProvideRxBuffer(rxConfig->CanTpRxPduId,
 							rxRuntime->pduLenghtTotalBytes,
 							&rxRuntime->bufferPduRouter);
-			if (ret == BEFREQ_OK) {
+			if (ret == BUFREQ_OK) {
 				VALIDATE( rxRuntime->bufferPduRouter->SduDataPtr != NULL,
 						SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_RX_BUFFER );
 				rxRuntime->pdurBufferCount = 0; // The buffer is emptied.
@@ -364,7 +364,7 @@ BufReq_ReturnType copyToSduRouterBuffer(const CanTp_RxNSduType *rxConfig,
 				break;
 			}
 		} else {
-			ret = BEFREQ_OK;
+			ret = BUFREQ_OK;
 			break;
 		}
 	}
@@ -373,7 +373,7 @@ BufReq_ReturnType copyToSduRouterBuffer(const CanTp_RxNSduType *rxConfig,
 
 // - - - - - - - - - - - - - -
 
-static inline Std_ReturnType CanTansmitHelperRx(
+static inline Std_ReturnType canReceivePaddingHelper(
 		const CanTp_RxNSduType *rxConfig, PduInfoType *PduInfoPtr) {
 	if (rxConfig->CanTpRxPaddingActivation == CANTP_ON) {
 		for (int i = PduInfoPtr->SduLength; i < CANIF_PDU_MAX_LENGTH; i++) {
@@ -386,7 +386,7 @@ static inline Std_ReturnType CanTansmitHelperRx(
 
 // - - - - - - - - - - - - - -
 
-static inline Std_ReturnType CanTansmitHelperTx(
+static inline Std_ReturnType canTansmitPaddingHelper(
 		const CanTp_TxNSduType *txConfig, PduInfoType *PduInfoPtr) {
 	if (txConfig->CanTpTxPaddingActivation == CANTP_ON) {
 		for (int i = PduInfoPtr->SduLength; i < CANIF_PDU_MAX_LENGTH; i++) {
@@ -399,7 +399,7 @@ static inline Std_ReturnType CanTansmitHelperTx(
 
 // - - - - - - - - - - - - - -
 
-static inline void sendFlowControl(const CanTp_RxNSduType *rxConfig,
+static inline void sendFlowControlFrame(const CanTp_RxNSduType *rxConfig,
 		CanTp_ChannelPrivateType *rxRuntime, BufReq_ReturnType flowStatus) {
 	int indexCount = 0;
 	Std_ReturnType ret;
@@ -412,21 +412,21 @@ static inline void sendFlowControl(const CanTp_RxNSduType *rxConfig,
 	}
 
 	switch (flowStatus) {
-	case BEFREQ_OK:
+	case BUFREQ_OK:
 		sduData[indexCount++] = ISO15765_TPCI_FC
 				| ISO15765_FLOW_CONTROL_STATUS_CTS;
 		sduData[indexCount++] = (uint8) rxConfig->CanTpBs;
 		sduData[indexCount++] = (uint8) rxConfig->CanTpSTmin;
 		pduInfo.SduLength = indexCount;
 		break;
-	case BEFREQ_NOT_OK:
+	case BUFREQ_NOT_OK:
 		break;
-	case BEFREQ_BUSY: //* qqq req: CanTp 222 */
+	case BUFREQ_BUSY: //* qqq req: CanTp 222 */
 		sduData[indexCount++] = ISO15765_TPCI_FC
 				| ISO15765_FLOW_CONTROL_STATUS_WAIT;
 		pduInfo.SduLength = indexCount;
 		break;
-	case BEFREQ_OVFL: //* qqq req: CanTp 081 */
+	case BUFREQ_OVFL: //* qqq req: CanTp 081 */
 		sduData[indexCount++] = ISO15765_TPCI_FC
 				| ISO15765_FLOW_CONTROL_STATUS_OVFLW;
 		pduInfo.SduLength = indexCount;
@@ -434,7 +434,7 @@ static inline void sendFlowControl(const CanTp_RxNSduType *rxConfig,
 	default:
 		break;
 	}
-	ret = CanTansmitHelperRx(rxConfig, &pduInfo);
+	ret = canReceivePaddingHelper(rxConfig, &pduInfo);
 	if (ret != E_OK) {
 		PduR_CanTpRxIndication(rxConfig->CanTpRxPduId,
 				(NotifResultType) NTFRSLT_E_NOT_OK);
@@ -481,7 +481,7 @@ static inline void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
 		payloadLen = maxPayloadDataSdu; // 6 or 7, depends on addressing format used.
 	}
 	// Copy received data to buffer provided by SDUR.
-	if (copyToSduRouterBuffer(rxConfig, rxRuntime,
+	if (saveSduPayloadData(rxConfig, rxRuntime,
 			&rxPduData->SduDataPtr[indexCount], payloadLen) != E_OK) {
 		// qqq: TODO:  handle this error.
 		PduR_CanTpRxIndication(rxConfig->CanTpRxPduId, NTFRSLT_E_NO_BUFFER);
@@ -493,7 +493,7 @@ static inline void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
 		rxRuntime->iso15765.framesHandledCount++;
 		rxRuntime->iso15765.nextFlowControlCount--;
 		if (rxRuntime->iso15765.nextFlowControlCount == 0) {
-			sendFlowControl(rxConfig, rxRuntime, BEFREQ_OK);
+			sendFlowControlFrame(rxConfig, rxRuntime, BUFREQ_OK);
 			rxRuntime->iso15765.framesHandledCount = rxConfig->CanTpBs;
 		}
 	} else {
@@ -543,7 +543,7 @@ static inline Std_ReturnType sendConsecutiveFrame(
 			txRuntime->pduTransferedBytesCount++;
 		}
 	}
-	ret = CanTansmitHelperTx(txConfig, &pduInfo);
+	ret = canTansmitPaddingHelper(txConfig, &pduInfo);
 	return ret;
 }
 
@@ -649,6 +649,9 @@ static inline void handleSingleFrame(const CanTp_RxNSduType *rxConfig,
 	pduLength = getPduLength(&rxConfig->CanTpAddressingFormant, SINGLE_FRAME,
 			rxPduData);
 
+	VALIDATE( rxRuntime->bufferPduRouter->SduDataPtr != NULL,
+			SERVICE_ID_CANTP_RX_INDICATION, CANTP_E_INVALID_RX_LENGTH );
+
 	if (rxConfig->CanTpAddressingFormant == CANTP_STANDARD) {
 		data = &rxPduData->SduDataPtr[1];
 	} else {
@@ -659,8 +662,8 @@ static inline void handleSingleFrame(const CanTp_RxNSduType *rxConfig,
 	rxRuntime->iso15765.stateTimeoutCount = rxConfig->CanTpNbr
 			* MAIN_FUNCTION_PERIOD_TIME_MS; /* CanTP 166. */
 
-	ret = copyToSduRouterBuffer(rxConfig, rxRuntime, data, pduLength);
-	if (ret == BEFREQ_OK && rxRuntime->iso15765.stateTimeoutCount != 0) {
+	ret = saveSduPayloadData(rxConfig, rxRuntime, data, pduLength);
+	if (ret == BUFREQ_OK && rxRuntime->iso15765.stateTimeoutCount != 0) {
 		PduR_CanTpRxIndication(rxConfig->CanTpRxPduId, NTFRSLT_OK);
 	} else {
 		PduR_CanTpRxIndication(rxConfig->CanTpRxPduId, NTFRSLT_E_NO_BUFFER);
@@ -687,6 +690,9 @@ static inline void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 			rxPduData);
 	rxRuntime->pduLenghtTotalBytes = pduLength;
 
+	VALIDATE( rxRuntime->pduLenghtTotalBytes != 0,
+			SERVICE_ID_CANTP_RX_INDICATION, CANTP_E_INVALID_RX_LENGTH );
+
 	// Validate that that there is a reason for using the segmented transfers and
 	// if not simply skip (single frame should have been used).
 	if (rxConfig->CanTpAddressingFormant == CANTP_STANDARD) {
@@ -707,21 +713,21 @@ static inline void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 			* MAIN_FUNCTION_PERIOD_TIME_MS; /* CanTP 166. */
 
 	if (rxConfig->CanTpAddressingFormant == CANTP_STANDARD) {
-		ret = copyToSduRouterBuffer(rxConfig, rxRuntime,
+		ret = saveSduPayloadData(rxConfig, rxRuntime,
 				&(rxRuntime->bufferPduRouter->SduDataPtr[2]),
 				MAX_PAYLOAD_FF_STD_ADDR);
 	} else {
-		ret = copyToSduRouterBuffer(rxConfig, rxRuntime,
+		ret = saveSduPayloadData(rxConfig, rxRuntime,
 				&(rxRuntime->bufferPduRouter->SduDataPtr[3]),
 				MAX_PAYLOAD_FF_EXT_ADDR);
 	}
-	if (ret == BEFREQ_OK) {
+	if (ret == BUFREQ_OK) {
 		rxRuntime->iso15765.stateTimeoutCount = rxConfig->CanTpNcr
 				* MAIN_FUNCTION_PERIOD_TIME_MS;
 		rxRuntime->iso15765.state = RX_WAIT_CONSECUTIVE_FRAME;
 		rxRuntime->mode = CANTP_RX_PROCESSING;
-		sendFlowControl(rxConfig, rxRuntime, ret);
-	} else if (ret == BEFREQ_BUSY) {
+		sendFlowControlFrame(rxConfig, rxRuntime, ret);
+	} else if (ret == BUFREQ_BUSY) {
 		/* req: CanTp: 222. */
 		for (i = 0; i < rxPduData->SduLength; i++) {
 			rxRuntime->tempSduData.data[i] = rxPduData->SduDataPtr[i];
@@ -731,9 +737,9 @@ static inline void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 				* MAIN_FUNCTION_PERIOD_TIME_MS;
 		rxRuntime->iso15765.state = RX_WAIT_SDU_BUFFER;
 		rxRuntime->mode = CANTP_RX_PROCESSING;
-		sendFlowControl(rxConfig, rxRuntime, ret);
-	} else if (ret == BEFREQ_OVFL) {
-		sendFlowControl(rxConfig, rxRuntime, ret);
+		sendFlowControlFrame(rxConfig, rxRuntime, ret);
+	} else if (ret == BUFREQ_OVFL) {
+		sendFlowControlFrame(rxConfig, rxRuntime, ret);
 		rxRuntime->iso15765.state = IDLE;
 		rxRuntime->mode = CANTP_RX_WAIT;
 	}
@@ -750,14 +756,28 @@ static inline ISO15765FrameType calcRequiredProtocolFrameType(
 
 	ISO15765FrameType ret;
 	if (txConfig->CanTpAddressingMode == CANTP_EXTENDED) {
+		VALIDATE( (txRuntime->pduLenghtTotalBytes > MAX_PAYLOAD_CF_EXT_ADDR) &&
+				  (txConfig->CanTpTxTaType == CANTP_FUNCTIONAL),
+				  SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TATYPE );
 		if (txRuntime->pduLenghtTotalBytes > MAX_PAYLOAD_CF_EXT_ADDR) {
-			ret = FIRST_FRAME;
+			if ( txConfig->CanTpTxTaType == CANTP_PHYSICAL ) {
+				ret = FIRST_FRAME;
+			} else {
+				ret = NONE;
+			}
 		} else {
 			ret = SINGLE_FRAME;
 		}
 	} else {
+		VALIDATE( (txRuntime->pduLenghtTotalBytes > MAX_PAYLOAD_CF_EXT_ADDR) &&
+				  (txConfig->CanTpTxTaType == CANTP_FUNCTIONAL),
+				  SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TATYPE );
 		if (txRuntime->pduLenghtTotalBytes > MAX_PAYLOAD_CF_EXT_ADDR) {
-			ret = FIRST_FRAME;
+			if ( txConfig->CanTpTxTaType == CANTP_PHYSICAL ) {
+				ret = FIRST_FRAME;
+			} else {
+				ret = NONE;
+			}
 		} else {
 			ret = SINGLE_FRAME;
 		}
@@ -783,7 +803,7 @@ static inline Std_ReturnType sendSingleFrame(const CanTp_TxNSduType *txConfig,
 	for (int i = 0; i < txRuntime->pduLenghtTotalBytes; i++) {
 		sduData[indexCount++] = txRuntime->bufferPduRouter->SduDataPtr[i];
 	}
-	ret = CanTansmitHelperTx(txConfig, &pduInfo);
+	ret = canTansmitPaddingHelper(txConfig, &pduInfo);
 	return ret;
 }
 
@@ -811,13 +831,13 @@ static inline Std_ReturnType sendFirstFrame(const CanTp_TxNSduType *txConfig,
 		}
 		txRuntime->pduTransferedBytesCount++;
 	}
-	ret = CanTansmitHelperTx(txConfig, &pduInfo);
+	ret = canTansmitPaddingHelper(txConfig, &pduInfo);
 	return ret;
 }
 
 // - - - - - - - - - - - - - -
 
-BufReq_ReturnType startCanTpTransmit(const CanTp_TxNSduType *txConfig,
+BufReq_ReturnType canTpTransmitHelper(const CanTp_TxNSduType *txConfig,
 		CanTp_ChannelPrivateType *txRuntime) {
 
 	BufReq_ReturnType pdurResp;
@@ -829,7 +849,7 @@ BufReq_ReturnType startCanTpTransmit(const CanTp_TxNSduType *txConfig,
 	if (txRuntime->iso15765.stateTimeoutCount != 0) {
 		VALIDATE( txRuntime->bufferPduRouter->SduDataPtr != NULL,
 				SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TX_BUFFER );
-		if (pdurResp == BEFREQ_OK) {
+		if (pdurResp == BUFREQ_OK) {
 			iso15765Frame = calcRequiredProtocolFrameType(txConfig, txRuntime);
 			switch (iso15765Frame) {
 			case SINGLE_FRAME:
@@ -857,11 +877,11 @@ BufReq_ReturnType startCanTpTransmit(const CanTp_TxNSduType *txConfig,
 				txRuntime->mode = CANTP_TX_WAIT;
 				break;
 			}
-		} else if (pdurResp == BEFREQ_NOT_OK) {
+		} else if (pdurResp == BUFREQ_NOT_OK) {
 			PduR_CanTpTxConfirmation(txConfig->CanTpTxPduId, NTFRSLT_NOT_OK);
 			txRuntime->iso15765.state = IDLE;
 			txRuntime->mode = CANTP_TX_WAIT;
-		} else if (pdurResp == BEFREQ_BUSY) {
+		} else if (pdurResp == BUFREQ_BUSY) {
 			txRuntime->iso15765.state = TX_WAIT_CAN_TP_TRANSMIT_PENDING; // We have to issue this request later from main until timeout.
 			txRuntime->mode = CANTP_TX_PROCESSING;
 		}
@@ -889,24 +909,26 @@ Std_ReturnType CanTp_Transmit(PduIdType CanTpTxSduId,
 	VALIDATE( CanTpRunTimeData.internalState == CANTP_ON,
 			SERVICE_ID_CANTP_TRANSMIT, CANTP_E_UNINIT ); /* req: CanTp031 */
 
-	index = getCanTpTxNSduConfigListIndex( &CanTpConfig, CanTpTxSduId);
-	VALIDATE( index != CANTP_ERR, SERVICE_ID_CANTP_TRANSMIT, CANTP_E_PARAM_ID ); /* req: CanTp031 */
+	index = getCanTpTxNSduConfigListIndex(&CanTpConfig, CanTpTxSduId);
+	VALIDATE( index != CANTP_ERR, SERVICE_ID_CANTP_TRANSMIT, CANTP_E_PARAM_ID );
+	VALIDATE( index != CANTP_ERR, SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TX_ID );
 	if (index != CANTP_ERR) {
 		txConfig = &CanTpTxNSduConfigList[index];
 		txRuntime = &CanTpRunTimeData.rxNSduData[index];
 		txRuntime->pduLenghtTotalBytes = CanTpTxInfoPtr->SduLength;
+		VALIDATE( index != CANTP_ERR, SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TX_LENGHT );
 		txRuntime->iso15765.stateTimeoutCount = txConfig->CanTpNcs
 				* MAIN_FUNCTION_PERIOD_TIME_MS;
 		txRuntime->mode = CANTP_TX_PROCESSING;
 		txRuntime->iso15765.state
 				= TX_WAIT_CAN_TP_TRANSMIT_CAN_TP_PROVIDE_TX_BUFFER;
-		res = startCanTpTransmit(txConfig, txRuntime);
+		res = canTpTransmitHelper(txConfig, txRuntime);
 		switch (res) {
-		case BEFREQ_OK:
-		case BEFREQ_BUSY:
+		case BUFREQ_OK:
+		case BUFREQ_BUSY:
 			res = E_OK;
 			break;
-		case BEFREQ_NOT_OK:
+		case BUFREQ_NOT_OK:
 			res = E_NOT_OK;
 			break;
 		default:
@@ -914,6 +936,7 @@ Std_ReturnType CanTp_Transmit(PduIdType CanTpTxSduId,
 			break;
 		}
 	} else {
+
 		ret = E_NOT_OK;
 	}
 	return ret; // CAN level error code.
@@ -1073,7 +1096,7 @@ void CanTp_MainFunction() /** req : CanTp213 **/
 			txRuntimeListItem->mode = CANTP_TX_WAIT;
 			break;
 		case TX_WAIT_CAN_TP_TRANSMIT_PENDING:
-			(void) startCanTpTransmit(txConfigListItem, txRuntimeListItem);
+			(void) canTpTransmitHelper(txConfigListItem, txRuntimeListItem);
 			break;
 		case TX_WAIT_SEND_CONSECUTIVE_FRAME:
 			(void) sendConsecutiveFrame(txConfigListItem, txRuntimeListItem);
@@ -1109,12 +1132,12 @@ void CanTp_MainFunction() /** req : CanTp213 **/
 				rxRuntimeListItem->mode = CANTP_RX_WAIT;
 			} else {
 				if (rxConfigListItem->CanTpAddressingFormant == CANTP_STANDARD) {
-					ret = copyToSduRouterBuffer(rxConfigListItem,
+					ret = saveSduPayloadData(rxConfigListItem,
 							rxRuntimeListItem,
 							&rxRuntimeListItem->tempSduData.data[2],
 							MAX_PAYLOAD_FF_STD_ADDR);
 				} else {
-					ret = copyToSduRouterBuffer(rxConfigListItem,
+					ret = saveSduPayloadData(rxConfigListItem,
 							rxRuntimeListItem,
 							&rxRuntimeListItem->tempSduData.data[3],
 							MAX_PAYLOAD_FF_EXT_ADDR);
