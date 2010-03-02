@@ -62,15 +62,6 @@
 #define MCU_GETRESETRAWVALUE_NORESETREG_RV  0x00 /**< MCU006 */
 #define MCU_GETRESETRAWVALUE_UNINIT_RV      0xffffffff /**< MCU135 */
 
-#if defined(CFG_5553)
-/* FMPLL modes( atleast in 5553/5554 ) */
-typedef enum {
-	MCU_FMPLL_BYPASS = 0,
-	MCU_FMPLL_EXTERNAL_REF,
-	MCU_FMPLL_EXTERNAL_REF_NO_FM,
-	MCU_FMPLL_DUAL_CONTROLLER_MODE,
-} Mcu_FMPLLmode_t;
-#endif
 
 typedef enum {
 	MCU_PLL_LOCKED,
@@ -100,15 +91,9 @@ typedef struct {
 	//	Point container. It shall be givn in Hz.
 	uint32 McuClockReferencePointFrequency;
 
-#if defined(CFG_MC912DG128A)
-	uint32 PllClock;
-
-#elif defined(CFG_MPC5516)
-	// Phase locked loop configuration parameters for MPC551x.
-	uint8 PllEprediv;
-	uint8 PllEmfd;
-	uint8 PllErfd;
-#endif
+	uint8 Pll1; // PLL setting 1
+	uint8 Pll2; // PLL setting 2
+	uint8 Pll3; // PLL setting 3
 
 } Mcu_ClockSettingConfigType;
 
