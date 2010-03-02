@@ -140,7 +140,7 @@ typedef unsigned char StatusType;
 #define STD_IDLE		0x00
 
 #define STD_ON			0x01
-#define STD_OFF		0x00
+#define STD_OFF			0x00
 
 
 #endif

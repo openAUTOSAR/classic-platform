@@ -48,6 +48,13 @@ obj-$(USE_CANIF) += CanIf_Cfg.o
 vpath-$(USE_CANIF) += $(ROOTDIR)/communication/CanIf
 inc-$(USE_CANIF) += $(ROOTDIR)/communication/CanIf
 
+# CanTp
+obj-$(USE_CANTP) += CanTp.o
+obj-$(USE_CANTP) += CanTp_PBcfg.o
+
+vpath-$(USE_CANTP) += $(ROOTDIR)/communication/CanTp
+inc-$(USE_CANTP) += $(ROOTDIR)/communication/CanTp
+
 obj-$(USE_DIO) += Dio.o
 obj-$(USE_DIO) += Dio_Lcfg.o
 
