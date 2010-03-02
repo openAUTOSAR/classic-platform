@@ -461,22 +461,24 @@ boolean matchEventWithDtcFilter(const EventStatusRecType *eventRec)
 	boolean dtcMatch = FALSE;
 
 	// Check status
-	if ((dtcFilter.dtcStatusMask == 0x00) || (eventRec->eventStatusExtended & dtcFilter.dtcStatusMask)) {
+	if ((dtcFilter.dtcStatusMask == DEM_DTC_STATUS_MASK_ALL) || (eventRec->eventStatusExtended & dtcFilter.dtcStatusMask)) {
+		if (eventRec->eventParamRef != NULL) {
 
-		// Check dtcKind
-		if (checkDtcKind(dtcFilter.dtcKind, eventRec->eventParamRef)) {
+			// Check dtcKind
+			if (checkDtcKind(dtcFilter.dtcKind, eventRec->eventParamRef)) {
 
-			// Check dtcOrigin
-			if (checkDtcOrigin(dtcFilter.dtcOrigin, eventRec->eventParamRef)) {
+				// Check dtcOrigin
+				if (checkDtcOrigin(dtcFilter.dtcOrigin, eventRec->eventParamRef)) {
 
-				// Check severity
-				if ((dtcFilter.filterWithSeverity == DEM_FILTER_WITH_SEVERITY_NO)
-					|| ((dtcFilter.filterWithSeverity == DEM_FILTER_WITH_SEVERITY_YES) && checkDtcSeverityMask(dtcFilter.dtcSeverityMask, eventRec->eventParamRef))) {
+					// Check severity
+					if ((dtcFilter.filterWithSeverity == DEM_FILTER_WITH_SEVERITY_NO)
+						|| ((dtcFilter.filterWithSeverity == DEM_FILTER_WITH_SEVERITY_YES) && checkDtcSeverityMask(dtcFilter.dtcSeverityMask, eventRec->eventParamRef))) {
 
-					// Check fault detection counter
-					if ((dtcFilter.filterForFaultDetectionCounter == DEM_FILTER_FOR_FDC_NO)
-						|| ((dtcFilter.filterWithSeverity == DEM_FILTER_FOR_FDC_YES) && checkDtcFaultDetectionCounter(eventRec->eventParamRef))) {
-						dtcMatch = TRUE;
+						// Check fault detection counter
+						if ((dtcFilter.filterForFaultDetectionCounter == DEM_FILTER_FOR_FDC_NO)
+							|| ((dtcFilter.filterWithSeverity == DEM_FILTER_FOR_FDC_YES) && checkDtcFaultDetectionCounter(eventRec->eventParamRef))) {
+							dtcMatch = TRUE;
+						}
 					}
 				}
 			}
@@ -1258,7 +1260,7 @@ void Dem_Init(void)
 	}
 
 	// Init the dtc filter
-	dtcFilter.dtcStatusMask = 0x00;										// All allowed
+	dtcFilter.dtcStatusMask = DEM_DTC_STATUS_MASK_ALL;					// All allowed
 	dtcFilter.dtcKind = DEM_DTC_KIND_ALL_DTCS;							// All kinds of DTCs
 	dtcFilter.dtcOrigin = DEM_DTC_ORIGIN_PRIMARY_MEMORY;				// Primary memory
 	dtcFilter.filterWithSeverity = DEM_FILTER_WITH_SEVERITY_NO;			// No Severity filtering
@@ -1537,10 +1539,10 @@ void Dem_ReportErrorStatus( Dem_EventIdType eventId, Dem_EventStatusType eventSt
  * Interface DCM <-> DEM (8.3.5) *
  *********************************/
 /*
- * Procedure:	Dem_GetDTCAvailabilityMask
+ * Procedure:	Dem_GetDTCStatusAvailabilityMask
  * Reentrant:	No
  */
-Std_ReturnType Dem_GetDTCAvailabilityMask(uint8 *dtcStatusMask)
+Std_ReturnType Dem_GetDTCStatusAvailabilityMask(uint8 *dtcStatusMask)
 {
 	*dtcStatusMask = 	DEM_TEST_FAILED
 						| DEM_TEST_FAILED_THIS_OPERATION_CYCLE
@@ -1568,36 +1570,29 @@ Dem_ReturnSetDTCFilterType Dem_SetDTCFilter(uint8 dtcStatusMask,
 		Dem_FilterForFDCType filterForFaultDetectionCounter) {
 
 	Dem_ReturnSetDTCFilterType returnCode = DEM_WRONG_FILTER;
-	Std_ReturnType result;
-	uint8 supStatusMask;
 
-	// Check the dtcStatusMask
-	result = Dem_GetDTCAvailabilityMask(&supStatusMask);
-	if ((result == E_OK) && !(dtcStatusMask & ~supStatusMask)) {
+	// Check dtcKind parameter
+	if ((dtcKind == DEM_DTC_KIND_ALL_DTCS) || (dtcKind ==  DEM_DTC_KIND_EMISSON_REL_DTCS)) {
 
-		// Check dtcKind parameter
-		if ((dtcKind == DEM_DTC_KIND_ALL_DTCS) || (dtcKind ==  DEM_DTC_KIND_EMISSON_REL_DTCS)) {
+		// Check dtcOrigin parameter
+		if ((dtcOrigin == DEM_DTC_ORIGIN_SECONDARY_MEMORY) || (dtcOrigin == DEM_DTC_ORIGIN_PRIMARY_MEMORY)
+			|| (dtcOrigin == DEM_DTC_ORIGIN_PERMANENT_MEMORY) || (dtcOrigin == DEM_DTC_ORIGIN_MIRROR_MEMORY)) {
 
-			// Check dtcOrigin parameter
-			if ((dtcOrigin == DEM_DTC_ORIGIN_SECONDARY_MEMORY) || (dtcOrigin == DEM_DTC_ORIGIN_PRIMARY_MEMORY)
-				|| (dtcOrigin == DEM_DTC_ORIGIN_PERMANENT_MEMORY) || (dtcOrigin == DEM_DTC_ORIGIN_MIRROR_MEMORY)) {
+			// Check filterWithSeverity and dtcSeverityMask parameter
+			if ((filterWithSeverity == DEM_FILTER_WITH_SEVERITY_NO)
+				|| ((filterWithSeverity == DEM_FILTER_WITH_SEVERITY_YES) && !(dtcSeverityMask & ~(DEM_SEVERITY_MAINTENANCE_ONLY | DEM_SEVERITY_CHECK_AT_NEXT_FALT | DEM_SEVERITY_CHECK_IMMEDIATELY)))){
 
-				// Check filterWithSeverity and dtcSeverityMask parameter
-				if ((filterWithSeverity == DEM_FILTER_WITH_SEVERITY_NO)
-					|| ((filterWithSeverity == DEM_FILTER_WITH_SEVERITY_YES) && !(dtcSeverityMask & ~(DEM_SEVERITY_MAINTENANCE_ONLY | DEM_SEVERITY_CHECK_AT_NEXT_FALT | DEM_SEVERITY_CHECK_IMMEDIATELY)))){
+				// Check filterForFaultDetectionCounter parameter
+				if ((filterForFaultDetectionCounter == DEM_FILTER_FOR_FDC_YES) || (filterForFaultDetectionCounter ==  DEM_FILTER_FOR_FDC_NO)) {
+					// Yes all parameters correct, set the new filters.
+					dtcFilter.dtcStatusMask = dtcStatusMask;
+					dtcFilter.dtcKind = dtcKind;
+					dtcFilter.dtcOrigin = dtcOrigin;
+					dtcFilter.filterWithSeverity = filterWithSeverity;
+					dtcFilter.dtcSeverityMask = dtcSeverityMask;
+					dtcFilter.filterForFaultDetectionCounter = filterForFaultDetectionCounter;
 
-					// Check filterForFaultDetectionCounter parameter
-					if ((filterForFaultDetectionCounter == DEM_FILTER_FOR_FDC_YES) || (filterForFaultDetectionCounter ==  DEM_FILTER_FOR_FDC_NO)) {
-						// Yes all parameters correct, set the new filters.
-						dtcFilter.dtcStatusMask = dtcStatusMask;
-						dtcFilter.dtcKind = dtcKind;
-						dtcFilter.dtcOrigin = dtcOrigin;
-						dtcFilter.filterWithSeverity = filterWithSeverity;
-						dtcFilter.dtcSeverityMask = dtcSeverityMask;
-						dtcFilter.filterForFaultDetectionCounter = filterForFaultDetectionCounter;
-
-						returnCode = DEM_FILTER_ACCEPTED;
-					}
+					returnCode = DEM_FILTER_ACCEPTED;
 				}
 			}
 		}
@@ -1641,8 +1636,12 @@ Dem_ReturnGetNumberOfFilteredDTCType Dem_GetNumberOfFilteredDtc(uint16 *numberOf
 	//Dem_DisableEventStatusUpdate();
 
 	for (i = 0; i < DEM_MAX_NUMBER_EVENT; i++) {
-		if (matchEventWithDtcFilter(&eventStatusBuffer[i])) {
-			numberOfFaults++;
+		if (eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) {
+			if (matchEventWithDtcFilter(&eventStatusBuffer[i])) {
+				if (eventStatusBuffer[i].eventParamRef->DTCClassRef != NULL) {
+					numberOfFaults++;
+				}
+			}
 		}
 	}
 
@@ -1713,31 +1712,33 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
 		if (eventId != DEM_EVENT_ID_NULL) {
 			eventParam = eventStatusBuffer[i].eventParamRef;
 			if (eventParam != NULL) {
-				if (checkDtcKind(dtcKind, eventParam)) {
-					if (checkDtcGroup(dtc, eventParam)) {
-						for (j = 0; (j < DEM_MAX_NR_OF_EVENT_DESTINATION) && (eventParam->EventClass->EventDestination[j] != dtcOrigin); j++);
-						if (j < DEM_MAX_NR_OF_EVENT_DESTINATION) {
-							// Yes! All conditions met.
-							switch (dtcOrigin)
-							{
-							case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
-								deleteEventPriMem(eventParam);
-								deleteFreezeFrameDataPriMem(eventParam);
-								deleteExtendedDataPriMem(eventParam);
-								deleteEventStatusRec(eventParam);		// TODO: Shall this be done or just resetting the status?
-								break;
+				if ( DEM_CLEAR_ALL_EVENTS | (eventParam->DTCClassRef != NULL)) {
+					if (checkDtcKind(dtcKind, eventParam)) {
+						if (checkDtcGroup(dtc, eventParam)) {
+							for (j = 0; (j < DEM_MAX_NR_OF_EVENT_DESTINATION) && (eventParam->EventClass->EventDestination[j] != dtcOrigin); j++);
+							if (j < DEM_MAX_NR_OF_EVENT_DESTINATION) {
+								// Yes! All conditions met.
+								switch (dtcOrigin)
+								{
+								case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
+									deleteEventPriMem(eventParam);
+									deleteFreezeFrameDataPriMem(eventParam);
+									deleteExtendedDataPriMem(eventParam);
+									deleteEventStatusRec(eventParam);		// TODO: Shall this be done or just resetting the status?
+									break;
 
-							case DEM_DTC_ORIGIN_SECONDARY_MEMORY:
-							case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
-							case DEM_DTC_ORIGIN_MIRROR_MEMORY:
-								// Not yet supported
-								returnCode = DEM_CLEAR_WRONG_DTCORIGIN;
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-								Det_ReportError(MODULE_ID_DEM, 0, DEM_CLEAR_DTC_ID, DEM_E_NOT_IMPLEMENTED_YET);
-#endif
-								break;
-							default:
-								break;
+								case DEM_DTC_ORIGIN_SECONDARY_MEMORY:
+								case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
+								case DEM_DTC_ORIGIN_MIRROR_MEMORY:
+									// Not yet supported
+									returnCode = DEM_CLEAR_WRONG_DTCORIGIN;
+	#if (DEM_DEV_ERROR_DETECT == STD_ON)
+									Det_ReportError(MODULE_ID_DEM, 0, DEM_CLEAR_DTC_ID, DEM_E_NOT_IMPLEMENTED_YET);
+	#endif
+									break;
+								default:
+									break;
+								}
 							}
 						}
 					}

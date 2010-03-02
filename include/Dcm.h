@@ -44,6 +44,7 @@
 // Service ID in this module
 #define DCM_INIT_ID							0x02
 #define DCM_HANDLE_RESPONSE_TRANSMISSION	0x03
+#define DCM_UDS_READ_DTC_INFO				0x10
 #define DCM_GLOBAL_ID						0xff
 
 #endif

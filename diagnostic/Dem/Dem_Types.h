@@ -44,6 +44,11 @@ typedef uint16 Dem_EventIdType;
 typedef uint32 Dem_DTCGroupType;
 #define	DEM_DTC_GROUP_ALL_DTCS			0xffffff
 
+/*
+ * Dem status type
+ */
+#define DEM_DTC_STATUS_MASK_ALL			0x00
+
 
 /*
  * DemDTCKindType

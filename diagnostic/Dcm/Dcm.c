@@ -65,6 +65,7 @@
 // Misc definitions
 #define SUPPRESS_POS_RESP_BIT		0x80
 #define SID_RESPONSE_BIT			0x40
+#define VALUE_IS_NOT_USED			0x00
 
 typedef struct {
 	PduIdType 	activePduId;
@@ -129,6 +130,7 @@ void DspUdsDiagnosticSessionControl(void);
 void DspUdsEcuReset(void);
 void DspUdsClearDiagnosticInformation(void);
 void DspUdsTesterPresent(void);
+void DspUdsReadDtcInformation(void);
 void DsdDspProcessingDone(Dcm_NegativeResponseCodeType responseCode);
 void DspDcmConfirmation(PduIdType confirmPduId);
 void DsdDataConfirmation(PduIdType confirmPduId);
@@ -621,6 +623,7 @@ void DsdSelectServiceFunction(uint8 sid)
 		break;
 
 	case SID_READ_DTC_INFORMATION:
+		DspUdsReadDtcInformation();
 		break;
 
 	case SID_READ_DATA_BY_IDENTIFIER:
@@ -892,6 +895,325 @@ void DspUdsClearDiagnosticInformation(void)
 	}
 }
 
+
+Dcm_NegativeResponseCodeType DspUdsReadDtcInfoSub_0x01_0x07_0x11_0x12(void)
+{
+	typedef struct {
+		uint8		SID;
+		uint8		reportType;
+		uint8 		dtcStatusAvailabilityMask;
+		uint8		dtcFormatIdentifier;
+		uint8		dtcCountHighByte;
+		uint8		dtcCountLowByte;
+	} TxDataType;
+
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+	Dem_ReturnSetDTCFilterType setDtcFilterResult;
+
+	// Setup the DTC filter
+	switch (commonVars.pduRxData->SduDataPtr[1]) 	/** @reg DCM293 **/
+	{
+	case 0x01:	// reportNumberOfDTCByStatusMask
+		setDtcFilterResult = Dem_SetDTCFilter(commonVars.pduRxData->SduDataPtr[2], DEM_DTC_KIND_ALL_DTCS, DEM_DTC_ORIGIN_PRIMARY_MEMORY, DEM_FILTER_WITH_SEVERITY_NO, VALUE_IS_NOT_USED, DEM_FILTER_FOR_FDC_NO);
+		break;
+
+	case 0x07:	// reportNumberOfDTCBySeverityMaskRecord
+		setDtcFilterResult = Dem_SetDTCFilter(commonVars.pduRxData->SduDataPtr[3], DEM_DTC_KIND_ALL_DTCS, DEM_DTC_ORIGIN_PRIMARY_MEMORY, DEM_FILTER_WITH_SEVERITY_YES, commonVars.pduRxData->SduDataPtr[2], DEM_FILTER_FOR_FDC_NO);
+		break;
+
+	case 0x11:	// reportNumberOfMirrorMemoryDTCByStatusMask
+		setDtcFilterResult = Dem_SetDTCFilter(commonVars.pduRxData->SduDataPtr[2], DEM_DTC_KIND_ALL_DTCS, DEM_DTC_ORIGIN_MIRROR_MEMORY, DEM_FILTER_WITH_SEVERITY_NO, VALUE_IS_NOT_USED, DEM_FILTER_FOR_FDC_NO);
+		break;
+
+	case 0x12:	// reportNumberOfEmissionRelatedOBDDTCByStatusMask
+		setDtcFilterResult = Dem_SetDTCFilter(commonVars.pduRxData->SduDataPtr[2], DEM_DTC_KIND_EMISSON_REL_DTCS, DEM_DTC_ORIGIN_PRIMARY_MEMORY, DEM_FILTER_WITH_SEVERITY_NO, VALUE_IS_NOT_USED, DEM_FILTER_FOR_FDC_NO);
+		break;
+	default:
+		setDtcFilterResult = DEM_WRONG_FILTER;
+#if (DCM_DEV_ERROR_DETECT == STD_ON)
+		Det_ReportError(MODULE_ID_DCM, 0, DCM_UDS_READ_DTC_INFO, DCM_E_UNEXPECTED_PARAM);
+#endif
+		break;
+	}
+
+	if (setDtcFilterResult == DEM_FILTER_ACCEPTED) {
+		uint16 numberOfFilteredDtc;
+		uint8 dtcStatusMask;
+		TxDataType *txData = (TxDataType*)commonVars.pduTxData->SduDataPtr;
+
+		/** @reg DCM376 **/
+		Dem_GetNumberOfFilteredDtc(&numberOfFilteredDtc);
+		Dem_GetDTCStatusAvailabilityMask(&dtcStatusMask);
+
+		// Create positive response (ISO 14229-1 table 251)
+		/** @req DCM039.0x19 **/
+		txData->reportType = commonVars.pduRxData->SduDataPtr[1];			// reportType
+		txData->dtcStatusAvailabilityMask = dtcStatusMask;					// DTCStatusAvailabilityMask
+		txData->dtcFormatIdentifier = Dem_GetTranslationType();				// DTCFormatIdentifier
+		txData->dtcCountHighByte = (numberOfFilteredDtc >> 8);				// DTCCount high byte
+		txData->dtcCountLowByte = (numberOfFilteredDtc & 0xFF);				// DTCCount low byte
+		commonVars.pduTxData->SduLength = 6;
+	}
+	else {
+		responseCode = DCM_E_REQUESTOUTOFRANGE;
+	}
+
+	return responseCode;
+}
+
+Dcm_NegativeResponseCodeType DspUdsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15(void)
+{
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+	Dem_ReturnSetDTCFilterType setDtcFilterResult;
+
+	typedef struct {
+		uint8		dtcHighByte;
+		uint8		dtcMiddleByte;
+		uint8		dtcLowByte;
+		uint8		statusOfDtc;
+	} dtcAndStatusRecordType;
+
+	typedef struct {
+		uint8					SID;
+		uint8					reportType;
+		uint8 					dtcStatusAvailabilityMask;
+		dtcAndStatusRecordType	dtcAndStatusRecord[];
+	} TxDataType;
+
+	// Setup the DTC filter
+	switch (commonVars.pduRxData->SduDataPtr[1]) 	/** @reg DCM378 **/
+	{
+	case 0x02:	// reportDTCByStatusMask
+		setDtcFilterResult = Dem_SetDTCFilter(commonVars.pduRxData->SduDataPtr[2], DEM_DTC_KIND_ALL_DTCS, DEM_DTC_ORIGIN_PRIMARY_MEMORY, DEM_FILTER_WITH_SEVERITY_NO, VALUE_IS_NOT_USED, DEM_FILTER_FOR_FDC_NO);
+		break;
+
+	case 0x0A:	// reportSupportedDTC
+		setDtcFilterResult = Dem_SetDTCFilter(DEM_DTC_STATUS_MASK_ALL, DEM_DTC_KIND_ALL_DTCS, DEM_DTC_ORIGIN_PRIMARY_MEMORY, DEM_FILTER_WITH_SEVERITY_NO, VALUE_IS_NOT_USED, DEM_FILTER_FOR_FDC_NO);
+		break;
+
+	case 0x0F:	// reportMirrorMemoryDTCByStatusMask
+		setDtcFilterResult = Dem_SetDTCFilter(commonVars.pduRxData->SduDataPtr[2], DEM_DTC_KIND_ALL_DTCS, DEM_DTC_ORIGIN_MIRROR_MEMORY, DEM_FILTER_WITH_SEVERITY_NO, VALUE_IS_NOT_USED, DEM_FILTER_FOR_FDC_NO);
+		break;
+
+	case 0x13:	// reportEmissionRelatedOBDDTCByStatusMask
+		setDtcFilterResult = Dem_SetDTCFilter(commonVars.pduRxData->SduDataPtr[2], DEM_DTC_KIND_EMISSON_REL_DTCS, DEM_DTC_ORIGIN_PRIMARY_MEMORY, DEM_FILTER_WITH_SEVERITY_NO, VALUE_IS_NOT_USED, DEM_FILTER_FOR_FDC_NO);
+		break;
+
+	case 0x15:	// reportDTCWithPermanentStatus
+		setDtcFilterResult = Dem_SetDTCFilter(DEM_DTC_STATUS_MASK_ALL, DEM_DTC_KIND_ALL_DTCS, DEM_DTC_ORIGIN_PERMANENT_MEMORY, DEM_FILTER_WITH_SEVERITY_NO, VALUE_IS_NOT_USED, DEM_FILTER_FOR_FDC_NO);
+		break;
+	default:
+		setDtcFilterResult = DEM_WRONG_FILTER;
+#if (DCM_DEV_ERROR_DETECT == STD_ON)
+		Det_ReportError(MODULE_ID_DCM, 0, DCM_UDS_READ_DTC_INFO, DCM_E_UNEXPECTED_PARAM);
+#endif
+		break;
+	}
+
+	if (setDtcFilterResult == DEM_FILTER_ACCEPTED) {
+		uint8 dtcStatusMask;
+		TxDataType *txData = (TxDataType*)commonVars.pduTxData->SduDataPtr;
+		Dem_ReturnGetNextFilteredDTCType getNextFilteredDtcResult;
+		uint32 dtc;
+		Dem_EventStatusExtendedType dtcStatus;
+		uint16 nrOfDtcs = 0;
+
+		/** @reg DCM377 **/
+		Dem_GetDTCStatusAvailabilityMask(&dtcStatusMask);
+
+		// Create positive response (ISO 14229-1 table 252)
+		/** @req DCM039.0x19 **/
+		txData->reportType = commonVars.pduRxData->SduDataPtr[1];
+		txData->dtcStatusAvailabilityMask = dtcStatusMask;
+
+		if (dtcStatusMask != 0x00) {	/** @req DCM008 **/
+			getNextFilteredDtcResult = Dem_GetNextFilteredDTC(&dtc, &dtcStatus);
+			while (getNextFilteredDtcResult == DEM_FILTERED_OK) {
+				txData->dtcAndStatusRecord[nrOfDtcs].dtcHighByte = (dtc >> 16) & 0xFF;
+				txData->dtcAndStatusRecord[nrOfDtcs].dtcMiddleByte = (dtc >> 8) & 0xFF;
+				txData->dtcAndStatusRecord[nrOfDtcs].dtcLowByte = (dtc >> 0) & 0xFF;
+				txData->dtcAndStatusRecord[nrOfDtcs].statusOfDtc = dtcStatus;
+				nrOfDtcs++;
+				getNextFilteredDtcResult = Dem_GetNextFilteredDTC(&dtc, &dtcStatus);
+			}
+
+			if (getNextFilteredDtcResult != DEM_FILTERED_NO_MATCHING_DTC) {
+				responseCode = DCM_E_REQUESTOUTOFRANGE;
+			}
+		}
+		commonVars.pduTxData->SduLength = 3 + nrOfDtcs * sizeof(dtcAndStatusRecordType);
+	}
+	else {
+		responseCode = DCM_E_REQUESTOUTOFRANGE;
+	}
+
+	return responseCode;
+}
+
+Dcm_NegativeResponseCodeType DspUdsReadDtcInfoSub_0x08(void)
+{
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+
+	// TODO: Not supported yet, (DEM module does not currently support severity).
+	responseCode = DCM_E_REQUESTOUTOFRANGE;
+
+	return responseCode;
+}
+
+Dcm_NegativeResponseCodeType DspUdsReadDtcInfoSub_0x09(void)
+{
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+
+	// TODO: Not supported yet, (DEM module does not currently support severity).
+	responseCode = DCM_E_REQUESTOUTOFRANGE;
+
+	return responseCode;
+}
+
+Dcm_NegativeResponseCodeType DspUdsReadDtcInfoSub_0x06_0x10(void)
+{
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+
+	// TODO: Not supported yet
+	responseCode = DCM_E_REQUESTOUTOFRANGE;
+
+	return responseCode;
+}
+
+Dcm_NegativeResponseCodeType DspUdsReadDtcInfoSub_0x03(void)
+{
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+
+	// TODO: Not supported yet
+	responseCode = DCM_E_REQUESTOUTOFRANGE;
+
+	return responseCode;
+}
+
+Dcm_NegativeResponseCodeType DspUdsReadDtcInfoSub_0x04(void)
+{
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+
+	// TODO: Not supported yet
+	responseCode = DCM_E_REQUESTOUTOFRANGE;
+
+	return responseCode;
+}
+
+Dcm_NegativeResponseCodeType DspUdsReadDtcInfoSub_0x05(void)
+{
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+
+	// TODO: Not supported yet
+	responseCode = DCM_E_REQUESTOUTOFRANGE;
+
+	return responseCode;
+}
+
+Dcm_NegativeResponseCodeType DspUdsReadDtcInfoSub_0x0B_0x0C_0x0D_0x0E(void)
+{
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+
+	// TODO: Not supported yet
+	responseCode = DCM_E_REQUESTOUTOFRANGE;
+
+	return responseCode;
+}
+
+Dcm_NegativeResponseCodeType DspUdsReadDtcInfoSub_0x14(void)
+{
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+
+	// TODO: Not supported yet
+	responseCode = DCM_E_REQUESTOUTOFRANGE;
+
+	return responseCode;
+}
+
+void DspUdsReadDtcInformation(void)
+{
+	/** @reg DCM248 **/
+	// Sub function number         0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F 10 11 12 13 14 15
+	const uint8 sduLength[0x16] = {0, 3, 3, 6, 6, 3, 6, 4, 4, 5, 2, 2, 2, 2, 2, 3, 6, 3, 3, 3, 2, 2};
+
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+
+	uint8 subFunctionNumber = commonVars.pduRxData->SduDataPtr[1];
+
+	// Check length
+	if (subFunctionNumber <= 0x15) {
+		if (commonVars.pduRxData->SduLength == sduLength[subFunctionNumber]) {
+			switch (subFunctionNumber)
+			{
+			case 0x01:	// reportNumberOfDTCByStatusMask
+			case 0x07:	// reportNumberOfDTCBySeverityMaskRecord
+			case 0x11:	// reportNumberOfMirrorMemoryDTCByStatusMask
+			case 0x12:	// reportNumberOfEmissionRelatedOBDDTCByStatusMask
+				responseCode = DspUdsReadDtcInfoSub_0x01_0x07_0x11_0x12();
+				break;
+
+			case 0x02:	// reportDTCByStatusMask
+			case 0x0A:	// reportSupportedDTC
+			case 0x0F:	// reportMirrorMemoryDTCByStatusMask
+			case 0x13:	// reportEmissionRelatedOBDDTCByStatusMask
+			case 0x15:	// reportDTCWithPermanentStatus
+				responseCode = DspUdsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15();
+				break;
+
+			case 0x08:	// reportDTCBySeverityMaskRecord
+				responseCode = DspUdsReadDtcInfoSub_0x08();
+				break;
+
+			case 0x09:	// reportSeverityInformationOfDTC
+				responseCode = DspUdsReadDtcInfoSub_0x09();
+				break;
+
+			case 0x06:	// reportDTCExtendedDataRecordByDTCNumber
+			case 0x10:	// reportMirrorMemoryDTCExtendedDataRecordByDTCNumber
+				responseCode = DspUdsReadDtcInfoSub_0x06_0x10();
+				break;
+
+			case 0x03:	// reportDTCSnapshotIdentidication
+				responseCode = DspUdsReadDtcInfoSub_0x03();
+				break;
+
+			case 0x04:	// reportDTCSnapshotByDtcNumber
+				responseCode = DspUdsReadDtcInfoSub_0x04();
+				break;
+
+			case 0x05:	// reportDTCSnapshotRecordNumber
+				responseCode = DspUdsReadDtcInfoSub_0x05();
+				break;
+
+			case 0x0B:	// reportFirstTestFailedDTC
+			case 0x0C:	// reportFirstConfirmedDTC
+			case 0x0D:	// reportMostRecentTestFailedDTC
+			case 0x0E:	// reportMostRecentConfirmedDTC
+				responseCode = DspUdsReadDtcInfoSub_0x0B_0x0C_0x0D_0x0E();
+				break;
+
+			case 0x14:	// reportDTCFaultDetectionCounter
+				responseCode = DspUdsReadDtcInfoSub_0x14();
+				break;
+
+			default:
+				// Unknown sub function
+				responseCode = DCM_E_REQUESTOUTOFRANGE;
+				break;
+			}
+		}
+		else {
+			// Wrong length
+			responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;	/** @req DCM272.0x19 **/
+		}
+	}
+	else {
+		// Sub function out of range
+		responseCode = DCM_E_REQUESTOUTOFRANGE;
+	}
+
+	DsdDspProcessingDone(responseCode);
+}
 
 
 void DspUdsTesterPresent(void)

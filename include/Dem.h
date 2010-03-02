@@ -137,7 +137,7 @@ Dem_ReturnSetDTCFilterType Dem_SetDTCFilter(uint8 dtcStatusMask,
 
 Dem_ReturnGetStatusOfDTCType Dem_GetStatusOfDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin, Dem_EventStatusExtendedType* dtcStatus);
 
-Std_ReturnType Dem_GetDTCAvailabilityMask(uint8 *dtcStatusMask);
+Std_ReturnType Dem_GetDTCStatusAvailabilityMask(uint8 *dtcStatusMask);
 
 Dem_ReturnGetNumberOfFilteredDTCType Dem_GetNumberOfFilteredDtc(uint16* numberOfFilteredDTC);
 
