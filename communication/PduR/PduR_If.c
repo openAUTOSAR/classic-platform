@@ -23,7 +23,9 @@
 #include <string.h>
 #include "PduR_If.h"
 #include "Trace.h"
+#if defined(USE_DEM)
 #include "Dem.h"
+#endif
 
 #ifndef PDUR_ZERO_COST_OPERATION
 

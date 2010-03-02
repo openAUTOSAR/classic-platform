@@ -21,6 +21,7 @@
  */
 
 #include "Det.h"
+#include "CanIf.h"
 #include "CanTp_Cfg.h" /** req: CanTp156.1 **/
 #include "CanTp_Cbk.h" /** req: CanTp156.2 **/
 #include "CanTp.h" /** req: CanTp156.3 **/
@@ -79,6 +80,13 @@ void PduR_CanTpTxConfirmation(PduIdType CanTpTxPduId, NotifResultType Result) {
 
 }
 
+/*
+Std_ReturnType CanIf_Transmit(PduIdType CanTxPduId,
+    const PduInfoType *PduInfoPtr) {
+	;
+}
+*/
+
 #define TIMER_DECREMENT(timer) \
 	if (timer > 0) { \
 		timer = timer - 1; \
@@ -128,7 +136,7 @@ typedef enum {
 typedef enum {
 	INVALID_FRAME, /* Not specified by ISO15765 - used as error return type when decoding frame. */
 	SINGLE_FRAME, FIRST_FRAME, CONSECUTIVE_FRAME, FLOW_CONTROL_CTS_FRAME, /* Clear to send */
-	FLOW_CONTROL_WAIT_FRAME, FLOW_CONTROL_OVERFLOW_FRAME, NONE
+	FLOW_CONTROL_WAIT_FRAME, FLOW_CONTROL_OVERFLOW_FRAME
 } ISO15765FrameType;
 
 typedef enum {
@@ -870,7 +878,7 @@ BufReq_ReturnType canTpTransmitHelper(const CanTp_TxNSduType *txConfig,
 					txRuntime->mode = CANTP_TX_PROCESSING;
 				}
 				break;
-			case NONE:
+			case INVALID_FRAME:
 			default:
 				PduR_CanTpTxConfirmation(txConfig->CanTpTxPduId, NTFRSLT_NOT_OK);
 				txRuntime->iso15765.state = IDLE;
