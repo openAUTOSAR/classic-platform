@@ -25,7 +25,11 @@ SECTIONS
 
     .text :
 	{
-    	*(.text .text.* .init .fini* .eini* .gnu.linkonce* .gnu.warning)
+    	*(.text .text.* .init .fini* .eini* .gnu.linkonce* .gnu.warning);
+    	PROVIDE( btask_sup_matrix = .);
+    	SORT(*)(.test_btask);
+    	PROVIDE( etask_sup_matrix = .);
+    	SORT(*)(.test_etask);
 	} > flash
 
 	.fls_rom : {

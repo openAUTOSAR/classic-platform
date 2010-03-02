@@ -77,6 +77,7 @@ void etask_master( void ) {
 
 }
 
+#if 0
 test_func_t etask_sup_matrix[][3] = {
 /* 01*/	{ etask_sup_l_01, NULL, NULL },
 #if 0
@@ -89,14 +90,20 @@ test_func_t etask_sup_matrix[][3] = {
 #define TEST_BASIC(nr) \
 	{ btest_sup_l_##nr , btest_sup_m_##nr , btest_sup_h_## nr }
 
+
 test_func_t btask_sup_matrix[][3] = {
-/* 01*/	{ NULL, NULL, NULL},
+// /* 01*/	{ NULL, NULL, NULL},
+		TEST_BASIC(01),
 #if 0
 		TEST_BASIC(02),
 
 #endif
 }; // __attribute__ ((section(".data_app_2")));
 
+#else
+extern test_func_t etask_sup_matrix[][3];
+extern test_func_t btask_sup_matrix[][3];
+#endif
 
 //--------------------------------------------------------------------
 //--------------------------------------------------------------------

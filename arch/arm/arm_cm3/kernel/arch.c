@@ -38,7 +38,7 @@
  * we call a task for the first time.
  */
 
-void os_arch_first_call( void )
+void Os_ArchFirstCall( void )
 {
 	// TODO: make switch here... for now just call func.
 	Irq_Enable();
@@ -55,7 +55,7 @@ unsigned int Os_ArchGetScSize( void ) {
 }
 
 
-void os_arch_setup_context( OsPcbType *pcb ) {
+void Os_ArchSetupContext( OsPcbType *pcb ) {
 	// TODO: Add lots of things here, see ppc55xx
 	uint32_t *context = (uint32_t *)pcb->stack.curr;
 	context[C_CONTEXT_OFFS/4] = SC_PATTERN;
@@ -67,9 +67,9 @@ void os_arch_setup_context( OsPcbType *pcb ) {
 		context[VGPR_LR_OFF/4] = (uint32_t)Os_TaskStartBasic;
 	}
 	os_arch_stack_set_endmark(pcb);
-// os_arch_setup_context_asm(pcb->stack.curr,NULL);
+// Os_ArchSetupContext_asm(pcb->stack.curr,NULL);
 }
 
-void os_arch_init( void ) {
+void Os_ArchInit( void ) {
 	// nothing to do here, yet :)
 }

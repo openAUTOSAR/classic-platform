@@ -275,7 +275,7 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
 
 #if defined(USE_DEBUG)
   {
-    uint32    extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePoint;
+    uint32    extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePointFrequency;
     uint32    f_sys;
 
     f_sys = CALC_SYSTEM_CLOCK( extal,
@@ -424,7 +424,7 @@ uint32_t McuE_GetSystemClock(void)
   // TODO: This of course wrong....
   uint32_t f_sys = 72000000UL;
 #if 0
-  uint32  extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePoint;
+  uint32  extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePointFrequency;
 
   f_sys =  CALC_SYSTEM_CLOCK(extal,emfd,eprediv,erfd);
 #endif

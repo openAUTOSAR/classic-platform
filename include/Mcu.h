@@ -23,10 +23,6 @@
 #ifndef MCU_H_
 #define MCU_H_
 
-#define MCU_SW_MAJOR_VERSION	2
-#define MCU_SW_MINOR_VERSION	0
-#define MCU_SW_PATCH_VERSION	0
-
 #include "Cpu.h"
 #include "irq_types.h"
 #include "Std_Types.h"
@@ -171,8 +167,8 @@ void Mcu_PerformReset( void );
 void Mcu_SetMode( const Mcu_ModeType McuMode );
 
 #if ( MCU_VERSION_INFO_API == STD_ON )
-#define MCU_SW_MAJOR_VERSION    	1
-#define MCU_SW_MINOR_VERSION   		0
+#define MCU_SW_MAJOR_VERSION    	2
+#define MCU_SW_MINOR_VERSION   	0
 #define MCU_SW_PATCH_VERSION    	0
 #define MCU_AR_MAJOR_VERSION     	2
 #define MCU_AR_MINOR_VERSION     	2

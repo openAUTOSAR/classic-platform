@@ -71,7 +71,13 @@ dummy_int:
 .global Os_ArchSwapContextToW
 .global Os_ArchSwapContextTo
 .global Os_ArchSwapContext
+.global Os_ArchSetSpAndCall
 .section .text
+
+Os_ArchSetSpAndCall:
+		mr r1,r3
+		mtlr r4
+		blr
 
 Os_ArchSwapContextToW:
 		mr 		r1,r5

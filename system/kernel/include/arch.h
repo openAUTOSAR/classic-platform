@@ -26,7 +26,7 @@
 #define STACK_PATTERN	0x42
 
 
-
+#if 0
 /**
  * Swap context with a context. The difference between this
  * function and Os_ArchSwapContext is that the later use
@@ -37,7 +37,19 @@
  * @param context Ptr to context
  * @return
  */
+
 void Os_ArchSwapContextToW(void *old,void *new, void *context );
+#endif
+
+
+/**
+ * Set the stack pointer to sp and call function f.
+ *
+ * @param sp    Pointer to the stack
+ * @param f     Pointer to the function to call.
+ *
+ */
+void Os_ArchSetSpAndCall(void *sp, void (*f)(void) );
 
 /**
  * Swap context.
@@ -67,7 +79,7 @@ void Os_ArchSwapContextTo(void *old,void *new);
  *
  * @param pcb Ptr to pcb
  */
-void os_arch_setup_context( OsPcbType *pcb );
+void Os_ArchSetupContext( OsPcbType *pcb );
 
 /**
  * Get current stack pointer
@@ -82,7 +94,7 @@ void *Os_ArchGetStackPtr( void );
  * - interrupt controller
  * - timers
  */
-void os_arch_init( void );
+void Os_ArchInit( void );
 
 /**
  * Function that is used when task entry is called for the
@@ -92,7 +104,7 @@ void os_arch_init( void );
  * When user mode is supported a switch to user mode must be done
  * in some way. A trap maybe?
  */
-void os_arch_first_call( void );
+void Os_ArchFirstCall( void );
 
 
 /**

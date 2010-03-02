@@ -165,7 +165,7 @@ void InitOS( void ) {
 	/* Clear sys */
 	memset(&os_sys,0,sizeof(sys_t));
 
-	os_arch_init();
+	Os_ArchInit();
 
 	// Assign pcb list and init ready queue
 	os_sys.pcb_list = pcb_list;

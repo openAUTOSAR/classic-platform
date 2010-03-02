@@ -347,7 +347,7 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
 
 #if defined(USE_DEBUG)
   {
-    uint32    extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePoint;
+    uint32    extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePointFrequency;
     uint32    f_sys;
 
     f_sys = CALC_SYSTEM_CLOCK( extal,

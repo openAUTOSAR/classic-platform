@@ -41,7 +41,7 @@ void Os_TaskStartExtended( void ) {
 	Os_ResourceGetInternal();
 	Os_TaskMakeRunning(pcb);
 
-	os_arch_first_call();
+	Os_ArchFirstCall();
 
 	/** @req OS070 */
 	Os_ResourceCheckAndRelease(pcb);
@@ -51,6 +51,8 @@ void Os_TaskStartExtended( void ) {
 	if( Os_IrqAnyDisabled() ) {
 		Os_IrqClearAll();
 	}
+
+#warning Dont I have to check this at terminate task also?
 
 	/** @req OS069 */
 	ERRORHOOK(E_OS_MISSINGEND);
@@ -72,7 +74,7 @@ void Os_TaskStartBasic( void ) {
 	pcb = Os_TaskGetCurrent();
 	Os_ResourceGetInternal();
 	Os_TaskMakeRunning(pcb);
-	os_arch_first_call();
+	Os_ArchFirstCall();
 
 	/** @req OS070 */
 	Os_ResourceCheckAndRelease(pcb);
@@ -158,7 +160,7 @@ void Os_ContextInit( OsPcbType *pcb ) {
 	Os_StackFill(pcb);
 	OsArch_SetTaskEntry(pcb);
 
-	os_arch_setup_context(pcb);
+	Os_ArchSetupContext(pcb);
 }
 
 /**
@@ -167,9 +169,6 @@ void Os_ContextInit( OsPcbType *pcb ) {
  */
 void Os_ContextReInit( OsPcbType *pcbPtr ) {
 	Os_StackSetup(pcbPtr);
-	OsArch_SetTaskEntry(pcbPtr);
-	// TODO: This really need to be done
-	os_arch_setup_context(pcbPtr);
 }
 
 /**
@@ -302,7 +301,7 @@ void Os_Dispatch( _Bool force ) {
 	pcbPtr = Os_TaskGetTop();
 	currPcbPtr = Os_TaskGetCurrent();
 	/* Swap if we found any process or are forced (multiple activations)*/
-	if( pcbPtr != currPcbPtr || force ) {
+	if( pcbPtr != currPcbPtr ) {
 		/* Add us to the ready list */
 		if( currPcbPtr->state & ST_RUNNING ) {
 			Os_TaskRunningToReady(currPcbPtr);
@@ -349,10 +348,16 @@ void Os_Dispatch( _Bool force ) {
 		 * 3. Normal swap -> Os_ArchSwapContext()
 		 */
 
+#if 0
 		/* Force is ONLY used from TerminateTask() */
 		if( force ) {
-			Os_ArchSwapContextToW(currPcbPtr ,pcbPtr, pcbPtr->stack.curr );
+			Os_StackSetup(pcbPtr);
+			OsArch_SetTaskEntry(pcbPtr);
+			// TODO: This really need to be done
+			Os_ArchSetupContext(pcbPtr);
+			// Os_ArchSetSpAndCall(pcbPtr->stack.curr,Os_TaskStartBasic);
 		}
+#endif
 
 		Os_ArchSwapContext(currPcbPtr,pcbPtr);
 
@@ -364,10 +369,14 @@ void Os_Dispatch( _Bool force ) {
 		PRETASKHOOK();
 
 	} else {
+		Os_StackSetup(pcbPtr);
+		Os_ArchSetSpAndCall(pcbPtr->stack.curr,Os_TaskStartBasic);
+#if 0
 		/* We haven't removed ourselves from the ready list? */
 		assert(currPcbPtr->state != ST_WAITING);
 		/* We have terminated and found us in the ready list? */
 		assert(currPcbPtr->state != ST_SUSPENDED);
+#endif
 	}
 }
 
@@ -505,6 +514,10 @@ StatusType ActivateTask( TaskType TaskID ) {
 			 * state into ready state all its events are cleared.*/
 			pcb->ev_set = 0;
 			pcb->ev_wait = 0;
+		} else {
+			Os_StackSetup(pcb);
+			OsArch_SetTaskEntry(pcb);
+			Os_ArchSetupContext(pcb);
 		}
 		Os_TaskMakeReady(pcb);
 	} else {
@@ -530,7 +543,7 @@ StatusType ActivateTask( TaskType TaskID ) {
 
 	/* Preempt only if higher prio than us */
 	if(	(pcb->scheduling == FULL) &&
-		(os_sys.int_nest_cnt == 0) )
+		(os_sys.int_nest_cnt == 0) && (pcb->prio > Os_TaskGetCurrent()->prio) )
 	{
 		Os_Dispatch(0);
 	}
@@ -584,7 +597,7 @@ StatusType TerminateTask( void ) {
 	Irq_Save(flags);
 
 	--curr_pcb->activations;
-	assert(curr_pcb->activations>=0);
+//	assert(curr_pcb->activations>=0);
 
 	/*@req OSEK TerminateTask
 	 * In case of tasks with multiple activation requests,
@@ -596,15 +609,9 @@ StatusType TerminateTask( void ) {
 	} else {
 		/* We need to add ourselves to the ready list again,
 		 * with a startup context. */
-
-
 	}
-	/* We're manipulating the current stack here.
-	 * Os_ArchSwapContext(old,new) saves on current stack.
-	 * 1. We add an argument to Os_ArchSwapContext() to set the stack.
-	 * 2. We could call ActivateTask here...
-	 */
-	Os_ContextReInit(curr_pcb);
+
+//	Os_ContextReInit(curr_pcb);
 
 	/* Force the dispatcher to find something, even if its us */
 	Os_Dispatch(1);

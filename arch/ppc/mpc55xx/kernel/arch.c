@@ -24,7 +24,7 @@
  * Function make sure that we switch to supervisor mode(rfi) before
  * we call a task for the first time.
  */
-void os_arch_first_call( void )
+void Os_ArchFirstCall( void )
 {
 #if USE_MM_USER_MODE
 
@@ -92,19 +92,8 @@ void os_arch_stack_to_small(OsPcbType *pcb ,uint32_t size_min) {
  *
  */
 
-void os_arch_setup_context( OsPcbType *pcb ) {
+void Os_ArchSetupContext( OsPcbType *pcb ) {
 	uint32_t msr;
-	// Note! stack.curr already points to where to save the context
-
-	// Check that the stack size is enough
-	#define STACK_SIZE_MIN	(SC_SIZE + 16*2 )
-
-#if 0
-	if( pcb->stack.size < (STACK_SIZE_MIN) ) {
-		os_arch_stack_to_small(pcb, STACK_SIZE_MIN);
-	}
-#endif
-
 
 	msr = MSR_EE;
 
@@ -158,7 +147,7 @@ void os_arch_print_context( char *str, OsPcbType *pcb ) {
 }
 
 
-void os_arch_init( void ) {
+void Os_ArchInit( void ) {
 #if defined(CFG_SPE)
 	uint32_t msr = get_msr();
 	msr |= MSR_SPE;

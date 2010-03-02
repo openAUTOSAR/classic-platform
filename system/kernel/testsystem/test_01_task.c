@@ -201,3 +201,6 @@ void btask_sup_h_01(void) {
 	}
 }
 
+__attribute__ ((section (".test_btask"))) const test_func_t btask_sup_matrix_01[3] = { btask_sup_l_01, btask_sup_m_01, btask_sup_h_01 };
+__attribute__ ((section (".test_etask"))) const test_func_t etask_sup_matrix_01[3] = { etask_sup_l_01, NULL, NULL };
+
