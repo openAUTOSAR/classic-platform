@@ -29,6 +29,8 @@
 
 #include "Cpu.h"
 #include "irq_types.h"
+#include "Std_Types.h"
+#include "Mcu_Cfg.h"
 //#include "mpc55xx_aos.h"
 
 /** @name Service id's */
@@ -60,6 +62,16 @@
 #define MCU_GETRESETRAWVALUE_NORESETREG_RV  0x00 /**< MCU006 */
 #define MCU_GETRESETRAWVALUE_UNINIT_RV      0xffffffff /**< MCU135 */
 
+#if defined(CFG_5553)
+/* FMPLL modes( atleast in 5553/5554 ) */
+typedef enum {
+	MCU_FMPLL_BYPASS = 0,
+	MCU_FMPLL_EXTERNAL_REF,
+	MCU_FMPLL_EXTERNAL_REF_NO_FM,
+	MCU_FMPLL_DUAL_CONTROLLER_MODE,
+} Mcu_FMPLLmode_t;
+#endif
+
 typedef enum {
 	MCU_PLL_LOCKED,
 	MCU_PLL_UNLOCKED,
@@ -83,7 +95,82 @@ typedef enum {
 	MCU_RESET_UNDEFINED
 } Mcu_ResetType;
 
-#include "Mcu_Cfg.h"
+typedef struct {
+	//	This is the frequency for the specific instance of the McuClockReference-
+	//	Point container. It shall be givn in Hz.
+	uint32 McuClockReferencePointFrequency;
+
+#if defined(CFG_MC912DG128A)
+	uint32 PllClock;
+
+#elif defined(CFG_MPC5516)
+	// Phase locked loop configuration parameters for MPC551x.
+	uint8 PllEprediv;
+	uint8 PllEmfd;
+	uint8 PllErfd;
+#endif
+
+} Mcu_ClockSettingConfigType;
+
+typedef struct {
+	// This parameter shall represent the Data pre-setting to be initialized
+	uint32 McuRamDefaultValue;
+
+	// This parameter shall represent the MCU RAM section base address
+	uint32 McuRamSectionBaseAddress;
+
+	// This parameter shall represent the MCU RAM Section size
+	uint32 McuRamSectionSize;
+
+} Mcu_RamSectorSettingConfigType;
+
+typedef struct {
+	//	Enables/Disables clock failure notification. In case this feature is not supported
+	//	by HW the setting should be disabled.
+	uint8	McuClockSrcFailureNotification;
+
+	//	This parameter shall represent the number of Modes available for the
+	//	MCU. calculationFormula = Number of configured McuModeSettingConf
+	//uint8 McuNumberOfMcuModes; /* Not supported */
+
+	//  This parameter shall represent the number of RAM sectors available for
+	//  the MCU. calculationFormula = Number of configured McuRamSectorSet-
+	//  tingConf
+	uint8 McuRamSectors;
+
+	//  This parameter shall represent the number of clock setting available for
+	//  the MCU.
+	uint8 McuClockSettings;
+
+	// This parameter defines the default clock settings that should be used
+	// It is an index into the McuClockSettingsConfig
+	Mcu_ClockType McuDefaultClockSettings;
+
+	//	This parameter relates to the MCU specific reset configuration. This ap-
+	//	plies to the function Mcu_PerformReset, which performs a microcontroller
+	//	reset using the hardware feature of the microcontroller.
+	//uint32 McuResetSetting;
+
+	//	This container contains the configuration (parameters) for the
+	//	Clock settings of the MCU. Please see MCU031 for more in-
+	//	formation on the MCU clock settings.
+	Mcu_ClockSettingConfigType * McuClockSettingConfig;
+
+	//	This container contains the configuration (parameters) for the
+	//	Mode setting of the MCU. Please see MCU035 for more information
+	//  on the MCU mode settings.
+	//Mcu_ModeSettingConfigType  *McuModeSettingConfig;
+
+	//	This container contains the configuration (parameters) for the
+	//	RAM Sector setting. Please see MCU030 for more information
+	//	on RAM sec-tor settings.
+	Mcu_RamSectorSettingConfigType *McuRamSectorSettingConfig;
+
+} Mcu_ConfigType;
+
+extern const Mcu_ConfigType McuConfigData[];
+
+
 
 void Mcu_Init( const Mcu_ConfigType *configPtr );
 void Mcu_DeInit();
@@ -121,8 +208,6 @@ uint32_t McuE_GetPeripheralClock( McuE_PeriperalClock_t type );
 #endif
 imask_t McuE_EnterCriticalSection(void);
 void McuE_ExitCriticalSection(imask_t old_state);
-void McuE_EnableInterrupts(void);
-void McuE_DisableInterrupts(void);
 
 
 

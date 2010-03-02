@@ -17,15 +17,69 @@
 #include <stdint.h>
 #include "Std_Types.h"
 #include "Mcu.h"
-#include "Det.h"
-#include <assert.h>
+//#include "Det.h"          // TODO Mattias restore
+//#include <assert.h>       // TODO Mattias restore
 #include "Cpu.h"
 #include <string.h>
-#include "Ramlog.h"
+//#include "hcs12.h"
+//#include "Ramlog.h"       // TODO Mattias restore
 
 //#define USE_TRACE 1
 //#define USE_DEBUG 1
-#include "Trace.h"
+//#include "Trace.h"        // TODO Mattias restore
+
+
+#define PORTIO_8		*(volatile unsigned char *)
+#define IO_BASE	0
+#define  CLKSEL    PORTIO_8(IO_BASE + 0x39)   /* clock select register */
+#define  PLLCTL    PORTIO_8(IO_BASE + 0x3a)   /* PLL control register */
+#define  CRGFLG    PORTIO_8(IO_BASE + 0x37)   /* clock generator flag register */
+#define  SYNR      PORTIO_8(IO_BASE + 0x34)   /* synthesizer register */
+#define  REFDV     PORTIO_8(IO_BASE + 0x35)   /* reference divider register */
+
+
+#define BM_RTIF		0x80
+#define BM_PORF		0x40
+//#define reserved	0x20
+#define BM_LOCKIF	0x10
+#define BM_LOCK		0x08
+#define BM_TRACK	0x04
+#define BM_SCMIF	0x02
+#define BM_SCM		0x01
+
+// Bits in CRGINT:
+#define BM_RTIE		0x80
+//#define reserved	0x40
+//#define reserved	0x20
+#define BM_LOCKIE	0x10
+//#define reserved	0x08
+//#define reserved	0x04
+#define BM_SCMIE	0x02
+//#define reserved	0x01
+
+// Bits in CLKSEL:
+#define BM_PLLSEL	0x80
+#define BM_PSTP		0x40
+#define BM_SYSWAI	0x20
+#define BM_ROAWAI	0x10
+#define BM_PLLWAI	0x08
+#define BM_CWAI		0x04
+#define BM_RTIWAI	0x02
+#define BM_COPWAI	0x01
+
+// Bits in PLLCTL:
+#define BM_CME		0x80
+#define BM_PLLON	0x40
+#define BM_AUTO		0x20
+#define BM_ACQ		0x10
+//#define reserved	0x08
+#define BM_PRE		0x04
+#define BM_PCE		0x02
+#define BM_SCME		0x01
+
+
+#define S12_REFCLK	 8000000		// PLL internal reference clock
+
 
 typedef struct {
 	uint32 lossOfLockCnt;
@@ -93,100 +147,6 @@ static void Mcu_LossOfLock( void  ) {
 }
 #endif
 
-#define SPR_PIR 286
-#define SPR_PVR 287
-
-#define CORE_PVR_E200Z1   0x81440000UL
-#define CORE_PVR_E200Z0   0x81710000UL
-
-
-typedef struct {
-  char *name;
-  uint32 pvr;
-} core_info_t;
-
-typedef struct {
-  char *name;
-  uint32 pvr;
-} cpu_info_t;
-
-cpu_info_t cpu_info_list[] = {
-    {
-    .name = "MPC5516",
-    .pvr = CORE_PVR_E200Z1,
-    },
-    {
-    .name = "MPC5516",
-    .pvr = CORE_PVR_E200Z0,
-    },
-};
-
-core_info_t core_info_list[] = {
-    {
-    .name = "CORE_E200Z1",
-    .pvr = CORE_PVR_E200Z1,
-    },
-    {
-    .name = "CORE_E200Z1",
-    .pvr = CORE_PVR_E200Z1,
-    },
-};
-
-// TODO: move
-#define ARRAY_SIZE(_x)  (sizeof(_x)/sizeof((_x)[0]))
-
-static cpu_info_t *Mcu_IdentifyCpu(uint32 pvr)
-{
-  int i;
-  for (i = 0; i < ARRAY_SIZE(cpu_info_list); i++) {
-    if (cpu_info_list[i].pvr == pvr) {
-      return &cpu_info_list[i];
-    }
-  }
-
-  return NULL;
-}
-
-static core_info_t *Mcu_IdentifyCore(uint32 pvr)
-{
-  int i;
-  for (i = 0; i < ARRAY_SIZE(core_info_list); i++) {
-    if (core_info_list[i].pvr == pvr) {
-      return &core_info_list[i];
-    }
-  }
-
-  return NULL;
-}
-
-
-static uint32 Mcu_CheckCpu( void ) {
-
-  uint32 pvr;
-  //uint32 pir;
-  cpu_info_t *cpuType;
-  core_info_t *coreType;
-
-  // We have to registers to read here, PIR and PVR
-
-#if 0
-  pir = get_spr(SPR_PIR);
-  pvr = get_spr(SPR_PVR);
-#endif
-
-  cpuType = Mcu_IdentifyCpu(pvr);
-  coreType = Mcu_IdentifyCore(pvr);
-
-  if( (cpuType == NULL) || (coreType == NULL) ) {
-    // Just hang
-    while(1);
-  }
-
-  //DEBUG(DEBUG_HIGH,"/drivers/mcu: Cpu:  %s( 0x%08x )\n",cpuType->name,pvr);
-  //DEBUG(DEBUG_HIGH,"/drivers/mcu: Core: %s( 0x%08x )\n",coreType->name,pvr);
-
-  return 0;
-}
 
 
 //-------------------------------------------------------------------
@@ -212,7 +172,7 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
 
 void Mcu_DeInit()
 {
-  Mcu_Global.initRun = FALSE; // Very simple Deinit. Should we do more?
+  Mcu_Global.initRun = FALSE;
 }
 
 //-------------------------------------------------------------------
@@ -239,54 +199,33 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
   Mcu_Global.clockSetting = ClockSetting;
   clockSettingsPtr = &Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting];
 
+/*
+#define S12_OSCCLK	16000000		// input frequency from Xtal/Osc
+#define S12_PLLCLK	48000000		// desired output frequency of PLL
+*/
+// PLL clock generation formula, according to CRG Block User Guide:
+// PLLCLK = OSCCLK * 2(SYNR+1) / (REFDV+1)
 
+//#define S12_ECLK	(S12_PLLCLK/2)	// final bus clock frequency (ECLK)
+//#define S12_ECLK	(S12_OSCCLK/2)	// bus clock if PLL not in use / off
 
-#if 0
-  /* 5516clock info:
-   * Fsys - System frequency ( CPU + all periperals? )
-   *
-   *  Fsys = EXTAL_FREQ *(  (emfd+16) / ( (eprediv+1) * ( erfd+1 )) ) )
-   */
-  // Check ranges...
-  assert((clockSettingsPtr->PllEmfd>=32) && (clockSettingsPtr->PllEmfd<=132));
-  assert( (clockSettingsPtr->PllEprediv!=6) &&
-          (clockSettingsPtr->PllEprediv!=8) &&
-          (clockSettingsPtr->PllEprediv<10) );
-  assert( clockSettingsPtr->PllErfd & 1); // Must be odd
-#endif
+  uint8 s12_refdv = (uint8)(clockSettingsPtr->McuClockReferencePointFrequency / S12_REFCLK) - 1;
+  uint8 s12_synr  = (uint8)(clockSettingsPtr->PllClock / (2 * S12_REFCLK) ) -1;
 
+  //PLLCLK = 2 * OSCCLK * (SYNR + 1) / (REFDV + 1)
 
+  CLKSEL &= ~BM_PLLSEL; // Turn off PLL
+  PLLCTL |= BM_PLLON+BM_AUTO;  // Enable PLL module, Auto Mode
 
-#if defined(USE_DEBUG)
-  {
-    uint32    extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePoint;
-    uint32    f_sys;
+  REFDV = s12_refdv;  // Set reference divider
+  SYNR = s12_synr;  // Set synthesizer multiplier
 
-    f_sys = CALC_SYSTEM_CLOCK( extal,
-        clockSettingsPtr->PllEmfd,
-        clockSettingsPtr->PllEprediv,
-        clockSettingsPtr->PllErfd );
+  // the following dummy write has no effect except consuming some cycles,
+  // this is a workaround for erratum MUCTS00174 (mask set 0K36N only)
+  // CRGFLG = 0;
 
-    //DEBUG(DEBUG_HIGH,"/drivers/mcu: F_sys will be:%08d Hz\n",f_sys);
-  }
-#endif
-
-#if defined(CFG_MPC5516)
-  // External crystal PLL mode.
-  FMPLL.ESYNCR1.B.CLKCFG = 7; //TODO: Hur ställa detta för 5567?
-
-  // Write pll parameters.
-  FMPLL.ESYNCR1.B.EPREDIV = clockSettingsPtr->PllEprediv;
-  FMPLL.ESYNCR1.B.EMFD    = clockSettingsPtr->PllEmfd;
-  FMPLL.ESYNCR2.B.ERFD    = clockSettingsPtr->PllErfd;
-
-  // Connect SYSCLK to FMPLL
-  SIU.SYSCLK.B.SYSCLKSEL = SYSCLOCK_SELECT_PLL;
-#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
-  FMPLL.SYNCR.B.PREDIV 	= clockSettingsPtr->PllEprediv;
-  FMPLL.SYNCR.B.MFD		= clockSettingsPtr->PllEmfd;
-  FMPLL.SYNCR.B.RFD    	= clockSettingsPtr->PllErfd;
-#endif
+  while (Mcu_GetPllStatus() != MCU_PLL_LOCKED) ;
+  CLKSEL |= BM_PLLSEL; // Switch to PLL clock
 
   return E_OK;
 }
@@ -309,25 +248,11 @@ Mcu_PllStatusType Mcu_GetPllStatus(void)
   VALIDATE_W_RV( ( 1 == Mcu_Global.initRun ), MCU_GETPLLSTATUS_SERVICE_ID, MCU_E_UNINIT, MCU_PLL_STATUS_UNDEFINED );
   Mcu_PllStatusType rv;
 
-#if 0
-  if( !SIMULATOR() )
-  {
-#if 0
-    if ( !FMPLL.SYNSR.B.LOCK )
-    {
-      rv = MCU_PLL_UNLOCKED;
-    } else
-    {
-      rv = MCU_PLL_LOCKED;
-    }
-#endif
+  if ((CRGFLG & BM_LOCK) == 0) {
+	  rv = MCU_PLL_UNLOCKED;
+  } else {
+	  rv = MCU_PLL_LOCKED;
   }
-  else
-  {
-    /* We are running on instruction set simulator. PLL is then always in sync... */
-    rv = MCU_PLL_LOCKED;
-  }
-#endif
 
   return rv;
 }
@@ -378,6 +303,8 @@ Mcu_RawResetType Mcu_GetResetRawValue(void)
 void Mcu_PerformReset(void)
 {
   VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_PERFORMRESET_SERVICE_ID, MCU_E_UNINIT );
+
+  /* NOT SUPPORTED */
 }
 #endif
 
@@ -400,20 +327,7 @@ void Mcu_SetMode(const Mcu_ModeType McuMode)
  */
 uint32_t McuE_GetSystemClock(void)
 {
-  /*
-   * System clock calculation
-   *
-   */
-
-  // TODO: This of course wrong....
-  uint32_t f_sys = 72000000UL;
-#if 0
-  uint32  extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePoint;
-
-  f_sys =  CALC_SYSTEM_CLOCK(extal,emfd,eprediv,erfd);
-#endif
-
-//  f_sys = extal * (emfd+16) / ( (eprediv+1) * ( erfd+1 ));
+  uint32_t f_sys = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePointFrequency * 2 * (SYNR + 1) / ( REFDV+1);
   return f_sys;
 }
 
@@ -456,12 +370,3 @@ void Mcu_ConfigureFlash(void)
 
 }
 
-void McuE_EnableInterrupts(void)
-{
-  Irq_Enable();
-}
-
-void McuE_DisableInterrupts(void)
-{
-  Irq_Disable();
-}
