@@ -23,7 +23,7 @@
 #ifndef MCU_H_
 #define MCU_H_
 
-#define MCU_SW_MAJOR_VERSION	1
+#define MCU_SW_MAJOR_VERSION	2
 #define MCU_SW_MINOR_VERSION	0
 #define MCU_SW_PATCH_VERSION	0
 
