@@ -17,6 +17,7 @@
 #include "irq.h"
 
 extern void *Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
+extern void _start (void);
 
 void Irq_Init( void ) {
 
@@ -87,3 +88,145 @@ uint8_t Irq_GetCurrentPriority( Cpu_t cpu) {
 	return prio;
 }
 
+void bad_int()
+{
+  for (;;);
+}
+
+
+const struct interrupt_vectors __attribute__((section(".vectors"))) vectors =
+    {
+  pwm_shutdown_handler:
+      bad_int,
+  ptpif_handler:
+      bad_int,
+  can4_tx_handler:
+      bad_int,
+  can4_rx_handler:
+      bad_int,
+  can4_err_handler:
+      bad_int,
+  can4_wake_handler:
+      bad_int,
+  can3_tx_handler:
+      bad_int,
+  can3_rx_handler:
+      bad_int,
+  can3_err_handler:
+      bad_int,
+  can3_wake_handler:
+      bad_int,
+  can2_tx_handler:
+      bad_int,
+  can2_rx_handler:
+      bad_int,
+  can2_err_handler:
+      bad_int,
+  can2_wake_handler:
+      bad_int,
+  can1_tx_handler:
+      bad_int,
+  can1_rx_handler:
+      bad_int,
+  can1_err_handler:
+      bad_int,
+  can1_wake_handler:
+      bad_int,
+  can0_tx_handler:
+      bad_int,
+  can0_rx_handler:
+      bad_int,
+  can0_err_handler:
+      bad_int,
+  can0_wake_handler:
+      bad_int,
+  flash_handler:
+      bad_int,
+  eeprom_handler:
+      bad_int,
+  spi2_handler:
+      bad_int,
+  spi1_handler:
+      bad_int,
+  iic_handler:
+      bad_int,
+  bdlc_handler:
+      bad_int,
+  selfclk_mode_handler:
+      bad_int,
+  pll_lock_handler:
+      bad_int,
+  accb_overflow_handler:
+      bad_int,
+  mccnt_underflow_handler:
+      bad_int,
+  pthif_handler:
+      bad_int,
+  ptjif_handler:
+      bad_int,
+  atd1_handler:
+      bad_int,
+  atd0_handler:
+      bad_int,
+  sci1_handler:
+      bad_int,
+  sci0_handler:
+      bad_int,
+  spi0_handler:
+      bad_int,
+
+      // Timer and Accumulator
+  acca_input_handler:
+      bad_int,
+  acca_overflow_handler:
+      bad_int,
+  timer_overflow_handler:
+      bad_int,
+
+      // InputCapture/OutputCompare Timers
+  tc7_handler:
+      bad_int,
+  tc6_handler:
+      bad_int,
+  tc5_handler:
+      bad_int,
+  tc4_handler:
+      bad_int,
+  tc3_handler:
+      bad_int,
+  tc2_handler:
+      bad_int,
+  tc1_handler:
+      bad_int,
+  tc0_handler:
+      bad_int,
+
+      // External Interrupts
+  rtii_handler:
+      bad_int,
+  irq_handler:
+      bad_int,
+  xirq_handler:
+      bad_int,
+
+  illegal_handler:
+      bad_int,
+  cop_fail_handler:
+      bad_int,
+  cop_clock_handler:
+      bad_int,
+
+      // Vectors in use
+  swi_handler:
+      bad_int,
+
+  rtii_handler:
+      bad_int,
+  sci0_handler:
+      bad_int,
+  sci1_handler:
+      bad_int,
+
+  reset_handler:
+      _start,
+    };

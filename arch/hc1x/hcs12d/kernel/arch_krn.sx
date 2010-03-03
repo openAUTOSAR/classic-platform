@@ -89,6 +89,10 @@ Os_ArchSwapContextToW:
 
 */
 
+	.global Os_ArchSetSpAndCall
+	.type	Os_ArchSetSpAndCall, %function
+Os_ArchSetSpAndCall:
+
 os_stack_problem:
 // TODO: Jump to error handler
 //    b os_stack_problem

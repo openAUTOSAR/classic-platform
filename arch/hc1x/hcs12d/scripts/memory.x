@@ -1,32 +1,19 @@
-/* Flash Memory Banks
-   For Wytec Dragon12, Technological Arts Adapt9S12DP256
-   with DBug12 v4 bootloader
-   
-   Author Jefferson L Smith; Robotronics, Inc.
-  */
 
 MEMORY
 {
   page0 (rwx) : ORIGIN = 0x0, LENGTH = 256
 
   /* RAM */
-  data (rwx)  : ORIGIN = 0x1000, LENGTH = 12k
+  data (rwx)  : ORIGIN = 0x2000, LENGTH = 8k
 
   eeprom (rx): ORIGIN = 0x0400, LENGTH = 3k
   text (rx)  : ORIGIN = 0x4000, LENGTH = 48k
   
   /* high fixed bank, reserve 0x100 vectors and security. */
   text_h (rx)  : ORIGIN = 0xc000, LENGTH = 16k-0x100
+  vectors (rx)  : ORIGIN = 0xff80, LENGTH = 0x80
   
-  /* Flash memory banks */
-  bank0  (rx)   : ORIGIN = 0x0d0000, LENGTH = 16k
-  bank1  (rx)   : ORIGIN = 0x0d4000, LENGTH = 16k
-  bank2  (rx)   : ORIGIN = 0x0d8000, LENGTH = 16k
-  bank3  (rx)   : ORIGIN = 0x0dc000, LENGTH = 16k
-  bank4  (rx)   : ORIGIN = 0x0e0000, LENGTH = 16k
-  bank5  (rx)   : ORIGIN = 0x0e4000, LENGTH = 16k
-  bank6  (rx)   : ORIGIN = 0x0e8000, LENGTH = 16k
-  bank7  (rx)   : ORIGIN = 0x0ec000, LENGTH = 16k
+  /* Flash memory banks VMA:s */
   bank8  (rx)   : ORIGIN = 0x0f0000, LENGTH = 16k
   bank9  (rx)   : ORIGIN = 0x0f4000, LENGTH = 16k
   bank10 (rx)   : ORIGIN = 0x0f8000, LENGTH = 16k
@@ -36,26 +23,21 @@ MEMORY
   
   bank14 (rx)   : ORIGIN = 0x108000, LENGTH = 16k
   bank15 (rx)   : ORIGIN = 0x10c000, LENGTH = 16k-0x100
+  
+  /* Flash memory banks LMA:s */
+  bank8_lma  (rx)   : ORIGIN = 0x388000, LENGTH = 16k
+  bank9_lma  (rx)   : ORIGIN = 0x398000, LENGTH = 16k
+  bank10_lma (rx)   : ORIGIN = 0x3a8000, LENGTH = 16k
+  bank11_lma (rx)   : ORIGIN = 0x3b8000, LENGTH = 16k
+  bank12_lma (rx)   : ORIGIN = 0x3c8000, LENGTH = 16k
+  bank13_lma (rx)   : ORIGIN = 0x3d8000, LENGTH = 16k
+
+  bank14_lma (rx)   : ORIGIN = 0x3e8000, LENGTH = 16k
+  bank15_lma (rx)   : ORIGIN = 0x3f8000, LENGTH = 16k-0x100
+  vectors_lma (rx)  : ORIGIN = 0x3fff80, LENGTH = 0x80
 }
+
 /* Setup the stack on the top of the data memory bank.  */
-PROVIDE (_stack = 0x1000+12k);
+PROVIDE (_stack = 0x4000);
 
-/* interrupt/reset vectors*/
-/* vectors_addr = 0x10ff80; */
-
-SECTIONS
-{
-  /* PPAGE memory banks */
-
-  .bank2 :
-  {
-    *(.bank2)
-  } > bank2
-
-  .bank3 :
-  {
-    *(.bank3)
-  } > bank3
-
-}
 

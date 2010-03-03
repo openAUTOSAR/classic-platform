@@ -4,11 +4,11 @@ OUTPUT_FORMAT("elf32-m68hc12", "elf32-m68hc12",
 	      "elf32-m68hc12")
 OUTPUT_ARCH(m68hc12)
 ENTRY(_start)
+
 SEARCH_DIR("/cygdrive/c/ArcticStudio/v1.2_2/Studio/workspace/arc/arch/hc1x/hcs12d/scripts/");
-/* Get memory banks definition from some user configuration file.
-   This file must be located in some linker directory (search path
-   with -L<dir>). See fixed memory banks emulation script.  */
 INCLUDE memory.x;
+
+
 SECTIONS
 {
   .hash          : { *(.hash)		}
@@ -17,6 +17,8 @@ SECTIONS
   .gnu.version		  : { *(.gnu.version) }
   .gnu.version_d	  : { *(.gnu.version_d) }
   .gnu.version_r	  : { *(.gnu.version_r) }
+  
+  /*
   .rel.text      :
     {
       *(.rel.text)
@@ -117,21 +119,127 @@ SECTIONS
   .rela.fini		  : { *(.rela.fini) }
   .rel.plt		  : { *(.rel.plt) }
   .rela.plt		  : { *(.rela.plt) }
+  */
+  
   /* Concatenate .page0 sections.  Put them in the page0 memory bank
      unless we are creating a relocatable file.  */
   .page0 :
   {
     *(.page0)
   }  > page0
+  
+  
+  /* PPAGE memory banks */
+
+  .bank8 :
+  {
+    *(.bank8)
+    *(.text.bank8*)
+    
+    /* BANK0 MODULES */
+    Os_Cfg.o(.text)
+    EcuM.o(.text)
+    EcuM_Cfg.o(.text)
+    EcuM_Callout_template.o(.text)
+    Mcu.o(.text)
+    event.o(.text)
+    init.o(.text)
+    arch.o(.text)
+    task.o(.text)
+    resource.o(.text)
+    alarm.o(.text)
+	
+    . = ALIGN(2);
+  } > bank8 AT>bank8_lma  =0xff
+
+  .bank9 :
+  {
+    *(.bank9)
+    *(.text.bank9*)
+
+    /* BANK9 MODULES */
+    sched_table.o(.text)
+    counter.o(.text)
+    sys_tick.o(.text)
+    isr.o(.text)
+    os_arctest.o(.text)
+    irq.o(.text)
+    Det.o(.text)
+    xtoa.o(.text)
+    newlib_port.o(.text)
+    tiny.o(.text)
+
+    . = ALIGN(2);
+  } > bank9 AT>bank9_lma =0xff
+
+
+  .bank10 :
+  {
+    *(.bank10)
+    *(.text.bank10*)
+
+    /* BANK10 MODULES */	
+	*_memcpy.o(.text)
+	*_memset.o(.text)
+	*_abort.o(.text)
+	*_subdi3.o(.text)
+	*_addsub_sf.o(.text)
+	*udivmod.o(.text)
+	*_negsi2.o(.text)
+	*_pack_sf.o(.text)
+	*_unpack_sf.o(.text)
+	*udivmodsi4.o(.text)
+	*_ashlsi3.o(.text)
+	*_lshrsi3.o(.text)
+	*assert.o(.text)
+	*div.o(.text)
+	*fiprintf.o(.text)
+	*reent.o(.text)
+	*strcmp.o(.text)
+	*strncpy.o(.text)
+	*wcrtomb.o(.text)
+	*wcsrtombs.o(.text)
+	*wctomb_r.o(.text)
+	*wsetup.o(.text)
+	*fflush.o(.text)
+	*findfp.o(.text)
+	*freer.o(.text)
+	*_memcpy.o(.text)
+	
+    . = ALIGN(2);
+  } > bank10 AT>bank10_lma  =0xff
+
+
+  .bank11 :
+  {
+    *(.bank11)
+    . = ALIGN(2);
+  } > bank11 AT>bank11_lma  =0xff
+
+
+  .bank12 :
+  {
+    *(.bank12)
+    . = ALIGN(2);
+  } > bank12 AT>bank12_lma  =0xff
+
+
+  .bank13 :
+  {
+    *(.bank13)
+    . = ALIGN(2);
+  } > bank13 AT>bank13_lma  =0xff
+  
+  
   /* Start of text section.  */
   .stext   :
   {
     *(.stext)
-  }  > text
+  }  > text AT>bank14_lma
   .init	  :
   {
     *(.init)
-  } =0
+  } AT>bank14_lma =0
   .text  :
   {
     /* Put startup code at beginning so that _start keeps same address.  */
@@ -158,28 +266,34 @@ SECTIONS
     _etext = .;
     PROVIDE (etext = .);
     . = ALIGN(2);
-  }  > text =0xa7a7a7a7
+  }  > text AT>bank14_lma =0xa7a7a7a7
+  
   .eh_frame   :
   {
     KEEP (*(.eh_frame))
-  }  > text
+  }  > text AT>bank14_lma
+  
   .gcc_except_table   :
   {
     *(.gcc_except_table)
-  }  > text
+  }  > text AT>bank14_lma
+  
   .rodata    :
   {
     *(.rodata)
     *(.rodata.*)
     *(.gnu.linkonce.r*)
     . = ALIGN(2);
-  }  > text =0xffffffff
+  }  > text_h AT>bank15_lma =0xffffffff
+  
   .rodata1   :
   {
     *(.rodata1)
     . = ALIGN(2);
-  }  > text =0xffffffff
+  }  > text_h AT>bank15_lma =0xffffffff
+  
   /* Constructor and destructor tables are in ROM.  */
+  /*
   .ctors   :
   {
      PROVIDE (__CTOR_LIST__ = .);
@@ -196,6 +310,8 @@ SECTIONS
   {
     KEEP (*(.jcr))
   }  > text
+  */
+  
   /* Start of the data section image in ROM.  */
   __data_image = .;
   PROVIDE (__data_image = .);
@@ -203,7 +319,7 @@ SECTIONS
      We construct the DATA image section in PROM at end of all these
      read-only sections.  The data image must be copied at init time.
      Refer to GNU ld, Section 3.6.8.2 Output Section LMA.  */
-  .data    : AT (__data_image)
+  .data    : /* AT (__data_image) */
   {
     __data_section_start = .;
     PROVIDE (__data_section_start = .);
@@ -216,7 +332,7 @@ SECTIONS
     _edata  =  .;
     PROVIDE (edata = .);
     . = ALIGN(2);
-  }  > data =0xffffffff
+  }  > data AT>bank15_lma =0xffffffff
   __data_section_size = SIZEOF(.data);
   PROVIDE (__data_section_size = SIZEOF(.data));
   __data_image_end = __data_image + __data_section_size;
@@ -251,7 +367,7 @@ SECTIONS
     *(.gnu.linkonce.b.*)
     *(COMMON)
     PROVIDE (_end = .);
-  }  > data
+  }  > data AT>bank15_lma
   __bss_size = SIZEOF(.bss);
   PROVIDE (__bss_size = SIZEOF(.bss));
   .eeprom   :
@@ -275,10 +391,11 @@ SECTIONS
   PROVIDE (_vectors_addr = DEFINED (vectors_addr) ? vectors_addr : 0xffc0);
   .vectors DEFINED (vectors_addr) ? vectors_addr : 0xffc0 :
   */
-  .vectors 0xff80 :
+  .vectors :
   {
     KEEP (*(.vectors))
-  }
+  } >vectors AT>vectors_lma
+  
   /* Stabs debugging sections.  */
   .stab		 0 : { *(.stab) }
   .stabstr	 0 : { *(.stabstr) }

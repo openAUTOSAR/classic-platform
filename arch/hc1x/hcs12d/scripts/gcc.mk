@@ -5,10 +5,10 @@ CC_VERSION=3.3.6
 
 
 cflags-y += -m68hcs12 -mshort -mlong-calls -gdwarf-2 -O0 -Wall -Wmissing-prototypes -Wno-char-subscripts -msoft-reg-count=0 -mrelax
-cflags-y 	+= -B/opt/m6812-elf-2/m6812-elf/
+cflags-y 	+= -B/opt/m6811-elf/m6811-elf/
 
 LDFLAGS += -mm68hc12elfb 
 
 lib-y   	+= -lgcc -lc
-ASFLAGS 	+= -mshort
+ASFLAGS 	+= -mshort -m68hcs12
 

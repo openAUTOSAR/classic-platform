@@ -9,7 +9,7 @@ _bad_int:
 	b _bad_int
 
 /* Arg , reverse order, 0xFF80-> */
- 	.section	.isr_vector,"a",%progbits
+ 	.section	.vectors,"a",%progbits
  	.space 0x30,0			/* 0xff80 */
  	.short  _bad_int		/* 0xffb0 */
  	.short  _bad_int

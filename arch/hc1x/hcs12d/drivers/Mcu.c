@@ -37,12 +37,16 @@
 #define  REFDV       PORTIO_8(IO_BASE + 0x35)   /* reference divider register */
 #define  S12_REFCLK	 8000000		// PLL internal reference clock
 
+#define BM_PLLSEL	0x80
+#define BM_PLLON	0x40
+#define BM_AUTO		0x20
+#define BM_LOCK		0x08
 /*
 #define BM_RTIF		0x80
 #define BM_PORF		0x40
 //#define reserved	0x20
 #define BM_LOCKIF	0x10
-#define BM_LOCK		0x08
+
 #define BM_TRACK	0x04
 #define BM_SCMIF	0x02
 #define BM_SCM		0x01
@@ -58,7 +62,7 @@
 //#define reserved	0x01
 
 // Bits in CLKSEL:
-#define BM_PLLSEL	0x80
+
 #define BM_PSTP		0x40
 #define BM_SYSWAI	0x20
 #define BM_ROAWAI	0x10
@@ -69,8 +73,6 @@
 
 // Bits in PLLCTL:
 #define BM_CME		0x80
-#define BM_PLLON	0x40
-#define BM_AUTO		0x20
 #define BM_ACQ		0x10
 //#define reserved	0x08
 #define BM_PRE		0x04
@@ -289,7 +291,7 @@ void Mcu_PerformReset(void)
 void Mcu_SetMode(const Mcu_ModeType McuMode)
 {
   VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_SETMODE_SERVICE_ID, MCU_E_UNINIT );
-  VALIDATE( ( McuMode <= Mcu_Global.config->McuNumberOfMcuModes ), MCU_SETMODE_SERVICE_ID, MCU_E_PARAM_MODE );
+//  VALIDATE( ( McuMode <= Mcu_Global.config->McuNumberOfMcuModes ), MCU_SETMODE_SERVICE_ID, MCU_E_PARAM_MODE );
   (void) McuMode;
 
   /* NOT SUPPORTED */
