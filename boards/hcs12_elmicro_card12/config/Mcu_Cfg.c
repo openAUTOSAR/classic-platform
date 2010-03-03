@@ -36,7 +36,8 @@ Mcu_ClockSettingConfigType Mcu_ClockSettingConfigData[] =
 {
   {
     .McuClockReferencePointFrequency = 16000000,
-    .Pll1 = 16000000
+    .Pll1    = 1,
+    .Pll2    = 0,
   }
 };
 

@@ -17,27 +17,27 @@
 #include <stdint.h>
 #include "Std_Types.h"
 #include "Mcu.h"
-//#include "Det.h"          // TODO Mattias restore
-//#include <assert.h>       // TODO Mattias restore
+#include "Det.h"
+#include <assert.h>
 #include "Cpu.h"
 #include <string.h>
-//#include "hcs12.h"
-//#include "Ramlog.h"       // TODO Mattias restore
+#include "Ramlog.h"
 
-//#define USE_TRACE 1
-//#define USE_DEBUG 1
-//#include "Trace.h"        // TODO Mattias restore
-
-
-#define PORTIO_8		*(volatile unsigned char *)
-#define IO_BASE	0
-#define  CLKSEL    PORTIO_8(IO_BASE + 0x39)   /* clock select register */
-#define  PLLCTL    PORTIO_8(IO_BASE + 0x3a)   /* PLL control register */
-#define  CRGFLG    PORTIO_8(IO_BASE + 0x37)   /* clock generator flag register */
-#define  SYNR      PORTIO_8(IO_BASE + 0x34)   /* synthesizer register */
-#define  REFDV     PORTIO_8(IO_BASE + 0x35)   /* reference divider register */
+#define USE_TRACE 1
+#define USE_DEBUG 1
+#include "Trace.h"
 
 
+#define  PORTIO_8	 *(volatile unsigned char *)
+#define  IO_BASE	 0
+#define  CLKSEL      PORTIO_8(IO_BASE + 0x39)   /* clock select register */
+#define  PLLCTL      PORTIO_8(IO_BASE + 0x3a)   /* PLL control register */
+#define  CRGFLG      PORTIO_8(IO_BASE + 0x37)   /* clock generator flag register */
+#define  SYNR        PORTIO_8(IO_BASE + 0x34)   /* synthesizer register */
+#define  REFDV       PORTIO_8(IO_BASE + 0x35)   /* reference divider register */
+#define  S12_REFCLK	 8000000		// PLL internal reference clock
+
+/*
 #define BM_RTIF		0x80
 #define BM_PORF		0x40
 //#define reserved	0x20
@@ -78,7 +78,8 @@
 #define BM_SCME		0x01
 
 
-#define S12_REFCLK	 8000000		// PLL internal reference clock
+
+*/
 
 
 typedef struct {
@@ -155,12 +156,6 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
 {
   VALIDATE( ( NULL != configPtr ), MCU_INIT_SERVICE_ID, MCU_E_PARAM_CONFIG );
 
-/*
-  if( !SIMULATOR() ) {
-	  Mcu_CheckCpu();
-  }
-*/
-
   memset(&Mcu_Global.stats,0,sizeof(Mcu_Global.stats));
 
   Irq_Enable();
@@ -199,30 +194,11 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
   Mcu_Global.clockSetting = ClockSetting;
   clockSettingsPtr = &Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting];
 
-/*
-#define S12_OSCCLK	16000000		// input frequency from Xtal/Osc
-#define S12_PLLCLK	48000000		// desired output frequency of PLL
-*/
-// PLL clock generation formula, according to CRG Block User Guide:
-// PLLCLK = OSCCLK * 2(SYNR+1) / (REFDV+1)
-
-//#define S12_ECLK	(S12_PLLCLK/2)	// final bus clock frequency (ECLK)
-//#define S12_ECLK	(S12_OSCCLK/2)	// bus clock if PLL not in use / off
-
-  uint8 s12_refdv = (uint8)(clockSettingsPtr->McuClockReferencePointFrequency / S12_REFCLK) - 1;
-  uint8 s12_synr  = (uint8)(clockSettingsPtr->PllClock / (2 * S12_REFCLK) ) -1;
-
-  //PLLCLK = 2 * OSCCLK * (SYNR + 1) / (REFDV + 1)
-
   CLKSEL &= ~BM_PLLSEL; // Turn off PLL
   PLLCTL |= BM_PLLON+BM_AUTO;  // Enable PLL module, Auto Mode
 
-  REFDV = s12_refdv;  // Set reference divider
-  SYNR = s12_synr;  // Set synthesizer multiplier
-
-  // the following dummy write has no effect except consuming some cycles,
-  // this is a workaround for erratum MUCTS00174 (mask set 0K36N only)
-  // CRGFLG = 0;
+  REFDV = clockSettingsPtr->Pll1;  // Set reference divider
+  SYNR = clockSettingsPtr->Pll2;  // Set synthesizer multiplier
 
   while (Mcu_GetPllStatus() != MCU_PLL_LOCKED) ;
   CLKSEL |= BM_PLLSEL; // Switch to PLL clock
