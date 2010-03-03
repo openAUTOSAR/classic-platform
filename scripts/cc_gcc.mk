@@ -64,18 +64,10 @@ space = $(empty) $(empty)
 
 # It seems some versions of make want "\=" and some "="
 # "=" - msys cpmake on windows 7 
-#	gcc_lib_path := "$(subst /libgcc.a,,$(shell $(CC) $(CFLAGS) --print-libgcc-file-name))" 
-#	lib_lib_path := "$(subst /libc.a,,$(shell $(CC) $(CFLAGS) --print-file-name=libc.a))"
-#	libpath-y += -L$(lib_lib_path)
-#	libpath-y += -L$(gcc_lib_path)
-
-# Mårten #2
-#libpath-y += -L"/opt/m6812-elf/m6812-elf/lib/mlong-calls"
-#libpath-y += -L"/opt/m6812-elf/lib/gcc-lib/m6812-elf/3.3.6-m68hc1x-20060122/mlong-calls"
-
-# Minimal
-libpath-y += -L"/opt/m6812-elf-minimal/m6811-elf/lib/m68hc12/mshort/mlong-calls"
-libpath-y += -L"/opt/m6812-elf-minimal/lib/gcc-lib/m6811-elf/3.3.6-m68hc1x-20060122/m68hc12/mshort/mlong-calls"
+gcc_lib_path := "$(subst /libgcc.a,,$(shell $(CC) $(CFLAGS) --print-libgcc-file-name))" 
+lib_lib_path := "$(subst /libc.a,,$(shell $(CC) $(CFLAGS) --print-file-name=libc.a))"
+libpath-y += -L$(lib_lib_path)
+libpath-y += -L$(gcc_lib_path)
 
 # ---------------------------------------------------------------------------
 # Linker
