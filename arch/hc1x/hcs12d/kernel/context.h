@@ -18,63 +18,22 @@
 /*
  * context.h
  *
- * DESCRIPTION
- *   ARM Cortex-M3 (architecture ARMv7-M).
  *
- * REFERENCES
- * - Any ABI?
+ * PPAGE
+ * PC
+ * PC
  *
- * REGISTER USE
- *   Args
- *     ?
- *
- * RETURN
- *   ?? r0?
- *
- *   Non-volatile regs (saved by function call)
- *     ?
- *
- *   Misc
- *     ?
- *
- * EXCEPTION FRAME
- *    ?
- *
- * EXCEPTION/IRQ TABLE
- *    ?
- *
- *   EXCEPTIONS
- *     ?
- *
- *   IRQ
- *     ?
- *
- * EXCEPTION/IRQ FLOW
  */
 
 #ifndef CONTEXT_H_
 #define CONTEXT_H_
 
+#define OS_KERNEL_CODE_PPAGE	0x38
 
-#define SC_PATTERN		0xde
-#define LC_PATTERN		0xad
+#define SC_PATTERN				0xde
+#define LC_PATTERN				0xad
 
-/* Minimum alignment req */
-#define ARCH_ALIGN		4
-
-/* Small context (task swap==function call) */
-#define SAVE_NVGPR(_x,_y)
-#define RESTORE_NVGPR(_x,_y)
-
-/* Save volatile regs, NOT preserved by function calls */
-#define SAVE_VGPR(_x,_y)
-#define RESTORE_VGPR(_x,_y)
-
-/* Large context (interrupt) */
-#define SAVE_ALL_GPR(_x,_y)
-#define RESTORE_ALL_GPR(_x,_y)
-
-
+/*
 // NVREGS: r4+r5+r6+r7+r8++r10+r11+lr = 9*4 = 36
 #define NVGPR_SIZE		32
 // VGPR: 9*4 = 36
@@ -86,9 +45,31 @@
 #define VGPR_LR_OFF		(C_SIZE+NVGPR_SIZE-4)
 #define C_CONTEXT_OFF   4
 #define C_SP_OFF 		0
-#define C_LR_OFF		16 // TODO: value is from ppc
+*/
 
-#define SC_SIZE			(NVGPR_SIZE+C_SIZE)
-
+/* Context layout, sizes in 16 bit words */
+// -- STACK TOP, CONTEXT START
+#define C_REG_CCR_OFF			0
+// -- CCR
+#define C_REG_D_OFF				1
+// -- D
+#define C_REG_X_OFF				2
+// -- X
+#define C_REG_Y_OFF				3
+// -- Y
+#define C_REG_TMP_OFF			4
+// -- _.tmp
+#define C_REG_XY_OFF			5
+// -- _.xy
+#define C_REG_Z_OFF				6
+// -- _.z
+#define C_REG_FRAME_OFF			7
+// -- _.frame
+#define C_RETURN_PPAGE_OFF		8
+// -- PPAGE
+#define C_RETURN_ADDR_OFF		9
+// -- ADDR
+#define SC_SIZE					10
+// -- CONTEXT END
 
 #endif /* CONTEXT_H_ */

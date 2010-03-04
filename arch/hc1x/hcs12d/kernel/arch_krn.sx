@@ -1,118 +1,168 @@
 
 
+/*
+ * IVOR4
+ * 1. Save stack frames: EXC, VGPR, NVGPR and C
+ * 2. Call Irq_Entry(void *curr_stack)
+ * 2.1 Check for exception
+ * 2.2 If softint, clear it.
+ * 2.3 If PROC_ISR1, then just call the function
+ * 2.4 If PROC_ISR2 -> it's a PCB, let the OS handle it.
+ */
+
 #define _ASSEMBLER_
 #include "kernel_offset.h"
-//#include "arch_offset.h"
-//#include "stack.h"
-
+#include "asm_hc1x.h"
+.extern os_intc_pcb_tbl
+.extern os_intc_types_tbl
 .extern os_sys
 
-	.section .text
-
- 	.global Irq_Handler
-    .type	Irq_Handler, %function
+/*
+#define	LOCK()			wrteei	0
+#define	UNLOCK()		wrteei	1
+*/
 
 #define IRQ_ENABLE() 		cpsie 	i
 #define IRQ_DISABLE()		cpsid 	i
 
-Irq_Handler:
-/*
-    push    {r4-r8,r10,r11,lr}
-    sub.w   sp,sp,#C_SIZE
-    mov.w   r4,#LC_PATTERN
-    str     r4,[sp,#C_CONTEXT_OFFS]
-    mov 	r0,sp			// stack as first arg
-    bl      Irq_Entry
-    mov     sp, r0			// pop from returned stack
-    b 		os_lc_restore
-*/
+.extern os_proc_start_extended
 
-/* r0 - pcb for old task
- * r1 pcb for new task
+/*--------------------------------------------------------------------
+ * void os_swap_context(pcb_t *old, pcb_t *new )
  *
- * -------------- higher addr
- * r4-r8,etc
- * -------
- * 4 - Large or Small context indicator
- * 0 - ?
- * ----------    <- JABBA
+ * Saves a small context on current stack, pops a new one from new context
  *
- */
- 	.global Os_ArchSwapContext
- 	.type	Os_ArchSwapContext, %function
-Os_ArchSwapContext:
+ * r3 - pcb for old process
+ * r4 - pcb for new process
+ *
+ *--------------------------------------------------------------------*/
+
+// TODO: this assumes that both are in user mode?.. can this happen under trusted functions?
+//       When I get here we're ALWAYS in kernel mode
+
+.global Os_ArchSwapContextToW
+.global Os_ArchSwapContextTo
+.global Os_ArchSwapContext
+.global Os_ArchSetSpAndCall
+.section .text
+
+Os_ArchSetSpAndCall:
 /*
-//    mov     r2, sp
-    push    {r4-r8,r10,r11,lr}
-
-    // Store c-frame
-    sub.w   sp,sp,#C_SIZE
-
-    mov.w   r4,#SC_PATTERN
-    str     r4,[sp,#C_CONTEXT_OFFS]
-//    str     r2,[sp,#C_SP_OFF]
-	// ---> We have saved NVGPR+C
-
-    // store old stack for old task
-    mov.w	r4,sp
-    str     r4,[r0,#PCB_STACK_CURR_P]
-*/
-// R1 - new PCB
-	.global Os_ArchSwapContextTo
-	.type	Os_ArchSwapContextTo, %function
-Os_ArchSwapContextTo:
-/*
-    // Get stack for new task
-    ldr 	r2,[r1,#PCB_STACK_CURR_P]
-//    msr		msp,r2
-    mov.w 	sp,r2
-
-
-// TODO: Fix this for all arch's..call pre,post hooks. Done here or after?
-// Set new current pcb
-    ldr     r5,= os_sys
-    str     r1,[r5,#SYS_CURR_PCB_P]
-
-// Restore C context
-    ldr     r6,[sp,#C_CONTEXT_OFFS]
-    cmp     r6,#SC_PATTERN
-    beq     os_sc_restore
-    cmp     r6,#LC_PATTERN
-    beq     os_lc_restore
+		mr r1,r3
+		mtlr r4
+		blr
 */
 
-// Os_ArchSwapContextToW(currPcbPtr ,pcbPtr, pcbPtr->stack.curr );
-	.global Os_ArchSwapContextToW
-	.type	Os_ArchSwapContextToW, %function
 Os_ArchSwapContextToW:
 /*
-
+		mr 		r1,r5
+		b 		Os_ArchSwapContextTo
 */
 
-	.global Os_ArchSetSpAndCall
-	.type	Os_ArchSetSpAndCall, %function
-Os_ArchSetSpAndCall:
+/* void Os_ArchSwapContext(void *old, void *new); */
+Os_ArchSwapContext:
+		GET_ARG_0_TO_X					// old --> X
+		GET_ARG_1_TO(y)					// new --> Y
+		
+		
+		sts		PCB_STACK_CURR_P, x		// SP --> old->stack.curr
 
-os_stack_problem:
-// TODO: Jump to error handler
-//    b os_stack_problem
 
+/* void Os_ArchSwapContextTo(void *old, void *new); */
+Os_ArchSwapContextTo:
+
+// Get stack for new task
+		GET_ARG_1_TO(y)					// new --> Y
+		lds		PCB_STACK_CURR_P, y		// new->stack.curr --> SP
+		
+// Restore context
+		ins								// skip byte		
+		pulc							// restore CCR
+		puld							// restore D
+		pulx							// restore X
+		puly							// restore Y
+		movw	2,sp+,_.tmp				// restore _.tmp
+		movw	2,sp+,_.xy				// restore _.xy
+		movw	2,sp+,_.z				// restore _.z
+		movw	2,sp+,_.frame			// restore _.frame
+
+		ins								// skip byte
+		
+		rtc
+/*
+// Set new current process
+		LOAD_ADDR_32(3,os_sys)
+		stw		r4,SYS_CURR_PCB_P(r3)
+
+// Restore C context
+        lwz     r0,C_CR_OFF(sp)
+        mtcr    r0
+        lwz     r0,C_LR_OFF (sp)
+        mtlr    r0
+
+// Get the context type
+		lwz		r0,C_CONTEXT_OFF(sp)
+		cmpli	0,r0,SC_PATTERN
+		beq+	os_sc_restore
+		cmpli	0,r0,LC_PATTERN
+		beq+ 	os_lc_restore
+		b		os_bad_bad
+*/
+
+// SC_xxx
+// C_xxxx <- We point here
+
+/*
 os_sc_restore:
-/*
-    add.w   sp,sp,#C_SIZE
+		RESTORE_NVGPR(sp,(C_SIZE-14*GPR_SIZE))
+		addi 	sp,sp,(C_SIZE+NVGPR_SIZE)
+		// TODO: The blr will not do the trick if swapping to a user land task.
+		blr
 
-    pop     {r4-r8,r10,r11,lr}
-        // ehh, we are in handler mode so a bx instruction works here
-    IRQ_ENABLE()
-    bx      lr
-*/
 os_lc_restore:
-/*
-    add.w   sp,sp,#C_SIZE
-    pop     {r4-r8,r10,r11,lr}
-    // ehh, we are in handler mode so a bx instruction works here
-    IRQ_ENABLE()
-    bx      lr
+	addi 	r1,r1,C_SIZE
+	RESTORE_NVGPR(1,0)
+	addi	r1,r1,-C_SIZE
+	RESTORE_VGPR(1,C_SIZE)
+
+	RESTORE_WORK_AND_MORE
+	rfi
+
+// When something really bad happens we end up here for the moment
+os_bad_bad:
+		b	os_bad_bad
 */
+
+
+
+// ------------------------------------------------------------------
+
+/*
+ * Trap interface !!!! See article http://www.linuxjournal.com/article/6516
+ * http://www.osweekly.com/index.php?option=com_content&task=view&id=2229
+ */
+
+/* The T32 instruction sim can't handle trap's so we have to make something
+ * - write SRR0, SRR1, MSR
+ * - jump to there routines
+ */
+
+// ------------------------------------------------------------------
+
+
+// System call, use this for trusted function ???
+// TODO: The example in autosar is not neccesary.. sc here here instead??
+//
+// NOTE!!!!!
+// Since the sc is a sync call, it should be enough to save NV regs(14->)
+// If I don't use the NV regs here I shouldn't need to save them
+// TODO: Inform compiler in SC_CALL() that I clobber volatile regs( r0, r3->
+//      (since the compiler does not know it's a function call)
+// TODO: Could probably do this shorter....only NV regs that I use need saving
+//       ( only cr2->cr4 according to e500 ABI )
+
+
+
+
 
 
