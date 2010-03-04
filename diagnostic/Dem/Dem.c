@@ -1733,7 +1733,7 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
 									// Not yet supported
 									returnCode = DEM_CLEAR_WRONG_DTCORIGIN;
 	#if (DEM_DEV_ERROR_DETECT == STD_ON)
-									Det_ReportError(MODULE_ID_DEM, 0, DEM_CLEAR_DTC_ID, DEM_E_NOT_IMPLEMENTED_YET);
+									Det_ReportError(MODULE_ID_DEM, 0, DEM_CLEARDTC_ID, DEM_E_NOT_IMPLEMENTED_YET);
 	#endif
 									break;
 								default:
@@ -1747,7 +1747,7 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
 			else {
 				// Fatal error, no event parameters found for the stored event!
 #if (DEM_DEV_ERROR_DETECT == STD_ON)
-			Det_ReportError(MODULE_ID_DEM, 0, DEM_CLEAR_DTC_ID, DEM_E_UNEXPECTED_EXECUTION);
+			Det_ReportError(MODULE_ID_DEM, 0, DEM_CLEARDTC_ID, DEM_E_UNEXPECTED_EXECUTION);
 #endif
 			}
 		}
