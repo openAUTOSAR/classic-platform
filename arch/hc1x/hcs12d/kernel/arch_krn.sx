@@ -61,21 +61,36 @@ Os_ArchSwapContextToW:
 
 /* void Os_ArchSwapContext(void *old, void *new); */
 Os_ArchSwapContext:
+Os_ArchSwapContext_get_args:
 		GET_ARG_0_TO_X					// old --> X
 		GET_ARG_1_TO(y)					// new --> Y
 		
+		movb	#0x00, 1,-sp			// skip byte
+		movw	_.frame, 2,-sp			// restore _.frame
+		movw	_.z, 2,-sp				// restore _.z
+		movw	_.xy, 2,-sp				// restore _.xy
+		movw	_.tmp ,2,-sp			// restore _.tmp
+		pshy							// restore Y
+		pshx							// restore X
+		pshd							// restore D
+		pshc							// restore CCR
+		movb	#0x00, 1,-sp			// skip byte
 		
 		sts		PCB_STACK_CURR_P, x		// SP --> old->stack.curr
+		bra		Os_ArchSwapContextTo_do
 
 
 /* void Os_ArchSwapContextTo(void *old, void *new); */
 Os_ArchSwapContextTo:
-
+Os_ArchSwapContextTo_get_args:
 // Get stack for new task
 		GET_ARG_1_TO(y)					// new --> Y
-		lds		PCB_STACK_CURR_P, y		// new->stack.curr --> SP
 		
+Os_ArchSwapContextTo_do:
+// Set current process
+		sty		os_sys					// new (Y) --> os_sys.curr_pcb
 // Restore context
+		lds		PCB_STACK_CURR_P, y		// new->stack.curr --> SP
 		ins								// skip byte		
 		pulc							// restore CCR
 		puld							// restore D
