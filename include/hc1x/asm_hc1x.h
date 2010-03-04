@@ -45,5 +45,10 @@
 #define GET_ARG_2(reg) 		\
 		ld##reg		ARG_2_STACK_OFFS,x;
 
+// Macro used to create the IRQ mapping table
+#define DECLARE_IRQ_MAP(x)    \
+irq_##x:					  \
+		movb	##x, CSize;SP \
+		bra		Irq_PreEntry  \
 
 #endif /*ASM_HC1X_H_*/
