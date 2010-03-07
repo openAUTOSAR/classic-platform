@@ -40,16 +40,16 @@ unsigned int Os_ArchGetScSize( void ) {
 
 void Os_ArchSetupContext( OsPcbType *pcb ) {
 	// TODO: Add lots of things here, see ppc55xx
-	uint32_t *context = (uint32_t *)pcb->stack.curr;
-	context[C_CONTEXT_OFF/4] = SC_PATTERN;
+//	uint16_t *context = (uint16_t *)pcb->stack.curr;
+//	context[C_CONTEXT_OFF/4] = SC_PATTERN;
 
 	/* Set LR to start function */
-	if( pcb->proc_type == PROC_EXTENDED ) {
-		context[VGPR_LR_OFF/4] = (uint32_t)Os_TaskStartExtended;
-	} else if( pcb->proc_type == PROC_BASIC ) {
-		context[VGPR_LR_OFF/4] = (uint32_t)Os_TaskStartBasic;
-	}
-	Os_StackSetEndmark(pcb);
+//	if( pcb->proc_type == PROC_EXTENDED ) {
+//		context[VGPR_LR_OFF/4] = (uint16_t)Os_TaskStartExtended;
+//	} else if( pcb->proc_type == PROC_BASIC ) {
+//		context[VGPR_LR_OFF/4] = (uint16_t)Os_TaskStartBasic;
+//	}
+//	Os_StackSetEndmark(pcb);
 // Os_ArchSetupContext_asm(pcb->stack.curr,NULL);
 }
 
@@ -59,15 +59,17 @@ void Os_ArchSetupContext( OsPcbType *pcb ) {
  */
 
 void OsArch_SetTaskEntry(OsPcbType *pcbPtr ) {
-	uint32_t *context = (uint32_t *)pcbPtr->stack.curr;
+	uint16_t *context = (uint16_t *)pcbPtr->stack.curr;
 
-	context[C_CONTEXT_OFF/4] = SC_PATTERN;
+//	context[C_CONTEXT_OFF/4] = SC_PATTERN;
 
-	/* Set LR to start function */
+	/* Set Return to start function */
 	if( pcbPtr->proc_type == PROC_EXTENDED ) {
-		context[C_LR_OFF/4] = (uint32_t)Os_TaskStartExtended;
+		context[C_RETURN_PPAGE_OFF] = OS_KERNEL_CODE_PPAGE;
+		context[C_RETURN_ADDR_OFF] = (uint16_t)Os_TaskStartExtended;
 	} else if( pcbPtr->proc_type == PROC_BASIC ) {
-		context[C_LR_OFF/4] = (uint32_t)Os_TaskStartBasic;
+		context[C_RETURN_PPAGE_OFF] = OS_KERNEL_CODE_PPAGE;
+		context[C_RETURN_ADDR_OFF] = (uint16_t)Os_TaskStartBasic;
 	}
 }
 
