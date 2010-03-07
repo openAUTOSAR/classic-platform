@@ -61,9 +61,20 @@
 
 
 
-#if !(  OS_CFG_API_VERSION)
-
-#define GEN_ETASK( _id, _priority, 	_autostart, _timing_protection, _application_id, _resource_int_p ) \
+/**
+ * _id
+ * _priority 		The task priority
+ * _autostart   	true/false
+ * _resource_int_p  Pointer to internal resource.
+ *                  NULL - if no internal resource or scheduling==NON
+ *                  Pointer to
+ * _scheduling      FULL or NON
+ * _resource_mask   Mask of the resources used. Applies to STANDARD and LINKED (NOT INTERNAL)
+ *                  For example if this task would use resource with id 2 and 4 the mask would
+ *                  become (1<<2)|(1<<4) = 0x14 (limits resources to 32).
+ *                  Currently used for calculating the ceiling priority.
+ */
+#define GEN_ETASK( _id, _priority, _scheduling, _autostart, _resource_int_p,  _resource_mask ) \
 {									\
 	.pid = TASK_ID_##_id,           \
 	.name = #_id,					\
@@ -73,52 +84,13 @@
 	.stack.size = sizeof stack_##_id,	\
 	.stack.top = stack_##_id,		\
 	.autostart = _autostart,		\
-	.timing_protection = _timing_protection,\
-	.application_id = _application_id,		\
-	.resource_int_p = _resource_int_p, \
-	.scheduling = FULL, \
-	.resourceAccess = -1UL \
-}
-
-#define GEN_BTASK( _id, _priority, 	_autostart, _timing_protection, _application_id, _resource_int_p ) \
-{									\
-	.pid = TASK_ID_##_id,           \
-	.name = #_id,					\
-	.entry = _id,				\
-	.prio = _priority,				\
-	.proc_type = PROC_BASIC,		\
-	.stack.size = sizeof stack_##_id,	\
-	.stack.top = stack_##_id,		\
-	.autostart = _autostart,		\
-	.timing_protection = _timing_protection,\
-	.application_id = _application_id,		\
-	.resource_int_p = _resource_int_p, \
-	.scheduling = FULL, \
-	.resourceAccess = -1UL \
-}
-#else
-
-#define GEN_ETASK( _id, _priority, _autostart, _timing_protection, _application_id, \
-                   _resource_int_p, _scheduling, _resource_mask ) \
-{									\
-	.pid = TASK_ID_##_id,           \
-	.name = #_id,					\
-	.entry = _id,				\
-	.prio = _priority,				\
-	.proc_type = PROC_EXTENDED,		\
-	.stack.size = sizeof stack_##_id,	\
-	.stack.top = stack_##_id,		\
-	.autostart = _autostart,		\
-	.timing_protection = _timing_protection,\
-	.application_id = _application_id,		\
 	.resource_int_p = _resource_int_p, \
 	.scheduling = _scheduling, \
 	.resourceAccess = _resource_mask, \
 	.activationLimit = 1, \
 }
 
-#define GEN_BTASK( _id, _priority, _autostart, _timing_protection, _application_id, \
-                    _resource_int_p, _scheduling, _resource_mask, _activation ) \
+#define GEN_BTASK( _id, _priority, _scheduling, _autostart, _resource_int_p,  _resource_mask, _activation_limit ) \
 {									\
 	.pid = TASK_ID_##_id,           \
 	.name = #_id,					\
@@ -128,42 +100,20 @@
 	.stack.size = sizeof stack_##_id,	\
 	.stack.top = stack_##_id,		\
 	.autostart = _autostart,		\
-	.timing_protection = _timing_protection,\
-	.application_id = _application_id,		\
 	.resource_int_p = _resource_int_p, \
 	.scheduling = _scheduling, \
 	.resourceAccess = _resource_mask, \
-	.activationLimit = _activation, \
+	.activationLimit = _activation_limit, \
 }
-#endif
 
-
-#define GEN_TASK( _id, _name, _entry, _priority, _process_type, _stack_size, _stack_top, \
-				_autostart, _timing_protection, _application_id, _resource_int_p ) \
+#define GEN_ISR_2( _id, _name, _entry, _priority,  _vector ) \
 {									\
 	.pid = _id,						\
 	.name = _name,					\
 	.entry = _entry,				\
 	.prio = _priority,				\
-	.proc_type = _process_type,		\
-	.stack.size = _stack_size,		\
-	.stack.top = _stack_top,		\
-	.autostart = _autostart,		\
-	.timing_protection = _timing_protection,\
-	.application_id = _application_id,		\
-	.resource_int_p = _resource_int_p, \
-}
-
-#define GEN_ISR_2( _id, _name, _entry, _priority, _process_type, _vector,  _timing_protection, _application_id ) \
-{									\
-	.pid = _id,						\
-	.name = _name,					\
-	.entry = _entry,				\
-	.prio = _priority,				\
-	.proc_type = _process_type,		\
+	.proc_type = PROC_ISR2,		    \
 	.vector = _vector,              \
-	.timing_protection = _timing_protection,\
-	.application_id = _application_id,		\
 }
 
 
@@ -181,13 +131,18 @@
 #define GEN_PCB_LIST()	OsPcbType pcb_list[ARRAY_SIZE(rom_pcb_list)];
 
 #define GEN_RESOURCE_HEAD OsResourceType resource_list[] =
-#define GEN_RESOURCE( _id, _type, _ceiling_priority, _application_id, _task_mask) \
+
+
+/**
+ * _id
+ * _type              RESOURCE_TYPE_STANDARD, RESOURCE_TYPE_LINKED or RESOURCE_TYPE_INTERNAL
+ * _ceiling_priority  The calculated ceiling priority
+ */
+#define GEN_RESOURCE( _id, _type, _ceiling_priority ) \
 {												\
 	.nr= _id,									\
 	.type= _type,								\
 	.ceiling_priority = _ceiling_priority,		\
-	.application_owner_id = _application_id,	\
-	.task_mask = _task_mask,					\
 	.owner = (-1),								\
 }
 
@@ -242,7 +197,7 @@
  * _type
  * _alarms_time
  * _cycle_time
- * _app_mode
+ * _app_mode       Mask of the application modes.
  */
 #define GEN_ALARM_AUTOSTART(_id, _type, _alarm_time, _cycle_time, _app_mode ) \
 		const OsAlarmAutostartType Os_AlarmAutoStart_ ## _id = \

@@ -93,8 +93,18 @@ static void os_resource_init( void ) {
 		rsrc_p->ceiling_priority = topPrio;
 	}
 
-	/* Assign an internal resource with prio 32 to the tasks
+
+
+	/* From OSEK:
+	 * Non preemptable tasks are the most common usage of the concept
+	 * of internal resources; they are tasks with a special internal
+	 * resource of highest task priority assigned.
+	 * --> Interpret this as we can set the priority to 32.
+	 *
+	 * Assign an internal resource with prio 32 to the tasks
 	 * with scheduling=NON
+	 *
+	 *
 	 */
 	for( int i; i < Oil_GetTaskCnt(); i++) {
 		pcb_p = os_get_pcb(i);

@@ -114,9 +114,8 @@ typedef struct OsAlarm {
 	SLIST_ENTRY(OsAlarm) alarm_list;
 
 #if (OS_SC1 == STD_ON)
-#warning Alarm callbacks NOT implemented
 	/* TODO: OS242, callback in scalability class 1 only..*/
-	/** @req OS242 */
+	/** Missing req OS242 */
 #endif
 
 } OsAlarmType;

@@ -58,21 +58,20 @@ typedef void ( * trusted_func_t)( TrustedFunctionIndexType , TrustedFunctionPara
  * OS_RES_SCHEDULER
  * */
 
+/**
+ * STD container: OsResource
+ * OsResourceProperty:				1    INTERNAL, LINKED, STANDARD
+ * OsResourceAccessingApplication:  0..*
+ * OsResourceLinkedResourceRef:     0..1
+ */
 
 typedef enum {
 	/* External resource */
-	RESOURCE_TYPE_STANDARD,
+	RESOURCE_TYPE_STANDARD,//!< RESOURCE_TYPE_STANDARD
 	/* ?? */
-	RESOURCE_TYPE_LINKED,
+	RESOURCE_TYPE_LINKED,  //!< RESOURCE_TYPE_LINKED
 	/* Internal resource */
-	RESOURCE_TYPE_INTERNAL
-} OsResourceTypeType;
-
-typedef struct  {
-
-	OsResourceTypeType type;
-	/* used only if type is RESOURCE_TYPE_LINKED */
-	ResourceType    linked_resource;
+	RESOURCE_TYPE_INTERNAL //!< RESOURCE_TYPE_INTERNAL
 } OsResourcePropertyType;
 
 /*-----------------------------------------------------------------*/
@@ -87,14 +86,16 @@ typedef struct OsResource {
 
 	// What application may access this resource. A resource may only be
 	// accessed by one application
+#if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
 	uint32 application_owner_id;
+#endif
 	// What tasks may access this resource. A resource may be be shared
 	// several tasks.
-	uint32 task_mask;
+//	uint32 task_mask;
 	// Owner of the resource...
 	TaskType owner;
 
-	OsResourceTypeType type;
+	OsResourcePropertyType type;
 	// used only if type is RESOURCE_TYPE_LINKED
 	ResourceType    linked_resource;
 

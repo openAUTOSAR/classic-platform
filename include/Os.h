@@ -216,12 +216,6 @@ static inline void ResumeOSInterrupts( void ) {
 	}
 }
 
-#if 0
-/* Can't find these anymore, removed from Autosar? */
-StatusType EnableInterruptSource( ISRType EnableISR );
-StatusType DisableInterruptSource( ISRType EnableISR );
-#endif
-
 /*
  * Class 2,3 and 4 API
  */

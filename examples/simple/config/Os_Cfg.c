@@ -30,25 +30,12 @@ OsTickType OsTickFreq = 1000;
 // atleast 1
 #define SERVICE_CNT 1
 
-
-#if ( OS_SC3 == STD_ON) || (  OS_SC4==STD_ON)
-GEN_TRUSTEDFUNCTIONS_LIST
-
-//--- APPLICATIONS ----
-
-GEN_APPLICATION_HEAD {
-
-	GEN_APPLICATON(	0,
-					"application_1",
-					true,
-					NULL,NULL,NULL , 0,0,0,0,0,0 )
-};
-#endif
-
 // --- RESOURCES ---
 
 GEN_RESOURCE_HEAD {
-	GEN_RESOURCE(RES_SCHEDULER,RESOURCE_TYPE_STANDARD,0,0,0),		// Standard resource..
+	GEN_RESOURCE( 	RES_SCHEDULER,
+					RESOURCE_TYPE_STANDARD,	/* standard, linked, internal */
+					0)                      /* ceiling priority */
 };
 
 //--- TASKS ----
@@ -61,32 +48,32 @@ DECLARE_STACK(btask_3,PRIO_STACK_SIZE);
 GEN_TASK_HEAD {
 	GEN_ETASK(	OsIdle,
 				0,
-				true/*auto*/,
-				NULL/*tm*/,
-				APPLICATION_ID_application_1/*app*/,
-				NULL/*rsrc*/),
+				FULL,   /* scheduling */
+				true,   /* autostart */
+				NULL,   /* internal resource */
+				0       /* rsrc mask */),
 
 	GEN_ETASK(	etask_1,
 				1,
-				true/*auto*/,
-				NULL/*tm*/,
-				APPLICATION_ID_application_1/*app*/,
-				NULL/*rsrc*/),
+				FULL,   /* scheduling */
+				true,   /* autostart */
+				NULL,   /* internal resource */
+				0       /* rsrc mask */),
 
 	GEN_ETASK(	etask_2,
 				2,
-				true/*auto*/,
-				NULL/*tm*/,
-				APPLICATION_ID_application_1/*app*/,
-				NULL/*rsrc*/),
-
+				FULL,   /* scheduling */
+				true,   /* autostart */
+				NULL,   /* internal resource */
+				0       /* rsrc mask */),
 
 	GEN_BTASK(	btask_3,
 				3,
-				false/*auto*/,
-				NULL/*tm*/,
-				APPLICATION_ID_application_1/*app*/,
-				NULL/*rsrc*/),
+				FULL,   /* scheduling */
+				false,   /* autostart */
+				NULL,   /* internal resource */
+				0,      /* rsrc mask */
+				1       /* activation limit */),
 };
 
 GEN_PCB_LIST()

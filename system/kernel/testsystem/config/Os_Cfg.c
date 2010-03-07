@@ -129,15 +129,15 @@ uint8 stack_btask_sup_h[STACK_SIZE_btask_sup_h] SECTION_BSS_SUPER;
 //-------------------------------------------------------------------
 
 GEN_RESOURCE_HEAD {
-	GEN_RESOURCE(RES_SCHEDULER,RESOURCE_TYPE_STANDARD,0,0,0),		// Standard resource..
+	GEN_RESOURCE(RES_SCHEDULER,RESOURCE_TYPE_STANDARD,0),		// Standard resource..
 // Internal resources
-	GEN_RESOURCE(1,RESOURCE_TYPE_INTERNAL,8, APPLICATION_ID_application_1,(1<<TASK_ID_etask_sup_l)),
+	GEN_RESOURCE(1,RESOURCE_TYPE_INTERNAL,0),
 // external resource
-	GEN_RESOURCE(2,RESOURCE_TYPE_STANDARD,3,0,0),
+	GEN_RESOURCE(2,RESOURCE_TYPE_STANDARD,0),
 // external resource
-	GEN_RESOURCE(3,RESOURCE_TYPE_STANDARD,4,0,0),
+	GEN_RESOURCE(3,RESOURCE_TYPE_STANDARD,0),
 // external resource
-	GEN_RESOURCE(4,RESOURCE_TYPE_STANDARD,5,0,0),
+	GEN_RESOURCE(4,RESOURCE_TYPE_STANDARD,0),
 
 };
 
@@ -145,21 +145,21 @@ GEN_RESOURCE_HEAD {
 
 GEN_TASK_HEAD {
 
-	GEN_ETASK(OsIdle,0,true/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0 ),
+	GEN_ETASK(OsIdle,      0, FULL, true/*auto*/, NULL/*rsrc*/, 0 ),
 
 /* extended */
-	GEN_ETASK(etask_master,1,true/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, NON, 0),
+	GEN_ETASK(etask_master,1,FULL,true/*auto*/, NULL/*rsrc*/, 0 ),
 
-	GEN_ETASK(etask_sup_l,2,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0 ),
-	GEN_ETASK(etask_sup_m,3,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0 ),
-	GEN_ETASK(etask_sup_h,4,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0 ),
+	GEN_ETASK(etask_sup_l,2,FULL,false/*auto*/, NULL/*rsrc*/, 0 ),
+	GEN_ETASK(etask_sup_m,3,FULL,false/*auto*/, NULL/*rsrc*/, 0 ),
+	GEN_ETASK(etask_sup_h,4,FULL,false/*auto*/, NULL/*rsrc*/, 0 ),
 
 /* basic */
-	GEN_BTASK(btask_sup_l,2,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0, 1 ),
-	GEN_BTASK(btask_sup_m,3,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0, 1 ),
-	GEN_BTASK(btask_sup_h,4,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/, FULL, 0, 1 ),
+	GEN_BTASK(btask_sup_l,2,FULL,false/*auto*/, NULL/*rsrc*/, 0, 1 ),
+	GEN_BTASK(btask_sup_m,3,FULL,false/*auto*/, NULL/*rsrc*/, 0, 1 ),
+	GEN_BTASK(btask_sup_h,4,FULL,false/*auto*/, NULL/*rsrc*/, 0, 1 ),
 
-	GEN_ISR_2(  TASK_ID_os_tick, "dec", OsTick, /*prio*/ 11, /*type*/ PROC_ISR2,  INTC_VECTOR_EXCEPTION_DEC , NULL, APPLICATION_ID_application_1),
+	GEN_ISR_2(  TASK_ID_os_tick, "dec", OsTick, /*prio*/ 11,  INTC_VECTOR_EXCEPTION_DEC ),
 #if 0
 	// Use the intc_vector tables for now
 	GEN_ISR_2(  TASK_ID_isr_dec, "dec", my_dec, /*prio*/ 11, /*type*/ PROC_ISR2,  INTC_VECTOR_EXCEPTION_DEC , NULL, APPLICATION_ID_application_1),

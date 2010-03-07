@@ -1,7 +1,17 @@
 
 LOCAL &cmd &arg1 &arg2
 ENTRY &cmd &arg1 &arg2
-gosub &cmd
+
+if CPU()=="HC12DG128A"
+(
+  LOCAL &var
+  &var="&cmd"+"_"+"&cfg_cpu_g"
+  gosub &var
+)
+ELSE
+  gosub &cmd
+
+
 
 enddo
 
@@ -16,28 +26,31 @@ dialog:
   RETURN
 
 
+  enddo
+
+
 //-------------------------------------------------------------
 load:
   LOCAL &file
   dialog.file "&cfg_project_path_g"/*.elf
   ENTRY &file
-  
-  IF OS.FILE(&file) 
+
+  IF OS.FILE(&file)
     &cfg_loadfile_g="&file"
-    
-  do config save   
+
+  do config save
   do flash open
-  data.load.elf &cfg_loadfile_g /CYGDRIVE /GNU 
+  data.load.elf &cfg_loadfile_g /CYGDRIVE /GNU
   do flash close
   print "&cfg_loadfile_g"
 
   enddo
 
-//-------------------------------------------------------------  
+//-------------------------------------------------------------
 reload:
   print "&cfg_loadfile_g"
   sys.up
-  r.reset  
+  r.reset
   do flash init
   do flash open
   data.load.elf &cfg_loadfile_g /GNU /CYGDRIVE
@@ -48,6 +61,30 @@ reload:
 
   enddo
 
+//-------------------------------------------------------------
+reload_HC12DG128A:
+  print "&cfg_loadfile_g"
+  sys.up
+  r.reset
+  do flash init
+  do flash open
+  y.reset
+  map.reset
+  mmu.reset
+  sys.option MEMEXP ON
+  mmu.create 0x388000--0x3883ff a:0x0f0000
+;  mmu.trans 0x0f0000--0x0f3fff
+  mmu.on
+  data.load.elf &cfg_loadfile_g /GNU /CYGDRIVE
+//  y.reloc (a:0x388000-0x8000)
+// /CYGDRIVE
+  do flash close
+
+  GOSUB postload_&cfg_cpu_g
+  enddo
+
+//-------------------------------------------------------------
+
 postload_CortexM3:
   r.s MSP 0x20005000
   RETURN
@@ -56,6 +93,9 @@ postload_mpc5516:
 postload_MPC5554:
 postload_MPC5554:
 postload_mpc5633M:
+  RETURN
+
+postload_HC12DG128A:
   RETURN
 
 //-------------------------------------------------------------
@@ -80,7 +120,7 @@ path:
 
 
 
-    
+
 
 
 

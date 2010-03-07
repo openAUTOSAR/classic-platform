@@ -53,16 +53,16 @@
  *
  */
 
-#define valid_standard_id() (rid->nr < Oil_GetResourceCnt()) //&& !(rid->type == RESOURCE_TYPE_INTERNAL) )
-#define valid_internal_id() (rid->nr < Oil_GetResourceCnt()) //&& (rid->type == RESOURCE_TYPE_INTERNAL) )
+#define valid_standard_id() (rPtr->nr < Oil_GetResourceCnt()) //&& !(rPtr->type == RESOURCE_TYPE_INTERNAL) )
+#define valid_internal_id() (rPtr->nr < Oil_GetResourceCnt()) //&& (rPtr->type == RESOURCE_TYPE_INTERNAL) )
 
 
 static StatusType GetResource_( OsResourceType * );
 StatusType ReleaseResource_( OsResourceType * );
 
 StatusType GetResource( ResourceType ResID ) {
-	OsResourceType *rid = Oil_GetResource(ResID);
-	StatusType rv = GetResource_(rid);
+	OsResourceType *rPtr = Oil_GetResource(ResID);
+	StatusType rv = GetResource_(rPtr);
 
 	if (rv != E_OK)
 	    goto err;
@@ -70,16 +70,10 @@ StatusType GetResource( ResourceType ResID ) {
 	OS_STD_END_1(OSServiceId_GetResource,ResID);
 }
 
-#if 0
-StatusType GetResourceInternal( ResourceType ResID ) {
-	return GetResource_(ResID,1);
-}
-#endif
-
-static StatusType GetResource_( OsResourceType * rid ) {
+static StatusType GetResource_( OsResourceType * rPtr ) {
 	StatusType rv = E_OK;
 
-	if( rid->nr == RES_SCHEDULER ) {
+	if( rPtr->nr == RES_SCHEDULER ) {
 		// Lock the scheduler
 		os_sys.scheduler_lock = 1;
 	}
@@ -89,22 +83,28 @@ static StatusType GetResource_( OsResourceType * rid ) {
 		rv = E_OS_ID;
 		goto err;
 	}
-	// Check that the resource does not belong to another application or task
-	if(	( (os_task_nr_to_mask(get_curr_pid()) & rid->task_mask ) == 0 )
+
+	/* @req OSEK
+	 * Attempt to get a resource which is already occupied by any task
+     * or ISR, or the statically assigned priority of the calling task or
+     * interrupt routine is higher than the calculated ceiling priority,
+     * E_OS_ACCESS
+	 */
+	if( (Os_TaskGetCurrent()->prio > rPtr->ceiling_priority )
 #if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
-		|| ( get_curr_application_id() !=  rid->application_owner_id)
+		|| ( get_curr_application_id() !=  rPtr->application_owner_id)
 #endif
-		|| ( rid->owner != (TaskType)(-1)))
+		|| ( rPtr->owner != (TaskType)(-1)))
 	{
 		rv = E_OS_ACCESS;
 		goto err;
 	}
 
-	rid->owner = get_curr_pid();
-	rid->old_task_prio = os_pcb_set_prio(Os_TaskGetCurrent() ,rid->ceiling_priority);
+	rPtr->owner = get_curr_pid();
+	rPtr->old_task_prio = os_pcb_set_prio(Os_TaskGetCurrent() ,rPtr->ceiling_priority);
 
-	if( rid->type != RESOURCE_TYPE_INTERNAL ) {
-		TAILQ_INSERT_TAIL(&Os_TaskGetCurrent()->resource_head, rid, listEntry);
+	if( rPtr->type != RESOURCE_TYPE_INTERNAL ) {
+		TAILQ_INSERT_TAIL(&Os_TaskGetCurrent()->resource_head, rPtr, listEntry);
 	}
 
 	goto ok;
@@ -119,8 +119,8 @@ StatusType ReleaseResource( ResourceType ResID) {
 	if( ResID == RES_SCHEDULER ) {
 		os_sys.scheduler_lock=0;
 	} else {
-	    OsResourceType *rid = Oil_GetResource(ResID);
-	    rv = ReleaseResource_(rid);
+	    OsResourceType *rPtr = Oil_GetResource(ResID);
+	    rv = ReleaseResource_(rPtr);
 	}
 
 	if (rv != E_OK)
@@ -129,15 +129,15 @@ StatusType ReleaseResource( ResourceType ResID) {
 	OS_STD_END_1(OSServiceId_ReleaseResource,ResID);
 }
 
-StatusType ReleaseResource_( OsResourceType * rid ) {
+StatusType ReleaseResource_( OsResourceType * rPtr ) {
 	if (!valid_standard_id()) {
 		return E_OS_ID;
 	} else {
 
         // Release it...
-        rid->owner = (TaskType) (-1);
-        TAILQ_REMOVE(&Os_TaskGetCurrent()->resource_head, rid, listEntry);
-        os_pcb_set_prio(Os_TaskGetCurrent(), rid->old_task_prio);
+        rPtr->owner = (TaskType) (-1);
+        TAILQ_REMOVE(&Os_TaskGetCurrent()->resource_head, rPtr, listEntry);
+        os_pcb_set_prio(Os_TaskGetCurrent(), rPtr->old_task_prio);
         return E_OK;
 	}
 }
