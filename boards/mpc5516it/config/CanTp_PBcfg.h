@@ -27,7 +27,7 @@
 #define FRTP_CANCEL_TRANSMIT_REQUEST 	STD_ON
 #define CANTP_VERSION_INFO_API          STD_ON   /**< Build version info API */
 #define CANTP_DEV_ERROR_DETECT          STD_ON   /**< Enable Development Error Trace */
-
+#define CANTP_DEV_ERROR_DETECT			STD_ON
 
 extern CanTp_ConfigType CanTpConfig;
 extern const CanTp_RxNSduType CanTpRxNSduConfigList[];
