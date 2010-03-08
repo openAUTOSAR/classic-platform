@@ -322,6 +322,7 @@ void initRx15765RuntimeData(const CanTp_RxNSduType *rxConfigParams,
 	rxRuntimeParams->pduLenghtTotalBytes = 0;
 	rxRuntimeParams->pduTransferedBytesCount = 0;
 	rxRuntimeParams->mode = CANTP_RX_WAIT; /* req: CanTp030. */
+	rxRuntimeParams->bufferPduRouter = NULL;
 }
 
 ///----------------------------------------------------------------------------------------------------------------------
@@ -335,6 +336,8 @@ void initTx15765RuntimeData(const CanTp_TxNSduType *txConfigParams,
 	txRuntimeParams->pduLenghtTotalBytes = 0;
 	txRuntimeParams->pduTransferedBytesCount = 0;
 	txRuntimeParams->mode = CANTP_TX_WAIT; /* req: CanTp030. */
+	txRuntimeParams->bufferPduRouter = NULL;
+
 }
 
 // - - - - - - - - - - - - - -
@@ -349,16 +352,17 @@ BufReq_ReturnType saveSduPayloadData(const CanTp_RxNSduType *rxConfig,
 
 	while ((copyCount < dataLength) && error == FALSE) {
 		// Copy the data that resides in the buffer.
-		while (rxRuntime->bufferPduRouter->SduLength
-				> rxRuntime->pdurBufferCount) {
-			rxRuntime->bufferPduRouter->SduDataPtr[rxRuntime->pdurBufferCount++]
-					= data[copyCount++];
+		if (rxRuntime->bufferPduRouter != NULL) {
+			while (rxRuntime->bufferPduRouter->SduLength
+					> rxRuntime->pdurBufferCount) {
+				rxRuntime->bufferPduRouter->SduDataPtr[rxRuntime->pdurBufferCount++]
+						= data[copyCount++];
+			}
 		}
 		if (copyCount < dataLength) {
 			// We need to request a new buffer from the SDUR.
 			// qqq: TODO: We should do a timeout here.
-			ret
-					= PduR_CanTpProvideRxBuffer(rxConfig->CanTpRxPduId,
+			ret = PduR_CanTpProvideRxBuffer(rxConfig->CanTpRxPduId,
 							rxRuntime->pduLenghtTotalBytes,
 							&rxRuntime->bufferPduRouter);
 			if (ret == BUFREQ_OK) {
