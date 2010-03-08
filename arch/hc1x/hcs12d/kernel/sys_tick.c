@@ -17,16 +17,27 @@
 #include "internal.h"
 #include "irq.h"
 #include "arc.h"
+#include "regs.h"
 
 /**
  * Init of free running timer.
  */
 void Os_SysTickInit( void ) {
-#if 0
+	// Set timer 0 as output compare. Timer 0 is reserved for the OS.
+
+	TSCR1 = 0 | TEN;
+	TSCR2 = 0 | TOI;
+	TIE = 1;
+
+	MCCTL = (1 << MCZI) | (1 << MODMC) | (1 << MCEN);
+
+	MCCNT = 1000;
+
+	ICSYS = 0;
+
 	TaskType tid;
 	tid = Os_Arc_CreateIsr(OsTick,6/*prio*/,"OsTick");
 	Irq_AttachIsr2(tid,NULL,7);
-#endif
 }
 
 /**
@@ -37,7 +48,10 @@ void Os_SysTickInit( void ) {
  *
  */
 void Os_SysTickStart(uint32_t period_ticks) {
-#if 0
+
+
+
+
 	uint32_t tmp;
 
 	// Enable the TB
@@ -58,7 +72,7 @@ void Os_SysTickStart(uint32_t period_ticks) {
     tmp = get_spr(SPR_TCR);
     tmp |= TCR_DIE;
     set_spr(SPR_TCR, tmp );
-#endif
+
 }
 
 /**
