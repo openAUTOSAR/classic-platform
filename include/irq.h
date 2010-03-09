@@ -40,7 +40,18 @@ void Irq_Init( void );
  */
 void Irq_EOI( void );
 
+#if defined(CFG_HC1X)
+/**
+ *
+ * @param stack Ptr to the current stack.
+ * @param irq_nr The nr. of the interrupt being handled.
+ *
+ * The stack holds C, NVGPR, VGPR and the EXC frame.
+ *
+ */
+void *Irq_Entry( uint8_t irq_nr, void *stack );
 
+#else
 /**
  *
  * @param stack_p Ptr to the current stack.
@@ -49,7 +60,7 @@ void Irq_EOI( void );
  *
  */
 void *Irq_Entry( void *stack_p );
-
+#endif
 /**
  * Attach an ISR type 1 to the interrupt controller.
  *

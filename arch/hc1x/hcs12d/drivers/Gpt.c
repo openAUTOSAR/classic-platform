@@ -15,20 +15,20 @@
 
 
 
-
-
-
-
-
 #include "Std_Types.h"
 #include "Gpt.h"
 #include "Cpu.h"
 #include <assert.h>
 #include <string.h>
-#include "mpc55xx.h"
+#include "regs.h"
 #include "Mcu.h"
 #include "Trace.h"
 #include "Det.h"
+#include "irq_types.h"
+#include "Os.h"
+#include "arc.h"
+
+#define FIRST_OC_REG 0x50
 
 // Implementation specific
 
@@ -90,6 +90,26 @@ typedef struct
   Gpt_StateType state;
 } Gpt_UnitType;
 
+
+// Holds the enable/disable status of notifications.
+uint8 GptNotificationStatuses[8] = {
+	STD_ON,
+	STD_ON,
+	STD_ON,
+	STD_ON,
+	STD_ON,
+	STD_ON,
+	STD_ON,
+	STD_ON
+};
+
+uint16 GptPeriods[GPT_CHANNEL_CNT];
+
+#if (GPT_TIME_ELAPSED_API == STD_ON)
+uint16 GptPrevOc[GPT_CHANNEL_CNT];
+#endif
+
+
 Gpt_UnitType Gpt_Unit[GPT_CHANNEL_CNT];
 
 // Global config
@@ -103,7 +123,6 @@ Gpt_GlobalType Gpt_Global;
  *
  * @param channel - Channel that the raised the interrupt
  */
-
 static void Gpt_IsrCh(Gpt_ChannelType channel)
 {
   const Gpt_ConfigType *config;
@@ -117,40 +136,48 @@ static void Gpt_IsrCh(Gpt_ChannelType channel)
   if (config->GptChannelMode == GPT_MODE_ONESHOT)
   {
     // Disable the channel
-    PIT.EN.R &= ~(1<<channel);
-
+	Gpt_StopTimer(channel);
     Gpt_Unit[channel].state = GPT_STATE_STOPPED;
-  }
-  config->GptNotification();
 
-  // Clear interrupt
-  PIT.FLG.R = (1<<channel); // Added by Mattias 2009-01
+  } else {
+	  // Start the next period.
+	  uint16 curr_oc = PORTIO_16((FIRST_OC_REG + (2 * channel)));
+	  PORTIO_16((FIRST_OC_REG + (2*channel))) = curr_oc + GptPeriods[channel];
+
+	  #if (GPT_TIME_ELAPSED_API == STD_ON)
+	  GptPrevOc[channel] = curr_oc;
+	  #endif
+  }
+  if (GptNotificationStatuses[channel] == STD_ON) {
+	  config->GptNotification();
+  }
 }
 
 //-------------------------------------------------------------------
 // Macro that counts leading zeroes.
 #define CNTLZW_INV(x) (31-cntlzw(x))
 
+
 /**
  * ISR that handles all interrupts to the PIT channels
  * ( NOT the decrementer )
  */
-
-static void Gpt_Isr(void)
-{
-  uint32 flgMask= PIT.FLG.R;
-  uint8 chNr = 0;
-
-  // Loop over all interrupts
-  for (; flgMask; flgMask&=~(1<<chNr))
-  {
-    // Find first channel that is requesting service.
-    chNr = CNTLZW_INV(flgMask);
-    Gpt_IsrCh(chNr);
-    // Clear interrupt
-    PIT.FLG.R = (1<<chNr);
-  }
+#define DECLARE_GPT_ISR_PROTOTYPE(x)			\
+void Gpt_Isr_##x (void) {   					\
+	Gpt_IsrCh(x);								\
 }
+
+#define GPT_IRQ_TYPE(x) IRQ_TYPE_TC(x)
+
+DECLARE_GPT_ISR_PROTOTYPE(0)
+DECLARE_GPT_ISR_PROTOTYPE(1)
+DECLARE_GPT_ISR_PROTOTYPE(2)
+DECLARE_GPT_ISR_PROTOTYPE(3)
+DECLARE_GPT_ISR_PROTOTYPE(4)
+DECLARE_GPT_ISR_PROTOTYPE(5)
+DECLARE_GPT_ISR_PROTOTYPE(6)
+DECLARE_GPT_ISR_PROTOTYPE(7)
+
 
 //-------------------------------------------------------------------
 
@@ -159,12 +186,8 @@ void Gpt_Init(const Gpt_ConfigType *config)
   uint32_t i=0;
   const Gpt_ConfigType *cfg;
   VALIDATE( (Gpt_Global.initRun == STD_OFF), GPT_INIT_SERVICE_ID, GPT_E_ALREADY_INITIALIZED );
-#if defined(GPT_VARIANT_PB)
   VALIDATE( (config != NULL ), GPT_INIT_SERVICE_ID, GPT_E_PARAM_CONFIG );
-#elif 	defined(GPT_VARIANT_PC)
-  // We don't support GPT_VARIANT_PC
-  assert(0);
-#endif
+
   Gpt_ChannelType ch;
 
   for (i=0; i<GPT_CHANNEL_CNT; i++)
@@ -182,22 +205,41 @@ void Gpt_Init(const Gpt_ConfigType *config)
     Gpt_Global.channelMap[cfg->GptChannelId] = i;
     Gpt_Global.configured |= (1<<ch);
 
-    if (ch <= GPT_CHANNEL_PIT_8)
+    if (ch <= GPT_CHANNEL_7)
     {
       if (cfg->GptNotification != NULL)
       {
-        Irq_InstallVector(Gpt_Isr, PIT_PITFLG_RTIF + ch, 1, CPU_Z1);
+    	TaskType tid;
+    	switch (ch) {
+    	case 0:
+    		tid = Os_Arc_CreateIsr(Gpt_Isr_0, 1, "Gpt_Isr_0");
+    		break;
+    	case 1:
+    	    tid = Os_Arc_CreateIsr(Gpt_Isr_1, 1, "Gpt_Isr_1");
+    	    break;
+    	case 2:
+			tid = Os_Arc_CreateIsr(Gpt_Isr_2, 1, "Gpt_Isr_2");
+			break;
+    	case 3:
+			tid = Os_Arc_CreateIsr(Gpt_Isr_3, 1, "Gpt_Isr_3");
+			break;
+    	case 4:
+			tid = Os_Arc_CreateIsr(Gpt_Isr_4, 1, "Gpt_Isr_4");
+			break;
+    	case 5:
+			tid = Os_Arc_CreateIsr(Gpt_Isr_5, 1, "Gpt_Isr_5");
+			break;
+    	case 6:
+    		tid = Os_Arc_CreateIsr(Gpt_Isr_6, 1, "Gpt_Isr_6");
+    		break;
+    	case 7:
+    	    tid = Os_Arc_CreateIsr(Gpt_Isr_7, 1, "Gpt_Isr_7");
+    	    break;
+    	}
+
+    	Irq_AttachIsr2(tid, NULL, (IRQ_NR_TC0 - ch));
       }
     }
-#if defined(USE_KERNEL)
-    // Don't install if we use kernel.. it handles that.
-#else
-    else if (ch == GPT_CHANNEL_DEC)
-    {
-      // Decrementer event is default an exception. Use software interrupt 7 as wrapper.
-      Irq_InstallVector(config[i].GptNotification, INTC_SSCIR0_CLR7, 1, CPU_Z1);
-    }
-#endif
 
     cfg++;
     i++;
@@ -206,7 +248,8 @@ void Gpt_Init(const Gpt_ConfigType *config)
   Gpt_Global.config = config;
 
   Gpt_Global.initRun = STD_ON;
-  PIT.CTRL.B.MDIS = 0;
+
+  TSCR1 |= TEN; // Turn timer on.
 }
 
 //-------------------------------------------------------------------
@@ -223,6 +266,7 @@ void Gpt_DeInit(void)
   }
   Gpt_Global.initRun = STD_OFF;
   Gpt_Global.configured = 0;
+  TSCR1 &= ~TEN; // Turn timer off.
   //_config.config = NULL;
 }
 #endif
@@ -243,52 +287,34 @@ void Gpt_StartTimer(Gpt_ChannelType channel, Gpt_ValueType period_ticks)
 
   confCh = Gpt_Global.channelMap[channel];
 
-  if (channel <= GPT_CHANNEL_PIT_8)
-  {
-    uint32 *tlval = (uint32 *)&PIT.TLVAL0;
-    uint32 *tval = (uint32 *)&PIT.TVAL0;
+  if (channel <= GPT_CHANNEL_7) {
 
-    tlval[channel] = period_ticks;
-    tval[channel] = period_ticks;
 
-    // always select interrupt
-    if (channel != GPT_CHANNEL_RTI)
-    {
-      PIT.INTSEL.R |= ( 1 << channel );
-    }
 
-    // Make sure that no interrupt is pending.
-    PIT.FLG.R = ( 1 << channel );
+	// Setup channel for output compare (OC).
+	TIOS |= (1 << channel);
 
-    // Enable timer
-    PIT.EN.R |= ( 1 << channel );
-  }
-  else if (channel == GPT_CHANNEL_DEC)
-  {
-    // Enable the TB
-    tmp = get_spr(SPR_HID0);
-    tmp |= HID0_TBEN;
-    set_spr(SPR_HID0,tmp);
+	// Enable interrupt for timer
+	TIE |= (1 << channel);
 
-    /* Initialize the Decrementer */
-    set_spr(SPR_DEC, period_ticks);
-    set_spr(SPR_DECAR, period_ticks);
+	// Set OC value.
+	uint16 curr_cnt = TCNT;
+	PORTIO_16((FIRST_OC_REG + (2*channel))) = curr_cnt + period_ticks;
 
-    if( Gpt_Global.config[confCh].GptChannelMode == GPT_MODE_CONTINUOUS )
-    {
-      /* Set autoreload */
-      tmp = get_spr(SPR_TCR);
-      tmp |= TCR_ARE;
-      set_spr(SPR_TCR,tmp);
-    }
+	#if (GPT_TIME_ELAPSED_API == STD_ON)
+	GptPrevOc[channel] = curr_cnt;
+	#endif
   }
 
+  #if ( GPT_ENABLE_DISABLE_NOTIFICATION_API == STD_ON )
   if( Gpt_Global.config[confCh].GptNotification != NULL )
   {
     // GPT275
     Gpt_EnableNotification(channel);
   }
+  #endif
 
+  GptPeriods[channel] = period_ticks;
   Gpt_Unit[channel].state = GPT_STATE_STARTED;
 }
 
@@ -298,25 +324,20 @@ void Gpt_StopTimer(Gpt_ChannelType channel)
   VALIDATE( (Gpt_Global.initRun == STD_ON), GPT_STOPTIMER_SERVICE_ID, GPT_E_UNINIT );
   VALIDATE( VALID_CHANNEL(channel), GPT_STOPTIMER_SERVICE_ID, GPT_E_PARAM_CHANNEL );
 
-  if (channel <= GPT_CHANNEL_PIT_8)
+  if (channel <= GPT_CHANNEL_7)
   {
-    // Disable timer
-    PIT.EN.R &= ~( 1 << channel );
-  }
-  else if (channel == GPT_CHANNEL_DEC)
-  {
-    uint32 tb;
-    tb = get_spr(SPR_HID0);
-    tb &= ~HID0_TBEN;
-    set_spr(SPR_HID0,tb);
+	 TIE &= ~(1 << channel);
   }
 
+#if ( GPT_ENABLE_DISABLE_NOTIFICATION_API == STD_ON )
   Gpt_DisableNotification(channel);
+#endif
+
   Gpt_Unit[channel].state = GPT_STATE_STOPPED;
 }
 
-#if ( GPT_TIME_REMAINING_API == STD_ON )
 
+#if ( GPT_TIME_REMAINING_API == STD_ON )
 Gpt_ValueType Gpt_GetTimeRemaining(Gpt_ChannelType channel)
 {
   VALIDATE_W_RV( (Gpt_Global.initRun == STD_ON), GPT_GETTIMEREMAINING_SERVICE_ID, GPT_E_UNINIT, 0 );
@@ -324,45 +345,42 @@ Gpt_ValueType Gpt_GetTimeRemaining(Gpt_ChannelType channel)
   VALIDATE_W_RV( (Gpt_Unit[channel].state == GPT_STATE_STARTED), GPT_GETTIMEREMAINING_SERVICE_ID, GPT_E_NOT_STARTED, 0 );
   Gpt_ValueType remaining;
 
-  if (channel <= GPT_CHANNEL_PIT_8)
+  if (channel <= GPT_CHANNEL_7)
   {
-    uint32 *tval = (uint32 *)&PIT.TVAL0;
-    // Time remaining is the time until it hits 0, so just return the current timer value
-    remaining = tval[channel];
-  }
-  else if (channel == GPT_CHANNEL_DEC)
-  {
-    remaining = get_spr(SPR_DEC);
+	  uint16 now = TCNT;
+	  uint16 next = PORTIO_16((FIRST_OC_REG + (2*channel)));
+	  if (next > now) {
+		  remaining = next - now;
+
+	  } else {
+		  remaining = next + (0xFF - now) ;
+	  }
   }
 
-return remaining;
+  return remaining;
 }
 #endif
 
 #if ( GPT_TIME_ELAPSED_API == STD_ON )
 Gpt_ValueType Gpt_GetTimeElapsed(Gpt_ChannelType channel)
 {
-  Gpt_ValueType timer;
+  Gpt_ValueType elapsed;
 
   VALIDATE_W_RV( (Gpt_Global.initRun == STD_ON), GPT_GETTIMEELAPSED_SERVICE_ID, GPT_E_UNINIT ,0 );
   VALIDATE_W_RV( VALID_CHANNEL(channel),GPT_GETTIMEELAPSED_SERVICE_ID, GPT_E_PARAM_CHANNEL, 0 );
   VALIDATE_W_RV( (Gpt_Unit[channel].state == GPT_STATE_STARTED),GPT_GETTIMEELAPSED_SERVICE_ID, GPT_E_NOT_STARTED, 0 );
 
-  // NOTE!
-  // These little creatures count down
+  if (channel <= GPT_CHANNEL_7) {
+    uint16 now = TCNT;
+    if (now > GptPrevOc[channel]) {
+    	elapsed = now - GptPrevOc[channel];
 
-  if (channel <= GPT_CHANNEL_PIT_8)
-  {
-    uint32 *tval = (uint32 *)&PIT.TVAL0;
-    uint32 *tlval = (uint32 *)&PIT.TLVAL0;
-    timer = tlval[channel] - tval[channel];
-  }
-  else if (channel == GPT_CHANNEL_DEC)
-  {
-    timer = get_spr(SPR_DECAR) - get_spr(SPR_DEC);
+    } else {
+    	elapsed = (0xFF - GptPrevOc[channel]) + now;
+    }
   }
 
-  return (timer);
+  return (elapsed);
 }
 #endif
 
@@ -373,41 +391,22 @@ void Gpt_EnableNotification(Gpt_ChannelType channel)
   VALIDATE( (Gpt_Global.initRun == STD_ON), 0x7, GPT_E_UNINIT );
   VALIDATE( VALID_CHANNEL(channel),0x7, GPT_E_PARAM_CHANNEL );
 
-  if (channel <= GPT_CHANNEL_PIT_8)
+  if (channel <= GPT_CHANNEL_7)
   {
-    // enable interrupts
-    PIT.INTEN.R |= ( 1 << channel );
-  }
-  else if (channel == GPT_CHANNEL_DEC)
-  {
-    uint32 tmp;
-    tmp = get_spr(SPR_TCR);
-    tmp |= TCR_DIE;
-    set_spr(SPR_TCR, tmp );
+	  GptNotificationStatuses[channel] = STD_ON;
   }
 }
 
 void Gpt_DisableNotification(Gpt_ChannelType channel)
 {
-
   VALIDATE( (Gpt_Global.initRun == STD_ON), 0x8, GPT_E_UNINIT );
   VALIDATE( VALID_CHANNEL(channel),0x8, GPT_E_PARAM_CHANNEL );
 
-  if (channel <= GPT_CHANNEL_PIT_8)
+  if (channel <= GPT_CHANNEL_7)
   {
-    PIT.INTEN.R &= ~( 1 << channel );
+	  GptNotificationStatuses[channel] = STD_OFF;
   }
-  else if (channel == GPT_CHANNEL_DEC)
-  {
-    uint32 tmp;
-    tmp = get_spr(SPR_TCR);
-    tmp &= ~TCR_DIE;
-    set_spr(SPR_TCR, tmp );
-  }
-
-  return;
 }
-
 #endif
 
 #if ( GPT_WAKEUP_FUNCTIONALITY_API == STD_ON )
@@ -421,18 +420,11 @@ void Gpt_SetMode(Gpt_ModeType mode)
 
   if (mode == GPT_MODE_NORMAL)
   {
-    PIT.CTRL.B.MDIS = 0;
-    // Do NOT restart channels
+
   }
   else if (mode == GPT_MODE_SLEEP)
   {
 
-    PIT.CTRL.B.MDIS = 1;
-    // Disable all but RTI
-    for (i= 0; i <= GPT_CHANNEL_PIT_8; i++)
-    {
-      Gpt_StopTimer(i);
-    }
   }
 }
 
@@ -440,31 +432,15 @@ void Gpt_DisableWakeup(Gpt_ChannelType channel)
 {
   VALIDATE( (Gpt_Global.initRun == STD_ON), GPT_DISABLEWAKEUP_SERVICE_ID, GPT_E_UNINIT );
   VALIDATE( VALID_CHANNEL(channel), GPT_DISABLEWAKEUP_SERVICE_ID, GPT_E_PARAM_CHANNEL );
-  // Only RTI have system wakeup
-  if (channel == GPT_CHANNEL_RTI)
-  {
-    Gpt_Global.wakeupEnabled = STD_OFF;
-  }
-  else
-  {
-    // TODO:
-    //assert(0);
-  }
+
+
 }
 
 void Gpt_EnableWakeup(Gpt_ChannelType channel)
 {
   VALIDATE( (Gpt_Global.initRun == STD_ON), GPT_ENABLEWAKEUP_SERVICE_ID, GPT_E_UNINIT );
   VALIDATE( VALID_CHANNEL(channel),GPT_ENABLEWAKEUP_SERVICE_ID, GPT_E_PARAM_CHANNEL );
-  if (channel == GPT_CHANNEL_RTI)
-  {
-    Gpt_Global.wakeupEnabled = STD_ON;
-  }
-  else
-  {
-    // TODO:
-    //assert(0);
-  }
+
 }
 
 void Gpt_Cbk_CheckWakeup(EcuM_WakeupSourceType wakeupSource)

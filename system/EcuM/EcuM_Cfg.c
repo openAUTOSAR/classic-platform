@@ -52,6 +52,9 @@ EcuM_ConfigType EcuMConfig =
 #if defined(USE_PWM)
 	.PwmConfig = &PwmConfig,
 #endif
+#if defined(USE_GPT)
+	.GptConfig = GptConfigData,
+#endif
 };
 
 void EcuM_OnGoOffTwo( void ) {

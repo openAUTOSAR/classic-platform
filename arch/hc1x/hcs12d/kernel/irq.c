@@ -15,6 +15,8 @@
 
 #include "internal.h"
 #include "irq.h"
+#include "irq_types.h"
+#include "regs.h"
 
 extern void * Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
 extern uint8 Irq_IsrTypeTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
@@ -30,16 +32,28 @@ void Irq_EOI( void ) {
 
 }
 
-void *Irq_Entry( uint8 irq_nr )
+void bad_irq(uint8_t irq_nr) {
+  for (;;);
+}
+
+void *Irq_Entry( uint8_t irq_nr, void *stack )
 {
-	if( Irq_GetIsrType(vector) == ISR_TYPE_1 ) {
+	void* vector = (void *)Irq_VectorTable[irq_nr];
+
+	// trap uninitialized interrupts
+	if (vector == NULL) {
+		bad_irq(irq_nr);
+	}
+
+	if( Irq_GetIsrType(irq_nr) == ISR_TYPE_1 ) {
 		// It's a function, just call it.
-		((func_t)Irq_VectorTable[vector])();
+		((func_t)vector)();
 		return stack;
+
 	} else {
 		// It's a PCB
 		// Let the kernel handle the rest,
-		return Os_Isr(stack, (void *)Irq_VectorTable[vector]);
+		return Os_Isr(stack, vector);
 	}
 }
 
@@ -97,11 +111,6 @@ uint8_t Irq_GetCurrentPriority( Cpu_t cpu) {
 	return prio;
 }
 
-void bad_int()
-{
-  for (;;);
-}
-
 
 // #####################  INTERRUPT TRANSLATE TABLE #######################
 #define IRQ_MAP(x) irq_##x
@@ -109,128 +118,128 @@ void bad_int()
 const struct interrupt_vectors __attribute__((section(".vectors"))) vectors =
     {
 	  pwm_shutdown_handler:
-		  IRQ_MAP(IRQ_NR_PWM_SHUTDOWN),
+		  IRQ_MAP(pwm_shutdown),
 	  ptpif_handler:
-		  IRQ_MAP(IRQ_NR_PTPIF),
+		  IRQ_MAP(ptpif),
 	  can4_tx_handler:
-		  IRQ_MAP(IRQ_NR_CAN4_TX),
+		  IRQ_MAP(can4_tx),
 	  can4_rx_handler:
-		  IRQ_MAP(IRQ_NR_CAN4_RX),
+		  IRQ_MAP(can4_rx),
 	  can4_err_handler:
-		  IRQ_MAP(IRQ_NR_CAN4_ERR),
+		  IRQ_MAP(can4_err),
 	  can4_wake_handler:
-		  IRQ_MAP(IRQ_NR_CAN4_WAKE),
+		  IRQ_MAP(can4_wake),
 	  can3_tx_handler:
-		  IRQ_MAP(IRQ_NR_CAN3_TX),
+		  IRQ_MAP(can3_tx),
 	  can3_rx_handler:
-		  IRQ_MAP(IRQ_NR_CAN3_RX),
+		  IRQ_MAP(can3_rx),
 	  can3_err_handler:
-		  IRQ_MAP(IRQ_NR_CAN3_ERR),
+		  IRQ_MAP(can3_err),
 	  can3_wake_handler:
-		  IRQ_MAP(IRQ_NR_CAN3_WAKE),
+		  IRQ_MAP(can3_wake),
 	  can2_tx_handler:
-		  IRQ_MAP(IRQ_NR_CAN2_TX),
+		  IRQ_MAP(can2_tx),
 	  can2_rx_handler:
-		  IRQ_MAP(IRQ_NR_CAN2_RX),
+		  IRQ_MAP(can2_rx),
 	  can2_err_handler:
-		  IRQ_MAP(IRQ_NR_CAN2_ERR),
+		  IRQ_MAP(can2_err),
 	  can2_wake_handler:
-		  IRQ_MAP(IRQ_NR_CAN2_WAKE),
+		  IRQ_MAP(can2_wake),
 	  can1_tx_handler:
-		  IRQ_MAP(IRQ_NR_CAN1_TX),
+		  IRQ_MAP(can1_tx),
 	  can1_rx_handler:
-		  IRQ_MAP(IRQ_NR_CAN1_RX),
+		  IRQ_MAP(can1_rx),
 	  can1_err_handler:
-		  IRQ_MAP(IRQ_NR_CAN1_ERR),
+		  IRQ_MAP(can1_err),
 	  can1_wake_handler:
-		  IRQ_MAP(IRQ_NR_CAN1_WAKE),
+		  IRQ_MAP(can1_wake),
 	  can0_tx_handler:
-		  IRQ_MAP(IRQ_NR_CAN0_TX),
+		  IRQ_MAP(can0_tx),
 	  can0_rx_handler:
-		  IRQ_MAP(IRQ_NR_CAN0_RX),
+		  IRQ_MAP(can0_rx),
 	  can0_err_handler:
-		  IRQ_MAP(IRQ_NR_CAN0_ERR),
+		  IRQ_MAP(can0_err),
 	  can0_wake_handler:
-		  IRQ_MAP(IRQ_NR_CAN0_WAKE),
+		  IRQ_MAP(can0_wake),
 	  flash_handler:
-		  IRQ_MAP(IRQ_NR_FLASH),
+		  IRQ_MAP(flash),
 	  eeprom_handler:
-		  IRQ_MAP(IRQ_NR_EEPROM),
+		  IRQ_MAP(eeprom),
 	  spi2_handler:
-		  IRQ_MAP(IRQ_NR_SPI2),
+		  IRQ_MAP(spi2),
 	  spi1_handler:
-		  IRQ_MAP(IRQ_NR_SPI1),
+		  IRQ_MAP(spi1),
 	  iic_handler:
-		  IRQ_MAP(IRQ_NR_IIC),
+		  IRQ_MAP(iic),
 	  bdlc_handler:
-		  IRQ_MAP(IRQ_NR_BDLC),
+		  IRQ_MAP(bdlc),
 	  selfclk_mode_handler:
-		  IRQ_MAP(IRQ_NR_SELFCLK_MODE),
+		  IRQ_MAP(selfclk_mode),
 	  pll_lock_handler:
-		  IRQ_MAP(IRQ_NR_PLL_LOCK),
+		  IRQ_MAP(pll_lock),
 	  accb_overflow_handler:
-		  IRQ_MAP(IRQ_NR_ACCB_OVERFLOW),
+		  IRQ_MAP(accb_overflow),
 	  mccnt_underflow_handler:
-		  IRQ_MAP(IRQ_NR_MCCNT_UNDERFLOW),
+		  IRQ_MAP(mccnt_underflow),
 	  pthif_handler:
-		  IRQ_MAP(IRQ_NR_PTHIF),
+		  IRQ_MAP(pthif),
 	  ptjif_handler:
-		  IRQ_MAP(IRQ_NR_PTJIF),
+		  IRQ_MAP(ptjif),
 	  atd1_handler:
-		  IRQ_MAP(IRQ_NR_ATD1),
+		  IRQ_MAP(atd1),
 	  atd0_handler:
-		  IRQ_MAP(IRQ_NR_ATD0),
+		  IRQ_MAP(atd0),
 	  sci1_handler:
-		  IRQ_MAP(IRQ_NR_SCI1),
+		  IRQ_MAP(sci1),
 	  sci0_handler:
-		  IRQ_MAP(IRQ_NR_SCI0),
+		  IRQ_MAP(sci0),
 	  spi0_handler:
-		  IRQ_MAP(IRQ_NR_SPI0),
+		  IRQ_MAP(spi0),
 
 		  // Timer and Accumulator
 	  acca_input_handler:
-		  IRQ_MAP(IRQ_NR_ACCA_INPUT),
+		  IRQ_MAP(acca_input),
 	  acca_overflow_handler:
-		  IRQ_MAP(IRQ_NR_ACCA_OVERFLOW),
+		  IRQ_MAP(acca_overflow),
 	  timer_overflow_handler:
-		  IRQ_MAP(IRQ_NR_TIMER_OVERFLOW),
+		  IRQ_MAP(timer_overflow),
 
 		  // InputCapture/OutputCompare Timers
 	  tc7_handler:
-		  IRQ_MAP(IRQ_NR_TC7),
+		  IRQ_MAP(tc7),
 	  tc6_handler:
-		  IRQ_MAP(IRQ_NR_TC6),
+		  IRQ_MAP(tc6),
 	  tc5_handler:
-		  IRQ_MAP(IRQ_NR_TC5),
+		  IRQ_MAP(tc5),
 	  tc4_handler:
-		  IRQ_MAP(IRQ_NR_TC4),
+		  IRQ_MAP(tc4),
 	  tc3_handler:
-		  IRQ_MAP(IRQ_NR_TC3),
+		  IRQ_MAP(tc3),
 	  tc2_handler:
-		  IRQ_MAP(IRQ_NR_TC2),
+		  IRQ_MAP(tc2),
 	  tc1_handler:
-		  IRQ_MAP(IRQ_NR_TC1),
+		  IRQ_MAP(tc1),
 	  tc0_handler:
-		  IRQ_MAP(IRQ_NR_TC0),
+		  IRQ_MAP(tc0),
 
 		  // External Interrupts
 	  rtii_handler:
-		  IRQ_MAP(IRQ_NR_RTII),
+		  IRQ_MAP(rtii),
 	  irq_handler:
-		  IRQ_MAP(IRQ_NR_IRQ),
+		  IRQ_MAP(irq),
 	  xirq_handler:
-		  IRQ_MAP(IRQ_NR_XIRQ),
+		  IRQ_MAP(xirq),
 
 	  // Vectors in use
 	  swi_handler:
-		  IRQ_MAP(IRQ_NR_SWI),
+		  IRQ_MAP(swi),
 
 	  illegal_handler:
-		  IRQ_MAP(IRQ_NR_ILLEGAL),
+		  IRQ_MAP(illegal),
 	  cop_fail_handler:
-		  IRQ_MAP(IRQ_NR_COP_FAIL),
+		  IRQ_MAP(cop_fail),
 	  cop_clock_handler:
-		  IRQ_MAP(IRQ_NR_COP_CLOCK),
+		  IRQ_MAP(cop_clock),
 
   reset_handler:
       _start,
