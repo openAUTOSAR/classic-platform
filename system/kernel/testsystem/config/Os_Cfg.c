@@ -150,14 +150,14 @@ GEN_TASK_HEAD {
 /* extended */
 	GEN_ETASK(etask_master,1,FULL,true/*auto*/, NULL/*rsrc*/, 0 ),
 
-	GEN_ETASK(etask_sup_l,2,FULL,false/*auto*/, NULL/*rsrc*/, 0 ),
-	GEN_ETASK(etask_sup_m,3,FULL,false/*auto*/, NULL/*rsrc*/, 0 ),
-	GEN_ETASK(etask_sup_h,4,FULL,false/*auto*/, NULL/*rsrc*/, 0 ),
+	GEN_ETASK(etask_sup_l,2,FULL,false/*auto*/, NULL/*rsrc*/, (1<<2)|(1<<3)|(1<<4) ),
+	GEN_ETASK(etask_sup_m,4,FULL,false/*auto*/, NULL/*rsrc*/, (1<<2)|(1<<3)|(1<<4) ),
+	GEN_ETASK(etask_sup_h,6,FULL,false/*auto*/, NULL/*rsrc*/, (1<<2)|(1<<3)|(1<<4) ),
 
 /* basic */
-	GEN_BTASK(btask_sup_l,2,FULL,false/*auto*/, NULL/*rsrc*/, 0, 1 ),
-	GEN_BTASK(btask_sup_m,3,FULL,false/*auto*/, NULL/*rsrc*/, 0, 1 ),
-	GEN_BTASK(btask_sup_h,4,FULL,false/*auto*/, NULL/*rsrc*/, 0, 1 ),
+	GEN_BTASK(btask_sup_l,2,FULL,false/*auto*/, NULL/*rsrc*/, (1<<2)|(1<<3)|(1<<4), 1 ),
+	GEN_BTASK(btask_sup_m,4,FULL,false/*auto*/, NULL/*rsrc*/, (1<<2)|(1<<3)|(1<<4), 1 ),
+	GEN_BTASK(btask_sup_h,6,FULL,false/*auto*/, NULL/*rsrc*/, (1<<2)|(1<<3)|(1<<4), 1 ),
 
 	GEN_ISR_2(  TASK_ID_os_tick, "dec", OsTick, /*prio*/ 11,  INTC_VECTOR_EXCEPTION_DEC ),
 #if 0

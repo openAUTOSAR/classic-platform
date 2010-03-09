@@ -17,7 +17,7 @@
 #include "mpc55xx.h"
 #include "asm_book_e.h"
 
-#define USE_DEBUG
+#define USE_DEBUG_PRINT
 #include "Trace.h"
 
 /**

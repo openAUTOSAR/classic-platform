@@ -35,7 +35,7 @@
 #include "irq.h"
 
 //#define USE_TRACE 1
-//#define USE_DEBUG 1
+//#define USE_DEBUG_PRINT 1
 #include "Trace.h"
 
 #define SYSCLOCK_SELECT_PLL	0x2
@@ -345,7 +345,7 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
 #endif
 
 
-#if defined(USE_DEBUG)
+#if defined(USE_DEBUG_PRINT)
   {
     uint32    extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePointFrequency;
     uint32    f_sys;

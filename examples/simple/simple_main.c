@@ -18,7 +18,7 @@
 #include "Mcu.h"
 #include "arc.h"
 
-#define USE_DEBUG
+#define USE_DEBUG_PRINT
 #include "Trace.h"
 
 // How many errors to keep in error log.

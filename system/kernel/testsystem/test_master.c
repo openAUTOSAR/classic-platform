@@ -22,7 +22,7 @@
 #endif
 #include "simple_printf.h"
 
-#define USE_DEBUG
+#define USE_DEBUG_PRINT
 #include "Trace.h"
 #include "arc.h"
 

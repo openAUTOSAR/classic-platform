@@ -33,7 +33,7 @@
 #include "system_stm32f10x.h"
 
 //#define USE_TRACE 1
-//#define USE_DEBUG 1
+//#define USE_DEBUG_PRINT 1
 #include "Trace.h"
 
 typedef struct {
@@ -273,7 +273,7 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
 
 
 
-#if defined(USE_DEBUG)
+#if defined(USE_DEBUG_PRINT)
   {
     uint32    extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePointFrequency;
     uint32    f_sys;

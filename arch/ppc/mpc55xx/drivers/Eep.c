@@ -56,7 +56,7 @@
 #include <assert.h>
 #include <string.h>
 
-//#define USE_DEBUG	1
+//#define USE_DEBUG_PRINT	1
 #include "Trace.h"
 #define MODULE_NAME 	"/driver/Eep"
 

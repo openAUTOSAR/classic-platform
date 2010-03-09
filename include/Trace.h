@@ -29,7 +29,7 @@
  *
  * Macro's for debugging and tracing
  *
- * Define USE_DEBUG and DBG_LEVEL either globally( e.g. a makefile )
+ * Define USE_DEBUG_PRINT and DBG_LEVEL either globally( e.g. a makefile )
  * or in a specific file.  The DBG_LEVEL macro controls the amount
  * of detail you want in the debug printout.
  * There are 3 levels:
@@ -57,7 +57,7 @@
 #define CH_ISR		0
 #define CH_PROC		1
 
-#if defined(USE_DEBUG)
+#if defined(USE_DEBUG_PRINT)
 #define DEBUG(_level,...) \
 	do { \
 		if(_level>=DEBUG_LVL) { \
@@ -69,7 +69,7 @@
 #define DEBUG(_level,...)
 #endif
 
-#if defined(USE_DEBUG)
+#if defined(USE_DEBUG_PRINT)
 #define dbg_printf(format,...) simple_printf(format,## __VA_ARGS__ )
 #else
 #define dbg_printf(format,...)

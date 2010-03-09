@@ -43,9 +43,6 @@ void Os_TaskStartExtended( void ) {
 
 	Os_ArchFirstCall();
 
-	/** @req OS070 */
-	Os_ResourceCheckAndRelease(pcb);
-
 	/** @req OS239 */
 	Irq_Disable();
 	if( Os_IrqAnyDisabled() ) {
@@ -76,8 +73,6 @@ void Os_TaskStartBasic( void ) {
 	Os_TaskMakeRunning(pcb);
 	Os_ArchFirstCall();
 
-	/** @req OS070 */
-	Os_ResourceCheckAndRelease(pcb);
 
 	/** @req OS239 */
 	Irq_Disable();
@@ -250,7 +245,7 @@ OsPcbType *Os_TaskGetTop( void ){
 }
 
 
-#define USE_DEBUG
+#define USE_DEBUG_PRINT
 #include "Trace.h"
 
 // we come here from
@@ -514,11 +509,10 @@ StatusType ActivateTask( TaskType TaskID ) {
 			 * state into ready state all its events are cleared.*/
 			pcb->ev_set = 0;
 			pcb->ev_wait = 0;
-		} else {
-			Os_StackSetup(pcb);
-			OsArch_SetTaskEntry(pcb);
-			Os_ArchSetupContext(pcb);
 		}
+		Os_StackSetup(pcb);
+		OsArch_SetTaskEntry(pcb);
+		Os_ArchSetupContext(pcb);
 		Os_TaskMakeReady(pcb);
 	} else {
 
@@ -588,15 +582,29 @@ StatusType TerminateTask( void ) {
 	os_std_printf(D_TASK,"TerminateTask %s\n",curr_pcb->name);
 
 #if (OS_STATUS_EXTENDED == STD_ON )
+
+
 	if( os_sys.int_nest_cnt != 0 ) {
 		rv =  E_OS_CALLEVEL;
 		goto err;
 	}
+
+	/** @req OS070 */
+	if( Os_ResourceCheckAndRelease(curr_pcb) == 1 ) {
+		rv =  E_OS_RESOURCE;
+		goto err;
+
+	}
+
+
 #endif
+
 
 	Irq_Save(flags);
 
 	--curr_pcb->activations;
+
+
 //	assert(curr_pcb->activations>=0);
 
 	/*@req OSEK TerminateTask
@@ -604,7 +612,8 @@ StatusType TerminateTask( void ) {
 	 * terminating the current instance of the task automatically puts the next
 	 * instance of the same task into the ready state
 	 */
-	if( curr_pcb->activations == 0 ) {
+	if( curr_pcb->activations <= 0 ) {
+		curr_pcb->activations = 0;
 		Os_TaskMakeSuspended(curr_pcb);
 	} else {
 		/* We need to add ourselves to the ready list again,

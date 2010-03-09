@@ -83,7 +83,7 @@ static void os_resource_init( void ) {
 		rsrc_p = Oil_GetResource(i);
 		topPrio = 0;
 
-		for( int pi; pi < Oil_GetTaskCnt(); pi++) {
+		for( int pi = 0; pi < Oil_GetTaskCnt(); pi++) {
 
 			pcb_p = os_get_pcb(pi);
 			if(pcb_p->resourceAccess & (1<<i) ) {
@@ -189,7 +189,6 @@ void InitOS( void ) {
 	// Init counter.. with alarms and schedule tables
 	os_counter_init();
 	Os_SchTblInit();
-	os_resource_init();
 
 	// Put all tasks in the pcb list
 	// Put the one that belong in the ready queue there
@@ -205,10 +204,14 @@ void InitOS( void ) {
 			Os_ContextInit(tmp_pcb);
 		}
 
+		TAILQ_INIT(&tmp_pcb->resource_head);
+
 		Os_AddTask(tmp_pcb);
 
 		DEBUG(DEBUG_LOW,"pid:%d name:%s prio:%d\n",tmp_pcb->pid,tmp_pcb->name,tmp_pcb->prio);
 	}
+
+	os_resource_init();
 
 	// Now all tasks should be created.
 }

@@ -30,3 +30,41 @@
  * Limitations:
  * - Internal resources.
  */
+
+#include "Os.h"
+#include "os_test.h"
+#include "arc.h"
+
+
+void etask_sup_l_02(void) {
+	_Bool done = 0;
+	StatusType rv;
+
+	while (!done) {
+		TEST_RUN();
+		switch (test_nr) {
+		case 1:
+			rv = GetResource(RES_ID_ext_prio_3);
+			TEST_ASSERT(rv == E_OK);
+			rv = ReleaseResource(RES_ID_ext_prio_3);
+			TEST_ASSERT(rv == E_OK);
+			test_nr++;
+			break;
+		case 2:
+			/* Get the same resource twice */
+			rv = GetResource(RES_ID_ext_prio_3);
+			TEST_ASSERT(rv == E_OK);
+			rv = GetResource(RES_ID_ext_prio_3);
+			TEST_ASSERT(rv == E_OK);
+			break;
+
+		}
+	}
+}
+
+void btask_sup_l_02(void) {
+}
+
+
+DECLARE_TEST_ETASK(02, etask_sup_l_02, NULL, NULL );
+DECLARE_TEST_BTASK(02, btask_sup_l_02, NULL, NULL );

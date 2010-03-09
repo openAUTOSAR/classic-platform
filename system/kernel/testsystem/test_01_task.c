@@ -37,6 +37,8 @@
 
 int btaskRunCnt = 0;
 
+static int status_100 = 0;
+
 void isr_l(void ) {
 	StatusType rv;
 	switch(test_nr) {
@@ -58,6 +60,8 @@ void etask_sup_l_01(void) {
 	StatusType rv;
 
 	while (!done) {
+		TEST_RUN();
+
 		switch (test_nr) {
 		case 1:
 			/*@req E_OS_ID ActivateTask */
@@ -81,9 +85,11 @@ void etask_sup_l_01(void) {
 		case 10:
 			/*@req E_OS_RESOURCE TerminateTask
 			 * Terminate a task that still holds resources
-			 * */
-			rv = ActivateTask(TASK_ID_btask_sup_h);
+			 * This is done in the TASK_ID_btask_sup_m task..
+			 */
+			rv = ActivateTask(TASK_ID_btask_sup_m);
 			TEST_ASSERT(rv == E_OK);
+			test_nr++;
 			break;
 		case 11:
 			/*@req E_OS_CALLEVEL TerminateTask */
@@ -97,7 +103,7 @@ void etask_sup_l_01(void) {
 			/*@req E_OS_ID ChainTask */
 			rv = ChainTask(TASK_ID_ILL);
 			TEST_ASSERT(rv == E_OS_ID);
-			test_nr++;
+			test_nr = 100;
 		case 21:
 			/*@req E_OS_LIMIT ChainTask */
 		case 22:
@@ -113,20 +119,35 @@ void etask_sup_l_01(void) {
 			break;
 
 		case 100:
-			/*@req Scheduler test
-			 * The first task(oldest) task of the same priority should be scheduled first
-			 * E.g. From M task do ActivateTask()
-			 */
-			/* Change to higher prio */
+			/* Check that tasks as run in priority order and that the oldest task
+			 * of the same priority should be scheduled first.
+			 * 1. esup_l: Activate(sup_m)
+			 * 2. bsup_m: Activate(sup_l)  (should not be taken)
+			 * 3. bsup_m: Activate(sup_h)  (taken)
+			 * 4. bsup_h: Terminate()
+			 *   (We should now have bsup_m, esup_l, bsup_l )
+			 * 5. bsup_m: Terminate()
+			 * 6. esup_l : Terminate()
+			 * 7. bsup_l : Activate(esup_l)  (found by dispatcher)
+			 * 8. esup_l:  Back again!!!!
+			 *
+			 * */
+			if(status_100==6) {
+				test_nr=101;
+				break;
+			}
 			btaskRunCnt = 0;
 			rv = ActivateTask(TASK_ID_btask_sup_m);
-			/* We got back from M, btask_l is now ready in queue */
-			TEST_ASSERT(btaskRunCnt==0);
-			/* Terminate ourselves, to be activated later */
-			TerminateTask();
+			TEST_ASSERT(status_100=3);
+			status_100=4;
+			TerminateTask();  // Step 6.
+
+			// Should never get here since we have restarded ourselves.
+			assert(0);
 			break;
 		case 101:
-			TEST_ASSERT(btaskRunCnt==1);
+			/* End Testing of this module */
+			TerminateTask();
 			break;
 		default:
 			while(1);
@@ -139,8 +160,11 @@ void btask_sup_l_01( void ) {
 	case 100:
 		btaskRunCnt++;
 		/* Make it go up again */
-		test_nr = 101;
-		ActivateTask(TASK_ID_etask_sup_l);
+		TEST_ASSERT(status_100=4);
+		status_100=5;
+		ActivateTask(TASK_ID_etask_sup_l);  // Step 7.
+		TEST_ASSERT(status_100=5);
+		status_100=6;
 		break;
 	default:
 		break;
@@ -153,6 +177,7 @@ void btask_sup_m_01( void ) {
 	switch(test_nr){
 	case 2:
 		btaskRunCnt++;
+		TerminateTask();
 		break;
 	case 10:
 		rv = GetResource(RES_ID_ext_prio_3);
@@ -162,11 +187,19 @@ void btask_sup_m_01( void ) {
 		TEST_ASSERT(rv==E_OS_RESOURCE);
 
 		rv = ReleaseResource(RES_ID_ext_prio_3);
+		TEST_ASSERT(rv==E_OK);
 		TerminateTask();
 		break;
 	case 100:
 		/* We got here from etask_l, so it should be oldest */
 		rv = ActivateTask(TASK_ID_btask_sup_l);
+		TEST_ASSERT(rv==E_OK);
+		TEST_ASSERT(status_100==0);
+		status_100=1;
+		rv = ActivateTask(TASK_ID_btask_sup_h);
+		TEST_ASSERT(rv==E_OK);
+		TEST_ASSERT(status_100==2);
+		status_100=3;
 		break;
 	default:
 		while(1);
@@ -195,12 +228,16 @@ void btask_sup_h_01(void) {
 		 *           Oldest is scheduled first..
 		 * */
 		break;
+	case 100:
+		TEST_ASSERT(status_100==1);
+		status_100=2;
+		break;
 	default:
 		while(1);
 
 	}
 }
 
-__attribute__ ((section (".test_btask"))) const test_func_t btask_sup_matrix_01[3] = { btask_sup_l_01, btask_sup_m_01, btask_sup_h_01 };
-__attribute__ ((section (".test_etask"))) const test_func_t etask_sup_matrix_01[3] = { etask_sup_l_01, NULL, NULL };
+DECLARE_TEST_ETASK(01, etask_sup_l_01, NULL, NULL );
+DECLARE_TEST_BTASK(01, btask_sup_l_01, btask_sup_m_01, btask_sup_h_01);
 

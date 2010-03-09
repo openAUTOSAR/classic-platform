@@ -24,7 +24,7 @@
 #include "Ramlog.h"
 
 #define USE_TRACE 1
-#define USE_DEBUG 1
+#define USE_DEBUG_PRINT 1
 #include "Trace.h"
 
 

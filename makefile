@@ -36,6 +36,7 @@ Q?=@
 export Q
 export TOPDIR = $(CURDIR)
 export CFG_DEBUG ?= n
+export CFG_USE_DEBUG_PRINT
 ifeq ($(CFG_DEBUG),n)
 export CFG_RELEASE = y
 endif
@@ -81,6 +82,7 @@ help:
 	@echo ""
 	
 def-$(USE_DBG_PRINTF) += USE_DBG_PRINTF
+def-$(USE_DEBUG_PRINT) += USE_DEBUG_PRINT
 
 
 export CFG_MCU 

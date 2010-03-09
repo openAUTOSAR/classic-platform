@@ -258,7 +258,12 @@ void Os_ResourceGetInternal(void );
 void Os_ResourceReleaseInternal( void );
 
 
-static inline void Os_ResourceCheckAndRelease( OsPcbType *pcb )  {
+/**
+ *
+ * @return 1 - if any resources were found.
+ */
+static inline _Bool Os_ResourceCheckAndRelease( OsPcbType *pcb )  {
+	_Bool rv = 0;
 	if( !TAILQ_EMPTY(&pcb->resource_head) ) {
 		OsResourceType *rPtr;
 
@@ -266,10 +271,14 @@ static inline void Os_ResourceCheckAndRelease( OsPcbType *pcb )  {
 			ReleaseResource(rPtr->nr);
 			/* Requirements are a little fuzzy here, no explicit
 			 * requirement for this.
+			 *
+			 * For OSEK this is a req.
 			 */
 			ERRORHOOK(E_OS_RESOURCE);
+			rv = 1;
 		}
 	}
+	return rv;
 }
 
 

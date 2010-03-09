@@ -62,7 +62,7 @@
 //#include <stdio.h>
 #include <string.h>
 
-//#define USE_DEBUG
+//#define USE_DEBUG_PRINT
 #include "Trace.h"
 #define MODULE_NAME 	"/driver/Fls_25"
 
