@@ -1,49 +1,22 @@
 
 
-/*
- * IVOR4
- * 1. Save stack frames: EXC, VGPR, NVGPR and C
- * 2. Call Irq_Entry(void *curr_stack)
- * 2.1 Check for exception
- * 2.2 If softint, clear it.
- * 2.3 If PROC_ISR1, then just call the function
- * 2.4 If PROC_ISR2 -> it's a PCB, let the OS handle it.
- */
-
 #define _ASSEMBLER_
 #include "kernel_offset.h"
 #include "asm_hc1x.h"
-.extern os_intc_pcb_tbl
-.extern os_intc_types_tbl
-.extern os_sys
+#include "context.sx"
 
-/*
-#define	LOCK()			wrteei	0
-#define	UNLOCK()		wrteei	1
-*/
+.extern os_sys
+.extern os_proc_start_extended
 
 #define IRQ_ENABLE() 		cpsie 	i
 #define IRQ_DISABLE()		cpsid 	i
 
-.extern os_proc_start_extended
-
-/*--------------------------------------------------------------------
- * void os_swap_context(pcb_t *old, pcb_t *new )
- *
- * Saves a small context on current stack, pops a new one from new context
- *
- * r3 - pcb for old process
- * r4 - pcb for new process
- *
- *--------------------------------------------------------------------*/
-
-// TODO: this assumes that both are in user mode?.. can this happen under trusted functions?
-//       When I get here we're ALWAYS in kernel mode
 
 .global Os_ArchSwapContextToW
 .global Os_ArchSwapContextTo
 .global Os_ArchSwapContext
 .global Os_ArchSetSpAndCall
+
 .section .text
 
 Os_ArchSetSpAndCall:
@@ -65,16 +38,7 @@ Os_ArchSwapContext_get_args:
 		GET_ARG_0_TO_X					// old --> X
 		GET_ARG_1_TO(y)					// new --> Y
 		
-		movb	#0x00, 1,-sp			// skip byte
-		movw	_.frame, 2,-sp			// restore _.frame
-		movw	_.z, 2,-sp				// restore _.z
-		movw	_.xy, 2,-sp				// restore _.xy
-		movw	_.tmp ,2,-sp			// restore _.tmp
-		pshy							// restore Y
-		pshx							// restore X
-		pshd							// restore D
-		pshc							// restore CCR
-		movb	#0x00, 1,-sp			// skip byte
+		SAVE_CONTEXT_FROM_FUNCTION
 		
 		sts		PCB_STACK_CURR_P, x		// SP --> old->stack.curr
 		bra		Os_ArchSwapContextTo_do
@@ -91,17 +55,8 @@ Os_ArchSwapContextTo_do:
 		sty		os_sys					// new (Y) --> os_sys.curr_pcb
 // Restore context
 		lds		PCB_STACK_CURR_P, y		// new->stack.curr --> SP
-		ins								// skip byte		
-		pulc							// restore CCR
-		puld							// restore D
-		pulx							// restore X
-		puly							// restore Y
-		movw	2,sp+,_.tmp				// restore _.tmp
-		movw	2,sp+,_.xy				// restore _.xy
-		movw	2,sp+,_.z				// restore _.z
-		movw	2,sp+,_.frame			// restore _.frame
-
-		ins								// skip byte
+		
+		RESTORE_CONTEXT_FOR_FUNCTION
 		
 		rtc
 /*

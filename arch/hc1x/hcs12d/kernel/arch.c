@@ -34,7 +34,7 @@ void *Os_ArchGetStackPtr( void ) {
 }
 
 unsigned int Os_ArchGetScSize( void ) {
-	return SC_SIZE;
+	return CONTEXT_SIZE_W;
 }
 
 
@@ -59,17 +59,17 @@ void Os_ArchSetupContext( OsPcbType *pcb ) {
  */
 
 void OsArch_SetTaskEntry(OsPcbType *pcbPtr ) {
-	uint16_t *context = (uint16_t *)pcbPtr->stack.curr;
-
-//	context[C_CONTEXT_OFF/4] = SC_PATTERN;
+	uint16_t *context_words = (uint16_t *)pcbPtr->stack.curr;
+	uint8_t *context_bytes = (uint8_t *)pcbPtr->stack.curr;
 
 	/* Set Return to start function */
+
+	context_bytes[8] = OS_KERNEL_CODE_PPAGE;
+
 	if( pcbPtr->proc_type == PROC_EXTENDED ) {
-		context[C_RETURN_PPAGE_OFF] = OS_KERNEL_CODE_PPAGE;
-		context[C_RETURN_ADDR_OFF] = (uint16_t)Os_TaskStartExtended;
+		context_words[8] = (uint16_t)Os_TaskStartExtended;
 	} else if( pcbPtr->proc_type == PROC_BASIC ) {
-		context[C_RETURN_PPAGE_OFF] = OS_KERNEL_CODE_PPAGE;
-		context[C_RETURN_ADDR_OFF] = (uint16_t)Os_TaskStartBasic;
+		context_words[8] = (uint16_t)Os_TaskStartBasic;
 	}
 }
 

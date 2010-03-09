@@ -29,7 +29,18 @@
  * Just an example of a basic task.
  */
 
+void SoftwareInterruptHandler(void) {
+	int i = 12;
+	i++;
+}
+
 void btask_3( void ) {
+
+	TaskType tid;
+	tid = Os_Arc_CreateIsr(SoftwareInterruptHandler,6/*prio*/,"DMA1");
+	Irq_AttachIsr2(tid, NULL, IRQ_TYPE_SWI);
+
+	asm("swi");
 	StackInfoType si;
 	TaskType currTask;
 	dbg_printf("[%08d] btask_3 start\n", GetOsTick() );

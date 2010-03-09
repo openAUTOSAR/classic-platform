@@ -27,17 +27,17 @@ void Os_SysTickInit( void ) {
 
 	TSCR1 = 0 | TEN;
 	TSCR2 = 0 | TOI;
-	TIE = 1;
 
-	MCCTL = (1 << MCZI) | (1 << MODMC) | (1 << MCEN);
+	MCCTL =  MCZI | MCEN;
+	MCCTL |= MODMC;
 
 	MCCNT = 1000;
 
 	ICSYS = 0;
 
 	TaskType tid;
-	tid = Os_Arc_CreateIsr(OsTick,6/*prio*/,"OsTick");
-	Irq_AttachIsr2(tid,NULL,7);
+	tid = Os_Arc_CreateIsr(OsTick, 6/*prio*/, "OsTick");
+	Irq_AttachIsr2(tid, NULL, IRQ_TYPE_MCCNT_UNDERFLOW);
 }
 
 /**
@@ -48,30 +48,6 @@ void Os_SysTickInit( void ) {
  *
  */
 void Os_SysTickStart(uint32_t period_ticks) {
-
-
-
-
-	uint32_t tmp;
-
-	// Enable the TB
-	tmp = get_spr(SPR_HID0);
-	tmp |= HID0_TBEN;
-	set_spr(SPR_HID0, tmp);
-
-	/* Initialize the Decrementer */
-	set_spr(SPR_DEC, period_ticks);
-	set_spr(SPR_DECAR, period_ticks);
-
-	/* Set autoreload */
-	tmp = get_spr(SPR_TCR);
-	tmp |= TCR_ARE;
-	set_spr(SPR_TCR, tmp);
-
-	/* Enable notification */
-    tmp = get_spr(SPR_TCR);
-    tmp |= TCR_DIE;
-    set_spr(SPR_TCR, tmp );
 
 }
 
