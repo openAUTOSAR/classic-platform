@@ -349,12 +349,12 @@ BufReq_ReturnType saveSduPayloadData(const CanTp_RxNSduType *rxConfig,
 	BufReq_ReturnType ret;
 	PduLengthType copyCount = 0;
 	boolean error = FALSE;
+	uint8 data_test;
 
 	while ((copyCount < dataLength) && error == FALSE) {
 		// Copy the data that resides in the buffer.
 		if (rxRuntime->bufferPduRouter != NULL) {
-			while (rxRuntime->bufferPduRouter->SduLength
-					> rxRuntime->pdurBufferCount) {
+			while (copyCount < dataLength ) {
 				rxRuntime->bufferPduRouter->SduDataPtr[rxRuntime->pdurBufferCount++]
 						= data[copyCount++];
 			}
@@ -723,11 +723,11 @@ static inline void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 
 	if (rxConfig->CanTpAddressingFormant == CANTP_STANDARD) {
 		ret = saveSduPayloadData(rxConfig, rxRuntime,
-				&(rxRuntime->bufferPduRouter->SduDataPtr[2]),
+				&rxPduData->SduDataPtr[2],
 				MAX_PAYLOAD_FF_STD_ADDR);
 	} else {
 		ret = saveSduPayloadData(rxConfig, rxRuntime,
-				&(rxRuntime->bufferPduRouter->SduDataPtr[3]),
+				&rxPduData->SduDataPtr[3],
 				MAX_PAYLOAD_FF_EXT_ADDR);
 	}
 	if (ret == BUFREQ_OK) {
@@ -760,35 +760,44 @@ static inline void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
  * This function validates if the data to be sent needs to be segmented or
  * could fit into a single frame.
  */
-static inline ISO15765FrameType calcRequiredProtocolFrameType(
-		const CanTp_TxNSduType *txConfig, CanTp_ChannelPrivateType *txRuntime) {
+static inline Std_ReturnType calcRequiredProtocolFrameType(
+		const CanTp_TxNSduType *txConfig, CanTp_ChannelPrivateType *txRuntime,
+		ISO15765FrameType *iso15765Frame) {
 
-	ISO15765FrameType ret;
+	Std_ReturnType ret;
 	if (txConfig->CanTpAddressingMode == CANTP_EXTENDED) {
-		VALIDATE( (txRuntime->pduLenghtTotalBytes > MAX_PAYLOAD_CF_EXT_ADDR) &&
-				(txConfig->CanTpTxTaType == CANTP_FUNCTIONAL),
-				SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TATYPE );
+		if ( txRuntime->pduLenghtTotalBytes > MAX_PAYLOAD_CF_EXT_ADDR ) {
+			VALIDATE( txConfig->CanTpTxTaType == CANTP_FUNCTIONAL,
+					SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TATYPE );
+		}
 		if (txRuntime->pduLenghtTotalBytes > MAX_PAYLOAD_CF_EXT_ADDR) {
 			if (txConfig->CanTpTxTaType == CANTP_PHYSICAL) {
-				ret = FIRST_FRAME;
+				*iso15765Frame = FIRST_FRAME;
+				ret = E_OK;
 			} else {
-				ret = NONE;
+				*iso15765Frame = NONE;
+				ret = E_NOT_OK;
 			}
 		} else {
-			ret = SINGLE_FRAME;
+			*iso15765Frame = SINGLE_FRAME;
+			ret = E_OK;
 		}
 	} else {
-		VALIDATE( (txRuntime->pduLenghtTotalBytes > MAX_PAYLOAD_CF_EXT_ADDR) &&
-				(txConfig->CanTpTxTaType == CANTP_FUNCTIONAL),
-				SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TATYPE );
+		if ( txRuntime->pduLenghtTotalBytes > MAX_PAYLOAD_CF_EXT_ADDR ) {
+			VALIDATE( txConfig->CanTpTxTaType == CANTP_FUNCTIONAL,
+					SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TATYPE );
+		}
 		if (txRuntime->pduLenghtTotalBytes > MAX_PAYLOAD_CF_STD_ADDR) {
 			if (txConfig->CanTpTxTaType == CANTP_PHYSICAL) {
-				ret = FIRST_FRAME;
+				*iso15765Frame = FIRST_FRAME;
+				ret = E_OK;
 			} else {
-				ret = NONE;
+				*iso15765Frame = NONE;
+				ret = E_NOT_OK;
 			}
 		} else {
-			ret = SINGLE_FRAME;
+			*iso15765Frame = SINGLE_FRAME;
+			ret = E_OK;
 		}
 	}
 	return ret;
@@ -865,7 +874,7 @@ BufReq_ReturnType canTpTransmitHelper(const CanTp_TxNSduType *txConfig,
 		VALIDATE( txRuntime->bufferPduRouter->SduDataPtr != NULL,
 				SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TX_BUFFER );
 		if (pdurResp == BUFREQ_OK) {
-			iso15765Frame = calcRequiredProtocolFrameType(txConfig, txRuntime);
+			res = calcRequiredProtocolFrameType(txConfig, txRuntime, &iso15765Frame);
 			switch (iso15765Frame) {
 			case SINGLE_FRAME:
 				res = sendSingleFrame(txConfig, txRuntime); /* req: CanTp 231  */
@@ -1015,7 +1024,7 @@ void CanTp_RxIndication(PduIdType CanTpRxPduId,
 	// Find transfer instance, try Rx and then Tx.
 	configListIndex = getCanTpRxNSduConfigListIndex(&CanTpConfig, CanTpRxPduId);
 	if (configListIndex == CANTP_ERR) {
-		configListIndex = getCanTpRxNSduConfigListIndex(&CanTpConfig,
+		configListIndex = getCanTpTxNSduConfigListIndex(&CanTpConfig,
 				CanTpRxPduId);
 		if (configListIndex == CANTP_ERR)
 			return;
