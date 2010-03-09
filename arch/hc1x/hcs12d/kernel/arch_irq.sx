@@ -2,8 +2,18 @@
 
 #define _ASSEMBLER_
 
-#define PPAGE	0x30   /* bank nr. reg              */
-#define MCFLG   0x67   /* modulus counter flag reg  */
+#define PPAGE	  0x30   /* bank nr. reg              */
+#define MCFLG     0x67   /* modulus counter flag reg  */
+#define TFLG1     0x4e   /* timer interrupt flags     */
+
+#define TFLG1_7   0x80
+#define TFLG1_6   0x40
+#define TFLG1_5   0x20
+#define TFLG1_4   0x10
+#define TFLG1_3   0x08
+#define TFLG1_2   0x04
+#define TFLG1_1   0x02
+#define TFLG1_0   0x01
 
 #include "kernel_offset.h"
 #include "asm_hc1x.h"
@@ -13,18 +23,41 @@
 
 .extern os_sys
 
+
+/* 
+ * Macros used to create the IRQ mapping table
+ */
+
 .macro DECLARE_IRQ_MAP_GLOBAL name
 .global irq_\name
 .endm
-
-//Macro used to create the IRQ mapping table
+ 
 .macro DECLARE_IRQ_MAP name nr
 irq_\name:
-	movb	#\nr, -10, sp	// save irq nr. above context space
+	movb	#\nr, -10, sp      // save irq nr. above context space
+	bra		Irq_PreEntry
+.endm
+
+.macro DECLARE_IRQ_TIMER_MAP name, nr, intflag
+irq_\name:
+	movb	#\nr, -10, sp      // save irq nr. above context space
+	bset	TFLG1, #\intflag   // clear timer interrupt flag
+	bra		Irq_PreEntry
+.endm
+
+.macro DECLARE_IRQ_MODULUS_COUNTER_MAP
+irq_mccnt_underflow:
+	movb	#IRQ_NR_MCCNT_UNDERFLOW, -10, sp	// save irq nr. above context space
+	bset	MCFLG, #0x80						// clear interrupt flag
 	bra		Irq_PreEntry
 .endm
 
 
+
+/*
+ * Make all isr-map entries global
+ */
+ 
 DECLARE_IRQ_MAP_GLOBAL res0
 DECLARE_IRQ_MAP_GLOBAL res1
 DECLARE_IRQ_MAP_GLOBAL res2
@@ -91,6 +124,10 @@ DECLARE_IRQ_MAP_GLOBAL cop_clock
 
 .section .text
 
+
+/*
+ * Save context, prepare args, call Irq_Entry, restore context (if we are returning to same task)
+ */
 Irq_PreEntry:
 	SAVE_CONTEXT_FROM_INTERRUPT
 	ldaa	#0						// load irq nr. as arg 0..
@@ -102,6 +139,9 @@ Irq_PreEntry:
 	rti
 	
 
+/*
+ * Irq map stubs. Used for catching irq number and resetting interrupt flag
+ */
 DECLARE_IRQ_MAP res0, IRQ_NR_RES0
 DECLARE_IRQ_MAP res1, IRQ_NR_RES1
 DECLARE_IRQ_MAP res2, IRQ_NR_RES2
@@ -140,12 +180,8 @@ DECLARE_IRQ_MAP selfclk_mode, IRQ_NR_SELFCLK_MODE
 DECLARE_IRQ_MAP pll_lock, IRQ_NR_PLL_LOCK
 DECLARE_IRQ_MAP accb_overflow, IRQ_NR_ACCB_OVERFLOW
 
-// DECLARE_IRQ_MAP mccnt_underflow, IRQ_NR_MCCNT_UNDERFLOW
-// We need to clear the modulus counter interrupt flag
-irq_mccnt_underflow:
-	movb	#IRQ_NR_MCCNT_UNDERFLOW, -10, sp	// save irq nr. above context space
-	movb	#0x80, MCFLG						// clear interrupt flag
-	bra		Irq_PreEntry
+// Modulus counter irq map stub
+DECLARE_IRQ_MODULUS_COUNTER_MAP
 
 DECLARE_IRQ_MAP pthif, IRQ_NR_PTHIF
 DECLARE_IRQ_MAP ptjif, IRQ_NR_PTJIF
@@ -157,14 +193,17 @@ DECLARE_IRQ_MAP spi0, IRQ_NR_SPI0
 DECLARE_IRQ_MAP acca_input, IRQ_NR_ACCA_INPUT
 DECLARE_IRQ_MAP acca_overflow, IRQ_NR_ACCA_OVERFLOW
 DECLARE_IRQ_MAP timer_overflow, IRQ_NR_TIMER_OVERFLOW
-DECLARE_IRQ_MAP tc7, IRQ_NR_TC7
-DECLARE_IRQ_MAP tc6, IRQ_NR_TC6
-DECLARE_IRQ_MAP tc5, IRQ_NR_TC5
-DECLARE_IRQ_MAP tc4, IRQ_NR_TC4
-DECLARE_IRQ_MAP tc3, IRQ_NR_TC3
-DECLARE_IRQ_MAP tc2, IRQ_NR_TC2
-DECLARE_IRQ_MAP tc1, IRQ_NR_TC1
-DECLARE_IRQ_MAP tc0, IRQ_NR_TC0
+
+// Gpt timer irq map stubs
+DECLARE_IRQ_TIMER_MAP tc7, IRQ_NR_TC7, TFLG1_7
+DECLARE_IRQ_TIMER_MAP tc6, IRQ_NR_TC6, TFLG1_6
+DECLARE_IRQ_TIMER_MAP tc5, IRQ_NR_TC5, TFLG1_5
+DECLARE_IRQ_TIMER_MAP tc4, IRQ_NR_TC4, TFLG1_4
+DECLARE_IRQ_TIMER_MAP tc3, IRQ_NR_TC3, TFLG1_3
+DECLARE_IRQ_TIMER_MAP tc2, IRQ_NR_TC2, TFLG1_2
+DECLARE_IRQ_TIMER_MAP tc1, IRQ_NR_TC1, TFLG1_1
+DECLARE_IRQ_TIMER_MAP tc0, IRQ_NR_TC0, TFLG1_0
+
 DECLARE_IRQ_MAP rtii, IRQ_NR_RTII
 DECLARE_IRQ_MAP irq, IRQ_NR_IRQ
 DECLARE_IRQ_MAP xirq, IRQ_NR_XIRQ
