@@ -50,6 +50,9 @@
 #if defined(USE_ADC)
 #include "Adc.h"
 #endif
+#if defined(USE_GPT)
+#include "Gpt.h"
+#endif
 
 typedef struct
 {
@@ -80,6 +83,9 @@ typedef struct
 #endif
 #if defined(USE_ADC)
     const Adc_ConfigType* AdcConfig;
+#endif
+#if defined(USE_GPT)
+    const Gpt_ConfigType* GptConfig;
 #endif
 } EcuM_ConfigType;
 
