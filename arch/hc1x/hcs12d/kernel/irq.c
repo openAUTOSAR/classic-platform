@@ -16,6 +16,7 @@
 #include "internal.h"
 #include "irq.h"
 #include "irq_types.h"
+#include "regs.h"
 
 extern void * Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
 extern uint8 Irq_IsrTypeTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
@@ -39,9 +40,11 @@ void *Irq_Entry( uint8_t irq_nr, void *stack )
 {
 	void* vector = (void *)Irq_VectorTable[irq_nr];
 
+	// trap uninitialized interrupts
 	if (vector == NULL) {
 		bad_irq(irq_nr);
 	}
+
 	if( Irq_GetIsrType(irq_nr) == ISR_TYPE_1 ) {
 		// It's a function, just call it.
 		((func_t)vector)();

@@ -2,7 +2,8 @@
 
 #define _ASSEMBLER_
 
-#define PPAGE	0x30
+#define PPAGE	0x30   /* bank nr. reg              */
+#define MCFLG   0x67   /* modulus counter flag reg  */
 
 #include "kernel_offset.h"
 #include "asm_hc1x.h"
@@ -138,7 +139,14 @@ DECLARE_IRQ_MAP bdlc, IRQ_NR_BDLC
 DECLARE_IRQ_MAP selfclk_mode, IRQ_NR_SELFCLK_MODE
 DECLARE_IRQ_MAP pll_lock, IRQ_NR_PLL_LOCK
 DECLARE_IRQ_MAP accb_overflow, IRQ_NR_ACCB_OVERFLOW
-DECLARE_IRQ_MAP mccnt_underflow, IRQ_NR_MCCNT_UNDERFLOW
+
+// DECLARE_IRQ_MAP mccnt_underflow, IRQ_NR_MCCNT_UNDERFLOW
+// We need to clear the modulus counter interrupt flag
+irq_mccnt_underflow:
+	movb	#IRQ_NR_MCCNT_UNDERFLOW, -10, sp	// save irq nr. above context space
+	movb	#0x80, MCFLG						// clear interrupt flag
+	bra		Irq_PreEntry
+
 DECLARE_IRQ_MAP pthif, IRQ_NR_PTHIF
 DECLARE_IRQ_MAP ptjif, IRQ_NR_PTJIF
 DECLARE_IRQ_MAP atd1, IRQ_NR_ATD1

@@ -150,13 +150,19 @@
 #define  TC2H      PORTIO_16(IO_BASE + 0x7c)   /* timer input capture hold 2 */
 #define  TC3H      PORTIO_16(IO_BASE + 0x7e)   /* timer input capture hold 3 */
 
-#define  TEN	   0x80
-#define  TOI	   0x80
-#define  MCZI	   0x80
-#define  MODMC	   0x40
+#define  TEN       0x80
+#define  TSFRZ     0x20
+#define  TOI       0x80
+#define  MCZI      0x80
+#define  MODMC     0x40
 #define  MCEN      0x4
 #define  MCPR1     0x2
 #define  MCPR0     0x1
+
+#define MCPRE_VAL_1		0
+#define MCPRE_VAL_4		MCPR0
+#define MCPRE_VAL_8		MCPR1
+#define MCPRE_VAL_16	MCPR0 | MCPR1
 
 // ATD0 Module  
 #define  ATD0_BASE (IO_BASE + 0x80)

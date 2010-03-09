@@ -192,7 +192,7 @@ void Gpt_Init(const Gpt_ConfigType *config)
     Gpt_Global.channelMap[cfg->GptChannelId] = i;
     Gpt_Global.configured |= (1<<ch);
 
-    if (ch <= GPT_CHANNEL_8)
+    if (ch <= GPT_CHANNEL_7)
     {
       if (cfg->GptNotification != NULL)
       {
@@ -238,7 +238,7 @@ void Gpt_Init(const Gpt_ConfigType *config)
 
   TSCR1 = 0 | TEN;
   TSCR2 = 0 | TOI;
-
+}
 //-------------------------------------------------------------------
 
 #if GPT_DEINIT_API == STD_ON
@@ -273,7 +273,7 @@ void Gpt_StartTimer(Gpt_ChannelType channel, Gpt_ValueType period_ticks)
 
   confCh = Gpt_Global.channelMap[channel];
 
-  if (channel <= GPT_CHANNEL_8) {
+  if (channel <= GPT_CHANNEL_7) {
 
 	  // TODO
 
@@ -310,7 +310,7 @@ void Gpt_StopTimer(Gpt_ChannelType channel)
   VALIDATE( (Gpt_Global.initRun == STD_ON), GPT_STOPTIMER_SERVICE_ID, GPT_E_UNINIT );
   VALIDATE( VALID_CHANNEL(channel), GPT_STOPTIMER_SERVICE_ID, GPT_E_PARAM_CHANNEL );
 
-  if (channel <= GPT_CHANNEL_8)
+  if (channel <= GPT_CHANNEL_7)
   {
     // Disable timer
     // TODO
@@ -332,7 +332,7 @@ Gpt_ValueType Gpt_GetTimeRemaining(Gpt_ChannelType channel)
   VALIDATE_W_RV( (Gpt_Unit[channel].state == GPT_STATE_STARTED), GPT_GETTIMEREMAINING_SERVICE_ID, GPT_E_NOT_STARTED, 0 );
   Gpt_ValueType remaining;
 
-  if (channel <= GPT_CHANNEL_8)
+  if (channel <= GPT_CHANNEL_7)
   {
 
     // Time remaining is the difference between global timer and channel OC.
@@ -353,7 +353,7 @@ Gpt_ValueType Gpt_GetTimeElapsed(Gpt_ChannelType channel)
   VALIDATE_W_RV( VALID_CHANNEL(channel),GPT_GETTIMEELAPSED_SERVICE_ID, GPT_E_PARAM_CHANNEL, 0 );
   VALIDATE_W_RV( (Gpt_Unit[channel].state == GPT_STATE_STARTED),GPT_GETTIMEELAPSED_SERVICE_ID, GPT_E_NOT_STARTED, 0 );
 
-  if (channel <= GPT_CHANNEL_8) {
+  if (channel <= GPT_CHANNEL_7) {
     // TODO
   }
 
@@ -368,7 +368,7 @@ void Gpt_EnableNotification(Gpt_ChannelType channel)
   VALIDATE( (Gpt_Global.initRun == STD_ON), 0x7, GPT_E_UNINIT );
   VALIDATE( VALID_CHANNEL(channel),0x7, GPT_E_PARAM_CHANNEL );
 
-  if (channel <= GPT_CHANNEL_8)
+  if (channel <= GPT_CHANNEL_7)
   {
 	  GptNotificationStatuses[channel] = STD_ON;
   }
@@ -379,11 +379,12 @@ void Gpt_DisableNotification(Gpt_ChannelType channel)
   VALIDATE( (Gpt_Global.initRun == STD_ON), 0x8, GPT_E_UNINIT );
   VALIDATE( VALID_CHANNEL(channel),0x8, GPT_E_PARAM_CHANNEL );
 
-  if (channel <= GPT_CHANNEL_8)
+  if (channel <= GPT_CHANNEL_7)
   {
 	  GptNotificationStatuses[channel] = STD_OFF;
   }
 }
+
 #endif
 
 #if ( GPT_WAKEUP_FUNCTIONALITY_API == STD_ON )

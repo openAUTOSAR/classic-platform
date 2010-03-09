@@ -25,13 +25,22 @@
 void Os_SysTickInit( void ) {
 	// Set timer 0 as output compare. Timer 0 is reserved for the OS.
 
-	TSCR1 = 0 | TEN;
-	TSCR2 = 0 | TOI;
+	// TEN, timer enable
+	// TSFRZ, stop in freeze mode (easier debugging)
+	TSCR1 = TEN | TSFRZ;
 
-	MCCTL =  MCZI | MCEN;
+	// Modulus counter
+	// MCZI, enable interrupt, MCEN enable modulus counter
+	// Prescaler 4
+	MCCTL =  MCZI | MCEN | MCPRE_VAL_4;
+
+	// Set auto-reload
 	MCCTL |= MODMC;
 
-	MCCNT = 1000;
+	// time = (count * prescaler)/(bus frequency)
+	//      = (0xFA0 * 4)/(16*10^6)
+	//      = 1ms
+	MCCNT = 0xFA0;
 
 	ICSYS = 0;
 
