@@ -28,6 +28,8 @@
 #include "Os.h"
 #include "arc.h"
 
+#define FIRST_OC_REG 0x50
+
 // Implementation specific
 
 #if ( GPT_DEV_ERROR_DETECT == STD_ON )
@@ -101,6 +103,12 @@ uint8 GptNotificationStatuses[8] = {
 	STD_ON
 };
 
+uint16 GptPeriods[GPT_CHANNEL_CNT];
+
+#if (GPT_TIME_ELAPSED_API == STD_ON)
+uint16 GptPrevOc[GPT_CHANNEL_CNT];
+#endif
+
 
 Gpt_UnitType Gpt_Unit[GPT_CHANNEL_CNT];
 
@@ -128,16 +136,21 @@ static void Gpt_IsrCh(Gpt_ChannelType channel)
   if (config->GptChannelMode == GPT_MODE_ONESHOT)
   {
     // Disable the channel
-    // TODO
-
+	Gpt_StopTimer(channel);
     Gpt_Unit[channel].state = GPT_STATE_STOPPED;
+
+  } else {
+	  // Start the next period.
+	  uint16 curr_oc = PORTIO_16((FIRST_OC_REG + (2 * channel)));
+	  PORTIO_16((FIRST_OC_REG + (2*channel))) = curr_oc + GptPeriods[channel];
+
+	  #if (GPT_TIME_ELAPSED_API == STD_ON)
+	  GptPrevOc[channel] = curr_oc;
+	  #endif
   }
   if (GptNotificationStatuses[channel] == STD_ON) {
 	  config->GptNotification();
   }
-
-  // Clear interrupt
-  // TODO
 }
 
 //-------------------------------------------------------------------
@@ -236,9 +249,9 @@ void Gpt_Init(const Gpt_ConfigType *config)
 
   Gpt_Global.initRun = STD_ON;
 
-  TSCR1 = 0 | TEN;
-  TSCR2 = 0 | TOI;
+  TSCR1 |= TEN; // Turn timer on.
 }
+
 //-------------------------------------------------------------------
 
 #if GPT_DEINIT_API == STD_ON
@@ -253,6 +266,7 @@ void Gpt_DeInit(void)
   }
   Gpt_Global.initRun = STD_OFF;
   Gpt_Global.configured = 0;
+  TSCR1 &= ~TEN; // Turn timer off.
   //_config.config = NULL;
 }
 #endif
@@ -275,7 +289,7 @@ void Gpt_StartTimer(Gpt_ChannelType channel, Gpt_ValueType period_ticks)
 
   if (channel <= GPT_CHANNEL_7) {
 
-	  // TODO
+
 
 	// Setup channel for output compare (OC).
 	TIOS |= (1 << channel);
@@ -283,14 +297,13 @@ void Gpt_StartTimer(Gpt_ChannelType channel, Gpt_ValueType period_ticks)
 	// Enable interrupt for timer
 	TIE |= (1 << channel);
 
+	// Set OC value.
+	uint16 curr_cnt = TCNT;
+	PORTIO_16((FIRST_OC_REG + (2*channel))) = curr_cnt + period_ticks;
 
-
-    // Make sure that no interrupt is pending.
-
-    // Enable timer
-
-	// If continuous set auto reload.
-
+	#if (GPT_TIME_ELAPSED_API == STD_ON)
+	GptPrevOc[channel] = curr_cnt;
+	#endif
   }
 
   #if ( GPT_ENABLE_DISABLE_NOTIFICATION_API == STD_ON )
@@ -301,6 +314,7 @@ void Gpt_StartTimer(Gpt_ChannelType channel, Gpt_ValueType period_ticks)
   }
   #endif
 
+  GptPeriods[channel] = period_ticks;
   Gpt_Unit[channel].state = GPT_STATE_STARTED;
 }
 
@@ -312,8 +326,7 @@ void Gpt_StopTimer(Gpt_ChannelType channel)
 
   if (channel <= GPT_CHANNEL_7)
   {
-    // Disable timer
-    // TODO
+	 TIE &= ~(1 << channel);
   }
 
 #if ( GPT_ENABLE_DISABLE_NOTIFICATION_API == STD_ON )
@@ -334,10 +347,14 @@ Gpt_ValueType Gpt_GetTimeRemaining(Gpt_ChannelType channel)
 
   if (channel <= GPT_CHANNEL_7)
   {
+	  uint16 now = TCNT;
+	  uint16 next = PORTIO_16((FIRST_OC_REG + (2*channel)));
+	  if (next > now) {
+		  remaining = next - now;
 
-    // Time remaining is the difference between global timer and channel OC.
-	// TODO
-
+	  } else {
+		  remaining = next + (0xFF - now) ;
+	  }
   }
 
   return remaining;
@@ -347,17 +364,23 @@ Gpt_ValueType Gpt_GetTimeRemaining(Gpt_ChannelType channel)
 #if ( GPT_TIME_ELAPSED_API == STD_ON )
 Gpt_ValueType Gpt_GetTimeElapsed(Gpt_ChannelType channel)
 {
-  Gpt_ValueType timer;
+  Gpt_ValueType elapsed;
 
   VALIDATE_W_RV( (Gpt_Global.initRun == STD_ON), GPT_GETTIMEELAPSED_SERVICE_ID, GPT_E_UNINIT ,0 );
   VALIDATE_W_RV( VALID_CHANNEL(channel),GPT_GETTIMEELAPSED_SERVICE_ID, GPT_E_PARAM_CHANNEL, 0 );
   VALIDATE_W_RV( (Gpt_Unit[channel].state == GPT_STATE_STARTED),GPT_GETTIMEELAPSED_SERVICE_ID, GPT_E_NOT_STARTED, 0 );
 
   if (channel <= GPT_CHANNEL_7) {
-    // TODO
+    uint16 now = TCNT;
+    if (now > GptPrevOc[channel]) {
+    	elapsed = now - GptPrevOc[channel];
+
+    } else {
+    	elapsed = (0xFF - GptPrevOc[channel]) + now;
+    }
   }
 
-  return (timer);
+  return (elapsed);
 }
 #endif
 
@@ -384,7 +407,6 @@ void Gpt_DisableNotification(Gpt_ChannelType channel)
 	  GptNotificationStatuses[channel] = STD_OFF;
   }
 }
-
 #endif
 
 #if ( GPT_WAKEUP_FUNCTIONALITY_API == STD_ON )
