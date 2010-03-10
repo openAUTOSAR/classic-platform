@@ -1,6 +1,8 @@
+/* 
+ * Copyright (C) 2009  ArcCore AB <contact@arccore.com> 
+ */
 
 /* For more info on sections check the E500 freescale doc: E500ABIUG.pdf
- *
  *
  */
 OUTPUT_FORMAT("elf32-powerpc", "elf32-powerpc", "elf32-powerpc")

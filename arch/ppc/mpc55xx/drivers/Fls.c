@@ -62,7 +62,6 @@
 #if defined(USE_DEM)
 #include "Dem.h"
 #endif
-#include "h7f_types.h"
 #include "Cpu.h"
 #include "mpc55xx.h"
 #include "Fls_H7F.h"

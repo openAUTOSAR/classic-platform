@@ -124,6 +124,7 @@
 #define C_CONTEXT_OFF	12
 #define C_LR_OFF		16
 #define C_CR_OFF		20
+#define C_MSR_OFF		24
 #else
 #define C_SIZE			0
 #endif
