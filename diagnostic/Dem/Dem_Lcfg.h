@@ -81,13 +81,13 @@ typedef struct {
 
 // 10.2.8 DemPidOrDid
 typedef struct {
-	boolean									PidOrDidUsePort;			// (1)
+//	boolean									PidOrDidUsePort;			// (1) Not used in current implementation
 	uint8									PidOrDidSize;				// (1)
-	uint16									DidIdentifier;				// (0..1)
+	const uint16							*DidIdentifier;				// (0..1)
 	Dem_CallbackConditionCheckReadFncType	DidConditionCheckReadFnc;	// (0..1)
 	Dem_CallbackReadDataLength				DidReadDataLengthFnc;		// (0..1)
 	Dem_CallbackReadDataFncType				DidReadFnc;					// (0..1)
-	uint8									PidIndentifier;				// (0..1)
+	const uint8								*PidIndentifier;			// (0..1)
 	Dem_CallbackGetPIDValueFncType			PidReadFnc;					// (0..1)
 	boolean									Arc_EOL;
 } Dem_PidOrDidType;

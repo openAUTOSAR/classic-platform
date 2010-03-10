@@ -246,9 +246,9 @@ typedef uint8 Dem_ReturnControlEventUpdateType;
 #define DEM_CONTROL_EVENT_WRONG_DTCGROUP	0x02
 
 /*
- * Den_ReturnGetDTCOfFreezeframeRecordType
+ * Dem_ReturnGetDTCOfFreezeframeRecordType
  */
-typedef uint8 Den_ReturnGetDTCOfFreezeframeRecordType;
+typedef uint8 Dem_ReturnGetDTCOfFreezeframeRecordType;
 #define DEM_GET_DTCOFFF_OK					0x00
 #define DEM_GET_DTCOFFF_WRONG_RECORD		0x01
 #define DEM_GET_DTCOFFF_NO_DTC_FOR_RECORD	0x02

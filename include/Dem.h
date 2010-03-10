@@ -58,26 +58,27 @@
 #define DEM_E_NOT_IMPLEMENTED_YET			0xff
 
 // Service ID in this module
-#define DEM_PREINIT_ID					0x01
-#define DEM_INIT_ID						0x02
-#define DEM_SETEVENTSTATUS_ID			0x04
-#define DEM_RESETEVENTSTATUS_ID			0x05
-#define DEM_SETOPERATIONCYCLESTATE_ID	0x08
-#define DEM_GETEVENTSTATUS_ID			0x0A
-#define DEM_GETEVENTFAILED_ID			0x0B
-#define DEM_GETEVENTTESTED_ID			0x0C
-#define DEM_REPORTERRORSTATUS_ID 		0x0F
-#define DEM_CLEARDTC_ID					0x22
-#define DEM_GETFAULTDETECTIONCOUNTER_ID 0x3E
+#define DEM_PREINIT_ID						0x01
+#define DEM_INIT_ID							0x02
+#define DEM_SETEVENTSTATUS_ID				0x04
+#define DEM_RESETEVENTSTATUS_ID				0x05
+#define DEM_SETOPERATIONCYCLESTATE_ID		0x08
+#define DEM_GETEVENTSTATUS_ID				0x0A
+#define DEM_GETEVENTFAILED_ID				0x0B
+#define DEM_GETEVENTTESTED_ID				0x0C
+#define DEM_REPORTERRORSTATUS_ID 			0x0F
+#define DEM_GETEXTENDEDDATARECORDBYDTC_ID	0x20
+#define DEM_CLEARDTC_ID						0x22
+#define DEM_GETFAULTDETECTIONCOUNTER_ID 	0x3E
 
-#define DEM_UPDATE_EVENT_STATUS_ID		0x80
-#define DEM_MERGE_EVENT_STATUS_ID		0x81
-#define DEM_GET_EXTENDED_DATA_ID		0x82
-#define DEM_STORE_EXT_DATA_PRE_INIT_ID	0x83
-#define DEM_STORE_EVENT_PRI_MEM_ID		0x84
-#define DEM_STORE_EXT_DATA_PRI_MEM_ID	0x85
+#define DEM_UPDATE_EVENT_STATUS_ID			0x80
+#define DEM_MERGE_EVENT_STATUS_ID			0x81
+#define DEM_GET_EXTENDED_DATA_ID			0x82
+#define DEM_STORE_EXT_DATA_PRE_INIT_ID		0x83
+#define DEM_STORE_EVENT_PRI_MEM_ID			0x84
+#define DEM_STORE_EXT_DATA_PRI_MEM_ID		0x85
 
-#define DEM_GLOBAL_ID					0xff
+#define DEM_GLOBAL_ID						0xff
 
 #endif
 
@@ -127,23 +128,21 @@ void Dem_ReportErrorStatus(Dem_EventIdType eventId ,uint8 eventStatus);
  * Interface DCM <-> DEM (8.3.5)
  */
 Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin);
-
 Dem_ReturnSetDTCFilterType Dem_SetDTCFilter(uint8 dtcStatusMask,
 		Dem_DTCKindType dtcKind,
 		Dem_DTCOriginType dtcOrigin,
 		Dem_FilterWithSeverityType filterWithSeverity,
 		Dem_DTCSeverityType dtcSeverityMask,
 		Dem_FilterForFDCType filterForFaultDetectionCounter);
-
 Dem_ReturnGetStatusOfDTCType Dem_GetStatusOfDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin, Dem_EventStatusExtendedType* dtcStatus);
-
 Std_ReturnType Dem_GetDTCStatusAvailabilityMask(uint8 *dtcStatusMask);
-
 Dem_ReturnGetNumberOfFilteredDTCType Dem_GetNumberOfFilteredDtc(uint16* numberOfFilteredDTC);
-
 Dem_ReturnGetNextFilteredDTCType Dem_GetNextFilteredDTC(uint32* dtc, Dem_EventStatusExtendedType* dtcStatus);
-
 Dem_ReturnTypeOfDtcSupportedType Dem_GetTranslationType(void);
+Dem_ReturnControlDTCStorageType Dem_DisableDTCStorage(Dem_DTCGroupType dtcGroup, Dem_DTCKindType dtcKind);
+Dem_ReturnControlDTCStorageType Dem_EnableDTCStorage(Dem_DTCGroupType dtcGroup, Dem_DTCKindType dtcKind);
+Dem_ReturnGetExtendedDataRecordByDTCType Dem_GetExtendedDataRecordByDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin, uint8 extendedDataNumber, uint8 *destBuffer, uint8 *bufSize);
+Dem_ReturnGetSizeOfExtendedDataRecordByDTCType Dem_GetSizeOfExtendedDataRecordByDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin, uint8 extendedDataNumber, uint16 *sizeOfExtendedDataRecord);
 
 
 

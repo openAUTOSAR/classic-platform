@@ -40,7 +40,15 @@ typedef struct {
 	Dem_FilterWithSeverityType	filterWithSeverity;
 	Dem_DTCSeverityType			dtcSeverityMask;
 	Dem_FilterForFDCType		filterForFaultDetectionCounter;
+	uint16						faultIndex;
 } DtcFilterType;
+
+// DisableDtcStorageType
+typedef struct {
+	boolean						storageDisabled;
+	Dem_DTCGroupType			dtcGroup;
+	Dem_DTCKindType				dtcKind;
+} DisableDtcStorageType;
 
 // For keeping track of the events status
 typedef struct {
@@ -105,9 +113,14 @@ static Std_VersionInfoType _Dem_VersionInfo =
 #endif /* DEM_VERSION_INFO_API */
 
 /*
- * Allocation of DTC filter params
+ * Allocation of DTC filter parameters
  */
 static DtcFilterType dtcFilter;
+
+/*
+ * Allocation of Disable/Enable DTC storage parameters
+ */
+static DisableDtcStorageType disableDtcStorage;
 
 /*
  * Allocation of operation cycle state list
@@ -144,6 +157,22 @@ void setZero(void *ptr, uint16 nrOfBytes)
 	if (nrOfBytes > 0)
 	{
 		*clrPtr = 0x00;
+		memcpy(clrPtr+1, clrPtr, nrOfBytes-1);
+	}
+}
+
+
+/*
+ * Procedure:	setFF
+ * Description:	Fill the *ptr to *(ptr+nrOfBytes-1) area with 0xFF
+ */
+void setFF(void *ptr, uint16 nrOfBytes)
+{
+	uint8 *clrPtr = (uint8*)ptr;
+
+	if (nrOfBytes > 0)
+	{
+		*clrPtr = 0xFF;
 		memcpy(clrPtr+1, clrPtr, nrOfBytes-1);
 	}
 }
@@ -452,6 +481,35 @@ void getEventStatusRec(Dem_EventIdType eventId, EventStatusRecType *eventStatusR
 
 
 /*
+ * Procedure:	lookupDtcEvent
+ * Description:	Returns TRUE if the DTC was found and "eventStatusRec" points
+ * 				to the event record found.
+ */
+boolean lookupDtcEvent(uint32 dtc, EventStatusRecType **eventStatusRec)
+{
+	boolean dtcFound = FALSE;
+	uint16 i;
+
+	*eventStatusRec = NULL;
+
+	for (i = 0; (i < DEM_MAX_NUMBER_EVENT) && !dtcFound; i++) {
+		if (eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) {
+			if (eventStatusBuffer[i].eventParamRef->DTCClassRef != NULL) {
+
+				// Check DTC
+				if (eventStatusBuffer[i].eventParamRef->DTCClassRef->DTC == dtc) {
+					*eventStatusRec = &eventStatusBuffer[i];
+					dtcFound = TRUE;
+				}
+			}
+		}
+	}
+
+	return dtcFound;
+}
+
+
+/*
  * Procedure:	matchEventWithDtcFilter
  * Description:	Returns TRUE if the event pointed by "event" fulfill
  * 				the "dtcFilter" global filter settings.
@@ -531,7 +589,7 @@ void getExtendedData(const Dem_EventParameterType *eventParam, ExtDataRecType *e
 				callbackReturnCode = eventParam->ExtendedDataClassRef->ExtendedDataRecordClassRef[i]->CallbackGetExtDataRecord(&extData->data[storeIndex]);
 				if (callbackReturnCode != E_OK) {
 					// Callback data currently not available, clear space.
-					setZero(&extData->data[storeIndex], recordSize);
+					setFF(&extData->data[storeIndex], recordSize);
 				}
 				storeIndex += recordSize;
 			}
@@ -768,10 +826,62 @@ void storeExtendedDataEvtMem(const Dem_EventParameterType *eventParam, ExtDataRe
 			Det_ReportError(MODULE_ID_DEM, 0, DEM_GLOBAL_ID, DEM_E_NOT_IMPLEMENTED_YET);
 #endif
 			break;
+
 		default:
 			break;
 		}
 	}
+}
+
+
+/*
+ * Procedure:	lookupExtendedDataRecNumParam
+ * Description:	Returns TRUE if the requested extended data number was found among the configured records for the event.
+ * 				"extDataRecClassPtr" returns a pointer to the record class, "posInExtData" returns the position in stored extended data.
+ */
+boolean lookupExtendedDataRecNumParam(uint8 extendedDataNumber, const Dem_EventParameterType *eventParam, Dem_ExtendedDataRecordClassType const **extDataRecClassPtr, uint8 *posInExtData)
+{
+	boolean recNumFound = FALSE;
+
+	if (eventParam->ExtendedDataClassRef != NULL) {
+		Dem_ExtendedDataRecordClassType const* const* extDataRecClassRefList = eventParam->ExtendedDataClassRef->ExtendedDataRecordClassRef;
+		uint16	byteCnt = 0;
+		uint16 i;
+
+		// Request extended data and copy it to the buffer
+		for (i = 0; (i < DEM_MAX_NR_OF_RECORDS_IN_EXTENDED_DATA) && (extDataRecClassRefList[i] != NULL) && !recNumFound; i++) {
+			if (extDataRecClassRefList[i]->RecordNumber == extendedDataNumber) {
+				*extDataRecClassPtr =  extDataRecClassRefList[i];
+				*posInExtData = byteCnt;
+				recNumFound = TRUE;
+			}
+			byteCnt += extDataRecClassRefList[i]->DataSize;
+		}
+	}
+
+	return recNumFound;
+}
+
+
+/*
+ * Procedure:	lookupExtendedDataPriMem
+ * Description: Returns TRUE if the requested event id is found, "extData" points to the found data.
+ */
+boolean lookupExtendedDataPriMem(Dem_EventIdType eventId, ExtDataRecType **extData)
+{
+	boolean eventIdFound = FALSE;
+	uint16 i;
+
+	// Lookup corresponding extended data
+	for (i = 0; (priMemExtDataBuffer[i].eventId != eventId) && (i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM); i++);
+
+	if (i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM) {
+		// Yes, return pointer
+		*extData = &priMemExtDataBuffer[i];
+		eventIdFound = TRUE;
+	}
+
+	return eventIdFound;
 }
 
 
@@ -895,22 +1005,22 @@ Std_ReturnType handleEvent(Dem_EventIdType eventId, Dem_EventStatusType eventSta
 		if (eventParam->EventClass->OperationCycleRef < DEM_OPERATION_CYCLE_ID_ENDMARK) {
 			if (operationCycleStateList[eventParam->EventClass->OperationCycleRef] == DEM_CYCLE_STATE_START) {
 				updateEventStatusRec(eventParam, eventStatus, TRUE, &eventStatusLocal);
-
 				if (eventStatusLocal.eventStatusChanged) {
-
 					if (eventStatusLocal.eventStatus == DEM_EVENT_STATUS_FAILED) {
-						storeEventEvtMem(eventParam, &eventStatusLocal);
-						// Collect freeze frame data
-						getFreezeFrameData(eventParam, &freezeFrameLocal);
-						if (freezeFrameLocal.eventId != DEM_EVENT_ID_NULL) {
-							storeFreezeFrameDataEvtMem(eventParam, &freezeFrameLocal);
-						}
+						if (!checkDtcGroup(disableDtcStorage.dtcGroup, eventParam) || !checkDtcKind(disableDtcStorage.dtcKind, eventParam))  {
+							storeEventEvtMem(eventParam, &eventStatusLocal);
+							// Collect freeze frame data
+							getFreezeFrameData(eventParam, &freezeFrameLocal);
+							if (freezeFrameLocal.eventId != DEM_EVENT_ID_NULL) {
+								storeFreezeFrameDataEvtMem(eventParam, &freezeFrameLocal);
+							}
 
-						// Collect extended data
-						getExtendedData(eventParam, &extendedDataLocal);
-						if (extendedDataLocal.eventId != DEM_EVENT_ID_NULL)
-						{
-							storeExtendedDataEvtMem(eventParam, &extendedDataLocal);
+							// Collect extended data
+							getExtendedData(eventParam, &extendedDataLocal);
+							if (extendedDataLocal.eventId != DEM_EVENT_ID_NULL)
+							{
+								storeExtendedDataEvtMem(eventParam, &extendedDataLocal);
+							}
 						}
 					}
 				}
@@ -1176,6 +1286,8 @@ void Dem_PreInit(void)
 			preInitExtDataBuffer[i].data[j] = 0;
 	}
 
+	disableDtcStorage.storageDisabled = FALSE;
+
 	setOperationCycleState(DEM_ACTIVE, DEM_CYCLE_STATE_START);
 
 	demState = DEM_PREINITIALIZED;
@@ -1266,6 +1378,10 @@ void Dem_Init(void)
 	dtcFilter.filterWithSeverity = DEM_FILTER_WITH_SEVERITY_NO;			// No Severity filtering
 	dtcFilter.dtcSeverityMask = DEM_SEVERITY_NO_SEVERITY;				// Not used when filterWithSeverity is FALSE
 	dtcFilter.filterForFaultDetectionCounter = DEM_FILTER_FOR_FDC_NO;	// No fault detection counter filtering
+
+	dtcFilter.faultIndex = DEM_MAX_NUMBER_EVENT;
+
+	disableDtcStorage.storageDisabled = FALSE;
 
 	demState = DEM_INITIALIZED;
 }
@@ -1591,7 +1707,7 @@ Dem_ReturnSetDTCFilterType Dem_SetDTCFilter(uint8 dtcStatusMask,
 					dtcFilter.filterWithSeverity = filterWithSeverity;
 					dtcFilter.dtcSeverityMask = dtcSeverityMask;
 					dtcFilter.filterForFaultDetectionCounter = filterForFaultDetectionCounter;
-
+					dtcFilter.faultIndex = DEM_MAX_NUMBER_EVENT;
 					returnCode = DEM_FILTER_ACCEPTED;
 				}
 			}
@@ -1608,17 +1724,24 @@ Dem_ReturnSetDTCFilterType Dem_SetDTCFilter(uint8 dtcStatusMask,
  */
 Dem_ReturnGetStatusOfDTCType Dem_GetStatusOfDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin, Dem_EventStatusExtendedType* status) {
 	Dem_ReturnGetStatusOfDTCType returnCode = DEM_STATUS_FAILED;
-	uint16 i;
+	EventStatusRecType *eventRec;
 
-	for (i = 0; (i < DEM_MAX_NUMBER_EVENT) && (returnCode != DEM_STATUS_OK); i++) {
-		if (eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) {
-			if (eventStatusBuffer[i].eventParamRef->DTCClassRef != NULL) {
-				if (eventStatusBuffer[i].eventParamRef->DTCClassRef->DTC == dtc) {
-					*status = eventStatusBuffer[i].eventStatusExtended;
-					returnCode = DEM_STATUS_OK;
-				}
+	if (lookupDtcEvent(dtc, &eventRec)) {
+		if (checkDtcKind(dtcKind, eventRec->eventParamRef)) {
+			if (checkDtcOrigin(dtcOrigin,eventRec->eventParamRef)) {
+				*status = eventRec->eventStatusExtended;
+				returnCode = DEM_STATUS_OK;
+			}
+			else {
+				returnCode = DEM_STATUS_WRONG_DTCORIGIN;
 			}
 		}
+		else {
+			returnCode = DEM_STATUS_WRONG_DTCKIND;
+		}
+	}
+	else {
+		returnCode = DEM_STATUS_WRONG_DTC;
 	}
 
 	return returnCode;
@@ -1659,18 +1782,17 @@ Dem_ReturnGetNumberOfFilteredDTCType Dem_GetNumberOfFilteredDtc(uint16 *numberOf
  */
 Dem_ReturnGetNextFilteredDTCType Dem_GetNextFilteredDTC(uint32 *dtc, Dem_EventStatusExtendedType *dtcStatus)
 {
-	static uint16 faultIndex = DEM_MAX_NUMBER_EVENT;
 	Dem_ReturnGetNextFilteredDTCType returnCode = DEM_FILTERED_OK;
 	boolean dtcFound = FALSE;
 
 	// TODO: This job should be done in an more advanced way according to Dem288
-	while (!dtcFound && (faultIndex != 0)) {
-		faultIndex--;
-		if (eventStatusBuffer[faultIndex].eventId != DEM_EVENT_ID_NULL) {
-			if (matchEventWithDtcFilter(&eventStatusBuffer[faultIndex])) {
-				if (eventStatusBuffer[faultIndex].eventParamRef->DTCClassRef != NULL) {
-					*dtc = eventStatusBuffer[faultIndex].eventParamRef->DTCClassRef->DTC;
-					*dtcStatus = eventStatusBuffer[faultIndex].eventStatusExtended;
+	while (!dtcFound && (dtcFilter.faultIndex != 0)) {
+		dtcFilter.faultIndex--;
+		if (eventStatusBuffer[dtcFilter.faultIndex].eventId != DEM_EVENT_ID_NULL) {
+			if (matchEventWithDtcFilter(&eventStatusBuffer[dtcFilter.faultIndex])) {
+				if (eventStatusBuffer[dtcFilter.faultIndex].eventParamRef->DTCClassRef != NULL) {
+					*dtc = eventStatusBuffer[dtcFilter.faultIndex].eventParamRef->DTCClassRef->DTC;
+					*dtcStatus = eventStatusBuffer[dtcFilter.faultIndex].eventStatusExtended;
 					dtcFound = TRUE;
 				}
 			}
@@ -1678,7 +1800,7 @@ Dem_ReturnGetNextFilteredDTCType Dem_GetNextFilteredDTC(uint32 *dtc, Dem_EventSt
 	}
 
 	if (!dtcFound) {
-		faultIndex = DEM_MAX_NUMBER_EVENT;
+		dtcFilter.faultIndex = DEM_MAX_NUMBER_EVENT;
 		returnCode = DEM_FILTERED_NO_MATCHING_DTC;
 	}
 
@@ -1694,6 +1816,7 @@ Dem_ReturnTypeOfDtcSupportedType Dem_GetTranslationType(void)
 {
 	return DEM_TYPE_OF_DTC_SUPPORTED;
 }
+
 
 /*
  * Procedure:	Dem_ClearDTC
@@ -1712,7 +1835,7 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
 		if (eventId != DEM_EVENT_ID_NULL) {
 			eventParam = eventStatusBuffer[i].eventParamRef;
 			if (eventParam != NULL) {
-				if ( DEM_CLEAR_ALL_EVENTS | (eventParam->DTCClassRef != NULL)) {
+				if (DEM_CLEAR_ALL_EVENTS | (eventParam->DTCClassRef != NULL)) {
 					if (checkDtcKind(dtcKind, eventParam)) {
 						if (checkDtcGroup(dtc, eventParam)) {
 							for (j = 0; (j < DEM_MAX_NR_OF_EVENT_DESTINATION) && (eventParam->EventClass->EventDestination[j] != dtcOrigin); j++);
@@ -1732,11 +1855,12 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
 								case DEM_DTC_ORIGIN_MIRROR_MEMORY:
 									// Not yet supported
 									returnCode = DEM_CLEAR_WRONG_DTCORIGIN;
-	#if (DEM_DEV_ERROR_DETECT == STD_ON)
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
 									Det_ReportError(MODULE_ID_DEM, 0, DEM_CLEARDTC_ID, DEM_E_NOT_IMPLEMENTED_YET);
-	#endif
+#endif
 									break;
 								default:
+									returnCode = DEM_CLEAR_WRONG_DTCORIGIN;
 									break;
 								}
 							}
@@ -1756,6 +1880,147 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
 	return returnCode;
 }
 
+
+/*
+ * Procedure:	Dem_DisableDTCStorage
+ * Reentrant:	No
+ */
+Dem_ReturnControlDTCStorageType Dem_DisableDTCStorage(Dem_DTCGroupType dtcGroup, Dem_DTCKindType dtcKind)
+{
+	Dem_ReturnControlDTCStorageType returnCode = DEM_CONTROL_DTC_STORAGE_N_OK;
+
+	// Check dtcGroup parameter
+	if (dtcGroup == DEM_DTC_GROUP_ALL_DTCS) {
+		// Check dtcKind parameter
+		if ((dtcKind == DEM_DTC_KIND_ALL_DTCS) || (dtcKind ==  DEM_DTC_KIND_EMISSON_REL_DTCS)) {
+			disableDtcStorage.dtcGroup = dtcGroup;
+			disableDtcStorage.dtcKind = dtcKind;
+			disableDtcStorage.storageDisabled = TRUE;
+
+			returnCode = DEM_CONTROL_DTC_STORAGE_OK;
+		}
+	}
+	else {
+		returnCode = DEM_CONTROL_DTC_WRONG_DTCGROUP;
+	}
+
+	return returnCode;
+}
+
+
+/*
+ * Procedure:	Dem_EnableDTCStorage
+ * Reentrant:	No
+ */
+Dem_ReturnControlDTCStorageType Dem_EnableDTCStorage(Dem_DTCGroupType dtcGroup, Dem_DTCKindType dtcKind)
+{
+	// TODO: Behavior is not defined if group or kind do not match active settings, therefore the filter is just switched off.
+	disableDtcStorage.storageDisabled = FALSE;
+
+	return DEM_CONTROL_DTC_STORAGE_OK;
+}
+
+/*
+ * Procedure:	Dem_GetExtendedDataRecordByDTC
+ * Reentrant:	No
+ */
+Dem_ReturnGetExtendedDataRecordByDTCType Dem_GetExtendedDataRecordByDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin, uint8 extendedDataNumber, uint8 *destBuffer, uint8 *bufSize)
+{
+	Dem_ReturnGetExtendedDataRecordByDTCType returnCode = DEM_RECORD_WRONG_DTC;
+	EventStatusRecType *eventRec;
+	Dem_ExtendedDataRecordClassType const *extendedDataRecordClass;
+	ExtDataRecType *extData;
+	uint8 posInExtData;
+
+	if (lookupDtcEvent(dtc, &eventRec)) {
+		if (checkDtcKind(dtcKind, eventRec->eventParamRef)) {
+			if (checkDtcOrigin(dtcOrigin, eventRec->eventParamRef)) {
+				if (lookupExtendedDataRecNumParam(extendedDataNumber, eventRec->eventParamRef, &extendedDataRecordClass, &posInExtData)) {
+					if (*bufSize >= extendedDataRecordClass->DataSize) {
+						switch (dtcOrigin)
+						{
+						case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
+							if (lookupExtendedDataPriMem(eventRec->eventId, &extData)) {
+								// Yes all conditions met, copy the extended data record to destination buffer.
+								memcpy(destBuffer, &extData->data[posInExtData], extendedDataRecordClass->DataSize);
+								*bufSize = extendedDataRecordClass->DataSize;
+								returnCode = DEM_RECORD_OK;
+							}
+							else {
+								// The record number is legal but no record was found for the DTC
+								*bufSize = 0;
+								returnCode = DEM_RECORD_OK;
+							}
+							break;
+
+						case DEM_DTC_ORIGIN_SECONDARY_MEMORY:
+						case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
+						case DEM_DTC_ORIGIN_MIRROR_MEMORY:
+							// Not yet supported
+							returnCode = DEM_RECORD_WRONG_DTCORIGIN;
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
+							Det_ReportError(MODULE_ID_DEM, 0, DEM_GETEXTENDEDDATARECORDBYDTC_ID, DEM_E_NOT_IMPLEMENTED_YET);
+#endif
+							break;
+						default:
+							returnCode = DEM_RECORD_WRONG_DTCORIGIN;
+							break;
+						}
+					}
+					else {
+						returnCode = DEM_RECORD_BUFFERSIZE;
+					}
+				}
+				else {
+					returnCode = DEM_RECORD_NUMBER;
+				}
+			}
+			else {
+				returnCode = DEM_RECORD_WRONG_DTCORIGIN;
+			}
+		}
+		else {
+			returnCode = DEM_RECORD_DTCKIND;
+		}
+	}
+
+	return returnCode;
+}
+
+
+/*
+ * Procedure:	Dem_GetSizeOfExtendedDataRecordByDTC
+ * Reentrant:	No
+ */
+Dem_ReturnGetSizeOfExtendedDataRecordByDTCType Dem_GetSizeOfExtendedDataRecordByDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin, uint8 extendedDataNumber, uint16 *sizeOfExtendedDataRecord)
+{
+	Dem_ReturnGetExtendedDataRecordByDTCType returnCode = DEM_GET_SIZEOFEDRBYDTC_W_DTC;
+	EventStatusRecType *eventRec;
+	Dem_ExtendedDataRecordClassType const *extendedDataRecordClass;
+	uint8 posInExtData;
+
+	if (lookupDtcEvent(dtc, &eventRec)) {
+		if (checkDtcKind(dtcKind, eventRec->eventParamRef)) {
+			if (checkDtcOrigin(dtcOrigin, eventRec->eventParamRef)) {
+				if (lookupExtendedDataRecNumParam(extendedDataNumber, eventRec->eventParamRef, &extendedDataRecordClass, &posInExtData)) {
+					*sizeOfExtendedDataRecord = extendedDataRecordClass->DataSize;
+					returnCode = DEM_GET_SIZEOFEDRBYDTC_OK;
+				}
+				else {
+					returnCode = DEM_GET_SIZEOFEDRBYDTC_W_RNUM;
+				}
+			}
+			else {
+				returnCode = DEM_GET_SIZEOFEDRBYDTC_W_DTCOR;
+			}
+		}
+		else {
+			returnCode = DEM_GET_SIZEOFEDRBYDTC_W_DTCKI;
+		}
+	}
+
+	return returnCode;
+}
 
 /***********************************
  * OBD-specific Interfaces (8.3.6) *

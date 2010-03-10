@@ -31,6 +31,14 @@
 #include "Mcu.h"
 
 /*
+ * Macros
+ */
+#define BYTES_TO_DTC(hb, mb, lb)	(((hb) << 16) | ((mb) << 8) | (lb))
+#define DTC_HIGH_BYTE(dtc)			(((dtc)>> 16) & 0xFF)
+#define DTC_MID_BYTE(dtc)			(((dtc)>> 8) & 0xFF)
+#define DTC_LOW_BYTE(dtc)			((dtc) & 0xFF)
+
+/*
  * Local types
  */
 // SID table
@@ -215,8 +223,8 @@ void Dcm_MainFunction(void)
 #define OBD_FUNC_RX_BUFFER_SIZE		8
 #define PHYS_BUFFER_SIZE			255
 
-static uint8 udsFuncRxBuffer[8];
-//static uint8 obdFuncRxBuffer[8];
+static uint8 udsFuncRxBuffer[UDS_FUNC_RX_BUFFER_SIZE];
+//static uint8 obdFuncRxBuffer[OBD_FUNC_RX_BUFFER_SIZE];
 static uint8 physBuffer[PHYS_BUFFER_SIZE];
 
 static PduInfoType udsFuncRxPduInfo = {
@@ -871,7 +879,7 @@ void DspUdsClearDiagnosticInformation(void)
 	Dem_ReturnClearDTCType result;
 
 	if (commonVars.pduRxData->SduLength == 4) {
-		dtc = (commonVars.pduRxData->SduDataPtr[1] << 16) | (commonVars.pduRxData->SduDataPtr[2] << 8) | commonVars.pduRxData->SduDataPtr[3];
+		dtc = BYTES_TO_DTC(commonVars.pduRxData->SduDataPtr[1], commonVars.pduRxData->SduDataPtr[2], commonVars.pduRxData->SduDataPtr[3]);
 
 		result = Dem_ClearDTC(dtc, DEM_DTC_KIND_ALL_DTCS, DEM_DTC_ORIGIN_PRIMARY_MEMORY);
 
@@ -928,6 +936,7 @@ Dcm_NegativeResponseCodeType DspUdsReadDtcInfoSub_0x01_0x07_0x11_0x12(void)
 	case 0x12:	// reportNumberOfEmissionRelatedOBDDTCByStatusMask
 		setDtcFilterResult = Dem_SetDTCFilter(commonVars.pduRxData->SduDataPtr[2], DEM_DTC_KIND_EMISSON_REL_DTCS, DEM_DTC_ORIGIN_PRIMARY_MEMORY, DEM_FILTER_WITH_SEVERITY_NO, VALUE_IS_NOT_USED, DEM_FILTER_FOR_FDC_NO);
 		break;
+
 	default:
 		setDtcFilterResult = DEM_WRONG_FILTER;
 #if (DCM_DEV_ERROR_DETECT == STD_ON)
@@ -1002,6 +1011,7 @@ Dcm_NegativeResponseCodeType DspUdsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15(void)
 	case 0x15:	// reportDTCWithPermanentStatus
 		setDtcFilterResult = Dem_SetDTCFilter(DEM_DTC_STATUS_MASK_ALL, DEM_DTC_KIND_ALL_DTCS, DEM_DTC_ORIGIN_PERMANENT_MEMORY, DEM_FILTER_WITH_SEVERITY_NO, VALUE_IS_NOT_USED, DEM_FILTER_FOR_FDC_NO);
 		break;
+
 	default:
 		setDtcFilterResult = DEM_WRONG_FILTER;
 #if (DCM_DEV_ERROR_DETECT == STD_ON)
@@ -1029,9 +1039,9 @@ Dcm_NegativeResponseCodeType DspUdsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15(void)
 		if (dtcStatusMask != 0x00) {	/** @req DCM008 **/
 			getNextFilteredDtcResult = Dem_GetNextFilteredDTC(&dtc, &dtcStatus);
 			while (getNextFilteredDtcResult == DEM_FILTERED_OK) {
-				txData->dtcAndStatusRecord[nrOfDtcs].dtcHighByte = (dtc >> 16) & 0xFF;
-				txData->dtcAndStatusRecord[nrOfDtcs].dtcMiddleByte = (dtc >> 8) & 0xFF;
-				txData->dtcAndStatusRecord[nrOfDtcs].dtcLowByte = (dtc >> 0) & 0xFF;
+				txData->dtcAndStatusRecord[nrOfDtcs].dtcHighByte = DTC_HIGH_BYTE(dtc);
+				txData->dtcAndStatusRecord[nrOfDtcs].dtcMiddleByte = DTC_MID_BYTE(dtc);
+				txData->dtcAndStatusRecord[nrOfDtcs].dtcLowByte = DTC_LOW_BYTE(dtc);
 				txData->dtcAndStatusRecord[nrOfDtcs].statusOfDtc = dtcStatus;
 				nrOfDtcs++;
 				getNextFilteredDtcResult = Dem_GetNextFilteredDTC(&dtc, &dtcStatus);
@@ -1073,9 +1083,87 @@ Dcm_NegativeResponseCodeType DspUdsReadDtcInfoSub_0x09(void)
 Dcm_NegativeResponseCodeType DspUdsReadDtcInfoSub_0x06_0x10(void)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+	Dem_DTCOriginType dtcOrigin;
+	uint8 startRecNum;
+	uint8 endRecNum;
 
-	// TODO: Not supported yet
-	responseCode = DCM_E_REQUESTOUTOFRANGE;
+	// Switch on sub function
+	switch (commonVars.pduRxData->SduDataPtr[1]) 	/** @reg DCM378 **/
+	{
+	case 0x06:	// reportDTCExtendedDataRecordByDTCNumber
+		dtcOrigin = DEM_DTC_ORIGIN_PRIMARY_MEMORY;
+		break;
+
+	case 0x10:	// reportMirrorMemoryDTCExtendedDataRecordByDTCNumber
+		dtcOrigin = DEM_DTC_ORIGIN_MIRROR_MEMORY;
+		break;
+
+	default:
+		responseCode = DCM_E_SUBFUNCTIONNOTSUPPORTED;
+#if (DCM_DEV_ERROR_DETECT == STD_ON)
+		Det_ReportError(MODULE_ID_DCM, 0, DCM_UDS_READ_DTC_INFO, DCM_E_UNEXPECTED_PARAM);
+#endif
+		break;
+	}
+
+	// Switch on record number
+	switch (commonVars.pduRxData->SduDataPtr[5])
+	{
+	case 0xFF:	// Report all Extended Data Records for a particular DTC
+		startRecNum = 0x00;
+		endRecNum = 0xEF;
+		break;
+
+	case 0xFE:	// Report all OBD Extended Data Records for a particular DTC
+		startRecNum = 0x90;
+		endRecNum = 0xEF;
+		break;
+
+	default:	// Report one specific Extended Data Records for a particular DTC
+		startRecNum = commonVars.pduRxData->SduDataPtr[5];
+		endRecNum = startRecNum;
+		break;
+	}
+
+	if (responseCode == DCM_E_POSITIVERESPONSE) {
+		Dem_ReturnGetStatusOfDTCType getStatusOfDtcResult;
+		uint32 dtc;
+		Dem_EventStatusExtendedType statusOfDtc;
+
+		dtc = BYTES_TO_DTC(commonVars.pduRxData->SduDataPtr[2], commonVars.pduRxData->SduDataPtr[3], commonVars.pduRxData->SduDataPtr[4]);
+		getStatusOfDtcResult = Dem_GetStatusOfDTC(dtc, DEM_DTC_KIND_ALL_DTCS, dtcOrigin, &statusOfDtc); /** @req DCM295 **/ /** @req DCM475 **/
+		if (getStatusOfDtcResult == DEM_STATUS_OK) {
+			Dem_ReturnGetExtendedDataRecordByDTCType getExtendedDataRecordByDtcResult;
+			uint16 recNum;
+			uint8 recLength;
+			uint16 txIndex = 6;
+
+			/** @req DCM297 **/ /** @req DCM474 **/ /** @req DCM386 **/
+			commonVars.pduTxData->SduDataPtr[1] = commonVars.pduRxData->SduDataPtr[1];	// Sub function
+			commonVars.pduTxData->SduDataPtr[2] = DTC_HIGH_BYTE(dtc);					// DTC high byte
+			commonVars.pduTxData->SduDataPtr[3] = DTC_MID_BYTE(dtc);					// DTC mid byte
+			commonVars.pduTxData->SduDataPtr[4] = DTC_LOW_BYTE(dtc);					// DTC low byte
+			commonVars.pduTxData->SduDataPtr[5] = statusOfDtc;							// DTC status
+			for (recNum = startRecNum; recNum <= endRecNum; recNum++) {
+				recLength = PHYS_BUFFER_SIZE - txIndex -1;	// Calculate what's left in buffer
+				/** @req DCM296 **/ /** @req DCM476 **/ /** @req DCM382 **/
+				getExtendedDataRecordByDtcResult = Dem_GetExtendedDataRecordByDTC(dtc, DEM_DTC_KIND_ALL_DTCS, dtcOrigin, recNum, &commonVars.pduTxData->SduDataPtr[txIndex+1], &recLength);
+				if (getExtendedDataRecordByDtcResult == DEM_RECORD_OK) {
+					commonVars.pduTxData->SduDataPtr[txIndex++] = recNum;
+					/* Instead of calling Dem_GetSizeOfExtendedDataRecordByDTC() the result from Dem_GetExtendedDataRecordByDTC() is used */
+					/** @req DCM478 **/ /** @req DCM479 **/ /** @req DCM480 **/
+					txIndex += recLength;
+				}
+				else {
+					// TODO: What to do here?
+				}
+			}
+			commonVars.pduTxData->SduLength = txIndex;
+		}
+		else {
+			responseCode = DCM_E_REQUESTOUTOFRANGE;
+		}
+	}
 
 	return responseCode;
 }
