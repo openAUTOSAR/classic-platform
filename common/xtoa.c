@@ -13,21 +13,14 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-#include <stdlib.h>
-/**
- * K & R itoa
+/*
+ * Itoa based on K&R itoa
  */
 
-void strreverse(char* begin, char* end) {
 
-	char c;
+#include <stdlib.h>
 
-	while (end > begin) {
-		c = *end;
-		*end-- = *begin;
-		*begin++ = c;
-	}
-}
+
 
 /**
  * Convert a number to a string
@@ -38,36 +31,58 @@ void strreverse(char* begin, char* end) {
  * @param negative	If negative or not.
  */
 void xtoa( unsigned long val, char* str, int base, int negative) {
-	static char num[] = "0123456789abcdefghijklmnopqrstuvwxyz";
-	char* wstr = str;
-	int value = (int) val;
+	int i;
+	char *oStr = str;
+	char c;
 
-	div_t res;
+	if (negative) {
+		val = -val;
+	}
 
-	// Validate base
-	if (base < 2 || base > 35) {
-		*wstr = '\0';
+	if( base < 10 && base > 16 ) {
+		*str = '0';
 		return;
 	}
+    i = 0;
 
-	// Check sign
-	if (negative) {
-		value = -value;
-	}
+    do {
+      str[i++] = "0123456789abcdef"[ val % base ];
+	} while ((val /= base) > 0);
 
-	do {
-		res = div(value, base);
-		*wstr++ = num[res.rem];
-	} while ((value = res.quot));
 
-	if (negative)
-		*wstr++ = '-';
+    if (negative) {
+        str[i++] = '-';
+    }
 
-	*wstr = '\0';
-
-	// Reverse string
-	strreverse(str, wstr - 1);
+    str[i] = '\0';
+    str = &str[i]-1;
+    while(str > oStr) {
+    	c = *str;
+    	*str-- = *oStr;
+    	*oStr++=c;
+    }
 }
+
+
+#if defined(TEST_XTOA)
+/* Some very limited testing */
+int main( void ) {
+	char str[20];
+
+	xtoa(123,str,10,0);
+	printf("%s\n",str);
+	xtoa(-123,str,10,1);
+	printf("%s\n",str);
+	xtoa(0xa123,str,16,0);
+	printf("%s\n",str);
+	xtoa(-0xa123,str,16,1);
+	printf("%s\n",str);
+
+
+	return 0;
+}
+#endif
+
 
 /**
  * Converts an unsigned long to a string

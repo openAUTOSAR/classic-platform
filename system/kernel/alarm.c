@@ -18,6 +18,16 @@
 #include "Os.h"
 #include "internal.h"
 
+
+#define COUNTER_MAX(x) 			(x)->counter->alarm_base.maxallowedvalue
+#define COUNTER_MIN_CYCLE(x) 	(x)->counter->alarm_base.mincycle
+#define ALARM_CHECK_ID(x) 				\
+	if( (x) > Oil_GetAlarmCnt()) { \
+		rv = E_OS_ID;					\
+		goto err; 						\
+	}
+
+
 /**
  * The system service  GetAlarmBase  reads the alarm base
  * characteristics. The return value <Info> is a structure in which
@@ -37,25 +47,25 @@ StatusType GetAlarmBase( AlarmType AlarmId, AlarmBaseRefType Info ) {
 
 StatusType GetAlarm(AlarmType AlarmId, TickRefType Tick) {
     StatusType rv = E_OK;
+    OsAlarmType *aPtr;
+    long flags;
 
-	(void)AlarmId;
-	(void)Tick;
-// TODO: What is this?
+    ALARM_CHECK_ID(AlarmId);
+    aPtr = Oil_GetAlarmObj(AlarmId);
 
-	// Prevent label warning. Remove when proper error handling is implemented.
-	if (0) goto err;
+	Irq_Save(flags);
+	if( aPtr->active == 0 ) {
+		rv = E_OS_NOFUNC;
+		Irq_Restore(flags);
+		goto err;
+	}
+
+	*Tick =aPtr->expire_val -  aPtr->counter->val;
+
+	Irq_Restore(flags);
 
 	OS_STD_END_2(OSServiceId_GetAlarm,AlarmId, Tick);
 }
-
-#define COUNTER_MAX(x) 			(x)->counter->alarm_base.maxallowedvalue
-#define COUNTER_MIN_CYCLE(x) 	(x)->counter->alarm_base.mincycle
-#define ALARM_CHECK_ID(x) 				\
-	if( (x) > Oil_GetAlarmCnt()) { \
-		rv = E_OS_ID;					\
-		goto err; 						\
-	}
-
 
 
 
@@ -74,19 +84,19 @@ StatusType GetAlarm(AlarmType AlarmId, TickRefType Tick) {
 
 StatusType SetRelAlarm(AlarmType AlarmId, TickType Increment, TickType Cycle){
 	StatusType rv = E_OK;
-	OsAlarmType *a_obj;
+	OsAlarmType *aPtr;
 
 	ALARM_CHECK_ID(AlarmId);
 
-	a_obj = Oil_GetAlarmObj(AlarmId);
+	aPtr = Oil_GetAlarmObj(AlarmId);
 
 	os_isr_printf(D_ALARM,"SetRelAlarm id:%d inc:%d cycle:%d\n",AlarmId,Increment,Cycle);
 
 
 	if( (Increment == 0) ||
-		(Increment > COUNTER_MAX(a_obj)) ||
-		(Cycle < COUNTER_MIN_CYCLE(a_obj)) ||
-		(Cycle > COUNTER_MAX(a_obj)) )
+		(Increment > COUNTER_MAX(aPtr)) ||
+		(Cycle < COUNTER_MIN_CYCLE(aPtr)) ||
+		(Cycle > COUNTER_MAX(aPtr)) )
 	{
 		/** @req OS304 */
 		rv =  E_OS_VALUE;
@@ -96,23 +106,23 @@ StatusType SetRelAlarm(AlarmType AlarmId, TickType Increment, TickType Cycle){
 	{
 
 		Irq_Disable();
-		if( a_obj->active == 0 ) {
-			a_obj->active = 1;
+		if( aPtr->active == 0 ) {
+			aPtr->active = 1;
 		} else {
 			rv = E_OS_STATE;
 			goto err;
 		}
 
-		TickType curr_val = a_obj->counter->val;
-		TickType left = COUNTER_MAX(a_obj) - curr_val;
+		TickType curr_val = aPtr->counter->val;
+		TickType left = COUNTER_MAX(aPtr) - curr_val;
 
-		a_obj->expire_val = (left < Increment ) ?
+		aPtr->expire_val = (left < Increment ) ?
 									(curr_val + Increment) :
 									(Increment - curr_val);
-		a_obj->cycletime = Cycle;
+		aPtr->cycletime = Cycle;
 
 		Irq_Enable();
-		os_isr_printf(D_ALARM,"  expire:%d cycle:%d\n",a_obj->expire_val,a_obj->cycletime);
+		os_isr_printf(D_ALARM,"  expire:%d cycle:%d\n",aPtr->expire_val,aPtr->cycletime);
 	}
 
 	OS_STD_END_3(OSServiceId_SetRelAlarm,AlarmId, Increment, Cycle);
@@ -159,21 +169,21 @@ StatusType SetAbsAlarm(AlarmType AlarmId, TickType Start, TickType Cycle) {
 
 StatusType CancelAlarm(AlarmType AlarmId) {
 	StatusType rv = E_OK;
-	OsAlarmType *a_obj;
+	OsAlarmType *aPtr;
 	long flags;
 
 	ALARM_CHECK_ID(AlarmId);
 
-	a_obj = Oil_GetAlarmObj(AlarmId);
+	aPtr = Oil_GetAlarmObj(AlarmId);
 
 	Irq_Save(flags);
-	if( a_obj->active == 0 ) {
+	if( aPtr->active == 0 ) {
 		rv = E_OS_NOFUNC;
 		Irq_Restore(flags);
 		goto err;
 	}
 
-	a_obj->active = 0;
+	aPtr->active = 0;
 
 	Irq_Restore(flags);
 

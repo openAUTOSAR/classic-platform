@@ -33,3 +33,46 @@
  * Limitations:
  */
 
+
+#include "Os.h"
+#include "os_test.h"
+#include "arc.h"
+
+
+void etask_sup_l_03(void) {
+	_Bool done = 0;
+	StatusType rv;
+	AlarmBaseType alarmBase;
+	TickType tick;
+
+	while (!done) {
+		TEST_RUN();
+		switch (test_nr) {
+		case 1:
+			/* GetAlarmBase E_OS_ID */
+			rv = GetAlarmBase(ALARM_ID_c_sys_activate_btask_h, &alarmBase);
+			TEST_ASSERT(rv == E_OK);
+			rv = GetAlarmBase(ALARM_ID_ILL, &alarmBase);
+			TEST_ASSERT(rv == E_OS_ID);
+			test_nr++;
+			break;
+		case 2:
+			/* GetAlarm E_OS_ID and E_OS_NO_FUNC */
+			rv = GetAlarm(ALARM_ID_c_sys_activate_btask_h,&tick);
+			TEST_ASSERT(rv == E_OS_NOFUNC);
+			rv = GetAlarm(ALARM_ID_ILL,&tick);
+			TEST_ASSERT(rv == E_OS_ID);
+			test_nr=100;
+		case 100:
+			TerminateTask();
+			break;
+		}
+	}
+}
+
+void btask_sup_l_03(void) {
+}
+
+
+DECLARE_TEST_ETASK(03, etask_sup_l_03, NULL, NULL );
+DECLARE_TEST_BTASK(03, btask_sup_l_03, NULL, NULL );

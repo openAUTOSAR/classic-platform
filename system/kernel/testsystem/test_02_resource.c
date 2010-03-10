@@ -55,9 +55,12 @@ void etask_sup_l_02(void) {
 			rv = GetResource(RES_ID_ext_prio_3);
 			TEST_ASSERT(rv == E_OK);
 			rv = GetResource(RES_ID_ext_prio_3);
-			TEST_ASSERT(rv == E_OK);
+			TEST_ASSERT(rv == E_OS_ACCESS);
+			test_nr = 100;
 			break;
-
+		case 100:
+			TerminateTask();
+			break;
 		}
 	}
 }
