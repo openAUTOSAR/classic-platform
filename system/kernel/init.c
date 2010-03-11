@@ -258,7 +258,7 @@ static void os_start( void ) {
 	/* Find highest Autostart task */
 	{
 		OsPcbType *iterPcbPtr;
-		OsPriorityType topPrio = 0;
+		OsPriorityType topPrio = -1;
 
 		TAILQ_FOREACH(iterPcbPtr,& os_sys.pcb_head,pcb_list) {
 			if(	iterPcbPtr->autostart ) {

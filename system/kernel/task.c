@@ -378,11 +378,24 @@ void Os_Dispatch( _Bool force ) {
 // We come here from
 // - os_init
 
+volatile static int a1, b1, c1;
+volatile static OsPcbType *o1;
+volatile static OsPcbType *n1;
+
+void hej(int a, int b, int c, OsPcbType *o, OsPcbType *n) {
+	a1 = a;
+	b1 = b;
+	c1 = c;
+	o1 = o;
+	n1 = n;
+}
+
 /**
  * Called when a task is to be run for the first time.
  */
 void Os_TaskSwapContextTo(OsPcbType *old_pcb, OsPcbType *new_pcb ) {
 
+	hej(1, 2, 3, old_pcb, new_pcb);
 
 	Os_ArchSwapContextTo(old_pcb,new_pcb);
 	/* TODO: When do we return here ?? */

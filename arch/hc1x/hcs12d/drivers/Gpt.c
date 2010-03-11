@@ -64,7 +64,7 @@ typedef enum
 typedef struct
 {
   // Set if Gpt_Init() have been called
-  boolean initRun;
+  uint8 initRun;
 
   // Our config
   const Gpt_ConfigType *config;
