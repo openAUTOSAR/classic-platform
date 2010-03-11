@@ -533,7 +533,6 @@ StatusType ActivateTask( TaskType TaskID ) {
 		}
 	}
 
-	Irq_Restore(msr);
 
 	/* Preempt only if higher prio than us */
 	if(	(pcb->scheduling == FULL) &&
@@ -541,6 +540,8 @@ StatusType ActivateTask( TaskType TaskID ) {
 	{
 		Os_Dispatch(0);
 	}
+
+	Irq_Restore(msr);
 
 	OS_STD_END_1(OSServiceId_ActivateTask,TaskID);
 }

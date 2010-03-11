@@ -92,8 +92,6 @@ Os_ArchSwapContext:
 		stw		r0,C_LR_OFF(sp)
 		mfcr	r0
 		stw		r0,C_CR_OFF(sp)
-		mfmsr	r0
-		stw		r0,C_MSR_OFF(sp)
 		// Save small-context pattern
 		li		r0,SC_PATTERN
 		stw		r0,C_CONTEXT_OFF(sp)
@@ -124,7 +122,7 @@ Os_ArchSwapContextTo:
         lwz     r0,C_CR_OFF(sp)
         mtcr    r0
         lwz     r0,C_LR_OFF (sp)
-        mtlr    r0        
+        mtlr    r0
 
 // Get the context type
 		lwz		r0,C_CONTEXT_OFF(sp)
@@ -139,14 +137,10 @@ Os_ArchSwapContextTo:
 // C_xxxx <- We point here
 
 os_sc_restore:
-        lwz     r0,C_LR_OFF (sp)
-        mtsrr0  r0        
-        lwz     r0,C_MSR_OFF (sp)
-        mtsrr1  r0        
 		RESTORE_NVGPR(sp,(C_SIZE-14*GPR_SIZE))
-		
 		addi 	sp,sp,(C_SIZE+NVGPR_SIZE)
-		rfi
+		// TODO: The blr will not do the trick if swapping to a user land task.
+		blr
 
 os_lc_restore:
 	addi 	r1,r1,C_SIZE
@@ -189,6 +183,7 @@ os_bad_bad:
 //      (since the compiler does not know it's a function call)
 // TODO: Could probably do this shorter....only NV regs that I use need saving
 //       ( only cr2->cr4 according to e500 ABI )
+
 
 
 
