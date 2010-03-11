@@ -219,6 +219,10 @@ void InitOS( void ) {
 static void os_start( void ) {
 	OsPcbType *tmp_pcb;
 
+	// We will be setting up interrupts,
+	// but we don't want them to fire just yet
+	Irq_Disable();
+
 	assert(init_os_called);
 
 	/* TODO: fix ugly */
@@ -244,7 +248,7 @@ static void os_start( void ) {
 		}
 	}
 
-	// Activate the systick interrupt
+	// Set up the systick interrupt
 	{
 		uint32_t sys_freq = McuE_GetSystemClock();
 		Os_SysTickInit();

@@ -2,7 +2,7 @@
 
 #define _ASSEMBLER_
 #include "kernel_offset.h"
-#include "asm_hc1x.h"
+#include "asm_hc1x.sx"
 #include "context.sx"
 
 .extern os_sys
@@ -19,12 +19,12 @@
 
 .section .text
 
+/* void Os_ArchSetSpAndCall(void *sp, void (*f)(void) ); */
 Os_ArchSetSpAndCall:
-/*
-		mr r1,r3
-		mtlr r4
-		blr
-*/
+		MOVE_ARG 1, x				// f --> X
+		MOVE_ARG 0, sp				// sp (D) --> SP
+		jmp		0, x				// f()
+
 
 Os_ArchSwapContextToW:
 /*
@@ -35,8 +35,8 @@ Os_ArchSwapContextToW:
 /* void Os_ArchSwapContext(void *old, void *new); */
 Os_ArchSwapContext:
 Os_ArchSwapContext_get_args:
-		GET_ARG_0_TO_X					// old --> X
-		GET_ARG_1_TO(y)					// new --> Y
+		MOVE_ARG 0, x					// old --> X
+		MOVE_ARG 1, y					// new --> Y
 		
 		SAVE_CONTEXT_FROM_FUNCTION
 		
@@ -48,7 +48,7 @@ Os_ArchSwapContext_get_args:
 Os_ArchSwapContextTo:
 Os_ArchSwapContextTo_get_args:
 // Get stack for new task
-		GET_ARG_1_TO(y)					// new --> Y
+		MOVE_ARG 1, y					// new --> Y
 		
 Os_ArchSwapContextTo_do:
 // Set current process
@@ -59,80 +59,4 @@ Os_ArchSwapContextTo_do:
 		RESTORE_CONTEXT_FOR_FUNCTION
 		
 		rtc
-/*
-// Set new current process
-		LOAD_ADDR_32(3,os_sys)
-		stw		r4,SYS_CURR_PCB_P(r3)
-
-// Restore C context
-        lwz     r0,C_CR_OFF(sp)
-        mtcr    r0
-        lwz     r0,C_LR_OFF (sp)
-        mtlr    r0
-
-// Get the context type
-		lwz		r0,C_CONTEXT_OFF(sp)
-		cmpli	0,r0,SC_PATTERN
-		beq+	os_sc_restore
-		cmpli	0,r0,LC_PATTERN
-		beq+ 	os_lc_restore
-		b		os_bad_bad
-*/
-
-// SC_xxx
-// C_xxxx <- We point here
-
-/*
-os_sc_restore:
-		RESTORE_NVGPR(sp,(C_SIZE-14*GPR_SIZE))
-		addi 	sp,sp,(C_SIZE+NVGPR_SIZE)
-		// TODO: The blr will not do the trick if swapping to a user land task.
-		blr
-
-os_lc_restore:
-	addi 	r1,r1,C_SIZE
-	RESTORE_NVGPR(1,0)
-	addi	r1,r1,-C_SIZE
-	RESTORE_VGPR(1,C_SIZE)
-
-	RESTORE_WORK_AND_MORE
-	rfi
-
-// When something really bad happens we end up here for the moment
-os_bad_bad:
-		b	os_bad_bad
-*/
-
-
-
-// ------------------------------------------------------------------
-
-/*
- * Trap interface !!!! See article http://www.linuxjournal.com/article/6516
- * http://www.osweekly.com/index.php?option=com_content&task=view&id=2229
- */
-
-/* The T32 instruction sim can't handle trap's so we have to make something
- * - write SRR0, SRR1, MSR
- * - jump to there routines
- */
-
-// ------------------------------------------------------------------
-
-
-// System call, use this for trusted function ???
-// TODO: The example in autosar is not neccesary.. sc here here instead??
-//
-// NOTE!!!!!
-// Since the sc is a sync call, it should be enough to save NV regs(14->)
-// If I don't use the NV regs here I shouldn't need to save them
-// TODO: Inform compiler in SC_CALL() that I clobber volatile regs( r0, r3->
-//      (since the compiler does not know it's a function call)
-// TODO: Could probably do this shorter....only NV regs that I use need saving
-//       ( only cr2->cr4 according to e500 ABI )
-
-
-
-
-
 
