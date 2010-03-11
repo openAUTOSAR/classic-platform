@@ -139,6 +139,7 @@ void DspUdsEcuReset(void);
 void DspUdsClearDiagnosticInformation(void);
 void DspUdsTesterPresent(void);
 void DspUdsReadDtcInformation(void);
+void DspUdsControlDtcSetting(void);
 void DsdDspProcessingDone(Dcm_NegativeResponseCodeType responseCode);
 void DspDcmConfirmation(PduIdType confirmPduId);
 void DsdDataConfirmation(PduIdType confirmPduId);
@@ -663,6 +664,7 @@ void DsdSelectServiceFunction(uint8 sid)
 		break;
 
 	case SID_CONTROL_DTC_SETTING:
+		DspUdsControlDtcSetting();
 		break;
 
 	default:
@@ -1326,6 +1328,49 @@ void DspUdsTesterPresent(void)
 	else {
 		// Wrong length
 		DsdDspProcessingDone(DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT);	/** @req DCM272.1 **/
+	}
+}
+
+
+void DspUdsControlDtcSetting(void)
+{
+	Dem_ReturnControlDTCStorageType resultCode;
+
+	if (commonVars.pduRxData->SduLength == 2) {
+		switch (commonVars.pduRxData->SduDataPtr[1])
+		{
+		case 0x01:	// ON	/** @req DCM249.1 **/
+			resultCode = Dem_EnableDTCStorage(DEM_DTC_GROUP_ALL_DTCS, DEM_DTC_KIND_ALL_DTCS);		/** @req DCM304 **/
+			if (resultCode == DEM_CONTROL_DTC_STORAGE_OK) {
+				commonVars.pduTxData->SduDataPtr[1] = 0x01;
+				commonVars.pduTxData->SduLength = 2;
+				DsdDspProcessingDone(DCM_E_POSITIVERESPONSE);
+			}
+			else {
+				DsdDspProcessingDone(DCM_E_REQUESTOUTOFRANGE);
+			}
+			break;
+
+		case 0x02:	// OFF	/** @req DCM249.2 **/
+			resultCode = Dem_DisableDTCStorage(DEM_DTC_GROUP_ALL_DTCS, DEM_DTC_KIND_ALL_DTCS);		/** @req DCM406 **/
+			if (resultCode == DEM_CONTROL_DTC_STORAGE_OK) {
+				commonVars.pduTxData->SduDataPtr[1] = 0x02;
+				commonVars.pduTxData->SduLength = 2;
+				DsdDspProcessingDone(DCM_E_POSITIVERESPONSE);
+			}
+			else {
+				DsdDspProcessingDone(DCM_E_REQUESTOUTOFRANGE);
+			}
+			break;
+
+		default:
+			DsdDspProcessingDone(DCM_E_SUBFUNCTIONNOTSUPPORTED);
+			break;
+		}
+	}
+	else {
+		// Wrong length
+		DsdDspProcessingDone(DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT);
 	}
 }
 

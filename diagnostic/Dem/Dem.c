@@ -386,10 +386,9 @@ void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_EventSta
 		eventStatusRec->eventId = DEM_EVENT_ID_NULL;
 		eventStatusRec->eventStatus = DEM_EVENT_STATUS_PASSED;
 		eventStatusRec->occurrence = 0;
-		eventStatusBuffer[i].eventStatusChanged = FALSE;
-		eventStatusBuffer[i].eventStatusExtended = DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE | DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR;
+		eventStatusRec->eventStatusChanged = FALSE;
+		eventStatusRec->eventStatusExtended = DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE | DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR;
 	}
-
 
 	McuE_ExitCriticalSection(state);
 }
@@ -1004,10 +1003,10 @@ Std_ReturnType handleEvent(Dem_EventIdType eventId, Dem_EventStatusType eventSta
 	if (eventParam != NULL) {
 		if (eventParam->EventClass->OperationCycleRef < DEM_OPERATION_CYCLE_ID_ENDMARK) {
 			if (operationCycleStateList[eventParam->EventClass->OperationCycleRef] == DEM_CYCLE_STATE_START) {
-				updateEventStatusRec(eventParam, eventStatus, TRUE, &eventStatusLocal);
-				if (eventStatusLocal.eventStatusChanged) {
-					if (eventStatusLocal.eventStatus == DEM_EVENT_STATUS_FAILED) {
-						if (!checkDtcGroup(disableDtcStorage.dtcGroup, eventParam) || !checkDtcKind(disableDtcStorage.dtcKind, eventParam))  {
+				if (!(disableDtcStorage.storageDisabled && checkDtcGroup(disableDtcStorage.dtcGroup, eventParam) && checkDtcKind(disableDtcStorage.dtcKind, eventParam)))  {
+					updateEventStatusRec(eventParam, eventStatus, TRUE, &eventStatusLocal);
+					if (eventStatusLocal.eventStatusChanged) {
+						if (eventStatusLocal.eventStatus == DEM_EVENT_STATUS_FAILED) {
 							storeEventEvtMem(eventParam, &eventStatusLocal);
 							// Collect freeze frame data
 							getFreezeFrameData(eventParam, &freezeFrameLocal);
