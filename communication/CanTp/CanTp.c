@@ -1285,6 +1285,8 @@ static inline boolean checkNasNarTimeout(CanTp_ChannelPrivateType *runtimeData) 
 	if (runtimeData->iso15765.NasNarPending) {
 		TIMER_DECREMENT(runtimeData->iso15765.NasNarTimeoutCount);
 		if (runtimeData->iso15765.NasNarTimeoutCount == 0) {
+			DEBUG( DEBUG_MEDIUM, "NAS timed out.\n" );
+
 			runtimeData->iso15765.state = IDLE;
 			runtimeData->iso15765.NasNarPending = FALSE;
 			ret = TRUE;
