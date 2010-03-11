@@ -1251,7 +1251,7 @@ void CanTp_GetVersionInfo(Std_VersionInfoType* versioninfo) /** req : CanTp210 *
 
 void CanTp_TxConfirmation(PduIdType PduId) /** req: CanTp215 **/
 {
-	VALIDATE( CanTpRunTimeData.internalState != CANTP_ON,
+	VALIDATE( CanTpRunTimeData.internalState == CANTP_ON,
 			SERVICE_ID_CANTP_TX_CONFIRMATION, CANTP_E_UNINIT ); /* req: CanTp031 */
 
 	int configListIndex = 0;
