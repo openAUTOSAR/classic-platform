@@ -22,7 +22,6 @@
 
 #define USE_DEBUG
 
-
 #include "Det.h"
 #include "CanIf.h"
 #include "CanTp_Cfg.h" /** req: CanTp156.1 **/
@@ -167,6 +166,8 @@ typedef struct {
 	uint32 stateTimeoutCount; // Counter for timeout.
 	uint8 STmin; // In case we are transmitters the remote node can configure this value (only valid for TX).
 	uint8 BS; // Blocksize (only valid for TX).
+	boolean NasNarPending;
+	uint32 NasNarTimeoutCount; // CanTpNas, CanTpNar.
 	ISO15765TransferStateTypes state; // Transfer state machine. qqq: Can this be initialized here?
 } ISO15765TransferControlType;
 
@@ -463,26 +464,34 @@ BufReq_ReturnType saveSduPayloadData(const CanTp_RxNSduType *rxConfig,
 // - - - - - - - - - - - - - -
 
 static inline Std_ReturnType canReceivePaddingHelper(
-		const CanTp_RxNSduType *rxConfig, PduInfoType *PduInfoPtr) {
+		const CanTp_RxNSduType *rxConfig, CanTp_ChannelPrivateType *rxRuntime,
+		PduInfoType *PduInfoPtr) {
 	if (rxConfig->CanTpRxPaddingActivation == CANTP_ON) {
 		for (int i = PduInfoPtr->SduLength; i < CANIF_PDU_MAX_LENGTH; i++) {
 			PduInfoPtr->SduDataPtr[i] = 0x0; // qqq: Does it have to be padded with zeroes?
 		}
 		PduInfoPtr->SduLength = CANIF_PDU_MAX_LENGTH;
 	}
+	rxRuntime->iso15765.NasNarTimeoutCount =
+			CONVERT_MS_TO_MAIN_CYCLES(rxConfig->CanTpNar); // req: CanTp075.
+	rxRuntime->iso15765.NasNarPending = TRUE;
 	return CanIf_Transmit(rxConfig->CanTpRxPduId, PduInfoPtr);
 }
 
 // - - - - - - - - - - - - - -
 
 static inline Std_ReturnType canTansmitPaddingHelper(
-		const CanTp_TxNSduType *txConfig, PduInfoType *PduInfoPtr) {
+		const CanTp_TxNSduType *txConfig, CanTp_ChannelPrivateType *txRuntime,
+		PduInfoType *PduInfoPtr) {
 	if (txConfig->CanTpTxPaddingActivation == CANTP_ON) {
 		for (int i = PduInfoPtr->SduLength; i < CANIF_PDU_MAX_LENGTH; i++) {
 			PduInfoPtr->SduDataPtr[i] = 0x0; // qqq: Does it have to be padded with zeroes?
 		}
 		PduInfoPtr->SduLength = CANIF_PDU_MAX_LENGTH;
 	}
+	txRuntime->iso15765.NasNarTimeoutCount =
+			CONVERT_MS_TO_MAIN_CYCLES(txConfig->CanTpNas); // req: CanTp075.
+	txRuntime->iso15765.NasNarPending = TRUE;
 	return CanIf_Transmit(txConfig->CanTpTxPduId, PduInfoPtr);
 }
 
@@ -525,7 +534,7 @@ static inline void sendFlowControlFrame(const CanTp_RxNSduType *rxConfig,
 	default:
 		break;
 	}
-	ret = canReceivePaddingHelper(rxConfig, &pduInfo);
+	ret = canReceivePaddingHelper(rxConfig, rxRuntime, &pduInfo);
 	if (ret != E_OK) {
 		PduR_CanTpRxIndication(rxConfig->CanTpRxPduId,
 				(NotifResultType) NTFRSLT_E_NOT_OK);
@@ -664,7 +673,7 @@ static inline Std_ReturnType sendConsecutiveFrame(
 		}
 		pduInfo.SduDataPtr = sduData;
 		pduInfo.SduLength = indexCount; // also includes consecutive frame header.
-		ret = canTansmitPaddingHelper(txConfig, &pduInfo);
+		ret = canTansmitPaddingHelper(txConfig, txRuntime, &pduInfo);
 		if (ret == E_OK) {
 			// Now we consider this frame sent and we can not handle
 			// the scenario where the CAN queue is full.
@@ -955,7 +964,7 @@ static inline Std_ReturnType sendSingleFrame(const CanTp_TxNSduType *txConfig,
 
 	pduInfo.SduDataPtr = sduData;
 	pduInfo.SduLength = indexCount;
-	ret = canTansmitPaddingHelper(txConfig, &pduInfo);
+	ret = canTansmitPaddingHelper(txConfig, txRuntime, &pduInfo);
 	return ret;
 }
 
@@ -987,7 +996,7 @@ static inline Std_ReturnType sendFirstFrame(const CanTp_TxNSduType *txConfig,
 	}
 	pduInfo.SduDataPtr = sduData;
 	pduInfo.SduLength = indexCount;
-	ret = canTansmitPaddingHelper(txConfig, &pduInfo);
+	ret = canTansmitPaddingHelper(txConfig, txRuntime, &pduInfo);
 	return ret;
 }
 
@@ -1240,10 +1249,22 @@ void CanTp_GetVersionInfo(Std_VersionInfoType* versioninfo) /** req : CanTp210 *
 
 // - - - - - - - - - - - - - -
 
-void CanTp_TxConfirmation(PduIdType CanTpTxPduId) /** req: CanTp215 **/
+void CanTp_TxConfirmation(PduIdType PduId) /** req: CanTp215 **/
 {
-	VALIDATE( CanTpRunTimeData.internalState == CANTP_ON,
+	VALIDATE( CanTpRunTimeData.internalState != CANTP_ON,
 			SERVICE_ID_CANTP_TX_CONFIRMATION, CANTP_E_UNINIT ); /* req: CanTp031 */
+
+	int configListIndex = 0;
+	configListIndex = getCanTpRxNSduConfigListIndex(&CanTpConfig, PduId);
+	if (configListIndex == CANTP_ERR) {
+		configListIndex = getCanTpTxNSduConfigListIndex(&CanTpConfig, PduId);
+		if (configListIndex != CANTP_ERR) {
+			CanTpRunTimeData.txNSduData[configListIndex].iso15765.NasNarPending = FALSE;
+		}
+	} else {
+		CanTpRunTimeData.rxNSduData[configListIndex].iso15765.NasNarPending = FALSE;
+	}
+
 }
 
 // - - - - - - - - - - - - - -
@@ -1257,6 +1278,23 @@ void CanTp_Shutdown() /** req : CanTp211 **/
 }
 
 // - - - - - - - - - - - - - -
+
+
+static inline boolean checkNasNarTimeout(CanTp_ChannelPrivateType *runtimeData) {
+	boolean ret = FALSE;
+	if (runtimeData->iso15765.NasNarPending) {
+		TIMER_DECREMENT(runtimeData->iso15765.NasNarTimeoutCount);
+		if (runtimeData->iso15765.NasNarTimeoutCount == 0) {
+			runtimeData->iso15765.state = IDLE;
+			runtimeData->iso15765.NasNarPending = FALSE;
+			ret = TRUE;
+		}
+	}
+	return ret;
+}
+
+// - - - - - - - - - - - - - -
+
 
 void CanTp_MainFunction() /** req : CanTp213 **/
 {
@@ -1292,6 +1330,11 @@ void CanTp_MainFunction() /** req : CanTp213 **/
 	}
 
 	for(int i=0; i < CANTP_TX_NSDU_CONFIG_LIST_CNT; i++) {
+		if ( checkNasNarTimeout( txRuntimeListItem ) ) { // CanTp075.
+			PduR_CanTpTxConfirmation(txConfigListItem->CanTpTxPduId,
+					NTFRSLT_NOT_OK); /* qqq: req: CanTp: 185. */
+			continue;
+		}
 		switch (txRuntimeListItem->iso15765.state) {
 		case TX_WAIT_CAN_TP_TRANSMIT_CAN_TP_PROVIDE_TX_BUFFER:
 			TIMER_DECREMENT (rxRuntimeListItem->iso15765.stateTimeoutCount);
@@ -1334,6 +1377,11 @@ void CanTp_MainFunction() /** req : CanTp213 **/
 	}
 
 	for(int i=0; i < CANTP_RX_NSDU_CONFIG_LIST_CNT; i++) {
+		if ( checkNasNarTimeout( rxRuntimeListItem ) ) {  // CanTp075.
+			PduR_CanTpTxConfirmation(rxConfigListItem->CanTpRxPduId,
+					NTFRSLT_NOT_OK); /* qqq: req: CanTp: 185. */
+			continue;
+		}
 		switch (rxRuntimeListItem->iso15765.state) {
 		case RX_WAIT_CONSECUTIVE_FRAME: {
 			TIMER_DECREMENT (rxRuntimeListItem->iso15765.stateTimeoutCount);
@@ -1373,7 +1421,5 @@ void CanTp_MainFunction() /** req : CanTp213 **/
 			break;
 		}
 	}
-
-	CanTpRunTimeData.internalState = CANTP_ON;
 }
 
