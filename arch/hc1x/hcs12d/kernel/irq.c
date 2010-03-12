@@ -31,8 +31,9 @@ void Irq_Init( void ) {
 void Irq_EOI( void ) {
 
 }
-
+volatile static uint8_t bad_irq_nr = 0;
 void bad_irq(uint8_t irq_nr) {
+	bad_irq_nr = irq_nr;
   for (;;);
 }
 

@@ -44,8 +44,11 @@
 #endif
 
 // Operation on Winidea terminal buffer
+
+
 #define TWBUFF_SIZE 0x100
 #define TRBUFF_SIZE 0x100
+
 
 #define TBUFF_PTR 2
 
@@ -57,9 +60,19 @@
 #define TWBUFF_FULL() (TWBUFF_TPTR==((TWBUFF_CPTR-1)&(TWBUFF_SIZE-1)))
 
 #ifdef USE_WINIDEA_TERM
+
+#if defined(MC912DG128A)
+static volatile unsigned char g_TWBuffer[TWBUFF_LEN];
+static volatile unsigned char g_TRBuffer[TRBUFF_LEN];
+static volatile char g_TConn __attribute__ ((section (".winidea_port")));
+
+#else
 static volatile unsigned char g_TWBuffer[TWBUFF_LEN] __attribute__ ((aligned (0x100))); // Transmit to WinIDEA terminal
 static volatile unsigned char g_TRBuffer[TRBUFF_LEN] __attribute__ ((aligned (0x100)));
 static volatile char g_TConn __attribute__ ((section (".winidea_port")));
+
+#endif
+
 #endif
 
 #define FILE_RAMLOG		3

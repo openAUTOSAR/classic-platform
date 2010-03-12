@@ -64,7 +64,7 @@ typedef enum
 typedef struct
 {
   // Set if Gpt_Init() have been called
-  boolean initRun;
+  uint8 initRun;
 
   // Our config
   const Gpt_ConfigType *config;
@@ -133,6 +133,10 @@ static void Gpt_IsrCh(Gpt_ChannelType channel)
 
   config = &Gpt_Global.config[confCh];
 
+  if (GptNotificationStatuses[channel] == STD_ON) {
+  	 config->GptNotification();
+  }
+
   if (config->GptChannelMode == GPT_MODE_ONESHOT)
   {
     // Disable the channel
@@ -148,9 +152,7 @@ static void Gpt_IsrCh(Gpt_ChannelType channel)
 	  GptPrevOc[channel] = curr_oc;
 	  #endif
   }
-  if (GptNotificationStatuses[channel] == STD_ON) {
-	  config->GptNotification();
-  }
+
 }
 
 //-------------------------------------------------------------------
