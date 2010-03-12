@@ -28,6 +28,8 @@
 
 #include "CanTp_PBcfg.h"
 
+//#define CONVERT_MS_TO_MAIN_CYCLES(x) 	x/MAIN_FUNCTION_PERIOD_TIME_MS
+#define CONVERT_MS_TO_MAIN_CYCLES(x) 	100
 
 
 #endif /* CANTP_CFG_H_ */

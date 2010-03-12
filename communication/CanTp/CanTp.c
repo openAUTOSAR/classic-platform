@@ -63,7 +63,7 @@
 #define NTFRSLT_E_WRONG_SN 234
 #define NTFRSLT_E_NOT_OK 987
 
-#if 0
+#if 1
 
 NotifResultType PduR_CanTpRxIndication(PduIdType CanTpRxPduId,
 		NotifResultType Result) {
