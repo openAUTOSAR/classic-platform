@@ -278,12 +278,7 @@ Mcu_RawResetType Mcu_GetResetRawValue(void)
 //-------------------------------------------------------------------
 
 #if ( MCU_PERFORM_RESET_API == STD_ON )
-void Mcu_PerformReset(void)
-{
-  VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_PERFORMRESET_SERVICE_ID, MCU_E_UNINIT );
-
-  /* NOT SUPPORTED */
-}
+#error MCU_PERFORM_RESET_API - Software reset is not supported on HCS12
 #endif
 
 //-------------------------------------------------------------------

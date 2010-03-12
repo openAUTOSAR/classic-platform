@@ -134,9 +134,17 @@ void EcuM_Shutdown()
 	EcuM_OnGoOffTwo();
 
 	if (internal_data.shutdown_target == ECUM_STATE_OFF)
+	{
 		EcuM_AL_SwitchOff();
+	}
 	else
+	{
+#if (MCU_PERFORM_RESET_API == STD_ON)
 		Mcu_PerformReset();
+#else
+		for(;;);
+#endif
+	}
 }
 
 Std_ReturnType EcuM_GetState(EcuM_StateType* state)
