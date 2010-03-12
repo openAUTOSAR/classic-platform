@@ -29,6 +29,10 @@
 #include "Mcu.h"
 #include "Trace.h"
 #include "Det.h"
+#if defined(USE_KERNEL)
+#include "Os.h"
+#include "irq.h"
+#endif
 
 // Implementation specific
 
@@ -186,7 +190,14 @@ void Gpt_Init(const Gpt_ConfigType *config)
     {
       if (cfg->GptNotification != NULL)
       {
-        Irq_InstallVector(Gpt_Isr, PIT_PITFLG_RTIF + ch, 1, CPU_Z1);
+
+#if defined(USE_KERNEL)
+			TaskType tid;
+			tid = Os_Arc_CreateIsr(Gpt_Isr, 2, "Gpt_Isr");
+			Irq_AttachIsr2(tid, NULL, PIT_PITFLG_RTIF + ch);
+#else
+			IntCtrl_InstallVector(Gpt_Isr, PIT_PITFLG_RTIF + ch, 1, CPU_Z1);
+#endif
       }
     }
 #if defined(USE_KERNEL)
