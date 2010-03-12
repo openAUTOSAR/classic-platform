@@ -63,7 +63,7 @@
 #define NTFRSLT_E_WRONG_SN 234
 #define NTFRSLT_E_NOT_OK 987
 
-#if 1
+#if 0
 
 NotifResultType PduR_CanTpRxIndication(PduIdType CanTpRxPduId,
 		NotifResultType Result) {
@@ -95,6 +95,12 @@ void PduR_CanTpTxConfirmation(PduIdType CanTpTxPduId, NotifResultType Result) {
 	if (timer > 0) { \
 		timer = timer - 1; \
 	} \
+
+#define COUNT_DECREMENT(timer) \
+	if (timer > 0) { \
+		timer = timer - 1; \
+	} \
+
 
 #define CANTP_ERR       							-1
 #define ISO15765_FLOW_CONTROL_STATUS_CTS   		0
@@ -398,6 +404,8 @@ void initRx15765RuntimeData(const CanTp_RxNSduType *rxConfigParams,
 		CanTp_ChannelPrivateType *rxRuntimeParams) {
 
 	rxRuntimeParams->iso15765.state = IDLE;
+	rxRuntimeParams->iso15765.framesHandledCount = 0;
+	rxRuntimeParams->iso15765.nextFlowControlCount = 0;
 	rxRuntimeParams->pdurBufferCount = 0;
 	rxRuntimeParams->pduLenghtTotalBytes = 0;
 	rxRuntimeParams->pduTransferedBytesCount = 0;
@@ -412,6 +420,8 @@ void initTx15765RuntimeData(const CanTp_TxNSduType *txConfigParams,
 		CanTp_ChannelPrivateType *txRuntimeParams) {
 
 	txRuntimeParams->iso15765.state = IDLE;
+	txRuntimeParams->iso15765.framesHandledCount = 0;
+	txRuntimeParams->iso15765.nextFlowControlCount = 0;
 	txRuntimeParams->pdurBufferCount = 0;
 	txRuntimeParams->pduLenghtTotalBytes = 0;
 	txRuntimeParams->pduTransferedBytesCount = 0;
@@ -517,6 +527,7 @@ static inline void sendFlowControlFrame(const CanTp_RxNSduType *rxConfig,
 				| ISO15765_FLOW_CONTROL_STATUS_CTS;
 		sduData[indexCount++] = (uint8) rxConfig->CanTpBs;
 		sduData[indexCount++] = (uint8) rxConfig->CanTpSTmin;
+		rxRuntime->iso15765.nextFlowControlCount = (uint8) rxConfig->CanTpBs;
 		pduInfo.SduLength = indexCount;
 		break;
 	case BUFREQ_NOT_OK:
@@ -595,7 +606,8 @@ static inline void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
 					- rxRuntime->pduTransferedBytesCount) > 0) {
 				DEBUG( DEBUG_MEDIUM,"bytesRemainingTotalPdu:%d\n", bytesRemainingTotalPdu);
 				rxRuntime->iso15765.framesHandledCount++;
-				rxRuntime->iso15765.nextFlowControlCount--;
+				COUNT_DECREMENT(rxRuntime->iso15765.nextFlowControlCount);
+				DEBUG("iso15765.nextFlowControlCount:%d", rxRuntime->iso15765.nextFlowControlCount);
 				if (rxRuntime->iso15765.nextFlowControlCount == 0) {
 					sendFlowControlFrame(rxConfig, rxRuntime, BUFREQ_OK);
 					rxRuntime->iso15765.framesHandledCount = rxConfig->CanTpBs;
@@ -678,7 +690,7 @@ static inline Std_ReturnType sendConsecutiveFrame(
 			// Now we consider this frame sent and we can not handle
 			// the scenario where the CAN queue is full.
 			txRuntime->iso15765.framesHandledCount++;
-			txRuntime->iso15765.nextFlowControlCount--;  // qqq: use decremt macro.
+			COUNT_DECREMENT(txRuntime->iso15765.nextFlowControlCount);
 			txRuntime->pduTransferedBytesCount += txRuntime->canFrameBuffer.byteCount;
 			txRuntime->canFrameBuffer.byteCount = 0;
 			DEBUG( DEBUG_MEDIUM, "pduTransferedBytesCount:%d\n", txRuntime->pduTransferedBytesCount);
@@ -828,7 +840,6 @@ static inline void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 	if (rxRuntime->iso15765.state != IDLE) {
 		// qqq: TODO: Log this maybe?
 	}
-
 	DEBUG( DEBUG_MEDIUM, "handleFirstFrame called!\n");
 
 	(void) initRx15765RuntimeData(rxConfig, rxRuntime);
@@ -836,6 +847,7 @@ static inline void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 			rxPduData);
 	rxRuntime->pduLenghtTotalBytes = pduLength;
 
+	DEBUG( DEBUG_MEDIUM, "Expect to receive %d bytes in this session!\n", pduLength);
 	VALIDATE( rxRuntime->pduLenghtTotalBytes != 0,
 			SERVICE_ID_CANTP_RX_INDICATION, CANTP_E_INVALID_RX_LENGTH );
 
