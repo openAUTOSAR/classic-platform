@@ -211,7 +211,7 @@ void Gpt_Init(const Gpt_ConfigType *config)
     {
       if (cfg->GptNotification != NULL)
       {
-    	TaskType tid;
+    	TaskType tid = 0;
     	switch (ch) {
     	case 0:
     		tid = Os_Arc_CreateIsr(Gpt_Isr_0, 1, "Gpt_Isr_0");
@@ -345,7 +345,7 @@ Gpt_ValueType Gpt_GetTimeRemaining(Gpt_ChannelType channel)
   VALIDATE_W_RV( (Gpt_Global.initRun == STD_ON), GPT_GETTIMEREMAINING_SERVICE_ID, GPT_E_UNINIT, 0 );
   VALIDATE_W_RV( VALID_CHANNEL(channel),GPT_GETTIMEREMAINING_SERVICE_ID, GPT_E_PARAM_CHANNEL, 0 );
   VALIDATE_W_RV( (Gpt_Unit[channel].state == GPT_STATE_STARTED), GPT_GETTIMEREMAINING_SERVICE_ID, GPT_E_NOT_STARTED, 0 );
-  Gpt_ValueType remaining;
+  Gpt_ValueType remaining = 0;
 
   if (channel <= GPT_CHANNEL_7)
   {
@@ -366,7 +366,7 @@ Gpt_ValueType Gpt_GetTimeRemaining(Gpt_ChannelType channel)
 #if ( GPT_TIME_ELAPSED_API == STD_ON )
 Gpt_ValueType Gpt_GetTimeElapsed(Gpt_ChannelType channel)
 {
-  Gpt_ValueType elapsed;
+  Gpt_ValueType elapsed = 0;
 
   VALIDATE_W_RV( (Gpt_Global.initRun == STD_ON), GPT_GETTIMEELAPSED_SERVICE_ID, GPT_E_UNINIT ,0 );
   VALIDATE_W_RV( VALID_CHANNEL(channel),GPT_GETTIMEELAPSED_SERVICE_ID, GPT_E_PARAM_CHANNEL, 0 );

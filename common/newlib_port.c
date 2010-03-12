@@ -244,9 +244,9 @@ int write(  int fd, char *buf, int nbytes)
 	return (nbytes);
 }
 
-int arc_putchar(int c) {
+int arc_putchar(int fd, int c) {
 	char cc = c;
-	write( 1,&cc,1);
+	write( fd,&cc,1);
 
 	return 0;
 }

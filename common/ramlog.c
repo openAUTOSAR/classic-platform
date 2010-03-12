@@ -41,7 +41,8 @@ static unsigned char ramlog[CFG_RAMLOG_SIZE] __attribute__ ((section (".ramlog")
 static unsigned ramlog_curr __attribute__ ((section (".ramlog")));
 static unsigned ramlog_session __attribute__ ((section (".ramlog")));
 
-static FILE *ramlogFile = 0;
+#define RAMLOG_FD 3
+
 
 
 /**
@@ -72,6 +73,7 @@ void ramlog_puts( char *str ) {
  *
  * @param format The format string.
  */
+extern int standard_simple_sprintf(int fd, char *out, const char *format, ...);
 void ramlog_printf( const char *format, ... ) {
 
 	// Fast and ugly ramlog support.
@@ -79,7 +81,7 @@ void ramlog_printf( const char *format, ... ) {
 	va_list args;
 	va_start(args,format);
 
-	rv = vfprintf(ramlogFile,format, args);
+	rv = standard_simple_sprintf(RAMLOG_FD, 0, format, args);
 	va_end(args);
 }
 
@@ -95,8 +97,6 @@ void ramlog_init()
       ramlog_curr = 0;
       ramlog_session = 0;
     }
-
-    ramlogFile = fopen("ramlog","a");
 
     ramlog_session++;
 
