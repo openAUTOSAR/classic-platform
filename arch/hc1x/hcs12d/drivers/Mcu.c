@@ -285,8 +285,11 @@ Mcu_RawResetType Mcu_GetResetRawValue(void)
 
 void Mcu_SetMode(const Mcu_ModeType McuMode)
 {
-  VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_SETMODE_SERVICE_ID, MCU_E_UNINIT );
-//  VALIDATE( ( McuMode <= Mcu_Global.config->McuNumberOfMcuModes ), MCU_SETMODE_SERVICE_ID, MCU_E_PARAM_MODE );
+
+	VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_SETMODE_SERVICE_ID, MCU_E_UNINIT );
+	VALIDATE( (0), MCU_SETMODE_SERVICE_ID, MCU_E_PARAM_MODE );
+	//VALIDATE( ( McuMode <= Mcu_Global.config->McuNumberOfMcuModes ), MCU_SETMODE_SERVICE_ID, MCU_E_PARAM_MODE );
+
   (void) McuMode;
 
   /* NOT SUPPORTED */
@@ -321,17 +324,7 @@ void McuE_ExitCriticalSection(uint32_t old_state)
 #endif
 }
 
-/**
- * Get the peripheral clock in Hz for a specific device
- */
 
-#if 0
-uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
-{
-
-	return 0;
-}
-#endif
 
 
 /**
