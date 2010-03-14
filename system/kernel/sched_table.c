@@ -140,7 +140,7 @@ static void ScheduleTableConsistenyCheck( OsSchTblType *sTblPtr ) {
 
 StatusType StartScheduleTableRel(ScheduleTableType sid, TickType offset) {
 	StatusType rv = E_OK;
-	OsSchTblType *s_tbl;
+	OsSchTblType *sPtr;
 	TickType max_offset;
 
 
@@ -149,32 +149,32 @@ StatusType StartScheduleTableRel(ScheduleTableType sid, TickType offset) {
 	SCHED_CHECK_ID(sid);
 #endif
 
-	s_tbl = Oil_GetSched(sid);
+	sPtr = Oil_GetSched(sid);
 
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
-	if( s_tbl->sync != NULL ) {
+	if( sPtr->sync != NULL ) {
 		/* EXPLICIT or IMPLICIT */
 
 		/** @req OS452 */
-		if( s_tbl->sync->syncStrategy == IMPLICIT ) {
+		if( sPtr->sync->syncStrategy == IMPLICIT ) {
 			rv = E_OS_ID;
 			goto err;
 		}
 	}
 #endif
 
-	max_offset = Os_CounterGetMaxValue(s_tbl->counter);
+	max_offset = Os_CounterGetMaxValue(sPtr->counter);
 #if (OS_STATUS_EXTENDED == STD_ON )
 	/** @req OS276 */
 	/** @req OS332 */
-	if( (offset == 0) || ((offset + Os_SchTblGetInitialOffset(s_tbl)) > max_offset ) ) {
+	if( (offset == 0) || ((offset + Os_SchTblGetInitialOffset(sPtr)) > max_offset ) ) {
 		rv = E_OS_VALUE;
 		goto err;
 	}
 #endif
 
 	/** @req OS277 */
-	if( s_tbl->state != SCHEDULETABLE_STOPPED ) {
+	if( sPtr->state != SCHEDULETABLE_STOPPED ) {
 		rv = E_OS_STATE;
 		goto err;
 	}
@@ -182,8 +182,11 @@ StatusType StartScheduleTableRel(ScheduleTableType sid, TickType offset) {
 	Irq_Disable();
 	/* calculate the expire value.. */
 	/** @req OS278 */
-	s_tbl->expire_val = Os_CounterCalcModulo( Os_CounterGetValue(s_tbl->counter), max_offset, offset );
-	s_tbl->state = SCHEDULETABLE_RUNNING;
+	sPtr->expire_val = Os_CounterAdd(
+							Os_CounterGetValue(sPtr->counter),
+							max_offset,
+							offset + Os_SchTblGetInitialOffset(sPtr) );
+	sPtr->state = SCHEDULETABLE_RUNNING;
 	Irq_Enable();
 
 	SCHED_STD_END;
@@ -261,19 +264,19 @@ StatusType StartScheduleTableSynchron(ScheduleTableType sid ){
 /* TODO: Implement StopScheduleTable */
 StatusType StopScheduleTable(ScheduleTableType sid) {
 	StatusType rv = E_OK;
-	OsSchTblType *s_tbl;
+	OsSchTblType *sPtr;
 	/** @req OS279 */
 	SCHED_CHECK_ID(sid);
-	s_tbl = Oil_GetSched(sid);
+	sPtr = Oil_GetSched(sid);
 
 	/** @req OS280 */
-	if(s_tbl->state == SCHEDULETABLE_STOPPED ) {
+	if(sPtr->state == SCHEDULETABLE_STOPPED ) {
 		rv = E_OS_NOFUNC;
 		goto err;
 	}
 
 	/** @req OS281 */
-	s_tbl->state = SCHEDULETABLE_STOPPED;
+	sPtr->state = SCHEDULETABLE_STOPPED;
 
 	SCHED_STD_END;
 }
@@ -526,7 +529,7 @@ void Os_SchTblCheck(OsCounterType *c_p) {
 		/* Check if the expire point have been hit */
 		if( (sched_obj->state == SCHEDULETABLE_RUNNING ||
 				SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS ) &&
-				(c_p->val >= sched_obj->expire_val) )
+				(c_p->val == sched_obj->expire_val) )
 		{
 			OsScheduleTableExpiryPointType * action;
 			int i;
@@ -582,17 +585,19 @@ void Os_SchTblCalcExpire( OsSchTblType *stbl ) {
 	_Bool handleLast = 0;
 
 
-	if( (stbl->expire_curr_index) == SA_LIST_CNT(&stbl->expirePointList) ) {
+
+	if( (stbl->expire_curr_index) == (SA_LIST_CNT(&stbl->expirePointList) - 1) ) {
 		/* We are at the last expiry point */
 		finalOffset = Os_SchTblGetFinalOffset(stbl);
 
 		if (finalOffset != 0) {
-			stbl->expire_val =	Os_CounterCalcModulo(
+			stbl->expire_val =	Os_CounterAdd(
 							Os_CounterGetValue(stbl->counter),
 							Os_CounterGetMaxValue(stbl->counter),
 							finalOffset );
 
 			stbl->expire_curr_index++;
+			return;
 		} else {
 			/* Only single shot may have an offset of 0 */
 			assert(stbl->repeating == SINGLE_SHOT);
@@ -601,7 +606,7 @@ void Os_SchTblCalcExpire( OsSchTblType *stbl ) {
 	}
 
 	if( handleLast ||
-		( (stbl->expire_curr_index) > SA_LIST_CNT(&stbl->expirePointList) ) )
+		( (stbl->expire_curr_index) == SA_LIST_CNT(&stbl->expirePointList) ) )
 	{
 		/* At final offset */
 		/** @req OS194 */
@@ -624,7 +629,7 @@ void Os_SchTblCalcExpire( OsSchTblType *stbl ) {
 				initalOffset = Os_SchTblGetInitialOffset(stbl);
 			}
 
-			stbl->expire_val =	Os_CounterCalcModulo(
+			stbl->expire_val =	Os_CounterAdd(
 							Os_CounterGetValue(stbl->counter),
 							Os_CounterGetMaxValue(stbl->counter),
 							initalOffset );
@@ -633,14 +638,15 @@ void Os_SchTblCalcExpire( OsSchTblType *stbl ) {
 			assert( stbl->repeating == SINGLE_SHOT );
 			/** @req OS009 */
 			stbl->state = SCHEDULETABLE_STOPPED;
-			stbl->expire_curr_index = 0;
 		}
+		stbl->expire_curr_index = 0;
+
 	} else {
 
-		delta = SA_LIST_GET(&stbl->expirePointList,stbl->expire_curr_index+1) -
-				SA_LIST_GET(&stbl->expirePointList,stbl->expire_curr_index) ;
+		delta = SA_LIST_GET(&stbl->expirePointList,stbl->expire_curr_index+1)->offset -
+				SA_LIST_GET(&stbl->expirePointList,stbl->expire_curr_index)->offset ;
 
-		stbl->expire_val =	Os_CounterCalcModulo(
+		stbl->expire_val =	Os_CounterAdd(
 						Os_CounterGetValue(stbl->counter),
 						Os_CounterGetMaxValue(stbl->counter),
 						delta );

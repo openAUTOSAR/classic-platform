@@ -267,9 +267,11 @@ GEN_COUNTER_HEAD {
 	GEN_COUNTER(COUNTER_ID_os_tick,	"COUNTER_ID_OsTick",COUNTER_TYPE_HARD,
 				COUNTER_UNIT_NANO, 0xffff,1,1,0 ),
 	GEN_COUNTER(COUNTER_ID_soft_1,	"counter_soft_1",COUNTER_TYPE_SOFT,
-				COUNTER_UNIT_NANO, 10,1,1,0),
+				COUNTER_UNIT_TICKS,
+				OSMAXALLOWEDVALUE_soft_1,1,1,0),
 	GEN_COUNTER(COUNTER_ID_soft_2,	"counter_soft_2",COUNTER_TYPE_SOFT,
-				COUNTER_UNIT_NANO, 100,1,1,0),
+				COUNTER_UNIT_TICKS,
+				OSMAXALLOWEDVALUE_soft_2,1,1,0),
 };
 
 CounterType Os_Arc_OsTickCounter = COUNTER_ID_OsTick;
@@ -323,22 +325,36 @@ GEN_ALARM_HEAD {
 #if defined(SCHEDULETABLE_USE)
 
 // ---- Table 0 -----
+/* 5 */
 GEN_SCHTBL_TASK_LIST_HEAD( 0, 5 ) {
-	TASK_ID_etask_sup_m
+	TASK_ID_btask_sup_m
 };
 
+/* 7 */
 GEN_SCHTBL_EVENT_LIST_HEAD( 0, 7 ) {
-	{ EVENT_2, TASK_ID_etask_sup_m },
+	{ EVENT_1, TASK_ID_etask_sup_m },
 };
+
+/* 11 */
+GEN_SCHTBL_TASK_LIST_HEAD( 0, 11 ) {
+	TASK_ID_btask_sup_m
+};
+
+GEN_SCHTBL_EVENT_LIST_HEAD( 0, 11 ) {
+	{ EVENT_1, TASK_ID_etask_sup_m },
+};
+
 
 GEN_SCHTBL_EXPIRY_POINT_HEAD( 0 ) {
 	GEN_SCHTBL_EXPIRY_POINT_W_TASK(  0, 5 ),
-	GEN_SCHTBL_EXPIRY_POINT_W_EVENT( 0, 7 )
+	GEN_SCHTBL_EXPIRY_POINT_W_EVENT( 0, 7 ),
+	GEN_SCHTBL_EXPIRY_POINT_W_TASK_EVENT( 0, 11 ),
+
 };
 
 // ---- Table 1 -----
 GEN_SCHTBL_TASK_LIST_HEAD(1,2) {
-	TASK_ID_etask_sup_m ,
+	TASK_ID_btask_sup_m ,
 };
 
 GEN_SCHTBL_EXPIRY_POINT_HEAD( 1 ) {
@@ -351,9 +367,9 @@ GEN_SCHTBL_HEAD {
 	GEN_SCHEDULETABLE(
 			0,						      // id
 			"stable0",				      // name
-		    COUNTER_ID_soft_2,		      // counter
+		    COUNTER_ID_soft_1,		      // counter
 		    REPEATING,				      // periodic
-			SCHEDULETABLE_DURATION_1,	  // duration
+			SCHEDULETABLE_DURATION_0,	  // duration
 			GEN_SCHTBL_AUTOSTART_NAME(0)
 			),
 
@@ -361,9 +377,9 @@ GEN_SCHTBL_HEAD {
 	GEN_SCHEDULETABLE(
 			1,						// id
 			"stable1",				// name
-			COUNTER_ID_soft_2,		// counter
+			COUNTER_ID_soft_1,		// counter
 			REPEATING,				// periodic
-			SCHEDULETABLE_DURATION_2,	// duration
+			SCHEDULETABLE_DURATION_1,	// duration
 			NULL
 			),
 };

@@ -34,6 +34,9 @@ extern int test_nr;
 #define RES_ID_ILL				99
 #define ALARM_ID_ILL			99
 #define SCHEDULE_TABLE_ID_ILL 	99
+#define COUNTER_ID_ILL			99
+
+#define EVENT_KILL				0x8000
 
 #if 1
 #define SECTION_SUP

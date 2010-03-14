@@ -46,82 +46,6 @@ static inline struct OsScheduleTableSync *getSync( OsSchTblType *stblPtr ) {
 #endif
 
 
-/**
- *
- * @param a_obj
- */
-static void AlarmProcess( OsAlarmType *a_obj ) {
-	if( a_obj->cycletime == 0 ) {
-		a_obj->active = 0;
-	} else {
-		// Calc new expire value..
-		a_obj->expire_val = Os_CounterCalcModulo( a_obj->expire_val,
-											Os_CounterGetMaxValue(a_obj->counter),
-											a_obj->cycletime);
-	}
-}
-
-static void check_alarms( OsCounterType *c_p ) {
-	OsAlarmType *a_obj;
-
-	SLIST_FOREACH(a_obj,&c_p->alarm_head,alarm_list) {
-		if( a_obj->active && (c_p->val == a_obj->expire_val) ) {
-			/* Check if the alarms have expired */
-			os_isr_printf(D_ALARM,"expired %s id:%d val:%d\n",
-											a_obj->name,
-											a_obj->counter_id,
-											a_obj->expire_val);
-
-			switch( a_obj->action.type ) {
-			case ALARM_ACTION_ACTIVATETASK:
-				if( ActivateTask(a_obj->action.task_id) != E_OK ) {
-					/* We actually do thing here, See 0S321 */
-				}
-				AlarmProcess(a_obj);
-				break;
-			case ALARM_ACTION_SETEVENT:
-				if( SetEvent(a_obj->action.task_id,a_obj->action.event_id) != E_OK ) {
-					// TODO: Check what to do here..
-					assert(0);
-				}
-				AlarmProcess(a_obj);
-				break;
-			case ALARM_ACTION_ALARMCALLBACK:
-				/* TODO: not done */
-				break;
-
-			case ALARM_ACTION_INCREMENTCOUNTER:
-				/** @req OS301 */
-				/* Huh,, recursive....*/
-				IncrementCounter(a_obj->action.counter_id);
-				break;
-			default:
-				assert(0);
-			}
-		}
-	}
-}
-
-
-/**
- * Increment a counter. Checks for wraps.
- *
- * @param counter Ptr to a counter object
- */
-static void IncCounter( OsCounterType *counter ) {
-	// Check for wrap of type
-	if( (counter->val+1) < (counter->val) ) {
-		counter->val = 0;		// This wraps
-	} else {
-		if( counter->val > counter->alarm_base.maxallowedvalue ) {
-			counter->val = 0;
-		} else {
-			counter->val++;
-		}
-	}
-}
-
-
 #define IsCounterValid(_counterId)   ((_counterId) <= Oil_GetCounterCnt())
 
 /**
@@ -133,8 +57,8 @@ static void IncCounter( OsCounterType *counter ) {
 /** @req OS399 */
 StatusType IncrementCounter( CounterType counter_id ) {
 	StatusType rv = E_OK;
-	OsCounterType *counter;
-	counter = Oil_GetCounter(counter_id);
+	OsCounterType *cPtr;
+	cPtr = Oil_GetCounter(counter_id);
 
 	/** @req OS376 */
 	if( !IsCounterValid(counter_id) ) {
@@ -144,17 +68,17 @@ StatusType IncrementCounter( CounterType counter_id ) {
 
 	/* Check param */
 	/** @req OS285 */
-	if( ( counter->type != COUNTER_TYPE_SOFT ) ||
+	if( ( cPtr->type != COUNTER_TYPE_SOFT ) ||
 		( counter_id >= Oil_GetCounterCnt() ) ) {
 		rv =  E_OS_ID;
 		goto err;
 	}
 
 	/** @req OS286 */
-	IncCounter(counter);
+	cPtr->val = Os_CounterAdd( cPtr->val, Os_CounterGetMaxValue(cPtr), 1 );
 
-	check_alarms(counter);
-	Os_SchTblCheck(counter);
+	Os_AlarmCheck(cPtr);
+	Os_SchTblCheck(cPtr);
 
 	/** @req OS321 */
 	COUNTER_STD_END;
@@ -193,12 +117,22 @@ StatusType GetCounterValue( CounterType counter_id , TickRefType tick_ref)
 	COUNTER_STD_END;
 }
 
+/**
+ *
+ * @param counter_id		The counter to be read
+ * @param val[in,out]		in,  The previously read tick value of the counter
+ * 							out, Contains the current tick value of the counter.
+ * @param elapsed_val[out]  The difference
+ * @return
+ */
+
 /** @req OS392 */
 StatusType GetElapsedCounterValue( CounterType counter_id, TickRefType val, TickRefType elapsed_val)
 {
 	StatusType rv = E_OK;
 	OsCounterType *cPtr;
-	TickType tick = 0;
+	TickType currTick = 0;
+	TickType max;
 
 	cPtr = Oil_GetCounter(counter_id);
 
@@ -208,19 +142,20 @@ StatusType GetElapsedCounterValue( CounterType counter_id, TickRefType val, Tick
 		goto err;
 	}
 
+	max = Os_CounterGetMaxValue(cPtr);
 	/** @req OS391 */
-	if( *val > Os_CounterGetMaxValue(cPtr) ) {
+	if( *val > max ) {
 		rv = E_OS_VALUE;
 		goto err;
 	}
 
-	GetCounterValue(counter_id,&tick);
+	GetCounterValue(counter_id,&currTick);
 
 	/** @req OS382 */
-	*elapsed_val = tick - *val;
+	*elapsed_val = Os_CounterDiff(currTick,*val,max);
 
 	/** @req OS460 */
-	*val = tick;
+	*val = currTick;
 
 	COUNTER_STD_END;
 }
@@ -245,16 +180,16 @@ void OsTick( void ) {
 	// if not used, os_tick_counter < 0
 	if (Os_Arc_OsTickCounter >= 0) {
 
-		OsCounterType *c_p = Oil_GetCounter(Os_Arc_OsTickCounter);
+		OsCounterType *cPtr = Oil_GetCounter(Os_Arc_OsTickCounter);
 
 		os_sys.tick++;
 
-		IncCounter(c_p);
+		cPtr->val = Os_CounterAdd( cPtr->val, Os_CounterGetMaxValue(cPtr), 1 );
 
-	//	os_sys.tick = c_p->val;
+	//	os_sys.tick = cPtr->val;
 
-		check_alarms(c_p);
-		Os_SchTblCheck(c_p);
+		Os_AlarmCheck(cPtr);
+		Os_SchTblCheck(cPtr);
 	}
 }
 

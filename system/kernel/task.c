@@ -49,7 +49,7 @@ void Os_TaskStartExtended( void ) {
 		Os_IrqClearAll();
 	}
 
-#warning Dont I have to check this at terminate task also?
+// TODO:Dont I have to check this at terminate task also?
 
 	/** @req OS069 */
 	ERRORHOOK(E_OS_MISSINGEND);
@@ -205,10 +205,10 @@ TaskType Os_AddTask( OsPcbType *pcb ) {
 
 
 #define PRIO_ILLEGAL	-100
-// TODO: we can't have O(n) search here.. hash on prio instead
 
 /**
  * Find the top priority task. Even the running task is included.
+ * TODO: we can't have O(n) search here.. hash on prio instead
  *
  * @return
  */
@@ -289,6 +289,7 @@ OsPcbType *Os_FindTopPrioTask( void ) {
 void Os_Dispatch( _Bool force ) {
 	OsPcbType *pcbPtr;
 	OsPcbType *currPcbPtr;
+	(void)force;
 
 	assert(os_sys.int_nest_cnt == 0);
 	assert(os_sys.scheduler_lock == 0 );
@@ -322,38 +323,6 @@ void Os_Dispatch( _Bool force ) {
 		}
 #endif
 
-#if 0
-		// Make a simple stack check for prio procs...
-		// See OS068, Autosar SWS
-		{
-			uint32_t stackp = (uint32_t)Os_ArchGetStackPtr();
-			uint32_t smallc_size = Os_ArchGetScSize();
-
-			// enough size to place a small context on the stack
-			// top( low address ) + small context > current stackpointer
-			if( (uint32_t)(currPcbPtr->stack.top + smallc_size) > stackp ) {
-				ShutdownOS(E_OS_STACKFAULT);
-			}
-		}
-#endif
-
-		/* Cases:
-		 * 1. Re-Activate the same basic task again -> Os_ArchSwapContextToW()
-		 * 2. Swap out a terminated task -> Os_ArchSwapContextToW()
-		 * 3. Normal swap -> Os_ArchSwapContext()
-		 */
-
-#if 0
-		/* Force is ONLY used from TerminateTask() */
-		if( force ) {
-			Os_StackSetup(pcbPtr);
-			OsArch_SetTaskEntry(pcbPtr);
-			// TODO: This really need to be done
-			Os_ArchSetupContext(pcbPtr);
-			// Os_ArchSetSpAndCall(pcbPtr->stack.curr,Os_TaskStartBasic);
-		}
-#endif
-
 		Os_ArchSwapContext(currPcbPtr,pcbPtr);
 
 		pcbPtr = Os_TaskGetCurrent();
@@ -364,14 +333,14 @@ void Os_Dispatch( _Bool force ) {
 		PRETASKHOOK();
 
 	} else {
+		/* We want to run the same task, again. This only happens
+		 * when we have multiple activation of a basic task (
+		 * extended tasks have an activation limit of 1)
+		 */
+
+		/* Setup the stack again, and just call the basic task */
 		Os_StackSetup(pcbPtr);
 		Os_ArchSetSpAndCall(pcbPtr->stack.curr,Os_TaskStartBasic);
-#if 0
-		/* We haven't removed ourselves from the ready list? */
-		assert(currPcbPtr->state != ST_WAITING);
-		/* We have terminated and found us in the ready list? */
-		assert(currPcbPtr->state != ST_SUSPENDED);
-#endif
 	}
 }
 
@@ -413,22 +382,13 @@ void Os_Arc_GetStackInfo( TaskType task, StackInfoType *s) {
 }
 
 
-#if 0
-OsPcbType *os_find_higher_priority_task( OsPriorityType prio ) {
-	OsPcbType *i_pcb;
-	OsPcbType *h_prio_pcb = NULL;
-	OsPriorityType t_prio = prio;
-
-	TAILQ_FOREACH(i_pcb,& os_sys.ready_head,ready_list) {
-		if( i_pcb->prio > t_prio ) {
-			t_prio = i_pcb->prio;
-			h_prio_pcb = i_pcb;
-		}
-	}
-	return h_prio_pcb;
-}
-#endif
-
+/**
+ * Returns the state of a task (running, ready, waiting, suspended)
+ * at the time of calling GetTaskState.
+ *
+ * @param TaskId  Task reference
+ * @param State   Reference to the state of the task
+ */
 
 StatusType GetTaskState(TaskType TaskId, TaskStateRefType State) {
 	state_t curr_state = os_pcb_get_state(os_get_pcb(TaskId));

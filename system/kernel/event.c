@@ -89,7 +89,6 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 
 	dest_pcb = os_get_pcb(TaskID);
 
-#warning OS327 Scalability class 3 and 4 should always use extended status
 
 	if( TaskID  >= Oil_GetTaskCnt() ) {
 		rv = E_OS_ID;
@@ -118,6 +117,9 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 	 * see chapter 13.5.3.1, message notification mechanism, alarm expiration, if event setting
 	 * defined, see chapter 9.2)
 	 * ... */
+
+	dest_pcb->ev_set |= Mask;
+
 	if( (Mask & dest_pcb->ev_wait) ) {
 		/* We have a an event match */
 		if( dest_pcb->state & ST_WAITING) {
@@ -136,7 +138,6 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 		}
 	}
 
-	dest_pcb->ev_set |= Mask;
 	Irq_Restore(flags);
 
 	OS_STD_END_2(OSServiceId_SetEvent,TaskID, Mask);

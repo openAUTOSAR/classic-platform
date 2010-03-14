@@ -89,8 +89,11 @@
 #define SOFT_COUNTER_1_PERIOD		10
 #define SOFT_COUNTER_2_PERIOD		100
 
-#define 	SCHEDULETABLE_DURATION_1		10
-#define 	SCHEDULETABLE_DURATION_2		5
+#define OSMAXALLOWEDVALUE_soft_1	10
+#define OSMAXALLOWEDVALUE_soft_2	100
+
+#define 	SCHEDULETABLE_DURATION_0		15
+#define 	SCHEDULETABLE_DURATION_1		5
 
 #define ALARM_ID_c_sys_activate_btask_h				0
 #define ALARM_ID_c_sys_1_setevent_etask_m			1

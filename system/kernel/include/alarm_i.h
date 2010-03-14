@@ -120,4 +120,7 @@ typedef struct OsAlarm {
 
 } OsAlarmType;
 
+
+void Os_AlarmCheck(OsCounterType *c_p);
+
 #endif /*ALARM_I_H_*/

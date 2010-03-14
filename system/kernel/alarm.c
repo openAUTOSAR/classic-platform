@@ -45,6 +45,15 @@ StatusType GetAlarmBase( AlarmType AlarmId, AlarmBaseRefType Info ) {
     OS_STD_END_2(OSServiceId_GetAlarmBase,AlarmId, Info);
 }
 
+
+/**
+ * The system service GetAlarm returns the relative value in ticks
+ * before the alarm <AlarmID> expires.
+
+ * @param AlarmId	Reference to an alarm
+ * @param Tick[out]	Relative value in ticks before the alarm <AlarmID> expires.
+ * @return
+ */
 StatusType GetAlarm(AlarmType AlarmId, TickRefType Tick) {
     StatusType rv = E_OK;
     OsAlarmType *aPtr;
@@ -60,7 +69,9 @@ StatusType GetAlarm(AlarmType AlarmId, TickRefType Tick) {
 		goto err;
 	}
 
-	*Tick =aPtr->expire_val -  aPtr->counter->val;
+	*Tick = Os_CounterDiff( 	aPtr->expire_val,
+								Os_CounterGetValue(aPtr->counter),
+								Os_CounterGetMaxValue(aPtr->counter) );
 
 	Irq_Restore(flags);
 
@@ -93,32 +104,36 @@ StatusType SetRelAlarm(AlarmType AlarmId, TickType Increment, TickType Cycle){
 	os_isr_printf(D_ALARM,"SetRelAlarm id:%d inc:%d cycle:%d\n",AlarmId,Increment,Cycle);
 
 
-	if( (Increment == 0) ||
-		(Increment > COUNTER_MAX(aPtr)) ||
-		(Cycle < COUNTER_MIN_CYCLE(aPtr)) ||
-		(Cycle > COUNTER_MAX(aPtr)) )
-	{
+	if( (Increment == 0) || (Increment > COUNTER_MAX(aPtr)) ) {
 		/** @req OS304 */
 		rv =  E_OS_VALUE;
 		goto err;
+	} else {
+		if(  Cycle == 0 ||
+			(Cycle >= COUNTER_MIN_CYCLE(aPtr)) ||
+			(Cycle <= COUNTER_MAX(aPtr)) ) {
+			/* OK */
+		} else {
+			/** @req OS304 */
+			rv =  E_OS_VALUE;
+			goto err;
+		}
 	}
 
 	{
-
 		Irq_Disable();
-		if( aPtr->active == 0 ) {
-			aPtr->active = 1;
-		} else {
+		if( aPtr->active == 1 ) {
+			Irq_Enable();
 			rv = E_OS_STATE;
 			goto err;
 		}
 
-		TickType curr_val = aPtr->counter->val;
-		TickType left = COUNTER_MAX(aPtr) - curr_val;
+		aPtr->active = 1;
 
-		aPtr->expire_val = (left < Increment ) ?
-									(curr_val + Increment) :
-									(Increment - curr_val);
+		aPtr->expire_val = Os_CounterAdd(
+								Os_CounterGetValue(aPtr->counter),
+								COUNTER_MAX(aPtr),
+								Increment);
 		aPtr->cycletime = Cycle;
 
 		Irq_Enable();
@@ -130,39 +145,44 @@ StatusType SetRelAlarm(AlarmType AlarmId, TickType Increment, TickType Cycle){
 
 StatusType SetAbsAlarm(AlarmType AlarmId, TickType Start, TickType Cycle) {
 
-	OsAlarmType *a_p;
+	OsAlarmType *aPtr;
 	long flags;
 	StatusType rv = E_OK;
 
-	a_p = Oil_GetAlarmObj(AlarmId);
+	ALARM_CHECK_ID(AlarmId);
 
-	if( a_p == NULL ) {
-	    rv = E_OS_ID;
-	    goto err;
-	}
+	aPtr = Oil_GetAlarmObj(AlarmId);
 
-	if( (Start > COUNTER_MAX(a_p)) ||
-		(Cycle < COUNTER_MIN_CYCLE(a_p)) ||
-		(Cycle > COUNTER_MAX(a_p)) )
-	{
-		/* See SWS, OS304 */
-	    rv = E_OS_VALUE;
-	    goto err;
+	if( Start > COUNTER_MAX(aPtr) ) {
+		/** @req OS304 */
+		rv =  E_OS_VALUE;
+		goto err;
+	} else {
+		if(  Cycle == 0 ||
+			(Cycle >= COUNTER_MIN_CYCLE(aPtr)) ||
+			(Cycle <= COUNTER_MAX(aPtr)) ) {
+			/* OK */
+		} else {
+			/** @req OS304 */
+			rv =  E_OS_VALUE;
+			goto err;
+		}
 	}
 
 	Irq_Save(flags);
-	if( a_p->active == 1 ) {
+	if( aPtr->active == 1 ) {
 		rv = E_OS_STATE;
 		goto err;
 	}
 
-	a_p->active = 1;
+	aPtr->active = 1;
 
-	a_p->expire_val = Start;
-	a_p->cycletime = Cycle;
+	aPtr->expire_val = Start;
+	aPtr->cycletime = Cycle;
+
 	Irq_Restore(flags);
 
-	os_isr_printf(D_ALARM,"  expire:%d cycle:%d\n",a_p->expire_val,a_p->cycletime);
+	os_isr_printf(D_ALARM,"  expire:%d cycle:%d\n",aPtr->expire_val,aPtr->cycletime);
 
 	OS_STD_END_3(OSServiceId_SetAbsAlarm,AlarmId, Start, Cycle);
 }
@@ -189,5 +209,65 @@ StatusType CancelAlarm(AlarmType AlarmId) {
 
 	OS_STD_END_1(OSServiceId_CancelAlarm,AlarmId);
 }
+
+
+
+/**
+ *
+ * @param a_obj
+ */
+static void AlarmProcess( OsAlarmType *aPtr ) {
+	if( aPtr->cycletime == 0 ) {
+		aPtr->active = 0;
+	} else {
+		// Calc new expire value..
+		aPtr->expire_val = Os_CounterAdd( Os_CounterGetValue(aPtr->counter),
+											Os_CounterGetMaxValue(aPtr->counter),
+											aPtr->cycletime);
+	}
+}
+
+void Os_AlarmCheck( OsCounterType *c_p ) {
+	OsAlarmType *a_obj;
+	StatusType rv;
+
+	SLIST_FOREACH(a_obj,&c_p->alarm_head,alarm_list) {
+		if( a_obj->active && (c_p->val == a_obj->expire_val) ) {
+			/* Check if the alarms have expired */
+			os_isr_printf(D_ALARM,"expired %s id:%d val:%d\n",
+											a_obj->name,
+											a_obj->counter_id,
+											a_obj->expire_val);
+
+			switch( a_obj->action.type ) {
+			case ALARM_ACTION_ACTIVATETASK:
+				if( ActivateTask(a_obj->action.task_id) != E_OK ) {
+					/* We actually do thing here, See 0S321 */
+				}
+				AlarmProcess(a_obj);
+				break;
+			case ALARM_ACTION_SETEVENT:
+				rv =  SetEvent(a_obj->action.task_id,a_obj->action.event_id);
+				if( rv != E_OK ) {
+					ERRORHOOK(rv);
+				}
+				AlarmProcess(a_obj);
+				break;
+			case ALARM_ACTION_ALARMCALLBACK:
+				/* TODO: not done */
+				break;
+
+			case ALARM_ACTION_INCREMENTCOUNTER:
+				/** @req OS301 */
+				/* Huh,, recursive....*/
+				IncrementCounter(a_obj->action.counter_id);
+				break;
+			default:
+				assert(0);
+			}
+		}
+	}
+}
+
 
 

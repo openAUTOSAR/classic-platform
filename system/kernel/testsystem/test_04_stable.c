@@ -38,9 +38,12 @@
 #include "arc.h"
 
 
+static 	int subTest = 0;
+
 void etask_sup_l_04(void) {
 	_Bool done = 0;
 	StatusType rv;
+	ScheduleTableStatusType status;
 
 	while (!done) {
 		TEST_RUN();
@@ -104,21 +107,211 @@ void etask_sup_l_04(void) {
 			TEST_ASSERT(rv==E_OK);
 			rv = StopScheduleTable(SCHEDULE_TABLE_1);
 			TEST_ASSERT(rv==E_OK);
+			test_nr = 10;
+			break;
+		/*--------------------------------------------------------------------
+		 * Functional tests, ScheduleTables
+		 *--------------------------------------------------------------------
+		 * - StartScheduleTableRel
+		 * - StartScheduleTableAbs
+		 * - StopScheduleTable
+		 * - NextScheduleTable
+		 * - GetScheduleTableStatus
+		 */
+		case 10:
+			subTest = 0;
+			rv = ActivateTask(TASK_ID_etask_sup_m);
+			TEST_ASSERT( rv == E_OK );
+
+			rv = GetScheduleTableStatus(SCHEDULE_TABLE_0,&status);
+			TEST_ASSERT(rv==E_OK);
+			TEST_ASSERT( status == SCHEDULETABLE_STOPPED );
+			rv = StartScheduleTableRel(SCHEDULE_TABLE_0,2);
+			TEST_ASSERT(rv==E_OK);
+
+			rv = GetScheduleTableStatus(SCHEDULE_TABLE_0,&status);
+			TEST_ASSERT(rv==E_OK);
+			TEST_ASSERT( status == SCHEDULETABLE_RUNNING );
+
+			/* 2+ 5 */
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			subTest = 5;
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+
+			/* 2 more for next*/
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			subTest = 7;
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+
+			/* 4 more for next*/
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			subTest = 11;
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = GetScheduleTableStatus(SCHEDULE_TABLE_0,&status);
+			TEST_ASSERT(rv==E_OK);
+			TEST_ASSERT( status == SCHEDULETABLE_RUNNING );
+
+			/* and the final offset */
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = GetScheduleTableStatus(SCHEDULE_TABLE_0,&status);
+			TEST_ASSERT(rv==E_OK);
+			TEST_ASSERT( status == SCHEDULETABLE_RUNNING );
+
+			/* First offset, again. */
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+
+			/* TODO: More here */
+
 			test_nr = 100;
 			break;
+
+
+#if 0 /* Working single shot case */
+		case 10:
+			subTest = 0;
+			rv = ActivateTask(TASK_ID_etask_sup_m);
+			TEST_ASSERT( rv == E_OK );
+
+			rv = GetScheduleTableStatus(SCHEDULE_TABLE_0,&status);
+			TEST_ASSERT(rv==E_OK);
+			TEST_ASSERT( status == SCHEDULETABLE_STOPPED );
+			rv = StartScheduleTableRel(SCHEDULE_TABLE_0,2);
+			TEST_ASSERT(rv==E_OK);
+
+			rv = GetScheduleTableStatus(SCHEDULE_TABLE_0,&status);
+			TEST_ASSERT(rv==E_OK);
+			TEST_ASSERT( status == SCHEDULETABLE_RUNNING );
+
+			/* 2+ 5 */
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			subTest = 5;
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+
+			/* 2 more for next*/
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			subTest = 7;
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+
+			/* 4 more for next*/
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			subTest = 11;
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = GetScheduleTableStatus(SCHEDULE_TABLE_0,&status);
+			TEST_ASSERT(rv==E_OK);
+			TEST_ASSERT( status == SCHEDULETABLE_RUNNING );
+
+			/* and the final offset */
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = IncrementCounter(COUNTER_ID_soft_1);
+			rv = GetScheduleTableStatus(SCHEDULE_TABLE_0,&status);
+			TEST_ASSERT(rv==E_OK);
+			TEST_ASSERT( status == SCHEDULETABLE_STOPPED );
+			test_nr = 100;
+
+			break;
+#endif
+
+
 		case 100:
+			rv = SetEvent(TASK_ID_etask_sup_m, EVENT_KILL);
+			TEST_ASSERT( rv == E_OK );
 			TerminateTask();
 			break;
 		}
 	}
 }
 
+void etask_sup_m_04(void) {
+
+	TaskType currTask;
+	EventMaskType eventMask;
+	GetTaskID(&currTask);
+	StatusType rv;
+
+	for(;;) {
+		WaitEvent(EVENT_1 | EVENT_KILL );
+		switch(test_nr) {
+		case 10:
+			switch(subTest) {
+			case 7:
+			case 11:
+				printf("etask\n");
+				rv = GetEvent(currTask,&eventMask);
+				TEST_ASSERT( rv == E_OK );
+				TEST_ASSERT(eventMask == EVENT_1 );
+				ClearEvent(EVENT_1);
+				break;
+
+			default:
+				TEST_ASSERT(0);
+				break;
+
+			}
+			break;
+		case 100:
+			rv = TerminateTask();
+			TEST_ASSERT( rv == E_OK );
+			break;
+
+		default:
+			TEST_ASSERT(0);
+			break;
+		}
+	}
+}
+
+
 void btask_sup_l_04(void) {
+
+
+
+}
+
+void btask_sup_m_04(void) {
+
+	switch(test_nr) {
+	case 10:
+		switch(subTest) {
+		case 5:
+		case 11:
+			printf("btask\n");
+			break;
+
+		default:
+			TEST_ASSERT(0);
+			break;
+		}
+
+		break;
+	}
 
 }
 
 
-DECLARE_TEST_ETASK(04, etask_sup_l_04, NULL, NULL );
-DECLARE_TEST_BTASK(04, btask_sup_l_04, NULL, NULL );
+DECLARE_TEST_ETASK(04, etask_sup_l_04, etask_sup_m_04, NULL );
+DECLARE_TEST_BTASK(04, btask_sup_l_04, btask_sup_m_04, NULL );
 
 

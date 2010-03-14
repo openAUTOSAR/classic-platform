@@ -72,16 +72,24 @@ static inline TickType Os_CounterGetValue( OsCounterType *cPtr ) {
 }
 
 
-/**
- *
- * @param curr
- * @param max
- * @param add
- * @return
- */
-static inline TickType Os_CounterCalcModulo( TickType curr, TickType max, TickType add ) {
+static inline TickType Os_CounterDiff( TickType curr, TickType old, TickType max ) {
+	/* + 1 here because it do diff one between OSMAXALLOWEDVALUE and 0.
+	 * That is, if curr = 0, max = 9 and old = 0, then the diff should be 1.
+	 */
+	return (curr >= old ) ? (curr - old) : (curr + (max - old) + 1);
+}
+
+
+static inline TickType Os_CounterAdd( TickType curr, TickType max, TickType add ) {
 	TickType diff = max - curr;
-	return (diff >= add ) ? (curr + add) : (add - curr);
+	TickType result;
+	if( add <= diff  ) {
+		result = curr + add;
+	} else {
+		result = add - (max - curr ) - 1;
+	}
+
+	return result;
 }
 
 
