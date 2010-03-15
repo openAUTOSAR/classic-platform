@@ -189,7 +189,7 @@ SECTIONS
     *(.bank8)
     *(.text.bank8*)
     
-    /* BANK0 MODULES */
+    /* BANK8 MODULES */
     Os_Cfg.o(.text)
     EcuM.o(.text)
     EcuM_Cfg.o(.text)
@@ -392,6 +392,7 @@ SECTIONS
   
   .ramlog :
   {
+    *(.winidea_port)
   	*(.ramlog)
   } > data
   
