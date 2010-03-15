@@ -22,7 +22,7 @@
 //#include <stdio.h>
 #include <assert.h>
 #include "os_test.h"
-#include "int_ctrl.h"
+#include "irq.h"
 
 void isr_l(void ) {
 	switch(test_nr) {
@@ -32,7 +32,7 @@ void isr_l(void ) {
 	case 5:
 		test_nr++;
 		/* Trigger higher prio interrupt */
-		IntCtrl_GenerateSoftInt(EXTI1_IRQn);
+		Irq_GenerateSoftInt(EXTI1_IRQn);
 		TEST_ASSERT(test_nr==8);
 		break;
 	default:
@@ -48,7 +48,7 @@ void isr_m(void ) {
 	case 6:
 		test_nr++;
 		/* Trigger higher prio interrupt */
-		IntCtrl_GenerateSoftInt(EXTI2_IRQn);
+		Irq_GenerateSoftInt(EXTI2_IRQn);
 		TEST_ASSERT(test_nr==7);
 		test_nr++;
 		break;
@@ -83,36 +83,36 @@ void etask_sup_l_04( void ) {
 		switch(test_nr){
 		case 1:
 			// test 01 ===============================================
-			isr1 = Os_CreateIsr(isr_l,6/*prio*/,"ISR_L");
-			IntCtrl_AttachIsr2(isr1,NULL, EXTI0_IRQn);
+			isr1 = Os_Arc_CreateIsr(isr_l,6/*prio*/,"ISR_L");
+			Irq_AttachIsr2(isr1,NULL, EXTI0_IRQn);
 
-			isr2 = Os_CreateIsr(isr_m,7/*prio*/,"ISR_M");
-			IntCtrl_AttachIsr2(isr2,NULL, EXTI1_IRQn);
+			isr2 = Os_Arc_CreateIsr(isr_m,7/*prio*/,"ISR_M");
+			Irq_AttachIsr2(isr2,NULL, EXTI1_IRQn);
 
-			isr3 = Os_CreateIsr(isr_h,8/*prio*/,"ISR_H");
-			IntCtrl_AttachIsr2(isr3,NULL, EXTI2_IRQn);
+			isr3 = Os_Arc_CreateIsr(isr_h,8/*prio*/,"ISR_H");
+			Irq_AttachIsr2(isr3,NULL, EXTI2_IRQn);
 			TEST_OK();
 			test_nr++;
 			break;
 
 		case 2:
 			// test 02 ===============================================
-			IntCtrl_GenerateSoftInt(EXTI0_IRQn);
+			Irq_GenerateSoftInt(EXTI0_IRQn);
 			TEST_ASSERT(test_nr==3);
 			break;
 		case 3:
 			// test 03 ===============================================
-			IntCtrl_GenerateSoftInt(EXTI1_IRQn);
+			Irq_GenerateSoftInt(EXTI1_IRQn);
 			TEST_ASSERT(test_nr==4);
 			break;
 		case 4:
 			// test 04 ===============================================
-			IntCtrl_GenerateSoftInt(EXTI2_IRQn);
+			Irq_GenerateSoftInt(EXTI2_IRQn);
 			TEST_ASSERT(test_nr==5);
 			break;
 		case 5:
 			// test 05 ===============================================
-			IntCtrl_GenerateSoftInt(EXTI2_IRQn);
+			Irq_GenerateSoftInt(EXTI2_IRQn);
 			TEST_ASSERT(test_nr==5);
 			break;
 		case 100:

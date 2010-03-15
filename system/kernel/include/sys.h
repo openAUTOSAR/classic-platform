@@ -13,27 +13,17 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
 #ifndef SYS_H_
 #define SYS_H_
-
-#include "types.h"
-#include "pcb.h"
 
 struct os_conf_global_hook_s;
 
 typedef struct sys_s {
-//	app_t *curr_application;
+//	OsApplicationType *curr_application;
 	/* Current running task*/
-	pcb_t *curr_pcb;
+	OsPcbType *curr_pcb;
 	/* List of all tasks */
-	pcb_t *pcb_list;
+	OsPcbType *pcb_list;
 	/* Interrupt nested count */
 	uint32 int_nest_cnt;
 	/* Ptr to the interrupt stack */
@@ -43,7 +33,7 @@ typedef struct sys_s {
 	// 1-The scheduler is locked (by GetResource() or something else)
 	int scheduler_lock;
 	/* Hooks */
-	struct os_conf_global_hooks_s *hooks;
+	struct OsHooks *hooks;
 
 	// parameters for functions, used by OSErrorXXX()
 	uint32_t param1;
@@ -55,14 +45,14 @@ typedef struct sys_s {
 	/* List of all pcb's,
 	 * Only needed for non-static configuration of the kernel
 	 */
-	TAILQ_HEAD(tailq2,pcb_s) pcb_head;
+	TAILQ_HEAD(,OsPcb) pcb_head;
 	/* Ready queue */
-	TAILQ_HEAD(tailq,pcb_s) ready_head;
+	TAILQ_HEAD(,OsPcb) ready_head;
 } sys_t;
 
 extern sys_t os_sys;
 
-static inline pcb_t *os_get_curr_pcb(  void ) {
+static inline OsPcbType *Os_TaskGetCurrent(  void ) {
 	return os_sys.curr_pcb;
 }
 

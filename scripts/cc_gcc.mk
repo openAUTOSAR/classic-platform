@@ -14,17 +14,15 @@ endif
 # CCFLAGS - compile flags
 
 CC	= 	$(CROSS_COMPILE)gcc
-cflags-y += -O0
-#cflags-y += -O0
-#cflags-y += -O3
+cflags-$(CFG_RELEASE) += -O3
+cflags-$(CFG_DEBUG) += -g -O0
+
+# Remove sections if needed.. may be problems with other compilers here.
+#cflags-y += -ffunction-sections
 
 ifneq ($(filter -O2 -O3 -O1,$(cflags-y)),) 
 	cflags-y += -fno-schedule-insns -fno-schedule-insns2
 endif
-
-# Remove sections if needed.. may be problems with other compilers here.
-#cflags-$(CFG_MPC55XX)  += -ffunction-sections
-
 
 #cflags-y 		+= -c 
 #cflags-y 		+= -fno-common
@@ -36,6 +34,7 @@ cflags-y 		+= -MMD
 # Warnings
 cflags-y          += -Wall
 cflags-y          += -Winline	# warn if inline failed
+#cflags-y          += -pedantic
 
 # Conformance
 cflags-y          += -fno-strict-aliasing
@@ -69,6 +68,7 @@ gcc_lib_path := "$(subst /libgcc.a,,$(shell $(CC) $(CFLAGS) --print-libgcc-file-
 lib_lib_path := "$(subst /libc.a,,$(shell $(CC) $(CFLAGS) --print-file-name=libc.a))"
 libpath-y += -L$(lib_lib_path)
 libpath-y += -L$(gcc_lib_path)
+
 # ---------------------------------------------------------------------------
 # Linker
 #
@@ -88,6 +88,7 @@ TE = elf
 LDMAPFILE = -M > $(subst .$(TE),.map, $@)
 
 libitem-y += $(libitem-yy)
+#LDFLAGS += --gc-section
 
 # ---------------------------------------------------------------------------
 # Assembler

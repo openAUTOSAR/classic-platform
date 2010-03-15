@@ -18,19 +18,18 @@
 #include "internal.h"
 #include "task_i.h"
 #include "hooks.h"
-#include "swap.h"
 #include "stm32f10x.h"
 #include "misc.h"
-#include "int_ctrl.h"
+#include "irq.h"
 #include "core_cm3.h"
 
 extern void *Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
 
-void IntCtrl_Init( void ) {
+void Irq_Init( void ) {
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 }
 
-void IntCtrl_EOI( void ) {
+void Irq_EOI( void ) {
 
 }
 
@@ -54,7 +53,7 @@ static uint32_t NVIC_GetActiveVector( void) {
  * The stack holds C, NVGPR, VGPR and the EXC frame.
  *
  */
-void *IntCtrl_Entry( void *stack_p )
+void *Irq_Entry( void *stack_p )
 {
 	uint32_t vector = 0;
 	uint32_t *stack;
@@ -85,7 +84,7 @@ void *IntCtrl_Entry( void *stack_p )
  * @param vector
  * @param prio
  */
-void IntCtrl_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector, uint8_t prio) {
+void Irq_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector, uint8_t prio) {
 
 	// TODO: Use NVIC_Init here
 	/*
@@ -113,8 +112,8 @@ static inline int osPrioToCpuPio( uint8_t prio ) {
  * @param int_ctrl
  * @param vector
  */
-void IntCtrl_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
-	pcb_t *pcb;
+void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
+	OsPcbType *pcb;
 	NVIC_InitTypeDef irqInit;
 
 	pcb = os_find_task(tid);
@@ -137,7 +136,7 @@ void IntCtrl_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
  *
  * @param vector
  */
-void IntCtrl_GenerateSoftInt( IrqType vector ) {
+void Irq_GenerateSoftInt( IrqType vector ) {
 
 	NVIC->STIR = (vector + 16);
 }
@@ -147,7 +146,7 @@ void IntCtrl_GenerateSoftInt( IrqType vector ) {
  * @param cpu
  * @return
  */
-uint8_t IntCtrl_GetCurrentPriority( Cpu_t cpu) {
+uint8_t Irq_GetCurrentPriority( Cpu_t cpu) {
 
 	uint8_t prio = 0;
 

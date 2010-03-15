@@ -127,6 +127,13 @@
 #define Irq_Disable() 	asm volatile (" wrteei 0");
 #define Irq_Enable() 	asm volatile (" wrteei 1");
 
+#define Irq_SuspendAll() 	Irq_Disable()
+#define Irq_ResumeAll() 	Irq_Enable()
+
+#define Irq_SuspendOs() 	Irq_Disable()
+#define Irq_ResumeOs() 	Irq_Enable()
+
+
 /*-----------------------------------------------------------------*/
 
 /**

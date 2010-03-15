@@ -12,28 +12,19 @@
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
-
-
-
-#include "types.h"
-#include "Cpu.h"
-#include "asm_ppc.h"
-#include "asm_book_e.h"
-#include "sys.h"
-#include "arch.h"
-#include "task_i.h"
 #include "internal.h"
+#include "asm_ppc.h"
 #include "mpc55xx.h"
-#include <assert.h>
+#include "asm_book_e.h"
 
-#define USE_DEBUG
+#define USE_DEBUG_PRINT
 #include "Trace.h"
 
 /**
  * Function make sure that we switch to supervisor mode(rfi) before
  * we call a task for the first time.
  */
-void os_arch_first_call( void )
+void Os_ArchFirstCall( void )
 {
 #if USE_MM_USER_MODE
 
@@ -60,7 +51,7 @@ void os_arch_first_call( void )
 /* TODO: This actually gives the stack ptr here...not the callers stack ptr
  * Should probably be a macro instead..... in some arch part..
  */
-void *os_arch_get_stackptr( void ) {
+void *Os_ArchGetStackPtr( void ) {
 	void *stackp;
 	// Get stack ptr(r1) from current context
 	asm volatile(" mr %0,1":"=r" (stackp));
@@ -68,38 +59,15 @@ void *os_arch_get_stackptr( void ) {
 	return stackp;
 }
 
-unsigned int os_arch_get_sc_size( void ) {
+unsigned int Os_ArchGetScSize( void ) {
 	return SC_SIZE;
 }
 
 extern void os_arch_setup_context_asm( void *context,unsigned int msr);
 
-#define STACK_PATTERN	0x42
-
-#if 0
-
-_Bool os_arch_stack_endmark_ok( pcb_t *pcb ) {
-	uint8_t *end = pcb->stack.top;
-	return ( *end == STACK_PATTERN);
-}
-
-
-void *os_arch_get_stack_usage( pcb_t *pcb ) {
-
-	uint8_t *p = pcb->stack.curr;
-	uint8_t *end = pcb->stack.top;
-
-	while( (*end == STACK_PATTERN) && (end<p)) {
-			end++;
-		}
-	return (void *)end;
-}
-#endif
-
-
 // TODO: I have no clue why I wrote this????
-void os_arch_stack_to_small(pcb_t *pcb ,uint32_t size_min) {
-	pcb_t *t;
+void os_arch_stack_to_small(OsPcbType *pcb ,uint32_t size_min) {
+	OsPcbType *t;
 	uint32_t min;
 
 	while(1) {
@@ -124,30 +92,8 @@ void os_arch_stack_to_small(pcb_t *pcb ,uint32_t size_min) {
  *
  */
 
-void os_arch_setup_context( pcb_t *pcb ) {
+void Os_ArchSetupContext( OsPcbType *pcb ) {
 	uint32_t msr;
-	// Note! stack.curr already points to where to save the context
-
-	// Check that the stack size is enough
-	#define STACK_SIZE_MIN	(SC_SIZE + 16*2 )
-
-	if( pcb->stack.size < (STACK_SIZE_MIN) ) {
-		os_arch_stack_to_small(pcb, STACK_SIZE_MIN);
-	}
-
-#if 0
-	// Fill stack with a nice pattern STACK_PATTERN
-	{
-		uint8_t *p = pcb->stack.curr;
-
-		assert(pcb->stack.curr>pcb->stack.top);
-
-		while(p > (uint8_t *)pcb->stack.top) {
-			--p;
-			*p = STACK_PATTERN;
-		}
-	}
-#endif
 
 	msr = MSR_EE;
 
@@ -155,26 +101,31 @@ void os_arch_setup_context( pcb_t *pcb ) {
 	msr |= MSR_SPE;
 #endif
 
+#if (  OS_SC3 == STD_ON) || (  OS_SC4== STD_ON)
 	if( !pcb->application->trusted ) {
 		// Non-trusted = User mode..
 		msr |= MSR_PR | MSR_DS | MSR_IS;
 	}
+#endif
 	pcb->regs[0] = msr;
+}
 
-	{
-		uint32_t *context = (uint32_t *)pcb->stack.curr;
+/**
+ *
+ * @param pcbPtr
+ */
 
-		context[C_CONTEXT_OFF/4] = SC_PATTERN;
+void OsArch_SetTaskEntry(OsPcbType *pcbPtr ) {
+	uint32_t *context = (uint32_t *)pcbPtr->stack.curr;
 
-		/* Set LR to start function */
-		if( pcb->proc_type == PROC_EXTENDED ) {
-			context[C_LR_OFF/4] = (uint32_t)os_proc_start_extended;
-		} else if( pcb->proc_type == PROC_BASIC ) {
-			context[C_LR_OFF/4] = (uint32_t)os_proc_start_basic;
-		}
+	context[C_CONTEXT_OFF/4] = SC_PATTERN;
+
+	/* Set LR to start function */
+	if( pcbPtr->proc_type == PROC_EXTENDED ) {
+		context[C_LR_OFF/4] = (uint32_t)Os_TaskStartExtended;
+	} else if( pcbPtr->proc_type == PROC_BASIC ) {
+		context[C_LR_OFF/4] = (uint32_t)Os_TaskStartBasic;
 	}
-
-	os_arch_stack_set_endmark(pcb);
 }
 
 
@@ -182,7 +133,7 @@ void os_arch_setup_context( pcb_t *pcb ) {
 #define C_LR_OFF		16
 #define C_CR_OFF		20
 
-void os_arch_print_context( char *str, pcb_t *pcb ) {
+void os_arch_print_context( char *str, OsPcbType *pcb ) {
 	uint32_t *stack;
 
 	dbg_printf("%s CONTEXT: %d\n",str, pcb->pid);
@@ -196,7 +147,7 @@ void os_arch_print_context( char *str, pcb_t *pcb ) {
 }
 
 
-void os_arch_init( void ) {
+void Os_ArchInit( void ) {
 #if defined(CFG_SPE)
 	uint32_t msr = get_msr();
 	msr |= MSR_SPE;

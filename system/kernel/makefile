@@ -5,32 +5,34 @@ vpath-y += $(ARCH_PATH-y)/kernel
 #obj-y += asm_sample.o
 #CFLAGS_asm_sample.o += -O3
 obj-y += arch_krn.o
+obj-$(CFG_HCS12D) += arch_irq.o
 #obj-y += stm32f10x_it.o
 
 # object files 
 obj-y += event.o
 obj-y += init.o
-obj-y += trusted.o
+#obj-y += trusted.o
 obj-y += arch.o
 obj-y += task.o
-obj-y += task_i.o
+#obj-y += task_i.o
 obj-y += resource.o
-obj-y += swap.o
+#obj-y += swap.o
 obj-y += alarm.o
 obj-y += sched_table.o
 obj-y += counter.o
-obj-y += com_internal.o
-obj-y += create.o
-obj-y += Frt.o
-obj-y += stack.o
+#obj-y += com_internal.o
+#obj-y += create.o
+obj-y += sys_tick.o
+#obj-y += stack.o
 obj-y += isr.o
+obj-y += os_arctest.o
 
 
 # These are VERY cpu dependent.. remove
-obj-y += int_ctrl.o
+#obj-y += int_ctrl.o
+obj-y += irq.o
 
 # We are compiling the kernel
-def-y+=CC_KERNEL
 dep-y += asm_offset.h
 dep-y += kernel_offset.h
 dep-$(CFG_ARM_CM3) += arch_offset.h
@@ -51,7 +53,8 @@ asm_offset.h: asm_offset.c
 	@$(SED) -n "/#define/p" $(<:.c=.s) > $@
 	@rm 	$(<:.c=.s)
 	
-VPATH += ..	
+#VPATH += ..
+VPATH += $(ROOTDIR)/system/kernel
 VPATH += $(ROOTDIR)/arch/$(ARCH_FAM)/$(ARCH)/kernel
 VPATH += $(ROOTDIR)/arch/$(ARCH_FAM)/$(ARCH)/drivers
 

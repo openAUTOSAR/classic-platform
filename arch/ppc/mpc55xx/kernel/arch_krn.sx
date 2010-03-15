@@ -2,7 +2,7 @@
 /*
  * IVOR4
  * 1. Save stack frames: EXC, VGPR, NVGPR and C
- * 2. Call IntCtrl_Entry(void *curr_stack)
+ * 2. Call Irq_Entry(void *curr_stack)
  * 2.1 Check for exception
  * 2.2 If softint, clear it.
  * 2.3 If PROC_ISR1, then just call the function
@@ -68,10 +68,22 @@ dummy_int:
 // TODO: this assumes that both are in user mode?.. can this happen under trusted functions?
 //       When I get here we're ALWAYS in kernel mode
 
-.global os_arch_swap_context_to
-.global os_arch_swap_context
+.global Os_ArchSwapContextToW
+.global Os_ArchSwapContextTo
+.global Os_ArchSwapContext
+.global Os_ArchSetSpAndCall
 .section .text
-os_arch_swap_context:
+
+Os_ArchSetSpAndCall:
+		mr r1,r3
+		mtlr r4
+		blr
+
+Os_ArchSwapContextToW:
+		mr 		r1,r5
+		b 		Os_ArchSwapContextTo
+
+Os_ArchSwapContext:
 		// allocate space for context+nvgpr
 		// (no need for proper stack-frame here)
  		stwu    r1,-(C_SIZE+NVGPR_SIZE)(r1)
@@ -98,7 +110,7 @@ os_arch_swap_context:
 
 
 // TODO: If we change application we must change mmu setup
-os_arch_swap_context_to:
+Os_ArchSwapContextTo:
 // Get stack for new task
 		lwz		sp,PCB_STACK_CURR_P(r4)
 

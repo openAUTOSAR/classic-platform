@@ -18,28 +18,20 @@
 #ifndef OS_H_
 #define OS_H_
 
-#define OS_SW_MAJOR_VERSION    1
+#define OS_SW_MAJOR_VERSION    2
 #define OS_SW_MINOR_VERSION    0
 #define OS_SW_PATCH_VERSION    0
 
+#include <assert.h>
 #include "Std_Types.h"
-#if !defined(CC_KERNEL)
 #include "Os_Cfg.h"
-#endif
 #include "MemMap.h"
 #include "Cpu.h"
 
-/* TODO: remove this... */
-// #include "pcb.h"
-/* 13.5.1 */
-/*
-typedef  procid_t		TaskType;
-typedef  event_t	EventMaskType;
-*/
-typedef uint32 EventMaskType;
-typedef EventMaskType *EventMaskRefType;
-typedef uint16 TaskType;
-typedef TaskType *TaskRefType;
+typedef uint32_t 		EventMaskType;
+typedef EventMaskType *	EventMaskRefType;
+typedef uint16_t 		TaskType;
+typedef TaskType *		TaskRefType;
 
 typedef enum {
 	TASK_STATE_WAITING,
@@ -49,60 +41,11 @@ typedef enum {
 } TaskStateType;
 
 
-/*
- * Macros for error handling
- * Registers service id of the erroneous function and the applicable parameters
- * to os_error. Functions that have less than three parameters do not touch
- * os_error.param3. Same rule follows for other parameter counts.
- */
-
-/* Error handling for functions that take no arguments */
-#define OS_STD_END(_service_id) \
-        goto ok;        \
-    err:                \
-        os_error.serviceId=_service_id;\
-        ERRORHOOK(rv);  \
-    ok:                 \
-        return rv;
-
-/* Error handling for functions that take one argument */
-#define OS_STD_END_1(_service_id, _p1) \
-        goto ok;        \
-    err:                \
-    os_error.serviceId=_service_id;\
-        os_error.param1 = (uint32_t) _p1; \
-        ERRORHOOK(rv);  \
-    ok:                 \
-        return rv;
-
-/* Error handling for functions that take two arguments */
-#define OS_STD_END_2(_service_id, _p1,_p2) \
-        goto ok;        \
-    err:                \
-        os_error.serviceId=_service_id;\
-        os_error.param1 = (uint32_t) _p1; \
-        os_error.param2 = (uint32_t) _p2; \
-        ERRORHOOK(rv);  \
-    ok:                 \
-        return rv;
-
-/* Error handling for functions that take three arguments */
-#define OS_STD_END_3(_service_id,_p1,_p2,_p3) \
-        goto ok;        \
-    err:                \
-        os_error.serviceId=_service_id;\
-        os_error.param1 = (uint32_t) _p1; \
-        os_error.param2 = (uint32_t) _p2; \
-        os_error.param3 = (uint32_t) _p3; \
-        ERRORHOOK(rv);  \
-    ok:                 \
-        return rv;
-
-
 typedef TaskStateType *TaskStateRefType;
 
 /* FIXME: OSMEMORY_IS__ , see 8.2*/
 
+#define OSDEFAULTAPPMODE  1
 
 #define INVALID_OSAPPLICATION (-1)
 
@@ -115,7 +58,6 @@ typedef sint32 AppModeType;
 /* FIXME: more types here */
 typedef uint16 ScheduleTableType;
 typedef uint16 GlobalTimeTickType;
-
 
 typedef enum {
 	SCHEDULETABLE_STOPPED,
@@ -178,7 +120,6 @@ void PostTaskHook( void );
 typedef uint16 TrustedFunctionIndexType;
 typedef  void * TrustedFunctionParameterRefType;
 
-
 /* See 8.3.9 */
 #define INVALID_ISR		((sint16)(-1))
 typedef	sint16 ISRType;
@@ -186,7 +127,6 @@ typedef	sint16 ISRType;
 typedef void * MemoryStartAddressType;
 typedef uint32 MemorySizeType;
 
-//#define WaitEvent(...) _WaitEvent(__VA_ARGS__)
 #if 0
 #define WaitEvent(...) SC_CALL(WaitEvent,1,1,__VA_ARGS__)
 #define SetEvent(...) SC_CALL(SetEvent,2,2,__VA_ARGS__)
@@ -197,80 +137,126 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask );
 StatusType ClearEvent( EventMaskType Mask);
 StatusType GetEvent( TaskType TaskId, EventMaskRefType Mask);
 
-
-ApplicationType GetApplicationID( void );
-ISRType GetISRID( void );
-
-
-#define  EnableAllInterrupts() 		Irq_Enable()
-#define  DisableAllInterrupts()		Irq_Disable()
-#define  ResumeAllInterrupts()		Irq_Enable()
-#define  SuspendAllInterrupts()		Irq_Disable()
-#define  ResumeOSInterrupts()		Irq_Enable()
-#define  SuspendOSInterrupts()		Irq_Disable()
-
-#if 0
-void EnableAllInterrups( void )		Irq_Enable()
-void DisableAllInterrupts( void )	Irq_Disable()
-void ResumeAllInterrupts( void )	Irq_Enable()
-void SuspendAllInterrupts( void )	Irq_Disable()
-void ResumeOSInterrupts( void )		Irq_Enable()
-void SuspendOSInterrupts( void )	Irq_Disable()
-#endif
-
-StatusType EnableInterruptSource( ISRType EnableISR );
-StatusType DisableInterruptSource( ISRType EnableISR );
-
-
-ApplicationType GetApplicationID( void );
-ISRType GetISRID( void );
-AccessType CheckISRMemoryAccess( ISRType ISRID,
-								MemoryStartAddressType Address,
-								MemorySizeType Size );
-
-AccessType CheckTaskMemoryAccess( 	TaskType TaskID,
-									MemoryStartAddressType Address,
-									MemorySizeType Size );
 void InitOS( void );
 void StartOS( AppModeType Mode );
 
-StatusType CallTrustedFunction(	TrustedFunctionIndexType FunctionIndex,
-								TrustedFunctionParameterRefType FunctionParams );
 
-StatusType GetTaskID( TaskRefType TaskID );
-StatusType GetTaskState(TaskType task_id, TaskStateRefType state);
 
-void ShutdownOS( StatusType );
-StatusType ActivateTask( TaskType TaskID );
-StatusType TerminateTask( void );
-StatusType ChainTask( TaskType TaskID );
-StatusType Schedule( void );
+ApplicationType GetApplicationID( void );
+ISRType GetISRID( void );
 
-/* TODO: This def. is wrong wrong wrong */
+typedef int8_t Os_IntCounterType;
 
-/* Hmm, OS188 indicates that we must have a locking time here ..*/
-/* and we at least have prio here */
-//typedef const uint32 ResourceType;
-#if 0
+/* requirements here: OS368(ISR2), OS092 */
 
-#define DeclareResource(x) extern ResourceType *(x);
+extern Os_IntCounterType Os_IntDisableAllCnt;
+extern Os_IntCounterType Os_IntSuspendAllCnt;
+extern Os_IntCounterType Os_IntSuspendOsCnt;
 
-StatusType GetResource( ResourceType *ResID );
-StatusType ReleaseResource( ResourceType *ResID);
 
-#else
+
+/** @req OS299 */
+/* OSEK: States that " service  does  not  support  nesting", but says
+ * nothing what to do about it.
+ *
+ * OS092: "  If EnableAllInterrupts()/ResumeAllInterrupts()/ResumeOSInterrupts()
+ * are called and no corresponding DisableAllInterupts()/SuspendAllInterrupts()/
+ * SuspendOSInterrupts()  was  done  before,  the Operating System shall not
+ * perform this OS service.
+ */
+static inline void DisableAllInterrupts( void ) {
+	Irq_Disable();
+	Os_IntDisableAllCnt++;
+	/* No nesting allowed */
+	assert(Os_IntDisableAllCnt>1);
+}
+
+static inline void EnableAllInterrupts( void ) {
+
+	if(Os_IntDisableAllCnt==0) {
+		/** @req OS092 EnableAllInterrupts */
+	} else {
+		Os_IntDisableAllCnt--;
+		Irq_Enable();
+	}
+}
+
+static inline void SuspendAllInterrupts( void ) {
+	Irq_SuspendAll();
+	Os_IntSuspendAllCnt++;
+}
+
+static inline void ResumeAllInterrupts( void ) {
+
+	if(Os_IntSuspendAllCnt==0) {
+		/** @req OS092 ResumeAllInterrupts */
+	} else {
+		Os_IntSuspendAllCnt--;
+		Irq_ResumeAll();
+	}
+}
+
+/* Only ISR2 interrupts should be suspended but this can NEVER be
+ * done in a more efficient way than to disable all, so let's
+ * do that for all targets.
+ */
+
+static inline void SuspendOSInterrupts( void ) {
+	Irq_SuspendOs();
+	Os_IntSuspendOsCnt++;
+}
+
+static inline void ResumeOSInterrupts( void ) {
+
+	if(Os_IntSuspendOsCnt==0) {
+		/** @req OS092 ResumeOSInterrupts */
+	} else {
+		Os_IntSuspendOsCnt--;
+		Irq_ResumeOs();
+	}
+}
+
+/*
+ * Class 2,3 and 4 API
+ */
+ApplicationType GetApplicationID( void );
+AccessType 	CheckISRMemoryAccess( 	ISRType ISRID,
+									MemoryStartAddressType Address,
+									MemorySizeType Size );
+
+AccessType 	CheckTaskMemoryAccess( 	TaskType TaskID,
+									MemoryStartAddressType Address,
+									MemorySizeType Size );
+
+StatusType 	CallTrustedFunction(	TrustedFunctionIndexType FunctionIndex,
+									TrustedFunctionParameterRefType FunctionParams );
+
+StatusType 	GetTaskID(		TaskRefType TaskID );
+StatusType 	GetTaskState(	TaskType task_id, TaskStateRefType state);
+
+void 		ShutdownOS( StatusType );
+StatusType 	ActivateTask( TaskType TaskID );
+StatusType 	TerminateTask( void );
+StatusType 	ChainTask( TaskType TaskID );
+StatusType 	Schedule( void );
 
 typedef uint32 ResourceType;
 #define DeclareResource(x) extern ResourceType (x);
 StatusType GetResource( ResourceType ResID );
 StatusType ReleaseResource( ResourceType ResID);
 
-#endif
+/*
+ * Define the scheduler resource as 0
+ */
+#define	RES_SCHEDULER 			0
 
-#define	RES_SCHEDULER 0
-//DeclareResource(RES_SCHEDULER);
+/*
+ * Priorities of tasks and resources
+ */
 #define OS_TASK_PRIORITY_MIN	0
 #define OS_TASK_PRIORITY_MAX	31
+/* Logical priority is higher higher than normal tasks */
+#define OS_RES_SCHEDULER_PRIO	32
 
 typedef struct OsDriver_s {
 	int	OsGptChannelRef;
@@ -280,9 +266,9 @@ typedef struct OsDriver_s {
  * Free running timer
  *-----------------------------------------------------------------*/
 typedef const uint32 OsTickType;
-void Frt_Init( void );
-void Frt_Start(uint32_t period_ticks);
-uint32_t Frt_GetTimeElapsed( void );
+void Os_SysTickInit( void );
+void Os_SysTickStart(uint32_t period_ticks);
+uint32_t Os_SysTickGetTimeElapsed( void );
 
 /*-------------------------------------------------------------------
  * Counters
@@ -405,6 +391,12 @@ extern os_error_t os_error;
 #define OSError_GetTaskState_TaskId ((TaskType) os_error.param1)
 #define OSError_GetTaskState_State ((TaskStateRefType) os_error.param2)
 
+/** @req OS398 */
+#if defined(LOCALMESSAGESONLY)
+#error LOCALMESSAGESONLY shall not be defined
+#endif
+
+
 /*-------------------------------------------------------------------
  * COM ( TODO : move )
  *-----------------------------------------------------------------*/
@@ -442,13 +434,6 @@ TickType GetOsTick();
 void OsTick(void);
 void OsIdle(void);
 
-// Generate conversion macro'
-// Todo
-#define OS_TICK2NS_OS_TICK_COUNTER(_x)
-#define OS_TICK2US_OS_TICK_COUNTER(_x)
-#define OS_TICK2MS_OS_TICK_COUNTER(_x)
-#define OS_TICK2SEC_OS_TICK_COUNTER(_x)
-
 #define OS_ISR_TYPE2	0
 #define OS_ISR_TYPE1	1
 
@@ -456,33 +441,5 @@ union isr_attr {
 	TaskType tid;
 	void (*entry)(void);
 };
-
-typedef struct StackInfo_s {
-	void *at_swap;	// This task was swapped in with this stack
-	void *top;		// Top of the stack
-	int size;		// Size of the stack
-
-	void *curr;		// current stack ptr
-	void *usage;	// Usage in %
-} StackInfoType;
-
-void Os_GetStackInfo( TaskType pid, StackInfoType *s );
-
-#define OS_STACK_USAGE(_x) ((((_x)->size - (uint32_t)((_x)->usage - (_x)->top))*100)/(_x)->size)
-
-int simple_printf(const char *format, ...);
-
-#define ARRAY_SIZE(_x) sizeof(_x)/sizeof((_x)[0])
-
-#define OS_STR__(x)	#x
-#define OS_STRSTR__(x) OS_STR__(x)
-
-
-TaskType Os_CreateIsr( void  (*entry)(void), uint8_t prio, const char *name );
-#if 0
-void IntCtrl_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector,uint8_t prio);
-void IntCtrl_AttachIsr2(TaskType tid,void *int_ctrl, IrqType vector );
-#endif
-
 
 #endif /*OS_H_*/

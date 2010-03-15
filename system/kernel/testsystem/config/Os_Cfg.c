@@ -13,15 +13,6 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-
-
 /*
  * Configuration
  * ------------------------------------------------
@@ -84,33 +75,39 @@
  *
  *
  */
+#define OS_CFG_API_VERSION 2
 
 #include <stdlib.h>
 #include <stdint.h>
-#include "os_config_macros.h"
 #include "Platform_Types.h"
 #include "Os.h"				// includes Os_Cfg.h
-#include "os_test.h"
+#include "os_config_macros.h"
 #include "kernel.h"
 #include "kernel_offset.h"
 #include "alist_i.h"
 #include "Mcu.h"
+#include "os_test.h"
 
 OsTickType OsTickFreq = 1000;
 
 extern void dec_exception( void );
 
+#if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
 // atleast 1
 #define SERVICE_CNT 1
 
 GEN_TRUSTEDFUNCTIONS_LIST
+#endif
 
 
 //-------------------------------------------------------------------
 
+#if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
 GEN_APPLICATION_HEAD {
 	GEN_APPLICATON(0,"application_1",true,NULL,NULL,NULL , 0,0,0,0,0,0 )
 };
+#endif
+
 //-------------------------------------------------------------------
 
 #define ALIGN_16(x) (((x)>>4)<<4)
@@ -132,32 +129,37 @@ uint8 stack_btask_sup_h[STACK_SIZE_btask_sup_h] SECTION_BSS_SUPER;
 //-------------------------------------------------------------------
 
 GEN_RESOURCE_HEAD {
-	GEN_RESOURCE(RES_SCHEDULER,RESOURCE_TYPE_STANDARD,0,0,0),		// Standard resource..
+	GEN_RESOURCE(RES_SCHEDULER,RESOURCE_TYPE_STANDARD,0),		// Standard resource..
 // Internal resources
-	GEN_RESOURCE(1,RESOURCE_TYPE_INTERNAL,8, APPLICATION_ID_application_1,(1<<TASK_ID_etask_sup_l)),
+	GEN_RESOURCE(1,RESOURCE_TYPE_INTERNAL,0),
 // external resource
-	GEN_RESOURCE(2,RESOURCE_TYPE_STANDARD,0,0,0),
+	GEN_RESOURCE(2,RESOURCE_TYPE_STANDARD,0),
+// external resource
+	GEN_RESOURCE(3,RESOURCE_TYPE_STANDARD,0),
+// external resource
+	GEN_RESOURCE(4,RESOURCE_TYPE_STANDARD,0),
+
 };
 
 //-------------------------------------------------------------------
 
 GEN_TASK_HEAD {
 
-	GEN_ETASK(OsIdle,0,true/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/),
+	GEN_ETASK(OsIdle,      0, FULL, true/*auto*/, NULL/*rsrc*/, 0 ),
 
 /* extended */
-	GEN_ETASK(etask_master,1,true/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/),
+	GEN_ETASK(etask_master,1,FULL,true/*auto*/, NULL/*rsrc*/, 0 ),
 
-	GEN_ETASK(etask_sup_l,2,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/),
-	GEN_ETASK(etask_sup_m,3,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/),
-	GEN_ETASK(etask_sup_h,4,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/),
+	GEN_ETASK(etask_sup_l,2,FULL,false/*auto*/, NULL/*rsrc*/, (1<<2)|(1<<3)|(1<<4) ),
+	GEN_ETASK(etask_sup_m,4,FULL,false/*auto*/, NULL/*rsrc*/, (1<<2)|(1<<3)|(1<<4) ),
+	GEN_ETASK(etask_sup_h,6,FULL,false/*auto*/, NULL/*rsrc*/, (1<<2)|(1<<3)|(1<<4) ),
 
 /* basic */
-	GEN_BTASK(btask_sup_l,2,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/),
-	GEN_BTASK(btask_sup_m,3,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/),
-	GEN_BTASK(btask_sup_h,4,false/*auto*/, NULL/*tm*/, APPLICATION_ID_application_1/*app*/,NULL/*rsrc*/),
+	GEN_BTASK(btask_sup_l,2,FULL,false/*auto*/, NULL/*rsrc*/, (1<<2)|(1<<3)|(1<<4), 1 ),
+	GEN_BTASK(btask_sup_m,4,FULL,false/*auto*/, NULL/*rsrc*/, (1<<2)|(1<<3)|(1<<4), 1 ),
+	GEN_BTASK(btask_sup_h,6,FULL,false/*auto*/, NULL/*rsrc*/, (1<<2)|(1<<3)|(1<<4), 1 ),
 
-	GEN_ISR_2(  TASK_ID_os_tick, "dec", OsTick, /*prio*/ 11, /*type*/ PROC_ISR2,  INTC_VECTOR_EXCEPTION_DEC , NULL, APPLICATION_ID_application_1),
+	GEN_ISR_2(  TASK_ID_os_tick, "dec", OsTick, /*prio*/ 11,  INTC_VECTOR_EXCEPTION_DEC ),
 #if 0
 	// Use the intc_vector tables for now
 	GEN_ISR_2(  TASK_ID_isr_dec, "dec", my_dec, /*prio*/ 11, /*type*/ PROC_ISR2,  INTC_VECTOR_EXCEPTION_DEC , NULL, APPLICATION_ID_application_1),
@@ -196,11 +198,12 @@ GEN_IRQ_PRIORITY_TABLE_HEAD {};
 //-------------------------------------------------------------------
 
 // Generate as <type> <msg_name>_data
+#if 0
 #ifdef ALARM_USE
 int MsgRx_1_data;
 int MsgTx_1_data;
 
-message_obj_t message_list[] = {
+OsMessageType message_list[] = {
 {
 	.property = RECEIVE_UNQUEUED_INTERNAL,
 	.data = &MsgRx_1_data,
@@ -224,12 +227,13 @@ message_obj_t message_list[] = {
 
 MESSAGE_CLASS(rx1,int,,,);
 #endif
+#endif
 
 /*
 typedef struct {
 	message_type_t type;		// RECEIVE_UNQUEUED_INTERNAL, RECEIVE_QUEUE_INTERNAL
 	MessageType send_id;
-	message_notification_t *notification;
+	OsMessageNotificationType *notification;
 	void *queue_data;
 	uint32 	queue_size;
 } message_rx_t;
@@ -263,9 +267,11 @@ GEN_COUNTER_HEAD {
 	GEN_COUNTER(COUNTER_ID_os_tick,	"COUNTER_ID_OsTick",COUNTER_TYPE_HARD,
 				COUNTER_UNIT_NANO, 0xffff,1,1,0 ),
 	GEN_COUNTER(COUNTER_ID_soft_1,	"counter_soft_1",COUNTER_TYPE_SOFT,
-				COUNTER_UNIT_NANO, 10,1,1,0),
+				COUNTER_UNIT_TICKS,
+				OSMAXALLOWEDVALUE_soft_1,1,1,0),
 	GEN_COUNTER(COUNTER_ID_soft_2,	"counter_soft_2",COUNTER_TYPE_SOFT,
-				COUNTER_UNIT_NANO, 100,1,1,0),
+				COUNTER_UNIT_TICKS,
+				OSMAXALLOWEDVALUE_soft_2,1,1,0),
 };
 
 CounterType Os_Arc_OsTickCounter = COUNTER_ID_OsTick;
@@ -318,57 +324,63 @@ GEN_ALARM_HEAD {
 
 #if defined(SCHEDULETABLE_USE)
 
+// ---- Table 0 -----
+/* 5 */
+GEN_SCHTBL_TASK_LIST_HEAD( 0, 5 ) {
+	TASK_ID_btask_sup_m
+};
 
-sched_action_t sched_expire_list_0[] = {
-	{
-		.type = SCHEDULE_ACTION_ACTIVATETASK,
-		.offset = 5,
-		.task_id = TASK_ID_etask_sup_m,
-	},{
-		.type = SCHEDULE_ACTION_SETEVENT,
-		.offset = 7,
-		.task_id = TASK_ID_etask_sup_m,
-		.event_id = EVENT_2,
-	}
+/* 7 */
+GEN_SCHTBL_EVENT_LIST_HEAD( 0, 7 ) {
+	{ EVENT_1, TASK_ID_etask_sup_m },
+};
+
+/* 11 */
+GEN_SCHTBL_TASK_LIST_HEAD( 0, 11 ) {
+	TASK_ID_btask_sup_m
+};
+
+GEN_SCHTBL_EVENT_LIST_HEAD( 0, 11 ) {
+	{ EVENT_1, TASK_ID_etask_sup_m },
 };
 
 
-sched_action_t sched_expire_list_1[] = {
-	{
-		.type = SCHEDULE_ACTION_ACTIVATETASK,
-		.offset = 2,
-		.task_id = TASK_ID_etask_sup_m,
-	}
+GEN_SCHTBL_EXPIRY_POINT_HEAD( 0 ) {
+	GEN_SCHTBL_EXPIRY_POINT_W_TASK(  0, 5 ),
+	GEN_SCHTBL_EXPIRY_POINT_W_EVENT( 0, 7 ),
+	GEN_SCHTBL_EXPIRY_POINT_W_TASK_EVENT( 0, 11 ),
+
 };
 
+// ---- Table 1 -----
+GEN_SCHTBL_TASK_LIST_HEAD(1,2) {
+	TASK_ID_btask_sup_m ,
+};
 
-GEN_SCHEDULETABLE_HEAD {
+GEN_SCHTBL_EXPIRY_POINT_HEAD( 1 ) {
+	GEN_SCHTBL_EXPIRY_POINT_W_TASK( 1, 2 )
+};
+
+GEN_SCHTBL_AUTOSTART(0,SCHTBL_AUTOSTART_ABSOLUTE, 100, OSDEFAULTAPPMODE );
+
+GEN_SCHTBL_HEAD {
 	GEN_SCHEDULETABLE(
-			0,						// id
-			"stable0",				// name
-		    COUNTER_ID_soft_2,		// counter
-			1,						// periodic
-			SCHEDULETABLE_DURATION_1,	// duration
-			0,						// app_mask
-			ARRAY_SIZE(sched_expire_list_0),				// action count
-			sched_expire_list_0, 	// expire ref
-			0,0,0,0, 				// autostart
-			NONE,0,					// sync
-			0,0 					// adjExpPoint
+			0,						      // id
+			"stable0",				      // name
+		    COUNTER_ID_soft_1,		      // counter
+		    REPEATING,				      // periodic
+			SCHEDULETABLE_DURATION_0,	  // duration
+			GEN_SCHTBL_AUTOSTART_NAME(0)
 			),
+
 
 	GEN_SCHEDULETABLE(
 			1,						// id
 			"stable1",				// name
-			COUNTER_ID_soft_2,		// counter
-			1,						// periodic
-			SCHEDULETABLE_DURATION_2,	// duration
-			0,						// app_mask
-			ARRAY_SIZE(sched_expire_list_1),				// action count
-			sched_expire_list_1,	// expire ref
-			0,0,0,0, 				// autostart
-			NONE,0,					// sync
-			0,0 					// adjExpPoint
+			COUNTER_ID_soft_1,		// counter
+			REPEATING,				// periodic
+			SCHEDULETABLE_DURATION_1,	// duration
+			NULL
 			),
 };
 
@@ -377,9 +389,11 @@ GEN_SCHEDULETABLE_HEAD {
 
 // --- HOOKS ---
 
-struct os_conf_global_hooks_s os_conf_global_hooks = {
+struct OsHooks os_conf_global_hooks = {
 		.StartupHook = StartupHook,
+#if (  OS_SC2 == STD_ON ) || ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
 		.ProtectionHook = ProtectionHook,
+#endif
 		.ShutdownHook = ShutdownHook,
 		.ErrorHook = ErrorHook,
 		.PreTaskHook = PreTaskHook,

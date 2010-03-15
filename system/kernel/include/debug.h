@@ -13,46 +13,9 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
 #ifndef DEBUG_H_
 #define DEBUG_H_
 
-#include <stdio.h>
-
-#ifdef USE_DBG_PRINTF
-
-#define DBG_T32_TERMINAL	1
-// Swap hook
-#define DGB_HOOK_SWAP		1
-
-#define DBG_START_OS		1
-
-#define DBG_EXCEPTION 		1
-
-// C99, see gcc manual for more info if no args..
-// WARNING!! This eats lots and lots of stack, about 500bytes ??
-
-//#defineos_printf(format,...) printf(format,__VA_ARGS__)
-#define os_printf(format,...) simple_printf(format,__VA_ARGS__)
-// #define os_printf(format,...) iprintf(format,__VA_ARGS__)
-
-// Macro's that don't take the whole stack...
-// #define os_print_hex()
-// #define os_print(char *str);
-
-#else
-
-#define os_printf(format,...)
-
-#endif
-
-
-
+#error debug.h is obsolete
 
 #endif /*DEBUG_H_*/

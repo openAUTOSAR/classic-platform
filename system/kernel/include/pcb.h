@@ -12,125 +12,191 @@
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
-
-
-
-
-
-
-
-
 #ifndef PCB_H
 #define PCB_H
 
-#include "types.h"
-#include "sys/queue.h"
-#include "Os.h"
-#include "kernel.h"
-#include "counter_i.h"
-#include <stdio.h>
-//#include "app_i.h"
+struct OsApplication;
+struct OsRomPcb;
 
-#define PID_IDLE	0
-#define PRIO_IDLE	0
+#define PID_IDLE			0
+#define PRIO_IDLE			0
 
-#define ST_READY 		1
-#define ST_WAITING		(1<<1)
-#define ST_SUSPENDED	(1<<2)
-#define ST_RUNNING		(1<<3)
-#define ST_NOT_STARTED  (1<<4)
+#define ST_READY 			1
+#define ST_WAITING			(1<<1)
+#define ST_SUSPENDED		(1<<2)
+#define ST_RUNNING			(1<<3)
+#define ST_NOT_STARTED  	(1<<4)
 
 typedef uint16_t state_t;
 
 /* from Os.h types */
-typedef TaskType procid_t;
-typedef EventMaskType event_t;
+typedef TaskType		OsTaskidType;
+typedef EventMaskType 	OsEventType;
 /* Lets have 32 priority levels
  * 0 - Highest prio
  * 31- Lowest
  */
-typedef sint8 prio_t;
+typedef sint8 OsPriorityType;
 
 #define TASK_NAME_SIZE		16
 
-#if 0
-/* Application */
-typedef struct {
-	/* Application id */
-	uint32_t application_id;
-	/* Name of the application */
-	char name[16];
-	/* We let the application have a pool */
-	void *pool;
-	/* if this application is trusted or not */
-	uint8 trusted:1;
-	/* Attached counters */
-	counter_obj_t *counter;
-} app_t;
+
+/* STD container : OsIsr
+ * Class: ALL
+ *
+ * OsIsrCategory:				1    CATEGORY_1 or CATEGORY_2
+ * OsIsrResourceRef:			0..1 Reference to OsResource
+ * OsIsrTimingProtection[C] 	0..1
+ * */
+
+/* STD container : OsIsrResourceLock
+ * Class: 2 and 4
+ *
+ * OsIsrResourceLockBudget  	1    Float in seconds (MAXRESOURCELOCKINGTIME)
+ * OsIsrResourceLockResourceRef 1    Ref to OsResource
+ * */
+
+/* STD container : OsIsrTimingProtection
+ * Class: 2 and 4
+ *
+ * OsIsrAllInterruptLockBudget  0..1 float
+ * OsIsrExecutionBudget 		0..1 float
+ * OsIsrOsInterruptLockBudget 	0..1 float
+ * OsIsrTimeFrame 				0..1 float
+ * OsIsrResourceLock[C] 		0..1
+ * */
+
+
+
+/* STD container : OsHooks
+ * OsErrorHooks:			1
+ * OsPostTaskHook:			1
+ * OsPreTaskHook:			1
+ * OsProtectionHook:		0..1 Class 2,3,4 it's 1 instance
+ * OsShutdownHook:			1
+ * OsStartupkHook:			1
+ * */
+
+typedef struct OsHooks {
+#if (  OS_SC2 == STD_ON ) || ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
+	ProtectionHookType 	ProtectionHook;
 #endif
-typedef rom_app_t app_t;
+	StartupHookType 	StartupHook;
+	ShutdownHookType 	ShutdownHook;
+	ErrorHookType 		ErrorHook;
+	PreTaskHookType 	PreTaskHook;
+	PostTaskHookType 	PostTaskHook;
+} OsHooksType;
+
+/* OsTask/OsTaskSchedule */
+enum OsTaskSchedule {
+	FULL,
+	NON
+};
+
+/*-----------------------------------------------------------------*/
+
+typedef uint8_t proc_type_t;
+
+#define PROC_PRIO		0x1
+#define PROC_BASIC		0x1
+#define PROC_EXTENDED	0x3
+
+#define PROC_ISR		0x4
+#define PROC_ISR1		0x4
+#define PROC_ISR2		0xc
 
 
-struct rom_pcb_s;
+typedef struct {
+	void   		*curr;	// Current stack ptr( at swap time )
+	void   		*top;	// Top of the stack( low address )
+	uint32		size;	// The size of the stack
+} OsStackType;
+
+
+
 
 /* We do ISR and TASK the same struct for now */
-typedef struct pcb_s {
-	procid_t 	pid;					// TASK
-	prio_t  	prio;
+typedef struct OsPcb {
+	OsTaskidType 	pid;					// TASK
+	OsPriorityType  prio;
+#if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
 	ApplicationType application_id;
-	uint32		app_mask;
-	void 		(*entry)();
-	proc_type_t proc_type;
-	uint8		autostart:1;			// TASK
-	stack_t		stack;					// TASK
+	uint32			app_mask;
+#endif
+	void 			(*entry)();
+	proc_type_t 	proc_type;
+	uint8			autostart:1;			// TASK
+	OsStackType		stack;					// TASK
+
+	int				vector; 				// ISR
+	char 			name[TASK_NAME_SIZE];
+#if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
+	OsTimingProtectionType	*timing_protection;
+#endif
+
+	state_t 		state;					// TASK
+	OsEventType 	ev_wait;				// TASK
+	OsEventType 	ev_set;					// TASK
+
+	enum OsTaskSchedule 	scheduling;	// TASK
 	/* belongs to this application */
-	app_t	   	*application;
+	struct OsApplication	*application;
 
-	int			vector; 				// ISR
-	char 		name[TASK_NAME_SIZE];
+	/* OsTaskActivation
+	 * The limit from OsTaskActivation. This is 1 for extended tasks */
+	uint8_t activationLimit;
+	// The number of queued activation of a task
+	int8_t activations;
 
-	timing_protection_t	*timing_protection;
+	// A task can hold only one internal resource and only i f
+	// OsTaskSchedule == FULL
+	OsResourceType *resource_int_p;		// TASK
 
-	state_t 	state;					// TASK
-	event_t 	ev_wait;				// TASK
-	event_t 	ev_set;					// TASK
+    // OsTaskResourceRef
+	// What resources this task have access to
+	// Typically (1<<RES_xxx) | (1<<RES_yyy)
+	uint32_t resourceAccess;
 
-	scheduling_t scheduling;	// TASK
 
-	// A task can hold only one internal resource
-	//ResourceType	resource_internal;	// TASK
-	resource_obj_t *resource_int_p;
+	// What resource that are currently held by this task
+	// Typically (1<<RES_xxx) | (1<<RES_yyy)
+//	uint32_t resourceHolds;
 
-	struct rom_pcb_s *pcb_rom_p;
+	TAILQ_HEAD(,OsResource) resource_head; // TASK
+
+	const struct OsRomPcb *pcb_rom_p;
 
 	/* TODO: Arch specific regs .. make space for them later...*/
 	uint32_t	regs[16]; 				// TASK
 	/* List of PCB's */
-	TAILQ_ENTRY(pcb_s) pcb_list;		// TASK
+	TAILQ_ENTRY(OsPcb) pcb_list;		// TASK
 	/* ready list */
-	TAILQ_ENTRY(pcb_s) ready_list;		// TASK
-} pcb_t;
+	TAILQ_ENTRY(OsPcb) ready_list;		// TASK
+} OsPcbType;
 
-extern pcb_t pcb_list[];
-extern rom_pcb_t rom_pcb_list[];
+/*-----------------------------------------------------------------*/
 
-static inline pcb_t * os_get_pcb( procid_t pid ) {
-	return &pcb_list[pid];
-}
-
-static inline rom_pcb_t * os_get_rom_pcb( procid_t pid ) {
-	return &rom_pcb_list[pid];
-}
-
-static inline prio_t os_pcb_set_prio( pcb_t *pcb, prio_t new_prio ) {
-	prio_t 	old_prio;
-	old_prio = pcb->prio;
-	pcb->prio = new_prio;
-	//simple_printf("set_prio of %s to %d from %d\n",pcb->name,new_prio,pcb->prio);
-	return old_prio;
-}
-
-#define os_pcb_get_state(pcb) ((pcb)->state)
+typedef struct OsRomPcb {
+	OsTaskidType	pid;
+	OsPriorityType	prio;
+	uint32			app_mask;
+	void 			(*entry)();
+	proc_type_t  	proc_type;
+	uint8	 	 	autostart;
+	OsStackType 	stack;
+	int				vector; 				// ISR
+	ApplicationType application_id;
+	char 		 	name[16];
+	enum OsTaskSchedule scheduling;
+	uint32_t 		resourceAccess;
+	// pointer to internal resource
+	// NULL if none
+	OsResourceType	*resource_int_p;
+	OsTimingProtectionType	*timing_protection;
+	uint8_t          activationLimit;
+//	lockingtime_obj_t
+} OsRomPcbType;
 
 #endif
 

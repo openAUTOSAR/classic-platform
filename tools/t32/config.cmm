@@ -1,21 +1,23 @@
 // File to load and save configuration settings to file
 //
-// Commands: 
+// Commands:
 // load - load config
-// save - save present configuration 
+// save - save present configuration
 // debug - print some useful data
 
 // global configuration macros
 GLOBAL &cfg_project_path_g
 GLOBAL &cfg_loadfile_g
 GLOBAL &cfg_cpu_g
+GLOBAL &cfg_cpu_family_g
+
 
 // Global macros
 LOCAL &data_file
 LOCAL &user &cpu
 &user=os.env("username")
 //&cpu=CPU()
-//&data_file="~~~\cfg_t32_"+"&user"+"_"+"&cfg_cpu_g"+".txt" 
+//&data_file="~~~\cfg_t32_"+"&user"+"_"+"&cfg_cpu_g"+".txt"
 //&global_file="~~~\cfg_t32"
 &data_file="~~~\cfg_t32.txt"
 //+"&cfg_cpu_g"+".txt"
@@ -29,27 +31,29 @@ enddo
 
 rm:
     rm &data_file
-    RETURN 
-   
+    RETURN
+
 //--------------------------------------------------------------------
 
 load:
 
   print "loading config from &data_file"
-      
-  if OS.FILE(&data_file) 
+
+  if OS.FILE(&data_file)
   (
     OPEN #1 &data_file /read
-    READ #1 &cfg_project_path_g		
-    READ #1 &cfg_loadfile_g	
-    READ #1 &cfg_cpu_g	
+    READ #1 &cfg_project_path_g
+    READ #1 &cfg_loadfile_g
+    READ #1 &cfg_cpu_g
+    READ #1 &cfg_cpu_family_g
     CLOSE #1
-  ) 
-  ELSE 
+  )
+  ELSE
   (
     &cfg_project_path_g=""
     &cfg_loadfile_g=""
     &cfg_cpu_g=""
+    &cfg_cpu_family_g=""
   )
   RETURN
 
@@ -60,9 +64,10 @@ load:
 save:
   print "Saving config to &data_file"
   OPEN #1 &data_file /create
-  WRITE #1 "&cfg_project_path_g" 
+  WRITE #1 "&cfg_project_path_g"
   WRITE #1 "&cfg_loadfile_g"
   WRITE #1 "&cfg_cpu_g"
+  WRITE #1 "&cfg_cpu_family_g"
   CLOSE #1
   RETURN
 
@@ -73,6 +78,7 @@ debug:
   print "       project_path: &cfg_project_path_g"
   print "       load file:    &cfg_loadfile_g"
   print "       cpu:          &cfg_cpu_g"
+  print "       cpu_fam:      &cfg_cpu_family_g"
   RETURN
 
 
@@ -80,7 +86,7 @@ debug:
 
 dialog_cpu:
   dialog
-(&          
+(&
         HEADER "Select cpu"
         POS 0. 0. 14.
 	      BUTTON "mpc5516" "jumpto mpc5516"
@@ -119,7 +125,7 @@ dialog_project:
         pos 1. 1. 14.
         text "CPU:"
         pos 1. 2. 10.
-CPU:   PULLDOWN "mpc5516,mpc5554,mpc5633M,CortexM3"
+CPU:   PULLDOWN "mpc5516,mpc5554,mpc5633M,CortexM3,HC12DG128A"
         (
         )
         HEADER "Project config"
@@ -129,9 +135,9 @@ CPU:   PULLDOWN "mpc5516,mpc5554,mpc5633M,CortexM3"
 P_PATH: EDIT "&cfg_project_path_g" ""
         pos 51. 4. 3.
         BUTTON "..."
-        (  
+        (
            Dialog.Setdir P_PATH "&cfg_project_path_g/*"
-        )         
+        )
         pos 35. 6. 10.
         DEFBUTTON "Set" "jumpto save_close"
         pos 45. 6. 10.
@@ -147,12 +153,12 @@ save_close:
 win_close:
   dialog.end
 
-// 
+//
 
   enddo
 
 
-  
+
 
 
 

@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <assert.h>
 #define USE_TRACE	1
-#define USE_DEBUG 1
+#define USE_DEBUG_PRINT 1
 #include "Trace.h"
 
 /* Notification callback from channel 0 */
@@ -90,7 +90,7 @@ void PostTaskHook( void ) {
 }
 
 #if 0
-struct os_conf_global_hooks_s os_conf_global_hooks = {
+struct OsHooks os_conf_global_hooks = {
 		.StartupHook = StartupHook,
 		.ProtectionHook = ProtectionHook,
 		.ShutdownHook = ShutdownHook,

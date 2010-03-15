@@ -13,27 +13,30 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-
-/*
- * Hold macros for the generator
+/* Configure "rules"
+ * - Don't pollute the namespace with the generator tools. The tools should
+ *   ONLY know the GEN_xxx macros.
+ * - If something is a container with multiplicity 1 and above, make it a pointer.
+ * - ...
  */
+
 #ifndef _OS_CONFIG_MACROS_H
 #define _OS_CONFIG_MACROS_H
+
+#include "Std_Types.h"
 
 #define false		0
 #define true		1
 
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(_x)		(sizeof(_x)/sizeof((_x)[0]))
+#endif
+
+
 // +1 here.. easy to have a reference..
 #define GEN_TRUSTEDFUNCTIONS_LIST trusted_func_t os_cfg_trusted_list[SERVICE_CNT];
 
-#define GEN_APPLICATION_HEAD rom_app_t rom_app_list[] =
+#define GEN_APPLICATION_HEAD const OsRomApplicationType rom_app_list[] =
 
 #define GEN_APPLICATON(	_id,_name,_trusted,_startuphook,_shutdownhook, \
 						_errorhook,_isr_mask,_scheduletable_mask, _alarm_mask, \
@@ -54,10 +57,24 @@
 }
 
 
-#define GEN_TASK_HEAD const rom_pcb_t rom_pcb_list[] =
+#define GEN_TASK_HEAD const OsRomPcbType rom_pcb_list[] =
 
 
-#define GEN_ETASK( _id, _priority, 	_autostart, _timing_protection, _application_id, _resource_int_p ) \
+
+/**
+ * _id
+ * _priority 		The task priority
+ * _autostart   	true/false
+ * _resource_int_p  Pointer to internal resource.
+ *                  NULL - if no internal resource or scheduling==NON
+ *                  Pointer to
+ * _scheduling      FULL or NON
+ * _resource_mask   Mask of the resources used. Applies to STANDARD and LINKED (NOT INTERNAL)
+ *                  For example if this task would use resource with id 2 and 4 the mask would
+ *                  become (1<<2)|(1<<4) = 0x14 (limits resources to 32).
+ *                  Currently used for calculating the ceiling priority.
+ */
+#define GEN_ETASK( _id, _priority, _scheduling, _autostart, _resource_int_p,  _resource_mask ) \
 {									\
 	.pid = TASK_ID_##_id,           \
 	.name = #_id,					\
@@ -67,12 +84,13 @@
 	.stack.size = sizeof stack_##_id,	\
 	.stack.top = stack_##_id,		\
 	.autostart = _autostart,		\
-	.timing_protection = _timing_protection,\
-	.application_id = _application_id,		\
 	.resource_int_p = _resource_int_p, \
+	.scheduling = _scheduling, \
+	.resourceAccess = _resource_mask, \
+	.activationLimit = 1, \
 }
 
-#define GEN_BTASK( _id, _priority, 	_autostart, _timing_protection, _application_id, _resource_int_p ) \
+#define GEN_BTASK( _id, _priority, _scheduling, _autostart, _resource_int_p,  _resource_mask, _activation_limit ) \
 {									\
 	.pid = TASK_ID_##_id,           \
 	.name = #_id,					\
@@ -82,38 +100,20 @@
 	.stack.size = sizeof stack_##_id,	\
 	.stack.top = stack_##_id,		\
 	.autostart = _autostart,		\
-	.timing_protection = _timing_protection,\
-	.application_id = _application_id,		\
 	.resource_int_p = _resource_int_p, \
+	.scheduling = _scheduling, \
+	.resourceAccess = _resource_mask, \
+	.activationLimit = _activation_limit, \
 }
 
-
-#define GEN_TASK( _id, _name, _entry, _priority, _process_type, _stack_size, _stack_top, \
-				_autostart, _timing_protection, _application_id, _resource_int_p ) \
+#define GEN_ISR_2( _id, _name, _entry, _priority,  _vector ) \
 {									\
 	.pid = _id,						\
 	.name = _name,					\
 	.entry = _entry,				\
 	.prio = _priority,				\
-	.proc_type = _process_type,		\
-	.stack.size = _stack_size,		\
-	.stack.top = _stack_top,		\
-	.autostart = _autostart,		\
-	.timing_protection = _timing_protection,\
-	.application_id = _application_id,		\
-	.resource_int_p = _resource_int_p, \
-}
-
-#define GEN_ISR_2( _id, _name, _entry, _priority, _process_type, _vector,  _timing_protection, _application_id ) \
-{									\
-	.pid = _id,						\
-	.name = _name,					\
-	.entry = _entry,				\
-	.prio = _priority,				\
-	.proc_type = _process_type,		\
+	.proc_type = PROC_ISR2,		    \
 	.vector = _vector,              \
-	.timing_protection = _timing_protection,\
-	.application_id = _application_id,		\
 }
 
 
@@ -127,16 +127,22 @@
 	.vector = _vector,              \
 }
 
-#define GEN_PCB_LIST()	uint8_t pcb_list[PCB_T_SIZE*ARRAY_SIZE(rom_pcb_list)];
+//#define GEN_PCB_LIST()	uint8_t pcb_list[PCB_T_SIZE*ARRAY_SIZE(rom_pcb_list)];
+#define GEN_PCB_LIST()	OsPcbType pcb_list[ARRAY_SIZE(rom_pcb_list)];
 
-#define GEN_RESOURCE_HEAD resource_obj_t resource_list[] =
-#define GEN_RESOURCE( _id, _type, _ceiling_priority, _application_id, _task_mask) \
+#define GEN_RESOURCE_HEAD OsResourceType resource_list[] =
+
+
+/**
+ * _id
+ * _type              RESOURCE_TYPE_STANDARD, RESOURCE_TYPE_LINKED or RESOURCE_TYPE_INTERNAL
+ * _ceiling_priority  The calculated ceiling priority
+ */
+#define GEN_RESOURCE( _id, _type, _ceiling_priority ) \
 {												\
 	.nr= _id,									\
 	.type= _type,								\
 	.ceiling_priority = _ceiling_priority,		\
-	.application_owner_id = _application_id,	\
-	.task_mask = _task_mask,					\
 	.owner = (-1),								\
 }
 
@@ -165,7 +171,7 @@
  *    NOT USED. Set to 0
  */
 
-#define GEN_COUNTER_HEAD counter_obj_t counter_list[] =
+#define GEN_COUNTER_HEAD OsCounterType counter_list[] =
 #define GEN_COUNTER( _id, _name, _type, _unit, 	\
 					_maxallowedvalue, 			\
 					_ticksperbase, 				\
@@ -177,10 +183,32 @@
 	.alarm_base.maxallowedvalue = _maxallowedvalue,	\
 	.alarm_base.tickperbase = _ticksperbase,		\
 	.alarm_base.mincycle = _mincycle,				\
-	.driver.OsGptChannelRef = _gpt_ch  \
 }
+#if 0
+	// For now...
+	.driver.OsGptChannelRef = _gpt_ch
+#endif
 
-#define GEN_ALARM_HEAD alarm_obj_t alarm_list[] =
+
+#define	GEN_ALARM_AUTOSTART_NAME(_id)    &(Os_AlarmAutoStart_ ## _id)
+
+/**
+ * _id
+ * _type
+ * _alarms_time
+ * _cycle_time
+ * _app_mode       Mask of the application modes.
+ */
+#define GEN_ALARM_AUTOSTART(_id, _type, _alarm_time, _cycle_time, _app_mode ) \
+		const OsAlarmAutostartType Os_AlarmAutoStart_ ## _id = \
+		{ \
+			.autostartType = _type, \
+			.alarmTime = _alarm_time, \
+			.cycleTime = _cycle_time, \
+			.appModeRef = _app_mode \
+		}
+
+#define GEN_ALARM_HEAD OsAlarmType alarm_list[] =
 
 /**
  * _id
@@ -192,17 +220,7 @@
  * _counter_id
  *    The id of the counter to drive the alarm
  *
- * _autostart_active
- *     If the alarm should be auto-started.
- *
- * _autostart_alarmtime
- *     Only used if active = 1
- *
- * _autostart_cycletime
- *     Only used if active = 1
- *
- * _autostart_application_mode_mask
- *     Set to 0 for now
+ * _autostart_ref
  *
  * _X_type       - Any of:
  * 					ALARM_ACTION_ACTIVATETASK
@@ -220,10 +238,7 @@
  *
  */
 #define GEN_ALARM( _id, _name, _counter_id,	\
-			_autostart_active,				\
-			_autostart_alarmtime,			\
-			_autostart_cycletime,			\
-			_autostart_application_mode_mask,\
+		    _autostart_ref,                 \
 			_action_type,					\
 			_action_task_id,				\
 			_action_event_id,				\
@@ -232,12 +247,7 @@
 	.name = _name,							\
 	.counter = &counter_list[_counter_id],	\
 	.counter_id = _counter_id,				\
-	.autostart = {							\
-		.active = _autostart_active,		\
-		.alarmtime = _autostart_alarmtime,	\
-		.cycletime = _autostart_cycletime,	\
-		.appmode_mask = _autostart_application_mode_mask,	\
-	},										\
+	.autostartPtr = _autostart_ref,            \
 	.action = {								\
 		.type = _action_type,				\
 		.task_id = _action_task_id,			\
@@ -246,37 +256,100 @@
 	},										\
 }
 
-#define GEN_SCHEDULETABLE_HEAD sched_table_t sched_list[] =
-#define GEN_SCHEDULETABLE(  _id, _name, _counter, _repeating, _length, _application_mask, \
-							_action_cnt, _action_expire_ref, \
-							_autostart_active, _autostart_type, _autostart_rel_offset, _autostart_appmode, \
-							_sync_strategy, _sync_explicit_precision , \
-							_adj_max_advance,_adj_max_retard  ) \
-{												\
-	.name = _name,						\
-	.counter = &counter_list[_counter],	\
-	.repeating = _repeating,			\
-	.length = _length,					\
-	.app_mask = _application_mask,		\
-	.action_list = SA_LIST_HEAD_INITIALIZER(_action_cnt,_action_expire_ref), \
-	.autostart = { \
-		.active = _autostart_active,		\
-		.type = _autostart_type,	\
-		.relOffset = _autostart_rel_offset,	\
-		.appModeRef = _autostart_appmode,	\
-	}, \
-	.sync = { \
-		.syncStrategy = _sync_strategy,		\
-		.explicitPrecision = _sync_explicit_precision,	\
-	}, \
-	.adjExpPoint = { \
-		.maxAdvance = _adj_max_advance,		\
-		.maxRetard = _adj_max_retard,	\
-	} \
+/*
+ *---------------------- SCHEDULE TABLES -----------------------------------
+ */
+
+#define GEN_SCHTBL_EXPIRY_POINT_HEAD(_id ) \
+		OsScheduleTableExpiryPointType Os_SchTblExpPointList_##_id[] =
+
+#define GEN_SCHTBL_EXPIRY_POINT_W_TASK_EVENT(_id, _offset ) 										\
+	{																			\
+		.offset      = _offset,													\
+		.taskList    = Os_SchTblTaskList_ ## _id ## _ ## _offset,				\
+		.taskListCnt = ARRAY_SIZE(Os_SchTblTaskList_ ## _id ## _ ## _offset),	\
+		.eventList   = Os_SchTblEventList_ ## _id ## _ ## _offset,				\
+		.eventListCnt    = ARRAY_SIZE(Os_SchTblEventList_ ## _id ## _ ## _offset)	\
+	}
+
+#define GEN_SCHTBL_EXPIRY_POINT_W_TASK(_id, _offset ) 							\
+	{																			\
+		.offset      = _offset,													\
+		.taskList    = Os_SchTblTaskList_ ## _id ## _ ## _offset,				\
+		.taskListCnt = ARRAY_SIZE(Os_SchTblTaskList_ ## _id ## _ ## _offset),	\
+	}
+
+#define GEN_SCHTBL_EXPIRY_POINT_W_EVENT(_id, _offset ) 							\
+	{																			\
+		.offset      = _offset,													\
+		.eventList   = Os_SchTblEventList_ ## _id ## _ ## _offset,				\
+		.eventListCnt    = ARRAY_SIZE(Os_SchTblEventList_ ## _id ## _ ## _offset)	\
+	}
+
+#define	GEN_SCHTBL_TASK_LIST_HEAD( _id, _offset ) \
+		const TaskType Os_SchTblTaskList_ ## _id ## _ ## _offset[] =
+
+#define	GEN_SCHTBL_EVENT_LIST_HEAD( _id, _offset ) \
+		const OsScheduleTableEventSettingType Os_SchTblEventList_ ## _id ## _ ## _offset[] =
+
+#define GEN_SCHTBL_AUTOSTART(_id, _type, _offset, _app_mode ) \
+		const struct OsSchTblAutostart Os_SchTblAutoStart_ ## _id = \
+		{ \
+			.type = _type, \
+			.offset = _offset, \
+			.appMode = _app_mode, \
+		}
+
+#define GEN_SCHTBL_AUTOSTART_NAME(_id)	&(Os_SchTblAutoStart_ ## _id)
+
+#define GEN_SCHTBL_HEAD OsSchTblType sched_list[] =
+
+/**
+ * _id
+ *    NOT USED
+ *
+ * _name
+ *    Name of the alarm, string
+ *
+ * _counter_ref
+ *    Pointer to the counter that drives the table
+ *
+ * _repeating
+ *   SINGLE_SHOT or REPEATING
+ *
+ * _duration
+ *   The duration of the schedule table
+ *
+ * _autostart_ref
+ *   Pointer to autostart configuration.
+ *   If autostart is desired set name to GEN_SCHTBL_AUTOSTART_NAME(<id>). It also
+ *   requires that GEN_SCHTBL_AUTOSTART(...) is set.
+ *   Set to NULL if not autostart configuration is desired.
+ *
+ * The usage of the macro requires that GEN_SCHTBL_EXPIRY_POINT_HEAD(<id>) is also
+ * set.
+ */
+
+#define GEN_SCHEDULETABLE(  _id, _name, _counter_id, _repeating, \
+							_duration,       \
+							_autostart_ref ) \
+{											 \
+	.name = _name,						     \
+	.counter = &counter_list[_counter_id],	     \
+	.repeating = _repeating,			     \
+	.duration = _duration,					 \
+	.expirePointList = {                     \
+	  .data = (void *)( Os_SchTblExpPointList_ ## _id ), \
+	  .cnt = ARRAY_SIZE(Os_SchTblExpPointList_ ## _id), \
+	 }, \
+	.autostartPtr = _autostart_ref, 			 \
 }
 
+
+#if (  OS_SC3 == STD_ON) || (  OS_SC4 == STD_ON)
+#error OLD or NOT implemented
 #define GEN_HOOKS( _startup, _protection, _shutdown, _error, _pretask, _posttask ) \
-struct os_conf_global_hooks_s os_conf_global_hooks = { \
+struct OsHooks os_conf_global_hooks = { \
 		.StartupHook = _startup, 		\
 		.ProtectionHook = _protection, 	\
 		.ShutdownHook = _shutdown,		\
@@ -284,6 +357,18 @@ struct os_conf_global_hooks_s os_conf_global_hooks = { \
 		.PreTaskHook = _pretask,		\
 		.PostTaskHook = _posttask,		\
 };
+#else
+#define GEN_HOOKS( _startup, _protection, _shutdown, _error, _pretask, _posttask ) \
+struct OsHooks os_conf_global_hooks = { \
+		.StartupHook = _startup, 		\
+		.ShutdownHook = _shutdown,		\
+		.ErrorHook = _error,			\
+		.PreTaskHook = _pretask,		\
+		.PostTaskHook = _posttask,		\
+};
+
+#endif
+
 
 #define GEN_IRQ_VECTOR_TABLE_HEAD 	\
 		 void * Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS] =

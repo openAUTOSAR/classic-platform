@@ -1,6 +1,8 @@
+/* 
+ * Copyright (C) 2009  ArcCore AB <contact@arccore.com> 
+ */
 
 /* For more info on sections check the E500 freescale doc: E500ABIUG.pdf
- *
  *
  */
 OUTPUT_FORMAT("elf32-powerpc", "elf32-powerpc", "elf32-powerpc")
@@ -25,7 +27,11 @@ SECTIONS
 
     .text :
 	{
-    	*(.text .text.* .init .fini* .eini* .gnu.linkonce* .gnu.warning)
+    	*(.text .text.* .init .fini* .eini* .gnu.linkonce* .gnu.warning);
+    	PROVIDE( btask_sup_matrix = .);
+    	SORT(*)(.test_btask);
+    	PROVIDE( etask_sup_matrix = .);
+    	SORT(*)(.test_etask);
 	} > flash
 
 	.fls_rom : {
@@ -86,7 +92,7 @@ SECTIONS
 	.t32_outport ALIGN(0x10): { *(.t32_outport); } 			> ram
 	.got : AT(ALIGN(LOADADDR(.sdata)+SIZEOF(.sdata),4)) { *(.got.plt) *(.got) } > ram
 	.bss : { *(.bss .bss.* COMMON .gnu.linkonce.b.*);__BSS_END 	= .; } 	> ram
-	.init_stack ALIGN(16) (NOLOAD) : {	__SP_END	= .;. = . + 3000; 	__SP_INIT 	= .; } > ram
+	.init_stack ALIGN(16) (NOLOAD) : {	__SP_END	= .;. = . + 200; 	__SP_INIT 	= .; } > ram
 	/* Fls RAM section */
 	.fls_ram ALIGN(16) (NOLOAD) : {
 		__FLS_ERASE_RAM__ = .;

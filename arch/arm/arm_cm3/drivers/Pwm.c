@@ -147,11 +147,11 @@ void Pwm_Init( const Pwm_ConfigType *ConfigPtr )
 
 #if PWM_NOTIFICATION_SUPPORTED==ON
   // Create a task for our interrupt service routine.
-  TaskType tid = Os_CreateIsr(Pwm_Isr, 6 /*prio*/, "PwmIsr");
-  IntCtrl_AttachIsr2(tid,NULL, TIM1_CC_IRQn);
-  IntCtrl_AttachIsr2(tid,NULL, TIM2_IRQn);
-  IntCtrl_AttachIsr2(tid,NULL, TIM3_IRQn);
-  IntCtrl_AttachIsr2(tid,NULL, TIM4_IRQn);
+  TaskType tid = Os_Arc_CreateIsr(Pwm_Isr, 6 /*prio*/, "PwmIsr");
+  Irq_AttachIsr2(tid,NULL, TIM1_CC_IRQn);
+  Irq_AttachIsr2(tid,NULL, TIM2_IRQn);
+  Irq_AttachIsr2(tid,NULL, TIM3_IRQn);
+  Irq_AttachIsr2(tid,NULL, TIM4_IRQn);
 #endif
 
   Pwm_ModuleState = PWM_STATE_INITIALIZED;

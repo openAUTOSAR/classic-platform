@@ -52,7 +52,7 @@ uint32 os_dbg_mask = 0;
 
 // ###############################    APPLICATION     ##############################
 // A single, non-configurable application for now
-rom_app_t rom_app_list[] = {
+OsRomApplicationType rom_app_list[] = {
 	{
 		.application_id = APPLICATION_ID_application_1,
 		.name = "application_1",
@@ -71,7 +71,7 @@ rom_app_t rom_app_list[] = {
 
 
 // #################################    COUNTERS     ###############################
-counter_obj_t counter_list[] = {
+OsCounterType counter_list[] = {
 	{
 		.name = "OsTick",
 		.type = COUNTER_TYPE_HARD,
@@ -85,7 +85,7 @@ counter_obj_t counter_list[] = {
 CounterType Os_Arc_OsTickCounter = COUNTER_ID_OsTick;
 
 // ##################################    ALARMS     ################################
-alarm_obj_t alarm_list[] = {
+OsAlarmType alarm_list[] = {
 	{
 		.name = "ComAlarm",
 		.counter = &counter_list[COUNTER_ID_OsTick],
@@ -120,7 +120,7 @@ alarm_obj_t alarm_list[] = {
 
 
 // ################################    RESOURCES     ###############################
-resource_obj_t resource_list[] = {
+OsResourceType resource_list[] = {
 	{
 		.nr = RES_SCHEDULER,
 		.type = RESOURCE_TYPE_STANDARD,
@@ -138,10 +138,10 @@ uint8_t stack_ReadSwitches[PRIO_STACK_SIZE];
 uint8_t stack_StartupTask[PRIO_STACK_SIZE];
 
 // #####################    TIMING PROTECTIONS (TASKS, ISRS)     ###################
-timing_protection_t timing_protection_list[] = {
+OsTimingProtectionType timing_protection_list[] = {
 };
 
-rom_pcb_t rom_pcb_list[] = {
+OsRomPcbType rom_pcb_list[] = {
 // ##################################    TASKS     #################################
 	{
 		.pid = TASK_ID_ComTask,
@@ -199,7 +199,7 @@ GEN_IRQ_PRIORITY_TABLE_HEAD {};
 
 
 // ##################################    HOOKS    ##################################
-struct os_conf_global_hooks_s os_conf_global_hooks = {
+struct OsHooks os_conf_global_hooks = {
 		.StartupHook = StartupHook,
 		.ProtectionHook = ProtectionHook,
 		.ShutdownHook = ShutdownHook,

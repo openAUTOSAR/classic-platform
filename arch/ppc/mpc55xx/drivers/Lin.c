@@ -329,11 +329,11 @@ void Lin_InitChannel(  uint8 Channel,   const Lin_ChannelConfigType* Config )
 	// Install the interrupt
 	if (Channel > 3)
 	{
-	  IntCtrl_InstallVector(aIntFnc[Channel],SCI_E_COMB + Channel,LIN_PRIO,CPU_Z1);
+	  Irq_InstallVector(aIntFnc[Channel],SCI_E_COMB + Channel,LIN_PRIO,CPU_Z1);
 	}
 	else
 	{
-	  IntCtrl_InstallVector(aIntFnc[Channel],SCI_A_COMB + Channel,LIN_PRIO,CPU_Z1);
+	  Irq_InstallVector(aIntFnc[Channel],SCI_A_COMB + Channel,LIN_PRIO,CPU_Z1);
 	}
 
 	esciHw->CR2.B.MDIS = 0;/* The module is enabled by writing the ESCIx_CR2[MDIS] bit to 0. */

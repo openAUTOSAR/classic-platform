@@ -28,7 +28,7 @@
 #include "EcuM_Cbk.h"
 #include "Mcu.h"
 #include "Det.h"
-#include "int_ctrl.h"
+#include "irq.h"
 
 EcuM_GobalType internal_data;
 
@@ -58,7 +58,7 @@ void EcuM_Init( void )
 	InitOS();
 
 	// Enable interrupts
-	IntCtrl_Init();
+	Irq_Init();
 
 
 	// Determine PostBuild configuration
@@ -102,7 +102,7 @@ void EcuM_StartupTwo()
 
 #if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
 	// Start timer to wait for NVM job to complete
-	timer = Frt_GetTimeElapsed();
+	timer = Os_SysTickGetTimeElapsed();
 #endif
 
 	// Prepare the system to startup RTE
@@ -112,7 +112,7 @@ void EcuM_StartupTwo()
 
 #if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
 	// Wait for the NVM job to terminate
-	while(Frt_GetTimeElapsed()-timer < internal_data.config.EcuMNvramReadAllTimeout)
+	while(Os_SysTickGetTimeElapsed()-timer < internal_data.config.EcuMNvramReadAllTimeout)
 	{
 		//TODO
 	}
@@ -134,9 +134,17 @@ void EcuM_Shutdown()
 	EcuM_OnGoOffTwo();
 
 	if (internal_data.shutdown_target == ECUM_STATE_OFF)
+	{
 		EcuM_AL_SwitchOff();
+	}
 	else
+	{
+#if (MCU_PERFORM_RESET_API == STD_ON)
 		Mcu_PerformReset();
+#else
+		for(;;);
+#endif
+	}
 }
 
 Std_ReturnType EcuM_GetState(EcuM_StateType* state)

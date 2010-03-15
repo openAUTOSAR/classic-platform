@@ -13,46 +13,38 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
 #ifndef EXT_CONFIG_H_
 #define EXT_CONFIG_H_
 
 /* Created in Oil_Config */
-struct pcb_s;
-struct alarm_obj_s;
-struct counter_obj_s;
-struct sched_table_s;
-//struct app_s;
-struct rom_app_s;
-struct resource_obj_s;
-struct rom_app_s;
-struct message_obj_s;
-//extern struct pcb_s pcb_list[];
-//extern struct app_s app_list[];
-//extern struct rom_app_s rom_app_list[];
+struct OsPcb;
+struct OsAlarm;
+struct OsCounter;
+struct OsSchTbl;
+struct OsResource;
+struct OsMessage;
+#if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
+struct OsRomApplication;
+#endif
 
+#if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
 int Oil_GetApplCnt(void);
-struct rom_app_s *Oil_GetApplObj( ApplicationType application_id );
+struct OsRomApplication *Oil_GetApplObj( ApplicationType application_id );
+#endif
 int Oil_GetTaskCnt(void);
 void *Oil_GetIdleProcStack(void);
 int Oil_GetResourceCnt(void);
 StatusType Oil_GetAlarmBase(AlarmType alarm_id, AlarmBaseRefType info);
 uint32 Oil_GetAlarmCnt(void);
-struct alarm_obj_s *Oil_GetAlarmObj( AlarmType alarm_id );
-struct counter_obj_s *Oil_GetCounter(CounterType);
+struct OsAlarm *Oil_GetAlarmObj( AlarmType alarm_id );
+struct OsCounter *Oil_GetCounter(CounterType);
 uint32 Oil_GetCounterCnt(void );
 uint32 Oil_GetSchedCnt( void );
-struct sched_table_s *Oil_GetSched( ScheduleTableType sched_id );
+struct OsSchTbl *Oil_GetSched( ScheduleTableType sched_id );
 uint32 Oil_GetServiceCnt( void ) ;
-struct resource_obj_s *Oil_GetResource( ResourceType resource );
+struct OsResource *Oil_GetResource( ResourceType resource );
 
-struct message_obj_s *Oil_GetMessage(MessageType message_id);
+struct OsMessage *Oil_GetMessage(MessageType message_id);
 uint32 Oil_GetMessageCnt(void );
 
 #endif /*EXT_CONFIG_H_*/

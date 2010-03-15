@@ -15,9 +15,9 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include "os_config_macros.h"
 #include "Platform_Types.h"
 #include "Os.h"				// includes Os_Cfg.h
+#include "os_config_macros.h"
 #include "kernel.h"
 #include "kernel_offset.h"
 #include "alist_i.h"
@@ -30,22 +30,12 @@ OsTickType OsTickFreq = 1000;
 // atleast 1
 #define SERVICE_CNT 1
 
-GEN_TRUSTEDFUNCTIONS_LIST
-
-//--- APPLICATIONS ----
-
-GEN_APPLICATION_HEAD {
-
-	GEN_APPLICATON(	0,
-					"application_1",
-					true,
-					NULL,NULL,NULL , 0,0,0,0,0,0 )
-};
-
 // --- RESOURCES ---
 
 GEN_RESOURCE_HEAD {
-	GEN_RESOURCE(RES_SCHEDULER,RESOURCE_TYPE_STANDARD,0,0,0),		// Standard resource..
+	GEN_RESOURCE( 	RES_SCHEDULER,
+					RESOURCE_TYPE_STANDARD,	/* standard, linked, internal */
+					0)                      /* ceiling priority */
 };
 
 //--- TASKS ----
@@ -58,32 +48,32 @@ DECLARE_STACK(btask_3,PRIO_STACK_SIZE);
 GEN_TASK_HEAD {
 	GEN_ETASK(	OsIdle,
 				0,
-				true/*auto*/,
-				NULL/*tm*/,
-				APPLICATION_ID_application_1/*app*/,
-				NULL/*rsrc*/),
+				FULL,   /* scheduling */
+				true,   /* autostart */
+				NULL,   /* internal resource */
+				0       /* rsrc mask */),
 
 	GEN_ETASK(	etask_1,
 				1,
-				true/*auto*/,
-				NULL/*tm*/,
-				APPLICATION_ID_application_1/*app*/,
-				NULL/*rsrc*/),
+				FULL,   /* scheduling */
+				true,   /* autostart */
+				NULL,   /* internal resource */
+				0       /* rsrc mask */),
 
 	GEN_ETASK(	etask_2,
 				2,
-				true/*auto*/,
-				NULL/*tm*/,
-				APPLICATION_ID_application_1/*app*/,
-				NULL/*rsrc*/),
-
+				FULL,   /* scheduling */
+				true,   /* autostart */
+				NULL,   /* internal resource */
+				0       /* rsrc mask */),
 
 	GEN_BTASK(	btask_3,
 				3,
-				false/*auto*/,
-				NULL/*tm*/,
-				APPLICATION_ID_application_1/*app*/,
-				NULL/*rsrc*/),
+				FULL,   /* scheduling */
+				false,   /* autostart */
+				NULL,   /* internal resource */
+				0,      /* rsrc mask */
+				1       /* activation limit */),
 };
 
 GEN_PCB_LIST()
@@ -112,9 +102,11 @@ CounterType Os_Arc_OsTickCounter = COUNTER_ID_OsTick;
 // --- ALARMS ---
 #define ALARM_USE
 
+GEN_ALARM_AUTOSTART( 0, ALARM_AUTOSTART_ABSOLUTE, 100, 10, OSDEFAULTAPPMODE );
+
 GEN_ALARM_HEAD {
 	GEN_ALARM(	0,"Alarm1",COUNTER_ID_OsTick,
-				1,100,10,0,		/*active,start,cycle,app_mask */
+				GEN_ALARM_AUTOSTART_NAME(0),
 				ALARM_ACTION_SETEVENT, TASK_ID_etask_1, 2, 0 ),
 };
 

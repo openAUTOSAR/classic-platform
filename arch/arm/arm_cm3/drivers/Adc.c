@@ -9,7 +9,7 @@
 #include "Det.h"
 #if defined(USE_KERNEL)
 #include "Os.h"
-#include "int_ctrl.h"
+#include "irq.h"
 #endif
 
 
@@ -83,8 +83,8 @@ Std_ReturnType Adc_Init (const Adc_ConfigType *ConfigPtr)
 
       // Connect interrupt to correct isr
 	TaskType tid;
-	tid = Os_CreateIsr(Adc_Group0ConversionComplete,6/*prio*/,"DMA1");
-	IntCtrl_AttachIsr2(tid,NULL, DMA1_Channel1_IRQn);
+	tid = Os_Arc_CreateIsr(Adc_Group0ConversionComplete,6/*prio*/,"DMA1");
+	Irq_AttachIsr2(tid,NULL, DMA1_Channel1_IRQn);
 
     /* Enable DMA1 channel1 */
     DMA_Cmd(DMA1_Channel1, ENABLE);
@@ -265,25 +265,25 @@ void Adc_ConfigureEQADCInterrupts (void)
 
 #if defined(USE_KERNEL)
   TaskType tid;
-  tid = Os_CreateIsr(Adc_EQADCError,EQADC_FISR_OVER_PRIORITY,"Adc_Err");
-  IntCtrl_AttachIsr2(tid,NULL,EQADC_FISR_OVER);
+  tid = Os_Arc_CreateIsr(Adc_EQADCError,EQADC_FISR_OVER_PRIORITY,"Adc_Err");
+  Irq_AttachIsr2(tid,NULL,EQADC_FISR_OVER);
 
-  tid = Os_CreateIsr(Adc_Group0ConversionComplete,EQADC_FIFO0_END_OF_QUEUE_PRIORITY,"Adc_Grp0");
-  IntCtrl_AttachIsr2(tid,NULL,EQADC_FISR0_EOQF0);
+  tid = Os_Arc_CreateIsr(Adc_Group0ConversionComplete,EQADC_FIFO0_END_OF_QUEUE_PRIORITY,"Adc_Grp0");
+  Irq_AttachIsr2(tid,NULL,EQADC_FISR0_EOQF0);
 
-  tid = Os_CreateIsr(Adc_Group1ConversionComplete,EQADC_FIFO1_END_OF_QUEUE_PRIORITY,"Adc_Grp1");
-  IntCtrl_AttachIsr2(tid,NULL,EQADC_FISR1_EOQF1);
+  tid = Os_Arc_CreateIsr(Adc_Group1ConversionComplete,EQADC_FIFO1_END_OF_QUEUE_PRIORITY,"Adc_Grp1");
+  Irq_AttachIsr2(tid,NULL,EQADC_FISR1_EOQF1);
 
 #else
-  IntCtrl_InstallVector (Adc_EQADCError,
+  Irq_InstallVector (Adc_EQADCError,
                             EQADC_FISR_OVER,
                             EQADC_FISR_OVER_PRIORITY, CPU_Z1);
 
-  IntCtrl_InstallVector (Adc_Group0ConversionComplete,
+  Irq_InstallVector (Adc_Group0ConversionComplete,
                           EQADC_FISR0_EOQF0,
                           EQADC_FIFO0_END_OF_QUEUE_PRIORITY, CPU_Z1);
 
-  IntCtrl_InstallVector (Adc_Group1ConversionComplete,
+  Irq_InstallVector (Adc_Group1ConversionComplete,
                           EQADC_FISR1_EOQF1,
                           EQADC_FIFO1_END_OF_QUEUE_PRIORITY, CPU_Z1);
 

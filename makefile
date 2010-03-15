@@ -35,7 +35,11 @@ USE_DBG_PRINTF?=y
 Q?=@
 export Q
 export TOPDIR = $(CURDIR)
-export RELEASE = n
+export CFG_DEBUG ?= n
+export CFG_USE_DEBUG_PRINT
+ifeq ($(CFG_DEBUG),n)
+export CFG_RELEASE = y
+endif
 export PATH
 
 ifneq ($(filter clean_all,$(MAKECMDGOALS)),clean_all)
@@ -47,10 +51,7 @@ endif
 USE_T32_SIM?=n
 export USE_T32_SIM
 
-export BUILD_TREE=y
-export RELEASE_TREE=n
-
-override BDIR := system/kernel ${BDIR} 
+# override BDIR := system/kernel ${BDIR} 
 
 # Tools
 # Ugly thing to make things work under cmd.exe 
@@ -65,10 +66,10 @@ export objdir = obj_$(BOARDDIR)
 .PHONY: help
 help:
 	@echo "Make kernel and a simple example"
-	@echo "  > make BOARDDIR=mpc551xsim CROSS_COMPILE=/opt/powerpc-eabi/bin/powerpc-eabi- BDIR=system/kernel,examples/simple all"
+	@echo "  > make BOARDDIR=mpc551xsim CROSS_COMPILE=/opt/powerpc-eabi/bin/powerpc-eabi- BDIR=examples/simple all"
 	@echo ""
 	@echo "Save the config (CROSS_COMPILE and BDIR)"
-	@echo "  > make BOARDDIR=mpc551xsim CROSS_COMPILE=/opt/powerpc-eabi/bin/powerpc-eabi- BDIR=system/kernel,examples/simple save"
+	@echo "  > make BOARDDIR=mpc551xsim CROSS_COMPILE=/opt/powerpc-eabi/bin/powerpc-eabi- BDIR=examples/simple save"
 	@echo ""
 	@echo "Clean"
 	@echo "  > make clean"
@@ -81,6 +82,7 @@ help:
 	@echo ""
 	
 def-$(USE_DBG_PRINTF) += USE_DBG_PRINTF
+def-$(USE_DEBUG_PRINT) += USE_DEBUG_PRINT
 
 
 export CFG_MCU 

@@ -116,7 +116,7 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
 
     #if PWM_NOTIFICATION_SUPPORTED==STD_ON
         // Create a task for our interrupt service routine.
-        TaskType tid = Os_CreateIsr(Pwm_Isr, PWM_ISR_PRIORITY /*prio*/, "PwmIsr");
+        TaskType tid = Os_Arc_CreateIsr(Pwm_Isr, PWM_ISR_PRIORITY /*prio*/, "PwmIsr");
     #endif
 
     /* Clock scaler uses system clock (~64MHz) as source, so prescaler 64 => 1MHz. */
@@ -150,7 +150,7 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
                 // Pwm_DisableNotification(channel);
 
                 // Install ISR
-                IntCtrl_AttachIsr2(tid, NULL, EMISOS200_FLAG_F0 + channel);
+                Irq_AttachIsr2(tid, NULL, EMISOS200_FLAG_F0 + channel);
                 ChannelRuntimeStruct[channel].NotificationRoutine
                         = ConfigPtr->NotificationHandlers[channel_iterator];
         #endif

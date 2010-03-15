@@ -26,7 +26,7 @@
 #include "Spi_Cfg.h"
 
 //#define USE_TRACE 1
-//#define USE_DEBUG	1
+//#define USE_DEBUG_PRINT	1
 #undef DEBUG_LVL
 #define DEBUG_LVL DEBUG_LOW
 #include "Trace.h"

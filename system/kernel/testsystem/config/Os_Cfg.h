@@ -15,22 +15,22 @@
 
 
 
-
-
-
-
-
-/*
- * Os_Cfg.h
- *
- *  Created on: 2008-dec-22
- *      Author: mahi
- */
-
 #ifndef OS_CFG_H_
 #define OS_CFG_H_
 
+
 /* os_config.h */
+
+/*
+ * OsOs container
+ */
+#define OS_SC1 					STD_ON 		/* | OS_SC2 | OS_SC3 | OS_SC4 */
+#define OS_STACK_MONITORING		STD_ON
+#define OS_STATUS_EXTENDED			STD_ON 		/* OS_STATUS_STANDARD */
+#define OS_USE_GET_SERVICE_ID		STD_ON
+#define OS_USE_PARAMETER_ACCESS	STD_ON
+#define OS_RES_SCHEDULER			STD_ON
+
 
 #define APPLICATION_ID_application_1	0
 #define APPLICATION_CNT					1
@@ -66,7 +66,10 @@
 //#define TASK_ID_isr_soft7				4
 
 #define RES_ID_INT_1		1
-#define RES_ID_EXT_1		2
+#define RES_ID_ext_prio_3	2
+#define RES_ID_ext_prio_4	3
+#define RES_ID_ext_prio_5	5
+
 
 #define COUNTER_ID_OsTick		0
 // Driver all alarms
@@ -86,8 +89,11 @@
 #define SOFT_COUNTER_1_PERIOD		10
 #define SOFT_COUNTER_2_PERIOD		100
 
-#define 	SCHEDULETABLE_DURATION_1		10
-#define 	SCHEDULETABLE_DURATION_2		5
+#define OSMAXALLOWEDVALUE_soft_1	10
+#define OSMAXALLOWEDVALUE_soft_2	100
+
+#define 	SCHEDULETABLE_DURATION_0		15
+#define 	SCHEDULETABLE_DURATION_1		5
 
 #define ALARM_ID_c_sys_activate_btask_h				0
 #define ALARM_ID_c_sys_1_setevent_etask_m			1
@@ -112,7 +118,5 @@
 #define EVENT_0	(1<<0)
 #define EVENT_1	(1<<1)
 #define EVENT_2 (1<<2)
-
-
 
 #endif /* OS_CFG_H_ */

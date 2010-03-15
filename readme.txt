@@ -1,4 +1,40 @@
 
+GOAL:
+  Implement Autosar OS scalability Class 1
+
+Limitations:
+  Only extended error checking is used (Scalbility class 3 and 4)
+
+Ongoing:
+  - Autostart of tasks does not work
+  -
+
+Bugs:
+- OsIsrResourceRef ?
+
+APIs for the OS:
+Os.h        - External API for OS
+internal.h  - Internal Kernel ONLY.
+kernel.h    - Types shared between kernel and config
+
+Do we really want to have Os_Cfg.h when compiling the kernel?
+  os_config_macros.h
+  os_config_funcs.h
+
+Add file: os_config_if.h (used only by the kernel)
+  extern int Oil_GetResourceCnt();
+  OsCfg_GetResourceCnt()
+
+internal.h
+  OsStack_IsEndMarkOk()
+
+kernel.h
+  types that are not in it's own header file.
+
+
+=========== OLD ===========
+
+
 Urgent:
 Problems with paths and stuff:
  - New project
