@@ -44,7 +44,7 @@ typedef Std_ReturnType (*Dcm_CallbackChangeIndicationFncType)(Dcm_SesCtrlType se
 typedef Std_ReturnType (*Dcm_CallbackConfirmationRespPendFncType)(Dcm_ConfirmationStatusType status);
 
 // SecurityAccess_<LEVEL>
-typedef Std_ReturnType (*Dcm_CallbackGetSeedFncType)(uint8 *securityAccessDataRecord, uint8 seed, Dcm_NegativeResponseCodeType *errorCode);
+typedef Std_ReturnType (*Dcm_CallbackGetSeedFncType)(uint8 *securityAccessDataRecord, uint8 *seed, Dcm_NegativeResponseCodeType *errorCode);
 typedef Std_ReturnType (*Dcm_CallbackCompareKeyFncType)(uint8 *key);
 
 // PidServices_<PID>
@@ -104,15 +104,17 @@ typedef struct {
 
 // 10.2.42
 typedef struct {
-	Dcm_SecLevelType	DspSecurityLevel;				// (1)
-	uint8				DspSecurityKeySize;				// (1)
-	uint8				DspSecurityNumAttDelay;			// (1)
-	uint8				DspSecurityNumAttLock;			// (1)
-	uint16				DspSecurityDelayTime;			// (1)
-	uint16				DspSecurityDelayTimeOnBoot;		// (1)
-	uint8				DspSecurityADRSize;				// (0..1)
-	uint8				DspSecuritySeedSize;			// (1)
-	boolean				Arc_EOL;
+	Dcm_SecLevelType				DspSecurityLevel;				// (1)
+	uint16							DspSecurityDelayTimeOnBoot;		// (1)
+	uint8							DspSecurityNumAttDelay;			// (1)
+	uint16							DspSecurityDelayTime;			// (1)
+	uint8							DspSecurityNumAttLock;			// (1)
+	uint8							DspSecurityADRSize;				// (0..1)
+	uint8							DspSecuritySeedSize;			// (1)
+	uint8							DspSecurityKeySize;				// (1)
+	Dcm_CallbackGetSeedFncType		GetSeed;
+	Dcm_CallbackCompareKeyFncType	CompareKey;
+	boolean							Arc_EOL;
 } Dcm_DspSecurityRowType;
 
 // 10.2.23

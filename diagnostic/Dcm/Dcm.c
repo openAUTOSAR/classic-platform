@@ -137,6 +137,7 @@ void DslResponseSuppressed(void);
 void DspUdsDiagnosticSessionControl(void);
 void DspUdsEcuReset(void);
 void DspUdsClearDiagnosticInformation(void);
+void DspUdsSecurityAccess(void);
 void DspUdsTesterPresent(void);
 void DspUdsReadDtcInformation(void);
 void DspUdsControlDtcSetting(void);
@@ -267,7 +268,7 @@ void DslInit(void)
 	// Lookup DCM_UDS_ON_CAN
 	for (i = 0; (dslProtocol->DslProtocolRow[i].DslProtocolID != DCM_UDS_ON_CAN) && !dslProtocol->DslProtocolRow[i].Arc_EOL; i++);
 
-	if (dslProtocol->DslProtocolRow[i].DslProtocolID == DCM_UDS_ON_CAN) {
+	if (!dslProtocol->DslProtocolRow[i].Arc_EOL) {
 		protocolUdsOnCan = (Dcm_DslProtocolRowType*)&(dslProtocol->DslProtocolRow[i]);
 	}
 	else {
@@ -557,14 +558,14 @@ void DsdInit(void)
 
 }
 
-boolean LookupSid(uint8 sid, Dcm_DsdServiceType **sidPtr)
+boolean DsDLookupSid(uint8 sid, Dcm_DsdServiceType **sidPtr)
 {
 	boolean returnStatus = TRUE;
 	uint16 i;
 
-	for (i = 0; currentServiceTable->DsdService[i].DsdSidTabServiceId != sid && !currentServiceTable->DsdService[i].Arc_EOL; i++);
+	for (i = 0; (currentServiceTable->DsdService[i].DsdSidTabServiceId != sid) && !currentServiceTable->DsdService[i].Arc_EOL; i++);
 
-	if (currentServiceTable->DsdService[i].DsdSidTabServiceId == sid) {
+	if (!currentServiceTable->DsdService[i].Arc_EOL) {
 		*sidPtr = (Dcm_DsdServiceType*)&currentServiceTable->DsdService[i];
 	}
 	else {
@@ -575,26 +576,34 @@ boolean LookupSid(uint8 sid, Dcm_DsdServiceType **sidPtr)
 	return returnStatus;
 }
 
-boolean DsdCheckIfSessionConfigured(Dcm_DsdServiceType *sidPtr)
+boolean DsdCheckSessionLevel(const Dcm_DspSessionRowType **sessionLevelRefTable)
 {
 	boolean returnStatus = TRUE;
 	Dcm_SesCtrlType currentSession;
 	uint16 i;
 
 	Dcm_GetSesCtrlType(&currentSession);
-	for (i = 0; (sidPtr->DsdSidTabSessionLevelRef[i]->DspSessionLevel != currentSession) && !sidPtr->DsdSidTabSessionLevelRef[i]->Arc_EOL; i++);
-	if (sidPtr->DsdSidTabSessionLevelRef[i]->DspSessionLevel != currentSession) {
+	for (i = 0; (sessionLevelRefTable[i]->DspSessionLevel != currentSession) && !sessionLevelRefTable[i]->Arc_EOL; i++);
+	if (sessionLevelRefTable[i]->Arc_EOL) {
 		returnStatus = FALSE;
 	}
 
 	return returnStatus;
 }
 
-boolean DsdCheckIfSecurityAllowed(Dcm_DsdServiceType *sidPtr)
+
+boolean DsdCheckSecurityLevel(const Dcm_DspSecurityRowType	**securityLevelRefTable)
 {
 	boolean returnStatus = TRUE;
+	Dcm_SecLevelType currentSecurityLevel;
+	uint16 i;
 
-	// TODO: Perform check
+	Dcm_GetSecurityLevel(&currentSecurityLevel);
+	for (i = 0; (securityLevelRefTable[i]->DspSecurityLevel != currentSecurityLevel) && !securityLevelRefTable[i]->Arc_EOL; i++);
+	if (securityLevelRefTable[i]->Arc_EOL) {
+		returnStatus = FALSE;
+	}
+
 	return returnStatus;
 }
 
@@ -642,6 +651,7 @@ void DsdSelectServiceFunction(uint8 sid)
 		break;
 
 	case SID_SECURITY_ACCESS:
+		DspUdsSecurityAccess();
 		break;
 
 	case SID_READ_DATA_BY_PERIODIC_IDENTIFIER:
@@ -694,11 +704,11 @@ void DsdHandleRequest(void)
 
 	/** @req DCM178 **/
 	if (DCM_RESPOND_ALL_REQUEST || ((commonVars.pduRxData->SduDataPtr[0] & 0x7F) < 0x40)) {		/** @req DCM084 **/
-		if (LookupSid(commonVars.pduRxData->SduDataPtr[0], &sidConfPtr)) {		/** @req DCM192 **/ /** @req DCM193 **/ /** @req DCM196 **/
+		if (DsDLookupSid(commonVars.pduRxData->SduDataPtr[0], &sidConfPtr)) {		/** @req DCM192 **/ /** @req DCM193 **/ /** @req DCM196 **/
 			// SID found!
 
-			if (DsdCheckIfSessionConfigured(sidConfPtr) || (sidConfPtr->DsdSidTabServiceId == SID_DIAGNOSTIC_SESSION_CONTROL)) {		 /** @req DCM211 **/
-				if (DsdCheckIfSecurityAllowed(sidConfPtr)) {	 /** @req DCM217 **/
+			if (DsdCheckSessionLevel(sidConfPtr->DsdSidTabSessionLevelRef) || (sidConfPtr->DsdSidTabServiceId == SID_DIAGNOSTIC_SESSION_CONTROL)) {		 /** @req DCM211 **/
+				if (DsdCheckSecurityLevel(sidConfPtr->DsdSidTabSecurityLevelRef)) {	 /** @req DCM217 **/
 					if (DCM_REQUEST_INDICATION_ENABLED) {	 /** @req DCM218 **/
 						 result = DsdAskApplicationForServicePermission(commonVars.pduRxData->SduDataPtr, commonVars.pduRxData->SduLength);
 					}
@@ -775,9 +785,19 @@ void DsdDataConfirmation(PduIdType confirmPduId)
 boolean dspResetPending = FALSE;
 PduIdType dspResetPduId = DCM_PDU_ID_NONE;
 
+typedef struct {
+	boolean 						reqInProgress;
+	Dcm_SecLevelType				reqSecLevel;
+	const Dcm_DspSecurityRowType	*reqSecLevelRef;
+} DspSecurityAccessDataType;
+
+static DspSecurityAccessDataType DspSecurityAccesData;
+
+
+
 void DspInit(void)
 {
-
+	DspSecurityAccesData.reqInProgress = FALSE;
 }
 
 Std_ReturnType AskApplicationForSessionPermission(Dcm_SesCtrlType newSessionLevel)
@@ -787,8 +807,7 @@ Std_ReturnType AskApplicationForSessionPermission(Dcm_SesCtrlType newSessionLeve
 	Std_ReturnType result;
 	uint16 i;
 
-	for (i = 0; !DCM_Config.Dsl->DslSessionControl[i].Arc_EOL && (returnCode != E_SESSION_NOT_ALLOWED); i++)
-	{
+	for (i = 0; !DCM_Config.Dsl->DslSessionControl[i].Arc_EOL && (returnCode != E_SESSION_NOT_ALLOWED); i++) {
 		if (DCM_Config.Dsl->DslSessionControl[i].GetSesChgPermission != NULL) {
 			Dcm_GetSesCtrlType(&currentSessionLevel);
 			result = DCM_Config.Dsl->DslSessionControl[i].GetSesChgPermission(currentSessionLevel ,newSessionLevel);
@@ -813,7 +832,7 @@ void DspUdsDiagnosticSessionControl(void)
 		// Check if type exist in session table
 		for (i = 0; (DCM_Config.Dsp->DspSession->DspSessionRow[i].DspSessionLevel != reqSessionType) && !DCM_Config.Dsp->DspSession->DspSessionRow[i].Arc_EOL;i++);
 
-		if (DCM_Config.Dsp->DspSession->DspSessionRow[i].DspSessionLevel == reqSessionType) {
+		if (!DCM_Config.Dsp->DspSession->DspSessionRow[i].Arc_EOL) {
 			result = AskApplicationForSessionPermission(reqSessionType);
 			if (result == E_OK) {
 				DslSetSesCtrlType(reqSessionType);		/** @req DCM311 **/
@@ -1300,6 +1319,107 @@ void DspUdsReadDtcInformation(void)
 	else {
 		// Sub function out of range
 		responseCode = DCM_E_REQUESTOUTOFRANGE;
+	}
+
+	DsdDspProcessingDone(responseCode);
+}
+
+void DspUdsSecurityAccess(void)
+{
+	/** @req DCM252 **/
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+
+	// Check sub function range (0x01 to 0x42)
+	if ((commonVars.pduRxData->SduDataPtr[1] >= 0x01) && (commonVars.pduRxData->SduDataPtr[1] <= 0x42)) {
+		boolean isRequestSeed = commonVars.pduRxData->SduDataPtr[1] & 0x01;
+		Dcm_SecLevelType requestedSecurityLevel = (commonVars.pduRxData->SduDataPtr[1]-1)/2;
+		Std_ReturnType getSeedResult;
+		Dcm_NegativeResponseCodeType getSeedErrorCode;
+		uint16 i;
+
+		if (isRequestSeed) {
+			// requestSeed message
+			// Check if type exist in security table
+			for (i = 0; (DCM_Config.Dsp->DspSecurity->DspSecurityRow[i].DspSecurityLevel != requestedSecurityLevel) && !DCM_Config.Dsp->DspSecurity->DspSecurityRow[i].Arc_EOL; i++);
+
+			if (!DCM_Config.Dsp->DspSecurity->DspSecurityRow[i].Arc_EOL) {
+				const Dcm_DspSecurityRowType *requestedSecurity = &DCM_Config.Dsp->DspSecurity->DspSecurityRow[i];
+				// Check length
+				if (commonVars.pduRxData->SduLength == (2 + requestedSecurity->DspSecurityADRSize)) {	/** @req DCM321.1 **/
+					Dcm_SecLevelType activeSecLevel;
+					Dcm_GetSecurityLevel(&activeSecLevel);
+					if (requestedSecurityLevel == activeSecLevel) {		/** @req DCM323 **/
+						// If same level set the seed to zeroes
+						for (i = 0; i < requestedSecurity->DspSecuritySeedSize; i++) {
+							commonVars.pduTxData->SduDataPtr[2+i] = 0;
+							commonVars.pduTxData->SduLength = 2 + requestedSecurity->DspSecuritySeedSize;
+						}
+					}
+					else {
+						// New security level ask for seed
+						getSeedResult = requestedSecurity->GetSeed(&commonVars.pduRxData->SduDataPtr[2], &commonVars.pduTxData->SduDataPtr[2], &getSeedErrorCode);
+						if ((getSeedResult == E_OK) && (getSeedErrorCode == E_OK)) {
+							// Everything ok add sub function to tx message and send it.
+							commonVars.pduTxData->SduDataPtr[1] = commonVars.pduRxData->SduDataPtr[1];
+							commonVars.pduTxData->SduLength = 2 + requestedSecurity->DspSecuritySeedSize;
+
+							DspSecurityAccesData.reqSecLevel = requestedSecurityLevel;
+							DspSecurityAccesData.reqSecLevelRef = &DCM_Config.Dsp->DspSecurity->DspSecurityRow[i];
+							DspSecurityAccesData.reqInProgress = TRUE;
+							// TODO: Start security timeout
+						}
+						else {
+							// GetSeed returned not ok
+							responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+						}
+					}
+				}
+				else {
+					// Length not ok
+					responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+				}
+			}
+			else {
+				// Requested security level not configured
+				responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+			}
+		}
+		else {
+			// sendKey message
+			if (DspSecurityAccesData.reqInProgress) {
+				if (commonVars.pduRxData->SduLength == (2 + DspSecurityAccesData.reqSecLevelRef->DspSecurityKeySize)) {	/** @req DCM321 **/
+					if (requestedSecurityLevel == DspSecurityAccesData.reqSecLevel) {
+						Std_ReturnType compareKeyResult;
+						compareKeyResult = DspSecurityAccesData.reqSecLevelRef->CompareKey(&commonVars.pduRxData->SduDataPtr[2]);
+						if (compareKeyResult == E_OK) {
+							// Request accepted
+							// Kill timer
+							DslSetSecurityLevel(DspSecurityAccesData.reqSecLevelRef->DspSecurityLevel);
+							DspSecurityAccesData.reqInProgress = FALSE;
+							commonVars.pduTxData->SduDataPtr[1] = commonVars.pduRxData->SduDataPtr[1];
+							commonVars.pduTxData->SduLength = 2;
+						}
+						else {
+							responseCode = DCM_E_CONDITIONSNOTCORRECT;
+						}
+					}
+					else {
+						responseCode = DCM_E_CONDITIONSNOTCORRECT;
+					}
+				}
+				else {
+					// Length not ok
+					responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+				}
+			}
+			else {
+				// sendKey request without a preceding requestSeed
+				responseCode = DCM_E_REQUESTSEQUENCEERROR;
+			}
+		}
+	}
+	else {
+		responseCode = DCM_E_SUBFUNCTIONNOTSUPPORTED;
 	}
 
 	DsdDspProcessingDone(responseCode);
