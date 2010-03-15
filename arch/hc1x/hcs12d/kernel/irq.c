@@ -31,10 +31,26 @@ void Irq_Init( void ) {
 void Irq_EOI( void ) {
 
 }
-volatile static uint8_t bad_irq_nr = 0;
-void bad_irq(uint8_t irq_nr) {
+
+// IRQ debug information
+// Stores irq nr on erroneous interrupt
+volatile sint16 bad_irq_nr = -1;
+
+// Stores context info on erroneous interrupt
+volatile uint8 bad_irq_context_bank = 0;
+volatile void* bad_irq_context_address = 0;
+
+void bad_irq(uint8_t irq_nr, void **stack) {
+
+	// Save number of caught interrupt
 	bad_irq_nr = irq_nr;
-  for (;;);
+
+	// Fetch address and page of where we were interrupted, from context
+	uint16 bank_and_ccr = (uint16)(*(stack + 4));
+	bad_irq_context_bank = (bank_and_ccr & 0xFF00) >> 8;
+	bad_irq_context_address = *(stack + 8);
+
+	for (;;);
 }
 
 void *Irq_Entry( uint8_t irq_nr, void *stack )
@@ -43,7 +59,7 @@ void *Irq_Entry( uint8_t irq_nr, void *stack )
 
 	// trap uninitialized interrupts
 	if (vector == NULL) {
-		bad_irq(irq_nr);
+		bad_irq(irq_nr, stack);
 	}
 
 	if( Irq_GetIsrType(irq_nr) == ISR_TYPE_1 ) {
@@ -238,7 +254,7 @@ const struct interrupt_vectors __attribute__((section(".vectors"))) vectors =
 	  illegal_handler:
 		  IRQ_MAP(illegal),
 	  cop_fail_handler:
-		  IRQ_MAP(cop_fail),
+		  _start,
 	  cop_clock_handler:
 		  IRQ_MAP(cop_clock),
 
