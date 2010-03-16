@@ -463,8 +463,12 @@ BufReq_ReturnType writeDataSegmentToPduRBuffer(const CanTp_RxNSduType *rxConfig,
 				VALIDATE( rxRuntime->bufferPduRouter->SduDataPtr != NULL,
 						SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_RX_BUFFER );
 				rxRuntime->pdurBufferCount = 0; // The buffer is emptied.
-			} else {
+			} else if (ret == BUFREQ_BUSY) {
+				rxRuntime->pduTransferedBytesCount += *bytesWritten;
 				error = TRUE;
+				break;
+			} else {
+				error = TRUE; // Let calling function handle this error.
 				break;
 			}
 		} else {
@@ -643,13 +647,14 @@ static inline void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
 		} else if (ret == BUFREQ_BUSY) {
 			if (rxConfig->CanTpAddressingFormant == CANTP_STANDARD) {
 				(void)writeDataSegmentToLocalBuffer(rxRuntime,
-						&rxPduData->SduDataPtr[2 + bytesWrittenToSduRBuffer],
+						&rxPduData->SduDataPtr[1 + bytesWrittenToSduRBuffer],
 						payloadLen - bytesWrittenToSduRBuffer );
 			} else {
 				(void)writeDataSegmentToLocalBuffer(rxRuntime,
-						&rxPduData->SduDataPtr[3 + bytesWrittenToSduRBuffer],
+						&rxPduData->SduDataPtr[2 + bytesWrittenToSduRBuffer],
 						payloadLen - bytesWrittenToSduRBuffer );
 			}
+			rxRuntime->iso15765.framesHandledCount++;
 			rxRuntime->iso15765.stateTimeoutCount = rxConfig->CanTpNbr
 					* MAIN_FUNCTION_PERIOD_TIME_MS;
 			rxRuntime->iso15765.state = RX_WAIT_SDU_BUFFER;
