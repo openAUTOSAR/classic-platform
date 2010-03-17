@@ -17,7 +17,7 @@
 #include "Platform_Types.h"
 #include "simple_printf.h"
 
-#define USE_DEBUG
+#define USE_DEBUG_PRINT
 #include "Trace.h"
 
 int test_suite = 1;

@@ -13,6 +13,7 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+
 /** @addtogroup General General
  *  @{ */
 
@@ -27,18 +28,13 @@
 // TODO: we haven't really defined the autosar types yet.
 //       the standard types are uint8, etc.
 
-#ifndef NULL
-#define	NULL	0
-#endif
-
-#if !defined(USE_KERNEL)
-#include "typedefs.h"
-#else
 #include <stdint.h>
-#endif
-
 #include "Platform_Types.h" // TODO: move
 #include "Compiler.h"
+
+#ifndef 	NULL
+#define	NULL	0
+#endif
 
 //typedef uint8_t uint8;
 //typedef uint16_t uint16;
@@ -111,8 +107,6 @@ typedef enum {
 	E_NOT_OK,
 } StatusType;
 
-
-// TODO: really ???
 typedef uint8 Std_ReturnType;
 
 
@@ -134,7 +128,7 @@ typedef unsigned char StatusType;
 #define E_FORCE_RCRRP			12
 
 #define STD_HIGH		0x01
-#define STD_LOW		0x00
+#define STD_LOW			0x00
 
 #define STD_ACTIVE		0x01
 #define STD_IDLE		0x00

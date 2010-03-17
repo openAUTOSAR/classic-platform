@@ -15,29 +15,25 @@
 
 
 
-
-
-
-
-
 /*
- * stack.c
+ * context.h
  *
- *  Created on: 2009-jan-25
- *      Author: mahi
+ *
+ * PPAGE
+ * PC
+ * PC
+ *
  */
 
-#include "pcb.h"
-#include "arch.h"
-#include "Os.h"
+#ifndef CONTEXT_H_
+#define CONTEXT_H_
 
-void Os_GetStackInfo( TaskType task, StackInfoType *s) {
+#define OS_KERNEL_CODE_PPAGE	0x38
 
-	pcb_t *pcb = os_get_pcb(task);
+#define SC_PATTERN				0xde
+#define LC_PATTERN				0xad
 
-	s->curr = os_arch_get_stackptr();
-	s->top = pcb->stack.top;
-	s->at_swap = pcb->stack.curr;
-	s->size = pcb->stack.size;
-	s->usage = (void *)os_arch_get_stack_usage(pcb);
-}
+#define	CONTEXT_SIZE_W			9
+
+
+#endif /* CONTEXT_H_ */

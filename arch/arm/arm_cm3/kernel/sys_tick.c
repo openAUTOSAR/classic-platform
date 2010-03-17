@@ -17,56 +17,52 @@
 #include "sys.h"
 #include "pcb.h"
 #include "internal.h"
-#include "int_ctrl.h"
+#include "stm32f10x.h"
+#include "core_cm3.h"
+#include "irq.h"
 
 /**
  * Init of free running timer.
  */
-void Frt_Init( void ) {
+void Os_SysTickInit( void ) {
 	TaskType tid;
-	tid = Os_CreateIsr(OsTick,6/*prio*/,"OsTick");
-	IntCtrl_AttachIsr2(tid,NULL,7);
+	tid = Os_Arc_CreateIsr(OsTick,6/*prio*/,"OsTick");
+	Irq_AttachIsr2(tid,NULL, SysTick_IRQn);
 }
 
 /**
- *
  *
  * @param period_ticks How long the period in timer ticks should be. The timer
  *                     on PowerPC often driver by the CPU clock or some platform clock.
  *
  */
-void Frt_Start(uint32_t period_ticks) {
-	uint32_t tmp;
 
-	// Enable the TB
-	tmp = get_spr(SPR_HID0);
-	tmp |= HID0_TBEN;
-	set_spr(SPR_HID0, tmp);
+void Os_SysTickStart(uint32_t period_ticks) {
 
-	/* Initialize the Decrementer */
-	set_spr(SPR_DEC, period_ticks);
-	set_spr(SPR_DECAR, period_ticks);
+	SysTick_Config(period_ticks);
 
-	/* Set autoreload */
-	tmp = get_spr(SPR_TCR);
-	tmp |= TCR_ARE;
-	set_spr(SPR_TCR, tmp);
+	 /* Set SysTick Priority to 3 */
+	NVIC_SetPriority(SysTick_IRQn, 0x0C);
 
-	/* Enable notification */
-    tmp = get_spr(SPR_TCR);
-    tmp |= TCR_DIE;
-    set_spr(SPR_TCR, tmp );
+#if 0
+	// SysTick interrupt each 250ms with counter clock equal to 9MHz
+	if (SysTick_Config((SystemFrequency / 8) / 4)) {
+		// Capture error
+		while (1)
+			;
+	}
+
+	// Select HCLK/8 as SysTick clock source
+	SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK_Div8);
+#endif
+
 }
 
 /**
- * ???
- * TODO: This function just subtract the max value?! ok??
- *
  * @return
  */
 
-uint32_t Frt_GetTimeElapsed( void )
+uint32_t Os_SysTickGetTimeElapsed( void )
 {
-	uint32_t timer = get_spr(SPR_DECAR) - get_spr(SPR_DEC);
-	return (timer);
+	return (SysTick->VAL);
 }

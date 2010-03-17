@@ -13,20 +13,8 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-
 #include "Os.h"
-#include "kernel.h"
-#include "ext_config.h"
-#include <assert.h>
-#include <string.h>
-
+#include "internal.h"
 
 /* Queued message
  *   The messages are put in a queue. Copied to the destination...
@@ -46,7 +34,7 @@
 StatusType SendMessage( MessageType message_id, ApplicationDataRef dataRef ) {
 
 
-	message_obj_t *msg;
+	OsMessageType *msg;
 
 	// Is the message valid ?
 	if( message_id > Oil_GetMessageCnt() ) {
@@ -87,7 +75,7 @@ StatusType SendMessage( MessageType message_id, ApplicationDataRef dataRef ) {
 }
 
 StatusType ReceiveMessage( MessageType message_id, ApplicationDataRef dataRef ) {
-	message_obj_t *msg;
+	OsMessageType *msg;
 	// Check if valid
 
 	// Copy from container to dataRef

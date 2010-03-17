@@ -14,14 +14,19 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
+#ifndef MCU_CFG_H_
+#define MCU_CFG_H_
+
+#define MCU_DEV_ERROR_DETECT 	STD_ON
+#define MCU_PERFORM_RESET_API 	STD_OFF
+#define MCU_VERSION_INFO_API 	STD_ON
 
 
+typedef enum {
+  MCU_CLOCKTYPE_EXT_REF_16MHZ = 0,
+  MCU_NBR_OF_CLOCKS,
+} Mcu_ClockType;
 
+#define MCU_DEFAULT_CONFIG McuConfigData[0]
 
-
-
-#ifndef H7F_TYPES_H_
-#define H7F_TYPES_H_
-
-
-#endif /*H7F_TYPES_H_*/
+#endif /*MCU_CFG_H_*/

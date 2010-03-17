@@ -5,9 +5,17 @@
 # APPLICATION
 
 obj-y += test_master.o
-obj-y += test_sup_01.o
-obj-y += test_sup_02.o
-obj-y += test_sup_03.o	
+obj-y += test_01_task.o
+obj-y += test_02_resource.o
+obj-y += test_03_alarm.o
+obj-y += test_04_stable.o
+obj-y += test_05_const.o
+obj-y += test_06_event.o
+
+#obj-y += test_sup_01.o
+#obj-y += test_sup_02.o
+#obj-y += test_sup_03.o
+#obj-y += test_sup_04.o	
 obj-y += test_framework.o
 
 obj-y += Os_Cfg.o
@@ -30,7 +38,7 @@ CFG+=CONSOLE_WINIDEA
 
 # TODO: Fix this....
 
-vpath-$(BUILD_TREE) += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
+vpath-y += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
 vpath-y += $(ROOTDIR)/$(ARCH_PATH-y)/drivers
 vpath-y += $(ROOTDIR)/boards/$(BOARDDIR)
 vpath-y += $(ROOTDIR)/boards/$(BOARDDIR)/config

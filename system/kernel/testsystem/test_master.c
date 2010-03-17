@@ -13,16 +13,8 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-
-#include "Os.h"
 #include <stdlib.h>
+#include "Os.h"
 #include "os_test.h"
 #include "Mcu.h"
 #if defined(USE_GPT)
@@ -30,7 +22,7 @@
 #endif
 #include "simple_printf.h"
 
-#define USE_DEBUG
+#define USE_DEBUG_PRINT
 #include "Trace.h"
 #include "arc.h"
 
@@ -44,7 +36,7 @@ extern void etask_sup_h_basic_02( void );
 	extern void btest_sup_m_##_nr(void);\
 	extern void btest_sup_h_##_nr(void);
 
-DECLARE_BASIC(02);
+// DECLARE_BASIC(02);
 
 typedef struct {
 	 uint32 nr;
@@ -57,6 +49,7 @@ TaskType test_activate_pid_list[] =
 /* 01*/	TASK_ID_etask_sup_l,
 /* 02*/	TASK_ID_etask_sup_l,
 /* 03*/	TASK_ID_etask_sup_l,
+/* 04*/	TASK_ID_etask_sup_l,
 };
 
 static int test_case = 0;
@@ -73,10 +66,9 @@ void etask_master( void ) {
 		dbg_printf("-----> Test Suite %02d\n",test_suite);
 		pid = test_activate_pid_list[test_case];
 		ActivateTask(pid);
-		// All test tasks are higher prio than we.. so this triggers them..
-		Schedule();
-		// All tasks in the test are now terminated...
-		// Start new tests..
+		/* We are lowest prio task in the system (apart from idle) so
+		 * all tasks in the test are now terminated...
+		 */
 		test_suite++;
 	}
 
@@ -85,22 +77,33 @@ void etask_master( void ) {
 
 }
 
+#if 0
 test_func_t etask_sup_matrix[][3] = {
-/* 01*/	{ etask_sup_l_01, etask_sup_m_01, etask_sup_h_01},
+/* 01*/	{ etask_sup_l_01, NULL, NULL },
+#if 0
 /* 02*/	{ etask_sup_l_02, etask_sup_m_02, etask_sup_h_02},
 /* 03*/	{ etask_sup_l_03, etask_sup_m_03, NULL},
+/* 04*/	{ etask_sup_l_04, etask_sup_m_04, NULL},
+#endif
 }; // __attribute__ ((section(".data_app_2")));
 
 #define TEST_BASIC(nr) \
 	{ btest_sup_l_##nr , btest_sup_m_##nr , btest_sup_h_## nr }
 
+
 test_func_t btask_sup_matrix[][3] = {
-/* 01*/	{ NULL, NULL, NULL},
-		TEST_BASIC(02),
+// /* 01*/	{ NULL, NULL, NULL},
+		TEST_BASIC(01),
 #if 0
+		TEST_BASIC(02),
+
 #endif
 }; // __attribute__ ((section(".data_app_2")));
 
+#else
+extern test_func_t etask_sup_matrix[][3];
+extern test_func_t btask_sup_matrix[][3];
+#endif
 
 //--------------------------------------------------------------------
 //--------------------------------------------------------------------
@@ -191,7 +194,7 @@ void ErrorHook( StatusType Error ) {
 //	dbg_printf("## ErrorHook err=%d\n",Error);
 	const char *err;
 	err = Arc_StatusToString(Error);
-	while(1);
+//	while(1);
 }
 
 void PreTaskHook( void ) {
@@ -213,7 +216,7 @@ void PostTaskHook( void ) {
 //	dbg_printf("## PostTaskHook, taskid=%d\n",task);
 	{
 		StackInfoType si;
-		Os_GetStackInfo(task,&si);
+		Os_Arc_GetStackInfo(task,&si);
 //		dbg_printf("Stack usage %d%% (this=%08x, top=%08x, size=%08x,usage=%08x )\n",OS_STACK_USAGE(&si),si.curr, si.top,si.size,si.usage);
 	}
 }

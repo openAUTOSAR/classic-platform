@@ -15,20 +15,19 @@
 
 
 
-
-
-
-
-
-/*
- * Os_Cfg.h
- *
- *  Created on: 2008-dec-22
- *      Author: mahi
- */
-
 #ifndef OS_CFG_H_
 #define OS_CFG_H_
+
+/*
+ * OsOs container
+ */
+#define OS_SC1 					STD_ON 		/* | OS_SC2 | OS_SC3 | OS_SC4 */
+#define OS_STACK_MONITORING		STD_ON
+#define OS_STATUS_EXTENDED			STD_ON 		/* OS_STATUS_STANDARD */
+#define OS_USE_GET_SERVICE_ID		STD_ON
+#define OS_USE_PARAMETER_ACCESS	STD_ON
+#define OS_RES_SCHEDULER			STD_ON
+
 
 /* os_config.h */
 

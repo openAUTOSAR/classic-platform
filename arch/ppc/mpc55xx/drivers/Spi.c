@@ -146,7 +146,7 @@
 #include <stdlib.h>
 
 //#define USE_TRACE 1
-//#define USE_DEBUG	1
+//#define USE_DEBUG_PRINT	1
 #undef DEBUG_LVL
 #define DEBUG_LVL DEBUG_HIGH
 #include "Trace.h"
@@ -1003,11 +1003,11 @@ static void Spi_InitController( uint32 unit ) {
 	spiHw->MCR.B.MDIS = 0;
 
 #if defined(__DMA_INT)
-	IntCtrl_InstallVector(Spi_Isr_DMA, 16 , 1, CPU_Z1);
+	Irq_InstallVector(Spi_Isr_DMA, 16 , 1, CPU_Z1);
 #endif
 
 	// Install EOFQ int..
-	IntCtrl_InstallVector(Spi_Isr_Info[unit].entry, Spi_Isr_Info[unit].vector,
+	Irq_InstallVector(Spi_Isr_Info[unit].entry, Spi_Isr_Info[unit].vector,
 	                       Spi_Global.configPtr->SpiHwConfig[unit].IsrPriority, Spi_Isr_Info[unit].cpu);
 }
 
@@ -1373,7 +1373,7 @@ static void Spi_SeqWrite( Spi_SequenceType seqIndex, Spi_CallTypeType sync ) {
 	  DEBUG(DEBUG_MEDIUM,"%s: sync/polled mode\n",MODULE_NAME);
 	}
 
-#if defined(USE_DEBUG) && ( DEBUG_LVL <= DEBUG_HIGH )
+#if defined(USE_DEBUG_PRINT) && ( DEBUG_LVL <= DEBUG_HIGH )
 	Spi_PrintSeqInfo( seqConfig );
 #endif
 

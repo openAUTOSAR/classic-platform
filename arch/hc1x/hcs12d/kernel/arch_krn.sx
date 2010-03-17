@@ -1,0 +1,62 @@
+
+
+#define _ASSEMBLER_
+#include "kernel_offset.h"
+#include "asm_hc1x.sx"
+#include "context.sx"
+
+.extern os_sys
+.extern os_proc_start_extended
+
+#define IRQ_ENABLE() 		cpsie 	i
+#define IRQ_DISABLE()		cpsid 	i
+
+
+.global Os_ArchSwapContextToW
+.global Os_ArchSwapContextTo
+.global Os_ArchSwapContext
+.global Os_ArchSetSpAndCall
+
+.section .text
+
+/* void Os_ArchSetSpAndCall(void *sp, void (*f)(void) ); */
+Os_ArchSetSpAndCall:
+		MOVE_ARG 1, x				// f --> X
+		MOVE_ARG 0, sp				// sp (D) --> SP
+		jmp		0, x				// f()
+
+
+Os_ArchSwapContextToW:
+/*
+		mr 		r1,r5
+		b 		Os_ArchSwapContextTo
+*/
+
+/* void Os_ArchSwapContext(void *old, void *new); */
+Os_ArchSwapContext:
+Os_ArchSwapContext_get_args:
+		MOVE_ARG 0, x					// old --> X
+		MOVE_ARG 1, y					// new --> Y
+		
+		SAVE_CONTEXT_FROM_FUNCTION
+		
+		sts		PCB_STACK_CURR_P, x		// SP --> old->stack.curr
+		bra		Os_ArchSwapContextTo_do
+
+
+/* void Os_ArchSwapContextTo(void *old, void *new); */
+Os_ArchSwapContextTo:
+Os_ArchSwapContextTo_get_args:
+// Get stack for new task
+		MOVE_ARG 1, y					// new --> Y
+		
+Os_ArchSwapContextTo_do:
+// Set current process
+		sty		os_sys					// new (Y) --> os_sys.curr_pcb
+// Restore context
+		lds		PCB_STACK_CURR_P, y		// new->stack.curr --> SP
+		
+		RESTORE_CONTEXT_FOR_FUNCTION
+		
+		rtc
+

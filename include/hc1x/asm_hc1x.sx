@@ -1,0 +1,44 @@
+/* -------------------------------- Arctic Core ------------------------------
+ * Arctic Core - the open source AUTOSAR platform http://arccore.com
+ *
+ * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
+ *
+ * This source code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ * -------------------------------- Arctic Core ------------------------------*/
+
+
+/*
+ * General purpose macros for hc1x
+ */
+ 
+
+// Move C call arguments
+
+.macro MOVE_ARG arg_nr to_reg
+if \arg_nr == 0
+	// arg 0 is in D
+.ifc \to_reg,"d"
+		// arg 0 is already in D
+.else
+		// D --> to_reg
+		tfr		d, \to_reg
+.endif
+.else
+	// arg 1,2,... are on the stack:
+	//  |  P  |  Ah  |  Al  | arg0h | arg0l | arg1h | ...
+.set STACK_OFFSET, 3 + (\arg_nr - 1) * 2
+.ifc \to_reg,"sp"
+		lds			STACK_OFFSET, sp
+.else
+		ld\to_reg	STACK_OFFSET, sp
+.endif
+.endif
+.endm
+

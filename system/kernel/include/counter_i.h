@@ -13,13 +13,6 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
 #ifndef COUNTER_I_H_
 #define COUNTER_I_H_
 
@@ -33,10 +26,18 @@
 #define COUNTER_UNIT_TICKS	0
 #define COUNTER_UNIT_NANO	1
 
-/*-----------------------------------------------------------------*/
-typedef struct counter_obj_s {
-	// counter id( TODO: remove ?? I use index here )
-//	uint32_t cid;
+/* STD container : OsCounter
+ * OsCounterMaxAllowedValue: 		1    Integer
+ * OsCounterMinCycle:				1	 Integer
+ * OsCounterTicksPerBase:			1 	 Integer
+ * OsCounterType:               	1    Enum HARDWARE/SOFTWARE
+ * OsSecondsPerTick: 				0..1 Float
+ * OsCounterAccessingApplication: 	0..* Ref
+ * OsDriver[C]:						0..1
+ * OsTimeConstant[C]:				0..*
+ */
+
+typedef struct OsCounter {
 	char name[16];
 	// hardware or software counter, SWS OS255
 	_Bool type;
@@ -49,14 +50,48 @@ typedef struct counter_obj_s {
 	//  hmm, strange to call it alarm base.... but see spec.
 	AlarmBaseType alarm_base;
 	/* Used only if we configure a GPT timer as os timer */
-	OsDriver driver;
+	OsDriver *driver;
 	/* List of alarms this counter is connected to
 	 * Overkill ??? Could have list of id's here, but easier to debug this way*/
-	SLIST_HEAD(slist,alarm_obj_s) alarm_head;
+	SLIST_HEAD(slist,OsAlarm) alarm_head;
 	/* List of scheduletable connected to this counter */
-	SLIST_HEAD(sclist,sched_table_s) sched_head;
-} counter_obj_t;
+	SLIST_HEAD(sclist,OsSchTbl) sched_head;
+} OsCounterType;
 
-TickType GetCounterValue_( counter_obj_t *c_p );
+
+static inline TickType Os_CounterGetMaxValue(OsCounterType *cPtr ) {
+	return cPtr->alarm_base.maxallowedvalue;
+}
+
+static inline TickType Os_CounterGetMinCycle(OsCounterType *cPtr ) {
+	return cPtr->alarm_base.mincycle;
+}
+
+static inline TickType Os_CounterGetValue( OsCounterType *cPtr ) {
+	return cPtr->val;
+}
+
+
+static inline TickType Os_CounterDiff( TickType curr, TickType old, TickType max ) {
+	/* + 1 here because it do diff one between OSMAXALLOWEDVALUE and 0.
+	 * That is, if curr = 0, max = 9 and old = 0, then the diff should be 1.
+	 */
+	return (curr >= old ) ? (curr - old) : (curr + (max - old) + 1);
+}
+
+
+static inline TickType Os_CounterAdd( TickType curr, TickType max, TickType add ) {
+	TickType diff = max - curr;
+	TickType result;
+	if( add <= diff  ) {
+		result = curr + add;
+	} else {
+		result = add - (max - curr ) - 1;
+	}
+
+	return result;
+}
+
+
 
 #endif /*COUNTER_I_H_*/

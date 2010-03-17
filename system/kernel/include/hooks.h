@@ -13,41 +13,7 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
 #ifndef HOOKS_H_
 #define HOOKS_H_
-
-#include "sys.h"
-#include "pcb.h"
-#include "kernel.h"
-
-/* Called for sequence of error hook calls in case a service
- * does not return with E_OK. Note that in this case the general error hook and the OS-
- * Application specific error hook are called.
- */
-
-#define ERRORHOOK(x) \
-	if( os_sys.hooks->ErrorHook != NULL  ) { \
-		os_sys.hooks->ErrorHook(x); \
-	}
-
-
-#define PRETASKHOOK() \
-	if( os_sys.hooks->PreTaskHook != NULL ) { \
-		os_sys.hooks->PreTaskHook(); \
-	}
-
-#define POSTTASKHOOK() \
-	if( os_sys.hooks->PostTaskHook != NULL ) { 	\
-		os_sys.hooks->PostTaskHook();			\
-	}
-
-
 
 #endif /*HOOKS_H_*/

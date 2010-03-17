@@ -32,10 +32,10 @@
 #include "Cpu.h"
 #include "Ramlog.h"
 #include "Os.h"
-#include "int_ctrl.h"
+#include "irq.h"
 
 //#define USE_TRACE 1
-//#define USE_DEBUG 1
+//#define USE_DEBUG_PRINT 1
 #include "Trace.h"
 
 #define SYSCLOCK_SELECT_PLL	0x2
@@ -266,22 +266,20 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
   //
   Mcu_ConfigureFlash();
 
-  Irq_Enable();
-
   Mcu_Global.config = configPtr;
   Mcu_Global.initRun = 1;
 
   if( Mcu_Global.config->McuClockSrcFailureNotification == TRUE  ){
   	// Enable loss of lock interrupt
 
-	IntCtrl_AttachIsr1(Mcu_LossOfLock, NULL, PLL_SYNSR_LOLF,10 );
+	Irq_AttachIsr1(Mcu_LossOfLock, NULL, PLL_SYNSR_LOLF,10 );
 #if defined(CFG_MPC5516)
 //  	FMPLL.SYNCR.B.LOCIRQ = 1; TODO: Kolla denna bortkommentering med Mårten.
   	FMPLL.ESYNCR2.B.LOLIRQ = 1;
 #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
   	FMPLL.SYNCR.B.LOLIRQ = 1;
 #endif
-	IntCtrl_AttachIsr1(Mcu_LossOfCLock, NULL, PLL_SYNSR_LOCF,10 );
+	Irq_AttachIsr1(Mcu_LossOfCLock, NULL, PLL_SYNSR_LOCF,10 );
 #if defined(CFG_MPC5516)
 //  	FMPLL.SYNCR.B.LOCIRQ = 1; TODO: Kolla denna bortkommentering med Mårten.
   	FMPLL.ESYNCR2.B.LOCIRQ = 1;
@@ -331,31 +329,31 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
    *  Fsys = EXTAL_FREQ *(  (emfd+16) / ( (eprediv+1) * ( erfd+1 )) ) )
    */
   // Check ranges...
-  assert((clockSettingsPtr->PllEmfd>=32) && (clockSettingsPtr->PllEmfd<=132));
-  assert( (clockSettingsPtr->PllEprediv!=6) &&
-          (clockSettingsPtr->PllEprediv!=8) &&
-          (clockSettingsPtr->PllEprediv<10) );
-  assert( clockSettingsPtr->PllErfd & 1); // Must be odd
+  assert((clockSettingsPtr->Pll2>=32) && (clockSettingsPtr->Pll2<=132));
+  assert( (clockSettingsPtr->Pll1 != 6) &&
+          (clockSettingsPtr->Pll1 != 8) &&
+          (clockSettingsPtr->Pll1 < 10) );
+  assert( clockSettingsPtr->Pll3 & 1); // Must be odd
 #elif defined(CFG_MPC5567)
   /* 5567 clock info:
    *  Fsys = EXTAL_FREQ *(  (emfd+4) / ( (eprediv+1) * ( 2^erfd )) ) )
    */
   // Check ranges...
-  assert(clockSettingsPtr->PllEmfd < 16);
-  assert(clockSettingsPtr->PllEprediv <= 4);
-  assert(clockSettingsPtr->PllErfd < 8);
+  assert(clockSettingsPtr->Pll2 < 16);
+  assert(clockSettingsPtr->Pll1 <= 4);
+  assert(clockSettingsPtr->Pll3 < 8);
 #endif
 
 
-#if defined(USE_DEBUG)
+#if defined(USE_DEBUG_PRINT)
   {
-    uint32    extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePoint;
+    uint32    extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePointFrequency;
     uint32    f_sys;
 
     f_sys = CALC_SYSTEM_CLOCK( extal,
-        clockSettingsPtr->PllEmfd,
-        clockSettingsPtr->PllEprediv,
-        clockSettingsPtr->PllErfd );
+        clockSettingsPtr->Pll2,
+        clockSettingsPtr->Pll1,
+        clockSettingsPtr->Pll3 );
 
     //DEBUG(DEBUG_HIGH,"/drivers/mcu: F_sys will be:%08d Hz\n",f_sys);
   }
@@ -366,9 +364,9 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
   FMPLL.ESYNCR1.B.CLKCFG = 7; //TODO: Hur ställa detta för 5567?
 
   // Write pll parameters.
-  FMPLL.ESYNCR1.B.EPREDIV = clockSettingsPtr->PllEprediv;
-  FMPLL.ESYNCR1.B.EMFD    = clockSettingsPtr->PllEmfd;
-  FMPLL.ESYNCR2.B.ERFD    = clockSettingsPtr->PllErfd;
+  FMPLL.ESYNCR1.B.EPREDIV = clockSettingsPtr->Pll1;
+  FMPLL.ESYNCR1.B.EMFD    = clockSettingsPtr->Pll2;
+  FMPLL.ESYNCR2.B.ERFD    = clockSettingsPtr->Pll3;
 
   // Connect SYSCLK to FMPLL
   SIU.SYSCLK.B.SYSCLKSEL = SYSCLOCK_SELECT_PLL;
@@ -378,9 +376,9 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
   FMPLL.SYNCR.B.LOLRE	= 0;
   FMPLL.SYNCR.B.LOLIRQ	= 0;
 
-  FMPLL.SYNCR.B.PREDIV 	= clockSettingsPtr->PllEprediv;
-  FMPLL.SYNCR.B.MFD		= clockSettingsPtr->PllEmfd;
-  FMPLL.SYNCR.B.RFD    	= clockSettingsPtr->PllErfd;
+  FMPLL.SYNCR.B.PREDIV 	= clockSettingsPtr->Pll1;
+  FMPLL.SYNCR.B.MFD		= clockSettingsPtr->Pll2;
+  FMPLL.SYNCR.B.RFD    	= clockSettingsPtr->Pll3;
 
 	// Wait for PLL to sync.
   while (Mcu_GetPllStatus() != MCU_PLL_LOCKED)
@@ -481,7 +479,7 @@ void Mcu_PerformReset(void)
 void Mcu_SetMode(const Mcu_ModeType McuMode)
 {
   VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_SETMODE_SERVICE_ID, MCU_E_UNINIT );
-  VALIDATE( ( McuMode <= Mcu_Global.config->McuNumberOfMcuModes ), MCU_SETMODE_SERVICE_ID, MCU_E_PARAM_MODE );
+ // VALIDATE( ( McuMode <= Mcu_Global.config->McuNumberOfMcuModes ), MCU_SETMODE_SERVICE_ID, MCU_E_PARAM_MODE );
   (void) McuMode;
 
   /* NOT SUPPORTED */
@@ -512,7 +510,7 @@ uint32_t McuE_GetSystemClock(void)
   uint32_t erfd = FMPLL.SYNCR.B.RFD;
 #endif
   uint32_t f_sys;
-  uint32  extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePoint;
+  uint32  extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePointFrequency;
 
   f_sys =  CALC_SYSTEM_CLOCK(extal,emfd,eprediv,erfd);
 

@@ -13,33 +13,30 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-/*
- * os_test.h
- *
- *  Created on: 2009-jan-08
- *      Author: mahi
- */
-
 #ifndef OS_TEST_H_
 #define OS_TEST_H_
 
 #include "test_framework.h"
+#include "Trace.h"
 
 typedef void (*test_func_t)( void );
 
 #define TEST_FAIL(_text)		test_fail((_text),  __FILE__,  __LINE__, __FUNCTION__ )
 #define TEST_OK()				test_ok();
 #define TEST_ASSERT(_cond) 			if(!(_cond)) { TEST_FAIL(#_cond); }
+#define TEST_RUN()				dbg_printf("Running test %d\n",test_nr);
+
 
 extern int test_suite;
 extern int test_nr;
+
+#define TASK_ID_ILL			99
+#define RES_ID_ILL				99
+#define ALARM_ID_ILL			99
+#define SCHEDULE_TABLE_ID_ILL 	99
+#define COUNTER_ID_ILL			99
+
+#define EVENT_KILL				0x8000
 
 #if 1
 #define SECTION_SUP
@@ -51,6 +48,15 @@ extern int test_nr;
 
 #define SECTION_BSS_SUPER	__attribute__ ((aligned (16),section(".bss")))
 #define SECTION_BSS_USER	__attribute__ ((aligned (16),section(".bss")))
+
+#define OS_STR__(x)		#x
+#define OS_STRSTR__(x) 	OS_STR__(x)
+
+#define DECLARE_TEST_BTASK(_nr, _task1, _task2, _task3 ) \
+		__attribute__ ((section (".test_btask"))) const test_func_t btask_sup_matrix_ ## _nr[3] = { _task1, _task2, _task3 }
+
+#define DECLARE_TEST_ETASK(_nr, _task1, _task2, _task3 ) \
+		__attribute__ ((section (".test_etask"))) const test_func_t etask_sup_matrix_ ## _nr[3]  = { _task1, _task2, _task3 }
 
 #define DECLARE_TASKS(_nr) \
 	void etask_sup_l_##_nr( void ); \
@@ -81,5 +87,6 @@ void btask_sup_h( void ) SECTION_SUP;
 DECLARE_TASKS(01);
 DECLARE_TASKS(02);
 DECLARE_TASKS(03);
+DECLARE_TASKS(04);
 
 #endif /* OS_TEST_H_ */

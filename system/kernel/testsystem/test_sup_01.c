@@ -13,14 +13,6 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-
 /*
  * Tested: Tasks
  */
@@ -45,6 +37,48 @@ DeclareResource(RES_1);
 
 //static int test = 1;
 
+#define TASK_ID_ILL			99
+#define RES_ID_ILL			99
+#define ALARM_ID_ILL		99
+
+static void taskApiTests( void ) {
+	StatusType 		rv;
+	TaskStateType 	taskState;
+	EventMaskType 	eventMask;
+	AlarmBaseType 	alarmInfo;
+	TickType 		tick;
+
+	/*@req E_OS_ID */
+	rv = ActivateTask(TASK_ID_ILL);
+	TEST_ASSERT(rv==E_OS_ID );
+	rv = ChainTask(TASK_ID_ILL);
+	TEST_ASSERT(rv==E_OS_ID );
+
+	rv = GetTaskState(TASK_ID_ILL,&taskState);
+	TEST_ASSERT(rv==E_OS_ID );
+
+	rv = GetResource(RES_ID_ILL);
+	TEST_ASSERT(rv==E_OS_ID );
+	rv = ReleaseResource(RES_ID_ILL);
+	TEST_ASSERT(rv==E_OS_ID );
+
+	rv = SetEvent(TASK_ID_ILL,1);
+	TEST_ASSERT(rv==E_OS_ID );
+	rv = GetEvent(TASK_ID_ILL,&eventMask);
+	TEST_ASSERT(rv==E_OS_ID );
+
+	rv = GetAlarmBase(ALARM_ID_ILL,&alarmInfo);
+	TEST_ASSERT(rv==E_OS_ID );
+	rv = GetAlarm(ALARM_ID_ILL,&tick);
+	TEST_ASSERT(rv==E_OS_ID );
+	rv = SetRelAlarm(ALARM_ID_ILL,1,2);
+	TEST_ASSERT(rv==E_OS_ID );
+	rv = SetAbsAlarm(ALARM_ID_ILL,1,2);
+	TEST_ASSERT(rv==E_OS_ID );
+	rv = CancelAlarm(ALARM_ID_ILL);
+	TEST_ASSERT(rv==E_OS_ID );
+}
+
 void etask_sup_l_01( void ){
 
 	_Bool done = 0;
@@ -52,6 +86,7 @@ void etask_sup_l_01( void ){
 	while(!done) {
 		switch( test_nr ) {
 		case 1:
+			/*@req OSEK_TASK_1 */
 			ActivateTask(TASK_ID_etask_sup_m);
 			/* Switch to higher prio */
 			Schedule();
@@ -60,10 +95,12 @@ void etask_sup_l_01( void ){
 			// From WaitEvent() in sup_m
 			TEST_OK();
 			++test_nr;
+			ClearEvent(EVENT_1);
 			// trigger sup_m to ready state(since it's waiting for the event)
 			SetEvent(TASK_ID_etask_sup_m,EVENT_1);
 			// Let SUP_M take the event
-			Schedule();
+#warning Something is very wrong here...
+			WaitEvent(EVENT_1);
 			break;
 		case 7:
 			// We get scheduled again from sup_m
@@ -74,7 +111,7 @@ void etask_sup_l_01( void ){
 		case 100:
 			SetEvent(TASK_ID_etask_sup_m,EVENT_1);
 			// Let SUP_M finish...
-			Schedule();
+			// Schedule();
 			// The test case is done! Kill ourselves
 			TerminateTask();
 //			done = 1;
@@ -116,6 +153,7 @@ void etask_sup_m_01( void ){
 			WaitEvent(EVENT_1);
 			break;
 		case 5:
+			SetEvent(TASK_ID_etask_sup_l,EVENT_1);
 			TEST_OK();
 			++test_nr;
 			break;

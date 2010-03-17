@@ -15,20 +15,20 @@
 
 
 
-
-
-
+#ifndef OS_CFG_H_
+#define OS_CFG_H_
 
 
 /*
- * Os_Cfg.h
- *
- *  Created on: 2008-dec-22
- *      Author: mahi
+ * OsOs container
  */
+#define OS_SC1 					STD_ON 		/* | OS_SC2 | OS_SC3 | OS_SC4 */
+#define OS_STACK_MONITORING		STD_ON
+#define OS_STATUS_EXTENDED			STD_ON 		/* OS_STATUS_STANDARD */
+#define OS_USE_GET_SERVICE_ID		STD_ON
+#define OS_USE_PARAMETER_ACCESS	STD_ON
+#define OS_RES_SCHEDULER			STD_ON
 
-#ifndef OS_CFG_H_
-#define OS_CFG_H_
 
 #define COUNTER_ID_OsTick				0
 
@@ -52,7 +52,7 @@ void btask_3( void );
 // NOT GENERATED( for test system only )
 #define SYSTEM_COUNTER_PERIOD				100
 
-#define PRIO_STACK_SIZE						2600
+#define PRIO_STACK_SIZE						5000 //2600
 #define OS_INTERRUPT_STACK_SIZE				2048
 
 // Just define them if you want to use them.

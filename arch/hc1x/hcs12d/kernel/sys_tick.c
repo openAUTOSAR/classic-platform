@@ -14,55 +14,64 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 #include "Os.h"
-#include "sys.h"
-#include "pcb.h"
 #include "internal.h"
-#include "stm32f10x.h"
-#include "core_cm3.h"
-#include "int_ctrl.h"
+#include "irq.h"
+#include "arc.h"
+#include "regs.h"
 
 /**
  * Init of free running timer.
  */
-void Frt_Init( void ) {
+void Os_SysTickInit( void ) {
+	// Set timer 0 as output compare. Timer 0 is reserved for the OS.
+
+	// TEN, timer enable
+	// TSFRZ, stop in freeze mode (easier debugging)
+	TSCR1 = TEN | TSFRZ;
+
+	// Modulus counter
+	// MCZI, enable interrupt, MCEN enable modulus counter
+	// Prescaler 4
+	MCCTL =  MCZI | MCEN | MCPRE_VAL_4;
+
+	// Set auto-reload
+	MCCTL |= MODMC;
+
+	// time = (count * prescaler)/(bus frequency)
+	//      = (0xFA0 * 4)/(16*10^6)
+	//      = 1ms
+	MCCNT = 0xFA0;
+
+	ICSYS = 0;
+
 	TaskType tid;
-	tid = Os_CreateIsr(OsTick,6/*prio*/,"OsTick");
-	IntCtrl_AttachIsr2(tid,NULL, SysTick_IRQn);
+	tid = Os_Arc_CreateIsr(OsTick, 6/*prio*/, "OsTick");
+	Irq_AttachIsr2(tid, NULL, IRQ_TYPE_MCCNT_UNDERFLOW);
 }
 
 /**
+ *
  *
  * @param period_ticks How long the period in timer ticks should be. The timer
  *                     on PowerPC often driver by the CPU clock or some platform clock.
  *
  */
-
-void Frt_Start(uint32_t period_ticks) {
-
-	SysTick_Config(period_ticks);
-
-	 /* Set SysTick Priority to 3 */
-	NVIC_SetPriority(SysTick_IRQn, 0x0C);
-
-#if 0
-	// SysTick interrupt each 250ms with counter clock equal to 9MHz
-	if (SysTick_Config((SystemFrequency / 8) / 4)) {
-		// Capture error
-		while (1)
-			;
-	}
-
-	// Select HCLK/8 as SysTick clock source
-	SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK_Div8);
-#endif
+void Os_SysTickStart(uint32_t period_ticks) {
 
 }
 
 /**
+ * ???
+ * TODO: This function just subtract the max value?! ok??
+ *
  * @return
  */
 
-uint32_t Frt_GetTimeElapsed( void )
+/** @req OS383 */
+uint32_t Os_SysTickGetTimeElapsed( void )
 {
-	return (SysTick->VAL);
+#if 0
+	uint32_t timer = get_spr(SPR_DECAR) - get_spr(SPR_DEC);
+	return (timer);
+#endif
 }

@@ -14,18 +14,4 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
-
-#ifndef SWAP_H_
-#define SWAP_H_
-
-#include "pcb.h"
-
-void os_swap_context(pcb_t *old_pcb, pcb_t *new_pcb );
-void os_swap_context_to(pcb_t *old_pcb, pcb_t *new_pcb );
-
-#endif /*SWAP_H_*/
+#error obsolete, remove..

@@ -14,10 +14,10 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-#ifndef INT_CTRL_H_
-#define INT_CTRL_H_
+#ifndef IRQ_H_
+#define IRQ_H_
 
-#include "irq.h"
+#include "irq_types.h"
 #include "bit.h"
 
 typedef void ( * func_t)(void);
@@ -33,14 +33,25 @@ typedef _Bool IsrType;
 /**
  * Init the interrupt controller
  */
-void IntCtrl_Init( void );
+void Irq_Init( void );
 
 /**
  * End-Of-Interrupt. Called by the OS it wants to clear the interrupt.
  */
-void IntCtrl_EOI( void );
+void Irq_EOI( void );
 
+#if defined(CFG_HC1X)
+/**
+ *
+ * @param stack Ptr to the current stack.
+ * @param irq_nr The nr. of the interrupt being handled.
+ *
+ * The stack holds C, NVGPR, VGPR and the EXC frame.
+ *
+ */
+void *Irq_Entry( uint8_t irq_nr, void *stack );
 
+#else
 /**
  *
  * @param stack_p Ptr to the current stack.
@@ -48,8 +59,8 @@ void IntCtrl_EOI( void );
  * The stack holds C, NVGPR, VGPR and the EXC frame.
  *
  */
-void *IntCtrl_Entry( void *stack_p );
-
+void *Irq_Entry( void *stack_p );
+#endif
 /**
  * Attach an ISR type 1 to the interrupt controller.
  *
@@ -58,7 +69,7 @@ void *IntCtrl_Entry( void *stack_p );
  * @param vector
  * @param prio
  */
-void IntCtrl_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector, uint8_t prio);
+void Irq_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector, uint8_t prio);
 
 /**
  * Attach a ISR type 2 to the interrupt controller.
@@ -67,32 +78,32 @@ void IntCtrl_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector, u
  * @param int_ctrl  The interrupt controller, The is NULL for now.
  * @param vector 	The vector to attach to
  */
-void IntCtrl_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector );
+void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector );
 
 /**
  * Generates a soft interrupt
  * @param vector
  */
-void IntCtrl_GenerateSoftInt( IrqType vector );
+void Irq_GenerateSoftInt( IrqType vector );
 /**
  * Get the current priority from the interrupt controller.
  * @param cpu
  * @return
  */
-uint8_t IntCtrl_GetCurrentPriority( Cpu_t cpu);
+uint8_t Irq_GetCurrentPriority( Cpu_t cpu);
 
 
 /**
  * Set the priority in the interrupt controller for vector
  */
-void IntCtrl_SetPriority( Cpu_t cpu,  IrqType vector, uint8_t prio );
+void Irq_SetPriority( Cpu_t cpu,  IrqType vector, uint8_t prio );
 
 /**
  *
  * @param vector
  * @param type
  */
-static inline void IntCtrl_SetIsrType( IrqType vector, IsrType type ) {
+static inline void Irq_SetIsrType( IrqType vector, IsrType type ) {
 	Irq_IsrTypeTable[vector + IRQ_INTERRUPT_OFFSET ] = type;
 }
 
@@ -102,7 +113,7 @@ static inline void IntCtrl_SetIsrType( IrqType vector, IsrType type ) {
  * @return 0 - Isr1
  *         1 - Isr2
  */
-static inline IsrType IntCtrl_GetIsrType( IrqType vector )  {
+static inline IsrType Irq_GetIsrType( IrqType vector )  {
 	return Irq_IsrTypeTable[vector + IRQ_INTERRUPT_OFFSET ];
 }
 
@@ -114,4 +125,4 @@ typedef struct {
 #endif
 
 
-#endif /* INT_CTRL_H_ */
+#endif /* IRQ_H_ */

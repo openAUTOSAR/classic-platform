@@ -41,16 +41,16 @@ Mcu_RamSectorSettingConfigType Mcu_RamSectorSettingConfigData[] = {
 Mcu_ClockSettingConfigType Mcu_ClockSettingConfigData[] =
 {
   {
-    .McuClockReferencePoint = 8000000UL,
-    .PllEprediv = 1,
-    .PllEmfd    = 104,
-    .PllErfd    = 5,
+    .McuClockReferencePointFrequency = 8000000UL,
+    .Pll1 = 1,
+    .Pll2    = 104,
+    .Pll3    = 5,
   },
   {
-    .McuClockReferencePoint = 16000000UL,
-    .PllEprediv = 3,
-    .PllEmfd    = 83,
-    .PllErfd    = 5,
+    .McuClockReferencePointFrequency = 16000000UL,
+    .Pll1 = 3,
+    .Pll2   = 83,
+    .Pll3    = 5,
   }
 };
 
@@ -61,10 +61,6 @@ Mcu_ClockSettingConfigType Mcu_ClockSettingConfigData[] =
   //  by HW the setting should be disabled.
   .McuClockSrcFailureNotification = 0,
 
-  //  This parameter shall represent the number of Modes available for the
-  //  MCU. calculationFormula = Number of configured McuModeSettingConf
-  .McuNumberOfMcuModes = 1, /* NOT USED */
-
   //  This parameter shall represent the number of RAM sectors available for
   //  the MCU. calculationFormula = Number of configured McuRamSectorSet-
   //  tingConf
@@ -74,20 +70,10 @@ Mcu_ClockSettingConfigType Mcu_ClockSettingConfigData[] =
   //  the MCU.
   .McuClockSettings = MCU_NBR_OF_CLOCKS,
 
-  //  This parameter relates to the MCU specific reset configuration. This ap-
-  //  plies to the function Mcu_PerformReset, which performs a microcontroller
-  //  reset using the hardware feature of the microcontroller.
-  .McuResetSetting = 0, /* NOT USED */
-
   //  This container contains the configuration (parameters) for the
   //  Clock settings of the MCU. Please see MCU031 for more in-
   //  formation on the MCU clock settings.
   .McuClockSettingConfig = &Mcu_ClockSettingConfigData[0],
-
-  //  This container contains the configuration (parameters) for the
-  //  Mode setting of the MCU. Please see MCU035 for more infor-
-  //  mation on the MCU mode settings.
-  .McuModeSettingConfig = 0,
 
   //  This container contains the configuration (parameters) for the
   //  RAM Sector setting. Please see MCU030 for more information

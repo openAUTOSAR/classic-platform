@@ -13,19 +13,30 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
 #ifndef ALARM_I_H_
 #define ALARM_I_H_
 
 #include "counter_i.h"
 
-struct counter_obj_s;
+/* STD container : OsAlarmSetEvent
+ * OsAlarmSetEventRef:			1
+ * OsAlarmSetEventTaskRef:		1
+ * */
+
+/* STD container : OsAlarmActivateTask
+ * OsAlarmActivateTaskRef:		1
+ * */
+
+/* STD container : OsAlarmCallback
+ * OsAlarmCallbackName:			1    Function Ptr
+ * */
+
+/* STD container : OsAlarmIncrementCounter
+ * OsAlarmIncrementCounterRef:	1    Ref to counter
+ * */
+
+
+struct OsCounter;
 
 typedef enum alarm_action_type_e {
 	ALARM_ACTION_ACTIVATETASK=0,
@@ -35,58 +46,81 @@ typedef enum alarm_action_type_e {
 } alarm_action_type_t;
 
 
-typedef struct alarm_action_s {
+/* STD container : OsAlarmAction
+ * OsAlarmActivateTask:			0..1
+ * OsAlarmCallback:				0..1
+ * OsAlarmIncrementCounter:		0..1
+ * OsAlarmSetEvent:				0..1
+ * */
+typedef struct OsAlarmAction {
 	alarm_action_type_t type;
 	TaskType 			task_id;
 	EventMaskType 		event_id;
 	CounterType 		counter_id;
-} alarm_action_t;
+} OsAlarmActionType;
 
-typedef struct alarm_autostart_s {
-	_Bool  active;
-	uint32 alarmtime;
-	uint32 cycletime;
-	uint32 appmode_mask;
-} alarm_autostart_t;
 
-typedef struct alarm_obj_s {
+enum OsAlarmAutostartTypeType {
+	// Start with SetAbsAlarm()
+	ALARM_AUTOSTART_ABSOLUTE,
+	// Start with SetRelAlarm()
+	ALARM_AUTOSTART_RELATIVE,
+};
 
-	char name[16];
+
+/* STD container : OsAlarmAutostart
+ * OsAlarmAlarmTime: 	 		1    Int
+ * OsAlarmAutoStartType: 		1    Int, ABSOLUTE, RELATIVE
+ * OsAlarmCycleTime: 	 		1    Int
+ * OsAlarmAppModeRef: 	 		1..*
+ */
+typedef struct OsAlarmAutostart {
+	uint32 alarmTime;
+	enum OsAlarmAutostartTypeType autostartType;
+	uint32 cycleTime;
+	uint32 appModeRef;
+} OsAlarmAutostartType;
+
+/* STD container : OsAlarm
+ * OsAlarmAccessionApplication: 0..* Ref to OS application
+ * OsAlamCounterRef:            1    Ref to counter
+ * OsAlarmAction[C]             1    Action when alarm expires
+ * OsAlarmAutostart[C]          0..1 Autostart
+ */
+typedef struct OsAlarm {
+	char 	name[16];
 	/* Reference to counter */
-	struct counter_obj_s *counter;
+	struct OsCounter *counter;
 
 	CounterType counter_id;
 	/* cycle, 0 = no cycle */
 	uint32 alarmtime;
 	uint32 cycletime;
-	uint32 appmode_mask;
-
-	alarm_autostart_t autostart;
+//	uint32 appmode_mask;
 
 	uint32 app_mask;
 
 	/* if the alarm is active or not */
-	_Bool active;
+	_Bool 	active;
 	/* expire value */
-	uint32 expire_val;
+	uint32 	expire_val;
+	/* Action attributes when alarm expires. */
+	OsAlarmActionType action;
 
+	/* Autostart */
+	const struct OsAlarmAutostart *autostartPtr;
 
-	// Action attributes when alarm expires.
-	alarm_action_t action;
-/*
-	alarm_action_type_t action_type;
-	TaskType 			action_pid;
-	EventMaskType 		action_event;
-	CounterType 		action_counter;
-*/
 	/* List of alarms connected to the same counter */
-	SLIST_ENTRY(alarm_obj_s) alarm_list;
+	SLIST_ENTRY(OsAlarm) alarm_list;
+
+#if (OS_SC1 == STD_ON)
 	/* TODO: OS242, callback in scalability class 1 only..*/
-#if 0
-	void (*cb)(void);
+	/** Missing req OS242 */
 #endif
-} alarm_obj_t;
+
+} OsAlarmType;
 
 
+void Os_AlarmCheck(OsCounterType *c_p);
 
 #endif /*ALARM_I_H_*/

@@ -13,18 +13,12 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-
 /*
  * Tested: alarms and events
  *
- *
+ * COUNTER_ID_soft_1 drives alarms:
+ *   ALARM_ID_c_soft_1_setevent_etask_m
+ *   ALARM_ID_c_soft_1_inc_counter_2
  */
 
 #include "Os.h"
@@ -61,14 +55,11 @@ void etask_sup_l_02( void ) {
 		case 3:
 			// Make cyclic alarm
 			SetRelAlarm(ALARM_ID_c_soft_1_setevent_etask_m, 2, 5);
+			// Let sup_m wait for the event.
 			ActivateTask(TASK_ID_etask_sup_m);
-			Schedule();
-			// Nothing should happen here
-			IncrementCounter(COUNTER_ID_soft_1);
-			// Trigger the event...
+			IncrementCounter(COUNTER_ID_soft_1);    // 1
 			IncrementCounter(COUNTER_ID_soft_1); 	// 2
-			// Should trigger
-			Schedule();
+			// Should trigger trigger after here, since higher prio it should swap
 			break;
 		case 4:
 			IncrementCounter(COUNTER_ID_soft_1);	// 3

@@ -99,8 +99,8 @@ on_int_stack:
 
 #endif
 
-    lis   r3, IntCtrl_Entry@h
-    ori   r3, r3,IntCtrl_Entry@l
+    lis   r3, Irq_Entry@h
+    ori   r3, r3,Irq_Entry@l
 
     mtlr  r3
     mr    r3,r4  /* "old" stack as arg1 */

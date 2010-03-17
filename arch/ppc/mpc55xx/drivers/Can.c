@@ -36,7 +36,7 @@
 #include <string.h>
 #if defined(USE_KERNEL)
 #include "Os.h"
-#include "int_ctrl.h"
+#include "irq.h"
 #endif
 
 
@@ -661,21 +661,21 @@ static void Can_Isr(int unit) {
 #define INSTALL_HANDLERS( _can_name,_boff,_err,_start,_stop) \
   do { \
     TaskType tid; \
-    tid = Os_CreateIsr(_can_name ## _BusOff,1/*prio*/,"Can"); \
-    IntCtrl_AttachIsr2(tid,NULL,_boff); \
-    tid = Os_CreateIsr(_can_name ## _Err,1/*prio*/,"Can"); \
-    IntCtrl_AttachIsr2(tid,NULL,_err); \
+    tid = Os_Arc_CreateIsr(_can_name ## _BusOff,1/*prio*/,"Can"); \
+    Irq_AttachIsr2(tid,NULL,_boff); \
+    tid = Os_Arc_CreateIsr(_can_name ## _Err,1/*prio*/,"Can"); \
+    Irq_AttachIsr2(tid,NULL,_err); \
     for(i=_start;i<=_stop;i++) {  \
-      tid = Os_CreateIsr(_can_name ## _Isr,1/*prio*/,"Can"); \
-			IntCtrl_AttachIsr2(tid,NULL,i); \
+      tid = Os_Arc_CreateIsr(_can_name ## _Isr,1/*prio*/,"Can"); \
+			Irq_AttachIsr2(tid,NULL,i); \
     } \
   } while(0);
 #else
 #define INSTALL_HANDLERS( _can_name,_boff,_err,_start,_stop) \
-  IntCtrl_InstallVector(_can_name ## _BusOff, _boff, 1, CPU_Z1); \
-  IntCtrl_InstallVector(_can_name ## _Err, _err, 1, CPU_Z1);    \
+  Irq_InstallVector(_can_name ## _BusOff, _boff, 1, CPU_Z1); \
+  Irq_InstallVector(_can_name ## _Err, _err, 1, CPU_Z1);    \
   for(i=_start;i<=_stop;i++) {																\
-    IntCtrl_InstallVector(_can_name ## _Isr, i, 1, CPU_Z1); \
+    Irq_InstallVector(_can_name ## _Isr, i, 1, CPU_Z1); \
   }
 #endif
 

@@ -1,0 +1,2057 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns1:Requirements xmlns:ns1="http://Employees" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<ns1:Req id="OS242">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall only allow Alarm Callbacks in Scalability Class
+1.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS398">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The OS shall not define the symbol LOCALMESSAGESONLY</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS304">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If in a call to SetRelAlarm() the parameter “increment” is set to zero, the
+service shall return E_OS_VALUE in standard and extended status .</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS424">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The first call to  StartOS() (for starting the Operating System) shall not
+return.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS425">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If ShutdownOS() is called and ShutdownHook() returns then the operating
+system shall disable all interrupts and enter an endless loop.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS299">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall provide the services DisableAllInterrupts(), EnableAllInterrupts(),  SuspendAllInterrupts(),  ResumeAllInterrupts()
+prior to calling StartOS() and after calling ShutdownOS(). (It is assumed that the static variables of these functions are initialized).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS301">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System  shall provide the ability  to increment a software
+counter as an alternative action on alarm expiry.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS399">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The OS shall provide an API call to increment a software counter.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS374">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall handle all the initialization and configuration of
+timers used directly by the OS and not handled by the GPT driver.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS383">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall provide a service to read the current count value
+of a counter (returning either the hardware timer ticks if counter is driven by hardware
+or the software ticks when user drives counter).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS392">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall provide a service to get the number of ticks
+between the current tick value and a previously read tick value.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS384">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall adjust the read out values of hardware timers
+(which drive counters) in such that the lowest value is zero and consecutive reads
+return an increasing count value until the timer wraps at its modulus.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS401">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code,generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>A schedule table shall have at least one expiry point</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS402">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code,generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>An expiry point shall contain a (possibly empty) set of tasks to activate.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS403">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code,generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>An expiry point shall contain a (possibly empty) set of events to set.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS404">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code,generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>An expiry point shall contain an offset in ticks from the start of the schedule
+table.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS407">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code,generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>An expiry point shall activate at least one task OR set at least one event</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS442">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code,generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>Each expiry point on a given schedule table shall have a unique offset.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS443">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code,generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Initial Offset shall be zero OR in the range  OsCounterMinCycle  ..
+OsCounterMaxAllowedValue of the underlying counter.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS408">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code,generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The delay between adjacent expiry points shall be in the range
+OsCounterMinCycle .. OsCounterMaxAllowedValue of the underlying counter.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS444">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code,generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The value of Final Delay shall be in the range  OsCounterMinCycle  ..
+OsCounterMaxAllowedValue of the underlying counter.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS002">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The OS shall drive an iterator over schedule table expiry points, processing
+each expiry point from the InitialExpiryPoint to the FinalExpiryPoint in order of
+increasing offset.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS007">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall permit multiple schedule tables to be processed
+concurrently.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS409">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>A schedule table shall be driven by exactly one counter.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS410">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall be able to process at least one schedule table
+per counter at any given time.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS411">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>One tick on the counter shall correspond to one tick on the schedule table.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS412">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The OS shall process all task activations on an expiry point first and then set
+events.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS413">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code,generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The schedule table shall be configurable as either single-shot or repeating.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS009">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the schedule table is single-shot,  the Operating System shall stop the
+processing of the schedule table Final Delay ticks after the Final Expiry Point is processed.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS427">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall allow the Final Delay for a single-shot schedule
+table to be zero.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS194">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the schedule table is repeating, the Operating System shall process the
+Initial Expiry Point Final Delay plus Initial Offset ticks have elapsed after processing
+the Final Expiry Point.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS358">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall provide a service to start the processing of a
+schedule table at an absolute value “Start” on the underlying counter. (The Initial Expiry Point shall be processed when the value of the underlying counter equals Start + InitialOffset).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS347">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall provide a service to  start the processing of a
+schedule table at “Offset” relative to the “Now” value on the underlying counter (The
+Initial Expiry Point shall be processed  when the value of the underlying counter
+equals Now + Offset + InitialOffset).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS006">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall provide a service to cancel the processing of a
+schedule table immediately at any point while the schedule table is running.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS428">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If schedule table processing has been cancelled before reaching the Final
+Expiry Point and is subsequently restarted then OS358/OS347 means that the re-start occurs from the start of the schedule table.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS191">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall provide a service to switch the processing from
+one schedule table to another schedule table.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS414">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>When a schedule table switch is requested, the OS shall continue to process
+expiry points on the current schedule table up and including the Final Expiry Point hen delay for Final Delay ticks before processing the Initial Expiry Point on the switched-to schedule table (after the initial offset).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS359">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall provide a service to query the state of a
+schedule table</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS013">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall provide the ability to synchronize the processing
+of schedule table to known counter values.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS429">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>A schedule table that is implicitly synchronized shall have a Duration equal to
+OsCounterMaxAllowedValue + 1 of its associated OSEK OS counter.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS430">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The OS shall prevent a schedule table  that is implicitly synchronized from
+being started at a relative count value.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS431">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>A schedule table that is explicitly synchronized shall have a duration
+no greater than modulus of the drive counter.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS462">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>A schedule table that is explicitly synchronized shall have a duration
+equal to the modulus of the synchronization counter.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS463">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The synchronization counter shall have the same resolution as the
+drive counter associated with the schedule table. This means that a tick on the schedule table has the same duration as a tick on the synchronization counter.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS434">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>An explicitly synchronized schedule table started at an absolute or relative
+counter value shall have state “running” when the service call returns.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS201">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating system shall provide  a service to start an explicitly
+synchronized schedule table. The Initial Expiry Point will be processed after (Duration – Value) + Initial Offset ticks of the driver counter have elapsed where Value is the absolute value of the synchronization count provided to the schedule table.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS435">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>An explicitly synchronized schedule table started synchronously shall have
+state “waiting” when the service call returns.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS199">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall provide a service to provide the schedule table
+with a synchronization count and start synchronization.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS415">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>An expiry point shall permit the configuration of a OsScheduleTableMaxRetard that defines the maximum number of ticks that can be subtracted from expiry point offset.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS416">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>An expiry point shall permit the configuration of a OsScheduleTableMaxAdvance that defines the maximum number of ticks that can be added to expiry point offset.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS436">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The value of (Offset - OsScheduleTableMaxRetard ) of an expiry point shall
+be greater than (Offset + OsCounterMinCycle) of the pervious expiry point.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS437">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The value of (Offset+OsScheduleTableMaxAdvance) of an expiry point shall
+be less than the duration of the schedule table.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS438">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>A schedule table shall define a precision bound with a value in the range 0
+to duration.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS206">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>When a new synchronization count is provided, the Operating System shall
+calculate the current deviation between the explicitly synchronized scheduled table and the synchronization count.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS417">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The OS shall start to synchronise an explicitly synchronized schedule table
+after a synchronization count is provided.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS418">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The OS shall set the state of an explicitly synchronized  schedule table to
+“running and synchronous” if the absolute value of the deviation between schedule table value the synchronization count is less than the configured
+OsScheduleTblExplicitPrecision threshold.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS419">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The OS shall set the state of an explicitly synchronized schedule table to
+“running” if the absolute value of the deviation between  schedule table value the synchronization count is greater  than or equal to the configured
+OsScheduleTblExplicitPrecision threshold.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS420">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the deviation is negative and the next expiry point is adjustable then the
+OS shall set the delay to the next expiry point to
+Delay+min(OsScheduleTableMaxAdvance,Deviation)</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS421">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the deviation is positive and the next expiry point is adjustable then the OS
+shall set the delay to the next expiry point to Delay-
+min(OsScheduleTableMaxRetard, Deviation)</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS422">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The OS shall provide a service to cancel synchronization being performed at
+adjustable expiry points on a schedule table.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS227">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall extend the service from OS359 to query the
+state of a schedule table with respect to synchronization.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS067">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code,generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall offer a stack monitoring which detects possible
+stack faults of Task(s)/Category 2 OsIsr(s).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS068">
+		<ns1:Class>1,2</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If a stack fault is detected by stack monitoring AND the configured scalability
+class is 1 or 2, the Operating System shall call the ShutdownOS() service with the status E_OS_STACKFAULT.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS396">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If a stack fault is detected by stack monitoring AND the configured scalability
+class is 3 or 4, the Operating System shall call the  ProtectionHook() with the
+status E_OS_STACKFAULT.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS445">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall support OS-Applications which are a
+composition of (at least one Task OR OsIsr) AND (zero or more Alarms, Schedule tables, Counters or Resources) AND (zero or one hooks for startup, error and shutdown).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS446">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall support the notion of trusted and not trustet OS-
+Applications.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS464">
+		<ns1:Class>,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>Trusted OS-Applications may offer services (“trusted services”) to other
+(even non-trusted) OS-Applications.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS016">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall provide a service to determine the currently
+running OS-Application (a unique identifier shall be allocated to each application).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS017">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall provide a service to determine to which OS-
+Application a given Task, OsIsr, Resource, Counter, Alarm or Schedule Table
+belongs.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS256">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall provide a service to determine which OS-
+Applications are allowed to use the IDs of a Task, OsIsr, Resource, Counter, Alarm or Schedule Table in API calls.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS258">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall provide a service to terminate the OS-
+Application to which the calling Task/Category 2 OsIsr/application specific error hook belongs. (This is an OS-Application level variant of the TerminateTask() service)</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS447">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>Terminating an OS-Application means to:
+- terminate all running, ready and waiting Tasks/OsIsrs of the OS-Application
+AND
+- disabling all interrupts of the OS-Application AND
+- stop all active alarms of the OS-Applications AND
+- stop all schedule tables of the OS-Application.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS448">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OS-Applications, trusted or non-trusted, shall by default have only access
+rights to objects belonging to this OS-Application. Access rights from other OS-Applications shall be granted explicitely by configuration.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS198">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall prevent write access to its  own data sections
+and its own stack from non-trusted OS-Applications.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS026">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System may prevent read access to an OS-Application’s data
+section attempted by other non-trusted OS-Applications.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS086">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall permit an OS-Application read and write access
+to that OS-Application’s own private data sections.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS207">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall prevent write access to the OS-Application’s
+private data sections from other non-trusted OS-Applications.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS196">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall permit a Task/Category 2 OsIsr read and write
+access to that Task’s/Category 2 OsIsr’s own private stack.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS208">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System may prevent write access to the private stack of
+Tasks/Category 2 OsIsrs of a non-trusted application from all other Tasks/OsIsrs in the same OS-Application.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS355">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall prevent  write access to all private stacks of
+Tasks/Category 2 OsIsrs of an OS-Application from other non-trusted OS-
+Applications.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS087">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall permit a Task/Category 2 OsIsr read and write
+access to that Task’s/Category 2 OsIsr’s own private data sections.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS195">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System may prevent write access to the private data sections
+of a Task/Category 2 OsIsr of a non-trusted application from all other Tasks/OsIsrs in the same OS-Application.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS356">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall prevent write access to all private data sections
+of a Task/Category 2 OsIsr of an OS-Application from other non-trusted OS-
+Applications.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS027">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System may provide an OS-Application the ability to protect
+its code sections against executing by non-trusted OS-Applications.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS081">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall provide the ability to provide shared library code
+in sections that are executable by all OS-Applications.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS209">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall permit trusted OS-Applications read and write
+access to peripherals.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS083">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall allow non-trusted OS-Applications to write to
+their assigned peripherals only (incl. reads that have the  side effect of writing to a memory location).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS044">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If a memory access violation is detected, the Operating System shall call the
+Protection Hook with status code E_OS_PROTECTION_MEMORY.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS028">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>In a non-trusted OS-Application, the Operating System shall apply timing
+protection to every Task/Category 2 OsIsr of this non-trusted OS-Application.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS089">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>In a trusted OS-Application, the Operating System shall offer the ability to
+apply timing protection to Tasks/Category 2 OsIsrs of this OS-Application.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS397">
+		<ns1:Class>2</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If no OS-Application is configured, the Operating System shall be able to
+apply timing protection to Tasks/Category 2 OsIsrs.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS064">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If a task’s OsTaskExecutionBudget is reached then the Operating System
+shall call the ProtectionHook() with E_OS_PROTECTION_TIME.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS473">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall reset a task’s OsTaskExecutionBudget on a
+transition to the SUSPENDED or WAITING states.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS465">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall limit the inter-arrival time of tasks to one per
+OsTaskTimeFrame.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS469">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall start an OsTaskTimeFrame when a task is
+activated successfully.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS472">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall start an OsTaskTimeFrame when a task is
+released successfully.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS466">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If an attempt is made to activate a task before the end of an
+OsTaskTimeFrame then the Operating System shall not perform the activation AND
+shall call the ProtectionHook() with E_OS_PROTECTION_ARRIVAL.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS467">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If an attempt is made to release a task before the end of an
+OsTaskTimeFrame then the Operating System shall not perform the release AND
+shall call the ProtectionHook() with E_OS_PROTECTION_ARRIVAL.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS210">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If a Category 2 OsIsr’s OsIsrExecutionBudget is reached then the Operating
+System shall call the ProtectionHook() with E_OS_PROTECTION_TIME.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS474">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall rest an OsIsr’s OsIsrExecutionBudget when the
+OsIsr returns control to the Operating terminates.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS470">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall limit the inter-arrival time of Category 2 OsIsrs to
+one per OsIsrTimeFrame.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS471">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall measure the start of an OsIsrTimeFrame from
+the point at which it recognises the interrupt (i.e. in the Operating System interrupt
+wrapper).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS048">
+		<ns1:Class>2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If Category 2 interrupt occurs before the end of the OsIsrTimeFrame then the
+Operating System shall not  execute the user provided OsIsr AND shall call the ProtectionHook() with E_OS_PROTECTION_ARRIVAL.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS033">
+		<ns1:Class>2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If a Task/Category 2 OsIsr holds an  OSEK Resource and exceeds the
+Os[Task|Isr]ResourceLockBudget, the  Operating System  shall call the
+ProtectionHook() with E_OS_PROTECTION_LOCKED.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS037">
+		<ns1:Class>2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If a Task/Category 2 OsIsr disables interrupts (via
+Suspend/Disable|All/OS|Interrupts()) and exceeds the configured
+Os[Task|Isr][All|OS]InterruptLockBudget, the Operating  System shall call the
+ProtectionHook() with E_OS_PROTECTION_LOCKED.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS051">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If an invalid address (address is not writable by this OS-Application) is
+passed as an out-parameter to an OS service, the Operating System shall return the
+status code E_OS_ILLEGAL_ADDRESS.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS088">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If an OS-Application makes a service  call from the wrong context AND is
+currently not inside a Category 1 OsIsr the Operating System shall not perform the requested action (the service call shall have no effect), and return E_OS_CALLEVEL or the “invalid value” of the service.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS052">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If a task returns from its entry function without making a TerminateTask()
+or  ChainTask() call, the Operating System shall terminate the task (and call the
+PostTaskHook() if configured).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS069">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If a task returns from its entry function without making a TerminateTask() or
+ChainTask() call AND the error hook is configured, the Operating System shall call the ErrorHook() (this is done regardless of whether the task causes other errors, e.g.  E_OS_RESOURCE) with status  E_OS_MISSINGEND before the task leaves the RUNNING state.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS070">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If a task returns from the entry function without making a TerminateTask()
+or  ChainTask() call and still holds OSEK Resources, the Operating System shall release them.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS239">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If a task returns from the entry function without making a TerminateTask()
+or  ChainTask() call and interrupts are still disabled, the Operating System shall enable them.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS368">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If a Category 2 OsIsr calls  DisableAllInterupts() /
+SuspendAllInterrupts() /  SuspendOSInterrupts()  and ends (returns) without
+calling the corresponding  EnableAllInterrupts() /  ResumeAllInterrupts() /
+ResumeOSInterrupts(), the Operating System shall  perform the missing service and shall call the ErrorHook() (if configured) with the status E_OS_DISABLEDINT.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS369">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If a Category 2 OsIsr calls GetResource() and ends (returns) without calling
+the corresponding  ReleaseResource(), the Operating System shall perform the ReleaseResource() call and shall call the  ErrorHook() (if configured) with the status E_OS_RESOURCE.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS071">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the PostTaskHook() is configured, the Operating System shall not call the
+hook if ShutdownOS() is called</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS092">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If  EnableAllInterrupts() /  ResumeAllInterrupts() /
+ResumeOSInterrupts() are called and no corresponding DisableAllInterupts()
+/  SuspendAllInterrupts() /  SuspendOSInterrupts() was done before, the
+Operating System shall not perform this OS service.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS093">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If interrupts are disabled/suspended  by a Task/OsIsr and the Task/OsIsr
+calls any OS service (excluding the interrupt services) then the Operating System shall ignore the service AND shall return E_OS_DISABLEDINT if the service returns a StatusType value.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS054">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall ignore calls to ShutdownOS() from non-trusted
+OS-Applications.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS056">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If an OS-object identifier is the parameter of a system service, and no
+sufficient access rights have been assigned  at configuration time (Parameter
+Os[...]AccessingApplication) to the calling Task/Category 2 OsIsr, the system
+service shall return E_OS_ACCESS.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS449">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>CheckTaskMemoryAccess and CheckIsrMemoryAccess check the memory
+access. Memory access checking is possible for all OS-Applications and from all OS-
+Applications and does not need granted rights (This is an exception to OS056).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS550">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>CheckObjectAccess checks the access rights for OS objects. Checking
+object access is possible for all OS-Applications and from all OS-Applications and
+does not need granted rights (This is an exception to OS056).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS058">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If supported by hardware,  the Operating System shall execute non-trusted
+OS-Applications in non-privileged mode.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS096">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>As far as supported by hardware, the Operating System shall not allow non-
+trusted OS-Applications to access control registers managed  by the Operating
+System.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS245">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If an instruction exception occurs (e.g. division by zero) the operating system
+shall call the protection hook with E_OS_PROTECTION_EXCEPTION.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS451">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall allow to export services from trusted OS-
+Applications.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS097">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall provide a mechanism to call a trusted function
+from a (trusted or non-trusted) OS-Application.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS100">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If a called trusted function is not configured the Operating System shall call
+the ErrorHook with E_OS_SERVICEID.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS099">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall offer OS-Applications a service to check if a
+memory region is write/read/execute accessible from a Task/Category 2 OsIsr and
+also return information if the memory region is part of the stack space.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS211">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall execute the ProtectionHook() with the same
+permissions as the Operating System.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS106">
+		<ns1:Class>2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall perform one of the following reactions
+depending on the return value of the ProtectionHook():
+o Do nothing
+o Forcibly terminate the faulty Task/Category 2 OsIsr OR
+o Forcibly terminate the faulty OS-Application OR
+o Forcibly terminate the faulty OS-Application and restart the OS-
+Application. OR
+o Call ShutdownOS().</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS107">
+		<ns1:Class>2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If no  ProtectionHook() is configured and a protection error occurs, the
+Operating System shall call ShutdownOS().</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS475">
+		<ns1:Class>2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the reaction is to do nothing and the ProtectionHook() was not called with
+E_OS_PROTECTION_ARRIVAL then the Operating System shall call ShutdownOS()</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS243">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the reaction is to forcibly terminate the Task/Category 2 OsIsr and no Task
+or OsIsr can be associated with the error, the running OS-Application is forcibly
+terminated by the Operating System.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS244">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the reaction is to forcibly terminate the faulty OS-Application and no OS-
+Application can be assigned, ShutdownOS()is called.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS108">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the Operating System forcibly terminates a task, it terminates the task (no
+PostTaskHook() for the task will be called), releases all allocated OSEK resources
+and calls  EnableAllInterrupts()/  ResumeOSInterrupts() /
+ResumeAllInterrupts() if the Task called  DisableAllInterrupts()  /
+SuspendOSInterrupts()  / SuspendAllInterrupts() before without the
+corresponding  EnableAllInterrupts()/  ResumeOSInterrupts() /
+ResumeAllInterrupts() call.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS109">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the Operating System forcibly terminates an interrupt service routine, it
+clears the interrupt request, aborts the interrupt service routine (The interrupt source
+stays in the current state.) and releases  all OSEK resources the interrupt service
+routine has allocated and calls EnableAllInterrupts() / ResumeOSInterrupts() /
+ResumeAllInterrupts() if the interrupt called  DisableAllInterrupts()  /
+SuspendOSInterrupts()  / SuspendAllInterrupts() before without the
+corresponding  EnableAllInterrupts()/  ResumeOSInterrupts() /
+ResumeAllInterrupts() call.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS110">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the Operating System forcibly terminates an OS-Application, it:
+o forcibly terminates all Tasks/OsIsrs of the OS-Application AND
+o cancels all alarms of the OS-Application AND
+o stops schedule tables of the OS-Application AND
+o disables interrupt sources of Category 2 OsIsrs belonging to the OS-
+Application</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS111">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>When the Operating System restarts an OS-Application it activates the
+configured OsRestartTask.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS240">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>none</ns1:Component>
+		<ns1:Verification>inspection</ns1:Verification>
+		<ns1:Description>If an implementation of a lower scalability class supports features of higher
+classes then the interfaces for the features must comply with this specification.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS241">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>none</ns1:Component>
+		<ns1:Verification>inspection</ns1:Verification>
+		<ns1:Description>The operating system shall support the features according to the configured
+scalability class. (See Tab. 2)</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS327">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The operating system shall always use extended status in Scalability Class 3
+and 4.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS439">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall offer the OSEK error macros (OSError…()) to all
+configured error hooks AND there shall be two (like in OIL) global configuration
+parameter to switch these macros on or off.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS060">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If an application-specific  startup hook is configured for an OS-Application
+&lt;App&gt;, the Operating System shall call StartupHook_&lt;App&gt; on startup of the OS.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS226">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall execute an application-specific startup hook with
+the access rights of the associated OS-Application.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS236">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If both a system-specific and one (or more) application specific startup
+hook(s) are configured, the Operating System shall call the system-specific startup
+hook before the application-specific startup hook(s).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS112">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If an application-specific shutdown hook is configured for an OS-Application
+&lt;App&gt;, the Operating System shall call  ShutdownHook_&lt;App&gt; on shutdown of the
+OS.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS225">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall execute an application-specific shutdown hook
+with the access rights of the associated OS-Application.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS237">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If both a system-specific and one (or more) application specific shutdown
+hook(s) are configured, the Operating System shall call the system-specific shutdown
+hook after the application-specific shutdown hook(s).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS246">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>When an error occurs AND an application-specific error hook is configured
+for the faulty OS-Application &lt;App&gt;, the Operating System shall call that application-
+specific error hook ErrorHook_&lt;App&gt; after the system specific error hook is called (if
+configured).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS085">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The Operating System shall execute an application-specific error hook with
+the access rights of the associated OS-Application.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS367">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>Operating System services which do not return a StatusType shall not raise
+the error hook(s).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS261">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>GetApplicationID() shall return the application identifier to which
+the executing Task/OsIsr/hook belongs.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS262">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If no OS-Application is running, GetApplicationID() shall return
+INVALID_OSAPPLICATION.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS263">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If called from category 2 OsIsr (or Hook routines called inside a category
+2 OsIsr), GetISRID() shall return the identifier of the currently executing OsIsr.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS264">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If its caller is not a category 2 OsIsr (or Hook routines called inside a category 2 OsIsr),
+GetISRID() shall return INVALID_ISR.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS265">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If &lt;FunctionIndex&gt; is a defined function index,
+CallTrustedFunction() shall switch the processor into privileged mode AND
+shall call the function &lt;FunctionIndex&gt; out of a list of implementation specific
+trusted functions AND shall return E_OK after completion.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS312">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The called trusted function must conform to the following C prototype:
+void TRUSTED_&lt;name_of_the_trusted_service&gt;(
+TrustedFunctionIndexType,TrustedFunctionParameterRefType);
+(The arguments are the same as the arguments of CallTrustedFunction).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS266">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>When the function &lt;FunctionIndex&gt; is called, it shall get the same
+permissions (access rights) as the associated trusted OS-Application.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS364">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the trusted function is called from a Category 2 OsIsr context it shall
+continue to run on the same interrupt priority and be allowed to call all system
+services defined for Category 2 OsIsr (see table in chapter 7.7.3.2).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS365">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the trusted function is called from a task context it shall continue to run
+on the same priority and be allowed to call all system services defined for tasks
+(see table in chapter 7.7.3.2).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS292">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the function index &lt;FunctionIndex&gt; is undefined,
+CallTrustedFunction() shall return E_OS_SERVICEID.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS267">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the OsIsr reference &lt;ISRID&gt; is valid, CheckISRMemoryAccess() shall
+return the access rights of the OsIsr on the specified memory area.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS313">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If an access right (e.g. “read”) is not valid for the whole specified memory
+area   CheckISRMemoryAccess() shall yield no access regarding this right.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS268">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the OsIsr reference &lt;ISRID&gt; is not valid, CheckISRMemoryAccess()
+shall yield no access rights.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS269">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the Task reference &lt;TaskID&gt; is valid, CheckTaskMemoryAccess()
+shall return the access rights of the task on the specified memory area.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS314">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If an access right (e.g. “read”) is not valid for the whole specified memory
+area   CheckTaskMemoryAccess() shall yield no access regarding this right.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS270">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the Task reference &lt;TaskID&gt; is not valid, CheckTaskMemoryAccess()
+shall yield no access rights.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS271">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the OS-Application &lt;ApplID&gt; has access to the queried object,
+CheckObjectAccess() shall return ACCESS.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS272">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the OS-Application &lt;ApplID&gt; has no access to the queried object,
+CheckObjectAccess() shall return NO_ACCESS.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS423">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the object to be examined is not a valid object OR &lt;ApplID&gt;  is invalid
+OR &lt;ObjectType&gt; is invalid THEN the  the CheckObjectAccess() shall return
+NO_ACCESS.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS318">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the object type is OBJECT_RESOURCE AND the object to be examined is
+the RES_SCHEDULER CheckObjectAccess() shall always return ACCESS.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS273">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the specified object ObjectType exists, CheckObjectOwnership()
+shall return the identifier of the OS-Application to which the object belongs.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS274">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the specified object ObjectType is invalid OR the argument of the type
+(the “…”) is invalid , CheckObjectOwnership() shall return
+INVALID_OSAPPLICATION.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS319">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the object to be examined is the RES_SCHEDULER
+CheckObjectOwnership() shall always return INVALID_OSAPPLICATION.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS275">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the schedule table &lt;ScheduleTableID&gt; is not valid,
+StartScheduleTableRel() shall return E_OS_ID.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS452">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the schedule table &lt;ScheduleTableID&gt; is implicitely synchronized
+(OsScheduleTblSyncStrategy   = IMPLICIT),
+StartScheduleTableRel() shall return E_OS_ID.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS332">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If &lt;Offset&gt; is zero StartScheduleTableRel() shall return
+E_OS_VALUE.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS276">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the offset &lt;Offset&gt; is greater than OsCounterMaxAllowedValue of
+the underlying counter minus the Initial Offset, StartScheduleTableRel()
+shall return E_OS_VALUE.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS277">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the schedule table &lt;ScheduleTableID&gt; is not in the state
+SCHEDULETABLE_STOPPED, StartScheduleTableRel() shall return
+E_OS_STATE.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS278">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If its input parameters are valid and the state of schedule table
+&lt;ScheduleTableID&gt; is SCHEDULETABLE_STOPPED, then
+StartScheduleTableRel() shall start the processing of a schedule table
+&lt;ScheduleTableID&gt;. The Initial Expiry Point shall be processed after &lt;Offset&gt; +
+Initial Offset ticks have elapsed on the underlying counter. The state of
+&lt;ScheduleTableID&gt; to SCHEDULETABLE_RUNNING.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS348">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the schedule table &lt;ScheduleTableID&gt; is not valid,
+StartScheduleTableAbs() shall return E_OS_ID.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS349">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the &lt;Tickvalue&gt; is greater than the OsCounterMaxAllowedValue of
+the underlying counter, StartScheduleTableAbs() shall return E_OS_VALUE.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS350">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the schedule table &lt;ScheduleTableID&gt; is not in the state
+SCHEDULETABLE_STOPPED, StartScheduleTableAbs() shall return
+E_OS_STATE.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS351">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If its input parameters are valid and &lt;ScheduleTableID&gt; is in the state
+SCHEDULETABLE_STOPPED, StartScheduleTableAbs() shall start the
+processing of schedule table &lt;ScheduleTableID&gt; at count value &lt;Start&gt; and shall
+set the state of &lt;ScheduleTableID&gt; to SCHEDULETABLE_RUNNING. The Initial
+Expiry Point will be processed when the underlying counter equals &lt;Start&gt;+Initial
+Offset.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS279">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the schedule table identifier &lt;ScheduleTableID&gt; is not valid,
+StopScheduleTable() shall return E_OS_ID.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS280">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the schedule table with identifier &lt;ScheduleTableID&gt; is in state
+SCHEDULETABLE_STOPPED, StopScheduleTable() shall return
+E_OS_NOFUNC.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS281">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If its input parameters are valid, StopScheduleTable()shall set the
+state of &lt;ScheduleTableID&gt; to SCHEDULETABLE_STOPPED and (stop the
+schedule table &lt;ScheduleTableID&gt; from processing any further expiry points and)
+shall return E_OK.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS282">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the input parameter &lt;ScheduleTableID_From&gt; or
+&lt;ScheduleTableID_To&gt; is not valid, NextScheduleTable() shall return
+E_OS_ID.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS330">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If schedule table &lt;ScheduleTableID_To&gt; is driven by different counter than
+schedule table &lt;ScheduleTableID_From&gt; then NextScheduleTable() shall
+return an error E_OS_ID.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS283">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>: If the schedule table &lt;ScheduleTableID_From&gt; is in state
+SCHEDULETABLE_STOPPED OR in state SCHEDULETABLE_NEXT,
+NextScheduleTable() shall leave the state of &lt;ScheduleTable_From&gt; and
+&lt;ScheduleTable_To&gt; unchanged and return E_OS_NOFUNC..</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS309">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>: If the schedule table &lt;ScheduleTableID_To&gt; is not in state
+SCHEDULETABLE_STOPPED, NextScheduleTable() shall leave the state of
+&lt;ScheduleTable_From&gt; and &lt;ScheduleTable_To&gt; unchanged and return
+E_OS_STATE.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS284">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the input parameters are valid then  NextScheduleTable() shall start
+the processing of schedule table &lt;ScheduleTableID_To&gt;
+&lt;ScheduleTableID_From&gt;.FinalDelay ticks after the Final Expiry Point on
+&lt;ScheduleTableID_From&gt; is processed and shall return E_OK. The Initial Expiry
+Point on &lt;ScheduleTableID_To&gt; shall be processed at
+&lt;ScheduleTableID_From&gt;.Final Delay + &lt;ScheduleTable_To&gt;.Initial Offset ticks
+after the Final Expiry Point on &lt;ScheduleTableID_From&gt; is processed .</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS324">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the input parameters are valid AND the &lt;ScheduleTableID_From&gt;
+already has a “next” schedule table then the &lt;ScheduleTableID_To&gt; shall replace
+the previous “next” schedule table and the old “next” schedule table state becomes
+SCHEDULETABLE_STOPPED.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS363">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The synchronization strategy of the &lt;ScheduleTableID_To&gt; shall come into
+effect when the Operating System processes the first expiry point of
+&lt;ScheduleTableID_To&gt;.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS453">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the &lt;ScheduleTableID_From&gt; is stopped, the “next” schedule table
+does not start and its state changes to SCHEDULETABLE_STOPPED.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS387">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the schedule table &lt;ScheduleTableID&gt; is not valid OR the schedule
+table &lt;ScheduleTableID&gt; is not explicitly synchronized
+(OsScheduleTblSyncStrategy   = EXPLICIT)
+StartScheduleTableSynchron() shall return E_OS_ID.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS388">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the schedule table &lt;ScheduleTableID&gt; is not in the state
+SCHEDULETABLE_STOPPED, the service shall return E_OS_STATE.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS389">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If &lt;ScheduleTableID&gt; is valid, StartScheduleTableSynchron()
+shall set the state of &lt;ScheduleTableID&gt; to SCHEDULETABLE_WAITING and
+start the processing of schedule table &lt;ScheduleTableID&gt; after the
+synchronization count of the schedule table is set via SyncScheduleTable().
+The Initial Expiry Point shall processed when (Duration-SyncValue)+InitialOffset
+ticks have elapsed on the synchronization counter where:
+- Duration is &lt;ScheduleTableID&gt;.OsScheduleTableDuration
+- SyncValue is the &lt;Value&gt; parameter passed to the SyncScheduleTable()
+- InitialOffset is the shortest expiry point offset in &lt;ScheduleTableID&gt;</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS454">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the &lt;ScheduleTableID&gt; is not valid OR schedule table can not be
+explicitely synchronized (OsScheduleTblSyncStrategy is not equal to
+EXPLICIT) the service shall return E_OS_ID.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS455">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the &lt;Value&gt; is greater than the OsScheduleTableDuration,
+SyncScheduleTableAbs() shall return E_OS_VALUE.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS456">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the state of the schedule table &lt;ScheduleTableID&gt; is equal to
+SCHEDULETABLE_STOPPED or SCHEDULETABLE_NEXT the service shall return
+E_OS_STATE.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS457">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the parameters are valid, the service provides the operating system with
+the current synchronization count for the given schedule table. (It is used to
+synchronize the processing of the schedule table to the synchronization counter.)</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS300">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If OsScheduleTblSyncStrategy  of &lt;ScheduleTableID&gt; equals to
+EXPLICIT then SetScheduleTableAsync() shall set the status of
+&lt;ScheduleTableID&gt; to SCHEDULETABLE_RUNNING.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS362">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If  SetScheduleTableAsync() is called for a running schedule table
+the OS shall stop further synchronization until a SyncScheduleTable() call is
+made.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS323">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If SetScheduleTableAsync() is called for a running schedule table
+the OS shall continue to process expiry points on the schedule table.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS458">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If OsScheduleTblSyncStrategy of &lt;ScheduleTableID&gt; is not equal
+to EXPLICIT then the service call shall return E_OS_ID</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS289">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the schedule table &lt;ScheduleTableID&gt; is NOT started,
+GetScheduleTableStatus() shall pass back SCHEDULETABLE_STOPPED via
+the reference parameter &lt;ScheduleStatus&gt; AND shall return E_OK.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS353">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the schedule table &lt;ScheduleTableID&gt; was used in a
+NextScheduleTable() call AND waits for the end of the current schedule
+table, GetScheduleTableStatus() shall return SCHEDULETABLE_NEXT via
+the reference parameter &lt;ScheduleStatus&gt; AND shall return E_OK</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS354">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the schedule table &lt;ScheduleTableID&gt; is configured with explicit
+synchronization AND no synchronization count was provided to the Operating
+System, GetScheduleTableStatus() shall return SCHEDULETABLE_WAITING via the reference parameter &lt;ScheduleStatus&gt; AND shall return E_OK.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS290">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the schedule table &lt;ScheduleTableID&gt; is started AND synchronous,
+GetScheduleTableStatus() shall pass back
+SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS via the reference parameter
+&lt;ScheduleStatus&gt; AND shall return E_OK</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS291">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the schedule table &lt;ScheduleTableID&gt; is started AND NOT
+synchronous (deviation is not within the precision interval OR the schedule table
+has been set asynchronous), GetScheduleTableStatus() shall pass back
+SCHEDULETABLE_RUNNING via the reference parameter ScheduleStatus AND
+shall return E_OK.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS293">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the identifier &lt;ScheduleTableID&gt; is NOT valid,
+GetScheduleTableStatus() shall return E_OS_ID.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS285">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the input parameter &lt;CounterID&gt; is not valid OR the counter is a
+hardware counter, IncrementCounter() shall return E_OS_ID.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS286">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If its input parameter is valid, IncrementCounter() shall increment the
+counter &lt;CounterID&gt; by one (if any alarm connected to this counter expires, the
+given action, e.g. task activation, is done) and shall return E_OK.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS321">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If an error happens during the execution of an alarm action, e.g.
+E_OS_LIMIT caused by a task activation, the error hook(s) are called, but the
+IncrementCounter() service itself will return E_OK.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS376">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the input parameter &lt;CounterID&gt; is not valid, the service should return
+E_OS_ID.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS377">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If its input parameter is valid, GetCounterValue() shall return the
+current tick value of the counter via &lt;Value&gt; and return E_OK.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS381">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the input parameter &lt;CounterID&gt; is not valid the service will return
+E_OS_ID.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS391">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the &lt;Value&gt; is larger than the max allowed value of the &lt;CounterID&gt;,
+the service will return E_OS_VALUE.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS382">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If its input parameter are valid, GetElapsedCounterValue() shall
+return the number of elapsed ticks since the given &lt;Value&gt; value via
+&lt;ElapsedValue&gt; and shall return E_OK.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS460">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>In the &lt;Value&gt; parameter the current tick value of the counter is
+returned.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS287">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If called from allowed context – see table [7.7.3.2.1] --,
+TerminateApplication() shall terminate the calling OS-Application (i.e. to
+kill all tasks, disable the interrupt sources of those OsIsrs which belong to the OS-
+Application and free all other OS resources associated with the application).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS288">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If called from wrong context, TerminateApplication() shall return
+E_OS_CALLEVEL.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS459">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the &lt;RestartOption&gt; is invalid, the service shall retrun E_OS_VALUE.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS346">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If RestartOption equals RESTART, TerminateApplication() shall
+activate the configured OsRestartTask of the terminated OS-Application.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS308">
+		<ns1:Class>2,3,4</ns1:Class>
+		<ns1:Component>code</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If an invalid value is returned the Operating System shall take the same
+action as if no protection hook is configured.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS302">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsAlarmIncrementCounter{INCREMENTCOUNTER}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS114">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsApplication{APPLICATION}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS115">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsTrusted {TRUSTED}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS231">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsAppAlarmRef</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS234">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsAppCounterRef</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS317">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>Same as OS234</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS221">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsAppIsrRef</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS248">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsAppResourceRef</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS252">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>Same as OS248</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS230">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsAppScheduleTableRef</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS249">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>Same as OS230</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS116">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsAppTaskRef</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS250">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>Same as OS116</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS120">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsRestartTask {RESTARTTASK}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS213">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsAppErrorHook {ERRORHOOK}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS125">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsAppShutdownHook {SHUTDOWNHOOK}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS124">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsAppStartupHook {STARTUPHOOK}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS254">
+		<ns1:Class>3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsTrustedFunctionName</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS255">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsCounterType {TYPE}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS371">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsDriver{DRIVER}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS214">
+		<ns1:Class>2,3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsProtectionHook {PROTECTIONHOOK}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS229">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsIsrResourceLock{LOCKINGTIME}
+OsIsrResourceLockBudget {MAXRESOURCELOCKTIME}
+OsIsrResourceLockResourceRef {RESOURCE}
+OsIsrAllInterruptLockBudget {MAXALLINTERRUPTLOCKTIME}
+OsIsrOsInterruptLockBudget {MAXOSINTERRUPTLOCKTIME}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS326">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsIsrTimingProtection{TIMING_PROTECTION}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS222">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsIsrExecutionBudget {EXECUTIONTIME}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS223">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsIsrTimeFrame {TIMEFRAME}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS259">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsScalabilityClass {SCALABILITYCLASS}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS307">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsStackMonitoring {STACKMONITORING}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS252">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsResource{RESOURCE}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS141">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsScheduleTable{SCHEDULETABLE}
+OsScheduleTableRepeating {REPEATING}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS145">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsScheduleTableCounterRef {COUNTER}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS335">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsScheduleTableAutostart{AUTOSTART}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS143">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsScheduleTableExpiryPoint{ACTION}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS325">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsTaskTimingProtection{TIMING_PROTECTION}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS185">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsTaskExecutionBudget {EXECUTIONBUDGET}
+OsTaskTimeFrame {TIMEFRAME}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS386">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>container</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>OsTimeConstant{TIMECONSTANTS}</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS172">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The generator shall provide the user the ability of reading the information of
+a selectable configuration file.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS173">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The generator shall provide the user  the ability of performing a consistency
+check of the current configuration.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS050">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If service protection is required and OsStatus is not equal to EXTENDED (all
+the associated error handling is provided), the consistency check shall issue an error.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS045">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If timing protection is configured together with OSEK OS Category 1
+interrupts, the consistency check shall issue a warning.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS320">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If configured attributes do not match the configured scalability class (e.g.
+defining an execution time budget in Tasks or Category 2 OsIsrs and selected
+scalability class is 1) the consistency check shall issue a warning.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS311">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If OsScalabilityClass is SC3 or SC4 AND a Task OR Category 2 OsIsr OR
+Resources OR Counters OR Alarms OR Schedule tables does not belong to exactly
+one OS-Application the consistency check shall issue an error.. RES_SCHEDULER
+as the only exception does not belong to any OS-Application.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS361">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If  OsScalabilityClass is  SC3 or  SC4 AND a Category 1 OsIsr does not
+belong to exactly one trusted OS-Application the consistency check shall issue an
+error</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS177">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If OsScalabilityClass is SC3 or SC4 AND an interrupt source that is used
+by the OS is assigned to an OS-Application, the consistency check shall issue an
+error.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS303">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If OsAlarmIncrementCounter is configured as action on alarm expiry AND
+the alarm is driven directly or indirectly (a cyclic chain of alarm actions with
+OsAlarmIncrementCounter) by that counter, the consistency check shall issue a
+warning..</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS328">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If  OsStatus is  STANDARD and  OsScalabilityClass  is  SC3 or  SC4 the
+consistency check shall issue an error.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS343">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If  OsScalabilityClass is  SC3 or  SC4 AND a task is referenced within a
+schedule table object AND the OS-Application of the schedule table has no access to
+the task, the consistency check shall issue an error.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS344">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If OsScalabilityClass is SC3 or SC4 AND a task is referenced within an
+alarm object AND the OS-Application of the alarm has no access to the task, the
+consistency check shall issue an error.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS440">
+		<ns1:Class>2,4</ns1:Class>
+		<ns1:Component>generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If a schedule table has OsScheduleTblSyncStrategy   = IMPLICIT and the
+OsCounterMaxAllowedValue+1  of the associated counter is not equal to the
+duration of the schedule table then the consitency check shall issue an error.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS441">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If a GPT channel is configured as a hardware counter driver the consitency
+check shall issue an error if the selected GPT channel is not configured for
+continuous mode.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS461">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If  OsScalabilityClass is  SC2, SC3  or SC4 AND  Alarm Callbacks are
+configured the conistency check shall isuue an error.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS179">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>If the consistency check of the read-in configuration  file has not run free of
+errors, the generator shall not generate/configure the operating system.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS336">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The generator shall generate a relocatable memory section containing the
+interrupt vector table.</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS370">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The generator shall print out information about timers used internally by the
+OS during generation (e.g. on console, list file).</ns1:Description>
+	</ns1:Req>
+	<ns1:Req id="OS393">
+		<ns1:Class>1,2,3,4</ns1:Class>
+		<ns1:Component>generator</ns1:Component>
+		<ns1:Verification>code</ns1:Verification>
+		<ns1:Description>The generator shall create conversation macros to convert counter ticks
+(given as argument) into real time. The format of the macro is
+OS_TICKS2&lt;Unit&gt;_&lt;Counter&gt;(ticks) whereas  &lt;Unit&gt; is one of  NS
+(nanoseconds),  US (microseconds),  MS (milliseconds) or  SEC (seconds) and
+&lt;Counter&gt; is the name of the counter; E.g. OS_TICKS2MS_MyCounter())</ns1:Description>
+	</ns1:Req>
+</ns1:Requirements>

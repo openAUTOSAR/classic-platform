@@ -13,24 +13,19 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-
 #include "Os.h"
-#include "types.h"
-#include "counter_i.h"
-#include "pcb.h"
-#include "sched_table_i.h"
-#include "ext_config.h"
-#include "hooks.h"
-#include <stdlib.h>
+#include "internal.h"
 #include "alist_i.h"
-#include <assert.h>
+
+/*
+ * Generic requirements this module can handle
+ */
+ /** @req OS007 */
+ /** @req OS410 */
+ /** @req OS411 */
+ /** @req OS347 */
+ /** @req OS358 */
+ /** @req OS428 */
 
 /*
  * How Autosar sees the scheduletable
@@ -79,17 +74,14 @@
 		ERRORHOOK(rv);  \
 		return rv;
 
-extern TickType GetCountValue( counter_obj_t *counter );
+extern TickType GetCountValue( OsCounterType *counter );
 
-static TickType os_calc_modulo( TickType curr, TickType max, TickType add ) {
-	TickType diff = max - curr;
-	return (diff >= add ) ? (curr + add) :
-							(add - curr);
-}
 
-enum OsScheduleTableSyncStrategy getSyncStrategy( sched_table_t *stblPtr ) {
+#if 0
+enum OsScheduleTableSyncStrategy getSyncStrategy( OsSchTblType *stblPtr ) {
 	return stblPtr->sync.syncStrategy;
 }
+#endif
 
 
 /**
@@ -100,59 +92,132 @@ enum OsScheduleTableSyncStrategy getSyncStrategy( sched_table_t *stblPtr ) {
  *
  * @return
  */
-static void ScheduleTableConsistenyCheck( sched_table_t *s_p ) {
+static void ScheduleTableConsistenyCheck( OsSchTblType *sTblPtr ) {
 
-	// OS440
-	if( s_p->sync.syncStrategy == IMPLICIT ) {
-		assert( s_p->duration == (s_p->counter->alarm_base.maxallowedvalue +1) );
+#if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
+	/** @req OS440 */
+	if( sTblPtr->sync.syncStrategy == IMPLICIT ) {
+		assert( sTblPtr->duration == (sTblPtr->counter->alarm_base.maxallowedvalue +1) );
 	}
 
-	// OS431
-	if( s_p->sync.syncStrategy == EXPLICIT ) {
-		assert( s_p->duration <= (s_p->counter->alarm_base.maxallowedvalue +1) );
+	/** @req OS431 */
+	if( sTblPtr->sync.syncStrategy == EXPLICIT ) {
+		assert( sTblPtr->duration <= (sTblPtr->counter->alarm_base.maxallowedvalue +1) );
 	}
+#endif
+
+	/** @req OS401 */
+	assert(SA_LIST_CNT(&sTblPtr->expirePointList)>=1);
+
+
+
+	{
+		int iter;
+		TickType delta = 0;
+		TickType minCycle = Os_CounterGetMinCycle(sTblPtr->counter);
+		TickType maxValue =  Os_CounterGetMaxValue(sTblPtr->counter);
+
+		/* - start at offset=0
+		 * - X expiry points = SA_LIST_CNT
+		 * - Final offset.
+		 */
+		/** @req OS443 */
+		/** @req OS408 */
+		for(iter=0; iter  <  SA_LIST_CNT(&sTblPtr->expirePointList) ; iter++) {
+			delta = SA_LIST_GET(&sTblPtr->expirePointList,iter)->offset - delta;
+			assert( delta >=  minCycle );
+			assert( delta <=  maxValue );
+		}
+
+		/* Final */
+		/** @req OS444 */
+		delta = sTblPtr->duration - SA_LIST_GET(&sTblPtr->expirePointList,iter-1)->offset;
+		assert( delta >=  minCycle );
+		assert( delta <=  maxValue );
+	}
+
 }
 
-
-// TODO: OS452,OS278
 StatusType StartScheduleTableRel(ScheduleTableType sid, TickType offset) {
 	StatusType rv = E_OK;
-	sched_table_t *s_tbl;
+	OsSchTblType *sPtr;
 	TickType max_offset;
 
 
-	(void)offset;
-	// OS275
+#if (OS_STATUS_EXTENDED == STD_ON )
+	/** @req OS275 */
 	SCHED_CHECK_ID(sid);
-	s_tbl = Oil_GetSched(sid);
-	// OS276
-	max_offset = s_tbl->counter->alarm_base.maxallowedvalue;
-	if( (offset == 0) || (offset > max_offset )) {
+#endif
+
+	sPtr = Oil_GetSched(sid);
+
+#if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
+	if( sPtr->sync != NULL ) {
+		/* EXPLICIT or IMPLICIT */
+
+		/** @req OS452 */
+		if( sPtr->sync->syncStrategy == IMPLICIT ) {
+			rv = E_OS_ID;
+			goto err;
+		}
+	}
+#endif
+
+	max_offset = Os_CounterGetMaxValue(sPtr->counter);
+#if (OS_STATUS_EXTENDED == STD_ON )
+	/** @req OS276 */
+	/** @req OS332 */
+	if( (offset == 0) || ((offset + Os_SchTblGetInitialOffset(sPtr)) > max_offset ) ) {
 		rv = E_OS_VALUE;
 		goto err;
 	}
+#endif
 
-	// OS277
-	if( s_tbl->state != SCHEDULETABLE_STOPPED ) {
-		rv = E_OS_STATE; goto err;
+	/** @req OS277 */
+	if( sPtr->state != SCHEDULETABLE_STOPPED ) {
+		rv = E_OS_STATE;
+		goto err;
 	}
 
-	s_tbl->state = SCHEDULETABLE_RUNNING;
-	// calculate the expire value..
-	s_tbl->expire_val = os_calc_modulo( GetCounterValue_(s_tbl->counter), max_offset, offset );
-//	s_tbl->expire_val = offset + SA_LIST_GET(&s_tbl->action_list,0)->offset;
-//	ALIST_RESET(&s_tbl->action_list);
-	s_tbl->state = SCHEDULETABLE_RUNNING;
-
-	//	s_tbl->action_list_index = 0;
+	Irq_Disable();
+	/* calculate the expire value.. */
+	/** @req OS278 */
+	sPtr->expire_val = Os_CounterAdd(
+							Os_CounterGetValue(sPtr->counter),
+							max_offset,
+							offset + Os_SchTblGetInitialOffset(sPtr) );
+	sPtr->state = SCHEDULETABLE_RUNNING;
+	Irq_Enable();
 
 	SCHED_STD_END;
 }
 
-StatusType StartScheduleTableAbs(ScheduleTableType sid, TickType val ){
+StatusType StartScheduleTableAbs(ScheduleTableType sid, TickType start ){
 	StatusType rv = E_OK;
-	(void)val;
+	OsSchTblType *sTblPtr;
+
+	/** @req OS348 */
 	SCHED_CHECK_ID(sid);
+	sTblPtr =  Oil_GetSched(sid);
+
+	/** @req OS349 */
+	if( start > Os_CounterGetMaxValue(sTblPtr->counter) ) {
+		rv = E_OS_VALUE;
+		goto err;
+	}
+
+	/** @req OS350 */
+	if( sTblPtr->state != SCHEDULETABLE_STOPPED ) {
+		rv = E_OS_STATE;
+		goto err;
+	}
+
+
+	Irq_Disable();
+	/** @req OS351 */
+	sTblPtr->expire_val = start + Os_SchTblGetInitialOffset(sTblPtr);
+	sTblPtr->state = SCHEDULETABLE_RUNNING;
+	Irq_Enable();
 
 	SCHED_STD_END;
 }
@@ -162,97 +227,114 @@ StatusType StartScheduleTableAbs(ScheduleTableType sid, TickType val ){
  * @param sid
  * @return
  */
+#if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 
 StatusType StartScheduleTableSynchron(ScheduleTableType sid ){
-	sched_table_t *s_p;
+	OsSchTblType *s_p;
 	StatusType rv = E_OK;
 
-	DisableAllInterrupts();
+	Irq_Disable();
 
 	SCHED_CHECK_ID(sid);
 
-	// OS387
+	/** @req OS387 */
 	if( s_p->sync.syncStrategy != EXPLICIT ) {
 		rv = E_OS_ID;
 		goto err;
 	}
 
-	// OS388
+	/** @req OS388 */
 	if( s_p->state != SCHEDULETABLE_STOPPED ) {
 		rv = E_OS_STATE;
 		goto err;
 	}
 
-	// OS389
+	/** @req OS389 */
 	s_p->state = SCHEDULETABLE_WAITING;
 
-	EnableAllInterrupts();
+	Irq_Enable();
 
 	SCHED_STD_END;
 }
+#endif
 
 
 
+/** @req OS006 */
+/* TODO: Implement StopScheduleTable */
 StatusType StopScheduleTable(ScheduleTableType sid) {
 	StatusType rv = E_OK;
-	sched_table_t *s_tbl;
+	OsSchTblType *sPtr;
+	/** @req OS279 */
 	SCHED_CHECK_ID(sid);
-	s_tbl = Oil_GetSched(sid);
+	sPtr = Oil_GetSched(sid);
 
-	s_tbl->state = SCHEDULETABLE_STOPPED;
+	/** @req OS280 */
+	if(sPtr->state == SCHEDULETABLE_STOPPED ) {
+		rv = E_OS_NOFUNC;
+		goto err;
+	}
+
+	/** @req OS281 */
+	sPtr->state = SCHEDULETABLE_STOPPED;
 
 	SCHED_STD_END;
 }
 
+/** @req OS191 */
 StatusType NextScheduleTable( ScheduleTableType sid_curr, ScheduleTableType sid_next) {
 	StatusType rv = E_OK;
 	(void)sid_curr;
 	(void)sid_next;
 
-	sched_table_t *s_curr;
-	sched_table_t *s_next;
+	OsSchTblType *sFromPtr;
+	OsSchTblType *sToPtr;
 
+	/** @req OS282 */
 	SCHED_CHECK_ID(sid_curr);
 	SCHED_CHECK_ID(sid_next);
 
-	s_curr = Oil_GetSched(sid_curr);
-	s_next = Oil_GetSched(sid_curr);
+	sFromPtr = Oil_GetSched(sid_curr);
+	sToPtr = Oil_GetSched(sid_curr);
 
-	// OS330
-	if( s_curr->counter != s_next->counter) {
+	/** @req OS330 */
+	if( sFromPtr->counter != sToPtr->counter) {
 		rv = E_OS_ID;
 		goto err;
 	}
 
-
-	DisableAllInterrupts();
-
-	// OS283
-	if( s_curr->state == SCHEDULETABLE_STOPPED ||
-		s_curr->state == SCHEDULETABLE_NEXT ||
-		s_next->state == SCHEDULETABLE_STOPPED ||
-		s_next->state == SCHEDULETABLE_NEXT )
+	/** @req OS283 */
+	if( sFromPtr->state == SCHEDULETABLE_STOPPED ||
+		sFromPtr->state == SCHEDULETABLE_NEXT )
 	{
 		rv = E_OS_NOFUNC;
 		goto err;
 	}
 
-	// OS309
-	if( s_next->state != SCHEDULETABLE_STOPPED ) {
+	/** @req OS309 */
+	if( sToPtr->state != SCHEDULETABLE_STOPPED ) {
 		rv = E_OS_STATE;
 		goto err;
 	}
 
-	// OS324
-	if( s_curr->next != NULL ) {
-		// Stop the scheduletable that was to be next.
-		s_curr->next->state = SCHEDULETABLE_STOPPED;
+	Irq_Disable();
+
+	/** @req OS453 */
+	if( sFromPtr->state == SCHEDULETABLE_STOPPED ) {
+		sFromPtr->next->state = SCHEDULETABLE_STOPPED;
+	} else {
+		/** @req OS324 */
+		if( sFromPtr->next != NULL ) {
+			// Stop the schedule-table that was to be next.
+			sFromPtr->next->state = SCHEDULETABLE_STOPPED;
+		}
+
+		sFromPtr->next = sToPtr;
+		sToPtr->state = SCHEDULETABLE_NEXT;
+		sToPtr->expire_curr_index = 0;
 	}
 
-	s_curr->next = s_next;
-	s_next->state = SCHEDULETABLE_NEXT;
-
-	EnableAllInterrupts();
+	Irq_Enable();
 
 	SCHED_STD_END;
 }
@@ -265,27 +347,29 @@ StatusType NextScheduleTable( ScheduleTableType sid_curr, ScheduleTableType sid_
  * @param globalTime
  * @return
  */
+#if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 StatusType SyncScheduleTable( ScheduleTableType sid, GlobalTimeTickType globalTime  ) {
 	StatusType rv = E_OK;
-	sched_table_t *s_p =  Oil_GetSched(sid);
+	OsSchTblType *s_p =  Oil_GetSched(sid);
 
 	SCHED_CHECK_ID(sid);
 
-	// OS454
+
+	/** @req OS454 */
 	if( s_p->sync.syncStrategy != EXPLICIT ) {
 		rv =  E_OS_ID;
 		goto err;
 	}
 
-	// OS455
+	/** @req OS455 */
 	if( globalTime > s_p->duration ) {
 		rv = E_OS_VALUE;
 		goto err;
 	}
 
-	DisableAllInterrupts();
+	Irq_Disable();
 
-	// OS456
+	/** @req OS456 */
 	if( (s_p->state == SCHEDULETABLE_STOPPED) ||
 		(s_p->state == SCHEDULETABLE_NEXT)	) {
 		rv = E_OS_STATE;
@@ -314,10 +398,12 @@ StatusType SyncScheduleTable( ScheduleTableType sid, GlobalTimeTickType globalTi
 		break;
 	}
 
-	EnableAllInterrupts();
+	Irq_Enable();
 
 	SCHED_STD_END;
 }
+#endif
+
 
 /**
  *
@@ -325,21 +411,30 @@ StatusType SyncScheduleTable( ScheduleTableType sid, GlobalTimeTickType globalTi
  * @param status
  * @return
  */
+
+/** @req OS359 */
+/** @req OS227 */
 StatusType GetScheduleTableStatus( ScheduleTableType sid, ScheduleTableStatusRefType status ) {
 	StatusType rv = E_OK;
-	sched_table_t *s_p;
+	OsSchTblType *s_p;
 	(void)status;
+	/** @req OS293 */
 	SCHED_CHECK_ID(sid);
 
 	s_p = Oil_GetSched(sid);
-	DisableAllInterrupts();
+	Irq_Disable();
 
 	switch(s_p->state) {
-	case SCHEDULETABLE_STOPPED:					// OS289
-	case SCHEDULETABLE_NEXT:					// OS353
-	case SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS:	// OS290
-	case SCHEDULETABLE_WAITING:					// OS354
-	case SCHEDULETABLE_RUNNING:					// OS291
+		/** @req OS289 */
+	case SCHEDULETABLE_STOPPED:
+		/** @req OS353 */
+	case SCHEDULETABLE_NEXT:
+		/** @req OS290 */
+	case SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS:
+		/** @req OS354 */
+	case SCHEDULETABLE_WAITING:
+		/** @req OS291 */
+	case SCHEDULETABLE_RUNNING:
 		*status = s_p->state;
 		break;
 	default:
@@ -347,7 +442,7 @@ StatusType GetScheduleTableStatus( ScheduleTableType sid, ScheduleTableStatusRef
 
 	}
 
-	EnableAllInterrupts();
+	Irq_Enable();
 
 	SCHED_STD_END;
 }
@@ -358,133 +453,208 @@ StatusType GetScheduleTableStatus( ScheduleTableType sid, ScheduleTableStatusRef
  * @param sid
  * @return
  */
+#if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 StatusType SetScheduleTableAsync( ScheduleTableType sid ) {
 	StatusType rv = E_OK;
-	sched_table_t *s_p = Oil_GetSched(sid);
+	OsSchTblType *s_p = Oil_GetSched(sid);
 
 	SCHED_CHECK_ID(sid);
 
-	// OS458
+	/** @req OS458 */
 	if( s_p->sync.syncStrategy != EXPLICIT ) {
 		rv = E_OS_ID;
 		goto err;
 	}
 
-	DisableAllInterrupts();
+	Irq_Disable();
 
-	// TODO: check OS362, OS323
+	/** @req_todo OS362 */
+	/** @req_todo OS323 */
 
-	// OS300
+	/** @req OS300 */
 	s_p->state = SCHEDULETABLE_RUNNING;
 
-	EnableAllInterrupts();
+	Irq_Enable();
 
 	SCHED_STD_END;
 }
+#endif
 
-/*
- *start e   e       e  delta stop
- * |----|---|-------|---------|
+
+
+/**
+ * Go through the schedule tables connected to this counter
  *
- *
- *  |   s   e    e   cm   e
- *  |---|---|----|---|----|----------|
- *      1   2    3   4    5
- *  e-expiry point
- * cm-counter max( restart from 0)
- *  s-call to StartScheduleTableRel()
+ * @param c_p Pointer to counter object
  */
+void Os_SchTblCheck(OsCounterType *c_p) {
+	/** @req OS002 */
+	/** @req OS007 */
 
+	OsSchTblType *sched_obj;
 
-/* TODO: Remove when we have a stable generator. The reason for this
- * funcion is that I'm afraid of if I change the maxallowedvalue for the
- * counter I will miss to update the delta values
- */
-static void os_stbl_action_calc_delta( sched_table_t *stbl ) {
-	sched_action_t * first;
-	sched_action_t * second;
-//	ALIST_DECL_ITER(iter);
-	int iter;
+	/* Iterate through the schedule tables */
+	SLIST_FOREACH(sched_obj,&c_p->sched_head,sched_list) {
 
-	// calculate the delta to next action
+		if( sched_obj->state == SCHEDULETABLE_STOPPED ) {
+			continue;
+		}
 
-	for(iter=1; iter <  SA_LIST_CNT(&stbl->action_list) ;iter++) {
-		first = SA_LIST_GET(&stbl->action_list,iter-1);
-		second = SA_LIST_GET(&stbl->action_list,iter);
-		first->delta = second->offset - first->offset;
+#if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
+		if( sched_obj->sync.syncStrategy == IMPLICIT ) {
+			// ....
+
+		} else {
+			int adj;
+			// Handle EXPLICIT
+			if( sched_obj->sync.deviation > 0 ) {
+				// The sync counter was set back ==
+				// we have more time to complete the table
+				adj = MIN(sched_obj->sync.deviation, getAdjExpPoint(sched_obj)->maxAdvance );
+				sched_obj->sync.deviation -= adj;
+
+			} else if( sched_obj->sync.deviation < 0 ) {
+				// The sync counter was set forward ==
+				// we have less time to complete the table
+				adj = MIN((-sched_obj->sync.deviation), getAdjExpPoint(sched_obj)->maxRetard);
+				sched_obj->sync.deviation -= adj;
+
+			} else {
+				// all is well
+				sched_obj->state = SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS;
+			}
+		}
+#endif
+
+		/* Check if the expire point have been hit */
+		if( (sched_obj->state == SCHEDULETABLE_RUNNING ||
+				SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS ) &&
+				(c_p->val == sched_obj->expire_val) )
+		{
+			OsScheduleTableExpiryPointType * action;
+			int i;
+
+			action = SA_LIST_GET(&sched_obj->expirePointList,sched_obj->expire_curr_index);
+
+			/** @req OS407 */
+			/** @req OS412 */
+
+			/* According to OS412 activate tasks before events */
+			for(i=0; i< action->taskListCnt;i++ ) {
+				ActivateTask(action->taskList[i]);
+			}
+
+			for(i=0; i< action->eventListCnt;i++ ) {
+				SetEvent( action->eventList[i].task, action->eventList[i].event);
+			}
+			// Calc new expire val
+			Os_SchTblCalcExpire(sched_obj);
+		}
+
 	}
-	// calculate the last delta( to countes max value )
-	first = SA_LIST_GET(&stbl->action_list, SA_LIST_CNT(&stbl->action_list)-1);
-	first->delta = stbl->counter->alarm_base.maxallowedvalue - first->offset;
 }
 
 /**
  *
  */
-void os_stbl_init( void ) {
-	sched_table_t *s_p;
+void Os_SchTblInit( void ) {
+	OsSchTblType *s_p;
 	for( int i=0; i < Oil_GetSchedCnt();i++ ) {
 		s_p = Oil_GetSched(i);
-		os_stbl_action_calc_delta(s_p);
 
 		ScheduleTableConsistenyCheck(s_p);
 	}
 }
 
 /**
+ * Calculates expire value and changes state depending it's state.
  *
- * @param stbl
+ * Note!
+ * We can't cheat with the final + initial expire-point, instead we
+ * must setup trigger after the final delay and set the "previous"
+ * table to SCHEDULETABLE_STOPPED and the new to SCHEDULETABLE_RUNNING.
+ *
+ * @param stbl Ptr to a Schedule Table.
  */
-void os_stbl_calc_expire( sched_table_t *stbl) {
+void Os_SchTblCalcExpire( OsSchTblType *stbl ) {
 
-	TickType old_delta;
+	TickType delta;
+	TickType initalOffset;
+	TickType finalOffset;
+	OsSchTblType *nextStblPtr;
+	_Bool handleLast = 0;
 
-	/* Any more actions in the action list?*/
-	if( (stbl->expire_curr_index+1) >= SA_LIST_CNT(&stbl->action_list) ) {
 
-		// TODO: final offset
-		if( stbl->next != NULL ) {
-			assert(stbl->state == SCHEDULETABLE_RUNNING);
+
+	if( (stbl->expire_curr_index) == (SA_LIST_CNT(&stbl->expirePointList) - 1) ) {
+		/* We are at the last expiry point */
+		finalOffset = Os_SchTblGetFinalOffset(stbl);
+
+		if (finalOffset != 0) {
+			stbl->expire_val =	Os_CounterAdd(
+							Os_CounterGetValue(stbl->counter),
+							Os_CounterGetMaxValue(stbl->counter),
+							finalOffset );
+
+			stbl->expire_curr_index++;
+			return;
+		} else {
+			/* Only single shot may have an offset of 0 */
+			assert(stbl->repeating == SINGLE_SHOT);
+			handleLast = 1;
 		}
+	}
 
-		if( !stbl->repeating ) {
+	if( handleLast ||
+		( (stbl->expire_curr_index) == SA_LIST_CNT(&stbl->expirePointList) ) )
+	{
+		/* At final offset */
+		/** @req OS194 */
+		if( (stbl->repeating == REPEATING) || (stbl->next != NULL) ) {
+			if( stbl->next != NULL ) {
+				/** @req OS284 */
+				nextStblPtr = stbl->next;
+				/* NextScheduleTable() have been called */
+				assert( nextStblPtr->state==SCHEDULETABLE_NEXT );
+
+				/* We don't care about REPEATING or SINGLE_SHOT here */
+				initalOffset = Os_SchTblGetInitialOffset(nextStblPtr);
+				stbl->state = SCHEDULETABLE_STOPPED;
+				nextStblPtr->state = SCHEDULETABLE_RUNNING;
+			} else {
+				/** @req OS414 */
+
+				/* REPEATING */
+				assert( stbl->repeating == REPEATING );
+				initalOffset = Os_SchTblGetInitialOffset(stbl);
+			}
+
+			stbl->expire_val =	Os_CounterAdd(
+							Os_CounterGetValue(stbl->counter),
+							Os_CounterGetMaxValue(stbl->counter),
+							initalOffset );
+
+		} else {
+			assert( stbl->repeating == SINGLE_SHOT );
+			/** @req OS009 */
 			stbl->state = SCHEDULETABLE_STOPPED;
-			stbl->expire_curr_index = 0;
-			goto end;
 		}
+		stbl->expire_curr_index = 0;
+
+	} else {
+
+		delta = SA_LIST_GET(&stbl->expirePointList,stbl->expire_curr_index+1)->offset -
+				SA_LIST_GET(&stbl->expirePointList,stbl->expire_curr_index)->offset ;
+
+		stbl->expire_val =	Os_CounterAdd(
+						Os_CounterGetValue(stbl->counter),
+						Os_CounterGetMaxValue(stbl->counter),
+						delta );
+
+		stbl->expire_curr_index++;
+
 	}
 
-	old_delta = SA_LIST_GET(&stbl->action_list,stbl->expire_curr_index)->delta;
-	stbl->expire_curr_index++;
-//	ALIST_INC(&stbl->action_list);
-
-	stbl->expire_val =
- os_calc_modulo(	stbl->expire_val,
-					stbl->counter->alarm_base.maxallowedvalue,
-					old_delta);
-
-
-#if 0
-	TickType old_delta;
-	if( ALIST_LAST(&stbl->action_list)) {
-		if( !stbl->repeating ) {
-			stbl->active = 0;
-			ALIST_RESET(&stbl->action_list);
-			goto end;
-		}
-	}
-
-	old_delta = ALIST_GET_DATA(&stbl->action_list)->delta;
-	ALIST_INC(&stbl->action_list);
-
-	stbl->expire_val =
- os_calc_modulo(	stbl->expire_val,
-					stbl->counter_id->alarm_base.maxallowedvalue,
-					old_delta);
-//					stbl->action_list[stbl->action_list_index]->delta);
-#endif
-
-end:
 	return;
 }
 

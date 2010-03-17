@@ -2,33 +2,32 @@ LOCAL &exe_dir &cpu &proj_path
 //ENTRY &cpu
 
 //do ~~/t32.cmm
-winclear 
+winclear
 &proj_path=os.pwd()
 do t32.cmm
 
-print "Current project path:" "&proj_path"  
+print "Current project path:" "&proj_path"
 
 do config load
-//do config debug 
+//do config debug
 
-
-IF "&cfg_cpu_g"==""
+IF ("&cfg_cpu_g"=="")||(CPUFAMILY()!="&cfg_cpu_family_g")
 (
   do config dialog_project
 )
 
 IF "&cfg_project_path_g"==""
 (
-  &cfg_project_path_g="&proj_path"  
+  &cfg_project_path_g="&proj_path"
   do config dialog_project
 )
 
-//do config debug 
+//do config debug
 
 &cpu="&cfg_cpu_g"
 
-winpos 0% 70% 50% 30%
-area
+//winpos 0% 70% 50% 30%
+//area
 
 sys.down
 
@@ -44,26 +43,26 @@ cd &exe_dir
 
 sys.cpu &cpu
 
-IF SIMULATOR() 
+IF SIMULATOR()
 (
   IF CPU()!="CortexM3"
   (
     do sim_mpc55xx
   )
 )
-ELSE 
+ELSE
 (
     sys.bdmclock 10000000.
 )
 
 
 // Setup flash
-SYStem.Up  	
+SYStem.Up
 do flash init
-	
 
-IF !SIMULATOR() 
-( 
+
+IF !SIMULATOR()
+(
   break.select program onchip
 )
 
@@ -83,6 +82,7 @@ print ""
 
 
 enddo
+
 
 
 

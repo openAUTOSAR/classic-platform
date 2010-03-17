@@ -19,6 +19,7 @@
 #include "simple_printf.h"
 
 #define BUF_SIZE	60
+#define STD_OUT 1
 
 #if 0
 //char *
@@ -66,26 +67,24 @@ int dbg_printf(const char *fmt, ...) {
 #define putchar(c) outbyte(c)
 */
 
-// newlib std function
-extern int putchar(int c);
 
-extern int arc_putchar(int c);
+extern int arc_putchar(int fd, int c);
 
-static void printchar(char **str, int c)
+static void printchar(int fd, char **str, int c)
 {
 	if (str) {
 		**str = c;
 		++(*str);
 	}
 	else {
-		(void)arc_putchar(c);
+		(void)arc_putchar(fd, c);
 	}
 }
 
 #define PAD_RIGHT 1
 #define PAD_ZERO 2
 
-static int prints(char **out, const char *string, int width, int pad)
+static int prints(int fd, char **out, const char *string, int width, int pad)
 {
 	register int pc = 0, padchar = ' ';
 
@@ -99,16 +98,16 @@ static int prints(char **out, const char *string, int width, int pad)
 	}
 	if (!(pad & PAD_RIGHT)) {
 		for ( ; width > 0; --width) {
-			printchar (out, padchar);
+			printchar (fd, out, padchar);
 			++pc;
 		}
 	}
 	for ( ; *string ; ++string) {
-		printchar (out, *string);
+		printchar (fd, out, *string);
 		++pc;
 	}
 	for ( ; width > 0; --width) {
-		printchar (out, padchar);
+		printchar (fd, out, padchar);
 		++pc;
 	}
 
@@ -120,7 +119,7 @@ static int prints(char **out, const char *string, int width, int pad)
 /* the following should be enough for 32 bit int */
 #define PRINT_BUF_LEN 12
 
-static int printi(char **out, int i, int b, int sg, int width, int pad, int letbase)
+static int printi(int fd, char **out, int i, int b, int sg, int width, int pad, int letbase)
 {
 	char print_buf[PRINT_BUF_LEN];
 	register char *s;
@@ -130,7 +129,7 @@ static int printi(char **out, int i, int b, int sg, int width, int pad, int letb
 	if (i == 0) {
 		print_buf[0] = '0';
 		print_buf[1] = '\0';
-		return prints (out, print_buf, width, pad);
+		return prints (fd, out, print_buf, width, pad);
 	}
 
 	if (sg && b == 10 && i < 0) {
@@ -151,7 +150,7 @@ static int printi(char **out, int i, int b, int sg, int width, int pad, int letb
 
 	if (neg) {
 		if( width && (pad & PAD_ZERO) ) {
-			printchar (out, '-');
+			printchar (fd, out, '-');
 			++pc;
 			--width;
 		}
@@ -160,10 +159,10 @@ static int printi(char **out, int i, int b, int sg, int width, int pad, int letb
 		}
 	}
 
-	return pc + prints (out, s, width, pad);
+	return pc + prints (fd, out, s, width, pad);
 }
 
-static int print(char **out, const char *format, va_list args )
+static int print(int fd, char **out, const char *format, va_list args )
 {
 	int width, pad;
 	int pc = 0;
@@ -189,36 +188,36 @@ static int print(char **out, const char *format, va_list args )
 			}
 			if( *format == 's' ) {
 				char *s = (char *)va_arg( args, int );
-				pc += prints (out, s?s:"(null)", width, pad);
+				pc += prints (fd, out, s?s:"(null)", width, pad);
 				continue;
 			}
 			if( *format == 'd' ) {
-				pc += printi (out, va_arg( args, int ), 10, 1, width, pad, 'a');
+				pc += printi (fd, out, va_arg( args, int ), 10, 1, width, pad, 'a');
 				continue;
 			}
 			if( *format == 'x' ) {
-				pc += printi (out, va_arg( args, int ), 16, 0, width, pad, 'a');
+				pc += printi (fd, out, va_arg( args, int ), 16, 0, width, pad, 'a');
 				continue;
 			}
 			if( *format == 'X' ) {
-				pc += printi (out, va_arg( args, int ), 16, 0, width, pad, 'A');
+				pc += printi (fd, out, va_arg( args, int ), 16, 0, width, pad, 'A');
 				continue;
 			}
 			if( *format == 'u' ) {
-				pc += printi (out, va_arg( args, int ), 10, 0, width, pad, 'a');
+				pc += printi (fd, out, va_arg( args, int ), 10, 0, width, pad, 'a');
 				continue;
 			}
 			if( *format == 'c' ) {
 				/* char are converted to int then pushed on the stack */
 				scr[0] = (char)va_arg( args, int );
 				scr[1] = '\0';
-				pc += prints (out, scr, width, pad);
+				pc += prints (fd, out, scr, width, pad);
 				continue;
 			}
 		}
 		else {
 		out:
-			printchar (out, *format);
+			printchar (fd, out, *format);
 			++pc;
 		}
 	}
@@ -227,13 +226,7 @@ static int print(char **out, const char *format, va_list args )
 	return pc;
 }
 
-int simple_printf(const char *format, ...)
-{
-        va_list args;
 
-        va_start( args, format );
-        return print( 0, format, args );
-}
 
 #if 0
 int arc_fprintf(FILE *fd, const char *format, ...);
@@ -251,12 +244,28 @@ int simple_fprintf(FILE *fd, const char *format, ...)
 }
 #endif
 
+int simple_printf(const char *format, ...)
+{
+        va_list args;
+
+        va_start( args, format );
+        return print( STD_OUT, 0, format, args );
+}
+
 int simple_sprintf(char *out, const char *format, ...)
 {
         va_list args;
 
         va_start( args, format );
-        return print( &out, format, args );
+        return print(STD_OUT, &out, format, args );
+}
+
+int standard_simple_sprintf(int fd, char *out, const char *format, ...)
+{
+        va_list args;
+
+        va_start( args, format );
+        return print(fd, &out, format, args );
 }
 
 #ifdef TEST_PRINTF

@@ -13,20 +13,6 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-/*
- * xtoa.h
- *
- *  Created on: May 3, 2009
- *      Author: mahi
- */
-
 #ifndef XTOA_H_
 #define XTOA_H_
 

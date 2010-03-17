@@ -13,33 +13,74 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+#include <sys/types.h>
+#include <stdint.h>
+#include <string.h>
+#include "internal.h"
+#include "irq.h"
+#if 0
 
-
-
-
-
-
-
-/*
- * isr.c
- *
- *  Created on: Jul 13, 2009
- *      Author: mahi
- */
 
 #include <stdint.h>
-#include "sys.h"
-#include "pcb.h"
+#include <stdlib.h>
+#include <assert.h>
+#include <sys/queue.h>
+#include <string.h>
 #include "internal.h"
-#include "hooks.h"
-#include "swap.h"
+
+#endif
+
+
 // TODO: remove. Make soft links or whatever
 #if defined(CFG_ARM_CM3)
-#include "irq.h"
+#include "irq_types.h"
 //#include "stm32f10x.h"
 //#include "stm32f10x_arc.h"
 #endif
-#include "int_ctrl.h"
+
+extern caddr_t *sbrk(int);
+
+#define os_alloc(_x)	sbrk(_x)
+
+OsPcbType * os_alloc_new_pcb( void ) {
+	void *h = os_alloc(sizeof(OsPcbType));
+	memset(h,0,sizeof(OsPcbType));
+	assert(h!=NULL);
+	return h;
+}
+
+#if 0
+typedef void (*Os_IsrEntryType)(void);
+
+
+typedef Os_IsrInfo_s {
+	Os_IsrEntryType entry;
+	uint32_t vector;
+	uint8_t priority;
+} Os_IsrInfoType;
+#endif
+
+
+extern TaskType Os_AddTask( OsPcbType *pcb );
+
+static uint8 stackTop = 0x42;
+
+TaskType Os_Arc_CreateIsr( void (*entry)(void ), uint8_t prio, const char *name )
+{
+	OsPcbType *pcb = os_alloc_new_pcb();
+	strncpy(pcb->name,name,TASK_NAME_SIZE);
+	pcb->vector = -1;
+	pcb->prio = prio;
+	/* TODO: map to interrupt controller priority */
+	assert(prio<=OS_TASK_PRIORITY_MAX);
+	pcb->proc_type  = PROC_ISR2;
+	pcb->state = ST_SUSPENDED;
+	pcb->entry = entry;
+	pcb->stack.top = &stackTop;
+
+	return Os_AddTask(pcb);
+}
+
 
 /**
  * Handle ISR type 2 interrupts from interrupt controller.
@@ -48,8 +89,8 @@
  * @param vector The vector that took the interrupt
  */
 void *Os_Isr( void *stack, void *pcb_p ) {
-	struct pcb_s *pcb;
-	struct pcb_s *preempted_pcb;
+	struct OsPcb *pcb;
+	struct OsPcb *preempted_pcb;
 
 	os_sys.int_nest_cnt++;
 
@@ -61,14 +102,14 @@ void *Os_Isr( void *stack, void *pcb_p ) {
 
 	POSTTASKHOOK();
 
-	pcb = (struct pcb_s *)pcb_p;
+	pcb = (struct OsPcb *)pcb_p;
 	pcb->state = ST_RUNNING;
 	set_curr_pcb(pcb);
 
 	PRETASKHOOK();
 
-	// We should not get here if we're SCHEDULING_NONE
-	if( pcb->scheduling == SCHEDULING_NONE) {
+	// We should not get here if we're NON
+	if( pcb->scheduling == NON) {
 		// TODO:
 		// assert(0);
 		while(1);
@@ -78,16 +119,25 @@ void *Os_Isr( void *stack, void *pcb_p ) {
 	pcb->entry();
 	Irq_Disable();
 
+	/** @req OS368 */
+	if( Os_IrqAnyDisabled() ) {
+		Os_IrqClearAll();
+		ERRORHOOK(E_OS_DISABLEDINT);
+	}
+
+	/** @req OS369 */
+	Os_ResourceCheckAndRelease(pcb);
+
 	pcb->state = ST_SUSPENDED;
 	POSTTASKHOOK();
 
-	IntCtrl_EOI();
+	Irq_EOI();
 
 	--os_sys.int_nest_cnt;
 
 	// TODO: Check stack check marker....
 	// We have preempted a task
-	if( (os_sys.int_nest_cnt == 0) ) { //&& is_idle_task() ) {
+	if( (os_sys.int_nest_cnt == 0) && (os_sys.scheduler_lock==0) ) { //&& is_idle_task() ) {
 		/* If we get here:
 		 * - the preempted task is saved with large context.
 		 * - We are on interrupt stack..( this function )
@@ -95,14 +145,13 @@ void *Os_Isr( void *stack, void *pcb_p ) {
 		 * if we find a new task:
 		 * - just switch in the new context( don't save the old because
 		 *   its already saved )
-		 *
 		 */
-		pcb_t *new_pcb;
-		new_pcb = os_find_top_prio_proc();
+		OsPcbType *new_pcb;
+		new_pcb = Os_TaskGetTop();
 		if( new_pcb != preempted_pcb ) {
 			os_isr_printf(D_TASK,"Found candidate %s\n",new_pcb->name);
-//#warning os_swap_context_to should call the pretaskswaphook
-			os_swap_context_to(NULL,new_pcb);
+//#warning Os_TaskSwapContextTo should call the pretaskswaphook
+			Os_TaskSwapContextTo(NULL,new_pcb);
 		} else {
 			if( new_pcb == NULL ) {
 				assert(0);
