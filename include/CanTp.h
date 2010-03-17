@@ -23,6 +23,13 @@
 #ifndef CANTP_H_
 #define CANTP_H_
 
+#define CANTP_SW_MAJOR_VERSION    	1
+#define CANTP_SW_MINOR_VERSION 		0
+#define CANTP_SW_PATCH_VERSION    	0
+#define CANTP_AR_MAJOR_VERSION    	3
+#define CANTP_AR_MINOR_VERSION    	0
+#define CANTP_AR_PATCH_VERSION    	1
+
 
 #include "ComStack_Types.h"
 #include "Std_Types.h"

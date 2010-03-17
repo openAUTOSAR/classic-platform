@@ -13,15 +13,9 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-/** @addtogroup TBD
- *  @{ */
 
-/** @file CanTp_Arc_Cfg_Types.h
- * TBD.
- */
-
-#ifndef CANTP_ARC_CFG_TYPES_H_
-#define CANTP_ARC_CFG_TYPES_H_
+#ifndef CANTP_TYPES_H_
+#define CANTP_TYPES_H_
 
 #include "Platform_Types.h"
 #include "ComStack_Types.h"
@@ -109,9 +103,9 @@ typedef struct {
 	const uint8 CanTpNas; /** req: CanTp263: N_As timeout for transmission of any CAN frame. */
 	const uint8 CanTpNbs; /** req: CanTp264: N_Bs timeout of transmission until reception of next Flow Control. */
 	const uint8 CanTpNcs; /** req: CanTp265: N_Bs timeout of transmission until reception of next Flow Control. */
-	/*const uint8						CanTp_TxChannel; /** req: CanTp266: Link to the TX connection channel (why?). */
+	/*const uint8						CanTp_TxChannel; / ** req: CanTp266: Link to the TX connection channel (why?). */
 	const uint32 CanTpTxDI; /** req: CanTp267: Data length code for of this TxNsdu. */
-	/*const uint32						CanTpTxNSduId; /** req: CanTp268: Data length code for of this TxNsdu. */
+	/*const uint32						CanTpTxNSduId; / ** req: CanTp268: Data length code for of this TxNsdu. */
 	CanTp_StateType CanTpTxPaddingActivation; /** req: CanTp249: Enable use of padding. */
 	CanTp_TaTypeType CanTpTxTaType; /** req: CanTp270: Functional or physical addressing. */
 	/*const uint32						CanTpNSduRef ** req: CanTp261. This is PDU id - typeless enum. */
@@ -149,4 +143,4 @@ typedef struct {
 
 } CanTp_ConfigType;
 
-#endif /* CANTP_ARC_CFG_TYPES_H_ */
+#endif /* CANTP_TYPES_H_ */

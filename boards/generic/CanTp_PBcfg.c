@@ -66,6 +66,24 @@ const CanTp_RxNSduType 	CanTpRxNSduConfigList[] =  // qqq: Maybe macro is not re
 	.CanTpNTa = &CanTpNTaConfig,
 	.CanTpRxNPdu = &CanTpRxNPduConfig,
 	.CanTpTxFcNPdu = &CanTpTxFcNPduConfig,
+	.CanTpListItemType = CANTP_NOT_LAST_ENTRY,
+  },
+  {
+	.CanTpAddressingFormant = CANTP_EXTENDED,
+	.CanTpRxPduId = 101,
+	.CanTpBs = 5,
+	.CanTpNar = 100,
+	.CanTpNbr = 100,
+	.CanTpNcr = 100,
+	.CanTpRxDI = 100,
+	.CanTpRxPaddingActivation = CANTP_ON,
+	.CanTpRxTaType = CANTP_FUNCTIONAL,
+	.CanTpWftMax = 100,
+	.CanTpSTmin = 100,
+	.CanTpNSa = &CanTpNSaConfig,
+	.CanTpNTa = &CanTpNTaConfig,
+	.CanTpRxNPdu = &CanTpRxNPduConfig,
+	.CanTpTxFcNPdu = &CanTpTxFcNPduConfig,
 	.CanTpListItemType = CANTP_END_OF_LIST,
   },
 };
@@ -86,8 +104,24 @@ const CanTp_TxNSduType    CanTpTxNSduConfigList[] =
 	.CanTpNTa = &CanTpNTaConfig,
 	.CanTpTxNPdu = &CanTpRxNPduConfig,
 	.CanTpRxFcNPdu = &CanTpTxFcNPduConfig,
+	.CanTpListItemType = CANTP_NOT_LAST_ENTRY
+  },
+  {
+	.CanTpAddressingMode = CANTP_EXTENDED,
+	.CanTpTxPduId = 101,
+	.CanTpNas = 100,
+	.CanTpNbs = 100,
+	.CanTpNcs = 100,
+	.CanTpTxDI = 100,
+	.CanTpTxPaddingActivation = CANTP_ON,
+	.CanTpTxTaType = CANTP_FUNCTIONAL,
+	.CanTpNSa = &CanTpNSaConfig,
+	.CanTpNTa = &CanTpNTaConfig,
+	.CanTpTxNPdu = &CanTpRxNPduConfig,
+	.CanTpRxFcNPdu = &CanTpTxFcNPduConfig,
 	.CanTpListItemType = CANTP_END_OF_LIST
-  }
+  },
+
 };
 
 CanTp_ConfigType CanTpConfig =
