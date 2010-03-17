@@ -106,7 +106,7 @@ static void os_resource_init( void ) {
 	 *
 	 *
 	 */
-	for( int i; i < Oil_GetTaskCnt(); i++) {
+	for(int i=0; i < Oil_GetTaskCnt(); i++) {
 		pcb_p = os_get_pcb(i);
 		if(pcb_p->scheduling == NON ) {
 			pcb_p->prio = OS_RES_SCHEDULER_PRIO;
