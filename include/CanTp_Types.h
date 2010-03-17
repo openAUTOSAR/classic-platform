@@ -93,8 +93,7 @@ typedef struct {
 	CanTp_NTaType *CanTpNTa;
 	CanTp_RxNPduType *CanTpRxNPdu; //
 	CanTp_TxFcNPduType *CanTpTxFcNPdu;
-	PduIdType CanTpRxPduId;
-	const CanTp_ListItemType CanTpListItemType;
+	const PduIdType CanTpRxPduId;
 
 } CanTp_RxNSduType;
 
@@ -114,7 +113,7 @@ typedef struct {
 	CanTp_RxFcNPduType *CanTpRxFcNPdu;
 	CanTp_TxNPduType *CanTpTxNPdu;
 	PduIdType CanTpTxPduId;
-	const CanTp_ListItemType CanTpListItemType;
+
 } CanTp_TxNSduType; /** req: CanTp138: */
 
 // - - - - - - - - - - -
@@ -130,16 +129,37 @@ typedef struct {
 
 // - - - - - - - - - - -
 
+typedef enum {
+	IS015765_TRANSMIT, ISO15765_RECEIVE
+} CanTp_DirectionType;
+
+
+// - - - - - - - - - - -
+
+typedef struct {
+	const CanTp_DirectionType direction;
+	const CanTp_ListItemType listItemType;
+	union {
+		const CanTp_RxNSduType 	CanTpRxNSdu;
+		const CanTp_TxNSduType 	CanTpTxNSdu;
+	} configData;
+} CanTp_NSduType;
+
+// - - - - - - - - - - -
+
 /** Top level config container for CANTP implementation. */
 typedef struct {
 	/** General configuration paramters for the CANTP module. */
 	const CanTp_GeneralType *CanTpGeneral; // 10.2.3
 
+	/** */
+	const CanTp_NSduType *CanTpNSduList;
+
 	/**  */
-	const CanTp_RxNSduType 	*CanTpRxNSduList;
+	//const CanTp_RxNSduType 	*CanTpRxNSduList;
 
 	/** This container contains the init parameters of the CAN Interface. */
-	const CanTp_TxNSduType 	*CanTpTxNSduList;
+	//const CanTp_TxNSduType 	*CanTpTxNSduList;
 
 } CanTp_ConfigType;
 

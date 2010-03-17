@@ -88,7 +88,7 @@ const CanTp_RxNSduType 	CanTpRxNSduConfigList[] =  // qqq: Maybe macro is not re
   },
 };
 
-
+/*
 const CanTp_TxNSduType    CanTpTxNSduConfigList[] =
 {
   {

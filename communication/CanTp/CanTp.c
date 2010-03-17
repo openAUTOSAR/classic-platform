@@ -217,8 +217,7 @@ typedef struct {
 	boolean initRun;
 	CanTpFifo fifo;
 	CanTp_StateType internalState; /** req: CanTp 027 */
-	CanTp_ChannelPrivateType txNSduData[CANTP_TX_NSDU_CONFIG_LIST_CNT];
-	CanTp_ChannelPrivateType rxNSduData[CANTP_RX_NSDU_CONFIG_LIST_CNT];
+	CanTp_ChannelPrivateType runtimeDataList[CANTP_NSDU_CONFIG_LIST_SIZE];
 } CanTp_RunTimeDataType;
 
 // - - - - - - - - - - - - - -
@@ -298,12 +297,15 @@ static INLINE boolean fifoQueueWrite( CanTpFifo *fifoQueue, CanTpFifoQueueItem *
 
 static INLINE int getCanTpRxNSduConfigListIndex(CanTp_ConfigType *config,
 		PduIdType PduId) {
-	for (int i = 0; i < CANTP_RX_NSDU_CONFIG_LIST_CNT; i++) {
-		if (config->CanTpRxNSduList[i].CanTpRxPduId == PduId) {
-			return i;
-		} else if (config->CanTpRxNSduList[i].CanTpListItemType
-				== CANTP_END_OF_LIST) {
-			break;
+	for (int i = 0; i < CANTP_NSDU_CONFIG_LIST_SIZE; i++) {
+		if ( config->CanTpNSduList[i].direction == ISO15765_RECEIVE ) {
+			if (config->CanTpNSduList[i].configData.CanTpRxNSdu.CanTpRxPduId ==
+					PduId) {
+				return i;
+			} else if (config->CanTpNSduList[i].listItemType
+					== CANTP_END_OF_LIST) {
+				break;
+			}
 		}
 	}
 	return CANTP_ERR;
@@ -313,12 +315,14 @@ static INLINE int getCanTpRxNSduConfigListIndex(CanTp_ConfigType *config,
 
 static INLINE int getCanTpTxNSduConfigListIndex(CanTp_ConfigType *config,
 		PduIdType PduId) {
-	for (int i = 0; i < CANTP_RX_NSDU_CONFIG_LIST_CNT; i++) {
-		if (config->CanTpTxNSduList[i].CanTpTxPduId == PduId) {
-			return i;
-		} else if (config->CanTpTxNSduList[i].CanTpListItemType
-				== CANTP_END_OF_LIST) {
-			break;
+	for (int i = 0; i < CANTP_NSDU_CONFIG_LIST_SIZE; i++) {
+		if ( config->CanTpNSduList[i].direction == IS015765_TRANSMIT ) {
+			if (config->CanTpNSduList[i].configData.CanTpTxNSdu.CanTpTxPduId  == PduId) {
+				return i;
+			} else if (config->CanTpNSduList[i].listItemType
+					== CANTP_END_OF_LIST) {
+				break;
+			}
 		}
 	}
 	return CANTP_ERR;
@@ -1147,12 +1151,10 @@ Std_ReturnType CanTp_Transmit(PduIdType CanTpTxSduId,
 			SERVICE_ID_CANTP_TRANSMIT, CANTP_E_UNINIT ); /* req: CanTp031 */
 
 	index = getCanTpTxNSduConfigListIndex(&CanTpConfig, CanTpTxSduId);
-	//VALIDATE( index != CANTP_ERR, SERVICE_ID_CANTP_TRANSMIT, CANTP_E_PARAM_ID );
 	VALIDATE( index != CANTP_ERR, SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TX_ID );
 	if (index != CANTP_ERR) {
-		//VALIDATE( index != CANTP_ERR, SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TX_LENGHT );
-		txConfig = &CanTpTxNSduConfigList[index];
-		txRuntime = &CanTpRunTimeData.txNSduData[index];
+		txConfig = (CanTp_TxNSduType*)&CanTpConfig.CanTpNSduList[index].configData;
+		txRuntime = &CanTpRunTimeData.runtimeDataList[index];
 		txRuntime->pduLenghtTotalBytes = CanTpTxInfoPtr->SduLength;
 		txRuntime->iso15765.stateTimeoutCount = txConfig->CanTpNcs
 				* MAIN_FUNCTION_PERIOD_TIME_MS;
@@ -1194,28 +1196,20 @@ Std_ReturnType FrTp_CancelTransmitRequest(PduIdType FrTpTxPduId,
 
 void CanTp_Init() /** req : CanTp208. **/
 {
-	const CanTp_RxNSduType *rxConfigListItem = CanTpRxNSduConfigList;
-	const CanTp_TxNSduType *txConfigListItem = CanTpTxNSduConfigList;
+	CanTp_ChannelPrivateType *runtimeData;
+	const CanTp_TxNSduType *txConfigParams;
+	const CanTp_RxNSduType *rxConfigParams;
 
-	CanTp_ChannelPrivateType *rxRuntimeListItem = CanTpRunTimeData.rxNSduData;
-	CanTp_ChannelPrivateType *txRuntimeListItem = CanTpRunTimeData.txNSduData;
-
-	for(int i=0; i < CANTP_TX_NSDU_CONFIG_LIST_CNT; i++) {
-		initTx15765RuntimeData(txConfigListItem, txRuntimeListItem);
-		if (txConfigListItem->CanTpListItemType != CANTP_END_OF_LIST) {
-			txConfigListItem++;
-			txRuntimeListItem++;
+	for (int i=0; i < CANTP_NSDU_CONFIG_LIST_SIZE; i++) {
+		if ( CanTpConfig.CanTpNSduList[i].direction == IS015765_TRANSMIT )
+		{
+			txConfigParams = (CanTp_TxNSduType*)&CanTpConfig.CanTpNSduList[i].configData;
+			runtimeData = &CanTpRunTimeData.runtimeDataList[i];
+			initTx15765RuntimeData( txConfigParams, runtimeData);
 		} else {
-			break;
-		}
-	}
-	for(int i=0; i < CANTP_RX_NSDU_CONFIG_LIST_CNT; i++) {
-		initRx15765RuntimeData(rxConfigListItem, rxRuntimeListItem);
-		if (rxConfigListItem->CanTpListItemType != CANTP_END_OF_LIST) {
-			rxConfigListItem++;
-			rxRuntimeListItem++;
-		} else {
-			break;
+			rxConfigParams = (CanTp_RxNSduType*)&CanTpConfig.CanTpNSduList[i].configData;
+			runtimeData = &CanTpRunTimeData.runtimeDataList[i];
+			initRx15765RuntimeData( rxConfigParams, runtimeData);
 		}
 	}
 	fifoQueueInit( &CanTpRunTimeData.fifo );
@@ -1265,13 +1259,13 @@ void CanTp_RxIndication_Main(PduIdType CanTpRxPduId,
 				CanTpRxPduId);
 		if (configListIndex == CANTP_ERR)
 			return;
-		txConfigParams = &CanTpConfig.CanTpTxNSduList[configListIndex];
-		runtimeParams = &CanTpRunTimeData.txNSduData[configListIndex];
+		txConfigParams = (CanTp_TxNSduType*)&CanTpConfig.CanTpNSduList[configListIndex].configData;
+		runtimeParams = &CanTpRunTimeData.runtimeDataList[configListIndex];
 		addressingFormat = &txConfigParams->CanTpAddressingMode;
 		rxConfigParams = NULL;
 	} else {
-		rxConfigParams = &CanTpConfig.CanTpRxNSduList[configListIndex];
-		runtimeParams = &CanTpRunTimeData.rxNSduData[configListIndex];
+		rxConfigParams = (CanTp_RxNSduType*)&CanTpConfig.CanTpNSduList[configListIndex].configData;
+		runtimeParams = &CanTpRunTimeData.runtimeDataList[configListIndex];
 		addressingFormat = &rxConfigParams->CanTpAddressingFormant;
 		txConfigParams = NULL;
 	}
@@ -1326,15 +1320,14 @@ void CanTp_TxConfirmation(PduIdType PduId) /** req: CanTp215 **/
 	VALIDATE_NO_RV( CanTpRunTimeData.internalState == CANTP_ON,
 			SERVICE_ID_CANTP_TX_CONFIRMATION, CANTP_E_UNINIT ); /* req: CanTp031 */
 
-	int configListIndex = 0;
-	configListIndex = getCanTpRxNSduConfigListIndex(&CanTpConfig, PduId);
+	int configListIndex = getCanTpRxNSduConfigListIndex(&CanTpConfig, PduId);
 	if (configListIndex == CANTP_ERR) {
 		configListIndex = getCanTpTxNSduConfigListIndex(&CanTpConfig, PduId);
 		if (configListIndex != CANTP_ERR) {
-			CanTpRunTimeData.txNSduData[configListIndex].iso15765.NasNarPending = FALSE;
+			CanTpRunTimeData.runtimeDataList[configListIndex].iso15765.NasNarPending = FALSE;
 		}
 	} else {
-		CanTpRunTimeData.rxNSduData[configListIndex].iso15765.NasNarPending = FALSE;
+		CanTpRunTimeData.runtimeDataList[configListIndex].iso15765.NasNarPending = FALSE;
 	}
 
 }
@@ -1358,7 +1351,6 @@ static inline boolean checkNasNarTimeout(CanTp_ChannelPrivateType *runtimeData) 
 		TIMER_DECREMENT(runtimeData->iso15765.NasNarTimeoutCount);
 		if (runtimeData->iso15765.NasNarTimeoutCount == 0) {
 			DEBUG( DEBUG_MEDIUM, "NAS timed out.\n" );
-
 			runtimeData->iso15765.state = IDLE;
 			runtimeData->iso15765.NasNarPending = FALSE;
 			ret = TRUE;
@@ -1376,14 +1368,13 @@ void CanTp_MainFunction() /** req : CanTp213 **/
 	CanTpFifoQueueItem item;
 	PduLengthType bytesWrittenToSduRBuffer;
 
-	const CanTp_RxNSduType *rxConfigListItem = CanTpRxNSduConfigList;
-	const CanTp_TxNSduType *txConfigListItem = CanTpTxNSduConfigList;
+	CanTp_ChannelPrivateType *txRuntimeListItem = NULL;
+	CanTp_ChannelPrivateType *rxRuntimeListItem = NULL;
 
-	CanTp_ChannelPrivateType *rxRuntimeListItem = CanTpRunTimeData.rxNSduData;
-	CanTp_ChannelPrivateType *txRuntimeListItem = CanTpRunTimeData.txNSduData;
+	const CanTp_TxNSduType *txConfigListItem = NULL;
+	const CanTp_RxNSduType *rxConfigListItem = NULL;
 
 	DEBUG( DEBUG_MEDIUM, "CanTp_MainFunction called.\n" );
-
 	VALIDATE_NO_RV( CanTpRunTimeData.internalState == CANTP_ON,
 			SERVICE_ID_CANTP_MAIN_FUNCTION, CANTP_E_UNINIT ); /* req: CanTp031 */
 
@@ -1398,14 +1389,22 @@ void CanTp_MainFunction() /** req : CanTp213 **/
 	}
 */
 	PduInfoType pduInfo;
+
 	if ( fifoQueueRead( &CanTpRunTimeData.fifo, &item ) == TRUE  ) {
 		pduInfo.SduDataPtr = item.SduData;
 		pduInfo.SduLength = item.SduLength;
 		CanTp_RxIndication_Main( item.PduId, &pduInfo );
 	}
 
-	for(int i=0; i < CANTP_TX_NSDU_CONFIG_LIST_CNT; i++) {
-		if ( checkNasNarTimeout( txRuntimeListItem ) ) { // CanTp075.
+	for( int i=0; i < CANTP_NSDU_CONFIG_LIST_SIZE; i++ ) {
+		if ( CanTpConfig.CanTpNSduList[i].direction == IS015765_TRANSMIT ) {
+			txConfigListItem = (CanTp_TxNSduType*)&CanTpConfig.CanTpNSduList[i].configData;
+			txRuntimeListItem = &CanTpRunTimeData.runtimeDataList[i];
+		} else {
+			continue;
+		}
+
+		if (checkNasNarTimeout( txRuntimeListItem )) { // CanTp075.
 			PduR_CanTpTxConfirmation(txConfigListItem->CanTpTxPduId,
 					NTFRSLT_NOT_OK); /* qqq: req: CanTp: 185. */
 			continue;
@@ -1442,16 +1441,16 @@ void CanTp_MainFunction() /** req : CanTp213 **/
 		default:
 			break;
 		}
-		// qqq: TODO:
-		if (txConfigListItem->CanTpListItemType != CANTP_END_OF_LIST) {
-			txConfigListItem++;
-			txRuntimeListItem++;
-		} else {
-			break;
-		}
 	}
 
-	for(int i=0; i < CANTP_RX_NSDU_CONFIG_LIST_CNT; i++) {
+	for(int i=0; i < CANTP_NSDU_CONFIG_LIST_SIZE; i++) {
+		if ( CanTpConfig.CanTpNSduList[i].direction == ISO15765_RECEIVE ) {
+			rxConfigListItem = (CanTp_RxNSduType*)&CanTpConfig.CanTpNSduList[i].configData;
+			rxRuntimeListItem = &CanTpRunTimeData.runtimeDataList[i];
+		} else {
+			continue;
+		}
+
 		if ( checkNasNarTimeout( rxRuntimeListItem ) ) {  // CanTp075.
 			PduR_CanTpTxConfirmation(rxConfigListItem->CanTpRxPduId,
 					NTFRSLT_NOT_OK); /* qqq: req: CanTp: 185. */
@@ -1502,13 +1501,7 @@ void CanTp_MainFunction() /** req : CanTp213 **/
 		default:
 			break;
 		}
-
-		if (rxConfigListItem->CanTpListItemType != CANTP_END_OF_LIST) {
-			rxConfigListItem++;
-			rxRuntimeListItem++;
-		} else {
-			break;
-		}
 	}
 }
+
 
