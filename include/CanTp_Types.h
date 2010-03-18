@@ -82,7 +82,7 @@ typedef struct {
 	const uint32 CanTpNar; /** req: CanTp244: Timeout for transmission of a CAN frame (ms). */
 	const uint32 CanTpNbr; /** req: CanTp245: ?? */
 	const uint32 CanTpNcr; /** req: CanTp246: Time out for consecutive frames (ms). */
-	/*const uin8							CanTp_RxChannel ** req: CanTp247: Link to the RX connection channel (why?) */
+	const uint8 CanTpRxChannel; /* Connection to runtime variable index, see CanTp 266. */
 	const uint32 CanTpRxDI; /** req: CanTp248: Data length code for of this RxNsdu. */
 	CanTp_StateType CanTpRxPaddingActivation; /** req: CanTp249: Enable use of padding. */
 	CanTp_TaTypeType CanTpRxTaType; /** req: CanTp250: Functional or physical addressing. */
@@ -102,7 +102,7 @@ typedef struct {
 	const uint8 CanTpNas; /** req: CanTp263: N_As timeout for transmission of any CAN frame. */
 	const uint8 CanTpNbs; /** req: CanTp264: N_Bs timeout of transmission until reception of next Flow Control. */
 	const uint8 CanTpNcs; /** req: CanTp265: N_Bs timeout of transmission until reception of next Flow Control. */
-	/*const uint8						CanTp_TxChannel; / ** req: CanTp266: Link to the TX connection channel (why?). */
+	const uint8	CanTpTxChannel; /** req: CanTp266: Link to the TX connection channel (why?). */
 	const uint32 CanTpTxDI; /** req: CanTp267: Data length code for of this TxNsdu. */
 	/*const uint32						CanTpTxNSduId; / ** req: CanTp268: Data length code for of this TxNsdu. */
 	CanTp_StateType CanTpTxPaddingActivation; /** req: CanTp249: Enable use of padding. */
