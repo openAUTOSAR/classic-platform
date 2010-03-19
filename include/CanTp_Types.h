@@ -77,6 +77,8 @@ typedef struct {
 
 
 typedef struct {
+	const int CanIf_CanTxPduId; // The polite CanIf PDU index.
+	const int PduR_CanTpRxPduId; // The polite PduR index.
 	const CanTp_AddressingFormantType CanTpAddressingFormant;
 	const uint32 CanTpBs; /** req: CanTp243: Sets the maximum number of messages of N-PDUs before flow control. */
 	const uint32 CanTpNar; /** req: CanTp244: Timeout for transmission of a CAN frame (ms). */
@@ -91,13 +93,15 @@ typedef struct {
 	/*const uint32							CanTpNSduRef ** req: CanTp241. This is PDU id - typeless enum. */
 	CanTp_NSaType *CanTpNSa;
 	CanTp_NTaType *CanTpNTa;
-	CanTp_RxNPduType *CanTpRxNPdu; //
-	CanTp_TxFcNPduType *CanTpTxFcNPdu;
-	const PduIdType CanTpRxPduId;
+	//CanTp_RxNPduType *CanTpRxNPdu;
+	//CanTp_TxFcNPduType *CanTpTxFcNPdu;
+	//const PduIdType CanTpRxPduId;
 
 } CanTp_RxNSduType;
 
 typedef struct {
+	const int CanIf_CanTxPduId; // The polite CanIf index.
+	const int PduR_CanTpTxPduId; // The polite PduR index.
 	const CanTp_AddressingFormantType CanTpAddressingMode; /** req: CanTp138: */
 	const uint8 CanTpNas; /** req: CanTp263: N_As timeout for transmission of any CAN frame. */
 	const uint8 CanTpNbs; /** req: CanTp264: N_Bs timeout of transmission until reception of next Flow Control. */
@@ -110,9 +114,9 @@ typedef struct {
 	/*const uint32						CanTpNSduRef ** req: CanTp261. This is PDU id - typeless enum. */
 	CanTp_NSaType *CanTpNSa;
 	CanTp_NTaType *CanTpNTa;
-	CanTp_RxFcNPduType *CanTpRxFcNPdu;
-	CanTp_TxNPduType *CanTpTxNPdu;
-	PduIdType CanTpTxPduId;
+	//CanTp_RxFcNPduType *CanTpRxFcNPdu;
+	//CanTp_TxNPduType *CanTpTxNPdu;
+	//PduIdType CanTpTxPduId;
 
 } CanTp_TxNSduType; /** req: CanTp138: */
 
