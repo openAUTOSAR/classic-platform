@@ -24,6 +24,7 @@
 #define DCM_LCFG_H_
 
 #include "Dcm_Types.h"
+#include "ComStack_Types.h"
 
 // TODO: Where to place these definitions?
 typedef uint8 Dcm_ProtocolTransTypeType;
@@ -376,11 +377,12 @@ typedef struct {
 	uint16					TimStrP2StarServerMax;			// (1)
 	uint16					TimStrP2StarServerMin;			// (1)
 	uint16					TimStrS3Server;					// (1)
+	boolean					Arc_EOL;
 } Dcm_DslProtocolTimingRowType;
 
 // 10.2.17
 typedef struct {
-	Dcm_DslProtocolTimingRowType	*DslProtocolTimingRow;	// (0..*)
+	const Dcm_DslProtocolTimingRowType	*DslProtocolTimingRow;	// (0..*)
 } Dcm_DslProtocolTimingType;
 
 
@@ -397,12 +399,13 @@ typedef struct {
 // 10.2.13
 typedef struct {
 	Dcm_ProtocolAddrTypeType		DslProtocolAddrType;			// (1)
-	// TODO: Add ref to PDU.
+	PduIdType						PduId;
+	boolean							Arc_EOL;
 } Dcm_DslProtocolRxType;
 
 // 10.2.14
 typedef struct {
-	// TODO: Add ref to PDU.
+	PduIdType						PduId;
 } Dcm_DslProtocolTxType;
 
 // 10.2.12
@@ -471,6 +474,9 @@ typedef struct {
 	const Dcm_DslSessionControlType				*DslSessionControl;				// (1..*)
 } Dcm_DslType;
 
+/*******
+ * DCM *
+ *******/
 
 // 10.2.1 Dcm
 typedef struct {

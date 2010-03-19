@@ -27,9 +27,19 @@
 #include "ComStack_Types.h"
 
 
+
 /*
  * Local types
  */
+#define MAX_NR_OF_PDUID		10		// ??
+typedef struct {
+	const Dcm_DslProtocolRowType	*DslProtocolRow;	// (1) For accessing DslProtocolID, DslProtocolSIDTable, DslProtocolTimeLimit etc
+	const Dcm_DslProtocolRxType		*DslProtocolRx;		// (1) For accessing DslProtocolAddrType (func/phys)
+	const Dcm_DslProtocolTxType		*DslProtocolTx;		// (1) For accessing TxPduId
+} PduIdProtocolCrossRefListType;
+
+PduIdProtocolCrossRefListType PduIdProtocolCrossRefList[MAX_NR_OF_PDUID];
+
 DslMsgDataType dslMsgData;
 
 // Setup buffers
