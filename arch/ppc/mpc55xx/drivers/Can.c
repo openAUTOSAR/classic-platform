@@ -661,12 +661,12 @@ static void Can_Isr(int unit) {
 #define INSTALL_HANDLERS( _can_name,_boff,_err,_start,_stop) \
   do { \
     TaskType tid; \
-    tid = Os_Arc_CreateIsr(_can_name ## _BusOff,1/*prio*/,"Can"); \
+    tid = Os_Arc_CreateIsr(_can_name ## _BusOff,2/*prio*/,"Can"); \
     Irq_AttachIsr2(tid,NULL,_boff); \
-    tid = Os_Arc_CreateIsr(_can_name ## _Err,1/*prio*/,"Can"); \
+    tid = Os_Arc_CreateIsr(_can_name ## _Err,2/*prio*/,"Can"); \
     Irq_AttachIsr2(tid,NULL,_err); \
     for(i=_start;i<=_stop;i++) {  \
-      tid = Os_Arc_CreateIsr(_can_name ## _Isr,1/*prio*/,"Can"); \
+      tid = Os_Arc_CreateIsr(_can_name ## _Isr,2/*prio*/,"Can"); \
 			Irq_AttachIsr2(tid,NULL,i); \
     } \
   } while(0);
