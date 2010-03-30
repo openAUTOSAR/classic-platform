@@ -77,12 +77,14 @@ typedef struct {
 
 
 typedef struct {
+	const int CanIf_CanTxPduId; // The polite CanIf PDU index.
+	const int PduR_CanTpRxPduId; // The polite PduR index.
 	const CanTp_AddressingFormantType CanTpAddressingFormant;
 	const uint32 CanTpBs; /** req: CanTp243: Sets the maximum number of messages of N-PDUs before flow control. */
 	const uint32 CanTpNar; /** req: CanTp244: Timeout for transmission of a CAN frame (ms). */
 	const uint32 CanTpNbr; /** req: CanTp245: ?? */
 	const uint32 CanTpNcr; /** req: CanTp246: Time out for consecutive frames (ms). */
-	/*const uin8							CanTp_RxChannel ** req: CanTp247: Link to the RX connection channel (why?) */
+	const uint8 CanTpRxChannel; /* Connection to runtime variable index, see CanTp 266. */
 	const uint32 CanTpRxDI; /** req: CanTp248: Data length code for of this RxNsdu. */
 	CanTp_StateType CanTpRxPaddingActivation; /** req: CanTp249: Enable use of padding. */
 	CanTp_TaTypeType CanTpRxTaType; /** req: CanTp250: Functional or physical addressing. */
@@ -91,19 +93,20 @@ typedef struct {
 	/*const uint32							CanTpNSduRef ** req: CanTp241. This is PDU id - typeless enum. */
 	CanTp_NSaType *CanTpNSa;
 	CanTp_NTaType *CanTpNTa;
-	CanTp_RxNPduType *CanTpRxNPdu; //
-	CanTp_TxFcNPduType *CanTpTxFcNPdu;
-	PduIdType CanTpRxPduId;
-	const CanTp_ListItemType CanTpListItemType;
+	//CanTp_RxNPduType *CanTpRxNPdu;
+	//CanTp_TxFcNPduType *CanTpTxFcNPdu;
+	//const PduIdType CanTpRxPduId;
 
 } CanTp_RxNSduType;
 
 typedef struct {
+	const int CanIf_CanTxPduId; // The polite CanIf index.
+	const int PduR_CanTpTxPduId; // The polite PduR index.
 	const CanTp_AddressingFormantType CanTpAddressingMode; /** req: CanTp138: */
 	const uint8 CanTpNas; /** req: CanTp263: N_As timeout for transmission of any CAN frame. */
 	const uint8 CanTpNbs; /** req: CanTp264: N_Bs timeout of transmission until reception of next Flow Control. */
 	const uint8 CanTpNcs; /** req: CanTp265: N_Bs timeout of transmission until reception of next Flow Control. */
-	/*const uint8						CanTp_TxChannel; / ** req: CanTp266: Link to the TX connection channel (why?). */
+	const uint8	CanTpTxChannel; /** req: CanTp266: Link to the TX connection channel (why?). */
 	const uint32 CanTpTxDI; /** req: CanTp267: Data length code for of this TxNsdu. */
 	/*const uint32						CanTpTxNSduId; / ** req: CanTp268: Data length code for of this TxNsdu. */
 	CanTp_StateType CanTpTxPaddingActivation; /** req: CanTp249: Enable use of padding. */
@@ -111,10 +114,10 @@ typedef struct {
 	/*const uint32						CanTpNSduRef ** req: CanTp261. This is PDU id - typeless enum. */
 	CanTp_NSaType *CanTpNSa;
 	CanTp_NTaType *CanTpNTa;
-	CanTp_RxFcNPduType *CanTpRxFcNPdu;
-	CanTp_TxNPduType *CanTpTxNPdu;
-	PduIdType CanTpTxPduId;
-	const CanTp_ListItemType CanTpListItemType;
+	//CanTp_RxFcNPduType *CanTpRxFcNPdu;
+	//CanTp_TxNPduType *CanTpTxNPdu;
+	//PduIdType CanTpTxPduId;
+
 } CanTp_TxNSduType; /** req: CanTp138: */
 
 // - - - - - - - - - - -
@@ -130,16 +133,37 @@ typedef struct {
 
 // - - - - - - - - - - -
 
+typedef enum {
+	IS015765_TRANSMIT, ISO15765_RECEIVE
+} CanTp_DirectionType;
+
+
+// - - - - - - - - - - -
+
+typedef struct {
+	const CanTp_DirectionType direction;
+	const CanTp_ListItemType listItemType;
+	union {
+		const CanTp_RxNSduType 	CanTpRxNSdu;
+		const CanTp_TxNSduType 	CanTpTxNSdu;
+	} configData;
+} CanTp_NSduType;
+
+// - - - - - - - - - - -
+
 /** Top level config container for CANTP implementation. */
 typedef struct {
 	/** General configuration paramters for the CANTP module. */
 	const CanTp_GeneralType *CanTpGeneral; // 10.2.3
 
+	/** */
+	const CanTp_NSduType *CanTpNSduList;
+
 	/**  */
-	const CanTp_RxNSduType 	*CanTpRxNSduList;
+	//const CanTp_RxNSduType 	*CanTpRxNSduList;
 
 	/** This container contains the init parameters of the CAN Interface. */
-	const CanTp_TxNSduType 	*CanTpTxNSduList;
+	//const CanTp_TxNSduType 	*CanTpTxNSduList;
 
 } CanTp_ConfigType;
 

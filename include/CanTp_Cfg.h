@@ -22,11 +22,11 @@
 #define MAIN_FUNCTION_PERIOD_TIME_MS	1000
 #define CONVERT_MS_TO_MAIN_CYCLES(x) 	100
 
+//#define CANTP_RX_NSDU_CONFIG_LIST_CNT	3
+//#define CANTP_TX_NSDU_CONFIG_LIST_CNT	3
 
-
-
-#define CANTP_RX_NSDU_CONFIG_LIST_CNT	3
-#define CANTP_TX_NSDU_CONFIG_LIST_CNT	3
+#define CANTP_NSDU_CONFIG_LIST_SIZE		6 //No. configured CanTp_NSduType CanTpNSduConfigList items.
+#define CANTP_NSDU_RUNTIME_LIST_SIZE	6 // Number of local channels, see CanTp266.
 
 #define FRTP_CANCEL_TRANSMIT_REQUEST 	STD_ON
 #define CANTP_VERSION_INFO_API          STD_ON   /**< Build version info API */
@@ -36,6 +36,6 @@
 extern CanTp_ConfigType CanTpConfig;
 extern const CanTp_RxNSduType CanTpRxNSduConfigList[];
 extern const CanTp_TxNSduType CanTpTxNSduConfigList[];
-
+extern const CanTp_NSduType CanTpNSduConfigList[];
 
 #endif /* CANTP_CFG_H_ */
