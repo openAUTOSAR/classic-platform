@@ -40,7 +40,9 @@ typedef struct {
 
 PduIdProtocolCrossRefListType PduIdProtocolCrossRefList[MAX_NR_OF_PDUID];
 
-DslMsgDataType dslMsgData;
+PduIdType 	activePduId;
+PduInfoType *pduRxData;
+PduInfoType *pduTxData;
 
 // Setup buffers
 static uint8 udsFuncRxBuffer[DCM_UDS_FUNC_RX_BUFFER_SIZE];
@@ -80,7 +82,7 @@ static PduInfoType *txBufferPointer = NULL;
 static boolean	dslDsdPduTransmit = FALSE;
 
 // Global service table, set by DSL used by DSD
-Dcm_DsdServiceTableType *DslCurrentServiceTable = NULL;
+//Dcm_DsdServiceTableType *DslCurrentServiceTable = NULL;
 
 
 void DslInit(void)
@@ -88,9 +90,9 @@ void DslInit(void)
 	const Dcm_DslProtocolType *dslProtocol = DCM_Config.Dsl->DslProtocol;
 	uint16 i;
 
-	dslMsgData.activePduId = DCM_PDU_ID_NONE;
-	dslMsgData.pduRxData = NULL;
-	dslMsgData.pduTxData = NULL;
+	activePduId = DCM_PDU_ID_NONE;
+	pduRxData = NULL;
+	pduTxData = NULL;
 
 	activeProtocol = NULL;
 	securityLevel = DCM_SEC_LEV_LOCKED;		/** @req DCM033 **/
@@ -134,12 +136,6 @@ void DslResetSessionTimeoutTimer(void)
 }
 
 
-void DslGetCurrentServiceTable(Dcm_DsdServiceTableType **currentServiceTable)
-{
-	*currentServiceTable = DslCurrentServiceTable;
-}
-
-
 boolean DslCheckIfOkToStartProtocol(Dcm_ProtocolType protocolId)
 {
 	boolean returnCode = TRUE;
@@ -163,7 +159,7 @@ BufReq_ReturnType DslProvideRxBuffer(PduIdType dcmRxPduId, PduLengthType tpSduLe
 
 	*pduInfoPtr = NULL;
 
-	if (dcmRxPduId != dslMsgData.activePduId) {
+	if (dcmRxPduId != activePduId) {
 		switch (dcmRxPduId)
 		{
 		case DCM_PDU_ID_UDS_FUNC_RX:
@@ -216,7 +212,7 @@ void DslRxIndication(PduIdType dcmRxPduId, NotifResultType result)
 				DslResetSessionTimeoutTimer();	/** @req DCM112 **/ /** @req DCM113 **/
 			}
 			else {
-				if (dslMsgData.activePduId == DCM_PDU_ID_NONE) {	/** @req DCM241 **/
+				if (activePduId == DCM_PDU_ID_NONE) {	/** @req DCM241 **/
 					if (activeProtocol != protocolUdsOnCan) {
 						if (DslCheckIfOkToStartProtocol(DCM_UDS_ON_CAN)) {		/** @req DCM036 **/
 							// TODO: Set default timing parameters (Dcm144)
@@ -224,7 +220,7 @@ void DslRxIndication(PduIdType dcmRxPduId, NotifResultType result)
 							activeProtocolId = DCM_UDS_ON_CAN;
 							securityLevel = DCM_SEC_LEV_LOCKED;		/** @req DCM146 **/
 							sessionControlType = DCM_DEFAULT_SESSION;	/** @req147 **/
-							DslCurrentServiceTable = (Dcm_DsdServiceTableType*)activeProtocol->DslProtocolSIDTable;	/** @req DCM195 **/ /** @req DCM035 **/ /** @req DCM145 **/
+//							DslCurrentServiceTable = (Dcm_DsdServiceTableType*)activeProtocol->DslProtocolSIDTable;	/** @req DCM195 **/ /** @req DCM035 **/ /** @req DCM145 **/
 						}
 						else {
 							// Protocol was not allowed to start
@@ -232,25 +228,26 @@ void DslRxIndication(PduIdType dcmRxPduId, NotifResultType result)
 							break;
 						}
 					}
-					dslMsgData.activePduId = dcmRxPduId;
+					activePduId = dcmRxPduId;
 					// TODO: Start the response pending timer
 					// Forward message to DSD
-					dslMsgData.pduRxData = &udsFuncRxPduInfo;
-					dslMsgData.pduTxData = &physPduInfo;
-					DsdDslDataIndication();
+					pduRxData = &udsFuncRxPduInfo;
+					pduTxData = &physPduInfo;
+//					DsdDslDataIndication();
+					DsdDslDataIndication(&udsFuncRxPduInfo, activeProtocol->DslProtocolSIDTable, DCM_PROTOCOL_FUNCTIONAL_ADDR_TYPE, DCM_PDU_ID_UDS_FUNC_RX, &physPduInfo);
 				}
 			}
 			break;
 
 		case DCM_PDU_ID_UDS_PHYS_RX:
-			if (dslMsgData.activePduId == DCM_PDU_ID_NONE) {	/** @req DCM241 **/
+			if (activePduId == DCM_PDU_ID_NONE) {	/** @req DCM241 **/
 				if (activeProtocol != protocolUdsOnCan) {
 					if (DslCheckIfOkToStartProtocol(DCM_UDS_ON_CAN)) {		/** @req DCM036 **/
 						activeProtocol = protocolUdsOnCan;
 						activeProtocolId = DCM_UDS_ON_CAN;
 						securityLevel = DCM_SEC_LEV_LOCKED;		/** @req DCM146 **/
 						sessionControlType = DCM_DEFAULT_SESSION;	/** @req147 **/
-						DslCurrentServiceTable = (Dcm_DsdServiceTableType*)activeProtocol->DslProtocolSIDTable;	/** @req DCM195 **/ /** @req DCM035 **/ /** @req DCM145 **/
+//						DslCurrentServiceTable = (Dcm_DsdServiceTableType*)activeProtocol->DslProtocolSIDTable;	/** @req DCM195 **/ /** @req DCM035 **/ /** @req DCM145 **/
 					}
 					else {
 						// Protocol was not allowed to start
@@ -258,12 +255,13 @@ void DslRxIndication(PduIdType dcmRxPduId, NotifResultType result)
 						break;
 					}
 				}
-				dslMsgData.activePduId = dcmRxPduId;
+				activePduId = dcmRxPduId;
 				// TODO: Start the response pending timer
 				// Forward message to DSD
-				dslMsgData.pduRxData = &physPduInfo;
-				dslMsgData.pduTxData = &physPduInfo;
-				DsdDslDataIndication();
+				pduRxData = &physPduInfo;
+				pduTxData = &physPduInfo;
+//				DsdDslDataIndication();
+				DsdDslDataIndication(&physPduInfo, activeProtocol->DslProtocolSIDTable, DCM_PROTOCOL_PHYSICAL_ADDR_TYPE, DCM_PDU_ID_UDS_PHYS_RX, &physPduInfo);
 			}
 			break;
 
@@ -328,7 +326,7 @@ Std_ReturnType DslGetSesCtrlType(Dcm_SesCtrlType *sesCtrlType)
 
 void DslHandleResponseTransmission(void)
 {
-	switch (dslMsgData.activePduId)
+	switch (activePduId)
 	{
 	case DCM_PDU_ID_UDS_FUNC_RX:
 	case DCM_PDU_ID_UDS_PHYS_RX:
@@ -344,8 +342,8 @@ void DslHandleResponseTransmission(void)
 		break;
 	}
 
-	if (pduTxId != DCM_PDU_ID_NONE && dslMsgData.pduTxData != NULL) {
-		txBufferPointer = dslMsgData.pduTxData;		// Save this for the Dcm_ProvideTxBuffer call
+	if (pduTxId != DCM_PDU_ID_NONE && pduTxData != NULL) {
+		txBufferPointer = pduTxData;		// Save this for the Dcm_ProvideTxBuffer call
 		Pdur_DcmTransmit(pduTxId, txBufferPointer);	/** @req DCM237 **/
 	}
 	else {
@@ -375,9 +373,9 @@ void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result)
 {
 	if (result == NTFRSLT_OK) {
 		// Lets clean up
-		dslMsgData.activePduId = DCM_PDU_ID_NONE;
-		dslMsgData.pduRxData = NULL;
-		dslMsgData.pduTxData = NULL;
+		activePduId = DCM_PDU_ID_NONE;
+		pduRxData = NULL;
+		pduTxData = NULL;
 
 		pduTxId = DCM_PDU_ID_NONE;
 		txBufferPointer = NULL;
@@ -394,9 +392,9 @@ void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result)
 void DslResponseSuppressed(void)
 {
 	// Lets clean up
-	dslMsgData.activePduId = DCM_PDU_ID_NONE;
-	dslMsgData.pduRxData = NULL;
-	dslMsgData.pduTxData = NULL;
+	activePduId = DCM_PDU_ID_NONE;
+	pduRxData = NULL;
+	pduTxData = NULL;
 
 	pduTxId = DCM_PDU_ID_NONE;
 	txBufferPointer = NULL;

@@ -53,13 +53,13 @@
  */
 void DspInit(void);
 void DspMain(void);
-void DspUdsDiagnosticSessionControl(void);
-void DspUdsEcuReset(void);
-void DspUdsClearDiagnosticInformation(void);
-void DspUdsSecurityAccess(void);
-void DspUdsTesterPresent(void);
-void DspUdsReadDtcInformation(void);
-void DspUdsControlDtcSetting(void);
+void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduInfoType *pduTxData);
+void DspUdsEcuReset(const PduInfoType *pduRxData, PduIdType txPduId, PduInfoType *pduTxData);
+void DspUdsClearDiagnosticInformation(const PduInfoType *pduRxData, PduInfoType *pduTxData);
+void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData);
+void DspUdsTesterPresent(const PduInfoType *pduRxData, PduInfoType *pduTxData);
+void DspUdsReadDtcInformation(const PduInfoType *pduRxData, PduInfoType *pduTxData);
+void DspUdsControlDtcSetting(const PduInfoType *pduRxData, PduInfoType *pduTxData);
 void DspDcmConfirmation(PduIdType confirmPduId);
 
 
@@ -71,22 +71,12 @@ void DsdMain(void);
 void DsdHandleRequest(void);
 void DsdDspProcessingDone(Dcm_NegativeResponseCodeType responseCode);
 void DsdDataConfirmation(PduIdType confirmPduId);
-void DsdDslDataIndication(void);
+void DsdDslDataIndication(const PduInfoType *pduRxData, const Dcm_DsdServiceTableType *protocolSIDTable, Dcm_ProtocolAddrTypeType addrType, PduIdType txPduId, PduInfoType *pduTxData);
 
 
 /*
  * DSL
  */
-typedef struct {
-	PduIdType 	activePduId;
-	boolean		suppressPosRspMsg;
-	PduInfoType *pduRxData;
-	PduInfoType *pduTxData;
-} DslMsgDataType;
-
-extern DslMsgDataType dslMsgData;
-
-
 void DslInit(void);
 void DslMain(void);
 void DslHandleResponseTransmission(void);
@@ -105,5 +95,6 @@ Std_ReturnType DslGetSesCtrlType(Dcm_SesCtrlType *sesCtrlType);
 BufReq_ReturnType DslProvideTxBuffer(PduIdType dcmTxPduId, PduInfoType **pduInfoPtr, PduLengthType length);
 void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result);
 void DslResetSessionTimeoutTimer(void);
+
 
 #endif /* DCM_INTERNAL_H_ */
