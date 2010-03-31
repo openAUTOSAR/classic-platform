@@ -98,7 +98,7 @@ void *Os_Isr( void *stack, void *pcb_p ) {
 	preempted_pcb = get_curr_pcb();
 	preempted_pcb->stack.curr = stack;
 	preempted_pcb->state = ST_READY;
-	os_isr_printf(D_TASK,"Preempted %s\n",preempted_pcb->name);
+	OS_DEBUG(D_TASK,"Preempted %s\n",preempted_pcb->name);
 
 	POSTTASKHOOK();
 
@@ -149,7 +149,7 @@ void *Os_Isr( void *stack, void *pcb_p ) {
 		OsPcbType *new_pcb;
 		new_pcb = Os_TaskGetTop();
 		if( new_pcb != preempted_pcb ) {
-			os_isr_printf(D_TASK,"Found candidate %s\n",new_pcb->name);
+			OS_DEBUG(D_TASK,"Found candidate %s\n",new_pcb->name);
 //#warning Os_TaskSwapContextTo should call the pretaskswaphook
 			Os_TaskSwapContextTo(NULL,new_pcb);
 		} else {
@@ -159,6 +159,9 @@ void *Os_Isr( void *stack, void *pcb_p ) {
 			preempted_pcb->state = ST_RUNNING;
 			set_curr_pcb(preempted_pcb);
 		}
+	} else {
+		set_curr_pcb(preempted_pcb);
+		PRETASKHOOK();
 	}
 
 	return stack;

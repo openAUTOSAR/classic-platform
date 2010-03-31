@@ -35,7 +35,7 @@
 #include "PduR_LinIf.h"
 #include "PduR_Ipdum.h"
 #include "Mcu.h"
-#include "Trace.h"
+#include "debug.h"
 
 /*
  * The state of the PDU router.

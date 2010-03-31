@@ -58,7 +58,7 @@ void Os_ArchSetupContext( OsPcbType *pcb ) {
  * @param pcbPtr
  */
 
-void OsArch_SetTaskEntry(OsPcbType *pcbPtr ) {
+void Os_ArchSetTaskEntry(OsPcbType *pcbPtr ) {
 	uint16_t *context_words = (uint16_t *)pcbPtr->stack.curr;
 	uint8_t *context_bytes = (uint8_t *)pcbPtr->stack.curr;
 

@@ -14,8 +14,8 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-#ifndef IRQ_H
-#define IRQ_H
+#ifndef IRQ_TYPES_H
+#define IRQ_TYPES_H
 
 #include "irq_defines.h"
 

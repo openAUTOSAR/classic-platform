@@ -25,21 +25,9 @@
 
 #define STACK_PATTERN	0x42
 
-
-#if 0
-/**
- * Swap context with a context. The difference between this
- * function and Os_ArchSwapContext is that the later use
- * the current stack. This one uses stack from context.
- *
- * @param old     always NULL
- * @param new     Ptr to pcb.
- * @param context Ptr to context
- * @return
- */
-
-void Os_ArchSwapContextToW(void *old,void *new, void *context );
-#endif
+/* See Os_ArchReboot() */
+#define OS_REBOOT_WARM		0
+#define OS_REBOOT_COLD		1
 
 
 /**
@@ -108,21 +96,28 @@ void Os_ArchFirstCall( void );
 
 
 /**
+ * Reboot the OS. Can be used as soft reset but also to get a controlled
+ * reboot of the OS, but saving state.
+ *
+ * This should probably:
+ * - Setup the stack pointer to same as in crt0.
+ * - Jump to main?!
+ * - De-init for some devices?
+ *
+ * @param type OS_REBOOT_COLD - Reboot cold. It quite close to reset.
+ *             OS_REBOOT_WARM - Reboot warm. Does not run init on sections (crt0)
+ */
+void Os_ArchReboot( int type );
+
+
+/**
  * Get the small context size
  *
  * @return The small context size in bytes
  */
 unsigned int Os_ArchGetScSize( void );
 
-void OsArch_SetTaskEntry(OsPcbType *pcbPtr );
-
-#if 0
-
-void *os_arch_get_stack_usage( OsPcbType * );
-
-_Bool os_arch_stack_endmark_ok( OsPcbType *);
-#endif
-
+void Os_ArchSetTaskEntry(OsPcbType *pcbPtr );
 
 
 #endif /*ARCH_H_*/

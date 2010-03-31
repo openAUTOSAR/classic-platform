@@ -25,7 +25,7 @@
 #include "Cpu.h"
 
 #define DEBUG_LVL 1
-#include "Trace.h"
+#include "debug.h"
 
 typedef enum
 {
@@ -142,7 +142,7 @@ void Det_ReportError(uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 Error
 #endif
 
 #if ( DET_USE_STDERR == STD_ON )
-        simple_printf("Det Error: ModuleId=%d, InstanceId=%d, ApiId=%d, ErrorId=%d\n", ModuleId, InstanceId, ApiId, ErrorId);        //fprintf(stderr, "Det Error: ModuleId=%d, InstanceId=%d, ApiId=%d, ErrorId=%d\n", ModuleId, InstanceId, ApiId, ErrorId);
+        printf("Det Error: ModuleId=%d, InstanceId=%d, ApiId=%d, ErrorId=%d\n", ModuleId, InstanceId, ApiId, ErrorId);        //fprintf(stderr, "Det Error: ModuleId=%d, InstanceId=%d, ApiId=%d, ErrorId=%d\n", ModuleId, InstanceId, ApiId, ErrorId);
 #endif
     }
 }

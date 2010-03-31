@@ -14,12 +14,6 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
-
 #include "Std_Types.h"
 #include "Mcu.h"
 #include "Det.h"
@@ -33,8 +27,8 @@
 #include "system_stm32f10x.h"
 
 //#define USE_TRACE 1
-//#define USE_DEBUG_PRINT 1
-#include "Trace.h"
+//#define USE_LDEBUG_PRINTF 1
+#include "debug.h"
 
 typedef struct {
 	uint32 lossOfLockCnt;
@@ -273,7 +267,7 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
 
 
 
-#if defined(USE_DEBUG_PRINT)
+#if defined(USE_LDEBUG_PRINTF)
   {
     uint32    extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePointFrequency;
     uint32    f_sys;
@@ -402,7 +396,8 @@ void Mcu_PerformReset(void)
 void Mcu_SetMode(const Mcu_ModeType McuMode)
 {
   VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_SETMODE_SERVICE_ID, MCU_E_UNINIT );
-  VALIDATE( ( McuMode <= Mcu_Global.config->McuNumberOfMcuModes ), MCU_SETMODE_SERVICE_ID, MCU_E_PARAM_MODE );
+  VALIDATE( (0), MCU_SETMODE_SERVICE_ID, MCU_E_PARAM_MODE );
+  //VALIDATE( ( McuMode <= Mcu_Global.config->McuNumberOfMcuModes ), MCU_SETMODE_SERVICE_ID, MCU_E_PARAM_MODE );
   (void) McuMode;
 
   /* NOT SUPPORTED */

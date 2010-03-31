@@ -14,11 +14,8 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 #include <stdint.h>
+#include <stdio.h>
 #include "Platform_Types.h"
-#include "simple_printf.h"
-
-#define USE_DEBUG_PRINT
-#include "Trace.h"
 
 int test_suite = 1;
 int test_nr = 1;
@@ -36,7 +33,7 @@ struct test testTable[50] = { {0} };
 
 
 void test_done( void ) {
-	dbg_printf(	"Test summary\n"
+	printf(	"\nTest summary\n"
 				"Total: %d\n"
 				"OK   : %d\n"
 				"FAIL : %d\n", _test_ok + _test_failed, _test_ok, _test_failed);
@@ -44,7 +41,7 @@ void test_done( void ) {
 }
 
 void test_fail( const char *text,char *file,  int line, const char *function ) {
-	dbg_printf("%02d %02d FAILED, %s , %d, %s\n",test_suite, test_nr, file, line, function);
+	printf("%02d %02d FAILED, %s , %d, %s\n",test_suite, test_nr, file, line, function);
 	testTable[testCnt].testSuite = test_suite;
 	testTable[testCnt].testNr = test_nr;
 	testTable[testCnt].status = 0;
@@ -54,7 +51,7 @@ void test_fail( const char *text,char *file,  int line, const char *function ) {
 
 
 void test_ok( void ) {
-	dbg_printf("%02d %02d OK\n",test_suite, test_nr);
+	printf("%02d %02d OK\n",test_suite, test_nr);
 	testTable[testCnt].testSuite = test_suite;
 	testTable[testCnt].testNr = test_nr;
 	testTable[testCnt].status = 1;

@@ -387,12 +387,6 @@ struct OsHooks os_conf_global_hooks = { \
 #define SECTION_BSS_SUPER	__attribute__ ((aligned (16),section(".bss")))
 #define SECTION_BSS_USER	__attribute__ ((aligned (16),section(".bss")))
 
-#undef ALARM_CNT
-#undef SCHEDULETABLE_CNT
-#undef MESSAGE_CNT
-#undef EVENT_CNT
-#undef SERVICE_CNT
-
 #endif
 
 

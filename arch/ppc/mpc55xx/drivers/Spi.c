@@ -146,10 +146,10 @@
 #include <stdlib.h>
 
 //#define USE_TRACE 1
-//#define USE_DEBUG_PRINT	1
+//#define USE_LDEBUG_PRINTF	1
 #undef DEBUG_LVL
 #define DEBUG_LVL DEBUG_HIGH
-#include "Trace.h"
+#include "debug.h"
 
 #define MODULE_NAME 	"/driver/Spi"
 
@@ -1232,7 +1232,7 @@ static void Spi_JobWrite( Spi_JobType jobIndex ) {
 		extChBuff = &Spi_Global.extBufPtr[channelIndex];
 
 		if( extChBuff->active == 0 ) {
-			dbg_printf("Err:External buffer %d@job %d not setup\n",channelIndex,jobIndex);
+			LDEBUG_PRINTF("Err:External buffer %d@job %d not setup\n",channelIndex,jobIndex);
 			assert(0);
 		}
 
@@ -1373,7 +1373,7 @@ static void Spi_SeqWrite( Spi_SequenceType seqIndex, Spi_CallTypeType sync ) {
 	  DEBUG(DEBUG_MEDIUM,"%s: sync/polled mode\n",MODULE_NAME);
 	}
 
-#if defined(USE_DEBUG_PRINT) && ( DEBUG_LVL <= DEBUG_HIGH )
+#if defined(USE_LDEBUG_PRINTF) && ( DEBUG_LVL <= DEBUG_HIGH )
 	Spi_PrintSeqInfo( seqConfig );
 #endif
 

@@ -22,7 +22,7 @@
  */
 
 #include "Os.h"
-#include "Trace.h"
+#include "debug.h"
 #include <assert.h>
 #include "os_test.h"
 
@@ -43,7 +43,7 @@ void etask_sup_l_02( void ) {
 				AlarmBaseType alarm;
 				TickType tick;
 				GetAlarmBase(ALARM_ID_c_soft_1_setevent_etask_m,&alarm);
-				dbg_printf("Alarm %d,%d,%d\n",	alarm.maxallowedvalue,
+				LDEBUG_PRINTF("Alarm %d,%d,%d\n",	alarm.maxallowedvalue,
 												alarm.tickperbase,
 												alarm.mincycle);
 

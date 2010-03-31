@@ -1,4 +1,7 @@
 
+#
+# Copyright ArcCore AB
+#
 
 #define _ASSEMBLER_
 #include "kernel_offset.h"
@@ -31,8 +34,25 @@ Irq_Handler:
     b 		os_lc_restore
 	
 	
-/* r0 - pcb for old task
- * r1 pcb for new task
+/**
+ * Os_ArchSetSpAndCall
+ *
+ * @param sp Pointer to the stack
+ * @param f  Pointer to the function to call
+ */
+
+ 	.global Os_ArchSetSpAndCall
+ 	.type	Os_ArchSetSpAndCall, %function
+Os_ArchSetSpAndCall:
+	mov.w	sp,r0
+	mov.w	lr,r1
+	bx		lr
+
+/**
+ * Os_ArchSwapContext
+ *
+ * @param r0 - pcb for old task
+ * @param r1 - pcb for new task
  *
  * -------------- higher addr
  * r4-r8,etc
@@ -45,22 +65,23 @@ Irq_Handler:
  	.global Os_ArchSwapContext
  	.type	Os_ArchSwapContext, %function
 Os_ArchSwapContext:
-//    mov     r2, sp
+	// Save function call registers
     push    {r4-r8,r10,r11,lr}
 
-    // Store c-frame
+	// Store the context frame
     sub.w   sp,sp,#C_SIZE
 
+	// Save small-context indicator
     mov.w   r4,#SC_PATTERN
     str     r4,[sp,#C_CONTEXT_OFFS]
-//    str     r2,[sp,#C_SP_OFF]
 	// ---> We have saved NVGPR+C
 
     // store old stack for old task
     mov.w	r4,sp
     str     r4,[r0,#PCB_STACK_CURR_P]
 
-// R1 - new PCB
+	// Flow down
+	// R1 - new PCB
 	.global Os_ArchSwapContextTo
 	.type	Os_ArchSwapContextTo, %function
 Os_ArchSwapContextTo:
@@ -90,15 +111,15 @@ os_sc_restore:
     add.w   sp,sp,#C_SIZE
 
     pop     {r4-r8,r10,r11,lr}
-        // ehh, we are in handler mode so a bx instruction works here
-    IRQ_ENABLE()
+    // We are in handler mode so a bx instruction works here
+//    IRQ_ENABLE()
     bx      lr
 
 os_lc_restore:
     add.w   sp,sp,#C_SIZE
     pop     {r4-r8,r10,r11,lr}
-    // ehh, we are in handler mode so a bx instruction works here
-    IRQ_ENABLE()
+    // We are in handler mode so a bx instruction works here
+//    IRQ_ENABLE()
     bx      lr
 
 

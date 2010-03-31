@@ -62,8 +62,8 @@
 //#include <stdio.h>
 #include <string.h>
 
-//#define USE_DEBUG_PRINT
-#include "Trace.h"
+//#define USE_LDEBUG_PRINTF
+#include "debug.h"
 #define MODULE_NAME 	"/driver/Fls_25"
 
 
@@ -402,7 +402,7 @@ void Fls_SST25xx_Init( const Fls_ConfigType* ConfigPtr ){
   Spi_SyncTransmit(SPI_SEQ_FLASH_CMD_DATA );
 
   if( ((jedecId[0]<<16) + (jedecId[1]<<8) + jedecId[2]) != 0xbf2541 ) {
-   dbg_printf("JEDEC: %02x %02x %02x\n",jedecId[0],jedecId[1],jedecId[2]);
+   LDEBUG_PRINTF("JEDEC: %02x %02x %02x\n",jedecId[0],jedecId[1],jedecId[2]);
     assert(0);
   }
 

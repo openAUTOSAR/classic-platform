@@ -13,8 +13,6 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-#include "pcb.h"
-#include "sys.h"
 #include "internal.h"
 #include "task_i.h"
 #include "hooks.h"

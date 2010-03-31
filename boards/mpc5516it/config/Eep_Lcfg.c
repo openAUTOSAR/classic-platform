@@ -26,10 +26,10 @@
 #include "Spi_Cfg.h"
 
 //#define USE_TRACE 1
-//#define USE_DEBUG_PRINT	1
+//#define USE_LDEBUG_PRINTF	1
 #undef DEBUG_LVL
 #define DEBUG_LVL DEBUG_LOW
-#include "Trace.h"
+#include "debug.h"
 
 static void _JobEndNotify(){
 	DEBUG(DEBUG_LOW,"EEP JOB END NOTIFICATION\n");

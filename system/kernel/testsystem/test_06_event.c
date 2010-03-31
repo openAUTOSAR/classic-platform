@@ -15,14 +15,7 @@
 
 /*
  * Tests:
- *
- * OSEK
- * - SetEvent     		E_OS_ID, E_OS_ACCESS, E_OS_STATE
- * - ClearEvent         E_OS_ACCESS, E_OS_CALLEVEL
- * - GetEvent			E_OS_ID, E_OS_ACCESS, E_OS_STATE
- * - WaitEvent			E_OS_ACCESS, E_OS_RESOURCE, E_OS_CALLEVEL
- *
- * More tests here:
+ *  Ramlog
  *
  * Limitations:
  */

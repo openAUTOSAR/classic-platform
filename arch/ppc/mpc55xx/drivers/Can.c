@@ -1217,7 +1217,7 @@ void Can_Arc_GetStatistics( uint8 controller, Can_Arc_StatisticsType *stats)
 
 #else // Stub all functions for use in simulator environment
 
-#include "Trace.h"
+#include "debug.h"
 
 void Can_Init( const Can_ConfigType *Config )
 {

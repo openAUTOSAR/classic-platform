@@ -17,8 +17,8 @@
 #include "mpc55xx.h"
 #include "asm_book_e.h"
 
-#define USE_DEBUG_PRINT
-#include "Trace.h"
+#define USE_LDEBUG_PRINTF
+#include "debug.h"
 
 /**
  * Function make sure that we switch to supervisor mode(rfi) before
@@ -115,7 +115,7 @@ void Os_ArchSetupContext( OsPcbType *pcb ) {
  * @param pcbPtr
  */
 
-void OsArch_SetTaskEntry(OsPcbType *pcbPtr ) {
+void Os_ArchSetTaskEntry(OsPcbType *pcbPtr ) {
 	uint32_t *context = (uint32_t *)pcbPtr->stack.curr;
 
 	context[C_CONTEXT_OFF/4] = SC_PATTERN;
@@ -136,13 +136,16 @@ void OsArch_SetTaskEntry(OsPcbType *pcbPtr ) {
 void os_arch_print_context( char *str, OsPcbType *pcb ) {
 	uint32_t *stack;
 
-	dbg_printf("%s CONTEXT: %d\n",str, pcb->pid);
-	dbg_printf("  stack: curr=%08x top=%08x bottom=%08x\n",pcb->stack.curr, pcb->stack.top, pcb->stack.top+ pcb->stack.size);
+	LDEBUG_PRINTF("%s CONTEXT: %d\n",str, pcb->pid);
+	LDEBUG_PRINTF("  stack: curr=%p top=%p bottom=%p\n",
+					pcb->stack.curr,
+					pcb->stack.top,
+					pcb->stack.top+ pcb->stack.size);
 	stack = pcb->stack.curr;
-	dbg_printf("  val  : context=%08x LR=%08x CR=%08x\n",
-					stack[C_CONTEXT_OFF/4],
-					stack[C_LR_OFF/4],
-					stack[C_CR_OFF/4]
+	LDEBUG_PRINTF("  val  : context=%08x LR=%08x CR=%08x\n",
+					(unsigned)stack[C_CONTEXT_OFF/4],
+					(unsigned)stack[C_LR_OFF/4],
+					(unsigned)stack[C_CR_OFF/4]
 					);
 }
 

@@ -46,7 +46,7 @@ static inline struct OsScheduleTableSync *getSync( OsSchTblType *stblPtr ) {
 #endif
 
 
-#define IsCounterValid(_counterId)   ((_counterId) <= Oil_GetCounterCnt())
+#define IsCounterValid(_counterId)   ((_counterId) <= Os_CfgGetCounterCnt())
 
 /**
  *
@@ -58,7 +58,7 @@ static inline struct OsScheduleTableSync *getSync( OsSchTblType *stblPtr ) {
 StatusType IncrementCounter( CounterType counter_id ) {
 	StatusType rv = E_OK;
 	OsCounterType *cPtr;
-	cPtr = Oil_GetCounter(counter_id);
+	cPtr = Os_CfgGetCounter(counter_id);
 
 	/** @req OS376 */
 	if( !IsCounterValid(counter_id) ) {
@@ -69,7 +69,7 @@ StatusType IncrementCounter( CounterType counter_id ) {
 	/* Check param */
 	/** @req OS285 */
 	if( ( cPtr->type != COUNTER_TYPE_SOFT ) ||
-		( counter_id >= Oil_GetCounterCnt() ) ) {
+		( counter_id >= Os_CfgGetCounterCnt() ) ) {
 		rv =  E_OS_ID;
 		goto err;
 	}
@@ -90,7 +90,7 @@ StatusType GetCounterValue( CounterType counter_id , TickRefType tick_ref)
 {
 	StatusType rv = E_OK;
 	OsCounterType *cPtr;
-	cPtr = Oil_GetCounter(counter_id);
+	cPtr = Os_CfgGetCounter(counter_id);
 
 	/** @req OS376 */
 	if( !IsCounterValid(counter_id) ) {
@@ -134,7 +134,7 @@ StatusType GetElapsedCounterValue( CounterType counter_id, TickRefType val, Tick
 	TickType currTick = 0;
 	TickType max;
 
-	cPtr = Oil_GetCounter(counter_id);
+	cPtr = Os_CfgGetCounter(counter_id);
 
 	/** @req OS381 */
 	if( !IsCounterValid(counter_id) ) {
@@ -180,7 +180,7 @@ void OsTick( void ) {
 	// if not used, os_tick_counter < 0
 	if (Os_Arc_OsTickCounter >= 0) {
 
-		OsCounterType *cPtr = Oil_GetCounter(Os_Arc_OsTickCounter);
+		OsCounterType *cPtr = Os_CfgGetCounter(Os_Arc_OsTickCounter);
 
 		os_sys.tick++;
 

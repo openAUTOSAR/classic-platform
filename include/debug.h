@@ -46,6 +46,8 @@
  *
  */
 
+#include <stdio.h>
+
 #define DEBUG_LOW		1
 #define DEBUG_MEDIUM	2
 #define DEBUG_HIGH		3
@@ -57,7 +59,8 @@
 #define CH_ISR		0
 #define CH_PROC		1
 
-#if defined(USE_LDEBUG_PRINTF)
+
+#if defined(USE_DEBUG_PRINTF)
 #define DEBUG(_level,...) \
 	do { \
 		if(_level>=DEBUG_LVL) { \

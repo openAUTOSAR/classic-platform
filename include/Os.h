@@ -248,7 +248,7 @@ StatusType ReleaseResource( ResourceType ResID);
 /*
  * Define the scheduler resource as 0
  */
-#define	RES_SCHEDULER 			0
+#define	RES_SCHEDULER 			~(ResourceType)0
 
 /*
  * Priorities of tasks and resources
@@ -441,5 +441,11 @@ union isr_attr {
 	TaskType tid;
 	void (*entry)(void);
 };
+
+#define TTY_NONE		1
+#define TTY_T32		2
+#define TTY_WINIDEA	4
+#define TTY_SERIAL		8
+#define TTY_RAMLOG		16
 
 #endif /*OS_H_*/

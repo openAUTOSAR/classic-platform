@@ -40,7 +40,7 @@ void Os_Arc_GetStackInfo( TaskType pid, StackInfoType *s );
 
 #define OS_STACK_USAGE(_x) ((((_x)->size - (uint32_t)((_x)->usage - (_x)->top))*100)/(_x)->size)
 
-// int simple_printf(const char *format, ...);
+// int printf(const char *format, ...);
 
 TaskType Os_Arc_CreateIsr( void  (*entry)(void), uint8_t prio, const char *name );
 

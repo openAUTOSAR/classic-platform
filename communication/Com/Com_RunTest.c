@@ -22,7 +22,7 @@
 
 #include "Com_RunTest.h"
 #include "Com.h"
-#include "Trace.h"
+#include "debug.h"
 #include <stdlib.h>
 
 //#define DEBUG_LVL DEBUG_MEDIUM
@@ -67,7 +67,7 @@ void RTE_EngineMain() {
 	if (setNewSpeed) {
 		Com_ReceiveSignal(1, (void *)&newSpeed);
 
-	dbg_printf("Setting engine speed to %d rpm\n", newSpeed);
+	LDEBUG_PRINTF("Setting engine speed to %d rpm\n", newSpeed);
 		/*
 		static uint16 sig;
 		sig = rand() % 10000;

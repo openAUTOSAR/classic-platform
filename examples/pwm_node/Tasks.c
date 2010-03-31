@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "pwm_sine_main.h"
-#include "Trace.h"
+#include "debug.h"
 //#include "WdgM.h"
 
 

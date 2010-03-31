@@ -53,15 +53,39 @@
  *
  */
 
-#define valid_standard_id() (rPtr->nr < Oil_GetResourceCnt()) //&& !(rPtr->type == RESOURCE_TYPE_INTERNAL) )
-#define valid_internal_id() (rPtr->nr < Oil_GetResourceCnt()) //&& (rPtr->type == RESOURCE_TYPE_INTERNAL) )
+#define valid_standard_id() (rPtr->nr < Os_CfgGetResourceCnt()) //&& !(rPtr->type == RESOURCE_TYPE_INTERNAL) )
+#define valid_internal_id() (rPtr->nr < Os_CfgGetResourceCnt()) //&& (rPtr->type == RESOURCE_TYPE_INTERNAL) )
 
 
 static StatusType GetResource_( OsResourceType * );
 StatusType ReleaseResource_( OsResourceType * );
 
+/**
+ * This call serves to enter critical sections in the code that are
+ * assigned to the resource referenced by <ResID>. A critical
+ * section shall always be left using ReleaseResource.
+ *
+ * The OSEK priority ceiling protocol for resource management is described
+ * in chapter 8.5. Nested resource occupation is only allowed if the inner
+ * critical sections are completely executed within the surrounding critical
+ * section (strictly stacked, see chapter 8.2, Restrictions when using
+ * resources). Nested occupation of one and the same resource is also
+ * forbidden! It is recommended that corresponding calls to GetResource and
+ * ReleaseResource appear within the same function.
+ *
+ * It is not allowed to use services which are points of rescheduling for
+ * non preemptable tasks  (TerminateTask,ChainTask,  Schedule  and  WaitEvent,
+ * see  chapter  4.6.2)  in critical  sections.
+ * Additionally,  critical  sections  are  to  be  left before completion of
+ * an interrupt service routine.
+ * Generally speaking, critical sections should be short.
+ * The service may be called from an ISR and from task level (see Figure 12-1).
+ *
+ * @param ResID
+ * @return
+ */
 StatusType GetResource( ResourceType ResID ) {
-	OsResourceType *rPtr = Oil_GetResource(ResID);
+	OsResourceType *rPtr = Os_CfgGetResource(ResID);
 	StatusType rv = GetResource_(rPtr);
 
 	if (rv != E_OK)
@@ -69,6 +93,42 @@ StatusType GetResource( ResourceType ResID ) {
 
 	OS_STD_END_1(OSServiceId_GetResource,ResID);
 }
+
+/**
+ * ReleaseResource   is   the   counterpart   of   GetResource   and
+ * serves to leave critical sections in the code that are assigned to
+ * the resource referenced by <ResID>.
+ *
+ * For  information  on  nesting  conditions,  see  particularities  of
+ * GetResource. The service may be called from an ISR and from task level (see
+ * Figure 12-1).
+ *
+ * @param ResID
+ * @return
+ */
+
+StatusType ReleaseResource( ResourceType ResID) {
+    StatusType rv = E_OK;
+	if( ResID == RES_SCHEDULER ) {
+		os_sys.scheduler_lock=0;
+	} else {
+	    OsResourceType *rPtr = Os_CfgGetResource(ResID);
+	    rv = ReleaseResource_(rPtr);
+	}
+
+	if (rv != E_OK)
+	    goto err;
+
+	OS_STD_END_1(OSServiceId_ReleaseResource,ResID);
+}
+
+
+/**
+ * Internal GetResource function...
+ *
+ * @param rPtr
+ * @return
+ */
 
 static StatusType GetResource_( OsResourceType * rPtr ) {
 	StatusType rv = E_OK;
@@ -114,26 +174,16 @@ ok:
 	return rv;
 }
 
-StatusType ReleaseResource( ResourceType ResID) {
-    StatusType rv = E_OK;
-	if( ResID == RES_SCHEDULER ) {
-		os_sys.scheduler_lock=0;
-	} else {
-	    OsResourceType *rPtr = Oil_GetResource(ResID);
-	    rv = ReleaseResource_(rPtr);
-	}
 
-	if (rv != E_OK)
-	    goto err;
-
-	OS_STD_END_1(OSServiceId_ReleaseResource,ResID);
-}
-
+/**
+ * Internal release resource..
+ * @param rPtr
+ * @return
+ */
 StatusType ReleaseResource_( OsResourceType * rPtr ) {
 	if (!valid_standard_id()) {
 		return E_OS_ID;
 	} else {
-
         // Release it...
         rPtr->owner = (TaskType) (-1);
         TAILQ_REMOVE(&Os_TaskGetCurrent()->resource_head, rPtr, listEntry);
@@ -143,27 +193,26 @@ StatusType ReleaseResource_( OsResourceType * rPtr ) {
 }
 
 
-void Os_ResourceReleaseAll( uint32_t mask ) {
-
-}
-
-//
 void Os_ResourceGetInternal( void ) {
 	OsResourceType *rt = os_get_resource_int_p();
 
 	if( rt != NULL ) {
-		//simple_printf("Get IR proc:%s prio:%d old_task_prio:%d\n",get_curr_pcb()->name, rt->ceiling_priority,rt->old_task_prio);
+		OS_DEBUG(D_RESOURCE,"Get IR proc:%s prio:%u old_task_prio:%u\n",
+				get_curr_pcb()->name,
+				(unsigned)rt->ceiling_priority,
+				(unsigned)rt->old_task_prio);
 		GetResource_(rt);
 	}
-	//GetResourceInternal(Os_TaskGetCurrent()->resource_internal);
 }
 
 void Os_ResourceReleaseInternal( void ) {
 	OsResourceType *rt = os_get_resource_int_p();
 
 	if(  rt != NULL ) {
-		//simple_printf("Rel IR proc:%s prio:%d old_task_prio:%d\n",get_curr_pcb()->name,rt->ceiling_priority,rt->old_task_prio);
+		OS_DEBUG(D_RESOURCE,"Rel IR proc:%s prio:%u old_task_prio:%u\n",
+				get_curr_pcb()->name,
+				(unsigned)rt->ceiling_priority,
+				(unsigned)rt->old_task_prio);
 		ReleaseResource_(rt);
 	}
-	//ReleaseResource(Os_TaskGetCurrent()->resource_internal);
 }

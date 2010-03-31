@@ -15,6 +15,7 @@
 
 #include <stdlib.h>
 #include "Os.h"
+
 #include "internal.h"
 #include "arc.h"
 #include "arch.h"
@@ -22,7 +23,7 @@
 /** @req OS067 */
 
 _Bool os_pcb_pid_valid( OsPcbType *restrict pcb ) {
-	return ( pcb->pid > Oil_GetTaskCnt() ) ? 0 : 1;
+	return ( pcb->pid > Os_CfgGetTaskCnt() ) ? 0 : 1;
 }
 /**
  * Start an extended task.
@@ -153,7 +154,7 @@ void Os_ContextInit( OsPcbType *pcb ) {
 
 	Os_StackSetup(pcb);
 	Os_StackFill(pcb);
-	OsArch_SetTaskEntry(pcb);
+	Os_ArchSetTaskEntry(pcb);
 
 	Os_ArchSetupContext(pcb);
 }
@@ -208,8 +209,9 @@ TaskType Os_AddTask( OsPcbType *pcb ) {
 
 /**
  * Find the top priority task. Even the running task is included.
- * TODO: we can't have O(n) search here.. hash on prio instead
- *
+ * TODO: There should be a priority queue (using a heap?) here instead.
+ *        giving O(log n) for instertions and (1) for getting the top
+ *        prio task. The curerent implementation is ehhhh bad.
  * @return
  */
 
@@ -218,7 +220,7 @@ OsPcbType *Os_TaskGetTop( void ){
 	OsPcbType *top_prio_pcb = NULL;
 	OsPriorityType top_prio = PRIO_ILLEGAL;
 
-	os_isr_printf(D_TASK,"os_find_top_prio_proc\n");
+	OS_DEBUG(D_TASK,"os_find_top_prio_proc\n");
 
 	TAILQ_FOREACH(i_pcb,& os_sys.ready_head,ready_list) {
 		// all ready task are canidates
@@ -239,14 +241,14 @@ OsPcbType *Os_TaskGetTop( void ){
 
 	assert(top_prio_pcb!=NULL);
 
-	os_isr_printf(D_TASK,"Found %s\n",top_prio_pcb->name);
+	OS_DEBUG(D_TASK,"Found %s\n",top_prio_pcb->name);
 
 	return top_prio_pcb;
 }
 
 
-#define USE_DEBUG_PRINT
-#include "Trace.h"
+#define USE_LDEBUG_PRINTF
+#include "debug.h"
 
 // we come here from
 // - WaitEvent()
@@ -408,10 +410,19 @@ StatusType GetTaskState(TaskType TaskId, TaskStateRefType State) {
 	OS_STD_END_2(OSServiceId_GetTaskState,TaskId, State);
 }
 
+
+/**
+ * GetTaskID returns the information about the TaskID of the task
+ * which is currently running.
+ *
+ * @param task_id Reference to the task which is currently running
+ * @return
+ */
 StatusType GetTaskID( TaskRefType task_id ) {
 	*task_id = os_sys.curr_pcb->pid;
 	return E_OK;
 }
+
 
 ISRType GetISRID( void ) {
 
@@ -425,7 +436,7 @@ ISRType GetISRID( void ) {
 }
 
 #define TASK_CHECK_ID(x) 				\
-	if( (x) > Oil_GetTaskCnt()) { \
+	if( (x) > Os_CfgGetTaskCnt()) { \
 		rv = E_OS_ID;					\
 		goto err; 						\
 	}
@@ -460,7 +471,7 @@ StatusType ActivateTask( TaskType TaskID ) {
 	OsPcbType *pcb = os_get_pcb(TaskID);
 	StatusType rv = E_OK;
 
-	os_isr_printf(D_TASK,"ActivateTask %s\n",pcb->name);
+	OS_DEBUG(D_TASK,"ActivateTask %s\n",pcb->name);
 
 #if (OS_STATUS_EXTENDED == STD_ON )
 	TASK_CHECK_ID(TaskID);
@@ -484,7 +495,7 @@ StatusType ActivateTask( TaskType TaskID ) {
 			pcb->ev_wait = 0;
 		}
 		Os_StackSetup(pcb);
-		OsArch_SetTaskEntry(pcb);
+		Os_ArchSetTaskEntry(pcb);
 		Os_ArchSetupContext(pcb);
 		Os_TaskMakeReady(pcb);
 	} else {
@@ -553,7 +564,7 @@ StatusType TerminateTask( void ) {
 	StatusType rv = E_OK;
 	uint32_t flags;
 
-	os_std_printf(D_TASK,"TerminateTask %s\n",curr_pcb->name);
+	OS_DEBUG(D_TASK,"TerminateTask %s\n",curr_pcb->name);
 
 #if (OS_STATUS_EXTENDED == STD_ON )
 

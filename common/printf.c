@@ -1,338 +1,413 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
+/*
+ * Copyright ArcCore AB
  *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
+ * A simple implementation of all formatted xxprintf functionallity.
  *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
+ * DESIGN CRITERIA:
+ *  - Reentrant
+ *  - Use little stack
  *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+ *  What you normally would do is to print to a buffer of some kind and then
+ *  call write(). However little stack indicates that we can't place buffers
+ *  on the stack and reentrant tells us that we can't have a static buffer.
+ *  That leaves us with printing characters as it is ready. From a speed
+ *  point of view that is less than optimal, but that the way it's got to be.
+ *  (Could make a 16 long char buffer??)
+ *
+ *  This is just intended to be used as a replacement for newlibs implementation.
+ *  Newlib porting interface have the following API:
+ *    int write(  int fd, char *buf, int nbytes)
+ *
+ *
+ *  Note that puts(), putc() are still the newlib variants....
+ *
+ *    printf()       -> vfprintf(stdout,) -> vsnprintf(buf,)
+ *                                           write()
+ *    vprintf()      -> vfprintf(stdout,) -> vsnprintf(buf,)
+ *                                           write()
+ *    sprintf(buf,)  ->                      vsnprintf(buf,)
+ *    snprintf(buf,) ->                      vsnprintf(buf,)
+ *
+ * IMPLEMENTATION NOTE:
+ *  If printing more than the limit, e.g. using vsnprintf() then
+ *  the emit function will only stop printing, but not interrupted
+ *  (The code will get more complicated that way)
+ */
 
-
-#include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
 #include <stdarg.h>
-#include "simple_printf.h"
+#include <assert.h>
 
-#define BUF_SIZE	60
-#define STD_OUT 1
+//#define HOST_TEST	1
 
-#if 0
-//char *
-int dbg_printf(const char *fmt, ...) {
-   /* Guess we need no more than 100 bytes. */
-   int n;
-   va_list ap;
-   char p[BUF_SIZE];
-
-  /* Try to print in the allocated space. */
-  va_start(ap, fmt);
-  n = vsnprintf (p, BUF_SIZE, fmt, ap);
-  puts(p);
-  va_end(ap);
-  return 0;
-}
-
-#endif
-/*
-	Copyright 2001, 2002 Georges Menie (www.menie.org)
-	stdarg version contributed by Christian Ettinger
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
-
-
-/*
-	putchar is the only external dependency for this file,
-	if you have a working putchar, leave it commented out.
-	If not, uncomment the define below and
-	replace outbyte(c) by your own function call.
-
-#define putchar(c) outbyte(c)
-*/
-
-
-extern int arc_putchar(int fd, int c);
-
-static void printchar(int fd, char **str, int c)
-{
-	if (str) {
-		**str = c;
-		++(*str);
-	}
-	else {
-		(void)arc_putchar(fd, c);
-	}
-}
-
-#define PAD_RIGHT 1
-#define PAD_ZERO 2
-
-static int prints(int fd, char **out, const char *string, int width, int pad)
-{
-	register int pc = 0, padchar = ' ';
-
-	if (width > 0) {
-		register int len = 0;
-		register const char *ptr;
-		for (ptr = string; *ptr; ++ptr) ++len;
-		if (len >= width) width = 0;
-		else width -= len;
-		if (pad & PAD_ZERO) padchar = '0';
-	}
-	if (!(pad & PAD_RIGHT)) {
-		for ( ; width > 0; --width) {
-			printchar (fd, out, padchar);
-			++pc;
-		}
-	}
-	for ( ; *string ; ++string) {
-		printchar (fd, out, *string);
-		++pc;
-	}
-	for ( ; width > 0; --width) {
-		printchar (fd, out, padchar);
-		++pc;
-	}
-
-	return pc;
-}
-
-
-
-/* the following should be enough for 32 bit int */
-#define PRINT_BUF_LEN 12
-
-static int printi(int fd, char **out, int i, int b, int sg, int width, int pad, int letbase)
-{
-	char print_buf[PRINT_BUF_LEN];
-	register char *s;
-	register int t, neg = 0, pc = 0;
-	register unsigned int u = i;
-
-	if (i == 0) {
-		print_buf[0] = '0';
-		print_buf[1] = '\0';
-		return prints (fd, out, print_buf, width, pad);
-	}
-
-	if (sg && b == 10 && i < 0) {
-		neg = 1;
-		u = -i;
-	}
-
-	s = print_buf + PRINT_BUF_LEN-1;
-	*s = '\0';
-
-	while (u) {
-		t = u % b;
-		if( t >= 10 )
-			t += letbase - '0' - 10;
-		*--s = t + '0';
-		u /= b;
-	}
-
-	if (neg) {
-		if( width && (pad & PAD_ZERO) ) {
-			printchar (fd, out, '-');
-			++pc;
-			--width;
-		}
-		else {
-			*--s = '-';
-		}
-	}
-
-	return pc + prints (fd, out, s, width, pad);
-}
-
-static int print(int fd, char **out, const char *format, va_list args )
-{
-	int width, pad;
-	int pc = 0;
-	char scr[2];
-
-	for (; *format != 0; ++format) {
-		if (*format == '%') {
-			++format;
-			width = pad = 0;
-			if (*format == '\0') break;
-			if (*format == '%') goto out;
-			if (*format == '-') {
-				++format;
-				pad = PAD_RIGHT;
-			}
-			while (*format == '0') {
-				++format;
-				pad |= PAD_ZERO;
-			}
-			for ( ; *format >= '0' && *format <= '9'; ++format) {
-				width *= 10;
-				width += *format - '0';
-			}
-			if( *format == 's' ) {
-				char *s = (char *)va_arg( args, int );
-				pc += prints (fd, out, s?s:"(null)", width, pad);
-				continue;
-			}
-			if( *format == 'd' ) {
-				pc += printi (fd, out, va_arg( args, int ), 10, 1, width, pad, 'a');
-				continue;
-			}
-			if( *format == 'x' ) {
-				pc += printi (fd, out, va_arg( args, int ), 16, 0, width, pad, 'a');
-				continue;
-			}
-			if( *format == 'X' ) {
-				pc += printi (fd, out, va_arg( args, int ), 16, 0, width, pad, 'A');
-				continue;
-			}
-			if( *format == 'u' ) {
-				pc += printi (fd, out, va_arg( args, int ), 10, 0, width, pad, 'a');
-				continue;
-			}
-			if( *format == 'c' ) {
-				/* char are converted to int then pushed on the stack */
-				scr[0] = (char)va_arg( args, int );
-				scr[1] = '\0';
-				pc += prints (fd, out, scr, width, pad);
-				continue;
-			}
-		}
-		else {
-		out:
-			printchar (fd, out, *format);
-			++pc;
-		}
-	}
-	if (out) **out = '\0';
-	va_end( args );
-	return pc;
-}
-
-
-
-#if 0
-int arc_fprintf(FILE *fd, const char *format, ...);
-int arc_vfprintf(FILE *fp, const char *fmt, va_list list);
+#ifdef HOST_TEST
+#define _STDOUT 	stdout
+#define _STDIN 	stdin
+#define _STDERR	stderr
+#else
+#define _STDOUT 	(FILE *)STDOUT_FILENO
+#define _STDINT 	STDIN_FILENO
+#define _STDERR	(FILE *)STDERR_FILENO
 #endif
 
 
-#if 0
-int simple_fprintf(FILE *fd, const char *format, ...)
-{
-    va_list args;
 
-    va_start( args, format );
-    return fprint( &fd, format, args );
+int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap);
+
+int printf(const char *format, ...) {
+	va_list ap;
+	int rv;
+
+	va_start(ap, format);
+	rv = vfprintf(_STDOUT, format, ap);
+	va_end(ap);
+	return rv;
 }
+
+int fprintf(FILE *file, const char *format, ...) {
+	va_list ap;
+	int rv;
+
+	va_start(ap, format);
+	rv = vfprintf(file, format, ap);
+	va_end(ap);
+	return rv;
+}
+
+int sprintf(char *buffer, const char *format, ...) {
+	va_list ap;
+	int rv;
+
+	va_start(ap, format);
+	rv = vsnprintf(buffer, ~(size_t)0, format, ap);
+	va_end(ap);
+
+	return rv;
+}
+
+int snprintf(char *buffer, size_t n, const char *format, ...) {
+	va_list ap;
+	int rv;
+
+	va_start(ap, format);
+	rv = vsnprintf(buffer, n, format, ap);
+	va_end(ap);
+	return rv;
+}
+
+int vprintf(const char *format, va_list ap) {
+	return vfprintf(_STDOUT, format, ap);
+}
+
+int vsprintf(char *buffer, const char *format, va_list ap) {
+	return vsnprintf(buffer, ~(size_t)0, format, ap);
+}
+
+int vfprintf(FILE *file, const char *format, va_list ap) {
+	int rv;
+	/* Just print to _STDOUT */
+	rv = print(file,NULL,~(size_t)0, format,ap);
+	return rv;
+}
+
+int vsnprintf(char *buffer, size_t n, const char *format, va_list ap) {
+	int rv;
+
+	rv = print(NULL, &buffer, n, format,ap);
+	return rv;
+}
+
+
+/**
+ *
+ * @param file  The file to print to
+ * @param buf   The buffer to print to
+ * @param c		The char to print
+ * @return
+ */
+static inline int emitChar( FILE *file, char **buf, char c, int *left ) {
+	if( (*left) == 1 ) {
+		return 1;
+	}
+	--(*left);
+	if( buf == NULL ) {
+#if HOST_TEST
+		putc(c, _STDOUT);
+		fflush(_STDOUT);
+#else
+		arc_putchar(file,c);
+#endif
+	} else {
+		**buf = c;
+		(*buf)++;
+	}
+	return 1;
+}
+
+
+#if defined(HOST_TEST)
+/**
+ * Convert a number to a string
+ *
+ * @param val		The value to convert
+ * @param str		Pointer to a space where to put the string
+ * @param base		The base
+ * @param negative	If negative or not.
+ */
+void xtoa( unsigned long val, char* str, int base, int negative) {
+	int i;
+	char *oStr = str;
+	char c;
+
+	if (negative) {
+		val = -val;
+	}
+
+	if( base < 10 && base > 16 ) {
+		*str = '0';
+		return;
+	}
+    i = 0;
+
+    do {
+      str[i++] = "0123456789abcdef"[ val % base ];
+	} while ((val /= base) > 0);
+
+
+    if (negative) {
+        str[i++] = '-';
+    }
+
+    str[i] = '\0';
+    str = &str[i]-1;
+    while(str > oStr) {
+    	c = *str;
+    	*str-- = *oStr;
+    	*oStr++=c;
+    }
+}
+#else
+extern void xtoa( unsigned long val, char* str, int base, int negative);
 #endif
 
-int simple_printf(const char *format, ...)
-{
-        va_list args;
 
-        va_start( args, format );
-        return print( STD_OUT, 0, format, args );
+#define FL_NONE					(0<<0)
+#define FL_ZERO					(1<<1)
+#define FL_HASH					(1<<2)
+#define FL_SPACE				(1<<3)
+#define FL_ALIGN_LEFT			(1<<4)
+#define FL_TYPE_SIGNED_INT		(1<<5)
+#define FL_TYPE_UNSIGNED_INT	(1<<6)
+
+
+static void emitString( FILE *file, char **buffer, char *string, int width, int flags, int *left) {
+	char pad;
+	char *str = string;
+	int i;
+	int strLen;
+	/* padding: FL_ZERO or normal ' '
+	 * align: FL_ALIGN_LEFT (left) or normal (right)
+	 */
+	pad = (flags & FL_ZERO) ? '0' : ' ';
+
+
+	if( flags & FL_ALIGN_LEFT ) {
+		for(i=0;str[i]; i++) {
+			emitChar(file,buffer,str[i],left);
+		}
+
+		/* Pad the rest */
+		for(;i<width;i++) {
+			emitChar(file,buffer,pad,left);
+		}
+	} else {
+
+		strLen = strlen(string);
+
+		/* Pad first  */
+		if( width > strLen ) {
+			for(i=0;i<(width-strLen);i++) {
+				emitChar(file,buffer,pad,left);
+			}
+		}
+
+		for(i=0;i<strLen; i++) {
+			emitChar(file,buffer,string[i],left);
+		}
+	}
 }
 
-int simple_sprintf(char *out, const char *format, ...)
+void emitInt( FILE *file, char **buffer, int base, int width, int flags, va_list ap, int *left )
 {
-        va_list args;
+	char lBuf[12];	// longest is base 10, 2^32
+	char *str = lBuf;
+	int val;
 
-        va_start( args, format );
-        return print(STD_OUT, &out, format, args );
+	if( flags & FL_TYPE_SIGNED_INT ) {
+		val = (int )va_arg( ap, int );
+		xtoa(val,str,base ,(val < 0));
+	} else {
+		xtoa((unsigned)va_arg( ap, int ),str,base ,0);
+	}
+
+	emitString(file,buffer,str,width,flags,left);
 }
 
-int standard_simple_sprintf(int fd, char *out, const char *format, ...)
-{
-        va_list args;
 
-        va_start( args, format );
-        return print(fd, &out, format, args );
+
+#define PRINT_CHAR(_c)  *buffer++= (_c);
+
+
+/**
+ * Write formatted output to an array with a maximum number of characters.
+ *
+ * This is the mother of the formatted print family. The main goal here
+ * is to be very small and memory efficient.
+ *
+ * Support:
+ *   Parameter: None
+ *   Flags    : '-' and '0'
+ *   Width    : Normal padding is supported, '*' is not.
+ *   Precision: None
+ *   Length   : None
+ *   C99      : None
+ *   Type     : d,u,x,s,and c
+ *
+ * @param file    The file descriptor
+ * @param buffer  A pointer to the place to store the output
+ *                If NULL the output is instead
+ * @param n       The maximum number of characters to write
+ * @param format  The format string
+ * @param ap      The va list
+ * @return
+ */
+int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap)
+{
+	char ch;
+	int flags;
+	char *str;
+	int width;
+	int left = n;
+
+	while ( (ch = *format++) ) {
+
+		if (ch == '%') {
+			ch = *format++;
+
+			/* Find flags */
+			switch (ch) {
+			case '0':
+				flags = FL_ZERO;
+				break;
+			case ' ':
+				flags = FL_SPACE;
+				break;
+			case '-':
+				flags = FL_ALIGN_LEFT;
+				break;
+			default:
+				/* Not supported or no flag */
+				flags = FL_NONE;
+				format--;
+				break;
+			}
+
+			ch = *format++;
+
+			/* Width */
+			if( (ch >= '0')  && (ch <= '9') ) {
+				width = ch -'0';
+				ch = *format++;
+			} else {
+				width = 0;
+			}
+
+			/* Find type */
+			switch (ch) {
+			case 'c':
+				emitChar(file,buffer,(char )va_arg( ap, int ),&left);
+				break;
+			case 'd':
+				flags |= FL_TYPE_SIGNED_INT;
+				emitInt(file,buffer,10,width,flags,ap,&left);
+				break;
+			case 'u':
+				flags |= FL_TYPE_UNSIGNED_INT;
+				emitInt(file,buffer,10,width,flags,ap,&left);
+				break;
+			case 'x':
+				flags |= FL_TYPE_UNSIGNED_INT;
+				emitInt(file,buffer,16,width,flags,ap,&left);
+				break;
+			case 's':
+				str = (char *)va_arg( ap, int );
+
+				if( str == NULL ) {
+					str = "(null)";
+				}
+
+				emitString(file,buffer,str,width,flags,&left);
+				break;
+			default:
+				assert(0); // oops
+				break;
+			}
+
+		} else {
+			flags = FL_NONE;
+			emitChar(file,buffer,ch,&left);
+		}
+	}
+	va_end(ap);
+	if(buffer!=0) {
+		left = 0;
+		emitChar(file,buffer,'\0',&left);
+	}
+	return 0; // Wrong.. but for now.
 }
 
-#ifdef TEST_PRINTF
-int main(void)
-{
-	char *ptr = "Hello world!";
-	char *np = 0;
-	int i = 5;
-	unsigned int bs = sizeof(int)*8;
-	int mi;
-	char buf[80];
+#if defined(HOST_TEST)
+int main(void) {
+	char *ptr = NULL;
+	char buff[30];
 
-	mi = (1 << (bs-1)) + 1;
-dbg_printf("%s\n", ptr);
-dbg_printf("printf test\n");
-dbg_printf("%s is null pointer\n", np);
-dbg_printf("%d = 5\n", i);
-dbg_printf("%d = - max int\n", mi);
-dbg_printf("char %c = 'a'\n", 'a');
-dbg_printf("hex %x = ff\n", 0xff);
-dbg_printf("hex %02x = 00\n", 0);
-dbg_printf("signed %d = unsigned %u = hex %x\n", -3, -3, -3);
-dbg_printf("%d %s(s)%", 0, "message");
-dbg_printf("\n");
-dbg_printf("%d %s(s) with %%\n", 0, "message");
-	sprintf(buf, "justif: \"%-10s\"\n", "left");dbg_printf("%s", buf);
-	sprintf(buf, "justif: \"%10s\"\n", "right");dbg_printf("%s", buf);
-	sprintf(buf, " 3: %04d zero padded\n", 3);dbg_printf("%s", buf);
-	sprintf(buf, " 3: %-4d left justif.\n", 3);dbg_printf("%s", buf);
-	sprintf(buf, " 3: %4d right justif.\n", 3);dbg_printf("%s", buf);
-	sprintf(buf, "-3: %04d zero padded\n", -3);dbg_printf("%s", buf);
-	sprintf(buf, "-3: %-4d left justif.\n", -3);dbg_printf("%s", buf);
-	sprintf(buf, "-3: %4d right justif.\n", -3);dbg_printf("%s", buf);
+	printf("char: %c %c = a B\n", 'a', 66);
+
+	printf("string: %s = (null)\n", (char *)ptr);
+
+	printf("string: %s = foobar \n", "foobar");
+
+	printf("string: %2s = foobar \n", "foobar");
+	printf("string: \"%8s\" = \"  foobar\" \n", "foobar");
+	/* Left justify */
+	printf("string: \"%-8s\" = \"foobar  \" \n", "foobar");
+
+	printf("decimal:  23 = %d \n", 23);
+	printf("hex:     c23 = %x \n", 0xc23);
+	printf("hex:    0c23 = %04x \n", 0xc23);
+	printf("decimal with blanks:     23 = %6d  \n", 23);
+	printf("decimal with zero:   000023 = %06d \n", 23);
+
+	/* negative and large numbers */
+	printf("decimal:  -23 = %d \n", -23);
+	printf("decimal:  4294967273 = %u \n", -23);
+	printf("decimal:  c0000000   = %x \n", 0xc0000000);
+
+	printf("decimal:  00c000   = %06x \n", 0xc000);
+
+	fprintf(_STDOUT, "string: %s = foobar \n", "foobar");
+	sprintf(buff, "string: %s = foobar \n", "foobar");
+	printf("%s",buff);
+
+	snprintf(buff,10, "%s\n", "12345678901234567");
+	printf("\"123456789\" = \"%s\"\n",buff);
+
+	snprintf(buff,12, "%s\n", "abcdefghijklmn");
+	printf("\"abcdefghijkl\" = \"%s\"\n",buff);
 
 	return 0;
 }
-
-/*
- * if you compile this file with
- *   gcc -Wall $(YOUR_C_OPTIONS) -DTEST_PRINTF -cdbg_printf.c
- * you will get a normal warning:
- *  dbg_printf.c:214: warning: spurious trailing `%' in format
- * this line is testing an invalid % at the end of the format string.
- *
- * this should display (on 32bit int machine) :
- *
- * Hello world!
- *dbg_printf test
- * (null) is null pointer
- * 5 = 5
- * -2147483647 = - max int
- * char a = 'a'
- * hex ff = ff
- * hex 00 = 00
- * signed -3 = unsigned 4294967293 = hex fffffffd
- * 0 message(s)
- * 0 message(s) with %
- * justif: "left      "
- * justif: "     right"
- *  3: 0003 zero padded
- *  3: 3    left justif.
- *  3:    3 right justif.
- * -3: -003 zero padded
- * -3: -3   left justif.
- * -3:   -3 right justif.
- */
-
 #endif
 
 

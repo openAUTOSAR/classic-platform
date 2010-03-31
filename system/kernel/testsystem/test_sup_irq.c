@@ -18,7 +18,7 @@
  */
 
 #include "Os.h"
-#include "Trace.h"
+#include "debug.h"
 //#include <stdio.h>
 #include <assert.h>
 #include "os_test.h"

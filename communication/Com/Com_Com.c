@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Com_Com.h"
-#include "Trace.h"
+#include "debug.h"
 #include "CanIf.h"
 #include "PduR.h"
 #include "PduR_Com.h"

@@ -31,7 +31,7 @@
 #define PDUR_SW_MINOR_VERSION 	0
 #define PDUR_SW_PATCH_VERSION	2
 
-#include "Trace.h"
+#include "debug.h"
 
 #include "PduR_Cfg.h"
 #include "PduR_Types.h"
@@ -57,7 +57,7 @@ extern const PduR_PBConfigType *PduRConfig;
  * statements are turned off if PDUR_PRINT_DEBUG_STATEMENTS is undefined.
  */
 //#include <stdio.h>
-#define debug(...) simple_printf(__VA_ARGS__)
+#define debug(...) printf(__VA_ARGS__)
 
 #else
 #define debug(...)
