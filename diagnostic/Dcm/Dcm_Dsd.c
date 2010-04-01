@@ -206,7 +206,7 @@ void DsdHandleRequest(void)
 		if (DsdLookupSid(msgData.pduRxData->SduDataPtr[0], &sidConfPtr)) {		/** @req DCM192 **/ /** @req DCM193 **/ /** @req DCM196 **/
 			// SID found!
 			if (DsdCheckSessionLevel(sidConfPtr->DsdSidTabSessionLevelRef) || (sidConfPtr->DsdSidTabServiceId == SID_DIAGNOSTIC_SESSION_CONTROL)) {		 /** @req DCM211 **/
-				if (DsdCheckSecurityLevel(sidConfPtr->DsdSidTabSecurityLevelRef)) {	 /** @req DCM217 **/
+				if (DsdCheckSecurityLevel(sidConfPtr->DsdSidTabSecurityLevelRef) || (sidConfPtr->DsdSidTabServiceId == SID_SECURITY_ACCESS)) {	 /** @req DCM217 **/
 					if (DCM_REQUEST_INDICATION_ENABLED) {	 /** @req DCM218 **/
 						 result = DsdAskApplicationForServicePermission(msgData.pduRxData->SduDataPtr, msgData.pduRxData->SduLength);
 					}
