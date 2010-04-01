@@ -23,6 +23,6 @@
 #ifndef PDUR_DCM_H_
 #define PDUR_DCM_H_
 
-Std_ReturnType Pdur_DcmTransmit(PduIdType pduTxId, PduInfoType *txBufferPointer);
+Std_ReturnType PduR_DcmTransmit(PduIdType DcmTxPduId, const PduInfoType *txBufferPointer);
 
 #endif /*PDUR_DCM_H_*/

@@ -344,7 +344,7 @@ void DslHandleResponseTransmission(void)
 
 	if (pduTxId != DCM_PDU_ID_NONE && pduTxData != NULL) {
 		txBufferPointer = pduTxData;		// Save this for the Dcm_ProvideTxBuffer call
-		Pdur_DcmTransmit(pduTxId, txBufferPointer);	/** @req DCM237 **/
+		PduR_DcmTransmit(pduTxId, txBufferPointer);	/** @req DCM237 **/
 	}
 	else {
 #if (DCM_DEV_ERROR_DETECT == STD_ON)
