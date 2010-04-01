@@ -14,7 +14,7 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-#include "CanTp_PBcfg.h"
+#include "CanTp_Types.h"
 
 
 CanTp_GeneralType 	CanTpGeneralConfig =
@@ -41,94 +41,155 @@ CanTp_RxNPduType CanTpRxNPduConfig =
 	.CanTpRxNPduRef = 100, /** req: CanTp257: */
 };
 
+CanTp_TxNPduType CanTpTxNPduConfig =
+{
+	.CanTpTxNPduId = 100, /** req: CanTp258: */
+	.CanTpTxNPduRef = 100, /** req: CanTp257: */
+};
+
 
 CanTp_TxFcNPduType CanTpTxFcNPduConfig =
 {
 	.CanTpTxFcNPduRef = 100,
 };
 
-
-const CanTp_RxNSduType 	CanTpRxNSduConfigList[] =  // qqq: Maybe macro is not required.
+CanTp_RxFcNPduType CanTpRxFcNPduConfig =
 {
-  {
-	.CanTpAddressingFormant = CANTP_STANDARD,
-	.CanTpRxPduId = 100,
-	.CanTpBs = 5,
-	.CanTpNar = 100,
-	.CanTpNbr = 100,
-	.CanTpNcr = 100,
-	.CanTpRxDI = 100,
-	.CanTpRxPaddingActivation = CANTP_ON,
-	.CanTpRxTaType = CANTP_FUNCTIONAL,
-	.CanTpWftMax = 100,
-	.CanTpSTmin = 100,
-	.CanTpNSa = &CanTpNSaConfig,
-	.CanTpNTa = &CanTpNTaConfig,
-	.CanTpRxNPdu = &CanTpRxNPduConfig,
-	.CanTpTxFcNPdu = &CanTpTxFcNPduConfig,
-	.CanTpListItemType = CANTP_NOT_LAST_ENTRY,
-  },
-  {
-	.CanTpAddressingFormant = CANTP_EXTENDED,
-	.CanTpRxPduId = 101,
-	.CanTpBs = 5,
-	.CanTpNar = 100,
-	.CanTpNbr = 100,
-	.CanTpNcr = 100,
-	.CanTpRxDI = 100,
-	.CanTpRxPaddingActivation = CANTP_ON,
-	.CanTpRxTaType = CANTP_FUNCTIONAL,
-	.CanTpWftMax = 100,
-	.CanTpSTmin = 100,
-	.CanTpNSa = &CanTpNSaConfig,
-	.CanTpNTa = &CanTpNTaConfig,
-	.CanTpRxNPdu = &CanTpRxNPduConfig,
-	.CanTpTxFcNPdu = &CanTpTxFcNPduConfig,
-	.CanTpListItemType = CANTP_END_OF_LIST,
-  },
+	.CanTpRxFcNPduRef = 100,
 };
 
-/*
-const CanTp_TxNSduType    CanTpTxNSduConfigList[] =
+CanTp_NSduType CanTpNSduConfigList[] =
 {
-  {
-	.CanTpAddressingMode = CANTP_STANDARD,
-	.CanTpTxPduId = 100,
-	.CanTpNas = 100,
-	.CanTpNbs = 100,
-	.CanTpNcs = 100,
-	.CanTpTxDI = 100,
-	.CanTpTxPaddingActivation = CANTP_ON,
-	.CanTpTxTaType = CANTP_FUNCTIONAL,
-	.CanTpNSa = &CanTpNSaConfig,
-	.CanTpNTa = &CanTpNTaConfig,
-	.CanTpTxNPdu = &CanTpRxNPduConfig,
-	.CanTpRxFcNPdu = &CanTpTxFcNPduConfig,
-	.CanTpListItemType = CANTP_NOT_LAST_ENTRY
-  },
-  {
-	.CanTpAddressingMode = CANTP_EXTENDED,
-	.CanTpTxPduId = 101,
-	.CanTpNas = 100,
-	.CanTpNbs = 100,
-	.CanTpNcs = 100,
-	.CanTpTxDI = 100,
-	.CanTpTxPaddingActivation = CANTP_ON,
-	.CanTpTxTaType = CANTP_FUNCTIONAL,
-	.CanTpNSa = &CanTpNSaConfig,
-	.CanTpNTa = &CanTpNTaConfig,
-	.CanTpTxNPdu = &CanTpRxNPduConfig,
-	.CanTpRxFcNPdu = &CanTpTxFcNPduConfig,
-	.CanTpListItemType = CANTP_END_OF_LIST
-  },
+	{
+		.direction = IS015765_TRANSMIT,
+		.configData.CanTpTxNSdu.CanIf_CanTxPduId = 0, // The polite CanIf index.
+		.configData.CanTpTxNSdu.PduR_CanTpTxPduId = 0, // The polite PduR index.
+		.configData.CanTpTxNSdu.CanTpTxChannel = 5, // Runtime array index.
+		.configData.CanTpTxNSdu.CanTpAddressingMode = CANTP_STANDARD,
+		//.configData.CanTpTxNSdu.CanTpTxPduId = 200,
+		.configData.CanTpTxNSdu.CanTpNas = 100,
+		.configData.CanTpTxNSdu.CanTpNbs = 100,
+		.configData.CanTpTxNSdu.CanTpNcs = 100,
+		.configData.CanTpTxNSdu.CanTpTxDI = 100,
+		.configData.CanTpTxNSdu.CanTpTxPaddingActivation = CANTP_ON,
+		.configData.CanTpTxNSdu.CanTpTxTaType = CANTP_FUNCTIONAL,
+		.configData.CanTpTxNSdu.CanTpNSa = &CanTpNSaConfig,
+		.configData.CanTpTxNSdu.CanTpNTa = &CanTpNTaConfig,
+		//.configData.CanTpTxNSdu.CanTpTxNPdu = &CanTpTxNPduConfig,
+		//.configData.CanTpTxNSdu.CanTpRxFcNPdu = &CanTpRxFcNPduConfig,
+		.listItemType = CANTP_NOT_LAST_ENTRY,
+	},
+	{
+		.direction = IS015765_TRANSMIT,
+		.configData.CanTpTxNSdu.CanIf_CanTxPduId = 1, // The polite CanIf index.
+		.configData.CanTpTxNSdu.PduR_CanTpTxPduId = 1, // The polite PduR index.
+		.configData.CanTpTxNSdu.CanTpTxChannel = 4, // Runtime array index.
+		.configData.CanTpTxNSdu.CanTpAddressingMode = CANTP_STANDARD,
+		//.configData.CanTpTxNSdu.CanTpTxPduId = 201,
+		.configData.CanTpTxNSdu.CanTpNas = 100,
+		.configData.CanTpTxNSdu.CanTpNbs = 100,
+		.configData.CanTpTxNSdu.CanTpNcs = 100,
+		.configData.CanTpTxNSdu.CanTpTxDI = 100,
+		.configData.CanTpTxNSdu.CanTpTxPaddingActivation = CANTP_ON,
+		.configData.CanTpTxNSdu.CanTpTxTaType = CANTP_FUNCTIONAL,
+		.configData.CanTpTxNSdu.CanTpNSa = &CanTpNSaConfig,
+		.configData.CanTpTxNSdu.CanTpNTa = &CanTpNTaConfig,
+		//.configData.CanTpTxNSdu.CanTpTxNPdu = &CanTpTxNPduConfig,
+		//.configData.CanTpTxNSdu.CanTpRxFcNPdu = &CanTpRxFcNPduConfig,
+		.listItemType = CANTP_NOT_LAST_ENTRY,
+	},
+	{
+		.direction = IS015765_TRANSMIT,
+		.configData.CanTpTxNSdu.CanIf_CanTxPduId = 2, // The polite CanIf index.
+		.configData.CanTpTxNSdu.PduR_CanTpTxPduId = 2, // The polite PduR index.
+		.configData.CanTpTxNSdu.CanTpTxChannel = 3, // Runtime array index.
+		.configData.CanTpTxNSdu.CanTpAddressingMode = CANTP_STANDARD,
+		//.configData.CanTpTxNSdu.CanTpTxPduId = 202,
+		.configData.CanTpTxNSdu.CanTpNas = 100,
+		.configData.CanTpTxNSdu.CanTpNbs = 100,
+		.configData.CanTpTxNSdu.CanTpNcs = 100,
+		.configData.CanTpTxNSdu.CanTpTxDI = 100,
+		.configData.CanTpTxNSdu.CanTpTxPaddingActivation = CANTP_ON,
+		.configData.CanTpTxNSdu.CanTpTxTaType = CANTP_FUNCTIONAL,
+		.configData.CanTpTxNSdu.CanTpNSa = &CanTpNSaConfig,
+		.configData.CanTpTxNSdu.CanTpNTa = &CanTpNTaConfig,
+		//.configData.CanTpTxNSdu.CanTpTxNPdu = &CanTpTxNPduConfig,
+		//.configData.CanTpTxNSdu.CanTpRxFcNPdu = &CanTpRxFcNPduConfig,
+		.listItemType = CANTP_NOT_LAST_ENTRY,
+	},
+	{
+		.direction = ISO15765_RECEIVE,
+		.configData.CanTpRxNSdu.CanIf_CanTxPduId = 3, // The polite CanIf index.
+		.configData.CanTpRxNSdu.PduR_CanTpRxPduId = 3, // The polite PduR index.
+		.configData.CanTpRxNSdu.CanTpRxChannel = 2, // Runtime array index.
+		.configData.CanTpRxNSdu.CanTpAddressingFormant = CANTP_STANDARD,
+		//.configData.CanTpRxNSdu.CanTpRxPduId = 100,
+		.configData.CanTpRxNSdu.CanTpBs = 5,
+		.configData.CanTpRxNSdu.CanTpNar = 100,
+		.configData.CanTpRxNSdu.CanTpNbr = 100,
+		.configData.CanTpRxNSdu.CanTpNcr = 100,
+		.configData.CanTpRxNSdu.CanTpRxDI = 100,
+		.configData.CanTpRxNSdu.CanTpRxPaddingActivation = CANTP_ON,
+		.configData.CanTpRxNSdu.CanTpRxTaType = CANTP_FUNCTIONAL,
+		.configData.CanTpRxNSdu.CanTpWftMax = 100,
+		.configData.CanTpRxNSdu.CanTpSTmin = 100,
+		.configData.CanTpRxNSdu.CanTpNSa = &CanTpNSaConfig,
+		.configData.CanTpRxNSdu.CanTpNTa = &CanTpNTaConfig,
+		//.configData.CanTpRxNSdu.CanTpRxNPdu = &CanTpRxNPduConfig,
+		//.configData.CanTpRxNSdu.CanTpTxFcNPdu = &CanTpTxFcNPduConfig,
+		.listItemType = CANTP_NOT_LAST_ENTRY,
+	},
+	{
+		.direction = ISO15765_RECEIVE,
+		.configData.CanTpRxNSdu.CanIf_CanTxPduId = 4, // The polite CanIf index.
+		.configData.CanTpRxNSdu.PduR_CanTpRxPduId = 4, // The polite PduR index.
+		.configData.CanTpRxNSdu.CanTpRxChannel = 1, // Runtime array index.
+		.configData.CanTpRxNSdu.CanTpAddressingFormant = CANTP_STANDARD,
+		//.configData.CanTpRxNSdu.CanTpRxPduId = 101,
+		.configData.CanTpRxNSdu.CanTpBs = 5,
+		.configData.CanTpRxNSdu.CanTpNar = 100,
+		.configData.CanTpRxNSdu.CanTpNbr = 100,
+		.configData.CanTpRxNSdu.CanTpNcr = 100,
+		.configData.CanTpRxNSdu.CanTpRxDI = 100,
+		.configData.CanTpRxNSdu.CanTpRxPaddingActivation = CANTP_ON,
+		.configData.CanTpRxNSdu.CanTpRxTaType = CANTP_FUNCTIONAL,
+		.configData.CanTpRxNSdu.CanTpWftMax = 100,
+		.configData.CanTpRxNSdu.CanTpSTmin = 100,
+		.configData.CanTpRxNSdu.CanTpNSa = &CanTpNSaConfig,
+		.configData.CanTpRxNSdu.CanTpNTa = &CanTpNTaConfig,
+		//.configData.CanTpRxNSdu.CanTpRxNPdu = &CanTpRxNPduConfig,
+		//.configData.CanTpRxNSdu.CanTpTxFcNPdu = &CanTpTxFcNPduConfig,
+		.listItemType = CANTP_NOT_LAST_ENTRY,
+	},
+	{
+		.direction = ISO15765_RECEIVE,
+		.configData.CanTpRxNSdu.CanIf_CanTxPduId = 5, // The polite CanIf index.
+		.configData.CanTpRxNSdu.PduR_CanTpRxPduId = 5, // The polite PduR index.
+		.configData.CanTpRxNSdu.CanTpRxChannel = 0, // Runtime array index.
+		.configData.CanTpRxNSdu.CanTpAddressingFormant = CANTP_STANDARD,
+		//.configData.CanTpRxNSdu.CanTpRxPduId = 102,
+		.configData.CanTpRxNSdu.CanTpBs = 5,
+		.configData.CanTpRxNSdu.CanTpNar = 100,
+		.configData.CanTpRxNSdu.CanTpNbr = 100,
+		.configData.CanTpRxNSdu.CanTpNcr = 100,
+		.configData.CanTpRxNSdu.CanTpRxDI = 100,
+		.configData.CanTpRxNSdu.CanTpRxPaddingActivation = CANTP_ON,
+		.configData.CanTpRxNSdu.CanTpRxTaType = CANTP_FUNCTIONAL,
+		.configData.CanTpRxNSdu.CanTpWftMax = 100,
+		.configData.CanTpRxNSdu.CanTpSTmin = 100,
+		.configData.CanTpRxNSdu.CanTpNSa = &CanTpNSaConfig,
+		.configData.CanTpRxNSdu.CanTpNTa = &CanTpNTaConfig,
+		//.configData.CanTpRxNSdu.CanTpRxNPdu = &CanTpRxNPduConfig,
+		//.configData.CanTpRxNSdu.CanTpTxFcNPdu = &CanTpTxFcNPduConfig,
+		.listItemType = CANTP_END_OF_LIST,
+	},
 
 };
 
 CanTp_ConfigType CanTpConfig =
 {
+  .CanTpNSduList 	= 	CanTpNSduConfigList,
   .CanTpGeneral 	= 	&CanTpGeneralConfig,
-  .CanTpRxNSduList 	= 	CanTpRxNSduConfigList,
-  .CanTpTxNSduList 	= 	CanTpTxNSduConfigList,
 };
 
 
