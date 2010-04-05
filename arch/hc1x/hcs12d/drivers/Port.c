@@ -1,0 +1,355 @@
+/* -------------------------------- Arctic Core ------------------------------
+ * Arctic Core - the open source AUTOSAR platform http://arccore.com
+ *
+ * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
+ *
+ * This source code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ * -------------------------------- Arctic Core ------------------------------*/
+
+#include "Std_Types.h"
+#include "Port.h" /** @req PORT131 */
+#include "regs.h"
+#include "Det.h"
+
+/* SHORT ON HW
+ *  Have a bunch of ports:
+ *  - PA, PB, PE, PK  is CPU registers (used as address bus if external RAM is used)
+ *  - PH, PJ, PM, PP, PS, PT is peripheral registers
+ */
+
+typedef enum
+{
+    PORT_UNINITIALIZED = 0, PORT_INITIALIZED,
+} Port_StateType;
+
+static Port_StateType _portState = PORT_UNINITIALIZED;
+static Port_ConfigType * _configPtr = NULL;
+
+/** @req PORT107 */
+#if (PORT_DEV_ERROR_DETECT == STD_ON)
+#define VALIDATE_PARAM_CONFIG(_ptr,_api) \
+	if( (_ptr)==((void *)0) ) { \
+		Det_ReportError(MODULE_ID_PORT, 0, _api, PORT_E_PARAM_CONFIG ); \
+		goto cleanup; \
+	}
+
+#define VALIDATE_STATE_INIT(_api)\
+	if(PORT_INITIALIZED!=_portState){\
+		Det_ReportError(MODULE_ID_PORT, 0, _api, PORT_E_UNINIT ); \
+		goto cleanup; \
+	}
+
+#else
+#define VALIDATE_PARAM_CONFIG(_ptr,_api)
+#define VALIDATE_STATE_INIT(_api)
+#define VALIDATE_PARAM_PIN(_api)
+#endif
+
+static Std_VersionInfoType _Port_VersionInfo =
+{ .vendorID = (uint16)1, .moduleID = (uint16) MODULE_ID_PORT,
+        .instanceID = (uint8)1,
+        .sw_major_version = (uint8)PORT_SW_MAJOR_VERSION,
+        .sw_minor_version = (uint8)PORT_SW_MINOR_VERSION,
+        .sw_patch_version = (uint8)PORT_SW_PATCH_VERSION,
+        .ar_major_version = (uint8)PORT_AR_MAJOR_VERSION,
+        .ar_minor_version = (uint8)PORT_AR_MINOR_VERSION,
+        .ar_patch_version = (uint8)PORT_AR_PATCH_VERSION, };
+
+/** @req PORT140 */
+/** @req PORT041 Comment: To reduce flash usage the configuration tool can disable configuration of some ports  */
+/** @req PORT078 See environment i.e Ecu State Manager */
+/** @req PORT042 */
+/** @req PORT113 Number 2 in list is applicable for all pins. */
+/** @req PORT043 Comment: Output value is set before direction */
+/** @req PORT071 See environment i.e Ecu State Manager */
+/** @req PORT002 The _portState varialble is initialised. */
+/** @req PORT003 See environment i.e Ecu State Manager */
+/** @req PORT055 Comment: Output value is set before direction */
+/** @req PORT121 */
+void Port_Init(const Port_ConfigType *configType)
+{
+    VALIDATE_PARAM_CONFIG(configType, PORT_INIT_ID); /** @req PORT105 */
+
+    // Setup pin drives and pullups
+    RDRIV = configType->coreReducedDriveRegister;
+    PUCR = configType->corePullUpRegister;
+
+    // CAN and SPI routing of pins
+    MODDR = configType->modeRoutingRegister;
+
+    // Setup ports
+#if ( PORTA_CONFIGURABLE == STD_ON )
+    PORTA = configType->portAOutValue;
+    DDRA = configType->portADirection;
+#endif
+
+#if ( PORTB_CONFIGURABLE == STD_ON )
+    PORTB = configType->portBOutValue;
+    DDRB = configType->portBDirection;
+#endif
+
+#if ( PORTE_CONFIGURABLE == STD_ON )
+    PORTE = configType->portEOutValue;
+    DDRE = configType->portEDirection;
+#endif
+
+#if ( PORTK_CONFIGURABLE == STD_ON )
+    PORTK = configType->portKOutValue;
+    DDRK = configType->portKDirection;
+#endif
+
+#if ( PORTH_CONFIGURABLE == STD_ON )
+    RDRH = configType->portHReducedDriveRegister;
+    PERH = configType->portHPullEnableRegister;
+    PPSH = configType->portHPullPolarityRegsiter;
+    PORTH = configType->portHOutValue;
+    DDRH = configType->portHDirection;
+#endif
+
+#if ( PORTJ_CONFIGURABLE == STD_ON )
+    RDRJ = configType->portJReducedDriveRegister;
+    PERJ = configType->portJPullEnableRegister;
+    PPSJ = configType->portJPullPolarityRegsiter;
+    PORTJ = configType->portJOutValue;
+    DDRJ = configType->portJDirection;
+#endif
+
+#if ( PORTM_CONFIGURABLE == STD_ON )
+    RDRM = configType->portMReducedDriveRegister;
+    PERM = configType->portMPullEnableRegister;
+    PPSM = configType->portMPullPolarityRegsiter;
+    WOMM = configType->portMWiredModeRegsiter;
+    PORTM = configType->portMOutValue;
+    DDRM = configType->portMDirection;
+#endif
+
+#if ( PORTP_CONFIGURABLE == STD_ON )
+    RDRP = configType->portPReducedDriveRegister;
+    PERP = configType->portPPullEnableRegister;
+    PPSP = configType->portPPullPolarityRegsiter;
+    PORTP = configType->portPOutValue;
+    DDRP = configType->portPDirection;
+#endif
+
+#if ( PORTS_CONFIGURABLE == STD_ON )
+    RDRS = configType->portSReducedDriveRegister;
+    PERS = configType->portSPullEnableRegister;
+    PPSS = configType->portSPullPolarityRegsiter;
+    WOMS = configType->portSWiredModeRegsiter;
+    PORTS = configType->portSOutValue;
+    DDRS = configType->portSDirection;
+#endif
+
+#if ( PORTT_CONFIGURABLE == STD_ON )
+    RDRT = configType->portTReducedDriveRegister;
+    PERT = configType->portTPullEnableRegister;
+    PPST = configType->portTPullPolarityRegsiter;
+    PORTT = configType->portTOutValue;
+    DDRT = configType->portTDirection;
+#endif
+
+    _portState = PORT_INITIALIZED;
+    _configPtr = configType;
+    cleanup: return;
+}
+
+/** @req PORT141 */
+/** @req PORT063 */
+/** @req PORT054 */
+/** @req PORT086 */
+#if ( PORT_SET_PIN_DIRECTION_API == STD_ON )
+void Port_SetPinDirection( Port_PinType pin, Port_PinDirectionType direction )
+{
+    VALIDATE_STATE_INIT(PORT_SET_PIN_DIRECTION_ID);
+    uint8_t bit;
+    uint8_t curValue;
+    uint16_t base;
+
+    base = pin & BASEMASK;
+    bit = pin & BITMASK;
+    if (base == PORT_A_BASE)
+    {
+        curValue = DDRA & ~(bit);
+        if (direction == PORT_PIN_OUT)
+        curValue = curValue | bit;
+        DDRA = curValue;
+    }
+    else if (base == PORT_B_BASE)
+    {
+        curValue = DDRB & ~(bit);
+        if (direction == PORT_PIN_OUT)
+        curValue = curValue | bit;
+        DDRB = curValue;
+    }
+    else if (base == PORT_E_BASE)
+    {
+        curValue = DDRE & ~(bit);
+        if (direction == PORT_PIN_OUT)
+        curValue = curValue | bit;
+        DDRE = curValue;
+    }
+    else if (base == PORT_K_BASE)
+    {
+        curValue = DDRK & ~(bit);
+        if (direction == PORT_PIN_OUT)
+        curValue = curValue | bit;
+        DDRK = curValue;
+    }
+    else if (base == PORT_H_BASE)
+    {
+        curValue = DDRH & ~(bit);
+        if (direction == PORT_PIN_OUT)
+        curValue = curValue | bit;
+        DDRH = curValue;
+    }
+    else if (base == PORT_J_BASE)
+    {
+        curValue = DDRJ & ~(bit);
+        if (direction == PORT_PIN_OUT)
+        curValue = curValue | bit;
+        DDRJ = curValue;
+    }
+    else if (base == PORT_M_BASE)
+    {
+        curValue = DDRM & ~(bit);
+        if (direction == PORT_PIN_OUT)
+        curValue = curValue | bit;
+        DDRM = curValue;
+    }
+    else if (base == PORT_P_BASE)
+    {
+        curValue = DDRP & ~(bit);
+        if (direction == PORT_PIN_OUT)
+        curValue = curValue | bit;
+        DDRP = curValue;
+    }
+    else if (base == PORT_S_BASE)
+    {
+        curValue = DDRS & ~(bit);
+        if (direction == PORT_PIN_OUT)
+        curValue = curValue | bit;
+        DDRS = curValue;
+    }
+    else if (base == PORT_T_BASE)
+    {
+        curValue = DDRT & ~(bit);
+        if (direction == PORT_PIN_OUT)
+        curValue = curValue | bit;
+        DDRT = curValue;
+    }
+    else
+    {
+        Det_ReportError(MODULE_ID_PORT, 0, PORT_SET_PIN_DIRECTION_ID, PORT_E_PARAM_PIN );
+    }
+
+    cleanup:return;
+}
+#endif
+
+/** @req PORT066 */
+/** @req PORT142 */
+/** @req PORT060 */
+/** @req PORT061 */
+void Port_RefreshPortDirection(void)
+{
+    uint_8 curValue;
+    VALIDATE_STATE_INIT(PORT_REFRESH_PORT_DIRECTION_ID);
+
+#if ( PORTA_CONFIGURABLE == STD_ON )
+    curValue = DDRA & ~(configType->portAMask);
+    curValue |= (configType->portADirection & configType->portAMask);
+    DDRA = curValue;
+#endif
+
+#if ( PORTB_CONFIGURABLE == STD_ON )
+    curValue = DDRB & ~(configType->portBMask);
+    curValue |= (configType->portBDirection & configType->portBMask);
+    DDRB = curValue;
+#endif
+
+#if ( PORTE_CONFIGURABLE == STD_ON )
+    curValue = DDRE & ~(configType->portEMask);
+    curValue |= (configType->portEDirection & configType->portEMask);
+    DDRE = curValue;
+#endif
+
+#if ( PORTK_CONFIGURABLE == STD_ON )
+    curValue = DDRK & ~(configType->portKMask);
+    curValue |= (configType->portKDirection & configType->portKMask);
+    DDRK = curValue;
+#endif
+
+#if ( PORTH_CONFIGURABLE == STD_ON )
+    curValue = DDRH & ~(configType->portHMask);
+    curValue |= (configType->portHDirection & configType->portHMask);
+    DDRH = curValue;
+#endif
+
+#if ( PORTJ_CONFIGURABLE == STD_ON )
+    curValue = DDRJ & ~(configType->portJMask);
+    curValue |= (configType->portJDirection & configType->portJMask);
+    DDRJ = curValue;
+#endif
+
+#if ( PORTM_CONFIGURABLE == STD_ON )
+    curValue = DDRM & ~(configType->portMMask);
+    curValue |= (configType->portMDirection & configType->portMMask);
+    DDRM = curValue;
+#endif
+
+#if ( PORTP_CONFIGURABLE == STD_ON )
+    curValue = DDRP & ~(configType->portPMask);
+    curValue |= (configType->portPDirection & configType->portPMask);
+    DDRP =
+#endif
+
+#if ( PORTS_CONFIGURABLE == STD_ON )
+    curValue = DDRS & ~(configType->portSMask);
+    curValue |= (configType->portSDirection & configType->portSMask);
+    DDRS = curValue;
+#endif
+
+#if ( PORTT_CONFIGURABLE == STD_ON )
+    curValue = DDRT & ~(configType->portTMask);
+    curValue |= (configType->portTDirection & configType->portTMask);
+    DDRT = curValue;
+#endif
+
+    cleanup: return;
+}
+
+/** req PORT143 */
+/** req PORT102 */
+/** req PORT103 */
+#if (PORT_VERSION_INFO_API == STD_ON)
+void Port_GetVersionInfo(Std_VersionInfoType* versionInfo)
+{
+    VALIDATE_STATE_INIT(PORT_GET_VERSION_INFO_ID);
+    memcpy(versionInfo, &_Port_VersionInfo, sizeof(Std_VersionInfoType));
+    cleanup: return;
+}
+#endif
+
+/** req PORT145 */
+/** req PORT125 */
+/** req PORT128 */
+#if (PORT_SET_PIN_MODE_API == STD_ON)
+void Port_SetPinMode(Port_PinType Pin, Port_PinModeType Mode)
+{
+    VALIDATE_STATE_INIT(PORT_SET_PIN_MODE_ID);
+
+    // Mode of pins not changeable on this CPU
+#if (PORT_DEV_ERROR_DETECT == STD_ON)
+    Det_ReportError(MODULE_ID_PORT, 0, PORT_SET_PIN_MODE_ID, PORT_E_MODE_UNCHANGEABLE );
+#endif
+
+    cleanup: return;
+}
+#endif
