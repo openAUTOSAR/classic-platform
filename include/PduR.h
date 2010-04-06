@@ -23,7 +23,7 @@
 #ifndef _PDUR_H_
 #define _PDUR_H_
 
-#define PDUR_VENDOR_ID			    1
+#define PDUR_VENDOR_ID			1
 #define PDUR_AR_MAJOR_VERSION  2
 #define PDUR_AR_MINOR_VERSION 	2
 #define PDUR_AR_PATCH_VERSION	2
@@ -43,6 +43,8 @@
 #include "PduR_Com.h"
 #include "PduR_CanIf.h"
 #include "PduR_LinIf.h"
+#include "PduR_CanTp.h"
+#include "PduR_Dcm.h"
 
 /* Contain the current state of the PDU router. The router is uninitialized
  * until PduR_Init has been run.

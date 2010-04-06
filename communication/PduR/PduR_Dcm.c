@@ -14,29 +14,20 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
+#if (PDUR_DCM_SUPPORT == STD_ON)
 
-#ifndef PDUR_DCM_H_
-#define PDUR_DCM_H_
+#include "PduR_Dcm.h"
 
-#include "PduR.h"
+Std_ReturnType PduR_DcmTransmit(PduIdType DcmTxPduId, const PduInfoType* PduInfoPtr) {
+	Enter(DcmTxPduId, E_NOT_OK);
+	DevCheck(DcmTxPduId,PduInfoPtr,0x15, E_NOT_OK);
 
-#ifdef PDUR_DCM_SUPPORT
-#ifndef PDUR_ZERO_COST_OPERATION
+	//DEBUG(DEBUG_LOW,"PduR_ComTransmit: received transmit request with id %d and data %d\n", ComTxPduId, *PduInfoPtr->SduDataPtr);
+	PduRRoutingPath_type *route = &PduRConfig->PduRRoutingTable->PduRRoutingPath[ComTxPduId];
+	Std_ReturnType retVal = CanTp_Transmit(route->PduRDestPdu.DestPduId, PduInfoPtr);
 
-Std_ReturnType PduR_DcmTransmit(PduIdType DcmTxPduId, const PduInfoType* PduInfoPtr);
-
-#else
-#include "CanTp.h"
-
-#define PduR_DcmTransmit CanTp_Transmit
+	Exit();
+	return retVal;
+}
 
 #endif
-#endif
-
-
-
-
-#endif /*PDUR_DCM_H_*/
-
-
-

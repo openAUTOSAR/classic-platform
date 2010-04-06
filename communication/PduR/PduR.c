@@ -261,6 +261,7 @@ Std_ReturnType LinIf_Transmit(PduIdType LinTxPduId,const PduInfoType* PduInfoPtr
 #include "LinIf.h"
 #endif
 
+#ifndef PDUR_ZERO_COST_OPERATION
 #include "Com.h"
 
 PduR_FctPtrType PduR_StdLinFctPtrs = {
@@ -278,4 +279,4 @@ PduR_FctPtrType PduR_StdCanFctPtrs = {
 	.TargetConfirmationFctPtr = Com_TxConfirmation,
 	.TargetTriggerTransmitFctPtr = Com_TriggerTransmit,
 };
-
+#endif

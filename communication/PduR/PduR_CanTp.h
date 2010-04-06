@@ -15,28 +15,33 @@
 
 
 
-#ifndef PDUR_DCM_H_
-#define PDUR_DCM_H_
+#ifndef PDUR_CANTP_H_
+#define PDUR_CANTP_H_
 
 #include "PduR.h"
 
-#ifdef PDUR_DCM_SUPPORT
+#ifdef PDUR_CANTP_SUPPORT
 #ifndef PDUR_ZERO_COST_OPERATION
 
-Std_ReturnType PduR_DcmTransmit(PduIdType DcmTxPduId, const PduInfoType* PduInfoPtr);
 
-#else
-#include "CanTp.h"
+BufReq_ReturnType PduR_CanTpProvideRxBuffer(PduIdType CanTpRxPduId, PduLengthType TpSduLength, PduInfoType** PduInfoPtr);
+void PduR_CanTpRxIndication(PduIdType CanTpRxPduId, NotifResultType Result);
+BufReq_ReturnType PduR_CanTpProvideTxBuffer(PduIdType CanTpTxPduId, PduInfoType** PduInfoPtr, uint16 Length);
+void PduR_CanTpTxConfirmation(PduIdType CanTpTxPduId, NotifResultType Result);
 
-#define PduR_DcmTransmit CanTp_Transmit
+
+#else // Zero cost operation active
+#include "Dcm_Cbk.h"
+
+#define PduR_CanTpProvideRxBuffer Dcm_ProvideRxBuffer
+#define PduR_CanTpRxIndication Dcm_RxIndication
+#define PduR_CanTpProvideTxBuffer Dcm_ProvideTxBuffer
+#define PduR_CanTpTxConfirmation Dcm_TxConfirmation
+
+
+
 
 #endif
 #endif
 
-
-
-
-#endif /*PDUR_DCM_H_*/
-
-
-
+#endif /* PDUR_CANTP_H_ */
