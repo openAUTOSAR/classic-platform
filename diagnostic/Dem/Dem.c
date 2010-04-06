@@ -1659,7 +1659,8 @@ void Dem_ReportErrorStatus( Dem_EventIdType eventId, Dem_EventStatusType eventSt
  */
 Std_ReturnType Dem_GetDTCStatusAvailabilityMask(uint8 *dtcStatusMask)
 {
-	*dtcStatusMask = 	DEM_TEST_FAILED
+	*dtcStatusMask = 	DEM_DTC_STATUS_AVAILABILITY_MASK;		// User configuration mask
+	*dtcStatusMask &= 	DEM_TEST_FAILED							// Mask with supported bits
 						| DEM_TEST_FAILED_THIS_OPERATION_CYCLE
 						| DEM_PENDING_DTC
 //						| DEM_CONFIRMED_DTC					TODO: Add support for this bit
