@@ -31,6 +31,10 @@
 #include "Trace.h"
 #include "PduR.h"
 
+#if defined(USE_CANTP)
+#include "CanTp_Cbk.h"
+#endif
+
 #if 0
 // TODO: Include upper layer functions, See CANIF208 and CANIF233
 #include "PduR_CanIf.h"
@@ -744,17 +748,21 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
             return;
         }
         break;
-         case CANIF_USER_TYPE_CAN_NM:
-         case CANIF_USER_TYPE_CAN_PDUR:
-        	 // Send Can frame to PDU router
-        	 PduR_CanIfRxIndication(entry->CanIfCanRxPduId,CanSduPtr);
-        	 return;
-        	 break;
 
-         case CANIF_USER_TYPE_CAN_TP:
-            continue; // Not supported yet
+        case CANIF_USER_TYPE_CAN_NM:
+        case CANIF_USER_TYPE_CAN_PDUR:
+            // Send Can frame to PDU router
+            PduR_CanIfRxIndication(entry->CanIfCanRxPduId,CanSduPtr);
             return;
-        break;
+            break;
+
+        case CANIF_USER_TYPE_CAN_TP:
+          // Send Can frame to CAN TP
+#if defined(USE_CANTP)
+            CanTp_RxIndication(entry->CanIfCanRxPduId,CanSduPtr);
+            return;
+#endif
+            break;
       }
     }
 
