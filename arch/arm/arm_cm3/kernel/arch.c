@@ -44,6 +44,8 @@ void Os_ArchSetTaskEntry(OsPcbType *pcbPtr ) {
 	// TODO: Add lots of things here, see ppc55xx
 	uint32_t *context = (uint32_t *)pcbPtr->stack.curr;
 
+	context[C_CONTEXT_OFFS/4] = SC_PATTERN;
+
 	/* Set LR to start function */
 	if( pcbPtr->proc_type == PROC_EXTENDED ) {
 		context[VGPR_LR_OFF/4] = (uint32_t)Os_TaskStartExtended;
@@ -55,8 +57,8 @@ void Os_ArchSetTaskEntry(OsPcbType *pcbPtr ) {
 
 void Os_ArchSetupContext( OsPcbType *pcb ) {
 	// TODO: Add lots of things here, see ppc55xx
-	uint32_t *context = (uint32_t *)pcb->stack.curr;
-	context[C_CONTEXT_OFFS/4] = SC_PATTERN;
+	// uint32_t *context = (uint32_t *)pcb->stack.curr;
+
 }
 
 void Os_ArchInit( void ) {

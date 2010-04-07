@@ -66,9 +66,11 @@
 
 
 static unsigned char ramlog[CFG_RAMLOG_SIZE] __attribute__ ((section (".ramlog")));
-static unsigned ramlog_curr __attribute__ ((section (".ramlog")));
 #if defined(CFG_RAMLOG_SESSION)
+static unsigned ramlog_curr __attribute__ ((section (".ramlog")));
 static unsigned ramlog_session __attribute__ ((section (".ramlog")));
+#else
+static unsigned ramlog_curr = 0;
 #endif
 
 #define RAMLOG_FILENO  (FILE *)3

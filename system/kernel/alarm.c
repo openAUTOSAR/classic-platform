@@ -101,7 +101,10 @@ StatusType SetRelAlarm(AlarmType AlarmId, TickType Increment, TickType Cycle){
 
 	aPtr = Os_CfgGetAlarmObj(AlarmId);
 
-	OS_DEBUG(D_ALARM,"SetRelAlarm id:%d inc:%d cycle:%d\n",AlarmId,Increment,Cycle);
+	OS_DEBUG(D_ALARM,"SetRelAlarm id:%d inc:%u cycle:%u\n",
+					AlarmId,
+					(unsigned)Increment,
+					(unsigned)Cycle);
 
 
 	if( (Increment == 0) || (Increment > COUNTER_MAX(aPtr)) ) {
@@ -137,7 +140,9 @@ StatusType SetRelAlarm(AlarmType AlarmId, TickType Increment, TickType Cycle){
 		aPtr->cycletime = Cycle;
 
 		Irq_Enable();
-		OS_DEBUG(D_ALARM,"  expire:%d cycle:%d\n",aPtr->expire_val,aPtr->cycletime);
+		OS_DEBUG(D_ALARM,"  expire:%u cycle:%u\n",
+				(unsigned)aPtr->expire_val,
+				(unsigned)aPtr->cycletime);
 	}
 
 	OS_STD_END_3(OSServiceId_SetRelAlarm,AlarmId, Increment, Cycle);
@@ -182,7 +187,9 @@ StatusType SetAbsAlarm(AlarmType AlarmId, TickType Start, TickType Cycle) {
 
 	Irq_Restore(flags);
 
-	OS_DEBUG(D_ALARM,"  expire:%d cycle:%d\n",aPtr->expire_val,aPtr->cycletime);
+	OS_DEBUG(D_ALARM,"  expire:%u cycle:%u\n",
+					(unsigned)aPtr->expire_val,
+					(unsigned)aPtr->cycletime);
 
 	OS_STD_END_3(OSServiceId_SetAbsAlarm,AlarmId, Start, Cycle);
 }
@@ -234,10 +241,10 @@ void Os_AlarmCheck( OsCounterType *c_p ) {
 	SLIST_FOREACH(a_obj,&c_p->alarm_head,alarm_list) {
 		if( a_obj->active && (c_p->val == a_obj->expire_val) ) {
 			/* Check if the alarms have expired */
-			OS_DEBUG(D_ALARM,"expired %s id:%d val:%d\n",
+			OS_DEBUG(D_ALARM,"expired %s id:%u val:%u\n",
 											a_obj->name,
-											a_obj->counter_id,
-											a_obj->expire_val);
+											(unsigned)a_obj->counter_id,
+											(unsigned)a_obj->expire_val);
 
 			switch( a_obj->action.type ) {
 			case ALARM_ACTION_ACTIVATETASK:

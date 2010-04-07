@@ -28,7 +28,6 @@ extern void dec_exception( void );
 OsTickType OsTickFreq = 1000;
 
 // atleast 1
-#define SERVICE_CNT 1
 
 //--- APPLICATIONS ----
 
@@ -36,7 +35,7 @@ OsTickType OsTickFreq = 1000;
 // --- RESOURCES ---
 
 GEN_RESOURCE_HEAD {
-	GEN_RESOURCE(RES_SCHEDULER,RESOURCE_TYPE_STANDARD,0),		// Standard resource..
+
 };
 
 //--- TASKS ----
@@ -104,12 +103,12 @@ CounterType Os_Arc_OsTickCounter = COUNTER_ID_OsTick;
 // --- ALARMS ---
 #define ALARM_USE
 
-GEN_ALARM_AUTOSTART( 0, ALARM_AUTOSTART_ABSOLUTE, 100, 2 , OSDEFAULTAPPMODE );
+GEN_ALARM_AUTOSTART( 0, ALARM_AUTOSTART_ABSOLUTE, 100, 10 , OSDEFAULTAPPMODE );
 
 GEN_ALARM_HEAD {
-	GEN_ALARM(	0,"Alarm_4ms",COUNTER_ID_OsTick,
+	GEN_ALARM(	0,"Alarm_10ms",COUNTER_ID_OsTick,
 				GEN_ALARM_AUTOSTART_NAME(0),
-				ALARM_ACTION_SETEVENT, TASK_ID_etask_1, 2, 0 ),
+				ALARM_ACTION_SETEVENT, TASK_ID_etask_1, EVENT_2, 0 ),
 };
 
 // --- SCHEDULETABLES ---
@@ -122,15 +121,7 @@ GEN_HOOKS( StartupHook, ProtectionHook, ShutdownHook, ErrorHook, PreTaskHook, Po
 
 // --- MISC ---
 
-uint32 os_dbg_mask = \
-	D_MASTER_PRINT |\
-	D_ISR_MASTER_PRINT |\
-	D_RAMLOG |\
-    D_ISR_RAMLOG | D_TASK | D_ALARM;
-
-
-// | D_ALARM | D_TASK;
-
+uint32 os_dbg_mask = D_TASK | D_ALARM;
 
 #include "os_config_funcs.h"
 

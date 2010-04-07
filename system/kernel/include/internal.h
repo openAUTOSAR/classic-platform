@@ -196,6 +196,7 @@ OsPcbType *os_find_task( TaskType tid );
 void Os_ResourceGetInternal(void );
 void Os_ResourceReleaseInternal( void );
 
+void Os_ResourceInit( void );
 
 /**
  *
@@ -250,8 +251,16 @@ static inline void Os_StackSetEndmark( OsPcbType *pcbPtr ) {
 }
 
 static inline _Bool Os_StackIsEndmarkOk( OsPcbType *pcbPtr ) {
+	_Bool rv;
 	uint8_t *end = pcbPtr->stack.top;
-	return ( *end == STACK_PATTERN);
+	rv =  ( *end == STACK_PATTERN);
+	if( !rv ) {
+		OS_DEBUG(D_TASK,"Stack End Mark is bad for %s curr: %08x curr: %08x\n",
+				pcbPtr->name,
+				pcbPtr->stack.curr,
+				pcbPtr->stack.top );
+	}
+	return rv;
 }
 
 

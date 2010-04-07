@@ -82,6 +82,11 @@ TaskType Os_Arc_CreateIsr( void (*entry)(void ), uint8_t prio, const char *name 
 }
 
 
+#if defined(CFG_ARM_CM3)
+extern void Irq_EOI2(void *pc);
+#endif
+
+
 /**
  * Handle ISR type 2 interrupts from interrupt controller.
  *
@@ -151,6 +156,13 @@ void *Os_Isr( void *stack, void *pcb_p ) {
 		if( new_pcb != preempted_pcb ) {
 			OS_DEBUG(D_TASK,"Found candidate %s\n",new_pcb->name);
 //#warning Os_TaskSwapContextTo should call the pretaskswaphook
+// TODO: This shuould go away!!!!
+#if defined(CFG_ARM_CM3)
+			void *p;
+			p = &&really_ugly;
+			Irq_EOI2(p);
+really_ugly:
+#endif
 			Os_TaskSwapContextTo(NULL,new_pcb);
 		} else {
 			if( new_pcb == NULL ) {

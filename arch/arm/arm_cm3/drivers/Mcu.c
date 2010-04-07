@@ -30,28 +30,10 @@
 //#define USE_LDEBUG_PRINTF 1
 #include "debug.h"
 
-typedef struct {
-	uint32 lossOfLockCnt;
-	uint32 lossOfClockCnt;
-} Mcu_Stats;
 
-void Mcu_ConfigureFlash(void);
-/**
- * Type that holds all global data for Mcu
- */
-typedef struct
-{
-  // Set if Mcu_Init() have been called
-  boolean initRun;
-
-  // Our config
-  const Mcu_ConfigType *config;
-
-  Mcu_ClockType clockSetting;
-
-  Mcu_Stats stats;
-
-} Mcu_GlobalType;
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(_x)  (sizeof(_x)/sizeof((_x)[0]))
+#endif
 
 /* Development error macros. */
 #if ( MCU_DEV_ERROR_DETECT == STD_ON )
@@ -71,6 +53,34 @@ typedef struct
 #define VALIDATE_W_RV(_exp,_api,_err,_rv )
 #endif
 
+
+#define CORE_CPUID_CORTEX_M3   	0x411FC231UL
+
+
+
+typedef struct {
+	uint32 lossOfLockCnt;
+	uint32 lossOfClockCnt;
+} Mcu_Stats;
+
+/**
+ * Type that holds all global data for Mcu
+ */
+typedef struct
+{
+  // Set if Mcu_Init() have been called
+  boolean initRun;
+
+  // Our config
+  const Mcu_ConfigType *config;
+
+  Mcu_ClockType clockSetting;
+
+  Mcu_Stats stats;
+
+} Mcu_GlobalType;
+
+
 // Global config
 Mcu_GlobalType Mcu_Global =
 {
@@ -79,27 +89,6 @@ Mcu_GlobalType Mcu_Global =
 };
 
 //-------------------------------------------------------------------
-
-#if 0
-static void Mcu_LossOfLock( void  ) {
-#if defined(USE_DEM)
-	Dem_ReportErrorStatus(MCU_E_CLOCK_FAILURE, DEM_EVENT_STATUS_FAILED);
-#endif
-
-	Mcu_Global.stats.lossOfLockCnt++;
-	// Clear interrupt
-//	FMPLL.SYNSR.B.LOLF = 1;
-
-}
-#endif
-
-#define SPR_PIR 286
-#define SPR_PVR 287
-
-#define CORE_PVR_E200Z1   	0x81440000UL
-#define CORE_PVR_E200Z0   	0x81710000UL
-#define CORE_PVR_E200Z3 	0x81120000UL
-
 
 typedef struct {
   char *name;
@@ -111,39 +100,34 @@ typedef struct {
   uint32 pvr;
 } cpu_info_t;
 
+
+void Mcu_ConfigureFlash(void);
+
+
+
+/* Haven't found any ID accessable from memory.
+ * There is the DBGMCU_IDCODE (0xe0042000) found in RM0041 but it
+ * you can't read from that address..
+ */
+#if 0
 cpu_info_t cpu_info_list[] = {
     {
-    .name = "MPC5516",
-    .pvr = CORE_PVR_E200Z1,
-    },
-    {
-    .name = "MPC5516",
-    .pvr = CORE_PVR_E200Z0,
-    },
-    {
-    .name = "MPC563X",
-    .pvr = CORE_PVR_E200Z3,
+    .name = "????",
+    .pvr = 0,
     },
 };
+#endif
 
+/* The supported cores
+ */
 core_info_t core_info_list[] = {
     {
-    .name = "CORE_E200Z1",
-    .pvr = CORE_PVR_E200Z1,
-    },
-    {
-    .name = "CORE_E200Z1",
-    .pvr = CORE_PVR_E200Z1,
-    },
-    {
-    .name = "CORE_E200Z3",
-    .pvr = CORE_PVR_E200Z3,
+    .name = "CORE_ARM_CORTEX_M3",
+    .pvr = CORE_CPUID_CORTEX_M3,
     },
 };
 
-// TODO: move
-#define ARRAY_SIZE(_x)  (sizeof(_x)/sizeof((_x)[0]))
-
+#if 0
 static cpu_info_t *Mcu_IdentifyCpu(uint32 pvr)
 {
   int i;
@@ -155,6 +139,8 @@ static cpu_info_t *Mcu_IdentifyCpu(uint32 pvr)
 
   return NULL;
 }
+#endif
+
 
 static core_info_t *Mcu_IdentifyCore(uint32 pvr)
 {
@@ -169,30 +155,26 @@ static core_info_t *Mcu_IdentifyCore(uint32 pvr)
 }
 
 
+
+/**
+ * Identify the core, just to check that we have support for it.
+ *
+ * @return
+ */
 static uint32 Mcu_CheckCpu( void ) {
 
   uint32 pvr;
   //uint32 pir;
-  cpu_info_t *cpuType;
+  //cpu_info_t *cpuType;
   core_info_t *coreType;
 
-  // We have to registers to read here, PIR and PVR
-
-#if 0
-  pir = get_spr(SPR_PIR);
-  pvr = get_spr(SPR_PVR);
-#endif
-
-  cpuType = Mcu_IdentifyCpu(pvr);
+  //cpuType = Mcu_IdentifyCpu(pvr);
   coreType = Mcu_IdentifyCore(pvr);
 
-  if( (cpuType == NULL) || (coreType == NULL) ) {
+  if( (coreType == NULL) ) {
     // Just hang
     while(1);
   }
-
-  //DEBUG(DEBUG_HIGH,"/drivers/mcu: Cpu:  %s( 0x%08x )\n",cpuType->name,pvr);
-  //DEBUG(DEBUG_HIGH,"/drivers/mcu: Core: %s( 0x%08x )\n",coreType->name,pvr);
 
   return 0;
 }
@@ -250,54 +232,6 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
   clockSettingsPtr = &Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting];
 
 
-
-#if 0
-  /* 5516clock info:
-   * Fsys - System frequency ( CPU + all periperals? )
-   *
-   *  Fsys = EXTAL_FREQ *(  (emfd+16) / ( (eprediv+1) * ( erfd+1 )) ) )
-   */
-  // Check ranges...
-  assert((clockSettingsPtr->PllEmfd>=32) && (clockSettingsPtr->PllEmfd<=132));
-  assert( (clockSettingsPtr->PllEprediv!=6) &&
-          (clockSettingsPtr->PllEprediv!=8) &&
-          (clockSettingsPtr->PllEprediv<10) );
-  assert( clockSettingsPtr->PllErfd & 1); // Must be odd
-#endif
-
-
-
-#if defined(USE_LDEBUG_PRINTF)
-  {
-    uint32    extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePointFrequency;
-    uint32    f_sys;
-
-    f_sys = CALC_SYSTEM_CLOCK( extal,
-        clockSettingsPtr->PllEmfd,
-        clockSettingsPtr->PllEprediv,
-        clockSettingsPtr->PllErfd );
-
-    //DEBUG(DEBUG_HIGH,"/drivers/mcu: F_sys will be:%08d Hz\n",f_sys);
-  }
-#endif
-
-#if defined(CFG_MPC5516)
-  // External crystal PLL mode.
-  FMPLL.ESYNCR1.B.CLKCFG = 7; //TODO: Hur ställa detta för 5567?
-
-  // Write pll parameters.
-  FMPLL.ESYNCR1.B.EPREDIV = clockSettingsPtr->PllEprediv;
-  FMPLL.ESYNCR1.B.EMFD    = clockSettingsPtr->PllEmfd;
-  FMPLL.ESYNCR2.B.ERFD    = clockSettingsPtr->PllErfd;
-
-  // Connect SYSCLK to FMPLL
-  SIU.SYSCLK.B.SYSCLKSEL = SYSCLOCK_SELECT_PLL;
-#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
-  FMPLL.SYNCR.B.PREDIV 	= clockSettingsPtr->PllEprediv;
-  FMPLL.SYNCR.B.MFD		= clockSettingsPtr->PllEmfd;
-  FMPLL.SYNCR.B.RFD    	= clockSettingsPtr->PllErfd;
-#endif
-
   return E_OK;
 }
 
@@ -314,75 +248,81 @@ void Mcu_DistributePllClock(void)
 
 //-------------------------------------------------------------------
 
-Mcu_PllStatusType Mcu_GetPllStatus(void)
-{
-  VALIDATE_W_RV( ( 1 == Mcu_Global.initRun ), MCU_GETPLLSTATUS_SERVICE_ID, MCU_E_UNINIT, MCU_PLL_STATUS_UNDEFINED );
-  Mcu_PllStatusType rv;
 
-  if( !SIMULATOR() )
-  {
-#if 0
-    if ( !FMPLL.SYNSR.B.LOCK )
-    {
-      rv = MCU_PLL_UNLOCKED;
-    } else
-    {
-      rv = MCU_PLL_LOCKED;
-    }
-#endif
-  }
-  else
-  {
-    /* We are running on instruction set simulator. PLL is then always in sync... */
-    rv = MCU_PLL_LOCKED;
-  }
+Mcu_PllStatusType Mcu_GetPllStatus(void) {
+	VALIDATE_W_RV( ( 1 == Mcu_Global.initRun ), MCU_GETPLLSTATUS_SERVICE_ID, MCU_E_UNINIT, MCU_PLL_STATUS_UNDEFINED );
+	Mcu_PllStatusType rv;
 
-  return rv;
+	if (!SIMULATOR()) {
+		if (RCC->CR & RCC_CR_PLLRDY) {
+			rv = MCU_PLL_LOCKED;
+		} else {
+			rv = MCU_PLL_UNLOCKED;
+		}
+	} else {
+		/* We are running on instruction set simulator. PLL is then always in sync... */
+		rv = MCU_PLL_LOCKED;
+	}
+
+	return rv;
 }
 
 //-------------------------------------------------------------------
 
-Mcu_ResetType Mcu_GetResetReason(void)
-{
+/**
+ *
+ * @return
+ */
+Mcu_ResetType Mcu_GetResetReason(void) {
 	Mcu_ResetType rv;
+	uint32_t csr;
 
-  VALIDATE_W_RV( ( 1 == Mcu_Global.initRun ), MCU_GETRESETREASON_SERVICE_ID, MCU_E_UNINIT, MCU_RESET_UNDEFINED );
+	VALIDATE_W_RV( ( 1 == Mcu_Global.initRun ), MCU_GETRESETREASON_SERVICE_ID, MCU_E_UNINIT, MCU_RESET_UNDEFINED );
 
-#if 0
-  if( SIU.RSR.B.SSRS ) {
-  	rv = MCU_SW_RESET;
-  } else if( SIU.RSR.B.WDRS ) {
-  	rv = MCU_WATCHDOG_RESET;
-  } else if( SIU.RSR.B.PORS || SIU.RSR.B.ERS ) {
-  	rv = MCU_POWER_ON_RESET;
-  } else {
-  	rv = MCU_RESET_UNDEFINED;
-  }
-#endif
+	csr = RCC->CSR;
 
-  return rv;
+	if (csr & RCC_CSR_SFTRSTF) {
+		rv = MCU_SW_RESET;
+	} else if (csr & (RCC_CSR_IWDGRSTF|RCC_CSR_WWDGRSTF) ) {
+		rv = MCU_WATCHDOG_RESET;
+	} else if ( csr & RCC_CSR_PORRSTF ) {
+		rv = MCU_POWER_ON_RESET;
+	} else {
+		rv = MCU_RESET_UNDEFINED;
+	}
+
+	return rv;
 }
 
 //-------------------------------------------------------------------
 
-Mcu_RawResetType Mcu_GetResetRawValue(void)
-{
-  VALIDATE_W_RV( ( 1 == Mcu_Global.initRun ), MCU_GETRESETREASON_SERVICE_ID, MCU_E_UNINIT, MCU_GETRESETRAWVALUE_UNINIT_RV );
+/**
+ * Shall read the raw reset value from hardware register if the hardware
+ * supports this.
+ *
+ * @return
+ */
 
-  if( !Mcu_Global.initRun ) {
-  	return MCU_GETRESETRAWVALUE_UNINIT_RV;
-  }
+Mcu_RawResetType Mcu_GetResetRawValue(void) {
+	VALIDATE_W_RV( ( 1 == Mcu_Global.initRun ), MCU_GETRESETREASON_SERVICE_ID, MCU_E_UNINIT, MCU_GETRESETRAWVALUE_UNINIT_RV );
 
-#if 0
-  return SIU.RSR.R;
-#endif
-
-  return 0;
+	if (!Mcu_Global.initRun) {
+		return MCU_GETRESETRAWVALUE_UNINIT_RV;
+	} else {
+		return (RCC->CSR) & (RCC_CSR_RMVF | RCC_CSR_PINRSTF | RCC_CSR_PORRSTF
+				| RCC_CSR_SFTRSTF | RCC_CSR_IWDGRSTF | RCC_CSR_WWDGRSTF
+				| RCC_CSR_LPWRRSTF);
+	}
+	return 0;
 }
 
 //-------------------------------------------------------------------
 
 #if ( MCU_PERFORM_RESET_API == STD_ON )
+/**
+ * Shell perform a microcontroller reset by using the hardware feature
+ * of the micro controller.
+ */
 void Mcu_PerformReset(void)
 {
   VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_PERFORMRESET_SERVICE_ID, MCU_E_UNINIT );

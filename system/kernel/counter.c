@@ -197,3 +197,35 @@ TickType GetOsTick( void ) {
 	return get_os_tick();
 }
 
+
+/**
+ * Initialize alarms and schedule-tables for the counters
+ */
+void Os_CounterInit( void ) {
+	OsCounterType *counter;
+	OsAlarmType *alarm_obj;
+	OsSchTblType *sched_obj;
+	/* Create a list from the counter to the alarms */
+	for(int i=0; i < Os_CfgGetCounterCnt() ; i++) {
+		counter = Os_CfgGetCounter(i);
+		// Alarms
+		SLIST_INIT(&counter->alarm_head);
+		for(int j=0; j < Os_CfgGetAlarmCnt(); j++ ) {
+			alarm_obj = Os_CfgGetAlarmObj(j);
+			// Add the alarms
+			SLIST_INSERT_HEAD(&counter->alarm_head,alarm_obj, alarm_list);
+		}
+		// Schedule tables
+		SLIST_INIT(&counter->sched_head);
+		for(int j=0; j < Os_CfgGetSchedCnt(); j++ ) {
+			sched_obj = Os_CfgGetSched(j);
+			// Add the alarms
+			SLIST_INSERT_HEAD(&counter->sched_head,
+								sched_obj,
+								sched_list);
+		}
+
+
+	}
+}
+

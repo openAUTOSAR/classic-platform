@@ -446,6 +446,6 @@ union isr_attr {
 #define TTY_T32		2
 #define TTY_WINIDEA	4
 #define TTY_SERIAL		8
-#define TTY_RAMLOG		16
+#define RAMLOG		16
 
 #endif /*OS_H_*/

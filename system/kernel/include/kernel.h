@@ -54,7 +54,7 @@ extern uint32_t os_dbg_mask;
  */
 
 #if defined(CFG_OS_DEBUG)
-# if (SELECT_OS_CONSOLE==TTY_RAMLOG)
+# if (SELECT_OS_CONSOLE==RAMLOG)
 #  ifndef USE_RAMLOG
 #  error  USE_RAMLOG must be defined.
 #  endif

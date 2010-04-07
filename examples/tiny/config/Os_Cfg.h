@@ -18,15 +18,11 @@
 #ifndef OS_CFG_H_
 #define OS_CFG_H_
 
-/*
- * OsOs container
- */
-#define OS_SC1 					STD_ON 		/* | OS_SC2 | OS_SC3 | OS_SC4 */
-#define OS_STACK_MONITORING		STD_ON
-#define OS_STATUS_EXTENDED			STD_ON 		/* OS_STATUS_STANDARD */
-#define OS_USE_GET_SERVICE_ID		STD_ON
-#define OS_USE_PARAMETER_ACCESS	STD_ON
-#define OS_RES_SCHEDULER			STD_ON
+
+#if (OS_SW_MAJOR_VERSION != 2)
+#error "Os: Configuration file version differs from BSW version."
+#endif
+
 
 
 /* os_config.h */
@@ -52,23 +48,38 @@ void btask_3( void );
 #define OS_TICK_DURATION_IN_US				2000
 
 #if defined(USE_SIMPLE_PRINTF)
-#define PRIO_STACK_SIZE						600
+#define PRIO_STACK_SIZE						1000
 #else
 #define PRIO_STACK_SIZE						200
 #endif
 
 #define OS_INTERRUPT_STACK_SIZE				200
 
-// Just define them if you want to use them.
-#undef ALARM_USE
-#undef SCHEDULETABLE_USE
-#undef MESSAGE_USE
-#undef EVENT_USE
-#undef SERVICE_USE
-
 #define EVENT_0	(1<<0)
 #define EVENT_1	(1<<1)
 #define EVENT_2 (1<<2)
+
+#define OS_ALARM_CNT				1
+#define OS_TASK_CNT				4
+#define OS_COUNTER_CNT				1
+#define OS_EVENTS_CNT				3
+#define OS_ISRS_CNT				0
+#define OS_RESOURCE_CNT			1
+#define OS_LINKED_RESOURCE_CNT		0
+#define OS_SCHTBL_CNT				0
+
+#define CFG_OS_DEBUG				STD_ON
+
+
+/*
+ * OsOs container
+ */
+#define OS_SC1 					STD_ON 		/* | OS_SC2 | OS_SC3 | OS_SC4 */
+#define OS_STACK_MONITORING		STD_ON
+#define OS_STATUS_EXTENDED			STD_ON 		/* OS_STATUS_STANDARD */
+#define OS_USE_GET_SERVICE_ID		STD_ON
+#define OS_USE_PARAMETER_ACCESS	STD_ON
+#define OS_RES_SCHEDULER			STD_ON
 
 
 #endif /* OS_CFG_H_ */

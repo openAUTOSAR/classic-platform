@@ -16,6 +16,10 @@
 #include "Os.h"
 #include "internal.h"
 
+#if !defined(MAX)
+#define MAX(_x,_y) (((_x) > (_y)) ? (_x) : (_y))
+#endif
+
 /* INFO
  * - If OsTaskSchedule = NON, Task it not preemptable, no internal resource may be assigned to a task
  *                       (cause it already have one of prio 32)
@@ -216,3 +220,57 @@ void Os_ResourceReleaseInternal( void ) {
 		ReleaseResource_(rt);
 	}
 }
+
+
+
+/**
+ *
+ * @param pcb_p
+ * @return
+ */
+void Os_ResourceInit( void ) {
+	//TAILQ_INIT(&pcb_p->resource_head);
+	OsPcbType *pcb_p;
+	OsResourceType *rsrc_p;
+	int topPrio;
+
+	/* Calculate ceiling priority
+	 * We make this as simple as possible. The ceiling priority
+	 * is set to the same priority as the highest priority task that
+	 * access it.
+	 * */
+	for( int i=0; i < Os_CfgGetResourceCnt(); i++) {
+		rsrc_p = Os_CfgGetResource(i);
+		topPrio = 0;
+
+		for( int pi = 0; pi < Os_CfgGetTaskCnt(); pi++) {
+
+			pcb_p = os_get_pcb(pi);
+			if(pcb_p->resourceAccess & (1<<i) ) {
+				topPrio = MAX(topPrio,pcb_p->prio);
+			}
+		}
+		rsrc_p->ceiling_priority = topPrio;
+	}
+
+
+
+	/* From OSEK:
+	 * Non preemptable tasks are the most common usage of the concept
+	 * of internal resources; they are tasks with a special internal
+	 * resource of highest task priority assigned.
+	 * --> Interpret this as we can set the priority to 32.
+	 *
+	 * Assign an internal resource with prio 32 to the tasks
+	 * with scheduling=NON
+	 *
+	 *
+	 */
+	for( int i; i < Os_CfgGetTaskCnt(); i++) {
+		pcb_p = os_get_pcb(i);
+		if(pcb_p->scheduling == NON ) {
+			pcb_p->prio = OS_RES_SCHEDULER_PRIO;
+		}
+	}
+}
+

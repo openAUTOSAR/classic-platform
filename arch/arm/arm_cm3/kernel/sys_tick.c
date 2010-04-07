@@ -31,13 +31,17 @@ void Os_SysTickInit( void ) {
 }
 
 /**
+ * Start the Sys Tick timer
  *
- * @param period_ticks How long the period in timer ticks should be. The timer
- *                     on PowerPC often driver by the CPU clock or some platform clock.
+ * @param period_ticks How long the period in timer ticks should be.
  *
  */
 
 void Os_SysTickStart(uint32_t period_ticks) {
+
+	/* Cortex-M3 have a 24-bit system timer that counts down
+	 * from the reload value to zero.
+	 */
 
 	SysTick_Config(period_ticks);
 

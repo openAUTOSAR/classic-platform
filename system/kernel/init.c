@@ -32,88 +32,6 @@ Os_IntCounterType Os_IntDisableAllCnt;
 Os_IntCounterType Os_IntSuspendAllCnt;
 Os_IntCounterType Os_IntSuspendOsCnt;
 
-/**
- * Initialize alarms and schedule-tables for the counters
- */
-static void os_counter_init( void ) {
-	OsCounterType *counter;
-	OsAlarmType *alarm_obj;
-	OsSchTblType *sched_obj;
-	/* Create a list from the counter to the alarms */
-	for(int i=0; i < Os_CfgGetCounterCnt() ; i++) {
-		counter = Os_CfgGetCounter(i);
-		// Alarms
-		SLIST_INIT(&counter->alarm_head);
-		for(int j=0; j < Os_CfgGetAlarmCnt(); j++ ) {
-			alarm_obj = Os_CfgGetAlarmObj(j);
-			// Add the alarms
-			SLIST_INSERT_HEAD(&counter->alarm_head,alarm_obj, alarm_list);
-		}
-		// Schedule tables
-		SLIST_INIT(&counter->sched_head);
-		for(int j=0; j < Os_CfgGetSchedCnt(); j++ ) {
-			sched_obj = Os_CfgGetSched(j);
-			// Add the alarms
-			SLIST_INSERT_HEAD(&counter->sched_head,
-								sched_obj,
-								sched_list);
-		}
-
-
-	}
-}
-
-/**
- *
- * @param pcb_p
- * @return
- */
-static void os_resource_init( void ) {
-	//TAILQ_INIT(&pcb_p->resource_head);
-	OsPcbType *pcb_p;
-	OsResourceType *rsrc_p;
-	int topPrio;
-
-	/* Calculate ceiling priority
-	 * We make this as simple as possible. The ceiling priority
-	 * is set to the same priority as the highest priority task that
-	 * access it.
-	 * */
-	for( int i=0; i < Os_CfgGetResourceCnt(); i++) {
-		rsrc_p = Os_CfgGetResource(i);
-		topPrio = 0;
-
-		for( int pi = 0; pi < Os_CfgGetTaskCnt(); pi++) {
-
-			pcb_p = os_get_pcb(pi);
-			if(pcb_p->resourceAccess & (1<<i) ) {
-				topPrio = MAX(topPrio,pcb_p->prio);
-			}
-		}
-		rsrc_p->ceiling_priority = topPrio;
-	}
-
-
-
-	/* From OSEK:
-	 * Non preemptable tasks are the most common usage of the concept
-	 * of internal resources; they are tasks with a special internal
-	 * resource of highest task priority assigned.
-	 * --> Interpret this as we can set the priority to 32.
-	 *
-	 * Assign an internal resource with prio 32 to the tasks
-	 * with scheduling=NON
-	 *
-	 *
-	 */
-	for( int i; i < Os_CfgGetTaskCnt(); i++) {
-		pcb_p = os_get_pcb(i);
-		if(pcb_p->scheduling == NON ) {
-			pcb_p->prio = OS_RES_SCHEDULER_PRIO;
-		}
-	}
-}
-
 
 /**
  * Copy rom pcb data(r_pcb) to ram data
@@ -184,10 +102,11 @@ void InitOS( void ) {
 
 	// Calc interrupt stack
 	Os_CfgGetInterruptStackInfo(&int_stack);
-	os_sys.int_stack = int_stack.top + int_stack.size - 16;		// TODO: 16 is arch dependent
+	// TODO: 16 is arch dependent
+	os_sys.int_stack = int_stack.top + int_stack.size - 16;
 
 	// Init counter.. with alarms and schedule tables
-	os_counter_init();
+	Os_CounterInit();
 	Os_SchTblInit();
 
 	// Put all tasks in the pcb list
@@ -211,7 +130,7 @@ void InitOS( void ) {
 		DEBUG(DEBUG_LOW,"pid:%d name:%s prio:%d\n",tmp_pcb->pid,tmp_pcb->name,tmp_pcb->prio);
 	}
 
-	os_resource_init();
+	Os_ResourceInit();
 
 	// Now all tasks should be created.
 }

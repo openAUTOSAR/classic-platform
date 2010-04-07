@@ -28,7 +28,12 @@ void Irq_Init( void ) {
 }
 
 void Irq_EOI( void ) {
-
+	/* Note!
+	 * This is not applicable on the Cortex-M3 since we
+	 * can't terminate the interrupt request without popping
+	 * back registers..have to be solved in the context switches
+	 * themselves.
+	 */
 }
 
 #define ICSR_VECTACTIVE		0x1ff

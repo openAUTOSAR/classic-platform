@@ -92,6 +92,6 @@ static inline TickType Os_CounterAdd( TickType curr, TickType max, TickType add 
 	return result;
 }
 
-
+void Os_CounterInit( void );
 
 #endif /*COUNTER_I_H_*/

@@ -295,6 +295,11 @@ int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap)
 		if (ch == '%') {
 			ch = *format++;
 
+			if( ch == '%') {
+				emitChar(file,buffer,ch,&left);
+				continue;
+			}
+
 			/* Find flags */
 			switch (ch) {
 			case '0':
