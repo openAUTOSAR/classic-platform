@@ -33,9 +33,9 @@
 
 
 // Event masks
-#define EVENT_MASK_EVENT_0	0
-#define EVENT_MASK_EVENT_1	1
-#define EVENT_MASK_EVENT_2	2
+#define EVENT_MASK_EVENT_0	(1<<0)
+#define EVENT_MASK_EVENT_1	(1<<1)
+#define EVENT_MASK_EVENT_2	(1<<2)
 
 // Isr Id's
 
@@ -64,7 +64,7 @@ void etask_2( void );
 #define OS_OSIDLE_STACK_SIZE 500
 
 #define OS_ALARM_CNT			1 
-#define OS_TASK_CNT				3
+#define OS_TASK_CNT				4
 #define OS_SCHTBL_CNT			0
 #define OS_COUNTER_CNT			1
 #define OS_EVENTS_CNT			3

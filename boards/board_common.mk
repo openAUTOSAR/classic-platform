@@ -177,7 +177,14 @@ obj-y += xtoa.o
 obj-y += arc.o
 #obj-y += malloc.o
 obj-$(USE_RAMLOG) += ramlog.o
-obj-$(USE_SIMPLE_PRINTF) += printf.o
+
+# If we have configured console output we include printf. 
+# Overridden to use lib implementation with CFG_USE_NEWLIB_PRINTF
+ifndef (CFG_USE_NEWLIB_PRINTF)
+ifneq (,$(SELECT_CONSOLE) $(SELECT_OS_CONSOLE))
+obj-y += printf.o
+endif
+endif
 
 VPATH += $(ROOTDIR)/common
 
