@@ -24,6 +24,7 @@
 // the EcuM. Every Autocore application should use an own version of this
 // file to implement the setup and tear down of the system.
 
+
 #include "EcuM.h"
 #include "Det.h"
 #if defined(USE_DEM)
@@ -47,6 +48,12 @@
 #if defined(USE_COM)
 #include "Com.h"
 #endif
+#if defined(USE_CANTP)
+#include "CanTp.h"
+#endif
+#if defined(USE_DCM)
+#include "Dcm.h"
+#endif
 #if defined(USE_PWM)
 #include "Pwm.h"
 #endif
@@ -58,12 +65,6 @@ void EcuM_AL_DriverInitZero()
 {
 	Det_Init();
     Det_Start();
-
-#if defined(USE_DEM)
-	// Preinitialize DEM
-	Dem_PreInit();
-#endif
-
 }
 
 EcuM_ConfigType* EcuM_DeterminePbConfiguration()
@@ -82,6 +83,11 @@ void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
 	// Wait for PLL to sync.
 	while (Mcu_GetPllStatus() != MCU_PLL_LOCKED)
 	  ;
+#endif
+
+#if defined(USE_DEM)
+	// Preinitialize DEM
+	Dem_PreInit();
 #endif
 
 #if defined(USE_PORT)
@@ -111,7 +117,6 @@ void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
 	// Setup ICU
 	// TODO
 
-	// Setup PWM
 #if defined(USE_PWM)
 	// Setup PWM
 	Pwm_Init(ConfigPtr->PwmConfig);
@@ -151,6 +156,11 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 	CanIf_Init(ConfigPtr->CanIfConfig);
 #endif
 
+#if defined(USE_CANTP)
+	// Setup CAN TP
+	CanTp_Init();
+#endif
+
 	// Setup LIN
 	// TODO
 
@@ -163,24 +173,34 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 	// Setup COM layer
 	Com_Init(ConfigPtr->ComConfig);
 #endif
-	
+
+#if defined(USE_DCM)
+	// Setup DCM
+	Dcm_Init();
+#endif
+
 #if defined(USE_IOHWAB)
-	// Setup IO Hardware Abstraction
+	// Setup IO hardware abstraction layer
 	IoHwAb_Init();
 #endif
-
-#if defined(USE_DEM)
-	// Initialize DEM
-	Dem_Init();
-#endif
-
 }
 
 void EcuM_AL_DriverInitThree(const EcuM_ConfigType ConfigPtr)
 {
-#if defined(USE_CANIF)
-	// Startup the CAN interface; due to the missing COM manager
-	CanIf_InitController(CANIF_CHANNEL_0, CANIF_CHANNEL_0_CONFIG_0);
-	CanIf_SetControllerMode(CANIF_CHANNEL_0, CANIF_CS_STARTED);
+	// Setup ComM
+
+#if defined(USE_DEM)
+	// Setup DEM
+	Dem_Init();
 #endif
+
+	// Setup FIM
+
+#if defined(USE_CANIF)
+	// Startup the CAN interafce; due to the missing COM manager
+//	CanIf_InitController(CANIF_Channel_1, CANIF_Channel_1_CONFIG_0);
+//	CanIf_SetControllerMode(CANIF_Channel_1, CANIF_CS_STARTED);
+#endif
+
+
 }

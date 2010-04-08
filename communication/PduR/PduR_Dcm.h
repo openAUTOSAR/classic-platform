@@ -21,16 +21,19 @@
 #include "PduR.h"
 
 #ifdef PDUR_DCM_SUPPORT
-#ifndef PDUR_ZERO_COST_OPERATION
 
-Std_ReturnType PduR_DcmTransmit(PduIdType DcmTxPduId, const PduInfoType* PduInfoPtr);
+	#ifndef PDUR_ZERO_COST_OPERATION
 
-#else
-#include "CanTp.h"
+		Std_ReturnType PduR_DcmTransmit(PduIdType DcmTxPduId, const PduInfoType* PduInfoPtr);
 
-#define PduR_DcmTransmit CanTp_Transmit
+	#else
 
-#endif
+		#include "CanTp.h"
+
+		#define PduR_DcmTransmit CanTp_Transmit
+
+	#endif
+
 #endif
 
 

@@ -759,7 +759,12 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
         case CANIF_USER_TYPE_CAN_TP:
           // Send Can frame to CAN TP
 #if defined(USE_CANTP)
-            CanTp_RxIndication(entry->CanIfCanRxPduId,CanSduPtr);
+            {
+        	    PduInfoType CanTpRxPdu;
+        	    CanTpRxPdu.SduLength = CanDlc;
+        	    CanTpRxPdu.SduDataPtr = (uint8 *)CanSduPtr;
+                CanTp_RxIndication(entry->CanIfCanRxPduId, &CanTpRxPdu);
+            }
             return;
 #endif
             break;

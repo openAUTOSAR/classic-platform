@@ -26,18 +26,35 @@
 #include "PduR.h"
 
 #ifdef PDUR_CANIF_SUPPORT
-#ifndef PDUR_ZERO_COST_OPERATION
 
-void PduR_CanIfRxIndication (PduIdType CanRxPduId, const uint8 *CanSudPtr );
-void PduR_CanIfTxConfirmation(PduIdType CanTxPduId);
+	#ifndef PDUR_ZERO_COST_OPERATION
 
+		void PduR_CanIfRxIndication (PduIdType CanRxPduId, const uint8 *CanSudPtr );
+		void PduR_CanIfTxConfirmation(PduIdType CanTxPduId);
 
-#else // Zero cost operation active
+	#else // Zero cost operation active
 
-#define PduR_CanIfRxIndication Com_RxIndication
-#define PduR_CanIfTxConfirmation Com_TxConfirmation
+		#if PDUR_SINGLE_IF == CAN_IF && defined(PDUR_COM_SUPPORT)
 
-#endif
-#endif
+			#include "Com_Com.h"
+
+			#define PduR_CanIfRxIndication Com_RxIndication
+			#define PduR_CanIfTxConfirmation Com_TxConfirmation
+
+		#else
+
+			#define PduR_CanIfRxIndication (void)
+			#define PduR_CanIfTxConfirmation (void)
+
+		#endif
+
+	#endif // Zero cost operation active
+
+#else
+
+	#define PduR_CanIfRxIndication (void)
+	#define PduR_CanIfTxConfirmation (void)
+
+#endif // CAN_IF not supported
 
 #endif /* PDUR_CANIF_H_ */

@@ -24,7 +24,9 @@
 #define DEM_LCFG_H_
 
 #include "Dem_Types.h"
+#if defined(USE_DCM)
 #include "Dcm_Types.h"
+#endif
 
 
 /*
@@ -44,9 +46,15 @@ typedef Std_ReturnType (*Dem_CallbackEventStatusChangedFncType)(Dem_EventStatusE
 typedef Std_ReturnType (*Dem_CallbackDTCStatusChangedFncType)(uint8 DTCStatusOld, uint8 DTCStatusNew);
 
 // DIDServices
+#if defined(USE_DCM)
 typedef Std_ReturnType (*Dem_CallbackConditionCheckReadFncType)(Dcm_NegativeResponseCodeType *Nrc);
 typedef Std_ReturnType (*Dem_CallbackReadDataFncType)(uint8 *Data);
 typedef Std_ReturnType (*Dem_CallbackReadDataLength)(uint16 *DidLength);
+#else
+typedef Std_ReturnType (*Dem_CallbackConditionCheckReadFncType)(uint8 *Nrc);
+typedef Std_ReturnType (*Dem_CallbackReadDataFncType)(uint8 *Data);
+typedef Std_ReturnType (*Dem_CallbackReadDataLength)(uint16 *DidLength);
+#endif
 
 // GetExtendedDataRecord
 typedef Std_ReturnType (*Dem_CallbackGetExtDataRecordFncType)(uint8 *ExtendedDataRecord);
