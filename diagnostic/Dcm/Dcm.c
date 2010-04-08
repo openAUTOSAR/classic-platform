@@ -114,7 +114,7 @@ BufReq_ReturnType Dcm_ProvideRxBuffer(PduIdType dcmRxPduId, PduLengthType tpSduL
 {
 	BufReq_ReturnType returnCode = BUFREQ_OK;
 
-	returnCode = DslProvideRxBuffer(dcmRxPduId, tpSduLength, pduInfoPtr);
+	returnCode = DslProvideRxBufferToPdur(dcmRxPduId, tpSduLength, (const PduInfoType**)pduInfoPtr);
 
 	return returnCode;
 }
@@ -122,7 +122,7 @@ BufReq_ReturnType Dcm_ProvideRxBuffer(PduIdType dcmRxPduId, PduLengthType tpSduL
 
 void Dcm_RxIndication(PduIdType dcmRxPduId, NotifResultType result)
 {
-	DslRxIndication(dcmRxPduId, result);
+	DslRxIndicationFromPduR(dcmRxPduId, result);
 }
 
 
@@ -159,7 +159,7 @@ BufReq_ReturnType Dcm_ProvideTxBuffer(PduIdType dcmTxPduId, PduInfoType **pduInf
 {
 	BufReq_ReturnType returnCode = BUFREQ_OK;
 
-	returnCode = DslProvideTxBuffer(dcmTxPduId, pduInfoPtr, length);
+	returnCode = DslProvideTxBuffer(dcmTxPduId, (const PduInfoType**)pduInfoPtr, length);
 
 	return returnCode;
 }

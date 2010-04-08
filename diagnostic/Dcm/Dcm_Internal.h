@@ -47,6 +47,10 @@
 #define DCM_OBD_FUNC_RX_BUFFER_SIZE		8
 #define DCM_PHYS_BUFFER_SIZE			255
 
+typedef enum {
+	DSD_TX_RESPONSE_READY,
+	DSD_TX_RESPONSE_SUPPRESSED
+} DsdProcessingDoneResultType;
 
 /*
  * DSP
@@ -80,19 +84,17 @@ void DsdDslDataIndication(const PduInfoType *pduRxData, const Dcm_DsdServiceTabl
 void DslInit(void);
 void DslMain(void);
 void DslHandleResponseTransmission(void);
-void DslResponseSuppressed(void);
-void DslDsdPduTransmit(void);
-void DslGetCurrentServiceTable(Dcm_DsdServiceTableType **currentServiceTable);
+void DslDsdProcessingDone(PduIdType txPduId, DsdProcessingDoneResultType result);
+void DslGetCurrentServiceTable(const Dcm_DsdServiceTableType **currentServiceTable);
 
-
-BufReq_ReturnType DslProvideRxBuffer(PduIdType dcmRxPduId, PduLengthType tpSduLength, PduInfoType **pduInfoPtr);
-void DslRxIndication(PduIdType dcmRxPduId, NotifResultType result);
+BufReq_ReturnType DslProvideRxBufferToPdur(PduIdType dcmRxPduId, PduLengthType tpSduLength, const PduInfoType **pduInfoPtr);
+void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result);
 Std_ReturnType DslGetActiveProtocol(Dcm_ProtocolType *protocolId);
 void DslSetSecurityLevel(Dcm_SecLevelType secLevel);
 Std_ReturnType DslGetSecurityLevel(Dcm_SecLevelType *secLevel);
 void DslSetSesCtrlType(Dcm_SesCtrlType sesCtrlType);
 Std_ReturnType DslGetSesCtrlType(Dcm_SesCtrlType *sesCtrlType);
-BufReq_ReturnType DslProvideTxBuffer(PduIdType dcmTxPduId, PduInfoType **pduInfoPtr, PduLengthType length);
+BufReq_ReturnType DslProvideTxBuffer(PduIdType dcmTxPduId, const PduInfoType **pduInfoPtr, PduLengthType length);
 void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result);
 void DslResetSessionTimeoutTimer(void);
 
