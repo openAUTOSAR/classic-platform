@@ -26,7 +26,7 @@
 #include <string.h>
 #include "Com.h"
 #include "Com_Types.h"
-#include "Trace.h"
+#include "debug.h"
 
 #ifdef COM_DEV_ERROR_DETECT
 #include "Det.h"

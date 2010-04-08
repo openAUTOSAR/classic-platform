@@ -20,6 +20,68 @@
 #include <sys/queue.h>
 #include "Os.h"
 
+extern uint32_t os_dbg_mask;
+
+
+/*
+ * Configuration tree:
+ * USE_OS_DEBUG               - Turn on/off all Os_DbgPrintf()
+ * SELECT_OS_CONSOLE          - Select console
+ * USE_RAMLOG                 - Compile ramlog code...
+ *
+ *
+ * Default is to print to RAMLOG.
+ *
+ *
+ * Use cases:
+ * 1. We don't have a RAMLOG (low on RAM) so we want to print to serial console:
+ *     #define CFG_OS_DEBUG
+ *     #define USE_SERIAL_PORT
+ *     #define SELECT_OS_CONSOLE=TTY_SERIAL0
+ * 2. We have a RAMLOG but we have a debugger connected and want the OS debug
+ *    to go there instead:
+ *     #define CFG_OS_DEBUG
+ *     #define USE_RAMLOG
+ *     #define USE_TTY_T32
+ *     #define SELECT_OS_CONSOLE=TTY_T32
+ * 3. We have only the ramlog:
+ *     #define CFG_OS_DEBUG
+ *     #define USE_RAMLOG
+ *     #define SELECT_OS_CONSOLE=TTY_RAMLOG
+ * 4. We use no debug.
+ *    <empty>
+  *
+ */
+
+#if defined(CFG_OS_DEBUG)
+# if (SELECT_OS_CONSOLE==RAMLOG)
+#  ifndef USE_RAMLOG
+#  error  USE_RAMLOG must be defined.
+#  endif
+
+#  define OS_DEBUG(_mask,...) \
+	do { \
+		if( os_dbg_mask & (_mask) ) { \
+			ramlog_printf("[%08u] : ",(unsigned)GetOsTick()); \
+			ramlog_printf(__VA_ARGS__ );	\
+		}; \
+	} while(0);
+# elif (SELECT_OS_CONSOLE==TTY_NONE)
+#   define OS_DEBUG(_mask,...)
+# else
+#  define OS_DEBUG(_mask,...) \
+	do { \
+		if( os_dbg_mask & (_mask) ) { \
+			printf("[%08u] : ",(unsigned)GetOsTick()); \
+			printf(__VA_ARGS__ );	\
+		}; \
+	} while(0);
+# endif
+#else
+# define OS_DEBUG(_mask,...)
+#endif
+
+
 #if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
 typedef void ( * trusted_func_t)( TrustedFunctionIndexType , TrustedFunctionParameterRefType );
 #endif
@@ -152,26 +214,19 @@ typedef struct OsTimingProtection {
  *
  */
 
-#define OS_DBG_MASTER_PRINT		(1<<0)
-#define OS_DBG_ISR_MASTER_PRINT	(1<<1)
-#define OS_DBG_STDOUT				(1<<2)
-#define OS_DBG_ISR_STDOUT			(1<<3)
-
-// Enable print dbg_XXXX (not dbg_isr_XXX though)
-#define D_MASTER_PRINT				(1<<0)
-// Enable print for all dbg_isr_XXX
-#define D_ISR_MASTER_PRINT			(1<<1)
 // print to STDOUT. If not set it prints to ramlog
-#define D_STDOUT					(1<<2)
+#define D_STDOUT					0
 #define D_RAMLOG					0
-// print to STDOUT, If not set print to ramlog
-#define D_ISR_STDOUT				(1<<3)
+#define D_MASTER_PRINT				0
+#define D_ISR_MASTER_PRINT			0
 #define D_ISR_RAMLOG				0
 
-#define D_TASK						(1<<13)
-#define D_ALARM					(1<<14)
+#define D_TASK						(1<<0)
+#define D_ALARM					(1<<1)
+#define D_RESOURCE					(1<<2)
+#define D_SCHTBL					(1<<3)
+#define D_EVENT					(1<<4)
+#define D_MESSAGE					(1<<5)
 
-#define OS_DBG_TASK				(1<<13)
-#define OS_DBG_ALARM				(1<<14)
 
 #endif /* KERNEL_H_ */

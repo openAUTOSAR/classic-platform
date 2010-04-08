@@ -16,7 +16,7 @@ MOD_AVAIL=KERNEL MCU PWM ADC SIMPLE_PRINTF ARM_ITM_TERM RAMLOG DEM IOHWAB
 # Needed by us
 MOD_USE=KERNEL MCU
 
-# Use little head
+# Use little heap
 def-y += HEAPSIZE=4000
 def-y += STM32F10X_CL
 

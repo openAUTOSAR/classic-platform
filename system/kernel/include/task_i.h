@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "internal.h"
-#include "simple_printf.h"
+
 #include "Ramlog.h"
 
 static inline void os_pcb_print_rq( void ) {
@@ -46,7 +46,7 @@ static inline void Os_TaskMakeReady( OsPcbType *pcb ) {
 	if( pcb->state != ST_READY ) {
 		pcb->state = ST_READY;
 		TAILQ_INSERT_TAIL(& os_sys.ready_head,pcb,ready_list);
-		os_isr_printf(D_TASK,"Added %s to ready list\n",pcb->name);
+		OS_DEBUG(D_TASK,"Added %s to ready list\n",pcb->name);
 	}
 }
 
@@ -57,7 +57,7 @@ static inline void Os_TaskMakeWaiting( OsPcbType *pcb )
 
 	pcb->state = ST_WAITING;
 	TAILQ_REMOVE(&os_sys.ready_head,pcb,ready_list);
-	os_isr_printf(D_TASK,"Removed %s from ready list\n",pcb->name);
+	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->name);
 }
 
 // Terminate task
@@ -66,7 +66,7 @@ static inline void Os_TaskMakeSuspended( OsPcbType *pcb )
 	assert( pcb->state & (ST_READY|ST_RUNNING) );
 	pcb->state = ST_SUSPENDED;
 	TAILQ_REMOVE(&os_sys.ready_head,pcb,ready_list);
-	os_isr_printf(D_TASK,"Removed %s from ready list\n",pcb->name);
+	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->name);
 }
 
 
@@ -110,7 +110,7 @@ static inline OsPriorityType os_pcb_set_prio( OsPcbType *pcb, OsPriorityType new
 	OsPriorityType 	old_prio;
 	old_prio = pcb->prio;
 	pcb->prio = new_prio;
-	//simple_printf("set_prio of %s to %d from %d\n",pcb->name,new_prio,pcb->prio);
+	//printf("set_prio of %s to %d from %d\n",pcb->name,new_prio,pcb->prio);
 	return old_prio;
 }
 

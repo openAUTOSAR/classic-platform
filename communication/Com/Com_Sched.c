@@ -22,7 +22,7 @@
 
 #include "Com_Sched.h"
 #include <string.h>
-#include "Trace.h"
+#include "debug.h"
 
 #define timerDec(timer) \
 	if (timer > 0) { \

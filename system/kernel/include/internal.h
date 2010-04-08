@@ -56,71 +56,10 @@
 
 
 
+#include <stdio.h>
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
-
-extern uint32_t os_dbg_mask;
-
-/*
- * 0  master print normal, 1-print
- * 1  master print isr     1-print
- * 2  normal 0-stdout,1-ramlog
- * 3  isr    0-stdout,
- *
- * 16 task_low
- * 17 task high
- *
- * 20 alarm
- *
- *
- * So when debugging the kernel using the ISS you want to use:
- * 0xB
- *
- * Ramlog all the way:
- * 0x7
- */
-
-extern uint32_t os_dbg_mask;
-
-#define STR_TASK		"OS_TASK"
-#define STR_ALARM		"OS_ALARM"
-#define STR_STBL		"OS_STBL"
-
-
-#define os_dbg_printf(format,...) \
-			if( os_dbg_mask & OS_DBG_MASTER_PRINT ) { \
-					simple_printf(format,## __VA_ARGS__ );	\
-			}
-
-#define os_dbg_isr_printf(format,...) \
-			if( os_dbg_mask & OS_DBG_ISR_MASTER_PRINT ) { \
-					simple_printf(format,## __VA_ARGS__ );	\
-			}
-
-#define os_isr_printf(_mask,format,...) \
-			if( (os_dbg_mask & OS_DBG_ISR_MASTER_PRINT) && ((_mask)>255 ) ) { \
-				if( os_dbg_mask & D_ISR_STDOUT ) { \
-					simple_printf("[%08d] : ",GetOsTick()); \
-					simple_printf(format,## __VA_ARGS__ );	\
-				} else {                                    \
-					ramlog_printf("[%08d] : ",GetOsTick()); \
-					ramlog_printf(format,## __VA_ARGS__ );	\
-				}                                           \
-			}
-
-#define os_std_printf(_mask,format,...) \
-		if( (os_dbg_mask & OS_DBG_MASTER_PRINT) && ((_mask)>255 ) ) { \
-			if( os_dbg_mask & D_STDOUT) { \
-				simple_printf("[%08d] : ",GetOsTick()); \
-				simple_printf(format,## __VA_ARGS__ );	\
-			} else {                                    \
-				ramlog_printf("[%08d] : ",GetOsTick()); \
-				ramlog_printf(format,## __VA_ARGS__ );	\
-			}                                           \
-		}
-
-
 #include "kernel.h"
 #include "task_i.h"
 #include "ext_config.h"
@@ -257,6 +196,7 @@ OsPcbType *os_find_task( TaskType tid );
 void Os_ResourceGetInternal(void );
 void Os_ResourceReleaseInternal( void );
 
+void Os_ResourceInit( void );
 
 /**
  *
@@ -311,12 +251,20 @@ static inline void Os_StackSetEndmark( OsPcbType *pcbPtr ) {
 }
 
 static inline _Bool Os_StackIsEndmarkOk( OsPcbType *pcbPtr ) {
+	_Bool rv;
 	uint8_t *end = pcbPtr->stack.top;
-	return ( *end == STACK_PATTERN);
+	rv =  ( *end == STACK_PATTERN);
+	if( !rv ) {
+		OS_DEBUG(D_TASK,"Stack End Mark is bad for %s curr: %08x curr: %08x\n",
+				pcbPtr->name,
+				pcbPtr->stack.curr,
+				pcbPtr->stack.top );
+	}
+	return rv;
 }
 
 
-int Oil_GetTaskCnt(void);
+int Os_CfgGetTaskCnt(void);
 void Os_ContextReInit( OsPcbType *pcbPtr );
 
 

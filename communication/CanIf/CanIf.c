@@ -28,7 +28,7 @@
 #include "string.h"
 
 // Added by Mattias 2008-11-18
-#include "Trace.h"
+#include "debug.h"
 #include "PduR.h"
 
 #if 0

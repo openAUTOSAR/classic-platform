@@ -22,7 +22,7 @@
 
 
 #include "Com.h"
-#include "Trace.h"
+#include "debug.h"
 #include "RTE_fading_led.h"
 
 

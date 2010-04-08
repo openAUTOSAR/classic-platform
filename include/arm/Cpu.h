@@ -30,6 +30,13 @@
 #define Irq_Save(_flags)     			_flags =_Irq_Save();
 #define Irq_Restore(_flags)			_Irq_Restore(_flags);
 
+
+#define Irq_SuspendAll() 	Irq_Disable()
+#define Irq_ResumeAll() 	Irq_Enable()
+
+#define Irq_SuspendOs() 	Irq_Disable()
+#define Irq_ResumeOs() 	Irq_Enable()
+
 static inline unsigned long _Irq_Save(void)
 {
    unsigned long val = __get_PRIMASK();

@@ -23,7 +23,7 @@
 #include "PduR_LinIf.h"
 //#include "LinIf.h"
 #include "PduR_If.h"
-#include "Trace.h"
+#include "debug.h"
 
 #ifndef PDUR_ZERO_COST_OPERATION
 #ifdef PDUR_LINIF_SUPPORT

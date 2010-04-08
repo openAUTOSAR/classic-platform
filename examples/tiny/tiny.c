@@ -18,8 +18,8 @@
 #include "Mcu.h"
 #include "arc.h"
 
-#define USE_DEBUG_PRINT
-#include "Trace.h"
+#define USE_LDEBUG_PRINTF
+#include "debug.h"
 
 // How many errors to keep in error log.
 #define ERROR_LOG_SIZE 20
@@ -32,11 +32,12 @@
 void btask_3( void ) {
 	StackInfoType si;
 	TaskType currTask;
-	dbg_printf("[%08d] btask_3 start\n", GetOsTick() );
+	LDEBUG_PRINTF("[%08u] btask_3 start\n", (unsigned)GetOsTick() );
 
 	GetTaskID(&currTask);
 	Os_Arc_GetStackInfo(currTask,&si);
-	dbg_printf("btask_3: Stack usage %d%%\n",OS_STACK_USAGE(&si));
+	LDEBUG_PRINTF("btask_3: Stack usage %u%%\n",
+			(unsigned)OS_STACK_USAGE(&si));
 
 	TerminateTask();
 }
@@ -52,15 +53,16 @@ void etask_1( void ) {
 	TaskType currTask;
 
 
-	dbg_printf("etask_1 start\n");
+	LDEBUG_PRINTF("etask_1 start\n");
 	for(;;) {
-		SetEvent(TASK_ID_etask_2,1);
-		WaitEvent(2);
-		ClearEvent(2);
+		SetEvent(TASK_ID_etask_2,EVENT_1);
+		WaitEvent(EVENT_2);
+		ClearEvent(EVENT_2);
 		tryFloatingPoint += 1.0F;
 		GetTaskID(&currTask);
 		Os_Arc_GetStackInfo(currTask,&si);
-		dbg_printf("etask_1: Stack usage %d%% \n",OS_STACK_USAGE(&si));
+		LDEBUG_PRINTF("etask_1: Stack usage %u%% \n",
+				(unsigned)OS_STACK_USAGE(&si));
 
 	}
 }
@@ -70,18 +72,19 @@ void etask_1( void ) {
  * and activates task: btask_3.
  */
 void etask_2( void ) {
-	dbg_printf("etask_2 start\n");
+	LDEBUG_PRINTF("etask_2 start\n");
 
 	for(;;) {
-		WaitEvent(1);
-		ClearEvent(1);
+		WaitEvent(EVENT_1);
+		ClearEvent(EVENT_1);
 		ActivateTask(TASK_ID_btask_3);
 		{
 			StackInfoType si;
 			TaskType currTask;
 			GetTaskID(&currTask);
 			Os_Arc_GetStackInfo(currTask,&si);
-			dbg_printf("etask_1: Stack usage %d%% \n",OS_STACK_USAGE(&si));
+			LDEBUG_PRINTF("etask_1: Stack usage %u%% \n",
+					(unsigned)OS_STACK_USAGE(&si));
 		}
 	}
 }
@@ -98,20 +101,20 @@ void OsIdle( void ) {
 
 /* Global hooks */
 ProtectionReturnType ProtectionHook( StatusType FatalError ) {
-	dbg_printf("## ProtectionHook\n");
+	LDEBUG_PRINTF("## ProtectionHook\n");
 	return PRO_KILLAPPL;
 }
 
 void StartupHook( void ) {
 	uint32_t sys_freq = McuE_GetSystemClock();
 
-	dbg_printf("## StartupHook\n");
+	LDEBUG_PRINTF("## StartupHook\n");
 
-	dbg_printf("Sys clock %d Hz\n",sys_freq);
+	LDEBUG_PRINTF("Sys clock %u Hz\n",(unsigned)sys_freq);
 }
 
 void ShutdownHook( StatusType Error ) {
-	dbg_printf("## ShutdownHook\n");
+	LDEBUG_PRINTF("## ShutdownHook\n");
 	while(1);
 }
 
@@ -145,6 +148,10 @@ void ErrorHook( StatusType Error ) {
 		AlarmType alarm_id = OSError_SetRelAlarm_AlarmId;
 		TickType increment = OSError_SetRelAlarm_Increment;
 		TickType cycle = OSError_SetRelAlarm_Cycle;
+		(void)alarm_id;
+		(void)increment;
+		(void)cycle;
+
 		// ... Handle this some way.
 		break;
 	}
@@ -157,7 +164,7 @@ void ErrorHook( StatusType Error ) {
 		break;
 	}
 
-	dbg_printf("## ErrorHook err=%d\n",Error);
+	LDEBUG_PRINTF("## ErrorHook err=%u\n",Error);
 
 	/* Log the errors in a buffer for later review */
 	LogBad[ErrorCount].param1 = os_error.param1;
@@ -176,12 +183,12 @@ void ErrorHook( StatusType Error ) {
 void PreTaskHook( void ) {
 	TaskType task;
 	GetTaskID(&task);
-//	dbg_printf("## PreTaskHook, taskid=%d\n",task);
+//	LDEBUG_PRINTF("## PreTaskHook, taskid=%u\n",task);
 }
 
 void PostTaskHook( void ) {
 	TaskType task;
 	GetTaskID(&task);
-//	dbg_printf("## PostTaskHook, taskid=%d\n",task);
+//	LDEBUG_PRINTF("## PostTaskHook, taskid=%u\n",task);
 }
 

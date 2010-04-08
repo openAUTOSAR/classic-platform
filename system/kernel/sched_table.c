@@ -63,7 +63,7 @@
 // Cancel
 
 #define SCHED_CHECK_ID(x) 				\
-	if( (x) > Oil_GetSchedCnt()) { \
+	if( (x) > Os_CfgGetSchedCnt()) { \
 		rv = E_OS_ID;					\
 		goto err; 						\
 	}
@@ -149,7 +149,7 @@ StatusType StartScheduleTableRel(ScheduleTableType sid, TickType offset) {
 	SCHED_CHECK_ID(sid);
 #endif
 
-	sPtr = Oil_GetSched(sid);
+	sPtr = Os_CfgGetSched(sid);
 
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 	if( sPtr->sync != NULL ) {
@@ -198,7 +198,7 @@ StatusType StartScheduleTableAbs(ScheduleTableType sid, TickType start ){
 
 	/** @req OS348 */
 	SCHED_CHECK_ID(sid);
-	sTblPtr =  Oil_GetSched(sid);
+	sTblPtr =  Os_CfgGetSched(sid);
 
 	/** @req OS349 */
 	if( start > Os_CounterGetMaxValue(sTblPtr->counter) ) {
@@ -267,7 +267,7 @@ StatusType StopScheduleTable(ScheduleTableType sid) {
 	OsSchTblType *sPtr;
 	/** @req OS279 */
 	SCHED_CHECK_ID(sid);
-	sPtr = Oil_GetSched(sid);
+	sPtr = Os_CfgGetSched(sid);
 
 	/** @req OS280 */
 	if(sPtr->state == SCHEDULETABLE_STOPPED ) {
@@ -294,8 +294,8 @@ StatusType NextScheduleTable( ScheduleTableType sid_curr, ScheduleTableType sid_
 	SCHED_CHECK_ID(sid_curr);
 	SCHED_CHECK_ID(sid_next);
 
-	sFromPtr = Oil_GetSched(sid_curr);
-	sToPtr = Oil_GetSched(sid_curr);
+	sFromPtr = Os_CfgGetSched(sid_curr);
+	sToPtr = Os_CfgGetSched(sid_curr);
 
 	/** @req OS330 */
 	if( sFromPtr->counter != sToPtr->counter) {
@@ -350,7 +350,7 @@ StatusType NextScheduleTable( ScheduleTableType sid_curr, ScheduleTableType sid_
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 StatusType SyncScheduleTable( ScheduleTableType sid, GlobalTimeTickType globalTime  ) {
 	StatusType rv = E_OK;
-	OsSchTblType *s_p =  Oil_GetSched(sid);
+	OsSchTblType *s_p =  Os_CfgGetSched(sid);
 
 	SCHED_CHECK_ID(sid);
 
@@ -421,7 +421,7 @@ StatusType GetScheduleTableStatus( ScheduleTableType sid, ScheduleTableStatusRef
 	/** @req OS293 */
 	SCHED_CHECK_ID(sid);
 
-	s_p = Oil_GetSched(sid);
+	s_p = Os_CfgGetSched(sid);
 	Irq_Disable();
 
 	switch(s_p->state) {
@@ -456,7 +456,7 @@ StatusType GetScheduleTableStatus( ScheduleTableType sid, ScheduleTableStatusRef
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 StatusType SetScheduleTableAsync( ScheduleTableType sid ) {
 	StatusType rv = E_OK;
-	OsSchTblType *s_p = Oil_GetSched(sid);
+	OsSchTblType *s_p = Os_CfgGetSched(sid);
 
 	SCHED_CHECK_ID(sid);
 
@@ -559,8 +559,8 @@ void Os_SchTblCheck(OsCounterType *c_p) {
  */
 void Os_SchTblInit( void ) {
 	OsSchTblType *s_p;
-	for( int i=0; i < Oil_GetSchedCnt();i++ ) {
-		s_p = Oil_GetSched(i);
+	for( int i=0; i < Os_CfgGetSchedCnt();i++ ) {
+		s_p = Os_CfgGetSched(i);
 
 		ScheduleTableConsistenyCheck(s_p);
 	}

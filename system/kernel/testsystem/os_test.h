@@ -17,14 +17,14 @@
 #define OS_TEST_H_
 
 #include "test_framework.h"
-#include "Trace.h"
+#include "debug.h"
 
 typedef void (*test_func_t)( void );
 
 #define TEST_FAIL(_text)		test_fail((_text),  __FILE__,  __LINE__, __FUNCTION__ )
 #define TEST_OK()				test_ok();
 #define TEST_ASSERT(_cond) 			if(!(_cond)) { TEST_FAIL(#_cond); }
-#define TEST_RUN()				dbg_printf("Running test %d\n",test_nr);
+#define TEST_RUN()				printf("Running test %d\n",test_nr);
 
 
 extern int test_suite;
@@ -33,10 +33,8 @@ extern int test_nr;
 #define TASK_ID_ILL			99
 #define RES_ID_ILL				99
 #define ALARM_ID_ILL			99
-#define SCHEDULE_TABLE_ID_ILL 	99
+#define SCHTBL_ID_ILL 	99
 #define COUNTER_ID_ILL			99
-
-#define EVENT_KILL				0x8000
 
 #if 1
 #define SECTION_SUP
