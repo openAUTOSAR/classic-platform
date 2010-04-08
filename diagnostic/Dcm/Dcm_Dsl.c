@@ -252,27 +252,6 @@ boolean findParentConfigurationLeafs(PduIdType dcmRxPduId,
 	return ret;
 }
 
-#if 0
-/*
- *  This function is called from the DSD module to the DSL when
- *  a response to a diagnostic request has been copied into the
- *  given TX-buffer and is ready for transmission.
- */
-void DslDsdDataResponseIndication(PduIdType txPduId) {
-	const Dcm_DslProtocolRxType *protocolRx = NULL;
-	const Dcm_DslMainConnectionType *mainConnection = NULL;
-	const Dcm_DslConnectionType *connection = NULL;
-	const Dcm_DslProtocolRowType *protocolRow = NULL;
-	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
-
-	if (findParentConfigurationLeafs(txPduId, &protocolRx, &mainConnection,
-			&connection, &protocolRow, &runtime)) {
-		McuE_EnterCriticalSection();
-		runtime->externalTxBufferStatus = DSD_PENDING_RESPONSE_SIGNALED;
-		McuE_ExitCriticalSection();
-	}
-}
-#else
 /*
  *  This function is called from the DSD module to the DSL when
  *  a response to a diagnostic request has been copied into the
@@ -292,7 +271,7 @@ void DslDsdProcessingDone(PduIdType txPduId, DsdProcessingDoneResultType result)
 		McuE_ExitCriticalSection(state);
 	}
 }
-#endif
+
 
 /*
  *	This function preparing transmission of response
@@ -666,25 +645,3 @@ void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result) {
 	DsdDataConfirmation(dcmTxPduId); /** @req DCM117 **//** @req DCM235 **/
 }
 
-
-
-void DslResponseSuppressed(void) {
-	// Lets clean up
-#if 0
-	dslMsgData.activePduId = DCM_PDU_ID_NONE;
-	dslMsgData.pduRxData = NULL;
-	dslMsgData.pduTxData = NULL;
-
-	pduTxId = DCM_PDU_ID_NONE;
-	txBufferPointer = NULL;
-#endif
-}
-
-/*
- *
- */
-void DslDsdPduTransmit(void) {
-#if 0
-	dslDsdPduTransmit = TRUE;
-#endif
-}
