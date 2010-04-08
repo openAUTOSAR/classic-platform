@@ -158,7 +158,7 @@ typedef struct {
 } Dem_IndicatorAttributeType;
 
 typedef struct {
-	Dem_CallbackGetFaultDetectionCounterFncType	CallbackGetFDCnt;	// (1)
+	Dem_CallbackGetFaultDetectionCounterFncType	CallbackGetFDCntFnc;	// (1)
 } Dem_PreDebounceMonitorInternalType;
 
 typedef struct {

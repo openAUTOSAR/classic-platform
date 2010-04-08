@@ -1131,7 +1131,7 @@ Std_ReturnType getFaultDetectionCounter(Dem_EventIdType eventId, sint8 *counter)
 			{
 			case DEM_NO_PRE_DEBOUNCE:
 				if (eventParam->EventClass->PreDebounceAlgorithmClass->PreDebounceAlgorithm.PreDebounceMonitorInternal != NULL) {
-					returnCode = eventParam->EventClass->PreDebounceAlgorithmClass->PreDebounceAlgorithm.PreDebounceMonitorInternal->CallbackGetFDCnt(counter);
+					returnCode = eventParam->EventClass->PreDebounceAlgorithmClass->PreDebounceAlgorithm.PreDebounceMonitorInternal->CallbackGetFDCntFnc(counter);
 				}
 				break;
 
