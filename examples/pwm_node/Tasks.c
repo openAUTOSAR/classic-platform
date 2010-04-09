@@ -71,8 +71,8 @@ void Startup( void ) {
 	/*
 	 * Activate scheduled tasks. OS tick is 1ms.
 	 */
-	SetRelAlarm(ALARM_ID_bTask25, 25, 25);    // Task for pwm channel 1
-	SetRelAlarm(ALARM_ID_bTask100, 100, 100); // Task for pwm channel 2
+	SetRelAlarm(ALARM_ID_Alarm25, 25, 25);    // Task for pwm channel 1
+	SetRelAlarm(ALARM_ID_Alarm100, 100, 100); // Task for pwm channel 2
 
 
 	// End of startup_task().
