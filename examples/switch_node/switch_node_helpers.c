@@ -23,7 +23,7 @@
 
 #include "Adc.h"
 #include "Com.h"
-#include "debug.h"
+#include "Trace.h"
 #include "RTE_switch.h"
 
 #define SWITCH_LOW_THRESHOLD 100
