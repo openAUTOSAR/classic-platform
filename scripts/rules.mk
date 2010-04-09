@@ -114,7 +114,6 @@ inc-y += ../include
 %.s: %.sx
 	@echo "  >> CPP $(notdir $<)"
 	$(Q)$(CPP) -x assembler-with-cpp -E -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
-	$(Q)cp $@ $(ROOTDIR)/
 
 
 #	@cat $@ 
