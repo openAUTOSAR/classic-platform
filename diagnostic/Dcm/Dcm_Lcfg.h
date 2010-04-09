@@ -387,6 +387,7 @@ typedef enum
 	DSD_PENDING_RESPONSE_SIGNALED, // Signals have been received saying the buffer contain valid data.
 	DCM_TRANSMIT_SIGNALED, // The DCM has been asked to transfer the response, system is now waiting for TP layer to reqest Tx buffer.
 	PROVIDED_TO_DSD,	// The buffer is currently in use by DSD.
+	UNDEFINED_USAGE
 }Dcm_DslBufferUserType;
 
 typedef struct {
@@ -531,6 +532,7 @@ typedef struct {
 	//DcmDsl_ProtocolConfigurationType protocolConfiguration;
 	boolean diagnosticActiveComM; //
 	uint16 S3ServerTimeoutCount;
+	uint8 responsePendingCount;
 	Dcm_SecLevelType securityLevel;
 	Dcm_SesCtrlType sessionControl;
 } Dcm_DslRunTimeProtocolParametersType;

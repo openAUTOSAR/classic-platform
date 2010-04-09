@@ -1042,9 +1042,9 @@ static INLINE Std_ReturnType sendFirstFrame(const CanTp_TxNSduType *txConfig,
 static INLINE BufReq_ReturnType canTpTransmitHelper(const CanTp_TxNSduType *txConfig,
 		CanTp_ChannelPrivateType *txRuntime) {
 
-	BufReq_ReturnType pdurResp;
-	Std_ReturnType res;
-	ISO15765FrameType iso15765Frame;
+	BufReq_ReturnType pdurResp = BUFREQ_NOT_OK;
+	Std_ReturnType res = E_NOT_OK;
+	ISO15765FrameType iso15765Frame = INVALID_FRAME;
 
 	pdurResp = PduR_CanTpProvideTxBuffer(txConfig->PduR_CanTpTxPduId,
 			&txRuntime->bufferPduRouter, 0);  // Req: CanTp 186.

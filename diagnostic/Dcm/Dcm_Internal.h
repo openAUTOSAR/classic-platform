@@ -74,7 +74,7 @@ void DsdInit(void);
 void DsdMain(void);
 void DsdHandleRequest(void);
 void DsdDspProcessingDone(Dcm_NegativeResponseCodeType responseCode);
-void DsdDataConfirmation(PduIdType confirmPduId);
+void DsdDataConfirmation(PduIdType confirmPduId, NotifResultType result);
 void DsdDslDataIndication(const PduInfoType *pduRxData, const Dcm_DsdServiceTableType *protocolSIDTable, Dcm_ProtocolAddrTypeType addrType, PduIdType txPduId, PduInfoType *pduTxData);
 
 
