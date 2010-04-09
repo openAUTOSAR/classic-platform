@@ -481,7 +481,7 @@ static INLINE Std_ReturnType canReceivePaddingHelper(
 		PduInfoPtr->SduLength = CANIF_PDU_MAX_LENGTH;
 	}
 	rxRuntime->iso15765.NasNarTimeoutCount =
-			CONVERT_MS_TO_MAIN_CYCLES(rxConfig->CanTpNar); // req: CanTp075.
+			CANTP_CONVERT_MS_TO_MAIN_CYCLES(rxConfig->CanTpNar); // req: CanTp075.
 	rxRuntime->iso15765.NasNarPending = TRUE;
 	return CanIf_Transmit(rxConfig->CanIf_CanTxPduId, PduInfoPtr);
 }
@@ -498,7 +498,7 @@ static INLINE Std_ReturnType canTansmitPaddingHelper(
 		PduInfoPtr->SduLength = CANIF_PDU_MAX_LENGTH;
 	}
 	txRuntime->iso15765.NasNarTimeoutCount =
-			CONVERT_MS_TO_MAIN_CYCLES(txConfig->CanTpNas); // req: CanTp075.
+			CANTP_CONVERT_MS_TO_MAIN_CYCLES(txConfig->CanTpNas); // req: CanTp075.
 	txRuntime->iso15765.NasNarPending = TRUE;
 	return CanIf_Transmit(txConfig->CanIf_CanTxPduId, PduInfoPtr);
 }
@@ -625,8 +625,7 @@ static INLINE void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
 						payloadLen - bytesWrittenToSduRBuffer );
 			}
 			rxRuntime->iso15765.framesHandledCount++;
-			rxRuntime->iso15765.stateTimeoutCount = rxConfig->CanTpNbr
-					* MAIN_FUNCTION_PERIOD_TIME_MS;
+			rxRuntime->iso15765.stateTimeoutCount = CANTP_CONVERT_MS_TO_MAIN_CYCLES(rxConfig->CanTpNbr);
 			rxRuntime->iso15765.state = RX_WAIT_SDU_BUFFER;
 			rxRuntime->mode = CANTP_RX_PROCESSING;
 			sendFlowControlFrame(rxConfig, rxRuntime, ret);  // Sends "WAIT" to remote node.
@@ -746,16 +745,15 @@ static INLINE void handleConsecutiveFrameSent(
 	} else if (txRuntime->iso15765.nextFlowControlCount == 0) {
 		// It is time to receive a flow control.
 		DEBUG( DEBUG_MEDIUM, "Sender require flow control!\n");
-		txRuntime->iso15765.stateTimeoutCount = txConfig->CanTpNbs
-				* MAIN_FUNCTION_PERIOD_TIME_MS; /*CanTp: 264*/
+		txRuntime->iso15765.stateTimeoutCount =
+				CANTP_CONVERT_MS_TO_MAIN_CYCLES(txConfig->CanTpNbs);  /*CanTp: 264*/
 		txRuntime->iso15765.state = TX_WAIT_FLOW_CONTROL;
 	} else if (txRuntime->iso15765.nextFlowControlCount != 0) {
 		// Send next consecutive frame.
 		DEBUG( DEBUG_MEDIUM, "TX:iso15765.nextFlowControlCount:%d \n",
 				txRuntime->iso15765.nextFlowControlCount);
-		txRuntime->iso15765.stateTimeoutCount
-				= txRuntime->iso15765.STmin
-						* MAIN_FUNCTION_PERIOD_TIME_MS;
+		txRuntime->iso15765.stateTimeoutCount =
+				CANTP_CONVERT_MS_TO_MAIN_CYCLES(txRuntime->iso15765.STmin);
 		txRuntime->iso15765.state = TX_WAIT_SEND_CONSECUTIVE_FRAME;
 	} else {
 		DEBUG( DEBUG_MEDIUM, "Sender failed!\n" );
@@ -798,8 +796,8 @@ static INLINE void handleFlowControlFrame(const CanTp_TxNSduType *txConfig,
 		break;
 	case ISO15765_FLOW_CONTROL_STATUS_WAIT:
 		DEBUG( DEBUG_MEDIUM, "----------------------->Flow Control: WAIT!\n");
-		txRuntime->iso15765.stateTimeoutCount = txConfig->CanTpNbs
-				* MAIN_FUNCTION_PERIOD_TIME_MS; /*CanTp: 264*/
+		txRuntime->iso15765.stateTimeoutCount =
+				CANTP_CONVERT_MS_TO_MAIN_CYCLES(txConfig->CanTpNbs);  /*CanTp: 264*/
 		txRuntime->iso15765.state = TX_WAIT_FLOW_CONTROL;
 		break;
 	case ISO15765_FLOW_CONTROL_STATUS_OVFLW:
@@ -841,8 +839,8 @@ static INLINE void handleSingleFrame(const CanTp_RxNSduType *rxConfig,
 	rxRuntime->pduLenghtTotalBytes = pduLength;
 	rxRuntime->iso15765.state = SF_OR_FF_RECEIVED_WAITING_PDUR_BUFFER;
 	rxRuntime->mode = CANTP_RX_PROCESSING;
-	rxRuntime->iso15765.stateTimeoutCount = rxConfig->CanTpNbr
-			* MAIN_FUNCTION_PERIOD_TIME_MS; /* CanTP 166. */
+	rxRuntime->iso15765.stateTimeoutCount =
+			CANTP_CONVERT_MS_TO_MAIN_CYCLES(rxConfig->CanTpNbr);
 
 
 	ret = writeDataSegmentToPduRBuffer(rxConfig, rxRuntime, data, pduLength,
@@ -894,8 +892,8 @@ static INLINE void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 
 	rxRuntime->iso15765.state = SF_OR_FF_RECEIVED_WAITING_PDUR_BUFFER;
 	rxRuntime->mode = CANTP_RX_PROCESSING;
-	rxRuntime->iso15765.stateTimeoutCount = rxConfig->CanTpNbr
-			* MAIN_FUNCTION_PERIOD_TIME_MS; /* CanTP 166. */
+	rxRuntime->iso15765.stateTimeoutCount =
+			CANTP_CONVERT_MS_TO_MAIN_CYCLES(rxConfig->CanTpNbr); /* CanTP 166. */
 
 	if (rxConfig->CanTpAddressingFormant == CANTP_STANDARD) {
 		ret = writeDataSegmentToPduRBuffer(rxConfig, rxRuntime,
@@ -909,8 +907,8 @@ static INLINE void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 				&bytesWrittenToSduRBuffer);
 	}
 	if (ret == BUFREQ_OK) {
-		rxRuntime->iso15765.stateTimeoutCount = rxConfig->CanTpNcr
-				* MAIN_FUNCTION_PERIOD_TIME_MS;
+		rxRuntime->iso15765.stateTimeoutCount =
+				CANTP_CONVERT_MS_TO_MAIN_CYCLES(rxConfig->CanTpNcr);
 		rxRuntime->iso15765.state = RX_WAIT_CONSECUTIVE_FRAME;
 		rxRuntime->mode = CANTP_RX_PROCESSING;
 		sendFlowControlFrame(rxConfig, rxRuntime, ret);
@@ -923,8 +921,8 @@ static INLINE void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 			(void)writeDataSegmentToLocalBuffer(rxRuntime,
 					&rxPduData->SduDataPtr[3], MAX_PAYLOAD_FF_EXT_ADDR );
 		}
-		rxRuntime->iso15765.stateTimeoutCount = rxConfig->CanTpNbr
-				* MAIN_FUNCTION_PERIOD_TIME_MS;
+		rxRuntime->iso15765.stateTimeoutCount =
+				CANTP_CONVERT_MS_TO_MAIN_CYCLES(rxConfig->CanTpNbr);
 		rxRuntime->iso15765.state = RX_WAIT_SDU_BUFFER;
 		rxRuntime->mode = CANTP_RX_PROCESSING;
 		sendFlowControlFrame(rxConfig, rxRuntime, ret);  // Sends "WAIT" to remote node.
@@ -1118,8 +1116,8 @@ Std_ReturnType CanTp_Transmit(PduIdType CanTpTxSduId,
 	txConfig = (CanTp_TxNSduType*)&CanTpConfig.CanTpNSduList[CanTpTxSduId].configData;
 	txRuntime = &CanTpRunTimeData.runtimeDataList[txConfig->CanTpTxChannel]; // Runtime data.
 	txRuntime->pduLenghtTotalBytes = CanTpTxInfoPtr->SduLength;
-	txRuntime->iso15765.stateTimeoutCount = txConfig->CanTpNcs
-			* MAIN_FUNCTION_PERIOD_TIME_MS;
+	txRuntime->iso15765.stateTimeoutCount =
+			CANTP_CONVERT_MS_TO_MAIN_CYCLES(txConfig->CanTpNcs);
 	txRuntime->mode = CANTP_TX_PROCESSING;
 	txRuntime->iso15765.state
 			= TX_WAIT_CAN_TP_TRANSMIT_CAN_TP_PROVIDE_TX_BUFFER;
