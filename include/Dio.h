@@ -13,17 +13,10 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
 #ifndef DIO_H_
 #define DIO_H_
 
-#include "Std_Types.h"
+#include "Std_Types.h" /** @req DIO131 */
 
 // API Service ID's
 #define DIO_READCHANNEL_ID			0x00
@@ -38,27 +31,6 @@
 #define DIO_E_PARAM_INVALID_PORT_ID 		20
 #define DIO_E_PARAM_INVALID_GROUP_ID 		31
 
-typedef uint32 Dio_ChannelType;
-typedef uint32 Dio_PortType;
-typedef struct
-{
-  Dio_PortType port;
-  uint8 offset;
-  uint32 mask;
-} Dio_ChannelGroupType;
-
-#if 0 // Gone from 3.0
-typedef enum
-{
-  STD_LOW,
-  STD_HIGH,
-}Dio_LevelType;
-#endif
-
-typedef uint32 Dio_LevelType;
-
-typedef uint16 Dio_PortLevelType;
-
 #define DIO_SW_MAJOR_VERSION	1
 #define DIO_SW_MINOR_VERSION	0
 #define DIO_SW_PATCH_VERSION	0
@@ -69,16 +41,27 @@ typedef uint16 Dio_PortLevelType;
 
 #include "Dio_Cfg.h"
 
-
+/** @req DIO124 */
 #if ( DIO_VERSION_INFO_API == STD_ON)
+/** @req DIO139 */
 void Dio_GetVersionInfo( Std_VersionInfoType *versionInfo );
 #endif
 
+/** @req DIO133 */
+/** @req DIO027 */
 Dio_LevelType Dio_ReadChannel(Dio_ChannelType channelId);
+/** @req DIO134 */
 void Dio_WriteChannel(Dio_ChannelType channelId, Dio_LevelType level);
+
+/** @req DIO135 */
+/** @req DIO031 */
 Dio_PortLevelType Dio_ReadPort(Dio_PortType portId);
+/** @req DIO136 */
 void Dio_WritePort(Dio_PortType portId, Dio_PortLevelType level);
+
+/** @req DIO137 */
 Dio_PortLevelType Dio_ReadChannelGroup( const Dio_ChannelGroupType *channelGroupIdPtr );
+/** @req DIO138 */
 void Dio_WriteChannelGroup(const Dio_ChannelGroupType *channelGroupIdPtr, Dio_PortLevelType level);
 
 #endif /*DIO_H_*/
