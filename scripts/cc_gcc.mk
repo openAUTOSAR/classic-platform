@@ -14,8 +14,8 @@ endif
 # CCFLAGS - compile flags
 
 CC	= 	$(CROSS_COMPILE)gcc
-cflags-$(CFG_RELEASE) += -O3
-cflags-$(CFG_DEBUG) += -g -O0
+cflags-$(CFG_OPT_RELEASE) += -O3
+cflags-$(CFG_OPT_DEBUG) += -g -O0
 
 # Remove sections if needed.. may be problems with other compilers here.
 #cflags-y += -ffunction-sections

@@ -28,11 +28,18 @@ define CFG_template
 	def-y += CFG_$(1)
 endef
 
-
 $(foreach mod,$(MOD_AVAIL),$(eval $(call MOD_AVAIL_template,${mod})))
 $(foreach mod,$(MOD_USE),$(eval $(call MOD_USE_template,${mod})))
 $(foreach mod,$(CFG),$(eval $(call CFG_template,${mod})))
 def-y += $(ARCH) $(ARCH_FAM) $(ARCH_MCU) 
+
+# Select console / debug
+$(foreach mod,$(SELECT_OS_CONSOLE),$(eval $(call MOD_USE_template,${mod})))
+$(foreach mod,$(SELECT_CONSOLE),$(eval $(call MOD_USE_template,${mod})))
+
+def-y += SELECT_OS_CONSOLE=$(if $(SELECT_OS_CONSOLE),$(SELECT_OS_CONSOLE),TTY_NONE)
+def-y += SELECT_CONSOLE=$(if $(SELECT_CONSOLE),$(SELECT_CONSOLE),TTY_NONE)
+def-$(USE_DEBUG_PRINTF) += USE_DEBUG_PRINTF 
 
 not_avail = $(filter-out $(MOD_AVAIL),$(MOD_USE))
 ifneq ($(not_avail),)
@@ -107,7 +114,6 @@ inc-y += ../include
 %.s: %.sx
 	@echo "  >> CPP $(notdir $<)"
 	$(Q)$(CPP) -x assembler-with-cpp -E -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
-	cp $@ $(ROOTDIR)/
 
 
 #	@cat $@ 

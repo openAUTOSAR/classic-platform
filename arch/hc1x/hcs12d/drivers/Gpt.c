@@ -22,7 +22,7 @@
 #include <string.h>
 #include "regs.h"
 #include "Mcu.h"
-#include "Trace.h"
+#include "debug.h"
 #include "Det.h"
 #include "irq_types.h"
 #include "Os.h"

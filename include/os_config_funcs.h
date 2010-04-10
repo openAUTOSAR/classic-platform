@@ -27,42 +27,27 @@
 
 
 // COUNTER, RESOURCE, TSAK, must be at least 1
-#define COUNTER_CNT				ARRAY_SIZE(counter_list)
-#define RESOURCE_CNT			ARRAY_SIZE(resource_list)
-#define TASK_CNT				ARRAY_SIZE(rom_pcb_list)
 
-#if defined(ALARM_USE)
-#define ALARM_CNT				ARRAY_SIZE(alarm_list)
-#else
-#define ALARM_CNT				0
-#endif
+#define OS_VALIDATE(_a,_b)   if((_a)!=(_b) ) { \
+								assert(#_a  #_b); \
+							  }
 
-#if defined(SCHEDULETABLE_USE)
-#define SCHEDULETABLE_CNT		ARRAY_SIZE(sched_list)
-#else
-#define SCHEDULETABLE_CNT		0
-#endif
 
-#if defined(MESSAGE_CNT)
-#undef MESSAGE_CNT
-#define MESSAGE_CNT				ARRAY_SIZE(message_list)
-#else
-#define MESSAGE_CNT				0
-#endif
 
-#if defined(EVENT_CNT)
-#undef EVENT_CNT
-#define EVENT_CNT				ARRAY_SIZE(event_list)
-#else
-#define EVENT_CNT				0
-#endif
 
-#if defined(SERVICE_CNT)
-#undef SERVICE_CNT
-#define SERVICE_CNT				ARRAY_SIZE(os_cfg_trusted_list)
-#else
-#define SERVICE_CNT				0
+void Os_CfgValidate(void ) {
+	OS_VALIDATE(OS_COUNTER_CNT,ARRAY_SIZE(counter_list));
+#if (RESOURCE_CNT!=0)
+	OS_VALIDATE(OS_RESOURCE_CNT,ARRAY_SIZE(resource_list));
 #endif
+	OS_VALIDATE(OS_TASK_CNT ,ARRAY_SIZE(rom_pcb_list));
+#if (RESOURCE_CNT!=0)
+	OS_VALIDATE(OS_ALARM_CNT,ARRAY_SIZE(alarm_list));
+#endif
+#if (OS_SCHTBL_CNT!=0)
+	OS_VALIDATE(OS_SCHTBL_CNT, ARRAY_SIZE(sched_list));
+#endif
+}
 
 os_error_t os_error;
 
@@ -81,48 +66,48 @@ trusted_func_t oil_trusted_func_list[SERVICE_CNT];
 
 /*-----------------------------------------------------------------*/
 #if (  OS_SC3 == STD_ON) || (  OS_SC4==STD_ON)
-int Oil_GetApplCnt(void) {
+int Os_CfgGetApplCnt(void) {
 	return APPLICATION_CNT;
 }
 
-OsRomApplicationType *Oil_GetApplObj( ApplicationType application_id ) {
+OsRomApplicationType *Os_CfgGetApplObj( ApplicationType application_id ) {
 	return &rom_app_list[application_id];
 }
 #endif
 
 /*-----------------------------------------------------------------*/
-int Oil_GetTaskCnt(void) {
-	return TASK_CNT;
+int Os_CfgGetTaskCnt(void) {
+	return OS_TASK_CNT;
 }
 /*-----------------------------------------------------------------*/
 
-OsResourceType *Oil_GetResource( ResourceType resource ) {
+OsResourceType *Os_CfgGetResource( ResourceType resource ) {
 	return &resource_list[resource];
 }
 
-int Oil_GetResourceCnt() {
-	return RESOURCE_CNT;
+int Os_CfgGetResourceCnt() {
+	return OS_RESOURCE_CNT;
 }
 
 /*-----------------------------------------------------------------*/
 
-OsCounterType *Oil_GetCounter(CounterType count_id) {
+OsCounterType *Os_CfgGetCounter(CounterType count_id) {
 	return &counter_list[count_id];
 }
 
-uint32 Oil_GetCounterCnt(void ) {
-	return COUNTER_CNT;
+uint32 Os_CfgGetCounterCnt(void ) {
+	return OS_COUNTER_CNT;
 //	return sizeof(counter_list)/sizeof(OsCounterType);
 }
 /*-----------------------------------------------------------------*/
 
-uint32 Oil_GetSchedCnt(  void ) {
-	return SCHEDULETABLE_CNT;
+uint32 Os_CfgGetSchedCnt(  void ) {
+	return OS_SCHTBL_CNT;
 }
 
-OsSchTblType *Oil_GetSched( ScheduleTableType sched_id ) {
-#if defined(SCHEDULETABLE_USE)
-	if(sched_id < SCHEDULETABLE_CNT) {
+OsSchTblType *Os_CfgGetSched( ScheduleTableType sched_id ) {
+#if (OS_SCHTBL_CNT!=0)
+	if(sched_id < OS_SCHTBL_CNT) {
 		return &sched_list[sched_id];
 	} else {
 		return NULL;
@@ -134,13 +119,13 @@ OsSchTblType *Oil_GetSched( ScheduleTableType sched_id ) {
 
 /*-----------------------------------------------------------------*/
 
-uint32 Oil_GetAlarmCnt(void) {
-	return ALARM_CNT;
+uint32 Os_CfgGetAlarmCnt(void) {
+	return OS_ALARM_CNT;
 }
 
-OsAlarmType *Oil_GetAlarmObj( AlarmType alarm_id ) {
-#if defined(ALARM_USE)
-	if( alarm_id < ALARM_CNT) {
+OsAlarmType *Os_CfgGetAlarmObj( AlarmType alarm_id ) {
+#if (OS_ALARM_CNT!=0)
+	if( alarm_id < OS_ALARM_CNT) {
 	  return &alarm_list[alarm_id];
 	} else {
 		return NULL;
@@ -150,14 +135,14 @@ OsAlarmType *Oil_GetAlarmObj( AlarmType alarm_id ) {
 #endif
 }
 
-StatusType Oil_GetAlarmBase(AlarmType alarm_id, AlarmBaseRefType info) {
+StatusType Os_CfgGetAlarmBase(AlarmType alarm_id, AlarmBaseRefType info) {
 
 	StatusType rv = E_OK;
 
-	if( alarm_id >= Oil_GetAlarmCnt() ) {
+	if( alarm_id >= Os_CfgGetAlarmCnt() ) {
 		rv = E_OS_ID;
 	}
-#if defined(ALARM_USE)
+#if (OS_ALARM_CNT!=0)
 	*info = alarm_list[alarm_id].counter->alarm_base;
 #endif
 	return rv;
@@ -167,23 +152,23 @@ StatusType Oil_GetAlarmBase(AlarmType alarm_id, AlarmBaseRefType info) {
 /*-----------------------------------------------------------------*/
 
 #if 0
-OsMessageType *Oil_GetMessage(MessageType message_id) {
-#if MESSAGE_CNT!=0
+OsMessageType *Os_CfgGetMessage(MessageType message_id) {
+#if (OS_MESSAGE_CNT!=0)
 	return &message_list[message_id];
 #else
 	return NULL;
 #endif
 }
 
-uint32 Oil_GetMessageCnt(void ) {
-	return MESSAGE_CNT;
+uint32 Os_CfgGetMessageCnt(void ) {
+	return OS_MESSAGE_CNT;
 }
 #endif
 
 /*-----------------------------------------------------------------*/
 
 #if (  OS_SC3 == STD_ON) || (  OS_SC4 == STD_ON)
-uint32 Oil_GetServiceCnt( void ) {
+uint32 Os_CfgGetServiceCnt( void ) {
 	return SERVICE_CNT;
 }
 #endif
@@ -191,7 +176,7 @@ uint32 Oil_GetServiceCnt( void ) {
 
 /*-----------------------------------------------------------------*/
 
-void Oil_GetInterruptStackInfo( OsStackType *stack ) {
+void Os_CfgGetInterruptStackInfo( OsStackType *stack ) {
 	stack->top = os_interrupt_stack;
 	stack->size = sizeof(os_interrupt_stack);
 }

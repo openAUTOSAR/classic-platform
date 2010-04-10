@@ -12,6 +12,7 @@ ENTRY(_start)
 
 MEMORY
 {
+	/* MPC55xx Reset Control Word(RCW) */
 	rcw(R)   : ORIGIN = 0x00000000, LENGTH = 0x8
     flash(R) : ORIGIN = 0x00000008, LENGTH = 0x100000
     /* 5516S, 48K
@@ -92,7 +93,7 @@ SECTIONS
 	.t32_outport ALIGN(0x10): { *(.t32_outport); } 			> ram
 	.got : AT(ALIGN(LOADADDR(.sdata)+SIZEOF(.sdata),4)) { *(.got.plt) *(.got) } > ram
 	.bss : { *(.bss .bss.* COMMON .gnu.linkonce.b.*);__BSS_END 	= .; } 	> ram
-	.init_stack ALIGN(16) (NOLOAD) : {	__SP_END	= .;. = . + 200; 	__SP_INIT 	= .; } > ram
+	.init_stack ALIGN(16) (NOLOAD) : {	__SP_END	= .;. = . + 1000; 	__SP_INIT 	= .; } > ram
 	/* Fls RAM section */
 	.fls_ram ALIGN(16) (NOLOAD) : {
 		__FLS_ERASE_RAM__ = .;

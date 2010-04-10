@@ -56,8 +56,8 @@
 #include <assert.h>
 #include <string.h>
 
-//#define USE_DEBUG_PRINT	1
-#include "Trace.h"
+//#define USE_LDEBUG_PRINTF	1
+#include "debug.h"
 #define MODULE_NAME 	"/driver/Eep"
 
 // Define if you to check if the E2 seems sane at init..

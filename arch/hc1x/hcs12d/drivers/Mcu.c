@@ -24,8 +24,8 @@
 #include "Ramlog.h"
 
 #define USE_TRACE 1
-#define USE_DEBUG_PRINT 1
-#include "Trace.h"
+#define USE_LDEBUG_PRINTF 1
+#include "debug.h"
 
 
 #define  PORTIO_8	 *(volatile unsigned char *)

@@ -25,7 +25,7 @@
  */
 
 #include "Os.h"
-#include "Trace.h"
+#include "debug.h"
 //#include <stdio.h>
 #include <assert.h>
 #include "os_test.h"
@@ -50,12 +50,12 @@ void etask_sup_l_03( void ) {
 
 		case 1:
 
-			GetScheduleTableStatus(SCHEDULE_TABLE_0,&status);
+			GetScheduleTableStatus(SCHTBL_ID_0,&status);
 			TEST_ASSERT(status==SCHEDULETABLE_STOPPED);
 
 			// Start a schedule with expire points at 2 and 5
-			StartScheduleTableRel(SCHEDULE_TABLE_0,SCHEDULETABLE_DURATION_1*2/10);
-			GetScheduleTableStatus(SCHEDULE_TABLE_0,&status);
+			StartScheduleTableRel(SCHTBL_ID_0,SCHEDULETABLE_DURATION_1*2/10);
+			GetScheduleTableStatus(SCHTBL_ID_0,&status);
 			TEST_ASSERT(status==SCHEDULETABLE_RUNNING);
 
 			IncrementCounter(COUNTER_ID_soft_2);
@@ -97,9 +97,9 @@ void etask_sup_l_03( void ) {
 
 			// Go with the next schedule table, while 0 is running
 			// (The current table must complete first)
-			NextScheduleTable(SCHEDULE_TABLE_0, SCHEDULE_TABLE_1);
+			NextScheduleTable(SCHTBL_ID_0, SCHTBL_ID_1);
 
-			GetScheduleTableStatus(SCHEDULE_TABLE_1,&status);
+			GetScheduleTableStatus(SCHTBL_ID_1,&status);
 			TEST_ASSERT(status==SCHEDULETABLE_NEXT);
 
 			IncrementCounter(COUNTER_ID_soft_2); // 1
@@ -114,15 +114,15 @@ void etask_sup_l_03( void ) {
 			IncrementCounter(COUNTER_ID_soft_2); // 9
 			IncrementCounter(COUNTER_ID_soft_2); // 10
 
-			GetScheduleTableStatus(SCHEDULE_TABLE_0,&status);
+			GetScheduleTableStatus(SCHTBL_ID_0,&status);
 			TEST_ASSERT(status==SCHEDULETABLE_STOPPED);
-			GetScheduleTableStatus(SCHEDULE_TABLE_1,&status);
+			GetScheduleTableStatus(SCHTBL_ID_1,&status);
 			TEST_ASSERT(status==SCHEDULETABLE_RUNNING);
 
 			IncrementCounter(COUNTER_ID_soft_2); // 0 On table 1
 
 
-//			StartScheduleTableRel(SCHEDULE_TABLE_0,SCHEDULETABLE_DURATION_1*3/10);
+//			StartScheduleTableRel(SCHTBL_ID_0,SCHEDULETABLE_DURATION_1*3/10);
 
 			// Done
 			break;

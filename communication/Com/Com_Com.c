@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Com_Com.h"
-#include "Trace.h"
+#include "debug.h"
 #include "CanIf.h"
 #include "PduR.h"
 #include "PduR_Com.h"
@@ -39,37 +39,9 @@ uint8 Com_SendSignal(Com_SignalIdType SignalId, const void *SignalDataPtr) {
 
 	//DEBUG(DEBUG_LOW, "Com_SendSignal: id %d, nBytes %d, BitPosition %d, intVal %d\n", SignalId, nBytes, signal->ComBitPosition, (uint32)*(uint8 *)SignalDataPtr);
 
-	void *dataPtr = (void *)SignalDataPtr;
-
-	if (Signal->ComSignalEndianess == BIG_ENDIAN) {
-		if (Signal->ComSignalType == UINT16) {
-			uint16 data;
-			memcpy(&data, SignalDataPtr, SignalTypeToSize(Signal->ComSignalType,Signal->ComSignalLength));
-			data = bswap16(data);
-			dataPtr = &data;
-
-		} else if (Signal->ComSignalType == UINT32) {
-			uint32 data;
-			memcpy(&data, SignalDataPtr, SignalTypeToSize(Signal->ComSignalType,Signal->ComSignalLength));
-			data = bswap32(data);
-			dataPtr = &data;
-
-		} else if (Signal->ComSignalType == SINT16) {
-			sint16 data;
-			memcpy(&data, SignalDataPtr, SignalTypeToSize(Signal->ComSignalType,Signal->ComSignalLength));
-			data = bswap16(data);
-			dataPtr = &data;
-
-		} else if (Signal->ComSignalType == SINT32) {
-			sint32 data;
-			memcpy(&data, SignalDataPtr, SignalTypeToSize(Signal->ComSignalType,Signal->ComSignalLength));
-			data = bswap32(data);
-			dataPtr = &data;
-		}
-
-	}
-
-	Com_CopyData(Arc_IPdu->ComIPduDataPtr, dataPtr, Signal->ComBitSize, Signal->ComBitPosition, 0);
+	// TODO: CopyData
+	// Com_CopyData(Arc_IPdu->ComIPduDataPtr, dataPtr, Signal->ComBitSize, Signal->ComBitPosition, 0);
+	Com_WriteSignalDataToPdu(Signal->ComHandleId, SignalDataPtr);
 
 	// If the signal has an update bit. Set it!
 	if (Signal->ComSignalArcUseUpdateBit) {
@@ -86,32 +58,11 @@ uint8 Com_SendSignal(Com_SignalIdType SignalId, const void *SignalDataPtr) {
 }
 
 uint8 Com_ReceiveSignal(Com_SignalIdType SignalId, void* SignalDataPtr) {
-	ComGetSignal(SignalId);
 	COM_VALIDATE_SIGNAL(SignalId, 0x0b, E_NOT_OK);
 	DEBUG(DEBUG_LOW, "Com_ReceiveSignal: SignalId %d\n", SignalId);
 
-	Com_CopyFromSignal(&ComConfig->ComSignal[SignalId], SignalDataPtr);
-
-	if (Signal->ComSignalEndianess == BIG_ENDIAN) {
-		if (Signal->ComSignalType == UINT16) {
-			*(uint16*)SignalDataPtr = bswap16(*(uint16*)SignalDataPtr);
-			//memcpy(SignalDataPtr, dataPtr, SignalTypeToSize(Signal->ComSignalType,Signal->ComSignalLength));
-
-		} else if (Signal->ComSignalType == UINT32) {
-			*(uint32*)SignalDataPtr = bswap32(*(uint32*)SignalDataPtr);
-			//memcpy(SignalDataPtr, dataPtr, SignalTypeToSize(Signal->ComSignalType,Signal->ComSignalLength));
-
-		} else if (Signal->ComSignalType == SINT16) {
-			*(sint16*)SignalDataPtr = bswap16(*(sint16*)SignalDataPtr);
-			//memcpy(SignalDataPtr, dataPtr, SignalTypeToSize(Signal->ComSignalType,Signal->ComSignalLength));
-
-		} else if (Signal->ComSignalType == SINT32) {
-			*(sint32*)SignalDataPtr = bswap32(*(sint32*)SignalDataPtr);
-			//memcpy(SignalDataPtr, dataPtr, SignalTypeToSize(Signal->ComSignalType,Signal->ComSignalLength));
-		}
-	}
-
-
+	// Com_CopyFromSignal(&ComConfig->ComSignal[SignalId], SignalDataPtr);
+	Com_ReadSignalDataFromPdu(SignalId, SignalDataPtr);
 
 	//uint16 val = *(uint16 *)SignalDataPtr;
 	//val = bswap16(val);
@@ -273,7 +224,9 @@ Std_ReturnType Com_SendSignalGroup(Com_SignalGroupIdType SignalGroupId) {
 	const ComGroupSignal_type *groupSignal;
 	for (int i = 0; Signal->ComGroupSignal[i] != NULL; i++) {
 		groupSignal = Signal->ComGroupSignal[i];
-		Com_CopyData(Arc_IPdu->ComIPduDataPtr, Arc_Signal->Com_Arc_ShadowBuffer,  groupSignal->ComBitSize, groupSignal->ComBitPosition, groupSignal->ComBitPosition);
+		// TODO CopyData
+		// Com_CopyData(Arc_IPdu->ComIPduDataPtr, Arc_Signal->Com_Arc_ShadowBuffer,  groupSignal->ComBitSize, groupSignal->ComBitPosition, groupSignal->ComBitPosition);
+		Com_WriteGroupSignalDataToPdu(Signal->ComHandleId, groupSignal->ComHandleId, Arc_Signal->Com_Arc_ShadowBuffer);
 	}
 
 	// If the signal has an update bit. Set it!
@@ -296,13 +249,14 @@ Std_ReturnType Com_ReceiveSignalGroup(Com_SignalGroupIdType SignalGroupId) {
 //#warning Com_ReceiveSignalGroup should be performed atomically. Should we disable interrupts here?
 	ComGetSignal(SignalGroupId);
 	ComGetArcSignal(SignalGroupId);
-	ComGetArcIPdu(Arc_Signal->ComIPduHandleId);
 
 	// Copy Ipdu data buffer to shadow buffer.
 	const ComGroupSignal_type *groupSignal;
 	for (int i = 0; Signal->ComGroupSignal[i] != NULL; i++) {
 		groupSignal = Signal->ComGroupSignal[i];
-		Com_CopyData(Arc_Signal->Com_Arc_ShadowBuffer, Arc_IPdu->ComIPduDataPtr, groupSignal->ComBitSize, groupSignal->ComBitPosition, groupSignal->ComBitPosition);
+		// TODO: CopyData
+		// Com_CopyData(Arc_Signal->Com_Arc_ShadowBuffer, Arc_IPdu->ComIPduDataPtr, groupSignal->ComBitSize, groupSignal->ComBitPosition, groupSignal->ComBitPosition);
+		Com_ReadSignalDataFromPdu(groupSignal->ComHandleId, (void *)Arc_Signal->Com_Arc_ShadowBuffer);
 	}
 
 
@@ -310,13 +264,15 @@ Std_ReturnType Com_ReceiveSignalGroup(Com_SignalGroupIdType SignalGroupId) {
 }
 
 void Com_UpdateShadowSignal(Com_SignalIdType SignalId, const void *SignalDataPtr) {
-	ComGetGroupSignal(SignalId);
 	ComGetArcGroupSignal(SignalId);
-	Com_CopyData(Arc_GroupSignal->Com_Arc_ShadowBuffer, SignalDataPtr, GroupSignal->ComBitSize, GroupSignal->ComBitPosition, 0);
+	// TODO: CopyData
+	// Com_CopyData(Arc_GroupSignal->Com_Arc_ShadowBuffer, SignalDataPtr, GroupSignal->ComBitSize, GroupSignal->ComBitPosition, 0);
+	Com_WriteSignalDataToPduBuffer(SignalId, TRUE, SignalDataPtr, (void *)Arc_GroupSignal->Com_Arc_ShadowBuffer);
 }
 
 void Com_ReceiveShadowSignal(Com_SignalIdType SignalId, void *SignalDataPtr) {
-	ComGetGroupSignal(SignalId);
 	ComGetArcGroupSignal(SignalId);
-	Com_CopyData(SignalDataPtr, Arc_GroupSignal->Com_Arc_ShadowBuffer, GroupSignal->ComBitSize, 0, GroupSignal->ComBitPosition);
+	// TODO: CopyData
+	// Com_CopyData(SignalDataPtr, Arc_GroupSignal->Com_Arc_ShadowBuffer, GroupSignal->ComBitSize, 0, GroupSignal->ComBitPosition);
+	Com_ReadSignalDataFromPduBuffer(SignalId, TRUE, SignalDataPtr, (void *)Arc_GroupSignal->Com_Arc_ShadowBuffer);
 }

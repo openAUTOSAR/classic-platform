@@ -19,10 +19,10 @@
 #include "Os.h"
 #include "internal.h"
 #include "arc.h"
-#include "Trace.h"
+#include "debug.h"
 #include "arch.h"
 
-extern void Oil_GetInterruptStackInfo( OsStackType *stack );
+extern void Os_CfgGetInterruptStackInfo( OsStackType *stack );
 extern uint32_t McuE_GetSystemClock( void );
 extern OsTickType OsTickFreq;
 
@@ -31,88 +31,6 @@ sys_t os_sys;
 Os_IntCounterType Os_IntDisableAllCnt;
 Os_IntCounterType Os_IntSuspendAllCnt;
 Os_IntCounterType Os_IntSuspendOsCnt;
-
-/**
- * Initialize alarms and schedule-tables for the counters
- */
-static void os_counter_init( void ) {
-	OsCounterType *counter;
-	OsAlarmType *alarm_obj;
-	OsSchTblType *sched_obj;
-	/* Create a list from the counter to the alarms */
-	for(int i=0; i < Oil_GetCounterCnt() ; i++) {
-		counter = Oil_GetCounter(i);
-		// Alarms
-		SLIST_INIT(&counter->alarm_head);
-		for(int j=0; j < Oil_GetAlarmCnt(); j++ ) {
-			alarm_obj = Oil_GetAlarmObj(j);
-			// Add the alarms
-			SLIST_INSERT_HEAD(&counter->alarm_head,alarm_obj, alarm_list);
-		}
-		// Schedule tables
-		SLIST_INIT(&counter->sched_head);
-		for(int j=0; j < Oil_GetSchedCnt(); j++ ) {
-			sched_obj = Oil_GetSched(j);
-			// Add the alarms
-			SLIST_INSERT_HEAD(&counter->sched_head,
-								sched_obj,
-								sched_list);
-		}
-
-
-	}
-}
-
-/**
- *
- * @param pcb_p
- * @return
- */
-static void os_resource_init( void ) {
-	//TAILQ_INIT(&pcb_p->resource_head);
-	OsPcbType *pcb_p;
-	OsResourceType *rsrc_p;
-	int topPrio;
-
-	/* Calculate ceiling priority
-	 * We make this as simple as possible. The ceiling priority
-	 * is set to the same priority as the highest priority task that
-	 * access it.
-	 * */
-	for( int i=0; i < Oil_GetResourceCnt(); i++) {
-		rsrc_p = Oil_GetResource(i);
-		topPrio = 0;
-
-		for( int pi = 0; pi < Oil_GetTaskCnt(); pi++) {
-
-			pcb_p = os_get_pcb(pi);
-			if(pcb_p->resourceAccess & (1<<i) ) {
-				topPrio = MAX(topPrio,pcb_p->prio);
-			}
-		}
-		rsrc_p->ceiling_priority = topPrio;
-	}
-
-
-
-	/* From OSEK:
-	 * Non preemptable tasks are the most common usage of the concept
-	 * of internal resources; they are tasks with a special internal
-	 * resource of highest task priority assigned.
-	 * --> Interpret this as we can set the priority to 32.
-	 *
-	 * Assign an internal resource with prio 32 to the tasks
-	 * with scheduling=NON
-	 *
-	 *
-	 */
-	for( int i; i < Oil_GetTaskCnt(); i++) {
-		pcb_p = os_get_pcb(i);
-		if(pcb_p->scheduling == NON ) {
-			pcb_p->prio = OS_RES_SCHEDULER_PRIO;
-		}
-	}
-}
 
 
 /**
@@ -140,7 +58,7 @@ static void os_pcb_rom_copy( OsPcbType *pcb, const OsRomPcbType *r_pcb ) {
 	pcb->pid = r_pcb->pid;
 	pcb->prio = r_pcb->prio;
 #if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
-	pcb->application = Oil_GetApplObj(r_pcb->application_id);
+	pcb->application = Os_CfgGetApplObj(r_pcb->application_id);
 #endif
 	pcb->entry = r_pcb->entry;
 	pcb->proc_type = r_pcb->proc_type;
@@ -183,18 +101,19 @@ void InitOS( void ) {
 	TAILQ_INIT(& os_sys.pcb_head);
 
 	// Calc interrupt stack
-	Oil_GetInterruptStackInfo(&int_stack);
-	os_sys.int_stack = int_stack.top + int_stack.size - 16;		// TODO: 16 is arch dependent
+	Os_CfgGetInterruptStackInfo(&int_stack);
+	// TODO: 16 is arch dependent
+	os_sys.int_stack = int_stack.top + int_stack.size - 16;
 
 	// Init counter.. with alarms and schedule tables
-	os_counter_init();
+	Os_CounterInit();
 	Os_SchTblInit();
 
 	// Put all tasks in the pcb list
 	// Put the one that belong in the ready queue there
 	// TODO: we should really hash on priority here to get speed, but I don't care for the moment
 	// TODO: Isn't this just EXTENED tasks ???
-	for( i=0; i < Oil_GetTaskCnt(); i++) {
+	for( i=0; i < Os_CfgGetTaskCnt(); i++) {
 		tmp_pcb = os_get_pcb(i);
 
 		assert(tmp_pcb->prio<=OS_TASK_PRIORITY_MAX);
@@ -211,7 +130,7 @@ void InitOS( void ) {
 		DEBUG(DEBUG_LOW,"pid:%d name:%s prio:%d\n",tmp_pcb->pid,tmp_pcb->name,tmp_pcb->prio);
 	}
 
-	os_resource_init();
+	Os_ResourceInit();
 
 	// Now all tasks should be created.
 }
@@ -234,9 +153,9 @@ static void os_start( void ) {
 	}
 
 	/* handle autostart */
-	for(int j=0; j < Oil_GetAlarmCnt(); j++ ) {
+	for(int j=0; j < Os_CfgGetAlarmCnt(); j++ ) {
 		OsAlarmType *alarmPtr;
-		alarmPtr = Oil_GetAlarmObj(j);
+		alarmPtr = Os_CfgGetAlarmObj(j);
 		if(alarmPtr->autostartPtr != NULL ) {
 			const OsAlarmAutostartType *autoPtr = alarmPtr->autostartPtr;
 
@@ -318,6 +237,8 @@ void StartOS(AppModeType Mode) {
 	if (test_bss != 0) {
 		noooo();
 	}
+
+	Os_CfgValidate();
 
 	os_start();
 

@@ -23,8 +23,10 @@
 #include "Os.h"
 #include <stdio.h>
 #include <assert.h>
-#define USE_TRACE	1
-#include "Trace.h"
+
+#define USE_LDEBUG_PRINTF
+#include "debug.h"
+
 #include "Mcu.h"
 
 
@@ -46,27 +48,27 @@ extern uint8_t pcb_list[];
 
 /* Global hooks */
 ProtectionReturnType ProtectionHook( StatusType FatalError ) {
-	dbg_printf("## ProtectionHook\n");
+	LDEBUG_PRINTF("## ProtectionHook\n");
 	return PRO_KILLAPPL;
 }
 
 void StartupHook( void ) {
-	dbg_printf("## StartupHook\n");
+	LDEBUG_PRINTF("## StartupHook\n");
 
 	uint32_t sys_freq = McuE_GetSystemClock();
 
-	dbg_printf("Sys clock %d Hz\n",sys_freq);
+	LDEBUG_PRINTF("Sys clock %d Hz\n",sys_freq);
 }
 
 void ShutdownHook( StatusType Error ) {
-	dbg_printf("## ShutdownHook\n");
+	LDEBUG_PRINTF("## ShutdownHook\n");
 	while(1);
 }
 
 void ErrorHook( StatusType Error ) {
 	DisableAllInterrupts();
 
-	dbg_printf("## ErrorHook err=%d\n",Error);
+	LDEBUG_PRINTF("## ErrorHook err=%d\n",Error);
 	while(1);
 }
 

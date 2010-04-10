@@ -14,12 +14,6 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
-
 /*
  * context.h
  *
@@ -49,6 +43,19 @@
  *     r14 - LR
  *     r15 - PC
  *
+ *   Other:
+ *   PSR
+ *   PRIMASK[0]      0 - No effect,
+ *                   1 - Prevents the activation of all exceptions with
+ *                       configurable priority.
+ *   FAULTMASK
+ *   BASEPRI[7:4]    0x0 - No effect
+ *                   !=0 -  When BASEPRI is set to a nonzero value, it prevents
+ *                          the activation of all exceptions with same or lower
+ *                          priority level as the BASEPRI value.
+ *   CONTOROL
+ *
+ *
  * EXCEPTION FRAME
  *
  *   The following registers are auto-magically pushed by the CPU
@@ -76,8 +83,33 @@
  *     Access through NVIC_IPR0 to IVPR_IPR16.
  *
  * EXCEPTION/IRQ FLOW
+ *  MODES
+ *    - Thread mode (normal execution). The privilige level can be set.
+ *    - Handler mode (exception mode). The privilige level is always "priviliged"
+ *
+ *  STACKS
+ *    Two stacks, process and main.
+ *
+ *
+ *  ENTRY
  *   - The exception hits
- *   - The handler is called
+ *      - Irq_Handler() is called.
+ *      - The processor now enters "handler" mode and saves
+ *        - r0--r3,r12,LR,PC, xPSR on the current stack (MSR) (Don't use PSP)
+ *        - Sets LR to EXC_RETURN (0xFFFF_FFFx)
+ *
+ *  EXIT
+ *  - Exception return instructions are bx,poppc or ldr, ldm
+ *  - When the interrupt return instruction is excuted, the registers
+ *    - will be pop:ed back
+ *    - The active bit in the NVIC controller will be clear
+ *    - The ICSR register will ?????
+ *
+ *
+ *  STRATEGY
+ *  - _estack and
+ *
+ *
  *
  */
 

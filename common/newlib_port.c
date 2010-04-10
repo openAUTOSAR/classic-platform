@@ -14,6 +14,7 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
+#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
@@ -59,7 +60,7 @@
 #define TWBUFF_INC(n) ((n + 1)&(TWBUFF_SIZE-1))
 #define TWBUFF_FULL() (TWBUFF_TPTR==((TWBUFF_CPTR-1)&(TWBUFF_SIZE-1)))
 
-#ifdef USE_WINIDEA_TERM
+#ifdef USE_TTY_WINIDEA
 
 #if defined(MC912DG128A)
 static volatile unsigned char g_TWBuffer[TWBUFF_LEN];
@@ -82,7 +83,7 @@ static volatile char g_TConn __attribute__ ((section (".winidea_port")));
  */
 
 // This must be in un-cached space....
-#ifdef USE_T32_TERM
+#ifdef USE_TTY_T32
 static volatile char t32_outport __attribute__ ((section (".t32_outport")));
 
 void t32_writebyte(char c)
@@ -113,10 +114,12 @@ char **environ = __env;
 #undef errno
 extern int errno;
 
-int execve(char *name, char **argv, char **env){
-	(void)name;
+
+int execve(const char *path, char * const argv[], char * const envp[] ) {
+//int execve(char *name, char **argv, char **env){
+	(void)path;
 	(void)argv;
-	(void)env;
+	(void)envp;
   	errno=ENOMEM;
   	return -1;
 }
@@ -178,12 +181,12 @@ int open(const char *name, int flags, int mode){
     return -1;
 }
 
-int read( int fd, char *buf, int nbytes )
+int read( int fd, void *buf, size_t nbytes )
 {
 	(void)fd;
 	(void)buf;
 	(void)nbytes;
-#ifdef USE_WINIDEA_TERM
+#ifdef USE_TTY_WINIDEA
 	(void)g_TRBuffer[0];
 #endif
 
@@ -192,13 +195,15 @@ int read( int fd, char *buf, int nbytes )
 }
 
 
-int write(  int fd, char *buf, int nbytes)
+int write(  int fd, const void *_buf, size_t nbytes)
 {
+	char *buf = (char *)_buf;
   	//(void)fd;  // Normally 0- ?, 1-stdout, 2-stderr,
 				// Added 3-ramlog,
 
-	if( fd < 3 ) {
-#ifdef USE_WINIDEA_TERM
+
+	if( fd <= STDERR_FILENO ) {
+#ifdef USE_TTY_WINIDEA
   	if (g_TConn)
   	{
   	  unsigned char nCnt,nLen;
@@ -213,7 +218,7 @@ int write(  int fd, char *buf, int nbytes)
   	}
 #endif
 
-#ifdef USE_T32_TERM
+#ifdef USE_TTY_T32
   	for (int i = 0; i < nbytes; i++) {
     	if (*(buf + i) == '\n') {
       		t32_writebyte ('\r');
@@ -222,7 +227,7 @@ int write(  int fd, char *buf, int nbytes)
     	t32_writebyte (*(buf + i));
   	}
 #endif
-#ifdef USE_ARM_ITM_TERM
+#ifdef USE_TTY_ARM_ITM
   	for (int i = 0; i < nbytes; i++) {
   	  	ITM_SendChar(*(buf + i));
   	}
@@ -272,7 +277,7 @@ extern char _end[];
 unsigned char _heap[HEAPSIZE] __attribute__((aligned (4)));
 //__attribute__((section(".heap")));
 
-caddr_t sbrk( int incr )
+void * sbrk( ptrdiff_t incr )
 {
     static unsigned char *heap_end;
     unsigned char *prev_heap_end;

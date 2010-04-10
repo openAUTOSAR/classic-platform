@@ -41,7 +41,7 @@ StatusType CallTrustedFunction(	TrustedFunctionIndexType ix,
 
 	/* According to OS097 we can call this function from both trusted and non-trusted application */
 
-	if( ix > Oil_GetServiceCnt() ) {
+	if( ix > Os_CfgGetServiceCnt() ) {
 		return E_OS_SERVICEID;
 	}
 

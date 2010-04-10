@@ -20,10 +20,10 @@
 #if defined(USE_GPT)
 #include "Gpt.h"
 #endif
-#include "simple_printf.h"
 
-#define USE_DEBUG_PRINT
-#include "Trace.h"
+
+//#define USE_LDEBUG_PRINTF
+#include "debug.h"
 #include "arc.h"
 
 extern void etask_sup_l_basic_02( void );
@@ -63,7 +63,7 @@ void etask_master( void ) {
 	for( ; test_case < sizeof(test_activate_pid_list)/sizeof(TaskType); test_case++)
 	{
 		test_nr = 1;
-		dbg_printf("-----> Test Suite %02d\n",test_suite);
+		printf("-----> Test Suite %02d\n",test_suite);
 		pid = test_activate_pid_list[test_case];
 		ActivateTask(pid);
 		/* We are lowest prio task in the system (apart from idle) so
@@ -71,6 +71,8 @@ void etask_master( void ) {
 		 */
 		test_suite++;
 	}
+
+	test_done();
 
 	// Test complete..
 	while(1);
@@ -168,21 +170,22 @@ void OsIdle(void ) {
 
 /* Global hooks */
 ProtectionReturnType ProtectionHook( StatusType FatalError ) {
-	dbg_printf("## ProtectionHook\n");
+	printf("## ProtectionHook\n");
 	return PRO_KILLAPPL;
 }
 
 void StartupHook( void ) {
-//	dbg_printf("## StartupHook\n");
+//	LDEBUG_PRINTF("## StartupHook\n");
 
 #ifdef USE_MCU
 	uint32_t sys_freq = McuE_GetSystemClock();
-	dbg_printf("Sys clock %d Hz\n",sys_freq);
+	(void)sys_freq;
+	LDEBUG_PRINTF("Sys clock %d Hz\n",sys_freq);
 #endif
 }
 
 void ShutdownHook( StatusType Error ) {
-//	dbg_printf("## ShutdownHook\n");
+	LDEBUG_PRINTF("## ShutdownHook\n");
 	const char *err;
 	err = Arc_StatusToString(Error);
 	while(1) {
@@ -191,7 +194,7 @@ void ShutdownHook( StatusType Error ) {
 }
 
 void ErrorHook( StatusType Error ) {
-//	dbg_printf("## ErrorHook err=%d\n",Error);
+	LDEBUG_PRINTF("## ErrorHook err=%d\n",Error);
 	const char *err;
 	err = Arc_StatusToString(Error);
 //	while(1);
@@ -203,7 +206,7 @@ void PreTaskHook( void ) {
 	if( task > 10 ) {
 		while(1);
 	}
-// 	dbg_printf("## PreTaskHook, taskid=%d\n",task);
+	LDEBUG_PRINTF("## PreTaskHook, taskid=%d\n",task);
 }
 
 void PostTaskHook( void ) {
@@ -213,11 +216,13 @@ void PostTaskHook( void ) {
 		while(1);
 	}
 
-//	dbg_printf("## PostTaskHook, taskid=%d\n",task);
+	LDEBUG_PRINTF("## PostTaskHook, taskid=%d\n",task);
+#if 0
 	{
 		StackInfoType si;
 		Os_Arc_GetStackInfo(task,&si);
-//		dbg_printf("Stack usage %d%% (this=%08x, top=%08x, size=%08x,usage=%08x )\n",OS_STACK_USAGE(&si),si.curr, si.top,si.size,si.usage);
+//		LDEBUG_PRINTF("Stack usage %d%% (this=%08x, top=%08x, size=%08x,usage=%08x )\n",OS_STACK_USAGE(&si),si.curr, si.top,si.size,si.usage);
 	}
+#endif
 }
 

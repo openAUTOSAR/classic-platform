@@ -22,7 +22,7 @@
 
 #include "Com_Sched.h"
 #include <string.h>
-#include "Trace.h"
+#include "debug.h"
 
 #define timerDec(timer) \
 	if (timer > 0) { \
@@ -51,7 +51,9 @@ void Com_MainFunctionRx() {
 					uint32 signalInitData;
 					memset(&signalInitData, signal->ComSignalInitValue, sizeof(uint32));
 
-					Com_CopyData(Arc_IPdu->ComIPduDataPtr, &signalInitData, signal->ComBitSize, signal->ComBitPosition, 0);
+					// TODO: CopyData
+					// Com_CopyData(Arc_IPdu->ComIPduDataPtr, &signalInitData, signal->ComBitSize, signal->ComBitPosition, 0);
+					Com_WriteSignalDataToPdu(signal->ComHandleId, &signalInitData);
 
 				}
 
@@ -66,7 +68,9 @@ void Com_MainFunctionRx() {
 		}
 
 		if (Arc_Signal->ComSignalUpdated) {
-			ComConfig->ComSignal[i].ComNotification();
+			if (ComConfig->ComSignal[i].ComNotification != NULL) {
+				ComConfig->ComSignal[i].ComNotification();
+			}
 			Arc_Signal->ComSignalUpdated = 0;
 		}
 	}

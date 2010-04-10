@@ -1,4 +1,7 @@
 
+#
+# Copyright ArcCore AB
+#
 
 #define _ASSEMBLER_
 #include "kernel_offset.h"
@@ -20,8 +23,13 @@
 #define IRQ_ENABLE() 		cpsie 	i
 #define IRQ_DISABLE()		cpsid 	i
 
+
+// lr
+#define REG_SAVE r4-r8,r10,r11
+
+
 Irq_Handler:
-    push    {r4-r8,r10,r11,lr}
+    push    {REG_SAVE,lr}
     sub.w   sp,sp,#C_SIZE
     mov.w   r4,#LC_PATTERN
     str     r4,[sp,#C_CONTEXT_OFFS]    
@@ -31,36 +39,83 @@ Irq_Handler:
     b 		os_lc_restore
 	
 	
-/* r0 - pcb for old task
- * r1 pcb for new task
+/**
+ * Fake an interrupt stack to be able to return to thread mode.
+ *
+ * Arm stack look like:
+ *   xPSR
+ *    PC
+ *    LR
+ *    r12
+ *    r3
+ *    r2
+ *    r1
+ *    r0
+ *
+ * Don't really know what bits matter on the xPSR here. Not setting
+ * the EPSR[T] is really bad since it will generate a INVSTATE exception.
+ *
+ * @param r0 Pointer to PC to set
+ */
+ 	.global Irq_EOI2
+ 	.type	Irq_EOI2, %function
+
+Irq_EOI2:
+	mov.w	r1,0x01000000	/* EPSR[T] bit */
+	push 	{r0,r1}			/* Push PC and xPSR */
+	sub.w sp,sp,#(6*4)		/* r0,r1,r2,r3, r12,lr,pc,xPSR */
+	mov.w	lr,#0xfffffff9	/* Return with MSR */
+	bx lr
+
+
+/**
+ * Os_ArchSetSpAndCall
+ *
+ * @param sp Pointer to the stack
+ * @param f  Pointer to the function to call
+ */
+
+ 	.global Os_ArchSetSpAndCall
+ 	.type	Os_ArchSetSpAndCall, %function
+Os_ArchSetSpAndCall:
+	mov.w	sp,r0
+	mov.w	lr,r1
+	bx		lr
+
+/**
+ * Os_ArchSwapContext
+ *
+ * @param r0 - pcb for old task
+ * @param r1 - pcb for new task
  *
  * -------------- higher addr
  * r4-r8,etc
  * -------
  * 4 - Large or Small context indicator
  * 0 - ?
- * ----------    <- JABBA
+ * ----------
  *
  */
  	.global Os_ArchSwapContext
  	.type	Os_ArchSwapContext, %function
 Os_ArchSwapContext:
-//    mov     r2, sp
-    push    {r4-r8,r10,r11,lr}
+	// Save function call registers
+    push    {REG_SAVE,lr}
 
-    // Store c-frame
+	// Store the context frame
     sub.w   sp,sp,#C_SIZE
 
+	// Save small-context indicator
     mov.w   r4,#SC_PATTERN
     str     r4,[sp,#C_CONTEXT_OFFS]
-//    str     r2,[sp,#C_SP_OFF]
 	// ---> We have saved NVGPR+C
 
     // store old stack for old task
     mov.w	r4,sp
     str     r4,[r0,#PCB_STACK_CURR_P]
 
-// R1 - new PCB
+	// Flow down
+	// R1 - new PCB
 	.global Os_ArchSwapContextTo
 	.type	Os_ArchSwapContextTo, %function
 Os_ArchSwapContextTo:
@@ -86,19 +141,35 @@ os_stack_problem:
 // TODO: Jump to error handler
     b os_stack_problem
 
+
+	/* Restore the small context. Cases:
+	 *  - "Normal" context switch between processes.
+	 *  - We are in handler mode (this task preemted another task in interrupt
+	 *    context). We need to terminate handler mode ( set to LR=0xffff_fff9 )
+	 *    and
+	 */
 os_sc_restore:
     add.w   sp,sp,#C_SIZE
 
-    pop     {r4-r8,r10,r11,lr}
-        // ehh, we are in handler mode so a bx instruction works here
-    IRQ_ENABLE()
+    pop     {REG_SAVE,lr}
     bx      lr
+
+
+	/* Restore the large context. Cases:
+	 *  - Directly from Irq_Handler()
+	 *    (the preempted task got swapped in directly)
+	 *  - The preempted task, got preemted by a task and
+	 *    we have already returned from handler mode.
+	 */
 
 os_lc_restore:
     add.w   sp,sp,#C_SIZE
-    pop     {r4-r8,r10,r11,lr}
-    // ehh, we are in handler mode so a bx instruction works here
-    IRQ_ENABLE()
+    pop     {REG_SAVE,lr}
+    
+    /* The usual case is that we are in handler mode (=handling exceptions).
+     * So, LR(=r14) should be 0xffff_fffx, and x in this case should return 
+     * to threaded mode (=not handling exeptions) 0b1001. (EXC_RETURN)
+     */
     bx      lr
 
 
