@@ -17,6 +17,7 @@
 #include "Port.h" /** @req PORT131 */
 #include "regs.h"
 #include "Det.h"
+#include "string.h"
 
 /* SHORT ON HW
  *  Have a bunch of ports:
@@ -109,7 +110,7 @@ void Port_Init(const Port_ConfigType *configType)
     RDRH = configType->portHReducedDriveRegister;
     PERH = configType->portHPullEnableRegister;
     PPSH = configType->portHPullPolarityRegsiter;
-    PORTH = configType->portHOutValue;
+    PTH = configType->portHOutValue;
     DDRH = configType->portHDirection;
 #endif
 
@@ -117,7 +118,7 @@ void Port_Init(const Port_ConfigType *configType)
     RDRJ = configType->portJReducedDriveRegister;
     PERJ = configType->portJPullEnableRegister;
     PPSJ = configType->portJPullPolarityRegsiter;
-    PORTJ = configType->portJOutValue;
+    PTJ = configType->portJOutValue;
     DDRJ = configType->portJDirection;
 #endif
 
@@ -126,7 +127,7 @@ void Port_Init(const Port_ConfigType *configType)
     PERM = configType->portMPullEnableRegister;
     PPSM = configType->portMPullPolarityRegsiter;
     WOMM = configType->portMWiredModeRegsiter;
-    PORTM = configType->portMOutValue;
+    PTM = configType->portMOutValue;
     DDRM = configType->portMDirection;
 #endif
 
@@ -134,7 +135,7 @@ void Port_Init(const Port_ConfigType *configType)
     RDRP = configType->portPReducedDriveRegister;
     PERP = configType->portPPullEnableRegister;
     PPSP = configType->portPPullPolarityRegsiter;
-    PORTP = configType->portPOutValue;
+    PTP = configType->portPOutValue;
     DDRP = configType->portPDirection;
 #endif
 
@@ -143,7 +144,7 @@ void Port_Init(const Port_ConfigType *configType)
     PERS = configType->portSPullEnableRegister;
     PPSS = configType->portSPullPolarityRegsiter;
     WOMS = configType->portSWiredModeRegsiter;
-    PORTS = configType->portSOutValue;
+    PTS = configType->portSOutValue;
     DDRS = configType->portSDirection;
 #endif
 
@@ -151,7 +152,7 @@ void Port_Init(const Port_ConfigType *configType)
     RDRT = configType->portTReducedDriveRegister;
     PERT = configType->portTPullEnableRegister;
     PPST = configType->portTPullPolarityRegsiter;
-    PORTT = configType->portTOutValue;
+    PTT = configType->portTOutValue;
     DDRT = configType->portTDirection;
 #endif
 
@@ -263,62 +264,62 @@ void Port_RefreshPortDirection(void)
     VALIDATE_STATE_INIT(PORT_REFRESH_PORT_DIRECTION_ID);
 
 #if ( PORTA_CONFIGURABLE == STD_ON )
-    curValue = DDRA & ~(configType->portAMask);
-    curValue |= (configType->portADirection & configType->portAMask);
+    curValue = DDRA & ~(_configPtr->portAMask);
+    curValue |= (_configPtr->portADirection & _configPtr->portAMask);
     DDRA = curValue;
 #endif
 
 #if ( PORTB_CONFIGURABLE == STD_ON )
-    curValue = DDRB & ~(configType->portBMask);
-    curValue |= (configType->portBDirection & configType->portBMask);
+    curValue = DDRB & ~(_configPtr->portBMask);
+    curValue |= (_configPtr->portBDirection & _configPtr->portBMask);
     DDRB = curValue;
 #endif
 
 #if ( PORTE_CONFIGURABLE == STD_ON )
-    curValue = DDRE & ~(configType->portEMask);
-    curValue |= (configType->portEDirection & configType->portEMask);
+    curValue = DDRE & ~(_configPtr->portEMask);
+    curValue |= (_configPtr->portEDirection & _configPtr->portEMask);
     DDRE = curValue;
 #endif
 
 #if ( PORTK_CONFIGURABLE == STD_ON )
-    curValue = DDRK & ~(configType->portKMask);
-    curValue |= (configType->portKDirection & configType->portKMask);
+    curValue = DDRK & ~(_configPtr->portKMask);
+    curValue |= (_configPtr->portKDirection & _configPtr->portKMask);
     DDRK = curValue;
 #endif
 
 #if ( PORTH_CONFIGURABLE == STD_ON )
-    curValue = DDRH & ~(configType->portHMask);
-    curValue |= (configType->portHDirection & configType->portHMask);
+    curValue = DDRH & ~(_configPtr->portHMask);
+    curValue |= (_configPtr->portHDirection & _configPtr->portHMask);
     DDRH = curValue;
 #endif
 
 #if ( PORTJ_CONFIGURABLE == STD_ON )
-    curValue = DDRJ & ~(configType->portJMask);
-    curValue |= (configType->portJDirection & configType->portJMask);
+    curValue = DDRJ & ~(_configPtr->portJMask);
+    curValue |= (_configPtr->portJDirection & _configPtr->portJMask);
     DDRJ = curValue;
 #endif
 
 #if ( PORTM_CONFIGURABLE == STD_ON )
-    curValue = DDRM & ~(configType->portMMask);
-    curValue |= (configType->portMDirection & configType->portMMask);
+    curValue = DDRM & ~(_configPtr->portMMask);
+    curValue |= (_configPtr->portMDirection & _configPtr->portMMask);
     DDRM = curValue;
 #endif
 
 #if ( PORTP_CONFIGURABLE == STD_ON )
-    curValue = DDRP & ~(configType->portPMask);
-    curValue |= (configType->portPDirection & configType->portPMask);
+    curValue = DDRP & ~(_configPtr->portPMask);
+    curValue |= (_configPtr->portPDirection & _configPtr->portPMask);
     DDRP =
 #endif
 
 #if ( PORTS_CONFIGURABLE == STD_ON )
-    curValue = DDRS & ~(configType->portSMask);
-    curValue |= (configType->portSDirection & configType->portSMask);
+    curValue = DDRS & ~(_configPtr->portSMask);
+    curValue |= (_configPtr->portSDirection & _configPtr->portSMask);
     DDRS = curValue;
 #endif
 
 #if ( PORTT_CONFIGURABLE == STD_ON )
-    curValue = DDRT & ~(configType->portTMask);
-    curValue |= (configType->portTDirection & configType->portTMask);
+    curValue = DDRT & ~(_configPtr->portTMask);
+    curValue |= (_configPtr->portTDirection & _configPtr->portTMask);
     DDRT = curValue;
 #endif
 

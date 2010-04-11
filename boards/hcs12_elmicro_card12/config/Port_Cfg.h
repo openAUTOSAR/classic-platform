@@ -23,16 +23,16 @@
 /** Enable Development Error Trace */
 #define PORT_DEV_ERROR_DETECT				STD_ON
 /** Build change pin direction API */
-#define PORT_SET_PIN_DIRECTION_API	        STD_OFF
+#define PORT_SET_PIN_DIRECTION_API	        STD_ON
 /** Allow Pin mode changes during runtime (not avail on this CPU) */
-#define PORT_SET_PIN_MODE_API               STD_OFF
+#define PORT_SET_PIN_MODE_API               STD_ON
 
 /** Parameter to enable/disable configuration on a port */
 #define PORTA_CONFIGURABLE  STD_OFF
 #define PORTB_CONFIGURABLE  STD_OFF
 #define PORTE_CONFIGURABLE  STD_OFF
 #define PORTK_CONFIGURABLE  STD_OFF
-#define PORTH_CONFIGURABLE  STD_OFF
+#define PORTH_CONFIGURABLE  STD_ON
 #define PORTJ_CONFIGURABLE  STD_OFF
 #define PORTM_CONFIGURABLE  STD_OFF
 #define PORTP_CONFIGURABLE  STD_OFF
