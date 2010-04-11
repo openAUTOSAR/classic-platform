@@ -161,4 +161,6 @@ typedef uint8 Dio_LevelType;
 /** @req DIO024 */
 typedef uint8 Dio_PortLevelType;
 
+#define LED_CHANNEL (DIO_CHANNEL_H7)
+
 #endif /*DIO_CFG_H_*/

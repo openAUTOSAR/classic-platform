@@ -242,5 +242,7 @@ typedef struct
 #endif
 } Port_ConfigType;
 
+/** Instance of the top level configuration container */
+extern const Port_ConfigType PortConfigData;
 
 #endif /*PORT_CFG_H_*/

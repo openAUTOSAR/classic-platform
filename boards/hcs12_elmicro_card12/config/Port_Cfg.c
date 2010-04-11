@@ -13,8 +13,9 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-#ifndef RTE_H_
-#define RTE_H_
-#include "RTE_blinker.h"
+#include "Port.h"
 
-#endif /* RTE_H_ */
+const Port_ConfigType PortConfigData =
+{
+};
+

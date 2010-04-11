@@ -259,7 +259,7 @@ void Port_SetPinDirection( Port_PinType pin, Port_PinDirectionType direction )
 /** @req PORT061 */
 void Port_RefreshPortDirection(void)
 {
-    uint_8 curValue;
+    uint8_t curValue;
     VALIDATE_STATE_INIT(PORT_REFRESH_PORT_DIRECTION_ID);
 
 #if ( PORTA_CONFIGURABLE == STD_ON )

@@ -37,44 +37,17 @@ static Std_VersionInfoType _Dio_VersionInfo =
 #if ( DIO_DEV_ERROR_DETECT == STD_ON )
 static int Channel_Config_Contains(Dio_ChannelType channelId)
 {
-  Dio_ChannelType* ch_ptr=(Dio_ChannelType*)CHANNEL_PTR;
-  int rv=0;
-  while (DIO_END_OF_LIST!=*ch_ptr)
-  {
-    if (*ch_ptr==channelId)
-    { rv=1; break;}
-    ch_ptr++;
-  }
-  return rv;
+  return 1;
 }
 
 static int Port_Config_Contains(Dio_PortType portId)
 {
-  Dio_PortType* port_ptr=(Dio_PortType*)PORT_PTR;
-  int rv=0;
-  while (DIO_END_OF_LIST!=*port_ptr)
-  {
-    if (*port_ptr==portId)
-    { rv=1; break;}
-    port_ptr++;
-  }
-  return rv;
+  return 1;
 }
 
 static int Channel_Group_Config_Contains(const Dio_ChannelGroupType* _channelGroupIdPtr)
 {
-  Dio_ChannelGroupType* chGrp_ptr=(Dio_ChannelGroupType*)CHANNEL_GRP_PTR;
-  int rv=0;
-
-  while (DIO_END_OF_LIST!=chGrp_ptr->port)
-  {
-    if (chGrp_ptr->port==_channelGroupIdPtr->port&&
-        chGrp_ptr->offset==_channelGroupIdPtr->offset&&
-        chGrp_ptr->mask==_channelGroupIdPtr->mask)
-    { rv=1; break;}
-    chGrp_ptr++;
-  }
-  return rv;
+  return 1;
 }
 
 #define VALIDATE_CHANNEL(_channelId, _api) \
@@ -105,22 +78,14 @@ Dio_LevelType Dio_ReadChannel(Dio_ChannelType channelId)
 {
   Dio_LevelType level;
   VALIDATE_CHANNEL(channelId, DIO_READCHANNEL_ID);
-  // Read level from SIU.
-  if (SIU.GPDI [channelId].R)
-  {
-    level = STD_HIGH;
-  } else
-  {
-    level = STD_LOW;
-  }
+
   cleanup: return (level);
 }
 
 void Dio_WriteChannel(Dio_ChannelType channelId, Dio_LevelType level)
 {
   VALIDATE_CHANNEL(channelId, DIO_WRITECHANNEL_ID);
-  // Write level to SIU.
-  SIU.GPDO [channelId].R = level;
+
   cleanup: return;
 }
 
@@ -129,12 +94,7 @@ Dio_PortLevelType Dio_ReadPort(Dio_PortType portId)
   Dio_LevelType level;
   VALIDATE_PORT(portId, DIO_READPORT_ID);
 
-#if defined(CFG_MPC5554)||defined(CFG_MPC5567)
-  vuint16_t *ptr = (vuint16_t *)&SIU.GPDI;
-#else
-  vuint16_t *ptr = (vuint16_t *)&SIU.PGPDI0; // The GPDI 0-3 is organized in 32bit chunks but we want to step them in 16bit port-widths
-#endif
-  level = ptr[portId]; // Read the bit pattern (16bits) to the port
+
   cleanup: return level;
 }
 
@@ -142,13 +102,6 @@ void Dio_WritePort(Dio_PortType portId, Dio_PortLevelType level)
 {
   VALIDATE_PORT(portId, DIO_WRITEPORT_ID);
 
-  // find address of first port
-#if defined(CFG_MPC5554)||defined(CFG_MPC5567)
-  vuint16_t *ptr = (vuint16_t *)&SIU.GPDO;
-#else
-  vuint16_t *ptr = (vuint16_t *)&SIU.PGPDO0; // The GPDO 0-3 is organized in 32bit chunks but we want to step them in 16bit port-widths
-#endif
-  ptr[portId] = level; // Write the bit pattern (16bits) to the port
   cleanup: return;
 }
 
@@ -158,36 +111,13 @@ Dio_PortLevelType Dio_ReadChannelGroup(
   Dio_LevelType level;
   VALIDATE_CHANNELGROUP(channelGroupIdPtr,DIO_READCHANNELGROUP_ID);
 
-  // find address of first port
-#if defined(CFG_MPC5554)||defined(CFG_MPC5567)
-  vuint16_t *ptr = (vuint16_t *)&SIU.GPDI;
-#else
-  uint16 *ptr = (uint16 *)&SIU.PGPDI0; // The GPDI 0-3 is organized in 32bit chunks but we want to step them in 16bit port-widths
-#endif
-
-  // Get masked values
-  level = ptr[channelGroupIdPtr->port] & channelGroupIdPtr->mask;
-
-  // Shift down
-  level<<=channelGroupIdPtr->offset;
   cleanup: return level;
 }
 
 void Dio_WriteChannelGroup(const Dio_ChannelGroupType *channelGroupIdPtr,
     Dio_PortLevelType level)
 {
-#if defined(CFG_MPC5516)
-  VALIDATE_CHANNELGROUP(channelGroupIdPtr,DIO_WRITECHANNELGROUP_ID);
-  // find address of first port of the masked register
-  uint32 *ptr = (uint32 *)&SIU.MPGPDO0; // The GPDI 0-3 is organized in 32bit chunks but we want to step them in 16bit port-widths
-
-  // Build the 32 bits Mask_Valule, and write to masked output register
-  ptr[channelGroupIdPtr->port] = (channelGroupIdPtr->mask << 16)&((level
-      <<channelGroupIdPtr->offset)|0xFFFF);
-  cleanup: return;
-#else
   return;
-#endif
 }
 
 #if (DIO_VERSION_INFO_API == STD_ON)

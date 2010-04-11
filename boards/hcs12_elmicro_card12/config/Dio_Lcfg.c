@@ -13,8 +13,5 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-#ifndef RTE_H_
-#define RTE_H_
-#include "RTE_blinker.h"
+#include "Dio.h"
 
-#endif /* RTE_H_ */

@@ -220,7 +220,6 @@ SECTIONS
     Det.o(.text)
     xtoa.o(.text)
     newlib_port.o(.text)
-    tiny.o(.text)
 
     . = ALIGN(2);
   } > bank9 AT>bank9_lma =0xff
