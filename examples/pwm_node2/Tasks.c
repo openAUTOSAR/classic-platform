@@ -40,6 +40,8 @@ void ComTask( void ) {
 	Com_MainFunctionRx();
 
 	pwm_node2_receive();
+
+	TerminateTask();
 }
 
 /*
@@ -54,7 +56,7 @@ void StartupTask( void ) {
 	Com_IpduGroupStart(RxGroup, 0);
 
 	// End of startup_task().
-//	TerminateTask();
+	TerminateTask();
 }
 
 
