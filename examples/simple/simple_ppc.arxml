@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <AUTOSAR xmlns="http://autosar.org/3.1.2"><TOP-LEVEL-PACKAGES>
     <AR-PACKAGE UUID="0d59ee12-95ec-49af-8852-d0a411bc3657">
-      <SHORT-NAME>simple</SHORT-NAME>
+      <SHORT-NAME>simple_ppc</SHORT-NAME>
       <CATEGORY>EcuConfiguration</CATEGORY>
       <ADMIN-DATA>
         <DOC-REVISIONS>
@@ -12,7 +12,7 @@
       </ADMIN-DATA>
       <ELEMENTS>
         <ECU-CONFIGURATION UUID="934d9f08-375e-4be3-b731-279fd50f7508">
-          <SHORT-NAME>simple</SHORT-NAME>
+          <SHORT-NAME>simple_ppc</SHORT-NAME>
           <ADMIN-DATA>
             <DOC-REVISIONS>
               <DOC-REVISION>
@@ -24,12 +24,12 @@
                 <SD GID="MCU">Undefined MCU</SD>
                 <SD GID="AUTHOR">ArcCore AB</SD>
                 <SD GID="COPYRIGHT">Copyright ArcCore AB 2010</SD>
-                <SD GID="GENDIR">/examples-simple/config</SD>
+                <SD GID="GENDIR"></SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>
           <MODULE-REFS>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/simple/Os</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/simple_ppc/Os</MODULE-REF>
           </MODULE-REFS>
         </ECU-CONFIGURATION>
         <MODULE-CONFIGURATION UUID="29b23c16-ee7a-4b40-afaf-6c4117db16d3">
@@ -141,7 +141,7 @@
               <REFERENCE-VALUES>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmCounterRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/simple/Os/OsTick</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/simple_ppc/Os/OsTick</VALUE-REF>
                 </REFERENCE-VALUE>
               </REFERENCE-VALUES>
               <SUB-CONTAINERS>
@@ -169,11 +169,11 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/simple/Os/EVENT_2</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/simple_ppc/Os/EVENT_2</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventTaskRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/simple/Os/etask_1</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/simple_ppc/Os/etask_1</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
