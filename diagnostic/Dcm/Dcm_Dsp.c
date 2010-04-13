@@ -65,6 +65,38 @@ void DspMain(void)
 }
 
 
+boolean DspCheckSessionLevel(const Dcm_DspSessionRowType **sessionLevelRefTable)
+{
+	boolean returnStatus = TRUE;
+	Dcm_SesCtrlType currentSession;
+	uint16 i;
+
+	DslGetSesCtrlType(&currentSession);
+	for (i = 0; (sessionLevelRefTable[i]->DspSessionLevel != currentSession) && !sessionLevelRefTable[i]->Arc_EOL; i++);
+	if (sessionLevelRefTable[i]->Arc_EOL) {
+		returnStatus = FALSE;
+	}
+
+	return returnStatus;
+}
+
+
+boolean DspCheckSecurityLevel(const Dcm_DspSecurityRowType	**securityLevelRefTable)
+{
+	boolean returnStatus = TRUE;
+	Dcm_SecLevelType currentSecurityLevel;
+	uint16 i;
+
+	DslGetSecurityLevel(&currentSecurityLevel);
+	for (i = 0; (securityLevelRefTable[i]->DspSecurityLevel != currentSecurityLevel) && !securityLevelRefTable[i]->Arc_EOL; i++);
+	if (securityLevelRefTable[i]->Arc_EOL) {
+		returnStatus = FALSE;
+	}
+
+	return returnStatus;
+}
+
+
 Std_ReturnType AskApplicationForSessionPermission(Dcm_SesCtrlType newSessionLevel)
 {
 	Std_ReturnType returnCode = E_OK;
@@ -374,7 +406,7 @@ Dcm_NegativeResponseCodeType DspUdsReadDtcInfoSub_0x09(const PduInfoType *pduRxD
 Dcm_NegativeResponseCodeType DspUdsReadDtcInfoSub_0x06_0x10(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
-	Dem_DTCOriginType dtcOrigin;
+	Dem_DTCOriginType dtcOrigin = NULL;
 	uint8 startRecNum;
 	uint8 endRecNum;
 
@@ -601,6 +633,279 @@ void DspUdsReadDtcInformation(const PduInfoType *pduRxData, PduInfoType *pduTxDa
 }
 
 
+boolean DspLookupDid(uint16 didNr, const Dcm_DspDidType **didPtr)
+{
+	uint16 i;
+	boolean didFound = FALSE;
+	for (i = 0; (DCM_Config.Dsp->DspDid[i].DspDidIdentifier != didNr) &&  !DCM_Config.Dsp->DspDid[i].Arc_EOL; i++);
+
+	if (!DCM_Config.Dsp->DspDid[i].Arc_EOL) {
+		didFound = TRUE;
+		*didPtr = &DCM_Config.Dsp->DspDid[i];
+	}
+
+	return didFound;
+}
+
+
+Dcm_NegativeResponseCodeType DspReadDidData(const Dcm_DspDidType *didPtr, PduInfoType *pduTxData, uint16 *txPos)
+{
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+
+	if ((didPtr->DspDidInfoRef->DspDidAccess.DspDidRead != NULL) && (didPtr->DspDidConditionCheckReadFnc != NULL) && (didPtr->DspDidReadDataFnc != NULL)) {	/** @req DCM433 **/
+		if (DspCheckSessionLevel(didPtr->DspDidInfoRef->DspDidAccess.DspDidRead->DspDidReadSessionRef)) { /** @req DCM434 **/
+			if (DspCheckSecurityLevel(didPtr->DspDidInfoRef->DspDidAccess.DspDidRead->DspDidReadSecurityLevelRef)) { /** @req DCM435 **/
+				Std_ReturnType result;
+				Dcm_NegativeResponseCodeType errorCode;
+				result = didPtr->DspDidConditionCheckReadFnc(&errorCode);
+				if ((result == E_OK) && (errorCode == DCM_E_POSITIVERESPONSE)) {	/** @req DCM439 **/
+					uint16 didLen;
+					result = E_NOT_OK;
+					if (didPtr->DspDidInfoRef->DspDidFixedLength) {	/** @req DCM436 **/
+						didLen = didPtr->DspDidSize;
+						result = E_OK;
+					}
+					else {
+						if (didPtr->DspDidReadDataLengthFnc != NULL) {
+							result = didPtr->DspDidReadDataLengthFnc(&didLen);
+						}
+					}
+
+					if (result == E_OK) {
+						// Now ready for reading the data!
+						if ((*txPos + didLen + 2) <= pduTxData->SduLength) {
+							pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 8) & 0xFF;
+							(*txPos)++;
+							pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 0) & 0xFF;
+							(*txPos)++;
+							result = didPtr->DspDidReadDataFnc(&pduTxData->SduDataPtr[*txPos]);	/** @req DCM437 **/
+							*txPos += didLen;
+
+							if (result != E_OK) {
+								responseCode = DCM_E_CONDITIONSNOTCORRECT;
+							}
+						}
+						else { // tx buffer full
+							responseCode = DCM_E_REQUESTOUTOFRANGE;
+						}
+					}
+					else {	// Not possible to obtain did length
+						responseCode = DCM_E_CONDITIONSNOTCORRECT;
+					}
+				}
+				else {	// CheckRead failed
+					responseCode = DCM_E_CONDITIONSNOTCORRECT;
+				}
+			}
+			else {	// Not allowed in current security level
+				responseCode = DCM_E_SECUTITYACCESSDENIED;
+			}
+		}
+		else {	// Not allowed in current session
+			responseCode = DCM_E_SERVICENOTSUPPORTEDINACTIVESESSION;
+		}
+	}
+	else {	// Read access not configured
+		responseCode = DCM_E_REQUESTOUTOFRANGE;
+	}
+
+	if (responseCode == DCM_E_POSITIVERESPONSE) {
+		// Recurse trough the rest of the dids. 	/** @req DCM440 **/
+		uint16 i;
+		for (i=0; (!didPtr->DspDidRef[i]->Arc_EOL) && (responseCode == DCM_E_POSITIVERESPONSE); i++) {
+			responseCode = DspReadDidData(didPtr->DspDidRef[i], pduTxData, txPos);
+		}
+	}
+
+	return responseCode;
+}
+
+void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTxData)
+{
+	/** @req DCM253 **/
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+	uint8 nrOfDids;
+	uint16 didNr;
+	const Dcm_DspDidType *didPtr = NULL;
+
+	uint16 txPos = 1;
+	uint16 i;
+
+	if ((pduRxData->SduLength - 1) % 2 == 0 ) {
+		nrOfDids = (pduRxData->SduLength - 1) / 2;
+
+		for (i = 0; (i < nrOfDids) && (responseCode == DCM_E_POSITIVERESPONSE); i++) {
+			didNr = (pduRxData->SduDataPtr[1+i*2] << 8) + pduRxData->SduDataPtr[2+i*2];
+			if (DspLookupDid(didNr, &didPtr)) {	/** @req DCM438 **/
+				responseCode = DspReadDidData(didPtr, pduTxData, &txPos);
+			}
+			else { // DID not found
+				responseCode = DCM_E_REQUESTOUTOFRANGE;
+			}
+		}
+	}
+	else {
+		responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+	}
+
+	if (responseCode == DCM_E_POSITIVERESPONSE) {
+		pduTxData->SduLength = txPos;
+	}
+
+	DsdDspProcessingDone(responseCode);
+}
+
+
+Dcm_NegativeResponseCodeType DspReadDidScalingData(const Dcm_DspDidType *didPtr, PduInfoType *pduTxData, uint16 *txPos)
+{
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+
+	if (didPtr->DspDidGetScalingInfoFnc != NULL) {
+		uint16 scalingInfoLen;
+
+		scalingInfoLen = didPtr->DspDidInfoRef->DspDidScalingInfoSize;
+		if ((*txPos + scalingInfoLen + 2) <= pduTxData->SduLength) {
+			Std_ReturnType result;
+			Dcm_NegativeResponseCodeType errorCode;
+
+			pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 8) & 0xFF;
+			(*txPos)++;
+			pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 0) & 0xFF;
+			(*txPos)++;
+			result = didPtr->DspDidGetScalingInfoFnc(&pduTxData->SduDataPtr[*txPos], &errorCode);	/** @req DCM394 **/
+			*txPos += scalingInfoLen;
+
+			if ((result != E_OK) || (errorCode != DCM_E_POSITIVERESPONSE)) {
+				responseCode = DCM_E_CONDITIONSNOTCORRECT;
+			}
+		}
+		else { // tx buffer full
+			responseCode = DCM_E_REQUESTOUTOFRANGE;
+		}
+	}
+	else {	// DspDidGetScalingInfoFnc null pointer
+		responseCode = DCM_E_CONDITIONSNOTCORRECT;
+	}
+
+	return responseCode;
+}
+
+void DspUdsReadScalingDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTxData)
+{
+	/** @req DCM258 **/
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+	uint16 didNr;
+	const Dcm_DspDidType *didPtr = NULL;
+
+	uint16 txPos = 1;
+
+	if (pduRxData->SduLength == 3) {
+		didNr = (pduRxData->SduDataPtr[1] << 8) + pduRxData->SduDataPtr[2];
+		if (DspLookupDid(didNr, &didPtr)) {
+			responseCode = DspReadDidScalingData(didPtr, pduTxData, &txPos);
+		}
+		else { // DID not found
+			responseCode = DCM_E_REQUESTOUTOFRANGE;
+		}
+
+		if (responseCode == DCM_E_POSITIVERESPONSE) {
+			pduTxData->SduLength = txPos;
+		}
+	}
+	else {
+		// Length not ok
+		responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+	}
+
+	DsdDspProcessingDone(responseCode);
+}
+
+
+Dcm_NegativeResponseCodeType DspWriteDidData(const Dcm_DspDidType *didPtr, const PduInfoType *pduRxData, uint16 writeDidLen)
+{
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+
+	if ((didPtr->DspDidInfoRef->DspDidAccess.DspDidWrite != NULL) && (didPtr->DspDidConditionCheckWriteFnc != NULL) && (didPtr->DspDidWriteDataFnc != NULL)) {	/** @req DCM468 **/
+		if (DspCheckSessionLevel(didPtr->DspDidInfoRef->DspDidAccess.DspDidWrite->DspDidWriteSessionRef)) { /** @req DCM469 **/
+			if (DspCheckSecurityLevel(didPtr->DspDidInfoRef->DspDidAccess.DspDidWrite->DspDidWriteSecurityLevelRef)) { /** @req DCM470 **/
+				Std_ReturnType result;
+				Dcm_NegativeResponseCodeType errorCode;
+				result = didPtr->DspDidConditionCheckWriteFnc(&errorCode);	/** @req DCM471 **/
+				if ((result == E_OK) && (errorCode == DCM_E_POSITIVERESPONSE)) {
+					uint16 didLen;
+					result = E_NOT_OK;
+					if (didPtr->DspDidInfoRef->DspDidFixedLength) {	/** @req DCM472 **/
+						didLen = didPtr->DspDidSize;
+						result = E_OK;
+					}
+					else {
+						if (didPtr->DspDidReadDataLengthFnc != NULL) {
+							result = didPtr->DspDidReadDataLengthFnc(&didLen);
+						}
+					}
+
+					if (result == E_OK) {
+						if (didLen == writeDidLen) {	/** @req DCM473 **/
+							result = didPtr->DspDidWriteDataFnc(&pduRxData->SduDataPtr[3], didLen, &errorCode);	/** @req DCM395 **/
+							if ((result != E_OK) || (errorCode != DCM_E_POSITIVERESPONSE)) {
+								responseCode = DCM_E_CONDITIONSNOTCORRECT;
+							}
+						}
+						else {
+							responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+						}
+					}
+					else {	// Not possible to obtain did length
+						responseCode = DCM_E_CONDITIONSNOTCORRECT;
+					}
+				}
+				else {	// CheckRead failed
+					responseCode = DCM_E_CONDITIONSNOTCORRECT;
+				}
+			}
+			else {	// Not allowed in current security level
+				responseCode = DCM_E_SECUTITYACCESSDENIED;
+			}
+		}
+		else {	// Not allowed in current session
+			responseCode = DCM_E_SERVICENOTSUPPORTEDINACTIVESESSION;
+		}
+	}
+	else {	// Read access not configured
+		responseCode = DCM_E_REQUESTOUTOFRANGE;
+	}
+
+	return responseCode;
+}
+
+void DspUdsWriteDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTxData)
+{
+	/** @req DCM255 **/
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+	uint16 didNr;
+	const Dcm_DspDidType *didPtr = NULL;
+
+	uint16 didDataLength;
+
+	didDataLength = pduRxData->SduLength - 3;
+	didNr = (pduRxData->SduDataPtr[1] << 8) + pduRxData->SduDataPtr[2];
+	if (DspLookupDid(didNr, &didPtr)) {	/** @req DCM467 **/
+		responseCode = DspWriteDidData(didPtr, pduRxData, didDataLength);
+	}
+	else { // DID not found
+		responseCode = DCM_E_REQUESTOUTOFRANGE;
+	}
+
+	if (responseCode == DCM_E_POSITIVERESPONSE) {
+		pduTxData->SduLength = 3;
+		pduTxData->SduDataPtr[1] = (didNr >> 8) & 0xFF;
+		pduTxData->SduDataPtr[2] = (didNr >> 0) & 0xFF;
+	}
+
+	DsdDspProcessingDone(responseCode);
+}
+
+
 void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	/** @req DCM252 **/
@@ -626,6 +931,7 @@ void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 					Dcm_SecLevelType activeSecLevel;
 					Dcm_GetSecurityLevel(&activeSecLevel);
 					if (requestedSecurityLevel == activeSecLevel) {		/** @req DCM323 **/
+						pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];
 						// If same level set the seed to zeroes
 						for (i = 0; i < requestedSecurity->DspSecuritySeedSize; i++) {
 							pduTxData->SduDataPtr[2+i] = 0;

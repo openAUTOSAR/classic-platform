@@ -33,80 +33,52 @@ typedef uint8 Dcm_ProtocolAddrTypeType;
  */
 
 // SessionControl
-typedef Std_ReturnType (*Dcm_CallbackGetSesChgPermissionFncType)(
-		Dcm_SesCtrlType sesCtrlTypeActive, Dcm_SesCtrlType sesCtrlTypeNew);
-typedef Std_ReturnType (*Dcm_CallbackChangeIndicationFncType)(
-		Dcm_SesCtrlType sesCtrlTypeOld, Dcm_SesCtrlType sesCtrlTypeNew);
-typedef Std_ReturnType (*Dcm_CallbackConfirmationRespPendFncType)(
-		Dcm_ConfirmationStatusType status);
+typedef Std_ReturnType (*Dcm_CallbackGetSesChgPermissionFncType)(Dcm_SesCtrlType sesCtrlTypeActive, Dcm_SesCtrlType sesCtrlTypeNew);
+typedef Std_ReturnType (*Dcm_CallbackChangeIndicationFncType)(Dcm_SesCtrlType sesCtrlTypeOld, Dcm_SesCtrlType sesCtrlTypeNew);
+typedef Std_ReturnType (*Dcm_CallbackConfirmationRespPendFncType)(Dcm_ConfirmationStatusType status);
 
 // SecurityAccess_<LEVEL>
-typedef Std_ReturnType (*Dcm_CallbackGetSeedFncType)(
-		uint8 *securityAccessDataRecord, uint8 *seed,
-		Dcm_NegativeResponseCodeType *errorCode);
+typedef Std_ReturnType (*Dcm_CallbackGetSeedFncType)(uint8 *securityAccessDataRecord, uint8 *seed, Dcm_NegativeResponseCodeType *errorCode);
 typedef Std_ReturnType (*Dcm_CallbackCompareKeyFncType)(uint8 *key);
 
 // PidServices_<PID>
-typedef Std_ReturnType
-(*Dcm_CallbackGetPIDValueFncType)(uint8 *dataValueBuffer);
+typedef Std_ReturnType (*Dcm_CallbackGetPIDValueFncType)(uint8 *dataValueBuffer);
 
 // DidServices_<DID>
 typedef Std_ReturnType (*Dcm_CallbackReadDataFncType)(uint8 *data);
-typedef Std_ReturnType (*Dcm_CallbackWriteDataFncType)(uint8 *data,
-		uint8 dataLength, Dcm_NegativeResponseCodeType *errorCode);
-typedef Std_ReturnType (*Dcm_CallbackReadDataLengthType)(uint16 *didLength);
-typedef Std_ReturnType (*Dcm_CallbackConditionCheckReadFncType)(
-		Dcm_NegativeResponseCodeType *errorCode);
-typedef Std_ReturnType (*Dcm_CallbackConditionCheckWriteFncType)(
-		Dcm_NegativeResponseCodeType *errorCode);
-typedef Std_ReturnType (*Dcm_CallbackReturnControlToECUFncType)(
-		uint8 *controlOptionRecord, uint8 *controlEnableMaskRecord,
-		uint8 *controlStatusRecord, Dcm_NegativeResponseCodeType *errorCode);
-typedef Std_ReturnType (*Dcm_CallbackResetToDefaultFncType)(
-		uint8 *controlOptionRecord, uint8 *controlEnableMaskRecord,
-		uint8 *controlStatusRecord, Dcm_NegativeResponseCodeType *errorCode);
-typedef Std_ReturnType (*Dcm_CallbackFreezeCurrentStateFncType)(
-		uint8 *controlOptionRecord, uint8 *controlEnableMaskRecord,
-		uint8 *controlStatusRecord, Dcm_NegativeResponseCodeType *errorCode);
-typedef Std_ReturnType (*Dcm_CallbackShortTermAdjustmentFncType)(
-		uint8 *controlOptionRecord, uint8 *controlEnableMaskRecord,
-		uint8 *controlStatusRecord, Dcm_NegativeResponseCodeType *errorCode);
-typedef Std_ReturnType (*Dcm_CallbackGetScalingInformationFncType)(
-		uint8 *scalingInfo, Dcm_NegativeResponseCodeType *errorCode);
+typedef Std_ReturnType (*Dcm_CallbackWriteDataFncType)(uint8 *data, uint8 dataLength, Dcm_NegativeResponseCodeType *errorCode);
+typedef Std_ReturnType (*Dcm_CallbackReadDataLengthFncType)(uint16 *didLength);
+typedef Std_ReturnType (*Dcm_CallbackConditionCheckReadFncType)(Dcm_NegativeResponseCodeType *errorCode);
+typedef Std_ReturnType (*Dcm_CallbackConditionCheckWriteFncType)(Dcm_NegativeResponseCodeType *errorCode);
+typedef Std_ReturnType (*Dcm_CallbackReturnControlToECUFncType)(uint8 *controlOptionRecord, uint8 *controlEnableMaskRecord, uint8 *controlStatusRecord, Dcm_NegativeResponseCodeType *errorCode);
+typedef Std_ReturnType (*Dcm_CallbackResetToDefaultFncType)(uint8 *controlOptionRecord, uint8 *controlEnableMaskRecord, uint8 *controlStatusRecord, Dcm_NegativeResponseCodeType *errorCode);
+typedef Std_ReturnType (*Dcm_CallbackFreezeCurrentStateFncType)(uint8 *controlOptionRecord, uint8 *controlEnableMaskRecord, uint8 *controlStatusRecord, Dcm_NegativeResponseCodeType *errorCode);
+typedef Std_ReturnType (*Dcm_CallbackShortTermAdjustmentFncType)(uint8 *controlOptionRecord, uint8 *controlEnableMaskRecord, uint8 *controlStatusRecord, Dcm_NegativeResponseCodeType *errorCode);
+typedef Std_ReturnType (*Dcm_CallbackGetScalingInformationFncType)(uint8 *scalingInfo, Dcm_NegativeResponseCodeType *errorCode);
 
 // InfoTypeServices_<INFOTYPENUMBER>
-typedef Std_ReturnType (*Dcm_CallbackGetInfoTypeValueFncType)(
-		uint8 *dataValueBuffer);
+typedef Std_ReturnType (*Dcm_CallbackGetInfoTypeValueFncType)(uint8 *dataValueBuffer);
 
 // DTRServices
-typedef Std_ReturnType (*Dcm_CallbackGgetDTRValueFncType)(uint16 *testval,
-		uint16 *minlimit, uint16 *maxlimit, uint8 *status);
+typedef Std_ReturnType (*Dcm_CallbackGgetDTRValueFncType)(uint16 *testval, uint16 *minlimit, uint16 *maxlimit, uint8 *status);
 
 // RoutineServices_<ROUTINENAME>
-typedef Std_ReturnType (*Dcm_CallbackStartFncType)(uint8 *inBuffer,
-		uint8 *outBuffer, Dcm_NegativeResponseCodeType *errorCode);
-typedef Std_ReturnType (*Dcm_CallbackStopFncType)(uint8 *inBuffer,
-		uint8 *outBuffer, Dcm_NegativeResponseCodeType *errorCode);
-typedef Std_ReturnType (*Dcm_CallbackRequestResultFncType)(uint8 *outBuffer,
-		Dcm_NegativeResponseCodeType *errorCode);
+typedef Std_ReturnType (*Dcm_CallbackStartFncType)(uint8 *inBuffer, uint8 *outBuffer, Dcm_NegativeResponseCodeType *errorCode);
+typedef Std_ReturnType (*Dcm_CallbackStopFncType)(uint8 *inBuffer, uint8 *outBuffer, Dcm_NegativeResponseCodeType *errorCode);
+typedef Std_ReturnType (*Dcm_CallbackRequestResultFncType)(uint8 *outBuffer, Dcm_NegativeResponseCodeType *errorCode);
 
 // RequestControlServices_<TID>
-typedef Std_ReturnType (*Dcm_CallbackRequestControlType)(uint8 *outBuffer,
-		uint8 *inBuffer);
+typedef Std_ReturnType (*Dcm_CallbackRequestControlType)(uint8 *outBuffer, uint8 *inBuffer);
 
 // CallBackDCMRequestServices
-typedef Std_ReturnType (*Dcm_CallbackStartProtocolFncType)(
-		Dcm_ProtocolType protocolID);
-typedef Std_ReturnType (*Dcm_CallbackStopProtocolFncType)(
-		Dcm_ProtocolType protocolID);
+typedef Std_ReturnType (*Dcm_CallbackStartProtocolFncType)(Dcm_ProtocolType protocolID);
+typedef Std_ReturnType (*Dcm_CallbackStopProtocolFncType)(Dcm_ProtocolType protocolID);
 
 // ServiceRequestIndication
-typedef Std_ReturnType (*Dcm_CallbackIndicationFncType)(uint8 *requestData,
-		uint16 dataSize);
+typedef Std_ReturnType (*Dcm_CallbackIndicationFncType)(uint8 *requestData, uint16 dataSize);
 
 // ResetService
-typedef Std_ReturnType (*Dcm_CallbackEcuResetType)(uint8 resetType,
-		Dcm_NegativeResponseCodeType *errorCode);
+typedef Std_ReturnType (*Dcm_CallbackEcuResetType)(uint8 resetType,	Dcm_NegativeResponseCodeType *errorCode);
 
 /*
  * DCM configurations
@@ -171,9 +143,9 @@ typedef struct {
 // 10.2.25
 typedef struct {
 	// Containers
-	Dcm_DspDidControlType DspDidControl; // (0..1)
-	Dcm_DspDidReadType DspDidRead; // (0..1)
-	Dcm_DspDidWriteType DspDidWrite; // (0..1)
+	const Dcm_DspDidReadType		*DspDidRead;	// (0..1)
+	const Dcm_DspDidWriteType		*DspDidWrite;	// (0..1)
+	const Dcm_DspDidControlType		*DspDidControl;	// (0..1)
 } Dcm_DspDidAccessType;
 
 // 10.2.24
@@ -193,18 +165,19 @@ typedef struct _Dcm_DspDidType {
 	uint16 DspDidSize; // (1)
 	const Dcm_DspDidInfoType *DspDidInfoRef; // (1)
 	const struct _Dcm_DspDidType **DspDidRef; // (0..*)
+	Dcm_CallbackReadDataLengthFncType DspDidReadDataLengthFnc;		// (0..1)
 	Dcm_CallbackConditionCheckReadFncType DspDidConditionCheckReadFnc; // (0..1)
+	Dcm_CallbackReadDataFncType DspDidReadDataFnc; // (0..1)
 	Dcm_CallbackConditionCheckWriteFncType DspDidConditionCheckWriteFnc; // (0..1)
 	Dcm_CallbackWriteDataFncType DspDidWriteDataFnc; // (0..1)
-	Dcm_CallbackFreezeCurrentStateFncType DspDidFreezeCurrentStateFnc; // (0..1)
 	Dcm_CallbackGetScalingInformationFncType DspDidGetScalingInfoFnc; // (0..1)
-	Dcm_CallbackReadDataLengthType DspDidReadDataLengthFnc; // (0..1)
-	Dcm_CallbackReadDataFncType DspDidReadDataFnc; // (0..1)
+	Dcm_CallbackFreezeCurrentStateFncType DspDidFreezeCurrentStateFnc; // (0..1)
 	Dcm_CallbackResetToDefaultFncType DspDidResetToDeaultFnc; // (0..1)
 	Dcm_CallbackReturnControlToECUFncType DspDidReturnControlToEcuFnc; // (0..1)
 	Dcm_CallbackShortTermAdjustmentFncType DspDidShortTermAdjustmentFnc; // (0..1)
 	// Containers
 	const Dcm_DspDidControlRecordSizesType *DspDidControlRecordSize; // (0..*)
+	boolean										Arc_EOL;
 } Dcm_DspDidType;
 
 // 10.2.30

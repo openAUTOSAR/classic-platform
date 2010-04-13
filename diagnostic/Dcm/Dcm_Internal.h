@@ -30,7 +30,7 @@
 #define SID_SECURITY_ACCESS						0x27
 #define SID_READ_DATA_BY_PERIODIC_IDENTIFIER	0x2A
 #define SID_DYNAMICLLY_DEFINE_DATA_IDENTIFIER	0x2C
-#define SID_WRIRE_DATA_BY_IDENTIFIER			0x2E
+#define SID_WRITE_DATA_BY_IDENTIFIER			0x2E
 #define SID_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER	0x2F
 #define SID_ROUTINE_CONTROL						0x31
 #define SID_TESTER_PRESENT						0x3E
@@ -55,6 +55,9 @@ typedef enum {
 /*
  * DSP
  */
+boolean DspCheckSessionLevel(const Dcm_DspSessionRowType **sessionLevelRefTable);
+boolean DspCheckSecurityLevel(const Dcm_DspSecurityRowType	**securityLevelRefTable);
+
 void DspInit(void);
 void DspMain(void);
 void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduInfoType *pduTxData);
@@ -63,6 +66,9 @@ void DspUdsClearDiagnosticInformation(const PduInfoType *pduRxData, PduInfoType 
 void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData);
 void DspUdsTesterPresent(const PduInfoType *pduRxData, PduInfoType *pduTxData);
 void DspUdsReadDtcInformation(const PduInfoType *pduRxData, PduInfoType *pduTxData);
+void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTxData);
+void DspUdsReadScalingDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTxData);
+void DspUdsWriteDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTxData);
 void DspUdsControlDtcSetting(const PduInfoType *pduRxData, PduInfoType *pduTxData);
 void DspDcmConfirmation(PduIdType confirmPduId);
 

@@ -71,38 +71,6 @@ boolean DsdLookupSid(uint8 sid, Dcm_DsdServiceType **sidPtr)
 }
 
 
-boolean DsdCheckSessionLevel(const Dcm_DspSessionRowType **sessionLevelRefTable)
-{
-	boolean returnStatus = TRUE;
-	Dcm_SesCtrlType currentSession;
-	uint16 i;
-
-	DslGetSesCtrlType(&currentSession);
-	for (i = 0; (sessionLevelRefTable[i]->DspSessionLevel != currentSession) && !sessionLevelRefTable[i]->Arc_EOL; i++);
-	if (sessionLevelRefTable[i]->Arc_EOL) {
-		returnStatus = FALSE;
-	}
-
-	return returnStatus;
-}
-
-
-boolean DsdCheckSecurityLevel(const Dcm_DspSecurityRowType	**securityLevelRefTable)
-{
-	boolean returnStatus = TRUE;
-	Dcm_SecLevelType currentSecurityLevel;
-	uint16 i;
-
-	DslGetSecurityLevel(&currentSecurityLevel);
-	for (i = 0; (securityLevelRefTable[i]->DspSecurityLevel != currentSecurityLevel) && !securityLevelRefTable[i]->Arc_EOL; i++);
-	if (securityLevelRefTable[i]->Arc_EOL) {
-		returnStatus = FALSE;
-	}
-
-	return returnStatus;
-}
-
-
 boolean DsdAskApplicationForServicePermission(uint8 *requestData, uint16 dataSize)
 {
 	Std_ReturnType returnCode = E_OK;
@@ -142,9 +110,11 @@ void DsdSelectServiceFunction(uint8 sid)
 		break;
 
 	case SID_READ_DATA_BY_IDENTIFIER:
+		DspUdsReadDataByIdentifier(msgData.pduRxData, msgData.pduTxData);
 		break;
 
 	case SID_READ_SCALING_DATA_BY_IDENTIFIER:
+		DspUdsReadScalingDataByIdentifier(msgData.pduRxData, msgData.pduTxData);
 		break;
 
 	case SID_SECURITY_ACCESS:
@@ -157,7 +127,8 @@ void DsdSelectServiceFunction(uint8 sid)
 	case SID_DYNAMICLLY_DEFINE_DATA_IDENTIFIER:
 		break;
 
-	case SID_WRIRE_DATA_BY_IDENTIFIER:
+	case SID_WRITE_DATA_BY_IDENTIFIER:
+		DspUdsWriteDataByIdentifier(msgData.pduRxData, msgData.pduTxData);
 		break;
 
 	case SID_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER:
@@ -205,8 +176,8 @@ void DsdHandleRequest(void)
 	if (DCM_RESPOND_ALL_REQUEST || ((msgData.pduRxData->SduDataPtr[0] & 0x7F) < 0x40)) {		/** @req DCM084 **/
 		if (DsdLookupSid(msgData.pduRxData->SduDataPtr[0], &sidConfPtr)) {		/** @req DCM192 **/ /** @req DCM193 **/ /** @req DCM196 **/
 			// SID found!
-			if (DsdCheckSessionLevel(sidConfPtr->DsdSidTabSessionLevelRef) || (sidConfPtr->DsdSidTabServiceId == SID_DIAGNOSTIC_SESSION_CONTROL)) {		 /** @req DCM211 **/
-				if (DsdCheckSecurityLevel(sidConfPtr->DsdSidTabSecurityLevelRef) || (sidConfPtr->DsdSidTabServiceId == SID_SECURITY_ACCESS)) {	 /** @req DCM217 **/
+			if (DspCheckSessionLevel(sidConfPtr->DsdSidTabSessionLevelRef) || (sidConfPtr->DsdSidTabServiceId == SID_DIAGNOSTIC_SESSION_CONTROL)) {		 /** @req DCM211 **/
+				if (DspCheckSecurityLevel(sidConfPtr->DsdSidTabSecurityLevelRef) || (sidConfPtr->DsdSidTabServiceId == SID_SECURITY_ACCESS)) {	 /** @req DCM217 **/
 					if (DCM_REQUEST_INDICATION_ENABLED) {	 /** @req DCM218 **/
 						 result = DsdAskApplicationForServicePermission(msgData.pduRxData->SduDataPtr, msgData.pduRxData->SduLength);
 					}
