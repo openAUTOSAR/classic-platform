@@ -13,24 +13,10 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-
-//#include "arch_offset.h"
-#include "pcb.h"
-#include "sys.h"
-#include <stdlib.h>
-#include "task_i.h"
+#include "internal.h"
 #include "stack.h"
-#include "arch_offset.h"
 #include "stm32f10x.h"
 #include "core_cm3.h"
-#include "arch.h"
 
 
 /**
@@ -54,20 +40,25 @@ unsigned int Os_ArchGetScSize( void ) {
 	return SC_SIZE;
 }
 
-
-void Os_ArchSetupContext( OsPcbType *pcb ) {
+void Os_ArchSetTaskEntry(OsPcbType *pcbPtr ) {
 	// TODO: Add lots of things here, see ppc55xx
-	uint32_t *context = (uint32_t *)pcb->stack.curr;
+	uint32_t *context = (uint32_t *)pcbPtr->stack.curr;
+
 	context[C_CONTEXT_OFFS/4] = SC_PATTERN;
 
 	/* Set LR to start function */
-	if( pcb->proc_type == PROC_EXTENDED ) {
+	if( pcbPtr->proc_type == PROC_EXTENDED ) {
 		context[VGPR_LR_OFF/4] = (uint32_t)Os_TaskStartExtended;
-	} else if( pcb->proc_type == PROC_BASIC ) {
+	} else if( pcbPtr->proc_type == PROC_BASIC ) {
 		context[VGPR_LR_OFF/4] = (uint32_t)Os_TaskStartBasic;
 	}
-	os_arch_stack_set_endmark(pcb);
-// Os_ArchSetupContext_asm(pcb->stack.curr,NULL);
+
+}
+
+void Os_ArchSetupContext( OsPcbType *pcb ) {
+	// TODO: Add lots of things here, see ppc55xx
+	// uint32_t *context = (uint32_t *)pcb->stack.curr;
+
 }
 
 void Os_ArchInit( void ) {

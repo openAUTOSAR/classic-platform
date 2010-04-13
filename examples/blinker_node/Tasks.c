@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "blinker_main.h"
-#include "Trace.h"
+#include "debug.h"
 #include "WdgM.h"
 
 
@@ -79,9 +79,9 @@ void Startup( void ) {
 	 * Activate scheduled tasks. OS tick is 1ms.
 	 * The Blink is run every 25 ms with an offset of 25ms.
 	 */
-	SetRelAlarm(ALARM_ID_bTask10, 10, 10); // ADC data acquisition
-	SetRelAlarm(ALARM_ID_bTask25, 25, 25); // ADC data acquisition
-	SetRelAlarm(ALARM_ID_bTask100, 100, 100); // ADC data acquisition
+	SetRelAlarm(ALARM_ID_alarm10, 10, 10); // ADC data acquisition
+	SetRelAlarm(ALARM_ID_alarm25, 25, 25); // ADC data acquisition
+	SetRelAlarm(ALARM_ID_alarm100, 100, 100); // ADC data acquisition
 
 	WdgM_ActivateAliveSupervision(WDBG_ALIVE_LOOP_BLINK_COMPONENT);
 

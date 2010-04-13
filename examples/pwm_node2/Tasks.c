@@ -25,7 +25,7 @@
 #include "EcuM.h"
 #include <stdio.h>
 #include <assert.h>
-#include "Trace.h"
+#include "debug.h"
 #include "Com.h"
 #include "pwm_node2_helpers.h"
 
@@ -40,6 +40,8 @@ void ComTask( void ) {
 	Com_MainFunctionRx();
 
 	pwm_node2_receive();
+
+	TerminateTask();
 }
 
 /*
@@ -54,7 +56,7 @@ void StartupTask( void ) {
 	Com_IpduGroupStart(RxGroup, 0);
 
 	// End of startup_task().
-//	TerminateTask();
+	TerminateTask();
 }
 
 

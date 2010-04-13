@@ -16,7 +16,7 @@
 #ifndef EXT_CONFIG_H_
 #define EXT_CONFIG_H_
 
-/* Created in Oil_Config */
+/* Created in Os_CfgConfig */
 struct OsPcb;
 struct OsAlarm;
 struct OsCounter;
@@ -28,23 +28,24 @@ struct OsRomApplication;
 #endif
 
 #if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
-int Oil_GetApplCnt(void);
-struct OsRomApplication *Oil_GetApplObj( ApplicationType application_id );
+int Os_CfgGetApplCnt(void);
+struct OsRomApplication *Os_CfgGetApplObj( ApplicationType application_id );
 #endif
-int Oil_GetTaskCnt(void);
-void *Oil_GetIdleProcStack(void);
-int Oil_GetResourceCnt(void);
-StatusType Oil_GetAlarmBase(AlarmType alarm_id, AlarmBaseRefType info);
-uint32 Oil_GetAlarmCnt(void);
-struct OsAlarm *Oil_GetAlarmObj( AlarmType alarm_id );
-struct OsCounter *Oil_GetCounter(CounterType);
-uint32 Oil_GetCounterCnt(void );
-uint32 Oil_GetSchedCnt( void );
-struct OsSchTbl *Oil_GetSched( ScheduleTableType sched_id );
-uint32 Oil_GetServiceCnt( void ) ;
-struct OsResource *Oil_GetResource( ResourceType resource );
+int Os_CfgGetTaskCnt(void);
+void *Os_CfgGetIdleProcStack(void);
+int Os_CfgGetResourceCnt(void);
+StatusType Os_CfgGetAlarmBase(AlarmType alarm_id, AlarmBaseRefType info);
+uint32 Os_CfgGetAlarmCnt(void);
+struct OsAlarm *Os_CfgGetAlarmObj( AlarmType alarm_id );
+struct OsCounter *Os_CfgGetCounter(CounterType);
+uint32 Os_CfgGetCounterCnt(void );
+uint32 Os_CfgGetSchedCnt( void );
+struct OsSchTbl *Os_CfgGetSched( ScheduleTableType sched_id );
+uint32 Os_CfgGetServiceCnt( void ) ;
+struct OsResource *Os_CfgGetResource( ResourceType resource );
 
-struct OsMessage *Oil_GetMessage(MessageType message_id);
-uint32 Oil_GetMessageCnt(void );
+struct OsMessage *Os_CfgGetMessage(MessageType message_id);
+uint32 Os_CfgGetMessageCnt(void );
+void Os_CfgValidate( void );
 
 #endif /*EXT_CONFIG_H_*/

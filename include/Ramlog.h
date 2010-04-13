@@ -53,7 +53,7 @@ static inline void ramlog_hex( uint32_t val ) {
 /*
  * var args ramlog functions
  */
-#if defined(USE_RAMLOG_PRINTF)
+#if defined(USE_RAMLOG)
 int ramlog_printf(const char *format, ...);
 #else
 #define ramlog_printf(format,...)

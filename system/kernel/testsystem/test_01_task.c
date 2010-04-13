@@ -180,13 +180,13 @@ void btask_sup_m_01( void ) {
 		TerminateTask();
 		break;
 	case 10:
-		rv = GetResource(RES_ID_ext_prio_3);
+		rv = GetResource(RES_ID_std_prio_3);
 		TEST_ASSERT(rv == E_OK);
 
 		rv = TerminateTask();
 		TEST_ASSERT(rv==E_OS_RESOURCE);
 
-		rv = ReleaseResource(RES_ID_ext_prio_3);
+		rv = ReleaseResource(RES_ID_std_prio_3);
 		TEST_ASSERT(rv==E_OK);
 		TerminateTask();
 		break;

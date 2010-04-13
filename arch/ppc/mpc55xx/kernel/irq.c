@@ -36,7 +36,7 @@
 #define NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS	336
 #endif
 
-#include "Trace.h"
+#include "debug.h"
 #endif
 #include "irq.h"
 
@@ -289,7 +289,7 @@ void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
 	Irq_IsrTypeTable[vector] = PROC_ISR2;
 
 	if (vector < INTC_NUMBER_OF_INTERRUPTS) {
-		Irq_SetPriority(CPU_CORE0,vector + + IRQ_INTERRUPT_OFFSET, osPrioToCpuPio(pcb->prio));
+		Irq_SetPriority(CPU_CORE0,vector + IRQ_INTERRUPT_OFFSET, osPrioToCpuPio(pcb->prio));
 	} else if ((vector >= CRITICAL_INPUT_EXCEPTION) && (vector
 			<= DEBUG_EXCEPTION)) {
 	} else {
@@ -535,11 +535,11 @@ typedef struct {
 static void dump_exception_regs( uint32_t *regs ) {
 	exc_stack_t *r = (exc_stack_t *)regs;
 
-	dbg_printf("sp   %08x  srr0 %08x  srr1 %08x\n",r->sp,r->srr0,r->srr1);
-	dbg_printf("lr   %08x  ctr  %08x  xer  %08x\n",r->lr,r->ctr,r->xer);
-	dbg_printf("cr   %08x  esr  %08x  mcsr %08x\n",r->cr,r->esr,r->mcsr);
-	dbg_printf("dear %08x  vec  %08x  r3   %08x\n",r->dear,r->vector,r->r3);
-	dbg_printf("r4   %08x\n",r->r4);
+	LDEBUG_PRINTF("sp   %08x  srr0 %08x  srr1 %08x\n",r->sp,r->srr0,r->srr1);
+	LDEBUG_PRINTF("lr   %08x  ctr  %08x  xer  %08x\n",r->lr,r->ctr,r->xer);
+	LDEBUG_PRINTF("cr   %08x  esr  %08x  mcsr %08x\n",r->cr,r->esr,r->mcsr);
+	LDEBUG_PRINTF("dear %08x  vec  %08x  r3   %08x\n",r->dear,r->vector,r->r3);
+	LDEBUG_PRINTF("r4   %08x\n",r->r4);
 }
 
 #else

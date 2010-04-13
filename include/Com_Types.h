@@ -54,6 +54,9 @@ typedef enum {
 	SINT32
 } Com_SignalType;
 
+#define COM_SIGNALTYPE_UNSIGNED  FALSE
+#define COM_SIGNALTYPE_SIGNED    TRUE
+
 typedef enum {
 	PENDING,
 	TRIGGERED,
@@ -113,6 +116,10 @@ typedef enum {
 	type == SINT8   ? sizeof(sint8) : \
 	type == SINT16  ? sizeof(sint16) : \
 	type == SINT32  ? sizeof(sint32) : sizeof(boolean)) \
+
+#define SignalTypeSignedness(type) \
+		((type == SINT8 || type == SINT16 || type == SINT32) ? \
+				COM_SIGNALTYPE_SIGNED : COM_SIGNALTYPE_UNSIGNED)
 
 /** Filter configuration type.
  * NOT SUPPORTED
@@ -218,7 +225,7 @@ typedef struct {
 	/** Identifier for the signal.
 	 * Should be the same value as the index in the COM signal array.
 	 */
-	const uint8 ComHandleId;
+	const uint16 ComHandleId;
 
 	/** Tx and Rx notification function. */
 	void (*ComNotification) (void);

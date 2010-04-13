@@ -13,8 +13,8 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-#ifndef IRQ_H_
-#define IRQ_H_
+#ifndef IRQ_TYPES_H
+#define IRQ_TYPES_H
 
 #include "stm32f10x.h"
 

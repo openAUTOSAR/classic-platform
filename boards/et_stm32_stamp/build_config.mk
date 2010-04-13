@@ -9,14 +9,14 @@ CFG=ARM ARM_CM3 BRD_ET_STM32_STAMP STM32_CL
 
 # What buildable modules does this board have, 
 # default or private
-MOD_AVAIL=KERNEL MCU PWM ADC SIMPLE_PRINTF ARM_ITM_TERM RAMLOG DEM DCM IOHWAB
+MOD_AVAIL=KERNEL MCU PWM ADC ARM_ITM_TERM DEM DCM IOHWAB
 #T32_TERM SIMPLE_PRINTF RAMLOG
 #
 
 # Needed by us
 MOD_USE=KERNEL MCU
 
-# Use little head
+# Use little heap
 def-y += HEAPSIZE=4000
 def-y += STM32F10X_CL
 

@@ -27,7 +27,7 @@
 #include <string.h>
 #include "mpc55xx.h"
 #include "Mcu.h"
-#include "Trace.h"
+#include "debug.h"
 #include "Det.h"
 #if defined(USE_KERNEL)
 #include "Os.h"

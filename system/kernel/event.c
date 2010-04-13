@@ -90,7 +90,7 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 	dest_pcb = os_get_pcb(TaskID);
 
 
-	if( TaskID  >= Oil_GetTaskCnt() ) {
+	if( TaskID  >= Os_CfgGetTaskCnt() ) {
 		rv = E_OS_ID;
 		goto err;
 	}

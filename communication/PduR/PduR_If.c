@@ -22,7 +22,7 @@
 
 #include <string.h>
 #include "PduR_If.h"
-#include "Trace.h"
+#include "debug.h"
 #if defined(USE_DEM)
 #include "Dem.h"
 #endif

@@ -37,7 +37,7 @@ StatusType SendMessage( MessageType message_id, ApplicationDataRef dataRef ) {
 	OsMessageType *msg;
 
 	// Is the message valid ?
-	if( message_id > Oil_GetMessageCnt() ) {
+	if( message_id > Os_CfgGetMessageCnt() ) {
 		// TODO: Add error hook here
 		return E_COM_ID;
 	}
@@ -48,7 +48,7 @@ StatusType SendMessage( MessageType message_id, ApplicationDataRef dataRef ) {
 	}
 
 	// Copy the data to interal buffers
-	msg = Oil_GetMessage(message_id);
+	msg = Os_CfgGetMessage(message_id);
 
 	// copy data
 	memcpy(msg->data,dataRef,msg->data_size);
@@ -79,7 +79,7 @@ StatusType ReceiveMessage( MessageType message_id, ApplicationDataRef dataRef ) 
 	// Check if valid
 
 	// Copy from container to dataRef
-	msg = Oil_GetMessage(message_id);
+	msg = Os_CfgGetMessage(message_id);
 	memcpy(dataRef,msg->data,msg->data_size);
 
 	return E_OK;

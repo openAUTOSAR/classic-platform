@@ -25,13 +25,13 @@
 
 #define PDUR_VENDOR_ID			1
 #define PDUR_AR_MAJOR_VERSION  2
-#define PDUR_AR_MINOR_VERSION 	2
-#define PDUR_AR_PATCH_VERSION	2
-#define PDUR_SW_MAJOR_VERSION  3
-#define PDUR_SW_MINOR_VERSION 	0
-#define PDUR_SW_PATCH_VERSION	2
+#define PDUR_AR_MINOR_VERSION  2
+#define PDUR_AR_PATCH_VERSION  2
+#define PDUR_SW_MAJOR_VERSION  1
+#define PDUR_SW_MINOR_VERSION  0
+#define PDUR_SW_PATCH_VERSION  0
 
-#include "Trace.h"
+#include "debug.h"
 
 #include "PduR_Cfg.h"
 #include "PduR_Types.h"
@@ -59,7 +59,7 @@ extern const PduR_PBConfigType *PduRConfig;
  * statements are turned off if PDUR_PRINT_DEBUG_STATEMENTS is undefined.
  */
 //#include <stdio.h>
-#define debug(...) simple_printf(__VA_ARGS__)
+#define debug(...) printf(__VA_ARGS__)
 
 #else
 #define debug(...)

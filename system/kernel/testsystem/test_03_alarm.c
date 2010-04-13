@@ -44,7 +44,6 @@ void etask_sup_l_03(void) {
 	StatusType rv;
 	AlarmBaseType alarmBase;
 	TickType tick;
-	TickType tick2;
 	TickType tickElapsed;
 
 	int i;
@@ -346,7 +345,7 @@ void etask_sup_l_03(void) {
 			test_nr = 100;
 			break;
 		case 100:
-			SetEvent(TASK_ID_etask_sup_m, EVENT_KILL);
+			SetEvent(TASK_ID_etask_sup_m, EVENT_MASK_kill);
 			TerminateTask();
 			break;
 		}
@@ -357,13 +356,13 @@ void etask_sup_m_03(void) {
 
 	for(;;) {
 
-		WaitEvent(EVENT_1 | EVENT_KILL );
+		WaitEvent(EVENT_MASK_1 | EVENT_MASK_kill );
 		switch (test_nr) {
 		case 12:
 		case 13:
 		case 14:
 		case 15:
-			ClearEvent(EVENT_1);
+			ClearEvent(EVENT_MASK_1);
 			break;
 		case 100:
 			TerminateTask();

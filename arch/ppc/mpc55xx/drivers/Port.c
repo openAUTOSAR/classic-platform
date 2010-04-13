@@ -63,7 +63,7 @@ static Port_StateType _portState = PORT_UNINITIALIZED;
 #else
 #define VALIDATE_PARAM_CONFIG(_ptr,_api)
 #define VALIDATE_STATE_INIT(_api)
-#define VALIDATE_PARAM_PIN(_api)
+#define VALIDATE_PARAM_PIN(_pin, _api)
 #endif
 
 static Std_VersionInfoType _Port_VersionInfo =

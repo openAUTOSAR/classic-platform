@@ -20,12 +20,13 @@
 
 
 
+#include <assert.h>
 #include <stdlib.h>
 //#include <stdio.h>
 #include <string.h>
 #include "Com.h"
 #include "Com_Types.h"
-#include "Trace.h"
+#include "debug.h"
 
 #ifdef COM_DEV_ERROR_DETECT
 #include "Det.h"
@@ -69,6 +70,7 @@ void Com_Init(const Com_ConfigType *config ) {
 
 		if (i >= COM_MAX_NR_IPDU) {
 			DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_TOO_MANY_IPDU);
+			assert(0);
 			failure = 1;
 			break;
 		}
@@ -103,8 +105,8 @@ void Com_Init(const Com_ConfigType *config ) {
 
 			// If this signal already has been configured this is most likely an error.
 			if (Arc_Signal->ComIPduDataPtr != NULL) {
-				DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_SIGNAL_CONFIGURATION);
-				failure = 1;
+				// DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_SIGNAL_CONFIGURATION);
+				// failure = 1;
 			}
 
 			// Configure signal deadline monitoring if used.
@@ -155,12 +157,16 @@ void Com_Init(const Com_ConfigType *config ) {
 					// Set pointer to shadow buffer
 					Arc_GroupSignal->Com_Arc_ShadowBuffer = Arc_Signal->Com_Arc_ShadowBuffer;
 					// Initialize group signal data.
-					Com_CopyData(Arc_IPdu->ComIPduDataPtr, &GroupSignal->ComSignalInitValue, GroupSignal->ComBitSize, GroupSignal->ComBitPosition, 0);
+					// TODO: CopyData
+					// Com_CopyData(Arc_IPdu->ComIPduDataPtr, &GroupSignal->ComSignalInitValue, GroupSignal->ComBitSize, GroupSignal->ComBitPosition, 0);
+					Com_WriteGroupSignalDataToPdu(Signal->ComHandleId, GroupSignal->ComHandleId, &GroupSignal->ComSignalInitValue);
 				}
 
 			} else {
 				// Initialize signal data.
-				Com_CopyData(Arc_IPdu->ComIPduDataPtr, &Signal->ComSignalInitValue, Signal->ComBitSize, Signal->ComBitPosition, 0);
+				// TODO: CopyData
+				// Com_CopyData(Arc_IPdu->ComIPduDataPtr, &Signal->ComSignalInitValue, Signal->ComBitSize, Signal->ComBitPosition, 0);
+				Com_WriteSignalDataToPdu(Signal->ComHandleId, &Signal->ComSignalInitValue);
 			}
 
 			// Check filter configuration

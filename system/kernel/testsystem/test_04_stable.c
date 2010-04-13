@@ -50,62 +50,62 @@ void etask_sup_l_04(void) {
 		switch (test_nr) {
 		case 1:
 			/* StartScheduleTableRel E_OS_ID, E_OS_VALUE, E_OS_STATE */
-			rv = StartScheduleTableRel(SCHEDULE_TABLE_ID_ILL,1);
+			rv = StartScheduleTableRel(SCHTBL_ID_ILL,1);
 			TEST_ASSERT(rv==E_OS_ID);
-			rv = StartScheduleTableRel(SCHEDULE_TABLE_0,0);
+			rv = StartScheduleTableRel(SCHTBL_ID_0,0);
 			TEST_ASSERT(rv==E_OS_VALUE);
-			rv = StartScheduleTableRel(SCHEDULE_TABLE_0,1);
+			rv = StartScheduleTableRel(SCHTBL_ID_0,1);
 			TEST_ASSERT(rv==E_OK);
-			rv = StartScheduleTableRel(SCHEDULE_TABLE_0,1);
+			rv = StartScheduleTableRel(SCHTBL_ID_0,1);
 			TEST_ASSERT(rv==E_OS_STATE);
-			rv = StopScheduleTable(SCHEDULE_TABLE_0);
+			rv = StopScheduleTable(SCHTBL_ID_0);
 			test_nr++;
 			break;
 		case 2:
 			/* StartScheduleTableAbs E_OS_ID, E_OS_VALUE, E_OS_STATE */
-			rv = StartScheduleTableAbs(SCHEDULE_TABLE_ID_ILL,1);
+			rv = StartScheduleTableAbs(SCHTBL_ID_ILL,1);
 			TEST_ASSERT(rv==E_OS_ID);
 #if 0
 			/* TODO:Must supply an offset bigger than OsCounterMaxAllowedValue */
-			StartScheduleTableAbs(SCHEDULE_TABLE_0,0);
+			StartScheduleTableAbs(SCHTBL_ID_0,0);
 			TEST_ASSERT(rv==E_OS_VALUE);
 #endif
-			rv = StartScheduleTableAbs(SCHEDULE_TABLE_0,1);
+			rv = StartScheduleTableAbs(SCHTBL_ID_0,1);
 			TEST_ASSERT(rv==E_OK);
-			rv = StartScheduleTableAbs(SCHEDULE_TABLE_0,1);
+			rv = StartScheduleTableAbs(SCHTBL_ID_0,1);
 			TEST_ASSERT(rv==E_OS_STATE);
-			rv = StopScheduleTable(SCHEDULE_TABLE_0);
+			rv = StopScheduleTable(SCHTBL_ID_0);
 			test_nr++;
 			break;
 		case 3:
 			/* StopScheduleTable E_OS_ID, E_OS_NO_FUNC */
-			rv = StopScheduleTable(SCHEDULE_TABLE_ID_ILL);
+			rv = StopScheduleTable(SCHTBL_ID_ILL);
 			TEST_ASSERT(rv==E_OS_ID);
-			rv = StopScheduleTable(SCHEDULE_TABLE_0);
+			rv = StopScheduleTable(SCHTBL_ID_0);
 			TEST_ASSERT(rv==E_OS_NOFUNC);
 			test_nr++;
 			break;
 		case 4:
 			/* NextScheduleTable	E_OS_ID, E_OS_NO_FUNC, E_OS_STATE */
-			rv = NextScheduleTable(SCHEDULE_TABLE_ID_ILL, SCHEDULE_TABLE_ID_ILL);
+			rv = NextScheduleTable(SCHTBL_ID_ILL, SCHTBL_ID_ILL);
 			TEST_ASSERT(rv==E_OS_ID);
-			rv = NextScheduleTable(SCHEDULE_TABLE_ID_ILL, SCHEDULE_TABLE_0);
+			rv = NextScheduleTable(SCHTBL_ID_ILL, SCHTBL_ID_0);
 			TEST_ASSERT(rv==E_OS_ID);
-			rv = NextScheduleTable(SCHEDULE_TABLE_0, SCHEDULE_TABLE_ID_ILL);
+			rv = NextScheduleTable(SCHTBL_ID_0, SCHTBL_ID_ILL);
 			TEST_ASSERT(rv==E_OS_ID);
 
-			rv = NextScheduleTable(SCHEDULE_TABLE_0,SCHEDULE_TABLE_0);
+			rv = NextScheduleTable(SCHTBL_ID_0,SCHTBL_ID_0);
 			TEST_ASSERT(rv==E_OS_NOFUNC);
 
-			rv = StartScheduleTableRel(SCHEDULE_TABLE_0,1);
-			rv = StartScheduleTableRel(SCHEDULE_TABLE_1,1);
-			rv = NextScheduleTable(SCHEDULE_TABLE_0,SCHEDULE_TABLE_1);
+			rv = StartScheduleTableRel(SCHTBL_ID_0,1);
+			rv = StartScheduleTableRel(SCHTBL_ID_1,1);
+			rv = NextScheduleTable(SCHTBL_ID_0,SCHTBL_ID_1);
 			TEST_ASSERT(rv==E_OS_STATE);
 
 			/* Cleanup */
-			rv = StopScheduleTable(SCHEDULE_TABLE_0);
+			rv = StopScheduleTable(SCHTBL_ID_0);
 			TEST_ASSERT(rv==E_OK);
-			rv = StopScheduleTable(SCHEDULE_TABLE_1);
+			rv = StopScheduleTable(SCHTBL_ID_1);
 			TEST_ASSERT(rv==E_OK);
 			test_nr = 10;
 			break;
@@ -123,13 +123,13 @@ void etask_sup_l_04(void) {
 			rv = ActivateTask(TASK_ID_etask_sup_m);
 			TEST_ASSERT( rv == E_OK );
 
-			rv = GetScheduleTableStatus(SCHEDULE_TABLE_0,&status);
+			rv = GetScheduleTableStatus(SCHTBL_ID_0,&status);
 			TEST_ASSERT(rv==E_OK);
 			TEST_ASSERT( status == SCHEDULETABLE_STOPPED );
-			rv = StartScheduleTableRel(SCHEDULE_TABLE_0,2);
+			rv = StartScheduleTableRel(SCHTBL_ID_0,2);
 			TEST_ASSERT(rv==E_OK);
 
-			rv = GetScheduleTableStatus(SCHEDULE_TABLE_0,&status);
+			rv = GetScheduleTableStatus(SCHTBL_ID_0,&status);
 			TEST_ASSERT(rv==E_OK);
 			TEST_ASSERT( status == SCHEDULETABLE_RUNNING );
 
@@ -154,7 +154,7 @@ void etask_sup_l_04(void) {
 			rv = IncrementCounter(COUNTER_ID_soft_1);
 			subTest = 11;
 			rv = IncrementCounter(COUNTER_ID_soft_1);
-			rv = GetScheduleTableStatus(SCHEDULE_TABLE_0,&status);
+			rv = GetScheduleTableStatus(SCHTBL_ID_0,&status);
 			TEST_ASSERT(rv==E_OK);
 			TEST_ASSERT( status == SCHEDULETABLE_RUNNING );
 
@@ -163,9 +163,9 @@ void etask_sup_l_04(void) {
 			rv = IncrementCounter(COUNTER_ID_soft_1);
 			rv = IncrementCounter(COUNTER_ID_soft_1);
 			rv = IncrementCounter(COUNTER_ID_soft_1);
-			rv = GetScheduleTableStatus(SCHEDULE_TABLE_0,&status);
+			rv = GetScheduleTableStatus(SCHTBL_ID_0,&status);
 			TEST_ASSERT(rv==E_OK);
-			TEST_ASSERT( status == SCHEDULETABLE_RUNNING );
+			TEST_ASSERT( status == SCHEDULETABLE_STOPPED );
 
 			/* First offset, again. */
 			rv = IncrementCounter(COUNTER_ID_soft_1);
@@ -186,13 +186,13 @@ void etask_sup_l_04(void) {
 			rv = ActivateTask(TASK_ID_etask_sup_m);
 			TEST_ASSERT( rv == E_OK );
 
-			rv = GetScheduleTableStatus(SCHEDULE_TABLE_0,&status);
+			rv = GetScheduleTableStatus(SCHTBL_ID_0,&status);
 			TEST_ASSERT(rv==E_OK);
 			TEST_ASSERT( status == SCHEDULETABLE_STOPPED );
-			rv = StartScheduleTableRel(SCHEDULE_TABLE_0,2);
+			rv = StartScheduleTableRel(SCHTBL_ID_0,2);
 			TEST_ASSERT(rv==E_OK);
 
-			rv = GetScheduleTableStatus(SCHEDULE_TABLE_0,&status);
+			rv = GetScheduleTableStatus(SCHTBL_ID_0,&status);
 			TEST_ASSERT(rv==E_OK);
 			TEST_ASSERT( status == SCHEDULETABLE_RUNNING );
 
@@ -217,7 +217,7 @@ void etask_sup_l_04(void) {
 			rv = IncrementCounter(COUNTER_ID_soft_1);
 			subTest = 11;
 			rv = IncrementCounter(COUNTER_ID_soft_1);
-			rv = GetScheduleTableStatus(SCHEDULE_TABLE_0,&status);
+			rv = GetScheduleTableStatus(SCHTBL_ID_0,&status);
 			TEST_ASSERT(rv==E_OK);
 			TEST_ASSERT( status == SCHEDULETABLE_RUNNING );
 
@@ -226,7 +226,7 @@ void etask_sup_l_04(void) {
 			rv = IncrementCounter(COUNTER_ID_soft_1);
 			rv = IncrementCounter(COUNTER_ID_soft_1);
 			rv = IncrementCounter(COUNTER_ID_soft_1);
-			rv = GetScheduleTableStatus(SCHEDULE_TABLE_0,&status);
+			rv = GetScheduleTableStatus(SCHTBL_ID_0,&status);
 			TEST_ASSERT(rv==E_OK);
 			TEST_ASSERT( status == SCHEDULETABLE_STOPPED );
 			test_nr = 100;
@@ -236,7 +236,7 @@ void etask_sup_l_04(void) {
 
 
 		case 100:
-			rv = SetEvent(TASK_ID_etask_sup_m, EVENT_KILL);
+			rv = SetEvent(TASK_ID_etask_sup_m, EVENT_MASK_kill);
 			TEST_ASSERT( rv == E_OK );
 			TerminateTask();
 			break;
@@ -252,7 +252,7 @@ void etask_sup_m_04(void) {
 	StatusType rv;
 
 	for(;;) {
-		WaitEvent(EVENT_1 | EVENT_KILL );
+		WaitEvent(EVENT_MASK_1 | EVENT_MASK_kill );
 		switch(test_nr) {
 		case 10:
 			switch(subTest) {
@@ -261,8 +261,8 @@ void etask_sup_m_04(void) {
 				printf("etask\n");
 				rv = GetEvent(currTask,&eventMask);
 				TEST_ASSERT( rv == E_OK );
-				TEST_ASSERT(eventMask == EVENT_1 );
-				ClearEvent(EVENT_1);
+				TEST_ASSERT(eventMask == EVENT_MASK_1 );
+				ClearEvent(EVENT_MASK_1);
 				break;
 
 			default:

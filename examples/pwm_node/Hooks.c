@@ -25,8 +25,8 @@
 #include <stdio.h>
 #include <assert.h>
 #define USE_TRACE	1
-#define USE_DEBUG_PRINT 1
-#include "Trace.h"
+#define USE_LDEBUG_PRINTF 1
+#include "debug.h"
 
 /* Notification callback from channel 0 */
 void MyPwmNotificationRoutine(void) {
@@ -47,27 +47,27 @@ void MyPwmNotificationRoutine(void) {
 
 /* Global hooks */
 ProtectionReturnType ProtectionHook( StatusType FatalError ) {
-	dbg_printf("## ProtectionHook\n");
+	LDEBUG_PRINTF("## ProtectionHook\n");
 	return PRO_KILLAPPL;
 }
 
 void StartupHook( void ) {
-	dbg_printf("## StartupHook\n");
+	LDEBUG_PRINTF("## StartupHook\n");
 
 	uint32_t sys_freq = McuE_GetSystemClock();
 
-	dbg_printf("Sys clock %d Hz\n",sys_freq);
+	LDEBUG_PRINTF("Sys clock %d Hz\n",sys_freq);
 }
 
 void ShutdownHook( StatusType Error ) {
-	dbg_printf("## ShutdownHook\n");
+	LDEBUG_PRINTF("## ShutdownHook\n");
 	while(1);
 }
 
 void ErrorHook( StatusType Error ) {
 	DisableAllInterrupts();
 
-	dbg_printf("## ErrorHook err=%d\n",Error);
+	LDEBUG_PRINTF("## ErrorHook err=%d\n",Error);
 	while(1);
 }
 
@@ -77,7 +77,7 @@ void PreTaskHook( void ) {
 	if( task > 10 ) {
 		while(1);
 	}
-// 	dbg_printf("## PreTaskHook, taskid=%d\n",task);
+// 	LDEBUG_PRINTF("## PreTaskHook, taskid=%d\n",task);
 }
 
 void PostTaskHook( void ) {
@@ -86,7 +86,7 @@ void PostTaskHook( void ) {
 	if( task > 10 ) {
 		while(1);
 	}
-//	dbg_printf("## PostTaskHook, taskid=%d\n",task);
+//	LDEBUG_PRINTF("## PostTaskHook, taskid=%d\n",task);
 }
 
 #if 0

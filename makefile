@@ -1,4 +1,3 @@
-
 # build with:
 # make subdir1 			- build the subdir1 
 # make subdir1/subdir2	- build subdir2
@@ -30,17 +29,19 @@ else
 	export SED=sed
 endif
 
-USE_DBG_PRINTF?=y
 
 Q?=@
 export Q
 export TOPDIR = $(CURDIR)
-export CFG_DEBUG ?= n
-export CFG_USE_DEBUG_PRINT
-ifeq ($(CFG_DEBUG),n)
-export CFG_RELEASE = y
-endif
 export PATH
+
+# Select default console
+# RAMLOG | TTY_T32 | TTY_WINIDEA 
+export SELECT_OS_CONSOLE
+export SELECT_CONSOLE
+export USE_DEBUG_PRINTF
+export SELECT_OPT?=OPT_RELEASE
+export CFG_$(SELECT_OPT)=y
 
 ifneq ($(filter clean_all,$(MAKECMDGOALS)),clean_all)
   ifeq (${BOARDDIR},)
@@ -81,10 +82,6 @@ help:
 	@echo "  CROSS_COMPILE =$(CROSS_COMPILE)"
 	@echo ""
 	
-def-$(USE_DBG_PRINTF) += USE_DBG_PRINTF
-def-$(USE_DEBUG_PRINT) += USE_DEBUG_PRINT
-
-
 export CFG_MCU 
 export CFG_CPU
 export MCU

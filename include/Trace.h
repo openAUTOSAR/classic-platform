@@ -18,18 +18,18 @@
 #ifndef TRACE_H_
 #define TRACE_H_
 
-#include "simple_printf.h"
+
 /**
  *
  * NOTE!!!!
  * Do not use this in a header file. Should be used in the *.c file like this.
  *
  * #define USE_TRACE
- * #include "Trace.h"
+ * #include "debug.h"
  *
  * Macro's for debugging and tracing
  *
- * Define USE_DEBUG_PRINT and DBG_LEVEL either globally( e.g. a makefile )
+ * Define USE_LDEBUG_PRINTF and DBG_LEVEL either globally( e.g. a makefile )
  * or in a specific file.  The DBG_LEVEL macro controls the amount
  * of detail you want in the debug printout.
  * There are 3 levels:
@@ -57,11 +57,11 @@
 #define CH_ISR		0
 #define CH_PROC		1
 
-#if defined(USE_DEBUG_PRINT)
+#if defined(USE_LDEBUG_PRINTF)
 #define DEBUG(_level,...) \
 	do { \
 		if(_level>=DEBUG_LVL) { \
-			simple_printf (__VA_ARGS__); \
+			printf (__VA_ARGS__); \
 		}; \
 	} while(0);
 
@@ -69,10 +69,10 @@
 #define DEBUG(_level,...)
 #endif
 
-#if defined(USE_DEBUG_PRINT)
-#define dbg_printf(format,...) simple_printf(format,## __VA_ARGS__ )
+#if defined(USE_LDEBUG_PRINTF)
+#define LDEBUG_PRINTF(format,...) printf(format,## __VA_ARGS__ )
 #else
-#define dbg_printf(format,...)
+#define LDEBUG_PRINTF(format,...)
 #endif
 
 
