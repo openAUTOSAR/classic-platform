@@ -549,6 +549,7 @@ boolean matchEventWithDtcFilter(const EventStatusRecType *eventRec)
 void getFreezeFrameData(const Dem_EventParameterType *eventParam, FreezeFrameRecType *freezeFrame)
 {
 	// TODO: Fill out
+	freezeFrame->eventId = DEM_EVENT_ID_NULL;	// Not supported yet
 }
 
 
@@ -1928,9 +1929,9 @@ Dem_ReturnGetExtendedDataRecordByDTCType Dem_GetExtendedDataRecordByDTC(uint32 d
 {
 	Dem_ReturnGetExtendedDataRecordByDTCType returnCode = DEM_RECORD_WRONG_DTC;
 	EventStatusRecType *eventRec;
-	Dem_ExtendedDataRecordClassType const *extendedDataRecordClass;
+	Dem_ExtendedDataRecordClassType const *extendedDataRecordClass = NULL;
 	ExtDataRecType *extData;
-	uint8 posInExtData;
+	uint8 posInExtData = 0;
 
 	if (lookupDtcEvent(dtc, &eventRec)) {
 		if (checkDtcKind(dtcKind, eventRec->eventParamRef)) {
@@ -1996,7 +1997,7 @@ Dem_ReturnGetSizeOfExtendedDataRecordByDTCType Dem_GetSizeOfExtendedDataRecordBy
 {
 	Dem_ReturnGetExtendedDataRecordByDTCType returnCode = DEM_GET_SIZEOFEDRBYDTC_W_DTC;
 	EventStatusRecType *eventRec;
-	Dem_ExtendedDataRecordClassType const *extendedDataRecordClass;
+	Dem_ExtendedDataRecordClassType const *extendedDataRecordClass = NULL;
 	uint8 posInExtData;
 
 	if (lookupDtcEvent(dtc, &eventRec)) {
