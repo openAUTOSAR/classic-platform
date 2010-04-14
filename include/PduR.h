@@ -31,8 +31,6 @@
 #define PDUR_SW_MINOR_VERSION  0
 #define PDUR_SW_PATCH_VERSION  0
 
-#include "debug.h"
-
 #include "PduR_Cfg.h"
 #include "PduR_Types.h"
 

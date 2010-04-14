@@ -20,8 +20,6 @@
  * TBD.
  */
 
-#define USE_DEBUG
-
 #include "Det.h"
 #include "CanIf.h"
 #include "CanTp_Cfg.h" /** req: CanTp156.1 **/
@@ -29,8 +27,8 @@
 #include "CanTp.h" /** req: CanTp156.3 **/
 #include "SchM_CanTp.h" /** req: CanTp156.4 **/
 //#include "MemMap.h" /** req: CanTp156.5 **/
-#include "Trace.h"
 #include "String.h"
+#include "debug.h"
 
 #if  ( CANTP_DEV_ERROR_DETECT == STD_ON )
 

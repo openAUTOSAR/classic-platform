@@ -24,6 +24,7 @@
 #include "ComM_Dcm.h"
 #include "PduR_Dcm.h"
 #include "ComStack_Types.h"
+#include "debug.h"
 
 #define TIMER_DECREMENT(timer) \
 	if (timer > 0) { \
