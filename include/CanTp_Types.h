@@ -78,7 +78,7 @@ typedef struct {
 
 typedef struct {
 	const int CanIf_CanTxPduId; // The polite CanIf PDU index.
-	const int PduR_CanTpRxPduId; // The polite PduR index.
+	const int PduR_CanTpTxPduId; // The polite PduR index.
 	const CanTp_AddressingFormantType CanTpAddressingFormant;
 	const uint32 CanTpBs; /** req: CanTp243: Sets the maximum number of messages of N-PDUs before flow control. */
 	const uint32 CanTpNar; /** req: CanTp244: Timeout for transmission of a CAN frame (ms). */

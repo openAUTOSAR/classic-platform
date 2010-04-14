@@ -51,7 +51,7 @@ inc-$(USE_CANIF) += $(ROOTDIR)/communication/CanIf
 
 # CanTp
 obj-$(USE_CANTP) += CanTp.o
-obj-$(USE_CANTP) += CanTp_PBcfg.o
+obj-$(USE_CANTP) += CanTp_Cfg.o
 
 vpath-$(USE_CANTP) += $(ROOTDIR)/communication/CanTp
 inc-$(USE_CANTP) += $(ROOTDIR)/communication/CanTp
