@@ -49,16 +49,6 @@
 
 #endif
 
-// TODO: Move following definitions to PduR
-#define DCM_PDU_ID_NONE				0
-#define DCM_PDU_ID_UDS_FUNC_RX		1
-#define DCM_PDU_ID_UDS_PHYS_RX		2
-#define DCM_PDU_ID_UDS_TX			3
-
-#define DCM_PDU_ID_OBD_FUNC_RX		4
-#define DCM_PDU_ID_OBD_TX			5
-
-
 /*
  * Interfaces for BSW components (8.3.1)
  */
