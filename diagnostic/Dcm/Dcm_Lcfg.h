@@ -80,6 +80,7 @@ typedef Std_ReturnType (*Dcm_CallbackIndicationFncType)(uint8 *requestData, uint
 // ResetService
 typedef Std_ReturnType (*Dcm_CallbackEcuResetType)(uint8 resetType,	Dcm_NegativeResponseCodeType *errorCode);
 
+
 /*
  * DCM configurations
  */
@@ -157,7 +158,6 @@ typedef struct {
 	Dcm_DspDidAccessType DspDidAccess; // (1)
 } Dcm_DspDidInfoType;
 
-//
 // 10.2.22
 typedef struct _Dcm_DspDidType {
 	boolean DspDidUsePort; // (1)
@@ -177,7 +177,7 @@ typedef struct _Dcm_DspDidType {
 	Dcm_CallbackShortTermAdjustmentFncType DspDidShortTermAdjustmentFnc; // (0..1)
 	// Containers
 	const Dcm_DspDidControlRecordSizesType *DspDidControlRecordSize; // (0..*)
-	boolean										Arc_EOL;
+	boolean	Arc_EOL;
 } Dcm_DspDidType;
 
 // 10.2.30
@@ -494,15 +494,13 @@ typedef struct {
 
 typedef struct {
 	uint32 stateTimeoutCount; // Counter for timeout.
-	//Dcm_DslProtocolStateType state;
-	//Dcm_DslPdurCommuncationState subState;
-	//boolean diagnosticResponsePendingExternalBuffer;
 	Dcm_DslBufferUserType externalRxBufferStatus;
+	PduInfoType diagnosticRequestFromTester;
+	PduInfoType diagnosticResponseFromDsd;
 	Dcm_DslBufferUserType externalTxBufferStatus;
 	boolean protocolStarted; // Has the protocol been started?
 	Dcm_DslLocalBufferType localRxBuffer;
 	Dcm_DslLocalBufferType localTxBuffer;
-	//DcmDsl_ProtocolConfigurationType protocolConfiguration;
 	boolean diagnosticActiveComM; //
 	uint16 S3ServerTimeoutCount;
 	uint8 responsePendingCount;
@@ -532,7 +530,7 @@ struct Dcm_DslProtocolRowType_t { // Cross referenced from Dcm_DslConnectionType
 typedef struct {
 // Containers
 const Dcm_DslProtocolRxType *DslProtocolRxGlobalList; // (1..*)  A polite list for all RX protocol configurations.
-const Dcm_DslProtocolRowType *DslProtocolRow; // (1..*)
+const Dcm_DslProtocolRowType *DslProtocolRowList; // (1..*)
 } Dcm_DslProtocolType;
 
 // 10.2.19
