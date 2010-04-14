@@ -52,15 +52,17 @@ void DsdMain(void)
 }
 
 
-boolean DsdLookupSid(uint8 sid, Dcm_DsdServiceType **sidPtr)
+boolean DsdLookupSid(uint8 sid, const Dcm_DsdServiceType **sidPtr)
 {
 	boolean returnStatus = TRUE;
-	uint16 i;
+	const Dcm_DsdServiceType *service = msgData.serviceTable->DsdService;
 
-	for (i = 0; (msgData.serviceTable->DsdService[i].DsdSidTabServiceId != sid) && !msgData.serviceTable->DsdService[i].Arc_EOL; i++);
+	while ((service->DsdSidTabServiceId != sid) && !service->Arc_EOL) {
+		service++;
+	}
 
-	if (!msgData.serviceTable->DsdService[i].Arc_EOL) {
-		*sidPtr = (Dcm_DsdServiceType*)&msgData.serviceTable->DsdService[i];
+	if (!service->Arc_EOL) {
+		*sidPtr = service;
 	}
 	else {
 		returnStatus = FALSE;
@@ -74,15 +76,16 @@ boolean DsdLookupSid(uint8 sid, Dcm_DsdServiceType **sidPtr)
 boolean DsdAskApplicationForServicePermission(uint8 *requestData, uint16 dataSize)
 {
 	Std_ReturnType returnCode = E_OK;
+	const Dcm_DslServiceRequestIndicationType *serviceRequestIndication = DCM_Config.Dsl->DslServiceRequestIndication;
 	Std_ReturnType result;
-	uint16 i;
 
-	for (i = 0; !DCM_Config.Dsl->DslServiceRequestIndication[i].Arc_EOL && returnCode != E_REQUEST_NOT_ACCEPTED; i++) {
-		if (DCM_Config.Dsl->DslServiceRequestIndication[i].Indication != NULL) {
-			result = DCM_Config.Dsl->DslServiceRequestIndication[i].Indication(requestData, dataSize);
+	while (!serviceRequestIndication->Arc_EOL && (returnCode != E_REQUEST_NOT_ACCEPTED)) {
+		if (serviceRequestIndication->Indication != NULL) {
+			result = serviceRequestIndication->Indication(requestData, dataSize);
 			if (result != E_OK)
 				returnCode = result;
 		}
+		serviceRequestIndication++;
 	}
 
 	return returnCode;
@@ -170,7 +173,7 @@ void DsdCreateAndSendNcr(Dcm_NegativeResponseCodeType responseCode)
 void DsdHandleRequest(void)
 {
 	Std_ReturnType result;
-	Dcm_DsdServiceType *sidConfPtr = NULL;
+	const Dcm_DsdServiceType *sidConfPtr = NULL;
 
 	/** @req DCM178 **/
 	if (DCM_RESPOND_ALL_REQUEST || ((msgData.pduRxData->SduDataPtr[0] & 0x7F) < 0x40)) {		/** @req DCM084 **/

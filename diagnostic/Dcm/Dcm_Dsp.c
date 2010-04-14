@@ -69,11 +69,13 @@ boolean DspCheckSessionLevel(const Dcm_DspSessionRowType **sessionLevelRefTable)
 {
 	boolean returnStatus = TRUE;
 	Dcm_SesCtrlType currentSession;
-	uint16 i;
 
 	DslGetSesCtrlType(&currentSession);
-	for (i = 0; (sessionLevelRefTable[i]->DspSessionLevel != currentSession) && !sessionLevelRefTable[i]->Arc_EOL; i++);
-	if (sessionLevelRefTable[i]->Arc_EOL) {
+	while (((*sessionLevelRefTable)->DspSessionLevel != currentSession) && !(*sessionLevelRefTable)->Arc_EOL) {
+		sessionLevelRefTable++;
+	}
+
+	if ((*sessionLevelRefTable)->Arc_EOL) {
 		returnStatus = FALSE;
 	}
 
@@ -85,11 +87,12 @@ boolean DspCheckSecurityLevel(const Dcm_DspSecurityRowType	**securityLevelRefTab
 {
 	boolean returnStatus = TRUE;
 	Dcm_SecLevelType currentSecurityLevel;
-	uint16 i;
 
 	DslGetSecurityLevel(&currentSecurityLevel);
-	for (i = 0; (securityLevelRefTable[i]->DspSecurityLevel != currentSecurityLevel) && !securityLevelRefTable[i]->Arc_EOL; i++);
-	if (securityLevelRefTable[i]->Arc_EOL) {
+	while (((*securityLevelRefTable)->DspSecurityLevel != currentSecurityLevel) && !(*securityLevelRefTable)->Arc_EOL) {
+		securityLevelRefTable++;
+	}
+	if ((*securityLevelRefTable)->Arc_EOL) {
 		returnStatus = FALSE;
 	}
 
@@ -100,18 +103,19 @@ boolean DspCheckSecurityLevel(const Dcm_DspSecurityRowType	**securityLevelRefTab
 Std_ReturnType AskApplicationForSessionPermission(Dcm_SesCtrlType newSessionLevel)
 {
 	Std_ReturnType returnCode = E_OK;
+	const Dcm_DslSessionControlType *sesControl = DCM_Config.Dsl->DslSessionControl;
 	Dcm_SesCtrlType currentSessionLevel;
 	Std_ReturnType result;
-	uint16 i;
 
-	for (i = 0; !DCM_Config.Dsl->DslSessionControl[i].Arc_EOL && (returnCode != E_SESSION_NOT_ALLOWED); i++) {
-		if (DCM_Config.Dsl->DslSessionControl[i].GetSesChgPermission != NULL) {
+	while (!sesControl->Arc_EOL && (returnCode != E_SESSION_NOT_ALLOWED)) {
+		if (sesControl->GetSesChgPermission != NULL) {
 			Dcm_GetSesCtrlType(&currentSessionLevel);
-			result = DCM_Config.Dsl->DslSessionControl[i].GetSesChgPermission(currentSessionLevel ,newSessionLevel);
+			result = sesControl->GetSesChgPermission(currentSessionLevel ,newSessionLevel);
 			if (result != E_OK) {
 				returnCode = result;
 			}
 		}
+		sesControl++;
 	}
 
 	return returnCode;
@@ -121,16 +125,18 @@ Std_ReturnType AskApplicationForSessionPermission(Dcm_SesCtrlType newSessionLeve
 void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	// @req DCM250 **/
+	const Dcm_DspSessionRowType *sessionRow = DCM_Config.Dsp->DspSession->DspSessionRow;
 	Dcm_SesCtrlType reqSessionType;
 	Std_ReturnType result;
-	uint16	i;
 
 	if (pduRxData->SduLength == 2) {
 		reqSessionType = pduRxData->SduDataPtr[1];
 		// Check if type exist in session table
-		for (i = 0; (DCM_Config.Dsp->DspSession->DspSessionRow[i].DspSessionLevel != reqSessionType) && !DCM_Config.Dsp->DspSession->DspSessionRow[i].Arc_EOL;i++);
+		while ((sessionRow->DspSessionLevel != reqSessionType) && !sessionRow->Arc_EOL) {
+			sessionRow++;
+		}
 
-		if (!DCM_Config.Dsp->DspSession->DspSessionRow[i].Arc_EOL) {
+		if (!sessionRow->Arc_EOL) {
 			result = AskApplicationForSessionPermission(reqSessionType);
 			if (result == E_OK) {
 				DslSetSesCtrlType(reqSessionType);		/** @req DCM311 **/
@@ -635,13 +641,16 @@ void DspUdsReadDtcInformation(const PduInfoType *pduRxData, PduInfoType *pduTxDa
 
 boolean DspLookupDid(uint16 didNr, const Dcm_DspDidType **didPtr)
 {
-	uint16 i;
+	const Dcm_DspDidType *dspDid = DCM_Config.Dsp->DspDid;
 	boolean didFound = FALSE;
-	for (i = 0; (DCM_Config.Dsp->DspDid[i].DspDidIdentifier != didNr) &&  !DCM_Config.Dsp->DspDid[i].Arc_EOL; i++);
 
-	if (!DCM_Config.Dsp->DspDid[i].Arc_EOL) {
+	while ((dspDid->DspDidIdentifier != didNr) &&  !dspDid->Arc_EOL) {
+		dspDid++;
+	}
+
+	if (!dspDid->Arc_EOL) {
 		didFound = TRUE;
-		*didPtr = &DCM_Config.Dsp->DspDid[i];
+		*didPtr = dspDid;
 	}
 
 	return didFound;
