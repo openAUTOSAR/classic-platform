@@ -241,7 +241,7 @@ SECTIONS
 	*_pack_sf.o(.text)
 	*_unpack_sf.o(.text)
 	*udivmodsi4.o(.text)
-	*_ashlsi3.o(.text)
+	/* *_ashlsi3.o(.text) */
 	*_lshrsi3.o(.text)
 	*assert.o(.text)
 	*div.o(.text)
