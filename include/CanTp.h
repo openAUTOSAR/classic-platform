@@ -33,6 +33,7 @@
 
 #include "ComStack_Types.h"
 #include "Std_Types.h"
+#include "CanTp_Cfg.h"
 //#include "Dem.h"  // TODO: req: CanTp156
 
 /*
