@@ -5,7 +5,7 @@
  *
  * This source code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
+ * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.                                           
  *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -890,6 +890,7 @@ static INLINE void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 		return;
 	}
 
+	rxRuntime->iso15765.framesHandledCount++; // First expected is one (1) according to Movimento Puma.
 	rxRuntime->iso15765.state = SF_OR_FF_RECEIVED_WAITING_PDUR_BUFFER;
 	rxRuntime->mode = CANTP_RX_PROCESSING;
 	rxRuntime->iso15765.stateTimeoutCount =
@@ -1066,6 +1067,7 @@ static INLINE BufReq_ReturnType canTpTransmitHelper(const CanTp_TxNSduType *txCo
 				txRuntime->mode = CANTP_TX_WAIT;
 				break;
 			case FIRST_FRAME:
+				txRuntime->iso15765.stateTimeoutCount = CANTP_CONVERT_MS_TO_MAIN_CYCLES(txConfig->CanTpNbs * 1000);  /*CanTp: 264*/
 				txRuntime->iso15765.state = TX_WAIT_FLOW_CONTROL;
 				res = sendFirstFrame(txConfig, txRuntime); /* req: CanTp 232 */
 				if (res == E_OK) {
@@ -1237,27 +1239,29 @@ void CanTp_RxIndication_Main(PduIdType CanTpRxPduId,
 	case SINGLE_FRAME: {
 		if (rxConfigParams != NULL)
 			handleSingleFrame(rxConfigParams, runtimeParams, CanTpRxPduPtr);
-    else
-      DEBUG( DEBUG_LOW, "Single frame received on ISO15765-Tx flow control - is ingnored!\n");
+		else
+			DEBUG( DEBUG_MEDIUM, "Single frame received on ISO15765-Tx flow control - is ingnored!\n");
 		break;
 	}
 	case FIRST_FRAME: {
 		if (rxConfigParams != NULL)
 			handleFirstFrame(rxConfigParams, runtimeParams, CanTpRxPduPtr);
-    else
-      DEBUG( DEBUG_LOW, "First frame received on ISO15765-Tx flow control - is ignored!\n");
+		else
+			DEBUG( DEBUG_MEDIUM, "First frame received on ISO15765-Tx flow control - is ignored!\n");
 		break;
 	}
 	case CONSECUTIVE_FRAME: {
 		if (rxConfigParams != NULL)
 			handleConsecutiveFrame(rxConfigParams, runtimeParams, CanTpRxPduPtr);
-    else
-      DEBUG( DEBUG_LOW, "Consecutive frame received on ISO15765-Tx flow control - is ignored!\n");
+		else
+			DEBUG( DEBUG_MEDIUM, "Consecutive frame received on ISO15765-Tx flow control - is ignored!\n");
 		break;
 	}
 	case FLOW_CONTROL_CTS_FRAME: {
 		if (txConfigParams != NULL)
 			handleFlowControlFrame(txConfigParams, runtimeParams, CanTpRxPduPtr);
+		else
+			DEBUG( DEBUG_MEDIUM, "Consecutive frame received on ISO15765-Tx flow control - is ignored!\n");
 		break;
 	}
 	case INVALID_FRAME: {
@@ -1338,7 +1342,7 @@ static inline boolean checkNasNarTimeout(CanTp_ChannelPrivateType *runtimeData) 
 
 void CanTp_MainFunction() /** req : CanTp213 **/
 {
-	BufReq_ReturnType ret;
+  BufReq_ReturnType ret;
 	CanTpFifoQueueItem item;
 	PduLengthType bytesWrittenToSduRBuffer;
 
@@ -1407,9 +1411,12 @@ void CanTp_MainFunction() /** req : CanTp213 **/
 				}
 				break;
 			case TX_WAIT_FLOW_CONTROL:
-				if (txRuntimeListItem->iso15765.stateTimeoutCount == 0)
+				if (txRuntimeListItem->iso15765.stateTimeoutCount == 0) {
+					DEBUG( DEBUG_MEDIUM, "State TX_WAIT_FLOW_CONTROL timed out!\n");
 					PduR_CanTpTxConfirmation(txConfigListItem->PduR_CanTpTxPduId,
 							NTFRSLT_NOT_OK); /* qqq: req: CanTp: 185. */
+					txRuntimeListItem->iso15765.state = IDLE;
+				}
 				break;
 			default:
 				break;

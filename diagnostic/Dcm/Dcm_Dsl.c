@@ -80,34 +80,6 @@ void ComM_DCM_InactivateDiagnostic() {
 	;
 }
 
-void _DsdDslDataIndication(const PduInfoType *pduRxData,
-		const Dcm_DsdServiceTableType *protocolSIDTable,
-		Dcm_ProtocolAddrTypeType addrType,
-		PduIdType rxPduIdRef,
-		PduInfoType *pduTxData) {
-	DEBUG( DEBUG_MEDIUM, "_DsdDslDataIndication called!\n");
-
-	DEBUG( DEBUG_MEDIUM, "pduRxData->SduLength = %d\n", pduRxData->SduLength );
-	for (int i=0; i < pduRxData->SduLength; i++) {
-		DEBUG( DEBUG_MEDIUM, "Data[%d] = %02x\n", i, pduRxData->SduDataPtr[i] );
-	}
-
-	uint8 *p;
-
-	pduTxData->SduLength = 5;
-	p = pduTxData->SduDataPtr;
-
-
-	for (int i=0; i<pduTxData->SduLength; i++) {
-		*p = i;
-		p++;
-	}
-
-	// Simulate a diagnostic response.
-	DslDsdProcessingDone(rxPduIdRef, DSD_TX_RESPONSE_READY);
-
-}
-
 // ################# HELPER FUNCTIONS START #################
 
 //
@@ -134,6 +106,48 @@ void stopS3SessionTimer(Dcm_DslRunTimeProtocolParametersType *runtime) {
 
 // - - - - - - - - - - -
 
+#if 1
+//
+//	This function implements the requirement @DCM139 when
+// 	transition from one session to another.
+// 	qqq, strange observation: If S3 timeout we will not change security mode to
+// 	locked and that is how I interper the requirement.
+//
+void changeDiagnosticSession( Dcm_DslRunTimeProtocolParametersType *runtime,
+	Dcm_SesCtrlType newSession) {
+	switch (runtime->sessionControl) {
+	case DCM_DEFAULT_SESSION: // "default".
+		break;
+
+	case DCM_PROGRAMMING_SESSION:
+	case DCM_EXTENDED_DIAGNOSTIC_SESSION:
+	case DCM_SAFTEY_SYSTEM_DIAGNOSTIC_SESSION:
+	case DCM_ALL_SESSION_LEVEL:
+		runtime->securityLevel = DCM_SEC_LEV_LOCKED; // "0x00".
+		break;
+
+	default:
+		// TODO: Log this error.
+		DEBUG(DEBUG_MEDIUM, "Old session invalid")
+		break;
+	}
+
+	switch (newSession) {
+	case DCM_DEFAULT_SESSION: // "default".
+	case DCM_PROGRAMMING_SESSION:
+	case DCM_EXTENDED_DIAGNOSTIC_SESSION:
+	case DCM_SAFTEY_SYSTEM_DIAGNOSTIC_SESSION:
+	case DCM_ALL_SESSION_LEVEL:
+		runtime->sessionControl = newSession;
+		break;
+
+	default:
+		// TODO: Log this error.
+		DEBUG(DEBUG_MEDIUM, "New session invalid")
+		break;
+	}
+}
+#else
 //
 //	This function implements the requirement @DCM139 when
 // 	transition from one session to another.
@@ -163,7 +177,7 @@ void changeDiagnosticSession( Dcm_DslRunTimeProtocolParametersType *runtime,
 		break;
 	}
 }
-
+#endif
 
 // - - - - - - - - - - -
 
@@ -316,6 +330,7 @@ void DslDsdProcessingDone(PduIdType rxPduIdRef, DsdProcessingDoneResultType resp
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
 
 	DEBUG( DEBUG_MEDIUM, "DslDsdProcessingDone!\n");
+
 	if (findParentConfigurationLeafs(rxPduIdRef, &protocolRx, &mainConnection,
 			&connection, &protocolRow, &runtime)) {
 		imask_t state = McuE_EnterCriticalSection();
@@ -471,15 +486,17 @@ void DslMain(void) {
 				if (runtime->localTxBuffer.status == NOT_IN_USE) {
 					const uint32 txPduId =
 							protocolRowEntry->DslConnection->DslMainConnection->DslProtocolTx->PduR_DcmDslTxPduId;
+					DEBUG( DEBUG_MEDIUM, "runtime->externalTxBufferStatus enter state DSD_PENDING_RESPONSE_SIGNALED.", txPduId);
 					runtime->externalTxBufferStatus = DCM_TRANSMIT_SIGNALED;
+					DEBUG( DEBUG_MEDIUM, "Calling PduR_DcmTransmit with txPduId = %d\n", txPduId);
 					PduR_DcmTransmit(txPduId, &runtime->diagnosticResponseFromDsd); /** @req DCM237 **//* Will trigger PduR (CanTP) to call DslProvideTxBuffer(). */
 				}
 				break;
 			case DCM_TRANSMIT_SIGNALED:
-				DEBUG( DEBUG_MEDIUM, "state DSD_PENDING_RESPONSE_SIGNALED!\n");
+				//DEBUG( DEBUG_MEDIUM, "state DSD_PENDING_RESPONSE_SIGNALED!\n");
 				break;
 			case PROVIDED_TO_PDUR: // The valid data is being transmitted by TP-layer.
-				DEBUG( DEBUG_MEDIUM, "state DSD_PENDING_RESPONSE_SIGNALED!\n");
+				//DEBUG( DEBUG_MEDIUM, "state DSD_PENDING_RESPONSE_SIGNALED!\n");
 				break;
 			default:
 				break;
@@ -506,7 +523,7 @@ BufReq_ReturnType DslProvideRxBufferToPdur(PduIdType dcmRxPduId,
 	const Dcm_DslProtocolRowType *protocolRow = NULL;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
 
-  DEBUG( DEBUG_MEDIUM, "DslProvideRxBufferToPdur called!\n");
+	DEBUG( DEBUG_MEDIUM, "DslProvideRxBufferToPdur called!\n");
 	imask_t state = McuE_EnterCriticalSection();
 	if (findParentConfigurationLeafs(dcmRxPduId, &protocolRx, &mainConnection,
 			&connection, &protocolRow, &runtime)) {
@@ -516,7 +533,7 @@ BufReq_ReturnType DslProvideRxBufferToPdur(PduIdType dcmRxPduId,
 			if ((runtime->externalRxBufferStatus == NOT_IN_USE)
 					&& (externalRxBuffer->externalBufferRuntimeData->status
 							== BUFFER_AVAILABLE)) {
-        DEBUG( DEBUG_MEDIUM, "External buffer available!\n");
+				DEBUG( DEBUG_MEDIUM, "External buffer available!\n");
 				// ### EXTERNAL BUFFER IS AVAILABLE; GRAB IT AND REMEBER THAT WE OWN IT! ###
 				externalRxBuffer->externalBufferRuntimeData->status
 						= BUFFER_BUSY;
@@ -527,7 +544,7 @@ BufReq_ReturnType DslProvideRxBufferToPdur(PduIdType dcmRxPduId,
 				runtime->externalRxBufferStatus = PROVIDED_TO_PDUR;
 				ret = BUFREQ_OK;
 			} else {
-        DEBUG( DEBUG_MEDIUM, "Local buffer available!\n");
+				DEBUG( DEBUG_MEDIUM, "Local buffer available!\n");
 				if (runtime->externalRxBufferStatus == PROVIDED_TO_DSD) {
 					// ### EXTERNAL BUFFER IS IN USE BY THE DSD, TRY TO USE LOCAL BUFFER! ###
 					if (runtime->localRxBuffer.status == NOT_IN_USE) {
@@ -615,13 +632,11 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {
 					McuE_ExitCriticalSection(state);
 					runtime->diagnosticResponseFromDsd.SduDataPtr = protocolRow->DslProtocolTxBufferID->pduInfo.SduDataPtr;
 					runtime->diagnosticResponseFromDsd.SduLength = protocolRow->DslProtocolTxBufferID->pduInfo.SduLength;
-					_DsdDslDataIndication(
-							//&protocolRow->DslProtocolRxBufferID->pduInfo,
+					DsdDslDataIndication(
 							&(runtime->diagnosticRequestFromTester),
 							protocolRow->DslProtocolSIDTable,
 							protocolRx->DslProtocolAddrType,
 							mainConnection->DslProtocolTx->PduR_DcmDslTxPduId,
-							//&protocolRow->DslProtocolTxBufferID->pduInfo);
 							&(runtime->diagnosticResponseFromDsd));
                                     
 				}
