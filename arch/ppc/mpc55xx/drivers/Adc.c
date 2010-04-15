@@ -693,9 +693,9 @@ static void  Adc_ConfigureEQADC (const Adc_ConfigType *ConfigPtr)
 }
 
 /* TODO How do we handle interrupt priorities? */
-#define EQADC_FIFO0_END_OF_QUEUE_PRIORITY   (1)
-#define EQADC_FIFO1_END_OF_QUEUE_PRIORITY   (1)
-#define EQADC_FISR_OVER_PRIORITY            (1)
+#define EQADC_FIFO0_END_OF_QUEUE_PRIORITY   (2)
+#define EQADC_FIFO1_END_OF_QUEUE_PRIORITY   (2)
+#define EQADC_FISR_OVER_PRIORITY            (2)
 
 void Adc_ConfigureEQADCInterrupts (void)
 {

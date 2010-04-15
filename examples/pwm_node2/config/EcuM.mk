@@ -1,0 +1,3 @@
+
+MOD_USE += CAN CANIF COM PORT PWM 
+

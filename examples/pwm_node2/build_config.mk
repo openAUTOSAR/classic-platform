@@ -1,5 +1,7 @@
+-include ../config/*.mk
+-include ../config/$(BOARDDIR)/*.mk
 
-MOD_USE+=KERNEL MCU PORT COM CAN CANIF PWM
+MOD_USE+=KERNEL MCU
 
 SELECT_CONSOLE = RAMLOG
 SELECT_OS_CONSOLE = RAMLOG
