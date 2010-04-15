@@ -29,9 +29,8 @@
  * The following function are exported only for testing purposes.
  */
 uint8 Com_Filter(ComSignal_type *signal);
-void Com_CopyFromSignal(const ComSignal_type *signal, void *Destination);
-void Com_CopyToSignal(ComSignal_type *signal, const void *Source);
 
+// Read data from PDU
 void Com_ReadSignalDataFromPdu(
 		const Com_SignalIdType signalId,
 		void *signalData);
@@ -47,6 +46,7 @@ void Com_ReadSignalDataFromPduBuffer(
 		void *signalData,
 		const void *pduBuffer);
 
+// write data to PDU
 void Com_WriteSignalDataToPdu(
 		const Com_SignalIdType signalId,
 		const void *signalData);

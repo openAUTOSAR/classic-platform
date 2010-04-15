@@ -76,14 +76,14 @@ void Com_ReadSignalDataFromPduBuffer(
 		ComGetSignal(signalId);
 		signalType = Signal->ComSignalType;
 		signalEndianess = Signal->ComSignalEndianess;
-		signalLength = Signal->ComSignalLength;
+		signalLength = Signal->ComBitSize / 8;
 		bitPosition = Signal->ComBitPosition;
 		bitSize = Signal->ComBitSize;
 	} else {
 		ComGetGroupSignal(signalId);
 		signalType = GroupSignal->ComSignalType;
 		signalEndianess = GroupSignal->ComSignalEndianess;
-		signalLength = GroupSignal->ComSignalLength;
+		signalLength = GroupSignal->ComBitSize / 8;
 		bitPosition = GroupSignal->ComBitPosition;
 		bitSize = GroupSignal->ComBitSize;
 	}
@@ -170,13 +170,13 @@ void Com_WriteSignalDataToPduBuffer(
 	if (!isGroupSignal) {
 		ComGetSignal(signalId);
 		signalType = Signal->ComSignalType;
-		signalLength = Signal->ComSignalLength;
+		signalLength = Signal->ComBitSize / 8;
 		bitPosition = Signal->ComBitPosition;
 		bitSize = Signal->ComBitSize;
 	} else {
 		ComGetGroupSignal(signalId);
 		signalType = GroupSignal->ComSignalType;
-		signalLength = GroupSignal->ComSignalLength;
+		signalLength = GroupSignal->ComBitSize / 8;
 		bitPosition = GroupSignal->ComBitPosition;
 		bitSize = GroupSignal->ComBitSize;
 	}
