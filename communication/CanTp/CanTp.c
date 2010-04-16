@@ -28,6 +28,7 @@
 #include "SchM_CanTp.h" /** req: CanTp156.4 **/
 //#include "MemMap.h" /** req: CanTp156.5 **/
 #include "String.h"
+#define USE_DEBUG_PRINTF
 #include "debug.h"
 
 #if  ( CANTP_DEV_ERROR_DETECT == STD_ON )
@@ -301,9 +302,11 @@ static inline ISO15765FrameType getFrameType(
 
 	switch (*formatType) {
 	case CANTP_STANDARD:
+		DEBUG( DEBUG_MEDIUM, "CANTP_STANDARD\n")
 		tpci = CanTpRxPduPtr->SduDataPtr[0];
 		break;
 	case CANTP_EXTENDED:
+		DEBUG( DEBUG_MEDIUM, "CANTP_EXTENDED\n")
 		tpci = CanTpRxPduPtr->SduDataPtr[1];
 		break;
 	default:
@@ -701,7 +704,9 @@ static INLINE Std_ReturnType sendConsecutiveFrame(
 			} else if (pdurResp == BUFREQ_BUSY) {
 				ret = E_OK; // We will remain in this state, called again later, not data lost/destoryed?
 			} else {
+				DEBUG( DEBUG_MEDIUM, "sendConsecutiveFrame failed, no buffer provided!\n");
 				ret = E_NOT_OK; // Serious malfunction, function caller should cancel this transfer.
+				break;
 			}
 		}
 	}
@@ -1117,7 +1122,13 @@ Std_ReturnType CanTp_Transmit(PduIdType CanTpTxSduId,
 	VALIDATE( CanTpTxSduId < CANTP_NSDU_CONFIG_LIST_SIZE, SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TX_ID );
 
 	txConfig = (CanTp_TxNSduType*)&CanTpConfig.CanTpNSduList[CanTpTxSduId].configData;
+
 	txRuntime = &CanTpRunTimeData.runtimeDataList[txConfig->CanTpTxChannel]; // Runtime data.
+	txRuntime->pdurBufferCount = 0;
+	txRuntime->pdurBufferCount = 0;
+	txRuntime->pduTransferedBytesCount = 0;
+	txRuntime->iso15765.framesHandledCount = 0;
+	//txRuntime->iso15765->framesHandledCount = 0;
 	txRuntime->pduLenghtTotalBytes = CanTpTxInfoPtr->SduLength;
 	txRuntime->iso15765.stateTimeoutCount =
 			CANTP_CONVERT_MS_TO_MAIN_CYCLES(txConfig->CanTpNcs);
@@ -1193,11 +1204,14 @@ void CanTp_RxIndication(PduIdType CanTpRxPduId,
 	VALIDATE_NO_RV( CanTpRunTimeData.internalState == CANTP_ON,
 			SERVICE_ID_CANTP_RX_INDICATION, CANTP_E_UNINIT ); /* req: CanTp031 */
 
+	DEBUG( DEBUG_MEDIUM, "CanTp_RxIndication: PduId=%d, [", CanTpRxPduId);
 	item.PduId = CanTpRxPduId;
 	item.SduLength = CanTpRxPduPtr->SduLength;
 	for (int i=0; i<item.SduLength; i++) {
 		item.SduData[i] = CanTpRxPduPtr->SduDataPtr[i];
+		DEBUG( DEBUG_MEDIUM, "%x, ", item.SduData[i]);
 	}
+	DEBUG( DEBUG_MEDIUM, "]");
 	if ( fifoQueueWrite( &CanTpRunTimeData.fifo, &item ) == FALSE ) {
 		; //qqq: TODO: Report overrun.
 	}
@@ -1214,7 +1228,8 @@ void CanTp_RxIndication_Main(PduIdType CanTpRxPduId,
 	CanTp_ChannelPrivateType *runtimeParams; // Params reside in RAM.
 	ISO15765FrameType frameType;
 
-	DEBUG( DEBUG_MEDIUM, "CanTp_RxIndication_Main, polite index: %d!\n", CanTpRxPduId );
+	DEBUG( DEBUG_MEDIUM, "CanTp_RxIndication - CanTpRxPduId: %x!\n", CanTpRxPduId );
+
 
 	VALIDATE_NO_RV( CanTpRunTimeData.internalState == CANTP_ON,
 			SERVICE_ID_CANTP_RX_INDICATION, CANTP_E_UNINIT ); /* req: CanTp031 */
@@ -1237,35 +1252,40 @@ void CanTp_RxIndication_Main(PduIdType CanTpRxPduId,
 	frameType = getFrameType(addressingFormat, CanTpRxPduPtr);
 	switch (frameType) {
 	case SINGLE_FRAME: {
-		if (rxConfigParams != NULL)
+		if (rxConfigParams != NULL) {
+			DEBUG( DEBUG_MEDIUM, "calling handleSingleFrame!\n");
 			handleSingleFrame(rxConfigParams, runtimeParams, CanTpRxPduPtr);
+		}
 		else
 			DEBUG( DEBUG_MEDIUM, "Single frame received on ISO15765-Tx flow control - is ingnored!\n");
 		break;
 	}
 	case FIRST_FRAME: {
-		if (rxConfigParams != NULL)
+		if (rxConfigParams != NULL) {
+			DEBUG( DEBUG_MEDIUM, "calling handleFirstFrame!\n");
 			handleFirstFrame(rxConfigParams, runtimeParams, CanTpRxPduPtr);
-		else
+		} else
 			DEBUG( DEBUG_MEDIUM, "First frame received on ISO15765-Tx flow control - is ignored!\n");
 		break;
 	}
 	case CONSECUTIVE_FRAME: {
-		if (rxConfigParams != NULL)
+		if (rxConfigParams != NULL) {
+			DEBUG( DEBUG_MEDIUM, "calling handleConsecutiveFrame!\n");
 			handleConsecutiveFrame(rxConfigParams, runtimeParams, CanTpRxPduPtr);
-		else
+		} else
 			DEBUG( DEBUG_MEDIUM, "Consecutive frame received on ISO15765-Tx flow control - is ignored!\n");
 		break;
 	}
 	case FLOW_CONTROL_CTS_FRAME: {
-		if (txConfigParams != NULL)
+		if (txConfigParams != NULL) {
+			DEBUG( DEBUG_MEDIUM, "calling handleFlowControlFrame!\n");
 			handleFlowControlFrame(txConfigParams, runtimeParams, CanTpRxPduPtr);
-		else
-			DEBUG( DEBUG_MEDIUM, "Consecutive frame received on ISO15765-Tx flow control - is ignored!\n");
+		} else
+			DEBUG( DEBUG_MEDIUM, "Flow control frame received on ISO15765-RX flow control - is ignored!\n");
 		break;
 	}
 	case INVALID_FRAME: {
-		return; // qqq: Failure, should go to log-file.
+		DEBUG( DEBUG_MEDIUM, "INVALID_FRAME recived, doing nothing!!\n");
 		break;
 	}
 	default:

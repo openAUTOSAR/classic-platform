@@ -24,6 +24,8 @@
 #include "ComM_Dcm.h"
 #include "PduR_Dcm.h"
 #include "ComStack_Types.h"
+
+#define USE_DEBUG_PRINTF
 #include "debug.h"
 
 #define TIMER_DECREMENT(timer) \
@@ -437,6 +439,7 @@ void DslMain(void) {
 	const Dcm_DslProtocolRowType *protocolRowEntry = NULL;
 	const Dcm_DslProtocolTimingRowType *timeParams = NULL;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
+	int debug_count = 0;
 
 	protocolRowEntry = DCM_Config.Dsl->DslProtocol->DslProtocolRowList;
 	while (protocolRowEntry->Arc_EOL == FALSE) {
@@ -454,6 +457,7 @@ void DslMain(void) {
 				break;
 			case PROVIDED_TO_DSD:
 			{
+				DEBUG( DEBUG_MEDIUM, "debug_count=%d\n", debug_count);
 				TIMER_DECREMENT(runtime->stateTimeoutCount);
 				DEBUG( DEBUG_MEDIUM, "state PROVIDED_TO_DSD!\n");
 				if (runtime->stateTimeoutCount == 0) {
@@ -482,6 +486,7 @@ void DslMain(void) {
 				// Make sure that response pending or general reject have not been issued,
 				// if so we can not transmit to PduR because we would not know from where
 				// the Tx confirmation resides later.
+				DEBUG( DEBUG_MEDIUM, "debug_count=%d\n", debug_count);
 				DEBUG( DEBUG_MEDIUM, "state DSD_PENDING_RESPONSE_SIGNALED!\n");
 				if (runtime->localTxBuffer.status == NOT_IN_USE) {
 					const uint32 txPduId =
@@ -503,6 +508,7 @@ void DslMain(void) {
 			}
 		}
 		protocolRowEntry++;
+		debug_count++;
 	}
 }
 
@@ -637,7 +643,8 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {
 							protocolRow->DslProtocolSIDTable,
 							protocolRx->DslProtocolAddrType,
 							mainConnection->DslProtocolTx->PduR_DcmDslTxPduId,
-							&(runtime->diagnosticResponseFromDsd));
+							&(runtime->diagnosticResponseFromDsd),
+							dcmRxPduId);
                                     
 				}
 			}
@@ -750,7 +757,7 @@ void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result) {
 */
 			DEBUG( DEBUG_MEDIUM, "Released external buffer sucessfully!\n");
 			externalBufferReleased = TRUE;
-			DsdDataConfirmation(dcmTxPduId, result); /** @req DCM117 **//** @req DCM235 **/
+			DsdDataConfirmation(mainConnection->DslProtocolTx->PduR_DcmDslTxPduId, result); /** @req DCM117 **//** @req DCM235 **/
 			break;
 		}
 		default:

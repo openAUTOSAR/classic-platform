@@ -28,6 +28,7 @@ typedef struct {
 	const Dcm_DsdServiceTableType	*serviceTable;
 	Dcm_ProtocolAddrTypeType		addrType;
 	PduIdType 						txPduId;
+	PduIdType 						rxPduId;
 } MsgDataType;
 
 // In "queue" to DSD
@@ -162,10 +163,10 @@ void DsdCreateAndSendNcr(Dcm_NegativeResponseCodeType responseCode)
 		msgData.pduTxData->SduDataPtr[1] = currentSid;
 		msgData.pduTxData->SduDataPtr[2] = responseCode;
 		msgData.pduTxData->SduLength = 3;
-		DslDsdProcessingDone(msgData.txPduId, DSD_TX_RESPONSE_READY);	/** @req DCM114 **/ /** @req DCM232.1 **/
+		DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_READY);	/** @req DCM114 **/ /** @req DCM232.1 **/
 	}
 	else {
-		DslDsdProcessingDone(msgData.txPduId, DSD_TX_RESPONSE_SUPPRESSED);
+		DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_SUPPRESSED);
 	}
 }
 
@@ -232,11 +233,11 @@ void DsdDspProcessingDone(Dcm_NegativeResponseCodeType responseCode)
 		if (!suppressPosRspMsg) {	/** @req DCM200 **/ /** @req DCM231 **/
 			/** @req DCM222 **/
 			msgData.pduTxData->SduDataPtr[0] = currentSid | SID_RESPONSE_BIT;	/** @req DCM223 **/ /** @req DCM224 **/
-			DslDsdProcessingDone(msgData.txPduId, DSD_TX_RESPONSE_READY);	/** @req DCM114 **/ /** @req DCM225 **/ /** @req DCM232.2 **/
+			DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_READY);	/** @req DCM114 **/ /** @req DCM225 **/ /** @req DCM232.2 **/
 		}
 		else {
 			DspDcmConfirmation(msgData.txPduId);	/** @req DCM236 **/ /** @req DCM240 **/
-			DslDsdProcessingDone(msgData.txPduId, DSD_TX_RESPONSE_SUPPRESSED);
+			DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_SUPPRESSED);
 		}
 	}
 	else {
@@ -252,8 +253,9 @@ void DsdDataConfirmation(PduIdType confirmPduId, NotifResultType result)
 }
 
 
-void DsdDslDataIndication(const PduInfoType *pduRxData, const Dcm_DsdServiceTableType *protocolSIDTable, Dcm_ProtocolAddrTypeType addrType, PduIdType txPduId, PduInfoType *pduTxData)
+void DsdDslDataIndication(const PduInfoType *pduRxData, const Dcm_DsdServiceTableType *protocolSIDTable, Dcm_ProtocolAddrTypeType addrType, PduIdType txPduId, PduInfoType *pduTxData, PduIdType rxContextPduId)
 {
+	msgData.rxPduId = rxContextPduId;
 	msgData.txPduId = txPduId;
 	msgData.pduRxData = pduRxData;
 	msgData.pduTxData = pduTxData;
