@@ -25,8 +25,8 @@
 
 #include "PduR.h"
 
-#ifdef PDUR_CANIF_SUPPORT
-#ifndef PDUR_ZERO_COST_OPERATION
+#if PDUR_CANIF_SUPPORT == STD_ON
+#if PDUR_ZERO_COST_OPERATION == STD_OFF
 
 void PduR_CanIfRxIndication (PduIdType CanRxPduId, const uint8 *CanSudPtr );
 void PduR_CanIfTxConfirmation(PduIdType CanTxPduId);

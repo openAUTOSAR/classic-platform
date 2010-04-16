@@ -34,9 +34,9 @@
 
 const Com_ConfigType * ComConfig;
 
-Com_Arc_IPdu_type Com_Arc_IPdu[COM_MAX_NR_IPDU];
-Com_Arc_Signal_type Com_Arc_Signal[COM_MAX_NR_SIGNAL];
-Com_Arc_GroupSignal_type Com_Arc_GroupSignal[COM_MAX_NR_GROUPSIGNAL];
+Com_Arc_IPdu_type Com_Arc_IPdu[COM_N_IPDUS];
+Com_Arc_Signal_type Com_Arc_Signal[COM_N_SIGNALS];
+Com_Arc_GroupSignal_type Com_Arc_GroupSignal[COM_N_GROUP_SIGNALS];
 
 Com_Arc_Config_type Com_Arc_Config = {
 	.ComIPdu = Com_Arc_IPdu,
@@ -99,7 +99,8 @@ void Com_Init(const Com_ConfigType *config ) {
 		}
 
 		// For each signal in this PDU.
-		for (int j = 0; IPdu->ComIPduSignalRef[j] != NULL; j++) {
+		Arc_IPdu->NComIPduSignalRef = 0;
+		for (int j = 0; IPdu->ComIPduSignalRef != NULL && IPdu->ComIPduSignalRef[j] != NULL; j++) {
 			Signal = IPdu->ComIPduSignalRef[j];
 			ComGetArcSignal(Signal->ComHandleId);
 
@@ -131,8 +132,6 @@ void Com_Init(const Com_ConfigType *config ) {
 
 			// Increment helper counters
 		    Arc_IPdu->NComIPduSignalRef = j + 1;
-
-			//IPdu->Com_Arc_NIPduSignalGroupRef = j + 1;
 
 			Arc_Signal->ComIPduDataPtr = Arc_IPdu->ComIPduDataPtr;
 			Arc_Signal->ComIPduHandleId = i;
@@ -203,7 +202,7 @@ void Com_Init(const Com_ConfigType *config ) {
 		}
 
 		// Configure per I-PDU based deadline monitoring.
-		for (int j = 0; IPdu->ComIPduSignalRef[j] != NULL; j++) {
+		for (int j = 0; IPdu->ComIPduSignalRef != NULL && IPdu->ComIPduSignalRef[j] != NULL; j++) {
 			Signal = IPdu->ComIPduSignalRef[j];
 			ComGetArcSignal(Signal->ComHandleId);
 
