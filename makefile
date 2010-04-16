@@ -40,9 +40,7 @@ export PATH
 export SELECT_OS_CONSOLE
 export SELECT_CONSOLE
 export USE_DEBUG_PRINTF
-#export SELECT_OPT?=OPT_RELEASE
-export SELECT_OPT?=OPT_DEBUG
-export CFG_$(SELECT_OPT)=y
+export SELECT_OPT
 
 ifneq ($(filter clean_all,$(MAKECMDGOALS)),clean_all)
   ifeq (${BOARDDIR},)
