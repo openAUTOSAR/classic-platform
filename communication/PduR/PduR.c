@@ -48,7 +48,7 @@ const PduR_PBConfigType * PduRConfig;
 /* ############### Zero Cost Operation Mode ############# */
 /* Only define the following functions if zero cost operation
  * mode is not used! They are defined as macros in PduR.h otherwise. */
-#ifndef PDUR_ZERO_COST_OPERATION
+#if PDUR_ZERO_COST_OPERATION == STD_OFF
 
 /*
  * Initializes the PDU Router.
@@ -61,12 +61,12 @@ void PduR_Init (const PduR_PBConfigType* ConfigPtr) {
 	// Otherwise raise an error.
 	if (PduRState != PDUR_UNINIT) {
 		// Raise error and return.
-		DET_REPORTERROR(PDUR_MODULE_ID, PDUR_INSTANCE_ID, 0x00, PDUR_E_INVALID_REQUEST);
+		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, 0x00, PDUR_E_INVALID_REQUEST);
 		return;
 	}
 
 	if (ConfigPtr == NULL) {
-		DET_REPORTERROR(PDUR_MODULE_ID, PDUR_INSTANCE_ID, 0x00, PDUR_E_CONFIG_PTR_INVALID);
+		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, 0x00, PDUR_E_CONFIG_PTR_INVALID);
 		return;
 	} else {
 		PduRConfig = ConfigPtr;
@@ -208,7 +208,7 @@ uint8 PduR_BufferIsFull(PduRTxBuffer_type *Buffer) {
 
 #ifdef PDUR_VERSION_INFO_API
 void PduR_GetVersionInfo (Std_VersionInfoType* versionInfo){
-	versionInfo->moduleID = (uint16)PDUR_MODULE_ID;
+	versionInfo->moduleID = (uint16)MODULE_ID_PDUR;
 	versionInfo->vendorID = (uint16)1;
 
 	// TODO Add vendor specific version numbers.

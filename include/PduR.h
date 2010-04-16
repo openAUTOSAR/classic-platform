@@ -31,10 +31,25 @@
 #define PDUR_SW_MINOR_VERSION  0
 #define PDUR_SW_PATCH_VERSION  0
 
+
+
+// ERROR CODES
+#define PDUR_E_CONFIG_PTR_INVALID 	0x06
+#define PDUR_E_INVALID_REQUEST 		0x01
+#define PDUR_E_PDU_ID_INVALID		0x02
+#define PDUR_E_TP_TX_REQ_REJECTED	0x03
+#define PDUR_E_DATA_PTR_INVALID		0x05
+#define PDUR_E_PDU_INSTANCE_LOST	0x10
+
+#define PDUR_INSTANCE_ID	0
+
+#include "modules.h"
+#include "debug.h"
+
 #include "PduR_Cfg.h"
 #include "PduR_Types.h"
 
-#ifndef PDUR_ZERO_COST_OPERATION
+#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
 #include "PduR_PbCfg.h"
 #endif
 
@@ -43,6 +58,8 @@
 #include "PduR_LinIf.h"
 #include "PduR_CanTp.h"
 #include "PduR_Dcm.h"
+
+
 
 /* Contain the current state of the PDU router. The router is uninitialized
  * until PduR_Init has been run.
@@ -100,18 +117,18 @@ extern const PduR_PBConfigType *PduRConfig;
 // TODO Implement data range check if needed.
 #define DevCheck(PduId,PduPtr,ApiId,...) \
 	if (PduRState == PDUR_UNINIT || PduRState == PDUR_REDUCED) { \
-		DET_REPORTERROR(PDUR_MODULE_ID, PDUR_INSTANCE_ID, ApiId, PDUR_E_INVALID_REQUEST); \
+		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_INVALID_REQUEST); \
 		DEBUG(DEBUG_LOW,"PDU Router not initialized. Routing request ignored.\n"); \
 		Exit(); \
 		return __VA_ARGS__; \
 	} \
 	if (PduPtr == 0 && PDUR_DEV_ERROR_DETECT) { \
-		DET_REPORTERROR(PDUR_MODULE_ID, PDUR_INSTANCE_ID, ApiId, PDUR_E_DATA_PTR_INVALID); \
+		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_DATA_PTR_INVALID); \
 		Exit(); \
 		return __VA_ARGS__; \
 	} \
 	if ((PduId >= PduRConfig->PduRRoutingTable->NRoutingPaths) && PDUR_DEV_ERROR_DETECT) { \
-		DET_REPORTERROR(PDUR_MODULE_ID, PDUR_INSTANCE_ID, ApiId, PDUR_E_PDU_ID_INVALID); \
+		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_PDU_ID_INVALID); \
 		Exit(); \
 		return __VA_ARGS__; \
 	} \
@@ -132,7 +149,7 @@ void PduR_ChangeParameterRequest(PduR_ParameterValueType PduParameterValue,
 /* Zero Cost Operation function definitions
  * These macros replaces the original functions if zero cost
  * operation is desired. */
-#ifdef PDUR_ZERO_COST_OPERATION
+#if PDUR_ZERO_COST_OPERATION == STD_ON
 #define PduR_Init(...)
 #define PduR_GetVersionInfo(...)
 #define PduR_GetConfigurationId(...) 0

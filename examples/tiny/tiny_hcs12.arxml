@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <AUTOSAR xmlns="http://autosar.org/3.1.2"><TOP-LEVEL-PACKAGES>
-    <AR-PACKAGE UUID="59e33e84-47d4-4613-bbcc-1aed684041be">
-      <SHORT-NAME>tiny_ppc</SHORT-NAME>
+    <AR-PACKAGE UUID="d3915a94-30a7-4688-a3b9-ec2496d78472">
+      <SHORT-NAME>tiny_hcs12</SHORT-NAME>
       <CATEGORY>EcuConfiguration</CATEGORY>
       <ADMIN-DATA>
         <DOC-REVISIONS>
@@ -11,8 +11,8 @@
         </DOC-REVISIONS>
       </ADMIN-DATA>
       <ELEMENTS>
-        <ECU-CONFIGURATION UUID="32d49946-be5d-4b62-afd8-4976df341ab6">
-          <SHORT-NAME>tiny_ppc</SHORT-NAME>
+        <ECU-CONFIGURATION UUID="a6c36274-8fdc-4537-a616-437aacc31827">
+          <SHORT-NAME>tiny_hcs12</SHORT-NAME>
           <ADMIN-DATA>
             <DOC-REVISIONS>
               <DOC-REVISION>
@@ -29,7 +29,7 @@
             </SDGS>
           </ADMIN-DATA>
           <MODULE-REFS>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/tiny_ppc/Os</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/tiny_hcs12/Os</MODULE-REF>
           </MODULE-REFS>
         </ECU-CONFIGURATION>
         <MODULE-CONFIGURATION UUID="d9b75d00-e6eb-4671-a7cf-0abd1e1ed6a7">
@@ -75,7 +75,7 @@
                 </INTEGER-VALUE>
                 <INTEGER-VALUE>
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsOS/OsInterruptStackSize</DEFINITION-REF>
-                  <VALUE>2048</VALUE>
+                  <VALUE>512</VALUE>
                 </INTEGER-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsUseDebug</DEFINITION-REF>
@@ -153,7 +153,7 @@
                 </ENUMERATION-VALUE>
                 <INTEGER-VALUE>
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/ArcCoreOsTaskStackSize</DEFINITION-REF>
-                  <VALUE>2048</VALUE>
+                  <VALUE>512</VALUE>
                 </INTEGER-VALUE>
                 <ENUMERATION-VALUE>
                   <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskSchedule</DEFINITION-REF>
@@ -185,7 +185,7 @@
                 </ENUMERATION-VALUE>
                 <INTEGER-VALUE>
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/ArcCoreOsTaskStackSize</DEFINITION-REF>
-                  <VALUE>2048</VALUE>
+                  <VALUE>512</VALUE>
                 </INTEGER-VALUE>
                 <ENUMERATION-VALUE>
                   <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskSchedule</DEFINITION-REF>
@@ -217,7 +217,7 @@
                 </ENUMERATION-VALUE>
                 <INTEGER-VALUE>
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/ArcCoreOsTaskStackSize</DEFINITION-REF>
-                  <VALUE>2048</VALUE>
+                  <VALUE>512</VALUE>
                 </INTEGER-VALUE>
                 <ENUMERATION-VALUE>
                   <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskSchedule</DEFINITION-REF>
@@ -231,7 +231,7 @@
               <REFERENCE-VALUES>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmCounterRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/tiny_ppc/Os/OsTick</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/tiny_hcs12/Os/OsTick</VALUE-REF>
                 </REFERENCE-VALUE>
               </REFERENCE-VALUES>
               <SUB-CONTAINERS>
@@ -259,11 +259,11 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/tiny_ppc/Os/EVENT_2</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/tiny_hcs12/Os/EVENT_2</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventTaskRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/tiny_ppc/Os/etask_1</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/tiny_hcs12/Os/etask_1</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>

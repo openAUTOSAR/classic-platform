@@ -23,11 +23,12 @@
  */
 
 
+
 #ifndef COM_TYPES_H_
 #define COM_TYPES_H_
 
+
 #include "ComStack_Types.h"
-#include "Com_Cfg.h"
 
 typedef uint8 Com_PduGroupIdType;
 typedef uint16 Com_SignalIdType;
@@ -166,11 +167,6 @@ typedef struct {
 	/** Value used to initialize this signal. */
 	const uint32 ComSignalInitValue;
 
-	/** The number of bytes if the signal has type UINT8_N;
-	 * Range 1 to 8.
-	 */
-	const uint8 ComSignalLength;
-
 	/** Defines the type of the signal. */
 	const Com_SignalType ComSignalType;
 
@@ -279,7 +275,7 @@ typedef struct {
 	/** Array of group signals.
 	 * Only applicable if this signal is a signal group.
 	 */
-	const ComGroupSignal_type *ComGroupSignal[COM_MAX_NR_SIGNALS_PER_SIGNAL_GROUP];
+	const ComGroupSignal_type **ComGroupSignal;
 
 
 	//void *Com_Arc_ShadowBuffer;
@@ -382,6 +378,9 @@ typedef struct {
 	/** The ID of this IPDU. */
 	const uint8 ComIPduRxHandleId;
 
+	/** The outgoing PDU id. For polite PDU id handling. */
+	const uint8 ArcIPduOutgoingId;
+
 	/** Signal processing mode for this IPDU. */
 	const Com_IPduSignalProcessingMode ComIPduSignalProcessing;
 
@@ -399,17 +398,10 @@ typedef struct {
 	/** Container of transmission related parameters. */
 	const ComTxIPdu_type ComTxIPdu;
 
-	/** References to all signal groups contained in this IPDU.
+	/** References to all signals and signal groups contained in this IPDU.
 	 * It probably makes little sense not to define at least one signal or signal group for each IPDU.
 	 */
-	const ComSignal_type *ComIPduSignalGroupRef[COM_MAX_NR_SIGNALS_PER_IPDU];
-
-
-	/** References to all signals contained in this IPDU.
-	 * It probably makes little sense not to define at least one signal or signal group for each IPDU.
-	 */
-	//const uint8 NComIPduSignalRef;
-	const ComSignal_type *ComIPduSignalRef[COM_MAX_NR_SIGNALS_PER_IPDU];
+	const ComSignal_type **ComIPduSignalRef;
 
 	/*
 	 * The following two variables are used to control the per I-PDU based Rx/Tx-deadline monitoring.
@@ -421,11 +413,6 @@ typedef struct {
 	 * These are internal variables and should not be configured.
 	 */
 	//ComTxIPduTimer_type Com_Arc_TxIPduTimers;
-
-	/* Pointer to data storage of this IPDU.
-	 */
-	//void *ComIPduDataPtr;
-
 
 	/** Marks the end of list for this configuration array. */
 	const uint8 Com_Arc_EOL;

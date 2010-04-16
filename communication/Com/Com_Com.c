@@ -119,7 +119,7 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
 		}
 
 		// Send IPdu!
-		if (PduR_ComTransmit(ComTxPduId, &Com_Arc_Config.OutgoingPdu) == E_OK) {
+		if (PduR_ComTransmit(IPdu->ArcIPduOutgoingId, &Com_Arc_Config.OutgoingPdu) == E_OK) {
 			// Clear all update bits for the contained signals
 			for (int i = 0; i < Arc_IPdu->NComIPduSignalRef; i++) {
 				if (IPdu->ComIPduSignalRef[i]->ComSignalArcUseUpdateBit) {
@@ -200,7 +200,7 @@ Std_ReturnType Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr) {
 				}
 			//}
 		} else {
-			DEBUG(DEBUG_LOW, "Com_RxIndication: Ignored signal %d of I-PDU %d since its update bit was not set\n", signal->ComHandleId, IPdu->ComIPduRxHandleId);
+			DEBUG(DEBUG_LOW, "Com_RxIndication: Ignored signal %d of I-PD %d since its update bit was not set\n", signal->ComHandleId, ComRxPduId);
 		}
 	}
 
