@@ -13,7 +13,3 @@ MOD_AVAIL=KERNEL MCU GPT DIO PORT
 
 # Needed by us (These become USE_XXX=y and def-y += USE_XXX )
 MOD_USE=KERNEL MCU
-
-# Extra defines
-def-y += HEAPSIZE=400
-def-y += CFG_RAMLOG_SIZE=500
