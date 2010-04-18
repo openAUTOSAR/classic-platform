@@ -23,8 +23,7 @@
 #include "Det.h"
 #include "PduR_Com.h"
 
-#ifndef PDUR_ZERO_COST_OPERATION
-#ifdef PDUR_COM_SUPPORT
+#if PDUR_ZERO_COST_OPERATION == STD_OFF && PDUR_COM_SUPPORT == STD_ON
 
 /**
  * Called by the COM-layer in order to send a PDU through a protocol interface.
@@ -35,10 +34,9 @@ Std_ReturnType PduR_ComTransmit(PduIdType ComTxPduId, const PduInfoType* PduInfo
 
 	//DEBUG(DEBUG_LOW,"PduR_ComTransmit: received transmit request with id %d and data %d\n", ComTxPduId, *PduInfoPtr->SduDataPtr);
 	PduRRoutingPath_type *route = &PduRConfig->PduRRoutingTable->PduRRoutingPath[ComTxPduId];
-	Std_ReturnType retVal = route->FctPtrs->TargetTransmitFctPtr(route->PduRDestPdu.DestPduId, PduInfoPtr);
+	Std_ReturnType retVal = route->FctPtrs.TargetTransmitFctPtr(route->PduRDestPdu.DestPduId, PduInfoPtr);
 	Exit();
 	return retVal;
 }
 
-#endif
 #endif

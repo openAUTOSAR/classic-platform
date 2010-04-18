@@ -25,8 +25,8 @@
 
 #include "PduR.h"
 
-#ifdef PDUR_COM_SUPPORT
-#ifndef PDUR_ZERO_COST_OPERATION
+#if PDUR_COM_SUPPORT == STD_ON
+#if PDUR_ZERO_COST_OPERATION == STD_OFF
 
 Std_ReturnType PduR_ComTransmit(PduIdType ComTxPduId, const PduInfoType* PduInfoPtr);
 

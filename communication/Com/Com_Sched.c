@@ -106,7 +106,7 @@ void Com_MainFunctionTx() {
 					if (Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeRepetitionPeriodTimer == 0
 						&& Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduMinimumDelayTimer == 0) {
 
-						Com_TriggerIPduSend(IPdu->ComIPduRxHandleId);
+						Com_TriggerIPduSend(i);
 
 						// Reset periodic timer
 						Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeRepetitionPeriodTimer = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeRepetitionPeriodFactor;
@@ -119,7 +119,7 @@ void Com_MainFunctionTx() {
 				// Is it time for a cyclic transmission?
 				if (Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeTimePeriodTimer == 0 && Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduMinimumDelayTimer == 0) {
 
-					Com_TriggerIPduSend(IPdu->ComIPduRxHandleId); // Send IPDU!
+					Com_TriggerIPduSend(i);
 
 					// Reset periodic timer.
 					Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeTimePeriodTimer = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeTimePeriodFactor;
@@ -133,7 +133,7 @@ void Com_MainFunctionTx() {
 
 					// Is it time for a transmission?
 					if (Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeRepetitionPeriodTimer == 0 && Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduMinimumDelayTimer == 0) {
-						Com_TriggerIPduSend(IPdu->ComIPduRxHandleId);
+						Com_TriggerIPduSend(i);
 
 						// Reset periodic timer
 						Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeRepetitionPeriodTimer = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeRepetitionPeriodFactor;

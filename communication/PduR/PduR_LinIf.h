@@ -26,8 +26,8 @@
 #include "PduR.h"
 
 
-#ifdef PDUR_LINIF_SUPPORT
-#ifndef PDUR_ZERO_COST_OPERATION
+#if PDUR_LINIF_SUPPORT == STD_ON
+#if PDUR_ZERO_COST_OPERATION == STD_OFF
 
 void PduR_LinIfRxIndication(PduIdType LinRxPduId,const uint8* LinSduPtr);
 void PduR_LinIfTxConfirmation(PduIdType LinTxPduId);
