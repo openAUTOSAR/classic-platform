@@ -422,25 +422,20 @@ typedef struct Dcm_DslProtocolRxType_t Dcm_DslProtocolRxType;
 struct Dcm_DslProtocolRxType_t {
 	const Dcm_DslMainConnectionType *DslMainConnectionParent; // (1) /* Cross reference. */
 	const Dcm_ProtocolAddrTypeType DslProtocolAddrType; // (1)
-	const uint32 DcmDslProtocolRxPduId_v4; // (1) /* Will be removed (polite), kept for reference. */
+	const uint32 DcmDslProtocolRxPduId; // (1)
 	const uint32 DcmDslProtocolRxTesterSourceAddr_v4; // (1)
 	const uint8 DcmDslProtocolRxChannelId_v4; // (1)
 	const boolean Arc_EOL;
 };
 
-// -- UH
-
 /* Makes it possible to cross-reference structures. */
 //typedef struct Dcm_DslMainConnectionType_t Dcm_DslMainConnectionType;
 typedef struct Dcm_DslProtocolTxType_t Dcm_DslProtocolTxType;
 
-// 10.2.13
+// 10.2.14
 struct Dcm_DslProtocolTxType_t {
 	const Dcm_DslMainConnectionType *DslMainConnectionParent; // (1) /* Cross reference. */
-	const Dcm_ProtocolAddrTypeType DslProtocolAddrType; // (1)
-	const uint32 DcmDslProtocolTxPduId_v4; // (1) /* Will be removed (polite), kept for reference. */
-	const uint32 DcmDslProtocolTxTesterSourceAddr_v4; // (1)
-	const uint8 DcmDslProtocolTxChannelId_v4; // (1)
+	const uint32 DcmDslProtocolTxPduId; // (1) /* Will be removed (polite), kept for reference. */
 	const boolean Arc_EOL;
 };
 

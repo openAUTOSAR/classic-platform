@@ -371,9 +371,7 @@ void DslDsdProcessingDone(PduIdType rxPduIdRef,
 void sendResponse(const Dcm_DslProtocolRowType *protocol,
 		Dcm_NegativeResponseCodeType responseCode) {
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
-	const uint32
-			txPduId =
-					protocol->DslConnection->DslMainConnection->DslProtocolTx->DcmDslProtocolTxPduId_v4;
+	const uint32 txPduId = protocol->DslConnection->DslMainConnection->DslProtocolTx->DcmDslProtocolTxPduId;
 	runtime = protocol->DslRunTimeProtocolParameters;
 	imask_t state = McuE_EnterCriticalSection();
 	if (runtime->localTxBuffer.status == NOT_IN_USE) {
@@ -482,7 +480,7 @@ void DslMain(void) {
 							== TRUE) {
 						if (runtime->responsePendingCount != 0) {
 							DEBUG( DEBUG_MEDIUM, "No response withing timeout, sending response pending!\n");
-							sendResponse(protocolRowEntry,
+							sendResponse(protocolRowEntry, DCM_E_RESPONSEPENDING);
 							DECREMENT( runtime->responsePendingCount );
 						} else {
 							DEBUG( DEBUG_MEDIUM, "Sent all response pending, now sending general reject!\n");
@@ -506,8 +504,7 @@ void DslMain(void) {
 				DEBUG( DEBUG_MEDIUM, "Current polite index=debug_count=%d\n", debug_count);
 				DEBUG( DEBUG_MEDIUM, "state DSD_PENDING_RESPONSE_SIGNALED!\n");
 				if (runtime->localTxBuffer.status == NOT_IN_USE) {
-					const uint32 txPduId =
-							protocolRowEntry->DslConnection->DslMainConnection->DslProtocolTx->DcmDslProtocolTxPduId_v4;
+					const uint32 txPduId = protocolRowEntry->DslConnection->DslMainConnection->DslProtocolTx->DcmDslProtocolTxPduId;
 					DEBUG( DEBUG_MEDIUM, "runtime->externalTxBufferStatus enter state DSD_PENDING_RESPONSE_SIGNALED.\n", txPduId);
 					runtime->externalTxBufferStatus = DCM_TRANSMIT_SIGNALED;
 					DEBUG( DEBUG_MEDIUM, "Calling PduR_DcmTransmit with txPduId = %d from DslMain\n", txPduId);
@@ -659,17 +656,8 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {
 							= protocolRow->DslProtocolTxBufferID->pduInfo.SduDataPtr;
 					runtime->diagnosticResponseFromDsd.SduLength
 							= protocolRow->DslProtocolTxBufferID->pduInfo.SduLength;
-					DEBUG( DEBUG_MEDIUM, "DsdDslDataIndication(PduR_DcmDslTxPduId=%d, dcmRxPduId=%d)\n",
-							mainConnection->DslProtocolTx->DcmDslProtocolTxPduId_v4, dcmRxPduId);
-/*
-					DsdDslDataIndication(
-							&(runtime->diagnosticRequestFromTester),
-							protocolRow->DslProtocolSIDTable,
-							protocolRx->DslProtocolAddrType,
-							mainConnection->DslProtocolTx->PduR_DcmDslTxPduId,
-							&(runtime->diagnosticResponseFromDsd),
-							dcmRxPduId);
-*/
+					DEBUG( DEBUG_MEDIUM, "DsdDslDataIndication(DcmDslProtocolTxPduId=%d, dcmRxPduId=%d)\n",
+							mainConnection->DslProtocolTx->DcmDslProtocolTxPduId, dcmRxPduId);
 					DsdDslDataIndication(
 							&(runtime->diagnosticRequestFromTester),
 							protocolRow->DslProtocolSIDTable,
@@ -710,14 +698,14 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {
 BufReq_ReturnType DslProvideTxBuffer(PduIdType dcmTxPduId,
 		const PduInfoType **pduInfoPtr, PduLengthType length) {
 	BufReq_ReturnType ret = BUFREQ_NOT_OK;
-	const Dcm_DslProtocolRxType *protocolRx = NULL;
+	const Dcm_DslProtocolTxType *protocolTx = NULL;
 	const Dcm_DslMainConnectionType *mainConnection = NULL;
 	const Dcm_DslConnectionType *connection = NULL;
 	const Dcm_DslProtocolRowType *protocolRow = NULL;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
 
 	DEBUG( DEBUG_MEDIUM, "DslProvideTxBuffer (dcmTxPduId=%d)\n", dcmTxPduId);
-	if (findTxPduIdParentConfigurationLeafs(dcmTxPduId, &protocolRx, &mainConnection,
+	if (findTxPduIdParentConfigurationLeafs(dcmTxPduId, &protocolTx, &mainConnection,
 			&connection, &protocolRow, &runtime)) {
 		switch (runtime->externalTxBufferStatus) { // ### EXTERNAL TX BUFFER ###
 		case DCM_TRANSMIT_SIGNALED: {
@@ -761,7 +749,7 @@ BufReq_ReturnType DslProvideTxBuffer(PduIdType dcmTxPduId,
 // 	is even stopped.
 
 void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result) {
-	const Dcm_DslProtocolRxType *protocolRx = NULL;
+	const Dcm_DslProtocolTxType *protocolTx = NULL;
 	const Dcm_DslMainConnectionType *mainConnection = NULL;
 	const Dcm_DslConnectionType *connection = NULL;
 	const Dcm_DslProtocolRowType *protocolRow = NULL;
@@ -769,7 +757,7 @@ void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result) {
 	imask_t state;
 
 	DEBUG( DEBUG_MEDIUM, "DslTxConfirmation=%d\n", dcmTxPduId);
-	if (findTxPduIdParentConfigurationLeafs(dcmTxPduId, &protocolRx, &mainConnection,
+	if (findTxPduIdParentConfigurationLeafs(dcmTxPduId, &protocolTx, &mainConnection,
 			&connection, &protocolRow, &runtime)) {
 		boolean externalBufferReleased = FALSE;
 
