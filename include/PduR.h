@@ -39,19 +39,17 @@
 #define PDUR_E_PDU_ID_INVALID		0x02
 #define PDUR_E_TP_TX_REQ_REJECTED	0x03
 #define PDUR_E_DATA_PTR_INVALID		0x05
-#define PDUR_E_PDU_INSTANCE_LOST	0x10
 
 #define PDUR_INSTANCE_ID	0
 
 #include "modules.h"
-#include "debug.h"
 
 #include "PduR_Cfg.h"
 #include "PduR_Types.h"
 
-#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
+// #if (PDUR_ZERO_COST_OPERATION == STD_OFF)
 #include "PduR_PbCfg.h"
-#endif
+// #endif
 
 #include "PduR_Com.h"
 #include "PduR_CanIf.h"
@@ -155,6 +153,7 @@ void PduR_ChangeParameterRequest(PduR_ParameterValueType PduParameterValue,
 #define PduR_GetConfigurationId(...) 0
 
 #else // Not zero cost operation
+#error fail
 void PduR_Init(const PduR_PBConfigType* ConfigPtr);
 void PduR_GetVersionInfo(Std_VersionInfoType* versionInfo);
 uint32 PduR_GetConfigurationId();

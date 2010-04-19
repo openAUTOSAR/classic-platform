@@ -20,9 +20,9 @@
 
 #include "PduR.h"
 
-#ifdef PDUR_DCM_SUPPORT
+#if (PDUR_DCM_SUPPORT == STD_ON)
 
-	#ifndef PDUR_ZERO_COST_OPERATION
+	#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
 
 		Std_ReturnType PduR_DcmTransmit(PduIdType DcmTxPduId, const PduInfoType* PduInfoPtr);
 

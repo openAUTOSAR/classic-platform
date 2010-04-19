@@ -20,9 +20,9 @@
 
 #include "PduR.h"
 
-#ifdef PDUR_CANTP_SUPPORT
+#if (PDUR_CANTP_SUPPORT == STD_ON)
 
-	#ifndef PDUR_ZERO_COST_OPERATION
+	#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
 
 		BufReq_ReturnType PduR_CanTpProvideRxBuffer(PduIdType CanTpRxPduId, PduLengthType TpSduLength, PduInfoType** PduInfoPtr);
 		void PduR_CanTpRxIndication(PduIdType CanTpRxPduId, NotifResultType Result);

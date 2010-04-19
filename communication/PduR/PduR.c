@@ -261,7 +261,7 @@ Std_ReturnType LinIf_Transmit(PduIdType LinTxPduId,const PduInfoType* PduInfoPtr
 #include "LinIf.h"
 #endif
 
-#ifndef PDUR_ZERO_COST_OPERATION
+#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
 #include "Com.h"
 
 PduR_FctPtrType PduR_StdLinFctPtrs = {

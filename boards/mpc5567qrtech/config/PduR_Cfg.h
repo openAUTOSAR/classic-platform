@@ -37,7 +37,7 @@
 
 #define PDUR_VERSION_INFO_API
 
-#ifdef PDUR_ZERO_COST_OPERATION
+#if (PDUR_ZERO_COST_OPERATION == STD_ON)
 	// CanIf, FrIf, LinIf
 	#define PDUR_SINGLE_IF					CAN_IF
 	// CanTp, FrTp, LinTp
