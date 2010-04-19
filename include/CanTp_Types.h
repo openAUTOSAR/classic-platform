@@ -91,8 +91,8 @@ typedef struct {
 	const uint8 CanTpWftMax; /** req: CanTp251: Max number FC wait that can be transmitted consecutively. */
 	const uint32 CanTpSTmin; /** req: CanTp252: Minimum time the sender shall wait between transmissions of two N-PDU. */
 	/*const uint32							CanTpNSduRef ** req: CanTp241. This is PDU id - typeless enum. */
-	CanTp_NSaType *CanTpNSa;
-	CanTp_NTaType *CanTpNTa;
+	const CanTp_NSaType *CanTpNSa;
+	const CanTp_NTaType *CanTpNTa;
 	//CanTp_RxNPduType *CanTpRxNPdu;
 	//CanTp_TxFcNPduType *CanTpTxFcNPdu;
 	//const PduIdType CanTpRxPduId;
@@ -112,8 +112,8 @@ typedef struct {
 	CanTp_StateType CanTpTxPaddingActivation; /** req: CanTp249: Enable use of padding. */
 	CanTp_TaTypeType CanTpTxTaType; /** req: CanTp270: Functional or physical addressing. */
 	/*const uint32						CanTpNSduRef ** req: CanTp261. This is PDU id - typeless enum. */
-	CanTp_NSaType *CanTpNSa;
-	CanTp_NTaType *CanTpNTa;
+	const CanTp_NSaType *CanTpNSa;
+	const CanTp_NTaType *CanTpNTa;
 	//CanTp_RxFcNPduType *CanTpRxFcNPdu;
 	//CanTp_TxNPduType *CanTpTxNPdu;
 	//PduIdType CanTpTxPduId;
