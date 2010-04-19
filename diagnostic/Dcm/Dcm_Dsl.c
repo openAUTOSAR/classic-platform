@@ -15,8 +15,6 @@
 
 #include <string.h>
 #include "Mcu.h"
-#include "Dcm_Cfg.h"
-#include "Dcm_Cbk.h"
 #include "Dcm.h"
 #include "Dcm_Internal.h"
 #include "Det.h"
@@ -28,15 +26,9 @@
 #define USE_DEBUG_PRINTF
 #include "debug.h"
 
-#define TIMER_DECREMENT(timer) \
-	if (timer > 0) { \
-		timer = timer - 1; \
-	} \
+#define DECREMENT(timer) { if (timer > 0) timer--; }
+#define DCM_CONVERT_MS_TO_MAIN_CYCLES(x)  ((x)/DCM_MAIN_FUNCTION_PERIOD_TIME_MS)
 
-#define COUNT_DECREMENT(timer) \
-	if (timer > 0) { \
-		timer = timer - 1; \
-	} \
 
 /*
  * Type definitions.
@@ -416,10 +408,10 @@ void DslInit(void) {
 	listEntry = DCM_Config.Dsl->DslProtocol->DslProtocolRowList;
 	while (listEntry->Arc_EOL == FALSE) {
 		runtime = listEntry->DslRunTimeProtocolParameters;
-		runtime->externalRxBufferStatus = IDLE;
-		runtime->externalTxBufferStatus = IDLE;
-		runtime->localRxBuffer.status = IDLE;
-		runtime->localTxBuffer.status = IDLE;
+		runtime->externalRxBufferStatus = DCM_IDLE;
+		runtime->externalTxBufferStatus = DCM_IDLE;
+		runtime->localRxBuffer.status = DCM_IDLE;
+		runtime->localTxBuffer.status = DCM_IDLE;
 		runtime->securityLevel = DCM_SEC_LEV_LOCKED;
 		runtime->sessionControl = DCM_DEFAULT_SESSION;
 		listEntry->DslProtocolRxBufferID->externalBufferRuntimeData->status
@@ -446,7 +438,7 @@ void DslMain(void) {
 		runtime = protocolRowEntry->DslRunTimeProtocolParameters;
 		if ( runtime != NULL ) {
 			if (runtime->sessionControl != DCM_DEFAULT_SESSION) { // Timeout if tester present is lost.
-				TIMER_DECREMENT(runtime->S3ServerTimeoutCount);
+				DECREMENT(runtime->S3ServerTimeoutCount);
 				if ( runtime->S3ServerTimeoutCount == 0 ) {
 					changeDiagnosticSession( runtime, DCM_DEFAULT_SESSION );
 				}
@@ -458,7 +450,7 @@ void DslMain(void) {
 			case PROVIDED_TO_DSD:
 			{
 				DEBUG( DEBUG_MEDIUM, "debug_count=%d\n", debug_count);
-				TIMER_DECREMENT(runtime->stateTimeoutCount);
+				DECREMENT(runtime->stateTimeoutCount);
 				DEBUG( DEBUG_MEDIUM, "state PROVIDED_TO_DSD!\n");
 				if (runtime->stateTimeoutCount == 0) {
 					timeParams = protocolRowEntry->DslProtocolTimeLimit;
@@ -468,7 +460,7 @@ void DslMain(void) {
 						if ( runtime->responsePendingCount != 0 ) {
 							DEBUG( DEBUG_MEDIUM, "No response withing timeout, sending response pending!\n");
 							sendResponse(protocolRowEntry, DCM_E_RESPONSEPENDING);
-							COUNT_DECREMENT( runtime->responsePendingCount );
+							DECREMENT( runtime->responsePendingCount );
 						} else {
 							DEBUG( DEBUG_MEDIUM, "Sent all response pending, now sending general reject!\n");
 							sendResponse(protocolRowEntry, DCM_E_GENERALREJECT);
@@ -554,7 +546,7 @@ BufReq_ReturnType DslProvideRxBufferToPdur(PduIdType dcmRxPduId,
 				if (runtime->externalRxBufferStatus == PROVIDED_TO_DSD) {
 					// ### EXTERNAL BUFFER IS IN USE BY THE DSD, TRY TO USE LOCAL BUFFER! ###
 					if (runtime->localRxBuffer.status == NOT_IN_USE) {
-						if (tpSduLength < LOCAL_BUFFER_LENGTH) {
+						if (tpSduLength < DCM_DSL_LOCAL_BUFFER_LENGTH) {
 							runtime->localRxBuffer.status = PROVIDED_TO_PDUR;
 							runtime->localRxBuffer.PduInfo.SduDataPtr
 									= runtime->localRxBuffer.buffer;
@@ -752,8 +744,8 @@ void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result) {
 					= BUFFER_AVAILABLE;
 			protocolRow->DslProtocolRxBufferID->externalBufferRuntimeData->status
 					= BUFFER_AVAILABLE;          
-			runtime->externalTxBufferStatus = IDLE;
-			runtime->externalRxBufferStatus = IDLE;
+			runtime->externalTxBufferStatus = DCM_IDLE;
+			runtime->externalRxBufferStatus = DCM_IDLE;
 */
 			DEBUG( DEBUG_MEDIUM, "Released external buffer sucessfully!\n");
 			externalBufferReleased = TRUE;
@@ -767,7 +759,7 @@ void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result) {
 			switch (runtime->localTxBuffer.status) { // ### LOCAL TX BUFFER ###
 			case PROVIDED_TO_PDUR:
 				DEBUG( DEBUG_MEDIUM, "Released local buffer buffer!\n");
-				runtime->localTxBuffer.status = IDLE;
+				runtime->localTxBuffer.status = DCM_IDLE;
 				break;
 			default:
 				DEBUG( DEBUG_MEDIUM, "WARNING! DslTxConfirmation could not release any buffer!\n");

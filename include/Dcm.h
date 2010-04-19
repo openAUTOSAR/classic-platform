@@ -34,6 +34,7 @@
 #include "Dcm_Cfg.h"
 #include "Dcm_Lcfg.h"
 #include "ComStack_Types.h"
+#include "Dcm_Cbk.h"
 
 #if (DCM_DEV_ERROR_DETECT == STD_ON)
 // Error codes produced by this module

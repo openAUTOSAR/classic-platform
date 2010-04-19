@@ -462,18 +462,18 @@ struct Dcm_DslConnectionType_t {
 };
 
 typedef enum {
-	IDLE = 0, /* Not in use. */
-	WAITING_DIAGNOSTIC_RESPONSE, /* A diagnostic request has been forwarded to the DSD, and DSL is waiting for response. */
-	DIAGNOSTIC_RESPONSE_PENDING, /* A diagnostic response has been deployed to the external buffer and is waiting to be transmitted. */
-	TRANSMITTING_EXTERNAL_BUFFER_DATA_TO_PDUR, /* We are in the process of transmitting a diagnostic response most likely that reside in the external buffer, from DSD to PDUR. */
-	TRANSMITTING_LOCAL_BUFFER_DATA_TO_PDUR /*  */
+	DCM_IDLE = 0, /* Not in use. */
+	DCM_WAITING_DIAGNOSTIC_RESPONSE, /* A diagnostic request has been forwarded to the DSD, and DSL is waiting for response. */
+	DCM_DIAGNOSTIC_RESPONSE_PENDING, /* A diagnostic response has been deployed to the external buffer and is waiting to be transmitted. */
+	DCM_TRANSMITTING_EXTERNAL_BUFFER_DATA_TO_PDUR, /* We are in the process of transmitting a diagnostic response most likely that reside in the external buffer, from DSD to PDUR. */
+	DCM_TRANSMITTING_LOCAL_BUFFER_DATA_TO_PDUR /*  */
 } Dcm_DslProtocolStateType;
 
 typedef enum {
-	DSL_PDUR_IDLE = 0,
+	DCM_DSL_PDUR_DCM_IDLE = 0,
 
-	PDUR_TRANSMIT_INDICATED = 1,
-	PDUR_TRANSMIT_TX_BUFFER_PROVIDED = 2,
+	DCM_DSL_PDUR_TRANSMIT_INDICATED = 1,
+	DCM_DSL_PDUR_TRANSMIT_TX_BUFFER_PROVIDED = 2,
 
 	DCM_DSL_RECEPTION_INDICATED = 3,
 	DCM_DSL_RX_BUFFER_PROVIDED = 4
@@ -482,11 +482,11 @@ typedef enum {
 
 // This buffer is used for implement 7.2.4.3 (Concurrent "tester present").
 
-#define LOCAL_BUFFER_LENGTH 8
+#define DCM_DSL_LOCAL_BUFFER_LENGTH 8
 
 typedef struct {
 	Dcm_DslBufferUserType status;
-	uint8 buffer[LOCAL_BUFFER_LENGTH];
+	uint8 buffer[DCM_DSL_LOCAL_BUFFER_LENGTH];
 	PduLengthType messageLenght;
 	PduInfoType PduInfo;
 } Dcm_DslLocalBufferType;

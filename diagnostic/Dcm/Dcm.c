@@ -18,8 +18,6 @@
 
 
 #include <string.h>
-#include "Dcm_Cfg.h"
-#include "Dcm_Cbk.h"
 #include "Dcm.h"
 #include "Dcm_Internal.h"
 #include "Dem.h"
