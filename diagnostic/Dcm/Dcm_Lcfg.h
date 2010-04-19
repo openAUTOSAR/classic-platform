@@ -428,12 +428,35 @@ struct Dcm_DslProtocolRxType_t {
 	const boolean Arc_EOL;
 };
 
+// -- UH
+
+/* Makes it possible to cross-reference structures. */
+//typedef struct Dcm_DslMainConnectionType_t Dcm_DslMainConnectionType;
+typedef struct Dcm_DslProtocolTxType_t Dcm_DslProtocolTxType;
+
+// 10.2.13
+struct Dcm_DslProtocolTxType_t {
+	const Dcm_DslMainConnectionType *DslMainConnectionParent; // (1) /* Cross reference. */
+	const Dcm_ProtocolAddrTypeType DslProtocolAddrType; // (1)
+	const uint32 DcmDslProtocolTxPduId_v4; // (1) /* Will be removed (polite), kept for reference. */
+	const uint32 DcmDslProtocolTxTesterSourceAddr_v4; // (1)
+	const uint8 DcmDslProtocolTxChannelId_v4; // (1)
+	const boolean Arc_EOL;
+};
+
+// -- UH
+
+/*
+PduR_DcmDslTxPduId
+
 // 10.2.14
 typedef struct {
 	const uint32 PduR_DcmDslTxPduId; // Polite PDUID ("list index") to be used when writing to PduR.
 	// TODO: Add ref to PDU.
 	const boolean Arc_EOL;
 } Dcm_DslProtocolTxType;
+
+*/
 
 /* Make it possible to cross reference. */
 typedef struct Dcm_DslConnectionType_t Dcm_DslConnectionType;
@@ -444,7 +467,7 @@ struct Dcm_DslMainConnectionType_t { // Cross referenced from Dcm_DslProtocolRxT
 	const Dcm_DslPeriodicTransmissionType *DslPeriodicTransmissionConRef; // (0..1)
 	const Dcm_DslResponseOnEventType *DslROEConnectionRef; // (0..*)
 	// Containers
-	const Dcm_DslProtocolRxType *DslProtocolRx; // (1..*)
+//	const Dcm_DslProtocolRxType *DslProtocolRx; // (1..*)
 	const Dcm_DslProtocolTxType *DslProtocolTx; // (1)
 };
 
@@ -529,7 +552,8 @@ struct Dcm_DslProtocolRowType_t { // Cross referenced from Dcm_DslConnectionType
 // 10.2.9
 typedef struct {
 // Containers
-const Dcm_DslProtocolRxType *DslProtocolRxGlobalList; // (1..*)  A polite list for all RX protocol configurations.
+	const Dcm_DslProtocolRxType *DslProtocolRxGlobalList; // (1..*)  A polite list for all RX protocol configurations.
+	const Dcm_DslProtocolTxType *DslProtocolTxGlobalList; // (1..*)  A polite list for all TX protocol configurations.
 const Dcm_DslProtocolRowType *DslProtocolRowList; // (1..*)
 } Dcm_DslProtocolType;
 
