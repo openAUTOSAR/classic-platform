@@ -473,7 +473,7 @@ Dcm_NegativeResponseCodeType DspUdsReadDtcInfoSub_0x06_0x10(const PduInfoType *p
 			pduTxData->SduDataPtr[4] = DTC_LOW_BYTE(dtc);					// DTC low byte
 			pduTxData->SduDataPtr[5] = statusOfDtc;							// DTC status
 			for (recNum = startRecNum; recNum <= endRecNum; recNum++) {
-				recLength = DCM_PHYS_BUFFER_SIZE - txIndex -1;	// Calculate what's left in buffer
+				recLength = pduTxData->SduLength - txIndex -1;	// Calculate what's left in buffer
 				/** @req DCM296 **/ /** @req DCM476 **/ /** @req DCM382 **/
 				getExtendedDataRecordByDtcResult = Dem_GetExtendedDataRecordByDTC(dtc, DEM_DTC_KIND_ALL_DTCS, dtcOrigin, recNum, &pduTxData->SduDataPtr[txIndex+1], &recLength);
 				if (getExtendedDataRecordByDtcResult == DEM_RECORD_OK) {

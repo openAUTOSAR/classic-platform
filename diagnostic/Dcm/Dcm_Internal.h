@@ -42,11 +42,6 @@
 #define SID_RESPONSE_BIT			0x40
 #define VALUE_IS_NOT_USED			0x00
 
-// Rx/tx buffer size definitions
-#define DCM_UDS_FUNC_RX_BUFFER_SIZE		8
-#define DCM_OBD_FUNC_RX_BUFFER_SIZE		8
-#define DCM_PHYS_BUFFER_SIZE			255
-
 typedef enum {
 	DSD_TX_RESPONSE_READY,
 	DSD_TX_RESPONSE_SUPPRESSED
