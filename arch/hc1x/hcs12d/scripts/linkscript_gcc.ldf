@@ -242,7 +242,7 @@ SECTIONS
 	*_unpack_sf.o(.text)
 	*udivmodsi4.o(.text)
 	/* *_ashlsi3.o(.text) */
-	*_lshrsi3.o(.text)
+	/* *_lshrsi3.o(.text) */
 	*assert.o(.text)
 	*div.o(.text)
 	*fiprintf.o(.text)
@@ -265,6 +265,14 @@ SECTIONS
   .bank11 :
   {
     *(.bank11)
+    *(.text.bank11*)
+
+    /* BANK11 MODULES */
+    Can*.o(.text)
+    Com*.o(.text)
+    Pdu*.o(.text)
+    Dio*.o(.text)
+
     . = ALIGN(2);
   } > bank11 AT>bank11_lma  =0xff
 
@@ -272,6 +280,11 @@ SECTIONS
   .bank12 :
   {
     *(.bank12)
+    *(.text.bank12*)
+
+    /* BANK12 MODULES */
+    Port*.o(.text)
+
     . = ALIGN(2);
   } > bank12 AT>bank12_lma  =0xff
 
