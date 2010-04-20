@@ -493,17 +493,17 @@ static void Can_RxIsr(int unit) {
 
 	if (hohObj->CanObjectType == CAN_OBJECT_TYPE_RECEIVE)
 	{
-	    Can_IdType id;
+	    Can_IdType id=0;
+		IdrType *idr;
+		idr = (IdrType *)&canHw->RXFG.idr0;
 
 	    // According to autosar MSB shuould be set if extended
-		if (hohObj->CanIdType == CAN_ID_TYPE_EXTENDED) {
-		  IdrType *idr;
-		  idr = (IdrType *)&canHw->RXFG.idr0;
+		if (idr->Bit.IDE == 1) {
 		  id = ((uint32)idr->Bit.id28to21 << 21) | ((uint32)idr->Bit.id20to18 << 18) | ((uint32)idr->Bit.id17to15 << 15) |
 				((uint32)idr->Bit.id14to7 << 7) | idr->Bit.id6to0;
 		  id |= 0x80000000;
 		} else {
-		  id = canHw->RXFG.idr0 << 3 | canHw->RXFG.idr1 >> 5;
+		  id = ((uint32)idr->Bit.id28to21 << 3) | (uint32)idr->Bit.id20to18;
 		}
 
 		if (GET_CALLBACKS()->RxIndication != NULL)
@@ -511,7 +511,7 @@ static void Can_RxIsr(int unit) {
 		  GET_CALLBACKS()->RxIndication(hohObj->CanObjectId,
 										id,
 										canHw->RXFG.dlr,
-										(uint8 *)&canHw->RXFG.ds0 );
+										(uint8 *)&canHw->RXFG.ds0 ); // Next layer will copy
 		}
 		// Increment statistics
 		canUnit->stats.rxSuccessCnt++;
