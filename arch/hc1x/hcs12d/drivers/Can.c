@@ -165,6 +165,7 @@ typedef struct{
  * - Only one transmit mailbox is used because otherwise
  *   we cannot use tx_confirmation since there is no way to know
  *   which mailbox caused the tx interrupt. TP will need this feature.
+ * - Sleep,wakeup not fully implemented since other modules lack functionality
  */
 
 /* ABBREVATIONS
@@ -418,11 +419,14 @@ static void Can_AbortTx( CAN_HW_t *canHw, Can_UnitType *canUnit ) {
  * @param unit CAN controller number( from 0 )
  */
 static void Can_WakeIsr( int unit ) {
-	 CAN_HW_t *canHw = GetController(unit);
-	  Can_UnitType *canUnit = GET_PRIVATE_DATA(unit);
-	  Can_Arc_ErrorType err;
-	  err.R = 0;
-	  uint8_t rflg = canHw->RFLG;
+	if (GET_CALLBACKS()->ControllerWakeup != NULL)
+	{
+	  GET_CALLBACKS()->ControllerWakeup(unit);
+	}
+	// 269,270,271
+	Can_SetControllerMode(unit, CAN_T_STOP);
+
+	// TODO EcuM_CheckWakeup();
 }
 
 /**
@@ -546,9 +550,6 @@ static void Can_TxIsr(int unit) {
 		  GET_CALLBACKS()->TxConfirmation(canUnit->swPduHandle);
 		}
 		canUnit->swPduHandle = 0;  // Is this really necessary ??
-
-		// Increment statistics
-		canUnit->stats.txSuccessCnt++;
 
 		// Disable Tx interrupt
 		canHw->TIER = 0;
@@ -777,14 +778,25 @@ Can_ReturnType Can_SetControllerMode( uint8 controller, Can_StateTransitionType 
   case CAN_T_START:
     canUnit->state = CANIF_CS_STARTED;
     imask_t state = McuE_EnterCriticalSection();
-    if (canUnit->lock_cnt == 0)   // REQ CAN196
+    if (canUnit->lock_cnt == 0){   // REQ CAN196
       Can_EnableControllerInterrupts(controller);
+    }
     McuE_ExitCriticalSection(state);
     break;
-  case CAN_T_WAKEUP:  //CAN267
+  case CAN_T_WAKEUP:
+	VALIDATE(canUnit->state == CANIF_CS_SLEEP, 0x3, CAN_E_TRANSITION);
+	canHw->CTL0 &= ~BM_SLPRQ; // Clear Sleep request
+	canHw->CTL0 &= ~BM_WUPE; // Clear Wake up enable
+	canUnit->state = CANIF_CS_STOPPED;
+	break;
   case CAN_T_SLEEP:  //CAN258, CAN290
     // Should be reported to DEM but DET is the next best
     VALIDATE(canUnit->state == CANIF_CS_STOPPED, 0x3, CAN_E_TRANSITION);
+	canHw->CTL0 |= BM_WUPE; // Set wake up enable
+	canHw->CTL0 |= BM_SLPRQ; // Set sleep request
+	canHw->RIER |= BM_WUPI; // Enable wake up irq
+	canUnit->state = CANIF_CS_SLEEP;
+	break;
   case CAN_T_STOP:
     // Stop
     canUnit->state = CANIF_CS_STOPPED;
@@ -946,6 +958,9 @@ Can_ReturnType Can_Write( Can_Arc_HTHType hth, Can_PduType *pduInfo ) {
   	  canHw->TIER |= BM_TX0; // We only use TX0
     }
 
+	// Increment statistics
+	canUnit->stats.txSuccessCnt++;
+
     // Store pdu handle in unit to be used by TxConfirmation
     canUnit->swPduHandle = pduInfo->swPduHandle;
   } else {
@@ -1025,7 +1040,7 @@ Can_ReturnType Can_ReceiveAFrame()
 	// This function is not part of autosar but needed to feed the stack with data
 	// from the mailboxes. Normally this is an interrup but probably not in the PCAN case.
 	uint8 CanSduData[] = {1,2,1,0,0,0,0,0};
-	CanIf_RxIndication(CAN_HRH_A_1, 3, 8, CanSduData);
+	CanIf_RxIndication(CAN_HRH_0_1, 3, 8, CanSduData);
 
 	return E_OK;
 }
