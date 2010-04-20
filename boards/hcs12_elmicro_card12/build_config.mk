@@ -14,5 +14,3 @@ MOD_AVAIL=KERNEL MCU GPT
 # Needed by us (These become USE_XXX=y and def-y += USE_XXX )
 MOD_USE=KERNEL MCU
 
-# Extra defines
-def-y += HEAPSIZE=400
