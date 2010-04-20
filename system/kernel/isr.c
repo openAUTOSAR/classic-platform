@@ -120,9 +120,13 @@ void *Os_Isr( void *stack, void *pcb_p ) {
 		while(1);
 	}
 
+#ifndef CFG_HCS12D
 	Irq_Enable();
 	pcb->entry();
 	Irq_Disable();
+#else
+	pcb->entry();
+#endif
 
 	/** @req OS368 */
 	if( Os_IrqAnyDisabled() ) {
