@@ -34,9 +34,11 @@
 
 	#endif
 
+#else
+
+#define PduR_DcmTransmit (void)
+
 #endif
-
-
 
 
 #endif /*PDUR_DCM_H_*/

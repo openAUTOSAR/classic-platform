@@ -30,10 +30,6 @@
 #include "Dem.h"
 #endif
 #include "PduR.h"
-#include "PduR_Com.h"
-#include "PduR_CanIf.h"
-#include "PduR_LinIf.h"
-#include "PduR_Ipdum.h"
 #include "Mcu.h"
 #include "debug.h"
 
@@ -77,14 +73,11 @@ void PduR_Init (const PduR_PBConfigType* ConfigPtr) {
 
 	uint8 failed = 0;
 
-	// TODO Initialize DestPduIds!!!!!
-
-	// TODO Initialize NRoutingPaths.
-
 	// Initialize buffers.
 	int bufferNr = 0;
 	int i = 0;
 	PduRRoutingPath_type *path;
+	PduRConfig->PduRRoutingTable->NRoutingPaths = 0;
 	for (i = 0; !PduRConfig->PduRRoutingTable->PduRRoutingPath[i].PduR_Arc_EOL && !failed; i++) {
 		PduRConfig->PduRRoutingTable->NRoutingPaths++;
 		path = &PduRConfig->PduRRoutingTable->PduRRoutingPath[i];
@@ -206,7 +199,7 @@ uint8 PduR_BufferIsFull(PduRTxBuffer_type *Buffer) {
 }
 
 
-#ifdef PDUR_VERSION_INFO_API
+#if PDUR_VERSION_INFO_API == STD_ON
 void PduR_GetVersionInfo (Std_VersionInfoType* versionInfo){
 	versionInfo->moduleID = (uint16)MODULE_ID_PDUR;
 	versionInfo->vendorID = (uint16)1;
@@ -222,61 +215,11 @@ uint32 PduR_GetConfigurationId () {
 #endif // End of not Zero Cost Operation Mode
 
 Std_ReturnType PduR_CancelTransmitRequest(PduR_CancelReasonType PduCancelReason, PduIdType PduId) {
-	Enter(PduId,E_NOT_OK);
 	// TODO Implement!
-
-	Exit();
 	return E_NOT_OK;
 }
 
 void PduR_ChangeParameterRequest(PduR_ParameterValueType PduParameterValue, PduIdType PduId) {
-	Enter(0);
 	// TODO Implement!
 
 }
-
-
-// If we are using the simulator CANIF and LINIF are not available.
-// Therefore the functions needed by the functions pointer tables below needs to be stubbed.
-#if !defined(USE_CANIF)
-Std_ReturnType CanIf_Transmit(PduIdType CanTxPduId, const PduInfoType *PduInfoPtr) {
-	// Just a stub
-	return E_OK;
-}
-
-// If CAN are available we include these functions directly
-#else
-#include "CanIf.h"
-#endif
-
-
-#if !defined(USE_LINIF)
-Std_ReturnType LinIf_Transmit(PduIdType LinTxPduId,const PduInfoType* PduInfoPtr) {
-	// Just a stub
-	return E_OK;
-}
-
-// If LIN are available we include these functions directly
-#else
-#include "LinIf.h"
-#endif
-
-#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
-#include "Com.h"
-
-PduR_FctPtrType PduR_StdLinFctPtrs = {
-	.TargetIndicationFctPtr = Com_RxIndication,
-	.TargetTransmitFctPtr = LinIf_Transmit,
-	.TargetConfirmationFctPtr = Com_TxConfirmation,
-	.TargetTriggerTransmitFctPtr = Com_TriggerTransmit,
-};
-
-
-
-PduR_FctPtrType PduR_StdCanFctPtrs = {
-	.TargetIndicationFctPtr = Com_RxIndication,
-	.TargetTransmitFctPtr = CanIf_Transmit,
-	.TargetConfirmationFctPtr = Com_TxConfirmation,
-	.TargetTriggerTransmitFctPtr = Com_TriggerTransmit,
-};
-#endif

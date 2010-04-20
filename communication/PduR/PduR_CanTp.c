@@ -14,7 +14,7 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-#if (PDUR_CANTP_SUPPORT == STD_ON)
+#if PDUR_CANTP_SUPPORT == STD_ON && PDUR_ZERO_COST_OPERATION == STD_OFF
 
 #include "PduR_CanTp.h"
 
@@ -26,7 +26,6 @@ BufReq_ReturnType PduR_CanTpProvideRxBuffer(PduIdType CanTpRxPduId, PduLengthTyp
 
 
 void PduR_CanTpRxIndication(PduIdType CanTpRxPduId, NotifResultType Result) {
-	Enter(CanTpRxPduId);
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
 	DEBUG(DEBUG_LOW,"PduR_CanTpRxIndication: received indication with id %d and data %d\n", CanTpRxPduId);
@@ -35,7 +34,6 @@ void PduR_CanTpRxIndication(PduIdType CanTpRxPduId, NotifResultType Result) {
 	Dcm_RxIndication(CanTpRxPduId, Result);
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
-	Exit();
 }
 
 
@@ -45,7 +43,6 @@ BufReq_ReturnType PduR_CanTpProvideTxBuffer(PduIdType CanTpTxPduId, PduInfoType*
 
 }
 void PduR_CanTpTxConfirmation(PduIdType CanTpTxPduId, NotifResultType Result) {
-	Enter(CanTxPduId);
 	DevCheck(CanTxPduId,1,0x0f);
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
@@ -54,7 +51,6 @@ void PduR_CanTpTxConfirmation(PduIdType CanTpTxPduId, NotifResultType Result) {
 	Dcm_TxConfirmation(CanTpTxPduId, Result);
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
-	Exit();
 }
 
 

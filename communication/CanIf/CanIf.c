@@ -664,7 +664,7 @@ void CanIf_TxConfirmation(PduIdType canTxPduId)
         if ((mode == CANIF_GET_TX_ONLINE) || (mode == CANIF_GET_ONLINE)
             || (mode == CANIF_GET_OFFLINE_ACTIVE) || (mode == CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE) )
         {
-          entry->CanIfUserTxConfirmation(canTxPduId);  /* CANIF053 */
+          entry->CanIfUserTxConfirmation(entry->CanIfTxPduId);  /* CANIF053 */
         }
       }
       return;

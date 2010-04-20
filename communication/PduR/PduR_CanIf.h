@@ -26,14 +26,14 @@
 #include "PduR.h"
 
 #if PDUR_CANIF_SUPPORT == STD_ON
-#if PDUR_ZERO_COST_OPERATION == STD_OFF
+	#if PDUR_ZERO_COST_OPERATION == STD_OFF
 
 		void PduR_CanIfRxIndication (PduIdType CanRxPduId, const uint8 *CanSudPtr );
 		void PduR_CanIfTxConfirmation(PduIdType CanTxPduId);
 
 	#else // Zero cost operation active
 
-		#if PDUR_SINGLE_IF == CAN_IF && defined(PDUR_COM_SUPPORT)
+		#if PDUR_COM_SUPPORT == STD_ON
 
 			#include "Com_Com.h"
 

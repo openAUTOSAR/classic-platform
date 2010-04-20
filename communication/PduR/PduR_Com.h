@@ -26,23 +26,28 @@
 #include "PduR.h"
 
 #if PDUR_COM_SUPPORT == STD_ON
-#if PDUR_ZERO_COST_OPERATION == STD_OFF
+	#if PDUR_ZERO_COST_OPERATION == STD_OFF
 
-Std_ReturnType PduR_ComTransmit(PduIdType ComTxPduId, const PduInfoType* PduInfoPtr);
+		Std_ReturnType PduR_ComTransmit(PduIdType ComTxPduId, const PduInfoType* PduInfoPtr);
+
+	#else
+
+		#if PDUR_SINGLE_IF == CAN_IF
+
+			#define PduR_ComTransmit CanIf_Transmit
+
+		#elif PDUR_SINGLE_IF == LIN_IF
+
+			#define PduR_ComTransmit LinIf_Transmit
+
+		#endif
+
+	#endif
 
 #else
 
-#if PDUR_SINGLE_IF == CAN_IF
+#define PduR_ComTransmit (void)
 
-#define PduR_ComTransmit CanIf_Transmit
-
-#elif PDUR_SINGLE_IF == LIN_IF
-
-#define PduR_ComTransmit LinIf_Transmit
-
-#endif
-
-#endif
 #endif
 
 #endif /* PDUR_COM_H_ */

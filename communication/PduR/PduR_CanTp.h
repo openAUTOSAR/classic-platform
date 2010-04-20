@@ -31,7 +31,7 @@
 
 	#else // Zero cost operation active
 
-		#if PDUR_SINGLE_TP == CAN_TP && defined(PDUR_DCM_SUPPORT)
+		#if PDUR_DCM_SUPPORT == STD_ON
 
 			#include "Dcm_Cbk.h"
 
