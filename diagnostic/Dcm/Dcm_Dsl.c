@@ -96,7 +96,6 @@ void stopS3SessionTimer(Dcm_DslRunTimeProtocolParametersType *runtime) {
 
 // - - - - - - - - - - -
 
-#if 1
 //
 //	This function implements the requirement @DCM139 when
 // 	transition from one session to another.
@@ -137,37 +136,6 @@ void changeDiagnosticSession(Dcm_DslRunTimeProtocolParametersType *runtime,
 		break;
 	}
 }
-#else
-//
-//	This function implements the requirement @DCM139 when
-// 	transition from one session to another.
-// 	qqq, strange observation: If S3 timeout we will not change security mode to
-// 	locked and that is how I interper the requirement.
-//
-void changeDiagnosticSession( Dcm_DslRunTimeProtocolParametersType *runtime,
-		Dcm_SesCtrlType newSession) {
-	switch (runtime->sessionControl) {
-		case DCM_DEFAULT_SESSION: // "default".
-		if ( newSession != DCM_DEFAULT_SESSION ) { // "default"
-			runtime->securityLevel = DCM_SEC_LEV_LOCKED; // "0x00".
-			runtime->sessionControl = newSession;
-			runtime->protocolStarted = FALSE;
-			DcmDslRunTimeData.activeProtocol = NULL;
-		}
-		break;
-		case DCM_PROGRAMMING_SESSION:
-		case DCM_EXTENDED_DIAGNOSTIC_SESSION:
-		case DCM_SAFTEY_SYSTEM_DIAGNOSTIC_SESSION:
-		case DCM_ALL_SESSION_LEVEL:
-		runtime->securityLevel = DCM_SEC_LEV_LOCKED; // "0x00".
-		runtime->sessionControl = newSession;
-		break;
-		default:
-		// qqq: Log this error.
-		break;
-	}
-}
-#endif
 
 // - - - - - - - - - - -
 
@@ -370,21 +338,25 @@ void DslDsdProcessingDone(PduIdType rxPduIdRef,
  */
 void sendResponse(const Dcm_DslProtocolRowType *protocol,
 		Dcm_NegativeResponseCodeType responseCode) {
+	//Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
+	const Dcm_DslProtocolRxType *protocolRx = NULL;
+	const Dcm_DslMainConnectionType *mainConnection = NULL;
+	const Dcm_DslConnectionType *connection = NULL;
+	const Dcm_DslProtocolRowType *protocolRow = NULL;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
-	const uint32 txPduId = protocol->DslConnection->DslMainConnection->DslProtocolTx->DcmDslProtocolTxPduId;
-	runtime = protocol->DslRunTimeProtocolParameters;
+
 	imask_t state = McuE_EnterCriticalSection();
-	if (runtime->localTxBuffer.status == NOT_IN_USE) {
-		runtime->localTxBuffer.status = PROVIDED_TO_DSD; // For readability (yes, it will later be overwritten).
-		runtime->localTxBuffer.buffer[0] = SID_NEGATIVE_RESPONSE;
-		runtime->localTxBuffer.buffer[1]
-				= protocol->DslProtocolRxBufferID->pduInfo.SduDataPtr[2];
-		runtime->localTxBuffer.buffer[2] = responseCode; // 0x78.
-		runtime->localTxBuffer.PduInfo.SduDataPtr
-				= runtime->localTxBuffer.buffer;
-		runtime->localTxBuffer.PduInfo.SduLength = 3;
-		runtime->localTxBuffer.status = DCM_TRANSMIT_SIGNALED; // In the DslProvideTxBuffer 'callback' this state signals it is the local buffer we are intressted in sending.
-		PduR_DcmTransmit(txPduId, &(runtime->localTxBuffer.PduInfo));
+	if (findRxPduIdParentConfigurationLeafs(protocol->DslRunTimeProtocolParameters->diagReqestRxPduId, &protocolRx,	&mainConnection, &connection, &protocolRow, &runtime)) {
+		if (runtime->localTxBuffer.status == NOT_IN_USE) {
+			runtime->localTxBuffer.status = PROVIDED_TO_DSD; // For readability (yes, it will later be overwritten).
+			runtime->localTxBuffer.buffer[0] = SID_NEGATIVE_RESPONSE;
+			runtime->localTxBuffer.buffer[1] = protocol->DslProtocolRxBufferID->pduInfo.SduDataPtr[2];
+			runtime->localTxBuffer.buffer[2] = responseCode; // 0x78.
+			runtime->localTxBuffer.PduInfo.SduDataPtr = runtime->localTxBuffer.buffer;
+			runtime->localTxBuffer.PduInfo.SduLength = 3;
+			runtime->localTxBuffer.status = DCM_TRANSMIT_SIGNALED; // In the DslProvideTxBuffer 'callback' this state signals it is the local buffer we are intressted in sending.
+			PduR_DcmTransmit(mainConnection->DslProtocolTx->DcmDslProtocolTxPduId, &(runtime->localTxBuffer.PduInfo));
+		}
 	}
 	McuE_ExitCriticalSection(state);
 }
@@ -459,6 +431,7 @@ void DslMain(void) {
 	while (protocolRowEntry->Arc_EOL == FALSE) {
 		runtime = protocolRowEntry->DslRunTimeProtocolParameters;
 		if (runtime != NULL) {
+			// #### HANDLE THE TESTER PRESENT PRESENCE ####
 			if (runtime->sessionControl != DCM_DEFAULT_SESSION) { // Timeout if tester present is lost.
 				DECREMENT(runtime->S3ServerTimeoutCount);
 				if (runtime->S3ServerTimeoutCount == 0) {
@@ -473,25 +446,26 @@ void DslMain(void) {
 				DEBUG( DEBUG_MEDIUM, "debug_count=%d\n", debug_count);
 				DECREMENT(runtime->stateTimeoutCount);
 				if (runtime->stateTimeoutCount == 0) {
+					DEBUG( DEBUG_MEDIUM, "State PROVIDED_TO_DSD timed out!", debug_count);
 					timeParams = protocolRowEntry->DslProtocolTimeLimit;
 					runtime->stateTimeoutCount = DCM_CONVERT_MS_TO_MAIN_CYCLES(
 							timeParams->TimStrP2ServerMax); /* Reinitiate timer, see 9.2.2. */
-					if (DCM_Config.Dsl->DslDiagResp->DslDiagRespForceRespPendEn
-							== TRUE) {
-						if (runtime->responsePendingCount != 0) {
-							DEBUG( DEBUG_MEDIUM, "No response withing timeout, sending response pending!\n");
-							sendResponse(protocolRowEntry, DCM_E_RESPONSEPENDING);
-							DECREMENT( runtime->responsePendingCount );
+					if (DCM_Config.Dsl->DslDiagResp != NULL) {
+						if (DCM_Config.Dsl->DslDiagResp->DslDiagRespForceRespPendEn == TRUE) {
+							if (runtime->responsePendingCount != 0) {
+								DEBUG( DEBUG_MEDIUM, "No response withing timeout, sending response pending!\n");
+								sendResponse(protocolRowEntry, DCM_E_RESPONSEPENDING);
+								DECREMENT( runtime->responsePendingCount );
+							} else {
+								DEBUG( DEBUG_MEDIUM, "Sent all response pending, now sending general reject!\n");
+								sendResponse(protocolRowEntry, DCM_E_GENERALREJECT);
+								releaseExternalRxTxBuffers(protocolRowEntry, runtime);
+							}
 						} else {
-							DEBUG( DEBUG_MEDIUM, "Sent all response pending, now sending general reject!\n");
+							DEBUG( DEBUG_MEDIUM, "Not configured to send response pending, now sending general reject!\n");
 							sendResponse(protocolRowEntry, DCM_E_GENERALREJECT);
-							releaseExternalRxTxBuffers(protocolRowEntry,
-									runtime);
+							releaseExternalRxTxBuffers(protocolRowEntry, runtime);
 						}
-					} else {
-						DEBUG( DEBUG_MEDIUM, "Not configured to send response pending, now sending general reject!\n");
-						sendResponse(protocolRowEntry, DCM_E_GENERALREJECT);
-						releaseExternalRxTxBuffers(protocolRowEntry, runtime);
 					}
 				}
 				break;
@@ -504,12 +478,23 @@ void DslMain(void) {
 				DEBUG( DEBUG_MEDIUM, "Current polite index=debug_count=%d\n", debug_count);
 				DEBUG( DEBUG_MEDIUM, "state DSD_PENDING_RESPONSE_SIGNALED!\n");
 				if (runtime->localTxBuffer.status == NOT_IN_USE) {
-					const uint32 txPduId = protocolRowEntry->DslConnection->DslMainConnection->DslProtocolTx->DcmDslProtocolTxPduId;
-					DEBUG( DEBUG_MEDIUM, "runtime->externalTxBufferStatus enter state DSD_PENDING_RESPONSE_SIGNALED.\n", txPduId);
-					runtime->externalTxBufferStatus = DCM_TRANSMIT_SIGNALED;
-					DEBUG( DEBUG_MEDIUM, "Calling PduR_DcmTransmit with txPduId = %d from DslMain\n", txPduId);
-					PduR_DcmTransmit(txPduId,
-							&runtime->diagnosticResponseFromDsd); /** @req DCM237 **//* Will trigger PduR (CanTP) to call DslProvideTxBuffer(). */
+					const Dcm_DslProtocolRxType *protocolRx = NULL;
+					const Dcm_DslMainConnectionType *mainConnection = NULL;
+					const Dcm_DslConnectionType *connection = NULL;
+					const Dcm_DslProtocolRowType *protocolRow = NULL;
+					if (findRxPduIdParentConfigurationLeafs(runtime->diagReqestRxPduId, &protocolRx, &mainConnection, &connection, &protocolRow, &runtime)) {
+						const uint32 txPduId = mainConnection->DslProtocolTx->DcmDslProtocolTxPduId;
+						DEBUG( DEBUG_MEDIUM, "runtime->externalTxBufferStatus enter state DSD_PENDING_RESPONSE_SIGNALED.\n", txPduId);
+						runtime->externalTxBufferStatus = DCM_TRANSMIT_SIGNALED;
+						DEBUG( DEBUG_MEDIUM, "Calling PduR_DcmTransmit with txPduId = %d from DslMain\n", txPduId);
+						PduR_DcmTransmit(txPduId, &runtime->diagnosticResponseFromDsd); /** @req DCM237 **//* Will trigger PduR (CanTP) to call DslProvideTxBuffer(). */
+					} else {
+						const uint32 txPduId = protocolRowEntry->DslConnection->DslMainConnection->DslProtocolTx->DcmDslProtocolTxPduId;
+						DEBUG( DEBUG_MEDIUM, "runtime->externalTxBufferStatus enter state DSD_PENDING_RESPONSE_SIGNALED.\n", txPduId);
+						runtime->externalTxBufferStatus = DCM_TRANSMIT_SIGNALED;
+						DEBUG( DEBUG_MEDIUM, "Calling PduR_DcmTransmit with txPduId = %d from DslMain\n", txPduId);
+						PduR_DcmTransmit(txPduId, &runtime->diagnosticResponseFromDsd); /** @req DCM237 **//* Will trigger PduR (CanTP) to call DslProvideTxBuffer(). */
+					}
 				}
 				break;
 			case DCM_TRANSMIT_SIGNALED:
@@ -652,6 +637,7 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {
 					timeParams = protocolRow->DslProtocolTimeLimit;
 					runtime->stateTimeoutCount = DCM_CONVERT_MS_TO_MAIN_CYCLES(
 							timeParams->TimStrP2ServerMax); /* Reinitiate timer, see 9.2.2. */
+					runtime->responsePendingCount = DCM_Config.Dsl->DslDiagResp->DslDiagRespMaxNumRespPend; // qqq ugly.
 					McuE_ExitCriticalSection(state);
 					runtime->diagnosticResponseFromDsd.SduDataPtr
 							= protocolRow->DslProtocolTxBufferID->pduInfo.SduDataPtr;
@@ -659,15 +645,14 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {
 							= protocolRow->DslProtocolTxBufferID->pduInfo.SduLength;
 					DEBUG( DEBUG_MEDIUM, "DsdDslDataIndication(DcmDslProtocolTxPduId=%d, dcmRxPduId=%d)\n",
 							mainConnection->DslProtocolTx->DcmDslProtocolTxPduId, dcmRxPduId);
+					runtime->diagReqestRxPduId = dcmRxPduId;
 					DsdDslDataIndication(
 							&(runtime->diagnosticRequestFromTester),
 							protocolRow->DslProtocolSIDTable,
 							protocolRx->DslProtocolAddrType,
-							dcmRxPduId,
+							mainConnection->DslProtocolTx->DcmDslProtocolTxPduId,
 							&(runtime->diagnosticResponseFromDsd),
 							dcmRxPduId);
-
-
 				}
 			}
 		} else {
@@ -780,10 +765,8 @@ void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result) {
 			DEBUG( DEBUG_MEDIUM, "Released external buffer sucessfully!\n");
 			externalBufferReleased = TRUE;
 
-//			DsdDataConfirmation(
-//					mainConnection->DslProtocolTx->PduR_DcmDslTxPduId, result); /** @req DCM117 **//** @req DCM235 **/
+			DsdDataConfirmation(mainConnection->DslProtocolTx->DcmDslProtocolTxPduId, result); /** @req DCM117 **//** @req DCM235 **/
 
-			DsdDataConfirmation(dcmTxPduId, result); /** @req DCM117 **//** @req DCM235 **/
 
 			break;
 		}

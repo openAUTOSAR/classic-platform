@@ -511,6 +511,7 @@ typedef struct {
 
 
 typedef struct {
+	PduIdType diagReqestRxPduId;  // Tester request PduId.
 	uint32 stateTimeoutCount; // Counter for timeout.
 	Dcm_DslBufferUserType externalRxBufferStatus;
 	PduInfoType diagnosticRequestFromTester;
