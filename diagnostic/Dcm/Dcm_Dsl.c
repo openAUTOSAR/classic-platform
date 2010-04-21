@@ -236,9 +236,8 @@ boolean findRxPduIdParentConfigurationLeafs(PduIdType dcmRxPduId,
 		Dcm_DslRunTimeProtocolParametersType **runtime) {
 
 	boolean ret = FALSE;
-	if (dcmRxPduId < DCM_DSL_BUFFER_LIST_LENGTH) {
-		*protocolRx
-				= &DCM_Config.Dsl->DslProtocol->DslProtocolRxGlobalList[dcmRxPduId];
+	if (dcmRxPduId < DCM_DSL_RX_PDU_ID_LIST_LENGTH) {
+		*protocolRx = &DCM_Config.Dsl->DslProtocol->DslProtocolRxGlobalList[dcmRxPduId];
 		*mainConnection = (*protocolRx)->DslMainConnectionParent;
 		*connection = (*mainConnection)->DslConnectionParent;
 		*protocolRow = (*connection)->DslProtocolRow;
@@ -258,9 +257,8 @@ boolean findTxPduIdParentConfigurationLeafs(PduIdType dcmTxPduId,
 		Dcm_DslRunTimeProtocolParametersType **runtime) {
 
 	boolean ret = FALSE;
-	if (dcmTxPduId < DCM_DSL_BUFFER_LIST_LENGTH) {
-		*protocolTx
-				= &DCM_Config.Dsl->DslProtocol->DslProtocolTxGlobalList[dcmTxPduId];
+	if (dcmTxPduId < DCM_DSL_TX_PDU_ID_LIST_LENGTH) {
+		*protocolTx = &DCM_Config.Dsl->DslProtocol->DslProtocolTxGlobalList[dcmTxPduId];
 		*mainConnection = (*protocolTx)->DslMainConnectionParent;
 		*connection = (*mainConnection)->DslConnectionParent;
 		*protocolRow = (*connection)->DslProtocolRow;
