@@ -462,7 +462,7 @@ struct Dcm_DslMainConnectionType_t { // Cross referenced from Dcm_DslProtocolRxT
 	const Dcm_DslPeriodicTransmissionType *DslPeriodicTransmissionConRef; // (0..1)
 	const Dcm_DslResponseOnEventType *DslROEConnectionRef; // (0..*)
 	// Containers
-//	const Dcm_DslProtocolRxType *DslProtocolRx; // (1..*)
+	const Dcm_DslProtocolRxType *DslProtocolRx; // (1..*) Remove?
 	const Dcm_DslProtocolTxType *DslProtocolTx; // (1)
 };
 

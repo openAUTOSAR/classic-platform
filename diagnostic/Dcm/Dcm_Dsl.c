@@ -628,6 +628,7 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {
 				state = McuE_EnterCriticalSection();
 				startS3SessionTimer(runtime, protocolRow); /** @req DCM141 **//** @req DCM112 **//** @req DCM113 **/
 				runtime->externalRxBufferStatus = NOT_IN_USE;
+				protocolRow->DslProtocolRxBufferID->externalBufferRuntimeData->status = BUFFER_AVAILABLE;
 				McuE_ExitCriticalSection(state);
 			} else {
 				if (runtime->protocolStarted == FALSE) {
