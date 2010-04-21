@@ -15,8 +15,8 @@
 
 
 
-#ifndef TRACE_H_
-#define TRACE_H_
+#ifndef DEBUG_H_
+#define DEBUG_H_
 
 
 /**
@@ -24,7 +24,7 @@
  * NOTE!!!!
  * Do not use this in a header file. Should be used in the *.c file like this.
  *
- * #define USE_TRACE
+ * #define USE_DEBUG_PRINTF
  * #include "debug.h"
  *
  * Macro's for debugging and tracing
@@ -79,4 +79,4 @@
 #endif
 
 
-#endif /*RAMLOG_H_*/
+#endif /*DEBUG_H_*/

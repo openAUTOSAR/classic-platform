@@ -20,32 +20,9 @@
 
 
 
-#include "PduR_Ipdum.h"
+#ifndef RTE_DCM_H_
+#define RTE_DCM_H_
 
-#ifdef PDUR_IPDUM_SUPPORT
 
-Std_ReturnType PduR_IpdumTransmit(PduIdType IpdumTxPduId, const PduInfoType* PduInfoPtr) {
 
-#ifdef PDUR_DEV_ERROR_DETECT
-	DevCheck(IpdumTxPduId,PduInfoPtr,0x19);
-#endif
-
-}
-
-void PduR_IpdumTxConfirmation(PduIdType IpdumLoTxPduId) {
-
-#ifdef PDUR_DEV_ERROR_DETECT
-	DevCheck(IpdumLoTxPduId,0,0x1a);
-#endif
-
-}
-
-void PduR_IpdumRxIndication(PduIdType IpdumLoRxPduId, const uint8* IpdumSduPtr) {
-
-#ifdef PDUR_DEV_ERROR_DETECT
-	DevCheck(IpdumLoRxPduId,IpdumSduPtr,0x1b);
-#endif
-
-}
-
-#endif
+#endif /*RTE_DCM_H_*/

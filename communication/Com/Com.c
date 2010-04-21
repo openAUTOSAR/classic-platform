@@ -156,16 +156,12 @@ void Com_Init(const Com_ConfigType *config ) {
 					// Set pointer to shadow buffer
 					Arc_GroupSignal->Com_Arc_ShadowBuffer = Arc_Signal->Com_Arc_ShadowBuffer;
 					// Initialize group signal data.
-					// TODO: CopyData
-					// Com_CopyData(Arc_IPdu->ComIPduDataPtr, &GroupSignal->ComSignalInitValue, GroupSignal->ComBitSize, GroupSignal->ComBitPosition, 0);
-					Com_WriteGroupSignalDataToPdu(Signal->ComHandleId, GroupSignal->ComHandleId, &GroupSignal->ComSignalInitValue);
+					Com_WriteGroupSignalDataToPdu(Signal->ComHandleId, GroupSignal->ComHandleId, GroupSignal->ComSignalInitValue);
 				}
 
 			} else {
 				// Initialize signal data.
-				// TODO: CopyData
-				// Com_CopyData(Arc_IPdu->ComIPduDataPtr, &Signal->ComSignalInitValue, Signal->ComBitSize, Signal->ComBitPosition, 0);
-				Com_WriteSignalDataToPdu(Signal->ComHandleId, &Signal->ComSignalInitValue);
+				Com_WriteSignalDataToPdu(Signal->ComHandleId, Signal->ComSignalInitValue);
 			}
 
 			// Check filter configuration

@@ -23,6 +23,9 @@
 #include <string.h>
 #include "PduR_If.h"
 #include "debug.h"
+#if defined(USE_DEM)
+#include "Dem.h"
+#endif
 
 #if PDUR_ZERO_COST_OPERATION == STD_OFF
 

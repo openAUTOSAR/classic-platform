@@ -48,6 +48,13 @@ endif
 
 #===== COMPILER CONFIG =====
 
+# set debug optimization level as default
+ifeq ($(SELECT_OPT),)
+SELECT_OPT=OPT_DEBUG
+endif
+
+CFG_$(SELECT_OPT)=y
+
 ARCH_PATH-y = arch/$(ARCH_FAM)/$(ARCH)
 
 # Include compiler generic and arch specific

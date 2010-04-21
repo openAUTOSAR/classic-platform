@@ -31,6 +31,10 @@
 #include "debug.h"
 #include "PduR.h"
 
+#if defined(USE_CANTP)
+#include "CanTp_Cbk.h"
+#endif
+
 #if 0
 // TODO: Include upper layer functions, See CANIF208 and CANIF233
 #include "PduR_CanIf.h"
@@ -305,9 +309,12 @@ Std_ReturnType CanIf_GetControllerMode(uint8 Controller,
  */
 static const CanIf_TxPduConfigType * CanIf_FindTxPduEntry(PduIdType id)
 {
-  const CanIf_TxPduConfigType *entry =
-    CanIf_ConfigPtr->InitConfig->CanIfTxPduConfigPtr;
-
+	if (id >= CanIf_ConfigPtr->InitConfig->CanIfNumberOfCanTXPduIds) {
+		return NULL;
+	} else {
+		return &CanIf_ConfigPtr->InitConfig->CanIfTxPduConfigPtr[id];
+	}
+/*
   for (uint16 i = 0; i < CanIf_ConfigPtr->InitConfig->CanIfNumberOfCanTXPduIds; i++)
   {
     if (entry->CanIfTxPduId == id)
@@ -318,6 +325,7 @@ static const CanIf_TxPduConfigType * CanIf_FindTxPduEntry(PduIdType id)
   }
 
   return 0;
+  */
 }
 
 //-------------------------------------------------------------------
@@ -637,15 +645,18 @@ Std_ReturnType CanIf_CheckValidation(EcuM_WakeupSourceType WakeupSource)
 void CanIf_TxConfirmation(PduIdType canTxPduId)
 {
   VALIDATE_NO_RV(CanIf_Global.initRun, CANIF_TXCONFIRMATION_ID, CANIF_E_UNINIT)
+  VALIDATE_NO_RV(canTxPduId < CanIf_ConfigPtr->InitConfig->CanIfNumberOfCanTXPduIds, CANIF_TXCONFIRMATION_ID, CANIF_E_PARAM_LPDU);
 
-  const CanIf_TxPduConfigType *entry =
-    CanIf_ConfigPtr->InitConfig->CanIfTxPduConfigPtr;
+  const CanIf_TxPduConfigType* entry =
+    &CanIf_ConfigPtr->InitConfig->CanIfTxPduConfigPtr[canTxPduId];
 
   /* Find the CAN id in the TxPduList */
+  /*
   for (uint16 i = 0; i < CanIf_ConfigPtr->InitConfig->CanIfNumberOfCanTXPduIds; i++)
   {
     if (entry->CanIfTxPduId == canTxPduId)
     {
+    */
       if (entry->CanIfUserTxConfirmation != NULL)
       {
         CanIf_ChannelGetModeType mode;
@@ -653,17 +664,18 @@ void CanIf_TxConfirmation(PduIdType canTxPduId)
         if ((mode == CANIF_GET_TX_ONLINE) || (mode == CANIF_GET_ONLINE)
             || (mode == CANIF_GET_OFFLINE_ACTIVE) || (mode == CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE) )
         {
-          entry->CanIfUserTxConfirmation(canTxPduId);  /* CANIF053 */
+          entry->CanIfUserTxConfirmation(entry->CanIfTxPduId);  /* CANIF053 */
         }
       }
       return;
+      /*
     }
 
     entry++;
   }
-
+  */
   // Did not find the PDU, something is wrong
-  VALIDATE_NO_RV(FALSE, CANIF_TXCONFIRMATION_ID, CANIF_E_PARAM_LPDU);
+
 }
 
 void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
@@ -744,17 +756,26 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
             return;
         }
         break;
-         case CANIF_USER_TYPE_CAN_NM:
-         case CANIF_USER_TYPE_CAN_PDUR:
-        	 // Send Can frame to PDU router
-        	 PduR_CanIfRxIndication(entry->CanIfCanRxPduId,CanSduPtr);
-        	 return;
-        	 break;
 
-         case CANIF_USER_TYPE_CAN_TP:
-            continue; // Not supported yet
+        case CANIF_USER_TYPE_CAN_NM:
+        case CANIF_USER_TYPE_CAN_PDUR:
+            // Send Can frame to PDU router
+            PduR_CanIfRxIndication(entry->CanIfCanRxPduId,CanSduPtr);
             return;
-        break;
+            break;
+
+        case CANIF_USER_TYPE_CAN_TP:
+          // Send Can frame to CAN TP
+#if defined(USE_CANTP)
+            {
+        	    PduInfoType CanTpRxPdu;
+        	    CanTpRxPdu.SduLength = CanDlc;
+        	    CanTpRxPdu.SduDataPtr = (uint8 *)CanSduPtr;
+                CanTp_RxIndication(entry->CanIfCanRxPduId, &CanTpRxPdu);
+            }
+            return;
+#endif
+            break;
       }
     }
 
@@ -775,17 +796,7 @@ void CanIf_CancelTxConfirmation(const Can_PduType *PduInfoPtr)
   const CanIf_TxPduConfigType *entry =
     CanIf_ConfigPtr->InitConfig->CanIfTxPduConfigPtr;
 
-  /* Find the CAN id in the TxPduList */
-  for (uint16 i = 0; i < CanIf_ConfigPtr->InitConfig->CanIfNumberOfCanTXPduIds; i++)
-  {
-    if (entry->CanIfTxPduId == canTxPduId)
-    {
-      // Not supported
-      return;
-    }
-
-    entry++;
-  }
+  // Not supported
 
   // Did not find the PDU, something is wrong
   VALIDATE_NO_RV(FALSE, CANIF_TXCONFIRMATION_ID, CANIF_E_PARAM_LPDU);

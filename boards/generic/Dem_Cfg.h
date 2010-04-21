@@ -25,18 +25,22 @@
 /*
  * DEM General
  */
-#define DEM_VERSION_INFO_API    STD_ON		// Activate/Deactivate ver info API.
-#define DEM_DEV_ERROR_DETECT	STD_ON		// Activate/Deactivate Dev Error Detection and Notification.
-#define DEM_OBD_SUPPORT			STD_OFF
-#define DEM_PTO_SUPPORT			STD_OFF
+#define DEM_VERSION_INFO_API    			STD_ON		// Activate/Deactivate ver info API.
+#define DEM_DEV_ERROR_DETECT				STD_ON		// Activate/Deactivate Dev Error Detection and Notification.
+#define DEM_OBD_SUPPORT						STD_OFF
+#define DEM_PTO_SUPPORT						STD_OFF
+#define DEM_TYPE_OF_DTC_SUPPORTED			DEM_ISO14229_1
+#define DEM_DTC_STATUS_AVAILABILITY_MASK	0xFF
+#define DEM_CLEAR_ALL_EVENTS				STD_OFF		// All event or only events with DTC is cleared with Dem_ClearDTC
 
-#define DEM_BSW_ERROR_BUFFER_SIZE		20	// Max nr of elements in BSW error buffer (0..255)
-#define DEM_FF_DID_LENGTH				TBD	// Length of DID & PID of FreezeFrames in Bytes.
-#define DEM_MAX_NUMBER_EVENT_ENTRY_MIR	0	// Max nr of events stored in mirror memory.
-#define DEM_MAX_NUMBER_EVENT_ENTRY_PER	0	// Max nr of events stored in permanent memory.
-#define DEM_MAX_NUMBER_EVENT_ENTRY_PRI	10	// Max nr of events stored in primary memory.
-#define DEM_MAX_NUMBER_EVENT_ENTRY_SEC	0	// Max nr of events stored in secondary memory.
-#define DEM_MAX_NUMBER_PRESTORED_FF		0	// Max nr of prestored FreezeFrames. 0=Not supported.
+
+#define DEM_BSW_ERROR_BUFFER_SIZE			20	// Max nr of elements in BSW error buffer (0..255)
+#define DEM_FF_DID_LENGTH					TBD	// Length of DID & PID of FreezeFrames in Bytes.
+#define DEM_MAX_NUMBER_EVENT_ENTRY_MIR		0	// Max nr of events stored in mirror memory.
+#define DEM_MAX_NUMBER_EVENT_ENTRY_PER		0	// Max nr of events stored in permanent memory.
+#define DEM_MAX_NUMBER_EVENT_ENTRY_PRI		10	// Max nr of events stored in primary memory.
+#define DEM_MAX_NUMBER_EVENT_ENTRY_SEC		0	// Max nr of events stored in secondary memory.
+#define DEM_MAX_NUMBER_PRESTORED_FF			0	// Max nr of prestored FreezeFrames. 0=Not supported.
 
 /*
  * Size limitations of the types derived from DemGeneral

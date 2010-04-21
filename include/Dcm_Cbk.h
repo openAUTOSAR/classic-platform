@@ -20,15 +20,20 @@
 
 
 
+#ifndef DCM_CBK_H_
+#define DCM_CBK_H_
+
+#include "ComStack_Types.h"
+
 /*
- * PduR_Test.h
- *
- *  Created on: 2008-nov-05
- *      Author: Mattias
+ * Interfaces for callback notifications from PduR and ComM (8.4)
  */
+BufReq_ReturnType Dcm_ProvideRxBuffer(PduIdType dcmRxPduId, PduLengthType tpSduLength, PduInfoType **pduInfoPtr);
+void Dcm_RxIndication(PduIdType dcmRxPduId, NotifResultType result);
+BufReq_ReturnType Dcm_ProvideTxBuffer(PduIdType dcmTxPduId, PduInfoType **pduInfoPtr, PduLengthType length);
+void Dcm_TxConfirmation(PduIdType dcmTxPduId, NotifResultType result);
+void Dcm_ComM_NoComModeEntered(void);
+void Dcm_ComM_SilentComModeEntered(void);
+void Dcm_ComM_FullComModeEntered(void);
 
-#ifndef PDUR_TEST_H_
-#define PDUR_TEST_H_
-
-
-#endif /* PDUR_TEST_H_ */
+#endif /*DCM_CBK_H_*/
