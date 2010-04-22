@@ -18,14 +18,12 @@
 
 
 
+#include "PduR.h"
 
+#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
 
 #include "Det.h"
-#include "PduR_CanIf.h"
-#include "PduR_If.h"
 #include "debug.h"
-
-#if PDUR_ZERO_COST_OPERATION == STD_OFF
 
 void PduR_CanIfRxIndication(PduIdType CanRxPduId,const uint8* CanSduPtr) {
 #if (PDUR_CANIF_SUPPORT == STD_ON)

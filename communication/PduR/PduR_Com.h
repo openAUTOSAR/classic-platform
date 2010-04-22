@@ -25,29 +25,24 @@
 
 #include "PduR.h"
 
-#if PDUR_COM_SUPPORT == STD_ON
-	#if PDUR_ZERO_COST_OPERATION == STD_OFF
+#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
 
 		Std_ReturnType PduR_ComTransmit(PduIdType ComTxPduId, const PduInfoType* PduInfoPtr);
 
+#else // Zero cost operation active
+
+	#if (PDUR_CANIF_SUPPORT == STD_ON)
+
+		#include "CanIf.h"
+
+		#define PduR_ComTransmit CanIf_Transmit
+
 	#else
 
-		#if PDUR_SINGLE_IF == CAN_IF
-
-			#define PduR_ComTransmit CanIf_Transmit
-
-		#elif PDUR_SINGLE_IF == LIN_IF
-
-			#define PduR_ComTransmit LinIf_Transmit
-
-		#endif
+		#define PduR_ComTransmit(... )
 
 	#endif
 
-#else
-
-#define PduR_ComTransmit (void)
-
-#endif
+#endif // Zero cost operation active
 
 #endif /* PDUR_COM_H_ */

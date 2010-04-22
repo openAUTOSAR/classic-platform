@@ -20,25 +20,25 @@
 
 #include "PduR.h"
 
-#if (PDUR_DCM_SUPPORT == STD_ON)
-
-	#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
+#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
 
 		Std_ReturnType PduR_DcmTransmit(PduIdType DcmTxPduId, const PduInfoType* PduInfoPtr);
 
-	#else
+#else // Zero cost operation active
+
+	#if (PDUR_CANTP_SUPPORT == STD_ON)
 
 		#include "CanTp.h"
 
 		#define PduR_DcmTransmit CanTp_Transmit
 
+	#else
+
+		#define PduR_DcmTransmit(... )
+
 	#endif
 
-#else
-
-#define PduR_DcmTransmit (void)
-
-#endif
+#endif // Zero cost operation active
 
 
 #endif /*PDUR_DCM_H_*/

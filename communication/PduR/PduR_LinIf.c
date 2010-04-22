@@ -18,16 +18,14 @@
 
 
 
+#include "PduR.h"
 
+#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
 
-#include "PduR_LinIf.h"
-//#include "LinIf.h"
-#include "PduR_If.h"
 #include "debug.h"
 
-#if PDUR_ZERO_COST_OPERATION == STD_OFF && PDUR_LINIF_SUPPORT == STD_ON
-
 void PduR_LinIfRxIndication(PduIdType LinRxPduId, const uint8* LinSduPtr) {
+#if (PDUR_LINIF_SUPPORT == STD_ON)
 	DevCheck(LinRxPduId,LinSduPtr,0x0e);
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
@@ -36,9 +34,11 @@ void PduR_LinIfRxIndication(PduIdType LinRxPduId, const uint8* LinSduPtr) {
 	PduR_LoIfRxIndication(LinRxPduId, LinSduPtr);
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
+#endif
 }
 
 void PduR_LinIfTxConfirmation(PduIdType LinTxPduId) {
+#if (PDUR_LINIF_SUPPORT == STD_ON)
 	DevCheck(LinTxPduId,1,0x0f);
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
@@ -47,9 +47,11 @@ void PduR_LinIfTxConfirmation(PduIdType LinTxPduId) {
 	PduR_LoIfTxConfirmation(LinTxPduId);
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
+#endif
 }
 
 void PduR_LinIfTriggerTransmit(PduIdType LinTxPduId, uint8* LinSduPtr) {
+#if (PDUR_LINIF_SUPPORT == STD_ON)
 	DevCheck(LinTxPduId,LinSduPtr,0x10);
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
@@ -58,6 +60,7 @@ void PduR_LinIfTriggerTransmit(PduIdType LinTxPduId, uint8* LinSduPtr) {
 	PduR_LoIfTriggerTransmit(LinTxPduId, LinSduPtr);
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
+#endif
 }
 
 #endif

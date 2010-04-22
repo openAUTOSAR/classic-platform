@@ -26,6 +26,7 @@
 #include "CanTp_Cbk.h" /** req: CanTp156.2 **/
 #include "CanTp.h" /** req: CanTp156.3 **/
 #include "SchM_CanTp.h" /** req: CanTp156.4 **/
+#include "PduR.h"
 //#include "MemMap.h" /** req: CanTp156.5 **/
 #include "String.h"
 #define USE_DEBUG_PRINTF
@@ -1395,13 +1396,12 @@ void CanTp_MainFunction() /** req : CanTp213 **/
 	}
 
 	for( int i=0; i < CANTP_NSDU_CONFIG_LIST_SIZE; i++ ) {
-/*    
+#if 0	// TODO: Not tested yet
 		if (checkNasNarTimeout( txRuntimeListItem )) { // CanTp075.
-			PduR_CanTpTxConfirmation(txConfigListItem->PduR_CanTpTxPduId,
-					NTFRSLT_NOT_OK); /* qqq: req: CanTp: 185. * /
+			PduR_CanTpTxConfirmation(txConfigListItem->PduR_CanTpTxPduId, NTFRSLT_NOT_OK); // qqq: req: CanTp: 185.
 			continue;
 		}
-*/    
+#endif
 		if ( CanTpConfig.CanTpNSduList[i].direction == IS015765_TRANSMIT ) {
 			txConfigListItem = (CanTp_TxNSduType*)&CanTpConfig.CanTpNSduList[i].configData;
 			txRuntimeListItem = &CanTpRunTimeData.runtimeDataList[txConfigListItem->CanTpTxChannel];

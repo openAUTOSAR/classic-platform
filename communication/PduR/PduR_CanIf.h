@@ -41,8 +41,8 @@
 
 	#else
 
-		#define PduR_CanIfRxIndication (void)
-		#define PduR_CanIfTxConfirmation (void)
+		#define PduR_CanIfRxIndication(... )
+		#define PduR_CanIfTxConfirmation(...)
 
 	#endif
 

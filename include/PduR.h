@@ -64,7 +64,7 @@ PduR_StateType PduRState;
 extern const PduR_PBConfigType *PduRConfig;
 
 
-#if PDUR_DEV_ERROR_DETECT == STD_ON
+#if (PDUR_DEV_ERROR_DETECT == STD_ON)
 
 #undef DET_REPORTERROR
 #define DET_REPORTERROR(_x,_y,_z,_q) Det_ReportError(_x,_y,_z,_q)
@@ -75,17 +75,14 @@ extern const PduR_PBConfigType *PduRConfig;
 	if (PduRState == PDUR_UNINIT || PduRState == PDUR_REDUCED) { \
 		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_INVALID_REQUEST); \
 		DEBUG(DEBUG_LOW,"PDU Router not initialized. Routing request ignored.\n"); \
-		Exit(); \
 		return __VA_ARGS__; \
 	} \
 	if (PduPtr == 0 && PDUR_DEV_ERROR_DETECT) { \
 		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_DATA_PTR_INVALID); \
-		Exit(); \
 		return __VA_ARGS__; \
 	} \
 	if ((PduId >= PduRConfig->PduRRoutingTable->NRoutingPaths) && PDUR_DEV_ERROR_DETECT) { \
 		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_PDU_ID_INVALID); \
-		Exit(); \
 		return __VA_ARGS__; \
 	} \
 

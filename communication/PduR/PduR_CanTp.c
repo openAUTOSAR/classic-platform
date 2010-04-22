@@ -14,43 +14,62 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-#if PDUR_CANTP_SUPPORT == STD_ON && PDUR_ZERO_COST_OPERATION == STD_OFF
+#include "PduR.h"
 
-#include "PduR_CanTp.h"
+#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
+#include "Det.h"
+#include "debug.h"
 
 
 BufReq_ReturnType PduR_CanTpProvideRxBuffer(PduIdType CanTpRxPduId, PduLengthType TpSduLength, PduInfoType** PduInfoPtr) {
+	BufReq_ReturnType retVal = BUFREQ_NOT_OK;
+#if (PDUR_CANTP_SUPPORT == STD_ON)
 	/* Gateway and multicast modes not supported. */
-	Dcm_ProvideRxBuffer(CanTpTxPduId, PduInfoPtr, Length);
+	PduRRoutingPath_type *route = &PduRConfig->PduRRoutingTable->PduRRoutingPath[CanTpRxPduId];
+	retVal = Dcm_ProvideRxBuffer(route->PduRDestPdu.DestPduId, TpSduLength, PduInfoPtr);
+#endif
+	return retVal;
 }
 
 
 void PduR_CanTpRxIndication(PduIdType CanTpRxPduId, NotifResultType Result) {
+#if (PDUR_CANTP_SUPPORT == STD_ON)
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
 	DEBUG(DEBUG_LOW,"PduR_CanTpRxIndication: received indication with id %d and data %d\n", CanTpRxPduId);
 
 	/* Note that there is no support for CAN TP and gateway operation mode */
-	Dcm_RxIndication(CanTpRxPduId, Result);
+	PduRRoutingPath_type *route = &PduRConfig->PduRRoutingTable->PduRRoutingPath[CanTpRxPduId];
+	Dcm_RxIndication(route->PduRDestPdu.DestPduId, Result); // Send PDU to next receptor.
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
+#endif
 }
 
 
 BufReq_ReturnType PduR_CanTpProvideTxBuffer(PduIdType CanTpTxPduId, PduInfoType** PduInfoPtr, uint16 Length) {
+	BufReq_ReturnType retVal = BUFREQ_NOT_OK;
+#if (PDUR_CANTP_SUPPORT == STD_ON)
 	/* Gateway and multicast modes not supported. */
-	Dcm_ProvideTxBuffer(CanTpTxPduId, PduInfoPtr, Length);
-
+	PduRRoutingPath_type *route = &PduRConfig->PduRRoutingTable->PduRRoutingPath[CanTpTxPduId];
+	retVal = Dcm_ProvideTxBuffer(route->PduRDestPdu.DestPduId, PduInfoPtr, Length);
+#endif
+	return retVal;
 }
+
+
 void PduR_CanTpTxConfirmation(PduIdType CanTpTxPduId, NotifResultType Result) {
-	DevCheck(CanTxPduId,1,0x0f);
+#if (PDUR_CANTP_SUPPORT == STD_ON)
+	DevCheck(CanTpTxPduId,1,0x0f);
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
 	DEBUG(DEBUG_LOW,"PduR_CanIfTxConfirmation: received confirmation with id %d\n", CanTxPduId);
 
-	Dcm_TxConfirmation(CanTpTxPduId, Result);
+	PduRRoutingPath_type *route = &PduRConfig->PduRRoutingTable->PduRRoutingPath[CanTpTxPduId];
+	Dcm_TxConfirmation(route->PduRDestPdu.DestPduId, Result); // Forward confirmation
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
+#endif
 }
 
 
