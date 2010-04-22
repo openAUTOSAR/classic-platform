@@ -165,7 +165,7 @@ typedef struct {
 	const ComSignalEndianess_type ComSignalEndianess;
 
 	/** Value used to initialize this signal. */
-	const uint32 ComSignalInitValue;
+	const void *ComSignalInitValue;
 
 	/** Defines the type of the signal. */
 	const Com_SignalType ComSignalType;
@@ -233,7 +233,7 @@ typedef struct {
 	const ComSignalEndianess_type ComSignalEndianess;
 
 	/** Value used to initialized this signal. */
-	const uint32 ComSignalInitValue;
+	const void *ComSignalInitValue;
 
 	/** The number of bytes if the signal has type UINT8_N;
 	 * Range 1 to 8.

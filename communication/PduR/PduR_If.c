@@ -20,11 +20,15 @@
 
 
 
-#include <string.h>
-#include "PduR_If.h"
-#include "debug.h"
+#include "PduR.h"
 
-#if PDUR_ZERO_COST_OPERATION == STD_OFF
+#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
+
+#include <string.h>
+#include "debug.h"
+#if defined(USE_DEM)
+#include "Dem.h"
+#endif
 
 /**
  * Helper function for the PduR_<LO>IfRxIndication functions. This helper performs the actions specified by PDUR255 and PDUR258.

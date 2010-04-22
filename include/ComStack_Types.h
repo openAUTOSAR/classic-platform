@@ -63,10 +63,10 @@ typedef struct {
 */
 
 typedef enum {
-	BEFREQ_OK=0,
-	BEFREQ_NOT_OK,
-	BEFREQ_BUSY,
-	BEFREQ_OVFL,
+	BUFREQ_OK=0,
+	BUFREQ_NOT_OK,
+	BUFREQ_BUSY,
+	BUFREQ_OVFL,
 } BufReq_ReturnType;
 
 // 0x00--0x1e General return types

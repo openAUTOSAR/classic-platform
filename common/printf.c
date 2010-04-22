@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <assert.h>
+#include <string.h>
 
 //#define HOST_TEST	1
 

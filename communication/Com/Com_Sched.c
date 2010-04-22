@@ -48,12 +48,7 @@ void Com_MainFunctionRx() {
 			if (Arc_Signal->Com_Arc_DeadlineCounter == 0) {
 				if (signal->ComRxDataTimeoutAction == COM_TIMEOUT_DATA_ACTION_REPLACE) {
 					// Replace signal data.
-					uint32 signalInitData;
-					memset(&signalInitData, signal->ComSignalInitValue, sizeof(uint32));
-
-					// TODO: CopyData
-					// Com_CopyData(Arc_IPdu->ComIPduDataPtr, &signalInitData, signal->ComBitSize, signal->ComBitPosition, 0);
-					Com_WriteSignalDataToPdu(signal->ComHandleId, &signalInitData);
+					Com_WriteSignalDataToPdu(signal->ComHandleId, signal->ComSignalInitValue);
 
 				}
 

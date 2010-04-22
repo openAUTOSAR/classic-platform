@@ -25,7 +25,7 @@
 #include "EcuM.h"
 #include <stdio.h>
 #include <assert.h>
-#include "Trace.h"
+#include "debug.h"
 #include "Com.h"
 #include "Adc.h"
 

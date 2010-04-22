@@ -393,6 +393,7 @@ SECTIONS
   {
     *(.winidea_port)
   	*(.ramlog)
+  	*(.dem_eventmemory_pri)
   } > data
   
 /* SCz: this does not work yet... This is supposed to force the loading

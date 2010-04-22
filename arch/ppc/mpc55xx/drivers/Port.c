@@ -66,6 +66,7 @@ static Port_StateType _portState = PORT_UNINITIALIZED;
 #define VALIDATE_PARAM_PIN(_pin, _api)
 #endif
 
+#if PORT_VERSION_INFO_API == STD_ON
 static Std_VersionInfoType _Port_VersionInfo =
 {
   .vendorID   = (uint16)1,
@@ -78,6 +79,8 @@ static Std_VersionInfoType _Port_VersionInfo =
   .ar_minor_version = (uint8)PORT_AR_MINOR_VERSION,
   .ar_patch_version = (uint8)PORT_AR_PATCH_VERSION,
 };
+#endif
+
 const Port_ConfigType * _configPtr = &PortConfigData;
 void Port_Init(const Port_ConfigType *configType)
 {

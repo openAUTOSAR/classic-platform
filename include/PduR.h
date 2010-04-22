@@ -32,29 +32,27 @@
 #define PDUR_SW_PATCH_VERSION  0
 
 
+
 // ERROR CODES
 #define PDUR_E_CONFIG_PTR_INVALID 	0x06
 #define PDUR_E_INVALID_REQUEST 		0x01
 #define PDUR_E_PDU_ID_INVALID		0x02
 #define PDUR_E_TP_TX_REQ_REJECTED	0x03
 #define PDUR_E_DATA_PTR_INVALID		0x05
-#define PDUR_E_PDU_INSTANCE_LOST	0x10
 
 #define PDUR_INSTANCE_ID	0
 
 #include "modules.h"
-#include "debug.h"
 
 #include "PduR_Cfg.h"
 #include "PduR_Types.h"
-
-#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
 #include "PduR_PbCfg.h"
-#endif
 
 #include "PduR_Com.h"
 #include "PduR_CanIf.h"
 #include "PduR_LinIf.h"
+#include "PduR_CanTp.h"
+#include "PduR_Dcm.h"
 
 
 
@@ -66,46 +64,7 @@ PduR_StateType PduRState;
 extern const PduR_PBConfigType *PduRConfig;
 
 
-#ifdef PDUR_PRINT_DEBUG_STATEMENTS
-/* A simple debug macro to be used instead of printf(). This way all print
- * statements are turned off if PDUR_PRINT_DEBUG_STATEMENTS is undefined.
- */
-//#include <stdio.h>
-#define debug(...) printf(__VA_ARGS__)
-
-#else
-#define debug(...)
-
-#endif
-
-#ifdef PDUR_REENTRANCY_CHECK
-/*
- * The macros Enter and Exit performs the ReEntrancy check of the PDU router functions.
- * Enter shall be called at the beginning of the function with the current PduId and the wanted
- * return value (possibly nothing for void methods).
- * Exit should be called at the end of the function where reentrancy is desirable.
- */
-#define Enter(PduId,...) \
-	static uint8 entered;\
-	static PduIdType enteredId;\
-	if (entered && enteredId == PduId) { \
-		debug("Function already entered. EnteredId: %d, CurrentId: %d. Exiting.\n", enteredId, PduId); \
-		return __VA_ARGS__; \
-	} else { \
-		entered = 1; \
-		enteredId = PduId; \
-	} \
-
-
-#define Exit() \
-	entered = 0; \
-
-#else
-#define Enter(...)
-#define Exit()
-#endif
-
-#ifdef PDUR_DEV_ERROR_DETECT
+#if (PDUR_DEV_ERROR_DETECT == STD_ON)
 
 #undef DET_REPORTERROR
 #define DET_REPORTERROR(_x,_y,_z,_q) Det_ReportError(_x,_y,_z,_q)
@@ -116,17 +75,14 @@ extern const PduR_PBConfigType *PduRConfig;
 	if (PduRState == PDUR_UNINIT || PduRState == PDUR_REDUCED) { \
 		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_INVALID_REQUEST); \
 		DEBUG(DEBUG_LOW,"PDU Router not initialized. Routing request ignored.\n"); \
-		Exit(); \
 		return __VA_ARGS__; \
 	} \
 	if (PduPtr == 0 && PDUR_DEV_ERROR_DETECT) { \
 		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_DATA_PTR_INVALID); \
-		Exit(); \
 		return __VA_ARGS__; \
 	} \
 	if ((PduId >= PduRConfig->PduRRoutingTable->NRoutingPaths) && PDUR_DEV_ERROR_DETECT) { \
 		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_PDU_ID_INVALID); \
-		Exit(); \
 		return __VA_ARGS__; \
 	} \
 
@@ -152,6 +108,7 @@ void PduR_ChangeParameterRequest(PduR_ParameterValueType PduParameterValue,
 #define PduR_GetConfigurationId(...) 0
 
 #else // Not zero cost operation
+//#error fail
 void PduR_Init(const PduR_PBConfigType* ConfigPtr);
 void PduR_GetVersionInfo(Std_VersionInfoType* versionInfo);
 uint32 PduR_GetConfigurationId();

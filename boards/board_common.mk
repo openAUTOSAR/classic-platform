@@ -49,6 +49,13 @@ obj-$(USE_CANIF) += CanIf_Cfg.o
 vpath-$(USE_CANIF) += $(ROOTDIR)/communication/CanIf
 inc-$(USE_CANIF) += $(ROOTDIR)/communication/CanIf
 
+# CanTp
+obj-$(USE_CANTP) += CanTp.o
+obj-$(USE_CANTP) += CanTp_Cfg.o
+
+vpath-$(USE_CANTP) += $(ROOTDIR)/communication/CanTp
+inc-$(USE_CANTP) += $(ROOTDIR)/communication/CanTp
+
 obj-$(USE_DIO) += Dio.o
 obj-$(USE_DIO) += Dio_Lcfg.o
 
@@ -130,6 +137,8 @@ obj-$(USE_PDUR) += PduR_If.o
 obj-$(USE_PDUR) += PduR_LinIf.o
 obj-$(USE_PDUR) += PduR_PbCfg.o
 obj-$(USE_PDUR) += PduR_CanIf.o
+obj-$(USE_PDUR) += PduR_CanTp.o
+obj-$(USE_PDUR) += PduR_Dcm.o
 obj-$(USE_PDUR) += PduR.o
 inc-$(USE_PDUR) += $(ROOTDIR)/communication/PduR
 inc-$(USE_COM) += $(ROOTDIR)/communication/PduR
@@ -143,6 +152,16 @@ obj-$(USE_DEM) += Dem.o
 obj-$(USE_DEM) += Dem_LCfg.o
 inc-$(USE_DEM) += $(ROOTDIR)/diagnostic/Dem
 vpath-$(USE_DEM) += $(ROOTDIR)/diagnostic/Dem
+
+#Dcm
+obj-$(USE_DCM) += Dcm.o
+obj-$(USE_DCM) += Dcm_Dsp.o
+obj-$(USE_DCM) += Dcm_Dsd.o
+obj-$(USE_DCM) += Dcm_Dsl.o
+obj-$(USE_DCM) += Dcm_LCfg.o
+inc-$(USE_DCM) += $(ROOTDIR)/diagnostic/Dcm
+vpath-$(USE_DCM) += $(ROOTDIR)/diagnostic/Dcm
+
 
 
 #tests
@@ -197,6 +216,7 @@ vpath-y += $(ROOTDIR)/boards/$(BOARDDIR)
 vpath-y += $(ROOTDIR)/arch/$(ARCH_FAM)
 vpath-y += $(ROOTDIR)/boards/$(BOARDDIR)/config
 vpath-y += $(ROOTDIR)/diagnostic/Dem
+vpath-y += $(ROOTDIR)/diagnostic/Dcm
 vpath-y += $(ROOTDIR)/diagnostic/Det
 
 # include files need by us
@@ -207,6 +227,7 @@ inc-y += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
 inc-y += $(ROOTDIR)/$(ARCH_PATH-y)/drivers
 inc-y += $(ROOTDIR)/boards/$(BOARDDIR)/config
 inc-y += $(ROOTDIR)/drivers/Dem
+inc-y += $(ROOTDIR)/drivers/Dcm
 inc-y += $(ROOTDIR)/drivers/test
 
 
