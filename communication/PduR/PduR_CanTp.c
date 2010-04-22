@@ -52,7 +52,7 @@ BufReq_ReturnType PduR_CanTpProvideTxBuffer(PduIdType CanTpTxPduId, PduInfoType*
 #if (PDUR_CANTP_SUPPORT == STD_ON)
 	/* Gateway and multicast modes not supported. */
 	PduRRoutingPath_type *route = &PduRConfig->PduRRoutingTable->PduRRoutingPath[CanTpTxPduId];
-	retVal = Dcm_ProvideTxBuffer(route->PduRDestPdu.DestPduId, PduInfoPtr, Length);
+	retVal = Dcm_ProvideTxBuffer(route->PduRSrcPdu.SrcPduId, PduInfoPtr, Length);
 #endif
 	return retVal;
 }
@@ -66,7 +66,7 @@ void PduR_CanTpTxConfirmation(PduIdType CanTpTxPduId, NotifResultType Result) {
 	DEBUG(DEBUG_LOW,"PduR_CanIfTxConfirmation: received confirmation with id %d\n", CanTxPduId);
 
 	PduRRoutingPath_type *route = &PduRConfig->PduRRoutingTable->PduRRoutingPath[CanTpTxPduId];
-	Dcm_TxConfirmation(route->PduRDestPdu.DestPduId, Result); // Forward confirmation
+	Dcm_TxConfirmation(route->PduRSrcPdu.SrcPduId, Result); // Forward confirmation
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
 #endif

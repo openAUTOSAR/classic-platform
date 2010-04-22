@@ -116,7 +116,7 @@ typedef struct {
 	/**
 	 * PDU identifier assigned by the PDU router.
 	 */
-	uint16 HandleId;
+	uint16 SrcPduId;
 
 	/**
 	 * Reference to unique PDU identifier.
