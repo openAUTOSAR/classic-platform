@@ -18,6 +18,9 @@
 #include "irq.h"
 #include "arc.h"
 #include "regs.h"
+#include "Mcu.h"
+
+extern OsTickType OsTickFreq;
 
 /**
  * Init of free running timer.
@@ -29,6 +32,12 @@ void Os_SysTickInit( void ) {
 	// TSFRZ, stop in freeze mode (easier debugging)
 	TSCR1 = TEN | TSFRZ;
 
+	ICSYS = 0;
+
+	TaskType tid;
+	tid = Os_Arc_CreateIsr(OsTick, 6/*prio*/, "OsTick");
+	Irq_AttachIsr2(tid, NULL, IRQ_TYPE_MCCNT_UNDERFLOW);
+
 	// Modulus counter
 	// MCZI, enable interrupt, MCEN enable modulus counter
 	// Prescaler 4
@@ -38,15 +47,7 @@ void Os_SysTickInit( void ) {
 	MCCTL |= MODMC;
 
 	// time = (count * prescaler)/(bus frequency)
-	//      = (0xFA0 * 4)/(16*10^6)
-	//      = 1ms
-	MCCNT = 0xFA0;
-
-	ICSYS = 0;
-
-	TaskType tid;
-	tid = Os_Arc_CreateIsr(OsTick, 6/*prio*/, "OsTick");
-	Irq_AttachIsr2(tid, NULL, IRQ_TYPE_MCCNT_UNDERFLOW);
+	MCCNT = (McuE_GetSystemClock() / 2) / (4 * OsTickFreq);
 }
 
 /**
