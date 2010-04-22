@@ -96,7 +96,7 @@ SECTIONS
     KEEP (*(SORT(.ctors.*)))
   }
 
-	.uninit ALIGN(0x10) (NOLOAD) : { *(.winidea_port .ramlog) ; } > ram
+	.uninit ALIGN(0x10) (NOLOAD) : { *(.winidea_port .ramlog .dem_eventmemory_pri) ; } > ram
 
 
 	__FLS_SIZE__ = SIZEOF(.fls_rom);
