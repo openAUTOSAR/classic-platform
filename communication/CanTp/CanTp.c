@@ -578,12 +578,11 @@ static INLINE void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
 	uint8 extendedAddress = 0;
 	PduLengthType bytesLeftToCopy = 0;
 	PduLengthType bytesLeftToTransfer = 0;
-	PduLengthType currentSegmentLength = 0;
+	PduLengthType currentSegmentSize = 0;
 	PduLengthType currentSegmentMaxSize = 0;
 	PduLengthType bytesCopiedToPdurRxBuffer = 0;
 	BufReq_ReturnType ret = BUFREQ_NOT_OK;
 
-	DEBUG(DEBUG_MEDIUM,"handleConsecutiveFrame called!\n");
 	if (rxConfig->CanTpAddressingFormant == CANTP_EXTENDED) {
 		extendedAddress = rxPduData->SduDataPtr[indexCount++];
 		// TODO: Should we validate the extended address ?
@@ -601,14 +600,14 @@ static INLINE void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
 		bytesLeftToCopy = rxRuntime->pduLenghtTotalBytes
 				- rxRuntime->pduTransferedBytesCount;
 		if (bytesLeftToCopy < currentSegmentMaxSize) {
-			currentSegmentLength = bytesLeftToCopy; // 1-5.
+			currentSegmentSize = bytesLeftToCopy; // 1-5.
 		} else {
-			currentSegmentLength = currentSegmentMaxSize; // 6 or 7, depends on addressing format used.
+			currentSegmentSize = currentSegmentMaxSize; // 6 or 7, depends on addressing format used.
 		}
 		// Copy received data to buffer provided by SDUR.
 		ret = copySegmentToPduRRxBuffer(rxConfig, rxRuntime,
 				&rxPduData->SduDataPtr[indexCount],
-				currentSegmentLength,
+				currentSegmentSize,
 				&bytesCopiedToPdurRxBuffer);
 		if (ret == BUFREQ_NOT_OK) {
 			PduR_CanTpRxIndication(rxConfig->PduR_PduId, NTFRSLT_E_NO_BUFFER);
@@ -617,7 +616,7 @@ static INLINE void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
 		} else if (ret == BUFREQ_BUSY) {
 			boolean dataCopyFailure = FALSE;
 			PduLengthType bytesNotCopiedToPdurRxBuffer =
-					currentSegmentLength - bytesCopiedToPdurRxBuffer;
+					currentSegmentSize - bytesCopiedToPdurRxBuffer;
 			if (rxConfig->CanTpAddressingFormant == CANTP_STANDARD) {
 				if ( copySegmentToLocalRxBuffer(rxRuntime,
 						&rxPduData->SduDataPtr[1 + bytesCopiedToPdurRxBuffer],
@@ -881,15 +880,13 @@ static INLINE void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 	PduLengthType bytesWrittenToSduRBuffer;
 
 	if (rxRuntime->iso15765.state != IDLE) {
-		// qqq: TODO: Log this maybe?
+		DEBUG( DEBUG_MEDIUM, "Unexpected first frame during ongoing reception!\n" );
 	}
-	DEBUG( DEBUG_MEDIUM, "handleFirstFrame called!\n");
 	(void) initRx15765RuntimeData(rxConfig, rxRuntime);
 	pduLength = getPduLength(&rxConfig->CanTpAddressingFormant, FIRST_FRAME,
 			rxPduData);
 	rxRuntime->pduLenghtTotalBytes = pduLength;
 
-	DEBUG( DEBUG_MEDIUM, "Expect to receive %d bytes in this session!\n", pduLength);
 	VALIDATE_NO_RV( rxRuntime->pduLenghtTotalBytes != 0,
 			SERVICE_ID_CANTP_RX_INDICATION, CANTP_E_INVALID_RX_LENGTH );
 
@@ -1011,9 +1008,7 @@ static INLINE Std_ReturnType sendSingleFrame(const CanTp_TxNSduType *txConfig,
 	if (txConfig->CanTpAddressingMode == CANTP_EXTENDED) {
 		sduData[indexCount++] = (uint8) txConfig->CanTpNTa->CanTpNTa; // Target address.
 	}
-	sduData[indexCount++] = ISO15765_TPCI_SF
-			// | txRuntime->bufferPduRouter->SduLength;
-			| txRuntime->pduLenghtTotalBytes;
+	sduData[indexCount++] = ISO15765_TPCI_SF | txRuntime->pduLenghtTotalBytes;
 	for (int i = 0; i < txRuntime->pduLenghtTotalBytes; i++) {
 		sduData[indexCount++] = txRuntime->bufferPduRouter->SduDataPtr[i];
 	}
@@ -1216,16 +1211,13 @@ void CanTp_RxIndication(PduIdType CanTpRxPduId,
 	VALIDATE_NO_RV( CanTpRunTimeData.internalState == CANTP_ON,
 			SERVICE_ID_CANTP_RX_INDICATION, CANTP_E_UNINIT ); /* req: CanTp031 */
 
-//	DEBUG( DEBUG_MEDIUM, "CanTp_RxIndication: PduId=%d, [", CanTpRxPduId);
 	item.PduId = CanTpRxPduId;
 	item.SduLength = CanTpRxPduPtr->SduLength;
 	for (int i=0; i<item.SduLength; i++) {
 		item.SduData[i] = CanTpRxPduPtr->SduDataPtr[i];
-//		DEBUG( DEBUG_MEDIUM, "%x, ", item.SduData[i]);
 	}
-//	DEBUG( DEBUG_MEDIUM, "]");
 	if ( fifoQueueWrite( &CanTpRunTimeData.fifo, &item ) == FALSE ) {
-		; //qqq: TODO: Report overrun.
+		DEBUG( DEBUG_MEDIUM, "WARNING!: Frames are lost!\n");
 	}
 }
 
@@ -1437,7 +1429,8 @@ void CanTp_MainFunction() /** req : CanTp213 **/
 				if ( ret == E_OK ) {
 					handleConsecutiveFrameSent(txConfigListItem, txRuntimeListItem);
 				} else {
-					PduR_CanTpRxIndication(txConfigListItem->PduR_PduId,
+					DEBUG( DEBUG_MEDIUM, "ERROR: Consecutive frame could not be sent!\n");
+					PduR_CanTpTxConfirmation(txConfigListItem->PduR_PduId,
 							(NotifResultType) NTFRSLT_E_NOT_OK);
 					txRuntimeListItem->iso15765.state = IDLE;
 					txRuntimeListItem->mode = CANTP_TX_WAIT;
@@ -1464,8 +1457,8 @@ void CanTp_MainFunction() /** req : CanTp213 **/
 					DEBUG( DEBUG_MEDIUM, "TIMEOUT!\n");
 					rxRuntimeListItem->iso15765.state = IDLE;
 					rxRuntimeListItem->mode = CANTP_RX_WAIT;
-					PduR_CanTpTxConfirmation(rxConfigListItem->PduR_PduId,
-							NTFRSLT_NOT_OK);
+					PduR_CanTpRxIndication(rxConfigListItem->PduR_PduId,
+							(NotifResultType) NTFRSLT_E_NOT_OK);
 				}
 				break;
 			}
