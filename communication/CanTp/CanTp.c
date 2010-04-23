@@ -411,7 +411,7 @@ void initTx15765RuntimeData(const CanTp_TxNSduType *txConfigParams,
 
 // - - - - - - - - - - - - - -
 
-static INLINE BufReq_ReturnType writeDataSegmentToPduRBuffer(const CanTp_RxNSduType *rxConfig,
+static INLINE BufReq_ReturnType copySegmentToPduRRxBuffer(const CanTp_RxNSduType *rxConfig,
 		CanTp_ChannelPrivateType *rxRuntime, uint8 *segment,
 		PduLengthType segmentSize, PduLengthType *bytesWrittenSuccessfully) {
 
@@ -423,8 +423,7 @@ static INLINE BufReq_ReturnType writeDataSegmentToPduRBuffer(const CanTp_RxNSduT
 		// Copy the data that resides in the buffer.
 		if (rxRuntime->bufferPduRouter != NULL) {
 			while ((*bytesWrittenSuccessfully < segmentSize ) &&
-					(rxRuntime->bufferPduRouter->SduLength > rxRuntime->pdurBufferCount))
-			{
+					(rxRuntime->bufferPduRouter->SduLength > rxRuntime->pdurBufferCount)) {
 				rxRuntime->bufferPduRouter->SduDataPtr[rxRuntime->pdurBufferCount++]
 						= segment[(*bytesWrittenSuccessfully)++];
 			}
@@ -458,7 +457,7 @@ static INLINE BufReq_ReturnType writeDataSegmentToPduRBuffer(const CanTp_RxNSduT
 
 // - - - - - - - - - - - - - -
 
-static INLINE boolean writeDataSegmentToLocalBuffer(
+static INLINE boolean copySegmentToLocalRxBuffer /*writeDataSegmentToLocalBuffer*/(
 		CanTp_ChannelPrivateType *rxRuntime, uint8 *segment,
 		PduLengthType segmentSize) {
 	boolean ret = FALSE;
@@ -577,74 +576,86 @@ static INLINE void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
 	int indexCount = 0;
 	uint8 segmentNumber = 0;
 	uint8 extendedAddress = 0;
-	PduLengthType bytesRemainingTotalPdu = 0;
-	PduLengthType payloadLen = 0;
-	PduLengthType maxPayloadDataSdu = 0;
-	PduLengthType bytesWrittenToSduRBuffer = 0;
+	PduLengthType bytesLeftToCopy = 0;
+	PduLengthType bytesLeftToTransfer = 0;
+	PduLengthType currentSegmentLength = 0;
+	PduLengthType currentSegmentMaxSize = 0;
+	PduLengthType bytesCopiedToPdurRxBuffer = 0;
 	BufReq_ReturnType ret = BUFREQ_NOT_OK;
 
 	DEBUG(DEBUG_MEDIUM,"handleConsecutiveFrame called!\n");
 	if (rxConfig->CanTpAddressingFormant == CANTP_EXTENDED) {
 		extendedAddress = rxPduData->SduDataPtr[indexCount++];
-		// qqq: TODO: Should we validate the extended address.
+		// TODO: Should we validate the extended address ?
 	}
 	segmentNumber = rxPduData->SduDataPtr[indexCount++] & SEGMENT_NUMBER_MASK;
 	if (segmentNumber != (rxRuntime->iso15765.framesHandledCount
 			& SEGMENT_NUMBER_MASK)) {
-		DEBUG(DEBUG_MEDIUM,"Segmentation number error detected!\n");
+		DEBUG(DEBUG_MEDIUM,"Segmentation number error detected - is the sending"
+				"unit too fast? Increase STmin (cofig) to slow it down!\n");
 		PduR_CanTpRxIndication(rxConfig->PduR_PduId, NTFRSLT_E_WRONG_SN);
 		rxRuntime->iso15765.state = IDLE;
 		rxRuntime->mode = CANTP_RX_WAIT;
 	} else {
-		// Calculate the maximal payload for Pdu ( depends on addressing mode ).
-		maxPayloadDataSdu = CANIF_PDU_MAX_LENGTH - indexCount;
-
-		// Calculate the number of valid bytes in received frame.
-		bytesRemainingTotalPdu = rxRuntime->pduLenghtTotalBytes
+		currentSegmentMaxSize = CANIF_PDU_MAX_LENGTH - indexCount;
+		bytesLeftToCopy = rxRuntime->pduLenghtTotalBytes
 				- rxRuntime->pduTransferedBytesCount;
-		if (bytesRemainingTotalPdu < maxPayloadDataSdu) {
-			payloadLen = bytesRemainingTotalPdu; // 1-5.
+		if (bytesLeftToCopy < currentSegmentMaxSize) {
+			currentSegmentLength = bytesLeftToCopy; // 1-5.
 		} else {
-			payloadLen = maxPayloadDataSdu; // 6 or 7, depends on addressing format used.
+			currentSegmentLength = currentSegmentMaxSize; // 6 or 7, depends on addressing format used.
 		}
-
-		DEBUG(DEBUG_MEDIUM,"bytesRemainingTotalPdu:%d\n", bytesRemainingTotalPdu);
 		// Copy received data to buffer provided by SDUR.
-		ret = writeDataSegmentToPduRBuffer(rxConfig, rxRuntime,
-				&rxPduData->SduDataPtr[indexCount], payloadLen,
-				&bytesWrittenToSduRBuffer);
+		ret = copySegmentToPduRRxBuffer(rxConfig, rxRuntime,
+				&rxPduData->SduDataPtr[indexCount],
+				currentSegmentLength,
+				&bytesCopiedToPdurRxBuffer);
 		if (ret == BUFREQ_NOT_OK) {
-			DEBUG( DEBUG_MEDIUM,"writeDataSegmentToPduRBuffer failed!\n");
 			PduR_CanTpRxIndication(rxConfig->PduR_PduId, NTFRSLT_E_NO_BUFFER);
 			rxRuntime->iso15765.state = IDLE;
 			rxRuntime->mode = CANTP_RX_WAIT;
 		} else if (ret == BUFREQ_BUSY) {
+			boolean dataCopyFailure = FALSE;
+			PduLengthType bytesNotCopiedToPdurRxBuffer =
+					currentSegmentLength - bytesCopiedToPdurRxBuffer;
 			if (rxConfig->CanTpAddressingFormant == CANTP_STANDARD) {
-				(void)writeDataSegmentToLocalBuffer(rxRuntime,
-						&rxPduData->SduDataPtr[1 + bytesWrittenToSduRBuffer],
-						payloadLen - bytesWrittenToSduRBuffer );
+				if ( copySegmentToLocalRxBuffer(rxRuntime,
+						&rxPduData->SduDataPtr[1 + bytesCopiedToPdurRxBuffer],
+						bytesNotCopiedToPdurRxBuffer ) != TRUE ) {
+					rxRuntime->iso15765.state = IDLE;
+					rxRuntime->mode = CANTP_RX_WAIT;
+					dataCopyFailure = TRUE;
+					DEBUG( DEBUG_MEDIUM, "Unexpected error, could not copy 'unaligned leftover' "
+							"data to local buffer!\n");
+				}
 			} else {
-				(void)writeDataSegmentToLocalBuffer(rxRuntime,
-						&rxPduData->SduDataPtr[2 + bytesWrittenToSduRBuffer],
-						payloadLen - bytesWrittenToSduRBuffer );
+				if ( copySegmentToLocalRxBuffer(rxRuntime,
+						&rxPduData->SduDataPtr[2 + bytesCopiedToPdurRxBuffer],
+						bytesNotCopiedToPdurRxBuffer) != TRUE ) {
+					rxRuntime->iso15765.state = IDLE;
+					rxRuntime->mode = CANTP_RX_WAIT;
+					dataCopyFailure = TRUE;
+					DEBUG( DEBUG_MEDIUM, "Unexpected error, could not copy 'unaligned leftover' "
+							"data to local buffer!\n");
+				}
 			}
-			rxRuntime->iso15765.framesHandledCount++;
-			rxRuntime->iso15765.stateTimeoutCount = CANTP_CONVERT_MS_TO_MAIN_CYCLES(rxConfig->CanTpNbr);
-			rxRuntime->iso15765.state = RX_WAIT_SDU_BUFFER;
-			rxRuntime->mode = CANTP_RX_PROCESSING;
-			sendFlowControlFrame(rxConfig, rxRuntime, ret);  // Sends "WAIT" to remote node.
+			if ( dataCopyFailure == FALSE ) {
+				rxRuntime->iso15765.framesHandledCount++;
+				rxRuntime->iso15765.stateTimeoutCount = CANTP_CONVERT_MS_TO_MAIN_CYCLES(rxConfig->CanTpNbr);
+				rxRuntime->iso15765.state = RX_WAIT_SDU_BUFFER;
+				rxRuntime->mode = CANTP_RX_PROCESSING;
+				sendFlowControlFrame(rxConfig, rxRuntime, ret);  // Sends "WAIT" to remote node.
+			}
 		} else if (ret == BUFREQ_OK) {
-			if ((rxRuntime->pduLenghtTotalBytes
-					- rxRuntime->pduTransferedBytesCount) > 0) {
+			bytesLeftToTransfer = rxRuntime->pduLenghtTotalBytes - rxRuntime->pduTransferedBytesCount;
+			if (bytesLeftToTransfer > 0) {
 				rxRuntime->iso15765.framesHandledCount++;
 				COUNT_DECREMENT(rxRuntime->iso15765.nextFlowControlCount);
-				DEBUG( DEBUG_MEDIUM,"iso15765.nextFlowControlCount:%d\n", rxRuntime->iso15765.nextFlowControlCount);
 				if (rxRuntime->iso15765.nextFlowControlCount == 0) {
 					sendFlowControlFrame(rxConfig, rxRuntime, BUFREQ_OK);
 				}
 			} else {
-				// The transfer succeeded successfully.
-				DEBUG( DEBUG_MEDIUM,"RX FINISHED!\n");
+				DEBUG( DEBUG_MEDIUM,"ISO15765-Rx session finished, going back to IDLE!\n");
 				rxRuntime->iso15765.state = IDLE;
 				rxRuntime->mode = CANTP_RX_WAIT;
 				PduR_CanTpRxIndication(rxConfig->PduR_PduId, NTFRSLT_OK);
@@ -849,7 +860,7 @@ static INLINE void handleSingleFrame(const CanTp_RxNSduType *rxConfig,
 			CANTP_CONVERT_MS_TO_MAIN_CYCLES(rxConfig->CanTpNbr);
 
 
-	ret = writeDataSegmentToPduRBuffer(rxConfig, rxRuntime, data, pduLength,
+	ret = copySegmentToPduRRxBuffer(rxConfig, rxRuntime, data, pduLength,
 			&bytesWrittenToSduRBuffer);
 	if (ret == BUFREQ_OK && rxRuntime->iso15765.stateTimeoutCount != 0) {
 		PduR_CanTpRxIndication(rxConfig->PduR_PduId, NTFRSLT_OK);
@@ -903,12 +914,12 @@ static INLINE void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 			CANTP_CONVERT_MS_TO_MAIN_CYCLES(rxConfig->CanTpNbr); /* CanTP 166. */
 
 	if (rxConfig->CanTpAddressingFormant == CANTP_STANDARD) {
-		ret = writeDataSegmentToPduRBuffer(rxConfig, rxRuntime,
+		ret = copySegmentToPduRRxBuffer(rxConfig, rxRuntime,
 				&rxPduData->SduDataPtr[2],
 				MAX_PAYLOAD_FF_STD_ADDR,
 				&bytesWrittenToSduRBuffer);
 	} else {
-		ret = writeDataSegmentToPduRBuffer(rxConfig, rxRuntime,
+		ret = copySegmentToPduRRxBuffer(rxConfig, rxRuntime,
 				&rxPduData->SduDataPtr[3],
 				MAX_PAYLOAD_FF_EXT_ADDR,
 				&bytesWrittenToSduRBuffer);
@@ -922,10 +933,10 @@ static INLINE void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 	} else if (ret == BUFREQ_BUSY) {
 		/* req: CanTp: 222. */
 		if (rxConfig->CanTpAddressingFormant == CANTP_STANDARD) {
-			(void)writeDataSegmentToLocalBuffer(rxRuntime,
+			(void)copySegmentToLocalRxBuffer(rxRuntime,
 					&rxPduData->SduDataPtr[2], MAX_PAYLOAD_FF_STD_ADDR );
 		} else {
-			(void)writeDataSegmentToLocalBuffer(rxRuntime,
+			(void)copySegmentToLocalRxBuffer(rxRuntime,
 					&rxPduData->SduDataPtr[3], MAX_PAYLOAD_FF_EXT_ADDR );
 		}
 		rxRuntime->iso15765.stateTimeoutCount =
@@ -1205,14 +1216,14 @@ void CanTp_RxIndication(PduIdType CanTpRxPduId,
 	VALIDATE_NO_RV( CanTpRunTimeData.internalState == CANTP_ON,
 			SERVICE_ID_CANTP_RX_INDICATION, CANTP_E_UNINIT ); /* req: CanTp031 */
 
-	DEBUG( DEBUG_MEDIUM, "CanTp_RxIndication: PduId=%d, [", CanTpRxPduId);
+//	DEBUG( DEBUG_MEDIUM, "CanTp_RxIndication: PduId=%d, [", CanTpRxPduId);
 	item.PduId = CanTpRxPduId;
 	item.SduLength = CanTpRxPduPtr->SduLength;
 	for (int i=0; i<item.SduLength; i++) {
 		item.SduData[i] = CanTpRxPduPtr->SduDataPtr[i];
-		DEBUG( DEBUG_MEDIUM, "%x, ", item.SduData[i]);
+//		DEBUG( DEBUG_MEDIUM, "%x, ", item.SduData[i]);
 	}
-	DEBUG( DEBUG_MEDIUM, "]");
+//	DEBUG( DEBUG_MEDIUM, "]");
 	if ( fifoQueueWrite( &CanTpRunTimeData.fifo, &item ) == FALSE ) {
 		; //qqq: TODO: Report overrun.
 	}
@@ -1229,12 +1240,14 @@ void CanTp_RxIndication_Main(PduIdType CanTpRxPduId,
 	CanTp_ChannelPrivateType *runtimeParams; // Params reside in RAM.
 	ISO15765FrameType frameType;
 
-	DEBUG( DEBUG_MEDIUM, "CanTp_RxIndication - CanTpRxPduId: %x!\n", CanTpRxPduId );
-
+	DEBUG( DEBUG_MEDIUM, "CanTp_RxIndication: PduId=%d, [", CanTpRxPduId);
+	for (int i=0; i<CanTpRxPduPtr->SduLength; i++) {
+		DEBUG( DEBUG_MEDIUM, "%x, ", CanTpRxPduPtr->SduDataPtr[i]);
+	}
+	DEBUG( DEBUG_MEDIUM, "]");
 
 	VALIDATE_NO_RV( CanTpRunTimeData.internalState == CANTP_ON,
 			SERVICE_ID_CANTP_RX_INDICATION, CANTP_E_UNINIT ); /* req: CanTp031 */
-
 
 	if ( CanTpConfig.CanTpNSduList[CanTpRxPduId].direction == IS015765_TRANSMIT ) {
 		txConfigParams =
@@ -1469,7 +1482,7 @@ void CanTp_MainFunction() /** req : CanTp213 **/
 					rxRuntimeListItem->iso15765.state = IDLE;
 					rxRuntimeListItem->mode = CANTP_RX_WAIT;
 				} else {
-					ret = writeDataSegmentToPduRBuffer(rxConfigListItem,
+					ret = copySegmentToPduRRxBuffer(rxConfigListItem,
 								rxRuntimeListItem,
 								rxRuntimeListItem->canFrameBuffer.data,
 								rxRuntimeListItem->canFrameBuffer.byteCount,
