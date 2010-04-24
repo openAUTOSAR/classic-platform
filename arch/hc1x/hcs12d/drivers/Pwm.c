@@ -145,7 +145,7 @@ void Pwm_SetPeriodAndDuty(Pwm_ChannelType Channel, Pwm_PeriodType Period,
 	Pwm_VALIDATE_CHANNEL(Channel);
 
 	volatile uint8 *pDuty = &PWMDTY0+Channel;
-	*pDuty = (uint8)((uint32)DutyCycle*(uint32)Period)>>15;
+	*pDuty = (uint8)((uint32)((uint32)DutyCycle*(uint32)Period)>>15);
 	volatile uint8 *pPer = &PWMPER0+Channel;
 	*pPer = Period;
 
@@ -184,7 +184,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle) {
 		*pDuty = 0;
 	} else {
 		volatile uint8 *pPer = &PWMPER0+Channel;
-		*pDuty = (uint8)((uint32)DutyCycle*(uint32)*pPer)>>15;
+		*pDuty = (uint8)((uint32)((uint32)DutyCycle*(uint32)*pPer)>>15);
 	}
 
 	if(PWM_DUTYCYCLE_UPDATED_ENDPERIOD != STD_ON){

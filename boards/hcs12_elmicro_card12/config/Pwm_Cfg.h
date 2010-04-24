@@ -96,7 +96,7 @@ is reached. */
  * the following macro can be used to convert between that format and the
  * driver format.
  */
-#define DUTY_AND_PERIOD(_duty,_period) .duty = (uint8)((uint32)_duty*(uint32)_period)>>15, .period = _period
+#define DUTY_AND_PERIOD(_duty,_period) .duty = (uint8)((uint32)((uint32)_duty*(uint32)_period)>>15), .period = _period
 
 
 typedef struct {

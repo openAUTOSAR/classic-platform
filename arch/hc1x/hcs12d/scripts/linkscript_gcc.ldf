@@ -269,7 +269,6 @@ SECTIONS
 
     /* BANK11 MODULES */
     Can*.o(.text)
-    Com*.o(.text)
     Pdu*.o(.text)
     Dio*.o(.text)
 
@@ -283,6 +282,7 @@ SECTIONS
     *(.text.bank12*)
 
     /* BANK12 MODULES */
+    Com*.o(.text)
     Port*.o(.text)
 
     . = ALIGN(2);
