@@ -1689,7 +1689,7 @@ Dem_ReturnSetDTCFilterType Dem_SetDTCFilter(uint8 dtcStatusMask,
 	Dem_ReturnSetDTCFilterType returnCode = DEM_WRONG_FILTER;
 
 	// Check dtcKind parameter
-	if ((dtcKind == DEM_DTC_KIND_ALL_DTCS) || (dtcKind ==  DEM_DTC_KIND_EMISSON_REL_DTCS)) {
+	if ((dtcKind == DEM_DTC_KIND_ALL_DTCS) || (dtcKind ==  DEM_DTC_KIND_EMISSION_REL_DTCS)) {
 
 		// Check dtcOrigin parameter
 		if ((dtcOrigin == DEM_DTC_ORIGIN_SECONDARY_MEMORY) || (dtcOrigin == DEM_DTC_ORIGIN_PRIMARY_MEMORY)
@@ -1893,7 +1893,7 @@ Dem_ReturnControlDTCStorageType Dem_DisableDTCStorage(Dem_DTCGroupType dtcGroup,
 	// Check dtcGroup parameter
 	if (dtcGroup == DEM_DTC_GROUP_ALL_DTCS) {
 		// Check dtcKind parameter
-		if ((dtcKind == DEM_DTC_KIND_ALL_DTCS) || (dtcKind ==  DEM_DTC_KIND_EMISSON_REL_DTCS)) {
+		if ((dtcKind == DEM_DTC_KIND_ALL_DTCS) || (dtcKind ==  DEM_DTC_KIND_EMISSION_REL_DTCS)) {
 			disableDtcStorage.dtcGroup = dtcGroup;
 			disableDtcStorage.dtcKind = dtcKind;
 			disableDtcStorage.storageDisabled = TRUE;
