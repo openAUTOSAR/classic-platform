@@ -824,9 +824,8 @@ static INLINE void handleSingleFrame(const CanTp_RxNSduType *rxConfig,
 
 	DEBUG( DEBUG_MEDIUM, "handleSingleFrame called!\n");
 	if (rxRuntime->iso15765.state != IDLE) {
-		DEBUG( DEBUG_MEDIUM, "Single frame received and channel not valid!\n");
+		DEBUG( DEBUG_MEDIUM, "Single frame received and channel not IDLE!\n");
 	}
-
 	(void) initRx15765RuntimeData(rxConfig, rxRuntime);
 	pduLength = getPduLength(&rxConfig->CanTpAddressingFormant, SINGLE_FRAME,
 			rxPduData);
@@ -843,18 +842,29 @@ static INLINE void handleSingleFrame(const CanTp_RxNSduType *rxConfig,
 	rxRuntime->iso15765.state = SF_OR_FF_RECEIVED_WAITING_PDUR_BUFFER;
 	rxRuntime->mode = CANTP_RX_PROCESSING;
 	rxRuntime->iso15765.stateTimeoutCount =
-			CANTP_CONVERT_MS_TO_MAIN_CYCLES(rxConfig->CanTpNbr);
-
+			CANTP_CONVERT_MS_TO_MAIN_CYCLES(rxConfig->CanTpNbr);  /** @req CANTP166 */
 
 	ret = copySegmentToPduRRxBuffer(rxConfig, rxRuntime, data, pduLength,
 			&bytesWrittenToSduRBuffer);
-	if (ret == BUFREQ_OK && rxRuntime->iso15765.stateTimeoutCount != 0) {
+
+	if (ret == BUFREQ_OK) {
 		PduR_CanTpRxIndication(rxConfig->PduR_PduId, NTFRSLT_OK);
+		rxRuntime->iso15765.state = IDLE;
+		rxRuntime->mode = CANTP_RX_WAIT;
+	} else if (ret == BUFREQ_BUSY) {
+		if (rxConfig->CanTpAddressingFormant == CANTP_STANDARD) {
+			data = &rxPduData->SduDataPtr[1];
+		} else {
+			data = &rxPduData->SduDataPtr[2];
+		}
+		(void)copySegmentToLocalRxBuffer(rxRuntime, data, pduLength );
+		rxRuntime->iso15765.state = RX_WAIT_SDU_BUFFER;
+		rxRuntime->mode = CANTP_RX_PROCESSING;
 	} else {
 		PduR_CanTpRxIndication(rxConfig->PduR_PduId, NTFRSLT_E_NO_BUFFER);
+		rxRuntime->iso15765.state = IDLE;
+		rxRuntime->mode = CANTP_RX_WAIT;
 	}
-	rxRuntime->iso15765.state = IDLE;
-	rxRuntime->mode = CANTP_RX_WAIT;
 }
 
 // - - - - - - - - - - - - - -
@@ -1459,7 +1469,7 @@ void CanTp_MainFunction() /** req : CanTp213 **/
 				/* We end up here if we have requested a buffer from the
 				 * PDUR but the response have been BUSY. We assume
 				 * we have data in our local buffer and we are expected
-				 * to send a flowcontrol clear to send (CTS).
+				 * to send a flow-control clear to send (CTS).
 				 */
 				if (rxRuntimeListItem->iso15765.stateTimeoutCount == 0) {
 					PduR_CanTpTxConfirmation(rxConfigListItem->PduR_PduId,
@@ -1467,15 +1477,28 @@ void CanTp_MainFunction() /** req : CanTp213 **/
 					rxRuntimeListItem->iso15765.state = IDLE;
 					rxRuntimeListItem->mode = CANTP_RX_WAIT;
 				} else {
+					PduLengthType bytesRemaining = 0;
 					ret = copySegmentToPduRRxBuffer(rxConfigListItem,
 								rxRuntimeListItem,
 								rxRuntimeListItem->canFrameBuffer.data,
 								rxRuntimeListItem->canFrameBuffer.byteCount,
 								&bytesWrittenToSduRBuffer);
-					sendFlowControlFrame( rxConfigListItem, rxRuntimeListItem, ret );
-					if (ret == BUFREQ_OK ) {
-						rxRuntimeListItem->iso15765.state = RX_WAIT_CONSECUTIVE_FRAME;
+					bytesRemaining = rxRuntimeListItem->pduLenghtTotalBytes -
+							rxRuntimeListItem->pduTransferedBytesCount;
+					if (bytesRemaining > 0) {
+						sendFlowControlFrame( rxConfigListItem, rxRuntimeListItem, ret );
+					}
+					if (ret == BUFREQ_OK) {
+						if ( bytesRemaining > 0 ) {
+							rxRuntimeListItem->iso15765.state = RX_WAIT_CONSECUTIVE_FRAME;
+						} else {
+							PduR_CanTpRxIndication(rxConfigListItem->PduR_PduId, NTFRSLT_OK);
+							rxRuntimeListItem->iso15765.state = IDLE;
+							rxRuntimeListItem->mode = CANTP_RX_WAIT;
+						}
 					} else if (ret == BUFREQ_NOT_OK ) {
+						rxRuntimeListItem->iso15765.state = IDLE;
+						rxRuntimeListItem->mode = CANTP_RX_WAIT;
 						PduR_CanTpTxConfirmation(rxConfigListItem->PduR_PduId,
 								NTFRSLT_NOT_OK);
 					} else if ( ret == BUFREQ_BUSY ) {
