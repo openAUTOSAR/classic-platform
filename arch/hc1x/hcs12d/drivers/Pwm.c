@@ -35,6 +35,7 @@
 #include "Os.h"
 #include "Mcu.h"
 #include "regs.h"
+#include "arc.h"
 
 #if PWM_DEV_EROR_DETECT==STD_ON
 	#define PWM_VALIDATE(_exp, _errid) \

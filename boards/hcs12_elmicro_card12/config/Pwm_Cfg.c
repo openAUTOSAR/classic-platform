@@ -41,8 +41,8 @@ const Pwm_ConfigType PwmConfig =
 			},
 			{
 				.channel = PWM_CHANNEL_2,
-				DUTY_AND_PERIOD(0x8000,255),
-				.centerAlign = 1,
+				DUTY_AND_PERIOD(0x1000,100),
+				.centerAlign = 0,
 				.polarity = POLARITY_NORMAL,
 				.scaledClockEnable = 1,
 			},

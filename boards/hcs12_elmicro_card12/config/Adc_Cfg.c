@@ -23,13 +23,8 @@
 
 Adc_GroupStatus AdcGroupStatus[ADC_NBR_OF_GROUPS];
 
-/* Configuration goes here. */
-void Adc_Group0Notification (void)
-{
-}
-void Adc_Group1Notification (void)
-{
-}
+void Adc_Group0Notification (void);
+void Adc_Group1Notification (void);
 
 const Adc_HWConfigurationType AdcHWUnitConfiguration[] =
 {

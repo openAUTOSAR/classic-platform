@@ -22,6 +22,8 @@
 #include "Os.h"
 #include "irq.h"
 #include "regs.h"
+#include "arc.h"
+
 
 // ATDCTL2
 #define BM_ADPU 0x80
@@ -105,7 +107,7 @@ Std_ReturnType Adc_Init (const Adc_ConfigType *ConfigPtr)
 	tid = Os_Arc_CreateIsr(Adc_GroupConversionComplete,6/*prio*/,"ADC");
 	Irq_AttachIsr2(tid,NULL, IRQ_TYPE_ATD0);
 
-	ATD0CTL2   = BM_ADPU | BM_ASCIE;	/* power enable, irq enable*/
+	ATD0CTL2   = BM_ADPU | BM_AFFC | BM_ASCIE;	/* power enable, Fast Flag Clear, irq enable*/
     ATD0CTL3   = 0x00;	/* 8 conversions per sequence default */
 
     ATD0CTL4   = (ConfigPtr->hwConfigPtr->resolution << 7) |
@@ -229,7 +231,7 @@ static void Adc_GroupConversionComplete (void)
   {
 	  if(AdcConfigPtr->groupConfigPtr[index].status->groupStatus == ADC_BUSY)
 	  {
-		  groupPtr = &AdcConfigPtr->groupConfigPtr[index];
+		  groupPtr = (Adc_GroupDefType *)&AdcConfigPtr->groupConfigPtr[index];
 		  break;
 	  }
   }

@@ -88,8 +88,8 @@ typedef enum {
 
 /* 1 =PWMchannel output is high at the beginning of the period, then goes low when the duty count
 is reached. */
-#define POLARITY_NORMAL 0
-#define POLARITY_INVERSED 1
+#define POLARITY_NORMAL 1
+#define POLARITY_INVERSED 0
 
 /**
  * Since the AUTOSAR PWM specification uses a different unit for the duty,

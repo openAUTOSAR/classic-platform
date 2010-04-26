@@ -34,10 +34,9 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#if defined(USE_KERNEL)
 #include "Os.h"
 #include "irq.h"
-#endif
+#include "arc.h"
 
 // bits in CANxCTL0:
 #define BM_INITRQ	0x01
