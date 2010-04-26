@@ -676,27 +676,24 @@ static INLINE Std_ReturnType sendConsecutiveFrame(
 	int copyCount = 0;
 	int indexCount = 0;
 
-	DEBUG( DEBUG_MEDIUM, "sendConsecutiveFrame entered!\n");
-
 	if (txConfig->CanTpAddressingMode == CANTP_EXTENDED) {
 		sduData[indexCount++] = (uint8) txConfig->CanTpNTa->CanTpNTa; // Target address.
 	}
 	sduData[indexCount++] = ISO15765_TPCI_CF | (uint8)(
-			txRuntime->iso15765.framesHandledCount & ISO15765_TPCI_FS_MASK);
+			(txRuntime->iso15765.framesHandledCount + 1) & ISO15765_TPCI_FS_MASK); // + 1 is because the consecutive frame numbering begins with 1 and not 0.
 
 	// Always copy from the PDUR buffer data to the canFrameBuffer because if
 	// we are unlucky the application give us very small buffers.
-
 	consecutiveFrameMaxPayload  = CANIF_PDU_MAX_LENGTH - indexCount;
 	remaningSduDataSize = txRuntime->pduLenghtTotalBytes
 			- txRuntime->pduTransferedBytesCount;
 
+	// Calculate number of valid bytes that reside in this CF.
 	if ( remaningSduDataSize < consecutiveFrameMaxPayload  ) {
 		consecutiveFrameActualPayload = remaningSduDataSize; // Last frame.
 	} else {
 		consecutiveFrameActualPayload = consecutiveFrameMaxPayload;
 	}
-
 	copyCount = txRuntime->canFrameBuffer.byteCount; // maybe some bytes already reside in the buffer that we need to handle before proceeding with application buffer data.
 	while (copyCount < consecutiveFrameActualPayload) {
 		if ( txRuntime->bufferPduRouter->SduLength > txRuntime->pdurBufferCount ) {
@@ -705,9 +702,7 @@ static INLINE Std_ReturnType sendConsecutiveFrame(
 			copyCount++;
 			txRuntime->canFrameBuffer.byteCount++;
 		} else {
-			// More buffering is required.
-			BufReq_ReturnType pdurResp;
-			pdurResp = PduR_CanTpProvideTxBuffer(txConfig->PduR_PduId,
+			BufReq_ReturnType pdurResp = PduR_CanTpProvideTxBuffer(txConfig->PduR_PduId,
 					&txRuntime->bufferPduRouter, 0);
 			if (pdurResp == BUFREQ_OK) {
 				txRuntime->pdurBufferCount = 0;
@@ -736,10 +731,8 @@ static INLINE Std_ReturnType sendConsecutiveFrame(
 			txRuntime->pduTransferedBytesCount += txRuntime->canFrameBuffer.byteCount;
 			txRuntime->canFrameBuffer.byteCount = 0;
 			DEBUG( DEBUG_MEDIUM, "pduTransferedBytesCount:%d\n", txRuntime->pduTransferedBytesCount);
-
 		}
 	} else {
-		// qqq. Serious error, should not happen!
 		DEBUG( DEBUG_MEDIUM, "Unexpected error, should not happen!\n");
 	}
 	DEBUG( DEBUG_MEDIUM, "sendConsecutiveFrame exit!\n");
@@ -752,31 +745,27 @@ static INLINE void handleConsecutiveFrameSent(
 		const CanTp_TxNSduType *txConfig, CanTp_ChannelPrivateType *txRuntime) {
 
 	if (txRuntime->pduLenghtTotalBytes <= txRuntime->pduTransferedBytesCount) {
-		// Transfer finished.
-		DEBUG( DEBUG_MEDIUM, "----->LAST CONSECUTIVE FRAME SENT!!!\n");
+		// Transfer finished!
 		txRuntime->iso15765.state = IDLE;
 		txRuntime->mode = CANTP_TX_WAIT;
-		PduR_CanTpTxConfirmation(txConfig->PduR_PduId,
-				(NotifResultType) NTFRSLT_OK);
+		PduR_CanTpTxConfirmation(txConfig->PduR_PduId, (NotifResultType) NTFRSLT_OK);
 	} else if (txRuntime->iso15765.nextFlowControlCount == 0) {
-		// It is time to receive a flow control.
-		DEBUG( DEBUG_MEDIUM, "Sender require flow control!\n");
-		txRuntime->iso15765.stateTimeoutCount =
-				CANTP_CONVERT_MS_TO_MAIN_CYCLES(txConfig->CanTpNbs);  /*CanTp: 264*/
-		txRuntime->iso15765.state = TX_WAIT_FLOW_CONTROL;
-	} else if (txRuntime->iso15765.nextFlowControlCount != 0) {
-		// Send next consecutive frame.
-		DEBUG( DEBUG_MEDIUM, "TX:iso15765.nextFlowControlCount:%d \n",
-				txRuntime->iso15765.nextFlowControlCount);
+		if (txRuntime->iso15765.BS) { // Check if receiver expects flow control.
+			// Time to send flow control!
+			txRuntime->iso15765.stateTimeoutCount =
+					CANTP_CONVERT_MS_TO_MAIN_CYCLES(txConfig->CanTpNbs);  /*CanTp: 264*/
+			txRuntime->iso15765.state = TX_WAIT_FLOW_CONTROL;
+		} else {
+			// Send next consecutive frame!
+			txRuntime->iso15765.stateTimeoutCount =
+					CANTP_CONVERT_MS_TO_MAIN_CYCLES(txRuntime->iso15765.STmin);
+			txRuntime->iso15765.state = TX_WAIT_SEND_CONSECUTIVE_FRAME;
+		}
+	} else {
+		// Send next consecutive frame!
 		txRuntime->iso15765.stateTimeoutCount =
 				CANTP_CONVERT_MS_TO_MAIN_CYCLES(txRuntime->iso15765.STmin);
 		txRuntime->iso15765.state = TX_WAIT_SEND_CONSECUTIVE_FRAME;
-	} else {
-		DEBUG( DEBUG_MEDIUM, "Sender failed!\n" );
-		PduR_CanTpTxConfirmation(txConfig->PduR_PduId,
-				(NotifResultType) NTFRSLT_E_NOT_OK);
-		txRuntime->iso15765.state = IDLE;
-		txRuntime->mode = CANTP_TX_WAIT;
 	}
 }
 
@@ -790,20 +779,18 @@ static INLINE void handleFlowControlFrame(const CanTp_TxNSduType *txConfig,
 
 	if (txConfig->CanTpAddressingMode == CANTP_EXTENDED) {
 		extendedAddress = txPduData->SduDataPtr[indexCount++];
-		// qqq: TODO: Should we validate the extended address ?.
 	}
 	switch (txPduData->SduDataPtr[indexCount++] & ISO15765_TPCI_FS_MASK) {
 	case ISO15765_FLOW_CONTROL_STATUS_CTS:
-		DEBUG( DEBUG_MEDIUM, "----------------------->Flow Control: CTS!\n");
 		/* qqq: TODO: Sometimes this value can be forced by config, but not in AutoSAR CANTP ? */
 		txRuntime->iso15765.BS = txPduData->SduDataPtr[indexCount++];
-		txRuntime->iso15765.nextFlowControlCount = txRuntime->iso15765.BS; // qqq do we need to store the .BS ?
+		txRuntime->iso15765.nextFlowControlCount = txRuntime->iso15765.BS;
 		txRuntime->iso15765.STmin = txPduData->SduDataPtr[indexCount++];
 		ret = sendConsecutiveFrame(txConfig, txRuntime);
 		if (ret == E_OK) {
 			handleConsecutiveFrameSent(txConfig, txRuntime);
 		} else {
-			DEBUG( DEBUG_MEDIUM, "handleConsecutiveFrameSent returned error!\n");
+			DEBUG( DEBUG_MEDIUM, "sendConsecutiveFrame returned error!\n");
 			PduR_CanTpRxIndication(txConfig->PduR_PduId,
 					(NotifResultType) NTFRSLT_E_NOT_OK);
 			txRuntime->iso15765.state = IDLE;
@@ -1078,14 +1065,18 @@ static INLINE BufReq_ReturnType canTpTransmitHelper(const CanTp_TxNSduType *txCo
 				txRuntime->iso15765.state = IDLE;
 				txRuntime->mode = CANTP_TX_WAIT;
 				break;
-			case FIRST_FRAME:
+			case FIRST_FRAME: {
 				txRuntime->iso15765.stateTimeoutCount = CANTP_CONVERT_MS_TO_MAIN_CYCLES(txConfig->CanTpNbs * 1000);  /*CanTp: 264*/
+				if ( txRuntime->iso15765.stateTimeoutCount == 0 ) {
+					DEBUG( DEBUG_MEDIUM, "WARNING! Too low CanTpNbs timeout!\n" );
+				}
 				txRuntime->iso15765.state = TX_WAIT_FLOW_CONTROL;
 				res = sendFirstFrame(txConfig, txRuntime); /* req: CanTp 232 */
 				if (res == E_OK) {
 					txRuntime->mode = CANTP_TX_PROCESSING;
 				}
 				break;
+			}
 			case INVALID_FRAME:
 			default:
 				PduR_CanTpTxConfirmation(txConfig->PduR_PduId, NTFRSLT_NOT_OK);
@@ -1437,6 +1428,7 @@ void CanTp_MainFunction() /** req : CanTp213 **/
 				}
 				break;
 			case TX_WAIT_FLOW_CONTROL:
+				//DEBUG( DEBUG_MEDIUM, "Waiting for flow control!\n");
 				if (txRuntimeListItem->iso15765.stateTimeoutCount == 0) {
 					DEBUG( DEBUG_MEDIUM, "State TX_WAIT_FLOW_CONTROL timed out!\n");
 					PduR_CanTpTxConfirmation(txConfigListItem->PduR_PduId,
