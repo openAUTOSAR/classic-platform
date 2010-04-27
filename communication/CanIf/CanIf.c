@@ -771,7 +771,7 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
         	    PduInfoType CanTpRxPdu;
         	    CanTpRxPdu.SduLength = CanDlc;
         	    CanTpRxPdu.SduDataPtr = (uint8 *)CanSduPtr;
-                CanTp_RxIndication(entry->CanIfCanRxPduId, &CanTpRxPdu);
+                CanTp_RxIndication(entry->CanIfCanRxPduId, &CanTpRxPdu); /** @req CANTP019 */
             }
             return;
 #endif
