@@ -12,6 +12,28 @@
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
-
 #include "Dio.h"
+#include "Dio_Cfg.h"
 
+const Dio_ChannelType DioChannelConfigData[] =
+{
+	LED_CHANNEL,
+	DIO_END_OF_LIST,
+};
+
+const Dio_PortType DioPortConfigData[] =
+{
+	LED_PORT,
+	DIO_END_OF_LIST
+};
+
+const Dio_ChannelGroupType DioConfigData[] =
+{
+  { .port = DIO_PORT_H, .offset = 7, .mask = 0x80, },
+  { .port = DIO_END_OF_LIST, .offset = DIO_END_OF_LIST, .mask = DIO_END_OF_LIST, },
+};
+
+uint32 Dio_GetPortConfigSize(void)
+{
+  return sizeof(DioConfigData);
+}

@@ -19,35 +19,68 @@
 #include <string.h>
 #include "regs.h"
 
+#define DIO_GET_PORT_FROM_CHANNEL_ID(_channelId) (_channelId / 8)
+#define DIO_GET_BIT_FROM_CHANNEL_ID(_channelId) (1 << (_channelId % 8))
+
 #if ( DIO_VERSION_INFO_API == STD_ON )
 static Std_VersionInfoType _Dio_VersionInfo =
 {
-  .vendorID   = (uint16)1,
-  .moduleID   = (uint16)1,
-  .instanceID = (uint8)1,
-  .sw_major_version = (uint8)DIO_SW_MAJOR_VERSION,
-  .sw_minor_version = (uint8)DIO_SW_MINOR_VERSION,
-  .sw_patch_version = (uint8)DIO_SW_PATCH_VERSION,
-  .ar_major_version = (uint8)DIO_AR_MAJOR_VERSION,
-  .ar_minor_version = (uint8)DIO_AR_MINOR_VERSION,
-  .ar_patch_version = (uint8)DIO_AR_PATCH_VERSION,
+	.vendorID   = (uint16)1,
+	.moduleID   = (uint16)1,
+	.instanceID = (uint8)1,
+	.sw_major_version = (uint8)DIO_SW_MAJOR_VERSION,
+	.sw_minor_version = (uint8)DIO_SW_MINOR_VERSION,
+	.sw_patch_version = (uint8)DIO_SW_PATCH_VERSION,
+	.ar_major_version = (uint8)DIO_AR_MAJOR_VERSION,
+	.ar_minor_version = (uint8)DIO_AR_MINOR_VERSION,
+	.ar_patch_version = (uint8)DIO_AR_PATCH_VERSION,
 };
 #endif
 
 #if ( DIO_DEV_ERROR_DETECT == STD_ON )
 static int Channel_Config_Contains(Dio_ChannelType channelId)
 {
-  return 1;
+	Dio_ChannelType* ch_ptr=(Dio_ChannelType*)CHANNEL_PTR;
+	int rv=0;
+	while (DIO_END_OF_LIST!=*ch_ptr)
+	{
+	if (*ch_ptr==channelId)
+	{
+		rv=1;
+		break;
+	}
+	ch_ptr++;
+	}
+	return rv;
 }
 
 static int Port_Config_Contains(Dio_PortType portId)
 {
-  return 1;
+	Dio_PortType* port_ptr=(Dio_PortType*)PORT_PTR;
+	int rv=0;
+	while (DIO_END_OF_LIST!=*port_ptr)
+	{
+	if (*port_ptr==portId)
+	{ rv=1; break;}
+	port_ptr++;
+	}
+	return rv;
 }
 
 static int Channel_Group_Config_Contains(const Dio_ChannelGroupType* _channelGroupIdPtr)
 {
-  return 1;
+	Dio_ChannelGroupType* chGrp_ptr=(Dio_ChannelGroupType*)CHANNEL_GRP_PTR;
+	int rv=0;
+
+	while (DIO_END_OF_LIST!=chGrp_ptr->port)
+	{
+	if (chGrp_ptr->port==_channelGroupIdPtr->port&&
+		chGrp_ptr->offset==_channelGroupIdPtr->offset&&
+		chGrp_ptr->mask==_channelGroupIdPtr->mask)
+	{ rv=1; break;}
+	chGrp_ptr++;
+	}
+	return rv;
 }
 
 #define VALIDATE_CHANNEL(_channelId, _api) \
@@ -76,31 +109,123 @@ static int Channel_Group_Config_Contains(const Dio_ChannelGroupType* _channelGro
 
 Dio_LevelType Dio_ReadChannel(Dio_ChannelType channelId)
 {
-  Dio_LevelType level;
-  VALIDATE_CHANNEL(channelId, DIO_READCHANNEL_ID);
+	Dio_LevelType level;
+	VALIDATE_CHANNEL(channelId, DIO_READCHANNEL_ID);
 
-  cleanup: return (level);
+	Dio_PortLevelType portVal = Dio_ReadPort(DIO_GET_PORT_FROM_CHANNEL_ID(channelId));
+	Dio_PortLevelType bit = DIO_GET_BIT_FROM_CHANNEL_ID(channelId);
+
+	if ((portVal & bit) != STD_LOW){
+		level = STD_HIGH;
+	} else{
+		level = STD_LOW;
+	}
+
+	cleanup: return (level);
 }
 
 void Dio_WriteChannel(Dio_ChannelType channelId, Dio_LevelType level)
 {
-  VALIDATE_CHANNEL(channelId, DIO_WRITECHANNEL_ID);
+	VALIDATE_CHANNEL(channelId, DIO_WRITECHANNEL_ID);
 
-  cleanup: return;
+	Dio_PortLevelType portVal = Dio_ReadPort(DIO_GET_PORT_FROM_CHANNEL_ID(channelId));
+	Dio_PortLevelType bit = DIO_GET_BIT_FROM_CHANNEL_ID(channelId);
+
+	if(level == STD_HIGH){
+		portVal |= bit;
+	}else{
+		portVal &= ~bit;
+	}
+
+	Dio_WritePort(DIO_GET_PORT_FROM_CHANNEL_ID(channelId), portVal);
+
+	cleanup: return;
 }
 
 Dio_PortLevelType Dio_ReadPort(Dio_PortType portId)
 {
-  Dio_LevelType level;
-  VALIDATE_PORT(portId, DIO_READPORT_ID);
+	Dio_LevelType level;
+	VALIDATE_PORT(portId, DIO_READPORT_ID);
 
+	switch(portId)
+	{
+	case DIO_PORT_A:
+		level = PORTA;
+		break;
+	case DIO_PORT_B:
+		level = PORTB;
+		break;
+	case DIO_PORT_E:
+		level = PORTE;
+		break;
+	case DIO_PORT_J:
+		level = PTJ;
+		break;
+	case DIO_PORT_K:
+		level = PORTK;
+		break;
+	case DIO_PORT_M:
+		level = PTM;
+		break;
+	case DIO_PORT_P:
+		level = PTP;
+		break;
+	case DIO_PORT_S:
+		level = PTS;
+		break;
+	case DIO_PORT_T:
+		level = PTT;
+		break;
+	case DIO_PORT_H:
+		level = PTH;
+		break;
+	default:
+		level=0;
+		break;
+	}
 
-  cleanup: return level;
+	cleanup: return level;
 }
 
 void Dio_WritePort(Dio_PortType portId, Dio_PortLevelType level)
 {
   VALIDATE_PORT(portId, DIO_WRITEPORT_ID);
+
+	switch(portId)
+	{
+	case DIO_PORT_A:
+		PORTA = level;
+		break;
+	case DIO_PORT_B:
+		PORTB = level;
+		break;
+	case DIO_PORT_E:
+		PORTE = level;
+		break;
+	case DIO_PORT_J:
+		PTJ = level;
+		break;
+	case DIO_PORT_K:
+		PORTK = level;
+		break;
+	case DIO_PORT_M:
+		PTM = level;
+		break;
+	case DIO_PORT_P:
+		PTP = level;
+		break;
+	case DIO_PORT_S:
+		PTS = level;
+		break;
+	case DIO_PORT_T:
+		PTT = level;
+		break;
+	case DIO_PORT_H:
+		PTH = level;
+		break;
+	default:
+		break;
+	}
 
   cleanup: return;
 }
@@ -108,16 +233,35 @@ void Dio_WritePort(Dio_PortType portId, Dio_PortLevelType level)
 Dio_PortLevelType Dio_ReadChannelGroup(
     const Dio_ChannelGroupType *channelGroupIdPtr)
 {
-  Dio_LevelType level;
-  VALIDATE_CHANNELGROUP(channelGroupIdPtr,DIO_READCHANNELGROUP_ID);
+	Dio_LevelType level;
+	VALIDATE_CHANNELGROUP(channelGroupIdPtr,DIO_READCHANNELGROUP_ID);
 
-  cleanup: return level;
+	// Get masked values
+	level = Dio_ReadPort(channelGroupIdPtr->port) & channelGroupIdPtr->mask;
+
+	// Shift down
+	level = level >> channelGroupIdPtr->offset;
+
+	cleanup: return level;
 }
 
 void Dio_WriteChannelGroup(const Dio_ChannelGroupType *channelGroupIdPtr,
     Dio_PortLevelType level)
 {
-  return;
+	VALIDATE_CHANNELGROUP(channelGroupIdPtr,DIO_WRITECHANNELGROUP_ID);
+
+	// Shift up and apply mask so that no unwanted bits are affected
+	level = (level << channelGroupIdPtr->offset) & channelGroupIdPtr->mask;
+
+	// Read port and clear out masked bits
+	Dio_PortLevelType portVal = Dio_ReadPort(channelGroupIdPtr->port) & (~channelGroupIdPtr->mask);
+
+	// Or in the upshifted masked level
+	portVal |= level;
+
+	Dio_WritePort(channelGroupIdPtr->port, portVal);
+
+	cleanup: return;
 }
 
 #if (DIO_VERSION_INFO_API == STD_ON)

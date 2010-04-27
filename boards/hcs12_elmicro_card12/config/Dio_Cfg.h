@@ -163,4 +163,19 @@ typedef uint8 Dio_PortLevelType;
 
 #define LED_CHANNEL (DIO_CHANNEL_H7)
 
+#define LED_PORT 		(DIO_PORT_H)
+
+// Channels
+extern const Dio_ChannelType DioChannelConfigData[];
+#define CHANNEL_PTR		(&DioChannelConfigData)
+
+// Port
+extern const Dio_PortType DioPortConfigData[];
+#define PORT_PTR		(&DioPortConfigData)
+
+// Channel group
+extern const Dio_ChannelGroupType DioConfigData[];
+#define CHANNEL_GRP_PTR	(&DioConfigData)
+
+
 #endif /*DIO_CFG_H_*/
