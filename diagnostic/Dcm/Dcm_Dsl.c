@@ -22,8 +22,7 @@
 #include "ComM_Dcm.h"
 #include "PduR_Dcm.h"
 #include "ComStack_Types.h"
-
-#define USE_DEBUG_PRINTF
+//#define USE_DEBUG_PRINTF
 #include "debug.h"
 
 #define DECREMENT(timer) { if (timer > 0) timer--; }
@@ -313,8 +312,6 @@ void DslDsdProcessingDone(PduIdType rxPduIdRef,
 	const Dcm_DslProtocolRowType *protocolRow = NULL;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
 
-
-
 	DEBUG( DEBUG_MEDIUM, "DslDsdProcessingDone rxPduIdRef=%d\n", rxPduIdRef);
 
 	if (findRxPduIdParentConfigurationLeafs(rxPduIdRef, &protocolRx, &mainConnection,
@@ -334,6 +331,8 @@ void DslDsdProcessingDone(PduIdType rxPduIdRef,
 		McuE_ExitCriticalSection(state);
 	}
 }
+
+// - - - - - - - - - - -
 
 /*
  *	This function preparing transmission of response
@@ -479,7 +478,7 @@ void DslMain(void) {
 				// if so we can not transmit to PduR because we would not know from where
 				// the Tx confirmation resides later.
 				DEBUG( DEBUG_MEDIUM, "state DSD_PENDING_RESPONSE_SIGNALED!\n");
-				if (runtime->localTxBuffer.status == NOT_IN_USE) {
+				if (runtime->localTxBuffer.status == NOT_IN_USE) { // Make sure that no TxConfirm could be sent by the local buffer and mixed up with this transmission.
 					const Dcm_DslProtocolRxType *protocolRx = NULL;
 					const Dcm_DslMainConnectionType *mainConnection = NULL;
 					const Dcm_DslConnectionType *connection = NULL;
@@ -637,8 +636,8 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {  /*
 						runtime->externalRxBufferStatus = PROVIDED_TO_DSD; /** @req DCM241 **/
 						runtime->externalTxBufferStatus = PROVIDED_TO_DSD; /** @req DCM241 **/
 						timeParams = protocolRow->DslProtocolTimeLimit;
-						runtime->stateTimeoutCount = DCM_CONVERT_MS_TO_MAIN_CYCLES(
-								timeParams->TimStrP2ServerMax); /* Reinitiate timer, see 9.2.2. */
+						//runtime->stateTimeoutCount = DCM_CONVERT_MS_TO_MAIN_CYCLES(
+						//		timeParams->TimStrP2ServerMax); /* Reinitiate timer, see 9.2.2. */
 						runtime->responsePendingCount = DCM_Config.Dsl->DslDiagResp->DslDiagRespMaxNumRespPend;
 						runtime->diagnosticResponseFromDsd.SduDataPtr
 								= protocolRow->DslProtocolTxBufferID->pduInfo.SduDataPtr;
@@ -647,7 +646,7 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {  /*
 						DEBUG( DEBUG_MEDIUM, "DsdDslDataIndication(DcmDslProtocolTxPduId=%d, dcmRxPduId=%d)\n",
 								mainConnection->DslProtocolTx->DcmDslProtocolTxPduId, dcmRxPduId);
 						runtime->diagReqestRxPduId = dcmRxPduId;
-						DsdDslDataIndication(  // qqq: We are in a critical section, how much time will this consume?
+						DsdDslDataIndication(  // qqq: We are inside a critical section, how much time will this consume?
 								&(runtime->diagnosticRequestFromTester),
 								protocolRow->DslProtocolSIDTable,
 								protocolRx->DslProtocolAddrType,

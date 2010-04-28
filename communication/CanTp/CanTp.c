@@ -38,7 +38,7 @@
 #include "PduR.h"
 //#include "MemMap.h" /** @req CANTP156 */
 #include "String.h"
-#define USE_DEBUG_PRINTF
+//#define USE_DEBUG_PRINTF
 #include "debug.h"
 
 #if  ( CANTP_DEV_ERROR_DETECT == STD_ON ) /** @req CANTP006 *//** @req CANTP134 */
@@ -64,15 +64,6 @@
 #define DET_REPORTERROR(_x,_y,_z,_q)
 #endif
 
-/****************
- *
- * Dummy implementation.
- *
- ***************/
-
-#define NTFRSLT_E_NO_BUFFER 123
-#define NTFRSLT_E_WRONG_SN 234
-#define NTFRSLT_E_NOT_OK 987
 
 #if 0
 
@@ -578,8 +569,7 @@ static INLINE void sendFlowControlFrame(const CanTp_RxNSduType *rxConfig,
 	}
 	ret = canReceivePaddingHelper(rxConfig, rxRuntime, &pduInfo);
 	if (ret != E_OK) {
-		PduR_CanTpRxIndication(rxConfig->PduR_PduId,
-				(NotifResultType) NTFRSLT_E_NOT_OK);  /** @req CANTP084 */
+		PduR_CanTpRxIndication(rxConfig->PduR_PduId, NTFRSLT_E_NOT_OK);  /** @req CANTP084 */
 		rxRuntime->iso15765.state = IDLE;
 		rxRuntime->mode = CANTP_RX_WAIT;
 	}
@@ -766,7 +756,7 @@ static INLINE void handleConsecutiveFrameSent(
 		// Transfer finished!
 		txRuntime->iso15765.state = IDLE;
 		txRuntime->mode = CANTP_TX_WAIT;
-		PduR_CanTpTxConfirmation(txConfig->PduR_PduId, (NotifResultType) NTFRSLT_OK); /** @req CANTP074 *//** @req CANTP09 *//** @req CANTP204 */
+		PduR_CanTpTxConfirmation(txConfig->PduR_PduId, NTFRSLT_OK); /** @req CANTP074 *//** @req CANTP09 *//** @req CANTP204 */
 	} else if (txRuntime->iso15765.nextFlowControlCount == 0) {
 		if (txRuntime->iso15765.BS) { // Check if receiver expects flow control.
 			// Time to send flow control!
@@ -808,8 +798,7 @@ static INLINE void handleFlowControlFrame(const CanTp_TxNSduType *txConfig,
 		if (ret == E_OK) {
 			handleConsecutiveFrameSent(txConfig, txRuntime);
 		} else {
-			PduR_CanTpRxIndication(txConfig->PduR_PduId,
-					(NotifResultType) NTFRSLT_E_NOT_OK);  /** @req CANTP177 */ /** @req CANTP084 */
+			PduR_CanTpRxIndication(txConfig->PduR_PduId, NTFRSLT_E_NOT_OK);  /** @req CANTP177 */ /** @req CANTP084 */
 			txRuntime->iso15765.state = IDLE;
 			txRuntime->mode = CANTP_TX_WAIT;
 		}
@@ -820,8 +809,7 @@ static INLINE void handleFlowControlFrame(const CanTp_TxNSduType *txConfig,
 		txRuntime->iso15765.state = TX_WAIT_FLOW_CONTROL;
 		break;
 	case ISO15765_FLOW_CONTROL_STATUS_OVFLW:
-		PduR_CanTpRxIndication(txConfig->PduR_PduId,
-				(NotifResultType) NTFRSLT_E_NOT_OK);
+		PduR_CanTpRxIndication(txConfig->PduR_PduId, NTFRSLT_E_NOT_OK);
 		txRuntime->iso15765.state = IDLE;
 		txRuntime->mode = CANTP_TX_WAIT;
 		break;
@@ -1087,7 +1075,7 @@ static INLINE BufReq_ReturnType canTpTransmitHelper(const CanTp_TxNSduType *txCo
 				if (res == E_OK) {
 					PduR_CanTpTxConfirmation(txConfig->PduR_PduId, NTFRSLT_OK); /** @req CANTP204 */
 				} else {
-					PduR_CanTpTxConfirmation(txConfig->PduR_PduId, NTFRSLT_NOT_OK); /** @req CANTP204 */
+					PduR_CanTpTxConfirmation(txConfig->PduR_PduId, NTFRSLT_E_NOT_OK); /** @req CANTP204 */
 				}
 				txRuntime->iso15765.state = IDLE;
 				txRuntime->mode = CANTP_TX_WAIT;
@@ -1106,13 +1094,13 @@ static INLINE BufReq_ReturnType canTpTransmitHelper(const CanTp_TxNSduType *txCo
 			}
 			case INVALID_FRAME:
 			default:
-				PduR_CanTpTxConfirmation(txConfig->PduR_PduId, NTFRSLT_NOT_OK); /** @req CANTP204 */
+				PduR_CanTpTxConfirmation(txConfig->PduR_PduId, NTFRSLT_E_NOT_OK); /** @req CANTP204 */
 				txRuntime->iso15765.state = IDLE;
 				txRuntime->mode = CANTP_TX_WAIT;
 				break;
 			}
 		} else if (pdurResp == BUFREQ_NOT_OK) {
-			PduR_CanTpTxConfirmation(txConfig->PduR_PduId, NTFRSLT_NOT_OK); /** @req CANTP204 */
+			PduR_CanTpTxConfirmation(txConfig->PduR_PduId, NTFRSLT_E_NOT_OK); /** @req CANTP204 */
 			txRuntime->iso15765.state = IDLE;
 			txRuntime->mode = CANTP_TX_WAIT;
 		} else if (pdurResp == BUFREQ_BUSY) {
@@ -1428,7 +1416,7 @@ void CanTp_MainFunction() /** @req CANTP213 */
 				TIMER_DECREMENT(txRuntimeListItem->iso15765.stateTimeoutCount); /** @req CANTP185 */
 				if (txRuntimeListItem->iso15765.stateTimeoutCount == 0)
 					PduR_CanTpTxConfirmation(txConfigListItem->PduR_PduId,
-							NTFRSLT_NOT_OK); /** @req CANTP204 *//** @req CANTP185 */
+							NTFRSLT_E_NOT_OK); /** @req CANTP204 *//** @req CANTP185 */
 				txRuntimeListItem->iso15765.state = IDLE;
 				txRuntimeListItem->mode = CANTP_TX_WAIT;
 				break;
@@ -1446,7 +1434,7 @@ void CanTp_MainFunction() /** @req CANTP213 */
 					} else {
 						DEBUG( DEBUG_MEDIUM, "ERROR: Consecutive frame could not be sent!\n");
 						PduR_CanTpTxConfirmation(txConfigListItem->PduR_PduId,
-								(NotifResultType) NTFRSLT_E_NOT_OK); /** @req CANTP204 */
+								 NTFRSLT_E_NOT_OK); /** @req CANTP204 */
 						txRuntimeListItem->iso15765.state = IDLE;
 						txRuntimeListItem->mode = CANTP_TX_WAIT;
 					}
@@ -1460,7 +1448,7 @@ void CanTp_MainFunction() /** @req CANTP213 */
 				if (txRuntimeListItem->iso15765.stateTimeoutCount == 0) {
 					DEBUG( DEBUG_MEDIUM, "State TX_WAIT_FLOW_CONTROL timed out!\n");
 					PduR_CanTpTxConfirmation(txConfigListItem->PduR_PduId,
-							NTFRSLT_NOT_OK); /** @req CANTP204 */ /** @req CANTP185 */
+							NTFRSLT_E_NOT_OK); /** @req CANTP204 */ /** @req CANTP185 */
 					txRuntimeListItem->iso15765.state = IDLE;
 				}
 				break;
@@ -1478,7 +1466,7 @@ void CanTp_MainFunction() /** @req CANTP213 */
 					rxRuntimeListItem->iso15765.state = IDLE;
 					rxRuntimeListItem->mode = CANTP_RX_WAIT;
 					PduR_CanTpRxIndication(rxConfigListItem->PduR_PduId,
-							(NotifResultType) NTFRSLT_E_NOT_OK);
+							 NTFRSLT_E_NOT_OK);
 				}
 				break;
 			}
@@ -1491,7 +1479,7 @@ void CanTp_MainFunction() /** @req CANTP213 */
 				 */
 				if (rxRuntimeListItem->iso15765.stateTimeoutCount == 0) { /** @req CANTP223 */
 					PduR_CanTpTxConfirmation(rxConfigListItem->PduR_PduId,
-							NTFRSLT_NOT_OK); /** @req CANTP204 */
+							NTFRSLT_E_NOT_OK); /** @req CANTP204 */
 					rxRuntimeListItem->iso15765.state = IDLE;
 					rxRuntimeListItem->mode = CANTP_RX_WAIT;
 				} else { /** @req CANTP222 */
@@ -1510,7 +1498,7 @@ void CanTp_MainFunction() /** @req CANTP213 */
 						if ( bytesRemaining > 0 ) {
 							rxRuntimeListItem->iso15765.state = RX_WAIT_CONSECUTIVE_FRAME;
 						} else {
-							PduR_CanTpRxIndication(rxConfigListItem->PduR_PduId, NTFRSLT_OK);
+							 (rxConfigListItem->PduR_PduId, NTFRSLT_OK);
 							rxRuntimeListItem->iso15765.state = IDLE;
 							rxRuntimeListItem->mode = CANTP_RX_WAIT;
 						}
@@ -1518,7 +1506,7 @@ void CanTp_MainFunction() /** @req CANTP213 */
 						rxRuntimeListItem->iso15765.state = IDLE;
 						rxRuntimeListItem->mode = CANTP_RX_WAIT;
 						PduR_CanTpTxConfirmation(rxConfigListItem->PduR_PduId,
-								NTFRSLT_NOT_OK); /** @req CANTP205 */
+								NTFRSLT_E_NOT_OK); /** @req CANTP205 */
 					} else if ( ret == BUFREQ_BUSY ) {
 						DEBUG( DEBUG_MEDIUM, "Still busy!\n");
 					}
