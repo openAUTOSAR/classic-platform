@@ -1498,7 +1498,7 @@ void CanTp_MainFunction() /** @req CANTP213 */
 						if ( bytesRemaining > 0 ) {
 							rxRuntimeListItem->iso15765.state = RX_WAIT_CONSECUTIVE_FRAME;
 						} else {
-							 (rxConfigListItem->PduR_PduId, NTFRSLT_OK);
+							PduR_CanTpRxIndication(rxConfigListItem->PduR_PduId, NTFRSLT_OK);
 							rxRuntimeListItem->iso15765.state = IDLE;
 							rxRuntimeListItem->mode = CANTP_RX_WAIT;
 						}
