@@ -839,6 +839,7 @@ static INLINE void handleSingleFrame(const CanTp_RxNSduType *rxConfig,
 
 
 	if (rxRuntime->iso15765.state != IDLE) {
+		PduR_CanTpRxIndication(rxConfig->PduR_PduId, NTFRSLT_E_NOT_OK);  // Abort current reception, we need to tell the current receiver it has been aborted.
 		DEBUG( DEBUG_MEDIUM, "Single frame received and channel not IDLE!\n");
 	}
 	(void) initRx15765RuntimeData(rxConfig, rxRuntime); /** @req CANTP124 */
@@ -892,8 +893,10 @@ static INLINE void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 	PduLengthType bytesWrittenToSduRBuffer;
 
 	if (rxRuntime->iso15765.state != IDLE) {
-		DEBUG( DEBUG_MEDIUM, "Unexpected first frame during ongoing reception!\n" );
+		DEBUG( DEBUG_MEDIUM, "First frame received during Rx-session!\n" );
+		PduR_CanTpRxIndication(rxConfig->PduR_PduId, NTFRSLT_E_NOT_OK);  // Abort current reception, we need to tell the current receiver it has been aborted.
 	}
+
 	(void) initRx15765RuntimeData(rxConfig, rxRuntime); /** @req CANTP124 */
 	pduLength = getPduLength(&rxConfig->CanTpAddressingFormant, FIRST_FRAME,
 			rxPduData);
@@ -916,7 +919,7 @@ static INLINE void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 		return;
 	}
 
-	rxRuntime->iso15765.framesHandledCount++; // First expected is one (1) according to Movimento Puma.
+	rxRuntime->iso15765.framesHandledCount = 1; // Segment count begins with 1 and not 0 according to Movimento Puma.
 	rxRuntime->iso15765.state = SF_OR_FF_RECEIVED_WAITING_PDUR_BUFFER;
 	rxRuntime->mode = CANTP_RX_PROCESSING;
 	rxRuntime->iso15765.stateTimeoutCount =
@@ -1422,7 +1425,7 @@ void CanTp_MainFunction() /** @req CANTP213 */
 			switch (txRuntimeListItem->iso15765.state) {
 			case TX_WAIT_CAN_TP_TRANSMIT_CAN_TP_PROVIDE_TX_BUFFER:
 			{
-				TIMER_DECREMENT (rxRuntimeListItem->iso15765.stateTimeoutCount); /** @req CANTP185 */
+				TIMER_DECREMENT(txRuntimeListItem->iso15765.stateTimeoutCount); /** @req CANTP185 */
 				if (txRuntimeListItem->iso15765.stateTimeoutCount == 0)
 					PduR_CanTpTxConfirmation(txConfigListItem->PduR_PduId,
 							NTFRSLT_NOT_OK); /** @req CANTP204 *//** @req CANTP185 */
@@ -1435,7 +1438,7 @@ void CanTp_MainFunction() /** @req CANTP213 */
 				break;
 			}
 			case TX_WAIT_SEND_CONSECUTIVE_FRAME: {
-				TIMER_DECREMENT (rxRuntimeListItem->iso15765.stateTimeoutCount); // Make sure that STmin timer has expired.
+				TIMER_DECREMENT(txRuntimeListItem->iso15765.stateTimeoutCount); // Make sure that STmin timer has expired.
 				if (txRuntimeListItem->iso15765.stateTimeoutCount == 0) {
 					ret = sendConsecutiveFrame(txConfigListItem, txRuntimeListItem);
 					if ( ret == E_OK ) {
