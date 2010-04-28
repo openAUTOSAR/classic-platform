@@ -1,4 +1,12 @@
 
+TODO:
+ - Finish ARM port
+ - Add new Arm board
+ - Add more tests to test-system
+ -  
+
+
+
 OsTick
 
    GENERATED
