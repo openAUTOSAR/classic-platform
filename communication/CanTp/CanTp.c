@@ -1402,10 +1402,10 @@ void CanTp_MainFunction() /** @req CANTP213 */
 	// Dispatch the messages that resides in the FIFO to CanTp_RxIndication_Main.
 
 	while ( fifoQueueRead( &CanTpRunTimeData.fifo, &item ) == TRUE  ) {
-		PduInfoType *pduInfo;
-		pduInfo->SduDataPtr = item.SduData;
-		pduInfo->SduLength = item.SduLength;
-		CanTp_RxIndication_Main( item.PduId, pduInfo );
+		PduInfoType pduInfo;
+		pduInfo.SduDataPtr = item.SduData;
+		pduInfo.SduLength = item.SduLength;
+		CanTp_RxIndication_Main( item.PduId, &pduInfo );
 	}
 
 	for( int i=0; i < CANTP_NSDU_CONFIG_LIST_SIZE; i++ ) {

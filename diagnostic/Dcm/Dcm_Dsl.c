@@ -480,7 +480,6 @@ void DslMain(void) {
 				// the Tx confirmation resides later.
 				DEBUG( DEBUG_MEDIUM, "state DSD_PENDING_RESPONSE_SIGNALED!\n");
 				if (runtime->localTxBuffer.status == NOT_IN_USE) {
-					int ii;
 					const Dcm_DslProtocolRxType *protocolRx = NULL;
 					const Dcm_DslMainConnectionType *mainConnection = NULL;
 					const Dcm_DslConnectionType *connection = NULL;
@@ -489,15 +488,6 @@ void DslMain(void) {
 						const uint32 txPduId = mainConnection->DslProtocolTx->DcmDslProtocolTxPduId;
 						DEBUG( DEBUG_MEDIUM, "runtime->externalTxBufferStatus enter state DCM_TRANSMIT_SIGNALED.\n" );
 						runtime->externalTxBufferStatus = DCM_TRANSMIT_SIGNALED;
-
-						DEBUG( DEBUG_MEDIUM, "DO NOT CHECK INTO REPO: **** FAKING DSD RESPONSE TO BE 50 bytes !!!!! ********\n", txPduId);
-						runtime->diagnosticResponseFromDsd.SduLength = runtime->diagnosticRequestFromTester.SduLength;
-						for (ii=0; ii<runtime->diagnosticRequestFromTester.SduLength; ii++) {
-							runtime->diagnosticResponseFromDsd.SduDataPtr[ii] =
-									runtime->diagnosticRequestFromTester.SduDataPtr[ii];
-						}
-
-
 						PduR_DcmTransmit(txPduId, &runtime->diagnosticResponseFromDsd); /** @req DCM237 **//* Will trigger PduR (CanTP) to call DslProvideTxBuffer(). */
 					} else {
 						DEBUG( DEBUG_MEDIUM, "***** WARNING, THIS IS UNEXPECTED !!! ********.\n" );
