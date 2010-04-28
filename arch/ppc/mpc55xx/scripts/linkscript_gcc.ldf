@@ -105,7 +105,7 @@ SECTIONS
     KEEP (*(SORT(.ctors.*)))
   }
 
-	.uninit ALIGN(0x10): { *(.winidea_port .ramlog) ; } 			> ram
+	.uninit ALIGN(0x10): { *(.winidea_port .ramlog .dem_eventmemory_pri) ; } 			> ram
 
 	__FLS_SIZE__ = SIZEOF(.fls_rom);
 	__FLS_WRITE_RAM__ =  __FLS_ERASE_RAM__ + (__FLS_WRITE_ROM__ - __FLS_ERASE_ROM__);

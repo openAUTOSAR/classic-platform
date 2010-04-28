@@ -55,7 +55,7 @@ typedef uint32 Dem_DTCGroupType;
  */
 typedef uint8 Dem_DTCKindType;
 #define	DEM_DTC_KIND_ALL_DTCS			0x01
-#define	DEM_DTC_KIND_EMISSON_REL_DTCS	0x02
+#define	DEM_DTC_KIND_EMISSION_REL_DTCS	0x02
 
 /*
  * DemDTCOriginType

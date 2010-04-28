@@ -303,7 +303,8 @@ void Mcu_SetMode(const Mcu_ModeType McuMode)
  */
 uint32_t McuE_GetSystemClock(void)
 {
-  uint32_t f_sys = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePointFrequency * 2 * (SYNR + 1) / ( REFDV+1);
+  uint32_t f_sys = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePointFrequency * 2 *
+		           (Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].Pll2 + 1) / ( Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].Pll1+1);
   return f_sys;
 }
 
