@@ -196,10 +196,10 @@ typedef struct {
  */
 typedef struct {
 	ISO15765TransferControlType iso15765;
-	PduInfoType *bufferPduRouter; // The PDUR make an instance of this.
+	PduInfoType *pdurBuffer; // The PDUR make an instance of this.
 	PduLengthType pdurBufferCount; // Number of bytes in PDUR buffer.
-	PduLengthType pduLenghtTotalBytes; // Total length of the PDU.
-	PduLengthType pduTransferedBytesCount; // Counter ongoing transfer.
+	PduLengthType transferTotal; // Total length of the PDU.
+	PduLengthType transferCount; // Counter ongoing transfer.
 	CanIfSduType canFrameBuffer; // Temp storage of SDU data.
 	CanTp_TransferInstanceMode mode; // CanTp030.
 } CanTp_ChannelPrivateType;
@@ -396,10 +396,10 @@ void initRx15765RuntimeData(const CanTp_RxNSduType *rxConfigParams,
 	rxRuntimeParams->iso15765.framesHandledCount = 0;
 	rxRuntimeParams->iso15765.nextFlowControlCount = 0;
 	rxRuntimeParams->pdurBufferCount = 0;
-	rxRuntimeParams->pduLenghtTotalBytes = 0;
-	rxRuntimeParams->pduTransferedBytesCount = 0;
+	rxRuntimeParams->transferTotal = 0;
+	rxRuntimeParams->transferCount = 0;
 	rxRuntimeParams->mode = CANTP_RX_WAIT; /** @req CANTP030 */
-	rxRuntimeParams->bufferPduRouter = NULL;
+	rxRuntimeParams->pdurBuffer = NULL;
 }
 
 // - - - - - - - - - - - - - -
@@ -412,10 +412,10 @@ void initTx15765RuntimeData(const CanTp_TxNSduType *txConfigParams,
 	txRuntimeParams->iso15765.framesHandledCount = 0;
 	txRuntimeParams->iso15765.nextFlowControlCount = 0;
 	txRuntimeParams->pdurBufferCount = 0;
-	txRuntimeParams->pduLenghtTotalBytes = 0;
-	txRuntimeParams->pduTransferedBytesCount = 0;
+	txRuntimeParams->transferTotal = 0;
+	txRuntimeParams->transferCount = 0;
 	txRuntimeParams->mode = CANTP_TX_WAIT; /** @req CANTP030 */
-	txRuntimeParams->bufferPduRouter = NULL;
+	txRuntimeParams->pdurBuffer = NULL;
 
 }
 
@@ -431,10 +431,10 @@ static INLINE BufReq_ReturnType copySegmentToPduRRxBuffer(const CanTp_RxNSduType
 
 	while ((*bytesWrittenSuccessfully < segmentSize) && error == FALSE) {
 		// Copy the data that resides in the buffer.
-		if (rxRuntime->bufferPduRouter != NULL) {
+		if (rxRuntime->pdurBuffer != NULL) {
 			while ((*bytesWrittenSuccessfully < segmentSize ) &&
-					(rxRuntime->bufferPduRouter->SduLength > rxRuntime->pdurBufferCount)) {
-				rxRuntime->bufferPduRouter->SduDataPtr[rxRuntime->pdurBufferCount++]
+					(rxRuntime->pdurBuffer->SduLength > rxRuntime->pdurBufferCount)) {
+				rxRuntime->pdurBuffer->SduDataPtr[rxRuntime->pdurBufferCount++]
 						= segment[(*bytesWrittenSuccessfully)++];
 			}
 		}
@@ -442,14 +442,14 @@ static INLINE BufReq_ReturnType copySegmentToPduRRxBuffer(const CanTp_RxNSduType
 			// We need to request a new buffer from the SDUR.
 			// qqq: TODO: We should do a timeout here.
 			ret = PduR_CanTpProvideRxBuffer(rxConfig->PduR_PduId,  /** @req CANTP079 */ /** @req CANTP080 */ /** @req CANTP064 */
-							rxRuntime->pduLenghtTotalBytes,
-							&rxRuntime->bufferPduRouter);
+							rxRuntime->transferTotal,
+							&rxRuntime->pdurBuffer);
 			if (ret == BUFREQ_OK) {
-				VALIDATE( rxRuntime->bufferPduRouter->SduDataPtr != NULL,
+				VALIDATE( rxRuntime->pdurBuffer->SduDataPtr != NULL,
 						SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_RX_BUFFER );
 				rxRuntime->pdurBufferCount = 0; // The buffer is emptied.
 			} else if (ret == BUFREQ_BUSY) {
-				rxRuntime->pduTransferedBytesCount += *bytesWrittenSuccessfully;
+				rxRuntime->transferCount += *bytesWrittenSuccessfully;
 				error = TRUE;
 				break;
 			} else {
@@ -457,7 +457,7 @@ static INLINE BufReq_ReturnType copySegmentToPduRRxBuffer(const CanTp_RxNSduType
 				break;
 			}
 		} else {
-			rxRuntime->pduTransferedBytesCount += segmentSize; //== bytesWrittenSuccessfully
+			rxRuntime->transferCount += segmentSize; //== bytesWrittenSuccessfully
 			ret = BUFREQ_OK;
 			break;
 		}
@@ -544,7 +544,7 @@ static INLINE void sendFlowControlFrame(const CanTp_RxNSduType *rxConfig,
 	{
 		sduData[indexCount++] = ISO15765_TPCI_FC
 				| ISO15765_FLOW_CONTROL_STATUS_CTS;
-		spaceFreePduRBuffer = rxRuntime->bufferPduRouter->SduLength -
+		spaceFreePduRBuffer = rxRuntime->pdurBuffer->SduLength -
 				rxRuntime->pdurBufferCount;
 		if (rxConfig->CanTpAddressingFormant == CANTP_EXTENDED) { /** @req CANTP094 *//** @req CANTP095 */
 			computedBs = spaceFreePduRBuffer / MAX_PAYLOAD_SF_EXT_ADDR + 1;  // + 1 is for local buffer.
@@ -568,7 +568,7 @@ static INLINE void sendFlowControlFrame(const CanTp_RxNSduType *rxConfig,
 				| ISO15765_FLOW_CONTROL_STATUS_WAIT;
 		pduInfo.SduLength = indexCount;
 		break;
-	case BUFREQ_OVFL: //* qqq req: CanTp 081 */
+	case BUFREQ_OVFL: /** @req CANTP081 */
 		sduData[indexCount++] = ISO15765_TPCI_FC
 				| ISO15765_FLOW_CONTROL_STATUS_OVFLW;
 		pduInfo.SduLength = indexCount;
@@ -614,8 +614,8 @@ static INLINE void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
 		rxRuntime->mode = CANTP_RX_WAIT;
 	} else {
 		currentSegmentMaxSize = CANIF_PDU_MAX_LENGTH - indexCount;
-		bytesLeftToCopy = rxRuntime->pduLenghtTotalBytes
-				- rxRuntime->pduTransferedBytesCount;
+		bytesLeftToCopy = rxRuntime->transferTotal
+				- rxRuntime->transferCount;
 		if (bytesLeftToCopy < currentSegmentMaxSize) {
 			currentSegmentSize = bytesLeftToCopy; // 1-5.
 		} else {
@@ -663,7 +663,7 @@ static INLINE void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
 				sendFlowControlFrame(rxConfig, rxRuntime, ret);  /** @req CANTP082 */
 			}
 		} else if (ret == BUFREQ_OK) {
-			bytesLeftToTransfer = rxRuntime->pduLenghtTotalBytes - rxRuntime->pduTransferedBytesCount;
+			bytesLeftToTransfer = rxRuntime->transferTotal - rxRuntime->transferCount;
 			if (bytesLeftToTransfer > 0) {
 				rxRuntime->iso15765.framesHandledCount++;
 				COUNT_DECREMENT(rxRuntime->iso15765.nextFlowControlCount);
@@ -702,8 +702,8 @@ static INLINE Std_ReturnType sendConsecutiveFrame(
 	// Always copy from the PDUR buffer data to the canFrameBuffer because if
 	// we are unlucky the application give us very small buffers.
 	consecutiveFrameMaxPayload  = CANIF_PDU_MAX_LENGTH - indexCount;
-	remaningSduDataSize = txRuntime->pduLenghtTotalBytes
-			- txRuntime->pduTransferedBytesCount;
+	remaningSduDataSize = txRuntime->transferTotal
+			- txRuntime->transferCount;
 
 	// Calculate number of valid bytes that reside in this CF.
 	if ( remaningSduDataSize < consecutiveFrameMaxPayload  ) {
@@ -713,14 +713,14 @@ static INLINE Std_ReturnType sendConsecutiveFrame(
 	}
 	copyCount = txRuntime->canFrameBuffer.byteCount; // maybe some bytes already reside in the buffer that we need to handle before proceeding with application buffer data.
 	while (copyCount < consecutiveFrameActualPayload) {
-		if ( txRuntime->bufferPduRouter->SduLength > txRuntime->pdurBufferCount ) {
+		if ( txRuntime->pdurBuffer->SduLength > txRuntime->pdurBufferCount ) {
 			txRuntime->canFrameBuffer.data[copyCount] =
-					txRuntime->bufferPduRouter->SduDataPtr[txRuntime->pdurBufferCount++];
+					txRuntime->pdurBuffer->SduDataPtr[txRuntime->pdurBufferCount++];
 			copyCount++;
 			txRuntime->canFrameBuffer.byteCount++;
 		} else {
 			BufReq_ReturnType pdurResp = PduR_CanTpProvideTxBuffer(txConfig->PduR_PduId, /** @req CANTP226 */ /** @req CANTP086 */ /** @req CANTP117 */
-					&txRuntime->bufferPduRouter, 0);
+					&txRuntime->pdurBuffer, 0);
 			if (pdurResp == BUFREQ_OK) {
 				txRuntime->pdurBufferCount = 0;
 				continue;
@@ -746,9 +746,9 @@ static INLINE Std_ReturnType sendConsecutiveFrame(
 			// the scenario where the CAN queue is full.
 			txRuntime->iso15765.framesHandledCount++;
 			COUNT_DECREMENT(txRuntime->iso15765.nextFlowControlCount);
-			txRuntime->pduTransferedBytesCount += txRuntime->canFrameBuffer.byteCount;
+			txRuntime->transferCount += txRuntime->canFrameBuffer.byteCount;
 			txRuntime->canFrameBuffer.byteCount = 0;
-			DEBUG( DEBUG_MEDIUM, "pduTransferedBytesCount:%d\n", txRuntime->pduTransferedBytesCount);
+			DEBUG( DEBUG_MEDIUM, "transferCount:%d\n", txRuntime->transferCount);
 		}
 	} else {
 		DEBUG( DEBUG_MEDIUM, "Unexpected error, should not happen!\n");
@@ -762,7 +762,7 @@ static INLINE Std_ReturnType sendConsecutiveFrame(
 static INLINE void handleConsecutiveFrameSent(
 		const CanTp_TxNSduType *txConfig, CanTp_ChannelPrivateType *txRuntime) {
 
-	if (txRuntime->pduLenghtTotalBytes <= txRuntime->pduTransferedBytesCount) {
+	if (txRuntime->transferTotal <= txRuntime->transferCount) {
 		// Transfer finished!
 		txRuntime->iso15765.state = IDLE;
 		txRuntime->mode = CANTP_TX_WAIT;
@@ -803,6 +803,7 @@ static INLINE void handleFlowControlFrame(const CanTp_TxNSduType *txConfig,
 		txRuntime->iso15765.BS = txPduData->SduDataPtr[indexCount++];
 		txRuntime->iso15765.nextFlowControlCount = txRuntime->iso15765.BS;
 		txRuntime->iso15765.STmin = txPduData->SduDataPtr[indexCount++];
+		DEBUG( DEBUG_MEDIUM, "txRuntime->iso15765.STmin = %d\n", txRuntime->iso15765.STmin);
 		ret = sendConsecutiveFrame(txConfig, txRuntime);
 		if (ret == E_OK) {
 			handleConsecutiveFrameSent(txConfig, txRuntime);
@@ -836,7 +837,7 @@ static INLINE void handleSingleFrame(const CanTp_RxNSduType *rxConfig,
 	uint8 *data = NULL;
 	PduLengthType bytesWrittenToSduRBuffer;
 
-	DEBUG( DEBUG_MEDIUM, "handleSingleFrame called!\n");
+
 	if (rxRuntime->iso15765.state != IDLE) {
 		DEBUG( DEBUG_MEDIUM, "Single frame received and channel not IDLE!\n");
 	}
@@ -844,7 +845,7 @@ static INLINE void handleSingleFrame(const CanTp_RxNSduType *rxConfig,
 	pduLength = getPduLength(&rxConfig->CanTpAddressingFormant, SINGLE_FRAME,
 			rxPduData);
 
-	VALIDATE_NO_RV( rxRuntime->bufferPduRouter->SduDataPtr != NULL,
+	VALIDATE_NO_RV( rxRuntime->pdurBuffer->SduDataPtr != NULL,
 			SERVICE_ID_CANTP_RX_INDICATION, CANTP_E_INVALID_RX_LENGTH );
 
 	if (rxConfig->CanTpAddressingFormant == CANTP_STANDARD) { /** @req CANTP094 *//** @req CANTP095 */
@@ -852,7 +853,7 @@ static INLINE void handleSingleFrame(const CanTp_RxNSduType *rxConfig,
 	} else {
 		data = &rxPduData->SduDataPtr[2];
 	}
-	rxRuntime->pduLenghtTotalBytes = pduLength;
+	rxRuntime->transferTotal = pduLength;
 	rxRuntime->iso15765.state = SF_OR_FF_RECEIVED_WAITING_PDUR_BUFFER;
 	rxRuntime->mode = CANTP_RX_PROCESSING;
 	rxRuntime->iso15765.stateTimeoutCount =
@@ -896,9 +897,9 @@ static INLINE void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 	(void) initRx15765RuntimeData(rxConfig, rxRuntime); /** @req CANTP124 */
 	pduLength = getPduLength(&rxConfig->CanTpAddressingFormant, FIRST_FRAME,
 			rxPduData);
-	rxRuntime->pduLenghtTotalBytes = pduLength;
+	rxRuntime->transferTotal = pduLength;
 
-	VALIDATE_NO_RV( rxRuntime->pduLenghtTotalBytes != 0,
+	VALIDATE_NO_RV( rxRuntime->transferTotal != 0,
 			SERVICE_ID_CANTP_RX_INDICATION, CANTP_E_INVALID_RX_LENGTH );
 
 	// Validate that that there is a reason for using the segmented transfers and
@@ -967,11 +968,11 @@ static INLINE Std_ReturnType calcRequiredProtocolFrameType(
 
 	Std_ReturnType ret;
 	if (txConfig->CanTpAddressingMode == CANTP_EXTENDED) {
-		if ( txRuntime->pduLenghtTotalBytes > MAX_PAYLOAD_CF_EXT_ADDR ) {
+		if ( txRuntime->transferTotal > MAX_PAYLOAD_CF_EXT_ADDR ) {
 			VALIDATE( txConfig->CanTpTxTaType == CANTP_FUNCTIONAL,
 					SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TATYPE );
 		}
-		if (txRuntime->pduLenghtTotalBytes > MAX_PAYLOAD_CF_EXT_ADDR) {
+		if (txRuntime->transferTotal > MAX_PAYLOAD_CF_EXT_ADDR) {
 			if (txConfig->CanTpTxTaType == CANTP_PHYSICAL) {
 				*iso15765Frame = FIRST_FRAME;
 				ret = E_OK;
@@ -984,11 +985,11 @@ static INLINE Std_ReturnType calcRequiredProtocolFrameType(
 			ret = E_OK;
 		}
 	} else {
-		if ( txRuntime->pduLenghtTotalBytes > MAX_PAYLOAD_CF_EXT_ADDR ) {
+		if ( txRuntime->transferTotal > MAX_PAYLOAD_CF_EXT_ADDR ) {
 			VALIDATE( txConfig->CanTpTxTaType == CANTP_FUNCTIONAL,
 					SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TATYPE );
 		}
-		if (txRuntime->pduLenghtTotalBytes > MAX_PAYLOAD_CF_STD_ADDR) {
+		if (txRuntime->transferTotal > MAX_PAYLOAD_CF_STD_ADDR) {
 			if (txConfig->CanTpTxTaType == CANTP_PHYSICAL) {
 				*iso15765Frame = FIRST_FRAME;
 				ret = E_OK;
@@ -1018,9 +1019,9 @@ static INLINE Std_ReturnType sendSingleFrame(const CanTp_TxNSduType *txConfig,
 	if (txConfig->CanTpAddressingMode == CANTP_EXTENDED) { /** @req CANTP094 *//** @req CANTP095 */
 		sduData[indexCount++] = (uint8) txConfig->CanTpNTa->CanTpNTa; // Target address.
 	}
-	sduData[indexCount++] = ISO15765_TPCI_SF | txRuntime->pduLenghtTotalBytes;
-	for (int i = 0; i < txRuntime->pduLenghtTotalBytes; i++) {
-		sduData[indexCount++] = txRuntime->bufferPduRouter->SduDataPtr[i];
+	sduData[indexCount++] = ISO15765_TPCI_SF | txRuntime->transferTotal;
+	for (int i = 0; i < txRuntime->transferTotal; i++) {
+		sduData[indexCount++] = txRuntime->pdurBuffer->SduDataPtr[i];
 	}
 
 	pduInfo.SduDataPtr = sduData;
@@ -1045,15 +1046,15 @@ static INLINE Std_ReturnType sendFirstFrame(const CanTp_TxNSduType *txConfig,
 		sduData[indexCount++] = (uint8) txConfig->CanTpNTa->CanTpNTa; // Target address.
 	}
 	sduData[indexCount++] = ISO15765_TPCI_FF | (uint8)(
-			(txRuntime->pduLenghtTotalBytes & 0xf00) >> 8);
-	sduData[indexCount++] = (uint8)(txRuntime->pduLenghtTotalBytes & 0xff);
+			(txRuntime->transferTotal & 0xf00) >> 8);
+	sduData[indexCount++] = (uint8)(txRuntime->transferTotal & 0xff);
 	for (i = 0; indexCount < CANIF_PDU_MAX_LENGTH; i++) {
-		sduData[indexCount++] = txRuntime->bufferPduRouter->SduDataPtr[i];
+		sduData[indexCount++] = txRuntime->pdurBuffer->SduDataPtr[i];
 		txRuntime->pdurBufferCount++;
-		if (txRuntime->pdurBufferCount > txRuntime->bufferPduRouter->SduLength) {
+		if (txRuntime->pdurBufferCount > txRuntime->pdurBuffer->SduLength) {
 			// qqq: TODO: Report failure - this is unexpected.
 		}
-		txRuntime->pduTransferedBytesCount++;
+		txRuntime->transferCount++;
 	}
 	pduInfo.SduDataPtr = sduData;
 	pduInfo.SduLength = indexCount;
@@ -1071,9 +1072,9 @@ static INLINE BufReq_ReturnType canTpTransmitHelper(const CanTp_TxNSduType *txCo
 	ISO15765FrameType iso15765Frame = INVALID_FRAME;
 
 	pdurResp = PduR_CanTpProvideTxBuffer(txConfig->PduR_PduId,
-			&txRuntime->bufferPduRouter, 0);  /** @req CANTP226 */ /** @req CANTP186 */
+			&txRuntime->pdurBuffer, 0);  /** @req CANTP226 */ /** @req CANTP186 */
 	//if (txRuntime->iso15765.stateTimeoutCount != 0) {   qqq: WHY WAS THIS DONE?
-		VALIDATE( txRuntime->bufferPduRouter->SduDataPtr != NULL,
+		VALIDATE( txRuntime->pdurBuffer->SduDataPtr != NULL,
 				SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TX_BUFFER );
 		if (pdurResp == BUFREQ_OK) {
 			res = calcRequiredProtocolFrameType(txConfig, txRuntime, &iso15765Frame);
@@ -1148,10 +1149,9 @@ Std_ReturnType CanTp_Transmit(PduIdType CanTpTxSduId,
 	if (txRuntime->mode != CANTP_TX_PROCESSING) {
 		txRuntime->pdurBufferCount = 0;
 		txRuntime->pdurBufferCount = 0;
-		txRuntime->pduTransferedBytesCount = 0;
+		txRuntime->transferCount = 0;
 		txRuntime->iso15765.framesHandledCount = 0;
-		//txRuntime->iso15765->framesHandledCount = 0;
-		txRuntime->pduLenghtTotalBytes = CanTpTxInfoPtr->SduLength; /** @req CANTP225 */
+		txRuntime->transferTotal = CanTpTxInfoPtr->SduLength; /** @req CANTP225 */
 		txRuntime->iso15765.stateTimeoutCount =
 				CANTP_CONVERT_MS_TO_MAIN_CYCLES(txConfig->CanTpNcs);
 		txRuntime->mode = CANTP_TX_PROCESSING;
@@ -1280,7 +1280,7 @@ void CanTp_RxIndication_Main(PduIdType CanTpRxPduId,
 			handleSingleFrame(rxConfigParams, runtimeParams, CanTpRxPduPtr);
 		}
 		else
-			DEBUG( DEBUG_MEDIUM, "Single frame received on ISO15765-Tx flow control - is ingnored!\n");
+			DEBUG( DEBUG_MEDIUM, "Single frame received on ISO15765-Tx flow control - is ignored!\n");
 		break;
 	}
 	case FIRST_FRAME: {
@@ -1356,7 +1356,7 @@ void CanTp_TxConfirmation(PduIdType PduId) /** req: CanTp215 **/ /** @req CANTP0
 
 // - - - - - - - - - - - - - -
 
-void CanTp_Shutdown() /** req : CanTp202 **//** req : CanTp200 **//** req : CanTp211 **/ /** @req CANTP010 */
+void CanTp_Shutdown() /** req : CanTp202 **//** req : CanTp200 **//** req : CanTp211 **//** @req CANTP010 */
 {
 	VALIDATE_NO_RV( CanTpRunTimeData.internalState == CANTP_ON,
 			SERVICE_ID_CANTP_SHUTDOWN, CANTP_E_UNINIT ); /** @req CANTP031 */
@@ -1430,22 +1430,28 @@ void CanTp_MainFunction() /** @req CANTP213 */
 				txRuntimeListItem->mode = CANTP_TX_WAIT;
 				break;
 			}
-			case TX_WAIT_CAN_TP_TRANSMIT_PENDING:
+			case TX_WAIT_CAN_TP_TRANSMIT_PENDING: {
 				(void) canTpTransmitHelper(txConfigListItem, txRuntimeListItem);/** @req CANTP184 */ /** @req CANTP089 */
 				break;
-			case TX_WAIT_SEND_CONSECUTIVE_FRAME:
-				ret = sendConsecutiveFrame(txConfigListItem, txRuntimeListItem);
-				/* qqq: TODO: We have a CAN error, put in log-file? */
-				if ( ret == E_OK ) {
-					handleConsecutiveFrameSent(txConfigListItem, txRuntimeListItem);
+			}
+			case TX_WAIT_SEND_CONSECUTIVE_FRAME: {
+				TIMER_DECREMENT (rxRuntimeListItem->iso15765.stateTimeoutCount); // Make sure that STmin timer has expired.
+				if (txRuntimeListItem->iso15765.stateTimeoutCount == 0) {
+					ret = sendConsecutiveFrame(txConfigListItem, txRuntimeListItem);
+					if ( ret == E_OK ) {
+						handleConsecutiveFrameSent(txConfigListItem, txRuntimeListItem);
+					} else {
+						DEBUG( DEBUG_MEDIUM, "ERROR: Consecutive frame could not be sent!\n");
+						PduR_CanTpTxConfirmation(txConfigListItem->PduR_PduId,
+								(NotifResultType) NTFRSLT_E_NOT_OK); /** @req CANTP204 */
+						txRuntimeListItem->iso15765.state = IDLE;
+						txRuntimeListItem->mode = CANTP_TX_WAIT;
+					}
 				} else {
-					DEBUG( DEBUG_MEDIUM, "ERROR: Consecutive frame could not be sent!\n");
-					PduR_CanTpTxConfirmation(txConfigListItem->PduR_PduId,
-							(NotifResultType) NTFRSLT_E_NOT_OK); /** @req CANTP204 */
-					txRuntimeListItem->iso15765.state = IDLE;
-					txRuntimeListItem->mode = CANTP_TX_WAIT;
+					DEBUG( DEBUG_MEDIUM, "Waiting for STmin timer to expire!\n");
 				}
 				break;
+			}
 			case TX_WAIT_FLOW_CONTROL:
 				//DEBUG( DEBUG_MEDIUM, "Waiting for flow control!\n");
 				if (txRuntimeListItem->iso15765.stateTimeoutCount == 0) {
@@ -1492,8 +1498,8 @@ void CanTp_MainFunction() /** @req CANTP213 */
 								rxRuntimeListItem->canFrameBuffer.data,
 								rxRuntimeListItem->canFrameBuffer.byteCount,
 								&bytesWrittenToSduRBuffer);
-					bytesRemaining = rxRuntimeListItem->pduLenghtTotalBytes -
-							rxRuntimeListItem->pduTransferedBytesCount;
+					bytesRemaining = rxRuntimeListItem->transferTotal -
+							rxRuntimeListItem->transferCount;
 					if (bytesRemaining > 0) {
 						sendFlowControlFrame( rxConfigListItem, rxRuntimeListItem, ret ); /** @req CANTP224 (Busy or CTS) */
 					}

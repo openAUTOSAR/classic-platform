@@ -13,6 +13,7 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** @req CANTP160 */
 
 #ifndef CANTP_TYPES_H_
 #define CANTP_TYPES_H_
