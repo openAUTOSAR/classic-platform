@@ -22,7 +22,7 @@
 #include "ComM_Dcm.h"
 #include "PduR_Dcm.h"
 #include "ComStack_Types.h"
-#define USE_DEBUG_PRINTF
+//#define USE_DEBUG_PRINTF
 #include "debug.h"
 
 #define DECREMENT(timer) { if (timer > 0) timer--; }

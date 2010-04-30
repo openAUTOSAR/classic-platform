@@ -160,24 +160,24 @@ typedef struct {
 
 // 10.2.22
 typedef struct _Dcm_DspDidType {
-	boolean DspDidUsePort; // (1)
-	uint16 DspDidIdentifier; // (1)
-	uint16 DspDidSize; // (1)
-	const Dcm_DspDidInfoType *DspDidInfoRef; // (1)
-	const struct _Dcm_DspDidType **DspDidRef; // (0..*)
-	Dcm_CallbackReadDataLengthFncType DspDidReadDataLengthFnc;		// (0..1)
-	Dcm_CallbackConditionCheckReadFncType DspDidConditionCheckReadFnc; // (0..1)
-	Dcm_CallbackReadDataFncType DspDidReadDataFnc; // (0..1)
-	Dcm_CallbackConditionCheckWriteFncType DspDidConditionCheckWriteFnc; // (0..1)
-	Dcm_CallbackWriteDataFncType DspDidWriteDataFnc; // (0..1)
-	Dcm_CallbackGetScalingInformationFncType DspDidGetScalingInfoFnc; // (0..1)
-	Dcm_CallbackFreezeCurrentStateFncType DspDidFreezeCurrentStateFnc; // (0..1)
-	Dcm_CallbackResetToDefaultFncType DspDidResetToDeaultFnc; // (0..1)
-	Dcm_CallbackReturnControlToECUFncType DspDidReturnControlToEcuFnc; // (0..1)
-	Dcm_CallbackShortTermAdjustmentFncType DspDidShortTermAdjustmentFnc; // (0..1)
+	boolean										DspDidUsePort;					// (1)
+	uint16										DspDidIdentifier;				// (1)
+	const Dcm_DspDidInfoType					*DspDidInfoRef;					// (1)
+	const struct _Dcm_DspDidType				**DspDidRef;					// (0..*)
+	uint16										DspDidSize;						// (1)
+	Dcm_CallbackReadDataLengthFncType			DspDidReadDataLengthFnc;		// (0..1)
+	Dcm_CallbackConditionCheckReadFncType		DspDidConditionCheckReadFnc;	// (0..1)
+	Dcm_CallbackReadDataFncType					DspDidReadDataFnc;				// (0..1)
+	Dcm_CallbackConditionCheckWriteFncType		DspDidConditionCheckWriteFnc;	// (0..1)
+	Dcm_CallbackWriteDataFncType				DspDidWriteDataFnc;				// (0..1)
+	Dcm_CallbackGetScalingInformationFncType	DspDidGetScalingInfoFnc;		// (0..1)
+	Dcm_CallbackFreezeCurrentStateFncType		DspDidFreezeCurrentStateFnc;	// (0..1)
+	Dcm_CallbackResetToDefaultFncType			DspDidResetToDeaultFnc;			// (0..1)
+	Dcm_CallbackReturnControlToECUFncType		DspDidReturnControlToEcuFnc;	// (0..1)
+	Dcm_CallbackShortTermAdjustmentFncType		DspDidShortTermAdjustmentFnc;	// (0..1)
 	// Containers
-	const Dcm_DspDidControlRecordSizesType *DspDidControlRecordSize; // (0..*)
-	boolean	Arc_EOL;
+	const Dcm_DspDidControlRecordSizesType		*DspDidControlRecordSize;		// (0..*)
+	boolean										Arc_EOL;
 } Dcm_DspDidType;
 
 // 10.2.30
