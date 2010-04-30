@@ -17,14 +17,29 @@
 #include "task_i.h"
 #include "hooks.h"
 #include "stm32f10x.h"
-#include "misc.h"
 #include "irq.h"
 #include "core_cm3.h"
 
 extern void *Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
 
+/*
+* PRIGROUP[2:0] 	Group prios 	Sub prios
+* 0b011 			16 				None
+* 0b100 			8 				2
+* 0b101 			4 				4
+* 0b110 			2 				8
+* 0b111 			None 			16
+*/
+#define AIRCR_VECTKEY    ((uint32_t)0x05FA0000)
+
+/** Set NVIC prio group */
+static void NVIC_SetPrioGroup(uint32_t prioGroup)
+{
+  SCB->AIRCR = AIRCR_VECTKEY | (prioGroup<<8);
+}
+
 void Irq_Init( void ) {
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+	NVIC_SetPrioGroup(3); // No sub prioritys
 }
 
 void Irq_EOI( void ) {
@@ -47,6 +62,19 @@ void Irq_EOI( void ) {
  */
 static uint32_t NVIC_GetActiveVector( void) {
 	return (SCB->ICSR &  ICSR_VECTACTIVE);
+}
+
+/**
+ * Init NVIC vector. We do not use subriority
+ *
+ */
+static void NVIC_InitVector(uint8_t vector, uint32_t prio)
+{
+	// Set prio
+	NVIC->IP[vector] = prio;
+
+	// Enable
+    NVIC->ISER[vector >> 5] = (uint32_t)1 << (vector & (uint8_t)0x1F);
 }
 
 /**
@@ -89,17 +117,7 @@ void *Irq_Entry( void *stack_p )
  */
 void Irq_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector, uint8_t prio) {
 
-	// TODO: Use NVIC_Init here
-	/*
-  NVIC_InitTypeDef NVIC_InitStructure;
-
-  // Enable and configure RCC global IRQ channel
-  NVIC_InitStructure.NVIC_IRQChannel = RCC_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-  NVIC_Init(&NVIC_InitStructure);
-   */
+	// TODO: Use NVIC_InitVector(vector, osPrioToCpuPio(pcb->prio)); here
 }
 
 static inline int osPrioToCpuPio( uint8_t prio ) {
@@ -117,19 +135,11 @@ static inline int osPrioToCpuPio( uint8_t prio ) {
  */
 void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
 	OsPcbType *pcb;
-	NVIC_InitTypeDef irqInit;
 
 	pcb = os_find_task(tid);
 	Irq_VectorTable[vector+16] = (void *)pcb;
 
-	irqInit.NVIC_IRQChannel = vector;
-	irqInit.NVIC_IRQChannelPreemptionPriority = osPrioToCpuPio(pcb->prio);
-	irqInit.NVIC_IRQChannelSubPriority = 0;
-	irqInit.NVIC_IRQChannelCmd = ENABLE;
-
-
-	// TODO: Same as for AttachIsr1
-	NVIC_Init(&irqInit);
+	NVIC_InitVector(vector, osPrioToCpuPio(pcb->prio));
 }
 
 
