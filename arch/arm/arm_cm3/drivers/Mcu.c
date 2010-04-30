@@ -178,14 +178,15 @@ static uint32 Mcu_CheckCpu( void ) {
   return 0;
 }
 
+static uint32_t GetPllValueFromMult(uint8_t pll)
+{
+	return (((uint32_t)pll - 2) << 18);
+}
+
 /**
-  * Set bus clocks.
-  * SysClk  = 72MHz
-  * AHBClk  = 72MHz
-  * APB1Clk = 72MHz/2
-  * APB2Clk = 72MHz
+  * Set bus clocks. SysClk,AHBClk,APB1Clk,APB2Clk
   */
-static void SetClocks(void)
+static void SetClocks(Mcu_ClockSettingConfigType *clockSettingsPtr)
 {
   volatile uint32 StartUpCounter = 0, HSEStatus = 0;
 
@@ -235,7 +236,7 @@ static void SetClocks(void)
 
     RCC->CFGR2 &= (uint32_t)~(RCC_CFGR2_PREDIV2 | RCC_CFGR2_PLL2MUL |
                               RCC_CFGR2_PREDIV1 | RCC_CFGR2_PREDIV1SRC);
-    RCC->CFGR2 |= (uint32_t)(RCC_CFGR2_PREDIV2_DIV5 | RCC_CFGR2_PLL2MUL8 |
+    RCC->CFGR2 |= (uint32_t)(RCC_CFGR2_PREDIV2_DIV5 | GetPllValueFromMult(clockSettingsPtr->Pll2) |
                              RCC_CFGR2_PREDIV1SRC_PLL2 | RCC_CFGR2_PREDIV1_DIV5);
 
     /* Enable PLL2 */
@@ -248,12 +249,12 @@ static void SetClocks(void)
     /* PLL configuration: PLLCLK = PREDIV1 * 9 = 72 MHz */
     RCC->CFGR &= (uint32_t)~(RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLSRC | RCC_CFGR_PLLMULL);
     RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLXTPRE_PREDIV1 | RCC_CFGR_PLLSRC_PREDIV1 |
-                            RCC_CFGR_PLLMULL9);
+    		                GetPllValueFromMult(clockSettingsPtr->Pll1));
 #else
     /*  PLL configuration: PLLCLK = HSE * 9 = 72 MHz */
     RCC->CFGR &= (uint32_t)((uint32_t)~(RCC_CFGR_PLLSRC | RCC_CFGR_PLLXTPRE |
                                         RCC_CFGR_PLLMULL));
-    RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_HSE | RCC_CFGR_PLLMULL9);
+    RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_HSE | GetPllValueFromMult(clockSettingsPtr->Pll1));
 #endif /* STM32F10X_CL */
 
     /* Enable PLL */
@@ -282,7 +283,7 @@ static void SetClocks(void)
 /**
   * Initialize Flash, PLL and clocks.
   */
-static void InitMcu(void)
+static void InitMcuClocks(Mcu_ClockSettingConfigType *clockSettingsPtr)
 {
   /* Reset the RCC clock configuration to the default reset state(for debug purpose) */
   /* Set HSION bit */
@@ -320,7 +321,7 @@ static void InitMcu(void)
 
   /* Configure the System clock frequency, HCLK, PCLK2 and PCLK1 prescalers */
   /* Configure the Flash Latency cycles and enable prefetch buffer */
-  SetClocks();
+  SetClocks(clockSettingsPtr);
 }
 
 //-------------------------------------------------------------------
@@ -334,8 +335,6 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
   }
 
   memset(&Mcu_Global.stats,0,sizeof(Mcu_Global.stats));
-
-  InitMcu();
 
   Irq_Enable();
 
@@ -373,6 +372,7 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
   Mcu_Global.clockSetting = ClockSetting;
   clockSettingsPtr = &Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting];
 
+  InitMcuClocks(clockSettingsPtr);
 
   return E_OK;
 }
@@ -493,20 +493,22 @@ void Mcu_SetMode(const Mcu_ModeType McuMode)
  */
 uint32_t McuE_GetSystemClock(void)
 {
-  /*
-   * System clock calculation
-   *
-   */
+  uint32_t f_sys;
 
-  // TODO: This of course wrong....
-  uint32_t f_sys = 72000000UL;
-#if 0
   uint32  extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePointFrequency;
+  uint32 pll1 = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].Pll1;
 
-  f_sys =  CALC_SYSTEM_CLOCK(extal,emfd,eprediv,erfd);
+#ifdef STM32F10X_CL
+  uint32 pll2 = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].Pll2;
+  /* PLL2 configuration: PLL2CLK = (HSE / 5) * PLL2 */
+  /* PREDIV1 configuration: PREDIV1CLK = PLL2 / 5 */
+  /* PLL configuration: PLLCLK = PREDIV1 * PLL1 */
+  f_sys = (extal / 5 * pll2) / 5 * pll1;
+#else
+  /* PLL configuration: PLLCLK = HSE * PLL1 */
+  f_sys = extal * pll1;
 #endif
 
-//  f_sys = extal * (emfd+16) / ( (eprediv+1) * ( erfd+1 ));
   return f_sys;
 }
 
@@ -530,14 +532,27 @@ void McuE_ExitCriticalSection(uint32_t old_state)
 /**
  * Get the peripheral clock in Hz for a specific device
  */
-
-#if 0
 uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 {
+	uint32_t res = 0;
 
-	return 0;
+	switch(type)
+	{
+	case PERIPHERAL_CLOCK_AHB:
+		res = McuE_GetSystemClock();
+		break;
+	case PERIPHERAL_CLOCK_APB1:
+		res = McuE_GetSystemClock() / 2;
+		break;
+	case PERIPHERAL_CLOCK_APB2:
+		res = McuE_GetSystemClock();
+		break;
+	default:
+		break;
+	}
+
+	return res;
 }
-#endif
 
 
 /**

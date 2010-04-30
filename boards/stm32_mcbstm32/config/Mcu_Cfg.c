@@ -36,16 +36,10 @@ Mcu_ClockSettingConfigType Mcu_ClockSettingConfigData[] =
 {
   {
     .McuClockReferencePointFrequency = 8000000UL,
-    .Pll1 = 1,
-    .Pll2    = 104,
-    .Pll3    = 5,
+    .Pll1    = 9,
+    .Pll2    = 0,
+    .Pll3    = 0,
   },
-  {
-    .McuClockReferencePointFrequency = 16000000UL,
-    .Pll1 = 3,
-    .Pll2    = 83,
-    .Pll3    = 5,
-  }
 };
 
 
@@ -69,7 +63,7 @@ Mcu_ClockSettingConfigType Mcu_ClockSettingConfigData[] =
   .McuClockSettings = MCU_NBR_OF_CLOCKS,
 
   // Default clock frequency used
-  .McuDefaultClockSettings = MCU_CLOCKTYPE_EXT_REF_80MHZ,
+  .McuDefaultClockSettings = MCU_CLOCKTYPE_EXT_REF_8MHZ,
 
   //  This parameter relates to the MCU specific reset configuration. This ap-
   //  plies to the function Mcu_PerformReset, which performs a microcontroller

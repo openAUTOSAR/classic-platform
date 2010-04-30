@@ -35,17 +35,11 @@ Mcu_RamSectorSettingConfigType Mcu_RamSectorSettingConfigData[] = {
 Mcu_ClockSettingConfigType Mcu_ClockSettingConfigData[] =
 {
   {
-    .McuClockReferencePointFrequency = 8000000UL,
-    .Pll1 = 1,
-    .Pll2    = 104,
-    .Pll3    = 5,
+    .McuClockReferencePointFrequency = 25000000UL,
+    .Pll1 = 9,
+    .Pll2 = 8,
+    .Pll3 = 0,
   },
-  {
-    .McuClockReferencePointFrequency = 16000000UL,
-    .Pll1 = 3,
-    .Pll2    = 83,
-    .Pll3    = 5,
-  }
 };
 
 

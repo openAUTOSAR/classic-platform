@@ -24,8 +24,7 @@
 #include "Std_Types.h"
 
 typedef enum {
-  MCU_CLOCKTYPE_EXT_REF_80MHZ = 0,
-  MCU_CLOCKTYPE_EXT_REF_66MHZ,
+  MCU_CLOCKTYPE_EXT_REF_8MHZ = 0,
   MCU_NBR_OF_CLOCKS,
 } Mcu_ClockType;
 
