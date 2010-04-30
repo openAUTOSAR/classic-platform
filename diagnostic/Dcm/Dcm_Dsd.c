@@ -92,6 +92,22 @@ boolean DsdAskApplicationForServicePermission(uint8 *requestData, uint16 dataSiz
 }
 
 
+void DsdCreateAndSendNcr(Dcm_NegativeResponseCodeType responseCode)
+{
+	if (!((msgData.addrType == DCM_PROTOCOL_FUNCTIONAL_ADDR_TYPE)
+		  && ((responseCode == DCM_E_SERVICENOTSUPPORTED) || (responseCode == DCM_E_SUBFUNCTIONNOTSUPPORTED) || (responseCode == DCM_E_REQUESTOUTOFRANGE)))) {   /** @req DCM001 **/
+		msgData.pduTxData->SduDataPtr[0] = SID_NEGATIVE_RESPONSE;
+		msgData.pduTxData->SduDataPtr[1] = currentSid;
+		msgData.pduTxData->SduDataPtr[2] = responseCode;
+		msgData.pduTxData->SduLength = 3;
+		DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_READY);	/** @req DCM114 **/ /** @req DCM232.1 **/
+	}
+	else {
+		DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_SUPPRESSED);
+	}
+}
+
+
 void DsdSelectServiceFunction(uint8 sid)
 {
 	switch (sid)	 /** @req DCM221 **/
@@ -144,22 +160,6 @@ void DsdSelectServiceFunction(uint8 sid)
 		/* Non implemented service */
 		DsdCreateAndSendNcr(DCM_E_SERVICENOTSUPPORTED);
 		break;
-	}
-}
-
-
-void DsdCreateAndSendNcr(Dcm_NegativeResponseCodeType responseCode)
-{
-	if (!((msgData.addrType == DCM_PROTOCOL_FUNCTIONAL_ADDR_TYPE)
-		  && ((responseCode == DCM_E_SERVICENOTSUPPORTED) || (responseCode == DCM_E_SUBFUNCTIONNOTSUPPORTED) || (responseCode == DCM_E_REQUESTOUTOFRANGE)))) {   /** @req DCM001 **/
-		msgData.pduTxData->SduDataPtr[0] = SID_NEGATIVE_RESPONSE;
-		msgData.pduTxData->SduDataPtr[1] = currentSid;
-		msgData.pduTxData->SduDataPtr[2] = responseCode;
-		msgData.pduTxData->SduLength = 3;
-		DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_READY);	/** @req DCM114 **/ /** @req DCM232.1 **/
-	}
-	else {
-		DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_SUPPRESSED);
 	}
 }
 
