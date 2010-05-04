@@ -13,6 +13,17 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/* CONFIGURATION
+ * - The "etask_master" should be the only autostarted task.
+ * - It can hold at most 3 extended task and 3 basic tasks. They must be called
+ *   etask_sup_l, etask_sup_m, etask_sup_h,
+ *   btask_sup_l, btask_sup_m, btask_sup_h
+ */
+
+
+
+
+
 #include <stdlib.h>
 #include "Os.h"
 #include "os_test.h"
@@ -26,17 +37,6 @@
 #include "debug.h"
 #include "arc.h"
 
-extern void etask_sup_l_basic_02( void );
-extern void etask_sup_m_basic_02( void );
-extern void etask_sup_h_basic_02( void );
-
-
-#define DECLARE_BASIC(_nr) \
-	extern void btest_sup_l_##_nr(void);\
-	extern void btest_sup_m_##_nr(void);\
-	extern void btest_sup_h_##_nr(void);
-
-// DECLARE_BASIC(02);
 
 typedef struct {
 	 uint32 nr;
@@ -79,33 +79,8 @@ void etask_master( void ) {
 
 }
 
-#if 0
-test_func_t etask_sup_matrix[][3] = {
-/* 01*/	{ etask_sup_l_01, NULL, NULL },
-#if 0
-/* 02*/	{ etask_sup_l_02, etask_sup_m_02, etask_sup_h_02},
-/* 03*/	{ etask_sup_l_03, etask_sup_m_03, NULL},
-/* 04*/	{ etask_sup_l_04, etask_sup_m_04, NULL},
-#endif
-}; // __attribute__ ((section(".data_app_2")));
-
-#define TEST_BASIC(nr) \
-	{ btest_sup_l_##nr , btest_sup_m_##nr , btest_sup_h_## nr }
-
-
-test_func_t btask_sup_matrix[][3] = {
-// /* 01*/	{ NULL, NULL, NULL},
-		TEST_BASIC(01),
-#if 0
-		TEST_BASIC(02),
-
-#endif
-}; // __attribute__ ((section(".data_app_2")));
-
-#else
 extern test_func_t etask_sup_matrix[][3];
 extern test_func_t btask_sup_matrix[][3];
-#endif
 
 //--------------------------------------------------------------------
 //--------------------------------------------------------------------

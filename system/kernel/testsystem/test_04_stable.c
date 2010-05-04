@@ -236,7 +236,7 @@ void etask_sup_l_04(void) {
 
 
 		case 100:
-			rv = SetEvent(TASK_ID_etask_sup_m, EVENT_MASK_kill);
+			rv = SetEvent(TASK_ID_etask_sup_m, EVENT_MASK_KILL);
 			TEST_ASSERT( rv == E_OK );
 			TerminateTask();
 			break;
@@ -252,7 +252,7 @@ void etask_sup_m_04(void) {
 	StatusType rv;
 
 	for(;;) {
-		WaitEvent(EVENT_MASK_1 | EVENT_MASK_kill );
+		WaitEvent(EVENT_MASK_NOTIF | EVENT_MASK_KILL );
 		switch(test_nr) {
 		case 10:
 			switch(subTest) {
@@ -261,8 +261,8 @@ void etask_sup_m_04(void) {
 				printf("etask\n");
 				rv = GetEvent(currTask,&eventMask);
 				TEST_ASSERT( rv == E_OK );
-				TEST_ASSERT(eventMask == EVENT_MASK_1 );
-				ClearEvent(EVENT_MASK_1);
+				TEST_ASSERT(eventMask == EVENT_MASK_NOTIF );
+				ClearEvent(EVENT_MASK_NOTIF);
 				break;
 
 			default:
