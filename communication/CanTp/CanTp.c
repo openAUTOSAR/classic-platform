@@ -590,7 +590,6 @@ static INLINE void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
 	PduLengthType bytesCopiedToPdurRxBuffer = 0;
 	BufReq_ReturnType ret = BUFREQ_NOT_OK;
 
-
 	if (rxRuntime->iso15765.state == RX_WAIT_CONSECUTIVE_FRAME) {
 		if (rxConfig->CanTpAddressingFormant == CANTP_EXTENDED) {
 			extendedAddress = rxPduData->SduDataPtr[indexCount++];
@@ -660,6 +659,9 @@ static INLINE void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
 					COUNT_DECREMENT(rxRuntime->iso15765.nextFlowControlCount);
 					if (rxRuntime->iso15765.nextFlowControlCount == 0) {
 						sendFlowControlFrame(rxConfig, rxRuntime, BUFREQ_OK);
+					} else {
+						rxRuntime->iso15765.stateTimeoutCount =  //UH
+								CANTP_CONVERT_MS_TO_MAIN_CYCLES(rxConfig->CanTpNcr);
 					}
 				} else {
 					DEBUG( DEBUG_MEDIUM,"ISO15765-Rx session finished, going back to IDLE!\n");
@@ -703,7 +705,7 @@ static INLINE Std_ReturnType sendConsecutiveFrame(
 	} else {
 		consecutiveFrameActualPayload = consecutiveFrameMaxPayload;
 	}
-	copyCount = txRuntime->canFrameBuffer.byteCount; // maybe some bytes already reside in the buffer that we need to handle before proceeding with application buffer data.
+	copyCount = txRuntime->canFrameBuffer.byteCount; // maybe some bytes already reside in the local buffer before we proceed asking for more data from application.
 	while (copyCount < consecutiveFrameActualPayload) {
 		if ( txRuntime->pdurBuffer->SduLength > txRuntime->pdurBufferCount ) {
 			txRuntime->canFrameBuffer.data[copyCount] =
@@ -745,7 +747,6 @@ static INLINE Std_ReturnType sendConsecutiveFrame(
 	} else {
 		DEBUG( DEBUG_MEDIUM, "Unexpected error, should not happen!\n");
 	}
-	DEBUG( DEBUG_MEDIUM, "sendConsecutiveFrame exit!\n");
 	return ret;
 }
 
@@ -1385,7 +1386,7 @@ static inline boolean checkNasNarTimeout(CanTp_ChannelPrivateType *runtimeData) 
 
 void CanTp_MainFunction() /** @req CANTP213 */
 {
-  BufReq_ReturnType ret;
+	BufReq_ReturnType ret;
 	CanTpFifoQueueItem item;
 	PduLengthType bytesWrittenToSduRBuffer;
 
@@ -1399,7 +1400,6 @@ void CanTp_MainFunction() /** @req CANTP213 */
 			SERVICE_ID_CANTP_MAIN_FUNCTION, CANTP_E_UNINIT ); /** @req CANTP031 */
 
 	// Dispatch the messages that resides in the FIFO to CanTp_RxIndication_Main.
-
 	while ( fifoQueueRead( &CanTpRunTimeData.fifo, &item ) == TRUE  ) {
 		PduInfoType pduInfo;
 		pduInfo.SduDataPtr = item.SduData;
@@ -1505,6 +1505,8 @@ void CanTp_MainFunction() /** @req CANTP213 */
 					}
 					if (ret == BUFREQ_OK) {
 						if ( bytesRemaining > 0 ) {
+							rxRuntimeListItem->iso15765.stateTimeoutCount =  //UH
+									CANTP_CONVERT_MS_TO_MAIN_CYCLES(rxConfigListItem->CanTpNcr);
 							rxRuntimeListItem->iso15765.state = RX_WAIT_CONSECUTIVE_FRAME;
 						} else {
 							PduR_CanTpRxIndication(rxConfigListItem->PduR_PduId, NTFRSLT_OK);
