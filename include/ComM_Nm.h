@@ -20,21 +20,13 @@
 
 
 
-#ifndef COMM_H_
-#define COMM_H_
+#ifndef COMM_NM_H_
+#define COMM_NM_H_
 
-typedef struct {
-	void *canIf;
-	void *canTp;
-	void *Frlf;
-	void *LinIf;
-	void *LinTp;
-	void *PduR;
-	void *IPDUM;
-	void *Nm;
-	void *Com;
-	void *Dcm;	
-} ComM_ConfigType;
+void ComM_Nm_NetworkStartIndication( NetworkHandleType Channel );
+void ComM_Nm_NetworkMode( NetworkHandleType Channel );
+void ComM_Nm_PrepareBusSleepMode( NetworkHandleType Channel );
+void ComM_Nm_BusSleepMode( NetworkHandleType Channel );
+void ComM_Nm_RestartIndication( NetworkHandleType Channel );
 
-void ComM_Init( ComM_ConfigType *);
-#endif /*COMM_H_*/
+#endif /*COMM_NM_H_*/

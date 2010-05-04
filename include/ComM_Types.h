@@ -24,9 +24,17 @@
 #define COMM_TYPES_H_
 
 typedef enum {
-COMM_NO_COMMUNICATION,
-COMM_SILENT_COMMUNICATION,
-COMM_FULL_COMMUNICATION,
-}ComM_ModeType;
+	COMM_NO_COMMUNICATION,
+	COMM_SILENT_COMMUNICATION,
+	COMM_FULL_COMMUNICATION,
+} ComM_ModeType;
+
+typedef enum {
+	COMM_UNINIT,
+	COMM_INIT,
+} ComM_InitStatusType;
+
+typedef uint8 ComM_InhibitionStatusType;
+
 
 #endif /*COMM_TYPES_H_*/
