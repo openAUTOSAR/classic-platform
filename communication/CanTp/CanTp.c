@@ -35,9 +35,9 @@
 #include "CanTp_Cbk.h" /** @req CANTP156 *//** @req CANTP233 */
 #include "CanTp.h" /** @req CANTP156 */ /** @req CANTP219 */
 #include "SchM_CanTp.h" /** @req CANTP156 */
-#include "PduR.h"
+#include "PduR_CanTp.h"
 //#include "MemMap.h" /** @req CANTP156 */
-#include "String.h"
+#include <string.h>
 //#define USE_DEBUG_PRINTF
 #include "debug.h"
 

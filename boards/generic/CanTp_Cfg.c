@@ -61,8 +61,8 @@ CanTp_NSduType CanTpNSduConfigList[] =
 {
 	{
 		.direction = IS015765_TRANSMIT,
-		.configData.CanTpTxNSdu.CanIf_CanTxPduId = 1, //CANIF_PDU_ID_UDS_PHYS_TX,
-		.configData.CanTpTxNSdu.PduR_CanTpTxPduId = 0, //PDUR_PDU_ID_UDS_PHYS_TX,
+		.configData.CanTpTxNSdu.CanIf_PduId = 1, //CANIF_PDU_ID_UDS_PHYS_TX,
+		.configData.CanTpTxNSdu.PduR_PduId = 0, //PDUR_PDU_ID_UDS_PHYS_TX,
 		.configData.CanTpTxNSdu.CanTpTxChannel = 2,
 		.configData.CanTpTxNSdu.CanTpAddressingMode = CANTP_STANDARD,
 		.configData.CanTpTxNSdu.CanTpNas = 2,
@@ -77,8 +77,8 @@ CanTp_NSduType CanTpNSduConfigList[] =
 	},
 	{
 		.direction = IS015765_TRANSMIT,
-		.configData.CanTpTxNSdu.CanIf_CanTxPduId = 0, //CANIF_PDU_ID_UDS_FUNC_TX,
-		.configData.CanTpTxNSdu.PduR_CanTpTxPduId = 1, //PDUR_PDU_ID_UDS_FUNC_TX,
+		.configData.CanTpTxNSdu.CanIf_PduId = 0, //CANIF_PDU_ID_UDS_FUNC_TX,
+		.configData.CanTpTxNSdu.PduR_PduId = 1, //PDUR_PDU_ID_UDS_FUNC_TX,
 		.configData.CanTpTxNSdu.CanTpTxChannel = 3,
 		.configData.CanTpTxNSdu.CanTpAddressingMode = CANTP_STANDARD,
 		.configData.CanTpTxNSdu.CanTpNas = 2,
@@ -93,8 +93,8 @@ CanTp_NSduType CanTpNSduConfigList[] =
 	},
 	{
 		.direction = ISO15765_RECEIVE,
-		.configData.CanTpRxNSdu.CanIf_CanTxPduId = 0, //CANIF_PDU_ID_UDS_PHYS_RX,
-		.configData.CanTpRxNSdu.PduR_CanTpTxPduId = 0, //PDUR_PDU_ID_UDS_PHYS_RX,
+		.configData.CanTpRxNSdu.CanIf_FcPduId = 0, //CANIF_PDU_ID_UDS_PHYS_RX,
+		.configData.CanTpRxNSdu.PduR_PduId = 0, //PDUR_PDU_ID_UDS_PHYS_RX,
 		.configData.CanTpRxNSdu.CanTpRxChannel = 0,	
 		.configData.CanTpRxNSdu.CanTpAddressingFormant = CANTP_STANDARD,
 		.configData.CanTpRxNSdu.CanTpBs = 30,
@@ -112,8 +112,8 @@ CanTp_NSduType CanTpNSduConfigList[] =
 	},
 	{
 		.direction = ISO15765_RECEIVE,
-		.configData.CanTpRxNSdu.CanIf_CanTxPduId = 0, //CANIF_PDU_ID_UDS_FUNC_RX,
-		.configData.CanTpRxNSdu.PduR_CanTpTxPduId = 1, //PDUR_PDU_ID_UDS_FUNC_RX,
+		.configData.CanTpRxNSdu.CanIf_FcPduId = 0, //CANIF_PDU_ID_UDS_FUNC_RX,
+		.configData.CanTpRxNSdu.PduR_PduId = 1, //PDUR_PDU_ID_UDS_FUNC_RX,
 		.configData.CanTpRxNSdu.CanTpRxChannel = 1,	
 		.configData.CanTpRxNSdu.CanTpAddressingFormant = CANTP_STANDARD,
 		.configData.CanTpRxNSdu.CanTpBs = 30,
