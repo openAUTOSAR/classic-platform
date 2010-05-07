@@ -566,6 +566,41 @@ void Os_SchTblInit( void ) {
 	}
 }
 
+void Os_SchTblAutostart( void ) {
+
+	for(int j=0; j < Os_CfgGetSchedCnt(); j++ ) {
+		OsSchTblType *sPtr;
+		sPtr = Os_CfgGetSched(j);
+
+		if( sPtr->autostartPtr != NULL ) {
+			const struct OsSchTblAutostart *autoPtr = sPtr->autostartPtr;
+
+			/* Check appmode */
+			if( os_sys.appMode & autoPtr->appMode ) {
+
+				/* Start the schedule table */
+				switch(autoPtr->type) {
+				case SCHTBL_AUTOSTART_ABSOLUTE:
+					StartScheduleTableAbs(j,autoPtr->offset);
+					break;
+				case SCHTBL_AUTOSTART_RELATIVE:
+					StartScheduleTableRel(j,autoPtr->offset);
+					break;
+	#if defined(OS_SC2) || defined(OS_SC4)
+				case SCHTBL_AUTOSTART_SYNCHRONE:
+					/* TODO: */
+					break;
+	#endif
+				default:
+					assert(0); 		// Illegal value
+					break;
+				}
+			}
+		}
+	}
+}
+
+
 /**
  * Calculates expire value and changes state depending it's state.
  *
@@ -583,8 +618,6 @@ void Os_SchTblCalcExpire( OsSchTblType *stbl ) {
 	TickType finalOffset;
 	OsSchTblType *nextStblPtr;
 	_Bool handleLast = 0;
-
-
 
 	if( (stbl->expire_curr_index) == (SA_LIST_CNT(&stbl->expirePointList) - 1) ) {
 		/* We are at the last expiry point */

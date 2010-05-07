@@ -152,20 +152,24 @@ static void os_start( void ) {
 		os_sys.hooks->StartupHook();
 	}
 
-	/* handle autostart */
+	/* Alarm autostart */
 	for(int j=0; j < Os_CfgGetAlarmCnt(); j++ ) {
 		OsAlarmType *alarmPtr;
 		alarmPtr = Os_CfgGetAlarmObj(j);
 		if(alarmPtr->autostartPtr != NULL ) {
 			const OsAlarmAutostartType *autoPtr = alarmPtr->autostartPtr;
 
-			if( autoPtr->autostartType == ALARM_AUTOSTART_ABSOLUTE ) {
-				SetAbsAlarm(j,autoPtr->alarmTime, autoPtr->cycleTime);
-			} else {
-				SetRelAlarm(j,autoPtr->alarmTime, autoPtr->cycleTime);
+			if( os_sys.appMode & autoPtr->appModeRef) {
+				if( autoPtr->autostartType == ALARM_AUTOSTART_ABSOLUTE ) {
+					SetAbsAlarm(j,autoPtr->alarmTime, autoPtr->cycleTime);
+				} else {
+					SetRelAlarm(j,autoPtr->alarmTime, autoPtr->cycleTime);
+				}
 			}
 		}
 	}
+
+	Os_SchTblAutostart();
 
 	// Set up the systick interrupt
 	{
@@ -183,6 +187,7 @@ static void os_start( void ) {
 			if(	iterPcbPtr->autostart ) {
 				if( iterPcbPtr->prio > topPrio ) {
 					tmp_pcb = iterPcbPtr;
+					topPrio = iterPcbPtr->prio;
 				}
 			}
  		}
@@ -237,6 +242,8 @@ void StartOS(AppModeType Mode) {
 	if (test_bss != 0) {
 		noooo();
 	}
+
+	os_sys.appMode = Mode;
 
 	Os_CfgValidate();
 

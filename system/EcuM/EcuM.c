@@ -13,13 +13,6 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
 #include "EcuM.h"
 #include "Modules.h"
 #include "string.h"
