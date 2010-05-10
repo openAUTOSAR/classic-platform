@@ -528,8 +528,8 @@ void Os_SchTblCheck(OsCounterType *c_p) {
 
 		/* Check if the expire point have been hit */
 		if( (sched_obj->state == SCHEDULETABLE_RUNNING ||
-				SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS ) &&
-				(c_p->val == sched_obj->expire_val) )
+			sched_obj->state == SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS ) &&
+			(c_p->val == sched_obj->expire_val) )
 		{
 			OsScheduleTableExpiryPointType * action;
 			int i;
