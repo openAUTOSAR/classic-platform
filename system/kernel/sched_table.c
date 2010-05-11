@@ -531,24 +531,26 @@ void Os_SchTblCheck(OsCounterType *c_p) {
 			sched_obj->state == SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS ) &&
 			(c_p->val == sched_obj->expire_val) )
 		{
-			OsScheduleTableExpiryPointType * action;
-			int i;
+			if ( sched_obj->expire_curr_index < SA_LIST_CNT(&sched_obj->expirePointList) ) {
+				OsScheduleTableExpiryPointType * action;
+				int i;
 
-			action = SA_LIST_GET(&sched_obj->expirePointList,sched_obj->expire_curr_index);
+				action = SA_LIST_GET(&sched_obj->expirePointList,sched_obj->expire_curr_index);
 
-			/** @req OS407 */
-			/** @req OS412 */
+				/** @req OS407 */
+				/** @req OS412 */
 
-			/* According to OS412 activate tasks before events */
-			for(i=0; i< action->taskListCnt;i++ ) {
-				ActivateTask(action->taskList[i]);
+				/* According to OS412 activate tasks before events */
+				for(i=0; i< action->taskListCnt;i++ ) {
+					ActivateTask(action->taskList[i]);
+				}
+
+				for(i=0; i< action->eventListCnt;i++ ) {
+					SetEvent( action->eventList[i].task, action->eventList[i].event);
+				}
 			}
-
-			for(i=0; i< action->eventListCnt;i++ ) {
-				SetEvent( action->eventList[i].task, action->eventList[i].event);
-			}
-			// Calc new expire val
-			Os_SchTblCalcExpire(sched_obj);
+			// Calc new expire val and state
+			Os_SchTblUpdateState(sched_obj);
 		}
 
 	}
@@ -611,7 +613,7 @@ void Os_SchTblAutostart( void ) {
  *
  * @param stbl Ptr to a Schedule Table.
  */
-void Os_SchTblCalcExpire( OsSchTblType *stbl ) {
+void Os_SchTblUpdateState( OsSchTblType *stbl ) {
 
 	TickType delta;
 	TickType initalOffset;
