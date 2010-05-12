@@ -39,7 +39,7 @@
 
 	#else
 
-		#define PduR_ComTransmit(... )
+		#define PduR_ComTransmit(... )	(E_OK)
 
 	#endif
 

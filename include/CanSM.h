@@ -17,6 +17,35 @@
 #ifndef CANSM_H_
 #define CANSM_H_
 
+#include "ComStack_Types.h"
+#include "ComM.h"
+#include "CanSM_ConfigTypes.h"
+
+#define CANSM_AR_MAJOR_VERSION	1
+#define CANSM_AR_MINOR_VERSION	0
+#define CANSM_AR_PATCH_VERSION	1
+
+#define CANSM_SW_MAJOR_VERSION	1
+#define CANSM_SW_MINOR_VERSION	0
+#define CANSM_SW_PATCH_VERSION	0
+
+#include "CanSM_Cfg.h"
+
+
+#define CANSM_E_UNINIT 					0x01	/**< API service used without module initialization */
+#define CANSM_E_PARAM_POINTER 			0x02	/**< API service called with wrong pointer */
+#define CANSM_E_INVALID_NETWORK_HANDLE	0x03	/**< API service called with wrong parameter */
+#define CANSM_E_INVALID_NETWORK_MODE	0x04	/**< API service called with wrong parameter */
+
+
+#define CANSM_SERVICEID_INIT					0x00
+#define CANSM_SERVICEID_GETVERSIONINFO			0x01
+#define CANSM_SERVICEID_REQUESTCOMMODE			0x02
+#define CANSM_SERVICEID_GETCURRENTCOMMODE		0x03
+#define CANSM_SERVICEID_CONTROLLERBUSOFF		0x04
+#define CANSM_SERVICEID_MAINFUNCTION			0x05
+
+
 /** This type shall define the states of the network mode state machine. */
 typedef enum {
 	CANSM_UNINITED,
@@ -41,7 +70,7 @@ typedef enum {
 void CanSM_Init( const CanSM_ConfigType* ConfigPtr );
 
 /** This service puts out the version information of this module */
-void CanSM_GetVersionInfo( Std_VersionInfoType VersionInfo );
+void CanSM_GetVersionInfo( Std_VersionInfoType* VersionInfo );
 
 /** This service shall change the communication mode of a CAN network to the requested one. */
 Std_ReturnType CanSM_RequestComMode( NetworkHandleType NetworkHandle, ComM_ModeType ComM_Mode );

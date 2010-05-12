@@ -17,6 +17,10 @@
 #ifndef CANNM_H_
 #define CANNM_H_
 
+#include "ComStack_Types.h"
+#include "NmStack_Types.h"
+#include "CanNm_ConfigTypes.h"
+
 // Functions called by NM Interface
 // --------------------------------
 
@@ -86,7 +90,7 @@ void CanNm_TxConfirmation( PduIdType canNmTxPduId );
 /** This service indicates a successful reception of a received NM message to the
   * CanNm after passing all filters and validation checks.
   * This callback service is called by the CAN Interface and implemented by the CanNm. */
-void CanNm_RxIndication( PduIdType canNmRxPduId, const unit8 *canSduPtr );
+void CanNm_RxIndication( PduIdType canNmRxPduId, const uint8 *canSduPtr );
 
 /** Main function of the CanNm which processes the algorithm describes in that document.
   * Generated functions used: CanNm_MainFunction_<Instance Id>( void );

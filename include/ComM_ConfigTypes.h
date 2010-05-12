@@ -14,22 +14,30 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-#ifndef NM_CONFIGTYPES_H_
-#define NM_CONFIGTYPES_H_
+#ifndef COMM_CONFIGTYPES_H_
+#define COMM_CONFIGTYPES_H_
 
-/** Data structure shall be pre-compile time configurable. */
-typedef struct {
-#if (NM_BUSNM_CANNM_ENABLED == STD_ON)
-	const CanNm_ConfigType* CanNmConfigPtr
-#endif
-#if (NM_BUSNM_FRNM_ENABLED == STD_ON)
-	const FrNm_ConfigType * FrNmConfigPtr
-#endif
-}Nm_BusNm_ConfigType;
+typedef enum {
+	COMM_BUS_TYPE_CAN,
+	COMM_BUS_TYPE_FR,
+	COMM_BUS_TYPE_INTERNAL,
+	COMM_BUS_TYPE_LIN,
+} ComM_BusTypeType;
 
 typedef struct {
+	const ComM_BusTypeType			BusType;
+	const NetworkHandleType			BusSMNetworkHandle;
+} ComM_ChannelType;
 
-} Nm_ConfigType;
 
+typedef struct {
+	const ComM_ChannelType**		ChannelList;
+	const uint8						ChannelCount;
+} ComM_UserType;
 
-#endif /* NM_CONFIGTYPES_H_ */
+typedef struct {
+	const ComM_ChannelType*			Channels;
+	const ComM_UserType*			Users;
+} ComM_ConfigType;
+
+#endif /* COMM_CONFIGTYPES_H_ */

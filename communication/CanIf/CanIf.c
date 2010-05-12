@@ -116,14 +116,15 @@ void CanIf_Init(const CanIf_ConfigType *ConfigPtr)
 
   CanIf_ConfigPtr = ConfigPtr;
 
-  for (uint16 i = 0; i < CANIF_CHANNEL_CNT; i++)
+  for (uint8 i = 0; i < CANIF_CHANNEL_CNT; i++)
   {
     CanIf_Global.channelData[i].ControllerMode = CANIF_CS_STOPPED;
     CanIf_Global.channelData[i].PduMode = CANIF_GET_OFFLINE;
   }
 
-  // NOTE!
-  // Do NOT initialise the Can Drivers and Tranceivers, see CANIF085
+  for(uint8 i = 0; i < CANIF_CHANNEL_CNT; i++){
+	  CanIf_InitController(i, CanIf_ConfigPtr->Arc_ChannelDefaultConfIndex[i]);
+  }
 
   CanIf_Global.initRun = TRUE;
 }

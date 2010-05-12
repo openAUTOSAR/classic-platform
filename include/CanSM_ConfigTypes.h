@@ -14,22 +14,20 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-#ifndef NM_CONFIGTYPES_H_
-#define NM_CONFIGTYPES_H_
-
-/** Data structure shall be pre-compile time configurable. */
-typedef struct {
-#if (NM_BUSNM_CANNM_ENABLED == STD_ON)
-	const CanNm_ConfigType* CanNmConfigPtr
-#endif
-#if (NM_BUSNM_FRNM_ENABLED == STD_ON)
-	const FrNm_ConfigType * FrNmConfigPtr
-#endif
-}Nm_BusNm_ConfigType;
+#ifndef CANSM_CONFIGTYPES_H_
+#define CANSM_CONFIGTYPES_H_
 
 typedef struct {
+	const uint8						CanIfControllerId;
+} CanSM_ControllerType;
 
-} Nm_ConfigType;
+typedef struct {
+	const CanSM_ControllerType*		Controllers;
+	const uint8						ControllerCount;
+} CanSM_NetworkType;
 
+typedef struct {
+	const CanSM_NetworkType*		Networks;
+} CanSM_ConfigType;
 
-#endif /* NM_CONFIGTYPES_H_ */
+#endif /* CANSM_CONFIGTYPES_H_ */

@@ -18,7 +18,9 @@
 #define NM_H_
 
 #include "Std_Types.h"
+#include "ComStack_Types.h"
 #include "NmStack_Types.h"
+#include "Nm_ConfigTypes.h"
 #include "ComM_Nm.h"
 
 /** Initializes the NM Interface. */
