@@ -199,6 +199,11 @@ void CanIf_InitController(uint8 Controller, uint8 ConfigurationIndex)
 void CanIf_PreInit_InitController(uint8 Controller, uint8 ConfigurationIndex){
 	// We call this a CanIf channel. Hopefully makes it easier to follow.
 	CanIf_Arc_ChannelIdType channel = Controller;
+
+	VALIDATE_NO_RV(channel < CANIF_CHANNEL_CNT, CANIF_INIT_ID, CANIF_E_PARAM_CONTROLLER);
+	VALIDATE_NO_RV(ConfigurationIndex < CANIF_CHANNEL_CONFIGURATION_CNT, CANIF_INIT_ID, CANIF_E_PARAM_POINTER);
+
+
 	const CanControllerIdType canControllerId = ARC_GET_CHANNEL_CONTROLLER(channel);
 	// Validate that the configuration at the index match the right channel
 	VALIDATE_NO_RV(CanIf_ConfigPtr->ControllerConfig[ConfigurationIndex].CanIfControllerIdRef == channel, CANIF_INIT_CONTROLLER_ID, CANIF_E_PARAM_CONTROLLER);
