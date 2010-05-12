@@ -26,7 +26,7 @@
 #include <string.h>
 #include "Com.h"
 #include "Com_Arc_Types.h"
-#include "Com_Types.h"
+#include "Com_misc.h"
 #include "debug.h"
 
 #ifdef COM_DEV_ERROR_DETECT
