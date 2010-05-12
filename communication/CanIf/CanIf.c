@@ -88,6 +88,8 @@ typedef struct
   CanIf_ChannelPrivateType channelData[CANIF_CHANNEL_CNT];
 } CanIf_GlobalType;
 
+void CanIf_PreInit_InitController(uint8 Controller, uint8 ConfigurationIndex);
+
 static CanIf_Arc_ChannelIdType CanIf_Arc_FindHrhChannel( Can_Arc_HRHType hrh )
 {
   const CanIf_HrhConfigType *hrhConfig;
@@ -120,11 +122,9 @@ void CanIf_Init(const CanIf_ConfigType *ConfigPtr)
   {
     CanIf_Global.channelData[i].ControllerMode = CANIF_CS_STOPPED;
     CanIf_Global.channelData[i].PduMode = CANIF_GET_OFFLINE;
+    CanIf_PreInit_InitController(i, CanIf_ConfigPtr->Arc_ChannelDefaultConfIndex[i]);
   }
 
-  for(uint8 i = 0; i < CANIF_CHANNEL_CNT; i++){
-	  CanIf_InitController(i, CanIf_ConfigPtr->Arc_ChannelDefaultConfIndex[i]);
-  }
 
   CanIf_Global.initRun = TRUE;
 }
@@ -194,6 +194,19 @@ void CanIf_InitController(uint8 Controller, uint8 ConfigurationIndex)
 
   // Set mode to stopped
   CanIf_SetControllerMode(channel, CANIF_CS_STOPPED);
+}
+
+void CanIf_PreInit_InitController(uint8 Controller, uint8 ConfigurationIndex){
+	// We call this a CanIf channel. Hopefully makes it easier to follow.
+	CanIf_Arc_ChannelIdType channel = Controller;
+	const CanControllerIdType canControllerId = ARC_GET_CHANNEL_CONTROLLER(channel);
+	// Validate that the configuration at the index match the right channel
+	VALIDATE_NO_RV(CanIf_ConfigPtr->ControllerConfig[ConfigurationIndex].CanIfControllerIdRef == channel, CANIF_INIT_CONTROLLER_ID, CANIF_E_PARAM_CONTROLLER);
+	const Can_ControllerConfigType *canConfig = CanIf_ConfigPtr->ControllerConfig[ConfigurationIndex].CanIfInitControllerRef;
+	// Validate that the CanIfControllerConfig points to configuration for the right Can Controller
+	VALIDATE_NO_RV(canConfig->CanControllerId == canControllerId, CANIF_INIT_CONTROLLER_ID, CANIF_E_PARAM_CONTROLLER);
+
+	Can_InitController(canControllerId, canConfig);
 }
 
 //-------------------------------------------------------------------

@@ -24,7 +24,6 @@
 #define COM_COM_H_
 
 #include "Com.h"
-#include "Com_misc.h"
 #include "PduR.h"
 
 uint8 Com_SendSignal(Com_SignalIdType SignalId, const void *SignalDataPtr);

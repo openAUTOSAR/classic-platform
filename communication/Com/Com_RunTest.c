@@ -22,6 +22,7 @@
 
 #include "Com_RunTest.h"
 #include "Com.h"
+#include "Com_Arc_Types.h"
 #include "debug.h"
 #include <stdlib.h>
 
