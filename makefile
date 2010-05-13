@@ -1,24 +1,33 @@
 # build with:
-# make subdir1 			- build the subdir1 
-# make subdir1/subdir2	- build subdir2
-# 
-# clean:
-#   	Removed all generated files 
+#   $ make BOARDDIR=<board> BDIR=<dir>[,<dir>] CROSS_COMPILE=<gcc> all|clean|clean_all
 #
-# BOARDDIR=<board dir> 
+# TARGETS
+#   all:   		Target when building
+#   clean:  	Remove generatated files for a board 
+#   clean_all:  Remove all generated files
+#   help:       Print some help
+#
+# VARIABLES:
+#   BOARDDIR=<board dir> 
 #       Select what board to build for 
-
-# BOARDDIR=<board dir> 
-#       Select what board to build for
-# 
-# Q=[(@)/empty] 
+#   BDIR=<dir>[,<dir>] 
+#       Select what directories to build. The kernel if always built.
+#   CROSS_COMPILE
+#       Specify the compiler to use.  
+#   Q=[(@)/empty] 
 #  		If Q=@ cmd's will not be echoed.
-#  
-# Build
-#   >make BOARDDIR=mpc551xsim BDIR=system/kernel,examples/simple all 
-# Clean 
-#   >make BOARDDIR=mpc551xsim BDIR=system/kernel,examples/simple clean
 #
+# EXAMPLES
+#   Clean all
+#     $ make clean_all
+#
+#   Clean for a specific board
+#     $ make BDIR=mpc551xsim clean
+#
+#   Build the simple example (assuming CROSS_COMPILE set)
+#     $ make BOARDDIR= mpc551xsim BDIR=examples/simple all
+#
+
 
 export UNAME:=$(shell uname)
 
@@ -45,7 +54,7 @@ export CFG_$(SELECT_OPT)=y
 
 ifneq ($(filter clean_all,$(MAKECMDGOALS)),clean_all)
   ifeq (${BOARDDIR},)
-    $(error BOARDDIR is empty) 
+#    $(error BOARDDIR is empty) 
   endif
 endif
 
@@ -95,27 +104,54 @@ export def-y+=$(CFG_ARCH_$(ARCH)) $(CFG_MCU) $(CFG_CPU)
 comma:= ,
 split = $(subst $(comma), ,$(1))
 dir_cmd_goals  := $(call split,$(BDIR))
-cmd_cmd_goals := $(filter clean all install,$(MAKECMDGOALS))
+cmd_cmd_goals := $(filter clean all,$(MAKECMDGOALS))
 
+# Check for CROSS_COMPILE
+ifneq ($(cmd_cmd_goals),)
+ifndef CROSS_COMPILE
+  $(error CROSS_COMPILE not defined)
+endif
+
+# Check that the board actually exist
+ifdef BOARDDIR
+  all_boards := $(subst boards/,,$(shell find boards/ -maxdepth 1 -type d))
+  ifeq ($(filter $(BOARDDIR),$(all_boards)),)
+  	$(error no such board: $(BOARDDIR), valid boards are: $(all_boards))
+  endif
+endif
+
+# Check BDIR
+endif
 libs:
 	mkdir -p $@
 
 all: libs $(dir_cmd_goals)
 
-show_build:
-	@echo Building for $(dir_cmd_goals)
-	@echo BOARDDIR: $(BOARDDIR)
-	@echo ARCH_FAM/ARCH: $(ARCH_FAM)/$(ARCH)
-	
 
+test:
+	@echo $(all_boards)
+
+show_build:
+	@echo "BUILD INFO"
+	@echo "BOARDDIR:      $(BOARDDIR) [$(origin BOARDDIR)]"
+	@echo "BDIR:          $(BDIR) [$(origin BDIR)]"
+	@echo "CROSS_COMPILE: $(CROSS_COMPILE) [$(origin CROSS_COMPILE)]"
+	@echo "cmd_cmd_goals: $(cmd_cmd_goals)"
+	
+	
 $(dir_cmd_goals) :: show_build FORCE 	
 	@echo ==========[ $@  ]===========
+	@if [ ! -d $@ ]; then echo "No such directory: \"$@\" quitting"; exit 1; fi
 	+@[ -d $@/$(objdir) ] || mkdir -p $@/$(objdir)
 	@chmod 777 $@/$(objdir)
 	$(Q)$(MAKE) -r  -C $@/$(objdir) -f $(CURDIR)/scripts/rules.mk  ROOTDIR=$(CURDIR) SUBDIR=$@ $(cmd_cmd_goals)
 .PHONY: test	
 
 FORCE:
+
+.PHONY: boards
+boards:
+	@find . -type d -name *
 
 clean_all:
 	@find . -type d -name obj_* | xargs rm -rf
