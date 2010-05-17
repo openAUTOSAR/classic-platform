@@ -98,9 +98,16 @@ static Std_ReturnType ComM_Internal_DelegateRequestComMode( ComM_UserHandleType 
 		const ComM_ChannelType* Channel = UserConfig->ChannelList[i];
 		Std_ReturnType status = E_OK;
 		switch (Channel->BusType) {
+#if defined(USE_CANSM)
 			case COMM_BUS_TYPE_CAN:
 				status = CanSM_RequestComMode(Channel->BusSMNetworkHandle, ComMode);
 				break;
+#endif
+#if defined(USE_LINSM)
+			case COMM_BUS_TYPE_LIN:
+				status = LinSM_RequestComMode(Channel->BusSMNetworkHandle, ComMode);
+				break;
+#endif
 			default:
 				status = E_NOT_OK;
 				break;

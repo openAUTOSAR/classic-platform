@@ -48,28 +48,21 @@ Std_ReturnType CanSM_RequestComMode( NetworkHandleType NetworkHandle, ComM_ModeT
 	CANSM_VALIDATE_NETWORK(NetworkHandle, CANSM_SERVICEID_REQUESTCOMMODE, E_NOT_OK);
 	CANSM_VALIDATE_MODE(ComM_Mode, CANSM_SERVICEID_REQUESTCOMMODE, E_NOT_OK);
 
-	return CanSM_Internal_RequestCanIfMode(NetworkHandle, ComM_Mode);
+	return CanSM_Internal_RequestComMode(NetworkHandle, ComM_Mode);
 }
 
 Std_ReturnType CanSM_Internal_RequestComMode( NetworkHandleType NetworkHandle, ComM_ModeType ComM_Mode ) {
-	Std_ReturnType totalStatus = E_OK;
-
 	CanSM_Internal_NetworkType* NetworkInternal = &CanSM_Internal.Networks[NetworkHandle];
 	NetworkInternal->RequestedMode = ComM_Mode;
 
-	if (ComM_Mode == COMM_NO_COMMUNICATION || ComM_Mode == COMM_FULL_COMMUNICATION) {
-		Std_ReturnType status = CanSM_Internal_RequestCanIfMode(NetworkHandle, ComM_Mode);
-		if (status > totalStatus) {
-			totalStatus = status;
-		}
-	}
+	Std_ReturnType status = CanSM_Internal_RequestCanIfMode(NetworkHandle, ComM_Mode);
 
-	if (totalStatus == E_OK) {
+	if (status == E_OK) {
 		NetworkInternal->CurrentMode = ComM_Mode;
 		ComM_BusSM_ModeIndication(NetworkHandle, ComM_Mode);
 	}
 
-	return totalStatus;
+	return status;
 }
 
 Std_ReturnType CanSM_Internal_RequestCanIfMode( NetworkHandleType NetworkHandle, ComM_ModeType ComM_Mode ) {
