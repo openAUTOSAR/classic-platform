@@ -53,6 +53,21 @@
 #if defined(USE_GPT)
 #include "Gpt.h"
 #endif
+#if defined(USE_COMM)
+#include "ComM.h"
+#endif
+#if defined(USE_NM)
+#include "Nm.h"
+#endif
+#if defined(USE_CANNM)
+#include "CanNm.h"
+#endif
+#if defined(USE_CANSM)
+#include "CanSM.h"
+#endif
+#if defined(USE_LINSM)
+#include "LinSM.h"
+#endif
 
 typedef struct
 {
@@ -72,8 +87,14 @@ typedef struct
 #if defined(USE_CANIF)
 	const CanIf_ConfigType* CanIfConfig;
 #endif
+#if defined(USE_CANSM)
+	const CanSM_ConfigType* CanSMConfig;
+#endif
 #if defined(USE_COM)
 	const Com_ConfigType* ComConfig;
+#endif
+#if defined(USE_COMM)
+	const ComM_ConfigType* ComMConfig;
 #endif
 #if defined(USE_PWM)
 	const Pwm_ConfigType* PwmConfig;

@@ -24,6 +24,7 @@ typedef struct {
 typedef struct {
 	const CanSM_ControllerType*		Controllers;
 	const uint8						ControllerCount;
+	const uint8						ComMNetworkHandle;
 } CanSM_NetworkType;
 
 typedef struct {

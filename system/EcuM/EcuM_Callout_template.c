@@ -60,6 +60,23 @@
 #if defined(USE_IOHWAB)
 #include "IoHwAb.h"
 #endif
+#if defined(USE_COMM)
+#include "ComM.h"
+#endif
+#if defined(USE_NM)
+#include "Nm.h"
+#endif
+#if defined(USE_CANNM)
+#include "CanNm.h"
+#endif
+#if defined(USE_CANSM)
+#include "CanSM.h"
+#endif
+#if defined(USE_LINSM)
+#include "LinSM.h"
+#endif
+
+
 
 void EcuM_AL_DriverInitZero()
 {
@@ -161,6 +178,10 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 	CanTp_Init();
 #endif
 
+#if defined(USE_CANSM)
+	CanSM_Init(ConfigPtr->CanSMConfig);
+#endif
+
 	// Setup LIN
 	// TODO
 
@@ -185,7 +206,7 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 #endif
 }
 
-void EcuM_AL_DriverInitThree(const EcuM_ConfigType ConfigPtr)
+void EcuM_AL_DriverInitThree(const EcuM_ConfigType* ConfigPtr)
 {
 	// Setup ComM
 
@@ -196,10 +217,9 @@ void EcuM_AL_DriverInitThree(const EcuM_ConfigType ConfigPtr)
 
 	// Setup FIM
 
-#if defined(USE_CANIF)
-	// Startup the CAN interafce; due to the missing COM manager
-//	CanIf_InitController(CANIF_Channel_1, CANIF_Channel_1_CONFIG_0);
-//	CanIf_SetControllerMode(CANIF_Channel_1, CANIF_CS_STARTED);
+#if defined(USE_COMM)
+	// Setup Communication Manager
+	ComM_Init(ConfigPtr->ComMConfig);
 #endif
 
 
