@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <AUTOSAR xmlns="http://autosar.org/3.1.2"><TOP-LEVEL-PACKAGES>
-    <AR-PACKAGE UUID="b2947917-7efc-415e-893c-bc90c6471c39">
+    <AR-PACKAGE UUID="fc563c91-212b-48aa-9b79-bd5e8f4b5ab0">
       <SHORT-NAME>switch_node_mpc551x</SHORT-NAME>
       <CATEGORY>EcuConfiguration</CATEGORY>
       <ADMIN-DATA>
@@ -11,12 +11,12 @@
         </DOC-REVISIONS>
       </ADMIN-DATA>
       <ELEMENTS>
-        <ECU-CONFIGURATION UUID="7551874e-e892-4ea6-ad1a-14a3eb377b4b">
+        <ECU-CONFIGURATION UUID="39c3afa6-22cd-4ebc-83c1-f01c24da1aa7">
           <SHORT-NAME>switch_node_mpc551x</SHORT-NAME>
           <ADMIN-DATA>
             <DOC-REVISIONS>
               <DOC-REVISION>
-                <REVISION-LABEL>Rev 2</REVISION-LABEL>
+                <REVISION-LABEL>Rev 3</REVISION-LABEL>
               </DOC-REVISION>
             </DOC-REVISIONS>
             <SDGS>
@@ -29,319 +29,143 @@
             </SDGS>
           </ADMIN-DATA>
           <MODULE-REFS>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/switch_node_mpc551x/Os</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/switch_node_mpc551x/Can</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/switch_node_mpc551x/CanIf</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/switch_node_mpc551x/Com</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/switch_node_mpc551x/EcuC</MODULE-REF>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/switch_node_mpc551x/Can</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/switch_node_mpc551x/Os</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/switch_node_mpc551x/PduR</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/switch_node_mpc551x/Port</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/switch_node_mpc551x/EcuM</MODULE-REF>
           </MODULE-REFS>
         </ECU-CONFIGURATION>
-        <MODULE-CONFIGURATION UUID="d2600553-d497-4274-bd8d-41f13ddb53aa">
-          <SHORT-NAME>Os</SHORT-NAME>
+        <MODULE-CONFIGURATION UUID="903e3de6-5ad8-45e1-ba0f-4e3e3baa7a5a">
+          <SHORT-NAME>Can</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
               <SDG/>
               <SDG GID="Arccore::ModuleOptions">
-                <SD GID="ARCCORE_EDITOR_VERSION">2.0.6</SD>
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.0.0</SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>
-          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Os</DEFINITION-REF>
+          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Can</DEFINITION-REF>
           <CONTAINERS>
-            <CONTAINER UUID="072c3ac2-b689-4cae-9c9a-57c8d77380a3">
-              <SHORT-NAME>OsOS</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsOS</DEFINITION-REF>
-              <PARAMETER-VALUES>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsStackMonitoring</DEFINITION-REF>
-                  <VALUE>true</VALUE>
-                </BOOLEAN-VALUE>
-                <ENUMERATION-VALUE>
-                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsOS/OsStatus</DEFINITION-REF>
-                  <VALUE>EXTENDED</VALUE>
-                </ENUMERATION-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsUseGetServiceId</DEFINITION-REF>
-                  <VALUE>true</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsUseParameterAccess</DEFINITION-REF>
-                  <VALUE>true</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsUseResScheduler</DEFINITION-REF>
-                  <VALUE>true</VALUE>
-                </BOOLEAN-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsOS/OsTickFrequency</DEFINITION-REF>
-                  <VALUE>1000</VALUE>
-                </INTEGER-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsOS/OsInterruptStackSize</DEFINITION-REF>
-                  <VALUE>2048</VALUE>
-                </INTEGER-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsUseDebug</DEFINITION-REF>
-                  <VALUE>true</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsDebugTask</DEFINITION-REF>
-                  <VALUE>true</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsDebugAlarm</DEFINITION-REF>
-                  <VALUE>true</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsDebugResource</DEFINITION-REF>
-                  <VALUE>true</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsDebugScheduleTable</DEFINITION-REF>
-                  <VALUE>true</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsDebugEvent</DEFINITION-REF>
-                  <VALUE>true</VALUE>
-                </BOOLEAN-VALUE>
-              </PARAMETER-VALUES>
+            <CONTAINER UUID="4050dda2-24da-4485-bfba-357bda04e3c2">
+              <SHORT-NAME>CanConfigSet</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet</DEFINITION-REF>
               <SUB-CONTAINERS>
-                <CONTAINER UUID="191cf6ba-72a1-4f1c-bc6a-13874dca0683">
-                  <SHORT-NAME>OsHooks</SHORT-NAME>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsOS/OsHooks</DEFINITION-REF>
+                <CONTAINER UUID="2927ceb7-ede4-4fa1-8b9f-1abd7efeee7d">
+                  <SHORT-NAME>Controller_1</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet/CanController</DEFINITION-REF>
                   <PARAMETER-VALUES>
                     <BOOLEAN-VALUE>
-                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsHooks/OsErrorHook</DEFINITION-REF>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerActivation</DEFINITION-REF>
                       <VALUE>true</VALUE>
                     </BOOLEAN-VALUE>
                     <BOOLEAN-VALUE>
-                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsHooks/OsPostTaskHook</DEFINITION-REF>
-                      <VALUE>true</VALUE>
-                    </BOOLEAN-VALUE>
-                    <BOOLEAN-VALUE>
-                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsHooks/OsPreTaskHook</DEFINITION-REF>
-                      <VALUE>true</VALUE>
-                    </BOOLEAN-VALUE>
-                    <BOOLEAN-VALUE>
-                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsHooks/OsProtectionHook</DEFINITION-REF>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerLoopback</DEFINITION-REF>
                       <VALUE>false</VALUE>
                     </BOOLEAN-VALUE>
-                    <BOOLEAN-VALUE>
-                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsHooks/OsShutdownHook</DEFINITION-REF>
-                      <VALUE>true</VALUE>
-                    </BOOLEAN-VALUE>
-                    <BOOLEAN-VALUE>
-                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsHooks/OsStartupHook</DEFINITION-REF>
-                      <VALUE>true</VALUE>
-                    </BOOLEAN-VALUE>
-                  </PARAMETER-VALUES>
-                </CONTAINER>
-              </SUB-CONTAINERS>
-            </CONTAINER>
-            <CONTAINER UUID="148c97cb-13ee-4dd5-8a9f-f488f458d2ac">
-              <SHORT-NAME>ComTask</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
-              <PARAMETER-VALUES>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskActivation</DEFINITION-REF>
-                  <VALUE>1</VALUE>
-                </INTEGER-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskPriority</DEFINITION-REF>
-                  <VALUE>10</VALUE>
-                </INTEGER-VALUE>
-                <ENUMERATION-VALUE>
-                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskProcessType</DEFINITION-REF>
-                  <VALUE>BASIC</VALUE>
-                </ENUMERATION-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/ArcCoreOsTaskStackSize</DEFINITION-REF>
-                  <VALUE>2048</VALUE>
-                </INTEGER-VALUE>
-                <ENUMERATION-VALUE>
-                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskSchedule</DEFINITION-REF>
-                  <VALUE>FULL</VALUE>
-                </ENUMERATION-VALUE>
-              </PARAMETER-VALUES>
-            </CONTAINER>
-            <CONTAINER UUID="65562102-831e-4168-821f-87ea15b93ba1">
-              <SHORT-NAME>ReadSwitches</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
-              <PARAMETER-VALUES>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskActivation</DEFINITION-REF>
-                  <VALUE>1</VALUE>
-                </INTEGER-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskPriority</DEFINITION-REF>
-                  <VALUE>5</VALUE>
-                </INTEGER-VALUE>
-                <ENUMERATION-VALUE>
-                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskProcessType</DEFINITION-REF>
-                  <VALUE>BASIC</VALUE>
-                </ENUMERATION-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/ArcCoreOsTaskStackSize</DEFINITION-REF>
-                  <VALUE>2048</VALUE>
-                </INTEGER-VALUE>
-                <ENUMERATION-VALUE>
-                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskSchedule</DEFINITION-REF>
-                  <VALUE>FULL</VALUE>
-                </ENUMERATION-VALUE>
-              </PARAMETER-VALUES>
-            </CONTAINER>
-            <CONTAINER UUID="cac9a5ff-4d42-4bee-8d9b-fa42bbb94e64">
-              <SHORT-NAME>StartupTask</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
-              <PARAMETER-VALUES>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskActivation</DEFINITION-REF>
-                  <VALUE>1</VALUE>
-                </INTEGER-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskPriority</DEFINITION-REF>
-                  <VALUE>20</VALUE>
-                </INTEGER-VALUE>
-                <ENUMERATION-VALUE>
-                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskProcessType</DEFINITION-REF>
-                  <VALUE>BASIC</VALUE>
-                </ENUMERATION-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/ArcCoreOsTaskStackSize</DEFINITION-REF>
-                  <VALUE>2048</VALUE>
-                </INTEGER-VALUE>
-                <ENUMERATION-VALUE>
-                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskSchedule</DEFINITION-REF>
-                  <VALUE>FULL</VALUE>
-                </ENUMERATION-VALUE>
-              </PARAMETER-VALUES>
-              <SUB-CONTAINERS>
-                <CONTAINER UUID="2382b0cd-21cb-4d48-b617-187f28f4541b">
-                  <SHORT-NAME>OsTaskAutostart</SHORT-NAME>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask/OsTaskAutostart</DEFINITION-REF>
-                </CONTAINER>
-              </SUB-CONTAINERS>
-            </CONTAINER>
-            <CONTAINER UUID="dcde9f1c-e183-4ff3-99c1-65c3952a09a1">
-              <SHORT-NAME>ComAlarm</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm</DEFINITION-REF>
-              <REFERENCE-VALUES>
-                <REFERENCE-VALUE>
-                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmCounterRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/switch_node_mpc551x/Os/OsTick</VALUE-REF>
-                </REFERENCE-VALUE>
-              </REFERENCE-VALUES>
-              <SUB-CONTAINERS>
-                <CONTAINER UUID="7097c902-7cd6-4f1b-b5bc-cf0c8beb42d9">
-                  <SHORT-NAME>OsAlarmAutostart</SHORT-NAME>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart</DEFINITION-REF>
-                  <PARAMETER-VALUES>
                     <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmAlarmTime</DEFINITION-REF>
-                      <VALUE>5</VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerBaudRate</DEFINITION-REF>
+                      <VALUE>125</VALUE>
                     </INTEGER-VALUE>
                     <ENUMERATION-VALUE>
-                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmAutostartType</DEFINITION-REF>
-                      <VALUE>RELATIVE</VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanHWControllerId</DEFINITION-REF>
+                      <VALUE>FLEXCAN_A</VALUE>
                     </ENUMERATION-VALUE>
                     <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmCycleTime</DEFINITION-REF>
-                      <VALUE>20</VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerPropSeg</DEFINITION-REF>
+                      <VALUE>4</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerSeg1</DEFINITION-REF>
+                      <VALUE>4</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerSeg2</DEFINITION-REF>
+                      <VALUE>4</VALUE>
                     </INTEGER-VALUE>
                   </PARAMETER-VALUES>
+                  <SUB-CONTAINERS>
+                    <CONTAINER UUID="101d46d2-e7cb-45d4-b8c4-ba4c49192f74">
+                      <SHORT-NAME>Mask_1</SHORT-NAME>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet/CanController/CanFilterMask</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanFilterMask/CanFilterMaskValue</DEFINITION-REF>
+                          <VALUE>0</VALUE>
+                        </INTEGER-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                  </SUB-CONTAINERS>
                 </CONTAINER>
-                <CONTAINER UUID="d6c53078-e269-46d0-bb6a-8f19730ed12d">
-                  <SHORT-NAME>OsAlarmActivateTask</SHORT-NAME>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask</DEFINITION-REF>
+                <CONTAINER UUID="623800d6-d672-45fb-9454-be8ca8f1d6db">
+                  <SHORT-NAME>HWObj_1</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanIdType</DEFINITION-REF>
+                      <VALUE>EXTENDED</VALUE>
+                    </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanObjectType</DEFINITION-REF>
+                      <VALUE>TRANSMIT</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanMBMask</DEFINITION-REF>
+                      <VALUE>16711680</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
-                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask/OsAlarmActivateTaskRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/switch_node_mpc551x/Os/ComTask</VALUE-REF>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanControllerRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/switch_node_mpc551x/Can/CanConfigSet/Controller_1</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanFilterMaskRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/switch_node_mpc551x/Can/CanConfigSet/Controller_1/Mask_1</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
               </SUB-CONTAINERS>
             </CONTAINER>
-            <CONTAINER UUID="49ca7087-2de0-4bdf-ac4c-2e59e5553798">
-              <SHORT-NAME>ReadSwAlarm</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm</DEFINITION-REF>
-              <REFERENCE-VALUES>
-                <REFERENCE-VALUE>
-                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmCounterRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/switch_node_mpc551x/Os/OsTick</VALUE-REF>
-                </REFERENCE-VALUE>
-              </REFERENCE-VALUES>
-              <SUB-CONTAINERS>
-                <CONTAINER UUID="bc9cb621-87eb-4b7b-8d89-417518ac3e18">
-                  <SHORT-NAME>OsAlarmAutostart</SHORT-NAME>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart</DEFINITION-REF>
-                  <PARAMETER-VALUES>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmAlarmTime</DEFINITION-REF>
-                      <VALUE>10</VALUE>
-                    </INTEGER-VALUE>
-                    <ENUMERATION-VALUE>
-                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmAutostartType</DEFINITION-REF>
-                      <VALUE>RELATIVE</VALUE>
-                    </ENUMERATION-VALUE>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmCycleTime</DEFINITION-REF>
-                      <VALUE>30</VALUE>
-                    </INTEGER-VALUE>
-                  </PARAMETER-VALUES>
-                </CONTAINER>
-                <CONTAINER UUID="ed28d86c-90d1-40be-8a43-345c34d7971d">
-                  <SHORT-NAME>OsAlarmActivateTask</SHORT-NAME>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask</DEFINITION-REF>
-                  <REFERENCE-VALUES>
-                    <REFERENCE-VALUE>
-                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask/OsAlarmActivateTaskRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/switch_node_mpc551x/Os/ReadSwitches</VALUE-REF>
-                    </REFERENCE-VALUE>
-                  </REFERENCE-VALUES>
-                </CONTAINER>
-              </SUB-CONTAINERS>
-            </CONTAINER>
-            <CONTAINER UUID="4f612d3e-9a04-4f17-880a-4e0e1cedb73d">
-              <SHORT-NAME>OsTick</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsCounter</DEFINITION-REF>
+            <CONTAINER UUID="e724dede-61d0-48df-85e0-65806ed2523a">
+              <SHORT-NAME>CanGeneral</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanGeneral</DEFINITION-REF>
               <PARAMETER-VALUES>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterMaxAllowedValue</DEFINITION-REF>
-                  <VALUE>65535</VALUE>
-                </INTEGER-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterMinCycle</DEFINITION-REF>
-                  <VALUE>0</VALUE>
-                </INTEGER-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterTicksPerBase</DEFINITION-REF>
-                  <VALUE>0</VALUE>
-                </INTEGER-VALUE>
-                <ENUMERATION-VALUE>
-                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterType</DEFINITION-REF>
-                  <VALUE>OS-TICK</VALUE>
-                </ENUMERATION-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanGeneral/CanDevErrorDetection</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanGeneral/CanMultiplexedTransmission</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanGeneral/CanVersionInfoApi</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
-        <MODULE-CONFIGURATION UUID="bfbcc88f-383e-4c3c-9852-1e600ba081d0">
+        <MODULE-CONFIGURATION UUID="85d102ca-e755-47c5-a266-beed10ab3b57">
           <SHORT-NAME>CanIf</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
               <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
-                <SD GID="ARCCORE_EDITOR_VERSION">1.0.1</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.0.1</SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>
           <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/CanIf</DEFINITION-REF>
           <CONTAINERS>
-            <CONTAINER UUID="63420d35-bd1e-4d2a-8107-3e14b0a61a7f">
+            <CONTAINER UUID="7da13625-c26c-48ff-b0b2-8a76b2306155">
               <SHORT-NAME>CanIfDispatchConfig</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/CanIf/CanIfDispatchConfig</DEFINITION-REF>
               <PARAMETER-VALUES>
@@ -363,7 +187,7 @@
                 </FUNCTION-NAME-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
-            <CONTAINER UUID="a683817c-f6fa-4d8f-95ef-c24b67682136">
+            <CONTAINER UUID="3b595f17-b484-400d-80d1-1c4c0feb134e">
               <SHORT-NAME>CanIfDriverConfig</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/CanIf/CanIfDriverConfig</DEFINITION-REF>
               <PARAMETER-VALUES>
@@ -389,7 +213,7 @@
                 </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
-            <CONTAINER UUID="b69a7fb4-5b6e-4680-bee7-f3254ae8e2c8">
+            <CONTAINER UUID="f15967b5-baeb-484b-981b-5550737310ee">
               <SHORT-NAME>CanIfInitConfiguration</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/CanIf/CanIfInitConfiguration</DEFINITION-REF>
               <PARAMETER-VALUES>
@@ -411,11 +235,11 @@
                 </INTEGER-VALUE>
               </PARAMETER-VALUES>
               <SUB-CONTAINERS>
-                <CONTAINER UUID="77a1c8df-9b63-43a0-a4ff-077eb7a70ca3">
+                <CONTAINER UUID="de0010c7-e224-4341-a27a-b88424103f34">
                   <SHORT-NAME>Hoh_1</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfInitHohConfig</DEFINITION-REF>
                   <SUB-CONTAINERS>
-                    <CONTAINER UUID="6f6b371c-0e02-4956-a460-a2fb442bbba2">
+                    <CONTAINER UUID="5b415083-c3b5-4b5f-b4bc-e71b49e1ffe9">
                       <SHORT-NAME>Hth_1</SHORT-NAME>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfInitHohConfig/CanIfHthConfig</DEFINITION-REF>
                       <PARAMETER-VALUES>
@@ -437,7 +261,7 @@
                     </CONTAINER>
                   </SUB-CONTAINERS>
                 </CONTAINER>
-                <CONTAINER UUID="776111b5-d8e1-4761-99da-bb49758c8ce4">
+                <CONTAINER UUID="adadedd5-f56c-4751-ac5d-5048c07faa64">
                   <SHORT-NAME>Tx_PDU_1</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfTxPduConfig</DEFINITION-REF>
                   <PARAMETER-VALUES>
@@ -487,7 +311,7 @@
                 </CONTAINER>
               </SUB-CONTAINERS>
             </CONTAINER>
-            <CONTAINER UUID="9e6340fb-355c-449b-8893-47b29de9563e">
+            <CONTAINER UUID="618e77b5-eebf-46e3-ba52-756f80010907">
               <SHORT-NAME>CanIfPrivateConfiguration</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/CanIf/CanIfPrivateConfiguration</DEFINITION-REF>
               <PARAMETER-VALUES>
@@ -505,7 +329,7 @@
                 </ENUMERATION-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
-            <CONTAINER UUID="566ba0a0-3510-4362-8393-9fd6f6ca814b">
+            <CONTAINER UUID="0ed5a5e2-65c5-429c-b717-8e87fc184cef">
               <SHORT-NAME>CanIfPublicConfiguration</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/CanIf/CanIfPublicConfiguration</DEFINITION-REF>
               <PARAMETER-VALUES>
@@ -547,7 +371,7 @@
                 </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
-            <CONTAINER UUID="cd75909f-2b20-400c-b8d7-e5b38035729b">
+            <CONTAINER UUID="c8cdffa3-3e6e-48d5-bfc0-1b25cc610b6c">
               <SHORT-NAME>CanIfTransceiverDrvConfig</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/CanIf/CanIfTransceiverDrvConfig</DEFINITION-REF>
               <PARAMETER-VALUES>
@@ -557,7 +381,7 @@
                 </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
-            <CONTAINER UUID="499b42e1-6f6b-4538-8a91-0f7094a93bbb">
+            <CONTAINER UUID="d0bb0449-11b0-4815-8fc4-d98b626da887">
               <SHORT-NAME>CHANNEL_0</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/CanIf/CanIfControllerConfig</DEFINITION-REF>
               <PARAMETER-VALUES>
@@ -575,20 +399,20 @@
             </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
-        <MODULE-CONFIGURATION UUID="2e00d0d1-0988-4c08-ad75-bdae4f91d955">
+        <MODULE-CONFIGURATION UUID="b4e9f534-4441-4a52-968c-fb41e20aa6a0">
           <SHORT-NAME>Com</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
               <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
-                <SD GID="ARCCORE_EDITOR_VERSION">1.0.0</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.0.0</SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>
           <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Com</DEFINITION-REF>
           <CONTAINERS>
-            <CONTAINER UUID="e17d3557-1823-432e-82f1-79f6ef3d6f1e">
+            <CONTAINER UUID="64ec3a02-f282-4783-a9d5-1dd92e3cf935">
               <SHORT-NAME>ComConfig</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig</DEFINITION-REF>
               <PARAMETER-VALUES>
@@ -598,7 +422,7 @@
                 </INTEGER-VALUE>
               </PARAMETER-VALUES>
               <SUB-CONTAINERS>
-                <CONTAINER UUID="135d0a3c-9424-4d62-83e3-209e6df61b3c">
+                <CONTAINER UUID="b8175764-efe9-441f-adc2-1a4077666cce">
                   <SHORT-NAME>TxGroup</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPduGroup</DEFINITION-REF>
                   <PARAMETER-VALUES>
@@ -608,7 +432,7 @@
                     </INTEGER-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
-                <CONTAINER UUID="ffba79df-1b67-45c4-a698-55fa8de41e75">
+                <CONTAINER UUID="66b0d698-8aa0-4883-a45b-02b0746f4636">
                   <SHORT-NAME>LedCommandTx</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPdu</DEFINITION-REF>
                   <PARAMETER-VALUES>
@@ -644,7 +468,7 @@
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                   <SUB-CONTAINERS>
-                    <CONTAINER UUID="589f70b4-7be9-46ed-8d65-650ed9e892e6">
+                    <CONTAINER UUID="c73c2651-058c-4884-9128-d56d4420c1f3">
                       <SHORT-NAME>ComTxIPdu</SHORT-NAME>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu</DEFINITION-REF>
                       <PARAMETER-VALUES>
@@ -658,43 +482,11 @@
                         </INTEGER-VALUE>
                       </PARAMETER-VALUES>
                       <SUB-CONTAINERS>
-                        <CONTAINER UUID="1706886c-5fb0-427b-8342-01ef5de6599d">
+                        <CONTAINER UUID="55257223-b898-4815-abed-5062063a6b8b">
                           <SHORT-NAME>ComTxModeTrue</SHORT-NAME>
                           <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue</DEFINITION-REF>
                           <SUB-CONTAINERS>
-                            <CONTAINER UUID="6b143b52-12fb-4cde-9e0f-524a03019dbc">
-                              <SHORT-NAME>ComTxMode</SHORT-NAME>
-                              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode</DEFINITION-REF>
-                              <PARAMETER-VALUES>
-                                <ENUMERATION-VALUE>
-                                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode/ComTxModeMode</DEFINITION-REF>
-                                  <VALUE>DIRECT</VALUE>
-                                </ENUMERATION-VALUE>
-                                <INTEGER-VALUE>
-                                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode/ComTxModeNumberOfRepetitions</DEFINITION-REF>
-                                  <VALUE>0</VALUE>
-                                </INTEGER-VALUE>
-                                <INTEGER-VALUE>
-                                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode/ComTxModeRepetitionPeriodFactor</DEFINITION-REF>
-                                  <VALUE>0</VALUE>
-                                </INTEGER-VALUE>
-                                <INTEGER-VALUE>
-                                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode/ComTxModeTimeOffsetFactor</DEFINITION-REF>
-                                  <VALUE>0</VALUE>
-                                </INTEGER-VALUE>
-                                <INTEGER-VALUE>
-                                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode/ComTxModeTimePeriodFactor</DEFINITION-REF>
-                                  <VALUE>0</VALUE>
-                                </INTEGER-VALUE>
-                              </PARAMETER-VALUES>
-                            </CONTAINER>
-                          </SUB-CONTAINERS>
-                        </CONTAINER>
-                        <CONTAINER UUID="60596db3-da0f-4d15-90ab-0c839821e586">
-                          <SHORT-NAME>ComTxModeTrue</SHORT-NAME>
-                          <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue</DEFINITION-REF>
-                          <SUB-CONTAINERS>
-                            <CONTAINER UUID="7fedcbcb-f025-4cc7-85ff-7ec66181ea1b">
+                            <CONTAINER UUID="51a3dd10-c265-46ad-a9b1-f875238bb8c2">
                               <SHORT-NAME>ComTxMode</SHORT-NAME>
                               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode</DEFINITION-REF>
                               <PARAMETER-VALUES>
@@ -726,7 +518,7 @@
                     </CONTAINER>
                   </SUB-CONTAINERS>
                 </CONTAINER>
-                <CONTAINER UUID="67c0041f-c216-4529-9495-047baae82663">
+                <CONTAINER UUID="96abce40-9742-4c44-a7f2-83171ff1dc8e">
                   <SHORT-NAME>SetLedLevelTx</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComSignal</DEFINITION-REF>
                   <PARAMETER-VALUES>
@@ -782,7 +574,7 @@
                 </CONTAINER>
               </SUB-CONTAINERS>
             </CONTAINER>
-            <CONTAINER UUID="602889dd-7c81-42dd-b229-c61f51a1d53a">
+            <CONTAINER UUID="8a567a5a-600d-4b61-942b-a046dce0f07d">
               <SHORT-NAME>ComGeneral</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComGeneral</DEFINITION-REF>
               <PARAMETER-VALUES>
@@ -798,24 +590,24 @@
             </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
-        <MODULE-CONFIGURATION UUID="2d3788ee-3b15-4847-a853-4c422afde50a">
+        <MODULE-CONFIGURATION UUID="8c81925b-ee12-4860-bbe9-6893abf6866d">
           <SHORT-NAME>EcuC</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
               <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
-                <SD GID="ARCCORE_EDITOR_VERSION">1.0.0</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.0.0</SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>
           <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/EcuC</DEFINITION-REF>
           <CONTAINERS>
-            <CONTAINER UUID="cdd24aa3-8c43-4f58-b73e-b0fa7b8b6df0">
+            <CONTAINER UUID="2680a1e1-37a7-43dc-a9b8-820a78d0e6dd">
               <SHORT-NAME>PduCollection</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuC/PduCollection</DEFINITION-REF>
               <SUB-CONTAINERS>
-                <CONTAINER UUID="66b0b52d-c9a3-4775-ac7d-ebe6da0375ba">
+                <CONTAINER UUID="2c6a8c0f-cccb-4cd6-b807-2f273efb6077">
                   <SHORT-NAME>LedCommandTx</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuC/PduCollection/Pdu</DEFINITION-REF>
                   <PARAMETER-VALUES>
@@ -829,141 +621,472 @@
             </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
-        <MODULE-CONFIGURATION UUID="c2fe140a-a879-40ee-95a6-721a3270622d">
-          <SHORT-NAME>Can</SHORT-NAME>
+        <MODULE-CONFIGURATION UUID="45cc3b0a-a0c2-4368-8950-4fd43999d34d">
+          <SHORT-NAME>Os</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
               <SDG/>
               <SDG GID="Arccore::ModuleOptions">
-                <SD GID="ARCCORE_EDITOR_VERSION">1.0.0</SD>
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.0.7</SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>
-          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Can</DEFINITION-REF>
+          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Os</DEFINITION-REF>
           <CONTAINERS>
-            <CONTAINER UUID="bb813aa2-555c-4830-9e28-922f492f9af7">
-              <SHORT-NAME>CanConfigSet</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet</DEFINITION-REF>
+            <CONTAINER UUID="85776455-d0ad-42aa-943b-eaf5370c764a">
+              <SHORT-NAME>OsOS</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsOS</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsStackMonitoring</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsOS/OsStatus</DEFINITION-REF>
+                  <VALUE>EXTENDED</VALUE>
+                </ENUMERATION-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsUseGetServiceId</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsUseParameterAccess</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsUseResScheduler</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsOS/OsTickFrequency</DEFINITION-REF>
+                  <VALUE>1000</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsOS/OsInterruptStackSize</DEFINITION-REF>
+                  <VALUE>2048</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsOS/OsIdleStackSize</DEFINITION-REF>
+                  <VALUE>512</VALUE>
+                </INTEGER-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsUseDebug</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsDebugTask</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsDebugAlarm</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsDebugResource</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsDebugScheduleTable</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsDebugEvent</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+              </PARAMETER-VALUES>
               <SUB-CONTAINERS>
-                <CONTAINER UUID="804b2e09-e633-4111-bf8b-1e9029cf6ec4">
-                  <SHORT-NAME>Controller_1</SHORT-NAME>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet/CanController</DEFINITION-REF>
+                <CONTAINER UUID="3b9e5e09-7789-4dd0-80f9-8336f61037b2">
+                  <SHORT-NAME>OsHooks</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsOS/OsHooks</DEFINITION-REF>
                   <PARAMETER-VALUES>
                     <BOOLEAN-VALUE>
-                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerActivation</DEFINITION-REF>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsHooks/OsErrorHook</DEFINITION-REF>
                       <VALUE>true</VALUE>
                     </BOOLEAN-VALUE>
                     <BOOLEAN-VALUE>
-                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerLoopback</DEFINITION-REF>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsHooks/OsPostTaskHook</DEFINITION-REF>
+                      <VALUE>true</VALUE>
+                    </BOOLEAN-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsHooks/OsPreTaskHook</DEFINITION-REF>
+                      <VALUE>true</VALUE>
+                    </BOOLEAN-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsHooks/OsProtectionHook</DEFINITION-REF>
                       <VALUE>false</VALUE>
                     </BOOLEAN-VALUE>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerBaudRate</DEFINITION-REF>
-                      <VALUE>125</VALUE>
-                    </INTEGER-VALUE>
-                    <ENUMERATION-VALUE>
-                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanHWControllerId</DEFINITION-REF>
-                      <VALUE>FLEXCAN_A</VALUE>
-                    </ENUMERATION-VALUE>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerPropSeg</DEFINITION-REF>
-                      <VALUE>4</VALUE>
-                    </INTEGER-VALUE>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerSeg1</DEFINITION-REF>
-                      <VALUE>4</VALUE>
-                    </INTEGER-VALUE>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerSeg2</DEFINITION-REF>
-                      <VALUE>4</VALUE>
-                    </INTEGER-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsHooks/OsShutdownHook</DEFINITION-REF>
+                      <VALUE>true</VALUE>
+                    </BOOLEAN-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsHooks/OsStartupHook</DEFINITION-REF>
+                      <VALUE>true</VALUE>
+                    </BOOLEAN-VALUE>
                   </PARAMETER-VALUES>
-                  <SUB-CONTAINERS>
-                    <CONTAINER UUID="6f2d1b79-8d77-45da-b0eb-23e0b38b398a">
-                      <SHORT-NAME>Mask_1</SHORT-NAME>
-                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet/CanController/CanFilterMask</DEFINITION-REF>
-                      <PARAMETER-VALUES>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanFilterMask/CanFilterMaskValue</DEFINITION-REF>
-                          <VALUE>0</VALUE>
-                        </INTEGER-VALUE>
-                      </PARAMETER-VALUES>
-                    </CONTAINER>
-                  </SUB-CONTAINERS>
                 </CONTAINER>
-                <CONTAINER UUID="af852068-aa5f-4a9b-ba0a-2c9ee38a2a90">
-                  <SHORT-NAME>HWObj_1</SHORT-NAME>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject</DEFINITION-REF>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+            <CONTAINER UUID="78d54bdf-c217-4592-b670-104b1dbbfc06">
+              <SHORT-NAME>ComAlarm</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm</DEFINITION-REF>
+              <REFERENCE-VALUES>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmCounterRef</DEFINITION-REF>
+                  <VALUE-REF DEST="CONTAINER">/switch_node_mpc551x/Os/OsTick</VALUE-REF>
+                </REFERENCE-VALUE>
+              </REFERENCE-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="ac32d5ae-8d87-4122-a8f6-b3272edafca6">
+                  <SHORT-NAME>OsAlarmAutostart</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart</DEFINITION-REF>
                   <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmAlarmTime</DEFINITION-REF>
+                      <VALUE>5</VALUE>
+                    </INTEGER-VALUE>
                     <ENUMERATION-VALUE>
-                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanIdType</DEFINITION-REF>
-                      <VALUE>EXTENDED</VALUE>
-                    </ENUMERATION-VALUE>
-                    <ENUMERATION-VALUE>
-                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanObjectType</DEFINITION-REF>
-                      <VALUE>TRANSMIT</VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmAutostartType</DEFINITION-REF>
+                      <VALUE>RELATIVE</VALUE>
                     </ENUMERATION-VALUE>
                     <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanMBMask</DEFINITION-REF>
-                      <VALUE>0</VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmCycleTime</DEFINITION-REF>
+                      <VALUE>20</VALUE>
                     </INTEGER-VALUE>
                   </PARAMETER-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="4074607e-a4c0-440e-a1cc-167c05a9ec83">
+                  <SHORT-NAME>OsAlarmActivateTask</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask</DEFINITION-REF>
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
-                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanControllerRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/switch_node_mpc551x/Can/CanConfigSet/Controller_1</VALUE-REF>
-                    </REFERENCE-VALUE>
-                    <REFERENCE-VALUE>
-                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanFilterMaskRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/switch_node_mpc551x/Can/CanConfigSet/Controller_1/Mask_1</VALUE-REF>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask/OsAlarmActivateTaskRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/switch_node_mpc551x/Os/ComTask</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
               </SUB-CONTAINERS>
             </CONTAINER>
-            <CONTAINER UUID="b8b3c932-7283-4ffa-b059-8265b77f7a6c">
-              <SHORT-NAME>CanGeneral</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanGeneral</DEFINITION-REF>
+            <CONTAINER UUID="38528920-a11b-4e23-a952-969bdd19bc4b">
+              <SHORT-NAME>ReadSwAlarm</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm</DEFINITION-REF>
+              <REFERENCE-VALUES>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmCounterRef</DEFINITION-REF>
+                  <VALUE-REF DEST="CONTAINER">/switch_node_mpc551x/Os/OsTick</VALUE-REF>
+                </REFERENCE-VALUE>
+              </REFERENCE-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="802dd1d5-57ad-4ba6-a068-5c97822717e6">
+                  <SHORT-NAME>OsAlarmAutostart</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmAlarmTime</DEFINITION-REF>
+                      <VALUE>10</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmAutostartType</DEFINITION-REF>
+                      <VALUE>RELATIVE</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmCycleTime</DEFINITION-REF>
+                      <VALUE>30</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="fb1d868d-8d1b-4977-a0cc-e2eea00b912b">
+                  <SHORT-NAME>OsAlarmActivateTask</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask</DEFINITION-REF>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask/OsAlarmActivateTaskRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/switch_node_mpc551x/Os/ReadSwitches</VALUE-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+            <CONTAINER UUID="299edb5c-e9bb-4cb7-99f2-96078c8ef889">
+              <SHORT-NAME>OsTick</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsCounter</DEFINITION-REF>
               <PARAMETER-VALUES>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanGeneral/CanDevErrorDetection</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanGeneral/CanMultiplexedTransmission</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanGeneral/CanVersionInfoApi</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterMaxAllowedValue</DEFINITION-REF>
+                  <VALUE>65535</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterMinCycle</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterTicksPerBase</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterType</DEFINITION-REF>
+                  <VALUE>OS_TICK</VALUE>
+                </ENUMERATION-VALUE>
               </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="1672b97f-c474-47c9-9e3b-c4fb8f26804b">
+              <SHORT-NAME>ComTask</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskActivation</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskPriority</DEFINITION-REF>
+                  <VALUE>10</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskProcessType</DEFINITION-REF>
+                  <VALUE>BASIC</VALUE>
+                </ENUMERATION-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/ArcCoreOsTaskStackSize</DEFINITION-REF>
+                  <VALUE>2048</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskSchedule</DEFINITION-REF>
+                  <VALUE>FULL</VALUE>
+                </ENUMERATION-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="7997f4d1-9b0c-4282-ba4c-5fdc1708411f">
+              <SHORT-NAME>ReadSwitches</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskActivation</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskPriority</DEFINITION-REF>
+                  <VALUE>5</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskProcessType</DEFINITION-REF>
+                  <VALUE>BASIC</VALUE>
+                </ENUMERATION-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/ArcCoreOsTaskStackSize</DEFINITION-REF>
+                  <VALUE>2048</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskSchedule</DEFINITION-REF>
+                  <VALUE>FULL</VALUE>
+                </ENUMERATION-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="dee9715a-4fa7-42f3-b692-a89b671c2578">
+              <SHORT-NAME>StartupTask</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskActivation</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskPriority</DEFINITION-REF>
+                  <VALUE>20</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskProcessType</DEFINITION-REF>
+                  <VALUE>BASIC</VALUE>
+                </ENUMERATION-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/ArcCoreOsTaskStackSize</DEFINITION-REF>
+                  <VALUE>2048</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskSchedule</DEFINITION-REF>
+                  <VALUE>FULL</VALUE>
+                </ENUMERATION-VALUE>
+              </PARAMETER-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="030fc701-0f8e-4d53-ad7b-8e341ef54b74">
+                  <SHORT-NAME>OsTaskAutostart</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask/OsTaskAutostart</DEFINITION-REF>
+                </CONTAINER>
+              </SUB-CONTAINERS>
             </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
-        <MODULE-CONFIGURATION UUID="15a17a81-e680-46ac-ba14-dc138f87f865">
+        <MODULE-CONFIGURATION UUID="560e71ec-57fc-4fc4-bfaf-a07ebc650bcd">
+          <SHORT-NAME>PduR</SHORT-NAME>
+          <ADMIN-DATA>
+            <SDGS>
+              <SDG/>
+              <SDG GID="Arccore::ModuleOptions">
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.0.1</SD>
+              </SDG>
+            </SDGS>
+          </ADMIN-DATA>
+          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/PduR</DEFINITION-REF>
+          <CONTAINERS>
+            <CONTAINER UUID="c02d4309-5afc-4c03-8451-668b3b8bd8ba">
+              <SHORT-NAME>PduRGeneral</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/PduR/PduRGeneral</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRCanIfSupport</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRCanTpSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRComSupport</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRDcmSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRDevErrorDetect</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRFifoTxBufferSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRFrIfSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRFrTpSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRGatewayOperation</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRIPduMSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRLinIfSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRLinTpSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMemorySize</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMinimumRoutingLoModule</DEFINITION-REF>
+                  <VALUE></VALUE>
+                </ENUMERATION-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMinimumRoutingLoRxPduId</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMinimumRoutingLoTxPduId</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMinimumRoutingUpModule</DEFINITION-REF>
+                  <VALUE></VALUE>
+                </ENUMERATION-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMinimumRoutingUpRxPduId</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMinimumRoutingUpTxPduId</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMulticastFromIfSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMulticastFromTpSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMulticastToIfSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMulticastToTpSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRSbTxBufferSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRSingleIf</DEFINITION-REF>
+                  <VALUE>CAN_IF</VALUE>
+                </ENUMERATION-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRSingleTp</DEFINITION-REF>
+                  <VALUE>CAN_TP</VALUE>
+                </ENUMERATION-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRVersionInfoApi</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRZeroCostOperation</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="31ab650e-b697-4204-ad91-3728915cef20">
+              <SHORT-NAME>PduRGlobalConfig</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/PduR/PduRGlobalConfig</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRConfigurationId</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+              </PARAMETER-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="c988f2e6-82ba-4053-877e-3a973ae704e5">
+                  <SHORT-NAME>PduRRoutingTable</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable</DEFINITION-REF>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+          </CONTAINERS>
+        </MODULE-CONFIGURATION>
+        <MODULE-CONFIGURATION UUID="28a14bc0-3b00-496d-94a3-d7046efc2b8c">
           <SHORT-NAME>Port</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
               <SDG/>
               <SDG GID="Arccore::ModuleOptions">
-                <SD GID="ARCCORE_EDITOR_VERSION">1.0.0</SD>
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.0.0</SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>
           <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Port</DEFINITION-REF>
           <CONTAINERS>
-            <CONTAINER UUID="0c113838-c000-4b9c-8136-8a3230d94bab">
+            <CONTAINER UUID="c6b54ed6-2d0c-4028-b87d-a62010a7947c">
               <SHORT-NAME>PortConfigSet</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet</DEFINITION-REF>
               <SUB-CONTAINERS>
-                <CONTAINER UUID="da28e71f-40c6-4ae5-9793-a80673f4d5ad">
-                  <SHORT-NAME>PortContainer_1</SHORT-NAME>
+                <CONTAINER UUID="586de8a0-4877-4e82-9f18-f73fb8b906eb">
+                  <SHORT-NAME>Can</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer</DEFINITION-REF>
                   <SUB-CONTAINERS>
-                    <CONTAINER UUID="22ada879-2a20-4f3d-b420-ab5d66ad0562">
+                    <CONTAINER UUID="b3bdba46-3617-420d-a72d-a33419b81f18">
                       <SHORT-NAME>CNTX_A</SHORT-NAME>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
                       <PARAMETER-VALUES>
@@ -1005,11 +1128,53 @@
                         </ENUMERATION-VALUE>
                       </PARAMETER-VALUES>
                     </CONTAINER>
+                    <CONTAINER UUID="10976fd3-cbb3-493d-91cb-35a890f8ea6b">
+                      <SHORT-NAME>CNRX_A</SHORT-NAME>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_IN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>49</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_CAN</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
                   </SUB-CONTAINERS>
                 </CONTAINER>
               </SUB-CONTAINERS>
             </CONTAINER>
-            <CONTAINER UUID="40fe25f0-7ca1-40dd-b3b9-0dea04614cf6">
+            <CONTAINER UUID="14037ce8-9c63-4019-986f-5e221ee88caf">
               <SHORT-NAME>PortGeneral</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortGeneral</DEFINITION-REF>
               <PARAMETER-VALUES>
@@ -1027,6 +1192,39 @@
                 </BOOLEAN-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortGeneral/PortVersionInfoApi</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+          </CONTAINERS>
+        </MODULE-CONFIGURATION>
+        <MODULE-CONFIGURATION UUID="4e4b8e32-0309-4da2-86b0-2fb7d7450820">
+          <SHORT-NAME>EcuM</SHORT-NAME>
+          <ADMIN-DATA>
+            <SDGS>
+              <SDG/>
+              <SDG GID="Arccore::ModuleOptions">
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.0.0</SD>
+              </SDG>
+            </SDGS>
+          </ADMIN-DATA>
+          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/EcuM</DEFINITION-REF>
+          <CONTAINERS>
+            <CONTAINER UUID="03e49c2b-e150-484b-93c4-1805e3ca0ec7">
+              <SHORT-NAME>EcuMGeneral</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMGeneral</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/EcuM/EcuMGeneral/EcuMDevErrorDetect</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/EcuM/EcuMGeneral/EcuMIncludeNvramMgr</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/EcuM/EcuMGeneral/EcuMVersionInfoApi</DEFINITION-REF>
                   <VALUE>false</VALUE>
                 </BOOLEAN-VALUE>
               </PARAMETER-VALUES>

@@ -77,6 +77,10 @@
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsOS/OsInterruptStackSize</DEFINITION-REF>
                   <VALUE>2048</VALUE>
                 </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsOS/OsIdleStackSize</DEFINITION-REF>
+                  <VALUE>512</VALUE>
+                </INTEGER-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsUseDebug</DEFINITION-REF>
                   <VALUE>false</VALUE>
@@ -197,7 +201,7 @@
                 </INTEGER-VALUE>
                 <ENUMERATION-VALUE>
                   <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterType</DEFINITION-REF>
-                  <VALUE>OS-TICK</VALUE>
+                  <VALUE>OS_TICK</VALUE>
                 </ENUMERATION-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>

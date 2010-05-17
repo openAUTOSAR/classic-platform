@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <AUTOSAR xmlns="http://autosar.org/3.1.2"><TOP-LEVEL-PACKAGES>
     <AR-PACKAGE UUID="0d59ee12-95ec-49af-8852-d0a411bc3657">
-      <SHORT-NAME>simple_ppc</SHORT-NAME>
+      <SHORT-NAME>simple_hcs12</SHORT-NAME>
       <CATEGORY>EcuConfiguration</CATEGORY>
       <ADMIN-DATA>
         <DOC-REVISIONS>
@@ -29,7 +29,7 @@
             </SDGS>
           </ADMIN-DATA>
           <MODULE-REFS>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/simple_ppc/Os</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/simple_hcs12/Os</MODULE-REF>
           </MODULE-REFS>
         </ECU-CONFIGURATION>
         <MODULE-CONFIGURATION UUID="29b23c16-ee7a-4b40-afaf-6c4117db16d3">
@@ -76,6 +76,10 @@
                 <INTEGER-VALUE>
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsOS/OsInterruptStackSize</DEFINITION-REF>
                   <VALUE>512</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsOS/OsIdleStackSize</DEFINITION-REF>
+                  <VALUE>200</VALUE>
                 </INTEGER-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsUseDebug</DEFINITION-REF>
@@ -141,7 +145,7 @@
               <REFERENCE-VALUES>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmCounterRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/simple_ppc/Os/OsTick</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/simple_hcs12/Os/OsTick</VALUE-REF>
                 </REFERENCE-VALUE>
               </REFERENCE-VALUES>
               <SUB-CONTAINERS>
@@ -169,11 +173,11 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/simple_ppc/Os/EVENT_2</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/simple_hcs12/Os/EVENT_2</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventTaskRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/simple_ppc/Os/etask_1</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/simple_hcs12/Os/etask_1</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
@@ -197,7 +201,7 @@
                 </INTEGER-VALUE>
                 <ENUMERATION-VALUE>
                   <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterType</DEFINITION-REF>
-                  <VALUE>OS-TICK</VALUE>
+                  <VALUE>OS_TICK</VALUE>
                 </ENUMERATION-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
