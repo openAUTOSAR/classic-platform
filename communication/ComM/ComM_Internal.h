@@ -17,8 +17,6 @@
 #ifndef COMM_INTERNAL_H_
 #define COMM_INTERNAL_H_
 
-#define COMM_DEV_ERROR_DETECT	STD_ON
-
 #include "ComM_Types.h"
 
 #if (COMM_DEV_ERROR_DETECT == STD_ON)
@@ -58,6 +56,7 @@ typedef enum {
 typedef struct {
 	ComM_ModeType				Mode;
 	ComM_Internal_SubModeType	SubMode;
+	uint32						UserRequestMask;
 } ComM_Internal_ChannelType;
 
 typedef struct {
@@ -70,10 +69,18 @@ typedef struct {
 	ComM_Internal_UserType		Users[COMM_USER_COUNT];
 } ComM_InternalType;
 
-/* Go through users channels. Relay to SMs. Collect overall success status */
-static Std_ReturnType ComM_Internal_DelegateRequestComMode( ComM_UserHandleType User, ComM_ModeType ComMode );
+/* Delegate request to users channels and call ComM_Internal_UpdateChannelState */
+static Std_ReturnType ComM_Internal_RequestComMode(
+				ComM_UserHandleType User, ComM_ModeType ComMode );
 
-/* Go through users channels. Relay to SMs. Collect overall mode and success status */
-static Std_ReturnType ComM_Internal_DelegateGetCurrentComMode( ComM_UserHandleType User, ComM_ModeType* ComMode );
+/* Looks at stored requests for Channel and updates state accordingly */
+static Std_ReturnType ComM_Internal_UpdateChannelState( const ComM_ChannelType* Channel );
+
+/* Propagates channel mode to respective Bus SM */
+static Std_ReturnType ComM_Internal_PropagateComMode( const ComM_ChannelType* Channel );
+
+/* Propagate query to channel Bus SMs. Collect overall mode and status */
+static Std_ReturnType ComM_Internal_PropagateGetCurrentComMode(
+		ComM_UserHandleType User, ComM_ModeType* ComMode );
 
 #endif /* COMM_INTERNAL_H_ */

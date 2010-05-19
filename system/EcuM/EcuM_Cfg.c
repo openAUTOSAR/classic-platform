@@ -22,6 +22,13 @@
 
 #include "EcuM.h"
 
+#if defined(USE_CANSM)
+extern const CanSM_ConfigType CanSM_Config;
+#endif
+#if defined(USE_COMM)
+extern const ComM_ConfigType ComM_Config;
+#endif
+
 EcuM_ConfigType EcuMConfig =
 {
 	.EcuMDefaultShutdownTarget = ECUM_STATE_RESET,
@@ -40,8 +47,14 @@ EcuM_ConfigType EcuMConfig =
 #if defined(USE_CANIF)
 	.CanIfConfig = &CanIf_Config,
 #endif
+#if defined(USE_CANSM)
+	.CanSMConfig = &CanSM_Config,
+#endif
 #if defined(USE_COM)
 	.ComConfig = &ComConfiguration,
+#endif
+#if defined(USE_COMM)
+	.ComMConfig = &ComM_Config,
 #endif
 #if defined(USE_DMA)
 	.DmaConfig = DmaConfig,

@@ -17,8 +17,6 @@
 #ifndef CANSM_INTERNAL_H_
 #define CANSM_INTERNAL_H_
 
-#define CANSM_DEV_ERROR_DETECT	STD_ON
-
 #include "CanSM.h"
 
 #if (CANSM_DEV_ERROR_DETECT == STD_ON)

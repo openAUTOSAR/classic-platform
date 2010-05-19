@@ -42,6 +42,7 @@ void ComM_Init( ComM_ConfigType * Config ){
 		/** @req ComM485 */
 		ComM_Internal.Channels[i].Mode = COMM_NO_COMMUNICATION;
 		ComM_Internal.Channels[i].SubMode = COMM_SUBMODE_NONE;
+		ComM_Internal.Channels[i].UserRequestMask = 0;
 	}
 
 	for (int i = 0; i < COMM_USER_COUNT; ++i) {
@@ -81,43 +82,89 @@ Std_ReturnType ComM_RequestComMode( ComM_UserHandleType User, ComM_ModeType ComM
 	COMM_VALIDATE_INIT(COMM_SERVICEID_REQUESTCOMMODE, COMM_E_UNINIT);
 	COMM_VALIDATE_USER(User, COMM_SERVICEID_REQUESTCOMMODE, E_NOT_OK);
 
+	return ComM_Internal_RequestComMode(User, ComMode);
+}
+
+static Std_ReturnType ComM_Internal_RequestComMode(
+				ComM_UserHandleType User, ComM_ModeType ComMode ){
+
+	const ComM_UserType* UserConfig = &ComM_Config->Users[User];
 	ComM_Internal_UserType* UserInternal = &ComM_Internal.Users[User];
 
 	UserInternal->RequestedMode = ComMode;
-
-	return ComM_Internal_DelegateRequestComMode(User, ComMode);
-}
-
-static Std_ReturnType ComM_Internal_DelegateRequestComMode( ComM_UserHandleType User, ComM_ModeType ComMode ){
-	const ComM_UserType* UserConfig = &ComM_Config->Users[User];
+	uint32 userMask = 1 << User;
 
 	Std_ReturnType requestStatus = E_OK;
 
 	/* Go through users channels. Relay to SMs. Collect overall success status */
 	for (int i = 0; i < UserConfig->ChannelCount; ++i) {
 		const ComM_ChannelType* Channel = UserConfig->ChannelList[i];
-		Std_ReturnType status = E_OK;
-		switch (Channel->BusType) {
-#if defined(USE_CANSM)
-			case COMM_BUS_TYPE_CAN:
-				status = CanSM_RequestComMode(Channel->BusSMNetworkHandle, ComMode);
-				break;
-#endif
-#if defined(USE_LINSM)
-			case COMM_BUS_TYPE_LIN:
-				status = LinSM_RequestComMode(Channel->BusSMNetworkHandle, ComMode);
-				break;
-#endif
-			default:
-				status = E_NOT_OK;
-				break;
+		ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel->Number];
+
+		// Put user request into mask
+		if (ComMode == COMM_NO_COMMUNICATION) {
+			ChannelInternal->UserRequestMask &= ~(userMask);
+		} else if (ComMode == COMM_FULL_COMMUNICATION) {
+			ChannelInternal->UserRequestMask |= userMask;
 		}
-		if (status > requestStatus) {
-			requestStatus = status;
-		}
+
+		// take request -> new state
+		Std_ReturnType status = ComM_Internal_UpdateChannelState(Channel);
+		if (status > requestStatus) requestStatus = status;
+
 	}
 
 	return requestStatus;
+}
+
+static Std_ReturnType ComM_Internal_UpdateChannelState( const ComM_ChannelType* Channel ) {
+	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel->Number];
+
+	switch (ChannelInternal->Mode) {
+		case COMM_NO_COMMUNICATION:
+			if (ChannelInternal->UserRequestMask != 0) {
+				ChannelInternal->Mode = COMM_FULL_COMMUNICATION;
+				ChannelInternal->SubMode = COMM_SUBMODE_NETWORK_REQUESTED;
+				return ComM_Internal_PropagateComMode(Channel);
+			}
+			break;
+		case COMM_SILENT_COMMUNICATION:
+			if (ChannelInternal->UserRequestMask != 0) {
+				ChannelInternal->Mode = COMM_FULL_COMMUNICATION;
+				ChannelInternal->SubMode = COMM_SUBMODE_NETWORK_REQUESTED;
+				return ComM_Internal_PropagateComMode(Channel);
+			}
+			break;
+		case COMM_FULL_COMMUNICATION:
+			if (ChannelInternal->UserRequestMask == 0) {
+				ChannelInternal->SubMode = COMM_SUBMODE_READY_SLEEP;
+			} else {
+				ChannelInternal->SubMode = COMM_SUBMODE_NETWORK_REQUESTED;
+			}
+			break;
+		default:
+			break;
+	}
+
+	return E_OK;
+}
+
+static Std_ReturnType ComM_Internal_PropagateComMode( const ComM_ChannelType* Channel ){
+	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel->Number];
+	ComM_ModeType ComMode = ChannelInternal->Mode;
+
+	switch (Channel->BusType) {
+#if defined(USE_CANSM)
+		case COMM_BUS_TYPE_CAN:
+			return CanSM_RequestComMode(Channel->BusSMNetworkHandle, ComMode);
+#endif
+#if defined(USE_LINSM)
+		case COMM_BUS_TYPE_LIN:
+			return LinSM_RequestComMode(Channel->BusSMNetworkHandle, ComMode);
+#endif
+		default:
+			return E_NOT_OK;
+	}
 }
 
 Std_ReturnType ComM_GetMaxComMode( ComM_UserHandleType User, ComM_ModeType* ComMode ){
@@ -141,10 +188,10 @@ Std_ReturnType ComM_GetCurrentComMode( ComM_UserHandleType User, ComM_ModeType* 
 	COMM_VALIDATE_INIT(COMM_SERVICEID_GETCURRENTCOMMODE, COMM_E_UNINIT);
 	COMM_VALIDATE_USER(User, COMM_SERVICEID_GETCURRENTCOMMODE, E_NOT_OK);
 
-	return ComM_Internal_DelegateGetCurrentComMode(User, ComMode);
+	return ComM_Internal_PropagateGetCurrentComMode(User, ComMode);
 }
 
-static Std_ReturnType ComM_Internal_DelegateGetCurrentComMode( ComM_UserHandleType User, ComM_ModeType* ComMode ){
+static Std_ReturnType ComM_Internal_PropagateGetCurrentComMode( ComM_UserHandleType User, ComM_ModeType* ComMode ){
 	const ComM_UserType* UserConfig = &ComM_Config->Users[User];
 
 	ComM_ModeType requestMode = COMM_FULL_COMMUNICATION;
