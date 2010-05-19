@@ -13,6 +13,7 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+
 /*
  * From Autosar 3.1
  *
@@ -252,7 +253,7 @@ void etask_sup_m_04(void) {
 	StatusType rv;
 
 	for(;;) {
-		WaitEvent(EVENT_MASK_1 | EVENT_MASK_kill );
+		WaitEvent(EVENT_MASK_notif | EVENT_MASK_kill );
 		switch(test_nr) {
 		case 10:
 			switch(subTest) {
@@ -261,8 +262,8 @@ void etask_sup_m_04(void) {
 				printf("etask\n");
 				rv = GetEvent(currTask,&eventMask);
 				TEST_ASSERT( rv == E_OK );
-				TEST_ASSERT(eventMask == EVENT_MASK_1 );
-				ClearEvent(EVENT_MASK_1);
+				TEST_ASSERT(eventMask == EVENT_MASK_notif );
+				ClearEvent(EVENT_MASK_notif);
 				break;
 
 			default:
