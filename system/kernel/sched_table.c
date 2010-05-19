@@ -528,9 +528,10 @@ void Os_SchTblCheck(OsCounterType *c_p) {
 
 		/* Check if the expire point have been hit */
 		if( (sched_obj->state == SCHEDULETABLE_RUNNING ||
-				SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS ) &&
+			sched_obj->state == SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS ) &&
 				(c_p->val == sched_obj->expire_val) )
 		{
+			if ( sched_obj->expire_curr_index < SA_LIST_CNT(&sched_obj->expirePointList) ) {
 			OsScheduleTableExpiryPointType * action;
 			int i;
 
@@ -547,8 +548,9 @@ void Os_SchTblCheck(OsCounterType *c_p) {
 			for(i=0; i< action->eventListCnt;i++ ) {
 				SetEvent( action->eventList[i].task, action->eventList[i].event);
 			}
-			// Calc new expire val
-			Os_SchTblCalcExpire(sched_obj);
+			}
+			// Calc new expire val and state
+			Os_SchTblUpdateState(sched_obj);
 		}
 
 	}
@@ -566,6 +568,41 @@ void Os_SchTblInit( void ) {
 	}
 }
 
+void Os_SchTblAutostart( void ) {
+
+	for(int j=0; j < Os_CfgGetSchedCnt(); j++ ) {
+		OsSchTblType *sPtr;
+		sPtr = Os_CfgGetSched(j);
+
+		if( sPtr->autostartPtr != NULL ) {
+			const struct OsSchTblAutostart *autoPtr = sPtr->autostartPtr;
+
+			/* Check appmode */
+			if( os_sys.appMode & autoPtr->appMode ) {
+
+				/* Start the schedule table */
+				switch(autoPtr->type) {
+				case SCHTBL_AUTOSTART_ABSOLUTE:
+					StartScheduleTableAbs(j,autoPtr->offset);
+					break;
+				case SCHTBL_AUTOSTART_RELATIVE:
+					StartScheduleTableRel(j,autoPtr->offset);
+					break;
+#if defined(OS_SC2) || defined(OS_SC4)
+				case SCHTBL_AUTOSTART_SYNCHRONE:
+					/* TODO: */
+					break;
+#endif
+				default:
+					assert(0); 		// Illegal value
+					break;
+				}
+			}
+		}
+	}
+}
+
+
 /**
  * Calculates expire value and changes state depending it's state.
  *
@@ -576,7 +613,7 @@ void Os_SchTblInit( void ) {
  *
  * @param stbl Ptr to a Schedule Table.
  */
-void Os_SchTblCalcExpire( OsSchTblType *stbl ) {
+void Os_SchTblUpdateState( OsSchTblType *stbl ) {
 
 	TickType delta;
 	TickType initalOffset;

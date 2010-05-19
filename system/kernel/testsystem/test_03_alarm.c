@@ -356,13 +356,13 @@ void etask_sup_m_03(void) {
 
 	for(;;) {
 
-		WaitEvent(EVENT_MASK_1 | EVENT_MASK_kill );
+		WaitEvent(EVENT_MASK_notif | EVENT_MASK_kill );
 		switch (test_nr) {
 		case 12:
 		case 13:
 		case 14:
 		case 15:
-			ClearEvent(EVENT_MASK_1);
+			ClearEvent(EVENT_MASK_notif);
 			break;
 		case 100:
 			TerminateTask();
