@@ -153,8 +153,6 @@ static core_info_t *Mcu_IdentifyCore(uint32 pvr)
   return NULL;
 }
 
-
-
 /**
  * Identify the core, just to check that we have support for it.
  *
@@ -162,7 +160,7 @@ static core_info_t *Mcu_IdentifyCore(uint32 pvr)
  */
 static uint32 Mcu_CheckCpu( void ) {
 
-  uint32 pvr;
+  uint32 pvr = SCB->CPUID;
   //uint32 pir;
   //cpu_info_t *cpuType;
   core_info_t *coreType;
@@ -330,9 +328,9 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
 {
   VALIDATE( ( NULL != configPtr ), MCU_INIT_SERVICE_ID, MCU_E_PARAM_CONFIG );
 
-  if( !SIMULATOR() ) {
-	  Mcu_CheckCpu();
-  }
+#if !defined(USE_SIMULATOR)
+  Mcu_CheckCpu();
+#endif
 
   memset(&Mcu_Global.stats,0,sizeof(Mcu_Global.stats));
 
@@ -395,17 +393,16 @@ Mcu_PllStatusType Mcu_GetPllStatus(void) {
 	VALIDATE_W_RV( ( 1 == Mcu_Global.initRun ), MCU_GETPLLSTATUS_SERVICE_ID, MCU_E_UNINIT, MCU_PLL_STATUS_UNDEFINED );
 	Mcu_PllStatusType rv;
 
-	if (!SIMULATOR()) {
-		if (RCC->CR & RCC_CR_PLLRDY) {
-			rv = MCU_PLL_LOCKED;
-		} else {
-			rv = MCU_PLL_UNLOCKED;
-		}
-	} else {
-		/* We are running on instruction set simulator. PLL is then always in sync... */
+#if !defined(USE_SIMULATOR)
+	if (RCC->CR & RCC_CR_PLLRDY) {
 		rv = MCU_PLL_LOCKED;
+	} else {
+		rv = MCU_PLL_UNLOCKED;
 	}
-
+#else
+	/* We are running on instruction set simulator. PLL is then always in sync... */
+	rv = MCU_PLL_LOCKED;
+#endif
 	return rv;
 }
 
@@ -514,19 +511,14 @@ uint32_t McuE_GetSystemClock(void)
 
 imask_t McuE_EnterCriticalSection()
 {
-#if 0
-  uint32_t msr = get_msr();
-  Irq_Disable();
-  return msr;
-#endif
-  return 0;
+	uint32_t val;
+	Irq_Save(val);
+	return val;
 }
 
 void McuE_ExitCriticalSection(uint32_t old_state)
 {
-#if 0
-  set_msr(old_state);
-#endif
+	Irq_Restore(old_state);
 }
 
 /**
