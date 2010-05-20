@@ -38,8 +38,8 @@
 
 #if (DCM_DEV_ERROR_DETECT == STD_ON)
 // Error codes produced by this module
-#define DCM_E_CONFIG_INVALID				0x01
-#define DCM_E_UNEXPECTED_PARAM				0x02
+#define DCM_E_CONFIG_INVALID				0x41
+#define DCM_E_UNEXPECTED_PARAM				0x42
 #define DCM_E_NOT_IMPLEMENTED_YET			0xff
 
 // Service ID in this module

@@ -13,6 +13,7 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** @req CANTP160 */
 
 #ifndef CANTP_TYPES_H_
 #define CANTP_TYPES_H_
@@ -80,16 +81,16 @@ typedef struct {
 	const int CanIf_FcPduId; // The polite CanIf PDU index.
 	const int PduR_PduId; // The polite PduR index.
 	const CanTp_AddressingFormantType CanTpAddressingFormant;
-	const uint32 CanTpBs; /** req: CanTp243: Sets the maximum number of messages of N-PDUs before flow control. */
-	const uint32 CanTpNar; /** req: CanTp244: Timeout for transmission of a CAN frame (ms). */
-	const uint32 CanTpNbr; /** req: CanTp245: ?? */
-	const uint32 CanTpNcr; /** req: CanTp246: Time out for consecutive frames (ms). */
+	const uint8 CanTpBs; /** req: CanTp243: Sets the maximum number of messages of N-PDUs before flow control. */
+	const uint16 CanTpNar; /** req: CanTp244: Timeout for transmission of a CAN frame (ms). */
+	const uint16 CanTpNbr; /** req: CanTp245: ?? */
+	const uint16 CanTpNcr; /** req: CanTp246: Time out for consecutive frames (ms). */
 	const uint8 CanTpRxChannel; /* Connection to runtime variable index, see CanTp 266. */
-	const uint32 CanTpRxDI; /** req: CanTp248: Data length code for of this RxNsdu. */
+	const uint16 CanTpRxDI; /** req: CanTp248: Data length code for of this RxNsdu. */
 	CanTp_StateType CanTpRxPaddingActivation; /** req: CanTp249: Enable use of padding. */
 	CanTp_TaTypeType CanTpRxTaType; /** req: CanTp250: Functional or physical addressing. */
 	const uint8 CanTpWftMax; /** req: CanTp251: Max number FC wait that can be transmitted consecutively. */
-	const uint32 CanTpSTmin; /** req: CanTp252: Minimum time the sender shall wait between transmissions of two N-PDU. */
+	const uint16 CanTpSTmin; /** req: CanTp252: Minimum time the sender shall wait between transmissions of two N-PDU. */
 	/*const uint32							CanTpNSduRef ** req: CanTp241. This is PDU id - typeless enum. */
 	const CanTp_NSaType *CanTpNSa;
 	const CanTp_NTaType *CanTpNTa;
@@ -103,11 +104,11 @@ typedef struct {
 	const int CanIf_PduId; // The polite CanIf index.
 	const int PduR_PduId; // The polite PduR index.
 	const CanTp_AddressingFormantType CanTpAddressingMode; /** req: CanTp138: */
-	const uint8 CanTpNas; /** req: CanTp263: N_As timeout for transmission of any CAN frame. */
-	const uint8 CanTpNbs; /** req: CanTp264: N_Bs timeout of transmission until reception of next Flow Control. */
-	const uint8 CanTpNcs; /** req: CanTp265: N_Bs timeout of transmission until reception of next Flow Control. */
+	const uint16 CanTpNas; /** req: CanTp263: N_As timeout for transmission of any CAN frame. */
+	const uint16 CanTpNbs; /** req: CanTp264: N_Bs timeout of transmission until reception of next Flow Control. */
+	const uint16 CanTpNcs; /** req: CanTp265: N_Bs timeout of transmission until reception of next Flow Control. */
 	const uint8	CanTpTxChannel; /** req: CanTp266: Link to the TX connection channel (why?). */
-	const uint32 CanTpTxDI; /** req: CanTp267: Data length code for of this TxNsdu. */
+	const uint16 CanTpTxDI; /** req: CanTp267: Data length code for of this TxNsdu. */
 	/*const uint32						CanTpTxNSduId; / ** req: CanTp268: Data length code for of this TxNsdu. */
 	CanTp_StateType CanTpTxPaddingActivation; /** req: CanTp249: Enable use of padding. */
 	CanTp_TaTypeType CanTpTxTaType; /** req: CanTp270: Functional or physical addressing. */

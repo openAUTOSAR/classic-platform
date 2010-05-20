@@ -204,33 +204,40 @@ int write(  int fd, const void *_buf, size_t nbytes)
 
 	if( fd <= STDERR_FILENO ) {
 #ifdef USE_TTY_WINIDEA
-  	if (g_TConn)
-  	{
-  	  unsigned char nCnt,nLen;
-  	  for(nCnt=0; nCnt<nbytes; nCnt++)
-	    {
-  	    while(TWBUFF_FULL());
-  	    nLen=TWBUFF_TPTR;
-  	    g_TWBuffer[nLen]=buf[nCnt];
-  	    nLen=TWBUFF_INC(nLen);
-  	    TWBUFF_TPTR=nLen;
-	    }
-  	}
+		if (g_TConn)
+		{
+		  unsigned char nCnt,nLen;
+		  for(nCnt=0; nCnt<nbytes; nCnt++)
+			{
+			while(TWBUFF_FULL());
+			nLen=TWBUFF_TPTR;
+			g_TWBuffer[nLen]=buf[nCnt];
+			nLen=TWBUFF_INC(nLen);
+			TWBUFF_TPTR=nLen;
+			}
+		}
 #endif
 
 #ifdef USE_TTY_T32
-  	for (int i = 0; i < nbytes; i++) {
-    	if (*(buf + i) == '\n') {
-      		t32_writebyte ('\r');
+		for (int i = 0; i < nbytes; i++) {
+			if (*(buf + i) == '\n') {
+				t32_writebyte ('\r');
 //      		t32_writebyte ('\n');
-    	}
-    	t32_writebyte (*(buf + i));
-  	}
+			}
+			t32_writebyte (*(buf + i));
+		}
 #endif
+
 #ifdef USE_TTY_ARM_ITM
-  	for (int i = 0; i < nbytes; i++) {
-  	  	ITM_SendChar(*(buf + i));
-  	}
+		for (int i = 0; i < nbytes; i++) {
+			ITM_SendChar(*(buf + i));
+		}
+#endif
+
+#if defined(USE_RAMLOG)
+		for (int i = 0; i < nbytes; i++) {
+			ramlog_chr (*(buf + i));
+		}
 #endif
 
 	}
