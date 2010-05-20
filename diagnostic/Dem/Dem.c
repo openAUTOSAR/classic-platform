@@ -1418,8 +1418,8 @@ Std_ReturnType Dem_SetEventStatus(Dem_EventIdType eventId, Dem_EventStatusType e
 	{
 #if (DEM_DEV_ERROR_DETECT == STD_ON)
 		Det_ReportError(MODULE_ID_DEM, 0, DEM_SETEVENTSTATUS_ID, DEM_E_UNINIT);
-		returnCode = E_NOT_OK;
 #endif
+		returnCode = E_NOT_OK;
 	}
 
 	return returnCode;
