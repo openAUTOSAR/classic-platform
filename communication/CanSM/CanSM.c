@@ -55,7 +55,12 @@ Std_ReturnType CanSM_Internal_RequestComMode( NetworkHandleType NetworkHandle, C
 	CanSM_Internal_NetworkType* NetworkInternal = &CanSM_Internal.Networks[NetworkHandle];
 	NetworkInternal->RequestedMode = ComM_Mode;
 
-	Std_ReturnType status = CanSM_Internal_RequestCanIfMode(NetworkHandle, ComM_Mode);
+	Std_ReturnType overallStatus = E_OK;
+	Std_ReturnType status;
+	status = CanSM_Internal_RequestCanIfMode(NetworkHandle, ComM_Mode);
+	if (status > overallStatus) overallStatus = status;
+	status = CanSM_Internal_RequestComGroupMode(NetworkHandle, ComM_Mode);
+	if (status > overallStatus) overallStatus = status;
 
 	if (status == E_OK) {
 		NetworkInternal->CurrentMode = ComM_Mode;
@@ -93,10 +98,52 @@ Std_ReturnType CanSM_Internal_RequestCanIfMode( NetworkHandleType NetworkHandle,
 	return totalStatus;
 }
 
+Std_ReturnType CanSM_Internal_RequestComGroupMode( NetworkHandleType NetworkHandle, ComM_ModeType ComM_Mode ) {
+	const CanSM_NetworkType* Network = &CanSM_Config->Networks[NetworkHandle];
+
+	switch (ComM_Mode) {
+		case COMM_NO_COMMUNICATION:
+			Com_IpduGroupStop(Network->ComRxPduGroupId);
+			Com_IpduGroupStop(Network->ComTxPduGroupId);
+			break;
+		case COMM_SILENT_COMMUNICATION:
+			Com_IpduGroupStart(Network->ComRxPduGroupId, FALSE);
+			Com_IpduGroupStop(Network->ComTxPduGroupId);
+			break;
+		case COMM_FULL_COMMUNICATION:
+			Com_IpduGroupStart(Network->ComRxPduGroupId, FALSE);
+			Com_IpduGroupStart(Network->ComTxPduGroupId, FALSE);
+			break;
+		default:
+			return E_NOT_OK;
+			break;
+	}
+	return E_OK;
+}
 Std_ReturnType CanSM_GetCurrentComMode( NetworkHandleType NetworkHandle, ComM_ModeType* ComM_ModePtr ) {
 	CANSM_VALIDATE_INIT(CANSM_SERVICEID_GETCURRENTCOMMODE, E_NOT_OK);
 	CANSM_VALIDATE_NETWORK(NetworkHandle, CANSM_SERVICEID_GETCURRENTCOMMODE, E_NOT_OK);
-	return E_OK;
+
+	ComM_ModeType ComM_Mode = COMM_FULL_COMMUNICATION;
+
+	const CanSM_NetworkType* Network = &CanSM_Config->Networks[NetworkHandle];
+	Std_ReturnType totalStatus = E_OK;
+	for (int i = 0; i < Network->ControllerCount; ++i) {
+		const CanSM_ControllerType* Controller = &Network->Controllers[i];
+		CanIf_ControllerModeType CanIf_Mode;
+		Std_ReturnType status =
+				CanIf_GetControllerMode(Controller->CanIfControllerId, &CanIf_Mode);
+		if (status > totalStatus) {
+			totalStatus = status;
+		}
+
+		if (CanIf_Mode != CANIF_CS_STARTED) {
+			ComM_Mode = COMM_NO_COMMUNICATION;
+		}
+	}
+
+	*ComM_ModePtr = ComM_Mode;
+	return totalStatus;
 }
 
 

@@ -17,6 +17,8 @@
 #ifndef CANSM_CONFIGTYPES_H_
 #define CANSM_CONFIGTYPES_H_
 
+#include "Com.h"
+
 typedef struct {
 	const uint8						CanIfControllerId;
 } CanSM_ControllerType;
@@ -25,6 +27,8 @@ typedef struct {
 	const CanSM_ControllerType*		Controllers;
 	const uint8						ControllerCount;
 	const uint8						ComMNetworkHandle;
+	const Com_PduGroupIdType		ComRxPduGroupId;
+	const Com_PduGroupIdType		ComTxPduGroupId;
 } CanSM_NetworkType;
 
 typedef struct {
