@@ -71,6 +71,15 @@ static void SetRegChannelBit(volatile uint8 *reg, uint8 channel, uint8 value)
 
 static Pwm_ModuleStateType Pwm_ModuleState = PWM_STATE_UNINITIALIZED;
 
+// Run-time variables
+typedef struct {
+	Pwm_ChannelClassType Class;
+	Pwm_OutputStateType IdleState;
+} Pwm_ChannelStructType;
+
+// We use Pwm_ChannelType as index here
+static Pwm_ChannelStructType ChannelRuntimeStruct[8];
+
 void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
     Pwm_ChannelType channel_iterator;
 
@@ -102,11 +111,17 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
     	PWMCTL &= ~0x04;
     }
 
-    PWMPRCLK = ConfigPtr->prescalerA | (ConfigPtr->prescalerB << 4);
+    PWMPRCLK = ConfigPtr->busPrescalerA | (ConfigPtr->busPrescalerB << 4);
+
+    PWMSCLA = ConfigPtr->prescalerA;
+    PWMSCLB = ConfigPtr->prescalerB;
 
     for (channel_iterator = 0; channel_iterator < PWM_NUMBER_OF_CHANNELS; channel_iterator++) {
     	const Pwm_ChannelConfigurationType *chCfgPtr = &ConfigPtr->channels[channel_iterator];
     	Pwm_ChannelType channel = ConfigPtr->channels[channel_iterator].channel;
+
+        ChannelRuntimeStruct[channel].Class = ConfigPtr->channels[channel_iterator].class;
+        ChannelRuntimeStruct[channel].IdleState = ConfigPtr->channels[channel_iterator].idleState;
 
         // Set up the registers in hw
     	SetRegChannelBit(&PWMCAE, channel, chCfgPtr->centerAlign);
@@ -144,6 +159,7 @@ void Pwm_SetPeriodAndDuty(Pwm_ChannelType Channel, Pwm_PeriodType Period,
 {
 	Pwm_VALIDATE_INITIALIZED();
 	Pwm_VALIDATE_CHANNEL(Channel);
+	PWM_VALIDATE(ChannelRuntimeStruct[Channel].Class == PWM_VARIABLE_PERIOD, PWM_E_PERIOD_UNCHANGEABLE);
 
 	volatile uint8 *pDuty = &PWMDTY0+Channel;
 	*pDuty = (uint8)((uint32)((uint32)DutyCycle*(uint32)Period)>>15);
@@ -200,7 +216,24 @@ void Pwm_SetOutputToIdle(Pwm_ChannelType Channel) {
 	Pwm_VALIDATE_INITIALIZED();
 
 	volatile uint8 *pDuty = &PWMDTY0+Channel;
-	*pDuty = 0;
+	if(ChannelRuntimeStruct[Channel].IdleState == PWM_HIGH)
+	{
+		// Output shall be high
+		if((PWMPOL & (1 << Channel)) == (1 << Channel)){
+			*pDuty = 100;//Polarity high at beginning and goes low when duty is reached
+		}else{
+			*pDuty = 0;
+		}
+	}
+	else
+	{
+		// Output shall be low
+		if((PWMPOL & (1 << Channel)) == (1 << Channel)){
+			*pDuty = 0;//Polarity high at beginning and goes low when duty is reached
+		}else{
+			*pDuty = 100;
+		}
+	}
 }
 
 /*

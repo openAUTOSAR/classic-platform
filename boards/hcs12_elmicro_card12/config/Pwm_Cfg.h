@@ -110,8 +110,12 @@ typedef struct {
 	uint8_t polarity:1;
 	/** Scaled clock enabled */
 	uint8_t scaledClockEnable:1;
+	/** idle state */
+	uint8_t idleState:1;
 
-	uint8_t reserved:5;
+	uint8_t reserved:4;
+
+	Pwm_ChannelClassType class;
 
 	Pwm_ChannelType channel;
 } Pwm_ChannelConfigurationType;
@@ -129,8 +133,10 @@ typedef enum{
 
 typedef struct {
 	Pwm_ChannelConfigurationType channels[PWM_NUMBER_OF_CHANNELS];
-	Pwm_PrescalerType prescalerA;
-	Pwm_PrescalerType prescalerB;
+	Pwm_PrescalerType busPrescalerA;
+	Pwm_PrescalerType busPrescalerB;
+	uint8_t prescalerA;
+	uint8_t prescalerB;
 } Pwm_ConfigType;
 
 #endif

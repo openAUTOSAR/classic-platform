@@ -38,6 +38,8 @@ const Pwm_ConfigType PwmConfig =
 				.centerAlign = 0,
 				.polarity = POLARITY_NORMAL,
 				.scaledClockEnable = 0,
+				.idleState = PWM_LOW,
+				.class = PWM_VARIABLE_PERIOD,
 			},
 			{
 				.channel = PWM_CHANNEL_2,
@@ -45,8 +47,12 @@ const Pwm_ConfigType PwmConfig =
 				.centerAlign = 0,
 				.polarity = POLARITY_NORMAL,
 				.scaledClockEnable = 1,
+				.idleState = PWM_LOW,
+				.class = PWM_VARIABLE_PERIOD,
 			},
 		},
-		.prescalerA = PRESCALER_128,
-		.prescalerB = PRESCALER_8,
+		.busPrescalerA = PRESCALER_128,
+		.busPrescalerB = PRESCALER_8,
+		.prescalerA = 1,
+		.prescalerB = 1,
 };
