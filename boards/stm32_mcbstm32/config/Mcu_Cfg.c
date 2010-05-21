@@ -32,7 +32,15 @@ Mcu_RamSectorSettingConfigType Mcu_RamSectorSettingConfigData[] = {
   }
 };
 
-Mcu_ClockSettingConfigType Mcu_ClockSettingConfigData[] =
+const Mcu_PerClockConfigType McuPerClockConfigData =
+{
+	.AHBClocksEnable = RCC_AHBPeriph_DMA1,
+	.APB1ClocksEnable = RCC_APB1Periph_TIM4,
+	.APB2ClocksEnable = (RCC_APB2Periph_ADC1 | RCC_APB2Periph_GPIOA |
+						 RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOC),
+};
+
+const Mcu_ClockSettingConfigType Mcu_ClockSettingConfigData[] =
 {
   {
     .McuClockReferencePointFrequency = 8000000UL,

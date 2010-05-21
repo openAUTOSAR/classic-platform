@@ -279,6 +279,16 @@ static void SetClocks(Mcu_ClockSettingConfigType *clockSettingsPtr)
 }
 
 /**
+  * Initialize Peripherals clocks
+  */
+static void InitPerClocks()
+{
+	RCC->AHBENR |= McuPerClockConfigData.AHBClocksEnable;
+	RCC->APB1ENR |= McuPerClockConfigData.APB1ClocksEnable;
+	RCC->APB2ENR |= McuPerClockConfigData.APB2ClocksEnable;
+}
+
+/**
   * Initialize Flash, PLL and clocks.
   */
 static void InitMcuClocks(Mcu_ClockSettingConfigType *clockSettingsPtr)
@@ -371,6 +381,8 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
   clockSettingsPtr = &Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting];
 
   InitMcuClocks(clockSettingsPtr);
+
+  InitPerClocks(clockSettingsPtr);
 
   return E_OK;
 }

@@ -70,21 +70,6 @@ void Port_Init(const Port_ConfigType *configType)
 
 	uint16_t portIndex,pinIndex;
 
-	  RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
-
-	  /* Enable DMA1 clock */
-	  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
-
-	  /* Enable ADC1 and GPIOC clock */
-	  RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1 |
-				 RCC_APB2Periph_GPIOA |
-				 RCC_APB2Periph_GPIOB |
-				 RCC_APB2Periph_GPIOC,
-				 ENABLE);
-
-	  /* PWM: TIM4 clock enable */
-	  RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
-
 	// Set up all the ports
 	for (portIndex = 0; portIndex < configType->portCount; portIndex++) {
 		const Port_PortConfigType* portConfig = configType->ports[portIndex];
