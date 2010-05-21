@@ -29,7 +29,7 @@ obj-$(CFG_MPC55XX)-$(USE_MCU) += Mcu_Exceptions.o
 # Flash
 obj-$(USE_FLS) += Fls.o
 obj-$(USE_FLS) += Fls_Cfg.o
-obj-$(USE_FLS) += Fls_H7F.o
+obj-$(CFG_MPC55XX)-$(USE_FLS) += Fls_H7F.o
 
 # Bring in the freescale driver source  
 inc-$(CFG_MPC55XX) +=  $(ROOTDIR)/$(ARCH_PATH-y)/delivery/mpc5500_h7f/include

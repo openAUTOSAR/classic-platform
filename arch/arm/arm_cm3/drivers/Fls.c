@@ -1,14 +1,20 @@
-/*
- * Fls.c
+/* -------------------------------- Arctic Core ------------------------------
+ * Arctic Core - the open source AUTOSAR platform http://arccore.com
  *
- *  Created on: 2009-nov-03
- *      Author: Fredrik Svensson
- */
+ * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
+ *
+ * This source code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ * -------------------------------- Arctic Core ------------------------------*/
+
 #include "stm32f10x_flash.h"
 #include "Fls.h"
-#ifdef USE_WATCHDOG
-#include "stm32f10x_wwdg.h"
-#endif
 
 static Fls_ConfigType const *flsConfigPtr;
 
@@ -23,11 +29,6 @@ Std_ReturnType Fls_Erase(Fls_AddressType TargetAddress, Fls_LengthType Length)
 	Fls_AddressType erased = 0;
 	u32 page = 0;
 	u32 pageIndex;
-
-#ifdef USE_WATCHDOG
-    /* Kick watchdog. */
-	WWDG_SetCounter(0x7f);
-#endif
 
 	/* Unlock the Flash Program Erase controller */
 	FLASH_Unlock();
@@ -48,10 +49,6 @@ Std_ReturnType Fls_Erase(Fls_AddressType TargetAddress, Fls_LengthType Length)
 		}
 		erased += flsConfigPtr->FlsSectorList[0].FlsPageSize;
 		pageStart += flsConfigPtr->FlsSectorList[0].FlsPageSize;
-#ifdef USE_WATCHDOG
-		/* Kick watchdog. */
-		WWDG_SetCounter(0x7f);
-#endif
 	}
 
 	return E_OK;
@@ -63,7 +60,6 @@ Std_ReturnType Fls_Write(Fls_AddressType TargetAddress, const uint8 *SourceAddre
 	Fls_LengthType len = Length;
 	Fls_AddressType addr = TargetAddress;
 	const uint8 *srcPtr = SourceAddressPtr;
-	vu32 wdgCnt = 0;
 
 	while (len >= sizeof(uint32_t))
 	{
@@ -71,15 +67,6 @@ Std_ReturnType Fls_Write(Fls_AddressType TargetAddress, const uint8 *SourceAddre
 		srcPtr += sizeof(uint32_t);
 		addr += sizeof(uint32_t);
 		len -= sizeof(uint32_t);
-#ifdef USE_WATCHDOG
-		wdgCnt++;
-		if(wdgCnt > 100)
-		{
-			/* Kick watchdog. */
-			WWDG_SetCounter(0x7f);
-			wdgCnt = 0;
-		}
-#endif
 	}
 
 	if (len == sizeof(uint16_t))

@@ -21,10 +21,6 @@
 #define FLS_BASE_ADDRESS 			0x08000000
 #define FLS_TOTAL_SIZE				0x40000 // from addr 0x0800_0000 to 0x0804_0000
 
-
-typedef uint32 Fls_LengthType;
-typedef uint32 Fls_AddressType;
-
 // Configuration description of a flashable sector
 typedef struct {
   // Number of continuous sectors with the above characteristics.
