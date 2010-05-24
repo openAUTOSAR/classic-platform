@@ -24,7 +24,7 @@ CFG+=STM32_CL
 
 # What buildable modules does this board have, 
 # default or private
-MOD_AVAIL=KERNEL MCU PWM ADC SIMPLE_PRINTF ARM_ITM_TERM RAMLOG DEM IOHWAB
+MOD_AVAIL=KERNEL MCU ECUM PWM ADC SIMPLE_PRINTF ARM_ITM_TERM RAMLOG DEM IOHWAB
 
 #
 # Modules needed by us

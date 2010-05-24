@@ -134,9 +134,13 @@ $(build-hex-y): $(build-exe-y)
 	@echo "  >> OBJCOPY $@"   
 	$(Q)$(CROSS_COMPILE)objcopy -O ihex $< $@
 
+# Linker
 # Could use readelf -S instead of parsing the *.map file.
 $(build-exe-y): $(dep-y) $(obj-y) $(sim-y) $(libitem-y) $(ldcmdfile-y)
 	@echo "  >> LD $@"
+ifeq ($(CROSS_COMPILE),)
+	$(Q)$(CC) $(LDFLAGS) -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	
+else	
 	$(Q)$(LD) $(LDFLAGS) -T $(ldcmdfile-y) -o $@ $(libpath-y) --start-group $(obj-y) $(lib-y) $(libitem-y) --end-group $(LDMAPFILE)
 ifdef CFG_MC912DG128A
 	@$(CROSS_COMPILE)objdump -h $@ | gawk -f $(ROOTDIR)/scripts/hc1x_memory.awk
@@ -147,9 +151,10 @@ else
 	 							/^\.bss/ { print "  bss :"  $$3+0 " bytes"; ram+=$$3}; \
 	 							END { print "  ROM: ~" rom " bytes"; print "  RAM: ~" ram " bytes"}' $(subst .elf,.map,$@)
 endif
+endif
 	@echo "  >>>>>>>  DONE  <<<<<<<<<"
 	
-
+	
 $(size-exe-y): $(build-exe-y)
 	$(Q)$(OBJDUMP) -h $<
 	@echo TODO: Parse the file....

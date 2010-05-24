@@ -6,11 +6,11 @@ obj-$(CFG_ARM_CM3) += startup_stm32f10x.o
 
 #Ecu
 #obj-y += EcuM_$(BOARDDIR).o
-obj-y += EcuM.o
-obj-y += EcuM_Cfg.o
-obj-y += EcuM_Callout_template.o
-inc-y += $(ROOTDIR)/system/EcuM
-vpath-y += $(ROOTDIR)/system/EcuM
+obj-$(USE_ECUM) += EcuM.o
+obj-$(USE_ECUM) += EcuM_Cfg.o
+obj-$(USE_ECUM) += EcuM_Callout_template.o
+inc-$(USE_ECUM) += $(ROOTDIR)/system/EcuM
+vpath-$(USE_ECUM) += $(ROOTDIR)/system/EcuM
 
 # Gpt
 obj-$(USE_GPT) += Gpt.o
@@ -54,7 +54,9 @@ obj-$(USE_ADC) += Adc.o
 obj-$(USE_ADC) += Adc_Cfg.o
 
 # Include the kernel
+ifneq ($(USE_KERNEL),)
 include $(ROOTDIR)/system/kernel/makefile
+endif
 
 # Spi
 obj-$(USE_SPI) += Spi.o
@@ -82,7 +84,7 @@ obj-$(USE_PWM) += Pwm.o
 obj-$(USE_PWM) += Pwm_Cfg.o
 
 # Misc
-obj-y += Det.o
+obj-$(USE_DET) += Det.o
 
 # Lin
 obj-$(USE_LIN) += Lin_PBcfg.o
@@ -139,44 +141,16 @@ obj-$(USE_DEM) += Dem_LCfg.o
 inc-$(USE_DEM) += $(ROOTDIR)/diagnostic/Dem
 vpath-$(USE_DEM) += $(ROOTDIR)/diagnostic/Dem
 
-
-#tests
-#obj-y += RunTests.o
-#obj-$(USE_CAN) += can_test.o
-#obj-$(USE_DIO) += dio_test.o
-#obj-$(USE_PORT) += port_test.o
-#obj-$(USE_CANIF) += canif_test.o
-#obj-$(USE_FLS) += fls_test.o
-#obj-y += mahi_test.o
-#obj-$(USE_GPT) += gpt_test.o
-#obj-$(USE_SPI) += spi_test.o
-#obj-$(USE_EEP) += eep_test.o
-#obj-y += det_test.o
-#obj-$(USE_MCU) += mcu_test.o
-#obj-$(USE_FLS_SST25XX) += xfls_test.o
-#obj-y += lin_test.o
-#obj-$(USE_PDUR) += pdur_test.o
-#obj-$(USE_COM) += com_test.o
-
-#inc-$(USE_TESTS) += $(ROOTDIR)/embunit/embUnit
-#inc-$(USE_TESTS) += $(ROOTDIR)/embunit/textui
-#inc-$(USE_TESTS) += $(ROOTDIR)/embunit
-
-#libitem-$(USE_TESTS) += $(ROOTDIR)/embunit/embUnit/obj_$(ARCH)/libembunit.a
-#libitem-$(USE_TESTS) += $(ROOTDIR)/embunit/textui/obj_$(ARCH)/libtextui.a
-
-
-
 # Common
-obj-y += xtoa.o
-obj-y += arc.o
+obj-$(USE_COMMON) += xtoa.o
+obj-$(USE_COMMON) += arc.o
 #obj-y += malloc.o
 obj-$(USE_RAMLOG) += ramlog.o
 obj-$(USE_SIMPLE_PRINTF) += printf.o
 
 VPATH += $(ROOTDIR)/common
 
-obj-y += newlib_port.o
+obj-$(USE_NEWLIB) += newlib_port.o
 obj-y += $(obj-y-y)
 
 vpath-y += $(ROOTDIR)/$(ARCH_PATH-y)/kernel

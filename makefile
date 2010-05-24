@@ -108,9 +108,9 @@ cmd_cmd_goals := $(filter clean all,$(MAKECMDGOALS))
 
 # Check for CROSS_COMPILE
 ifneq ($(cmd_cmd_goals),)
-ifndef CROSS_COMPILE
-  $(error CROSS_COMPILE not defined)
-endif
+#ifndef CROSS_COMPILE
+#  $(error CROSS_COMPILE not defined)
+#endif
 
 # Check that the board actually exist
 ifdef BOARDDIR
@@ -157,6 +157,8 @@ clean_all:
 	@find . -type d -name obj_* | xargs rm -rf
 	@find . -type f -name *.a | xargs rm -rf
 	echo Done!
+	
+config: $(dir_cmd_goals)	
 	
 clean: $(dir_cmd_goals)
 	@echo "Clean:"
