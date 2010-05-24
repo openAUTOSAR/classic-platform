@@ -549,7 +549,7 @@ static void Can_Isr(int unit) {
       // No FIFO used
       const Can_HardwareObjectType *hohObj;
       uint32 mbMask;
-      uint8 mbNr;
+      uint8 mbNr = 0;
       uint32 data;
       Can_IdType id;
 
@@ -592,6 +592,9 @@ static void Can_Isr(int unit) {
             }
             // Increment statistics
             canUnit->stats.rxSuccessCnt++;
+
+            // unlock MB (dummy read timer)
+            canHw->TIMER.R;
 
             // Clear interrupt
             canHw->IFRL.R = (1<<mbNr);
@@ -661,12 +664,12 @@ static void Can_Isr(int unit) {
 #define INSTALL_HANDLERS( _can_name,_boff,_err,_start,_stop) \
   do { \
     TaskType tid; \
-    tid = Os_Arc_CreateIsr(_can_name ## _BusOff,1/*prio*/,"Can"); \
+    tid = Os_Arc_CreateIsr(_can_name ## _BusOff,2/*prio*/,"Can"); \
     Irq_AttachIsr2(tid,NULL,_boff); \
-    tid = Os_Arc_CreateIsr(_can_name ## _Err,1/*prio*/,"Can"); \
+    tid = Os_Arc_CreateIsr(_can_name ## _Err,2/*prio*/,"Can"); \
     Irq_AttachIsr2(tid,NULL,_err); \
     for(i=_start;i<=_stop;i++) {  \
-      tid = Os_Arc_CreateIsr(_can_name ## _Isr,1/*prio*/,"Can"); \
+      tid = Os_Arc_CreateIsr(_can_name ## _Isr,2/*prio*/,"Can"); \
 			Irq_AttachIsr2(tid,NULL,i); \
     } \
   } while(0);
@@ -890,7 +893,10 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
       canHw->RXIMR[i].R = 0;
     }
   }
-#else
+#endif
+#if defined(CFG_MPC5567)
+  // Enable individual Rx ID masking and the reception queue features.
+  canHw->MCR.B.MBFEN = 1;
 #endif
   // Set the id's
   if( config->Can_Arc_Fifo ) {
@@ -932,12 +938,20 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
           if ( hohObj->CanIdType == CAN_ID_TYPE_EXTENDED )
           {
             canHw->BUF[mbNr].CS.B.IDE = 1;
+#if defined(CFG_MPC5567)
+            canHw->RXIMR[mbNr].B.MI = *hohObj->CanFilterMaskRef;
+#else
             canHw->BUF[mbNr].ID.R = *hohObj->CanFilterMaskRef; // Write 29-bit MB IDs
+#endif
           }
           else
           {
             canHw->BUF[mbNr].CS.B.IDE = 0;
+#if defined(CFG_MPC5567)
+            canHw->RXIMR[mbNr].B.MI = *hohObj->CanFilterMaskRef;
+#else
             canHw->BUF[mbNr].ID.B.STD_ID = *hohObj->CanFilterMaskRef;
+#endif
          }
         }
 
@@ -953,12 +967,14 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
       }
     } while( !hohObj->Can_Arc_EOL );
 
-
+#if defined(CFM_MPC5567)
+#else
     // Set global mask
     canHw->RXGMASK.R = mask;
     // Don't use them
     canHw->RX14MASK.R = 0;
     canHw->RX15MASK.R = 0;
+#endif
   }
 
   canUnit->iflagStart = canUnit->Can_Arc_TxMbMask;

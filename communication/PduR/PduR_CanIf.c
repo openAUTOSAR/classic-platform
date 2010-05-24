@@ -18,19 +18,15 @@
 
 
 
+#include "PduR.h"
 
+#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
 
 #include "Det.h"
-#include "PduR_CanIf.h"
-#include "PduR_If.h"
 #include "debug.h"
 
-#ifndef PDUR_ZERO_COST_OPERATION
-#ifdef PDUR_CANIF_SUPPORT
-
-
 void PduR_CanIfRxIndication(PduIdType CanRxPduId,const uint8* CanSduPtr) {
-	Enter(CanRxPduId);
+#if (PDUR_CANIF_SUPPORT == STD_ON)
 	DevCheck(CanRxPduId,CanSduPtr,0x0e);
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
@@ -39,11 +35,11 @@ void PduR_CanIfRxIndication(PduIdType CanRxPduId,const uint8* CanSduPtr) {
 	PduR_LoIfRxIndication(CanRxPduId, CanSduPtr);
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
-	Exit();
+#endif
 }
 
 void PduR_CanIfTxConfirmation(PduIdType CanTxPduId) {
-	Enter(CanTxPduId);
+#if (PDUR_CANIF_SUPPORT == STD_ON)
 	DevCheck(CanTxPduId,1,0x0f);
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
@@ -52,8 +48,7 @@ void PduR_CanIfTxConfirmation(PduIdType CanTxPduId) {
 	PduR_LoIfTxConfirmation(CanTxPduId);
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
-	Exit();
+#endif
 }
 
-#endif
 #endif

@@ -23,8 +23,10 @@
 #include "Os.h"
 #include <stdio.h>
 #include <assert.h>
-#define USE_TRACE	1
+
+#define USE_LDEBUG_PRINTF
 #include "debug.h"
+
 #include "Mcu.h"
 
 
@@ -71,11 +73,11 @@ void ErrorHook( StatusType Error ) {
 }
 
 void PreTaskHook( void ) {
-// 	LDEBUG_PRINTF("## PreTaskHook, taskid=%d\n",task);
+// 	dbg_printf("## PreTaskHook, taskid=%d\n",task);
 }
 
 void PostTaskHook( void ) {
-//	LDEBUG_PRINTF("## PostTaskHook, taskid=%d\n",task);
+//	dbg_printf("## PostTaskHook, taskid=%d\n",task);
 }
 
 #if 0

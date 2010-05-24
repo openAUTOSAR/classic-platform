@@ -116,7 +116,7 @@ typedef struct {
 	/**
 	 * PDU identifier assigned by the PDU router.
 	 */
-	uint16 HandleId;
+	uint16 SrcPduId;
 
 	/**
 	 * Reference to unique PDU identifier.
@@ -164,7 +164,7 @@ typedef struct {
 	/**
 	 * Not part of standard
 	 */
-	PduR_FctPtrType *FctPtrs;
+	PduR_FctPtrType FctPtrs;
 	uint8 PduR_Arc_EOL;
 	uint8 PduR_GatewayMode;
 

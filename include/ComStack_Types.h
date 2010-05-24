@@ -63,10 +63,10 @@ typedef struct {
 */
 
 typedef enum {
-	BEFREQ_OK=0,
-	BEFREQ_NOT_OK,
-	BEFREQ_BUSY,
-	BEFREQ_OVFL,
+	BUFREQ_OK=0,
+	BUFREQ_NOT_OK,
+	BUFREQ_BUSY,
+	BUFREQ_OVFL,
 } BufReq_ReturnType;
 
 // 0x00--0x1e General return types
@@ -75,8 +75,12 @@ typedef enum {
 // more
 typedef uint8 NotifResultType;
 
-#define NTFRSLT_OK			0
-#define NTFRSLT_NOT_OK		1
+#define NTFRSLT_OK				0x00
+#define NTFRSLT_E_NOT_OK		0x01
+#define NTFRSLT_E_WRONG_SN 		0x05
+#define NTFRSLT_E_NO_BUFFER 	0x09
+
+
 // TODO, more
 
 typedef uint8 BusTrcvErrorType;

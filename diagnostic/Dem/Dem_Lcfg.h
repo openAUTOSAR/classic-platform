@@ -24,6 +24,9 @@
 #define DEM_LCFG_H_
 
 #include "Dem_Types.h"
+#if defined(USE_DCM)
+#include "Dcm_Types.h"
+#endif
 
 
 /*
@@ -43,12 +46,15 @@ typedef Std_ReturnType (*Dem_CallbackEventStatusChangedFncType)(Dem_EventStatusE
 typedef Std_ReturnType (*Dem_CallbackDTCStatusChangedFncType)(uint8 DTCStatusOld, uint8 DTCStatusNew);
 
 // DIDServices
-#if 1	// Until DCM is available
-typedef uint8 Dcm_NegativeResponseCodeType;
-#endif
+#if defined(USE_DCM)
 typedef Std_ReturnType (*Dem_CallbackConditionCheckReadFncType)(Dcm_NegativeResponseCodeType *Nrc);
 typedef Std_ReturnType (*Dem_CallbackReadDataFncType)(uint8 *Data);
 typedef Std_ReturnType (*Dem_CallbackReadDataLength)(uint16 *DidLength);
+#else
+typedef Std_ReturnType (*Dem_CallbackConditionCheckReadFncType)(uint8 *Nrc);
+typedef Std_ReturnType (*Dem_CallbackReadDataFncType)(uint8 *Data);
+typedef Std_ReturnType (*Dem_CallbackReadDataLength)(uint16 *DidLength);
+#endif
 
 // GetExtendedDataRecord
 typedef Std_ReturnType (*Dem_CallbackGetExtDataRecordFncType)(uint8 *ExtendedDataRecord);
@@ -83,21 +89,22 @@ typedef struct {
 
 // 10.2.8 DemPidOrDid
 typedef struct {
-	boolean									PidOrDidUsePort;			// (1)
+//	boolean									PidOrDidUsePort;			// (1) Not used in current implementation
 	uint8									PidOrDidSize;				// (1)
-	uint16									DidIdentifier;				// (0..1)
+	const uint16							*DidIdentifier;				// (0..1)
 	Dem_CallbackConditionCheckReadFncType	DidConditionCheckReadFnc;	// (0..1)
 	Dem_CallbackReadDataLength				DidReadDataLengthFnc;		// (0..1)
 	Dem_CallbackReadDataFncType				DidReadFnc;					// (0..1)
-	uint8									PidIndentifier;				// (0..1)
+	const uint8								*PidIndentifier;			// (0..1)
 	Dem_CallbackGetPIDValueFncType			PidReadFnc;					// (0..1)
+	boolean									Arc_EOL;
 } Dem_PidOrDidType;
 
 // 10.2.18 DemFreezeFrameClass
 typedef struct {
 	Dem_FreezeFrameKindType FFKind;			// (1)
-//	uint8					FFRecordNumber;	// (1) Optional
-//	const Dem_PidOrDidType 	*FFIdClassRef; 	// (1..255) Optional?
+	uint8					FFRecordNumber;	// (1)
+	const Dem_PidOrDidType 	*FFIdClassRef; 	// (1..255)
 } Dem_FreezeFrameClassType;
 
 // 10.2.4 DemIndicator
@@ -127,11 +134,12 @@ typedef struct {
 // 10.2.17 DemDTCClass
 typedef struct {
 	uint32									DTC;						// (1)
-	uint8									DTCFunctionUnit;			// (1)
+	uint8									DTCFunctionalUnit;			// (1)
 	Dem_DTCKindType							DTCKind;					// (1)
 	const Dem_CallbackDTCStatusChangedType	*CallbackDTCStatusChanged;	// (0..*)
 	const Dem_CallbackInitMForFType			*CallbackInitMForF;			// (0..*)
 	// Dem_DTCSeverityType					DTCSeverity					// (0..1)  Optional
+	boolean									Arc_EOL;
 } Dem_DTCClassType;
 
 // 10.2.5 DemCallbackEventStatusChanged
@@ -150,7 +158,7 @@ typedef struct {
 } Dem_IndicatorAttributeType;
 
 typedef struct {
-	Dem_CallbackGetFaultDetectionCounterFncType	CallbackGetFDCnt;	// (1)
+	Dem_CallbackGetFaultDetectionCounterFncType	CallbackGetFDCntFnc;	// (1)
 } Dem_PreDebounceMonitorInternalType;
 
 typedef struct {
@@ -170,8 +178,8 @@ typedef struct {
 	union {
 	const Dem_PreDebounceMonitorInternalType	*PreDebounceMonitorInternal;	// (0..1)
 	const Dem_PreDebounceCounterBasedType		*PreDebounceCouterBased;		// (0..1)
-	const Dem_PreDebounceFrequencyBasedType	*PreDebounceFrequencyBased;		// (0..1)
-	const Dem_PreDebounceTimeBasedType		*PreDebounceTimeBased;			// (0..1)
+	const Dem_PreDebounceFrequencyBasedType		*PreDebounceFrequencyBased;		// (0..1)
+	const Dem_PreDebounceTimeBasedType			*PreDebounceTimeBased;			// (0..1)
 	} PreDebounceAlgorithm;
 } Dem_PreDebounceAlgorithmClassType;
 
@@ -186,10 +194,9 @@ typedef struct {
 //	uint8					HealingCycleCounter;									// (0..1) Optional
 //	const Dem_EnableConditionType	*EnableConditionRef;							// (0..*) Optional
 //	const Dem_OperationCycleTgtType *HealingCycleRef;								// (0..1) Optional
-	const Dem_PreDebounceAlgorithmClassType	*PreDebounceAlgorithmClass;				// (0..255) (Only one supported)
-	const Dem_IndicatorAttributeType			*IndicatorAttribute;				// (0..255)
+	const Dem_PreDebounceAlgorithmClassType	*PreDebounceAlgorithmClass;				// (0..255) (Only 0..1 supported)
+	const Dem_IndicatorAttributeType		*IndicatorAttribute;					// (0..255)
 //	Dem_OEMSPecific
-
 } Dem_EventClassType;
 
 // 10.2.12 DemEventParameter
@@ -198,10 +205,10 @@ typedef struct {
 	Dem_EventKindType							EventKind;					// (1)
 	const Dem_EventClassType					*EventClass;				// (1)
 	const Dem_ExtendedDataClassType				*ExtendedDataClassRef;		// (0..1)
-	const Dem_FreezeFrameClassType				*FreezeFrameClassRef;		// (0..255)
+	const Dem_FreezeFrameClassType				*FreezeFrameClassRef;		// (0..255) (Only 0..1 supported)
 	const Dem_CallbackInitMforEType				*CallbackInitMforE;			// (0..1)
 	const Dem_CallbackEventStatusChangedType	*CallbackEventStatusChanged;// (0..*)
-	const Dem_DTCClassType						*DTCClass;					// (0..1)
+	const Dem_DTCClassType						*DTCClassRef;				// (0..1)
 	boolean										Arc_EOL;
 } Dem_EventParameterType;
 
