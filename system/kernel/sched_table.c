@@ -75,7 +75,7 @@
 		return rv;
 
 extern TickType GetCountValue( OsCounterType *counter );
-
+void Os_SchTblUpdateState( OsSchTblType *stbl );
 
 #if 0
 enum OsScheduleTableSyncStrategy getSyncStrategy( OsSchTblType *stblPtr ) {
