@@ -207,8 +207,11 @@ typedef struct OsSchTbl {
 */
 
 void Os_SchTblInit( void );
+void Os_SchTblAutostart( void );
 void Os_SchTblCalcExpire( OsSchTblType *stbl );
 void Os_SchTblCheck(OsCounterType *c_p);
+void Os_SchTblAutostart( void );
+
 
 static inline TickType Os_SchTblGetInitialOffset( OsSchTblType *sPtr ) {
 	return SA_LIST_GET(&sPtr->expirePointList,0)->offset;

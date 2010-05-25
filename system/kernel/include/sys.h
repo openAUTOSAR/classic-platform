@@ -41,6 +41,9 @@ typedef struct sys_s {
 	uint32_t param3;
 	uint32_t serviceId;
 
+	/* Current Application mode */
+	AppModeType appMode;
+
 	uint32_t task_cnt;
 	/* List of all pcb's,
 	 * Only needed for non-static configuration of the kernel

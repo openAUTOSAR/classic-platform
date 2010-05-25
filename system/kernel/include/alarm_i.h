@@ -78,7 +78,7 @@ typedef struct OsAlarmAutostart {
 	uint32 alarmTime;
 	enum OsAlarmAutostartTypeType autostartType;
 	uint32 cycleTime;
-	uint32 appModeRef;
+	AppModeType appModeRef;
 } OsAlarmAutostartType;
 
 /* STD container : OsAlarm

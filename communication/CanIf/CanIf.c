@@ -90,17 +90,25 @@ typedef struct
 
 static CanIf_Arc_ChannelIdType CanIf_Arc_FindHrhChannel( Can_Arc_HRHType hrh )
 {
+  const CanIf_InitHohConfigType *hohConfig;
   const CanIf_HrhConfigType *hrhConfig;
 
-  hrhConfig = CanIf_ConfigPtr->InitConfig->CanIfHohConfigPtr->CanIfHrhConfig;
-
-  hrhConfig--;
+  // foreach(hoh){ foreach(hrh in hoh) {} }
+  hohConfig = CanIf_ConfigPtr->InitConfig->CanIfHohConfigPtr;
+  hohConfig--;
   do
   {
-    hrhConfig++;
-    if (hrhConfig->CanIfHrhIdSymRef == hrh)
-      return hrhConfig->CanIfCanControllerHrhIdRef;
-  } while(!hrhConfig->CanIf_Arc_EOL);
+    hohConfig++;
+
+    hrhConfig = hohConfig->CanIfHrhConfig;
+    hrhConfig--;
+    do
+    {
+      hrhConfig++;
+      if (hrhConfig->CanIfHrhIdSymRef == hrh)
+        return hrhConfig->CanIfCanControllerHrhIdRef;
+    } while(!hrhConfig->CanIf_Arc_EOL);
+  } while(!hohConfig->CanIf_Arc_EOL);
 
   DET_REPORTERROR(MODULE_ID_CANIF, 0, CANIF_RXINDICATION_ID, CANIF_E_PARAM_HRH);
 
@@ -768,9 +776,9 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
           // Send Can frame to CAN TP
 #if defined(USE_CANTP)
             {
-        	    PduInfoType CanTpRxPdu;
-        	    CanTpRxPdu.SduLength = CanDlc;
-        	    CanTpRxPdu.SduDataPtr = (uint8 *)CanSduPtr;
+                PduInfoType CanTpRxPdu;
+                CanTpRxPdu.SduLength = CanDlc;
+                CanTpRxPdu.SduDataPtr = (uint8 *)CanSduPtr;
                 CanTp_RxIndication(entry->CanIfCanRxPduId, &CanTpRxPdu); /** @req CANTP019 */
             }
             return;

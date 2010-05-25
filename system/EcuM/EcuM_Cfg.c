@@ -26,7 +26,7 @@ EcuM_ConfigType EcuMConfig =
 {
 	.EcuMDefaultShutdownTarget = ECUM_STATE_RESET,
 	.EcuMDefaultShutdownMode = 0, // Don't care
-	.EcuMDefaultAppMode = 0,  // Don't care
+	.EcuMDefaultAppMode = OSDEFAULTAPPMODE,
 
 #if defined(USE_MCU)
 	.McuConfig = McuConfigData,

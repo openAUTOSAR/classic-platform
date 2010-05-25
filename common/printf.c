@@ -53,7 +53,7 @@
 #endif
 
 
-
+int arc_putchar(int fd, int c);
 int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap);
 
 int printf(const char *format, ...) {
@@ -137,7 +137,7 @@ static inline int emitChar( FILE *file, char **buf, char c, int *left ) {
 		putc(c, _STDOUT);
 		fflush(_STDOUT);
 #else
-		arc_putchar(file,c);
+		arc_putchar((int)file, c);
 #endif
 	} else {
 		**buf = c;
