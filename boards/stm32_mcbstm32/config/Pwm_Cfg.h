@@ -85,8 +85,8 @@ typedef enum {
  * Maps a symbolic name to a hardware channel
  */
 typedef enum {
-    PWM_CHANNEL_1 = PWM_CHANNEL_43, //PB8
-    PWM_CHANNEL_2 = PWM_CHANNEL_44, //PB9
+    PWM_CHANNEL_1 = PWM_CHANNEL_23, //PB10
+    PWM_CHANNEL_2 = PWM_CHANNEL_24, //PB11
     PWM_NUMBER_OF_CHANNELS = 2
 } Pwm_NamedChannelsType;
 

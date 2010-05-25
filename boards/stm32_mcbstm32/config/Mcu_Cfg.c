@@ -35,9 +35,9 @@ Mcu_RamSectorSettingConfigType Mcu_RamSectorSettingConfigData[] = {
 const Mcu_PerClockConfigType McuPerClockConfigData =
 {
 	.AHBClocksEnable = RCC_AHBPeriph_DMA1,
-	.APB1ClocksEnable = RCC_APB1Periph_TIM4,
+	.APB1ClocksEnable = RCC_APB1Periph_TIM2 | RCC_APB1Periph_CAN1,
 	.APB2ClocksEnable = (RCC_APB2Periph_ADC1 | RCC_APB2Periph_GPIOA |
-						 RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOC),
+						 RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOC | RCC_APB2Periph_AFIO),
 };
 
 const Mcu_ClockSettingConfigType Mcu_ClockSettingConfigData[] =

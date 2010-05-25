@@ -25,7 +25,8 @@ typedef enum {
 } Port_PortType;
 
 const u32 remaps[] = {
-
+		GPIO_Remap1_CAN1,
+		GPIO_PartialRemap2_TIM2,
 };
 
 const Port_PortConfigType porta = {
@@ -43,15 +44,27 @@ const Port_PortConfigType porta = {
 
 const Port_PortConfigType portb = {
   .port = GPIOB,
-  .pinCount = 2,
+  .pinCount = 4,
   .pins = {
+	/* PB8 is CAN1_RX, remapped: */
 	{
-	  .GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9,
+	  .GPIO_Pin = GPIO_Pin_8,
+	  .GPIO_Mode = GPIO_Mode_IPU,
+	  .GPIO_Speed = GPIO_Speed_10MHz
+	},
+	/* PB9 is CAN1_TX, remapped: */
+	{
+	  .GPIO_Pin = GPIO_Pin_9,
+	  .GPIO_Mode = GPIO_Mode_AF_PP,
+	  .GPIO_Speed = GPIO_Speed_10MHz
+	},
+	{
+	  .GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11,
 	  .GPIO_Mode = GPIO_Mode_AF_PP,
 	  .GPIO_Speed = GPIO_Speed_50MHz
 	},
 	{
-	  .GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15,
+	  .GPIO_Pin = GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15,
 	  .GPIO_Mode = GPIO_Mode_Out_PP,
 	  .GPIO_Speed = GPIO_Speed_10MHz
 	},

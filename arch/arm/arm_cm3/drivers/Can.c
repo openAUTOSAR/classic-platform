@@ -336,7 +336,7 @@ static void Can_RxIsr(int unit) {
 	    Can_IdType id=0;
 
 	    // According to autosar MSB shuould be set if extended
-		if (RxMessage.IDE == 1) {
+		if (RxMessage.IDE != CAN_ID_STD) {
 		  id = RxMessage.ExtId;
 		  id |= 0x80000000;
 		} else {
@@ -602,7 +602,7 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
   CAN_InitStructure.CAN_SJW=config->CanControllerPropSeg;
   CAN_InitStructure.CAN_BS1=config->CanControllerSeg1;
   CAN_InitStructure.CAN_BS2=config->CanControllerSeg2;
-  CAN_InitStructure.CAN_Prescaler= (clock/(config->CanControllerBaudRate*1000*tq) - 1);;
+  CAN_InitStructure.CAN_Prescaler= clock/(config->CanControllerBaudRate*1000*tq);
 
   if(CANINITOK != CAN_Init(canHw,&CAN_InitStructure))
   {
