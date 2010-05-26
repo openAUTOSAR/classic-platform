@@ -294,23 +294,25 @@ static CAN_HW_t * GetController(int unit)
 {
 	CAN_HW_t *res = 0;
 
-	switch(unit)
+	if(unit == CAN_CTRL_0)
 	{
-	case CAN_CTRL_0:
 		res = (CAN_HW_t *)CAN0_BASE;
-		break;
-	case CAN_CTRL_1:
+	}
+	else if(unit == CAN_CTRL_1)
+	{
 		res = (CAN_HW_t *)CAN1_BASE;
-		break;
-	case CAN_CTRL_2:
+	}
+	else if(unit == CAN_CTRL_2)
+	{
 		res = (CAN_HW_t *)CAN2_BASE;
-		break;
-	case CAN_CTRL_3:
+	}
+	else if(unit == CAN_CTRL_3)
+	{
 		res = (CAN_HW_t *)CAN3_BASE;
-		break;
-	case CAN_CTRL_4:
+	}
+	else if(unit == CAN_CTRL_4)
+	{
 		res = (CAN_HW_t *)CAN4_BASE;
-		break;
 	}
 
 	return res;
@@ -575,7 +577,7 @@ static void Can_TxIsr(int unit) {
 void Can_Init( const Can_ConfigType *config ) {
   Can_UnitType *canUnit;
   const Can_ControllerConfigType *canHwConfig;
-  uint32 ctlrId;
+  uint8 ctlrId;
 
   VALIDATE_NO_RV( (Can_Global.initRun == CAN_UNINIT), 0x0, CAN_E_TRANSITION );
   VALIDATE_NO_RV( (config != NULL ), 0x0, CAN_E_PARAM_POINTER );
@@ -603,19 +605,20 @@ void Can_Init( const Can_ConfigType *config ) {
     // Note!
     // Could install handlers depending on HW objects to trap more errors
     // in configuration
-    switch( canHwConfig->CanControllerId ) {
-    case CAN_CTRL_0:
-        INSTALL_HANDLERS(Can_0, IRQ_TYPE_CAN0_ERR, IRQ_TYPE_CAN0_WAKE, IRQ_TYPE_CAN0_RX, IRQ_TYPE_CAN0_TX);	break;
-    case CAN_CTRL_1:
-        INSTALL_HANDLERS(Can_1, IRQ_TYPE_CAN1_ERR, IRQ_TYPE_CAN1_WAKE, IRQ_TYPE_CAN1_RX, IRQ_TYPE_CAN1_TX);	break;
-    case CAN_CTRL_2:
-        INSTALL_HANDLERS(Can_2, IRQ_TYPE_CAN2_ERR, IRQ_TYPE_CAN2_WAKE, IRQ_TYPE_CAN2_RX, IRQ_TYPE_CAN2_TX);	break;
-    case CAN_CTRL_3:
-        INSTALL_HANDLERS(Can_3, IRQ_TYPE_CAN3_ERR, IRQ_TYPE_CAN3_WAKE, IRQ_TYPE_CAN3_RX, IRQ_TYPE_CAN3_TX);	break;
-    case CAN_CTRL_4:
-        INSTALL_HANDLERS(Can_4, IRQ_TYPE_CAN4_ERR, IRQ_TYPE_CAN4_WAKE, IRQ_TYPE_CAN4_RX, IRQ_TYPE_CAN4_TX);	break;
-    default:
-        assert(0);
+    if( canHwConfig->CanControllerId  == CAN_CTRL_0) {
+         INSTALL_HANDLERS(Can_0, IRQ_TYPE_CAN0_ERR, IRQ_TYPE_CAN0_WAKE, IRQ_TYPE_CAN0_RX, IRQ_TYPE_CAN0_TX);
+    }
+    else if( canHwConfig->CanControllerId  == CAN_CTRL_1) {
+        INSTALL_HANDLERS(Can_1, IRQ_TYPE_CAN1_ERR, IRQ_TYPE_CAN1_WAKE, IRQ_TYPE_CAN1_RX, IRQ_TYPE_CAN1_TX);
+    }
+    else if( canHwConfig->CanControllerId  == CAN_CTRL_2) {
+    	INSTALL_HANDLERS(Can_2, IRQ_TYPE_CAN2_ERR, IRQ_TYPE_CAN2_WAKE, IRQ_TYPE_CAN2_RX, IRQ_TYPE_CAN2_TX);
+    }
+    else if( canHwConfig->CanControllerId  == CAN_CTRL_3) {
+    	INSTALL_HANDLERS(Can_3, IRQ_TYPE_CAN3_ERR, IRQ_TYPE_CAN3_WAKE, IRQ_TYPE_CAN3_RX, IRQ_TYPE_CAN3_TX);
+    }
+    else if( canHwConfig->CanControllerId  == CAN_CTRL_4) {
+    	INSTALL_HANDLERS(Can_4, IRQ_TYPE_CAN4_ERR, IRQ_TYPE_CAN4_WAKE, IRQ_TYPE_CAN4_RX, IRQ_TYPE_CAN4_TX);
     }
 
     Can_InitController(ctlrId, canHwConfig);

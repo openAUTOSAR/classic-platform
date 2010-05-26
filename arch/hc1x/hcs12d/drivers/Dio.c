@@ -144,90 +144,39 @@ void Dio_WriteChannel(Dio_ChannelType channelId, Dio_LevelType level)
 
 Dio_PortLevelType Dio_ReadPort(Dio_PortType portId)
 {
-	Dio_LevelType level;
+	Dio_LevelType level = 0;
 	VALIDATE_PORT(portId, DIO_READPORT_ID);
 
-	switch(portId)
-	{
-	case DIO_PORT_A:
-		level = PORTA;
-		break;
-	case DIO_PORT_B:
-		level = PORTB;
-		break;
-	case DIO_PORT_E:
-		level = PORTE;
-		break;
-	case DIO_PORT_J:
-		level = PTJ;
-		break;
-	case DIO_PORT_K:
-		level = PORTK;
-		break;
-	case DIO_PORT_M:
-		level = PTM;
-		break;
-	case DIO_PORT_P:
-		level = PTP;
-		break;
-	case DIO_PORT_S:
-		level = PTS;
-		break;
-	case DIO_PORT_T:
-		level = PTT;
-		break;
-	case DIO_PORT_H:
-		level = PTH;
-		break;
-	default:
-		level=0;
-		break;
-	}
+	if(portId == DIO_PORT_A){level = PORTA;}
+	else if(portId == DIO_PORT_B){level = PORTB;}
+	else if(portId == DIO_PORT_E){level = PORTE;}
+	else if(portId == DIO_PORT_J){level = PTJ;}
+	else if(portId == DIO_PORT_K){level = PORTK;}
+	else if(portId == DIO_PORT_M){level = PTM;}
+	else if(portId == DIO_PORT_P){level = PTP;}
+	else if(portId == DIO_PORT_S){level = PTS;}
+	else if(portId == DIO_PORT_T){level = PTT;}
+	else if(portId == DIO_PORT_H){level = PTH;}
 
 	cleanup: return level;
 }
 
 void Dio_WritePort(Dio_PortType portId, Dio_PortLevelType level)
 {
-  VALIDATE_PORT(portId, DIO_WRITEPORT_ID);
+    VALIDATE_PORT(portId, DIO_WRITEPORT_ID);
 
-	switch(portId)
-	{
-	case DIO_PORT_A:
-		PORTA = level;
-		break;
-	case DIO_PORT_B:
-		PORTB = level;
-		break;
-	case DIO_PORT_E:
-		PORTE = level;
-		break;
-	case DIO_PORT_J:
-		PTJ = level;
-		break;
-	case DIO_PORT_K:
-		PORTK = level;
-		break;
-	case DIO_PORT_M:
-		PTM = level;
-		break;
-	case DIO_PORT_P:
-		PTP = level;
-		break;
-	case DIO_PORT_S:
-		PTS = level;
-		break;
-	case DIO_PORT_T:
-		PTT = level;
-		break;
-	case DIO_PORT_H:
-		PTH = level;
-		break;
-	default:
-		break;
-	}
+	if(portId == DIO_PORT_A){PORTA = level;}
+	else if(portId == DIO_PORT_B){PORTB = level;}
+	else if(portId == DIO_PORT_E){PORTE = level;}
+	else if(portId == DIO_PORT_J){PTJ = level;}
+	else if(portId == DIO_PORT_K){PORTK = level;}
+	else if(portId == DIO_PORT_M){PTM = level;}
+	else if(portId == DIO_PORT_P){PTP = level;}
+	else if(portId == DIO_PORT_S){PTS = level;}
+	else if(portId == DIO_PORT_T){PTT = level;}
+	else if(portId == DIO_PORT_H){PTH = level;}
 
-  cleanup: return;
+    cleanup: return;
 }
 
 Dio_PortLevelType Dio_ReadChannelGroup(
