@@ -105,6 +105,10 @@ int vsprintf(char *buffer, const char *format, va_list ap) {
 	return vsnprintf(buffer, ~(size_t)0, format, ap);
 }
 
+int vfiprintf(FILE *file, const char *format, va_list ap) {
+	return vfprintf(file, format, ap);
+}
+
 int vfprintf(FILE *file, const char *format, va_list ap) {
 	int rv;
 	/* Just print to _STDOUT */

@@ -39,5 +39,10 @@ typedef enum {
 /** Inhibition status of ComM. */
 typedef uint8 ComM_InhibitionStatusType;
 
+#define COMM_INHIBITION_STATUS_NONE					(0)
+/** Wake Up inhibition active */
+#define COMM_INHIBITION_STATUS_WAKE_UP				(1 << 0)
+/** Limit to “No Communication” mode active */
+#define COMM_INHIBITION_STATUS_NO_COMMUNICATION		(1 << 1)
 
 #endif /*COMM_TYPES_H_*/

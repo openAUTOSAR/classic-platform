@@ -57,6 +57,7 @@ typedef struct {
 	ComM_ModeType				Mode;
 	ComM_Internal_SubModeType	SubMode;
 	uint32						UserRequestMask;
+	ComM_InhibitionStatusType	InhibitionStatus;
 } ComM_Internal_ChannelType;
 
 typedef struct {
@@ -67,6 +68,8 @@ typedef struct {
 	ComM_InitStatusType 		InitStatus;
 	ComM_Internal_ChannelType	Channels[COMM_CHANNEL_COUNT];
 	ComM_Internal_UserType		Users[COMM_USER_COUNT];
+	boolean 					NoCommunication;
+	uint16						InhibitCounter;
 } ComM_InternalType;
 
 /* Delegate request to users channels and call ComM_Internal_UpdateChannelState */
@@ -74,7 +77,7 @@ static Std_ReturnType ComM_Internal_RequestComMode(
 				ComM_UserHandleType User, ComM_ModeType ComMode );
 
 /* Looks at stored requests for Channel and updates state accordingly */
-static Std_ReturnType ComM_Internal_UpdateChannelState( const ComM_ChannelType* Channel );
+static Std_ReturnType ComM_Internal_UpdateChannelState( const ComM_ChannelType* Channel, boolean isRequest );
 
 /* Propagates channel mode to respective Bus SM */
 static Std_ReturnType ComM_Internal_PropagateComMode( const ComM_ChannelType* Channel );
