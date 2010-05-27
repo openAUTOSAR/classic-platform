@@ -16,109 +16,167 @@
 #ifndef DIO_CFG_H_
 #define DIO_CFG_H_
 
-#define DIO_CHANNEL_A0 0
-#define DIO_CHANNEL_A1 1
-#define DIO_CHANNEL_A2 2
-#define DIO_CHANNEL_A3 3
-#define DIO_CHANNEL_A4 4
-#define DIO_CHANNEL_A5 5
-#define DIO_CHANNEL_A6 6
-#define DIO_CHANNEL_A7 7
-#define DIO_CHANNEL_A8 8
-#define DIO_CHANNEL_A9 9
-#define DIO_CHANNEL_A10 10
-#define DIO_CHANNEL_A11 11
-#define DIO_CHANNEL_A12 12
-#define DIO_CHANNEL_A13 13
-#define DIO_CHANNEL_A14 14
-#define DIO_CHANNEL_A15 15
-#define DIO_CHANNEL_B0 16
-#define DIO_CHANNEL_B1 17
-#define DIO_CHANNEL_B2 18
-#define DIO_CHANNEL_B3 19
-#define DIO_CHANNEL_B4 20
-#define DIO_CHANNEL_B5 21
-#define DIO_CHANNEL_B6 22
-#define DIO_CHANNEL_B7 23
-#define DIO_CHANNEL_B8 24
-#define DIO_CHANNEL_B9 25
-#define DIO_CHANNEL_B10 26
-#define DIO_CHANNEL_B11 27
-#define DIO_CHANNEL_B12 28
-#define DIO_CHANNEL_B13 29
-#define DIO_CHANNEL_B14 30
-#define DIO_CHANNEL_B15 31
-#define DIO_CHANNEL_C0 32
-#define DIO_CHANNEL_C1 33
-#define DIO_CHANNEL_C2 34
-#define DIO_CHANNEL_C3 35
-#define DIO_CHANNEL_C4 36
-#define DIO_CHANNEL_C5 37
-#define DIO_CHANNEL_C6 38
-#define DIO_CHANNEL_C7 39
-#define DIO_CHANNEL_C8 40
-#define DIO_CHANNEL_C9 41
-#define DIO_CHANNEL_C10 42
-#define DIO_CHANNEL_C11 43
-#define DIO_CHANNEL_C12 44
-#define DIO_CHANNEL_C13 45
-#define DIO_CHANNEL_C14 46
-#define DIO_CHANNEL_C15 47
-#define DIO_CHANNEL_D0 48
-#define DIO_CHANNEL_D1 49
-#define DIO_CHANNEL_D2 50
-#define DIO_CHANNEL_D3 51
-#define DIO_CHANNEL_D4 52
-#define DIO_CHANNEL_D5 53
-#define DIO_CHANNEL_D6 54
-#define DIO_CHANNEL_D7 55
-#define DIO_CHANNEL_D8 56
-#define DIO_CHANNEL_D9 57
-#define DIO_CHANNEL_D10 58
-#define DIO_CHANNEL_D11 59
-#define DIO_CHANNEL_D12 60
-#define DIO_CHANNEL_D13 61
-#define DIO_CHANNEL_D14 62
-#define DIO_CHANNEL_D15 63
-#define DIO_CHANNEL_E0 64
-#define DIO_CHANNEL_E1 65
-#define DIO_CHANNEL_E2 66
-#define DIO_CHANNEL_E3 67
-#define DIO_CHANNEL_E4 68
-#define DIO_CHANNEL_E5 69
-#define DIO_CHANNEL_E6 70
-#define DIO_CHANNEL_E7 71
-#define DIO_CHANNEL_E8 72
-#define DIO_CHANNEL_E9 73
-#define DIO_CHANNEL_E10 74
-#define DIO_CHANNEL_E11 75
-#define DIO_CHANNEL_E12 76
-#define DIO_CHANNEL_E13 77
-#define DIO_CHANNEL_E14 78
-#define DIO_CHANNEL_E15 79
-#define DIO_CHANNEL_F0 80
-#define DIO_CHANNEL_F1 81
-#define DIO_CHANNEL_F2 82
-#define DIO_CHANNEL_F3 83
-#define DIO_CHANNEL_F4 84
-#define DIO_CHANNEL_F5 85
-#define DIO_CHANNEL_F6 86
-#define DIO_CHANNEL_F7 87
-#define DIO_CHANNEL_F8 88
-#define DIO_CHANNEL_F9 89
-#define DIO_CHANNEL_F10 90
-#define DIO_CHANNEL_F11 91
-#define DIO_CHANNEL_F12 92
-#define DIO_CHANNEL_F13 93
-#define DIO_CHANNEL_F14 94
-#define DIO_CHANNEL_F15 95
+#define DIO_VERSION_INFO_API    STD_ON
+#define DIO_DEV_ERROR_DETECT 	STD_ON
+#define DIO_END_OF_LIST  -1
 
+/** @name DIO channels
+ *  HW specific dio channels.
+ */
+//	Pin Name	GPIO(PCR)Num
+//@{
+//* req DIO015 */
+//* req DIO017 */
+typedef enum
+{
+	 DIO_CHANNEL_A0,
+	 DIO_CHANNEL_A1,
+	 DIO_CHANNEL_A2,
+	 DIO_CHANNEL_A3,
+	 DIO_CHANNEL_A4,
+	 DIO_CHANNEL_A5,
+	 DIO_CHANNEL_A6,
+	 DIO_CHANNEL_A7,
+	 DIO_CHANNEL_A8,
+	 DIO_CHANNEL_A9,
+	 DIO_CHANNEL_A10,
+	 DIO_CHANNEL_A11,
+	 DIO_CHANNEL_A12,
+	 DIO_CHANNEL_A13,
+	 DIO_CHANNEL_A14,
+	 DIO_CHANNEL_A15,
+
+	 DIO_CHANNEL_B0,
+	 DIO_CHANNEL_B1,
+	 DIO_CHANNEL_B2,
+	 DIO_CHANNEL_B3,
+	 DIO_CHANNEL_B4,
+	 DIO_CHANNEL_B5,
+	 DIO_CHANNEL_B6,
+	 DIO_CHANNEL_B7,
+	 DIO_CHANNEL_B8,
+	 DIO_CHANNEL_B9,
+	 DIO_CHANNEL_B10,
+	 DIO_CHANNEL_B11,
+	 DIO_CHANNEL_B12,
+	 DIO_CHANNEL_B13,
+	 DIO_CHANNEL_B14,
+	 DIO_CHANNEL_B15,
+
+	 DIO_CHANNEL_C0,
+	 DIO_CHANNEL_C1,
+	 DIO_CHANNEL_C2,
+	 DIO_CHANNEL_C3,
+	 DIO_CHANNEL_C4,
+	 DIO_CHANNEL_C5,
+	 DIO_CHANNEL_C6,
+	 DIO_CHANNEL_C7,
+	 DIO_CHANNEL_C8,
+	 DIO_CHANNEL_C9,
+	 DIO_CHANNEL_C10,
+	 DIO_CHANNEL_C11,
+	 DIO_CHANNEL_C12,
+	 DIO_CHANNEL_C13,
+	 DIO_CHANNEL_C14,
+	 DIO_CHANNEL_C15,
+
+	 DIO_CHANNEL_D0,
+	 DIO_CHANNEL_D1,
+	 DIO_CHANNEL_D2,
+	 DIO_CHANNEL_D3,
+	 DIO_CHANNEL_D4,
+	 DIO_CHANNEL_D5,
+	 DIO_CHANNEL_D6,
+	 DIO_CHANNEL_D7,
+	 DIO_CHANNEL_D8,
+	 DIO_CHANNEL_D9,
+	 DIO_CHANNEL_D10,
+	 DIO_CHANNEL_D11,
+	 DIO_CHANNEL_D12,
+	 DIO_CHANNEL_D13,
+	 DIO_CHANNEL_D14,
+	 DIO_CHANNEL_D15,
+
+	 DIO_CHANNEL_E0,
+	 DIO_CHANNEL_E1,
+	 DIO_CHANNEL_E2,
+	 DIO_CHANNEL_E3,
+	 DIO_CHANNEL_E4,
+	 DIO_CHANNEL_E5,
+	 DIO_CHANNEL_E6,
+	 DIO_CHANNEL_E7,
+	 DIO_CHANNEL_E8,
+	 DIO_CHANNEL_E9,
+	 DIO_CHANNEL_E10,
+	 DIO_CHANNEL_E11,
+	 DIO_CHANNEL_E12,
+	 DIO_CHANNEL_E13,
+	 DIO_CHANNEL_E14,
+	 DIO_CHANNEL_E15,
+
+	 DIO_CHANNEL_F0,
+	 DIO_CHANNEL_F1,
+	 DIO_CHANNEL_F2,
+	 DIO_CHANNEL_F3,
+	 DIO_CHANNEL_F4,
+	 DIO_CHANNEL_F5,
+	 DIO_CHANNEL_F6,
+	 DIO_CHANNEL_F7,
+	 DIO_CHANNEL_F8,
+	 DIO_CHANNEL_F9,
+	 DIO_CHANNEL_F10,
+	 DIO_CHANNEL_F11,
+	 DIO_CHANNEL_F12,
+	 DIO_CHANNEL_F13,
+	 DIO_CHANNEL_F14,
+	 DIO_CHANNEL_F15,
+
+} Dio_ChannelType;
+//@}
+
+/** HW specific DIO port definitions. */
+/** @req DIO018 */
+/** @req DIO020 */
 typedef enum {
-  Dio_PortA,
-  Dio_PortB,
-  Dio_PortC,
-  Dio_PortD,
-  Dio_PortE,
-} Dio_PortType2;
+	DIO_PORT_A,
+	DIO_PORT_B,
+	DIO_PORT_C,
+	DIO_PORT_D,
+	DIO_PORT_E,
+	DIO_PORT_F,
+} Dio_PortType;
+
+/** @req DIO021 */
+/** @req DIO022 */
+typedef struct
+{
+  Dio_PortType port;
+  uint16 offset;
+  uint16 mask;
+} Dio_ChannelGroupType;
+
+/** @req DIO023 */
+typedef uint16 Dio_LevelType;
+
+/** @req DIO024 */
+typedef uint16 Dio_PortLevelType;
+
+#define LED_CHANNEL (DIO_CHANNEL_B13)
+
+#define LED_PORT 		(DIO_PORT_B)
+
+#define LED_GROUP			(&DioConfigData[0])
+
+// Channels
+extern const Dio_ChannelType DioChannelConfigData[];
+#define CHANNEL_PTR		(&DioChannelConfigData)
+
+// Port
+extern const Dio_PortType DioPortConfigData[];
+#define PORT_PTR		(&DioPortConfigData)
+
+// Channel group
+extern const Dio_ChannelGroupType DioConfigData[];
+#define CHANNEL_GRP_PTR	(&DioConfigData)
 
 #endif /* DIO_CFG_H_ */
