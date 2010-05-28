@@ -37,43 +37,12 @@ static MsgDataType msgData;
 static uint8	currentSid;
 static boolean	suppressPosRspMsg;
 
-void DsdInit(void)
-{
-
-}
-
-
-void DsdMain(void)
-{
-	if (dsdDslDataIndication) {
-		dsdDslDataIndication = FALSE;
-		DsdHandleRequest();
-	}
-}
+/*
+ * Local functions
+ */
 
 
-boolean DsdLookupSid(uint8 sid, const Dcm_DsdServiceType **sidPtr)
-{
-	boolean returnStatus = TRUE;
-	const Dcm_DsdServiceType *service = msgData.serviceTable->DsdService;
-
-	while ((service->DsdSidTabServiceId != sid) && !service->Arc_EOL) {
-		service++;
-	}
-
-	if (!service->Arc_EOL) {
-		*sidPtr = service;
-	}
-	else {
-		returnStatus = FALSE;
-		*sidPtr = NULL;
-	}
-
-	return returnStatus;
-}
-
-
-boolean DsdAskApplicationForServicePermission(uint8 *requestData, uint16 dataSize)
+static boolean askApplicationForServicePermission(uint8 *requestData, uint16 dataSize)
 {
 	Std_ReturnType returnCode = E_OK;
 	const Dcm_DslServiceRequestIndicationType *serviceRequestIndication = DCM_Config.Dsl->DslServiceRequestIndication;
@@ -92,7 +61,7 @@ boolean DsdAskApplicationForServicePermission(uint8 *requestData, uint16 dataSiz
 }
 
 
-void DsdCreateAndSendNcr(Dcm_NegativeResponseCodeType responseCode)
+static void createAndSendNcr(Dcm_NegativeResponseCodeType responseCode)
 {
 	if (!((msgData.addrType == DCM_PROTOCOL_FUNCTIONAL_ADDR_TYPE)
 		  && ((responseCode == DCM_E_SERVICENOTSUPPORTED) || (responseCode == DCM_E_SUBFUNCTIONNOTSUPPORTED) || (responseCode == DCM_E_REQUESTOUTOFRANGE)))) {   /** @req DCM001 **/
@@ -108,7 +77,7 @@ void DsdCreateAndSendNcr(Dcm_NegativeResponseCodeType responseCode)
 }
 
 
-void DsdSelectServiceFunction(uint8 sid)
+static void selectServiceFunction(uint8 sid)
 {
 	switch (sid)	 /** @req DCM221 **/
 	{
@@ -158,8 +127,48 @@ void DsdSelectServiceFunction(uint8 sid)
 	case SID_ROUTINE_CONTROL:
 	default:
 		/* Non implemented service */
-		DsdCreateAndSendNcr(DCM_E_SERVICENOTSUPPORTED);
+		createAndSendNcr(DCM_E_SERVICENOTSUPPORTED);
 		break;
+	}
+}
+
+
+static boolean lookupSid(uint8 sid, const Dcm_DsdServiceType **sidPtr)
+{
+	boolean returnStatus = TRUE;
+	const Dcm_DsdServiceType *service = msgData.serviceTable->DsdService;
+
+	while ((service->DsdSidTabServiceId != sid) && !service->Arc_EOL) {
+		service++;
+	}
+
+	if (!service->Arc_EOL) {
+		*sidPtr = service;
+	}
+	else {
+		returnStatus = FALSE;
+		*sidPtr = NULL;
+	}
+
+	return returnStatus;
+}
+
+
+/*
+ * Exported functions
+ */
+
+void DsdInit(void)
+{
+
+}
+
+
+void DsdMain(void)
+{
+	if (dsdDslDataIndication) {
+		dsdDslDataIndication = FALSE;
+		DsdHandleRequest();
 	}
 }
 
@@ -173,12 +182,12 @@ void DsdHandleRequest(void)
 
 	/** @req DCM178 **/
 	if (DCM_RESPOND_ALL_REQUEST || ((currentSid & 0x7F) < 0x40)) {		/** @req DCM084 **/
-		if (DsdLookupSid(currentSid, &sidConfPtr)) {		/** @req DCM192 **/ /** @req DCM193 **/ /** @req DCM196 **/
+		if (lookupSid(currentSid, &sidConfPtr)) {		/** @req DCM192 **/ /** @req DCM193 **/ /** @req DCM196 **/
 			// SID found!
 			if (DspCheckSessionLevel(sidConfPtr->DsdSidTabSessionLevelRef)) {		 /** @req DCM211 **/
 				if (DspCheckSecurityLevel(sidConfPtr->DsdSidTabSecurityLevelRef)) {	 /** @req DCM217 **/
 					if (DCM_REQUEST_INDICATION_ENABLED) {	 /** @req DCM218 **/
-						 result = DsdAskApplicationForServicePermission(msgData.pduRxData->SduDataPtr, msgData.pduRxData->SduLength);
+						 result = askApplicationForServicePermission(msgData.pduRxData->SduDataPtr, msgData.pduRxData->SduLength);
 					}
 					if (!DCM_REQUEST_INDICATION_ENABLED || result == E_OK) {
 						// Yes! All conditions met!
@@ -191,11 +200,11 @@ void DsdHandleRequest(void)
 						{
 							suppressPosRspMsg = FALSE;	/** @req DCM202 **/
 						}
-						DsdSelectServiceFunction(currentSid);
+						selectServiceFunction(currentSid);
 					}
 					else {
 						if (result == E_REQUEST_ENV_NOK) {
-							DsdCreateAndSendNcr(DCM_E_CONDITIONSNOTCORRECT);	/** @req DCM463 **/
+							createAndSendNcr(DCM_E_CONDITIONSNOTCORRECT);	/** @req DCM463 **/
 						}
 						else {
 							// Do not send any response		/** @req DCM462 **/
@@ -204,15 +213,15 @@ void DsdHandleRequest(void)
 					}
 				}
 				else {
-					DsdCreateAndSendNcr(DCM_E_SECUTITYACCESSDENIED);	/** @req DCM217 **/
+					createAndSendNcr(DCM_E_SECUTITYACCESSDENIED);	/** @req DCM217 **/
 				}
 			}
 			else {
-				DsdCreateAndSendNcr(DCM_E_SERVICENOTSUPPORTEDINACTIVESESSION);	/** @req DCM211 **/
+				createAndSendNcr(DCM_E_SERVICENOTSUPPORTEDINACTIVESESSION);	/** @req DCM211 **/
 			}
 		}
 		else {
-			DsdCreateAndSendNcr(DCM_E_SERVICENOTSUPPORTED);	/** @req DCM197 **/
+			createAndSendNcr(DCM_E_SERVICENOTSUPPORTED);	/** @req DCM197 **/
 		}
 	}
 	else {
@@ -236,7 +245,7 @@ void DsdDspProcessingDone(Dcm_NegativeResponseCodeType responseCode)
 		}
 	}
 	else {
-		DsdCreateAndSendNcr(responseCode);	/** @req DCM228 **/
+		createAndSendNcr(responseCode);	/** @req DCM228 **/
 	}
 
 }
