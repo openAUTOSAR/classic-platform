@@ -115,7 +115,7 @@ static Std_ReturnType ComM_Internal_RequestComMode(
 	ComM_Internal_UserType* UserInternal = &ComM_Internal.Users[User];
 
 	UserInternal->RequestedMode = ComMode;
-	uint32 userMask = 1 << User;
+	uint32 userMask = (1 << User);
 
 	Std_ReturnType requestStatus = E_OK;
 
@@ -168,7 +168,6 @@ Std_ReturnType ComM_PreventWakeUp( NetworkHandleType Channel, boolean Status ){
 	COMM_VALIDATE_INIT(COMM_SERVICEID_PREVENTWAKEUP, COMM_E_UNINIT);
 	COMM_VALIDATE_CHANNEL(Channel, COMM_SERVICEID_PREVENTWAKEUP, E_NOT_OK);
 #if (COMM_MODE_LIMITATION_ENABLED == STD_ON)
-	ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
 	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
 	if (Status) {
 		ChannelInternal->InhibitionStatus |=  (COMM_INHIBITION_STATUS_WAKE_UP);
@@ -185,7 +184,7 @@ Std_ReturnType ComM_LimitChannelToNoComMode( NetworkHandleType Channel, boolean 
 	COMM_VALIDATE_INIT(COMM_SERVICEID_LIMITCHANNELTONOCOMMODE, COMM_E_UNINIT);
 	COMM_VALIDATE_CHANNEL(Channel, COMM_SERVICEID_LIMITCHANNELTONOCOMMODE, E_NOT_OK);
 #if (COMM_MODE_LIMITATION_ENABLED == STD_ON)
-	ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
+	const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
 	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
 	if (Status) {
 		ChannelInternal->InhibitionStatus |=  (COMM_INHIBITION_STATUS_NO_COMMUNICATION);
@@ -204,7 +203,7 @@ Std_ReturnType ComM_LimitECUToNoComMode( boolean Status ){
 	ComM_Internal.NoCommunication = Status;
 	int Channel;
 	for (Channel = 0; Channel < COMM_CHANNEL_COUNT; Channel++) {
-		ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
+		const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
 		ComM_Internal_UpdateChannelState(ChannelConf, FALSE);
 	}
 	return E_OK;
@@ -305,6 +304,23 @@ void ComM_BusSM_ModeIndication( NetworkHandleType Channel, ComM_ModeType ComMode
 }
 
 
+// Scheduled main function
+// -----------------------
+
+void ComM_MainFunction(NetworkHandleType Channel) {
+	const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
+	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
+
+	if (ChannelInternal->Mode == COMM_FULL_COMMUNICATION) {
+		if (ChannelConf->MainFunctionPeriod >= ChannelInternal->FullComMinDurationTimeLeft) {
+			ChannelInternal->FullComMinDurationTimeLeft = 0;
+			ComM_Internal_UpdateChannelState(ChannelConf, FALSE);
+		} else {
+			ChannelInternal->FullComMinDurationTimeLeft -= ChannelConf->MainFunctionPeriod;
+		}
+	}
+}
+
 // ----------------------------------------------------------------------------
 // Internal functions
 // ----------------------------------------------------------------------------
@@ -358,68 +374,83 @@ static Std_ReturnType ComM_Internal_PropagateComMode( const ComM_ChannelType* Ch
 }
 
 /* Processes all requests etc. and makes state machine transitions accordingly */
-static Std_ReturnType ComM_Internal_UpdateChannelState( const ComM_ChannelType* Channel, boolean isRequest ) {
-	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel->Number];
+static Std_ReturnType ComM_Internal_UpdateChannelState( const ComM_ChannelType* ChannelConf, boolean isRequest ) {
+	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[ChannelConf->Number];
 
 	switch (ChannelInternal->Mode) {
 		case COMM_NO_COMMUNICATION:
-			if ((ChannelInternal->InhibitionStatus & COMM_INHIBITION_STATUS_NO_COMMUNICATION) ||
-				(ChannelInternal->InhibitionStatus & COMM_INHIBITION_STATUS_WAKE_UP) ||
-				(ComM_Internal.NoCommunication == TRUE)) {
-				// Stay in NO
-				if (isRequest) {
-					ComM_Internal.InhibitCounter++;
-				}
-			} else {
-				if (ChannelInternal->UserRequestMask != 0) {
-					// NO -> FULL
-					ChannelInternal->Mode = COMM_FULL_COMMUNICATION;
-					ChannelInternal->SubMode = COMM_SUBMODE_NETWORK_REQUESTED;
-					return ComM_Internal_PropagateComMode(Channel);
-				} else {
-					// Stay in NO
-				}
-			}
-			break;
+			return ComM_Internal_UpdateFromNoCom(ChannelConf, ChannelInternal, isRequest);
 		case COMM_SILENT_COMMUNICATION:
-			if ((ChannelInternal->InhibitionStatus & COMM_INHIBITION_STATUS_NO_COMMUNICATION) ||
-				(ComM_Internal.NoCommunication == TRUE)) {
-				// Stay in SILENT
-				if (isRequest) {
-					ComM_Internal.InhibitCounter++;
-				}
-			} else {
-				if (ChannelInternal->UserRequestMask != 0) {
-					// SILENT -> FULL/NETWORK_REQUESTED
-					ChannelInternal->Mode = COMM_FULL_COMMUNICATION;
-					ChannelInternal->SubMode = COMM_SUBMODE_NETWORK_REQUESTED;
-					return ComM_Internal_PropagateComMode(Channel);
-				} else {
-					// Stay in SILENT
-				}
-			}
-			break;
+			return ComM_Internal_UpdateFromSilentCom(ChannelConf, ChannelInternal, isRequest);
 		case COMM_FULL_COMMUNICATION:
-			if ((ChannelInternal->InhibitionStatus & COMM_INHIBITION_STATUS_NO_COMMUNICATION) ||
-				(ComM_Internal.NoCommunication == TRUE)) {
-				// FULL/* -> FULL/READY_SLEEP
-				ChannelInternal->SubMode = COMM_SUBMODE_READY_SLEEP;
-				if (isRequest) {
-					ComM_Internal.InhibitCounter++;
-				}
-			} else {
-				if (ChannelInternal->UserRequestMask == 0) {
-					// FULL/* -> FULL/READY_SLEEP
-					ChannelInternal->SubMode = COMM_SUBMODE_READY_SLEEP;
-				} else {
-					// FULL/* -> FULL/NETWORK_REQUESTED
-					ChannelInternal->SubMode = COMM_SUBMODE_NETWORK_REQUESTED;
-				}
-			}
-			break;
+			return ComM_Internal_UpdateFromFullCom(ChannelConf, ChannelInternal, isRequest);
 		default:
-			break;
+			return E_NOT_OK;
 	}
+}
 
+inline Std_ReturnType ComM_Internal_UpdateFromNoCom(const ComM_ChannelType* ChannelConf,
+					ComM_Internal_ChannelType* ChannelInternal, boolean isRequest) {
+	if ((ChannelInternal->InhibitionStatus & COMM_INHIBITION_STATUS_NO_COMMUNICATION) ||
+		(ChannelInternal->InhibitionStatus & COMM_INHIBITION_STATUS_WAKE_UP) ||
+		(ComM_Internal.NoCommunication == TRUE)) {
+		// Stay in NO
+		if (isRequest) ComM_Internal.InhibitCounter++;
+	} else {
+		if (ChannelInternal->UserRequestMask != 0) {
+			// NO -> FULL
+			ChannelInternal->FullComMinDurationTimeLeft = COMM_T_MIN_FULL_COM_MODE_DURATION;
+			ChannelInternal->Mode = COMM_FULL_COMMUNICATION;
+			ChannelInternal->SubMode = COMM_SUBMODE_NETWORK_REQUESTED;
+			return ComM_Internal_PropagateComMode(ChannelConf);
+		} else {
+			// Stay in NO
+		}
+	}
+	return E_OK;
+}
+
+inline Std_ReturnType ComM_Internal_UpdateFromSilentCom(const ComM_ChannelType* ChannelConf,
+					ComM_Internal_ChannelType* ChannelInternal,	boolean isRequest) {
+	if ((ChannelInternal->InhibitionStatus & COMM_INHIBITION_STATUS_NO_COMMUNICATION) ||
+		(ComM_Internal.NoCommunication == TRUE)) {
+		// Stay in SILENT
+		if (isRequest) ComM_Internal.InhibitCounter++;
+	} else {
+		if (ChannelInternal->UserRequestMask != 0) {
+			// SILENT -> FULL/NETWORK_REQUESTED
+			ChannelInternal->FullComMinDurationTimeLeft = COMM_T_MIN_FULL_COM_MODE_DURATION;
+			ChannelInternal->Mode = COMM_FULL_COMMUNICATION;
+			ChannelInternal->SubMode = COMM_SUBMODE_NETWORK_REQUESTED;
+			return ComM_Internal_PropagateComMode(ChannelConf);
+		} else {
+			// Stay in SILENT
+		}
+	}
+	return E_OK;
+}
+
+inline Std_ReturnType ComM_Internal_UpdateFromFullCom(const ComM_ChannelType* ChannelConf,
+					ComM_Internal_ChannelType* ChannelInternal, boolean isRequest) {
+	if ((ChannelInternal->InhibitionStatus & COMM_INHIBITION_STATUS_NO_COMMUNICATION) ||
+		(ComM_Internal.NoCommunication == TRUE)) {
+		if (ChannelInternal->FullComMinDurationTimeLeft == 0) {
+			// FULL/* -> FULL/READY_SLEEP
+			ChannelInternal->SubMode = COMM_SUBMODE_READY_SLEEP;
+		}
+		if (isRequest) ComM_Internal.InhibitCounter++;
+	} else {
+		if (ChannelInternal->UserRequestMask == 0) {
+			if (ChannelInternal->FullComMinDurationTimeLeft == 0) {
+				// FULL/* -> FULL/READY_SLEEP
+				ChannelInternal->LightTimeoutTimeLeft = ChannelConf->LightTimeout;
+				ChannelInternal->SubMode = COMM_SUBMODE_READY_SLEEP;
+			}
+		} else {
+			// FULL/* -> FULL/NETWORK_REQUESTED
+			ChannelInternal->FullComMinDurationTimeLeft = COMM_T_MIN_FULL_COM_MODE_DURATION;
+			ChannelInternal->SubMode = COMM_SUBMODE_NETWORK_REQUESTED;
+		}
+	}
 	return E_OK;
 }

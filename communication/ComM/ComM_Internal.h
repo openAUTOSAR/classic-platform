@@ -58,6 +58,8 @@ typedef struct {
 	ComM_Internal_SubModeType	SubMode;
 	uint32						UserRequestMask;
 	ComM_InhibitionStatusType	InhibitionStatus;
+	uint32						FullComMinDurationTimeLeft;
+	uint32						LightTimeoutTimeLeft;
 } ComM_Internal_ChannelType;
 
 typedef struct {

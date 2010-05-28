@@ -74,6 +74,15 @@
 #define COMM_SERVICEID_MAINFUNCTION						0x60
 
 
+#define COMM_MAIN_FUNCTION_PROTOTYPE(channel) \
+void ComM_MainFunction_##channel (void)
+
+#define COMM_MAIN_FUNCTION(channel)	\
+void ComM_MainFunction_##channel (void) { \
+	ComM_MainFunction(COMM_NETWORK_HANDLE_##channel); \
+}
+
+
 /** Initializes the AUTOSAR Communication Manager and restarts the internal state machines.*/
 void ComM_Init( ComM_ConfigType *);
 

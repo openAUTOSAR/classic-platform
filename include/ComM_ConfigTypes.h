@@ -27,6 +27,8 @@ typedef enum {
 typedef struct {
 	const ComM_BusTypeType			BusType;
 	const NetworkHandleType			BusSMNetworkHandle;
+	const uint32					MainFunctionPeriod;
+	const uint32					LightTimeout;
 	const uint8						Number;
 } ComM_ChannelType;
 
