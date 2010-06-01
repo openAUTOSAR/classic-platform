@@ -20,6 +20,48 @@
 #include "ComStack_Types.h"
 #include "NmStack_Types.h"
 #include "CanNm_ConfigTypes.h"
+#include "Modules.h"
+
+#define CANNM_AR_MAJOR_VERSION	3
+#define CANNM_AR_MINOR_VERSION	0
+#define CANNM_AR_PATCH_VERSION	1
+
+#define CANNM_SW_MAJOR_VERSION	1
+#define CANNM_SW_MINOR_VERSION	0
+#define CANNM_SW_PATCH_VERSION	0
+
+#include "CanNm_Cfg.h"
+
+
+#define CANNM_E_NO_INIT						0x01 /**< API service used */
+#define CANNM_E_INVALID_CHANNEL				0x02 /**< API service called with wrong channel handle */
+/** NM-Timeout Timer has abnormally expired outside of the Ready Sleep State;
+it may happen: (1) because of Bus-Off state, (2) if some ECU requests bus communication or node detection shortly
+before the NMTimeout Timer expires so that a NM message can not be transmitted in time;
+this race condition applies to event-triggered systems */
+#define CANNM_E_DEV_NETWORK_TIMEOUT			0x11
+#define NM_E_NULL_POINTER					0x12 /**< Null pointer has been passed as an argument (Does not apply to function CanNm_Init) */
+
+
+#define CANNM_SERVICEID_INIT								0x00
+#define CANNM_SERVICEID_PASSIVESTARTUP						0x01
+#define CANNM_SERVICEID_NETWORKREQUEST						0x02
+#define CANNM_SERVICEID_NETWORKRELEASE						0x03
+#define CANNM_SERVICEID_DISABLECOMMUNICATION				0x0C
+#define CANNM_SERVICEID_ENABLECOMMUNICATION					0x0D
+#define CANNM_SERVICEID_SETUSERDATA							0x04
+#define CANNM_SERVICEID_GETUSERDATA							0x05
+#define CANNM_SERVICEID_GETNODEIDENTIFIER					0x06
+#define CANNM_SERVICEID_GETLOCALNODEIDENTIFIER				0x07
+#define CANNM_SERVICEID_REPEATMESSAGEREQUEST				0x08
+#define CANNM_SERVICEID_GETPDUDATA							0x0A
+#define CANNM_SERVICEID_GETSTATE							0x0B
+#define CANNM_SERVICEID_GETVERSIONINFO						0xF1
+#define CANNM_SERVICEID_REQUESTBUSSYNCHRONIZATION			0xC0
+#define CANNM_SERVICEID_CHECKREMOTESLEEPINDICATION			0xD0
+#define CANNM_SERVICEID_TXCONFIRMATION						0x0F
+#define CANNM_SERVICEID_RXINDICATION						0x10
+#define CANNM_SERVICEID_ARC_MAINFUNCTION					0x13
 
 // Functions called by NM Interface
 // --------------------------------
