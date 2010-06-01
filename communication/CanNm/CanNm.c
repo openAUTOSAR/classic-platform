@@ -14,6 +14,9 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
+#if (CANNM_DEV_ERROR_DETECT == STD_ON)
+#include "Det.h"
+#endif
 #include "ComStack_Types.h"
 #include "CanNm.h"
 #include "CanNm_Internal.h"
@@ -26,7 +29,11 @@ CanNm_InternalType CanNm_Internal = {
 };
 
 /** Initialize the complete CanNm module, i.e. all channels which are activated */
-void CanNm_Init( const CanNm_ConfigType * const cannmConfigPtr ){}
+void CanNm_Init( const CanNm_ConfigType * const cannmConfigPtr ){
+	CANNM_VALIDATE_NOTNULL(cannmConfigPtr, CANNM_SERVICEID_INIT);
+
+	CanNm_Internal.InitStatus = CANNM_INIT;
+}
 
 /** Passive startup of the AUTOSAR CAN NM. It triggers the transition from Bus-
   * Sleep Mode to the Network Mode in Repeat Message State.
@@ -125,7 +132,7 @@ void CanNm_GetVersionInfo( Std_VersionInfoType * versioninfo ){
 }
 
 /** Request bus synchronization. */
-Nm_ReturnType CanNm_RequestBusSynchronization( const NetworkHandleType mmChannelHandle ){
+Nm_ReturnType CanNm_RequestBusSynchronization( const NetworkHandleType nmChannelHandle ){
 	CANNM_VALIDATE_INIT(CANNM_SERVICEID_REQUESTBUSSYNCHRONIZATION, NM_E_NOT_OK);
 	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_REQUESTBUSSYNCHRONIZATION, NM_E_NOT_OK);
 	return NM_E_NOT_OK;

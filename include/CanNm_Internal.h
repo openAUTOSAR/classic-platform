@@ -38,6 +38,8 @@
 #define CANNM_VALIDATE_CHANNEL(channel, serviceID, ...)					\
 		CANNM_VALIDATE( (channel < CANNM_CHANNEL_COUNT), serviceID, CANNM_E_INVALID_CHANNEL, __VA_ARGS__)
 
+#define CANNM_VALIDATE_NOTNULL(ptr, serviceID, ...)	\
+		CANNM_VALIDATE( (ptr != NULL), serviceID, NM_E_NULL_POINTER, __VA_ARGS__)
 
 typedef enum {
 	CANNM_INIT,

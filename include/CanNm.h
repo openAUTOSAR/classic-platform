@@ -116,7 +116,7 @@ Nm_ReturnType CanNm_GetState( const NetworkHandleType nmChannelHandle, Nm_StateT
 void CanNm_GetVersionInfo( Std_VersionInfoType * versioninfo );
 
 /** Request bus synchronization. */
-Nm_ReturnType CanNm_RequestBusSynchronization( const NetworkHandleType mmChannelHandle );
+Nm_ReturnType CanNm_RequestBusSynchronization( const NetworkHandleType nmChannelHandle );
 
 /** Check if remote sleep indication takes place or not. */
 Nm_ReturnType CanNm_CheckRemoteSleepIndication( const NetworkHandleType nmChannelHandle, boolean * const nmRemoteSleepIndPtr );

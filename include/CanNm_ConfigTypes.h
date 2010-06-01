@@ -19,6 +19,10 @@
 
 typedef struct {
 
+} CanNm_ChannelType;
+
+typedef struct {
+
 } CanNm_ConfigType;
 
 #endif /* CANNM_CONFIGTYPES_H_ */
