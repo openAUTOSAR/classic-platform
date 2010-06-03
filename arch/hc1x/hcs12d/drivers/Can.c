@@ -160,7 +160,6 @@ typedef struct{
  * -----------------------------------------------
  * - A HOH us unique for a controller( not a config-set )
  * - Hrh's are numbered for each controller from 0
- * - loopback in HW NOT supported
  * - Only one transmit mailbox is used because otherwise
  *   we cannot use tx_confirmation since there is no way to know
  *   which mailbox caused the tx interrupt. TP will need this feature.
@@ -697,9 +696,9 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
   canHw->CTL0 = BM_INITRQ;				// request Init Mode
   while((canHw->CTL1 & BM_INITAK) == 0);   // wait until Init Mode is established
 
-  // set CAN enable bit, deactivate listen-only mode and
-  // use Bus Clock as clock source
-  canHw->CTL1 = BM_CANE | BM_CLKSRC;
+  // set CAN enable bit, deactivate listen-only mode,
+  // use Bus Clock as clock source and select loop back mode on/off
+  canHw->CTL1 = BM_CANE | BM_CLKSRC | (config->Can_Arc_Loopback ? BM_LOOPB : 0x00);
 
   // acceptance filters
    hohObj = canHwConfig->Can_Arc_Hoh;
