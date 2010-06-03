@@ -40,6 +40,11 @@
  *
  */
 
+typedef enum
+{
+    PORT_UNINITIALIZED = 0, PORT_INITIALIZED,
+} Port_StateType;
+
 static Port_StateType _portState = PORT_UNINITIALIZED;
 
 #if (PORT_DEV_ERROR_DETECT)

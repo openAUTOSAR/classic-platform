@@ -585,6 +585,8 @@
 #define  PPSM         PORTIO_8(IO_BASE + 0x255)	/* port M polarity select */
 #define  WOMM         PORTIO_8(IO_BASE + 0x256)	/* port M wired-or mode */
 
+#define  MODDR        PORTIO_8(IO_BASE + 0x257) /* Module routing register */
+
 // Port P
 #define  PTP          PORTIO_8(IO_BASE + 0x258)	/* port P data register */
 #define  PTIP         PORTIO_8(IO_BASE + 0x259)	/* port P input register */

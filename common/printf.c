@@ -112,6 +112,10 @@ int vfprintf(FILE *file, const char *format, va_list ap) {
 	return rv;
 }
 
+int vfiprintf(FILE *file, const char *format, va_list ap) {
+	return vfprintf(file,format,ap);
+}
+
 int vsnprintf(char *buffer, size_t n, const char *format, va_list ap) {
 	int rv;
 
