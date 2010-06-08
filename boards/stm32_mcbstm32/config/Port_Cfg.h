@@ -28,6 +28,15 @@
 /** Allow Pin mode changes during runtime (not avail on this CPU) */
 #define PORT_SET_PIN_MODE_API               STD_ON
 
+/** @req PORT124 */
+typedef uint8 Port_PinModeType;
+
+/** HW specific symbolic names of pins */
+/** @req PORT013 */
+typedef enum{
+	PIN1,
+} Port_PinType;
+
 /* Configuration of one specific port */
 typedef struct {
 	uint16_t pinCount;
@@ -45,12 +54,6 @@ typedef struct {
   uint16_t portCount;
   const Port_PortConfigType* ports[];
 } Port_ConfigType;
-
-/** HW specific symbolic names of pins */
-/** @req PORT013 */
-typedef enum{
-	PIN1,
-} Port_PinType;
 
 /** Instance of the top level configuration container */
 extern const Port_ConfigType PortConfigData;

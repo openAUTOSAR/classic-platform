@@ -19,6 +19,10 @@
 #include "string.h"
 #include "stm32f10x_rcc.h"
 
+typedef enum
+{
+    PORT_UNINITIALIZED = 0, PORT_INITIALIZED,
+} Port_StateType;
 
 static Port_StateType _portState = PORT_UNINITIALIZED;
 static Port_ConfigType * _configPtr = NULL;
