@@ -14,12 +14,6 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
-
 /*
  * test_framework.h
  *
@@ -30,9 +24,21 @@
 #ifndef TEST_FRAMEWORK_H_
 #define TEST_FRAMEWORK_H_
 
+/* Test flags */
+#define TEST_FLG_RUNNING		1
+#define TEST_FLG_ASSERT		(1<<1)
+#define TEST_FLG_DONE			(1<<2)
+#define TEST_FLG_OK			(1<<3)
+
+#define TEST_VALUE_NC			(-1)
 void test_done( void );
 
-void test_fail( char *text,char *file,  int line , const char *function );
+void test_fail( const char *text,char *file,  int line, const char *function );
 void test_ok( void );
+
+void testStart( const char *str, int testNr );
+void testInc( void );
+void testEnd( void );
+void testExit( int rv );
 
 #endif /* TEST_FRAMEWORK_H_ */

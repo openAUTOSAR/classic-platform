@@ -12,6 +12,11 @@
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
+/*
+ * Contains mostly macros for the test-system. Most macro's have the same
+ * name as in embUnit, to make it easier to use.
+ *
+ */
 
 #ifndef OS_TEST_H_
 #define OS_TEST_H_
@@ -21,10 +26,17 @@
 
 typedef void (*test_func_t)( void );
 
+
+#define TEST_INIT()			printf("Test init\n");
 #define TEST_FAIL(_text)		test_fail((_text),  __FILE__,  __LINE__, __FUNCTION__ )
 #define TEST_OK()				test_ok();
 #define TEST_ASSERT(_cond) 			if(!(_cond)) { TEST_FAIL(#_cond); }
+/* Start to run a test */
 #define TEST_RUN()				printf("Running test %d\n",test_nr);
+/* Indicate that a test is done */
+//#define TEST_DONE()
+#define TEST_START(_str,_nr)		testStart(_str,_nr)
+#define TEST_NEXT(_str,_next_nr)	testEnd(); testStart(_str,_next_nr);
 
 
 extern int test_suite;

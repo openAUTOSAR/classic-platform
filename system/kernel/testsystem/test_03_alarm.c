@@ -368,7 +368,7 @@ void etask_sup_m_03(void) {
 			TerminateTask();
 			break;
 		default:
-			assert(0);
+			TEST_ASSERT(0);
 		}
 	}
 

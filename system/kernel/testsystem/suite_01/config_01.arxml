@@ -12,7 +12,7 @@
       </ADMIN-DATA>
       <ELEMENTS>
         <ECU-CONFIGURATION UUID="adececfa-6614-4f2a-bc3b-0de7440970a7">
-          <SHORT-NAME>testsystem</SHORT-NAME>
+          <SHORT-NAME>config_01</SHORT-NAME>
           <ADMIN-DATA>
             <DOC-REVISIONS>
               <DOC-REVISION>
@@ -450,7 +450,7 @@
               </PARAMETER-VALUES>
             </CONTAINER>
             <CONTAINER UUID="535d1101-3931-4273-81af-00627d240a77">
-              <SHORT-NAME>NOTIF</SHORT-NAME>
+              <SHORT-NAME>notif</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsEvent</DEFINITION-REF>
               <PARAMETER-VALUES>
                 <INTEGER-VALUE>
@@ -460,7 +460,7 @@
               </PARAMETER-VALUES>
             </CONTAINER>
             <CONTAINER UUID="19e4f863-4f93-4692-ade2-6e2451d7c194">
-              <SHORT-NAME>KILL</SHORT-NAME>
+              <SHORT-NAME>kill</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsEvent</DEFINITION-REF>
               <PARAMETER-VALUES>
                 <INTEGER-VALUE>
@@ -527,7 +527,7 @@
                       <REFERENCE-VALUES>
                         <REFERENCE-VALUE>
                           <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsScheduleTable/OsScheduleTableExpiryPoint/OsScheduleTableEventSetting/OsScheduleTableSetEventRef</DEFINITION-REF>
-                          <VALUE-REF DEST="CONTAINER">/testsystem/Os/NOTIF</VALUE-REF>
+                          <VALUE-REF DEST="CONTAINER">/testsystem/Os/notif</VALUE-REF>
                         </REFERENCE-VALUE>
                         <REFERENCE-VALUE>
                           <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsScheduleTable/OsScheduleTableExpiryPoint/OsScheduleTableEventSetting/OsScheduleTableSetEventTaskRef</DEFINITION-REF>
@@ -553,7 +553,7 @@
                       <REFERENCE-VALUES>
                         <REFERENCE-VALUE>
                           <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsScheduleTable/OsScheduleTableExpiryPoint/OsScheduleTableEventSetting/OsScheduleTableSetEventRef</DEFINITION-REF>
-                          <VALUE-REF DEST="CONTAINER">/testsystem/Os/NOTIF</VALUE-REF>
+                          <VALUE-REF DEST="CONTAINER">/testsystem/Os/notif</VALUE-REF>
                         </REFERENCE-VALUE>
                         <REFERENCE-VALUE>
                           <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsScheduleTable/OsScheduleTableExpiryPoint/OsScheduleTableEventSetting/OsScheduleTableSetEventTaskRef</DEFINITION-REF>
@@ -572,20 +572,6 @@
                       </REFERENCE-VALUES>
                     </CONTAINER>
                   </SUB-CONTAINERS>
-                </CONTAINER>
-                <CONTAINER UUID="753698a2-650f-4eb4-a637-839ab71c48df">
-                  <SHORT-NAME>OsScheduleTableAutostart</SHORT-NAME>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsScheduleTable/OsScheduleTableAutostart</DEFINITION-REF>
-                  <PARAMETER-VALUES>
-                    <ENUMERATION-VALUE>
-                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsScheduleTable/OsScheduleTableAutostart/OsScheduleTableAutostartType</DEFINITION-REF>
-                      <VALUE>ABSOLUTE</VALUE>
-                    </ENUMERATION-VALUE>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsScheduleTable/OsScheduleTableAutostart/ArcCoreOsScheduleTableOffset</DEFINITION-REF>
-                      <VALUE>1</VALUE>
-                    </INTEGER-VALUE>
-                  </PARAMETER-VALUES>
                 </CONTAINER>
               </SUB-CONTAINERS>
             </CONTAINER>
@@ -715,7 +701,7 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/testsystem/Os/NOTIF</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/testsystem/Os/notif</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventTaskRef</DEFINITION-REF>
@@ -741,7 +727,7 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/testsystem/Os/NOTIF</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/testsystem/Os/notif</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventTaskRef</DEFINITION-REF>

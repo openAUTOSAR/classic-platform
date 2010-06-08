@@ -12,12 +12,7 @@ obj-y += test_04_stable.o
 obj-y += test_05_const.o
 obj-y += test_06_event.o
 
-#obj-y += test_sup_01.o
-#obj-y += test_sup_02.o
-#obj-y += test_sup_03.o
-#obj-y += test_sup_04.o	
 obj-y += test_framework.o
-
 obj-y += Os_Cfg.o
 
 # Not supported yet...
@@ -44,7 +39,7 @@ vpath-y += $(ROOTDIR)/boards/$(BOARDDIR)
 vpath-y += $(ROOTDIR)/boards/$(BOARDDIR)/config
 VPATH += $(vpath-y)
 VPATH += $(ROOTDIR)/$(SUBDIR)/config
-
+VPATH += $(realpath ../..)
 
 # libs needed by us 
 libitem-y += $(ROOTDIR)/libs/libkernel_$(ARCH_MCU).a
@@ -54,6 +49,7 @@ ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
 #ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
 
 inc-y += ..
+inc-y += ../..
 inc-y += $(ROOTDIR)/system/kernel/$(objdir)
 inc-y += $(ROOTDIR)/system/kernel/include
 inc-y += $(ROOTDIR)/$(ARCH_PATH-y)

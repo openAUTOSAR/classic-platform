@@ -21,8 +21,8 @@ MOD_USE+=KERNEL MCU
 MOD_USE+=T32_TERM
 #MOD_USE+=PROTECTIONHOOK STARTUPHOOK SHUTDOWNHOOK ERRORHOOK			1
 #MOD_USE+=PRETASKHOOK POSTTASKHOOK
-CFG+=CONSOLE_T32
-CFG+=CONSOLE_WINIDEA
+#CFG+=CONSOLE_T32
+#CFG+=CONSOLE_WINIDEA
 
 
 # TODO: Fix this....
@@ -33,16 +33,17 @@ vpath-y += $(ROOTDIR)/boards/$(BOARDDIR)
 vpath-y += $(ROOTDIR)/boards/$(BOARDDIR)/config
 VPATH += $(vpath-y)
 VPATH += $(ROOTDIR)/$(SUBDIR)/config
-
+VPATH += $(realpath ../..)
 
 # libs needed by us 
-libitem-y += $(ROOTDIR)/libs/libkernel_$(ARCH_MCU).a
+#libitem-y += $(ROOTDIR)/libs/libkernel_$(ARCH_MCU).a
 
 #linkfile
 ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
 #ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
 
 inc-y += ..
+inc-y += ../..
 inc-y += $(ROOTDIR)/system/kernel/$(objdir)
 inc-y += $(ROOTDIR)/system/kernel/include
 inc-y += $(ROOTDIR)/$(ARCH_PATH-y)

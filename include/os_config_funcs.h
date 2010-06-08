@@ -49,7 +49,7 @@ void Os_CfgValidate(void ) {
 #endif
 }
 
-os_error_t os_error;
+OsErrorType os_error;
 
 //-------------------------------------------------------------------
 

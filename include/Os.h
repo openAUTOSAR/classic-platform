@@ -347,21 +347,21 @@ typedef enum {
     OSServiceId_GetTaskState,
 } OsServiceIdType;;
 
-typedef struct os_error_s {
+typedef struct OsError {
 	OsServiceIdType serviceId;
 	uint32_t param1;
 	uint32_t param2;
 	uint32_t param3;
-} os_error_t;
+} OsErrorType;
 
-extern os_error_t os_error;
+extern OsErrorType os_error;
 
 // TODO: Add the service id to all OS service methods.
 static inline OsServiceIdType OSErrorGetServiceId(void)  {
 	return os_error.serviceId;
 }
 
-extern os_error_t os_error;
+extern OsErrorType os_error;
 
 #define OSError_ActivateTask_TaskID ((TaskType) os_error.param1)
 #define OSError_ChainTask_TaskID ((TaskType) os_error.param1)

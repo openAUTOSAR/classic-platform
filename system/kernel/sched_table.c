@@ -125,7 +125,10 @@ static void ScheduleTableConsistenyCheck( OsSchTblType *sTblPtr ) {
 		/** @req OS408 */
 		for(iter=0; iter  <  SA_LIST_CNT(&sTblPtr->expirePointList) ; iter++) {
 			delta = SA_LIST_GET(&sTblPtr->expirePointList,iter)->offset - delta;
-			assert( delta >=  minCycle );
+			/* initial offset may be zero (OS443) */
+			if(iter!=0) {
+				assert( delta >=  minCycle );
+			}
 			assert( delta <=  maxValue );
 		}
 

@@ -143,6 +143,19 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 	OS_STD_END_2(OSServiceId_SetEvent,TaskID, Mask);
 }
 
+
+/**
+ * This service returns the current state of all event bits of the task
+ * <TaskID>, not the events that the task is waiting for.
+ * The service may be called from interrupt service routines, task
+ * level and some hook routines (see Figure 12-1).
+ *  The current status of the event mask of task <TaskID> is copied
+ * to <Event>.
+ *
+ * @param TaskId Task whose event mask is to be returned.
+ * @param Mask   Reference to the memory of the return data.
+ * @return
+ */
 StatusType GetEvent( TaskType TaskId, EventMaskRefType Mask) {
 
 	OsPcbType *dest_pcb;
@@ -161,6 +174,14 @@ StatusType GetEvent( TaskType TaskId, EventMaskRefType Mask) {
 }
 
 
+/**
+ * The events of the extended task calling ClearEvent are cleared
+ * according to the event mask <Mask>.
+ *
+ *
+ * @param Mask
+ * @return
+ */
 StatusType ClearEvent( EventMaskType Mask) {
     StatusType rv = E_OK;
 	OsPcbType *pcb;
