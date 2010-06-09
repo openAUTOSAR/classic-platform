@@ -17,12 +17,30 @@
 #ifndef CANNM_CONFIGTYPES_H_
 #define CANNM_CONFIGTYPES_H_
 
-typedef struct {
+typedef enum {
+	CANNM_PDU_BYTE_0 = 0x00,
+	CANNM_PDU_BYTE_1 = 0x01,
+	CANNM_PDU_OFF = 0xFF,
+} CanNm_PduBytePositionType;
 
+typedef struct {
+	const boolean					Active;
+	const NetworkHandleType			NmNetworkHandle;
+	const uint8						NodeId;
+	const uint32					MainFunctionPeriod;
+	const uint32					TimeoutTime;
+	const uint32					RepeatMessageTime;
+	const uint32					WaitBusSleepTime;
+	const uint32					MessageCycleTime;
+	const uint32					MessageCycleOffsetTime;
+	const PduIdType					CanIfPduId;
+	const uint8						PduLength;
+	const CanNm_PduBytePositionType	NidPosition;
+	const CanNm_PduBytePositionType	CbvPosition;
 } CanNm_ChannelType;
 
 typedef struct {
-
+	CanNm_ChannelType* 			Channels;
 } CanNm_ConfigType;
 
 #endif /* CANNM_CONFIGTYPES_H_ */

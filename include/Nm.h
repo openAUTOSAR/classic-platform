@@ -23,6 +23,16 @@
 #include "Nm_ConfigTypes.h"
 #include "ComM_Nm.h"
 
+#define NM_AR_MAJOR_VERSION	1
+#define NM_AR_MINOR_VERSION	0
+#define NM_AR_PATCH_VERSION	1
+
+#define NM_SW_MAJOR_VERSION	1
+#define NM_SW_MINOR_VERSION	0
+#define NM_SW_PATCH_VERSION	0
+
+#include "Nm_Cfg.h"
+
 /** Initializes the NM Interface. */
 void Nm_Init( Nm_ConfigType * const nmConfigPtr );
 

@@ -63,6 +63,8 @@ this race condition applies to event-triggered systems */
 #define CANNM_SERVICEID_RXINDICATION						0x10
 #define CANNM_SERVICEID_ARC_MAINFUNCTION					0x13
 
+#define CANNM_CBV_REPEAT_MESSAGE_REQUEST					(1 << 0)
+
 // Functions called by NM Interface
 // --------------------------------
 
@@ -133,13 +135,6 @@ void CanNm_TxConfirmation( PduIdType canNmTxPduId );
   * CanNm after passing all filters and validation checks.
   * This callback service is called by the CAN Interface and implemented by the CanNm. */
 void CanNm_RxIndication( PduIdType canNmRxPduId, const uint8 *canSduPtr );
-
-/** Main function of the CanNm which processes the algorithm describes in that document.
-  * Generated functions used: CanNm_MainFunction_<Instance Id>( void );
-  * e.g.
-  * CanNm_MainFunction_0() represents the CanNm instance for the CAN channel 0
-  * CanNm_MainFunction_1() represents the CanNm instance for the CAN channel 1 */
-void CanNm_Arc_MainFunction( uint8 instanceId );
 
 
 
