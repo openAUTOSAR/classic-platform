@@ -21,6 +21,9 @@
 
 #define DIO_GET_PORT_FROM_CHANNEL_ID(_channelId) (_channelId / 8)
 #define DIO_GET_BIT_FROM_CHANNEL_ID(_channelId) (1 << (_channelId % 8))
+#define CHANNEL_PTR		(&DioChannelConfigData)
+#define CHANNEL_GRP_PTR	(&DioConfigData)
+#define PORT_PTR		(&DioPortConfigData)
 
 #if ( DIO_VERSION_INFO_API == STD_ON )
 static Std_VersionInfoType _Dio_VersionInfo =
@@ -42,14 +45,14 @@ static int Channel_Config_Contains(Dio_ChannelType channelId)
 {
 	Dio_ChannelType* ch_ptr=(Dio_ChannelType*)CHANNEL_PTR;
 	int rv=0;
-	while (DIO_END_OF_LIST!=*ch_ptr)
+	while ((Dio_ChannelType)DIO_END_OF_LIST!=*ch_ptr)
 	{
-	if (*ch_ptr==channelId)
-	{
-		rv=1;
-		break;
-	}
-	ch_ptr++;
+		if (*ch_ptr==channelId)
+		{
+			rv=1;
+			break;
+		}
+		ch_ptr++;
 	}
 	return rv;
 }
@@ -58,11 +61,14 @@ static int Port_Config_Contains(Dio_PortType portId)
 {
 	Dio_PortType* port_ptr=(Dio_PortType*)PORT_PTR;
 	int rv=0;
-	while (DIO_END_OF_LIST!=*port_ptr)
+	while ((Dio_PortType)DIO_END_OF_LIST!=*port_ptr)
 	{
-	if (*port_ptr==portId)
-	{ rv=1; break;}
-	port_ptr++;
+		if (*port_ptr==portId)
+		{
+			rv=1;
+			break;
+		}
+		port_ptr++;
 	}
 	return rv;
 }
@@ -72,13 +78,16 @@ static int Channel_Group_Config_Contains(const Dio_ChannelGroupType* _channelGro
 	Dio_ChannelGroupType* chGrp_ptr=(Dio_ChannelGroupType*)CHANNEL_GRP_PTR;
 	int rv=0;
 
-	while (DIO_END_OF_LIST!=chGrp_ptr->port)
+	while ((Dio_PortType)DIO_END_OF_LIST!=chGrp_ptr->port)
 	{
-	if (chGrp_ptr->port==_channelGroupIdPtr->port&&
-		chGrp_ptr->offset==_channelGroupIdPtr->offset&&
-		chGrp_ptr->mask==_channelGroupIdPtr->mask)
-	{ rv=1; break;}
-	chGrp_ptr++;
+		if (chGrp_ptr->port==_channelGroupIdPtr->port
+				&& chGrp_ptr->offset==_channelGroupIdPtr->offset
+				&& chGrp_ptr->mask==_channelGroupIdPtr->mask)
+		{
+			rv=1;
+			break;
+		}
+		chGrp_ptr++;
 	}
 	return rv;
 }
@@ -117,7 +126,7 @@ Dio_LevelType Dio_ReadChannel(Dio_ChannelType channelId)
 
 	if ((portVal & bit) != STD_LOW){
 		level = STD_HIGH;
-	} else{
+	} else {
 		level = STD_LOW;
 	}
 
@@ -133,7 +142,7 @@ void Dio_WriteChannel(Dio_ChannelType channelId, Dio_LevelType level)
 
 	if(level == STD_HIGH){
 		portVal |= bit;
-	}else{
+	} else {
 		portVal &= ~bit;
 	}
 

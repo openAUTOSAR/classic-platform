@@ -31,6 +31,11 @@
 #include <string.h>
 #include "mpc55xx.h"
 
+#define CHANNEL_PTR		(&DioChannelConfigData)
+#define CHANNEL_GRP_PTR	(&DioConfigData)
+#define PORT_PTR		(&DioPortConfigData)
+
+
 #if ( DIO_VERSION_INFO_API == STD_ON )
 static Std_VersionInfoType _Dio_VersionInfo =
 {

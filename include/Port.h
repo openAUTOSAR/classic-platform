@@ -77,7 +77,7 @@ typedef uint32 Port_PinModeType;
 #endif
 
 void Port_Init(const Port_ConfigType *configType);
-#if (PORT_PIN_DIRECTION_CHANGES_ALLOWED == STD_ON)
+#if (PORT_SET_PIN_DIRECTION_API == STD_ON)
 void Port_SetPinDirection(Port_PinType pin, Port_PinDirectionType direction);
 #endif
 void Port_RefreshPortDirection(void);

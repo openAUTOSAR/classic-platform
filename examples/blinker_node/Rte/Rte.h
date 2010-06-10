@@ -20,10 +20,10 @@
 
 // Select DIO channel
 #if defined(CFG_BRD_MPC5516IT)
-#define LED_CHANNEL		LEDS_LED5
+#define LED_CHANNEL		DIO_CHANNEL_NAME_LEDS_LED5
 
 #elif defined(CFG_BRD_MPC5567QRTECH)
-#define LED_CHANNEL		LED_K2
+#define LED_CHANNEL		DIO_CHANNEL_NAME_LED_K2
 
 #else
 #warning "Unknown board or CFG_BRD_* undefined"

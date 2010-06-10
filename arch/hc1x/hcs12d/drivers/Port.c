@@ -17,7 +17,7 @@
 #include "Port.h" /** @req PORT131 */
 #include "regs.h"
 #include "Det.h"
-#include "string.h"
+#include <string.h>
 
 /* SHORT ON HW
  *  Have a bunch of ports:
@@ -31,7 +31,7 @@ typedef enum
 } Port_StateType;
 
 static Port_StateType _portState = PORT_UNINITIALIZED;
-static Port_ConfigType * _configPtr = NULL;
+static const Port_ConfigType * _configPtr = NULL;
 
 /** @req PORT107 */
 #if (PORT_DEV_ERROR_DETECT == STD_ON)
@@ -53,8 +53,11 @@ static Port_ConfigType * _configPtr = NULL;
 #define VALIDATE_PARAM_PIN(_api)
 #endif
 
+#if PORT_VERSION_INFO_API == STD_ON
 static Std_VersionInfoType _Port_VersionInfo =
-{ .vendorID = (uint16)1, .moduleID = (uint16) MODULE_ID_PORT,
+{
+		.vendorID = (uint16)1,
+		.moduleID = (uint16) MODULE_ID_PORT,
         .instanceID = (uint8)1,
         .sw_major_version = (uint8)PORT_SW_MAJOR_VERSION,
         .sw_minor_version = (uint8)PORT_SW_MINOR_VERSION,
@@ -62,6 +65,7 @@ static Std_VersionInfoType _Port_VersionInfo =
         .ar_major_version = (uint8)PORT_AR_MAJOR_VERSION,
         .ar_minor_version = (uint8)PORT_AR_MINOR_VERSION,
         .ar_patch_version = (uint8)PORT_AR_PATCH_VERSION, };
+#endif
 
 /** @req PORT140 */
 /** @req PORT041 Comment: To reduce flash usage the configuration tool can disable configuration of some ports  */
@@ -169,80 +173,80 @@ void Port_Init(const Port_ConfigType *configType)
 void Port_SetPinDirection( Port_PinType pin, Port_PinDirectionType direction )
 {
     VALIDATE_STATE_INIT(PORT_SET_PIN_DIRECTION_ID);
-    uint8_t bit;
-    uint8_t curValue;
     uint16_t base;
+    uint8_t bitmask;
+    uint8_t curValue;
 
-    base = pin & BASEMASK;
-    bit = pin & BITMASK;
+    base = pin & PORT_BASEMASK;
+    bitmask = 1 << (pin & PORT_BITMASK);
     if (base == PORT_A_BASE)
     {
-        curValue = DDRA & ~(bit);
+        curValue = DDRA & ~(bitmask);
         if (direction == PORT_PIN_OUT)
-        curValue = curValue | bit;
+        curValue = curValue | bitmask;
         DDRA = curValue;
     }
     else if (base == PORT_B_BASE)
     {
-        curValue = DDRB & ~(bit);
+        curValue = DDRB & ~(bitmask);
         if (direction == PORT_PIN_OUT)
-        curValue = curValue | bit;
+        curValue = curValue | bitmask;
         DDRB = curValue;
     }
     else if (base == PORT_E_BASE)
     {
-        curValue = DDRE & ~(bit);
+        curValue = DDRE & ~(bitmask);
         if (direction == PORT_PIN_OUT)
-        curValue = curValue | bit;
+        curValue = curValue | bitmask;
         DDRE = curValue;
     }
     else if (base == PORT_K_BASE)
     {
-        curValue = DDRK & ~(bit);
+        curValue = DDRK & ~(bitmask);
         if (direction == PORT_PIN_OUT)
-        curValue = curValue | bit;
+        curValue = curValue | bitmask;
         DDRK = curValue;
     }
     else if (base == PORT_H_BASE)
     {
-        curValue = DDRH & ~(bit);
+        curValue = DDRH & ~(bitmask);
         if (direction == PORT_PIN_OUT)
-        curValue = curValue | bit;
+        curValue = curValue | bitmask;
         DDRH = curValue;
     }
     else if (base == PORT_J_BASE)
     {
-        curValue = DDRJ & ~(bit);
+        curValue = DDRJ & ~(bitmask);
         if (direction == PORT_PIN_OUT)
-        curValue = curValue | bit;
+        curValue = curValue | bitmask;
         DDRJ = curValue;
     }
     else if (base == PORT_M_BASE)
     {
-        curValue = DDRM & ~(bit);
+        curValue = DDRM & ~(bitmask);
         if (direction == PORT_PIN_OUT)
-        curValue = curValue | bit;
+        curValue = curValue | bitmask;
         DDRM = curValue;
     }
     else if (base == PORT_P_BASE)
     {
-        curValue = DDRP & ~(bit);
+        curValue = DDRP & ~(bitmask);
         if (direction == PORT_PIN_OUT)
-        curValue = curValue | bit;
+        curValue = curValue | bitmask;
         DDRP = curValue;
     }
     else if (base == PORT_S_BASE)
     {
-        curValue = DDRS & ~(bit);
+        curValue = DDRS & ~(bitmask);
         if (direction == PORT_PIN_OUT)
-        curValue = curValue | bit;
+        curValue = curValue | bitmask;
         DDRS = curValue;
     }
     else if (base == PORT_T_BASE)
     {
-        curValue = DDRT & ~(bit);
+        curValue = DDRT & ~(bitmask);
         if (direction == PORT_PIN_OUT)
-        curValue = curValue | bit;
+        curValue = curValue | bitmask;
         DDRT = curValue;
     }
     else

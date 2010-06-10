@@ -24,7 +24,7 @@
 #include "Dio_Cfg.h"
 
 const Dio_ChannelType DioChannelConfigData[] =
-{ LED_K2, DIO_END_OF_LIST, };
+{ DIO_CHANNEL_NAME_LED_K2, DIO_END_OF_LIST, };
 
 // No ports available for 5567
 const Dio_PortType DioPortConfigData[] =
