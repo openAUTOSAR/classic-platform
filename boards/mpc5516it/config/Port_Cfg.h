@@ -227,8 +227,8 @@ typedef enum
 #define   PORT_NORMAL_INPUT	(PORT_BIT15)
 
 // Should be this out of reset
-#define    PORT_PCR_RESET    (0)
-#define PORT_PORT_PCR_BOOTCFG   (PORT_IBE_ENABLE|PORT_PULL_DOWN)
+#define   PORT_PCR_RESET    (0)
+#define   PORT_PCR_BOOTCFG   (PORT_IBE_ENABLE|PORT_PULL_DOWN)
 //@}
 
 #define PORT_EVB_TEST_CONFIG  (&PortConfigData)
