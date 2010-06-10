@@ -17,19 +17,14 @@
 #ifndef NM_CONFIGTYPES_H_
 #define NM_CONFIGTYPES_H_
 
-/** Data structure shall be pre-compile time configurable. */
 typedef struct {
-#if (NM_BUSNM_CANNM_ENABLED == STD_ON)
-	const CanNm_ConfigType* CanNmConfigPtr
-#endif
-#if (NM_BUSNM_FRNM_ENABLED == STD_ON)
-	const FrNm_ConfigType * FrNmConfigPtr
-#endif
-}Nm_BusNm_ConfigType;
+	const Nm_BusNmType			BusType;
+	const NetworkHandleType		BusNmNetworkHandle;
+	const NetworkHandleType		ComMNetworkHandle;
+} Nm_ChannelType;
 
 typedef struct {
-
+	const Nm_ChannelType* 		Channels;
 } Nm_ConfigType;
-
 
 #endif /* NM_CONFIGTYPES_H_ */
