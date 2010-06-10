@@ -16,8 +16,8 @@ ENTRY(Reset_Handler)
 
 MEMORY
 {
-    flash(R) : ORIGIN = 0x08000000, LENGTH = 128K
-    ram(RW)  : ORIGIN = 0x20000000, LENGTH = 20K
+    flash(R) : ORIGIN = 0x08000000, LENGTH = 256K
+    ram(RW)  : ORIGIN = 0x20000000, LENGTH = 64K
 }
 
 SECTIONS

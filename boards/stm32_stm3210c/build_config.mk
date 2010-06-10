@@ -24,7 +24,7 @@ CFG+=STM32_CL
 
 # What buildable modules does this board have, 
 # default or private
-MOD_AVAIL=KERNEL MCU PWM ADC SIMPLE_PRINTF ARM_ITM_TERM RAMLOG DEM IOHWAB
+MOD_AVAIL=KERNEL MCU PWM ADC DIO PORT FLS CAN COM CAN CANIF SIMPLE_PRINTF ARM_ITM_TERM RAMLOG DEM IOHWAB
 
 #
 # Modules needed by us
@@ -36,7 +36,7 @@ MOD_USE=KERNEL MCU
 #
 
 # Use little heap
-def-y += HEAPSIZE=4000
+def-y += HEAPSIZE=25000
 # Select the right device in ST header files.
 # [ STM32F10X_LD | STM32F10X_MD |  STM32F10X_HD |STM32F10X_CL ]
 def-y += STM32F10X_CL
