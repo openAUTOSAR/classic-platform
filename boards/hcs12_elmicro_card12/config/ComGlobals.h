@@ -14,20 +14,43 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-#ifndef RTE_H_
-#define RTE_H_
-#include "RTE_blinker.h"
 
-// Select DIO channel
-#if defined(CFG_BRD_MPC5516IT)
-#define LED_CHANNEL		DIO_CHANNEL_NAME_LEDS_LED5
 
-#elif defined(CFG_BRD_MPC5567QRTECH)
-#define LED_CHANNEL		DIO_CHANNEL_NAME_LED_K2
 
-#else
-#warning "Unknown board or CFG_BRD_* undefined"
 
-#endif
 
-#endif /* RTE_H_ */
+
+/*
+ * ComGlobals.h
+ *
+ *  Created on: 2009-jan-11
+ *      Author: Mattias
+ */
+
+#ifndef COMGLOBALS_H_
+#define COMGLOBALS_H_
+
+
+// PDU definitions
+enum {
+  // Used for PCAN.
+  PCAN_RX_FRAME_1 = 0,
+  PCAN_RX_FRAME_2 = 2,
+  PCAN_TX_FRAME_1 = 3,
+  PCAN_TX_FRAME_2 = 4,
+
+  // Used for hardware test.
+  PDU_MSG_HARDWARE_TEST_ENGINE_STATUS = 0,
+  PDU_MSG_HARDWARE_TEST_ENGINE_CONTROL = 1,
+  PDU_MSG_HARDWARE_TEST_ROUTED_MSG = 2,
+
+  // Used for testing CanIf
+  PDU_MSG_RX234 = 8,
+  PDU_MSG_RX123 = 10,
+  PDU_MSG_TX789 = 9,
+  PDU_MSG_TX987 = 11
+
+};
+
+
+#endif /* COMGLOBALS_H_ */

@@ -14,20 +14,45 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-#ifndef RTE_H_
-#define RTE_H_
-#include "RTE_blinker.h"
 
-// Select DIO channel
-#if defined(CFG_BRD_MPC5516IT)
-#define LED_CHANNEL		DIO_CHANNEL_NAME_LEDS_LED5
 
-#elif defined(CFG_BRD_MPC5567QRTECH)
-#define LED_CHANNEL		DIO_CHANNEL_NAME_LED_K2
 
-#else
-#warning "Unknown board or CFG_BRD_* undefined"
 
-#endif
 
-#endif /* RTE_H_ */
+
+/*
+ * Pwm_Cfg.c
+ *
+ *      Author: jonte
+ */
+
+#include "Pwm.h"
+#include "Pwm_Cfg.h"
+
+const Pwm_ConfigType PwmConfig =
+{
+		.channels = {
+			{
+				.channel = PWM_CHANNEL_1,
+				DUTY_AND_PERIOD(0x6000,100),
+				.centerAlign = 0,
+				.polarity = POLARITY_NORMAL,
+				.scaledClockEnable = 0,
+				.idleState = PWM_LOW,
+				.class = PWM_VARIABLE_PERIOD,
+			},
+			{
+				.channel = PWM_CHANNEL_2,
+				DUTY_AND_PERIOD(0x1000,100),
+				.centerAlign = 0,
+				.polarity = POLARITY_NORMAL,
+				.scaledClockEnable = 1,
+				.idleState = PWM_LOW,
+				.class = PWM_VARIABLE_PERIOD,
+			},
+		},
+		.busPrescalerA = PRESCALER_128,
+		.busPrescalerB = PRESCALER_8,
+		.prescalerA = 1,
+		.prescalerB = 1,
+};

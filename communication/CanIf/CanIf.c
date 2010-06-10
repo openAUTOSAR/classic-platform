@@ -465,12 +465,12 @@ Std_ReturnType CanIf_SetPduMode(uint8 Controller,
 
   CanIf_ChannelGetModeType oldMode = CanIf_Global.channelData[channel].PduMode;
 
-  switch(PduModeRequest)
+  if(PduModeRequest == CANIF_SET_OFFLINE)
   {
-  case CANIF_SET_OFFLINE:
     CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE;
-    break;
-  case CANIF_SET_RX_OFFLINE:
+  }
+  else if(PduModeRequest == CANIF_SET_RX_OFFLINE)
+  {
     if (oldMode == CANIF_GET_RX_ONLINE)
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE;
     else if (oldMode == CANIF_GET_ONLINE)
@@ -479,8 +479,9 @@ Std_ReturnType CanIf_SetPduMode(uint8 Controller,
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE_ACTIVE;
 
     // Other oldmodes don't care
-    break;
-  case CANIF_SET_RX_ONLINE:
+  }
+  else if(PduModeRequest == CANIF_SET_RX_ONLINE)
+  {
     if (oldMode == CANIF_GET_OFFLINE)
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_RX_ONLINE;
     else if (oldMode == CANIF_GET_TX_ONLINE)
@@ -489,8 +490,9 @@ Std_ReturnType CanIf_SetPduMode(uint8 Controller,
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE;
 
     // Other oldmodes don't care
-    break;
-  case CANIF_SET_TX_OFFLINE:
+  }
+  else if(PduModeRequest == CANIF_SET_TX_OFFLINE)
+  {
     if (oldMode == CANIF_GET_TX_ONLINE)
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE;
     else if (oldMode == CANIF_GET_ONLINE)
@@ -501,8 +503,9 @@ Std_ReturnType CanIf_SetPduMode(uint8 Controller,
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_RX_ONLINE;
 
     // Other oldmodes don't care
-    break;
-  case CANIF_SET_TX_ONLINE:
+  }
+  else if(PduModeRequest == CANIF_SET_TX_ONLINE)
+  {
     if (oldMode == CANIF_GET_OFFLINE)
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_TX_ONLINE;
     else if (oldMode == CANIF_GET_RX_ONLINE)
@@ -513,12 +516,13 @@ Std_ReturnType CanIf_SetPduMode(uint8 Controller,
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_ONLINE;
 
     // Other oldmodes don't care
-    break;
-  case CANIF_SET_ONLINE:
+  }
+  else if(PduModeRequest == CANIF_SET_ONLINE)
+  {
     CanIf_Global.channelData[channel].PduMode = CANIF_GET_ONLINE;
-    break;
-
-  case CANIF_SET_TX_OFFLINE_ACTIVE:
+  }
+  else if(PduModeRequest == CANIF_SET_TX_OFFLINE_ACTIVE)
+  {
     if (oldMode == CANIF_GET_OFFLINE)
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE_ACTIVE;
     else if (oldMode == CANIF_GET_RX_ONLINE)
@@ -529,7 +533,6 @@ Std_ReturnType CanIf_SetPduMode(uint8 Controller,
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE;
 
     // Other oldmodes don't care
-    break;
   }
 
   return E_OK;

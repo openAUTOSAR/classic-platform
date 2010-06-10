@@ -12,22 +12,28 @@
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
+#include "Dio.h"
+#include "Dio_Cfg.h"
 
+const Dio_ChannelType DioChannelConfigData[] =
+{
+	DIO_CHANNEL_NAME_LED_CHANNEL,
+	DIO_END_OF_LIST,
+};
 
-#ifndef RTE_H_
-#define RTE_H_
-#include "RTE_blinker.h"
+const Dio_PortType DioPortConfigData[] =
+{
+	DIO_PORT_NAME_LED_PORT,
+	DIO_END_OF_LIST
+};
 
-// Select DIO channel
-#if defined(CFG_BRD_MPC5516IT)
-#define LED_CHANNEL		DIO_CHANNEL_NAME_LEDS_LED5
+const Dio_ChannelGroupType DioConfigData[] =
+{
+  { .port = DIO_PORT_H, .offset = 7, .mask = 0x80, },
+  { .port = DIO_END_OF_LIST, .offset = DIO_END_OF_LIST, .mask = DIO_END_OF_LIST, },
+};
 
-#elif defined(CFG_BRD_MPC5567QRTECH)
-#define LED_CHANNEL		DIO_CHANNEL_NAME_LED_K2
-
-#else
-#warning "Unknown board or CFG_BRD_* undefined"
-
-#endif
-
-#endif /* RTE_H_ */
+uint32 Dio_GetPortConfigSize(void)
+{
+  return sizeof(DioConfigData);
+}
