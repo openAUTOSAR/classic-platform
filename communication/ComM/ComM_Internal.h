@@ -60,6 +60,7 @@ typedef struct {
 	ComM_InhibitionStatusType	InhibitionStatus;
 	uint32						FullComMinDurationTimeLeft;
 	uint32						LightTimeoutTimeLeft;
+	uint8						NmIndicationMask;
 } ComM_Internal_ChannelType;
 
 typedef struct {
@@ -73,6 +74,12 @@ typedef struct {
 	boolean 					NoCommunication;
 	uint16						InhibitCounter;
 } ComM_InternalType;
+
+#define COMM_NM_INDICATION_NONE					0
+#define COMM_NM_INDICATION_NETWORK_MODE			(1 << 0)
+#define COMM_NM_INDICATION_PREPARE_BUS_SLEEP	(1 << 1)
+#define COMM_NM_INDICATION_BUS_SLEEP			(1 << 2)
+#define COMM_NM_INDICATION_RESTART				(1 << 3)
 
 /* Delegate request to users channels and call ComM_Internal_UpdateChannelState */
 static Std_ReturnType ComM_Internal_RequestComMode(

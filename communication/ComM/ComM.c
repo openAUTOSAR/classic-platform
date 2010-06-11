@@ -49,6 +49,7 @@ void ComM_Init( ComM_ConfigType * Config ){
 		ComM_Internal.Channels[i].SubMode = COMM_SUBMODE_NONE;
 		ComM_Internal.Channels[i].UserRequestMask = 0;
 		ComM_Internal.Channels[i].InhibitionStatus = COMM_INHIBITION_STATUS_NONE;
+		ComM_Internal.Channels[i].NmIndicationMask = COMM_NM_INDICATION_NONE;
 	}
 
 	for (int i = 0; i < COMM_USER_COUNT; ++i) {
@@ -251,21 +252,41 @@ void ComM_Nm_NetworkStartIndication( NetworkHandleType Channel ){
 void ComM_Nm_NetworkMode( NetworkHandleType Channel ){
 	COMM_VALIDATE_INIT(COMM_SERVICEID_NM_NETWORKMODE);
 	COMM_VALIDATE_CHANNEL(Channel, COMM_SERVICEID_NM_NETWORKMODE);
+	const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
+	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
+
+	ChannelInternal->NmIndicationMask |= COMM_NM_INDICATION_NETWORK_MODE;
+	ComM_Internal_UpdateChannelState(ChannelConf, FALSE);
 }
 
 void ComM_Nm_PrepareBusSleepMode( NetworkHandleType Channel ){
 	COMM_VALIDATE_INIT(COMM_SERVICEID_NM_PREPAREBUSSLEEPMODE);
 	COMM_VALIDATE_CHANNEL(Channel, COMM_SERVICEID_NM_PREPAREBUSSLEEPMODE);
+	const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
+	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
+
+	ChannelInternal->NmIndicationMask |= COMM_NM_INDICATION_PREPARE_BUS_SLEEP;
+	ComM_Internal_UpdateChannelState(ChannelConf, FALSE);
 }
 
 void ComM_Nm_BusSleepMode( NetworkHandleType Channel ){
 	COMM_VALIDATE_INIT(COMM_SERVICEID_NM_BUSSLEEPMODE);
 	COMM_VALIDATE_CHANNEL(Channel, COMM_SERVICEID_NM_BUSSLEEPMODE);
+	const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
+	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
+
+	ChannelInternal->NmIndicationMask |= COMM_NM_INDICATION_BUS_SLEEP;
+	ComM_Internal_UpdateChannelState(ChannelConf, FALSE);
 }
 
 void ComM_Nm_RestartIndication( NetworkHandleType Channel ){
 	COMM_VALIDATE_INIT(COMM_SERVICEID_NM_RESTARTINDICATION);
 	COMM_VALIDATE_CHANNEL(Channel, COMM_SERVICEID_NM_RESTARTINDICATION);
+	const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
+	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
+
+	ChannelInternal->NmIndicationMask |= COMM_NM_INDICATION_RESTART;
+	ComM_Internal_UpdateChannelState(ChannelConf, FALSE);
 }
 
 
@@ -355,22 +376,46 @@ static Std_ReturnType ComM_Internal_PropagateGetCurrentComMode( ComM_UserHandleT
 	return E_OK;
 }
 
-static Std_ReturnType ComM_Internal_PropagateComMode( const ComM_ChannelType* Channel ){
-	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel->Number];
+static Std_ReturnType ComM_Internal_PropagateComMode( const ComM_ChannelType* ChannelConf ){
+	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[ChannelConf->Number];
 	ComM_ModeType ComMode = ChannelInternal->Mode;
 
-	switch (Channel->BusType) {
+	Std_ReturnType globalStatus = E_OK;
+
+	if (ChannelConf->NmVariant == COMM_NM_VARIANT_FULL) {
+		Nm_ReturnType nmStatus = NM_E_OK;
+		switch (ChannelInternal->Mode) {
+			case COMM_NO_COMMUNICATION:
+				nmStatus = Nm_NetworkRelease(ChannelConf->NmChannelHandle);
+				break;
+			case COMM_FULL_COMMUNICATION:
+				nmStatus = Nm_NetworkRequest(ChannelConf->NmChannelHandle);
+				break;
+		}
+		if (nmStatus != NM_E_OK) {
+			globalStatus = E_NOT_OK;
+		}
+	}
+
+	Std_ReturnType busSMStatus = E_OK;
+	switch (ChannelConf->BusType) {
 #if defined(USE_CANSM)
 		case COMM_BUS_TYPE_CAN:
-			return CanSM_RequestComMode(Channel->BusSMNetworkHandle, ComMode);
+			busSMStatus = CanSM_RequestComMode(ChannelConf->BusSMNetworkHandle, ComMode);
+			break;
 #endif
 #if defined(USE_LINSM)
 		case COMM_BUS_TYPE_LIN:
-			return LinSM_RequestComMode(Channel->BusSMNetworkHandle, ComMode);
+			busSMStatus = LinSM_RequestComMode(ChannelConf->BusSMNetworkHandle, ComMode);
+			break;
 #endif
 		default:
-			return E_NOT_OK;
+			busSMStatus = E_NOT_OK;
 	}
+	if (busSMStatus > globalStatus) {
+		globalStatus = busSMStatus;
+	}
+	return globalStatus;
 }
 
 /* Processes all requests etc. and makes state machine transitions accordingly */
@@ -389,22 +434,33 @@ static Std_ReturnType ComM_Internal_UpdateChannelState( const ComM_ChannelType* 
 	}
 }
 
+inline void ComM_Internal_NoCom_to_FullComRequested(ComM_Internal_ChannelType* ChannelInternal) {
+	ChannelInternal->FullComMinDurationTimeLeft = COMM_T_MIN_FULL_COM_MODE_DURATION;
+	ChannelInternal->Mode = COMM_FULL_COMMUNICATION;
+	ChannelInternal->SubMode = COMM_SUBMODE_NETWORK_REQUESTED;
+}
+
 inline Std_ReturnType ComM_Internal_UpdateFromNoCom(const ComM_ChannelType* ChannelConf,
 					ComM_Internal_ChannelType* ChannelInternal, boolean isRequest) {
-	if ((ChannelInternal->InhibitionStatus & COMM_INHIBITION_STATUS_NO_COMMUNICATION) ||
-		(ChannelInternal->InhibitionStatus & COMM_INHIBITION_STATUS_WAKE_UP) ||
-		(ComM_Internal.NoCommunication == TRUE)) {
-		// Stay in NO
-		if (isRequest) ComM_Internal.InhibitCounter++;
+	if (ChannelInternal->NmIndicationMask & COMM_NM_INDICATION_RESTART) {
+		// NO -> FULL
+		ComM_Internal_NoCom_to_FullComRequested(ChannelInternal);
+		ChannelInternal->NmIndicationMask &= ~(COMM_NM_INDICATION_RESTART);
+		return ComM_Internal_PropagateComMode(ChannelConf);
 	} else {
-		if (ChannelInternal->UserRequestMask != 0) {
-			// NO -> FULL
-			ChannelInternal->FullComMinDurationTimeLeft = COMM_T_MIN_FULL_COM_MODE_DURATION;
-			ChannelInternal->Mode = COMM_FULL_COMMUNICATION;
-			ChannelInternal->SubMode = COMM_SUBMODE_NETWORK_REQUESTED;
-			return ComM_Internal_PropagateComMode(ChannelConf);
-		} else {
+		if ((ChannelInternal->InhibitionStatus & COMM_INHIBITION_STATUS_NO_COMMUNICATION) ||
+			(ChannelInternal->InhibitionStatus & COMM_INHIBITION_STATUS_WAKE_UP) ||
+			(ComM_Internal.NoCommunication == TRUE)) {
 			// Stay in NO
+			if (isRequest) ComM_Internal.InhibitCounter++;
+		} else {
+			if (ChannelInternal->UserRequestMask != 0) {
+				// NO -> FULL
+				ComM_Internal_NoCom_to_FullComRequested(ChannelInternal);
+				return ComM_Internal_PropagateComMode(ChannelConf);
+			} else {
+				// Stay in NO
+			}
 		}
 	}
 	return E_OK;
@@ -412,19 +468,33 @@ inline Std_ReturnType ComM_Internal_UpdateFromNoCom(const ComM_ChannelType* Chan
 
 inline Std_ReturnType ComM_Internal_UpdateFromSilentCom(const ComM_ChannelType* ChannelConf,
 					ComM_Internal_ChannelType* ChannelInternal,	boolean isRequest) {
-	if ((ChannelInternal->InhibitionStatus & COMM_INHIBITION_STATUS_NO_COMMUNICATION) ||
-		(ComM_Internal.NoCommunication == TRUE)) {
-		// Stay in SILENT
-		if (isRequest) ComM_Internal.InhibitCounter++;
+	if (ChannelInternal->NmIndicationMask & COMM_NM_INDICATION_RESTART) {
+		// SILENT -> FULL/READY_SLEEP
+		ChannelInternal->LightTimeoutTimeLeft = ChannelConf->LightTimeout;
+		ChannelInternal->Mode = COMM_FULL_COMMUNICATION;
+		ChannelInternal->SubMode = COMM_SUBMODE_READY_SLEEP;
+		ChannelInternal->NmIndicationMask &= ~(COMM_NM_INDICATION_RESTART);
+		return ComM_Internal_PropagateComMode(ChannelConf);
+	} else if (ChannelInternal->NmIndicationMask & COMM_NM_INDICATION_BUS_SLEEP) {
+		// SILENT -> NO
+		ChannelInternal->Mode = COMM_NO_COMMUNICATION;
+		ChannelInternal->NmIndicationMask &= ~(COMM_NM_INDICATION_BUS_SLEEP);
+		return ComM_Internal_PropagateComMode(ChannelConf);
 	} else {
-		if (ChannelInternal->UserRequestMask != 0) {
-			// SILENT -> FULL/NETWORK_REQUESTED
-			ChannelInternal->FullComMinDurationTimeLeft = COMM_T_MIN_FULL_COM_MODE_DURATION;
-			ChannelInternal->Mode = COMM_FULL_COMMUNICATION;
-			ChannelInternal->SubMode = COMM_SUBMODE_NETWORK_REQUESTED;
-			return ComM_Internal_PropagateComMode(ChannelConf);
-		} else {
+		if ((ChannelInternal->InhibitionStatus & COMM_INHIBITION_STATUS_NO_COMMUNICATION) ||
+			(ComM_Internal.NoCommunication == TRUE)) {
 			// Stay in SILENT
+			if (isRequest) ComM_Internal.InhibitCounter++;
+		} else {
+			if (ChannelInternal->UserRequestMask != 0) {
+				// SILENT -> FULL/NETWORK_REQUESTED
+				ChannelInternal->FullComMinDurationTimeLeft = COMM_T_MIN_FULL_COM_MODE_DURATION;
+				ChannelInternal->Mode = COMM_FULL_COMMUNICATION;
+				ChannelInternal->SubMode = COMM_SUBMODE_NETWORK_REQUESTED;
+				return ComM_Internal_PropagateComMode(ChannelConf);
+			} else {
+				// Stay in SILENT
+			}
 		}
 	}
 	return E_OK;
@@ -432,24 +502,37 @@ inline Std_ReturnType ComM_Internal_UpdateFromSilentCom(const ComM_ChannelType* 
 
 inline Std_ReturnType ComM_Internal_UpdateFromFullCom(const ComM_ChannelType* ChannelConf,
 					ComM_Internal_ChannelType* ChannelInternal, boolean isRequest) {
-	if ((ChannelInternal->InhibitionStatus & COMM_INHIBITION_STATUS_NO_COMMUNICATION) ||
-		(ComM_Internal.NoCommunication == TRUE)) {
-		if (ChannelInternal->FullComMinDurationTimeLeft == 0) {
-			// FULL/* -> FULL/READY_SLEEP
-			ChannelInternal->SubMode = COMM_SUBMODE_READY_SLEEP;
-		}
-		if (isRequest) ComM_Internal.InhibitCounter++;
+	if (ChannelInternal->NmIndicationMask & COMM_NM_INDICATION_BUS_SLEEP) {
+		// FULL/* -> NO
+		ChannelInternal->Mode = COMM_NO_COMMUNICATION;
+		ChannelInternal->NmIndicationMask &= ~(COMM_NM_INDICATION_BUS_SLEEP);
+		return ComM_Internal_PropagateComMode(ChannelConf);
+	} else if ((ChannelInternal->NmIndicationMask & COMM_NM_INDICATION_PREPARE_BUS_SLEEP) &&
+				(ChannelInternal->SubMode == COMM_SUBMODE_READY_SLEEP)) {
+		// FULL/READY_SLEEP -> SILENT
+		ChannelInternal->Mode = COMM_SILENT_COMMUNICATION;
+		ChannelInternal->NmIndicationMask &= ~(COMM_NM_INDICATION_PREPARE_BUS_SLEEP);
+		return ComM_Internal_PropagateComMode(ChannelConf);
 	} else {
-		if (ChannelInternal->UserRequestMask == 0) {
+		if ((ChannelInternal->InhibitionStatus & COMM_INHIBITION_STATUS_NO_COMMUNICATION) ||
+			(ComM_Internal.NoCommunication == TRUE)) {
 			if (ChannelInternal->FullComMinDurationTimeLeft == 0) {
 				// FULL/* -> FULL/READY_SLEEP
-				ChannelInternal->LightTimeoutTimeLeft = ChannelConf->LightTimeout;
 				ChannelInternal->SubMode = COMM_SUBMODE_READY_SLEEP;
 			}
+			if (isRequest) ComM_Internal.InhibitCounter++;
 		} else {
-			// FULL/* -> FULL/NETWORK_REQUESTED
-			ChannelInternal->FullComMinDurationTimeLeft = COMM_T_MIN_FULL_COM_MODE_DURATION;
-			ChannelInternal->SubMode = COMM_SUBMODE_NETWORK_REQUESTED;
+			if (ChannelInternal->UserRequestMask == 0) {
+				if (ChannelInternal->FullComMinDurationTimeLeft == 0) {
+					// FULL/* -> FULL/READY_SLEEP
+					ChannelInternal->LightTimeoutTimeLeft = ChannelConf->LightTimeout;
+					ChannelInternal->SubMode = COMM_SUBMODE_READY_SLEEP;
+				}
+			} else {
+				// FULL/* -> FULL/NETWORK_REQUESTED
+				ChannelInternal->FullComMinDurationTimeLeft = COMM_T_MIN_FULL_COM_MODE_DURATION;
+				ChannelInternal->SubMode = COMM_SUBMODE_NETWORK_REQUESTED;
+			}
 		}
 	}
 	return E_OK;

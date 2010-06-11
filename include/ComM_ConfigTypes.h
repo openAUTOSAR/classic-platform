@@ -24,9 +24,18 @@ typedef enum {
 	COMM_BUS_TYPE_LIN,
 } ComM_BusTypeType;
 
+typedef enum {
+	COMM_NM_VARIANT_NONE,
+	COMM_NM_VARIANT_LIGHT,
+	COMM_NM_VARIANT_PASSIVE,
+	COMM_NM_VARIANT_FULL,
+} ComM_NmVariantType;
+
 typedef struct {
 	const ComM_BusTypeType			BusType;
 	const NetworkHandleType			BusSMNetworkHandle;
+	const NetworkHandleType			NmChannelHandle;
+	const ComM_NmVariantType		NmVariant;
 	const uint32					MainFunctionPeriod;
 	const uint32					LightTimeout;
 	const uint8						Number;
