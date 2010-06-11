@@ -180,6 +180,10 @@ static uint32_t GetPllValueFromMult(uint8_t pll)
 {
 	return (((uint32_t)pll - 2) << 18);
 }
+static uint32_t GetPll2ValueFromMult(uint8_t pll)
+{
+	return (((uint32_t)pll - 2) << 8);
+}
 
 /**
   * Set bus clocks. SysClk,AHBClk,APB1Clk,APB2Clk
@@ -234,7 +238,7 @@ static void SetClocks(Mcu_ClockSettingConfigType *clockSettingsPtr)
 
     RCC->CFGR2 &= (uint32_t)~(RCC_CFGR2_PREDIV2 | RCC_CFGR2_PLL2MUL |
                               RCC_CFGR2_PREDIV1 | RCC_CFGR2_PREDIV1SRC);
-    RCC->CFGR2 |= (uint32_t)(RCC_CFGR2_PREDIV2_DIV5 | GetPllValueFromMult(clockSettingsPtr->Pll2) |
+    RCC->CFGR2 |= (uint32_t)(RCC_CFGR2_PREDIV2_DIV5 | GetPll2ValueFromMult(clockSettingsPtr->Pll2) |
                              RCC_CFGR2_PREDIV1SRC_PLL2 | RCC_CFGR2_PREDIV1_DIV5);
 
     /* Enable PLL2 */

@@ -17,7 +17,10 @@
 
 const Dio_ChannelType DioChannelConfigData[] =
 {
-	LED_CHANNEL,
+	LED_CHANNEL1,
+	LED_CHANNEL2,
+	LED_CHANNEL3,
+	LED_CHANNEL4,
 	DIO_END_OF_LIST,
 };
 
@@ -29,7 +32,7 @@ const Dio_PortType DioPortConfigData[] =
 
 const Dio_ChannelGroupType DioConfigData[] =
 {
-  { .port = DIO_PORT_B, .offset = 7, .mask = 0x80, },
+  { .port = DIO_PORT_D, .offset = 0, .mask = 0x1094, },
   { .port = DIO_END_OF_LIST, .offset = DIO_END_OF_LIST, .mask = DIO_END_OF_LIST, },
 };
 

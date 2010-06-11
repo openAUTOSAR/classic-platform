@@ -161,9 +161,12 @@ typedef uint16 Dio_LevelType;
 /** @req DIO024 */
 typedef uint16 Dio_PortLevelType;
 
-#define LED_CHANNEL (DIO_CHANNEL_B13)
+#define LED_CHANNEL1 (DIO_CHANNEL_D3)
+#define LED_CHANNEL2 (DIO_CHANNEL_D4)
+#define LED_CHANNEL3 (DIO_CHANNEL_D7)
+#define LED_CHANNEL4 (DIO_CHANNEL_D13)
 
-#define LED_PORT 		(DIO_PORT_B)
+#define LED_PORT 		(DIO_PORT_D)
 
 #define LED_GROUP			(&DioConfigData[0])
 
