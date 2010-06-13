@@ -95,4 +95,8 @@ static Std_ReturnType ComM_Internal_PropagateComMode( const ComM_ChannelType* Ch
 static Std_ReturnType ComM_Internal_PropagateGetCurrentComMode(
 		ComM_UserHandleType User, ComM_ModeType* ComMode );
 
+/* Tick 'Min full com duration' timeout, and update state if needed */
+static inline void ComM_Internal_TickFullComMinTime(const ComM_ChannelType* ChannelConf,
+		ComM_Internal_ChannelType* ChannelInternal);
+
 #endif /* COMM_INTERNAL_H_ */

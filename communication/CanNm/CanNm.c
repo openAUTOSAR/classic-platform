@@ -279,6 +279,7 @@ Nm_ReturnType CanNm_CheckRemoteSleepIndication( const NetworkHandleType nmChanne
   * This callback service is called by the CanIf and implemented by the CanNm. */
 void CanNm_TxConfirmation( PduIdType canNmTxPduId ){
 	CANNM_VALIDATE_INIT(CANNM_SERVICEID_TXCONFIRMATION);
+	CANNM_VALIDATE_CHANNEL(canNmTxPduId, CANNM_SERVICEID_TXCONFIRMATION);
 
 	CanNm_ChannelType* ChannelConf = &CanNm_ConfigPtr->Channels[canNmTxPduId];
 	CanNm_Internal_ChannelType* ChannelInternal = &CanNm_Internal.Channels[canNmTxPduId];
@@ -293,13 +294,13 @@ void CanNm_TxConfirmation( PduIdType canNmTxPduId ){
   * This callback service is called by the CAN Interface and implemented by the CanNm. */
 void CanNm_RxIndication( PduIdType canNmRxPduId, const uint8 *canSduPtr ){
 	CANNM_VALIDATE_INIT(CANNM_SERVICEID_RXINDICATION);
+	CANNM_VALIDATE_CHANNEL(canNmRxPduId, CANNM_SERVICEID_RXINDICATION);
 
 	CanNm_ChannelType* ChannelConf = &CanNm_ConfigPtr->Channels[canNmRxPduId];
 	CanNm_Internal_ChannelType* ChannelInternal = &CanNm_Internal.Channels[canNmRxPduId];
 
 	memcpy(ChannelInternal->RxMessageSdu, canSduPtr, ChannelConf->PduLength);
 
-	// TODO: check sdu data
 	boolean repeatMessageBitIndication = FALSE;
 	if (ChannelConf->CbvPosition != CANNM_PDU_OFF) {
 		uint8 cbv = ChannelInternal->RxMessageSdu[ChannelConf->CbvPosition];

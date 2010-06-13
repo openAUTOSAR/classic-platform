@@ -332,6 +332,17 @@ void ComM_MainFunction(NetworkHandleType Channel) {
 	const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
 	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
 
+	if ((ChannelConf->NmVariant == COMM_NM_VARIANT_NONE) ||
+		(ChannelConf->NmVariant == COMM_NM_VARIANT_LIGHT)) {
+		ComM_Internal_TickFullComMinTime(ChannelConf, ChannelInternal);
+	}
+}
+
+// ----------------------------------------------------------------------------
+// Internal functions
+// ----------------------------------------------------------------------------
+
+static inline void ComM_Internal_TickFullComMinTime(const ComM_ChannelType* ChannelConf, ComM_Internal_ChannelType* ChannelInternal) {
 	if (ChannelInternal->Mode == COMM_FULL_COMMUNICATION) {
 		if (ChannelConf->MainFunctionPeriod >= ChannelInternal->FullComMinDurationTimeLeft) {
 			ChannelInternal->FullComMinDurationTimeLeft = 0;
@@ -341,11 +352,6 @@ void ComM_MainFunction(NetworkHandleType Channel) {
 		}
 	}
 }
-
-// ----------------------------------------------------------------------------
-// Internal functions
-// ----------------------------------------------------------------------------
-
 
 static Std_ReturnType ComM_Internal_PropagateGetCurrentComMode( ComM_UserHandleType User, ComM_ModeType* ComMode ){
 	const ComM_UserType* UserConfig = &ComM_Config->Users[User];
@@ -518,6 +524,7 @@ inline Std_ReturnType ComM_Internal_UpdateFromFullCom(const ComM_ChannelType* Ch
 			(ComM_Internal.NoCommunication == TRUE)) {
 			if (ChannelInternal->FullComMinDurationTimeLeft == 0) {
 				// FULL/* -> FULL/READY_SLEEP
+				ChannelInternal->LightTimeoutTimeLeft = ChannelConf->LightTimeout;
 				ChannelInternal->SubMode = COMM_SUBMODE_READY_SLEEP;
 			}
 			if (isRequest) ComM_Internal.InhibitCounter++;
