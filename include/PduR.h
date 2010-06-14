@@ -23,26 +23,38 @@
 #ifndef _PDUR_H_
 #define _PDUR_H_
 
-#define PDUR_VENDOR_ID			    1
+#define PDUR_VENDOR_ID			1
 #define PDUR_AR_MAJOR_VERSION  2
-#define PDUR_AR_MINOR_VERSION 	2
-#define PDUR_AR_PATCH_VERSION	2
-#define PDUR_SW_MAJOR_VERSION  3
-#define PDUR_SW_MINOR_VERSION 	0
-#define PDUR_SW_PATCH_VERSION	2
+#define PDUR_AR_MINOR_VERSION  2
+#define PDUR_AR_PATCH_VERSION  2
+#define PDUR_SW_MAJOR_VERSION  1
+#define PDUR_SW_MINOR_VERSION  0
+#define PDUR_SW_PATCH_VERSION  0
 
-#include "debug.h"
+
+
+// ERROR CODES
+#define PDUR_E_CONFIG_PTR_INVALID 	0x06
+#define PDUR_E_INVALID_REQUEST 		0x01
+#define PDUR_E_PDU_ID_INVALID		0x02
+#define PDUR_E_TP_TX_REQ_REJECTED	0x03
+#define PDUR_E_DATA_PTR_INVALID		0x05
+
+#define PDUR_INSTANCE_ID	0
+
+#include "modules.h"
 
 #include "PduR_Cfg.h"
 #include "PduR_Types.h"
-
-#ifndef PDUR_ZERO_COST_OPERATION
 #include "PduR_PbCfg.h"
-#endif
 
 #include "PduR_Com.h"
 #include "PduR_CanIf.h"
 #include "PduR_LinIf.h"
+#include "PduR_CanTp.h"
+#include "PduR_Dcm.h"
+
+
 
 /* Contain the current state of the PDU router. The router is uninitialized
  * until PduR_Init has been run.
@@ -52,46 +64,7 @@ PduR_StateType PduRState;
 extern const PduR_PBConfigType *PduRConfig;
 
 
-#ifdef PDUR_PRINT_DEBUG_STATEMENTS
-/* A simple debug macro to be used instead of printf(). This way all print
- * statements are turned off if PDUR_PRINT_DEBUG_STATEMENTS is undefined.
- */
-//#include <stdio.h>
-#define debug(...) printf(__VA_ARGS__)
-
-#else
-#define debug(...)
-
-#endif
-
-#ifdef PDUR_REENTRANCY_CHECK
-/*
- * The macros Enter and Exit performs the ReEntrancy check of the PDU router functions.
- * Enter shall be called at the beginning of the function with the current PduId and the wanted
- * return value (possibly nothing for void methods).
- * Exit should be called at the end of the function where reentrancy is desirable.
- */
-#define Enter(PduId,...) \
-	static uint8 entered;\
-	static PduIdType enteredId;\
-	if (entered && enteredId == PduId) { \
-		debug("Function already entered. EnteredId: %d, CurrentId: %d. Exiting.\n", enteredId, PduId); \
-		return __VA_ARGS__; \
-	} else { \
-		entered = 1; \
-		enteredId = PduId; \
-	} \
-
-
-#define Exit() \
-	entered = 0; \
-
-#else
-#define Enter(...)
-#define Exit()
-#endif
-
-#ifdef PDUR_DEV_ERROR_DETECT
+#if (PDUR_DEV_ERROR_DETECT == STD_ON)
 
 #undef DET_REPORTERROR
 #define DET_REPORTERROR(_x,_y,_z,_q) Det_ReportError(_x,_y,_z,_q)
@@ -100,19 +73,16 @@ extern const PduR_PBConfigType *PduRConfig;
 // TODO Implement data range check if needed.
 #define DevCheck(PduId,PduPtr,ApiId,...) \
 	if (PduRState == PDUR_UNINIT || PduRState == PDUR_REDUCED) { \
-		DET_REPORTERROR(PDUR_MODULE_ID, PDUR_INSTANCE_ID, ApiId, PDUR_E_INVALID_REQUEST); \
+		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_INVALID_REQUEST); \
 		DEBUG(DEBUG_LOW,"PDU Router not initialized. Routing request ignored.\n"); \
-		Exit(); \
 		return __VA_ARGS__; \
 	} \
 	if (PduPtr == 0 && PDUR_DEV_ERROR_DETECT) { \
-		DET_REPORTERROR(PDUR_MODULE_ID, PDUR_INSTANCE_ID, ApiId, PDUR_E_DATA_PTR_INVALID); \
-		Exit(); \
+		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_DATA_PTR_INVALID); \
 		return __VA_ARGS__; \
 	} \
 	if ((PduId >= PduRConfig->PduRRoutingTable->NRoutingPaths) && PDUR_DEV_ERROR_DETECT) { \
-		DET_REPORTERROR(PDUR_MODULE_ID, PDUR_INSTANCE_ID, ApiId, PDUR_E_PDU_ID_INVALID); \
-		Exit(); \
+		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_PDU_ID_INVALID); \
 		return __VA_ARGS__; \
 	} \
 
@@ -132,12 +102,13 @@ void PduR_ChangeParameterRequest(PduR_ParameterValueType PduParameterValue,
 /* Zero Cost Operation function definitions
  * These macros replaces the original functions if zero cost
  * operation is desired. */
-#ifdef PDUR_ZERO_COST_OPERATION
+#if PDUR_ZERO_COST_OPERATION == STD_ON
 #define PduR_Init(...)
 #define PduR_GetVersionInfo(...)
 #define PduR_GetConfigurationId(...) 0
 
 #else // Not zero cost operation
+//#error fail
 void PduR_Init(const PduR_PBConfigType* ConfigPtr);
 void PduR_GetVersionInfo(Std_VersionInfoType* versionInfo);
 uint32 PduR_GetConfigurationId();

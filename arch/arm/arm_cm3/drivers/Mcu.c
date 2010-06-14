@@ -153,8 +153,6 @@ static core_info_t *Mcu_IdentifyCore(uint32 pvr)
   return NULL;
 }
 
-
-
 /**
  * Identify the core, just to check that we have support for it.
  *
@@ -162,7 +160,7 @@ static core_info_t *Mcu_IdentifyCore(uint32 pvr)
  */
 static uint32 Mcu_CheckCpu( void ) {
 
-  uint32 pvr;
+  uint32 pvr = SCB->CPUID;
   //uint32 pir;
   //cpu_info_t *cpuType;
   core_info_t *coreType;
@@ -181,6 +179,10 @@ static uint32 Mcu_CheckCpu( void ) {
 static uint32_t GetPllValueFromMult(uint8_t pll)
 {
 	return (((uint32_t)pll - 2) << 18);
+}
+static uint32_t GetPll2ValueFromMult(uint8_t pll)
+{
+	return (((uint32_t)pll - 2) << 8);
 }
 
 /**
@@ -236,7 +238,7 @@ static void SetClocks(Mcu_ClockSettingConfigType *clockSettingsPtr)
 
     RCC->CFGR2 &= (uint32_t)~(RCC_CFGR2_PREDIV2 | RCC_CFGR2_PLL2MUL |
                               RCC_CFGR2_PREDIV1 | RCC_CFGR2_PREDIV1SRC);
-    RCC->CFGR2 |= (uint32_t)(RCC_CFGR2_PREDIV2_DIV5 | GetPllValueFromMult(clockSettingsPtr->Pll2) |
+    RCC->CFGR2 |= (uint32_t)(RCC_CFGR2_PREDIV2_DIV5 | GetPll2ValueFromMult(clockSettingsPtr->Pll2) |
                              RCC_CFGR2_PREDIV1SRC_PLL2 | RCC_CFGR2_PREDIV1_DIV5);
 
     /* Enable PLL2 */
@@ -278,6 +280,16 @@ static void SetClocks(Mcu_ClockSettingConfigType *clockSettingsPtr)
   { /* HSE fails to start-up, the application will have wrong clock */
 	  NVIC_SystemReset();
   }
+}
+
+/**
+  * Initialize Peripherals clocks
+  */
+static void InitPerClocks()
+{
+	RCC->AHBENR |= McuPerClockConfigData.AHBClocksEnable;
+	RCC->APB1ENR |= McuPerClockConfigData.APB1ClocksEnable;
+	RCC->APB2ENR |= McuPerClockConfigData.APB2ClocksEnable;
 }
 
 /**
@@ -330,9 +342,9 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
 {
   VALIDATE( ( NULL != configPtr ), MCU_INIT_SERVICE_ID, MCU_E_PARAM_CONFIG );
 
-  if( !SIMULATOR() ) {
-	  Mcu_CheckCpu();
-  }
+#if !defined(USE_SIMULATOR)
+  Mcu_CheckCpu();
+#endif
 
   memset(&Mcu_Global.stats,0,sizeof(Mcu_Global.stats));
 
@@ -374,6 +386,8 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
 
   InitMcuClocks(clockSettingsPtr);
 
+  InitPerClocks(clockSettingsPtr);
+
   return E_OK;
 }
 
@@ -395,17 +409,16 @@ Mcu_PllStatusType Mcu_GetPllStatus(void) {
 	VALIDATE_W_RV( ( 1 == Mcu_Global.initRun ), MCU_GETPLLSTATUS_SERVICE_ID, MCU_E_UNINIT, MCU_PLL_STATUS_UNDEFINED );
 	Mcu_PllStatusType rv;
 
-	if (!SIMULATOR()) {
-		if (RCC->CR & RCC_CR_PLLRDY) {
-			rv = MCU_PLL_LOCKED;
-		} else {
-			rv = MCU_PLL_UNLOCKED;
-		}
-	} else {
-		/* We are running on instruction set simulator. PLL is then always in sync... */
+#if !defined(USE_SIMULATOR)
+	if (RCC->CR & RCC_CR_PLLRDY) {
 		rv = MCU_PLL_LOCKED;
+	} else {
+		rv = MCU_PLL_UNLOCKED;
 	}
-
+#else
+	/* We are running on instruction set simulator. PLL is then always in sync... */
+	rv = MCU_PLL_LOCKED;
+#endif
 	return rv;
 }
 
@@ -514,19 +527,14 @@ uint32_t McuE_GetSystemClock(void)
 
 imask_t McuE_EnterCriticalSection()
 {
-#if 0
-  uint32_t msr = get_msr();
-  Irq_Disable();
-  return msr;
-#endif
-  return 0;
+	uint32_t val;
+	Irq_Save(val);
+	return val;
 }
 
 void McuE_ExitCriticalSection(uint32_t old_state)
 {
-#if 0
-  set_msr(old_state);
-#endif
+	Irq_Restore(old_state);
 }
 
 /**

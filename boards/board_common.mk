@@ -29,7 +29,7 @@ obj-$(CFG_MPC55XX)-$(USE_MCU) += Mcu_Exceptions.o
 # Flash
 obj-$(USE_FLS) += Fls.o
 obj-$(USE_FLS) += Fls_Cfg.o
-obj-$(USE_FLS) += Fls_H7F.o
+obj-$(CFG_MPC55XX)-$(USE_FLS) += Fls_H7F.o
 
 # Bring in the freescale driver source  
 inc-$(CFG_MPC55XX) +=  $(ROOTDIR)/$(ARCH_PATH-y)/delivery/mpc5500_h7f/include
@@ -43,6 +43,13 @@ obj-$(USE_CANIF) += CanIf.o
 obj-$(USE_CANIF) += CanIf_Cfg.o
 vpath-$(USE_CANIF) += $(ROOTDIR)/communication/CanIf
 inc-$(USE_CANIF) += $(ROOTDIR)/communication/CanIf
+
+# CanTp
+obj-$(USE_CANTP) += CanTp.o
+obj-$(USE_CANTP) += CanTp_Cfg.o
+
+vpath-$(USE_CANTP) += $(ROOTDIR)/communication/CanTp
+inc-$(USE_CANTP) += $(ROOTDIR)/communication/CanTp
 
 obj-$(USE_DIO) += Dio.o
 obj-$(USE_DIO) += Dio_Lcfg.o
@@ -127,6 +134,8 @@ obj-$(USE_PDUR) += PduR_If.o
 obj-$(USE_PDUR) += PduR_LinIf.o
 obj-$(USE_PDUR) += PduR_PbCfg.o
 obj-$(USE_PDUR) += PduR_CanIf.o
+obj-$(USE_PDUR) += PduR_CanTp.o
+obj-$(USE_PDUR) += PduR_Dcm.o
 obj-$(USE_PDUR) += PduR.o
 inc-$(USE_PDUR) += $(ROOTDIR)/communication/PduR
 inc-$(USE_COM) += $(ROOTDIR)/communication/PduR
@@ -141,12 +150,29 @@ obj-$(USE_DEM) += Dem_LCfg.o
 inc-$(USE_DEM) += $(ROOTDIR)/diagnostic/Dem
 vpath-$(USE_DEM) += $(ROOTDIR)/diagnostic/Dem
 
+#Dcm
+obj-$(USE_DCM) += Dcm.o
+obj-$(USE_DCM) += Dcm_Dsp.o
+obj-$(USE_DCM) += Dcm_Dsd.o
+obj-$(USE_DCM) += Dcm_Dsl.o
+obj-$(USE_DCM) += Dcm_LCfg.o
+inc-$(USE_DCM) += $(ROOTDIR)/diagnostic/Dcm
+vpath-$(USE_DCM) += $(ROOTDIR)/diagnostic/Dcm
+
+
 # Common
 obj-$(USE_COMMON) += xtoa.o
 obj-$(USE_COMMON) += arc.o
 #obj-y += malloc.o
 obj-$(USE_RAMLOG) += ramlog.o
-obj-$(USE_SIMPLE_PRINTF) += printf.o
+
+# If we have configured console output we include printf. 
+# Overridden to use lib implementation with CFG_USE_NEWLIB_PRINTF
+ifndef (CFG_USE_NEWLIB_PRINTF)
+ifneq (,$(SELECT_CONSOLE) $(SELECT_OS_CONSOLE))
+obj-y += printf.o
+endif
+endif
 
 VPATH += $(ROOTDIR)/common
 
@@ -159,6 +185,7 @@ vpath-y += $(ROOTDIR)/boards/$(BOARDDIR)
 vpath-y += $(ROOTDIR)/arch/$(ARCH_FAM)
 vpath-y += $(ROOTDIR)/boards/$(BOARDDIR)/config
 vpath-y += $(ROOTDIR)/diagnostic/Dem
+vpath-y += $(ROOTDIR)/diagnostic/Dcm
 vpath-y += $(ROOTDIR)/diagnostic/Det
 
 # include files need by us
@@ -169,6 +196,7 @@ inc-y += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
 inc-y += $(ROOTDIR)/$(ARCH_PATH-y)/drivers
 inc-y += $(ROOTDIR)/boards/$(BOARDDIR)/config
 inc-y += $(ROOTDIR)/drivers/Dem
+inc-y += $(ROOTDIR)/drivers/Dcm
 inc-y += $(ROOTDIR)/drivers/test
 
 

@@ -32,6 +32,17 @@ Mcu_RamSectorSettingConfigType Mcu_RamSectorSettingConfigData[] = {
   }
 };
 
+
+const Mcu_PerClockConfigType McuPerClockConfigData =
+{
+	.AHBClocksEnable = RCC_AHBPeriph_DMA1 | RCC_AHBPeriph_ETH_MAC |
+					   RCC_AHBPeriph_ETH_MAC_Tx | RCC_AHBPeriph_ETH_MAC_Rx,
+	.APB1ClocksEnable = RCC_APB1Periph_TIM2 | RCC_APB1Periph_CAN1,
+	.APB2ClocksEnable = (RCC_APB2Periph_ADC1 | RCC_APB2Periph_GPIOA |
+						 RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOC |
+						 RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOE | RCC_APB2Periph_AFIO),
+};
+
 Mcu_ClockSettingConfigType Mcu_ClockSettingConfigData[] =
 {
   {
@@ -63,7 +74,7 @@ Mcu_ClockSettingConfigType Mcu_ClockSettingConfigData[] =
   .McuClockSettings = MCU_NBR_OF_CLOCKS,
 
   // Default clock frequency used
-  .McuDefaultClockSettings = MCU_CLOCKTYPE_EXT_REF_80MHZ,
+  .McuDefaultClockSettings = MCU_CLOCKTYPE_EXT_REF_25MHZ,
 
   //  This parameter relates to the MCU specific reset configuration. This ap-
   //  plies to the function Mcu_PerformReset, which performs a microcontroller

@@ -20,11 +20,15 @@
 
 
 
-#include <string.h>
-#include "PduR_If.h"
-#include "debug.h"
+#include "PduR.h"
 
-#ifndef PDUR_ZERO_COST_OPERATION
+#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
+
+#include <string.h>
+#include "debug.h"
+#if defined(USE_DEM)
+#include "Dem.h"
+#endif
 
 /**
  * Helper function for the PduR_<LO>IfRxIndication functions. This helper performs the actions specified by PDUR255 and PDUR258.
@@ -39,7 +43,7 @@ void PduR_LoIfRxIndication(PduIdType PduId, const uint8* SduPtr) {
 
 	if (route->PduR_GatewayMode == 0) {
 		// This is an ordinary request.
-		route->FctPtrs->TargetIndicationFctPtr(route->PduRDestPdu.DestPduId, SduPtr); // Send PDU to next receptor.
+		route->FctPtrs.TargetIndicationFctPtr(route->PduRDestPdu.DestPduId, SduPtr); // Send PDU to next receptor.
 
 
 	} else if (route->PduR_GatewayMode == 1 && route->PduRDestPdu.DataProvision == PDUR_NO_PROVISION) {
@@ -48,7 +52,7 @@ void PduR_LoIfRxIndication(PduIdType PduId, const uint8* SduPtr) {
 			.SduDataPtr = (uint8 *)SduPtr,
 			.SduLength = route->SduLength
 		};
-		route->FctPtrs->TargetTransmitFctPtr(route->PduRDestPdu.DestPduId, &PduInfo); // Send PDU to next receptor.
+		route->FctPtrs.TargetTransmitFctPtr(route->PduRDestPdu.DestPduId, &PduInfo); // Send PDU to next receptor.
 
 
 	} else if (route->PduR_GatewayMode == 1 && route->PduRDestPdu.DataProvision == PDUR_TRIGGER_TRANSMIT) {
@@ -69,7 +73,7 @@ void PduR_LoIfRxIndication(PduIdType PduId, const uint8* SduPtr) {
 			};
 			PduR_BufferDeQueue(route->PduRDestPdu.TxBufferRef, val);
 			PduR_BufferQueue(route->PduRDestPdu.TxBufferRef, SduPtr);
-			if (route->FctPtrs->TargetTransmitFctPtr(route->PduRDestPdu.DestPduId, &PduInfo) == E_OK) {
+			if (route->FctPtrs.TargetTransmitFctPtr(route->PduRDestPdu.DestPduId, &PduInfo) == E_OK) {
 				setTxConfP(route);
 			}
 		}
@@ -94,7 +98,7 @@ void PduR_LoIfRxIndication(PduIdType PduId, const uint8* SduPtr) {
 					.SduDataPtr = (uint8 *)SduPtr,
 					.SduLength = route->SduLength
 			};
-			if (route->FctPtrs->TargetTransmitFctPtr(route->PduRDestPdu.DestPduId, &PduInfoPtr) == E_OK) {
+			if (route->FctPtrs.TargetTransmitFctPtr(route->PduRDestPdu.DestPduId, &PduInfoPtr) == E_OK) {
 				setTxConfP(route);
 
 
@@ -119,11 +123,11 @@ void PduR_LoIfTxConfirmation(PduIdType PduId) {
 
 	if (route->PduR_GatewayMode == 0) {
 		// This is an ordinary request.
-		route->FctPtrs->TargetConfirmationFctPtr(route->PduRDestPdu.DestPduId); // Forward confirmation
+		route->FctPtrs.TargetConfirmationFctPtr(route->PduRDestPdu.DestPduId); // Forward confirmation
 
 	} else if (route->PduR_GatewayMode == 1 && route->PduRDestPdu.DataProvision == PDUR_NO_PROVISION) {
 		// A gateway request without provision. Just forward confirmation.
-		route->FctPtrs->TargetConfirmationFctPtr(route->PduRDestPdu.DestPduId); // Forward confirmation
+		route->FctPtrs.TargetConfirmationFctPtr(route->PduRDestPdu.DestPduId); // Forward confirmation
 
 
 	} else if (route->PduR_GatewayMode == 1 && route->PduRDestPdu.DataProvision == PDUR_TRIGGER_TRANSMIT) {
@@ -157,7 +161,7 @@ void PduR_LoIfTxConfirmation(PduIdType PduId) {
 						.SduLength = route->SduLength
 					};
 					// Transmit this item.
-					if (route->FctPtrs->TargetTransmitFctPtr(route->PduRDestPdu.DestPduId, &PduInfo) == E_OK) {
+					if (route->FctPtrs.TargetTransmitFctPtr(route->PduRDestPdu.DestPduId, &PduInfo) == E_OK) {
 						DEBUG(DEBUG_LOW,"\tTransmit succeeded.\n");
 						break;
 
@@ -201,7 +205,7 @@ void PduR_LoIfTxConfirmation(PduIdType PduId) {
 						.SduLength = route->SduLength
 					};
 					// Transmit this item.
-					if (route->FctPtrs->TargetTransmitFctPtr(route->PduRDestPdu.DestPduId, &PduInfo) == E_OK) {
+					if (route->FctPtrs.TargetTransmitFctPtr(route->PduRDestPdu.DestPduId, &PduInfo) == E_OK) {
 						DEBUG(DEBUG_LOW,"\tTransmit succeeded.\n");
 						break;
 
@@ -222,7 +226,7 @@ void PduR_LoIfTriggerTransmit(PduIdType PduId, uint8* SduPtr) {
 	// Find out if this is a gateway or ordinary trigger.
 	//if (route->PduRDestPdu.DataProvision == PDUR_NO_PROVISION) { // This is an ordinary trigger.
 	if (route->PduR_GatewayMode == 0) { // This is an ordinary trigger.
-		route->FctPtrs->TargetTriggerTransmitFctPtr(route->PduRDestPdu.DestPduId, SduPtr);
+		route->FctPtrs.TargetTriggerTransmitFctPtr(route->PduRDestPdu.DestPduId, SduPtr);
 
 	} else if (route->PduR_GatewayMode == 1 && route->PduRDestPdu.DataProvision == PDUR_TRIGGER_TRANSMIT) { // The route is using a trigger transmit fifo. PDUR256
 		DEBUG(DEBUG_LOW,"\tUsing gateway mode with trigger transmit data provision.\n", PduId);

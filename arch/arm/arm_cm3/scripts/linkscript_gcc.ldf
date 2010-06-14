@@ -16,8 +16,8 @@ ENTRY(Reset_Handler)
 
 MEMORY
 {
-    flash(R) : ORIGIN = 0x08000000, LENGTH = 128K
-    ram(RW)  : ORIGIN = 0x20000000, LENGTH = 20K
+    flash(R) : ORIGIN = 0x08000000, LENGTH = 256K
+    ram(RW)  : ORIGIN = 0x20000000, LENGTH = 64K
 }
 
 SECTIONS
@@ -96,7 +96,7 @@ SECTIONS
     KEEP (*(SORT(.ctors.*)))
   }
 
-	.uninit ALIGN(0x10) (NOLOAD) : { *(.winidea_port .ramlog) ; } > ram
+	.uninit ALIGN(0x10) (NOLOAD) : { *(.winidea_port .ramlog .dem_eventmemory_pri) ; } > ram
 
 
 	__FLS_SIZE__ = SIZEOF(.fls_rom);
