@@ -95,17 +95,25 @@ void CanIf_PreInit_InitController(uint8 Controller, uint8 ConfigurationIndex);
 
 static CanIf_Arc_ChannelIdType CanIf_Arc_FindHrhChannel( Can_Arc_HRHType hrh )
 {
+  const CanIf_InitHohConfigType *hohConfig;
   const CanIf_HrhConfigType *hrhConfig;
 
-  hrhConfig = CanIf_ConfigPtr->InitConfig->CanIfHohConfigPtr->CanIfHrhConfig;
-
-  hrhConfig--;
+  // foreach(hoh){ foreach(hrh in hoh) {} }
+  hohConfig = CanIf_ConfigPtr->InitConfig->CanIfHohConfigPtr;
+  hohConfig--;
   do
   {
-    hrhConfig++;
-    if (hrhConfig->CanIfHrhIdSymRef == hrh)
-      return hrhConfig->CanIfCanControllerHrhIdRef;
-  } while(!hrhConfig->CanIf_Arc_EOL);
+    hohConfig++;
+
+    hrhConfig = hohConfig->CanIfHrhConfig;
+    hrhConfig--;
+    do
+    {
+      hrhConfig++;
+      if (hrhConfig->CanIfHrhIdSymRef == hrh)
+        return hrhConfig->CanIfCanControllerHrhIdRef;
+    } while(!hrhConfig->CanIf_Arc_EOL);
+  } while(!hohConfig->CanIf_Arc_EOL);
 
   DET_REPORTERROR(MODULE_ID_CANIF, 0, CANIF_RXINDICATION_ID, CANIF_E_PARAM_HRH);
 

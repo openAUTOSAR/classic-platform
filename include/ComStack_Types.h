@@ -75,8 +75,12 @@ typedef enum {
 // more
 typedef uint8 NotifResultType;
 
-#define NTFRSLT_OK			0
-#define NTFRSLT_NOT_OK		1
+#define NTFRSLT_OK				0x00
+#define NTFRSLT_E_NOT_OK		0x01
+#define NTFRSLT_E_WRONG_SN 		0x05
+#define NTFRSLT_E_NO_BUFFER 	0x09
+
+
 // TODO, more
 
 typedef uint8 BusTrcvErrorType;

@@ -17,7 +17,7 @@ MEMORY
   text (rx)  : ORIGIN = 0x4000, LENGTH = 48k
   
   /* high fixed bank, reserve 0x100 vectors and security. */
-  text_h (rx)  : ORIGIN = 0xc000, LENGTH = 16k-0x100
+  text_h (rx)  : ORIGIN = 0xc002, LENGTH = 16k-0x102
   vectors (rx)  : ORIGIN = 0xff80, LENGTH = 0x80
   
   /* Flash memory banks VMA:s */
@@ -29,7 +29,7 @@ MEMORY
   bank13 (rx)   : ORIGIN = 0x104000, LENGTH = 16k
   
   bank14 (rx)   : ORIGIN = 0x108000, LENGTH = 16k
-  bank15 (rx)   : ORIGIN = 0x10c000, LENGTH = 16k-0x100
+  bank15 (rx)   : ORIGIN = 0x10c002, LENGTH = 16k-0x102
   
   /* Flash memory banks LMA:s */
   /* iSystem winIDEA */
@@ -41,7 +41,7 @@ MEMORY
   bank13_lma (rx)   : ORIGIN = 0x104000, LENGTH = 16k
 
   bank14_lma (rx)   : ORIGIN = 0x108000, LENGTH = 16k
-  bank15_lma (rx)   : ORIGIN = 0x10c000, LENGTH = 16k-0x100
+  bank15_lma (rx)   : ORIGIN = 0x10c002, LENGTH = 16k-0x102
   vectors_lma (rx)  : ORIGIN = 0x10ff80, LENGTH = 0x80
   
   /* Freescale Codewarrior Hiwave (s19, TBDML)
@@ -53,7 +53,7 @@ MEMORY
   bank13_lma (rx)   : ORIGIN = 0x3d8000, LENGTH = 16k
 
   bank14_lma (rx)   : ORIGIN = 0x3e8000, LENGTH = 16k
-  bank15_lma (rx)   : ORIGIN = 0x3f8000, LENGTH = 16k-0x100
+  bank15_lma (rx)   : ORIGIN = 0x3f8002, LENGTH = 16k-0x102
   vectors_lma (rx)  : ORIGIN = 0x3fff80, LENGTH = 0x80
   */
 }
@@ -237,7 +237,7 @@ SECTIONS
 	*_subdi3.o(.text)
 	*_addsub_sf.o(.text)
 	*udivmod.o(.text)
-	*_negsi2.o(.text)
+	/* *_negsi2.o(.text) */
 	*_pack_sf.o(.text)
 	*_unpack_sf.o(.text)
 	*udivmodsi4.o(.text)
@@ -265,6 +265,13 @@ SECTIONS
   .bank11 :
   {
     *(.bank11)
+    *(.text.bank11*)
+
+    /* BANK11 MODULES */
+    Can*.o(.text)
+    Pdu*.o(.text)
+    Dio*.o(.text)
+
     . = ALIGN(2);
   } > bank11 AT>bank11_lma  =0xff
 
@@ -272,6 +279,12 @@ SECTIONS
   .bank12 :
   {
     *(.bank12)
+    *(.text.bank12*)
+
+    /* BANK12 MODULES */
+    Com*.o(.text)
+    Port*.o(.text)
+
     . = ALIGN(2);
   } > bank12 AT>bank12_lma  =0xff
 
@@ -279,6 +292,10 @@ SECTIONS
   .bank13 :
   {
     *(.bank13)
+   *(.text.bank13*)
+
+    /* BANK13 MODULES */
+    Adc*.o(.text)
     . = ALIGN(2);
   } > bank13 AT>bank13_lma  =0xff
   

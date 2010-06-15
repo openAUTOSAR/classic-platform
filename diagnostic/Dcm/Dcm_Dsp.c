@@ -258,7 +258,7 @@ Dcm_NegativeResponseCodeType DspUdsReadDtcInfoSub_0x01_0x07_0x11_0x12(const PduI
 		break;
 
 	case 0x12:	// reportNumberOfEmissionRelatedOBDDTCByStatusMask
-		setDtcFilterResult = Dem_SetDTCFilter(pduRxData->SduDataPtr[2], DEM_DTC_KIND_EMISSON_REL_DTCS, DEM_DTC_ORIGIN_PRIMARY_MEMORY, DEM_FILTER_WITH_SEVERITY_NO, VALUE_IS_NOT_USED, DEM_FILTER_FOR_FDC_NO);
+		setDtcFilterResult = Dem_SetDTCFilter(pduRxData->SduDataPtr[2], DEM_DTC_KIND_EMISSION_REL_DTCS, DEM_DTC_ORIGIN_PRIMARY_MEMORY, DEM_FILTER_WITH_SEVERITY_NO, VALUE_IS_NOT_USED, DEM_FILTER_FOR_FDC_NO);
 		break;
 
 	default:
@@ -330,7 +330,7 @@ Dcm_NegativeResponseCodeType DspUdsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15(const
 		break;
 
 	case 0x13:	// reportEmissionRelatedOBDDTCByStatusMask
-		setDtcFilterResult = Dem_SetDTCFilter(pduRxData->SduDataPtr[2], DEM_DTC_KIND_EMISSON_REL_DTCS, DEM_DTC_ORIGIN_PRIMARY_MEMORY, DEM_FILTER_WITH_SEVERITY_NO, VALUE_IS_NOT_USED, DEM_FILTER_FOR_FDC_NO);
+		setDtcFilterResult = Dem_SetDTCFilter(pduRxData->SduDataPtr[2], DEM_DTC_KIND_EMISSION_REL_DTCS, DEM_DTC_ORIGIN_PRIMARY_MEMORY, DEM_FILTER_WITH_SEVERITY_NO, VALUE_IS_NOT_USED, DEM_FILTER_FOR_FDC_NO);
 		break;
 
 	case 0x15:	// reportDTCWithPermanentStatus
@@ -925,39 +925,36 @@ void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 		Dcm_SecLevelType requestedSecurityLevel = (pduRxData->SduDataPtr[1]-1)/2;
 		Std_ReturnType getSeedResult;
 		Dcm_NegativeResponseCodeType getSeedErrorCode;
-		uint16 i;
 
 		if (isRequestSeed) {
 			// requestSeed message
 			// Check if type exist in security table
-			for (i = 0; (DCM_Config.Dsp->DspSecurity->DspSecurityRow[i].DspSecurityLevel != requestedSecurityLevel) && !DCM_Config.Dsp->DspSecurity->DspSecurityRow[i].Arc_EOL; i++);
-
-			if (!DCM_Config.Dsp->DspSecurity->DspSecurityRow[i].Arc_EOL) {
-				const Dcm_DspSecurityRowType *requestedSecurity = &DCM_Config.Dsp->DspSecurity->DspSecurityRow[i];
+			const Dcm_DspSecurityRowType *securityRow = &DCM_Config.Dsp->DspSecurity->DspSecurityRow[0];
+			while ((securityRow->DspSecurityLevel != requestedSecurityLevel) && !securityRow->Arc_EOL) {
+				securityRow++;
+			}
+			if (!securityRow->Arc_EOL) {
 				// Check length
-				if (pduRxData->SduLength == (2 + requestedSecurity->DspSecurityADRSize)) {	/** @req DCM321.1 **/
+				if (pduRxData->SduLength == (2 + securityRow->DspSecurityADRSize)) {	/** @req DCM321.1 **/
 					Dcm_SecLevelType activeSecLevel;
 					Dcm_GetSecurityLevel(&activeSecLevel);
 					if (requestedSecurityLevel == activeSecLevel) {		/** @req DCM323 **/
 						pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];
 						// If same level set the seed to zeroes
-						for (i = 0; i < requestedSecurity->DspSecuritySeedSize; i++) {
-							pduTxData->SduDataPtr[2+i] = 0;
-							pduTxData->SduLength = 2 + requestedSecurity->DspSecuritySeedSize;
-						}
+						memset(&pduTxData->SduDataPtr[2], 0, securityRow->DspSecuritySeedSize);
+						pduTxData->SduLength = 2 + securityRow->DspSecuritySeedSize;
 					}
 					else {
 						// New security level ask for seed
-						getSeedResult = requestedSecurity->GetSeed(&pduRxData->SduDataPtr[2], &pduTxData->SduDataPtr[2], &getSeedErrorCode);
+						getSeedResult = securityRow->GetSeed(&pduRxData->SduDataPtr[2], &pduTxData->SduDataPtr[2], &getSeedErrorCode);
 						if ((getSeedResult == E_OK) && (getSeedErrorCode == E_OK)) {
 							// Everything ok add sub function to tx message and send it.
 							pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];
-							pduTxData->SduLength = 2 + requestedSecurity->DspSecuritySeedSize;
+							pduTxData->SduLength = 2 + securityRow->DspSecuritySeedSize;
 
 							dspUdsSecurityAccesData.reqSecLevel = requestedSecurityLevel;
-							dspUdsSecurityAccesData.reqSecLevelRef = &DCM_Config.Dsp->DspSecurity->DspSecurityRow[i];
+							dspUdsSecurityAccesData.reqSecLevelRef = securityRow;
 							dspUdsSecurityAccesData.reqInProgress = TRUE;
-							// TODO: Start security timeout
 						}
 						else {
 							// GetSeed returned not ok

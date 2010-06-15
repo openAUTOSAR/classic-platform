@@ -92,6 +92,22 @@ boolean DsdAskApplicationForServicePermission(uint8 *requestData, uint16 dataSiz
 }
 
 
+void DsdCreateAndSendNcr(Dcm_NegativeResponseCodeType responseCode)
+{
+	if (!((msgData.addrType == DCM_PROTOCOL_FUNCTIONAL_ADDR_TYPE)
+		  && ((responseCode == DCM_E_SERVICENOTSUPPORTED) || (responseCode == DCM_E_SUBFUNCTIONNOTSUPPORTED) || (responseCode == DCM_E_REQUESTOUTOFRANGE)))) {   /** @req DCM001 **/
+		msgData.pduTxData->SduDataPtr[0] = SID_NEGATIVE_RESPONSE;
+		msgData.pduTxData->SduDataPtr[1] = currentSid;
+		msgData.pduTxData->SduDataPtr[2] = responseCode;
+		msgData.pduTxData->SduLength = 3;
+		DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_READY);	/** @req DCM114 **/ /** @req DCM232.1 **/
+	}
+	else {
+		DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_SUPPRESSED);
+	}
+}
+
+
 void DsdSelectServiceFunction(uint8 sid)
 {
 	switch (sid)	 /** @req DCM221 **/
@@ -124,20 +140,8 @@ void DsdSelectServiceFunction(uint8 sid)
 		DspUdsSecurityAccess(msgData.pduRxData, msgData.pduTxData);
 		break;
 
-	case SID_READ_DATA_BY_PERIODIC_IDENTIFIER:
-		break;
-
-	case SID_DYNAMICLLY_DEFINE_DATA_IDENTIFIER:
-		break;
-
 	case SID_WRITE_DATA_BY_IDENTIFIER:
 		DspUdsWriteDataByIdentifier(msgData.pduRxData, msgData.pduTxData);
-		break;
-
-	case SID_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER:
-		break;
-
-	case SID_ROUTINE_CONTROL:
 		break;
 
 	case SID_TESTER_PRESENT:
@@ -148,24 +152,14 @@ void DsdSelectServiceFunction(uint8 sid)
 		DspUdsControlDtcSetting(msgData.pduRxData, msgData.pduTxData);
 		break;
 
+	case SID_READ_DATA_BY_PERIODIC_IDENTIFIER:
+	case SID_DYNAMICALLY_DEFINE_DATA_IDENTIFIER:
+	case SID_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER:
+	case SID_ROUTINE_CONTROL:
 	default:
+		/* Non implemented service */
+		DsdCreateAndSendNcr(DCM_E_SERVICENOTSUPPORTED);
 		break;
-	}
-}
-
-
-void DsdCreateAndSendNcr(Dcm_NegativeResponseCodeType responseCode)
-{
-	if (!((msgData.addrType == DCM_PROTOCOL_FUNCTIONAL_ADDR_TYPE)
-		  && ((responseCode == DCM_E_SERVICENOTSUPPORTED) || (responseCode == DCM_E_SUBFUNCTIONNOTSUPPORTED) || (responseCode == DCM_E_REQUESTOUTOFRANGE)))) {   /** @req DCM001 **/
-		msgData.pduTxData->SduDataPtr[0] = SID_NEGATIVE_RESPONSE;
-		msgData.pduTxData->SduDataPtr[1] = currentSid;
-		msgData.pduTxData->SduDataPtr[2] = responseCode;
-		msgData.pduTxData->SduLength = 3;
-		DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_READY);	/** @req DCM114 **/ /** @req DCM232.1 **/
-	}
-	else {
-		DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_SUPPRESSED);
 	}
 }
 
@@ -175,9 +169,11 @@ void DsdHandleRequest(void)
 	Std_ReturnType result;
 	const Dcm_DsdServiceType *sidConfPtr = NULL;
 
+	currentSid = msgData.pduRxData->SduDataPtr[0];	/** @req DCM198 **/
+
 	/** @req DCM178 **/
-	if (DCM_RESPOND_ALL_REQUEST || ((msgData.pduRxData->SduDataPtr[0] & 0x7F) < 0x40)) {		/** @req DCM084 **/
-		if (DsdLookupSid(msgData.pduRxData->SduDataPtr[0], &sidConfPtr)) {		/** @req DCM192 **/ /** @req DCM193 **/ /** @req DCM196 **/
+	if (DCM_RESPOND_ALL_REQUEST || ((currentSid & 0x7F) < 0x40)) {		/** @req DCM084 **/
+		if (DsdLookupSid(currentSid, &sidConfPtr)) {		/** @req DCM192 **/ /** @req DCM193 **/ /** @req DCM196 **/
 			// SID found!
 			if (DspCheckSessionLevel(sidConfPtr->DsdSidTabSessionLevelRef)) {		 /** @req DCM211 **/
 				if (DspCheckSecurityLevel(sidConfPtr->DsdSidTabSecurityLevelRef)) {	 /** @req DCM217 **/
@@ -186,8 +182,6 @@ void DsdHandleRequest(void)
 					}
 					if (!DCM_REQUEST_INDICATION_ENABLED || result == E_OK) {
 						// Yes! All conditions met!
-						currentSid = msgData.pduRxData->SduDataPtr[0];	/** @req DCM198 **/
-
 						// Check if response shall be suppressed
 						if (sidConfPtr->DsdSidTabSubfuncAvail && (msgData.pduRxData->SduDataPtr[1] & SUPPRESS_POS_RESP_BIT)) {	/** @req DCM204 **/
 							suppressPosRspMsg = TRUE;	/** @req DCM202 **/
@@ -204,7 +198,8 @@ void DsdHandleRequest(void)
 							DsdCreateAndSendNcr(DCM_E_CONDITIONSNOTCORRECT);	/** @req DCM463 **/
 						}
 						else {
-							// Do not any response		/** @req DCM462 **/
+							// Do not send any response		/** @req DCM462 **/
+							DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_SUPPRESSED);
 						}
 					}
 				}
@@ -221,7 +216,8 @@ void DsdHandleRequest(void)
 		}
 	}
 	else {
-		// TODO: Inform DSL that message has been discard
+		// Inform DSL that message has been discard
+		DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_SUPPRESSED);
 	}
 }
 

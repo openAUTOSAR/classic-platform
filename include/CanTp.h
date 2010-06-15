@@ -20,6 +20,8 @@
  * TBD.
  */
 
+/** @req CANTP157 */
+
 #ifndef CANTP_H_
 #define CANTP_H_
 
@@ -33,7 +35,7 @@
 
 #include "ComStack_Types.h"
 #include "Std_Types.h"
-#include "CanTp_Cfg.h"
+#include "CanTp_Cfg.h"  /** @req CANTP221 */
 //#include "Dem.h"  // TODO: req: CanTp156
 
 /*
