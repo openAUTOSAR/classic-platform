@@ -28,6 +28,12 @@ extern const CanSM_ConfigType CanSM_Config;
 #if defined(USE_COMM)
 extern const ComM_ConfigType ComM_Config;
 #endif
+#if defined(USE_NM)
+extern const Nm_ConfigType Nm_Config;
+#endif
+#if defined(USE_CANNM)
+extern const CanNm_ConfigType CanNm_Config;
+#endif
 
 EcuM_ConfigType EcuMConfig =
 {
@@ -50,11 +56,20 @@ EcuM_ConfigType EcuMConfig =
 #if defined(USE_CANSM)
 	.CanSMConfig = &CanSM_Config,
 #endif
+#if defined(USE_CANNM)
+	.CanNmConfig = &CanNm_Config,
+#endif
 #if defined(USE_COM)
 	.ComConfig = &ComConfiguration,
 #endif
 #if defined(USE_COMM)
 	.ComMConfig = &ComM_Config,
+#endif
+#if defined(USE_NM)
+	.NmConfig = &Nm_Config,
+#endif
+#if defined(USE_PDUR)
+	.PduRConfig = &PduR_Config,
 #endif
 #if defined(USE_DMA)
 	.DmaConfig = DmaConfig,

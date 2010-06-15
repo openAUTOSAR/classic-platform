@@ -27,12 +27,15 @@
 #include "CanIf_Cbk.h"
 #include "string.h"
 
-// Added by Mattias 2008-11-18
 #include "debug.h"
 #include "PduR.h"
 
 #if defined(USE_CANTP)
 #include "CanTp_Cbk.h"
+#endif
+
+#if defined(USE_CANNM)
+#include "CanNm.h"
 #endif
 
 #if 0

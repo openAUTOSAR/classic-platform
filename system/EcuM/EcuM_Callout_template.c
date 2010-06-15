@@ -21,7 +21,7 @@
 
 
 // This file is just examples of implementation for the stubs needed by
-// the EcuM. Every Autocore application should use an own version of this
+// the EcuM. Every application should use an own version of this
 // file to implement the setup and tear down of the system.
 
 
@@ -134,6 +134,7 @@ void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
 	// Setup ICU
 	// TODO
 
+	// Setup PWM
 #if defined(USE_PWM)
 	// Setup PWM
 	Pwm_Init(ConfigPtr->PwmConfig);
@@ -190,6 +191,16 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 	PduR_Init(ConfigPtr->PduRConfig);
 #endif
 
+#if defined(USE_CANNM)
+	// Setup Can Network Manager
+	CanNm_Init(ConfigPtr->CanNmConfig);
+#endif
+
+#if defined(USE_NM)
+	// Setup Network Management Interface
+	Nm_Init(ConfigPtr->NmConfig);
+#endif
+
 #if defined(USE_COM)
 	// Setup COM layer
 	Com_Init(ConfigPtr->ComConfig);
@@ -208,8 +219,6 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 
 void EcuM_AL_DriverInitThree(const EcuM_ConfigType* ConfigPtr)
 {
-	// Setup ComM
-
 #if defined(USE_DEM)
 	// Setup DEM
 	Dem_Init();
@@ -221,6 +230,4 @@ void EcuM_AL_DriverInitThree(const EcuM_ConfigType* ConfigPtr)
 	// Setup Communication Manager
 	ComM_Init(ConfigPtr->ComMConfig);
 #endif
-
-
 }
