@@ -255,6 +255,12 @@ Std_ReturnType ComM_SetECUGroupClassification( ComM_InhibitionStatusType Status 
 void ComM_Nm_NetworkStartIndication( NetworkHandleType Channel ){
 	COMM_VALIDATE_INIT(COMM_SERVICEID_NM_NETWORKSTARTINDICATION);
 	COMM_VALIDATE_CHANNEL(Channel, COMM_SERVICEID_NM_NETWORKSTARTINDICATION);
+	const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
+	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
+
+	// Used to simulate Wake-up
+	ChannelInternal->NmIndicationMask |= COMM_NM_INDICATION_RESTART;
+	ComM_Internal_UpdateChannelState(ChannelConf, FALSE);
 }
 
 void ComM_Nm_NetworkMode( NetworkHandleType Channel ){
@@ -517,6 +523,10 @@ static inline Std_ReturnType ComM_Internal_UpdateFromSilentCom(const ComM_Channe
 		// "bus sleep" indication
 		status = ComM_Internal_Enter_NoCom(ChannelConf, ChannelInternal);
 		ChannelInternal->NmIndicationMask &= ~(COMM_NM_INDICATION_BUS_SLEEP);
+	} else if (ChannelInternal->NmIndicationMask & COMM_NM_INDICATION_NETWORK_MODE) {
+		// "network mode" indication
+		status = ComM_Internal_Enter_ReadySleep(ChannelConf, ChannelInternal);
+		ChannelInternal->NmIndicationMask &= ~(COMM_NM_INDICATION_NETWORK_MODE);
 	} else {
 		if ((ChannelInternal->InhibitionStatus & COMM_INHIBITION_STATUS_NO_COMMUNICATION) ||
 			(ComM_Internal.NoCommunication == TRUE)) {

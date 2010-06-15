@@ -788,6 +788,10 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
         break;
 
         case CANIF_USER_TYPE_CAN_NM:
+        	CanNm_RxIndication(entry->CanIfCanRxPduId,CanSduPtr);
+        	return;
+        	break;
+
         case CANIF_USER_TYPE_CAN_PDUR:
             // Send Can frame to PDU router
             PduR_CanIfRxIndication(entry->CanIfCanRxPduId,CanSduPtr);
