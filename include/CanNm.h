@@ -21,6 +21,7 @@
 #include "NmStack_Types.h"
 #include "CanNm_ConfigTypes.h"
 #include "Modules.h"
+#include "CanNm_Cbk.h"
 
 #define CANNM_AR_MAJOR_VERSION	3
 #define CANNM_AR_MINOR_VERSION	0
@@ -135,7 +136,6 @@ void CanNm_TxConfirmation( PduIdType canNmTxPduId );
   * CanNm after passing all filters and validation checks.
   * This callback service is called by the CAN Interface and implemented by the CanNm. */
 void CanNm_RxIndication( PduIdType canNmRxPduId, const uint8 *canSduPtr );
-
 
 
 #endif /* CANNM_H_ */

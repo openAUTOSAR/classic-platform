@@ -40,7 +40,7 @@ typedef struct {
 } CanNm_ChannelType;
 
 typedef struct {
-	CanNm_ChannelType* 			Channels;
+	const CanNm_ChannelType* 			Channels;
 } CanNm_ConfigType;
 
 #endif /* CANNM_CONFIGTYPES_H_ */

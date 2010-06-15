@@ -88,8 +88,32 @@ static Std_ReturnType ComM_Internal_RequestComMode(
 /* Looks at stored requests for Channel and updates state accordingly */
 static Std_ReturnType ComM_Internal_UpdateChannelState( const ComM_ChannelType* Channel, boolean isRequest );
 
-/* Propagates channel mode to respective Bus SM */
-static Std_ReturnType ComM_Internal_PropagateComMode( const ComM_ChannelType* Channel );
+static inline Std_ReturnType ComM_Internal_UpdateFromNoCom(const ComM_ChannelType* ChannelConf,
+					ComM_Internal_ChannelType* ChannelInternal, boolean isRequest);
+
+static inline Std_ReturnType ComM_Internal_UpdateFromSilentCom(const ComM_ChannelType* ChannelConf,
+					ComM_Internal_ChannelType* ChannelInternal,	boolean isRequest);
+
+static inline Std_ReturnType ComM_Internal_UpdateFromFullCom(const ComM_ChannelType* ChannelConf,
+					ComM_Internal_ChannelType* ChannelInternal, boolean isRequest);
+
+static inline Std_ReturnType ComM_Internal_Enter_NoCom(const ComM_ChannelType* ChannelConf,
+													ComM_Internal_ChannelType* ChannelInternal);
+
+static inline Std_ReturnType ComM_Internal_Enter_SilentCom(const ComM_ChannelType* ChannelConf,
+														ComM_Internal_ChannelType* ChannelInternal);
+
+static inline Std_ReturnType ComM_Internal_Enter_NetworkRequested(const ComM_ChannelType* ChannelConf,
+																ComM_Internal_ChannelType* ChannelInternal);
+
+static inline Std_ReturnType ComM_Internal_Enter_ReadySleep(const ComM_ChannelType* ChannelConf,
+															ComM_Internal_ChannelType* ChannelInternal);
+
+/* Propagates channel mode to BusSM */
+static Std_ReturnType ComM_Internal_PropagateComMode( const ComM_ChannelType* ChannelConf );
+
+/* Requests/releases Nm network according to channel mode */
+static Std_ReturnType ComM_Internal_NotifyNm( const ComM_ChannelType* ChannelConf);
 
 /* Propagate query to channel Bus SMs. Collect overall mode and status */
 static Std_ReturnType ComM_Internal_PropagateGetCurrentComMode(
@@ -97,6 +121,13 @@ static Std_ReturnType ComM_Internal_PropagateGetCurrentComMode(
 
 /* Tick 'Min full com duration' timeout, and update state if needed */
 static inline void ComM_Internal_TickFullComMinTime(const ComM_ChannelType* ChannelConf,
+		ComM_Internal_ChannelType* ChannelInternal);
+
+static inline boolean ComM_Internal_FullComMinTime_AllowsExit(const ComM_ChannelType* ChannelConf,
+		ComM_Internal_ChannelType* ChannelInternal);
+
+/* Tick 'Light nm' timeout, and update state if needed */
+static inline void ComM_Internal_TickLightTime(const ComM_ChannelType* ChannelConf,
 		ComM_Internal_ChannelType* ChannelInternal);
 
 #endif /* COMM_INTERNAL_H_ */

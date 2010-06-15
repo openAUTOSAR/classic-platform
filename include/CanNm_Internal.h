@@ -65,38 +65,38 @@ typedef struct {
 } CanNm_InternalType;
 
 /* Timer helpers */
-static inline void CanNm_Internal_TickTimeoutTime( CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
-static inline void CanNm_Internal_TickRepeatMessageTime( CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
-static inline void CanNm_Internal_TickWaitBusSleepTime( CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
-static inline void CanNm_Internal_TickMessageCycleTime( CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
-static inline void CanNm_Internal_ClearCbv( CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
+static inline void CanNm_Internal_TickTimeoutTime( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
+static inline void CanNm_Internal_TickRepeatMessageTime( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
+static inline void CanNm_Internal_TickWaitBusSleepTime( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
+static inline void CanNm_Internal_TickMessageCycleTime( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
+static inline void CanNm_Internal_ClearCbv( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
 
 /* Message helpers */
-static inline void CanNm_Internal_TransmitMessage( CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
-static inline uint8 CanNm_Internal_GetUserDataOffset( CanNm_ChannelType* ChannelConf );
-static inline uint8* CanNm_Internal_GetUserDataPtr( CanNm_ChannelType* ChannelConf, uint8* MessageSduPtr );
-static inline uint8 CanNm_Internal_GetUserDataLength( CanNm_ChannelType* ChannelConf );
+static inline void CanNm_Internal_TransmitMessage( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
+static inline uint8 CanNm_Internal_GetUserDataOffset( const CanNm_ChannelType* ChannelConf );
+static inline uint8* CanNm_Internal_GetUserDataPtr( const CanNm_ChannelType* ChannelConf, uint8* MessageSduPtr );
+static inline uint8 CanNm_Internal_GetUserDataLength( const CanNm_ChannelType* ChannelConf );
 
 /* Transition helpers */
-static inline void CanNm_Internal_PrepareBusSleep_to_RepeatMessage( CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
-static inline void CanNm_Internal_PrepareBusSleep_to_BusSleep( CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
+static inline void CanNm_Internal_PrepareBusSleep_to_RepeatMessage( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
+static inline void CanNm_Internal_PrepareBusSleep_to_BusSleep( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
 
-static inline void CanNm_Internal_BusSleep_to_RepeatMessage( CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
-static inline void CanNm_Internal_BusSleep_to_BusSleep( CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
+static inline void CanNm_Internal_BusSleep_to_RepeatMessage( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
+static inline void CanNm_Internal_BusSleep_to_BusSleep( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
 
-static inline void CanNm_Internal_RepeatMessage_to_RepeatMessage( CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
-static inline void CanNm_Internal_RepeatMessage_to_ReadySleep( CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
-static inline void CanNm_Internal_RepeatMessage_to_NormalOperation( CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
+static inline void CanNm_Internal_RepeatMessage_to_RepeatMessage( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
+static inline void CanNm_Internal_RepeatMessage_to_ReadySleep( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
+static inline void CanNm_Internal_RepeatMessage_to_NormalOperation( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
 
-static inline void CanNm_Internal_NormalOperation_to_RepeatMessage( CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
-static inline void CanNm_Internal_NormalOperation_to_ReadySleep( CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
-static inline void CanNm_Internal_NormalOperation_to_NormalOperation( CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
+static inline void CanNm_Internal_NormalOperation_to_RepeatMessage( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
+static inline void CanNm_Internal_NormalOperation_to_ReadySleep( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
+static inline void CanNm_Internal_NormalOperation_to_NormalOperation( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
 
-static inline void CanNm_Internal_ReadySleep_to_NormalOperation( CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
-static inline void CanNm_Internal_ReadySleep_to_PrepareBusSleep( CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
-static inline void CanNm_Internal_ReadySleep_to_RepeatMessage( CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
+static inline void CanNm_Internal_ReadySleep_to_NormalOperation( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
+static inline void CanNm_Internal_ReadySleep_to_PrepareBusSleep( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
+static inline void CanNm_Internal_ReadySleep_to_RepeatMessage( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
 
-static inline void CanNm_Internal_NetworkMode_to_NetworkMode( CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
+static inline void CanNm_Internal_NetworkMode_to_NetworkMode( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal );
 
 
 #endif /* CANNM_INTERNAL_H_ */

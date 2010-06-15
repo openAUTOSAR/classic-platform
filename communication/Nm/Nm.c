@@ -17,7 +17,7 @@
 #include "Nm.h"
 #include "Nm_Internal.h"
 
-extern const Nm_ConfigType* Nm_ConfigPtr;
+const Nm_ConfigType* Nm_ConfigPtr;
 
 /** Initializes the NM Interface. */
 void Nm_Init( Nm_ConfigType * const nmConfigPtr ){

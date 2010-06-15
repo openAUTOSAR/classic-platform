@@ -17,5 +17,7 @@
 #ifndef CANNM_CBK_H_
 #define CANNM_CBK_H_
 
+/* We need this to export pdu id's */
+#include "CanNm.h"
 
 #endif /* CANNM_CBK_H_ */

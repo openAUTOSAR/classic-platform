@@ -17,7 +17,6 @@
 #ifndef NM_INTERNAL_H_
 #define NM_INTERNAL_H_
 
-#define USE_CANNM
 
 /* macros to remove unavailable BusNm calls */
 #if defined(USE_CANNM)
