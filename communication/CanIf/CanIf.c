@@ -27,12 +27,15 @@
 #include "CanIf_Cbk.h"
 #include "string.h"
 
-// Added by Mattias 2008-11-18
 #include "debug.h"
 #include "PduR.h"
 
 #if defined(USE_CANTP)
 #include "CanTp_Cbk.h"
+#endif
+
+#if defined(USE_CANNM)
+#include "CanNm.h"
 #endif
 
 #if 0
@@ -88,6 +91,8 @@ typedef struct
   CanIf_ChannelPrivateType channelData[CANIF_CHANNEL_CNT];
 } CanIf_GlobalType;
 
+void CanIf_PreInit_InitController(uint8 Controller, uint8 ConfigurationIndex);
+
 static CanIf_Arc_ChannelIdType CanIf_Arc_FindHrhChannel( Can_Arc_HRHType hrh )
 {
   const CanIf_InitHohConfigType *hohConfig;
@@ -124,14 +129,13 @@ void CanIf_Init(const CanIf_ConfigType *ConfigPtr)
 
   CanIf_ConfigPtr = ConfigPtr;
 
-  for (uint16 i = 0; i < CANIF_CHANNEL_CNT; i++)
+  for (uint8 i = 0; i < CANIF_CHANNEL_CNT; i++)
   {
     CanIf_Global.channelData[i].ControllerMode = CANIF_CS_STOPPED;
     CanIf_Global.channelData[i].PduMode = CANIF_GET_OFFLINE;
+    CanIf_PreInit_InitController(i, CanIf_ConfigPtr->Arc_ChannelDefaultConfIndex[i]);
   }
 
-  // NOTE!
-  // Do NOT initialise the Can Drivers and Tranceivers, see CANIF085
 
   CanIf_Global.initRun = TRUE;
 }
@@ -201,6 +205,24 @@ void CanIf_InitController(uint8 Controller, uint8 ConfigurationIndex)
 
   // Set mode to stopped
   CanIf_SetControllerMode(channel, CANIF_CS_STOPPED);
+}
+
+void CanIf_PreInit_InitController(uint8 Controller, uint8 ConfigurationIndex){
+	// We call this a CanIf channel. Hopefully makes it easier to follow.
+	CanIf_Arc_ChannelIdType channel = Controller;
+
+	VALIDATE_NO_RV(channel < CANIF_CHANNEL_CNT, CANIF_INIT_ID, CANIF_E_PARAM_CONTROLLER);
+	VALIDATE_NO_RV(ConfigurationIndex < CANIF_CHANNEL_CONFIGURATION_CNT, CANIF_INIT_ID, CANIF_E_PARAM_POINTER);
+
+
+	const CanControllerIdType canControllerId = ARC_GET_CHANNEL_CONTROLLER(channel);
+	// Validate that the configuration at the index match the right channel
+	VALIDATE_NO_RV(CanIf_ConfigPtr->ControllerConfig[ConfigurationIndex].CanIfControllerIdRef == channel, CANIF_INIT_CONTROLLER_ID, CANIF_E_PARAM_CONTROLLER);
+	const Can_ControllerConfigType *canConfig = CanIf_ConfigPtr->ControllerConfig[ConfigurationIndex].CanIfInitControllerRef;
+	// Validate that the CanIfControllerConfig points to configuration for the right Can Controller
+	VALIDATE_NO_RV(canConfig->CanControllerId == canControllerId, CANIF_INIT_CONTROLLER_ID, CANIF_E_PARAM_CONTROLLER);
+
+	Can_InitController(canControllerId, canConfig);
 }
 
 //-------------------------------------------------------------------
@@ -465,12 +487,12 @@ Std_ReturnType CanIf_SetPduMode(uint8 Controller,
 
   CanIf_ChannelGetModeType oldMode = CanIf_Global.channelData[channel].PduMode;
 
-  if(PduModeRequest == CANIF_SET_OFFLINE)
+  switch(PduModeRequest)
   {
+  case CANIF_SET_OFFLINE:
     CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE;
-  }
-  else if(PduModeRequest == CANIF_SET_RX_OFFLINE)
-  {
+    break;
+  case CANIF_SET_RX_OFFLINE:
     if (oldMode == CANIF_GET_RX_ONLINE)
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE;
     else if (oldMode == CANIF_GET_ONLINE)
@@ -479,9 +501,8 @@ Std_ReturnType CanIf_SetPduMode(uint8 Controller,
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE_ACTIVE;
 
     // Other oldmodes don't care
-  }
-  else if(PduModeRequest == CANIF_SET_RX_ONLINE)
-  {
+    break;
+  case CANIF_SET_RX_ONLINE:
     if (oldMode == CANIF_GET_OFFLINE)
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_RX_ONLINE;
     else if (oldMode == CANIF_GET_TX_ONLINE)
@@ -490,9 +511,8 @@ Std_ReturnType CanIf_SetPduMode(uint8 Controller,
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE;
 
     // Other oldmodes don't care
-  }
-  else if(PduModeRequest == CANIF_SET_TX_OFFLINE)
-  {
+    break;
+  case CANIF_SET_TX_OFFLINE:
     if (oldMode == CANIF_GET_TX_ONLINE)
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE;
     else if (oldMode == CANIF_GET_ONLINE)
@@ -503,9 +523,8 @@ Std_ReturnType CanIf_SetPduMode(uint8 Controller,
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_RX_ONLINE;
 
     // Other oldmodes don't care
-  }
-  else if(PduModeRequest == CANIF_SET_TX_ONLINE)
-  {
+    break;
+  case CANIF_SET_TX_ONLINE:
     if (oldMode == CANIF_GET_OFFLINE)
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_TX_ONLINE;
     else if (oldMode == CANIF_GET_RX_ONLINE)
@@ -516,13 +535,12 @@ Std_ReturnType CanIf_SetPduMode(uint8 Controller,
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_ONLINE;
 
     // Other oldmodes don't care
-  }
-  else if(PduModeRequest == CANIF_SET_ONLINE)
-  {
+    break;
+  case CANIF_SET_ONLINE:
     CanIf_Global.channelData[channel].PduMode = CANIF_GET_ONLINE;
-  }
-  else if(PduModeRequest == CANIF_SET_TX_OFFLINE_ACTIVE)
-  {
+    break;
+
+  case CANIF_SET_TX_OFFLINE_ACTIVE:
     if (oldMode == CANIF_GET_OFFLINE)
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE_ACTIVE;
     else if (oldMode == CANIF_GET_RX_ONLINE)
@@ -533,6 +551,7 @@ Std_ReturnType CanIf_SetPduMode(uint8 Controller,
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE;
 
     // Other oldmodes don't care
+    break;
   }
 
   return E_OK;
@@ -769,6 +788,10 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
         break;
 
         case CANIF_USER_TYPE_CAN_NM:
+        	CanNm_RxIndication(entry->CanIfCanRxPduId,CanSduPtr);
+        	return;
+        	break;
+
         case CANIF_USER_TYPE_CAN_PDUR:
             // Send Can frame to PDU router
             PduR_CanIfRxIndication(entry->CanIfCanRxPduId,CanSduPtr);
@@ -779,10 +802,10 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
           // Send Can frame to CAN TP
 #if defined(USE_CANTP)
             {
-                PduInfoType CanTpRxPdu;
-                CanTpRxPdu.SduLength = CanDlc;
-                CanTpRxPdu.SduDataPtr = (uint8 *)CanSduPtr;
-                CanTp_RxIndication(entry->CanIfCanRxPduId, &CanTpRxPdu); /** @req CANTP019 */
+        	    PduInfoType CanTpRxPdu;
+        	    CanTpRxPdu.SduLength = CanDlc;
+        	    CanTpRxPdu.SduDataPtr = (uint8 *)CanSduPtr;
+                CanTp_RxIndication(entry->CanIfCanRxPduId, &CanTpRxPdu);
             }
             return;
 #endif

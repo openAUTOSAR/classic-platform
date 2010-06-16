@@ -20,12 +20,10 @@
 
 
 
-#ifndef COMM_BUSSM_H_
-#define COMM_BUSSM_H_
+#ifndef COMM_DCM_H_
+#define COMM_DCM_H_
 
-#include "ComStack_Types.h"
-#include "ComM_Types.h"
+void ComM_DCM_ActiveDiagnostic();
+void ComM_DCM_InactiveDiagnostic();
 
-void ComM_BusSM_ModeIndication(NetworkHandleType Channel,ComM_ModeType ComMode);
-
-#endif /*COMM_BUSSM_H_*/
+#endif /*COMM_DCM_H_*/

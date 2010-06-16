@@ -16,8 +16,8 @@
 
 
 
-
-
+#include "Std_Types.h"
+#include "Com_Types.h"
 
 
 typedef struct {

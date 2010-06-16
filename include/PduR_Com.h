@@ -20,29 +20,29 @@
 
 
 
-#ifndef COMM_TYPES_H_
-#define COMM_TYPES_H_
+#ifndef PDUR_COM_H_
+#define PDUR_COM_H_
 
-/** Current mode of the Communication Manager (main state of the state machine). */
-typedef enum {
-	COMM_NO_COMMUNICATION = 0,
-	COMM_SILENT_COMMUNICATION = 1,
-	COMM_FULL_COMMUNICATION = 2,
-} ComM_ModeType;
+#include "PduR.h"
 
-/** Initialization status of ComM. */
-typedef enum {
-	COMM_UNINIT,
-	COMM_INIT,
-} ComM_InitStatusType;
+#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
 
-/** Inhibition status of ComM. */
-typedef uint8 ComM_InhibitionStatusType;
+		Std_ReturnType PduR_ComTransmit(PduIdType ComTxPduId, const PduInfoType* PduInfoPtr);
 
-#define COMM_INHIBITION_STATUS_NONE					(0)
-/** Wake Up inhibition active */
-#define COMM_INHIBITION_STATUS_WAKE_UP				(1 << 0)
-/** Limit to “No Communication” mode active */
-#define COMM_INHIBITION_STATUS_NO_COMMUNICATION		(1 << 1)
+#else // Zero cost operation active
 
-#endif /*COMM_TYPES_H_*/
+	#if (PDUR_CANIF_SUPPORT == STD_ON)
+
+		#include "CanIf.h"
+
+		#define PduR_ComTransmit CanIf_Transmit
+
+	#else
+
+		#define PduR_ComTransmit(... )	(E_OK)
+
+	#endif
+
+#endif // Zero cost operation active
+
+#endif /* PDUR_COM_H_ */

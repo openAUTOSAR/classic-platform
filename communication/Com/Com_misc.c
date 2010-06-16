@@ -22,8 +22,12 @@
 
 #include <stdlib.h>
 #include <string.h>
+
+#include "Com_Arc_Types.h"
+#include "Com.h"
 #include "Com_misc.h"
 
+extern Com_Arc_Config_type Com_Arc_Config;
 
 void Com_ReadSignalDataFromPdu(
 			const Com_SignalIdType signalId,

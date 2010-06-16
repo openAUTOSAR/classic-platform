@@ -14,13 +14,42 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
+#ifndef NMSTACK_TYPES_H_
+#define NMSTACK_TYPES_H_
+
+/** Return type for NM functions. Derived from Std_ReturnType. */
+typedef enum {
+	NM_E_OK,
+	NM_E_NOT_OK,
+	NM_E_NOT_EXECUTED,
+} Nm_ReturnType;
+
+/** Operational modes of the network management */
+typedef enum {
+	NM_MODE_BUS_SLEEP,
+	NM_MODE_PREPARE_BUS_SLEEP,
+	NM_MODE_SYNCHRONIZE,
+	NM_MODE_NETWORK,
+} Nm_ModeType;
+
+/** States of the network management state machine */
+typedef enum {
+	NM_STATE_UNINIT,
+	NM_STATE_BUS_SLEEP,
+	NM_STATE_PREPARE_BUS_SLEEP,
+	NM_STATE_READY_SLEEP,
+	NM_STATE_NORMAL_OPERATION,
+	NM_STATE_REPEAT_MESSAGE,
+	NM_STATE_SYNCHRONIZE,
+} Nm_StateType;
+
+/** BusNm Type */
+typedef enum {
+	NM_BUSNM_CANNM,
+	NM_BUSNM_FRNM,
+	NM_BUSNM_LINNM,
+	NM_BUSNM_UNDEF = 0xFF,
+} Nm_BusNmType;
 
 
-
-
-
-
-#ifndef COMM_ECUM_H_
-#define COMM_ECUM_H_
-
-#endif /*COMM_ECUM_H_*/
+#endif /* NMSTACK_TYPES_H_ */

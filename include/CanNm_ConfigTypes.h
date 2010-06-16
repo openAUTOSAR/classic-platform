@@ -14,35 +14,33 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
+#ifndef CANNM_CONFIGTYPES_H_
+#define CANNM_CONFIGTYPES_H_
 
-
-
-
-
-
-#ifndef COMM_TYPES_H_
-#define COMM_TYPES_H_
-
-/** Current mode of the Communication Manager (main state of the state machine). */
 typedef enum {
-	COMM_NO_COMMUNICATION = 0,
-	COMM_SILENT_COMMUNICATION = 1,
-	COMM_FULL_COMMUNICATION = 2,
-} ComM_ModeType;
+	CANNM_PDU_BYTE_0 = 0x00,
+	CANNM_PDU_BYTE_1 = 0x01,
+	CANNM_PDU_OFF = 0xFF,
+} CanNm_PduBytePositionType;
 
-/** Initialization status of ComM. */
-typedef enum {
-	COMM_UNINIT,
-	COMM_INIT,
-} ComM_InitStatusType;
+typedef struct {
+	const boolean					Active;
+	const NetworkHandleType			NmNetworkHandle;
+	const uint8						NodeId;
+	const uint32					MainFunctionPeriod;
+	const uint32					TimeoutTime;
+	const uint32					RepeatMessageTime;
+	const uint32					WaitBusSleepTime;
+	const uint32					MessageCycleTime;
+	const uint32					MessageCycleOffsetTime;
+	const PduIdType					CanIfPduId;
+	const uint8						PduLength;
+	const CanNm_PduBytePositionType	NidPosition;
+	const CanNm_PduBytePositionType	CbvPosition;
+} CanNm_ChannelType;
 
-/** Inhibition status of ComM. */
-typedef uint8 ComM_InhibitionStatusType;
+typedef struct {
+	const CanNm_ChannelType* 			Channels;
+} CanNm_ConfigType;
 
-#define COMM_INHIBITION_STATUS_NONE					(0)
-/** Wake Up inhibition active */
-#define COMM_INHIBITION_STATUS_WAKE_UP				(1 << 0)
-/** Limit to “No Communication” mode active */
-#define COMM_INHIBITION_STATUS_NO_COMMUNICATION		(1 << 1)
-
-#endif /*COMM_TYPES_H_*/
+#endif /* CANNM_CONFIGTYPES_H_ */

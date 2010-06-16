@@ -14,35 +14,17 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
+#ifndef NM_CONFIGTYPES_H_
+#define NM_CONFIGTYPES_H_
 
+typedef struct {
+	const Nm_BusNmType			BusType;
+	const NetworkHandleType		BusNmNetworkHandle;
+	const NetworkHandleType		ComMNetworkHandle;
+} Nm_ChannelType;
 
+typedef struct {
+	const Nm_ChannelType* 		Channels;
+} Nm_ConfigType;
 
-
-
-
-#ifndef COMM_TYPES_H_
-#define COMM_TYPES_H_
-
-/** Current mode of the Communication Manager (main state of the state machine). */
-typedef enum {
-	COMM_NO_COMMUNICATION = 0,
-	COMM_SILENT_COMMUNICATION = 1,
-	COMM_FULL_COMMUNICATION = 2,
-} ComM_ModeType;
-
-/** Initialization status of ComM. */
-typedef enum {
-	COMM_UNINIT,
-	COMM_INIT,
-} ComM_InitStatusType;
-
-/** Inhibition status of ComM. */
-typedef uint8 ComM_InhibitionStatusType;
-
-#define COMM_INHIBITION_STATUS_NONE					(0)
-/** Wake Up inhibition active */
-#define COMM_INHIBITION_STATUS_WAKE_UP				(1 << 0)
-/** Limit to “No Communication” mode active */
-#define COMM_INHIBITION_STATUS_NO_COMMUNICATION		(1 << 1)
-
-#endif /*COMM_TYPES_H_*/
+#endif /* NM_CONFIGTYPES_H_ */

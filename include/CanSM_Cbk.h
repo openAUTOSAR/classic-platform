@@ -14,35 +14,12 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
+#ifndef CANSM_CBK_H_
+#define CANSM_CBK_H_
 
+/** The CanSM is notified about a bus-off event on a certain CAN controller with this
+  * call-out function. It shall execute the bus-off recovery state machine for the
+  * corresponding network handle. */
+void CanSM_ControllerBusOff( uint8 Controller );
 
-
-
-
-
-#ifndef COMM_TYPES_H_
-#define COMM_TYPES_H_
-
-/** Current mode of the Communication Manager (main state of the state machine). */
-typedef enum {
-	COMM_NO_COMMUNICATION = 0,
-	COMM_SILENT_COMMUNICATION = 1,
-	COMM_FULL_COMMUNICATION = 2,
-} ComM_ModeType;
-
-/** Initialization status of ComM. */
-typedef enum {
-	COMM_UNINIT,
-	COMM_INIT,
-} ComM_InitStatusType;
-
-/** Inhibition status of ComM. */
-typedef uint8 ComM_InhibitionStatusType;
-
-#define COMM_INHIBITION_STATUS_NONE					(0)
-/** Wake Up inhibition active */
-#define COMM_INHIBITION_STATUS_WAKE_UP				(1 << 0)
-/** Limit to “No Communication” mode active */
-#define COMM_INHIBITION_STATUS_NO_COMMUNICATION		(1 << 1)
-
-#endif /*COMM_TYPES_H_*/
+#endif /* CANSM_CBK_H_ */

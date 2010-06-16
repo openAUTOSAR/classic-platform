@@ -14,13 +14,8 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
+#ifndef CANSM_COMM_H_
+#define CANSM_COMM_H_
 
 
-
-
-
-
-#ifndef COMM_DCM_H_
-#define COMM_DCM_H_
-
-#endif /*COMM_DCM_H_*/
+#endif /* CANSM_COMM_H_ */
