@@ -27,6 +27,12 @@
 #include "Mcu.h"
 
 /*
+ * Local defines
+ */
+#define DEBOUNCE_FDC_TEST_FAILED  127
+#define DEBOUNCE_FDC_TEST_PASSED -128
+
+/*
  * Local types
  */
 
@@ -54,10 +60,10 @@ typedef struct {
 typedef struct {
 	Dem_EventIdType				eventId;
 	const Dem_EventParameterType *eventParamRef;
+	sint8						faultDetectionCounter;
 	uint16						occurrence;
-	Dem_EventStatusType			eventStatus;
-	boolean						eventStatusChanged;
 	Dem_EventStatusExtendedType	eventStatusExtended;
+	boolean						errorStatusChanged;
 } EventStatusRecType;
 
 
@@ -91,6 +97,7 @@ typedef enum
   DEM_PREINITIALIZED,
   DEM_INITIALIZED
 } Dem_StateType;
+
 
 static Dem_StateType demState = DEM_UNINITIALIZED;
 
@@ -150,7 +157,7 @@ static ExtDataRecType		priMemExtDataBuffer[DEM_MAX_NUMBER_EXT_DATA_PRI_MEM] __at
  * Procedure:	zeroPriMemBuffers
  * Description:	Fill the primary buffers with zeroes
  */
-void zeroPriMemBuffers(void)
+void demZeroPriMemBuffers(void)
 {
 	memset(priMemEventBuffer, 0, sizeof(priMemEventBuffer));
 	memset(priMemFreezeFrameBuffer, 0, sizeof(priMemFreezeFrameBuffer));
@@ -162,7 +169,7 @@ void zeroPriMemBuffers(void)
  * Procedure:	calcChecksum
  * Description:	Calculate checksum over *data to *(data+nrOfBytes-1) area
  */
-ChecksumType calcChecksum(void *data, uint16 nrOfBytes)
+static ChecksumType calcChecksum(void *data, uint16 nrOfBytes)
 {
 	uint16 i;
 	uint8 *ptr = (uint8*)data;
@@ -180,7 +187,7 @@ ChecksumType calcChecksum(void *data, uint16 nrOfBytes)
  * Description:	Return TRUE if "dtcKind" match the events DTCKind or "dtcKind"
  * 				is "DEM_DTC_KIND_ALL_DTCS" otherwise FALSE.
  */
-boolean checkDtcKind(Dem_DTCKindType dtcKind, const Dem_EventParameterType *eventParam)
+static boolean checkDtcKind(Dem_DTCKindType dtcKind, const Dem_EventParameterType *eventParam)
 {
 	boolean result = FALSE;
 
@@ -203,7 +210,7 @@ boolean checkDtcKind(Dem_DTCKindType dtcKind, const Dem_EventParameterType *even
  * Description:	Return TRUE if "dtc" match the events DTC or "dtc" is
  * 				"DEM_DTC_GROUP_ALL_DTCS" otherwise FALSE.
  */
-boolean checkDtcGroup(uint32 dtc, const Dem_EventParameterType *eventParam)
+static boolean checkDtcGroup(uint32 dtc, const Dem_EventParameterType *eventParam)
 {
 	boolean result = FALSE;
 
@@ -225,7 +232,7 @@ boolean checkDtcGroup(uint32 dtc, const Dem_EventParameterType *eventParam)
  * Procedure:	checkDtcOrigin
  * Description:	Return TRUE if "dtcOrigin" match any of the events DTCOrigin otherwise FALSE.
  */
-boolean checkDtcOrigin(Dem_DTCOriginType dtcOrigin, const Dem_EventParameterType *eventParam)
+static boolean checkDtcOrigin(Dem_DTCOriginType dtcOrigin, const Dem_EventParameterType *eventParam)
 {
 	boolean result = FALSE;
 	uint16 i;
@@ -244,7 +251,7 @@ boolean checkDtcOrigin(Dem_DTCOriginType dtcOrigin, const Dem_EventParameterType
  * Procedure:	checkDtcSeverityMask
  * Description:	Return TRUE if "dtcSeverityMask" match any of the events DTC severity otherwise FALSE.
  */
-boolean checkDtcSeverityMask(Dem_DTCSeverityType dtcSeverityMask, const Dem_EventParameterType *eventParam)
+static boolean checkDtcSeverityMask(Dem_DTCSeverityType dtcSeverityMask, const Dem_EventParameterType *eventParam)
 {
 	boolean result = TRUE;
 
@@ -258,7 +265,7 @@ boolean checkDtcSeverityMask(Dem_DTCSeverityType dtcSeverityMask, const Dem_Even
  * Procedure:	checkDtcFaultDetectionCounterMask
  * Description:	TBD.
  */
-boolean checkDtcFaultDetectionCounter(const Dem_EventParameterType *eventParam)
+static boolean checkDtcFaultDetectionCounter(const Dem_EventParameterType *eventParam)
 {
 	boolean result = TRUE;
 
@@ -273,7 +280,7 @@ boolean checkDtcFaultDetectionCounter(const Dem_EventParameterType *eventParam)
  * Description:	Returns the pointer to event id parameters of "eventId" in "*eventStatusBuffer",
  * 				if not found NULL is returned.
  */
-void lookupEventStatusRec(Dem_EventIdType eventId, EventStatusRecType **const eventStatusRec)
+static void lookupEventStatusRec(Dem_EventIdType eventId, EventStatusRecType **const eventStatusRec)
 {
 	EventStatusRecType *eventStatusRecPtr = eventStatusBuffer;
 
@@ -294,7 +301,7 @@ void lookupEventStatusRec(Dem_EventIdType eventId, EventStatusRecType **const ev
  * Description:	Returns the pointer to event id parameters of "eventId" in "*eventIdParam",
  * 				if not found NULL is returned.
  */
-void lookupEventIdParameter(Dem_EventIdType eventId, const Dem_EventParameterType **const eventIdParam)
+static void lookupEventIdParameter(Dem_EventIdType eventId, const Dem_EventParameterType **const eventIdParam)
 {
 	const Dem_EventParameterType *EventIdParamPtr = configSet->EventParameter;
 
@@ -310,12 +317,110 @@ void lookupEventIdParameter(Dem_EventIdType eventId, const Dem_EventParameterTyp
 	}
 }
 
+
+/*
+ * Procedure:	preDebounceNone
+ * Description:	Returns the result of the debouncing.
+ */
+static Dem_EventStatusType preDebounceNone(Dem_EventStatusType reportedStatus, EventStatusRecType* statusRecord) {
+	Dem_EventStatusType returnCode;
+
+	switch (reportedStatus) {
+	case DEM_EVENT_STATUS_FAILED:
+	case DEM_EVENT_STATUS_PASSED:
+		// Already debounced, do nothing.
+		break;
+
+	default:
+		// TODO: What to do with PREFAIL and PREPASSED on no debouncing?
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
+			Det_ReportError(MODULE_ID_DEM, 0, DEM_PREDEBOUNCE_NONE_ID, DEM_E_PARAM_DATA);
+#endif
+		break;
+	}
+
+	returnCode = reportedStatus;
+	return returnCode;
+}
+
+
+/*
+ * Procedure:	preDebounceCounterBased
+ * Description:	Returns the result of the debouncing.
+ */
+static Dem_EventStatusType preDebounceCounterBased(Dem_EventStatusType reportedStatus, EventStatusRecType* statusRecord) {
+	Dem_EventStatusType returnCode;
+	const Dem_PreDebounceCounterBasedType* pdVars = statusRecord->eventParamRef->EventClass->PreDebounceAlgorithmClass->PreDebounceAlgorithm.PreDebounceCounterBased;
+
+	switch (reportedStatus) {
+	case DEM_EVENT_STATUS_PREFAILED:
+		if (statusRecord->faultDetectionCounter < DEBOUNCE_FDC_TEST_FAILED) {
+			if (pdVars->JumpUp && (statusRecord->faultDetectionCounter < 0)) {
+				statusRecord->faultDetectionCounter = 0;
+			} else {
+				if (((sint16)statusRecord->faultDetectionCounter + pdVars->CountInStepSize) < DEBOUNCE_FDC_TEST_FAILED) {
+					statusRecord->faultDetectionCounter += pdVars->CountInStepSize;
+				} else {
+					statusRecord->faultDetectionCounter = DEBOUNCE_FDC_TEST_FAILED;
+				}
+			}
+		}
+		break;
+
+	case DEM_EVENT_STATUS_PREPASSED:
+		if (statusRecord->faultDetectionCounter > DEBOUNCE_FDC_TEST_PASSED) {
+			if (pdVars->JumpDown && (statusRecord->faultDetectionCounter > 0)) {
+				statusRecord->faultDetectionCounter = 0;
+			} else {
+				if (((sint16)statusRecord->faultDetectionCounter - pdVars->CountOutStepSize) > DEBOUNCE_FDC_TEST_PASSED) {
+					statusRecord->faultDetectionCounter -= pdVars->CountOutStepSize;
+				} else {
+					statusRecord->faultDetectionCounter = DEBOUNCE_FDC_TEST_PASSED;
+				}
+			}
+		}
+		break;
+
+	case DEM_EVENT_STATUS_FAILED:
+		statusRecord->faultDetectionCounter = DEBOUNCE_FDC_TEST_FAILED;
+		break;
+
+	case DEM_EVENT_STATUS_PASSED:
+		statusRecord->faultDetectionCounter = DEBOUNCE_FDC_TEST_PASSED;
+		break;
+
+	default:
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
+		Det_ReportError(MODULE_ID_DEM, 0, DEM_PREDEBOUNCE_COUNTER_BASED_ID, DEM_E_PARAM_DATA);
+#endif
+		break;
+
+	}
+
+	switch (statusRecord->faultDetectionCounter) {
+	case DEBOUNCE_FDC_TEST_FAILED:
+		returnCode = DEM_EVENT_STATUS_FAILED;
+		break;
+
+	case DEBOUNCE_FDC_TEST_PASSED:
+		returnCode = DEM_EVENT_STATUS_PASSED;
+		break;
+
+	default:
+		returnCode = reportedStatus;
+		break;
+	}
+
+	return returnCode;
+}
+
+
 /*
  * Procedure:	updateEventStatusRec
  * Description:	Update the status of "eventId", if not exist and "createIfNotExist" is
  * 				true a new record is created
  */
-void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_EventStatusType eventStatus, boolean createIfNotExist, EventStatusRecType *eventStatusRec)
+static void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_EventStatusType eventStatus, boolean createIfNotExist, EventStatusRecType *eventStatusRec)
 {
 	EventStatusRecType *eventStatusRecPtr;
 	imask_t state = McuE_EnterCriticalSection();
@@ -331,10 +436,10 @@ void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_EventSta
 			// Create new event record
 			eventStatusRecPtr->eventId = eventParam->EventID;
 			eventStatusRecPtr->eventParamRef = eventParam;
+			eventStatusRecPtr->faultDetectionCounter = 0;
 			eventStatusRecPtr->occurrence = 0;
-			eventStatusRecPtr->eventStatus = DEM_EVENT_STATUS_PASSED;
-			eventStatusRecPtr->eventStatusChanged = FALSE;
 			eventStatusRecPtr->eventStatusExtended = DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE;
+			eventStatusRecPtr->errorStatusChanged = FALSE;
 		}
 		else {
 			// Error: Event status buffer full
@@ -344,27 +449,46 @@ void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_EventSta
 		}
 	}
 
+
 	if (eventStatusRecPtr != NULL) {
-		// Update event record
-		eventStatusRecPtr->eventStatusExtended &= ~(DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE);
+		// Handle debouncing
+		switch (eventParam->EventClass->PreDebounceAlgorithmClass->PreDebounceName) {
+		case DEM_NO_PRE_DEBOUNCE:
+			eventStatus = preDebounceNone(eventStatus, eventStatusRecPtr);
+			break;
 
+		case DEM_PRE_DEBOUNCE_COUNTER_BASED:
+			eventStatus = preDebounceCounterBased(eventStatus, eventStatusRecPtr);
+			break;
+
+		default:
+			// Don't know how to handle this.
+#if (DEM_DEV_ERROR_DETECT == STD_ON)
+			Det_ReportError(MODULE_ID_DEM, 0, DEM_UPDATE_EVENT_STATUS_ID, DEM_E_NOT_IMPLEMENTED_YET);
+#endif
+			break;
+		}
+
+
+		eventStatusRecPtr->errorStatusChanged = FALSE;
+
+		// Check test failed
 		if (eventStatus == DEM_EVENT_STATUS_FAILED) {
-			eventStatusRecPtr->eventStatusExtended |= (DEM_TEST_FAILED | DEM_TEST_FAILED_THIS_OPERATION_CYCLE | DEM_TEST_FAILED_SINCE_LAST_CLEAR | DEM_PENDING_DTC);
-			if (eventStatusRecPtr->eventStatus != eventStatus) {
+			if (!(eventStatusRecPtr->eventStatusExtended & DEM_TEST_FAILED)) {
 				eventStatusRecPtr->occurrence++;
+				eventStatusRecPtr->errorStatusChanged = TRUE;
 			}
+			eventStatusRecPtr->eventStatusExtended |= (DEM_TEST_FAILED | DEM_TEST_FAILED_THIS_OPERATION_CYCLE | DEM_TEST_FAILED_SINCE_LAST_CLEAR | DEM_PENDING_DTC);
+			eventStatusRecPtr->eventStatusExtended &= ~(DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE);
 		}
 
+		// Check test passed
 		if (eventStatus == DEM_EVENT_STATUS_PASSED) {
+			if (eventStatusRecPtr->eventStatusExtended & DEM_TEST_FAILED) {
+				eventStatusRecPtr->errorStatusChanged = TRUE;
+			}
 			eventStatusRecPtr->eventStatusExtended &= ~DEM_TEST_FAILED;
-		}
-
-		if (eventStatusRecPtr->eventStatus != eventStatus) {
-			eventStatusRecPtr->eventStatus = eventStatus;
-			eventStatusRecPtr->eventStatusChanged = TRUE;
-		}
-		else {
-			eventStatusRecPtr->eventStatusChanged = FALSE;
+			eventStatusRecPtr->eventStatusExtended &= ~(DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE);
 		}
 
 		// Copy the record
@@ -373,10 +497,10 @@ void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_EventSta
 	else {
 		// Copy an empty record to return data
 		eventStatusRec->eventId = DEM_EVENT_ID_NULL;
-		eventStatusRec->eventStatus = DEM_EVENT_STATUS_PASSED;
+		eventStatusRecPtr->faultDetectionCounter = 0;
 		eventStatusRec->occurrence = 0;
-		eventStatusRec->eventStatusChanged = FALSE;
 		eventStatusRec->eventStatusExtended = DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE | DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR;
+		eventStatusRec->errorStatusChanged = FALSE;
 	}
 
 	McuE_ExitCriticalSection(state);
@@ -387,7 +511,7 @@ void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_EventSta
  * Procedure:	mergeEventStatusRec
  * Description:	Update the occurrence counter of status, if not exist a new record is created
  */
-void mergeEventStatusRec(EventRecType *eventRec)
+static void mergeEventStatusRec(EventRecType *eventRec)
 {
 	EventStatusRecType *eventStatusRecPtr;
 	imask_t state = McuE_EnterCriticalSection();
@@ -408,10 +532,10 @@ void mergeEventStatusRec(EventRecType *eventRec)
 			// Create new event, from stored event
 			eventStatusRecPtr->eventId = eventRec->eventId;
 			lookupEventIdParameter(eventRec->eventId, &eventStatusRecPtr->eventParamRef);
+			eventStatusRecPtr->faultDetectionCounter = 0;
 			eventStatusRecPtr->occurrence = eventRec->occurrence;
-			eventStatusRecPtr->eventStatus = DEM_EVENT_STATUS_PASSED;
-			eventStatusRecPtr->eventStatusChanged = FALSE;
 			eventStatusRecPtr->eventStatusExtended = DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE | DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR;
+			eventStatusRecPtr->errorStatusChanged = FALSE;
 		}
 		else {
 			// Error: Event status buffer full
@@ -429,7 +553,7 @@ void mergeEventStatusRec(EventRecType *eventRec)
  * Procedure:	deleteEventStatusRec
  * Description:	Delete the status record of "eventParam->eventId" from "eventStatusBuffer".
  */
-void deleteEventStatusRec(const Dem_EventParameterType *eventParam)
+static void deleteEventStatusRec(const Dem_EventParameterType *eventParam)
 {
 	EventStatusRecType *eventStatusRecPtr;
 	imask_t state = McuE_EnterCriticalSection();
@@ -450,7 +574,7 @@ void deleteEventStatusRec(const Dem_EventParameterType *eventParam)
  * Procedure:	getEventStatusRec
  * Description:	Returns the status record of "eventId" in "eventStatusRec"
  */
-void getEventStatusRec(Dem_EventIdType eventId, EventStatusRecType *eventStatusRec)
+static void getEventStatusRec(Dem_EventIdType eventId, EventStatusRecType *eventStatusRec)
 {
 	EventStatusRecType *eventStatusRecPtr;
 
@@ -463,8 +587,6 @@ void getEventStatusRec(Dem_EventIdType eventId, EventStatusRecType *eventStatusR
 	}
 	else {
 		eventStatusRec->eventId = DEM_EVENT_ID_NULL;
-		eventStatusRec->eventStatus = DEM_EVENT_STATUS_PASSED;
-		eventStatusRec->occurrence = 0;
 	}
 }
 
@@ -474,7 +596,7 @@ void getEventStatusRec(Dem_EventIdType eventId, EventStatusRecType *eventStatusR
  * Description:	Returns TRUE if the DTC was found and "eventStatusRec" points
  * 				to the event record found.
  */
-boolean lookupDtcEvent(uint32 dtc, EventStatusRecType **eventStatusRec)
+static boolean lookupDtcEvent(uint32 dtc, EventStatusRecType **eventStatusRec)
 {
 	boolean dtcFound = FALSE;
 	uint16 i;
@@ -503,7 +625,7 @@ boolean lookupDtcEvent(uint32 dtc, EventStatusRecType **eventStatusRec)
  * Description:	Returns TRUE if the event pointed by "event" fulfill
  * 				the "dtcFilter" global filter settings.
  */
-boolean matchEventWithDtcFilter(const EventStatusRecType *eventRec)
+static boolean matchEventWithDtcFilter(const EventStatusRecType *eventRec)
 {
 	boolean dtcMatch = FALSE;
 
@@ -536,20 +658,20 @@ boolean matchEventWithDtcFilter(const EventStatusRecType *eventRec)
 }
 
 
-void getFreezeFrameData(const Dem_EventParameterType *eventParam, FreezeFrameRecType *freezeFrame)
+static void getFreezeFrameData(const Dem_EventParameterType *eventParam, FreezeFrameRecType *freezeFrame)
 {
 	// TODO: Fill out
 	freezeFrame->eventId = DEM_EVENT_ID_NULL;	// Not supported yet
 }
 
 
-void storeFreezeFrameDataPreInit(const Dem_EventParameterType *eventParam, FreezeFrameRecType *freezeFrame)
+static void storeFreezeFrameDataPreInit(const Dem_EventParameterType *eventParam, FreezeFrameRecType *freezeFrame)
 {
 	// TODO: Fill out
 }
 
 
-void updateFreezeFrameOccurrencePreInit(EventRecType *EventBuffer)
+static void updateFreezeFrameOccurrencePreInit(EventRecType *EventBuffer)
 {
 	// TODO: Fill out
 }
@@ -560,7 +682,7 @@ void updateFreezeFrameOccurrencePreInit(EventRecType *EventBuffer)
  * Description:	Collects the extended data according to "eventParam" and return it in "extData",
  * 				if not found eventId is set to DEM_EVENT_ID_NULL.
  */
-void getExtendedData(const Dem_EventParameterType *eventParam, ExtDataRecType *extData)
+static void getExtendedData(const Dem_EventParameterType *eventParam, ExtDataRecType *extData)
 {
 	Std_ReturnType callbackReturnCode;
 	uint16 i;
@@ -586,7 +708,7 @@ void getExtendedData(const Dem_EventParameterType *eventParam, ExtDataRecType *e
 			else {
 				// Error: Size of extended data record is bigger than reserved space.
 #if (DEM_DEV_ERROR_DETECT == STD_ON)
-				Det_ReportError(MODULE_ID_DEM, 0, DEM_GET_EXTENDED_DATA_ID, DEM_E_EXT_DATA_TO_BIG);
+				Det_ReportError(MODULE_ID_DEM, 0, DEM_GET_EXTENDED_DATA_ID, DEM_E_EXT_DATA_TOO_BIG);
 #endif
 				break;	// Break the loop
 			}
@@ -612,7 +734,7 @@ void getExtendedData(const Dem_EventParameterType *eventParam, ExtDataRecType *e
  * Description:	Store the extended data pointed by "extendedData" to the "preInitExtDataBuffer",
  * 				if non existent a new entry is created.
  */
-void storeExtendedDataPreInit(const Dem_EventParameterType *eventParam, ExtDataRecType *extendedData)
+static void storeExtendedDataPreInit(const Dem_EventParameterType *eventParam, ExtDataRecType *extendedData)
 {
 	uint16 i;
 	imask_t state = McuE_EnterCriticalSection();
@@ -648,7 +770,7 @@ void storeExtendedDataPreInit(const Dem_EventParameterType *eventParam, ExtDataR
  * Description:	Store the event data of "eventStatus->eventId" in "priMemEventBuffer",
  * 				if non existent a new entry is created.
  */
-void storeEventPriMem(const Dem_EventParameterType *eventParam, EventStatusRecType *eventStatus)
+static void storeEventPriMem(const Dem_EventParameterType *eventParam, EventStatusRecType *eventStatus)
 {
 	uint16 i;
 	imask_t state = McuE_EnterCriticalSection();
@@ -687,7 +809,7 @@ void storeEventPriMem(const Dem_EventParameterType *eventParam, EventStatusRecTy
  * Procedure:	deleteEventPriMem
  * Description:	Delete the event data of "eventParam->eventId" from "priMemEventBuffer".
  */
-void deleteEventPriMem(const Dem_EventParameterType *eventParam)
+static void deleteEventPriMem(const Dem_EventParameterType *eventParam)
 {
 	uint16 i;
 	imask_t state = McuE_EnterCriticalSection();
@@ -710,7 +832,7 @@ void deleteEventPriMem(const Dem_EventParameterType *eventParam)
  * Description:	Store the event data of "eventStatus->eventId" in event memory according to
  * 				"eventParam" destination option.
  */
-void storeEventEvtMem(const Dem_EventParameterType *eventParam, EventStatusRecType *eventStatus)
+static void storeEventEvtMem(const Dem_EventParameterType *eventParam, EventStatusRecType *eventStatus)
 {
 	uint16 i;
 
@@ -741,7 +863,7 @@ void storeEventEvtMem(const Dem_EventParameterType *eventParam, EventStatusRecTy
  * Description:	Store the extended data pointed by "extendedData" to the "priMemExtDataBuffer",
  * 				if non existent a new entry is created.
  */
-void storeExtendedDataPriMem(const Dem_EventParameterType *eventParam, ExtDataRecType *extendedData)
+static void storeExtendedDataPriMem(const Dem_EventParameterType *eventParam, ExtDataRecType *extendedData)
 {
 	uint16 i;
 	imask_t state = McuE_EnterCriticalSection();
@@ -775,7 +897,7 @@ void storeExtendedDataPriMem(const Dem_EventParameterType *eventParam, ExtDataRe
  * Procedure:	deleteExtendedDataPriMem
  * Description:	Delete the extended data of "eventParam->eventId" from "priMemExtDataBuffer".
  */
-void deleteExtendedDataPriMem(const Dem_EventParameterType *eventParam)
+static void deleteExtendedDataPriMem(const Dem_EventParameterType *eventParam)
 {
 	uint16 i;
 	imask_t state = McuE_EnterCriticalSection();
@@ -797,7 +919,7 @@ void deleteExtendedDataPriMem(const Dem_EventParameterType *eventParam)
  * Description:	Store the extended data in event memory according to
  * 				"eventParam" destination option
  */
-void storeExtendedDataEvtMem(const Dem_EventParameterType *eventParam, ExtDataRecType *extendedData)
+static void storeExtendedDataEvtMem(const Dem_EventParameterType *eventParam, ExtDataRecType *extendedData)
 {
 	uint16 i;
 
@@ -829,7 +951,7 @@ void storeExtendedDataEvtMem(const Dem_EventParameterType *eventParam, ExtDataRe
  * Description:	Returns TRUE if the requested extended data number was found among the configured records for the event.
  * 				"extDataRecClassPtr" returns a pointer to the record class, "posInExtData" returns the position in stored extended data.
  */
-boolean lookupExtendedDataRecNumParam(uint8 extendedDataNumber, const Dem_EventParameterType *eventParam, Dem_ExtendedDataRecordClassType const **extDataRecClassPtr, uint8 *posInExtData)
+static boolean lookupExtendedDataRecNumParam(uint8 extendedDataNumber, const Dem_EventParameterType *eventParam, Dem_ExtendedDataRecordClassType const **extDataRecClassPtr, uint8 *posInExtData)
 {
 	boolean recNumFound = FALSE;
 
@@ -857,7 +979,7 @@ boolean lookupExtendedDataRecNumParam(uint8 extendedDataNumber, const Dem_EventP
  * Procedure:	lookupExtendedDataPriMem
  * Description: Returns TRUE if the requested event id is found, "extData" points to the found data.
  */
-boolean lookupExtendedDataPriMem(Dem_EventIdType eventId, ExtDataRecType **extData)
+static boolean lookupExtendedDataPriMem(Dem_EventIdType eventId, ExtDataRecType **extData)
 {
 	boolean eventIdFound = FALSE;
 	uint16 i;
@@ -875,13 +997,13 @@ boolean lookupExtendedDataPriMem(Dem_EventIdType eventId, ExtDataRecType **extDa
 }
 
 
-void storeFreezeFrameDataPriMem(const Dem_EventParameterType *eventParam, FreezeFrameRecType *freezeFrame)
+static void storeFreezeFrameDataPriMem(const Dem_EventParameterType *eventParam, FreezeFrameRecType *freezeFrame)
 {
 	// TODO: Fill out
 }
 
 
-void deleteFreezeFrameDataPriMem(const Dem_EventParameterType *eventParam)
+static void deleteFreezeFrameDataPriMem(const Dem_EventParameterType *eventParam)
 {
 	// TODO: Fill out
 }
@@ -892,7 +1014,7 @@ void deleteFreezeFrameDataPriMem(const Dem_EventParameterType *eventParam)
  * Description:	Store the freeze frame data in event memory according to
  * 				"eventParam" destination option
  */
-void storeFreezeFrameDataEvtMem(const Dem_EventParameterType *eventParam, FreezeFrameRecType *freezeFrame)
+static void storeFreezeFrameDataEvtMem(const Dem_EventParameterType *eventParam, FreezeFrameRecType *freezeFrame)
 {
 	uint16 i;
 
@@ -923,7 +1045,7 @@ void storeFreezeFrameDataEvtMem(const Dem_EventParameterType *eventParam, Freeze
  * Description:	Handle the updating of event status and storing of
  * 				event related data in preInit buffers.
  */
-void handlePreInitEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus)
+static void handlePreInitEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus)
 {
 	const Dem_EventParameterType *eventParam;
 	EventStatusRecType eventStatusLocal;
@@ -935,16 +1057,16 @@ void handlePreInitEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus
 	if (eventParam != NULL) {
 		if (eventParam->EventClass->OperationCycleRef < DEM_OPERATION_CYCLE_ID_ENDMARK) {
 			if (operationCycleStateList[eventParam->EventClass->OperationCycleRef] == DEM_CYCLE_STATE_START) {
-				if (eventStatus == DEM_EVENT_STATUS_PASSED) {
-					updateEventStatusRec(eventParam, eventStatus, FALSE, &eventStatusLocal);
-				}
-				else {
+				if (eventStatus == DEM_EVENT_STATUS_FAILED) {
 					updateEventStatusRec(eventParam, eventStatus, TRUE, &eventStatusLocal);
 				}
+				else {
+					updateEventStatusRec(eventParam, eventStatus, FALSE, &eventStatusLocal);
+				}
 
-				if (eventStatusLocal.eventStatusChanged) {
+				if (eventStatusLocal.errorStatusChanged) {
 
-					if (eventStatusLocal.eventStatus == DEM_EVENT_STATUS_FAILED) {
+					if (eventStatusLocal.eventStatusExtended & DEM_TEST_FAILED) {
 						// Collect freeze frame data
 						getFreezeFrameData(eventParam, &freezeFrameLocal);
 						if (freezeFrameLocal.eventId != DEM_EVENT_ID_NULL) {
@@ -981,7 +1103,7 @@ void handlePreInitEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus
  * Description:	Handle the updating of event status and storing of
  * 				event related data in event memory.
  */
-Std_ReturnType handleEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus)
+static Std_ReturnType handleEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus)
 {
 	Std_ReturnType returnCode = E_OK;
 	const Dem_EventParameterType *eventParam;
@@ -996,8 +1118,8 @@ Std_ReturnType handleEvent(Dem_EventIdType eventId, Dem_EventStatusType eventSta
 			if (operationCycleStateList[eventParam->EventClass->OperationCycleRef] == DEM_CYCLE_STATE_START) {
 				if (!(disableDtcStorage.storageDisabled && checkDtcGroup(disableDtcStorage.dtcGroup, eventParam) && checkDtcKind(disableDtcStorage.dtcKind, eventParam)))  {
 					updateEventStatusRec(eventParam, eventStatus, TRUE, &eventStatusLocal);
-					if (eventStatusLocal.eventStatusChanged) {
-						if (eventStatusLocal.eventStatus == DEM_EVENT_STATUS_FAILED) {
+					if (eventStatusLocal.errorStatusChanged) {
+						if (eventStatusLocal.eventStatusExtended & DEM_TEST_FAILED) {
 							storeEventEvtMem(eventParam, &eventStatusLocal);
 							// Collect freeze frame data
 							getFreezeFrameData(eventParam, &freezeFrameLocal);
@@ -1035,10 +1157,28 @@ Std_ReturnType handleEvent(Dem_EventIdType eventId, Dem_EventStatusType eventSta
 
 
 /*
+ * Procedure:	resetEventStatus
+ * Description:	Resets the events status of eventId.
+ */
+static void resetEventStatus(Dem_EventIdType eventId)
+{
+	imask_t state = McuE_EnterCriticalSection();
+	EventStatusRecType *eventStatusRecPtr;
+
+	lookupEventStatusRec(eventId, &eventStatusRecPtr);
+	if (eventStatusRecPtr != NULL) {
+		eventStatusRecPtr->eventStatusExtended &= ~DEM_TEST_FAILED;
+	}
+
+	McuE_ExitCriticalSection(state);
+}
+
+
+/*
  * Procedure:	getEventStatus
  * Description:	Returns the extended event status bitmask of eventId in "eventStatusExtended".
  */
-void getEventStatus(Dem_EventIdType eventId, Dem_EventStatusExtendedType *eventStatusExtended)
+static void getEventStatus(Dem_EventIdType eventId, Dem_EventStatusExtendedType *eventStatusExtended)
 {
 	EventStatusRecType eventStatusLocal;
 
@@ -1058,7 +1198,7 @@ void getEventStatus(Dem_EventIdType eventId, Dem_EventStatusExtendedType *eventS
  * Procedure:	getEventFailed
  * Description:	Returns the TRUE or FALSE of "eventId" in "eventFailed" depending on current status.
  */
-void getEventFailed(Dem_EventIdType eventId, boolean *eventFailed)
+static void getEventFailed(Dem_EventIdType eventId, boolean *eventFailed)
 {
 	EventStatusRecType eventStatusLocal;
 
@@ -1084,7 +1224,7 @@ void getEventFailed(Dem_EventIdType eventId, boolean *eventFailed)
  * Description:	Returns the TRUE or FALSE of "eventId" in "eventTested" depending on
  * 				current status the "test not completed this operation cycle" bit.
  */
-void getEventTested(Dem_EventIdType eventId, boolean *eventTested)
+static void getEventTested(Dem_EventIdType eventId, boolean *eventTested)
 {
 	EventStatusRecType eventStatusLocal;
 
@@ -1110,7 +1250,7 @@ void getEventTested(Dem_EventIdType eventId, boolean *eventTested)
  * Description:	Returns pre debounce counter of "eventId" in "counter" and return value E_OK if
  * 				the counter was available else E_NOT_OK.
  */
-Std_ReturnType getFaultDetectionCounter(Dem_EventIdType eventId, sint8 *counter)
+static Std_ReturnType getFaultDetectionCounter(Dem_EventIdType eventId, sint8 *counter)
 {
 	Std_ReturnType returnCode = E_NOT_OK;
 	const Dem_EventParameterType *eventParam;
@@ -1122,11 +1262,26 @@ Std_ReturnType getFaultDetectionCounter(Dem_EventIdType eventId, sint8 *counter)
 			{
 			case DEM_NO_PRE_DEBOUNCE:
 				if (eventParam->EventClass->PreDebounceAlgorithmClass->PreDebounceAlgorithm.PreDebounceMonitorInternal != NULL) {
-					returnCode = eventParam->EventClass->PreDebounceAlgorithmClass->PreDebounceAlgorithm.PreDebounceMonitorInternal->CallbackGetFDCntFnc(counter);
+					if (eventParam->EventClass->PreDebounceAlgorithmClass->PreDebounceAlgorithm.PreDebounceMonitorInternal->CallbackGetFDCntFnc != NULL) {
+						returnCode = eventParam->EventClass->PreDebounceAlgorithmClass->PreDebounceAlgorithm.PreDebounceMonitorInternal->CallbackGetFDCntFnc(counter);
+					}
 				}
 				break;
 
 			case DEM_PRE_DEBOUNCE_COUNTER_BASED:
+				{
+					EventStatusRecType *eventStatusRec;
+
+					lookupEventStatusRec(eventId, &eventStatusRec);
+					if (eventStatusRec != NULL) {
+						*counter = eventStatusRec->faultDetectionCounter;
+					} else {
+						*counter = 0;
+					}
+					returnCode = E_OK;
+				}
+				break;
+
 			case DEM_PRE_DEBOUNCE_FREQUENCY_BASED:
 			case DEM_PRE_DEBOUNCE_TIME_BASED:
 #if (DEM_DEV_ERROR_DETECT == STD_ON)
@@ -1153,7 +1308,7 @@ Std_ReturnType getFaultDetectionCounter(Dem_EventIdType eventId, sint8 *counter)
  * 				event connected to this cycle id.
  * 				Returns E_OK if operation was successful else E_NOT_OK.
  */
-Std_ReturnType setOperationCycleState(Dem_OperationCycleIdType operationCycleId, Dem_OperationCycleStateType cycleState)
+static Std_ReturnType setOperationCycleState(Dem_OperationCycleIdType operationCycleId, Dem_OperationCycleStateType cycleState)
 {
 	uint16 i;
 	Std_ReturnType returnCode = E_OK;
@@ -1252,10 +1407,11 @@ void Dem_PreInit(void)
 	// Initialize the event status buffer
 	for (i = 0; i < DEM_MAX_NUMBER_EVENT; i++) {
 		eventStatusBuffer[i].eventId = DEM_EVENT_ID_NULL;
+		eventStatusBuffer[i].eventParamRef = NULL;
+		eventStatusBuffer[i].faultDetectionCounter = 0;
 		eventStatusBuffer[i].occurrence = 0;
 		eventStatusBuffer[i].eventStatusExtended = DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE | DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR;
-		eventStatusBuffer[i].eventStatus = DEM_EVENT_STATUS_PASSED;
-		eventStatusBuffer[i].eventStatusChanged = FALSE;
+		eventStatusBuffer[i].errorStatusChanged = FALSE;
 	}
 
 	// Initialize the pre init buffers
@@ -1432,16 +1588,11 @@ Std_ReturnType Dem_SetEventStatus(Dem_EventIdType eventId, Dem_EventStatusType e
  */
 Std_ReturnType Dem_ResetEventStatus(Dem_EventIdType eventId)
 {
-	const Dem_EventParameterType *eventParam;
-	EventStatusRecType eventStatusLocal;
 	Std_ReturnType returnCode = E_OK;
 
 	if (demState == DEM_INITIALIZED) // No action is taken if the module is not started
 	{
-		lookupEventIdParameter(eventId, &eventParam);
-		if (eventParam != NULL) {
-			updateEventStatusRec(eventParam, DEM_EVENT_STATUS_PASSED, FALSE, &eventStatusLocal);
-		}
+		resetEventStatus(eventId);
 	}
 	else
 	{
@@ -1624,10 +1775,7 @@ void Dem_ReportErrorStatus( Dem_EventIdType eventId, Dem_EventStatusType eventSt
 			break;
 
 		case DEM_INITIALIZED:
-			// Handle report
-			if ((eventStatus == DEM_EVENT_STATUS_PASSED) || (eventStatus == DEM_EVENT_STATUS_FAILED)) {
-				(void)handleEvent(eventId, eventStatus);
-			}
+			(void)handleEvent(eventId, eventStatus);
 			break;
 
 		case DEM_UNINITIALIZED:

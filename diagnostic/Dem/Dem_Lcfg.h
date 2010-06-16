@@ -157,27 +157,34 @@ typedef struct {
 	Dem_IndicatorType		*LinkedIndicator;			// (1)
 } Dem_IndicatorAttributeType;
 
+// 10.2.23 DemPreDebounceMonitorInternal
 typedef struct {
 	Dem_CallbackGetFaultDetectionCounterFncType	CallbackGetFDCntFnc;	// (1)
 } Dem_PreDebounceMonitorInternalType;
 
+// 10.2.21 DemPreDebounceCounterBased
 typedef struct {
-	// TODO: Fill out
+	boolean	JumpUp;
+	boolean	JumpDown;
+	uint8	CountInStepSize;
+	uint8	CountOutStepSize;
 } Dem_PreDebounceCounterBasedType;
 
+// 10.2.22 DemPreDebounceFrequencyBased
 typedef struct {
 	// TODO: Fill out
 } Dem_PreDebounceFrequencyBasedType;
 
+// 10.2.24 DemPreDebounceTimeBased
 typedef struct {
 	// TODO: Fill out
 } Dem_PreDebounceTimeBasedType;
 
 typedef struct {
-	Dem_PreDebounceNameType		PreDebounceName;						// (1)
+	Dem_PreDebounceNameType						PreDebounceName;				// (1)
 	union {
 	const Dem_PreDebounceMonitorInternalType	*PreDebounceMonitorInternal;	// (0..1)
-	const Dem_PreDebounceCounterBasedType		*PreDebounceCouterBased;		// (0..1)
+	const Dem_PreDebounceCounterBasedType		*PreDebounceCounterBased;		// (0..1)
 	const Dem_PreDebounceFrequencyBasedType		*PreDebounceFrequencyBased;		// (0..1)
 	const Dem_PreDebounceTimeBasedType			*PreDebounceTimeBased;			// (0..1)
 	} PreDebounceAlgorithm;
