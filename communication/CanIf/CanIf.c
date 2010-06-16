@@ -788,8 +788,10 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
         break;
 
         case CANIF_USER_TYPE_CAN_NM:
+#if defined(USE_CANNM)
         	CanNm_RxIndication(entry->CanIfCanRxPduId,CanSduPtr);
         	return;
+#endif
         	break;
 
         case CANIF_USER_TYPE_CAN_PDUR:
