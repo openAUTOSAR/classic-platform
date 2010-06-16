@@ -121,7 +121,8 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
 		// Send IPdu!
 		if (PduR_ComTransmit(IPdu->ArcIPduOutgoingId, &Com_Arc_Config.OutgoingPdu) == E_OK) {
 			// Clear all update bits for the contained signals
-			for (int i = 0; i < Arc_IPdu->NComIPduSignalRef; i++) {
+			for (int i = 0; IPdu->ComIPduSignalRef != NULL && IPdu->ComIPduSignalRef[i] != NULL; i++) {
+			//for (int i = 0; i < Arc_IPdu->NComIPduSignalRef; i++) {
 				if (IPdu->ComIPduSignalRef[i]->ComSignalArcUseUpdateBit) {
 					clearBit(Arc_IPdu->ComIPduDataPtr, IPdu->ComIPduSignalRef[i]->ComUpdateBitPosition);
 				}

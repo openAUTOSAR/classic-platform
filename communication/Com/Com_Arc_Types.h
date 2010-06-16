@@ -28,7 +28,7 @@ typedef struct {
 
 typedef struct {
 
-	Com_Arc_Filter_type ComFilter;
+	//Com_Arc_Filter_type ComFilter;
 
 	uint32 Com_Arc_DeadlineCounter;
 	uint32 ComTimeoutFactor;
@@ -74,9 +74,9 @@ typedef struct {
 	Com_Arc_TxIPduTimer_type Com_Arc_TxIPduTimers;
 	void *ComIPduDataPtr;
 
-	uint8 Com_Arc_NIPduSignalGroupRef;
+	//uint8 Com_Arc_NIPduSignalGroupRef;
 
-	uint8 NComIPduSignalRef;
+	//uint8 NComIPduSignalRef;
 
 	uint8 Com_Arc_IpduStarted;
 
