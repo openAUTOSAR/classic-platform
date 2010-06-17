@@ -55,9 +55,9 @@ void etask_1( void ) {
 
 	LDEBUG_PRINTF("etask_1 start\n");
 	for(;;) {
-		SetEvent(TASK_ID_etask_2,EVENT_1);
-		WaitEvent(EVENT_2);
-		ClearEvent(EVENT_2);
+		SetEvent(TASK_ID_etask_2,EVENT_MASK_EVENT_1);
+		WaitEvent(EVENT_MASK_EVENT_2);
+		ClearEvent(EVENT_MASK_EVENT_2);
 		tryFloatingPoint += 1.0F;
 		GetTaskID(&currTask);
 		Os_Arc_GetStackInfo(currTask,&si);
@@ -75,8 +75,8 @@ void etask_2( void ) {
 	LDEBUG_PRINTF("etask_2 start\n");
 
 	for(;;) {
-		WaitEvent(EVENT_1);
-		ClearEvent(EVENT_1);
+		WaitEvent(EVENT_MASK_EVENT_1);
+		ClearEvent(EVENT_MASK_EVENT_1);
 		ActivateTask(TASK_ID_btask_3);
 		{
 			StackInfoType si;

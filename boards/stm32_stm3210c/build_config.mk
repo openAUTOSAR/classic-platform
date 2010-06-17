@@ -24,12 +24,12 @@ CFG+=STM32_CL
 
 # What buildable modules does this board have, 
 # default or private
-MOD_AVAIL=KERNEL MCU ECUM PWM ADC DIO PORT FLS CAN COM CAN CANIF SIMPLE_PRINTF ARM_ITM_TERM RAMLOG DEM IOHWAB
 
-#
-# Modules needed by us
-#
-MOD_USE=KERNEL MCU
+MOD_AVAIL+=ADC CAN DIO MCU FLS PORT PWM     
+# System + Communication + Diagnostic
+MOD_AVAIL+=CANIF CANTP COM DCM DEM DET ECUM IOHWAB KERNEL PDUR WDGM
+# Additional
+MOD_AVAIL+=COMMON NEWLIB RAMLOG 
 
 #
 # Extra defines 

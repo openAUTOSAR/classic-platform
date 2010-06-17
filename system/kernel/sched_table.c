@@ -77,6 +77,8 @@
 extern TickType GetCountValue( OsCounterType *counter );
 
 
+static void Os_SchTblUpdateState( OsSchTblType *stbl );
+
 #if 0
 enum OsScheduleTableSyncStrategy getSyncStrategy( OsSchTblType *stblPtr ) {
 	return stblPtr->sync.syncStrategy;
@@ -616,7 +618,7 @@ void Os_SchTblAutostart( void ) {
  *
  * @param stbl Ptr to a Schedule Table.
  */
-void Os_SchTblUpdateState( OsSchTblType *stbl ) {
+static void Os_SchTblUpdateState( OsSchTblType *stbl ) {
 
 	TickType delta;
 	TickType initalOffset;

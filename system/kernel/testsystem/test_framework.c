@@ -15,6 +15,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "Platform_Types.h"
 #include "test_framework.h"
 #include "Cpu.h"
