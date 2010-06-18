@@ -38,7 +38,6 @@ else
 	export SED=sed
 endif
 
-
 Q?=@
 export Q
 export TOPDIR = $(CURDIR)
@@ -65,7 +64,8 @@ export USE_T32_SIM
 # Tools
 # Ugly thing to make things work under cmd.exe 
 PATH := /usr/bin/:$(PATH) 
-find := $(shell which find)
+#find := $(shell which find)
+FIND := /bin/find
 
 export objdir = obj_$(BOARDDIR)
 
@@ -103,7 +103,7 @@ export def-y+=$(CFG_ARCH_$(ARCH)) $(CFG_MCU) $(CFG_CPU)
 comma:= ,
 split = $(subst $(comma), ,$(1))
 dir_cmd_goals  := $(call split,$(BDIR))
-cmd_cmd_goals := $(filter clean all,$(MAKECMDGOALS))
+cmd_cmd_goals := $(filter clean all config,$(MAKECMDGOALS))
 
 # Check for CROSS_COMPILE
 ifneq ($(cmd_cmd_goals),)
@@ -113,7 +113,7 @@ ifneq ($(cmd_cmd_goals),)
 
 # Check that the board actually exist
 ifdef BOARDDIR
-  all_boards := $(subst boards/,,$(shell find boards/ -maxdepth 1 -type d))
+  all_boards := $(subst boards/,,$(shell $(FIND) boards/ -maxdepth 1 -type d))
   ifeq ($(filter $(BOARDDIR),$(all_boards)),)
   	$(error no such board: $(BOARDDIR), valid boards are: $(all_boards))
   endif
@@ -121,6 +121,7 @@ endif
 
 # Check BDIR
 endif
+
 libs:
 	mkdir -p $@
 

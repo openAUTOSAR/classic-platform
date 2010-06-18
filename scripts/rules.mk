@@ -74,11 +74,12 @@ inc-y += $(ROOTDIR)/include/$(ARCH_FAM)
 
 .PHONY config:
 
-config:
+config: FORCE
 	@echo "board   modules:" $(MOD_AVAIL)
 	@echo "example modules:" $(MOD_USE)
 	@echo $(MOD) ${def-y}
 
+FORCE:
 
 $(ROOTDIR)/binaries:
 	@mkdir -p $@

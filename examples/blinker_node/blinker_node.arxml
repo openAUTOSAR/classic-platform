@@ -1,0 +1,498 @@
+<!-- quirksmode -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+<title>Repositories - Arctic Core - the open source AUTOSAR embedded platform</title>
+
+<meta name="robots" content="index, nofollow" />
+
+<link rel="stylesheet" type="text/css" href="/css,Styles/hgStyles.css">
+<link rel="stylesheet" href="/css,Styles/site.css" type="text/css" />
+
+<link rel="icon" href="/favicon.ico" type="image/x-icon" />
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" /> 
+	
+
+<body>
+
+<div id="page">
+  <div id="header">
+    <!-- This div is a place holder used to make this html work in genshi. Do not remove! -->
+  <div>
+  <div id="logo">
+    <a href="http://arccore.com">
+      <img style="border:none;" src="/img/ArcCoreLogo.gif" alt="Arctic Core Logo" />
+    </a>
+  </div>
+  <ul>
+      <li>
+      	<a href="http://arccore.com/download">
+      		<span class="headerBold">Download</span><br />
+      		<span class="headerSmall">Core and Studio</span>
+      	</a>
+      </li>
+	  <li>
+	  	<a href="http://arccore.com/about">
+	  		<span class="headerBold">About</span><br />
+	  		<span class="headerSmall">products and us</span>
+	  	</a>
+	  </li>
+	  <li>
+	  	<a href="https://arccore.com/forum/">
+	  		<span class="headerBold">Discuss</span><br />
+	  		<span class="headerSmall">in our forum</span>
+	  	</a>
+	  </li>
+	  <li>
+	  	<a href="http://arccore.com/wiki/Main_Page">
+	  		<span class="headerBold">Get Help</span><br />
+	  		<span class="headerSmall">in our wiki</span>
+	  	</a>
+	  </li>
+	  <li>
+	  	<a href="http://arccore.com/resources">
+	  		<span class="headerBold">Resources</span><br />
+	  		<span class="headerSmall">for your service</span>
+	  	</a>
+	  </li>
+	  <li>
+	  	<a href="http://arccore.com/buy">
+	  		<span class="headerBold">Buy</span><br />
+	  		<span class="headerSmall">licenses</span>
+	  	</a>
+	  </li>
+	</ul>
+	</div>
+		
+  </div>
+  
+  <div id="middle">
+ 
+
+<div class="container">
+<div class="menu">
+<ul>
+<li><a href="/hg/arc/shortlog/7d4147f1df99">log</a></li>
+<li><a href="/hg/arc/graph/7d4147f1df99">graph</a></li>
+<li><a href="/hg/arc/tags">tags</a></li>
+</ul>
+<ul>
+<li><a href="/hg/arc/rev/7d4147f1df99">changeset</a></li>
+<li><a href="/hg/arc/file/7d4147f1df99/examples/blinker_node/">browse</a></li>
+</ul>
+<ul>
+<li class="active">file</li>
+<li><a href="/hg/arc/diff/7d4147f1df99/examples/blinker_node/blinker_node.arxml">diff</a></li>
+<li><a href="/hg/arc/annotate/7d4147f1df99/examples/blinker_node/blinker_node.arxml">annotate</a></li>
+<li><a href="/hg/arc/log/7d4147f1df99/examples/blinker_node/blinker_node.arxml">file log</a></li>
+<li><a href="/hg/arc/raw-file/7d4147f1df99/examples/blinker_node/blinker_node.arxml">raw</a></li>
+</ul>
+</div>
+
+<div class="main">
+<h2><a href="/hg/arc/">arc</a></h2>
+<h3>view examples/blinker_node/blinker_node.arxml @ 382:7d4147f1df99</h3>
+
+<form class="search" action="/hg/arc/log">
+
+<p><input name="rev" id="search1" type="text" size="30"></p>
+<span>find changesets by author, revision,
+files, or words in the commit message</span>
+</form>
+
+<div class="description">Starting 'maek-com' branch</div>
+
+<table id="changesetEntry">
+<tr>
+ <th class="author">author</th>
+ <td class="author">&#109;&#97;&#101;&#107;</td>
+</tr>
+<tr>
+ <th class="date">date</th>
+ <td class="date">Wed Jun 16 15:48:28 2010 +0200 (18 hours ago)</td>
+</tr>
+<tr>
+ <th class="author">parents</th>
+ <td class="author"><a href="/hg/arc/file/6c412ea6f592/examples/blinker_node/blinker_node.arxml">6c412ea6f592</a> <a href="/hg/arc/file/5b01ac4b6d3c/examples/blinker_node/blinker_node.arxml">5b01ac4b6d3c</a> </td>
+</tr>
+<tr>
+ <th class="author">children</th>
+ <td class="author"></td>
+</tr>
+
+</table>
+
+<div class="overflow">
+<div class="sourcefirst"> line source</div>
+<div class="parity0 source"><a href="#l1" id="l1">     1</a> &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+</div><div class="parity1 source"><a href="#l2" id="l2">     2</a> &lt;AUTOSAR xmlns=&quot;http://autosar.org/3.1.2&quot;&gt;&lt;TOP-LEVEL-PACKAGES&gt;
+</div><div class="parity0 source"><a href="#l3" id="l3">     3</a>     &lt;AR-PACKAGE UUID=&quot;b715bb9d-eec4-4ac5-acdb-a63c2c5c7b2f&quot;&gt;
+</div><div class="parity1 source"><a href="#l4" id="l4">     4</a>       &lt;SHORT-NAME&gt;blinker_node&lt;/SHORT-NAME&gt;
+</div><div class="parity0 source"><a href="#l5" id="l5">     5</a>       &lt;CATEGORY&gt;EcuConfiguration&lt;/CATEGORY&gt;
+</div><div class="parity1 source"><a href="#l6" id="l6">     6</a>       &lt;ADMIN-DATA&gt;
+</div><div class="parity0 source"><a href="#l7" id="l7">     7</a>         &lt;DOC-REVISIONS&gt;
+</div><div class="parity1 source"><a href="#l8" id="l8">     8</a>           &lt;DOC-REVISION&gt;
+</div><div class="parity0 source"><a href="#l9" id="l9">     9</a>             &lt;ISSUED-BY/&gt;
+</div><div class="parity1 source"><a href="#l10" id="l10">    10</a>           &lt;/DOC-REVISION&gt;
+</div><div class="parity0 source"><a href="#l11" id="l11">    11</a>         &lt;/DOC-REVISIONS&gt;
+</div><div class="parity1 source"><a href="#l12" id="l12">    12</a>       &lt;/ADMIN-DATA&gt;
+</div><div class="parity0 source"><a href="#l13" id="l13">    13</a>       &lt;ELEMENTS&gt;
+</div><div class="parity1 source"><a href="#l14" id="l14">    14</a>         &lt;ECU-CONFIGURATION UUID=&quot;194b9abc-510c-4b5e-8486-65c5b26772af&quot;&gt;
+</div><div class="parity0 source"><a href="#l15" id="l15">    15</a>           &lt;SHORT-NAME&gt;blinker_node&lt;/SHORT-NAME&gt;
+</div><div class="parity1 source"><a href="#l16" id="l16">    16</a>           &lt;ADMIN-DATA&gt;
+</div><div class="parity0 source"><a href="#l17" id="l17">    17</a>             &lt;DOC-REVISIONS&gt;
+</div><div class="parity1 source"><a href="#l18" id="l18">    18</a>               &lt;DOC-REVISION&gt;
+</div><div class="parity0 source"><a href="#l19" id="l19">    19</a>                 &lt;REVISION-LABEL&gt;Rev 2&lt;/REVISION-LABEL&gt;
+</div><div class="parity1 source"><a href="#l20" id="l20">    20</a>               &lt;/DOC-REVISION&gt;
+</div><div class="parity0 source"><a href="#l21" id="l21">    21</a>             &lt;/DOC-REVISIONS&gt;
+</div><div class="parity1 source"><a href="#l22" id="l22">    22</a>             &lt;SDGS&gt;
+</div><div class="parity0 source"><a href="#l23" id="l23">    23</a>               &lt;SDG GID=&quot;Arccore::EcuOptions&quot;&gt;
+</div><div class="parity1 source"><a href="#l24" id="l24">    24</a>                 &lt;SD GID=&quot;MCU&quot;&gt;Undefined MCU&lt;/SD&gt;
+</div><div class="parity0 source"><a href="#l25" id="l25">    25</a>                 &lt;SD GID=&quot;AUTHOR&quot;&gt;ArcCore AB&lt;/SD&gt;
+</div><div class="parity1 source"><a href="#l26" id="l26">    26</a>                 &lt;SD GID=&quot;COPYRIGHT&quot;&gt;Copyright ArcCore AB 2010&lt;/SD&gt;
+</div><div class="parity0 source"><a href="#l27" id="l27">    27</a>                 &lt;SD GID=&quot;GENDIR&quot;&gt;&lt;/SD&gt;
+</div><div class="parity1 source"><a href="#l28" id="l28">    28</a>               &lt;/SDG&gt;
+</div><div class="parity0 source"><a href="#l29" id="l29">    29</a>             &lt;/SDGS&gt;
+</div><div class="parity1 source"><a href="#l30" id="l30">    30</a>           &lt;/ADMIN-DATA&gt;
+</div><div class="parity0 source"><a href="#l31" id="l31">    31</a>           &lt;MODULE-REFS&gt;
+</div><div class="parity1 source"><a href="#l32" id="l32">    32</a>             &lt;MODULE-REF DEST=&quot;MODULE-CONFIGURATION&quot;&gt;/blinker_node/Os&lt;/MODULE-REF&gt;
+</div><div class="parity0 source"><a href="#l33" id="l33">    33</a>           &lt;/MODULE-REFS&gt;
+</div><div class="parity1 source"><a href="#l34" id="l34">    34</a>         &lt;/ECU-CONFIGURATION&gt;
+</div><div class="parity0 source"><a href="#l35" id="l35">    35</a>         &lt;MODULE-CONFIGURATION UUID=&quot;3633db49-329b-4569-8ee7-a7795b97cfb3&quot;&gt;
+</div><div class="parity1 source"><a href="#l36" id="l36">    36</a>           &lt;SHORT-NAME&gt;Os&lt;/SHORT-NAME&gt;
+</div><div class="parity0 source"><a href="#l37" id="l37">    37</a>           &lt;ADMIN-DATA&gt;
+</div><div class="parity1 source"><a href="#l38" id="l38">    38</a>             &lt;SDGS&gt;
+</div><div class="parity0 source"><a href="#l39" id="l39">    39</a>               &lt;SDG/&gt;
+</div><div class="parity1 source"><a href="#l40" id="l40">    40</a>               &lt;SDG GID=&quot;Arccore::ModuleOptions&quot;&gt;
+</div><div class="parity0 source"><a href="#l41" id="l41">    41</a>                 &lt;SD GID=&quot;GENERATE_AND_VALIDATE&quot;&gt;true&lt;/SD&gt;
+</div><div class="parity1 source"><a href="#l42" id="l42">    42</a>                 &lt;SD GID=&quot;ARCCORE_EDITOR_VERSION&quot;&gt;2.0.6&lt;/SD&gt;
+</div><div class="parity0 source"><a href="#l43" id="l43">    43</a>               &lt;/SDG&gt;
+</div><div class="parity1 source"><a href="#l44" id="l44">    44</a>             &lt;/SDGS&gt;
+</div><div class="parity0 source"><a href="#l45" id="l45">    45</a>           &lt;/ADMIN-DATA&gt;
+</div><div class="parity1 source"><a href="#l46" id="l46">    46</a>           &lt;DEFINITION-REF DEST=&quot;MODULE-DEF&quot;&gt;/ArcCore/Os&lt;/DEFINITION-REF&gt;
+</div><div class="parity0 source"><a href="#l47" id="l47">    47</a>           &lt;CONTAINERS&gt;
+</div><div class="parity1 source"><a href="#l48" id="l48">    48</a>             &lt;CONTAINER UUID=&quot;22a1bd13-4119-4c40-84a1-bf19c3b548e4&quot;&gt;
+</div><div class="parity0 source"><a href="#l49" id="l49">    49</a>               &lt;SHORT-NAME&gt;OsOS&lt;/SHORT-NAME&gt;
+</div><div class="parity1 source"><a href="#l50" id="l50">    50</a>               &lt;DEFINITION-REF DEST=&quot;PARAM-CONF-CONTAINER-DEF&quot;&gt;/ArcCore/Os/OsOS&lt;/DEFINITION-REF&gt;
+</div><div class="parity0 source"><a href="#l51" id="l51">    51</a>               &lt;PARAMETER-VALUES&gt;
+</div><div class="parity1 source"><a href="#l52" id="l52">    52</a>                 &lt;BOOLEAN-VALUE&gt;
+</div><div class="parity0 source"><a href="#l53" id="l53">    53</a>                   &lt;DEFINITION-REF DEST=&quot;BOOLEAN-PARAM-DEF&quot;&gt;/ArcCore/Os/OsOS/OsStackMonitoring&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l54" id="l54">    54</a>                   &lt;VALUE&gt;true&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l55" id="l55">    55</a>                 &lt;/BOOLEAN-VALUE&gt;
+</div><div class="parity1 source"><a href="#l56" id="l56">    56</a>                 &lt;ENUMERATION-VALUE&gt;
+</div><div class="parity0 source"><a href="#l57" id="l57">    57</a>                   &lt;DEFINITION-REF DEST=&quot;ENUMERATION-PARAM-DEF&quot;&gt;/ArcCore/Os/OsOS/OsStatus&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l58" id="l58">    58</a>                   &lt;VALUE&gt;EXTENDED&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l59" id="l59">    59</a>                 &lt;/ENUMERATION-VALUE&gt;
+</div><div class="parity1 source"><a href="#l60" id="l60">    60</a>                 &lt;BOOLEAN-VALUE&gt;
+</div><div class="parity0 source"><a href="#l61" id="l61">    61</a>                   &lt;DEFINITION-REF DEST=&quot;BOOLEAN-PARAM-DEF&quot;&gt;/ArcCore/Os/OsOS/OsUseGetServiceId&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l62" id="l62">    62</a>                   &lt;VALUE&gt;true&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l63" id="l63">    63</a>                 &lt;/BOOLEAN-VALUE&gt;
+</div><div class="parity1 source"><a href="#l64" id="l64">    64</a>                 &lt;BOOLEAN-VALUE&gt;
+</div><div class="parity0 source"><a href="#l65" id="l65">    65</a>                   &lt;DEFINITION-REF DEST=&quot;BOOLEAN-PARAM-DEF&quot;&gt;/ArcCore/Os/OsOS/OsUseParameterAccess&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l66" id="l66">    66</a>                   &lt;VALUE&gt;true&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l67" id="l67">    67</a>                 &lt;/BOOLEAN-VALUE&gt;
+</div><div class="parity1 source"><a href="#l68" id="l68">    68</a>                 &lt;BOOLEAN-VALUE&gt;
+</div><div class="parity0 source"><a href="#l69" id="l69">    69</a>                   &lt;DEFINITION-REF DEST=&quot;BOOLEAN-PARAM-DEF&quot;&gt;/ArcCore/Os/OsOS/OsUseResScheduler&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l70" id="l70">    70</a>                   &lt;VALUE&gt;true&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l71" id="l71">    71</a>                 &lt;/BOOLEAN-VALUE&gt;
+</div><div class="parity1 source"><a href="#l72" id="l72">    72</a>                 &lt;INTEGER-VALUE&gt;
+</div><div class="parity0 source"><a href="#l73" id="l73">    73</a>                   &lt;DEFINITION-REF DEST=&quot;INTEGER-PARAM-DEF&quot;&gt;/ArcCore/Os/OsOS/OsTickFrequency&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l74" id="l74">    74</a>                   &lt;VALUE&gt;1000&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l75" id="l75">    75</a>                 &lt;/INTEGER-VALUE&gt;
+</div><div class="parity1 source"><a href="#l76" id="l76">    76</a>                 &lt;INTEGER-VALUE&gt;
+</div><div class="parity0 source"><a href="#l77" id="l77">    77</a>                   &lt;DEFINITION-REF DEST=&quot;INTEGER-PARAM-DEF&quot;&gt;/ArcCore/Os/OsOS/OsInterruptStackSize&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l78" id="l78">    78</a>                   &lt;VALUE&gt;2048&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l79" id="l79">    79</a>                 &lt;/INTEGER-VALUE&gt;
+</div><div class="parity1 source"><a href="#l80" id="l80">    80</a>                 &lt;BOOLEAN-VALUE&gt;
+</div><div class="parity0 source"><a href="#l81" id="l81">    81</a>                   &lt;DEFINITION-REF DEST=&quot;BOOLEAN-PARAM-DEF&quot;&gt;/ArcCore/Os/OsOS/ArcCoreOsUseDebug&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l82" id="l82">    82</a>                   &lt;VALUE&gt;true&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l83" id="l83">    83</a>                 &lt;/BOOLEAN-VALUE&gt;
+</div><div class="parity1 source"><a href="#l84" id="l84">    84</a>                 &lt;BOOLEAN-VALUE&gt;
+</div><div class="parity0 source"><a href="#l85" id="l85">    85</a>                   &lt;DEFINITION-REF DEST=&quot;BOOLEAN-PARAM-DEF&quot;&gt;/ArcCore/Os/OsOS/ArcCoreOsDebugTask&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l86" id="l86">    86</a>                   &lt;VALUE&gt;true&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l87" id="l87">    87</a>                 &lt;/BOOLEAN-VALUE&gt;
+</div><div class="parity1 source"><a href="#l88" id="l88">    88</a>                 &lt;BOOLEAN-VALUE&gt;
+</div><div class="parity0 source"><a href="#l89" id="l89">    89</a>                   &lt;DEFINITION-REF DEST=&quot;BOOLEAN-PARAM-DEF&quot;&gt;/ArcCore/Os/OsOS/ArcCoreOsDebugAlarm&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l90" id="l90">    90</a>                   &lt;VALUE&gt;true&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l91" id="l91">    91</a>                 &lt;/BOOLEAN-VALUE&gt;
+</div><div class="parity1 source"><a href="#l92" id="l92">    92</a>                 &lt;BOOLEAN-VALUE&gt;
+</div><div class="parity0 source"><a href="#l93" id="l93">    93</a>                   &lt;DEFINITION-REF DEST=&quot;BOOLEAN-PARAM-DEF&quot;&gt;/ArcCore/Os/OsOS/ArcCoreOsDebugResource&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l94" id="l94">    94</a>                   &lt;VALUE&gt;true&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l95" id="l95">    95</a>                 &lt;/BOOLEAN-VALUE&gt;
+</div><div class="parity1 source"><a href="#l96" id="l96">    96</a>                 &lt;BOOLEAN-VALUE&gt;
+</div><div class="parity0 source"><a href="#l97" id="l97">    97</a>                   &lt;DEFINITION-REF DEST=&quot;BOOLEAN-PARAM-DEF&quot;&gt;/ArcCore/Os/OsOS/ArcCoreOsDebugScheduleTable&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l98" id="l98">    98</a>                   &lt;VALUE&gt;true&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l99" id="l99">    99</a>                 &lt;/BOOLEAN-VALUE&gt;
+</div><div class="parity1 source"><a href="#l100" id="l100">   100</a>                 &lt;BOOLEAN-VALUE&gt;
+</div><div class="parity0 source"><a href="#l101" id="l101">   101</a>                   &lt;DEFINITION-REF DEST=&quot;BOOLEAN-PARAM-DEF&quot;&gt;/ArcCore/Os/OsOS/ArcCoreOsDebugEvent&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l102" id="l102">   102</a>                   &lt;VALUE&gt;true&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l103" id="l103">   103</a>                 &lt;/BOOLEAN-VALUE&gt;
+</div><div class="parity1 source"><a href="#l104" id="l104">   104</a>               &lt;/PARAMETER-VALUES&gt;
+</div><div class="parity0 source"><a href="#l105" id="l105">   105</a>               &lt;SUB-CONTAINERS&gt;
+</div><div class="parity1 source"><a href="#l106" id="l106">   106</a>                 &lt;CONTAINER UUID=&quot;1e94709e-d025-4e1a-9fd9-bb0092b52ac2&quot;&gt;
+</div><div class="parity0 source"><a href="#l107" id="l107">   107</a>                   &lt;SHORT-NAME&gt;OsHooks&lt;/SHORT-NAME&gt;
+</div><div class="parity1 source"><a href="#l108" id="l108">   108</a>                   &lt;DEFINITION-REF DEST=&quot;PARAM-CONF-CONTAINER-DEF&quot;&gt;/ArcCore/Os/OsOS/OsHooks&lt;/DEFINITION-REF&gt;
+</div><div class="parity0 source"><a href="#l109" id="l109">   109</a>                   &lt;PARAMETER-VALUES&gt;
+</div><div class="parity1 source"><a href="#l110" id="l110">   110</a>                     &lt;BOOLEAN-VALUE&gt;
+</div><div class="parity0 source"><a href="#l111" id="l111">   111</a>                       &lt;DEFINITION-REF DEST=&quot;BOOLEAN-PARAM-DEF&quot;&gt;/ArcCore/Os/OsOS/OsHooks/OsErrorHook&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l112" id="l112">   112</a>                       &lt;VALUE&gt;true&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l113" id="l113">   113</a>                     &lt;/BOOLEAN-VALUE&gt;
+</div><div class="parity1 source"><a href="#l114" id="l114">   114</a>                     &lt;BOOLEAN-VALUE&gt;
+</div><div class="parity0 source"><a href="#l115" id="l115">   115</a>                       &lt;DEFINITION-REF DEST=&quot;BOOLEAN-PARAM-DEF&quot;&gt;/ArcCore/Os/OsOS/OsHooks/OsPostTaskHook&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l116" id="l116">   116</a>                       &lt;VALUE&gt;true&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l117" id="l117">   117</a>                     &lt;/BOOLEAN-VALUE&gt;
+</div><div class="parity1 source"><a href="#l118" id="l118">   118</a>                     &lt;BOOLEAN-VALUE&gt;
+</div><div class="parity0 source"><a href="#l119" id="l119">   119</a>                       &lt;DEFINITION-REF DEST=&quot;BOOLEAN-PARAM-DEF&quot;&gt;/ArcCore/Os/OsOS/OsHooks/OsPreTaskHook&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l120" id="l120">   120</a>                       &lt;VALUE&gt;true&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l121" id="l121">   121</a>                     &lt;/BOOLEAN-VALUE&gt;
+</div><div class="parity1 source"><a href="#l122" id="l122">   122</a>                     &lt;BOOLEAN-VALUE&gt;
+</div><div class="parity0 source"><a href="#l123" id="l123">   123</a>                       &lt;DEFINITION-REF DEST=&quot;BOOLEAN-PARAM-DEF&quot;&gt;/ArcCore/Os/OsOS/OsHooks/OsProtectionHook&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l124" id="l124">   124</a>                       &lt;VALUE&gt;false&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l125" id="l125">   125</a>                     &lt;/BOOLEAN-VALUE&gt;
+</div><div class="parity1 source"><a href="#l126" id="l126">   126</a>                     &lt;BOOLEAN-VALUE&gt;
+</div><div class="parity0 source"><a href="#l127" id="l127">   127</a>                       &lt;DEFINITION-REF DEST=&quot;BOOLEAN-PARAM-DEF&quot;&gt;/ArcCore/Os/OsOS/OsHooks/OsShutdownHook&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l128" id="l128">   128</a>                       &lt;VALUE&gt;true&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l129" id="l129">   129</a>                     &lt;/BOOLEAN-VALUE&gt;
+</div><div class="parity1 source"><a href="#l130" id="l130">   130</a>                     &lt;BOOLEAN-VALUE&gt;
+</div><div class="parity0 source"><a href="#l131" id="l131">   131</a>                       &lt;DEFINITION-REF DEST=&quot;BOOLEAN-PARAM-DEF&quot;&gt;/ArcCore/Os/OsOS/OsHooks/OsStartupHook&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l132" id="l132">   132</a>                       &lt;VALUE&gt;true&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l133" id="l133">   133</a>                     &lt;/BOOLEAN-VALUE&gt;
+</div><div class="parity1 source"><a href="#l134" id="l134">   134</a>                   &lt;/PARAMETER-VALUES&gt;
+</div><div class="parity0 source"><a href="#l135" id="l135">   135</a>                 &lt;/CONTAINER&gt;
+</div><div class="parity1 source"><a href="#l136" id="l136">   136</a>               &lt;/SUB-CONTAINERS&gt;
+</div><div class="parity0 source"><a href="#l137" id="l137">   137</a>             &lt;/CONTAINER&gt;
+</div><div class="parity1 source"><a href="#l138" id="l138">   138</a>             &lt;CONTAINER UUID=&quot;8dd8fa9c-8203-48d9-b607-dbf36364f60e&quot;&gt;
+</div><div class="parity0 source"><a href="#l139" id="l139">   139</a>               &lt;SHORT-NAME&gt;bTask25&lt;/SHORT-NAME&gt;
+</div><div class="parity1 source"><a href="#l140" id="l140">   140</a>               &lt;DEFINITION-REF DEST=&quot;PARAM-CONF-CONTAINER-DEF&quot;&gt;/ArcCore/Os/OsTask&lt;/DEFINITION-REF&gt;
+</div><div class="parity0 source"><a href="#l141" id="l141">   141</a>               &lt;PARAMETER-VALUES&gt;
+</div><div class="parity1 source"><a href="#l142" id="l142">   142</a>                 &lt;INTEGER-VALUE&gt;
+</div><div class="parity0 source"><a href="#l143" id="l143">   143</a>                   &lt;DEFINITION-REF DEST=&quot;INTEGER-PARAM-DEF&quot;&gt;/ArcCore/Os/OsTask/OsTaskActivation&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l144" id="l144">   144</a>                   &lt;VALUE&gt;1&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l145" id="l145">   145</a>                 &lt;/INTEGER-VALUE&gt;
+</div><div class="parity1 source"><a href="#l146" id="l146">   146</a>                 &lt;INTEGER-VALUE&gt;
+</div><div class="parity0 source"><a href="#l147" id="l147">   147</a>                   &lt;DEFINITION-REF DEST=&quot;INTEGER-PARAM-DEF&quot;&gt;/ArcCore/Os/OsTask/OsTaskPriority&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l148" id="l148">   148</a>                   &lt;VALUE&gt;1&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l149" id="l149">   149</a>                 &lt;/INTEGER-VALUE&gt;
+</div><div class="parity1 source"><a href="#l150" id="l150">   150</a>                 &lt;ENUMERATION-VALUE&gt;
+</div><div class="parity0 source"><a href="#l151" id="l151">   151</a>                   &lt;DEFINITION-REF DEST=&quot;ENUMERATION-PARAM-DEF&quot;&gt;/ArcCore/Os/OsTask/OsTaskProcessType&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l152" id="l152">   152</a>                   &lt;VALUE&gt;BASIC&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l153" id="l153">   153</a>                 &lt;/ENUMERATION-VALUE&gt;
+</div><div class="parity1 source"><a href="#l154" id="l154">   154</a>                 &lt;INTEGER-VALUE&gt;
+</div><div class="parity0 source"><a href="#l155" id="l155">   155</a>                   &lt;DEFINITION-REF DEST=&quot;INTEGER-PARAM-DEF&quot;&gt;/ArcCore/Os/OsTask/ArcCoreOsTaskStackSize&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l156" id="l156">   156</a>                   &lt;VALUE&gt;2048&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l157" id="l157">   157</a>                 &lt;/INTEGER-VALUE&gt;
+</div><div class="parity1 source"><a href="#l158" id="l158">   158</a>                 &lt;ENUMERATION-VALUE&gt;
+</div><div class="parity0 source"><a href="#l159" id="l159">   159</a>                   &lt;DEFINITION-REF DEST=&quot;ENUMERATION-PARAM-DEF&quot;&gt;/ArcCore/Os/OsTask/OsTaskSchedule&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l160" id="l160">   160</a>                   &lt;VALUE&gt;FULL&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l161" id="l161">   161</a>                 &lt;/ENUMERATION-VALUE&gt;
+</div><div class="parity1 source"><a href="#l162" id="l162">   162</a>               &lt;/PARAMETER-VALUES&gt;
+</div><div class="parity0 source"><a href="#l163" id="l163">   163</a>             &lt;/CONTAINER&gt;
+</div><div class="parity1 source"><a href="#l164" id="l164">   164</a>             &lt;CONTAINER UUID=&quot;e33395cc-d24f-4396-9143-dc526ab1be98&quot;&gt;
+</div><div class="parity0 source"><a href="#l165" id="l165">   165</a>               &lt;SHORT-NAME&gt;bTask100&lt;/SHORT-NAME&gt;
+</div><div class="parity1 source"><a href="#l166" id="l166">   166</a>               &lt;DEFINITION-REF DEST=&quot;PARAM-CONF-CONTAINER-DEF&quot;&gt;/ArcCore/Os/OsTask&lt;/DEFINITION-REF&gt;
+</div><div class="parity0 source"><a href="#l167" id="l167">   167</a>               &lt;PARAMETER-VALUES&gt;
+</div><div class="parity1 source"><a href="#l168" id="l168">   168</a>                 &lt;INTEGER-VALUE&gt;
+</div><div class="parity0 source"><a href="#l169" id="l169">   169</a>                   &lt;DEFINITION-REF DEST=&quot;INTEGER-PARAM-DEF&quot;&gt;/ArcCore/Os/OsTask/OsTaskActivation&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l170" id="l170">   170</a>                   &lt;VALUE&gt;1&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l171" id="l171">   171</a>                 &lt;/INTEGER-VALUE&gt;
+</div><div class="parity1 source"><a href="#l172" id="l172">   172</a>                 &lt;INTEGER-VALUE&gt;
+</div><div class="parity0 source"><a href="#l173" id="l173">   173</a>                   &lt;DEFINITION-REF DEST=&quot;INTEGER-PARAM-DEF&quot;&gt;/ArcCore/Os/OsTask/OsTaskPriority&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l174" id="l174">   174</a>                   &lt;VALUE&gt;1&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l175" id="l175">   175</a>                 &lt;/INTEGER-VALUE&gt;
+</div><div class="parity1 source"><a href="#l176" id="l176">   176</a>                 &lt;ENUMERATION-VALUE&gt;
+</div><div class="parity0 source"><a href="#l177" id="l177">   177</a>                   &lt;DEFINITION-REF DEST=&quot;ENUMERATION-PARAM-DEF&quot;&gt;/ArcCore/Os/OsTask/OsTaskProcessType&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l178" id="l178">   178</a>                   &lt;VALUE&gt;BASIC&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l179" id="l179">   179</a>                 &lt;/ENUMERATION-VALUE&gt;
+</div><div class="parity1 source"><a href="#l180" id="l180">   180</a>                 &lt;INTEGER-VALUE&gt;
+</div><div class="parity0 source"><a href="#l181" id="l181">   181</a>                   &lt;DEFINITION-REF DEST=&quot;INTEGER-PARAM-DEF&quot;&gt;/ArcCore/Os/OsTask/ArcCoreOsTaskStackSize&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l182" id="l182">   182</a>                   &lt;VALUE&gt;2048&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l183" id="l183">   183</a>                 &lt;/INTEGER-VALUE&gt;
+</div><div class="parity1 source"><a href="#l184" id="l184">   184</a>                 &lt;ENUMERATION-VALUE&gt;
+</div><div class="parity0 source"><a href="#l185" id="l185">   185</a>                   &lt;DEFINITION-REF DEST=&quot;ENUMERATION-PARAM-DEF&quot;&gt;/ArcCore/Os/OsTask/OsTaskSchedule&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l186" id="l186">   186</a>                   &lt;VALUE&gt;FULL&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l187" id="l187">   187</a>                 &lt;/ENUMERATION-VALUE&gt;
+</div><div class="parity1 source"><a href="#l188" id="l188">   188</a>               &lt;/PARAMETER-VALUES&gt;
+</div><div class="parity0 source"><a href="#l189" id="l189">   189</a>             &lt;/CONTAINER&gt;
+</div><div class="parity1 source"><a href="#l190" id="l190">   190</a>             &lt;CONTAINER UUID=&quot;f18ef7d7-7fb4-40f9-95fa-a04be86a9935&quot;&gt;
+</div><div class="parity0 source"><a href="#l191" id="l191">   191</a>               &lt;SHORT-NAME&gt;bTask10&lt;/SHORT-NAME&gt;
+</div><div class="parity1 source"><a href="#l192" id="l192">   192</a>               &lt;DEFINITION-REF DEST=&quot;PARAM-CONF-CONTAINER-DEF&quot;&gt;/ArcCore/Os/OsTask&lt;/DEFINITION-REF&gt;
+</div><div class="parity0 source"><a href="#l193" id="l193">   193</a>               &lt;PARAMETER-VALUES&gt;
+</div><div class="parity1 source"><a href="#l194" id="l194">   194</a>                 &lt;INTEGER-VALUE&gt;
+</div><div class="parity0 source"><a href="#l195" id="l195">   195</a>                   &lt;DEFINITION-REF DEST=&quot;INTEGER-PARAM-DEF&quot;&gt;/ArcCore/Os/OsTask/OsTaskActivation&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l196" id="l196">   196</a>                   &lt;VALUE&gt;1&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l197" id="l197">   197</a>                 &lt;/INTEGER-VALUE&gt;
+</div><div class="parity1 source"><a href="#l198" id="l198">   198</a>                 &lt;INTEGER-VALUE&gt;
+</div><div class="parity0 source"><a href="#l199" id="l199">   199</a>                   &lt;DEFINITION-REF DEST=&quot;INTEGER-PARAM-DEF&quot;&gt;/ArcCore/Os/OsTask/OsTaskPriority&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l200" id="l200">   200</a>                   &lt;VALUE&gt;1&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l201" id="l201">   201</a>                 &lt;/INTEGER-VALUE&gt;
+</div><div class="parity1 source"><a href="#l202" id="l202">   202</a>                 &lt;ENUMERATION-VALUE&gt;
+</div><div class="parity0 source"><a href="#l203" id="l203">   203</a>                   &lt;DEFINITION-REF DEST=&quot;ENUMERATION-PARAM-DEF&quot;&gt;/ArcCore/Os/OsTask/OsTaskProcessType&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l204" id="l204">   204</a>                   &lt;VALUE&gt;BASIC&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l205" id="l205">   205</a>                 &lt;/ENUMERATION-VALUE&gt;
+</div><div class="parity1 source"><a href="#l206" id="l206">   206</a>                 &lt;INTEGER-VALUE&gt;
+</div><div class="parity0 source"><a href="#l207" id="l207">   207</a>                   &lt;DEFINITION-REF DEST=&quot;INTEGER-PARAM-DEF&quot;&gt;/ArcCore/Os/OsTask/ArcCoreOsTaskStackSize&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l208" id="l208">   208</a>                   &lt;VALUE&gt;2048&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l209" id="l209">   209</a>                 &lt;/INTEGER-VALUE&gt;
+</div><div class="parity1 source"><a href="#l210" id="l210">   210</a>                 &lt;ENUMERATION-VALUE&gt;
+</div><div class="parity0 source"><a href="#l211" id="l211">   211</a>                   &lt;DEFINITION-REF DEST=&quot;ENUMERATION-PARAM-DEF&quot;&gt;/ArcCore/Os/OsTask/OsTaskSchedule&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l212" id="l212">   212</a>                   &lt;VALUE&gt;FULL&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l213" id="l213">   213</a>                 &lt;/ENUMERATION-VALUE&gt;
+</div><div class="parity1 source"><a href="#l214" id="l214">   214</a>               &lt;/PARAMETER-VALUES&gt;
+</div><div class="parity0 source"><a href="#l215" id="l215">   215</a>             &lt;/CONTAINER&gt;
+</div><div class="parity1 source"><a href="#l216" id="l216">   216</a>             &lt;CONTAINER UUID=&quot;ce065515-397f-4172-8266-8eb9b51ac4df&quot;&gt;
+</div><div class="parity0 source"><a href="#l217" id="l217">   217</a>               &lt;SHORT-NAME&gt;Startup&lt;/SHORT-NAME&gt;
+</div><div class="parity1 source"><a href="#l218" id="l218">   218</a>               &lt;DEFINITION-REF DEST=&quot;PARAM-CONF-CONTAINER-DEF&quot;&gt;/ArcCore/Os/OsTask&lt;/DEFINITION-REF&gt;
+</div><div class="parity0 source"><a href="#l219" id="l219">   219</a>               &lt;PARAMETER-VALUES&gt;
+</div><div class="parity1 source"><a href="#l220" id="l220">   220</a>                 &lt;INTEGER-VALUE&gt;
+</div><div class="parity0 source"><a href="#l221" id="l221">   221</a>                   &lt;DEFINITION-REF DEST=&quot;INTEGER-PARAM-DEF&quot;&gt;/ArcCore/Os/OsTask/OsTaskActivation&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l222" id="l222">   222</a>                   &lt;VALUE&gt;1&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l223" id="l223">   223</a>                 &lt;/INTEGER-VALUE&gt;
+</div><div class="parity1 source"><a href="#l224" id="l224">   224</a>                 &lt;INTEGER-VALUE&gt;
+</div><div class="parity0 source"><a href="#l225" id="l225">   225</a>                   &lt;DEFINITION-REF DEST=&quot;INTEGER-PARAM-DEF&quot;&gt;/ArcCore/Os/OsTask/OsTaskPriority&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l226" id="l226">   226</a>                   &lt;VALUE&gt;1&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l227" id="l227">   227</a>                 &lt;/INTEGER-VALUE&gt;
+</div><div class="parity1 source"><a href="#l228" id="l228">   228</a>                 &lt;ENUMERATION-VALUE&gt;
+</div><div class="parity0 source"><a href="#l229" id="l229">   229</a>                   &lt;DEFINITION-REF DEST=&quot;ENUMERATION-PARAM-DEF&quot;&gt;/ArcCore/Os/OsTask/OsTaskProcessType&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l230" id="l230">   230</a>                   &lt;VALUE&gt;BASIC&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l231" id="l231">   231</a>                 &lt;/ENUMERATION-VALUE&gt;
+</div><div class="parity1 source"><a href="#l232" id="l232">   232</a>                 &lt;INTEGER-VALUE&gt;
+</div><div class="parity0 source"><a href="#l233" id="l233">   233</a>                   &lt;DEFINITION-REF DEST=&quot;INTEGER-PARAM-DEF&quot;&gt;/ArcCore/Os/OsTask/ArcCoreOsTaskStackSize&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l234" id="l234">   234</a>                   &lt;VALUE&gt;2048&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l235" id="l235">   235</a>                 &lt;/INTEGER-VALUE&gt;
+</div><div class="parity1 source"><a href="#l236" id="l236">   236</a>                 &lt;ENUMERATION-VALUE&gt;
+</div><div class="parity0 source"><a href="#l237" id="l237">   237</a>                   &lt;DEFINITION-REF DEST=&quot;ENUMERATION-PARAM-DEF&quot;&gt;/ArcCore/Os/OsTask/OsTaskSchedule&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l238" id="l238">   238</a>                   &lt;VALUE&gt;FULL&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l239" id="l239">   239</a>                 &lt;/ENUMERATION-VALUE&gt;
+</div><div class="parity1 source"><a href="#l240" id="l240">   240</a>               &lt;/PARAMETER-VALUES&gt;
+</div><div class="parity0 source"><a href="#l241" id="l241">   241</a>               &lt;SUB-CONTAINERS&gt;
+</div><div class="parity1 source"><a href="#l242" id="l242">   242</a>                 &lt;CONTAINER UUID=&quot;9f004177-c0ab-444e-808f-afc44e967fd2&quot;&gt;
+</div><div class="parity0 source"><a href="#l243" id="l243">   243</a>                   &lt;SHORT-NAME&gt;OsTaskAutostart&lt;/SHORT-NAME&gt;
+</div><div class="parity1 source"><a href="#l244" id="l244">   244</a>                   &lt;DEFINITION-REF DEST=&quot;PARAM-CONF-CONTAINER-DEF&quot;&gt;/ArcCore/Os/OsTask/OsTaskAutostart&lt;/DEFINITION-REF&gt;
+</div><div class="parity0 source"><a href="#l245" id="l245">   245</a>                 &lt;/CONTAINER&gt;
+</div><div class="parity1 source"><a href="#l246" id="l246">   246</a>               &lt;/SUB-CONTAINERS&gt;
+</div><div class="parity0 source"><a href="#l247" id="l247">   247</a>             &lt;/CONTAINER&gt;
+</div><div class="parity1 source"><a href="#l248" id="l248">   248</a>             &lt;CONTAINER UUID=&quot;f88f6c29-cbd6-469a-9c23-1a574adcce63&quot;&gt;
+</div><div class="parity0 source"><a href="#l249" id="l249">   249</a>               &lt;SHORT-NAME&gt;OsTick&lt;/SHORT-NAME&gt;
+</div><div class="parity1 source"><a href="#l250" id="l250">   250</a>               &lt;DEFINITION-REF DEST=&quot;PARAM-CONF-CONTAINER-DEF&quot;&gt;/ArcCore/Os/OsCounter&lt;/DEFINITION-REF&gt;
+</div><div class="parity0 source"><a href="#l251" id="l251">   251</a>               &lt;PARAMETER-VALUES&gt;
+</div><div class="parity1 source"><a href="#l252" id="l252">   252</a>                 &lt;INTEGER-VALUE&gt;
+</div><div class="parity0 source"><a href="#l253" id="l253">   253</a>                   &lt;DEFINITION-REF DEST=&quot;INTEGER-PARAM-DEF&quot;&gt;/ArcCore/Os/OsCounter/OsCounterMaxAllowedValue&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l254" id="l254">   254</a>                   &lt;VALUE&gt;65535&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l255" id="l255">   255</a>                 &lt;/INTEGER-VALUE&gt;
+</div><div class="parity1 source"><a href="#l256" id="l256">   256</a>                 &lt;INTEGER-VALUE&gt;
+</div><div class="parity0 source"><a href="#l257" id="l257">   257</a>                   &lt;DEFINITION-REF DEST=&quot;INTEGER-PARAM-DEF&quot;&gt;/ArcCore/Os/OsCounter/OsCounterMinCycle&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l258" id="l258">   258</a>                   &lt;VALUE&gt;0&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l259" id="l259">   259</a>                 &lt;/INTEGER-VALUE&gt;
+</div><div class="parity1 source"><a href="#l260" id="l260">   260</a>                 &lt;INTEGER-VALUE&gt;
+</div><div class="parity0 source"><a href="#l261" id="l261">   261</a>                   &lt;DEFINITION-REF DEST=&quot;INTEGER-PARAM-DEF&quot;&gt;/ArcCore/Os/OsCounter/OsCounterTicksPerBase&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l262" id="l262">   262</a>                   &lt;VALUE&gt;0&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l263" id="l263">   263</a>                 &lt;/INTEGER-VALUE&gt;
+</div><div class="parity1 source"><a href="#l264" id="l264">   264</a>                 &lt;ENUMERATION-VALUE&gt;
+</div><div class="parity0 source"><a href="#l265" id="l265">   265</a>                   &lt;DEFINITION-REF DEST=&quot;ENUMERATION-PARAM-DEF&quot;&gt;/ArcCore/Os/OsCounter/OsCounterType&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l266" id="l266">   266</a>                   &lt;VALUE&gt;OS-TICK&lt;/VALUE&gt;
+</div><div class="parity0 source"><a href="#l267" id="l267">   267</a>                 &lt;/ENUMERATION-VALUE&gt;
+</div><div class="parity1 source"><a href="#l268" id="l268">   268</a>               &lt;/PARAMETER-VALUES&gt;
+</div><div class="parity0 source"><a href="#l269" id="l269">   269</a>             &lt;/CONTAINER&gt;
+</div><div class="parity1 source"><a href="#l270" id="l270">   270</a>             &lt;CONTAINER UUID=&quot;b19901ff-471a-46bd-95b7-27d01a84d72e&quot;&gt;
+</div><div class="parity0 source"><a href="#l271" id="l271">   271</a>               &lt;SHORT-NAME&gt;alarm25&lt;/SHORT-NAME&gt;
+</div><div class="parity1 source"><a href="#l272" id="l272">   272</a>               &lt;DEFINITION-REF DEST=&quot;PARAM-CONF-CONTAINER-DEF&quot;&gt;/ArcCore/Os/OsAlarm&lt;/DEFINITION-REF&gt;
+</div><div class="parity0 source"><a href="#l273" id="l273">   273</a>               &lt;REFERENCE-VALUES&gt;
+</div><div class="parity1 source"><a href="#l274" id="l274">   274</a>                 &lt;REFERENCE-VALUE&gt;
+</div><div class="parity0 source"><a href="#l275" id="l275">   275</a>                   &lt;DEFINITION-REF DEST=&quot;REFERENCE-PARAM-DEF&quot;&gt;/ArcCore/Os/OsAlarm/OsAlarmCounterRef&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l276" id="l276">   276</a>                   &lt;VALUE-REF DEST=&quot;CONTAINER&quot;&gt;/blinker_node/Os/OsTick&lt;/VALUE-REF&gt;
+</div><div class="parity0 source"><a href="#l277" id="l277">   277</a>                 &lt;/REFERENCE-VALUE&gt;
+</div><div class="parity1 source"><a href="#l278" id="l278">   278</a>               &lt;/REFERENCE-VALUES&gt;
+</div><div class="parity0 source"><a href="#l279" id="l279">   279</a>               &lt;SUB-CONTAINERS&gt;
+</div><div class="parity1 source"><a href="#l280" id="l280">   280</a>                 &lt;CONTAINER UUID=&quot;d2b4563e-166d-425e-ad2f-9002b3709aaf&quot;&gt;
+</div><div class="parity0 source"><a href="#l281" id="l281">   281</a>                   &lt;SHORT-NAME&gt;OsAlarmActivateTask&lt;/SHORT-NAME&gt;
+</div><div class="parity1 source"><a href="#l282" id="l282">   282</a>                   &lt;DEFINITION-REF DEST=&quot;PARAM-CONF-CONTAINER-DEF&quot;&gt;/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask&lt;/DEFINITION-REF&gt;
+</div><div class="parity0 source"><a href="#l283" id="l283">   283</a>                   &lt;REFERENCE-VALUES&gt;
+</div><div class="parity1 source"><a href="#l284" id="l284">   284</a>                     &lt;REFERENCE-VALUE&gt;
+</div><div class="parity0 source"><a href="#l285" id="l285">   285</a>                       &lt;DEFINITION-REF DEST=&quot;REFERENCE-PARAM-DEF&quot;&gt;/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask/OsAlarmActivateTaskRef&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l286" id="l286">   286</a>                       &lt;VALUE-REF DEST=&quot;CONTAINER&quot;&gt;/blinker_node/Os/bTask25&lt;/VALUE-REF&gt;
+</div><div class="parity0 source"><a href="#l287" id="l287">   287</a>                     &lt;/REFERENCE-VALUE&gt;
+</div><div class="parity1 source"><a href="#l288" id="l288">   288</a>                   &lt;/REFERENCE-VALUES&gt;
+</div><div class="parity0 source"><a href="#l289" id="l289">   289</a>                 &lt;/CONTAINER&gt;
+</div><div class="parity1 source"><a href="#l290" id="l290">   290</a>               &lt;/SUB-CONTAINERS&gt;
+</div><div class="parity0 source"><a href="#l291" id="l291">   291</a>             &lt;/CONTAINER&gt;
+</div><div class="parity1 source"><a href="#l292" id="l292">   292</a>             &lt;CONTAINER UUID=&quot;84cfef77-eaad-4c89-a71a-69960ec6d89c&quot;&gt;
+</div><div class="parity0 source"><a href="#l293" id="l293">   293</a>               &lt;SHORT-NAME&gt;alarm10&lt;/SHORT-NAME&gt;
+</div><div class="parity1 source"><a href="#l294" id="l294">   294</a>               &lt;DEFINITION-REF DEST=&quot;PARAM-CONF-CONTAINER-DEF&quot;&gt;/ArcCore/Os/OsAlarm&lt;/DEFINITION-REF&gt;
+</div><div class="parity0 source"><a href="#l295" id="l295">   295</a>               &lt;REFERENCE-VALUES&gt;
+</div><div class="parity1 source"><a href="#l296" id="l296">   296</a>                 &lt;REFERENCE-VALUE&gt;
+</div><div class="parity0 source"><a href="#l297" id="l297">   297</a>                   &lt;DEFINITION-REF DEST=&quot;REFERENCE-PARAM-DEF&quot;&gt;/ArcCore/Os/OsAlarm/OsAlarmCounterRef&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l298" id="l298">   298</a>                   &lt;VALUE-REF DEST=&quot;CONTAINER&quot;&gt;/blinker_node/Os/OsTick&lt;/VALUE-REF&gt;
+</div><div class="parity0 source"><a href="#l299" id="l299">   299</a>                 &lt;/REFERENCE-VALUE&gt;
+</div><div class="parity1 source"><a href="#l300" id="l300">   300</a>               &lt;/REFERENCE-VALUES&gt;
+</div><div class="parity0 source"><a href="#l301" id="l301">   301</a>               &lt;SUB-CONTAINERS&gt;
+</div><div class="parity1 source"><a href="#l302" id="l302">   302</a>                 &lt;CONTAINER UUID=&quot;93b42d8b-fcb7-4829-87c5-2fc9abdff68c&quot;&gt;
+</div><div class="parity0 source"><a href="#l303" id="l303">   303</a>                   &lt;SHORT-NAME&gt;OsAlarmActivateTask&lt;/SHORT-NAME&gt;
+</div><div class="parity1 source"><a href="#l304" id="l304">   304</a>                   &lt;DEFINITION-REF DEST=&quot;PARAM-CONF-CONTAINER-DEF&quot;&gt;/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask&lt;/DEFINITION-REF&gt;
+</div><div class="parity0 source"><a href="#l305" id="l305">   305</a>                   &lt;REFERENCE-VALUES&gt;
+</div><div class="parity1 source"><a href="#l306" id="l306">   306</a>                     &lt;REFERENCE-VALUE&gt;
+</div><div class="parity0 source"><a href="#l307" id="l307">   307</a>                       &lt;DEFINITION-REF DEST=&quot;REFERENCE-PARAM-DEF&quot;&gt;/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask/OsAlarmActivateTaskRef&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l308" id="l308">   308</a>                       &lt;VALUE-REF DEST=&quot;CONTAINER&quot;&gt;/blinker_node/Os/bTask10&lt;/VALUE-REF&gt;
+</div><div class="parity0 source"><a href="#l309" id="l309">   309</a>                     &lt;/REFERENCE-VALUE&gt;
+</div><div class="parity1 source"><a href="#l310" id="l310">   310</a>                   &lt;/REFERENCE-VALUES&gt;
+</div><div class="parity0 source"><a href="#l311" id="l311">   311</a>                 &lt;/CONTAINER&gt;
+</div><div class="parity1 source"><a href="#l312" id="l312">   312</a>               &lt;/SUB-CONTAINERS&gt;
+</div><div class="parity0 source"><a href="#l313" id="l313">   313</a>             &lt;/CONTAINER&gt;
+</div><div class="parity1 source"><a href="#l314" id="l314">   314</a>             &lt;CONTAINER UUID=&quot;8400ccd3-846f-4ec8-ab24-a8049347b3ac&quot;&gt;
+</div><div class="parity0 source"><a href="#l315" id="l315">   315</a>               &lt;SHORT-NAME&gt;alarm100&lt;/SHORT-NAME&gt;
+</div><div class="parity1 source"><a href="#l316" id="l316">   316</a>               &lt;DEFINITION-REF DEST=&quot;PARAM-CONF-CONTAINER-DEF&quot;&gt;/ArcCore/Os/OsAlarm&lt;/DEFINITION-REF&gt;
+</div><div class="parity0 source"><a href="#l317" id="l317">   317</a>               &lt;REFERENCE-VALUES&gt;
+</div><div class="parity1 source"><a href="#l318" id="l318">   318</a>                 &lt;REFERENCE-VALUE&gt;
+</div><div class="parity0 source"><a href="#l319" id="l319">   319</a>                   &lt;DEFINITION-REF DEST=&quot;REFERENCE-PARAM-DEF&quot;&gt;/ArcCore/Os/OsAlarm/OsAlarmCounterRef&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l320" id="l320">   320</a>                   &lt;VALUE-REF DEST=&quot;CONTAINER&quot;&gt;/blinker_node/Os/OsTick&lt;/VALUE-REF&gt;
+</div><div class="parity0 source"><a href="#l321" id="l321">   321</a>                 &lt;/REFERENCE-VALUE&gt;
+</div><div class="parity1 source"><a href="#l322" id="l322">   322</a>               &lt;/REFERENCE-VALUES&gt;
+</div><div class="parity0 source"><a href="#l323" id="l323">   323</a>               &lt;SUB-CONTAINERS&gt;
+</div><div class="parity1 source"><a href="#l324" id="l324">   324</a>                 &lt;CONTAINER UUID=&quot;975669f6-7d28-46a6-8186-bd9ac973196e&quot;&gt;
+</div><div class="parity0 source"><a href="#l325" id="l325">   325</a>                   &lt;SHORT-NAME&gt;OsAlarmActivateTask&lt;/SHORT-NAME&gt;
+</div><div class="parity1 source"><a href="#l326" id="l326">   326</a>                   &lt;DEFINITION-REF DEST=&quot;PARAM-CONF-CONTAINER-DEF&quot;&gt;/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask&lt;/DEFINITION-REF&gt;
+</div><div class="parity0 source"><a href="#l327" id="l327">   327</a>                   &lt;REFERENCE-VALUES&gt;
+</div><div class="parity1 source"><a href="#l328" id="l328">   328</a>                     &lt;REFERENCE-VALUE&gt;
+</div><div class="parity0 source"><a href="#l329" id="l329">   329</a>                       &lt;DEFINITION-REF DEST=&quot;REFERENCE-PARAM-DEF&quot;&gt;/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask/OsAlarmActivateTaskRef&lt;/DEFINITION-REF&gt;
+</div><div class="parity1 source"><a href="#l330" id="l330">   330</a>                       &lt;VALUE-REF DEST=&quot;CONTAINER&quot;&gt;/blinker_node/Os/bTask100&lt;/VALUE-REF&gt;
+</div><div class="parity0 source"><a href="#l331" id="l331">   331</a>                     &lt;/REFERENCE-VALUE&gt;
+</div><div class="parity1 source"><a href="#l332" id="l332">   332</a>                   &lt;/REFERENCE-VALUES&gt;
+</div><div class="parity0 source"><a href="#l333" id="l333">   333</a>                 &lt;/CONTAINER&gt;
+</div><div class="parity1 source"><a href="#l334" id="l334">   334</a>               &lt;/SUB-CONTAINERS&gt;
+</div><div class="parity0 source"><a href="#l335" id="l335">   335</a>             &lt;/CONTAINER&gt;
+</div><div class="parity1 source"><a href="#l336" id="l336">   336</a>           &lt;/CONTAINERS&gt;
+</div><div class="parity0 source"><a href="#l337" id="l337">   337</a>         &lt;/MODULE-CONFIGURATION&gt;
+</div><div class="parity1 source"><a href="#l338" id="l338">   338</a>       &lt;/ELEMENTS&gt;
+</div><div class="parity0 source"><a href="#l339" id="l339">   339</a>     &lt;/AR-PACKAGE&gt;
+</div><div class="parity1 source"><a href="#l340" id="l340">   340</a>   &lt;/TOP-LEVEL-PACKAGES&gt;&lt;/AUTOSAR&gt;
+</div>
+<div class="sourcelast"></div>
+</div>
+</div>
+</div>
+
+
+
+
+<div style="clear:both;width:100%"></div>
+
+</div>
+<div id="footer">
+			<a href="http://arccore.com">ArcCore - The future is open - http://www.arccore.com</a> - copyright &copy; ArcCore AB 2009 - 2010<br />
+			<a href="http://arccore.com/contact">Contact ArcCore</a>
+			
+		</div>
+</div>
+	<script type="text/javascript">
+		var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+		document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+	</script>
+	<script type="text/javascript">
+		try {
+			var pageTracker = _gat._getTracker("UA-10405840-2");
+			pageTracker._trackPageview();
+		} catch(err) {}
+	</script>
+</body>
+</html>
+
