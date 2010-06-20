@@ -103,7 +103,7 @@ export def-y+=$(CFG_ARCH_$(ARCH)) $(CFG_MCU) $(CFG_CPU)
 comma:= ,
 split = $(subst $(comma), ,$(1))
 dir_cmd_goals  := $(call split,$(BDIR))
-cmd_cmd_goals := $(filter clean all config,$(MAKECMDGOALS))
+cmd_cmd_goals := $(filter all clean config,$(MAKECMDGOALS))
 
 # Check for CROSS_COMPILE
 ifneq ($(cmd_cmd_goals),)
@@ -124,6 +124,8 @@ endif
 
 libs:
 	mkdir -p $@
+
+.PHONY all:
 
 all: libs $(dir_cmd_goals)
 
@@ -160,6 +162,7 @@ clean_all:
 	
 config: $(dir_cmd_goals)	
 	
+.PHONY clean:	
 clean: $(dir_cmd_goals)
 	@echo "Clean:"
 	@echo "  Removing objectfiles and libs for ARCH=$(ARCH)"

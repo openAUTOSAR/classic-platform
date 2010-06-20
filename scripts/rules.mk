@@ -68,12 +68,15 @@ include $(ROOTDIR)/scripts/cc_$(COMPILER).mk
 include ../makefile
 
 inc-y += $(ROOTDIR)/include
-#inc-$(CFG_PPC) += $(ROOTDIR)/include/ppc
-#inc-$(CFG_ARM) += $(ROOTDIR)/include/arm
 inc-y += $(ROOTDIR)/include/$(ARCH_FAM)
 
-.PHONY config:
 
+.PHONY clean: 
+clean: FORCE
+	@-rm -f *.o *.d *.h *.elf *.a
+
+
+.PHONY config: 
 config: FORCE
 	@echo "board   modules:" $(MOD_AVAIL)
 	@echo "example modules:" $(MOD_USE)
@@ -85,12 +88,10 @@ $(ROOTDIR)/binaries:
 	@mkdir -p $@
 
 # build- targets are "end" target that the included makefile want's to build
+.PHONY all:
 all: $(build-exe-y) $(build-hex-y) $(build-lib-y) $(ROOTDIR)/binaries
 	@cp -v $(build-lib-y) $(build-exe-y) $(build-hex-y) $(ROOTDIR)/binaries
 
-#.PHONY post_process:
-#post_process:: $(ROOTDIR)/binaries
-	 
 
 # Determine what kind of filetype to build from  
 VPATH += $(ROOTDIR)/$(SUBDIR)/src
@@ -166,5 +167,3 @@ $(size-exe-y): $(build-exe-y)
 	$(Q)$(OBJDUMP) -h $<
 	@echo TODO: Parse the file....
 
-.PHONY clean:
-	@-rm -f *.o *.d *.h *.elf *.a
