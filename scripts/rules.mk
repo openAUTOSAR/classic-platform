@@ -73,8 +73,7 @@ inc-y += $(ROOTDIR)/include/$(ARCH_FAM)
 
 .PHONY clean: 
 clean: FORCE
-	@-rm -f *.o *.d *.h *.elf *.a
-
+	@-rm -f *.o *.d *.h *.elf *.a *.ldp
 
 .PHONY config: 
 config: FORCE
@@ -124,6 +123,14 @@ inc-y += ../include
 	@echo "  >> CPP $(notdir $<)"
 	$(Q)$(CPP) -x assembler-with-cpp -E -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
+
+# Board linker files are in the board directory 
+inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
+
+# Preprocess linker files..
+%.ldp: %.ldf
+	@echo "  >> CPP $<"
+	$(Q)$(CPP) -E -P -x assembler-with-cpp -o $@ $(addprefix -I ,$(inc-y)) $<
 
 #	@cat $@ 
 	
