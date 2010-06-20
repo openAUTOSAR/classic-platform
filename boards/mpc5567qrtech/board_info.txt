@@ -1,0 +1,30 @@
+
+
+The Freescale MPC5567 is an PowerPC process with a e200z6 core. 
+The EVAL board used is the "ODEEP" concept. 
+	
+Datasheets:
+  ODEEP  
+    http://www.odeep.se/  
+ 
+  MPC5567
+    http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC5567
+ 
+Info:	
+  MPC5567
+  80-132Mhz
+  2MB Flash 
+  80kB SRAM
+  2 × SCI
+  3 × DSPI
+  5 × CAN
+  FlexRay
+  Ethernet
+  24-ch PWM
+  32-ch ETPU
+  24-ch EMIOS
+  2-ch × 20-ch, 12bit ADC
+  
+Memory Map:
+ 0x0000_0000 ->           Flash
+ 0x4000_0000 ->           SRAM

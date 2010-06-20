@@ -22,7 +22,9 @@ include $(ROOTDIR)/boards/board_common.mk
 libitem-y += $(ROOTDIR)/libs/libkernel_$(ARCH_MCU).a
 
 #linkfile
-ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
+ldcmdfile-y = linkscript_gcc.ldp
+vpath %.ldf $(ROOTDIR)/$(ARCH_PATH-y)/scripts
+#ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldp
 
 # What I want to build
 build-exe-y = simple.elf
