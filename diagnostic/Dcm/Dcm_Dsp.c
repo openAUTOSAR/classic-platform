@@ -28,10 +28,10 @@
 /*
  * Macros
  */
-#define BYTES_TO_DTC(hb, mb, lb)	(((hb) << 16) | ((mb) << 8) | (lb))
-#define DTC_HIGH_BYTE(dtc)			(((dtc)>> 16) & 0xFF)
-#define DTC_MID_BYTE(dtc)			(((dtc)>> 8) & 0xFF)
-#define DTC_LOW_BYTE(dtc)			((dtc) & 0xFF)
+#define BYTES_TO_DTC(hb, mb, lb)	(((uint32)(hb) << 16) | ((uint32)(mb) << 8) | (uint32)(lb))
+#define DTC_HIGH_BYTE(dtc)			(((uint32)(dtc) >> 16) & 0xFF)
+#define DTC_MID_BYTE(dtc)			(((uint32)(dtc) >> 8) & 0xFF)
+#define DTC_LOW_BYTE(dtc)			((uint32)(dtc) & 0xFF)
 
 
 typedef struct {
@@ -1088,7 +1088,13 @@ void DspDcmConfirmation(PduIdType confirmPduId)
 	if (dspUdsEcuResetData.resetPending) {
 		if (confirmPduId == dspUdsEcuResetData.resetPduId) {
 			dspUdsEcuResetData.resetPending = FALSE;
+#if ( MCU_PERFORM_RESET_API == STD_ON )
 			Mcu_PerformReset();
+#else
+#if (DCM_DEV_ERROR_DETECT == STD_ON)
+			Det_ReportError(MODULE_ID_DCM, 0, DCM_UDS_RESET, DCM_E_NOT_SUPPORTED);
+#endif
+#endif
 		}
 	}
 }
