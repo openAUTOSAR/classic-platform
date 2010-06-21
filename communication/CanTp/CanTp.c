@@ -61,6 +61,7 @@
 #else
 #define VALIDATE(_exp,_api,_err )
 #define VALIDATE_NO_RV(_exp,_api,_err )
+#undef DET_REPORTERROR
 #define DET_REPORTERROR(_x,_y,_z,_q)
 #endif
 
@@ -90,7 +91,7 @@ void PduR_CanTpTxConfirmation(PduIdType CanTpTxPduId, NotifResultType Result) {
 
 #endif
 
-//#define INLINE inline
+//#define INLINE
 #define INLINE inline
 
 #define TIMER_DECREMENT(timer) \
@@ -508,14 +509,13 @@ static INLINE Std_ReturnType canTansmitPaddingHelper(
 
 // - - - - - - - - - - - - - -
 
-static INLINE void sendFlowControlFrame(const CanTp_RxNSduType *rxConfig,
-		CanTp_ChannelPrivateType *rxRuntime, BufReq_ReturnType flowStatus) {
+static INLINE void sendFlowControlFrame(const CanTp_RxNSduType *rxConfig, CanTp_ChannelPrivateType *rxRuntime, BufReq_ReturnType flowStatus) {
 	int indexCount = 0;
 	Std_ReturnType ret = E_NOT_OK;
 	PduInfoType pduInfo;
 	uint8 sduData[8]; // Note that buffer in declared on the stack.
 	uint16 spaceFreePduRBuffer = 0;
-	uint8 computedBs = 0; // req:CanTp064 and example.
+	uint16 computedBs = 0; // req:CanTp064 and example.
 
 	DEBUG( DEBUG_MEDIUM, "sendFlowControlFrame called!\n");
 	pduInfo.SduDataPtr = &sduData[0];
@@ -538,7 +538,7 @@ static INLINE void sendFlowControlFrame(const CanTp_RxNSduType *rxConfig,
 		DEBUG( DEBUG_MEDIUM, "computedBs:%d\n", computedBs);
 		sduData[indexCount++] = computedBs;
 		sduData[indexCount++] = (uint8) rxConfig->CanTpSTmin;
-		rxRuntime->iso15765.nextFlowControlCount = (uint8) computedBs;
+		rxRuntime->iso15765.nextFlowControlCount = computedBs;
 		pduInfo.SduLength = indexCount;
 		break;
 	}
@@ -775,9 +775,18 @@ static INLINE void handleFlowControlFrame(const CanTp_TxNSduType *txConfig,
 		}
 		switch (txPduData->SduDataPtr[indexCount++] & ISO15765_TPCI_FS_MASK) {
 		case ISO15765_FLOW_CONTROL_STATUS_CTS:
+#if 1
+			{	// This construction is added to make the hcs12 compiler happy.
+				const uint16 bs = txPduData->SduDataPtr[indexCount++];
+				txRuntime->iso15765.BS = bs;
+				txRuntime->iso15765.nextFlowControlCount = bs;
+			}
+			txRuntime->iso15765.STmin = txPduData->SduDataPtr[indexCount++];
+#else
 			txRuntime->iso15765.BS = txPduData->SduDataPtr[indexCount++];
 			txRuntime->iso15765.nextFlowControlCount = txRuntime->iso15765.BS;
 			txRuntime->iso15765.STmin = txPduData->SduDataPtr[indexCount++];
+#endif
 			DEBUG( DEBUG_MEDIUM, "txRuntime->iso15765.STmin = %d\n", txRuntime->iso15765.STmin);
 			ret = sendConsecutiveFrame(txConfig, txRuntime);
 			if (ret == E_OK) {
@@ -802,6 +811,7 @@ static INLINE void handleFlowControlFrame(const CanTp_TxNSduType *txConfig,
 		DEBUG( DEBUG_MEDIUM, "Ignoring flow control, we do not expect it!");
 	}
 }
+
 
 // - - - - - - - - - - - - - -
 
