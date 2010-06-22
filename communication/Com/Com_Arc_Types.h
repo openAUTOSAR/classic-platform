@@ -36,8 +36,6 @@ typedef struct {
 
 	uint8 ComIPduHandleId;
 	uint8 ComSignalUpdated;
-	//uint8 Com_Arc_EOL;
-	//uint8 Com_Arc_IsSignalGroup;
 
 	/* For signal groups */
 	void *Com_Arc_ShadowBuffer;
@@ -47,20 +45,9 @@ typedef struct {
 
 typedef struct {
 	void *Com_Arc_ShadowBuffer;
-	//uint8 ComIPduHandleId;
-
 	uint8 ComSignalUpdated;
 	uint8 Com_Arc_EOL;
 } Com_Arc_GroupSignal_type;
-
-
-/*
-typedef struct {
-	void *Com_Arc_ShadowBuffer;
-	void *Com_Arc_IPduDataPtr;
-	uint8 Com_Arc_EOL;
-} Com_Arc_SignalGroup_type;
-*/
 
 typedef struct {
 	uint8  ComTxIPduNumberOfRepetitionsLeft;
@@ -73,21 +60,13 @@ typedef struct {
 
 	Com_Arc_TxIPduTimer_type Com_Arc_TxIPduTimers;
 	void *ComIPduDataPtr;
-
-	//uint8 Com_Arc_NIPduSignalGroupRef;
-
-	//uint8 NComIPduSignalRef;
-
 	uint8 Com_Arc_IpduStarted;
-
 } Com_Arc_IPdu_type;
 
 typedef struct {
 	uint16 ComNIPdu;
 	Com_Arc_IPdu_type *ComIPdu; // Only used in PduIdCheck()
-	//Com_Arc_IPduGroup_type *ComIPduGroup;
 	Com_Arc_Signal_type *ComSignal;
-	//Com_Arc_SignalGroup_type *ComSignalGroup;
 	Com_Arc_GroupSignal_type *ComGroupSignal;
 	PduInfoType OutgoingPdu;
 } Com_Arc_Config_type;
