@@ -19,7 +19,7 @@ inc-y := ../config/$(BOARDDIR) ../config $(inc-y)
 include $(ROOTDIR)/boards/board_common.mk
 
 # libs needed by us 
-libitem-y += $(ROOTDIR)/libs/libkernel_$(ARCH_MCU).a
+#libitem-y += 
 
 #linkfile
 ldcmdfile-y = linkscript_gcc.ldp

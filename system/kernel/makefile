@@ -64,9 +64,6 @@ inc-y += $(ROOTDIR)/arch/$(ARCH_FAM)/$(ARCH)/drivers
 inc-y += $(ROOTDIR)/arch/$(ARCH_FAM)/$(ARCH)/config
 inc-y += $(ROOTDIR)/arch/$(ARCH)
 inc-y += $(ROOTDIR)/include/$(ARCH_FAM)
-
-
-build-lib-y = $(ROOTDIR)/libs/libkernel_$(ARCH_MCU).a
  
 
 

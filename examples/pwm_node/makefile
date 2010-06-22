@@ -29,7 +29,7 @@ inc-y += $(ROOTDIR)/components/pwm_sine
 
 
 # libs needed by us 
-libitem-y += $(ROOTDIR)/libs/libkernel_$(ARCH_MCU).a
+#libitem-y +=
 
 #linkfile
 ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
