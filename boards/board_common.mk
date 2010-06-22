@@ -113,11 +113,29 @@ inc-y += $(ROOTDIR)/communication/ComM
 
 # ComM
 obj-$(USE_COMM) += ComM.o
+obj-$(USE_COMM) += ComM_Cfg.o
 inc-$(USE_COMM) += $(ROOTDIR)/communication/ComM
 vpath-$(USE_COMM) += $(ROOTDIR)/communication/ComM
 vpath-y += $(ROOTDIR)/communication/ComM
 inc-$(USE_COMM) += $(ROOTDIR)/communication/ComM
 
+# Nm
+obj-$(USE_NM) += Nm.o
+obj-$(USE_NM) += Nm_Cfg.o
+inc-$(USE_NM) += $(ROOTDIR)/communication/Nm
+vpath-$(USE_NM) += $(ROOTDIR)/communication/Nm
+
+# CanNm
+obj-$(USE_CANNM) += CanNm.o
+obj-$(USE_CANNM) += CanNm_LCfg.o
+inc-$(USE_CANNM) += $(ROOTDIR)/communication/CanNm
+vpath-$(USE_CANNM) += $(ROOTDIR)/communication/CanNm
+
+# CanSm
+obj-$(USE_CANSM) += CanSM.o
+obj-$(USE_CANSM) += CanSM_LCfg.o
+inc-$(USE_CANSM) += $(ROOTDIR)/communication/CanSM
+vpath-$(USE_CANSM) += $(ROOTDIR)/communication/CanSM
 
 # Com
 obj-$(USE_COM) += Com_PbCfg.o

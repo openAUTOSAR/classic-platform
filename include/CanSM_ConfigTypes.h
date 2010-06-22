@@ -14,35 +14,25 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
+#ifndef CANSM_CONFIGTYPES_H_
+#define CANSM_CONFIGTYPES_H_
 
+#include "Com.h"
 
+typedef struct {
+	const uint8						CanIfControllerId;
+} CanSM_ControllerType;
 
+typedef struct {
+	const CanSM_ControllerType*		Controllers;
+	const uint8						ControllerCount;
+	const uint8						ComMNetworkHandle;
+	const Com_PduGroupIdType		ComRxPduGroupId;
+	const Com_PduGroupIdType		ComTxPduGroupId;
+} CanSM_NetworkType;
 
+typedef struct {
+	const CanSM_NetworkType*		Networks;
+} CanSM_ConfigType;
 
-
-#ifndef PDUR_COM_H_
-#define PDUR_COM_H_
-
-#include "PduR.h"
-
-#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
-
-		Std_ReturnType PduR_ComTransmit(PduIdType ComTxPduId, const PduInfoType* PduInfoPtr);
-
-#else // Zero cost operation active
-
-	#if (PDUR_CANIF_SUPPORT == STD_ON)
-
-		#include "CanIf.h"
-
-		#define PduR_ComTransmit CanIf_Transmit
-
-	#else
-
-		#define PduR_ComTransmit(... )
-
-	#endif
-
-#endif // Zero cost operation active
-
-#endif /* PDUR_COM_H_ */
+#endif /* CANSM_CONFIGTYPES_H_ */

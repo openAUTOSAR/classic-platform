@@ -213,9 +213,9 @@ typedef enum
 #define   PORT_IBE_ENABLE    PORT_BIT7
 #define   PORT_OBE_ENABLE    PORT_BIT6
 #define   PORT_PA_IO         0
-#define   PA_PORT_FUNC1     (PORT_BIT5)
-#define   PA_PORT_FUNC2     (PORT_BIT4)
-#define   PA_PORT_FUNC3     (PORT_BIT4|PORT_BIT5)
+#define   PORT_PA_FUNC1     (PORT_BIT5)
+#define   PORT_PA_FUNC2     (PORT_BIT4)
+#define   PORT_PA_FUNC3     (PORT_BIT4|PORT_BIT5)
 
 #define   PORT_NORMAL_INPUT (PORT_BIT15)
 

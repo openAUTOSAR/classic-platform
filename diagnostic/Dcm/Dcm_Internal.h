@@ -13,7 +13,9 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
+/*
+ * NB! This file is for DCM internal use only and may only be included from DCM C-files!
+ */
 
 
 
@@ -50,9 +52,6 @@ typedef enum {
 /*
  * DSP
  */
-boolean DspCheckSessionLevel(const Dcm_DspSessionRowType **sessionLevelRefTable);
-boolean DspCheckSecurityLevel(const Dcm_DspSecurityRowType	**securityLevelRefTable);
-
 void DspInit(void);
 void DspMain(void);
 void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduInfoType *pduTxData);
@@ -66,6 +65,9 @@ void DspUdsReadScalingDataByIdentifier(const PduInfoType *pduRxData, PduInfoType
 void DspUdsWriteDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTxData);
 void DspUdsControlDtcSetting(const PduInfoType *pduRxData, PduInfoType *pduTxData);
 void DspDcmConfirmation(PduIdType confirmPduId);
+
+boolean DspCheckSessionLevel(const Dcm_DspSessionRowType **sessionLevelRefTable);
+boolean DspCheckSecurityLevel(const Dcm_DspSecurityRowType	**securityLevelRefTable);
 
 
 /*

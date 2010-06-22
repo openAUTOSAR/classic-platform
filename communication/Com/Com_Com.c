@@ -22,12 +22,16 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "Com_Com.h"
+#include "Com_Arc_Types.h"
+#include "Com.h"
+#include "Com_misc.h"
 #include "debug.h"
 #include "CanIf.h"
 #include "PduR.h"
 #include "PduR_Com.h"
 #include "Byteorder.h"
+
+extern Com_Arc_Config_type Com_Arc_Config;
 
 uint8 Com_SendSignal(Com_SignalIdType SignalId, const void *SignalDataPtr) {
 	COM_VALIDATE_SIGNAL(SignalId, 0x0a, E_NOT_OK);

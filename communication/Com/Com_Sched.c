@@ -18,9 +18,9 @@
 
 
 
-
-
-#include "Com_Sched.h"
+#include "Com_Arc_Types.h"
+#include "Com.h"
+#include "Com_misc.h"
 #include <string.h>
 #include "debug.h"
 
@@ -29,6 +29,7 @@
 		timer = timer - 1; \
 	} \
 
+extern Com_Arc_Config_type Com_Arc_Config;
 
 void Com_MainFunctionRx() {
 	//DEBUG(DEBUG_MEDIUM, "Com_MainFunctionRx() excecuting\n");
