@@ -40,12 +40,14 @@
 // Error codes produced by this module
 #define DCM_E_CONFIG_INVALID				0x41
 #define DCM_E_UNEXPECTED_PARAM				0x42
+#define DCM_E_NOT_SUPPORTED					0xfe
 #define DCM_E_NOT_IMPLEMENTED_YET			0xff
 
 // Service ID in this module
 #define DCM_INIT_ID							0x01
 #define DCM_HANDLE_RESPONSE_TRANSMISSION	0x80
 #define DCM_UDS_READ_DTC_INFO				0x81
+#define DCM_UDS_RESET						0x82
 #define DCM_GLOBAL_ID						0xff
 
 #endif
