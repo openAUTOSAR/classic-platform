@@ -221,6 +221,17 @@ static inline _Bool Os_ResourceCheckAndRelease( OsPcbType *pcb )  {
 	return rv;
 }
 
+static inline void Os_GetSchedulerResource() {
+	os_sys.scheduler_lock = 1;
+}
+
+static inline void Os_ReleaseSchedulerResource() {
+	os_sys.scheduler_lock = 0;
+}
+
+static inline _Bool Os_CheckSchedulerResource() {
+	return (os_sys.scheduler_lock == 1);
+}
 
 // Create.c
 OsPcbType * os_alloc_new_pcb( void );

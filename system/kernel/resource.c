@@ -89,11 +89,17 @@ StatusType ReleaseResource_( OsResourceType * );
  * @return
  */
 StatusType GetResource( ResourceType ResID ) {
-	OsResourceType *rPtr = Os_CfgGetResource(ResID);
-	StatusType rv = GetResource_(rPtr);
+	StatusType rv = E_OK;
+	if( ResID == RES_SCHEDULER ) {
+		// Lock the scheduler
+		os_sys.scheduler_lock = 1;
+	} else {
+		OsResourceType *rPtr = Os_CfgGetResource(ResID);
+		rv = GetResource_(rPtr);
+	}
 
 	if (rv != E_OK)
-	    goto err;
+		goto err;
 
 	OS_STD_END_1(OSServiceId_GetResource,ResID);
 }

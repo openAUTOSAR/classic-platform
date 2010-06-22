@@ -564,6 +564,11 @@ StatusType TerminateTask( void ) {
 		goto err;
 	}
 
+	if ( Os_CheckSchedulerResource() ) {
+		rv =  E_OS_RESOURCE;
+		goto err;
+	}
+
 	/** @req OS070 */
 	if( Os_ResourceCheckAndRelease(curr_pcb) == 1 ) {
 		rv =  E_OS_RESOURCE;
@@ -625,6 +630,11 @@ StatusType ChainTask( TaskType TaskId ) {
 
 	if( os_sys.int_nest_cnt != 0 ) {
 		rv =  E_OS_CALLEVEL;
+		goto err;
+	}
+
+	if ( Os_CheckSchedulerResource() ) {
+		rv =  E_OS_RESOURCE;
 		goto err;
 	}
 
@@ -703,6 +713,12 @@ StatusType Schedule( void ) {
 	StatusType rv = E_OK;
 	uint32_t flags;
 
+	/* Check that we are not calling from interrupt context */
+	if( os_sys.int_nest_cnt != 0 ) {
+		rv =  E_OS_CALLEVEL;
+		goto err;
+	}
+
 	/* We need to figure out if we have an internal resource,
 	 * otherwise no re-scheduling.
 	 * NON  - Have internal resource prio OS_RES_SCHEDULER_PRIO (32+)
@@ -719,12 +735,6 @@ StatusType Schedule( void ) {
 		return E_OK;
 	}
 #endif
-
-	/* Check that we are not calling from interrupt context */
-	if( os_sys.int_nest_cnt != 0 ) {
-		rv =  E_OS_CALLEVEL;
-		goto err;
-	}
 
 	Irq_Save(flags);
 	Os_Dispatch(0);
