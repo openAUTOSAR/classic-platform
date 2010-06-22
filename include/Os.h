@@ -246,7 +246,7 @@ StatusType GetResource( ResourceType ResID );
 StatusType ReleaseResource( ResourceType ResID);
 
 /*
- * Define the scheduler resource as 0
+ * Define the scheduler resource as ~0
  */
 #define	RES_SCHEDULER 			~(ResourceType)0
 

@@ -284,6 +284,7 @@ OsPcbType *Os_FindTopPrioTask( void ) {
  *   ActivateTask()
  *   WaitEvent()
  *   TerminateTask()
+ *   ChainTask()
  *
  * @param force Force a re-scheduling
  *
@@ -349,24 +350,10 @@ void Os_Dispatch( _Bool force ) {
 // We come here from
 // - os_init
 
-volatile static int a1, b1, c1;
-volatile static OsPcbType *o1;
-volatile static OsPcbType *n1;
-
-void hej(int a, int b, int c, OsPcbType *o, OsPcbType *n) {
-	a1 = a;
-	b1 = b;
-	c1 = c;
-	o1 = o;
-	n1 = n;
-}
-
 /**
  * Called when a task is to be run for the first time.
  */
 void Os_TaskSwapContextTo(OsPcbType *old_pcb, OsPcbType *new_pcb ) {
-
-	hej(1, 2, 3, old_pcb, new_pcb);
 
 	Os_ArchSwapContextTo(old_pcb,new_pcb);
 	/* TODO: When do we return here ?? */
@@ -441,6 +428,18 @@ ISRType GetISRID( void ) {
 		goto err; 						\
 	}
 
+static inline void Os_Arc_SetCleanContext( OsPcbType *pcb ) {
+	if (pcb->proc_type == PROC_EXTENDED) {
+		/** @req OSEK ActivateTask Cleanup events
+		 * OSEK,ActivateTask, When an extended task is transferred from suspended
+		 * state into ready state all its events are cleared.*/
+		pcb->ev_set = 0;
+		pcb->ev_wait = 0;
+	}
+	Os_StackSetup(pcb);
+	Os_ArchSetTaskEntry(pcb);
+	Os_ArchSetupContext(pcb);
+}
 
 /**
  * The task <TaskID> is transferred from the suspended state into
@@ -487,16 +486,7 @@ StatusType ActivateTask( TaskType TaskID ) {
 
 	if( os_pcb_get_state(pcb) == ST_SUSPENDED ) {
 		pcb->activations++;
-		if (pcb->proc_type == PROC_EXTENDED) {
-			/** @req OSEK ActivateTask Cleanup events
-			 * OSEK,ActivateTask, When an extended task is transferred from suspended
-			 * state into ready state all its events are cleared.*/
-			pcb->ev_set = 0;
-			pcb->ev_wait = 0;
-		}
-		Os_StackSetup(pcb);
-		Os_ArchSetTaskEntry(pcb);
-		Os_ArchSetupContext(pcb);
+		Os_Arc_SetCleanContext(pcb);
 		Os_TaskMakeReady(pcb);
 	} else {
 
@@ -603,6 +593,10 @@ StatusType TerminateTask( void ) {
 	} else {
 		/* We need to add ourselves to the ready list again,
 		 * with a startup context. */
+
+		/* We are already in ready list..
+		 * This should give us a clean start /tojo */
+		Os_Arc_SetCleanContext(curr_pcb);
 	}
 
 //	Os_ContextReInit(curr_pcb);
@@ -622,7 +616,8 @@ StatusType TerminateTask( void ) {
 }
 
 StatusType ChainTask( TaskType TaskId ) {
-	StatusType rv;
+	OsPcbType *curr_pcb = Os_TaskGetCurrent();
+	StatusType rv = E_OK;
 	uint32_t flags;
 
 #if (OS_STATUS_EXTENDED == STD_ON )
@@ -632,12 +627,57 @@ StatusType ChainTask( TaskType TaskId ) {
 		rv =  E_OS_CALLEVEL;
 		goto err;
 	}
+
+	if( Os_ResourceCheckAndRelease(curr_pcb) == 1 ) {
+		rv =  E_OS_RESOURCE;
+		goto err;
+	}
 #endif
+	OsPcbType *pcb = os_get_pcb(TaskId);
 
 	Irq_Save(flags);
-	rv = ActivateTask(TaskId);
-	/* TODO: more more here..*/
-	TerminateTask();
+
+	if (curr_pcb == pcb) {
+		/* If we are chaining same task just make a clean start */
+		/* TODO: Is it allowed to chain same task if extended? */
+		Os_Arc_SetCleanContext(curr_pcb);
+
+		/* Force the dispatcher to find something, even if its us */
+		Os_Dispatch(1);
+
+		Irq_Restore(flags);
+		/* It must find something here...otherwise something is very wrong.. */
+		assert(0);
+
+	} else {
+		/* We are chaining another task
+		 * We need to make sure it is in valid state */
+		if( os_pcb_get_state(pcb) != ST_SUSPENDED ) {
+			if( pcb->proc_type == PROC_EXTENDED ) {
+				/** @req OSEK Activate task.
+				 * An extended task be activated once. See Chapter 4.3 in OSEK */
+				rv = E_OS_LIMIT;
+				goto err;
+			}
+
+			/** @req OSEK_? Too many task activations */
+			if( pcb->activations == pcb->activationLimit ) {
+				rv=E_OS_LIMIT;
+				goto err;
+			}
+		}
+
+		// Terminate current task
+		--curr_pcb->activations;
+		if( curr_pcb->activations <= 0 ) {
+			curr_pcb->activations = 0;
+			Os_TaskMakeSuspended(curr_pcb);
+		}
+
+		rv = ActivateTask(TaskId);
+		// we return here only if something is wrong
+	}
+
 	Irq_Restore(flags);
 
 	if (rv != E_OK) goto err;
