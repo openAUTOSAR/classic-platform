@@ -223,23 +223,6 @@ typedef struct {
 
 // - - - - - - - - - - - - - -
 
-#if (CANTP_VERSION_INFO_API == STD_ON) /** @req CANTP162 *//** @req CANTP163 */
-static Std_VersionInfoType _CanTp_VersionInfo =
-{
-  .vendorID   = (uint16)1,
-  .moduleID   = (uint16)1,
-  .instanceID = (uint8)1,
-  .sw_major_version = (uint8)CANTP_SW_MAJOR_VERSION,
-  .sw_minor_version = (uint8)CANTP_SW_MINOR_VERSION,
-  .sw_patch_version = (uint8)CANTP_SW_PATCH_VERSION,
-  .ar_major_version = (uint8)CANTP_AR_MAJOR_VERSION,
-  .ar_minor_version = (uint8)CANTP_AR_MINOR_VERSION,
-  .ar_patch_version = (uint8)CANTP_AR_PATCH_VERSION,
-};
-#endif /* DEM_VERSION_INFO_API */
-
-// - - - - - - - - - - - - - -
-
 CanTp_RunTimeDataType CanTpRunTimeData = { .initRun = FALSE,
 		.internalState = CANTP_OFF }; /** @req CANTP168 */
 
@@ -303,11 +286,11 @@ static inline ISO15765FrameType getFrameType(
 
 	switch (*formatType) {
 	case CANTP_STANDARD:
-		DEBUG( DEBUG_MEDIUM, "CANTP_STANDARD\n")
+		DEBUG( DEBUG_MEDIUM, "CANTP_STANDARD\n");
 		tpci = CanTpRxPduPtr->SduDataPtr[0];
 		break;
 	case CANTP_EXTENDED:
-		DEBUG( DEBUG_MEDIUM, "CANTP_EXTENDED\n")
+		DEBUG( DEBUG_MEDIUM, "CANTP_EXTENDED\n");
 		tpci = CanTpRxPduPtr->SduDataPtr[1];
 		break;
 	default:
@@ -1279,16 +1262,7 @@ void CanTp_RxIndication_Main(PduIdType CanTpRxPduId,
 
 // - - - - - - - - - - - - - -
 
-#if (CANTP_VERSION_INFO_API == STD_ON)
-void CanTp_GetVersionInfo(Std_VersionInfoType* versionInfo) /** @req CANTP210 */
-{
-	memcpy(versionInfo, &_CanTp_VersionInfo, sizeof(Std_VersionInfoType));
-}
-#endif /* DEM_VERSION_INFO_API */
-
-// - - - - - - - - - - - - - -
-
-void CanTp_TxConfirmation(PduIdType PduId) /** @req CANTP215 */ /** @req CANTP076 *//** @req CANTP215 */
+void CanTp_TxConfirmation(PduIdType PduId) /** @req CANTP215 *//** @req CANTP076 *//** @req CANTP215 */
 {
 	const CanTp_RxNSduType *rxConfigParams = NULL;
 	const CanTp_TxNSduType *txConfigParams = NULL;

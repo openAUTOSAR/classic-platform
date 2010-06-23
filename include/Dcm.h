@@ -23,6 +23,9 @@
 #ifndef DCM_H_
 #define DCM_H_
 
+#define DCM_MODULE_ID			MODULE_ID_DCM
+#define DCM_VENDOR_ID			1
+
 #define DCM_SW_MAJOR_VERSION    1
 #define DCM_SW_MINOR_VERSION   	0
 #define DCM_SW_PATCH_VERSION    0
@@ -55,8 +58,8 @@
 /*
  * Interfaces for BSW components (8.3.1)
  */
-#if (DCM_VERSION_INFO_API == STD_ON)
-void Dcm_GetVersionInfo(Std_VersionInfoType *versionInfo);
+#if ( DCM_VERSION_INFO_API == STD_ON )
+#define Dcm_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,DCM)
 #endif /* DCM_VERSION_INFO_API */
 
 void Dcm_Init( void );

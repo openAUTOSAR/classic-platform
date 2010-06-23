@@ -104,21 +104,6 @@ static Dem_StateType demState = DEM_UNINITIALIZED;
 // Help pointer to configuration set
 static const Dem_ConfigSetType *configSet;
 
-#if (DEM_VERSION_INFO_API == STD_ON)
-static Std_VersionInfoType _Dem_VersionInfo =
-{
-  .vendorID   = (uint16)1,
-  .moduleID   = (uint16)1,
-  .instanceID = (uint8)1,
-  .sw_major_version = (uint8)DEM_SW_MAJOR_VERSION,
-  .sw_minor_version = (uint8)DEM_SW_MINOR_VERSION,
-  .sw_patch_version = (uint8)DEM_SW_PATCH_VERSION,
-  .ar_major_version = (uint8)DEM_AR_MAJOR_VERSION,
-  .ar_minor_version = (uint8)DEM_AR_MINOR_VERSION,
-  .ar_patch_version = (uint8)DEM_AR_PATCH_VERSION,
-};
-#endif /* DEM_VERSION_INFO_API */
-
 /*
  * Allocation of DTC filter parameters
  */
@@ -1371,11 +1356,7 @@ static Std_ReturnType setOperationCycleState(Dem_OperationCycleIdType operationC
  * Procedure:	Dem_GetVersionInfo
  * Reentrant:	Yes
  */
-#if (DEM_VERSION_INFO_API == STD_ON)
-void Dem_GetVersionInfo(Std_VersionInfoType *versionInfo) {
-	memcpy(versionInfo, &_Dem_VersionInfo, sizeof(Std_VersionInfoType));
-}
-#endif /* DEM_VERSION_INFO_API */
+// Defined in Dem.h
 
 
 /***********************************************
