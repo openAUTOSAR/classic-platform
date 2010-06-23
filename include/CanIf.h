@@ -23,9 +23,13 @@
 #ifndef CANIF_H_
 #define CANIF_H_
 
-// Added by Mattias
+#if defined(USE_PDUR)
 #include "PduR.h"
+#endif
+
+#if defined(USE_COM)
 #include "Com.h"
+#endif
 
 #define CANIF_VENDOR_ID          1
 #define CANIF_MODULE_ID          MODULE_ID_CANIF
