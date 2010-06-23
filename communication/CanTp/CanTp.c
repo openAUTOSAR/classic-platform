@@ -29,11 +29,10 @@
 /** @req CANTP003 */
 /** @req CANTP216 */
 
+#include "CanTp.h" /** @req CANTP156 */ /** @req CANTP219 */
+#include "CanTp_Cbk.h" /** @req CANTP156 *//** @req CANTP233 */
 #include "Det.h"
 #include "CanIf.h"
-#include "CanTp_Cfg.h" /** @req CANTP156 */
-#include "CanTp_Cbk.h" /** @req CANTP156 *//** @req CANTP233 */
-#include "CanTp.h" /** @req CANTP156 */ /** @req CANTP219 */
 #include "SchM_CanTp.h" /** @req CANTP156 */
 #include "PduR_CanTp.h"
 //#include "MemMap.h" /** @req CANTP156 */
@@ -942,46 +941,32 @@ static INLINE void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 
 // - - - - - - - - - - - - - -
 
-static INLINE Std_ReturnType calcRequiredProtocolFrameType(
-		const CanTp_TxNSduType *txConfig, CanTp_ChannelPrivateType *txRuntime,
-		ISO15765FrameType *iso15765Frame) {
+static INLINE ISO15765FrameType calcRequiredProtocolFrameType(
+		const CanTp_TxNSduType *txConfig, CanTp_ChannelPrivateType *txRuntime) {
 
-	Std_ReturnType ret;
+	ISO15765FrameType ret = INVALID_FRAME;
 	if (txConfig->CanTpAddressingMode == CANTP_EXTENDED) {
-		if ( txRuntime->transferTotal > MAX_PAYLOAD_CF_EXT_ADDR ) {
-			VALIDATE( txConfig->CanTpTxTaType == CANTP_FUNCTIONAL,
-					SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TATYPE );
-		}
-		if (txRuntime->transferTotal > MAX_PAYLOAD_CF_EXT_ADDR) {
-			if (txConfig->CanTpTxTaType == CANTP_PHYSICAL) {
-				*iso15765Frame = FIRST_FRAME;
-				ret = E_OK;
-			} else {
-				*iso15765Frame = NONE;
-				ret = E_NOT_OK;
-			}
+		if (txRuntime->transferTotal <= MAX_PAYLOAD_CF_EXT_ADDR) {
+			ret = SINGLE_FRAME;
 		} else {
-			*iso15765Frame = SINGLE_FRAME;
-			ret = E_OK;
-		}
-	} else {
-		if ( txRuntime->transferTotal > MAX_PAYLOAD_CF_EXT_ADDR ) {
-			VALIDATE( txConfig->CanTpTxTaType == CANTP_FUNCTIONAL,
-					SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TATYPE );
-		}
-		if (txRuntime->transferTotal > MAX_PAYLOAD_CF_STD_ADDR) {
 			if (txConfig->CanTpTxTaType == CANTP_PHYSICAL) {
-				*iso15765Frame = FIRST_FRAME;
-				ret = E_OK;
+				ret = FIRST_FRAME;
 			} else {
-				*iso15765Frame = NONE;
-				ret = E_NOT_OK;
+				DET_REPORTERROR( MODULE_ID_CANTP, 0, SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TATYPE );
 			}
+		}
+	} else {	// CANTP_STANDARD
+		if (txRuntime->transferTotal <= MAX_PAYLOAD_CF_STD_ADDR) {
+			ret = SINGLE_FRAME;
 		} else {
-			*iso15765Frame = SINGLE_FRAME;
-			ret = E_OK;
+			if (txConfig->CanTpTxTaType == CANTP_PHYSICAL) {
+				ret = FIRST_FRAME;
+			} else {
+				DET_REPORTERROR( MODULE_ID_CANTP, 0, SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TATYPE );
+			}
 		}
 	}
+
 	return ret;
 }
 
@@ -1056,7 +1041,7 @@ static INLINE BufReq_ReturnType canTpTransmitHelper(const CanTp_TxNSduType *txCo
 		VALIDATE( txRuntime->pdurBuffer->SduDataPtr != NULL,
 				SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TX_BUFFER );
 		if (pdurResp == BUFREQ_OK) {
-			res = calcRequiredProtocolFrameType(txConfig, txRuntime, &iso15765Frame);
+			iso15765Frame = calcRequiredProtocolFrameType(txConfig, txRuntime);
 			switch (iso15765Frame) {
 			case SINGLE_FRAME:
 				res = sendSingleFrame(txConfig, txRuntime); /** @req CANTP231 */
