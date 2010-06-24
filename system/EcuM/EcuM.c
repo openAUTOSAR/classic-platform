@@ -32,21 +32,6 @@
 
 EcuM_GobalType internal_data;
 
-#if ( ECUM_VERSION_INFO_API == STD_ON )
-static Std_VersionInfoType _EcuM_VersionInfo =
-{
-  .vendorID   = (uint16)1,
-  .moduleID   = (uint16)1,
-  .instanceID = (uint8)1,
-  .sw_major_version = (uint8)ECUM_SW_MAJOR_VERSION,
-  .sw_minor_version = (uint8)ECUM_SW_MINOR_VERSION,
-  .sw_patch_version = (uint8)ECUM_SW_PATCH_VERSION,
-  .ar_major_version = (uint8)ECUM_AR_MAJOR_VERSION,
-  .ar_minor_version = (uint8)ECUM_AR_MINOR_VERSION,
-  .ar_patch_version = (uint8)ECUM_AR_PATCH_VERSION,
-};
-#endif
-
 void EcuM_Init( void )
 {
 	internal_data.current_state = ECUM_STATE_STARTUP_ONE;
@@ -233,11 +218,3 @@ Std_ReturnType EcuM_GetBootTarget(EcuM_BootTargetType* target)
 
 	return E_NOT_OK;
 }
-
-#if (ECUM_VERSION_INFO_API == STD_ON)
-void EcuM_GetVersionInfo(Std_VersionInfoType *versionInfo)
-{
-  memcpy(versionInfo, &_EcuM_VersionInfo, sizeof(Std_VersionInfoType));
-}
-#endif
-

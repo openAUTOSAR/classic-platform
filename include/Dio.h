@@ -73,6 +73,9 @@ typedef uint16 Dio_PortLevelType;
 #endif
 
 
+#define DIO_MODULE_ID			MODULE_ID_DIO
+#define DIO_VENDOR_ID			1
+
 #define DIO_SW_MAJOR_VERSION	1
 #define DIO_SW_MINOR_VERSION	0
 #define DIO_SW_PATCH_VERSION	0
@@ -86,7 +89,7 @@ typedef uint16 Dio_PortLevelType;
 /** @req DIO124 */
 #if ( DIO_VERSION_INFO_API == STD_ON)
 /** @req DIO139 */
-void Dio_GetVersionInfo( Std_VersionInfoType *versionInfo );
+#define Dio_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,DIO)
 #endif
 
 /** @req DIO133 */

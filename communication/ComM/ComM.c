@@ -74,26 +74,6 @@ void ComM_DeInit(){
 	ComM_Internal.InitStatus = COMM_UNINIT;
 }
 
-#if (COMM_VERSION_INFO_API == STD_ON)
-static Std_VersionInfoType ComM_Internal_VersionInfo = {
-  .vendorID   = (uint16)1,
-  .moduleID   = (uint16)1,
-  .instanceID = (uint8)1,
-  .sw_major_version = (uint8)COMM_SW_MAJOR_VERSION,
-  .sw_minor_version = (uint8)COMM_SW_MINOR_VERSION,
-  .sw_patch_version = (uint8)COMM_SW_PATCH_VERSION,
-  .ar_major_version = (uint8)COMM_AR_MAJOR_VERSION,
-  .ar_minor_version = (uint8)COMM_AR_MINOR_VERSION,
-  .ar_patch_version = (uint8)COMM_AR_PATCH_VERSION,
-};
-
-void ComM_GetVersionInfo( Std_VersionInfoType* VersionInfo ){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_GETVERSIONINFO);
-	memcpy(VersionInfo, &ComM_Internal_VersionInfo, sizeof(Std_VersionInfoType));
-}
-#endif
-
-
 Std_ReturnType ComM_GetStatus( ComM_InitStatusType* Status ){
 	COMM_VALIDATE_PARAMETER( (Status != NULL), COMM_SERVICEID_GETSTATUS, E_NOT_OK);
 
