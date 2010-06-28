@@ -37,6 +37,7 @@ typedef void (*test_func_t)( void );
 //#define TEST_DONE()
 #define TEST_START(_str,_nr)		testStart(_str,_nr)
 #define TEST_NEXT(_str,_next_nr)	testEnd(); testStart(_str,_next_nr);
+#define TEST_END()					testEnd()
 
 
 extern int test_suite;

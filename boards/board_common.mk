@@ -167,8 +167,10 @@ obj-$(USE_COMMON) += arc.o
 obj-$(USE_RAMLOG) += ramlog.o
 
 # If we have configured console output we include printf. 
-# Overridden to use lib implementation with CFG_USE_NEWLIB_PRINTF
-ifndef (CFG_USE_NEWLIB_PRINTF)
+# Overridden to use lib implementation with CFG_NEWLIB_PRINTF
+ifneq ($(CFG_NEWLIB_PRINTF),y)
+# TODO: This assumes that you print to console.. but you could
+#       just print to a buffer, e.g. sprintf() 
 ifneq (,$(SELECT_CONSOLE) $(SELECT_OS_CONSOLE))
 obj-y += printf.o
 endif

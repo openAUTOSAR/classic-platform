@@ -34,8 +34,8 @@
             <SDGS>
               <SDG/>
               <SDG GID="Arccore::ModuleOptions">
-                <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.7</SD>
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>

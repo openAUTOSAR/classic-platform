@@ -81,6 +81,7 @@ void etask_sup_l_02(void) {
 			test_nr = 10;
 			break;
 		case 10:
+#if defined(CFG_PPC)
 			/* Test RES_SCHEDULER.
 			 * Since GetResource(RES_SCHEDULER) only locks the
 			 * scheduler (interrupts are still working) we the interrupt
@@ -90,6 +91,8 @@ void etask_sup_l_02(void) {
 
 			/* Create an ISR2 */
 			isrTask = Os_Arc_CreateIsr( isr2, 4/*prio*/,"soft_0");
+
+
 			Irq_AttachIsr2(isrTask,NULL,INTC_SSCIR0_CLR0);
 			/* Create an ISR1 */
 			Irq_AttachIsr1(isr1,NULL,INTC_SSCIR0_CLR1,6);
@@ -112,6 +115,7 @@ void etask_sup_l_02(void) {
 
 //			TEST_ASSERT( taskRunCnt == 1 );
 			// TODO:
+#endif
 
 			test_nr = 100;
 			break;

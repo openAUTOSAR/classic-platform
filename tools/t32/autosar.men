@@ -134,8 +134,10 @@ menu
     menuitem "Reset,ALT+r" "sys.up"
     menuitem "Restore layout,CTRL+l" "do lay"
     menuitem "View ramlog,CTRL+s" "do ramlog"
+    menuitem "Run kernel testsuite" "do test"
   )  
 )
+
 
 
 

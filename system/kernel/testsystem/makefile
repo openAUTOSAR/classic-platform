@@ -49,7 +49,9 @@ VPATH += $(ROOTDIR)/$(SUBDIR)/config
 #libitem-y +=
 
 #linkfile
-ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
+#ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
+ldcmdfile-y = linkscript_gcc.ldp
+vpath %.ldf $(ROOTDIR)/$(ARCH_PATH-y)/scripts
 #ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
 
 inc-y += ..

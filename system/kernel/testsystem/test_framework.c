@@ -12,6 +12,34 @@
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
+/*
+ * Testsystem Requirements:
+ * - Similar to EmbUnit():
+ *   - EmbUnit is built around methods..this does not work well for an OS so
+ *     use macros, TEST_START() and TEST_END() start and end testcases.
+ *   - TEST_ASSERT() macro the same
+ *   - XML output should be the same
+ *   - Same statistict output
+ * - Be able to survive a known crash and restore to the current testcase
+ *   This would be very useful when testing exception behaviour.
+ * - It would have the test-cases grouped, so it will be easy the remove test that don't work
+ *   - Invent a way to do this pretty for different ARCH's. Today ARCH dependent
+ *     test-cases are #ifdef'd.
+ *     ALT_1: Have different header files for each ARCH that disable certain test-cases ?
+ *
+ * Bad stuff in current implementation:
+ * - The initial thought (see suite_01 ) was to build a rather large testsystem
+ *   that whould have few configurations. Howevent, this does not work well at all for
+ *   systems with that is very low on ROM/RAM.
+ * - I wish there was one place to enable/disable tests. Now it's spread out all over the place.
+ * - I guess the DECLARE_TEST_ETASK() macros was good for a large test-system,
+ *   but it should go away (suite_01)
+ * - Hooks and error handling should be unitfied into one file.
+ * - That test-cases is dependent on the former testcase to increase "test_nr"
+ *
+ */
+
+
 
 #include <stdint.h>
 #include <stdio.h>
