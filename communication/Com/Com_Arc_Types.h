@@ -19,6 +19,7 @@
 #include "Std_Types.h"
 #include "Com_Types.h"
 
+#define COM_ARC_FILTER_ENABLED	STD_OFF
 
 typedef struct {
 	uint32 ComFilterArcN;
@@ -28,7 +29,9 @@ typedef struct {
 
 typedef struct {
 
-	//Com_Arc_Filter_type ComFilter;
+#if (COM_ARC_FILTER_ENABLED == STD_ON)
+	Com_Arc_Filter_type ComFilter;
+#endif
 
 	uint32 Com_Arc_DeadlineCounter;
 	uint32 ComTimeoutFactor;

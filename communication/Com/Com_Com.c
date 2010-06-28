@@ -182,16 +182,14 @@ Std_ReturnType Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr) {
 				Arc_Signal->Com_Arc_DeadlineCounter = signal->ComTimeoutFactor;
 			}
 
-			/*
+#if (COM_ARC_FILTER_ENABLED == STD_ON)
 			// Zero new filter value.
 			IPdu->ComIPduSignalRef[i]->ComFilter.ComFilterArcNewValue = 0;
-
 			//Fix this!!!
 			Com_CopyFromSignal(IPdu->ComIPduSignalRef[i], &IPdu->ComIPduSignalRef[i]->ComFilter.ComFilterArcNewValue);
-			*/
 			// Perform filtering
-			//if (Com_Filter(IPdu->ComIPduSignalRef[i])) {
-
+			if (Com_Filter(IPdu->ComIPduSignalRef[i])) {
+#endif
 				// Check the signal processing mode.
 				if (IPdu->ComIPduSignalProcessing == IMMEDIATE) {
 					// If signal processing mode is IMMEDIATE, notify the signal callback.
@@ -203,7 +201,9 @@ Std_ReturnType Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr) {
 					// Signal processing mode is DEFERRED, mark the signal as updated.
 					Arc_Signal->ComSignalUpdated = 1;
 				}
-			//}
+#if (COM_ARC_FILTER_ENABLED == STD_ON)
+			}
+#endif
 		} else {
 			DEBUG(DEBUG_LOW, "Com_RxIndication: Ignored signal %d of I-PD %d since its update bit was not set\n", signal->ComHandleId, ComRxPduId);
 		}
