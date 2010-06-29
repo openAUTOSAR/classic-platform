@@ -69,7 +69,7 @@ void Com_Init(const Com_ConfigType *config ) {
 		ComGetIPdu(i);
 		ComGetArcIPdu(i);
 
-		if (i >= COM_MAX_NR_IPDU) {
+		if (i >= COM_N_IPDUS) {
 			DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_TOO_MANY_IPDU);
 			assert(0);
 			failure = 1;

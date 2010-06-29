@@ -25,6 +25,9 @@
 #include "ComM_ConfigTypes.h"
 #include "Modules.h"
 
+#define COMM_MODULE_ID			MODULE_ID_COMM
+#define COMM_VENDOR_ID			1
+
 #define COMM_AR_MAJOR_VERSION	2
 #define COMM_AR_MINOR_VERSION	0
 #define COMM_AR_PATCH_VERSION	1
@@ -89,7 +92,9 @@ void ComM_Init( ComM_ConfigType *);
 /** De-initializes (terminates) the AUTOSAR Communication Manager. */
 void ComM_DeInit();
 
-void ComM_GetVersionInfo( Std_VersionInfoType* versioninfo );
+#if (COMM_VERSION_INFO_API == STD_ON)
+#define ComM_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,COMM)
+#endif
 
 /** Returns the initialization status of the AUTOSAR Communication Manager. */
 Std_ReturnType ComM_GetStatus( ComM_InitStatusType* Status );

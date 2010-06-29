@@ -29,11 +29,10 @@
 /** @req CANTP003 */
 /** @req CANTP216 */
 
+#include "CanTp.h" /** @req CANTP156 */ /** @req CANTP219 */
+#include "CanTp_Cbk.h" /** @req CANTP156 *//** @req CANTP233 */
 #include "Det.h"
 #include "CanIf.h"
-#include "CanTp_Cfg.h" /** @req CANTP156 */
-#include "CanTp_Cbk.h" /** @req CANTP156 *//** @req CANTP233 */
-#include "CanTp.h" /** @req CANTP156 */ /** @req CANTP219 */
 #include "SchM_CanTp.h" /** @req CANTP156 */
 #include "PduR_CanTp.h"
 //#include "MemMap.h" /** @req CANTP156 */
@@ -61,6 +60,7 @@
 #else
 #define VALIDATE(_exp,_api,_err )
 #define VALIDATE_NO_RV(_exp,_api,_err )
+#undef DET_REPORTERROR
 #define DET_REPORTERROR(_x,_y,_z,_q)
 #endif
 
@@ -90,7 +90,7 @@ void PduR_CanTpTxConfirmation(PduIdType CanTpTxPduId, NotifResultType Result) {
 
 #endif
 
-//#define INLINE inline
+//#define INLINE
 #define INLINE inline
 
 #define TIMER_DECREMENT(timer) \
@@ -223,23 +223,6 @@ typedef struct {
 
 // - - - - - - - - - - - - - -
 
-#if (CANTP_VERSION_INFO_API == STD_ON) /** @req CANTP162 *//** @req CANTP163 */
-static Std_VersionInfoType _CanTp_VersionInfo =
-{
-  .vendorID   = (uint16)1,
-  .moduleID   = (uint16)1,
-  .instanceID = (uint8)1,
-  .sw_major_version = (uint8)CANTP_SW_MAJOR_VERSION,
-  .sw_minor_version = (uint8)CANTP_SW_MINOR_VERSION,
-  .sw_patch_version = (uint8)CANTP_SW_PATCH_VERSION,
-  .ar_major_version = (uint8)CANTP_AR_MAJOR_VERSION,
-  .ar_minor_version = (uint8)CANTP_AR_MINOR_VERSION,
-  .ar_patch_version = (uint8)CANTP_AR_PATCH_VERSION,
-};
-#endif /* DEM_VERSION_INFO_API */
-
-// - - - - - - - - - - - - - -
-
 CanTp_RunTimeDataType CanTpRunTimeData = { .initRun = FALSE,
 		.internalState = CANTP_OFF }; /** @req CANTP168 */
 
@@ -303,11 +286,11 @@ static inline ISO15765FrameType getFrameType(
 
 	switch (*formatType) {
 	case CANTP_STANDARD:
-		DEBUG( DEBUG_MEDIUM, "CANTP_STANDARD\n")
+		DEBUG( DEBUG_MEDIUM, "CANTP_STANDARD\n");
 		tpci = CanTpRxPduPtr->SduDataPtr[0];
 		break;
 	case CANTP_EXTENDED:
-		DEBUG( DEBUG_MEDIUM, "CANTP_EXTENDED\n")
+		DEBUG( DEBUG_MEDIUM, "CANTP_EXTENDED\n");
 		tpci = CanTpRxPduPtr->SduDataPtr[1];
 		break;
 	default:
@@ -508,14 +491,13 @@ static INLINE Std_ReturnType canTansmitPaddingHelper(
 
 // - - - - - - - - - - - - - -
 
-static INLINE void sendFlowControlFrame(const CanTp_RxNSduType *rxConfig,
-		CanTp_ChannelPrivateType *rxRuntime, BufReq_ReturnType flowStatus) {
+static INLINE void sendFlowControlFrame(const CanTp_RxNSduType *rxConfig, CanTp_ChannelPrivateType *rxRuntime, BufReq_ReturnType flowStatus) {
 	int indexCount = 0;
 	Std_ReturnType ret = E_NOT_OK;
 	PduInfoType pduInfo;
 	uint8 sduData[8]; // Note that buffer in declared on the stack.
 	uint16 spaceFreePduRBuffer = 0;
-	uint8 computedBs = 0; // req:CanTp064 and example.
+	uint16 computedBs = 0; // req:CanTp064 and example.
 
 	DEBUG( DEBUG_MEDIUM, "sendFlowControlFrame called!\n");
 	pduInfo.SduDataPtr = &sduData[0];
@@ -538,7 +520,7 @@ static INLINE void sendFlowControlFrame(const CanTp_RxNSduType *rxConfig,
 		DEBUG( DEBUG_MEDIUM, "computedBs:%d\n", computedBs);
 		sduData[indexCount++] = computedBs;
 		sduData[indexCount++] = (uint8) rxConfig->CanTpSTmin;
-		rxRuntime->iso15765.nextFlowControlCount = (uint8) computedBs;
+		rxRuntime->iso15765.nextFlowControlCount = computedBs;
 		pduInfo.SduLength = indexCount;
 		break;
 	}
@@ -775,9 +757,18 @@ static INLINE void handleFlowControlFrame(const CanTp_TxNSduType *txConfig,
 		}
 		switch (txPduData->SduDataPtr[indexCount++] & ISO15765_TPCI_FS_MASK) {
 		case ISO15765_FLOW_CONTROL_STATUS_CTS:
+#if 1
+			{	// This construction is added to make the hcs12 compiler happy.
+				const uint16 bs = txPduData->SduDataPtr[indexCount++];
+				txRuntime->iso15765.BS = bs;
+				txRuntime->iso15765.nextFlowControlCount = bs;
+			}
+			txRuntime->iso15765.STmin = txPduData->SduDataPtr[indexCount++];
+#else
 			txRuntime->iso15765.BS = txPduData->SduDataPtr[indexCount++];
 			txRuntime->iso15765.nextFlowControlCount = txRuntime->iso15765.BS;
 			txRuntime->iso15765.STmin = txPduData->SduDataPtr[indexCount++];
+#endif
 			DEBUG( DEBUG_MEDIUM, "txRuntime->iso15765.STmin = %d\n", txRuntime->iso15765.STmin);
 			ret = sendConsecutiveFrame(txConfig, txRuntime);
 			if (ret == E_OK) {
@@ -802,6 +793,7 @@ static INLINE void handleFlowControlFrame(const CanTp_TxNSduType *txConfig,
 		DEBUG( DEBUG_MEDIUM, "Ignoring flow control, we do not expect it!");
 	}
 }
+
 
 // - - - - - - - - - - - - - -
 
@@ -932,46 +924,32 @@ static INLINE void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 
 // - - - - - - - - - - - - - -
 
-static INLINE Std_ReturnType calcRequiredProtocolFrameType(
-		const CanTp_TxNSduType *txConfig, CanTp_ChannelPrivateType *txRuntime,
-		ISO15765FrameType *iso15765Frame) {
+static INLINE ISO15765FrameType calcRequiredProtocolFrameType(
+		const CanTp_TxNSduType *txConfig, CanTp_ChannelPrivateType *txRuntime) {
 
-	Std_ReturnType ret;
+	ISO15765FrameType ret = INVALID_FRAME;
 	if (txConfig->CanTpAddressingMode == CANTP_EXTENDED) {
-		if ( txRuntime->transferTotal > MAX_PAYLOAD_CF_EXT_ADDR ) {
-			VALIDATE( txConfig->CanTpTxTaType == CANTP_FUNCTIONAL,
-					SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TATYPE );
-		}
-		if (txRuntime->transferTotal > MAX_PAYLOAD_CF_EXT_ADDR) {
-			if (txConfig->CanTpTxTaType == CANTP_PHYSICAL) {
-				*iso15765Frame = FIRST_FRAME;
-				ret = E_OK;
-			} else {
-				*iso15765Frame = NONE;
-				ret = E_NOT_OK;
-			}
+		if (txRuntime->transferTotal <= MAX_PAYLOAD_CF_EXT_ADDR) {
+			ret = SINGLE_FRAME;
 		} else {
-			*iso15765Frame = SINGLE_FRAME;
-			ret = E_OK;
-		}
-	} else {
-		if ( txRuntime->transferTotal > MAX_PAYLOAD_CF_EXT_ADDR ) {
-			VALIDATE( txConfig->CanTpTxTaType == CANTP_FUNCTIONAL,
-					SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TATYPE );
-		}
-		if (txRuntime->transferTotal > MAX_PAYLOAD_CF_STD_ADDR) {
 			if (txConfig->CanTpTxTaType == CANTP_PHYSICAL) {
-				*iso15765Frame = FIRST_FRAME;
-				ret = E_OK;
+				ret = FIRST_FRAME;
 			} else {
-				*iso15765Frame = NONE;
-				ret = E_NOT_OK;
+				DET_REPORTERROR( MODULE_ID_CANTP, 0, SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TATYPE );
 			}
+		}
+	} else {	// CANTP_STANDARD
+		if (txRuntime->transferTotal <= MAX_PAYLOAD_CF_STD_ADDR) {
+			ret = SINGLE_FRAME;
 		} else {
-			*iso15765Frame = SINGLE_FRAME;
-			ret = E_OK;
+			if (txConfig->CanTpTxTaType == CANTP_PHYSICAL) {
+				ret = FIRST_FRAME;
+			} else {
+				DET_REPORTERROR( MODULE_ID_CANTP, 0, SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TATYPE );
+			}
 		}
 	}
+
 	return ret;
 }
 
@@ -1046,7 +1024,7 @@ static INLINE BufReq_ReturnType canTpTransmitHelper(const CanTp_TxNSduType *txCo
 		VALIDATE( txRuntime->pdurBuffer->SduDataPtr != NULL,
 				SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TX_BUFFER );
 		if (pdurResp == BUFREQ_OK) {
-			res = calcRequiredProtocolFrameType(txConfig, txRuntime, &iso15765Frame);
+			iso15765Frame = calcRequiredProtocolFrameType(txConfig, txRuntime);
 			switch (iso15765Frame) {
 			case SINGLE_FRAME:
 				res = sendSingleFrame(txConfig, txRuntime); /** @req CANTP231 */
@@ -1284,16 +1262,7 @@ void CanTp_RxIndication_Main(PduIdType CanTpRxPduId,
 
 // - - - - - - - - - - - - - -
 
-#if (CANTP_VERSION_INFO_API == STD_ON)
-void CanTp_GetVersionInfo(Std_VersionInfoType* versionInfo) /** @req CANTP210 */
-{
-	memcpy(versionInfo, &_CanTp_VersionInfo, sizeof(Std_VersionInfoType));
-}
-#endif /* DEM_VERSION_INFO_API */
-
-// - - - - - - - - - - - - - -
-
-void CanTp_TxConfirmation(PduIdType PduId) /** @req CANTP215 */ /** @req CANTP076 *//** @req CANTP215 */
+void CanTp_TxConfirmation(PduIdType PduId) /** @req CANTP215 *//** @req CANTP076 *//** @req CANTP215 */
 {
 	const CanTp_RxNSduType *rxConfigParams = NULL;
 	const CanTp_TxNSduType *txConfigParams = NULL;

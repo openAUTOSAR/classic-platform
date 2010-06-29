@@ -38,22 +38,6 @@ typedef enum
 
 static Dcm_StateType dcmState = DCM_UNINITIALIZED;
 
-#if (DCM_VERSION_INFO_API == STD_ON)
-static Std_VersionInfoType _Dcm_VersionInfo =
-{
-  .vendorID   = (uint16)1,
-  .moduleID   = (uint16)1,
-  .instanceID = (uint8)1,
-  .sw_major_version = (uint8)DCM_SW_MAJOR_VERSION,
-  .sw_minor_version = (uint8)DCM_SW_MINOR_VERSION,
-  .sw_patch_version = (uint8)DCM_SW_PATCH_VERSION,
-  .ar_major_version = (uint8)DCM_AR_MAJOR_VERSION,
-  .ar_minor_version = (uint8)DCM_AR_MINOR_VERSION,
-  .ar_patch_version = (uint8)DCM_AR_PATCH_VERSION,
-};
-#endif /* DCM_VERSION_INFO_API */
-
-
 
 /*********************************************
  * Interface for upper layer modules (8.3.1) *
@@ -63,11 +47,7 @@ static Std_VersionInfoType _Dcm_VersionInfo =
  * Procedure:	Dcm_GetVersionInfo
  * Reentrant:	Yes
  */
-#if (DCM_VERSION_INFO_API == STD_ON)
-void Dcm_GetVersionInfo(Std_VersionInfoType *versionInfo) {
-	memcpy(versionInfo, &_Dcm_VersionInfo, sizeof(Std_VersionInfoType));
-}
-#endif /* DCM_VERSION_INFO_API */
+// Defined in Dcm.h
 
 
 
