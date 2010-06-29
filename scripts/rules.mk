@@ -123,6 +123,14 @@ inc-y += ../include
 	$(Q)$(CPP) -x assembler-with-cpp -E -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
 
+# Board linker files are in the board directory 
+inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
+
+# Preprocess linker files..
+%.ldp: %.ldf
+	@echo "  >> CPP $<"
+	$(Q)$(CPP) -E -P -x assembler-with-cpp -o $@ $(addprefix -I ,$(inc-y)) $<
+
 #	@cat $@ 
 	
 .PHONY $(ROOTDIR)/libs:
@@ -153,7 +161,9 @@ else
 	 							/^\.bss/ { print "  bss :"  $$3+0 " bytes"; ram+=$$3}; \
 	 							END { print "  ROM: ~" rom " bytes"; print "  RAM: ~" ram " bytes"}' $(subst .elf,.map,$@)
 endif
+	@echo
 	@echo "  >>>>>>>  DONE  <<<<<<<<<"
+	@echo
 	
 
 $(size-exe-y): $(build-exe-y)
@@ -161,4 +171,4 @@ $(size-exe-y): $(build-exe-y)
 	@echo TODO: Parse the file....
 
 .PHONY clean:
-	@-rm -f *.o *.d *.h *.elf *.a
+	@-rm -f *.o *.d *.h *.elf *.a *.ldp
