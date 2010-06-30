@@ -275,7 +275,7 @@ typedef struct {
 	/** Array of group signals.
 	 * Only applicable if this signal is a signal group.
 	 */
-	const ComGroupSignal_type **ComGroupSignal;
+	const ComGroupSignal_type * const *ComGroupSignal;
 
 
 	//void *Com_Arc_ShadowBuffer;
@@ -401,7 +401,7 @@ typedef struct {
 	/** References to all signals and signal groups contained in this IPDU.
 	 * It probably makes little sense not to define at least one signal or signal group for each IPDU.
 	 */
-	const ComSignal_type **ComIPduSignalRef;
+	const ComSignal_type * const *ComIPduSignalRef;
 
 	/*
 	 * The following two variables are used to control the per I-PDU based Rx/Tx-deadline monitoring.
