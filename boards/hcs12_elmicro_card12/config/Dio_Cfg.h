@@ -24,6 +24,8 @@
 #ifndef DIO_CFG_H_
 #define DIO_CFG_H_
 
+#warning "This default file may only be used as an example!"
+
 #define DIO_VERSION_INFO_API    STD_ON
 #define DIO_DEV_ERROR_DETECT 	STD_ON
 #define DIO_END_OF_LIST  -1

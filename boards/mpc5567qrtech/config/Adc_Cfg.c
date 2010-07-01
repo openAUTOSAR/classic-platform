@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #include "Adc.h"
 #include "Dma.h"
 #include "mpc5516.h"

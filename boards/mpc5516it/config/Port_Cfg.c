@@ -21,6 +21,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #include "Port_Cfg.h"
 
 // All: 	PA,OBE,IBE,ODE,HYS,SRC,WPE,WPS

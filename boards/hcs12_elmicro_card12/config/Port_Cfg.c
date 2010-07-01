@@ -13,6 +13,8 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+#warning "This default file may only be used as an example!"
+
 #include "Port.h"
 
 const Port_ConfigType PortConfigData =

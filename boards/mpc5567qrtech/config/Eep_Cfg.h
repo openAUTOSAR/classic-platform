@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #ifndef EEP_CFG_H_
 #define EEP_CFG_H_
 

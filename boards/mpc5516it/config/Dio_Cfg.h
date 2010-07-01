@@ -21,6 +21,8 @@
 /** @file Dio_Cfg.h
  * Definitions of configuration parameters for the DIO Driver.
  */
+#warning "This default file may only be used as an example!"
+
 #ifndef DIO_CFG_H_
 #define DIO_CFG_H_
 

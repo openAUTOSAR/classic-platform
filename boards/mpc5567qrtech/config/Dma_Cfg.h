@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #ifndef DMA_CFG_H_
 #define DMA_CFG_H_
 

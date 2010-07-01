@@ -21,6 +21,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #define PDUR_MODULE_ID		51
 #define PDUR_INSTANCE_ID	0
 
