@@ -366,7 +366,7 @@ static inline PduLengthType getPduLength(
 
 // - - - - - - - - - - - - - -
 
-void initRx15765RuntimeData(const CanTp_RxNSduType *rxConfigParams,
+static void initRx15765RuntimeData(const CanTp_RxNSduType *rxConfigParams,
 		CanTp_ChannelPrivateType *rxRuntimeParams) {
 
 	rxRuntimeParams->iso15765.state = IDLE;
@@ -382,7 +382,7 @@ void initRx15765RuntimeData(const CanTp_RxNSduType *rxConfigParams,
 
 // - - - - - - - - - - - - - -
 
-void initTx15765RuntimeData(const CanTp_TxNSduType *txConfigParams,
+static void initTx15765RuntimeData(const CanTp_TxNSduType *txConfigParams,
 		CanTp_ChannelPrivateType *txRuntimeParams) {
 
 	txRuntimeParams->iso15765.state = IDLE;

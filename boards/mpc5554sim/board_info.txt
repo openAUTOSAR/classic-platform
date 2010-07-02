@@ -1,0 +1,15 @@
+
+The Freescale MPC5554 is an PowerPC process with a e200Z6 core. 
+The difference between this and the MPC551xsim is that this supports VLE.
+	
+Datasheets:
+  
+Info:	
+  MPC5554
+  2MB Flash
+  64KB SRAM
+  .. 
+  
+Memory Map:
+ 0x0000_0000 ->           Flash
+ 0x4000_0000 ->           SRAM
