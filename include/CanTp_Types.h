@@ -123,11 +123,6 @@ typedef struct {
 
 // - - - - - - - - - - -
 
-// These constants needs to move later.
-#define CANTP_DEV_ERROR_DETECT					STD_ON  /** req: CanTp239, development error detection on/off. */
-#define CANTP_MAIN_FUNCTION_PERIOD				0.1250	/** req: CanTp240, allow to configure time for MainFunction. */
-#define CANTP_TC								STD_ON	/** req: CanTp242, enabling transmit Cancellation. */
-
 typedef struct {
 	uint32 main_function_period; /** req: CanTp240: ?? */
 } CanTp_GeneralType;

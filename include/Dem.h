@@ -23,6 +23,9 @@
 #ifndef DEM_H_
 #define DEM_H_
 
+#define DEM_MODULE_ID			MODULE_ID_DEM
+#define DEM_VENDOR_ID			1
+
 #define DEM_SW_MAJOR_VERSION    1
 #define DEM_SW_MINOR_VERSION   	0
 #define DEM_SW_PATCH_VERSION    0
@@ -87,9 +90,8 @@
 /*
  * Interface for upper layer modules (8.3.1)
  */
-
-#if (DEM_VERSION_INFO_API == STD_ON)
-void Dem_GetVersionInfo(Std_VersionInfoType *versionInfo);
+#if ( DEM_VERSION_INFO_API == STD_ON )
+#define Dem_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,DEM)
 #endif /* DEM_VERSION_INFO_API */
 
 /*

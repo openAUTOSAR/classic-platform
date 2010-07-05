@@ -25,21 +25,6 @@
 #define CHANNEL_GRP_PTR	(&DioConfigData)
 #define PORT_PTR		(&DioPortConfigData)
 
-#if ( DIO_VERSION_INFO_API == STD_ON )
-static Std_VersionInfoType _Dio_VersionInfo =
-{
-	.vendorID   = (uint16)1,
-	.moduleID   = (uint16)1,
-	.instanceID = (uint8)1,
-	.sw_major_version = (uint8)DIO_SW_MAJOR_VERSION,
-	.sw_minor_version = (uint8)DIO_SW_MINOR_VERSION,
-	.sw_patch_version = (uint8)DIO_SW_PATCH_VERSION,
-	.ar_major_version = (uint8)DIO_AR_MAJOR_VERSION,
-	.ar_minor_version = (uint8)DIO_AR_MINOR_VERSION,
-	.ar_patch_version = (uint8)DIO_AR_PATCH_VERSION,
-};
-#endif
-
 #if ( DIO_DEV_ERROR_DETECT == STD_ON )
 static int Channel_Config_Contains(Dio_ChannelType channelId)
 {
@@ -221,11 +206,3 @@ void Dio_WriteChannelGroup(const Dio_ChannelGroupType *channelGroupIdPtr,
 
 	cleanup: return;
 }
-
-#if (DIO_VERSION_INFO_API == STD_ON)
-void Dio_GetVersionInfo(Std_VersionInfoType *versionInfo)
-{
-  memcpy(versionInfo, &_Dio_VersionInfo, sizeof(Std_VersionInfoType));
-}
-#endif
-

@@ -29,10 +29,11 @@ inc-y += $(ROOTDIR)/components/pwm_sine
 
 
 # libs needed by us 
-libitem-y += $(ROOTDIR)/libs/libkernel_$(ARCH_MCU).a
+#libitem-y +=
 
 #linkfile
-ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
+ldcmdfile-y = linkscript_gcc.ldp
+vpath %.ldf $(ROOTDIR)/$(ARCH_PATH-y)/scripts
 
 # What I want to build
 build-exe-y = pwm_node.elf

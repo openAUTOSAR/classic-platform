@@ -67,6 +67,28 @@ include $(ROOTDIR)/scripts/cc_$(COMPILER).mk
 # Get object files
 include ../makefile
 
+
+##### For backwards compatability with older project makefiles
+# Remove dependency on libkernel
+deprecated-libs += $(ROOTDIR)/libs/libkernel_$(ARCH_MCU).a
+deprecated-libs-included = $(filter $(deprecated-libs),$(libitem-y))
+ifneq ($(deprecated-libs-included),)
+$(info >>>> Ignoring deprecated lib dependencies: $(deprecated-libs-included)')
+libitem-y := $(filter-out $(deprecated-libs),$(libitem-y))
+endif
+
+# Automatic preprocessing of std linkscripts
+old-ldcmdfile = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
+new-ldcmdfile = linkscript_gcc.ldp
+old-ldcmdfile-used = $(filter $(old-ldcmdfile),$(ldcmdfile-y))
+ifneq ($(old-ldcmdfile-used),)
+$(info >>>> Changing linkscript to preprocessed version: $(old-ldcmdfile) -> $(new-ldcmdfile)')
+ldcmdfile-y := $(subst $(old-ldcmdfile),$(new-ldcmdfile),$(ldcmdfile-y))
+vpath %.ldf $(ROOTDIR)/$(ARCH_PATH-y)/scripts
+endif
+
+#####
+
 inc-y += $(ROOTDIR)/include
 #inc-$(CFG_PPC) += $(ROOTDIR)/include/ppc
 #inc-$(CFG_ARM) += $(ROOTDIR)/include/arm
@@ -123,6 +145,14 @@ inc-y += ../include
 	$(Q)$(CPP) -x assembler-with-cpp -E -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
 
+# Board linker files are in the board directory 
+inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
+
+# Preprocess linker files..
+%.ldp: %.ldf
+	@echo "  >> CPP $<"
+	$(Q)$(CPP) -E -P -x assembler-with-cpp -o $@ $(addprefix -I ,$(inc-y)) $<
+
 #	@cat $@ 
 	
 .PHONY $(ROOTDIR)/libs:
@@ -153,7 +183,9 @@ else
 	 							/^\.bss/ { print "  bss :"  $$3+0 " bytes"; ram+=$$3}; \
 	 							END { print "  ROM: ~" rom " bytes"; print "  RAM: ~" ram " bytes"}' $(subst .elf,.map,$@)
 endif
+	@echo
 	@echo "  >>>>>>>  DONE  <<<<<<<<<"
+	@echo
 	
 
 $(size-exe-y): $(build-exe-y)
@@ -161,4 +193,4 @@ $(size-exe-y): $(build-exe-y)
 	@echo TODO: Parse the file....
 
 .PHONY clean:
-	@-rm -f *.o *.d *.h *.elf *.a
+	@-rm -f *.o *.d *.h *.elf *.a *.ldp

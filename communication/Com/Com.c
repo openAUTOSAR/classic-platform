@@ -69,7 +69,7 @@ void Com_Init(const Com_ConfigType *config ) {
 		ComGetIPdu(i);
 		ComGetArcIPdu(i);
 
-		if (i >= COM_MAX_NR_IPDU) {
+		if (i >= COM_N_IPDUS) {
 			DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_TOO_MANY_IPDU);
 			assert(0);
 			failure = 1;
@@ -100,7 +100,7 @@ void Com_Init(const Com_ConfigType *config ) {
 		}
 
 		// For each signal in this PDU.
-		Arc_IPdu->NComIPduSignalRef = 0;
+		//Arc_IPdu->NComIPduSignalRef = 0;
 		for (int j = 0; IPdu->ComIPduSignalRef != NULL && IPdu->ComIPduSignalRef[j] != NULL; j++) {
 			Signal = IPdu->ComIPduSignalRef[j];
 			ComGetArcSignal(Signal->ComHandleId);
@@ -132,7 +132,7 @@ void Com_Init(const Com_ConfigType *config ) {
 			}
 
 			// Increment helper counters
-		    Arc_IPdu->NComIPduSignalRef = j + 1;
+		    //Arc_IPdu->NComIPduSignalRef = j + 1;
 
 			Arc_Signal->ComIPduDataPtr = Arc_IPdu->ComIPduDataPtr;
 			Arc_Signal->ComIPduHandleId = i;

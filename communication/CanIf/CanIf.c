@@ -67,6 +67,7 @@
 #else
 #define VALIDATE(_exp,_api,_err )
 #define VALIDATE_NO_RV(_exp,_api,_err )
+#undef DET_REPORTERROR
 #define DET_REPORTERROR(_x,_y,_z,_q)
 #endif
 
@@ -147,29 +148,16 @@ void CanIf_Init(const CanIf_ConfigType *ConfigPtr)
 /*
  * Controller :: CanIf_Arc_ChannelIdType (CanIf-specific id to abstract from Can driver/controllers)
  * ConfigurationIndex :: CanIf_Arc_ConfigurationIndexType
- *   /tojo
  */
 void CanIf_InitController(uint8 Controller, uint8 ConfigurationIndex)
 {
   // We call this a CanIf channel. Hopefully makes it easier to follow.
   CanIf_Arc_ChannelIdType channel = Controller;
+  CanIf_ControllerModeType mode;
 
   VALIDATE_NO_RV(CanIf_Global.initRun, CANIF_INIT_CONTROLLER_ID, CANIF_E_UNINIT );
   VALIDATE_NO_RV(channel < CANIF_CHANNEL_CNT, CANIF_INIT_CONTROLLER_ID, CANIF_E_PARAM_CONTROLLER);
   VALIDATE_NO_RV(ConfigurationIndex < CANIF_CHANNEL_CONFIGURATION_CNT, CANIF_INIT_CONTROLLER_ID, CANIF_E_PARAM_POINTER);
-
-#if (CANIF_DEV_ERROR_DETECT == STD_ON)
-  CanIf_ControllerModeType mode;
-
-  if (CanIf_GetControllerMode(channel, &mode) == E_OK)
-  {
-    VALIDATE_NO_RV((mode != CANIF_CS_UNINIT), CANIF_INIT_CONTROLLER_ID, CANIF_E_PARAM_CONTROLLER_MODE );
-  }
-  else
-  {
-    VALIDATE_NO_RV(FALSE, CANIF_INIT_CONTROLLER_ID, CANIF_E_PARAM_CONTROLLER_MODE);
-  }
-#endif
 
   if (CanIf_GetControllerMode(channel, &mode) == E_OK)
   {
@@ -180,7 +168,11 @@ void CanIf_InitController(uint8 Controller, uint8 ConfigurationIndex)
     else if (mode != CANIF_CS_STOPPED)
     {
       VALIDATE_NO_RV(FALSE, CANIF_INIT_CONTROLLER_ID, CANIF_E_PARAM_CONTROLLER_MODE); // CANIF092
-   }
+    }
+  }
+  else
+  {
+    VALIDATE_NO_RV(FALSE, CANIF_INIT_CONTROLLER_ID, CANIF_E_PARAM_CONTROLLER_MODE);
   }
 
   // CANIF293: ..Subsequently the CAN Interface calls the corresponding
@@ -796,8 +788,10 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
 
         case CANIF_USER_TYPE_CAN_PDUR:
             // Send Can frame to PDU router
+#if defined(USE_PDUR)
             PduR_CanIfRxIndication(entry->CanIfCanRxPduId,CanSduPtr);
             return;
+#endif
             break;
 
         case CANIF_USER_TYPE_CAN_TP:
@@ -859,8 +853,10 @@ void CanIf_ControllerBusOff(uint8 Controller)
 
 void CanIf_SetWakeupEvent(uint8 Controller)
 {
+#if  ( CANIF_DEV_ERROR_DETECT == STD_ON )
   // We call this a CanIf channel. Hopefully makes it easier to follow.
   CanIf_Arc_ChannelIdType channel = Controller;
+#endif
 
   VALIDATE_NO_RV(FALSE, CANIF_SETWAKEUPEVENT_ID, CANIF_E_NOK_NOSUPPORT);
   VALIDATE_NO_RV( CanIf_Global.initRun, CANIF_SETWAKEUPEVENT_ID, CANIF_E_UNINIT );
@@ -871,8 +867,10 @@ void CanIf_SetWakeupEvent(uint8 Controller)
 
 void CanIf_Arc_Error(uint8 Controller, Can_Arc_ErrorType Error)
 {
+#if  ( CANIF_DEV_ERROR_DETECT == STD_ON )
   // We call this a CanIf channel. Hopefully makes it easier to follow.
   CanIf_Arc_ChannelIdType channel = Controller;
+#endif
 
   VALIDATE_NO_RV( CanIf_Global.initRun, CANIF_ARCERROR_ID, CANIF_E_UNINIT );
   VALIDATE_NO_RV( channel < CANIF_CHANNEL_CNT, CANIF_ARCERROR_ID, CANIF_E_PARAM_CONTROLLER );

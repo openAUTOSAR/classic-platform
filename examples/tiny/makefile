@@ -21,10 +21,11 @@ include $(ROOTDIR)/boards/board_common.mk
 obj-y += tiny.o
 
 # libs needed by us 
-libitem-y += $(ROOTDIR)/libs/libkernel_$(ARCH_MCU).a
+#libitem-y +=
 
 #linkfile
-ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
+ldcmdfile-y = linkscript_gcc.ldp
+vpath %.ldf $(ROOTDIR)/$(ARCH_PATH-y)/scripts
 
 # What I want to build
 #build-lib-y = tiny.a
