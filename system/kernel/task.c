@@ -508,8 +508,8 @@ StatusType ActivateTask( TaskType TaskID ) {
 	}
 
 
-	/* Preempt only if higher prio than us */
-	if(	(pcb->scheduling == FULL) &&
+	/* Preempt only if we are preemptable and target has higher prio than us */
+	if(	(Os_TaskGetCurrent()->scheduling == FULL) &&
 		(os_sys.int_nest_cnt == 0) && (pcb->prio > Os_TaskGetCurrent()->prio) )
 	{
 		Os_Dispatch(0);
