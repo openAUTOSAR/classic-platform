@@ -168,7 +168,7 @@
               </SUB-CONTAINERS>
             </CONTAINER>
             <CONTAINER UUID="6b1bd06c-aa6c-4a3b-890f-7a6622039010">
-              <SHORT-NAME>etask_l_none</SHORT-NAME>
+              <SHORT-NAME>etask_l_non</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
               <PARAMETER-VALUES>
                 <INTEGER-VALUE>
@@ -220,7 +220,7 @@
               </PARAMETER-VALUES>
             </CONTAINER>
             <CONTAINER UUID="21591f45-043e-4d3f-9c91-fbb617d69350">
-              <SHORT-NAME>etask_m_none</SHORT-NAME>
+              <SHORT-NAME>etask_m_non</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
               <PARAMETER-VALUES>
                 <INTEGER-VALUE>
@@ -272,7 +272,7 @@
               </PARAMETER-VALUES>
             </CONTAINER>
             <CONTAINER UUID="d8a48b25-b6e2-4c30-9834-9f841effedfc">
-              <SHORT-NAME>etask_h_none</SHORT-NAME>
+              <SHORT-NAME>etask_h_non</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
               <PARAMETER-VALUES>
                 <INTEGER-VALUE>
@@ -324,7 +324,7 @@
               </PARAMETER-VALUES>
             </CONTAINER>
             <CONTAINER UUID="e7882a54-1553-411b-89da-b6bdab4a7b15">
-              <SHORT-NAME>btask_l_none</SHORT-NAME>
+              <SHORT-NAME>btask_l_non</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
               <PARAMETER-VALUES>
                 <INTEGER-VALUE>
@@ -376,7 +376,7 @@
               </PARAMETER-VALUES>
             </CONTAINER>
             <CONTAINER UUID="fee669e9-e94e-47d2-90bb-2bcf4f95215b">
-              <SHORT-NAME>btask_m_none</SHORT-NAME>
+              <SHORT-NAME>btask_m_non</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
               <PARAMETER-VALUES>
                 <INTEGER-VALUE>
@@ -428,7 +428,7 @@
               </PARAMETER-VALUES>
             </CONTAINER>
             <CONTAINER UUID="1427277d-b148-4faa-8b15-a9b732a756d0">
-              <SHORT-NAME>btask_h_none</SHORT-NAME>
+              <SHORT-NAME>btask_h_non</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
               <PARAMETER-VALUES>
                 <INTEGER-VALUE>
@@ -528,6 +528,26 @@
                 <INTEGER-VALUE>
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsEvent/OsEventMask</DEFINITION-REF>
                   <VALUE>4</VALUE>
+                </INTEGER-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="47709c91-4cce-40dc-84d8-9918f984c206">
+              <SHORT-NAME>kill</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsEvent</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsEvent/OsEventMask</DEFINITION-REF>
+                  <VALUE>8</VALUE>
+                </INTEGER-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="9e9f81cc-0b31-4c1b-a434-6da73d1980eb">
+              <SHORT-NAME>next</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsEvent</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsEvent/OsEventMask</DEFINITION-REF>
+                  <VALUE>16</VALUE>
                 </INTEGER-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>

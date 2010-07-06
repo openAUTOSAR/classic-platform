@@ -26,7 +26,7 @@
 
 #include <stdlib.h>
 #include "Os.h"
-#include "os_test.h"
+#include "test_framework.h"
 #include "Mcu.h"
 #if defined(USE_GPT)
 #include "Gpt.h"
@@ -208,7 +208,7 @@ void etask_master( void ) {
 	GetEvent(currTask,&evMask);
 	TEST_ASSERT( evMask == mask);
 
-	testExit(0);
+	TestExit(0);
 }
 
 //--------------------------------------------------------------------

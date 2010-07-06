@@ -13,47 +13,49 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+
+
 /* Tests
  *    Scheduling tests FULL/NONE using SetEvent(), ActivateTask() and ChainTask()
  *    TODO: ChainTask()
  *    TODO: Should we add the GetResource(RES_SCHEDULER) here also?
  *
  *    SetEvent()
- *      etask_m_full: SetEvent() to  etask_l_full, etask_h_full
- *      etask_m_full: SetEvent() to  etask_l_none, etask_h_none
- *      etask_m_none: SetEvent() to  etask_l_full, etask_h_full
- *      etask_m_none: SetEvent() to  etask_l_none, etask_h_none
+ *    1 etask_m_full: SetEvent() to  etask_l_full, etask_h_full
+ *    1 etask_m_full: SetEvent() to  etask_l_non, etask_h_non
+ *    4 etask_m_non: SetEvent() to  etask_l_full, etask_h_full
+ *    4 etask_m_non: SetEvent() to  etask_l_non, etask_h_non
  *
  *      btask_m_full: SetEvent() to  etask_l_full, etask_h_full
- *      btask_m_full: SetEvent() to  etask_l_none, etask_h_none
- *      btask_m_none: SetEvent() to  etask_l_full, etask_h_full
- *      btask_m_none: SetEvent() to  etask_l_none, etask_h_none
+ *      btask_m_full: SetEvent() to  etask_l_non, etask_h_non
+ *      btask_m_non: SetEvent() to  etask_l_full, etask_h_full
+ *      btask_m_non: SetEvent() to  etask_l_non, etask_h_non
  *
  *    ActivateTask()
- *      etask_m_full: ActivateTask() to  etask_l_full, etask_h_full
- *      etask_m_full: ActivateTask() to  etask_l_none, etask_h_none
- *      etask_m_none: ActivateTask() to  etask_l_full, etask_h_full
- *      etask_m_none: ActivateTask() to  etask_l_none, etask_h_none
+ *    2 etask_m_full: ActivateTask() to  etask_l_full, etask_h_full
+ *    2 etask_m_full: ActivateTask() to  etask_l_non, etask_h_non
+ *      etask_m_non: ActivateTask() to  etask_l_full, etask_h_full
+ *      etask_m_non: ActivateTask() to  etask_l_non, etask_h_non
  *
- *      etask_m_full: ActivateTask() to  btask_l_full, btask_h_full
- *      etask_m_full: ActivateTask() to  btask_l_none, btask_h_none
- *      etask_m_none: ActivateTask() to  btask_l_full, btask_h_full
- *      etask_m_none: ActivateTask() to  btask_l_none, btask_h_none
- *
- *      btask_m_full: ActivateTask() to  btask_l_full, etask_h_full
- *      btask_m_full: ActivateTask() to  btask_l_none, etask_h_none
- *      btask_m_none: ActivateTask() to  btask_l_full, etask_h_full
- *      btask_m_none: ActivateTask() to  btask_l_none, etask_h_none
+ *    3 etask_m_full: ActivateTask() to  btask_l_full, btask_h_full
+ *    3 etask_m_full: ActivateTask() to  btask_l_non, btask_h_non
+ *      etask_m_non: ActivateTask() to  btask_l_full, btask_h_full
+ *      etask_m_non: ActivateTask() to  btask_l_non, btask_h_non
  *
  *      btask_m_full: ActivateTask() to  btask_l_full, etask_h_full
- *      btask_m_full: ActivateTask() to  btask_l_none, etask_h_none
- *      btask_m_none: ActivateTask() to  btask_l_full, etask_h_full
- *      btask_m_none: ActivateTask() to  btask_l_none, etask_h_none
+ *      btask_m_full: ActivateTask() to  btask_l_non, etask_h_non
+ *      btask_m_non: ActivateTask() to  btask_l_full, etask_h_full
+ *      btask_m_non: ActivateTask() to  btask_l_non, etask_h_non
+ *
+ *      btask_m_full: ActivateTask() to  btask_l_full, etask_h_full
+ *      btask_m_full: ActivateTask() to  btask_l_non, etask_h_non
+ *      btask_m_non: ActivateTask() to  btask_l_full, etask_h_full
+ *      btask_m_non: ActivateTask() to  btask_l_non, etask_h_non
  */
 
 #include <stdlib.h>
 #include "Os.h"
-#include "os_test.h"
+#include "test_framework.h"
 #include "Mcu.h"
 #if defined(USE_GPT)
 #include "Gpt.h"
@@ -63,10 +65,16 @@
 //#define USE_LDEBUG_PRINTF
 #include "debug.h"
 #include "arc.h"
-#include "test_framework.h"
 
 
 #define ERROR_LOG_SIZE	1
+
+#define NOT_EXPECTED	0
+#define EXPECTED 		1
+#define TASK_BASIC		0
+#define TASK_EXT		1
+
+
 
 typedef struct ErrorEntry {
 	StatusType 		error;
@@ -83,6 +91,75 @@ typedef struct ErrorLog {
 
 ErrorLogType ErrorLog;
 
+#define MAKE_TEST(_x)		TEST_ ## (_x)
+#define TEST_INC()			test_nr++
+//#define TEST_START2()		printf("%s\n",TestFixure[test_nr-1].description)
+#define TEST_START2()		TestStart(TestFixure[test_nr-1].description, TestFixure[test_nr-1].nr );
+#define TEST_GETCASE()		TestFixure[test_nr-1].nr
+
+
+enum testCase {
+	TEST_1 = 1,
+	TEST_2,
+	TEST_3,
+	TEST_4,
+	TEST_5,
+	TEST_6,
+	TEST_7,
+	TEST_8,
+	TEST_9,
+	TEST_10,
+	TEST_11,
+	TEST_12,
+	TEST_13,
+	TEST_14,
+	TEST_15,
+	TEST_16,
+	TEST_17,
+	TEST_18,
+	TEST_19,
+	TEST_20,
+	TEST_LAST,
+};
+
+
+
+static TestFixtureType TestFixure[] = {
+/* 0 */
+		{"SetEvent()/E/FULL to self",TEST_1},
+		{"ActivateTask()/E/FULL to self",TEST_2},
+
+/* 1 */
+		{"SetEvent()/E/FULL to E/Lo/FULL",TEST_3},
+		{"SetEvent()/E/FULL to E/Hi/FULL",TEST_4},
+		{"SetEvent()/E/FULL to E/Lo/NON",TEST_5},
+		{"SetEvent()/E/FULL to E/Hi/NON",TEST_6},
+
+/* 2 */
+		{"ActivateTask()/E/FULL to E/Lo/FULL",TEST_7},
+		{"ActivateTask()/E/FULL to E/Hi/FULL",TEST_8},
+		{"ActivateTask()/E/FULL to E/Lo/NON",TEST_9},
+		{"ActivateTask()/E/FULL to E/Hi/NON",TEST_10},
+
+/* 3 */
+		{"ActivateTask()/E/FULL to B/Lo/FULL",TEST_11},
+		{"ActivateTask()/E/FULL to B/Hi/FULL",TEST_12},
+		{"ActivateTask()/E/FULL to B/Lo/NON",TEST_13},
+		{"ActivateTask()/E/FULL to B/Hi/NON",TEST_14},
+
+		{"SetEvent()/E/NON to self",TEST_15},
+		{"ActivateTask()/E/NON to self",TEST_16},
+
+/* 4 */
+		{"SetEvent()/E/NON to E/Lo/FULL",TEST_17},
+		{"SetEvent()/E/NON to E/Hi/FULL",TEST_18},
+		{"SetEvent()/E/NON to E/Lo/NON",TEST_19},
+		{"SetEvent()/E/NON to E/Hi/NON",TEST_20},
+
+		{"",TEST_LAST},
+};
+
+
 ErrorEntryType *errorLogGetEntry( int backlog ) {
 
 
@@ -93,6 +170,7 @@ ErrorEntryType *errorLogGetEntry( int backlog ) {
 	}
 	return &ErrorLog.log[index];
 }
+
 
 
 void validateErrorHook(int backlog, int error, int serviceId,
@@ -127,6 +205,9 @@ do { 																	\
 	}																\
 } while(0)
 
+
+
+
 /*
  * Master test process, everything is controlled from here.
  */
@@ -134,10 +215,24 @@ void etask_master( void ) {
 	TEST_INIT();
 	test_nr = 1;
 
-	ActivateTask(TASK_ID_etask_m_full);
-	ActivateTask(TASK_ID_etask_m_none);
+	/* Activate ext. task "slaves" */
+	ActivateTask(TASK_ID_etask_l_full);
+	ActivateTask(TASK_ID_etask_h_full);
+	ActivateTask(TASK_ID_etask_l_non);
+	ActivateTask(TASK_ID_etask_h_non);
 
-	testExit(0);
+	/* Do the m_full -> XX tests first */
+	ActivateTask(TASK_ID_etask_m_full);
+
+	/* Do the next test */
+	WaitEvent(EVENT_MASK_next);
+	ClearEvent(EVENT_MASK_next);
+
+	/* Do the m_non -> XX  */
+	ActivateTask(TASK_ID_etask_m_non);
+
+
+	TestExit(0);
 }
 
 //--------------------------------------------------------------------
@@ -148,7 +243,7 @@ void btask_h_full( void ) {
 	TerminateTask();
 }
 
-void btask_h_none( void ) {
+void btask_h_non( void ) {
 
 	TerminateTask();
 }
@@ -158,7 +253,7 @@ void btask_l_full( void ) {
 	TerminateTask();
 }
 
-void btask_l_none( void ) {
+void btask_l_non( void ) {
 
 	TerminateTask();
 }
@@ -168,21 +263,33 @@ void btask_m_full( void ) {
 	TerminateTask();
 }
 
-void btask_m_none( void ) {
+void btask_m_non( void ) {
 
 	TerminateTask();
 }
 
+
+static void waitKillAndTest( void ) {
+	TaskType currTask;
+	EventMaskType mask;
+	GetTaskID(&currTask);
+
+	WaitEvent( EVENT_MASK_test | EVENT_MASK_kill);
+	GetEvent(currTask,&mask);
+	if( EVENT_MASK_kill & mask ) {
+		TerminateTask();
+	}
+	ClearEvent(EVENT_MASK_test);
+}
+
 void etask_h_full( void ) {
 	for(;;) {
-		WaitEvent(EVENT_MASK_test);
-		ClearEvent(EVENT_MASK_test);
+		waitKillAndTest();
 		switch(test_nr) {
-		case 2:
+		case TEST_4:
+		case TEST_8:
 			SetEvent(TASK_ID_etask_m_full,EVENT_MASK_test);
 			break;
-		case 100:
-			TerminateTask();
 		default:
 			TEST_ASSERT(0);
 			break;
@@ -191,22 +298,29 @@ void etask_h_full( void ) {
 	}
 }
 
-void etask_h_none( void ) {
-
-
+void etask_h_non( void ) {
+	for(;;) {
+		waitKillAndTest();
+		switch(test_nr) {
+		case TEST_6:
+		case TEST_9:
+			SetEvent(TASK_ID_etask_m_full,EVENT_MASK_test);
+			break;
+		default:
+			TEST_ASSERT(0);
+			break;
+		}
+	}
 }
 
 void etask_l_full( void ) {
 	for(;;) {
-		WaitEvent(EVENT_MASK_test);
-		ClearEvent(EVENT_MASK_test);
-
+		waitKillAndTest();
 		switch(test_nr) {
-		case 1:
+		case TEST_3:
+		case TEST_7:
 			SetEvent(TASK_ID_etask_m_full,EVENT_MASK_test);
 			break;
-		case 100:
-			TerminateTask();
 		default:
 			TEST_ASSERT(0);
 			break;
@@ -215,61 +329,176 @@ void etask_l_full( void ) {
 	}
 }
 
-void etask_l_none( void ) {
+void etask_l_non( void ) {
+	for(;;) {
+		waitKillAndTest();
+		switch(test_nr) {
+		case TEST_5:
+		case TEST_9:
+			SetEvent(TASK_ID_etask_m_full,EVENT_MASK_test);
+			break;
+		default:
+			TEST_ASSERT(0);
+			break;
+		}
 
-
+	}
 }
+
+
+static void taskDispatchCheck( TaskType task,_Bool expected, _Bool etask ) {
+	EventMaskType mask;
+	StatusType rv;
+	TaskType currTask;
+	TaskStateType taskState;
+
+	GetTaskID(&currTask);
+
+	/* 1. Kill the task */
+	TEST_ASSERT(taskState == TASK_STATE_WAITING);
+	rv = SetEvent(task,EVENT_MASK_kill);
+	TEST_ASSERT( rv == E_OK );
+
+	/* 2. Grab task state */
+	GetTaskState(task, &taskState);
+	TEST_ASSERT(taskState == TASK_STATE_SUSPENDED);
+
+	/* 3. Activate */
+	ActivateTask(task);
+
+	GetEvent(currTask,&mask);
+	if( expected ) {
+		TEST_ASSERT( mask & EVENT_MASK_test );
+	} else {
+		TEST_ASSERT( (mask & EVENT_MASK_test) == 0 );
+	}
+
+	/* Let task task run */
+	WaitEvent(EVENT_MASK_test);
+	ClearEvent(EVENT_MASK_test);
+}
+
+
+static void eventExpectNoDispatch( TaskType task ) {
+	EventMaskType mask;
+	StatusType rv;
+	/** req OS?? */
+	rv = GetEvent(task,&mask);
+	TEST_ASSERT(rv == E_OK);
+	TEST_ASSERT( !(mask & EVENT_MASK_test) );
+	/* After SetEvent(), NO dispatch */
+	SetEvent(task, EVENT_MASK_test);
+	GetEvent(task,&mask);
+	TEST_ASSERT( mask & EVENT_MASK_test );
+
+	/* Let the Low prio task run */
+	WaitEvent(EVENT_MASK_test);
+	ClearEvent(EVENT_MASK_test);
+}
+
+static void eventExpectDispatch( TaskType task ) {
+	EventMaskType mask;
+	StatusType rv;
+	/** req OS?? */
+	rv = GetEvent(task,&mask);
+	TEST_ASSERT(rv == E_OK);
+	TEST_ASSERT( !(mask & EVENT_MASK_test) );
+	/* After SetEvent(), dispatch */
+	SetEvent(task, EVENT_MASK_test);
+	GetEvent(task,&mask);
+	TEST_ASSERT( !(mask & EVENT_MASK_test) );
+}
+
+
 
 void etask_m_full( void ) {
+	StatusType	rv;
+	TaskType task;
 	EventMaskType mask;
+	static int m_full_starts = 0;
+	_Bool kill = 0;
 
-	ActivateTask(TASK_ID_etask_l_full);
-	ActivateTask(TASK_ID_etask_h_full);
+	(void)rv;
+	m_full_starts++;
+	GetTaskID(&task);
 
 	for(;;) {
-		switch(test_nr) {
-		case 1:
-			TEST_START("SetEvent() to low",test_nr);
-			/** req OS?? */
-			GetEvent(TASK_ID_etask_l_full,&mask);
-			TEST_ASSERT( !(mask & EVENT_MASK_test) );
-			/* After SetEvent(), NO dispatch */
-			SetEvent(TASK_ID_etask_l_full, EVENT_MASK_test);
-			GetEvent(TASK_ID_etask_l_full,&mask);
-			TEST_ASSERT( mask & EVENT_MASK_test )
-
-			/* Let the Low prio task run */
-			WaitEvent(EVENT_MASK_test);
-			ClearEvent(EVENT_MASK_test);
-			TEST_END();
-			test_nr++;
-			break;
-		case 2:
-			TEST_START("SetEvent() to high",test_nr);
-			/** req OS?? */
-			GetEvent(TASK_ID_etask_h_full,&mask);
-			TEST_ASSERT( !(mask & EVENT_MASK_test) );
-			/* After SetEvent(), dispatch */
-			SetEvent(TASK_ID_etask_h_full, EVENT_MASK_test);
-			GetEvent(TASK_ID_etask_h_full,&mask);
-			TEST_ASSERT( !(mask & EVENT_MASK_test) );
-			TEST_END();
-			test_nr = 100;
-			break;
-		case 100:
+		if( kill == 1) {
 			/* Kill tasks */
-			SetEvent(TASK_ID_etask_l_full, EVENT_MASK_test);
-			SetEvent(TASK_ID_etask_h_full, EVENT_MASK_test);
+#if 0
+			SetEvent(TASK_ID_etask_l_full, EVENT_MASK_kill);
+			SetEvent(TASK_ID_etask_h_full, EVENT_MASK_kill);
+			SetEvent(TASK_ID_etask_l_non, EVENT_MASK_kill);
+			SetEvent(TASK_ID_etask_h_non, EVENT_MASK_kill);
+#endif
+			SetEvent(TASK_ID_etask_master, EVENT_MASK_next);
 			TerminateTask();
+		}
+
+		TEST_START2();
+		switch(TEST_GETCASE()) {
+		case TEST_1:
+			GetTaskID(&task);
+			GetEvent(task,&mask);
+			TEST_ASSERT( (mask & EVENT_MASK_test) == 0 );
+			TEST_ASSERT( m_full_starts == 1 );
+			SetEvent(task,EVENT_MASK_test);
+			GetEvent(task,&mask);
+			TEST_ASSERT( (mask & EVENT_MASK_test) );
+			TEST_ASSERT( m_full_starts == 1 );
+			ClearEvent(EVENT_MASK_test);
+			break;
+		case TEST_2:
+			rv = ActivateTask(task);
+			TEST_ASSERT( rv == E_OS_LIMIT);
+			break;
+		case TEST_3:
+			eventExpectNoDispatch(TASK_ID_etask_l_full);
+			break;
+		case TEST_4:
+			eventExpectDispatch(TASK_ID_etask_h_full);
+			break;
+		case TEST_5:
+			eventExpectNoDispatch(TASK_ID_etask_l_non);
+			break;
+		case TEST_6:
+			eventExpectDispatch(TASK_ID_etask_h_non);
+			break;
+		case TEST_7:
+			taskDispatchCheck(TASK_ID_etask_l_full, EXPECTED, TASK_EXT );
+			break;
+		case TEST_8:
+			taskDispatchCheck(TASK_ID_etask_h_full, NOT_EXPECTED, TASK_EXT );
+			break;
+		case TEST_9:
+			taskDispatchCheck(TASK_ID_etask_l_non, EXPECTED, TASK_EXT );
+			break;
+		case TEST_10:
+			taskDispatchCheck(TASK_ID_etask_h_full, NOT_EXPECTED, TASK_EXT );
+			break;
+		case TEST_11:
+			taskDispatchCheck(TASK_ID_btask_l_full, EXPECTED, TASK_BASIC );
+			break;
+		case TEST_12:
+			taskDispatchCheck(TASK_ID_btask_h_full, NOT_EXPECTED, TASK_BASIC );
+			break;
+		case TEST_13:
+			taskDispatchCheck(TASK_ID_btask_l_non, EXPECTED, TASK_BASIC );
+			break;
+		case TEST_14:
+			taskDispatchCheck(TASK_ID_btask_h_full, NOT_EXPECTED, TASK_BASIC );
+			kill = 1;
+			break;
 		default:
 			TEST_ASSERT(0);
 			break;
 		}
-
+		TEST_END();
+		TEST_INC();
 	}
 }
 
-void etask_m_none( void ) {
+void etask_m_non( void ) {
 
 
 }

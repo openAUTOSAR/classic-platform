@@ -32,7 +32,7 @@
  */
 
 #include "Os.h"
-#include "os_test.h"
+#include "test_framework.h"
 #include "arc.h"
 #include "irq.h"
 

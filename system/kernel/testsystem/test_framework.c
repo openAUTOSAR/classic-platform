@@ -36,6 +36,19 @@
  *   but it should go away (suite_01)
  * - Hooks and error handling should be unitfied into one file.
  * - That test-cases is dependent on the former testcase to increase "test_nr"
+ * - Should be able to see what tests are not run?!
+ *
+ *
+ * Total tests:   150
+ * Not run:       5    (not touched by assert)
+ * Failures:      10
+ * Success:       135
+ * Not Implented: 0
+ *
+ * Next:
+ * 1. Fix statistics
+ * 2. Cleanup of testCnt and other "indexes"
+ * 3. Fix statistics over severaral test_suites. (move to NOLOAD section)
  *
  */
 
@@ -57,6 +70,12 @@ int _test_failed = 0;
 int testCnt = 0;
 
 
+struct testStats {
+	int ok;
+	int fail;
+	int notRun;
+	int notImplemented;
+};
 
 struct test {
 	uint8_t testSuite;
@@ -69,11 +88,11 @@ struct test {
 struct test testTable[50] = { {0} };
 
 
-void testInit( void ) {
+void TestInit( void ) {
 
 }
 
-void test_done( void ) {
+void TestDone( void ) {
 	printf(	"\nTest summary\n"
 				"Total: %d\n"
 				"OK   : %d\n"
@@ -88,11 +107,11 @@ void test_done( void ) {
  * @param line
  * @param function
  */
-void test_fail( const char *text,char *file,  int line, const char *function ) {
+void TestFail( const char *text,char *file,  int line, const char *function ) {
 	printf("%02d %02d FAILED, %s , %d, %s\n",test_suite, test_nr, file, line, function);
 	testTable[testCnt].testSuite = test_suite;
 	testTable[testCnt].testNr = test_nr;
-	testTable[testCnt].status = TEST_FLG_ASSERT;
+	testTable[testCnt].status |= TEST_FLG_ASSERT;
 //	testCnt++;
 //	_test_failed++;
 }
@@ -110,33 +129,39 @@ void testSetErrorMask( uint32_t errMask ) {
 void testValidateHook( void ) {
 
 }
+
 /**
  * Start a test
  */
-void testStart( const char *str, int testNr ) {
+void TestStart( const char *str, int testNr ) {
 	testTable[testCnt].status = TEST_FLG_RUNNING;
 	testTable[testCnt].testNr = testNr;
 	testTable[testCnt].description = str;
 	printf("%3d %3d %s\n",testCnt,testNr,str);
 }
 
-void testInc( void ) {
+void TestInc( void ) {
 	testCnt++;
 }
 
 /**
  * End a testcase.
  */
-void testEnd( void ) {
+void TestEnd( void ) {
 	uint16_t status = testTable[testCnt].status;
 
-	if( status & TEST_FLG_RUNNING ) {
+	if( status & TEST_FLG_NOT_IMPLEMENTED ) {
+		printf("Not Implemented\n");
+	} else 	if( (status & TEST_FLG_TOUCHED) == 0 ) {
+		printf("NOT touched\n");
+	} else 	if( status & TEST_FLG_RUNNING ) {
 		if( status & TEST_FLG_ASSERT ) {
 
 		} else {
 			/* All is OK */
 			testTable[testCnt].status &= TEST_FLG_RUNNING;
 			testTable[testCnt].status |= TEST_FLG_OK;
+			printf("OK\n");
 		}
 	} else {
 		printf("testEnd() on a test that is not running\n");
@@ -144,13 +169,21 @@ void testEnd( void ) {
 	testCnt++;
 }
 
-void testExit( int rv ) {
+void TestExit( int rv ) {
 	Irq_Disable();
 	exit(rv);
 }
 
+void TestTouch( void ) {
+	testTable[testCnt].status |= TEST_FLG_TOUCHED;
+}
 
-void test_ok( void ) {
+void TestNotImplemented( void ) {
+	testTable[testCnt].status |= TEST_FLG_NOT_IMPLEMENTED;
+}
+
+
+void TestOk( void ) {
 	printf("%02d %02d OK\n",test_suite, test_nr);
 	testTable[testCnt].testSuite = test_suite;
 	testTable[testCnt].testNr = test_nr;

@@ -87,13 +87,12 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 	OsPcbType *currPcbPtr;
 	uint32_t flags;
 
-	dest_pcb = os_get_pcb(TaskID);
-
-
 	if( TaskID  >= Os_CfgGetTaskCnt() ) {
 		rv = E_OS_ID;
 		goto err;
 	}
+
+	dest_pcb = os_get_pcb(TaskID);
 
 	if( (dest_pcb->state & ST_SUSPENDED ) ) {
 		rv = E_OS_STATE;
@@ -128,8 +127,10 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 			currPcbPtr = Os_TaskGetCurrent();
 			/* Checking "4.6.2  Non preemptive scheduling" it does not dispatch if NON  */
 			if( (os_sys.int_nest_cnt == 0) &&
-				(currPcbPtr->scheduling == FULL) )
+				(currPcbPtr->scheduling == FULL) &&
+				(dest_pcb->prio > currPcbPtr->prio) )
 			{
+				Os_SetOp(OP_SET_EVENT);
 				Os_Dispatch(0);
 			}
 
@@ -160,6 +161,11 @@ StatusType GetEvent( TaskType TaskId, EventMaskRefType Mask) {
 
 	OsPcbType *dest_pcb;
 	StatusType rv = E_OK;
+
+	if( TaskId  >= Os_CfgGetTaskCnt() ) {
+		rv = E_OS_ID;
+		goto err;
+	}
 
 	dest_pcb = os_get_pcb(TaskId);
 
