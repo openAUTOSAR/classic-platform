@@ -510,7 +510,9 @@ StatusType ActivateTask( TaskType TaskID ) {
 
 	/* Preempt only if we are preemptable and target has higher prio than us */
 	if(	(Os_TaskGetCurrent()->scheduling == FULL) &&
-		(os_sys.int_nest_cnt == 0) && (pcb->prio > Os_TaskGetCurrent()->prio) )
+		(os_sys.int_nest_cnt == 0) &&
+		(pcb->prio > Os_TaskGetCurrent()->prio) &&
+		(Os_SchedulerResourceIsFree()))
 	{
 		Os_Dispatch(0);
 	}
@@ -564,7 +566,7 @@ StatusType TerminateTask( void ) {
 		goto err;
 	}
 
-	if ( Os_CheckSchedulerResource() ) {
+	if ( Os_SchedulerResourceIsOccupied() ) {
 		rv =  E_OS_RESOURCE;
 		goto err;
 	}
@@ -633,7 +635,7 @@ StatusType ChainTask( TaskType TaskId ) {
 		goto err;
 	}
 
-	if ( Os_CheckSchedulerResource() ) {
+	if ( Os_SchedulerResourceIsOccupied() ) {
 		rv =  E_OS_RESOURCE;
 		goto err;
 	}
@@ -736,9 +738,13 @@ StatusType Schedule( void ) {
 	}
 #endif
 
-	Irq_Save(flags);
-	Os_Dispatch(0);
-	Irq_Restore(flags);
+	OsPcbType* top_pcb = Os_TaskGetTop();
+	/* only dispatch if some other ready task has higher prio */
+	if (top_pcb->prio > Os_TaskGetCurrent()->prio) {
+		Irq_Save(flags);
+		Os_Dispatch(0);
+		Irq_Restore(flags);
+	}
 
 	// Prevent label warning. Remove this when proper error handling is implemented.
 	if (0) goto err;

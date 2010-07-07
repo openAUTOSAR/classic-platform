@@ -240,7 +240,7 @@ StatusType 	TerminateTask( void );
 StatusType 	ChainTask( TaskType TaskID );
 StatusType 	Schedule( void );
 
-typedef uint32 ResourceType;
+typedef uint8 ResourceType;
 #define DeclareResource(x) extern ResourceType (x);
 StatusType GetResource( ResourceType ResID );
 StatusType ReleaseResource( ResourceType ResID);
