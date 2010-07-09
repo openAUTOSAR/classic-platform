@@ -36,11 +36,11 @@ _Bool os_pcb_pid_valid( OsPcbType *restrict pcb ) {
 void Os_TaskStartExtended( void ) {
 	OsPcbType *pcb;
 
-	PRETASKHOOK();
-
 	pcb = Os_TaskGetCurrent();
 	Os_ResourceGetInternal();
 	Os_TaskMakeRunning(pcb);
+
+	PRETASKHOOK();
 
 	Os_ArchFirstCall();
 
@@ -67,11 +67,12 @@ void Os_TaskStartExtended( void ) {
 void Os_TaskStartBasic( void ) {
 	OsPcbType *pcb;
 
-	PRETASKHOOK();
-
 	pcb = Os_TaskGetCurrent();
 	Os_ResourceGetInternal();
 	Os_TaskMakeRunning(pcb);
+
+	PRETASKHOOK();
+
 	Os_ArchFirstCall();
 
 
@@ -301,16 +302,17 @@ void Os_Dispatch( _Bool force ) {
 	currPcbPtr = Os_TaskGetCurrent();
 	/* Swap if we found any process or are forced (multiple activations)*/
 	if( pcbPtr != currPcbPtr ) {
+
 		/* Add us to the ready list */
 		if( currPcbPtr->state & ST_RUNNING ) {
+			/** @req OS052 */
+			POSTTASKHOOK();
 			Os_TaskRunningToReady(currPcbPtr);
 		}
 
 		/*
 		 * Swap context
 		 */
-		/** @req OS052 */
-		POSTTASKHOOK();
 		assert(pcbPtr!=NULL);
 
 		Os_ResourceReleaseInternal();
@@ -596,6 +598,7 @@ StatusType TerminateTask( void ) {
 	 */
 	if( curr_pcb->activations <= 0 ) {
 		curr_pcb->activations = 0;
+		POSTTASKHOOK();
 		Os_TaskMakeSuspended(curr_pcb);
 	} else {
 		/* We need to add ourselves to the ready list again,
@@ -683,6 +686,7 @@ StatusType ChainTask( TaskType TaskId ) {
 		--curr_pcb->activations;
 		if( curr_pcb->activations <= 0 ) {
 			curr_pcb->activations = 0;
+			POSTTASKHOOK();
 			Os_TaskMakeSuspended(curr_pcb);
 		}
 

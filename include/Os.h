@@ -144,6 +144,7 @@ void StartOS( AppModeType Mode );
 
 ApplicationType GetApplicationID( void );
 ISRType GetISRID( void );
+StatusType GetActiveApplicationMode( AppModeType* mode);
 
 typedef int8_t Os_IntCounterType;
 

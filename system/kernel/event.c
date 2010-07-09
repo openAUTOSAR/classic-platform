@@ -67,10 +67,13 @@ StatusType WaitEvent( EventMaskType Mask ) {
 	if( !(curr_pcb->ev_set & Mask) ) {
 
 		curr_pcb->ev_wait = Mask;
-		Os_TaskMakeWaiting(curr_pcb);
 
 		if ( Os_SchedulerResourceIsFree() ) {
+			POSTTASKHOOK();
+			Os_TaskMakeWaiting(curr_pcb);
 			Os_Dispatch(0);
+		} else {
+			Os_TaskMakeWaiting(curr_pcb);
 		}
 	}
 
