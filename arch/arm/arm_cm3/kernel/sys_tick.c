@@ -66,7 +66,7 @@ void Os_SysTickStart(uint32_t period_ticks) {
  * @return
  */
 
-uint32_t Os_SysTickGetTimeElapsed( void )
+uint32_t Os_SysTickGetValue( void )
 {
 	return (SysTick->VAL);
 }

@@ -65,8 +65,18 @@ void Os_SysTickStart(uint32_t period_ticks) {
  */
 
 /** @req OS383 */
-uint32_t Os_SysTickGetTimeElapsed( void )
+TickType Os_SysTickGetValue( void )
 {
 	uint32_t timer = get_spr(SPR_DECAR) - get_spr(SPR_DEC);
 	return (timer);
 }
+
+TickType Os_SysTickGetElapsedValue( uint32_t preValue ) {
+	uint32_t curr;
+	uint32_t max;
+
+	curr = get_spr(SPR_DEC);
+	max  = get_spr(SPR_DECAR);
+	return Os_CounterDiff((max - curr),preValue,max);
+}
+

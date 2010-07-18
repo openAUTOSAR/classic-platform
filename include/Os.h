@@ -262,13 +262,7 @@ typedef struct OsDriver_s {
 	int	OsGptChannelRef;
 } OsDriver;
 
-/*-------------------------------------------------------------------
- * Free running timer
- *-----------------------------------------------------------------*/
-typedef const uint32 OsTickType;
-void Os_SysTickInit( void );
-void Os_SysTickStart(uint32_t period_ticks);
-uint32_t Os_SysTickGetTimeElapsed( void );
+
 
 /*-------------------------------------------------------------------
  * Counters
@@ -281,6 +275,16 @@ typedef TickType *TickRefType;
 StatusType IncrementCounter( CounterType );
 StatusType GetCounterValue( CounterType, TickRefType );
 StatusType GetElapsedCounterValue( CounterType, TickRefType val, TickRefType elapsed_val);
+
+
+/*-------------------------------------------------------------------
+ * System timer
+ *-----------------------------------------------------------------*/
+typedef const uint32 OsTickType;
+void Os_SysTickInit( void );
+void Os_SysTickStart(TickType period_ticks);
+TickType Os_SysTickGetValue( void );
+TickType Os_SysTickGetElapsedValue( TickType preValue );
 
 /*-------------------------------------------------------------------
  * Schedule Tables

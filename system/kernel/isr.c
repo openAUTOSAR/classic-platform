@@ -65,6 +65,14 @@ extern TaskType Os_AddTask( OsPcbType *pcb );
 
 static uint8 stackTop = 0x42;
 
+/**
+ * Creates an ISR dynamically
+ * @param entry
+ * @param prio
+ * @param name
+ *
+ * @return The PID of the ISR created
+ */
 TaskType Os_Arc_CreateIsr( void (*entry)(void ), uint8_t prio, const char *name )
 {
 	OsPcbType *pcb = os_alloc_new_pcb();

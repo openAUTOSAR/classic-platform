@@ -81,7 +81,16 @@ typedef void (*test_func_t)( void );
 extern int test_suite;
 extern int test_nr;
 
-
+/* TODO: Move to a better place */
+#if defined(CFG_MPC55XX)
+/* On INTC first 8 interrupt are softtriggered */
+#define IRQ_SOFTINT_0		INTC_SSCIR0_CLR0
+#define IRQ_SOFTINT_1		INTC_SSCIR0_CLR1
+#elif defined(CFG_ARM_CM3)
+/* Cortex-M3 can softtrigger any interrupt. Use external here. */
+#define IRQ_SOFTINT_0		EXTI0_IRQn
+#define IRQ_SOFTINT_1		EXTI1_IRQn
+#endif
 
 #if 1
 #define SECTION_SUP
