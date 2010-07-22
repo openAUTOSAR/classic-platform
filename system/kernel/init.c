@@ -197,6 +197,13 @@ static void os_start( void ) {
 	{
 		// FIXME: Do this in a more structured way.. setting os_sys.curr_pcb manually is not the way to go..
 		os_sys.curr_pcb = tmp_pcb;
+
+		// register this auto-start activation
+		if (tmp_pcb->proc_type == PROC_BASIC) {
+			assert(tmp_pcb->activations < tmp_pcb->activationLimit);
+			tmp_pcb->activations++;
+		}
+
 		// NOTE! We don't go for os_swap_context() here..
 		// first arg(NULL) is dummy only
 		Os_TaskSwapContextTo(NULL,tmp_pcb);

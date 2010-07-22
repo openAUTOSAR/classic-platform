@@ -21,7 +21,7 @@
 
 
 // This file is just examples of implementation for the stubs needed by
-// the EcuM. Every Autocore application should use an own version of this
+// the EcuM. Every application should use an own version of this
 // file to implement the setup and tear down of the system.
 
 
@@ -60,6 +60,23 @@
 #if defined(USE_IOHWAB)
 #include "IoHwAb.h"
 #endif
+#if defined(USE_COMM)
+#include "ComM.h"
+#endif
+#if defined(USE_NM)
+#include "Nm.h"
+#endif
+#if defined(USE_CANNM)
+#include "CanNm.h"
+#endif
+#if defined(USE_CANSM)
+#include "CanSM.h"
+#endif
+#if defined(USE_LINSM)
+#include "LinSM.h"
+#endif
+
+
 
 void EcuM_AL_DriverInitZero()
 {
@@ -117,6 +134,7 @@ void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
 	// Setup ICU
 	// TODO
 
+	// Setup PWM
 #if defined(USE_PWM)
 	// Setup PWM
 	Pwm_Init(ConfigPtr->PwmConfig);
@@ -161,12 +179,26 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 	CanTp_Init();
 #endif
 
+#if defined(USE_CANSM)
+	CanSM_Init(ConfigPtr->CanSMConfig);
+#endif
+
 	// Setup LIN
 	// TODO
 
 #if defined(USE_PDUR)
 	// Setup PDU Router
 	PduR_Init(ConfigPtr->PduRConfig);
+#endif
+
+#if defined(USE_CANNM)
+	// Setup Can Network Manager
+	CanNm_Init(ConfigPtr->CanNmConfig);
+#endif
+
+#if defined(USE_NM)
+	// Setup Network Management Interface
+	Nm_Init(ConfigPtr->NmConfig);
 #endif
 
 #if defined(USE_COM)
@@ -185,10 +217,8 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 #endif
 }
 
-void EcuM_AL_DriverInitThree(const EcuM_ConfigType ConfigPtr)
+void EcuM_AL_DriverInitThree(const EcuM_ConfigType* ConfigPtr)
 {
-	// Setup ComM
-
 #if defined(USE_DEM)
 	// Setup DEM
 	Dem_Init();
@@ -196,11 +226,8 @@ void EcuM_AL_DriverInitThree(const EcuM_ConfigType ConfigPtr)
 
 	// Setup FIM
 
-#if defined(USE_CANIF)
-	// Startup the CAN interafce; due to the missing COM manager
-//	CanIf_InitController(CANIF_Channel_1, CANIF_Channel_1_CONFIG_0);
-//	CanIf_SetControllerMode(CANIF_Channel_1, CANIF_CS_STARTED);
+#if defined(USE_COMM)
+	// Setup Communication Manager
+	ComM_Init(ConfigPtr->ComMConfig);
 #endif
-
-
 }

@@ -113,6 +113,8 @@ void *Os_Isr( void *stack, void *pcb_p ) {
 	preempted_pcb->state = ST_READY;
 	OS_DEBUG(D_TASK,"Preempted %s\n",preempted_pcb->name);
 
+	Os_StackPerformCheck(preempted_pcb);
+
 	POSTTASKHOOK();
 
 	pcb = (struct OsPcb *)pcb_p;
@@ -128,9 +130,13 @@ void *Os_Isr( void *stack, void *pcb_p ) {
 		while(1);
 	}
 
+#ifndef CFG_HCS12D
 	Irq_Enable();
 	pcb->entry();
 	Irq_Disable();
+#else
+	pcb->entry();
+#endif
 
 	/** @req OS368 */
 	if( Os_IrqAnyDisabled() ) {
@@ -161,6 +167,9 @@ void *Os_Isr( void *stack, void *pcb_p ) {
 		 */
 		OsPcbType *new_pcb;
 		new_pcb = Os_TaskGetTop();
+
+		Os_StackPerformCheck(new_pcb);
+
 		if( new_pcb != preempted_pcb ) {
 			OS_DEBUG(D_TASK,"Found candidate %s\n",new_pcb->name);
 //#warning Os_TaskSwapContextTo should call the pretaskswaphook

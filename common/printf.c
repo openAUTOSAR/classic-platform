@@ -53,7 +53,7 @@
 #endif
 
 
-
+int arc_putchar(int fd, int c);
 int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap);
 
 int printf(const char *format, ...) {
@@ -208,7 +208,7 @@ static inline int emitChar( FILE *file, char **buf, char c, int *left ) {
 		putc(c, _STDOUT);
 		fflush(_STDOUT);
 #else
-		arc_putchar(file,c);
+		arc_putchar((int)file, c);
 #endif
 	} else {
 		**buf = c;
@@ -310,23 +310,19 @@ static void emitString( FILE *file, char **buffer, char *string, int width, int 
 	}
 }
 
-void emitInt( FILE *file, char **buffer, int base, int width, int flags, va_list ap, int *left )
+void emitInt( FILE *file, char **buffer, int val, int base, int width, int flags, int *left )
 {
 	char lBuf[12];	// longest is base 10, 2^32
 	char *str = lBuf;
-	int val;
 
 	if( flags & FL_TYPE_SIGNED_INT ) {
-		val = (int )va_arg( ap, int );
 		xtoa(val,str,base ,(val < 0));
 	} else {
-		xtoa((unsigned)va_arg( ap, int ),str,base ,0);
+		xtoa((unsigned)val,str,base ,0);
 	}
 
 	emitString(file,buffer,str,width,flags,left);
 }
-
-
 
 #define PRINT_CHAR(_c)  *buffer++= (_c);
 
@@ -407,15 +403,15 @@ int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap)
 				break;
 			case 'd':
 				flags |= FL_TYPE_SIGNED_INT;
-				emitInt(file,buffer,10,width,flags,ap,&left);
+				emitInt(file,buffer,va_arg( ap, int ),10,width,flags,&left);
 				break;
 			case 'u':
 				flags |= FL_TYPE_UNSIGNED_INT;
-				emitInt(file,buffer,10,width,flags,ap,&left);
+				emitInt(file,buffer,va_arg( ap, int ),10,width,flags,&left);
 				break;
 			case 'x':
 				flags |= FL_TYPE_UNSIGNED_INT;
-				emitInt(file,buffer,16,width,flags,ap,&left);
+				emitInt(file,buffer,va_arg( ap, int ),16,width,flags,&left);
 				break;
 			case 's':
 				str = (char *)va_arg( ap, int );
@@ -436,7 +432,7 @@ int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap)
 			emitChar(file,buffer,ch,&left);
 		}
 	}
-	va_end(ap);
+//	va_end(ap);		// Removed, TODO: Check the va_start/va_end handling (used in calling functions also).
 	if(buffer!=0) {
 		left = 0;
 		emitChar(file,buffer,'\0',&left);

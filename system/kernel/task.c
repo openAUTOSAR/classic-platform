@@ -36,11 +36,11 @@ _Bool os_pcb_pid_valid( OsPcbType *restrict pcb ) {
 void Os_TaskStartExtended( void ) {
 	OsPcbType *pcb;
 
-	PRETASKHOOK();
-
 	pcb = Os_TaskGetCurrent();
 	Os_ResourceGetInternal();
 	Os_TaskMakeRunning(pcb);
+
+	PRETASKHOOK();
 
 	Os_ArchFirstCall();
 
@@ -67,11 +67,12 @@ void Os_TaskStartExtended( void ) {
 void Os_TaskStartBasic( void ) {
 	OsPcbType *pcb;
 
-	PRETASKHOOK();
-
 	pcb = Os_TaskGetCurrent();
 	Os_ResourceGetInternal();
 	Os_TaskMakeRunning(pcb);
+
+	PRETASKHOOK();
+
 	Os_ArchFirstCall();
 
 
@@ -284,6 +285,7 @@ OsPcbType *Os_FindTopPrioTask( void ) {
  *   ActivateTask()
  *   WaitEvent()
  *   TerminateTask()
+ *   ChainTask()
  *
  * @param force Force a re-scheduling
  *
@@ -300,16 +302,17 @@ void Os_Dispatch( _Bool force ) {
 	currPcbPtr = Os_TaskGetCurrent();
 	/* Swap if we found any process or are forced (multiple activations)*/
 	if( pcbPtr != currPcbPtr ) {
+
 		/* Add us to the ready list */
 		if( currPcbPtr->state & ST_RUNNING ) {
+			/** @req OS052 */
+			POSTTASKHOOK();
 			Os_TaskRunningToReady(currPcbPtr);
 		}
 
 		/*
 		 * Swap context
 		 */
-		/** @req OS052 */
-		POSTTASKHOOK();
 		assert(pcbPtr!=NULL);
 
 		Os_ResourceReleaseInternal();
@@ -360,24 +363,10 @@ void Os_Dispatch( _Bool force ) {
 // We come here from
 // - os_init
 
-volatile static int a1, b1, c1;
-volatile static OsPcbType *o1;
-volatile static OsPcbType *n1;
-
-void hej(int a, int b, int c, OsPcbType *o, OsPcbType *n) {
-	a1 = a;
-	b1 = b;
-	c1 = c;
-	o1 = o;
-	n1 = n;
-}
-
 /**
  * Called when a task is to be run for the first time.
  */
 void Os_TaskSwapContextTo(OsPcbType *old_pcb, OsPcbType *new_pcb ) {
-
-	hej(1, 2, 3, old_pcb, new_pcb);
 
 	Os_ArchSwapContextTo(old_pcb,new_pcb);
 	/* TODO: When do we return here ?? */
@@ -452,6 +441,18 @@ ISRType GetISRID( void ) {
 		goto err; 						\
 	}
 
+static inline void Os_Arc_SetCleanContext( OsPcbType *pcb ) {
+	if (pcb->proc_type == PROC_EXTENDED) {
+		/** @req OSEK ActivateTask Cleanup events
+		 * OSEK,ActivateTask, When an extended task is transferred from suspended
+		 * state into ready state all its events are cleared.*/
+		pcb->ev_set = 0;
+		pcb->ev_wait = 0;
+	}
+	Os_StackSetup(pcb);
+	Os_ArchSetTaskEntry(pcb);
+	Os_ArchSetupContext(pcb);
+}
 
 /**
  * The task <TaskID> is transferred from the suspended state into
@@ -498,16 +499,7 @@ StatusType ActivateTask( TaskType TaskID ) {
 
 	if( os_pcb_get_state(pcb) == ST_SUSPENDED ) {
 		pcb->activations++;
-		if (pcb->proc_type == PROC_EXTENDED) {
-			/** @req OSEK ActivateTask Cleanup events
-			 * OSEK,ActivateTask, When an extended task is transferred from suspended
-			 * state into ready state all its events are cleared.*/
-			pcb->ev_set = 0;
-			pcb->ev_wait = 0;
-		}
-		Os_StackSetup(pcb);
-		Os_ArchSetTaskEntry(pcb);
-		Os_ArchSetupContext(pcb);
+		Os_Arc_SetCleanContext(pcb);
 		Os_TaskMakeReady(pcb);
 	} else {
 
@@ -529,9 +521,11 @@ StatusType ActivateTask( TaskType TaskID ) {
 	}
 
 
-	/* Preempt only if higher prio than us */
-	if(	(pcb->scheduling == FULL) &&
-		(os_sys.int_nest_cnt == 0) && (pcb->prio > Os_TaskGetCurrent()->prio) )
+	/* Preempt only if we are preemptable and target has higher prio than us */
+	if(	(Os_TaskGetCurrent()->scheduling == FULL) &&
+		(os_sys.int_nest_cnt == 0) &&
+		(pcb->prio > Os_TaskGetCurrent()->prio) &&
+		(Os_SchedulerResourceIsFree()))
 	{
 		Os_Dispatch(0);
 	}
@@ -585,6 +579,11 @@ StatusType TerminateTask( void ) {
 		goto err;
 	}
 
+	if ( Os_SchedulerResourceIsOccupied() ) {
+		rv =  E_OS_RESOURCE;
+		goto err;
+	}
+
 	/** @req OS070 */
 	if( Os_ResourceCheckAndRelease(curr_pcb) == 1 ) {
 		rv =  E_OS_RESOURCE;
@@ -610,10 +609,15 @@ StatusType TerminateTask( void ) {
 	 */
 	if( curr_pcb->activations <= 0 ) {
 		curr_pcb->activations = 0;
+		POSTTASKHOOK();
 		Os_TaskMakeSuspended(curr_pcb);
 	} else {
 		/* We need to add ourselves to the ready list again,
 		 * with a startup context. */
+
+		/* We are already in ready list..
+		 * This should give us a clean start /tojo */
+		Os_Arc_SetCleanContext(curr_pcb);
 	}
 
 //	Os_ContextReInit(curr_pcb);
@@ -633,7 +637,8 @@ StatusType TerminateTask( void ) {
 }
 
 StatusType ChainTask( TaskType TaskId ) {
-	StatusType rv;
+	OsPcbType *curr_pcb = Os_TaskGetCurrent();
+	StatusType rv = E_OK;
 	uint32_t flags;
 
 #if (OS_STATUS_EXTENDED == STD_ON )
@@ -643,12 +648,63 @@ StatusType ChainTask( TaskType TaskId ) {
 		rv =  E_OS_CALLEVEL;
 		goto err;
 	}
+
+	if ( Os_SchedulerResourceIsOccupied() ) {
+		rv =  E_OS_RESOURCE;
+		goto err;
+	}
+
+	if( Os_ResourceCheckAndRelease(curr_pcb) == 1 ) {
+		rv =  E_OS_RESOURCE;
+		goto err;
+	}
 #endif
+	OsPcbType *pcb = os_get_pcb(TaskId);
 
 	Irq_Save(flags);
-	rv = ActivateTask(TaskId);
-	/* TODO: more more here..*/
-	TerminateTask();
+
+	if (curr_pcb == pcb) {
+		/* If we are chaining same task just make a clean start */
+		/* TODO: Is it allowed to chain same task if extended? */
+		Os_Arc_SetCleanContext(curr_pcb);
+
+		/* Force the dispatcher to find something, even if its us */
+		Os_Dispatch(1);
+
+		Irq_Restore(flags);
+		/* It must find something here...otherwise something is very wrong.. */
+		assert(0);
+
+	} else {
+		/* We are chaining another task
+		 * We need to make sure it is in valid state */
+		if( os_pcb_get_state(pcb) != ST_SUSPENDED ) {
+			if( pcb->proc_type == PROC_EXTENDED ) {
+				/** @req OSEK Activate task.
+				 * An extended task be activated once. See Chapter 4.3 in OSEK */
+				rv = E_OS_LIMIT;
+				goto err;
+			}
+
+			/** @req OSEK_? Too many task activations */
+			if( pcb->activations == pcb->activationLimit ) {
+				rv=E_OS_LIMIT;
+				goto err;
+			}
+		}
+
+		// Terminate current task
+		--curr_pcb->activations;
+		if( curr_pcb->activations <= 0 ) {
+			curr_pcb->activations = 0;
+			POSTTASKHOOK();
+			Os_TaskMakeSuspended(curr_pcb);
+		}
+
+		rv = ActivateTask(TaskId);
+		// we return here only if something is wrong
+	}
+
 	Irq_Restore(flags);
 
 	if (rv != E_OK) goto err;
@@ -674,6 +730,12 @@ StatusType Schedule( void ) {
 	StatusType rv = E_OK;
 	uint32_t flags;
 
+	/* Check that we are not calling from interrupt context */
+	if( os_sys.int_nest_cnt != 0 ) {
+		rv =  E_OS_CALLEVEL;
+		goto err;
+	}
+
 	/* We need to figure out if we have an internal resource,
 	 * otherwise no re-scheduling.
 	 * NON  - Have internal resource prio OS_RES_SCHEDULER_PRIO (32+)
@@ -691,15 +753,13 @@ StatusType Schedule( void ) {
 	}
 #endif
 
-	/* Check that we are not calling from interrupt context */
-	if( os_sys.int_nest_cnt != 0 ) {
-		rv =  E_OS_CALLEVEL;
-		goto err;
+	OsPcbType* top_pcb = Os_TaskGetTop();
+	/* only dispatch if some other ready task has higher prio */
+	if (top_pcb->prio > Os_TaskGetCurrent()->prio) {
+		Irq_Save(flags);
+		Os_Dispatch(0);
+		Irq_Restore(flags);
 	}
-
-	Irq_Save(flags);
-	Os_Dispatch(0);
-	Irq_Restore(flags);
 
 	// Prevent label warning. Remove this when proper error handling is implemented.
 	if (0) goto err;

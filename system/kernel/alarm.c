@@ -193,16 +193,14 @@ StatusType SetAbsAlarm(AlarmType AlarmId, TickType Start, TickType Cycle) {
 		/** @req OS304 */
 		rv =  E_OS_VALUE;
 		goto err;
-	} else {
-		if(  Cycle == 0 ||
-			(Cycle >= COUNTER_MIN_CYCLE(aPtr)) ||
-			(Cycle <= COUNTER_MAX(aPtr)) ) {
-			/* OK */
-		} else {
-			/** @req OS304 */
-			rv =  E_OS_VALUE;
-			goto err;
-		}
+	}
+
+	if( Cycle != 0 &&
+		( (Cycle < COUNTER_MIN_CYCLE(aPtr)) ||
+		  (Cycle > COUNTER_MAX(aPtr)) ) ) {
+		/** @req OS304 */
+		rv =  E_OS_VALUE;
+		goto err;
 	}
 
 	Irq_Save(flags);

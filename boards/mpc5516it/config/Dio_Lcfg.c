@@ -24,14 +24,14 @@
 #include "Dio_Cfg.h"
 
 const Dio_ChannelType DioChannelConfigData[] =
-{ LEDS_LED4, LEDS_LED5, DIO_END_OF_LIST, };
+{ DIO_CHANNEL_NAME_LEDS_LED4, DIO_CHANNEL_NAME_LEDS_LED5, DIO_END_OF_LIST, };
 
 const Dio_PortType DioPortConfigData[] =
-{ LED_PORT, DIO_END_OF_LIST };
+{ DIO_PORT_NAME_LED_PORT, DIO_END_OF_LIST };
 
 const Dio_ChannelGroupType DioConfigData[] =
 {
-  { .port = LED_PORT, .offset = 4, .mask = 0x30, },
+  { .port = DIO_PORT_NAME_LED_PORT, .offset = 4, .mask = 0x30, },
   { .port = DIO_END_OF_LIST, .offset = DIO_END_OF_LIST, .mask = DIO_END_OF_LIST, },
 };
 

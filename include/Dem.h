@@ -23,6 +23,9 @@
 #ifndef DEM_H_
 #define DEM_H_
 
+#define DEM_MODULE_ID			MODULE_ID_DEM
+#define DEM_VENDOR_ID			1
+
 #define DEM_SW_MAJOR_VERSION    1
 #define DEM_SW_MINOR_VERSION   	0
 #define DEM_SW_PATCH_VERSION    0
@@ -49,7 +52,7 @@
 #define DEM_E_NODATAAVAILABLE				0x30
 
 #define DEM_E_EVENT_STATUS_BUFF_FULL		0x40
-#define DEM_E_EXT_DATA_TO_BIG				0x41
+#define DEM_E_EXT_DATA_TOO_BIG				0x41
 #define DEM_E_PRE_INIT_EXT_DATA_BUFF_FULL	0x42
 #define DEM_E_PRI_MEM_EVENT_BUFF_FULL		0x43
 #define DEM_E_PRI_MEM_EXT_DATA_BUFF_FULL	0x44
@@ -77,7 +80,8 @@
 #define DEM_STORE_EXT_DATA_PRE_INIT_ID		0x83
 #define DEM_STORE_EVENT_PRI_MEM_ID			0x84
 #define DEM_STORE_EXT_DATA_PRI_MEM_ID		0x85
-
+#define DEM_PREDEBOUNCE_NONE_ID				0x86
+#define DEM_PREDEBOUNCE_COUNTER_BASED_ID	0x87
 #define DEM_GLOBAL_ID						0xff
 
 #endif
@@ -86,9 +90,8 @@
 /*
  * Interface for upper layer modules (8.3.1)
  */
-
-#if (DEM_VERSION_INFO_API == STD_ON)
-void Dem_GetVersionInfo(Std_VersionInfoType *versionInfo);
+#if ( DEM_VERSION_INFO_API == STD_ON )
+#define Dem_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,DEM)
 #endif /* DEM_VERSION_INFO_API */
 
 /*

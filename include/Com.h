@@ -25,7 +25,6 @@
 
 #include "Std_Types.h"
 #include "ComStack_Types.h"
-#include "Com_Arc_Types.h"
 
 
 #ifdef COM_DEV_ERROR_DETECT
@@ -43,8 +42,6 @@
 #include "Com_Sched.h"
 
 const Com_ConfigType * ComConfig;
-
-Com_Arc_Config_type Com_Arc_Config;
 
 
 

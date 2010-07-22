@@ -144,6 +144,7 @@ void StartOS( AppModeType Mode );
 
 ApplicationType GetApplicationID( void );
 ISRType GetISRID( void );
+StatusType GetActiveApplicationMode( AppModeType* mode);
 
 typedef int8_t Os_IntCounterType;
 
@@ -240,13 +241,13 @@ StatusType 	TerminateTask( void );
 StatusType 	ChainTask( TaskType TaskID );
 StatusType 	Schedule( void );
 
-typedef uint32 ResourceType;
+typedef uint8 ResourceType;
 #define DeclareResource(x) extern ResourceType (x);
 StatusType GetResource( ResourceType ResID );
 StatusType ReleaseResource( ResourceType ResID);
 
 /*
- * Define the scheduler resource as 0
+ * Define the scheduler resource as ~0
  */
 #define	RES_SCHEDULER 			~(ResourceType)0
 

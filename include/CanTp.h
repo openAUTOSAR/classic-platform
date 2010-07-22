@@ -25,6 +25,9 @@
 #ifndef CANTP_H_
 #define CANTP_H_
 
+#define CANTP_MODULE_ID				MODULE_ID_CANTP
+#define CANTP_VENDOR_ID				1
+
 #define CANTP_SW_MAJOR_VERSION    	1
 #define CANTP_SW_MINOR_VERSION 		0
 #define CANTP_SW_PATCH_VERSION    	0
@@ -89,7 +92,9 @@ typedef enum {
 
 void CanTp_Init(); /** req : CanTp208 **/
 
-void CanTp_GetVersionInfo( Std_VersionInfoType* versioninfo ); /** req : CanTp210 **/
+#if ( CANTP_VERSION_INFO_API == STD_ON ) /** @req CANTP162 *//** @req CANTP163 */
+#define CanTp_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,CANTP) /** req : CanTp210 */
+#endif /* CANTP_VERSION_INFO_API */
 
 void CanTp_Shutdown();
 

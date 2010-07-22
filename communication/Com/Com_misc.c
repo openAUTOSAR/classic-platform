@@ -22,8 +22,12 @@
 
 #include <stdlib.h>
 #include <string.h>
+
+#include "Com_Arc_Types.h"
+#include "Com.h"
 #include "Com_misc.h"
 
+extern Com_Arc_Config_type Com_Arc_Config;
 
 void Com_ReadSignalDataFromPdu(
 			const Com_SignalIdType signalId,
@@ -190,6 +194,7 @@ void Com_WriteSignalDataToPduBuffer(
 	Com_WriteDataSegment(pduBufferBytes, signalDataBytes, signalBufferSize, startBitOffset, bitSize);
 }
 
+#if (COM_ARC_FILTER_ENABLED == STD_ON)
 uint8 Com_Filter(ComSignal_type *signal) {
 	ComGetArcSignal(signal->ComHandleId);
 	const ComFilter_type * filter = &signal->ComFilter;
@@ -265,7 +270,7 @@ uint8 Com_Filter(ComSignal_type *signal) {
 		return 1;
 	} else return 0;
 }
-
+#endif
 
 /*
  * Read an arbitrary signal segment from buffer.

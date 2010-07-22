@@ -29,58 +29,53 @@
 
 // Channels
 extern const Dio_ChannelType DioChannelConfigData[];
-#define CHANNEL_PTR		(&DioChannelConfigData)
-
 // Port
 extern const Dio_PortType DioPortConfigData[];
-#define PORT_PTR		(&DioPortConfigData)
-
 // Channel group
 extern const Dio_ChannelGroupType DioConfigData[];
-#define CHANNEL_GRP_PTR	(&DioConfigData)
 
 // Mapping of logical ports to physical
 
 // Channels
-#define LED_K2		(125)
+#define DIO_CHANNEL_NAME_LED_K2		(125)
 
 // Port
 // No ports available for MPC5567
 
 // Channel group
-#define LED_GRP_PTR		(&DioConfigData[0])
+#define DIO_GROUP_NAME_LED_GRP_PTR		(&DioConfigData[0])
 
 //
 // Channels
 //
-#define CONTROL_BUS_EN
-#define CONTROL_BUS_STB
-#define CONTROL_BUS_ERR
-#define CONTROL_BUS_S_PLUS_ST
-#define CONTROL_BUS_S_MINUS_ST
-#define CONTROL_BUS_S_PLUS_IN
+#define DIO_CONTROL_BUS_EN
+#define DIO_CONTROL_BUS_STB
+#define DIO_CONTROL_BUS_ERR
+#define DIO_CONTROL_BUS_S_PLUS_ST
+#define DIO_CONTROL_BUS_S_MINUS_ST
+#define DIO_CONTROL_BUS_S_PLUS_IN
 
-#define MULTILINK_SO_IN
-#define MULTILINK_SO_ST
+#define DIO_MULTILINK_SO_IN
+#define DIO_MULTILINK_SO_ST
 
-#define DATALINK_CANERR
-#define DATALINK_CANEN
-#define DATALINK_CANSTB
+#define DIO_DATALINK_CANERR
+#define DIO_DATALINK_CANEN
+#define DIO_DATALINK_CANSTB
 
-#define RF_PWM
-#define RF_C1
-#define RF_C2
+#define DIO_RF_PWM
+#define DIO_RF_C1
+#define DIO_RF_C2
 
-#define IO_SOUND_EN
-#define IO_SOUND
+#define DIO_IO_SOUND_EN
+#define DIO_IO_SOUND
 
 //
 // Channel groups
 //
-#define CONTROL_BUS			(DioConfigData)
-#define MULTILINK_BUS		(DioConfigData)
-#define RF					(DioConfigData)
-#define IO					(DioConfigData)
+#define DIO_CONTROL_BUS			(DioConfigData)
+#define DIO_MULTILINK_BUS		(DioConfigData)
+#define DIO_RF					(DioConfigData)
+#define DIO_IO					(DioConfigData)
 
 //
 // Port mapping

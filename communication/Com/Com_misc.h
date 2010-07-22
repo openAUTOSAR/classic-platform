@@ -24,7 +24,6 @@
 #ifndef COM_MISC_H_
 #define COM_MISC_H_
 
-#include "Com.h"
 /*
  * The following function are exported only for testing purposes.
  */

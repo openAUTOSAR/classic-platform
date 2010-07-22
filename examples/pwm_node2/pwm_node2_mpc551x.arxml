@@ -20,7 +20,7 @@
             <SDGS>
               <SDG GID="Arccore::EcuOptions">
                 <SD GID="MCU">MPC551x</SD>
-                <SD GID="GENDIR">/pwm_node2_2/config</SD>
+                <SD GID="GENDIR"></SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>
