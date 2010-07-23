@@ -24,6 +24,8 @@
 #ifndef TEST_FRAMEWORK_H_
 #define TEST_FRAMEWORK_H_
 
+#include <stdio.h>
+
 /* Test flags */
 #define TEST_FLG_RUNNING			1
 #define TEST_FLG_ASSERT			(1<<1)

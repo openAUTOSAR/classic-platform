@@ -124,72 +124,13 @@ int vsnprintf(char *buffer, size_t n, const char *format, va_list ap) {
 /*
  * The integer only counterpart
  */
-int iprintf(const char *format, ...) {
-	va_list ap;
-	int rv;
-
-	va_start(ap, format);
-	rv = vfprintf(_STDOUT, format, ap);
-	va_end(ap);
-	return rv;
-}
-
-int fiprintf(FILE *file, const char *format, ...) {
-	va_list ap;
-	int rv;
-
-	va_start(ap, format);
-	rv = vfprintf(file, format, ap);
-	va_end(ap);
-	return rv;
-}
-
-
-int siprintf(char *buffer, const char *format, ...) {
-	va_list ap;
-	int rv;
-
-	va_start(ap, format);
-	rv = vsnprintf(buffer, ~(size_t)0, format, ap);
-	va_end(ap);
-
-	return rv;
-}
-
-int sniprintf(char *buffer, size_t n, const char *format, ...) {
-	va_list ap;
-	int rv;
-
-	va_start(ap, format);
-	rv = vsnprintf(buffer, n, format, ap);
-	va_end(ap);
-	return rv;
-}
-
-int viprintf(const char *format, va_list ap) {
-	return vfprintf(_STDOUT, format, ap);
-}
-
-int vsiprintf(char *buffer, const char *format, va_list ap) {
-	return vsnprintf(buffer, ~(size_t)0, format, ap);
-}
-
-
-int vfiprintf(FILE *file, const char *format, va_list ap) {
-	int rv;
-	/* Just print to _STDOUT */
-	rv = print(file,NULL,~(size_t)0, format,ap);
-	return rv;
-}
-
-int vsniprintf(char *buffer, size_t n, const char *format, va_list ap) {
-	int rv;
-
-	rv = print(NULL, &buffer, n, format,ap);
-	return rv;
-}
-
-
+int iprintf(const char *format, ...) __attribute__ ((alias("printf")));
+int fiprintf(FILE *file, const char *format, ...) __attribute__ ((alias("fprintf")));
+int siprintf(char *buffer, const char *format, ...) __attribute__ ((alias("sprintf")));
+int sniprintf(char *buffer, size_t n, const char *format, ...) __attribute__ ((alias("snprintf")));
+int viprintf(const char *format, va_list ap) __attribute__ ((alias("vprintf")));
+int vsiprintf(char *buffer, const char *format, va_list ap) __attribute__ ((alias("vsprintf")));
+int vfiprintf(FILE *file, const char *format, va_list ap) __attribute__ ((alias("vfprintf")));
 
 /**
  *

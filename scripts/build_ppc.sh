@@ -17,7 +17,7 @@ SCRIPT_DIR=`dirname $0`
 ARCH=PPC
 source ${SCRIPT_DIR}/guess_cc.sh
 	  
-export BDIR=system/kernel/testsystem/suite_01,system/kernel/testsystem/suite_02
+export BDIR=system/kernel/testsystem/suite_01,system/kernel/testsystem/suite_02,,system/kernel/testsystem/suite_03
 make BOARDDIR=mpc5554sim clean 
 make BOARDDIR=mpc5554sim all 
 if [ $? -ne 0 ]; then quit 1
