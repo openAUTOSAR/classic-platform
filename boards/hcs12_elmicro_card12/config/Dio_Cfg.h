@@ -148,6 +148,9 @@ typedef enum
 
 #define DIO_CHANNEL_NAME_LED_CHANNEL 	(DIO_CHANNEL_H7)
 
+// Standard board test led
+#define DIO_CHANNEL_NAME_BOARD_LED		DIO_CHANNEL_NAME_LED_CHANNEL
+
 #define DIO_PORT_NAME_LED_PORT 		(DIO_PORT_H)
 
 #define DIO_GROUP_NAME_LED_PORT		(&DioConfigData[0])

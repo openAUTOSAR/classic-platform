@@ -39,6 +39,9 @@ extern const Dio_ChannelGroupType DioConfigData[];
 // Channels
 #define DIO_CHANNEL_NAME_LED_K2		(125)
 
+// Standard board test led
+#define DIO_CHANNEL_NAME_BOARD_LED  DIO_CHANNEL_NAME_LED_K2
+
 // Port
 // No ports available for MPC5567
 
