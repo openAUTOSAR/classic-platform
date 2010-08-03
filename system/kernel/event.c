@@ -49,6 +49,16 @@ StatusType WaitEvent( EventMaskType Mask ) {
 		goto err;
 	}
 
+	if (curr_pcb->proc_type != PROC_EXTENDED) {
+		rv = E_OS_ACCESS;
+		goto err;
+	}
+
+	if ( Os_TaskOccupiesResouces(curr_pcb) ) {
+		rv = E_OS_RESOURCE;
+		goto err;
+	}
+
 	/* Remove from ready queue */
 	Irq_Disable();
 
@@ -57,8 +67,14 @@ StatusType WaitEvent( EventMaskType Mask ) {
 	if( !(curr_pcb->ev_set & Mask) ) {
 
 		curr_pcb->ev_wait = Mask;
-		Os_TaskMakeWaiting(curr_pcb);
-		Os_Dispatch(0);
+
+		if ( Os_SchedulerResourceIsFree() ) {
+			POSTTASKHOOK();
+			Os_TaskMakeWaiting(curr_pcb);
+			Os_Dispatch(0);
+		} else {
+			Os_TaskMakeWaiting(curr_pcb);
+		}
 	}
 
 	Irq_Enable();
@@ -121,14 +137,16 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 	dest_pcb->ev_set |= Mask;
 
 	if( (Mask & dest_pcb->ev_wait) ) {
-		/* We have a an event match */
+		/* We have an event match */
 		if( dest_pcb->state & ST_WAITING) {
 			Os_TaskMakeReady(dest_pcb);
 
 			currPcbPtr = Os_TaskGetCurrent();
 			/* Checking "4.6.2  Non preemptive scheduling" it does not dispatch if NON  */
 			if( (os_sys.int_nest_cnt == 0) &&
-				(currPcbPtr->scheduling == FULL) )
+				(currPcbPtr->scheduling == FULL) &&
+				(dest_pcb->prio > currPcbPtr->prio) &&
+				(Os_SchedulerResourceIsFree()) )
 			{
 				Os_Dispatch(0);
 			}
@@ -147,6 +165,11 @@ StatusType GetEvent( TaskType TaskId, EventMaskRefType Mask) {
 
 	OsPcbType *dest_pcb;
 	StatusType rv = E_OK;
+
+	if( TaskId  >= Os_CfgGetTaskCnt() ) {
+		rv = E_OS_ID;
+		goto err;
+	}
 
 	dest_pcb = os_get_pcb(TaskId);
 
@@ -171,6 +194,12 @@ StatusType ClearEvent( EventMaskType Mask) {
 	}
 
 	pcb = get_curr_pcb();
+
+	if (pcb->proc_type != PROC_EXTENDED) {
+		rv = E_OS_ACCESS;
+		goto err;
+	}
+
 	pcb->ev_set &= ~Mask;
 
 	if (0) goto err;
