@@ -17,6 +17,10 @@
 #include "Nm.h"
 #include "Nm_Internal.h"
 
+/* Globally fulfilled requirements */
+/** @req NM006 */
+/** @req NM026 */
+
 const Nm_ConfigType* Nm_ConfigPtr;
 
 /** Initializes the NM Interface. */
@@ -140,6 +144,7 @@ Nm_ReturnType Nm_GetState( const NetworkHandleType NetworkHandle, Nm_StateType* 
 /** Notification that a NM-message has been received in the Bus-Sleep Mode, what
   * indicates that some nodes in the network have already entered the Network Mode.
   * The callback function shall start the network management state machine. */
+/** @req NM012.partially.1 */
 void Nm_NetworkStartIndication( const NetworkHandleType NetworkHandle ){
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
 	ComM_Nm_NetworkStartIndication(ChannelConf->ComMNetworkHandle);
@@ -147,6 +152,7 @@ void Nm_NetworkStartIndication( const NetworkHandleType NetworkHandle ){
 
 /** Notification that the network management has entered Network Mode. The
   * callback function shall enable transmission of application messages. */
+/** @req NM012.partially.2 */
 void Nm_NetworkMode( const NetworkHandleType NetworkHandle ){
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
 	ComM_Nm_NetworkMode(ChannelConf->ComMNetworkHandle);
@@ -154,12 +160,14 @@ void Nm_NetworkMode( const NetworkHandleType NetworkHandle ){
 
 /** Notification that the network management has entered Prepare Bus-Sleep Mode.
   * The callback function shall disable transmission of application messages. */
+/** @req NM012.partially.3 */
 void Nm_PrepareBusSleepMode( const NetworkHandleType NetworkHandle ){
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
 	ComM_Nm_PrepareBusSleepMode(ChannelConf->ComMNetworkHandle);
 }
 
 /** Notification that the network management has entered Bus-Sleep Mode. */
+/** @req NM012.partially.4 */
 void Nm_BusSleepMode( const NetworkHandleType NetworkHandle ){
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
 	ComM_Nm_BusSleepMode(ChannelConf->ComMNetworkHandle);
@@ -177,5 +185,6 @@ void Nm_StateChangeNotification(
 /** This function implements the processes of the NM Interface, which need a fix
   * cyclic scheduling. This function is supplied for the NM coordinator functionality
   * (Nm020). However, specific implementation may not need it (Nm093) */
+/** @req 121 */
 void Nm_MainFunction(){}
 
