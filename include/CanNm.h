@@ -23,6 +23,10 @@
 #include "Modules.h"
 #include "CanNm_Cbk.h"
 
+/** @req CANNM021 */
+#define CANNM_VENDOR_ID  1
+#define CANNM_MODULE_ID  MODULE_ID_CANNM
+
 #define CANNM_AR_MAJOR_VERSION	3
 #define CANNM_AR_MINOR_VERSION	0
 #define CANNM_AR_PATCH_VERSION	1
@@ -31,9 +35,10 @@
 #define CANNM_SW_MINOR_VERSION	0
 #define CANNM_SW_PATCH_VERSION	0
 
+/** @req CANNM200.configFiles */
 #include "CanNm_Cfg.h"
 
-
+/** @req CANNM018 */
 #define CANNM_E_NO_INIT						0x01 /**< API service used */
 #define CANNM_E_INVALID_CHANNEL				0x02 /**< API service called with wrong channel handle */
 /** NM-Timeout Timer has abnormally expired outside of the Ready Sleep State;
@@ -64,7 +69,7 @@ this race condition applies to event-triggered systems */
 #define CANNM_SERVICEID_RXINDICATION						0x10
 #define CANNM_SERVICEID_ARC_MAINFUNCTION					0x13
 
-#define CANNM_CBV_REPEAT_MESSAGE_REQUEST					(1 << 0)
+#define CANNM_CBV_REPEAT_MESSAGE_REQUEST					(1 << 0)  /**< @req CANNM045 */
 
 // Functions called by NM Interface
 // --------------------------------
