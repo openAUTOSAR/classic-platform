@@ -15,6 +15,11 @@
 
 
 
+/*
+ *  General requirements
+ */
+
+
 #include <string.h>
 #include "Dcm.h"
 #include "Dcm_Internal.h"
@@ -64,12 +69,12 @@ static boolean askApplicationForServicePermission(uint8 *requestData, uint16 dat
 static void createAndSendNcr(Dcm_NegativeResponseCodeType responseCode)
 {
 	if (!((msgData.addrType == DCM_PROTOCOL_FUNCTIONAL_ADDR_TYPE)
-		  && ((responseCode == DCM_E_SERVICENOTSUPPORTED) || (responseCode == DCM_E_SUBFUNCTIONNOTSUPPORTED) || (responseCode == DCM_E_REQUESTOUTOFRANGE)))) {   /** @req DCM001 **/
+		  && ((responseCode == DCM_E_SERVICENOTSUPPORTED) || (responseCode == DCM_E_SUBFUNCTIONNOTSUPPORTED) || (responseCode == DCM_E_REQUESTOUTOFRANGE)))) {   /** @req DCM001 */
 		msgData.pduTxData->SduDataPtr[0] = SID_NEGATIVE_RESPONSE;
 		msgData.pduTxData->SduDataPtr[1] = currentSid;
 		msgData.pduTxData->SduDataPtr[2] = responseCode;
 		msgData.pduTxData->SduLength = 3;
-		DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_READY);	/** @req DCM114 **/ /** @req DCM232.1 **/
+		DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_READY);	/** @req DCM114 */ /** @req DCM232.Ncr */
 	}
 	else {
 		DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_SUPPRESSED);
@@ -79,7 +84,7 @@ static void createAndSendNcr(Dcm_NegativeResponseCodeType responseCode)
 
 static void selectServiceFunction(uint8 sid)
 {
-	switch (sid)	 /** @req DCM221 **/
+	switch (sid)	 /** @req DCM221 */
 	{
 	case SID_DIAGNOSTIC_SESSION_CONTROL:
 		DspUdsDiagnosticSessionControl(msgData.pduRxData, msgData.pduTxData);
@@ -178,50 +183,50 @@ void DsdHandleRequest(void)
 	Std_ReturnType result;
 	const Dcm_DsdServiceType *sidConfPtr = NULL;
 
-	currentSid = msgData.pduRxData->SduDataPtr[0];	/** @req DCM198 **/
+	currentSid = msgData.pduRxData->SduDataPtr[0];	/** @req DCM198 */
 
-	/** @req DCM178 **/
-	if (DCM_RESPOND_ALL_REQUEST || ((currentSid & 0x7F) < 0x40)) {		/** @req DCM084 **/
-		if (lookupSid(currentSid, &sidConfPtr)) {		/** @req DCM192 **/ /** @req DCM193 **/ /** @req DCM196 **/
+	/** @req DCM178 */
+	if (DCM_RESPOND_ALL_REQUEST || ((currentSid & 0x7F) < 0x40)) {		/** @req DCM084 */
+		if (lookupSid(currentSid, &sidConfPtr)) {		/** @req DCM192 */ /** @req DCM193 */ /** @req DCM196 */
 			// SID found!
-			if (DspCheckSessionLevel(sidConfPtr->DsdSidTabSessionLevelRef)) {		 /** @req DCM211 **/
-				if (DspCheckSecurityLevel(sidConfPtr->DsdSidTabSecurityLevelRef)) {	 /** @req DCM217 **/
-					if (DCM_REQUEST_INDICATION_ENABLED) {	 /** @req DCM218 **/
+			if (DspCheckSessionLevel(sidConfPtr->DsdSidTabSessionLevelRef)) {		 /** @req DCM211 */
+				if (DspCheckSecurityLevel(sidConfPtr->DsdSidTabSecurityLevelRef)) {	 /** @req DCM217 */
+					if (DCM_REQUEST_INDICATION_ENABLED) {	 /** @req DCM218 */
 						 result = askApplicationForServicePermission(msgData.pduRxData->SduDataPtr, msgData.pduRxData->SduLength);
 					}
 					if (!DCM_REQUEST_INDICATION_ENABLED || result == E_OK) {
 						// Yes! All conditions met!
 						// Check if response shall be suppressed
-						if (sidConfPtr->DsdSidTabSubfuncAvail && (msgData.pduRxData->SduDataPtr[1] & SUPPRESS_POS_RESP_BIT)) {	/** @req DCM204 **/
-							suppressPosRspMsg = TRUE;	/** @req DCM202 **/
-							msgData.pduRxData->SduDataPtr[1] &= ~SUPPRESS_POS_RESP_BIT;	/** @req DCM201 **/
+						if (sidConfPtr->DsdSidTabSubfuncAvail && (msgData.pduRxData->SduDataPtr[1] & SUPPRESS_POS_RESP_BIT)) {	/** @req DCM204 */
+							suppressPosRspMsg = TRUE;	/** @req DCM202 */
+							msgData.pduRxData->SduDataPtr[1] &= ~SUPPRESS_POS_RESP_BIT;	/** @req DCM201 */
 						}
 						else
 						{
-							suppressPosRspMsg = FALSE;	/** @req DCM202 **/
+							suppressPosRspMsg = FALSE;	/** @req DCM202 */
 						}
 						selectServiceFunction(currentSid);
 					}
 					else {
 						if (result == E_REQUEST_ENV_NOK) {
-							createAndSendNcr(DCM_E_CONDITIONSNOTCORRECT);	/** @req DCM463 **/
+							createAndSendNcr(DCM_E_CONDITIONSNOTCORRECT);	/** @req DCM463 */
 						}
 						else {
-							// Do not send any response		/** @req DCM462 **/
+							// Do not send any response		/** @req DCM462 */
 							DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_SUPPRESSED);
 						}
 					}
 				}
 				else {
-					createAndSendNcr(DCM_E_SECUTITYACCESSDENIED);	/** @req DCM217 **/
+					createAndSendNcr(DCM_E_SECUTITYACCESSDENIED);	/** @req DCM217 */
 				}
 			}
 			else {
-				createAndSendNcr(DCM_E_SERVICENOTSUPPORTEDINACTIVESESSION);	/** @req DCM211 **/
+				createAndSendNcr(DCM_E_SERVICENOTSUPPORTEDINACTIVESESSION);	/** @req DCM211 */
 			}
 		}
 		else {
-			createAndSendNcr(DCM_E_SERVICENOTSUPPORTED);	/** @req DCM197 **/
+			createAndSendNcr(DCM_E_SERVICENOTSUPPORTED);	/** @req DCM197 */
 		}
 	}
 	else {
@@ -234,18 +239,18 @@ void DsdHandleRequest(void)
 void DsdDspProcessingDone(Dcm_NegativeResponseCodeType responseCode)
 {
 	if (responseCode == DCM_E_POSITIVERESPONSE) {
-		if (!suppressPosRspMsg) {	/** @req DCM200 **/ /** @req DCM231 **/
-			/** @req DCM222 **/
-			msgData.pduTxData->SduDataPtr[0] = currentSid | SID_RESPONSE_BIT;	/** @req DCM223 **/ /** @req DCM224 **/
-			DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_READY);	/** @req DCM114 **/ /** @req DCM225 **/ /** @req DCM232.2 **/
+		if (!suppressPosRspMsg) {	/** @req DCM200 */ /** @req DCM231 */
+			/** @req DCM222 */
+			msgData.pduTxData->SduDataPtr[0] = currentSid | SID_RESPONSE_BIT;	/** @req DCM223 */ /** @req DCM224 */
+			DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_READY);	/** @req DCM114 */ /** @req DCM225 */ /** @req DCM232.Ok */
 		}
 		else {
-			DspDcmConfirmation(msgData.txPduId);	/** @req DCM236 **/ /** @req DCM240 **/
+			DspDcmConfirmation(msgData.txPduId);	/** @req DCM236 */ /** @req DCM240 */
 			DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_SUPPRESSED);
 		}
 	}
 	else {
-		createAndSendNcr(responseCode);	/** @req DCM228 **/
+		createAndSendNcr(responseCode);	/** @req DCM228 */
 	}
 
 }
@@ -253,7 +258,7 @@ void DsdDspProcessingDone(Dcm_NegativeResponseCodeType responseCode)
 
 void DsdDataConfirmation(PduIdType confirmPduId, NotifResultType result)
 {
-	DspDcmConfirmation(confirmPduId);	/** @req DCM236 **/
+	DspDcmConfirmation(confirmPduId);	/** @req DCM236 */
 }
 
 

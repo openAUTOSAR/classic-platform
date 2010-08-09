@@ -17,6 +17,15 @@
 
 
 
+/*
+ *  General requirements
+ */
+/** @req DCM054.Partially */ /** @req DCM055.Partially */ /** @req DCM110 */ /** @req DCM107 */ /** @req DCM332 */
+/** @req DCM012 */ /** @req DCM044 */ /** @req DCM364 */ /** @req DCM041 */
+/** @req DCM042 */ /** @req DCM049 */
+/** @req DCM033 */
+/** @req DCM171 */
+
 #include <string.h>
 #include "Dcm.h"
 #include "Dcm_Internal.h"
@@ -55,7 +64,7 @@ static Dcm_StateType dcmState = DCM_UNINITIALIZED;
  * Procedure:	Dcm_Init
  * Reentrant:	No
  */
-void Dcm_Init(void)
+void Dcm_Init(void) /** @req DCM037 */
 {
 	if ((DCM_Config.Dsl == NULL) || (DCM_Config.Dsd == NULL) || (DCM_Config.Dsp == NULL)) {
 #if (DCM_DEV_ERROR_DETECT == STD_ON)

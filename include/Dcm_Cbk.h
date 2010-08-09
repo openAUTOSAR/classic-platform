@@ -28,12 +28,12 @@
 /*
  * Interfaces for callback notifications from PduR and ComM (8.4)
  */
-BufReq_ReturnType Dcm_ProvideRxBuffer(PduIdType dcmRxPduId, PduLengthType tpSduLength, PduInfoType **pduInfoPtr);
-void Dcm_RxIndication(PduIdType dcmRxPduId, NotifResultType result);
-BufReq_ReturnType Dcm_ProvideTxBuffer(PduIdType dcmTxPduId, PduInfoType **pduInfoPtr, PduLengthType length);
-void Dcm_TxConfirmation(PduIdType dcmTxPduId, NotifResultType result);
-void Dcm_ComM_NoComModeEntered(void);
-void Dcm_ComM_SilentComModeEntered(void);
-void Dcm_ComM_FullComModeEntered(void);
+BufReq_ReturnType Dcm_ProvideRxBuffer(PduIdType dcmRxPduId, PduLengthType tpSduLength, PduInfoType **pduInfoPtr); /** @req DCM094 */
+void Dcm_RxIndication(PduIdType dcmRxPduId, NotifResultType result); /** @req DCM093 */
+BufReq_ReturnType Dcm_ProvideTxBuffer(PduIdType dcmTxPduId, PduInfoType **pduInfoPtr, PduLengthType length); /** @req DCM092 */
+void Dcm_TxConfirmation(PduIdType dcmTxPduId, NotifResultType result); /** @req DCM351 */
+void Dcm_ComM_NoComModeEntered(void); /** @req DCM356 */
+void Dcm_ComM_SilentComModeEntered(void); /** @req DCM358 */
+void Dcm_ComM_FullComModeEntered(void); /** @req DCM360 */
 
 #endif /*DCM_CBK_H_*/
