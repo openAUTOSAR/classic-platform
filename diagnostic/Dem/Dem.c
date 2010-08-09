@@ -17,6 +17,17 @@
 
 
 
+/*
+ *  General requirements
+ */
+/** @req DEM014.14229-1 */
+/** @req DEM277 */
+/** @req DEM363 */
+/** @req DEM113 */ /** @req DEM174 */
+/** @req DEM286 */
+/** @req DEM267 */
+
+
 #include <string.h>
 #include "Dem.h"
 #include "Det.h"
@@ -26,15 +37,6 @@
 #include "MemMap.h"
 #include "Mcu.h"
 
-/*
- *  Global requirements
- */
-/** @req DEM014.14229-1 */
-/** @req DEM277 */
-/** @req DEM363 */
-/** @req DEM113 */ /** @req DEM174 */
-/** @req DEM286 */
-/** @req DEM267 */
 /*
  * Local defines
  */

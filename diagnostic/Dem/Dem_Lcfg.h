@@ -20,6 +20,13 @@
 
 
 
+/*
+ *  General requirements
+ */
+/** @req DEM128 */
+
+
+
 #ifndef DEM_LCFG_H_
 #define DEM_LCFG_H_
 
