@@ -22,7 +22,7 @@
 
 #ifndef DEM_TYPES_H_
 #define DEM_TYPES_H_
-#include "Std_Types.h"
+#include "Std_Types.h" /** @req DEM176.Std */
 
 /*
  * DTC storage types
