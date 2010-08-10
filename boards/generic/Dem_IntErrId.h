@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #ifndef DEM_INTERRID_H_
 #define DEM_INTERRID_H_
 

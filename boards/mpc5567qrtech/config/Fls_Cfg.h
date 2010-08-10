@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #ifndef FLS_CFG_H_
 #define FLS_CFG_H_
 

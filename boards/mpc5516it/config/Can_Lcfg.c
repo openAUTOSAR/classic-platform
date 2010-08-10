@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #include <stdlib.h>
 #include "Can.h"
 #include "CanIf_Cbk.h"

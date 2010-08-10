@@ -17,6 +17,8 @@
 #ifndef MCU_CFG_H_
 #define MCU_CFG_H_
 
+#warning "This default file may only be used as an example!"
+
 #define MCU_DEV_ERROR_DETECT 	STD_ON
 #define MCU_PERFORM_RESET_API 	STD_OFF
 #define MCU_VERSION_INFO_API 	STD_ON

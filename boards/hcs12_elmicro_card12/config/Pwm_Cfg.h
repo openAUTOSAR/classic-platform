@@ -23,6 +23,8 @@
 #ifndef PWM_CFG_H_
 #define PWM_CFG_H_
 
+#warning "This default file may only be used as an example!"
+
 /*
  * PwmGeneral
  */

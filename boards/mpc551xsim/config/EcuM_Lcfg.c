@@ -23,6 +23,8 @@
 
 /* Link time config */
 
+#warning "This default file may only be used as an example!"
+
 #include "Std_Types.h"
 #include "Os.h"
 #include "Mcu.h"

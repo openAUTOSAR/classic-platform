@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #ifndef _COM_PBCFG_H
 #define _COM_PBCFG_H
 

@@ -20,6 +20,8 @@
  *  Definitions of configuration parameters for CAN Interface.
  */
 
+#warning "This default file may only be used as an example!"
+
 #ifndef CANIF_CFG_H_
 #define CANIF_CFG_H_
 
