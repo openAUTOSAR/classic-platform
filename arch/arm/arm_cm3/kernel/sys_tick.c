@@ -68,5 +68,16 @@ void Os_SysTickStart(uint32_t period_ticks) {
 
 uint32_t Os_SysTickGetValue( void )
 {
-	return (SysTick->VAL);
+	return (SysTick->LOAD) - (SysTick->VAL);
 }
+
+
+TickType Os_SysTickGetElapsedValue( uint32_t preValue ) {
+	uint32_t curr;
+	uint32_t max;
+
+	curr = (SysTick->VAL);
+	max  = (SysTick->LOAD);
+	return Os_CounterDiff((max - curr),preValue,max);
+}
+

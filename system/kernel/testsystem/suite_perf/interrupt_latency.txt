@@ -1,0 +1,32 @@
+
+A part of this test-suite measures interrupt latency.
+Interrupt latency is the time it takes from the assertion of the interrupt
+until the ISR starts to execute it first instruction.
+
+The interrupt have dependencies to:
+- Length of the critical sections.
+- How hot the cache is.
+
+The measuring technique used here is just to periodically run a routine on a 
+HW-timer and measure the time from assertion to the first instruction. 
+By raising/lowering the priority of the interrupt times for each interrupt 
+priority could be calculated. If the system is more or less driven by a timer, 
+the HW-timer should NOT be a multiple of the driving timer. 
+
+Measure the time in an:
+- idle system:  Will give you the execution time for the interrupt implementaion.  
+- timer driven: TODO:
+- 100% load:    If a test-system that uses all the OS funcionallity can be 
+                constructed and it takes 100% of the CPU, running the HW-timer 
+                long enough would give the worst possible interrupt latency 
+                without interrupts.
+                
+                  
+
+
+
+
+
+
+
+

@@ -68,12 +68,21 @@ static uint32_t NVIC_GetActiveVector( void) {
  * Init NVIC vector. We do not use subriority
  *
  */
-static void NVIC_InitVector(uint8_t vector, uint32_t prio)
+
+/**
+ * Init NVIC vector. We do not use subpriority
+ *
+ * @param vector	The IRQ number
+ * @param prio      NVIC priority, 0-15, 0-high prio
+ */
+static void NVIC_InitVector(IRQn_Type vector, uint32_t prio)
 {
 	// Set prio
-	NVIC->IP[vector] = prio;
+	NVIC_SetPriority(vector,prio);
+	//NVIC->IP[vector] = prio;
 
 	// Enable
+	//NVIC_EnableIRQ(vector);
     NVIC->ISER[vector >> 5] = (uint32_t)1 << (vector & (uint8_t)0x1F);
 }
 
@@ -120,11 +129,24 @@ void Irq_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector, uint8
 	// TODO: Use NVIC_InitVector(vector, osPrioToCpuPio(pcb->prio)); here
 }
 
+/**
+ * NVIC prio have priority 0-15, 0-highest priority.
+ * Autosar does it the other way around, 0-Lowest priority
+ *
+ * Autosar    NVIC
+ *   31        0
+ *   30        0
+ *   ..
+ *   0         15
+ *   0         15
+ * @param prio
+ * @return
+ */
 static inline int osPrioToCpuPio( uint8_t prio ) {
 	assert(prio<32);
-	return prio>>1;
+	prio = 31 - prio;
+	return (prio>>1);
 }
-
 
 /**
  * Attach a ISR type 2 to the interrupt controller.
@@ -151,7 +173,7 @@ void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
  */
 void Irq_GenerateSoftInt( IrqType vector ) {
 
-	NVIC->STIR = (vector + 16);
+	NVIC->STIR = (vector);
 }
 
 /**
