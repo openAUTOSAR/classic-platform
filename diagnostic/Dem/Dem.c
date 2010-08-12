@@ -20,7 +20,10 @@
 /*
  *  General requirements
  */
-/** @req DEM014.14229-1 */
+/** @req DEM126 */
+/** @req DEM151.partially */
+/** @req DEM152 */
+/** @req DEM013.14229-1 */
 /** @req DEM277 */
 /** @req DEM363 */
 /** @req DEM113 */ /** @req DEM174 */
@@ -324,8 +327,8 @@ static Dem_EventStatusType preDebounceNone(Dem_EventStatusType reportedStatus, E
 	Dem_EventStatusType returnCode;
 
 	switch (reportedStatus) {
-	case DEM_EVENT_STATUS_FAILED: /** @req DEM191.NoneFailed */
-	case DEM_EVENT_STATUS_PASSED: /** @req DEM191.NonePassed */
+	case DEM_EVENT_STATUS_FAILED: /** @req DEM091.NoneFailed */
+	case DEM_EVENT_STATUS_PASSED: /** @req DEM091.NonePassed */
 		// Already debounced, do nothing.
 		break;
 
@@ -380,11 +383,11 @@ static Dem_EventStatusType preDebounceCounterBased(Dem_EventStatusType reportedS
 		break;
 
 	case DEM_EVENT_STATUS_FAILED:
-		statusRecord->faultDetectionCounter = DEBOUNCE_FDC_TEST_FAILED; /** @req DEM191.CounterFailed */
+		statusRecord->faultDetectionCounter = DEBOUNCE_FDC_TEST_FAILED; /** @req DEM091.CounterFailed */
 		break;
 
 	case DEM_EVENT_STATUS_PASSED:
-		statusRecord->faultDetectionCounter = DEBOUNCE_FDC_TEST_PASSED; /** @req DEM191.CounterPassed */
+		statusRecord->faultDetectionCounter = DEBOUNCE_FDC_TEST_PASSED; /** @req DEM091.CounterPassed */
 		break;
 
 	default:
@@ -476,7 +479,7 @@ static void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_E
 				eventStatusRecPtr->occurrence++;
 				eventStatusRecPtr->errorStatusChanged = TRUE;
 			}
-			/** @req DEM036.Failed */ /** @req DEM379.PendingSet */
+			/** @req DEM036 */ /** @req DEM379.PendingSet */
 			eventStatusRecPtr->eventStatusExtended |= (DEM_TEST_FAILED | DEM_TEST_FAILED_THIS_OPERATION_CYCLE | DEM_TEST_FAILED_SINCE_LAST_CLEAR | DEM_PENDING_DTC);
 			eventStatusRecPtr->eventStatusExtended &= ~(DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE);
 		}
@@ -486,7 +489,7 @@ static void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_E
 			if (eventStatusRecPtr->eventStatusExtended & DEM_TEST_FAILED) {
 				eventStatusRecPtr->errorStatusChanged = TRUE;
 			}
-			/** @req DEM036.Passed */
+			/** @req DEM036 */
 			eventStatusRecPtr->eventStatusExtended &= ~DEM_TEST_FAILED;
 			eventStatusRecPtr->eventStatusExtended &= ~(DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE);
 		}
@@ -1590,7 +1593,7 @@ Std_ReturnType Dem_ResetEventStatus(Dem_EventIdType eventId) /** @req DEM331 */
 
 	if (demState == DEM_INITIALIZED) // No action is taken if the module is not started
 	{
-		resetEventStatus(eventId);
+		resetEventStatus(eventId); /** @req DEM186 */
 	}
 	else
 	{
@@ -2023,7 +2026,7 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
  * Procedure:	Dem_DisableDTCStorage
  * Reentrant:	No
  */
-Dem_ReturnControlDTCStorageType Dem_DisableDTCStorage(Dem_DTCGroupType dtcGroup, Dem_DTCKindType dtcKind) /** @req DEM35 */
+Dem_ReturnControlDTCStorageType Dem_DisableDTCStorage(Dem_DTCGroupType dtcGroup, Dem_DTCKindType dtcKind) /** @req DEM035 */
 {
 	Dem_ReturnControlDTCStorageType returnCode = DEM_CONTROL_DTC_STORAGE_N_OK;
 

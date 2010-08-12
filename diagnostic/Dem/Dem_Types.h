@@ -92,7 +92,7 @@ enum {
 	DEM_OBD_DCY,	// OBD Driving Cycle
 
 	DEM_OPERATION_CYCLE_ID_ENDMARK
-};
+}; /** @req DEM142 */
 
 /*
  * Dem_OperationCycleStateType
