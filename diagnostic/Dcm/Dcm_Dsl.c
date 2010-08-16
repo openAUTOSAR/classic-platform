@@ -629,7 +629,7 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {
 						runtime->diagReqestRxPduId = dcmRxPduId;
 						DsdDslDataIndication(  // qqq: We are inside a critical section.
 								&(runtime->diagnosticRequestFromTester),
-								protocolRow->DslProtocolSIDTable,
+								protocolRow->DslProtocolSIDTable,	/** @req DCM035 */
 								protocolRx->DslProtocolAddrType,
 								mainConnection->DslProtocolTx->DcmDslProtocolTxPduId,
 								&(runtime->diagnosticResponseFromDsd),
@@ -736,7 +736,7 @@ void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result) {
 		case PROVIDED_TO_PDUR: {
 			ComM_DCM_InactivateDiagnostic(); /** @req DCM164 */
 			startS3SessionTimer(runtime, protocolRow); /** @req DCM141 */
-			releaseExternalRxTxBuffers(protocolRow, runtime); /** @req DCM118 *//** @req DCM353 *//** @req DCM354 */
+			releaseExternalRxTxBuffers(protocolRow, runtime); /** @req DCM118 *//** @req DCM352 *//** @req DCM353 *//** @req DCM354 */
 			externalBufferReleased = TRUE;
 			DEBUG( DEBUG_MEDIUM, "Released external buffer OK!\n");
 			DsdDataConfirmation(mainConnection->DslProtocolTx->DcmDslProtocolTxPduId, result); /** @req DCM117 *//** @req DCM235 */
