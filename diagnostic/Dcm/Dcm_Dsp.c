@@ -249,7 +249,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x01_0x07_0x11_0x12(const 
 	Dem_ReturnSetDTCFilterType setDtcFilterResult;
 
 	// Setup the DTC filter
-	switch (pduRxData->SduDataPtr[1]) 	/** @reg DCM293 */
+	switch (pduRxData->SduDataPtr[1]) 	/** @req DCM293 */
 	{
 	case 0x01:	// reportNumberOfDTCByStatusMask
 		setDtcFilterResult = Dem_SetDTCFilter(pduRxData->SduDataPtr[2], DEM_DTC_KIND_ALL_DTCS, DEM_DTC_ORIGIN_PRIMARY_MEMORY, DEM_FILTER_WITH_SEVERITY_NO, VALUE_IS_NOT_USED, DEM_FILTER_FOR_FDC_NO);
@@ -280,7 +280,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x01_0x07_0x11_0x12(const 
 		uint8 dtcStatusMask;
 		TxDataType *txData = (TxDataType*)pduTxData->SduDataPtr;
 
-		/** @reg DCM376 */
+		/** @req DCM376 */
 		Dem_GetNumberOfFilteredDtc(&numberOfFilteredDtc);
 		Dem_GetDTCStatusAvailabilityMask(&dtcStatusMask);
 
@@ -320,7 +320,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15(c
 	} TxDataType;
 
 	// Setup the DTC filter
-	switch (pduRxData->SduDataPtr[1]) 	/** @reg DCM378 */
+	switch (pduRxData->SduDataPtr[1]) 	/** @req DCM378 */
 	{
 	case 0x02:	// reportDTCByStatusMask
 		setDtcFilterResult = Dem_SetDTCFilter(pduRxData->SduDataPtr[2], DEM_DTC_KIND_ALL_DTCS, DEM_DTC_ORIGIN_PRIMARY_MEMORY, DEM_FILTER_WITH_SEVERITY_NO, VALUE_IS_NOT_USED, DEM_FILTER_FOR_FDC_NO);
@@ -358,7 +358,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15(c
 		Dem_EventStatusExtendedType dtcStatus;
 		uint16 nrOfDtcs = 0;
 
-		/** @reg DCM377 */
+		/** @req DCM377 */
 		Dem_GetDTCStatusAvailabilityMask(&dtcStatusMask);
 
 		// Create positive response (ISO 14229-1 table 252)
@@ -420,7 +420,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x06_0x10(const PduInfoTyp
 	uint8 endRecNum;
 
 	// Switch on sub function
-	switch (pduRxData->SduDataPtr[1]) 	/** @reg DCM378 */
+	switch (pduRxData->SduDataPtr[1]) 	/** @req DCM378 */
 	{
 	case 0x06:	// reportDTCExtendedDataRecordByDTCNumber
 		dtcOrigin = DEM_DTC_ORIGIN_PRIMARY_MEMORY;
@@ -558,7 +558,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x14(const PduInfoType *pd
 
 void DspUdsReadDtcInformation(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
-	/** @reg DCM248 */
+	/** @req DCM248 */
 	// Sub function number         0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F 10 11 12 13 14 15
 	const uint8 sduLength[0x16] = {0, 3, 3, 6, 6, 3, 6, 4, 4, 5, 2, 2, 2, 2, 2, 3, 6, 3, 3, 3, 2, 2};
 

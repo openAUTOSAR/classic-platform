@@ -84,6 +84,7 @@ static void createAndSendNcr(Dcm_NegativeResponseCodeType responseCode)
 
 static void selectServiceFunction(uint8 sid)
 {
+	/** @req DCM442.Partially */
 	switch (sid)	 /** @req DCM221 */
 	{
 	case SID_DIAGNOSTIC_SESSION_CONTROL:

@@ -153,7 +153,7 @@ typedef struct {
 	const Dcm_DspDidReadType		*DspDidRead;	// (0..1)
 	const Dcm_DspDidWriteType		*DspDidWrite;	// (0..1)
 	const Dcm_DspDidControlType		*DspDidControl;	// (0..1)
-} Dcm_DspDidAccessType;
+} Dcm_DspDidAccessType; /** @req DCM609 */
 
 // 10.2.24
 typedef struct {
@@ -303,7 +303,7 @@ typedef struct {
 
 // 10.2.21
 typedef struct {
-	uint8								DspMaxDidToRead; // (0..1)
+	uint8								DspMaxDidToRead; // (0..1)	/** @req DCM638 */
 	// Containers
 	const Dcm_DspDidType				*DspDid;	// (0..*)
 	const Dcm_DspDidInfoType			*DspDidInfo;			// (0..*)

@@ -21,10 +21,11 @@
  *  General requirements
  */
 /** @req DCM054.Partially */ /** @req DCM055.Partially */ /** @req DCM110 */ /** @req DCM107 */ /** @req DCM332 */
-/** @req DCM012 */ /** @req DCM044 */ /** @req DCM364 */ /** @req DCM041 */
+/** @req DCM012 */ /** @req DCM044 */ /** @req DCM364 */ /** @req DCM040 */ /** @req DCM041 */
 /** @req DCM042 */ /** @req DCM049 */
 /** @req DCM033 */
 /** @req DCM171 */
+/** @req DCM333 */ /** @req DCM334 */
 
 #include <string.h>
 #include "Dcm.h"
@@ -87,7 +88,7 @@ void Dcm_Init(void) /** @req DCM037 */
 /*
  * Interface for basic software scheduler
  */
-void Dcm_MainFunction(void)
+void Dcm_MainFunction(void) /** @req DCM362 */
 {
 	DsdMain();
 	DspMain();
