@@ -23,6 +23,10 @@
 /*
  *  General requirements
  */
+
+/** @req CANTP001 */
+/** @req CANTP019 */
+/** @req CANTP020 */
 /** @req CANTP156.Partially */
 /** @req CANTP150 */
 /** @req CANTP151 */
@@ -32,6 +36,14 @@
 /** @req CANTP158 */
 /** @req CANTP003 */
 /** @req CANTP216 */
+/** @req CANTP217 */
+
+/*
+ * Environmental requirements
+ */
+/** @req CANTP164 */
+/** @req CANTP199 */
+
 
 #include "CanTp.h" /** @req CANTP219 */
 #include "CanTp_Cbk.h" /** @req CANTP233 */
@@ -1139,7 +1151,7 @@ Std_ReturnType FrTp_CancelTransmitRequest(PduIdType FrTpTxPduId,
 // - - - - - - - - - - - - - -
 
 
-void CanTp_Init() /** @req CANTP208 */
+void CanTp_Init()
 {
 	CanTp_ChannelPrivateType *runtimeData;
 	const CanTp_TxNSduType *txConfigParams;
