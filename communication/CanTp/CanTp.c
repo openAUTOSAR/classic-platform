@@ -20,6 +20,10 @@
  * TBD.
  */
 
+/*
+ *  General requirements
+ */
+/** @req CANTP156.Partially */
 /** @req CANTP150 */
 /** @req CANTP151 */
 /** @req CANTP152 */
@@ -29,13 +33,13 @@
 /** @req CANTP003 */
 /** @req CANTP216 */
 
-#include "CanTp.h" /** @req CANTP156 */ /** @req CANTP219 */
-#include "CanTp_Cbk.h" /** @req CANTP156 *//** @req CANTP233 */
+#include "CanTp.h" /** @req CANTP219 */
+#include "CanTp_Cbk.h" /** @req CANTP233 */
 #include "Det.h"
 #include "CanIf.h"
-#include "SchM_CanTp.h" /** @req CANTP156 */
+#include "SchM_CanTp.h"
 #include "PduR_CanTp.h"
-//#include "MemMap.h" /** @req CANTP156 */
+//#include "MemMap.h"
 #include <string.h>
 //#define USE_DEBUG_PRINTF
 #include "debug.h"
@@ -506,7 +510,7 @@ static INLINE void sendFlowControlFrame(const CanTp_RxNSduType *rxConfig, CanTp_
 	PduInfoType pduInfo;
 	uint8 sduData[8]; // Note that buffer in declared on the stack.
 	uint16 spaceFreePduRBuffer = 0;
-	uint16 computedBs = 0; // req:CanTp064 and example.
+	uint16 computedBs = 0;
 
 	DEBUG( DEBUG_MEDIUM, "sendFlowControlFrame called!\n");
 	pduInfo.SduDataPtr = &sduData[0];
@@ -1141,7 +1145,7 @@ Std_ReturnType CanTp_Transmit(PduIdType CanTpTxSduId,
 
 #if FRTP_CANCEL_TRANSMIT_REQUEST
 Std_ReturnType FrTp_CancelTransmitRequest(PduIdType FrTpTxPduId,
-		FrTp_CancelReasonType FrTpCancelReason) /** @req CANTP246 */
+		FrTp_CancelReasonType FrTpCancelReason)
 {
 	return E_NOT_OK;
 }
@@ -1182,7 +1186,7 @@ void CanTp_Init() /** @req CANTP208 */
 // - - - - - - - - - - - - - -
 
 void CanTp_RxIndication(PduIdType CanTpRxPduId, /** @req CANTP078 */ /** @req CANTP035 */
-		const PduInfoType *CanTpRxPduPtr) /** @req CANTP214 */
+		const PduInfoType *CanTpRxPduPtr)
 {
 	CanTpFifoQueueItem item;
 	VALIDATE_NO_RV( CanTpRunTimeData.internalState == CANTP_ON,
@@ -1201,7 +1205,7 @@ void CanTp_RxIndication(PduIdType CanTpRxPduId, /** @req CANTP078 */ /** @req CA
 // - - - - - - - - - - - - - -
 
 void CanTp_RxIndication_Main(PduIdType CanTpRxPduId,
-		const PduInfoType *CanTpRxPduPtr) /** @req CANTP214 */
+		const PduInfoType *CanTpRxPduPtr)
 {
 	const CanTp_RxNSduType *rxConfigParams; // Params reside in ROM.
 	const CanTp_TxNSduType *txConfigParams;
@@ -1277,9 +1281,7 @@ void CanTp_RxIndication_Main(PduIdType CanTpRxPduId,
 
 // - - - - - - - - - - - - - -
 
-
-
-void CanTp_TxConfirmation(PduIdType PduId) /** @req CANTP215 *//** @req CANTP076 *//** @req CANTP215 */
+void CanTp_TxConfirmation(PduIdType PduId) /** @req CANTP076 */
 {
 	const CanTp_RxNSduType *rxConfigParams = NULL;
 	const CanTp_TxNSduType *txConfigParams = NULL;
@@ -1306,7 +1308,7 @@ void CanTp_TxConfirmation(PduIdType PduId) /** @req CANTP215 *//** @req CANTP076
 
 // - - - - - - - - - - - - - -
 
-void CanTp_Shutdown() /** @req CANTP202 *//** @req CANTP200 *//** @req CANTP211 *//** @req CANTP010 */
+void CanTp_Shutdown() /** @req CANTP202 *//** @req CANTP200 *//** @req CANTP010 */
 {
 	VALIDATE_NO_RV( CanTpRunTimeData.internalState == CANTP_ON,
 			SERVICE_ID_CANTP_SHUTDOWN, CANTP_E_UNINIT ); /** @req CANTP031 */
@@ -1334,7 +1336,7 @@ static inline boolean checkNasNarTimeout(CanTp_ChannelPrivateType *runtimeData) 
 // - - - - - - - - - - - - - -
 
 
-void CanTp_MainFunction() /** @req CANTP213 */
+void CanTp_MainFunction()
 {
 	BufReq_ReturnType ret;
 	CanTpFifoQueueItem item;
