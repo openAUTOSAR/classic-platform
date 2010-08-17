@@ -33,6 +33,7 @@
 #define DEM_AR_MINOR_VERSION    0
 #define DEM_AR_PATCH_VERSION    1
 
+/** @req DCM067.Cfg-files */
 #include "Dem_Types.h"
 #include "Dem_Cfg.h"
 #include "Dem_Lcfg.h"
