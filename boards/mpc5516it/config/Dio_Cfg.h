@@ -21,6 +21,8 @@
 /** @file Dio_Cfg.h
  * Definitions of configuration parameters for the DIO Driver.
  */
+#warning "This default file may only be used as an example!"
+
 #ifndef DIO_CFG_H_
 #define DIO_CFG_H_
 
@@ -218,6 +220,10 @@ extern const Dio_ChannelGroupType DioConfigData[];
 // Channels	
 #define DIO_CHANNEL_NAME_LEDS_LED4		(DIO_CHANNEL_D4)
 #define DIO_CHANNEL_NAME_LEDS_LED5		(DIO_CHANNEL_D5)
+
+// Standard board test led
+#define DIO_CHANNEL_NAME_BOARD_LED		DIO_CHANNEL_NAME_LEDS_LED4
+
 
 // Port
 #define DIO_PORT_NAME_LED_PORT 			(DIO_PORT_D)

@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #include "Com_PbCfg.h"
 #include "Com_RunTest.h"
 

@@ -20,6 +20,7 @@
 #ifndef COMM_H_
 #define COMM_H_
 
+/** @req COMM466  @req COMM518  @req COMM692 */
 #include "ComStack_Types.h"
 #include "ComM_Types.h"
 #include "ComM_ConfigTypes.h"
@@ -28,6 +29,7 @@
 #define COMM_MODULE_ID			MODULE_ID_COMM
 #define COMM_VENDOR_ID			1
 
+/** @req COMM469 */
 #define COMM_AR_MAJOR_VERSION	2
 #define COMM_AR_MINOR_VERSION	0
 #define COMM_AR_PATCH_VERSION	1
@@ -36,6 +38,7 @@
 #define COMM_SW_MINOR_VERSION	0
 #define COMM_SW_PATCH_VERSION	0
 
+/** @req COMM328  @req COMM456 */
 #include "ComM_Cfg.h"
 
 /** Function call has been successfully but mode can not
@@ -43,6 +46,7 @@
 #define COMM_E_MODE_LIMITATION			2
 
 /** ComM not initialized */
+/** @req COMM650 */
 #define COMM_E_UNINIT					3
 
 #define COMM_E_NOT_INITED				0x1 /**< API service used without module initialization */
@@ -87,29 +91,30 @@ void ComM_MainFunction_##channel (void) { \
 
 
 /** Initializes the AUTOSAR Communication Manager and restarts the internal state machines.*/
-void ComM_Init( ComM_ConfigType *);
+void ComM_Init( ComM_ConfigType *);  /**< @req COMM146 */
 
 /** De-initializes (terminates) the AUTOSAR Communication Manager. */
-void ComM_DeInit();
+void ComM_DeInit();  /**< @req COMM147 */
 
+/** @req COMM370 */
 #if (COMM_VERSION_INFO_API == STD_ON)
 #define ComM_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,COMM)
 #endif
 
 /** Returns the initialization status of the AUTOSAR Communication Manager. */
-Std_ReturnType ComM_GetStatus( ComM_InitStatusType* Status );
-Std_ReturnType ComM_GetInhibitionStatus( NetworkHandleType Channel, ComM_InhibitionStatusType* Status );
+Std_ReturnType ComM_GetStatus( ComM_InitStatusType* Status );                                             /**< @req COMM242 */
+Std_ReturnType ComM_GetInhibitionStatus( NetworkHandleType Channel, ComM_InhibitionStatusType* Status );  /**< @req COMM619 */
 
-Std_ReturnType ComM_RequestComMode( ComM_UserHandleType User, ComM_ModeType ComMode );
+Std_ReturnType ComM_RequestComMode( ComM_UserHandleType User, ComM_ModeType ComMode );        /**< @req COMM110 */
 Std_ReturnType ComM_GetMaxComMode( ComM_UserHandleType User, ComM_ModeType* ComMode );
-Std_ReturnType ComM_GetRequestedComMode( ComM_UserHandleType User, ComM_ModeType* ComMode );
-Std_ReturnType ComM_GetCurrentComMode( ComM_UserHandleType User, ComM_ModeType* ComMode );
+Std_ReturnType ComM_GetRequestedComMode( ComM_UserHandleType User, ComM_ModeType* ComMode );  /**< @req COMM79 */
+Std_ReturnType ComM_GetCurrentComMode( ComM_UserHandleType User, ComM_ModeType* ComMode );    /**< @req COMM83 */
 
-Std_ReturnType ComM_PreventWakeUp( NetworkHandleType Channel, boolean Status );
-Std_ReturnType ComM_LimitChannelToNoComMode( NetworkHandleType Channel, boolean Status );
-Std_ReturnType ComM_LimitECUToNoComMode( boolean Status );
-Std_ReturnType ComM_ReadInhibitCounter( uint16* CounterValue );
-Std_ReturnType ComM_ResetInhibitCounter();
+Std_ReturnType ComM_PreventWakeUp( NetworkHandleType Channel, boolean Status );               /**< @req COMM156 */
+Std_ReturnType ComM_LimitChannelToNoComMode( NetworkHandleType Channel, boolean Status );     /**< @req COMM163 */
+Std_ReturnType ComM_LimitECUToNoComMode( boolean Status );                                    /**< @req COMM124 */
+Std_ReturnType ComM_ReadInhibitCounter( uint16* CounterValue );                               /**< @req COMM224 */
+Std_ReturnType ComM_ResetInhibitCounter();                                                    /**< @req COMM108 */
 Std_ReturnType ComM_SetECUGroupClassification( ComM_InhibitionStatusType Status );
 
 

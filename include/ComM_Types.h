@@ -24,6 +24,7 @@
 #define COMM_TYPES_H_
 
 /** Current mode of the Communication Manager (main state of the state machine). */
+/** @req COMM484  @req COMM190  @req COMM248 */
 typedef enum {
 	COMM_NO_COMMUNICATION = 0,
 	COMM_SILENT_COMMUNICATION = 1,
@@ -34,10 +35,10 @@ typedef enum {
 typedef enum {
 	COMM_UNINIT,
 	COMM_INIT,
-} ComM_InitStatusType;
+} ComM_InitStatusType;  /**< @req COMM494 */
 
 /** Inhibition status of ComM. */
-typedef uint8 ComM_InhibitionStatusType;
+typedef uint8 ComM_InhibitionStatusType;  /**< @req COMM496 */
 
 #define COMM_INHIBITION_STATUS_NONE					(0)
 /** Wake Up inhibition active */

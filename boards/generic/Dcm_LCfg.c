@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #include "Dcm.h"
 #include "Rte_Dcm.h"
 

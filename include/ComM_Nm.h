@@ -23,10 +23,10 @@
 #ifndef COMM_NM_H_
 #define COMM_NM_H_
 
-void ComM_Nm_NetworkStartIndication( NetworkHandleType Channel );
-void ComM_Nm_NetworkMode( NetworkHandleType Channel );
-void ComM_Nm_PrepareBusSleepMode( NetworkHandleType Channel );
-void ComM_Nm_BusSleepMode( NetworkHandleType Channel );
-void ComM_Nm_RestartIndication( NetworkHandleType Channel );
+void ComM_Nm_NetworkStartIndication( NetworkHandleType Channel );  /**< @req COMM383 */
+void ComM_Nm_NetworkMode( NetworkHandleType Channel );             /**< @req COMM390 */
+void ComM_Nm_PrepareBusSleepMode( NetworkHandleType Channel );     /**< @req COMM391 */
+void ComM_Nm_BusSleepMode( NetworkHandleType Channel );            /**< @req COMM392 */
+void ComM_Nm_RestartIndication( NetworkHandleType Channel );       /**< @req COMM792 */
 
 #endif /*COMM_NM_H_*/

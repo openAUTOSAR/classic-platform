@@ -20,6 +20,8 @@
  *  Definitions of configuration parameters for LIN Interface.
  */
 
+#warning "This default file may only be used as an example!"
+
 #ifndef LINIF_CFG_H_
 #define LINIF_CFG_H_
 

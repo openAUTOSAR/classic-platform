@@ -19,6 +19,7 @@
 
 #include "CanSM.h"
 
+/** @req CANSM027  @req CANSM028  @req CANSM071 */
 #if (CANSM_DEV_ERROR_DETECT == STD_ON)
 #define CANSM_DET_REPORTERROR(serviceId, errorId)			\
 	Det_ReportError(MODULE_ID_CANSM, 0, serviceId, errorId)

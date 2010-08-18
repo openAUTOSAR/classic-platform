@@ -23,7 +23,7 @@
 #ifndef DCM_H_
 #define DCM_H_
 
-#define DCM_MODULE_ID			MODULE_ID_DCM
+#define DCM_MODULE_ID			MODULE_ID_DCM /** @req DCM052 */
 #define DCM_VENDOR_ID			1
 
 #define DCM_SW_MAJOR_VERSION    1
@@ -58,24 +58,24 @@
 /*
  * Interfaces for BSW components (8.3.1)
  */
-#if ( DCM_VERSION_INFO_API == STD_ON )
-#define Dcm_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,DCM)
+#if ( DCM_VERSION_INFO_API == STD_ON ) /** @req DCM337 */
+#define Dcm_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,DCM) /** @req DCM065 */ /** @req DCM335 */ /** @req DCM336 */
 #endif /* DCM_VERSION_INFO_API */
 
-void Dcm_Init( void );
+void Dcm_Init( void ); /** @req DCM037 */
 
 
 /*
  * Interfaces for BSW modules and to SW-Cs (8.3.2)
  */
-Std_ReturnType Dcm_GetSecurityLevel(Dcm_SecLevelType *secLevel);
-Std_ReturnType Dcm_GetSesCtrlType(Dcm_SesCtrlType *sesCtrlType);
-Std_ReturnType Dcm_GetActiveProtocol(Dcm_ProtocolType *activeProtocol);
+Std_ReturnType Dcm_GetSecurityLevel(Dcm_SecLevelType *secLevel); /** @req DCM338 */
+Std_ReturnType Dcm_GetSesCtrlType(Dcm_SesCtrlType *sesCtrlType); /** @req DCM339 */
+Std_ReturnType Dcm_GetActiveProtocol(Dcm_ProtocolType *activeProtocol); /** @req DCM340 */
 
 /*
  * Interface for basic software scheduler (8.5)
  */
-void Dcm_MainFunction( void );
+void Dcm_MainFunction( void ); /** @req DCM053 */
 
 
 #endif /*DCM_H_*/

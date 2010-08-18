@@ -12,16 +12,11 @@
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
-/*
- * Adc_Cfg.c
- *
- *  Created on: 2009-okt-02
- *      Author: Fredrik
- */
+
+#warning "This default file may only be used as an example!"
 
 #include "Adc.h"
 #include "stm32f10x_adc.h"
-
 
 Adc_GroupStatus AdcGroupStatus[ADC_NBR_OF_GROUPS];
 

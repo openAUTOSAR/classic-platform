@@ -21,6 +21,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #include "Eep.h"
 #include "Spi.h"
 #include "Spi_Cfg.h"

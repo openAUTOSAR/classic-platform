@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #ifndef LIN_CFG_H_
 #define LIN_CFG_H_
 

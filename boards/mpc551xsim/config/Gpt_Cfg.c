@@ -21,6 +21,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #include "Gpt.h"
 #include "Gpt_Cfg.h"
 #include <stdlib.h>

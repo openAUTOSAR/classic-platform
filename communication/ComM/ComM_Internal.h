@@ -19,6 +19,7 @@
 
 #include "ComM_Types.h"
 
+/** @req COMM612  @req COMM511  @req COMM512  @req COMM270  @req COMM523 */
 #if (COMM_DEV_ERROR_DETECT == STD_ON)
 #define COMM_DET_REPORTERROR(serviceId, errorId)			\
 	Det_ReportError(MODULE_ID_COMM, 0, serviceId, errorId)
@@ -72,7 +73,7 @@ typedef struct {
 	ComM_Internal_ChannelType	Channels[COMM_CHANNEL_COUNT];
 	ComM_Internal_UserType		Users[COMM_USER_COUNT];
 	boolean 					NoCommunication;
-	uint16						InhibitCounter;
+	uint16						InhibitCounter;  /**< @req COMM138  @req COMM141 */
 } ComM_InternalType;
 
 #define COMM_NM_INDICATION_NONE					0

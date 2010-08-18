@@ -26,6 +26,8 @@
  * Specification: Autosar v2.0.1, Final
  *
  */
+#warning "This default file may only be used as an example!"
+
 #ifndef _DET_CFG_H_
 #define _DET_CFG_H_
 

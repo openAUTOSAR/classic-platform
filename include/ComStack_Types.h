@@ -29,10 +29,6 @@
 
 #include "Std_Types.h"
 
-// Proposed by Mattias
-// We need a place to store the global PDU ids?
-#include "ComGlobals.h"
-
 
 // Zero-based integer number
 // The size of this global type depends on the maximum
