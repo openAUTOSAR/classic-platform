@@ -24,6 +24,8 @@
 #ifndef DIO_CFG_H_
 #define DIO_CFG_H_
 
+#warning "This default file may only be used as an example!"
+
 #define DIO_VERSION_INFO_API    STD_ON
 #define DIO_DEV_ERROR_DETECT 	STD_ON
 #define DIO_END_OF_LIST  -1
@@ -147,6 +149,9 @@ typedef enum
 //@}
 
 #define DIO_CHANNEL_NAME_LED_CHANNEL 	(DIO_CHANNEL_H7)
+
+// Standard board test led
+#define DIO_CHANNEL_NAME_BOARD_LED		DIO_CHANNEL_NAME_LED_CHANNEL
 
 #define DIO_PORT_NAME_LED_PORT 		(DIO_PORT_H)
 

@@ -19,6 +19,8 @@
  *      Author: Jonte
  */
 
+#warning "This default file may only be used as an example!"
+
 #include "Adc.h"
 
 Adc_GroupStatus AdcGroupStatus[ADC_NBR_OF_GROUPS];

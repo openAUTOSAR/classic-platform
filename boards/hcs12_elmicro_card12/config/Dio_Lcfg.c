@@ -12,6 +12,9 @@
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
+
+#warning "This default file may only be used as an example!"
+
 #include "Dio.h"
 #include "Dio_Cfg.h"
 

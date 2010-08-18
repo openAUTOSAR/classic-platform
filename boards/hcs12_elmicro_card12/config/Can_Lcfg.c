@@ -12,6 +12,7 @@
 *           on Wed Apr 21 10:15:00 CEST 2010
 */
 
+#warning "This default file may only be used as an example!"
 	
 
 #include <stdlib.h>

@@ -5,6 +5,8 @@ obj-y += Tasks.o
 obj-y += Hooks.o
 obj-y += Rte.o
 
+VPATH += ..
+
 # OS object files.
 obj-y += Os_Cfg.o
 # Board object files
@@ -20,11 +22,14 @@ inc-y += $(ROOTDIR)/system/kernel/$(objdir)
 inc-y += $(ROOTDIR)/system/kernel/include
 
 #TODO: Remove?, Build other way?
-VPATH += $(ROOTDIR)/$(SUBDIR)/Rte
-inc-y += $(ROOTDIR)/$(SUBDIR)/Rte
+VPATH += ../Rte
+inc-y += ../Rte
 VPATH += $(ROOTDIR)/components/blinker
 inc-y += $(ROOTDIR)/components/blinker
 
+$(warning ROOTDIR: $(ROOTDIR))
+$(warning SUBDIR: $(SUBDIR))
+$(warning VPATH: $(VPATH))
 
 # libs needed by us 
 #libitem-y +=

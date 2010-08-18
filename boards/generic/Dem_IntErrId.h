@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #ifndef DEM_INTERRID_H_
 #define DEM_INTERRID_H_
 
@@ -41,7 +43,7 @@ enum {
 	CANTP_E_OPER_NOT_SUPPORTED,
 	CANTP_E_COMM,
 	CANNM_E_CANIF_TRANSMIT_ERROR,
-	CANM_E_NETWORK_TIMEOUT,
+	CANNM_E_NETWORK_TIMEOUT,
 	CANIF_TRCV_E_TRANSCEIVER,
 	CANIF_E_INVALID_DLC,
 	CANIF_STOPPED,

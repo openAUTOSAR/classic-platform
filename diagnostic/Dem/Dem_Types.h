@@ -22,7 +22,7 @@
 
 #ifndef DEM_TYPES_H_
 #define DEM_TYPES_H_
-#include "Std_Types.h"
+#include "Std_Types.h" /** @req DEM176.Std */
 
 /*
  * DTC storage types
@@ -92,7 +92,7 @@ enum {
 	DEM_OBD_DCY,	// OBD Driving Cycle
 
 	DEM_OPERATION_CYCLE_ID_ENDMARK
-};
+}; /** @req DEM142 */
 
 /*
  * Dem_OperationCycleStateType

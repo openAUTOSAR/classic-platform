@@ -26,6 +26,7 @@ obj-y += sys_tick.o
 #obj-y += stack.o
 obj-y += isr.o
 obj-y += os_arctest.o
+#obj-y += application.o
 
 
 # These are VERY cpu dependent.. remove

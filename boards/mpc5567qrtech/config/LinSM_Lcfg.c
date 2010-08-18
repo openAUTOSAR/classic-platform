@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #include "LinSM_Cfg.h"
 #include "LinIf_Cfg.h"
 #include "Lin_Cfg.h"

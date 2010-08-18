@@ -22,6 +22,8 @@
  */
 
 
+#warning "This default file may only be used as an example!"
+
 #ifndef COM_CFG_H_
 #define COM_CFG_H_
 

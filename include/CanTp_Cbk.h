@@ -27,9 +27,9 @@
 #include "ComStack_Types.h"
 
 
-void CanTp_RxIndication( PduIdType CanTpRxPduId, const PduInfoType *CanTpRxPduPtr );
+void CanTp_RxIndication( PduIdType CanTpRxPduId, const PduInfoType *CanTpRxPduPtr ); /** @req CANTP214 */
 
-void CanTp_TxConfirmation( PduIdType CanTpTxPduId );
+void CanTp_TxConfirmation( PduIdType CanTpTxPduId ); /** @req CANTP215 */
 
 
 #endif /* CANTP_CBK_H_ */

@@ -221,6 +221,25 @@ static inline _Bool Os_ResourceCheckAndRelease( OsPcbType *pcb )  {
 	return rv;
 }
 
+static inline _Bool Os_TaskOccupiesResouces( OsPcbType *pcb ) {
+	return !(TAILQ_EMPTY(&pcb->resource_head));
+}
+
+static inline void Os_GetSchedulerResource() {
+	os_sys.scheduler_lock = 1;
+}
+
+static inline void Os_ReleaseSchedulerResource() {
+	os_sys.scheduler_lock = 0;
+}
+
+static inline _Bool Os_SchedulerResourceIsOccupied() {
+	return (os_sys.scheduler_lock == 1);
+}
+
+static inline _Bool Os_SchedulerResourceIsFree() {
+	return (os_sys.scheduler_lock == 0);
+}
 
 // Create.c
 OsPcbType * os_alloc_new_pcb( void );
@@ -261,6 +280,19 @@ static inline _Bool Os_StackIsEndmarkOk( OsPcbType *pcbPtr ) {
 				pcbPtr->stack.top );
 	}
 	return rv;
+}
+
+static inline void Os_StackPerformCheck( OsPcbType *pcbPtr ) {
+#if (OS_STACK_MONITORING == 1)
+		if( !Os_StackIsEndmarkOk(pcbPtr) ) {
+#if (  OS_SC1 == 1) || (  OS_SC2 == 1)
+			/** @req OS068 */
+			ShutdownOS(E_OS_STACKFAULT);
+#else
+#error SC3 or SC4 not supported. Protection hook should be called here
+#endif
+		}
+#endif
 }
 
 

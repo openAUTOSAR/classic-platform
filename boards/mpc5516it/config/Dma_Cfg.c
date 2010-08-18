@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #include "Dma.h"
 
 const Dma_MuxConfigType DmaMuxConfig [DMA_NUMBER_OF_CHANNELS] =

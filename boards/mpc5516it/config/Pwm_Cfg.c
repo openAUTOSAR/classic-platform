@@ -27,6 +27,8 @@
  *      Author: nian
  */
 
+#warning "This default file may only be used as an example!"
+
 #include "Pwm.h"
 #include "Pwm_Cfg.h"
 

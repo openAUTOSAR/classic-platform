@@ -21,6 +21,8 @@
  *  Initialization sequences are defined in EcuM_Callout_template.c
  */
 
+#warning "This default file may only be used as an example!"
+
 #ifndef ECUM_CFG_H_
 #define ECUM_CFG_H_
 

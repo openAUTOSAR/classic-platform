@@ -21,6 +21,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #ifndef FLS_SST25XX_CFG_H_
 #define FLS_SST25XX_CFG_H_
 

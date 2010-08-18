@@ -39,7 +39,7 @@
 #include "ComStack_Types.h"
 #include "Std_Types.h"
 #include "CanTp_Cfg.h"  /** @req CANTP221 */
-//#include "Dem.h"  // TODO: req: CanTp156
+//#include "Dem.h"
 
 /*
  *
@@ -90,19 +90,19 @@ typedef enum {
  * Implemented functions
  ****************************/
 
-void CanTp_Init(); /** req : CanTp208 **/
+void CanTp_Init(); /** @req CANTP208 **/
 
 #if ( CANTP_VERSION_INFO_API == STD_ON ) /** @req CANTP162 *//** @req CANTP163 */
-#define CanTp_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,CANTP) /** req : CanTp210 */
+#define CanTp_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,CANTP) /** @req CANTP210 */ /* @req CANTP218 */
 #endif /* CANTP_VERSION_INFO_API */
 
-void CanTp_Shutdown();
+void CanTp_Shutdown(); /** @req CANTP211 */
 
-Std_ReturnType CanTp_Transmit( PduIdType CanTpTxSduId, const PduInfoType * CanTpTxInfoPtr );
+Std_ReturnType CanTp_Transmit( PduIdType CanTpTxSduId, const PduInfoType * CanTpTxInfoPtr ); /** @req CANTP212 */
 
-Std_ReturnType FrTp_CancelTransmitRequest( PduIdType FrTpTxPduId, FrTp_CancelReasonType FrTpCancelReason );
+Std_ReturnType FrTp_CancelTransmitRequest( PduIdType FrTpTxPduId, FrTp_CancelReasonType FrTpCancelReason ); /** @req CANTP246 */
 
-void CanTp_MainFunction();
+void CanTp_MainFunction(); /** @req CANTP213 */
 
 
 #endif /* CANTP_H_ */
