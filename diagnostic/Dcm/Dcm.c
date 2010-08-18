@@ -26,6 +26,7 @@
 /** @req DCM033 */
 /** @req DCM171 */
 /** @req DCM333 */ /** @req DCM334 */
+/** @req DCM018 */
 
 #include <string.h>
 #include "Dcm.h"
