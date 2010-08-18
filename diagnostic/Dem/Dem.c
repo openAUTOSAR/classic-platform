@@ -1925,7 +1925,7 @@ Dem_ReturnGetNextFilteredDTCType Dem_GetNextFilteredDTC(uint32 *dtc, Dem_EventSt
 	Dem_ReturnGetNextFilteredDTCType returnCode = DEM_FILTERED_OK;
 	boolean dtcFound = FALSE;
 
-	// TODO: This job should be done in an more advanced way according to Dem217
+	/** @req DEM217.Partially */ // TODO: This job should be done in an more advanced way according to Dem217
 	while (!dtcFound && (dtcFilter.faultIndex != 0)) {
 		dtcFilter.faultIndex--;
 		if (eventStatusBuffer[dtcFilter.faultIndex].eventId != DEM_EVENT_ID_NULL) {
