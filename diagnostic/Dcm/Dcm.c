@@ -26,6 +26,7 @@
 /** @req DCM033 */
 /** @req DCM171 */
 /** @req DCM333 */ /** @req DCM334 */
+/** @req DCM048 */
 
 #include <string.h>
 #include "Dcm.h"
@@ -67,19 +68,13 @@ static Dcm_StateType dcmState = DCM_UNINITIALIZED;
  */
 void Dcm_Init(void) /** @req DCM037 */
 {
-	if ((DCM_Config.Dsl == NULL) || (DCM_Config.Dsd == NULL) || (DCM_Config.Dsp == NULL)) {
-#if (DCM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DCM, 0, DCM_INIT_ID, DCM_E_CONFIG_INVALID);
-#endif
+	VALIDATE_NO_RV((DCM_Config.Dsl != NULL) && (DCM_Config.Dsd != NULL) && (DCM_Config.Dsp != NULL), DCM_INIT_ID, DCM_E_CONFIG_INVALID);
 
-	}
-	else {
-		DslInit();
-		DsdInit();
-		DspInit();
+	DslInit();
+	DsdInit();
+	DspInit();
 
-		dcmState = DCM_INITIALIZED;
-	}
+	dcmState = DCM_INITIALIZED;
 
 	return;
 }

@@ -269,9 +269,6 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x01_0x07_0x11_0x12(const 
 
 	default:
 		setDtcFilterResult = DEM_WRONG_FILTER;
-#if (DCM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DCM, 0, DCM_UDS_READ_DTC_INFO, DCM_E_UNEXPECTED_PARAM);
-#endif
 		break;
 	}
 
@@ -344,9 +341,6 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15(c
 
 	default:
 		setDtcFilterResult = DEM_WRONG_FILTER;
-#if (DCM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DCM, 0, DCM_UDS_READ_DTC_INFO, DCM_E_UNEXPECTED_PARAM);
-#endif
 		break;
 	}
 
@@ -432,9 +426,6 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x06_0x10(const PduInfoTyp
 
 	default:
 		responseCode = DCM_E_SUBFUNCTIONNOTSUPPORTED;
-#if (DCM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DCM, 0, DCM_UDS_READ_DTC_INFO, DCM_E_UNEXPECTED_PARAM);
-#endif
 		break;
 	}
 
@@ -927,7 +918,6 @@ void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 	if ((pduRxData->SduDataPtr[1] >= 0x01) && (pduRxData->SduDataPtr[1] <= 0x42)) {
 		boolean isRequestSeed = pduRxData->SduDataPtr[1] & 0x01;
 		Dcm_SecLevelType requestedSecurityLevel = (pduRxData->SduDataPtr[1]-1)/2;
-		Std_ReturnType getSeedResult;
 		Dcm_NegativeResponseCodeType getSeedErrorCode;
 
 		if (isRequestSeed) {
@@ -950,18 +940,23 @@ void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 					}
 					else {
 						// New security level ask for seed
-						getSeedResult = securityRow->GetSeed(&pduRxData->SduDataPtr[2], &pduTxData->SduDataPtr[2], &getSeedErrorCode); /** @req DCM324.RequestSeed */
-						if ((getSeedResult == E_OK) && (getSeedErrorCode == E_OK)) {
-							// Everything ok add sub function to tx message and send it.
-							pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];
-							pduTxData->SduLength = 2 + securityRow->DspSecuritySeedSize;
+						if (securityRow->GetSeed != NULL) {
+							Std_ReturnType getSeedResult;
+							getSeedResult = securityRow->GetSeed(&pduRxData->SduDataPtr[2], &pduTxData->SduDataPtr[2], &getSeedErrorCode); /** @req DCM324.RequestSeed */
+							if ((getSeedResult == E_OK) && (getSeedErrorCode == E_OK)) {
+								// Everything ok add sub function to tx message and send it.
+								pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];
+								pduTxData->SduLength = 2 + securityRow->DspSecuritySeedSize;
 
-							dspUdsSecurityAccesData.reqSecLevel = requestedSecurityLevel;
-							dspUdsSecurityAccesData.reqSecLevelRef = securityRow;
-							dspUdsSecurityAccesData.reqInProgress = TRUE;
-						}
-						else {
-							// GetSeed returned not ok
+								dspUdsSecurityAccesData.reqSecLevel = requestedSecurityLevel;
+								dspUdsSecurityAccesData.reqSecLevelRef = securityRow;
+								dspUdsSecurityAccesData.reqInProgress = TRUE;
+							}
+							else {
+								// GetSeed returned not ok
+								responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+							}
+						} else {
 							responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
 						}
 					}
@@ -981,17 +976,21 @@ void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 			if (dspUdsSecurityAccesData.reqInProgress) {
 				if (pduRxData->SduLength == (2 + dspUdsSecurityAccesData.reqSecLevelRef->DspSecurityKeySize)) {	/** @req DCM321.SendKey */
 					if (requestedSecurityLevel == dspUdsSecurityAccesData.reqSecLevel) {
-						Std_ReturnType compareKeyResult;
-						compareKeyResult = dspUdsSecurityAccesData.reqSecLevelRef->CompareKey(&pduRxData->SduDataPtr[2]); /** @req DCM324.SendKey */
-						if (compareKeyResult == E_OK) {
-							// Request accepted
-							// Kill timer
-							DslSetSecurityLevel(dspUdsSecurityAccesData.reqSecLevelRef->DspSecurityLevel); /** @req DCM325 */
-							dspUdsSecurityAccesData.reqInProgress = FALSE;
-							pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];
-							pduTxData->SduLength = 2;
-						}
-						else {
+						if (dspUdsSecurityAccesData.reqSecLevelRef->CompareKey != NULL) {
+							Std_ReturnType compareKeyResult;
+							compareKeyResult = dspUdsSecurityAccesData.reqSecLevelRef->CompareKey(&pduRxData->SduDataPtr[2]); /** @req DCM324.SendKey */
+							if (compareKeyResult == E_OK) {
+								// Request accepted
+								// Kill timer
+								DslSetSecurityLevel(dspUdsSecurityAccesData.reqSecLevelRef->DspSecurityLevel); /** @req DCM325 */
+								dspUdsSecurityAccesData.reqInProgress = FALSE;
+								pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];
+								pduTxData->SduLength = 2;
+							}
+							else {
+								responseCode = DCM_E_CONDITIONSNOTCORRECT;
+							}
+						} else {
 							responseCode = DCM_E_CONDITIONSNOTCORRECT;
 						}
 					}
@@ -1096,9 +1095,7 @@ void DspDcmConfirmation(PduIdType confirmPduId)
 #if ( MCU_PERFORM_RESET_API == STD_ON )
 			Mcu_PerformReset();
 #else
-#if (DCM_DEV_ERROR_DETECT == STD_ON)
-			Det_ReportError(MODULE_ID_DCM, 0, DCM_UDS_RESET, DCM_E_NOT_SUPPORTED);
-#endif
+			DET_REPORTERROR(MODULE_ID_DCM, 0, DCM_UDS_RESET, DCM_E_NOT_SUPPORTED);
 #endif
 		}
 	}

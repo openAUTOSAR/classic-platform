@@ -103,8 +103,7 @@ static inline void stopS3SessionTimer(Dcm_DslRunTimeProtocolParametersType *runt
 //	This function implements the requirement DCM139 when
 // 	transition from one session to another.
 //
-static void changeDiagnosticSession(Dcm_DslRunTimeProtocolParametersType *runtime,
-		Dcm_SesCtrlType newSession) {
+static void changeDiagnosticSession(Dcm_DslRunTimeProtocolParametersType *runtime, Dcm_SesCtrlType newSession) {
 
 	/** @req DCM139 */
 
@@ -120,7 +119,7 @@ static void changeDiagnosticSession(Dcm_DslRunTimeProtocolParametersType *runtim
 		break;
 
 	default:
-		// TODO: Log this error.
+		DET_REPORTERROR(MODULE_ID_DCM, 0, DCM_CHANGE_DIAGNOSTIC_SESSION, DCM_E_PARAM_DATA);
 		DEBUG(DEBUG_MEDIUM, "Old session invalid");
 		break;
 	}
@@ -135,7 +134,7 @@ static void changeDiagnosticSession(Dcm_DslRunTimeProtocolParametersType *runtim
 		break;
 
 	default:
-		// TODO: Log this error.
+		DET_REPORTERROR(MODULE_ID_DCM, 0, DCM_CHANGE_DIAGNOSTIC_SESSION, DCM_E_PARAM_DATA);
 		DEBUG(DEBUG_MEDIUM, "New session invalid");
 		break;
 	}
