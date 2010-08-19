@@ -221,6 +221,10 @@ extern const Dio_ChannelGroupType DioConfigData[];
 #define DIO_CHANNEL_NAME_LEDS_LED4		(DIO_CHANNEL_D4)
 #define DIO_CHANNEL_NAME_LEDS_LED5		(DIO_CHANNEL_D5)
 
+// Standard board test led
+#define DIO_CHANNEL_NAME_BOARD_LED		DIO_CHANNEL_NAME_LEDS_LED4
+
+
 // Port
 #define DIO_PORT_NAME_LED_PORT 			(DIO_PORT_D)
 

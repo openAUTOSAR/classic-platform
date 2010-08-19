@@ -89,11 +89,27 @@ StatusType ReleaseResource_( OsResourceType * );
  * @return
  */
 StatusType GetResource( ResourceType ResID ) {
-	OsResourceType *rPtr = Os_CfgGetResource(ResID);
-	StatusType rv = GetResource_(rPtr);
+	StatusType rv = E_OK;
+
+	if( ResID == RES_SCHEDULER ) {
+		if ( Os_SchedulerResourceIsOccupied() ) {
+			rv = E_OS_ACCESS;
+			goto err;
+		} else {
+			Os_GetSchedulerResource();
+		}
+	} else {
+		if (ResID >= Os_CfgGetResourceCnt()) {
+			rv = E_OS_ID;
+			goto err;
+		}
+
+		OsResourceType *rPtr = Os_CfgGetResource(ResID);
+		rv = GetResource_(rPtr);
+	}
 
 	if (rv != E_OK)
-	    goto err;
+		goto err;
 
 	OS_STD_END_1(OSServiceId_GetResource,ResID);
 }
@@ -113,15 +129,42 @@ StatusType GetResource( ResourceType ResID ) {
 
 StatusType ReleaseResource( ResourceType ResID) {
     StatusType rv = E_OK;
+
 	if( ResID == RES_SCHEDULER ) {
-		os_sys.scheduler_lock=0;
+		if ( Os_SchedulerResourceIsFree() ) {
+			rv = E_OS_NOFUNC;
+			goto err;
+		} else {
+			Os_ReleaseSchedulerResource();
+		}
 	} else {
+		if (ResID >= Os_CfgGetResourceCnt()) {
+			rv = E_OS_ID;
+			goto err;
+		}
+
 	    OsResourceType *rPtr = Os_CfgGetResource(ResID);
 	    rv = ReleaseResource_(rPtr);
 	}
 
 	if (rv != E_OK)
 	    goto err;
+
+	/* do a rescheduling (in some cases) (see OSEK OS 4.6.1) */
+	if ( (Os_TaskGetCurrent()->scheduling == FULL) &&
+		 (os_sys.int_nest_cnt == 0) &&
+		 (Os_SchedulerResourceIsFree()) ) {
+
+		OsPcbType* top_pcb = Os_TaskGetTop();
+
+		/* only dispatch if some other ready task has higher prio */
+		if (top_pcb->prio > Os_TaskGetCurrent()->prio) {
+			long flags;
+			Irq_Save(flags);
+			Os_Dispatch(0);
+			Irq_Restore(flags);
+		}
+	}
 
 	OS_STD_END_1(OSServiceId_ReleaseResource,ResID);
 }
@@ -146,6 +189,16 @@ static StatusType GetResource_( OsResourceType * rPtr ) {
 	if( !valid_standard_id() ) {
 		rv = E_OS_ID;
 		goto err;
+	}
+
+	/* check if we have access
+	 * TODO: This gives access to all resources for ISR2s but we should respect the OsIsrResourceRef [0..*] here.
+	 */
+	if ( Os_TaskGetCurrent()->proc_type != PROC_ISR2) {
+		if ( !(Os_TaskGetCurrent()->resourceAccess & (1 << rPtr->nr)) ) {
+			rv = E_OS_ACCESS;
+			goto err;
+		}
 	}
 
 	/* @req OSEK
@@ -187,13 +240,27 @@ ok:
 StatusType ReleaseResource_( OsResourceType * rPtr ) {
 	if (!valid_standard_id()) {
 		return E_OS_ID;
-	} else {
-        // Release it...
-        rPtr->owner = (TaskType) (-1);
-        TAILQ_REMOVE(&Os_TaskGetCurrent()->resource_head, rPtr, listEntry);
-        os_pcb_set_prio(Os_TaskGetCurrent(), rPtr->old_task_prio);
-        return E_OK;
 	}
+
+	/* check if we have access
+	 * TODO: This gives access to all resources for ISR2s but we should respect the OsIsrResourceRef [0..*] here.
+	 */
+	if ( Os_TaskGetCurrent()->proc_type != PROC_ISR2) {
+		if ( !(Os_TaskGetCurrent()->resourceAccess & (1 << rPtr->nr)) ) {
+			return E_OS_ACCESS;
+		}
+	}
+
+	/* if we are not holding this resource */
+	if (rPtr->owner != Os_TaskGetCurrent()->pid) {
+		return E_OS_NOFUNC;
+	}
+
+	// Release it...
+	rPtr->owner = (TaskType) (-1);
+	TAILQ_REMOVE(&Os_TaskGetCurrent()->resource_head, rPtr, listEntry);
+	os_pcb_set_prio(Os_TaskGetCurrent(), rPtr->old_task_prio);
+	return E_OK;
 }
 
 
@@ -266,11 +333,13 @@ void Os_ResourceInit( void ) {
 	 *
 	 *
 	 */
+#if 0
 	for( int i=0; i < Os_CfgGetTaskCnt(); i++) {
 		pcb_p = os_get_pcb(i);
 		if(pcb_p->scheduling == NON ) {
 			pcb_p->prio = OS_RES_SCHEDULER_PRIO;
 		}
 	}
+#endif
 }
 

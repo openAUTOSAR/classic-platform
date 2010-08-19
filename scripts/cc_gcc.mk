@@ -65,7 +65,9 @@ space = $(empty) $(empty)
 # It seems some versions of make want "\=" and some "="
 # "=" - msys cpmake on windows 7 
 gcc_lib_path := "$(subst /libgcc.a,,$(shell $(CC) $(CFLAGS) --print-libgcc-file-name))" 
+gcc_lib_path := $(subst \libgcc.a,,$(gcc_lib_path)) 
 lib_lib_path := "$(subst /libc.a,,$(shell $(CC) $(CFLAGS) --print-file-name=libc.a))"
+lib_lib_path := $(subst \libc.a,,$(lib_lib_path))
 libpath-y += -L$(lib_lib_path)
 libpath-y += -L$(gcc_lib_path)
 

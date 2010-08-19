@@ -17,6 +17,8 @@
 #ifndef CANSM_CBK_H_
 #define CANSM_CBK_H_
 
+/** @req CANSM011 */
+
 /** The CanSM is notified about a bus-off event on a certain CAN controller with this
   * call-out function. It shall execute the bus-off recovery state machine for the
   * corresponding network handle. */
