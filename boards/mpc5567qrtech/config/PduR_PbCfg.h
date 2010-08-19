@@ -20,4 +20,6 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #define PDUR_ZERO_COST_OPERATION	STD_ON

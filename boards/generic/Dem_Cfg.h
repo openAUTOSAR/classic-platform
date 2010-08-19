@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #ifndef DEM_CFG_H_
 #define DEM_CFG_H_
 /*

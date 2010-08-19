@@ -21,6 +21,9 @@
 #ifndef ADC_CFG_H_
 #define ADC_CFG_H_
 
+#warning "This default file may only be used as an example!"
+
+
 #define ADC_PRIORITY_HW                   0
 #define ADC_PRIORITY_HW_SW                1
 #define ADC_PRIORITY_NONE                 2

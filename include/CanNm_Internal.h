@@ -17,13 +17,14 @@
 #ifndef CANNM_INTERNAL_H_
 #define CANNM_INTERNAL_H_
 
+/** @req CANNM188  @req CANNM196  @req CANNM199    */
 #if (CANNM_DEV_ERROR_DETECT == STD_ON)
-#define CANNM_DET_REPORTERROR(serviceId, errorId)			\
-	Det_ReportError(MODULE_ID_CANNM, 0, serviceId, errorId)
+#define CANNM_DET_REPORTERROR(serviceId, errorId, instanceId)			\
+	Det_ReportError(MODULE_ID_CANNM, instanceId, serviceId, errorId)
 
-#define CANNM_VALIDATE(expression, serviceId, errorId, ...)	\
+#define CANNM_VALIDATE(expression, serviceId, errorId, instanceId, ...)	\
 	if (!(expression)) {									\
-		CANNM_DET_REPORTERROR(serviceId, errorId);			\
+		CANNM_DET_REPORTERROR(serviceId, errorId, instanceId);			\
 		return __VA_ARGS__;									\
 	}
 
@@ -33,13 +34,14 @@
 #endif
 
 #define CANNM_VALIDATE_INIT(serviceID, ...)					\
-		CANNM_VALIDATE((CanNm_Internal.InitStatus == CANNM_INIT), serviceID, CANNM_E_NO_INIT, __VA_ARGS__)
+		CANNM_VALIDATE((CanNm_Internal.InitStatus == CANNM_INIT), serviceID, CANNM_E_NO_INIT, 0, __VA_ARGS__)
 
+/** @req CANNM192 */
 #define CANNM_VALIDATE_CHANNEL(channel, serviceID, ...)					\
-		CANNM_VALIDATE( (channel < CANNM_CHANNEL_COUNT), serviceID, CANNM_E_INVALID_CHANNEL, __VA_ARGS__)
+		CANNM_VALIDATE( (channel < CANNM_CHANNEL_COUNT), serviceID, CANNM_E_INVALID_CHANNEL, channel, __VA_ARGS__)
 
 #define CANNM_VALIDATE_NOTNULL(ptr, serviceID, ...)	\
-		CANNM_VALIDATE( (ptr != NULL), serviceID, NM_E_NULL_POINTER, __VA_ARGS__)
+		CANNM_VALIDATE( (ptr != NULL), serviceID, NM_E_NULL_POINTER, 0, __VA_ARGS__)
 
 typedef enum {
 	CANNM_INIT,
@@ -47,8 +49,8 @@ typedef enum {
 } CanNm_InitStatusType;
 
 typedef struct {
-	Nm_ModeType					Mode;
-	Nm_StateType				State;
+	Nm_ModeType					Mode;				/**< @req CANNM092 */
+	Nm_StateType				State;				/**< @req CANNM094 */
 	boolean						Requested;
 	uint32						TimeoutTimeLeft;
 	uint32						RepeatMessageTimeLeft;

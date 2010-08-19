@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #ifndef GPT_CFG_H_
 #define GPT_CFG_H_
 #include "Std_Types.h"

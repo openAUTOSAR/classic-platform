@@ -13,13 +13,18 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** @req CANSM008 */
 
 #ifndef CANSM_H_
 #define CANSM_H_
 
-#include "ComStack_Types.h"
+#include "ComStack_Types.h"       /**< @req CANSM238 */
 #include "ComM.h"
 #include "CanSM_ConfigTypes.h"
+#include "Modules.h"
+
+#define CANSM_VENDOR_ID			1
+#define CANSM_MODULE_ID			MODULE_ID_CANSM
 
 #define CANSM_AR_MAJOR_VERSION	1
 #define CANSM_AR_MINOR_VERSION	0
@@ -29,7 +34,7 @@
 #define CANSM_SW_MINOR_VERSION	0
 #define CANSM_SW_PATCH_VERSION	0
 
-#include "CanSM_Cfg.h"
+#include "CanSM_Cfg.h"             /**< @req CANSM239  @req CANSM025.configuration */
 
 
 #define CANSM_E_UNINIT 					0x01	/**< API service used without module initialization */
@@ -65,21 +70,29 @@ typedef enum {
 	CANSM_BOR_CHECK_L2, /**<  Bus-off recovery level 2 state, TX enabled again */
 };
 
+/** @req CANSM037 */
 
 /** This service initializes the CanSM module */
+/** @req CANSM023 */
 void CanSM_Init( const CanSM_ConfigType* ConfigPtr );
 
 /** This service puts out the version information of this module */
-void CanSM_GetVersionInfo( Std_VersionInfoType* VersionInfo );
+/** @req CANSM024  @req CANSM180 */
+#if (CANSM_VERSION_INFO_API == STD_ON)
+#define CanSM_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,CANSM)
+#endif
 
 /** This service shall change the communication mode of a CAN network to the requested one. */
+/** @req CANSM062 */
 Std_ReturnType CanSM_RequestComMode( NetworkHandleType NetworkHandle, ComM_ModeType ComM_Mode );
 
 /** This service shall put out the current communication mode of a CAN network. */
+/** @req CANSM063 */
 Std_ReturnType CanSM_GetCurrentComMode( NetworkHandleType NetworkHandle, ComM_ModeType* ComM_ModePtr );
 
 
 /** Scheduled function of the CanSM */
+/** @req CANSM065 */
 void CanSM_MainFunction();
 
 

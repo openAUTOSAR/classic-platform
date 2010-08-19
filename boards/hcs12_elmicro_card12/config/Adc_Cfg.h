@@ -21,6 +21,8 @@
 #ifndef ADC_CFG_H_
 #define ADC_CFG_H_
 
+#warning "This default file may only be used as an example!"
+
 #define ADC_DEINIT_API                    STD_ON
 #define ADC_DEV_ERROR_DETECT              STD_ON
 #define ADC_ENABLE_QUEUING                STD_ON

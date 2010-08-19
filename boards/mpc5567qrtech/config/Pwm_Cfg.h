@@ -13,6 +13,8 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+#warning "This default file may only be used as an example!"
+
 #ifndef PWM_CFG_H_
 #define PWM_CFG_H_
 

@@ -197,7 +197,6 @@ int read( int fd, void *buf, size_t nbytes )
 
 int write(  int fd, const void *_buf, size_t nbytes)
 {
-	char *buf = (char *)_buf;
   	//(void)fd;  // Normally 0- ?, 1-stdout, 2-stderr,
 				// Added 3-ramlog,
 
@@ -206,6 +205,7 @@ int write(  int fd, const void *_buf, size_t nbytes)
 #ifdef USE_TTY_WINIDEA
 		if (g_TConn)
 		{
+          char *buf = (char *)_buf;
 		  unsigned char nCnt,nLen;
 		  for(nCnt=0; nCnt<nbytes; nCnt++)
 			{
@@ -219,6 +219,7 @@ int write(  int fd, const void *_buf, size_t nbytes)
 #endif
 
 #ifdef USE_TTY_T32
+		char *buf = (char *)_buf;
 		for (int i = 0; i < nbytes; i++) {
 			if (*(buf + i) == '\n') {
 				t32_writebyte ('\r');
@@ -229,12 +230,14 @@ int write(  int fd, const void *_buf, size_t nbytes)
 #endif
 
 #ifdef USE_TTY_ARM_ITM
+		char *buf = (char *)_buf;
 		for (int i = 0; i < nbytes; i++) {
 			ITM_SendChar(*(buf + i));
 		}
 #endif
 
 #if defined(USE_RAMLOG)
+		char *buf = (char *)_buf;
 		for (int i = 0; i < nbytes; i++) {
 			ramlog_chr (*(buf + i));
 		}
@@ -246,6 +249,7 @@ int write(  int fd, const void *_buf, size_t nbytes)
 #if defined(USE_RAMLOG)
 		/* RAMLOG support */
 		if(fd == FILE_RAMLOG) {
+			char *buf = (char *)_buf;
 		  	for (int i = 0; i < nbytes; i++) {
 				ramlog_chr (*(buf + i));
 		  	}

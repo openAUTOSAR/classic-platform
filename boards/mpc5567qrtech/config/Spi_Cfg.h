@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #ifndef SPI_CFG_H_
 #define SPI_CFG_H_
 

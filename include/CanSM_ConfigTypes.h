@@ -17,6 +17,8 @@
 #ifndef CANSM_CONFIGTYPES_H_
 #define CANSM_CONFIGTYPES_H_
 
+/** @req CANSM010.bswbuilder */
+
 #include "Com.h"
 
 typedef struct {
@@ -27,12 +29,12 @@ typedef struct {
 	const CanSM_ControllerType*		Controllers;
 	const uint8						ControllerCount;
 	const uint8						ComMNetworkHandle;
-	const Com_PduGroupIdType		ComRxPduGroupId;
+	const Com_PduGroupIdType		ComRxPduGroupId;     /**< @req CANSM091 */
 	const Com_PduGroupIdType		ComTxPduGroupId;
 } CanSM_NetworkType;
 
 typedef struct {
 	const CanSM_NetworkType*		Networks;
-} CanSM_ConfigType;
+} CanSM_ConfigType;                                       /**< @req CANSM061 */
 
 #endif /* CANSM_CONFIGTYPES_H_ */

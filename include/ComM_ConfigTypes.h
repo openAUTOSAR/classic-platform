@@ -17,6 +17,13 @@
 #ifndef COMM_CONFIGTYPES_H_
 #define COMM_CONFIGTYPES_H_
 
+/* Configuration requirements */
+/** @req COMM554.bswbuilder  @req COMM555.bswbuilder  @req COMM563.bswbuilder  @req COMM560.bswbuilder
+ *  @req COMM561.bswbuilder  @req COMM557.bswbuilder  @req COMM622.bswbuilder  @req COMM653.bswbuilder
+ *  @req COMM654.bswbuilder  @req COMM565.bswbuilder  @req COMM567.bswbuilder  @req COMM635.bswbuilder
+ *  @req COMM556.bswbuilder  @req COMM607.bswbuilder  @req COMM606.bswbuilder  @req COMM568.bswbuilder
+ *  @req COMM657.bswbuilder  @req COMM658.bswbuilder  @req COMM246.bswbuilder */
+
 typedef enum {
 	COMM_BUS_TYPE_CAN,
 	COMM_BUS_TYPE_FR,
@@ -32,7 +39,7 @@ typedef enum {
 } ComM_NmVariantType;
 
 typedef struct {
-	const ComM_BusTypeType			BusType;
+	const ComM_BusTypeType			BusType;               /**< @req COMM322 */
 	const NetworkHandleType			BusSMNetworkHandle;
 	const NetworkHandleType			NmChannelHandle;
 	const ComM_NmVariantType		NmVariant;
@@ -43,6 +50,7 @@ typedef struct {
 
 
 typedef struct {
+	/** @req COMM795  @req COMM796  @req COMM797  @req COMM798  @req COMM327  @req COMM159 */
 	const ComM_ChannelType**		ChannelList;
 	const uint8						ChannelCount;
 } ComM_UserType;
