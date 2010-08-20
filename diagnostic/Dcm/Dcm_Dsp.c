@@ -27,7 +27,6 @@
 #include "Dcm.h"
 #include "Dcm_Internal.h"
 #include "Dem.h"
-#include "Det.h"
 #include "MemMap.h"
 #include "Mcu.h"
 

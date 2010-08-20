@@ -24,6 +24,7 @@
 
 
 #if  ( DCM_DEV_ERROR_DETECT == STD_ON )
+#include "Det.h"
 #define VALIDATE(_exp,_api,_err ) \
         if( !(_exp) ) { \
           Det_ReportError(MODULE_ID_DCM, 0, _api, _err); \
