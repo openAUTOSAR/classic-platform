@@ -1095,7 +1095,7 @@ void DspDcmConfirmation(PduIdType confirmPduId)
 #if ( MCU_PERFORM_RESET_API == STD_ON )
 			Mcu_PerformReset();
 #else
-			DET_REPORTERROR(MODULE_ID_DCM, 0, DCM_UDS_RESET, DCM_E_NOT_SUPPORTED);
+			DET_REPORTERROR(MODULE_ID_DCM, 0, DCM_UDS_RESET_ID, DCM_E_NOT_SUPPORTED);
 #endif
 		}
 	}

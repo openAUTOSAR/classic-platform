@@ -30,6 +30,12 @@
           return E_NOT_OK; \
         }
 
+#define VALIDATE_RV(_exp,_api,_err,_rv ) \
+        if( !(_exp) ) { \
+          Det_ReportError(MODULE_ID_DCM, 0, _api, _err); \
+          return _rv; \
+        }
+
 #define VALIDATE_NO_RV(_exp,_api,_err ) \
   if( !(_exp) ) { \
           Det_ReportError(MODULE_ID_DCM, 0, _api, _err); \
@@ -40,6 +46,7 @@
 
 #else
 #define VALIDATE(_exp,_api,_err )
+#define VALIDATE_RV(_exp,_api,_err,_rv )
 #define VALIDATE_NO_RV(_exp,_api,_err )
 #undef DET_REPORTERROR
 #define DET_REPORTERROR(_x,_y,_z,_q)

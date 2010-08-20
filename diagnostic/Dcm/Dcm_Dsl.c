@@ -119,7 +119,7 @@ static void changeDiagnosticSession(Dcm_DslRunTimeProtocolParametersType *runtim
 		break;
 
 	default:
-		DET_REPORTERROR(MODULE_ID_DCM, 0, DCM_CHANGE_DIAGNOSTIC_SESSION, DCM_E_PARAM_DATA);
+		DET_REPORTERROR(MODULE_ID_DCM, 0, DCM_CHANGE_DIAGNOSTIC_SESSION_ID, DCM_E_PARAM);
 		DEBUG(DEBUG_MEDIUM, "Old session invalid");
 		break;
 	}
@@ -134,7 +134,7 @@ static void changeDiagnosticSession(Dcm_DslRunTimeProtocolParametersType *runtim
 		break;
 
 	default:
-		DET_REPORTERROR(MODULE_ID_DCM, 0, DCM_CHANGE_DIAGNOSTIC_SESSION, DCM_E_PARAM_DATA);
+		DET_REPORTERROR(MODULE_ID_DCM, 0, DCM_CHANGE_DIAGNOSTIC_SESSION_ID, DCM_E_PARAM);
 		DEBUG(DEBUG_MEDIUM, "New session invalid");
 		break;
 	}
