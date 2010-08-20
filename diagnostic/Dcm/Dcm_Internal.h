@@ -41,14 +41,12 @@
           Det_ReportError(MODULE_ID_DCM, 0, _api, _err); \
           return; \
         }
-#undef DET_REPORTERROR
 #define DET_REPORTERROR(_x,_y,_z,_q) Det_ReportError(_x, _y, _z, _q)
 
 #else
 #define VALIDATE(_exp,_api,_err )
 #define VALIDATE_RV(_exp,_api,_err,_rv )
 #define VALIDATE_NO_RV(_exp,_api,_err )
-#undef DET_REPORTERROR
 #define DET_REPORTERROR(_x,_y,_z,_q)
 #endif
 

@@ -47,30 +47,28 @@ const Com_ConfigType * ComConfig;
 
 #ifdef COM_DEV_ERROR_DETECT
 
-#undef DET_REPORTERROR
-#define DET_REPORTERROR(_x,_y,_z,_q) Det_ReportError(_x,_y,_z,_q)
+#define COM_DET_REPORTERROR(_x,_y,_z,_q) Det_ReportError(_x,_y,_z,_q)
 
 
 // Define macro for parameter check.
-#define PduIdCheck(PduId,ApiId,...) \
+#define Com_PduIdCheck(PduId,ApiId,...) \
 	if (PduId >= Com_Arc_Config.ComNIPdu) { \
-		DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, ApiId, COM_INVALID_PDU_ID); \
+		COM_DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, ApiId, COM_INVALID_PDU_ID); \
 		return __VA_ARGS__; \
 	} \
 
 #define COM_VALIDATE_SIGNAL(SignalId, ApiId, ...) \
 	if (ComConfig->ComSignal[SignalId].Com_Arc_IsSignalGroup) { \
-		DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, ApiId, COM_ERROR_SIGNAL_IS_SIGNALGROUP); \
+		COM_DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, ApiId, COM_ERROR_SIGNAL_IS_SIGNALGROUP); \
 		return __VA_ARGS__; \
 	} \
 
 
 #else
 
-#undef DET_REPORTERROR
-#define DET_REPORTERROR(_x,_y,_z,_q)
+#define COM_DET_REPORTERROR(_x,_y,_z,_q)
 
-#define PduIdCheck(PduId,ApiId,...)
+#define Com_PduIdCheck(PduId,ApiId,...)
 #define COM_VALIDATE_SIGNAL(PduId, ApiId, ...)
 #endif
 

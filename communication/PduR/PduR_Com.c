@@ -30,7 +30,7 @@
 Std_ReturnType PduR_ComTransmit(PduIdType ComTxPduId, const PduInfoType* PduInfoPtr) {
 	BufReq_ReturnType retVal = BUFREQ_NOT_OK;
 #if (PDUR_COM_SUPPORT == STD_ON)
-	DevCheck(ComTxPduId,PduInfoPtr,0x15, E_NOT_OK);
+	PduR_DevCheck(ComTxPduId,PduInfoPtr,0x15, E_NOT_OK);
 
 	//DEBUG(DEBUG_LOW,"PduR_ComTransmit: received transmit request with id %d and data %d\n", ComTxPduId, *PduInfoPtr->SduDataPtr);
 	PduRRoutingPath_type *route = &PduRConfig->PduRRoutingTable->PduRRoutingPath[ComTxPduId];

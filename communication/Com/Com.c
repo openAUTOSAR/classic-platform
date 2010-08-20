@@ -70,7 +70,7 @@ void Com_Init(const Com_ConfigType *config ) {
 		ComGetArcIPdu(i);
 
 		if (i >= COM_N_IPDUS) {
-			DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_TOO_MANY_IPDU);
+			COM_DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_TOO_MANY_IPDU);
 			assert(0);
 			failure = 1;
 			break;
@@ -107,7 +107,7 @@ void Com_Init(const Com_ConfigType *config ) {
 
 			// If this signal already has been configured this is most likely an error.
 			if (Arc_Signal->ComIPduDataPtr != NULL) {
-				// DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_SIGNAL_CONFIGURATION);
+				// COM_DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_SIGNAL_CONFIGURATION);
 				// failure = 1;
 			}
 
@@ -178,7 +178,7 @@ void Com_Init(const Com_ConfigType *config ) {
 					|| Signal->ComFilter.ComFilterAlgorithm == NEW_IS_OUTSIDE
 					|| Signal->ComFilter.ComFilterAlgorithm == ONE_EVERY_N))) {
 
-					DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_FILTER_CONFIGURATION);
+					COM_DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_FILTER_CONFIGURATION);
 					failure = 1;
 				}
 
@@ -189,7 +189,7 @@ void Com_Init(const Com_ConfigType *config ) {
 					|| Signal->ComFilter.ComFilterAlgorithm == NEW_IS_OUTSIDE))) {
 
 
-					DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_FILTER_CONFIGURATION);
+					COM_DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_FILTER_CONFIGURATION);
 					failure = 1;
 				}
 			// Initialize filter values. COM230
@@ -219,7 +219,7 @@ void Com_Init(const Com_ConfigType *config ) {
 			//free(ComConfig->ComIPdu[i].ComIPduDataPtr);
 		}
 		DEBUG(DEBUG_LOW, "--Initialization of COM failed--\n");
-		//DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_FILTER_CONFIGURATION);
+		//COM_DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_FILTER_CONFIGURATION);
 	} else {
 		DEBUG(DEBUG_LOW, "--Initialization of COM completed--\n");
 	}

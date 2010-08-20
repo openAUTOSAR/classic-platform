@@ -75,7 +75,7 @@ uint8 Com_ReceiveSignal(Com_SignalIdType SignalId, void* SignalDataPtr) {
 }
 
 Std_ReturnType Com_TriggerTransmit(PduIdType ComTxPduId, uint8 *SduPtr) {
-	PduIdCheck(ComTxPduId, 0x13, E_NOT_OK);
+	Com_PduIdCheck(ComTxPduId, 0x13, E_NOT_OK);
 	/*
 	 * COM260: This function must not check the transmission mode of the I-PDU
 	 * since it should be possible to use it regardless of the transmission mode.
@@ -93,7 +93,7 @@ Std_ReturnType Com_TriggerTransmit(PduIdType ComTxPduId, uint8 *SduPtr) {
 
 
 void Com_TriggerIPduSend(PduIdType ComTxPduId) {
-	PduIdCheck(ComTxPduId, 0x17);
+	Com_PduIdCheck(ComTxPduId, 0x17);
 
 	//DEBUG(DEBUG_MEDIUM, "Com_TriggerIPduSend sending IPdu %d... ", ComTxPduId);
 	ComGetIPdu(ComTxPduId);
@@ -145,7 +145,7 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
 }
 
 Std_ReturnType Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr) {
-	PduIdCheck(ComRxPduId, 0x14, E_NOT_OK);
+	Com_PduIdCheck(ComRxPduId, 0x14, E_NOT_OK);
 
 	ComGetIPdu(ComRxPduId);
 	ComGetArcIPdu(ComRxPduId);
@@ -213,7 +213,7 @@ Std_ReturnType Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr) {
 }
 
 void Com_TxConfirmation(PduIdType ComTxPduId) {
-	PduIdCheck(ComTxPduId, 0x15);
+	Com_PduIdCheck(ComTxPduId, 0x15);
 }
 
 
