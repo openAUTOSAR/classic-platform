@@ -169,7 +169,7 @@ static inline void DisableAllInterrupts( void ) {
 	Irq_Disable();
 	Os_IntDisableAllCnt++;
 	/* No nesting allowed */
-	assert(Os_IntDisableAllCnt>1);
+	assert(Os_IntDisableAllCnt==1);
 }
 
 static inline void EnableAllInterrupts( void ) {
