@@ -92,8 +92,9 @@ void EcuM_StartupTwo()
 
 	// Prepare the system to startup RTE
 	// TODO EcuM_OnRTEStartup();
-
-	//Rte_Start();
+#if defined(USE_RTE)
+	Rte_Start();
+#endif
 
 #if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
 	// Wait for the NVM job to terminate

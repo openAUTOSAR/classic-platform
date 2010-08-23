@@ -128,9 +128,7 @@
 //
 
 
-// RTE Lifecycle API reference.( see chap 5.8 )
-Std_ReturnType Rte_Start( void );
-Std_ReturnType Rte_Stop( void );
+
 
 #endif /*RTE_H_*/
 
