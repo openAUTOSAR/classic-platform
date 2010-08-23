@@ -47,15 +47,15 @@
 /* TODO: Not threadsafe, add DisableAllInterrts()/EnableAllInterrupts() */
 
 CirqBufferType CirqBuffStatCreate(void *buffer, int maxCnt, size_t dataSize) {
-	CirqBufferType bufferType;
-	bufferType.bufStart = buffer;
-	bufferType.maxCnt = maxCnt;
-	bufferType.bufEnd = (char *)bufferType.bufStart + dataSize*maxCnt;
-	bufferType.head = bufferType.bufStart;
-	bufferType.tail = bufferType.bufStart;
-	bufferType.dataSize = dataSize;
-	bufferType.buffer = buffer;
-	return bufferType;
+	CirqBufferType cirqbuffer;
+	cirqbuffer.bufStart = buffer;
+	cirqbuffer.maxCnt = maxCnt;
+	cirqbuffer.bufEnd = (char *)cirqbuffer.bufStart + dataSize*maxCnt;
+	cirqbuffer.head = cirqbuffer.bufStart;
+	cirqbuffer.tail = cirqbuffer.bufStart;
+	cirqbuffer.dataSize = dataSize;
+	cirqbuffer.currCnt = 0;
+	return cirqbuffer;
 }
 
 CirqBufferType *CirqBuffDynCreate( size_t size, size_t dataSize ) {
