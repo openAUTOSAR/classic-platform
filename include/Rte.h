@@ -25,7 +25,7 @@
 #ifndef RTE_H_
 #define RTE_H_
 
-
+#include "Std_Types.h"
 
 /* Contract 
  * rte_sws_1143
