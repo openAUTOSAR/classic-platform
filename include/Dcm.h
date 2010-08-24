@@ -49,7 +49,7 @@
 #define DCM_E_PARAM							0x06
 
 // Other error codes reported by this module
-#define DCM_E_CONFIG_INVALID				0x41
+#define DCM_E_CONFIG_INVALID				0x40
 #define DCM_E_NOT_SUPPORTED					0xfe
 #define DCM_E_NOT_IMPLEMENTED_YET			0xff
 
