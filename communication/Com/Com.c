@@ -26,12 +26,9 @@
 #include <string.h>
 #include "Com.h"
 #include "Com_Arc_Types.h"
+#include "Com_Internal.h"
 #include "Com_misc.h"
 #include "debug.h"
-
-#ifdef COM_DEV_ERROR_DETECT
-#include "Det.h"
-#endif
 
 const Com_ConfigType * ComConfig;
 
@@ -66,11 +63,11 @@ void Com_Init(const Com_ConfigType *config ) {
 	for (int i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
 		Com_Arc_Config.ComNIPdu++;
 
-		ComGetIPdu(i);
-		ComGetArcIPdu(i);
+		GET_IPdu(i);
+		GET_ArcIPdu(i);
 
 		if (i >= COM_N_IPDUS) {
-			COM_DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_TOO_MANY_IPDU);
+			DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_TOO_MANY_IPDU);
 			assert(0);
 			failure = 1;
 			break;
@@ -103,11 +100,11 @@ void Com_Init(const Com_ConfigType *config ) {
 		//Arc_IPdu->NComIPduSignalRef = 0;
 		for (int j = 0; IPdu->ComIPduSignalRef != NULL && IPdu->ComIPduSignalRef[j] != NULL; j++) {
 			Signal = IPdu->ComIPduSignalRef[j];
-			ComGetArcSignal(Signal->ComHandleId);
+			GET_ArcSignal(Signal->ComHandleId);
 
 			// If this signal already has been configured this is most likely an error.
 			if (Arc_Signal->ComIPduDataPtr != NULL) {
-				// COM_DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_SIGNAL_CONFIGURATION);
+				// DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_SIGNAL_CONFIGURATION);
 				// failure = 1;
 			}
 
@@ -139,7 +136,7 @@ void Com_Init(const Com_ConfigType *config ) {
 
 			// Clear update bits
 			if (Signal->ComSignalArcUseUpdateBit) {
-				clearBit(Arc_IPdu->ComIPduDataPtr, Signal->ComUpdateBitPosition);
+				CLEARBIT(Arc_IPdu->ComIPduDataPtr, Signal->ComUpdateBitPosition);
 			}
 
 			// If this signal is a signal group
@@ -153,7 +150,7 @@ void Com_Init(const Com_ConfigType *config ) {
 				// For each group signal of this signal group.
 				for(int h = 0; Signal->ComGroupSignal[h] != NULL; h++) {
 					GroupSignal = Signal->ComGroupSignal[h];
-					ComGetArcGroupSignal(GroupSignal->ComHandleId);
+					GET_ArcGroupSignal(GroupSignal->ComHandleId);
 					// Set pointer to shadow buffer
 					Arc_GroupSignal->Com_Arc_ShadowBuffer = Arc_Signal->Com_Arc_ShadowBuffer;
 					// Initialize group signal data.
@@ -178,7 +175,7 @@ void Com_Init(const Com_ConfigType *config ) {
 					|| Signal->ComFilter.ComFilterAlgorithm == NEW_IS_OUTSIDE
 					|| Signal->ComFilter.ComFilterAlgorithm == ONE_EVERY_N))) {
 
-					COM_DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_FILTER_CONFIGURATION);
+					DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_FILTER_CONFIGURATION);
 					failure = 1;
 				}
 
@@ -189,7 +186,7 @@ void Com_Init(const Com_ConfigType *config ) {
 					|| Signal->ComFilter.ComFilterAlgorithm == NEW_IS_OUTSIDE))) {
 
 
-					COM_DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_FILTER_CONFIGURATION);
+					DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_FILTER_CONFIGURATION);
 					failure = 1;
 				}
 			// Initialize filter values. COM230
@@ -201,7 +198,7 @@ void Com_Init(const Com_ConfigType *config ) {
 		// Configure per I-PDU based deadline monitoring.
 		for (int j = 0; IPdu->ComIPduSignalRef != NULL && IPdu->ComIPduSignalRef[j] != NULL; j++) {
 			Signal = IPdu->ComIPduSignalRef[j];
-			ComGetArcSignal(Signal->ComHandleId);
+			GET_ArcSignal(Signal->ComHandleId);
 
 			if (Signal->ComTimeoutFactor > 0 && !Signal->ComSignalArcUseUpdateBit) {
 				Arc_Signal->ComTimeoutFactor = earliestDeadline;
@@ -219,7 +216,7 @@ void Com_Init(const Com_ConfigType *config ) {
 			//free(ComConfig->ComIPdu[i].ComIPduDataPtr);
 		}
 		DEBUG(DEBUG_LOW, "--Initialization of COM failed--\n");
-		//COM_DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_FILTER_CONFIGURATION);
+		//DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_FILTER_CONFIGURATION);
 	} else {
 		DEBUG(DEBUG_LOW, "--Initialization of COM completed--\n");
 	}

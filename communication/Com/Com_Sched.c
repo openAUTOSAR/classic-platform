@@ -20,6 +20,7 @@
 
 #include "Com_Arc_Types.h"
 #include "Com.h"
+#include "Com_Internal.h"
 #include "Com_misc.h"
 #include <string.h>
 #include "debug.h"
@@ -36,8 +37,8 @@ void Com_MainFunctionRx() {
 	const ComSignal_type *signal;
 	for (int i = 0; !ComConfig->ComSignal[i].Com_Arc_EOL; i++) {
 		signal = &ComConfig->ComSignal[i];
-		ComGetArcSignal(signal->ComHandleId);
-		ComGetArcIPdu(Arc_Signal->ComIPduHandleId);
+		GET_ArcSignal(signal->ComHandleId);
+		GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
 
 		// Monitor signal reception deadline
 		if (Arc_IPdu->Com_Arc_IpduStarted && Arc_Signal->ComTimeoutFactor > 0) {
@@ -79,7 +80,7 @@ void Com_MainFunctionTx() {
 	const ComIPdu_type *IPdu;
 	for (int i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
 		IPdu = &ComConfig->ComIPdu[i];
-		ComGetArcIPdu(i);
+		GET_ArcIPdu(i);
 
 		// Is this a IPdu that should be transmitted?
 		if (IPdu->ComIPduDirection == SEND && Arc_IPdu->Com_Arc_IpduStarted) {
