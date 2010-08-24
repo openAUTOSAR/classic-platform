@@ -28,7 +28,7 @@
 #include "debug.h"
 //#include <stdio.h>
 #include <assert.h>
-#include "os_test.h"
+#include "test_framework.h"
 
 
 //static int test = 1;

@@ -29,7 +29,6 @@ include $(ROOTDIR)/boards/board_common.mk
 # What modules do we use
 MOD_USE+=KERNEL MCU
 
-MOD_USE+=T32_TERM
 #MOD_USE+=PROTECTIONHOOK STARTUPHOOK SHUTDOWNHOOK ERRORHOOK			1
 #MOD_USE+=PRETASKHOOK POSTTASKHOOK
 CFG+=CONSOLE_T32
@@ -50,7 +49,9 @@ VPATH += $(ROOTDIR)/$(SUBDIR)/config
 #libitem-y +=
 
 #linkfile
-ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
+#ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
+ldcmdfile-y = linkscript_gcc.ldp
+vpath %.ldf $(ROOTDIR)/$(ARCH_PATH-y)/scripts
 #ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
 
 inc-y += ..

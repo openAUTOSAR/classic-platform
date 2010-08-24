@@ -26,7 +26,7 @@
 #include "debug.h"
 //#include <stdio.h>
 #include <assert.h>
-#include "os_test.h"
+#include "test_framework.h"
 #include "irq.h"
 
 #if 0

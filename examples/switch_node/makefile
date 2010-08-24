@@ -6,8 +6,6 @@ obj-y += Rte.o
 obj-y += Tasks.o
 obj-y += Hooks.o
 
-VPATH += ..
-
 inc-y += $(ROOTDIR)/system/kernel/$(objdir)
 inc-y += $(ROOTDIR)/system/kernel/include
 
@@ -25,8 +23,8 @@ inc-y := ../config/$(BOARDDIR) ../config $(inc-y)
 inc-y += $(ROOTDIR)/system/kernel/$(objdir)
 
 #TODO: Remove?, Build other way?
-VPATH += ../Rte
-inc-y += ../Rte
+VPATH += $(ROOTDIR)/$(SUBDIR)/Rte
+inc-y += $(ROOTDIR)/$(SUBDIR)/Rte
 VPATH += $(ROOTDIR)/components/switch
 inc-y += $(ROOTDIR)/components/switch
 

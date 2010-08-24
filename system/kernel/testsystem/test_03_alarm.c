@@ -35,7 +35,7 @@
 
 
 #include "Os.h"
-#include "os_test.h"
+#include "test_framework.h"
 #include "arc.h"
 
 
@@ -368,7 +368,7 @@ void etask_sup_m_03(void) {
 			TerminateTask();
 			break;
 		default:
-			assert(0);
+			TEST_ASSERT(0);
 		}
 	}
 

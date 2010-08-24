@@ -1,0 +1,174 @@
+/* 
+ * Copyright (C) ArcCore AB <contact@arccore.com>
+ *
+ * ST startup variables: 
+ * _sidata - Start of .data in flash 
+ * _sdata  - start address of .data in RAM
+ * _edata  - end address of .data  in RAM
+ * _sbss   - start address of .bss
+ * _ebss   - end address of .bss
+ * _etext  - ?
+ */
+
+OUTPUT_FORMAT("elf32-littlearm", "elf32-bigarm","elf32-littlearm")
+OUTPUT_ARCH(arm)
+ENTRY(Reset_Handler)
+
+MEMORY
+{
+    flash(R) : ORIGIN = 0x08008000, LENGTH = 256K-32K
+    ram(RW)  : ORIGIN = 0x20000000, LENGTH = 64K
+}
+
+SECTIONS
+{
+
+    .isr_vector :
+    {
+	. = ALIGN(4);
+        KEEP(*(.isr_vector))
+	. = ALIGN(4);
+    } > flash
+
+    .text :
+	{
+    	*(.text .text.* );
+    	*(.glue_7)		/* TODO */
+    	*(.glue_7t)     /* TODO */
+    	
+    	PROVIDE( btask_sup_matrix = .);
+    	SORT(*)(.test_btask);
+    	PROVIDE( etask_sup_matrix = .);
+    	SORT(*)(.test_etask);
+    	
+    	/* ST/ARM special variable to initialize .data */
+    	_etext = .;
+	} > flash
+
+	/* Relocatable Flash Driver */
+	.fls_rom : {
+    	__FLS_ERASE_ROM__ = .;
+    	*(.fls_erase);
+    	__FLS_WRITE_ROM__ = .;
+    	*(.fls_write);
+    	__FLS_END_ROM__ = .;
+	} > flash
+
+    /* ARM exception section */
+    .ARM.exidx   : { 
+        *(.ARM.exidx* .gnu.linkonce.armexidx.*)
+    } > flash
+    __exidx_start = .;
+
+	/* Read-only data section. */
+	.rodata :	{ 
+		*(.rodata .rodata.* .gnu.linkonce.r.*)
+		_sidata = .;
+	} > flash
+
+	.data :	AT(ALIGN(LOADADDR(.rodata)+SIZEOF(.rodata),4)) {
+		_sdata = .; 
+		*(.data .data.* .gnu.linkonce.d.* .gnu.linkonce.r.* .eh_frame)
+		_edata = .;		
+	} > ram
+
+	.t32_outport ALIGN(0x10): { *(.t32_outport); } > ram
+	.bss : {
+		_sbss = ., 
+		*(.bss .bss.* COMMON .gnu.linkonce.b.*);
+		_ebss = .; 
+	} 	> ram
+	
+	.init_stack ALIGN(16) (NOLOAD) : 
+	{	
+		. = . + 200; 	
+		_estack	= .; 
+	} > ram
+	
+	/* Fls RAM section */
+	.fls_ram ALIGN(16) (NOLOAD) : {
+		__FLS_ERASE_RAM__ = .;
+		. = . + SIZEOF(.fls_rom);
+	} > ram
+
+  .ctors :
+  {
+    KEEP (*(SORT(.ctors.*)))
+  }
+
+	.uninit ALIGN(0x10) (NOLOAD) : { *(.winidea_port .ramlog .dem_eventmemory_pri) ; } > ram
+
+    .boot_area 0x2000FE00 (NOLOAD):
+    {
+       _boot_area_start = .;
+	    . = . + 256;
+       _boot_area_end = .;
+    } > ram
+    
+    PROVIDE (boot_area_start = _boot_area_start);
+    PROVIDE (boot_area_end = _boot_area_end);
+
+	__FLS_SIZE__ = SIZEOF(.fls_rom);
+	__FLS_WRITE_RAM__ =  __FLS_ERASE_RAM__ + (__FLS_WRITE_ROM__ - __FLS_ERASE_ROM__);
+
+   /* Stabs debugging sections.  */
+  .stab          0 : { *(.stab) }
+  .stabstr       0 : { *(.stabstr) }
+  .stab.excl     0 : { *(.stab.excl) }
+  .stab.exclstr  0 : { *(.stab.exclstr) }
+  .stab.index    0 : { *(.stab.index) }
+  .stab.indexstr 0 : { *(.stab.indexstr) }
+  .comment       0 : { *(.comment) }
+  /* DWARF debug sections.
+     Symbols in the DWARF debugging sections are relative to the beginning
+     of the section so we begin them at 0.  */
+  /* DWARF 1 */
+  .debug          0 : { *(.debug) }
+  .line           0 : { *(.line) }
+  /* GNU DWARF 1 extensions */
+  .debug_srcinfo  0 : { *(.debug_srcinfo) }
+  .debug_sfnames  0 : { *(.debug_sfnames) }
+  /* DWARF 1.1 and DWARF 2 */
+  .debug_aranges  0 : { *(.debug_aranges) }
+  .debug_pubnames 0 : { *(.debug_pubnames) }
+  /* DWARF 2 */
+  .debug_info     0 : { *(.debug_info .gnu.linkonce.wi.*) }
+  .debug_abbrev   0 : { *(.debug_abbrev) }
+  .debug_line     0 : { *(.debug_line) }
+  .debug_frame    0 : { *(.debug_frame) }
+  .debug_str      0 : { *(.debug_str) }
+  .debug_loc      0 : { *(.debug_loc) }
+  .debug_macinfo  0 : { *(.debug_macinfo) }
+  /* SGI/MIPS DWARF 2 extensions */
+  .debug_weaknames 0 : { *(.debug_weaknames) }
+  .debug_funcnames 0 : { *(.debug_funcnames) }
+  .debug_typenames 0 : { *(.debug_typenames) }
+  .debug_varnames  0 : { *(.debug_varnames) }
+}
+__EXCEPT_START__	= 0x0;
+__EXCEPT_END__		= 0x0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

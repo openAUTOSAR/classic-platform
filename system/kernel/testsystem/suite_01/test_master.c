@@ -26,7 +26,7 @@
 
 #include <stdlib.h>
 #include "Os.h"
-#include "os_test.h"
+#include "test_framework.h"
 #include "Mcu.h"
 #if defined(USE_GPT)
 #include "Gpt.h"
@@ -72,11 +72,8 @@ void etask_master( void ) {
 		test_suite++;
 	}
 
-	test_done();
-
 	// Test complete..
-	while(1);
-
+	TestExit(0);
 }
 
 extern test_func_t etask_sup_matrix[][3];

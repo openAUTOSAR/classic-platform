@@ -160,13 +160,13 @@ static void os_start( void ) {
 			const OsAlarmAutostartType *autoPtr = alarmPtr->autostartPtr;
 
 			if( os_sys.appMode & autoPtr->appModeRef) {
-			if( autoPtr->autostartType == ALARM_AUTOSTART_ABSOLUTE ) {
-				SetAbsAlarm(j,autoPtr->alarmTime, autoPtr->cycleTime);
-			} else {
-				SetRelAlarm(j,autoPtr->alarmTime, autoPtr->cycleTime);
+				if( autoPtr->autostartType == ALARM_AUTOSTART_ABSOLUTE ) {
+					SetAbsAlarm(j,autoPtr->alarmTime, autoPtr->cycleTime);
+				} else {
+					SetRelAlarm(j,autoPtr->alarmTime, autoPtr->cycleTime);
+				}
 			}
 		}
-	}
 	}
 
 	Os_SchTblAutostart();

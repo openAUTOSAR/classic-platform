@@ -75,7 +75,8 @@
 		return rv;
 
 extern TickType GetCountValue( OsCounterType *counter );
-void Os_SchTblUpdateState( OsSchTblType *stbl );
+
+static void Os_SchTblUpdateState( OsSchTblType *stbl );
 
 #if 0
 enum OsScheduleTableSyncStrategy getSyncStrategy( OsSchTblType *stblPtr ) {
@@ -125,7 +126,10 @@ static void ScheduleTableConsistenyCheck( OsSchTblType *sTblPtr ) {
 		/** @req OS408 */
 		for(iter=0; iter  <  SA_LIST_CNT(&sTblPtr->expirePointList) ; iter++) {
 			delta = SA_LIST_GET(&sTblPtr->expirePointList,iter)->offset - delta;
-			assert( delta >=  minCycle );
+			/* initial offset may be zero (OS443) */
+			if(iter!=0) {
+				assert( delta >=  minCycle );
+			}
 			assert( delta <=  maxValue );
 		}
 
@@ -529,25 +533,25 @@ void Os_SchTblCheck(OsCounterType *c_p) {
 		/* Check if the expire point have been hit */
 		if( (sched_obj->state == SCHEDULETABLE_RUNNING ||
 			sched_obj->state == SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS ) &&
-				(c_p->val == sched_obj->expire_val) )
+			(c_p->val == sched_obj->expire_val) )
 		{
 			if ( sched_obj->expire_curr_index < SA_LIST_CNT(&sched_obj->expirePointList) ) {
-			OsScheduleTableExpiryPointType * action;
-			int i;
+				OsScheduleTableExpiryPointType * action;
+				int i;
 
-			action = SA_LIST_GET(&sched_obj->expirePointList,sched_obj->expire_curr_index);
+				action = SA_LIST_GET(&sched_obj->expirePointList,sched_obj->expire_curr_index);
 
-			/** @req OS407 */
-			/** @req OS412 */
+				/** @req OS407 */
+				/** @req OS412 */
 
-			/* According to OS412 activate tasks before events */
-			for(i=0; i< action->taskListCnt;i++ ) {
-				ActivateTask(action->taskList[i]);
-			}
+				/* According to OS412 activate tasks before events */
+				for(i=0; i< action->taskListCnt;i++ ) {
+					ActivateTask(action->taskList[i]);
+				}
 
-			for(i=0; i< action->eventListCnt;i++ ) {
-				SetEvent( action->eventList[i].task, action->eventList[i].event);
-			}
+				for(i=0; i< action->eventListCnt;i++ ) {
+					SetEvent( action->eventList[i].task, action->eventList[i].event);
+				}
 			}
 			// Calc new expire val and state
 			Os_SchTblUpdateState(sched_obj);
@@ -588,11 +592,11 @@ void Os_SchTblAutostart( void ) {
 				case SCHTBL_AUTOSTART_RELATIVE:
 					StartScheduleTableRel(j,autoPtr->offset);
 					break;
-#if defined(OS_SC2) || defined(OS_SC4)
+	#if defined(OS_SC2) || defined(OS_SC4)
 				case SCHTBL_AUTOSTART_SYNCHRONE:
 					/* TODO: */
 					break;
-#endif
+	#endif
 				default:
 					assert(0); 		// Illegal value
 					break;
@@ -613,15 +617,13 @@ void Os_SchTblAutostart( void ) {
  *
  * @param stbl Ptr to a Schedule Table.
  */
-void Os_SchTblUpdateState( OsSchTblType *stbl ) {
+static void Os_SchTblUpdateState( OsSchTblType *stbl ) {
 
 	TickType delta;
 	TickType initalOffset;
 	TickType finalOffset;
 	OsSchTblType *nextStblPtr;
 	_Bool handleLast = 0;
-
-
 
 	if( (stbl->expire_curr_index) == (SA_LIST_CNT(&stbl->expirePointList) - 1) ) {
 		/* We are at the last expiry point */

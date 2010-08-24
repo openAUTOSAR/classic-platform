@@ -24,7 +24,7 @@
                 <SD GID="MCU">Undefined MCU</SD>
                 <SD GID="AUTHOR">ArcCore AB</SD>
                 <SD GID="COPYRIGHT">Copyright ArcCore AB 2010</SD>
-                <SD GID="GENDIR"></SD>
+                <SD GID="GENDIR">/arc/examples/simple/config/mpc5516it</SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>

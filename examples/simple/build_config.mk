@@ -1,10 +1,10 @@
 -include ../config/*.mk
 -include ../config/$(BOARDDIR)/*.mk
 
-MOD_USE+=KERNEL MCU
+-include ../config/*.mk
+-include ../config/$(BOARDDIR)/*.mk
 
-SELECT_CONSOLE = RAMLOG
-SELECT_OS_CONSOLE = RAMLOG
+MOD_USE+= COMMON DET ECUM MCU NEWLIB KERNEL RAMLOG 
 
-def-y += CFG_RAMLOG_SIZE=1024
-def-y += HEAPSIZE=1400
+#def-y += NDEBUG
+#def-y += HEAPSIZE=1400

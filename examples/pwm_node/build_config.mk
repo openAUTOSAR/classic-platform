@@ -1,7 +1,7 @@
 -include ../config/*.mk
 -include ../config/$(BOARDDIR)/*.mk
 
-MOD_USE+=KERNEL MCU PORT PWM
+-include ../config/*.mk
+-include ../config/$(BOARDDIR)/*.mk
 
-SELECT_CONSOLE = RAMLOG
-SELECT_OS_CONSOLE = RAMLOG
+MOD_USE+=KERNEL MCU ECUM NEWLIB COMMON DET PORT PWM RAMLOG

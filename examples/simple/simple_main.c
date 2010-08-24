@@ -32,11 +32,12 @@
 void btask_3( void ) {
 	StackInfoType si;
 	TaskType currTask;
-	LDEBUG_PRINTF("[%08d] btask_3 start\n", GetOsTick() );
+	LDEBUG_PRINTF("[%08u] btask_3 start\n", (unsigned)GetOsTick() );
 
 	GetTaskID(&currTask);
 	Os_Arc_GetStackInfo(currTask,&si);
-	LDEBUG_PRINTF("btask_3: Stack usage %d%%\n",OS_STACK_USAGE(&si));
+	LDEBUG_PRINTF("btask_3: Stack usage %u%%\n",
+			(unsigned)OS_STACK_USAGE(&si));
 
 	TerminateTask();
 }
@@ -54,13 +55,14 @@ void etask_1( void ) {
 
 	LDEBUG_PRINTF("etask_1 start\n");
 	for(;;) {
-		SetEvent(TASK_ID_etask_2,1);
-		WaitEvent(2);
-		ClearEvent(2);
+		SetEvent(TASK_ID_etask_2,EVENT_MASK_EVENT_1);
+		WaitEvent(EVENT_MASK_EVENT_2);
+		ClearEvent(EVENT_MASK_EVENT_2);
 		tryFloatingPoint += 1.0F;
 		GetTaskID(&currTask);
 		Os_Arc_GetStackInfo(currTask,&si);
-		LDEBUG_PRINTF("etask_1: Stack usage %d%% \n",OS_STACK_USAGE(&si));
+		LDEBUG_PRINTF("etask_1: Stack usage %u%% \n",
+				(unsigned)OS_STACK_USAGE(&si));
 
 	}
 }
@@ -73,15 +75,16 @@ void etask_2( void ) {
 	LDEBUG_PRINTF("etask_2 start\n");
 
 	for(;;) {
-		WaitEvent(1);
-		ClearEvent(1);
+		WaitEvent(EVENT_MASK_EVENT_1);
+		ClearEvent(EVENT_MASK_EVENT_1);
 		ActivateTask(TASK_ID_btask_3);
 		{
 			StackInfoType si;
 			TaskType currTask;
 			GetTaskID(&currTask);
 			Os_Arc_GetStackInfo(currTask,&si);
-			LDEBUG_PRINTF("etask_1: Stack usage %d%% \n",OS_STACK_USAGE(&si));
+			LDEBUG_PRINTF("etask_1: Stack usage %u%% \n",
+					(unsigned)OS_STACK_USAGE(&si));
 		}
 	}
 }
@@ -107,7 +110,7 @@ void StartupHook( void ) {
 
 	LDEBUG_PRINTF("## StartupHook\n");
 
-	LDEBUG_PRINTF("Sys clock %d Hz\n",sys_freq);
+	LDEBUG_PRINTF("Sys clock %u Hz\n",(unsigned)sys_freq);
 }
 
 void ShutdownHook( StatusType Error ) {
@@ -142,10 +145,13 @@ void ErrorHook( StatusType Error ) {
 	case OSServiceId_SetRelAlarm:
 	{
 		// Read the arguments to the faulty functions...
-		/* (Commented to remove warnings)
 		AlarmType alarm_id = OSError_SetRelAlarm_AlarmId;
 		TickType increment = OSError_SetRelAlarm_Increment;
-		TickType cycle = OSError_SetRelAlarm_Cycle;	*/
+		TickType cycle = OSError_SetRelAlarm_Cycle;
+		(void)alarm_id;
+		(void)increment;
+		(void)cycle;
+
 		// ... Handle this some way.
 		break;
 	}
@@ -158,7 +164,7 @@ void ErrorHook( StatusType Error ) {
 		break;
 	}
 
-	LDEBUG_PRINTF("## ErrorHook err=%d\n",Error);
+	LDEBUG_PRINTF("## ErrorHook err=%u\n",Error);
 
 	/* Log the errors in a buffer for later review */
 	LogBad[ErrorCount].param1 = os_error.param1;
@@ -177,12 +183,12 @@ void ErrorHook( StatusType Error ) {
 void PreTaskHook( void ) {
 	TaskType task;
 	GetTaskID(&task);
-//	LDEBUG_PRINTF("## PreTaskHook, taskid=%d\n",task);
+//	LDEBUG_PRINTF("## PreTaskHook, taskid=%u\n",task);
 }
 
 void PostTaskHook( void ) {
 	TaskType task;
 	GetTaskID(&task);
-//	LDEBUG_PRINTF("## PostTaskHook, taskid=%d\n",task);
+//	LDEBUG_PRINTF("## PostTaskHook, taskid=%u\n",task);
 }
 
