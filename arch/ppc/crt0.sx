@@ -17,6 +17,17 @@ _resetconfiguration:
 	.type	_start,@function
 
 	// Good information about the E500 is freescale doc: E500ABIUG.pdf
+	
+
+.global _redled
+_redled:
+	// mpc5567qrtech: light up led K2 
+	li r0, 0x0202
+	lis r3, 0xC3F9013A@h
+	ori r3, r3, 0xC3F90130@l
+	stw r0, 8(r3)
+	b _exit
+
 _start:
 	// Set up the reserved registers in EABI: r1,r2 and r13
 
@@ -34,7 +45,21 @@ _start:
 
 	// make space for initial backchain..
 	subi    r1,r1,16
+    
 
+       # Clear all SRAM
+init_RAM:
+	lis r11,0x4000 # base address of the SRAM, 64-bit word aligned
+	ori r11,r11,0 # not needed for this address but could be for others
+	li r12,640 # loop counter to get all of SRAM;
+	# 80k/4 bytes/32 GPRs = 640
+	mtctr r12
+
+init_ram_loop:
+	stmw r0,0(r11) # write all 32 GPRs to SRAM
+	addi r11,r11,128 # inc the ram ptr; 32 GPRs * 4 bytes = 128
+	bdnz init_ram_loop # loop for 80k of SRAM
+		
 	// Copy initialized data from ROM to RAM
 	lis		r3,__DATA_ROM@h
 	ori		r3,r3,__DATA_ROM@l
@@ -70,7 +95,6 @@ skip_data:
 	cmplw	r3,r4
 	bne+	2b
 3:
-
 	# Call main() with argc set to 1 and argv ignored
 	li	r3,1
 	bl	main
