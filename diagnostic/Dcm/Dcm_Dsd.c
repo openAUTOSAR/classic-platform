@@ -24,7 +24,6 @@
 #include <string.h>
 #include "Dcm.h"
 #include "Dcm_Internal.h"
-#include "Det.h"
 #include "MemMap.h"
 
 typedef struct {

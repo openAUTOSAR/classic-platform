@@ -26,7 +26,7 @@
 
 void PduR_LinIfRxIndication(PduIdType LinRxPduId, const uint8* LinSduPtr) {
 #if (PDUR_LINIF_SUPPORT == STD_ON)
-	DevCheck(LinRxPduId,LinSduPtr,0x0e);
+	PduR_DevCheck(LinRxPduId,LinSduPtr,0x0e);
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
 	DEBUG(DEBUG_LOW,"PduR_LinIfRxIndication: received indication with id %d and data %d\n", LinRxPduId, *LinSduPtr);
@@ -39,7 +39,7 @@ void PduR_LinIfRxIndication(PduIdType LinRxPduId, const uint8* LinSduPtr) {
 
 void PduR_LinIfTxConfirmation(PduIdType LinTxPduId) {
 #if (PDUR_LINIF_SUPPORT == STD_ON)
-	DevCheck(LinTxPduId,1,0x0f);
+	PduR_DevCheck(LinTxPduId,1,0x0f);
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
 	DEBUG(DEBUG_LOW,"PduR_LinIfTxConfirmation: received confirmation with id %d\n", LinTxPduId);
@@ -52,7 +52,7 @@ void PduR_LinIfTxConfirmation(PduIdType LinTxPduId) {
 
 void PduR_LinIfTriggerTransmit(PduIdType LinTxPduId, uint8* LinSduPtr) {
 #if (PDUR_LINIF_SUPPORT == STD_ON)
-	DevCheck(LinTxPduId,LinSduPtr,0x10);
+	PduR_DevCheck(LinTxPduId,LinSduPtr,0x10);
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
 	DEBUG(DEBUG_LOW,"PduR_LinIfTriggerTransmit: received request with id %d\n", LinTxPduId);

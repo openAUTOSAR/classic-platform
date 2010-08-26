@@ -25,7 +25,7 @@
 Std_ReturnType PduR_DcmTransmit(PduIdType DcmTxPduId, const PduInfoType* PduInfoPtr) {
 	BufReq_ReturnType retVal = BUFREQ_NOT_OK;
 #if (PDUR_DCM_SUPPORT == STD_ON)
-	DevCheck(DcmTxPduId,PduInfoPtr,0x15, E_NOT_OK);
+	PduR_DevCheck(DcmTxPduId,PduInfoPtr,0x15, E_NOT_OK);
 
 	//DEBUG(DEBUG_LOW,"PduR_ComTransmit: received transmit request with id %d and data %d\n", ComTxPduId, *PduInfoPtr->SduDataPtr);
 

@@ -66,31 +66,29 @@ extern const PduR_PBConfigType *PduRConfig;
 
 #if (PDUR_DEV_ERROR_DETECT == STD_ON)
 
-#undef DET_REPORTERROR
-#define DET_REPORTERROR(_x,_y,_z,_q) Det_ReportError(_x,_y,_z,_q)
+#define PDUR_DET_REPORTERROR(_x,_y,_z,_q) Det_ReportError(_x,_y,_z,_q)
 
 // Define macro for state, parameter and data pointer checks.
 // TODO Implement data range check if needed.
-#define DevCheck(PduId,PduPtr,ApiId,...) \
+#define PduR_DevCheck(PduId,PduPtr,ApiId,...) \
 	if (PduRState == PDUR_UNINIT || PduRState == PDUR_REDUCED) { \
-		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_INVALID_REQUEST); \
-		DEBUG(DEBUG_LOW,"PDU Router not initialized. Routing request ignored.\n"); \
+		PDUR_DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_INVALID_REQUEST); \
+		/* DEBUG(DEBUG_LOW,"PDU Router not initialized. Routing request ignored.\n"); */ \
 		return __VA_ARGS__; \
 	} \
 	if (PduPtr == 0 && PDUR_DEV_ERROR_DETECT) { \
-		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_DATA_PTR_INVALID); \
+		PDUR_DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_DATA_PTR_INVALID); \
 		return __VA_ARGS__; \
 	} \
 	if ((PduId >= PduRConfig->PduRRoutingTable->NRoutingPaths) && PDUR_DEV_ERROR_DETECT) { \
-		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_PDU_ID_INVALID); \
+		PDUR_DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_PDU_ID_INVALID); \
 		return __VA_ARGS__; \
-	} \
+	}
 
 
 #else
-#undef DET_REPORTERROR
-#define DET_REPORTERROR(_x,_y,_z,_q)
-#define DevCheck(...)
+#define PDUR_DET_REPORTERROR(_x,_y,_z,_q)
+#define PduR_DevCheck(...)
 
 #endif
 
