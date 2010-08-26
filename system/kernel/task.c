@@ -373,6 +373,13 @@ void Os_Arc_GetStackInfo( TaskType task, StackInfoType *s) {
 }
 
 
+#define TASK_CHECK_ID(x) 				\
+	if( (x) > Os_CfgGetTaskCnt()) { \
+		rv = E_OS_ID;					\
+		goto err; 						\
+	}
+
+
 /**
  * Returns the state of a task (running, ready, waiting, suspended)
  * at the time of calling GetTaskState.
@@ -382,8 +389,12 @@ void Os_Arc_GetStackInfo( TaskType task, StackInfoType *s) {
  */
 
 StatusType GetTaskState(TaskType TaskId, TaskStateRefType State) {
-	state_t curr_state = os_pcb_get_state(os_get_pcb(TaskId));
+	state_t curr_state;
 	StatusType rv = E_OK;
+
+	TASK_CHECK_ID(TaskId);
+
+	curr_state = os_pcb_get_state(os_get_pcb(TaskId));
 
 	// TODO: Lazy impl. for now */
 	switch(curr_state) {
@@ -423,12 +434,6 @@ ISRType GetISRID( void ) {
 	/** @req OS263 */
 	return (ISRType)Os_TaskGetCurrent()->pid;
 }
-
-#define TASK_CHECK_ID(x) 				\
-	if( (x) > Os_CfgGetTaskCnt()) { \
-		rv = E_OS_ID;					\
-		goto err; 						\
-	}
 
 static inline void Os_Arc_SetCleanContext( OsPcbType *pcb ) {
 	if (pcb->proc_type == PROC_EXTENDED) {
@@ -606,7 +611,7 @@ StatusType TerminateTask( void ) {
 
 		/* We are already in ready list..
 		 * This should give us a clean start /tojo */
-		Os_Arc_SetCleanContext(curr_pcb);
+//		Os_Arc_SetCleanContext(curr_pcb);
 	}
 
 //	Os_ContextReInit(curr_pcb);
@@ -653,11 +658,7 @@ StatusType ChainTask( TaskType TaskId ) {
 	Irq_Save(flags);
 
 	if (curr_pcb == pcb) {
-		/* If we are chaining same task just make a clean start */
-		/* TODO: Is it allowed to chain same task if extended? */
-		Os_Arc_SetCleanContext(curr_pcb);
-
-		/* Force the dispatcher to find something, even if its us */
+		/* If we are chaining same task Dispatch will give us a clean start */
 		Os_Dispatch(1);
 
 		Irq_Restore(flags);
@@ -682,7 +683,7 @@ StatusType ChainTask( TaskType TaskId ) {
 			}
 		}
 
-		// Terminate current task
+		/* Terminate current task */
 		--curr_pcb->activations;
 		if( curr_pcb->activations <= 0 ) {
 			curr_pcb->activations = 0;
@@ -690,8 +691,25 @@ StatusType ChainTask( TaskType TaskId ) {
 			Os_TaskMakeSuspended(curr_pcb);
 		}
 
-		rv = ActivateTask(TaskId);
-		// we return here only if something is wrong
+		/* Activate chained task
+		 * We know it's ok here */
+		pcb->activations++;
+		if( os_pcb_get_state(pcb) == ST_SUSPENDED ) {
+			Os_TaskMakeReady(pcb);
+		}
+
+		if(	(os_sys.int_nest_cnt == 0) &&
+			(Os_SchedulerResourceIsFree()))
+		{
+			Os_Dispatch(1);
+		}
+
+		/* we will only come back here if we had activations left */
+		assert(curr_pcb->activations > 0);
+
+		/* restart ourselves */
+		Os_StackSetup(curr_pcb);
+		Os_ArchSetSpAndCall(curr_pcb->stack.curr, Os_TaskStartBasic);
 	}
 
 	Irq_Restore(flags);
