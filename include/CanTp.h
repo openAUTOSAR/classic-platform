@@ -25,7 +25,7 @@
 #ifndef CANTP_H_
 #define CANTP_H_
 
-#define CANTP_MODULE_ID				MODULE_ID_CANTP
+#define CANTP_MODULE_ID				MODULE_ID_CANTP	/** @req CANTP115 */
 #define CANTP_VENDOR_ID				1
 
 #define CANTP_SW_MAJOR_VERSION    	1
@@ -46,7 +46,7 @@
  * Errors described by CanTp 7.4 Error classification.
  *
  ****************************/
-
+/** @req CANTP101 */
 #define CANTP_E_PARAM_CONFIG		0x01
 #define CANTP_E_PARAM_ID			0x02
 #define CANTP_E_PARAM_ADDRESS		0x04
