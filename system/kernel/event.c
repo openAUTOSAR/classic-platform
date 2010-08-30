@@ -56,7 +56,9 @@ StatusType WaitEvent( EventMaskType Mask ) {
 
 	if ( Os_TaskOccupiesResouces(curr_pcb) ) {
 		rv = E_OS_RESOURCE;
+#ifndef CFG_LWIP_SEMAPHORE_FIX
 		goto err;
+#endif
 	}
 
 	/* Remove from ready queue */

@@ -1,18 +1,9 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
+/*
+ * sleep.c
  *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
-
+ *  Created on: 23 jun 2010
+ *      Author: jcar
+ */
 #include "sleep.h"
 
 struct timeoutlist_t{
@@ -36,9 +27,14 @@ void SleepInit()
 
 void Sleep(uint32_t nofTicks, TaskType TaskID, EventMaskType Mask )
 {
+	uint32 pval = McuE_EnterCriticalSection();
+	if(nofTicks == 0){
+		nofTicks=1;
+	}
 	timeoutlist[TaskID].timeout = ticks + nofTicks;
 	timeoutlist[TaskID].active = TRUE;
 	timeoutlist[TaskID].mask = Mask;
+	McuE_ExitCriticalSection(pval);
 }
 
 
