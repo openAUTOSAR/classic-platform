@@ -69,14 +69,17 @@ Nm_ReturnType Nm_EnableCommunication( const NetworkHandleType NetworkHandle ){
 /** Set user data for NM messages transmitted next on the bus.
   * For that purpose <BusNm>_SetUserData shall be called
   * (e.g. CanNm_SetUserData function is called if channel is configured as CAN). */
+#if (NM_USER_DATA_ENABLED == STD_ON)
 Nm_ReturnType Nm_SetUserData( const NetworkHandleType NetworkHandle, const uint8 * const nmUserDataPtr ){
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
 	NM_CALL_BUSNM(SetUserData, ChannelConf, nmUserDataPtr)
 }
+#endif
 
 /** Get user data out of the last successfully received NM message.
   * For that purpose <BusNm>_GetUserData shall be called
   * (e.g. CanNm_GetUserData function is called if channel is configured as CAN). */
+#if (NM_USER_DATA_ENABLED == STD_ON)
 Nm_ReturnType Nm_GetUserData( const NetworkHandleType NetworkHandle, uint8 * const nmUserDataPtr, uint8 * const nmNodeIdPtr ){
 	/* For some reason the signature of this service differs from its busNm equivalents... */
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
@@ -96,13 +99,16 @@ Nm_ReturnType Nm_GetUserData( const NetworkHandleType NetworkHandle, uint8 * con
 	default: return NM_E_NOT_OK;
 	}
 }
+#endif
 
 /** Get the whole PDU data out of the most recently received NM message.
   * For that purpose CanNm_GetPduData shall be called. */
+#if ((NM_NODE_ID_ENABLED == STD_ON) || (NM_NODE_DETECTION_ENABLED == STD_ON) || (NM_USER_DATA_ENABLED == STD_ON))
 Nm_ReturnType Nm_GetPduData( const NetworkHandleType NetworkHandle, uint8 * const nmPduData ){
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
 	NM_CALL_BUSNM(GetPduData, ChannelConf, nmPduData)
 }
+#endif
 
 /** Set Repeat Message Request Bit for NM messages transmitted next on the bus.
   * For that purpose <BusNm>_RepeatMessageRequest shall be called
@@ -114,6 +120,7 @@ Nm_ReturnType Nm_RepeatMessageRequest( const NetworkHandleType NetworkHandle ){
 
 /** Get node identifier out of the last successfully received NM-message.
   * The function <BusNm>_GetNodeIdentifier shall be called. */
+#if (NM_NODE_ID_ENABLED == STD_ON)
 Nm_ReturnType Nm_GetNodeIdentifier( const NetworkHandleType NetworkHandle, uint8 * const nmNodeIdPtr ){
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
 	NM_CALL_BUSNM(GetNodeIdentifier, ChannelConf, nmNodeIdPtr)
@@ -126,6 +133,7 @@ Nm_ReturnType Nm_GetLocalNodeIdentifier( const NetworkHandleType NetworkHandle, 
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
 	NM_CALL_BUSNM(GetLocalNodeIdentifier, ChannelConf, nmNodeIdPtr)
 }
+#endif
 
 /** Check if remote sleep indication takes place or not. This in turn calls the
   * <BusNm>_CheckRemoteSleepIndication for the bus specific NM layer
