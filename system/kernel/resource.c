@@ -251,12 +251,10 @@ StatusType ReleaseResource_( OsResourceType * rPtr ) {
 		}
 	}
 
-#ifndef CFG_LWIP_SEMAPHORE_FIX
 	/* if we are not holding this resource */
 	if (rPtr->owner != Os_TaskGetCurrent()->pid) {
 		return E_OS_NOFUNC;
 	}
-#endif
 
 	// Release it...
 	rPtr->owner = (TaskType) (-1);
