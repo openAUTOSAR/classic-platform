@@ -20,14 +20,21 @@
 
 
 
-#ifndef NVM_H_
-#define NVM_H_
+#warning "This default file may only be used as an example!"
 
-#include "NvM_Cfg.h"
+#ifndef MEMIF_CFG_H_
+#define MEMIF_CFG_H_
 
-void NvM_Init( void );
-void NvM_ReadAll( void );
-void NvM_WriteAll( void );
-void NvM_CancelWriteAll( void );
+#include "MemIf_Types.h"
 
-#endif /*NVM_H_*/
+#define MEMIF_VERSION_INFO_API    		STD_ON		// Activate/Deactivate ver info API.
+#define MEMIF_DEV_ERROR_DETECT			STD_ON		// Activate/Deactivate Dev Error Detection and Notification.
+
+// Definitions of device IDs
+typedef enum {
+	MEMIF_FEE_ID,
+	MEMIF_EA_ID,
+	MEMIF_NUMBER_OF_DEVICES			// Number of underlying memory abstraction modules.
+};
+
+#endif /*MEMIF_CFG_H_*/

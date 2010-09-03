@@ -70,10 +70,7 @@ typedef enum {
     MEMIF_MODE_FAST,
 } MemIf_ModeType;
 
-// TODO: I have no idea where the types below are specified
-// In Eep these are defined in the header file
-// In Fls these are not found in the spec at all..
-typedef uint32 MemIf_AddressType;
-typedef uint32 MemIf_LengthType;
+// Definition of broadcast device ID
+#define MEMIF_BROADCAST_ID	0xff
 
 #endif /*MEMIF_TYPES_H_*/

@@ -15,9 +15,10 @@
 
 
 
-#ifndef NVM_CFG_H_
-#define NVM_CFG_H_
+#ifndef NVM_CBK_H_
+#define NVM_CBK_H_
 
-#include "NvM_Types.h"
+void NvM_JobEndNotification(void);		/** @req NVM462 */
+void NvM_JobErrorNotification(void);	/** @req NVM463 */
 
-#endif /*NVM_CFG_H_*/
+#endif /*NVM_CBK_H_*/

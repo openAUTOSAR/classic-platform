@@ -20,26 +20,21 @@
 
 
 
+#ifndef NVM_TYPES_H_
+#define NVM_TYPES_H_
 
-#include "NvM.h"
-#include "Rte.h"
-#if defined(USE_DEM)
-#include "Dem.h"
-#endif
-//#include "Crc.h"
+#include "Std_Types.h"
 
-void NvM_Init( void ){
+typedef uint8 NvM_RequestResultType;	/** @req NVM470 */
+#define NVM_REQ_OK					0x00
+#define NVM_REQ_NOT_OK				0x01
+#define NVM_REQ_PENDING				0x02
+#define NVM_REQ_INTEGRITY_FAILED	0x03
+#define NVM_REQ_BLOCK_SKIPPED		0x04
+#define NVM_REQ_NV_INVALIDATED		0x05
+#define NVM_REQ_CANCELLED			0x06
 
-}
+typedef uint16 NvM_BlockIdType;		/** @req NVM471 */
 
-void NvM_ReadAll( void ) {
-	
-}
 
-void NvM_WriteAll( void ) {
-	
-}
-
-void NvM_CancelWriteAll( void ) {
-	
-}
+#endif /*NVM_TYPES_H_*/
