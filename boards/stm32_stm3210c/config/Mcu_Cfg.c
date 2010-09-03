@@ -37,7 +37,7 @@ const Mcu_PerClockConfigType McuPerClockConfigData =
 {
 	.AHBClocksEnable = RCC_AHBPeriph_DMA1 | RCC_AHBPeriph_ETH_MAC |
 					   RCC_AHBPeriph_ETH_MAC_Tx | RCC_AHBPeriph_ETH_MAC_Rx,
-	.APB1ClocksEnable = RCC_APB1Periph_TIM2 | RCC_APB1Periph_CAN1,
+	.APB1ClocksEnable = RCC_APB1Periph_TIM2 | RCC_APB1Periph_CAN1 | RCC_APB1Periph_CAN2,
 	.APB2ClocksEnable = (RCC_APB2Periph_ADC1 | RCC_APB2Periph_GPIOA |
 						 RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOC |
 						 RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOE | RCC_APB2Periph_AFIO),

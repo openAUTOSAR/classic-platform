@@ -61,6 +61,9 @@
  * - Hth - HOH with transmit definitions
  *
  */
+#define TSR_ABRQ0    ((uint32_t)0x00000080)    /* Abort request for mailbox0 */
+#define TSR_ABRQ1    ((uint32_t)0x00008000)    /* Abort request for mailbox1 */
+#define TSR_ABRQ2    ((uint32_t)0x00800000)    /* Abort request for mailbox2 */
 
 typedef CAN_TypeDef CAN_HW_t;
 //-------------------------------------------------------------------
@@ -236,12 +239,12 @@ void Can_2_ErrIsr( void  ) {	Can_ErrIsr(CAN_CTRL_2); }
 // Uses 25.4.5.1 Transmission Abort Mechanism
 static void Can_AbortTx( CAN_HW_t *canHw, Can_UnitType *canUnit ) {
 	// Disable Transmit irq
-
-	// check if mb's empty
+  	CAN_ITConfig(canHw, CAN_IT_TME, DISABLE);
 
 	// Abort all pending mb's
-
-	// Wait for mb's being emptied
+	canHw->TSR |= TSR_ABRQ0;
+	canHw->TSR |= TSR_ABRQ1;
+	canHw->TSR |= TSR_ABRQ2;
 }
 
 /**
@@ -290,6 +293,15 @@ static void Can_ErrIsr( int unit ) {
 	// Clear int
 	CAN_ClearITPendingBit(canHw, CAN_IT_BOF);
   }
+
+  // Clear all to be sure
+  CAN_ClearITPendingBit(canHw, CAN_IT_EPV);
+  CAN_ClearITPendingBit(canHw, CAN_IT_EWG);
+  CAN_ClearITPendingBit(canHw, CAN_IT_BOF);
+
+  // Reinit unit
+  const Can_ControllerConfigType *canHwConfig= GET_CONTROLLER_CONFIG(Can_Global.channelMap[unit]);
+  Can_InitController( unit, canHwConfig);
 
   if (err.R != 0)
   {
