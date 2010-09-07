@@ -34,7 +34,6 @@
 #define NVM_DYNAMIC_CONFIGURATION		STD_OFF					// OFF..ON
 #define NVM_JOB_PRIORIZATION			STD_OFF					// OFF..ON
 #define NVM_MAX_NUMBER_OF_WRITE_RETRIES	0						// 0..7
-#define NVM_MULTI_BLOCK_CALLBACK		??						// TODO: How shall this be configured
 #define NVM_POLLING_MODE				STD_ON					// OFF..ON
 #define NVM_SIZE_IMMEDIATE_JOB_QUEUE	1						// 1..255
 #define NVM_SIZE_STANDARD_JOB_QUEUE		1						// 1..255

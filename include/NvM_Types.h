@@ -35,6 +35,8 @@ typedef uint8 NvM_RequestResultType;	/** @req NVM470 */
 #define NVM_REQ_CANCELLED			0x06
 
 typedef uint16 NvM_BlockIdType;		/** @req NVM471 */
+#define NVM_MULTI_BLOCK_REQUEST_ID			0
+#define NVM_REDUNDANT_BLOCK_FOR_CONFIG_ID	1
 
 
 #endif /*NVM_TYPES_H_*/

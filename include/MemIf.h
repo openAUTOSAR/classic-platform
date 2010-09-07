@@ -35,7 +35,7 @@
 #define MEMIF_AR_MINOR_VERSION	0
 #define MEMIF_AR_PATCH_VERSION	1
 
-#if ( MEMIF_VERSION_INFO_API == STD_ON )
+#if (MEMIF_VERSION_INFO_API == STD_ON)
 #define MemIf_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi, MEMIF)
 #endif /* MEMIF_VERSION_INFO_API */
 
@@ -46,15 +46,45 @@
 #define MemIf_Cancel(_deviceIndex)
 #define MemIf_GetStatus(_deviceIndex)
 #define MemIf_GetJobResult(_deviceIndex)
-#define MemIf_InvalidateBlock(_deviceIndex, _block)
-#define MemIf_GetVersionInfo(_versionInfo)
-#define MemIf_EraseImmediateBlock(_deviceIndex,_blockNumber);
+#define MemIf_InvalidateBlock(_deviceIndex,_blockNumber)
+#define MemIf_EraseImmediateBlock(_deviceIndex,_blockNumber)
 #endif
 
 #if (MEMIF_NUMBER_OF_DEVICES == 1)
+#if (MEMIF_DEVICE_TO_USE == FLS_DRIVER_INDEX)
+#define MemIf_SetMode(_mode)	Fls_SetMode(_mode)
+#define MemIf_Read(_deviceIndex,_blockNumber,_blockOffset,_dataBufferPtr,_length)	Fls_Read(_deviceIndex,_blockNumber,_blockOffset,_dataBufferPtr,_length)
+#define MemIf_Write(_deviceIndex,_blockNumber,_dataBufferPtr)	Fls_Write(_deviceIndex,_blockNumber,_dataBufferPtr)
+#define MemIf_Cancel(_deviceIndex)	Fls_Cancel(_deviceIndex)
+#define MemIf_GetStatus(_deviceIndex)	Fls_GetStatus(_deviceIndex)
+#define MemIf_GetJobResult(_deviceIndex)	Fls_GetJobResult(_deviceIndex)
+#define MemIf_InvalidateBlock(_deviceIndex,_blockNumber)	Fls_InvalidateBlock(_deviceIndex,_blockNumber)
+#define MemIf_EraseImmediateBlock(_deviceIndex,_blockNumber)	Fls_EraseImmediateBlock(_deviceIndex,_blockNumber)
+
+#elif (MEMIF_DEVICE_TO_USE == EEP_DRIVER_INDEX)
+#define MemIf_SetMode(_mode)	Eep_SetMode(_mode)
+#define MemIf_Read(_deviceIndex,_blockNumber,_blockOffset,_dataBufferPtr,_length)	Eep_Read(_deviceIndex,_blockNumber,_blockOffset,_dataBufferPtr,_length)
+#define MemIf_Write(_deviceIndex,_blockNumber,_dataBufferPtr)	Eep_Write(_deviceIndex,_blockNumber,_dataBufferPtr)
+#define MemIf_Cancel(_deviceIndex)	Eep_Cancel(_deviceIndex)
+#define MemIf_GetStatus(_deviceIndex)	Eep_GetStatus(_deviceIndex)
+#define MemIf_GetJobResult(_deviceIndex)	Eep_GetJobResult(_deviceIndex)
+#define MemIf_InvalidateBlock(_deviceIndex,_blockNumber)	Eep_InvalidateBlock(_deviceIndex,_blockNumber)
+#define MemIf_EraseImmediateBlock(_deviceIndex,_blockNumber)	Eep_EraseImmediateBlock(_deviceIndex,_blockNumber)
+#else
+#error "Memory device unknown (MEMIF_DEVICE_TO_USE)"
+#endif
+
 #endif
 
 #if (MEMIF_NUMBER_OF_DEVICES > 1)
+void MemIf_SetMode(MemIf_ModeType Mode);
+Std_ReturnType MemIf_Read(uint8 DeviceIndex, uint16 BlockNumber, uint16 BlockOffset, uint8 *DataBufferPtr, uint16 Length);
+Std_ReturnType MemIf_Write(uint8 DeviceIndex, uint16 BlockNumber, uint8 *DataBufferPtr);
+void MemIf_Cancel(uint8 DeviceIndex);
+MemIf_StatusType MemIf_GetStatus(uint8 DeviceIndex);
+MemIf_JobResultType MemIf_GetJobResult(uint8 DeviceIndex);
+Std_ReturnType MemIf_InvalidateBlock(uint8 DeviceIndex, uint16 BlockNumber);
+Std_ReturnType MemIf_EraseImmediateBlock(uint8 DeviceIndex, uint16 BlockNumber);
 #endif
 
 #endif /*MEMIF_H_*/

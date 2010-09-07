@@ -32,9 +32,9 @@ typedef enum {
 } Nvm_BlockCRCTypeType;
 
 typedef enum {
-	NVM_BLOCK_DATASET,
 	NVM_BLOCK_NATIVE,
-	NVM_BLOCK_REDUNDANT
+	NVM_BLOCK_REDUNDANT,
+	NVM_BLOCK_DATASET
 } NvM_BlockManagementTypeType;
 
 /*
@@ -50,13 +50,18 @@ typedef Std_ReturnType (*NvM_InitBlockCallbackFunction)(void);	/** @req NVM469 *
  */
 
 typedef struct {
-	???			EaRef;	// TODO: Check this
-	???			FeeRef;	// TODO: Check this
+	NvM_MultiBlockCallbackFunction		MultiBlockCallback;		/** @req NVM500 */
+	// The rest of the parameters is realized in NvM_Cfg.h
+} NvM_CommonType;
+
+typedef struct {
+//	???			EaRef;	// TODO: Check this
+//	???			FeeRef;	// TODO: Check this
 } NvM_TargetBlockReferenceType;
 
 typedef struct {
 	// NVRAM block global settings
-	uint16								NvramBlockIdentifier;	/** @req NVM481 */	// TODO: Check this
+	uint16								NvramBlockIdentifier;	/** @req NVM481 */	// TODO: Remove? Not needed if block nr correspond to array index.
 	NvM_BlockManagementTypeType			BlockManagementType;	/** @req NVM062 */
 	uint8								BlockJobPriority;		/** @req NVM477 */
 	boolean								BlockWriteProt;			/** @req NVM033 */
@@ -64,24 +69,24 @@ typedef struct {
 	boolean								SelectBlockForReadall;	/** @req NVM117 *//** @req NVM245 */
 	boolean								ResistantToChangesSw;	/** @req NVM483 */
 	NvM_SingleBlockCallbackFunctionType	SingleBlockCallback;
+	uint16								NvBlockLength;			/** @req NVM479 */	// TODO: Check this
 
 	// CRC usage of RAM and NV blocks
 	boolean								BlockUseCrc;			/** @req NVM036 */
 	NvM_BlockCRCTypeType				BlockCRCType;			/** @req NVM476 */
 
 	// RAM block, RamBlockDataAddress == NULL means temporary block otherwise permanent block
-	uint16								*RamBlockDataAddress;	/** @req NVM482 */	// TODO: Check this
+	uint8								*RamBlockDataAddress;	/** @req NVM482 */
 	boolean								CalcRamBlockCrc;		/** @req NVM119 */
 
 	// NV block, FEE/EA references
 	uint8								NvBlockNum;				/** @req NVM480 */
-	uint32								NvramDeviceId;			/** @req NVM035 */	// TODO: Check this
+	uint32								NvramDeviceId;			/** @req NVM035 */	// TODO: What shall this be used for?
 	uint16								NvBlockBaseNumber;		/** @req NVM478 */
-	uint16								NvBlockLength;			/** @req NVM479 */	// TODO: Check this
 
 	// ROM block, reference, if RomBlockDataAdress == NULL no ROM data is available
-	uint16								RomBlockNum;			/** @req NVM485 */	// TODO: Check this
-	uint16								*RomBlockDataAdress;	/** @req NVM484 */	// TODO: Check this
+	uint16								RomBlockNum;			/** @req NVM485 */
+	uint8								*RomBlockDataAdress;	/** @req NVM484 */
 	NvM_InitBlockCallbackFunction		InitBlockCallback;		/** @req NVM116 */
 
 	// Containers
@@ -90,9 +95,16 @@ typedef struct {
 
 typedef struct {
 	// Containers
-//	NvM_CommonType					Common;				// 1 Realized in NvM_Cfg.h
+	NvM_CommonType					Common;				// 1
 	const NvM_BlockDescriptorType	*BlockDescriptor;	// 1..65536
 } NvM_Type;
+
+/*
+ * Make the NvM_Config visible for others.
+ */
+extern const NvM_ConfigType NvM_Config;
+
+
 
 
 #endif /*NVM_CONFIG_TYPES_H_*/

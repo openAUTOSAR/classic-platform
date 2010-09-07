@@ -26,7 +26,7 @@
 #include "NvM_Cfg.h"
 /** @req NVM028 */ // NvmCommon configuration block is implemented in the NvM_Cfg.h file
 /** @req NVM491 *//** @req NVM492 *//** @req NVM493 *//** @req NVM494 *//** @req NVM495 */
-/** @req NVM496 *//** @req NVM497 *//** @req NVM498 *//** @req NVM499 *//** @req NVM500 */
+/** @req NVM496 *//** @req NVM497 *//** @req NVM498 *//** @req NVM499 */
 /** @req NVM501 *//** @req NVM502 *//** @req NVM503 *//** @req NVM504 *//** @req NVM505 */
 
 
