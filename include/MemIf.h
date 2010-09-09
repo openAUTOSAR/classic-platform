@@ -52,24 +52,28 @@
 
 #if (MEMIF_NUMBER_OF_DEVICES == 1)
 #if (MEMIF_DEVICE_TO_USE == FLS_DRIVER_INDEX)
-#define MemIf_SetMode(_mode)	Fls_SetMode(_mode)
-#define MemIf_Read(_deviceIndex,_blockNumber,_blockOffset,_dataBufferPtr,_length)	Fls_Read(_deviceIndex,_blockNumber,_blockOffset,_dataBufferPtr,_length)
-#define MemIf_Write(_deviceIndex,_blockNumber,_dataBufferPtr)	Fls_Write(_deviceIndex,_blockNumber,_dataBufferPtr)
-#define MemIf_Cancel(_deviceIndex)	Fls_Cancel(_deviceIndex)
-#define MemIf_GetStatus(_deviceIndex)	Fls_GetStatus(_deviceIndex)
-#define MemIf_GetJobResult(_deviceIndex)	Fls_GetJobResult(_deviceIndex)
-#define MemIf_InvalidateBlock(_deviceIndex,_blockNumber)	Fls_InvalidateBlock(_deviceIndex,_blockNumber)
-#define MemIf_EraseImmediateBlock(_deviceIndex,_blockNumber)	Fls_EraseImmediateBlock(_deviceIndex,_blockNumber)
+#include "Fee.h"
+
+#define MemIf_SetMode(_mode)	Fee_SetMode(_mode)
+#define MemIf_Read(_deviceIndex,_blockNumber,_blockOffset,_dataBufferPtr,_length)	Fee_Read(_blockNumber,_blockOffset,_dataBufferPtr,_length)
+#define MemIf_Write(_deviceIndex,_blockNumber,_dataBufferPtr)	Fee_Write(_blockNumber,_dataBufferPtr)
+#define MemIf_Cancel(_deviceIndex)	Fee_Cancel()
+#define MemIf_GetStatus(_deviceIndex)	Fee_GetStatus()
+#define MemIf_GetJobResult(_deviceIndex)	Fee_GetJobResult()
+#define MemIf_InvalidateBlock(_deviceIndex,_blockNumber)	Fee_InvalidateBlock(blockNumber)
+#define MemIf_EraseImmediateBlock(_deviceIndex,_blockNumber)	Fee_EraseImmediateBlock(_blockNumber)
 
 #elif (MEMIF_DEVICE_TO_USE == EEP_DRIVER_INDEX)
-#define MemIf_SetMode(_mode)	Eep_SetMode(_mode)
-#define MemIf_Read(_deviceIndex,_blockNumber,_blockOffset,_dataBufferPtr,_length)	Eep_Read(_deviceIndex,_blockNumber,_blockOffset,_dataBufferPtr,_length)
-#define MemIf_Write(_deviceIndex,_blockNumber,_dataBufferPtr)	Eep_Write(_deviceIndex,_blockNumber,_dataBufferPtr)
-#define MemIf_Cancel(_deviceIndex)	Eep_Cancel(_deviceIndex)
-#define MemIf_GetStatus(_deviceIndex)	Eep_GetStatus(_deviceIndex)
-#define MemIf_GetJobResult(_deviceIndex)	Eep_GetJobResult(_deviceIndex)
-#define MemIf_InvalidateBlock(_deviceIndex,_blockNumber)	Eep_InvalidateBlock(_deviceIndex,_blockNumber)
-#define MemIf_EraseImmediateBlock(_deviceIndex,_blockNumber)	Eep_EraseImmediateBlock(_deviceIndex,_blockNumber)
+#include "Ea.h"
+
+#define MemIf_SetMode(_mode)	Ea_SetMode(_mode)
+#define MemIf_Read(_deviceIndex,_blockNumber,_blockOffset,_dataBufferPtr,_length)	Ea_Read(_blockNumber,_blockOffset,_dataBufferPtr,_length)
+#define MemIf_Write(_deviceIndex,_blockNumber,_dataBufferPtr)	Ea_Write(_blockNumber,_dataBufferPtr)
+#define MemIf_Cancel(_deviceIndex)	Ea_Cancel()
+#define MemIf_GetStatus(_deviceIndex)	Ea_GetStatus()
+#define MemIf_GetJobResult(_deviceIndex)	Ea_GetJobResult()
+#define MemIf_InvalidateBlock(_deviceIndex,_blockNumber)	Ea_InvalidateBlock(_blockNumber)
+#define MemIf_EraseImmediateBlock(_deviceIndex,_blockNumber)	Ea_EraseImmediateBlock(_blockNumber)
 #else
 #error "Memory device unknown (MEMIF_DEVICE_TO_USE)"
 #endif

@@ -21,6 +21,7 @@
 #define NVM_CFG_H_
 
 #include "NvM_Types.h"
+#include "NvM_ConfigTypes.h"
 
 #define NVM_DEV_ERROR_DETECT			STD_ON		// Activate/Deactivate Dev Error Detection and Notification.
 #define NVM_VERSION_INFO_API    		STD_ON		// Activate/Deactivate ver info API.
@@ -29,7 +30,7 @@
 #define NVM_API_CONFIG_CLASS			NVM_API_CONFIG_CLASS_1	// Class 1-3
 #define NVM_COMPILED_CONFIG_ID			0						// 0..65535
 #define NVM_CRC_NUM_OF_BYTES			1						// 1..65535
-#define NVM_DATASET_SELECTION_BITS		0						// 0..8
+#define NVM_DATASET_SELECTION_BITS		2						// 0..8
 #define NVM_DRV_MODE_SWITCH				STD_OFF					// OFF = SLOW, ON = FAST
 #define NVM_DYNAMIC_CONFIGURATION		STD_OFF					// OFF..ON
 #define NVM_JOB_PRIORIZATION			STD_OFF					// OFF..ON
@@ -38,8 +39,7 @@
 #define NVM_SIZE_IMMEDIATE_JOB_QUEUE	1						// 1..255
 #define NVM_SIZE_STANDARD_JOB_QUEUE		1						// 1..255
 
-
-
+#define NVM_NUM_OF_NVRAM_BLOCKS			1
 
 
 #endif /*NVM_CFG_H_*/

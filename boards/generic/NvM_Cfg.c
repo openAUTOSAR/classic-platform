@@ -39,7 +39,7 @@ uint8 RamBlock2[4];
  * NvM Configuration *
  *********************/
 
-const NvM_BlockDescriptorType BlockDecriptorList[] = {
+const NvM_BlockDescriptorType BlockDescriptorList[] = {
 	{
 		.NvramBlockIdentifier = 2,
 		.BlockManagementType = NVM_BLOCK_NATIVE,
@@ -61,7 +61,7 @@ const NvM_BlockDescriptorType BlockDecriptorList[] = {
 
 		.NvBlockNum = 1,	// Always 1 for native block
 		.NvramDeviceId = 0,	// Ignored when only one device
-		.NvBlockBaseNumber = 0,	// TODO: How to use this
+		.NvBlockBaseNumber = (2 << NVM_DATASET_SELECTION_BITS), // NvRamBlockIdentifier << NVM_DATASET_SELECTION_BITS
 
 		.RomBlockNum = 0,	// No ROM block for this NVRAM block
 		.RomBlockDataAdress = NULL,
@@ -79,7 +79,8 @@ const NvM_BlockDescriptorType BlockDecriptorList[] = {
  */
 const NvM_ConfigType NvM_Config = {
 		.Common = {
-				MultiBlockCallback = NULL,
+				.MultiBlockCallback = NULL,
 		},
 		.BlockDescriptor = BlockDescriptorList,
 };
+

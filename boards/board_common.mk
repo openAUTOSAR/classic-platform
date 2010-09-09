@@ -72,6 +72,12 @@ include $(ROOTDIR)/system/kernel/makefile
 obj-$(USE_SPI) += Spi.o
 obj-$(USE_SPI) += Spi_Lcfg.o
 
+# NvM
+obj-$(USE_NVM) += NvM.o
+obj-$(USE_NVM) += NvM_Cfg.o
+inc-$(USE_NVM) += $(ROOTDIR)/memory/Nvm
+vpath-$(USE_NVM) += $(ROOTDIR)/memory/Nvm
+
 #Eep
 obj-$(USE_EEP) += Eep.o
 obj-$(USE_EEP) += Eep_Lcfg.o

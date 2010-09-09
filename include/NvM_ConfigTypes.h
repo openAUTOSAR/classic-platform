@@ -73,7 +73,7 @@ typedef struct {
 
 	// CRC usage of RAM and NV blocks
 	boolean								BlockUseCrc;			/** @req NVM036 */
-	NvM_BlockCRCTypeType				BlockCRCType;			/** @req NVM476 */
+	Nvm_BlockCRCTypeType				BlockCRCType;			/** @req NVM476 */
 
 	// RAM block, RamBlockDataAddress == NULL means temporary block otherwise permanent block
 	uint8								*RamBlockDataAddress;	/** @req NVM482 */
@@ -81,7 +81,7 @@ typedef struct {
 
 	// NV block, FEE/EA references
 	uint8								NvBlockNum;				/** @req NVM480 */
-	uint32								NvramDeviceId;			/** @req NVM035 */	// TODO: What shall this be used for?
+	uint32								NvramDeviceId;			/** @req NVM035 */
 	uint16								NvBlockBaseNumber;		/** @req NVM478 */
 
 	// ROM block, reference, if RomBlockDataAdress == NULL no ROM data is available
@@ -91,13 +91,13 @@ typedef struct {
 
 	// Containers
 	NvM_TargetBlockReferenceType		TargetBlockReference;	/** @req NVM486 */
-} Nvm_BlockDescriptorType;	/** @req NVM061 */
+} NvM_BlockDescriptorType;	/** @req NVM061 */
 
 typedef struct {
 	// Containers
 	NvM_CommonType					Common;				// 1
 	const NvM_BlockDescriptorType	*BlockDescriptor;	// 1..65536
-} NvM_Type;
+} NvM_ConfigType;
 
 /*
  * Make the NvM_Config visible for others.

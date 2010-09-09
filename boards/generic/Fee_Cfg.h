@@ -15,18 +15,10 @@
 
 
 
-
-
-
-
-
 #warning "This default file may only be used as an example!"
+#warning "This file is currently empty!!!"
 
-#ifndef MEMIF_CFG_H_
-#define MEMIF_CFG_H_
+#ifndef FEE_CFG_H_
+#define FEE_CFG_H_
 
-// TODO. include FEE and EA modules
-
-
-
-#endif /*MEMIF_CFG_H_*/
+#endif /*FEE_CFG_H_*/

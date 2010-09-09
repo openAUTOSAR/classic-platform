@@ -63,13 +63,14 @@
 #endif
 
 // State variable
-typedef enum
-{
+typedef enum {
   NVM_UNINITIALIZED = 0,
-  NVM_INITIALIZED
+  NVM_INITIALIZED,
+  NVM_IDLE,
+  NVM_READ_ALL_REQUESTED
 } Nvm_StateType;
 
-static Nvm_StateType nvmState = DEM_UNINITIALIZED;
+static Nvm_StateType nvmState = NVM_UNINITIALIZED;
 
 typedef struct {
 	uint8					DataIndex;				// Selected data index if "Data Set" type
@@ -78,59 +79,78 @@ typedef struct {
 	boolean					BlockChanged;			// Block changed?
 	boolean					BlockValid;				// Block valid?
 	uint8					NumberOfWriteRetries;	// Current write retry cycle
-
-
 } AdministrativeBlockType;
 
-AdministrativeBlockType AdminBlock[NUM_OF_NVRAM_BLOCKS];
+AdministrativeBlockType AdminBlock[NVM_NUM_OF_NVRAM_BLOCKS];
 
+typedef struct {
+	NvM_RequestResultType	ErrorStatus;			// Status from multi block requests i.e. Read/Write/CancelWrite-all
+} AdministrateMultiBlockType;
 
-
-const NvM_BlockDescriptorType	*BlockDescriptorList = NvM_Config.BlockDescriptor;
+AdministrateMultiBlockType AdminMultiBlock;
 
 
 void NvM_Init(void)
 {
-	uint i;
+	/** @req NVM399 *//** @req NVM193 */
+	const NvM_BlockDescriptorType	*BlockDescriptorList = NvM_Config.BlockDescriptor;
+	AdministrativeBlockType *AdminBlockTable = AdminBlock;
+	uint16 i;
 
 	// Initiate the administration blocks
-	for (i = 2; i< NUM_OF_NVRAM_BLOCKS; i++) {
-		AdminBlock[i].DataIndex = 0;
-		AdminBlock[i].BlockWriteProtected = BlockDescriptorList[i].BlockWriteProt;
-		AdminBlock[i].ErrorStatus = NVM_REQ_OK;
-		AdminBlock[i].BlockChanged = FALSE;
-		AdminBlock[i].BlockValid = FALSE;
-		AdminBlock[i].NumberOfWriteRetries = 0;
+	for (i = 0; i< NVM_NUM_OF_NVRAM_BLOCKS; i++) {
+		if (BlockDescriptorList->BlockManagementType == NVM_BLOCK_DATASET) {
+			AdminBlockTable->DataIndex = 0;	/** @req NVM192 */
+		}
+		AdminBlockTable->BlockWriteProtected = BlockDescriptorList->BlockWriteProt;
+		AdminBlockTable->ErrorStatus = NVM_REQ_OK;
+		AdminBlockTable->BlockChanged = FALSE;
+		AdminBlockTable->BlockValid = FALSE;
+		AdminBlockTable->NumberOfWriteRetries = 0;
+
+		AdminBlockTable++;
+		BlockDescriptorList++;
 	}
 
 	// Set status to initialized
 	nvmState = NVM_INITIALIZED;	/** @req NVM399 */
 }
 
-void NvM_MainFunction(void)
-{
-
-}
 
 void NvM_ReadAll(void)
 {
+	// TODO: VALIDATE STATE != NVM_UNINITIALIZED
+	// Check queue
+	// TODO: Check queue
+
+	// Check state
+	if ((nvmState == NVM_INITIALIZED) || (nvmState == NVM_IDLE)) {
+		nvmState = NVM_READ_ALL_REQUESTED;		/** @req NVM243 */
+		AdminMultiBlock.ErrorStatus = NVM_REQ_PENDING;
+	} else {
+		// TODO: Handle error
+	}
 
 }
+
 
 void NvM_WriteAll(void)
 {
 	
 }
 
+
 void NvM_CancelWriteAll(void)
 {
 	
 }
 
+
 void NvM_GetErrorStatus(NvM_BlockIdType BlockId, uint8 *RequestResultPtr)
 {
 
 }
+
 
 #if (NVM_SET_RAM_BLOCK_STATUS_API == STD_ON)
 void Nvm_SetRamBlockStatus(NvM_BlockIdType BlockId, boolean BlockChanged)
@@ -138,3 +158,10 @@ void Nvm_SetRamBlockStatus(NvM_BlockIdType BlockId, boolean BlockChanged)
 	
 }
 #endif
+
+
+void NvM_MainFunction(void)
+{
+
+}
+
