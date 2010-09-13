@@ -5,6 +5,7 @@
  *      Author: jcar
  */
 #include "sleep.h"
+#include "Mcu.h"
 
 struct timeoutlist_t{
 	uint32_t timeout;
@@ -43,8 +44,8 @@ void SleepTask(void)
 	uint32_t i;
 	for(;;) {
 		// Alarms every tick
-		WaitEvent(EVENT_MASK_EVENT_SLEEP_ALARM_TASK);
-		ClearEvent(EVENT_MASK_EVENT_SLEEP_ALARM_TASK);
+		WaitEvent(EVENT_MASK_SLEEP_ALARM_TASK);
+		ClearEvent(EVENT_MASK_SLEEP_ALARM_TASK);
 
 		ticks++;
 
