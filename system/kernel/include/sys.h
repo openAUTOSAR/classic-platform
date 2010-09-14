@@ -18,6 +18,10 @@
 
 struct os_conf_global_hook_s;
 
+#define OP_SET_EVENT		1
+#define OP_ACTIVATE_TASK	2
+
+
 typedef struct sys_s {
 //	OsApplicationType *curr_application;
 	/* Current running task*/
@@ -26,6 +30,8 @@ typedef struct sys_s {
 	OsPcbType *pcb_list;
 	/* Interrupt nested count */
 	uint32 int_nest_cnt;
+	/* The current operation */
+	uint8_t op;
 	/* Ptr to the interrupt stack */
 	void *int_stack;
 	// The os tick
@@ -54,6 +60,14 @@ typedef struct sys_s {
 } sys_t;
 
 extern sys_t os_sys;
+
+static inline void Os_SetOp( uint8_t op) {
+	os_sys.op = op;
+}
+
+static inline uint8_t Os_GetOp( void ) {
+	return os_sys.op;
+}
 
 static inline OsPcbType *Os_TaskGetCurrent(  void ) {
 	return os_sys.curr_pcb;

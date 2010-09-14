@@ -2,14 +2,14 @@
 
 
 The Freescale MPC5510 is an PowerPC process with a e200Z1+e200Z0 core. 
-
+	
 Datasheets:
   Eval board:
     http://www.asyst.si/isystem/files/downloads/evaluation_boards/ITMPC5517_V10.pdf  
-
+ 
   MPC5516/7
     http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC5510&webpageId=1067371573986721160325&nodeId=0162468rH3bTdG06C10325&fromPage=tax
- 
+
 Board:
   8Mhz external crystal
  

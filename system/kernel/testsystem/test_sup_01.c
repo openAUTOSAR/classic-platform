@@ -20,7 +20,7 @@
 //#include "Platform_Types.h"
 #include "Os.h"
 #include "debug.h"
-#include "os_test.h"
+#include "test_framework.h"
 //#include "test_cfg.h"
 
 #define EVENT_NR	1

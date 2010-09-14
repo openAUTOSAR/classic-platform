@@ -338,14 +338,25 @@ void Os_Dispatch( _Bool force ) {
 		PRETASKHOOK();
 
 	} else {
-		/* We want to run the same task, again. This only happens
-		 * when we have multiple activation of a basic task (
-		 * extended tasks have an activation limit of 1)
-		 */
+		if( Os_GetOp() != OP_SET_EVENT ) {
 
-		/* Setup the stack again, and just call the basic task */
-		Os_StackSetup(pcbPtr);
-		Os_ArchSetSpAndCall(pcbPtr->stack.curr,Os_TaskStartBasic);
+			/* We want to run the same task, again. This only happens
+			 * when we have multiple activation of a basic task (
+			 * extended tasks have an activation limit of 1)
+			 */
+
+			/* Setup the stack again, and just call the basic task */
+			Os_StackSetup(pcbPtr);
+			Os_ArchSetSpAndCall(pcbPtr->stack.curr,Os_TaskStartBasic);
+		} else {
+			/* Two cases:
+			 * 1. SetEvent() on itself
+			 * 2. SetEvent()
+			 *
+			 *
+			 * */
+
+		}
 	}
 }
 
@@ -683,7 +694,7 @@ StatusType ChainTask( TaskType TaskId ) {
 			}
 		}
 
-		/* Terminate current task */
+		// Terminate current task
 		--curr_pcb->activations;
 		if( curr_pcb->activations <= 0 ) {
 			curr_pcb->activations = 0;

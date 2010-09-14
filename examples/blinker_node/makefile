@@ -27,9 +27,6 @@ inc-y += ../Rte
 VPATH += $(ROOTDIR)/components/blinker
 inc-y += $(ROOTDIR)/components/blinker
 
-$(warning ROOTDIR: $(ROOTDIR))
-$(warning SUBDIR: $(SUBDIR))
-$(warning VPATH: $(VPATH))
 
 # libs needed by us 
 #libitem-y +=

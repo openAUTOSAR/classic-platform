@@ -20,16 +20,12 @@
 #include "stm32f10x.h"
 #include "core_cm3.h"
 
-#define SIMULATOR() (0==0)
-
 /* Call intrinsic functions directly */
 #define Irq_Disable()					__disable_irq()
 #define Irq_Enable()					__enable_irq()
 
-/* TODO: This is of course wrong */
-#define Irq_Save(_flags)     			_flags =_Irq_Save();
+#define Irq_Save(_flags)     			_flags = _Irq_Save();
 #define Irq_Restore(_flags)			_Irq_Restore(_flags);
-
 
 #define Irq_SuspendAll() 	Irq_Disable()
 #define Irq_ResumeAll() 	Irq_Enable()

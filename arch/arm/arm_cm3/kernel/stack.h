@@ -38,10 +38,12 @@
  *
  *   Misc
  *     r9 - Platform specific ???
- *     r12 - IP
+ *     r12 - IP (Intra Procedure call)
  *     r13 - SP
  *     r14 - LR
  *     r15 - PC
+ *
+ *   See "Procedure Call Standard for the ARM® Architecture" for more information.
  *
  *   Other:
  *   PSR

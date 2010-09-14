@@ -104,7 +104,7 @@ void Os_ArchFirstCall( void );
  * - Jump to main?!
  * - De-init for some devices?
  *
- * @param type OS_REBOOT_COLD - Reboot cold. It quite close to reset.
+ * @param type OS_REBOOT_COLD - Reboot cold. Soft reset.
  *             OS_REBOOT_WARM - Reboot warm. Does not run init on sections (crt0)
  */
 void Os_ArchReboot( int type );
