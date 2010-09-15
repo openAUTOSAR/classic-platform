@@ -237,9 +237,11 @@ int write(  int fd, const void *_buf, size_t nbytes)
 #endif
 
 #if defined(USE_RAMLOG)
-		char *buf = (char *)_buf;
-		for (int i = 0; i < nbytes; i++) {
-			ramlog_chr (*(buf + i));
+		{
+			char *buf = (char *)_buf;
+			for (int i = 0; i < nbytes; i++) {
+				ramlog_chr (*(buf + i));
+			}
 		}
 #endif
 
