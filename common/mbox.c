@@ -57,7 +57,7 @@ void Arc_MBoxDestroy( Arc_MBoxType *mPtr ) {
  */
 int Arc_MBoxPost( Arc_MBoxType *mPtr, void *msg ) {
 	int rv;
-	rv = CirqBuffDynPush(mPtr->cirqPtr,msg);
+	rv = CirqBuffPush(mPtr->cirqPtr,msg);
 	if( rv != 0) {
 		return 1;
 	}
@@ -71,7 +71,7 @@ int Arc_MBoxPost( Arc_MBoxType *mPtr, void *msg ) {
 int Arc_MBoxFetch(Arc_MBoxType *mPtr, void *msg)
 {
 	int rv;
-	rv = CirqBuffDynPop(mPtr->cirqPtr,msg);
+	rv = CirqBuffPop(mPtr->cirqPtr,msg);
 	if(rv != 0) {
 		return 1;
 	}

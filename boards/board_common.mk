@@ -184,6 +184,15 @@ obj-$(USE_COMMON) += arc.o
 #obj-y += malloc.o
 obj-$(USE_RAMLOG) += ramlog.o
 
+#TCF
+obj-$(USE_TCF) += tcf.o
+obj-$(USE_TCF) += Tcf_Cfg.o
+obj-$(USE_TCF) += sys_monitor.o
+obj-$(USE_TCF) += streams.o
+inc-$(USE_TCF) += $(ROOTDIR)/common/tcf
+vpath-$(USE_TCF) += $(ROOTDIR)/common/tcf
+
+
 # If we have configured console output we include printf. 
 # Overridden to use lib implementation with CFG_NEWLIB_PRINTF
 ifneq ($(CFG_NEWLIB_PRINTF),y)
