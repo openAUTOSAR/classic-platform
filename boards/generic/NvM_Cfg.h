@@ -39,7 +39,7 @@
 #define NVM_SIZE_IMMEDIATE_JOB_QUEUE	1						// 1..255
 #define NVM_SIZE_STANDARD_JOB_QUEUE		1						// 1..255
 
-#define NVM_NUM_OF_NVRAM_BLOCKS			1
+#define NVM_NUM_OF_NVRAM_BLOCKS			4		// Needs to be derived from NvM_Cfg.c
 
 
 #endif /*NVM_CFG_H_*/

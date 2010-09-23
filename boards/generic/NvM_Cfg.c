@@ -27,12 +27,14 @@
 /*
  * Dummy declarations for callbacks
  */
-Std_ReturnType SingleBlockFunctionCallback1(uint8 ServiceId, NvM_RequestResultType JobResult)
+Std_ReturnType SingleBlockFunctionCallbackBlock3(uint8 ServiceId, NvM_RequestResultType JobResult)
 {
 	return E_OK;
 }
 
-uint8 RamBlock2[4];
+uint8 RamBlock2[2];
+uint8 RamBlock3[4];
+uint8 RamBlock5[4];
 
 
 /*********************
@@ -48,20 +50,20 @@ const NvM_BlockDescriptorType BlockDescriptorList[] = {
 #endif
 		.BlockWriteProt = STD_OFF,
 		.WriteBlockOnce = STD_OFF,
-		.SelectBlockForReadall = STD_ON,
+		.SelectBlockForReadall = STD_OFF,
 		.ResistantToChangesSw = STD_OFF,
-		.SingleBlockCallback = SingleBlockFunctionCallback1,
-		.NvBlockLength = 4,
+		.SingleBlockCallback = NULL,
+		.NvBlockLength = 2,
 
 		.BlockUseCrc = STD_OFF,
 		.BlockCRCType = NVM_CRC16,	// Default
 
 		.RamBlockDataAddress = RamBlock2,
-		.CalcRamBlockCrc = STD_ON,
+		.CalcRamBlockCrc = STD_OFF,
 
 		.NvBlockNum = 1,	// Always 1 for native block
 		.NvramDeviceId = 0,	// Ignored when only one device
-		.NvBlockBaseNumber = (2 << NVM_DATASET_SELECTION_BITS), // NvRamBlockIdentifier << NVM_DATASET_SELECTION_BITS
+		.NvBlockBaseNumber = 0,
 
 		.RomBlockNum = 0,	// No ROM block for this NVRAM block
 		.RomBlockDataAdress = NULL,
@@ -71,6 +73,99 @@ const NvM_BlockDescriptorType BlockDescriptorList[] = {
 		NvM_TargetBlockReferenceType		TargetBlockReference;	/** @req NVM486 */
 #endif
 		},
+		{
+			.NvramBlockIdentifier = 3,
+			.BlockManagementType = NVM_BLOCK_NATIVE,
+	#if (NVM_JOB_PRIORIZATION == STD_ON)
+			.BlockJobPriority = 0,
+	#endif
+			.BlockWriteProt = STD_OFF,
+			.WriteBlockOnce = STD_OFF,
+			.SelectBlockForReadall = STD_ON,
+			.ResistantToChangesSw = STD_OFF,
+			.SingleBlockCallback = SingleBlockFunctionCallbackBlock3,
+			.NvBlockLength = 4,
+
+			.BlockUseCrc = STD_OFF,
+			.BlockCRCType = NVM_CRC16,	// Default
+
+			.RamBlockDataAddress = RamBlock3,
+			.CalcRamBlockCrc = STD_OFF,
+
+			.NvBlockNum = 1,	// Always 1 for native block
+			.NvramDeviceId = 0,	// Ignored when only one device
+			.NvBlockBaseNumber = 0,
+
+			.RomBlockNum = 0,	// No ROM block for this NVRAM block
+			.RomBlockDataAdress = NULL,
+			.InitBlockCallback = NULL,
+
+	#if 0
+			NvM_TargetBlockReferenceType		TargetBlockReference;	/** @req NVM486 */
+	#endif
+			},
+			{
+				.NvramBlockIdentifier = 4,
+				.BlockManagementType = NVM_BLOCK_NATIVE,
+		#if (NVM_JOB_PRIORIZATION == STD_ON)
+				.BlockJobPriority = 0,
+		#endif
+				.BlockWriteProt = STD_OFF,
+				.WriteBlockOnce = STD_OFF,
+				.SelectBlockForReadall = STD_OFF,
+				.ResistantToChangesSw = STD_OFF,
+				.SingleBlockCallback = NULL,
+				.NvBlockLength = 2,
+
+				.BlockUseCrc = STD_OFF,
+				.BlockCRCType = NVM_CRC16,	// Default
+
+				.RamBlockDataAddress =NULL,
+				.CalcRamBlockCrc = STD_OFF,
+
+				.NvBlockNum = 1,	// Always 1 for native block
+				.NvramDeviceId = 0,	// Ignored when only one device
+				.NvBlockBaseNumber = 0,
+
+				.RomBlockNum = 0,	// No ROM block for this NVRAM block
+				.RomBlockDataAdress = NULL,
+				.InitBlockCallback = NULL,
+
+		#if 0
+				NvM_TargetBlockReferenceType		TargetBlockReference;	/** @req NVM486 */
+		#endif
+				},
+				{
+					.NvramBlockIdentifier = 5,
+					.BlockManagementType = NVM_BLOCK_NATIVE,
+			#if (NVM_JOB_PRIORIZATION == STD_ON)
+					.BlockJobPriority = 0,
+			#endif
+					.BlockWriteProt = STD_OFF,
+					.WriteBlockOnce = STD_OFF,
+					.SelectBlockForReadall = STD_ON,
+					.ResistantToChangesSw = STD_OFF,
+					.SingleBlockCallback = NULL,
+					.NvBlockLength = 4,
+
+					.BlockUseCrc = STD_OFF,
+					.BlockCRCType = NVM_CRC16,	// Default
+
+					.RamBlockDataAddress = RamBlock5,
+					.CalcRamBlockCrc = STD_OFF,
+
+					.NvBlockNum = 1,	// Always 1 for native block
+					.NvramDeviceId = 0,	// Ignored when only one device
+					.NvBlockBaseNumber = 0,
+
+					.RomBlockNum = 0,	// No ROM block for this NVRAM block
+					.RomBlockDataAdress = NULL,
+					.InitBlockCallback = NULL,
+
+			#if 0
+					NvM_TargetBlockReferenceType		TargetBlockReference;	/** @req NVM486 */
+			#endif
+					},
 };
 
 
