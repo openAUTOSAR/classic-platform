@@ -56,6 +56,7 @@
 
 // Other error codes reported by this module
 #define NVM_PARAM_OUT_OF_RANGE				0x40
+#define NVM_UNEXPECTED_STATE				0x41
 #define NVM_E_WRONG_CONFIG					0xfd
 #define NVM_E_UNEXPECTED_EXECUTION			0xfe
 #define NVM_E_NOT_IMPLEMENTED_YET			0xff
@@ -79,6 +80,7 @@
 #define NVM_GET_VERSION_INFO_ID					0x0f
 
 #define NVM_LOC_READ_BLOCK_ID					0x40
+#define NVM_LOC_WRITE_BLOCK_ID					0x41
 #define DEM_GLOBAL_ID							0xff
 
 #endif
