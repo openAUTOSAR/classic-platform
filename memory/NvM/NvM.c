@@ -582,10 +582,27 @@ void NvM_GetErrorStatus(NvM_BlockIdType blockId, uint8 *requestResultPtr)
 }
 
 
-#if (NVM_SET_RAM_BLOCK_STATUS_API == STD_ON)
-void Nvm_SetRamBlockStatus(NvM_BlockIdType BlockId, boolean BlockChanged)
+#if (NVM_SET_RAM_BLOCK_STATUS_API == STD_ON)	/** @req NVM408 */
+void Nvm_SetRamBlockStatus(NvM_BlockIdType blockId, boolean blockChanged)
 {
-	
+	const NvM_BlockDescriptorType	*BlockDescriptorList = NvM_Config.BlockDescriptor;
+
+	VALIDATE_NO_RV(nvmState != NVM_UNINITIALIZED, NVM_SET_RAM_BLOCK_STATUS_ID, NVM_E_NOT_INITIALIZED);	/** @req NVM497 */
+	VALIDATE_NO_RV(blockId < NVM_NUM_OF_NVRAM_BLOCKS+2, NVM_SET_RAM_BLOCK_STATUS_ID, NVM_E_PARAM_BLOCK_ID);
+	VALIDATE_NO_RV(blockId > 1, NVM_SET_RAM_BLOCK_STATUS_ID, NVM_E_PARAM_BLOCK_ID);
+
+	if (BlockDescriptorList[blockId-2].RamBlockDataAddress != NULL) {	/** @req NVM240 */
+		if (blockChanged) {
+			AdminBlock[blockId-2].BlockChanged = TRUE;	/** @req NVM406 */
+			AdminBlock[blockId-2].BlockValid = TRUE;	/** @req NVM241 */
+			if (BlockDescriptorList[blockId-2].BlockUseCrc) {
+				AdminBlock[blockId-2].BlockState = BLOCK_STATE_RECALC_CRC;	/** @req NVM121 */
+			}
+		} else {
+			AdminBlock[blockId-2].BlockChanged = FALSE;	/** @req NVM405 */
+			AdminBlock[blockId-2].BlockValid = FALSE;
+		} // else blockChanged
+	} // if permanent block
 }
 #endif
 
