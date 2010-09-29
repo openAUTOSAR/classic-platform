@@ -15,18 +15,23 @@
 
 
 
+
+
+
+
+
 #warning "This default file may only be used as an example!"
-#warning "This file is currently empty!!!"
 
-#ifndef FEE_CFG_H_
-#define FEE_CFG_H_
+#include "Fee_Cfg.h"
 
-#include "MemIf_Types.h"
+/*********************
+ * Fee Configuration *
+ *********************/
 
-#define FEE_DEV_ERROR_DETECT			STD_ON		// Activate/Deactivate Dev Error Detection and Notification.
-#define FEE_VERSION_INFO_API    		STD_ON		// Activate/Deactivate ver info API.
-#define FEE_POLLING_MODE				STD_OFF		// OFF..ON
 
-#define FEE_INDEX							0
-#define FEE_VIRTUAL_PAGE_SIZE				4		// 0..65535
-#endif /*FEE_CFG_H_*/
+/*
+ * Fee's config
+ */
+const Fee_ConfigType Fee_Config = {
+};
+

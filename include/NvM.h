@@ -62,7 +62,7 @@
 #define NVM_E_NOT_IMPLEMENTED_YET			0xff
 
 // Service ID in this module
-#define NVM_INIT								0x00
+#define NVM_INIT_ID								0x00
 #define NVM_SET_DATA_INDEX_ID					0x01
 #define NVM_GET_DATA_INDEX_ID					0x02
 #define NVM_SET_BLOCK_PROTECTION_ID				0x03
@@ -81,7 +81,7 @@
 
 #define NVM_LOC_READ_BLOCK_ID					0x40
 #define NVM_LOC_WRITE_BLOCK_ID					0x41
-#define DEM_GLOBAL_ID							0xff
+#define NVM_GLOBAL_ID							0xff
 
 #endif
 

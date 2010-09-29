@@ -23,7 +23,9 @@
 #ifndef FEE_H_
 #define FEE_H_
 
+#include "Std_Types.h"
 #include "Fee_Cfg.h"
+#include "Fls.h"
 
 
 #define FEE_MODULE_ID			MODULE_ID_FEE
@@ -35,6 +37,38 @@
 #define FEE_AR_MAJOR_VERSION	3
 #define FEE_AR_MINOR_VERSION	0
 #define FEE_AR_PATCH_VERSION	1
+
+#if (FEE_DEV_ERROR_DETECT == STD_ON)
+// Error codes reported by this module defined by AUTOSAR
+#define FEE_INVALID_BLOCK_ID				0x02
+
+
+// Other error codes reported by this module
+#define FEE_PARAM_OUT_OF_RANGE				0x40
+#define FEE_UNEXPECTED_STATE				0x41
+#define FEE_E_WRONG_CONFIG					0xfd
+#define FEE_E_UNEXPECTED_EXECUTION			0xfe
+#define FEE_E_NOT_IMPLEMENTED_YET			0xff
+
+// Service ID in this module
+#define FEE_INIT								0x00
+#define FEE_SET_MODE_ID							0x01
+#define FEE_READ_ID								0x02
+#define FEE_WRITE_ID							0x03
+#define FEE_CANCEL_ID							0x04
+#define FEE_GET_STATUS_ID						0x05
+#define FEE_GET_JOB_RESULT_ID					0x06
+#define FEE_INVALIDATE_BLOCK_ID					0x07
+#define FEE_GET_VERSION_INFO_ID					0x08
+#define FEE_ERASE_IMMEDIATE_ID					0x09
+#define FEE_JOB_END_NOTIFICTION_ID				0x10
+#define FEE_JOB_ERROR_NOTIFICTION_ID			0x11
+#define FEE_MAIN_FUNCTION_ID					0x12
+
+#define FEE_GLOBAL_ID							0xff
+
+#endif
+
 
 #if ( FEE_VERSION_INFO_API == STD_ON )
 #define Fee_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi, FEE)	/** @req FEE093 */
