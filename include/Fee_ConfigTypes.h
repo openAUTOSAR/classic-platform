@@ -18,7 +18,8 @@
 #ifndef FEE_CONFIG_TYPES_H_
 #define FEE_CONFIG_TYPES_H_
 
-#include "Fee_Types.h"
+#include "Std_Types.h"
+//#include "Fee_Types.h"
 
 
 /*
@@ -44,14 +45,14 @@ typedef struct {
 	uint16	BlockSize;				/** @req FEE108 */
 	boolean	ImmediateData;			/** @req FEE109 */
 	uint32	NumberOfWriteCycles;	/** @req FEE110 */
-
+	uint32	PhysBaseAddress;		/** Not in Autosar, added for performance reason */
 } Fee_BlockConfigType;				/** @req FEE040 */
 
 typedef struct {
 	// Containers
 	Fee_GeneralType					General;			// 1
 	const Fee_BlockConfigType		*BlockConfig;		// 1..*
-} NvM_ConfigType;
+} Fee_ConfigType;
 
 /*
  * Make the Fee_Config visible for others.

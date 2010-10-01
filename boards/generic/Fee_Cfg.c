@@ -22,16 +22,49 @@
 
 #warning "This default file may only be used as an example!"
 
-#include "Fee_Cfg.h"
+#include "Fee.h"
+
+/*
+ * Extern declarations for callbacks
+ */
+extern void NvmJobEndCallbackNotificationCallback(void);
+extern void NvmJobErrorCallbackNotificationCallback(void);
+
+extern uint8 FlashMemory[];
+
 
 /*********************
  * Fee Configuration *
  *********************/
 
 
+const Fee_BlockConfigType BlockConfigList[] = {
+	{
+		.BlockNumber = 0,				// TODO: Remove due to that DeviceIndex corresponds to posistion in list
+		.DeviceIndex = 0,				// TODO: Needed by NvM and MemIf or remove?
+		.BlockSize = 10,
+		.ImmediateData = FALSE,
+		.NumberOfWriteCycles = 0,	// Not supported yet
+		.PhysBaseAddress = (uint32)&FlashMemory[0 * FEE_VIRTUAL_PAGE_SIZE],
+	},
+	{
+		.BlockNumber = 1,				// TODO: Remove due to that DeviceIndex corresponds to posistion in list
+		.DeviceIndex = 0,				// TODO: Needed by NvM and MemIf or remove?
+		.BlockSize = 8,
+		.ImmediateData = FALSE,
+		.NumberOfWriteCycles = 0,	// Not supported yet
+		.PhysBaseAddress = (uint32)&FlashMemory[3 * FEE_VIRTUAL_PAGE_SIZE],
+	},
+};
+
 /*
  * Fee's config
  */
 const Fee_ConfigType Fee_Config = {
+		.General = {
+				.NvmJobEndCallbackNotificationCallback = NULL,
+				.NvmJobErrorCallbackNotificationCallback = NULL,
+		},
+		.BlockConfig = BlockConfigList,
 };
 

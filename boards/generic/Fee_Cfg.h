@@ -16,12 +16,12 @@
 
 
 #warning "This default file may only be used as an example!"
-#warning "This file is currently empty!!!"
 
 #ifndef FEE_CFG_H_
 #define FEE_CFG_H_
 
 #include "MemIf_Types.h"
+#include "Fee_ConfigTypes.h"
 
 #define FEE_DEV_ERROR_DETECT			STD_ON		// Activate/Deactivate Dev Error Detection and Notification.
 #define FEE_VERSION_INFO_API    		STD_ON		// Activate/Deactivate ver info API.
@@ -29,4 +29,6 @@
 
 #define FEE_INDEX							0
 #define FEE_VIRTUAL_PAGE_SIZE				4		// 0..65535
+
+#define FEE_NUM_OF_BLOCKS					2		// Needs to be derived from Fee_Cfg.c
 #endif /*FEE_CFG_H_*/

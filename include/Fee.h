@@ -40,14 +40,21 @@
 
 #if (FEE_DEV_ERROR_DETECT == STD_ON)
 // Error codes reported by this module defined by AUTOSAR
-#define FEE_INVALID_BLOCK_ID				0x02
+#define FEE_E_UNINIT						0x01
+#define FEE_E_INVALID_BLOCK_NO				0x02
+#define FEE_E_INVALID_BLOCK_OFS				0x03
+#define FEE_E_INVALID_DATA_PTR				0x04
+#define FEE_E_INVALID_BLOCK_LEN				0x05
+#define FEE_E_BUSY							0x06
+
 
 
 // Other error codes reported by this module
 #define FEE_PARAM_OUT_OF_RANGE				0x40
 #define FEE_UNEXPECTED_STATE				0x41
-#define FEE_E_WRONG_CONFIG					0xfd
-#define FEE_E_UNEXPECTED_EXECUTION			0xfe
+#define FEE_E_WRONG_CONFIG					0xfc
+#define FEE_E_UNEXPECTED_EXECUTION			0xfd
+#define FEE_E_NOT_SUPPORTED					0xfe
 #define FEE_E_NOT_IMPLEMENTED_YET			0xff
 
 // Service ID in this module
