@@ -15,44 +15,10 @@
 
 
 
-
-
-
-
-
-
-
 #ifndef RTE_H_
 #define RTE_H_
 
 #include "Std_Types.h"
-
-/* Contract 
- * rte_sws_1143
- * <name>_<c>_<p>_<o>
- * <p> - port name, e.g 
- * <c> - component name, e.g. doors, lights
- * <o> - operation name or element name
- *
- * and more 
- * Rte_Pim?
- * Rte_CData?
- */
-
-/* 
- * Generated, rte_sws_3730(p.154)
- */
-#define	Rte_Send_p_d
-#define Rte_Switch_p_m
-#define Rte_Write_p_d
-#define Rte_Invalidate_p_d
-#define Rte_Feedback_p_d
-#define Rte_Read_p_d
-#define Rte_Receive_p_d
-#define Rte_Call_p_o
-#define Rte_Result_p_o
-#define Rte_Mode_p_o
-
 
 // Errors
 #define RTE_E_OK				((Std_ReturnType) 0)
@@ -67,73 +33,4 @@
 #define RTE_E_MAX_AGE_EXCEEDED	((Std_ReturnType) 64)
 
 
-// RTE Mode, TODO
-
-// Rte_Ports
-#define Rte_PortHandle_i_RP
-#define Rte_Ports_i_RP
-
-// Rte_NPorts
-#define Rte_NPorts_i_RP
-
-// Rte_Port
-//#define Rte_PortHandle_i_RP
-#define Rte_Port_RP
-
-// Rte_Send/Rte_Write/Rte_Switch
-#define Rte_Write_p_o
-#define Rte_Send_p_o
-#define Rte_Swich_p_o
-
-// Rte_Invalidate
-#define Rte_Invalidate_p_o
-
-// Rte_Feedback
-#define Rte_Feedback_p_o
-
-// Rte_Read
-#define Rte_Read_p_o
-
-// Rte_Receive
-#define Rte_Receive_p_o
-
-// Rte_Call
-#define Rte_Call_p_o
-
-// Rte_Result
-#define Rte_Result_p_o
-
-//Rte_Pim
-#define Rte_Pim_name
-
-// Rte_CData
-#define Rte_CData_name
-
-// Rte_IRead
-#define Rte_IRead_re_p_d
-
-// Rte_IWrite
-#define Rte_IWrite_re_p_d
-
-// Rte_IInvalidate
-#define Rte_IInvalidate_re_p_d
-
-// Rte_IStatus
-#define Rte_IStatus_re_p_d
-
-// Rte_IrvIRead
-#define Rte_IrvIRead_re_name
-
-// TODO: bla bla bla .. more methods
-//
-
-
-
-
 #endif /*RTE_H_*/
-
-
-
-
-
-
