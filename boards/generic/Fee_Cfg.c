@@ -40,20 +40,28 @@ extern uint8 FlashMemory[];
 
 const Fee_BlockConfigType BlockConfigList[] = {
 	{
-		.BlockNumber = 0,				// TODO: Remove due to that DeviceIndex corresponds to posistion in list
+		.BlockNumber = 0,				// TODO: Remove due to that DeviceIndex corresponds to position in list
 		.DeviceIndex = 0,				// TODO: Needed by NvM and MemIf or remove?
-		.BlockSize = 10,
+		.BlockSize = 4,
 		.ImmediateData = FALSE,
 		.NumberOfWriteCycles = 0,	// Not supported yet
 		.PhysBaseAddress = (uint32)&FlashMemory[0 * FEE_VIRTUAL_PAGE_SIZE],
 	},
 	{
-		.BlockNumber = 1,				// TODO: Remove due to that DeviceIndex corresponds to posistion in list
+		.BlockNumber = 1,				// TODO: Remove due to that DeviceIndex corresponds to position in list
+		.DeviceIndex = 0,				// TODO: Needed by NvM and MemIf or remove?
+		.BlockSize = 10,
+		.ImmediateData = FALSE,
+		.NumberOfWriteCycles = 0,	// Not supported yet
+		.PhysBaseAddress = (uint32)&FlashMemory[1 * FEE_VIRTUAL_PAGE_SIZE],
+	},
+	{
+		.BlockNumber = 2,				// TODO: Remove due to that DeviceIndex corresponds to position in list
 		.DeviceIndex = 0,				// TODO: Needed by NvM and MemIf or remove?
 		.BlockSize = 8,
 		.ImmediateData = FALSE,
 		.NumberOfWriteCycles = 0,	// Not supported yet
-		.PhysBaseAddress = (uint32)&FlashMemory[3 * FEE_VIRTUAL_PAGE_SIZE],
+		.PhysBaseAddress = (uint32)&FlashMemory[4 * FEE_VIRTUAL_PAGE_SIZE],
 	},
 };
 

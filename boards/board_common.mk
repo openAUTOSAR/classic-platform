@@ -78,6 +78,12 @@ obj-$(USE_NVM) += NvM_Cfg.o
 inc-$(USE_NVM) += $(ROOTDIR)/memory/Nvm
 vpath-$(USE_NVM) += $(ROOTDIR)/memory/Nvm
 
+# Fee
+obj-$(USE_NVM) += Fee.o
+obj-$(USE_NVM) += Fee_Cfg.o
+inc-$(USE_NVM) += $(ROOTDIR)/memory/Fee
+vpath-$(USE_NVM) += $(ROOTDIR)/memory/Fee
+
 #Eep
 obj-$(USE_EEP) += Eep.o
 obj-$(USE_EEP) += Eep_Lcfg.o

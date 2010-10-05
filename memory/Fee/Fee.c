@@ -64,7 +64,7 @@
 
 
 #define GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(blocknr)	((blocknr >> NVM_DATASET_SELECTION_BITS) - 1)
-#define GET_DATASET_FROM_BLOCK_NUMBER(blocknr)	(blocknr & ~((1 << NVM_DATASET_SELECTION_BITS) - 1))
+#define GET_DATASET_FROM_BLOCK_NUMBER(blocknr)	(blocknr & ((1 << NVM_DATASET_SELECTION_BITS) - 1))
 
 
 // Variables for quick reporting of status and job result
@@ -75,7 +75,6 @@ typedef enum {
   FEE_UNINITIALIZED = 0,
   FEE_IDLE,
   FEE_JOB_REQUESTED,
-  FEE_JOB_PROCESSING,
   FEE_JOB_PENDING,
 } FeeStateType;
 
@@ -120,7 +119,7 @@ typedef struct {
 	const Fee_BlockConfigType	*BlockConfigPtr;
 	BlockAdminType				*BlockAdminPtr;
 	uint16						Length;
-	uint8						FlsAddr;		// Flash source/Dest depending of operation
+	uint32						FlsAddr;		// Flash source/Dest depending of operation
 	uint8						*RamPtr;		// RAM source/Dest depending of operation
 } CurrentJobType;
 
@@ -164,7 +163,7 @@ Std_ReturnType Fee_Read(uint16 blockNumber, uint16 blockOffset, uint8* dataBuffe
 	VALIDATE_RV(blockIndex < FEE_NUM_OF_BLOCKS, FEE_READ_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
 	VALIDATE_RV(dataBufferPtr != NULL, FEE_READ_ID, FEE_E_INVALID_DATA_PTR, E_NOT_OK);
 	VALIDATE_RV(blockOffset < Fee_Config.BlockConfig[blockIndex].BlockSize, FEE_READ_ID, FEE_E_INVALID_BLOCK_OFS, E_NOT_OK);
-	VALIDATE_RV(blockOffset + length < Fee_Config.BlockConfig[blockIndex].BlockSize, FEE_READ_ID, FEE_E_INVALID_BLOCK_LEN, E_NOT_OK);
+	VALIDATE_RV(blockOffset + length <= Fee_Config.BlockConfig[blockIndex].BlockSize, FEE_READ_ID, FEE_E_INVALID_BLOCK_LEN, E_NOT_OK);
 
 
 	/** @req FEE022 */
@@ -369,7 +368,9 @@ void Fee_MainFunction(void)
 #if (FEE_POLLING_MODE == STD_ON)
 		PollFlsJobResult();
 #endif
-		CheckFlsResult();
+		if (FlsAdmin.State == FEE_FLS_STATE_READY) {
+			CheckFlsResult();
+		}
 		break;
 
 	default:

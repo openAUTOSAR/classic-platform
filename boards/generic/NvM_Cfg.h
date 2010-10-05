@@ -25,7 +25,7 @@
 
 #define NVM_DEV_ERROR_DETECT			STD_ON		// Activate/Deactivate Dev Error Detection and Notification.
 #define NVM_VERSION_INFO_API    		STD_ON		// Activate/Deactivate ver info API.
-#define NVM_SET_RAM_BLOCK_STATUS_API	STD_OFF		// Activate/Deactivate Nvm_SetRamBlockStatus() API.
+#define NVM_SET_RAM_BLOCK_STATUS_API	STD_ON		// Activate/Deactivate Nvm_SetRamBlockStatus() API.
 
 #define NVM_API_CONFIG_CLASS			NVM_API_CONFIG_CLASS_1	// Class 1-3
 #define NVM_COMPILED_CONFIG_ID			0						// 0..65535

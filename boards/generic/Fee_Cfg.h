@@ -30,5 +30,5 @@
 #define FEE_INDEX							0
 #define FEE_VIRTUAL_PAGE_SIZE				4		// 0..65535
 
-#define FEE_NUM_OF_BLOCKS					2		// Needs to be derived from Fee_Cfg.c
+#define FEE_NUM_OF_BLOCKS					3		// Needs to be derived from Fee_Cfg.c
 #endif /*FEE_CFG_H_*/
