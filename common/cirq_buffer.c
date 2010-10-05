@@ -84,10 +84,11 @@ int CirqBuffDynDestroy(CirqBufferType *cPtr ) {
 
 int CirqBuffPush( CirqBufferType *cPtr, void *dataPtr ) {
 	uint32_t flags;
+	Irq_Save(flags);
 	if( (cPtr->currCnt == cPtr->maxCnt) || (cPtr==NULL) ) {
+		Irq_Restore(flags);
 		return 1;	/* No more room */
 	}
-	Irq_Save(flags);
 	MEMCPY(cPtr->head,dataPtr,cPtr->dataSize);
 	cPtr->head = (char *)cPtr->head + cPtr->dataSize;
 	if( cPtr->head == cPtr->bufEnd) {
@@ -101,10 +102,11 @@ int CirqBuffPush( CirqBufferType *cPtr, void *dataPtr ) {
 
 int CirqBuffPop(CirqBufferType *cPtr, void *dataPtr ) {
 	uint32_t flags;
+	Irq_Save(flags);
 	if( (cPtr->currCnt == 0) || (cPtr==NULL) ) {
+		Irq_Restore(flags);
 		return 1;
 	}
-	Irq_Save(flags);
 	MEMCPY(dataPtr,cPtr->tail,cPtr->dataSize);
 	cPtr->tail = (char *)cPtr->tail + cPtr->dataSize;
 	if( cPtr->tail == cPtr->bufEnd) {
