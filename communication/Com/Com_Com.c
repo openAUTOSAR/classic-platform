@@ -26,7 +26,6 @@
 #include "Com.h"
 #include "Com_misc.h"
 #include "debug.h"
-#include "CanIf.h"
 #include "PduR.h"
 #include "PduR_Com.h"
 #include "Byteorder.h"
