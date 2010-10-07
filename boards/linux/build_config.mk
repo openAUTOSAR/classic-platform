@@ -11,7 +11,7 @@ CFG= BRD_LINUX
 
 # What buildable modules does this board have, 
 # default or private
-MOD_AVAIL+=COM PDUR NEWLIB
+MOD_AVAIL+=COM PDUR NEWLIB DET
 
 # Needed by us
 MOD_USE=
