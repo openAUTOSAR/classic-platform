@@ -30,7 +30,7 @@
 #include "Dem.h"
 #endif
 #include "PduR.h"
-#include "Mcu.h"
+#include "McuExtensions.h"
 #include "debug.h"
 
 /*

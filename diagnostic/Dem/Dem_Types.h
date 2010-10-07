@@ -24,6 +24,8 @@
 #define DEM_TYPES_H_
 #include "Std_Types.h" /** @req DEM176.Std */
 
+#define DEM_EVENT_DESTINATION_END_OF_LIST 0
+
 /*
  * DTC storage types
  */
