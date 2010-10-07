@@ -177,12 +177,11 @@ obj-$(USE_DCM) += Dcm_LCfg.o
 inc-$(USE_DCM) += $(ROOTDIR)/diagnostic/Dcm
 vpath-$(USE_DCM) += $(ROOTDIR)/diagnostic/Dcm
 
-
-# Common
-obj-$(USE_COMMON) += xtoa.o
-obj-$(USE_COMMON) += arc.o
-#obj-y += malloc.o
 obj-$(USE_RAMLOG) += ramlog.o
+
+# Common stuff, if speciied
+obj-$(USE_COMMON) += arc.o
+VPATH += $(ROOTDIR)/common
 
 # If we have configured console output we include printf. 
 # Overridden to use lib implementation with CFG_NEWLIB_PRINTF
@@ -194,9 +193,11 @@ obj-y += printf.o
 endif
 endif
 
-VPATH += $(ROOTDIR)/common
 
+# Newlib
+obj-$(USE_NEWLIB) += xtoa.o
 obj-$(USE_NEWLIB) += newlib_port.o
+
 obj-y += $(obj-y-y)
 
 vpath-y += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
