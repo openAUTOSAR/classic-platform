@@ -58,7 +58,7 @@ const Fee_BlockConfigType BlockConfigList[] = {
 	{
 		.BlockNumber = 2,				// TODO: Remove due to that DeviceIndex corresponds to position in list
 		.DeviceIndex = 0,				// TODO: Needed by NvM and MemIf or remove?
-		.BlockSize = 8,
+		.BlockSize = 6,
 		.ImmediateData = FALSE,
 		.NumberOfWriteCycles = 0,	// Not supported yet
 		.PhysBaseAddress = (uint32)&FlashMemory[4 * FEE_VIRTUAL_PAGE_SIZE],

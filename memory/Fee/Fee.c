@@ -66,20 +66,16 @@
 #define GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(blocknr)	((blocknr >> NVM_DATASET_SELECTION_BITS) - 1)
 #define GET_DATASET_FROM_BLOCK_NUMBER(blocknr)	(blocknr & ((1 << NVM_DATASET_SELECTION_BITS) - 1))
 
+#define FLS_READY	(FlsAdmin.State == FEE_FLS_STATE_READY)
+
+#define MAGIC_LEN		4
+
+static const uint8 Magic[MAGIC_LEN] = { 0xeb, 0xba, 0xba, 0xbe };
+
 
 // Variables for quick reporting of status and job result
 static MemIf_StatusType ModuleStatus = MEMIF_UNINIT;
 static MemIf_JobResultType JobResult = MEMIF_JOB_OK;
-
-typedef enum {
-  FEE_UNINITIALIZED = 0,
-  FEE_IDLE,
-  FEE_JOB_REQUESTED,
-  FEE_JOB_PENDING,
-} FeeStateType;
-
-// Variables holding state of Fee.
-static FeeStateType FeeState = FEE_UNINITIALIZED;
 
 typedef enum {
 	FEE_JOB_TYPE_NONE,
@@ -89,6 +85,23 @@ typedef enum {
 	FEE_JOB_TYPE_INVALIDATE,
 	FEE_JOB_TYPE_ERASE_IMMEDIATE_BLOCK
 } CurrentJobTypeType;
+
+typedef enum {
+  FEE_UNINITIALIZED = 0,
+  FEE_IDLE,
+  FEE_WRITE_REQUESTED,
+  FEE_WRITE_EREASE_PENDING,
+  FEE_WRITE_PENDING,
+  FEE_WRITE_MAGIC_PENDING,
+  FEE_READ_REQUESTED,
+  FEE_READ_PENDING,
+  FEE_CANCEL_REQUESTED,
+  FEE_CANCEL_PENDING,
+  FEE_INVALIDATE_REQUESTED,
+  FEE_INVALIDATE_PENDING,
+  FEE_ERASE_IMMEDIATE_REQUESTED,
+  FEE_ERASE_IMMEDIATE_PENDING
+} CurrentJobStateType;
 
 typedef enum {
 	FEE_FLS_STATE_IDLE,
@@ -116,6 +129,7 @@ static BlockAdminType BlockAdminList[FEE_NUM_OF_BLOCKS];
 
 typedef struct {
 	CurrentJobTypeType			Type;
+	CurrentJobStateType			State;
 	const Fee_BlockConfigType	*BlockConfigPtr;
 	BlockAdminType				*BlockAdminPtr;
 	uint16						Length;
@@ -125,7 +139,65 @@ typedef struct {
 
 static CurrentJobType CurrentJob = {
 		.Type = FEE_JOB_TYPE_NONE,
+		.State = FEE_IDLE
 };
+
+#if (FEE_POLLING_MODE == STD_ON)
+void PollFlsJobResult(void)
+{
+	MemIf_JobResultType jobResult;
+
+	if (FlsAdmin.State = FEE_FLS_STATE_PENDING) {
+		jobResult = Fls_GetJobResult();
+
+		if (jobResult == MEMIF_JOB_OK) {
+			FlsAdmin.ErrorStatus = E_OK;
+			FlsAdmin.JobResult = jobResult;
+			FlsAdmin.State = FEE_FLS_STATE_READY;
+		} else if (jobResult != MEMIF_JOB_PENDING) {
+			FlsAdmin.ErrorStatus = E_NOT_OK;
+			FlsAdmin.JobResult = jobResult;
+			FlsAdmin.State = FEE_FLS_STATE_READY;
+		}
+	}
+}
+#else
+#define PollFlsJobResult(...)
+
+void Fee_JobEndNotification(void)
+{
+	FlsAdmin.State = FEE_FLS_STATE_READY;
+	FlsAdmin.ErrorStatus = E_OK;
+	FlsAdmin.JobResult = Fls_GetJobResult();
+}
+
+void Fee_JobErrorNotification(void)
+{
+	FlsAdmin.State = FEE_FLS_STATE_READY;
+	FlsAdmin.ErrorStatus = E_NOT_OK;
+	FlsAdmin.JobResult = Fls_GetJobResult();
+}
+#endif
+
+void FinnishJob(void)
+{
+	FlsAdmin.State = FEE_FLS_STATE_IDLE;
+	CurrentJob.State = FEE_IDLE;
+
+	ModuleStatus = MEMIF_IDLE;
+	JobResult = FlsAdmin.JobResult;
+
+	if (FlsAdmin.ErrorStatus == E_OK) {
+		if (Fee_Config.General.NvmJobEndCallbackNotificationCallback != NULL) {
+			Fee_Config.General.NvmJobEndCallbackNotificationCallback();
+		}
+	} else {
+		if (Fee_Config.General.NvmJobErrorCallbackNotificationCallback != NULL) {
+			Fee_Config.General.NvmJobErrorCallbackNotificationCallback();
+		}
+	}
+}
+
 
 void Fee_Init(void)
 {
@@ -134,7 +206,7 @@ void Fee_Init(void)
 	JobResult = MEMIF_JOB_OK;
 
 	// State of device
-	FeeState = FEE_IDLE;
+	CurrentJob.State = FEE_IDLE;
 	FlsAdmin.State = FEE_FLS_STATE_IDLE;
 	FlsAdmin.ErrorStatus = E_OK;
 	FlsAdmin.JobResult = MEMIF_JOB_OK;
@@ -176,8 +248,7 @@ Std_ReturnType Fee_Read(uint16 blockNumber, uint16 blockOffset, uint8* dataBuffe
 	CurrentJob.Length = length;
 	CurrentJob.FlsAddr = CurrentJob.BlockConfigPtr->PhysBaseAddress + GET_DATASET_FROM_BLOCK_NUMBER(blockNumber) * CurrentJob.BlockConfigPtr->BlockSize + blockOffset; 		/** @req FEE021 */
 	CurrentJob.RamPtr = dataBufferPtr;
-
-	FeeState = FEE_JOB_REQUESTED;
+	CurrentJob.State = FEE_READ_REQUESTED;
 
 	return E_OK;
 }
@@ -206,8 +277,7 @@ Std_ReturnType Fee_Write(uint16 blockNumber, uint8* dataBufferPtr)
 	CurrentJob.Length = CurrentJob.BlockConfigPtr->BlockSize;
 	CurrentJob.FlsAddr = CurrentJob.BlockConfigPtr->PhysBaseAddress + GET_DATASET_FROM_BLOCK_NUMBER(blockNumber) * CurrentJob.BlockConfigPtr->BlockSize; 		/** @req FEE024 */
 	CurrentJob.RamPtr = dataBufferPtr;
-
-	FeeState = FEE_JOB_REQUESTED;
+	CurrentJob.State = FEE_WRITE_REQUESTED;
 
 	return E_OK;
 }
@@ -239,8 +309,7 @@ Std_ReturnType Fee_InvalidateBlock(uint16 blockNumber)
 	JobResult = MEMIF_JOB_PENDING;
 
 	CurrentJob.Type = FEE_JOB_TYPE_INVALIDATE;
-
-	FeeState = FEE_JOB_REQUESTED;
+	CurrentJob.State = FEE_INVALIDATE_REQUESTED;
 
 	return E_OK;
 }
@@ -254,122 +323,92 @@ Std_ReturnType Fee_EraseImmediateBlock(uint16 blockNumber)
 	ModuleStatus = MEMIF_BUSY;
 	JobResult = MEMIF_JOB_PENDING;
 	CurrentJob.Type = FEE_JOB_TYPE_ERASE_IMMEDIATE_BLOCK;
-
-	FeeState = FEE_JOB_REQUESTED;
+	CurrentJob.State = FEE_ERASE_IMMEDIATE_REQUESTED;
 
 	return E_OK;
 }
 
-void StartJob(void)
+void ReadStartJob(void)
 {
 	if (FlsAdmin.State == FEE_FLS_STATE_IDLE) {
-		switch (CurrentJob.Type) {
-		case FEE_JOB_TYPE_READ:
-			FlsAdmin.State = FEE_FLS_STATE_PENDING;
-			FeeState = FEE_JOB_PENDING;
-			if (Fls_Read(CurrentJob.FlsAddr, CurrentJob.RamPtr, CurrentJob.Length) != E_OK) {
-				FlsAdmin.State = FEE_FLS_STATE_READY;
-				FlsAdmin.ErrorStatus = E_NOT_OK;
-				FlsAdmin.JobResult = Fls_GetJobResult();
-			}
-			break;
+		FlsAdmin.State = FEE_FLS_STATE_PENDING;
+		CurrentJob.State = FEE_READ_PENDING;
+		if (Fls_Read(CurrentJob.FlsAddr, CurrentJob.RamPtr, CurrentJob.Length) != E_OK) {
+			FlsAdmin.State = FEE_FLS_STATE_READY;
+			FlsAdmin.ErrorStatus = E_NOT_OK;
+			FlsAdmin.JobResult = Fls_GetJobResult();
+		}
+	}
+}
 
-		case FEE_JOB_TYPE_WRITE:
+
+void WriteStartJob(void)
+{
+	if (FlsAdmin.State == FEE_FLS_STATE_IDLE) {
+		FlsAdmin.State = FEE_FLS_STATE_PENDING;
+		CurrentJob.State = FEE_WRITE_EREASE_PENDING;
+		if (Fls_Erase(CurrentJob.FlsAddr, CurrentJob.Length) != E_OK) {
+			FlsAdmin.State = FEE_FLS_STATE_READY;
+			FlsAdmin.ErrorStatus = E_NOT_OK;
+			FlsAdmin.JobResult = Fls_GetJobResult();
+		}
+	}
+}
+
+
+void WriteCheckEraseJaob(void)
+{
+	if (FlsAdmin.ErrorStatus == E_OK) {
+		if (FlsAdmin.State != FEE_FLS_STATE_PENDING) {
 			FlsAdmin.State = FEE_FLS_STATE_PENDING;
-			FeeState = FEE_JOB_PENDING;
+			CurrentJob.State = FEE_WRITE_PENDING;
 			if (Fls_Write(CurrentJob.FlsAddr, CurrentJob.RamPtr, CurrentJob.Length) != E_OK) {
 				FlsAdmin.State = FEE_FLS_STATE_READY;
 				FlsAdmin.ErrorStatus = E_NOT_OK;
 				FlsAdmin.JobResult = Fls_GetJobResult();
+				FinnishJob();
 			}
-			break;
-
-		case FEE_JOB_TYPE_CANCEL:
-			break;
-
-		case FEE_JOB_TYPE_INVALIDATE:
-			break;
-
-		case FEE_JOB_TYPE_ERASE_IMMEDIATE_BLOCK:
-			break;
-
-		default:
-			break;
-		}
-	} // if FEE_FLSH_STATE_IDLE
-}
-
-
-#if (FEE_POLLING_MODE == STD_ON)
-void PollFlsJobResult(void)
-{
-	MemIf_JobResultType jobResult;
-
-	FlsAdmin.State = FEE_FLS_STATE_READY;
-	jobResult = Fls_GetJobResult();
-
-	if (jobResult == MEMIF_JOB_OK) {
-		FlsAdmin.ErrorStatus = E_OK;
-		FlsAdmin.JobResult = jobResult;
-	} else if (jobResult != MEMIF_JOB_PENDING) {
-		FlsAdmin.ErrorStatus = E_NOT_OK;
-		FlsAdmin.JobResult = jobResult;
-	}
-
-}
-#else
-void Fee_JobEndNotification(void)
-{
-	FlsAdmin.State = FEE_FLS_STATE_READY;
-	FlsAdmin.ErrorStatus = E_OK;
-	FlsAdmin.JobResult = Fls_GetJobResult();
-}
-
-void Fee_JobErrorNotification(void)
-{
-	FlsAdmin.State = FEE_FLS_STATE_READY;
-	FlsAdmin.ErrorStatus = E_NOT_OK;
-	FlsAdmin.JobResult = Fls_GetJobResult();
-}
-#endif
-
-void CheckFlsResult(void)
-{
-	FlsAdmin.State = FEE_FLS_STATE_IDLE;
-	FeeState = FEE_IDLE;
-
-	ModuleStatus = MEMIF_IDLE;
-	JobResult = FlsAdmin.JobResult;
-
-	if (FlsAdmin.ErrorStatus == E_OK) {
-		if (Fee_Config.General.NvmJobEndCallbackNotificationCallback != NULL) {
-			Fee_Config.General.NvmJobEndCallbackNotificationCallback();
 		}
 	} else {
-		if (Fee_Config.General.NvmJobErrorCallbackNotificationCallback != NULL) {
-			Fee_Config.General.NvmJobErrorCallbackNotificationCallback();
-		}
+		FinnishJob();
 	}
 }
 
 
 void Fee_MainFunction(void)
 {
-	switch (FeeState) {
+	switch (CurrentJob.State) {
 	case FEE_UNINITIALIZED:
 	case FEE_IDLE:
 		break;
 
-	case FEE_JOB_REQUESTED:
-		StartJob();
+	case FEE_READ_REQUESTED:
+		ReadStartJob();
 		break;
 
-	case FEE_JOB_PENDING:
-#if (FEE_POLLING_MODE == STD_ON)
+	case FEE_READ_PENDING:
 		PollFlsJobResult();
-#endif
-		if (FlsAdmin.State == FEE_FLS_STATE_READY) {
-			CheckFlsResult();
+		if (FLS_READY) {
+			FinnishJob();
+		}
+		break;
+
+	case FEE_WRITE_REQUESTED:
+		WriteStartJob();
+		break;
+
+	case FEE_WRITE_EREASE_PENDING:
+		PollFlsJobResult();
+		if (FLS_READY) {
+			WriteCheckEraseJaob();
+		}
+		break;
+
+	case FEE_WRITE_PENDING:
+	case FEE_WRITE_MAGIC_PENDING:
+		PollFlsJobResult();
+		if (FLS_READY) {
+			FinnishJob();
 		}
 		break;
 
