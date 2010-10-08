@@ -82,6 +82,11 @@ typedef enum {
 	ONE_EVERY_N,
 } ComFilterAlgorithm_type;
 
+#if defined(BIG_ENDIAN) || defined(LITTLE_ENDIAN)
+#undef BIG_ENDIAN
+#undef LITTLE_ENDIAN
+#endif
+
 typedef enum {
 	BIG_ENDIAN,
 	LITTLE_ENDIAN,

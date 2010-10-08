@@ -73,7 +73,7 @@ static ComM_InternalType ComM_Internal = {
 static ComM_ConfigType * ComM_Config;
 
 
-void ComM_Init( ComM_ConfigType * Config ){
+void ComM_Init(const ComM_ConfigType * Config ){
 	COMM_VALIDATE_PARAMETER( (Config != NULL), COMM_SERVICEID_INIT);
 	COMM_VALIDATE_PARAMETER( (Config->Channels != NULL), COMM_SERVICEID_INIT);
 	COMM_VALIDATE_PARAMETER( (Config->Users != NULL), COMM_SERVICEID_INIT);

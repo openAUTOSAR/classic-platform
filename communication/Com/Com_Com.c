@@ -29,6 +29,7 @@
 #include "PduR.h"
 #include "PduR_Com.h"
 #include "Byteorder.h"
+#include "Det.h"
 
 extern Com_Arc_Config_type Com_Arc_Config;
 

@@ -65,7 +65,7 @@ export USE_T32_SIM
 # Ugly thing to make things work under cmd.exe 
 PATH := /usr/bin/:$(PATH) 
 #find := $(shell which find)
-FIND := /bin/find
+FIND := $(shell which find)
 
 export objdir = obj_$(BOARDDIR)
 

@@ -42,7 +42,7 @@
 
 #define PDUR_INSTANCE_ID	0
 
-#include "modules.h"
+#include "Modules.h"
 
 #include "PduR_Cfg.h"
 #include "PduR_Types.h"
