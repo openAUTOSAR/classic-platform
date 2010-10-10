@@ -74,7 +74,6 @@ extern const PduR_PBConfigType *PduRConfig;
 #define DevCheck(PduId,PduPtr,ApiId,...) \
 	if (PduRState == PDUR_UNINIT || PduRState == PDUR_REDUCED) { \
 		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_INVALID_REQUEST); \
-		DEBUG(DEBUG_LOW,"PDU Router not initialized. Routing request ignored.\n"); \
 		return __VA_ARGS__; \
 	} \
 	if (PduPtr == 0 && PDUR_DEV_ERROR_DETECT) { \
