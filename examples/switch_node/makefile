@@ -9,8 +9,8 @@ obj-y += Hooks.o
 inc-y += $(ROOTDIR)/system/kernel/$(objdir)
 inc-y += $(ROOTDIR)/system/kernel/include
 
-# OS object files.
-obj-y += Os_Cfg.o
+VPATH += ../
+
 # Board object files
 include $(ROOTDIR)/boards/board_common.mk
 

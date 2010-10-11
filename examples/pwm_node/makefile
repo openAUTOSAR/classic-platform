@@ -5,8 +5,8 @@ obj-y += Tasks.o
 obj-y += Hooks.o
 obj-y += Rte.o
 
-# OS object files.
-obj-y += Os_Cfg.o
+VPATH += ../
+
 # Board object files
 include $(ROOTDIR)/boards/board_common.mk
 

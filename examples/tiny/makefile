@@ -1,7 +1,6 @@
 
-# OS object files.
-obj-y += Os_Cfg.o
-
+# Our object files
+obj-y += tiny.o
 
 VPATH += ..
 VPATH += ../config
@@ -16,9 +15,6 @@ inc-y := ../config/$(BOARDDIR) ../config $(inc-y)
 
 # Board object files
 include $(ROOTDIR)/boards/board_common.mk
-
-# Our object files
-obj-y += tiny.o
 
 # libs needed by us 
 #libitem-y +=
