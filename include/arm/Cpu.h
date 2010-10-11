@@ -35,15 +35,14 @@
 
 static inline unsigned long _Irq_Save(void)
 {
-   unsigned long val = __get_PRIMASK();
-   Irq_Disable();
+   unsigned long val = 0;
    return val;
 }
 
 /*-----------------------------------------------------------------*/
 
 static inline void _Irq_Restore(unsigned mask) {
-	__set_PRIMASK(mask);
+
 }
 
 #define CallService(index,param)

@@ -4,6 +4,9 @@ vpath-$(CFG_ARM_CM3) += $(ARCH_PATH-y)kernel
 obj-$(CFG_ARM_CM3) += core_cm3.o
 obj-$(CFG_ARM_CM3) += startup_stm32f10x.o
 
+# Cortex R4
+obj-$(CFG_ARM_CR4) += startup_cr4.o
+
 # OS object files. 
 # (checking if already included for compatability)
 ifeq ($(filter Os_Cfg.o,$(obj-y)),)
