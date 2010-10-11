@@ -36,6 +36,8 @@
 /*
  * Local definitions
  */
+
+// Validation macros
 #if  ( FEE_DEV_ERROR_DETECT == STD_ON )
 #include "Det.h"
 #define VALIDATE(_exp,_api,_err ) \
@@ -63,59 +65,36 @@
 #define DET_REPORTERROR(_module,_instance,_api,_err)
 #endif
 
-
+// Block numbering recalculation macros
 #define GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(blocknr)	((blocknr >> NVM_DATASET_SELECTION_BITS) - 1)
 #define GET_DATASET_FROM_BLOCK_NUMBER(blocknr)	(blocknr & ((1 << NVM_DATASET_SELECTION_BITS) - 1))
 
-#define FLS_READY	(FlsAdmin.State == FEE_FLS_STATE_READY)
+// Macro for checking if the flash is ready
+#define FLASH_READY	(FlsAdmin.State == FEE_FLS_STATE_READY)
 
-#define MAGIC_LEN		4
-#define VALIDATE_POS	(MAGIC_LEN + 0)
+// Macros and variables for flash block administration
+#define BLOCK_ADMIN_STATUS_VALID	0x01
+#define BLOCK_ADMIN_STATUS_EMPTY	0x02
+
+#define BLOCK_ADMIN_MAGIC_LEN		4
 typedef struct {
-	uint8	Magic[MAGIC_LEN];
-	uint8	Valid;
-} BlockHeaderType;
+	uint8	Status;
+	uint8	Magic[BLOCK_ADMIN_MAGIC_LEN];
+} FlsBlockAdminType;
 
-static BlockHeaderType BlockHeader;
-#define BLOCK_HEADER_LEN		(sizeof(BlockHeaderType))
+static FlsBlockAdminType FlsBlockAdmin;
 
-static const uint8 MagicMaster[MAGIC_LEN] = { 0xeb, 0xba, 0xba, 0xbe };
-static const BlockHeaderType BlockHeaderMaster = {
-		.Magic = {0xeb, 0xba, 0xba, 0xbe },
-		.Valid = TRUE
+#define BLOCK_ADMIN_LEN				(sizeof(FlsBlockAdminType))
+#define BLOCK_ADMIN_VALIDATE_POS	0
+#define BLOCK_ADMIN_MAGIC_POS		1
+
+static const uint8 MagicMaster[BLOCK_ADMIN_MAGIC_LEN] = { 0xeb, 0xba, 0xba, 0xbe };
+static const FlsBlockAdminType FlsBlockAdminMaster = {
+		.Status = BLOCK_ADMIN_STATUS_VALID | ~BLOCK_ADMIN_STATUS_EMPTY,
+		.Magic = { 0xeb, 0xba, 0xba, 0xbe }
 };
 
-// Variables for quick reporting of status and job result
-static MemIf_StatusType ModuleStatus = MEMIF_UNINIT;
-static MemIf_JobResultType JobResult = MEMIF_JOB_OK;
-
-typedef enum {
-	FEE_JOB_TYPE_NONE,
-	FEE_JOB_TYPE_READ,
-	FEE_JOB_TYPE_WRITE,
-	FEE_JOB_TYPE_CANCEL,
-	FEE_JOB_TYPE_INVALIDATE,
-	FEE_JOB_TYPE_ERASE_IMMEDIATE_BLOCK
-} CurrentJobTypeType;
-
-typedef enum {
-  FEE_UNINITIALIZED = 0,
-  FEE_IDLE,
-  FEE_WRITE_REQUESTED,
-  FEE_WRITE_EREASE_PENDING,
-  FEE_WRITE_PENDING,
-  FEE_WRITE_HEADER_PENDING,
-  FEE_READ_REQUESTED,
-  FEE_READ_HEADER_PENDING,
-  FEE_READ_PENDING,
-  FEE_CANCEL_REQUESTED,
-  FEE_CANCEL_PENDING,
-  FEE_INVALIDATE_REQUESTED,
-  FEE_INVALIDATE_PENDING,
-  FEE_ERASE_IMMEDIATE_REQUESTED,
-  FEE_ERASE_IMMEDIATE_PENDING
-} CurrentJobStateType;
-
+// Variables for keeping the state and status of the flash
 typedef enum {
 	FEE_FLS_STATE_IDLE,
 	FEE_FLS_STATE_PENDING,
@@ -134,35 +113,54 @@ static FlsAdminType FlsAdmin = {
 		.JobResult = MEMIF_JOB_OK
 };
 
-typedef struct {
-	boolean		Consistent;
-	boolean		Valid;
-} BlockAdminType;
+// Variables for quick reporting of status and job result
+static MemIf_StatusType ModuleStatus = MEMIF_UNINIT;
+static MemIf_JobResultType JobResult = MEMIF_JOB_OK;
 
-static BlockAdminType BlockAdminList[FEE_NUM_OF_BLOCKS];
+// Variables for the current job
+typedef enum {
+  FEE_UNINITIALIZED = 0,
+  FEE_IDLE,
+  FEE_WRITE_REQUESTED,
+  FEE_WRITE_MAGIC_EREASE_PENDING,
+  FEE_WRITE_EREASE_PENDING,
+  FEE_WRITE_PENDING,
+  FEE_WRITE_BLOCK_ADMIN_PENDING,
+  FEE_READ_REQUESTED,
+  FEE_READ_BLOCK_ADMIN_PENDING,
+  FEE_READ_PENDING,
+  FEE_CANCEL_REQUESTED,
+  FEE_CANCEL_PENDING,
+  FEE_INVALIDATE_REQUESTED,
+  FEE_INVALIDATE_PENDING,
+  FEE_ERASE_IMMEDIATE_REQUESTED,
+  FEE_ERASE_IMMEDIATE_PENDING
+} CurrentJobStateType;
 
 typedef struct {
-	CurrentJobTypeType			Type;
 	CurrentJobStateType			State;
 	const Fee_BlockConfigType	*BlockConfigPtr;
-	BlockAdminType				*BlockAdminPtr;
 	uint16						Length;
 	uint16						Offset;
 	uint32						FlsBlockAddr;		// Flash source/Dest depending of operation
+	uint32						FlsBlockAdminAddr;	// Startadress of admin block
 	uint8						*RamPtr;		// RAM source/Dest depending of operation
 } CurrentJobType;
 
 static CurrentJobType CurrentJob = {
-		.Type = FEE_JOB_TYPE_NONE,
 		.State = FEE_IDLE
 };
 
+
+/*
+ * Local functions
+ */
 #if (FEE_POLLING_MODE == STD_ON)
 void PollFlsJobResult(void)
 {
 	MemIf_JobResultType jobResult;
 
-	if (FlsAdmin.State = FEE_FLS_STATE_PENDING) {
+	if (FlsAdmin.State == FEE_FLS_STATE_PENDING) {
 		jobResult = Fls_GetJobResult();
 
 		if (jobResult == MEMIF_JOB_OK) {
@@ -178,21 +176,8 @@ void PollFlsJobResult(void)
 }
 #else
 #define PollFlsJobResult(...)
-
-void Fee_JobEndNotification(void)
-{
-	FlsAdmin.State = FEE_FLS_STATE_READY;
-	FlsAdmin.ErrorStatus = E_OK;
-	FlsAdmin.JobResult = Fls_GetJobResult();
-}
-
-void Fee_JobErrorNotification(void)
-{
-	FlsAdmin.State = FEE_FLS_STATE_READY;
-	FlsAdmin.ErrorStatus = E_NOT_OK;
-	FlsAdmin.JobResult = Fls_GetJobResult();
-}
 #endif
+
 
 void FinnishJob(void)
 {
@@ -214,157 +199,13 @@ void FinnishJob(void)
 }
 
 
-void Fee_Init(void)
-{
-	// Reporting information
-	ModuleStatus = MEMIF_IDLE;
-	JobResult = MEMIF_JOB_OK;
-
-	// State of device
-	CurrentJob.State = FEE_IDLE;
-	FlsAdmin.State = FEE_FLS_STATE_IDLE;
-	FlsAdmin.ErrorStatus = E_OK;
-	FlsAdmin.JobResult = MEMIF_JOB_OK;
-}
-
-
-void Fee_SetMode(MemIf_ModeType mode)
-{
-#if ( FLS_SET_MODE_API == STD_ON )
-	Fls_SetMode(mode);
-#else
-	DET_REPORTERROR(MODULE_ID_FEE, 0, FEE_SET_MODE_ID, FEE_E_NOT_SUPPORTED);
-#endif
-}
-
-
-Std_ReturnType Fee_Read(uint16 blockNumber, uint16 blockOffset, uint8* dataBufferPtr, uint16 length)
-{
-	uint16 blockIndex;
-
-	VALIDATE_RV(ModuleStatus != MEMIF_UNINIT, FEE_READ_ID, FEE_E_UNINIT, E_NOT_OK);
-	VALIDATE_RV(ModuleStatus == MEMIF_IDLE, FEE_READ_ID, FEE_E_BUSY, E_NOT_OK);
-
-	VALIDATE_RV(blockNumber >= (1 << NVM_DATASET_SELECTION_BITS), FEE_READ_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
-	blockIndex = GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(blockNumber);
-	VALIDATE_RV(blockIndex < FEE_NUM_OF_BLOCKS, FEE_READ_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
-	VALIDATE_RV(dataBufferPtr != NULL, FEE_READ_ID, FEE_E_INVALID_DATA_PTR, E_NOT_OK);
-	VALIDATE_RV(blockOffset < Fee_Config.BlockConfig[blockIndex].BlockSize, FEE_READ_ID, FEE_E_INVALID_BLOCK_OFS, E_NOT_OK);
-	VALIDATE_RV(blockOffset + length <= Fee_Config.BlockConfig[blockIndex].BlockSize, FEE_READ_ID, FEE_E_INVALID_BLOCK_LEN, E_NOT_OK);
-
-
-	/** @req FEE022 */
-	ModuleStatus = MEMIF_BUSY;
-	JobResult = MEMIF_JOB_PENDING;
-
-	CurrentJob.Type = FEE_JOB_TYPE_READ;
-	CurrentJob.BlockConfigPtr = &Fee_Config.BlockConfig[blockIndex];
-	CurrentJob.BlockAdminPtr = &BlockAdminList[blockIndex];
-	CurrentJob.Length = length;
-	CurrentJob.Offset = blockOffset;
-	CurrentJob.FlsBlockAddr = CurrentJob.BlockConfigPtr->PhysBaseAddress + GET_DATASET_FROM_BLOCK_NUMBER(blockNumber) * CurrentJob.BlockConfigPtr->BlockSize; 		/** @req FEE021 */
-	CurrentJob.RamPtr = dataBufferPtr;
-	CurrentJob.State = FEE_READ_REQUESTED;
-
-	return E_OK;
-}
-
-
-Std_ReturnType Fee_Write(uint16 blockNumber, uint8* dataBufferPtr)
-{
-	uint16 blockIndex;
-
-	VALIDATE_RV(ModuleStatus != MEMIF_UNINIT, FEE_WRITE_ID, FEE_E_UNINIT, E_NOT_OK);
-	VALIDATE_RV(ModuleStatus == MEMIF_IDLE, FEE_WRITE_ID, FEE_E_BUSY, E_NOT_OK);
-
-	VALIDATE_RV(blockNumber >= (1 << NVM_DATASET_SELECTION_BITS), FEE_WRITE_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
-	blockIndex = GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(blockNumber);
-	VALIDATE_RV(blockIndex < FEE_NUM_OF_BLOCKS, FEE_WRITE_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
-	VALIDATE_RV(dataBufferPtr != NULL, FEE_WRITE_ID, FEE_E_INVALID_DATA_PTR, E_NOT_OK);
-
-
-	/** @req FEE025 */
-	ModuleStatus = MEMIF_BUSY;
-	JobResult = MEMIF_JOB_PENDING;
-
-	CurrentJob.Type = FEE_JOB_TYPE_WRITE;
-	CurrentJob.BlockConfigPtr = &Fee_Config.BlockConfig[blockIndex];
-	CurrentJob.BlockAdminPtr = &BlockAdminList[blockIndex];
-	CurrentJob.Length = CurrentJob.BlockConfigPtr->BlockSize;
-	CurrentJob.FlsBlockAddr = CurrentJob.BlockConfigPtr->PhysBaseAddress + GET_DATASET_FROM_BLOCK_NUMBER(blockNumber) * CurrentJob.BlockConfigPtr->BlockSize; 		/** @req FEE024 */
-	CurrentJob.RamPtr = dataBufferPtr;
-	CurrentJob.State = FEE_WRITE_REQUESTED;
-
-	return E_OK;
-}
-
-
-void Fee_Cancel(void)
-{
-
-}
-
-
-MemIf_StatusType Fee_GetStatus(void)
-{
-	return ModuleStatus;
-}
-
-
-MemIf_JobResultType Fee_GetJobResult(void)
-{
-	return JobResult;
-}
-
-
-Std_ReturnType Fee_InvalidateBlock(uint16 blockNumber)
-{
-	uint16 blockIndex;
-
-	VALIDATE_RV(ModuleStatus != MEMIF_UNINIT, FEE_INVALIDATE_BLOCK_ID, FEE_E_UNINIT, E_NOT_OK);
-	VALIDATE_RV(ModuleStatus == MEMIF_IDLE, FEE_INVALIDATE_BLOCK_ID, FEE_E_BUSY, E_NOT_OK);
-
-	VALIDATE_RV(blockNumber >= (1 << NVM_DATASET_SELECTION_BITS), FEE_INVALIDATE_BLOCK_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
-	blockIndex = GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(blockNumber);
-	VALIDATE_RV(blockIndex < FEE_NUM_OF_BLOCKS, FEE_INVALIDATE_BLOCK_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
-
-
-	ModuleStatus = MEMIF_BUSY;
-	JobResult = MEMIF_JOB_PENDING;
-
-	CurrentJob.Type = FEE_JOB_TYPE_INVALIDATE;
-	CurrentJob.BlockConfigPtr = &Fee_Config.BlockConfig[blockIndex];
-	CurrentJob.BlockAdminPtr = &BlockAdminList[blockIndex];
-	CurrentJob.Length = 0;
-	CurrentJob.FlsBlockAddr = CurrentJob.BlockConfigPtr->PhysBaseAddress + GET_DATASET_FROM_BLOCK_NUMBER(blockNumber) * CurrentJob.BlockConfigPtr->BlockSize; 		/** @req FEE024 */
-	CurrentJob.RamPtr = NULL;
-	CurrentJob.State = FEE_INVALIDATE_REQUESTED;
-
-	return E_OK;
-}
-
-
-Std_ReturnType Fee_EraseImmediateBlock(uint16 blockNumber)
-{
-	VALIDATE_RV(blockNumber < FEE_NUM_OF_BLOCKS, FEE_ERASE_IMMEDIATE_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
-	VALIDATE_RV(Fee_Config.BlockConfig[blockNumber].ImmediateData, FEE_ERASE_IMMEDIATE_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
-
-	ModuleStatus = MEMIF_BUSY;
-	JobResult = MEMIF_JOB_PENDING;
-	CurrentJob.Type = FEE_JOB_TYPE_ERASE_IMMEDIATE_BLOCK;
-	CurrentJob.State = FEE_ERASE_IMMEDIATE_REQUESTED;
-
-	return E_OK;
-}
-
-
 void ReadStartJob(void)
 {
 	if (FlsAdmin.State == FEE_FLS_STATE_IDLE) {
 		FlsAdmin.State = FEE_FLS_STATE_PENDING;
-		CurrentJob.State = FEE_READ_HEADER_PENDING;
-		// Start by reading the header block
-		if (Fls_Read(CurrentJob.FlsBlockAddr, (uint8*)&BlockHeader, BLOCK_HEADER_LEN) != E_OK) {
+		CurrentJob.State = FEE_READ_BLOCK_ADMIN_PENDING;
+		// Start by reading the admin block
+		if (Fls_Read(CurrentJob.FlsBlockAdminAddr, (uint8*)&FlsBlockAdmin, BLOCK_ADMIN_LEN) != E_OK) {
 			FlsAdmin.State = FEE_FLS_STATE_READY;
 			FlsAdmin.ErrorStatus = E_NOT_OK;
 			FlsAdmin.JobResult = Fls_GetJobResult();
@@ -372,16 +213,16 @@ void ReadStartJob(void)
 	}
 }
 
-void ReadCheckHeaderJob(void)
+void ReadCheckBlockAdminJob(void)
 {
 	if (FlsAdmin.ErrorStatus == E_OK) {
-		if (memcmp(BlockHeader.Magic, MagicMaster, MAGIC_LEN) == 0) {
-			if (BlockHeader.Valid) {
+		if (memcmp(FlsBlockAdmin.Magic, MagicMaster, BLOCK_ADMIN_MAGIC_LEN) == 0) {
+			if (FlsBlockAdmin.Status & BLOCK_ADMIN_STATUS_VALID) {
 				if (FlsAdmin.State != FEE_FLS_STATE_PENDING) {
 					FlsAdmin.State = FEE_FLS_STATE_PENDING;
 					CurrentJob.State = FEE_READ_PENDING;
 					// Read the actual data
-					if (Fls_Read(CurrentJob.FlsBlockAddr + CurrentJob.Offset + BLOCK_HEADER_LEN, CurrentJob.RamPtr, CurrentJob.Length) != E_OK) {
+					if (Fls_Read(CurrentJob.FlsBlockAddr + CurrentJob.Offset, CurrentJob.RamPtr, CurrentJob.Length) != E_OK) {
 						FlsAdmin.State = FEE_FLS_STATE_READY;
 						FlsAdmin.ErrorStatus = E_NOT_OK;
 						FlsAdmin.JobResult = Fls_GetJobResult();
@@ -408,13 +249,33 @@ void WriteStartJob(void)
 {
 	if (FlsAdmin.State == FEE_FLS_STATE_IDLE) {
 		FlsAdmin.State = FEE_FLS_STATE_PENDING;
-		CurrentJob.State = FEE_WRITE_EREASE_PENDING;
-		// Start by erasing the block
-		if (Fls_Erase(CurrentJob.FlsBlockAddr, CurrentJob.Length + BLOCK_HEADER_LEN) != E_OK) {
+		CurrentJob.State = FEE_WRITE_MAGIC_EREASE_PENDING;
+		// Start by erasing the magic
+		if (Fls_Erase(CurrentJob.FlsBlockAdminAddr + BLOCK_ADMIN_MAGIC_POS, BLOCK_ADMIN_MAGIC_LEN) != E_OK) {
 			FlsAdmin.State = FEE_FLS_STATE_READY;
 			FlsAdmin.ErrorStatus = E_NOT_OK;
 			FlsAdmin.JobResult = Fls_GetJobResult();
 		}
+	}
+}
+
+
+void WriteCheckMagicEraseJob(void)
+{
+	if (FlsAdmin.ErrorStatus == E_OK) {
+		if (FlsAdmin.State != FEE_FLS_STATE_PENDING) {
+			FlsAdmin.State = FEE_FLS_STATE_PENDING;
+			CurrentJob.State = FEE_WRITE_EREASE_PENDING;
+			// Erase the rest of the block
+			if (Fls_Erase(CurrentJob.FlsBlockAddr, CurrentJob.BlockConfigPtr->BlockSize + BLOCK_ADMIN_LEN - BLOCK_ADMIN_MAGIC_LEN) != E_OK) {
+				FlsAdmin.State = FEE_FLS_STATE_READY;
+				FlsAdmin.ErrorStatus = E_NOT_OK;
+				FlsAdmin.JobResult = Fls_GetJobResult();
+				FinnishJob();
+			}
+		}
+	} else {
+		FinnishJob();
 	}
 }
 
@@ -426,7 +287,7 @@ void WriteCheckEraseJob(void)
 			FlsAdmin.State = FEE_FLS_STATE_PENDING;
 			CurrentJob.State = FEE_WRITE_PENDING;
 			// Write the actual data
-			if (Fls_Write(CurrentJob.FlsBlockAddr + BLOCK_HEADER_LEN, CurrentJob.RamPtr, CurrentJob.Length) != E_OK) {
+			if (Fls_Write(CurrentJob.FlsBlockAddr, CurrentJob.RamPtr, CurrentJob.Length) != E_OK) {
 				FlsAdmin.State = FEE_FLS_STATE_READY;
 				FlsAdmin.ErrorStatus = E_NOT_OK;
 				FlsAdmin.JobResult = Fls_GetJobResult();
@@ -444,9 +305,9 @@ void WriteCheckWriteJob(void)
 	if (FlsAdmin.ErrorStatus == E_OK) {
 		if (FlsAdmin.State != FEE_FLS_STATE_PENDING) {
 			FlsAdmin.State = FEE_FLS_STATE_PENDING;
-			CurrentJob.State = FEE_WRITE_HEADER_PENDING;
-			// Write the block header (mark it as consistent and valid)
-			if (Fls_Write(CurrentJob.FlsBlockAddr, (uint8*)&BlockHeaderMaster, BLOCK_HEADER_LEN) != E_OK) {
+			CurrentJob.State = FEE_WRITE_BLOCK_ADMIN_PENDING;
+			// Write the block admin (mark it as consistent, valid and not empty)
+			if (Fls_Write(CurrentJob.FlsBlockAdminAddr, (uint8*)&FlsBlockAdminMaster, BLOCK_ADMIN_LEN) != E_OK) {
 				FlsAdmin.State = FEE_FLS_STATE_READY;
 				FlsAdmin.ErrorStatus = E_NOT_OK;
 				FlsAdmin.JobResult = Fls_GetJobResult();
@@ -467,7 +328,7 @@ void InvalidateStartJob(void)
 		FlsAdmin.State = FEE_FLS_STATE_PENDING;
 		CurrentJob.State = FEE_INVALIDATE_PENDING;
 		// Write a zero to the Validate flag
-		if (Fls_Write(CurrentJob.FlsBlockAddr + VALIDATE_POS, &zero, 1) != E_OK) {
+		if (Fls_Write(CurrentJob.FlsBlockAdminAddr + BLOCK_ADMIN_VALIDATE_POS, &zero, 1) != E_OK) {
 			FlsAdmin.State = FEE_FLS_STATE_READY;
 			FlsAdmin.ErrorStatus = E_NOT_OK;
 			FlsAdmin.JobResult = Fls_GetJobResult();
@@ -476,6 +337,186 @@ void InvalidateStartJob(void)
 }
 
 
+/***************************************
+ *    External accessible functions    *
+ ***************************************/
+/*
+ * Procedure:	Fee_Init
+ * Reentrant:	No
+ */
+void Fee_Init(void)
+{
+	// Reporting information
+	ModuleStatus = MEMIF_IDLE;
+	JobResult = MEMIF_JOB_OK;
+
+	// State of device
+	CurrentJob.State = FEE_IDLE;
+	FlsAdmin.State = FEE_FLS_STATE_IDLE;
+	FlsAdmin.ErrorStatus = E_OK;
+	FlsAdmin.JobResult = MEMIF_JOB_OK;
+}
+
+
+/*
+ * Procedure:	Fee_SetMode
+ * Reentrant:	No
+ */
+void Fee_SetMode(MemIf_ModeType mode)
+{
+#if ( FLS_SET_MODE_API == STD_ON )
+	Fls_SetMode(mode);
+#else
+	DET_REPORTERROR(MODULE_ID_FEE, 0, FEE_SET_MODE_ID, FEE_E_NOT_SUPPORTED);
+#endif
+}
+
+/*
+ * Procedure:	Fee_Read
+ * Reentrant:	No
+ */
+Std_ReturnType Fee_Read(uint16 blockNumber, uint16 blockOffset, uint8* dataBufferPtr, uint16 length)
+{
+	uint16 blockIndex;
+
+	VALIDATE_RV(ModuleStatus != MEMIF_UNINIT, FEE_READ_ID, FEE_E_UNINIT, E_NOT_OK);
+	VALIDATE_RV(ModuleStatus == MEMIF_IDLE, FEE_READ_ID, FEE_E_BUSY, E_NOT_OK);
+
+	VALIDATE_RV(blockNumber >= (1 << NVM_DATASET_SELECTION_BITS), FEE_READ_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
+	blockIndex = GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(blockNumber);
+	VALIDATE_RV(blockIndex < FEE_NUM_OF_BLOCKS, FEE_READ_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
+	VALIDATE_RV(dataBufferPtr != NULL, FEE_READ_ID, FEE_E_INVALID_DATA_PTR, E_NOT_OK);
+	VALIDATE_RV(blockOffset < Fee_Config.BlockConfig[blockIndex].BlockSize, FEE_READ_ID, FEE_E_INVALID_BLOCK_OFS, E_NOT_OK);
+	VALIDATE_RV(blockOffset + length <= Fee_Config.BlockConfig[blockIndex].BlockSize, FEE_READ_ID, FEE_E_INVALID_BLOCK_LEN, E_NOT_OK);
+
+
+	/** @req FEE022 */
+	ModuleStatus = MEMIF_BUSY;
+	JobResult = MEMIF_JOB_PENDING;
+
+	CurrentJob.BlockConfigPtr = &Fee_Config.BlockConfig[blockIndex];
+	CurrentJob.Length = length;
+	CurrentJob.Offset = blockOffset;
+	CurrentJob.FlsBlockAddr = CurrentJob.BlockConfigPtr->PhysBaseAddress + GET_DATASET_FROM_BLOCK_NUMBER(blockNumber) * CurrentJob.BlockConfigPtr->BlockSize; 		/** @req FEE021 */
+	CurrentJob.FlsBlockAdminAddr = CurrentJob.FlsBlockAddr + CurrentJob.BlockConfigPtr->BlockSize;
+	CurrentJob.RamPtr = dataBufferPtr;
+	CurrentJob.State = FEE_READ_REQUESTED;
+
+	return E_OK;
+}
+
+
+/*
+ * Procedure:	Fee_Write
+ * Reentrant:	No
+ */
+Std_ReturnType Fee_Write(uint16 blockNumber, uint8* dataBufferPtr)
+{
+	uint16 blockIndex;
+
+	VALIDATE_RV(ModuleStatus != MEMIF_UNINIT, FEE_WRITE_ID, FEE_E_UNINIT, E_NOT_OK);
+	VALIDATE_RV(ModuleStatus == MEMIF_IDLE, FEE_WRITE_ID, FEE_E_BUSY, E_NOT_OK);
+
+	VALIDATE_RV(blockNumber >= (1 << NVM_DATASET_SELECTION_BITS), FEE_WRITE_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
+	blockIndex = GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(blockNumber);
+	VALIDATE_RV(blockIndex < FEE_NUM_OF_BLOCKS, FEE_WRITE_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
+	VALIDATE_RV(dataBufferPtr != NULL, FEE_WRITE_ID, FEE_E_INVALID_DATA_PTR, E_NOT_OK);
+
+
+	/** @req FEE025 */
+	ModuleStatus = MEMIF_BUSY;
+	JobResult = MEMIF_JOB_PENDING;
+
+	CurrentJob.BlockConfigPtr = &Fee_Config.BlockConfig[blockIndex];
+	CurrentJob.Length = CurrentJob.BlockConfigPtr->BlockSize;
+	CurrentJob.FlsBlockAddr = CurrentJob.BlockConfigPtr->PhysBaseAddress + GET_DATASET_FROM_BLOCK_NUMBER(blockNumber) * CurrentJob.BlockConfigPtr->BlockSize; 		/** @req FEE024 */
+	CurrentJob.FlsBlockAdminAddr = CurrentJob.FlsBlockAddr + CurrentJob.BlockConfigPtr->BlockSize;
+	CurrentJob.RamPtr = dataBufferPtr;
+	CurrentJob.State = FEE_WRITE_REQUESTED;
+
+	return E_OK;
+}
+
+
+/*
+ * Procedure:	Fee_Cancel
+ * Reentrant:	No
+ */
+void Fee_Cancel(void)
+{
+	DET_REPORTERROR(MODULE_ID_FEE, 0, FEE_CANCEL_ID, FEE_E_NOT_IMPLEMENTED_YET);
+}
+
+
+/*
+ * Procedure:	Fee_GetStatus
+ * Reentrant:	No
+ */
+MemIf_StatusType Fee_GetStatus(void)
+{
+	return ModuleStatus;
+}
+
+
+/*
+ * Procedure:	Fee_GetJobResult
+ * Reentrant:	No
+ */
+MemIf_JobResultType Fee_GetJobResult(void)
+{
+	return JobResult;
+}
+
+
+/*
+ * Procedure:	Fee_InvalidateBlock
+ * Reentrant:	No
+ */
+Std_ReturnType Fee_InvalidateBlock(uint16 blockNumber)
+{
+	uint16 blockIndex;
+
+	VALIDATE_RV(ModuleStatus != MEMIF_UNINIT, FEE_INVALIDATE_BLOCK_ID, FEE_E_UNINIT, E_NOT_OK);
+	VALIDATE_RV(ModuleStatus == MEMIF_IDLE, FEE_INVALIDATE_BLOCK_ID, FEE_E_BUSY, E_NOT_OK);
+
+	VALIDATE_RV(blockNumber >= (1 << NVM_DATASET_SELECTION_BITS), FEE_INVALIDATE_BLOCK_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
+	blockIndex = GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(blockNumber);
+	VALIDATE_RV(blockIndex < FEE_NUM_OF_BLOCKS, FEE_INVALIDATE_BLOCK_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
+
+
+	ModuleStatus = MEMIF_BUSY;
+	JobResult = MEMIF_JOB_PENDING;
+
+	CurrentJob.BlockConfigPtr = &Fee_Config.BlockConfig[blockIndex];
+	CurrentJob.Length = 0;
+	CurrentJob.FlsBlockAddr = CurrentJob.BlockConfigPtr->PhysBaseAddress + GET_DATASET_FROM_BLOCK_NUMBER(blockNumber) * CurrentJob.BlockConfigPtr->BlockSize; 		/** @req FEE024 */
+	CurrentJob.FlsBlockAdminAddr = CurrentJob.FlsBlockAddr + CurrentJob.BlockConfigPtr->BlockSize;
+	CurrentJob.RamPtr = NULL;
+	CurrentJob.State = FEE_INVALIDATE_REQUESTED;
+
+	return E_OK;
+}
+
+
+/*
+ * Procedure:	Fee_EraseImmediateBlock
+ * Reentrant:	No
+ */
+Std_ReturnType Fee_EraseImmediateBlock(uint16 blockNumber)
+{
+	DET_REPORTERROR(MODULE_ID_FEE, 0, FEE_ERASE_IMMEDIATE_ID, FEE_E_NOT_IMPLEMENTED_YET);
+
+	return E_NOT_OK;
+}
+
+
+/***************************************
+ *         Scheduled functions         *
+ ***************************************/
+/*
+ * Procedure:	Fee_MainFunction
+ * Reentrant:	No
+ */
 void Fee_MainFunction(void)
 {
 	switch (CurrentJob.State) {
@@ -483,62 +524,103 @@ void Fee_MainFunction(void)
 	case FEE_IDLE:
 		break;
 
+	// Read states
 	case FEE_READ_REQUESTED:
 		ReadStartJob();
 		break;
 
-	case FEE_READ_HEADER_PENDING:
+	case FEE_READ_BLOCK_ADMIN_PENDING:
 		PollFlsJobResult();
-		if (FLS_READY) {
-			ReadCheckHeaderJob();
+		if (FLASH_READY) {
+			ReadCheckBlockAdminJob();
 		}
 		break;
 
 	case FEE_READ_PENDING:
 		PollFlsJobResult();
-		if (FLS_READY) {
+		if (FLASH_READY) {
 			FinnishJob();
 		}
 		break;
 
+	// Write states
 	case FEE_WRITE_REQUESTED:
 		WriteStartJob();
 		break;
 
+	case FEE_WRITE_MAGIC_EREASE_PENDING:
+		PollFlsJobResult();
+		if (FLASH_READY) {
+			WriteCheckMagicEraseJob();
+		}
+		break;
+
 	case FEE_WRITE_EREASE_PENDING:
 		PollFlsJobResult();
-		if (FLS_READY) {
+		if (FLASH_READY) {
 			WriteCheckEraseJob();
 		}
 		break;
 
 	case FEE_WRITE_PENDING:
 		PollFlsJobResult();
-		if (FLS_READY) {
+		if (FLASH_READY) {
 			WriteCheckWriteJob();
 		}
 		break;
 
-	case FEE_WRITE_HEADER_PENDING:
+	case FEE_WRITE_BLOCK_ADMIN_PENDING:
 		PollFlsJobResult();
-		if (FLS_READY) {
+		if (FLASH_READY) {
 			FinnishJob();
 		}
 		break;
 
+	// Invalidate states
 	case FEE_INVALIDATE_REQUESTED:
 		InvalidateStartJob();
 		break;
 
 	case FEE_INVALIDATE_PENDING:
 		PollFlsJobResult();
-		if (FLS_READY) {
+		if (FLASH_READY) {
 			FinnishJob();
 		}
 		break;
 
+	// Other
 	default:
 		break;
 	}
 }
+
+
+/***************************************
+ *  Call-back notifications functions  *
+ ***************************************/
+#if (FEE_POLLING_MODE == STD_OFF)
+/*
+ * Procedure:	Fee_JobEndNotification
+ * Reentrant:	No
+ */
+void Fee_JobEndNotification(void)
+{
+	FlsAdmin.State = FEE_FLS_STATE_READY;
+	FlsAdmin.ErrorStatus = E_OK;
+	FlsAdmin.JobResult = Fls_GetJobResult();
+}
+
+
+/*
+ * Procedure:	Fee_JobErrorNotification
+ * Reentrant:	No
+ */
+void Fee_JobErrorNotification(void)
+{
+	FlsAdmin.State = FEE_FLS_STATE_READY;
+	FlsAdmin.ErrorStatus = E_NOT_OK;
+	FlsAdmin.JobResult = Fls_GetJobResult();
+}
+#endif
+
 
