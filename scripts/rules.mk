@@ -110,8 +110,8 @@ $(ROOTDIR)/binaries:
 
 # build- targets are "end" target that the included makefile want's to build
 .PHONY all:
-all: $(build-exe-y) $(build-hex-y) $(build-lib-y) $(ROOTDIR)/binaries
-	@cp -v $(build-lib-y) $(build-exe-y) $(build-hex-y) $(ROOTDIR)/binaries
+all: $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $(ROOTDIR)/binaries
+	@cp -v $(build-lib-y) $(build-exe-y) $(build-hex-y) $(build-bin-y) $(ROOTDIR)/binaries
 
 
 # Determine what kind of filetype to build from  
@@ -170,6 +170,10 @@ $(build-lib-y): $(dep-y) $(obj-y)
 $(build-hex-y): $(build-exe-y)
 	@echo "  >> OBJCOPY $@"   
 	$(Q)$(CROSS_COMPILE)objcopy -O ihex $< $@
+	
+$(build-bin-y): $(build-exe-y)
+	@echo "  >> OBJCOPY $@"   
+	$(Q)$(CROSS_COMPILE)objcopy -O binary $< $@	
 
 # Linker
 # Could use readelf -S instead of parsing the *.map file.

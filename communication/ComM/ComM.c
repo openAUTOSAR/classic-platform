@@ -56,7 +56,7 @@
 #endif
 
 /** @req COMM347 */
-#if defined(USE_NM)
+#if defined(USE_NM) || defined(COMM_TESTS)
 #include "Nm.h"
 #endif
 
@@ -73,7 +73,7 @@ static ComM_InternalType ComM_Internal = {
 static ComM_ConfigType * ComM_Config;
 
 
-void ComM_Init( ComM_ConfigType * Config ){
+void ComM_Init(const ComM_ConfigType * Config ){
 	COMM_VALIDATE_PARAMETER( (Config != NULL), COMM_SERVICEID_INIT);
 	COMM_VALIDATE_PARAMETER( (Config->Channels != NULL), COMM_SERVICEID_INIT);
 	COMM_VALIDATE_PARAMETER( (Config->Users != NULL), COMM_SERVICEID_INIT);
@@ -451,7 +451,7 @@ static Std_ReturnType ComM_Internal_PropagateComMode( const ComM_ChannelType* Ch
 
 	Std_ReturnType busSMStatus = E_OK;
 	switch (ChannelConf->BusType) {
-#if defined(USE_CANSM)
+#if defined(USE_CANSM) || defined(COMM_TESTS)
 		case COMM_BUS_TYPE_CAN:
 			busSMStatus = CanSM_RequestComMode(ChannelConf->BusSMNetworkHandle, ComMode);
 			break;
@@ -476,7 +476,7 @@ static Std_ReturnType ComM_Internal_NotifyNm( const ComM_ChannelType* ChannelCon
 
 	if ((ChannelConf->NmVariant == COMM_NM_VARIANT_FULL) ||
 		(ChannelConf->NmVariant == COMM_NM_VARIANT_PASSIVE)) {
-#if defined(USE_NM)
+#if defined(USE_NM) || defined(COMM_TESTS)
 		Nm_ReturnType nmStatus = NM_E_OK;
 		if (ChannelInternal->Mode == COMM_FULL_COMMUNICATION) {
 			if (ChannelInternal->SubMode == COMM_SUBMODE_NETWORK_REQUESTED) {

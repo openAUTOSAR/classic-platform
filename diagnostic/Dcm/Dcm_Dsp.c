@@ -28,7 +28,9 @@
 #include "Dcm_Internal.h"
 #include "Dem.h"
 #include "MemMap.h"
+#if defined(USE_MCU)
 #include "Mcu.h"
+#endif
 
 #define ZERO_SUB_FUNCTION			0x00
 
@@ -408,7 +410,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x09(const PduInfoType *pd
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x06_0x10(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
-	Dem_DTCOriginType dtcOrigin = NULL;
+	Dem_DTCOriginType dtcOrigin;
 	uint8 startRecNum;
 	uint8 endRecNum;
 
@@ -425,6 +427,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x06_0x10(const PduInfoTyp
 
 	default:
 		responseCode = DCM_E_SUBFUNCTIONNOTSUPPORTED;
+		dtcOrigin = 0;
 		break;
 	}
 
@@ -1091,7 +1094,7 @@ void DspDcmConfirmation(PduIdType confirmPduId)
 	if (dspUdsEcuResetData.resetPending) {
 		if (confirmPduId == dspUdsEcuResetData.resetPduId) {
 			dspUdsEcuResetData.resetPending = FALSE;
-#if ( MCU_PERFORM_RESET_API == STD_ON )
+#if defined(USE_MCU) && ( MCU_PERFORM_RESET_API == STD_ON )
 			Mcu_PerformReset();
 #else
 			DET_REPORTERROR(MODULE_ID_DCM, 0, DCM_UDS_RESET_ID, DCM_E_NOT_SUPPORTED);

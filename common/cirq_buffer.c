@@ -46,21 +46,10 @@
 
 /* TODO: Not threadsafe, add DisableAllInterrts()/EnableAllInterrupts() */
 
-CirqBufferType CirqBuffStatCreate(void *buffer, int maxCnt, size_t dataSize) {
-	CirqBufferType cirqbuffer;
-	cirqbuffer.bufStart = buffer;
-	cirqbuffer.maxCnt = maxCnt;
-	cirqbuffer.bufEnd = (char *)cirqbuffer.bufStart + dataSize*maxCnt;
-	cirqbuffer.head = cirqbuffer.bufStart;
-	cirqbuffer.tail = cirqbuffer.bufStart;
-	cirqbuffer.dataSize = dataSize;
-	cirqbuffer.currCnt = 0;
-	return cirqbuffer;
-}
 
-CirqBufferType *CirqBuffDynCreate( size_t size, size_t dataSize ) {
-	CirqBufferType *cPtr;
-	cPtr = malloc(sizeof(CirqBufferType));
+CirqBufferDynType *CirqBuffDynCreate( size_t size, size_t dataSize ) {
+	CirqBufferDynType *cPtr;
+	cPtr = malloc(sizeof(CirqBufferDynType));
 	if( cPtr == NULL ) {
 		return NULL;
 	}
@@ -74,15 +63,13 @@ CirqBufferType *CirqBuffDynCreate( size_t size, size_t dataSize ) {
 	return cPtr;
 }
 
-
-
-int CirqBuffDynDestroy(CirqBufferType *cPtr ) {
+int CirqBuffDynDestroy(CirqBufferDynType *cPtr ) {
 	free(cPtr->bufStart);
 	free(cPtr);
 	return 0;
 }
 
-int CirqBuffPush( CirqBufferType *cPtr, void *dataPtr ) {
+int CirqBuffDynPush( CirqBufferDynType *cPtr, void *dataPtr ) {
 	uint32_t flags;
 	if( (cPtr->currCnt == cPtr->maxCnt) || (cPtr==NULL) ) {
 		return 1;	/* No more room */
@@ -99,7 +86,7 @@ int CirqBuffPush( CirqBufferType *cPtr, void *dataPtr ) {
 	return 0;
 }
 
-int CirqBuffPop(CirqBufferType *cPtr, void *dataPtr ) {
+int CirqBuffDynPop(CirqBufferDynType *cPtr, void *dataPtr ) {
 	uint32_t flags;
 	if( (cPtr->currCnt == 0) || (cPtr==NULL) ) {
 		return 1;
@@ -115,11 +102,9 @@ int CirqBuffPop(CirqBufferType *cPtr, void *dataPtr ) {
 	return 0;
 }
 
-
-
 #ifdef _TEST_CIRQ_BUFFER_DYN_
 int main( void ) {
-	CirqBufferType *cPtr;
+	CirqBufferDynType *cPtr;
 	uint8_t *dataPtr;
 	int rv;
 
@@ -129,24 +114,24 @@ int main( void ) {
 
 	dataPtr = malloc(DATA_SIZE);
 	dataPtr[0] = 1;
-	rv  = CirqBuffPush(cPtr,dataPtr);
+	rv  = CirqBuffDynPush(cPtr,dataPtr);
 	assert(rv == 0);
 	free(dataPtr);
 
 	dataPtr = malloc(DATA_SIZE);
 	dataPtr[0] = 2;
-	rv  = CirqBuffPush(cPtr,dataPtr);
+	rv  = CirqBuffDynPush(cPtr,dataPtr);
 	assert(rv == 0);
 	free(dataPtr);
 
 	dataPtr = malloc(DATA_SIZE);
-	rv = CirqBuffPop(cPtr,dataPtr);
+	rv = CirqBuffDynPop(cPtr,dataPtr);
 	assert( dataPtr[0] == 1);
 	assert(rv == 0);
 	free(dataPtr);
 
 	dataPtr = malloc(DATA_SIZE);
-	rv = CirqBuffPop(cPtr,dataPtr);
+	rv = CirqBuffDynPop(cPtr,dataPtr);
 	assert( dataPtr[0] == 2);
 	assert(rv == 0);
 	free(dataPtr);

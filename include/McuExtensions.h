@@ -13,22 +13,15 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-#ifndef SLEEP_H_
-#define SLEEP_H_
 
-#include "os.h"
 
-#define SLEEP(_x_) \
-do{ \
-	uint32_t pval = McuE_EnterCriticalSection(); \
-	TaskType task; \
-	GetTaskID(&task); \
-	Sleep(_x_, task, EVENT_MASK_EVENT_SLEEP_ALARM ); \
-    McuE_ExitCriticalSection(pval); \
-	WaitEvent(EVENT_MASK_EVENT_SLEEP_ALARM); \
-	ClearEvent(EVENT_MASK_EVENT_SLEEP_ALARM); \
-}while(0);
+#ifndef _MCU_EXTENSIONS_H_
+#define _MCU_EXTENSIONS_H_
 
-void Sleep(uint32_t nofTicks, TaskType TaskID, EventMaskType Mask );
+#include "Std_Types.h"
+typedef uint32_t imask_t;
 
-#endif /* SLEEP_H_ */
+imask_t McuE_EnterCriticalSection(void);
+void McuE_ExitCriticalSection(imask_t old_state);
+
+#endif

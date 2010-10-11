@@ -26,7 +26,7 @@
 #include "CanSM.h"              /**< @req CANSM013 */
 #include "Com.h"                /**< @req CANSM172 */
 #include "ComM.h"               /**< @req CANSM174 */
-#include "ComM_BusSM.h"         /**< @req CANSM191 */
+#include "ComM_BusSm.h"         /**< @req CANSM191 */
 #include "Det.h"                /**< @req CANSM015 */
 #if defined(USE_DEM)
 #include "Dem.h"                /**< @req CANSM014 */

@@ -835,8 +835,10 @@ static INLINE void handleSingleFrame(const CanTp_RxNSduType *rxConfig,
 	(void) initRx15765RuntimeData(rxConfig, rxRuntime); /** @req CANTP124 */
 	pduLength = getPduLength(&rxConfig->CanTpAddressingFormant, SINGLE_FRAME, rxPduData);
 
-	VALIDATE_NO_RV( rxRuntime->pdurBuffer->SduDataPtr != NULL,
+	if (rxRuntime->pdurBuffer != NULL) {
+		VALIDATE_NO_RV( rxRuntime->pdurBuffer->SduDataPtr != NULL,
 			SERVICE_ID_CANTP_RX_INDICATION, CANTP_E_INVALID_RX_LENGTH );
+	}
 
 	if (rxConfig->CanTpAddressingFormant == CANTP_STANDARD) { /** @req CANTP094 *//** @req CANTP095 */
 		data = &rxPduData->SduDataPtr[1];

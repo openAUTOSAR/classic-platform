@@ -1,8 +1,6 @@
 
 # Our object files
 obj-y += simple_main.o
-# OS object files.
-obj-y += Os_Cfg.o
 
 VPATH += ..
 VPATH += ../config
