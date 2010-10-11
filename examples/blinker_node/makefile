@@ -20,8 +20,8 @@ inc-y += $(ROOTDIR)/system/kernel/$(objdir)
 inc-y += $(ROOTDIR)/system/kernel/include
 
 #TODO: Remove?, Build other way?
-VPATH += $(ROOTDIR)/$(SUBDIR)/Rte
-inc-y += $(ROOTDIR)/$(SUBDIR)/Rte
+VPATH += ../Rte
+inc-y += ../Rte
 VPATH += $(ROOTDIR)/components/blinker
 inc-y += $(ROOTDIR)/components/blinker
 
