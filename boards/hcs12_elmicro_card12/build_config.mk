@@ -13,7 +13,7 @@ MOD_AVAIL+=MCU GPT
 # System + Communication + Diagnostic
 MOD_AVAIL+=CANIF CANTP COM DCM DEM DET ECUM IOHWAB KERNEL PDUR WDGM
 # Additional
-MOD_AVAIL+=COMMON NEWLIB RAMLOG 
+MOD_AVAIL+=  RAMLOG 
 
 
 # Needed by us (These become USE_XXX=y and def-y += USE_XXX )

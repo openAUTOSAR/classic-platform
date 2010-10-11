@@ -4,6 +4,12 @@ vpath-$(CFG_ARM_CM3) += $(ARCH_PATH-y)kernel
 obj-$(CFG_ARM_CM3) += core_cm3.o
 obj-$(CFG_ARM_CM3) += startup_stm32f10x.o
 
+# OS object files. 
+# (checking if already included for compatability)
+ifeq ($(filter Os_Cfg.o,$(obj-y)),)
+obj-$(USE_KERNEL) += Os_Cfg.o
+endif
+
 #Ecu
 #obj-y += EcuM_$(BOARDDIR).o
 obj-$(USE_ECUM) += EcuM.o
@@ -180,9 +186,13 @@ vpath-$(USE_DCM) += $(ROOTDIR)/diagnostic/Dcm
 obj-$(USE_RAMLOG) += ramlog.o
 
 # Common stuff, if speciied
-obj-$(USE_COMMON) += arc.o
 VPATH += $(ROOTDIR)/common
 
+
+# Newlib overrides (overridden by default)
+ifneq ($(CFG_STANDARD_NEWLIB),y)
+obj-y += xtoa.o
+obj-y += newlib_port.o
 # If we have configured console output we include printf. 
 # Overridden to use lib implementation with CFG_NEWLIB_PRINTF
 ifneq ($(CFG_NEWLIB_PRINTF),y)
@@ -190,13 +200,10 @@ ifneq ($(CFG_NEWLIB_PRINTF),y)
 #       just print to a buffer, e.g. sprintf() 
 ifneq (,$(SELECT_CONSOLE) $(SELECT_OS_CONSOLE))
 obj-y += printf.o
-endif
-endif
 
-
-# Newlib
-obj-$(USE_NEWLIB) += xtoa.o
-obj-$(USE_NEWLIB) += newlib_port.o
+endif # SELECT_CONSOLE
+endif # CFG_NEWLIB_PRINTF
+endif # CFG_STANDARD_NEWLIB
 
 obj-y += $(obj-y-y)
 
