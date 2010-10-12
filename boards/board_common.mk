@@ -79,10 +79,10 @@ inc-$(USE_NVM) += $(ROOTDIR)/memory/Nvm
 vpath-$(USE_NVM) += $(ROOTDIR)/memory/Nvm
 
 # Fee
-obj-$(USE_NVM) += Fee.o
-obj-$(USE_NVM) += Fee_Cfg.o
-inc-$(USE_NVM) += $(ROOTDIR)/memory/Fee
-vpath-$(USE_NVM) += $(ROOTDIR)/memory/Fee
+obj-$(USE_FEE) += Fee.o
+obj-$(USE_FEE) += Fee_Cfg.o
+inc-$(USE_FEE) += $(ROOTDIR)/memory/Fee
+vpath-$(USE_FEE) += $(ROOTDIR)/memory/Fee
 
 #Eep
 obj-$(USE_EEP) += Eep.o
