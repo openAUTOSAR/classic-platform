@@ -34,8 +34,11 @@
 #include "CanIf.h"              /**< @req CANSM017 */
 #include "CanSM_Internal.h"
 
+static CanSM_Internal_NetworkType CanSM_InternalNetworks[CANSM_NETWORK_COUNT];
+
 static CanSM_InternalType CanSM_Internal = {
 		.InitStatus = CANSM_STATUS_UNINIT,
+		.Networks = CanSM_InternalNetworks,
 };
 
 static const CanSM_ConfigType* CanSM_Config;
