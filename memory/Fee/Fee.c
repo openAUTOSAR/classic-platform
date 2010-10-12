@@ -79,6 +79,7 @@
 #define BLOCK_ADMIN_MAGIC_LEN		4
 typedef struct {
 	uint8	Status;
+	uint8	Spare;
 	uint8	Magic[BLOCK_ADMIN_MAGIC_LEN];
 } FlsBlockAdminType;
 
@@ -86,7 +87,7 @@ static FlsBlockAdminType FlsBlockAdmin;
 
 #define BLOCK_ADMIN_LEN				(sizeof(FlsBlockAdminType))
 #define BLOCK_ADMIN_VALIDATE_POS	0
-#define BLOCK_ADMIN_MAGIC_POS		1
+#define BLOCK_ADMIN_MAGIC_POS		2
 
 static const uint8 MagicMaster[BLOCK_ADMIN_MAGIC_LEN] = { 0xeb, 0xba, 0xba, 0xbe };
 static const FlsBlockAdminType FlsBlockAdminMaster = {

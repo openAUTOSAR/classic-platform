@@ -62,7 +62,11 @@ SECTIONS
 		__DATA_ROM = .;
 	} > flash
 
-	.data :	AT(ALIGN(LOADADDR(.sbss2)+SIZEOF(.sbss2),4)) {
+	.nv : {
+		*(.nvram)
+	} > flash
+	
+	.data :	AT(ALIGN(LOADADDR(.nv)+SIZEOF(.nv),4)) {
 		__DATA_RAM = .; *(.data .data.* .gnu.linkonce.d.* .gnu.linkonce.r.* .eh_frame)
 	} > ram
 
