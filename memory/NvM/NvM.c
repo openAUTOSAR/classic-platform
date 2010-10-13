@@ -567,16 +567,13 @@ void NvM_CancelWriteAll(void)
 void NvM_GetErrorStatus(NvM_BlockIdType blockId, uint8 *requestResultPtr)
 {
 	VALIDATE_NO_RV(nvmState != NVM_UNINITIALIZED, NVM_GET_ERROR_STATUS_ID, NVM_E_NOT_INITIALIZED);
-	VALIDATE_NO_RV(blockId < NVM_NUM_OF_NVRAM_BLOCKS+2, NVM_GET_ERROR_STATUS_ID, NVM_E_PARAM_BLOCK_ID);
+	VALIDATE_NO_RV(blockId < NVM_NUM_OF_NVRAM_BLOCKS+1, NVM_GET_ERROR_STATUS_ID, NVM_E_PARAM_BLOCK_ID);
 
 	if (blockId == 0) {
 		// Multiblock ID
 		*requestResultPtr = AdminMultiBlock.ErrorStatus;
-	} else if (blockId == 1) {
-		// Configuration block id
-		// TODO: Shall anything be read here?
 	} else {
-		*requestResultPtr = AdminBlock[blockId-2].ErrorStatus;
+		*requestResultPtr = AdminBlock[blockId-1].ErrorStatus;
 	}
 
 }
@@ -588,19 +585,19 @@ void Nvm_SetRamBlockStatus(NvM_BlockIdType blockId, boolean blockChanged)
 	const NvM_BlockDescriptorType	*BlockDescriptorList = NvM_Config.BlockDescriptor;
 
 	VALIDATE_NO_RV(nvmState != NVM_UNINITIALIZED, NVM_SET_RAM_BLOCK_STATUS_ID, NVM_E_NOT_INITIALIZED);	/** @req NVM497 */
-	VALIDATE_NO_RV(blockId < NVM_NUM_OF_NVRAM_BLOCKS+2, NVM_SET_RAM_BLOCK_STATUS_ID, NVM_E_PARAM_BLOCK_ID);
+	VALIDATE_NO_RV(blockId < NVM_NUM_OF_NVRAM_BLOCKS+1, NVM_SET_RAM_BLOCK_STATUS_ID, NVM_E_PARAM_BLOCK_ID);
 	VALIDATE_NO_RV(blockId > 1, NVM_SET_RAM_BLOCK_STATUS_ID, NVM_E_PARAM_BLOCK_ID);
 
-	if (BlockDescriptorList[blockId-2].RamBlockDataAddress != NULL) {	/** @req NVM240 */
+	if (BlockDescriptorList[blockId-1].RamBlockDataAddress != NULL) {	/** @req NVM240 */
 		if (blockChanged) {
-			AdminBlock[blockId-2].BlockChanged = TRUE;	/** @req NVM406 */
-			AdminBlock[blockId-2].BlockValid = TRUE;	/** @req NVM241 */
-			if (BlockDescriptorList[blockId-2].BlockUseCrc) {
-				AdminBlock[blockId-2].BlockState = BLOCK_STATE_RECALC_CRC;	/** @req NVM121 */
+			AdminBlock[blockId-1].BlockChanged = TRUE;	/** @req NVM406 */
+			AdminBlock[blockId-1].BlockValid = TRUE;	/** @req NVM241 */
+			if (BlockDescriptorList[blockId-1].BlockUseCrc) {
+				AdminBlock[blockId-1].BlockState = BLOCK_STATE_RECALC_CRC;	/** @req NVM121 */
 			}
 		} else {
-			AdminBlock[blockId-2].BlockChanged = FALSE;	/** @req NVM405 */
-			AdminBlock[blockId-2].BlockValid = FALSE;
+			AdminBlock[blockId-1].BlockChanged = FALSE;	/** @req NVM405 */
+			AdminBlock[blockId-1].BlockValid = FALSE;
 		} // else blockChanged
 	} // if permanent block
 }
