@@ -5,6 +5,9 @@
  *      Author: jcar
  */
 
+#define USE_LDEBUG_PRINTF
+#include "debug.h"
+
 #include "Std_Types.h"
 #include <string.h>
 #ifdef USE_LWIP
@@ -141,8 +144,15 @@ uint16_t handle_LocatorCommand(TCF_Command* command, char* buf) {
 }
 
 uint16_t handle_LocatorEvent(TCF_Event* event, char* buf) {
-	uint16_t len = message_length(locator_hello, TCF_MAX_FIELD_LENGTH);
-	memcpy(buf,locator_hello,len);
+	uint16_t len = 0;
+	if(strcmp(event->eventName, "Hello") == 0)
+	{
+		len = message_length(locator_hello, TCF_MAX_FIELD_LENGTH);
+		memcpy(buf,locator_hello,len);
+	}else if(strcmp(event->eventName, "peerHeartBeat") == 0){
+
+	}
+
 	return len;
 }
 
@@ -214,6 +224,7 @@ static void handle_command(char *buf, uint16_t len)
 	TCF_Command command;
 
 	if (parse_command(msg, &command, len) == E_OK) {
+		//LDEBUG_PRINTF("C %s\n\r", command.token);
 		/* Find and call the requested agent */
 		index = 0;
 		while(tcfServiceCfgList[index].commandHandler != NULL){
@@ -226,9 +237,14 @@ static void handle_command(char *buf, uint16_t len)
 
 		if(outlen > 0){
 #ifdef USE_LWIP
+			//LDEBUG_PRINTF("R %s\n\r", command.token);
 			TcpSendData(outbuf, outlen);
 #endif
+		}else{
+			LDEBUG_PRINTF("TCF: len=0:%s\n\r", command.token);
 		}
+	}else{
+		LDEBUG_PRINTF("TCF: Parse failed:%s\n\r", command.token);
 	}
 }
 

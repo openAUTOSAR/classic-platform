@@ -112,11 +112,9 @@ StatusType SetRelAlarm(AlarmType AlarmId, TickType Increment, TickType Cycle){
 		rv =  E_OS_VALUE;
 		goto err;
 	} else {
-		if(  Cycle == 0 ||
-			(Cycle >= COUNTER_MIN_CYCLE(aPtr)) ||
-			(Cycle <= COUNTER_MAX(aPtr)) ) {
-			/* OK */
-		} else {
+		if( Cycle != 0 &&
+			( (Cycle < COUNTER_MIN_CYCLE(aPtr)) ||
+			  (Cycle > COUNTER_MAX(aPtr)) ) ) {
 			/** @req OS304 */
 			rv =  E_OS_VALUE;
 			goto err;

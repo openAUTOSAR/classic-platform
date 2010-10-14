@@ -58,11 +58,14 @@ static inline struct OsScheduleTableSync *getSync( OsSchTblType *stblPtr ) {
 StatusType IncrementCounter( CounterType counter_id ) {
 	StatusType rv = E_OK;
 	OsCounterType *cPtr;
+	uint32_t flags;
 	cPtr = Os_CfgGetCounter(counter_id);
 
+	Irq_Save(flags);
 	/** @req OS376 */
 	if( !IsCounterValid(counter_id) ) {
 		rv = E_OS_ID;
+		Irq_Restore(flags);
 		goto err;
 	}
 
@@ -71,6 +74,7 @@ StatusType IncrementCounter( CounterType counter_id ) {
 	if( ( cPtr->type != COUNTER_TYPE_SOFT ) ||
 		( counter_id >= Os_CfgGetCounterCnt() ) ) {
 		rv =  E_OS_ID;
+		Irq_Restore(flags);
 		goto err;
 	}
 
@@ -79,6 +83,8 @@ StatusType IncrementCounter( CounterType counter_id ) {
 
 	Os_AlarmCheck(cPtr);
 	Os_SchTblCheck(cPtr);
+
+	Irq_Restore(flags);
 
 	/** @req OS321 */
 	COUNTER_STD_END;

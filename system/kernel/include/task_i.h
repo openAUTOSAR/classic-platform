@@ -43,7 +43,7 @@ static inline void Os_TaskRunningToReady( OsPcbType *pcb ) {
 // ActivateTask(pid)
 // SetEvent(pid)
 static inline void Os_TaskMakeReady( OsPcbType *pcb ) {
-	if( pcb->state != ST_READY ) {
+	if( !( pcb->state & ( ST_READY | ST_RUNNING )) ) {
 		pcb->state = ST_READY;
 		TAILQ_INSERT_TAIL(& os_sys.ready_head,pcb,ready_list);
 		OS_DEBUG(D_TASK,"Added %s to ready list\n",pcb->name);
@@ -116,7 +116,7 @@ static inline OsPriorityType os_pcb_set_prio( OsPcbType *pcb, OsPriorityType new
 
 #define os_pcb_get_state(pcb) ((pcb)->state)
 
-void os_swap_context(OsPcbType *old_pcb, OsPcbType *new_pcb );
+void Os_TaskSwapContext(OsPcbType *old_pcb, OsPcbType *new_pcb );
 void Os_TaskSwapContextTo(OsPcbType *old_pcb, OsPcbType *new_pcb );
 
 

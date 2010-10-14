@@ -33,11 +33,11 @@ typedef struct {
 	char* data;
 } TCF_Streams_Command;
 
-#define TCF_TTY_SIZE 200
+#define TCF_TTY_SIZE 800
 
 static boolean tty_initialized = FALSE;
 static CirqBufferType cirqBuf;
-static char tty_buffer[TCF_TTY_SIZE] = "";
+char tty_buffer[TCF_TTY_SIZE] = "";
 
 void init_streams()
 {
@@ -65,6 +65,9 @@ uint32_t TCF_TTY_ReadString(char *str, uint16_t max_len)
 			if(rv==0){
 				len++;
 				*str++=ch;
+				if(ch == '\0'){
+					rv = 1;
+				}
 			}
 		}while((rv == 0) && (len < max_len));
 	}
@@ -120,7 +123,7 @@ static Std_ReturnType parse_id(char* msg, TCF_Streams_Command* command, uint16_t
 }
 
 uint16_t handle_StreamsCommand(TCF_Command* command, char* buf) {
-	char tmp[50] = "";
+	char tmp[200] = "";
 	TCF_Streams_Command streams_cmd;
 
 	/* Start building return message */
@@ -136,7 +139,7 @@ uint16_t handle_StreamsCommand(TCF_Command* command, char* buf) {
 
 		/* Add data field */
 		strcat(buf, JSON_Stringify);
-		int len = TCF_TTY_ReadString(tmp, 49);
+		int len = TCF_TTY_ReadString(tmp, 199);
 		tmp[len] = '\0'; /* Terminate to be sure */
 		strcat(buf, tmp);
 		strcat(buf, JSON_Stringify);

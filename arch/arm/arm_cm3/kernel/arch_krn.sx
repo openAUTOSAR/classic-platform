@@ -36,6 +36,16 @@ Irq_Handler:
     mov.w   r4,#LC_PATTERN
     str     r4,[sp,#C_CONTEXT_OFFS]    
     mov 	r0,sp			// stack as first arg
+    
+// When at interrupt nest count = 0, load interrupt stack    
+	ldr      r4,=os_sys
+	ldr      r5,[r4,#SYS_INT_NEST_CNT]
+	cmp      r5, #0
+	bgt      arggg
+    
+	ldr      sp,[r4,#SYS_INT_STACK]   
+      
+arggg:  
     bl      Irq_Entry
     mov     sp, r0			// pop from returned stack
 

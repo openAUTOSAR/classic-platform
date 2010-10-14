@@ -6,6 +6,7 @@
  */
 #include "sleep.h"
 #include "Mcu.h"
+#include "Os.h"
 
 struct timeoutlist_t{
 	uint32_t timeout;
@@ -32,9 +33,14 @@ void Sleep(uint32_t nofTicks, TaskType TaskID, EventMaskType Mask )
 	if(nofTicks == 0){
 		nofTicks=1;
 	}
-	timeoutlist[TaskID].timeout = ticks + nofTicks;
-	timeoutlist[TaskID].active = TRUE;
-	timeoutlist[TaskID].mask = Mask;
+    if(TaskID < OS_TASK_CNT){
+        timeoutlist[TaskID].timeout = ticks + nofTicks;
+        timeoutlist[TaskID].active = TRUE;
+        timeoutlist[TaskID].mask = Mask;
+    }else{
+        /* Error */
+    	ErrorHook(E_OS_LIMIT);
+    }
 	McuE_ExitCriticalSection(pval);
 }
 

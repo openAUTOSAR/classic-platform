@@ -78,15 +78,17 @@ struct testStats {
 };
 
 struct test {
-	uint8_t testSuite;
-	uint8_t testNr;
+	uint16_t testSuite;
+	uint16_t testNr;
 	uint16_t status;
-	const char *description;
-	uint32_t expectedErrMask;
+	uint16_t pad;
+//	const char *description;
+//	uint32_t expectedErrMask;
 };
 
-struct test testTable[50] = { {0} };
 
+
+struct test testTable[50] __attribute__ ((aligned(8))) = { {0} };
 
 void TestInit( void ) {
 
@@ -100,6 +102,56 @@ void TestDone( void ) {
 
 }
 
+void TestSetFixture( uint32_t nextTestFixture, uint32_t nextTestNr,
+		char *file,  int line, const char *function ) {
+	_Bool error = 0;
+
+	testTable[nextTestFixture].testSuite = nextTestFixture;
+	testTable[nextTestFixture].testNr = nextTestNr;
+	testTable[nextTestFixture].status |= TEST_FLG_RUNNING;
+	testTable[nextTestFixture].pad = 0x0;
+
+	/* For a new sequence should start with TEST_SET_FIXTURE( OSEK_TM_04, SEQ_NR_01 ) */
+	if( nextTestNr == 1) {
+		if( (nextTestFixture) != (TestWorld.fixtureNr +1) ) {
+			printf("## Expected fixture=%u, found=%u\n",
+					(unsigned)nextTestFixture,
+					(unsigned)TestWorld.fixtureNr +1);
+			error = 1;
+		}
+
+	} else {
+		if( (nextTestFixture) != (TestWorld.fixtureNr ) ) {
+			printf("## Expected same fixture=%u, found=%u\n",
+					(unsigned)nextTestFixture,
+					(unsigned)TestWorld.fixtureNr);
+			error = 1;
+		}
+		if( nextTestNr  != ( TestWorld.testNr + 1 ) ) {
+			printf("## Sequence is wrong. Found %u, expected %u in fixture %u\n",
+					(unsigned)nextTestNr,
+					(unsigned)TestWorld.testNr + 1,
+					(unsigned)nextTestFixture);
+			error = 1;
+		}
+	}
+
+	if( error == 1 ) {
+		printf("## Info: %s %d %s \n",file,line,function);
+		testTable[nextTestFixture].status |= TEST_FLG_SEQ_ERROR;
+	}
+#if 0
+	if( (nextTestNr) != (TestWorld.testNr +1) ) {
+		printf("%s %d %s FAILURE, seq failed\n",file,line,function);
+	}
+#endif
+
+	printf("Testing fixture %u and sub seq:%u\n",(unsigned)nextTestFixture, (unsigned)nextTestNr);
+	TestWorld.testNr  = nextTestNr;
+    TestWorld.fixtureNr = nextTestFixture;
+}
+
+
 /**
  *
  * @param text
@@ -109,9 +161,9 @@ void TestDone( void ) {
  */
 void TestFail( const char *text,char *file,  int line, const char *function ) {
 	printf("%02d %02d FAILED, %s , %d, %s\n",test_suite, test_nr, file, line, function);
-	testTable[testCnt].testSuite = test_suite;
-	testTable[testCnt].testNr = test_nr;
-	testTable[testCnt].status |= TEST_FLG_ASSERT;
+	testTable[TestWorld.fixtureNr].testSuite = 0x0;
+	testTable[TestWorld.fixtureNr].testNr = TestWorld.testNr;
+	testTable[TestWorld.fixtureNr].status |= TEST_FLG_ASSERT;
 //	testCnt++;
 //	_test_failed++;
 }
@@ -136,7 +188,7 @@ void testValidateHook( void ) {
 void TestStart( const char *str, int testNr ) {
 	testTable[testCnt].status = TEST_FLG_RUNNING;
 	testTable[testCnt].testNr = testNr;
-	testTable[testCnt].description = str;
+//	testTable[testCnt].description = str;
 	printf("%3d %3d %s\n",testCnt,testNr,str);
 }
 
@@ -159,7 +211,7 @@ void TestEnd( void ) {
 
 		} else {
 			/* All is OK */
-			testTable[testCnt].status &= TEST_FLG_RUNNING;
+			// testTable[testCnt].status &= TEST_FLG_RUNNING;
 			testTable[testCnt].status |= TEST_FLG_OK;
 			printf("OK\n");
 		}
@@ -169,25 +221,30 @@ void TestEnd( void ) {
 	testCnt++;
 }
 
+/**
+ * Exit from the test system, no try to be graceful here.
+ * @param rv
+ */
 void TestExit( int rv ) {
+	printf("---- Done ----\n");
 	Irq_Disable();
 	exit(rv);
 }
 
 void TestTouch( void ) {
-	testTable[testCnt].status |= TEST_FLG_TOUCHED;
+	testTable[TestWorld.fixtureNr].status |= TEST_FLG_TOUCHED;
 }
 
 void TestNotImplemented( void ) {
-	testTable[testCnt].status |= TEST_FLG_NOT_IMPLEMENTED;
+	testTable[TestWorld.fixtureNr].status |= TEST_FLG_NOT_IMPLEMENTED;
 }
 
 
 void TestOk( void ) {
 	printf("%02d %02d OK\n",test_suite, test_nr);
-	testTable[testCnt].testSuite = test_suite;
-	testTable[testCnt].testNr = test_nr;
-	testTable[testCnt].status = 1;
+	testTable[TestWorld.fixtureNr].testSuite = TestWorld.fixtureNr;
+	testTable[TestWorld.fixtureNr].testNr = TestWorld.testNr;
+	testTable[TestWorld.fixtureNr].status = 1;
 	testCnt++;
 	_test_ok++;
 }

@@ -40,6 +40,7 @@ typedef enum {
 	TASK_STATE_RUNNING,
 } TaskStateType;
 
+#define INVALID_TASK	0xdeadU
 
 typedef TaskStateType *TaskStateRefType;
 
@@ -247,9 +248,9 @@ StatusType GetResource( ResourceType ResID );
 StatusType ReleaseResource( ResourceType ResID);
 
 /*
- * Define the scheduler resource as ~0
+ * Define scheduler as topmost
  */
-#define	RES_SCHEDULER 			(ResourceType)(~0)
+#define	RES_SCHEDULER 			OS_RESOURCE_CNT
 
 /*
  * Priorities of tasks and resources
