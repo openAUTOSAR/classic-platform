@@ -27,10 +27,10 @@
 #include "Com_Internal.h"
 #include "Com_misc.h"
 #include "debug.h"
-#include "CanIf.h"
 #include "PduR.h"
 #include "PduR_Com.h"
 #include "Byteorder.h"
+#include "Det.h"
 
 extern Com_Arc_Config_type Com_Arc_Config;
 

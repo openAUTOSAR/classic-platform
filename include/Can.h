@@ -46,7 +46,9 @@
 #include "Std_Types.h"
 #include "CanIf_Types.h"
 #include "ComStack_Types.h"
+#if defined(USE_MCU)
 #include "Mcu.h"
+#endif
 
 typedef struct {
 	uint32 txSuccessCnt;

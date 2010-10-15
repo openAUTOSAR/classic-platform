@@ -178,9 +178,8 @@ void Mcu_SetMode( const Mcu_ModeType McuMode );
 #define Mcu_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,MCU)
 #endif
 
-typedef uint32_t imask_t;
-
 /* ArcCore extensions */
+
 void Irq_InstallVector(void (*func)(), IrqType vector, uint8_t priority, Cpu_t cpu );
 void Irq_GenerateSoftInt( IrqType vector );
 uint8_t Irq_GetCurrentPriority( Cpu_t cpu);
@@ -188,8 +187,7 @@ uint32_t McuE_GetSystemClock( void );
 #if defined(CFG_MPC55XX)
 uint32_t McuE_GetPeripheralClock( McuE_PeriperalClock_t type );
 #endif
-imask_t McuE_EnterCriticalSection(void);
-void McuE_ExitCriticalSection(imask_t old_state);
+#include "McuExtensions.h"
 
 
 

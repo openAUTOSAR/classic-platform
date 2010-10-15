@@ -200,4 +200,11 @@ void Dio_WriteChannelGroup(const Dio_ChannelGroupType *channelGroupIdPtr,
 	cleanup: return;
 }
 
+#if (DIO_VERSION_INFO_API == STD_ON)
+void Dio_GetVersionInfo(Std_VersionInfoType *versionInfo)
+{
+  memcpy(versionInfo, &_Dio_VersionInfo, sizeof(Std_VersionInfoType));
+}
+#endif
+
 

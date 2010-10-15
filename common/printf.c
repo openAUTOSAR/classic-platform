@@ -380,7 +380,7 @@ int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap)
 	return 0; // Wrong.. but for now.
 }
 
-#if defined(HOST_TEST)
+#if 0
 int main(void) {
 	char *ptr = NULL;
 	char buff[30];

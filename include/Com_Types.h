@@ -83,9 +83,9 @@ typedef enum {
 } ComFilterAlgorithm_type;
 
 typedef enum {
-	BIG_ENDIAN,
-	LITTLE_ENDIAN,
-	OPAQUE,
+	COM_BIG_ENDIAN,
+	COM_LITTLE_ENDIAN,
+	COM_OPAQUE,
 } ComSignalEndianess_type;
 
 typedef enum {
