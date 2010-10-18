@@ -12,6 +12,7 @@ obj-$(CFG_STM32_CL) += startup_stm32f10x_cl.o
 #Ecu
 #obj-y += EcuM_$(BOARDDIR).o
 obj-y += EcuM.o
+obj-y += EcuM_Main.o
 obj-y += EcuM_Cfg.o
 obj-y += EcuM_Callout_template.o
 inc-y += $(ROOTDIR)/system/EcuM

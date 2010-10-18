@@ -29,6 +29,9 @@
 #include "Mcu.h"
 #include "Det.h"
 #include "irq.h"
+#if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
+#include "Nvm.h"
+#endif
 
 EcuM_GobalType internal_data;
 
@@ -64,6 +67,11 @@ void EcuM_Init( void )
 
 	// Set default application mode
 	internal_data.app_mode = internal_data.config->EcuMDefaultAppMode;
+#if defined(USE_COMM)
+	internal_data.run_comm_requests = 0;
+#endif
+	internal_data.run_requests = 0;
+	internal_data.postrun_requests = 0;
 
 	internal_data.initiated = TRUE;
 
@@ -75,6 +83,7 @@ void EcuM_StartupTwo()
 {
 #if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
 	uint32 timer;
+	static NvM_RequestResultType readAllResult;
 #endif
 
 	internal_data.current_state = ECUM_STATE_STARTUP_TWO;
@@ -97,11 +106,10 @@ void EcuM_StartupTwo()
 #endif
 
 #if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
-	// Wait for the NVM job to terminate
-	while(Os_SysTickGetTimeElapsed()-timer < internal_data.config.EcuMNvramReadAllTimeout)
-	{
-		//TODO
-	}
+	// Wait for the NVM job (NvmReadAll) to terminate
+	do {
+		NvM_GetErrorStatus(0, &readAllResult);	// Read the multiblock status
+	} while( (readAllResult == NVM_REQ_PENDING) && !(Os_SysTickGetTimeElapsed() - timer < internal_data.config->EcuMNvramReadAllTimeout) );
 #endif
 
 	// Initialize drivers that need NVRAM data
@@ -135,13 +143,7 @@ void EcuM_Shutdown()
 
 Std_ReturnType EcuM_GetState(EcuM_StateType* state)
 {
-#if (ECUM_DEV_ERROR_DETECT == STD_ON)
-	if (state == NULL)
-	{
-		Det_ReportError(MODULE_ID_ECUM, 1, ECUM_GETSTATE_ID, ECUM_E_NULL_POINTER);
-		return E_NOT_OK;
-	}
-#endif
+	VALIDATE_RV(state != NULL, ECUM_GETSTATE_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
 
 	*state = internal_data.current_state;
 
@@ -150,13 +152,7 @@ Std_ReturnType EcuM_GetState(EcuM_StateType* state)
 
 Std_ReturnType EcuM_SelectApplicationMode(AppModeType appMode)
 {
-#if (ECUM_DEV_ERROR_DETECT == STD_ON)
-	if (!internal_data.initiated)
-	{
-		Det_ReportError(MODULE_ID_ECUM, 1, ECUM_SELECTAPPMODE_ID, ECUM_E_NOT_INITIATED);
-		return E_NOT_OK;
-	}
-#endif
+	VALIDATE_RV(internal_data.initiated, ECUM_SELECTAPPMODE_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
 
 	// TODO Save this application mode for next startup
 
@@ -165,19 +161,8 @@ Std_ReturnType EcuM_SelectApplicationMode(AppModeType appMode)
 
 Std_ReturnType EcuM_GetApplicationMode(AppModeType* appMode)
 {
-#if (ECUM_DEV_ERROR_DETECT == STD_ON)
-	if (!internal_data.initiated)
-	{
-		Det_ReportError(MODULE_ID_ECUM, 1, ECUM_GETAPPMODE_ID, ECUM_E_NOT_INITIATED);
-		return E_NOT_OK;
-	}
-
-	if (appMode == NULL)
-	{
-		Det_ReportError(MODULE_ID_ECUM, 1, ECUM_GETAPPMODE_ID, ECUM_E_NULL_POINTER);
-		return E_NOT_OK;
-	}
-#endif
+	VALIDATE_RV(internal_data.initiated, ECUM_GETAPPMODE_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV(appMode != NULL, ECUM_GETAPPMODE_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
 
 	*appMode = internal_data.app_mode;
 
@@ -186,13 +171,7 @@ Std_ReturnType EcuM_GetApplicationMode(AppModeType* appMode)
 
 Std_ReturnType EcuM_SelectBootTarget(EcuM_BootTargetType target)
 {
-#if (ECUM_DEV_ERROR_DETECT == STD_ON)
-	if (!internal_data.initiated)
-	{
-		Det_ReportError(MODULE_ID_ECUM, 1, ECUM_SELECT_BOOTARGET_ID, ECUM_E_NOT_INITIATED);
-		return E_NOT_OK;
-	}
-#endif
+	VALIDATE_RV(internal_data.initiated, ECUM_SELECT_BOOTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
 
 	// TODO Do something great here
 
@@ -201,21 +180,105 @@ Std_ReturnType EcuM_SelectBootTarget(EcuM_BootTargetType target)
 
 Std_ReturnType EcuM_GetBootTarget(EcuM_BootTargetType* target)
 {
-#if (ECUM_DEV_ERROR_DETECT == STD_ON)
-	if (!internal_data.initiated)
-	{
-		Det_ReportError(MODULE_ID_ECUM, 1, ECUM_GET_BOOTARGET_ID, ECUM_E_NOT_INITIATED);
-		return E_NOT_OK;
-	}
-
-	if (target == NULL)
-	{
-		Det_ReportError(MODULE_ID_ECUM, 1, ECUM_GET_BOOTARGET_ID, ECUM_E_NULL_POINTER);
-		return E_NOT_OK;
-	}
-#endif
+	VALIDATE_RV(internal_data.initiated, ECUM_GET_BOOTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV(target != NULL, ECUM_GET_BOOTARGET_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
 
 	// TODO Return selected boot target here
 
 	return E_NOT_OK;
 }
+
+
+Std_ReturnType EcuM_SelectShutdownTarget(EcuM_StateType target, uint8 mode)
+{
+	VALIDATE_RV(internal_data.initiated, ECUM_SELECTSHUTDOWNTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV((target == ECUM_STATE_OFF) || (target == ECUM_STATE_RESET) || (target == ECUM_STATE_SLEEP), ECUM_SELECTSHUTDOWNTARGET_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
+
+	internal_data.shutdown_target = target;
+	internal_data.shutdown_mode = mode;
+
+	return E_OK;
+}
+
+
+Std_ReturnType EcuM_GetShutdownTarget(EcuM_StateType *shutdownTarget, uint8 *sleepMode)
+{
+	VALIDATE_RV(internal_data.initiated, ECUM_GETSHUTDOWNTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+
+	*shutdownTarget = internal_data.shutdown_target;
+	*sleepMode = internal_data.shutdown_mode;
+
+	return E_OK;
+}
+
+
+Std_ReturnType EcuM_RequestRUN(EcuM_UserType user)
+{
+	VALIDATE_RV(internal_data.initiated, ECUM_REQUESTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_REQUESTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
+
+	internal_data.run_requests |= (uint32)1 << user;
+
+	return E_OK;
+}
+
+Std_ReturnType EcuM_ReleaseRUN(EcuM_UserType user)
+{
+	VALIDATE_RV(internal_data.initiated, ECUM_RELEASERUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_RELEASERUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
+
+	internal_data.run_requests &= ~((uint32)1 << user);
+
+	return E_OK;
+}
+
+#if defined(USE_COMM)
+Std_ReturnType EcuM_ComM_RequestRUN(NetworkHandleType user)
+{
+	VALIDATE_RV(internal_data.initiated, ECUM_COMM_REQUESTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV(user < 32, ECUM_COMM_REQUESTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
+
+	internal_data.run_comm_requests |= (uint32)1 << user;
+
+	return E_OK;
+}
+
+Std_ReturnType EcuM_ComM_ReleaseRUN(NetworkHandleType user)
+{
+	VALIDATE_RV(internal_data.initiated, ECUM_COMM_RELEASERUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV(user < 32, ECUM_COMM_RELEASERUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
+
+	internal_data.run_comm_requests &= ~((uint32)1 << user);
+
+	return E_OK;
+}
+
+boolean EcuM_ComM_HasRequestedRUN(NetworkHandleType user)
+{
+	VALIDATE_RV(internal_data.initiated, ECUM_COMM_HASREQUESTEDRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV(user < 32, ECUM_COMM_HASREQUESTEDRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
+
+	return (internal_data.run_comm_requests &((uint32)1 << user)) != 0;
+}
+#endif
+
+Std_ReturnType EcuM_RequestPOST_RUN(EcuM_UserType user)
+{
+	VALIDATE_RV(internal_data.initiated, ECUM_REQUESTPOSTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_REQUESTPOSTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
+
+	internal_data.postrun_requests |= (uint32)1 << user;
+
+	return E_OK;
+}
+
+Std_ReturnType EcuM_ReleasePOST_RUN(EcuM_UserType user)
+{
+	VALIDATE_RV(internal_data.initiated, ECUM_RELEASEPOSTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_RELEASEPOSTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
+
+	internal_data.postrun_requests &= ~((uint32)1 << user);
+
+	return E_OK;
+}
+
