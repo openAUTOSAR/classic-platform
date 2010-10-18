@@ -322,9 +322,9 @@ typedef struct {
   MemIf_StatusType    status;
   MemIf_JobResultType jobResultType;
   Fls_Arc_JobType	jobType;
-  MemIf_AddressType   sourceAddr;
+  Fls_AddressType   sourceAddr;
   uint8 *targetAddr;
-  MemIf_LengthType length;
+  Fls_LengthType length;
 
   Fls_ProgInfoType flashWriteInfo;
 
@@ -354,9 +354,9 @@ typedef struct {
   MemIf_StatusType    status;
   MemIf_JobResultType jobResultType;
   Fls_Arc_JobType	jobType;
-  MemIf_AddressType   sourceAddr;
+  Fls_AddressType   sourceAddr;
   uint8 *targetAddr;
-  MemIf_LengthType length;
+  Fls_LengthType length;
 
   Fls_ProgInfoType flashWriteInfo;
 } Fls_GlobalType;
@@ -494,8 +494,8 @@ void Fls_Init( const Fls_ConfigType *ConfigPtr )
 }
 
 /* TargetAddress always from 0 to FLS_TOTAL_SIZE */
-Std_ReturnType Fls_Erase(	MemIf_AddressType   TargetAddress,
-                          MemIf_LengthType    Length )
+Std_ReturnType Fls_Erase(	Fls_AddressType   TargetAddress,
+                          Fls_LengthType    Length )
 {
   uint32 block;
   uint32 sBlock;
@@ -562,9 +562,9 @@ Std_ReturnType Fls_Erase(	MemIf_AddressType   TargetAddress,
 }
 
 
-Std_ReturnType Fls_Write (    MemIf_AddressType   TargetAddress,
+Std_ReturnType Fls_Write (    Fls_AddressType   TargetAddress,
                         const uint8         *SourceAddressPtr,
-                        MemIf_LengthType    Length )
+                        Fls_LengthType    Length )
 {
   Fls_EraseBlockType eraseBlock;
 
@@ -724,9 +724,9 @@ void Fls_MainFunction( void )
   }
 }
 
-Std_ReturnType Fls_Read (	MemIf_AddressType SourceAddress,
+Std_ReturnType Fls_Read (	Fls_AddressType SourceAddress,
               uint8 *TargetAddressPtr,
-              MemIf_LengthType Length )
+              Fls_LengthType Length )
 {
   FLS_VALIDATE_STATUS_UNINIT_W_RV(Fls_Global.status, FLS_READ_ID, E_NOT_OK);
   FLS_VALIDATE_STATUS_BUSY_W_RV(Fls_Global.status, FLS_READ_ID, E_NOT_OK);
@@ -750,9 +750,9 @@ Std_ReturnType Fls_Read (	MemIf_AddressType SourceAddress,
 }
 
 #if ( FLS_COMPARE_API == STD_ON )
-Std_ReturnType Fls_Compare( MemIf_AddressType SourceAddress,
+Std_ReturnType Fls_Compare( Fls_AddressType SourceAddress,
               uint8 *TargetAddressPtr,
-              MemIf_LengthType Length )
+              Fls_LengthType Length )
 {
   FLS_VALIDATE_STATUS_UNINIT_W_RV(Fls_Global.status, FLS_COMPARE_ID, E_NOT_OK);
   FLS_VALIDATE_STATUS_BUSY_W_RV(Fls_Global.status, FLS_COMPARE_ID, E_NOT_OK);
