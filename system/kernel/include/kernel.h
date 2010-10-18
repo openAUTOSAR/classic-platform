@@ -72,7 +72,7 @@ extern uint32_t os_dbg_mask;
 #  define OS_DEBUG(_mask,...) \
 	do { \
 		if( os_dbg_mask & (_mask) ) { \
-			printf("[%08u] : ",(unsigned)GetOsTick()); \
+			printf("[%08u] : %s %d ",(unsigned)GetOsTick(), __FUNCTION__, __LINE__ ); \
 			printf(__VA_ARGS__ );	\
 		}; \
 	} while(0);
