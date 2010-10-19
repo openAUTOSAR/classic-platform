@@ -62,7 +62,7 @@ SECTIONS
 	/* Read-only data section. */
 	.rodata :	{ 
 		*(.rodata .rodata.* .gnu.linkonce.r.*)
-		_sidata = .;
+		_sidata = ALIGN(.,4);
 	} > flash
 
 	.data :	AT(ALIGN(LOADADDR(.rodata)+SIZEOF(.rodata),4)) {
