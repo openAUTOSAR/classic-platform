@@ -5,10 +5,8 @@ obj-y += Tasks.o
 obj-y += Hooks.o
 obj-y += Rte.o
 
-VPATH += ..
+VPATH += ../
 
-# OS object files.
-obj-y += Os_Cfg.o
 # Board object files
 include $(ROOTDIR)/boards/board_common.mk
 
@@ -27,9 +25,6 @@ inc-y += ../Rte
 VPATH += $(ROOTDIR)/components/blinker
 inc-y += $(ROOTDIR)/components/blinker
 
-$(warning ROOTDIR: $(ROOTDIR))
-$(warning SUBDIR: $(SUBDIR))
-$(warning VPATH: $(VPATH))
 
 # libs needed by us 
 #libitem-y +=

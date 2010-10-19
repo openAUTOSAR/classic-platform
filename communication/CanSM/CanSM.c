@@ -26,7 +26,7 @@
 #include "CanSM.h"              /**< @req CANSM013 */
 #include "Com.h"                /**< @req CANSM172 */
 #include "ComM.h"               /**< @req CANSM174 */
-#include "ComM_BusSM.h"         /**< @req CANSM191 */
+#include "ComM_BusSm.h"         /**< @req CANSM191 */
 #include "Det.h"                /**< @req CANSM015 */
 #if defined(USE_DEM)
 #include "Dem.h"                /**< @req CANSM014 */
@@ -34,8 +34,11 @@
 #include "CanIf.h"              /**< @req CANSM017 */
 #include "CanSM_Internal.h"
 
+static CanSM_Internal_NetworkType CanSM_InternalNetworks[CANSM_NETWORK_COUNT];
+
 static CanSM_InternalType CanSM_Internal = {
 		.InitStatus = CANSM_STATUS_UNINIT,
+		.Networks = CanSM_InternalNetworks,
 };
 
 static const CanSM_ConfigType* CanSM_Config;

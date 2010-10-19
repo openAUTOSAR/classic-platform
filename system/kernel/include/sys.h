@@ -18,20 +18,34 @@
 
 struct os_conf_global_hook_s;
 
+typedef enum  {
+	OP_SET_EVENT = 1,
+	OP_WAIT_EVENT = 2,
+	OP_ACTIVATE_TASK = 4,
+	OP_TERMINATE_TASK = 8,
+	OP_SCHEDULE = 16,
+	OP_CHAIN_TASK = 32,
+	OP_RELEASE_RESOURCE = 64,
+} OpType ;
+
 typedef struct sys_s {
 //	OsApplicationType *curr_application;
 	/* Current running task*/
 	OsPcbType *curr_pcb;
 	/* List of all tasks */
 	OsPcbType *pcb_list;
+
+	OsPcbType *chainedPcbPtr;
 	/* Interrupt nested count */
 	uint32 int_nest_cnt;
+	/* The current operation */
+	uint8_t op;
 	/* Ptr to the interrupt stack */
 	void *int_stack;
 	// The os tick
 	TickType tick;
 	// 1-The scheduler is locked (by GetResource() or something else)
-	int scheduler_lock;
+//	int scheduler_lock;
 	/* Hooks */
 	struct OsHooks *hooks;
 
@@ -44,6 +58,8 @@ typedef struct sys_s {
 	/* Current Application mode */
 	AppModeType appMode;
 
+//	uint32_t flags;
+
 	uint32_t task_cnt;
 	/* List of all pcb's,
 	 * Only needed for non-static configuration of the kernel
@@ -51,6 +67,9 @@ typedef struct sys_s {
 	TAILQ_HEAD(,OsPcb) pcb_head;
 	/* Ready queue */
 	TAILQ_HEAD(,OsPcb) ready_head;
+
+	/* Occording to OSEK 8.3 RES_SCHEDULER is accessible to all tasks */
+	OsResourceType resScheduler;
 } sys_t;
 
 extern sys_t os_sys;

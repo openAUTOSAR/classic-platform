@@ -9,7 +9,7 @@ if CPU()=="HC12DG128A"
   gosub &var
 )
 ELSE
-  gosub &cmd
+  gosub &cmd &arg1
 
 
 
@@ -32,10 +32,13 @@ dialog:
 //-------------------------------------------------------------
 load:
   LOCAL &file
-  dialog.file "&cfg_project_path_g"/*.elf
   ENTRY &file
-
-  IF OS.FILE(&file)
+  IF "&file"==""
+  (
+    dialog.file "&cfg_project_path_g"/*.elf
+    ENTRY &file
+  )
+  IF OS.FILE("&file")
     &cfg_loadfile_g="&file"
 
   do config save
@@ -112,6 +115,8 @@ path:
   y.spath + &cfg_project_path_g/system/kernel
   y.spath.SETRECURSEDIR &cfg_project_path_g
   RETURN
+
+
 
 
 

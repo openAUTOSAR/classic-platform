@@ -2,7 +2,7 @@
 
 #VPATH += $(ROOTDIR)/arch/arm/arm_cm3/kernel
 vpath-y += $(ARCH_PATH-y)/kernel
-#obj-y += asm_sample.o
+obj-y += asm_sample.o
 #CFLAGS_asm_sample.o += -O3
 obj-y += arch_krn.o
 obj-$(CFG_HCS12D) += arch_irq.o
@@ -37,7 +37,6 @@ obj-y += irq.o
 dep-y += asm_offset.h
 dep-y += kernel_offset.h
 dep-$(CFG_ARM_CM3) += arch_offset.h
-obj-$(CFG_ARM_CM3) += misc.o
 
 
 # ARM assembler generates "define STACK_APA $12". The extra '$' we want to go.

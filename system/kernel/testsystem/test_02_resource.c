@@ -32,7 +32,7 @@
  */
 
 #include "Os.h"
-#include "os_test.h"
+#include "test_framework.h"
 #include "arc.h"
 #include "irq.h"
 
@@ -90,15 +90,17 @@ void etask_sup_l_02(void) {
 
 			/* Create an ISR2 */
 			isrTask = Os_Arc_CreateIsr( isr2, 4/*prio*/,"soft_0");
-			Irq_AttachIsr2(isrTask,NULL,INTC_SSCIR0_CLR0);
+
+
+			Irq_AttachIsr2(isrTask,NULL,IRQ_SOFTINT_0);
 			/* Create an ISR1 */
-			Irq_AttachIsr1(isr1,NULL,INTC_SSCIR0_CLR1,6);
+			Irq_AttachIsr1(isr1,NULL,IRQ_SOFTINT_1,6);
 
 			GetTaskID(&task);
 			TEST_ASSERT( task == TASK_ID_etask_sup_l );
 			/* Lock the scheduler */
 			rv = GetResource(RES_SCHEDULER);
-			Irq_GenerateSoftInt( INTC_SSCIR0_CLR0 );
+			Irq_GenerateSoftInt( IRQ_SOFTINT_0 );
 
 			GetTaskID(&task);
 

@@ -42,7 +42,7 @@
 //#include "Nvm.h"
 //#include "SchM_Dem.h"
 #include "MemMap.h"
-#include "Mcu.h"
+#include "McuExtensions.h"
 
 /*
  * Local defines
@@ -481,21 +481,22 @@ static void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_E
 
 	if (eventStatusRecPtr != NULL) {
 		// Handle debouncing
-		switch (eventParam->EventClass->PreDebounceAlgorithmClass->PreDebounceName) { /** @req DEM004 */ /** @req DEM342 */
-		case DEM_NO_PRE_DEBOUNCE:
-			eventStatus = preDebounceNone(eventStatus, eventStatusRecPtr);
-			break;
+		if (eventParam->EventClass->PreDebounceAlgorithmClass != NULL) {
+			switch (eventParam->EventClass->PreDebounceAlgorithmClass->PreDebounceName) { /** @req DEM004 */ /** @req DEM342 */
+			case DEM_NO_PRE_DEBOUNCE:
+				eventStatus = preDebounceNone(eventStatus, eventStatusRecPtr);
+				break;
 
-		case DEM_PRE_DEBOUNCE_COUNTER_BASED:
-			eventStatus = preDebounceCounterBased(eventStatus, eventStatusRecPtr);
-			break;
+			case DEM_PRE_DEBOUNCE_COUNTER_BASED:
+				eventStatus = preDebounceCounterBased(eventStatus, eventStatusRecPtr);
+				break;
 
-		default:
-			// Don't know how to handle this.
-			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_UPDATE_EVENT_STATUS_ID, DEM_E_NOT_IMPLEMENTED_YET);
-			break;
+			default:
+				// Don't know how to handle this.
+				DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_UPDATE_EVENT_STATUS_ID, DEM_E_NOT_IMPLEMENTED_YET);
+				break;
+			}
 		}
-
 
 		eventStatusRecPtr->errorStatusChanged = FALSE;
 
@@ -857,7 +858,8 @@ static void storeEventEvtMem(const Dem_EventParameterType *eventParam, EventStat
 {
 	uint16 i;
 
-	for (i = 0; (i < DEM_MAX_NR_OF_EVENT_DESTINATION) && (eventParam->EventClass->EventDestination[i] != NULL); i++) {
+	for (i = 0; (i < DEM_MAX_NR_OF_EVENT_DESTINATION)
+				 && (eventParam->EventClass->EventDestination[i] != DEM_EVENT_DESTINATION_END_OF_LIST); i++) {
 		switch (eventParam->EventClass->EventDestination[i])
 		{
 		case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
@@ -940,7 +942,7 @@ static void storeExtendedDataEvtMem(const Dem_EventParameterType *eventParam, Ex
 {
 	uint16 i;
 
-	for (i = 0; (i < DEM_MAX_NR_OF_EVENT_DESTINATION) && (eventParam->EventClass->EventDestination[i] != NULL); i++) {
+	for (i = 0; (i < DEM_MAX_NR_OF_EVENT_DESTINATION) && (eventParam->EventClass->EventDestination[i] != DEM_EVENT_DESTINATION_END_OF_LIST); i++) {
 		switch (eventParam->EventClass->EventDestination[i])
 		{
 		case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
@@ -1033,7 +1035,7 @@ static void storeFreezeFrameDataEvtMem(const Dem_EventParameterType *eventParam,
 {
 	uint16 i;
 
-	for (i = 0; (i < DEM_MAX_NR_OF_EVENT_DESTINATION) && (eventParam->EventClass->EventDestination[i] != NULL); i++) {
+	for (i = 0; (i < DEM_MAX_NR_OF_EVENT_DESTINATION) && (eventParam->EventClass->EventDestination[i] != DEM_EVENT_DESTINATION_END_OF_LIST); i++) {
 		switch (eventParam->EventClass->EventDestination[i])
 		{
 		case DEM_DTC_ORIGIN_PRIMARY_MEMORY:

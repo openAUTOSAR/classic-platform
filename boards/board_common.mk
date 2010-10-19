@@ -1,13 +1,15 @@
 obj-$(CFG_PPC) += crt0.o
 obj-$(CFG_HCS12D) += crt0.o
 vpath-$(CFG_ARM_CM3) += $(ARCH_PATH-y)kernel
-obj-$(CFG_ARM_CM3) += system_stm32f10x.o
 obj-$(CFG_ARM_CM3) += core_cm3.o
+obj-$(CFG_ARM_CM3) += startup_stm32f10x.o
 
-obj-$(CFG_STM32_MD) += startup_stm32f10x_md.o
-obj-$(CFG_STM32_LD) += startup_stm32f10x_ld.o
-obj-$(CFG_STM32_HD) += startup_stm32f10x_hd.o
-obj-$(CFG_STM32_CL) += startup_stm32f10x_cl.o
+
+# OS object files. 
+# (checking if already included for compatability)
+ifeq ($(filter Os_Cfg.o,$(obj-y)),)
+obj-$(USE_KERNEL) += Os_Cfg.o
+endif
 
 #Ecu
 #obj-y += EcuM_$(BOARDDIR).o
@@ -35,7 +37,7 @@ obj-$(CFG_MPC55XX)-$(USE_MCU) += Mcu_Exceptions.o
 # Flash
 obj-$(USE_FLS) += Fls.o
 obj-$(USE_FLS) += Fls_Cfg.o
-obj-$(USE_FLS) += Fls_H7F.o
+obj-$(CFG_MPC55XX)-$(USE_FLS) += Fls_H7F.o
 
 # Bring in the freescale driver source  
 inc-$(CFG_MPC55XX) +=  $(ROOTDIR)/$(ARCH_PATH-y)/delivery/mpc5500_h7f/include
@@ -67,7 +69,9 @@ obj-$(USE_ADC) += Adc.o
 obj-$(USE_ADC) += Adc_Cfg.o
 
 # Include the kernel
+ifneq ($(USE_KERNEL),)
 include $(ROOTDIR)/system/kernel/makefile
+endif
 
 # Spi
 obj-$(USE_SPI) += Spi.o
@@ -107,7 +111,7 @@ obj-$(USE_PWM) += Pwm.o
 obj-$(USE_PWM) += Pwm_Cfg.o
 
 # Misc
-obj-y += Det.o
+obj-$(USE_DET) += Det.o
 
 # Lin
 obj-$(USE_LIN) += Lin_PBcfg.o
@@ -193,7 +197,10 @@ obj-$(USE_DCM) += Dcm_LCfg.o
 inc-$(USE_DCM) += $(ROOTDIR)/diagnostic/Dcm
 vpath-$(USE_DCM) += $(ROOTDIR)/diagnostic/Dcm
 
+obj-$(USE_RAMLOG) += ramlog.o
 
+# Common stuff, if speciied
+VPATH += $(ROOTDIR)/common
 
 #tests
 #obj-y += RunTests.o
@@ -220,25 +227,22 @@ vpath-$(USE_DCM) += $(ROOTDIR)/diagnostic/Dcm
 #libitem-$(USE_TESTS) += $(ROOTDIR)/embunit/embUnit/obj_$(ARCH)/libembunit.a
 #libitem-$(USE_TESTS) += $(ROOTDIR)/embunit/textui/obj_$(ARCH)/libtextui.a
 
-
-
-# Common
+# Newlib overrides (overridden by default)
+ifneq ($(CFG_STANDARD_NEWLIB),y)
 obj-y += xtoa.o
-obj-y += arc.o
-#obj-y += malloc.o
-obj-$(USE_RAMLOG) += ramlog.o
-
+obj-y += newlib_port.o
 # If we have configured console output we include printf. 
-# Overridden to use lib implementation with CFG_USE_NEWLIB_PRINTF
-ifndef (CFG_USE_NEWLIB_PRINTF)
+# Overridden to use lib implementation with CFG_NEWLIB_PRINTF
+ifneq ($(CFG_NEWLIB_PRINTF),y)
+# TODO: This assumes that you print to console.. but you could
+#       just print to a buffer, e.g. sprintf() 
 ifneq (,$(SELECT_CONSOLE) $(SELECT_OS_CONSOLE))
 obj-y += printf.o
-endif
-endif
 
-VPATH += $(ROOTDIR)/common
+endif # SELECT_CONSOLE
+endif # CFG_NEWLIB_PRINTF
+endif # CFG_STANDARD_NEWLIB
 
-obj-y += newlib_port.o
 obj-y += $(obj-y-y)
 
 vpath-y += $(ROOTDIR)/$(ARCH_PATH-y)/kernel

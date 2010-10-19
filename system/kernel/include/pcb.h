@@ -114,7 +114,8 @@ typedef struct {
 } OsStackType;
 
 
-
+#define SYS_FLAG_HOOK_STATE_EXPECTING_PRE	0
+#define SYS_FLAG_HOOK_STATE_EXPECTING_POST   1
 
 /* We do ISR and TASK the same struct for now */
 typedef struct OsPcb {
@@ -139,6 +140,8 @@ typedef struct OsPcb {
 	OsEventType 	ev_wait;				// TASK
 	OsEventType 	ev_set;					// TASK
 
+	uint32_t 		flags;
+
 	enum OsTaskSchedule 	scheduling;	// TASK
 	/* belongs to this application */
 	struct OsApplication	*application;
@@ -161,9 +164,9 @@ typedef struct OsPcb {
 
 	// What resource that are currently held by this task
 	// Typically (1<<RES_xxx) | (1<<RES_yyy)
-//	uint32_t resourceHolds;
+	uint32_t resourceMaskTaken;
 
-	TAILQ_HEAD(,OsResource) resource_head; // TASK
+	TAILQ_HEAD(head,OsResource) resource_head; // TASK
 
 	const struct OsRomPcb *pcb_rom_p;
 

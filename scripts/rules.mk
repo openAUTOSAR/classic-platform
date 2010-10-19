@@ -90,28 +90,29 @@ endif
 #####
 
 inc-y += $(ROOTDIR)/include
-#inc-$(CFG_PPC) += $(ROOTDIR)/include/ppc
-#inc-$(CFG_ARM) += $(ROOTDIR)/include/arm
 inc-y += $(ROOTDIR)/include/$(ARCH_FAM)
 
-.PHONY config:
 
-config:
+.PHONY clean: 
+clean: FORCE
+	@-rm -f *.o *.d *.h *.elf *.a *.ldp
+
+.PHONY config: 
+config: FORCE
 	@echo "board   modules:" $(MOD_AVAIL)
 	@echo "example modules:" $(MOD_USE)
 	@echo $(MOD) ${def-y}
 
+FORCE:
 
 $(ROOTDIR)/binaries:
 	@mkdir -p $@
 
 # build- targets are "end" target that the included makefile want's to build
-all: $(build-exe-y) $(build-hex-y) $(build-lib-y) $(ROOTDIR)/binaries
-	@cp -v $(build-lib-y) $(build-exe-y) $(build-hex-y) $(ROOTDIR)/binaries
+.PHONY all:
+all: $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $(ROOTDIR)/binaries
+	@cp -v $(build-lib-y) $(build-exe-y) $(build-hex-y) $(build-bin-y) $(ROOTDIR)/binaries
 
-#.PHONY post_process:
-#post_process:: $(ROOTDIR)/binaries
-	 
 
 # Determine what kind of filetype to build from  
 VPATH += $(ROOTDIR)/$(SUBDIR)/src
@@ -169,10 +170,18 @@ $(build-lib-y): $(dep-y) $(obj-y)
 $(build-hex-y): $(build-exe-y)
 	@echo "  >> OBJCOPY $@"   
 	$(Q)$(CROSS_COMPILE)objcopy -O ihex $< $@
+	
+$(build-bin-y): $(build-exe-y)
+	@echo "  >> OBJCOPY $@"   
+	$(Q)$(CROSS_COMPILE)objcopy -O binary $< $@	
 
+# Linker
 # Could use readelf -S instead of parsing the *.map file.
 $(build-exe-y): $(dep-y) $(obj-y) $(sim-y) $(libitem-y) $(ldcmdfile-y)
 	@echo "  >> LD $@"
+ifeq ($(CROSS_COMPILE),)
+	$(Q)$(CC) $(LDFLAGS) -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	
+else	
 	$(Q)$(LD) $(LDFLAGS) -T $(ldcmdfile-y) -o $@ $(libpath-y) --start-group $(obj-y) $(lib-y) $(libitem-y) --end-group $(LDMAPFILE)
 ifdef CFG_MC912DG128A
 	@$(CROSS_COMPILE)objdump -h $@ | gawk -f $(ROOTDIR)/scripts/hc1x_memory.awk
@@ -182,15 +191,18 @@ else
 	 							/^\.data/ { print "  data:"  $$3+0 " bytes"; rom+=$$3; ram+=$$3}; \
 	 							/^\.bss/ { print "  bss :"  $$3+0 " bytes"; ram+=$$3}; \
 	 							END { print "  ROM: ~" rom " bytes"; print "  RAM: ~" ram " bytes"}' $(subst .elf,.map,$@)
+ifeq ($(BUILD_LOAD_MODULE),y)
+	@$(CROSS_COMPILE)objcopy -O srec $@ $@.raw.s19
+	srec_cat $@.raw.s19 --crop 0x8008000 0x803fffc --fill 0x00 0x8008000 0x803fffc --l-e-crc32 0x803fffc -o $@.lm.s19
+endif
+endif
 endif
 	@echo
 	@echo "  >>>>>>>  DONE  <<<<<<<<<"
 	@echo
 	
-
+	
 $(size-exe-y): $(build-exe-y)
 	$(Q)$(OBJDUMP) -h $<
 	@echo TODO: Parse the file....
 
-.PHONY clean:
-	@-rm -f *.o *.d *.h *.elf *.a *.ldp

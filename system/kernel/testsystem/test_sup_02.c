@@ -24,7 +24,7 @@
 #include "Os.h"
 #include "debug.h"
 #include <assert.h>
-#include "os_test.h"
+#include "test_framework.h"
 
 
 void etask_sup_l_02( void ) {

@@ -1,8 +1,6 @@
 
 # Our object files
 obj-y += simple_main.o
-# OS object files.
-obj-y += Os_Cfg.o
 
 VPATH += ..
 VPATH += ../config
@@ -24,6 +22,7 @@ include $(ROOTDIR)/boards/board_common.mk
 #linkfile
 ldcmdfile-y = linkscript_gcc.ldp
 vpath %.ldf $(ROOTDIR)/$(ARCH_PATH-y)/scripts
+#ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldp
 
 # What I want to build
 build-exe-y = simple.elf

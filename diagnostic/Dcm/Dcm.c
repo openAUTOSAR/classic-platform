@@ -42,7 +42,7 @@
 #include "ComM_Dcm.h"
 #include "PduR_Dcm.h"
 #include "ComStack_Types.h"
-#include "Mcu.h"
+#include "McuExtensions.h"
 
 // State variable
 typedef enum

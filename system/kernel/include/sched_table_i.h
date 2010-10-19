@@ -222,6 +222,7 @@ static inline TickType Os_SchTblGetFinalOffset( OsSchTblType *sPtr ) {
 			SA_LIST_GET(&sPtr->expirePointList, SA_LIST_CNT(&sPtr->expirePointList)-1)->offset);
 }
 
+void Os_SchTblCheck(OsCounterType *c_p);
 
 
 #endif /*SCHED_TABLE_I_H_*/

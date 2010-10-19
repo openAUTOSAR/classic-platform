@@ -1,0 +1,82 @@
+// Copyright ArcCore AB
+// 
+// DESCRIPTION 
+//   A simple testscript that runs all the test-suite located in the 
+//   system/kernel/testsystem folder (it looks for the binaries in 
+//   the "binaries" folder)
+
+// Make the !run() command work
+screen.always
+LOCAL &datafile &file &rfile &data &tmpfile &stop &testfiles
+
+&stop="no"
+&datafile="va1.txt"
+&rfile="test_result.txt"
+&testfiles=0.
+
+&tdir="&cfg_project_path_g\system\kernel\testsystem"
+os cmd /c dir &tdir/B /A:D > &datafile
+
+os cmd /c del &rfile
+os cmd /c echo "" > &rfile
+wait 100ms
+
+// Start file at #10 to make space for others to use #1..#9
+OPEN #10 &datafile /read
+READ #10 &data
+WHILE "&data"!=""
+( 
+	&file="&cfg_project_path_g"+"/binaries/system_kernel_testsystem_"+"&data"+".elf"
+  IF OS.FILE("&file")
+  (
+    &tmpfile=os.tmpfile()
+    GOSUB testrun &file "hopp.txt"
+    os cmd /c type hopp.txt >> &rfile  
+    &testfiles=&testfiles+1
+  )
+  IF "&stop"=="yes"
+  (
+    print "Press any key"
+    inkey 
+  )
+
+  READ #10 &data
+) 
+
+CLOSE #10
+
+IF &testfiles==0
+  print "NO testfiles found"
+ELSE
+(
+  beep
+  print "Ran:" &testfiles " testfiles"
+  type "&rfile"
+)
+
+enddo
+
+//-------------------------------------
+testrun:
+  LOCAL &file &term_file
+  ENTRY &file &term_file
+
+  IF ("&file"=="")||!OS.FILE("&file")
+    RETURN
+
+  sys.up
+  do load load &file
+  do term &term_file
+  b.s exit
+  b.s _exit
+  go
+  wait !run()
+  b.d /all
+  term.close
+  RETURN
+
+
+
+
+
+

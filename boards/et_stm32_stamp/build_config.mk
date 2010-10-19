@@ -9,9 +9,11 @@ CFG=ARM ARM_CM3 BRD_ET_STM32_STAMP STM32_CL
 
 # What buildable modules does this board have, 
 # default or private
-MOD_AVAIL=KERNEL MCU PWM ADC ARM_ITM_TERM DEM DCM IOHWAB
-#T32_TERM SIMPLE_PRINTF RAMLOG
-#
+MOD_AVAIL+=ADC MCU PWM     
+# System + Communication + Diagnostic
+MOD_AVAIL+=CANIF CANTP COM DCM DEM DET ECUM IOHWAB KERNEL PDUR WDGM RTE
+# Additional
+MOD_AVAIL+=RAMLOG 
 
 # Needed by us
 MOD_USE=KERNEL MCU

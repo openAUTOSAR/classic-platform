@@ -9,7 +9,10 @@ CFG=PPC BOOKE E200Z1 MPC55XX MPC5516 BRD_MPC551XSIM SIMULATOR
 
 # What buildable modules does this board have, 
 # default or private
-MOD_AVAIL=KERNEL MCU GPT LIN CAN WDG WDGM DEM DCM IOHWAB
 
-# Needed by us
-MOD_USE=KERNEL MCU
+# Memory + Peripherals
+MOD_AVAIL+=ADC DIO DMA CAN GPT LIN MCU PORT PWM WDG    
+# System + Communication + Diagnostic
+MOD_AVAIL+=CANIF CANTP COM DCM DEM DET ECUM IOHWAB KERNEL PDUR WDGM RTE
+# Additional
+MOD_AVAIL+=RAMLOG 

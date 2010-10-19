@@ -57,7 +57,7 @@ const ComSignal_type ComSignal[] = {
 		.ComSignalInitValue = &Com_SignalInitValue_SetLedLevelTx,
 		.ComBitPosition = 7,
 		.ComBitSize = 16,
-		.ComSignalEndianess = BIG_ENDIAN,
+		.ComSignalEndianess = COM_BIG_ENDIAN,
 		.ComSignalType = UINT16,
 		.ComGroupSignal = NULL,
 		

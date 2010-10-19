@@ -42,7 +42,7 @@
 
 #define PDUR_INSTANCE_ID	0
 
-#include "modules.h"
+#include "Modules.h"
 
 #include "PduR_Cfg.h"
 #include "PduR_Types.h"
@@ -73,7 +73,6 @@ extern const PduR_PBConfigType *PduRConfig;
 #define PduR_DevCheck(PduId,PduPtr,ApiId,...) \
 	if (PduRState == PDUR_UNINIT || PduRState == PDUR_REDUCED) { \
 		PDUR_DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_INVALID_REQUEST); \
-		/* DEBUG(DEBUG_LOW,"PDU Router not initialized. Routing request ignored.\n"); */ \
 		return __VA_ARGS__; \
 	} \
 	if (PduPtr == 0 && PDUR_DEV_ERROR_DETECT) { \

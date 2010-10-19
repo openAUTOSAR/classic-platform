@@ -38,6 +38,14 @@ typedef IRQn_Type IrqType;
 #error No device selected
 #endif
 
+
+typedef enum {
+	  PERIPHERAL_CLOCK_AHB,
+	  PERIPHERAL_CLOCK_APB1,
+	  PERIPHERAL_CLOCK_APB2,
+} McuE_PeriperalClock_t;
+
+
 typedef enum {
 	CPU_0=0,
 } Cpu_t;

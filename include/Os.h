@@ -40,6 +40,7 @@ typedef enum {
 	TASK_STATE_RUNNING,
 } TaskStateType;
 
+#define INVALID_TASK	0xdeadU
 
 typedef TaskStateType *TaskStateRefType;
 
@@ -247,9 +248,9 @@ StatusType GetResource( ResourceType ResID );
 StatusType ReleaseResource( ResourceType ResID);
 
 /*
- * Define the scheduler resource as ~0
+ * Define scheduler as topmost
  */
-#define	RES_SCHEDULER 			(ResourceType)(~0)
+#define	RES_SCHEDULER 			OS_RESOURCE_CNT
 
 /*
  * Priorities of tasks and resources
@@ -263,13 +264,7 @@ typedef struct OsDriver_s {
 	int	OsGptChannelRef;
 } OsDriver;
 
-/*-------------------------------------------------------------------
- * Free running timer
- *-----------------------------------------------------------------*/
-typedef const uint32 OsTickType;
-void Os_SysTickInit( void );
-void Os_SysTickStart(uint32_t period_ticks);
-uint32_t Os_SysTickGetTimeElapsed( void );
+
 
 /*-------------------------------------------------------------------
  * Counters
@@ -282,6 +277,16 @@ typedef TickType *TickRefType;
 StatusType IncrementCounter( CounterType );
 StatusType GetCounterValue( CounterType, TickRefType );
 StatusType GetElapsedCounterValue( CounterType, TickRefType val, TickRefType elapsed_val);
+
+
+/*-------------------------------------------------------------------
+ * System timer
+ *-----------------------------------------------------------------*/
+typedef const uint32 OsTickType;
+void Os_SysTickInit( void );
+void Os_SysTickStart(TickType period_ticks);
+TickType Os_SysTickGetValue( void );
+TickType Os_SysTickGetElapsedValue( TickType preValue );
 
 /*-------------------------------------------------------------------
  * Schedule Tables
@@ -348,21 +353,21 @@ typedef enum {
     OSServiceId_GetTaskState,
 } OsServiceIdType;;
 
-typedef struct os_error_s {
+typedef struct OsError {
 	OsServiceIdType serviceId;
 	uint32_t param1;
 	uint32_t param2;
 	uint32_t param3;
-} os_error_t;
+} OsErrorType;
 
-extern os_error_t os_error;
+extern OsErrorType os_error;
 
 // TODO: Add the service id to all OS service methods.
 static inline OsServiceIdType OSErrorGetServiceId(void)  {
 	return os_error.serviceId;
 }
 
-extern os_error_t os_error;
+extern OsErrorType os_error;
 
 #define OSError_ActivateTask_TaskID ((TaskType) os_error.param1)
 #define OSError_ChainTask_TaskID ((TaskType) os_error.param1)

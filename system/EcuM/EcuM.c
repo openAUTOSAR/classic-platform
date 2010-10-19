@@ -13,13 +13,6 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
 #include "EcuM.h"
 #include "Modules.h"
 #include "string.h"
@@ -96,7 +89,7 @@ void EcuM_StartupTwo()
 
 #if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
 	// Start timer to wait for NVM job to complete
-	timer = Os_SysTickGetTimeElapsed();
+	timer = Os_SysTickGetValue();
 #endif
 
 	// Prepare the system to startup RTE
@@ -109,7 +102,7 @@ void EcuM_StartupTwo()
 	// Wait for the NVM job (NvmReadAll) to terminate
 	do {
 		NvM_GetErrorStatus(0, &readAllResult);	// Read the multiblock status
-	} while( (readAllResult == NVM_REQ_PENDING) && !(Os_SysTickGetTimeElapsed() - timer < internal_data.config->EcuMNvramReadAllTimeout) );
+	} while( (readAllResult == NVM_REQ_PENDING) && !(Os_SysTickGetValue() - timer < internal_data.config->EcuMNvramReadAllTimeout) );
 #endif
 
 	// Initialize drivers that need NVRAM data
