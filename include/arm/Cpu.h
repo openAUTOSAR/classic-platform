@@ -17,8 +17,12 @@
 #define CPU_H_
 
 #include <stdint.h>
-#include "stm32f10x.h"
+
+#if defined(CFG_ARM_CM3)
 #include "core_cm3.h"
+#elif defined(CFG_ARM_CR4)
+#include "core_cr4.h"
+#endif
 
 /* Call intrinsic functions directly */
 #define Irq_Disable()					__disable_irq()
