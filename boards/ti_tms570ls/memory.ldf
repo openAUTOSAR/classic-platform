@@ -1,4 +1,4 @@
 
-
-flash(R) : ORIGIN = 0x00000000, LENGTH = 2M
+intvecs(R)      : ORIGIN = 0x0000000, LENGTH = 0x20
+flash(R) : ORIGIN = 0x00000020, LENGTH = 2M
 ram(RW)  : ORIGIN = 0x08000000, LENGTH = 160K
