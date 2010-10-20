@@ -130,6 +130,8 @@ void *Os_Isr( void *stack, void *pcb_p ) {
 		while(1);
 	}
 
+	Irq_SOI();
+
 #ifndef CFG_HCS12D
 	Irq_Enable();
 	pcb->entry();
