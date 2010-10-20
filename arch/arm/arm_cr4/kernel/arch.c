@@ -15,8 +15,7 @@
 
 #include "internal.h"
 #include "stack.h"
-#include "stm32f10x.h"
-#include "core_cm3.h"
+#include "core_cr4.h"
 
 
 /**

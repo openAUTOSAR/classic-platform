@@ -10,7 +10,7 @@
  * _etext  - ?
  */
 
-OUTPUT_FORMAT("elf32-littlearm", "elf32-bigarm","elf32-littlearm")
+OUTPUT_FORMAT("elf32-bigarm")
 OUTPUT_ARCH(arm)
 ENTRY(Reset_Handler)
 
@@ -22,12 +22,10 @@ MEMORY
 SECTIONS
 {
 
-    .isr_vector :
+    .int_vecs :
     {
-	. = ALIGN(4);
-        KEEP(*(.isr_vector))
-	. = ALIGN(4);
-    } > flash
+        KEEP(*(.int_vecs))
+    } > intvecs
 
     .text :
 	{
@@ -62,13 +60,13 @@ SECTIONS
 	/* Read-only data section. */
 	.rodata :	{ 
 		*(.rodata .rodata.* .gnu.linkonce.r.*)
-		_sidata = .;
+		_sidata = ALIGN(.,4);
 	} > flash
 
 	.data :	AT(ALIGN(LOADADDR(.rodata)+SIZEOF(.rodata),4)) {
-		_sdata = .; 
+		_sdata = ALIGN(.,4); 
 		*(.data .data.* .gnu.linkonce.d.* .gnu.linkonce.r.* .eh_frame)
-		_edata = .;		
+		_edata = ALIGN(.,4);		
 	} > ram
 
 	.t32_outport ALIGN(0x10): { *(.t32_outport); } > ram
@@ -80,8 +78,11 @@ SECTIONS
 	
 	.init_stack ALIGN(16) (NOLOAD) : 
 	{	
-		. = . + 200; 	
+		_sstack = .;
+		. = . + 8000; 	
 		_estack	= .; 
+		. = . + 1;
+		. = ALIGN(4);
 	} > ram
 	
 	/* Fls RAM section */

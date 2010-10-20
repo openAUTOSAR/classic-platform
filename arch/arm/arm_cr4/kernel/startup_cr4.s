@@ -40,36 +40,138 @@
 	.type	Reset_Handler, %function
 Reset_Handler:	
 
-/* Copy the data segment initializers from flash to SRAM */  
-  movs	r1, #0
-  b	LoopCopyDataInit
+/* Set big endian state */
+	SETEND BE
+
+/* Copy the data segment initializers from flash to SRAM */
+  	movs	r1, #0
+
+
+Init_Registers:
+
+        mov   r0,         #0x0000
+        mov   r1,         #0x0000
+        mov   r2,         #0x0000
+        mov   r3,         #0x0000
+        mov   r4,         #0x0000
+        mov   r5,         #0x0000
+        mov   r6,         #0x0000
+        mov   r7,         #0x0000
+        mov   r8,         #0x0000
+        mov   r9,         #0x0000
+        mov   r10,        #0x0000
+        mov   r11,        #0x0000
+        mov   r12,        #0x0000
+        mov   r1,         #0x03D0
+        orr   r2,        r1,     #0x0001
+        msr   cpsr_cxsf,  r2
+        msr   spsr_cxsf,  r2
+        mov   r8,         #0x0000
+        mov   r9,         #0x0000
+        mov   r10,        #0x0000
+        mov   r11,        #0x0000
+        mov   r12,        #0x0000
+        orr   r12,        r1,     #0x0002
+        msr   cpsr_c,     r12
+        msr   spsr_cxsf,  r12
+        orr   r12,        r1,     #0x0007
+        msr   cpsr_c,     r12
+        msr   spsr_cxsf,  r12
+        orr   r12,        r1,     #0x000B
+        msr   cpsr_c,     r12
+        msr   spsr_cxsf,  r12
+        orr   r12,        r1,     #0x0003
+        msr   cpsr_c,     r12
+        msr   spsr_cxsf,  r12
+
+        /* System level configuration */
+        mrc   p15,0,r11,c1,c0,0       /* Read current system configuration */
+        mov   r12,		  #0x40000000 /* Set THUMB instruction set mode for interrupts and exceptions */
+        orr   r12, r12, r11
+        mcr   p15,0,r12,c1,c0,0       /* Write new configuration */
+
+
+Init_Stack_Pointers:
+
+user:   .word _estack
+svc:    .word _estack
+fiq:    .word _estack
+irq:    .word _estack
+abort:  .word _estack
+undef:  .word _estack
+
+		mov   r2,		#0xD1
+        msr   cpsr_c,   r2
+        ldr   sp,       fiq
+
+        mov   r2,		#0xD2
+        msr   cpsr_c,   r2
+        ldr   sp,       irq
+
+        mov   r2,		#0xD7
+        msr   cpsr_c,   r2
+        ldr   sp,       abort
+
+        mov   r2,		#0xDB
+        msr   cpsr_c,   r2
+        ldr   sp,       undef
+
+        mov   r2,		#0xDF
+        msr   cpsr_c,   r2
+        ldr   sp,       user
+
+        mov   r2,		#0xD3
+        msr   cpsr_c,   r2
+        ldr   sp,       svc
+
+
+CopyInitializedData:
+	ldr	r0, =_sdata       /* r0 holds start of data in ram */
+	ldr	r3, =_edata       /* r3 holds end of data in ram */
+	ldr	r5, =_sidata      /* r5 start of data in flash */
+	movs  r1,       #0    /* r1 is the counter */
+	b	LoopCopyDataInit
 
 CopyDataInit:
-	ldr	r3, =_sidata
-	ldr	r3, [r3, r1]
-	str	r3, [r0, r1]
-	adds	r1, r1, #4
+	ldr	r4, [r5, r1]          /* read current position in flash */
+	str	r4, [r0, r1]          /* store current position in ram */
+	adds	r1, r1, #4        /* increment counter */
     
 LoopCopyDataInit:
-	ldr	r0, =_sdata
-	ldr	r3, =_edata
-	adds	r2, r0, r1
-	cmp	r2, r3
-	bcc	CopyDataInit
-	ldr	r2, =_sbss
-	b	LoopFillZerobss
-/* Zero fill the bss segment. */  
-FillZerobss:
-	movs	r3, #0
-	str	r3, [r2], #4
-    
-LoopFillZerobss:
-	ldr	r3, = _ebss
-	cmp	r2, r3
-	bcc	FillZerobss
+	adds	r2, r0, r1        /* are we at the final position? */
+	cmp	r2, r3                /* ... */
+	bcc	CopyDataInit          /* nope, continue */
+
+/* Fill zero areas */
+	ldr	r2, =_sbss            /* r2 holds the start address */
+	ldr r5, =_ebss            /* r5 holds the end address */
+	bl	LoopFillZero
+
+	ldr	r2, =_sstack            /* r2 holds the start address */
+	ldr r5, =_estack            /* r5 holds the end address */
+	bl	LoopFillZero
+
 /* Call the application's entry point.*/
+	mov   r2,		#0xDF
+    msr   cpsr_c,   r2
 	bl	main
-	bx	lr    
+	bx	lr
+
+/* Zero fill the bss segment. */  
+FillZero:
+	movs	r3, #0
+	str	    r3, [r2], #4
+    
+LoopFillZero:
+	cmp	r2, r5
+	bcc	FillZero
+	bx  lr
+
+Dummy_Irq:
+	nop
+	nop
+	b Dummy_Irq
+
 .size	Reset_Handler, .-Reset_Handler
 
 /**
@@ -85,55 +187,20 @@ Default_Handler:
 Infinite_Loop:
 	b	Infinite_Loop
 	.size	Default_Handler, .-Default_Handler
-/******************************************************************************
-* Vector table for a Cortex M3. Vectors start at addr 0x0.
-******************************************************************************/    
- 	.section	.isr_vector,"a",%progbits
-	.type	g_pfnVectors, %object
-	.size	g_pfnVectors, .-g_pfnVectors
 
+
+/******************************************************************************
+* Interrupt and exception vectors. Vectors start at addr 0x0.
+******************************************************************************/    
+ 	.section	.int_vecs,"ax",%progbits
 	.extern Irq_Handler
 
-	.word	_estack
-	.word	Reset_Handler
-	.word	NMI_Handler
-	.word	HardFault_Handler
-	.word	MemManage_Handler
-	.word	BusFault_Handler
-	.word	UsageFault_Handler
-	.word	0
-	.word	0
-	.word	0
-	.word	0
-	.word	SVC_Handler
-	.word	DebugMon_Handler
-	.word	0
-	.word	PendSV_Handler
-	.word   Irq_Handler+1		/* SysTick */
-	.rept   83
-	.word	Irq_Handler+1
-	.endr
-    
-      .weak	NMI_Handler
-	.thumb_set NMI_Handler,Default_Handler
+        b   Dummy_Irq          /* Reset? */
+        b   Dummy_Irq          /* Undef? */
+        b   Dummy_Irq          /* SVC */
+        b   Dummy_Irq          /* Prefetch */
+        b   Dummy_Irq          /* data */
+        b   Dummy_Irq          /* ? */
+        b   Irq_Handler        /* IRQ */
+	    b   Irq_Handler        /* FIR */
 
-  	.weak	HardFault_Handler
-	.thumb_set HardFault_Handler,Default_Handler
-
-  	.weak	MemManage_Handler
-	.thumb_set MemManage_Handler,Default_Handler
-
-  	.weak	BusFault_Handler
-	.thumb_set BusFault_Handler,Default_Handler
-
-	.weak	UsageFault_Handler
-	.thumb_set UsageFault_Handler,Default_Handler
-
-	.weak	SVC_Handler
-	.thumb_set SVC_Handler,Default_Handler
-
-	.weak	DebugMon_Handler
-	.thumb_set DebugMon_Handler,Default_Handler
-
-	.weak	PendSV_Handler
-	.thumb_set PendSV_Handler,Default_Handler

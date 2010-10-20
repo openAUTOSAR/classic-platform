@@ -26,11 +26,17 @@
 #define IRQ_DISABLE()		cpsid 	i
 
 
+
+
+
+
 // lr
 #define REG_SAVE r4-r8,r10,r11
 
 
 Irq_Handler:
+	mov   r2,		#0xDF  // Swich back to sys mode.
+    msr   cpsr_c,   r2
     push    {REG_SAVE,lr}
     sub.w   sp,sp,#C_SIZE
     mov.w   r4,#LC_PATTERN
@@ -45,7 +51,7 @@ Irq_Handler:
     bx 		lr
 
 //    b 		os_lc_restore
-	
+
 	
 /**
  * Fake an interrupt stack to be able to return to thread mode.

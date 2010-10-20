@@ -16,9 +16,8 @@
 #include "internal.h"
 #include "task_i.h"
 #include "hooks.h"
-#include "stm32f10x.h"
 #include "irq.h"
-#include "core_cm3.h"
+#include "core_cr4.h"
 
 extern void *Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
 
@@ -33,23 +32,25 @@ extern void *Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
 #define AIRCR_VECTKEY    ((uint32_t)0x05FA0000)
 
 /** Set NVIC prio group */
+/* TODO remove
 static void NVIC_SetPrioGroup(uint32_t prioGroup)
 {
   SCB->AIRCR = AIRCR_VECTKEY | (prioGroup<<8);
 }
+*/
+
+
+
+static inline void Irq_Setup() {
+	vimREG->FIRQPR0 = 0x0;
+	vimREG->FIRQPR1 = 0x0;
+}
 
 void Irq_Init( void ) {
-	//NVIC_SetPrioGroup(3); // No sub prioritys
+	Irq_Setup();
+	Irq_Enable();
 }
 
-void Irq_EOI( void ) {
-	/* Note!
-	 * This is not applicable on the Cortex-M3 since we
-	 * can't terminate the interrupt request without popping
-	 * back registers..have to be solved in the context switches
-	 * themselves.
-	 */
-}
 
 #define ICSR_VECTACTIVE		0x1ff
 
@@ -60,9 +61,11 @@ void Irq_EOI( void ) {
  * Registers. INTISR[0] has vector number 16.
  *
  */
+/* TODO remove
 static uint32_t NVIC_GetActiveVector( void) {
 	return (SCB->ICSR &  ICSR_VECTACTIVE);
 }
+*/
 
 /**
  * Init NVIC vector. We do not use subriority
@@ -75,6 +78,7 @@ static uint32_t NVIC_GetActiveVector( void) {
  * @param vector	The IRQ number
  * @param prio      NVIC priority, 0-15, 0-high prio
  */
+/* TODO remove
 static void NVIC_InitVector(IRQn_Type vector, uint32_t prio)
 {
 	// Set prio
@@ -85,6 +89,7 @@ static void NVIC_InitVector(IRQn_Type vector, uint32_t prio)
 	//NVIC_EnableIRQ(vector);
     NVIC->ISER[vector >> 5] = (uint32_t)1 << (vector & (uint8_t)0x1F);
 }
+*/
 
 /**
  *
@@ -95,23 +100,16 @@ static void NVIC_InitVector(IRQn_Type vector, uint32_t prio)
  */
 void *Irq_Entry( void *stack_p )
 {
-	uint32_t vector = 0;
 	uint32_t *stack;
+
+	// Get the active interrupt channel
+	uint8 channel = IrqGetCurrentInterruptSource();
 
 	Irq_Disable();
 	stack = (uint32_t *)stack_p;
 
-	/* 0. Set the default handler here....
-	 * 1. Grab the vector from the interrupt controller
-	 *    INT_CTRL_ST[VECTACTIVE]
-	 * 2. Irq_VectorTable[vector] is odd -> ISR1
-	 *    Irq_VectorTable[vector] is even-> ISR2
-	 */
+	stack = Os_Isr(stack, (void *)Irq_VectorTable[channel]);
 
-
-	vector = NVIC_GetActiveVector();
-
-	stack = Os_Isr(stack, (void *)Irq_VectorTable[vector]);
 	Irq_Enable();
 	return stack;
 }
@@ -159,9 +157,10 @@ void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
 	OsPcbType *pcb;
 
 	pcb = os_find_task(tid);
-	Irq_VectorTable[vector+16] = (void *)pcb;
+	Irq_VectorTable[vector] = (void *)pcb;
+	IrqActivateChannel(vector);
 
-	NVIC_InitVector(vector, osPrioToCpuPio(pcb->prio));
+	// TOdo replace NVIC_InitVector(vector, osPrioToCpuPio(pcb->prio));
 }
 
 
@@ -173,7 +172,7 @@ void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
  */
 void Irq_GenerateSoftInt( IrqType vector ) {
 
-	NVIC->STIR = (vector);
+	// Todo replace NVIC->STIR = (vector);
 }
 
 /**

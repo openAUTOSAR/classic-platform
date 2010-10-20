@@ -25,6 +25,8 @@
 #include <string.h>
 #include "Ramlog.h"
 
+#include "core_cr4.h"
+
 //#define USE_TRACE 1
 //#define USE_LDEBUG_PRINTF 1
 #include "debug.h"
@@ -55,12 +57,15 @@
 
 #define CORE_CPUID_CORTEX_M3   	0x411FC231UL
 
-
-
 typedef struct {
 	uint32 lossOfLockCnt;
 	uint32 lossOfClockCnt;
 } Mcu_Stats;
+
+
+
+
+
 
 /**
  * Type that holds all global data for Mcu
@@ -203,7 +208,79 @@ Std_ReturnType Mcu_InitRamSection(const Mcu_RamSectionType RamSection)
 
 Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
 {
+    /** @b Initialize @b Pll: */
 
+    /** - Setup pll control register 1:
+    *     - Setup reset on oscillator slip
+    *     - Setup bypass on pll slip
+    *     - Setup Pll output clock divider
+    *     - Setup reset on oscillator fail
+    *     - Setup reference clock divider
+    *     - Setup Pll multiplier
+    */
+	systemREG1->PLLCTL1 =  0x00000000U
+	                        |  0x20000000U
+	                        | (1U << 24U)
+	                        |  0x00000000U
+	                        | (4U << 16U)
+	                        | (119U  << 8U);
+
+    /** - Setup pll control register 1
+    *     - Enable/Disable frequency modulation
+    *     - Setup spreading rate
+    *     - Setup bandwidth adjustment
+    *     - Setup internal Pll output divider
+    *     - Setup spreading amount
+    */
+    systemREG1->PLLCTL2 = 0x00000000U
+                        | (255U << 22U)
+                        | (0U << 12U)
+                        | (1U << 9U)
+                        |  61U;
+
+
+    /** @b Initialize @b Clock @b Tree: */
+
+    /** - Start clock source lock */
+    systemREG1->CSDIS = 0x00000040U
+                      | 0x00000000U
+                      | 0x00000000U
+                      | 0x00000008U
+                      | 0x00000004U
+                      | 0x00000000U
+                      | 0x00000000U;
+
+    /** - Wait for until clocks are locked */
+    while ((systemREG1->CSVSTAT & ((systemREG1->CSDIS ^ 0xFF) & 0xFF)) != ((systemREG1->CSDIS ^ 0xFF) & 0xFF));
+
+    /** - Setup GCLK, HCLK and VCLK clock source for normal operation, power down mode and after wakeup */
+    systemREG1->GHVSRC = (SYS_PLL << 24U)
+                       | (SYS_PLL << 16U)
+                       |  SYS_PLL;
+
+    /** - Power-up all peripharals */
+    pcrREG->PSPWRDWNCLR0 = 0xFFFFFFFFU;
+    pcrREG->PSPWRDWNCLR1 = 0xFFFFFFFFU;
+    pcrREG->PSPWRDWNCLR2 = 0xFFFFFFFFU;
+    pcrREG->PSPWRDWNCLR3 = 0xFFFFFFFFU;
+
+    /** - Setup synchronous peripheral clock dividers for VCLK1 and VCLK2 */
+    systemREG1->VCLKR  = 15U;
+    systemREG1->VCLK2R = 1U;
+    systemREG1->VCLKR  = 1U;
+
+    /** - Setup RTICLK1 and RTICLK2 clocks */
+    systemREG1->RCLKSRC = (1U << 24U)
+                        | (SYS_VCLK << 16U)
+                        | (1U << 8U)
+                        |  SYS_VCLK;
+
+    /** - Setup asynchronous peripheral clock sources for AVCLK1 and AVCLK2 */
+    systemREG1->VCLKASRC = (SYS_FR_PLL << 8U)
+                         |  SYS_VCLK;
+
+    /** - Enable Peripherals */
+    systemREG1->PENA = 1U;
   return E_OK;
 }
 
@@ -219,9 +296,11 @@ void Mcu_DistributePllClock(void)
 
 Mcu_PllStatusType Mcu_GetPllStatus(void) {
 
-	Mcu_PllStatusType rv;
+	if ((systemREG1->CSVSTAT & ((systemREG1->CSDIS ^ 0xFF) & 0xFF)) != ((systemREG1->CSDIS ^ 0xFF) & 0xFF)) {
+		return MCU_PLL_UNLOCKED;
+	}
 
-	return rv;
+	return MCU_PLL_LOCKED;
 }
 
 //-------------------------------------------------------------------

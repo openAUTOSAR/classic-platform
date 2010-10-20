@@ -15,8 +15,7 @@
 
 #include "Os.h"
 #include "internal.h"
-#include "stm32f10x.h"
-#include "core_cm3.h"
+#include "core_cr4.h"
 #include "irq.h"
 #include "arc.h"
 
@@ -26,8 +25,51 @@
  */
 void Os_SysTickInit( void ) {
 	TaskType tid;
-	tid = Os_Arc_CreateIsr(OsTick,6/*prio*/,"OsTick");
-	Irq_AttachIsr2(tid,NULL, SysTick_IRQn);
+	tid = Os_Arc_CreateIsr(OsTick,6,"OsTick");
+	Irq_AttachIsr2(tid,NULL, 2);
+}
+
+
+static inline uint32_t SysTick_Config(uint32_t ticks)
+{
+
+	    /** - Setup NTU source, debug options and disable both counter blocks */
+	    rtiREG1->GCTRL = 0x0;
+
+	    /** - Setup timebase for free running counter 0 */
+	    rtiREG1->TBCTRL = 0x0;
+
+	    /** - Enable/Disable capture event sources for both counter blocks */
+	    rtiREG1->CAPCTRL = 0x0;
+
+	    /** - Setup input source compare 0-3 */
+	    rtiREG1->COMPCTRL = 0x0;
+
+	    /** - Reset up counter 0 */
+	    rtiREG1->CNT[0U].UCx = 0x00000000U;
+
+	    /** - Reset free running counter 0 */
+	    rtiREG1->CNT[0U].FRCx = 0x00000000U;
+
+	    /** - Setup up counter 0 compare value
+	    *     - 0x00000000: Divide by 2^32
+	    *     - 0x00000001-0xFFFFFFFF: Divide by (CPUC0 + 1)
+	    */
+	    rtiREG1->CNT[0U].CPUCx = 4U;
+
+	    /** - Setup compare 0 value. This value is compared with selected free running counter. */
+	    rtiREG1->CMP[0U].COMPx = 9360U;
+
+	    /** - Setup update compare 0 value. This value is added to the compare 0 value on each compare match. */
+	    rtiREG1->CMP[0U].UDCPx = 9360U;
+
+	    /** - Clear all pending interrupts */
+	    rtiREG1->INTFLAG = 0x0;
+
+	    /** - Disable all interrupts */
+	    rtiREG1->CLEARINT = 0x0;
+
+  return (0);                                                                            /* Function successful */
 }
 
 /**
@@ -36,7 +78,6 @@ void Os_SysTickInit( void ) {
  * @param period_ticks How long the period in timer ticks should be.
  *
  */
-
 void Os_SysTickStart(uint32_t period_ticks) {
 
 	/* Cortex-M3 have a 24-bit system timer that counts down
@@ -44,9 +85,12 @@ void Os_SysTickStart(uint32_t period_ticks) {
 	 */
 
 	SysTick_Config(period_ticks);
+	rtiREG1->GCTRL  = 0x1;
+	rtiREG1->SETINT = 0x1;
+
 
 	 /* Set SysTick Priority to 3 */
-	NVIC_SetPriority(SysTick_IRQn, 0x0C);
+	// TODO removeNVIC_SetPriority(SysTick_IRQn, 0x0C);
 
 #if 0
 	// SysTick interrupt each 250ms with counter clock equal to 9MHz
@@ -68,7 +112,8 @@ void Os_SysTickStart(uint32_t period_ticks) {
 
 uint32_t Os_SysTickGetValue( void )
 {
-	return (SysTick->LOAD) - (SysTick->VAL);
+	//return (SysTick->LOAD) - (SysTick->VAL);
+	return 0;
 }
 
 
@@ -76,8 +121,12 @@ TickType Os_SysTickGetElapsedValue( uint32_t preValue ) {
 	uint32_t curr;
 	uint32_t max;
 
+	/*
 	curr = (SysTick->VAL);
 	max  = (SysTick->LOAD);
+	*/
+	curr = 0;
+	max = 0;
 	return Os_CounterDiff((max - curr),preValue,max);
 }
 
