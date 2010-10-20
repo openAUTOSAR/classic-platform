@@ -22,6 +22,7 @@
 
 #ifndef __CM3_CORE_H__
 #define __CM3_CORE_H__
+#include "stm32f10x.h"
 
 #ifdef __cplusplus
  extern "C" {
