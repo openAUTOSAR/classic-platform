@@ -15,10 +15,55 @@
 
 #include "Os.h"
 #include "internal.h"
+#include <assert.h>
+#include <string.h>
+
 
 #if !defined(MAX)
 #define MAX(_x,_y) (((_x) > (_y)) ? (_x) : (_y))
 #endif
+
+
+/*
+Resource management at interrupt level is NOT supported
+
+
+Testing
+RM:
+1. Priority ceiling: Call GetResource() from preemtive
+   task and activate a task with higher priority than the ceiling protocol.
+   The higher priority task should be swapped in.
+2. Verify that you cannot allocate an internal resource with
+   a) GetResource()
+   b) ReleaseResource()
+3. Internal resource. Allocate 1 internal resource to 3 tasks of different
+   priorities. Verify that
+   a) Higher priority tasks than the group can preement
+   b) For tasks which have the same or lower priority as the highest priority within a group,
+      the tasks within the group behave like non preemptable tasks ( OSEK 4.6.3)
+4. Attempt to release a resource which has a lower ceiling priority
+   than the statically assigned priority of the calling task or
+   interrupt routine, E_OS_ACCESS
+5. The  general  restriction  on  some  system  calls  that  they  are  not  to  be  called  with  resources
+  occupied (chapter 8.2) does not apply to internal resources, as internal resources are handled
+  within  those  calls.  However,  all  standard  resources  have  to  be  released  before  the  internal
+  resource can be released (see chapter 8.2, “LIFO principle”).
+6. Check LIFO order. Return E_OS_ACCESS if not in LIFO order..
+7. Test Os_IsrAddResource().
+
+
+task
+- GetResource(RES_SCHEDULER) will lock the scheduler even for ISR2
+
+TODO:
+1. task.resourceAccess is already calculated by BSW builder. This is the bitmask
+   of what resources is accessable by the task.
+2.
+
+  task.rsrcAccessMask & (1 << RES_SCHEDULER)
+
+ *
+ */
 
 /* INFO
  * - If OsTaskSchedule = NON, Task it not preemptable, no internal resource may be assigned to a task
@@ -61,8 +106,33 @@
 #define valid_internal_id() (rPtr->nr < Os_CfgGetResourceCnt()) //&& (rPtr->type == RESOURCE_TYPE_INTERNAL) )
 
 
-static StatusType GetResource_( OsResourceType * );
-StatusType ReleaseResource_( OsResourceType * );
+void Os_ResourceAlloc( OsResourceType *rPtr, OsPcbType *pcbPtr) {
+	/* Save old task prio in resource and set new task prio */
+	rPtr->owner = pcbPtr->pid;
+	rPtr->old_task_prio = pcbPtr->prio;
+	pcbPtr->prio = rPtr->ceiling_priority;
+
+	if( rPtr->type != RESOURCE_TYPE_INTERNAL ) {
+		TAILQ_INSERT_TAIL(&pcbPtr->resource_head, rPtr, listEntry);
+	}
+}
+
+void Os_ResourceFree( OsResourceType *rPtr , OsPcbType *pcbPtr) {
+	assert( rPtr->owner == pcbPtr->pid );
+	rPtr->owner = NO_TASK_OWNER;
+	pcbPtr->prio = rPtr->old_task_prio;
+
+	if( rPtr->type != RESOURCE_TYPE_INTERNAL ) {
+		/* The list can't be empty here */
+		assert( !TAILQ_EMPTY(&pcbPtr->resource_head) );
+
+		/* The list should be popped in LIFO order */
+		assert( TAILQ_LAST(&pcbPtr->resource_head, head) == rPtr );
+
+		/* Remove the entry */
+		TAILQ_REMOVE(&pcbPtr->resource_head, rPtr, listEntry);
+	}
+}
 
 /**
  * This call serves to enter critical sections in the code that are
@@ -88,25 +158,40 @@ StatusType ReleaseResource_( OsResourceType * );
  * @param ResID
  * @return
  */
+
+
 StatusType GetResource( ResourceType ResID ) {
 	StatusType rv = E_OK;
+	OsPcbType *pcbPtr = Os_TaskGetCurrent();
+	OsResourceType *rPtr;
+	uint32_t flags;
+
+	Irq_Save(flags);
 
 	if( ResID == RES_SCHEDULER ) {
-		if ( Os_SchedulerResourceIsOccupied() ) {
-			rv = E_OS_ACCESS;
-			goto err;
-		} else {
-			Os_GetSchedulerResource();
-		}
+
+		rPtr = &os_sys.resScheduler;
 	} else {
-		if (ResID >= Os_CfgGetResourceCnt()) {
+		/* Check we can access it */
+		if( (pcbPtr->resourceAccess & (1<< ResID)) == 0 ) {
 			rv = E_OS_ID;
 			goto err;
 		}
 
-		OsResourceType *rPtr = Os_CfgGetResource(ResID);
-		rv = GetResource_(rPtr);
+		rPtr = Os_CfgGetResource(ResID);
 	}
+
+	/* Check for invalid configuration */
+	if( (rPtr->owner != NO_TASK_OWNER) ||
+		(pcbPtr->prio > rPtr->ceiling_priority) )
+	{
+		rv = E_OS_ACCESS;
+		Irq_Restore(flags);
+		goto err;
+	}
+
+	Os_ResourceAlloc(rPtr,pcbPtr);
+	Irq_Restore(flags);
 
 	if (rv != E_OK)
 		goto err;
@@ -128,30 +213,42 @@ StatusType GetResource( ResourceType ResID ) {
  */
 
 StatusType ReleaseResource( ResourceType ResID) {
-    StatusType rv = E_OK;
+	StatusType rv = E_OK;
+	OsPcbType *pcbPtr = Os_TaskGetCurrent();
+	OsResourceType *rPtr;
+	uint32_t flags;
 
+	Irq_Save(flags);
 	if( ResID == RES_SCHEDULER ) {
-		if ( Os_SchedulerResourceIsFree() ) {
-			rv = E_OS_NOFUNC;
-			goto err;
-		} else {
-			Os_ReleaseSchedulerResource();
-		}
+		rPtr = &os_sys.resScheduler;
 	} else {
-		if (ResID >= Os_CfgGetResourceCnt()) {
+		/* Check we can access it */
+		if( (pcbPtr->resourceAccess & (1<< ResID)) == 0 ) {
 			rv = E_OS_ID;
 			goto err;
 		}
-
-	    OsResourceType *rPtr = Os_CfgGetResource(ResID);
-	    rv = ReleaseResource_(rPtr);
+		rPtr = Os_CfgGetResource(ResID);
 	}
 
-	if (rv != E_OK)
-	    goto err;
+	/* Check for invalid configuration */
+	if( rPtr->owner == NO_TASK_OWNER)
+	{
+		rv = E_OS_NOFUNC;
+		Irq_Restore(flags);
+		goto err;
+	}
+
+	if( (pcbPtr->prio < rPtr->ceiling_priority))
+	{
+		rv = E_OS_ACCESS;
+		Irq_Restore(flags);
+		goto err;
+	}
+
+	Os_ResourceFree(rPtr,pcbPtr);
 
 	/* do a rescheduling (in some cases) (see OSEK OS 4.6.1) */
-	if ( (Os_TaskGetCurrent()->scheduling == FULL) &&
+	if ( (pcbPtr->scheduling == FULL) &&
 		 (os_sys.int_nest_cnt == 0) &&
 		 (Os_SchedulerResourceIsFree()) ) {
 
@@ -159,132 +256,38 @@ StatusType ReleaseResource( ResourceType ResID) {
 
 		/* only dispatch if some other ready task has higher prio */
 		if (top_pcb->prio > Os_TaskGetCurrent()->prio) {
-			long flags;
-			Irq_Save(flags);
-			Os_Dispatch(0);
-			Irq_Restore(flags);
+			Os_Dispatch(OP_RELEASE_RESOURCE);
 		}
 	}
+	Irq_Restore(flags);
 
 	OS_STD_END_1(OSServiceId_ReleaseResource,ResID);
 }
 
 
-/**
- * Internal GetResource function...
- *
- * @param rPtr
- * @return
- */
-
-static StatusType GetResource_( OsResourceType * rPtr ) {
-	StatusType rv = E_OK;
-
-	if( rPtr->nr == RES_SCHEDULER ) {
-		// Lock the scheduler
-		os_sys.scheduler_lock = 1;
-	}
-
-	/* Check if valid resource */
-	if( !valid_standard_id() ) {
-		rv = E_OS_ID;
-		goto err;
-	}
-
-	/* check if we have access
-	 * TODO: This gives access to all resources for ISR2s but we should respect the OsIsrResourceRef [0..*] here.
-	 */
-	if ( Os_TaskGetCurrent()->proc_type != PROC_ISR2) {
-		if ( !(Os_TaskGetCurrent()->resourceAccess & (1 << rPtr->nr)) ) {
-			rv = E_OS_ACCESS;
-			goto err;
-		}
-	}
-
-	/* @req OSEK
-	 * Attempt to get a resource which is already occupied by any task
-     * or ISR, or the statically assigned priority of the calling task or
-     * interrupt routine is higher than the calculated ceiling priority,
-     * E_OS_ACCESS
-	 */
-	if( (Os_TaskGetCurrent()->prio > rPtr->ceiling_priority )
-#if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
-		|| ( get_curr_application_id() !=  rPtr->application_owner_id)
-#endif
-		|| ( rPtr->owner != (TaskType)(-1)))
-	{
-		rv = E_OS_ACCESS;
-		goto err;
-	}
-
-	rPtr->owner = get_curr_pid();
-	rPtr->old_task_prio = os_pcb_set_prio(Os_TaskGetCurrent() ,rPtr->ceiling_priority);
-
-	if( rPtr->type != RESOURCE_TYPE_INTERNAL ) {
-		TAILQ_INSERT_TAIL(&Os_TaskGetCurrent()->resource_head, rPtr, listEntry);
-	}
-
-	goto ok;
-err:
-	ERRORHOOK(rv);
-ok:
-	return rv;
-}
-
-
-/**
- * Internal release resource..
- * @param rPtr
- * @return
- */
-StatusType ReleaseResource_( OsResourceType * rPtr ) {
-	if (!valid_standard_id()) {
-		return E_OS_ID;
-	}
-
-	/* check if we have access
-	 * TODO: This gives access to all resources for ISR2s but we should respect the OsIsrResourceRef [0..*] here.
-	 */
-	if ( Os_TaskGetCurrent()->proc_type != PROC_ISR2) {
-		if ( !(Os_TaskGetCurrent()->resourceAccess & (1 << rPtr->nr)) ) {
-			return E_OS_ACCESS;
-		}
-	}
-
-	/* if we are not holding this resource */
-	if (rPtr->owner != Os_TaskGetCurrent()->pid) {
-		return E_OS_NOFUNC;
-	}
-
-	// Release it...
-	rPtr->owner = (TaskType) (-1);
-	TAILQ_REMOVE(&Os_TaskGetCurrent()->resource_head, rPtr, listEntry);
-	os_pcb_set_prio(Os_TaskGetCurrent(), rPtr->old_task_prio);
-	return E_OK;
-}
-
-
 void Os_ResourceGetInternal( void ) {
-	OsResourceType *rt = os_get_resource_int_p();
+	OsPcbType *pcbPtr = Os_TaskGetCurrent();
+	OsResourceType *rt = pcbPtr->resource_int_p;
 
 	if( rt != NULL ) {
 		OS_DEBUG(D_RESOURCE,"Get IR proc:%s prio:%u old_task_prio:%u\n",
 				get_curr_pcb()->name,
 				(unsigned)rt->ceiling_priority,
 				(unsigned)rt->old_task_prio);
-		GetResource_(rt);
+		Os_ResourceAlloc(rt,pcbPtr);
 	}
 }
 
 void Os_ResourceReleaseInternal( void ) {
-	OsResourceType *rt = os_get_resource_int_p();
+	OsPcbType *pcbPtr = Os_TaskGetCurrent();
+	OsResourceType *rt = pcbPtr->resource_int_p;
 
 	if(  rt != NULL ) {
 		OS_DEBUG(D_RESOURCE,"Rel IR proc:%s prio:%u old_task_prio:%u\n",
 				get_curr_pcb()->name,
 				(unsigned)rt->ceiling_priority,
 				(unsigned)rt->old_task_prio);
-		ReleaseResource_(rt);
+		Os_ResourceFree(rt,pcbPtr);
 	}
 }
 
@@ -301,10 +304,19 @@ void Os_ResourceInit( void ) {
 	OsResourceType *rsrc_p;
 	int topPrio;
 
+
+	/* For now, assign the scheduler resource here */
+	os_sys.resScheduler.ceiling_priority = OS_RES_SCHEDULER_PRIO;
+	strcpy(os_sys.resScheduler.id,"RES_SCHEDULER");
+	os_sys.resScheduler.nr = RES_SCHEDULER;
+	os_sys.resScheduler.owner = NO_TASK_OWNER;
+
 	/* Calculate ceiling priority
 	 * We make this as simple as possible. The ceiling priority
 	 * is set to the same priority as the highest priority task that
 	 * access it.
+	 *
+	 * Note that this applies both internal and standard resources.
 	 * */
 	for( int i=0; i < Os_CfgGetResourceCnt(); i++) {
 		rsrc_p = Os_CfgGetResource(i);
@@ -313,33 +325,16 @@ void Os_ResourceInit( void ) {
 		for( int pi = 0; pi < Os_CfgGetTaskCnt(); pi++) {
 
 			pcb_p = os_get_pcb(pi);
+
+
 			if(pcb_p->resourceAccess & (1<<i) ) {
 				topPrio = MAX(topPrio,pcb_p->prio);
 			}
+
+			/* Generator fix, add RES_SCHEDULER */
+			pcb_p->resourceAccess |= (1 << RES_SCHEDULER) ;
 		}
 		rsrc_p->ceiling_priority = topPrio;
 	}
-
-
-
-	/* From OSEK:
-	 * Non preemptable tasks are the most common usage of the concept
-	 * of internal resources; they are tasks with a special internal
-	 * resource of highest task priority assigned.
-	 * --> Interpret this as we can set the priority to 32.
-	 *
-	 * Assign an internal resource with prio 32 to the tasks
-	 * with scheduling=NON
-	 *
-	 *
-	 */
-#if 0
-	for( int i=0; i < Os_CfgGetTaskCnt(); i++) {
-		pcb_p = os_get_pcb(i);
-		if(pcb_p->scheduling == NON ) {
-			pcb_p->prio = OS_RES_SCHEDULER_PRIO;
-		}
-	}
-#endif
 }
 

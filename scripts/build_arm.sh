@@ -17,20 +17,17 @@ make BOARDDIR=stm32_stm3210c all
 if [ $? -ne 0 ]; then quit 1
 fi
 
-export BDIR=system/kernel/testsystem/suite_01,system/kernel/testsystem/suite_02
+export BDIR=examples/simple 
 make BOARDDIR=stm32_stm3210c clean
 make BOARDDIR=stm32_stm3210c all
 if [ $? -ne 0 ]; then quit 1
 fi
 
-export BDIR=system/kernel/testsystem/suite_01,system/kernel/testsystem/suite_02
-make BOARDDIR=stm32_mcbstm32 clean
-make BOARDDIR=stm32_mcbstm32 all
-if [ $? -ne 0 ]; then quit 1
-fi
+# Problems memory..
+#export BDIR=system/kernel/testsystem/suite_01,system/kernel/testsystem/suite_02, system/kernel/testsystem/suite_03
+#make BOARDDIR=stm32_stm3210c clean
+#make BOARDDIR=stm32_stm3210c all
+#if [ $? -ne 0 ]; then quit 1
+#fi
 
-export BDIR=system/kernel/testsystem/suite_01,system/kernel/testsystem/suite_02
-make BOARDDIR=stm32_stm3210c clean
-make BOARDDIR=stm32_stm3210c all
-if [ $? -ne 0 ]; then quit 1
-fi
+

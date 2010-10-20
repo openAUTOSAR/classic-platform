@@ -29,6 +29,10 @@
 #include "core_cm3.h"
 #endif
 
+#ifdef USE_TTY_TCF_STREAMS
+#include "streams.h"
+#endif
+
 
 #if defined(CFG_ARM)
 #define open	_open
@@ -236,10 +240,19 @@ int write(  int fd, const void *_buf, size_t nbytes)
 		}
 #endif
 
-#if defined(USE_RAMLOG)
+#ifdef USE_TTY_TCF_STREAMS
 		char *buf = (char *)_buf;
 		for (int i = 0; i < nbytes; i++) {
-			ramlog_chr (*(buf + i));
+			TCF_TTY_SendChar(*(buf + i));
+		}
+#endif
+
+#if defined(USE_RAMLOG)
+		{
+			char *buf = (char *)_buf;
+			for (int i = 0; i < nbytes; i++) {
+				ramlog_chr (*(buf + i));
+			}
 		}
 #endif
 

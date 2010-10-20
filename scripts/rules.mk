@@ -191,6 +191,10 @@ else
 	 							/^\.data/ { print "  data:"  $$3+0 " bytes"; rom+=$$3; ram+=$$3}; \
 	 							/^\.bss/ { print "  bss :"  $$3+0 " bytes"; ram+=$$3}; \
 	 							END { print "  ROM: ~" rom " bytes"; print "  RAM: ~" ram " bytes"}' $(subst .elf,.map,$@)
+ifeq ($(BUILD_LOAD_MODULE),y)
+	@$(CROSS_COMPILE)objcopy -O srec $@ $@.raw.s19
+	srec_cat $@.raw.s19 --crop 0x8008000 0x803fffc --fill 0x00 0x8008000 0x803fffc --l-e-crc32 0x803fffc -o $@.lm.s19
+endif
 endif
 endif
 	@echo

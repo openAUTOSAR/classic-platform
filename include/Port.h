@@ -68,6 +68,13 @@ typedef enum
     PORT_PIN_IN = 0, PORT_PIN_OUT,
 } Port_PinDirectionType;
 
+#if defined(CFG_HC1X)
+/** @req PORT124 */
+typedef uint8 Port_PinModeType;
+#else  // CFG_PPC, CFG_STM32_STAMP and others
+typedef uint32 Port_PinModeType;
+#endif
+
 void
 Port_Init(const Port_ConfigType *configType);
 #if ( PORT_PIN_DIRECTION_CHANGES_ALLOWED == STD_ON )

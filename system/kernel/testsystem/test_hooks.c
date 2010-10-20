@@ -17,8 +17,17 @@
 
 #include <stdint.h>
 #include "Os.h"
-#include "debug.h"
+#include <assert.h>
+
+
 #include "test_framework.h"
+#if defined( USE_MCU )
+#include "Mcu.h"
+#endif
+#include "arc.h"
+
+//#define USE_LDEBUG_PRINTF	1
+#include "debug.h"
 
 #define ERROR_LOG_SIZE 1
 
@@ -154,7 +163,7 @@ void ErrorHook( StatusType error ) {
 	}
 #endif
 
-	LDEBUG_PRINTF("## ErrorHook err=%u\n",Error);
+//	LDEBUG_PRINTF("## ErrorHook err=%u\n",error);
 
 	/* Log the errors in a buffer for later review */
 	errEntry = &ErrorLog.log[ErrorLog.index];
@@ -179,15 +188,30 @@ void ErrorHook( StatusType Error ) {
 #endif
 
 void PreTaskHook( void ) {
+	StatusType rv;
 	TaskType task;
-	GetTaskID(&task);
+	TaskStateType state;
+
+	rv = GetTaskID(&task);
+	assert( rv == E_OK );
 	LDEBUG_PRINTF("## PreTaskHook, taskid=%d\n",task);
+	rv = GetTaskState(task,&state);
+	assert( rv == E_OK );
+	assert( state == TASK_STATE_RUNNING );
 }
 
 void PostTaskHook( void ) {
+	StatusType rv;
 	TaskType task;
-	GetTaskID(&task);
+	TaskStateType state;
+
+	rv = GetTaskID(&task);
+	assert( rv == E_OK );
 	LDEBUG_PRINTF("## PostTaskHook, taskid=%d\n",task);
+	rv = GetTaskState(task,&state);
+	assert( rv == E_OK );
+	assert( state == TASK_STATE_RUNNING );
+
 #if 0
 	{
 		StackInfoType si;

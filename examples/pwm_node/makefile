@@ -5,8 +5,8 @@ obj-y += Tasks.o
 obj-y += Hooks.o
 obj-y += Rte.o
 
-# OS object files.
-obj-y += Os_Cfg.o
+VPATH += ../
+
 # Board object files
 include $(ROOTDIR)/boards/board_common.mk
 
@@ -22,8 +22,8 @@ inc-y += $(ROOTDIR)/system/kernel/$(objdir)
 inc-y += $(ROOTDIR)/system/kernel/include
 
 #TODO: Remove?, Build other way?
-VPATH += $(ROOTDIR)/$(SUBDIR)/Rte
-inc-y += $(ROOTDIR)/$(SUBDIR)/Rte
+VPATH += ../Rte
+inc-y += ../Rte
 VPATH += $(ROOTDIR)/components/pwm_sine
 inc-y += $(ROOTDIR)/components/pwm_sine
 

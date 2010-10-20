@@ -72,6 +72,7 @@ static void os_pcb_rom_copy( OsPcbType *pcb, const OsRomPcbType *r_pcb ) {
 //	pcb->app = &app_list[r_pcb->app];
 //	pcb->app_mask = app_mask[r_pcb->app];
 	strncpy(pcb->name,r_pcb->name,16);
+	pcb->name[15] = '\0';
 }
 
 static _Bool init_os_called = 0;
@@ -199,10 +200,8 @@ static void os_start( void ) {
 		os_sys.curr_pcb = tmp_pcb;
 
 		// register this auto-start activation
-		if (tmp_pcb->proc_type == PROC_BASIC) {
-			assert(tmp_pcb->activations < tmp_pcb->activationLimit);
-			tmp_pcb->activations++;
-		}
+		assert(tmp_pcb->activations < tmp_pcb->activationLimit);
+		tmp_pcb->activations++;
 
 		// NOTE! We don't go for os_swap_context() here..
 		// first arg(NULL) is dummy only

@@ -9,8 +9,8 @@ obj-y += Hooks.o
 inc-y += $(ROOTDIR)/system/kernel/$(objdir)
 inc-y += $(ROOTDIR)/system/kernel/include
 
-# OS object files.
-obj-y += Os_Cfg.o
+VPATH += ../
+
 # Board object files
 include $(ROOTDIR)/boards/board_common.mk
 
@@ -23,8 +23,8 @@ inc-y := ../config/$(BOARDDIR) ../config $(inc-y)
 inc-y += $(ROOTDIR)/system/kernel/$(objdir)
 
 #TODO: Remove?, Build other way?
-VPATH += $(ROOTDIR)/$(SUBDIR)/Rte
-inc-y += $(ROOTDIR)/$(SUBDIR)/Rte
+VPATH += ../Rte
+inc-y += ../Rte
 VPATH += $(ROOTDIR)/components/fading_led
 inc-y += $(ROOTDIR)/components/fading_led
 

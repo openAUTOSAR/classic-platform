@@ -57,12 +57,12 @@ void PduR_Init (const PduR_PBConfigType* ConfigPtr) {
 	// Otherwise raise an error.
 	if (PduRState != PDUR_UNINIT) {
 		// Raise error and return.
-		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, 0x00, PDUR_E_INVALID_REQUEST);
+		PDUR_DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, 0x00, PDUR_E_INVALID_REQUEST);
 		return;
 	}
 
 	if (ConfigPtr == NULL) {
-		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, 0x00, PDUR_E_CONFIG_PTR_INVALID);
+		PDUR_DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, 0x00, PDUR_E_CONFIG_PTR_INVALID);
 		return;
 	} else {
 		PduRConfig = ConfigPtr;
@@ -209,7 +209,7 @@ void PduR_GetVersionInfo (Std_VersionInfoType* versionInfo){
 #endif
 
 uint32 PduR_GetConfigurationId () {
-	//DevCheck(0,1,0x18,E_NOT_OK);
+	//PduR_DevCheck(0,1,0x18,E_NOT_OK);
 	return PduRConfig->PduRConfigurationId;
 }
 #endif // End of not Zero Cost Operation Mode

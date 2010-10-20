@@ -28,9 +28,6 @@
 /** Allow Pin mode changes during runtime (not avail on this CPU) */
 #define PORT_SET_PIN_MODE_API               STD_ON
 
-/** @req PORT124 */
-typedef uint8 Port_PinModeType;
-
 /** HW specific symbolic names of pins */
 /** @req PORT013 */
 typedef enum{

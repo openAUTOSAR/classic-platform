@@ -30,7 +30,7 @@ void interrupt(void) __attribute__((__interrupt__));
 
 void interrupt( void ) {
 
-	apa((void *)0x123);
+//	apa((void *)0x123);
 }
 
 
@@ -38,11 +38,19 @@ void func1( int a ) {
 
 }
 
+int func3( int a ) {
+	if( a == 0) {
+		return 5;
+	}
+	return 4;
+}
+
 int func2( void ) {
 	int a;
 	a = 3;
 
 	func1(5);
+	func3(0);
 
 	return 2;
 }

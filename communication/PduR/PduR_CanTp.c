@@ -60,7 +60,7 @@ BufReq_ReturnType PduR_CanTpProvideTxBuffer(PduIdType CanTpTxPduId, PduInfoType*
 
 void PduR_CanTpTxConfirmation(PduIdType CanTpTxPduId, NotifResultType Result) {
 #if (PDUR_CANTP_SUPPORT == STD_ON)
-	DevCheck(CanTpTxPduId,1,0x0f);
+	PduR_DevCheck(CanTpTxPduId,1,0x0f);
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
 	DEBUG(DEBUG_LOW,"PduR_CanIfTxConfirmation: received confirmation with id %d\n", CanTxPduId);

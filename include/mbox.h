@@ -20,7 +20,7 @@
 
 typedef struct
 {
-	CirqBufferDynType *cirqPtr;
+	CirqBufferType *cirqPtr;
 } Arc_MBoxType;
 
 

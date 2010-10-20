@@ -44,6 +44,8 @@ StatusType WaitEvent( EventMaskType Mask ) {
 	OsPcbType *curr_pcb = get_curr_pcb();
 	StatusType rv = E_OK;
 
+	OS_DEBUG(D_EVENT,"# WaitEvent %s\n",Os_TaskGetCurrent()->name);
+
 	if( os_sys.int_nest_cnt != 0 ) {
 		rv =  E_OS_CALLEVEL;
 		goto err;
@@ -54,7 +56,7 @@ StatusType WaitEvent( EventMaskType Mask ) {
 		goto err;
 	}
 
-	if ( Os_TaskOccupiesResouces(curr_pcb) ) {
+	if ( Os_TaskOccupiesResources(curr_pcb) ) {
 		rv = E_OS_RESOURCE;
 		goto err;
 	}
@@ -69,9 +71,9 @@ StatusType WaitEvent( EventMaskType Mask ) {
 		curr_pcb->ev_wait = Mask;
 
 		if ( Os_SchedulerResourceIsFree() ) {
-			POSTTASKHOOK();
-			Os_TaskMakeWaiting(curr_pcb);
-			Os_Dispatch(0);
+			// Os_TaskMakeWaiting(curr_pcb);
+			Os_Dispatch(OP_WAIT_EVENT);
+			assert( curr_pcb->state & ST_RUNNING );
 		} else {
 			Os_TaskMakeWaiting(curr_pcb);
 		}
@@ -103,6 +105,8 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 	OsPcbType *currPcbPtr;
 	uint32_t flags;
 
+	OS_DEBUG(D_EVENT,"# SetEvent %s\n",Os_TaskGetCurrent()->name);
+
 	if( TaskID  >= Os_CfgGetTaskCnt() ) {
 		rv = E_OS_ID;
 		goto err;
@@ -110,15 +114,17 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 
 	dest_pcb = os_get_pcb(TaskID);
 
-	if( (dest_pcb->state & ST_SUSPENDED ) ) {
-		rv = E_OS_STATE;
-		goto err;
-	}
-
+#if (OS_STATUS_EXTENDED == STD_ON )
 	if( dest_pcb->proc_type != PROC_EXTENDED ) {
 		rv = E_OS_ACCESS;
 		goto err;
 	}
+
+	if( (dest_pcb->state & ST_SUSPENDED ) ) {
+		rv = E_OS_STATE;
+		goto err;
+	}
+#endif
 
 	Irq_Save(flags);
 
@@ -147,12 +153,13 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 				(dest_pcb->prio > currPcbPtr->prio) &&
 				(Os_SchedulerResourceIsFree()) )
 			{
-				Os_SetOp(OP_SET_EVENT);
-				Os_Dispatch(0);
+				Os_Dispatch(OP_SET_EVENT);
 			}
 
-		}  else if(dest_pcb->state & ST_READY ) {
+		}  else if(dest_pcb->state & (ST_READY|ST_RUNNING) ) {
 			/* Hmm, we do nothing */
+		} else {
+			assert( 0 );
 		}
 	}
 
@@ -186,8 +193,8 @@ StatusType GetEvent( TaskType TaskId, EventMaskRefType Mask) {
 
 	dest_pcb = os_get_pcb(TaskId);
 
-	VALIDATE_W_RV(dest_pcb->state & ST_SUSPENDED,E_OS_STATE);
 	VALIDATE_W_RV(dest_pcb->proc_type != PROC_EXTENDED,E_OS_ACCESS);
+	VALIDATE_W_RV(dest_pcb->state & ST_SUSPENDED,E_OS_STATE);
 
 	*Mask = dest_pcb->ev_set;
 

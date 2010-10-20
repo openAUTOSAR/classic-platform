@@ -29,11 +29,15 @@
 /** @req DEM113 */ /** @req DEM174 */
 /** @req DEM286 */
 /** @req DEM267 */
+/** @req DEM364 */
+/** @req DEM114 */
+/** @req DEM124 */
+/** @req DEM370 */
+
 
 
 #include <string.h>
 #include "Dem.h"
-#include "Det.h"
 //#include "Fim.h"
 //#include "Nvm.h"
 //#include "SchM_Dem.h"
@@ -45,6 +49,36 @@
  */
 #define DEBOUNCE_FDC_TEST_FAILED  127
 #define DEBOUNCE_FDC_TEST_PASSED -128
+
+#if  ( DEM_DEV_ERROR_DETECT == STD_ON )
+#include "Det.h"
+/** @req DEM117 */
+#define VALIDATE(_exp,_api,_err ) \
+        if( !(_exp) ) { \
+          Det_ReportError(MODULE_ID_DEM, 0, _api, _err); \
+          return E_NOT_OK; \
+        }
+
+#define VALIDATE_RV(_exp,_api,_err,_rv ) \
+        if( !(_exp) ) { \
+          Det_ReportError(MODULE_ID_DEM, 0, _api, _err); \
+          return _rv; \
+        }
+
+#define VALIDATE_NO_RV(_exp,_api,_err ) \
+  if( !(_exp) ) { \
+          Det_ReportError(MODULE_ID_DEM, 0, _api, _err); \
+          return; \
+        }
+#define DET_REPORTERROR(_x,_y,_z,_q) Det_ReportError(_x, _y, _z, _q)
+
+#else
+#define VALIDATE(_exp,_api,_err )
+#define VALIDATE_RV(_exp,_api,_err,_rv )
+#define VALIDATE_NO_RV(_exp,_api,_err )
+#define DET_REPORTERROR(_x,_y,_z,_q)
+#endif
+
 
 /*
  * Local types
@@ -334,9 +368,7 @@ static Dem_EventStatusType preDebounceNone(Dem_EventStatusType reportedStatus, E
 
 	default:
 		// TODO: What to do with PREFAIL and PREPASSED on no debouncing?
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-			Det_ReportError(MODULE_ID_DEM, 0, DEM_PREDEBOUNCE_NONE_ID, DEM_E_PARAM_DATA); /** @req DEM117 */
-#endif
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_PREDEBOUNCE_NONE_ID, DEM_E_PARAM_DATA);
 		break;
 	}
 
@@ -391,9 +423,7 @@ static Dem_EventStatusType preDebounceCounterBased(Dem_EventStatusType reportedS
 		break;
 
 	default:
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DEM, 0, DEM_PREDEBOUNCE_COUNTER_BASED_ID, DEM_E_PARAM_DATA); /** @req DEM117 */
-#endif
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_PREDEBOUNCE_COUNTER_BASED_ID, DEM_E_PARAM_DATA);
 		break;
 
 	}
@@ -444,9 +474,7 @@ static void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_E
 		}
 		else {
 			// Error: Event status buffer full
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-			Det_ReportError(MODULE_ID_DEM, 0, DEM_UPDATE_EVENT_STATUS_ID, DEM_E_EVENT_STATUS_BUFF_FULL); /** @req DEM117 */
-#endif
+			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_UPDATE_EVENT_STATUS_ID, DEM_E_EVENT_STATUS_BUFF_FULL);
 		}
 	}
 
@@ -465,9 +493,7 @@ static void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_E
 
 			default:
 				// Don't know how to handle this.
-	#if (DEM_DEV_ERROR_DETECT == STD_ON)
-				Det_ReportError(MODULE_ID_DEM, 0, DEM_UPDATE_EVENT_STATUS_ID, DEM_E_NOT_IMPLEMENTED_YET); /** @req DEM117 */
-	#endif
+				DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_UPDATE_EVENT_STATUS_ID, DEM_E_NOT_IMPLEMENTED_YET);
 				break;
 			}
 		}
@@ -543,9 +569,7 @@ static void mergeEventStatusRec(EventRecType *eventRec)
 		}
 		else {
 			// Error: Event status buffer full
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-			Det_ReportError(MODULE_ID_DEM, 0, DEM_MERGE_EVENT_STATUS_ID, DEM_E_EVENT_STATUS_BUFF_FULL); /** @req DEM117 */
-#endif
+			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_MERGE_EVENT_STATUS_ID, DEM_E_EVENT_STATUS_BUFF_FULL);
 		}
 	}
 
@@ -711,9 +735,7 @@ static void getExtendedData(const Dem_EventParameterType *eventParam, ExtDataRec
 			}
 			else {
 				// Error: Size of extended data record is bigger than reserved space.
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-				Det_ReportError(MODULE_ID_DEM, 0, DEM_GET_EXTENDED_DATA_ID, DEM_E_EXT_DATA_TOO_BIG); /** @req DEM117 */
-#endif
+				DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GET_EXTENDED_DATA_ID, DEM_E_EXT_DATA_TOO_BIG);
 				break;	// Break the loop
 			}
 		}
@@ -759,9 +781,7 @@ static void storeExtendedDataPreInit(const Dem_EventParameterType *eventParam, E
 		}
 		else {
 			// Error: Pre init extended data buffer full
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-			Det_ReportError(MODULE_ID_DEM, 0, DEM_STORE_EXT_DATA_PRE_INIT_ID, DEM_E_PRE_INIT_EXT_DATA_BUFF_FULL); /** @req DEM117 */
-#endif
+			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_STORE_EXT_DATA_PRE_INIT_ID, DEM_E_PRE_INIT_EXT_DATA_BUFF_FULL);
 		}
 	}
 
@@ -799,9 +819,7 @@ static void storeEventPriMem(const Dem_EventParameterType *eventParam, EventStat
 		}
 		else {
 			// Error: Pri mem event buffer full
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-			Det_ReportError(MODULE_ID_DEM, 0, DEM_STORE_EVENT_PRI_MEM_ID, DEM_E_PRI_MEM_EVENT_BUFF_FULL); /** @req DEM117 */
-#endif
+			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_STORE_EVENT_PRI_MEM_ID, DEM_E_PRI_MEM_EVENT_BUFF_FULL);
 		}
 	}
 
@@ -852,9 +870,7 @@ static void storeEventEvtMem(const Dem_EventParameterType *eventParam, EventStat
 		case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
 		case DEM_DTC_ORIGIN_MIRROR_MEMORY:
 			// Not yet supported
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-			Det_ReportError(MODULE_ID_DEM, 0, DEM_GLOBAL_ID, DEM_E_NOT_IMPLEMENTED_YET); /** @req DEM117 */
-#endif
+			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GLOBAL_ID, DEM_E_NOT_IMPLEMENTED_YET);
 			break;
 		default:
 			break;
@@ -888,9 +904,7 @@ static void storeExtendedDataPriMem(const Dem_EventParameterType *eventParam, Ex
 		}
 		else {
 			// Error: Pri mem extended data buffer full
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-			Det_ReportError(MODULE_ID_DEM, 0, DEM_STORE_EXT_DATA_PRI_MEM_ID, DEM_E_PRI_MEM_EXT_DATA_BUFF_FULL); /** @req DEM117 */
-#endif
+			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_STORE_EXT_DATA_PRI_MEM_ID, DEM_E_PRI_MEM_EXT_DATA_BUFF_FULL);
 		}
 	}
 
@@ -939,9 +953,7 @@ static void storeExtendedDataEvtMem(const Dem_EventParameterType *eventParam, Ex
 		case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
 		case DEM_DTC_ORIGIN_MIRROR_MEMORY:
 			// Not yet supported
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-			Det_ReportError(MODULE_ID_DEM, 0, DEM_GLOBAL_ID, DEM_E_NOT_IMPLEMENTED_YET); /** @req DEM117 */
-#endif
+			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GLOBAL_ID, DEM_E_NOT_IMPLEMENTED_YET);
 			break;
 
 		default:
@@ -1034,9 +1046,7 @@ static void storeFreezeFrameDataEvtMem(const Dem_EventParameterType *eventParam,
 		case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
 		case DEM_DTC_ORIGIN_MIRROR_MEMORY:
 			// Not yet supported
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-			Det_ReportError(MODULE_ID_DEM, 0, DEM_GLOBAL_ID, DEM_E_NOT_IMPLEMENTED_YET); /** @req DEM117 */
-#endif
+			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GLOBAL_ID, DEM_E_NOT_IMPLEMENTED_YET);
 			break;
 		default:
 			break;
@@ -1289,15 +1299,11 @@ static Std_ReturnType getFaultDetectionCounter(Dem_EventIdType eventId, sint8 *c
 
 			case DEM_PRE_DEBOUNCE_FREQUENCY_BASED:
 			case DEM_PRE_DEBOUNCE_TIME_BASED:
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-				Det_ReportError(MODULE_ID_DEM, 0, DEM_GETFAULTDETECTIONCOUNTER_ID, DEM_E_NOT_IMPLEMENTED_YET); /** @req DEM117 */
-#endif
+				DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETFAULTDETECTIONCOUNTER_ID, DEM_E_NOT_IMPLEMENTED_YET);
 				break;
 
 			default:
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-				Det_ReportError(MODULE_ID_DEM, 0, DEM_GETFAULTDETECTIONCOUNTER_ID, DEM_E_PARAM_DATA); /** @req DEM117 */
-#endif
+				DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETFAULTDETECTIONCOUNTER_ID, DEM_E_PARAM_DATA);
 				break;
 			}
 		}
@@ -1344,17 +1350,13 @@ static Std_ReturnType setOperationCycleState(Dem_OperationCycleIdType operationC
 			}
 			break;
 		default:
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-			Det_ReportError(MODULE_ID_DEM, 0, DEM_SETOPERATIONCYCLESTATE_ID, DEM_E_PARAM_DATA); /** @req DEM117 */
-#endif
+			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_SETOPERATIONCYCLESTATE_ID, DEM_E_PARAM_DATA);
 			returnCode = E_NOT_OK;
 			break;
 		}
 	}
 	else {
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DEM, 0, DEM_SETOPERATIONCYCLESTATE_ID, DEM_E_PARAM_DATA); /** @req DEM117 */
-#endif
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_SETOPERATIONCYCLESTATE_ID, DEM_E_PARAM_DATA);
 		returnCode = E_NOT_OK;
 		}
 
@@ -1392,14 +1394,9 @@ void Dem_PreInit(void)
 	/** @req DEM180 */
 	int i, j;
 
-	if (DEM_Config.ConfigSet == NULL) {
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DEM, 0, DEM_PREINIT_ID, DEM_E_CONFIG_PTR_INVALID); /** @req DEM117 */
-#endif
-		return;
-	} else {
-		configSet = DEM_Config.ConfigSet;
-	}
+	VALIDATE_NO_RV(DEM_Config.ConfigSet != NULL, DEM_PREINIT_ID, DEM_E_CONFIG_PTR_INVALID);
+
+	configSet = DEM_Config.ConfigSet;
 
 	// Initializion of operation cycle states.
 	for (i = 0; i < DEM_OPERATION_CYCLE_ID_ENDMARK; i++) {
@@ -1575,10 +1572,8 @@ Std_ReturnType Dem_SetEventStatus(Dem_EventIdType eventId, Dem_EventStatusType e
 	}
 	else
 	{
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DEM, 0, DEM_SETEVENTSTATUS_ID, DEM_E_UNINIT); /** @req DEM124.SetEventStatus */ /** @req DEM117 */
-#endif
-		returnCode = E_NOT_OK; /** @req DEM370.SetEventStatus */
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_SETEVENTSTATUS_ID, DEM_E_UNINIT);
+		returnCode = E_NOT_OK;
 	}
 
 	return returnCode;
@@ -1599,10 +1594,8 @@ Std_ReturnType Dem_ResetEventStatus(Dem_EventIdType eventId) /** @req DEM331 */
 	}
 	else
 	{
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DEM, 0, DEM_RESETEVENTSTATUS_ID, DEM_E_UNINIT); /** @req DEM124.ResetEventStatus */ /** @req DEM117 */
-#endif
-		returnCode = E_NOT_OK; /** @req DEM370.ResetEventStatus */
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_RESETEVENTSTATUS_ID, DEM_E_UNINIT);
+		returnCode = E_NOT_OK;
 	}
 
 	return returnCode;
@@ -1623,10 +1616,8 @@ Std_ReturnType Dem_GetEventStatus(Dem_EventIdType eventId, Dem_EventStatusExtend
 	}
 	else
 	{
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DEM, 0, DEM_GETEVENTSTATUS_ID, DEM_E_UNINIT); /** @req DEM124.GetEventStatus */ /** @req DEM117 */
-#endif
-		returnCode = E_NOT_OK; /** @req DEM370.GetEventStatus */
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETEVENTSTATUS_ID, DEM_E_UNINIT);
+		returnCode = E_NOT_OK;
 	}
 
 	return returnCode;
@@ -1647,10 +1638,8 @@ Std_ReturnType Dem_GetEventFailed(Dem_EventIdType eventId, boolean *eventFailed)
 	}
 	else
 	{
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DEM, 0, DEM_GETEVENTFAILED_ID, DEM_E_UNINIT); /** @req DEM124.GetEventFailed */ /** @req DEM117 */
-#endif
-		returnCode = E_NOT_OK; /** @req DEM370.GetEventFailed */
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETEVENTFAILED_ID, DEM_E_UNINIT);
+		returnCode = E_NOT_OK;
 	}
 
 	return returnCode;
@@ -1671,10 +1660,8 @@ Std_ReturnType Dem_GetEventTested(Dem_EventIdType eventId, boolean *eventTested)
 	}
 	else
 	{
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DEM, 0, DEM_GETEVENTTESTED_ID, DEM_E_UNINIT); /** @req DEM124.GetEventTested */ /** @req DEM117 */
-#endif
-		returnCode = E_NOT_OK; /** @req DEM370.GetEventTested */
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETEVENTTESTED_ID, DEM_E_UNINIT);
+		returnCode = E_NOT_OK;
 	}
 
 	return returnCode;
@@ -1695,10 +1682,8 @@ Std_ReturnType Dem_GetFaultDetectionCounter(Dem_EventIdType eventId, sint8 *coun
 	}
 	else
 	{
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DEM, 0, DEM_GETFAULTDETECTIONCOUNTER_ID, DEM_E_UNINIT); /** @req DEM124.GetFaultDetectionCounter */ /** @req DEM117 */
-#endif
-		returnCode = E_NOT_OK; /** @req DEM370.GetFaultDetectionCounter */
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETFAULTDETECTIONCOUNTER_ID, DEM_E_UNINIT);
+		returnCode = E_NOT_OK;
 	}
 
 	return returnCode;
@@ -1720,10 +1705,8 @@ Std_ReturnType Dem_SetOperationCycleState(Dem_OperationCycleIdType operationCycl
 	}
 	else
 	{
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DEM, 0, DEM_SETOPERATIONCYCLESTATE_ID, DEM_E_UNINIT); /** @req DEM124.SetOperationCycleState */ /** @req DEM117 */
-#endif
-		returnCode = E_NOT_OK; /** @req DEM370.SetOperationCycleState */
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_SETOPERATIONCYCLESTATE_ID, DEM_E_UNINIT);
+		returnCode = E_NOT_OK;
 	}
 
 	return returnCode;
@@ -1739,18 +1722,26 @@ Std_ReturnType Dem_GetDTCOfEvent(Dem_EventIdType eventId, Dem_DTCKindType dtcKin
 	Std_ReturnType returnCode = E_NO_DTC_AVAILABLE;
 	const Dem_EventParameterType *eventParam;
 
-	lookupEventIdParameter(eventId, &eventParam);
+	if (demState == DEM_INITIALIZED) // No action is taken if the module is not started
+	{
+		lookupEventIdParameter(eventId, &eventParam);
 
-	if (eventParam != NULL) {
-		if (checkDtcKind(dtcKind, eventParam)) {
-			if (eventParam->DTCClassRef != NULL) {
-				*dtcOfEvent = eventParam->DTCClassRef->DTC; /** @req DEM269 */
-				returnCode = E_OK;
+		if (eventParam != NULL) {
+			if (checkDtcKind(dtcKind, eventParam)) {
+				if (eventParam->DTCClassRef != NULL) {
+					*dtcOfEvent = eventParam->DTCClassRef->DTC; /** @req DEM269 */
+					returnCode = E_OK;
+				}
 			}
 		}
+		else {
+			// Event Id not found
+			returnCode = E_NOT_OK;
+		}
 	}
-	else {
-		// Event Id not found
+	else
+	{
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETDTCOFEVENT_ID, DEM_UNINITIALIZED);
 		returnCode = E_NOT_OK;
 	}
 
@@ -1784,9 +1775,8 @@ void Dem_ReportErrorStatus( Dem_EventIdType eventId, Dem_EventStatusType eventSt
 		case DEM_UNINITIALIZED:
 		default:
 			// Uninitialized can not do anything
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-			Det_ReportError(MODULE_ID_DEM, 0, DEM_REPORTERRORSTATUS_ID, DEM_E_UNINIT); /** @req DEM124.ReportErrorStatus */ /** @req DEM364 */ /** @req DEM117 */
-#endif
+			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_REPORTERRORSTATUS_ID, DEM_E_UNINIT);
+
 			break;
 
 	} // switch (demState)
@@ -1825,35 +1815,37 @@ Dem_ReturnSetDTCFilterType Dem_SetDTCFilter(uint8 dtcStatusMask,
 		Dem_DTCOriginType dtcOrigin,
 		Dem_FilterWithSeverityType filterWithSeverity,
 		Dem_DTCSeverityType dtcSeverityMask,
-		Dem_FilterForFDCType filterForFaultDetectionCounter) {
+		Dem_FilterForFDCType filterForFaultDetectionCounter)
+{
+	Dem_ReturnSetDTCFilterType returnCode = DEM_FILTER_ACCEPTED;
 
-	Dem_ReturnSetDTCFilterType returnCode = DEM_WRONG_FILTER;
-
-	// Check dtcKind parameter
-	if ((dtcKind == DEM_DTC_KIND_ALL_DTCS) || (dtcKind ==  DEM_DTC_KIND_EMISSION_REL_DTCS)) {
+	if (demState == DEM_INITIALIZED) {
+		// Check dtcKind parameter
+		VALIDATE_RV((dtcKind == DEM_DTC_KIND_ALL_DTCS) || (dtcKind == DEM_DTC_KIND_EMISSION_REL_DTCS), DEM_SETDTCFILTER_ID, DEM_E_PARAM_DATA, DEM_WRONG_FILTER);
 
 		// Check dtcOrigin parameter
-		if ((dtcOrigin == DEM_DTC_ORIGIN_SECONDARY_MEMORY) || (dtcOrigin == DEM_DTC_ORIGIN_PRIMARY_MEMORY)
-			|| (dtcOrigin == DEM_DTC_ORIGIN_PERMANENT_MEMORY) || (dtcOrigin == DEM_DTC_ORIGIN_MIRROR_MEMORY)) {
+		VALIDATE_RV((dtcOrigin == DEM_DTC_ORIGIN_SECONDARY_MEMORY) || (dtcOrigin == DEM_DTC_ORIGIN_PRIMARY_MEMORY)
+					|| (dtcOrigin == DEM_DTC_ORIGIN_PERMANENT_MEMORY) || (dtcOrigin == DEM_DTC_ORIGIN_MIRROR_MEMORY), DEM_SETDTCFILTER_ID, DEM_E_PARAM_DATA, DEM_WRONG_FILTER);
 
-			// Check filterWithSeverity and dtcSeverityMask parameter
-			if ((filterWithSeverity == DEM_FILTER_WITH_SEVERITY_NO)
-				|| ((filterWithSeverity == DEM_FILTER_WITH_SEVERITY_YES) && !(dtcSeverityMask & ~(DEM_SEVERITY_MAINTENANCE_ONLY | DEM_SEVERITY_CHECK_AT_NEXT_FALT | DEM_SEVERITY_CHECK_IMMEDIATELY)))){
+		// Check filterWithSeverity and dtcSeverityMask parameter
+		VALIDATE_RV(((filterWithSeverity == DEM_FILTER_WITH_SEVERITY_NO)
+					|| ((filterWithSeverity == DEM_FILTER_WITH_SEVERITY_YES)
+						&& !(dtcSeverityMask & ~(DEM_SEVERITY_MAINTENANCE_ONLY | DEM_SEVERITY_CHECK_AT_NEXT_FALT | DEM_SEVERITY_CHECK_IMMEDIATELY)))), DEM_SETDTCFILTER_ID, DEM_E_PARAM_DATA, DEM_WRONG_FILTER);
 
-				// Check filterForFaultDetectionCounter parameter
-				if ((filterForFaultDetectionCounter == DEM_FILTER_FOR_FDC_YES) || (filterForFaultDetectionCounter ==  DEM_FILTER_FOR_FDC_NO)) {
-					// Yes all parameters correct, set the new filters.  /** @req DEM057 */
-					dtcFilter.dtcStatusMask = dtcStatusMask;
-					dtcFilter.dtcKind = dtcKind;
-					dtcFilter.dtcOrigin = dtcOrigin;
-					dtcFilter.filterWithSeverity = filterWithSeverity;
-					dtcFilter.dtcSeverityMask = dtcSeverityMask;
-					dtcFilter.filterForFaultDetectionCounter = filterForFaultDetectionCounter;
-					dtcFilter.faultIndex = DEM_MAX_NUMBER_EVENT;
-					returnCode = DEM_FILTER_ACCEPTED;
-				}
-			}
-		}
+		// Check filterForFaultDetectionCounter parameter
+		VALIDATE_RV((filterForFaultDetectionCounter == DEM_FILTER_FOR_FDC_YES) || (filterForFaultDetectionCounter ==  DEM_FILTER_FOR_FDC_NO), DEM_SETDTCFILTER_ID, DEM_E_PARAM_DATA, DEM_WRONG_FILTER);
+
+		// Yes all parameters correct, set the new filters.  /** @req DEM057 */
+		dtcFilter.dtcStatusMask = dtcStatusMask;
+		dtcFilter.dtcKind = dtcKind;
+		dtcFilter.dtcOrigin = dtcOrigin;
+		dtcFilter.filterWithSeverity = filterWithSeverity;
+		dtcFilter.dtcSeverityMask = dtcSeverityMask;
+		dtcFilter.filterForFaultDetectionCounter = filterForFaultDetectionCounter;
+		dtcFilter.faultIndex = DEM_MAX_NUMBER_EVENT;
+	} else {
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_SETDTCFILTER_ID, DEM_E_UNINIT);
+		returnCode = DEM_WRONG_FILTER;
 	}
 
 	return returnCode;
@@ -1868,22 +1860,27 @@ Dem_ReturnGetStatusOfDTCType Dem_GetStatusOfDTC(uint32 dtc, Dem_DTCKindType dtcK
 	Dem_ReturnGetStatusOfDTCType returnCode = DEM_STATUS_FAILED;
 	EventStatusRecType *eventRec;
 
-	if (lookupDtcEvent(dtc, &eventRec)) {
-		if (checkDtcKind(dtcKind, eventRec->eventParamRef)) {
-			if (checkDtcOrigin(dtcOrigin,eventRec->eventParamRef)) {
-				*status = eventRec->eventStatusExtended; /** @req DEM059 */
-				returnCode = DEM_STATUS_OK;
+	if (demState == DEM_INITIALIZED) {
+		if (lookupDtcEvent(dtc, &eventRec)) {
+			if (checkDtcKind(dtcKind, eventRec->eventParamRef)) {
+				if (checkDtcOrigin(dtcOrigin,eventRec->eventParamRef)) {
+					*status = eventRec->eventStatusExtended; /** @req DEM059 */
+					returnCode = DEM_STATUS_OK;
+				}
+				else {
+					returnCode = DEM_STATUS_WRONG_DTCORIGIN; /** @req DEM171 */
+				}
 			}
 			else {
-				returnCode = DEM_STATUS_WRONG_DTCORIGIN; /** @req DEM171 */
+				returnCode = DEM_STATUS_WRONG_DTCKIND;
 			}
 		}
 		else {
-			returnCode = DEM_STATUS_WRONG_DTCKIND;
+			returnCode = DEM_STATUS_WRONG_DTC; /** @req DEM172 */
 		}
-	}
-	else {
-		returnCode = DEM_STATUS_WRONG_DTC; /** @req DEM172 */
+	} else {
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETSTATUSOFDTC_ID, DEM_E_UNINIT);
+		returnCode = DEM_STATUS_FAILED;
 	}
 
 	return returnCode;
@@ -1897,24 +1894,30 @@ Dem_ReturnGetStatusOfDTCType Dem_GetStatusOfDTC(uint32 dtc, Dem_DTCKindType dtcK
 Dem_ReturnGetNumberOfFilteredDTCType Dem_GetNumberOfFilteredDtc(uint16 *numberOfFilteredDTC) {
 	uint16 i;
 	uint16 numberOfFaults = 0;
+	Dem_ReturnGetNumberOfFilteredDTCType returnCode = DEM_NUMBER_OK;
 
-	//Dem_DisableEventStatusUpdate();
+	if (demState == DEM_INITIALIZED) {
+		//Dem_DisableEventStatusUpdate();
 
-	for (i = 0; i < DEM_MAX_NUMBER_EVENT; i++) {
-		if (eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) {
-			if (matchEventWithDtcFilter(&eventStatusBuffer[i])) {
-				if (eventStatusBuffer[i].eventParamRef->DTCClassRef != NULL) {
-					numberOfFaults++;
+		for (i = 0; i < DEM_MAX_NUMBER_EVENT; i++) {
+			if (eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) {
+				if (matchEventWithDtcFilter(&eventStatusBuffer[i])) {
+					if (eventStatusBuffer[i].eventParamRef->DTCClassRef != NULL) {
+						numberOfFaults++;
+					}
 				}
 			}
 		}
+
+		//Dem_EnableEventStatusUpdate();
+
+		*numberOfFilteredDTC = numberOfFaults; /** @req DEM061 */
+	} else {
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETNUMBEROFFILTEREDDTC_ID, DEM_E_UNINIT);
+		returnCode = DEM_NUMBER_FAILED;
 	}
 
-	//Dem_EnableEventStatusUpdate();
-
-	*numberOfFilteredDTC = numberOfFaults; /** @req DEM061 */
-
-	return DEM_NUMBER_OK;
+	return returnCode;
 }
 
 
@@ -1927,22 +1930,27 @@ Dem_ReturnGetNextFilteredDTCType Dem_GetNextFilteredDTC(uint32 *dtc, Dem_EventSt
 	Dem_ReturnGetNextFilteredDTCType returnCode = DEM_FILTERED_OK;
 	boolean dtcFound = FALSE;
 
-	// TODO: This job should be done in an more advanced way according to Dem217
-	while (!dtcFound && (dtcFilter.faultIndex != 0)) {
-		dtcFilter.faultIndex--;
-		if (eventStatusBuffer[dtcFilter.faultIndex].eventId != DEM_EVENT_ID_NULL) {
-			if (matchEventWithDtcFilter(&eventStatusBuffer[dtcFilter.faultIndex])) {
-				if (eventStatusBuffer[dtcFilter.faultIndex].eventParamRef->DTCClassRef != NULL) {
-					*dtc = eventStatusBuffer[dtcFilter.faultIndex].eventParamRef->DTCClassRef->DTC; /** @req DEM216 */
-					*dtcStatus = eventStatusBuffer[dtcFilter.faultIndex].eventStatusExtended;
-					dtcFound = TRUE;
+	if (demState == DEM_INITIALIZED) {
+		// TODO: This job should be done in an more advanced way according to Dem217
+		while (!dtcFound && (dtcFilter.faultIndex != 0)) {
+			dtcFilter.faultIndex--;
+			if (eventStatusBuffer[dtcFilter.faultIndex].eventId != DEM_EVENT_ID_NULL) {
+				if (matchEventWithDtcFilter(&eventStatusBuffer[dtcFilter.faultIndex])) {
+					if (eventStatusBuffer[dtcFilter.faultIndex].eventParamRef->DTCClassRef != NULL) {
+						*dtc = eventStatusBuffer[dtcFilter.faultIndex].eventParamRef->DTCClassRef->DTC; /** @req DEM216 */
+						*dtcStatus = eventStatusBuffer[dtcFilter.faultIndex].eventStatusExtended;
+						dtcFound = TRUE;
+					}
 				}
 			}
 		}
-	}
 
-	if (!dtcFound) {
-		dtcFilter.faultIndex = DEM_MAX_NUMBER_EVENT;
+		if (!dtcFound) {
+			dtcFilter.faultIndex = DEM_MAX_NUMBER_EVENT;
+			returnCode = DEM_FILTERED_NO_MATCHING_DTC;
+		}
+	} else {
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETNEXTFILTEREDDTC_ID, DEM_E_UNINIT);
 		returnCode = DEM_FILTERED_NO_MATCHING_DTC;
 	}
 
@@ -1971,53 +1979,54 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
 	const Dem_EventParameterType *eventParam;
 	uint16 i, j;
 
-	// Loop through the event buffer
-	for (i = 0; i < DEM_MAX_NUMBER_EVENT; i++) {
-		eventId = eventStatusBuffer[i].eventId;
-		if (eventId != DEM_EVENT_ID_NULL) {
-			eventParam = eventStatusBuffer[i].eventParamRef;
-			if (eventParam != NULL) {
-				if (DEM_CLEAR_ALL_EVENTS | (eventParam->DTCClassRef != NULL)) {
-					if (checkDtcKind(dtcKind, eventParam)) {
-						if (checkDtcGroup(dtc, eventParam)) {
-							for (j = 0; (j < DEM_MAX_NR_OF_EVENT_DESTINATION) && (eventParam->EventClass->EventDestination[j] != dtcOrigin); j++);
-							if (j < DEM_MAX_NR_OF_EVENT_DESTINATION) {
-								// Yes! All conditions met.
-								switch (dtcOrigin)
-								{
-								case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
-									/** @req DEM077 */
-									deleteEventPriMem(eventParam);
-									deleteFreezeFrameDataPriMem(eventParam);
-									deleteExtendedDataPriMem(eventParam);
-									deleteEventStatusRec(eventParam);		// TODO: Shall this be done or just resetting the status?
-									break;
+	if (demState == DEM_INITIALIZED) {
+		// Loop through the event buffer
+		for (i = 0; i < DEM_MAX_NUMBER_EVENT; i++) {
+			eventId = eventStatusBuffer[i].eventId;
+			if (eventId != DEM_EVENT_ID_NULL) {
+				eventParam = eventStatusBuffer[i].eventParamRef;
+				if (eventParam != NULL) {
+					if (DEM_CLEAR_ALL_EVENTS | (eventParam->DTCClassRef != NULL)) {
+						if (checkDtcKind(dtcKind, eventParam)) {
+							if (checkDtcGroup(dtc, eventParam)) {
+								for (j = 0; (j < DEM_MAX_NR_OF_EVENT_DESTINATION) && (eventParam->EventClass->EventDestination[j] != dtcOrigin); j++);
+								if (j < DEM_MAX_NR_OF_EVENT_DESTINATION) {
+									// Yes! All conditions met.
+									switch (dtcOrigin)
+									{
+									case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
+										/** @req DEM077 */
+										deleteEventPriMem(eventParam);
+										deleteFreezeFrameDataPriMem(eventParam);
+										deleteExtendedDataPriMem(eventParam);
+										deleteEventStatusRec(eventParam);		// TODO: Shall this be done or just resetting the status?
+										break;
 
-								case DEM_DTC_ORIGIN_SECONDARY_MEMORY:
-								case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
-								case DEM_DTC_ORIGIN_MIRROR_MEMORY:
-									// Not yet supported
-									returnCode = DEM_CLEAR_WRONG_DTCORIGIN;
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-									Det_ReportError(MODULE_ID_DEM, 0, DEM_CLEARDTC_ID, DEM_E_NOT_IMPLEMENTED_YET); /** @req DEM117 */
-#endif
-									break;
-								default:
-									returnCode = DEM_CLEAR_WRONG_DTCORIGIN;
-									break;
+									case DEM_DTC_ORIGIN_SECONDARY_MEMORY:
+									case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
+									case DEM_DTC_ORIGIN_MIRROR_MEMORY:
+										// Not yet supported
+										returnCode = DEM_CLEAR_WRONG_DTCORIGIN;
+										DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_CLEARDTC_ID, DEM_E_NOT_IMPLEMENTED_YET);
+										break;
+									default:
+										returnCode = DEM_CLEAR_WRONG_DTCORIGIN;
+										break;
+									}
 								}
 							}
 						}
 					}
 				}
-			}
-			else {
-				// Fatal error, no event parameters found for the stored event!
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-			Det_ReportError(MODULE_ID_DEM, 0, DEM_CLEARDTC_ID, DEM_E_UNEXPECTED_EXECUTION); /** @req DEM117 */
-#endif
+				else {
+					// Fatal error, no event parameters found for the stored event!
+					DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_CLEARDTC_ID, DEM_E_UNEXPECTED_EXECUTION);
+				}
 			}
 		}
+	} else {
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_CLEARDTC_ID, DEM_E_UNINIT);
+		returnCode = DEM_CLEAR_FAILED;
 	}
 
 	return returnCode;
@@ -2030,22 +2039,26 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
  */
 Dem_ReturnControlDTCStorageType Dem_DisableDTCStorage(Dem_DTCGroupType dtcGroup, Dem_DTCKindType dtcKind) /** @req DEM035 */
 {
-	Dem_ReturnControlDTCStorageType returnCode = DEM_CONTROL_DTC_STORAGE_N_OK;
+	Dem_ReturnControlDTCStorageType returnCode = DEM_CONTROL_DTC_STORAGE_OK;
 
-	// Check dtcGroup parameter
-	if (dtcGroup == DEM_DTC_GROUP_ALL_DTCS) {
-		// Check dtcKind parameter
-		if ((dtcKind == DEM_DTC_KIND_ALL_DTCS) || (dtcKind ==  DEM_DTC_KIND_EMISSION_REL_DTCS)) {
-			/** @req DEM079 */
-			disableDtcStorage.dtcGroup = dtcGroup;
-			disableDtcStorage.dtcKind = dtcKind;
-			disableDtcStorage.storageDisabled = TRUE;
-
-			returnCode = DEM_CONTROL_DTC_STORAGE_OK;
+	if (demState == DEM_INITIALIZED) {
+		// Check dtcGroup parameter
+		if (dtcGroup == DEM_DTC_GROUP_ALL_DTCS) {
+			// Check dtcKind parameter
+			if ((dtcKind == DEM_DTC_KIND_ALL_DTCS) || (dtcKind ==  DEM_DTC_KIND_EMISSION_REL_DTCS)) {
+				/** @req DEM079 */
+				disableDtcStorage.dtcGroup = dtcGroup;
+				disableDtcStorage.dtcKind = dtcKind;
+				disableDtcStorage.storageDisabled = TRUE;
+			} else {
+				returnCode = DEM_CONTROL_DTC_STORAGE_N_OK;
+			}
+		} else {
+			returnCode = DEM_CONTROL_DTC_WRONG_DTCGROUP;
 		}
-	}
-	else {
-		returnCode = DEM_CONTROL_DTC_WRONG_DTCGROUP;
+	} else {
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_DISABLEDTCSTORAGE_ID, DEM_E_UNINIT);
+		returnCode = DEM_CONTROL_DTC_STORAGE_N_OK;
 	}
 
 	return returnCode;
@@ -2058,10 +2071,17 @@ Dem_ReturnControlDTCStorageType Dem_DisableDTCStorage(Dem_DTCGroupType dtcGroup,
  */
 Dem_ReturnControlDTCStorageType Dem_EnableDTCStorage(Dem_DTCGroupType dtcGroup, Dem_DTCKindType dtcKind)
 {
-	// TODO: Behavior is not defined if group or kind do not match active settings, therefore the filter is just switched off.
-	disableDtcStorage.storageDisabled = FALSE; /** @req DEM080 */
+	Dem_ReturnControlDTCStorageType returnCode = DEM_CONTROL_DTC_STORAGE_OK;
 
-	return DEM_CONTROL_DTC_STORAGE_OK;
+	if (demState == DEM_INITIALIZED) {
+		// TODO: Behavior is not defined if group or kind do not match active settings, therefore the filter is just switched off.
+		disableDtcStorage.storageDisabled = FALSE; /** @req DEM080 */
+	} else {
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_ENABLEDTCSTORAGE_ID, DEM_E_UNINIT);
+		returnCode = DEM_CONTROL_DTC_STORAGE_N_OK;
+	}
+
+	return returnCode;
 }
 
 /*
@@ -2076,56 +2096,59 @@ Dem_ReturnGetExtendedDataRecordByDTCType Dem_GetExtendedDataRecordByDTC(uint32 d
 	ExtDataRecType *extData;
 	uint8 posInExtData = 0;
 
-	if (lookupDtcEvent(dtc, &eventRec)) {
-		if (checkDtcKind(dtcKind, eventRec->eventParamRef)) {
-			if (checkDtcOrigin(dtcOrigin, eventRec->eventParamRef)) {
-				if (lookupExtendedDataRecNumParam(extendedDataNumber, eventRec->eventParamRef, &extendedDataRecordClass, &posInExtData)) {
-					if (*bufSize >= extendedDataRecordClass->DataSize) {
-						switch (dtcOrigin)
-						{
-						case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
-							if (lookupExtendedDataPriMem(eventRec->eventId, &extData)) {
-								// Yes all conditions met, copy the extended data record to destination buffer.
-								memcpy(destBuffer, &extData->data[posInExtData], extendedDataRecordClass->DataSize); /** @req DEM075 */
-								*bufSize = extendedDataRecordClass->DataSize;
-								returnCode = DEM_RECORD_OK;
-							}
-							else {
-								// The record number is legal but no record was found for the DTC
-								*bufSize = 0;
-								returnCode = DEM_RECORD_OK;
-							}
-							break;
+	if (demState == DEM_INITIALIZED) {
+		if (lookupDtcEvent(dtc, &eventRec)) {
+			if (checkDtcKind(dtcKind, eventRec->eventParamRef)) {
+				if (checkDtcOrigin(dtcOrigin, eventRec->eventParamRef)) {
+					if (lookupExtendedDataRecNumParam(extendedDataNumber, eventRec->eventParamRef, &extendedDataRecordClass, &posInExtData)) {
+						if (*bufSize >= extendedDataRecordClass->DataSize) {
+							switch (dtcOrigin)
+							{
+							case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
+								if (lookupExtendedDataPriMem(eventRec->eventId, &extData)) {
+									// Yes all conditions met, copy the extended data record to destination buffer.
+									memcpy(destBuffer, &extData->data[posInExtData], extendedDataRecordClass->DataSize); /** @req DEM075 */
+									*bufSize = extendedDataRecordClass->DataSize;
+									returnCode = DEM_RECORD_OK;
+								}
+								else {
+									// The record number is legal but no record was found for the DTC
+									*bufSize = 0;
+									returnCode = DEM_RECORD_OK;
+								}
+								break;
 
-						case DEM_DTC_ORIGIN_SECONDARY_MEMORY:
-						case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
-						case DEM_DTC_ORIGIN_MIRROR_MEMORY:
-							// Not yet supported
-							returnCode = DEM_RECORD_WRONG_DTCORIGIN;
-#if (DEM_DEV_ERROR_DETECT == STD_ON)
-							Det_ReportError(MODULE_ID_DEM, 0, DEM_GETEXTENDEDDATARECORDBYDTC_ID, DEM_E_NOT_IMPLEMENTED_YET); /** @req DEM117 */
-#endif
-							break;
-						default:
-							returnCode = DEM_RECORD_WRONG_DTCORIGIN;
-							break;
+							case DEM_DTC_ORIGIN_SECONDARY_MEMORY:
+							case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
+							case DEM_DTC_ORIGIN_MIRROR_MEMORY:
+								// Not yet supported
+								returnCode = DEM_RECORD_WRONG_DTCORIGIN;
+								DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETEXTENDEDDATARECORDBYDTC_ID, DEM_E_NOT_IMPLEMENTED_YET);
+								break;
+							default:
+								returnCode = DEM_RECORD_WRONG_DTCORIGIN;
+								break;
+							}
+						}
+						else {
+							returnCode = DEM_RECORD_BUFFERSIZE;
 						}
 					}
 					else {
-						returnCode = DEM_RECORD_BUFFERSIZE;
+						returnCode = DEM_RECORD_NUMBER;
 					}
 				}
 				else {
-					returnCode = DEM_RECORD_NUMBER;
+					returnCode = DEM_RECORD_WRONG_DTCORIGIN;
 				}
 			}
 			else {
-				returnCode = DEM_RECORD_WRONG_DTCORIGIN;
+				returnCode = DEM_RECORD_DTCKIND;
 			}
 		}
-		else {
-			returnCode = DEM_RECORD_DTCKIND;
-		}
+	} else {
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETEXTENDEDDATARECORDBYDTC_ID, DEM_E_UNINIT);
+		returnCode = DEM_RECORD_WRONG_DTC;
 	}
 
 	return returnCode;
@@ -2143,24 +2166,29 @@ Dem_ReturnGetSizeOfExtendedDataRecordByDTCType Dem_GetSizeOfExtendedDataRecordBy
 	Dem_ExtendedDataRecordClassType const *extendedDataRecordClass = NULL;
 	uint8 posInExtData;
 
-	if (lookupDtcEvent(dtc, &eventRec)) {
-		if (checkDtcKind(dtcKind, eventRec->eventParamRef)) {
-			if (checkDtcOrigin(dtcOrigin, eventRec->eventParamRef)) {
-				if (lookupExtendedDataRecNumParam(extendedDataNumber, eventRec->eventParamRef, &extendedDataRecordClass, &posInExtData)) {
-					*sizeOfExtendedDataRecord = extendedDataRecordClass->DataSize; /** @req DEM076 */
-					returnCode = DEM_GET_SIZEOFEDRBYDTC_OK;
+	if (demState == DEM_INITIALIZED) {
+		if (lookupDtcEvent(dtc, &eventRec)) {
+			if (checkDtcKind(dtcKind, eventRec->eventParamRef)) {
+				if (checkDtcOrigin(dtcOrigin, eventRec->eventParamRef)) {
+					if (lookupExtendedDataRecNumParam(extendedDataNumber, eventRec->eventParamRef, &extendedDataRecordClass, &posInExtData)) {
+						*sizeOfExtendedDataRecord = extendedDataRecordClass->DataSize; /** @req DEM076 */
+						returnCode = DEM_GET_SIZEOFEDRBYDTC_OK;
+					}
+					else {
+						returnCode = DEM_GET_SIZEOFEDRBYDTC_W_RNUM;
+					}
 				}
 				else {
-					returnCode = DEM_GET_SIZEOFEDRBYDTC_W_RNUM;
+					returnCode = DEM_GET_SIZEOFEDRBYDTC_W_DTCOR;
 				}
 			}
 			else {
-				returnCode = DEM_GET_SIZEOFEDRBYDTC_W_DTCOR;
+				returnCode = DEM_GET_SIZEOFEDRBYDTC_W_DTCKI;
 			}
 		}
-		else {
-			returnCode = DEM_GET_SIZEOFEDRBYDTC_W_DTCKI;
-		}
+	} else {
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETSIZEOFEXTENDEDDATARECORDBYDTC_ID, DEM_E_UNINIT);
+		returnCode = DEM_GET_SIZEOFEDRBYDTC_W_DTC;
 	}
 
 	return returnCode;
