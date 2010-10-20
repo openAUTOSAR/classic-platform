@@ -28,16 +28,15 @@ EcuM_GobalType internal_data;
 void EcuM_Init( void )
 {
 	internal_data.current_state = ECUM_STATE_STARTUP_ONE;
-#if 0
+
 	// Initialize drivers that are needed to determine PostBuild configuration
 	EcuM_AL_DriverInitZero();
 
 	// Initialize the OS
 	InitOS();
-#endif
+
 	// Enable interrupts
 	Irq_Init();
-
 
 	// Determine PostBuild configuration
 	internal_data.config = EcuM_DeterminePbConfiguration();
