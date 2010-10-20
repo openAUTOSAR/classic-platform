@@ -18,6 +18,14 @@
 #define IRQ_TYPES_H
 
 
+#define Irq_SOI()
+
+/**
+ * End-Of-Interrupt. Called by the OS it wants to clear the interrupt.
+ */
+void Irq_EOI( void );
+
+
 typedef enum
 {
   /* Software interrupts. */
