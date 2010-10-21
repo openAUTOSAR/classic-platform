@@ -22,36 +22,51 @@
  	.global Irq_Handler
     .type	Irq_Handler, %function
 
-#define IRQ_ENABLE() 		cpsie 	i
-#define IRQ_DISABLE()		cpsid 	i
 
-
-
-
-
-
-// lr
+// Registers part of context.
 #define REG_SAVE r4-r8,r10,r11
 
 
 Irq_Handler:
-	mov   r2,		#0xDF  // Swich back to sys mode.
+	// Save link register
+	mov   r3, lr
+	
+	// We don't want to use the IRQ mode
+	// so swich back to sys mode.
+	mov   r2,		#0xDF
     msr   cpsr_c,   r2
-    push    {REG_SAVE,lr}
+    
+    // Restore link register again
+    mov   lr, r3
+    
+    // Push registers on stack
+	push    {REG_SAVE,lr}
+	
     sub.w   sp,sp,#C_SIZE
     mov.w   r4,#LC_PATTERN
-    str     r4,[sp,#C_CONTEXT_OFFS]    
-    mov 	r0,sp			// stack as first arg
+    str     r4,[sp,#C_CONTEXT_OFFS]
+    
+    // Put stack as first arg to Irq_Entry    
+    mov 	r0,sp			
+    
+	// When at interrupt nest count = 0, load interrupt stack    
+	ldr      r4,=os_sys
+	ldr      r5,[r4,#SYS_INT_NEST_CNT]
+	cmp      r5, #0
+	bgt      arggg
+	ldr      sp,[r4,#SYS_INT_STACK]   
+      
+arggg:  
     bl      Irq_Entry
     mov     sp, r0			// pop from returned stack
 
 	/* Do a normal exception return */
     add.w   sp,sp,#C_SIZE
+    
+    // Restore registers
     pop     {REG_SAVE,lr}
-    bx 		lr
-
-//    b 		os_lc_restore
-
+    subs 	pc, lr, #0x4
+    
 	
 /**
  * Fake an interrupt stack to be able to return to thread mode.

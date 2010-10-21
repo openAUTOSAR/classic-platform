@@ -168,8 +168,15 @@ LoopFillZero:
 	bx  lr
 
 Dummy_Irq:
-	nop
-	nop
+	/* Go back to sys mode for easier debugging.
+	 Save link register*/
+	mov   r3, lr
+	/* We don't want to use the IRQ mode
+	   so swich back to sys mode. */
+	mov   r2,		#0xDF
+    msr   cpsr_c,   r2
+    /* Restore link register again */
+    mov   lr, r3
 	b Dummy_Irq
 
 .size	Reset_Handler, .-Reset_Handler
@@ -195,7 +202,7 @@ Infinite_Loop:
  	.section	.int_vecs,"ax",%progbits
 	.extern Irq_Handler
 
-        b   Dummy_Irq          /* Reset? */
+        b   Reset_Handler      /* Reset? */
         b   Dummy_Irq          /* Undef? */
         b   Dummy_Irq          /* SVC */
         b   Dummy_Irq          /* Prefetch */

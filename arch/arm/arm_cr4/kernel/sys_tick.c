@@ -19,13 +19,22 @@
 #include "irq.h"
 #include "arc.h"
 
+void CortexR4OsTick() {
+	/** Clear all pending interrupts
+	 *  otherwise this will hit again
+	 *  as soon as interrupts are enabled. */
+	rtiREG1->INTFLAG = 0x1;
+
+	// Call regular OsTick.
+	OsTick();
+}
 
 /**
  * Init of free running timer.
  */
 void Os_SysTickInit( void ) {
 	TaskType tid;
-	tid = Os_Arc_CreateIsr(OsTick,6,"OsTick");
+	tid = Os_Arc_CreateIsr(CortexR4OsTick,6,"OsTick");
 	Irq_AttachIsr2(tid,NULL, 2);
 }
 
