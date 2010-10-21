@@ -28,16 +28,14 @@
 
 
 Irq_Handler:
-	// Save link register
-	mov   r3, lr
+	// Setup return address. This requires subtraction from LR.
+	sub		lr, lr, #4
 	
-	// We don't want to use the IRQ mode
-	// so swich back to sys mode.
-	mov   r2,		#0xDF
-    msr   cpsr_c,   r2
-    
-    // Restore link register again
-    mov   lr, r3
+	// Store return stuff on system mode's stack
+	srsdb	sp!, #31 // 31 = System mode
+	
+	// Switch to system mode.
+	cpsid 	i, #31  // 31 = system mode 
     
     // Push registers on stack
 	push    {REG_SAVE,lr}
@@ -65,8 +63,9 @@ arggg:
     
     // Restore registers
     pop     {REG_SAVE,lr}
-    subs 	pc, lr, #0x4
     
+    // Return using stuff from stack.
+    rfeia	sp!
 	
 /**
  * Fake an interrupt stack to be able to return to thread mode.
