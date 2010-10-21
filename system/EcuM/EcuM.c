@@ -75,7 +75,9 @@ void EcuM_Init( void )
 void EcuM_StartupTwo()
 {
 #if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
-	uint32 timer;
+	extern CounterType Os_Arc_OsTickCounter;
+	TickType tickTimerStart, tickTimer, tickTimerElapsed;
+	StatusType tickTimerStatus;
 	static NvM_RequestResultType readAllResult;
 #endif
 
@@ -89,7 +91,10 @@ void EcuM_StartupTwo()
 
 #if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
 	// Start timer to wait for NVM job to complete
-	timer = Os_SysTickGetValue();
+	tickTimerStatus = GetCounterValue(Os_Arc_OsTickCounter , &tickTimerStart);
+	if (tickTimerStatus != E_OK) {
+		// TODO: Generate error?
+	}
 #endif
 
 	// Prepare the system to startup RTE
@@ -98,11 +103,25 @@ void EcuM_StartupTwo()
 	Rte_Start();
 #endif
 
+#if 1
 #if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
 	// Wait for the NVM job (NvmReadAll) to terminate
 	do {
 		NvM_GetErrorStatus(0, &readAllResult);	// Read the multiblock status
-	} while( (readAllResult == NVM_REQ_PENDING) && !(Os_SysTickGetValue() - timer < internal_data.config->EcuMNvramReadAllTimeout) );
+		tickTimer = tickTimerStart;	// Save this because the GetElapsedCounterValue() will destroy it.
+		tickTimerStatus =  GetElapsedCounterValue(Os_Arc_OsTickCounter, &tickTimer, &tickTimerElapsed);
+		if (tickTimerStatus != E_OK) {
+			// TODO: Generate error?
+		}
+	} while( (readAllResult == NVM_REQ_PENDING) && (tickTimerElapsed < internal_data.config->EcuMNvramReadAllTimeout) );
+#endif
+#else
+#if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
+	// Wait for the NVM job (NvmReadAll) to terminate
+	do {
+		NvM_GetErrorStatus(0, &readAllResult);	// Read the multiblock status
+	} while( (readAllResult == NVM_REQ_PENDING) && ((Os_SysTickGetElapsedValue(timer)) < internal_data.config->EcuMNvramReadAllTimeout) );
+#endif
 #endif
 
 	// Initialize drivers that need NVRAM data
@@ -110,6 +129,11 @@ void EcuM_StartupTwo()
 
 	// Indicate mode change to RTE
 	// TODO
+
+	// If coming from startup sequence, enter Run mode
+//	if (internal_data.current_state == ECUM_STATE_STARTUP_TWO)
+		EcuM_enter_run_mode();
+
 }
 
 // Typically called from OS shutdown hook

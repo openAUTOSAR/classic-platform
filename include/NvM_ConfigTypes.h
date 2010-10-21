@@ -42,15 +42,15 @@ typedef enum {
  */
 
 typedef Std_ReturnType (*NvM_SingleBlockCallbackFunctionType)(uint8 ServiceId, NvM_RequestResultType JobResult);	/** @req NVM467 */
-typedef void (*NvM_MultiBlockCallbackFunction)(uint8 ServiceId, NvM_RequestResultType JobResult);	/** @req NVM468 */
-typedef Std_ReturnType (*NvM_InitBlockCallbackFunction)(void);	/** @req NVM469 */
+typedef void (*NvM_MultiBlockCallbackFunctionType)(uint8 ServiceId, NvM_RequestResultType JobResult);	/** @req NVM468 */
+typedef Std_ReturnType (*NvM_InitBlockCallbackFunctionType)(void);	/** @req NVM469 */
 
 /*
  * Containers and configuration parameters
  */
 
 typedef struct {
-	NvM_MultiBlockCallbackFunction		MultiBlockCallback;		/** @req NVM500 */
+	NvM_MultiBlockCallbackFunctionType		MultiBlockCallback;		/** @req NVM500 */
 	// The rest of the parameters is realized in NvM_Cfg.h
 } NvM_CommonType;
 
@@ -87,7 +87,7 @@ typedef struct {
 	// ROM block, reference, if RomBlockDataAdress == NULL no ROM data is available
 	uint16								RomBlockNum;			/** @req NVM485 */
 	uint8								*RomBlockDataAdress;	/** @req NVM484 */
-	NvM_InitBlockCallbackFunction		InitBlockCallback;		/** @req NVM116 */
+	NvM_InitBlockCallbackFunctionType	InitBlockCallback;		/** @req NVM116 */
 
 	// Containers
 	NvM_TargetBlockReferenceType		TargetBlockReference;	/** @req NVM486 */

@@ -37,7 +37,7 @@ static uint32 internal_data_go_off_one_state_timeout = 0;
 
 
 
-static inline void enter_run_mode(void)
+inline void EcuM_enter_run_mode(void)
 {
 	internal_data.current_state = ECUM_STATE_APP_RUN;
 	EcuM_OnEnterRUN();
@@ -103,10 +103,6 @@ static NvM_RequestResultType writeAllResult;
 
 VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_NOT_INITIATED);
 
-	// If coming from startup sequence, enter Run mode
-	if (internal_data.current_state == ECUM_STATE_STARTUP_TWO)
-		enter_run_mode();
-
 	if (internal_data.current_state == ECUM_STATE_APP_RUN)
 	{
 		if (internal_data_run_state_timeout)
@@ -124,7 +120,7 @@ VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_NOT_INITIAT
 	{
 		if (hasRunRequests())
 		{
-			enter_run_mode(); // ECUM_2866
+			EcuM_enter_run_mode(); // ECUM_2866
 			return;
 		}
 

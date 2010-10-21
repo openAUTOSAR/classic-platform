@@ -153,7 +153,7 @@ static void ReadBlock(const NvM_BlockDescriptorType *blockDescriptor, Administra
 	MemIfAdmin.State = MEMIF_STATE_PENDING;
 
 	if (setNumber < blockDescriptor->NvBlockNum) {
-		returnCode = MemIf_Read(blockDescriptor->NvramDeviceId, blockDescriptor->NvBlockBaseNumber << NVM_DATASET_SELECTION_BITS || setNumber, blockOffset, destAddress, blockDescriptor->NvBlockLength);
+		returnCode = MemIf_Read(blockDescriptor->NvramDeviceId, (blockDescriptor->NvBlockBaseNumber << NVM_DATASET_SELECTION_BITS) | setNumber, blockOffset, destAddress, blockDescriptor->NvBlockLength);
 		MemIfAdmin.BlockAdmin = adminBlock;
 		MemIfAdmin.BlockDescriptor = blockDescriptor;
 		if (returnCode != E_OK) {
@@ -176,7 +176,7 @@ static void WriteBlock(const NvM_BlockDescriptorType *blockDescriptor, Administr
 	MemIfAdmin.State = MEMIF_STATE_PENDING;
 
 	if (setNumber < blockDescriptor->NvBlockNum) {
-		returnCode = MemIf_Write(blockDescriptor->NvramDeviceId, blockDescriptor->NvBlockBaseNumber << NVM_DATASET_SELECTION_BITS || setNumber, sourceAddress);
+		returnCode = MemIf_Write(blockDescriptor->NvramDeviceId, (blockDescriptor->NvBlockBaseNumber << NVM_DATASET_SELECTION_BITS) | setNumber, sourceAddress);
 		MemIfAdmin.BlockAdmin = adminBlock;
 		MemIfAdmin.BlockDescriptor = blockDescriptor;
 		if (returnCode != E_OK) {
