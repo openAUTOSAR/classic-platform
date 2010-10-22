@@ -1,0 +1,89 @@
+
+
+/* The board Elmicro HCS12 T-Board comes with HCS12X512DP.
+ * This memory mapping is for that CPU.
+ */
+ 
+page0 (rwx) : ORIGIN = 0x0, LENGTH = 2k
+
+/* RAM */
+data (rwx)  : ORIGIN = 0x1000, LENGTH = 12k
+
+eeprom (rx): ORIGIN = 0x0800, LENGTH = 2k
+text (rx)  : ORIGIN = 0x4000, LENGTH = 48k
+  
+/* high fixed bank, reserve 0x100 vectors and security. */
+text_h (rx)  : ORIGIN = 0xc002, LENGTH = 16k-0x102
+vectors (rx)  : ORIGIN = 0xff80, LENGTH = 0x80
+ 
+/* Flash memory banks VMA:s */
+bank_A  (rx)   : ORIGIN = 0x790000, LENGTH = 16k  /* Page E0 */
+bank_B  (rx)   : ORIGIN = 0x794000, LENGTH = 16k  /* Page E1 */
+bank_C  (rx)   : ORIGIN = 0x798000, LENGTH = 16k  /* Page E2 */
+bank_D  (rx)   : ORIGIN = 0x79c000, LENGTH = 16k  /* Page E3 */
+bank_E  (rx)   : ORIGIN = 0x7A0000, LENGTH = 16k  /* Page E4 */
+bank_F  (rx)   : ORIGIN = 0x7A4000, LENGTH = 16k  /* Page E5 */
+bank_G  (rx)   : ORIGIN = 0x7A8000, LENGTH = 16k  /* Page E6 */
+bank_H  (rx)   : ORIGIN = 0x7Ac000, LENGTH = 16k  /* Page E7 */
+bank_I  (rx)   : ORIGIN = 0x7B0000, LENGTH = 16k  /* Page E8 */
+bank_J  (rx)   : ORIGIN = 0x7B4000, LENGTH = 16k  /* Page E9 */
+bank_K  (rx)   : ORIGIN = 0x7B8000, LENGTH = 16k  /* Page EA */
+bank_L  (rx)   : ORIGIN = 0x7Bc000, LENGTH = 16k  /* Page EB */
+bank_M  (rx)   : ORIGIN = 0x7C0000, LENGTH = 16k  /* Page EC */
+bank_N  (rx)   : ORIGIN = 0x7C4000, LENGTH = 16k  /* Page ED */
+bank_O  (rx)   : ORIGIN = 0x7C8000, LENGTH = 16k  /* Page EE */
+bank_P  (rx)   : ORIGIN = 0x7Cc000, LENGTH = 16k  /* Page EF */
+  
+bank_Q  (rx)   : ORIGIN = 0x7D0000, LENGTH = 16k  /* Page F0 */
+bank_R  (rx)   : ORIGIN = 0x7D4000, LENGTH = 16k  /* Page F1 */
+bank_S  (rx)   : ORIGIN = 0x7D8000, LENGTH = 16k  /* Page F2 */
+bank_T  (rx)   : ORIGIN = 0x7Dc000, LENGTH = 16k  /* Page F3 */
+bank_U  (rx)   : ORIGIN = 0x7E0000, LENGTH = 16k  /* Page F4 */
+bank_V  (rx)   : ORIGIN = 0x7E4000, LENGTH = 16k  /* Page F5 */
+bank_W  (rx)   : ORIGIN = 0x7E8000, LENGTH = 16k  /* Page F6 */
+bank_X  (rx)   : ORIGIN = 0x7Ec000, LENGTH = 16k  /* Page F7 */
+bank_Y  (rx)   : ORIGIN = 0x7F0000, LENGTH = 16k  /* Page F8 */
+bank_Z  (rx)   : ORIGIN = 0x7F4000, LENGTH = 16k  /* Page F9 */
+bank_AA (rx)   : ORIGIN = 0x7F8000, LENGTH = 16k  /* Page FA */
+bank_AB (rx)   : ORIGIN = 0x7Fc000, LENGTH = 16k  /* Page FB */
+bank_AC (rx)   : ORIGIN = 0x800000, LENGTH = 16k  /* Page FC */
+bank_FIX1 (rx)   : ORIGIN = 0x804000, LENGTH = 16k  /* Page FD */
+/* bankxx (rx)   : ORIGIN = 0x808000, LENGTH = 16k  /* Page FE  Not used Why?*/
+bank_FIX2 (rx)   : ORIGIN = 0x80c002, LENGTH = 16k-0x102 /* Page FF */
+ 
+/* NoICE Elf loading */ 
+
+bank_A_lma  (rx)   : ORIGIN = 0x790000, LENGTH = 16k  /* Page E0 */ 
+bank_B_lma  (rx)   : ORIGIN = 0x794000, LENGTH = 16k  /* Page E1 */
+bank_C_lma  (rx)   : ORIGIN = 0x798000, LENGTH = 16k  /* Page E2 */
+bank_D_lma  (rx)   : ORIGIN = 0x79c000, LENGTH = 16k  /* Page E3 */
+bank_E_lma  (rx)   : ORIGIN = 0x7A0000, LENGTH = 16k  /* Page E4 */
+bank_F_lma  (rx)   : ORIGIN = 0x7A4000, LENGTH = 16k  /* Page E5 */
+bank_G_lma  (rx)   : ORIGIN = 0x7A8000, LENGTH = 16k  /* Page E6 */
+bank_H_lma  (rx)   : ORIGIN = 0x7Ac000, LENGTH = 16k  /* Page E7 */
+bank_I_lma  (rx)   : ORIGIN = 0x7B0000, LENGTH = 16k  /* Page E8 */
+bank_J_lma  (rx)   : ORIGIN = 0x7B4000, LENGTH = 16k  /* Page E9 */
+bank_K_lma  (rx)   : ORIGIN = 0x7B8000, LENGTH = 16k  /* Page EA */
+bank_L_lma  (rx)   : ORIGIN = 0x7Bc000, LENGTH = 16k  /* Page EB */
+bank_M_lma  (rx)   : ORIGIN = 0x7C0000, LENGTH = 16k  /* Page EC */
+bank_N_lma  (rx)   : ORIGIN = 0x7C4000, LENGTH = 16k  /* Page ED */
+bank_O_lma  (rx)   : ORIGIN = 0x7C8000, LENGTH = 16k  /* Page EE */
+bank_P_lma  (rx)   : ORIGIN = 0x7Cc000, LENGTH = 16k  /* Page EF */
+
+bank_Q_lma  (rx)   : ORIGIN = 0x7D0000, LENGTH = 16k  /* Page F0 */
+bank_R_lma  (rx)   : ORIGIN = 0x7D4000, LENGTH = 16k  /* Page F1 */
+bank_S_lma  (rx)   : ORIGIN = 0x7D8000, LENGTH = 16k  /* Page F2 */
+bank_T_lma  (rx)   : ORIGIN = 0x7Dc000, LENGTH = 16k  /* Page F3 */
+bank_U_lma  (rx)   : ORIGIN = 0x7E0000, LENGTH = 16k  /* Page F4 */
+bank_V_lma  (rx)   : ORIGIN = 0x7E4000, LENGTH = 16k  /* Page F5 */
+bank_W_lma  (rx)   : ORIGIN = 0x7E8000, LENGTH = 16k  /* Page F6 */
+bank_X_lma  (rx)   : ORIGIN = 0x7Ec000, LENGTH = 16k  /* Page F7 */
+bank_Y_lma  (rx)   : ORIGIN = 0x7F0000, LENGTH = 16k  /* Page F8 */
+bank_Z_lma  (rx)   : ORIGIN = 0x7F4000, LENGTH = 16k  /* Page F9 */
+bank_AA_lma  (rx)  : ORIGIN = 0x7F8000, LENGTH = 16k  /* Page FA */
+bank_AB_lma  (rx)  : ORIGIN = 0x7Fc000, LENGTH = 16k  /* Page FB */
+bank_AC_lma  (rx)  : ORIGIN = 0x800000, LENGTH = 16k  /* Page FC */
+bank_FIX1_lma (rx) : ORIGIN = 0x804000, LENGTH = 16k  /* Page FD */
+/* bankxx_lma (rx) : ORIGIN = 0x808000, LENGTH = 16k       /* Page FE  Not used Why?*/
+bank_FIX2_lma (rx) : ORIGIN = 0x80c002, LENGTH = 16k-0x102 /* Page FF */
+vectors_lma   (rx) : ORIGIN = 0x80ff80, LENGTH = 0x80
