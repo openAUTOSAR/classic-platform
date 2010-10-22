@@ -48,7 +48,7 @@
 
 //#define HOST_TEST	1
 
-int arc_putchar(int fd, int c);
+int arc_putchar(_PTR fd, int c);
 int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap);
 
 int printf(const char *format, ...) {
@@ -305,17 +305,20 @@ int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap)
 			}
 
 			/* Find flags */
-			switch (ch) {
-			case '0':
+			if (ch == '0')
+			{
 				flags = FL_ZERO;
-				break;
-			case ' ':
+			}
+			else if (ch == ' ')
+			{
 				flags = FL_SPACE;
-				break;
-			case '-':
+			}
+			else if (ch == '-')
+			{
 				flags = FL_ALIGN_LEFT;
-				break;
-			default:
+			}
+			else
+			{
 				/* Not supported or no flag */
 				flags = FL_NONE;
 				format--;
@@ -333,27 +336,32 @@ int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap)
 			}
 
 			/* Find type */
-			switch (ch) {
-			case 'c':
+			if (ch =='c')
+			{
 				emitChar(file,buffer,(char )va_arg( ap, int ),&left);
-				break;
-			case 'd':
+			}
+			else if (ch == 'd')
+			{
 				flags |= FL_TYPE_SIGNED_INT;
 				emitInt(file,buffer,va_arg( ap, int ),10,width,flags,&left);
-				break;
-			case 'u':
+			}
+			else if (ch == 'u')
+			{
 				flags |= FL_TYPE_UNSIGNED_INT;
 				emitInt(file,buffer,va_arg( ap, int ),10,width,flags,&left);
-				break;
-			case 'x':
+			}
+			else if (ch == 'x')
+			{
 				flags |= FL_TYPE_UNSIGNED_INT;
 				emitInt(file,buffer,va_arg( ap, int ),16,width,flags,&left);
-				break;
-			case 'p':
+			}
+			else if (ch == 'p')
+			{
 				flags |= FL_TYPE_POINTER;
 				emitInt(file,buffer,va_arg( ap, int ),16,width,flags,&left);
-				break;
-			case 's':
+			}
+			else if (ch == 's')
+			{
 				str = (char *)va_arg( ap, int );
 
 				if( str == NULL ) {
@@ -361,12 +369,11 @@ int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap)
 				}
 
 				emitString(file,buffer,str,width,flags,&left);
-				break;
-			default:
-				assert(0); // oops
-				break;
 			}
-
+			else
+			{
+				assert(0); // oops
+			}
 		} else {
 			flags = FL_NONE;
 			emitChar(file,buffer,ch,&left);
