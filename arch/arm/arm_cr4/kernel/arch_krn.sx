@@ -205,7 +205,7 @@ os_lc_restore:
     
     /* Grab stack xPSR and move to psr  */
     /* TODO: Does this enable interrupts?? */
-    ldr	 r0,[sp,#28]
+    //ldr	 r0,[sp,#28]
     //msr	 apsr,r0
     
     /* Update bit[0] of PC.
@@ -214,20 +214,21 @@ os_lc_restore:
      * Bit[0] of any address written to the PC with a BX, BLX, LDM, LDR, or POP instruction must
      * be 1 for correct execution, because this bit indicates the required instruction set, and the
      * Cortex-M3 processor only supports thumb instructions. */
-    ldr r0,[sp,#24]
-    orr r0,r0,#1
-    str r0,[sp,#24]
+    //ldr r0,[sp,#24]
+    //orr r0,r0,#1
+    //str r0,[sp,#24]
     
     /* Pop part of the exception stack */
-    pop {r0-r3,r12,lr}
+    //pop {r0-r3,r12,lr}
     
-    add.w	sp,sp,#(2*4)	/* Adjust for xPSR and PC */
+    //add.w	sp,sp,#(2*4)	/* Adjust for xPSR and PC */
    	/* We do return directly to the preempted task here, so enable interrupts */
     cpsie	i    			/* Enable interrupts */
 
     /* Jump to PC from PC on stack (the branch value on the stack must be + 1 to
      * stay in thumb mode) */
-    ldr		pc,[sp,#-8]
+    //ldr		pc,[sp,#-8]
+    rfeia	sp!
 
     
 
