@@ -187,12 +187,26 @@ void OsTick( void ) {
 	if (Os_Arc_OsTickCounter >= 0) {
 
 		OsCounterType *cPtr = Os_CfgGetCounter(Os_Arc_OsTickCounter);
+#if defined(USE_KERNEL_EXTRA)
+		OsPcbType *pcbPtr;
+#endif
 
 		os_sys.tick++;
 
 		cPtr->val = Os_CounterAdd( cPtr->val, Os_CounterGetMaxValue(cPtr), 1 );
 
-	//	os_sys.tick = cPtr->val;
+#if defined(USE_KERNEL_EXTRA)
+		/* Check sleep() (ST_WAITING) tasks */
+		TAILQ_FOREACH(pcbPtr, &os_sys.timerHead, timerEntry ) {
+			--pcbPtr->timerDec;
+			if( pcbPtr->timerDec <= 0 ) {
+				/* Remove from the timer queue */
+				TAILQ_REMOVE(&os_sys.timerHead, pcbPtr, timerEntry);
+				/* ... and add to the ready queue */
+				Os_TaskMakeReady(pcbPtr);
+			}
+		}
+#endif
 
 		Os_AlarmCheck(cPtr);
 		Os_SchTblCheck(cPtr);

@@ -2,7 +2,7 @@
 
 #VPATH += $(ROOTDIR)/arch/arm/arm_cm3/kernel
 vpath-y += $(ARCH_PATH-y)/kernel
-obj-y += asm_sample.o
+#obj-y += asm_sample.o
 #CFLAGS_asm_sample.o += -O3
 obj-y += arch_krn.o
 obj-$(CFG_HCS12D) += arch_irq.o
@@ -27,6 +27,9 @@ obj-y += sys_tick.o
 obj-y += isr.o
 obj-y += os_arctest.o
 obj-y += application.o
+obj-y += arc.o
+obj-$(USE_KERNEL_EXTRA) += sleep.o
+#obj-$(USE_KERNEL_EXTRA) += semaphore.o
 
 
 # These are VERY cpu dependent.. remove

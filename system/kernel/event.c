@@ -56,7 +56,8 @@ StatusType WaitEvent( EventMaskType Mask ) {
 		goto err;
 	}
 
-	if ( Os_TaskOccupiesResources(curr_pcb) ) {
+	if ( Os_TaskOccupiesResources(curr_pcb) ||
+		 !Os_SchedulerResourceIsFree() ) {
 		rv = E_OS_RESOURCE;
 		goto err;
 	}
@@ -70,13 +71,8 @@ StatusType WaitEvent( EventMaskType Mask ) {
 
 		curr_pcb->ev_wait = Mask;
 
-		if ( Os_SchedulerResourceIsFree() ) {
-			// Os_TaskMakeWaiting(curr_pcb);
-			Os_Dispatch(OP_WAIT_EVENT);
-			assert( curr_pcb->state & ST_RUNNING );
-		} else {
-			Os_TaskMakeWaiting(curr_pcb);
-		}
+		Os_Dispatch(OP_WAIT_EVENT);
+		assert( curr_pcb->state & ST_RUNNING );
 	}
 
 	Irq_Enable();
@@ -141,25 +137,25 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 
 	dest_pcb->ev_set |= Mask;
 
-	if( (Mask & dest_pcb->ev_wait) ) {
-		/* We have an event match */
-		if( dest_pcb->state & ST_WAITING) {
-			Os_TaskMakeReady(dest_pcb);
+	if( (Mask & dest_pcb->ev_wait)
+#if defined(USE_KERNEL_EXTRA)
+			/* Don't dispatch if target task is sleeping */
+			&& !(dest_pcb->state & ST_SLEEPING)
+#endif
 
-			currPcbPtr = Os_TaskGetCurrent();
-			/* Checking "4.6.2  Non preemptive scheduling" it does not dispatch if NON  */
-			if( (os_sys.int_nest_cnt == 0) &&
-				(currPcbPtr->scheduling == FULL) &&
-				(dest_pcb->prio > currPcbPtr->prio) &&
-				(Os_SchedulerResourceIsFree()) )
-			{
-				Os_Dispatch(OP_SET_EVENT);
-			}
+	) {
+		assert(dest_pcb->state & ST_WAITING );
 
-		}  else if(dest_pcb->state & (ST_READY|ST_RUNNING) ) {
-			/* Hmm, we do nothing */
-		} else {
-			assert( 0 );
+		Os_TaskMakeReady(dest_pcb);
+
+		currPcbPtr = Os_TaskGetCurrent();
+		/* Checking "4.6.2  Non preemptive scheduling" it does not dispatch if NON  */
+		if( (os_sys.int_nest_cnt == 0) &&
+			(currPcbPtr->scheduling == FULL) &&
+			(dest_pcb->prio > currPcbPtr->prio) &&
+			(Os_SchedulerResourceIsFree()) )
+		{
+			Os_Dispatch(OP_SET_EVENT);
 		}
 	}
 

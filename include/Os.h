@@ -141,8 +141,6 @@ StatusType GetEvent( TaskType TaskId, EventMaskRefType Mask);
 void InitOS( void );
 void StartOS( AppModeType Mode );
 
-
-
 ApplicationType GetApplicationID( void );
 ISRType GetISRID( void );
 StatusType GetActiveApplicationMode( AppModeType* mode);
@@ -287,6 +285,11 @@ void Os_SysTickInit( void );
 void Os_SysTickStart(TickType period_ticks);
 TickType Os_SysTickGetValue( void );
 TickType Os_SysTickGetElapsedValue( TickType preValue );
+
+#if defined(USE_KERNEL_EXTRA)
+StatusType Sleep( TickType ticks );
+#endif
+
 
 /*-------------------------------------------------------------------
  * Schedule Tables

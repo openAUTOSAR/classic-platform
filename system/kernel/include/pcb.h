@@ -26,6 +26,7 @@ struct OsRomPcb;
 #define ST_SUSPENDED		(1<<2)
 #define ST_RUNNING			(1<<3)
 #define ST_NOT_STARTED  	(1<<4)
+#define ST_SLEEPING		(1<<5)
 
 typedef uint16_t state_t;
 
@@ -172,6 +173,10 @@ typedef struct OsPcb {
 
 	/* TODO: Arch specific regs .. make space for them later...*/
 	uint32_t	regs[16]; 				// TASK
+#if defined(USE_KERNEL_EXTRA)
+	TAILQ_ENTRY(OsPcb) timerEntry;		// TASK
+	int32_t		   timerDec;
+#endif
 	/* List of PCB's */
 	TAILQ_ENTRY(OsPcb) pcb_list;		// TASK
 	/* ready list */

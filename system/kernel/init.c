@@ -100,6 +100,9 @@ void InitOS( void ) {
 	os_sys.pcb_list = pcb_list;
 	TAILQ_INIT(& os_sys.ready_head);
 	TAILQ_INIT(& os_sys.pcb_head);
+#if defined(USE_KERNEL_EXTRA)
+	TAILQ_INIT(& os_sys.timerHead);
+#endif
 
 	// Calc interrupt stack
 	Os_CfgGetInterruptStackInfo(&int_stack);

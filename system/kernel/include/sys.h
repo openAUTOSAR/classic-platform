@@ -26,6 +26,7 @@ typedef enum  {
 	OP_SCHEDULE = 16,
 	OP_CHAIN_TASK = 32,
 	OP_RELEASE_RESOURCE = 64,
+	OP_SLEEP = 128,
 } OpType ;
 
 typedef struct sys_s {
@@ -61,6 +62,12 @@ typedef struct sys_s {
 //	uint32_t flags;
 
 	uint32_t task_cnt;
+
+#if defined(USE_KERNEL_EXTRA)
+	/* List of PCB's to be put in ready list when timeout */
+	TAILQ_HEAD(,OsPcb) timerHead;		// TASK
+#endif
+
 	/* List of all pcb's,
 	 * Only needed for non-static configuration of the kernel
 	 */
