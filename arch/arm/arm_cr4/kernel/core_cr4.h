@@ -332,18 +332,6 @@ static inline void __disable_irq() {
 }
 static inline void __enable_irq() {
 	__asm volatile("CPSIE if");
-
-	/*
-	__asm volatile("MRS R1, CPSR");
-	__asm volatile("BIC R1, R1, #0x80");
-	__asm volatile("MSR CPSR, R1");
-
-	__asm volatile("MRC p15 ,#0 ,R1 ,c1 ,c0 ,#0");
-	__asm volatile("ORR R1 ,R1 ,#0x01000000"); //Mask 0-31 bits except bit 24 in Sys ; Ctrl Reg of CORTEX-R4
-	__asm volatile("MCR p15 ,#0 ,R1 ,c1 ,c0 ,#0"); //; Enable bit 24
-	//__asm volatile("SVC #1");
-	*/
-
 }
 
 

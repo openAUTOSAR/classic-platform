@@ -24,18 +24,18 @@
 #include "core_cr4.h"
 #endif
 
-/* Call intrinsic functions directly */
-#define Irq_Disable()					__disable_irq()
-#define Irq_Enable()					__enable_irq()
+/* Call architecture specific code */
+#define Irq_Disable()		__disable_irq()
+#define Irq_Enable()		__enable_irq()
 
-#define Irq_Save(_flags)     			_flags = _Irq_Save();
+#define Irq_Save(_flags)     		_flags = _Irq_Save();
 #define Irq_Restore(_flags)			_Irq_Restore(_flags);
 
 #define Irq_SuspendAll() 	Irq_Disable()
 #define Irq_ResumeAll() 	Irq_Enable()
 
 #define Irq_SuspendOs() 	Irq_Disable()
-#define Irq_ResumeOs() 	Irq_Enable()
+#define Irq_ResumeOs() 		Irq_Enable()
 
 static inline unsigned long _Irq_Save(void)
 {

@@ -31,6 +31,47 @@
 //#define USE_LDEBUG_PRINTF 1
 #include "debug.h"
 
+/* PLLCTL1 register */
+#define	MCU_RESET_ON_SLIP	0  				// Reset on slip is off
+#define	MCU_RESET_ON_SLIP_OFFSET	31  	// Offset in PLLCTL1
+
+#define	MCU_BYPASS_ON_SLIP	2  				// Bypass on slip is off
+#define	MCU_BYPASS_ON_SLIP_OFFSET	29  	// Offset in PLLCTL1 (2 bits)
+
+#define	MCU_RESET_ON_OSC_FAIL	0  			// Reset on oscillator fail is off
+#define	MCU_RESET_ON_OSC_FAIL_OFFSET	23  // Offset in PLLCTL1
+
+#define	MCU_PLLDIV_OFFSET	24  			// Offset in PLLCTL1 (5 bits)
+#define MCU_PLLDIV_MASK     (0x1F << MCU_PLLDIV_OFFSET)
+#define	MCU_REFCLKDIV_OFFSET	16  		// Offset in PLLCTL1 (6 bits)
+#define MCU_REFCLKDIV_MASK  (0x3F << MCU_REFCLKDIV_OFFSET)
+#define	MCU_PLLMUL_OFFSET	0  				// Offset in PLLCTL1 (16 bits)
+#define MCU_PLLMUL_MASK     (0xFFFF << MCU_PLLMUL_OFFSET)
+
+/* PLLCTL2 register */
+#define MCU_FM_ENABLE	0  					// Frequency modulation is off
+#define MCU_FM_ENABLE_OFFSET	31 			// Offset in PLLCTL2
+
+#define MCU_SPREADING_RATE	0 				// Spreading rate
+#define MCU_SPREADING_RATE_OFFSET	22 		// Offset in PLLCTL2 (9 bits)
+
+#define MCU_BWADJ	0 						// Bandwidth adjustment
+#define MCU_BWADJ_OFFSET	12 				// Offset in PLLCTL2 (9 bits)
+
+#define MCU_ODPLL_OFFSET	9				// Offset in PLLCTL2 (3 bits)
+#define MCU_ODPLL_MASK     (0x7 << MCU_ODPLL_OFFSET)
+
+#define MCU_SPREADING_AMOUNT	0 			// Spreading amount
+#define MCU_SPREADING_AMOUT_OFFSET	0 		// Offset in PLLCTL2 (9 bits)
+
+
+/* CSDIS (Clock source disable) register offsets */
+#define MCU_CLK_SOURCE_OSC_OFFSET		0
+#define MCU_CLK_SOURCE_FMZPLL_OFFSET	1
+#define MCU_CLK_SOURCE_LPO_OFFSET		4
+#define MCU_CLK_SOURCE_HPO_OFFSET		5
+#define MCU_CLK_SOURCE_FPLL_OFFSET		6
+
 
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(_x)  (sizeof(_x)/sizeof((_x)[0]))
@@ -147,7 +188,8 @@ static core_info_t *Mcu_IdentifyCore(uint32 pvr)
  */
 static uint32 Mcu_CheckCpu( void ) {
 
-  return 0;
+
+	return 0;
 }
 
 static uint32_t GetPllValueFromMult(uint8_t pll)
@@ -181,25 +223,133 @@ static void InitPerClocks()
 static void InitMcuClocks(Mcu_ClockSettingConfigType *clockSettingsPtr)
 {
 
+	// INTCLK 1.63MHz - 6.53MHz
+	// NR (REFCLKDIV) 1 - 64
+	// INTCLK = CLKIN / REFCLKDIV;
+
+	// Output CLK 120MHz - 500MHz
+	// NF (PLLMUL) 92 - 184
+	// OutputCLK = INTCLK * PLLMUL;
+
+	// OD (ODPLL) 1 - 8
+	// R (PLLDIV)  1 - 32
+	// PLLCLK = OutputCLK / ODPLL / PLLDIV;
+
+	// Algorithm
+	// PLLCLK = (CLKIN * PLLMUL) / (REFCLKDIV * ODPLL * PLLDIV);
+
+
+	/** - Setup pll control register 1:
+	*     - Setup reset on oscillator slip
+	*     - Setup bypass on pll slip
+	*     - Setup reset on oscillator fail
+	*      - Setup Pll output clock divider
+	*     - Setup reference clock divider
+	*     - Setup Pll multiplier*
+	*/
+	systemREG1->PLLCTL1 =
+		  (MCU_RESET_ON_SLIP << MCU_RESET_ON_SLIP_OFFSET)
+		| (MCU_BYPASS_ON_SLIP << MCU_BYPASS_ON_SLIP_OFFSET)
+		| (MCU_RESET_ON_OSC_FAIL << MCU_RESET_ON_OSC_FAIL_OFFSET)
+		| (clockSettingsPtr->Pll1 << MCU_REFCLKDIV_OFFSET)
+		| (clockSettingsPtr->Pll2 << MCU_PLLMUL_OFFSET)
+		| (clockSettingsPtr->Pll4 << MCU_PLLDIV_OFFSET);
+
+
+	/** Setup PLLCTL2
+	 *     - Setup internal Pll output divider
+	 *     - Enable/Disable frequency modulation (NOT USED)
+	 *     - Setup spreading rate (NOT USED)
+	 *     - Setup bandwidth adjustment (NOT USED)
+	 *     - Setup spreading amount (NOT USED)
+	 */
+	systemREG1->PLLCTL2 =
+		  (MCU_FM_ENABLE << MCU_FM_ENABLE_OFFSET)
+		| (MCU_SPREADING_RATE << MCU_SPREADING_RATE_OFFSET)
+		| (MCU_BWADJ << MCU_BWADJ_OFFSET)
+		| (MCU_SPREADING_AMOUNT << MCU_SPREADING_AMOUT_OFFSET)
+		| (clockSettingsPtr->Pll3 << MCU_ODPLL_OFFSET);
+
+	/** - Wait for until clocks are locked */
+	while ((systemREG1->CSVSTAT & ((systemREG1->CSDIS ^ 0xFF) & 0xFF)) != ((systemREG1->CSDIS ^ 0xFF) & 0xFF));
+
+
 }
 
 //-------------------------------------------------------------------
 
 void Mcu_Init(const Mcu_ConfigType *configPtr)
 {
+	VALIDATE( ( NULL != configPtr ), MCU_INIT_SERVICE_ID, MCU_E_PARAM_CONFIG );
 
+#if !defined(USE_SIMULATOR)
+	Mcu_CheckCpu();
+#endif
+
+	memset(&Mcu_Global.stats,0,sizeof(Mcu_Global.stats));
+
+  /** Enable/Disable the right clocks
+	 *  0 = enable, 1 = disable */
+	systemREG1->CSDIS =
+		  (0 << MCU_CLK_SOURCE_OSC_OFFSET)
+		| (0 << MCU_CLK_SOURCE_FMZPLL_OFFSET)
+		| (1 << MCU_CLK_SOURCE_LPO_OFFSET)
+		| (0 << MCU_CLK_SOURCE_HPO_OFFSET)
+		| (1 << MCU_CLK_SOURCE_FPLL_OFFSET);
+
+
+	/** - Wait for until clocks are locked */
+	while ((systemREG1->CSVSTAT & ((systemREG1->CSDIS ^ 0xFF) & 0xFF)) != ((systemREG1->CSDIS ^ 0xFF) & 0xFF));
+
+	/** - Setup GCLK, HCLK and VCLK clock source for normal operation, power down mode and after wakeup */
+	systemREG1->GHVSRC = (SYS_PLL << 24U) // Selectes PLL clock (clock source 1) as wakeup clock source.
+					   | (SYS_PLL << 16U) // Select PLL clock (clock source 1) as wakeup when GCLK is off as clock source.
+					   |  SYS_PLL;  // Select PLL clock (clock source 1) as current clock source.
+
+	/** - Power-up clocks to all peripharals */
+	pcrREG->PSPWRDWNCLR0 = 0xFFFFFFFFU;
+	pcrREG->PSPWRDWNCLR1 = 0xFFFFFFFFU;
+	pcrREG->PSPWRDWNCLR2 = 0xFFFFFFFFU;
+	pcrREG->PSPWRDWNCLR3 = 0xFFFFFFFFU;
+
+	/** - Setup synchronous peripheral clock dividers for VCLK1 and VCLK2
+	 * 0 = divide by 1
+	 */
+	systemREG1->VCLKR  = 0U;
+	systemREG1->VCLK2R = 0U;
+
+	/** - Setup RTICLK1 and RTICLK2 clocks */
+	systemREG1->RCLKSRC = (0U << 24U) // RTICLK2 divider is 1
+						| (SYS_VCLK << 16U)  // Select VCLK as source for RTICLK2.
+						| (0U << 8U) // RTICLK2 divider is 1
+						|  SYS_VCLK; // Select VCLK as source for RTICLK1.
+
+	/** - Setup asynchronous peripheral clock sources for AVCLK1 and AVCLK2 */
+	systemREG1->VCLKASRC = (SYS_VCLK << 8U)
+						 |  SYS_VCLK;
+
+	/** - Enable Peripherals */
+	systemREG1->PENA = 1U;
+
+	Mcu_Global.config = configPtr;
+	Mcu_Global.initRun = 1;
 }
 //-------------------------------------------------------------------
 
 void Mcu_DeInit()
 {
+	Mcu_Global.initRun = FALSE;
 }
 
 //-------------------------------------------------------------------
 Std_ReturnType Mcu_InitRamSection(const Mcu_RamSectionType RamSection)
 {
+	VALIDATE_W_RV( ( 1 == Mcu_Global.initRun ), MCU_INITRAMSECTION_SERVICE_ID, MCU_E_UNINIT, E_NOT_OK );
+	VALIDATE_W_RV( ( RamSection <= Mcu_Global.config->McuRamSectors ), MCU_INITRAMSECTION_SERVICE_ID, MCU_E_PARAM_RAMSECTION, E_NOT_OK );
 
-  return E_OK;
+	/* NOT SUPPORTED, reason: no support for external RAM */
+
+	return E_NOT_OK;
 }
 
 
@@ -208,79 +358,22 @@ Std_ReturnType Mcu_InitRamSection(const Mcu_RamSectionType RamSection)
 
 Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
 {
-    /** @b Initialize @b Pll: */
+	Mcu_ClockSettingConfigType *clockSettingsPtr;
+	VALIDATE_W_RV( ( 1 == Mcu_Global.initRun ), MCU_INITCLOCK_SERVICE_ID, MCU_E_UNINIT, E_NOT_OK );
+	VALIDATE_W_RV( ( ClockSetting < Mcu_Global.config->McuClockSettings ), MCU_INITCLOCK_SERVICE_ID, MCU_E_PARAM_CLOCK, E_NOT_OK );
 
-    /** - Setup pll control register 1:
-    *     - Setup reset on oscillator slip
-    *     - Setup bypass on pll slip
-    *     - Setup Pll output clock divider
-    *     - Setup reset on oscillator fail
-    *     - Setup reference clock divider
-    *     - Setup Pll multiplier
-    */
-	systemREG1->PLLCTL1 =  0x00000000U
-	                        |  0x20000000U
-	                        | (1U << 24U)
-	                        |  0x00000000U
-	                        | (4U << 16U)
-	                        | (119U  << 8U);
+	Mcu_Global.clockSetting = ClockSetting;
+	clockSettingsPtr = &Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting];
 
-    /** - Setup pll control register 1
-    *     - Enable/Disable frequency modulation
-    *     - Setup spreading rate
-    *     - Setup bandwidth adjustment
-    *     - Setup internal Pll output divider
-    *     - Setup spreading amount
-    */
-    systemREG1->PLLCTL2 = 0x00000000U
-                        | (255U << 22U)
-                        | (0U << 12U)
-                        | (1U << 9U)
-                        |  61U;
+	InitMcuClocks(clockSettingsPtr);
+	InitPerClocks(clockSettingsPtr);
+
+	return E_OK;
 
 
-    /** @b Initialize @b Clock @b Tree: */
 
-    /** - Start clock source lock */
-    systemREG1->CSDIS = 0x00000040U
-                      | 0x00000000U
-                      | 0x00000000U
-                      | 0x00000008U
-                      | 0x00000004U
-                      | 0x00000000U
-                      | 0x00000000U;
 
-    /** - Wait for until clocks are locked */
-    while ((systemREG1->CSVSTAT & ((systemREG1->CSDIS ^ 0xFF) & 0xFF)) != ((systemREG1->CSDIS ^ 0xFF) & 0xFF));
 
-    /** - Setup GCLK, HCLK and VCLK clock source for normal operation, power down mode and after wakeup */
-    systemREG1->GHVSRC = (SYS_PLL << 24U)
-                       | (SYS_PLL << 16U)
-                       |  SYS_PLL;
-
-    /** - Power-up all peripharals */
-    pcrREG->PSPWRDWNCLR0 = 0xFFFFFFFFU;
-    pcrREG->PSPWRDWNCLR1 = 0xFFFFFFFFU;
-    pcrREG->PSPWRDWNCLR2 = 0xFFFFFFFFU;
-    pcrREG->PSPWRDWNCLR3 = 0xFFFFFFFFU;
-
-    /** - Setup synchronous peripheral clock dividers for VCLK1 and VCLK2 */
-    systemREG1->VCLKR  = 15U;
-    systemREG1->VCLK2R = 1U;
-    systemREG1->VCLKR  = 1U;
-
-    /** - Setup RTICLK1 and RTICLK2 clocks */
-    systemREG1->RCLKSRC = (1U << 24U)
-                        | (SYS_VCLK << 16U)
-                        | (1U << 8U)
-                        |  SYS_VCLK;
-
-    /** - Setup asynchronous peripheral clock sources for AVCLK1 and AVCLK2 */
-    systemREG1->VCLKASRC = (SYS_FR_PLL << 8U)
-                         |  SYS_VCLK;
-
-    /** - Enable Peripherals */
-    systemREG1->PENA = 1U;
   return E_OK;
 }
 
@@ -338,7 +431,7 @@ Mcu_RawResetType Mcu_GetResetRawValue(void) {
  */
 void Mcu_PerformReset(void)
 {
-
+	/* Not supported yet */
 }
 #endif
 
@@ -346,8 +439,6 @@ void Mcu_PerformReset(void)
 
 void Mcu_SetMode(const Mcu_ModeType McuMode)
 {
-
-
   /* NOT SUPPORTED */
 }
 
@@ -361,18 +452,28 @@ uint32_t McuE_GetSystemClock(void)
 {
   uint32_t f_sys;
 
+  // PLLCLK = (CLKIN * PLLMUL) / (REFCLKDIV * ODPLL * PLLDIV);
+
+  uint32 odpll = (systemREG1->PLLCTL2 & MCU_ODPLL_MASK) >> MCU_ODPLL_OFFSET;
+  uint32 plldiv = (systemREG1->PLLCTL1 & MCU_PLLDIV_MASK) >> MCU_PLLDIV_OFFSET;
+  uint32 refclkdiv = (systemREG1->PLLCTL1 & MCU_REFCLKDIV_MASK) >> MCU_REFCLKDIV_OFFSET;
+  uint32 pllmult = (systemREG1->PLLCTL1 & MCU_PLLMUL_MASK) >> MCU_PLLMUL_OFFSET;
+
+  f_sys = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePointFrequency;
+  f_sys = f_sys * pllmult / (refclkdiv * odpll * plldiv);
+
   return f_sys;
 }
 
 imask_t McuE_EnterCriticalSection()
 {
-	uint32_t val;
-	return val;
+	McuE_DisableInterrupts();
+	return 0;
 }
 
 void McuE_ExitCriticalSection(uint32_t old_state)
 {
-
+	McuE_EnableInterrupts();
 }
 
 /**
@@ -380,14 +481,14 @@ void McuE_ExitCriticalSection(uint32_t old_state)
  */
 uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 {
-
+	// Not supported yet.
+	return 0;
 }
 
 
 /**
  * Function to setup the internal flash for optimal performance
  */
-
 void Mcu_ConfigureFlash(void)
 {
 

@@ -13,20 +13,22 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
     
-  .syntax unified
+
+  	.syntax unified
 	.cpu cortex-r4
 	.fpu softvfp
 	.thumb
 
-.global	g_pfnVectors
 .global	Default_Handler
 
+/* Addresses used to setup RAM */
 .word	_sidata
 .word	_sdata
 .word	_edata
 .word	_sbss
 .word	_ebss
 
+/* The address of the stack to use in all modes. */
 .word _estack
 
 
@@ -41,87 +43,93 @@
     .section	.text.Reset_Handler
 	.weak	Reset_Handler
 	.type	Reset_Handler, %function
+
 Reset_Handler:	
 
 /* Set big endian state */
 	SETEND BE
 
-/* Copy the data segment initializers from flash to SRAM */
-  	movs	r1, #0
+/* Initialize core registers.
+   This is done to avoid mismatch between lockstep CPU and ordinary CPU
+*/
+    mov   r0,         #0x0000
+    mov   r1,         #0x0000
+    mov   r2,         #0x0000
+    mov   r3,         #0x0000
+    mov   r4,         #0x0000
+    mov   r5,         #0x0000
+    mov   r6,         #0x0000
+    mov   r7,         #0x0000
+    mov   r8,         #0x0000
+    mov   r9,         #0x0000
+    mov   r10,        #0x0000
+    mov   r11,        #0x0000
+    mov   r12,        #0x0000
+    mov   r1,         #0x03D0
+    orr   r2,        r1,     #0x0001
+    msr   cpsr_cxsf,  r2
+    msr   spsr_cxsf,  r2
+    mov   r8,         #0x0000
+    mov   r9,         #0x0000
+    mov   r10,        #0x0000
+    mov   r11,        #0x0000
+    mov   r12,        #0x0000
+    orr   r12,        r1,     #0x0002
+    msr   cpsr_c,     r12
+    msr   spsr_cxsf,  r12
+    orr   r12,        r1,     #0x0007
+    msr   cpsr_c,     r12
+    msr   spsr_cxsf,  r12
+    orr   r12,        r1,     #0x000B
+    msr   cpsr_c,     r12
+    msr   spsr_cxsf,  r12
+    orr   r12,        r1,     #0x0003
+    msr   cpsr_c,     r12
+    msr   spsr_cxsf,  r12
+
+/* System level configuration
+   This mainly involves setting instruction mode for exceptions and interrupts.
+*/
+    mrc   p15,0,r11,c1,c0,0       /* Read current system configuration */
+    mov   r12,		  #0x40000000 /* Set THUMB instruction set mode for interrupts and exceptions */
+    orr   r12, r12, r11
+    mcr   p15,0,r12,c1,c0,0       /* Write new configuration */
 
 
-Init_Registers:
+/* Initialize stack pointers.
+   This is done for all processor modes. Note that we only use one stack pointer.
+   In reality this means that no mode except USER and SYS is allowed to do anythin on the stack.
+   IRQ mode handles its own stack in the interrupt routine.
+*/
+	mov   r2,		#0xD1
+    msr   cpsr_c,   r2
+    ldr   sp,		=_estack
 
-        mov   r0,         #0x0000
-        mov   r1,         #0x0000
-        mov   r2,         #0x0000
-        mov   r3,         #0x0000
-        mov   r4,         #0x0000
-        mov   r5,         #0x0000
-        mov   r6,         #0x0000
-        mov   r7,         #0x0000
-        mov   r8,         #0x0000
-        mov   r9,         #0x0000
-        mov   r10,        #0x0000
-        mov   r11,        #0x0000
-        mov   r12,        #0x0000
-        mov   r1,         #0x03D0
-        orr   r2,        r1,     #0x0001
-        msr   cpsr_cxsf,  r2
-        msr   spsr_cxsf,  r2
-        mov   r8,         #0x0000
-        mov   r9,         #0x0000
-        mov   r10,        #0x0000
-        mov   r11,        #0x0000
-        mov   r12,        #0x0000
-        orr   r12,        r1,     #0x0002
-        msr   cpsr_c,     r12
-        msr   spsr_cxsf,  r12
-        orr   r12,        r1,     #0x0007
-        msr   cpsr_c,     r12
-        msr   spsr_cxsf,  r12
-        orr   r12,        r1,     #0x000B
-        msr   cpsr_c,     r12
-        msr   spsr_cxsf,  r12
-        orr   r12,        r1,     #0x0003
-        msr   cpsr_c,     r12
-        msr   spsr_cxsf,  r12
+    mov   r2,		#0xD2
+    msr   cpsr_c,   r2
+    ldr   sp,		=_estack
 
-        /* System level configuration */
-        mrc   p15,0,r11,c1,c0,0       /* Read current system configuration */
-        mov   r12,		  #0x40000000 /* Set THUMB instruction set mode for interrupts and exceptions */
-        orr   r12, r12, r11
-        mcr   p15,0,r12,c1,c0,0       /* Write new configuration */
+    mov   r2,		#0xD7
+    msr   cpsr_c,   r2
+    ldr   sp,		=_estack
+
+    mov   r2,		#0xDB
+    msr   cpsr_c,   r2
+    ldr   sp,		=_estack
+
+    mov   r2,		#0xDF
+    msr   cpsr_c,   r2
+    ldr   sp,		=_estack
+
+    mov   r2,		#0xD3
+    msr   cpsr_c,   r2
+    ldr   sp,		=_estack
 
 
-Init_Stack_Pointers:
-
-		mov   r2,		#0xD1
-        msr   cpsr_c,   r2
-        ldr   sp,		=_estack
-
-        mov   r2,		#0xD2
-        msr   cpsr_c,   r2
-        ldr   sp,		=_estack
-
-        mov   r2,		#0xD7
-        msr   cpsr_c,   r2
-        ldr   sp,		=_estack
-
-        mov   r2,		#0xDB
-        msr   cpsr_c,   r2
-        ldr   sp,		=_estack
-
-        mov   r2,		#0xDF
-        msr   cpsr_c,   r2
-        ldr   sp,		=_estack
-
-        mov   r2,		#0xD3
-        msr   cpsr_c,   r2
-        ldr   sp,		=_estack
-
-
-CopyInitializedData:
+/* Initialize RAM.
+   First the initialized RAM is copied from flash to RAM.
+   Then the zeroed RAM is erased.
+*/
 	ldr	r0, =_sdata       /* r0 holds start of data in ram */
 	ldr	r3, =_edata       /* r3 holds end of data in ram */
 	ldr	r5, =_sidata      /* r5 start of data in flash */
@@ -163,6 +171,7 @@ LoopFillZero:
 	bcc	FillZero
 	bx  lr
 
+/* Interrupt routine used to catch unused interrupts and exceptions */
 Dummy_Irq:
 	/* Go back to sys mode for easier debugging.
 	 Save link register*/
@@ -192,6 +201,7 @@ Infinite_Loop:
 	.size	Default_Handler, .-Default_Handler
 
 
+
 /******************************************************************************
 * Interrupt and exception vectors. Vectors start at addr 0x0.
 ******************************************************************************/    
@@ -199,11 +209,11 @@ Infinite_Loop:
 	.extern Irq_Handler
 
         b   Reset_Handler      /* Reset? */
-        b   Dummy_Irq          /* Undef? */
-        b   Irq_Handler        /* SVC, to be able to use SVC instruction. */
-        b   Dummy_Irq          /* Prefetch */
-        b   Dummy_Irq          /* data */
-        b   Dummy_Irq          /* ? */
-        b   Irq_Handler        /* IRQ */
-	    b   Irq_Handler        /* FIR */
+        b   Dummy_Irq          /* Undefined instruction exception */
+        b   Irq_Handler        /* SVC, to be able to use software interrupt instruction. */
+        b   Dummy_Irq          /* Prefetch exception */
+        b   Dummy_Irq          /* Data exception */
+        b   Dummy_Irq          /* Reserved */
+        b   Irq_Handler        /* Ordinary interrupts (IRQ) */
+	    b   Irq_Handler        /* Fast interrupts (FIR) */
 
