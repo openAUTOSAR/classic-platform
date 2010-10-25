@@ -27,6 +27,9 @@
 .word	_sbss
 .word	_ebss
 
+.word _estack
+
+
 /**
  * @brief  This is the code that gets called when the processor first
  *          starts execution following a reset event. Only the absolutely
@@ -93,36 +96,29 @@ Init_Registers:
 
 Init_Stack_Pointers:
 
-user:   .word _estack
-svc:    .word _estack
-fiq:    .word _estack
-irq:    .word _estack
-abort:  .word _estack
-undef:  .word _estack
-
 		mov   r2,		#0xD1
         msr   cpsr_c,   r2
-        ldr   sp,       fiq
+        ldr   sp,		=_estack
 
         mov   r2,		#0xD2
         msr   cpsr_c,   r2
-        ldr   sp,       irq
+        ldr   sp,		=_estack
 
         mov   r2,		#0xD7
         msr   cpsr_c,   r2
-        ldr   sp,       abort
+        ldr   sp,		=_estack
 
         mov   r2,		#0xDB
         msr   cpsr_c,   r2
-        ldr   sp,       undef
+        ldr   sp,		=_estack
 
         mov   r2,		#0xDF
         msr   cpsr_c,   r2
-        ldr   sp,       user
+        ldr   sp,		=_estack
 
         mov   r2,		#0xD3
         msr   cpsr_c,   r2
-        ldr   sp,       svc
+        ldr   sp,		=_estack
 
 
 CopyInitializedData:
@@ -204,7 +200,7 @@ Infinite_Loop:
 
         b   Reset_Handler      /* Reset? */
         b   Dummy_Irq          /* Undef? */
-        b   Dummy_Irq          /* SVC */
+        b   Irq_Handler        /* SVC, to be able to use SVC instruction. */
         b   Dummy_Irq          /* Prefetch */
         b   Dummy_Irq          /* data */
         b   Dummy_Irq          /* ? */
