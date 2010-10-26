@@ -143,9 +143,9 @@ typedef struct {
 	const Fee_BlockConfigType	*BlockConfigPtr;
 	uint16						Length;
 	uint16						Offset;
-	uint32						FlsBlockAddr;		// Flash source/Dest depending of operation
-	uint32						FlsBlockAdminAddr;	// Startadress of admin block
-	uint8						*RamPtr;		// RAM source/Dest depending of operation
+	Fls_AddressType				FlsBlockAddr;		// Flash source/Dest depending of operation
+	Fls_AddressType				FlsBlockAdminAddr;	// Startadress of admin block
+	uint8						*RamPtr;			// RAM source/Dest depending of operation
 } CurrentJobType;
 
 static CurrentJobType CurrentJob = {
@@ -210,6 +210,7 @@ void ReadStartJob(void)
 			FlsAdmin.State = FEE_FLS_STATE_READY;
 			FlsAdmin.ErrorStatus = E_NOT_OK;
 			FlsAdmin.JobResult = Fls_GetJobResult();
+			FinnishJob();
 		}
 	}
 }
@@ -256,6 +257,7 @@ void WriteStartJob(void)
 			FlsAdmin.State = FEE_FLS_STATE_READY;
 			FlsAdmin.ErrorStatus = E_NOT_OK;
 			FlsAdmin.JobResult = Fls_GetJobResult();
+			FinnishJob();
 		}
 	}
 }
@@ -398,7 +400,7 @@ Std_ReturnType Fee_Read(uint16 blockNumber, uint16 blockOffset, uint8* dataBuffe
 	CurrentJob.BlockConfigPtr = &Fee_Config.BlockConfig[blockIndex];
 	CurrentJob.Length = length;
 	CurrentJob.Offset = blockOffset;
-	CurrentJob.FlsBlockAddr = CurrentJob.BlockConfigPtr->PhysBaseAddress + GET_DATASET_FROM_BLOCK_NUMBER(blockNumber) * CurrentJob.BlockConfigPtr->BlockSize; 		/** @req FEE021 */
+	CurrentJob.FlsBlockAddr = (CurrentJob.BlockConfigPtr->PhysBlockBaseNumber - 1) * FEE_VIRTUAL_PAGE_SIZE + GET_DATASET_FROM_BLOCK_NUMBER(blockNumber) * CurrentJob.BlockConfigPtr->BlockSize; 		/** @req FEE021 */
 	CurrentJob.FlsBlockAdminAddr = CurrentJob.FlsBlockAddr + CurrentJob.BlockConfigPtr->BlockSize;
 	CurrentJob.RamPtr = dataBufferPtr;
 	CurrentJob.State = FEE_READ_REQUESTED;
@@ -430,7 +432,7 @@ Std_ReturnType Fee_Write(uint16 blockNumber, uint8* dataBufferPtr)
 
 	CurrentJob.BlockConfigPtr = &Fee_Config.BlockConfig[blockIndex];
 	CurrentJob.Length = CurrentJob.BlockConfigPtr->BlockSize;
-	CurrentJob.FlsBlockAddr = CurrentJob.BlockConfigPtr->PhysBaseAddress + GET_DATASET_FROM_BLOCK_NUMBER(blockNumber) * CurrentJob.BlockConfigPtr->BlockSize; 		/** @req FEE024 */
+	CurrentJob.FlsBlockAddr = (CurrentJob.BlockConfigPtr->PhysBlockBaseNumber - 1) * FEE_VIRTUAL_PAGE_SIZE + GET_DATASET_FROM_BLOCK_NUMBER(blockNumber) * CurrentJob.BlockConfigPtr->BlockSize; 		/** @req FEE024 */
 	CurrentJob.FlsBlockAdminAddr = CurrentJob.FlsBlockAddr + CurrentJob.BlockConfigPtr->BlockSize;
 	CurrentJob.RamPtr = dataBufferPtr;
 	CurrentJob.State = FEE_WRITE_REQUESTED;
@@ -490,7 +492,7 @@ Std_ReturnType Fee_InvalidateBlock(uint16 blockNumber)
 
 	CurrentJob.BlockConfigPtr = &Fee_Config.BlockConfig[blockIndex];
 	CurrentJob.Length = 0;
-	CurrentJob.FlsBlockAddr = CurrentJob.BlockConfigPtr->PhysBaseAddress + GET_DATASET_FROM_BLOCK_NUMBER(blockNumber) * CurrentJob.BlockConfigPtr->BlockSize; 		/** @req FEE024 */
+	CurrentJob.FlsBlockAddr = (CurrentJob.BlockConfigPtr->PhysBlockBaseNumber - 1) * FEE_VIRTUAL_PAGE_SIZE + GET_DATASET_FROM_BLOCK_NUMBER(blockNumber) * CurrentJob.BlockConfigPtr->BlockSize; 		/** @req FEE024 */
 	CurrentJob.FlsBlockAdminAddr = CurrentJob.FlsBlockAddr + CurrentJob.BlockConfigPtr->BlockSize;
 	CurrentJob.RamPtr = NULL;
 	CurrentJob.State = FEE_INVALIDATE_REQUESTED;
