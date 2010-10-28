@@ -103,7 +103,6 @@ StatusType Os_IsrAddResource( TaskType isr, ResourceType resource ) {
 
 #if defined(CFG_ARM_CM3)
 extern void Irq_EOI2( void );
-#endif
 
 void TailChaining(void *stack)
 {
@@ -177,8 +176,7 @@ void Os_Isr_cm3( void *isr_p ) {
 	/* Scheduling is done in PendSV handler for ARM CM3 */
 	*((uint32_t volatile *)0xE000ED04) = 0x10000000; // PendSV
 }
-
-
+#endif
 
 /**
  * Handle ISR type 2 interrupts from interrupt controller.
