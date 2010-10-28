@@ -198,6 +198,10 @@ obj-$(USE_TCF) += streams.o
 inc-$(USE_TCF) += $(ROOTDIR)/common/tcf
 vpath-$(USE_TCF) += $(ROOTDIR)/common/tcf
 
+#SLEEP
+obj-$(USE_SLEEP) += sleep.o
+
+
 # Newlib overrides (overridden by default)
 ifneq ($(CFG_STANDARD_NEWLIB),y)
 obj-y += xtoa.o
