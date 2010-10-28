@@ -27,8 +27,10 @@
 #define CPU_BIT_ORDER       MSB_FIRST 
 #define CPU_BYTE_ORDER      HIGH_BYTE_FIRST
 
+#if !defined(FALSE)
 #define FALSE		0
 #define TRUE		1
+#endif
 
 typedef unsigned long       boolean;         
 typedef signed char         sint8;        

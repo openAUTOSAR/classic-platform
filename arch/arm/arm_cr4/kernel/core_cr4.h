@@ -8,6 +8,8 @@
 #ifndef CORE_CR4_H_
 #define CORE_CR4_H_
 
+#include "Std_Types.h"
+
 #define     __I     volatile const            /*!< defines 'read only' permissions      */
 #define     __O     volatile                  /*!< defines 'write only' permissions     */
 #define     __IO    volatile                  /*!< defines 'read / write' permissions   */
@@ -319,6 +321,170 @@ typedef volatile struct pcrBase
 #define pcrREG ((pcrBASE_t *)0xFFFFE000U)
 
 
+/*----------------------------------------------------------------------------*/
+/* CAN register definition                                                    */
+
+typedef volatile struct
+{
+    uint32   CTL;
+    uint32   SR;
+    unsigned     : 16;
+    unsigned REC :  8;
+    unsigned TEC :  8;
+    uint32   BTR;
+    uint32   IR;
+    uint32   TR;
+    unsigned : 32;
+    uint32   PEC;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+	unsigned : 32;
+	unsigned : 32;
+    uint32   ABOT;
+    uint32   TRX;
+    uint32   TRx[4];
+    uint32   NDX;
+    uint32   NDx[4];
+    uint32   IPX;
+    uint32   IPx[4];
+    uint32   MVX;
+    uint32   MVx[4];
+    unsigned : 32;
+    uint32   IPMx[4];
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+	unsigned : 32;
+    struct
+    {
+        uint32   COM;
+        uint32   MASK;
+        uint32   ARB;
+        uint32   MC;
+        uint8    DATx[8];
+        unsigned : 32;
+        unsigned : 32;
+    } IFx[3];
+    uint32   IF3UEy[4];
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+    unsigned : 32;
+	unsigned : 32;
+	unsigned : 32;
+	unsigned : 32;
+    uint32   IOTX;
+    uint32   IORX;
+} Can_RegisterType;
+
+
+#define Can0_Base ((Can_RegisterType *)0xFFF7DC00)
+#define Can1_Base ((Can_RegisterType *)0xFFF7DE00)
+
+
+
+typedef volatile struct gioBase
+{
+    unsigned GCR0;      /**< 0x0000: Global Control Register */
+    unsigned PWDN;      /**< 0x0004: Power Down Register */
+    unsigned INTDET;    /**< 0x0008: Interrupt Detect Regsiter*/
+    unsigned POL;       /**< 0x000C: Interrupt Polarity Register */
+    unsigned INTENASET; /**< 0x0010: Interrupt Enable Set Register */
+    unsigned INTENACLR; /**< 0x0014: Interrupt Enable Clear Register */
+    unsigned LVLSET;    /**< 0x0018: Interrupt Priority Set Register */
+    unsigned LVLCLR;    /**< 0x001C: Interrupt Priority Clear Register */
+    unsigned FLG;       /**< 0x0020: Interrupt Flag Register */
+    unsigned OFFSET0;   /**< 0x0024: Interrupt Offset A Register */
+    unsigned OFFSET1;   /**< 0x0028: Interrupt Offset B Register */
+} gioBASE_t;
+
+
+/** @struct gioPort
+*   @brief GIO Port Register Definition
+*/
+/** @typedef gioPORT_t
+*   @brief GIO Port Register Type Definition
+*
+*   This type is used to access the GIO Port Registers.
+*/
+typedef volatile struct gioPort
+{
+    unsigned DIR;    /**< 0x0000: Data Direction Register */
+    unsigned DIN;    /**< 0x0004: Data Input Register */
+    unsigned DOUT;   /**< 0x0008: Data Output Register */
+    unsigned DSET;   /**< 0x000C: Data Output Set Register */
+    unsigned DCLR;   /**< 0x0010: Data Output Clear Register */
+    unsigned PDR;    /**< 0x0014: Open Drain Regsiter */
+    unsigned PULDIS; /**< 0x0018: Pullup Disable Register */
+    unsigned PSL;    /**< 0x001C: Pull Up/Down Selection Register */
+} gioPORT_t;
+
+
+/** @def gioREG
+*   @brief GIO Register Frame Pointer
+*
+*   This pointer is used by the GIO driver to access the gio module registers.
+*/
+#define gioREG   ((gioBASE_t *)0xFFF7BC00U)
+
+/** @def gioPORTA
+*   @brief GIO Port (A) Register Pointer
+*
+*   Pointer used by the GIO driver to access PORTA
+*/
+#define gioPORTA ((gioPORT_t *)0xFFF7BC34U)
+
+/** @def gioPORTB
+*   @brief GIO Port (B) Register Pointer
+*
+*   Pointer used by the GIO driver to access PORTB
+*/
+#define gioPORTB ((gioPORT_t *)0xFFF7BC54U)
+
+
 typedef struct
 {
   __IO uint32_t CTRL;                         /*!< SysTick Control and Status Register */
@@ -327,6 +493,7 @@ typedef struct
   __I  uint32_t CALIB;                        /*!< SysTick Calibration Register        */
 } SysTick_Type;
 
+
 static inline void __disable_irq() {
   __asm volatile("CPSID if");
 }
@@ -334,7 +501,26 @@ static inline void __enable_irq() {
 	__asm volatile("CPSIE if");
 }
 
+static inline unsigned long _Irq_Save(void)
+{
+   register unsigned long val asm("r0");
+   asm("mrs r0, cpsr");
+   asm("and r0, r0, #0xC0"); // Mask the I and F bit of CPSR
+   __disable_irq();
+   return val;
+}
 
-
+static inline void _Irq_Restore(unsigned mask) {
+	if (mask & 0x80) {
+		__asm volatile("CPSID i");
+	} else {
+		__asm volatile("CPSIE i");
+	}
+	if (mask & 0x40) {
+		__asm volatile("CPSID f");
+	} else {
+		__asm volatile("CPSIE f");
+	}
+}
 
 #endif /* CORE_CR4_H_ */

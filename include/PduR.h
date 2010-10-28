@@ -59,7 +59,7 @@
 /* Contain the current state of the PDU router. The router is uninitialized
  * until PduR_Init has been run.
  */
-PduR_StateType PduRState;
+//PduR_StateType PduRState;
 
 extern const PduR_PBConfigType *PduRConfig;
 

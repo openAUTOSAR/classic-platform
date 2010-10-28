@@ -207,10 +207,11 @@ Infinite_Loop:
 ******************************************************************************/    
  	.section	.int_vecs,"ax",%progbits
 	.extern Irq_Handler
+	.extern Svc_Handler
 
         b   Reset_Handler      /* Reset? */
         b   Dummy_Irq          /* Undefined instruction exception */
-        b   Irq_Handler        /* SVC, to be able to use software interrupt instruction. */
+        b   Svc_Handler        /* SVC, to be able to use software interrupt instruction. */
         b   Dummy_Irq          /* Prefetch exception */
         b   Dummy_Irq          /* Data exception */
         b   Dummy_Irq          /* Reserved */

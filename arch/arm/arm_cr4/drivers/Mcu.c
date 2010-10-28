@@ -251,9 +251,9 @@ static void InitMcuClocks(Mcu_ClockSettingConfigType *clockSettingsPtr)
 		  (MCU_RESET_ON_SLIP << MCU_RESET_ON_SLIP_OFFSET)
 		| (MCU_BYPASS_ON_SLIP << MCU_BYPASS_ON_SLIP_OFFSET)
 		| (MCU_RESET_ON_OSC_FAIL << MCU_RESET_ON_OSC_FAIL_OFFSET)
-		| (clockSettingsPtr->Pll1 << MCU_REFCLKDIV_OFFSET)
-		| (clockSettingsPtr->Pll2 << MCU_PLLMUL_OFFSET)
-		| (clockSettingsPtr->Pll4 << MCU_PLLDIV_OFFSET);
+		| ((clockSettingsPtr->Pll1 - 1) << MCU_REFCLKDIV_OFFSET)
+		| (((clockSettingsPtr->Pll2 - 1) * 256) << MCU_PLLMUL_OFFSET)
+		| ((clockSettingsPtr->Pll4 - 1) << MCU_PLLDIV_OFFSET);
 
 
 	/** Setup PLLCTL2
@@ -268,7 +268,7 @@ static void InitMcuClocks(Mcu_ClockSettingConfigType *clockSettingsPtr)
 		| (MCU_SPREADING_RATE << MCU_SPREADING_RATE_OFFSET)
 		| (MCU_BWADJ << MCU_BWADJ_OFFSET)
 		| (MCU_SPREADING_AMOUNT << MCU_SPREADING_AMOUT_OFFSET)
-		| (clockSettingsPtr->Pll3 << MCU_ODPLL_OFFSET);
+		| ((clockSettingsPtr->Pll3 - 1) << MCU_ODPLL_OFFSET);
 
 	/** - Wait for until clocks are locked */
 	while ((systemREG1->CSVSTAT & ((systemREG1->CSDIS ^ 0xFF) & 0xFF)) != ((systemREG1->CSDIS ^ 0xFF) & 0xFF));
@@ -313,10 +313,10 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
 	pcrREG->PSPWRDWNCLR3 = 0xFFFFFFFFU;
 
 	/** - Setup synchronous peripheral clock dividers for VCLK1 and VCLK2
-	 * 0 = divide by 1
+	 * 1 = divide by 2
 	 */
-	systemREG1->VCLKR  = 0U;
-	systemREG1->VCLK2R = 0U;
+	systemREG1->VCLKR  = 1U;
+	systemREG1->VCLK2R = 1U;
 
 	/** - Setup RTICLK1 and RTICLK2 clocks */
 	systemREG1->RCLKSRC = (0U << 24U) // RTICLK2 divider is 1
@@ -454,10 +454,10 @@ uint32_t McuE_GetSystemClock(void)
 
   // PLLCLK = (CLKIN * PLLMUL) / (REFCLKDIV * ODPLL * PLLDIV);
 
-  uint32 odpll = (systemREG1->PLLCTL2 & MCU_ODPLL_MASK) >> MCU_ODPLL_OFFSET;
-  uint32 plldiv = (systemREG1->PLLCTL1 & MCU_PLLDIV_MASK) >> MCU_PLLDIV_OFFSET;
-  uint32 refclkdiv = (systemREG1->PLLCTL1 & MCU_REFCLKDIV_MASK) >> MCU_REFCLKDIV_OFFSET;
-  uint32 pllmult = (systemREG1->PLLCTL1 & MCU_PLLMUL_MASK) >> MCU_PLLMUL_OFFSET;
+  uint32 odpll = ((systemREG1->PLLCTL2 & MCU_ODPLL_MASK) >> MCU_ODPLL_OFFSET) + 1;
+  uint32 plldiv = ((systemREG1->PLLCTL1 & MCU_PLLDIV_MASK) >> MCU_PLLDIV_OFFSET) + 1;
+  uint32 refclkdiv = ((systemREG1->PLLCTL1 & MCU_REFCLKDIV_MASK) >> MCU_REFCLKDIV_OFFSET) + 1;
+  uint32 pllmult = (((systemREG1->PLLCTL1 & MCU_PLLMUL_MASK) >> MCU_PLLMUL_OFFSET) / 256) + 1;
 
   f_sys = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePointFrequency;
   f_sys = f_sys * pllmult / (refclkdiv * odpll * plldiv);

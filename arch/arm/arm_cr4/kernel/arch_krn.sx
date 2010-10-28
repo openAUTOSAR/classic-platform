@@ -21,6 +21,9 @@
 
  	.global Irq_Handler
     .type	Irq_Handler, %function
+    
+	.global Svc_Handler
+    .type	Svc_Handler, %function    
 
 
 // Registers part of context.
@@ -30,7 +33,8 @@
 Irq_Handler:
 	// Setup return address. This requires subtraction from LR.
 	sub		lr, lr, #4
-	
+
+Svc_Handler:
 	// Store return stuff on system mode's stack
 	srsdb	sp!, #31 // 31 = System mode
 	
@@ -43,6 +47,9 @@ Irq_Handler:
     sub.w   sp,sp,#C_SIZE
     mov.w   r4,#LC_PATTERN
     str     r4,[sp,#C_CONTEXT_OFFS]
+    
+    // Preserve r0 in r1 for svc calls
+    mov     r1, r0
     
     // Put stack as first arg to Irq_Entry    
     mov 	r0,sp			
@@ -197,7 +204,7 @@ os_lc_restore:
     pop     {REG_SAVE,lr}
     
    	/* Enable interrupts */
-    cpsie	i    			
+    //cpsie	i    			
 
 	// Return using stuff from stack.
     rfeia	sp!

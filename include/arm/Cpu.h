@@ -37,17 +37,6 @@
 #define Irq_SuspendOs() 	Irq_Disable()
 #define Irq_ResumeOs() 		Irq_Enable()
 
-static inline unsigned long _Irq_Save(void)
-{
-   unsigned long val = 0;
-   return val;
-}
-
-/*-----------------------------------------------------------------*/
-
-static inline void _Irq_Restore(unsigned mask) {
-
-}
 
 #define CallService(index,param)
 

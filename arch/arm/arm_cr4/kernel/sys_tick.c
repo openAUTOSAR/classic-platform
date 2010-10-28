@@ -42,43 +42,43 @@ void Os_SysTickInit( void ) {
 static inline uint32_t SysTick_Config(uint32_t ticks)
 {
 
-	    /** - Setup NTU source, debug options and disable both counter blocks */
-	    rtiREG1->GCTRL = 0x0;
+	/** - Setup NTU source, debug options and disable both counter blocks */
+	rtiREG1->GCTRL = 0x0;
 
-	    /** - Setup timebase for free running counter 0 */
-	    rtiREG1->TBCTRL = 0x0;
+	/** - Setup timebase for free running counter 0 */
+	rtiREG1->TBCTRL = 0x0;
 
-	    /** - Enable/Disable capture event sources for both counter blocks */
-	    rtiREG1->CAPCTRL = 0x0;
+	/** - Enable/Disable capture event sources for both counter blocks */
+	rtiREG1->CAPCTRL = 0x0;
 
-	    /** - Setup input source compare 0-3 */
-	    rtiREG1->COMPCTRL = 0x0;
+	/** - Setup input source compare 0-3 */
+	rtiREG1->COMPCTRL = 0x0;
 
-	    /** - Reset up counter 0 */
-	    rtiREG1->CNT[0U].UCx = 0x00000000U;
+	/** - Reset up counter 0 */
+	rtiREG1->CNT[0U].UCx = 0x00000000U;
 
-	    /** - Reset free running counter 0 */
-	    rtiREG1->CNT[0U].FRCx = 0x00000000U;
+	/** - Reset free running counter 0 */
+	rtiREG1->CNT[0U].FRCx = 0x00000000U;
 
-	    /** - Setup up counter 0 compare value
-	    *     - 0x00000000: Divide by 2^32
-	    *     - 0x00000001-0xFFFFFFFF: Divide by (CPUC0 + 1)
-	    */
-	    rtiREG1->CNT[0U].CPUCx = 4U;
+	/** - Setup up counter 0 compare value
+	*     - 0x00000000: Divide by 2^32
+	*     - 0x00000001-0xFFFFFFFF: Divide by (CPUC0 + 1)
+	*/
+	rtiREG1->CNT[0U].CPUCx = 4U;
 
-	    /** - Setup compare 0 value. This value is compared with selected free running counter. */
-	    rtiREG1->CMP[0U].COMPx = 9360U;
+	/** - Setup compare 0 value. This value is compared with selected free running counter. */
+	rtiREG1->CMP[0U].COMPx = ticks / 8;
 
-	    /** - Setup update compare 0 value. This value is added to the compare 0 value on each compare match. */
-	    rtiREG1->CMP[0U].UDCPx = 9360U;
+	/** - Setup update compare 0 value. This value is added to the compare 0 value on each compare match. */
+	rtiREG1->CMP[0U].UDCPx = ticks / 8;
 
-	    /** - Clear all pending interrupts */
-	    rtiREG1->INTFLAG = 0x0;
+	/** - Clear all pending interrupts */
+	rtiREG1->INTFLAG = 0x0;
 
-	    /** - Disable all interrupts */
-	    rtiREG1->CLEARINT = 0x0;
+	/** - Disable all interrupts */
+	rtiREG1->CLEARINT = 0x0;
 
-  return (0);                                                                            /* Function successful */
+	return (0);
 }
 
 /**
@@ -96,22 +96,6 @@ void Os_SysTickStart(uint32_t period_ticks) {
 	SysTick_Config(period_ticks);
 	rtiREG1->GCTRL  = 0x1;
 	rtiREG1->SETINT = 0x1;
-
-
-	 /* Set SysTick Priority to 3 */
-	// TODO removeNVIC_SetPriority(SysTick_IRQn, 0x0C);
-
-#if 0
-	// SysTick interrupt each 250ms with counter clock equal to 9MHz
-	if (SysTick_Config((SystemFrequency / 8) / 4)) {
-		// Capture error
-		while (1)
-			;
-	}
-
-	// Select HCLK/8 as SysTick clock source
-	SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK_Div8);
-#endif
 
 }
 

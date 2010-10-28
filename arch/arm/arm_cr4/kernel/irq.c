@@ -105,12 +105,19 @@ void *Irq_Entry( void *stack_p )
 	// Get the active interrupt channel
 	uint8 channel = IrqGetCurrentInterruptSource();
 
-	Irq_Disable();
+	if (channel == 255) {
+		// This irq is a result of a svc call
+		register uint32 irq_vector asm("r1");
+		channel = irq_vector;
+
+	}
+
+	//Irq_Disable();
 	stack = (uint32_t *)stack_p;
 
 	stack = Os_Isr(stack, (void *)Irq_VectorTable[channel]);
 
-	Irq_Enable();
+	//Irq_Enable();
 	return stack;
 }
 
@@ -172,7 +179,7 @@ void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
  */
 void Irq_GenerateSoftInt( IrqType vector ) {
 
-	// Todo replace NVIC->STIR = (vector);
+	__asm volatile("svc #0");
 }
 
 /**
