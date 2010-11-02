@@ -62,6 +62,10 @@ SECTIONS
 		*(.rodata .rodata.* .gnu.linkonce.r.*)
 		_sidata = ALIGN(.,4);
 	} > flash
+	
+	.cio ALIGN(0x10) : {
+	
+	} > ram
 
 	.data :	AT(ALIGN(LOADADDR(.rodata)+SIZEOF(.rodata),4)) {
 		_sdata = ALIGN(.,4); 
