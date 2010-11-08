@@ -49,7 +49,7 @@ PRIGROUP
 7 			0.8 indicates no pre-emption priority, eight bits of subpriority.
 */
 void Irq_Init( void ) {
-	NVIC_SetPriorityGrouping(7); // We do not allow preemption.
+	NVIC_SetPriorityGrouping(0);
 	NVIC_SetPriority(SVCall_IRQn, 0xff); // Set lowest prio
 	NVIC_SetPriority(PendSV_IRQn, 0xff); // Set lowest prio
 

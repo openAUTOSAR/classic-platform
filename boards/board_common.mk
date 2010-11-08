@@ -201,6 +201,7 @@ vpath-$(USE_TCF) += $(ROOTDIR)/common/tcf
 #SLEEP
 obj-$(USE_SLEEP) += sleep.o
 
+obj-y += arc.o
 
 # Newlib overrides (overridden by default)
 ifneq ($(CFG_STANDARD_NEWLIB),y)
