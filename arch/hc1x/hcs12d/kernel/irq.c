@@ -50,7 +50,8 @@ void bad_irq(uint8_t irq_nr, void **stack) {
 	bad_irq_context_bank = (bank_and_ccr & 0xFF00) >> 8;
 	bad_irq_context_address = *(stack + 8);
 
-	for (;;);
+	for (;;)
+	  asm("BGND"); // Jump to debugger
 }
 
 void *Irq_Entry( uint8_t irq_nr, void *stack )
