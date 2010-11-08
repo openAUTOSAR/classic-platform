@@ -236,6 +236,7 @@ SECTIONS
     /* BANK_E MODULES */
     Port*.o(.text)
     Com*.o(.text)
+    test_*.o(.text)
 
     . = ALIGN(2);
   } > bank_E AT>bank_E_lma  =0xff

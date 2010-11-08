@@ -112,7 +112,15 @@ void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
  * @param vector
  */
 void Irq_GenerateSoftInt( IrqType vector ) {
-	(void)vector;
+	if (vector == IRQ_TYPE_SWI)
+	{
+	    asm("swi");
+	}
+
+	if (vector == IRQ_TYPE_ILLEGAL)
+	{
+            asm(".short 0x1830"); // Trap instruction
+	}
 }
 
 /**

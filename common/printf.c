@@ -322,7 +322,6 @@ int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap)
 				/* Not supported or no flag */
 				flags = FL_NONE;
 				format--;
-				break;
 			}
 
 			ch = *format++;
