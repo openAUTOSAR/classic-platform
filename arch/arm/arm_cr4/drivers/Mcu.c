@@ -481,7 +481,10 @@ void McuE_ExitCriticalSection(uint32_t old_state)
  */
 uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 {
-	// Not supported yet.
+	if (type == PERIPHERAL_CLOCK_CAN) {
+		uint8 vclockDiv = systemREG1->VCLKR;
+		return McuE_GetSystemClock() / (vclockDiv + 1);
+	}
 	return 0;
 }
 

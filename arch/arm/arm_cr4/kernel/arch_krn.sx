@@ -1,9 +1,18 @@
+/* -------------------------------- Arctic Core ------------------------------
+ * Arctic Core - the open source AUTOSAR platform http://arccore.com
+ *
+ * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
+ *
+ * This source code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ * -------------------------------- Arctic Core ------------------------------*/
 
-/*
- *  Copyright ArcCore AB
- *
- *
- */
 
 #define _ASSEMBLER_
 #include "kernel_offset.h"
@@ -25,9 +34,56 @@
 	.global Svc_Handler
     .type	Svc_Handler, %function    
 
+	.global Data_Exc_Handler
+    .type	Data_Exc_Handler, %function
+    
+    .global Prefetch_Exc_Handler
+    .type	Prefetch_Exc_Handler, %function
+    
+    .global Dummy_Irq
+    .type	Dummy_Irq, %function        
+
 
 // Registers part of context.
-#define REG_SAVE r4-r8,r10,r11
+#define REG_SAVE r0-r12
+
+
+// A data exception handler. This let us put a breakpoint and return to the place where the exception was caught.
+// If DEBUG_EXCEPTIONS is off then just use the ordinary dummy irq.
+Data_Exc_Handler: 
+#ifdef CFG_ARM_CR4_DEBUG_EXCEPTIONS
+	// Setup return address. This requires subtraction from LR.
+	sub		lr, lr, #8
+	
+	// Store return stuff on system mode's stack
+	srsdb	sp!, #31 // 31 = System mode
+	
+	// Switch to system mode.
+	cpsid 	i, #31  // 31 = system mode
+	
+	// Return using stuff from stack.
+    rfeia	sp!
+#else
+	b 		Dummy_Irq
+#endif
+
+// A prefetch exception handler. This let us put a breakpoint and return to the place where the exception was caught.
+// If DEBUG_EXCEPTIONS is off then just use the ordinary dummy irq.
+Prefetch_Exc_Handler: 
+#ifdef CFG_ARM_CR4_DEBUG_EXCEPTIONS	
+
+	// Switch to system mode.
+	cpsid 	i, #31  // 31 = system mode
+	
+	// Setup return address. This requires subtraction from LR.
+	sub		lr, lr, #4
+	
+	// Return to the place before the instruction that caused the interrupt.
+    MOVS  PC, LR
+    
+#else
+	b 		Dummy_Irq
+#endif
 
 
 Irq_Handler:
@@ -210,4 +266,15 @@ os_lc_restore:
     rfeia	sp!
 
     
-
+/* Interrupt routine used to catch unused interrupts and exceptions */
+Dummy_Irq:
+	/* Go back to sys mode for easier debugging.
+	 Save link register*/
+	mov   r3, lr
+	/* We don't want to use the IRQ mode
+	   so swich back to sys mode. */
+	mov   r2,		#0xDF
+    msr   cpsr_c,   r2
+    /* Restore link register again */
+    mov   lr, r3
+	b Dummy_Irq

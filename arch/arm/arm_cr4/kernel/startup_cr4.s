@@ -44,7 +44,7 @@
 	.weak	Reset_Handler
 	.type	Reset_Handler, %function
 
-Reset_Handler:	
+Reset_Handler:
 
 /* Set big endian state */
 	SETEND BE
@@ -171,18 +171,7 @@ LoopFillZero:
 	bcc	FillZero
 	bx  lr
 
-/* Interrupt routine used to catch unused interrupts and exceptions */
-Dummy_Irq:
-	/* Go back to sys mode for easier debugging.
-	 Save link register*/
-	mov   r3, lr
-	/* We don't want to use the IRQ mode
-	   so swich back to sys mode. */
-	mov   r2,		#0xDF
-    msr   cpsr_c,   r2
-    /* Restore link register again */
-    mov   lr, r3
-	b Dummy_Irq
+
 
 .size	Reset_Handler, .-Reset_Handler
 
@@ -208,13 +197,22 @@ Infinite_Loop:
  	.section	.int_vecs,"ax",%progbits
 	.extern Irq_Handler
 	.extern Svc_Handler
+	.extern Data_Exc_Handler
+	.extern Prefetch_Exc_Handler
+	.extern Dummy_Irq
 
-        b   Reset_Handler      /* Reset? */
+		/* This is the reset handler. Since the CPU is in ARM mode when this instruction is executed
+		   it has to be hard coded (otherwise GCC will compile it wrongly.
+		   Instruction branches to address 0x22 while changing instruction mode to THUMB. */
+        .word 0xfb000006
         b   Dummy_Irq          /* Undefined instruction exception */
         b   Svc_Handler        /* SVC, to be able to use software interrupt instruction. */
-        b   Dummy_Irq          /* Prefetch exception */
-        b   Dummy_Irq          /* Data exception */
+        b   Prefetch_Exc_Handler          /* Prefetch exception */
+        b   Data_Exc_Handler   /* Data exception */
         b   Dummy_Irq          /* Reserved */
         b   Irq_Handler        /* Ordinary interrupts (IRQ) */
 	    b   Irq_Handler        /* Fast interrupts (FIR) */
+
+		nop
+		b 	Reset_Handler      /* Branch to the real reset handler. */
 

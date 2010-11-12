@@ -185,7 +185,7 @@ void Irq_InstallVector(void (*func)(), IrqType vector, uint8_t priority, Cpu_t c
 void Irq_GenerateSoftInt( IrqType vector );
 uint8_t Irq_GetCurrentPriority( Cpu_t cpu);
 uint32_t McuE_GetSystemClock( void );
-#if defined(CFG_MPC55XX)
+#if defined(CFG_MPC55XX) || defined(CFG_ARM_CR4)
 uint32_t McuE_GetPeripheralClock( McuE_PeriperalClock_t type );
 #endif
 #include "McuExtensions.h"
