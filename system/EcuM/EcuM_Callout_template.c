@@ -75,6 +75,9 @@
 #if defined(USE_LINSM)
 #include "LinSM.h"
 #endif
+#if defined(USE_FLS)
+#include "Fls.h"
+#endif
 
 
 
@@ -155,7 +158,7 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 
 #if defined(USE_FLS)
 	// Setup Flash
-	FlashInit(ConfigPtr->FlashConfig);
+	Fls_Init(ConfigPtr->FlsConfig);
 #endif
 
 	// Setup NVRAM Manaager

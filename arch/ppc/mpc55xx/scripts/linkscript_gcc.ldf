@@ -62,9 +62,15 @@ SECTIONS
 		__DATA_ROM = .;
 	} > flash
 
+	.calibration : AT(ORIGIN(flash_L1_CALIBRATIONPARAMS)) {
+		__CALIB_RAM_START = .;
+		*(.calibration)
+		__CALIB_RAM_END = .;
+	} > ram
+
 	.data :	AT(ALIGN(LOADADDR(.sbss2)+SIZEOF(.sbss2),4)) {
 		__DATA_RAM = .; *(.data .data.* .gnu.linkonce.d.* .gnu.linkonce.r.* .eh_frame)
-	} > ram
+		} > ram
 
 	.sdata : AT(ALIGN(LOADADDR(.data)+SIZEOF(.data),4)) {
 		__SDATA_START__ = .;
@@ -146,6 +152,7 @@ __DATA_RAM  		= ADDR(.data);
 /*__DATA_END  		= ADDR(.sdata)+SIZEOF(.sdata);*/
 /*__BSS_START 		= ADDR(.sbss);*/
 __BSS_START 		= ADDR(.sbss);
+__CALIB_ROM_START	= ORIGIN(flash_L1_CALIBRATIONPARAMS);
 
 /* _SDA_BASE_ and _SDA2_BASE_ is defined in e500 ABI
  * Some of the symbols below is used by eabi() that does interesting.
