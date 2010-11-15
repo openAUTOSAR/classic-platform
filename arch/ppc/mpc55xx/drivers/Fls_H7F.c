@@ -259,6 +259,7 @@ UINT32 Fls_H7F_FlashErase ( PSSD_CONFIG pSSDConfig,
         H7F_REG_WRITE (h7fRegBase + H7F_HBS, highEnabledBlocks);
     }
 
+EXIT:
     /* set MCR-ERS to start erase operation */
     H7FMCR_BIT_SET (MCRAddress, H7F_MCR_ERS);
 
@@ -271,7 +272,6 @@ UINT32 Fls_H7F_FlashErase ( PSSD_CONFIG pSSDConfig,
     /* This is where the freescale driver ends */
     eraseInfo->state = ERASE_STATE_ERASING;
 
-EXIT:
   if (pSSDConfig->BDMEnable)
   {
       //asm ( "mr   r3,returnCode" );   /* save the return code to R3 */
@@ -627,20 +627,25 @@ EXIT_EHV:
  */
 void Fls_H7F_SetLock ( Fls_EraseBlockType *blocks, UINT8 logic )
 {
-    vuint32_t *reg;
+    vuint32_t *reg, *sreg;
     struct FLASH_tag *flashHw = &FLASH;
 
     if( (blocks->lowEnabledBlocks != 0 ) ||
     		(blocks->midEnabledBlocks != 0 ) ||
     		(blocks->shadowBlocks != 0 ) )
     {
-      reg = &(flashHw->LMLR.R);
+      reg 	= &(flashHw->LMLR.R);
+      sreg	= &(flashHw->SLMLR.R);
 
       // Check if sector is locked
       if( !(*reg & 0x80000000 )) {
-        // Unlock the sector with password
-        *reg = FLASH_LMLR_PASSWORD;
-      }
+              // Unlock the sector with password
+              *reg = FLASH_LMLR_PASSWORD;
+            }
+      if( !(*sreg & 0x80000000 )) {
+              // Unlock the sector with password
+              *sreg = FLASH_SLMLR_PASSWORD;
+            }
 
       // set/clear them
       if( logic ) {
@@ -649,6 +654,15 @@ void Fls_H7F_SetLock ( Fls_EraseBlockType *blocks, UINT8 logic )
 								(blocks->shadowBlocks & H7F_LML_SLOCK);
       } else {
       	*reg &= ((~blocks->midEnabledBlocks<<16) & H7F_LML_MLOCK) |
+								((~blocks->lowEnabledBlocks) & H7F_LML_LLOCK) |
+								((~blocks->shadowBlocks) & H7F_LML_SLOCK) ;
+      }
+      if( logic ) {
+      	*sreg |= ((blocks->midEnabledBlocks<<16)& H7F_LML_MLOCK) +
+								(blocks->lowEnabledBlocks & H7F_LML_LLOCK) +
+								(blocks->shadowBlocks & H7F_LML_SLOCK);
+      } else {
+      	*sreg &= ((~blocks->midEnabledBlocks<<16) & H7F_LML_MLOCK) |
 								((~blocks->lowEnabledBlocks) & H7F_LML_LLOCK) |
 								((~blocks->shadowBlocks) & H7F_LML_SLOCK) ;
       }

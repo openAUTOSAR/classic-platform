@@ -83,6 +83,9 @@ EcuM_ConfigType EcuMConfig =
 #if defined(USE_GPT)
 	.GptConfig = GptConfigData,
 #endif
+#if defined(USE_FLS)
+	.FlsConfig = FlsConfigSet,
+#endif
 };
 
 void EcuM_OnGoOffTwo( void ) {
