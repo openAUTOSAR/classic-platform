@@ -12,7 +12,7 @@
             <SDGS>
               <SDG GID="Arccore::EcuOptions">
                 <SD GID="MCU">HCS12</SD>
-                <SD GID="GENDIR">/pwmnode2/hcs12x_elmicro_tboard/config</SD>
+                <SD GID="GENDIR">/arc/boards/hcs12x_elmicro_tboard/config</SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>
@@ -1088,7 +1088,7 @@
                   <SHORT-NAME>TIMER</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer</DEFINITION-REF>
                   <SUB-CONTAINERS>
-                    <CONTAINER UUID="4ba3dbfd-add4-4ded-a79d-031ad2b43bed">
+                    <CONTAINER UUID="18f35583-11aa-4af3-a7cb-6bf56494047e">
                       <SHORT-NAME>PT0</SHORT-NAME>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
                       <PARAMETER-VALUES>
@@ -1122,7 +1122,7 @@
                         </STRING-VALUE>
                         <INTEGER-VALUE>
                           <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
-                          <VALUE>64</VALUE>
+                          <VALUE>72</VALUE>
                         </INTEGER-VALUE>
                         <ENUMERATION-VALUE>
                           <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
@@ -1134,7 +1134,7 @@
                         </ENUMERATION-VALUE>
                       </PARAMETER-VALUES>
                     </CONTAINER>
-                    <CONTAINER UUID="e56e00ed-d3c7-400f-9e71-ea21891d9f84">
+                    <CONTAINER UUID="58635cff-b40b-41d7-879a-ea79efc33e06">
                       <SHORT-NAME>PT1</SHORT-NAME>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
                       <PARAMETER-VALUES>
@@ -1168,7 +1168,7 @@
                         </STRING-VALUE>
                         <INTEGER-VALUE>
                           <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
-                          <VALUE>65</VALUE>
+                          <VALUE>73</VALUE>
                         </INTEGER-VALUE>
                         <ENUMERATION-VALUE>
                           <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
@@ -1180,13 +1180,13 @@
                         </ENUMERATION-VALUE>
                       </PARAMETER-VALUES>
                     </CONTAINER>
-                    <CONTAINER UUID="4afcc45e-04d6-4ecb-aea2-3e587f56fa97">
+                    <CONTAINER UUID="99e5f077-39d8-48c6-8085-6b0764b0c48d">
                       <SHORT-NAME>BEEPER</SHORT-NAME>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
                       <PARAMETER-VALUES>
                         <ENUMERATION-VALUE>
                           <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
-                          <VALUE></VALUE>
+                          <VALUE>PULL_NONE</VALUE>
                         </ENUMERATION-VALUE>
                         <ENUMERATION-VALUE>
                           <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
@@ -1214,7 +1214,7 @@
                         </STRING-VALUE>
                         <INTEGER-VALUE>
                           <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
-                          <VALUE>66</VALUE>
+                          <VALUE>74</VALUE>
                         </INTEGER-VALUE>
                         <ENUMERATION-VALUE>
                           <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
@@ -1231,6 +1231,100 @@
                 <CONTAINER UUID="95d6d2f4-2db4-4495-84ed-fa8032997f5b">
                   <SHORT-NAME>PWM</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer</DEFINITION-REF>
+                  <SUB-CONTAINERS>
+                    <CONTAINER UUID="89bf9c10-ceb3-4d60-961c-1051ed4b031d">
+                      <SHORT-NAME>PP0</SHORT-NAME>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_OUT</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/ArcReducedDrive</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <STRING-VALUE>
+                          <DEFINITION-REF DEST="STRING-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/ArcPortPinName</DEFINITION-REF>
+                          <VALUE>PP0</VALUE>
+                        </STRING-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>56</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE></VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                    <CONTAINER UUID="182cd6da-fc4c-4b21-8ad3-57e3e8c3568a">
+                      <SHORT-NAME>PP1</SHORT-NAME>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_OUT</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/ArcReducedDrive</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <STRING-VALUE>
+                          <DEFINITION-REF DEST="STRING-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/ArcPortPinName</DEFINITION-REF>
+                          <VALUE>PP1</VALUE>
+                        </STRING-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>57</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE></VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                  </SUB-CONTAINERS>
                 </CONTAINER>
                 <CONTAINER UUID="a1fa03c0-2470-4914-aabd-17c992c74a92">
                   <SHORT-NAME>SCI0</SHORT-NAME>
@@ -1807,23 +1901,33 @@
                 </STRING-VALUE>
               </PARAMETER-VALUES>
               <SUB-CONTAINERS>
-                <CONTAINER UUID="bc826432-79a4-4a8d-bf00-fe0ab11865f8">
+                <CONTAINER UUID="4851cc6e-1775-442d-aaa3-55b29fe287b9">
                   <SHORT-NAME>DI_PT0</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Dio/DioPort/DioChannel</DEFINITION-REF>
                   <PARAMETER-VALUES>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Dio/DioPort/DioChannel/DioChannelId</DEFINITION-REF>
-                      <VALUE>64</VALUE>
+                      <VALUE>72</VALUE>
                     </INTEGER-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
-                <CONTAINER UUID="77c0b8be-bcee-4908-8d60-f2ec88e1c396">
+                <CONTAINER UUID="40f94f56-0093-4894-b2ad-899a69ea8a2a">
                   <SHORT-NAME>DI_PT1</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Dio/DioPort/DioChannel</DEFINITION-REF>
                   <PARAMETER-VALUES>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Dio/DioPort/DioChannel/DioChannelId</DEFINITION-REF>
-                      <VALUE>65</VALUE>
+                      <VALUE>73</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="05f1f1f6-3a57-4b67-850a-e5e1857b09ca">
+                  <SHORT-NAME>DO_PT2</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Dio/DioPort/DioChannel</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Dio/DioPort/DioChannel/DioChannelId</DEFINITION-REF>
+                      <VALUE>74</VALUE>
                     </INTEGER-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
