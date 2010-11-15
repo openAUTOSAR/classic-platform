@@ -259,7 +259,6 @@ UINT32 Fls_H7F_FlashErase ( PSSD_CONFIG pSSDConfig,
         H7F_REG_WRITE (h7fRegBase + H7F_HBS, highEnabledBlocks);
     }
 
-EXIT:
     /* set MCR-ERS to start erase operation */
     H7FMCR_BIT_SET (MCRAddress, H7F_MCR_ERS);
 
@@ -272,6 +271,7 @@ EXIT:
     /* This is where the freescale driver ends */
     eraseInfo->state = ERASE_STATE_ERASING;
 
+EXIT:
   if (pSSDConfig->BDMEnable)
   {
       //asm ( "mr   r3,returnCode" );   /* save the return code to R3 */
@@ -588,6 +588,7 @@ UINT32 Fls_H7F_ProgramStatus ( PSSD_CONFIG pSSDConfig, Fls_ProgInfoType *pInfo )
       return H7F_BUSY;
     }
 
+EXIT_EHV:
   /* Clear MCR-PGM bit */
   H7FMCR_BIT_CLEAR (MCRAddress, H7F_MCR_PGM);
 
@@ -606,7 +607,6 @@ UINT32 Fls_H7F_ProgramStatus ( PSSD_CONFIG pSSDConfig, Fls_ProgInfoType *pInfo )
   // Clear our struct....
   memset( pInfo,0x0,sizeof(Fls_ProgInfoType) );
 
-EXIT_EHV:
   return returnCode;
 }
 
