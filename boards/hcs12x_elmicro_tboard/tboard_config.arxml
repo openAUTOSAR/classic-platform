@@ -2026,7 +2026,7 @@
                         </ENUMERATION-VALUE>
                         <ENUMERATION-VALUE>
                           <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcGroup/AdcGroupTriggSrc</DEFINITION-REF>
-                          <VALUE>ADC_TRIGG_SRC_HW</VALUE>
+                          <VALUE>ADC_TRIGG_SRC_SW</VALUE>
                         </ENUMERATION-VALUE>
                         <ENUMERATION-VALUE>
                           <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcGroup/AdcHwTrigSignal</DEFINITION-REF>
@@ -2082,11 +2082,11 @@
                 </BOOLEAN-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Adc/AdcGeneral/AdcEnableStartStopGroupApi</DEFINITION-REF>
-                  <VALUE>false</VALUE>
+                  <VALUE>true</VALUE>
                 </BOOLEAN-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Adc/AdcGeneral/AdcGrpNotifCapability</DEFINITION-REF>
-                  <VALUE>false</VALUE>
+                  <VALUE>true</VALUE>
                 </BOOLEAN-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Adc/AdcGeneral/AdcHwTriggerApi</DEFINITION-REF>
