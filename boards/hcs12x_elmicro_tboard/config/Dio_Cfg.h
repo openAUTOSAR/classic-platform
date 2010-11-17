@@ -17,9 +17,10 @@
 #error "Dio: Configuration file version differs from BSW version."
 #endif
 
-
 #ifndef DIO_CFG_H_
 #define DIO_CFG_H_
+
+#warning "This default file may only be used as an example!"
 
 #define DIO_VERSION_INFO_API    STD_OFF
 #define DIO_DEV_ERROR_DETECT    STD_OFF

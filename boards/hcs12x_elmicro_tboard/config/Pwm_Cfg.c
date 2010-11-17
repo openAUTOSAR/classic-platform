@@ -12,6 +12,7 @@
  *           on Wed Nov 17 09:10:16 CET 2010
  */
 
+#warning "This default file may only be used as an example!"
 
 #include "Pwm.h"
 

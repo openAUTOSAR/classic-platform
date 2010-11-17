@@ -17,10 +17,10 @@
 #error "Can: Configuration file version differs from BSW version."
 #endif
 
-	
-
 #ifndef CAN_CFG_H_
 #define CAN_CFG_H_
+
+#warning "This default file may only be used as an example!"
 
 // Number of controller configs
 #define CAN_ARC_CTRL_CONFIG_CNT		1

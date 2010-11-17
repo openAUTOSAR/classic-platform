@@ -17,9 +17,10 @@
 #error "Adc: Configuration file version differs from BSW version."
 #endif
 
-
 #ifndef ADC_CFG_H_
 #define ADC_CFG_H_
+
+#warning "This default file may only be used as an example!"
 
 #define ADC_DEINIT_API                    STD_OFF
 #define ADC_DEV_ERROR_DETECT              STD_ON

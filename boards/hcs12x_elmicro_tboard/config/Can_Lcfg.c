@@ -12,12 +12,11 @@
  *           on Mon Nov 08 20:30:03 CET 2010
  */
 
-	
+#warning "This default file may only be used as an example!"
 
 #include <stdlib.h>
 #include "Can.h"
 #include "CanIf_Cbk.h"
-
 
 Can_FilterMaskType Can_FilterMaskConfigData_CAN0_Mask_1 = {
 	{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},

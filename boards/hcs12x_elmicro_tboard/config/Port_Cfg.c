@@ -12,8 +12,7 @@
  *           on Mon Nov 08 20:30:02 CET 2010
  */
 
-	
-
+#warning "This default file may only be used as an example!"
 
 #include "Port.h"
 

@@ -12,8 +12,8 @@
  *           on Mon Nov 15 12:06:55 CET 2010
  */
 
+#warning "This default file may only be used as an example!"
 
-	
 #include "Dio.h"
 #include "Dio_Cfg.h"
 

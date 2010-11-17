@@ -12,13 +12,11 @@
  *           on Mon Nov 08 20:30:03 CET 2010
  */
 
-
+#warning "This default file may only be used as an example!"
 
 #include "Gpt.h"
 #include "Gpt_Cfg.h"
 #include <stdlib.h>
-
- 
 
 const Gpt_ConfigType GptConfigData[] =
 {

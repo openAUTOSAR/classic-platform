@@ -17,9 +17,10 @@
 #error "Port: Configuration file version differs from BSW version."
 #endif
 
-
 #ifndef PORT_CFG_H_
 #define PORT_CFG_H_
+
+#warning "This default file may only be used as an example!"
 
 #include "Std_Types.h"
 

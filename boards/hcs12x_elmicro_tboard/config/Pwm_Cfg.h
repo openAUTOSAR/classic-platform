@@ -17,10 +17,10 @@
 #error "Pwm: Configuration file version differs from BSW version."
 #endif
 
-	
-
 #ifndef PWM_CFG_H_
 #define PWM_CFG_H_
+
+#warning "This default file may only be used as an example!"
 
 #define PWM_DEV_ERROR_DETECT STD_ON
 #define PWM_STATICALLY_CONFIGURED STD_OFF
