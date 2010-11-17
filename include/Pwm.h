@@ -50,6 +50,12 @@
 #   define Pwm_ReportError(ErrorId)
 #endif
 
+#if PWM_DEV_ERROR_DETECT==STD_ON
+#       define Pwm_ReportError(ErrorId) Det_ReportError( MODULE_ID_PWM, 0, 0, ErrorId);
+#else
+#   define Pwm_ReportError(ErrorId)
+#endif
+
 /**************************************************************
  *  Type definitions
  **************************************************************/

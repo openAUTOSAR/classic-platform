@@ -2165,7 +2165,7 @@
                     </INTEGER-VALUE>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel/PwmDutycycleDefault</DEFINITION-REF>
-                      <VALUE>10</VALUE>
+                      <VALUE>4096</VALUE>
                     </INTEGER-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel/PwmIdleState</DEFINITION-REF>
@@ -2177,7 +2177,7 @@
                     </FUNCTION-NAME-VALUE>
                     <FLOAT-VALUE>
                       <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel/PwmPeriodDefault</DEFINITION-REF>
-                      <VALUE>0.0010</VALUE>
+                      <VALUE>188.0</VALUE>
                     </FLOAT-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel/PwmPolarity</DEFINITION-REF>
@@ -2207,7 +2207,7 @@
                     </INTEGER-VALUE>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel/PwmDutycycleDefault</DEFINITION-REF>
-                      <VALUE>10</VALUE>
+                      <VALUE>24576</VALUE>
                     </INTEGER-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel/PwmIdleState</DEFINITION-REF>
@@ -2219,7 +2219,7 @@
                     </FUNCTION-NAME-VALUE>
                     <FLOAT-VALUE>
                       <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel/PwmPeriodDefault</DEFINITION-REF>
-                      <VALUE>0.0010</VALUE>
+                      <VALUE>188.0</VALUE>
                     </FLOAT-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel/PwmPolarity</DEFINITION-REF>
@@ -2289,7 +2289,7 @@
                 </BOOLEAN-VALUE>
                 <ENUMERATION-VALUE>
                   <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Pwm/PwmGeneral/ArcPwmChannelBusPrescalerA</DEFINITION-REF>
-                  <VALUE>PRESCALER_2</VALUE>
+                  <VALUE>PRESCALER_128</VALUE>
                 </ENUMERATION-VALUE>
                 <ENUMERATION-VALUE>
                   <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Pwm/PwmGeneral/ArcPwmChannelBusPrescalerB</DEFINITION-REF>
