@@ -588,6 +588,8 @@ UINT32 Fls_H7F_ProgramStatus ( PSSD_CONFIG pSSDConfig, Fls_ProgInfoType *pInfo )
       return H7F_BUSY;
     }
 
+EXIT_EHV:
+
   /* Clear MCR-PGM bit */
   H7FMCR_BIT_CLEAR (MCRAddress, H7F_MCR_PGM);
 
@@ -606,7 +608,6 @@ UINT32 Fls_H7F_ProgramStatus ( PSSD_CONFIG pSSDConfig, Fls_ProgInfoType *pInfo )
   // Clear our struct....
   memset( pInfo,0x0,sizeof(Fls_ProgInfoType) );
 
-EXIT_EHV:
   return returnCode;
 }
 
@@ -627,20 +628,25 @@ EXIT_EHV:
  */
 void Fls_H7F_SetLock ( Fls_EraseBlockType *blocks, UINT8 logic )
 {
-    vuint32_t *reg;
+    vuint32_t *reg, *sreg;
     struct FLASH_tag *flashHw = &FLASH;
 
     if( (blocks->lowEnabledBlocks != 0 ) ||
     		(blocks->midEnabledBlocks != 0 ) ||
     		(blocks->shadowBlocks != 0 ) )
     {
-      reg = &(flashHw->LMLR.R);
+      reg 	= &(flashHw->LMLR.R);
+      sreg	= &(flashHw->SLMLR.R);
 
       // Check if sector is locked
       if( !(*reg & 0x80000000 )) {
-        // Unlock the sector with password
-        *reg = FLASH_LMLR_PASSWORD;
-      }
+              // Unlock the sector with password
+              *reg = FLASH_LMLR_PASSWORD;
+            }
+      if( !(*sreg & 0x80000000 )) {
+              // Unlock the sector with password
+              *sreg = FLASH_SLMLR_PASSWORD;
+            }
 
       // set/clear them
       if( logic ) {
@@ -649,6 +655,15 @@ void Fls_H7F_SetLock ( Fls_EraseBlockType *blocks, UINT8 logic )
 								(blocks->shadowBlocks & H7F_LML_SLOCK);
       } else {
       	*reg &= ((~blocks->midEnabledBlocks<<16) & H7F_LML_MLOCK) |
+								((~blocks->lowEnabledBlocks) & H7F_LML_LLOCK) |
+								((~blocks->shadowBlocks) & H7F_LML_SLOCK) ;
+      }
+      if( logic ) {
+      	*sreg |= ((blocks->midEnabledBlocks<<16)& H7F_LML_MLOCK) +
+								(blocks->lowEnabledBlocks & H7F_LML_LLOCK) +
+								(blocks->shadowBlocks & H7F_LML_SLOCK);
+      } else {
+      	*sreg &= ((~blocks->midEnabledBlocks<<16) & H7F_LML_MLOCK) |
 								((~blocks->lowEnabledBlocks) & H7F_LML_LLOCK) |
 								((~blocks->shadowBlocks) & H7F_LML_SLOCK) ;
       }
