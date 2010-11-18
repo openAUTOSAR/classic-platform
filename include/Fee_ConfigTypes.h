@@ -45,7 +45,6 @@ typedef struct {
 	uint16	BlockSize;				/** @req FEE108 */
 	boolean	ImmediateData;			/** @req FEE109 */
 	uint32	NumberOfWriteCycles;	/** @req FEE110 */
-	uint8	PhysBlockBaseNumber;
 } Fee_BlockConfigType;				/** @req FEE040 */
 
 typedef struct {

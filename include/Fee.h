@@ -52,6 +52,8 @@
 // Other error codes reported by this module
 #define FEE_PARAM_OUT_OF_RANGE				0x40
 #define FEE_UNEXPECTED_STATE				0x41
+#define FEE_FLASH_CORRUPT					0xfa
+#define FEE_UNEXPECTED_STATUS				0xfb
 #define FEE_E_WRONG_CONFIG					0xfc
 #define FEE_E_UNEXPECTED_EXECUTION			0xfd
 #define FEE_E_NOT_SUPPORTED					0xfe
@@ -72,6 +74,8 @@
 #define FEE_JOB_ERROR_NOTIFICTION_ID			0x11
 #define FEE_MAIN_FUNCTION_ID					0x12
 
+#define FEE_STARTUP_ID							0x40
+#define FEE_GARBAGE_WRITE_HEADER_ID				0x41
 #define FEE_GLOBAL_ID							0xff
 
 #endif

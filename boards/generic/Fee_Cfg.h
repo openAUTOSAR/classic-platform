@@ -28,7 +28,7 @@
 #define FEE_POLLING_MODE				STD_OFF		// Activate/Deactivate polling mode
 
 #define FEE_INDEX							0
-#define FEE_VIRTUAL_PAGE_SIZE				4		// 0..65535
+#define FEE_VIRTUAL_PAGE_SIZE			   16		// 0..65535
 
 #define FEE_NUM_OF_BLOCKS					3		// Needs to be derived from Fee_Cfg.c
 
