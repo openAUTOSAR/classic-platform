@@ -730,8 +730,8 @@ Std_ReturnType Fls_Read (	Fls_AddressType SourceAddress,
 {
   FLS_VALIDATE_STATUS_UNINIT_W_RV(Fls_Global.status, FLS_READ_ID, E_NOT_OK);
   FLS_VALIDATE_STATUS_BUSY_W_RV(Fls_Global.status, FLS_READ_ID, E_NOT_OK);
-  FLS_VALIDATE_PARAM_ADDRESS_PAGE_W_RV(SourceAddress, FLS_READ_ID, E_NOT_OK);
-  FLS_VALIDATE_PARAM_LENGTH_PAGE_W_RV(SourceAddress, Length, FLS_READ_ID, E_NOT_OK);
+//  FLS_VALIDATE_PARAM_ADDRESS_PAGE_W_RV(SourceAddress, FLS_READ_ID, E_NOT_OK);
+//  FLS_VALIDATE_PARAM_LENGTH_PAGE_W_RV(SourceAddress, Length, FLS_READ_ID, E_NOT_OK);
   FLS_VALIDATE_PARAM_DATA_W_RV((void*)TargetAddressPtr, FLS_READ_ID, E_NOT_OK)
 
   // Always check if status is not busy
