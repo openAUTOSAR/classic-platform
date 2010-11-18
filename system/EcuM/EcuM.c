@@ -103,7 +103,6 @@ void EcuM_StartupTwo()
 	Rte_Start();
 #endif
 
-#if 1
 #if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
 	// Wait for the NVM job (NvmReadAll) to terminate
 	do {
@@ -114,14 +113,6 @@ void EcuM_StartupTwo()
 			// TODO: Generate error?
 		}
 	} while( (readAllResult == NVM_REQ_PENDING) && (tickTimerElapsed < internal_data.config->EcuMNvramReadAllTimeout) );
-#endif
-#else
-#if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
-	// Wait for the NVM job (NvmReadAll) to terminate
-	do {
-		NvM_GetErrorStatus(0, &readAllResult);	// Read the multiblock status
-	} while( (readAllResult == NVM_REQ_PENDING) && ((Os_SysTickGetElapsedValue(timer)) < internal_data.config->EcuMNvramReadAllTimeout) );
-#endif
 #endif
 
 	// Initialize drivers that need NVRAM data
