@@ -34,7 +34,8 @@
 
 // EcuM_UserType definitions
 typedef enum {
-	ECUM_USER_ENDMARK	// Must be the last in list!
+	ECUM_USER_SYSTEM,
+	ECUM_USER_ENDMARK	// Must be the last in list and less than 32!
 } EcuM_UserList;
 
 extern EcuM_ConfigType EcuMConfig;
