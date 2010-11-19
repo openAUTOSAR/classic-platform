@@ -2,6 +2,7 @@
 
 /* MPC55xx Reset Control Word(RCW) */
 rcw      : ORIGIN = 0x00000000, LENGTH = 0x8
+flash_calibration_area_0(R)	:	ORIGIN = 0x00004000, LENGTH = 48K
 flash(R) : ORIGIN = 0x00000008, LENGTH = 0x100000
 /* 5516S, 48K
  * 5517S,5516G,5516E, 64K RAM
