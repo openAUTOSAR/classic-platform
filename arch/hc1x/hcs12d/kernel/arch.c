@@ -29,8 +29,12 @@ void Os_ArchFirstCall( void )
 }
 
 void *Os_ArchGetStackPtr( void ) {
+  void* val;
 
-//	return (void *)__get_MSP();
+  asm("sts _.tmp");
+  asm volatile("movw _.tmp, %0":"=m" (val));
+
+  return val;
 }
 
 unsigned int Os_ArchGetScSize( void ) {
