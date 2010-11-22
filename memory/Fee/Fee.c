@@ -82,10 +82,26 @@
 #define PAGE_ALIGN(_size)	((((_size) + FEE_VIRTUAL_PAGE_SIZE - 1) / FEE_VIRTUAL_PAGE_SIZE) * FEE_VIRTUAL_PAGE_SIZE)
 
 /*
- * Bank offset list
+ * Bank properties list
  */
 #define NUM_OF_BANKS	2
-static const Fls_AddressType BankList[NUM_OF_BANKS] = {FEE_BANK1_OFFSET, FEE_BANK2_OFFSET};
+typedef struct {
+	Fls_AddressType		Start;
+	Fls_LengthType		End;
+} BankPropType;
+
+static const BankPropType BankProp[NUM_OF_BANKS] = {
+		{
+				.Start = FEE_BANK1_OFFSET,
+				.End = FEE_BANK1_OFFSET + FEE_BANK1_LENGTH
+		},
+		{
+				.Start = FEE_BANK2_OFFSET,
+				.End = FEE_BANK2_OFFSET + FEE_BANK2_LENGTH
+		},
+};
+
+
 
 /*
  * Macros and variables for flash bank administration
@@ -360,7 +376,7 @@ static void StartupStartJob(void)
 	if (Fls_GetStatus() == MEMIF_IDLE) {
 		CurrentJob.State = FEE_STARTUP_READ_BANK1_STATUS;
 		/* Read bank status of bank 1 */
-		if (Fls_Read(FEE_BANK1_OFFSET + FEE_BANK_LENGTH - BANK_CTRL_PAGE_SIZE, (uint8*)&AdminFls.BankStatus[0], sizeof(FlsBankStatusType)) == E_OK) {
+		if (Fls_Read(BankProp[0].End - BANK_CTRL_PAGE_SIZE, (uint8*)&AdminFls.BankStatus[0], sizeof(FlsBankStatusType)) == E_OK) {
 			SetFlsJobBusy();
 		} else {
 			AbortStartup(Fls_GetJobResult());
@@ -392,7 +408,7 @@ static void StartupReadBank2StatusRequested(void)
 	if (Fls_GetStatus() == MEMIF_IDLE) {
 		/* Read bank status of bank 2 */
 		CurrentJob.State = FEE_STARTUP_READ_BANK2_STATUS;
-		if (Fls_Read(FEE_BANK2_OFFSET + FEE_BANK_LENGTH - BANK_CTRL_PAGE_SIZE, (uint8*)&AdminFls.BankStatus[1], sizeof(FlsBankStatusType)) == E_OK) {
+		if (Fls_Read(BankProp[1].End - BANK_CTRL_PAGE_SIZE, (uint8*)&AdminFls.BankStatus[1], sizeof(FlsBankStatusType)) == E_OK) {
 			SetFlsJobBusy();
 		} else {
 			AbortStartup(Fls_GetJobResult());
@@ -432,7 +448,7 @@ static void StartupReadBank2Status(void)
 		if (jobResult != MEMIF_JOB_OK) {
 			AbortStartup(jobResult);
 		} else {
-			CurrentJob.Op.Startup.BlockAdminAddress = BankList[CurrentJob.Op.Startup.BankNumber] + FEE_BANK_LENGTH - BLOCK_CTRL_PAGE_SIZE - BANK_CTRL_PAGE_SIZE;
+			CurrentJob.Op.Startup.BlockAdminAddress = BankProp[CurrentJob.Op.Startup.BankNumber].End - BLOCK_CTRL_PAGE_SIZE - BANK_CTRL_PAGE_SIZE;
 			CurrentJob.State = FEE_STARTUP_READ_BLOCK_ADMIN_REQUESTED;
 		}
 	}
@@ -467,7 +483,7 @@ static void StartupReadBlockAdmin(void)
 				VALIDATE(CurrentJob.Op.Startup.NrOfBanks != 0, FEE_STARTUP_ID, FEE_FLASH_CORRUPT);
 				CurrentJob.Op.Startup.NrOfBanks--;
 				CurrentJob.Op.Startup.BankNumber = (CurrentJob.Op.Startup.BankNumber + 1) % 2;
-				CurrentJob.Op.Startup.BlockAdminAddress = BankList[CurrentJob.Op.Startup.BankNumber] + FEE_BANK_LENGTH - BLOCK_CTRL_PAGE_SIZE - BANK_CTRL_PAGE_SIZE;
+				CurrentJob.Op.Startup.BlockAdminAddress = BankProp[CurrentJob.Op.Startup.BankNumber].End - BLOCK_CTRL_PAGE_SIZE - BANK_CTRL_PAGE_SIZE;
 			} else { /* Block not empty */
 				if ((memcmp(RWBuffer.BlockCtrl.MagicPage.Byte, MagicMaster, BLOCK_MAGIC_LEN) == 0) &&
 						((RWBuffer.BlockCtrl.DataPage.Data.Status == BLOCK_STATUS_INUSE) || (RWBuffer.BlockCtrl.DataPage.Data.Status == BLOCK_STATUS_INVALIDATED))) {
@@ -499,8 +515,8 @@ static void StartupReadBlockAdmin(void)
 				/* If current bank is marked as old we need to switch to a new bank */
 				if (AdminFls.BankStatus[AdminFls.BankNumber] == BANK_STATUS_OLD) {
 					AdminFls.BankNumber = (AdminFls.BankNumber + 1) % 2;
-					AdminFls.NewBlockAdminAddress = BankList[AdminFls.BankNumber] + FEE_BANK_LENGTH - BLOCK_CTRL_PAGE_SIZE - BANK_CTRL_PAGE_SIZE;
-					AdminFls.NewBlockDataAddress = BankList[AdminFls.BankNumber];
+					AdminFls.NewBlockAdminAddress = BankProp[AdminFls.BankNumber].End - BLOCK_CTRL_PAGE_SIZE - BANK_CTRL_PAGE_SIZE;
+					AdminFls.NewBlockDataAddress = BankProp[AdminFls.BankNumber].Start;
 				}
 				/* We are done! */
 				FinnishStartup();
@@ -565,7 +581,7 @@ static void BankHeaderOldWrite(uint8 bank)
 	/* Mark the bank as old */
 	memset(RWBuffer.BankCtrl.Data, 0xff, BLOCK_DATA_PAGE_SIZE);
 	RWBuffer.BankCtrl.BankStatus = BANK_STATUS_OLD;
-	if (Fls_Write(BankList[bank] + FEE_BANK_LENGTH - BANK_CTRL_PAGE_SIZE, RWBuffer.BankCtrl.Data, BANK_CTRL_PAGE_SIZE) == E_OK) {
+	if (Fls_Write(BankProp[bank].End - BANK_CTRL_PAGE_SIZE, RWBuffer.BankCtrl.Data, BANK_CTRL_PAGE_SIZE) == E_OK) {
 		SetFlsJobBusy();
 	} else {
 		AbortJob(Fls_GetJobResult());
@@ -629,8 +645,8 @@ static void WriteMarkBankOldState(void)
 
 			/* Change of bank */
 			AdminFls.BankNumber ^= 0x1;
-			AdminFls.NewBlockDataAddress = BankList[AdminFls.BankNumber] + 0;
-			AdminFls.NewBlockAdminAddress = BankList[AdminFls.BankNumber] + FEE_BANK_LENGTH - BLOCK_CTRL_PAGE_SIZE - BANK_CTRL_PAGE_SIZE;
+			AdminFls.NewBlockDataAddress = BankProp[AdminFls.BankNumber].Start;
+			AdminFls.NewBlockAdminAddress = BankProp[AdminFls.BankNumber].End - BLOCK_CTRL_PAGE_SIZE - BANK_CTRL_PAGE_SIZE;
 
 			CurrentJob.Op.Write.WriteDataAddress = AdminFls.NewBlockDataAddress;
 			CurrentJob.Op.Write.WriteAdminAddress = AdminFls.NewBlockAdminAddress;
@@ -779,7 +795,7 @@ static void GarbageCollectStartJob(void)
 		for (blockIndex = 0; (blockIndex < FEE_NUM_OF_BLOCKS) && !found; blockIndex++) {
 			for (set = 0; (set < FEE_MAX_NUM_SETS) && !found; set++) {
 				if (AdminFls.BlockDescrTbl[blockIndex][set].Status != BLOCK_STATUS_EMPTY) {
-					if ((AdminFls.BlockDescrTbl[blockIndex][set].BlockAdminAddress >= BankList[sourceBank]) && (AdminFls.BlockDescrTbl[blockIndex][set].BlockAdminAddress < (BankList[sourceBank]+ FEE_BANK_LENGTH))) {
+					if ((AdminFls.BlockDescrTbl[blockIndex][set].BlockAdminAddress >= BankProp[sourceBank].Start) && (AdminFls.BlockDescrTbl[blockIndex][set].BlockAdminAddress < (BankProp[sourceBank].End))) {
 						CurrentJob.AdminFlsBlockPtr = &AdminFls.BlockDescrTbl[blockIndex][set];
 						CurrentJob.BlockConfigPtr = &Fee_Config.BlockConfig[blockIndex];
 						CurrentJob.BlockNumber = BLOCK_INDEX_AND_SET_TO_BLOCKNR(blockIndex, set);
@@ -802,7 +818,7 @@ static void GarbageCollectStartJob(void)
 			CurrentJob.State = FEE_GARBAGE_COLLECT_HEADER_WRITE;
 			BlockHeaderDataWrite();
 		} else {
-			if (Fls_Erase(BankList[sourceBank], FEE_BANK_LENGTH) == E_OK) {
+			if (Fls_Erase(BankProp[sourceBank].Start, BankProp[sourceBank].End - BankProp[sourceBank].Start) == E_OK) {
 				SetFlsJobBusy();
 			} else {
 				AbortJob(Fls_GetJobResult());
@@ -1026,8 +1042,8 @@ static void InvalidateMarkBankOld(void)
 
 			// Change of bank
 			AdminFls.BankNumber ^= 0x1;
-			AdminFls.NewBlockDataAddress = BankList[AdminFls.BankNumber] + 0;
-			AdminFls.NewBlockAdminAddress = BankList[AdminFls.BankNumber] + FEE_BANK_LENGTH - BLOCK_CTRL_PAGE_SIZE - BANK_CTRL_PAGE_SIZE;
+			AdminFls.NewBlockDataAddress = BankProp[AdminFls.BankNumber].Start;
+			AdminFls.NewBlockAdminAddress = BankProp[AdminFls.BankNumber].End - BLOCK_CTRL_PAGE_SIZE - BANK_CTRL_PAGE_SIZE;
 
 			CurrentJob.Op.Invalidate.WriteDataAddress = AdminFls.NewBlockDataAddress;
 			CurrentJob.Op.Invalidate.WriteAdminAddress = AdminFls.NewBlockAdminAddress;
@@ -1116,8 +1132,8 @@ void Fee_Init(void)
 #endif
 
 	AdminFls.BankNumber = 0;
-	AdminFls.NewBlockDataAddress = BankList[AdminFls.BankNumber] + 0;
-	AdminFls.NewBlockAdminAddress = BankList[AdminFls.BankNumber] + FEE_BANK_LENGTH - BLOCK_CTRL_PAGE_SIZE - BANK_CTRL_PAGE_SIZE;
+	AdminFls.NewBlockDataAddress = BankProp[AdminFls.BankNumber].Start;
+	AdminFls.NewBlockAdminAddress = BankProp[AdminFls.BankNumber].End - BLOCK_CTRL_PAGE_SIZE - BANK_CTRL_PAGE_SIZE;
 
 	for (i = 0; i < NUM_OF_BANKS; i++) {
 		AdminFls.BankStatus[i] = BANK_STATUS_NEW;
