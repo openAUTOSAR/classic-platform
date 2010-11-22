@@ -23,8 +23,6 @@
 /*
  * Development Error Tracer driver
  *
- * Specification: Autosar v2.0.1, Final
- *
  */
 
 #ifndef _DET_H_
@@ -33,10 +31,12 @@
 #define DET_MODULE_ID            MODULE_ID_DET
 #define DET_VENDOR_ID            1
 
+/* Implementation version */
 #define DET_SW_MAJOR_VERSION     1
 #define DET_SW_MINOR_VERSION     0
 #define DET_SW_PATCH_VERSION     0
 
+/* AUTOSAR specification document version */
 #define DET_AR_MAJOR_VERSION     2
 #define DET_AR_MINOR_VERSION     2
 #define DET_AR_PATCH_VERSION     2
@@ -61,7 +61,7 @@ typedef struct
 } Det_EntryType;
 
 #if ( DET_ENABLE_CALLBACKS == STD_ON )
-typedef void *(*detCbk_t)( uint16 ModuleId, uint8 InstanceId , uint8 ApiId, uint8 ErrorId);
+typedef void (*detCbk_t)( uint16 ModuleId, uint8 InstanceId , uint8 ApiId, uint8 ErrorId);
 
 /*
  * Add a callback function to the array of callback. After a call to Det_ReportError the callback

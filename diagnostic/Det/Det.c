@@ -67,15 +67,20 @@ void Det_RemoveCbk(uint8 detCbkIndex)
 {
     // Validate the index
     if (detCbkIndex >= DET_NUMBER_OF_CALLBACKS)
+    {
         Det_ReportError(DET_MODULE_ID, 0, DET_CALLBACK_API, DET_E_INDEX_OUT_OF_RANGE);
-
-    detCbk_List[detCbkIndex]=NULL;
+    }
+    else
+    {
+    	detCbk_List[detCbkIndex]=NULL;
+    }
 }
 #endif
 
 
 void Det_Init(void)
 {
+
     // Implements DET000
 #if ( DET_ENABLE_CALLBACKS == STD_ON )
     for (uint32 i=0; i<DET_NUMBER_OF_CALLBACKS; i++)
@@ -113,6 +118,7 @@ void Det_ReportError(uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 Error
 #if ( DET_ENABLE_CALLBACKS == STD_ON )
         long old1;
         Irq_Save(old1);
+
         for (uint32 i=0; i<DET_NUMBER_OF_CALLBACKS; i++)
         {
             if (NULL!=detCbk_List[i])
@@ -122,6 +128,7 @@ void Det_ReportError(uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 Error
         }
         Irq_Restore(old1);
 #endif
+
 
 #if ( DET_USE_RAMLOG == STD_ON )
         long old2;
