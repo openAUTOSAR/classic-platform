@@ -306,7 +306,7 @@ static void SetFlsJobBusy()
 
 static boolean CheckFlsJobFinnished(void)
 {
-	return !(FlsJobReady);
+	return (FlsJobReady);
 }
 
 #endif

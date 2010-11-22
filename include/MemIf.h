@@ -22,9 +22,6 @@
 
 #ifndef MEMIF_H_
 #define MEMIF_H_
-#include "Std_Types.h"
-#include "MemIf_Cfg.h"
-
 #define MEMIF_MODULE_ID			MODULE_ID_MEMIF
 #define MEMIF_VENDOR_ID			1
 
@@ -34,6 +31,9 @@
 #define MEMIF_AR_MAJOR_VERSION	3
 #define MEMIF_AR_MINOR_VERSION	0
 #define MEMIF_AR_PATCH_VERSION	1
+
+#include "Std_Types.h"
+#include "MemIf_Cfg.h"
 
 #if (MEMIF_VERSION_INFO_API == STD_ON)
 #define MemIf_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi, MEMIF)

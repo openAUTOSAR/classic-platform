@@ -23,10 +23,6 @@
 #ifndef FEE_H_
 #define FEE_H_
 
-#include "Std_Types.h"
-#include "Fee_Cfg.h"
-#include "Fls.h"
-
 
 #define FEE_MODULE_ID			MODULE_ID_FEE
 #define FEE_VENDOR_ID			1
@@ -37,6 +33,10 @@
 #define FEE_AR_MAJOR_VERSION	3
 #define FEE_AR_MINOR_VERSION	0
 #define FEE_AR_PATCH_VERSION	1
+
+#include "Std_Types.h"
+#include "Fee_Cfg.h"
+#include "Fls.h"
 
 #if (FEE_DEV_ERROR_DETECT == STD_ON)
 // Error codes reported by this module defined by AUTOSAR

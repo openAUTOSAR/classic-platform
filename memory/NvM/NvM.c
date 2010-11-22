@@ -146,36 +146,34 @@ typedef struct {
 static AdminMultiReqType AdminMultiReq;
 
 
-#if (NVM_POLLING_MODE == STD_ON)
-static void SetFlsJobBusy()
-{
-	/* Nothing needed here */
-}
-
-static boolean CheckFlsJobFinnished(void)
-{
-	MemIf_JobResultType jobResult;
-
-	jobResult = MemIf_GetJobResult();
-
-	if (jobResult == MEMIF_JOB_OK) {
-		MemIfJobAdmin.JobFinnished = TRUE;
-		MemIfJobAdmin.JobStatus = E_OK;
-		MemIfJobAdmin.JobResult = jobResult;
-	} else if (jobResult != MEMIF_JOB_PENDING) {
-		MemIfJobAdmin.JobFinnished = TRUE;
-		MemIfJobAdmin.JobStatus = E_NOT_OK;
-		MemIfJobAdmin.JobResult = jobResult;
-	}
-
-	return MemIfJobAdmin.JobFinnished;
-}
-#else
 static void SetFlsJobBusy()
 {
 	MemIfJobAdmin.JobFinnished = FALSE;
 }
 
+
+#if (NVM_POLLING_MODE == STD_ON)
+static boolean CheckFlsJobFinnished(void)
+{
+	MemIf_JobResultType jobResult;
+
+	if (!MemIfJobAdmin.JobFinnished) {
+		jobResult = MemIf_GetJobResult();
+
+		if (jobResult == MEMIF_JOB_OK) {
+			MemIfJobAdmin.JobFinnished = TRUE;
+			MemIfJobAdmin.JobStatus = E_OK;
+			MemIfJobAdmin.JobResult = jobResult;
+		} else if (jobResult != MEMIF_JOB_PENDING) {
+			MemIfJobAdmin.JobFinnished = TRUE;
+			MemIfJobAdmin.JobStatus = E_NOT_OK;
+			MemIfJobAdmin.JobResult = jobResult;
+		}
+	}
+
+	return MemIfJobAdmin.JobFinnished;
+}
+#else
 static boolean CheckFlsJobFinnished(void)
 {
 	return MemIfJobAdmin.JobFinnished;
