@@ -681,6 +681,7 @@ void Fls_MainFunction( void )
       Fls_Global.jobResultType = MEMIF_JOB_OK;
       Fls_Global.status = MEMIF_IDLE;
       Fls_Global.jobType = FLS_JOB_NONE;
+      FEE_JOB_END_NOTIFICATION();
       break;
     case FLS_JOB_WRITE:
     {
