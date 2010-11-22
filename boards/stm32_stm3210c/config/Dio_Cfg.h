@@ -131,7 +131,7 @@ typedef enum
 	 DIO_CHANNEL_F14,
 	 DIO_CHANNEL_F15,
 
-} Dio_ChannelType;
+} Dio_Hw_ChannelType;
 //@}
 
 /** HW specific DIO port definitions. */
@@ -144,22 +144,7 @@ typedef enum {
 	DIO_PORT_D,
 	DIO_PORT_E,
 	DIO_PORT_F,
-} Dio_PortType;
-
-/** @req DIO021 */
-/** @req DIO022 */
-typedef struct
-{
-  Dio_PortType port;
-  uint16 offset;
-  uint16 mask;
-} Dio_ChannelGroupType;
-
-/** @req DIO023 */
-typedef uint16 Dio_LevelType;
-
-/** @req DIO024 */
-typedef uint16 Dio_PortLevelType;
+} Dio_Hw_PortType;
 
 #define LED_CHANNEL1 (DIO_CHANNEL_D3)
 #define LED_CHANNEL2 (DIO_CHANNEL_D4)

@@ -11,6 +11,7 @@
 #include "stack.h"
 
 .extern os_sys
+.extern TailChaining
 
 	.syntax unified
 	.cpu cortex-m3
@@ -21,6 +22,10 @@
 
  	.global Irq_Handler
     .type	Irq_Handler, %function
+ 	.global SVC_Handler
+    .type	SVC_Handler, %function
+ 	.global PendSV_Handler
+    .type	PendSV_Handler, %function
 
 #define IRQ_ENABLE() 		cpsie 	i
 #define IRQ_DISABLE()		cpsid 	i
@@ -29,22 +34,38 @@
 // lr
 #define REG_SAVE r4-r8,r10,r11
 
+SVC_Handler: 
+    add     sp,sp,#(8*4)    /* remove one interrupt frame from the stack */
+    bx      lr              /* return to the preempted task */
 
-Irq_Handler:
+PendSV_Handler:
+    IRQ_DISABLE()
+    push    {REG_SAVE,lr}
+    sub.w   sp,sp,#C_SIZE
+    mov.w   r4,#LC_PATTERN
+    str     r4,[sp,#C_CONTEXT_OFFS]    
+    mov 	r2,sp			// stack as first arg
+
+	mov     r1,#0x01000000  // make up a task xPSR that has only the T bit set 
+	ldr     r0,=TailChaining   // load the address of scheduler wrapper (new PC) 
+	push    {r0-r1}         // push xPSR,PC 
+	sub     sp,sp,#(5*4)    // don't care for lr,r12,r3,r2,r1
+    push    {r2}            // stack as first arg
+ 	bx      lr              // interrupt return to the scheduler wrapper
+ 
+Irq_Handler:        
     push    {REG_SAVE,lr}
     sub.w   sp,sp,#C_SIZE
     mov.w   r4,#LC_PATTERN
     str     r4,[sp,#C_CONTEXT_OFFS]    
     mov 	r0,sp			// stack as first arg
-    
-// When at interrupt nest count = 0, load interrupt stack    
+
+    // When at interrupt nest count = 0, load interrupt stack    
 	ldr      r4,=os_sys
 	ldr      r5,[r4,#SYS_INT_NEST_CNT]
 	cmp      r5, #0
-	bgt      arggg
-    
-	ldr      sp,[r4,#SYS_INT_STACK]   
-      
+	bgt      arggg  
+	ldr      sp,[r4,#SYS_INT_STACK]         
 arggg:  
     bl      Irq_Entry
     mov     sp, r0			// pop from returned stack
@@ -52,10 +73,7 @@ arggg:
 	/* Do a normal exception return */
     add.w   sp,sp,#C_SIZE
     pop     {REG_SAVE,lr}
-    bx 		lr
-
-//    b 		os_lc_restore
-	
+    bx 		lr	
 	
 /**
  * Fake an interrupt stack to be able to return to thread mode.
@@ -167,7 +185,6 @@ os_stack_problem:
 	 */
 os_sc_restore:
     add.w   sp,sp,#C_SIZE
-
     pop     {REG_SAVE,lr}
     bx      lr
 
@@ -186,38 +203,9 @@ os_lc_restore:
     add.w   sp,sp,#C_SIZE
     /* Pop function stack (LR will be 0xffff_fff9 here, just ignore */
     pop     {REG_SAVE,lr}
-    
-    /* If we were in handler mode a "bx lr" would pop back all the registers
-     * that were automatically pushed by the CPU. Now we have to do this 
-     * manually instead. 
-     * The problem here is PSR since its not a register that we can pop
-     * back so we have to do it manually, use r0 as scratch */
-    
-    /* Grab stack xPSR and move to psr  */
-    /* TODO: Does this enable interrupts?? */
-    ldr	 r0,[sp,#28]
-    msr	 apsr,r0
-    
-    /* Update bit[0] of PC.
-     *
-     * From "3.3.1 STM32F10xxx Cortex-M3 programming manual"
-     * Bit[0] of any address written to the PC with a BX, BLX, LDM, LDR, or POP instruction must
-     * be 1 for correct execution, because this bit indicates the required instruction set, and the
-     * Cortex-M3 processor only supports thumb instructions. */
-    ldr r0,[sp,#24]
-    orr r0,r0,#1
-    str r0,[sp,#24]
-    
-    /* Pop part of the exception stack */
-    pop {r0-r3,r12,lr}
-    
-    add.w	sp,sp,#(2*4)	/* Adjust for xPSR and PC */
-   	/* We do return directly to the preempted task here, so enable interrupts */
-    cpsie	i    			/* Enable interrupts */
+    IRQ_ENABLE()       /* Enable interrupts to allow svc */
+    svc 0              /* cause exception to return to the preempted task */
 
-    /* Jump to PC from PC on stack (the branch value on the stack must be + 1 to
-     * stay in thumb mode) */
-    ldr		pc,[sp,#-8]
 
     
 

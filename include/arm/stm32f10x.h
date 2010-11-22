@@ -120,7 +120,9 @@
  * @brief Configuration of the Cortex-M3 Processor and Core Peripherals 
  */
 #define __MPU_PRESENT             0 /*!< STM32 does not provide an MPU */
-#define __NVIC_PRIO_BITS          4 /*!< STM32 uses 4 Bits for the Priority Levels    */
+
+/* NOTE We use 7 bits preemption since 8 bits premtion isn't configurable */
+#define __NVIC_PRIO_BITS          7 /*!< STM32 uses 7 Bits for the Priority Levels    */
 #define __Vendor_SysTickConfig    0 /*!< Set to 1 if different SysTick Config is used */
 
 /**

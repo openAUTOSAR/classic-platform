@@ -280,6 +280,11 @@ void os_dispatch(void);
 
 void OsTick( void );
 
+#if defined(CFG_ARM_CM3)
+void Os_Isr_cm3( void *isr_p );
+void TailChaining(void *stack);
+#endif
+
 void *Os_Isr( void *stack, void *pcb_p );
 void Os_Dispatch( uint32_t op );
 

@@ -31,6 +31,7 @@ SECTIONS
 
     .text :
 	{
+        . = ALIGN(4);
     	*(.text .text.* );
     	*(.glue_7)		/* TODO */
     	*(.glue_7t)     /* TODO */
@@ -41,6 +42,7 @@ SECTIONS
     	SORT(*)(.test_etask);
     	
     	/* ST/ARM special variable to initialize .data */
+	    . = ALIGN(4);
     	_etext = .;
 	} > flash
 
@@ -61,20 +63,27 @@ SECTIONS
 
 	/* Read-only data section. */
 	.rodata :	{ 
+	    . = ALIGN(4);
 		*(.rodata .rodata.* .gnu.linkonce.r.*)
+	    . = ALIGN(4);
 		_sidata = .;
 	} > flash
 
-	.data :	AT(ALIGN(LOADADDR(.rodata)+SIZEOF(.rodata),4)) {
+	.data :	AT ( _sidata )
+	{
+	    . = ALIGN(4);
 		_sdata = .; 
 		*(.data .data.* .gnu.linkonce.d.* .gnu.linkonce.r.* .eh_frame)
+	    . = ALIGN(4);
 		_edata = .;		
 	} > ram
 
 	.t32_outport ALIGN(0x10): { *(.t32_outport); } > ram
 	.bss : {
+	    . = ALIGN(4);
 		_sbss = ., 
 		*(.bss .bss.* COMMON .gnu.linkonce.b.*);
+	    . = ALIGN(4);
 		_ebss = .; 
 	} 	> ram
 	
