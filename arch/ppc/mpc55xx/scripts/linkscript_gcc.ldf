@@ -10,17 +10,22 @@ OUTPUT_FORMAT("elf32-powerpc", "elf32-powerpc", "elf32-powerpc")
 OUTPUT_ARCH(powerpc)
 ENTRY(_start)
 
-
-
 MEMORY
 {
 #include "memory.ldf"
 }
-
 SECTIONS
 {
 	.rcw : { *(.rcw) }> rcw
-
+#if defined(USE_FEE)
+#include "Fee_Memory_Cfg.h"
+	.fee_bank1 FEE_BANK1_OFFSET : {
+		. = . + FEE_BANK_LENGTH;
+	}
+	.fee_bank2 FEE_BANK2_OFFSET : {
+		. = . + FEE_BANK_LENGTH;
+	}
+#endif
     .text :
 	{
     	*(.text .text.* .init .fini* .eini* .gnu.linkonce* .gnu.warning);
