@@ -22,7 +22,7 @@
 void CortexR4OsTick() {
 	/** Clear all pending interrupts
 	 *  otherwise this will hit again
-	 *  as soon as interrupts are enabled. */
+	 *  as soon as interrupts are re-enabled. */
 	rtiREG1->INTFLAG = 0x1;
 
 	// Call regular OsTick.
@@ -35,7 +35,7 @@ void CortexR4OsTick() {
 void Os_SysTickInit( void ) {
 	TaskType tid;
 	tid = Os_Arc_CreateIsr(CortexR4OsTick,6,"OsTick");
-	Irq_AttachIsr2(tid,NULL, 2);
+	Irq_AttachIsr2(tid,NULL, RTI_COMPARE_0);
 }
 
 

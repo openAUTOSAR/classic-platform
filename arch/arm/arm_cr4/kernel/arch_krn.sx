@@ -13,10 +13,8 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
 #define _ASSEMBLER_
 #include "kernel_offset.h"
-//#include "arch_offset.h"
 #include "stack.h"
 
 .extern os_sys
@@ -103,9 +101,6 @@ Svc_Handler:
     sub.w   sp,sp,#C_SIZE
     mov.w   r4,#LC_PATTERN
     str     r4,[sp,#C_CONTEXT_OFFS]
-    
-    // Preserve r0 in r1 for svc calls
-    mov     r1, r0
     
     // Put stack as first arg to Irq_Entry    
     mov 	r0,sp			

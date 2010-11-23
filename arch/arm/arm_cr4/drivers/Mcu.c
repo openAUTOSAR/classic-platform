@@ -192,14 +192,6 @@ static uint32 Mcu_CheckCpu( void ) {
 	return 0;
 }
 
-static uint32_t GetPllValueFromMult(uint8_t pll)
-{
-	return (((uint32_t)pll - 2) << 18);
-}
-static uint32_t GetPll2ValueFromMult(uint8_t pll)
-{
-	return (((uint32_t)pll - 2) << 8);
-}
 
 /**
   * Set bus clocks. SysClk,AHBClk,APB1Clk,APB2Clk
@@ -403,8 +395,8 @@ Mcu_PllStatusType Mcu_GetPllStatus(void) {
  * @return
  */
 Mcu_ResetType Mcu_GetResetReason(void) {
-	Mcu_ResetType rv;
-
+	// TODO Not supported
+	Mcu_ResetType rv = MCU_RESET_UNDEFINED;
 	return rv;
 }
 
