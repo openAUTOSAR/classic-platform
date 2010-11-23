@@ -152,7 +152,7 @@ inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
 # Preprocess linker files..
 %.ldp: %.ldf
 	@echo "  >> CPP $<"
-	$(Q)$(CPP) -E -P -x assembler-with-cpp -o $@ $(addprefix -I ,$(inc-y)) $<
+	$(Q)$(CPP) -E -P -x assembler-with-cpp -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
 #	@cat $@ 
 	
