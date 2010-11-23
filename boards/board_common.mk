@@ -1,8 +1,22 @@
 obj-$(CFG_PPC) += crt0.o
 obj-$(CFG_HCS12D) += crt0.o
-vpath-$(CFG_ARM_CM3) += $(ARCH_PATH-y)kernel
+vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
+vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32F10x_StdPeriph_Driver/src
+vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32_ETH_Driver/src
+inc-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32F10x_StdPeriph_Driver/inc
+inc-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32_ETH_Driver/inc
 obj-$(CFG_ARM_CM3) += core_cm3.o
 obj-$(CFG_ARM_CM3) += startup_stm32f10x.o
+#stm32 lib files needed by drivers
+obj-$(CFG_ARM_CM3) += stm32f10x_rcc.o
+obj-$(CFG_ARM_CM3)-$(USE_CAN) += stm32f10x_can.o
+obj-$(CFG_ARM_CM3)-$(USE_DIO) += stm32f10x_gpio.o
+obj-$(CFG_ARM_CM3)-$(USE_ADC) += stm32f10x_adc.o
+obj-$(CFG_ARM_CM3)-$(USE_ADC) += stm32f10x_dma.o
+obj-$(CFG_ARM_CM3)-$(USE_FLS) += stm32f10x_flash.o
+obj-$(CFG_ARM_CM3)-$(USE_PWM) += stm32f10x_tim.o
+obj-$(CFG_ARM_CM3)-$(USE_LWIP) += stm32_eth.o
+
 
 
 # OS object files. 
