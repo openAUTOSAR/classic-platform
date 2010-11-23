@@ -20,10 +20,10 @@ SECTIONS
 #if defined(USE_FEE)
 #include "Fee_Memory_Cfg.h"
 	.fee_bank1 FEE_BANK1_OFFSET : {
-		. = . + FEE_BANK_LENGTH;
+		. = . + FEE_BANK1_LENGTH;
 	}
 	.fee_bank2 FEE_BANK2_OFFSET : {
-		. = . + FEE_BANK_LENGTH;
+		. = . + FEE_BANK2_LENGTH;
 	}
 #endif
     .text :
