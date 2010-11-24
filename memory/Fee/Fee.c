@@ -579,7 +579,7 @@ static void Reading(void)
 static void BankHeaderOldWrite(uint8 bank)
 {
 	/* Mark the bank as old */
-	memset(RWBuffer.BankCtrl.Data, 0xff, BLOCK_DATA_PAGE_SIZE);
+	memset(RWBuffer.BankCtrl.Data, 0xff, BANK_CTRL_PAGE_SIZE);
 	RWBuffer.BankCtrl.BankStatus = BANK_STATUS_OLD;
 	if (Fls_Write(BankProp[bank].End - BANK_CTRL_PAGE_SIZE, RWBuffer.BankCtrl.Data, BANK_CTRL_PAGE_SIZE) == E_OK) {
 		SetFlsJobBusy();
@@ -843,7 +843,7 @@ static void GarbageCollectWriteHeader(void)
 				CurrentJob.State = FEE_GARBAGE_COLLECT_DATA_READ_REQUESTED;
 			} else {
 				/* Yes, we are finished */
-				VALIDATE_NO_RV(CurrentJob.AdminFlsBlockPtr->Status == BLOCK_STATUS_EMPTY, FEE_GARBAGE_WRITE_HEADER_ID, FEE_UNEXPECTED_STATUS);
+				VALIDATE_NO_RV(CurrentJob.AdminFlsBlockPtr->Status == BLOCK_STATUS_INVALIDATED, FEE_GARBAGE_WRITE_HEADER_ID, FEE_UNEXPECTED_STATUS);
 				CurrentJob.State = FEE_GARBAGE_COLLECT_MAGIC_WRITE_REQUESTED;
 			}
 		} else {
@@ -993,11 +993,11 @@ static void BlockHeaderInvalidWrite(void)
 	memset(RWBuffer.Byte, 0xff, BLOCK_CTRL_PAGE_SIZE);
 	RWBuffer.BlockCtrl.DataPage.Data.Status = BLOCK_STATUS_INVALIDATED;
 	RWBuffer.BlockCtrl.DataPage.Data.BlockNo = CurrentJob.BlockNumber;
-	RWBuffer.BlockCtrl.DataPage.Data.BlockDataAddress = 0;
+	RWBuffer.BlockCtrl.DataPage.Data.BlockDataAddress = AdminFls.NewBlockDataAddress;
 	RWBuffer.BlockCtrl.DataPage.Data.BlockDataLength = 0;
 	memcpy(RWBuffer.BlockCtrl.MagicPage.Byte, MagicMaster, BLOCK_MAGIC_LEN);
 
-	if (Fls_Write(CurrentJob.Op.Invalidate.WriteAdminAddress + BLOCK_CTRL_DATA_POS_OFFSET, RWBuffer.Byte, BLOCK_DATA_PAGE_SIZE) == E_OK) {
+	if (Fls_Write(CurrentJob.Op.Invalidate.WriteAdminAddress + BLOCK_CTRL_DATA_POS_OFFSET, RWBuffer.Byte, BLOCK_CTRL_PAGE_SIZE) == E_OK) {
 		SetFlsJobBusy();
 		AdminFls.NewBlockDataAddress += CurrentJob.Length;
 		AdminFls.NewBlockAdminAddress -= BLOCK_CTRL_PAGE_SIZE;
@@ -1049,7 +1049,6 @@ static void InvalidateMarkBankOld(void)
 			CurrentJob.Op.Invalidate.WriteAdminAddress = AdminFls.NewBlockAdminAddress;
 
 			CurrentJob.State = FEE_WRITE_INVALIDATE_HEADER_REQUESTED;
-			BlockHeaderInvalidWrite();
 		} else {
 			AbortJob(Fls_GetJobResult());
 		}
@@ -1064,8 +1063,6 @@ static void InvalidateWriteInvalidateHeaderRequested(void)
 	if (Fls_GetStatus() == MEMIF_IDLE) {
 		CurrentJob.State = FEE_WRITE_INVALIDATE_HEADER;
 		BlockHeaderInvalidWrite();
-	} else {
-		AbortJob(Fls_GetJobResult());
 	}
 }
 
@@ -1078,7 +1075,7 @@ static void InvalidateWriteInvalidateHeader(void)
 	if (CheckFlsJobFinnished()) {
 		if (Fls_GetJobResult() == MEMIF_JOB_OK) {
 			// Update the block admin table
-			CurrentJob.AdminFlsBlockPtr->Status =  BLOCK_STATUS_INUSE;
+			CurrentJob.AdminFlsBlockPtr->Status =  BLOCK_STATUS_INVALIDATED;
 			CurrentJob.AdminFlsBlockPtr->BlockAdminAddress = CurrentJob.Op.Invalidate.WriteAdminAddress;
 			CurrentJob.AdminFlsBlockPtr->BlockDataAddress = CurrentJob.Op.Invalidate.WriteDataAddress;
 
@@ -1100,25 +1097,6 @@ static void InvalidateWriteInvalidateHeader(void)
 void Fee_Init(void)
 {
 	uint16 i,j;
-#if 0
-	uint16 t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11;
-	t1 = sizeof(FlsBankStatusType);
-	t2 = BANK_CTRL_PAGE_SIZE;
-	t3 = sizeof(FlsBankCtrlPageType);
-
-	t4 = sizeof(BlockStatusType);
-	t5 = sizeof(FlsBlockDataType);
-	t6 = BLOCK_DATA_PAGE_SIZE;
-	t7 = sizeof(FlsBlockDataPageType);
-
-
-	t8 = sizeof(FlsBlockMagicPageType);
-	t9 = BLOCK_MAGIC_PAGE_SIZE;
-	t10 = sizeof(FlsBlockControlType);
-	t11 = BLOCK_CTRL_PAGE_SIZE;
-#endif
-
-
 
 	/* Reporting information */
 	ModuleStatus = MEMIF_BUSY_INTERNAL;
