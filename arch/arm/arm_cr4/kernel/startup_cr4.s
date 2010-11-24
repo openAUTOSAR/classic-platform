@@ -171,23 +171,8 @@ LoopFillZero:
 	bcc	FillZero
 	bx  lr
 
-
-
 .size	Reset_Handler, .-Reset_Handler
 
-/**
- * @brief  This is the code that gets called when the processor receives an 
- *         unexpected interrupt.  This simply enters an infinite loop, preserving
- *         the system state for examination by a debugger.
- *
- * @param  None     
- * @retval : None       
-*/
-    .section	.text.Default_Handler,"ax",%progbits
-Default_Handler:
-Infinite_Loop:
-	b	Infinite_Loop
-	.size	Default_Handler, .-Default_Handler
 
 
 
@@ -202,16 +187,17 @@ Infinite_Loop:
 	.extern Dummy_Irq
 
 		/* This is the reset handler. Since the CPU is in ARM mode when this instruction is executed
-		   it has to be hard coded (otherwise GCC will compile it wrongly.
+		   it has to be hard coded (otherwise it will compile wrong).
 		   Instruction branches to address 0x22 while changing instruction mode to THUMB. */
         .word 0xfb000006
-        b   Dummy_Irq          /* Undefined instruction exception */
-        b   Svc_Handler        /* SVC, to be able to use software interrupt instruction. */
-        b   Prefetch_Exc_Handler          /* Prefetch exception */
-        b   Data_Exc_Handler   /* Data exception */
-        b   Dummy_Irq          /* Reserved */
-        b   Irq_Handler        /* Ordinary interrupts (IRQ) */
-	    b   Irq_Handler        /* Fast interrupts (FIR) */
+
+        b   Dummy_Irq          		/* Undefined instruction exception */
+        b   Dummy_Irq        		/* SVC */
+        b   Prefetch_Exc_Handler    /* Prefetch exception */
+        b   Data_Exc_Handler   		/* Data exception */
+        b   Dummy_Irq          		/* Reserved */
+        b   Irq_Handler        		/* Ordinary interrupts (IRQ) */
+	    b   Dummy_Irq        		/* Fast interrupts (FIR) */
 
 		nop
 		b 	Reset_Handler      /* Branch to the real reset handler. */
