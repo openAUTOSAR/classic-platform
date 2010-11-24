@@ -12,8 +12,8 @@ obj-$(USE_KERNEL) += Os_Cfg.o
 endif
 
 #Ecu
-#obj-y += EcuM_$(BOARDDIR).o
 obj-$(USE_ECUM) += EcuM.o
+obj-$(USE_ECUM) += EcuM_Main.o
 obj-$(USE_ECUM) += EcuM_Cfg.o
 obj-$(USE_ECUM) += EcuM_Callout_template.o
 inc-$(USE_ECUM) += $(ROOTDIR)/system/EcuM
