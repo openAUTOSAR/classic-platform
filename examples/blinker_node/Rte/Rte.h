@@ -25,6 +25,9 @@
 #elif defined(CFG_BRD_MPC5567QRTECH)
 #define LED_CHANNEL		DIO_CHANNEL_NAME_LED_K2
 
+#elif defined(CFG_BRD_HCS12X_ELMICRO_TBOARD)
+#define LED_CHANNEL             DIO_CHANNEL_NAME_DO_PB0
+
 #else
 #warning "Unknown board or CFG_BRD_* undefined"
 
