@@ -38,7 +38,12 @@
 	sty			1, -sp			// save Y -> ctx(Y)
 	stx			2, -sp			// save X -> ctx(X)
 	stab		2, -sp			// save B -> ctx(B)  (skipping ctx(A))
+#ifdef CFG_HCS12D
 	pshc						// save CCR -> ctx(CCR)
+#endif
+#ifdef CFG_HCS12XD	
+	.short 0x1839				// save CCR -> ctx(CCR)
+#endif	
 	psha						// save P -> ctx(P) *
 	movw	_.tmp ,2,-sp		// save tmp -> ctx(tmp)
 	movw	_.xy, 2,-sp			// save xy -> ctx(xy)
@@ -51,9 +56,14 @@
 	movw	2,sp+, _.z			// load z <- ctx(z)
 	movw	2,sp+, _.xy			// load xy <- ctx(xy)
 	movw	2,sp+, _.tmp		// load tmp <- ctx(tmp)
-	ldy		6,sp				// load Y <- ctx(Y)
-	movb	1,sp+, 6,sp			// move ctx(P) -> callctx(P)
-	pulc						// load CCR <- ctx(CCR)
+	ldy		Y_SP_OFFSET,sp		// load Y <- ctx(Y)
+	movb	1,sp+, Y_SP_OFFSET,sp			// move ctx(P) -> callctx(P)
+#ifdef CFG_HCS12D
+	pulc						// save CCR -> ctx(CCR)
+#endif
+#ifdef CFG_HCS12XD
+	.short 0x1838				// load CCR <- ctx(CCR)
+#endif
 	puld						// load D <- ctx(D)
 	pulx						// load X <- ctx(X)
 	ins							// skipping ctx(Yh)

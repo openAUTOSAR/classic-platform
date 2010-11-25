@@ -1,5 +1,5 @@
 obj-$(CFG_PPC) += crt0.o
-obj-$(CFG_HCS12D) += crt0.o
+obj-$(CFG_HC1X) += crt0.o
 vpath-$(CFG_ARM_CM3) += $(ARCH_PATH-y)kernel
 obj-$(CFG_ARM_CM3) += core_cm3.o
 obj-$(CFG_ARM_CM3) += startup_stm32f10x.o
@@ -12,8 +12,8 @@ obj-$(USE_KERNEL) += Os_Cfg.o
 endif
 
 #Ecu
-#obj-y += EcuM_$(BOARDDIR).o
 obj-$(USE_ECUM) += EcuM.o
+obj-$(USE_ECUM) += EcuM_Main.o
 obj-$(USE_ECUM) += EcuM_Cfg.o
 obj-$(USE_ECUM) += EcuM_Callout_template.o
 inc-$(USE_ECUM) += $(ROOTDIR)/system/EcuM

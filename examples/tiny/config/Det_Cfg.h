@@ -20,31 +20,23 @@
 
 
 
-#include "WdgM_Cfg.h"
+/*
+ * Development Error Tracer driver
+ *
+ * Specification: Autosar v2.0.1, Final
+ *
+ */
+#ifndef _DET_CFG_H_
+#define _DET_CFG_H_
 
-Wdgm_SupervisionType Wdgm_Supervision[WDBG_NBR_OF_ALIVE_SIGNALS];
+#define DET_ENABLE_CALLBACKS STD_ON  // Enable to use callback on errors
+#define DET_USE_RAMLOG       STD_ON  // Enable to log DET errors to ramlog
+#define DET_WRAP_RAMLOG      STD_ON  // The ramlog wraps around when reaching the end
+#define DET_USE_STDERR       STD_OFF // Enable to get DET errors on stderr
 
+#define DET_DEINIT_API       STD_ON // Enable/Disable the Det_DeInit function
 
-const WdgM_SupervisedEntityType WdgM_SupervisedEntity [WDBG_NBR_OF_ALIVE_SIGNALS] =
-{
-  {
-    .WdgM_SupervisedEntityID = WDBG_ALIVE_LOOP_BLINK_COMPONENT,
-    .WdgM_ActivationStatus = WDBG_SUPERVISION_DISABLED,
-    .WdgM_ExpectedAliveIndications = 4,
-    .WdgM_SupervisionReferenceCycle = 1,
-    .WdgM_FailedSupervisionReferenceCycleTolerance = 1,
-    .WdgM_MinMargin = 1,
-    .WdgM_MaxMargin = 1
-  },
-};
+#define DET_RAMLOG_SIZE (32)        // Number of entries in ramlog
+#define DET_NUMBER_OF_CALLBACKS (5) // Number of callbacks
 
-const WdgM_ConfigType WdgMAliveSupervision =
-{
-  .WdgM_SupervisionCycle = 1,
-  .WdgM_NumberOfSupervisedEntities = WDBG_NBR_OF_ALIVE_SIGNALS,
-  .WdgM_ExpiredSupervisionCycleTolerance = 1,
-  .WdgM_SupervisedEntityPtr = WdgM_SupervisedEntity,
-  .Wdgm_SupervisionPtr = Wdgm_Supervision
-};
-
-
+#endif /*_DET_CFG_H_*/

@@ -135,13 +135,12 @@ SECTIONS
   
   
   /* PPAGE memory banks */
-
-  .bank8 :
+  .bank_A :
   {
-    *(.bank8)
-    *(.text.bank8*)
+    *(.bank_A)
+    *(.text.bank_A*)
     
-    /* BANK8 MODULES */
+    /* BANK_A MODULES */
     Os_Cfg.o(.text)
     EcuM.o(.text)
     EcuM_Cfg.o(.text)
@@ -154,14 +153,14 @@ SECTIONS
     alarm.o(.text)
 	
     . = ALIGN(2);
-  } > bank8 AT>bank8_lma  =0xff
+  } > bank_A AT>bank_A_lma  =0xff
 
-  .bank9 :
+  .bank_B :
   {
-    *(.bank9)
-    *(.text.bank9*)
+    *(.bank_B)
+    *(.text.bank_B*)
 
-    /* BANK9 MODULES */
+    /* BANK_B MODULES */
     resource.o(.text)
     sched_table.o(.text)
     counter.o(.text)
@@ -174,15 +173,16 @@ SECTIONS
     newlib_port.o(.text)
 
     . = ALIGN(2);
-  } > bank9 AT>bank9_lma =0xff
+  } > bank_B AT>bank_B_lma =0xff
 
 
-  .bank10 :
+  .bank_C :
   {
-    *(.bank10)
-    *(.text.bank10*)
+    *(.bank_C)
+    *(.text.bank_C*)
 
-    /* BANK10 MODULES */	
+    /* BANK_C MODULES */
+    printf.o(.text)	
 	*_memcpy.o(.text)
 	*_memset.o(.text)
 	*_abort.o(.text)
@@ -211,56 +211,59 @@ SECTIONS
 	*_memcpy.o(.text)
 	
     . = ALIGN(2);
-  } > bank10 AT>bank10_lma  =0xff
+  } > bank_C AT>bank_C_lma  =0xff
 
 
-  .bank11 :
+  .bank_D :
   {
-    *(.bank11)
-    *(.text.bank11*)
+    *(.bank_D)
+    *(.text.bank_D*)
 
-    /* BANK11 MODULES */
+    /* BANK_D MODULES */
     Can*.o(.text)
     Pdu*.o(.text)
     Dio*.o(.text)
 
     . = ALIGN(2);
-  } > bank11 AT>bank11_lma  =0xff
+  } > bank_D AT>bank_D_lma  =0xff
 
 
-  .bank12 :
+  .bank_E :
   {
-    *(.bank12)
-    *(.text.bank12*)
+    *(.bank_E)
+    *(.text.bank_E*)
 
-    /* BANK12 MODULES */
-    Com*.o(.text)
+    /* BANK_E MODULES */
     Port*.o(.text)
+    Com*.o(.text)
+    test_*.o(.text)
 
     . = ALIGN(2);
-  } > bank12 AT>bank12_lma  =0xff
+  } > bank_E AT>bank_E_lma  =0xff
 
 
-  .bank13 :
+  .bank_F :
   {
-    *(.bank13)
-   *(.text.bank13*)
+    *(.bank_F)
+   *(.text.bank_F*)
 
-    /* BANK13 MODULES */
+    /* BANK_F MODULES */
     Adc*.o(.text)
-    . = ALIGN(2);
-  } > bank13 AT>bank13_lma  =0xff
+    Dem*.o(.text)
+    IoHwAb*.o(.text)
+        . = ALIGN(2);
+  } > bank_F AT>bank_F_lma  =0xff
   
   
   /* Start of text section.  */
   .stext   :
   {
     *(.stext)
-  }  > text AT>bank14_lma
+  }  > text AT>bank_FIX1_lma
   .init	  :
   {
     *(.init)
-  } AT>bank14_lma =0
+  } AT>bank_FIX1_lma =0
   .text  :
   {
     /* Put startup code at beginning so that _start keeps same address.  */
@@ -287,17 +290,17 @@ SECTIONS
     _etext = .;
     PROVIDE (etext = .);
     . = ALIGN(2);
-  }  > text AT>bank14_lma =0xa7a7a7a7
+  }  > text AT>bank_FIX1_lma =0xa7a7a7a7
   
   .eh_frame   :
   {
     KEEP (*(.eh_frame))
-  }  > text AT>bank14_lma
+  }  > text AT>bank_FIX1_lma
   
   .gcc_except_table   :
   {
     *(.gcc_except_table)
-  }  > text AT>bank14_lma
+  }  > text AT>bank_FIX1_lma
   
   .rodata    :
   {
@@ -305,13 +308,13 @@ SECTIONS
     *(.rodata.*)
     *(.gnu.linkonce.r*)
     . = ALIGN(2);
-  }  > text_h AT>bank15_lma =0xffffffff
+  }  > text_h AT>bank_FIX2_lma =0xffffffff
   
   .rodata1   :
   {
     *(.rodata1)
     . = ALIGN(2);
-  }  > text_h AT>bank15_lma =0xffffffff
+  }  > text_h AT>bank_FIX2_lma =0xffffffff
   
   /* Constructor and destructor tables are in ROM.  */
   /*
@@ -353,7 +356,7 @@ SECTIONS
     _edata  =  .;
     PROVIDE (edata = .);
     . = ALIGN(2);
-  }  > data AT>bank15_lma =0xffffffff
+  }  > data AT>bank_FIX2_lma =0xffffffff
   __data_section_size = SIZEOF(.data);
   PROVIDE (__data_section_size = SIZEOF(.data));
   __data_image_end = __data_image + __data_section_size;
@@ -365,6 +368,11 @@ SECTIONS
   	*(.dem_eventmemory_pri)
   } > data
   
+  .noice_port 0x2000 :
+  {
+      *(.noice_port)
+  } > data
+    
 /* SCz: this does not work yet... This is supposed to force the loading
    of _map_data.o (from libgcc.a) when the .data section is not empty.
    By doing so, this should bring the code that copies the .data section
@@ -390,7 +398,7 @@ SECTIONS
     *(.gnu.linkonce.b.*)
     *(COMMON)
     PROVIDE (_end = .);
-  }  > data AT>bank15_lma
+  }  > data AT>bank_FIX2_lma
   __bss_size = SIZEOF(.bss);
   PROVIDE (__bss_size = SIZEOF(.bss));
   .eeprom   :
