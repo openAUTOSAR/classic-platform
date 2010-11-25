@@ -13,11 +13,34 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-#include "Std_Types.h"
+
 #include "Port.h" /** @req PORT131 */
+#include "stm32f10x.h"
 #include "Det.h"
 #include "string.h"
-#include "stm32f10x_rcc.h"
+#include "stm32f10x_gpio.h"
+
+const uint32 *GpioBaseAddr[] =
+{
+	(uint32 *)GPIOA_BASE,
+    (uint32 *)GPIOB_BASE,
+    (uint32 *)GPIOC_BASE,
+    (uint32 *)GPIOD_BASE,
+    (uint32 *)GPIOE_BASE,
+    (uint32 *)GPIOF_BASE,
+    (uint32 *)GPIOG_BASE
+};
+
+const uint32 *GpioODRAddr[] =
+{
+    (uint32 *)&((GPIO_TypeDef *)GPIOA_BASE)->ODR,
+    (uint32 *)&((GPIO_TypeDef *)GPIOB_BASE)->ODR,
+    (uint32 *)&((GPIO_TypeDef *)GPIOC_BASE)->ODR,
+    (uint32 *)&((GPIO_TypeDef *)GPIOD_BASE)->ODR,
+    (uint32 *)&((GPIO_TypeDef *)GPIOE_BASE)->ODR,
+    (uint32 *)&((GPIO_TypeDef *)GPIOF_BASE)->ODR,
+    (uint32 *)&((GPIO_TypeDef *)GPIOG_BASE)->ODR
+};
 
 typedef enum
 {
@@ -70,29 +93,29 @@ static Std_VersionInfoType _Port_VersionInfo =
 /** @req PORT121 */
 void Port_Init(const Port_ConfigType *configType)
 {
-    VALIDATE_PARAM_CONFIG(configType, PORT_INIT_ID); /** @req PORT105 */
+  VALIDATE_PARAM_CONFIG(configType, PORT_INIT_ID); /** @req PORT105 */
+  volatile const uint32 *gpioAddr;
 
-	uint16_t portIndex,pinIndex;
+  for (uint8_t i = 0; i < configType->padCnt; i++)
+  {
+	  /* Configure pin. */
+	  gpioAddr = GpioBaseAddr[i];
+	  //*((GpioPinCnfMode_Type *)gpioAddr) = configType->padConfig[i];
+	  *(uint32 *)gpioAddr = *(uint32 *)&configType->padConfig[i];
+	  *(1+(uint32 *)gpioAddr) = *(1+(uint32 *)&configType->padConfig[i]);
 
-	// Set up all the ports
-	for (portIndex = 0; portIndex < configType->portCount; portIndex++) {
-		const Port_PortConfigType* portConfig = configType->ports[portIndex];
-
-		// set up all pins
-		for (pinIndex = 0; pinIndex < portConfig->pinCount; pinIndex++) {
-
-			GPIO_Init(portConfig->port, &portConfig->pins[pinIndex]);
-
-		}
-	}
+	  /* Set default output level. */
+	  gpioAddr = GpioODRAddr[i];
+	  *((GpioPinOutLevel_Type *)gpioAddr) = configType->outConfig[i];
+  }
 
 	// Enable remaps
-	for (portIndex = 0; portIndex < configType->remapCount; portIndex++) {
+	for (int portIndex = 0; portIndex < configType->remapCount; portIndex++) {
 		GPIO_PinRemapConfig(configType->remaps[portIndex], ENABLE);
 	}
 
     _portState = PORT_INITIALIZED;
-    _configPtr = configType;
+    _configPtr = (Port_ConfigType *)configType;
     cleanup: return;
 }
 
@@ -103,13 +126,41 @@ void Port_Init(const Port_ConfigType *configType)
 #if ( PORT_SET_PIN_DIRECTION_API == STD_ON )
 void Port_SetPinDirection( Port_PinType pin, Port_PinDirectionType direction )
 {
-    VALIDATE_STATE_INIT(PORT_SET_PIN_DIRECTION_ID);
+  VALIDATE_STATE_INIT(PORT_SET_PIN_DIRECTION_ID);
 
-    {
-        Det_ReportError(MODULE_ID_PORT, 0, PORT_SET_PIN_DIRECTION_ID, PORT_E_PARAM_PIN );
-    }
+  uint32 * gpioAddr;
+  static uint8 index, bit, reg;
 
-    cleanup:return;
+  index = pin / 16;
+  bit = pin % 16;
+  reg = bit / 8;
+  bit = (bit % 8) * 4;
+  // Ex. DIO_CHANNEL_B8 = 24
+  // index = 1 => GPIOB
+  // bit = 8
+  // reg = 1 => CRH
+  // bit = 0 => MODE8, CNF8 => OK
+  // 0  1  2
+  // 0  4  8
+  gpioAddr = (uint32 *)GpioBaseAddr[index];
+
+  /* Adjust for CRL/CRH */
+  gpioAddr += reg;
+
+  *gpioAddr &= ~(0x000000F << bit);
+
+  if (direction==PORT_PIN_IN)
+  {
+    /* Configure pin. */
+	//*gpioAddr |= (GPIO_INPUT_MODE | GPIO_FLOATING_INPUT_CNF) << bit; // TODO shall this be added to conf?
+	  *gpioAddr |= (GPIO_INPUT_MODE | GPIO_INPUT_PULLUP_CNF) << bit; // TODO shall this be added to conf?
+  }
+  else
+  {
+    *gpioAddr |= (GPIO_OUTPUT_2MHz_MODE | GPIO_OUTPUT_PUSHPULL_CNF) << bit; // TODO shall this be added to conf?
+  }
+
+  cleanup:return;
 }
 #endif
 
@@ -119,9 +170,9 @@ void Port_SetPinDirection( Port_PinType pin, Port_PinDirectionType direction )
 /** @req PORT061 */
 void Port_RefreshPortDirection(void)
 {
-    uint8_t curValue;
     VALIDATE_STATE_INIT(PORT_REFRESH_PORT_DIRECTION_ID);
 
+    /* TODO Not implemented yet */
     cleanup: return;
 }
 
@@ -153,4 +204,3 @@ void Port_SetPinMode(Port_PinType Pin, Port_PinModeType Mode)
     cleanup: return;
 }
 #endif
-
