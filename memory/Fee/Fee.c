@@ -91,14 +91,14 @@ typedef struct {
 } BankPropType;
 
 static const BankPropType BankProp[NUM_OF_BANKS] = {
-		{
-				.Start = FEE_BANK1_OFFSET,
-				.End = FEE_BANK1_OFFSET + FEE_BANK1_LENGTH
-		},
-		{
-				.Start = FEE_BANK2_OFFSET,
-				.End = FEE_BANK2_OFFSET + FEE_BANK2_LENGTH
-		},
+	{
+		.Start = FEE_BANK1_OFFSET,
+		.End = FEE_BANK1_OFFSET + FEE_BANK1_LENGTH
+	},
+	{
+		.Start = FEE_BANK2_OFFSET,
+		.End = FEE_BANK2_OFFSET + FEE_BANK2_LENGTH
+	},
 };
 
 
@@ -106,10 +106,8 @@ static const BankPropType BankProp[NUM_OF_BANKS] = {
 /*
  * Macros and variables for flash bank administration
  */
-typedef enum {
-	BANK_STATUS_OLD = 0x00,
-	BANK_STATUS_NEW = 0xFF
-} FlsBankStatusEnumType;
+#define BANK_STATUS_OLD		0x00
+#define BANK_STATUS_NEW		0xFF
 typedef uint8 FlsBankStatusType;
 
 #define BANK_CTRL_PAGE_SIZE		PAGE_ALIGN(sizeof(FlsBankStatusType))
@@ -123,11 +121,9 @@ typedef union {
 /*
  * Macros and variables for flash block administration in flash
  */
-typedef enum {
-	BLOCK_STATUS_INUSE = 0x00,
-	BLOCK_STATUS_INVALIDATED = 0x02,
-	BLOCK_STATUS_EMPTY = 0xFF
-} BlockStatusEnumType;
+#define BLOCK_STATUS_INUSE			0x00
+#define BLOCK_STATUS_INVALIDATED	0x02
+#define BLOCK_STATUS_EMPTY			0xFF
 typedef uint8 BlockStatusType;
 
 typedef struct {
@@ -135,35 +131,35 @@ typedef struct {
 	uint16				BlockNo;
 	Fls_AddressType		BlockDataAddress;
 	uint16				BlockDataLength;
-} FlsBlockDataType;
+} FlsBlockCtrlDataType;
 
-#define BLOCK_DATA_PAGE_SIZE		PAGE_ALIGN(sizeof(FlsBlockDataType))
+#define BLOCK_CTRL_DATA_PAGE_SIZE		PAGE_ALIGN(sizeof(FlsBlockCtrlDataType))
 
 typedef union {
-	FlsBlockDataType	Data;
-	uint8				Byte[BLOCK_DATA_PAGE_SIZE];
-} FlsBlockDataPageType;
+	FlsBlockCtrlDataType	Data;
+	uint8					Byte[BLOCK_CTRL_DATA_PAGE_SIZE];
+} FlsBlockCtrlDataPageType;
 
 
 #define BLOCK_MAGIC_LEN		4
-static const uint8 MagicMaster[BLOCK_MAGIC_LEN] = { 0xeb, 0xba, 0xba, 0xbe };
-#define BLOCK_MAGIC_PAGE_SIZE	PAGE_ALIGN(BLOCK_MAGIC_LEN)
+static const uint8 BlockMagicMaster[BLOCK_MAGIC_LEN] = { 0xeb, 0xba, 0xba, 0xbe };
+#define BLOCK_CTRL_MAGIC_PAGE_SIZE	PAGE_ALIGN(BLOCK_MAGIC_LEN)
 
 
 typedef union {
 	uint8		Magic[BLOCK_MAGIC_LEN];
-	uint8		Byte[BLOCK_MAGIC_PAGE_SIZE];
-} FlsBlockMagicPageType;
+	uint8		Byte[BLOCK_CTRL_MAGIC_PAGE_SIZE];
+} FlsBlockCtrlMagicPageType;
 
 typedef struct {
-	FlsBlockDataPageType	DataPage;
-	FlsBlockMagicPageType	MagicPage;
+	FlsBlockCtrlDataPageType	DataPage;
+	FlsBlockCtrlMagicPageType	MagicPage;
 } FlsBlockControlType;
 
 #define BLOCK_CTRL_PAGE_SIZE	PAGE_ALIGN(sizeof(FlsBlockControlType))
 
 #define BLOCK_CTRL_DATA_POS_OFFSET		0
-#define BLOCK_CTRL_MAGIC_POS_OFFSET		BLOCK_DATA_PAGE_SIZE
+#define BLOCK_CTRL_MAGIC_POS_OFFSET		BLOCK_CTRL_DATA_PAGE_SIZE
 
 typedef union {
 	FlsBlockControlType	BlockCtrl;
@@ -485,7 +481,7 @@ static void StartupReadBlockAdmin(void)
 				CurrentJob.Op.Startup.BankNumber = (CurrentJob.Op.Startup.BankNumber + 1) % 2;
 				CurrentJob.Op.Startup.BlockAdminAddress = BankProp[CurrentJob.Op.Startup.BankNumber].End - BLOCK_CTRL_PAGE_SIZE - BANK_CTRL_PAGE_SIZE;
 			} else { /* Block not empty */
-				if ((memcmp(RWBuffer.BlockCtrl.MagicPage.Byte, MagicMaster, BLOCK_MAGIC_LEN) == 0) &&
+				if ((memcmp(RWBuffer.BlockCtrl.MagicPage.Byte, BlockMagicMaster, BLOCK_MAGIC_LEN) == 0) &&
 						((RWBuffer.BlockCtrl.DataPage.Data.Status == BLOCK_STATUS_INUSE) || (RWBuffer.BlockCtrl.DataPage.Data.Status == BLOCK_STATUS_INVALIDATED))) {
 					/* This is a valid admin block */
 					uint16 blockIndex;
@@ -595,12 +591,12 @@ static void BankHeaderOldWrite(uint8 bank)
 static void BlockHeaderDataWrite(void)
 {
 	/* Write the header excluding the magic */
-	memset(RWBuffer.BlockCtrl.DataPage.Byte, 0xff, BLOCK_DATA_PAGE_SIZE);
+	memset(RWBuffer.BlockCtrl.DataPage.Byte, 0xff, BLOCK_CTRL_DATA_PAGE_SIZE);
 	RWBuffer.BlockCtrl.DataPage.Data.Status = BLOCK_STATUS_INUSE;
 	RWBuffer.BlockCtrl.DataPage.Data.BlockNo = CurrentJob.BlockNumber;
 	RWBuffer.BlockCtrl.DataPage.Data.BlockDataAddress = AdminFls.NewBlockDataAddress;
 	RWBuffer.BlockCtrl.DataPage.Data.BlockDataLength = CurrentJob.Length;
-	if (Fls_Write(CurrentJob.Op.Write.WriteAdminAddress + BLOCK_CTRL_DATA_POS_OFFSET, RWBuffer.Byte, BLOCK_DATA_PAGE_SIZE) == E_OK) {
+	if (Fls_Write(CurrentJob.Op.Write.WriteAdminAddress + BLOCK_CTRL_DATA_POS_OFFSET, RWBuffer.Byte, BLOCK_CTRL_DATA_PAGE_SIZE) == E_OK) {
 		SetFlsJobBusy();
 		AdminFls.NewBlockDataAddress += CurrentJob.Length;
 		AdminFls.NewBlockAdminAddress -= BLOCK_CTRL_PAGE_SIZE;
@@ -725,9 +721,9 @@ static void WriteMagicRequested(void)
 {
 	if (Fls_GetStatus() == MEMIF_IDLE) {
 		CurrentJob.State = FEE_WRITE_MAGIC;
-		memset(RWBuffer.BlockCtrl.MagicPage.Byte, 0xff, BLOCK_MAGIC_PAGE_SIZE);
-		memcpy(RWBuffer.BlockCtrl.MagicPage.Byte, MagicMaster, BLOCK_MAGIC_LEN);
-		if (Fls_Write(CurrentJob.Op.Write.WriteAdminAddress + BLOCK_CTRL_MAGIC_POS_OFFSET, RWBuffer.BlockCtrl.MagicPage.Byte, BLOCK_MAGIC_PAGE_SIZE) == E_OK) {
+		memset(RWBuffer.BlockCtrl.MagicPage.Byte, 0xff, BLOCK_CTRL_MAGIC_PAGE_SIZE);
+		memcpy(RWBuffer.BlockCtrl.MagicPage.Byte, BlockMagicMaster, BLOCK_MAGIC_LEN);
+		if (Fls_Write(CurrentJob.Op.Write.WriteAdminAddress + BLOCK_CTRL_MAGIC_POS_OFFSET, RWBuffer.BlockCtrl.MagicPage.Byte, BLOCK_CTRL_MAGIC_PAGE_SIZE) == E_OK) {
 			SetFlsJobBusy();
 		} else {
 			AbortJob(Fls_GetJobResult());
@@ -940,9 +936,9 @@ static void GarbageCollectWriteMagicRequested(void)
 {
 	if (Fls_GetStatus() == MEMIF_IDLE) {
 		CurrentJob.State = FEE_GARBAGE_COLLECT_MAGIC_WRITE;
-		memset(RWBuffer.BlockCtrl.MagicPage.Byte, 0xff, BLOCK_MAGIC_PAGE_SIZE);
-		memcpy(RWBuffer.BlockCtrl.MagicPage.Byte, MagicMaster, BLOCK_MAGIC_LEN);
-		if (Fls_Write(CurrentJob.Op.GarbageCollect.WriteAdminAddress + BLOCK_CTRL_MAGIC_POS_OFFSET, RWBuffer.BlockCtrl.MagicPage.Byte, BLOCK_MAGIC_PAGE_SIZE) == E_OK) {
+		memset(RWBuffer.BlockCtrl.MagicPage.Byte, 0xff, BLOCK_CTRL_MAGIC_PAGE_SIZE);
+		memcpy(RWBuffer.BlockCtrl.MagicPage.Byte, BlockMagicMaster, BLOCK_MAGIC_LEN);
+		if (Fls_Write(CurrentJob.Op.GarbageCollect.WriteAdminAddress + BLOCK_CTRL_MAGIC_POS_OFFSET, RWBuffer.BlockCtrl.MagicPage.Byte, BLOCK_CTRL_MAGIC_PAGE_SIZE) == E_OK) {
 			SetFlsJobBusy();
 		} else {
 			AbortJob(Fls_GetJobResult());
@@ -995,7 +991,7 @@ static void BlockHeaderInvalidWrite(void)
 	RWBuffer.BlockCtrl.DataPage.Data.BlockNo = CurrentJob.BlockNumber;
 	RWBuffer.BlockCtrl.DataPage.Data.BlockDataAddress = AdminFls.NewBlockDataAddress;
 	RWBuffer.BlockCtrl.DataPage.Data.BlockDataLength = 0;
-	memcpy(RWBuffer.BlockCtrl.MagicPage.Byte, MagicMaster, BLOCK_MAGIC_LEN);
+	memcpy(RWBuffer.BlockCtrl.MagicPage.Byte, BlockMagicMaster, BLOCK_MAGIC_LEN);
 
 	if (Fls_Write(CurrentJob.Op.Invalidate.WriteAdminAddress + BLOCK_CTRL_DATA_POS_OFFSET, RWBuffer.Byte, BLOCK_CTRL_PAGE_SIZE) == E_OK) {
 		SetFlsJobBusy();
