@@ -6,13 +6,3 @@ The Texas Instruments TMS570LS is an ARM 32-bit Cortes-R4 microcontroller.
 Datasheets:  
     http://focus.ti.com/lit/ug/spnu489a/spnu489a.pdf  
  
-Info:	
-  
-  
-Memory Map:
-	0x00000000 -> 0x001FFFFF : Flash
-	0x00400000 -> 0x004FFFFF : Flash ECC
-	
-	0x08000000 -> 0x08027FFF : RAM
-	0x08400000 -> 0x08427FFF : RAM  
- 
