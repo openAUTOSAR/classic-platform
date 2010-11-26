@@ -32,17 +32,17 @@
 #define CAN_TIMEOUT_DURATION   0xFFFFFFFF
 #define CAN_INSTANCE           0
 
+#define DCAN_IRQ_MASK		0x00000006
+
 
 #if !defined(USE_DEM)
+// If compiled without the DEM, calls to DEM are simply ignored.
 #define Dem_ReportErrorStatus(...)
 #endif
 
 
-/*----------------------------------------------------------------------------*/
-/* Variable Definition                                                        */
-
 // Array for easy access to DCAN register definitions.
-static Can_RegisterType* CanBase[]=
+static Can_RegisterType* CanRegs[]=
 {
 	DCAN1_Base,
 	DCAN2_Base,
@@ -173,6 +173,7 @@ static inline const Can_HardwareObjectType * Can_FindRxHoh(CanControllerIdType C
 	return 0;
 }
 
+uint32 usedBoxes[64] = {0};
 
 void Can_InterruptHandler(CanControllerIdType controller)
 {
@@ -183,19 +184,19 @@ void Can_InterruptHandler(CanControllerIdType controller)
     uint8   DataByteIndex;
     uint8  *SduPtr;
 
-    //Can_DisableControllerInterrupts(0);
+    Can_DisableControllerInterrupts(controller);
 
     ErrCounter = CAN_TIMEOUT_DURATION;
 
-    uint32 ir = CanBase[controller]->IR;
+    uint32 ir = CanRegs[controller]->IR;
 
     if(ir == 0x8000)
     {
-    	uint32 sr = CanBase[controller]->SR;
+    	uint32 sr = CanRegs[controller]->SR;
         /* WakeUp Pending */
         if(sr & 0x00000200) {
             /* Set Init Bit, so that Controller is in Stop state */
-            CanBase[controller]->CTL |= 0x1;
+            CanRegs[controller]->CTL |= 0x1;
            // EcuM_CheckWakeUp(ControllerConfig[0].WakeupSrc);
 
         }
@@ -210,11 +211,19 @@ void Can_InterruptHandler(CanControllerIdType controller)
     {
         MsgNr = ir;
 
+
+        if (MsgNr == 0) {
+        	usedBoxes[MsgNr]++;
+        } else {
+        	usedBoxes[MsgNr]++;
+        }
+        
+
         /* Read Arbitration, Control and Data Bits and clear IntPnd and NewDat*/
-        CanBase[controller]->IFx[IfRegId].COM = 0x003F0000 | MsgNr;
+        CanRegs[controller]->IFx[IfRegId].COM = 0x003F0000 | MsgNr;
 
         /* Wait until Busy Flag is 0 */
-        while(CanBase[controller]->IFx[IfRegId].COM & 0x8000)
+        while(CanRegs[controller]->IFx[IfRegId].COM & 0x8000)
         {
             ErrCounter--;
             if(ErrCounter == 0)
@@ -226,7 +235,7 @@ void Can_InterruptHandler(CanControllerIdType controller)
         }
 
         /* Transmit Object */
-        if(CanBase[controller]->IFx[IfRegId].ARB & 0x20000000)
+        if(CanRegs[controller]->IFx[IfRegId].ARB & 0x20000000)
         {
             /* Reset TxRqst-Array Element */
         	ControllerConfig[controller].TxPtr[MsgNr - 1] = 0;
@@ -237,19 +246,19 @@ void Can_InterruptHandler(CanControllerIdType controller)
         else
         {
             /* Extended Id */
-            if(CanBase[controller]->IFx[IfRegId].ARB & 0x40000000)
+            if(CanRegs[controller]->IFx[IfRegId].ARB & 0x40000000)
             {
                 /* Bring Id to standardized format (MSB marks extended Id) */
-                MsgId = (CanBase[controller]->IFx[IfRegId].ARB & 0x1FFFFFFF) | 0x80000000;
+                MsgId = (CanRegs[controller]->IFx[IfRegId].ARB & 0x1FFFFFFF) | 0x80000000;
             }
             /* Standard Id */
             else
             {
                 /* Bring Id to standardized format (MSB marks extended Id) */
-                MsgId = (CanBase[controller]->IFx[IfRegId].ARB & 0x1FFC0000) >> 18;
+                MsgId = (CanRegs[controller]->IFx[IfRegId].ARB & 0x1FFC0000) >> 18;
             }
             /* DLC (Max 8) */
-            MsgDlc = CanBase[controller]->IFx[IfRegId].MC & 0x000F;
+            MsgDlc = CanRegs[controller]->IFx[IfRegId].MC & 0x000F;
             if(MsgDlc > 8)
             {
                 MsgDlc = 8;
@@ -260,7 +269,7 @@ void Can_InterruptHandler(CanControllerIdType controller)
             /* Copy Message Data to Shadow Buffer */
             for(DataByteIndex = 0; DataByteIndex < MsgDlc; DataByteIndex++)
             {
-            	SduPtr[DataByteIndex] = CanBase[controller]->IFx[IfRegId].DATx[ElementIndex[DataByteIndex]];
+            	SduPtr[DataByteIndex] = CanRegs[controller]->IFx[IfRegId].DATx[ElementIndex[DataByteIndex]];
             }
             /* Indicate successful Reception */
             const Can_HardwareObjectType *hoh = Can_FindRxHoh(controller, MsgNr);
@@ -268,7 +277,7 @@ void Can_InterruptHandler(CanControllerIdType controller)
 
         }
     }
-    //Can_EnableControllerInterrupts(0);
+    Can_EnableControllerInterrupts(controller);
 }
 
 void Can1_InterruptHandler() {
@@ -324,18 +333,19 @@ void Can_Init(const Can_ConfigType *Config)
     {
         ErrCounter = CAN_TIMEOUT_DURATION;
 
-        /* Init, IE, AutomaticRetransmission, ConfChangeEnable, ABO Off,Parity On, SIE and EIE depending on ControllerConfig */
+        /* Init, IE, AutomaticRetransmission, ConfChangeEnable, ABO Off,Parity On, SIE and EIE depending on ControllerConfig, loopback */
 #if(CAN_WAKEUP_SUPPORT == STD_ON)
-        CanBase[Controller]->CTL = 0x02001643;// | (CanControllerConfigData[Controller].CanWakeupProcessing >> 8) | (CanControllerConfigData[Controller].CanBusOffProcessing >> 7);
+        CanRegs[Controller]->CTL = 0x02001641 | DCAN_IRQ_MASK | (CanControllerConfigData[Controller].Can_Arc_Loopback << 7);// | (CanControllerConfigData[Controller].CanWakeupProcessing >> 8) | (CanControllerConfigData[Controller].CanBusOffProcessing >> 7);
 #else
-        CanBase[Controller]->CTL = 0x00001643;// | (CanControllerConfigData[Controller].CanWakeupProcessing >> 8) | (CanControllerConfigData[Controller].CanBusOffProcessing >> 7);
+        CanRegs[Controller]->CTL = 0x00001641 | DCAN_IRQ_MASK | (CanControllerConfigData[Controller].Can_Arc_Loopback << 7);// | (CanControllerConfigData[Controller].CanWakeupProcessing >> 8) | (CanControllerConfigData[Controller].CanBusOffProcessing >> 7);
 #endif        
         /* LEC 7, TxOk, RxOk, PER */
-        CanBase[Controller]->SR  = 0x0000011F;
+        CanRegs[Controller]->SR  = 0x0000011F;
 
         /* Test Mode only for Development time: Silent Loopback */
-        //CanBase[Controller]->CTL |= 0x00000080;
-        //CanBase[Controller]->TR   = 0x00000018;
+        if (CanControllerConfigData[Controller].Can_Arc_Loopback) {
+        	CanRegs[Controller]->TR   = 0x00000018;
+        }
             
 
         // Basic message object initialization
@@ -345,7 +355,7 @@ void Can_Init(const Can_ConfigType *Config)
             *(ControllerConfig[Controller].TxPtr     + MsgNr) = 0;
             
             /* Wait until Busy Flag is 0 */
-            while(CanBase[Controller]->IFx[IfRegId].COM & 0x00008000)
+            while(CanRegs[Controller]->IFx[IfRegId].COM & 0x00008000)
             {
                 ErrCounter--;
                 if(ErrCounter == 0)
@@ -358,9 +368,9 @@ void Can_Init(const Can_ConfigType *Config)
 
             // Initialize all message objects for this controller to invalid state.
             /* Valid = 0 */
-			CanBase[Controller]->IFx[IfRegId].ARB = 0x00000000;
+			CanRegs[Controller]->IFx[IfRegId].ARB = 0x00000000;
 			/* Start writing Arbitration Bits */
-			CanBase[Controller]->IFx[IfRegId].COM = 0x00A80000 | (MsgNr + 1);
+			CanRegs[Controller]->IFx[IfRegId].COM = 0x00A80000 | (MsgNr + 1);
 
 			/* Use IFx[0] and IFx[1] alternating */
 			IfRegId ^= 1;
@@ -399,31 +409,37 @@ void Can_Init(const Can_ConfigType *Config)
 				}
 
 				/* DLC=8, Use Mask only for receive, Set RxIE/TxIE depending on pre-config settings, Eob */
-				CanBase[Controller]->IFx[IfRegId].MC = 0x00001008 | CanControllerConfigData[Controller].CanRxProcessing | (CanControllerConfigData[Controller].CanTxProcessing << 1) | Eob & ~(hoh->CanObjectType >> 17);
+				CanRegs[Controller]->IFx[IfRegId].MC = 	  0x00000008 // DLC = 8
+														| 0x00001000 // umask = ON
+														| CanControllerConfigData[Controller].CanRxProcessing // Rx interrupt enabled
+														| (CanControllerConfigData[Controller].CanTxProcessing << 1) // Tx confirmation interrupt enabled
+														| (Eob & ~(hoh->CanObjectType >> 22)); // Eob, only for Rx.
+
+				//CanRegs[Controller]->IFx[IfRegId].MC = 0x00001008 | CanControllerConfigData[Controller].CanRxProcessing | (CanControllerConfigData[Controller].CanTxProcessing) | Eob & ~(hoh->CanObjectType >> 17);
 
 				if(hoh->CanIdType == CAN_ID_TYPE_STANDARD)      /* Standard Identifiers */
 				{
 					/* Only Standard-Ids are accepted, Set Mask */
-					CanBase[Controller]->IFx[IfRegId].MASK = 0x80000000 | ((*(hoh->CanFilterMaskRef)) & 0x1FFFFFFF);
+					CanRegs[Controller]->IFx[IfRegId].MASK = 0x80000000 | ((*(hoh->CanFilterMaskRef)) & 0x1FFFFFFF);
 					/* Message valid, Id, Direction */
-					CanBase[Controller]->IFx[IfRegId].ARB  = 0x80000000 | ((hoh->CanIdValue & 0x7FF) << 18) | hoh->CanObjectType;
+					CanRegs[Controller]->IFx[IfRegId].ARB  = 0x80000000 | ((hoh->CanIdValue & 0x7FF) << 18) | hoh->CanObjectType;
 				}
 				else if(hoh->CanIdType == CAN_ID_TYPE_EXTENDED) /* Extended Identifiers */
 				{
 					/* Only Extended-Ids are accepted, Set Mask */
-					CanBase[Controller]->IFx[IfRegId].MASK = 0x80000000 | ((*(hoh->CanFilterMaskRef)) & 0x1FFFFFFF);
+					CanRegs[Controller]->IFx[IfRegId].MASK = 0x80000000 | ((*(hoh->CanFilterMaskRef)) & 0x1FFFFFFF);
 					/* Message valid, Id, Direction */
-					CanBase[Controller]->IFx[IfRegId].ARB  = 0xC0000000 | (hoh->CanIdValue & 0x1FFFFFFF) | hoh->CanObjectType;
+					CanRegs[Controller]->IFx[IfRegId].ARB  = 0xC0000000 | (hoh->CanIdValue & 0x1FFFFFFF) | hoh->CanObjectType;
 				}
 				else /* Mixed Identifiers */
 				{
 					/* Standard- and Mixed-Ids are accepted, Set Mask */
-					CanBase[Controller]->IFx[IfRegId].MASK = 0x00000000 | ((*(hoh->CanFilterMaskRef)) & 0x1FFFFFF);
+					CanRegs[Controller]->IFx[IfRegId].MASK = 0x00000000 | ((*(hoh->CanFilterMaskRef)) & 0x1FFFFFF);
 					/* Message valid, Id, Direction */
-					CanBase[Controller]->IFx[IfRegId].ARB  = 0xC0000000 | (hoh->CanIdValue & 0x1FFFFFF) | hoh->CanObjectType;
+					CanRegs[Controller]->IFx[IfRegId].ARB  = 0xC0000000 | (hoh->CanIdValue & 0x1FFFFFF) | hoh->CanObjectType;
 				}
 				/* Start writing Mask, Arb, Control and Id bits */
-				CanBase[Controller]->IFx[IfRegId].COM  = 0x00F80000 | mbNr;
+				CanRegs[Controller]->IFx[IfRegId].COM  = 0x00F80000 | mbNr;
 
 				/* Use IFx[0] and IFx[1] alternating */
 				IfRegId ^= 1;
@@ -433,10 +449,10 @@ void Can_Init(const Can_ConfigType *Config)
 
 
         /* Set Bit Timing Register */
-        CanBase[Controller]->BTR = Can_CalculateBTR(Controller);
+        CanRegs[Controller]->BTR = Can_CalculateBTR(Controller);
 
         /* Reset CCE Bit */
-        CanBase[Controller]->CTL &= ~0x00000040;
+        CanRegs[Controller]->CTL &= ~0x00000040;
 
 #if(CAN_DEV_ERROR_DETECT == STD_ON)
         /* Switch Controller State to CANIF_CS_STOPPED */
@@ -519,15 +535,15 @@ void Can_InitController(uint8 Controller, const Can_ControllerConfigType* Config
 
 	// For every message object in this hoh
 	for(; mbMask != 0; mbMask >>= 1) {
+		MsgNr++;
 		if (!(mbMask & 1)) {
 			// This message object is not part of this hoh.
 			continue;
 		}
-		MsgNr++;
 		nProcessedMb++;
 
         /* Wait until Busy Flag is 0 */
-        while(CanBase[Controller]->IFx[IfRegId].COM & 0x00008000)
+        while(CanRegs[Controller]->IFx[IfRegId].COM & 0x00008000)
         {
             ErrCounter--;
             if(ErrCounter == 0)
@@ -538,10 +554,10 @@ void Can_InitController(uint8 Controller, const Can_ControllerConfigType* Config
             }
         }
         /* Read actual MaskRegister value of MessageObject */
-        CanBase[Controller]->IFx[IfRegId].COM = 0x004C0000 | (MsgNr);
+        CanRegs[Controller]->IFx[IfRegId].COM = 0x004C0000 | (MsgNr);
 
         /* Wait until Busy Flag is 0 */
-        while(CanBase[Controller]->IFx[IfRegId].COM & 0x00008000)
+        while(CanRegs[Controller]->IFx[IfRegId].COM & 0x00008000)
         {
             ErrCounter--;
             if(ErrCounter == 0)
@@ -551,17 +567,17 @@ void Can_InitController(uint8 Controller, const Can_ControllerConfigType* Config
                 return;
             }
         }
-        CanBase[Controller]->IFx[IfRegId].MASK &= 0xD0000000;
+        CanRegs[Controller]->IFx[IfRegId].MASK &= 0xD0000000;
         /* Set new Mask */
-        CanBase[Controller]->IFx[IfRegId].MASK |= (*(hoh->CanFilterMaskRef)) & 0x1FFFFFFF;
+        CanRegs[Controller]->IFx[IfRegId].MASK |= (*(hoh->CanFilterMaskRef)) & 0x1FFFFFFF;
         /* Write new Mask to MaskRegister */
-        CanBase[Controller]->IFx[IfRegId].COM   = 0x00C80000 | (MsgNr);
+        CanRegs[Controller]->IFx[IfRegId].COM   = 0x00C80000 | (MsgNr);
 
         IfRegId ^= 1;
     }
 
     /* Wait until Busy Flag is 0 */
-    while(CanBase[Controller]->IFx[IfRegId].COM & 0x00008000)
+    while(CanRegs[Controller]->IFx[IfRegId].COM & 0x00008000)
     {
         ErrCounter--;
         if(ErrCounter == 0)
@@ -572,11 +588,11 @@ void Can_InitController(uint8 Controller, const Can_ControllerConfigType* Config
         }
     }   
     /* Set CCE Bit to allow access to BitTiming Register (Init already set, in mode "stopped") */
-    CanBase[Controller]->CTL |= 0x00000040;
+    CanRegs[Controller]->CTL |= 0x00000040;
     /* Set Bit Timing Register */
-    CanBase[Controller]->BTR = Can_CalculateBTR(Controller);
+    CanRegs[Controller]->BTR = Can_CalculateBTR(Controller);
     /* Clear CCE Bit */
-    CanBase[Controller]->CTL &= ~0x00000040;
+    CanRegs[Controller]->CTL &= ~0x00000040;
 
 }
 
@@ -612,9 +628,9 @@ Can_ReturnType Can_SetControllerMode(uint8 Controller, Can_StateTransitionType T
     {
     case CAN_T_START:
         /* Clear Init Bit */
-        CanBase[Controller]->CTL  &= ~0x00000001;
+        CanRegs[Controller]->CTL  &= ~0x00000001;
         /* Clear Status Register */
-        CanBase[Controller]->SR    = 0x0000011F;
+        CanRegs[Controller]->SR    = 0x0000011F;
 
         ControllerMode[Controller] = CANIF_CS_STARTED;
         Can_EnableControllerInterrupts(Controller);
@@ -622,23 +638,23 @@ Can_ReturnType Can_SetControllerMode(uint8 Controller, Can_StateTransitionType T
 
     case CAN_T_STOP:
         /* Set Init Bit */
-        CanBase[Controller]->CTL  |=  0x00000001;
+        CanRegs[Controller]->CTL  |=  0x00000001;
         ControllerMode[Controller] = CANIF_CS_STOPPED;
         Can_DisableControllerInterrupts(Controller);
         break;
 
     case CAN_T_SLEEP:
         /* Set PDR  Bit */
-        CanBase[Controller]->CTL |=  0x01000000;
+        CanRegs[Controller]->CTL |=  0x01000000;
         /* Save actual Register status */
-        RegBuf = CanBase[Controller]->CTL;
+        RegBuf = CanRegs[Controller]->CTL;
         /* Disable Status Interrupts and WUBA */
-        CanBase[Controller]->CTL &= ~0x02000004;
+        CanRegs[Controller]->CTL &= ~0x02000004;
         /* Wait until Local Power Down Mode acknowledged */
-        while(!(CanBase[Controller]->SR & 0x00000400))
+        while(!(CanRegs[Controller]->SR & 0x00000400))
         {
             /* Check if a WakeUp occurs */
-            if(CanBase[Controller]->SR & 0x00000200)
+            if(CanRegs[Controller]->SR & 0x00000200)
             {
                 Status = CAN_NOT_OK;
                 break;
@@ -653,13 +669,13 @@ Can_ReturnType Can_SetControllerMode(uint8 Controller, Can_StateTransitionType T
             }
         }
         /* Reset Control Register */
-        CanBase[Controller]->CTL   = RegBuf;
+        CanRegs[Controller]->CTL   = RegBuf;
         ControllerMode[Controller] = CANIF_CS_SLEEP;
         break;
 
     case CAN_T_WAKEUP:
         /* Clear PDR Bit */
-        CanBase[Controller]->CTL  &= ~0x01000000;
+        CanRegs[Controller]->CTL  &= ~0x01000000;
         ControllerMode[Controller] = CANIF_CS_STOPPED;
         break;
 
@@ -691,7 +707,7 @@ void Can_DisableControllerInterrupts(uint8 Controller)
     }
 #endif 
     /* Clear IE */
-    CanBase[Controller]->CTL &= ~0x00000002;
+    CanRegs[Controller]->CTL &= ~DCAN_IRQ_MASK;
     /* Increment Disable Counter */
     IntDisableCount[Controller]++;
 }
@@ -715,7 +731,7 @@ void Can_EnableControllerInterrupts(uint8 Controller)
         if(IntDisableCount[Controller] == 1)
         {
             /* Set IE */
-            CanBase[Controller]->CTL |= 0x00000002;
+            CanRegs[Controller]->CTL |= DCAN_IRQ_MASK;
         }
         IntDisableCount[Controller]--;
     }
@@ -733,7 +749,7 @@ void Can_Cbk_CheckWakeup(uint8 Controller)
     }
 #endif
     // Check WakeUpPending
-    if(CanBase[Controller]->SR & 0x00000200)
+    if(CanRegs[Controller]->SR & 0x00000200)
     {
         return E_OK;
     }
@@ -793,11 +809,10 @@ Can_ReturnType Can_Write(Can_Arc_HTHType Hth, Can_PduType *PduInfo)
     uint64 mbMask = hoh->Can_Arc_MbMask;
     MsgNr = 0;
     for(; mbMask != 0; mbMask >>= 1) {
+    	MsgNr++;
 		if (!(mbMask & 1)) {
 			continue; // This message object is not part of this hoh.
 		}
-		// Just use the first message object.
-		MsgNr++;
     }
 
     CurPduArrayPtr   = ControllerConfig[ControllerId].PduPtr    + (MsgNr - 1);
@@ -817,13 +832,13 @@ Can_ReturnType Can_Write(Can_Arc_HTHType Hth, Can_PduType *PduInfo)
     }
 
     /* Check if TxRqst Bit of MsgObject is set */
-    if(CanBase[ControllerId]->TRx[MsgNr >> 5] & (1 << (MsgNr & 0x1F)))
+    if(CanRegs[ControllerId]->TRx[MsgNr >> 5] & (1 << (MsgNr & 0x1F)))
     {
         return CAN_BUSY;
     }
 
     /* Wait until Busy Flag is 0 */
-    while(CanBase[ControllerId]->IFx[IfRegId].COM & 0x00008000)
+    while(CanRegs[ControllerId]->IFx[IfRegId].COM & 0x00008000)
     {
         ErrCounter--;
         if(ErrCounter == 0)
@@ -835,19 +850,26 @@ Can_ReturnType Can_Write(Can_Arc_HTHType Hth, Can_PduType *PduInfo)
     }
 
     /* Set NewDat, TxIE (dep on ControllerConfig), TxRqst, EoB and DLC */
-    CanBase[ControllerId]->IFx[IfRegId].MC = 0x00000180 | (0x000F & PduInfo->length) | (CanControllerConfigData[ControllerId].CanTxProcessing << 1);
+    CanRegs[ControllerId]->IFx[IfRegId].MC = 	  0x00000100 // Tx request
+											| 0x00000080 // Eob should be set to one for tx
+											| (0x000F & PduInfo->length) // Set DLC
+											| CanControllerConfigData[ControllerId].CanRxProcessing
+											| (CanControllerConfigData[ControllerId].CanTxProcessing << 1); // Tx confirmation interrupt enabled
+
+
+    //CanRegs[ControllerId]->IFx[IfRegId].MC = 0x00000180 | (0x000F & PduInfo->length) | (CanControllerConfigData[ControllerId].CanTxProcessing);
 
     /* Set ArbitrationRegister */
-    CanBase[ControllerId]->IFx[IfRegId].ARB = ArbRegValue;
+    CanRegs[ControllerId]->IFx[IfRegId].ARB = ArbRegValue;
 
     /* Set Databytes */
     for(DataByteIndex = 0; DataByteIndex < PduInfo->length; DataByteIndex++)
     {
-        CanBase[ControllerId]->IFx[IfRegId].DATx[ElementIndex[DataByteIndex]] = *CurSduPtr++;
+        CanRegs[ControllerId]->IFx[IfRegId].DATx[ElementIndex[DataByteIndex]] = *CurSduPtr++;
     }
 
     /* Start transmission to MessageRAM */
-    CanBase[ControllerId]->IFx[IfRegId].COM = 0x00BF0000 | MsgNr;
+    CanRegs[ControllerId]->IFx[IfRegId].COM = 0x00BF0000 | MsgNr;
     
     /* Save the PduInfo in PduArray, so that messages can be identified later */
     *CurPduArrayPtr = *PduInfo;
