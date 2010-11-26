@@ -24,6 +24,7 @@
 #include <string.h>
 #include "Fee.h"
 #include "Fee_Cbk.h"
+#include "Fee_Memory_Cfg.h"
 #include "NvM.h"
 #include "Fls.h"
 #include "Rte.h" // ???
