@@ -36,8 +36,7 @@ static uint32 internal_data_go_off_one_state_timeout = 0;
 #endif
 
 
-
-inline void EcuM_enter_run_mode(void)
+void EcuM_enter_run_mode(void)
 {
 	internal_data.current_state = ECUM_STATE_APP_RUN;
 	EcuM_OnEnterRUN();

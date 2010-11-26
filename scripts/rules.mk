@@ -31,7 +31,7 @@ endef
 $(foreach mod,$(MOD_AVAIL),$(eval $(call MOD_AVAIL_template,${mod})))
 $(foreach mod,$(MOD_USE),$(eval $(call MOD_USE_template,${mod})))
 $(foreach mod,$(CFG),$(eval $(call CFG_template,${mod})))
-def-y += $(ARCH) $(ARCH_FAM) $(ARCH_MCU) 
+#def-y += $(ARCH) $(ARCH_FAM) $(ARCH_MCU) 
 
 # Select console / debug
 $(foreach mod,$(SELECT_OS_CONSOLE),$(eval $(call MOD_USE_template,${mod})))

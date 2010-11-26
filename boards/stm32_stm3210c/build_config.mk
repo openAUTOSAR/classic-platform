@@ -10,7 +10,7 @@ ARCH_MCU=arm_cm3
 
 CFG=ARM ARM_CM3
 # Add our board  
-CFG+=BRD_STM32_MCBSTM32 
+CFG+=BRD_STM32_STM3210C 
 
 # 
 # ST have devided devices into ( See chapter 6 in Ref manual )
