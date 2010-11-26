@@ -32,7 +32,7 @@
 /** Build change pin direction API */
 #define PORT_SET_PIN_DIRECTION_API	        STD_ON
 /** Allow Pin mode changes during runtime (not avail on this CPU) */
-#define PORT_SET_PIN_MODE_API               STD_ON
+#define PORT_SET_PIN_MODE_API               STD_OFF
 
 #define GPIO_INPUT_MODE           (0)
 #define GPIO_OUTPUT_10MHz_MODE    (1)
@@ -53,8 +53,6 @@
 
 #define GPIO_OUTPUT_LOW           (0)
 #define GPIO_OUTPUT_HIGH          (1)
-
-
 
 typedef struct
 {
