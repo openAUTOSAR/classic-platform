@@ -109,21 +109,24 @@ typedef struct {
 	uint8					NumberOfWriteFailed;	// Current write retry cycle
 } AdministrativeBlockType;
 
-AdministrativeBlockType AdminBlock[NVM_NUM_OF_NVRAM_BLOCKS];
+static AdministrativeBlockType AdminBlock[NVM_NUM_OF_NVRAM_BLOCKS];
 
 typedef struct {
 	NvM_RequestResultType	ErrorStatus;			// Status from multi block requests i.e. Read/Write/CancelWrite-all
 } AdministrativeMultiBlockType;
 
-AdministrativeMultiBlockType AdminMultiBlock;
+static AdministrativeMultiBlockType AdminMultiBlock;
 
+/*
+ * This function needs to be implemented!
+ */
 static void CalcCrc(void)
 {
 	// TODO: Calculate CRC
 }
 
 typedef struct {
-	boolean JobFinnished;
+	boolean JobFinished;
 	Std_ReturnType JobStatus;
 	MemIf_JobResultType JobResult;
 	const NvM_BlockDescriptorType *BlockDescriptor;
@@ -131,7 +134,7 @@ typedef struct {
 } MemIfJobAdminType;
 
 static MemIfJobAdminType MemIfJobAdmin = {
-		.JobFinnished = TRUE,
+		.JobFinished = TRUE,
 		.JobStatus = E_OK,
 		.JobResult = MEMIF_JOB_OK,
 		.BlockDescriptor = NULL,
@@ -145,74 +148,76 @@ typedef struct {
 
 static AdminMultiReqType AdminMultiReq;
 
-
-static void SetFlsJobBusy()
+/*
+ * Set the MemIf job as busy
+ */
+static void SetMemifJobBusy()
 {
-	MemIfJobAdmin.JobFinnished = FALSE;
+	MemIfJobAdmin.JobFinished = FALSE;
 }
 
 
 #if (NVM_POLLING_MODE == STD_ON)
-static boolean CheckFlsJobFinnished(void)
+/*
+ * Check if the MemIf job is finished
+ */
+static boolean CheckMemIfJobFinished(void)
 {
 	MemIf_JobResultType jobResult;
 
-	if (!MemIfJobAdmin.JobFinnished) {
+	if (!MemIfJobAdmin.JobFinished) {
 		jobResult = MemIf_GetJobResult();
 
 		if (jobResult == MEMIF_JOB_OK) {
-			MemIfJobAdmin.JobFinnished = TRUE;
+			MemIfJobAdmin.JobFinished = TRUE;
 			MemIfJobAdmin.JobStatus = E_OK;
 			MemIfJobAdmin.JobResult = jobResult;
 		} else if (jobResult != MEMIF_JOB_PENDING) {
-			MemIfJobAdmin.JobFinnished = TRUE;
+			MemIfJobAdmin.JobFinished = TRUE;
 			MemIfJobAdmin.JobStatus = E_NOT_OK;
 			MemIfJobAdmin.JobResult = jobResult;
 		}
 	}
 
-	return MemIfJobAdmin.JobFinnished;
+	return MemIfJobAdmin.JobFinished;
 }
 #else
-static boolean CheckFlsJobFinnished(void)
+/*
+ * Check if the MemIf job is finished
+ */
+static boolean CheckMemIfJobFinished(void)
 {
-	return MemIfJobAdmin.JobFinnished;
-}
-
-void NvM_JobEndNotification(void)
-{
-	MemIfJobAdmin.JobFinnished = TRUE;
-	MemIfJobAdmin.JobStatus = E_OK;
-	MemIfJobAdmin.JobResult = MemIf_GetJobResult();
-}
-
-void NvM_JobErrorNotification(void)
-{
-	MemIfJobAdmin.JobFinnished = TRUE;
-	MemIfJobAdmin.JobStatus = E_NOT_OK;
-	MemIfJobAdmin.JobResult = MemIf_GetJobResult();
+	return MemIfJobAdmin.JobFinished;
 }
 #endif
 
-static void AbortFlsJob(MemIf_JobResultType jobResult)
+
+/*
+ * Abort the MemIf job with E_NOT_OK
+ */
+static void AbortMemIfJob(MemIf_JobResultType jobResult)
 {
-	MemIfJobAdmin.JobFinnished = TRUE;
+	MemIfJobAdmin.JobFinished = TRUE;
 	MemIfJobAdmin.JobStatus = E_NOT_OK;
 	MemIfJobAdmin.JobResult = jobResult;
 }
 
+
+/*
+ * Request a read of a block from MemIf
+ */
 static void ReadBlock(const NvM_BlockDescriptorType *blockDescriptor, AdministrativeBlockType *adminBlock, uint8 setNumber, uint8 *destAddress)
 {
 	Std_ReturnType returnCode;
 	uint16 blockOffset = 0;	// TODO: How to calculate this?
 
 	if (setNumber < blockDescriptor->NvBlockNum) {
-		SetFlsJobBusy();
+		SetMemifJobBusy();
 		MemIfJobAdmin.BlockAdmin = adminBlock;
 		MemIfJobAdmin.BlockDescriptor = blockDescriptor;
 		returnCode = MemIf_Read(blockDescriptor->NvramDeviceId, (blockDescriptor->NvBlockBaseNumber << NVM_DATASET_SELECTION_BITS) | setNumber, blockOffset, destAddress, blockDescriptor->NvBlockLength);
 		if (returnCode != E_OK) {
-			AbortFlsJob(MEMIF_JOB_FAILED);
+			AbortMemIfJob(MEMIF_JOB_FAILED);
 		}
 	} else if (setNumber < blockDescriptor->NvBlockNum + blockDescriptor->RomBlockNum) {
 		// TODO: Read from ROM
@@ -223,54 +228,9 @@ static void ReadBlock(const NvM_BlockDescriptorType *blockDescriptor, Administra
 }
 
 
-static void WriteBlock(const NvM_BlockDescriptorType *blockDescriptor, AdministrativeBlockType *adminBlock, uint8 setNumber, uint8 *sourceAddress)
-{
-	Std_ReturnType returnCode;
-
-	if (setNumber < blockDescriptor->NvBlockNum) {
-		SetFlsJobBusy();
-		MemIfJobAdmin.BlockAdmin = adminBlock;
-		MemIfJobAdmin.BlockDescriptor = blockDescriptor;
-		returnCode = MemIf_Write(blockDescriptor->NvramDeviceId, (blockDescriptor->NvBlockBaseNumber << NVM_DATASET_SELECTION_BITS) | setNumber, sourceAddress);
-		if (returnCode != E_OK) {
-			AbortFlsJob(MEMIF_JOB_FAILED);
-		}
-	} else {
-		// Error: setNumber out of range
-		DET_REPORTERROR(MODULE_ID_NVM, 0, NVM_LOC_WRITE_BLOCK_ID, NVM_PARAM_OUT_OF_RANGE);
-	}
-}
-
-
-void NvM_Init(void)
-{
-	/** @req NVM399 *//** @req NVM193 */
-	const NvM_BlockDescriptorType	*BlockDescriptorList = NvM_Config.BlockDescriptor;
-	AdministrativeBlockType *AdminBlockTable = AdminBlock;
-	uint16 i;
-
-	// Initiate the administration blocks
-	for (i = 0; i< NVM_NUM_OF_NVRAM_BLOCKS; i++) {
-		if (BlockDescriptorList->BlockManagementType == NVM_BLOCK_DATASET) {
-			AdminBlockTable->DataIndex = 0;	/** @req NVM192 */
-		}
-		AdminBlockTable->BlockWriteProtected = BlockDescriptorList->BlockWriteProt;
-		AdminBlockTable->ErrorStatus = NVM_REQ_NOT_OK;
-		AdminBlockTable->BlockChanged = FALSE;
-		AdminBlockTable->BlockValid = FALSE;
-		AdminBlockTable->NumberOfWriteFailed = 0;
-
-		AdminBlockTable++;
-		BlockDescriptorList++;
-	}
-
-	AdminMultiBlock.ErrorStatus = NVM_REQ_NOT_OK;
-
-	// Set status to initialized
-	nvmState = NVM_IDLE;	/** @req NVM399 */
-}
-
-
+/*
+ * Initiate the read all job
+ */
 static void ReadAllInit(void)
 {
 	/*
@@ -309,6 +269,9 @@ static void ReadAllInit(void)
 }
 
 
+/*
+ * Main function for the read all job
+ */
 static void ReadAllMain(void)
 {
 	const NvM_BlockDescriptorType	*BlockDescriptorList = NvM_Config.BlockDescriptor;
@@ -359,7 +322,10 @@ static void ReadAllMain(void)
 }
 
 
-void ReadAllCheckReadResult(void)
+/*
+ * Handles the MemIf result of one block read
+ */
+static void ReadAllCheckReadResult(void)
 {
 	if (MemIfJobAdmin.JobStatus == E_OK) {
 		if (MemIfJobAdmin.BlockDescriptor->BlockUseCrc) {
@@ -384,13 +350,24 @@ void ReadAllCheckReadResult(void)
 		MemIfJobAdmin.BlockAdmin->BlockState = BLOCK_STATE_IDLE;
 		MemIfJobAdmin.BlockAdmin->BlockValid = FALSE;
 		MemIfJobAdmin.BlockAdmin->BlockChanged = FALSE;
+
 		switch (MemIfJobAdmin.JobResult ) {
 		case MEMIF_BLOCK_INVALID:
 			MemIfJobAdmin.BlockAdmin->ErrorStatus = NVM_REQ_NV_INVALIDATED;	/** @req NVM342 */
 			break;
 
-		case MEMIF_BLOCK_INCONSISTENT:
-			MemIfJobAdmin.BlockAdmin->ErrorStatus = NVM_REQ_INTEGRITY_FAILED;	/** @req NVM360 */
+		case MEMIF_BLOCK_INCONSISTENT:										/** @req NVM360 */
+			MemIfJobAdmin.BlockAdmin->ErrorStatus = NVM_REQ_INTEGRITY_FAILED;
+#if defined(USE_DEM)
+		Dem_ReportErrorStatus(NVM_E_INTEGRITY_FAILED,DEM_EVENT_STATUS_FAILED);
+#endif
+			break;
+
+		case MEMIF_JOB_FAILED:												/** @req NVM361 */
+			MemIfJobAdmin.BlockAdmin->ErrorStatus = NVM_REQ_NOT_OK;
+#if defined(USE_DEM)
+			Dem_ReportErrorStatus(NVM_E_REQ_FAILED,DEM_EVENT_STATUS_FAILED);
+#endif
 			break;
 
 		default:
@@ -406,35 +383,33 @@ void ReadAllCheckReadResult(void)
 }
 
 
-void NvM_ReadAll(void)
+/*
+ * Request writing of a block to MemIf
+ */
+static void WriteBlock(const NvM_BlockDescriptorType *blockDescriptor, AdministrativeBlockType *adminBlock, uint8 setNumber, uint8 *sourceAddress)
 {
-	AdministrativeBlockType *AdminBlockTable = AdminBlock;
-	uint16 i;
+	Std_ReturnType returnCode;
 
-	VALIDATE_NO_RV(nvmState != NVM_UNINITIALIZED, NVM_READ_ALL_ID, NVM_E_NOT_INITIALIZED);
-	// Check queue
-	// TODO: Check queue
-
-	// Check state
-	if (nvmState == NVM_IDLE) {
-		nvmState = NVM_READ_ALL_REQUESTED;		/** @req NVM243 */
-
-		// Set status to pending in the administration blocks
-		AdminMultiBlock.ErrorStatus = NVM_REQ_PENDING;
-
-		for (i = 0; i < NVM_NUM_OF_NVRAM_BLOCKS; i++) {
-			AdminBlockTable->ErrorStatus = NVM_REQ_PENDING;
-			AdminBlockTable++;
+	if (setNumber < blockDescriptor->NvBlockNum) {
+		SetMemifJobBusy();
+		MemIfJobAdmin.BlockAdmin = adminBlock;
+		MemIfJobAdmin.BlockDescriptor = blockDescriptor;
+		returnCode = MemIf_Write(blockDescriptor->NvramDeviceId, (blockDescriptor->NvBlockBaseNumber << NVM_DATASET_SELECTION_BITS) | setNumber, sourceAddress);
+		if (returnCode != E_OK) {
+			AbortMemIfJob(MEMIF_JOB_FAILED);
 		}
+	} else {
+		// Error: setNumber out of range
+		DET_REPORTERROR(MODULE_ID_NVM, 0, NVM_LOC_WRITE_BLOCK_ID, NVM_PARAM_OUT_OF_RANGE);
 	}
 }
 
 
+/*
+ * Initiate the write all job
+ */
 static void WriteAllInit(void)
 {
-	/*
-	 * Initiate the write all job
-	 */
 	const NvM_BlockDescriptorType	*BlockDescriptorList = NvM_Config.BlockDescriptor;
 	AdministrativeBlockType *AdminBlockTable = AdminBlock;
 	uint16 i;
@@ -466,6 +441,9 @@ static void WriteAllInit(void)
 }
 
 
+/*
+ * Main function for the write all job
+ */
 static void WriteAllMain(void)
 {
 	const NvM_BlockDescriptorType	*BlockDescriptorList = NvM_Config.BlockDescriptor;
@@ -516,7 +494,10 @@ static void WriteAllMain(void)
 }
 
 
-void WriteAllCheckWriteResult(void)
+/*
+ * Handles the result of one MemIf block write
+ */
+static void WriteAllCheckWriteResult(void)
 {
 	if (MemIfJobAdmin.JobStatus == E_OK) {
 		// TODO: Check if redundant block shall be written NVM337
@@ -539,8 +520,10 @@ void WriteAllCheckWriteResult(void)
 			AdminMultiReq.PendingErrorStatus = NVM_REQ_NOT_OK;
 
 			MemIfJobAdmin.BlockAdmin->BlockState = BLOCK_STATE_IDLE;
-			MemIfJobAdmin.BlockAdmin->ErrorStatus = NVM_REQ_NOT_OK;
-//			Dem_ReportErrorStatus(NVM_E_REQ_FAILED,DEM_EVENT_STATUS_FAILED); TODO: Add this!
+			MemIfJobAdmin.BlockAdmin->ErrorStatus = NVM_REQ_NOT_OK;	/** @req NVM296 */
+#if defined(USE_DEM)
+			Dem_ReportErrorStatus(NVM_E_REQ_FAILED,DEM_EVENT_STATUS_FAILED);
+#endif
 
 			if (MemIfJobAdmin.BlockDescriptor->SingleBlockCallback != NULL) {
 				MemIfJobAdmin.BlockDescriptor->SingleBlockCallback(NVM_SERVICE_ID, MemIfJobAdmin.BlockAdmin->ErrorStatus);
@@ -551,6 +534,74 @@ void WriteAllCheckWriteResult(void)
 }
 
 
+/***************************************
+ *    External accessible functions    *
+ ***************************************/
+/*
+ * Procedure:	NvM_Init
+ * Reentrant:	No
+ */
+void NvM_Init(void)
+{
+	/** @req NVM399 *//** @req NVM193 */
+	const NvM_BlockDescriptorType	*BlockDescriptorList = NvM_Config.BlockDescriptor;
+	AdministrativeBlockType *AdminBlockTable = AdminBlock;
+	uint16 i;
+
+	// Initiate the administration blocks
+	for (i = 0; i< NVM_NUM_OF_NVRAM_BLOCKS; i++) {
+		if (BlockDescriptorList->BlockManagementType == NVM_BLOCK_DATASET) {
+			AdminBlockTable->DataIndex = 0;	/** @req NVM192 */
+		}
+		AdminBlockTable->BlockWriteProtected = BlockDescriptorList->BlockWriteProt;
+		AdminBlockTable->ErrorStatus = NVM_REQ_NOT_OK;
+		AdminBlockTable->BlockChanged = FALSE;
+		AdminBlockTable->BlockValid = FALSE;
+		AdminBlockTable->NumberOfWriteFailed = 0;
+
+		AdminBlockTable++;
+		BlockDescriptorList++;
+	}
+
+	AdminMultiBlock.ErrorStatus = NVM_REQ_NOT_OK;
+
+	// Set status to initialized
+	nvmState = NVM_IDLE;	/** @req NVM399 */
+}
+
+
+/*
+ * Procedure:	NvM_ReadAll
+ * Reentrant:	No
+ */
+void NvM_ReadAll(void)
+{
+	AdministrativeBlockType *AdminBlockTable = AdminBlock;
+	uint16 i;
+
+	VALIDATE_NO_RV(nvmState != NVM_UNINITIALIZED, NVM_READ_ALL_ID, NVM_E_NOT_INITIALIZED);
+	// Check queue
+	// TODO: Check queue
+
+	// Check state
+	if (nvmState == NVM_IDLE) {
+		nvmState = NVM_READ_ALL_REQUESTED;		/** @req NVM243 */
+
+		// Set status to pending in the administration blocks
+		AdminMultiBlock.ErrorStatus = NVM_REQ_PENDING;
+
+		for (i = 0; i < NVM_NUM_OF_NVRAM_BLOCKS; i++) {
+			AdminBlockTable->ErrorStatus = NVM_REQ_PENDING;
+			AdminBlockTable++;
+		}
+	}
+}
+
+
+/*
+ * Procedure:	NvM_WriteAll
+ * Reentrant:	No
+ */
 void NvM_WriteAll(void)
 {
 	AdministrativeBlockType *AdminBlockTable = AdminBlock;
@@ -575,12 +626,20 @@ void NvM_WriteAll(void)
 }
 
 
+/*
+ * Procedure:	NvM_CancelWriteAll
+ * Reentrant:	No
+ */
 void NvM_CancelWriteAll(void)
 {
 	
 }
 
 
+/*
+ * Procedure:	NvM_GetErrorStatus
+ * Reentrant:	Yes
+ */
 void NvM_GetErrorStatus(NvM_BlockIdType blockId, uint8 *requestResultPtr)
 {
 	VALIDATE_NO_RV(nvmState != NVM_UNINITIALIZED, NVM_GET_ERROR_STATUS_ID, NVM_E_NOT_INITIALIZED);
@@ -597,6 +656,10 @@ void NvM_GetErrorStatus(NvM_BlockIdType blockId, uint8 *requestResultPtr)
 
 
 #if (NVM_SET_RAM_BLOCK_STATUS_API == STD_ON)	/** @req NVM408 */
+/*
+ * Procedure:	Nvm_SetRamBlockStatus
+ * Reentrant:	Yes
+ */
 void Nvm_SetRamBlockStatus(NvM_BlockIdType blockId, boolean blockChanged)
 {
 	const NvM_BlockDescriptorType	*BlockDescriptorList = NvM_Config.BlockDescriptor;
@@ -621,6 +684,13 @@ void Nvm_SetRamBlockStatus(NvM_BlockIdType blockId, boolean blockChanged)
 #endif
 
 
+/***************************************
+ *         Scheduled functions         *
+ ***************************************/
+/*
+ * Procedure:	NvM_MainFunction
+ * Reentrant:	No
+ */
 void NvM_MainFunction(void)
 {
 	switch (nvmState) {
@@ -643,7 +713,7 @@ void NvM_MainFunction(void)
 		break;
 
 	case NVM_READ_ALL_PENDING:
-		if (CheckFlsJobFinnished()) {
+		if (CheckMemIfJobFinished()) {
 			ReadAllCheckReadResult();
 		}
 		CalcCrc();
@@ -661,7 +731,7 @@ void NvM_MainFunction(void)
 		break;
 
 	case NVM_WRITE_ALL_PENDING:
-		if (CheckFlsJobFinnished()) {
+		if (CheckMemIfJobFinished()) {
 			WriteAllCheckWriteResult();
 		}
 		CalcCrc();
@@ -672,4 +742,32 @@ void NvM_MainFunction(void)
 		break;
 	}
 }
+
+
+/***************************************
+ *  Call-back notifications functions  *
+ ***************************************/
+#if (NVM_POLLING_MODE == STD_OFF)
+/*
+ * Procedure:	NvM_JobEndNotification
+ * Reentrant:	No
+ */
+void NvM_JobEndNotification(void)
+{
+	MemIfJobAdmin.JobFinished = TRUE;
+	MemIfJobAdmin.JobStatus = E_OK;
+	MemIfJobAdmin.JobResult = MemIf_GetJobResult();
+}
+
+/*
+ * Procedure:	NvM_JobErrorNotification
+ * Reentrant:	No
+ */
+void NvM_JobErrorNotification(void)
+{
+	MemIfJobAdmin.JobFinished = TRUE;
+	MemIfJobAdmin.JobStatus = E_NOT_OK;
+	MemIfJobAdmin.JobResult = MemIf_GetJobResult();
+}
+#endif
 
