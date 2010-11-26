@@ -132,7 +132,7 @@ Std_ReturnType Dem_GetEventStatus(Dem_EventIdType eventId, Dem_EventStatusExtend
 Std_ReturnType Dem_GetEventFailed(Dem_EventIdType eventId, boolean *eventFailed); /** @req DEM196 */
 Std_ReturnType Dem_GetEventTested(Dem_EventIdType eventId, boolean *eventTested); /** @req DEM197 */
 Std_ReturnType Dem_GetFaultDetectionCounter(Dem_EventIdType eventId, sint8 *counter); /** @req DEM203 */
-Std_ReturnType Dem_SetOperationCycleState(Dem_OperationCycleIdType OperationCycleId, Dem_OperationCycleStateType CycleState); /** @req DEM194 */
+Std_ReturnType Dem_SetOperationCycleState(Dem_OperationCycleIdType operationCycleId, Dem_OperationCycleStateType cycleState); /** @req DEM194 */
 Std_ReturnType Dem_GetDTCOfEvent(Dem_EventIdType eventId, Dem_DTCKindType dtcKind, uint32* dtcOfEvent); /** @req DEM198 */
 
 
@@ -147,14 +147,14 @@ void Dem_ReportErrorStatus(Dem_EventIdType eventId ,uint8 eventStatus); /** @req
  */
 Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin); /** @req DEM241 */
 Dem_ReturnSetDTCFilterType Dem_SetDTCFilter(uint8 dtcStatusMask, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin, Dem_FilterWithSeverityType filterWithSeverity, Dem_DTCSeverityType dtcSeverityMask, Dem_FilterForFDCType filterForFaultDetectionCounter);  /** @req DEM208 */
-Dem_ReturnGetStatusOfDTCType Dem_GetStatusOfDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin, Dem_EventStatusExtendedType* dtcStatus); /** @req DEM212 */
+Dem_ReturnGetStatusOfDTCType Dem_GetStatusOfDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin, Dem_EventStatusExtendedType* status); /** @req DEM212 */
 Std_ReturnType Dem_GetDTCStatusAvailabilityMask(uint8 *dtcStatusMask); /** @req DEM213 */
 Dem_ReturnGetNumberOfFilteredDTCType Dem_GetNumberOfFilteredDtc(uint16* numberOfFilteredDTC); /** @req DEM214 */
 Dem_ReturnGetNextFilteredDTCType Dem_GetNextFilteredDTC(uint32* dtc, Dem_EventStatusExtendedType* dtcStatus); /** @req DEM215 */
 Dem_ReturnTypeOfDtcSupportedType Dem_GetTranslationType(void); /** @req DEM230 */
 Dem_ReturnControlDTCStorageType Dem_DisableDTCStorage(Dem_DTCGroupType dtcGroup, Dem_DTCKindType dtcKind); /** @req DEM242 */
 Dem_ReturnControlDTCStorageType Dem_EnableDTCStorage(Dem_DTCGroupType dtcGroup, Dem_DTCKindType dtcKind); /** @req DEM243 */
-Dem_ReturnGetExtendedDataRecordByDTCType Dem_GetExtendedDataRecordByDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin, uint8 extendedDataNumber, uint8 *destBuffer, uint8 *bufSize); /** @req DEM239 */
+Dem_ReturnGetExtendedDataRecordByDTCType Dem_GetExtendedDataRecordByDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin, uint8 extendedDataNumber, uint8 *destBuffer, uint16 *bufSize); /** @req DEM239 */
 Dem_ReturnGetSizeOfExtendedDataRecordByDTCType Dem_GetSizeOfExtendedDataRecordByDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin, uint8 extendedDataNumber, uint16 *sizeOfExtendedDataRecord); /** @req DEM240 */
 
 

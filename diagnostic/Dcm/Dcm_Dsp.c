@@ -460,7 +460,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x06_0x10(const PduInfoTyp
 		if (getStatusOfDtcResult == DEM_STATUS_OK) {
 			Dem_ReturnGetExtendedDataRecordByDTCType getExtendedDataRecordByDtcResult;
 			uint16 recNum;
-			uint8 recLength;
+			uint16 recLength;
 			uint16 txIndex = 6;
 
 			/** @req DCM297 */ /** @req DCM474 */ /** @req DCM386 */

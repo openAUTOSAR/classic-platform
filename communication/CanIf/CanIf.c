@@ -295,6 +295,7 @@ Std_ReturnType CanIf_SetControllerMode(uint8 Controller,
     if (Can_SetControllerMode(canControllerId, CAN_T_STOP) == CAN_NOT_OK)
       return E_NOT_OK;
     CanIf_Global.channelData[channel].ControllerMode = CANIF_CS_STOPPED;
+    break;
   }
 
   case CANIF_CS_UNINIT:

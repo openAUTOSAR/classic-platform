@@ -39,6 +39,7 @@ static Det_StateType _detState = DET_UNINITIALIZED;
 #if ( DET_USE_RAMLOG == STD_ON )
 // Ram log variables in uninitialized memory
 uint32 Det_RamlogIndex __attribute__ ((section (".ramlog")));
+/*lint -esym(552,Det_RamLog)*/ /* supress lintwarning about Det_Ramlog not being accessed */
 Det_EntryType Det_RamLog[DET_RAMLOG_SIZE] __attribute__ ((section (".ramlog")));
 #endif
 
@@ -141,8 +142,9 @@ void Det_ReportError(uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 Error
             Det_RamLog[Det_RamlogIndex].errorId = ErrorId;
             Det_RamlogIndex++;
 #if ( DET_WRAP_RAMLOG == STD_ON )
-            if (Det_RamlogIndex == DET_RAMLOG_SIZE)
+            if (Det_RamlogIndex == DET_RAMLOG_SIZE){
                 Det_RamlogIndex = 0;
+            }
 #endif
         }
         Irq_Restore(old2);

@@ -71,11 +71,10 @@ typedef struct {
 	((_vi)->ar_patch_version =  _module ## _AR_PATCH_VERSION);
 
 
-// TODO: Move to OSEK implementation, See 8.2 in SWS_StandardTypes
-
-#define STATUSTYPEDEFINED
 typedef enum {
-	E_OK = 0,
+	E_OK = 0,						/**< Differs from spec. (see StandardTypes 8.2.1)  */
+	E_NOT_OK = 1,					/**< Differs from spec. (see StandardTypes 8.2.1)  */
+
 	E_OS_ACCESS = 1,               /**< STD OSEK */
 	E_OS_CALLEVEL = 2,             /**< STD OSEK */
 	E_OS_ID	= 3,                   /**< STD OSEK */
@@ -100,23 +99,14 @@ typedef enum {
 	/* COM.. TODO: move ?? */
 	E_COM_ID,
 
-
+	//EIJA
 	/** Implementation specific */
 	E_OS_SYS_APA,
 
-	E_NOT_OK,
 } StatusType;
 
 typedef uint8 Std_ReturnType;
 
-
-#ifndef STATUSTYPEDEFINED
-#define STATUSTYPEDEFINED
-#define E_OK 			0
-typedef unsigned char StatusType;
-#endif
-
-#define E_NOT_OK				1
 
 #define E_NO_DTC_AVAILABLE		2
 #define E_SESSION_NOT_ALLOWED	4

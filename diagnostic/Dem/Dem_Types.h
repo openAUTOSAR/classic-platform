@@ -30,10 +30,10 @@
  * DTC storage types
  */
 typedef uint8 Dem_ReturnTypeOfDtcSupportedType;
-#define DEM_ISO15031_6		0x00
-#define DEM_ISO14229_1		0x01
-#define DEM_SAEJ1939_73		0x02
-#define DEM_ISO_11992_4		0x03
+#define DEM_ISO15031_6		(Dem_ReturnTypeOfDtcSupportedType)0x00
+#define DEM_ISO14229_1		(Dem_ReturnTypeOfDtcSupportedType)0x01
+#define DEM_SAEJ1939_73		(Dem_ReturnTypeOfDtcSupportedType)0x02
+#define DEM_ISO_11992_4		(Dem_ReturnTypeOfDtcSupportedType)0x03
 
 /*
  * Dem_EventIdType
@@ -44,42 +44,42 @@ typedef uint16 Dem_EventIdType;
  * Dem_DTCGroupType
  */
 typedef uint32 Dem_DTCGroupType;
-#define	DEM_DTC_GROUP_ALL_DTCS			0xffffff
+#define	DEM_DTC_GROUP_ALL_DTCS			(Dem_DTCGroupType)0xffffff
 
 /*
  * Dem status type
  */
-#define DEM_DTC_STATUS_MASK_ALL			0x00
+#define DEM_DTC_STATUS_MASK_ALL			(uint8)0x00
 
 
 /*
  * DemDTCKindType
  */
 typedef uint8 Dem_DTCKindType;
-#define	DEM_DTC_KIND_ALL_DTCS			0x01
-#define	DEM_DTC_KIND_EMISSION_REL_DTCS	0x02
+#define	DEM_DTC_KIND_ALL_DTCS			(Dem_DTCKindType)0x01
+#define	DEM_DTC_KIND_EMISSION_REL_DTCS	(Dem_DTCKindType)0x02
 
 /*
  * DemDTCOriginType
  */
 typedef uint8 Dem_DTCOriginType;
-#define	DEM_DTC_ORIGIN_SECONDARY_MEMORY	0x01
-#define	DEM_DTC_ORIGIN_PRIMARY_MEMORY	0x02
-#define	DEM_DTC_ORIGIN_PERMANENT_MEMORY	0x03
-#define	DEM_DTC_ORIGIN_MIRROR_MEMORY	0x04
+#define	DEM_DTC_ORIGIN_SECONDARY_MEMORY	(Dem_DTCOriginType)0x01
+#define	DEM_DTC_ORIGIN_PRIMARY_MEMORY	(Dem_DTCOriginType)0x02
+#define	DEM_DTC_ORIGIN_PERMANENT_MEMORY	(Dem_DTCOriginType)0x03
+#define	DEM_DTC_ORIGIN_MIRROR_MEMORY	(Dem_DTCOriginType)0x04
 
 /*
  * DemEventStatusExtendedType
  */
 typedef uint8 Dem_EventStatusExtendedType;
-#define	DEM_TEST_FAILED 							0x01
-#define	DEM_TEST_FAILED_THIS_OPERATION_CYCLE 		0x02
-#define	DEM_PENDING_DTC 							0x04
-#define	DEM_CONFIRMED_DTC 							0x08
-#define	DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR 	0x10
-#define	DEM_TEST_FAILED_SINCE_LAST_CLEAR 			0x20
-#define	DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE 0x40
-#define	DEM_WARNING_INDICATOR_REQUESTED 			0x80
+#define	DEM_TEST_FAILED 							(Dem_EventStatusExtendedType)0x01
+#define	DEM_TEST_FAILED_THIS_OPERATION_CYCLE 		(Dem_EventStatusExtendedType)0x02
+#define	DEM_PENDING_DTC 							(Dem_EventStatusExtendedType)0x04
+#define	DEM_CONFIRMED_DTC 							(Dem_EventStatusExtendedType)0x08
+#define	DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR 	(Dem_EventStatusExtendedType)0x10
+#define	DEM_TEST_FAILED_SINCE_LAST_CLEAR 			(Dem_EventStatusExtendedType)0x20
+#define	DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE (Dem_EventStatusExtendedType)0x40
+#define	DEM_WARNING_INDICATOR_REQUESTED 			(Dem_EventStatusExtendedType)0x80
 
 /*
  * DemOperationCycleType

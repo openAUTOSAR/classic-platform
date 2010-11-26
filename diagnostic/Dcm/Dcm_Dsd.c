@@ -56,8 +56,9 @@ static boolean askApplicationForServicePermission(uint8 *requestData, uint16 dat
 	while (!serviceRequestIndication->Arc_EOL && (returnCode != E_REQUEST_NOT_ACCEPTED)) {
 		if (serviceRequestIndication->Indication != NULL) {
 			result = serviceRequestIndication->Indication(requestData, dataSize);
-			if (result != E_OK)
+			if (result != E_OK){
 				returnCode = result;
+			}
 		}
 		serviceRequestIndication++;
 	}
