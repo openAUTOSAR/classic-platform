@@ -19,6 +19,8 @@
 #include "irq.h"
 #include "arc.h"
 
+#define RTICLK_PRESCALER 10
+
 void CortexR4OsTick() {
 	/** Clear all pending interrupts
 	 *  otherwise this will hit again
@@ -61,16 +63,22 @@ static inline uint32_t SysTick_Config(uint32_t ticks)
 	rtiREG1->CNT[0U].FRCx = 0x00000000U;
 
 	/** - Setup up counter 0 compare value
-	*     - 0x00000000: Divide by 2^32
-	*     - 0x00000001-0xFFFFFFFF: Divide by (CPUC0 + 1)
-	*/
-	rtiREG1->CNT[0U].CPUCx = 4U;
+	 *  The RTI module is driven by RTICLK. With the Arctic Core
+	 *  MCU driver for cortex R4 RTICLK = VCLK = PLLCLK / 2
+	 *  ticks = number of PLLCLK cycles per os tick = number of RTICLK cycles * 2 per os tick
+	 *
+	 *     - 0x00000000: Divide by 2^32
+	 *     - 0x00000001-0xFFFFFFFF: Divide by (CPUCx + 1)
+	 */
+	rtiREG1->CNT[0U].CPUCx = RTICLK_PRESCALER - 1;
+
+	uint8 vclkDiv = systemREG1->VCLKR + 1;
 
 	/** - Setup compare 0 value. This value is compared with selected free running counter. */
-	rtiREG1->CMP[0U].COMPx = ticks / 8;
+	rtiREG1->CMP[0U].COMPx = ticks / (RTICLK_PRESCALER * vclkDiv);
 
 	/** - Setup update compare 0 value. This value is added to the compare 0 value on each compare match. */
-	rtiREG1->CMP[0U].UDCPx = ticks / 8;
+	rtiREG1->CMP[0U].UDCPx = ticks / (RTICLK_PRESCALER * vclkDiv);
 
 	/** - Clear all pending interrupts */
 	rtiREG1->INTFLAG = 0x0;
