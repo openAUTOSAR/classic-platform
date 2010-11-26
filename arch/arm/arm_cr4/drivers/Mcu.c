@@ -373,13 +373,14 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
 
 void Mcu_DistributePllClock(void)
 {
-
+	VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_DISTRIBUTEPLLCLOCK_SERVICE_ID, MCU_E_UNINIT );
 }
 
 //-------------------------------------------------------------------
 
 
 Mcu_PllStatusType Mcu_GetPllStatus(void) {
+	VALIDATE_W_RV( ( 1 == Mcu_Global.initRun ), MCU_GETPLLSTATUS_SERVICE_ID, MCU_E_UNINIT, MCU_PLL_STATUS_UNDEFINED );
 
 	if ((systemREG1->CSVSTAT & ((systemREG1->CSDIS ^ 0xFF) & 0xFF)) != ((systemREG1->CSDIS ^ 0xFF) & 0xFF)) {
 		return MCU_PLL_UNLOCKED;
@@ -395,9 +396,38 @@ Mcu_PllStatusType Mcu_GetPllStatus(void) {
  * @return
  */
 Mcu_ResetType Mcu_GetResetReason(void) {
-	// TODO Not supported
-	Mcu_ResetType rv = MCU_RESET_UNDEFINED;
-	return rv;
+	VALIDATE_W_RV( ( 1 == Mcu_Global.initRun ), MCU_GETRESETREASON_SERVICE_ID, MCU_E_UNINIT, MCU_RESET_UNDEFINED );
+	 Mcu_ResetType reason = MCU_RESET_UNDEFINED;
+
+	if (systemREG1->SYSESR & 0x00008000) {
+		reason = MCU_POWER_ON_RESET;
+		systemREG1->SYSESR = 0x00008000;
+	} else if (systemREG1->SYSESR & 0x00004000) {
+		reason = MCU_OSC_FAILURE_RESET;
+		systemREG1->SYSESR = 0x00004000;
+	} else if (systemREG1->SYSESR & 0x00002000) {
+		reason = MCU_WATCHDOG_RESET;
+		systemREG1->SYSESR = 0x00002000;
+	} else if (systemREG1->SYSESR & 0x00000020) {
+		reason = MCU_CPU_RESET;
+		systemREG1->SYSESR = 0x00000020;
+	} else if (systemREG1->SYSESR & 0x00000010) {
+		reason = MCU_SW_RESET;
+		systemREG1->SYSESR = 0x00000010;
+	} else if (systemREG1->SYSESR & 0x00000008) {
+		reason = MCU_EXT_RESET;
+		systemREG1->SYSESR = 0x00000008;
+	} else if (systemREG1->SYSESR & 0x00000004) {
+		reason = MCU_VSW_RESET;
+		systemREG1->SYSESR = 0x00000004;
+	} else {
+		reason = MCU_RESET_UNDEFINED;
+	}
+
+/* USER CODE BEGIN (23) */
+/* USER CODE END */
+
+	return reason;
 }
 
 //-------------------------------------------------------------------
@@ -410,8 +440,13 @@ Mcu_ResetType Mcu_GetResetReason(void) {
  */
 
 Mcu_RawResetType Mcu_GetResetRawValue(void) {
+	VALIDATE_W_RV( ( 1 == Mcu_Global.initRun ), MCU_GETRESETREASON_SERVICE_ID, MCU_E_UNINIT, MCU_GETRESETRAWVALUE_UNINIT_RV );
 
-	return 0;
+	Mcu_RawResetType reason = 0xFFFFFFFF;
+	reason = systemREG1->SYSESR & 0x0000E03B;
+	systemREG1->SYSESR = 0x0000E03B;
+
+	return reason;
 }
 
 //-------------------------------------------------------------------
@@ -423,7 +458,8 @@ Mcu_RawResetType Mcu_GetResetRawValue(void) {
  */
 void Mcu_PerformReset(void)
 {
-	/* Not supported yet */
+	VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_PERFORMRESET_SERVICE_ID, MCU_E_UNINIT );
+	systemREG1->SYSECR = 0x00008000;
 }
 #endif
 
@@ -431,6 +467,7 @@ void Mcu_PerformReset(void)
 
 void Mcu_SetMode(const Mcu_ModeType McuMode)
 {
+	VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_SETMODE_SERVICE_ID, MCU_E_UNINIT );
   /* NOT SUPPORTED */
 }
 
