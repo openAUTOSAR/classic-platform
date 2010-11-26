@@ -80,14 +80,6 @@ TIM_TypeDef * const TimAddr[] =
     ((TIM_TypeDef *)TIM7_BASE),
 };
 
-const uint32 IrqVector[] =
-{
-		TIM1_UP_IRQn,
-		TIM2_IRQn,
-		TIM3_IRQn,
-		TIM4_IRQn,
-};
-
 #if ( GPT_DEV_ERROR_DETECT == STD_ON )
 #define VALIDATE(_exp,_api,_err ) \
 		if( !(_exp) ) { \
@@ -107,6 +99,14 @@ const uint32 IrqVector[] =
 #define VALIDATE(_exp,_api,_err )
 #define VALIDATE_W_RV(_exp,_api,_err,_rv )
 #endif
+
+const uint32 IrqVector[] =
+{
+		TIM1_UP_IRQn,
+		TIM2_IRQn,
+		TIM3_IRQn,
+		TIM4_IRQn,
+};
 
 typedef enum
 {
@@ -218,11 +218,6 @@ void Gpt_Init(const Gpt_ConfigType *config)
 	assert(0);
 #endif
 	Gpt_ChannelType ch;
-
-	// TODO Move to Mcu
-	RCC->APB1ENR |= (1 << 0) |
-					(1 << 1) |
-					(1 << 2);
 
 	for (i=0; i<GPT_CHANNEL_CNT; i++)
 	{
