@@ -19,9 +19,8 @@
 
 
 const uint32 remaps[] = {
-		GPIO_Remap_ETH,
-		GPIO_Remap2_CAN1,
-		GPIO_Remap_CAN2,
+		GPIO_Remap1_CAN1,
+		GPIO_PartialRemap2_TIM2,
 };
 
 const GpioPinCnfMode_Type GPIOConf[] =
@@ -53,8 +52,8 @@ const GpioPinCnfMode_Type GPIOConf[] =
   	.GpioPinCnfMode_12 = GPIO_OUTPUT_2MHz_MODE | GPIO_OUTPUT_PUSHPULL_CNF,
   	.GpioPinCnfMode_11 = GPIO_OUTPUT_2MHz_MODE | GPIO_OUTPUT_PUSHPULL_CNF,
   	.GpioPinCnfMode_10 = GPIO_OUTPUT_2MHz_MODE | GPIO_OUTPUT_PUSHPULL_CNF,
-  	.GpioPinCnfMode_9  = GPIO_OUTPUT_2MHz_MODE | GPIO_OUTPUT_PUSHPULL_CNF,
-  	.GpioPinCnfMode_8  = GPIO_INPUT_MODE | GPIO_FLOATING_INPUT_CNF,
+  	.GpioPinCnfMode_9  = GPIO_OUTPUT_10MHz_MODE | GPIO_ALT_PUSHPULL_CNF,/* PB9 is CAN1_TX, remapped: */
+  	.GpioPinCnfMode_8  = GPIO_INPUT_MODE | GPIO_INPUT_PULLUP_CNF,/* PB8 is CAN1_RX, remapped: */
   	.GpioPinCnfMode_7  = GPIO_INPUT_MODE | GPIO_FLOATING_INPUT_CNF,
   	.GpioPinCnfMode_6  = GPIO_INPUT_MODE | GPIO_FLOATING_INPUT_CNF,
   	.GpioPinCnfMode_5  = GPIO_INPUT_MODE | GPIO_FLOATING_INPUT_CNF,
