@@ -35,10 +35,8 @@ typedef _Bool IsrType;
  */
 void Irq_Init( void );
 
-/**
- * End-Of-Interrupt. Called by the OS it wants to clear the interrupt.
- */
-void Irq_EOI( void );
+
+
 
 #if defined(CFG_HC1X)
 /**
@@ -104,7 +102,7 @@ void Irq_SetPriority( Cpu_t cpu,  IrqType vector, uint8_t prio );
  * @param type
  */
 static inline void Irq_SetIsrType( IrqType vector, IsrType type ) {
-	Irq_IsrTypeTable[vector + IRQ_INTERRUPT_OFFSET ] = type;
+	Irq_IsrTypeTable[vector] = type;
 }
 
 /**
@@ -114,7 +112,7 @@ static inline void Irq_SetIsrType( IrqType vector, IsrType type ) {
  *         1 - Isr2
  */
 static inline IsrType Irq_GetIsrType( IrqType vector )  {
-	return Irq_IsrTypeTable[vector + IRQ_INTERRUPT_OFFSET ];
+	return Irq_IsrTypeTable[vector];
 }
 
 

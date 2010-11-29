@@ -214,7 +214,9 @@ void *Os_Isr( void *stack, void *isr_p ) {
 		assert(0);
 	}
 
-#ifndef CFG_HCS12D
+	Irq_SOI();
+
+#if !defined(CFG_HCS12D)
 	Irq_Enable();
 	isrPtr->entry();
 	Irq_Disable();

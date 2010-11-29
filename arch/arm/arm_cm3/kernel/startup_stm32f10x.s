@@ -40,24 +40,25 @@
 	.type	Reset_Handler, %function
 Reset_Handler:	
 
-/* Copy the data segment initializers from flash to SRAM */  
+/* Copy the data segment initializers from flash to SRAM */
+  ldr	r0, =_sdata       /* r0 holds start of data in ram */
+  ldr	r3, =_edata       /* r3 holds end of data in ram */
+  ldr	r5, =_sidata      /* r5 start of data in flash */
   movs	r1, #0
   b	LoopCopyDataInit
 
 CopyDataInit:
-	ldr	r3, =_sidata
-	ldr	r3, [r3, r1]
-	str	r3, [r0, r1]
-	adds	r1, r1, #4
+	ldr	r4, [r5, r1]          /* read current position in flash */
+	str	r4, [r0, r1]          /* store current position in ram */
+	adds	r1, r1, #4        /* increment counter */
     
 LoopCopyDataInit:
-	ldr	r0, =_sdata
-	ldr	r3, =_edata
-	adds	r2, r0, r1
-	cmp	r2, r3
-	bcc	CopyDataInit
+	adds	r2, r0, r1        /* are we at the final position? */
+	cmp	r2, r3                /* ... */
+	bcc	CopyDataInit          /* nope, continue */
 	ldr	r2, =_sbss
 	b	LoopFillZerobss
+
 /* Zero fill the bss segment. */  
 FillZerobss:
 	movs	r3, #0

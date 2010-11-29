@@ -10,9 +10,11 @@
  * _etext  - ?
  */
 
-OUTPUT_FORMAT("elf32-littlearm", "elf32-bigarm","elf32-littlearm")
+OUTPUT_FORMAT("elf32-bigarm")
 OUTPUT_ARCH(arm)
 ENTRY(Reset_Handler)
+
+#include "Calibration_Settings.h"
 
 MEMORY
 {
@@ -22,16 +24,13 @@ MEMORY
 SECTIONS
 {
 
-    .isr_vector :
+    .int_vecs :
     {
-	. = ALIGN(4);
-        KEEP(*(.isr_vector))
-	. = ALIGN(4);
-    } > flash
+        KEEP(*(.int_vecs))
+    } > intvecs
 
     .text :
 	{
-        . = ALIGN(4);
     	*(.text .text.* );
     	*(.glue_7)		/* TODO */
     	*(.glue_7t)     /* TODO */
@@ -42,7 +41,6 @@ SECTIONS
     	SORT(*)(.test_etask);
     	
     	/* ST/ARM special variable to initialize .data */
-	    . = ALIGN(4);
     	_etext = .;
 	} > flash
 
@@ -63,34 +61,41 @@ SECTIONS
 
 	/* Read-only data section. */
 	.rodata :	{ 
-	    . = ALIGN(4);
 		*(.rodata .rodata.* .gnu.linkonce.r.*)
-	    . = ALIGN(4);
 		_sidata = ALIGN(.,4);
 	} > flash
-
-	.data :	AT ( _sidata )
-	{
-	    . = ALIGN(4);
-		_sdata = .; 
+	
+	.cio ALIGN(0x10) : {
+	
+	} > ram
+#ifdef CALIBRATION_ACTIVE
+	.calibration : AT(ORIGIN(flash_calibration_area_0)) {
+		__CALIB_RAM_START = .;
+		*(.calibration)
+		__CALIB_RAM_END = .;
+	} > ram
+	__CALIB_ROM_START	= ORIGIN(flash_calibration_area_0);
+#endif
+	.data :	AT(ALIGN(LOADADDR(.rodata)+SIZEOF(.rodata),4)) {
+		_sdata = ALIGN(.,4); 
 		*(.data .data.* .gnu.linkonce.d.* .gnu.linkonce.r.* .eh_frame)
-	    . = ALIGN(4);
-		_edata = .;		
+		_edata = ALIGN(.,4);		
 	} > ram
 
 	.t32_outport ALIGN(0x10): { *(.t32_outport); } > ram
 	.bss : {
-	    . = ALIGN(4);
 		_sbss = ., 
 		*(.bss .bss.* COMMON .gnu.linkonce.b.*);
-	    . = ALIGN(4);
 		_ebss = .; 
 	} 	> ram
 	
 	.init_stack ALIGN(16) (NOLOAD) : 
 	{	
-		. = . + 200; 	
+		_sstack = .;
+		. = . + 8000; 	
 		_estack	= .; 
+		. = . + 1;
+		. = ALIGN(4);
 	} > ram
 	
 	/* Fls RAM section */

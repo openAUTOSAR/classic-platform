@@ -17,7 +17,11 @@ obj-$(CFG_ARM_CM3)-$(USE_FLS) += stm32f10x_flash.o
 obj-$(CFG_ARM_CM3)-$(USE_PWM) += stm32f10x_tim.o
 obj-$(CFG_ARM_CM3)-$(USE_LWIP) += stm32_eth.o
 
+obj-$(USE_TTY_TMS570_KEIL) += GLCD.o
+obj-$(USE_TTY_TMS570_KEIL) += emif.o
 
+# Cortex R4
+obj-$(CFG_ARM_CR4) += startup_cr4.o
 
 # OS object files. 
 # (checking if already included for compatability)

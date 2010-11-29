@@ -101,6 +101,9 @@ postload_mpc5633M:
 postload_HC12DG128A:
   RETURN
 
+postload_CortexR4F:
+  RETURN
+
 //-------------------------------------------------------------
 
 path_fast:

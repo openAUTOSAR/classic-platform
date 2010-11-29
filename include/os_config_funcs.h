@@ -141,10 +141,11 @@ StatusType Os_CfgGetAlarmBase(AlarmType alarm_id, AlarmBaseRefType info) {
 
 	if( alarm_id >= Os_CfgGetAlarmCnt() ) {
 		rv = E_OS_ID;
-	}
+	} else {
 #if (OS_ALARM_CNT!=0)
-	*info = alarm_list[alarm_id].counter->alarm_base;
+		*info = alarm_list[alarm_id].counter->alarm_base;
 #endif
+	}
 	return rv;
 }
 

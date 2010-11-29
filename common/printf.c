@@ -144,7 +144,7 @@ static inline int emitChar( FILE *file, char **buf, char c, int *left ) {
 		putc(c, stdout);
 		fflush(stdout);
 #else
-		arc_putchar(file->_cookie, c);
+		arc_putchar((int)file, c);
 #endif
 	} else {
 		**buf = c;

@@ -22,6 +22,22 @@
 
 #ifndef __CM3_CORE_H__
 #define __CM3_CORE_H__
+#include "stm32f10x.h"
+
+static inline unsigned long _Irq_Save(void)
+{
+   unsigned long val = __get_PRIMASK();
+   Irq_Disable();
+   return val;
+}
+
+/*-----------------------------------------------------------------*/
+
+static inline void _Irq_Restore(unsigned mask) {
+	__set_PRIMASK(mask);
+}
+
+
 
 #ifdef __cplusplus
  extern "C" {

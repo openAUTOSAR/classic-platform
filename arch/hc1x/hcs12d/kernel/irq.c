@@ -28,9 +28,6 @@ void Irq_Init( void ) {
 
 }
 
-void Irq_EOI( void ) {
-
-}
 
 // IRQ debug information
 // Stores irq nr on erroneous interrupt
