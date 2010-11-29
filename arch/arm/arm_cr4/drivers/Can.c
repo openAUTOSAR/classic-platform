@@ -212,7 +212,7 @@ void Can_InterruptHandler(CanControllerIdType controller)
     uint8   DataByteIndex;
     uint8  *SduPtr;
 
-    Can_DisableControllerInterrupts(controller);
+    //Can_DisableControllerInterrupts(controller);
 
     uint32 ir = CanRegs[controller]->IR;
 
@@ -294,7 +294,7 @@ void Can_InterruptHandler(CanControllerIdType controller)
 
         }
     }
-    Can_EnableControllerInterrupts(controller);
+    //Can_EnableControllerInterrupts(controller);
 }
 
 void Can1_InterruptHandler() {
@@ -799,13 +799,10 @@ Can_ReturnType Can_Write(Can_Arc_HTHType Hth, Can_PduType *PduInfo)
     CurTxRqstPtr     = ControllerConfig[ControllerId].TxPtr     + (MsgNr - 1);
     
     /* Bring Id Value to appropriate format and set ArbRegValue */
-    if(PduInfo->id & 0x80000000)
-    {
+    if( hoh->CanIdType == CAN_ID_TYPE_EXTENDED ) {
         /* MsgVal, Ext, Transmit, Extended Id */ 
-        ArbRegValue = 0xD0000000 | (PduInfo->id & 0x1FFFFFFF);
-    }
-    else
-    {
+        ArbRegValue = 0xE0000000 | (PduInfo->id & 0x1FFFFFFF);
+    } else {
         /* MsgVal, Std, Transmit, Standard Id */ 
         ArbRegValue = 0xA0000000 | ((PduInfo->id & 0x7FF) << 18);
     }
@@ -823,7 +820,6 @@ Can_ReturnType Can_Write(Can_Arc_HTHType Hth, Can_PduType *PduInfo)
     CanRegs[ControllerId]->IFx[IfRegId].MC = 	  0x00000100 // Tx request
 											| 0x00000080 // Eob should be set to one for tx
 											| (0x000F & PduInfo->length) // Set DLC
-											| CanControllerConfigData[ControllerId].CanRxProcessing
 											| (CanControllerConfigData[ControllerId].CanTxProcessing << 1); // Tx confirmation interrupt enabled
 
 
