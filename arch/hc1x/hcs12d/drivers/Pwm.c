@@ -37,7 +37,7 @@
 #include "regs.h"
 #include "arc.h"
 
-#if PWM_DEV_EROR_DETECT==STD_ON
+#if PWM_DEV_ERROR_DETECT==STD_ON
 	#define PWM_VALIDATE(_exp, _errid) \
 		if (!(_exp)) { \
 			Pwm_ReportError(_errid); \
@@ -47,6 +47,7 @@
 	#define Pwm_VALIDATE_INITIALIZED() PWM_VALIDATE(Pwm_ModuleState == PWM_STATE_INITIALIZED, PWM_E_UNINIT)
 	#define Pwm_VALIDATE_UNINITIALIZED() PWM_VALIDATE(Pwm_ModuleState != PWM_STATE_INITIALIZED, PWM_E_ALREADY_INITIALIZED)
 #else
+        #define PWM_VALIDATE(_exp, _errid)
 	#define Pwm_VALIDATE_CHANNEL(ch)
 	#define Pwm_VALIDATE_INITIALIZED()
 	#define Pwm_VALIDATE_UNINITIALIZED()
@@ -84,7 +85,7 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
     Pwm_ChannelType channel_iterator;
 
     Pwm_VALIDATE_UNINITIALIZED();
-    #if PWM_DEV_EROR_DETECT==STD_ON
+    #if PWM_DEV_ERROR_DETECT==STD_ON
         /*
          * PWM046: If development error detection is enabled for the Pwm module,
          * the function Pwm_Init shall raise development error PWM_E_PARAM_CONFIG

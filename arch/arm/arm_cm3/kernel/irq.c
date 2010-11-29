@@ -22,24 +22,39 @@
 
 extern void *Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
 
-/*
-* PRIGROUP[2:0] 	Group prios 	Sub prios
-* 0b011 			16 				None
-* 0b100 			8 				2
-* 0b101 			4 				4
-* 0b110 			2 				8
-* 0b111 			None 			16
-*/
-#define AIRCR_VECTKEY    ((uint32_t)0x05FA0000)
-
-/** Set NVIC prio group */
-static void NVIC_SetPrioGroup(uint32_t prioGroup)
+/**
+ * Init NVIC vector. We do not use subpriority
+ *
+ * @param vector	The IRQ number
+ * @param prio      NVIC priority, 0-31, 0-high prio
+ */
+static void NVIC_InitVector(IRQn_Type vector, uint32_t prio)
 {
-  SCB->AIRCR = AIRCR_VECTKEY | (prioGroup<<8);
+	// Set prio
+	NVIC_SetPriority(vector,prio);
+
+	// Enable
+    NVIC->ISER[vector >> 5] = (uint32_t)1 << (vector & (uint8_t)0x1F);
 }
 
+/*
+PRIGROUP
+0 			7.1 indicates seven bits of pre-emption priority, one bit of subpriority
+1 			6.2 indicates six bits of pre-emption priority, two bits of subpriority
+2 			5.3 indicates five bits of pre-emption priority, three bits of subpriority
+3 			4.4 indicates four bits of pre-emption priority, four bits of subpriority
+4 			3.5 indicates three bits of pre-emption priority, five bits of subpriority
+5 			2.6 indicates two bits of pre-emption priority, six bits of subpriority
+6 			1.7 indicates one bit of pre-emption priority, seven bits of subpriority
+7 			0.8 indicates no pre-emption priority, eight bits of subpriority.
+*/
 void Irq_Init( void ) {
-	NVIC_SetPrioGroup(3); // No sub prioritys
+	NVIC_SetPriorityGrouping(0);
+	NVIC_SetPriority(SVCall_IRQn, 0xff); // Set lowest prio
+	NVIC_SetPriority(PendSV_IRQn, 0xff); // Set lowest prio
+
+	/* Stop counters and watchdogs when halting in debug */
+	DBGMCU->CR |= 0x00ffffff00;
 }
 
 void Irq_EOI( void ) {
@@ -64,27 +79,6 @@ static uint32_t NVIC_GetActiveVector( void) {
 	return (SCB->ICSR &  ICSR_VECTACTIVE);
 }
 
-/**
- * Init NVIC vector. We do not use subriority
- *
- */
-
-/**
- * Init NVIC vector. We do not use subpriority
- *
- * @param vector	The IRQ number
- * @param prio      NVIC priority, 0-15, 0-high prio
- */
-static void NVIC_InitVector(IRQn_Type vector, uint32_t prio)
-{
-	// Set prio
-	NVIC_SetPriority(vector,prio);
-	//NVIC->IP[vector] = prio;
-
-	// Enable
-	//NVIC_EnableIRQ(vector);
-    NVIC->ISER[vector >> 5] = (uint32_t)1 << (vector & (uint8_t)0x1F);
-}
 
 /**
  *
@@ -93,13 +87,10 @@ static void NVIC_InitVector(IRQn_Type vector, uint32_t prio)
  * The stack holds C, NVGPR, VGPR and the EXC frame.
  *
  */
-void *Irq_Entry( void *stack_p )
-{
+void *Irq_Entry( void *stack_p ){
 	uint32_t vector = 0;
-	uint32_t *stack;
 
 	Irq_Disable();
-	stack = (uint32_t *)stack_p;
 
 	/* 0. Set the default handler here....
 	 * 1. Grab the vector from the interrupt controller
@@ -111,9 +102,10 @@ void *Irq_Entry( void *stack_p )
 
 	vector = NVIC_GetActiveVector();
 
-	stack = Os_Isr(stack, (void *)Irq_VectorTable[vector]);
+	Os_Isr_cm3((void *)Irq_VectorTable[vector]);
 	Irq_Enable();
-	return stack;
+
+	return stack_p;
 }
 
 /**
@@ -130,22 +122,22 @@ void Irq_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector, uint8
 }
 
 /**
- * NVIC prio have priority 0-15, 0-highest priority.
+ * NVIC prio have priority 0-31, 0-highest priority.
  * Autosar does it the other way around, 0-Lowest priority
+ * NOTE: prio 255 is reserved for SVC and PendSV
  *
  * Autosar    NVIC
  *   31        0
- *   30        0
+ *   30        1
  *   ..
- *   0         15
- *   0         15
+ *   0         31
  * @param prio
  * @return
  */
 static inline int osPrioToCpuPio( uint8_t prio ) {
 	assert(prio<32);
 	prio = 31 - prio;
-	return (prio>>1);
+	return prio;
 }
 
 /**

@@ -14,21 +14,11 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
-
 #include "Os.h"
-#include "os_config_macros.h"
 
 #include "EcuM.h"
-#include <stdio.h>
-#include <assert.h>
 #include "blinker_main.h"
 #include "debug.h"
-#include "WdgM.h"
 
 
 void OsIdle( void ) {
@@ -41,8 +31,6 @@ void OsIdle( void ) {
 
 void bTask10( void ) {
 
-	WdgM_MainFunction_Trigger();
-
 	TerminateTask();
 }
 
@@ -51,7 +39,6 @@ void bTask10( void ) {
  */
 void bTask25( void ) {
 
-	WdgM_UpdateAliveCounter(WDBG_ALIVE_LOOP_BLINK_COMPONENT);
 	blinker_component_main();
 
 	TerminateTask();
@@ -62,8 +49,6 @@ void bTask25( void ) {
  */
 
 void bTask100( void ) {
-
-	WdgM_MainFunction_AliveSupervision();
 
 	TerminateTask();
 }
@@ -82,8 +67,6 @@ void Startup( void ) {
 	SetRelAlarm(ALARM_ID_alarm10, 10, 10); // ADC data acquisition
 	SetRelAlarm(ALARM_ID_alarm25, 25, 25); // ADC data acquisition
 	SetRelAlarm(ALARM_ID_alarm100, 100, 100); // ADC data acquisition
-
-	WdgM_ActivateAliveSupervision(WDBG_ALIVE_LOOP_BLINK_COMPONENT);
 
 	// End of startup_task().
 	TerminateTask();

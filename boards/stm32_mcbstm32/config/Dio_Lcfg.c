@@ -17,7 +17,8 @@
 
 const Dio_ChannelType DioChannelConfigData[] =
 {
-	LED_CHANNEL,
+	LED_CHANNEL1,
+	LED_CHANNEL2,
 	DIO_END_OF_LIST,
 };
 

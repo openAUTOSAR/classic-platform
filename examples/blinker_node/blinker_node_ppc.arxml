@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<AUTOSAR xmlns="http://autosar.org/3.1.2"><TOP-LEVEL-PACKAGES>
+<AUTOSAR xmlns="http://autosar.org/3.1.2">
+  <TOP-LEVEL-PACKAGES>
     <AR-PACKAGE UUID="b715bb9d-eec4-4ac5-acdb-a63c2c5c7b2f">
       <SHORT-NAME>blinker_node_ppc</SHORT-NAME>
       <CATEGORY>EcuConfiguration</CATEGORY>
       <ADMIN-DATA>
         <DOC-REVISIONS>
           <DOC-REVISION>
-            <ISSUED-BY/>
+            <ISSUED-BY />
           </DOC-REVISION>
         </DOC-REVISIONS>
       </ADMIN-DATA>
       <ELEMENTS>
         <ECU-CONFIGURATION UUID="194b9abc-510c-4b5e-8486-65c5b26772af">
-          <SHORT-NAME>blinker_node_ppc</SHORT-NAME>
+          <SHORT-NAME>blinker_node_hcs12</SHORT-NAME>
           <ADMIN-DATA>
             <DOC-REVISIONS>
               <DOC-REVISION>
@@ -24,7 +25,7 @@
                 <SD GID="MCU">Undefined MCU</SD>
                 <SD GID="AUTHOR">ArcCore AB</SD>
                 <SD GID="COPYRIGHT">Copyright ArcCore AB 2010</SD>
-                <SD GID="GENDIR"></SD>
+                <SD GID="GENDIR" />
               </SDG>
             </SDGS>
           </ADMIN-DATA>
@@ -36,7 +37,7 @@
           <SHORT-NAME>Os</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG/>
+              <SDG />
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.7</SD>
@@ -341,4 +342,6 @@
         </MODULE-CONFIGURATION>
       </ELEMENTS>
     </AR-PACKAGE>
-  </TOP-LEVEL-PACKAGES></AUTOSAR>
+  </TOP-LEVEL-PACKAGES>
+</AUTOSAR>
+

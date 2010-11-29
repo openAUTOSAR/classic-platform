@@ -198,6 +198,13 @@ int HOSTwrite(int dev_fd, const char *buf, unsigned count)
 
 #define FILE_RAMLOG		3
 
+/* Location MUST match NoICE configuration */
+#ifdef USE_TTY_NOICE
+static volatile char VUART_TX __attribute__ ((section (".noice_port")));
+static volatile char VUART_RX __attribute__ ((section (".noice_port")));
+volatile unsigned char START_VUART = 0;
+#endif
+
 /*
  * T32 stuff
  */
@@ -310,6 +317,17 @@ int read( int fd, void *buf, size_t nbytes )
 	(void)g_TRBuffer[0];
 #endif
 
+#ifdef USE_TTY_NOICE
+	// Not tested at all
+    int retval;
+    while (VUART_RX != 0)
+    {
+    }
+
+    retval = VUART_RX;
+    VUART_RX = 0;
+#endif
+
 	/* Only support write for now, return 0 read */
 	return 0;
 }
@@ -322,6 +340,30 @@ int write(  int fd, const void *_buf, size_t nbytes)
 
 
 	if( fd <= STDERR_FILENO ) {
+#ifdef USE_TTY_NOICE
+	char *buf1 = (char *)_buf;
+	if (START_VUART)
+	{
+   	   for (int i = 0; i < nbytes; i++) {
+   		   char c = buf1[i];
+   		   if (c == '\n')
+   		   {
+   	   		   while (VUART_TX != 0)
+   	   		   {
+   	   		   }
+
+   	   		   VUART_TX = '\r';
+   		   }
+
+   		   while (VUART_TX != 0)
+   		   {
+   		   }
+
+   		   VUART_TX = c;
+   	   }
+	}
+#endif
+
 #ifdef USE_TTY_WINIDEA
 		if (g_TConn)
 		{

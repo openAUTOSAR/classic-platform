@@ -33,7 +33,19 @@
 #define SC_PATTERN				0xde
 #define LC_PATTERN				0xad
 
-#define	CONTEXT_SIZE_W			9
+#if defined(CFG_HCS12D)
+#define Y_SP_OFFSET             6  // The offset from P to Y in the context
+#define	CONTEXT_SIZE_W		  9  // The context size in words
+#define HIGH_BYTE_RETURN_ADRESS 16 // The offset in the context that contains the high order byte of return address
+#define LOW_BYTE_RETURN_ADRESS  17 // The offset in the context that contains the low order byte of return address
 
+#elif defined(CFG_HCS12XD)
+#define Y_SP_OFFSET             7    // The offset from P to Y in the context
+#define	CONTEXT_SIZE_W			10   // The context size in words ( Actual size 9+1/2)
+#define HIGH_BYTE_RETURN_ADRESS 17   // The offset in the context that contains the high order byte of return address
+#define LOW_BYTE_RETURN_ADRESS  18   // The offset in the context that contains the low order byte of return address
+#else
+#error "HC1X: Subarchitecture not defined."
+#endif
 
 #endif /* CONTEXT_H_ */

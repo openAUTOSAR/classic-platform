@@ -105,4 +105,6 @@ uint16_t handle_LocatorEvent(TCF_Event* event, char* buf);
 uint16_t handle_FileSystemCommand(TCF_Command* command, char* buf);
 uint16_t handle_FileSystemEvent(TCF_Event* event, char* buf);
 
+char *mystrcat(char *s1, const char *s2);
+
 #endif /* TCF_H_ */

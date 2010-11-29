@@ -94,6 +94,8 @@ Infinite_Loop:
 	.size	g_pfnVectors, .-g_pfnVectors
 
 	.extern Irq_Handler
+	.extern SVC_Handler
+	.extern PendSV_Handler
 
 	.word	_estack
 	.word	Reset_Handler

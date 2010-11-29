@@ -2,6 +2,7 @@
 
 #define _ASSEMBLER_
 #include "kernel_offset.h"
+#include "context.h"
 #include "asm_hc1x.sx"
 #include "context.sx"
 

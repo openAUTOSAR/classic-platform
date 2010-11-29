@@ -2,6 +2,7 @@
  * Copyright (C) 2009  ArcCore AB <contact@arccore.com> 
  */
 
+#include "Calibration_Settings.h"
 /* Undef sections/keywords */ 
 #undef PPC
 
@@ -9,17 +10,22 @@ OUTPUT_FORMAT("elf32-powerpc", "elf32-powerpc", "elf32-powerpc")
 OUTPUT_ARCH(powerpc)
 ENTRY(_start)
 
-
-
 MEMORY
 {
 #include "memory.ldf"
 }
-
 SECTIONS
 {
 	.rcw : { *(.rcw) }> rcw
-
+#if defined(USE_FEE)
+#include "Fee_Memory_Cfg.h"
+	.fee_bank1 FEE_BANK1_OFFSET : {
+		. = . + FEE_BANK1_LENGTH;
+	}
+	.fee_bank2 FEE_BANK2_OFFSET : {
+		. = . + FEE_BANK2_LENGTH;
+	}
+#endif
     .text :
 	{
     	*(.text .text.* .init .fini* .eini* .gnu.linkonce* .gnu.warning);
@@ -61,10 +67,17 @@ SECTIONS
 		. = . + ALIGN(8);
 		__DATA_ROM = .;
 	} > flash
-
+#ifdef CALIBRATION_ACTIVE
+	.calibration : AT(ORIGIN(flash_calibration_area_0)) {
+		__CALIB_RAM_START = .;
+		*(.calibration)
+		__CALIB_RAM_END = .;
+	} > ram
+	__CALIB_ROM_START	= ORIGIN(flash_calibration_area_0);
+#endif
 	.data :	AT(ALIGN(LOADADDR(.sbss2)+SIZEOF(.sbss2),4)) {
 		__DATA_RAM = .; *(.data .data.* .gnu.linkonce.d.* .gnu.linkonce.r.* .eh_frame)
-	} > ram
+		} > ram
 
 	.sdata : AT(ALIGN(LOADADDR(.data)+SIZEOF(.data),4)) {
 		__SDATA_START__ = .;
