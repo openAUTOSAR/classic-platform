@@ -192,6 +192,10 @@ int HOSTwrite(int dev_fd, const char *buf, unsigned count)
 
 #endif
 
+#ifdef USE_TTY_TMS570_KEIL
+#include "GLCD.h"
+#endif
+
 #define FILE_RAMLOG		3
 
 /*
@@ -361,6 +365,12 @@ int write(  int fd, const void *_buf, size_t nbytes)
 
 #ifdef USE_TTY_CODE_COMPOSER
 	HOSTwrite(fd, _buf, nbytes);
+#endif
+
+#ifdef USE_TTY_TMS570_KEIL
+	for (int i = 0; i < nbytes; i++) {
+		GLCD_PrintChar((_buf + i));
+	}
 #endif
 
 #if defined(USE_RAMLOG)
