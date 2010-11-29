@@ -14,6 +14,8 @@ OUTPUT_FORMAT("elf32-bigarm")
 OUTPUT_ARCH(arm)
 ENTRY(Reset_Handler)
 
+#include "Calibration_Settings.h"
+
 MEMORY
 {
 #include "memory.ldf"
@@ -66,7 +68,14 @@ SECTIONS
 	.cio ALIGN(0x10) : {
 	
 	} > ram
-
+#ifdef CALIBRATION_ACTIVE
+	.calibration : AT(ORIGIN(flash_calibration_area_0)) {
+		__CALIB_RAM_START = .;
+		*(.calibration)
+		__CALIB_RAM_END = .;
+	} > ram
+	__CALIB_ROM_START	= ORIGIN(flash_calibration_area_0);
+#endif
 	.data :	AT(ALIGN(LOADADDR(.rodata)+SIZEOF(.rodata),4)) {
 		_sdata = ALIGN(.,4); 
 		*(.data .data.* .gnu.linkonce.d.* .gnu.linkonce.r.* .eh_frame)
