@@ -22,25 +22,6 @@
 extern TaskType Os_Arc_CreateIsr( void (*entry)(void ), uint8_t prio, const char *name );
 extern void *Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
 
-/*
-* PRIGROUP[2:0] 	Group prios 	Sub prios
-* 0b011 			16 				None
-* 0b100 			8 				2
-* 0b101 			4 				4
-* 0b110 			2 				8
-* 0b111 			None 			16
-*/
-#define AIRCR_VECTKEY    ((uint32_t)0x05FA0000)
-
-/** Set NVIC prio group */
-/* TODO remove
-static void NVIC_SetPrioGroup(uint32_t prioGroup)
-{
-  SCB->AIRCR = AIRCR_VECTKEY | (prioGroup<<8);
-}
-*/
-
-
 
 static inline void Irq_Setup() {
 	vimREG->FIRQPR0 = 0x0;
@@ -51,10 +32,6 @@ void Irq_Init( void ) {
 	Irq_Setup();
 	Irq_Enable();
 }
-
-
-#define ICSR_VECTACTIVE		0x1ff
-
 
 
 /**
@@ -76,6 +53,10 @@ void *Irq_Entry( void *stack_p )
 		channel = IrqGetCurrentInterruptSource();
 		c++;
 	} while (channel < 0 && c < MAX_WAIT_COUNT);
+
+	if (c > 1) {
+		uint8 a = c;
+	}
 
 	if (c >= MAX_WAIT_COUNT) {
 		// No interrupt is pending
