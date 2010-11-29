@@ -16,9 +16,18 @@
 
 
 
+/*
+ *  General requirements
+ */
+/** @req NVM076 */
+/** @req NVM552 */
+/** @req NVM689 */
 
 
-
+/*
+ * NB! Even though some code exist for handling crc, the functionality is not complete
+ * and shall not be used.
+ */
 
 
 #include "NvM.h"
@@ -335,6 +344,10 @@ static void ReadAllCheckReadResult(void)
 			MemIfJobAdmin.BlockAdmin->ErrorStatus = NVM_REQ_OK;
 			MemIfJobAdmin.BlockAdmin->BlockValid = TRUE;
 			MemIfJobAdmin.BlockAdmin->BlockChanged = FALSE;
+
+			if (MemIfJobAdmin.BlockDescriptor->WriteBlockOnce) {
+				MemIfJobAdmin.BlockAdmin->BlockWriteProtected = TRUE;
+			}
 
 			if (MemIfJobAdmin.BlockDescriptor->SingleBlockCallback != NULL) {
 				MemIfJobAdmin.BlockDescriptor->SingleBlockCallback(NVM_SERVICE_ID, MemIfJobAdmin.BlockAdmin->ErrorStatus); /** @req NVM281 */

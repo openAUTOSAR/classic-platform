@@ -20,6 +20,9 @@
 
 
 
+/** @req NVM077 */
+
+
 #ifndef NVM_H_
 #define NVM_H_
 

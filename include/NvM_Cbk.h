@@ -15,6 +15,9 @@
 
 
 
+/** @req NVM551 */
+
+
 #ifndef NVM_CBK_H_
 #define NVM_CBK_H_
 

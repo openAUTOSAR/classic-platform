@@ -20,6 +20,9 @@
 
 
 
+/** @req NVM550 */
+
+
 #ifndef NVM_TYPES_H_
 #define NVM_TYPES_H_
 
