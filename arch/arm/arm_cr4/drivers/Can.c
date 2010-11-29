@@ -40,6 +40,35 @@
 #define Dem_ReportErrorStatus(...)
 #endif
 
+/* Macro for waiting until busy flag is 0 */
+#define DCAN_WAIT_UNTIL_NOT_BUSY(ControllerId, IfRegId) \
+    { \
+		uint32 ErrCounter = CAN_TIMEOUT_DURATION; \
+		while(CanRegs[ControllerId]->IFx[IfRegId].COM & 0x00008000) { \
+			ErrCounter--; \
+			if(ErrCounter == 0) { \
+				Dem_ReportErrorStatus(CAN_E_TIMEOUT, DEM_EVENT_STATUS_FAILED); \
+				ErrCounter = CAN_TIMEOUT_DURATION; \
+				return CAN_NOT_OK; \
+			} \
+		} \
+    }
+
+/* Macro for waiting until busy flag is 0 */
+#define DCAN_WAIT_UNTIL_NOT_BUSY_NO_RV(ControllerId, IfRegId) \
+	{ \
+		uint32 ErrCounter = CAN_TIMEOUT_DURATION; \
+		while(CanRegs[ControllerId]->IFx[IfRegId].COM & 0x00008000) { \
+			ErrCounter--; \
+			if(ErrCounter == 0) { \
+				Dem_ReportErrorStatus(CAN_E_TIMEOUT, DEM_EVENT_STATUS_FAILED); \
+				ErrCounter = CAN_TIMEOUT_DURATION; \
+				return; \
+			} \
+		} \
+	}
+
+
 
 // Array for easy access to DCAN register definitions.
 static Can_RegisterType* CanRegs[]=
@@ -177,7 +206,6 @@ uint32 usedBoxes[64] = {0};
 
 void Can_InterruptHandler(CanControllerIdType controller)
 {
-    uint32  ErrCounter;
     uint32  MsgNr;
     uint32  MsgId;
     uint8   MsgDlc;
@@ -185,8 +213,6 @@ void Can_InterruptHandler(CanControllerIdType controller)
     uint8  *SduPtr;
 
     Can_DisableControllerInterrupts(controller);
-
-    ErrCounter = CAN_TIMEOUT_DURATION;
 
     uint32 ir = CanRegs[controller]->IR;
 
@@ -223,16 +249,7 @@ void Can_InterruptHandler(CanControllerIdType controller)
         CanRegs[controller]->IFx[IfRegId].COM = 0x003F0000 | MsgNr;
 
         /* Wait until Busy Flag is 0 */
-        while(CanRegs[controller]->IFx[IfRegId].COM & 0x8000)
-        {
-            ErrCounter--;
-            if(ErrCounter == 0)
-            {
-                Dem_ReportErrorStatus(CAN_E_TIMEOUT, DEM_EVENT_STATUS_FAILED);
-                ErrCounter = CAN_TIMEOUT_DURATION;
-                return;
-            }
-        }
+        DCAN_WAIT_UNTIL_NOT_BUSY_NO_RV(controller, IfRegId);
 
         /* Transmit Object */
         if(CanRegs[controller]->IFx[IfRegId].ARB & 0x20000000)
@@ -354,17 +371,7 @@ void Can_Init(const Can_ConfigType *Config)
             *(ControllerConfig[Controller].CancelPtr + MsgNr) = 0;
             *(ControllerConfig[Controller].TxPtr     + MsgNr) = 0;
             
-            /* Wait until Busy Flag is 0 */
-            while(CanRegs[Controller]->IFx[IfRegId].COM & 0x00008000)
-            {
-                ErrCounter--;
-                if(ErrCounter == 0)
-                {
-                    Dem_ReportErrorStatus(CAN_E_TIMEOUT, DEM_EVENT_STATUS_FAILED);
-                    ErrCounter = CAN_TIMEOUT_DURATION;
-                    return;
-                }
-            }
+            DCAN_WAIT_UNTIL_NOT_BUSY_NO_RV(Controller, IfRegId);
 
             // Initialize all message objects for this controller to invalid state.
             /* Valid = 0 */
@@ -542,31 +549,13 @@ void Can_InitController(uint8 Controller, const Can_ControllerConfigType* Config
 		}
 		nProcessedMb++;
 
-        /* Wait until Busy Flag is 0 */
-        while(CanRegs[Controller]->IFx[IfRegId].COM & 0x00008000)
-        {
-            ErrCounter--;
-            if(ErrCounter == 0)
-            {
-                Dem_ReportErrorStatus(CAN_E_TIMEOUT, DEM_EVENT_STATUS_FAILED);
-                ErrCounter = CAN_TIMEOUT_DURATION;
-                return;
-            }
-        }
-        /* Read actual MaskRegister value of MessageObject */
+		DCAN_WAIT_UNTIL_NOT_BUSY_NO_RV(Controller, IfRegId);
+
+		/* Read actual MaskRegister value of MessageObject */
         CanRegs[Controller]->IFx[IfRegId].COM = 0x004C0000 | (MsgNr);
 
-        /* Wait until Busy Flag is 0 */
-        while(CanRegs[Controller]->IFx[IfRegId].COM & 0x00008000)
-        {
-            ErrCounter--;
-            if(ErrCounter == 0)
-            {
-                Dem_ReportErrorStatus(CAN_E_TIMEOUT, DEM_EVENT_STATUS_FAILED);
-                ErrCounter = CAN_TIMEOUT_DURATION;
-                return;
-            }
-        }
+        DCAN_WAIT_UNTIL_NOT_BUSY_NO_RV(Controller, IfRegId);
+
         CanRegs[Controller]->IFx[IfRegId].MASK &= 0xD0000000;
         /* Set new Mask */
         CanRegs[Controller]->IFx[IfRegId].MASK |= (*(hoh->CanFilterMaskRef)) & 0x1FFFFFFF;
@@ -576,17 +565,8 @@ void Can_InitController(uint8 Controller, const Can_ControllerConfigType* Config
         IfRegId ^= 1;
     }
 
-    /* Wait until Busy Flag is 0 */
-    while(CanRegs[Controller]->IFx[IfRegId].COM & 0x00008000)
-    {
-        ErrCounter--;
-        if(ErrCounter == 0)
-        {
-            Dem_ReportErrorStatus(CAN_E_TIMEOUT, DEM_EVENT_STATUS_FAILED);
-            ErrCounter = CAN_TIMEOUT_DURATION;
-            return;
-        }
-    }   
+	DCAN_WAIT_UNTIL_NOT_BUSY_NO_RV(Controller, IfRegId);
+
     /* Set CCE Bit to allow access to BitTiming Register (Init already set, in mode "stopped") */
     CanRegs[Controller]->CTL |= 0x00000040;
     /* Set Bit Timing Register */
@@ -763,7 +743,6 @@ void Can_Cbk_CheckWakeup(uint8 Controller)
 
 Can_ReturnType Can_Write(Can_Arc_HTHType Hth, Can_PduType *PduInfo)
 {
-    uint32                 ErrCounter;
     uint8                  ControllerId;
     uint8                  MsgNr;
     uint32                 ArbRegValue;
@@ -774,8 +753,8 @@ Can_ReturnType Can_Write(Can_Arc_HTHType Hth, Can_PduType *PduInfo)
     uint8                 *CurTxRqstPtr;
 
     CurSduPtr       = PduInfo->sdu;
-    ErrCounter      = CAN_TIMEOUT_DURATION;
     
+
 /* DET Error Check */
 #if(CAN_DEV_ERROR_DETECT == STD_ON)
     if(PduInfo == NULL || PduInfo->sdu == NULL)
@@ -837,17 +816,8 @@ Can_ReturnType Can_Write(Can_Arc_HTHType Hth, Can_PduType *PduInfo)
         return CAN_BUSY;
     }
 
-    /* Wait until Busy Flag is 0 */
-    while(CanRegs[ControllerId]->IFx[IfRegId].COM & 0x00008000)
-    {
-        ErrCounter--;
-        if(ErrCounter == 0)
-        {
-            Dem_ReportErrorStatus(CAN_E_TIMEOUT, DEM_EVENT_STATUS_FAILED);
-            ErrCounter = CAN_TIMEOUT_DURATION;
-            return CAN_NOT_OK;
-        }
-    }
+    DCAN_WAIT_UNTIL_NOT_BUSY(ControllerId, IfRegId);
+
 
     /* Set NewDat, TxIE (dep on ControllerConfig), TxRqst, EoB and DLC */
     CanRegs[ControllerId]->IFx[IfRegId].MC = 	  0x00000100 // Tx request
@@ -856,8 +826,6 @@ Can_ReturnType Can_Write(Can_Arc_HTHType Hth, Can_PduType *PduInfo)
 											| CanControllerConfigData[ControllerId].CanRxProcessing
 											| (CanControllerConfigData[ControllerId].CanTxProcessing << 1); // Tx confirmation interrupt enabled
 
-
-    //CanRegs[ControllerId]->IFx[IfRegId].MC = 0x00000180 | (0x000F & PduInfo->length) | (CanControllerConfigData[ControllerId].CanTxProcessing);
 
     /* Set ArbitrationRegister */
     CanRegs[ControllerId]->IFx[IfRegId].ARB = ArbRegValue;
