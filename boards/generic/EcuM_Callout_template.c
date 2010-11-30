@@ -2,7 +2,7 @@
 * Configuration of module EcuM (EcuM_Callout_template.c)
 * 
 * Created by: 
-* Configured for (MCU): MPC5567
+* Configured for (MCU):
 * 
 * Module editor vendor:  ArcCore
 * Module editor version: 2.0.0

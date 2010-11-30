@@ -2,7 +2,7 @@
 * Configuration of module EcuM (EcuM_Generated_Types.h)
 * 
 * Created by: 
-* Configured for (MCU): MPC5567
+* Configured for (MCU):
 * 
 * Module editor vendor:  ArcCore
 * Module editor version: 2.0.0
@@ -63,7 +63,7 @@ typedef struct
 	EcuM_StateType EcuMDefaultShutdownTarget;
 	uint8 EcuMDefaultShutdownMode;
 	AppModeType EcuMDefaultAppMode;
-	uint32 EcuMRunSelfRequestPeriod;
+	uint32 EcuMRunMinimumDuration;
 	uint32 EcuMNvramReadAllTimeout;
 	uint32 EcuMNvramWriteAllTimeout;
 
