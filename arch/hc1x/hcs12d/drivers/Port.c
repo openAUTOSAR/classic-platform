@@ -162,7 +162,10 @@ void Port_Init(const Port_ConfigType *configType)
 
     _portState = PORT_INITIALIZED;
     _configPtr = configType;
-    cleanup: return;
+#if (PORT_DEV_ERROR_DETECT == STD_ON)
+    cleanup:
+#endif
+    return;
 }
 
 /** @req PORT141 */
@@ -327,7 +330,10 @@ void Port_RefreshPortDirection(void)
     DDRT = curValue;
 #endif
 
-    cleanup: return;
+#if (PORT_DEV_ERROR_DETECT == STD_ON)
+    cleanup:
+#endif
+    return;
 }
 
 /** req PORT143 */

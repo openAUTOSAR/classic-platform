@@ -71,6 +71,6 @@ typedef struct
 
 extern EcuM_GobalType internal_data;
 
-inline void EcuM_enter_run_mode(void);
+void EcuM_enter_run_mode(void);
 
 #endif /*_ECUM_INTERNALS_H_*/

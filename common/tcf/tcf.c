@@ -45,6 +45,21 @@ struct tcf_tcp_state
     int num;
 };
 
+char *mystrcat(char *s1, const char *s2)
+{
+  char *s;
+
+  for(s = s1;*s;++s)
+    ;
+
+  while(*s2)
+    *s++ = *s2++;
+  *s = '\0';
+
+  return s1;
+}
+
+
 uint16_t message_length(const char* msg, uint16_t max_length) {
 	uint16_t i;
 	for (i = 0; i < max_length; ++i) {
@@ -57,16 +72,16 @@ uint16_t message_length(const char* msg, uint16_t max_length) {
 
 void start_tcf_field(char* start, char* field) {
 	strcpy(start, field);
-	strcat(start, TCF_S_EOFIELD_MARKER);
+	mystrcat(start, TCF_S_EOFIELD_MARKER);
 }
 
 void append_tcf_field(char* start, char* field) {
-	strcat(start, field);
-	strcat(start, TCF_S_EOFIELD_MARKER);
+	mystrcat(start, field);
+	mystrcat(start, TCF_S_EOFIELD_MARKER);
 }
 
 void convert_to_tcf_message(char* start) {
-	strcat(start, TCF_S_EOM);
+	mystrcat(start, TCF_S_EOM);
 	size_t length = strlen(start);
 	int i;
 	for (i = 0; i < length; ++i) {
@@ -164,18 +179,18 @@ uint16_t handle_FileSystemCommand(TCF_Command* command, char* buf) {
 	append_tcf_field(buf, command->token);  /* Token */
 
 	/* Add error field */
-	strcat(buf, JSON_ObjStart);
+	mystrcat(buf, JSON_ObjStart);
 
-	strcat(buf, TCF_Code);
+	mystrcat(buf, TCF_Code);
 	ultoa(TCF_UNSUPPORTED,tmp,10);
-	strcat(buf, tmp);
+	mystrcat(buf, tmp);
 
-	strcat(buf, JSON_ObjEnd);
-	strcat(buf, TCF_S_EOFIELD_MARKER);
+	mystrcat(buf, JSON_ObjEnd);
+	mystrcat(buf, TCF_S_EOFIELD_MARKER);
 
 	/* Add data field */
-	strcat(buf, JSON_null);
-	strcat(buf, TCF_S_EOFIELD_MARKER);
+	mystrcat(buf, JSON_null);
+	mystrcat(buf, TCF_S_EOFIELD_MARKER);
 
 	convert_to_tcf_message(buf);
 	uint16_t len = message_length(buf, TCF_MAX_FIELD_LENGTH);
@@ -188,7 +203,7 @@ uint16_t handle_FileSystemEvent(TCF_Event* event, char* buf) {
 }
 
 /* Not reentrant so buffers can be static */
-static char outbuf[TCF_MAX_FIELD_LENGTH] = "";
+char outbuf[TCF_MAX_FIELD_LENGTH] = "";
 
 static void handle_event(char *buf, uint16_t len)
 {
@@ -250,18 +265,20 @@ static void handle_command(char *buf, uint16_t len)
 
 static void handle_incoming(const void* buf, uint16_t len) {
 	char *msg = (char *)buf;
-
 	if(len > 0){
 		do{
-			char c = msg[0];
-			if (c == 'C') {
+			if ((msg[0] == 'C') && (msg[1] == '\0')) {
 				handle_command(msg, len);
-			} else if (c == 'E') {
+			} else if ((msg[0] == 'E') && (msg[1] == '\0')) {
 				handle_event(msg, len);
-			}
+			}else{
+                len=0;
+            }
 
 			/* Check if more than one message in buffer */
-			msg = get_next_tcf_msg(msg, &len);
+            if(len > 0){
+                msg = get_next_tcf_msg(msg, &len);
+            }
 		}while((msg != NULL) && (len > 0));
 	}
 }

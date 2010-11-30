@@ -45,9 +45,6 @@ void Os_SysTickStart(uint32_t period_ticks) {
 
 	SysTick_Config(period_ticks);
 
-	 /* Set SysTick Priority to 3 */
-	NVIC_SetPriority(SysTick_IRQn, 0x0C);
-
 #if 0
 	// SysTick interrupt each 250ms with counter clock equal to 9MHz
 	if (SysTick_Config((SystemFrequency / 8) / 4)) {

@@ -20,9 +20,8 @@
 
 
 
-#warning "This default file may only be used as an example!"
-
 #include "Fls.h"
+#include "Fls_Cfg.h"
 #include <stdlib.h>
 
 
@@ -30,31 +29,46 @@
 
 
 const Fls_SectorType fls_evbSectorList[] = {
-    { // L0->L7
-    .FlsSectorStartaddress = (Fls_AddressType)0x00000000, // Start address of this sector
-    .FlsPageSize = (Fls_LengthType)8, // Read page size of 128 bits (4 words), (8 bytes)
-    .FlsSectorSize = (Fls_LengthType)(16 KB), // 16Kbyte
-    // Number of continuous sectors with the above characteristics.
-    .FlsNumberOfSectors = (uint32)8,// L0->L7 , 8 sectors
-    },
-    { // L8,L9
-    .FlsSectorStartaddress = (Fls_AddressType)0x00020000,
-    .FlsPageSize = (Fls_LengthType)8, // Read page size of 128 bits (4 words), (8 bytes)
-    .FlsSectorSize = (Fls_LengthType)(64 KB), // 64Kbyte
-    .FlsNumberOfSectors = (uint32)2,// L8,L9 , 2 sectors
-    },
-    { // M0->H7
-    .FlsSectorStartaddress = (Fls_AddressType)0x00040000,
-    .FlsPageSize = (Fls_LengthType)8, // Read page size of 128 bits (4 words), (8 bytes)
+	{ // L0
+	.FlsSectorStartaddress = (Fls_AddressType)0x00000000, // Start address of this sector
+	.FlsPageSize = (Fls_LengthType)4, // Page size 8 words = 32bytes
+	.FlsSectorSize = (Fls_LengthType)(16 KB), // 16Kbyte
+	// Number of continuous sectors with the above characteristics.
+	.FlsNumberOfSectors = (uint32)1,// L0 , 1 sectors
+	},
+	{ // L1-L2
+	.FlsSectorStartaddress = (Fls_AddressType)0x00004000, // Start address of this sector
+	.FlsPageSize = (Fls_LengthType)4, // Page size 8 words = 32bytes
+	.FlsSectorSize = (Fls_LengthType)(48 KB), // 48Kbyte
+	// Number of continuous sectors with the above characteristics.
+	.FlsNumberOfSectors = (uint32)2,// L1->L2 , 2 sectors
+	},
+	{ // L3
+	.FlsSectorStartaddress = (Fls_AddressType)0x0001C000, // Start address of this sector
+	.FlsPageSize = (Fls_LengthType)4, // Page size 8 words = 32bytes
+	.FlsSectorSize = (Fls_LengthType)(16 KB), // 16Kbyte
+	// Number of continuous sectors with the above characteristics.
+	.FlsNumberOfSectors = (uint32)8,// L0->L7 , 8 sectors
+	},
+	{ // L4-L5
+	.FlsSectorStartaddress = (Fls_AddressType)0x00020000, // Start address of this sector
+	.FlsPageSize = (Fls_LengthType)4, // Page size 8 words = 32bytes
+	.FlsSectorSize = (Fls_LengthType)(128 KB), // 128Kbyte
+	// Number of continuous sectors with the above characteristics.
+	.FlsNumberOfSectors = (uint32)2,// L4->L5 , 8 sectors
+	},
+    { // H0->H11
+    .FlsSectorStartaddress = (Fls_AddressType)0x00060000, // Start address of this sector
+    .FlsPageSize = (Fls_LengthType)4, // Page size 8 words = 32bytes
     .FlsSectorSize = (Fls_LengthType)(128 KB), // 128Kbyte
-    .FlsNumberOfSectors = (uint32)6,// M0->H7
+    .FlsNumberOfSectors = (uint32)12,// H0->H11
     }
 };
 
 /*
  * Block to partition map
  */
-uint8 Fls_BlockToPartitionMap[] = { 1,1,1,1,2,2,2,2,3,3,4,4,5,5,6,6,7,7,8,8 };
+uint8 Fls_BlockToPartitionMap[] = { 1,1,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9 };
 
 const Fls_ConfigType FlsConfigSet[]=
 {

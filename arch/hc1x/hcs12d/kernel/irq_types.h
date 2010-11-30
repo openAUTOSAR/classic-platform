@@ -17,6 +17,9 @@
 #ifndef IRQ_TYPES_H
 #define IRQ_TYPES_H
 
+#define Irq_SOI()
+#define Irq_EOI()
+
 #include "irq_defines.h"
 
 #define DECLARE_IRQ_PROTOTYPE(x)			\

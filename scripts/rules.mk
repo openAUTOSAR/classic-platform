@@ -31,7 +31,7 @@ endef
 $(foreach mod,$(MOD_AVAIL),$(eval $(call MOD_AVAIL_template,${mod})))
 $(foreach mod,$(MOD_USE),$(eval $(call MOD_USE_template,${mod})))
 $(foreach mod,$(CFG),$(eval $(call CFG_template,${mod})))
-def-y += $(ARCH) $(ARCH_FAM) $(ARCH_MCU) 
+#def-y += $(ARCH) $(ARCH_FAM) $(ARCH_MCU) 
 
 # Select console / debug
 $(foreach mod,$(SELECT_OS_CONSOLE),$(eval $(call MOD_USE_template,${mod})))
@@ -183,7 +183,7 @@ ifeq ($(CROSS_COMPILE),)
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	
 else	
 	$(Q)$(LD) $(LDFLAGS) -T $(ldcmdfile-y) -o $@ $(libpath-y) --start-group $(obj-y) $(lib-y) $(libitem-y) --end-group $(LDMAPFILE)
-ifdef CFG_MC912DG128A
+ifdef CFG_HC1X
 	@$(CROSS_COMPILE)objdump -h $@ | gawk -f $(ROOTDIR)/scripts/hc1x_memory.awk
 else
 	@echo "Image size: (decimal)"

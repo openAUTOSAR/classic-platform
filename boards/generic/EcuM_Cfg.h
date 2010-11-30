@@ -25,7 +25,7 @@
 #define ECUM_CFG_H_
 
 #define ECUM_VERSION_INFO_API	STD_ON
-#define ECUM_INCLUDE_NVRAM_MGR	STD_ON
+#define ECUM_INCLUDE_NVRAM_MGR	STD_OFF
 #define ECUM_DEV_ERROR_DETECT	STD_ON
 
 #include "EcuM_Generated_Types.h"
@@ -34,7 +34,6 @@
 
 // EcuM_UserType definitions
 typedef enum {
-	ECUM_USER_SYSTEM,
 	ECUM_USER_ENDMARK	// Must be the last in list and less than 32!
 } EcuM_UserList;
 

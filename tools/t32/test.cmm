@@ -14,8 +14,8 @@ LOCAL &datafile &file &rfile &data &tmpfile &stop &testfiles
 &rfile="test_result.txt"
 &testfiles=0.
 
-&tdir="&cfg_project_path_g\system\kernel\testsystem"
-os cmd /c dir &tdir/B /A:D > &datafile
+&tdir="&cfg_project_path_g\binaries\*osek*.elf"
+os cmd /c dir &tdir/B /O:N > &datafile
 
 os cmd /c del &rfile
 os cmd /c echo "" > &rfile
@@ -26,7 +26,9 @@ OPEN #10 &datafile /read
 READ #10 &data
 WHILE "&data"!=""
 ( 
-	&file="&cfg_project_path_g"+"/binaries/system_kernel_testsystem_"+"&data"+".elf"
+//	&file="&cfg_project_path_g"+"/binaries/system_kernel_testsystem_"+"&data"+".elf"
+	&file="&cfg_project_path_g"+"/binaries/"+"&data"
+
   IF OS.FILE("&file")
   (
     &tmpfile=os.tmpfile()
@@ -74,6 +76,8 @@ testrun:
   b.d /all
   term.close
   RETURN
+
+
 
 
 

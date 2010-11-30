@@ -143,7 +143,6 @@ void Irq_Init( void ) {
 
 }
 
-
 void Irq_EOI( void ) {
 #if defined(CFG_MPC5516)
 	struct INTC_tag *intc = &INTC;

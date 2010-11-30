@@ -1,9 +1,27 @@
 obj-$(CFG_PPC) += crt0.o
-obj-$(CFG_HCS12D) += crt0.o
-vpath-$(CFG_ARM_CM3) += $(ARCH_PATH-y)kernel
+obj-$(CFG_HC1X) += crt0.o
+vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
+vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32F10x_StdPeriph_Driver/src
+vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32_ETH_Driver/src
+inc-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32F10x_StdPeriph_Driver/inc
+inc-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32_ETH_Driver/inc
 obj-$(CFG_ARM_CM3) += core_cm3.o
 obj-$(CFG_ARM_CM3) += startup_stm32f10x.o
+#stm32 lib files needed by drivers
+obj-$(CFG_ARM_CM3) += stm32f10x_rcc.o
+obj-$(CFG_ARM_CM3)-$(USE_CAN) += stm32f10x_can.o
+obj-$(CFG_ARM_CM3)-$(USE_DIO) += stm32f10x_gpio.o
+obj-$(CFG_ARM_CM3)-$(USE_ADC) += stm32f10x_adc.o
+obj-$(CFG_ARM_CM3)-$(USE_ADC) += stm32f10x_dma.o
+obj-$(CFG_ARM_CM3)-$(USE_FLS) += stm32f10x_flash.o
+obj-$(CFG_ARM_CM3)-$(USE_PWM) += stm32f10x_tim.o
+obj-$(CFG_ARM_CM3)-$(USE_LWIP) += stm32_eth.o
 
+obj-$(USE_TTY_TMS570_KEIL) += GLCD.o
+obj-$(USE_TTY_TMS570_KEIL) += emif.o
+
+# Cortex R4
+obj-$(CFG_ARM_CR4) += startup_cr4.o
 
 # OS object files. 
 # (checking if already included for compatability)
@@ -12,13 +30,12 @@ obj-$(USE_KERNEL) += Os_Cfg.o
 endif
 
 #Ecu
-#obj-y += EcuM_$(BOARDDIR).o
-obj-y += EcuM.o
-obj-y += EcuM_Main.o
-obj-y += EcuM_Cfg.o
-obj-y += EcuM_Callout_template.o
-inc-y += $(ROOTDIR)/system/EcuM
-vpath-y += $(ROOTDIR)/system/EcuM
+obj-$(USE_ECUM) += EcuM.o
+obj-$(USE_ECUM) += EcuM_Main.o
+obj-$(USE_ECUM) += EcuM_Cfg.o
+obj-$(USE_ECUM) += EcuM_Callout_template.o
+inc-$(USE_ECUM) += $(ROOTDIR)/system/EcuM
+vpath-$(USE_ECUM) += $(ROOTDIR)/system/EcuM
 
 # Gpt
 obj-$(USE_GPT) += Gpt.o
@@ -202,30 +219,18 @@ obj-$(USE_RAMLOG) += ramlog.o
 # Common stuff, if speciied
 VPATH += $(ROOTDIR)/common
 
-#tests
-#obj-y += RunTests.o
-#obj-$(USE_CAN) += can_test.o
-#obj-$(USE_DIO) += dio_test.o
-#obj-$(USE_PORT) += port_test.o
-#obj-$(USE_CANIF) += canif_test.o
-#obj-$(USE_FLS) += fls_test.o
-#obj-y += mahi_test.o
-#obj-$(USE_GPT) += gpt_test.o
-#obj-$(USE_SPI) += spi_test.o
-#obj-$(USE_EEP) += eep_test.o
-#obj-y += det_test.o
-#obj-$(USE_MCU) += mcu_test.o
-#obj-$(USE_FLS_SST25XX) += xfls_test.o
-#obj-y += lin_test.o
-#obj-$(USE_PDUR) += pdur_test.o
-#obj-$(USE_COM) += com_test.o
 
-#inc-$(USE_TESTS) += $(ROOTDIR)/embunit/embUnit
-#inc-$(USE_TESTS) += $(ROOTDIR)/embunit/textui
-#inc-$(USE_TESTS) += $(ROOTDIR)/embunit
+#TCF
+obj-$(USE_TCF) += tcf.o
+obj-$(USE_TCF) += Tcf_Cfg.o
+obj-$(USE_TCF) += sys_monitor.o
+obj-$(USE_TCF) += streams.o
+inc-$(USE_TCF) += $(ROOTDIR)/common/tcf
+vpath-$(USE_TCF) += $(ROOTDIR)/common/tcf
 
-#libitem-$(USE_TESTS) += $(ROOTDIR)/embunit/embUnit/obj_$(ARCH)/libembunit.a
-#libitem-$(USE_TESTS) += $(ROOTDIR)/embunit/textui/obj_$(ARCH)/libtextui.a
+#SLEEP
+obj-$(USE_SLEEP) += sleep.o
+
 
 # Newlib overrides (overridden by default)
 ifneq ($(CFG_STANDARD_NEWLIB),y)

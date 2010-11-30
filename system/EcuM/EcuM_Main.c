@@ -36,8 +36,7 @@ static uint32 internal_data_go_off_one_state_timeout = 0;
 #endif
 
 
-
-inline void EcuM_enter_run_mode(void)
+void EcuM_enter_run_mode(void)
 {
 	internal_data.current_state = ECUM_STATE_APP_RUN;
 	EcuM_OnEnterRUN();
@@ -140,13 +139,11 @@ VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_NOT_INITIAT
 #endif
 
 		// Switch shutdown mode
-		if ((internal_data.shutdown_target == ECUM_STATE_OFF) || (internal_data.shutdown_target == ECUM_STATE_RESET))
-		{
+		if ((internal_data.shutdown_target == ECUM_STATE_OFF) || (internal_data.shutdown_target == ECUM_STATE_RESET)) {
 			enter_go_off_one_mode();
 		}
 
-		if (internal_data.shutdown_target == ECUM_STATE_SLEEP)
-		{
+		if (internal_data.shutdown_target == ECUM_STATE_SLEEP) {
 			enter_go_sleep_mode();
 		}
 	}

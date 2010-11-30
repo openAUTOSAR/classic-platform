@@ -32,16 +32,16 @@ typedef struct {
 	/* Buffer start/stop */
 	void *bufStart;
 	void *bufEnd;
-} CirqBufferDynType;
+} CirqBufferType;
 
-CirqBufferDynType *CirqBuffDynCreate( size_t size, size_t dataSize );
-int CirqBuffDynDestroy(CirqBufferDynType *cPtr );
-int CirqBuffDynPush( CirqBufferDynType *cPtr, void *dataPtr );
-int CirqBuffDynPop(CirqBufferDynType *cPtr, void *dataPtr );
+/* Dynamic implementation */
+CirqBufferType *CirqBuffDynCreate( size_t size, size_t dataSize );
+int CirqBuffDynDestroy(CirqBufferType *cPtr );
 
-/* TODO: Static implementation */
+/* Static implementation */
+CirqBufferType CirqBuffStatCreate(void *buffer, int maxCnt, size_t dataSize);
 
-
-
+int CirqBuffPush( CirqBufferType *cPtr, void *dataPtr );
+int CirqBuffPop(CirqBufferType *cPtr, void *dataPtr );
 
 #endif /* CIRQ_BUFFER_H_ */
