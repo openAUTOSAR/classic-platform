@@ -53,7 +53,7 @@ static boolean askApplicationForServicePermission(uint8 *requestData, uint16 dat
 	const Dcm_DslServiceRequestIndicationType *serviceRequestIndication = DCM_Config.Dsl->DslServiceRequestIndication;
 	Std_ReturnType result;
 
-	while (!serviceRequestIndication->Arc_EOL && (returnCode != E_REQUEST_NOT_ACCEPTED)) {
+	while ((!serviceRequestIndication->Arc_EOL) && (returnCode != E_REQUEST_NOT_ACCEPTED)) {
 		if (serviceRequestIndication->Indication != NULL) {
 			result = serviceRequestIndication->Indication(requestData, dataSize);
 			if (result != E_OK){
@@ -145,7 +145,7 @@ static boolean lookupSid(uint8 sid, const Dcm_DsdServiceType **sidPtr)
 	boolean returnStatus = TRUE;
 	const Dcm_DsdServiceType *service = msgData.serviceTable->DsdService;
 
-	while ((service->DsdSidTabServiceId != sid) && !service->Arc_EOL) {
+	while ((service->DsdSidTabServiceId != sid) && (!service->Arc_EOL)) {
 		service++;
 	}
 
@@ -196,7 +196,7 @@ void DsdHandleRequest(void)
 					if (DCM_REQUEST_INDICATION_ENABLED) {	 /** @req DCM218 */
 						 result = askApplicationForServicePermission(msgData.pduRxData->SduDataPtr, msgData.pduRxData->SduLength);
 					}
-					if (!DCM_REQUEST_INDICATION_ENABLED || result == E_OK) {
+					if ((!DCM_REQUEST_INDICATION_ENABLED) || (result == E_OK)) {
 						// Yes! All conditions met!
 						// Check if response shall be suppressed
 						if (sidConfPtr->DsdSidTabSubfuncAvail && (msgData.pduRxData->SduDataPtr[1] & SUPPRESS_POS_RESP_BIT)) {	/** @req DCM204 */

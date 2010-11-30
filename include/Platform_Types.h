@@ -20,6 +20,8 @@
  * General platform type definitions.
  */
 
+#include <stdbool.h>
+
 #ifndef _PLATFORM_TYPES_H_
 #define _PLATFORM_TYPES_H_
 
@@ -27,10 +29,11 @@
 #define CPU_BIT_ORDER       MSB_FIRST 
 #define CPU_BYTE_ORDER      HIGH_BYTE_FIRST
 
-#define FALSE		0
-#define TRUE		1
+#define FALSE		(boolean)0
+#define TRUE		(boolean)1
 
-typedef unsigned long       boolean;         
+//typedef unsigned long       boolean;
+typedef _Bool      boolean;
 typedef signed char         sint8;        
 typedef unsigned char       uint8;        
 typedef signed short        sint16;       

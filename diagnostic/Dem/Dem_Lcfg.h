@@ -192,7 +192,7 @@ typedef struct {
 // 10.2.20
 typedef struct {
 	Dem_PreDebounceNameType						PreDebounceName;				// (1)
-	union {
+	union {	// 960 PC-lint: 18.4 Unions shall not be used. Ta upp på möte!
 	const Dem_PreDebounceMonitorInternalType	*PreDebounceMonitorInternal;	// (0..1)
 	const Dem_PreDebounceCounterBasedType		*PreDebounceCounterBased;		// (0..1)
 	const Dem_PreDebounceFrequencyBasedType		*PreDebounceFrequencyBased;		// (0..1)
