@@ -63,6 +63,11 @@
 
 extern const PduR_PBConfigType *PduRConfig;
 
+/*
+ * The state of the PDU router.
+ */
+extern PduR_StateType PduRState;
+
 
 #if (PDUR_DEV_ERROR_DETECT == STD_ON)
 
