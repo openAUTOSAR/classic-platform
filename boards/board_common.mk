@@ -97,8 +97,8 @@ obj-$(USE_SPI) += Spi_Lcfg.o
 # NvM
 obj-$(USE_NVM) += NvM.o
 obj-$(USE_NVM) += NvM_Cfg.o
-inc-$(USE_NVM) += $(ROOTDIR)/memory/Nvm
-vpath-$(USE_NVM) += $(ROOTDIR)/memory/Nvm
+inc-$(USE_NVM) += $(ROOTDIR)/memory/NvM
+vpath-$(USE_NVM) += $(ROOTDIR)/memory/NvM
 
 # Fee
 obj-$(USE_FEE) += Fee.o
