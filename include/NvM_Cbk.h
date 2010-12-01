@@ -15,18 +15,13 @@
 
 
 
+/** @req NVM551 */
 
 
+#ifndef NVM_CBK_H_
+#define NVM_CBK_H_
 
+void NvM_JobEndNotification(void);		/** @req NVM462 */
+void NvM_JobErrorNotification(void);	/** @req NVM463 */
 
-
-#warning "This default file may only be used as an example!"
-
-#ifndef MEMIF_CFG_H_
-#define MEMIF_CFG_H_
-
-// TODO. include FEE and EA modules
-
-
-
-#endif /*MEMIF_CFG_H_*/
+#endif /*NVM_CBK_H_*/

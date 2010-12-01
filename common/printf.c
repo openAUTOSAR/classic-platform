@@ -48,7 +48,7 @@
 
 //#define HOST_TEST	1
 
-int arc_putchar(_PTR fd, int c);
+int arc_putchar(int fd, int c);
 int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap);
 
 int printf(const char *format, ...) {
@@ -144,7 +144,7 @@ static inline int emitChar( FILE *file, char **buf, char c, int *left ) {
 		putc(c, stdout);
 		fflush(stdout);
 #else
-		arc_putchar((int)file, c);
+		arc_putchar((int)file->_cookie, c);
 #endif
 	} else {
 		**buf = c;

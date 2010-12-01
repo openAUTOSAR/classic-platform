@@ -20,13 +20,26 @@
 
 
 
-#warning "This default file may only be used as an example!"
-
-#ifndef MEMIF_CFG_H_
-#define MEMIF_CFG_H_
-
-// TODO. include FEE and EA modules
+/** @req NVM550 */
 
 
+#ifndef NVM_TYPES_H_
+#define NVM_TYPES_H_
 
-#endif /*MEMIF_CFG_H_*/
+#include "Std_Types.h"
+
+typedef uint8 NvM_RequestResultType;	/** @req NVM470 */
+#define NVM_REQ_OK					0x00
+#define NVM_REQ_NOT_OK				0x01
+#define NVM_REQ_PENDING				0x02
+#define NVM_REQ_INTEGRITY_FAILED	0x03
+#define NVM_REQ_BLOCK_SKIPPED		0x04
+#define NVM_REQ_NV_INVALIDATED		0x05
+#define NVM_REQ_CANCELLED			0x06
+
+typedef uint16 NvM_BlockIdType;		/** @req NVM471 */
+#define NVM_MULTI_BLOCK_REQUEST_ID			0
+#define NVM_REDUNDANT_BLOCK_FOR_CONFIG_ID	1
+
+
+#endif /*NVM_TYPES_H_*/

@@ -589,6 +589,7 @@ UINT32 Fls_H7F_ProgramStatus ( PSSD_CONFIG pSSDConfig, Fls_ProgInfoType *pInfo )
     }
 
 EXIT_EHV:
+
   /* Clear MCR-PGM bit */
   H7FMCR_BIT_CLEAR (MCRAddress, H7F_MCR_PGM);
 

@@ -15,9 +15,15 @@
 
 
 
-#ifndef NVM_CFG_H_
-#define NVM_CFG_H_
 
-#include "NvM_Types.h"
 
-#endif /*NVM_CFG_H_*/
+
+
+
+#ifndef EA_CBK_H_
+#define EA_CBK_H_
+
+void Ea_JobEndNotification(void);	/** @req EA094 */
+void Ea_JobErrorNotification(void);	/** @req EA095 */
+
+#endif /*EA_CBK_H_*/

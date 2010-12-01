@@ -15,19 +15,10 @@
 
 
 
+#warning "This default file may only be used as an example!"
+#warning "This file is currently empty!!!"
 
+#ifndef EA_CFG_H_
+#define EA_CFG_H_
 
-
-
-
-#ifndef NVM_H_
-#define NVM_H_
-
-#include "NvM_Cfg.h"
-
-void NvM_Init( void );
-void NvM_ReadAll( void );
-void NvM_WriteAll( void );
-void NvM_CancelWriteAll( void );
-
-#endif /*NVM_H_*/
+#endif /*EA_CFG_H_*/

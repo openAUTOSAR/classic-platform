@@ -20,13 +20,10 @@
 
 
 
-#warning "This default file may only be used as an example!"
+#ifndef FEE_CBK_H_
+#define FEE_CBK_H_
 
-#ifndef MEMIF_CFG_H_
-#define MEMIF_CFG_H_
+void Fee_JobEndNotification(void);		/** @req FEE095 */
+void Fee_JobErrorNotification(void);	/** @req FEE096 */
 
-// TODO. include FEE and EA modules
-
-
-
-#endif /*MEMIF_CFG_H_*/
+#endif /*FEE_CBK_H_*/
