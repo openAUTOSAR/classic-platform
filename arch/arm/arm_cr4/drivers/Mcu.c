@@ -172,15 +172,6 @@ core_info_t core_info_list[] = {
     },
 };
 
-
-
-static core_info_t *Mcu_IdentifyCore(uint32 pvr)
-{
-
-
-  return NULL;
-}
-
 /**
  * Identify the core, just to check that we have support for it.
  *
@@ -192,14 +183,6 @@ static uint32 Mcu_CheckCpu( void ) {
 	return 0;
 }
 
-
-/**
-  * Set bus clocks. SysClk,AHBClk,APB1Clk,APB2Clk
-  */
-static void SetClocks(Mcu_ClockSettingConfigType *clockSettingsPtr)
-{
-
-}
 
 /**
   * Initialize Peripherals clocks
@@ -496,13 +479,14 @@ uint32_t McuE_GetSystemClock(void)
 
 imask_t McuE_EnterCriticalSection()
 {
-	McuE_DisableInterrupts();
-	return 0;
+	imask_t state;
+	Irq_Save(state);
+	return state;
 }
 
 void McuE_ExitCriticalSection(uint32_t old_state)
 {
-	McuE_EnableInterrupts();
+	Irq_Restore(old_state);
 }
 
 /**
@@ -526,12 +510,3 @@ void Mcu_ConfigureFlash(void)
 
 }
 
-void McuE_EnableInterrupts(void)
-{
-  Irq_Enable();
-}
-
-void McuE_DisableInterrupts(void)
-{
-  Irq_Disable();
-}
