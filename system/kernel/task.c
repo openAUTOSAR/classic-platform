@@ -540,10 +540,8 @@ StatusType GetTaskID( TaskRefType TaskID ) {
 			goto err;
 		}
 	}
-err:
-    os_error.serviceId= OSServiceId_GetTaskID;
-    os_error.param1 = (uint32_t)TaskID;
-    return rv;
+
+	OS_STD_END_1(OSServiceId_GetTaskID, TaskID);
 }
 
 
