@@ -19,7 +19,7 @@ MEMORY
 
 SECTIONS
 {
-#if defined (CALIBRATION_ACTIVE)
+#if defined(CALIBRATION_ACTIVE)
 	__FLS_CALIBRATION_AREA_START__ = 0x0000;
 	.calibration : AT(__FLS_CALIBRATION_AREA_START__) {
 		__CALIB_RAM_START = .;
@@ -39,8 +39,10 @@ SECTIONS
            .fee_bank2 FEE_BANK2_OFFSET : {
                       . = . + FEE_BANK2_LENGTH;
            }
+#endif
 
-/* Make sure the rest of the code is in another flash partition that the fee banks. */
+#if defined(USE_FEE) || defined(CALIBRATION_ACTIVE)
+/* Place the rest of the code is in another flash partition that the calibration and fee banks. */
 __FLS_PROG_START__ = 0x20000;	/* Must be aligned to a sector start. */
 #else
 
