@@ -792,6 +792,12 @@ Can_ReturnType Can_Write(Can_Arc_HTHType Hth, Can_PduType *PduInfo)
 		if (!(mbMask & 1)) {
 			continue; // This message object is not part of this hoh.
 		}
+		/* Check if TxRqst Bit of MsgObject is set */
+		if(CanRegs[ControllerId]->TRx[MsgNr >> 5] & (1 << (MsgNr & 0x1F)))
+		{
+			continue;
+		}
+		break;
     }
 
     CurPduArrayPtr   = ControllerConfig[ControllerId].PduPtr    + (MsgNr - 1);
