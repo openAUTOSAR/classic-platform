@@ -36,5 +36,7 @@ void RTE_pwm_sine_update(Pwm_ChannelType channel, Pwm_PeriodType arg){
 
 
 void RTE_pwm_enable_notifications(Pwm_ChannelType channel, Pwm_EdgeNotificationType type) {
+#if (PWM_NOTIFICATION_SUPPORTED == STD_ON)
 	Pwm_EnableNotification(channel, type);
+#endif
 }

@@ -21,6 +21,7 @@
 
 
 #include "Os.h"
+#include "mcu.h"
 #include "Pwm.h"
 #include <stdio.h>
 #include <assert.h>
