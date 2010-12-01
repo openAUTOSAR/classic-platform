@@ -22,7 +22,7 @@
 #include "Mcu.h"
 #include "Det.h"
 #include "irq.h"
-#if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
+#if defined(USE_NVM)
 #include "Nvm.h"
 #endif
 
@@ -73,7 +73,7 @@ void EcuM_Init( void )
 
 void EcuM_StartupTwo()
 {
-#if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
+#if defined(USE_NVM)
 	extern CounterType Os_Arc_OsTickCounter;
 	TickType tickTimerStart, tickTimer, tickTimerElapsed;
 	StatusType tickTimerStatus;
@@ -88,7 +88,7 @@ void EcuM_StartupTwo()
 	// Initialize drivers that don't need NVRAM data
 	EcuM_AL_DriverInitTwo(internal_data.config);
 
-#if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
+#if defined(USE_NVM)
 	// Start timer to wait for NVM job to complete
 	tickTimerStatus = GetCounterValue(Os_Arc_OsTickCounter , &tickTimerStart);
 	if (tickTimerStatus != E_OK) {
@@ -102,7 +102,7 @@ void EcuM_StartupTwo()
 	Rte_Start();
 #endif
 
-#if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
+#if defined(USE_NVM)
 	// Wait for the NVM job (NvmReadAll) to terminate
 	do {
 		NvM_GetErrorStatus(0, &readAllResult);	// Read the multiblock status
