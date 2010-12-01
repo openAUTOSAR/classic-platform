@@ -16,7 +16,6 @@
 #include "Os.h"
 #include "internal.h"
 #include "stm32f10x.h"
-#include "core_cm3.h"
 #include "irq.h"
 #include "arc.h"
 

@@ -18,7 +18,6 @@
 #include "hooks.h"
 #include "stm32f10x.h"
 #include "irq.h"
-#include "core_cm3.h"
 
 extern void *Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
 

@@ -26,7 +26,7 @@
 
 #if defined(CFG_ARM_CM3)
 #include "irq_types.h"
-#include "core_cm3.h"
+#include "stm32f10x.h"
 #endif
 
 #ifdef USE_TTY_TCF_STREAMS
