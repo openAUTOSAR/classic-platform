@@ -59,7 +59,7 @@
 
 
 #ifndef CFG_RAMLOG_SIZE
-#define CFG_RAMLOG_SIZE  20000
+#define CFG_RAMLOG_SIZE  2000
 #endif
 
 #define RAMLOG_MAGIC	  1
