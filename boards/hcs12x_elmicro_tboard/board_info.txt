@@ -27,4 +27,3 @@ Board Features:
   BDM (Background Debug Mode) connector
   All controller pins are available at two double row headers
   5V power supply
-  Credit card size: 86mm x 54mm
