@@ -127,7 +127,7 @@ inc-y += ../include
 # Some dependency for xxx_offset.c/h also
 -include $(subst .h,.d,$(dep-y))
 
-#LINT#inc-y += /C/lint/lnt #To run PC-lint
+#LINT#inc-y += /C/lint/lnt #LINT: To run PC-lint
 abs-inc-y = $(abspath $(inc-y))
 
 lint_exclude_path := arc-tests
@@ -135,7 +135,7 @@ lint_exclude_path := arc-tests
 # Compile
 %.o: %.c
 	@echo "  >> CC $(notdir $<)"
-# if path does not include "lint_exclude_path" then run PC-lint to check MISRA C standard
+# LINT: if path does not include "lint_exclude_path" then run PC-lint to check MISRA C standard
 #LINT#	$(if $(findstring $(lint_exclude_path),$(abspath $<)),$(info $(abspath $<):0:0: Info: Not running lint MISRA check on $(abspath $<)),/C/lint/Lint-nt +v $(addprefix -i,$(abs-inc-y)) /C/lint/std.lnt  $(abspath $<))
 # compile
 	$(Q)$(CC) -c $(CFLAGS) -o $(goal) $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)

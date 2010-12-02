@@ -262,7 +262,6 @@ static boolean checkDtcGroup(uint32 dtc, const Dem_EventParameterType *eventPara
  * Procedure:	checkDtcOrigin
  * Description:	Return TRUE if "dtcOrigin" match any of the events DTCOrigin otherwise FALSE.
  */
-#if 1 // lint-change
 static boolean checkDtcOrigin(Dem_DTCOriginType dtcOrigin, const Dem_EventParameterType *eventParam)
 {
 	boolean result = FALSE;
@@ -279,21 +278,6 @@ static boolean checkDtcOrigin(Dem_DTCOriginType dtcOrigin, const Dem_EventParame
 
 	return result;
 }
-#else
-static boolean checkDtcOrigin(Dem_DTCOriginType dtcOrigin, const Dem_EventParameterType *eventParam)
-{
-	boolean result = FALSE;
-	uint16 i;
-
-	for (i = 0; (eventParam->EventClass->EventDestination[i] != dtcOrigin) && (i < DEM_MAX_NR_OF_EVENT_DESTINATION); i++);
-
-	if (i < DEM_MAX_NR_OF_EVENT_DESTINATION) {
-		result = TRUE;
-	}
-
-	return result;
-}
-#endif
 
 /*
  * Procedure:	checkDtcSeverityMask
@@ -328,7 +312,6 @@ static boolean checkDtcFaultDetectionCounter(const Dem_EventParameterType *event
  * Description:	Returns the pointer to event id parameters of "eventId" in "*eventStatusBuffer",
  * 				if not found NULL is returned.
  */
-#if 1 // Lint-changes
 static void lookupEventStatusRec(Dem_EventIdType eventId, EventStatusRecType **const eventStatusRec)
 {
 	uint8 i;
@@ -344,22 +327,6 @@ static void lookupEventStatusRec(Dem_EventIdType eventId, EventStatusRecType **c
 		*eventStatusRec = NULL;
 	}
 }
-#else
-static void lookupEventStatusRec(Dem_EventIdType eventId, EventStatusRecType **const eventStatusRec)
-{
-	EventStatusRecType *eventStatusRecPtr = eventStatusBuffer;
-
-	while ((eventStatusRecPtr->eventId != eventId) && (eventStatusRecPtr < &eventStatusBuffer[DEM_MAX_NUMBER_EVENT])) {
-		eventStatusRecPtr++;
-	}
-
-	if (eventStatusRecPtr < &eventStatusBuffer[DEM_MAX_NUMBER_EVENT]) {
-		*eventStatusRec = eventStatusRecPtr;
-	} else {
-		*eventStatusRec = NULL;
-	}
-}
-#endif
 
 
 /*
@@ -791,7 +758,6 @@ static void getExtendedData(const Dem_EventParameterType *eventParam, ExtDataRec
  * Description:	Store the extended data pointed by "extendedData" to the "preInitExtDataBuffer",
  * 				if non existent a new entry is created.
  */
-#if 1 // Lint-changes
 static void storeExtendedDataPreInit(const Dem_EventParameterType *eventParam, const ExtDataRecType *extendedData)
 {
 	boolean eventIdFound = FALSE;
@@ -828,42 +794,12 @@ static void storeExtendedDataPreInit(const Dem_EventParameterType *eventParam, c
 
 	McuE_ExitCriticalSection(state);
 }
-#else
-static void storeExtendedDataPreInit(const Dem_EventParameterType *eventParam, const ExtDataRecType *extendedData)
-{
-	uint16 i;
-	imask_t state = McuE_EnterCriticalSection();
-
-	// Check if already stored
-	for (i = 0; (preInitExtDataBuffer[i].eventId != eventParam->EventID) && (i<DEM_MAX_NUMBER_EXT_DATA_PRE_INIT); i++);
-
-	if (i < DEM_MAX_NUMBER_EXT_DATA_PRE_INIT) {
-		// Yes, overwrite existing
-		memcpy(&preInitExtDataBuffer[i], extendedData, sizeof(ExtDataRecType));
-	}
-	else {
-		// No, lookup first free position
-		for (i = 0; (preInitExtDataBuffer[i].eventId !=0) && (i<DEM_MAX_NUMBER_EXT_DATA_PRE_INIT); i++);
-
-		if (i < DEM_MAX_NUMBER_EXT_DATA_PRE_INIT) {
-			memcpy(&preInitExtDataBuffer[i], extendedData, sizeof(ExtDataRecType));
-		}
-		else {
-			// Error: Pre init extended data buffer full
-			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_STORE_EXT_DATA_PRE_INIT_ID, DEM_E_PRE_INIT_EXT_DATA_BUFF_FULL);
-		}
-	}
-
-	McuE_ExitCriticalSection(state);
-}
-#endif
 
 /*
  * Procedure:	storeEventPriMem
  * Description:	Store the event data of "eventStatus->eventId" in "priMemEventBuffer",
  * 				if non existent a new entry is created.
  */
-#if 1 // Lint-change
 static void storeEventPriMem(const Dem_EventParameterType *eventParam, const EventStatusRecType *eventStatus)
 {
 	boolean eventIdFound = FALSE;
@@ -902,45 +838,11 @@ static void storeEventPriMem(const Dem_EventParameterType *eventParam, const Eve
 
 	McuE_ExitCriticalSection(state);
 }
-#else
-static void storeEventPriMem(const Dem_EventParameterType *eventParam, const EventStatusRecType *eventStatus)
-{
-	uint16 i;
-	imask_t state = McuE_EnterCriticalSection();
-
-
-	// Lookup event ID
-	for (i = 0; (priMemEventBuffer[i].eventId != eventStatus->eventId) && (i < DEM_MAX_NUMBER_EVENT_ENTRY_PRI); i++);
-
-	if (i < DEM_MAX_NUMBER_EVENT_ENTRY_PRI) {
-		// Update event found
-		priMemEventBuffer[i].occurrence = eventStatus->occurrence;
-		priMemEventBuffer[i].checksum = calcChecksum(&priMemEventBuffer[i], sizeof(EventRecType)-sizeof(ChecksumType));
-	}
-	else {
-		// Search for free position
-		for (i=0; (priMemEventBuffer[i].eventId != DEM_EVENT_ID_NULL) && (i < DEM_MAX_NUMBER_EVENT_ENTRY_PRI); i++);
-
-		if (i < DEM_MAX_NUMBER_EVENT_ENTRY_PRI) {
-			priMemEventBuffer[i].eventId = eventStatus->eventId;
-			priMemEventBuffer[i].occurrence = eventStatus->occurrence;
-			priMemEventBuffer[i].checksum = calcChecksum(&priMemEventBuffer[i], sizeof(EventRecType)-sizeof(ChecksumType));
-		}
-		else {
-			// Error: Pri mem event buffer full
-			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_STORE_EVENT_PRI_MEM_ID, DEM_E_PRI_MEM_EVENT_BUFF_FULL);
-		}
-	}
-
-	McuE_ExitCriticalSection(state);
-}
-#endif
 
 /*
  * Procedure:	deleteEventPriMem
  * Description:	Delete the event data of "eventParam->eventId" from "priMemEventBuffer".
  */
-#if 1 // Lint-change
 static void deleteEventPriMem(const Dem_EventParameterType *eventParam)
 {
 	boolean eventIdFound = FALSE;
@@ -960,24 +862,6 @@ static void deleteEventPriMem(const Dem_EventParameterType *eventParam)
 
 	McuE_ExitCriticalSection(state);
 }
-#else
-static void deleteEventPriMem(const Dem_EventParameterType *eventParam)
-{
-	uint16 i;
-	imask_t state = McuE_EnterCriticalSection();
-
-
-	// Lookup event ID
-	for (i = 0; (priMemEventBuffer[i].eventId != eventParam->EventID) && (i < DEM_MAX_NUMBER_EVENT_ENTRY_PRI); i++);
-
-	if (i < DEM_MAX_NUMBER_EVENT_ENTRY_PRI) {
-		// Delete event found
-		memset(&priMemEventBuffer[i], 0, sizeof(EventRecType));
-	}
-
-	McuE_ExitCriticalSection(state);
-}
-#endif
 
 /*
  * Procedure:	storeEventEvtMem
@@ -1014,7 +898,6 @@ static void storeEventEvtMem(const Dem_EventParameterType *eventParam, const Eve
  * Description:	Store the extended data pointed by "extendedData" to the "priMemExtDataBuffer",
  * 				if non existent a new entry is created.
  */
-#if 1 // lint-change
 static void storeExtendedDataPriMem(const Dem_EventParameterType *eventParam, const ExtDataRecType *extendedData) /** @req DEM041 */
 {
 	boolean eventIdFound = FALSE;
@@ -1047,40 +930,11 @@ static void storeExtendedDataPriMem(const Dem_EventParameterType *eventParam, co
 
 	McuE_ExitCriticalSection(state);
 }
-#else
-static void storeExtendedDataPriMem(const Dem_EventParameterType *eventParam, const ExtDataRecType *extendedData) /** @req DEM041 */
-{
-	uint16 i;
-	imask_t state = McuE_EnterCriticalSection();
-
-	// Check if already stored
-	for (i = 0; (priMemExtDataBuffer[i].eventId != eventParam->EventID) && (i<DEM_MAX_NUMBER_EXT_DATA_PRI_MEM); i++);
-
-	if (i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM) {
-		// Yes, overwrite existing
-		memcpy(&priMemExtDataBuffer[i], extendedData, sizeof(ExtDataRecType));
-	}
-	else {
-		// No, lookup first free position
-		for (i = 0; (priMemExtDataBuffer[i].eventId != DEM_EVENT_ID_NULL) && (i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM); i++);
-		if (i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM) {
-			memcpy(&priMemExtDataBuffer[i], extendedData, sizeof(ExtDataRecType));
-		}
-		else {
-			// Error: Pri mem extended data buffer full
-			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_STORE_EXT_DATA_PRI_MEM_ID, DEM_E_PRI_MEM_EXT_DATA_BUFF_FULL);
-		}
-	}
-
-	McuE_ExitCriticalSection(state);
-}
-#endif
 
 /*
  * Procedure:	deleteExtendedDataPriMem
  * Description:	Delete the extended data of "eventParam->eventId" from "priMemExtDataBuffer".
  */
-#if 1 // lint-change
 static void deleteExtendedDataPriMem(const Dem_EventParameterType *eventParam)
 {
 	boolean eventIdFound = FALSE;
@@ -1099,23 +953,6 @@ static void deleteExtendedDataPriMem(const Dem_EventParameterType *eventParam)
 
 	McuE_ExitCriticalSection(state);
 }
-#else
-static void deleteExtendedDataPriMem(const Dem_EventParameterType *eventParam)
-{
-	uint16 i;
-	imask_t state = McuE_EnterCriticalSection();
-
-	// Check if already stored
-	for (i = 0; (priMemExtDataBuffer[i].eventId != eventParam->EventID) && (i<DEM_MAX_NUMBER_EXT_DATA_PRI_MEM); i++);
-
-	if (i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM) {
-		// Yes, clear record
-		memset(&priMemExtDataBuffer[i], 0, sizeof(ExtDataRecType));
-	}
-
-	McuE_ExitCriticalSection(state);
-}
-#endif
 
 /*
  * Procedure:	storeExtendedDataEvtMem
@@ -1184,7 +1021,7 @@ static boolean lookupExtendedDataPriMem(Dem_EventIdType eventId, ExtDataRecType 
 {
 	boolean eventIdFound = FALSE;
 	sint16 i;
-#if 1 // Lint-change
+
 	// Lookup corresponding extended data
 	for (i = 0; (i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM) && (!eventIdFound); i++) {
 		eventIdFound = (priMemExtDataBuffer[i].eventId == eventId);
@@ -1197,19 +1034,6 @@ static boolean lookupExtendedDataPriMem(Dem_EventIdType eventId, ExtDataRecType 
 
 	return eventIdFound;
 }
-#else
-	// Lookup corresponding extended data
-	for (i = 0; (priMemExtDataBuffer[i].eventId != eventId) && (i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM); i++);
-
-	if (i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM) {
-		// Yes, return pointer
-		*extData = &priMemExtDataBuffer[i];
-		eventIdFound = TRUE;
-	}
-
-	return eventIdFound;
-}
-#endif
 
 static void storeFreezeFrameDataPriMem(const Dem_EventParameterType *eventParam, const FreezeFrameRecType *freezeFrame)
 {
