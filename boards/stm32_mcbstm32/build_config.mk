@@ -36,7 +36,7 @@ MOD_AVAIL+=  RAMLOG
 #
 
 # Use little heap
-def-y += HEAPSIZE=4000
+def-y += HEAPSIZE=3000
 # Select the right device in ST header files.
 # [ STM32F10X_LD | STM32F10X_MD |  STM32F10X_HD |STM32F10X_CL ]
 def-y += STM32F10X_MD
