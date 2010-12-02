@@ -21,7 +21,7 @@
 #include "Dem.h"
 #endif
 #include <assert.h>
-#include "cpu.h"
+#include "Cpu.h"
 #include <string.h>
 #include "Ramlog.h"
 

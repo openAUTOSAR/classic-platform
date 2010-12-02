@@ -33,7 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include "cpu.h"
+#include "Cpu.h"
 #include "cirq_buffer.h"
 
 #ifdef _TEST_CIRQ_BUFFER_DYN_
