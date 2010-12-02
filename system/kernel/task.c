@@ -534,14 +534,15 @@ StatusType GetTaskID( TaskRefType TaskID ) {
 		/* We have no running task, check level */
 
 		/* Call level is not from the OSEK specification but from the
-		 * test specification */
+		 * test specification.
+		 * We cannot call ErrorHook here since the errorhook should be able to call this function.
+		 * See 12-1 footnote 13 in OSEK OS specification. */
 		if( os_sys.int_nest_cnt != 0 ) {
 			rv =  E_OS_CALLEVEL;
-			goto err;
 		}
 	}
 
-	OS_STD_END_1(OSServiceId_GetTaskID, TaskID);
+    return rv;
 }
 
 
