@@ -59,7 +59,7 @@
 /* Contain the current state of the PDU router. The router is uninitialized
  * until PduR_Init has been run.
  */
-PduR_StateType PduRState;
+PduR_StateType PduRState; // 960, 31 LINT: konstigt...
 
 extern const PduR_PBConfigType *PduRConfig;
 
@@ -71,11 +71,11 @@ extern const PduR_PBConfigType *PduRConfig;
 // Define macro for state, parameter and data pointer checks.
 // TODO Implement data range check if needed.
 #define PduR_DevCheck(PduId,PduPtr,ApiId,...) \
-	if (PduRState == PDUR_UNINIT || PduRState == PDUR_REDUCED) { \
+	if ((PduRState == PDUR_UNINIT) || (PduRState == PDUR_REDUCED)) { \
 		PDUR_DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_INVALID_REQUEST); \
 		return __VA_ARGS__; \
 	} \
-	if (PduPtr == 0 && PDUR_DEV_ERROR_DETECT) { \
+	if ((PduPtr == 0) && (PDUR_DEV_ERROR_DETECT)) { \
 		PDUR_DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_DATA_PTR_INVALID); \
 		return __VA_ARGS__; \
 	} \
@@ -108,7 +108,7 @@ void PduR_ChangeParameterRequest(PduR_ParameterValueType PduParameterValue,
 //#error fail
 void PduR_Init(const PduR_PBConfigType* ConfigPtr);
 void PduR_GetVersionInfo(Std_VersionInfoType* versionInfo);
-uint32 PduR_GetConfigurationId();
+uint32 PduR_GetConfigurationId(void);
 
 void PduR_BufferQueue(PduRTxBuffer_type *Buffer, const uint8 * SduPtr);
 void PduR_BufferDeQueue(PduRTxBuffer_type *Buffer, uint8 *SduPtr);

@@ -50,7 +50,7 @@ uint8 Det_AddCbk(detCbk_t detCbk)
 {
     if (_detState != DET_UNINITIALIZED)
     {
-        for (uint32 i=0; i<DET_NUMBER_OF_CALLBACKS; i++)
+        for (uint8 i=0; i<DET_NUMBER_OF_CALLBACKS; i++)
         {
             if (NULL==detCbk_List[i])
             {
@@ -117,7 +117,7 @@ void Det_ReportError(uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 Error
     if (_detState == DET_STARTED) // No action is taken if the module is not started
     {
 #if ( DET_ENABLE_CALLBACKS == STD_ON )
-        long old1;
+        uint32 old1;
         Irq_Save(old1);
 
         for (uint32 i=0; i<DET_NUMBER_OF_CALLBACKS; i++)
@@ -132,7 +132,7 @@ void Det_ReportError(uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 Error
 
 
 #if ( DET_USE_RAMLOG == STD_ON )
-        long old2;
+        uint32 old2;
         Irq_Save(old2);
         if (Det_RamlogIndex < DET_RAMLOG_SIZE)
         {

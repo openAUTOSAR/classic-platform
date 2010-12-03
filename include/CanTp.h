@@ -90,19 +90,19 @@ typedef enum {
  * Implemented functions
  ****************************/
 
-void CanTp_Init(); /** @req CANTP208 **/
+void CanTp_Init(void); /** @req CANTP208 **/
 
 #if ( CANTP_VERSION_INFO_API == STD_ON ) /** @req CANTP162 *//** @req CANTP163 */
 #define CanTp_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,CANTP) /** @req CANTP210 */ /* @req CANTP218 */
 #endif /* CANTP_VERSION_INFO_API */
 
-void CanTp_Shutdown(); /** @req CANTP211 */
+void CanTp_Shutdown(void); /** @req CANTP211 */
 
 Std_ReturnType CanTp_Transmit( PduIdType CanTpTxSduId, const PduInfoType * CanTpTxInfoPtr ); /** @req CANTP212 */
 
 Std_ReturnType FrTp_CancelTransmitRequest( PduIdType FrTpTxPduId, FrTp_CancelReasonType FrTpCancelReason ); /** @req CANTP246 */
 
-void CanTp_MainFunction(); /** @req CANTP213 */
+void CanTp_MainFunction(void); /** @req CANTP213 */
 
 
 #endif /* CANTP_H_ */

@@ -23,7 +23,7 @@
 #ifndef COMM_DCM_H_
 #define COMM_DCM_H_
 
-void ComM_DCM_ActiveDiagnostic();
-void ComM_DCM_InactiveDiagnostic();
+void ComM_DCM_ActiveDiagnostic(void);
+void ComM_DCM_InactiveDiagnostic(void);
 
 #endif /*COMM_DCM_H_*/

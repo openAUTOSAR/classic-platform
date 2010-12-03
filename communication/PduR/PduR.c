@@ -78,7 +78,7 @@ void PduR_Init (const PduR_PBConfigType* ConfigPtr) {
 	int i = 0;
 	PduRRoutingPath_type *path;
 	PduRConfig->PduRRoutingTable->NRoutingPaths = 0;
-	for (i = 0; !PduRConfig->PduRRoutingTable->PduRRoutingPath[i].PduR_Arc_EOL && !failed; i++) {
+	for (i = 0; (!PduRConfig->PduRRoutingTable->PduRRoutingPath[i].PduR_Arc_EOL) && (!failed); i++) {
 		PduRConfig->PduRRoutingTable->NRoutingPaths++;
 		path = &PduRConfig->PduRRoutingTable->PduRRoutingPath[i];
 
@@ -137,7 +137,7 @@ void PduR_BufferInc(PduRTxBuffer_type *Buffer, uint8 **ptr) {
 	(*ptr) = (*ptr) + Buffer->Length;
 
 	// TODO make more efficient without multiplication.
-	if (*ptr >= Buffer->Buffer + Buffer->Depth * Buffer->Length) {
+	if ( *ptr >= ( Buffer->Buffer + (Buffer->Depth * Buffer->Length) ) ) {
 		*ptr = Buffer->Buffer;
 	}
 	//*val = (*val + 1) % Buffer->Depth;

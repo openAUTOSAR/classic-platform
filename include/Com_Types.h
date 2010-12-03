@@ -36,7 +36,7 @@ typedef uint8 Com_SignalGroupIdType;
 
 typedef enum {
 	IMMEDIATE,
-	DEFERRED,
+	DEFERRED
 } Com_IPduSignalProcessingMode;
 
 typedef enum {
@@ -60,14 +60,14 @@ typedef enum {
 
 typedef enum {
 	PENDING,
-	TRIGGERED,
+	TRIGGERED
 } ComTransferProperty_type;
 
 typedef enum {
 	DIRECT,
 	MIXED,
 	NONE,
-	PERIODIC,
+	PERIODIC
 } ComTxModeMode_type;
 
 
@@ -79,13 +79,13 @@ typedef enum {
 	NEVER,
 	NEW_IS_OUTSIDE,
 	NEW_IS_WITHIN,
-	ONE_EVERY_N,
+	ONE_EVERY_N
 } ComFilterAlgorithm_type;
 
 typedef enum {
 	COM_BIG_ENDIAN,
 	COM_LITTLE_ENDIAN,
-	COM_OPAQUE,
+	COM_OPAQUE
 } ComSignalEndianess_type;
 
 typedef enum {

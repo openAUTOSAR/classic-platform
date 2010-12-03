@@ -127,10 +127,12 @@ inc-y += ../include
 # Some dependency for xxx_offset.c/h also
 -include $(subst .h,.d,$(dep-y))
 
+#LINT:
 #LINT#inc-y += /C/lint/lnt #LINT: To run PC-lint
 abs-inc-y = $(abspath $(inc-y))
 
-lint_exclude_path := arc-tests
+#LINT:
+#LINT#lint_exclude_path := arc-tests
 
 # Compile
 %.o: %.c

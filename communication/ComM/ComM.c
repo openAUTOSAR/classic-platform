@@ -341,11 +341,11 @@ void ComM_EcuM_WakeUpIndication( NetworkHandleType Channel ){
 // Diagnostic Communication Manager Callbacks
 // ------------------------------------------
 
-void ComM_DCM_ActiveDiagnostic(){
+void ComM_DCM_ActiveDiagnostic(void){
 	COMM_VALIDATE_INIT(COMM_SERVICEID_DCM_ACTIVEDIAGNOSTIC);
 }
 
-void ComM_DCM_InactiveDiagnostic(){
+void ComM_DCM_InactiveDiagnostic(void){
 	COMM_VALIDATE_INIT(COMM_SERVICEID_DCM_INACTIVEDIAGNOSTIC);
 }
 

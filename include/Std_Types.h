@@ -97,11 +97,10 @@ typedef enum {
 	E_OS_PROTECTION_RATE,          /**< AUTOSAR, see 7.10 */
 
 	/* COM.. TODO: move ?? */
-	E_COM_ID,
+	E_COM_ID
 
-	//EIJA
 	/** Implementation specific */
-	E_OS_SYS_APA,
+	//E_OS_SYS_APA
 
 } StatusType;
 
