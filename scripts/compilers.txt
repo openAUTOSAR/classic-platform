@@ -1,0 +1,8 @@
+ti_tms570ls:arm-none-eabi/bin/arm-none-eabi-
+stm32_mcbstm32:arm-none-eabi/bin/arm-none-eabi-
+stm32_stm3210c:arm-none-eabi/bin/arm-none-eabi-
+mpc5516it:powerpc-eabispe/bin/powerpc-eabispe-
+mpc5567qrtech:powerpc-eabispe/bin/powerpc-eabispe-
+mpc551xsim:powerpc-eabispe/bin/powerpc-eabispe-
+mpc5554sim:powerpc-eabispe/bin/powerpc-eabispe-
+linux:
