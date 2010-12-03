@@ -24,7 +24,7 @@
               <SDG GID="Arccore::EcuOptions">
                 <SD GID="MCU">MPC551x</SD>
                 <SD GID="AUTHOR">Arccore AB</SD>
-                <SD GID="GENDIR" />
+                <SD GID="GENDIR">/PwmNode2/config/mpc5516it</SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>
@@ -1081,7 +1081,7 @@
                   <SHORT-NAME>Pwm</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer</DEFINITION-REF>
                   <SUB-CONTAINERS>
-                    <CONTAINER UUID="aad28c1c-ef39-4003-8782-cc280dfa1a23">
+                    <CONTAINER UUID="2f95dcba-6a3d-49e0-9094-cec839c6cf59">
                       <SHORT-NAME>eMIOS[13]</SHORT-NAME>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
                       <PARAMETER-VALUES>
@@ -1107,7 +1107,7 @@
                         </BOOLEAN-VALUE>
                         <INTEGER-VALUE>
                           <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
-                          <VALUE>45</VALUE>
+                          <VALUE>53</VALUE>
                         </INTEGER-VALUE>
                         <ENUMERATION-VALUE>
                           <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
