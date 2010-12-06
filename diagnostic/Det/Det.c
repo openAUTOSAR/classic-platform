@@ -117,7 +117,7 @@ void Det_ReportError(uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 Error
     if (_detState == DET_STARTED) // No action is taken if the module is not started
     {
 #if ( DET_ENABLE_CALLBACKS == STD_ON )
-        uint32 old1;
+        uint32 old1; // 586 LINT OK: fattar inte att den används i macrot.
         Irq_Save(old1);
 
         for (uint32 i=0; i<DET_NUMBER_OF_CALLBACKS; i++)

@@ -59,7 +59,7 @@
 /* Contain the current state of the PDU router. The router is uninitialized
  * until PduR_Init has been run.
  */
-PduR_StateType PduRState; // 960, 31 LINT: konstigt...
+PduR_StateType PduRState; // 960, 31 LINT: Borde åtgärdas
 
 extern const PduR_PBConfigType *PduRConfig;
 
@@ -110,10 +110,14 @@ void PduR_Init(const PduR_PBConfigType* ConfigPtr);
 void PduR_GetVersionInfo(Std_VersionInfoType* versionInfo);
 uint32 PduR_GetConfigurationId(void);
 
+void PduR_BufferInc(PduRTxBuffer_type *Buffer, uint8 **ptr);
 void PduR_BufferQueue(PduRTxBuffer_type *Buffer, const uint8 * SduPtr);
 void PduR_BufferDeQueue(PduRTxBuffer_type *Buffer, uint8 *SduPtr);
 void PduR_BufferFlush(PduRTxBuffer_type *Buffer);
 uint8 PduR_BufferIsFull(PduRTxBuffer_type *Buffer);
+void PduR_LoIfRxIndication(PduIdType PduId, const uint8* SduPtr);
+void PduR_LoIfTxConfirmation(PduIdType PduId);
+void PduR_LoIfTriggerTransmit(PduIdType PduId, uint8* SduPtr);
 
 /*
  * Macros

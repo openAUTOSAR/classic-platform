@@ -36,7 +36,7 @@
 /*
  * The state of the PDU router.
  */
-PduR_StateType PduRState = PDUR_UNINIT;
+PduR_StateType PduRState = PDUR_UNINIT; // 960, 31 LINT: Borde åtgärdas
 
 const PduR_PBConfigType * PduRConfig;
 
@@ -190,12 +190,14 @@ void PduR_BufferFlush(PduRTxBuffer_type *Buffer) {
 
 uint8 PduR_BufferIsFull(PduRTxBuffer_type *Buffer) {
 	imask_t state = McuE_EnterCriticalSection();
+	uint8 rv = 0;
 	if (Buffer->NrItems < Buffer->Depth) {
-		return 0;
+		rv = 0;
 	} else {
-		return 1;
+		rv = 1;
 	}
 	McuE_ExitCriticalSection(state);
+	return rv;
 }
 
 

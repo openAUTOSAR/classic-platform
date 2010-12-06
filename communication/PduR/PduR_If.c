@@ -49,7 +49,7 @@ void PduR_LoIfRxIndication(PduIdType PduId, const uint8* SduPtr) {
 	} else if ( (route->PduR_GatewayMode == 1) && (route->PduRDestPdu.DataProvision == PDUR_NO_PROVISION) ) {
 		// This is a gateway request, but without any data provision (buffer usage).
 		PduInfoType PduInfo = {
-			.SduDataPtr = (uint8 *)SduPtr,
+			.SduDataPtr = (uint8 *)SduPtr, // 926, 960 PC-Lint: Beror på att funktion PduR_LoIfRxIndication(...) fel-definerad TICKET 130
 			.SduLength = route->SduLength
 		};
 		route->FctPtrs.TargetTransmitFctPtr(route->PduRDestPdu.DestPduId, &PduInfo); // Send PDU to next receptor.

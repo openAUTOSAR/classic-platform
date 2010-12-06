@@ -994,7 +994,7 @@ static INLINE Std_ReturnType sendSingleFrame(const CanTp_TxNSduType *txConfig,
 	if (txConfig->CanTpAddressingMode == CANTP_EXTENDED) { /** @req CANTP094 *//** @req CANTP095 */
 		sduData[indexCount++] = (uint8) txConfig->CanTpNTa->CanTpNTa; // Target address.
 	}
-	sduData[indexCount++] = ISO15765_TPCI_SF | txRuntime->transferTotal;
+	sduData[indexCount++] = ISO15765_TPCI_SF | txRuntime->transferTotal; // 734 PC-lint: Okej att casta till uint8?
 	for (int i = 0; i < txRuntime->transferTotal; i++) {
 		sduData[indexCount++] = txRuntime->pdurBuffer->SduDataPtr[i];
 	}
