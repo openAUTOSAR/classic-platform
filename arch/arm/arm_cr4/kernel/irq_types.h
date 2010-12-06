@@ -39,12 +39,11 @@
 
 
 #define Irq_SOI() \
-	sint8 channel = IrqGetCurrentInterruptSource(); \
-	IrqDeactivateChannel(channel)
+	IrqDeactivateChannel(isrPtr->vector)
 
 
 #define Irq_EOI() \
-	IrqActivateChannel(channel)
+	IrqActivateChannel(isrPtr->vector)
 
 
 typedef enum {
