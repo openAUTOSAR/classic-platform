@@ -29,7 +29,7 @@
 
 
 #include "mpc55xx.h"
-#include "mcu.h"
+#include "Mcu.h"
 void StartWatchdog(void)
 {
   // Setup watchdog
