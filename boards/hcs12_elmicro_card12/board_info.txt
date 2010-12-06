@@ -1,28 +1,28 @@
 
-Elmicro Card12 HC12 Controller Module with MC912D60A / MC912DG128A
+Elmicro Card12 HC12 Controller Module with MC9S12DP512
 
   http://elmicro.com/en/card12.html
 
-MC912D60A Microcontroller Info:
-  MC912D60A MCU with LQFP112 package
-  60 KB Flash
-  1 KB EEPROM
-  2 KB RAM
-  SPI
+MC9S12DP512 Microcontroller Info:
+  MC9S12DP512 MCU with LQFP112 package
+  512 KB Flash
+  4 KB EEPROM
+  14 KB RAM
+  3x SPI
   2x SCI
+  5x CAN
   Enhanced Capture Timer
-  4 Channel PWM
+  8 Channel PWM
   16 Channel 10 Bit A/D-Converter
-  up to 80 binary Inputs/Outputs!
+  
   
 Board Features:
   16 MHz Quarz Clock (8 MHz System Clock)
-  Two RS232 Ports with Transceiver MAX232A
-  PCA82C250 CAN Physical Interface
+  RS232 Ports with Transceiver MAX232A
+  PCA82C251 CAN Physical Interface
   Special Reset Controller
   Reset Switch
-  Operating Mode selectable via jumpers
+  LED
   BDM (Background Debug Mode) connector
   All controller pins are available at two double row headers
   5V power supply
-  Credit card size: 86mm x 54mm

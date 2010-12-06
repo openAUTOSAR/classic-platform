@@ -13,7 +13,7 @@
       </ADMIN-DATA>
       <ELEMENTS>
         <ECU-CONFIGURATION UUID="194b9abc-510c-4b5e-8486-65c5b26772af">
-          <SHORT-NAME>blinker_node_hcs12</SHORT-NAME>
+          <SHORT-NAME>blinker_node_ppc</SHORT-NAME>
           <ADMIN-DATA>
             <DOC-REVISIONS>
               <DOC-REVISION>

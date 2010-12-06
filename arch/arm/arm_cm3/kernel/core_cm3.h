@@ -22,20 +22,6 @@
 
 #ifndef __CM3_CORE_H__
 #define __CM3_CORE_H__
-#include "stm32f10x.h"
-
-static inline unsigned long _Irq_Save(void)
-{
-   unsigned long val = __get_PRIMASK();
-   Irq_Disable();
-   return val;
-}
-
-/*-----------------------------------------------------------------*/
-
-static inline void _Irq_Restore(unsigned mask) {
-	__set_PRIMASK(mask);
-}
 
 
 
@@ -1376,6 +1362,22 @@ static __INLINE uint32_t ITM_SendChar (uint32_t ch)
   }  
   return (ch);
 }
+
+/* ---  Arctic Core --- */
+
+static inline unsigned long _Irq_Save(void)
+{
+   unsigned long val = __get_PRIMASK();
+   __disable_irq();
+   return val;
+}
+
+
+static inline void _Irq_Restore(unsigned mask) {
+	__set_PRIMASK(mask);
+}
+
+
 
 #ifdef __cplusplus
 }

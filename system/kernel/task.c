@@ -527,22 +527,17 @@ StatusType GetTaskID( TaskRefType TaskID ) {
 	StatusType rv = E_OK;
 	*TaskID = INVALID_TASK;
 
-
-	if( os_sys.curr_pcb->state & ST_RUNNING ) {
-		*TaskID = os_sys.curr_pcb->pid;
-	} else {
-		/* We have no running task, check level */
-
-		/* Call level is not from the OSEK specification but from the
-		 * test specification */
-		if( os_sys.int_nest_cnt != 0 ) {
-			rv =  E_OS_CALLEVEL;
-			goto err;
+	/* Test specification say return CALLEVEL if in ISR
+	 * but impl. spec says otherwise */
+	if( os_sys.int_nest_cnt == 0 ) {
+		if( os_sys.curr_pcb->state & ST_RUNNING ) {
+			*TaskID = os_sys.curr_pcb->pid;
+		} else {
+			/* This is not a real error since this could
+			 * be the case when called from ErrorHook */
 		}
 	}
-err:
-    os_error.serviceId= OSServiceId_GetTaskID;
-    os_error.param1 = (uint32_t)TaskID;
+
     return rv;
 }
 

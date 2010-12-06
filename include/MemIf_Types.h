@@ -49,7 +49,7 @@ typedef enum {
 	MEMIF_JOB_FAILED,
 	//	The job has not yet been finished.
 	MEMIF_JOB_PENDING,
-	//	The job has been cancelled.
+	//	The job has been canceled.
 	MEMIF_JOB_CANCELLED,
 	//	The requested block is inconsistent, it may contain
 	//	corrupted data.	       
@@ -70,10 +70,7 @@ typedef enum {
     MEMIF_MODE_FAST,
 } MemIf_ModeType;
 
-// TODO: I have no idea where the types below are specified
-// In Eep these are defined in the header file
-// In Fls these are not found in the spec at all..
-typedef uint32 MemIf_AddressType;
-typedef uint32 MemIf_LengthType;
+// Definition of broadcast device ID
+#define MEMIF_BROADCAST_ID	0xff
 
 #endif /*MEMIF_TYPES_H_*/

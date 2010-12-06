@@ -8,7 +8,7 @@
 page0 (rwx) : ORIGIN = 0x0, LENGTH = 256
 
 /* RAM */
-data (rwx)  : ORIGIN = 0x2000, LENGTH = 8k
+data (rwx)  : ORIGIN = 0x1000, LENGTH = 12k
 
 eeprom (rx): ORIGIN = 0x0400, LENGTH = 3k
 text (rx)  : ORIGIN = 0x4000, LENGTH = 48k

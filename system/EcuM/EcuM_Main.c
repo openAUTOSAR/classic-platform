@@ -26,12 +26,12 @@
 #if defined(USE_DEM)
 #include "Dem.h"
 #endif
-#if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
+#if defined(USE_NVM)
 #include "Nvm.h"
 #endif
 
 static uint32 internal_data_run_state_timeout = 0;
-#if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
+#if defined(USE_NVM)
 static uint32 internal_data_go_off_one_state_timeout = 0;
 #endif
 
@@ -40,7 +40,7 @@ void EcuM_enter_run_mode(void)
 {
 	internal_data.current_state = ECUM_STATE_APP_RUN;
 	EcuM_OnEnterRUN();
-	internal_data_run_state_timeout = internal_data.config->EcuMRunSelfRequestPeriod / ECUM_MAIN_FUNCTION_PERIOD;
+	internal_data_run_state_timeout = internal_data.config->EcuMRunMinimumDuration / ECUM_MAIN_FUNCTION_PERIOD;
 }
 
 static inline void enter_post_run_mode(void)
@@ -69,7 +69,7 @@ static inline void enter_go_off_one_mode(void)
 	ComM_DeInit();
 #endif
 
-#if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
+#if defined(USE_NVM)
 
 	// Start NvM_WriteAll and timeout timer
 	NvM_WriteAll();
@@ -96,7 +96,7 @@ static inline boolean hasPostRunRequests(void)
 
 void EcuM_MainFunction(void)
 {
-#if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
+#if defined(USE_NVM)
 static NvM_RequestResultType writeAllResult;
 #endif
 
@@ -150,7 +150,7 @@ VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_NOT_INITIAT
 
 	if (internal_data.current_state == ECUM_STATE_GO_OFF_ONE)
 	{
-#if	(ECUM_INCLUDE_NVRAM_MGR == STD_ON)
+#if defined(USE_NVM)
 		if (internal_data_go_off_one_state_timeout)
 			internal_data_go_off_one_state_timeout--;
 

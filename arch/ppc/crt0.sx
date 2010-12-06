@@ -45,7 +45,13 @@ _start:
 
 	// make space for initial backchain..
 	subi    r1,r1,16
-    
+
+/* Store winIDEA terminal connected status */
+#if defined(USE_TTY_WINIDEA)
+	lis	r3,g_TConn@h
+	ori	r3,r3,g_TConn@l
+	lbz r4,0(r3)
+#endif
 
        # Clear all SRAM
 init_RAM:
@@ -59,7 +65,12 @@ init_ram_loop:
 	stmw r0,0(r11) # write all 32 GPRs to SRAM
 	addi r11,r11,128 # inc the ram ptr; 32 GPRs * 4 bytes = 128
 	bdnz init_ram_loop # loop for 80k of SRAM
-		
+
+/* Restore winIDEA terminal connected status */
+#if defined(USE_TTY_WINIDEA)
+	stb		r4,0(r3)
+#endif
+
 	// Copy initialized data from ROM to RAM
 	lis		r3,__DATA_ROM@h
 	ori		r3,r3,__DATA_ROM@l

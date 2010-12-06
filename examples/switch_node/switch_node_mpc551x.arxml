@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<AUTOSAR xmlns="http://autosar.org/3.1.2"><TOP-LEVEL-PACKAGES>
+<AUTOSAR xmlns="http://autosar.org/3.1.2">
+  <TOP-LEVEL-PACKAGES>
     <AR-PACKAGE UUID="fc563c91-212b-48aa-9b79-bd5e8f4b5ab0">
       <SHORT-NAME>switch_node_mpc551x</SHORT-NAME>
       <CATEGORY>EcuConfiguration</CATEGORY>
       <ADMIN-DATA>
         <DOC-REVISIONS>
           <DOC-REVISION>
-            <ISSUED-BY/>
+            <ISSUED-BY />
           </DOC-REVISION>
         </DOC-REVISIONS>
       </ADMIN-DATA>
@@ -24,10 +25,11 @@
                 <SD GID="MCU">MPC551x</SD>
                 <SD GID="AUTHOR">ArcCore AB</SD>
                 <SD GID="COPYRIGHT">Copyright ArcCore AB 2010</SD>
-                <SD GID="GENDIR"></SD>
+                <SD GID="GENDIR" />
               </SDG>
             </SDGS>
           </ADMIN-DATA>
+          <ECU-SW-COMPOSITION-REF DEST="ECU-SW-COMPOSITION">/switch_node_mpc551x/SwComposition_switch_node_mpc551x</ECU-SW-COMPOSITION-REF>
           <MODULE-REFS>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/switch_node_mpc551x/Can</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/switch_node_mpc551x/CanIf</MODULE-REF>
@@ -43,7 +45,7 @@
           <SHORT-NAME>Can</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG/>
+              <SDG />
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.0</SD>
@@ -156,7 +158,7 @@
           <SHORT-NAME>CanIf</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG/>
+              <SDG />
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.1</SD>
@@ -171,19 +173,19 @@
               <PARAMETER-VALUES>
                 <FUNCTION-NAME-VALUE>
                   <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/CanIf/CanIfDispatchConfig/CanIfBusOffNotification</DEFINITION-REF>
-                  <VALUE></VALUE>
+                  <VALUE />
                 </FUNCTION-NAME-VALUE>
                 <FUNCTION-NAME-VALUE>
                   <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/CanIf/CanIfDispatchConfig/CanIfErrorNotificaton</DEFINITION-REF>
-                  <VALUE></VALUE>
+                  <VALUE />
                 </FUNCTION-NAME-VALUE>
                 <FUNCTION-NAME-VALUE>
                   <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/CanIf/CanIfDispatchConfig/CanIfWakeupNotification</DEFINITION-REF>
-                  <VALUE></VALUE>
+                  <VALUE />
                 </FUNCTION-NAME-VALUE>
                 <FUNCTION-NAME-VALUE>
                   <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/CanIf/CanIfDispatchConfig/CanIfWakeupValidNotification</DEFINITION-REF>
-                  <VALUE></VALUE>
+                  <VALUE />
                 </FUNCTION-NAME-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
@@ -219,7 +221,7 @@
               <PARAMETER-VALUES>
                 <STRING-VALUE>
                   <DEFINITION-REF DEST="STRING-PARAM-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfConfigSet</DEFINITION-REF>
-                  <VALUE></VALUE>
+                  <VALUE />
                 </STRING-VALUE>
                 <INTEGER-VALUE>
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfNumberOfCanRxPduIds</DEFINITION-REF>
@@ -295,7 +297,7 @@
                     </ENUMERATION-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfTxPduConfig/CanIfUserTxConfirmation</DEFINITION-REF>
-                      <VALUE></VALUE>
+                      <VALUE />
                     </FUNCTION-NAME-VALUE>
                   </PARAMETER-VALUES>
                   <REFERENCE-VALUES>
@@ -325,7 +327,7 @@
                 </INTEGER-VALUE>
                 <ENUMERATION-VALUE>
                   <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/CanIf/CanIfPrivateConfiguration/CanIfSoftwareFilterType</DEFINITION-REF>
-                  <VALUE></VALUE>
+                  <VALUE />
                 </ENUMERATION-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
@@ -371,16 +373,6 @@
                 </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
-            <CONTAINER UUID="c8cdffa3-3e6e-48d5-bfc0-1b25cc610b6c">
-              <SHORT-NAME>CanIfTransceiverDrvConfig</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/CanIf/CanIfTransceiverDrvConfig</DEFINITION-REF>
-              <PARAMETER-VALUES>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/CanIf/CanIfTransceiverDrvConfig/CanIfTrcvWakeupNotification</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-              </PARAMETER-VALUES>
-            </CONTAINER>
             <CONTAINER UUID="d0bb0449-11b0-4815-8fc4-d98b626da887">
               <SHORT-NAME>CHANNEL_0</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/CanIf/CanIfControllerConfig</DEFINITION-REF>
@@ -403,7 +395,7 @@
           <SHORT-NAME>Com</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG/>
+              <SDG />
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.0</SD>
@@ -438,7 +430,7 @@
                   <PARAMETER-VALUES>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduCallout</DEFINITION-REF>
-                      <VALUE></VALUE>
+                      <VALUE />
                     </FUNCTION-NAME-VALUE>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduRxHandleId</DEFINITION-REF>
@@ -540,7 +532,7 @@
                     </INTEGER-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComNotification</DEFINITION-REF>
-                      <VALUE></VALUE>
+                      <VALUE />
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalEndianess</DEFINITION-REF>
@@ -564,7 +556,7 @@
                     </INTEGER-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutNotification</DEFINITION-REF>
-                      <VALUE></VALUE>
+                      <VALUE />
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
@@ -594,7 +586,7 @@
           <SHORT-NAME>EcuC</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG/>
+              <SDG />
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.0</SD>
@@ -625,7 +617,7 @@
           <SHORT-NAME>Os</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG/>
+              <SDG />
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.7</SD>
@@ -920,7 +912,7 @@
           <SHORT-NAME>PduR</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG/>
+              <SDG />
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.1</SD>
@@ -987,7 +979,7 @@
                 </INTEGER-VALUE>
                 <ENUMERATION-VALUE>
                   <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMinimumRoutingLoModule</DEFINITION-REF>
-                  <VALUE></VALUE>
+                  <VALUE />
                 </ENUMERATION-VALUE>
                 <INTEGER-VALUE>
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMinimumRoutingLoRxPduId</DEFINITION-REF>
@@ -999,7 +991,7 @@
                 </INTEGER-VALUE>
                 <ENUMERATION-VALUE>
                   <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMinimumRoutingUpModule</DEFINITION-REF>
-                  <VALUE></VALUE>
+                  <VALUE />
                 </ENUMERATION-VALUE>
                 <INTEGER-VALUE>
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMinimumRoutingUpRxPduId</DEFINITION-REF>
@@ -1069,7 +1061,7 @@
           <SHORT-NAME>Port</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG/>
+              <SDG />
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.0</SD>
@@ -1202,7 +1194,7 @@
           <SHORT-NAME>EcuM</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG/>
+              <SDG />
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.0</SD>
@@ -1227,10 +1219,115 @@
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/EcuM/EcuMGeneral/EcuMVersionInfoApi</DEFINITION-REF>
                   <VALUE>false</VALUE>
                 </BOOLEAN-VALUE>
+                <FLOAT-VALUE>
+                  <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/EcuM/EcuMGeneral/EcuMMainFunctionPeriod</DEFINITION-REF>
+                  <VALUE>0.2</VALUE>
+                </FLOAT-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="d82c22c1-1366-4a95-8b12-e9567fb3ae45">
+              <SHORT-NAME>EcuMConfiguration</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <FLOAT-VALUE>
+                  <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMNvramReadallTimeout</DEFINITION-REF>
+                  <VALUE>10.0</VALUE>
+                </FLOAT-VALUE>
+                <FLOAT-VALUE>
+                  <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMRunMinimumDuration</DEFINITION-REF>
+                  <VALUE>10.0</VALUE>
+                </FLOAT-VALUE>
+                <FLOAT-VALUE>
+                  <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMNvramWriteallTimeout</DEFINITION-REF>
+                  <VALUE>10.0</VALUE>
+                </FLOAT-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
+        <ECU-SW-COMPOSITION UUID="f5aff3ee-47b2-4798-906d-c72a3e6ad31e">
+          <SHORT-NAME>SwComposition_switch_node_mpc551x</SHORT-NAME>
+        </ECU-SW-COMPOSITION>
       </ELEMENTS>
+      <SUB-PACKAGES>
+        <AR-PACKAGE UUID="a12472d5-8544-45a1-a68e-b72607912e76">
+          <SHORT-NAME>GeneratedSystemSignals</SHORT-NAME>
+          <ELEMENTS>
+            <SYSTEM-SIGNAL UUID="aa8d91e9-05a9-41ba-8a22-0bcb423997f9">
+              <SHORT-NAME>SetLedLevelTx</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::ParallelModelOptions">
+                    <SD GID="PARALLEL_MODEL_GENERATED">TRUE</SD>
+                  </SDG>
+                </SDGS>
+              </ADMIN-DATA>
+              <INIT-VALUE-REF DEST="INTEGER-LITERAL">/switch_node_mpc551x/GeneratedSystemSignals/Data/IntegerLiterals/SetLedLevelTxInitValue/SetLedLevelTxInitValueLiteral</INIT-VALUE-REF>
+              <LENGTH>16</LENGTH>
+            </SYSTEM-SIGNAL>
+          </ELEMENTS>
+          <SUB-PACKAGES>
+            <AR-PACKAGE>
+              <SHORT-NAME>Data</SHORT-NAME>
+              <ELEMENTS>
+                <INTEGER-TYPE>
+                  <SHORT-NAME>UInt8</SHORT-NAME>
+                  <SW-DATA-DEF-PROPS />
+                  <LOWER-LIMIT INTERVAL-TYPE="CLOSED">0</LOWER-LIMIT>
+                  <UPPER-LIMIT INTERVAL-TYPE="CLOSED">255</UPPER-LIMIT>
+                </INTEGER-TYPE>
+                <INTEGER-TYPE>
+                  <SHORT-NAME>UInt16</SHORT-NAME>
+                  <SW-DATA-DEF-PROPS />
+                  <LOWER-LIMIT INTERVAL-TYPE="CLOSED">0</LOWER-LIMIT>
+                  <UPPER-LIMIT INTERVAL-TYPE="CLOSED">65535</UPPER-LIMIT>
+                </INTEGER-TYPE>
+                <INTEGER-TYPE>
+                  <SHORT-NAME>UInt32</SHORT-NAME>
+                  <SW-DATA-DEF-PROPS />
+                  <LOWER-LIMIT INTERVAL-TYPE="CLOSED">0</LOWER-LIMIT>
+                  <UPPER-LIMIT INTERVAL-TYPE="CLOSED">4294967295</UPPER-LIMIT>
+                </INTEGER-TYPE>
+                <INTEGER-TYPE>
+                  <SHORT-NAME>SInt8</SHORT-NAME>
+                  <SW-DATA-DEF-PROPS />
+                  <LOWER-LIMIT INTERVAL-TYPE="CLOSED">-128</LOWER-LIMIT>
+                  <UPPER-LIMIT INTERVAL-TYPE="CLOSED">127</UPPER-LIMIT>
+                </INTEGER-TYPE>
+                <INTEGER-TYPE>
+                  <SHORT-NAME>SInt16</SHORT-NAME>
+                  <SW-DATA-DEF-PROPS />
+                  <LOWER-LIMIT INTERVAL-TYPE="CLOSED">-32768</LOWER-LIMIT>
+                  <UPPER-LIMIT INTERVAL-TYPE="CLOSED">32767</UPPER-LIMIT>
+                </INTEGER-TYPE>
+                <INTEGER-TYPE>
+                  <SHORT-NAME>SInt32</SHORT-NAME>
+                  <SW-DATA-DEF-PROPS />
+                  <LOWER-LIMIT INTERVAL-TYPE="CLOSED">-2147483648</LOWER-LIMIT>
+                  <UPPER-LIMIT INTERVAL-TYPE="CLOSED">2147483647</UPPER-LIMIT>
+                </INTEGER-TYPE>
+              </ELEMENTS>
+              <SUB-PACKAGES>
+                <AR-PACKAGE>
+                  <SHORT-NAME>IntegerLiterals</SHORT-NAME>
+                  <ELEMENTS>
+                    <CONSTANT-SPECIFICATION>
+                      <SHORT-NAME>SetLedLevelTxInitValue</SHORT-NAME>
+                      <VALUE>
+                        <INTEGER-LITERAL UUID="c12f4ad5-c594-438d-b7ef-0cc98e0e17b6">
+                          <SHORT-NAME>SetLedLevelTxInitValueLiteral</SHORT-NAME>
+                          <VALUE>0</VALUE>
+                        </INTEGER-LITERAL>
+                      </VALUE>
+                    </CONSTANT-SPECIFICATION>
+                  </ELEMENTS>
+                </AR-PACKAGE>
+              </SUB-PACKAGES>
+            </AR-PACKAGE>
+          </SUB-PACKAGES>
+        </AR-PACKAGE>
+      </SUB-PACKAGES>
     </AR-PACKAGE>
-  </TOP-LEVEL-PACKAGES></AUTOSAR>
+  </TOP-LEVEL-PACKAGES>
+</AUTOSAR>
+

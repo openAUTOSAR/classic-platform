@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<AUTOSAR xmlns="http://autosar.org/3.1.2"><TOP-LEVEL-PACKAGES>
+<AUTOSAR xmlns="http://autosar.org/3.1.2">
+  <TOP-LEVEL-PACKAGES>
     <AR-PACKAGE UUID="d3915a94-30a7-4688-a3b9-ec2496d78472">
       <SHORT-NAME>tiny_hcs12</SHORT-NAME>
       <CATEGORY>EcuConfiguration</CATEGORY>
       <ADMIN-DATA>
         <DOC-REVISIONS>
           <DOC-REVISION>
-            <ISSUED-BY/>
+            <ISSUED-BY />
           </DOC-REVISION>
         </DOC-REVISIONS>
       </ADMIN-DATA>
@@ -24,7 +25,7 @@
                 <SD GID="MCU">Undefined MCU</SD>
                 <SD GID="AUTHOR">ArcCore AB</SD>
                 <SD GID="COPYRIGHT">Copyright ArcCore AB 2010</SD>
-                <SD GID="GENDIR"></SD>
+                <SD GID="GENDIR" />
               </SDG>
             </SDGS>
           </ADMIN-DATA>
@@ -36,7 +37,7 @@
           <SHORT-NAME>Os</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG/>
+              <SDG />
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.6</SD>
@@ -79,7 +80,7 @@
                 </INTEGER-VALUE>
                 <INTEGER-VALUE>
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsOS/OsIdleStackSize</DEFINITION-REF>
-                  <VALUE>200</VALUE>
+                  <VALUE>512</VALUE>
                 </INTEGER-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsUseDebug</DEFINITION-REF>
@@ -329,4 +330,6 @@
         </MODULE-CONFIGURATION>
       </ELEMENTS>
     </AR-PACKAGE>
-  </TOP-LEVEL-PACKAGES></AUTOSAR>
+  </TOP-LEVEL-PACKAGES>
+</AUTOSAR>
+

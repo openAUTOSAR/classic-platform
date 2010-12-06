@@ -19,7 +19,7 @@
 #include <stdint.h>
 
 #if defined(CFG_ARM_CM3)
-#include "core_cm3.h"
+#include "stm32f10x.h"
 #elif defined(CFG_ARM_CR4)
 #include "core_cr4.h"
 #endif

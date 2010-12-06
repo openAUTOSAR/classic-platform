@@ -26,7 +26,7 @@
 
 #if defined(CFG_ARM_CM3)
 #include "irq_types.h"
-#include "core_cm3.h"
+#include "stm32f10x.h"
 #endif
 
 #ifdef USE_TTY_TCF_STREAMS
@@ -69,12 +69,12 @@
 #if defined(MC912DG128A)
 static volatile unsigned char g_TWBuffer[TWBUFF_LEN];
 static volatile unsigned char g_TRBuffer[TRBUFF_LEN];
-static volatile char g_TConn __attribute__ ((section (".winidea_port")));
+volatile char g_TConn __attribute__ ((section (".winidea_port")));
 
 #else
 static volatile unsigned char g_TWBuffer[TWBUFF_LEN] __attribute__ ((aligned (0x100))); // Transmit to WinIDEA terminal
 static volatile unsigned char g_TRBuffer[TRBUFF_LEN] __attribute__ ((aligned (0x100)));
-static volatile char g_TConn __attribute__ ((section (".winidea_port")));
+volatile char g_TConn __attribute__ ((section (".winidea_port")));
 
 #endif
 

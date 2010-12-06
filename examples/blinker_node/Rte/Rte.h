@@ -28,6 +28,9 @@
 #elif defined(CFG_BRD_HCS12X_ELMICRO_TBOARD)
 #define LED_CHANNEL             DIO_CHANNEL_NAME_DO_PB0
 
+#elif defined(CFG_BRD_HCS12_ELMICRO_CARD12)
+#define LED_CHANNEL             DIO_CHANNEL_NAME_LED_CHANNEL
+
 #elif defined(CFG_BRD_STM32_STM3210C)
 #define LED_CHANNEL             LED_CHANNEL1
 

@@ -36,7 +36,7 @@ void btask_3( void ) {
 
 	GetTaskID(&currTask);
 	Os_Arc_GetStackInfo(currTask,&si);
-	LDEBUG_PRINTF("btask_3: Stack usage %u%%\n",
+	LDEBUG_PRINTF("btask_3: %u%% stack usage\n",
 			(unsigned)OS_STACK_USAGE(&si));
 
 	TerminateTask();
@@ -52,7 +52,6 @@ void etask_1( void ) {
 	StackInfoType si;
 	TaskType currTask;
 
-
 	LDEBUG_PRINTF("etask_1 start\n");
 	for(;;) {
 		SetEvent(TASK_ID_etask_2,EVENT_MASK_EVENT_1);
@@ -61,7 +60,7 @@ void etask_1( void ) {
 		tryFloatingPoint += 1.0F;
 		GetTaskID(&currTask);
 		Os_Arc_GetStackInfo(currTask,&si);
-		LDEBUG_PRINTF("etask_1: Stack usage %u%% \n",
+		LDEBUG_PRINTF("etask_1: %u%% stack usage\n",
 				(unsigned)OS_STACK_USAGE(&si));
 
 	}
@@ -83,7 +82,7 @@ void etask_2( void ) {
 			TaskType currTask;
 			GetTaskID(&currTask);
 			Os_Arc_GetStackInfo(currTask,&si);
-			LDEBUG_PRINTF("etask_1: Stack usage %u%% \n",
+			LDEBUG_PRINTF("etask_2: %u%% stack usage\n",
 					(unsigned)OS_STACK_USAGE(&si));
 		}
 	}
