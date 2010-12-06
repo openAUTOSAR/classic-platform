@@ -188,10 +188,8 @@ void *Os_Isr( void *stack, void *isr_p ) {
 	struct OsPcb *isrPtr;
 	struct OsPcb *pPtr = NULL;
 
-	os_sys.int_nest_cnt++;
-
 	/* Check if we interrupted a task or ISR */
-	if( os_sys.int_nest_cnt == 1 ) {
+	if( os_sys.int_nest_cnt == 0 ) {
 		/* We interrupted a task */
 		POSTTASKHOOK();
 
@@ -205,6 +203,8 @@ void *Os_Isr( void *stack, void *isr_p ) {
 	} else {
 		/* We interrupted an ISR */
 	}
+
+	os_sys.int_nest_cnt++;
 
 	/* Grab the ISR "pcb" */
 	isrPtr = (struct OsPcb *)isr_p;
