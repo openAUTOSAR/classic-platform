@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<AUTOSAR xmlns="http://autosar.org/3.1.2"><TOP-LEVEL-PACKAGES>
+<AUTOSAR xmlns="http://autosar.org/3.1.2">
+  <TOP-LEVEL-PACKAGES>
     <AR-PACKAGE UUID="59e33e84-47d4-4613-bbcc-1aed684041be">
       <SHORT-NAME>tiny_ppc</SHORT-NAME>
       <CATEGORY>EcuConfiguration</CATEGORY>
       <ADMIN-DATA>
         <DOC-REVISIONS>
           <DOC-REVISION>
-            <ISSUED-BY/>
+            <ISSUED-BY />
           </DOC-REVISION>
         </DOC-REVISIONS>
       </ADMIN-DATA>
@@ -24,10 +25,11 @@
                 <SD GID="MCU">Undefined MCU</SD>
                 <SD GID="AUTHOR">ArcCore AB</SD>
                 <SD GID="COPYRIGHT">Copyright ArcCore AB 2010</SD>
-                <SD GID="GENDIR"></SD>
+                <SD GID="GENDIR" />
               </SDG>
             </SDGS>
           </ADMIN-DATA>
+          <ECU-SW-COMPOSITION-REF DEST="ECU-SW-COMPOSITION">/tiny_ppc/SwComposition_tiny_ppc</ECU-SW-COMPOSITION-REF>
           <MODULE-REFS>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/tiny_ppc/Os</MODULE-REF>
           </MODULE-REFS>
@@ -36,7 +38,7 @@
           <SHORT-NAME>Os</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG/>
+              <SDG />
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.6</SD>
@@ -327,6 +329,11 @@
             </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
+        <ECU-SW-COMPOSITION UUID="58aa50aa-74d9-422a-9410-c1fb05da153b">
+          <SHORT-NAME>SwComposition_tiny_ppc</SHORT-NAME>
+        </ECU-SW-COMPOSITION>
       </ELEMENTS>
     </AR-PACKAGE>
-  </TOP-LEVEL-PACKAGES></AUTOSAR>
+  </TOP-LEVEL-PACKAGES>
+</AUTOSAR>
+

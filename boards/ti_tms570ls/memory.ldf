@@ -2,4 +2,3 @@
 intvecs(R) : ORIGIN = 0x0000000, LENGTH = 0x60
 flash(R) : ORIGIN = 0x00000060, LENGTH = 2M
 ram(RW)  : ORIGIN = 0x08000000, LENGTH = 160K
-flash_calibration_area_0(R)	:	ORIGIN = 0x00004000, LENGTH = 48K

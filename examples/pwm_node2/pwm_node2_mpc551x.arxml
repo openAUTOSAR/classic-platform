@@ -24,7 +24,7 @@
               <SDG GID="Arccore::EcuOptions">
                 <SD GID="MCU">MPC551x</SD>
                 <SD GID="AUTHOR">Arccore AB</SD>
-                <SD GID="GENDIR">/PwmNode2/config/mpc5516it</SD>
+                <SD GID="GENDIR" />
               </SDG>
             </SDGS>
           </ADMIN-DATA>

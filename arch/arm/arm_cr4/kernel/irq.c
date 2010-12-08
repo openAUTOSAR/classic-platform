@@ -46,31 +46,38 @@ void *Irq_Entry( void *stack_p )
 {
 	uint32_t *stack;
 
-	// Get the active interrupt channel
+	// This is the current hardware interrupt channel that we are processing.
 	volatile sint8 channel;
+
+	// This is the current OS-interrupt vector that we are processing.
+	volatile sint8 virtualChannel;
+
+	// Get the highest pending interrupt.
 	volatile uint32 c = 0;
 	do {
 		channel = IrqGetCurrentInterruptSource();
 		c++;
 	} while (channel < 0 && c < MAX_WAIT_COUNT);
 
-	if (c > 1) {
-		uint8 a = c;
-	}
-
 	if (c >= MAX_WAIT_COUNT) {
 		// No interrupt is pending
 		return stack_p;
 	}
 
+	// In most cases the OS-channel is the same as the hardware channel.
+	virtualChannel = channel;
+
 	// Special case for software interrupts.
 	if (channel == SSI) {
 		// Get the emulated interrupt channel.
-		channel = systemREG1->SSISR1;
+		virtualChannel = systemREG1->SSISR1;
 	}
 
 	stack = (uint32_t *)stack_p;
-	stack = Os_Isr(stack, (void *)Irq_VectorTable[channel]);
+	struct OsPcb * pcb = (struct OsPcb *)Irq_VectorTable[virtualChannel];
+	// Save the hardware channel in the PCB, so that Os_Isr knows which interrupt channel to deactivate.
+	pcb->vector = channel;
+	stack = Os_Isr(stack, (void *)pcb);
 
 	//Irq_Enable();
 	return stack;

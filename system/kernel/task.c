@@ -725,7 +725,6 @@ StatusType ChainTask( TaskType TaskId ) {
 	if( os_sys.int_nest_cnt != 0 ) {
 		/* extended */
 		rv = E_OS_CALLEVEL;
-		Irq_Restore(flags);
 		goto err;
 	}
 
