@@ -1,0 +1,76 @@
+//  Gnu C/C++ (version 2.95.3 or later), -si4 -sp4, 
+//  Standard lint options
+
+//c:\lint\au-misra2.lnt //To check MISRA C rules
+//c:\lint\lnt\co-gcc.lnt
+
+au-misra2.lnt //To check MISRA C rules
+lnt\co-gcc.lnt
+
+//c:\lint\options.lnt  -si4 -sp4
+
+
+// EIJAS STUFF:
+-zero //always return exit code 0 (avoiding makefile interruption)
+
+//Reset which files are viewed library-files to only treat <> as such
++libclass(angle)
+
+//+os(lintOutput.TMP) //append output to file
+//+oe(lintErrorOutput.TMP)//append error output to file
+
+//MESSAGE FORMAT:
++ffn // force full path names
+-width(0) // don't insert line breaks (unlimited output width).
+-hf1 // message height one
+-format=%f:%l:%c:\s%t:\s%n\sPC-lint:\s%m
+
+
+// SET WARNING LEVEL:
+-w3 //-wlib(0)// 1:only errors, 2: +warnings 3: + infos
+
+
+-A(C99)//use C99 standard
+
++fie // Use to view enums as ints (tar bort tex PC641)
+
+
+// RULES TO TURN OFF
+//-efile(755,*.h)
+-e755 //e switch off for header files
+-e756 //e switch off for header files
+-e757 //e switch off for header files
+-e758 //e switch off for header files
+-e768 //e switch off for header files
+-e769 //e switch off for header files
+
+-e537 //e switch off (unjustified complain about 19.15)
+
+-esym(961, 19.7) //Advisory Rule that should be switched off
+-esym(961, 19.13)//Advisory Rule that should be switched off
+
+// RULES MAYBE TO TURN OFF
+//-e534 //only turned of for OS, printf? kolla hur vanlig...
+//-e757
+//-e526 vad betyder detta fel?
+
+
+// RULES THAT MAY BE SWITCHED OFF LOCALLY
+// * 13.7, 14.1 Constant value boolean 
+// * 14.2 
+
+// RULES TO DISCUSS IF TO SWITCH OFF OR NOT
+-esym(961,12.6)//Advisory Rule (Boolean expression required for operator...)
+
+// ERRORS SWITCHED OFF TEMPORARLY
+//-e525
+//-e526
+
+//-esym(960, 10.1) //implicit conversion....
+//-e714 //Symbol not referenced
+//-e715 //Symbol not referenced
+
+//-e830 //location cited in prior message
+//-e831 //reference cited in prior message
+
+//-esym(960, 12.5) //Non-primary expression used with logical operator.

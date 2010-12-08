@@ -1,0 +1,12 @@
+
+// au-misra.lnt -- Author options - MISRA
+// Traditionally this file has held the lastest misra standard.
+// There have been two standards published: MISRA 1998 and MISRA 2004.
+// We have two files bearing options that, respectively, activate
+// these standards: au-misra1.lnt and au-misra2.lnt
+// Currently MISRA 2004 is the preferred standard.
+// Prior to publishing the 2nd standard, the file au-misra.lnt was
+// used to hold the then current misra standard.  We are maintaining
+// this file to afford backward compatibility.
+
+au-misra2.lnt

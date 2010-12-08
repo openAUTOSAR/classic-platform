@@ -63,6 +63,14 @@ ifneq ($(ARCH),)
 include $(ROOTDIR)/$(ARCH_PATH-y)/scripts/gcc.mk
 endif
 include $(ROOTDIR)/scripts/cc_$(COMPILER).mk
+ifneq ($(PCLINT),)
+include $(ROOTDIR)/scripts/cc_pclint.mk
+endif
+ifneq ($(SPLINT),)
+include $(ROOTDIR)/scripts/cc_splint.mk
+endif
+
+
 
 # Get object files
 include ../makefile
@@ -127,10 +135,25 @@ inc-y += ../include
 # Some dependency for xxx_offset.c/h also
 -include $(subst .h,.d,$(dep-y))
 
+ifneq ($(PCLINT),)
+define run_pclint
+$(Q)$(PCLINT) $(lint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y)) $(abspath $<)
+endef
+endif
+
+ifneq ($(SPLINT),)
+define run_splint
+$(Q)$(SPLINT) $(splint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y)) $(abspath $<)
+endef
+endif
+
+
 # Compile
 %.o: %.c
 	@echo "  >> CC $(notdir $<)"
 	$(Q)$(CC) -c $(CFLAGS) -o $(goal) $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
+	$(run_pclint)
+	$(run_splint)
 
 # Assembler
 
