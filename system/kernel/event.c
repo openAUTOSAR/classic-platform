@@ -107,7 +107,7 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 
 	OS_DEBUG(D_EVENT,"# SetEvent %s\n",Os_TaskGetCurrent()->name);
 
-	if( TaskID  >= Os_CfgGetTaskCnt() ) {
+	if( TaskID  >= OS_TASK_CNT ) {
 		rv = E_OS_ID;
 		goto err;
 	}
@@ -186,7 +186,7 @@ StatusType GetEvent( TaskType TaskId, EventMaskRefType Mask) {
 	OsPcbType *dest_pcb;
 	StatusType rv = E_OK;
 
-	if( TaskId  >= Os_CfgGetTaskCnt() ) {
+	if( TaskId  >= OS_TASK_CNT ) {
 		rv = E_OS_ID;
 		goto err;
 	}

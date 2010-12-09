@@ -63,7 +63,7 @@
 // Cancel
 
 #define SCHED_CHECK_ID(x) 				\
-	if( (x) > Os_CfgGetSchedCnt()) { \
+	if( (x) > OS_SCHTBL_CNT) { \
 		rv = E_OS_ID;					\
 		goto err; 						\
 	}
@@ -565,7 +565,7 @@ void Os_SchTblCheck(OsCounterType *c_p) {
  */
 void Os_SchTblInit( void ) {
 	OsSchTblType *s_p;
-	for( int i=0; i < Os_CfgGetSchedCnt();i++ ) {
+	for( int i=0; i < OS_SCHTBL_CNT;i++ ) {
 		s_p = Os_CfgGetSched(i);
 
 		ScheduleTableConsistenyCheck(s_p);
@@ -574,7 +574,7 @@ void Os_SchTblInit( void ) {
 
 void Os_SchTblAutostart( void ) {
 
-	for(int j=0; j < Os_CfgGetSchedCnt(); j++ ) {
+	for(int j=0; j < OS_SCHTBL_CNT; j++ ) {
 		OsSchTblType *sPtr;
 		sPtr = Os_CfgGetSched(j);
 
