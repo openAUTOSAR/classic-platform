@@ -59,7 +59,7 @@
 /* Contain the current state of the PDU router. The router is uninitialized
  * until PduR_Init has been run.
  */
-PduR_StateType PduRState; // 960, 31 LINT: Borde åtgärdas
+PduR_StateType PduRState; // 960, 31 PC-Lint: Borde åtgärdas!
 
 extern const PduR_PBConfigType *PduRConfig;
 
@@ -122,8 +122,8 @@ void PduR_LoIfTriggerTransmit(PduIdType PduId, uint8* SduPtr);
 /*
  * Macros
  */
-#define setTxConfP(R) R->PduRDestPdu.TxBufferRef->TxConfP = 1
-#define clearTxConfP(R) R->PduRDestPdu.TxBufferRef->TxConfP = 0
+#define setTxConfP(R) (R->PduRDestPdu.TxBufferRef->TxConfP = 1)
+#define clearTxConfP(R) (R->PduRDestPdu.TxBufferRef->TxConfP = 0)
 
 #endif
 

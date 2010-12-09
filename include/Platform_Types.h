@@ -22,15 +22,15 @@
 
 #include <stdbool.h>
 
-#ifndef _PLATFORM_TYPES_H_
-#define _PLATFORM_TYPES_H_
+#ifndef PLATFORM_TYPES_H
+#define PLATFORM_TYPES_H
 
 #define CPU_TYPE            CPU_TYPE_32 
 #define CPU_BIT_ORDER       MSB_FIRST 
 #define CPU_BYTE_ORDER      HIGH_BYTE_FIRST
 
-#define FALSE		(boolean)0
-#define TRUE		(boolean)1
+#define FALSE		(boolean)false
+#define TRUE		(boolean)true
 
 //typedef unsigned long       boolean;
 typedef _Bool      boolean;

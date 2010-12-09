@@ -37,7 +37,7 @@ typedef enum {
 	TASK_STATE_WAITING,
 	TASK_STATE_READY,
 	TASK_STATE_SUSPENDED,
-	TASK_STATE_RUNNING,
+	TASK_STATE_RUNNING
 } TaskStateType;
 
 #define INVALID_TASK	0xdeadU
@@ -350,8 +350,8 @@ typedef enum {
     OSServiceId_PostTaskHook,
     OSServiceId_StartupHook,
     OSServiceId_ShutdownHook,
-    OSServiceId_GetTaskState,
-} OsServiceIdType;;
+    OSServiceId_GetTaskState
+} OsServiceIdType;
 
 typedef struct OsError {
 	OsServiceIdType serviceId;

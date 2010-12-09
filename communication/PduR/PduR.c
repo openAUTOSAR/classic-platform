@@ -36,7 +36,7 @@
 /*
  * The state of the PDU router.
  */
-PduR_StateType PduRState = PDUR_UNINIT; // 960, 31 LINT: Borde åtgärdas
+PduR_StateType PduRState = PDUR_UNINIT; // 960, 31 PC-Lint: Borde åtgärdas
 
 const PduR_PBConfigType * PduRConfig;
 
@@ -75,10 +75,9 @@ void PduR_Init (const PduR_PBConfigType* ConfigPtr) {
 
 	// Initialize buffers.
 	int bufferNr = 0;
-	int i = 0;
 	PduRRoutingPath_type *path;
 	PduRConfig->PduRRoutingTable->NRoutingPaths = 0;
-	for (i = 0; (!PduRConfig->PduRRoutingTable->PduRRoutingPath[i].PduR_Arc_EOL) && (!failed); i++) {
+	for (int i = 0; (!PduRConfig->PduRRoutingTable->PduRRoutingPath[i].PduR_Arc_EOL) && (!failed); i++) {
 		PduRConfig->PduRRoutingTable->NRoutingPaths++;
 		path = &PduRConfig->PduRRoutingTable->PduRRoutingPath[i];
 

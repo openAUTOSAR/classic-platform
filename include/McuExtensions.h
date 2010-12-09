@@ -15,8 +15,8 @@
 
 
 
-#ifndef _MCU_EXTENSIONS_H_
-#define _MCU_EXTENSIONS_H_
+#ifndef MCU_EXTENSIONS_H
+#define MCU_EXTENSIONS_H
 
 #include "Std_Types.h"
 typedef uint32_t imask_t;

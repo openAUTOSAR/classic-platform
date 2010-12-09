@@ -105,7 +105,7 @@ enum {
 	 *  If hardware cannot distinguish between a
 	 *  power cycle and a reset reason, then this
 	 *  shall be the default wakeup source */
-	ECUM_WKSOURCE_RESET = 0x02,
+	ECUM_WKSOURCE_RESET = 0x02
 };
 
 typedef uint32 EcuM_WakeupSourceType;
@@ -115,20 +115,20 @@ typedef enum
 	ECUM_WKSTATUS_NONE = 0,        /**< No pending wakeup event was detected */
 	ECUM_WKSTATUS_PENDING = 1,     /**< The wakeup event was detected but not yet validated */
 	ECUM_WKSTATUS_VALIDATED = 2,   /**< The wakeup event is valid */
-	ECUM_WKSTATUS_EXPIRED = 3,     /**< The wakeup event has not been validated and has expired therefore */
+	ECUM_WKSTATUS_EXPIRED = 3     /**< The wakeup event has not been validated and has expired therefore */
 } EcuM_WakeupStatusType;
 
 typedef enum
 {
 	ECUM_WWKACT_RUN = 0,       /**< Initialization into RUN state */
 	ECUM_WKACT_TTII = 2,       /**< Execute time triggered increased inoperation protocol and shutdown */
-	ECUM_WKACT_SHUTDOWN = 3,   /**< Immediate shutdown */
+	ECUM_WKACT_SHUTDOWN = 3   /**< Immediate shutdown */
 } EcuM_WakeupReactionType;
 
 typedef enum
 {
 	ECUM_BOOT_TARGET_APP = 0,          /**< The Ecu will boot into the application */
-	ECUM_BOOT_TARGET_BOOTLOADER = 1,   /**< The Ecu will boot into the bootloader */
+	ECUM_BOOT_TARGET_BOOTLOADER = 1   /**< The Ecu will boot into the bootloader */
 } EcuM_BootTargetType;
 
 

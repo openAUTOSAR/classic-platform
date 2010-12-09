@@ -21,8 +21,8 @@
  *  Definitions of General types.
  */
 
-#ifndef _STD_TYPES_H
-#define _STD_TYPES_H
+#ifndef STD_TYPES_H
+#define STD_TYPES_H
 
 // Autosar include files....
 // TODO: we haven't really defined the autosar types yet.
@@ -33,6 +33,7 @@
 #include "Compiler.h"
 
 #ifndef 	NULL
+//lint -esym(960,20.2) // PC-Lint LINT EXCEPTION
 #define	NULL	0
 #endif
 
@@ -98,9 +99,6 @@ typedef enum {
 
 	/* COM.. TODO: move ?? */
 	E_COM_ID
-
-	/** Implementation specific */
-	//E_OS_SYS_APA
 
 } StatusType;
 
