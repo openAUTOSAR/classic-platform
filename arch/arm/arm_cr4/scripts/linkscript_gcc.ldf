@@ -42,6 +42,12 @@ SECTIONS
 __CALIB_RAM_START = ADDR(.calibration);
 __CALIB_RAM_END = ADDR(.calibration) + SIZEOF(.calibration);
 __CALIB_ROM_START	= LOADADDR(.calibration);
+#else
+	/* failsafe to avoid trouble with defined calib variables if CALIBRATION_ENABLED is not set */
+	.calibration : {
+			*(.calibration)
+	} > flash
+	ASSERT(SIZEOF(.calibration) == 0, ".calibration section used but CALIBRATION_ENABLED is undefined")
 #endif /* CALIBRATION_ENABLED */
 
     .int_vecs :
