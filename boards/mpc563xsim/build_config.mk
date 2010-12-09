@@ -5,7 +5,7 @@ ARCH_FAM=ppc
 ARCH_MCU=mpc5633
 
 # CFG (y/n) macros
-CFG=PPC BOOKE E200Z3 MPC55XX MPC5633 BRD_MPC5633SIM SPE
+CFG=PPC BOOKE E200Z3 MPC55XX MPC5633 BRD_MPC5633SIM SPE SIMULATOR
 
 # What buildable modules does this board have, 
 # default or private

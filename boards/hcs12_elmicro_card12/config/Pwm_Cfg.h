@@ -35,7 +35,7 @@
  * the detection of all development errors
  */
 /** Enable Development Error Trace */
-#define PWM_DEV_EROR_DETECT STD_ON
+#define PWM_DEV_ERROR_DETECT STD_ON
 /** Build GetOutputState()
  * Note: Not supported since pwm module doesn't support reading output.
  */

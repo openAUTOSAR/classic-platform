@@ -20,15 +20,14 @@
 
 #define SLEEP(_x_) \
 do{ \
-	uint32_t pval = McuE_EnterCriticalSection(); \
 	TaskType task; \
 	GetTaskID(&task); \
-	Sleep(_x_, task, EVENT_MASK_EVENT_SLEEP_ALARM ); \
-    McuE_ExitCriticalSection(pval); \
-	WaitEvent(EVENT_MASK_EVENT_SLEEP_ALARM); \
-	ClearEvent(EVENT_MASK_EVENT_SLEEP_ALARM); \
+	Sleep(_x_, task, EVENT_MASK_SLEEP_ALARM ); \
+	WaitEvent(EVENT_MASK_SLEEP_ALARM); \
+	ClearEvent(EVENT_MASK_SLEEP_ALARM); \
 }while(0);
 
 void Sleep(uint32_t nofTicks, TaskType TaskID, EventMaskType Mask );
+void SleepInit();
 
 #endif /* SLEEP_H_ */

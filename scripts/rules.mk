@@ -31,7 +31,7 @@ endef
 $(foreach mod,$(MOD_AVAIL),$(eval $(call MOD_AVAIL_template,${mod})))
 $(foreach mod,$(MOD_USE),$(eval $(call MOD_USE_template,${mod})))
 $(foreach mod,$(CFG),$(eval $(call CFG_template,${mod})))
-def-y += $(ARCH) $(ARCH_FAM) $(ARCH_MCU) 
+#def-y += $(ARCH) $(ARCH_FAM) $(ARCH_MCU) 
 
 # Select console / debug
 $(foreach mod,$(SELECT_OS_CONSOLE),$(eval $(call MOD_USE_template,${mod})))
@@ -63,6 +63,14 @@ ifneq ($(ARCH),)
 include $(ROOTDIR)/$(ARCH_PATH-y)/scripts/gcc.mk
 endif
 include $(ROOTDIR)/scripts/cc_$(COMPILER).mk
+ifneq ($(PCLINT),)
+include $(ROOTDIR)/scripts/cc_pclint.mk
+endif
+ifneq ($(SPLINT),)
+include $(ROOTDIR)/scripts/cc_splint.mk
+endif
+
+
 
 # Get object files
 include ../makefile
@@ -127,10 +135,25 @@ inc-y += ../include
 # Some dependency for xxx_offset.c/h also
 -include $(subst .h,.d,$(dep-y))
 
+ifneq ($(PCLINT),)
+define run_pclint
+$(Q)$(PCLINT) $(lint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y)) $(abspath $<)
+endef
+endif
+
+ifneq ($(SPLINT),)
+define run_splint
+$(Q)$(SPLINT) $(splint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y)) $(abspath $<)
+endef
+endif
+
+
 # Compile
 %.o: %.c
 	@echo "  >> CC $(notdir $<)"
 	$(Q)$(CC) -c $(CFLAGS) -o $(goal) $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
+	$(run_pclint)
+	$(run_splint)
 
 # Assembler
 
@@ -152,7 +175,7 @@ inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
 # Preprocess linker files..
 %.ldp: %.ldf
 	@echo "  >> CPP $<"
-	$(Q)$(CPP) -E -P -x assembler-with-cpp -o $@ $(addprefix -I ,$(inc-y)) $<
+	$(Q)$(CPP) -E -P -x assembler-with-cpp -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
 #	@cat $@ 
 	
@@ -183,7 +206,7 @@ ifeq ($(CROSS_COMPILE),)
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	
 else	
 	$(Q)$(LD) $(LDFLAGS) -T $(ldcmdfile-y) -o $@ $(libpath-y) --start-group $(obj-y) $(lib-y) $(libitem-y) --end-group $(LDMAPFILE)
-ifdef CFG_MC912DG128A
+ifdef CFG_HC1X
 	@$(CROSS_COMPILE)objdump -h $@ | gawk -f $(ROOTDIR)/scripts/hc1x_memory.awk
 else
 	@echo "Image size: (decimal)"

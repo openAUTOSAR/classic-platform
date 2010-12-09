@@ -1,8 +1,4 @@
-
-
-/* MPC55xx Reset Control Word(RCW) */
-rcw      : ORIGIN = 0x00000000, LENGTH = 0x8
-flash(R) : ORIGIN = 0x00000008, LENGTH = 1M
+flash(R) : ORIGIN = 0x00000000, LENGTH = 1M
 /* 5516S, 48K
  * 5517S,5516G,5516E, 64K RAM
  * 5517G,E , 80K RAM

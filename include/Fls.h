@@ -27,7 +27,7 @@
 //#include "Spi.h"
 #include "Std_Types.h"
 #include "Det.h"
-//#include "MemIf_Types.h"
+#include "MemIf_Types.h"
 #if defined(USE_DEM)
 #include "Dem.h"
 #endif
@@ -121,7 +121,7 @@ void 				Fls_Cancel( void );
 MemIf_StatusType 	Fls_GetStatus(	void );
 #endif
 
-#if ( FLS_GET_JOB_RESULT_API == STD_ON )
+#if ( 1 )
 MemIf_JobResultType Fls_GetJobResult( void );
 #endif
 

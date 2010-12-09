@@ -26,7 +26,7 @@
 
 #if defined(CFG_ARM_CM3)
 #include "irq_types.h"
-#include "core_cm3.h"
+#include "stm32f10x.h"
 #endif
 
 #ifdef USE_TTY_TCF_STREAMS
@@ -69,18 +69,141 @@
 #if defined(MC912DG128A)
 static volatile unsigned char g_TWBuffer[TWBUFF_LEN];
 static volatile unsigned char g_TRBuffer[TRBUFF_LEN];
-static volatile char g_TConn __attribute__ ((section (".winidea_port")));
+volatile char g_TConn __attribute__ ((section (".winidea_port")));
 
 #else
 static volatile unsigned char g_TWBuffer[TWBUFF_LEN] __attribute__ ((aligned (0x100))); // Transmit to WinIDEA terminal
 static volatile unsigned char g_TRBuffer[TRBUFF_LEN] __attribute__ ((aligned (0x100)));
-static volatile char g_TConn __attribute__ ((section (".winidea_port")));
+volatile char g_TConn __attribute__ ((section (".winidea_port")));
 
 #endif
 
+#endif
+
+#ifdef USE_TTY_CODE_COMPOSER
+
+#define _DTOPEN    (0xF0)
+#define _DTCLOSE   (0xF1)
+#define _DTREAD    (0xF2)
+#define _DTWRITE   (0xF3)
+#define _DTLSEEK   (0xF4)
+#define _DTUNLINK  (0xF5)
+#define _DTGETENV  (0xF6)
+#define _DTRENAME  (0xF7)
+#define _DTGETTIME (0xF8)
+#define _DTGETCLK  (0xF9)
+#define _DTSYNC    (0xFF)
+
+#define LOADSHORT(x,y,z)  { x[(z)]   = (unsigned short) (y); \
+                            x[(z)+1] = (unsigned short) (y) >> 8;  }
+
+#define UNLOADSHORT(x,z) ((short) ( (short) x[(z)] +             \
+				   ((short) x[(z)+1] << 8)))
+
+#define PACKCHAR(val, base, byte) ( (base)[(byte)] = (val) )
+
+#define UNPACKCHAR(base, byte)    ( (base)[byte] )
+
+
+static unsigned char parmbuf[8];
+#define BUFSIZ 512
+#define CC_BUFFER_SIZE ((BUFSIZ)+32)
+volatile unsigned int _CIOBUF_[CC_BUFFER_SIZE] __attribute__ ((section (".cio")));
+
+/***************************************************************************/
+/*                                                                         */
+/*  WRITEMSG()  -  Sends the passed data and parameters on to the host.    */
+/*                                                                         */
+/***************************************************************************/
+void writemsg(unsigned char  command,
+              register const unsigned char *parm,
+              register const          char *data,
+              unsigned int            length)
+{
+   volatile unsigned char *p = (volatile unsigned char *)(_CIOBUF_+1);
+   unsigned int i;
+
+   /***********************************************************************/
+   /* THE LENGTH IS WRITTEN AS A TARGET INT                               */
+   /***********************************************************************/
+   _CIOBUF_[0] = length;
+
+   /***********************************************************************/
+   /* THE COMMAND IS WRITTEN AS A TARGET BYTE                             */
+   /***********************************************************************/
+   *p++ = command;
+
+   /***********************************************************************/
+   /* PACK THE PARAMETERS AND DATA SO THE HOST READS IT AS BYTE STREAM    */
+   /***********************************************************************/
+   for (i = 0; i < 8; i++)      PACKCHAR(*parm++, p, i);
+   for (i = 0; i < length; i++) PACKCHAR(*data++, p, i+8);
+
+   /***********************************************************************/
+   /* THE BREAKPOINT THAT SIGNALS THE HOST TO DO DATA TRANSFER            */
+   /***********************************************************************/
+   __asm("	 .global C$$IO$$");
+   __asm("C$$IO$$: nop");
+}
+
+/***************************************************************************/
+/*                                                                         */
+/*  READMSG()   -  Reads the data and parameters passed from the host.     */
+/*                                                                         */
+/***************************************************************************/
+void readmsg(register unsigned char *parm,
+	     register char          *data)
+{
+   volatile unsigned char *p = (volatile unsigned char *)(_CIOBUF_+1);
+   unsigned int   i;
+   unsigned int   length;
+
+   /***********************************************************************/
+   /* THE LENGTH IS READ AS A TARGET INT                                  */
+   /***********************************************************************/
+   length = _CIOBUF_[0];
+
+   /***********************************************************************/
+   /* UNPACK THE PARAMETERS AND DATA                                      */
+   /***********************************************************************/
+   for (i = 0; i < 8; i++) *parm++ = UNPACKCHAR(p, i);
+   if (data != NULL)
+      for (i = 0; i < length; i++) *data++ = UNPACKCHAR(p, i+8);
+}
+
+/****************************************************************************/
+/* HOSTWRITE()  -  Pass the write command and its arguments to the host.    */
+/****************************************************************************/
+int HOSTwrite(int dev_fd, const char *buf, unsigned count)
+{
+   int result;
+
+   if (count > BUFSIZ) count = BUFSIZ;
+
+   LOADSHORT(parmbuf,dev_fd,0);
+   LOADSHORT(parmbuf,count,2);
+   writemsg(_DTWRITE,parmbuf,(char *)buf,count);
+   readmsg(parmbuf,NULL);
+
+   result = UNLOADSHORT(parmbuf,0);
+
+   return result;
+}
+
+#endif
+
+#ifdef USE_TTY_TMS570_KEIL
+#include "GLCD.h"
 #endif
 
 #define FILE_RAMLOG		3
+
+/* Location MUST match NoICE configuration */
+#ifdef USE_TTY_NOICE
+static volatile char VUART_TX __attribute__ ((section (".noice_port")));
+static volatile char VUART_RX __attribute__ ((section (".noice_port")));
+volatile unsigned char START_VUART = 0;
+#endif
 
 /*
  * T32 stuff
@@ -194,6 +317,17 @@ int read( int fd, void *buf, size_t nbytes )
 	(void)g_TRBuffer[0];
 #endif
 
+#ifdef USE_TTY_NOICE
+	// Not tested at all
+    int retval;
+    while (VUART_RX != 0)
+    {
+    }
+
+    retval = VUART_RX;
+    VUART_RX = 0;
+#endif
+
 	/* Only support write for now, return 0 read */
 	return 0;
 }
@@ -206,6 +340,30 @@ int write(  int fd, const void *_buf, size_t nbytes)
 
 
 	if( fd <= STDERR_FILENO ) {
+#ifdef USE_TTY_NOICE
+	char *buf1 = (char *)_buf;
+	if (START_VUART)
+	{
+   	   for (int i = 0; i < nbytes; i++) {
+   		   char c = buf1[i];
+   		   if (c == '\n')
+   		   {
+   	   		   while (VUART_TX != 0)
+   	   		   {
+   	   		   }
+
+   	   		   VUART_TX = '\r';
+   		   }
+
+   		   while (VUART_TX != 0)
+   		   {
+   		   }
+
+   		   VUART_TX = c;
+   	   }
+	}
+#endif
+
 #ifdef USE_TTY_WINIDEA
 		if (g_TConn)
 		{
@@ -245,6 +403,16 @@ int write(  int fd, const void *_buf, size_t nbytes)
 		for (int i = 0; i < nbytes; i++) {
 			TCF_TTY_SendChar(*(buf + i));
 		}
+#endif
+
+#ifdef USE_TTY_CODE_COMPOSER
+	HOSTwrite(fd, _buf, nbytes);
+#endif
+
+#ifdef USE_TTY_TMS570_KEIL
+	for (int i = 0; i < nbytes; i++) {
+		GLCD_PrintChar((_buf + i));
+	}
 #endif
 
 #if defined(USE_RAMLOG)
@@ -367,6 +535,10 @@ void __init( void )
 }
 #if defined(CFG_ARM)
 void _exit( int status ) {
+#ifdef USE_TTY_CODE_COMPOSER
+	__asm("        .global C$$EXIT");
+	__asm("C$$EXIT: nop");
+#endif
 	while(1);
 }
 #endif

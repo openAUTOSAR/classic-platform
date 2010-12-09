@@ -122,8 +122,8 @@ static Std_ReturnType parse_id(char* msg, TCF_Streams_Command* command, uint16_t
 	return E_OK;
 }
 
+char tmp_stream[200] = "";
 uint16_t handle_StreamsCommand(TCF_Command* command, char* buf) {
-	char tmp[200] = "";
 	TCF_Streams_Command streams_cmd;
 
 	/* Start building return message */
@@ -138,25 +138,28 @@ uint16_t handle_StreamsCommand(TCF_Command* command, char* buf) {
 		}
 
 		/* Add data field */
-		strcat(buf, JSON_Stringify);
-		int len = TCF_TTY_ReadString(tmp, 199);
-		tmp[len] = '\0'; /* Terminate to be sure */
-		strcat(buf, tmp);
-		strcat(buf, JSON_Stringify);
-		strcat(buf, TCF_S_EOFIELD_MARKER);
+		mystrcat(buf, JSON_Stringify);
+		int len = TCF_TTY_ReadString(tmp_stream, 199);
+        if(len >= 200){
+            return 0;
+        }
+		tmp_stream[len] = '\0'; /* Terminate to be sure */
+		mystrcat(buf, tmp_stream);
+		mystrcat(buf, JSON_Stringify);
+		mystrcat(buf, TCF_S_EOFIELD_MARKER);
 
 		/* Add error field */
-		strcat(buf, JSON_null);
-		strcat(buf, TCF_S_EOFIELD_MARKER);
+		mystrcat(buf, JSON_null);
+		mystrcat(buf, TCF_S_EOFIELD_MARKER);
 
-		//strcat(buf, Streams_LostSize);
-		ultoa(0,tmp,10);
-		strcat(buf,tmp);
-		strcat(buf, TCF_S_EOFIELD_MARKER);
+		//mystrcat(buf, Streams_LostSize);
+		ultoa(0,tmp_stream,10);
+		mystrcat(buf,tmp_stream);
+		mystrcat(buf, TCF_S_EOFIELD_MARKER);
 
-		//strcat(buf, Streams_EOS);
-		strcat(buf, Streams_false);
-		strcat(buf, TCF_S_EOFIELD_MARKER);
+		//mystrcat(buf, Streams_EOS);
+		mystrcat(buf, Streams_false);
+		mystrcat(buf, TCF_S_EOFIELD_MARKER);
 	} else if (strcmp(command->commandName, Streams_Write) == 0) {
 		/* C • <token> • Streams • write • <string: stream ID> • <int: size> • <string: data> • */
 		/* R • <token> • <error report> */
@@ -165,40 +168,40 @@ uint16_t handle_StreamsCommand(TCF_Command* command, char* buf) {
 		}
 
 		/* Add error field */
-		strcat(buf, JSON_null);
-		strcat(buf, TCF_S_EOFIELD_MARKER);
+		mystrcat(buf, JSON_null);
+		mystrcat(buf, TCF_S_EOFIELD_MARKER);
 	} else if (strcmp(command->commandName, Streams_Subscribe) == 0) {
 		/* R • <token> • <error report> */
 		if(parse_id(command->arguments,&streams_cmd,command->args_len) != E_OK){
 			return 0;
 		}
 		/* Add error field */
-		strcat(buf, JSON_null);
-		strcat(buf, TCF_S_EOFIELD_MARKER);
+		mystrcat(buf, JSON_null);
+		mystrcat(buf, TCF_S_EOFIELD_MARKER);
 	}else if (strcmp(command->commandName, Streams_Unsubscribe) == 0) {
 		/* R • <token> • <error report> */
 		if(parse_id(command->arguments,&streams_cmd,command->args_len) != E_OK){
 			return 0;
 		}
 		/* Add error field */
-		strcat(buf, JSON_null);
-		strcat(buf, TCF_S_EOFIELD_MARKER);
+		mystrcat(buf, JSON_null);
+		mystrcat(buf, TCF_S_EOFIELD_MARKER);
 	}else if (strcmp(command->commandName, Streams_Connect) == 0) {
 		/* R • <token> • <error report> */
 		if(parse_id(command->arguments,&streams_cmd,command->args_len) != E_OK){
 			return 0;
 		}
 		/* Add error field */
-		strcat(buf, JSON_null);
-		strcat(buf, TCF_S_EOFIELD_MARKER);
+		mystrcat(buf, JSON_null);
+		mystrcat(buf, TCF_S_EOFIELD_MARKER);
 	}else if (strcmp(command->commandName, Streams_Disconnect) == 0) {
 		/* R • <token> • <error report> */
 		if(parse_id(command->arguments,&streams_cmd,command->args_len) != E_OK){
 			return 0;
 		}
 		/* Add error field */
-		strcat(buf, JSON_null);
-		strcat(buf, TCF_S_EOFIELD_MARKER);
+		mystrcat(buf, JSON_null);
+		mystrcat(buf, TCF_S_EOFIELD_MARKER);
 	}
 
 	convert_to_tcf_message(buf);

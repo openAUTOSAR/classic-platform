@@ -103,8 +103,80 @@ StatusType Os_IsrAddResource( TaskType isr, ResourceType resource ) {
 
 #if defined(CFG_ARM_CM3)
 extern void Irq_EOI2( void );
-#endif
 
+void TailChaining(void *stack)
+{
+	struct OsPcb *pPtr = NULL;
+
+	POSTTASKHOOK();
+
+	/* Save info for preempted pcb */
+	pPtr = get_curr_pcb();
+	pPtr->stack.curr = stack;
+	pPtr->state = ST_READY;
+	OS_DEBUG(D_TASK,"Preempted %s\n",pPtr->name);
+
+	Os_StackPerformCheck(pPtr);
+
+	/* We interrupted a task */
+	OsPcbType *new_pcb  = Os_TaskGetTop();
+
+	Os_StackPerformCheck(new_pcb);
+
+	if(     (new_pcb == os_sys.curr_pcb) ||
+			(os_sys.curr_pcb->scheduling == NON) ||
+			!Os_SchedulerResourceIsFree() )
+	{
+		/* Just bring the preempted task back to running */
+		Os_TaskSwapContextTo(NULL,os_sys.curr_pcb);
+	} else {
+		OS_DEBUG(D_TASK,"Found candidate %s\n",new_pcb->name);
+		Os_TaskSwapContextTo(NULL,new_pcb);
+	}
+}
+
+void Os_Isr_cm3( void *isr_p ) {
+
+	struct OsPcb *isrPtr;
+
+	os_sys.int_nest_cnt++;
+
+	/* Grab the ISR "pcb" */
+	isrPtr = (struct OsPcb *)isr_p;
+	isrPtr->state = ST_RUNNING;
+
+	if( isrPtr->proc_type & ( PROC_EXTENDED | PROC_BASIC ) ) {
+		assert(0);
+	}
+
+	Irq_Enable();
+	isrPtr->entry();
+	Irq_Disable();
+
+	/* Check so that ISR2 haven't disabled the interrupts */
+	/** @req OS368 */
+	if( Os_IrqAnyDisabled() ) {
+		Os_IrqClearAll();
+		ERRORHOOK(E_OS_DISABLEDINT);
+	}
+
+	/* Check so that the ISR2 have called ReleaseResource() for each GetResource() */
+	/** @req OS369 */
+	if( Os_TaskOccupiesResources(isrPtr) ) {
+		Os_ResourceFreeAll(isrPtr);
+		ERRORHOOK(E_OS_RESOURCE);
+	}
+
+	isrPtr->state = ST_SUSPENDED;
+
+	Irq_EOI();
+
+	--os_sys.int_nest_cnt;
+
+	/* Scheduling is done in PendSV handler for ARM CM3 */
+	*((uint32_t volatile *)0xE000ED04) = 0x10000000; // PendSV
+}
+#endif
 
 /**
  * Handle ISR type 2 interrupts from interrupt controller.
@@ -116,10 +188,8 @@ void *Os_Isr( void *stack, void *isr_p ) {
 	struct OsPcb *isrPtr;
 	struct OsPcb *pPtr = NULL;
 
-	os_sys.int_nest_cnt++;
-
 	/* Check if we interrupted a task or ISR */
-	if( os_sys.int_nest_cnt == 1 ) {
+	if( os_sys.int_nest_cnt == 0 ) {
 		/* We interrupted a task */
 		POSTTASKHOOK();
 
@@ -134,6 +204,8 @@ void *Os_Isr( void *stack, void *isr_p ) {
 		/* We interrupted an ISR */
 	}
 
+	os_sys.int_nest_cnt++;
+
 	/* Grab the ISR "pcb" */
 	isrPtr = (struct OsPcb *)isr_p;
 	isrPtr->state = ST_RUNNING;
@@ -142,7 +214,9 @@ void *Os_Isr( void *stack, void *isr_p ) {
 		assert(0);
 	}
 
-#ifndef CFG_HCS12D
+	Irq_SOI();
+
+#if !defined(CFG_HCS12D)
 	Irq_Enable();
 	isrPtr->entry();
 	Irq_Disable();
@@ -170,9 +244,12 @@ void *Os_Isr( void *stack, void *isr_p ) {
 
 	--os_sys.int_nest_cnt;
 
+#if defined(CFG_ARM_CM3)
+		/* Scheduling is done in PendSV handler for ARM CM3 */
+		*((uint32_t volatile *)0xE000ED04) = 0x10000000; // PendSV
+#else
 	// We have preempted a task
 	if( (os_sys.int_nest_cnt == 0) ) {
-
 		OsPcbType *new_pcb  = Os_TaskGetTop();
 
 		Os_StackPerformCheck(new_pcb);
@@ -186,14 +263,12 @@ void *Os_Isr( void *stack, void *isr_p ) {
 			PRETASKHOOK();
 		} else {
 			OS_DEBUG(D_TASK,"Found candidate %s\n",new_pcb->name);
-#if defined(CFG_ARM_CM3)
-			Irq_EOI2();
-#endif
 			Os_TaskSwapContextTo(NULL,new_pcb);
 		}
 	} else {
 		/* We have a nested interrupt, do nothing */
 	}
+#endif
 
 	return stack;
 }

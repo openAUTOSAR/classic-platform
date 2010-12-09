@@ -31,19 +31,19 @@ static void AddState(char *buf, state_t state)
 	switch(state)
 	{
 	case ST_READY:
-		strcat(buf,"\"D\"");
+		mystrcat(buf,"\"D\"");
 		break;
 	case ST_WAITING:
-		strcat(buf,"\"S\"");
+		mystrcat(buf,"\"S\"");
 		break;
 	case ST_SUSPENDED:
-		strcat(buf,"\"T\"");
+		mystrcat(buf,"\"T\"");
 		break;
 	case ST_RUNNING:
-		strcat(buf,"\"R\"");
+		mystrcat(buf,"\"R\"");
 		break;
 	case ST_NOT_STARTED:
-		strcat(buf,"\"T\"");
+		mystrcat(buf,"\"T\"");
 		break;
 	}
 }
@@ -64,33 +64,33 @@ uint16_t handle_SysMonCommand(TCF_Command* command, char* buf) {
 		boolean first = TRUE;
 
 		/* Add error field */
-		strcat(buf, JSON_null);
-		strcat(buf, TCF_S_EOFIELD_MARKER);
+		mystrcat(buf, JSON_null);
+		mystrcat(buf, TCF_S_EOFIELD_MARKER);
 
 		/* Add data field */
-		strcat(buf, JSON_ListStart);
+		mystrcat(buf, JSON_ListStart);
 		TAILQ_FOREACH(iterPcbPtr,& os_sys.pcb_head,pcb_list) {
 			if(iterPcbPtr->proc_type < 4)
 			{
 				if(first){
 					first = FALSE;
 				}else{
-					strcat(buf, JSON_Separator);
+					mystrcat(buf, JSON_Separator);
 				}
-				strcat(buf, JSON_Stringify);
-				strcat(buf, iterPcbPtr->name);
-				strcat(buf, JSON_Stringify);
+				mystrcat(buf, JSON_Stringify);
+				mystrcat(buf, iterPcbPtr->name);
+				mystrcat(buf, JSON_Stringify);
 			}
 		}
-		strcat(buf, JSON_ListEnd);
-		strcat(buf, TCF_S_EOFIELD_MARKER);
+		mystrcat(buf, JSON_ListEnd);
+		mystrcat(buf, TCF_S_EOFIELD_MARKER);
 
 	} else if (strcmp(command->commandName, TCF_getContext) == 0) {
 		char tmp[20] = "";
 
 		/* Add error field */
-		strcat(buf, JSON_null);
-		strcat(buf, TCF_S_EOFIELD_MARKER);
+		mystrcat(buf, JSON_null);
+		mystrcat(buf, TCF_S_EOFIELD_MARKER);
 
 		/* Add data field */
 		char *arg = command->arguments + 1; /* add 1 for " */
@@ -100,45 +100,45 @@ uint16_t handle_SysMonCommand(TCF_Command* command, char* buf) {
 				break;
 			}
 		}
-		strcat(buf, JSON_ObjStart);
-	    strcat(buf, TCF_ID);
-		strcat(buf, command->arguments);
+		mystrcat(buf, JSON_ObjStart);
+	    mystrcat(buf, TCF_ID);
+		mystrcat(buf, command->arguments);
 
-		strcat(buf, JSON_Separator);
-		strcat(buf, TCF_File);
-		strcat(buf, command->arguments);
+		mystrcat(buf, JSON_Separator);
+		mystrcat(buf, TCF_File);
+		mystrcat(buf, command->arguments);
 
-		strcat(buf, JSON_Separator);
-		strcat(buf, SysMon_PID);
+		mystrcat(buf, JSON_Separator);
+		mystrcat(buf, SysMon_PID);
 		ultoa(iterPcbPtr->pid,tmp,10);
-		strcat(buf, tmp);
+		mystrcat(buf, tmp);
 
-		strcat(buf, JSON_Separator);
-		strcat(buf, SysMon_Prio);
+		mystrcat(buf, JSON_Separator);
+		mystrcat(buf, SysMon_Prio);
 		ultoa(iterPcbPtr->prio,tmp,10);
-		strcat(buf, tmp);
+		mystrcat(buf, tmp);
 
-		strcat(buf, JSON_Separator);
-		strcat(buf, SysMon_Stackstart);
+		mystrcat(buf, JSON_Separator);
+		mystrcat(buf, SysMon_Stackstart);
 		ultoa((uint32_t)iterPcbPtr->stack.top,tmp,10);
-		strcat(buf, tmp);
+		mystrcat(buf, tmp);
 
-/*		strcat(buf, JSON_Separator);
-		strcat(buf, SysMon_Stackend);
+/*		mystrcat(buf, JSON_Separator);
+		mystrcat(buf, SysMon_Stackend);
 		ultoa((uint32_t)iterPcbPtr->stack.top + iterPcbPtr->stack.size,tmp,10);
-		strcat(buf, tmp);
+		mystrcat(buf, tmp);
 
-		strcat(buf, JSON_Separator);
-		strcat(buf, SysMon_Stackcurr);
+		mystrcat(buf, JSON_Separator);
+		mystrcat(buf, SysMon_Stackcurr);
 		ultoa((uint32_t)iterPcbPtr->stack.curr,tmp,10);
-		strcat(buf, tmp);
+		mystrcat(buf, tmp);
 */
-		strcat(buf, JSON_Separator);
-		strcat(buf, SysMon_State);
+		mystrcat(buf, JSON_Separator);
+		mystrcat(buf, SysMon_State);
 		AddState(buf,iterPcbPtr->state);
 
-		strcat(buf, JSON_ObjEnd);
-		strcat(buf, TCF_S_EOFIELD_MARKER);
+		mystrcat(buf, JSON_ObjEnd);
+		mystrcat(buf, TCF_S_EOFIELD_MARKER);
 	}
 
 	convert_to_tcf_message(buf);

@@ -1,9 +1,27 @@
 obj-$(CFG_PPC) += crt0.o
-obj-$(CFG_HCS12D) += crt0.o
-vpath-$(CFG_ARM_CM3) += $(ARCH_PATH-y)kernel
+obj-$(CFG_HC1X) += crt0.o
+vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
+vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32F10x_StdPeriph_Driver/src
+vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32_ETH_Driver/src
+inc-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32F10x_StdPeriph_Driver/inc
+inc-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32_ETH_Driver/inc
 obj-$(CFG_ARM_CM3) += core_cm3.o
 obj-$(CFG_ARM_CM3) += startup_stm32f10x.o
+#stm32 lib files needed by drivers
+obj-$(CFG_ARM_CM3) += stm32f10x_rcc.o
+obj-$(CFG_ARM_CM3)-$(USE_CAN) += stm32f10x_can.o
+obj-$(CFG_ARM_CM3)-$(USE_DIO) += stm32f10x_gpio.o
+obj-$(CFG_ARM_CM3)-$(USE_ADC) += stm32f10x_adc.o
+obj-$(CFG_ARM_CM3)-$(USE_ADC) += stm32f10x_dma.o
+obj-$(CFG_ARM_CM3)-$(USE_FLS) += stm32f10x_flash.o
+obj-$(CFG_ARM_CM3)-$(USE_PWM) += stm32f10x_tim.o
+obj-$(CFG_ARM_CM3)-$(USE_LWIP) += stm32_eth.o
 
+obj-$(USE_TTY_TMS570_KEIL) += GLCD.o
+obj-$(USE_TTY_TMS570_KEIL) += emif.o
+
+# Cortex R4
+obj-$(CFG_ARM_CR4) += startup_cr4.o
 
 # OS object files. 
 # (checking if already included for compatability)
@@ -12,8 +30,8 @@ obj-$(USE_KERNEL) += Os_Cfg.o
 endif
 
 #Ecu
-#obj-y += EcuM_$(BOARDDIR).o
 obj-$(USE_ECUM) += EcuM.o
+obj-$(USE_ECUM) += EcuM_Main.o
 obj-$(USE_ECUM) += EcuM_Cfg.o
 obj-$(USE_ECUM) += EcuM_Callout_template.o
 inc-$(USE_ECUM) += $(ROOTDIR)/system/EcuM
@@ -75,6 +93,18 @@ endif
 # Spi
 obj-$(USE_SPI) += Spi.o
 obj-$(USE_SPI) += Spi_Lcfg.o
+
+# NvM
+obj-$(USE_NVM) += NvM.o
+obj-$(USE_NVM) += NvM_Cfg.o
+inc-$(USE_NVM) += $(ROOTDIR)/memory/NvM
+vpath-$(USE_NVM) += $(ROOTDIR)/memory/NvM
+
+# Fee
+obj-$(USE_FEE) += Fee.o
+obj-$(USE_FEE) += Fee_Cfg.o
+inc-$(USE_FEE) += $(ROOTDIR)/memory/Fee
+vpath-$(USE_FEE) += $(ROOTDIR)/memory/Fee
 
 #Eep
 obj-$(USE_EEP) += Eep.o
@@ -197,6 +227,10 @@ obj-$(USE_TCF) += sys_monitor.o
 obj-$(USE_TCF) += streams.o
 inc-$(USE_TCF) += $(ROOTDIR)/common/tcf
 vpath-$(USE_TCF) += $(ROOTDIR)/common/tcf
+
+#SLEEP
+obj-$(USE_SLEEP) += sleep.o
+
 
 # Newlib overrides (overridden by default)
 ifneq ($(CFG_STANDARD_NEWLIB),y)

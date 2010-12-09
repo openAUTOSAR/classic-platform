@@ -52,6 +52,10 @@ void StartupTask( void ) {
 	// Call second phase of startup sequence.
 	EcuM_StartupTwo();
 
+	// Startup CanIf due to ComM is missing in this example
+	CanIf_InitController(CANIF_CHANNEL_0, CANIF_CHANNEL_0_CONFIG_0);
+	CanIf_SetControllerMode(CANIF_CHANNEL_0, CANIF_CS_STARTED);
+
 	// Make sure that the right PDU-groups are ready for communication.
 	Com_IpduGroupStart(RxGroup, 0);
 

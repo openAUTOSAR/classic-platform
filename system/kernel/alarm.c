@@ -22,7 +22,7 @@
 #define COUNTER_MAX(x) 			(x)->counter->alarm_base.maxallowedvalue
 #define COUNTER_MIN_CYCLE(x) 	(x)->counter->alarm_base.mincycle
 #define ALARM_CHECK_ID(x) 				\
-	if( (x) > Os_CfgGetAlarmCnt()) { \
+	if( (x) > OS_ALARM_CNT) { \
 		rv = E_OS_ID;					\
 		goto err; 						\
 	}
@@ -299,6 +299,25 @@ void Os_AlarmCheck( OsCounterType *c_p ) {
 				break;
 			default:
 				assert(0);
+			}
+		}
+	}
+}
+
+void Os_AlarmAutostart(void) {
+	int j;
+	for (j = 0; j < OS_ALARM_CNT; j++) {
+		OsAlarmType *alarmPtr;
+		alarmPtr = Os_CfgGetAlarmObj(j);
+		if (alarmPtr->autostartPtr != NULL) {
+			const OsAlarmAutostartType *autoPtr = alarmPtr->autostartPtr;
+
+			if (os_sys.appMode & autoPtr->appModeRef) {
+				if (autoPtr->autostartType == ALARM_AUTOSTART_ABSOLUTE) {
+					SetAbsAlarm(j, autoPtr->alarmTime, autoPtr->cycleTime);
+				} else {
+					SetRelAlarm(j, autoPtr->alarmTime, autoPtr->cycleTime);
+				}
 			}
 		}
 	}

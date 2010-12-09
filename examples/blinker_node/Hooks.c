@@ -53,7 +53,7 @@ ProtectionReturnType ProtectionHook( StatusType FatalError ) {
 void StartupHook( void ) {
 	LDEBUG_PRINTF("## StartupHook\n");
 
-	uint32_t sys_freq = McuE_GetSystemClock();
+//	uint32_t sys_freq = McuE_GetSystemClock();
 
 	LDEBUG_PRINTF("Sys clock %d Hz\n",sys_freq);
 }
