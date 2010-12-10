@@ -34,12 +34,12 @@ typedef enum
     DET_STARTED
 } Det_StateType;
 
-static Det_StateType _detState = DET_UNINITIALIZED;
+static Det_StateType detState = DET_UNINITIALIZED;
 
 #if ( DET_USE_RAMLOG == STD_ON )
 // Ram log variables in uninitialized memory
 uint32 Det_RamlogIndex __attribute__ ((section (".ramlog")));
-/*lint -esym(552,Det_RamLog)*/ /* supress lintwarning about Det_Ramlog not being accessed */
+/*lint -esym(552,Det_RamLog)*/ /* PC-Lint OK. supress lintwarning about Det_Ramlog not being accessed */
 Det_EntryType Det_RamLog[DET_RAMLOG_SIZE] __attribute__ ((section (".ramlog")));
 #endif
 
@@ -48,7 +48,7 @@ detCbk_t detCbk_List[DET_NUMBER_OF_CALLBACKS];
 
 uint8 Det_AddCbk(detCbk_t detCbk)
 {
-    if (_detState != DET_UNINITIALIZED)
+    if (detState != DET_UNINITIALIZED)
     {
         for (uint8 i=0; i<DET_NUMBER_OF_CALLBACKS; i++)
         {
@@ -102,22 +102,22 @@ void Det_Init(void)
     Det_RamlogIndex = 0;
 #endif
 
-    _detState = DET_INITIALIZED;
+    detState = DET_INITIALIZED;
 }
 
 #if DET_DEINIT_API == STD_ON
 void Det_DeInit( void )
 {
-    _detState = DET_UNINITIALIZED;
+    detState = DET_UNINITIALIZED;
 }
 #endif
 
 void Det_ReportError(uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 ErrorId)
 {
-    if (_detState == DET_STARTED) // No action is taken if the module is not started
+    if (detState == DET_STARTED) // No action is taken if the module is not started
     {
 #if ( DET_ENABLE_CALLBACKS == STD_ON )
-        uint32 old1; // 586 LINT OK: fattar inte att den används i macrot.
+        uint32 old1; // 586 PC-Lint OK: fattar inte att den används i macrot.
         Irq_Save(old1);
 
         for (uint32 i=0; i<DET_NUMBER_OF_CALLBACKS; i++)
@@ -158,5 +158,5 @@ void Det_ReportError(uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 Error
 
 void Det_Start(void)
 {
-    _detState = DET_STARTED;
+    detState = DET_STARTED;
 }

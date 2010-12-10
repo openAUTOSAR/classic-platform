@@ -25,8 +25,8 @@
  *
  */
 
-#ifndef _DET_H_
-#define _DET_H_
+#ifndef DET_H
+#define DET_H
 
 #define DET_MODULE_ID            MODULE_ID_DET
 #define DET_VENDOR_ID            1
@@ -82,4 +82,4 @@ void Det_ReportError( uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 Erro
 void Det_Start( void );
 #define Det_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,DET)
 
-#endif /*_DET_H_*/
+#endif /*DET_H*/

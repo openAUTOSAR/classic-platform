@@ -125,7 +125,7 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result);
 Std_ReturnType DslGetActiveProtocol(Dcm_ProtocolType *protocolId);
 void DslSetSecurityLevel(Dcm_SecLevelType secLevel);
 Std_ReturnType DslGetSecurityLevel(Dcm_SecLevelType *secLevel);
-void DslSetSesCtrlType(Dcm_SesCtrlType sesCtrlType);
+void DslSetSesCtrlType(Dcm_SesCtrlType sesCtrl);
 Std_ReturnType DslGetSesCtrlType(Dcm_SesCtrlType *sesCtrlType);
 BufReq_ReturnType DslProvideTxBuffer(PduIdType dcmTxPduId, const PduInfoType **pduInfoPtr, PduLengthType length);
 void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result);

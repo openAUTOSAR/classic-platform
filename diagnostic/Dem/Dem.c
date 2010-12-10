@@ -207,7 +207,7 @@ static ChecksumType calcChecksum(void *data, uint16 nrOfBytes)
 		sum += *ptr;
 		ptr++;
 	}
-	sum ^= 0xaaaa; // lint: OK om (uint16)0xaaaa;
+	sum ^= 0xaaaau;
 	return sum;
 }
 
@@ -506,7 +506,7 @@ static void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_E
 			}
 			/** @req DEM036 */ /** @req DEM379.PendingSet */
 			eventStatusRecPtr->eventStatusExtended |= (DEM_TEST_FAILED | DEM_TEST_FAILED_THIS_OPERATION_CYCLE | DEM_TEST_FAILED_SINCE_LAST_CLEAR | DEM_PENDING_DTC);
-			eventStatusRecPtr->eventStatusExtended &= ~(DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE);
+			eventStatusRecPtr->eventStatusExtended &= (Dem_EventStatusExtendedType)~(DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE);
 		}
 
 		// Check test passed
@@ -515,8 +515,8 @@ static void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_E
 				eventStatusRecPtr->errorStatusChanged = TRUE;
 			}
 			/** @req DEM036 */
-			eventStatusRecPtr->eventStatusExtended &= ~DEM_TEST_FAILED;
-			eventStatusRecPtr->eventStatusExtended &= ~(DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE);
+			eventStatusRecPtr->eventStatusExtended &= (Dem_EventStatusExtendedType)~DEM_TEST_FAILED;
+			eventStatusRecPtr->eventStatusExtended &= (Dem_EventStatusExtendedType)~(DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE);
 		}
 
 		// Copy the record
@@ -727,7 +727,7 @@ static void getExtendedData(const Dem_EventParameterType *eventParam, ExtDataRec
 				callbackReturnCode = eventParam->ExtendedDataClassRef->ExtendedDataRecordClassRef[i]->CallbackGetExtDataRecord(&extData->data[storeIndex]); /** @req DEM282 */
 				if (callbackReturnCode != E_OK) {
 					// Callback data currently not available, clear space.
-					memset(&extData->data[storeIndex], 0xFF, recordSize); // Lint OK
+					memset(&extData->data[storeIndex], 0xFF, recordSize); // PC-Lint OK
 				}
 				storeIndex += recordSize;
 			}
@@ -1203,7 +1203,7 @@ static void resetEventStatus(Dem_EventIdType eventId)
 
 	lookupEventStatusRec(eventId, &eventStatusRecPtr);
 	if (eventStatusRecPtr != NULL) {
-		eventStatusRecPtr->eventStatusExtended &= ~DEM_TEST_FAILED; /** @req DEM187 */
+		eventStatusRecPtr->eventStatusExtended &= (Dem_EventStatusExtendedType)~DEM_TEST_FAILED; /** @req DEM187 */
 	}
 
 	McuE_ExitCriticalSection(state);
@@ -1353,7 +1353,7 @@ static Std_ReturnType setOperationCycleState(Dem_OperationCycleIdType operationC
 			// Lookup event ID
 			for (i = 0; i < DEM_MAX_NUMBER_EVENT; i++) {
 				if ((eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) && (eventStatusBuffer[i].eventParamRef->EventClass->OperationCycleRef == operationCycleId)) {
-					eventStatusBuffer[i].eventStatusExtended &= ~DEM_TEST_FAILED_THIS_OPERATION_CYCLE;
+					eventStatusBuffer[i].eventStatusExtended &= (Dem_EventStatusExtendedType)~DEM_TEST_FAILED_THIS_OPERATION_CYCLE;
 					eventStatusBuffer[i].eventStatusExtended |= DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE;
 				}
 			}
@@ -1365,7 +1365,7 @@ static Std_ReturnType setOperationCycleState(Dem_OperationCycleIdType operationC
 			for (i = 0; i < DEM_MAX_NUMBER_EVENT; i++) {
 				if ((eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) && (eventStatusBuffer[i].eventParamRef->EventClass->OperationCycleRef == operationCycleId)) {
 					if ((!(eventStatusBuffer[i].eventStatusExtended & DEM_TEST_FAILED_THIS_OPERATION_CYCLE)) && (!(eventStatusBuffer[i].eventStatusExtended & DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE))) {
-						eventStatusBuffer[i].eventStatusExtended &= ~DEM_PENDING_DTC;		// Clear pendingDTC bit /** @req DEM379.PendingClear
+						eventStatusBuffer[i].eventStatusExtended &= (Dem_EventStatusExtendedType)~DEM_PENDING_DTC;		// Clear pendingDTC bit /** @req DEM379.PendingClear
 					}
 				}
 			}
@@ -1853,7 +1853,7 @@ Dem_ReturnSetDTCFilterType Dem_SetDTCFilter(uint8 dtcStatusMask,
 		// Check filterWithSeverity and dtcSeverityMask parameter
 		VALIDATE_RV(((filterWithSeverity == DEM_FILTER_WITH_SEVERITY_NO)
 					|| ((filterWithSeverity == DEM_FILTER_WITH_SEVERITY_YES)
-						&& (!(dtcSeverityMask & ~(DEM_SEVERITY_MAINTENANCE_ONLY | DEM_SEVERITY_CHECK_AT_NEXT_FALT | DEM_SEVERITY_CHECK_IMMEDIATELY))))), DEM_SETDTCFILTER_ID, DEM_E_PARAM_DATA, DEM_WRONG_FILTER);
+						&& (!(dtcSeverityMask & (Dem_DTCSeverityType)~(DEM_SEVERITY_MAINTENANCE_ONLY | DEM_SEVERITY_CHECK_AT_NEXT_FALT | DEM_SEVERITY_CHECK_IMMEDIATELY))))), DEM_SETDTCFILTER_ID, DEM_E_PARAM_DATA, DEM_WRONG_FILTER);
 
 		// Check filterForFaultDetectionCounter parameter
 		VALIDATE_RV((filterForFaultDetectionCounter == DEM_FILTER_FOR_FDC_YES) || (filterForFaultDetectionCounter ==  DEM_FILTER_FOR_FDC_NO), DEM_SETDTCFILTER_ID, DEM_E_PARAM_DATA, DEM_WRONG_FILTER);
@@ -2013,7 +2013,7 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
 						if (checkDtcKind(dtcKind, eventParam)) {
 							if (checkDtcGroup(dtc, eventParam)) {
 								boolean dtcOriginFound = FALSE;
-								for (j = 0; (j < DEM_MAX_NR_OF_EVENT_DESTINATION) && (!dtcOriginFound) ; j++){ // lint-change
+								for (j = 0; (j < DEM_MAX_NR_OF_EVENT_DESTINATION) && (!dtcOriginFound) ; j++){
 									dtcOriginFound =(eventParam->EventClass->EventDestination[j] == dtcOrigin);
 								}
 								//if (j-1 < DEM_MAX_NR_OF_EVENT_DESTINATION) {

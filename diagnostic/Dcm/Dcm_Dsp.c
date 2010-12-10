@@ -38,9 +38,9 @@
  * Macros
  */
 #define BYTES_TO_DTC(hb, mb, lb)	(((uint32)(hb) << 16) | ((uint32)(mb) << 8) | (uint32)(lb))
-#define DTC_HIGH_BYTE(dtc)			(((uint32)(dtc) >> 16) & 0xFF)
-#define DTC_MID_BYTE(dtc)			(((uint32)(dtc) >> 8) & 0xFF)
-#define DTC_LOW_BYTE(dtc)			((uint32)(dtc) & 0xFF)
+#define DTC_HIGH_BYTE(dtc)			(((uint32)(dtc) >> 16) & 0xFFu)
+#define DTC_MID_BYTE(dtc)			(((uint32)(dtc) >> 8) & 0xFFu)
+#define DTC_LOW_BYTE(dtc)			((uint32)(dtc) & 0xFFu)
 
 
 typedef struct {
@@ -79,7 +79,7 @@ boolean DspCheckSessionLevel(const Dcm_DspSessionRowType **sessionLevelRefTable)
 	Dcm_SesCtrlType currentSession;
 
 	DslGetSesCtrlType(&currentSession);
-	while (((*sessionLevelRefTable)->DspSessionLevel != currentSession) && !(*sessionLevelRefTable)->Arc_EOL) {
+	while ( ((*sessionLevelRefTable)->DspSessionLevel != currentSession) && (!(*sessionLevelRefTable)->Arc_EOL) ) {
 		sessionLevelRefTable++;
 	}
 
@@ -97,7 +97,7 @@ boolean DspCheckSecurityLevel(const Dcm_DspSecurityRowType	**securityLevelRefTab
 	Dcm_SecLevelType currentSecurityLevel;
 
 	DslGetSecurityLevel(&currentSecurityLevel);
-	while (((*securityLevelRefTable)->DspSecurityLevel != currentSecurityLevel) && !(*securityLevelRefTable)->Arc_EOL) {
+	while ( ((*securityLevelRefTable)->DspSecurityLevel != currentSecurityLevel) && (!(*securityLevelRefTable)->Arc_EOL) ) {
 		securityLevelRefTable++;
 	}
 	if ((*securityLevelRefTable)->Arc_EOL) {
@@ -115,7 +115,7 @@ static Std_ReturnType askApplicationForSessionPermission(Dcm_SesCtrlType newSess
 	Dcm_SesCtrlType currentSessionLevel;
 	Std_ReturnType result;
 
-	while (!sesControl->Arc_EOL && (returnCode != E_SESSION_NOT_ALLOWED)) {
+	while ( (!sesControl->Arc_EOL) && (returnCode != E_SESSION_NOT_ALLOWED)) {
 		if (sesControl->GetSesChgPermission != NULL) {
 			Dcm_GetSesCtrlType(&currentSessionLevel);
 			result = sesControl->GetSesChgPermission(currentSessionLevel ,newSessionLevel);
@@ -140,7 +140,7 @@ void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduInfoType *p
 	if (pduRxData->SduLength == 2) {
 		reqSessionType = pduRxData->SduDataPtr[1];
 		// Check if type exist in session table
-		while ((sessionRow->DspSessionLevel != reqSessionType) && !sessionRow->Arc_EOL) {
+		while ((sessionRow->DspSessionLevel != reqSessionType) && (!sessionRow->Arc_EOL) ) {
 			sessionRow++;
 		}
 
@@ -287,7 +287,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x01_0x07_0x11_0x12(const 
 		txData->dtcStatusAvailabilityMask = dtcStatusMask;					// DTCStatusAvailabilityMask
 		txData->dtcFormatIdentifier = Dem_GetTranslationType();				// DTCFormatIdentifier
 		txData->dtcCountHighByte = (numberOfFilteredDtc >> 8);				// DTCCount high byte
-		txData->dtcCountLowByte = (numberOfFilteredDtc & 0xFF);				// DTCCount low byte
+		txData->dtcCountLowByte = (numberOfFilteredDtc & 0xFFu);				// DTCCount low byte
 		pduTxData->SduLength = 6;
 	}
 	else {
@@ -375,7 +375,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15(c
 				responseCode = DCM_E_REQUESTOUTOFRANGE;
 			}
 		}
-		pduTxData->SduLength = 3 + nrOfDtcs * sizeof(dtcAndStatusRecordType);
+		pduTxData->SduLength = 3 + (nrOfDtcs * sizeof(dtcAndStatusRecordType));
 	}
 	else {
 		responseCode = DCM_E_REQUESTOUTOFRANGE;
@@ -470,7 +470,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x06_0x10(const PduInfoTyp
 			pduTxData->SduDataPtr[4] = DTC_LOW_BYTE(dtc);					// DTC low byte
 			pduTxData->SduDataPtr[5] = statusOfDtc;							// DTC status
 			for (recNum = startRecNum; recNum <= endRecNum; recNum++) {
-				recLength = pduTxData->SduLength - txIndex -1;	// Calculate what's left in buffer
+				recLength = pduTxData->SduLength - (txIndex + 1);	// Calculate what's left in buffer
 				/** @req DCM296 */ /** @req DCM476 */ /** @req DCM382 */
 				getExtendedDataRecordByDtcResult = Dem_GetExtendedDataRecordByDTC(dtc, DEM_DTC_KIND_ALL_DTCS, dtcOrigin, recNum, &pduTxData->SduDataPtr[txIndex+1], &recLength);
 				if (getExtendedDataRecordByDtcResult == DEM_RECORD_OK) {
@@ -640,7 +640,7 @@ static boolean lookupDid(uint16 didNr, const Dcm_DspDidType **didPtr)
 	const Dcm_DspDidType *dspDid = DCM_Config.Dsp->DspDid;
 	boolean didFound = FALSE;
 
-	while ((dspDid->DspDidIdentifier != didNr) &&  !dspDid->Arc_EOL) {
+	while ((dspDid->DspDidIdentifier != didNr) &&  (!dspDid->Arc_EOL)) {
 		dspDid++;
 	}
 
@@ -679,9 +679,9 @@ static Dcm_NegativeResponseCodeType readDidData(const Dcm_DspDidType *didPtr, Pd
 					if (result == E_OK) {
 						// Now ready for reading the data!
 						if ((*txPos + didLen + 2) <= pduTxData->SduLength) {
-							pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 8) & 0xFF;
+							pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 8) & 0xFFu;
 							(*txPos)++;
-							pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 0) & 0xFF;
+							pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 0) & 0xFFu;
 							(*txPos)++;
 							result = didPtr->DspDidReadDataFnc(&pduTxData->SduDataPtr[*txPos]);	/** @req DCM437 */
 							*txPos += didLen;
@@ -736,11 +736,11 @@ void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTx
 	uint16 txPos = 1;
 	uint16 i;
 
-	if ((pduRxData->SduLength - 1) % 2 == 0 ) {
+	if ( ((pduRxData->SduLength - 1) % 2) == 0 ) {
 		nrOfDids = (pduRxData->SduLength - 1) / 2;
 
 		for (i = 0; (i < nrOfDids) && (responseCode == DCM_E_POSITIVERESPONSE); i++) {
-			didNr = (pduRxData->SduDataPtr[1+i*2] << 8) + pduRxData->SduDataPtr[2+i*2];
+			didNr = (uint16)((uint16)pduRxData->SduDataPtr[1+(i*2)] << 8);// + pduRxData->SduDataPtr[2+(i*2)];
 			if (lookupDid(didNr, &didPtr)) {	/** @req DCM438 */
 				responseCode = readDidData(didPtr, pduTxData, &txPos);
 			}
@@ -773,9 +773,9 @@ static Dcm_NegativeResponseCodeType readDidScalingData(const Dcm_DspDidType *did
 			Std_ReturnType result;
 			Dcm_NegativeResponseCodeType errorCode;
 
-			pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 8) & 0xFF;
+			pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 8) & 0xFFu;
 			(*txPos)++;
-			pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 0) & 0xFF;
+			pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 0) & 0xFFu;
 			(*txPos)++;
 			result = didPtr->DspDidGetScalingInfoFnc(&pduTxData->SduDataPtr[*txPos], &errorCode);	/** @req DCM394 */
 			*txPos += scalingInfoLen;
@@ -805,7 +805,7 @@ void DspUdsReadScalingDataByIdentifier(const PduInfoType *pduRxData, PduInfoType
 	uint16 txPos = 1;
 
 	if (pduRxData->SduLength == 3) {
-		didNr = (pduRxData->SduDataPtr[1] << 8) + pduRxData->SduDataPtr[2];
+		didNr = (uint16)((uint16)pduRxData->SduDataPtr[1] << 8) + pduRxData->SduDataPtr[2];
 		if (lookupDid(didNr, &didPtr)) {
 			responseCode = readDidScalingData(didPtr, pduTxData, &txPos);
 		}
@@ -893,7 +893,7 @@ void DspUdsWriteDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduT
 	uint16 didDataLength;
 
 	didDataLength = pduRxData->SduLength - 3;
-	didNr = (pduRxData->SduDataPtr[1] << 8) + pduRxData->SduDataPtr[2];
+	didNr = (uint16)((uint16)pduRxData->SduDataPtr[1] << 8) + pduRxData->SduDataPtr[2];
 	if (lookupDid(didNr, &didPtr)) {	/** @req DCM467 */
 		responseCode = writeDidData(didPtr, pduRxData, didDataLength);
 	}
@@ -903,8 +903,8 @@ void DspUdsWriteDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduT
 
 	if (responseCode == DCM_E_POSITIVERESPONSE) {
 		pduTxData->SduLength = 3;
-		pduTxData->SduDataPtr[1] = (didNr >> 8) & 0xFF;
-		pduTxData->SduDataPtr[2] = (didNr >> 0) & 0xFF;
+		pduTxData->SduDataPtr[1] = (didNr >> 8) & 0xFFu;
+		pduTxData->SduDataPtr[2] = (didNr >> 0) & 0xFFu;
 	}
 
 	DsdDspProcessingDone(responseCode);
@@ -918,7 +918,7 @@ void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 
 	// Check sub function range (0x01 to 0x42)
 	if ((pduRxData->SduDataPtr[1] >= 0x01) && (pduRxData->SduDataPtr[1] <= 0x42)) {
-		boolean isRequestSeed = pduRxData->SduDataPtr[1] & 0x01;
+		boolean isRequestSeed = pduRxData->SduDataPtr[1] & 0x01u;
 		Dcm_SecLevelType requestedSecurityLevel = (pduRxData->SduDataPtr[1]-1)/2;
 		Dcm_NegativeResponseCodeType getSeedErrorCode;
 
@@ -926,7 +926,7 @@ void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 			// requestSeed message
 			// Check if type exist in security table
 			const Dcm_DspSecurityRowType *securityRow = &DCM_Config.Dsp->DspSecurity->DspSecurityRow[0];
-			while ((securityRow->DspSecurityLevel != requestedSecurityLevel) && !securityRow->Arc_EOL) {
+			while ((securityRow->DspSecurityLevel != requestedSecurityLevel) && (!securityRow->Arc_EOL)) {
 				securityRow++;
 			}
 			if (!securityRow->Arc_EOL) {

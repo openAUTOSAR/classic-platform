@@ -165,11 +165,11 @@ typedef struct {
 } Dcm_DspDidInfoType; /** @req DCM607 */
 
 // 10.2.22
-typedef struct _Dcm_DspDidType {
+typedef struct Dcm_DspDidType {
 	boolean										DspDidUsePort;					// (1)
 	uint16										DspDidIdentifier;				// (1)		/** @req DCM602 */
 	const Dcm_DspDidInfoType					*DspDidInfoRef;					// (1)		/** @req DCM604 */
-	const struct _Dcm_DspDidType				**DspDidRef;					// (0..*)	/** @req DCM606 */
+	const struct Dcm_DspDidType				**DspDidRef;					// (0..*)	/** @req DCM606 */
 	uint16										DspDidSize;						// (1)		/** @req DCM605 */
 	Dcm_CallbackReadDataLengthFncType			DspDidReadDataLengthFnc;		// (0..1)	/** @req DCM671 */
 	Dcm_CallbackConditionCheckReadFncType		DspDidConditionCheckReadFnc;	// (0..1)	/** @req DCM677 */
@@ -353,7 +353,7 @@ typedef struct {
 typedef enum
 {
 	BUFFER_AVAILABLE,
-	BUFFER_BUSY,
+	BUFFER_BUSY
 }Dcm_DslBufferStatusType;
 
 

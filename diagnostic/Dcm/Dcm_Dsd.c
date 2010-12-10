@@ -188,7 +188,7 @@ void DsdHandleRequest(void)
 	currentSid = msgData.pduRxData->SduDataPtr[0];	/** @req DCM198 */
 
 	/** @req DCM178 */
-	if (DCM_RESPOND_ALL_REQUEST || ((currentSid & 0x7F) < 0x40)) {		/** @req DCM084 */
+	if (DCM_RESPOND_ALL_REQUEST || ((currentSid & 0x7Fu) < 0x40)) {		/** @req DCM084 */
 		if (lookupSid(currentSid, &sidConfPtr)) {		/** @req DCM192 */ /** @req DCM193 */ /** @req DCM196 */
 			// SID found!
 			if (DspCheckSessionLevel(sidConfPtr->DsdSidTabSessionLevelRef)) {		 /** @req DCM211 */
@@ -199,7 +199,7 @@ void DsdHandleRequest(void)
 					if ((!DCM_REQUEST_INDICATION_ENABLED) || (result == E_OK)) {
 						// Yes! All conditions met!
 						// Check if response shall be suppressed
-						if (sidConfPtr->DsdSidTabSubfuncAvail && (msgData.pduRxData->SduDataPtr[1] & SUPPRESS_POS_RESP_BIT)) {	/** @req DCM204 */
+						if ( (sidConfPtr->DsdSidTabSubfuncAvail) && (msgData.pduRxData->SduDataPtr[1] & SUPPRESS_POS_RESP_BIT) ) {	/** @req DCM204 */
 							suppressPosRspMsg = TRUE;	/** @req DCM202 */
 							msgData.pduRxData->SduDataPtr[1] &= ~SUPPRESS_POS_RESP_BIT;	/** @req DCM201 */
 						}

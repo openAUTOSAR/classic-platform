@@ -30,7 +30,7 @@
 //#define USE_DEBUG_PRINTF
 #include "debug.h"
 
-#define DECREMENT(timer) { if (timer > 0) timer--; }
+#define DECREMENT(timer) { if (timer > 0){timer--;} }
 #define DCM_CONVERT_MS_TO_MAIN_CYCLES(x)  ((x)/DCM_MAIN_FUNCTION_PERIOD_TIME_MS)
 
 
@@ -141,7 +141,7 @@ static void changeDiagnosticSession(Dcm_DslRunTimeProtocolParametersType *runtim
 
 // - - - - - - - - - - -
 
-void DslResetSessionTimeoutTimer() {
+void DslResetSessionTimeoutTimer(void) {
 	const Dcm_DslProtocolRowType *activeProtocol = NULL;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
 	activeProtocol = DcmDslRunTimeData.activeProtocol;
@@ -743,7 +743,7 @@ void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result) {
 		default:
 			break;
 		}
-		if (externalBufferReleased == FALSE) {
+		if (!externalBufferReleased) {
 			switch (runtime->localTxBuffer.status) { // ### LOCAL TX BUFFER ###
 			case PROVIDED_TO_PDUR:
 				DEBUG( DEBUG_MEDIUM, "Released local buffer buffer OK!\n");
