@@ -119,60 +119,81 @@ static Std_VersionInfoType _Port_VersionInfo =
 };
 #endif
 
+void Port_RefreshPin(uint16 pinNumber) {
+	uint8 port = GET_PIN_PORT(_configPtr->pins[pinNumber].pin);
+	uint32 mask = GET_PIN_MASK(_configPtr->pins[pinNumber].pin);
+	uint16 conf = _configPtr->pins[pinNumber].conf;
+
+	if (conf & PORT_FUNC) {
+		// Don't do anything, let each driver configure???
+		return;
+	}
+
+	// Set pin direction
+	if (conf & PORT_PIN_IN) {
+		Port_Base[port]->DIR &= ~mask;
+
+	} else {
+		Port_Base[port]->DIR |= mask;
+
+		// Set open drain
+		if (conf & PORT_ODE_ENABLE) {
+			Port_Base[port]->PDR |= mask;
+		} else {
+			Port_Base[port]->PDR &= ~mask;
+		}
+	}
+
+	// Set pull up or down or nothing.
+	if (conf & PORT_PULL_NONE) {
+		Port_Base[port]->PULDIS |= mask;
+
+	} else {
+		Port_Base[port]->PULDIS &= ~mask;
+		if (conf & PORT_PULL_UP) {
+			Port_Base[port]->PSL |= mask;
+
+		} else {
+			Port_Base[port]->PSL &= ~mask;
+		}
+	}
+}
+
+
+
 void Port_Init(const Port_ConfigType *configType) {
 	VALIDATE_PARAM_CONFIG(configType, PORT_INIT_ID);
+
+	_configPtr = (Port_ConfigType *)configType;
 
 	// Bring GIO register out of reset.
 	gioREG->GCR0 = 1;
 
 	for (uint16 i = 0; i < PORT_NUMBER_OF_PINS; i++) {
-		uint8 port = GET_PIN_PORT(configType->pins[i].pin);
-		uint32 mask = GET_PIN_MASK(configType->pins[i].pin);
-		uint16 conf = configType->pins[i].conf;
-
-		if (conf & PORT_FUNC) {
-			// Don't do anything, let each driver configure???
-			continue;
-		}
-
-		// Set pin direction
-		if (conf & PORT_PIN_IN) {
-			Port_Base[port]->DIR &= ~mask;
-
-		} else {
-			Port_Base[port]->DIR |= mask;
-
-			// Set open drain
-			if (conf & PORT_ODE_ENABLE) {
-				Port_Base[port]->PDR |= mask;
-			} else {
-				Port_Base[port]->PDR &= ~mask;
-			}
-		}
-
-		// Set pull up or down or nothing.
-		if (conf & PORT_PULL_NONE) {
-			Port_Base[port]->PULDIS |= mask;
-
-		} else {
-			Port_Base[port]->PULDIS &= ~mask;
-			if (conf & PORT_PULL_UP) {
-				Port_Base[port]->PSL |= mask;
-
-			} else {
-				Port_Base[port]->PSL &= ~mask;
-			}
-		}
+		Port_RefreshPin(i);
 	}
+
+	_portState = PORT_INITIALIZED;
+
 	cleanup:return;
 }
 
 #if ( PORT_SET_PIN_DIRECTION_API == STD_ON )
 void Port_SetPinDirection( Port_PinType pin, Port_PinDirectionType direction )
 {
-  VALIDATE_STATE_INIT(PORT_SET_PIN_DIRECTION_ID);
-  VALIDATE_PARAM_PIN(pin, PORT_SET_PIN_DIRECTION_ID);
-  // TODO IMPLEMENT!
+	VALIDATE_STATE_INIT(PORT_SET_PIN_DIRECTION_ID);
+	VALIDATE_PARAM_PIN(pin, PORT_SET_PIN_DIRECTION_ID);
+
+	uint8 port = GET_PIN_PORT(pin);
+	uint32 mask = GET_PIN_MASK(pin);
+
+	if (direction & PORT_PIN_IN) {
+		Port_Base[port]->DIR &= ~mask;
+
+	} else {
+		Port_Base[port]->DIR |= mask;
+
+	}
 
 cleanup:return;
 }
@@ -180,8 +201,13 @@ cleanup:return;
 
 void Port_RefreshPortDirection( void )
 {
-	// TODO IMPLEMENT!
+	for (uint16 i = 0; i < PORT_NUMBER_OF_PINS; i++) {
+		if (!(_configPtr->pins[i].conf & PORT_DIRECTION_CHANGEABLE)) {
+			Port_RefreshPin(i);
+		}
+	}
 }
+
 
 #if PORT_VERSION_INFO_API == STD_ON
 void Port_GetVersionInfo(Std_VersionInfoType* versionInfo)
@@ -197,11 +223,7 @@ void Port_SetPinMode(Port_PinType Pin, Port_PinModeType Mode) {
 	uint8 port = GET_PIN_PORT(Pin);
 	uint8 pin = GET_PIN_PIN(Pin);
 	uint32 mask = GET_PIN_MASK(Pin);
-/*
-    Port_PinType pin  = Pin & 0x1F;
-    Port_PinType port = Pin >> 8;
-    Port_PinType mask = 1 << pin;
-*/
+
     Port_Base[port]->FUN &= ~mask;
     Port_Base[port]->FUN |= ((Mode & 1) << pin);
 }
