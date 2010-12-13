@@ -25,6 +25,8 @@ typedef IRQn_Type IrqType;
  */
 #define IRQ_INTERRUPT_OFFSET  16
 
+#define Irq_SOI()
+
 /* Total number of interrupts and exceptions
  */
 

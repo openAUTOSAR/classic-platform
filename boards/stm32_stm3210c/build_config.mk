@@ -10,7 +10,7 @@ ARCH_MCU=arm_cm3
 
 CFG=ARM ARM_CM3
 # Add our board  
-CFG+=BRD_STM32_MCBSTM32 
+CFG+=BRD_STM32_STM3210C 
 
 # 
 # ST have devided devices into ( See chapter 6 in Ref manual )
@@ -25,11 +25,11 @@ CFG+=STM32_CL
 # What buildable modules does this board have, 
 # default or private
 
-MOD_AVAIL+=ADC CAN DIO MCU FLS PORT PWM     
+MOD_AVAIL+=ADC CAN DIO MCU FLS PORT PWM GPT   
 # System + Communication + Diagnostic
 MOD_AVAIL+=CANIF CANTP COM DCM DEM DET ECUM IOHWAB KERNEL PDUR WDGM RTE
 # Additional
-MOD_AVAIL+=RAMLOG TCF LWIP
+MOD_AVAIL+=RAMLOG TCF LWIP SLEEP RTE
 
 #
 # Extra defines 

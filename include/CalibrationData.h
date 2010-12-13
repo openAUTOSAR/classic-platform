@@ -3,16 +3,12 @@
 
 #include "Calibration_Settings.h"
 
-#ifdef CALIBRATION_ACTIVE
+#ifdef CALIBRATION_ENABLED
 /* Section data from linker script. */
 extern char __CALIB_RAM_START;
 extern char __CALIB_RAM_END;
 extern char __CALIB_ROM_START;
+#endif /* CALIBRATION_ENABLED */
 #define ARC_DECLARE_CALIB(type, name) type __attribute__((section (".calibration"))) name
-#else
-#define ARC_DECLARE_CALIB(type, name) const type name
-#endif /* CALIBRATION_ACTIVE */
-
-
 
 #endif /* CALIBRATIONDATA_H_ */

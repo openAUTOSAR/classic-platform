@@ -115,7 +115,10 @@ Dio_LevelType Dio_ReadChannel(Dio_ChannelType channelId)
 		level = STD_LOW;
 	}
 
-	cleanup: return (level);
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+	cleanup:
+#endif
+	return (level);
 }
 
 void Dio_WriteChannel(Dio_ChannelType channelId, Dio_LevelType level)
@@ -133,7 +136,10 @@ void Dio_WriteChannel(Dio_ChannelType channelId, Dio_LevelType level)
 
 	Dio_WritePort(DIO_GET_PORT_FROM_CHANNEL_ID(channelId), portVal);
 
-	cleanup: return;
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+	cleanup:
+#endif
+	return;
 }
 
 Dio_PortLevelType Dio_ReadPort(Dio_PortType portId)
@@ -152,7 +158,10 @@ Dio_PortLevelType Dio_ReadPort(Dio_PortType portId)
 	else if(portId == DIO_PORT_T){level = PTT;}
 	else if(portId == DIO_PORT_H){level = PTH;}
 
-	cleanup: return level;
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+	cleanup:
+#endif
+	return level;
 }
 
 void Dio_WritePort(Dio_PortType portId, Dio_PortLevelType level)
@@ -170,7 +179,10 @@ void Dio_WritePort(Dio_PortType portId, Dio_PortLevelType level)
 	else if(portId == DIO_PORT_T){PTT = level;}
 	else if(portId == DIO_PORT_H){PTH = level;}
 
-    cleanup: return;
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+    cleanup:
+#endif
+    return;
 }
 
 Dio_PortLevelType Dio_ReadChannelGroup(
@@ -185,7 +197,10 @@ Dio_PortLevelType Dio_ReadChannelGroup(
 	// Shift down
 	level = level >> channelGroupIdPtr->offset;
 
-	cleanup: return level;
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+	cleanup:
+#endif
+	return level;
 }
 
 void Dio_WriteChannelGroup(const Dio_ChannelGroupType *channelGroupIdPtr,
@@ -204,5 +219,8 @@ void Dio_WriteChannelGroup(const Dio_ChannelGroupType *channelGroupIdPtr,
 
 	Dio_WritePort(channelGroupIdPtr->port, portVal);
 
-	cleanup: return;
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+	cleanup:
+#endif
+	return;
 }

@@ -28,6 +28,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "LinIf_Cbk.h"
+#if defined(USE_KERNEL)
+#include "Os.h"
+#include "irq.h"
+#endif
 
 #define ESCI(exp) (volatile struct ESCI_tag *)(0xFFFA0000 + (0x4000 * exp))
 
@@ -329,11 +333,23 @@ void Lin_InitChannel(  uint8 Channel,   const Lin_ChannelConfigType* Config )
 	// Install the interrupt
 	if (Channel > 3)
 	{
+#if defined(USE_KERNEL)
+		TaskType tid;
+		tid = Os_Arc_CreateIsr(aIntFnc[Channel],LIN_PRIO,"Lin");
+		Irq_AttachIsr2(tid,NULL,SCI_E_COMB + Channel);
+#else
 	  Irq_InstallVector(aIntFnc[Channel],SCI_E_COMB + Channel,LIN_PRIO,CPU_Z1);
+#endif
 	}
 	else
 	{
+#if defined(USE_KERNEL)
+		TaskType tid;
+		tid = Os_Arc_CreateIsr(aIntFnc[Channel],LIN_PRIO,"Lin");
+		Irq_AttachIsr2(tid,NULL,SCI_A_COMB + Channel);
+#else
 	  Irq_InstallVector(aIntFnc[Channel],SCI_A_COMB + Channel,LIN_PRIO,CPU_Z1);
+#endif
 	}
 
 	esciHw->CR2.B.MDIS = 0;/* The module is enabled by writing the ESCIx_CR2[MDIS] bit to 0. */

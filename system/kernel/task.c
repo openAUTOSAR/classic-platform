@@ -23,7 +23,7 @@
 /** @req OS067 */
 
 _Bool os_pcb_pid_valid( OsPcbType *restrict pcb ) {
-	return ( pcb->pid > Os_CfgGetTaskCnt() ) ? 0 : 1;
+	return ( pcb->pid > OS_TASK_CNT ) ? 0 : 1;
 }
 /**
  * Start an extended task.
@@ -479,7 +479,7 @@ void Os_Arc_GetStackInfo( TaskType task, StackInfoType *s) {
 
 
 #define TASK_CHECK_ID(x) 				\
-	if( (x) > Os_CfgGetTaskCnt()) { \
+	if( (x) > OS_TASK_CNT) { \
 		rv = E_OS_ID;					\
 		goto err; 						\
 	}
@@ -527,22 +527,17 @@ StatusType GetTaskID( TaskRefType TaskID ) {
 	StatusType rv = E_OK;
 	*TaskID = INVALID_TASK;
 
-
-	if( os_sys.curr_pcb->state & ST_RUNNING ) {
-		*TaskID = os_sys.curr_pcb->pid;
-	} else {
-		/* We have no running task, check level */
-
-		/* Call level is not from the OSEK specification but from the
-		 * test specification */
-		if( os_sys.int_nest_cnt != 0 ) {
-			rv =  E_OS_CALLEVEL;
-			goto err;
+	/* Test specification say return CALLEVEL if in ISR
+	 * but impl. spec says otherwise */
+	if( os_sys.int_nest_cnt == 0 ) {
+		if( os_sys.curr_pcb->state & ST_RUNNING ) {
+			*TaskID = os_sys.curr_pcb->pid;
+		} else {
+			/* This is not a real error since this could
+			 * be the case when called from ErrorHook */
 		}
 	}
-err:
-    os_error.serviceId= OSServiceId_GetTaskID;
-    os_error.param1 = (uint32_t)TaskID;
+
     return rv;
 }
 
@@ -730,7 +725,6 @@ StatusType ChainTask( TaskType TaskId ) {
 	if( os_sys.int_nest_cnt != 0 ) {
 		/* extended */
 		rv = E_OS_CALLEVEL;
-		Irq_Restore(flags);
 		goto err;
 	}
 

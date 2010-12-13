@@ -597,7 +597,11 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
   CAN_InitStructure.CAN_NART=DISABLE;
   CAN_InitStructure.CAN_RFLM=DISABLE;
   CAN_InitStructure.CAN_TXFP=DISABLE;
-  CAN_InitStructure.CAN_Mode=CAN_Mode_Normal;//CAN_Mode_LoopBack;
+  if(config->Can_Arc_Loopback){
+	  CAN_InitStructure.CAN_Mode=CAN_Mode_LoopBack;
+  }else{
+	  CAN_InitStructure.CAN_Mode=CAN_Mode_Normal;
+  }
 
   CAN_InitStructure.CAN_SJW=config->CanControllerPropSeg;
   CAN_InitStructure.CAN_BS1=config->CanControllerSeg1;

@@ -102,8 +102,8 @@ TODO:
  *
  */
 
-#define valid_standard_id() (rPtr->nr < Os_CfgGetResourceCnt()) //&& !(rPtr->type == RESOURCE_TYPE_INTERNAL) )
-#define valid_internal_id() (rPtr->nr < Os_CfgGetResourceCnt()) //&& (rPtr->type == RESOURCE_TYPE_INTERNAL) )
+#define valid_standard_id() (rPtr->nr < OS_RESOURCE_CNT) //&& !(rPtr->type == RESOURCE_TYPE_INTERNAL) )
+#define valid_internal_id() (rPtr->nr < OS_RESOURCE_CNT) //&& (rPtr->type == RESOURCE_TYPE_INTERNAL) )
 
 
 void Os_ResourceAlloc( OsResourceType *rPtr, OsPcbType *pcbPtr) {
@@ -318,11 +318,11 @@ void Os_ResourceInit( void ) {
 	 *
 	 * Note that this applies both internal and standard resources.
 	 * */
-	for( int i=0; i < Os_CfgGetResourceCnt(); i++) {
+	for( int i=0; i < OS_RESOURCE_CNT; i++) {
 		rsrc_p = Os_CfgGetResource(i);
 		topPrio = 0;
 
-		for( int pi = 0; pi < Os_CfgGetTaskCnt(); pi++) {
+		for( int pi = 0; pi < OS_TASK_CNT; pi++) {
 
 			pcb_p = os_get_pcb(pi);
 

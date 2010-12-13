@@ -28,9 +28,6 @@ void Irq_Init( void ) {
 
 }
 
-void Irq_EOI( void ) {
-
-}
 
 // IRQ debug information
 // Stores irq nr on erroneous interrupt
@@ -50,7 +47,8 @@ void bad_irq(uint8_t irq_nr, void **stack) {
 	bad_irq_context_bank = (bank_and_ccr & 0xFF00) >> 8;
 	bad_irq_context_address = *(stack + 8);
 
-	for (;;);
+	for (;;)
+	  asm("BGND"); // Jump to debugger
 }
 
 void *Irq_Entry( uint8_t irq_nr, void *stack )
@@ -112,7 +110,15 @@ void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
  * @param vector
  */
 void Irq_GenerateSoftInt( IrqType vector ) {
-	(void)vector;
+	if (vector == IRQ_TYPE_SWI)
+	{
+	    asm("swi");
+	}
+
+	if (vector == IRQ_TYPE_ILLEGAL)
+	{
+            asm(".short 0x1830"); // Trap instruction
+	}
 }
 
 /**

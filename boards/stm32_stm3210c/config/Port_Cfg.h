@@ -13,11 +13,17 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** @addtogroup Port Port Driver
+ *  @{ */
+
+/** @file Port_Cfg.h
+ *  Definitions of configuration parameters for Port Driver.
+ */
+
 #ifndef PORT_CFG_H_
 #define PORT_CFG_H_
 
 #include "Std_Types.h"
-#include "stm32f10x_gpio.h"
 
 /** Build version info API */
 #define PORT_VERSION_INFO_API				STD_ON  /** @req PORT100 PORT101 */
@@ -26,33 +32,88 @@
 /** Build change pin direction API */
 #define PORT_SET_PIN_DIRECTION_API	        STD_ON
 /** Allow Pin mode changes during runtime (not avail on this CPU) */
-#define PORT_SET_PIN_MODE_API               STD_ON
+#define PORT_SET_PIN_MODE_API               STD_OFF
 
-/** HW specific symbolic names of pins */
-/** @req PORT013 */
-typedef enum{
-	PIN1,
-} Port_PinType;
+#define GPIO_INPUT_MODE           (0)
+#define GPIO_OUTPUT_10MHz_MODE    (1)
+#define GPIO_OUTPUT_2MHz_MODE     (2)
+#define GPIO_OUTPUT_50MHz_MODE    (3)
 
-/* Configuration of one specific port */
-typedef struct {
-	uint16_t pinCount;
-	GPIO_TypeDef *port;
-  const GPIO_InitTypeDef pins[];
+/* Valid for input modes. */
+#define GPIO_ANALOG_INPUT_CNF     (0 << 2)
+#define GPIO_FLOATING_INPUT_CNF   (1 << 2)
+#define GPIO_INPUT_PULLUP_CNF     (2 << 2)
+#define GPIO_RESERVED_CNF         (3 << 2)
 
-} Port_PortConfigType;
+/* Valid for output modes. */
+#define GPIO_OUTPUT_PUSHPULL_CNF  (0 << 2)
+#define GPIO_OUTPUT_OPENDRAIN_CNF (1 << 2)
+#define GPIO_ALT_PUSHPULL_CNF     (2 << 2)
+#define GPIO_ALT_OPENDRAIN_CNF    (3 << 2)
+
+#define GPIO_OUTPUT_LOW           (0)
+#define GPIO_OUTPUT_HIGH          (1)
+
+typedef struct
+{
+  uint8_t GpioPinCnfMode_0:4;
+  uint8_t GpioPinCnfMode_1:4;
+  uint8_t GpioPinCnfMode_2:4;
+  uint8_t GpioPinCnfMode_3:4;
+  uint8_t GpioPinCnfMode_4:4;
+  uint8_t GpioPinCnfMode_5:4;
+  uint8_t GpioPinCnfMode_6:4;
+  uint8_t GpioPinCnfMode_7:4;
+  uint8_t GpioPinCnfMode_8:4;
+  uint8_t GpioPinCnfMode_9:4;
+  uint8_t GpioPinCnfMode_10:4;
+  uint8_t GpioPinCnfMode_11:4;
+  uint8_t GpioPinCnfMode_12:4;
+  uint8_t GpioPinCnfMode_13:4;
+  uint8_t GpioPinCnfMode_14:4;
+  uint8_t GpioPinCnfMode_15:4;
+}GpioPinCnfMode_Type;
+
+typedef struct
+{
+  uint8_t GpioPinOutLevel_0:1;
+  uint8_t GpioPinOutLevel_1:1;
+  uint8_t GpioPinOutLevel_2:1;
+  uint8_t GpioPinOutLevel_3:1;
+  uint8_t GpioPinOutLevel_4:1;
+  uint8_t GpioPinOutLevel_5:1;
+  uint8_t GpioPinOutLevel_6:1;
+  uint8_t GpioPinOutLevel_7:1;
+  uint8_t GpioPinOutLevel_8:1;
+  uint8_t GpioPinOutLevel_9:1;
+  uint8_t GpioPinOutLevel_10:1;
+  uint8_t GpioPinOutLevel_11:1;
+  uint8_t GpioPinOutLevel_12:1;
+  uint8_t GpioPinOutLevel_13:1;
+  uint8_t GpioPinOutLevel_14:1;
+  uint8_t GpioPinOutLevel_15:1;
+}GpioPinOutLevel_Type;
+
+/* To be compatible with Port.h */
+typedef uint8_t Port_PinType;
 
 /** Top level configuration container */
-/** @req PORT073 */
-typedef struct {
+typedef struct
+{
+  /** Total number of pins */
+  uint16_t padCnt;
+  /** List of pin configurations */
+  const GpioPinCnfMode_Type *padConfig;
+  const GpioPinOutLevel_Type *outConfig;
+  /** Total number of pin default levels */
+
   uint16_t remapCount;
   const uint32_t* remaps;
 
-  uint16_t portCount;
-  const Port_PortConfigType* ports[];
 } Port_ConfigType;
 
 /** Instance of the top level configuration container */
 extern const Port_ConfigType PortConfigData;
 
 #endif /*PORT_CFG_H_*/
+/** @} */

@@ -31,7 +31,7 @@ endef
 $(foreach mod,$(MOD_AVAIL),$(eval $(call MOD_AVAIL_template,${mod})))
 $(foreach mod,$(MOD_USE),$(eval $(call MOD_USE_template,${mod})))
 $(foreach mod,$(CFG),$(eval $(call CFG_template,${mod})))
-def-y += $(ARCH) $(ARCH_FAM) $(ARCH_MCU) 
+#def-y += $(ARCH) $(ARCH_FAM) $(ARCH_MCU) 
 
 # Select console / debug
 $(foreach mod,$(SELECT_OS_CONSOLE),$(eval $(call MOD_USE_template,${mod})))
@@ -63,6 +63,14 @@ ifneq ($(ARCH),)
 include $(ROOTDIR)/$(ARCH_PATH-y)/scripts/gcc.mk
 endif
 include $(ROOTDIR)/scripts/cc_$(COMPILER).mk
+ifneq ($(PCLINT),)
+include $(ROOTDIR)/scripts/cc_pclint.mk
+endif
+ifneq ($(SPLINT),)
+include $(ROOTDIR)/scripts/cc_splint.mk
+endif
+
+
 
 # Get object files
 include ../makefile
@@ -128,22 +136,35 @@ inc-y += ../include
 -include $(subst .h,.d,$(dep-y))
 
 #LINT:
-inc-y += /C/lint/lnt #LINT: To run PC-lint
+LINT_EXCLUDE ?= arc-tests
 
-abs-inc-y = $(abspath $(inc-y))
+ifneq ($(PCLINT),)
+define run_pclint
+$(if 
+$(findstring $(LINT_EXCLUDE),$(abspath $<)),
+$(info $(abspath $<):0:0: Info: Not running lint check on $(abspath $<)),
+$(Q)$(PCLINT) $(lint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y)) $(abspath $<))
+endef
+endif
 
-#LINT:
-lint_exclude_path := arc-tests
+ifneq ($(SPLINT),)
+define run_splint
+$(if 
+$(findstring $(LINT_EXCLUDE),$(abspath $<)),
+$(info $(abspath $<):0:0: Info: Not running lint check on $(abspath $<)),
+$(Q)$(SPLINT) $(splint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y)) $(abspath $<))
+endef
+endif
+
 
 # Compile
 %.o: %.c
 	@echo "  >> CC $(notdir $<)"
-# LINT: if path does not include "lint_exclude_path" then run PC-lint to check MISRA C standard
-ifeq ($(ENABLE_PCLINT), y)
-	$(if $(findstring $(lint_exclude_path),$(abspath $<)),$(info $(abspath $<):0:0: Info: Not running lint MISRA check on $(abspath $<)),/C/lint/Lint-nt +v $(addprefix -i,$(abs-inc-y)) /C/lint/std.lnt  $(abspath $<))
-endif
 # compile
 	$(Q)$(CC) -c $(CFLAGS) -o $(goal) $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
+# run lint if enabled
+	$(run_pclint)
+	$(run_splint)
 
 # Assembler
 

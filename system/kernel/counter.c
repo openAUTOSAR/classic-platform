@@ -46,7 +46,7 @@ static inline struct OsScheduleTableSync *getSync( OsSchTblType *stblPtr ) {
 #endif
 
 
-#define IsCounterValid(_counterId)   ((_counterId) <= Os_CfgGetCounterCnt())
+#define IsCounterValid(_counterId)   ((_counterId) <= OS_COUNTER_CNT)
 
 /**
  *
@@ -72,7 +72,7 @@ StatusType IncrementCounter( CounterType counter_id ) {
 	/* Check param */
 	/** @req OS285 */
 	if( ( cPtr->type != COUNTER_TYPE_SOFT ) ||
-		( counter_id >= Os_CfgGetCounterCnt() ) ) {
+		( counter_id >= OS_COUNTER_CNT ) ) {
 		rv =  E_OS_ID;
 		Irq_Restore(flags);
 		goto err;
@@ -81,8 +81,12 @@ StatusType IncrementCounter( CounterType counter_id ) {
 	/** @req OS286 */
 	cPtr->val = Os_CounterAdd( cPtr->val, Os_CounterGetMaxValue(cPtr), 1 );
 
+#if OS_ALARM_CNT!=0
 	Os_AlarmCheck(cPtr);
+#endif
+#if OS_SCHTBL_CNT!=0
 	Os_SchTblCheck(cPtr);
+#endif
 
 	Irq_Restore(flags);
 
@@ -193,9 +197,12 @@ void OsTick( void ) {
 		cPtr->val = Os_CounterAdd( cPtr->val, Os_CounterGetMaxValue(cPtr), 1 );
 
 	//	os_sys.tick = cPtr->val;
-
+#if OS_ALARM_CNT!=0
 		Os_AlarmCheck(cPtr);
+#endif
+#if OS_SCHTBL_CNT!=0
 		Os_SchTblCheck(cPtr);
+#endif
 	}
 }
 
@@ -208,23 +215,33 @@ TickType GetOsTick( void ) {
  * Initialize alarms and schedule-tables for the counters
  */
 void Os_CounterInit( void ) {
-	OsCounterType *cPtr;
-	OsAlarmType *aPtr;
-	OsSchTblType *sPtr;
+#if OS_ALARM_CNT!=0
+	{
+		OsCounterType *cPtr;
+		OsAlarmType *aPtr;
 
-	/* Add the alarms to counters */
-	for(int i=0; i < Os_CfgGetAlarmCnt(); i++ ) {
-		aPtr = Os_CfgGetAlarmObj(i);
-		cPtr = aPtr->counter;
-		SLIST_INSERT_HEAD(&cPtr->alarm_head,aPtr, alarm_list);
+		/* Add the alarms to counters */
+		for (int i = 0; i < OS_ALARM_CNT; i++) {
+			aPtr = Os_CfgGetAlarmObj(i);
+			cPtr = aPtr->counter;
+			SLIST_INSERT_HEAD(&cPtr->alarm_head, aPtr, alarm_list);
+		}
 	}
+#endif
 
-	/* Add the schedule tables to counters */
-	for(int i=0; i < Os_CfgGetSchedCnt(); i++ ) {
+#if OS_SCHTBL_CNT!=0
+	{
+		OsCounterType *cPtr;
+		OsSchTblType *sPtr;
 
-		sPtr = Os_CfgGetSched(i);
-		cPtr = sPtr->counter;
-		SLIST_INSERT_HEAD(&cPtr->sched_head, sPtr, sched_list);
+		/* Add the schedule tables to counters */
+		for(int i=0; i < OS_SCHTBL_CNT; i++ ) {
+
+			sPtr = Os_CfgGetSched(i);
+			cPtr = sPtr->counter;
+			SLIST_INSERT_HEAD(&cPtr->sched_head, sPtr, sched_list);
+		}
 	}
+#endif
 }
 
