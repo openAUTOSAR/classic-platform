@@ -383,7 +383,7 @@ static Std_ReturnType StartProtocolHelper(Dcm_ProtocolType protocolId) {
 static boolean isTesterPresentCommand(const PduInfoType *rxPdu) {
 	boolean ret = FALSE;
 	if ((rxPdu->SduDataPtr[0] == SID_TESTER_PRESENT) && (rxPdu->SduDataPtr[1] & SUPPRESS_POS_RESP_BIT)) {
-		return TRUE;
+		ret = TRUE;
 	}
 	return ret;
 }
@@ -420,7 +420,6 @@ void DslMain(void) {
 	const Dcm_DslProtocolRowType *protocolRowEntry = NULL;
 	const Dcm_DslProtocolTimingRowType *timeParams = NULL;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
-	int debug_count = 0;
 
 	protocolRowEntry = DCM_Config.Dsl->DslProtocol->DslProtocolRowList;
 	while (protocolRowEntry->Arc_EOL == FALSE) {
@@ -499,7 +498,6 @@ void DslMain(void) {
 			}
 		}
 		protocolRowEntry++;
-		debug_count++;
 	}
 }
 

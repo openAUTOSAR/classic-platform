@@ -13,7 +13,8 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
+// 904 PC-Lint: OK. Allow VALIDATE, VALIDATE_RV and VALIDATE_NO_RV to return value.
+//lint -emacro(904,VALIDATE_RV,VALIDATE_NO_RV,VALIDATE)
 
 
 
@@ -200,17 +201,15 @@ void demZeroPriMemBuffers(void) // 957 PC-Lint (MISRA 8.1): OK. Used only by Dem
 static ChecksumType calcChecksum(void *data, uint16 nrOfBytes)
 {
 	uint16 i;
-	uint8 *ptr = (uint8*)data;
+	uint8 *byte = (uint8*)data;
 	ChecksumType sum = 0;
 
 	for (i = 0; i < nrOfBytes; i++) {
-		sum += *ptr;
-		ptr++;
+		sum += byte[i];
 	}
 	sum ^= 0xaaaau;
 	return sum;
 }
-
 
 /*
  * Procedure:	checkDtcKind
@@ -283,6 +282,8 @@ static boolean checkDtcOrigin(Dem_DTCOriginType dtcOrigin, const Dem_EventParame
  * Procedure:	checkDtcSeverityMask
  * Description:	Return TRUE if "dtcSeverityMask" match any of the events DTC severity otherwise FALSE.
  */
+// PC-Lint (715 etc): Remove errors until function is filled.
+//lint -save -e*
 static boolean checkDtcSeverityMask(Dem_DTCSeverityType dtcSeverityMask, const Dem_EventParameterType *eventParam)
 {
 	boolean result = TRUE;
@@ -291,12 +292,15 @@ static boolean checkDtcSeverityMask(Dem_DTCSeverityType dtcSeverityMask, const D
 
 	return result;
 }
+//lint -restore
 
 
 /*
  * Procedure:	checkDtcFaultDetectionCounterMask
  * Description:	TBD.
  */
+// PC-Lint (715 etc): Remove errors until function is filled.
+//lint -save -e*
 static boolean checkDtcFaultDetectionCounter(const Dem_EventParameterType *eventParam)
 {
 	boolean result = TRUE;
@@ -305,7 +309,7 @@ static boolean checkDtcFaultDetectionCounter(const Dem_EventParameterType *event
 
 	return result;
 }
-
+//lint -restore
 
 /*
  * Procedure:	lookupEventStatusRec
@@ -336,15 +340,16 @@ static void lookupEventStatusRec(Dem_EventIdType eventId, EventStatusRecType **c
  */
 static void lookupEventIdParameter(Dem_EventIdType eventId, const Dem_EventParameterType **const eventIdParam)
 {
-	const Dem_EventParameterType *EventIdParamPtr = configSet->EventParameter;
+	const Dem_EventParameterType *EventIdParamList = configSet->EventParameter;
 
 	// Lookup the correct event id parameters
-	while ((EventIdParamPtr->EventID != eventId) && (!EventIdParamPtr->Arc_EOL)) {
-		EventIdParamPtr++;
+	uint16 i=0;
+	while ((EventIdParamList[i].EventID != eventId) && (!EventIdParamList[i].Arc_EOL)) {
+		i++;
 	}
 
-	if (!EventIdParamPtr->Arc_EOL) {
-		*eventIdParam = EventIdParamPtr;
+	if (!EventIdParamList[i].Arc_EOL) {
+		*eventIdParam = &EventIdParamList[i];
 	} else {
 		*eventIdParam = NULL;
 	}
@@ -357,6 +362,7 @@ static void lookupEventIdParameter(Dem_EventIdType eventId, const Dem_EventParam
  */
 static Dem_EventStatusType preDebounceNone(const Dem_EventStatusType reportedStatus, const EventStatusRecType* statusRecord) {
 	Dem_EventStatusType returnCode;
+	(void)statusRecord;		// Just to get rid of PC-Lint warnings
 
 	switch (reportedStatus) {
 	case DEM_EVENT_STATUS_FAILED: /** @req DEM091.NoneFailed */
@@ -372,7 +378,7 @@ static Dem_EventStatusType preDebounceNone(const Dem_EventStatusType reportedSta
 
 	returnCode = reportedStatus;
 	return returnCode;
-}// 715 PC-Lint: OK. It is OK that StatusRecord is not used.
+}
 
 
 /*
@@ -684,24 +690,30 @@ static boolean matchEventWithDtcFilter(const EventStatusRecType *eventRec)
 }
 
 
+// PC-Lint (715 etc): Remove errors until function is filled.
+//lint -save -e*
 static void getFreezeFrameData(const Dem_EventParameterType *eventParam, FreezeFrameRecType *freezeFrame)
 {
 	// TODO: Fill out
 	freezeFrame->eventId = DEM_EVENT_ID_NULL;	// Not supported yet
 }
+//lint -restore
 
-
+// PC-Lint (715 etc): Remove errors until function is filled.
+//lint -save -e*
 static void storeFreezeFrameDataPreInit(const Dem_EventParameterType *eventParam, const FreezeFrameRecType *freezeFrame)
 {
 	// TODO: Fill out
 }
+//lint -restore
 
-
+// PC-Lint (715 etc): Remove errors until function is filled.
+//lint -save -e*
 static void updateFreezeFrameOccurrencePreInit(const EventRecType *EventBuffer)
 {
 	// TODO: Fill out
 }
-
+//lint -restore  // PC-lint: Restore to original error-setting.
 
 /*
  * Procedure:	getExtendedData
@@ -819,7 +831,6 @@ static void storeEventPriMem(const Dem_EventParameterType *eventParam, const Eve
 	}
 	else {
 		// Search for free position
-		//for (i=0; (priMemEventBuffer[i].eventId != DEM_EVENT_ID_NULL) && (i < DEM_MAX_NUMBER_EVENT_ENTRY_PRI); i++);
 		for (i=0; (i < DEM_MAX_NUMBER_EVENT_ENTRY_PRI) && (!eventIdFreePositionFound); i++){
 			eventIdFreePositionFound = (priMemEventBuffer[i].eventId == DEM_EVENT_ID_NULL);
 		}
@@ -1035,16 +1046,21 @@ static boolean lookupExtendedDataPriMem(Dem_EventIdType eventId, ExtDataRecType 
 	return eventIdFound;
 }
 
+// PC-Lint (715 etc): Remove errors until function is filled.
+//lint -save -e*
 static void storeFreezeFrameDataPriMem(const Dem_EventParameterType *eventParam, const FreezeFrameRecType *freezeFrame)
 {
 	// TODO: Fill out
 }
+//lint -restore
 
-
+// PC-Lint (715 etc): Remove errors until function is filled.
+//lint -save -e*
 static void deleteFreezeFrameDataPriMem(const Dem_EventParameterType *eventParam)
 {
 	// TODO: Fill out
 }
+//lint -restore
 
 
 /*
@@ -2009,7 +2025,7 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
 			if (eventId != DEM_EVENT_ID_NULL) {
 				eventParam = eventStatusBuffer[i].eventParamRef;
 				if (eventParam != NULL) {
-					if (DEM_CLEAR_ALL_EVENTS || (eventParam->DTCClassRef != NULL)) {
+					if ((DEM_CLEAR_ALL_EVENTS == STD_ON) || (eventParam->DTCClassRef != NULL)) {
 						if (checkDtcKind(dtcKind, eventParam)) {
 							if (checkDtcGroup(dtc, eventParam)) {
 								boolean dtcOriginFound = FALSE;
@@ -2102,6 +2118,7 @@ Dem_ReturnControlDTCStorageType Dem_EnableDTCStorage(Dem_DTCGroupType dtcGroup, 
 
 	if (demState == DEM_INITIALIZED) {
 		// TODO: Behavior is not defined if group or kind do not match active settings, therefore the filter is just switched off.
+		(void)dtcGroup; (void)dtcKind;	// Just to make get rid of PC-Lint warnings
 		disableDtcStorage.storageDisabled = FALSE; /** @req DEM080 */
 	} else {
 		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_ENABLEDTCSTORAGE_ID, DEM_E_UNINIT);

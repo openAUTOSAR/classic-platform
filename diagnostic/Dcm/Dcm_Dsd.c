@@ -47,7 +47,7 @@ static boolean	suppressPosRspMsg;
  */
 
 
-static boolean askApplicationForServicePermission(uint8 *requestData, uint16 dataSize)
+static Std_ReturnType askApplicationForServicePermission(uint8 *requestData, uint16 dataSize)
 {
 	Std_ReturnType returnCode = E_OK;
 	const Dcm_DslServiceRequestIndicationType *serviceRequestIndication = DCM_Config.Dsl->DslServiceRequestIndication;
@@ -188,15 +188,17 @@ void DsdHandleRequest(void)
 	currentSid = msgData.pduRxData->SduDataPtr[0];	/** @req DCM198 */
 
 	/** @req DCM178 */
-	if (DCM_RESPOND_ALL_REQUEST || ((currentSid & 0x7Fu) < 0x40)) {		/** @req DCM084 */
+	if ((DCM_RESPOND_ALL_REQUEST == STD_ON) || ((currentSid & 0x7Fu) < 0x40)) {		/** @req DCM084 */
 		if (lookupSid(currentSid, &sidConfPtr)) {		/** @req DCM192 */ /** @req DCM193 */ /** @req DCM196 */
 			// SID found!
 			if (DspCheckSessionLevel(sidConfPtr->DsdSidTabSessionLevelRef)) {		 /** @req DCM211 */
 				if (DspCheckSecurityLevel(sidConfPtr->DsdSidTabSecurityLevelRef)) {	 /** @req DCM217 */
-					if (DCM_REQUEST_INDICATION_ENABLED) {	 /** @req DCM218 */
+					if (DCM_REQUEST_INDICATION_ENABLED == STD_ON) {	 /** @req DCM218 */
 						 result = askApplicationForServicePermission(msgData.pduRxData->SduDataPtr, msgData.pduRxData->SduLength);
+					} else {
+						result = E_OK;
 					}
-					if ((!DCM_REQUEST_INDICATION_ENABLED) || (result == E_OK)) {
+					if (result == E_OK) {
 						// Yes! All conditions met!
 						// Check if response shall be suppressed
 						if ( (sidConfPtr->DsdSidTabSubfuncAvail) && (msgData.pduRxData->SduDataPtr[1] & SUPPRESS_POS_RESP_BIT) ) {	/** @req DCM204 */
@@ -236,6 +238,7 @@ void DsdHandleRequest(void)
 		DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_SUPPRESSED);
 	}
 }
+
 
 
 void DsdDspProcessingDone(Dcm_NegativeResponseCodeType responseCode)

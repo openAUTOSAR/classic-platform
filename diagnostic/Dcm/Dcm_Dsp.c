@@ -117,10 +117,14 @@ static Std_ReturnType askApplicationForSessionPermission(Dcm_SesCtrlType newSess
 
 	while ( (!sesControl->Arc_EOL) && (returnCode != E_SESSION_NOT_ALLOWED)) {
 		if (sesControl->GetSesChgPermission != NULL) {
-			Dcm_GetSesCtrlType(&currentSessionLevel);
-			result = sesControl->GetSesChgPermission(currentSessionLevel ,newSessionLevel);
-			if (result != E_OK) {
-				returnCode = result;
+			result = Dcm_GetSesCtrlType(&currentSessionLevel);
+			if (result == E_OK) {
+				result = sesControl->GetSesChgPermission(currentSessionLevel ,newSessionLevel);
+				if (result != E_OK) {
+					returnCode = result;
+				}
+			} else {
+				returnCode = E_NOT_OK;
 			}
 		}
 		sesControl++;
@@ -274,21 +278,31 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x01_0x07_0x11_0x12(const 
 	}
 
 	if (setDtcFilterResult == DEM_FILTER_ACCEPTED) {
+		Std_ReturnType result;
+		Dem_ReturnGetNumberOfFilteredDTCType getNumerResult;
 		uint16 numberOfFilteredDtc;
 		uint8 dtcStatusMask;
 		TxDataType *txData = (TxDataType*)pduTxData->SduDataPtr;
 
 		/** @req DCM376 */
-		Dem_GetNumberOfFilteredDtc(&numberOfFilteredDtc);
-		Dem_GetDTCStatusAvailabilityMask(&dtcStatusMask);
+		getNumerResult = Dem_GetNumberOfFilteredDtc(&numberOfFilteredDtc);
+		if (getNumerResult == DEM_NUMBER_OK) {
+			result = Dem_GetDTCStatusAvailabilityMask(&dtcStatusMask);
+			if (result != E_OK) {
+				dtcStatusMask = 0;
+			}
 
-		// Create positive response (ISO 14229-1 table 251)
-		txData->reportType = pduRxData->SduDataPtr[1];						// reportType
-		txData->dtcStatusAvailabilityMask = dtcStatusMask;					// DTCStatusAvailabilityMask
-		txData->dtcFormatIdentifier = Dem_GetTranslationType();				// DTCFormatIdentifier
-		txData->dtcCountHighByte = (numberOfFilteredDtc >> 8);				// DTCCount high byte
-		txData->dtcCountLowByte = (numberOfFilteredDtc & 0xFFu);				// DTCCount low byte
-		pduTxData->SduLength = 6;
+			// Create positive response (ISO 14229-1 table 251)
+			txData->reportType = pduRxData->SduDataPtr[1];						// reportType
+			txData->dtcStatusAvailabilityMask = dtcStatusMask;					// DTCStatusAvailabilityMask
+			txData->dtcFormatIdentifier = Dem_GetTranslationType();				// DTCFormatIdentifier
+			txData->dtcCountHighByte = (numberOfFilteredDtc >> 8);				// DTCCount high byte
+			txData->dtcCountLowByte = (numberOfFilteredDtc & 0xFFu);			// DTCCount low byte
+			pduTxData->SduLength = 6;
+		} else {
+			// TODO: What to do?
+			responseCode = DCM_E_GENERALREJECT;
+		}
 	}
 	else {
 		responseCode = DCM_E_REQUESTOUTOFRANGE;
@@ -352,9 +366,13 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15(c
 		uint32 dtc;
 		Dem_EventStatusExtendedType dtcStatus;
 		uint16 nrOfDtcs = 0;
+		Std_ReturnType result;
 
 		/** @req DCM377 */
-		Dem_GetDTCStatusAvailabilityMask(&dtcStatusMask);
+		result = Dem_GetDTCStatusAvailabilityMask(&dtcStatusMask);
+		if (result != E_OK) {
+			dtcStatusMask = 0;
+		}
 
 		// Create positive response (ISO 14229-1 table 252)
 		txData->reportType = pduRxData->SduDataPtr[1];
@@ -384,7 +402,8 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15(c
 	return responseCode;
 }
 
-
+// PC-Lint (715 etc): Remove errors until function is filled.
+//lint -save -e*
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x08(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -394,8 +413,11 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x08(const PduInfoType *pd
 
 	return responseCode;
 }
+//lint -restore
 
 
+// PC-Lint (715 etc): Remove errors until function is filled.
+//lint -save -e*
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x09(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -405,6 +427,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x09(const PduInfoType *pd
 
 	return responseCode;
 }
+//lint -restore
 
 
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x06_0x10(const PduInfoType *pduRxData, PduInfoType *pduTxData)
@@ -494,6 +517,8 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x06_0x10(const PduInfoTyp
 }
 
 
+// PC-Lint (715 etc): Remove errors until function is filled.
+//lint -save -e*
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x03(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -503,8 +528,11 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x03(const PduInfoType *pd
 
 	return responseCode;
 }
+//lint -restore
 
 
+// PC-Lint (715 etc): Remove errors until function is filled.
+//lint -save -e*
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x04(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -514,8 +542,11 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x04(const PduInfoType *pd
 
 	return responseCode;
 }
+//lint -restore
 
 
+// PC-Lint (715 etc): Remove errors until function is filled.
+//lint -save -e*
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x05(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -525,8 +556,11 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x05(const PduInfoType *pd
 
 	return responseCode;
 }
+//lint -restore
 
 
+// PC-Lint (715 etc): Remove errors until function is filled.
+//lint -save -e*
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x0B_0x0C_0x0D_0x0E(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -536,8 +570,11 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x0B_0x0C_0x0D_0x0E(const 
 
 	return responseCode;
 }
+//lint -restore
 
 
+// PC-Lint (715 etc): Remove errors until function is filled.
+//lint -save -e*
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x14(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -547,6 +584,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x14(const PduInfoType *pd
 
 	return responseCode;
 }
+//lint -restore
 
 
 void DspUdsReadDtcInformation(const PduInfoType *pduRxData, PduInfoType *pduTxData)
@@ -664,7 +702,7 @@ static Dcm_NegativeResponseCodeType readDidData(const Dcm_DspDidType *didPtr, Pd
 				Dcm_NegativeResponseCodeType errorCode;
 				result = didPtr->DspDidConditionCheckReadFnc(&errorCode);
 				if ((result == E_OK) && (errorCode == DCM_E_POSITIVERESPONSE)) {	/** @req DCM439 */
-					uint16 didLen;
+					uint16 didLen = 0;
 					result = E_NOT_OK;
 					if (didPtr->DspDidInfoRef->DspDidFixedLength) {	/** @req DCM436 */
 						didLen = didPtr->DspDidSize;
@@ -740,7 +778,7 @@ void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTx
 		nrOfDids = (pduRxData->SduLength - 1) / 2;
 
 		for (i = 0; (i < nrOfDids) && (responseCode == DCM_E_POSITIVERESPONSE); i++) {
-			didNr = (uint16)((uint16)pduRxData->SduDataPtr[1+(i*2)] << 8);// + pduRxData->SduDataPtr[2+(i*2)];
+			didNr = (uint16)((uint16)pduRxData->SduDataPtr[1+(i*2)] << 8) + pduRxData->SduDataPtr[2+(i*2)];
 			if (lookupDid(didNr, &didPtr)) {	/** @req DCM438 */
 				responseCode = readDidData(didPtr, pduTxData, &txPos);
 			}
@@ -837,7 +875,7 @@ static Dcm_NegativeResponseCodeType writeDidData(const Dcm_DspDidType *didPtr, c
 				Dcm_NegativeResponseCodeType errorCode;
 				result = didPtr->DspDidConditionCheckWriteFnc(&errorCode);	/** @req DCM471 */
 				if ((result == E_OK) && (errorCode == DCM_E_POSITIVERESPONSE)) {
-					uint16 didLen;
+					uint16 didLen = 0;
 					result = E_NOT_OK;
 					if (didPtr->DspDidInfoRef->DspDidFixedLength) {	/** @req DCM472 */
 						didLen = didPtr->DspDidSize;
@@ -846,8 +884,7 @@ static Dcm_NegativeResponseCodeType writeDidData(const Dcm_DspDidType *didPtr, c
 					else {
 						if (didPtr->DspDidReadDataLengthFnc != NULL) {
 							result = didPtr->DspDidReadDataLengthFnc(&didLen);
-						}
-					}
+						}					}
 
 					if (result == E_OK) {
 						if (didLen == writeDidLen) {	/** @req DCM473 */
@@ -933,35 +970,41 @@ void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 				// Check length
 				if (pduRxData->SduLength == (2 + securityRow->DspSecurityADRSize)) {	/** @req DCM321.RequestSeed */
 					Dcm_SecLevelType activeSecLevel;
-					Dcm_GetSecurityLevel(&activeSecLevel);
-					if (requestedSecurityLevel == activeSecLevel) {		/** @req DCM323 */
-						pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];
-						// If same level set the seed to zeroes
-						memset(&pduTxData->SduDataPtr[2], 0, securityRow->DspSecuritySeedSize);
-						pduTxData->SduLength = 2 + securityRow->DspSecuritySeedSize;
-					}
-					else {
-						// New security level ask for seed
-						if (securityRow->GetSeed != NULL) {
-							Std_ReturnType getSeedResult;
-							getSeedResult = securityRow->GetSeed(&pduRxData->SduDataPtr[2], &pduTxData->SduDataPtr[2], &getSeedErrorCode); /** @req DCM324.RequestSeed */
-							if ((getSeedResult == E_OK) && (getSeedErrorCode == E_OK)) {
-								// Everything ok add sub function to tx message and send it.
-								pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];
-								pduTxData->SduLength = 2 + securityRow->DspSecuritySeedSize;
+					Std_ReturnType result;
+					result = Dcm_GetSecurityLevel(&activeSecLevel);
+					if (result == E_OK) {
+						if (requestedSecurityLevel == activeSecLevel) {		/** @req DCM323 */
+							pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];
+							// If same level set the seed to zeroes
+							memset(&pduTxData->SduDataPtr[2], 0, securityRow->DspSecuritySeedSize);
+							pduTxData->SduLength = 2 + securityRow->DspSecuritySeedSize;
+						} else {
+							// New security level ask for seed
+							if (securityRow->GetSeed != NULL) {
+								Std_ReturnType getSeedResult;
+								getSeedResult = securityRow->GetSeed(&pduRxData->SduDataPtr[2], &pduTxData->SduDataPtr[2], &getSeedErrorCode); /** @req DCM324.RequestSeed */
+								if ((getSeedResult == E_OK) && (getSeedErrorCode == E_OK)) {
+									// Everything ok add sub function to tx message and send it.
+									pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];
+									pduTxData->SduLength = 2 + securityRow->DspSecuritySeedSize;
 
-								dspUdsSecurityAccesData.reqSecLevel = requestedSecurityLevel;
-								dspUdsSecurityAccesData.reqSecLevelRef = securityRow;
-								dspUdsSecurityAccesData.reqInProgress = TRUE;
-							}
-							else {
-								// GetSeed returned not ok
+									dspUdsSecurityAccesData.reqSecLevel = requestedSecurityLevel;
+									dspUdsSecurityAccesData.reqSecLevelRef = securityRow;
+									dspUdsSecurityAccesData.reqInProgress = TRUE;
+								}
+								else {
+									// GetSeed returned not ok
+									responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+								}
+							} else {
 								responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
 							}
-						} else {
-							responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
 						}
+					} else {
+						// TODO: What to do?
+						responseCode = DCM_E_GENERALREJECT;
 					}
+
 				}
 				else {
 					// Length not ok
