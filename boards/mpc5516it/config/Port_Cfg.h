@@ -34,7 +34,7 @@
 /** Allow Pin mode changes during runtime */
 #define PORT_SET_PIN_MODE_API				STD_ON
 /** Build change pin direction API */
-#define PORT_SET_PIN_DIRECTION_API	STD_ON
+#define PORT_SET_PIN_DIRECTION_API			STD_ON
 
 /** HW specific symbolic names of pins */
 typedef enum
