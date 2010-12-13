@@ -144,7 +144,7 @@ P_PATH: EDIT "&cfg_project_path_g" ""
     	DEFBUTTON "Cancel" "jumpto win_close"
         CLOSE "jumpto win_close"
 )
-
+  dialog.set CPU "&cfg_cpu_g"
   stop
 save_close:
   &cfg_cpu_g=dialog.string(CPU)

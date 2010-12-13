@@ -71,15 +71,14 @@ IF !SIMULATOR()
 setup.var %SYMBOL.on %HEX.on %decimal.on %index.on %string.on
 setup.tabsize 2.
 
-menu.rp autosar.men
+menu.rp arccore.men
 
 winpos 0% 70% 50% 30%
 area
 
 area.select
-print "## Welcome to Arc-Core simulator environment for T32   ##"
+print "## Welcome to ArcCore simulator environment for T32   ##"
 print ""
-
 
 enddo
 

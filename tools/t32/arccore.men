@@ -119,7 +119,7 @@ ggg ggg gg  g g
 add
 menu
 (
-  popup "Autosar"
+  popup "ArcCore"
   (
     popup "&Breakpoint"
     (

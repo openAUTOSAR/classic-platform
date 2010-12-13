@@ -78,7 +78,11 @@ OsRomApplicationType *Os_CfgGetApplObj( ApplicationType application_id ) {
 /*-----------------------------------------------------------------*/
 
 OsResourceType *Os_CfgGetResource( ResourceType resource ) {
+#if OS_RESOURCE_CNT!=0
 	return &resource_list[resource];
+#else
+	return NULL;
+#endif
 }
 
 /*-----------------------------------------------------------------*/

@@ -127,7 +127,7 @@ typedef struct OsPcb {
 #endif
 	void 			(*entry)();
 	proc_type_t 	proc_type;
-	uint8			autostart:1;			// TASK
+	int 			autostart:1;			// TASK
 	OsStackType		stack;					// TASK
 
 	int				vector; 				// ISR
