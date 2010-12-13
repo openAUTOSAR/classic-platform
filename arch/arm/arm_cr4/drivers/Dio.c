@@ -150,8 +150,14 @@ void Dio_WriteChannel(Dio_ChannelType channelId, Dio_LevelType level)
 {
 	VALIDATE_CHANNEL(channelId, DIO_WRITECHANNEL_ID);
 
-	Dio_PortLevelType portVal = Dio_ReadPort(DIO_GET_PORT_FROM_CHANNEL_ID(channelId));
-	Dio_PortLevelType bit = DIO_GET_BIT_FROM_CHANNEL_ID(channelId);
+	Dio_PortType port = DIO_GET_PORT_FROM_CHANNEL_ID(channelId);
+	uint16 bit = DIO_GET_BIT_FROM_CHANNEL_ID(channelId);
+
+	if (!( GPIO_ports[port]->DIR & bit)) { // This is an input channel.
+		goto cleanup;
+	}
+
+	Dio_PortLevelType portVal = Dio_ReadPort(port);
 
 	if(level == STD_HIGH){
 		portVal |= bit;
@@ -159,7 +165,7 @@ void Dio_WriteChannel(Dio_ChannelType channelId, Dio_LevelType level)
 		portVal &= ~bit;
 	}
 
-	Dio_WritePort(DIO_GET_PORT_FROM_CHANNEL_ID(channelId), portVal);
+	Dio_WritePort(port, portVal);
 
 	cleanup: return;
 }

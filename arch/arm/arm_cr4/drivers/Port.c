@@ -79,7 +79,7 @@ static Port_RegisterType * const Port_Base[] =
 static Port_StateType _portState = PORT_UNINITIALIZED;
 static const Port_ConfigType * _configPtr = &PortConfigData;
 
-#if (PORT_DEV_ERROR_DETECT)
+#if PORT_DEV_ERROR_DETECT == STD_ON
 #define VALIDATE_PARAM_CONFIG(_ptr,_api) \
 	if( (_ptr)==((void *)0) ) { \
 		Det_ReportError(MODULE_ID_PORT, 0, _api, PORT_E_PARAM_CONFIG ); \
@@ -188,10 +188,10 @@ void Port_SetPinDirection( Port_PinType pin, Port_PinDirectionType direction )
 	uint32 mask = GET_PIN_MASK(pin);
 
 	if (direction & PORT_PIN_IN) {
-		Port_Base[port]->DIR &= ~mask;
+		Port_Base[port]->DIR |= mask;
 
 	} else {
-		Port_Base[port]->DIR |= mask;
+		Port_Base[port]->DIR &= ~mask;
 
 	}
 
@@ -201,11 +201,13 @@ cleanup:return;
 
 void Port_RefreshPortDirection( void )
 {
+	VALIDATE_STATE_INIT(PORT_REFRESH_PORT_DIRECTION_ID);
 	for (uint16 i = 0; i < PORT_NUMBER_OF_PINS; i++) {
 		if (!(_configPtr->pins[i].conf & PORT_DIRECTION_CHANGEABLE)) {
 			Port_RefreshPin(i);
 		}
 	}
+cleanup:return;
 }
 
 
@@ -220,11 +222,15 @@ void Port_GetVersionInfo(Std_VersionInfoType* versionInfo)
 
 #if (PORT_SET_PIN_MODE_API == STD_ON)
 void Port_SetPinMode(Port_PinType Pin, Port_PinModeType Mode) {
+	VALIDATE_STATE_INIT(PORT_SET_PIN_MODE_ID);
+	VALIDATE_PARAM_PIN(Pin, PORT_SET_PIN_MODE_ID);
+
 	uint8 port = GET_PIN_PORT(Pin);
 	uint8 pin = GET_PIN_PIN(Pin);
 	uint32 mask = GET_PIN_MASK(Pin);
 
     Port_Base[port]->FUN &= ~mask;
     Port_Base[port]->FUN |= ((Mode & 1) << pin);
+    cleanup: return;
 }
 #endif
