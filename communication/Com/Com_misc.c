@@ -104,8 +104,7 @@ void Com_ReadSignalDataFromPduBuffer(
 		// Swap source bytes before reading
 		// TODO: Must adapt to larger PDUs!
 		uint8 pduBufferBytes_swap[8];
-		int i = 0;
-		for (i = 0; i < 8; ++i) {
+		for (int i = 0; i < 8; ++i) {
 			pduBufferBytes_swap[i] = pduBufferBytes[7 - i];
 		}
 		startBitOffset = intelBitNrToPduOffset(bitPosition, bitSize, 64);
@@ -348,7 +347,7 @@ void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByteLength,
 				if (sourceByteNr == sourceByteLength) {			// if we are on the last source byte..
 					shiftReg |= sourceStartByteMask;		// ..we need to mask out stuff we don't want
 				}
-				shiftReg = ~(shiftReg);						// shifting inverted to shift in 1:s
+				shiftReg = (uint16)~(shiftReg);						// shifting inverted to shift in 1:s
 				shiftReg <<= 8;								// shift up (to match destination "byte space")
 				shiftReg = ~(shiftReg);
 				shiftReg >>= sourceAlignmentShift;				// shift down to align

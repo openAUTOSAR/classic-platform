@@ -196,11 +196,11 @@ void Com_Init(const Com_ConfigType *config ) {
 		}
 
 		// Configure per I-PDU based deadline monitoring.
-		for (int j = 0; IPdu->ComIPduSignalRef != NULL && IPdu->ComIPduSignalRef[j] != NULL; j++) {
+		for (int j = 0; (IPdu->ComIPduSignalRef != NULL) && (IPdu->ComIPduSignalRef[j] != NULL); j++) {
 			Signal = IPdu->ComIPduSignalRef[j];
 			GET_ArcSignal(Signal->ComHandleId);
 
-			if (Signal->ComTimeoutFactor > 0 && !Signal->ComSignalArcUseUpdateBit) {
+			if ( (Signal->ComTimeoutFactor > 0) && (!Signal->ComSignalArcUseUpdateBit) ) {
 				Arc_Signal->ComTimeoutFactor = earliestDeadline;
 				Arc_Signal->Com_Arc_DeadlineCounter = firstTimeout;
 			}

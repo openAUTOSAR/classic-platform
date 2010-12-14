@@ -68,7 +68,7 @@ void RTE_EngineMain() {
 	if (setNewSpeed) {
 		Com_ReceiveSignal(1, (void *)&newSpeed);
 
-	LDEBUG_PRINTF("Setting engine speed to %d rpm\n", newSpeed);
+		LDEBUG_PRINTF("Setting engine speed to %d rpm\n", newSpeed);
 		/*
 		static uint16 sig;
 		sig = rand() % 10000;
