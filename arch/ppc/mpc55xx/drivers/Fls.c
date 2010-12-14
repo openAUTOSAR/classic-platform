@@ -86,6 +86,8 @@
 #define SHADOW_ROW_SIZE 		0x00008000
 #define FLASH_PAGE_SIZE    H7FB_PAGE_SIZE
 
+#define FLASH_TOTAL_BLOCKS ( 20 )
+
 #if 0
 #define VFLAGS_ADDR_SECT		(1<<0)
 #define VFLAGS_ADDR_PAGE		(1<<1)
@@ -263,7 +265,7 @@ static inline int Fls_Validate( uint32 addr,uint32 length, uint32 api,uint32 rv 
   }
 
 #define FLS_VALIDATE_PARAM_DATA_W_RV(_ptr,_api, _rv) \
-  if( (_ptr)==((void *)0)) { \
+  if(( (uint32)(_ptr)%FLS_READ_PAGE_SIZE != 0 ) || ( (_ptr)==((void *)0))) { \
     Det_ReportError(MODULE_ID_FLS,0,_api,FLS_E_PARAM_DATA); \
     return _rv; \
   }
@@ -480,7 +482,7 @@ static void address_to_erase_blocks( Fls_EraseBlockType *eraseBlocks, uint32 add
   endBlock = address_to_block( addr + size - 1,&rem );
 
   // Check so our implementation holds..
-  assert( endBlock<=32 );
+  assert( endBlock <= FLASH_TOTAL_BLOCKS );
 
 #define BLOCK_MASK 0x0003ffffUL
 
