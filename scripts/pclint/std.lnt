@@ -79,6 +79,13 @@ lnt\co-gcc.lnt
 -esym(961,12.13)//Advisory Rule (++, -- not with other operators...)
 -esym(961,12.1)
 
+-e830 //location cited in prior message
+-e831 //reference cited in prior message
+
+// RULES TO TURN OFF FOR OLD MODULES, but think of them when having new modules
+-esym(960,17.4) // To many messages to be possible to handle locally!
+
+
 // ERRORS SWITCHED OFF TEMPORARLY
 //-e525
 //-e526
@@ -86,8 +93,5 @@ lnt\co-gcc.lnt
 //-esym(960, 10.1) //implicit conversion....
 //-e714 //Symbol not referenced
 //-e715 //Symbol not referenced
-
-//-e830 //location cited in prior message
-//-e831 //reference cited in prior message
 
 //-esym(960, 12.5) //Non-primary expression used with logical operator.
