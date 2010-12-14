@@ -140,6 +140,9 @@ typedef struct {
   // This parameter is the number of bytes written within one job processing cycle in fast mode
   Eep_LengthType EepFastWriteBlockSize;
 
+  // This parameter is the EEPROM page size, i.e. number of bytes.
+  Eep_LengthType EepPageSize;
+
   // This parameter is the EEPROM device base address.
   Eep_AddressType EepBaseAddress;
 } Eep_ConfigType;
