@@ -11,7 +11,13 @@ lnt\co-gcc.lnt
 
 
 // EIJAS STUFF:
+-u //unit-checkout since not checking the test-files. Supresses the inter-module
+	//messages 526,552,628,714.720,755-759,765,768-769,948,974,1526-1527,1711,1714-1715,1755
+
 -zero //always return exit code 0 (avoiding makefile interruption)
+
+// SET WARNING LEVEL:
+-w3 //-wlib(0)// 1:only errors, 2: +warnings 3: + infos
 
 //Reset which files are viewed library-files to only treat <> as such
 +libclass(angle)
@@ -26,8 +32,7 @@ lnt\co-gcc.lnt
 -format=%f:%l:%c:\s%t:\s%n\sPC-lint:\s%m
 
 
-// SET WARNING LEVEL:
--w3 //-wlib(0)// 1:only errors, 2: +warnings 3: + infos
+
 
 
 -A(C99)//use C99 standard
@@ -35,7 +40,7 @@ lnt\co-gcc.lnt
 +fie // Use to view enums as ints (tar bort tex PC641)
 
 
-// RULES TO TURN OFF
+// RULES TO TURN OFF (diskussed and confirmed)
 //-efile(755,*.h)
 -e755 //e switch off for header files
 -e756 //e switch off for header files
@@ -49,6 +54,16 @@ lnt\co-gcc.lnt
 -esym(961, 19.7) //Advisory Rule that should be switched off
 -esym(961, 19.13)//Advisory Rule that should be switched off
 
+
+-esym(960, 10.1) //implicit conversion...
+-esym(960,18.4) // Unions shall not be used.
+-e621 //Complains about identifiers names longer than _ characters. Length set by -idlen(). [1.4, 5.1] OK in autosar.
+
+// Rules ok to remove by autosar:
+// [1.4, 5.1](621), 8.10, 12.10, 11.1-11.5, 14.3(960).
+-esym(960,14.3)
+
+
 // RULES MAYBE TO TURN OFF
 //-e534 //only turned of for OS, printf? kolla hur vanlig...
 //-e757
@@ -61,6 +76,8 @@ lnt\co-gcc.lnt
 
 // RULES TO DISCUSS IF TO SWITCH OFF OR NOT
 -esym(961,12.6)//Advisory Rule (Boolean expression required for operator...)
+-esym(961,12.13)//Advisory Rule (++, -- not with other operators...)
+-esym(961,12.1)
 
 // ERRORS SWITCHED OFF TEMPORARLY
 //-e525

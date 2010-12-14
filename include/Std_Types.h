@@ -61,6 +61,8 @@ typedef struct {
 #define STD_GET_VERSION (_major,_minor,_patch) (_major * 10000 + _minor * 100 + _patch)
 
 /** Create Std_VersionInfoType */
+// PC-Lint Exception MISRA rule 19.12
+//lint -save -esym(960,19.12)
 #define STD_GET_VERSION_INFO(_vi,_module) \
 	((_vi)->vendorID =  _module ## _VENDOR_ID);\
 	((_vi)->moduleID = _module ## _MODULE_ID);\
@@ -70,7 +72,7 @@ typedef struct {
 	((_vi)->ar_major_version =  _module ## _AR_MAJOR_VERSION);\
 	((_vi)->ar_minor_version =  _module ## _AR_MINOR_VERSION);\
 	((_vi)->ar_patch_version =  _module ## _AR_PATCH_VERSION);
-
+//lint -restore
 
 typedef enum {
 	E_OK = 0,						/**< Differs from spec. (see StandardTypes 8.2.1)  */
