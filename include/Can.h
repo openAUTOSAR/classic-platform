@@ -100,17 +100,17 @@ typedef enum {
 
 /* Error from  CAN controller */
 typedef union {
-	volatile uint32_t R;
+     vuint32_t R;
      struct {
-         volatile uint32_t:24;
-         volatile uint32_t BIT1ERR:1;
-         volatile uint32_t BIT0ERR:1;
-         volatile uint32_t ACKERR:1;
-         volatile uint32_t CRCERR:1;
-         volatile uint32_t FRMERR:1;
-         volatile uint32_t STFERR:1;
-         volatile uint32_t TXWRN:1;
-         volatile uint32_t RXWRN:1;
+         vuint32_t:24;
+         vuint32_t BIT1ERR:1;
+         vuint32_t BIT0ERR:1;
+         vuint32_t ACKERR:1;
+         vuint32_t CRCERR:1;
+         vuint32_t FRMERR:1;
+         vuint32_t STFERR:1;
+         vuint32_t TXWRN:1;
+         vuint32_t RXWRN:1;
      } B;
  } Can_Arc_ErrorType;
 

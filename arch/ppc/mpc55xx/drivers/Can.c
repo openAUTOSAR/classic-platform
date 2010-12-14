@@ -637,7 +637,7 @@ static void Can_Isr(int unit) {
     // - Interupt on a masked box
   }
 
-  if (canHwConfig->CanEcoreFifo) {
+  if (canHwConfig->Can_Arc_Fifo) {
     /*
      * NOTE!!!
      * Do not enable RxFIFO. See [Freescale Device Errata MPC5510ACE, Rev. 10 APR 2009, errata ID: 14593].
