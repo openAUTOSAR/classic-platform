@@ -791,8 +791,7 @@ static void storeExtendedDataPreInit(const Dem_EventParameterType *eventParam, c
 
 	if(eventIdFound){
 		// Yes, overwrite existing
-		/*lint -esym(669,memcpy) -e826 */ /* supress lintwarning 669 and 826 locally. */
-		memcpy(&preInitExtDataBuffer[i-1], extendedData, sizeof(ExtDataRecType)); // 826,669 PC-Lint: OK. TA BORT ERROR! Lint does not recognise the size of the preInitExtDataBuffer record correctly.
+		memcpy(&preInitExtDataBuffer[i-1], extendedData, sizeof(ExtDataRecType));
 	}
 	else{
 		// No, lookup first free position
@@ -2033,7 +2032,8 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
 			if (eventId != DEM_EVENT_ID_NULL) {
 				eventParam = eventStatusBuffer[i].eventParamRef;
 				if (eventParam != NULL) {
-					//lint -e506 -e774	PC-Lint exception Misra 13.7, 14.1 Allow configuration variables in boolean expression
+					//lint -e506	PC-Lint exception Misra 13.7, 14.1 Allow configuration variables in boolean expression
+					//lint -e774	PC-Lint exception	Related to MISRA 13.7
 					if ((DEM_CLEAR_ALL_EVENTS == STD_ON) || (eventParam->DTCClassRef != NULL)) {
 						if (checkDtcKind(dtcKind, eventParam)) {
 							if (checkDtcGroup(dtc, eventParam)) {

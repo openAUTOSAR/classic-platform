@@ -70,9 +70,9 @@
 #define SID_CONTROL_DTC_SETTING					0x85
 
 // Misc definitions
-#define SUPPRESS_POS_RESP_BIT		0x80
-#define SID_RESPONSE_BIT			0x40
-#define VALUE_IS_NOT_USED			0x00
+#define SUPPRESS_POS_RESP_BIT		(uint8)0x80
+#define SID_RESPONSE_BIT			(uint8)0x40
+#define VALUE_IS_NOT_USED			(uint8)0x00
 
 typedef enum {
 	DSD_TX_RESPONSE_READY,
@@ -96,8 +96,8 @@ void DspUdsWriteDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduT
 void DspUdsControlDtcSetting(const PduInfoType *pduRxData, PduInfoType *pduTxData);
 void DspDcmConfirmation(PduIdType confirmPduId);
 
-boolean DspCheckSessionLevel(const Dcm_DspSessionRowType **sessionLevelRefTable);
-boolean DspCheckSecurityLevel(const Dcm_DspSecurityRowType	**securityLevelRefTable);
+boolean DspCheckSessionLevel(Dcm_DspSessionRowType const* const* sessionLevelRefTable);
+boolean DspCheckSecurityLevel(Dcm_DspSecurityRowType const* const* securityLevelRefTable);
 
 
 /*
@@ -117,7 +117,7 @@ void DsdDslDataIndication(const PduInfoType *pduRxData, const Dcm_DsdServiceTabl
 void DslInit(void);
 void DslMain(void);
 void DslHandleResponseTransmission(void);
-void DslDsdProcessingDone(PduIdType txPduId, DsdProcessingDoneResultType result);
+void DslDsdProcessingDone(PduIdType rxPduIdRef, DsdProcessingDoneResultType responseResult);
 void DslGetCurrentServiceTable(const Dcm_DsdServiceTableType **currentServiceTable);
 
 BufReq_ReturnType DslProvideRxBufferToPdur(PduIdType dcmRxPduId, PduLengthType tpSduLength, const PduInfoType **pduInfoPtr);

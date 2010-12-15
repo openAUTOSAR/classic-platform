@@ -102,7 +102,7 @@ void Dcm_MainFunction(void) /** @req DCM362 */
  ***********************************************/
 BufReq_ReturnType Dcm_ProvideRxBuffer(PduIdType dcmRxPduId, PduLengthType tpSduLength, PduInfoType **pduInfoPtr)
 {
-	BufReq_ReturnType returnCode = BUFREQ_OK;
+	BufReq_ReturnType returnCode;
 
 	VALIDATE_RV(dcmState == DCM_INITIALIZED, DCM_PROVIDE_RX_BUFFER_ID, DCM_E_UNINIT, BUFREQ_NOT_OK);
 	VALIDATE_RV(dcmRxPduId < DCM_DSL_RX_PDU_ID_LIST_LENGTH, DCM_PROVIDE_RX_BUFFER_ID, DCM_E_PARAM, BUFREQ_NOT_OK);
@@ -122,13 +122,13 @@ void Dcm_RxIndication(PduIdType dcmRxPduId, NotifResultType result)
 }
 
 
-Std_ReturnType Dcm_GetActiveProtocol(Dcm_ProtocolType *protocolId)
+Std_ReturnType Dcm_GetActiveProtocol(Dcm_ProtocolType *activeProtocol)
 {
-	Std_ReturnType returnCode = E_OK;
+	Std_ReturnType returnCode;
 
 	VALIDATE_RV(dcmState == DCM_INITIALIZED, DCM_GET_ACTIVE_PROTOCOL_ID, DCM_E_UNINIT, E_NOT_OK);
 
-	returnCode = DslGetActiveProtocol(protocolId);
+	returnCode = DslGetActiveProtocol(activeProtocol);
 
 	return returnCode;
 }
@@ -136,7 +136,7 @@ Std_ReturnType Dcm_GetActiveProtocol(Dcm_ProtocolType *protocolId)
 
 Std_ReturnType Dcm_GetSecurityLevel(Dcm_SecLevelType *secLevel)
 {
-	Std_ReturnType returnCode = E_OK;
+	Std_ReturnType returnCode;
 
 	VALIDATE_RV(dcmState == DCM_INITIALIZED, DCM_GET_SECURITY_LEVEL_ID, DCM_E_UNINIT, E_NOT_OK);
 
@@ -148,7 +148,7 @@ Std_ReturnType Dcm_GetSecurityLevel(Dcm_SecLevelType *secLevel)
 
 Std_ReturnType Dcm_GetSesCtrlType(Dcm_SesCtrlType *sesCtrlType)
 {
-	Std_ReturnType returnCode = E_OK;
+	Std_ReturnType returnCode;
 
 	VALIDATE_RV(dcmState == DCM_INITIALIZED, DCM_GET_SES_CTRL_TYPE_ID, DCM_E_UNINIT, E_NOT_OK);
 
@@ -159,7 +159,7 @@ Std_ReturnType Dcm_GetSesCtrlType(Dcm_SesCtrlType *sesCtrlType)
 
 BufReq_ReturnType Dcm_ProvideTxBuffer(PduIdType dcmTxPduId, PduInfoType **pduInfoPtr, PduLengthType length)
 {
-	BufReq_ReturnType returnCode = BUFREQ_OK;
+	BufReq_ReturnType returnCode;
 
 	VALIDATE_RV(dcmState == DCM_INITIALIZED, DCM_PROVIDE_TX_BUFFER_ID, DCM_E_UNINIT, BUFREQ_NOT_OK);
 	VALIDATE_RV(dcmTxPduId < DCM_DSL_TX_PDU_ID_LIST_LENGTH, DCM_PROVIDE_TX_BUFFER_ID, DCM_E_PARAM, BUFREQ_NOT_OK);

@@ -52,7 +52,7 @@ typedef Std_ReturnType (*Dcm_CallbackGetPIDValueFncType)(uint8 *dataValueBuffer)
 
 // DidServices_<DID>
 typedef Std_ReturnType (*Dcm_CallbackReadDataFncType)(uint8 *data);
-typedef Std_ReturnType (*Dcm_CallbackWriteDataFncType)(uint8 *data, uint8 dataLength, Dcm_NegativeResponseCodeType *errorCode);
+typedef Std_ReturnType (*Dcm_CallbackWriteDataFncType)(uint8 *data, uint16 dataLength, Dcm_NegativeResponseCodeType *errorCode);
 typedef Std_ReturnType (*Dcm_CallbackReadDataLengthFncType)(uint16 *didLength);
 typedef Std_ReturnType (*Dcm_CallbackConditionCheckReadFncType)(Dcm_NegativeResponseCodeType *errorCode);
 typedef Std_ReturnType (*Dcm_CallbackConditionCheckWriteFncType)(Dcm_NegativeResponseCodeType *errorCode);
@@ -169,7 +169,7 @@ typedef struct Dcm_DspDidType {
 	boolean										DspDidUsePort;					// (1)
 	uint16										DspDidIdentifier;				// (1)		/** @req DCM602 */
 	const Dcm_DspDidInfoType					*DspDidInfoRef;					// (1)		/** @req DCM604 */
-	const struct Dcm_DspDidType				**DspDidRef;					// (0..*)	/** @req DCM606 */
+	const struct Dcm_DspDidType					**DspDidRef;					// (0..*)	/** @req DCM606 */
 	uint16										DspDidSize;						// (1)		/** @req DCM605 */
 	Dcm_CallbackReadDataLengthFncType			DspDidReadDataLengthFnc;		// (0..1)	/** @req DCM671 */
 	Dcm_CallbackConditionCheckReadFncType		DspDidConditionCheckReadFnc;	// (0..1)	/** @req DCM677 */
@@ -426,7 +426,7 @@ typedef struct Dcm_DslProtocolRxType_t Dcm_DslProtocolRxType;
 struct Dcm_DslProtocolRxType_t {
 	const Dcm_DslMainConnectionType	*DslMainConnectionParent;				// (1) /* Cross reference. */
 	const Dcm_ProtocolAddrTypeType	DslProtocolAddrType;					// (1)
-	const uint32					DcmDslProtocolRxPduId;					// (1)
+	const PduIdType					DcmDslProtocolRxPduId;					// (1)
 	const uint32					DcmDslProtocolRxTesterSourceAddr_v4;	// (1)
 	const uint8						DcmDslProtocolRxChannelId_v4;			// (1)
 	const boolean					Arc_EOL;
@@ -439,7 +439,7 @@ typedef struct Dcm_DslProtocolTxType_t Dcm_DslProtocolTxType;
 // 10.2.14
 struct Dcm_DslProtocolTxType_t {
 	const Dcm_DslMainConnectionType	*DslMainConnectionParent;	// (1) /* Cross reference. */
-	const uint32					DcmDslProtocolTxPduId;		// (1) /* Will be removed (polite), kept for reference. */
+	const PduIdType					DcmDslProtocolTxPduId;		// (1) /* Will be removed (polite), kept for reference. */
 	const boolean					Arc_EOL;
 };
 

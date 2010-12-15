@@ -73,38 +73,44 @@ void DspMain(void)
 }
 
 
-boolean DspCheckSessionLevel(const Dcm_DspSessionRowType **sessionLevelRefTable)
+boolean DspCheckSessionLevel(Dcm_DspSessionRowType const* const* sessionLevelRefTable)
 {
-	boolean returnStatus = TRUE;
+	Std_ReturnType returnStatus;
+	boolean levelFound = FALSE;
 	Dcm_SesCtrlType currentSession;
 
-	DslGetSesCtrlType(&currentSession);
-	while ( ((*sessionLevelRefTable)->DspSessionLevel != currentSession) && (!(*sessionLevelRefTable)->Arc_EOL) ) {
-		sessionLevelRefTable++;
+	returnStatus = DslGetSesCtrlType(&currentSession);
+	if (returnStatus == E_OK) {
+		while ( ((*sessionLevelRefTable)->DspSessionLevel != currentSession) && (!(*sessionLevelRefTable)->Arc_EOL) ) {
+			sessionLevelRefTable++;
+		}
+
+		if (!(*sessionLevelRefTable)->Arc_EOL) {
+			levelFound = TRUE;
+		}
 	}
 
-	if ((*sessionLevelRefTable)->Arc_EOL) {
-		returnStatus = FALSE;
-	}
-
-	return returnStatus;
+	return levelFound;
 }
 
 
-boolean DspCheckSecurityLevel(const Dcm_DspSecurityRowType	**securityLevelRefTable)
+boolean DspCheckSecurityLevel(Dcm_DspSecurityRowType const* const* securityLevelRefTable)
 {
-	boolean returnStatus = TRUE;
+	Std_ReturnType returnStatus;
+	boolean levelFound = FALSE;
 	Dcm_SecLevelType currentSecurityLevel;
 
-	DslGetSecurityLevel(&currentSecurityLevel);
-	while ( ((*securityLevelRefTable)->DspSecurityLevel != currentSecurityLevel) && (!(*securityLevelRefTable)->Arc_EOL) ) {
-		securityLevelRefTable++;
-	}
-	if ((*securityLevelRefTable)->Arc_EOL) {
-		returnStatus = FALSE;
+	returnStatus = DslGetSecurityLevel(&currentSecurityLevel);
+	if (returnStatus == E_OK) {
+		while ( ((*securityLevelRefTable)->DspSecurityLevel != currentSecurityLevel) && (!(*securityLevelRefTable)->Arc_EOL) ) {
+			securityLevelRefTable++;
+		}
+		if (!(*securityLevelRefTable)->Arc_EOL) {
+			levelFound = TRUE;
+		}
 	}
 
-	return returnStatus;
+	return levelFound;
 }
 
 
@@ -282,6 +288,8 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x01_0x07_0x11_0x12(const 
 		Dem_ReturnGetNumberOfFilteredDTCType getNumerResult;
 		uint16 numberOfFilteredDtc;
 		uint8 dtcStatusMask;
+		//lint -e826	PC-Lint exception - Suspicious pointer conversion
+		//lint -e927	PC-Lint exception - Pointer to pointer cast
 		TxDataType *txData = (TxDataType*)pduTxData->SduDataPtr;
 
 		/** @req DCM376 */
@@ -361,6 +369,8 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15(c
 
 	if (setDtcFilterResult == DEM_FILTER_ACCEPTED) {
 		uint8 dtcStatusMask;
+		//lint -e826	PC-Lint exception - Suspicious pointer conversion
+		//lint -e927	PC-Lint exception - Pointer to pointer cast
 		TxDataType *txData = (TxDataType*)pduTxData->SduDataPtr;
 		Dem_ReturnGetNextFilteredDTCType getNextFilteredDtcResult;
 		uint32 dtc;
@@ -393,7 +403,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15(c
 				responseCode = DCM_E_REQUESTOUTOFRANGE;
 			}
 		}
-		pduTxData->SduLength = 3 + (nrOfDtcs * sizeof(dtcAndStatusRecordType));
+		pduTxData->SduLength = (PduLengthType)(3 + (nrOfDtcs * sizeof(dtcAndStatusRecordType)));
 	}
 	else {
 		responseCode = DCM_E_REQUESTOUTOFRANGE;
@@ -403,7 +413,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15(c
 }
 
 // PC-Lint (715 etc): Remove errors until function is filled.
-//lint -save -e*
+//lint -save -e715 -e838 -e818		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x08(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -417,7 +427,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x08(const PduInfoType *pd
 
 
 // PC-Lint (715 etc): Remove errors until function is filled.
-//lint -save -e*
+//lint -save -e715 -e838 -e818		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x09(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -482,7 +492,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x06_0x10(const PduInfoTyp
 		getStatusOfDtcResult = Dem_GetStatusOfDTC(dtc, DEM_DTC_KIND_ALL_DTCS, dtcOrigin, &statusOfDtc); /** @req DCM295 */ /** @req DCM475 */
 		if (getStatusOfDtcResult == DEM_STATUS_OK) {
 			Dem_ReturnGetExtendedDataRecordByDTCType getExtendedDataRecordByDtcResult;
-			uint16 recNum;
+			uint8 recNum;
 			uint16 recLength;
 			uint16 txIndex = 6;
 
@@ -518,7 +528,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x06_0x10(const PduInfoTyp
 
 
 // PC-Lint (715 etc): Remove errors until function is filled.
-//lint -save -e*
+//lint -save -e715 -e838 -e818		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x03(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -532,7 +542,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x03(const PduInfoType *pd
 
 
 // PC-Lint (715 etc): Remove errors until function is filled.
-//lint -save -e*
+//lint -save -e715 -e838 -e818		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x04(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -546,7 +556,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x04(const PduInfoType *pd
 
 
 // PC-Lint (715 etc): Remove errors until function is filled.
-//lint -save -e*
+//lint -save -e715 -e838 -e818		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x05(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -560,7 +570,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x05(const PduInfoType *pd
 
 
 // PC-Lint (715 etc): Remove errors until function is filled.
-//lint -save -e*
+//lint -save -e715 -e838 -e818		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x0B_0x0C_0x0D_0x0E(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -574,7 +584,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x0B_0x0C_0x0D_0x0E(const 
 
 
 // PC-Lint (715 etc): Remove errors until function is filled.
-//lint -save -e*
+//lint -save -e715 -e838 -e818		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x14(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -719,7 +729,7 @@ static Dcm_NegativeResponseCodeType readDidData(const Dcm_DspDidType *didPtr, Pd
 						if ((*txPos + didLen + 2) <= pduTxData->SduLength) {
 							pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 8) & 0xFFu;
 							(*txPos)++;
-							pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 0) & 0xFFu;
+							pduTxData->SduDataPtr[*txPos] = didPtr->DspDidIdentifier & 0xFFu;
 							(*txPos)++;
 							result = didPtr->DspDidReadDataFnc(&pduTxData->SduDataPtr[*txPos]);	/** @req DCM437 */
 							*txPos += didLen;
@@ -767,7 +777,7 @@ void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTx
 {
 	/** @req DCM253 */
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
-	uint8 nrOfDids;
+	uint16 nrOfDids;
 	uint16 didNr;
 	const Dcm_DspDidType *didPtr = NULL;
 
@@ -813,7 +823,7 @@ static Dcm_NegativeResponseCodeType readDidScalingData(const Dcm_DspDidType *did
 
 			pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 8) & 0xFFu;
 			(*txPos)++;
-			pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 0) & 0xFFu;
+			pduTxData->SduDataPtr[*txPos] = didPtr->DspDidIdentifier & 0xFFu;
 			(*txPos)++;
 			result = didPtr->DspDidGetScalingInfoFnc(&pduTxData->SduDataPtr[*txPos], &errorCode);	/** @req DCM394 */
 			*txPos += scalingInfoLen;
@@ -888,7 +898,7 @@ static Dcm_NegativeResponseCodeType writeDidData(const Dcm_DspDidType *didPtr, c
 
 					if (result == E_OK) {
 						if (didLen == writeDidLen) {	/** @req DCM473 */
-							result = didPtr->DspDidWriteDataFnc(&pduRxData->SduDataPtr[3], didLen, &errorCode);	/** @req DCM395 */
+							result = didPtr->DspDidWriteDataFnc(&pduRxData->SduDataPtr[3], (uint8)didLen, &errorCode);	/** @req DCM395 */
 							if ((result != E_OK) || (errorCode != DCM_E_POSITIVERESPONSE)) {
 								responseCode = DCM_E_CONDITIONSNOTCORRECT;
 							}
@@ -941,7 +951,7 @@ void DspUdsWriteDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduT
 	if (responseCode == DCM_E_POSITIVERESPONSE) {
 		pduTxData->SduLength = 3;
 		pduTxData->SduDataPtr[1] = (didNr >> 8) & 0xFFu;
-		pduTxData->SduDataPtr[2] = (didNr >> 0) & 0xFFu;
+		pduTxData->SduDataPtr[2] = didNr & 0xFFu;
 	}
 
 	DsdDspProcessingDone(responseCode);
