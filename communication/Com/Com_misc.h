@@ -24,10 +24,7 @@
 #ifndef COM_MISC_H_
 #define COM_MISC_H_
 
-/*
- * The following function are exported only for testing purposes.
- */
-uint8 Com_Filter(ComSignal_type *signal);
+
 
 // Read data from PDU
 void Com_ReadSignalDataFromPdu(
@@ -74,11 +71,11 @@ void Com_WriteSignalDataToPduBuffer(
 void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByteLength,
 		uint8 segmentStartBitOffset, uint8 segmentBitLength, boolean signedOutput);
 
-void Com_WriteDataSegment(uint8 *pdu, const uint8 *signal, uint8 destByteLength,
+void Com_WriteDataSegment(uint8 *pdu, const uint8 *signalDataPtr, uint8 destByteLength,
 		uint8 segmentStartBitOffset, uint8 segmentBitLength);
 
 uint8 motorolaBitNrToPduOffset (uint8 motorolaBitNr);
-uint8 intelBitNrToPduOffset (uint8 intelBitNr, uint8 segmentBitLength, uint8 pduBitLenght);
+uint8 intelBitNrToPduOffset (uint8 intelBitNr, uint8 segmentBitLength, uint8 pduBitLength);
 
 
 #endif /* COM_MISC_H_ */

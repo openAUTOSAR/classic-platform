@@ -71,7 +71,7 @@
 
 
 // From Autosar
-void Com_Init(const Com_ConfigType * ConfigPtr);
+void Com_Init(const Com_ConfigType * config);
 void Com_DeInit(void);
 
 void Com_IpduGroupStart(Com_PduGroupIdType IpduGroupId, boolean Initialize);

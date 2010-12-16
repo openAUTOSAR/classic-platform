@@ -119,7 +119,7 @@ typedef enum {
 	type == SINT32  ? sizeof(sint32) : sizeof(boolean)) \
 
 #define SignalTypeSignedness(type) \
-		((type == SINT8 || type == SINT16 || type == SINT32) ? \
+		(( (type == SINT8) || (type == SINT16) || (type == SINT32) ) ? \
 				COM_SIGNALTYPE_SIGNED : COM_SIGNALTYPE_UNSIGNED)
 
 /** Filter configuration type.

@@ -56,9 +56,9 @@ extern const Com_ConfigType * ComConfig;
 #endif
 
 
-#define TESTBIT(source,bit) ( (*((uint8 *)source + (bit / 8)) & (1 << (bit % 8))) )
-#define SETBIT(dest,bit) ( *((uint8 *)dest + (bit / 8)) |= (1 << (bit % 8)) )
-#define CLEARBIT(dest,bit) ( *((uint8 *)dest + (bit / 8)) &= ~(1 << (bit % 8)) )
+#define TESTBIT(source,bit)	( *( (uint8 *)source  + (bit / 8) ) &  (uint8)(1u << (bit % 8)) )
+#define SETBIT(dest,bit)	( *( (uint8 *)dest    + (bit / 8) ) |= (uint8)(1u << (bit % 8)) )
+#define CLEARBIT(dest,bit)	( *( (uint8 *)dest    + (bit / 8) ) &= (uint8)~(uint8)(1u << (bit % 8)) )
 
 #define GET_Signal(SignalId) \
 	const ComSignal_type * Signal = &ComConfig->ComSignal[SignalId]\

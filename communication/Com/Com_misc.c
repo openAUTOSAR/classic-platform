@@ -17,10 +17,6 @@
 
 
 
-
-
-
-#include <stdlib.h>
 #include <string.h>
 
 #include "Com_Arc_Types.h"
@@ -97,22 +93,23 @@ void Com_ReadSignalDataFromPduBuffer(
 
 	// Pointer to a byte of the source and dest respectively.
 	uint8 *signalDataBytes = (uint8 *)signalData;
-	uint8 *pduBufferBytes = (uint8 *)pduBuffer;
+	const uint8 *pduBufferBytes = (const uint8 *)pduBuffer;
 	uint8 startBitOffset = 0;
 
 	if (signalEndianess != CPU_ENDIANESS) {
 		// Swap source bytes before reading
 		// TODO: Must adapt to larger PDUs!
 		uint8 pduBufferBytes_swap[8];
-		for (int i = 0; i < 8; ++i) {
+		for (uint8 i = 0; i < 8; ++i) {
 			pduBufferBytes_swap[i] = pduBufferBytes[7 - i];
 		}
 		startBitOffset = intelBitNrToPduOffset(bitPosition, bitSize, 64);
+		//lint -save -esym(960,12.5) PC-Lint Exception: OK. PC-Lint misunderstands MISRA rule 12.5.
 		Com_ReadDataSegment(
 				signalDataBytes, pduBufferBytes_swap, destSize,
 				startBitOffset, bitSize,
 				SignalTypeSignedness(signalType));
-
+		//lint -restore
 	} else {
 		startBitOffset = motorolaBitNrToPduOffset(bitPosition);
 		Com_ReadDataSegment(
@@ -186,7 +183,7 @@ void Com_WriteSignalDataToPduBuffer(
 	}
 
 
-	uint8 *signalDataBytes = (uint8 *)signalData;
+	const uint8 *signalDataBytes = (const uint8 *)signalData;
 	uint8 *pduBufferBytes = (uint8 *)pduBuffer;
 	uint8 startBitOffset = motorolaBitNrToPduOffset(bitPosition);
 	uint8 signalBufferSize = SignalTypeToSize(signalType, signalLength);
@@ -194,83 +191,6 @@ void Com_WriteSignalDataToPduBuffer(
 	Com_WriteDataSegment(pduBufferBytes, signalDataBytes, signalBufferSize, startBitOffset, bitSize);
 }
 
-#if (COM_ARC_FILTER_ENABLED == STD_ON)
-uint8 Com_Filter(ComSignal_type *signal) {
-	GET_ArcSignal(signal->ComHandleId);
-	const ComFilter_type * filter = &signal->ComFilter;
-	uint8 success = 0;
-	if (filter->ComFilterAlgorithm == ALWAYS) {
-		success = 1;
-
-	} else if (filter->ComFilterAlgorithm == NEVER) {
-		success = 0;
-
-	} else if (filter->ComFilterAlgorithm == ONE_EVERY_N) {
-		// Treat the special cases that should not exists.
-		if (filter->ComFilterPeriodFactor < 2) {
-			// If PeriodFactor is 0 then every package is discarded.
-			// If PeriodFactor is 1 then every package is passed through.
-			success = filter->ComFilterPeriodFactor;
-
-		} else {
-			if (filter->ComFilterArcN == 0) {
-				success = 1;
-			} else {
-				success = 0;
-			}
-			Arc_Signal->ComFilter.ComFilterArcN++;
-			if (filter->ComFilterArcN >= filter->ComFilterPeriodFactor) {
-				Arc_Signal->ComFilter.ComFilterArcN = 0;
-			}
-		}
-
-	} else if (filter->ComFilterAlgorithm == NEW_IS_OUTSIDE) {
-		if ((filter->ComFilterMin > filter->ComFilterArcNewValue)
-				|| (filter->ComFilterArcNewValue > filter->ComFilterMax)) {
-			success = 1;
-		} else {
-			success = 0;
-		}
-
-
-	} else if (filter->ComFilterAlgorithm == NEW_IS_WITHIN) {
-		if (filter->ComFilterMin <= filter->ComFilterArcNewValue
-		 && filter->ComFilterArcNewValue <= filter->ComFilterMax) {
-			success = 1;
-		} else {
-			success = 0;
-		}
-
-
-	} else if (filter->ComFilterAlgorithm == MASKED_NEW_DIFFERS_MASKED_OLD) {
-		if ((filter->ComFilterArcNewValue & filter->ComFilterMask)
-				!= (filter->ComFilterArcNewValue & filter->ComFilterMask)) {
-			success = 1;
-		} else {
-			success = 0;
-		}
-
-	} else if (filter->ComFilterAlgorithm == MASKED_NEW_DIFFERS_X) {
-		if ((filter->ComFilterArcNewValue & filter->ComFilterMask) != filter->ComFilterX) {
-			success = 1;
-		} else {
-			success = 0;
-		}
-
-	} else if (filter->ComFilterAlgorithm == MASKED_NEW_EQUALS_X) {
-		if ((filter->ComFilterArcNewValue & filter->ComFilterMask) == filter->ComFilterX) {
-			success = 1;
-		} else {
-			success = 0;
-		}
-	}
-
-	if (success) {
-		Arc_Signal->ComFilter.ComFilterArcOldValue = filter->ComFilterArcNewValue;
-		return 1;
-	} else return 0;
-}
-#endif
 
 /*
  * Read an arbitrary signal segment from buffer.
@@ -316,14 +236,14 @@ void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByteLength,
 
 	boolean negative;
 
-	if ( signedOutput && (*(source + sourceStartByte) & (0x80 >> segmentStartBitOffsetInsideByte)) ) {
+	if ( signedOutput && (*(source + sourceStartByte) & (0x80u >> segmentStartBitOffsetInsideByte)) ) {
 		negative = TRUE;
-		sourceStartByteMask = (0xFF00 >> segmentStartBitOffsetInsideByte);
+		sourceStartByteMask = (0xFF00u >> segmentStartBitOffsetInsideByte);
 		memset(dest, 0xFF, destByteLength);
 	} else {
 		negative = FALSE;
-		sourceStartByteMask = (0x00FF >> segmentStartBitOffsetInsideByte);
-		memset(dest, 0x00, destByteLength);
+		sourceStartByteMask = (0x00FFu >> segmentStartBitOffsetInsideByte);
+		memset(dest, 0x00u, destByteLength);
 	}
 
 	// setup to point to end (LSB) of buffers
@@ -333,47 +253,47 @@ void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByteLength,
 	if (negative) {
 	// compiles and writes one destination byte on each iteration
 		do {
-			shiftReg = *(source - sourceByteNr) | 0xFF00;		// read source byte (already matching "byte space")
+			shiftReg = *(source - sourceByteNr) | 0xFF00u;		// read source byte (already matching "byte space")
 			if (sourceByteNr == sourceByteLength) {				// if we are on the last source byte..
 				shiftReg |= sourceStartByteMask;			// ..we need to mask out stuff we don't want
 			}
 			shiftReg >>= sourceAlignmentShift;					// shift down to align
-			*(dest - destByteNr) &= shiftReg | 0xFF00;		// write into destination byte
+			*(dest - destByteNr) &= shiftReg | 0xFF00u;		// write into destination byte
 
 			sourceByteNr++;										// move to next source byte
-			if (sourceAlignmentShift != 0						// do we have more bits for current dest. byte in this source byte?
-					&& sourceByteNr <= sourceByteLength) {
-				shiftReg = *(source - sourceByteNr) | 0xFF00;	// read next source byte
+			if ( (sourceAlignmentShift != 0)						// do we have more bits for current dest. byte in this source byte?
+					&& (sourceByteNr <= sourceByteLength) ) {
+				shiftReg = *(source - sourceByteNr) | 0xFF00u;	// read next source byte
 				if (sourceByteNr == sourceByteLength) {			// if we are on the last source byte..
 					shiftReg |= sourceStartByteMask;		// ..we need to mask out stuff we don't want
 				}
 				shiftReg = (uint16)~(shiftReg);						// shifting inverted to shift in 1:s
 				shiftReg <<= 8;								// shift up (to match destination "byte space")
-				shiftReg = ~(shiftReg);
+				shiftReg = (uint16)~shiftReg;
 				shiftReg >>= sourceAlignmentShift;				// shift down to align
-				*(dest - destByteNr) &= shiftReg | 0xFF00;	// write into destination byte
+				*(dest - destByteNr) &= shiftReg | 0xFF00u;	// write into destination byte
 			}
 			destByteNr++;
 		} while (destByteNr < segmentByteLength);
 	} else { // positive
 		do {
-			shiftReg = *(source - sourceByteNr) & 0x00FF;		// read source byte (already matching "byte space")
+			shiftReg = *(source - sourceByteNr) & 0x00FFu;		// read source byte (already matching "byte space")
 			if (sourceByteNr == sourceByteLength) {				// if we are on the last source byte..
 				shiftReg &= sourceStartByteMask;			// ..we need to mask out stuff we don't want
 			}
 			shiftReg >>= sourceAlignmentShift;					// shift down to align
-			*(dest - destByteNr) |= shiftReg & 0x00FF;		// write into destination byte
+			*(dest - destByteNr) |= shiftReg & 0x00FFu;		// write into destination byte
 
 			sourceByteNr++;										// move to next source byte
 			if (sourceAlignmentShift != 0						// do we have more bits for current dest. byte in this source byte?
 					&& sourceByteNr <= sourceByteLength) {
-				shiftReg = *(source - sourceByteNr) & 0x00FF;	// read next source byte
+				shiftReg = *(source - sourceByteNr) & 0x00FFu;	// read next source byte
 				if (sourceByteNr == sourceByteLength) {			// if we are on the last source byte..
 					shiftReg &= sourceStartByteMask;		// ..we need to mask out stuff we don't want
 				}
 				shiftReg <<= 8;								// shift up (to match destination "byte space")
 				shiftReg >>= sourceAlignmentShift;				// shift down to align
-				*(dest - destByteNr) |= shiftReg & 0x00FF;	// write into destination byte
+				*(dest - destByteNr) |= shiftReg & 0x00FFu;	// write into destination byte
 			}
 			destByteNr++;
 		} while (destByteNr < segmentByteLength);
@@ -382,10 +302,10 @@ void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByteLength,
 
 /*
  * Copies the <segmentBitLength> least significant bits from <signal> into <pdu>.
- * The bit segment is placed in <pdu> som that the most significant bit ends up
+ * The bit segment is placed in <pdu> so that the most significant bit ends up
  * at <segmentStartBitOffset> from the msb of <pdu>.
  */
-void Com_WriteDataSegment(uint8 *pdu, const uint8 *signal, uint8 destByteLength,
+void Com_WriteDataSegment(uint8 *pdu, const uint8 *signalDataPtr, uint8 destByteLength,
 		uint8 segmentStartBitOffset, uint8 segmentBitLength) {
 	uint8 pduEndBitOffset = segmentStartBitOffset + segmentBitLength - 1;
 	uint8 pduStartByte = segmentStartBitOffset / 8;
@@ -393,7 +313,7 @@ void Com_WriteDataSegment(uint8 *pdu, const uint8 *signal, uint8 destByteLength,
 	uint8 pduByteLength = pduEndByte - pduStartByte;
 
 	uint8 segmentStartBitOffsetInsideByte = segmentStartBitOffset % 8;
-	uint8 pduStartByteMask = (0xFF >> segmentStartBitOffsetInsideByte);
+	uint8 pduStartByteMask = (0xFFu >> segmentStartBitOffsetInsideByte);
 
 	uint8 pduAlignmentShift = 7 - (pduEndBitOffset % 8);
 	uint8 segmentByteLength = 1 + (segmentBitLength - 1) / 8;
@@ -405,11 +325,11 @@ void Com_WriteDataSegment(uint8 *pdu, const uint8 *signal, uint8 destByteLength,
 
 	// setup to point to end (LSB) of buffers
 	pdu += pduEndByte;
-	signal += destByteLength - 1;
+	signalDataPtr += destByteLength - 1;
 
 	// splits and writes one source byte on each iteration
 	do {
-		shiftReg = *(signal - signalByteNr) & 0x00FF;
+		shiftReg = *(signalDataPtr - signalByteNr) & 0x00FFu;
 		clearReg = 0x00FF;
 		shiftReg <<= pduAlignmentShift;
 		clearReg <<= pduAlignmentShift;
@@ -417,13 +337,13 @@ void Com_WriteDataSegment(uint8 *pdu, const uint8 *signal, uint8 destByteLength,
 			shiftReg &= pduStartByteMask;
 			clearReg &= pduStartByteMask;
 		}
-		*(pdu - pduByteNr) &= ~(clearReg & 0x00FF);
-		*(pdu - pduByteNr) |= shiftReg & 0x00FF;
+		*(pdu - pduByteNr) &= (uint16)~(clearReg & 0x00FFu);
+		*(pdu - pduByteNr) |= shiftReg & 0x00FFu;
 
 		pduByteNr++;
-		if (pduAlignmentShift != 0
-				&& pduByteNr <= pduByteLength) {
-			shiftReg = *(signal - signalByteNr) & 0x00FF;
+		if ( (pduAlignmentShift != 0)
+				&& (pduByteNr <= pduByteLength) ) {
+			shiftReg = *(signalDataPtr - signalByteNr) & 0x00FFu;
 			clearReg = 0x00FF;
 			shiftReg <<= pduAlignmentShift;
 			clearReg <<= pduAlignmentShift;
@@ -433,8 +353,8 @@ void Com_WriteDataSegment(uint8 *pdu, const uint8 *signal, uint8 destByteLength,
 				shiftReg &= pduStartByteMask;
 				clearReg &= pduStartByteMask;
 			}
-			*(pdu - pduByteNr) &= ~(clearReg & 0x00FF);
-			*(pdu - pduByteNr) |= shiftReg & 0x00FF;
+			*(pdu - pduByteNr) &= (uint16)~(clearReg & 0x00FFu);
+			*(pdu - pduByteNr) |= shiftReg & 0x00FFu;
 		}
 		signalByteNr++;
 	} while (signalByteNr < segmentByteLength);
@@ -448,8 +368,9 @@ void Com_WriteDataSegment(uint8 *pdu, const uint8 *signal, uint8 destByteLength,
  */
 uint8 motorolaBitNrToPduOffset (uint8 motorolaBitNr) {
 	uint8 byte = motorolaBitNr / 8;
+	uint8 offsetToByteStart = (uint8) (byte * 8u);
 	uint8 offsetInsideByte = motorolaBitNr % 8;
-	return byte * 8 + (7 - offsetInsideByte);
+	return (uint8) (offsetToByteStart + (7u - offsetInsideByte));
 }
 
 /*
@@ -459,6 +380,6 @@ uint8 motorolaBitNrToPduOffset (uint8 motorolaBitNr) {
  *  intelBitNr (after PDU byte-swap): 39 38 37 36 35 34 33 32 31 ...  3  2  1  0
  *             intelBitNrToPduOffset:  0  1  2  3  4  5  6  7  8 ... 36 37 38 39
  */
-uint8 intelBitNrToPduOffset (uint8 intelBitNr, uint8 segmentBitLength, uint8 pduBitLenght) {
-	return pduBitLenght - (intelBitNr + segmentBitLength);
+uint8 intelBitNrToPduOffset (uint8 intelBitNr, uint8 segmentBitLength, uint8 pduBitLength) {
+	return pduBitLength - (intelBitNr + segmentBitLength);
 }
