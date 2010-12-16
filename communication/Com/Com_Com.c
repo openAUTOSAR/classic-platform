@@ -143,7 +143,7 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
 	}
 }
 
-Std_ReturnType Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr) {
+void Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr) {
 	PDU_ID_CHECK(ComRxPduId, 0x14, E_NOT_OK);
 
 	GET_IPdu(ComRxPduId);
@@ -151,7 +151,7 @@ Std_ReturnType Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr) {
 
 	// If Ipdu is stopped
 	if (!Arc_IPdu->Com_Arc_IpduStarted) {
-		return E_OK;
+		return;
 	}
 
 	// Check callout status
@@ -159,7 +159,7 @@ Std_ReturnType Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr) {
 		if (!IPdu->ComIPduCallout(ComRxPduId, SduPtr)) {
 			// TODO Report error to DET.
 			// Det_ReportError();
-			return E_NOT_OK;
+			return;
 		}
 	}
 
@@ -198,7 +198,7 @@ Std_ReturnType Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr) {
 		}
 	}
 
-	return E_OK;
+	return;
 }
 
 // PC-Lint skriv undantag för så länge

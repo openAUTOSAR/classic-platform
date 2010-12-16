@@ -33,7 +33,7 @@ Std_ReturnType Com_TriggerTransmit(PduIdType ComTxPduId, uint8 *SduPtr);
 
 void Com_TriggerIPduSend(PduIdType ComTxPduId);
 
-Std_ReturnType Com_RxIndication(PduIdType ComRxPduId, const uint8* PduInfoPtr);
+void Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr); // TODO: Parameter SduPtr should be const PduInfoType* PduInfoPtr
 void Com_TxConfirmation(PduIdType ComTxPduId);
 
 
