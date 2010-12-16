@@ -104,7 +104,7 @@ void Com_ReadSignalDataFromPduBuffer(
 			pduBufferBytes_swap[i] = pduBufferBytes[7 - i];
 		}
 		startBitOffset = intelBitNrToPduOffset(bitPosition, bitSize, 64);
-		//lint -save -esym(960,12.5) PC-Lint Exception: OK. PC-Lint misunderstands MISRA rule 12.5.
+		//lint -save -esym(960,12.5) PC-Lint Exception: OK. PC-Lint Wrong interpretation of MISRA rule 12.5.
 		Com_ReadDataSegment(
 				signalDataBytes, pduBufferBytes_swap, destSize,
 				startBitOffset, bitSize,
@@ -331,8 +331,10 @@ void Com_WriteDataSegment(uint8 *pdu, const uint8 *signalDataPtr, uint8 destByte
 	do {
 		shiftReg = *(signalDataPtr - signalByteNr) & 0x00FFu;
 		clearReg = 0x00FF;
+		//lint -save -e701 -e734 //PC-Lint Wrong interpretation of MISRA rule 10.5.
 		shiftReg <<= pduAlignmentShift;
 		clearReg <<= pduAlignmentShift;
+		//lint -restore
 		if (pduByteNr == pduByteLength) {
 			shiftReg &= pduStartByteMask;
 			clearReg &= pduStartByteMask;
@@ -345,10 +347,12 @@ void Com_WriteDataSegment(uint8 *pdu, const uint8 *signalDataPtr, uint8 destByte
 				&& (pduByteNr <= pduByteLength) ) {
 			shiftReg = *(signalDataPtr - signalByteNr) & 0x00FFu;
 			clearReg = 0x00FF;
+			//lint -save -e701 -e734 //PC-Lint Wrong interpretation of MISRA rule 10.5.
 			shiftReg <<= pduAlignmentShift;
 			clearReg <<= pduAlignmentShift;
 			shiftReg >>= 8;
 			clearReg >>= 8;
+			//lint -restore
 			if (pduByteNr == pduByteLength) {
 				shiftReg &= pduStartByteMask;
 				clearReg &= pduStartByteMask;

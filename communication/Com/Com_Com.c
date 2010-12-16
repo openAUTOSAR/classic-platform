@@ -91,6 +91,7 @@ Std_ReturnType Com_TriggerTransmit(PduIdType ComTxPduId, uint8 *SduPtr) {
 }
 
 
+//lint -esym(904, Com_TriggerIPduSend) //PC-Lint Exception of rule 14.7
 void Com_TriggerIPduSend(PduIdType ComTxPduId) {
 	PDU_ID_CHECK(ComTxPduId, 0x17);
 
@@ -143,6 +144,7 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
 	}
 }
 
+//lint -esym(904, Com_RxIndication) //PC-Lint Exception of rule 14.7
 void Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr) {
 	PDU_ID_CHECK(ComRxPduId, 0x14, E_NOT_OK);
 
