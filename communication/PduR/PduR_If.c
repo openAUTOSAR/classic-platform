@@ -109,6 +109,8 @@ void PduR_LoIfRxIndication(PduIdType PduId, const uint8* SduPtr) {
 				DEBUG(DEBUG_LOW,"\tTransmission failed. PDUR_E_PDU_INSTANCE_LOST\n");
 			}
 		}
+	} else {
+		// Nothing to be done.
 	}
 }
 
@@ -216,6 +218,8 @@ void PduR_LoIfTxConfirmation(PduIdType PduId) {
 				}
 			}
 		}
+	} else {
+		// Nothing to be done.
 	}
 }
 
@@ -232,6 +236,8 @@ void PduR_LoIfTriggerTransmit(PduIdType PduId, uint8* SduPtr) {
 		DEBUG(DEBUG_LOW,"\tUsing gateway mode with trigger transmit data provision.\n", PduId);
 		memcpy((void *)SduPtr, (void *)route->PduRDestPdu.TxBufferRef->First, sizeof(uint8) * route->SduLength);
 
+	} else {
+		// Nothing to be done.
 	}
 }
 

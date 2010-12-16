@@ -75,10 +75,10 @@ void PduR_Init (const PduR_PBConfigType* ConfigPtr) {
 	uint8 failed = 0;
 
 	// Initialize buffers.
-	int bufferNr = 0;
+	uint16 bufferNr = 0;
 	PduRRoutingPath_type *path;
 	PduRConfig->PduRRoutingTable->NRoutingPaths = 0;
-	for (int i = 0; (!PduRConfig->PduRRoutingTable->PduRRoutingPath[i].PduR_Arc_EOL) && (!failed); i++) {
+	for (uint16 i = 0; (!PduRConfig->PduRRoutingTable->PduRRoutingPath[i].PduR_Arc_EOL) && (!failed); i++) {
 		PduRConfig->PduRRoutingTable->NRoutingPaths++;
 		path = &PduRConfig->PduRRoutingTable->PduRRoutingPath[i];
 
@@ -210,7 +210,7 @@ void PduR_GetVersionInfo (Std_VersionInfoType* versionInfo){
 }
 #endif
 
-uint32 PduR_GetConfigurationId () {
+uint32 PduR_GetConfigurationId (void) {
 	//PduR_DevCheck(0,1,0x18,E_NOT_OK);
 	return PduRConfig->PduRConfigurationId;
 }
