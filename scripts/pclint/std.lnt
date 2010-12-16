@@ -82,6 +82,8 @@ lnt\co-gcc.lnt
 -e830 //location cited in prior message
 -e831 //reference cited in prior message
 
+-e788 // PC-Lint message: Enum constant 'Symbol' not used within defaulted switch
+
 // RULES TO TURN OFF FOR OLD MODULES, but think of them when having new modules
 -esym(960,17.4) // To many messages to be possible to handle locally!
 
