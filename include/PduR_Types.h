@@ -20,8 +20,8 @@
  * Type definitions for PDU Router.
  */
 
-#ifndef _PDUR_TYPES_H
-#define _PDUR_TYPES_H
+#ifndef PDUR_TYPES_H
+#define PDUR_TYPES_H
 
 #include "ComStack_Types.h"
 

@@ -20,8 +20,8 @@
 
 
 
-#ifndef _PDUR_H_
-#define _PDUR_H_
+#ifndef PDUR_H
+#define PDUR_H
 
 #define PDUR_VENDOR_ID			1
 #define PDUR_AR_MAJOR_VERSION  2
@@ -135,4 +135,4 @@ void PduR_LoIfTriggerTransmit(PduIdType PduId, uint8* SduPtr);
 extern PduR_FctPtrType PduR_StdCanFctPtrs;
 extern PduR_FctPtrType PduR_StdLinFctPtrs;
 
-#endif /* _PDUR_H_ */
+#endif /* PDUR_H */
