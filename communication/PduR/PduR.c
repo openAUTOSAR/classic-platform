@@ -91,6 +91,7 @@ void PduR_Init (const PduR_PBConfigType* ConfigPtr) {
 				failed = 1;
 				break;
 			}
+			// 586 PC-Lint (malloc) ticket #135
 			if	((buffer->Buffer = (uint8 *)malloc(buffer->Depth * sizeof(uint8) * path->SduLength)) == 0) {
 				DEBUG(DEBUG_LOW,"PduR_Init: Initialization of buffer failed. Buffer space could not be allocated for buffer number %d\n", bufferNr);
 				failed = 1;
@@ -137,6 +138,7 @@ void PduR_BufferInc(PduRTxBuffer_type *Buffer, uint8 **ptr) {
 	(*ptr) = (*ptr) + Buffer->Length;
 
 	// TODO make more efficient without multiplication.
+	//lint -e946 //PC-Lint Exception of MISRA rule 17.3
 	if ( *ptr >= ( Buffer->Buffer + (Buffer->Depth * Buffer->Length) ) ) {
 		*ptr = Buffer->Buffer;
 	}

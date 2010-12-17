@@ -89,6 +89,7 @@ void Com_Init(const Com_ConfigType *config ) {
 		firstTimeout = 0xffffffffu;
 
 		// Reserve memory for all defined signals.
+		//586 PC-Lint ska ändras. Ticket #133
 		Arc_IPdu->ComIPduDataPtr = malloc(IPdu->ComIPduSize);
 		if (Arc_IPdu->ComIPduDataPtr == NULL) {
 			failure = 1;
@@ -144,6 +145,7 @@ void Com_Init(const Com_ConfigType *config ) {
 
 			// If this signal is a signal group
 			if (Signal->Com_Arc_IsSignalGroup) {
+				//586 PC-Lint ska ändras. Ticket #133
 				Arc_Signal->Com_Arc_ShadowBuffer = malloc(IPdu->ComIPduSize);
 
 				if (Arc_Signal->Com_Arc_ShadowBuffer == NULL) {

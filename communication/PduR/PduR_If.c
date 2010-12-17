@@ -43,6 +43,7 @@ void PduR_LoIfRxIndication(PduIdType PduId, const uint8* SduPtr) {
 
 	if (route->PduR_GatewayMode == 0) {
 		// This is an ordinary request.
+		// 534 PC-Lint (ignoring return value) ticket #134:
 		route->FctPtrs.TargetIndicationFctPtr(route->PduRDestPdu.DestPduId, SduPtr); // Send PDU to next receptor.
 
 
@@ -52,6 +53,7 @@ void PduR_LoIfRxIndication(PduIdType PduId, const uint8* SduPtr) {
 			.SduDataPtr = (uint8 *)SduPtr, // 926, 960 PC-Lint: Beror på att funktion PduR_LoIfRxIndication(...) fel-definerad TICKET 130
 			.SduLength = route->SduLength
 		};
+		// 534 PC-Lint (ignoring return value) ticket #134:
 		route->FctPtrs.TargetTransmitFctPtr(route->PduRDestPdu.DestPduId, &PduInfo); // Send PDU to next receptor.
 
 
@@ -95,7 +97,7 @@ void PduR_LoIfRxIndication(PduIdType PduId, const uint8* SduPtr) {
 			// Make new PduInfoPackage
 			DEBUG(DEBUG_LOW,"\tNo transfer confirmation pending. Forwarding packet.\n");
 			PduInfoType PduInfoPtr = {
-					.SduDataPtr = (uint8 *)SduPtr,
+					.SduDataPtr = (uint8 *)SduPtr, // 926, 960 PC-Lint: Beror på att funktion PduR_LoIfRxIndication(...) fel-definerad TICKET 130
 					.SduLength = route->SduLength
 			};
 			if (route->FctPtrs.TargetTransmitFctPtr(route->PduRDestPdu.DestPduId, &PduInfoPtr) == E_OK) {
@@ -230,6 +232,7 @@ void PduR_LoIfTriggerTransmit(PduIdType PduId, uint8* SduPtr) {
 	// Find out if this is a gateway or ordinary trigger.
 	//if (route->PduRDestPdu.DataProvision == PDUR_NO_PROVISION) { // This is an ordinary trigger.
 	if (route->PduR_GatewayMode == 0) { // This is an ordinary trigger.
+		// 534 PC-Lint (ignoring return value) ticket #134:
 		route->FctPtrs.TargetTriggerTransmitFctPtr(route->PduRDestPdu.DestPduId, SduPtr);
 
 	} else if ( (route->PduR_GatewayMode == 1) && (route->PduRDestPdu.DataProvision == PDUR_TRIGGER_TRANSMIT) ) { // The route is using a trigger transmit fifo. PDUR256
