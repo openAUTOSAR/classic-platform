@@ -45,7 +45,7 @@
 
 typedef enum {
 	CANNM_INIT,
-	CANNM_UNINIT,
+	CANNM_UNINIT
 } CanNm_InitStatusType;
 
 typedef struct {

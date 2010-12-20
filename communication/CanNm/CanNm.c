@@ -150,6 +150,8 @@ Nm_ReturnType CanNm_NetworkRequest( const NetworkHandleType nmChannelHandle ){
 		if (ChannelInternal->State == NM_STATE_READY_SLEEP) {
 			CanNm_Internal_ReadySleep_to_NormalOperation(ChannelConf, ChannelInternal);  /**< @req CANNM110 */
 		}
+	} else {
+		//Nothing to be done
 	}
 	return NM_E_OK;
 }
@@ -274,6 +276,8 @@ Nm_ReturnType CanNm_RepeatMessageRequest( const NetworkHandleType nmChannelHandl
 			ChannelInternal->TxMessageSdu[ChannelConf->CbvPosition] = CANNM_CBV_REPEAT_MESSAGE_REQUEST;  /**< @req CANNM121 */
 			CanNm_Internal_NormalOperation_to_RepeatMessage(ChannelConf, ChannelInternal);  /**< @req CANNM120 */
 			return NM_E_OK;
+		} else {
+			//Nothing to be done
 		}
 	}
 	return NM_E_NOT_EXECUTED;  /**< @req CANNM137 */
@@ -376,8 +380,12 @@ void CanNm_RxIndication( PduIdType canNmRxPduId, const uint8 *canSduPtr ){
 				CanNm_Internal_ReadySleep_to_RepeatMessage(ChannelConf, ChannelInternal);  /**< @req CANNM111 */
 			} else if (ChannelInternal->State == NM_STATE_NORMAL_OPERATION) {
 				CanNm_Internal_NormalOperation_to_RepeatMessage(ChannelConf, ChannelInternal);  /**< @req CANNM119 */
+			} else {
+				//Nothing to be done
 			}
 		}
+	} else {
+		//Nothing to be done
 	}
 #if (CANNM_PDU_RX_INDICATION_ENABLED == STD_ON)
 	// TODO: call NM rx indication
@@ -412,6 +420,8 @@ void CanNm_MainFunction( NetworkHandleType nmChannelHandle ) {
 		}
 	} else if (ChannelInternal->Mode == NM_MODE_PREPARE_BUS_SLEEP) {
 		CanNm_Internal_TickWaitBusSleepTime(ChannelConf, ChannelInternal);  /**< @req CANNM115.2 */
+	} else {
+		//Nothing to be done
 	}
 }
 
@@ -433,6 +443,8 @@ static inline void CanNm_Internal_TickTimeoutTime( const CanNm_ChannelType* Chan
 			CanNm_Internal_NormalOperation_to_NormalOperation(ChannelConf, ChannelInternal);  /**< @req CANNM117.1 */
 		} else if (ChannelInternal->State == NM_STATE_READY_SLEEP) {
 			CanNm_Internal_ReadySleep_to_PrepareBusSleep(ChannelConf, ChannelInternal);  /**< @req CANNM109 */
+		} else {
+			//Nothing to be done
 		}
 	} else {
 		ChannelInternal->TimeoutTimeLeft -= ChannelConf->MainFunctionPeriod;

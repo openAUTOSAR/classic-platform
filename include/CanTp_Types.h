@@ -24,6 +24,8 @@
 /** @req CANTP239 */
 /** @req CANTP242 */
 
+//lint -save -e451 //PC-Lint Wrong interpretation, "Platform_Types.h included twice without a standard include guard."
+
 #ifndef CANTP_TYPES_H_
 #define CANTP_TYPES_H_
 

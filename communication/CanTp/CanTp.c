@@ -418,10 +418,10 @@ static INLINE BufReq_ReturnType copySegmentToPduRRxBuffer(const CanTp_RxNSduType
 		PduLengthType segmentSize, PduLengthType *bytesWrittenSuccessfully) {
 
 	BufReq_ReturnType ret = BUFREQ_NOT_OK;
-	boolean error = FALSE;
+	boolean endLoop = FALSE;
 	*bytesWrittenSuccessfully = 0;
 
-	while ((*bytesWrittenSuccessfully < segmentSize) && (!error)) {
+	while ((*bytesWrittenSuccessfully < segmentSize) && (!endLoop)) {
 		// Copy the data that resides in the buffer.
 		if (rxRuntime->pdurBuffer != NULL) {
 			while ((*bytesWrittenSuccessfully < segmentSize ) && (rxRuntime->pdurBuffer->SduLength > rxRuntime->pdurBufferCount)) {
@@ -438,19 +438,17 @@ static INLINE BufReq_ReturnType copySegmentToPduRRxBuffer(const CanTp_RxNSduType
 				rxRuntime->pdurBufferCount = 0; // The buffer is emptied.
 			} else if (ret == BUFREQ_BUSY) {
 				rxRuntime->transferCount += *bytesWrittenSuccessfully;
-				error = TRUE;
-				break;
+				endLoop = TRUE;
 			} else {
-				error = TRUE; // Let calling function handle this error.
-				break;
+				endLoop = TRUE; // Let calling function handle this error.
 			}
 		} else {
 			rxRuntime->transferCount += segmentSize; //== bytesWrittenSuccessfully
 			ret = BUFREQ_OK;
-			break;
+			endLoop = TRUE;
 		}
 	}
-	return ret; // 438 PC-lint: Sista värde på error används inte. OK. hittar  inget fel.
+	return ret;
 }
 
 // - - - - - - - - - - - - - -
@@ -659,7 +657,7 @@ static INLINE void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
 			}
 		}
 	}
-} // 438, 550 PC-lint: extendAdress används inte. EN BUG? Behöver fixas
+} // 438, 550 PC-lint: extendedAdress not accessed. Extended adress needs to be implemented. Ticket #136
 
 // - - - - - - - - - - - - - -
 

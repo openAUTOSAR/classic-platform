@@ -20,7 +20,7 @@
 typedef enum {
 	CANNM_PDU_BYTE_0 = 0x00,
 	CANNM_PDU_BYTE_1 = 0x01,
-	CANNM_PDU_OFF = 0xFF,
+	CANNM_PDU_OFF = 0xFF
 } CanNm_PduBytePositionType;
 
 /** @req CANNM202  @req CANNM203 */
