@@ -15,11 +15,6 @@
 
 // 904 PC-Lint: OK. Allow VALIDATE, VALIDATE_RV and VALIDATE_NO_RV to return value.
 //lint -emacro(904,VALIDATE_RV,VALIDATE_NO_RV,VALIDATE)
-// 522 PC-Lint exception for empty functions
-//lint -esym(522,deleteFreezeFrameDataPriMem)
-//lint -esym(522,storeFreezeFrameDataPreInit)
-//lint -esym(522,storeFreezeFrameDataPriMem)
-//lint -esym(522,updateFreezeFrameOccurrencePreInit)
 
 
 
@@ -290,7 +285,7 @@ static boolean checkDtcOrigin(Dem_DTCOriginType dtcOrigin, const Dem_EventParame
  * Description:	Return TRUE if "dtcSeverityMask" match any of the events DTC severity otherwise FALSE.
  */
 // PC-Lint (715 etc): Remove errors until function is filled.
-//lint -save -e715		Symbol not referenced
+//lint -e{715}		Symbol not referenced
 static boolean checkDtcSeverityMask(Dem_DTCSeverityType dtcSeverityMask, const Dem_EventParameterType *eventParam)
 {
 	boolean result = TRUE;
@@ -299,7 +294,6 @@ static boolean checkDtcSeverityMask(Dem_DTCSeverityType dtcSeverityMask, const D
 
 	return result;
 }
-//lint -restore
 
 
 /*
@@ -307,7 +301,7 @@ static boolean checkDtcSeverityMask(Dem_DTCSeverityType dtcSeverityMask, const D
  * Description:	TBD.
  */
 // PC-Lint (715 etc): Remove errors until function is filled.
-//lint -save -e*715
+//lint -e{715}		Symbol not referenced
 static boolean checkDtcFaultDetectionCounter(const Dem_EventParameterType *eventParam)
 {
 	boolean result = TRUE;
@@ -316,7 +310,7 @@ static boolean checkDtcFaultDetectionCounter(const Dem_EventParameterType *event
 
 	return result;
 }
-//lint -restore
+
 
 /*
  * Procedure:	lookupEventStatusRec
@@ -698,29 +692,29 @@ static boolean matchEventWithDtcFilter(const EventStatusRecType *eventRec)
 
 
 // PC-Lint (715 etc): Remove errors until function is filled.
-//lint -save -e715		Symbol not referenced
+//lint -e{715}		Symbol not referenced
 static void getFreezeFrameData(const Dem_EventParameterType *eventParam, FreezeFrameRecType *freezeFrame)
 {
 	// TODO: Fill out
 	freezeFrame->eventId = DEM_EVENT_ID_NULL;	// Not supported yet
 }
-//lint -restore
+
 
 // PC-Lint (715 etc): Remove errors until function is filled.
-//lint -save -e715		Symbol not referenced
+//lint -e{715}		Symbol not referenced
 static void storeFreezeFrameDataPreInit(const Dem_EventParameterType *eventParam, const FreezeFrameRecType *freezeFrame)
 {
 	// TODO: Fill out
 }
-//lint -restore
+
 
 // PC-Lint (715 etc): Remove errors until function is filled.
-//lint -save -e715		Symbol not referenced
+//lint -e{715}		Symbol not referenced
 static void updateFreezeFrameOccurrencePreInit(const EventRecType *EventBuffer)
 {
 	// TODO: Fill out
 }
-//lint -restore  // PC-lint: Restore to original error-setting.
+
 
 /*
  * Procedure:	getExtendedData
@@ -746,7 +740,7 @@ static void getExtendedData(const Dem_EventParameterType *eventParam, ExtDataRec
 				callbackReturnCode = eventParam->ExtendedDataClassRef->ExtendedDataRecordClassRef[i]->CallbackGetExtDataRecord(&extData->data[storeIndex]); /** @req DEM282 */
 				if (callbackReturnCode != E_OK) {
 					// Callback data currently not available, clear space.
-					memset(&extData->data[storeIndex], 0xFF, recordSize); // PC-Lint OK
+					memset(&extData->data[storeIndex], 0xFF, recordSize);
 				}
 				storeIndex += recordSize;
 			}
@@ -1054,20 +1048,19 @@ static boolean lookupExtendedDataPriMem(Dem_EventIdType eventId, ExtDataRecType 
 }
 
 // PC-Lint (715 etc): Remove errors until function is filled.
-//lint -save -e715		Symbol not referenced
+//lint -e{715}		Symbol not referenced
 static void storeFreezeFrameDataPriMem(const Dem_EventParameterType *eventParam, const FreezeFrameRecType *freezeFrame)
 {
 	// TODO: Fill out
 }
-//lint -restore
+
 
 // PC-Lint (715 etc): Remove errors until function is filled.
-//lint -save -e715		Symbol not referenced
+//lint -e{715}		Symbol not referenced
 static void deleteFreezeFrameDataPriMem(const Dem_EventParameterType *eventParam)
 {
 	// TODO: Fill out
 }
-//lint -restore
 
 
 /*
@@ -2032,8 +2025,8 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
 			if (eventId != DEM_EVENT_ID_NULL) {
 				eventParam = eventStatusBuffer[i].eventParamRef;
 				if (eventParam != NULL) {
-					//lint -e506	PC-Lint exception Misra 13.7, 14.1 Allow configuration variables in boolean expression
-					//lint -e774	PC-Lint exception	Related to MISRA 13.7
+					//lint --e(506)	PC-Lint exception Misra 13.7, 14.1 Allow configuration variables in boolean expression
+					//lint --e(774)	PC-Lint exception	Related to MISRA 13.7
 					if ((DEM_CLEAR_ALL_EVENTS == STD_ON) || (eventParam->DTCClassRef != NULL)) {
 						if (checkDtcKind(dtcKind, eventParam)) {
 							if (checkDtcGroup(dtc, eventParam)) {
@@ -2160,7 +2153,7 @@ Dem_ReturnGetExtendedDataRecordByDTCType Dem_GetExtendedDataRecordByDTC(uint32 d
 							case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
 								if (lookupExtendedDataPriMem(eventRec->eventId, &extData)) {
 									// Yes all conditions met, copy the extended data record to destination buffer.
-									memcpy(destBuffer, &extData->data[posInExtData], extendedDataRecordClass->DataSize); /** @req DEM075 */ // 960 PC-Lint OK
+									memcpy(destBuffer, &extData->data[posInExtData], extendedDataRecordClass->DataSize); /** @req DEM075 */
 									*bufSize = extendedDataRecordClass->DataSize;
 									returnCode = DEM_RECORD_OK;
 								}

@@ -40,7 +40,7 @@
 #include "Dem.h"
 #include "MemMap.h"
 //#include "SchM_Dcm.h"
-#include "ComM_Dcm.h"
+//#include "ComM_Dcm.h"
 #include "PduR_Dcm.h"
 #include "ComStack_Types.h"
 #include "McuExtensions.h"
@@ -64,7 +64,6 @@ static Dcm_StateType dcmState = DCM_UNINITIALIZED;
  * Reentrant:	Yes
  */
 // Defined in Dcm.h
-
 
 
 /*
@@ -97,6 +96,7 @@ void Dcm_MainFunction(void) /** @req DCM362 */
 	DslMain();
 }
 
+
 /***********************************************
  * Interface for BSW modules and SW-Cs (8.3.2) *
  ***********************************************/
@@ -107,6 +107,8 @@ BufReq_ReturnType Dcm_ProvideRxBuffer(PduIdType dcmRxPduId, PduLengthType tpSduL
 	VALIDATE_RV(dcmState == DCM_INITIALIZED, DCM_PROVIDE_RX_BUFFER_ID, DCM_E_UNINIT, BUFREQ_NOT_OK);
 	VALIDATE_RV(dcmRxPduId < DCM_DSL_RX_PDU_ID_LIST_LENGTH, DCM_PROVIDE_RX_BUFFER_ID, DCM_E_PARAM, BUFREQ_NOT_OK);
 
+	//lint --e(929)		// PC-Lint exception, MISRA 11.4 Ok by atosar
+	//lint --e(960)		// PC-Lint exception, MISRA 11.5 Ok by atosar
 	returnCode = DslProvideRxBufferToPdur(dcmRxPduId, tpSduLength, (const PduInfoType**)pduInfoPtr);
 
 	return returnCode;
@@ -164,6 +166,8 @@ BufReq_ReturnType Dcm_ProvideTxBuffer(PduIdType dcmTxPduId, PduInfoType **pduInf
 	VALIDATE_RV(dcmState == DCM_INITIALIZED, DCM_PROVIDE_TX_BUFFER_ID, DCM_E_UNINIT, BUFREQ_NOT_OK);
 	VALIDATE_RV(dcmTxPduId < DCM_DSL_TX_PDU_ID_LIST_LENGTH, DCM_PROVIDE_TX_BUFFER_ID, DCM_E_PARAM, BUFREQ_NOT_OK);
 
+	//lint --e(929)		// PC-Lint exception, MISRA 11.4 Ok by atosar
+	//lint --e(960)		// PC-Lint exception, MISRA 11.5 Ok by atosar
 	returnCode = DslProvideTxBuffer(dcmTxPduId, (const PduInfoType**)pduInfoPtr, length);
 
 	return returnCode;

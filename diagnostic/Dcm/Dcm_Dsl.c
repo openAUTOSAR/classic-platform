@@ -39,29 +39,21 @@
 /*
  * Type definitions.
  */
-typedef struct {
-	const Dcm_DslProtocolRxType *protocolRx;
-	const Dcm_DslMainConnectionType *mainConnection;
-	const Dcm_DslConnectionType *connection;
-	const Dcm_DslProtocolRowType *protocolRow;
-} DcmDsl_ProtocolConfigurationType;
-
-#define MAX_PARALLEL_PROTOCOLS_ALLOWED		1
+// #define MAX_PARALLEL_PROTOCOLS_ALLOWED		1
 
 typedef struct {
 	boolean initRun;
 	//boolean diagnosticRequestPending; // This is a "semaphore" because DSD and DCM can handle multiple/parallel request at the moment.
-	const Dcm_DslProtocolRowType *preemptedProtocol; // Points to the currently active protocol.
 	const Dcm_DslProtocolRowType *activeProtocol; // Points to the currently active protocol.
-	Dcm_DslRunTimeProtocolParametersType
-			protocolList[MAX_PARALLEL_PROTOCOLS_ALLOWED];
+//	const Dcm_DslProtocolRowType *preemptedProtocol; // Points to the currently active protocol - reserved for future use
+//	Dcm_DslRunTimeProtocolParametersType protocolList[MAX_PARALLEL_PROTOCOLS_ALLOWED];	// Reserved for future use
 } DcmDsl_RunTimeDataType;
 
 static DcmDsl_RunTimeDataType DcmDslRunTimeData = {
 		.initRun = FALSE,
-		.preemptedProtocol = NULL,
-		.activeProtocol = NULL,
-		.protocolList = {}
+		.activeProtocol = NULL
+//		.preemptedProtocol = NULL,
+//		.protocolList = {}
 };
 
 
@@ -519,8 +511,7 @@ void DslMain(void) {
 //  received a FF or a single frame and needs to obtain a buffer from the
 //  receiver so that received data can be forwarded.
 
-BufReq_ReturnType DslProvideRxBufferToPdur(PduIdType dcmRxPduId,
-		PduLengthType tpSduLength, const PduInfoType **pduInfoPtr) {
+BufReq_ReturnType DslProvideRxBufferToPdur(PduIdType dcmRxPduId, PduLengthType tpSduLength, const PduInfoType **pduInfoPtr) {
 	BufReq_ReturnType ret = BUFREQ_NOT_OK;
 	const Dcm_DslProtocolRxType *protocolRx = NULL;
 	const Dcm_DslMainConnectionType *mainConnection = NULL;
