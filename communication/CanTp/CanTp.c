@@ -1120,7 +1120,7 @@ Std_ReturnType CanTp_Transmit(PduIdType CanTpTxSduId,
 			SERVICE_ID_CANTP_TRANSMIT, CANTP_E_UNINIT ); /** @req CANTP031 */
 	VALIDATE( CanTpTxSduId < CANTP_NSDU_CONFIG_LIST_SIZE, SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TX_ID );
 
-	txConfig = (CanTp_TxNSduType*)&CanTpConfig.CanTpNSduList[CanTpTxSduId].configData;
+	txConfig =&CanTpConfig.CanTpNSduList[CanTpTxSduId].configData.CanTpTxNSdu;
 
 	txRuntime = &CanTpRunTimeData.runtimeDataList[txConfig->CanTpTxChannel]; // Runtime data.
 	if (txRuntime->iso15765.state == IDLE) {
