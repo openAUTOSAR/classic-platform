@@ -67,8 +67,8 @@ void Com_Init(const Com_ConfigType *config ) {
 	for (uint16 i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
 		Com_Arc_Config.ComNIPdu++;
 
-		GET_IPdu(i);
-		GET_ArcIPdu(i);
+		const ComIPdu_type *IPdu = GET_IPdu(i);
+		Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(i);
 
 		if (i >= COM_N_IPDUS) {
 			DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_TOO_MANY_IPDU);
@@ -104,7 +104,7 @@ void Com_Init(const Com_ConfigType *config ) {
 		//Arc_IPdu->NComIPduSignalRef = 0;
 		for (uint16 j = 0; (IPdu->ComIPduSignalRef != NULL) && (IPdu->ComIPduSignalRef[j] != NULL) ; j++) {
 			Signal = IPdu->ComIPduSignalRef[j];
-			GET_ArcSignal(Signal->ComHandleId);
+			Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
 
 			// If this signal already has been configured this is most likely an error.
 			if (Arc_Signal->ComIPduDataPtr != NULL) {
@@ -155,7 +155,7 @@ void Com_Init(const Com_ConfigType *config ) {
 				// For each group signal of this signal group.
 				for(uint8 h = 0; Signal->ComGroupSignal[h] != NULL; h++) {
 					GroupSignal = Signal->ComGroupSignal[h];
-					GET_ArcGroupSignal(GroupSignal->ComHandleId);
+					Com_Arc_GroupSignal_type *Arc_GroupSignal = GET_ArcGroupSignal(GroupSignal->ComHandleId);
 					// Set pointer to shadow buffer
 					Arc_GroupSignal->Com_Arc_ShadowBuffer = Arc_Signal->Com_Arc_ShadowBuffer;
 					// Initialize group signal data.
@@ -205,7 +205,7 @@ void Com_Init(const Com_ConfigType *config ) {
 		// Configure per I-PDU based deadline monitoring.
 		for (uint16 j = 0; (IPdu->ComIPduSignalRef != NULL) && (IPdu->ComIPduSignalRef[j] != NULL); j++) {
 			Signal = IPdu->ComIPduSignalRef[j];
-			GET_ArcSignal(Signal->ComHandleId);
+			Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
 
 			if ( (Signal->ComTimeoutFactor > 0) && (!Signal->ComSignalArcUseUpdateBit) ) {
 				Arc_Signal->ComTimeoutFactor = earliestDeadline;

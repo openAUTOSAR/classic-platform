@@ -37,8 +37,8 @@ void Com_MainFunctionRx(void) {
 	const ComSignal_type *signal;
 	for (uint16 i = 0; !ComConfig->ComSignal[i].Com_Arc_EOL; i++) {
 		signal = &ComConfig->ComSignal[i];
-		GET_ArcSignal(signal->ComHandleId);
-		GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
+		Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(signal->ComHandleId);
+		Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
 
 		// Monitor signal reception deadline
 		if ( (Arc_IPdu->Com_Arc_IpduStarted) && (Arc_Signal->ComTimeoutFactor > 0) ) {
@@ -80,7 +80,7 @@ void Com_MainFunctionTx(void) {
 	const ComIPdu_type *IPdu;
 	for (uint16 i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
 		IPdu = &ComConfig->ComIPdu[i];
-		GET_ArcIPdu(i);
+		Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(i);
 
 		// Is this a IPdu that should be transmitted?
 		if ( (IPdu->ComIPduDirection == SEND) && (Arc_IPdu->Com_Arc_IpduStarted) ) {

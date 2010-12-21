@@ -31,9 +31,9 @@ void Com_ReadSignalDataFromPdu(
 			void *signalData) {
 
 	// Get PDU
-	GET_Signal(signalId);
-	GET_ArcSignal(Signal->ComHandleId);
-	GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
+	const ComSignal_type * Signal = GET_Signal(signalId);
+	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
+	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
 
 	// Get data
 	Com_ReadSignalDataFromPduBuffer(
@@ -49,9 +49,9 @@ void Com_ReadGroupSignalDataFromPdu(
 		void *signalData) {
 
 	// Get PDU
-	GET_Signal(parentSignalId);
-	GET_ArcSignal(Signal->ComHandleId);
-	GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
+	const ComSignal_type * Signal = GET_Signal(parentSignalId);
+	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
+	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
 
 	// Get data
 	Com_ReadSignalDataFromPduBuffer(
@@ -74,14 +74,14 @@ void Com_ReadSignalDataFromPduBuffer(
 	uint8 bitSize;
 
 	if (!isGroupSignal) {
-		GET_Signal(signalId);
+		const ComSignal_type * Signal =  GET_Signal(signalId);
 		signalType = Signal->ComSignalType;
 		signalEndianess = Signal->ComSignalEndianess;
 		signalLength = Signal->ComBitSize / 8;
 		bitPosition = Signal->ComBitPosition;
 		bitSize = Signal->ComBitSize;
 	} else {
-		GET_GroupSignal(signalId);
+		const ComGroupSignal_type *GroupSignal = GET_GroupSignal(signalId);
 		signalType = GroupSignal->ComSignalType;
 		signalEndianess = GroupSignal->ComSignalEndianess;
 		signalLength = GroupSignal->ComBitSize / 8;
@@ -125,9 +125,9 @@ void Com_WriteSignalDataToPdu(
 			const void *signalData) {
 
 	// Get PDU
-	GET_Signal(signalId);
-	GET_ArcSignal(Signal->ComHandleId);
-	GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
+	const ComSignal_type * Signal =  GET_Signal(signalId);
+	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
+	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
 
 	// Get data
 	Com_WriteSignalDataToPduBuffer(
@@ -143,9 +143,9 @@ void Com_WriteGroupSignalDataToPdu(
 		const void *signalData) {
 
 	// Get PDU
-	GET_Signal(parentSignalId);
-	GET_ArcSignal(Signal->ComHandleId);
-	GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
+	const ComSignal_type * Signal =  GET_Signal(parentSignalId);
+	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
+	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
 
 	// Get data
 	Com_WriteSignalDataToPduBuffer(
@@ -169,13 +169,13 @@ void Com_WriteSignalDataToPduBuffer(
 	uint8 bitSize;
 
 	if (!isGroupSignal) {
-		GET_Signal(signalId);
+		const ComSignal_type * Signal =  GET_Signal(signalId);
 		signalType = Signal->ComSignalType;
 		signalLength = Signal->ComBitSize / 8;
 		bitPosition = Signal->ComBitPosition;
 		bitSize = Signal->ComBitSize;
 	} else {
-		GET_GroupSignal(signalId);
+		const ComGroupSignal_type *GroupSignal = GET_GroupSignal(signalId);
 		signalType = GroupSignal->ComSignalType;
 		signalLength = GroupSignal->ComBitSize / 8;
 		bitPosition = GroupSignal->ComBitPosition;
