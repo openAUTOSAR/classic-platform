@@ -288,8 +288,8 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x01_0x07_0x11_0x12(const 
 		Dem_ReturnGetNumberOfFilteredDTCType getNumerResult;
 		uint16 numberOfFilteredDtc;
 		uint8 dtcStatusMask;
-		//lint -e826	PC-Lint exception - Suspicious pointer conversion
-		//lint -e927	PC-Lint exception - Pointer to pointer cast
+		//lint --e(826)	PC-Lint exception - Suspicious pointer conversion
+		//lint --e(927)	PC-Lint exception - Pointer to pointer cast
 		TxDataType *txData = (TxDataType*)pduTxData->SduDataPtr;
 
 		/** @req DCM376 */
@@ -369,8 +369,8 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15(c
 
 	if (setDtcFilterResult == DEM_FILTER_ACCEPTED) {
 		uint8 dtcStatusMask;
-		//lint -e826	PC-Lint exception - Suspicious pointer conversion
-		//lint -e927	PC-Lint exception - Pointer to pointer cast
+		//lint --e(826)	PC-Lint exception - Suspicious pointer conversion
+		//lint --e(927)	PC-Lint exception - Pointer to pointer cast
 		TxDataType *txData = (TxDataType*)pduTxData->SduDataPtr;
 		Dem_ReturnGetNextFilteredDTCType getNextFilteredDtcResult;
 		uint32 dtc;
@@ -413,7 +413,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15(c
 }
 
 // PC-Lint (715 etc): Remove errors until function is filled.
-//lint -save -e715 -e838 -e818		Symbol not referenced, responseCode not used, txData should be const
+//lint -e{715, 838, 818}		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x08(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -423,11 +423,10 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x08(const PduInfoType *pd
 
 	return responseCode;
 }
-//lint -restore
 
 
 // PC-Lint (715 etc): Remove errors until function is filled.
-//lint -save -e715 -e838 -e818		Symbol not referenced, responseCode not used, txData should be const
+//lint -e{715, 838, 818}		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x09(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -437,7 +436,6 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x09(const PduInfoType *pd
 
 	return responseCode;
 }
-//lint -restore
 
 
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x06_0x10(const PduInfoType *pduRxData, PduInfoType *pduTxData)
@@ -528,7 +526,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x06_0x10(const PduInfoTyp
 
 
 // PC-Lint (715 etc): Remove errors until function is filled.
-//lint -save -e715 -e838 -e818		Symbol not referenced, responseCode not used, txData should be const
+//lint -e{715, 838, 818}		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x03(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -538,11 +536,10 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x03(const PduInfoType *pd
 
 	return responseCode;
 }
-//lint -restore
 
 
 // PC-Lint (715 etc): Remove errors until function is filled.
-//lint -save -e715 -e838 -e818		Symbol not referenced, responseCode not used, txData should be const
+//lint -e{715, 838, 818}		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x04(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -552,11 +549,10 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x04(const PduInfoType *pd
 
 	return responseCode;
 }
-//lint -restore
 
 
 // PC-Lint (715 etc): Remove errors until function is filled.
-//lint -save -e715 -e838 -e818		Symbol not referenced, responseCode not used, txData should be const
+//lint -e{715, 838, 818}		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x05(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -566,11 +562,10 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x05(const PduInfoType *pd
 
 	return responseCode;
 }
-//lint -restore
 
 
 // PC-Lint (715 etc): Remove errors until function is filled.
-//lint -save -e715 -e838 -e818		Symbol not referenced, responseCode not used, txData should be const
+//lint -e{715, 838, 818}		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x0B_0x0C_0x0D_0x0E(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -580,11 +575,10 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x0B_0x0C_0x0D_0x0E(const 
 
 	return responseCode;
 }
-//lint -restore
 
 
 // PC-Lint (715 etc): Remove errors until function is filled.
-//lint -save -e715 -e838 -e818		Symbol not referenced, responseCode not used, txData should be const
+//lint -e{715, 838, 818}		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x14(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -594,7 +588,6 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x14(const PduInfoType *pd
 
 	return responseCode;
 }
-//lint -restore
 
 
 void DspUdsReadDtcInformation(const PduInfoType *pduRxData, PduInfoType *pduTxData)
@@ -809,7 +802,7 @@ void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTx
 }
 
 
-static Dcm_NegativeResponseCodeType readDidScalingData(const Dcm_DspDidType *didPtr, PduInfoType *pduTxData, uint16 *txPos)
+static Dcm_NegativeResponseCodeType readDidScalingData(const Dcm_DspDidType *didPtr, const PduInfoType *pduTxData, uint16 *txPos)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 

@@ -188,18 +188,19 @@ void DsdHandleRequest(void)
 	currentSid = msgData.pduRxData->SduDataPtr[0];	/** @req DCM198 */
 
 	/** @req DCM178 */
-	//lint -e506 -e774	PC-Lint exception Misra 13.7, 14.1 Allow configuration variables in boolean expression
+	//lint --e(506, 774)	PC-Lint exception Misra 13.7, 14.1 Allow configuration variables in boolean expression
 	if ((DCM_RESPOND_ALL_REQUEST == STD_ON) || ((currentSid & 0x7Fu) < 0x40)) {		/** @req DCM084 */
 		if (lookupSid(currentSid, &sidConfPtr)) {		/** @req DCM192 */ /** @req DCM193 */ /** @req DCM196 */
 			// SID found!
 			if (DspCheckSessionLevel(sidConfPtr->DsdSidTabSessionLevelRef)) {		 /** @req DCM211 */
 				if (DspCheckSecurityLevel(sidConfPtr->DsdSidTabSecurityLevelRef)) {	 /** @req DCM217 */
-					//lint -e506 -e774	PC-Lint exception Misra 13.7, 14.1 Allow configuration variables in boolean expression
+					//lint --e(506, 774)	PC-Lint exception Misra 13.7, 14.1 Allow configuration variables in boolean expression
 					if (DCM_REQUEST_INDICATION_ENABLED == STD_ON) {	 /** @req DCM218 */
 						 result = askApplicationForServicePermission(msgData.pduRxData->SduDataPtr, msgData.pduRxData->SduLength);
 					} else {
 						result = E_OK;
 					}
+					//lint --e(506, 774)	PC-Lint exception Misra 13.7, 14.1 Allow configuration variables in boolean expression
 					if (result == E_OK) {
 						// Yes! All conditions met!
 						// Check if response shall be suppressed
