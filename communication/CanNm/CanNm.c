@@ -13,6 +13,10 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+// 904 PC-Lint MISRA 14.7: OK. Allow VALIDATE, VALIDATE_RV and VALIDATE_NO_RV to return value.
+//lint -emacro(904,CANNM_VALIDATE_INIT,CANNM_VALIDATE_CHANNEL)
+
+
 /* Globally fulfilled requirements */
 /** @req CANNM081 */
 /** @req CANNM044 */
@@ -44,25 +48,28 @@
 /** @req CANNM026 */
 /** @req CANNM201 */
 
-#if (CANNM_DEV_ERROR_DETECT == STD_ON)
-#include "Det.h"
-#endif
-#if defined(USE_DEM)
-#include "Dem.h"
-#endif
-#include "ComStack_Types.h"
-#include "CanNm.h"
+#include "ComStack_Types.h" 	/** @req CANNM082 */ //Eija
+#include "CanNm.h"				/** @req CANNM082 */ //Eija
 #include "CanNm_Internal.h"
-#include "CanNm_ConfigTypes.h"
-#include "Nm_Cbk.h"
-#include "NmStack_Types.h"
-#include "MemMap.h"
+//#include "CanNm_ConfigTypes.h" //Eija: already included in CanNm.h
+#include "Nm_Cbk.h"				/** @req CANNM082 */ //Eija
+#include "NmStack_Types.h"		/** @req CANNM082 */ //Eija
+//#include SchM_CanNm.h			/** @req CANNM082 */ //Eija: Not implemented.
+#include "MemMap.h"				/** @req CANNM082 */ //Eija
 
 /** @req CANNM083 */
 #include "CanIf.h"
 #include "Nm.h"
 
 #include <string.h>
+
+#if (CANNM_DEV_ERROR_DETECT == STD_ON)
+#include "Det.h"				/** @req CANNM082 */
+#endif
+#if defined(USE_DEM)
+#include "Dem.h"				/** @req CANNM082 */
+#endif
+
 
 static const CanNm_ConfigType* CanNm_ConfigPtr;
 
@@ -77,7 +84,7 @@ void CanNm_Init( const CanNm_ConfigType * const cannmConfigPtr ){
 
 	CanNm_ConfigPtr = cannmConfigPtr;  /**< @req CANNM060 */
 
-	int channel;
+	uint8 channel; //Eija
 	for (channel = 0; channel < CANNM_CHANNEL_COUNT; channel++) {
 		const CanNm_ChannelType* ChannelConf = &CanNm_ConfigPtr->Channels[channel];
 		CanNm_Internal_ChannelType* ChannelInternal = &CanNm_Internal.Channels[channel];
@@ -559,6 +566,7 @@ static inline void CanNm_Internal_BusSleep_to_RepeatMessage( const CanNm_Channel
 static inline void CanNm_Internal_BusSleep_to_BusSleep( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal ) {
 	// Notify 'Network Start'
 	Nm_NetworkStartIndication(ChannelConf->NmNetworkHandle);  /**< @req CANNM127.1 */
+	(void) ChannelInternal; //Just to avoid 715 PC-Lint warning about not used.
 }
 
 static inline void CanNm_Internal_RepeatMessage_to_RepeatMessage( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal ) {
@@ -591,6 +599,7 @@ static inline void CanNm_Internal_NormalOperation_to_RepeatMessage( const CanNm_
 static inline void CanNm_Internal_NormalOperation_to_ReadySleep( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal ) {
 	ChannelInternal->Mode = NM_MODE_NETWORK;
 	ChannelInternal->State = NM_STATE_READY_SLEEP;
+	(void) ChannelConf; //Just to avoid 715 PC-Lint warning about not used.
 }
 static inline void CanNm_Internal_NormalOperation_to_NormalOperation( const CanNm_ChannelType* ChannelConf, CanNm_Internal_ChannelType* ChannelInternal ) {
 	ChannelInternal->TimeoutTimeLeft = ChannelConf->TimeoutTime;  /**< @req CANNM117.2 */
