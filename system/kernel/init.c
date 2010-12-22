@@ -26,7 +26,7 @@ extern void Os_CfgGetInterruptStackInfo( OsStackType *stack );
 extern uint32_t McuE_GetSystemClock( void );
 extern OsTickType OsTickFreq;
 
-sys_t os_sys;
+Os_SysType Os_Sys;
 
 Os_IntCounterType Os_IntDisableAllCnt;
 Os_IntCounterType Os_IntSuspendAllCnt;
@@ -58,7 +58,7 @@ static void os_pcb_rom_copy( OsPcbType *pcb, const OsRomPcbType *r_pcb ) {
 	pcb->pid = r_pcb->pid;
 	pcb->prio = r_pcb->prio;
 #if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
-	pcb->application = Os_CfgGetApplObj(r_pcb->application_id);
+//	pcb->accessingApp = Os_CfgGetApplObj(r_pcb->application_id);
 #endif
 	pcb->entry = r_pcb->entry;
 	pcb->proc_type = r_pcb->proc_type;
@@ -92,19 +92,19 @@ void InitOS( void ) {
 	DEBUG(DEBUG_LOW,"os_init");
 
 	/* Clear sys */
-	memset(&os_sys,0,sizeof(sys_t));
+	memset(&Os_Sys,0,sizeof(Os_SysType));
 
 	Os_ArchInit();
 
 	// Assign pcb list and init ready queue
-	os_sys.pcb_list = pcb_list;
-	TAILQ_INIT(& os_sys.ready_head);
-	TAILQ_INIT(& os_sys.pcb_head);
+	Os_Sys.pcb_list = pcb_list;
+	TAILQ_INIT(& Os_Sys.ready_head);
+	TAILQ_INIT(& Os_Sys.pcb_head);
 
 	// Calc interrupt stack
 	Os_CfgGetInterruptStackInfo(&int_stack);
 	// TODO: 16 is arch dependent
-	os_sys.int_stack = (void *)((size_t)int_stack.top + (size_t)int_stack.size - 16);
+	Os_Sys.int_stack = (void *)((size_t)int_stack.top + (size_t)int_stack.size - 16);
 
 	// Init counter.. with alarms and schedule tables
 #if OS_COUNTER_CNT!=0
@@ -152,9 +152,9 @@ static void os_start( void ) {
 	/* TODO: fix ugly */
 	/* Call the startup hook */
 	extern struct OsHooks os_conf_global_hooks;
-	os_sys.hooks = &os_conf_global_hooks;
-	if( os_sys.hooks->StartupHook!=NULL ) {
-		os_sys.hooks->StartupHook();
+	Os_Sys.hooks = &os_conf_global_hooks;
+	if( Os_Sys.hooks->StartupHook!=NULL ) {
+		Os_Sys.hooks->StartupHook();
 	}
 
 	/* Alarm autostart */
@@ -178,7 +178,7 @@ static void os_start( void ) {
 		OsPcbType *iterPcbPtr;
 		OsPriorityType topPrio = -1;
 
-		TAILQ_FOREACH(iterPcbPtr,& os_sys.pcb_head,pcb_list) {
+		TAILQ_FOREACH(iterPcbPtr,& Os_Sys.pcb_head,pcb_list) {
 			if(	iterPcbPtr->autostart ) {
 				if( iterPcbPtr->prio > topPrio ) {
 					tmp_pcb = iterPcbPtr;
@@ -190,8 +190,8 @@ static void os_start( void ) {
 
 	// Swap in prio proc.
 	{
-		// FIXME: Do this in a more structured way.. setting os_sys.curr_pcb manually is not the way to go..
-		os_sys.curr_pcb = tmp_pcb;
+		// FIXME: Do this in a more structured way.. setting Os_Sys.curr_pcb manually is not the way to go..
+		Os_Sys.curr_pcb = tmp_pcb;
 
 		// register this auto-start activation
 		assert(tmp_pcb->activations < tmp_pcb->activationLimit);
@@ -243,7 +243,7 @@ void StartOS(AppModeType Mode) {
 		noooo();
 	}
 
-	os_sys.appMode = Mode;
+	Os_Sys.appMode = Mode;
 
 	Os_CfgValidate();
 
@@ -262,8 +262,8 @@ void StartOS(AppModeType Mode) {
 /** @req OS071 */
 void ShutdownOS( StatusType Error ) {
 
-	if( os_sys.hooks->ShutdownHook != NULL ) {
-		os_sys.hooks->ShutdownHook(Error);
+	if( Os_Sys.hooks->ShutdownHook != NULL ) {
+		Os_Sys.hooks->ShutdownHook(Error);
 	}
 
 	Irq_Disable();

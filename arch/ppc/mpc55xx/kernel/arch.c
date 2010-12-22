@@ -30,8 +30,8 @@ void Os_ArchFirstCall( void )
 
 	// Assume that regs[0] is setup before and contains the settings
 	// to switch to user mode.
-	register uint32_t msr asm("r3") = os_sys.curr_pcb->regs[0];
-	register void *ea asm("r4") = (void *) os_sys.curr_pcb->entry;
+	register uint32_t msr asm("r3") = Os_Sys.curr_pcb->regs[0];
+	register void *ea asm("r4") = (void *) Os_Sys.curr_pcb->entry;
 
 	// Do the switch
 	asm volatile(
@@ -43,7 +43,7 @@ void Os_ArchFirstCall( void )
 #else
 // TODO: This really depends on if scheduling policy
 	Irq_Enable();
-	os_sys.curr_pcb->entry();
+	Os_Sys.curr_pcb->entry();
 #endif
 }
 

@@ -123,25 +123,25 @@
  */
 
 #define ERRORHOOK(x) \
-	if( os_sys.hooks->ErrorHook != NULL  ) { \
-		os_sys.hooks->ErrorHook(x); \
+	if( Os_Sys.hooks->ErrorHook != NULL  ) { \
+		Os_Sys.hooks->ErrorHook(x); \
 	}
 
 
 #define PRETASKHOOK() \
-	assert( os_sys.curr_pcb->state & ST_RUNNING ); \
-	assert( os_sys.curr_pcb->flags == SYS_FLAG_HOOK_STATE_EXPECTING_PRE );  \
-	os_sys.curr_pcb->flags = SYS_FLAG_HOOK_STATE_EXPECTING_POST;   \
-	if( os_sys.hooks->PreTaskHook != NULL ) { \
-		os_sys.hooks->PreTaskHook(); \
+	assert( Os_Sys.curr_pcb->state & ST_RUNNING ); \
+	assert( Os_Sys.curr_pcb->flags == SYS_FLAG_HOOK_STATE_EXPECTING_PRE );  \
+	Os_Sys.curr_pcb->flags = SYS_FLAG_HOOK_STATE_EXPECTING_POST;   \
+	if( Os_Sys.hooks->PreTaskHook != NULL ) { \
+		Os_Sys.hooks->PreTaskHook(); \
 	}
 
 #define POSTTASKHOOK() \
-	assert( os_sys.curr_pcb->state & ST_RUNNING ); \
-	assert( os_sys.curr_pcb->flags == SYS_FLAG_HOOK_STATE_EXPECTING_POST );  \
-	os_sys.curr_pcb->flags = SYS_FLAG_HOOK_STATE_EXPECTING_PRE;   \
-	if( os_sys.hooks->PostTaskHook != NULL ) { 	\
-		os_sys.hooks->PostTaskHook();			\
+	assert( Os_Sys.curr_pcb->state & ST_RUNNING ); \
+	assert( Os_Sys.curr_pcb->flags == SYS_FLAG_HOOK_STATE_EXPECTING_POST );  \
+	Os_Sys.curr_pcb->flags = SYS_FLAG_HOOK_STATE_EXPECTING_PRE;   \
+	if( Os_Sys.hooks->PostTaskHook != NULL ) { 	\
+		Os_Sys.hooks->PostTaskHook();			\
 	}
 
 /*
@@ -149,15 +149,15 @@
  */
 
 static inline OsTaskidType get_curr_pid( void ) {
-	return os_sys.curr_pcb->pid;
+	return Os_Sys.curr_pcb->pid;
 }
 
 static inline OsPcbType *get_curr_pcb( void ) {
-	return os_sys.curr_pcb;
+	return Os_Sys.curr_pcb;
 }
 
 static inline void set_curr_pcb( OsPcbType *pcb ) {
-	os_sys.curr_pcb = pcb;
+	Os_Sys.curr_pcb = pcb;
 }
 
 static inline _Bool is_idle_task( OsPcbType *pcb ){
@@ -165,22 +165,12 @@ static inline _Bool is_idle_task( OsPcbType *pcb ){
 }
 
 static inline OsTaskidType get_curr_prio( void ){
-	return os_sys.curr_pcb->prio;
+	return Os_Sys.curr_pcb->prio;
 }
 
 static inline TickType get_os_tick( void ) {
-	return os_sys.tick;
+	return Os_Sys.tick;
 }
-
-#if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
-static inline OsApplicationType *get_curr_application( void ) {
-	return get_curr_pcb()->application;
-}
-
-static inline uint32_t get_curr_application_id( void ) {
-	return get_curr_pcb()->application->application_id;
-}
-#endif
 
 static inline struct OsResource *os_get_resource_int_p( void ) {
 	return get_curr_pcb()->resource_int_p;
@@ -247,19 +237,19 @@ static inline _Bool Os_TaskOccupiesResources( OsPcbType *pcb ) {
 
 /*
 static inline void Os_GetSchedulerResource() {
-	os_sys.scheduler_lock = 1;
+	Os_Sys.scheduler_lock = 1;
 }
 
 static inline void Os_ReleaseSchedulerResource() {
-	os_sys.scheduler_lock = 0;
+	Os_Sys.scheduler_lock = 0;
 }
 */
 /*
 static inline _Bool Os_SchedulerResourceIsOccupied() {
 #if 0
-	return (os_sys.resScheduler.owner != NO_TASK_OWNER );
+	return (Os_Sys.resScheduler.owner != NO_TASK_OWNER );
 #else
-	return (os_sys.scheduler_lock == 1);
+	return (Os_Sys.scheduler_lock == 1);
 #endif
 }
 */
@@ -267,9 +257,9 @@ static inline _Bool Os_SchedulerResourceIsOccupied() {
 
 static inline _Bool Os_SchedulerResourceIsFree() {
 #if 1
-	return (os_sys.resScheduler.owner == NO_TASK_OWNER );
+	return (Os_Sys.resScheduler.owner == NO_TASK_OWNER );
 #else
-	return (os_sys.scheduler_lock == 0);
+	return (Os_Sys.scheduler_lock == 0);
 #endif
 }
 
@@ -326,7 +316,7 @@ static inline void Os_StackPerformCheck( OsPcbType *pcbPtr ) {
 			/** @req OS068 */
 			ShutdownOS(E_OS_STACKFAULT);
 #else
-#error SC3 or SC4 not supported. Protection hook should be called here
+#warning SC3 or SC4 not supported. Protection hook should be called here
 #endif
 		}
 #endif

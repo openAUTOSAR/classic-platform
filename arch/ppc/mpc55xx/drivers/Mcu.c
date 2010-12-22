@@ -14,12 +14,7 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
-
+/* ----------------------------[includes]------------------------------------*/
 #include <assert.h>
 #include <string.h>
 #include "Std_Types.h"
@@ -34,11 +29,14 @@
 #include "Os.h"
 #include "irq.h"
 
+/* ----------------------------[private define]------------------------------*/
 //#define USE_TRACE 1
 //#define USE_LDEBUG_PRINTF 1
 #include "debug.h"
 
 #define SYSCLOCK_SELECT_PLL	0x2
+
+/* ----------------------------[private macro]-------------------------------*/
 
 #if defined(CFG_MPC5567)
 #define CALC_SYSTEM_CLOCK(_extal,_emfd,_eprediv,_erfd)  \
@@ -48,11 +46,27 @@
             ( (_extal) * ((_emfd)+16) / (((_eprediv)+1)*((_erfd)+1)) )
 #endif
 
+/* Development error macros. */
+#if ( MCU_DEV_ERROR_DETECT == STD_ON )
+#define VALIDATE(_exp,_api,_err ) \
+        if( !(_exp) ) { \
+          Det_ReportError(MODULE_ID_MCU,0,_api,_err); \
+          return; \
+        }
+
+#define VALIDATE_W_RV(_exp,_api,_err,_rv ) \
+        if( !(_exp) ) { \
+          Det_ReportError(MODULE_ID_MCU,0,_api,_err); \
+          return (_rv); \
+        }
+#else
+#define VALIDATE(_exp,_api,_err )
+#define VALIDATE_W_RV(_exp,_api,_err,_rv )
+#endif
+
+
+/* ----------------------------[private typedef]-----------------------------*/
 typedef void (*vfunc_t)();
-
-/* Function declarations. */
-static void Mcu_ConfigureFlash(void);
-
 
 typedef struct {
 	uint32 lossOfLockCnt;
@@ -76,23 +90,10 @@ typedef struct
 
 } Mcu_GlobalType;
 
-/* Development error macros. */
-#if ( MCU_DEV_ERROR_DETECT == STD_ON )
-#define VALIDATE(_exp,_api,_err ) \
-        if( !(_exp) ) { \
-          Det_ReportError(MODULE_ID_MCU,0,_api,_err); \
-          return; \
-        }
 
-#define VALIDATE_W_RV(_exp,_api,_err,_rv ) \
-        if( !(_exp) ) { \
-          Det_ReportError(MODULE_ID_MCU,0,_api,_err); \
-          return (_rv); \
-        }
-#else
-#define VALIDATE(_exp,_api,_err )
-#define VALIDATE_W_RV(_exp,_api,_err,_rv )
-#endif
+/* ----------------------------[private function prototypes]-----------------*/
+static void Mcu_ConfigureFlash(void);
+/* ----------------------------[private variables]---------------------------*/
 
 // Global config
 Mcu_GlobalType Mcu_Global =
@@ -101,8 +102,13 @@ Mcu_GlobalType Mcu_Global =
 		.config = &McuConfigData[0],
 };
 
-//-------------------------------------------------------------------
+/* ----------------------------[private functions]---------------------------*/
+/* ----------------------------[public functions]----------------------------*/
 
+
+/**
+ * ISR wh
+ */
 static void Mcu_LossOfLock( void  ) {
 #if defined(USE_DEM)
 	Dem_ReportErrorStatus(MCU_E_CLOCK_FAILURE, DEM_EVENT_STATUS_FAILED);
@@ -114,8 +120,10 @@ static void Mcu_LossOfLock( void  ) {
 
 }
 
-//-------------------------------------------------------------------
-static void Mcu_LossOfCLock( void  ) {
+/**
+ *
+ */
+static void Mcu_LossOfClock( void  ) {
 
 	/* Should report MCU_E_CLOCK_FAILURE with DEM here */
 
@@ -250,43 +258,45 @@ static uint32 Mcu_CheckCpu( void ) {
 
 //-------------------------------------------------------------------
 
-void Mcu_Init(const Mcu_ConfigType *configPtr)
-{
-  VALIDATE( ( NULL != configPtr ), MCU_INIT_SERVICE_ID, MCU_E_PARAM_CONFIG );
+void Mcu_Init(const Mcu_ConfigType *configPtr) {
+	IRQ_DECL_ISR1( PLL_SYNSR_LOLF,  CPU_CORE0, 10, Mcu_LossOfLock  );
+	IRQ_DECL_ISR1( PLL_SYNSR_LOCF,  CPU_CORE0, 10, Mcu_LossOfClock );
 
-  if( !SIMULATOR() ) {
-	  Mcu_CheckCpu();
-  }
+	VALIDATE( ( NULL != configPtr ), MCU_INIT_SERVICE_ID, MCU_E_PARAM_CONFIG );
 
-  memset(&Mcu_Global.stats,0,sizeof(Mcu_Global.stats));
+	if (!SIMULATOR()) {
+		Mcu_CheckCpu();
+	}
 
+	memset(&Mcu_Global.stats, 0, sizeof(Mcu_Global.stats));
 
-  //
-  // Setup memories
-  //
-  Mcu_ConfigureFlash();
+	//
+	// Setup memories
+	//
+	Mcu_ConfigureFlash();
 
-  Mcu_Global.config = configPtr;
-  Mcu_Global.initRun = 1;
+	Mcu_Global.config = configPtr;
+	Mcu_Global.initRun = 1;
 
-  if( Mcu_Global.config->McuClockSrcFailureNotification == TRUE  ){
-  	// Enable loss of lock interrupt
+	if (Mcu_Global.config->McuClockSrcFailureNotification == TRUE) {
+		// Enable loss of lock interrupt
 
-	Irq_AttachIsr1(Mcu_LossOfLock, NULL, PLL_SYNSR_LOLF,10 );
+		Irq_Attach( &IRQ_NAME(PLL_SYNSR_LOLF) );
+//		Irq_AttachIsr1(Mcu_LossOfLock, NULL, PLL_SYNSR_LOLF, 10);
 #if defined(CFG_MPC5516)
-//  	FMPLL.SYNCR.B.LOCIRQ = 1; TODO: Kolla denna bortkommentering med Mårten.
-  	FMPLL.ESYNCR2.B.LOLIRQ = 1;
+		FMPLL.ESYNCR2.B.LOLIRQ = 1;
 #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
-  	FMPLL.SYNCR.B.LOLIRQ = 1;
+		FMPLL.SYNCR.B.LOLIRQ = 1;
 #endif
-	Irq_AttachIsr1(Mcu_LossOfCLock, NULL, PLL_SYNSR_LOCF,10 );
+
+		Irq_Attach( &IRQ_NAME(PLL_SYNSR_LOLF));
+//		Irq_AttachIsr1(Mcu_LossOfClock, NULL, PLL_SYNSR_LOCF, 10);
 #if defined(CFG_MPC5516)
-//  	FMPLL.SYNCR.B.LOCIRQ = 1; TODO: Kolla denna bortkommentering med Mårten.
-  	FMPLL.ESYNCR2.B.LOCIRQ = 1;
+		FMPLL.ESYNCR2.B.LOCIRQ = 1;
 #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
-  	FMPLL.SYNCR.B.LOCIRQ = 1;
+		FMPLL.SYNCR.B.LOCIRQ = 1;
 #endif
-  }
+	}
 }
 //-------------------------------------------------------------------
 
@@ -531,8 +541,10 @@ void McuE_ExitCriticalSection(uint32_t old_state)
 
 /**
  * Get the peripheral clock in Hz for a specific device
+ *
+ * @param type
+ * @return
  */
-
 uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 {
 #if defined(CFG_MPC5567)

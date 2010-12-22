@@ -82,7 +82,7 @@ typedef struct OsAlarmAutostart {
 } OsAlarmAutostartType;
 
 /* STD container : OsAlarm
- * OsAlarmAccessionApplication: 0..* Ref to OS application
+ * OsAlarmAccessingApplication: 0..* Ref to OS application
  * OsAlamCounterRef:            1    Ref to counter
  * OsAlarmAction[C]             1    Action when alarm expires
  * OsAlarmAutostart[C]          0..1 Autostart
@@ -91,6 +91,10 @@ typedef struct OsAlarm {
 	char 	name[16];
 	/* Reference to counter */
 	struct OsCounter *counter;
+
+#if defined(SC3) || defined(SC4)
+	uint32 accessingAppMask;
+#endif
 
 	CounterType counter_id;
 	/* cycle, 0 = no cycle */

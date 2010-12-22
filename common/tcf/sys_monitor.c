@@ -69,7 +69,7 @@ uint16_t handle_SysMonCommand(TCF_Command* command, char* buf) {
 
 		/* Add data field */
 		mystrcat(buf, JSON_ListStart);
-		TAILQ_FOREACH(iterPcbPtr,& os_sys.pcb_head,pcb_list) {
+		TAILQ_FOREACH(iterPcbPtr,& Os_Sys.pcb_head,pcb_list) {
 			if(iterPcbPtr->proc_type < 4)
 			{
 				if(first){
@@ -94,7 +94,7 @@ uint16_t handle_SysMonCommand(TCF_Command* command, char* buf) {
 
 		/* Add data field */
 		char *arg = command->arguments + 1; /* add 1 for " */
-		TAILQ_FOREACH(iterPcbPtr,& os_sys.pcb_head,pcb_list) {
+		TAILQ_FOREACH(iterPcbPtr,& Os_Sys.pcb_head,pcb_list) {
 			if(strncmp(arg, iterPcbPtr->name, strlen(command->arguments)-2) == 0)
 			{
 				break;

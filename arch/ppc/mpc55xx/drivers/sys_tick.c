@@ -23,8 +23,13 @@
  */
 void Os_SysTickInit( void ) {
 	TaskType tid;
+#if 1
+	IRQ_DECL_ISR2("MyIsr",10,CPU_CORE0, 10,MyIsr,HAVE_SC2_SC4(RES_ID_1),HAVE_SC2_SC4(timing));
+
+#else
 	tid = Os_Arc_CreateIsr(OsTick,6/*prio*/,"OsTick");
 	Irq_AttachIsr2(tid,NULL,7);
+#endif
 }
 
 /**

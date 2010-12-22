@@ -51,7 +51,17 @@ typedef TaskStateType *TaskStateRefType;
 #define INVALID_OSAPPLICATION (-1)
 
 /* TODO, I have no idea what this should be*/
+#if (OS_SC3==STD_ON) || (OS_SC4==STD_ON)
 typedef sint32 ApplicationType;
+
+typedef enum {
+	APPLICATION_ACCESSIBLE,
+	APPLICATION_RESTARTING,
+	APPLICATION_TERMINATED
+} ApplicationStateType;
+
+typedef ApplicationStateType *ApplicationStateRefType;
+#endif
 
 /* See oil config for defines */
 typedef sint32 AppModeType;
@@ -221,6 +231,7 @@ static inline void ResumeOSInterrupts( void ) {
 /*
  * Class 2,3 and 4 API
  */
+#if (OS_SC3==STD_ON) || (OS_SC4==STD_ON)
 ApplicationType GetApplicationID( void );
 AccessType 	CheckISRMemoryAccess( 	ISRType ISRID,
 									MemoryStartAddressType Address,
@@ -230,8 +241,14 @@ AccessType 	CheckTaskMemoryAccess( 	TaskType TaskID,
 									MemoryStartAddressType Address,
 									MemorySizeType Size );
 
+ObjectAccessType CheckObjectAccess( ApplicationType ApplID, ObjectTypeType ObjectType, uintptr_t objPtr);
+ApplicationType CheckObjectOwnership(  ObjectTypeType ObjectType, uintptr_t objPtr );
+StatusType TerminateApplication(  ApplicationType Application, RestartType RestartOption );
+StatusType AllowAccess( void );
+StatusType GetApplicationState(   ApplicationType Application,  ApplicationStateRefType Value );
 StatusType 	CallTrustedFunction(	TrustedFunctionIndexType FunctionIndex,
 									TrustedFunctionParameterRefType FunctionParams );
+#endif
 
 StatusType 	GetTaskID(		TaskRefType TaskID );
 StatusType 	GetTaskState(	TaskType task_id, TaskStateRefType state);

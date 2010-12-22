@@ -28,7 +28,10 @@ typedef enum  {
 	OP_RELEASE_RESOURCE = 64,
 } OpType ;
 
-typedef struct sys_s {
+/*
+ * Global system structure
+ */
+typedef struct Os_Sys {
 //	OsApplicationType *curr_application;
 	/* Current running task*/
 	OsPcbType *curr_pcb;
@@ -58,9 +61,13 @@ typedef struct sys_s {
 	/* Current Application mode */
 	AppModeType appMode;
 
-//	uint32_t flags;
+#if (OS_SC3==STD_ON) || (OS_SC4==STD_ON)
+	ApplicationStateType currAppState;
+#endif
 
 	uint32_t task_cnt;
+
+	uint32_t isrCnt;
 	/* List of all pcb's,
 	 * Only needed for non-static configuration of the kernel
 	 */
@@ -70,17 +77,17 @@ typedef struct sys_s {
 
 	/* Occording to OSEK 8.3 RES_SCHEDULER is accessible to all tasks */
 	OsResourceType resScheduler;
-} sys_t;
+} Os_SysType;
 
-extern sys_t os_sys;
+extern Os_SysType Os_Sys;
 
 static inline OsPcbType *Os_TaskGetCurrent(  void ) {
-	return os_sys.curr_pcb;
+	return Os_Sys.curr_pcb;
 }
 
 #if 0
 static uint32_t OSErrorGetServiceId( void ) {
-	return os_sys.serviceId;
+	return Os_Sys.serviceId;
 }
 #endif
 

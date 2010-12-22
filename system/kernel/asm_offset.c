@@ -30,9 +30,9 @@
 void  asm_foo(void) {
 	DECLARE(PCB_STACK_CURR_P,	offsetof(OsPcbType, stack));
 	DECLARE(PCB_ENTRY_P,		offsetof(OsPcbType, entry));
-	DECLARE(SYS_CURR_PCB_P,		offsetof(sys_t, curr_pcb));
-	DECLARE(SYS_INT_NEST_CNT, offsetof(sys_t, int_nest_cnt));
-	DECLARE(SYS_INT_STACK, offsetof(sys_t, int_stack));
+	DECLARE(SYS_CURR_PCB_P,		offsetof(Os_SysType, curr_pcb));
+	DECLARE(SYS_INT_NEST_CNT, offsetof(Os_SysType, int_nest_cnt));
+	DECLARE(SYS_INT_STACK, offsetof(Os_SysType, int_stack));
 }
 
 

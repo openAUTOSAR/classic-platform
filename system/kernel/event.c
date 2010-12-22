@@ -46,7 +46,7 @@ StatusType WaitEvent( EventMaskType Mask ) {
 
 	OS_DEBUG(D_EVENT,"# WaitEvent %s\n",Os_TaskGetCurrent()->name);
 
-	if( os_sys.int_nest_cnt != 0 ) {
+	if( Os_Sys.int_nest_cnt != 0 ) {
 		rv =  E_OS_CALLEVEL;
 		goto err;
 	}
@@ -148,7 +148,7 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 
 			currPcbPtr = Os_TaskGetCurrent();
 			/* Checking "4.6.2  Non preemptive scheduling" it does not dispatch if NON  */
-			if( (os_sys.int_nest_cnt == 0) &&
+			if( (Os_Sys.int_nest_cnt == 0) &&
 				(currPcbPtr->scheduling == FULL) &&
 				(dest_pcb->prio > currPcbPtr->prio) &&
 				(Os_SchedulerResourceIsFree()) )
@@ -216,7 +216,7 @@ StatusType ClearEvent( EventMaskType Mask) {
     StatusType rv = E_OK;
 	OsPcbType *pcb;
 
-	if( os_sys.int_nest_cnt != 0 ) {
+	if( Os_Sys.int_nest_cnt != 0 ) {
 		rv =  E_OS_CALLEVEL;
 		goto err;
 	}

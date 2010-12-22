@@ -582,7 +582,7 @@ void Os_SchTblAutostart( void ) {
 			const struct OsSchTblAutostart *autoPtr = sPtr->autostartPtr;
 
 			/* Check appmode */
-			if( os_sys.appMode & autoPtr->appMode ) {
+			if( Os_Sys.appMode & autoPtr->appMode ) {
 
 				/* Start the schedule table */
 				switch(autoPtr->type) {

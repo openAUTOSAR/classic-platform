@@ -65,14 +65,13 @@ trusted_func_t oil_trusted_func_list[SERVICE_CNT];
 #endif
 
 /*-----------------------------------------------------------------*/
+#if 0
 #if (  OS_SC3 == STD_ON) || (  OS_SC4==STD_ON)
-int Os_CfgGetApplCnt(void) {
-	return APPLICATION_CNT;
-}
 
-OsRomApplicationType *Os_CfgGetApplObj( ApplicationType application_id ) {
+OsRomApplicationType *Os_CfgGetApplObj( ApplicationType appId ) {
 	return &rom_app_list[application_id];
 }
+#endif
 #endif
 
 /*-----------------------------------------------------------------*/
@@ -154,7 +153,7 @@ uint32 Os_CfgGetMessageCnt(void ) {
 
 #if (  OS_SC3 == STD_ON) || (  OS_SC4 == STD_ON)
 uint32 Os_CfgGetServiceCnt( void ) {
-	return SERVICE_CNT;
+	return OS_SERVICE_CNT;
 }
 #endif
 

@@ -26,7 +26,7 @@ static inline void os_pcb_print_rq( void ) {
 	OsPcbType *i_pcb;
 	int cnt = 0;
 
-	TAILQ_FOREACH(i_pcb,&os_sys.ready_head,ready_list) {
+	TAILQ_FOREACH(i_pcb,&Os_Sys.ready_head,ready_list) {
 		//printf("%02d: %02d %s\n",cnt,i_pcb->state,i_pcb->name);
 		cnt++;
 //		assert( i_pcb->state == ST_READY );
@@ -45,7 +45,7 @@ static inline void Os_TaskRunningToReady( OsPcbType *pcb ) {
 static inline void Os_TaskMakeReady( OsPcbType *pcb ) {
 	if( !( pcb->state & ( ST_READY | ST_RUNNING )) ) {
 		pcb->state = ST_READY;
-		TAILQ_INSERT_TAIL(& os_sys.ready_head,pcb,ready_list);
+		TAILQ_INSERT_TAIL(& Os_Sys.ready_head,pcb,ready_list);
 		OS_DEBUG(D_TASK,"Added %s to ready list\n",pcb->name);
 	}
 }
@@ -56,7 +56,7 @@ static inline void Os_TaskMakeWaiting( OsPcbType *pcb )
 	assert( pcb->state & (ST_READY|ST_RUNNING) );
 
 	pcb->state = ST_WAITING;
-	TAILQ_REMOVE(&os_sys.ready_head,pcb,ready_list);
+	TAILQ_REMOVE(&Os_Sys.ready_head,pcb,ready_list);
 	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->name);
 }
 
@@ -65,7 +65,7 @@ static inline void Os_TaskMakeSuspended( OsPcbType *pcb )
 	{
 	assert( pcb->state & (ST_READY|ST_RUNNING) );
 	pcb->state = ST_SUSPENDED;
-	TAILQ_REMOVE(&os_sys.ready_head,pcb,ready_list);
+	TAILQ_REMOVE(&Os_Sys.ready_head,pcb,ready_list);
 	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->name);
 }
 

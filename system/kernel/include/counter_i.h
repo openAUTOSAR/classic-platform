@@ -46,7 +46,9 @@ typedef struct OsCounter {
 	// The counter value ( if software counter )
 	uint32_t val;
 	// Application mask, SWS OS317
-	uint32_t app_mask;
+#if defined(SC3) || defined(SC4)
+	uint32 accessingAppMask;
+#endif
 	//  hmm, strange to call it alarm base.... but see spec.
 	AlarmBaseType alarm_base;
 	/* Used only if we configure a GPT timer as os timer */

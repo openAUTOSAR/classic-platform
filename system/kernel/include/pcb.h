@@ -63,7 +63,7 @@ typedef sint8 OsPriorityType;
  * OsIsrExecutionBudget 		0..1 float
  * OsIsrOsInterruptLockBudget 	0..1 float
  * OsIsrTimeFrame 				0..1 float
- * OsIsrResourceLock[C] 		0..1
+ * OsIsrResourceLock[C] 		0..*
  * */
 
 
@@ -130,7 +130,6 @@ typedef struct OsPcb {
 	int 			autostart:1;			// TASK
 	OsStackType		stack;					// TASK
 
-	int				vector; 				// ISR
 	char 			name[TASK_NAME_SIZE];
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 	OsTimingProtectionType	*timing_protection;
@@ -180,6 +179,15 @@ typedef struct OsPcb {
 
 /*-----------------------------------------------------------------*/
 
+
+typedef struct {
+	int a;
+	int b;
+} OsIsrType_VAR;
+
+
+/*-----------------------------------------------------------------*/
+
 typedef struct OsRomPcb {
 	OsTaskidType	pid;
 	OsPriorityType	prio;
@@ -189,7 +197,9 @@ typedef struct OsRomPcb {
 	uint8	 	 	autostart;
 	OsStackType 	stack;
 	int				vector; 				// ISR
-	ApplicationType application_id;
+#if defined(SC3) || defined(SC4)
+	uint32 accessingAppMask;
+#endif
 	char 		 	name[16];
 	enum OsTaskSchedule scheduling;
 	uint32_t 		resourceAccess;

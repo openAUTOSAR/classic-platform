@@ -77,7 +77,7 @@ TaskType Os_Arc_CreateIsr( void (*entry)(void ), uint8_t prio, const char *name 
 {
 	OsPcbType *pcb = os_alloc_new_pcb();
 	strncpy(pcb->name,name,TASK_NAME_SIZE);
-	pcb->vector = -1;
+//	pcb->vector = -1;
 	pcb->prio = prio;
 	/* TODO: map to interrupt controller priority */
 	assert(prio<=OS_TASK_PRIORITY_MAX);
@@ -88,6 +88,60 @@ TaskType Os_Arc_CreateIsr( void (*entry)(void ), uint8_t prio, const char *name 
 
 	return Os_AddTask(pcb);
 }
+
+ISRType Os_AddIsr( const OsIsrType_CONST * restrict isrPtr ) {
+	ISRType iid;
+
+	iid = Os_Sys.isrCnt++;
+	return iid;
+}
+
+/*
+ * Resources:
+ *   Irq_VectorTable[]
+ *   Irq_IsrTypeTable[]
+ *   Irq_PriorityTable[]
+ *
+ *   exception table
+ *   interrupt table
+ *
+ * Usual HW resources.
+ * - prio in HW (ppc and arm (even cortex m4))
+ *
+ *
+ * TOOL GENERATES ALL
+ *   Irq_VectorTable   CONST
+ *   Irq_IsrTypeTable  CONST
+ *   Irq_PriorityTable CONST  Can probably be a table with ISR_MAX number
+ *                            of for a CPU with prio registers.  For masking
+ *                            CPUs it's better to keep an array to that indexing
+ *                            can be used.
+ *
+ *   The problem with this approach is that the tool needs to know everything.
+ *
+ * TOOL GENERATES PART
+ *   Irq_VectorTable   VAR     Since we must add vectors later
+ *   Irq_IsrTypeTable  VAR     Since we must add vectors later
+ *   Irq_PriorityTable VAR
+ *
+ *   We move the
+ *
+ */
+
+
+#if 0
+void apa( void ) {
+	ISRType iid;
+	static const OsIsrType_CONST isr = {
+			.name = "MyIsr",
+			.prio = 12,
+			.vector = 15,
+			.entry = MyIsr
+	};
+	iid = Irq_Attach(&isr, ISR_TYPE2, NULL );
+}
+#endif
+
 
 /**
  * Before we have proper editor for ISR2 use this function to add resources
@@ -123,12 +177,12 @@ void TailChaining(void *stack)
 
 	Os_StackPerformCheck(new_pcb);
 
-	if(     (new_pcb == os_sys.curr_pcb) ||
-			(os_sys.curr_pcb->scheduling == NON) ||
+	if(     (new_pcb == Os_Sys.curr_pcb) ||
+			(Os_Sys.curr_pcb->scheduling == NON) ||
 			!Os_SchedulerResourceIsFree() )
 	{
 		/* Just bring the preempted task back to running */
-		Os_TaskSwapContextTo(NULL,os_sys.curr_pcb);
+		Os_TaskSwapContextTo(NULL,Os_Sys.curr_pcb);
 	} else {
 		OS_DEBUG(D_TASK,"Found candidate %s\n",new_pcb->name);
 		Os_TaskSwapContextTo(NULL,new_pcb);
@@ -139,7 +193,7 @@ void Os_Isr_cm3( void *isr_p ) {
 
 	struct OsPcb *isrPtr;
 
-	os_sys.int_nest_cnt++;
+	Os_Sys.int_nest_cnt++;
 
 	/* Grab the ISR "pcb" */
 	isrPtr = (struct OsPcb *)isr_p;
@@ -171,7 +225,7 @@ void Os_Isr_cm3( void *isr_p ) {
 
 	Irq_EOI();
 
-	--os_sys.int_nest_cnt;
+	--Os_Sys.int_nest_cnt;
 
 	/* Scheduling is done in PendSV handler for ARM CM3 */
 	*((uint32_t volatile *)0xE000ED04) = 0x10000000; // PendSV
@@ -189,7 +243,7 @@ void *Os_Isr( void *stack, void *isr_p ) {
 	struct OsPcb *pPtr = NULL;
 
 	/* Check if we interrupted a task or ISR */
-	if( os_sys.int_nest_cnt == 0 ) {
+	if( Os_Sys.int_nest_cnt == 0 ) {
 		/* We interrupted a task */
 		POSTTASKHOOK();
 
@@ -204,7 +258,7 @@ void *Os_Isr( void *stack, void *isr_p ) {
 		/* We interrupted an ISR */
 	}
 
-	os_sys.int_nest_cnt++;
+	Os_Sys.int_nest_cnt++;
 
 	/* Grab the ISR "pcb" */
 	isrPtr = (struct OsPcb *)isr_p;
@@ -242,24 +296,24 @@ void *Os_Isr( void *stack, void *isr_p ) {
 
 	Irq_EOI();
 
-	--os_sys.int_nest_cnt;
+	--Os_Sys.int_nest_cnt;
 
 #if defined(CFG_ARM_CM3)
 		/* Scheduling is done in PendSV handler for ARM CM3 */
 		*((uint32_t volatile *)0xE000ED04) = 0x10000000; // PendSV
 #else
 	// We have preempted a task
-	if( (os_sys.int_nest_cnt == 0) ) {
+	if( (Os_Sys.int_nest_cnt == 0) ) {
 		OsPcbType *new_pcb  = Os_TaskGetTop();
 
 		Os_StackPerformCheck(new_pcb);
 
-		if(     (new_pcb == os_sys.curr_pcb) ||
-				(os_sys.curr_pcb->scheduling == NON) ||
+		if(     (new_pcb == Os_Sys.curr_pcb) ||
+				(Os_Sys.curr_pcb->scheduling == NON) ||
 				!Os_SchedulerResourceIsFree() )
 		{
 			/* Just bring the preempted task back to running */
-			os_sys.curr_pcb->state = ST_RUNNING;
+			Os_Sys.curr_pcb->state = ST_RUNNING;
 			PRETASKHOOK();
 		} else {
 			OS_DEBUG(D_TASK,"Found candidate %s\n",new_pcb->name);

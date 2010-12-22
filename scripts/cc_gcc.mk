@@ -34,7 +34,7 @@ cflags-y 		+= -MMD
 # Warnings
 cflags-y          += -Wall
 #cflags-y          += -Winline	# warn if inline failed
-#cflags-y          += -pedantic
+cflags-y          += -pedantic
 
 # Conformance
 cflags-y          += -fno-strict-aliasing

@@ -150,6 +150,10 @@ typedef struct OsSchTbl {
 	/** @req OS413 */
 	_Bool repeating;
 
+#if defined(SC3) || defined(SC4)
+	uint32 accessingAppMask;
+#endif
+
 	// pointer to this tables counter
 	// OsScheduleTableCounterRef
 	/** @req OS409 */

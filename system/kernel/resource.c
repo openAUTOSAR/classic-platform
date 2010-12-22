@@ -170,7 +170,7 @@ StatusType GetResource( ResourceType ResID ) {
 
 	if( ResID == RES_SCHEDULER ) {
 
-		rPtr = &os_sys.resScheduler;
+		rPtr = &Os_Sys.resScheduler;
 	} else {
 		/* Check we can access it */
 		if( (pcbPtr->resourceAccess & (1<< ResID)) == 0 ) {
@@ -220,7 +220,7 @@ StatusType ReleaseResource( ResourceType ResID) {
 
 	Irq_Save(flags);
 	if( ResID == RES_SCHEDULER ) {
-		rPtr = &os_sys.resScheduler;
+		rPtr = &Os_Sys.resScheduler;
 	} else {
 		/* Check we can access it */
 		if( (pcbPtr->resourceAccess & (1<< ResID)) == 0 ) {
@@ -249,7 +249,7 @@ StatusType ReleaseResource( ResourceType ResID) {
 
 	/* do a rescheduling (in some cases) (see OSEK OS 4.6.1) */
 	if ( (pcbPtr->scheduling == FULL) &&
-		 (os_sys.int_nest_cnt == 0) &&
+		 (Os_Sys.int_nest_cnt == 0) &&
 		 (Os_SchedulerResourceIsFree()) ) {
 
 		OsPcbType* top_pcb = Os_TaskGetTop();
@@ -306,10 +306,10 @@ void Os_ResourceInit( void ) {
 
 
 	/* For now, assign the scheduler resource here */
-	os_sys.resScheduler.ceiling_priority = OS_RES_SCHEDULER_PRIO;
-	strcpy(os_sys.resScheduler.id,"RES_SCHEDULER");
-	os_sys.resScheduler.nr = RES_SCHEDULER;
-	os_sys.resScheduler.owner = NO_TASK_OWNER;
+	Os_Sys.resScheduler.ceiling_priority = OS_RES_SCHEDULER_PRIO;
+	strcpy(Os_Sys.resScheduler.id,"RES_SCHEDULER");
+	Os_Sys.resScheduler.nr = RES_SCHEDULER;
+	Os_Sys.resScheduler.owner = NO_TASK_OWNER;
 
 	/* Calculate ceiling priority
 	 * We make this as simple as possible. The ceiling priority

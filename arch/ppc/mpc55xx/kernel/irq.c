@@ -13,48 +13,47 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/* ----------------------------[includes]------------------------------------*/
+/* ----------------------------[private define]------------------------------*/
+/* ----------------------------[private macro]-------------------------------*/
+/* ----------------------------[private typedef]-----------------------------*/
+/* ----------------------------[private function prototypes]-----------------*/
+/* ----------------------------[private variables]---------------------------*/
+/* ----------------------------[private functions]---------------------------*/
+/* ----------------------------[public functions]----------------------------*/
+
+
+/* ----------------------------[includes]------------------------------------*/
+
 #include "internal.h"
 #include "asm_book_e.h"
 #include "irq_types.h"
 #include "mpc55xx.h"
-#if !defined(USE_KERNEL)
-#include "Mcu.h"
-#endif
-
-#if defined(USE_KERNEL)
 #include "pcb.h"
 #include "sys.h"
 #include "internal.h"
 #include "task_i.h"
 #include "hooks.h"
-
-#if 0
-#define INTC_SSCIR0_CLR7					7
-#define MLB_SERVICE_REQUEST					293
-#define CRITICAL_INPUT_EXCEPTION			320
-#define DEBUG_EXCEPTION						335
-#define NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS	336
-#endif
-
 #include "debug.h"
-#endif
 #include "irq.h"
+#include <stdint.h>
 
-static void dump_exception_regs( uint32_t *regs );
-
+/* ----------------------------[private define]------------------------------*/
+/* ----------------------------[private macro]-------------------------------*/
+/* ----------------------------[private typedef]-----------------------------*/
 typedef void (*f_t)( uint32_t *);
-//typedef void (*func_t)();
-//extern vfunc_t Irq_VectorTable[];
+
+/* ----------------------------[private function prototypes]-----------------*/
+extern uintptr_t Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
+extern uint8 Irq_IsrTypeTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
+
+static void dumpExceptionRegs( uint32_t *regs );
+
+/* ----------------------------[private variables]---------------------------*/
 extern void exception_tbl(void);
 
-
-
-#if defined(USE_KERNEL)
-extern void * Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
-extern uint8 Irq_IsrTypeTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
-#else
-extern func_t Irq_VectorTable[];
-#endif
+/* ----------------------------[private functions]---------------------------*/
+/* ----------------------------[public functions]----------------------------*/
 
 // write 0 to pop INTC stack
 void Irq_Init( void ) {
@@ -113,17 +112,6 @@ void Irq_Init( void ) {
 	  INTC.MCR.B.VTES = 0; // 4 byte offset between entries
 	#endif
 
-
-	  // Pointless in software vector more???
-#if 0
-	  // Check alignment requirements for the INTC table
-	  assert( (((uint32_t)&Irq_VectorTable[0]) & 0x7ff) == 0 );
-	#if defined(CFG_MPC5516)
-	  INTC.IACKR_PRC0.R = (uint32_t) & Irq_VectorTable[0]; // Set INTC ISR vector table
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
-	  INTC.IACKR.R = (uint32_t) & Irq_VectorTable[0]; // Set INTC ISR vector table
-	#endif
-#endif
 	  // Pop the FIFO queue
 	  for (int i = 0; i < 15; i++)
 	  {
@@ -193,8 +181,6 @@ void *Irq_Entry( void *stack_p )
 		}
 	}
 
-#if defined(USE_KERNEL)
-
 	if( Irq_GetIsrType(vector) == ISR_TYPE_1 ) {
 		// It's a function, just call it.
 		((func_t)Irq_VectorTable[vector])();
@@ -204,37 +190,7 @@ void *Irq_Entry( void *stack_p )
 		// Let the kernel handle the rest,
 		return Os_Isr(stack, (void *)Irq_VectorTable[vector]);
 	}
-
-
-#else
-		//read address
-	t = (func_t)Irq_VectorTable[vector];
-
-	if( t == ((void *)0) )
-	{
-		while(1);
-	}
-
-	// Enable nestling interrupts
-	Irq_Enable();
-	t();
-	Irq_Disable();
-
-	if( vector < INTC_NUMBER_OF_INTERRUPTS )
-	{
-		// write 0 to pop INTC stack
-		intc->EOIR_PRC0.R = 0;
-	}
-	return NULL;
-
-#endif
 }
-
-
-
-#if defined(USE_KERNEL)
-
-
 
 static inline int osPrioToCpuPio( uint8_t prio ) {
 	assert(prio<32);
@@ -250,6 +206,7 @@ void Irq_SetPriority( Cpu_t cpu,  IrqType vector, uint8_t prio ) {
 
 
 
+#if 0
 /**
  * Attach an ISR type 1 to the interrupt controller.
  *
@@ -272,7 +229,33 @@ void Irq_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector,uint8_
 	}
 
 }
+#endif
 
+/**
+ *
+ * @param isrPtr
+ * @param type
+ * @param int_ctrl
+ */
+ISRType Irq_Attach( const OsIsrType_CONST *isrPtr ) {
+//	Os_Sys.isrCnt
+	uint32_t vector = isrPtr->vector;
+
+	Irq_VectorTable[vector] = (uintptr_t)isrPtr;
+//	Irq_IsrTypeTable[vector] = type;
+
+	if (vector < INTC_NUMBER_OF_INTERRUPTS) {
+		Irq_SetPriority(CPU_CORE0,vector + IRQ_INTERRUPT_OFFSET, osPrioToCpuPio(isrPtr->prio));
+	} else if ((vector >= CRITICAL_INPUT_EXCEPTION)
+			&& (vector<= DEBUG_EXCEPTION)) {
+	} else {
+		/* Invalid vector! */
+		assert(0);
+	}
+	return 0;
+}
+
+#if 0
 /**
  * Attach a ISR type 2 to the interrupt controller.
  *
@@ -296,47 +279,7 @@ void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
 		assert(0);
 	}
 }
-
-#endif /* defined(USE_KERNEL) */
-
-#if !defined(USE_KERNEL)
-/**
- * Installs a vector in intc vector table. It also sets the priority in the INTC
- * internal registers.
- *
- * This does NOT use the kernel
- *
- * @param func   The function to install
- * @param vector INTC vector to install it to
- * @param priority INTC priority. 0 - Low prio. 15- Highest( NMI )
- * @param cpu
- */
-
-void Irq_InstallVector(void(*func)(), IrqType vector,
-    uint8_t priority, Cpu_t cpu)
-{
-  VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_INTCVECTORINSTALL_SERVICE_ID, MCU_E_UNINIT );
-  DEBUG(DEBUG_LOW,"Installing INTC vector:%d,prio:%d,cpu,%d\n",vector,priority,cpu);
-  Irq_VectorTable[vector] = func;
-
-  if (vector <= MLB_SERVICE_REQUEST)
-  {
-    INTC.PSR[vector].B.PRC_SEL = cpu;
-    INTC.PSR[vector].B.PRI = priority;
-
-    Irq_VectorTable[vector] = func;
-  } else if ((vector >= CRITICAL_INPUT_EXCEPTION)
-      && (vector <= DEBUG_EXCEPTION))
-  {
-    Irq_VectorTable[vector] = func;
-  } else
-  {
-    /* Invalid vector! */
-    assert(0);
-  }
-}
 #endif
-
 
 
 /**
@@ -385,7 +328,7 @@ void IVOR0Exception (uint32_t *regs)
 //	ExceptionSave(srr0,srr1,esr,mcsr,dear;)
 	// CSRR0, CSSR1
 	// Nothing more
-	dump_exception_regs(regs);
+	dumpExceptionRegs(regs);
 	while (1);
 }
 
@@ -394,7 +337,7 @@ void IVOR1Exception (uint32_t *regs)
 {
 	// CSRR0, CSSR1
 	// MCSR - Source of machine check
-	dump_exception_regs(regs);
+	dumpExceptionRegs(regs);
    while (1);
 }
 // Data Storage Interrupt
@@ -402,7 +345,7 @@ void IVOR2Exception (uint32_t *regs)
 {
 	// SRR0, SRR1
 	// ESR - lots of stuff
-	dump_exception_regs(regs);
+	dumpExceptionRegs(regs);
    while (1);
 }
 
@@ -411,7 +354,7 @@ void IVOR3Exception (uint32_t *regs)
 {
 	// SRR0, SRR1
 	// ESR - lots of stuff
-	dump_exception_regs(regs);
+	dumpExceptionRegs(regs);
    while (1);
 }
 
@@ -421,7 +364,7 @@ void IVOR5Exception (uint32_t *regs)
 	// SRR0, SRR1
 	// ESR - lots of stuff
 	// DEAR - Address of load store that caused the exception
-	dump_exception_regs(regs);
+	dumpExceptionRegs(regs);
    while (1);
 }
 
@@ -430,7 +373,7 @@ void IVOR6Exception (uint32_t *regs)
 {
 	// SRR0, SRR1
 	// ESR - lots of stuff
-	dump_exception_regs(regs);
+	dumpExceptionRegs(regs);
 	while (1);
 }
 
@@ -438,7 +381,7 @@ void IVOR6Exception (uint32_t *regs)
 void IVOR7Exception (uint32_t *regs)
 {
 	// SRR0, SRR1
-	dump_exception_regs(regs);
+	dumpExceptionRegs(regs);
    while (1);
 }
 
@@ -447,7 +390,7 @@ void IVOR8Exception (uint32_t *regs)
 {
 	// SRR0, SRR1
 	// ESR
-	dump_exception_regs(regs);
+	dumpExceptionRegs(regs);
 	while (1);
 }
 
@@ -455,7 +398,7 @@ void IVOR8Exception (uint32_t *regs)
 void IVOR9Exception (uint32_t *regs)
 {
 	// Does not happen on e200
-	dump_exception_regs(regs);
+	dumpExceptionRegs(regs);
 	while (1);
 }
 #if 0
@@ -471,7 +414,7 @@ void IVOR10Exception (uint32_t *regs)
 void IVOR11Exception (uint32_t *regs)
 {
 	// SRR0, SRR1
-	dump_exception_regs(regs);
+	dumpExceptionRegs(regs);
 	while (1);
 }
 
@@ -479,7 +422,7 @@ void IVOR11Exception (uint32_t *regs)
 void IVOR12Exception (uint32_t *regs)
 {
 	// SRR0, SRR1
-	dump_exception_regs(regs);
+	dumpExceptionRegs(regs);
 	while (1);
 }
 
@@ -498,14 +441,14 @@ void IVOR14Exception (uint32_t *regs)
 {
 	// SRR0, SRR1
 	// ESR - MIF set, All others cleared
-	dump_exception_regs(regs);
+	dumpExceptionRegs(regs);
 	while (1);
 }
 
 void IVOR15Exception (uint32_t *regs)
 {
 	// Debug
-	dump_exception_regs(regs);
+	dumpExceptionRegs(regs);
 	while (1);
 }
 
@@ -531,7 +474,7 @@ typedef struct {
 
 
 
-static void dump_exception_regs( uint32_t *regs ) {
+static void dumpExceptionRegs( uint32_t *regs ) {
 	exc_stack_t *r = (exc_stack_t *)regs;
 
 	LDEBUG_PRINTF("sp   %08x  srr0 %08x  srr1 %08x\n",r->sp,r->srr0,r->srr1);
@@ -542,107 +485,7 @@ static void dump_exception_regs( uint32_t *regs ) {
 }
 
 #else
-static void dump_exception_regs( uint32_t *regs ) {
+static void dumpExceptionRegs( uint32_t *regs ) {
 }
-#endif
-
-#if !defined(USE_KERNEL)
-func_t Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS] __attribute__ ((aligned (0x800))) = {
- dummy, dummy, dummy, dummy, dummy, /* ISRs 00 - 04 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 05 - 09 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 10 - 14 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 15 - 19 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 20 - 24 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 25 - 29 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 30 - 34 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 35 - 39 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 40 - 44 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 45 - 49 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 50 - 54 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 55 - 59 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 60 - 64 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 55 - 69 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 70 - 74 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 75 - 79 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 80 - 84 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 85 - 89 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 90 - 94 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 95 - 99 */
-
- dummy, dummy, dummy, dummy, dummy, /* ISRs 100 - 104 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 105 - 109 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 110 - 114 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 115 - 119 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 120 - 124 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 125 - 129 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 130 - 134 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 135 - 139 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 140 - 144 */
- dummy, dummy, dummy, dummy, dummy /* PIT1 */, /* ISRs 145 - 149 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 150 - 154 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 155 - 159 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 160 - 164 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 155 - 169 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 170 - 174 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 175 - 179 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 180 - 184 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 185 - 189 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 190 - 194 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 195 - 199 */
-
- dummy, dummy, dummy, dummy, dummy, /* ISRs 200 - 204 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 205 - 209 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 210 - 214 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 215 - 219 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 220 - 224 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 225 - 229 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 230 - 234 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 235 - 239 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 240 - 244 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 245 - 249 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 250 - 254 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 255 - 259 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 260 - 264 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 255 - 269 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 270 - 274 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 275 - 279 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 280 - 284 */
- dummy, dummy, dummy, dummy, dummy, /* ISRs 285 - 289 */
- dummy, dummy, dummy, dummy,        /* ISRs 290 - 293 */
-
- /* Some reserved vectors between INC interrupts and exceptions. */
- dummy,                             /* INTC_NUMBER_OF_INTERRUPTS */
-
- dummy, dummy, dummy, dummy, dummy,
- dummy, dummy, dummy, dummy, dummy,
- dummy, dummy, dummy, dummy, dummy,
- dummy, dummy, dummy, dummy, dummy,
- dummy, dummy, dummy, dummy, dummy,
-
- IVOR0Exception,                    /* CRITICAL_INPUT_EXCEPTION, */
- IVOR1Exception,                    /* MACHINE_CHECK_EXCEPTION */
- IVOR2Exception,                    /* DATA_STORAGE_EXCEPTION */
- IVOR3Exception,                    /* INSTRUCTION_STORAGE_EXCEPTION */
- dummy,                             /* EXTERNAL_INTERRUPT */
-                                    /* This is the place where the "normal" interrupts will hit the CPU... */
- IVOR5Exception,                    /* ALIGNMENT_EXCEPTION */
- IVOR6Exception,                    /* PROGRAM_EXCEPTION */
- IVOR7Exception,                    /* FLOATING_POINT_EXCEPTION */
- IVOR8Exception,                    /* SYSTEM_CALL_EXCEPTION */
- dummy,                             /* AUX_EXCEPTION Not implemented in MPC5516. */
- dummy,                             /* DECREMENTER_EXCEPTION */
- IVOR11Exception,                   /* FIXED_INTERVAL_TIMER_EXCEPTION */
- IVOR12Exception,                   /* WATCHDOG_TIMER_EXCEPTION */
- IVOR13Exception,                   /* DATA_TLB_EXCEPTION */
- IVOR14Exception,                   /* INSTRUCTION_TLB_EXCEPTION */
- IVOR15Exception,                   /* DEBUG_EXCEPTION */
-};
-
-void dummy (void) {
-   while (1){
-	   /* TODO: Rename and check for what spurious interrupt have happend */
-   };
- }
-
 #endif
 

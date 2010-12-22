@@ -27,7 +27,7 @@ void Os_ArchFirstCall( void )
 {
 	// TODO: make switch here... for now just call func.
 	Irq_Enable();
-	os_sys.curr_pcb->entry();
+	Os_Sys.curr_pcb->entry();
 }
 
 void *Os_ArchGetStackPtr( void ) {

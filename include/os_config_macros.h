@@ -34,26 +34,40 @@
 
 
 // +1 here.. easy to have a reference..
-#define GEN_TRUSTEDFUNCTIONS_LIST trusted_func_t os_cfg_trusted_list[SERVICE_CNT];
+#define GEN_TRUSTEDFUNCTIONS_LIST trusted_func_t os_cfg_trusted_list[OS_SERVICE_CNT];
 
-#define GEN_APPLICATION_HEAD const OsRomApplicationType rom_app_list[] =
+#define GEN_APPLICATION_HEAD const OsAppConstType Os_AppConst[OS_APP_CNT] =
 
-#define GEN_APPLICATON(	_id,_name,_trusted,_startuphook,_shutdownhook, \
-						_errorhook,_isr_mask,_scheduletable_mask, _alarm_mask, \
-						_counter_mask,_resource_mask,_message_mask ) \
+
+#define APP_ALARM_LIST(_id,...)		const uint8_t Os_AppAlarmList ## _id[] = {__VA_ARGS__}
+#define APP_COUNTER(_id,...)		const uint8_t Os_AppCounterList ## _id = { __VA_ARGS__ }
+#define APP_ISR_LIST(_id,...)
+#define APP_RESOURCE_LIST(_id,...)
+#define APP_SCHTBL_LIST(_id,...)
+#define APP_TASK_LIST(_id,...)		const uint8_t Os_AppTaskList ## _id = { __VA_ARGS__ };
+
+#define APP_TASK_NAME(_id)			(Os_AppTaskList ## _id)
+#define APP_ALARM_NAME(_id)			(Os_AppAlarmList ## _id)
+#define APP_COUNTER_NAME(_id)		(Os_AppCounterList ## _id)
+
+
+#define GEN_APPLICATION(	_id,_name,_trusted,_startuphook,_shutdownhook, _errorhook, \
+						_alarm_list,_counter_list,_isr_list,_resource_list, \
+						_schtbl_list,_task_list, _restart_task  ) \
 {												\
-	.application_id = _id, 						\
+	.appId = _id, 						\
 	.name = _name,								\
 	.trusted = _trusted,						\
 	.StartupHook = _startuphook,				\
 	.ShutdownHook = _shutdownhook,				\
 	.ErrorHook = _errorhook,					\
-	.isr_mask = _isr_mask,						\
-	.scheduletable_mask  = _scheduletable_mask,	\
-	.alarm_mask  = _alarm_mask,					\
-	.counter_mask  = _counter_mask,				\
-	.resource_mask  = _resource_mask,			\
-	.message_mask  = _message_mask,				\
+	.alarmRef  = _alarm_list,					\
+	.counterRef  = _counter_list,				\
+	.isrRef = _isr_list,						\
+	.resourceRef  = _resource_list,				\
+	.schtblRef  = _schtbl_list,			\
+	.taskRef  = _task_list,						\
+	.restartTaskId = _restart_task				\
 }
 
 
@@ -347,7 +361,6 @@
 
 
 #if (  OS_SC3 == STD_ON) || (  OS_SC4 == STD_ON)
-#error OLD or NOT implemented
 #define GEN_HOOKS( _startup, _protection, _shutdown, _error, _pretask, _posttask ) \
 struct OsHooks os_conf_global_hooks = { \
 		.StartupHook = _startup, 		\
@@ -369,9 +382,15 @@ struct OsHooks os_conf_global_hooks = { \
 
 #endif
 
+#if 0
+typedef union {
+		void (*isr1)(void);	/* ISR1 is just a function call */
+
+} ;
+#endif
 
 #define GEN_IRQ_VECTOR_TABLE_HEAD 	\
-		 void * Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS] =
+		 uintptr_t Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS] =
 
 #define GEN_IRQ_ISR_TYPE_TABLE_HEAD \
 		 uint8_t Irq_IsrTypeTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS]  =
