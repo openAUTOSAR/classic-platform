@@ -229,7 +229,6 @@ void Com_DeInit( void ) {
 
 }
 
-// PC-Lint skriv undantag för så länge
 void Com_IpduGroupStart(Com_PduGroupIdType IpduGroupId,boolean Initialize) {
 	(void)Initialize; // Nothing to be done. This is just to avoid Lint warning.
 	for (uint16 i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {

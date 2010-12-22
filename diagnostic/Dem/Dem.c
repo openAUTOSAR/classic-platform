@@ -13,7 +13,7 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-// 904 PC-Lint: OK. Allow VALIDATE, VALIDATE_RV and VALIDATE_NO_RV to return value.
+// 904 PC-Lint MISRA 14.7: OK. Allow VALIDATE, VALIDATE_RV and VALIDATE_NO_RV to return value.
 //lint -emacro(904,VALIDATE_RV,VALIDATE_NO_RV,VALIDATE)
 
 
