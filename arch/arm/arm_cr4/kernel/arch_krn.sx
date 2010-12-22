@@ -17,7 +17,7 @@
 #include "kernel_offset.h"
 #include "stack.h"
 
-.extern os_sys
+.extern Os_Sys
 
 	.syntax unified
 	.cpu cortex-r4
@@ -106,7 +106,7 @@ Svc_Handler:
     mov 	r0,sp			
     
 	// When at interrupt nest count = 0, load interrupt stack    
-	ldr      r4,=os_sys
+	ldr      r4,=Os_Sys
 	ldr      r5,[r4,#SYS_INT_NEST_CNT]
 	cmp      r5, #0
 	bgt      arggg
@@ -210,7 +210,7 @@ Os_ArchSwapContextTo:
     mov.w 	sp,r2
     
 	// Set new current pcb
-    ldr     r5,= os_sys
+    ldr     r5,= Os_Sys
     str     r1,[r5,#SYS_CURR_PCB_P]
 
 	// Restore C context

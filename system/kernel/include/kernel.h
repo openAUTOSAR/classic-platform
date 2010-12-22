@@ -149,7 +149,7 @@ typedef struct OsResource {
 	// What application may access this resource. A resource may only be
 	// accessed by one application
 #if defined(SC3) || defined(SC4)
-	uint32 accessingAppMask;
+	uint32 accessingApplMask;
 #endif
 	// What tasks may access this resource. A resource may be be shared
 	// several tasks.

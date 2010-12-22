@@ -151,7 +151,7 @@ typedef struct OsSchTbl {
 	_Bool repeating;
 
 #if defined(SC3) || defined(SC4)
-	uint32 accessingAppMask;
+	uint32 accessingApplMask;
 #endif
 
 	// pointer to this tables counter

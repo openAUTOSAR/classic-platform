@@ -62,7 +62,8 @@ typedef struct Os_Sys {
 	AppModeType appMode;
 
 #if (OS_SC3==STD_ON) || (OS_SC4==STD_ON)
-	ApplicationStateType currAppState;
+	ApplicationStateType currApplState;
+	ApplicationType currApplId;
 #endif
 
 	uint32_t task_cnt;

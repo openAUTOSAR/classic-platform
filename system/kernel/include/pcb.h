@@ -121,9 +121,11 @@ typedef struct {
 typedef struct OsPcb {
 	OsTaskidType 	pid;					// TASK
 	OsPriorityType  prio;
-#if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
-	ApplicationType application_id;
-	uint32			app_mask;
+#if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
+	/* Application that owns this task */
+	ApplicationType applOwnerId;
+	/* Applications that may access task when state is APPLICATION_ACCESSIBLE */
+	uint32			accessingApplMask;
 #endif
 	void 			(*entry)();
 	proc_type_t 	proc_type;
@@ -198,7 +200,7 @@ typedef struct OsRomPcb {
 	OsStackType 	stack;
 	int				vector; 				// ISR
 #if defined(SC3) || defined(SC4)
-	uint32 accessingAppMask;
+	uint32 accessingApplMask;
 #endif
 	char 		 	name[16];
 	enum OsTaskSchedule scheduling;

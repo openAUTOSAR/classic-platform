@@ -28,7 +28,7 @@ struct OsRomApplication;
 #endif
 
 #if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
-extern const OsAppConstType Os_AppConst[OS_APP_CNT];
+extern const OsAppConstType Os_AppConst[OS_APPLICATION_CNT];
 
 struct OsRomApplication *Os_CfgGetApplObj( ApplicationType application_id );
 #endif

@@ -46,6 +46,11 @@ typedef TaskStateType *TaskStateRefType;
 
 /* FIXME: OSMEMORY_IS__ , see 8.2*/
 
+#define OSMEMORY_IS_READABLE(_access)
+#define OSMEMORY_IS_WRITEABLE(_access)
+#define OSMEMORY_IS_EXECUTABLE(_access)
+#define OSMEMORY_IS_STACKSPACE(_access)
+
 #define OSDEFAULTAPPMODE  1
 
 #define INVALID_OSAPPLICATION (-1)
@@ -241,8 +246,11 @@ AccessType 	CheckTaskMemoryAccess( 	TaskType TaskID,
 									MemoryStartAddressType Address,
 									MemorySizeType Size );
 
-ObjectAccessType CheckObjectAccess( ApplicationType ApplID, ObjectTypeType ObjectType, uintptr_t objPtr);
-ApplicationType CheckObjectOwnership(  ObjectTypeType ObjectType, uintptr_t objPtr );
+ObjectAccessType CheckObjectAccess( ApplicationType ApplId,
+									ObjectTypeType ObjectType,
+									void *object );
+ApplicationType CheckObjectOwnership( ObjectTypeType ObjectType,
+									void *object );
 StatusType TerminateApplication(  ApplicationType Application, RestartType RestartOption );
 StatusType AllowAccess( void );
 StatusType GetApplicationState(   ApplicationType Application,  ApplicationStateRefType Value );

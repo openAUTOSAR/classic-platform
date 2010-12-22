@@ -127,6 +127,16 @@
 		Os_Sys.hooks->ErrorHook(x); \
 	}
 
+#if (OS_SC3==STD_ON)||(OS_SC4==STD_ON)
+#define PROTECTIONHOOK(_x) \
+	do { \
+		if( Os_Sys.hooks->ProtectionHook != NULL ) { \
+			Os_Sys.hooks->ProtectionHook(_x); \
+		} \
+    } while(0)
+
+#endif
+
 
 #define PRETASKHOOK() \
 	assert( Os_Sys.curr_pcb->state & ST_RUNNING ); \
@@ -312,11 +322,12 @@ static inline _Bool Os_StackIsEndmarkOk( OsPcbType *pcbPtr ) {
 static inline void Os_StackPerformCheck( OsPcbType *pcbPtr ) {
 #if (OS_STACK_MONITORING == 1)
 		if( !Os_StackIsEndmarkOk(pcbPtr) ) {
-#if (  OS_SC1 == 1) || (  OS_SC2 == 1)
+#if (OS_SC1 == STD_ON) || (OS_SC2 == STD_ON)
 			/** @req OS068 */
 			ShutdownOS(E_OS_STACKFAULT);
-#else
-#warning SC3 or SC4 not supported. Protection hook should be called here
+#elif (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
+			/** @req OS396 */
+			PROTECTIONHOOK(E_OS_STACKFAULT);
 #endif
 		}
 #endif

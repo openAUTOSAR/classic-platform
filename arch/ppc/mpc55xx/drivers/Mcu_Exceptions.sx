@@ -90,11 +90,11 @@ exception_IVOR4:
 	stw		r3,C_CONTEXT_OFF(sp)
 
 	// Switch to interrupt stack if at depth 0
-	LOAD_IND_32(3,os_sys+SYS_INT_NEST_CNT)
+	LOAD_IND_32(3,Os_Sys+SYS_INT_NEST_CNT)
 	cmpli	0,r3,0
 	bne-	on_int_stack
 	// Load the interrupt stack
-	LOAD_IND_32(sp,os_sys+SYS_INT_STACK)
+	LOAD_IND_32(sp,Os_Sys+SYS_INT_STACK)
 on_int_stack:
 
 #endif

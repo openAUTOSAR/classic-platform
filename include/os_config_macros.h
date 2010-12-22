@@ -36,7 +36,7 @@
 // +1 here.. easy to have a reference..
 #define GEN_TRUSTEDFUNCTIONS_LIST trusted_func_t os_cfg_trusted_list[OS_SERVICE_CNT];
 
-#define GEN_APPLICATION_HEAD const OsAppConstType Os_AppConst[OS_APP_CNT] =
+#define GEN_APPLICATION_HEAD const OsAppConstType Os_AppConst[OS_APPLICATION_CNT] =
 
 
 #define APP_ALARM_LIST(_id,...)		const uint8_t Os_AppAlarmList ## _id[] = {__VA_ARGS__}

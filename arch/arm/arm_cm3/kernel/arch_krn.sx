@@ -10,7 +10,7 @@
 #include "arch_offset.h"
 #include "stack.h"
 
-.extern os_sys
+.extern Os_Sys
 .extern TailChaining
 
 	.syntax unified
@@ -61,7 +61,7 @@ Irq_Handler:
     mov 	r0,sp			// stack as first arg
 
     // When at interrupt nest count = 0, load interrupt stack    
-	ldr      r4,=os_sys
+	ldr      r4,=Os_Sys
 	ldr      r5,[r4,#SYS_INT_NEST_CNT]
 	cmp      r5, #0
 	bgt      arggg  
@@ -163,7 +163,7 @@ Os_ArchSwapContextTo:
 
 // TODO: Fix this for all arch's..call pre,post hooks. Done here or after?
 // Set new current pcb
-    ldr     r5,= os_sys
+    ldr     r5,= Os_Sys
     str     r1,[r5,#SYS_CURR_PCB_P]
 
 // Restore C context

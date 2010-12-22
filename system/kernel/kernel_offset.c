@@ -24,6 +24,7 @@
 #include "pcb.h"
 //#include "app_i.h"
 #include "sys.h"
+#include "application.h"
 
 
 
@@ -31,7 +32,7 @@ void  oil_foo(void) {
 
 	DECLARE(PCB_T_SIZE,			sizeof(OsPcbType));
 #if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
-	DECLARE(APP_T_SIZE,			sizeof(OsApplicationType));
+//	DECLARE(APP_T_SIZE,			sizeof(OsApplicationType));
 #endif
 	DECLARE(PCB_STACK_CURR_P,	offsetof(OsPcbType, stack));
 	DECLARE(PCB_ENTRY_P,		offsetof(OsPcbType, entry));

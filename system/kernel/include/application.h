@@ -96,6 +96,9 @@ typedef struct OsAppVar {
 	/* The application hooks */
 	OsAppHooksType hooks;
 
+	/* The current state of the application */
+	ApplicationStateType state;
+
 	/* Trusted functions */
 	/* .... */
 } OsAppVarType;

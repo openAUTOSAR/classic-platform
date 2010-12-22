@@ -15,7 +15,7 @@
 #include "asm_book_e.h"
 .extern os_intc_pcb_tbl
 .extern os_intc_types_tbl
-.extern os_sys
+.extern Os_Sys
 
 
 /*
@@ -115,7 +115,7 @@ Os_ArchSwapContextTo:
 		lwz		sp,PCB_STACK_CURR_P(r4)
 
 // Set new current process
-		LOAD_ADDR_32(3,os_sys)
+		LOAD_ADDR_32(3,Os_Sys)
 		stw		r4,SYS_CURR_PCB_P(r3)
 
 // Restore C context

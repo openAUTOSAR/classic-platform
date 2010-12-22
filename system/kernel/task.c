@@ -396,11 +396,16 @@ void Os_Dispatch( uint32_t op ) {
 
 #if (OS_STACK_MONITORING == 1)
 		if( !Os_StackIsEndmarkOk(currPcbPtr) ) {
-#if (  OS_SC1 == 1) || (  OS_SC2 == 1)
+#if (  OS_SC1 == STD_ON) || (  OS_SC2 == STD_ON )
 			/** @req OS068 */
 			ShutdownOS(E_OS_STACKFAULT);
 #else
-#warning SC3 or SC4 not supported. Protection hook should be called here
+			/** @req OS396
+			 * If a stack fault is detected by stack monitoring AND the configured scalability
+			 * class is 3 or 4, the Operating System module shall call the ProtectionHook() with
+			 * the status E_OS_STACKFAULT.
+			 * */
+			PROTECTIONHOOK(E_OS_STACKFAULT);
 #endif
 		}
 #endif
@@ -605,19 +610,21 @@ StatusType ActivateTask( TaskType TaskID ) {
 
 	Irq_Save(msr);
 #if (OS_SC3==STD_ON) || (OS_SC4==STD_ON)
+
 	/* @req OS504/ActivateTask
 	 * The Operating System module shall deny access to Operating System
 	 * objects from other OS-Applications to an OS-Application which is not in state
      * APPLICATION_ACCESSIBLE.
      * */
-
-	if( Os_TaskConst[TaskID].appOwnerId != Os_Sys.currAppId ) {
+#if 0
+	if( Os_TaskVar[TaskID].appOwnerId != Os_Sys.currAppId ) {
 		/* We are activating a task in another application */
 		if( Os_AppVar[Os_Sys.currAppId].state != APPLICATION_ACCESSIBLE ) {
 			rv=E_OS_ACCESS;
 			goto err;
 		}
 	}
+#endif
 #endif
 
 	/* @req OS093 ActivateTask */

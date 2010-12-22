@@ -46,8 +46,8 @@ typedef struct OsCounter {
 	// The counter value ( if software counter )
 	uint32_t val;
 	// Application mask, SWS OS317
-#if defined(SC3) || defined(SC4)
-	uint32 accessingAppMask;
+#if (OS_SC3==STD_ON) || (OS_SC4==STD_ON)
+	uint32 accessingApplMask;
 #endif
 	//  hmm, strange to call it alarm base.... but see spec.
 	AlarmBaseType alarm_base;
