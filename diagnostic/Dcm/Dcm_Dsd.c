@@ -266,6 +266,7 @@ void DsdDspProcessingDone(Dcm_NegativeResponseCodeType responseCode)
 
 void DsdDataConfirmation(PduIdType confirmPduId, NotifResultType result)
 {
+	(void)result;	/* Currently not used */
 	DspDcmConfirmation(confirmPduId);	/** @req DCM236 */
 }
 

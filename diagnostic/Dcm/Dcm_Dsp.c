@@ -13,6 +13,7 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+//lint -esym(754, SID)	//Structure member SID not used in udsReadDtcInfoSub_0x01_0x07_0x11_0x12() and udsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15()
 
 
 /*
