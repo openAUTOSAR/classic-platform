@@ -13,12 +13,6 @@ typedef uint16_t Adc_ValueGroupType;
 
 typedef enum
 {
-  ADC_GROUP0,
-  ADC_NBR_OF_GROUPS
-}Adc_GroupType;
-
-typedef enum
-{
   ADC_CH0,
   ADC_CH1,
   ADC_CH2,
@@ -37,15 +31,6 @@ typedef enum
   ADC_CH15,
   ADC_NBR_OF_CHANNELS,
 }Adc_ChannelType;
-
-typedef enum
-{
-	  ADC_TEST_BOARD_POT,
-	  ADC_TEST_BOARD_POT2,
-	  ADC_TEST_BOARD_POT3,
-	  ADC_TEST_BOARD_POT4,
-  ADC_NBR_OF_GROUP0_CHANNELS,
-}Adc_Group0SignalType;
 
 /* Std-type, supplier defined */
 typedef enum
