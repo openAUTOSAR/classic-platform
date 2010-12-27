@@ -54,10 +54,12 @@ typedef struct {
 	// The rest of the parameters is realized in NvM_Cfg.h
 } NvM_CommonType;
 
+#if 0	// Currently not used
 typedef struct {
 //	???			EaRef;	// TODO: Check this
 //	???			FeeRef;	// TODO: Check this
 } NvM_TargetBlockReferenceType;
+#endif
 
 typedef struct {
 	// NVRAM block global settings
@@ -90,7 +92,9 @@ typedef struct {
 	NvM_InitBlockCallbackFunctionType	InitBlockCallback;		/** @req NVM116 */
 
 	// Containers
+#if 0	// Currently not used
 	NvM_TargetBlockReferenceType		TargetBlockReference;	/** @req NVM486 */
+#endif
 } NvM_BlockDescriptorType;	/** @req NVM061 */
 
 typedef struct {

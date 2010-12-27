@@ -28,6 +28,8 @@
  * NB! Even though some code exist for handling crc, the functionality is not complete
  * and shall not be used.
  */
+// 522 PC-Lint exception for empty functions
+//lint -esym(522,CalcCrc)
 
 
 #include "NvM.h"
@@ -102,7 +104,7 @@ typedef enum {
 	BLOCK_STATE_LOAD_FROM_ROM,
 
 	BLOCK_STATE_WRITE_TO_NV,
-	BLOCK_STATE_WRITE_TO_NV_DONE,
+	BLOCK_STATE_WRITE_TO_NV_DONE
 } BlockStateType;
 
 
@@ -350,7 +352,7 @@ static void ReadAllCheckReadResult(void)
 			}
 
 			if (MemIfJobAdmin.BlockDescriptor->SingleBlockCallback != NULL) {
-				MemIfJobAdmin.BlockDescriptor->SingleBlockCallback(NVM_SERVICE_ID, MemIfJobAdmin.BlockAdmin->ErrorStatus); /** @req NVM281 */
+				(void)MemIfJobAdmin.BlockDescriptor->SingleBlockCallback(NVM_SERVICE_ID, MemIfJobAdmin.BlockAdmin->ErrorStatus); /** @req NVM281 */
 			}
 		}
 	} else {
@@ -389,7 +391,7 @@ static void ReadAllCheckReadResult(void)
 		}
 
 		if (MemIfJobAdmin.BlockDescriptor->SingleBlockCallback != NULL) {
-			MemIfJobAdmin.BlockDescriptor->SingleBlockCallback(NVM_SERVICE_ID, MemIfJobAdmin.BlockAdmin->ErrorStatus); /** @req NVM281 */
+			(void)MemIfJobAdmin.BlockDescriptor->SingleBlockCallback(NVM_SERVICE_ID, MemIfJobAdmin.BlockAdmin->ErrorStatus); /** @req NVM281 */
 		}
 	}
 	nvmState = NVM_READ_ALL_PROCESSING;
@@ -522,7 +524,7 @@ static void WriteAllCheckWriteResult(void)
 		MemIfJobAdmin.BlockAdmin->ErrorStatus = NVM_REQ_OK;
 
 		if (MemIfJobAdmin.BlockDescriptor->SingleBlockCallback != NULL) {
-			MemIfJobAdmin.BlockDescriptor->SingleBlockCallback(NVM_SERVICE_ID, MemIfJobAdmin.BlockAdmin->ErrorStatus);
+			(void)MemIfJobAdmin.BlockDescriptor->SingleBlockCallback(NVM_SERVICE_ID, MemIfJobAdmin.BlockAdmin->ErrorStatus);
 		}
 	} else {
 		MemIfJobAdmin.BlockAdmin->NumberOfWriteFailed++;
@@ -539,7 +541,7 @@ static void WriteAllCheckWriteResult(void)
 #endif
 
 			if (MemIfJobAdmin.BlockDescriptor->SingleBlockCallback != NULL) {
-				MemIfJobAdmin.BlockDescriptor->SingleBlockCallback(NVM_SERVICE_ID, MemIfJobAdmin.BlockAdmin->ErrorStatus);
+				(void)MemIfJobAdmin.BlockDescriptor->SingleBlockCallback(NVM_SERVICE_ID, MemIfJobAdmin.BlockAdmin->ErrorStatus);
 			}
 		}
 	}
