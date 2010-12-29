@@ -7,7 +7,6 @@
 
 #ifndef MCU_CONFIGTYPES_H_
 #define MCU_CONFIGTYPES_H_
-#include "Std_Types.h"
 
 #define RCC_AHBPeriph_DMA1               ((uint32_t)0x00000001)
 #define RCC_AHBPeriph_DMA2               ((uint32_t)0x00000002)
@@ -68,6 +67,8 @@ typedef struct {
 	uint32 APB1ClocksEnable;
 	uint32 APB2ClocksEnable;
 } Mcu_PerClockConfigType;
+
+extern const Mcu_PerClockConfigType McuPerClockConfigData;
 
 
 #endif /* MCU_CONFIGTYPES_H_ */
