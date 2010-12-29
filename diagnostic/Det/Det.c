@@ -48,22 +48,28 @@ detCbk_t detCbk_List[DET_NUMBER_OF_CALLBACKS];
 
 uint8 Det_AddCbk(detCbk_t detCbk)
 {
-	uint8 rv=0xFFu;
+	uint8 rv = 0xFFu;	 // Return 0xff if the registration fails
+
     if (detState != DET_UNINITIALIZED)
     {
-        for (uint8 i=0; i<DET_NUMBER_OF_CALLBACKS; i++)
+        for (uint8 i = 0; (i < DET_NUMBER_OF_CALLBACKS) && (rv == 0xFFu); i++)
         {
-            if (NULL==detCbk_List[i])
+            if (NULL == detCbk_List[i])
             {
-                detCbk_List[i]=detCbk;
+                detCbk_List[i] = detCbk;
                 rv = i;
             }
         }
     }
 
-    Det_ReportError(DET_MODULE_ID, 0, DET_CALLBACK_API, DET_E_CBK_REGISTRATION_FAILED);
-    return rv; // Return 0xff to indicate that the registration failed
+    if (rv == 0xFFu)
+    {
+        Det_ReportError(DET_MODULE_ID, 0, DET_CALLBACK_API, DET_E_CBK_REGISTRATION_FAILED);
+    }
+
+    return rv;
 }
+
 
 void Det_RemoveCbk(uint8 detCbkIndex)
 {
