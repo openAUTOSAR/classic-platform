@@ -36,6 +36,10 @@
 #define DCM_CONVERT_MS_TO_MAIN_CYCLES(x)  ((x)/DCM_MAIN_FUNCTION_PERIOD_TIME_MS)
 
 
+#if (DCM_PAGEDBUFFER_ENABLED)
+#error "DCM_PAGEDBUFFER_ENABLED is set to STD_ON, this is not supported by the code."
+#endif
+
 /*
  * Type definitions.
  */
@@ -55,7 +59,6 @@ static DcmDsl_RunTimeDataType DcmDslRunTimeData = {
 //		.preemptedProtocol = NULL,
 //		.protocolList = {}
 };
-
 
 // ################# HELPER FUNCTIONS START #################
 

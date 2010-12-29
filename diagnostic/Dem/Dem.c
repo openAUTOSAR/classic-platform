@@ -16,10 +16,12 @@
 // 904 PC-Lint MISRA 14.7: OK. Allow VALIDATE, VALIDATE_RV and VALIDATE_NO_RV to return value.
 //lint -emacro(904,VALIDATE_RV,VALIDATE_NO_RV,VALIDATE)
 // 522 PC-Lint exception for empty functions
+//lint -esym(522,storeFreezeFrameDataEvtMem)
 //lint -esym(522,deleteFreezeFrameDataPriMem)
 //lint -esym(522,storeFreezeFrameDataPreInit)
 //lint -esym(522,storeFreezeFrameDataPriMem)
 //lint -esym(522,updateFreezeFrameOccurrencePreInit)
+
 
 
 
@@ -76,6 +78,18 @@
 #define VALIDATE_RV(_exp,_api,_err,_rv )
 #define VALIDATE_NO_RV(_exp,_api,_err )
 #define DET_REPORTERROR(_x,_y,_z,_q)
+#endif
+
+#if (DEM_OBD_SUPPORT == STD_ON)
+#error "DEM_OBD_SUPPORT is set to STD_ON, this is not supported by the code."
+#endif
+
+#if (DEM_PTO_SUPPORT == STD_ON)
+#error "DEM_PTO_SUPPORT is set to STD_ON, this is not supported by the code."
+#endif
+
+#if (DEM_TYPE_OF_DTC_SUPPORTED != 0x01)
+#error "DEM_TYPE_OF_DTC_SUPPORTED is not set to 1 (ISO14229-1), only ISO14229-1 is currently supported by the code."
 #endif
 
 
@@ -1090,6 +1104,7 @@ static void storeFreezeFrameDataEvtMem(const Dem_EventParameterType *eventParam,
 			// Not yet supported
 			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GLOBAL_ID, DEM_E_NOT_IMPLEMENTED_YET);
 			break;
+
 		default:
 			break;
 		}

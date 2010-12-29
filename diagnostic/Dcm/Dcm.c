@@ -52,6 +52,7 @@ typedef enum
   DCM_INITIALIZED
 } Dcm_StateType;
 
+//lint -esym(551,dcmState)	PC-Lint - Turn of warning of dcmState not accessed when having DCM_DEV_ERROR_DETECT to STD_OFF
 static Dcm_StateType dcmState = DCM_UNINITIALIZED;
 
 

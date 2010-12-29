@@ -30,10 +30,10 @@
  * DTC storage types
  */
 typedef uint8 Dem_ReturnTypeOfDtcSupportedType;
-#define DEM_ISO15031_6		(Dem_ReturnTypeOfDtcSupportedType)0x00
-#define DEM_ISO14229_1		(Dem_ReturnTypeOfDtcSupportedType)0x01
-#define DEM_SAEJ1939_73		(Dem_ReturnTypeOfDtcSupportedType)0x02
-#define DEM_ISO_11992_4		(Dem_ReturnTypeOfDtcSupportedType)0x03
+#define DEM_ISO15031_6		0x00
+#define DEM_ISO14229_1		0x01
+#define DEM_SAEJ1939_73		0x02
+#define DEM_ISO_11992_4		0x03
 
 /*
  * Dem_EventIdType
