@@ -26,6 +26,10 @@ const GPIO_TypeDefPtr GPIO_ports[] = { GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF 
 #define DIO_GET_PORT_FROM_CHANNEL_ID(_channelId) (_channelId / 16)
 #define DIO_GET_BIT_FROM_CHANNEL_ID(_channelId) (1 << (_channelId % 16))
 
+#define CHANNEL_PTR		(&DioChannelConfigData)
+#define PORT_PTR		(&DioPortConfigData)
+#define CHANNEL_GRP_PTR	(&DioConfigData)
+
 #if ( DIO_VERSION_INFO_API == STD_ON )
 static Std_VersionInfoType _Dio_VersionInfo =
 {

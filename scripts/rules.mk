@@ -99,6 +99,7 @@ endif
 
 inc-y += $(ROOTDIR)/include
 inc-y += $(ROOTDIR)/include/$(ARCH_FAM)
+inc-y += $(ROOTDIR)/include/$(ARCH_FAM)/$(ARCH)
 
 
 .PHONY clean: 

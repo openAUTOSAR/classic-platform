@@ -11,7 +11,7 @@
             </DOC-REVISIONS>
             <SDGS>
               <SDG GID="Arccore::EcuOptions">
-                <SD GID="MCU">Cortex M3</SD>
+                <SD GID="MCU">STM32_F103</SD>
                 <SD GID="GENDIR">/tiny/config/stm32_stm3210c</SD>
               </SDG>
             </SDGS>
