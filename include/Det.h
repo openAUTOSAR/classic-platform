@@ -51,6 +51,8 @@
 
 #define DET_CALLBACK_API              0xFF
 
+#define DET_CBK_REGISTRATION_FAILED_INDEX	0xFF
+
 // Type used to store errors
 typedef struct
 {
@@ -68,7 +70,8 @@ typedef void (*detCbk_t)( uint16 ModuleId, uint8 InstanceId , uint8 ApiId, uint8
  * is called. This can be used in for instance unit tests to verify that correct errors are
  * reported when sending invalid parameters to a function.
  * This function returns the index of the callback in the array when registration is successful. If
- * not -1 is returned. The index can be used to remove a callback with the Det_RemoveCbk.
+ * not DET_CBK_REGISTRATION_FAILED_INDEX is returned.
+ * The index can be used to remove a callback with the Det_RemoveCbk.
  */
 uint8 Det_AddCbk ( detCbk_t detCbk);
 void Det_RemoveCbk ( uint8 detCbkIndex);
