@@ -121,7 +121,9 @@ Nm_ReturnType CanNm_GetPduData( const NetworkHandleType nmChannelHandle, uint8 *
 Nm_ReturnType CanNm_GetState( const NetworkHandleType nmChannelHandle, Nm_StateType * const nmStatePtr, Nm_ModeType * const nmModePtr );
 
 /** This service returns the version information of this module. */
-void CanNm_GetVersionInfo( Std_VersionInfoType * versioninfo );
+#if ( CANNM_VERSION_INFO_API == STD_ON )
+#define CanNm_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,CANNM)
+#endif /* CANNM_VERSION_INFO_API */
 
 /** Request bus synchronization. */
 Nm_ReturnType CanNm_RequestBusSynchronization( const NetworkHandleType nmChannelHandle );

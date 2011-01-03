@@ -13,8 +13,7 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-// 904 PC-Lint MISRA 14.7: OK. Allow VALIDATE, VALIDATE_RV and VALIDATE_NO_RV to return value.
-//lint -emacro(904,CANNM_VALIDATE_INIT,CANNM_VALIDATE_CHANNEL)
+//lint -emacro(904,CANNM_VALIDATE_INIT,CANNM_VALIDATE_CHANNEL,CANNM_VALIDATE_NOTNULL) //904 PC-Lint exception to MISRA 14.7 (validate macros).
 
 
 /* Globally fulfilled requirements */
@@ -48,14 +47,13 @@
 /** @req CANNM026 */
 /** @req CANNM201 */
 
-#include "ComStack_Types.h" 	/** @req CANNM082 */ //Eija
-#include "CanNm.h"				/** @req CANNM082 */ //Eija
+#include "ComStack_Types.h" 	/** @req CANNM082 */
+#include "CanNm.h"				/** @req CANNM082 */
 #include "CanNm_Internal.h"
-//#include "CanNm_ConfigTypes.h" //Eija: already included in CanNm.h
-#include "Nm_Cbk.h"				/** @req CANNM082 */ //Eija
-#include "NmStack_Types.h"		/** @req CANNM082 */ //Eija
-//#include SchM_CanNm.h			/** @req CANNM082 */ //Eija: Not implemented.
-#include "MemMap.h"				/** @req CANNM082 */ //Eija
+#include "Nm_Cbk.h"				/** @req CANNM082 */
+#include "NmStack_Types.h"		/** @req CANNM082 */
+//#include SchM_CanNm.h			//Not implemented. (CANNM082)
+#include "MemMap.h"				/** @req CANNM082 */
 
 /** @req CANNM083 */
 #include "CanIf.h"
@@ -73,9 +71,11 @@
 
 static const CanNm_ConfigType* CanNm_ConfigPtr;
 
+//lint -save -e785 //PC-Lint exception: Too few initializers for aggregate...
 CanNm_InternalType CanNm_Internal = {
 		.InitStatus = CANNM_UNINIT,
 };
+//lint -restore
 
 /** Initialize the complete CanNm module, i.e. all channels which are activated */
 /** @req CANNM041 */
@@ -84,7 +84,7 @@ void CanNm_Init( const CanNm_ConfigType * const cannmConfigPtr ){
 
 	CanNm_ConfigPtr = cannmConfigPtr;  /**< @req CANNM060 */
 
-	uint8 channel; //Eija
+	uint8 channel;
 	for (channel = 0; channel < CANNM_CHANNEL_COUNT; channel++) {
 		const CanNm_ChannelType* ChannelConf = &CanNm_ConfigPtr->Channels[channel];
 		CanNm_Internal_ChannelType* ChannelInternal = &CanNm_Internal.Channels[channel];
@@ -129,13 +129,15 @@ Nm_ReturnType CanNm_PassiveStartUp( const NetworkHandleType nmChannelHandle ){
 
 	const CanNm_ChannelType* ChannelConf = &CanNm_ConfigPtr->Channels[nmChannelHandle];
 	CanNm_Internal_ChannelType* ChannelInternal = &CanNm_Internal.Channels[nmChannelHandle];
+	Nm_ReturnType status = NM_E_OK;
 
 	if (ChannelInternal->Mode == NM_MODE_BUS_SLEEP) {
 		CanNm_Internal_BusSleep_to_RepeatMessage(ChannelConf, ChannelInternal);  /**< @req CANNM128  @req CANNM095.3 */
-		return NM_E_OK;
+		status = NM_E_OK;
 	} else {
-		return NM_E_NOT_EXECUTED;  /**< @req CANNM147 */
+		status = NM_E_NOT_EXECUTED;  /**< @req CANNM147 */
 	}
+	return status;
 }
 
 /** Request the network, since ECU needs to communicate on the bus. Network
@@ -242,13 +244,15 @@ Nm_ReturnType CanNm_GetNodeIdentifier( const NetworkHandleType nmChannelHandle, 
 
 	const CanNm_ChannelType* ChannelConf = &CanNm_ConfigPtr->Channels[nmChannelHandle];
 	CanNm_Internal_ChannelType* ChannelInternal = &CanNm_Internal.Channels[nmChannelHandle];
+	Nm_ReturnType status = NM_E_OK;
 
 	if (ChannelConf->NidPosition == CANNM_PDU_OFF) {
-		return NM_E_NOT_EXECUTED;
+		status = NM_E_NOT_EXECUTED;
 	} else {
 		*nmNodeIdPtr = ChannelInternal->RxMessageSdu[ChannelConf->NidPosition];
-		return NM_E_OK;
+		status = NM_E_OK;
 	}
+	return status;
 }
 
 /** Get node identifier configured for the local node. */
@@ -273,21 +277,22 @@ Nm_ReturnType CanNm_RepeatMessageRequest( const NetworkHandleType nmChannelHandl
 
 	const CanNm_ChannelType* ChannelConf = &CanNm_ConfigPtr->Channels[nmChannelHandle];
 	CanNm_Internal_ChannelType* ChannelInternal = &CanNm_Internal.Channels[nmChannelHandle];
+	Nm_ReturnType status = NM_E_NOT_EXECUTED;  /**< @req CANNM137 */
 
 	if (ChannelConf->CbvPosition != CANNM_PDU_OFF) {
 		if (ChannelInternal->State == NM_STATE_READY_SLEEP) {
 			ChannelInternal->TxMessageSdu[ChannelConf->CbvPosition] = CANNM_CBV_REPEAT_MESSAGE_REQUEST;  /**< @req CANNM113 */
 			CanNm_Internal_ReadySleep_to_RepeatMessage(ChannelConf, ChannelInternal);  /**< @req CANNM112 */
-			return NM_E_OK;
+			status = NM_E_OK;
 		} else if (ChannelInternal->State == NM_STATE_NORMAL_OPERATION) {
 			ChannelInternal->TxMessageSdu[ChannelConf->CbvPosition] = CANNM_CBV_REPEAT_MESSAGE_REQUEST;  /**< @req CANNM121 */
 			CanNm_Internal_NormalOperation_to_RepeatMessage(ChannelConf, ChannelInternal);  /**< @req CANNM120 */
-			return NM_E_OK;
+			status = NM_E_OK;
 		} else {
 			//Nothing to be done
 		}
 	}
-	return NM_E_NOT_EXECUTED;  /**< @req CANNM137 */
+	return status;
 }
 #endif
 
@@ -320,15 +325,11 @@ Nm_ReturnType CanNm_GetState( const NetworkHandleType nmChannelHandle, Nm_StateT
 	return NM_E_OK;
 }
 
-/** This service returns the version information of this module. */
-void CanNm_GetVersionInfo( Std_VersionInfoType * versioninfo ){
-	CANNM_VALIDATE_INIT(CANNM_SERVICEID_GETVERSIONINFO);
-}
-
 /** Request bus synchronization. */
 Nm_ReturnType CanNm_RequestBusSynchronization( const NetworkHandleType nmChannelHandle ){
 	CANNM_VALIDATE_INIT(CANNM_SERVICEID_REQUESTBUSSYNCHRONIZATION, NM_E_NOT_OK);
 	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_REQUESTBUSSYNCHRONIZATION, NM_E_NOT_OK);
+	// Not implemented
 	return NM_E_NOT_OK;
 }
 
@@ -336,6 +337,8 @@ Nm_ReturnType CanNm_RequestBusSynchronization( const NetworkHandleType nmChannel
 Nm_ReturnType CanNm_CheckRemoteSleepIndication( const NetworkHandleType nmChannelHandle, boolean * const nmRemoteSleepIndPtr ){
 	CANNM_VALIDATE_INIT(CANNM_SERVICEID_CHECKREMOTESLEEPINDICATION, NM_E_NOT_OK);
 	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_CHECKREMOTESLEEPINDICATION, NM_E_NOT_OK);
+	(void)nmRemoteSleepIndPtr;
+	// Not implemented
 	return NM_E_NOT_OK;
 }
 
@@ -405,6 +408,8 @@ void CanNm_RxIndication( PduIdType canNmRxPduId, const uint8 *canSduPtr ){
 // ----------------------------------------------------------------------------
 // Internal functions
 // ----------------------------------------------------------------------------
+// Accessed through CanNm_MainFunction_<channel>
+void CanNm_MainFunction(NetworkHandleType nmChannelHandle);
 
 void CanNm_MainFunction( NetworkHandleType nmChannelHandle ) {
 	CANNM_VALIDATE_INIT(CANNM_SERVICEID_ARC_MAINFUNCTION);
@@ -508,7 +513,9 @@ static inline void CanNm_Internal_TransmitMessage( const CanNm_ChannelType* Chan
 			.SduDataPtr = ChannelInternal->TxMessageSdu,
 			.SduLength = ChannelConf->PduLength,
 	};
-	CanIf_Transmit(ChannelConf->CanIfPduId, &pdu);
+	Std_ReturnType status = CanIf_Transmit(ChannelConf->CanIfPduId, &pdu);
+	(void)status;
+	// TODO: what to do if Transmit fails?
 }
 
 static inline uint8 CanNm_Internal_GetUserDataOffset( const CanNm_ChannelType* ChannelConf ) {

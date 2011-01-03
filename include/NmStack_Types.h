@@ -45,10 +45,10 @@ typedef enum {
 
 /** BusNm Type */
 typedef enum {
-	NM_BUSNM_CANNM,
-	NM_BUSNM_FRNM,
-	NM_BUSNM_LINNM,
-	NM_BUSNM_UNDEF = 0xFF
+	NM_BUSNM_CANNM	= 0,
+	NM_BUSNM_FRNM	= 1,
+	NM_BUSNM_LINNM	= 2,
+	NM_BUSNM_UNDEF	= 0xFF
 } Nm_BusNmType;
 
 
