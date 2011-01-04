@@ -136,12 +136,21 @@ inc-y += ../include
 -include $(subst .h,.d,$(dep-y))
 
 #LINT:
-LINT_EXCLUDE ?= arc-tests
+LINT_EXCLUDE_PATHS := $(abspath $(LINT_EXCLUDE_PATHS))
+$(info $(LINT_EXCLUDE_PATHS))
+
+LINT_BAD_EXCLUDE_PATHS := $(filter %/,$(LINT_EXCLUDE_PATHS))
+ifneq ($(LINT_BAD_EXCLUDE_PATHS),)
+$(warning LINT_EXCLUDE_PATHS entries must not end in '/'. Ignoring $(LINT_BAD_EXCLUDE_PATHS))
+endif
+
+LINT_NICE_EXCLUDE_PATHS := $(filter-out %/,$(LINT_EXCLUDE_PATHS))
+LINT_NICE_EXCLUDE_PATHS := $(foreach path,$(LINT_NICE_EXCLUDE_PATHS),$(path)/)
 
 ifneq ($(PCLINT),)
 define run_pclint
 $(if 
-$(findstring $(LINT_EXCLUDE),$(abspath $<)),
+$(filter $(dir $(abspath $<)),$(LINT_NICE_EXCLUDE_PATHS)),
 $(info $(abspath $<):0:0: Info: Not running lint check on $(abspath $<)),
 $(Q)$(PCLINT) $(lint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y)) $(abspath $<))
 endef
@@ -150,9 +159,9 @@ endif
 ifneq ($(SPLINT),)
 define run_splint
 $(if 
-$(findstring $(LINT_EXCLUDE),$(abspath $<)),
+$(filter $(dir $(abspath $<)),$(LINT_NICE_EXCLUDE_PATHS)),
 $(info $(abspath $<):0:0: Info: Not running lint check on $(abspath $<)),
-$(Q)$(SPLINT) $(splint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y)) $(abspath $<))
+$(Q)$(SPLINT) $(lint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y)) $(abspath $<))
 endef
 endif
 
