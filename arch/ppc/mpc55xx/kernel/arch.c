@@ -140,7 +140,7 @@ void os_arch_print_context( char *str, OsPcbType *pcb ) {
 	LDEBUG_PRINTF("  stack: curr=%p top=%p bottom=%p\n",
 					pcb->stack.curr,
 					pcb->stack.top,
-					pcb->stack.top+ pcb->stack.size);
+					(void *)((size_t)pcb->stack.top+ (size_t)pcb->stack.size));
 	stack = pcb->stack.curr;
 	LDEBUG_PRINTF("  val  : context=%08x LR=%08x CR=%08x\n",
 					(unsigned)stack[C_CONTEXT_OFF/4],

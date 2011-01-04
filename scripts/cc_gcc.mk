@@ -33,7 +33,7 @@ cflags-y 		+= -MMD
 
 # Warnings
 cflags-y          += -Wall
-cflags-y          += -Winline	# warn if inline failed
+#cflags-y          += -Winline	# warn if inline failed
 #cflags-y          += -pedantic
 
 # Conformance
@@ -68,6 +68,8 @@ gcc_lib_path := "$(subst /libgcc.a,,$(shell $(CC) $(CFLAGS) --print-libgcc-file-
 gcc_lib_path := $(subst \libgcc.a,,$(gcc_lib_path)) 
 lib_lib_path := "$(subst /libc.a,,$(shell $(CC) $(CFLAGS) --print-file-name=libc.a))"
 lib_lib_path := $(subst \libc.a,,$(lib_lib_path))
+text_chunk := $(subst \,/,$(shell touch i_m_here.c; $(CC) -v -c i_m_here.c &> i_m_here.txt;gawk -f $(TOPDIR)/scripts/gcc_getinclude.awk i_m_here.txt))
+cc_inc_path := $(realpath $(text_chunk))
 libpath-y += -L$(lib_lib_path)
 libpath-y += -L$(gcc_lib_path)
 

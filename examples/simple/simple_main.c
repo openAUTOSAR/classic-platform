@@ -52,7 +52,7 @@ void etask_1( void ) {
 	StackInfoType si;
 	TaskType currTask;
 
-	LDEBUG_PRINTF("etask_1 start\n");
+	LDEBUG_FPUTS("etask_1 start\n");
 	for(;;) {
 		SetEvent(TASK_ID_etask_2,EVENT_MASK_EVENT_1);
 		WaitEvent(EVENT_MASK_EVENT_2);
@@ -71,7 +71,7 @@ void etask_1( void ) {
  * and activates task: btask_3.
  */
 void etask_2( void ) {
-	LDEBUG_PRINTF("etask_2 start\n");
+	LDEBUG_FPUTS("etask_2 start\n");
 
 	for(;;) {
 		WaitEvent(EVENT_MASK_EVENT_1);
@@ -100,20 +100,20 @@ void OsIdle( void ) {
 
 /* Global hooks */
 ProtectionReturnType ProtectionHook( StatusType FatalError ) {
-	LDEBUG_PRINTF("## ProtectionHook\n");
+	LDEBUG_FPUTS("## ProtectionHook\n");
 	return PRO_KILLAPPL;
 }
 
 void StartupHook( void ) {
 	uint32_t sys_freq = McuE_GetSystemClock();
 
-	LDEBUG_PRINTF("## StartupHook\n");
+	LDEBUG_FPUTS("## StartupHook\n");
 
 	LDEBUG_PRINTF("Sys clock %u Hz\n",(unsigned)sys_freq);
 }
 
 void ShutdownHook( StatusType Error ) {
-	LDEBUG_PRINTF("## ShutdownHook\n");
+	LDEBUG_FPUTS("## ShutdownHook\n");
 	while(1);
 }
 

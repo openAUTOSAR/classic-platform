@@ -351,7 +351,7 @@ typedef enum {
     OSServiceId_StartupHook,
     OSServiceId_ShutdownHook,
     OSServiceId_GetTaskState,
-} OsServiceIdType;;
+} OsServiceIdType;
 
 typedef struct OsError {
 	OsServiceIdType serviceId;

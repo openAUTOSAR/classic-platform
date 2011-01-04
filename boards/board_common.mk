@@ -10,7 +10,7 @@ obj-$(CFG_ARM_CM3) += startup_stm32f10x.o
 #stm32 lib files needed by drivers
 obj-$(CFG_ARM_CM3) += stm32f10x_rcc.o
 obj-$(CFG_ARM_CM3)-$(USE_CAN) += stm32f10x_can.o
-obj-$(CFG_ARM_CM3)-$(USE_DIO) += stm32f10x_gpio.o
+obj-$(CFG_ARM_CM3)-$(USE_PORT) += stm32f10x_gpio.o
 obj-$(CFG_ARM_CM3)-$(USE_ADC) += stm32f10x_adc.o
 obj-$(CFG_ARM_CM3)-$(USE_ADC) += stm32f10x_dma.o
 obj-$(CFG_ARM_CM3)-$(USE_FLS) += stm32f10x_flash.o

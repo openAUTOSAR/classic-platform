@@ -24,6 +24,7 @@
 #include "Os.h"
 #include "irq.h"
 #include "Mcu.h"
+#include "arc.h"
 
 #define DCAN1_MAX_MESSAGEBOXES 64
 #define DCAN2_MAX_MESSAGEBOXES 64
@@ -202,99 +203,146 @@ static inline const Can_HardwareObjectType * Can_FindRxHoh(CanControllerIdType C
 	return 0;
 }
 
-uint32 usedBoxes[64] = {0};
+#define DCAN_MC_NEWDAT	15
+#define DCAN_MC_EOB		7
+
+uint32 usedRxBoxes[64] = {0};
+uint32 usedTxBoxes[64] = {0};
+
+static inline Can_ReturnType handleRxMsgObject(uint8 MsgNr, const Can_HardwareObjectType *hoh, CanControllerIdType controller) {
+	uint32  MsgId;
+	uint8   MsgDlc;
+	uint8   DataByteIndex;
+	uint8  *SduPtr;
+
+	/* Wait until Busy Flag is 0 */
+	DCAN_WAIT_UNTIL_NOT_BUSY_NO_RV(controller, IfRegId);
+
+	// Read message control
+	uint32 mc = CanRegs[controller]->IFx[IfRegId].MC;
+	uint32 arb = CanRegs[controller]->IFx[IfRegId].ARB;
+
+	// Is there a new message waiting?
+	if (!(mc & (1 << DCAN_MC_NEWDAT))) {
+		return CAN_NOT_OK; // Nothing more to be done.
+	}
+
+	// For debug
+	if (MsgNr == 0) {
+		usedRxBoxes[MsgNr]++;
+	} else {
+		usedRxBoxes[MsgNr]++;
+	}
+
+
+	/* Extended Id */
+	if(arb & 0x40000000) {
+		/* Bring Id to standardized format (MSB marks extended Id) */
+		MsgId = (arb & 0x1FFFFFFF) | 0x80000000;
+
+	} else { /* Standard Id */
+		/* Bring Id to standardized format (MSB marks extended Id) */
+		MsgId = (arb & 0x1FFC0000) >> 18;
+	}
+
+	/* DLC (Max 8) */
+	MsgDlc = mc & 0x000F;
+	if(MsgDlc > 8) {
+		MsgDlc = 8;
+	}
+
+	/* Let SduPtr point to Shadow Buffer */
+	SduPtr = RxShadowBuf[controller];
+
+	/* Copy Message Data to Shadow Buffer */
+	for(DataByteIndex = 0; DataByteIndex < MsgDlc; DataByteIndex++)
+	{
+		SduPtr[DataByteIndex] = CanRegs[controller]->IFx[IfRegId].DATx[ElementIndex[DataByteIndex]];
+	}
+
+	/* Indicate successful Reception */
+	CanIf_RxIndication(hoh->CanObjectId, MsgId, MsgDlc, SduPtr);
+
+	// Is this the last message object of the FIFO?
+	if (mc & (1 << DCAN_MC_EOB)) {
+		return CAN_NOT_OK;
+	}
+
+	return CAN_OK;
+}
+
 
 void Can_InterruptHandler(CanControllerIdType controller)
 {
     uint32  MsgNr;
-    uint32  MsgId;
-    uint8   MsgDlc;
-    uint8   DataByteIndex;
-    uint8  *SduPtr;
-
-    //Can_DisableControllerInterrupts(controller);
 
     uint32 ir = CanRegs[controller]->IR;
 
-    if(ir == 0x8000)
-    {
+
+    if(ir == 0x8000) { // This is an error interrupt
+
     	uint32 sr = CanRegs[controller]->SR;
-        /* WakeUp Pending */
-        if(sr & 0x00000200) {
+
+        if(sr & 0x00000200) { /* WakeUp Pending */
             /* Set Init Bit, so that Controller is in Stop state */
             CanRegs[controller]->CTL |= 0x1;
            // EcuM_CheckWakeUp(ControllerConfig[0].WakeupSrc);
 
         }
-        /* Bus Off */
-        if(sr & 0x00000080) {
+
+        if(sr & 0x00000080) { /* Bus Off */
         	Can_SetControllerMode(controller, CAN_T_STOP); // CANIF272
             //CanIf_ControllerBusOff(0); // Not implemented in Arctic Core
 
         }
-    }
-    else
-    {
+
+    } else if (ir > 0 && ir < 0x8000){ // This interrupt is from a message object.
         MsgNr = ir;
 
+        /* Read Arbitration and control */
+		CanRegs[controller]->IFx[IfRegId].COM = 0x003F0000 | MsgNr;
 
-        if (MsgNr == 0) {
-        	usedBoxes[MsgNr]++;
-        } else {
-        	usedBoxes[MsgNr]++;
-        }
-        
-
-        /* Read Arbitration, Control and Data Bits and clear IntPnd and NewDat*/
-        CanRegs[controller]->IFx[IfRegId].COM = 0x003F0000 | MsgNr;
-
-        /* Wait until Busy Flag is 0 */
-        DCAN_WAIT_UNTIL_NOT_BUSY_NO_RV(controller, IfRegId);
+		/* Wait until Busy Flag is 0 */
+		DCAN_WAIT_UNTIL_NOT_BUSY_NO_RV(controller, IfRegId);
 
         /* Transmit Object */
         if(CanRegs[controller]->IFx[IfRegId].ARB & 0x20000000)
         {
+        	// For debug
+        	if (MsgNr == 0) {
+        		usedTxBoxes[MsgNr]++;
+        	} else {
+        		usedTxBoxes[MsgNr]++;
+        	}
+
             /* Reset TxRqst-Array Element */
         	ControllerConfig[controller].TxPtr[MsgNr - 1] = 0;
             /* A Message was successfully transmitted */
             CanIf_TxConfirmation(ControllerConfig[controller].PduPtr[MsgNr - 1].swPduHandle);
-        }
-        /* Receive Object */
-        else
-        {
-            /* Extended Id */
-            if(CanRegs[controller]->IFx[IfRegId].ARB & 0x40000000)
-            {
-                /* Bring Id to standardized format (MSB marks extended Id) */
-                MsgId = (CanRegs[controller]->IFx[IfRegId].ARB & 0x1FFFFFFF) | 0x80000000;
-            }
-            /* Standard Id */
-            else
-            {
-                /* Bring Id to standardized format (MSB marks extended Id) */
-                MsgId = (CanRegs[controller]->IFx[IfRegId].ARB & 0x1FFC0000) >> 18;
-            }
-            /* DLC (Max 8) */
-            MsgDlc = CanRegs[controller]->IFx[IfRegId].MC & 0x000F;
-            if(MsgDlc > 8)
-            {
-                MsgDlc = 8;
-            }
-            /* Let SduPtr point to Shadow Buffer */
-            SduPtr = RxShadowBuf[controller];
 
-            /* Copy Message Data to Shadow Buffer */
-            for(DataByteIndex = 0; DataByteIndex < MsgDlc; DataByteIndex++)
-            {
-            	SduPtr[DataByteIndex] = CanRegs[controller]->IFx[IfRegId].DATx[ElementIndex[DataByteIndex]];
-            }
-            /* Indicate successful Reception */
-            const Can_HardwareObjectType *hoh = Can_FindRxHoh(controller, MsgNr);
-            CanIf_RxIndication(hoh->CanObjectId, MsgId, MsgDlc, SduPtr);
+        /* Receive Object */
+        } else {
+
+        	// Handle all of the message objects in this FIFO buffer.
+        	const Can_HardwareObjectType *hoh = Can_FindRxHoh(controller, MsgNr);
+        	for(; MsgNr < ControllerConfig[controller].MaxBoxes; MsgNr++) {
+        		if (!(hoh->Can_Arc_MbMask & (1 << (MsgNr - 1)))) {
+        			continue;
+        		}
+
+        		/* Read setup hardware to read arbitration, control and data Bits of the message object.
+        		 * Clear IntPnd and Tx */
+        		if (MsgNr != ir) { // Don't do this the first time.
+        			CanRegs[controller]->IFx[IfRegId].COM = 0x003F0000 | MsgNr;
+        		}
+
+        		if (handleRxMsgObject(MsgNr, hoh, controller) == CAN_NOT_OK) {
+        			break; // We have parsed the last object of this FIFO.
+        		}
+			}
 
         }
     }
-    //Can_EnableControllerInterrupts(controller);
 }
 
 void Can1_InterruptHandler() {
@@ -342,7 +390,9 @@ void Can_Init(const Can_ConfigType *Config)
         return;
     }
 #endif 
-     
+
+    imask_t i_state = McuE_EnterCriticalSection();
+
     // TODO This should be used instead of other variables in the Can_Lcfg file.
     CurConfig        = Config;
 
@@ -497,7 +547,7 @@ void Can_Init(const Can_ConfigType *Config)
     ModuleState = CAN_READY;
 #endif
 
-
+    McuE_ExitCriticalSection(i_state);
 
 }
 
@@ -530,6 +580,8 @@ void Can_InitController(uint8 Controller, const Can_ControllerConfigType* Config
         return;
     }
 #endif 
+
+    imask_t i_state = McuE_EnterCriticalSection();
 
     ErrCounter = CAN_TIMEOUT_DURATION;
     
@@ -574,6 +626,7 @@ void Can_InitController(uint8 Controller, const Can_ControllerConfigType* Config
     /* Clear CCE Bit */
     CanRegs[Controller]->CTL &= ~0x00000040;
 
+    McuE_ExitCriticalSection(i_state);
 }
 
 
@@ -800,6 +853,12 @@ Can_ReturnType Can_Write(Can_Arc_HTHType Hth, Can_PduType *PduInfo)
 		break;
     }
 
+	/* Check if TxRqst Bit of MsgObject is set */
+	if(CanRegs[ControllerId]->TRx[MsgNr >> 5] & (1 << (MsgNr & 0x1F)))
+	{
+		return CAN_BUSY;
+	}
+
     CurPduArrayPtr   = ControllerConfig[ControllerId].PduPtr    + (MsgNr - 1);
     CurCancelRqstPtr = ControllerConfig[ControllerId].CancelPtr + (MsgNr - 1);
     CurTxRqstPtr     = ControllerConfig[ControllerId].TxPtr     + (MsgNr - 1);
@@ -813,13 +872,11 @@ Can_ReturnType Can_Write(Can_Arc_HTHType Hth, Can_PduType *PduInfo)
         ArbRegValue = 0xA0000000 | ((PduInfo->id & 0x7FF) << 18);
     }
 
-    /* Check if TxRqst Bit of MsgObject is set */
-    if(CanRegs[ControllerId]->TRx[MsgNr >> 5] & (1 << (MsgNr & 0x1F)))
-    {
-        return CAN_BUSY;
-    }
 
     DCAN_WAIT_UNTIL_NOT_BUSY(ControllerId, IfRegId);
+
+    // We cannot allow an interrupt or other task to play with the COM, MC and ARB registers here.
+    imask_t i_state = McuE_EnterCriticalSection();
 
 
     /* Set NewDat, TxIE (dep on ControllerConfig), TxRqst, EoB and DLC */
@@ -848,6 +905,7 @@ Can_ReturnType Can_Write(Can_Arc_HTHType Hth, Can_PduType *PduInfo)
     
     IfRegId ^= 1;
        
+    McuE_ExitCriticalSection(i_state);
     return CAN_OK;
 }
 

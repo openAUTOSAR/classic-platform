@@ -12,8 +12,7 @@ syntax: glob
 # switch to regexp syntax.
 syntax: regexp
 ^.*obj_.*\.[h|c|s]
-
-
+^\.lib.*\.arxml
 
 syntax: regexp
 ^.project$

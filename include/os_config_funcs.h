@@ -76,17 +76,13 @@ OsRomApplicationType *Os_CfgGetApplObj( ApplicationType application_id ) {
 #endif
 
 /*-----------------------------------------------------------------*/
-int Os_CfgGetTaskCnt(void) {
-	return OS_TASK_CNT;
-}
-/*-----------------------------------------------------------------*/
 
 OsResourceType *Os_CfgGetResource( ResourceType resource ) {
+#if OS_RESOURCE_CNT!=0
 	return &resource_list[resource];
-}
-
-int Os_CfgGetResourceCnt() {
-	return OS_RESOURCE_CNT;
+#else
+	return NULL;
+#endif
 }
 
 /*-----------------------------------------------------------------*/
@@ -95,15 +91,7 @@ OsCounterType *Os_CfgGetCounter(CounterType count_id) {
 	return &counter_list[count_id];
 }
 
-uint32 Os_CfgGetCounterCnt(void ) {
-	return OS_COUNTER_CNT;
-//	return sizeof(counter_list)/sizeof(OsCounterType);
-}
 /*-----------------------------------------------------------------*/
-
-uint32 Os_CfgGetSchedCnt(  void ) {
-	return OS_SCHTBL_CNT;
-}
 
 OsSchTblType *Os_CfgGetSched( ScheduleTableType sched_id ) {
 #if (OS_SCHTBL_CNT!=0)
@@ -118,10 +106,6 @@ OsSchTblType *Os_CfgGetSched( ScheduleTableType sched_id ) {
 }
 
 /*-----------------------------------------------------------------*/
-
-uint32 Os_CfgGetAlarmCnt(void) {
-	return OS_ALARM_CNT;
-}
 
 OsAlarmType *Os_CfgGetAlarmObj( AlarmType alarm_id ) {
 #if (OS_ALARM_CNT!=0)
@@ -139,7 +123,7 @@ StatusType Os_CfgGetAlarmBase(AlarmType alarm_id, AlarmBaseRefType info) {
 
 	StatusType rv = E_OK;
 
-	if( alarm_id >= Os_CfgGetAlarmCnt() ) {
+	if( alarm_id >= OS_ALARM_CNT ) {
 		rv = E_OS_ID;
 	} else {
 #if (OS_ALARM_CNT!=0)

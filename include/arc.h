@@ -38,7 +38,7 @@ const char *Arc_StatusToString(StatusType);
 
 void Os_Arc_GetStackInfo( TaskType pid, StackInfoType *s );
 
-#define OS_STACK_USAGE(_x) ((((_x)->size - (uint32_t)((_x)->usage - (_x)->top))*100)/(_x)->size)
+#define OS_STACK_USAGE(_x) ((((_x)->size - (uint32_t)((size_t)(_x)->usage - (size_t)(_x)->top))*100)/(_x)->size)
 
 // int printf(const char *format, ...);
 

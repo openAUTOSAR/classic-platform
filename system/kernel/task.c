@@ -23,7 +23,7 @@
 /** @req OS067 */
 
 _Bool os_pcb_pid_valid( OsPcbType *restrict pcb ) {
-	return ( pcb->pid > Os_CfgGetTaskCnt() ) ? 0 : 1;
+	return ( pcb->pid > OS_TASK_CNT ) ? 0 : 1;
 }
 /**
  * Start an extended task.
@@ -479,7 +479,7 @@ void Os_Arc_GetStackInfo( TaskType task, StackInfoType *s) {
 
 
 #define TASK_CHECK_ID(x) 				\
-	if( (x) > Os_CfgGetTaskCnt()) { \
+	if( (x) > OS_TASK_CNT) { \
 		rv = E_OS_ID;					\
 		goto err; 						\
 	}

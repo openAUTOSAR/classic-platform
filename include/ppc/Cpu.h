@@ -149,7 +149,7 @@
  * Note! Tried lots of other ways to do this but came up empty
  */
 
-#define get_spr(spr_nr)	\
+#define get_spr(spr_nr)	CC_EXTENSION \
 ({\
 	uint32_t __val;\
 	asm volatile (" mfspr %0," STRINGIFY__(spr_nr) : "=r"(__val) : );\
