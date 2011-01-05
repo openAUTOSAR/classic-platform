@@ -30,7 +30,7 @@
 		timer = timer - 1; \
 	} \
 
-extern Com_Arc_Config_type Com_Arc_Config;
+
 
 void Com_MainFunctionRx(void) {
 	//DEBUG(DEBUG_MEDIUM, "Com_MainFunctionRx() excecuting\n");

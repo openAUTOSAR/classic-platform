@@ -24,7 +24,7 @@
 #include "Com_Internal.h"
 #include "Com_misc.h"
 
-extern Com_Arc_Config_type Com_Arc_Config;
+
 
 void Com_ReadSignalDataFromPdu(
 			const Com_SignalIdType signalId,
