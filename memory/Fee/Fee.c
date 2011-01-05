@@ -20,6 +20,7 @@
 
 
 
+//lint -emacro(904,VALIDATE_RV,VALIDATE_NO_RV) //904 PC-Lint exception to MISRA 14.7 (validate macros).
 
 #include <string.h>
 #include "Fee.h"
@@ -51,15 +52,13 @@
 #define VALIDATE_RV(_exp,_api,_err,_rv ) \
         if( !(_exp) ) { \
           Det_ReportError(MODULE_ID_FEE, 0, _api, _err); \
-          /* PC-Lint exception (MISRA 14.7) - Allow return statement before end of function in validate macros */ \
-          /*lint -e(904)*/return _rv; \
+          return _rv; \
         }
 
 #define VALIDATE_NO_RV(_exp,_api,_err ) \
   if( !(_exp) ) { \
           Det_ReportError(MODULE_ID_FEE, 0, _api, _err); \
-          /* PC-Lint exception (MISRA 14.7)- Allow return statement before end of function in validate macros */ \
-          /*lint -e(904)*/ return; \
+          return; \
         }
 
 #define DET_REPORTERROR(_module,_instance,_api,_err) Det_ReportError(_module,_instance,_api,_err)
@@ -79,7 +78,7 @@
  */
 #define GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(_blocknr)	(((_blocknr) >> NVM_DATASET_SELECTION_BITS) - 1u)
 #define GET_DATASET_FROM_BLOCK_NUMBER(_blocknr)	((_blocknr) & ((uint16)((uint16)1u << NVM_DATASET_SELECTION_BITS) - 1u))
-#define BLOCK_INDEX_AND_SET_TO_BLOCKNR(_blocknr, _set)	((uint16)((_blocknr + 1u) << NVM_DATASET_SELECTION_BITS) | set)
+#define BLOCK_INDEX_AND_SET_TO_BLOCKNR(_blocknr, _set)	((uint16)((_blocknr + 1u) << NVM_DATASET_SELECTION_BITS) | _set)
 
 /*
  * Page alignment macros

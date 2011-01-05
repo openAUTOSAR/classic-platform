@@ -100,24 +100,24 @@ void NvM_Init( void );	/** @req NVM447 */
 void NvM_ReadAll( void );	/** @req NVM460 */
 void NvM_WriteAll( void );	/** @req NVM461 */
 void NvM_CancelWriteAll( void );	/** @req NVM458 */
-void NvM_GetErrorStatus( NvM_BlockIdType BlockId, uint8 *RequestResultPtr );	/** @req NVM451 */
+void NvM_GetErrorStatus( NvM_BlockIdType blockId, uint8 *requestResultPtr );	/** @req NVM451 */
 
 #if (NVM_SET_RAM_BLOCK_STATUS_API == STD_ON)
-void Nvm_SetRamBlockStatus( NvM_BlockIdType BlockId, boolean BlockChanged );	/** @req NVM453 */
+void Nvm_SetRamBlockStatus( NvM_BlockIdType blockId, boolean blockChanged );	/** @req NVM453 */
 #endif
 
 #if (NVM_API_CONFIG_CLASS > NVM_API_CONFIG_CLASS_1)
-void NvM_SetDataIndex( NvM_BlockIdType BlockId, uint8 DataIndex );	/** @req NVM448 */
-void NvM_GetDataIndex( NvM_BlockIdType BlockId, uint8 *DataIndexPtr );	/** @req NVM449 */
-void Nvm_ReadBlock( NvM_BlockIdType BlockId, uint8 *NvM_DstPtr );	/** @req NVM454 */
-void NvM_WriteBlock( NvM_BlockIdType BlockId, const uint8 *NvM_SrcPtr );	/** @req NVM455 */
-void Nvm_RestoreBlockDefaults( NvM_BlockIdType BlockId, uint8 *NvM_DstPtr );	/** @req NVM456 */
+void NvM_SetDataIndex( NvM_BlockIdType blockId, uint8 dataIndex );	/** @req NVM448 */
+void NvM_GetDataIndex( NvM_BlockIdType blockId, uint8 *dataIndexPtr );	/** @req NVM449 */
+void Nvm_ReadBlock( NvM_BlockIdType blockId, uint8 *dstPtr );	/** @req NVM454 */
+void NvM_WriteBlock( NvM_BlockIdType blockId, const uint8 *srcPtr );	/** @req NVM455 */
+void Nvm_RestoreBlockDefaults( NvM_BlockIdType blockId, uint8 *dstPtr );	/** @req NVM456 */
 #endif
 
 #if (NVM_API_CONFIG_CLASS > NVM_API_CONFIG_CLASS_2)
-void NvM_SetBlockProtection( NvM_BlockIdType BlockId, boolean ProtectionEnabled );	/** @req NVM450 */
-void NvM_EraseNvBlock( NvM_BlockIdType BlockId );	/** @req NVM457 */
-void NvM_InvalidateNvBlock( NvM_BlockIdType BlockId );	/** @req NVM459 */
+void NvM_SetBlockProtection( NvM_BlockIdType blockId, boolean protectionEnabled );	/** @req NVM450 */
+void NvM_EraseNvBlock( NvM_BlockIdType blockId );	/** @req NVM457 */
+void NvM_InvalidateNvBlock( NvM_BlockIdType blockId );	/** @req NVM459 */
 #endif
 
 #endif /*NVM_H_*/
