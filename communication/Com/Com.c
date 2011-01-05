@@ -137,40 +137,6 @@ void Com_Init(const Com_ConfigType *config ) {
 				// Initialize signal data.
 				Com_WriteSignalDataToPdu(Signal->ComHandleId, Signal->ComSignalInitValue);
 			}
-
-			// Check filter configuration
-			if (IPdu->ComIPduDirection == RECEIVE) {
-
-				// This represents an invalid configuration of the UINT8_N datatype
-				//lint -save -esym(960,12.5) PC-Lint Exception: It is checked and OK. PC-Lint missunderstands rule 12.5 in this case.
-				if (( (Signal->ComSignalType == UINT8_N)
-					&&
-					( (Signal->ComFilter.ComFilterAlgorithm == MASKED_NEW_EQUALS_X)
-					|| (Signal->ComFilter.ComFilterAlgorithm == MASKED_NEW_DIFFERS_X)
-					|| (Signal->ComFilter.ComFilterAlgorithm == MASKED_NEW_DIFFERS_MASKED_OLD)
-					|| (Signal->ComFilter.ComFilterAlgorithm == NEW_IS_WITHIN)
-					|| (Signal->ComFilter.ComFilterAlgorithm == NEW_IS_OUTSIDE)
-					|| (Signal->ComFilter.ComFilterAlgorithm == ONE_EVERY_N) ))) {
-
-					DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_FILTER_CONFIGURATION);
-					failure = 1;
-				}
-				//lint -restore
-
-				// This represents an invalid configuration of the BOOLEAN datatype
-				if (( (Signal->ComSignalType == BOOLEAN)
-					&&
-					( (Signal->ComFilter.ComFilterAlgorithm == NEW_IS_WITHIN)
-					|| (Signal->ComFilter.ComFilterAlgorithm == NEW_IS_OUTSIDE) ))) {
-
-
-					DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_FILTER_CONFIGURATION);
-					failure = 1;
-				}
-			// Initialize filter values. COM230
-			//signal.ComFilter.ComFilterNewValue = ComConfig->ComIPdu[i].ComTxIPdu.ComTxIPduUnusedAreasDefault;
-			//signal.ComFilter.ComFilterOldValue = ComConfig->ComIPdu[i].ComTxIPdu.ComTxIPduUnusedAreasDefault;
-			}
 		}
 
 		// Configure per I-PDU based deadline monitoring.

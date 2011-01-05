@@ -174,7 +174,7 @@ typedef struct {
 	/** Filter for this signal.
 	 * NOT SUPPORTED
 	 */
-	const ComFilter_type ComFilter;
+	//const ComFilter_type ComFilter;
 
 	/* Pointer to the shadow buffer of the signal group that this group signal is contained in.
 	 *
@@ -238,7 +238,7 @@ typedef struct {
 	/** The number of bytes if the signal has type UINT8_N;
 	 * Range 1 to 8.
 	 */
-	const uint8 ComSignalLength;
+	//const uint8 ComSignalLength;
 
 	/** Defines the type of the signal. */
 	const Com_SignalType ComSignalType;
@@ -265,7 +265,7 @@ typedef struct {
 	/** Filter for this signal.
 	 * NOT SUPPORTED.
 	 */
-	const ComFilter_type ComFilter;
+	//const ComFilter_type ComFilter;
 
 	/** Marks if this signal is a signal group.
 	 * Should be set to 1 if the signal is a signal group.
@@ -374,9 +374,6 @@ typedef struct {
 	 */
 	boolean (*ComIPduCallout)(PduIdType PduId, const uint8 *IPduData);
 
-
-	/** The ID of this IPDU. */
-	const uint8 ComIPduRxHandleId;
 
 	/** The outgoing PDU id. For polite PDU id handling. */
 	const uint8 ArcIPduOutgoingId;
