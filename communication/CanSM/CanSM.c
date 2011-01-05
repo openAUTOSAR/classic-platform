@@ -13,6 +13,8 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+//lint -emacro(904,CANSM_VALIDATE_INIT,CANSM_VALIDATE_NETWORK,CANSM_VALIDATE_POINTER,CANSM_VALIDATE_MODE) //904 PC-Lint exception to MISRA 14.7 (validate macros).
+
 /* Globally fulfilled requirements */
 /** @req CANSM069 */
 /** @req CANSM077 */
@@ -49,7 +51,7 @@ void CanSM_Init( const CanSM_ConfigType* ConfigPtr ) {
 
 	CanSM_Config = ConfigPtr;
 
-	for (int i = 0; i < CANSM_NETWORK_COUNT; ++i) {
+	for (uint8 i = 0; i < CANSM_NETWORK_COUNT; ++i) {
 		CanSM_Internal_RequestComMode(i, COMM_NO_COMMUNICATION);  /**< @req CANSM211 */
 	}
 

@@ -94,7 +94,7 @@ void ComM_MainFunction_##channel (void) { \
 void ComM_Init(const ComM_ConfigType *);  /**< @req COMM146 */
 
 /** De-initializes (terminates) the AUTOSAR Communication Manager. */
-void ComM_DeInit();  /**< @req COMM147 */
+void ComM_DeInit(void);  /**< @req COMM147 */
 
 /** @req COMM370 */
 #if (COMM_VERSION_INFO_API == STD_ON)
@@ -114,7 +114,7 @@ Std_ReturnType ComM_PreventWakeUp( NetworkHandleType Channel, boolean Status ); 
 Std_ReturnType ComM_LimitChannelToNoComMode( NetworkHandleType Channel, boolean Status );     /**< @req COMM163 */
 Std_ReturnType ComM_LimitECUToNoComMode( boolean Status );                                    /**< @req COMM124 */
 Std_ReturnType ComM_ReadInhibitCounter( uint16* CounterValue );                               /**< @req COMM224 */
-Std_ReturnType ComM_ResetInhibitCounter();                                                    /**< @req COMM108 */
+Std_ReturnType ComM_ResetInhibitCounter(void);                                                    /**< @req COMM108 */
 Std_ReturnType ComM_SetECUGroupClassification( ComM_InhibitionStatusType Status );
 
 

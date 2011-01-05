@@ -93,7 +93,7 @@ Std_ReturnType CanSM_GetCurrentComMode( NetworkHandleType NetworkHandle, ComM_Mo
 
 /** Scheduled function of the CanSM */
 /** @req CANSM065 */
-void CanSM_MainFunction();
+void CanSM_MainFunction(void);
 
 
 
