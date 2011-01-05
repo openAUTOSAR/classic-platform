@@ -30,7 +30,6 @@
 #include "PduR.h"
 #include "Det.h"
 
-extern Com_Arc_Config_type Com_Arc_Config;
 
 uint8 Com_SendSignal(Com_SignalIdType SignalId, const void *SignalDataPtr) {
 	VALIDATE_SIGNAL(SignalId, 0x0a, E_NOT_OK);

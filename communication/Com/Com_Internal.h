@@ -22,8 +22,10 @@
 #ifndef COM_INTERNAL_H_
 #define COM_INTERNAL_H_
 
+#include "Com_Arc_Types.h"
 
-extern const Com_ConfigType * ComConfig;
+extern const Com_ConfigType *ComConfig;
+extern Com_Arc_Config_type Com_Arc_Config;
 
 
 

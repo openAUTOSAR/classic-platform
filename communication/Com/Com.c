@@ -32,22 +32,6 @@
 
 const Com_ConfigType * ComConfig;
 
-Com_Arc_IPdu_type Com_Arc_IPdu[COM_N_IPDUS];
-Com_Arc_Signal_type Com_Arc_Signal[COM_N_SIGNALS];
-Com_Arc_GroupSignal_type Com_Arc_GroupSignal[COM_N_GROUP_SIGNALS];
-
-uint8 outgoingSduPtr[8];
-
-Com_Arc_Config_type Com_Arc_Config = {
-	.ComIPdu = Com_Arc_IPdu,
-	.ComSignal = Com_Arc_Signal,
-	.ComGroupSignal = Com_Arc_GroupSignal,
-	.OutgoingPdu = {
-			.SduDataPtr = outgoingSduPtr,
-			.SduLength = 0
-		}
-};
-
 
 void Com_Init(const Com_ConfigType *config ) {
 	DEBUG(DEBUG_LOW, "--Initialization of COM--\n");
@@ -87,13 +71,6 @@ void Com_Init(const Com_ConfigType *config ) {
 		// Reset earliest deadline.
 		earliestDeadline = 0xffffffffu;
 		firstTimeout = 0xffffffffu;
-
-		// Reserve memory for all defined signals.
-		//586 PC-Lint ska ändras. Ticket #133
-		Arc_IPdu->ComIPduDataPtr = malloc(IPdu->ComIPduSize);
-		if (Arc_IPdu->ComIPduDataPtr == NULL) {
-			failure = 1;
-		}
 
 		// Initialize the memory with the default value.
 		if (IPdu->ComIPduDirection == SEND) {
@@ -145,12 +122,6 @@ void Com_Init(const Com_ConfigType *config ) {
 
 			// If this signal is a signal group
 			if (Signal->Com_Arc_IsSignalGroup) {
-				//586 PC-Lint ska ändras. Ticket #133
-				Arc_Signal->Com_Arc_ShadowBuffer = malloc(IPdu->ComIPduSize);
-
-				if (Arc_Signal->Com_Arc_ShadowBuffer == NULL) {
-					failure = 1;
-				}
 
 				// For each group signal of this signal group.
 				for(uint8 h = 0; Signal->ComGroupSignal[h] != NULL; h++) {

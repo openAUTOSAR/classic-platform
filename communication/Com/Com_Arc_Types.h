@@ -14,7 +14,8 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
+#ifndef COM_ARC_TYPES_H_
+#define COM_ARC_TYPES_H_
 
 #include "Std_Types.h"
 #include "Com_Types.h"
@@ -68,3 +69,5 @@ typedef struct {
 	Com_Arc_GroupSignal_type *ComGroupSignal;
 	PduInfoType OutgoingPdu;
 } Com_Arc_Config_type;
+
+#endif
