@@ -86,6 +86,9 @@ lnt\co-gcc.lnt
 
 -e788 // PC-Lint message: Enum constant 'Symbol' not used within defaulted switch
 
+-esym(960, 16.9) // Function identifier used without '&'
+
+
 // RULES TO TURN OFF FOR OLD MODULES, but think of them when having new modules
 -esym(960,17.4) // To many messages to be possible to handle locally!
 
@@ -99,3 +102,5 @@ lnt\co-gcc.lnt
 //-e715 //Symbol not referenced
 
 //-esym(960, 12.5) //Non-primary expression used with logical operator.
+
+//-e785 // Too few initializers for aggregate ...
