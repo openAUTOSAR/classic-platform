@@ -146,7 +146,7 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
 
 //lint -esym(904, Com_RxIndication) //PC-Lint Exception of rule 14.7
 void Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr) {
-	PDU_ID_CHECK(ComRxPduId, 0x14, E_NOT_OK);
+	PDU_ID_CHECK(ComRxPduId, 0x14);
 
 	const ComIPdu_type *IPdu = GET_IPdu(ComRxPduId);
 	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(ComRxPduId);
@@ -203,7 +203,6 @@ void Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr) {
 	return;
 }
 
-// PC-Lint skriv undantag för så länge
 void Com_TxConfirmation(PduIdType ComTxPduId) {
 	PDU_ID_CHECK(ComTxPduId, 0x15);
 	(void)ComTxPduId; // Nothing to be done. This is just to avoid Lint warning.

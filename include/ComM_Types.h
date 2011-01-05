@@ -28,13 +28,13 @@
 typedef enum {
 	COMM_NO_COMMUNICATION = 0,
 	COMM_SILENT_COMMUNICATION = 1,
-	COMM_FULL_COMMUNICATION = 2,
+	COMM_FULL_COMMUNICATION = 2
 } ComM_ModeType;
 
 /** Initialization status of ComM. */
 typedef enum {
 	COMM_UNINIT,
-	COMM_INIT,
+	COMM_INIT
 } ComM_InitStatusType;  /**< @req COMM494 */
 
 /** Inhibition status of ComM. */

@@ -78,9 +78,13 @@ Std_ReturnType CanSM_Internal_RequestComMode( NetworkHandleType NetworkHandle, C
 	Std_ReturnType overallStatus = E_OK;
 	Std_ReturnType status;
 	status = CanSM_Internal_RequestCanIfMode(NetworkHandle, ComM_Mode);      /**< @req CANSM240 */
-	if (status > overallStatus) overallStatus = status;
+	if (status > overallStatus){
+		overallStatus = status;
+	}
 	status = CanSM_Internal_RequestComGroupMode(NetworkHandle, ComM_Mode);   /**< @req CANSM241 */
-	if (status > overallStatus) overallStatus = status;
+	if (status > overallStatus) {
+		overallStatus = status;
+	}
 
 	if (status == E_OK) {
 		NetworkInternal->CurrentMode = ComM_Mode;

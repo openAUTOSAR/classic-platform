@@ -49,7 +49,7 @@
 
 typedef enum {
 	CANSM_STATUS_UNINIT,
-	CANSM_STATUS_INIT,
+	CANSM_STATUS_INIT
 } CanSM_Internal_InitStatusType;
 
 
