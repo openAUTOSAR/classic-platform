@@ -159,8 +159,8 @@ typedef enum
 #endif
 
 void EcuM_Init( void );
-void EcuM_StartupTwo();
-void EcuM_Shutdown();
+void EcuM_StartupTwo(void);
+void EcuM_Shutdown(void);
 
 Std_ReturnType EcuM_GetState(EcuM_StateType* state);
 
@@ -170,7 +170,7 @@ Std_ReturnType EcuM_ReleaseRUN(EcuM_UserType user);
 Std_ReturnType EcuM_RequestPOST_RUN(EcuM_UserType user);
 Std_ReturnType EcuM_ReleasePOST_RUN(EcuM_UserType user);
 
-void EcuM_KillAllRUNRequests();
+void EcuM_KillAllRUNRequests(void);
 
 #if defined(USE_COM)
 Std_ReturnType EcuM_ComM_RequestRUN(NetworkHandleType channel);
@@ -182,10 +182,10 @@ Std_ReturnType EcuM_SelectShutdownTarget(EcuM_StateType target, uint8 mode);
 Std_ReturnType EcuM_GetShutdownTarget(EcuM_StateType* target, uint8* mode);
 Std_ReturnType EcuM_GetLastShutdownTarget(EcuM_StateType* target, uint8* mode);
 
-EcuM_WakeupSourceType EcuM_GetPendingWakeupEvents();
+EcuM_WakeupSourceType EcuM_GetPendingWakeupEvents(void);
 void EcuM_ClearWakeupEvent(EcuM_WakeupSourceType sources);
-EcuM_WakeupSourceType EcuM_GetValidatedWakeupEvents();
-EcuM_WakeupSourceType EcuM_GetExpiredWakeupEvents();
+EcuM_WakeupSourceType EcuM_GetValidatedWakeupEvents(void);
+EcuM_WakeupSourceType EcuM_GetExpiredWakeupEvents(void);
 EcuM_WakeupStatusType EcuM_GetStatusOfWakeupSource(EcuM_WakeupSourceType sources);
 
 Std_ReturnType EcuM_SelectApplicationMode(AppModeType appMode);
@@ -195,9 +195,6 @@ Std_ReturnType EcuM_SelectBootTarget(EcuM_BootTargetType target);
 Std_ReturnType EcuM_GetBootTarget(EcuM_BootTargetType* target);
 
 void EcuM_MainFunction(void);
-
-void EcuM_OnGoOffTwo( void );
-void EcuM_AL_SwitchOff( void );
 
 #endif /*ECUM_H_*/
 /** @} */
