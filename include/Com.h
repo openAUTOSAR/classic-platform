@@ -34,7 +34,7 @@
 #include "Com_Cfg.h"
 #include "Com_Types.h"
 #include "Com_PbCfg.h"
-#include "Com_Internal.h"
+//#include "Com_Internal.h" //TODO: Remove completely?
 #include "Com_Com.h"
 #include "Com_Sched.h"
 
