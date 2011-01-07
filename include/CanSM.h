@@ -68,7 +68,7 @@ typedef enum {
 	CANSM_BOR_CHECK_L1, /**<  Bus-off recovery level 1 state, TX enabled again */
 	CANSM_BOR_TXOFF_L2, /**<  Bus-off recovery level 2 state, TX disabled */
 	CANSM_BOR_CHECK_L2 /**<  Bus-off recovery level 2 state, TX enabled again */
-};
+} CanSM_BusOffRecoveryStateType; /** @req CANSM169 */
 
 /** @req CANSM037 */
 
