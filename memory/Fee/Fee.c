@@ -63,7 +63,7 @@
 
 #define DET_REPORTERROR(_module,_instance,_api,_err) Det_ReportError(_module,_instance,_api,_err)
 
-#define MIN_BLOCKNR		((uint16)((uint16)1 << NVM_DATASET_SELECTION_BITS))
+#define MIN_BLOCKNR		((uint16)((uint16)1 << /*lint --e(835)*/NVM_DATASET_SELECTION_BITS))
 
 #else
 #define VALIDATE(_exp,_api,_err )
@@ -76,9 +76,12 @@
 /*
  * Block numbering recalculation macros
  */
-#define GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(_blocknr)	(((_blocknr) >> NVM_DATASET_SELECTION_BITS) - 1u)
-#define GET_DATASET_FROM_BLOCK_NUMBER(_blocknr)	((_blocknr) & ((uint16)((uint16)1u << NVM_DATASET_SELECTION_BITS) - 1u))
-#define BLOCK_INDEX_AND_SET_TO_BLOCKNR(_blocknr, _set)	((uint16)((_blocknr + 1u) << NVM_DATASET_SELECTION_BITS) | _set)
+// 835 PC-lint: A zero has been given as right argument to operator '<<' or '>>' - inform lint that NVM_DATASET_SELECTION_BITS set to zero is ok
+// 778 PC-lint: Constant expression evaluates to 0 in operation '-' - inform lint that NVM_DATASET_SELECTION_BITS set to zero is ok
+// 845 PC-lint: The right argument to operator '&' is certain to be 0 - inform lint that NVM_DATASET_SELECTION_BITS set to zero is ok
+#define GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(_blocknr)	(((_blocknr) >> /*lint --e(835)*/NVM_DATASET_SELECTION_BITS) - 1u)
+#define GET_DATASET_FROM_BLOCK_NUMBER(_blocknr)	((_blocknr) & ((uint16)((uint16)1u << /*lint --e(835, 778, 845)*/NVM_DATASET_SELECTION_BITS) - 1u))
+#define BLOCK_INDEX_AND_SET_TO_BLOCKNR(_blocknr, _set)	((uint16)((_blocknr + 1u) << /*lint --e(835)*/NVM_DATASET_SELECTION_BITS) | _set)
 
 /*
  * Page alignment macros

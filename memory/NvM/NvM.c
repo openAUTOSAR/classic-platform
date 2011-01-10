@@ -78,7 +78,8 @@
 #define DET_REPORTERROR(_module,_instance,_api,_err)
 #endif
 
-#define BLOCK_BASE_AND_SET_TO_BLOCKNR(_blockbase, _set)	((uint16)(_blockbase << NVM_DATASET_SELECTION_BITS) | _set)
+// 835 PC-lint: A zero has been given as right argument to operator '<<' - inform lint that NVM_DATASET_SELECTION_BITS set to zero is ok
+#define BLOCK_BASE_AND_SET_TO_BLOCKNR(_blockbase, _set)	((uint16)(_blockbase << /*lint --e(835)*/NVM_DATASET_SELECTION_BITS) | _set)
 
 
 // State variable
