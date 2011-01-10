@@ -99,6 +99,7 @@ endif
 
 inc-y += $(ROOTDIR)/include
 inc-y += $(ROOTDIR)/include/$(ARCH_FAM)
+inc-y += $(ROOTDIR)/include/$(ARCH_FAM)/$(ARCH)
 
 
 .PHONY clean: 
@@ -161,7 +162,7 @@ define run_splint
 $(if 
 $(filter $(dir $(abspath $<)),$(LINT_NICE_EXCLUDE_PATHS)),
 $(info $(abspath $<):0:0: Info: Not running lint check on $(abspath $<)),
-$(Q)$(SPLINT) $(lint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y)) $(abspath $<))
+$(Q)$(SPLINT) $(splint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y)) $(abspath $<))
 endef
 endif
 
@@ -195,7 +196,7 @@ inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
 # Preprocess linker files..
 %.ldp: %.ldf
 	@echo "  >> CPP $<"
-	$(Q)$(CPP) -E -P -x assembler-with-cpp -o $@ $(addprefix -I ,$(inc-y)) $<
+	$(Q)$(CPP) -E -P -x assembler-with-cpp -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
 #	@cat $@ 
 	

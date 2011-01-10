@@ -48,12 +48,12 @@ void MyPwmNotificationRoutine(void) {
 
 /* Global hooks */
 ProtectionReturnType ProtectionHook( StatusType FatalError ) {
-	LDEBUG_PRINTF("## ProtectionHook\n");
+	LDEBUG_FPUTS("## ProtectionHook\n");
 	return PRO_KILLAPPL;
 }
 
 void StartupHook( void ) {
-	LDEBUG_PRINTF("## StartupHook\n");
+	LDEBUG_FPUTS("## StartupHook\n");
 
 	uint32_t sys_freq = McuE_GetSystemClock();
 
@@ -61,7 +61,7 @@ void StartupHook( void ) {
 }
 
 void ShutdownHook( StatusType Error ) {
-	LDEBUG_PRINTF("## ShutdownHook\n");
+	LDEBUG_FPUTS("## ShutdownHook\n");
 	while(1);
 }
 

@@ -19,6 +19,7 @@
 
 #define MPC5516		1
 
+#include "Compiler.h"
 #include "typedefs.h"
 
 #ifdef  __cplusplus
@@ -33,7 +34,7 @@ extern "C" {
 /****************************************************************************/
 /*                     MODULE : CRP                                         */
 /****************************************************************************/
-    struct CRP_tag {
+CC_EXTENSION struct CRP_tag {
 
         union {
             vuint32_t R;
@@ -198,7 +199,7 @@ extern "C" {
 /****************************************************************************/
 /*                          MODULE : DMAMUX                                 */
 /****************************************************************************/
-    struct DMAMUX_tag {
+CC_EXTENSION struct DMAMUX_tag {
         union {
             vuint8_t R;
             struct {
@@ -212,7 +213,7 @@ extern "C" {
 /****************************************************************************/
 /*                          MODULE : DSPI                                   */
 /****************************************************************************/
-    struct DSPI_tag {
+CC_EXTENSION struct DSPI_tag {
         union {
             vuint32_t R;
             struct {
@@ -417,7 +418,7 @@ extern "C" {
 /****************************************************************************/
 /*                     MODULE : External Bus Interface (EBI)                */
 /****************************************************************************/
-    struct CS_tag {
+CC_EXTENSION struct CS_tag {
         union {                 /* Base Register Bank */
             vuint32_t R;
             struct {
@@ -498,7 +499,7 @@ extern "C" {
 /****************************************************************************/
 /*                          MODULE : eDMA                                   */
 /****************************************************************************/
-    struct EDMA_tag {
+CC_EXTENSION  struct EDMA_tag {
         union {
             vuint32_t R;
             struct {
@@ -737,7 +738,7 @@ extern "C" {
 
     };
 
-    struct EDMA_TCD_alt1_tag {  /*for alternate format TCDs (when EDMA.TCD[x].CITER.E_LINK==BITER.E_LINK=1 ) */
+    CC_EXTENSION struct EDMA_TCD_alt1_tag {  /*for alternate format TCDs (when EDMA.TCD[x].CITER.E_LINK==BITER.E_LINK=1 ) */
 
         struct tcd_alt1_t {
             vuint32_t SADDR;    /* source address */
@@ -783,7 +784,7 @@ extern "C" {
 /****************************************************************************/
 /*                          MODULE : EMIOS                                  */
 /****************************************************************************/
-    struct EMIOS_tag {
+    CC_EXTENSION   struct EMIOS_tag {
         union {
             vuint32_t R;
             struct {
@@ -936,7 +937,7 @@ extern "C" {
 /****************************************************************************/
 /*                          MODULE : EQADC                                  */
 /****************************************************************************/
-    struct EQADC_tag {
+CC_EXTENSION  struct EQADC_tag {
         union {
             vuint32_t R;
             struct {
@@ -1173,7 +1174,7 @@ extern "C" {
 /****************************************************************************/
 /*                          MODULE : eSCI                                   */
 /****************************************************************************/
-    struct ESCI_tag {
+CC_EXTENSION     struct ESCI_tag {
         union {
             vuint32_t R;
             struct {
@@ -1298,7 +1299,7 @@ extern "C" {
 /****************************************************************************/
 /*                     MODULE : FLASH                                       */
 /****************************************************************************/
-    struct FLASH_tag {
+CC_EXTENSION  struct FLASH_tag {
         union {                 /* Module Configuration Register */
             vuint32_t R;
             struct {
@@ -1453,7 +1454,7 @@ extern "C" {
 /****************************************************************************/
 /*                          MODULE : FlexCAN                                */
 /****************************************************************************/
-    struct FLEXCAN_tag {
+CC_EXTENSION     struct FLEXCAN_tag {
         union {
             vuint32_t R;
             struct {
@@ -1787,7 +1788,7 @@ extern "C" {
 /****************************************************************************/
 /*                     MODULE : FMPLL                                       */
 /****************************************************************************/
-    struct FMPLL_tag {
+CC_EXTENSION     struct FMPLL_tag {
         union {             /* JRichard */
             vuint32_t R;
             struct {
@@ -1862,7 +1863,7 @@ extern "C" {
 /****************************************************************************/
 /*                          MODULE : i2c                                    */
 /****************************************************************************/
-    struct I2C_tag {
+CC_EXTENSION     struct I2C_tag {
         union {
             vuint8_t R;
             struct {
@@ -1925,7 +1926,7 @@ extern "C" {
 /****************************************************************************/
 /*                          MODULE : INTC                                   */
 /****************************************************************************/
-    struct INTC_tag {
+CC_EXTENSION     struct INTC_tag {
         union {
             vuint32_t R;
             struct {
@@ -2014,7 +2015,7 @@ extern "C" {
 /****************************************************************************/
 /*                     MODULE : MCM                                         */
 /****************************************************************************/
-    struct MCM_tag {
+CC_EXTENSION     struct MCM_tag {
 
         uint32_t mcm_reserved1[5];
 
@@ -2172,7 +2173,7 @@ extern "C" {
 /****************************************************************************/
 /*                          MODULE : MPU                                    */
 /****************************************************************************/
-    struct MPU_tag {
+CC_EXTENSION     struct MPU_tag {
         union {
             vuint32_t R;
             struct {
@@ -2320,7 +2321,7 @@ extern "C" {
 /****************************************************************************/
 /*                          MODULE : pit                                    */
 /****************************************************************************/
-    struct PIT_tag {
+CC_EXTENSION     struct PIT_tag {
         union {
             vuint32_t R;
             struct {
@@ -2521,7 +2522,7 @@ extern "C" {
 /****************************************************************************/
 /*                          MODULE : sem4                                   */
 /****************************************************************************/
-    struct SEMA4_tag {
+CC_EXTENSION     struct SEMA4_tag {
         union {
             vuint8_t R;
             struct {
@@ -2659,7 +2660,7 @@ extern "C" {
 /****************************************************************************/
 /*                     MODULE : SIU                                         */
 /****************************************************************************/
-    struct SIU_tag {
+CC_EXTENSION     struct SIU_tag {
         int32_t SIU_reserved0;
 
         union {                 /* MCU ID Register */
@@ -3218,7 +3219,7 @@ extern "C" {
 /*                          MODULE : FlexRay                                */
 /****************************************************************************/
 
-    typedef union uMVR {
+CC_EXTENSION     typedef union uMVR {
         vuint16_t R;
         struct {
             vuint16_t CHIVER:8; /* CHI Version Number */
@@ -3226,7 +3227,7 @@ extern "C" {
         } B;
     } MVR_t;
 
-    typedef union uMCR {
+CC_EXTENSION     typedef union uMCR {
         vuint16_t R;
         struct {
             vuint16_t MEN:1;    /* module enable */
@@ -3241,7 +3242,7 @@ extern "C" {
               vuint16_t:1;
         } B;
     } MCR_t;
-    typedef union uSTBSCR {
+CC_EXTENSION     typedef union uSTBSCR {
         vuint16_t R;
         struct {
             vuint16_t WMD:1;    /* write mode */
@@ -3252,7 +3253,7 @@ extern "C" {
             vuint16_t STBPSEL:2;        /* strobe port select */
         } B;
     } STBSCR_t;
-    typedef union uSTBPCR {
+CC_EXTENSION     typedef union uSTBPCR {
         vuint16_t R;
         struct {
             vuint16_t:12;
@@ -3263,7 +3264,7 @@ extern "C" {
         } B;
     } STBPCR_t;
 
-    typedef union uMBDSR {
+CC_EXTENSION     typedef union uMBDSR {
         vuint16_t R;
         struct {
             vuint16_t:1;
@@ -3273,7 +3274,7 @@ extern "C" {
         } B;
     } MBDSR_t;
 
-    typedef union uMBSSUTR {
+CC_EXTENSION     typedef union uMBSSUTR {
         vuint16_t R;
         struct {
 
@@ -3284,7 +3285,7 @@ extern "C" {
         } B;
     } MBSSUTR_t;
 
-    typedef union uPOCR {
+CC_EXTENSION     typedef union uPOCR {
         vuint16_t R;
         vuint8_t byte[2];
         struct {
@@ -3298,7 +3299,7 @@ extern "C" {
         } B;
     } POCR_t;
 /* protocol commands */
-    typedef union uGIFER {
+CC_EXTENSION     typedef union uGIFER {
         vuint16_t R;
         struct {
             vuint16_t MIF:1;    /* module interrupt flag */
@@ -3319,7 +3320,8 @@ extern "C" {
             vuint16_t TBIE:1;   /* transmit buffer interrupt enable */
         } B;
     } GIFER_t;
-    typedef union uPIFR0 {
+
+CC_EXTENSION     typedef union uPIFR0 {
         vuint16_t R;
         struct {
             vuint16_t FATLIF:1; /* fatal protocol error interrupt flag */
@@ -3340,7 +3342,8 @@ extern "C" {
             vuint16_t CYSIF:1;  /* cycle start interrupt flag */
         } B;
     } PIFR0_t;
-    typedef union uPIFR1 {
+
+    CC_EXTENSION     typedef union uPIFR1 {
         vuint16_t R;
         struct {
             vuint16_t EMCIF:1;  /* error mode changed interrupt flag */
@@ -3357,7 +3360,7 @@ extern "C" {
               vuint16_t:4;
         } B;
     } PIFR1_t;
-    typedef union uPIER0 {
+CC_EXTENSION     typedef union uPIER0 {
         vuint16_t R;
         struct {
             vuint16_t FATLIE:1; /* fatal protocol error interrupt enable */
@@ -3378,7 +3381,7 @@ extern "C" {
             vuint16_t CYSIE:1;  /* cycle start interrupt enable */
         } B;
     } PIER0_t;
-    typedef union uPIER1 {
+CC_EXTENSION     typedef union uPIER1 {
         vuint16_t R;
         struct {
             vuint16_t EMCIE:1;  /* error mode changed interrupt enable */
@@ -3395,7 +3398,7 @@ extern "C" {
               vuint16_t:4;
         } B;
     } PIER1_t;
-    typedef union uCHIERFR {
+    CC_EXTENSION typedef union uCHIERFR {
         vuint16_t R;
         struct {
             vuint16_t FRLBEF:1; /* flame lost channel B error flag */
@@ -3416,7 +3419,7 @@ extern "C" {
             vuint16_t ILSAEF:1; /* illegal access error flag */
         } B;
     } CHIERFR_t;
-    typedef union uMBIVEC {
+    CC_EXTENSION typedef union uMBIVEC {
         vuint16_t R;
         struct {
 
@@ -3427,7 +3430,7 @@ extern "C" {
         } B;
     } MBIVEC_t;
 
-    typedef union uPSR0 {
+    CC_EXTENSION typedef union uPSR0 {
         vuint16_t R;
         struct {
             vuint16_t ERRMODE:2;        /* error mode */
@@ -3443,7 +3446,7 @@ extern "C" {
 /* protocol states */
 /* protocol sub-states */
 /* wakeup status */
-    typedef union uPSR1 {
+    CC_EXTENSION typedef union uPSR1 {
         vuint16_t R;
         struct {
             vuint16_t CSAA:1;   /* cold start attempt abort flag */
@@ -3456,7 +3459,7 @@ extern "C" {
             vuint16_t APTAC:5;  /* allow passive to active counter */
         } B;
     } PSR1_t;
-    typedef union uPSR2 {
+    CC_EXTENSION typedef union uPSR2 {
         vuint16_t R;
         struct {
             vuint16_t NBVB:1;   /* NIT boundary violation on channel B */
@@ -3474,7 +3477,7 @@ extern "C" {
             vuint16_t CLKCORRFAILCNT:4; /* clock correction failed counter */
         } B;
     } PSR2_t;
-    typedef union uPSR3 {
+    CC_EXTENSION typedef union uPSR3 {
         vuint16_t R;
         struct {
             vuint16_t:2;
@@ -3493,7 +3496,7 @@ extern "C" {
             vuint16_t AVFA:1;   /* aggregated valid frame on channel A */
         } B;
     } PSR3_t;
-    typedef union uCIFRR {
+    CC_EXTENSION typedef union uCIFRR {
         vuint16_t R;
         struct {
             vuint16_t:8;
@@ -3507,7 +3510,7 @@ extern "C" {
             vuint16_t TBIFR:1;  /* transmit buffer interrupt flag */
         } B;
     } CIFRR_t;
-    typedef union uSFCNTR {
+    CC_EXTENSION typedef union uSFCNTR {
         vuint16_t R;
         struct {
             vuint16_t SFEVB:4;  /* sync frames channel B, even cycle */
@@ -3517,7 +3520,7 @@ extern "C" {
         } B;
     } SFCNTR_t;
 
-    typedef union uSFTCCSR {
+    CC_EXTENSION typedef union uSFTCCSR {
         vuint16_t R;
         struct {
             vuint16_t ELKT:1;   /* even cycle tables lock and unlock trigger */
@@ -3533,7 +3536,7 @@ extern "C" {
             vuint16_t SIDEN:1;  /* sync frame ID table enable */
         } B;
     } SFTCCSR_t;
-    typedef union uSFIDRFR {
+    CC_EXTENSION typedef union uSFIDRFR {
         vuint16_t R;
         struct {
             vuint16_t:6;
@@ -3541,7 +3544,7 @@ extern "C" {
         } B;
     } SFIDRFR_t;
 
-    typedef union uTICCR {
+    CC_EXTENSION typedef union uTICCR {
         vuint16_t R;
         struct {
             vuint16_t:2;
@@ -3560,7 +3563,7 @@ extern "C" {
 
         } B;
     } TICCR_t;
-    typedef union uTI1CYSR {
+    CC_EXTENSION typedef union uTI1CYSR {
         vuint16_t R;
         struct {
             vuint16_t:2;
@@ -3571,7 +3574,7 @@ extern "C" {
         } B;
     } TI1CYSR_t;
 
-    typedef union uSSSR {
+    CC_EXTENSION typedef union uSSSR {
         vuint16_t R;
         struct {
             vuint16_t WMD:1;    /* write mode */
@@ -3582,7 +3585,7 @@ extern "C" {
         } B;
     } SSSR_t;
 
-    typedef union uSSCCR {
+    CC_EXTENSION typedef union uSSCCR {
         vuint16_t R;
         struct {
             vuint16_t WMD:1;    /* write mode */
@@ -3598,7 +3601,7 @@ extern "C" {
             vuint16_t STATUSMASK:4;     /* slot status mask */
         } B;
     } SSCCR_t;
-    typedef union uSSR {
+    CC_EXTENSION typedef union uSSR {
         vuint16_t R;
         struct {
             vuint16_t VFB:1;    /* valid frame on channel B */
@@ -3619,7 +3622,7 @@ extern "C" {
             vuint16_t TCA:1;    /* tx conflict on channel A */
         } B;
     } SSR_t;
-    typedef union uMTSCFR {
+    CC_EXTENSION typedef union uMTSCFR {
         vuint16_t R;
         struct {
             vuint16_t MTE:1;    /* media access test symbol transmission enable */
@@ -3630,7 +3633,7 @@ extern "C" {
         } B;
     } MTSCFR_t;
 
-    typedef union uRSBIR {
+    CC_EXTENSION typedef union uRSBIR {
         vuint16_t R;
         struct {
             vuint16_t WMD:1;    /* write mode */
@@ -3641,7 +3644,7 @@ extern "C" {
         } B;
     } RSBIR_t;
 
-    typedef union uRFDSR {
+    CC_EXTENSION typedef union uRFDSR {
         vuint16_t R;
         struct {
             vuint16_t FIFODEPTH:8;      /* fifo depth */
@@ -3650,7 +3653,7 @@ extern "C" {
         } B;
     } RFDSR_t;
 
-    typedef union uRFRFCFR {
+    CC_EXTENSION typedef union uRFRFCFR {
         vuint16_t R;
         struct {
             vuint16_t WMD:1;    /* write mode */
@@ -3661,7 +3664,7 @@ extern "C" {
         } B;
     } RFRFCFR_t;
 
-    typedef union uRFRFCTR {
+    CC_EXTENSION typedef union uRFRFCTR {
         vuint16_t R;
         struct {
             vuint16_t:4;
@@ -3676,7 +3679,7 @@ extern "C" {
             vuint16_t F0EN:1;   /* filter enable */
         } B;
     } RFRFCTR_t;
-    typedef union uPCR0 {
+    CC_EXTENSION typedef union uPCR0 {
         vuint16_t R;
         struct {
             vuint16_t ACTION_POINT_OFFSET:6;
@@ -3684,7 +3687,7 @@ extern "C" {
         } B;
     } PCR0_t;
 
-    typedef union uPCR1 {
+    CC_EXTENSION typedef union uPCR1 {
         vuint16_t R;
         struct {
             vuint16_t:2;
@@ -3692,7 +3695,7 @@ extern "C" {
         } B;
     } PCR1_t;
 
-    typedef union uPCR2 {
+    CC_EXTENSION typedef union uPCR2 {
         vuint16_t R;
         struct {
             vuint16_t MINISLOT_AFTER_ACTION_POINT:6;
@@ -3700,7 +3703,7 @@ extern "C" {
         } B;
     } PCR2_t;
 
-    typedef union uPCR3 {
+    CC_EXTENSION typedef union uPCR3 {
         vuint16_t R;
         struct {
             vuint16_t WAKEUP_SYMBOL_RX_LOW:6;
@@ -3709,7 +3712,7 @@ extern "C" {
         } B;
     } PCR3_t;
 
-    typedef union uPCR4 {
+    CC_EXTENSION typedef union uPCR4 {
         vuint16_t R;
         struct {
             vuint16_t CAS_RX_LOW_MAX:7;
@@ -3717,7 +3720,7 @@ extern "C" {
         } B;
     } PCR4_t;
 
-    typedef union uPCR5 {
+    CC_EXTENSION typedef union uPCR5 {
         vuint16_t R;
         struct {
             vuint16_t TSS_TRANSMITTER:4;
@@ -3726,7 +3729,7 @@ extern "C" {
         } B;
     } PCR5_t;
 
-    typedef union uPCR6 {
+    CC_EXTENSION typedef union uPCR6 {
         vuint16_t R;
         struct {
             vuint16_t:1;
@@ -3735,7 +3738,7 @@ extern "C" {
         } B;
     } PCR6_t;
 
-    typedef union uPCR7 {
+    CC_EXTENSION typedef union uPCR7 {
         vuint16_t R;
         struct {
             vuint16_t DECODING_CORRECTION_B:9;
@@ -3743,7 +3746,7 @@ extern "C" {
         } B;
     } PCR7_t;
 
-    typedef union uPCR8 {
+    CC_EXTENSION typedef union uPCR8 {
         vuint16_t R;
         struct {
             vuint16_t MAX_WITHOUT_CLOCK_CORRECTION_FATAL:4;
@@ -3752,7 +3755,7 @@ extern "C" {
         } B;
     } PCR8_t;
 
-    typedef union uPCR9 {
+    CC_EXTENSION typedef union uPCR9 {
         vuint16_t R;
         struct {
             vuint16_t MINISLOT_EXISTS:1;
@@ -3761,7 +3764,7 @@ extern "C" {
         } B;
     } PCR9_t;
 
-    typedef union uPCR10 {
+    CC_EXTENSION typedef union uPCR10 {
         vuint16_t R;
         struct {
             vuint16_t SINGLE_SLOT_ENABLED:1;
@@ -3770,7 +3773,7 @@ extern "C" {
         } B;
     } PCR10_t;
 
-    typedef union uPCR11 {
+    CC_EXTENSION typedef union uPCR11 {
         vuint16_t R;
         struct {
             vuint16_t KEY_SLOT_USED_FOR_STARTUP:1;
@@ -3779,7 +3782,7 @@ extern "C" {
         } B;
     } PCR11_t;
 
-    typedef union uPCR12 {
+    CC_EXTENSION typedef union uPCR12 {
         vuint16_t R;
         struct {
             vuint16_t ALLOW_PASSIVE_TO_ACTIVE:5;
@@ -3787,7 +3790,7 @@ extern "C" {
         } B;
     } PCR12_t;
 
-    typedef union uPCR13 {
+    CC_EXTENSION typedef union uPCR13 {
         vuint16_t R;
         struct {
             vuint16_t FIRST_MINISLOT_ACTION_POINT_OFFSET:6;
@@ -3795,7 +3798,7 @@ extern "C" {
         } B;
     } PCR13_t;
 
-    typedef union uPCR14 {
+    CC_EXTENSION typedef union uPCR14 {
         vuint16_t R;
         struct {
             vuint16_t RATE_CORRECTION_OUT:11;
@@ -3803,14 +3806,14 @@ extern "C" {
         } B;
     } PCR14_t;
 
-    typedef union uPCR15 {
+    CC_EXTENSION typedef union uPCR15 {
         vuint16_t R;
         struct {
             vuint16_t LISTEN_TIMEOUT_L:16;
         } B;
     } PCR15_t;
 
-    typedef union uPCR16 {
+    CC_EXTENSION typedef union uPCR16 {
         vuint16_t R;
         struct {
             vuint16_t MACRO_INITIAL_OFFSET_B:7;
@@ -3818,14 +3821,14 @@ extern "C" {
         } B;
     } PCR16_t;
 
-    typedef union uPCR17 {
+    CC_EXTENSION typedef union uPCR17 {
         vuint16_t R;
         struct {
             vuint16_t NOISE_LISTEN_TIMEOUT_L:16;
         } B;
     } PCR17_t;
 
-    typedef union uPCR18 {
+    CC_EXTENSION typedef union uPCR18 {
         vuint16_t R;
         struct {
             vuint16_t WAKEUP_PATTERN:6;
@@ -3833,7 +3836,7 @@ extern "C" {
         } B;
     } PCR18_t;
 
-    typedef union uPCR19 {
+    CC_EXTENSION typedef union uPCR19 {
         vuint16_t R;
         struct {
             vuint16_t DECODING_CORRECTION_A:9;
@@ -3841,7 +3844,7 @@ extern "C" {
         } B;
     } PCR19_t;
 
-    typedef union uPCR20 {
+    CC_EXTENSION typedef union uPCR20 {
         vuint16_t R;
         struct {
             vuint16_t MICRO_INITIAL_OFFSET_B:8;
@@ -3849,7 +3852,7 @@ extern "C" {
         } B;
     } PCR20_t;
 
-    typedef union uPCR21 {
+    CC_EXTENSION typedef union uPCR21 {
         vuint16_t R;
         struct {
             vuint16_t EXTERN_RATE_CORRECTION:3;
@@ -3857,7 +3860,7 @@ extern "C" {
         } B;
     } PCR21_t;
 
-    typedef union uPCR22 {
+    CC_EXTENSION typedef union uPCR22 {
         vuint16_t R;
         struct {
             vuint16_t:1;
@@ -3866,14 +3869,14 @@ extern "C" {
         } B;
     } PCR22_t;
 
-    typedef union uPCR23 {
+    CC_EXTENSION typedef union uPCR23 {
         vuint16_t R;
         struct {
             vuint16_t micro_per_cycle_l:16;
         } B;
     } PCR23_t;
 
-    typedef union uPCR24 {
+    CC_EXTENSION typedef union uPCR24 {
         vuint16_t R;
         struct {
             vuint16_t CLUSTER_DRIFT_DAMPING:5;
@@ -3882,14 +3885,14 @@ extern "C" {
         } B;
     } PCR24_t;
 
-    typedef union uPCR25 {
+    CC_EXTENSION typedef union uPCR25 {
         vuint16_t R;
         struct {
             vuint16_t MICRO_PER_CYCLE_MIN_L:16;
         } B;
     } PCR25_t;
 
-    typedef union uPCR26 {
+    CC_EXTENSION typedef union uPCR26 {
         vuint16_t R;
         struct {
             vuint16_t ALLOW_HALT_DUE_TO_CLOCK:1;
@@ -3898,14 +3901,14 @@ extern "C" {
         } B;
     } PCR26_t;
 
-    typedef union uPCR27 {
+    CC_EXTENSION typedef union uPCR27 {
         vuint16_t R;
         struct {
             vuint16_t MICRO_PER_CYCLE_MAX_L:16;
         } B;
     } PCR27_t;
 
-    typedef union uPCR28 {
+    CC_EXTENSION typedef union uPCR28 {
         vuint16_t R;
         struct {
             vuint16_t DYNAMIC_SLOT_IDLE_PHASE:2;
@@ -3913,7 +3916,7 @@ extern "C" {
         } B;
     } PCR28_t;
 
-    typedef union uPCR29 {
+    CC_EXTENSION typedef union uPCR29 {
         vuint16_t R;
         struct {
             vuint16_t EXTERN_OFFSET_CORRECTION:3;
@@ -3921,7 +3924,7 @@ extern "C" {
         } B;
     } PCR29_t;
 
-    typedef union uPCR30 {
+    CC_EXTENSION typedef union uPCR30 {
         vuint16_t R;
         struct {
             vuint16_t:12;
@@ -3929,7 +3932,7 @@ extern "C" {
         } B;
     } PCR30_t;
 
-    typedef struct uMSG_BUFF_CCS {
+    CC_EXTENSION typedef struct uMSG_BUFF_CCS {
         union {
             vuint16_t R;
             struct {
@@ -3976,97 +3979,97 @@ extern "C" {
             } B;
         } MBIDXR;
     } MSG_BUFF_CCS_t;
-    typedef union uSYSBADHR {
+    CC_EXTENSION typedef union uSYSBADHR {
         vuint16_t R;
     } SYSBADHR_t;
-    typedef union uSYSBADLR {
+    CC_EXTENSION typedef union uSYSBADLR {
         vuint16_t R;
     } SYSBADLR_t;
-    typedef union uPADR {
+    CC_EXTENSION typedef union uPADR {
         vuint16_t R;
     } PADR_t;
-    typedef union uPDAR {
+    CC_EXTENSION typedef union uPDAR {
         vuint16_t R;
     } PDAR_t;
-    typedef union uCASERCR {
+    CC_EXTENSION typedef union uCASERCR {
         vuint16_t R;
     } CASERCR_t;
-    typedef union uCBSERCR {
+    CC_EXTENSION typedef union uCBSERCR {
         vuint16_t R;
     } CBSERCR_t;
-    typedef union uCYCTR {
+    CC_EXTENSION typedef union uCYCTR {
         vuint16_t R;
     } CYCTR_t;
-    typedef union uMTCTR {
+    CC_EXTENSION typedef union uMTCTR {
         vuint16_t R;
     } MTCTR_t;
-    typedef union uSLTCTAR {
+    CC_EXTENSION typedef union uSLTCTAR {
         vuint16_t R;
     } SLTCTAR_t;
-    typedef union uSLTCTBR {
+    CC_EXTENSION typedef union uSLTCTBR {
         vuint16_t R;
     } SLTCTBR_t;
-    typedef union uRTCORVR {
+    CC_EXTENSION typedef union uRTCORVR {
         vuint16_t R;
     } RTCORVR_t;
-    typedef union uOFCORVR {
+    CC_EXTENSION typedef union uOFCORVR {
         vuint16_t R;
     } OFCORVR_t;
-    typedef union uSFTOR {
+    CC_EXTENSION typedef union uSFTOR {
         vuint16_t R;
     } SFTOR_t;
-    typedef union uSFIDAFVR {
+    CC_EXTENSION typedef union uSFIDAFVR {
         vuint16_t R;
     } SFIDAFVR_t;
-    typedef union uSFIDAFMR {
+    CC_EXTENSION typedef union uSFIDAFMR {
         vuint16_t R;
     } SFIDAFMR_t;
-    typedef union uNMVR {
+    CC_EXTENSION typedef union uNMVR {
         vuint16_t R;
     } NMVR_t;
-    typedef union uNMVLR {
+    CC_EXTENSION typedef union uNMVLR {
         vuint16_t R;
     } NMVLR_t;
-    typedef union uT1MTOR {
+    CC_EXTENSION typedef union uT1MTOR {
         vuint16_t R;
     } T1MTOR_t;
-    typedef union uTI2CR0 {
+    CC_EXTENSION typedef union uTI2CR0 {
         vuint16_t R;
     } TI2CR0_t;
-    typedef union uTI2CR1 {
+    CC_EXTENSION typedef union uTI2CR1 {
         vuint16_t R;
     } TI2CR1_t;
-    typedef union uSSCR {
+    CC_EXTENSION typedef union uSSCR {
         vuint16_t R;
     } SSCR_t;
-    typedef union uRFSR {
+    CC_EXTENSION typedef union uRFSR {
         vuint16_t R;
     } RFSR_t;
-    typedef union uRFSIR {
+    CC_EXTENSION typedef union uRFSIR {
         vuint16_t R;
     } RFSIR_t;
-    typedef union uRFARIR {
+    CC_EXTENSION typedef union uRFARIR {
         vuint16_t R;
     } RFARIR_t;
-    typedef union uRFBRIR {
+    CC_EXTENSION typedef union uRFBRIR {
         vuint16_t R;
     } RFBRIR_t;
-    typedef union uRFMIDAFVR {
+    CC_EXTENSION typedef union uRFMIDAFVR {
         vuint16_t R;
     } RFMIDAFVR_t;
-    typedef union uRFMIAFMR {
+    CC_EXTENSION typedef union uRFMIAFMR {
         vuint16_t R;
     } RFMIAFMR_t;
-    typedef union uRFFIDRFVR {
+    CC_EXTENSION typedef union uRFFIDRFVR {
         vuint16_t R;
     } RFFIDRFVR_t;
-    typedef union uRFFIDRFMR {
+    CC_EXTENSION typedef union uRFFIDRFMR {
         vuint16_t R;
     } RFFIDRFMR_t;
-    typedef union uLDTXSLAR {
+    CC_EXTENSION typedef union uLDTXSLAR {
         vuint16_t R;
     } LDTXSLAR_t;
-    typedef union uLDTXSLBR {
+    CC_EXTENSION typedef union uLDTXSLBR {
         vuint16_t R;
     } LDTXSLBR_t;
 
@@ -4171,7 +4174,7 @@ extern "C" {
         volatile MSG_BUFF_CCS_t MBCCS[128];     /* message buffer configuration, control & status registers 0-31 *//*100 */
     } FR_tag_t;
 
-    typedef union uF_HEADER     /* frame header */
+    CC_EXTENSION typedef union uF_HEADER     /* frame header */
     {
         struct {
             vuint16_t:5;
@@ -4189,7 +4192,7 @@ extern "C" {
         } B;
         vuint16_t WORDS[3];
     } F_HEADER_t;
-    typedef union uS_STSTUS     /* slot status */
+    CC_EXTENSION typedef union uS_STSTUS     /* slot status */
     {
         struct {
             vuint16_t VFB:1;    /* Valid Frame on channel B */

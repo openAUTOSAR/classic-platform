@@ -355,8 +355,8 @@ struct OsHooks os_conf_global_hooks = { \
 		.ShutdownHook = _shutdown,		\
 		.ErrorHook = _error,			\
 		.PreTaskHook = _pretask,		\
-		.PostTaskHook = _posttask,		\
-};
+		.PostTaskHook = _posttask		\
+}
 #else
 #define GEN_HOOKS( _startup, _protection, _shutdown, _error, _pretask, _posttask ) \
 struct OsHooks os_conf_global_hooks = { \
@@ -364,8 +364,8 @@ struct OsHooks os_conf_global_hooks = { \
 		.ShutdownHook = _shutdown,		\
 		.ErrorHook = _error,			\
 		.PreTaskHook = _pretask,		\
-		.PostTaskHook = _posttask,		\
-};
+		.PostTaskHook = _posttask		\
+}
 
 #endif
 

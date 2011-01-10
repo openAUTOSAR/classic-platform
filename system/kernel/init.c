@@ -104,7 +104,7 @@ void InitOS( void ) {
 	// Calc interrupt stack
 	Os_CfgGetInterruptStackInfo(&int_stack);
 	// TODO: 16 is arch dependent
-	os_sys.int_stack = int_stack.top + int_stack.size - 16;
+	os_sys.int_stack = (void *)((size_t)int_stack.top + (size_t)int_stack.size - 16);
 
 	// Init counter.. with alarms and schedule tables
 #if OS_COUNTER_CNT!=0

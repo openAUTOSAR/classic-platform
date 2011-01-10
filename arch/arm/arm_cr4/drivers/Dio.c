@@ -17,18 +17,13 @@
 #include "Std_Types.h"
 #include "Dio.h"
 #include "Det.h"
+#include "Cpu.h"
 #include <string.h>
-#include "stm32f10x_gpio.h"
 
-typedef GPIO_TypeDef* GPIO_TypeDefPtr;
-const GPIO_TypeDefPtr GPIO_ports[] = { GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF };
+GIO_RegisterType *GPIO_ports[] = { GIO_PORTA_BASE, GIO_PORTB_BASE };
 
-#define DIO_GET_PORT_FROM_CHANNEL_ID(_channelId) (_channelId / 16)
-#define DIO_GET_BIT_FROM_CHANNEL_ID(_channelId) (1 << (_channelId % 16))
-
-#define CHANNEL_PTR		(&DioChannelConfigData)
-#define PORT_PTR		(&DioPortConfigData)
-#define CHANNEL_GRP_PTR	(&DioConfigData)
+#define DIO_GET_PORT_FROM_CHANNEL_ID(_channelId) (_channelId >> 8)
+#define DIO_GET_BIT_FROM_CHANNEL_ID(_channelId) (1 << (_channelId & 0x1F))
 
 #if ( DIO_VERSION_INFO_API == STD_ON )
 static Std_VersionInfoType _Dio_VersionInfo =
@@ -48,7 +43,7 @@ static Std_VersionInfoType _Dio_VersionInfo =
 #if ( DIO_DEV_ERROR_DETECT == STD_ON )
 static int Channel_Config_Contains(Dio_ChannelType channelId)
 {
-	Dio_ChannelType* ch_ptr=(Dio_ChannelType*)CHANNEL_PTR;
+	Dio_ChannelType* ch_ptr=(Dio_ChannelType*)(&DioChannelConfigData);
 	int rv=0;
 	while (DIO_END_OF_LIST!=*ch_ptr)
 	{
@@ -64,7 +59,7 @@ static int Channel_Config_Contains(Dio_ChannelType channelId)
 
 static int Port_Config_Contains(Dio_PortType portId)
 {
-	Dio_PortType* port_ptr=(Dio_PortType*)PORT_PTR;
+	Dio_PortType* port_ptr=(Dio_PortType*)(&DioPortConfigData);
 	int rv=0;
 	while (DIO_END_OF_LIST!=*port_ptr)
 	{
@@ -77,7 +72,7 @@ static int Port_Config_Contains(Dio_PortType portId)
 
 static int Channel_Group_Config_Contains(const Dio_ChannelGroupType* _channelGroupIdPtr)
 {
-	Dio_ChannelGroupType* chGrp_ptr=(Dio_ChannelGroupType*)CHANNEL_GRP_PTR;
+	Dio_ChannelGroupType* chGrp_ptr=(Dio_ChannelGroupType*)(&DioConfigData);
 	int rv=0;
 
 	while (DIO_END_OF_LIST!=chGrp_ptr->port)
@@ -117,10 +112,10 @@ static int Channel_Group_Config_Contains(const Dio_ChannelGroupType* _channelGro
 
 Dio_PortLevelType Dio_ReadPort(Dio_PortType portId)
 {
-	Dio_LevelType level = 0;
+	Dio_PortLevelType level = 0;
 	VALIDATE_PORT(portId, DIO_READPORT_ID);
 
-	level = GPIO_ReadInputData(GPIO_ports[portId]);
+	level = (uint8)GPIO_ports[portId]->DIN;
 
 	cleanup: return level;
 }
@@ -129,7 +124,7 @@ void Dio_WritePort(Dio_PortType portId, Dio_PortLevelType level)
 {
     VALIDATE_PORT(portId, DIO_WRITEPORT_ID);
 
-	GPIO_Write(GPIO_ports[portId], level);
+	GPIO_ports[portId]->DOUT = (uint32)level;
 
     cleanup: return;
 }
@@ -155,8 +150,14 @@ void Dio_WriteChannel(Dio_ChannelType channelId, Dio_LevelType level)
 {
 	VALIDATE_CHANNEL(channelId, DIO_WRITECHANNEL_ID);
 
-	Dio_PortLevelType portVal = Dio_ReadPort(DIO_GET_PORT_FROM_CHANNEL_ID(channelId));
-	Dio_PortLevelType bit = DIO_GET_BIT_FROM_CHANNEL_ID(channelId);
+	Dio_PortType port = DIO_GET_PORT_FROM_CHANNEL_ID(channelId);
+	uint16 bit = DIO_GET_BIT_FROM_CHANNEL_ID(channelId);
+
+	if (!( GPIO_ports[port]->DIR & bit)) { // This is an input channel.
+		goto cleanup;
+	}
+
+	Dio_PortLevelType portVal = Dio_ReadPort(port);
 
 	if(level == STD_HIGH){
 		portVal |= bit;
@@ -164,7 +165,7 @@ void Dio_WriteChannel(Dio_ChannelType channelId, Dio_LevelType level)
 		portVal &= ~bit;
 	}
 
-	Dio_WritePort(DIO_GET_PORT_FROM_CHANNEL_ID(channelId), portVal);
+	Dio_WritePort(port, portVal);
 
 	cleanup: return;
 }

@@ -51,8 +51,7 @@ typedef uint8 StatusType;
 #define	E_OS_PROTECTION_EXCEPTION (StatusType)18    /**< AUTOSAR, see 7.10 */
 #define	E_OS_PROTECTION_RATE (StatusType)19          /**< AUTOSAR, see 7.10 */
 
-#define E_COM_ID 255
-#warning "var ska E_COM_ID vara?"
+#define E_COM_ID 255 // TODO: var ska E_COM_ID vara?"
 
 
 typedef uint32_t 		EventMaskType;

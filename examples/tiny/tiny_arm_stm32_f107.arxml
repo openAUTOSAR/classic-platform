@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <AUTOSAR xmlns="http://autosar.org/3.1.4"><TOP-LEVEL-PACKAGES>
     <AR-PACKAGE>
-      <SHORT-NAME>simple_arm_cm3</SHORT-NAME>
+      <SHORT-NAME>tiny_arm_cm3</SHORT-NAME>
       <ELEMENTS>
-        <ECU-CONFIGURATION UUID="4ab03f0b-f00d-4eb3-8406-006c42d20f4d">
-          <SHORT-NAME>simple_arm_cm3</SHORT-NAME>
+        <ECU-CONFIGURATION UUID="2791ca0a-8e26-4388-976c-a48110927414">
+          <SHORT-NAME>tiny_arm_cm3</SHORT-NAME>
           <ADMIN-DATA>
             <DOC-REVISIONS>
               <DOC-REVISION/>
             </DOC-REVISIONS>
             <SDGS>
               <SDG GID="Arccore::EcuOptions">
-                <SD GID="MCU">Cortex M3</SD>
-                <SD GID="GENDIR">/simple/config/stm32_stm3210c</SD>
+                <SD GID="MCU">STM32_F107</SD>
+                <SD GID="GENDIR">/tiny/config/stm32_stm3210c</SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>
-          <ECU-SW-COMPOSITION-REF DEST="ECU-SW-COMPOSITION">/simple_arm_cm3/SwComposition_simple_arm_cm3</ECU-SW-COMPOSITION-REF>
+          <ECU-SW-COMPOSITION-REF DEST="ECU-SW-COMPOSITION">/tiny_arm_cm3/SwComposition_tiny_arm_cm3</ECU-SW-COMPOSITION-REF>
           <MODULE-REFS>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/simple_arm_cm3/Os</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/tiny_arm_cm3/Os</MODULE-REF>
           </MODULE-REFS>
         </ECU-CONFIGURATION>
-        <ECU-SW-COMPOSITION UUID="a5ac45c0-0dd8-4e11-8f33-bcc59510e846">
-          <SHORT-NAME>SwComposition_simple_arm_cm3</SHORT-NAME>
+        <ECU-SW-COMPOSITION UUID="9aecec1e-749c-47fe-9fdb-98ed851bf12f">
+          <SHORT-NAME>SwComposition_tiny_arm_cm3</SHORT-NAME>
         </ECU-SW-COMPOSITION>
-        <MODULE-CONFIGURATION UUID="29b23c16-ee7a-4b40-afaf-6c4117db16d3">
+        <MODULE-CONFIGURATION UUID="d9b75d00-e6eb-4671-a7cf-0abd1e1ed6a7">
           <SHORT-NAME>Os</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
@@ -37,7 +37,7 @@
           </ADMIN-DATA>
           <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Os</DEFINITION-REF>
           <CONTAINERS>
-            <CONTAINER UUID="92c5a2e3-81e3-4e1f-9137-174435a92b41">
+            <CONTAINER UUID="5ceca27a-71ff-4c71-bcb8-69a1f31f5d79">
               <SHORT-NAME>OsOS</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsOS</DEFINITION-REF>
               <PARAMETER-VALUES>
@@ -99,7 +99,7 @@
                 </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
               <SUB-CONTAINERS>
-                <CONTAINER UUID="6578a055-00a4-4de2-8e87-3b7758f9caf7">
+                <CONTAINER UUID="185f3281-13f7-459b-9ccd-66eb1aff52ca">
                   <SHORT-NAME>OsHooks</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsOS/OsHooks</DEFINITION-REF>
                   <PARAMETER-VALUES>
@@ -131,73 +131,7 @@
                 </CONTAINER>
               </SUB-CONTAINERS>
             </CONTAINER>
-            <CONTAINER UUID="67722c4e-130a-4dac-8aeb-72ed94e3e7e9">
-              <SHORT-NAME>Alarm1</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm</DEFINITION-REF>
-              <REFERENCE-VALUES>
-                <REFERENCE-VALUE>
-                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmCounterRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/simple_arm_cm3/Os/OsTick</VALUE-REF>
-                </REFERENCE-VALUE>
-              </REFERENCE-VALUES>
-              <SUB-CONTAINERS>
-                <CONTAINER UUID="78d0ecea-4ed3-4503-b0c8-4ad0b400d6ab">
-                  <SHORT-NAME>OsAlarmAutostart</SHORT-NAME>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart</DEFINITION-REF>
-                  <PARAMETER-VALUES>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmAlarmTime</DEFINITION-REF>
-                      <VALUE>100</VALUE>
-                    </INTEGER-VALUE>
-                    <ENUMERATION-VALUE>
-                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmAutostartType</DEFINITION-REF>
-                      <VALUE>ABSOLUTE</VALUE>
-                    </ENUMERATION-VALUE>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmCycleTime</DEFINITION-REF>
-                      <VALUE>10</VALUE>
-                    </INTEGER-VALUE>
-                  </PARAMETER-VALUES>
-                </CONTAINER>
-                <CONTAINER UUID="e6de53f9-2026-4621-887f-556572f825be">
-                  <SHORT-NAME>OsAlarmSetEvent</SHORT-NAME>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent</DEFINITION-REF>
-                  <REFERENCE-VALUES>
-                    <REFERENCE-VALUE>
-                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/simple_arm_cm3/Os/EVENT_2</VALUE-REF>
-                    </REFERENCE-VALUE>
-                    <REFERENCE-VALUE>
-                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventTaskRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/simple_arm_cm3/Os/etask_1</VALUE-REF>
-                    </REFERENCE-VALUE>
-                  </REFERENCE-VALUES>
-                </CONTAINER>
-              </SUB-CONTAINERS>
-            </CONTAINER>
-            <CONTAINER UUID="9c54b7bd-b0c1-4733-a6a4-b77b22b8df12">
-              <SHORT-NAME>OsTick</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsCounter</DEFINITION-REF>
-              <PARAMETER-VALUES>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterMaxAllowedValue</DEFINITION-REF>
-                  <VALUE>65535</VALUE>
-                </INTEGER-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterMinCycle</DEFINITION-REF>
-                  <VALUE>0</VALUE>
-                </INTEGER-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterTicksPerBase</DEFINITION-REF>
-                  <VALUE>0</VALUE>
-                </INTEGER-VALUE>
-                <ENUMERATION-VALUE>
-                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterType</DEFINITION-REF>
-                  <VALUE>OS_TICK</VALUE>
-                </ENUMERATION-VALUE>
-              </PARAMETER-VALUES>
-            </CONTAINER>
-            <CONTAINER UUID="170cda57-b4ad-4c67-8384-97736003af20">
+            <CONTAINER UUID="4c1d9bd6-69e7-48c8-8036-35c6279f2240">
               <SHORT-NAME>etask_1</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
               <PARAMETER-VALUES>
@@ -223,13 +157,13 @@
                 </ENUMERATION-VALUE>
               </PARAMETER-VALUES>
               <SUB-CONTAINERS>
-                <CONTAINER UUID="9254b1b9-6b3d-4e1a-b294-871e853d8ae0">
+                <CONTAINER UUID="fbcd933e-5944-44dd-ac92-f9eace6bb55c">
                   <SHORT-NAME>OsTaskAutostart</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask/OsTaskAutostart</DEFINITION-REF>
                 </CONTAINER>
               </SUB-CONTAINERS>
             </CONTAINER>
-            <CONTAINER UUID="8c0b5497-cc95-4e9b-b102-99f3f7e637bb">
+            <CONTAINER UUID="41f28680-c88e-4083-bacc-40cf82ec3122">
               <SHORT-NAME>etask_2</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
               <PARAMETER-VALUES>
@@ -255,13 +189,13 @@
                 </ENUMERATION-VALUE>
               </PARAMETER-VALUES>
               <SUB-CONTAINERS>
-                <CONTAINER UUID="b5d30e9f-ae64-42ba-861e-7dd525761722">
+                <CONTAINER UUID="53d449ae-bdbe-49cb-bb22-141480e62565">
                   <SHORT-NAME>OsTaskAutostart</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask/OsTaskAutostart</DEFINITION-REF>
                 </CONTAINER>
               </SUB-CONTAINERS>
             </CONTAINER>
-            <CONTAINER UUID="72dc534e-fc28-4883-b1d7-5e1162314494">
+            <CONTAINER UUID="b5120b2f-2b4e-4e0f-8a7f-c7466b489644">
               <SHORT-NAME>btask_3</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
               <PARAMETER-VALUES>
@@ -287,7 +221,83 @@
                 </ENUMERATION-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
-            <CONTAINER UUID="5f7216e5-bed0-4a95-bf07-26b1c54be1c0">
+            <CONTAINER UUID="759524bb-836c-4d61-b59a-cf8edfb6e162">
+              <SHORT-NAME>Alarm_4ms</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm</DEFINITION-REF>
+              <REFERENCE-VALUES>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmCounterRef</DEFINITION-REF>
+                  <VALUE-REF DEST="CONTAINER">/tiny_arm_cm3/Os/OsTick</VALUE-REF>
+                </REFERENCE-VALUE>
+              </REFERENCE-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="45cda08c-e07f-4670-8f14-b85acb209a6f">
+                  <SHORT-NAME>OsAlarmAutostart</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmAlarmTime</DEFINITION-REF>
+                      <VALUE>100</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmAutostartType</DEFINITION-REF>
+                      <VALUE>ABSOLUTE</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmCycleTime</DEFINITION-REF>
+                      <VALUE>4</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="5801fbe7-6b9b-4390-9341-2dd9ab4412f5">
+                  <SHORT-NAME>OsAlarmSetEvent</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent</DEFINITION-REF>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/tiny_arm_cm3/Os/EVENT_2</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventTaskRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/tiny_arm_cm3/Os/etask_1</VALUE-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+            <CONTAINER UUID="f289efa7-5957-47a1-9c32-2248195ca090">
+              <SHORT-NAME>OsTick</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsCounter</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterMaxAllowedValue</DEFINITION-REF>
+                  <VALUE>65535</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterMinCycle</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterTicksPerBase</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterType</DEFINITION-REF>
+                  <VALUE>OS_TICK</VALUE>
+                </ENUMERATION-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="e6dde7c3-6596-4a33-96ab-3a43d4ab1429">
+              <SHORT-NAME>EVENT_0</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsEvent</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsEvent/OsEventMask</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="d93f5687-240e-465d-afb4-da563598d37a">
               <SHORT-NAME>EVENT_1</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsEvent</DEFINITION-REF>
               <PARAMETER-VALUES>
@@ -297,23 +307,13 @@
                 </INTEGER-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
-            <CONTAINER UUID="896fdbc9-ed9a-4f24-9366-257760788019">
+            <CONTAINER UUID="94eef554-c26c-44d5-9b8f-501597b53d51">
               <SHORT-NAME>EVENT_2</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsEvent</DEFINITION-REF>
               <PARAMETER-VALUES>
                 <INTEGER-VALUE>
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsEvent/OsEventMask</DEFINITION-REF>
                   <VALUE>2</VALUE>
-                </INTEGER-VALUE>
-              </PARAMETER-VALUES>
-            </CONTAINER>
-            <CONTAINER UUID="d681023d-1f60-4239-b9a2-7889a00bdaa4">
-              <SHORT-NAME>EVENT_3</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsEvent</DEFINITION-REF>
-              <PARAMETER-VALUES>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsEvent/OsEventMask</DEFINITION-REF>
-                  <VALUE>3</VALUE>
                 </INTEGER-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
