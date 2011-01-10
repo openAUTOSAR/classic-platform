@@ -25,6 +25,12 @@
  *
  */
 
+
+/*
+ *  General requirements
+ */
+/** @req DET004 */
+
 #ifndef DET_H
 #define DET_H
 
@@ -77,12 +83,12 @@ uint8 Det_AddCbk ( detCbk_t detCbk);
 void Det_RemoveCbk ( uint8 detCbkIndex);
 #endif
 
-void Det_Init( void );
+void Det_Init( void ); /** @req DET008 */
 #if DET_DEINIT_API == STD_ON
 void Det_DeInit( void );
 #endif
-void Det_ReportError( uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 ErrorId);
-void Det_Start( void );
-#define Det_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,DET)
+void Det_ReportError( uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 ErrorId); /** @req DET009 */
+void Det_Start( void ); /** @req DET010 */
+#define Det_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,DET) /** @req DET011 */ /** @req DET012 */
 
 #endif /*DET_H*/

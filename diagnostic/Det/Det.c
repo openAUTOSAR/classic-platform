@@ -20,9 +20,17 @@
  *
  */
 
+/*
+ *  General requirements
+ */
+/** @req DET001 */
+/** @req DET002 */
+
+
 #include "Std_Types.h"
 #include "Det.h"
 #include "Cpu.h"
+#include "MemMap.h" /** @req DET006 */
 
 #define DEBUG_LVL 1
 #include "debug.h"
@@ -90,7 +98,6 @@ void Det_RemoveCbk(uint8 detCbkIndex)
 void Det_Init(void)
 {
 
-    // Implements DET000
 #if ( DET_ENABLE_CALLBACKS == STD_ON )
     for (uint32 i=0; i<DET_NUMBER_OF_CALLBACKS; i++)
     {
@@ -98,7 +105,7 @@ void Det_Init(void)
     }
 #endif
 
-    // Implements DET000
+    /** @req DET000 */
 #if ( DET_USE_RAMLOG == STD_ON )
     for(uint32 i=0; i < DET_RAMLOG_SIZE; i++)
     {
