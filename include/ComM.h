@@ -17,8 +17,8 @@
 
 
 
-#ifndef COMM_H_
-#define COMM_H_
+#ifndef COMM_H
+#define COMM_H
 
 /** @req COMM466  @req COMM518  @req COMM692 */
 #include "ComStack_Types.h"
@@ -91,7 +91,7 @@ void ComM_MainFunction_##channel (void) { \
 
 
 /** Initializes the AUTOSAR Communication Manager and restarts the internal state machines.*/
-void ComM_Init(const ComM_ConfigType *);  /**< @req COMM146 */
+void ComM_Init(const ComM_ConfigType* Config);  /**< @req COMM146 */
 
 /** De-initializes (terminates) the AUTOSAR Communication Manager. */
 void ComM_DeInit(void);  /**< @req COMM147 */
@@ -118,4 +118,4 @@ Std_ReturnType ComM_ResetInhibitCounter(void);                                  
 Std_ReturnType ComM_SetECUGroupClassification( ComM_InhibitionStatusType Status );
 
 
-#endif /*COMM_H_*/
+#endif /*COMM_H*/
