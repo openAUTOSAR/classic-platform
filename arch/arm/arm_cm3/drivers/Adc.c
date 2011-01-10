@@ -195,7 +195,7 @@ Std_ReturnType Adc_ReadGroup (Adc_GroupType group, Adc_ValueGroupType *dataBuffe
 
   if (E_OK == Adc_CheckReadGroup (group))
   {
-    if ((ADC_CONV_MODE_CONTINOUS == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
+    if ((ADC_CONV_MODE_CONTINUOUS == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
          ((ADC_STREAM_COMPLETED    == AdcConfigPtr->groupConfigPtr[group].status->groupStatus) ||
           (ADC_COMPLETED           == AdcConfigPtr->groupConfigPtr[group].status->groupStatus)))
     {

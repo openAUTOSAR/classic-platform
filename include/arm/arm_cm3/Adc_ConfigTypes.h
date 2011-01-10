@@ -119,7 +119,7 @@ typedef enum
 {
   ADC_CONV_MODE_DISABLED,
   ADC_CONV_MODE_ONESHOT   = 1,
-  ADC_CONV_MODE_CONTINOUS = 9,
+  ADC_CONV_MODE_CONTINUOUS = 9,
 } Adc_GroupConvModeType;
 
 /* Implementation specific */
