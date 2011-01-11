@@ -28,8 +28,8 @@
  * NB! Even though some code exist for handling crc, the functionality is not complete
  * and shall not be used.
  */
-// 522 PC-Lint exception for empty functions
-//lint -esym(522,CalcCrc)
+
+//lint -esym(522,CalcCrc) // 522 PC-Lint exception for empty functions
 //lint -emacro(904,VALIDATE_RV,VALIDATE_NO_RV) //904 PC-Lint exception to MISRA 14.7 (validate macros).
 
 // Exception made as a result of that NVM_DATASET_SELECTION_BITS can be zero
