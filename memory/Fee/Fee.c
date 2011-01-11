@@ -22,6 +22,14 @@
 
 //lint -emacro(904,VALIDATE_RV,VALIDATE_NO_RV) //904 PC-Lint exception to MISRA 14.7 (validate macros).
 
+// Exception made as a result of that NVM_DATASET_SELECTION_BITS can be zero
+//lint -emacro(835, MIN_BLOCKNR) // 835 PC-lint: A zero has been given as right argument to operator '<<' or '>>'
+//lint -emacro(835, GET_BLOCK_INDEX_FROM_BLOCK_NUMBER) // 835 PC-lint: A zero has been given as right argument to operator '<<' or '>>'
+//lint -emacro(835, GET_DATASET_FROM_BLOCK_NUMBER) // 835 PC-lint: A zero has been given as right argument to operator '<<' or '>>'
+//lint -emacro(778, GET_DATASET_FROM_BLOCK_NUMBER) // 778 PC-lint: Constant expression evaluates to 0 in operation '-'
+//lint -emacro(845, GET_DATASET_FROM_BLOCK_NUMBER) // 845 PC-lint: The right argument to operator '&' is certain to be 0
+//lint -emacro(835, BLOCK_INDEX_AND_SET_TO_BLOCKNR) // 835 PC-lint: A zero has been given as right argument to operator '<<' or '>>'
+
 #include <string.h>
 #include "Fee.h"
 #include "Fee_Cbk.h"
@@ -63,7 +71,7 @@
 
 #define DET_REPORTERROR(_module,_instance,_api,_err) Det_ReportError(_module,_instance,_api,_err)
 
-#define MIN_BLOCKNR		((uint16)((uint16)1 << /*lint --e(835)*/NVM_DATASET_SELECTION_BITS))
+#define MIN_BLOCKNR		((uint16)((uint16)1 << NVM_DATASET_SELECTION_BITS))
 
 #else
 #define VALIDATE(_exp,_api,_err )
@@ -76,12 +84,9 @@
 /*
  * Block numbering recalculation macros
  */
-// 835 PC-lint: A zero has been given as right argument to operator '<<' or '>>' - inform lint that NVM_DATASET_SELECTION_BITS set to zero is ok
-// 778 PC-lint: Constant expression evaluates to 0 in operation '-' - inform lint that NVM_DATASET_SELECTION_BITS set to zero is ok
-// 845 PC-lint: The right argument to operator '&' is certain to be 0 - inform lint that NVM_DATASET_SELECTION_BITS set to zero is ok
-#define GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(_blocknr)	(((_blocknr) >> /*lint --e(835)*/NVM_DATASET_SELECTION_BITS) - 1u)
-#define GET_DATASET_FROM_BLOCK_NUMBER(_blocknr)	((_blocknr) & ((uint16)((uint16)1u << /*lint --e(835, 778, 845)*/NVM_DATASET_SELECTION_BITS) - 1u))
-#define BLOCK_INDEX_AND_SET_TO_BLOCKNR(_blocknr, _set)	((uint16)((_blocknr + 1u) << /*lint --e(835)*/NVM_DATASET_SELECTION_BITS) | _set)
+#define GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(_blocknr)	(((_blocknr) >> NVM_DATASET_SELECTION_BITS) - 1u)
+#define GET_DATASET_FROM_BLOCK_NUMBER(_blocknr)	((_blocknr) & ((uint16)((uint16)1u << NVM_DATASET_SELECTION_BITS) - 1u))
+#define BLOCK_INDEX_AND_SET_TO_BLOCKNR(_blocknr, _set)	((uint16)((_blocknr + 1u) << NVM_DATASET_SELECTION_BITS) | _set)
 
 /*
  * Page alignment macros

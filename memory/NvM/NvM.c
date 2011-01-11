@@ -32,6 +32,10 @@
 //lint -esym(522,CalcCrc)
 //lint -emacro(904,VALIDATE_RV,VALIDATE_NO_RV) //904 PC-Lint exception to MISRA 14.7 (validate macros).
 
+// Exception made as a result of that NVM_DATASET_SELECTION_BITS can be zero
+//lint -emacro(835, BLOCK_BASE_AND_SET_TO_BLOCKNR) // 835 PC-lint: A zero has been given as right argument to operator '<<' or '>>'
+
+
 
 #include "NvM.h"
 #include "NvM_Cbk.h"
@@ -78,8 +82,7 @@
 #define DET_REPORTERROR(_module,_instance,_api,_err)
 #endif
 
-// 835 PC-lint: A zero has been given as right argument to operator '<<' - inform lint that NVM_DATASET_SELECTION_BITS set to zero is ok
-#define BLOCK_BASE_AND_SET_TO_BLOCKNR(_blockbase, _set)	((uint16)(_blockbase << /*lint --e(835)*/NVM_DATASET_SELECTION_BITS) | _set)
+#define BLOCK_BASE_AND_SET_TO_BLOCKNR(_blockbase, _set)	((uint16)(_blockbase << NVM_DATASET_SELECTION_BITS) | _set)
 
 
 // State variable
