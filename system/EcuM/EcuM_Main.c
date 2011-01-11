@@ -13,12 +13,7 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
+//lint -emacro(904,VALIDATE,VALIDATE_RV,VALIDATE_NO_RV) //904 PC-Lint exception to MISRA 14.7 (validate macros).
 
 #include "EcuM.h"
 #include "EcuM_Cbk.h"
@@ -57,7 +52,7 @@ static inline void enter_prep_shutdown_mode(void)
 static inline void enter_go_sleep_mode(void)
 {
 	internal_data.current_state = ECUM_STATE_GO_SLEEP;
-	void EcuM_OnGoSleep();
+	EcuM_OnGoSleep();
 }
 
 static inline void enter_go_off_one_mode(void)
@@ -80,7 +75,7 @@ static inline void enter_go_off_one_mode(void)
 
 static inline boolean hasRunRequests(void)
 {
-	boolean result = internal_data.run_requests;
+	uint32 result = internal_data.run_requests;
 
 #if defined(USE_COMM)
 	result |= internal_data.run_comm_requests;
@@ -105,13 +100,15 @@ VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_NOT_INITIAT
 	if (internal_data.current_state == ECUM_STATE_APP_RUN)
 	{
 		if (internal_data_run_state_timeout)
+		{
 			internal_data_run_state_timeout--;
+		}
 
-		if (!hasRunRequests() && (internal_data_run_state_timeout == 0))
+		if ((!hasRunRequests()) && (internal_data_run_state_timeout == 0))
 		{
 			EcuM_OnExitRun();	// ECUM_2865
 			enter_post_run_mode();
-			return;
+			/*lint --e(904)*/ return;
 		}
 	}
 
@@ -120,14 +117,14 @@ VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_NOT_INITIAT
 		if (hasRunRequests())
 		{
 			EcuM_enter_run_mode(); // ECUM_2866
-			return;
+			/*lint --e(904)*/ return;
 		}
 
 		if (!hasPostRunRequests())
 		{
 			EcuM_OnExitPostRun(); // ECUM_2761
 			enter_prep_shutdown_mode();
-			return;
+			/*lint --e(904)*/ return;
 		}
 	}
 

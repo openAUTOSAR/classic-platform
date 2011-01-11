@@ -69,7 +69,7 @@ typedef enum {
 	 *  SLEEP mode and can be woken up by request of the
 	 *  CAN driver or by a network event (must be supported
 	 *  by CAN hardware) */
-	CANIF_CS_SLEEP,
+	CANIF_CS_SLEEP
 } CanIf_ControllerModeType;
 
 /** Status of the PDU channel group. Current mode of the channel defines its
@@ -105,7 +105,7 @@ typedef enum {
 	 *  shall be set to the offline active mode
 	 *  => notifications are processed but transmit
 	 *  requests are blocked. */
-	CANIF_SET_TX_OFFLINE_ACTIVE,
+	CANIF_SET_TX_OFFLINE_ACTIVE
 } CanIf_ChannelSetModeType;
 
 
@@ -137,7 +137,7 @@ typedef enum {
 	CANIF_NO_NOTIFICATION = 0,	
 	/** The requested Rx/Tx CAN L-PDU was
 	 *  successfully transmitted or received. */
-	CANIF_TX_RX_NOTIFICATION,
+	CANIF_TX_RX_NOTIFICATION
 	
 } CanIf_NotifStatusType;
 

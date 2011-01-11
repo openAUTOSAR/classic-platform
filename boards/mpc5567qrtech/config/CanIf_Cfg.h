@@ -88,18 +88,6 @@ typedef enum {
 #define CANIF_TRANSMIT_CANCELLATION       STD_OFF  // Not supported
 
 //-------------------------------------------------------------------
-
-typedef struct {
-	void (*CancelTxConfirmation)( void *);  // (const Can_PduType *);
-	void (*RxIndication)(void *); //(const Can_PduType *);
-	void (*ControllerBusOff)(uint8);
-	void (*ControllerWakeup)(uint8);
-	void (*Arc_Error)(uint8,uint32);
-} CanIf_CallbackType;
-
-
-
-//-------------------------------------------------------------------
 /*
  * CanIfHrhRangeConfig container
  */

@@ -20,8 +20,8 @@
 
 
 
-#ifndef _PDUR_H_
-#define _PDUR_H_
+#ifndef PDUR_H
+#define PDUR_H
 
 #define PDUR_VENDOR_ID			1
 #define PDUR_AR_MAJOR_VERSION  2
@@ -76,11 +76,11 @@ extern PduR_StateType PduRState;
 // Define macro for state, parameter and data pointer checks.
 // TODO Implement data range check if needed.
 #define PduR_DevCheck(PduId,PduPtr,ApiId,...) \
-	if (PduRState == PDUR_UNINIT || PduRState == PDUR_REDUCED) { \
+	if ((PduRState == PDUR_UNINIT) || (PduRState == PDUR_REDUCED)) { \
 		PDUR_DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_INVALID_REQUEST); \
 		return __VA_ARGS__; \
 	} \
-	if (PduPtr == 0 && PDUR_DEV_ERROR_DETECT) { \
+	if ((PduPtr == 0) && (PDUR_DEV_ERROR_DETECT)) { \
 		PDUR_DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_DATA_PTR_INVALID); \
 		return __VA_ARGS__; \
 	} \
@@ -113,22 +113,26 @@ void PduR_ChangeParameterRequest(PduR_ParameterValueType PduParameterValue,
 //#error fail
 void PduR_Init(const PduR_PBConfigType* ConfigPtr);
 void PduR_GetVersionInfo(Std_VersionInfoType* versionInfo);
-uint32 PduR_GetConfigurationId();
+uint32 PduR_GetConfigurationId(void);
 
+void PduR_BufferInc(PduRTxBuffer_type *Buffer, uint8 **ptr);
 void PduR_BufferQueue(PduRTxBuffer_type *Buffer, const uint8 * SduPtr);
 void PduR_BufferDeQueue(PduRTxBuffer_type *Buffer, uint8 *SduPtr);
 void PduR_BufferFlush(PduRTxBuffer_type *Buffer);
 uint8 PduR_BufferIsFull(PduRTxBuffer_type *Buffer);
+void PduR_LoIfRxIndication(PduIdType PduId, const uint8* SduPtr);
+void PduR_LoIfTxConfirmation(PduIdType PduId);
+void PduR_LoIfTriggerTransmit(PduIdType PduId, uint8* SduPtr);
 
 /*
  * Macros
  */
-#define setTxConfP(R) R->PduRDestPdu.TxBufferRef->TxConfP = 1
-#define clearTxConfP(R) R->PduRDestPdu.TxBufferRef->TxConfP = 0
+#define setTxConfP(R) (R->PduRDestPdu.TxBufferRef->TxConfP = 1)
+#define clearTxConfP(R) (R->PduRDestPdu.TxBufferRef->TxConfP = 0)
 
 #endif
 
 extern PduR_FctPtrType PduR_StdCanFctPtrs;
 extern PduR_FctPtrType PduR_StdLinFctPtrs;
 
-#endif /* _PDUR_H_ */
+#endif /* PDUR_H */

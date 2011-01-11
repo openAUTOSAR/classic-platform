@@ -20,9 +20,17 @@
  *
  */
 
+/*
+ *  General requirements
+ */
+/** @req DET001 */
+/** @req DET002 */
+
+
 #include "Std_Types.h"
 #include "Det.h"
 #include "Cpu.h"
+#include "MemMap.h" /** @req DET006 */
 
 #define DEBUG_LVL 1
 #include "debug.h"
@@ -34,11 +42,12 @@ typedef enum
     DET_STARTED
 } Det_StateType;
 
-static Det_StateType _detState = DET_UNINITIALIZED;
+static Det_StateType detState = DET_UNINITIALIZED;
 
 #if ( DET_USE_RAMLOG == STD_ON )
 // Ram log variables in uninitialized memory
 uint32 Det_RamlogIndex __attribute__ ((section (".ramlog")));
+/*lint -esym(552,Det_RamLog)*/ /* PC-Lint OK. supress lintwarning about Det_Ramlog not being accessed */
 Det_EntryType Det_RamLog[DET_RAMLOG_SIZE] __attribute__ ((section (".ramlog")));
 #endif
 
@@ -47,36 +56,48 @@ detCbk_t detCbk_List[DET_NUMBER_OF_CALLBACKS];
 
 uint8 Det_AddCbk(detCbk_t detCbk)
 {
-    if (_detState != DET_UNINITIALIZED)
+	uint8 rv = DET_CBK_REGISTRATION_FAILED_INDEX;	 // Return DET_CBK_REGISTRATION_FAILED_INDEX if the registration fails
+
+    if (detState != DET_UNINITIALIZED)
     {
-        for (uint32 i=0; i<DET_NUMBER_OF_CALLBACKS; i++)
+        for (uint8 i = 0; i < DET_NUMBER_OF_CALLBACKS; i++)
         {
-            if (NULL==detCbk_List[i])
+            if (NULL == detCbk_List[i])
             {
-                detCbk_List[i]=detCbk;
-                return i;
+                detCbk_List[i] = detCbk;
+                rv = i;
+                break;
             }
         }
     }
 
-    Det_ReportError(DET_MODULE_ID, 0, DET_CALLBACK_API, DET_E_CBK_REGISTRATION_FAILED);
-    return (0xFF); // Return 0xff to indicate that the registration failed
+    if (rv == DET_CBK_REGISTRATION_FAILED_INDEX)
+    {
+        Det_ReportError(DET_MODULE_ID, 0, DET_CALLBACK_API, DET_E_CBK_REGISTRATION_FAILED);
+    }
+
+    return rv;
 }
+
 
 void Det_RemoveCbk(uint8 detCbkIndex)
 {
     // Validate the index
     if (detCbkIndex >= DET_NUMBER_OF_CALLBACKS)
+    {
         Det_ReportError(DET_MODULE_ID, 0, DET_CALLBACK_API, DET_E_INDEX_OUT_OF_RANGE);
-
-    detCbk_List[detCbkIndex]=NULL;
+    }
+    else
+    {
+    	detCbk_List[detCbkIndex]=NULL;
+    }
 }
 #endif
 
 
 void Det_Init(void)
 {
-    // Implements DET000
+
 #if ( DET_ENABLE_CALLBACKS == STD_ON )
     for (uint32 i=0; i<DET_NUMBER_OF_CALLBACKS; i++)
     {
@@ -84,7 +105,7 @@ void Det_Init(void)
     }
 #endif
 
-    // Implements DET000
+    /** @req DET000 */
 #if ( DET_USE_RAMLOG == STD_ON )
     for(uint32 i=0; i < DET_RAMLOG_SIZE; i++)
     {
@@ -96,23 +117,24 @@ void Det_Init(void)
     Det_RamlogIndex = 0;
 #endif
 
-    _detState = DET_INITIALIZED;
+    detState = DET_INITIALIZED;
 }
 
 #if DET_DEINIT_API == STD_ON
 void Det_DeInit( void )
 {
-    _detState = DET_UNINITIALIZED;
+    detState = DET_UNINITIALIZED;
 }
 #endif
 
 void Det_ReportError(uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 ErrorId)
 {
-    if (_detState == DET_STARTED) // No action is taken if the module is not started
+    if (detState == DET_STARTED) // No action is taken if the module is not started
     {
 #if ( DET_ENABLE_CALLBACKS == STD_ON )
-        long old1;
+        uint32 old1; // 586 PC-Lint OK: fattar inte att den används i macrot.
         Irq_Save(old1);
+
         for (uint32 i=0; i<DET_NUMBER_OF_CALLBACKS; i++)
         {
             if (NULL!=detCbk_List[i])
@@ -123,8 +145,9 @@ void Det_ReportError(uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 Error
         Irq_Restore(old1);
 #endif
 
+
 #if ( DET_USE_RAMLOG == STD_ON )
-        long old2;
+        uint32 old2;
         Irq_Save(old2);
         if (Det_RamlogIndex < DET_RAMLOG_SIZE)
         {
@@ -134,8 +157,9 @@ void Det_ReportError(uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 Error
             Det_RamLog[Det_RamlogIndex].errorId = ErrorId;
             Det_RamlogIndex++;
 #if ( DET_WRAP_RAMLOG == STD_ON )
-            if (Det_RamlogIndex == DET_RAMLOG_SIZE)
+            if (Det_RamlogIndex == DET_RAMLOG_SIZE){
                 Det_RamlogIndex = 0;
+            }
 #endif
         }
         Irq_Restore(old2);
@@ -149,5 +173,5 @@ void Det_ReportError(uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 Error
 
 void Det_Start(void)
 {
-    _detState = DET_STARTED;
+    detState = DET_STARTED;
 }

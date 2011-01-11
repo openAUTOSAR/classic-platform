@@ -191,7 +191,7 @@ static inline struct OsResource *os_get_resource_int_p( void ) {
  */
 
 static inline uint32_t os_task_nr_to_mask( uint32_t nr ) {
-	return (1<<nr);
+	return ((uint32_t) 1 << nr); // 701 PC-lint [10.5]: OK om skriver 1u... får då istället: 960 PC-lint [10.5]: Båda ok om skriver 1ul eller castar till uint32_t
 }
 
 // task_i.c

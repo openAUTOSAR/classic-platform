@@ -475,10 +475,10 @@ void * sbrk( ptrdiff_t incr )
     unsigned char *prev_heap_end;
 
 /* initialize */
-    if( heap_end == 0 )
+    if( heap_end == 0 ){
     	heap_end = _heap;
-
-	prev_heap_end = heap_end;
+    }
+    prev_heap_end = heap_end;
 
 	if( heap_end + incr - _heap > HEAPSIZE ) {
 	/* heap overflow - announce on stderr */

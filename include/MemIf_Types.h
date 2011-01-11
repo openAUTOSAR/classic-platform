@@ -56,7 +56,7 @@ typedef enum {
 	MEMIF_BLOCK_INCONSISTENT,
 	// The requested block has been marked as invalid,
 	// the requested operation can not be performed.
-	MEMIF_BLOCK_INVALID, 
+	MEMIF_BLOCK_INVALID
 	
 } MemIf_JobResultType; 
 
@@ -67,7 +67,7 @@ typedef enum {
 	MEMIF_MODE_SLOW,
 	// The underlying memory abstraction modules and
 	// drivers are working in fast mode.
-    MEMIF_MODE_FAST,
+    MEMIF_MODE_FAST
 } MemIf_ModeType;
 
 // Definition of broadcast device ID

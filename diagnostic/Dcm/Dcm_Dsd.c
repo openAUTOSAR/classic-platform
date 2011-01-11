@@ -47,17 +47,18 @@ static boolean	suppressPosRspMsg;
  */
 
 
-static boolean askApplicationForServicePermission(uint8 *requestData, uint16 dataSize)
+static Std_ReturnType askApplicationForServicePermission(uint8 *requestData, uint16 dataSize)
 {
 	Std_ReturnType returnCode = E_OK;
 	const Dcm_DslServiceRequestIndicationType *serviceRequestIndication = DCM_Config.Dsl->DslServiceRequestIndication;
 	Std_ReturnType result;
 
-	while (!serviceRequestIndication->Arc_EOL && (returnCode != E_REQUEST_NOT_ACCEPTED)) {
+	while ((!serviceRequestIndication->Arc_EOL) && (returnCode != E_REQUEST_NOT_ACCEPTED)) {
 		if (serviceRequestIndication->Indication != NULL) {
 			result = serviceRequestIndication->Indication(requestData, dataSize);
-			if (result != E_OK)
+			if (result != E_OK){
 				returnCode = result;
+			}
 		}
 		serviceRequestIndication++;
 	}
@@ -144,7 +145,7 @@ static boolean lookupSid(uint8 sid, const Dcm_DsdServiceType **sidPtr)
 	boolean returnStatus = TRUE;
 	const Dcm_DsdServiceType *service = msgData.serviceTable->DsdService;
 
-	while ((service->DsdSidTabServiceId != sid) && !service->Arc_EOL) {
+	while ((service->DsdSidTabServiceId != sid) && (!service->Arc_EOL)) {
 		service++;
 	}
 
@@ -187,18 +188,23 @@ void DsdHandleRequest(void)
 	currentSid = msgData.pduRxData->SduDataPtr[0];	/** @req DCM198 */
 
 	/** @req DCM178 */
-	if (DCM_RESPOND_ALL_REQUEST || ((currentSid & 0x7F) < 0x40)) {		/** @req DCM084 */
+	//lint --e(506, 774)	PC-Lint exception Misra 13.7, 14.1 Allow configuration variables in boolean expression
+	if ((DCM_RESPOND_ALL_REQUEST == STD_ON) || ((currentSid & 0x7Fu) < 0x40)) {		/** @req DCM084 */
 		if (lookupSid(currentSid, &sidConfPtr)) {		/** @req DCM192 */ /** @req DCM193 */ /** @req DCM196 */
 			// SID found!
 			if (DspCheckSessionLevel(sidConfPtr->DsdSidTabSessionLevelRef)) {		 /** @req DCM211 */
 				if (DspCheckSecurityLevel(sidConfPtr->DsdSidTabSecurityLevelRef)) {	 /** @req DCM217 */
-					if (DCM_REQUEST_INDICATION_ENABLED) {	 /** @req DCM218 */
+					//lint --e(506, 774)	PC-Lint exception Misra 13.7, 14.1 Allow configuration variables in boolean expression
+					if (DCM_REQUEST_INDICATION_ENABLED == STD_ON) {	 /** @req DCM218 */
 						 result = askApplicationForServicePermission(msgData.pduRxData->SduDataPtr, msgData.pduRxData->SduLength);
+					} else {
+						result = E_OK;
 					}
-					if (!DCM_REQUEST_INDICATION_ENABLED || result == E_OK) {
+					//lint --e(506, 774)	PC-Lint exception Misra 13.7, 14.1 Allow configuration variables in boolean expression
+					if (result == E_OK) {
 						// Yes! All conditions met!
 						// Check if response shall be suppressed
-						if (sidConfPtr->DsdSidTabSubfuncAvail && (msgData.pduRxData->SduDataPtr[1] & SUPPRESS_POS_RESP_BIT)) {	/** @req DCM204 */
+						if ( (sidConfPtr->DsdSidTabSubfuncAvail) && (msgData.pduRxData->SduDataPtr[1] & SUPPRESS_POS_RESP_BIT) ) {	/** @req DCM204 */
 							suppressPosRspMsg = TRUE;	/** @req DCM202 */
 							msgData.pduRxData->SduDataPtr[1] &= ~SUPPRESS_POS_RESP_BIT;	/** @req DCM201 */
 						}
@@ -237,6 +243,7 @@ void DsdHandleRequest(void)
 }
 
 
+
 void DsdDspProcessingDone(Dcm_NegativeResponseCodeType responseCode)
 {
 	if (responseCode == DCM_E_POSITIVERESPONSE) {
@@ -259,6 +266,7 @@ void DsdDspProcessingDone(Dcm_NegativeResponseCodeType responseCode)
 
 void DsdDataConfirmation(PduIdType confirmPduId, NotifResultType result)
 {
+	(void)result;	/* Currently not used */
 	DspDcmConfirmation(confirmPduId);	/** @req DCM236 */
 }
 

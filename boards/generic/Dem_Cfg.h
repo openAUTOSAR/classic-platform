@@ -31,7 +31,7 @@
 #define DEM_DEV_ERROR_DETECT				STD_ON		// Activate/Deactivate Dev Error Detection and Notification.
 #define DEM_OBD_SUPPORT						STD_OFF
 #define DEM_PTO_SUPPORT						STD_OFF
-#define DEM_TYPE_OF_DTC_SUPPORTED			DEM_ISO14229_1
+#define DEM_TYPE_OF_DTC_SUPPORTED			0x01		// ISO14229-1
 #define DEM_DTC_STATUS_AVAILABILITY_MASK	0xFF
 #define DEM_CLEAR_ALL_EVENTS				STD_OFF		// All event or only events with DTC is cleared with Dem_ClearDTC
 

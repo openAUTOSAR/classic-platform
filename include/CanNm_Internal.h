@@ -20,7 +20,7 @@
 /** @req CANNM188  @req CANNM196  @req CANNM199    */
 #if (CANNM_DEV_ERROR_DETECT == STD_ON)
 #define CANNM_DET_REPORTERROR(serviceId, errorId, instanceId)			\
-	Det_ReportError(MODULE_ID_CANNM, instanceId, serviceId, errorId)
+	Det_ReportError(MODULE_ID_CANNM, (uint8)instanceId, serviceId, errorId)
 
 #define CANNM_VALIDATE(expression, serviceId, errorId, instanceId, ...)	\
 	if (!(expression)) {									\
@@ -45,7 +45,7 @@
 
 typedef enum {
 	CANNM_INIT,
-	CANNM_UNINIT,
+	CANNM_UNINIT
 } CanNm_InitStatusType;
 
 typedef struct {

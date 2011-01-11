@@ -94,7 +94,7 @@ typedef enum {
 typedef enum {
 	CAN_OK,
 	CAN_NOT_OK,
-	CAN_BUSY,
+	CAN_BUSY
 // 	CAN_WAKEUP,		// Removed in 3.0
 } Can_ReturnType;
 
@@ -121,7 +121,7 @@ typedef union {
 #include "Can_Cfg.h"
 
 void Can_Init( const Can_ConfigType *Config );
-void Can_DeInit();
+void Can_DeInit(void);
 
 #if ( CAN_VERSION_INFO_API == STD_ON )
 #define Can_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,CAN)

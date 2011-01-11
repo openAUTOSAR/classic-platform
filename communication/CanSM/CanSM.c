@@ -13,6 +13,8 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+//lint -emacro(904,CANSM_VALIDATE_INIT,CANSM_VALIDATE_NETWORK,CANSM_VALIDATE_POINTER,CANSM_VALIDATE_MODE) //904 PC-Lint exception to MISRA 14.7 (validate macros).
+
 /* Globally fulfilled requirements */
 /** @req CANSM069 */
 /** @req CANSM077 */
@@ -48,17 +50,23 @@ void CanSM_Init( const CanSM_ConfigType* ConfigPtr ) {
 	CANSM_VALIDATE_POINTER(ConfigPtr, CANSM_SERVICEID_INIT);  /**< @req CANSM179 */
 
 	CanSM_Config = ConfigPtr;
+	Std_ReturnType status = E_OK;
+	Std_ReturnType totalStatus = E_OK;
 
-	for (int i = 0; i < CANSM_NETWORK_COUNT; ++i) {
-		CanSM_Internal_RequestComMode(i, COMM_NO_COMMUNICATION);  /**< @req CANSM211 */
+	for (uint8 i = 0; i < CANSM_NETWORK_COUNT; ++i) {
+		status = CanSM_Internal_RequestComMode(i, COMM_NO_COMMUNICATION);  /**< @req CANSM211 */
+		if (status > totalStatus) {
+			totalStatus = status;
+		}
 	}
 
-	CanSM_Internal.InitStatus = CANSM_STATUS_INIT;
+	if (totalStatus == E_OK) {
+		CanSM_Internal.InitStatus = CANSM_STATUS_INIT;
+	} else {
+		// TODO report error?
+	}
 }
 
-void CanSM_GetVersionInfo( Std_VersionInfoType* VersionInfo ) {
-	CANSM_VALIDATE_INIT(CANSM_SERVICEID_GETVERSIONINFO);
-}
 
 /** @req CANSM181  @req CANSM183  @req CANSM182.partially  @req CANSM184 */
 Std_ReturnType CanSM_RequestComMode( NetworkHandleType NetworkHandle, ComM_ModeType ComM_Mode ) {
@@ -78,22 +86,27 @@ Std_ReturnType CanSM_Internal_RequestComMode( NetworkHandleType NetworkHandle, C
 	Std_ReturnType overallStatus = E_OK;
 	Std_ReturnType status;
 	status = CanSM_Internal_RequestCanIfMode(NetworkHandle, ComM_Mode);      /**< @req CANSM240 */
-	if (status > overallStatus) overallStatus = status;
+	if (status > overallStatus){
+		overallStatus = status;
+	}
 	status = CanSM_Internal_RequestComGroupMode(NetworkHandle, ComM_Mode);   /**< @req CANSM241 */
-	if (status > overallStatus) overallStatus = status;
+	if (status > overallStatus) {
+		overallStatus = status;
+	}
 
-	if (status == E_OK) {
+	if (overallStatus == E_OK) {
 		NetworkInternal->CurrentMode = ComM_Mode;
 		ComM_BusSM_ModeIndication(NetworkHandle, ComM_Mode);                 /**< @req CANSM089 */
 	}
 
-	return status;
+	return overallStatus;
 }
 
 /** @req CANSM039  @req CANSM044 */
 Std_ReturnType CanSM_Internal_RequestCanIfMode( NetworkHandleType NetworkHandle, ComM_ModeType ComM_Mode ) {
 	const CanSM_NetworkType* Network = &CanSM_Config->Networks[NetworkHandle];
-	CanIf_ControllerModeType CanIf_Mode;
+	CanIf_ControllerModeType CanIf_Mode = CANIF_CS_STARTED;
+	Std_ReturnType totalStatus = E_OK;
 
 	switch (ComM_Mode) {
 		case COMM_NO_COMMUNICATION:
@@ -110,17 +123,18 @@ Std_ReturnType CanSM_Internal_RequestCanIfMode( NetworkHandleType NetworkHandle,
 			CanIf_Mode = CANIF_CS_STARTED;
 			break;
 		default:
-			return E_NOT_OK;
+			totalStatus = E_NOT_OK;
 			break;
 	}
 
-	Std_ReturnType totalStatus = E_OK;
-	for (int i = 0; i < Network->ControllerCount; ++i) {
-		const CanSM_ControllerType* Controller = &Network->Controllers[i];
-		Std_ReturnType status =
-				CanIf_SetControllerMode(Controller->CanIfControllerId, CanIf_Mode);
-		if (status > totalStatus) {
-			totalStatus = status;
+	if (totalStatus == E_OK) {
+		for (uint8 i = 0; i < Network->ControllerCount; ++i) {
+			const CanSM_ControllerType* Controller = &Network->Controllers[i];
+			Std_ReturnType status =
+					CanIf_SetControllerMode(Controller->CanIfControllerId, CanIf_Mode);
+			if (status > totalStatus) {
+				totalStatus = status;
+			}
 		}
 	}
 	return totalStatus;
@@ -129,6 +143,7 @@ Std_ReturnType CanSM_Internal_RequestCanIfMode( NetworkHandleType NetworkHandle,
 /** @req CANSM173 */
 Std_ReturnType CanSM_Internal_RequestComGroupMode( NetworkHandleType NetworkHandle, ComM_ModeType ComM_Mode ) {
 	const CanSM_NetworkType* Network = &CanSM_Config->Networks[NetworkHandle];
+	Std_ReturnType status = E_OK;
 
 	switch (ComM_Mode) {
 		case COMM_NO_COMMUNICATION:
@@ -144,10 +159,10 @@ Std_ReturnType CanSM_Internal_RequestComGroupMode( NetworkHandleType NetworkHand
 			Com_IpduGroupStart(Network->ComTxPduGroupId, FALSE);
 			break;
 		default:
-			return E_NOT_OK;
+			status = E_NOT_OK;
 			break;
 	}
-	return E_OK;
+	return status;
 }
 
 /** @req CANSM090  @req CANSM185  @req CANSM187  @req CANSM186  @req CANSM188 */
@@ -159,7 +174,7 @@ Std_ReturnType CanSM_GetCurrentComMode( NetworkHandleType NetworkHandle, ComM_Mo
 
 	const CanSM_NetworkType* Network = &CanSM_Config->Networks[NetworkHandle];
 	Std_ReturnType totalStatus = E_OK;
-	for (int i = 0; i < Network->ControllerCount; ++i) {
+	for (uint8 i = 0; i < Network->ControllerCount; ++i) {
 		const CanSM_ControllerType* Controller = &Network->Controllers[i];
 		CanIf_ControllerModeType CanIf_Mode;
 		Std_ReturnType status =

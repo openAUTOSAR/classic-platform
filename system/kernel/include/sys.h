@@ -25,7 +25,7 @@ typedef enum  {
 	OP_TERMINATE_TASK = 8,
 	OP_SCHEDULE = 16,
 	OP_CHAIN_TASK = 32,
-	OP_RELEASE_RESOURCE = 64,
+	OP_RELEASE_RESOURCE = 64
 } OpType ;
 
 typedef struct sys_s {

@@ -13,9 +13,11 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+//lint -emacro(904,VALIDATE,VALIDATE_RV,VALIDATE_NO_RV) //904 PC-Lint exception to MISRA 14.7 (validate macros).
+
 #include "EcuM.h"
 #include "Modules.h"
-#include "string.h"
+#include <string.h>
 #include "Os.h"
 #include "EcuM_Internals.h"
 #include "EcuM_Cbk.h"
@@ -24,6 +26,9 @@
 #include "irq.h"
 #if defined(USE_NVM)
 #include "Nvm.h"
+#endif
+#if defined(USE_RTE)
+#include "Rte_Main.h"
 #endif
 
 EcuM_GobalType internal_data;
@@ -71,7 +76,7 @@ void EcuM_Init( void )
 	StartOS(internal_data.app_mode);
 }
 
-void EcuM_StartupTwo()
+void EcuM_StartupTwo(void)
 {
 #if defined(USE_NVM)
 	extern CounterType Os_Arc_OsTickCounter;
@@ -127,7 +132,7 @@ void EcuM_StartupTwo()
 }
 
 // Typically called from OS shutdown hook
-void EcuM_Shutdown()
+void EcuM_Shutdown(void)
 {
 	internal_data.current_state = ECUM_STATE_GO_OFF_TWO;
 
@@ -143,7 +148,10 @@ void EcuM_Shutdown()
 #if (MCU_PERFORM_RESET_API == STD_ON)
 		Mcu_PerformReset();
 #else
-		for(;;);
+		for(;;)
+                {
+                  ;
+                }
 #endif
 	}
 }
@@ -162,6 +170,7 @@ Std_ReturnType EcuM_SelectApplicationMode(AppModeType appMode)
 	VALIDATE_RV(internal_data.initiated, ECUM_SELECTAPPMODE_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
 
 	// TODO Save this application mode for next startup
+	(void) appMode;
 
 	return E_NOT_OK;
 }
@@ -181,6 +190,7 @@ Std_ReturnType EcuM_SelectBootTarget(EcuM_BootTargetType target)
 	VALIDATE_RV(internal_data.initiated, ECUM_SELECT_BOOTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
 
 	// TODO Do something great here
+	(void) target;
 
 	return E_NOT_OK;
 }
@@ -191,6 +201,7 @@ Std_ReturnType EcuM_GetBootTarget(EcuM_BootTargetType* target)
 	VALIDATE_RV(target != NULL, ECUM_GET_BOOTARGET_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
 
 	// TODO Return selected boot target here
+	(void) target;
 
 	return E_NOT_OK;
 }
@@ -208,12 +219,12 @@ Std_ReturnType EcuM_SelectShutdownTarget(EcuM_StateType target, uint8 mode)
 }
 
 
-Std_ReturnType EcuM_GetShutdownTarget(EcuM_StateType *shutdownTarget, uint8 *sleepMode)
+Std_ReturnType EcuM_GetShutdownTarget(EcuM_StateType *target, uint8 *mode)
 {
 	VALIDATE_RV(internal_data.initiated, ECUM_GETSHUTDOWNTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
 
-	*shutdownTarget = internal_data.shutdown_target;
-	*sleepMode = internal_data.shutdown_mode;
+	*target = internal_data.shutdown_target;
+	*mode = internal_data.shutdown_mode;
 
 	return E_OK;
 }

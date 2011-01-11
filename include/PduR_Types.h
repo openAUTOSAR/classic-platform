@@ -20,8 +20,8 @@
  * Type definitions for PDU Router.
  */
 
-#ifndef _PDUR_TYPES_H
-#define _PDUR_TYPES_H
+#ifndef PDUR_TYPES_H
+#define PDUR_TYPES_H
 
 #include "ComStack_Types.h"
 
@@ -47,33 +47,24 @@ typedef enum {
 } PduR_DataProvisionType;
 
 
-/* ################## EXTERNAL STRUCTURES ##################
- *
- * These structures will be external in final implementation
- */
-typedef struct {
-	const int foo;
-} PduR_LConfigType;
-
-
 
 
 /* ################ NEW DEFINITIONS ################### */
 typedef struct {
-	Std_ReturnType (*TargetIndicationFctPtr)(PduIdType, const uint8*); /**< Pointer to target function in layer above PDU router. */
-	Std_ReturnType (*TargetTransmitFctPtr)(PduIdType, const PduInfoType*); /**< Pointer to target function below PDU router. */
+	Std_ReturnType (*TargetIndicationFctPtr)(PduIdType pduId, const uint8* data); /**< Pointer to target function in layer above PDU router. */
+	Std_ReturnType (*TargetTransmitFctPtr)(PduIdType pduId, const PduInfoType* pduInfo); /**< Pointer to target function below PDU router. */
 
 
-	void (*TargetConfirmationFctPtr)(PduIdType);
+	void (*TargetConfirmationFctPtr)(PduIdType pduId);
 
 	/**
 	 * Target function for trigger transmit requests from the interface modules, e.g. Com_TriggerTransmit. Only
 	 * needed if gateway mode is not used, that is, if .DataProvision is set to PDUR_NO_PROVISION.
 	 */
-	Std_ReturnType (*TargetTriggerTransmitFctPtr)(PduIdType, uint8*);
+	Std_ReturnType (*TargetTriggerTransmitFctPtr)(PduIdType pduId, uint8* data);
 
 
-	Std_ReturnType (*TargetGatewayFctPtr)(PduIdType, const PduInfoType*);
+	Std_ReturnType (*TargetGatewayFctPtr)(PduIdType pduId, const PduInfoType* pduInfo);
 
 } PduR_FctPtrType;
 
@@ -81,7 +72,7 @@ typedef struct {
 	/*
 	 * Not part of autosar standard. Added by ArcCore.
 	 */
-	int BufferId;
+	uint16 BufferId;
 	PduR_DataProvisionType BufferType;
 	//uint8 SduLength;
 	uint8 *Last;

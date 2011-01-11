@@ -14,8 +14,8 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-#ifndef COMM_INTERNAL_H_
-#define COMM_INTERNAL_H_
+#ifndef COMM_INTERNAL_H
+#define COMM_INTERNAL_H
 
 #include "ComM_Types.h"
 
@@ -51,7 +51,7 @@
 typedef enum {
 	COMM_SUBMODE_NETWORK_REQUESTED,
 	COMM_SUBMODE_READY_SLEEP,
-	COMM_SUBMODE_NONE,
+	COMM_SUBMODE_NONE
 } ComM_Internal_SubModeType;
 
 typedef struct {
@@ -76,18 +76,18 @@ typedef struct {
 	uint16						InhibitCounter;  /**< @req COMM138  @req COMM141 */
 } ComM_InternalType;
 
-#define COMM_NM_INDICATION_NONE					0
-#define COMM_NM_INDICATION_NETWORK_MODE			(1 << 0)
-#define COMM_NM_INDICATION_PREPARE_BUS_SLEEP	(1 << 1)
-#define COMM_NM_INDICATION_BUS_SLEEP			(1 << 2)
-#define COMM_NM_INDICATION_RESTART				(1 << 3)
+#define COMM_NM_INDICATION_NONE					(uint8)(0u)
+#define COMM_NM_INDICATION_NETWORK_MODE			(uint8)(1u)
+#define COMM_NM_INDICATION_PREPARE_BUS_SLEEP	(uint8)(1u << 1)
+#define COMM_NM_INDICATION_BUS_SLEEP			(uint8)(1u << 2)
+#define COMM_NM_INDICATION_RESTART				(uint8)(1u << 3)
 
 /* Delegate request to users channels and call ComM_Internal_UpdateChannelState */
 static Std_ReturnType ComM_Internal_RequestComMode(
 				ComM_UserHandleType User, ComM_ModeType ComMode );
 
 /* Looks at stored requests for Channel and updates state accordingly */
-static Std_ReturnType ComM_Internal_UpdateChannelState( const ComM_ChannelType* Channel, boolean isRequest );
+static Std_ReturnType ComM_Internal_UpdateChannelState( const ComM_ChannelType* ChannelConf, boolean isRequest );
 
 static inline Std_ReturnType ComM_Internal_UpdateFromNoCom(const ComM_ChannelType* ChannelConf,
 					ComM_Internal_ChannelType* ChannelInternal, boolean isRequest);
@@ -121,14 +121,14 @@ static Std_ReturnType ComM_Internal_PropagateGetCurrentComMode(
 		ComM_UserHandleType User, ComM_ModeType* ComMode );
 
 /* Tick 'Min full com duration' timeout, and update state if needed */
-static inline void ComM_Internal_TickFullComMinTime(const ComM_ChannelType* ChannelConf,
+static inline Std_ReturnType ComM_Internal_TickFullComMinTime(const ComM_ChannelType* ChannelConf,
 		ComM_Internal_ChannelType* ChannelInternal);
 
 static inline boolean ComM_Internal_FullComMinTime_AllowsExit(const ComM_ChannelType* ChannelConf,
-		ComM_Internal_ChannelType* ChannelInternal);
+		const ComM_Internal_ChannelType* ChannelInternal);
 
 /* Tick 'Light nm' timeout, and update state if needed */
-static inline void ComM_Internal_TickLightTime(const ComM_ChannelType* ChannelConf,
+static inline Std_ReturnType ComM_Internal_TickLightTime(const ComM_ChannelType* ChannelConf,
 		ComM_Internal_ChannelType* ChannelInternal);
 
-#endif /* COMM_INTERNAL_H_ */
+#endif /* COMM_INTERNAL_H */

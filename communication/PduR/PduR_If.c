@@ -43,19 +43,21 @@ void PduR_LoIfRxIndication(PduIdType PduId, const uint8* SduPtr) {
 
 	if (route->PduR_GatewayMode == 0) {
 		// This is an ordinary request.
+		// 534 PC-Lint (ignoring return value) ticket #134:
 		route->FctPtrs.TargetIndicationFctPtr(route->PduRDestPdu.DestPduId, SduPtr); // Send PDU to next receptor.
 
 
-	} else if (route->PduR_GatewayMode == 1 && route->PduRDestPdu.DataProvision == PDUR_NO_PROVISION) {
+	} else if ( (route->PduR_GatewayMode == 1) && (route->PduRDestPdu.DataProvision == PDUR_NO_PROVISION) ) {
 		// This is a gateway request, but without any data provision (buffer usage).
 		PduInfoType PduInfo = {
-			.SduDataPtr = (uint8 *)SduPtr,
+			.SduDataPtr = (uint8 *)SduPtr, // 926, 960 PC-Lint: Beror på att funktion PduR_LoIfRxIndication(...) fel-definerad TICKET 130
 			.SduLength = route->SduLength
 		};
+		// 534 PC-Lint (ignoring return value) ticket #134:
 		route->FctPtrs.TargetTransmitFctPtr(route->PduRDestPdu.DestPduId, &PduInfo); // Send PDU to next receptor.
 
 
-	} else if (route->PduR_GatewayMode == 1 && route->PduRDestPdu.DataProvision == PDUR_TRIGGER_TRANSMIT) {
+	} else if ( (route->PduR_GatewayMode == 1) && (route->PduRDestPdu.DataProvision == PDUR_TRIGGER_TRANSMIT) ) {
 		// Ths is a gateway request which uses trigger transmit data provision. PDUR255
 		DEBUG(DEBUG_LOW,"\tUsing gateway mode with trigger transmit provision\n");
 
@@ -78,7 +80,7 @@ void PduR_LoIfRxIndication(PduIdType PduId, const uint8* SduPtr) {
 			}
 		}
 
-	} else if (route->PduR_GatewayMode == 1 && route->PduRDestPdu.DataProvision == PDUR_DIRECT) {
+	} else if ( (route->PduR_GatewayMode == 1) && (route->PduRDestPdu.DataProvision == PDUR_DIRECT) ) {
 		// This is a gateway request using a direct data provision fifo. PDUR258
 		DEBUG(DEBUG_LOW,"\tUsing gateway mode with direct provision\n");
 
@@ -95,7 +97,7 @@ void PduR_LoIfRxIndication(PduIdType PduId, const uint8* SduPtr) {
 			// Make new PduInfoPackage
 			DEBUG(DEBUG_LOW,"\tNo transfer confirmation pending. Forwarding packet.\n");
 			PduInfoType PduInfoPtr = {
-					.SduDataPtr = (uint8 *)SduPtr,
+					.SduDataPtr = (uint8 *)SduPtr, // 926, 960 PC-Lint: Beror på att funktion PduR_LoIfRxIndication(...) fel-definerad TICKET 130
 					.SduLength = route->SduLength
 			};
 			if (route->FctPtrs.TargetTransmitFctPtr(route->PduRDestPdu.DestPduId, &PduInfoPtr) == E_OK) {
@@ -109,6 +111,8 @@ void PduR_LoIfRxIndication(PduIdType PduId, const uint8* SduPtr) {
 				DEBUG(DEBUG_LOW,"\tTransmission failed. PDUR_E_PDU_INSTANCE_LOST\n");
 			}
 		}
+	} else {
+		// Nothing to be done.
 	}
 }
 
@@ -125,12 +129,12 @@ void PduR_LoIfTxConfirmation(PduIdType PduId) {
 		// This is an ordinary request.
 		route->FctPtrs.TargetConfirmationFctPtr(route->PduRDestPdu.DestPduId); // Forward confirmation
 
-	} else if (route->PduR_GatewayMode == 1 && route->PduRDestPdu.DataProvision == PDUR_NO_PROVISION) {
+	} else if ( (route->PduR_GatewayMode == 1) && (route->PduRDestPdu.DataProvision == PDUR_NO_PROVISION) ) {
 		// A gateway request without provision. Just forward confirmation.
 		route->FctPtrs.TargetConfirmationFctPtr(route->PduRDestPdu.DestPduId); // Forward confirmation
 
 
-	} else if (route->PduR_GatewayMode == 1 && route->PduRDestPdu.DataProvision == PDUR_TRIGGER_TRANSMIT) {
+	} else if ( (route->PduR_GatewayMode == 1) && (route->PduRDestPdu.DataProvision == PDUR_TRIGGER_TRANSMIT) ) {
 		// The route is using gateway mode and trigger transmit data provision. PDUR256
 		DEBUG(DEBUG_LOW,"\tUsing gateway mode with trigger transmit data provision.\n", PduId);
 
@@ -174,7 +178,7 @@ void PduR_LoIfTxConfirmation(PduIdType PduId) {
 		}
 
 
-	} else if (route->PduR_GatewayMode == 1 && route->PduRDestPdu.DataProvision == PDUR_DIRECT) {
+	} else if ( (route->PduR_GatewayMode == 1) && (route->PduRDestPdu.DataProvision == PDUR_DIRECT) ) {
 		// The route is using a direct data provision fifo. PDUR259
 		DEBUG(DEBUG_LOW,"\tUsing gateway mode with direct data provision.\n", PduId);
 
@@ -216,6 +220,8 @@ void PduR_LoIfTxConfirmation(PduIdType PduId) {
 				}
 			}
 		}
+	} else {
+		// Nothing to be done.
 	}
 }
 
@@ -226,12 +232,15 @@ void PduR_LoIfTriggerTransmit(PduIdType PduId, uint8* SduPtr) {
 	// Find out if this is a gateway or ordinary trigger.
 	//if (route->PduRDestPdu.DataProvision == PDUR_NO_PROVISION) { // This is an ordinary trigger.
 	if (route->PduR_GatewayMode == 0) { // This is an ordinary trigger.
+		// 534 PC-Lint (ignoring return value) ticket #134:
 		route->FctPtrs.TargetTriggerTransmitFctPtr(route->PduRDestPdu.DestPduId, SduPtr);
 
-	} else if (route->PduR_GatewayMode == 1 && route->PduRDestPdu.DataProvision == PDUR_TRIGGER_TRANSMIT) { // The route is using a trigger transmit fifo. PDUR256
+	} else if ( (route->PduR_GatewayMode == 1) && (route->PduRDestPdu.DataProvision == PDUR_TRIGGER_TRANSMIT) ) { // The route is using a trigger transmit fifo. PDUR256
 		DEBUG(DEBUG_LOW,"\tUsing gateway mode with trigger transmit data provision.\n", PduId);
 		memcpy((void *)SduPtr, (void *)route->PduRDestPdu.TxBufferRef->First, sizeof(uint8) * route->SduLength);
 
+	} else {
+		// Nothing to be done.
 	}
 }
 

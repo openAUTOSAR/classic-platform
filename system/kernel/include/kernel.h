@@ -168,7 +168,7 @@ typedef struct OsResource {
 
 typedef enum {
 	LOCK_TYPE_RESOURCE,
-	LOCK_TYPE_INTERRUPT,
+	LOCK_TYPE_INTERRUPT
 } OsLocktypeType;
 
 typedef struct OsLockingtime {

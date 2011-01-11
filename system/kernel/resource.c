@@ -173,7 +173,7 @@ StatusType GetResource( ResourceType ResID ) {
 		rPtr = &os_sys.resScheduler;
 	} else {
 		/* Check we can access it */
-		if( (pcbPtr->resourceAccess & (1<< ResID)) == 0 ) {
+		if( (pcbPtr->resourceAccess & ( (uint32_t) 1 << ResID)) == 0 ) {
 			rv = E_OS_ID;
 			goto err;
 		}
@@ -223,7 +223,7 @@ StatusType ReleaseResource( ResourceType ResID) {
 		rPtr = &os_sys.resScheduler;
 	} else {
 		/* Check we can access it */
-		if( (pcbPtr->resourceAccess & (1<< ResID)) == 0 ) {
+		if( (pcbPtr->resourceAccess & ( (uint32_t) 1 << ResID) ) == 0 ) {// 960 PC-lint [10.5]: varför klagar? funkar inte heller om (unsigned char)1 )
 			rv = E_OS_ID;
 			goto err;
 		}
@@ -327,7 +327,7 @@ void Os_ResourceInit( void ) {
 			pcb_p = os_get_pcb(pi);
 
 
-			if(pcb_p->resourceAccess & (1<<i) ) {
+			if(pcb_p->resourceAccess & ( (uint32_t) 1<<i) ) {
 				topPrio = MAX(topPrio,pcb_p->prio);
 			}
 

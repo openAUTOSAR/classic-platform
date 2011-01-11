@@ -62,7 +62,7 @@ typedef enum {
 	BUFREQ_OK=0,
 	BUFREQ_NOT_OK,
 	BUFREQ_BUSY,
-	BUFREQ_OVFL,
+	BUFREQ_OVFL
 } BufReq_ReturnType;
 
 // 0x00--0x1e General return types

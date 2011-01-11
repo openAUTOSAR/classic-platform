@@ -16,7 +16,7 @@
 
 #warning "This default file may only be used as an example!"
 
-#if (ECUM_SW_MAJOR_VERSION != 2 && ECUM_SW_MINOR_VERSION != 0)
+#if ((ECUM_SW_MAJOR_VERSION != 2) && (ECUM_SW_MINOR_VERSION != 0))
 #error "EcuM: Configuration file version differs from BSW version."
 #endif
 
