@@ -27,6 +27,9 @@
 #if defined(USE_NVM)
 #include "Nvm.h"
 #endif
+#if defined(USE_RTE)
+#include "Rte_Main.h"
+#endif
 
 EcuM_GobalType internal_data;
 
