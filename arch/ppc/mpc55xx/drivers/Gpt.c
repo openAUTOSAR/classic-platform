@@ -112,7 +112,7 @@ Gpt_GlobalType Gpt_Global;
                                                        \
     /* Find the config entry for the PIT channel. */   \
     confCh = Gpt_Global.channelMap[ _channel ];        \
-    ASSERT(confCh != GPT_CHANNEL_ILL);                 \
+    assert(confCh != GPT_CHANNEL_ILL);                 \
     config = &Gpt_Global.config[ confCh ];             \
                                                        \
     if( config->GptChannelMode == GPT_MODE_ONESHOT )   \
