@@ -28,7 +28,7 @@
 
 
 #define COM_SW_MAJOR_VERSION   1
-#define COM_SW_MINOR_VERSION   0
+#define COM_SW_MINOR_VERSION   1
 #define COM_SW_PATCH_VERSION   0
 
 #include "Com_Cfg.h"
