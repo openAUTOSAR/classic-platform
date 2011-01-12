@@ -96,6 +96,7 @@ StatusType GetAlarm(AlarmType AlarmId, TickRefType Tick) {
 StatusType SetRelAlarm(AlarmType AlarmId, TickType Increment, TickType Cycle){
 	StatusType rv = E_OK;
 	OsAlarmType *aPtr;
+	long flags;
 
 	ALARM_CHECK_ID(AlarmId);
 
@@ -122,9 +123,9 @@ StatusType SetRelAlarm(AlarmType AlarmId, TickType Increment, TickType Cycle){
 	}
 
 	{
-		Irq_Disable();
+	        Irq_Save(flags);
 		if( aPtr->active == 1 ) {
-			Irq_Enable();
+		        Irq_Restore(flags);
 			rv = E_OS_STATE;
 			goto err;
 		}
@@ -137,7 +138,7 @@ StatusType SetRelAlarm(AlarmType AlarmId, TickType Increment, TickType Cycle){
 								Increment);
 		aPtr->cycletime = Cycle;
 
-		Irq_Enable();
+		Irq_Restore(flags);
 		OS_DEBUG(D_ALARM,"  expire:%u cycle:%u\n",
 				(unsigned)aPtr->expire_val,
 				(unsigned)aPtr->cycletime);
