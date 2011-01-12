@@ -86,6 +86,8 @@
 #define SHADOW_ROW_SIZE 		0x00008000
 #define FLASH_PAGE_SIZE    H7FB_PAGE_SIZE
 
+#define FLASH_TOTAL_BLOCKS ( 20 )
+
 #if 0
 #define VFLAGS_ADDR_SECT		(1<<0)
 #define VFLAGS_ADDR_PAGE		(1<<1)
@@ -263,7 +265,7 @@ static inline int Fls_Validate( uint32 addr,uint32 length, uint32 api,uint32 rv 
   }
 
 #define FLS_VALIDATE_PARAM_DATA_W_RV(_ptr,_api, _rv) \
-  if( (_ptr)==((void *)0)) { \
+  if(( (uint32)(_ptr)%FLS_READ_PAGE_SIZE != 0 ) || ( (_ptr)==((void *)0))) { \
     Det_ReportError(MODULE_ID_FLS,0,_api,FLS_E_PARAM_DATA); \
     return _rv; \
   }
@@ -480,7 +482,7 @@ static void address_to_erase_blocks( Fls_EraseBlockType *eraseBlocks, uint32 add
   endBlock = address_to_block( addr + size - 1,&rem );
 
   // Check so our implementation holds..
-  assert( endBlock<=32 );
+  assert( endBlock <= FLASH_TOTAL_BLOCKS );
 
 #define BLOCK_MASK 0x0003ffffUL
 
@@ -491,9 +493,9 @@ static void address_to_erase_blocks( Fls_EraseBlockType *eraseBlocks, uint32 add
 
 
   // shift things in to make freescale driver happy
-  eraseBlocks->lowEnabledBlocks = mask&0x3f; // ????
-  eraseBlocks->midEnabledBlocks = (mask>>10)&3; // ????
-  eraseBlocks->highEnabledBlocks = mask>>12;
+  eraseBlocks->lowEnabledBlocks = mask&0x3ff;   // Bits 0..9 indicats low blocks
+  eraseBlocks->midEnabledBlocks = (mask>>10)&3; // Bits 10..11 indicats mid blocks
+  eraseBlocks->highEnabledBlocks = mask>>12;    // Bits 12..19 indicats high blocks
 
 
   return ;
@@ -536,8 +538,8 @@ void Fls_Init( const Fls_ConfigType *ConfigPtr )
 Std_ReturnType Fls_Erase(	Fls_AddressType   TargetAddress,
                           Fls_LengthType    Length )
 {
-  uint32 block;
-  uint32 sBlock;
+  uint32 endBlock;
+  uint32 startBlock;
   uint32 rem;
   Fls_EraseBlockType eraseBlock;
   Fls_EraseInfoType eraseInfo;
@@ -553,14 +555,14 @@ Std_ReturnType Fls_Erase(	Fls_AddressType   TargetAddress,
      return E_NOT_OK;
 
   // TargetAddress
-  sBlock = address_to_block(TargetAddress,&rem);
+  startBlock = address_to_block(TargetAddress,&rem);
 
-  if( (sBlock == (-1)) || (rem!=0) ) {
+  if( (startBlock == (-1)) || (rem!=0) ) {
     DET_REPORTERROR(MODULE_ID_FLS,0,0x0,FLS_E_PARAM_ADDRESS );
     return E_NOT_OK;
   }
 
-  block = address_to_block(TargetAddress+Length,&rem);
+  endBlock = address_to_block(TargetAddress+Length,&rem);
 
   // Check if we trying to erase a partition that we are executing in
   pc = Fls_GetPc();
@@ -569,8 +571,7 @@ Std_ReturnType Fls_Erase(	Fls_AddressType   TargetAddress,
   	uint32 pcBlock = address_to_block(pc,&rem);
   	uint8 *partMap = Fls_Global.config->FlsBlockToPartitionMap;
 
-  	if( (partMap[pcBlock] >= partMap[sBlock]) && (partMap[pcBlock] <= partMap[block]) ) {
-//    if( address_to_block(pc,&rem) == Fls_Global.config->FlsBlockToPartitionMap[block] ) {
+  	if( (partMap[pcBlock] >= partMap[startBlock]) && (partMap[pcBlock] <= partMap[endBlock]) ) {
         // Can't erase and in the same partition we are executing
         assert(0);
     }
@@ -828,5 +829,27 @@ void Fls_GetVersionInfo( Std_VersionInfoType *VersioninfoPtr )
   memcpy(VersioninfoPtr, &_Fls_VersionInfo, sizeof(Std_VersionInfoType));
 }
 
+void Fls_Check( uint32 flsBaseAddress, uint32 flsTotalSize )
+{
+  // ECC checking is always on by default.
+  // If a non correctable error is discovered
+  // we will get an IVOR2 exception.
+
+  // Enable Flash Non_Correctible Reporting,
+  // Not really necessary but makes more information
+  // available in the MCM registers if an error occurs.
+  MCM.ECR.B.EFNCR = 1;
+
+  // Read flash in 32bit chunks, it's most efficient.
+  uint32* memoryChunkPtr = (uint32*)flsBaseAddress;
+  uint32* flsTotalSizePtr = (uint32*)flsTotalSize;
+  uint32  memoryChunk = *memoryChunkPtr; // The first read
+
+  // Read the rest of the flash, chunk by chunk
+  while(memoryChunkPtr < flsTotalSizePtr)
+  {
+    memoryChunk=*(memoryChunkPtr++);
+  }
+}
 
 

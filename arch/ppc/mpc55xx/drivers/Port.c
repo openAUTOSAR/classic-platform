@@ -94,7 +94,7 @@ void Port_Init(const Port_ConfigType *configType)
   // Pointers to the register memory areas
   vuint16_t * padConfig = &(SIU.PCR[0].R);
   vuint8_t * outConfig = &(SIU.GPDO[0].R);
-//  vuint8_t * inConfig = &(SIU.GPDI[0].R);
+//  vuint8_t * inConfig = &(SIU.GPDI[0].R); // Read only
 
   // Copy config to register areas
   memcpy((void *)outConfig, configType->outConfig, configType->outCnt);

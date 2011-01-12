@@ -638,6 +638,11 @@ static void Can_Isr(int unit) {
   }
 
   if (canHwConfig->Can_Arc_Fifo) {
+    /*
+     * NOTE!!!
+     * Do not enable RxFIFO. See [Freescale Device Errata MPC5510ACE, Rev. 10 APR 2009, errata ID: 14593].
+     */
+     
   	/* Note
   	 * NOT tested at all
   	 */
@@ -1004,7 +1009,9 @@ Can_ReturnType Can_SetControllerMode( uint8 controller, Can_StateTransitionType 
     canUnit->state = CANIF_CS_STARTED;
     imask_t state = McuE_EnterCriticalSection();
     if (canUnit->lock_cnt == 0)   // REQ CAN196
+    {
       Can_EnableControllerInterrupts(controller);
+    }
     McuE_ExitCriticalSection(state);
     break;
   case CAN_T_WAKEUP:  //CAN267

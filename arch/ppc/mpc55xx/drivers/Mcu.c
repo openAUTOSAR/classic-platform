@@ -108,6 +108,13 @@ static void Mcu_LossOfLock( void  ) {
 	Dem_ReportErrorStatus(MCU_E_CLOCK_FAILURE, DEM_EVENT_STATUS_FAILED);
 #endif
 
+  /*
+   * NOTE!!!
+   * This interrupt may be triggered more than expected.
+   * If you are going to use this interrupt, see [Freescale Device Errata MPC5510ACE, Rev. 10 APR 2009, errata ID: 6764].
+   *
+   */
+
 	Mcu_Global.stats.lossOfLockCnt++;
 	// Clear interrupt
 	FMPLL.SYNSR.B.LOLF = 1;

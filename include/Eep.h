@@ -49,6 +49,9 @@ typedef Eep_AddressType Eep_LengthType;
 #define EEP_E_UNINIT				    0x20
 #define EEP_E_BUSY					    0x21
 
+/* Production errors */
+// #define EEP_E_COM_FAILURE       0x30 /* Shall be located in DemIntErrId.h when its available */
+
 /* Service id's for fls functions */
 #define EEP_INIT_ID					    0x00
 #define EEP_SETMODE_ID          0x01
