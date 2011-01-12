@@ -79,7 +79,7 @@ typedef enum
 
 #define GPT_SW_MAJOR_VERSION	1
 #define GPT_SW_MINOR_VERSION   	0
-#define GPT_SW_PATCH_VERSION	0
+#define GPT_SW_PATCH_VERSION	1
 
 #define GPT_AR_MAJOR_VERSION     2
 #define GPT_AR_MINOR_VERSION     2
