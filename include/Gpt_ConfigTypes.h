@@ -13,6 +13,7 @@ typedef struct  {
 	Gpt_ChannelType GptChannelId;
 	Gpt_ChannelMode GptChannelMode;
 	void (*GptNotification)();
+	uint8 GptNotificationPriority;
 	uint32 GptChannelPrescale;
 	boolean GptEnableWakeup;
 } Gpt_ConfigType;

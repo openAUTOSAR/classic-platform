@@ -144,10 +144,10 @@ GPT_ISR( 6 );
 GPT_ISR( 7 );
 GPT_ISR( 8 );
 
-#define GPT_ISR_INSTALL( _channel )													\
+#define GPT_ISR_INSTALL( _channel, _prio )													\
 {																					\
 	TaskType tid;																	\
-	tid = Os_Arc_CreateIsr(Gpt_Isr_Channel##_channel, 2, XSTR__(Gpt_##_channel));	\
+	tid = Os_Arc_CreateIsr(Gpt_Isr_Channel##_channel, _prio, XSTR__(Gpt_##_channel));	\
 	Irq_AttachIsr2(tid, NULL, PIT_PITFLG_RTIF + _channel);							\
 }
 
@@ -187,15 +187,15 @@ void Gpt_Init(const Gpt_ConfigType *config)
       {
         switch( ch )
         {
-          case 0: GPT_ISR_INSTALL( 0 ); break;
-          case 1: GPT_ISR_INSTALL( 1 ); break;
-          case 2: GPT_ISR_INSTALL( 2 ); break;
-          case 3: GPT_ISR_INSTALL( 3 ); break;
-          case 4: GPT_ISR_INSTALL( 4 ); break;
-          case 5: GPT_ISR_INSTALL( 5 ); break;
-          case 6: GPT_ISR_INSTALL( 6 ); break;
-          case 7: GPT_ISR_INSTALL( 7 ); break;
-          case 8: GPT_ISR_INSTALL( 8 ); break;
+          case 0: GPT_ISR_INSTALL( 0, cfg->GptNotificationPriority ); break;
+          case 1: GPT_ISR_INSTALL( 1, cfg->GptNotificationPriority ); break;
+          case 2: GPT_ISR_INSTALL( 2, cfg->GptNotificationPriority ); break;
+          case 3: GPT_ISR_INSTALL( 3, cfg->GptNotificationPriority ); break;
+          case 4: GPT_ISR_INSTALL( 4, cfg->GptNotificationPriority ); break;
+          case 5: GPT_ISR_INSTALL( 5, cfg->GptNotificationPriority ); break;
+          case 6: GPT_ISR_INSTALL( 6, cfg->GptNotificationPriority ); break;
+          case 7: GPT_ISR_INSTALL( 7, cfg->GptNotificationPriority ); break;
+          case 8: GPT_ISR_INSTALL( 8, cfg->GptNotificationPriority ); break;
           default:
           {
             // Unknown PIT channel.
