@@ -35,7 +35,7 @@
 #define LED_CHANNEL             DIO_CHANNEL_D3
 
 #elif defined(CFG_BRD_STM32_MCBSTM32)
-#define LED_CHANNEL             DIO_CHANNEL_NAME_LED_CHANNEL
+#define LED_CHANNEL             DIO_CHANNEL_B13
 
 #else
 #warning "Unknown board or CFG_BRD_* undefined"
