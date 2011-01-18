@@ -398,7 +398,7 @@ SECTIONS
     *(.gnu.linkonce.b.*)
     *(COMMON)
     PROVIDE (_end = .);
-  }  > data AT>bank_FIX2_lma
+  }  > data /* AT>bank_FIX2_lma */
   __bss_size = SIZEOF(.bss);
   PROVIDE (__bss_size = SIZEOF(.bss));
   .eeprom   :

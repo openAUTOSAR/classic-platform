@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<AUTOSAR xmlns="http://autosar.org/3.1.2"><TOP-LEVEL-PACKAGES>
+<AUTOSAR xmlns="http://autosar.org/3.1.2">
+  <TOP-LEVEL-PACKAGES>
     <AR-PACKAGE UUID="55d13f76-fbd7-4f4f-894f-6e893bb4af68">
       <SHORT-NAME>pwm_node_mpc5567</SHORT-NAME>
       <CATEGORY>EcuConfiguration</CATEGORY>
       <ADMIN-DATA>
         <DOC-REVISIONS>
           <DOC-REVISION>
-            <ISSUED-BY/>
+            <ISSUED-BY />
           </DOC-REVISION>
         </DOC-REVISIONS>
       </ADMIN-DATA>
@@ -24,10 +25,11 @@
                 <SD GID="MCU">MPC5567</SD>
                 <SD GID="COPYRIGHT">Copyright ArcCore AB 2010</SD>
                 <SD GID="AUTHOR">ArcCore AB</SD>
-                <SD GID="GENDIR"></SD>
+                <SD GID="GENDIR" />
               </SDG>
             </SDGS>
           </ADMIN-DATA>
+          <ECU-SW-COMPOSITION-REF DEST="ECU-SW-COMPOSITION">/pwm_node_mpc5567/SwComposition_pwm_node_mpc5567</ECU-SW-COMPOSITION-REF>
           <MODULE-REFS>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/pwm_node_mpc5567/Port</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/pwm_node_mpc5567/Pwm</MODULE-REF>
@@ -38,7 +40,7 @@
           <SHORT-NAME>Port</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG/>
+              <SDG />
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">1.0.0</SD>
@@ -171,7 +173,7 @@
           <SHORT-NAME>Pwm</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG/>
+              <SDG />
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">1.0.0</SD>
@@ -248,7 +250,7 @@
                     </ENUMERATION-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel/PwmNotification</DEFINITION-REF>
-                      <VALUE></VALUE>
+                      <VALUE />
                     </FUNCTION-NAME-VALUE>
                     <FLOAT-VALUE>
                       <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel/PwmPeriodDefault</DEFINITION-REF>
@@ -324,7 +326,7 @@
           <SHORT-NAME>Os</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG/>
+              <SDG />
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.7</SD>
@@ -579,6 +581,11 @@
             </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
+        <ECU-SW-COMPOSITION UUID="11a49707-21e6-4cba-b31c-dccc09708eed">
+          <SHORT-NAME>SwComposition_pwm_node_mpc5567</SHORT-NAME>
+        </ECU-SW-COMPOSITION>
       </ELEMENTS>
     </AR-PACKAGE>
-  </TOP-LEVEL-PACKAGES></AUTOSAR>
+  </TOP-LEVEL-PACKAGES>
+</AUTOSAR>
+

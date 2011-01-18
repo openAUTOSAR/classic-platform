@@ -342,19 +342,7 @@ static const CanIf_TxPduConfigType * CanIf_FindTxPduEntry(PduIdType id)
 	} else {
 		return &CanIf_ConfigPtr->InitConfig->CanIfTxPduConfigPtr[id];
 	}
-/*
-  for (uint16 i = 0; i < CanIf_ConfigPtr->InitConfig->CanIfNumberOfCanTXPduIds; i++)
-  {
-    if (entry->CanIfTxPduId == id)
-    {
-      return entry;
-    }
-    entry++;
   }
-
-  return 0;
-  */
-}
 
 //-------------------------------------------------------------------
 
@@ -688,13 +676,6 @@ void CanIf_TxConfirmation(PduIdType canTxPduId)
   const CanIf_TxPduConfigType* entry =
     &CanIf_ConfigPtr->InitConfig->CanIfTxPduConfigPtr[canTxPduId];
 
-  /* Find the CAN id in the TxPduList */
-  /*
-  for (uint16 i = 0; i < CanIf_ConfigPtr->InitConfig->CanIfNumberOfCanTXPduIds; i++)
-  {
-    if (entry->CanIfTxPduId == canTxPduId)
-    {
-    */
       if (entry->CanIfUserTxConfirmation != NULL)
       {
         CanIf_ChannelGetModeType mode;
@@ -706,14 +687,6 @@ void CanIf_TxConfirmation(PduIdType canTxPduId)
         }
       }
       return;
-      /*
-    }
-
-    entry++;
-  }
-  */
-  // Did not find the PDU, something is wrong
-
 }
 
 void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
@@ -766,7 +739,7 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
             else
             {
               entry++;
-              continue; // Not a supported filter type, so just drop the frame
+              continue; // Go to next entry
             }
           }
           else

@@ -73,13 +73,13 @@
 #if ( EEP_DEV_ERROR_DETECT == STD_ON ) // Report DEV errors
 #define VALIDATE(_exp,_api,_err ) \
         if( !(_exp) ) { \
-          Det_ReportError(MODULE_ID_GPT,0,_api,_err); \
+          Det_ReportError(MODULE_ID_EEP,0,_api,_err); \
           return; \
         }
 
 #define VALIDATE_W_RV(_exp,_api,_err,_rv ) \
         if( !(_exp) ) { \
-          Det_ReportError(MODULE_ID_GPT,0,_api,_err); \
+          Det_ReportError(MODULE_ID_EEP,0,_api,_err); \
           return (_rv); \
         }
 
@@ -139,6 +139,7 @@ typedef struct {
 	Eep_Arc_JobType mainState;
 	Spi_SequenceType currSeq;
 	uint32 chunkSize;
+	uint32            pageSize;
 } Eep_JobInfoType;
 
 #define JOB_SET_STATE(_x,_y)		job->state=(_x);job->mainState=(_y)
@@ -174,9 +175,9 @@ typedef struct {
 
 } Eep_GlobalType;
 
-#if 0
+#if 0  // Use SPI synchronous transmit
 #define SPI_TRANSMIT_FUNC(_x)	Spi_SyncTransmit(_x)
-#else
+#else  // Use SPI asynchronous transmit
 #define SPI_TRANSMIT_FUNC(_x,_y)	Eep_AsyncTransmit(_x,_y)
 
 Std_ReturnType Eep_AsyncTransmit(Spi_SequenceType Sequence,Eep_JobInfoType *job) {
@@ -255,6 +256,8 @@ void Eep_Init( const Eep_ConfigType* ConfigPtr ){
   Eep_Global.status     = MEMIF_IDLE;
   Eep_Global.jobResultType  = MEMIF_JOB_OK;
 
+  Eep_SetMode( CFG_P()->EepDefaultMode );
+
 }
 
 
@@ -330,6 +333,7 @@ Std_ReturnType Eep_Write( Eep_AddressType EepromAddress, const uint8* DataBuffer
 		job->chunkSize = Eep_Global.config->EepNormalWriteBlockSize;
 	}
 
+  job->pageSize = Eep_Global.config->EepPageSize;
   job->eepAddr = EepromAddress;
   job->targetAddr = (uint8 *)DataBufferPtr;
   job->left = Length;
@@ -363,6 +367,7 @@ Std_ReturnType Eep_Compare( Eep_AddressType EepromAddress, uint8 *TargetAddressP
      job->chunkSize = Eep_Global.config->EepNormalReadBlockSize;
   }
 
+  job->pageSize = Eep_Global.config->EepPageSize;    // Not relevant to compare/read operations, but set anyways.
   job->eepAddr = EepromAddress;
   job->targetAddr = TargetAddressPtr;
   job->left = Length;
@@ -373,8 +378,8 @@ Std_ReturnType Eep_Compare( Eep_AddressType EepromAddress, uint8 *TargetAddressP
 }
 
 
-void Eep_Cancel( void ){
-  EEP_JOB_END_NOTIFICATION();
+void Eep_Cancel( void ) {
+  EEP_JOB_ERROR_NOTIFICATION();
 
   if (MEMIF_JOB_PENDING==Eep_Global.jobResultType) {
   	Eep_Global.jobResultType=MEMIF_JOB_CANCELLED;
@@ -401,6 +406,8 @@ MemIf_JobResultType Eep_GetJobResult( void ){
 static Spi_SeqResultType Eep_ProcessJob( Eep_JobInfoType *job ) {
   Spi_SeqResultType rv;
   _Bool done = 0;
+  uint32 chunkSize = 0;
+  uint32 sizeLeftInPage = 0;
 
   /* Check if previous sequence is OK */
   rv = Spi_GetSequenceResult(job->currSeq);
@@ -417,15 +424,19 @@ static Spi_SeqResultType Eep_ProcessJob( Eep_JobInfoType *job ) {
 			/* Check status from erase cmd, read status from flash */
 			Spi_SetupEB( CFG_P()->EepDataChannel, NULL, &Eep_Global.ebReadStatus, 1);
 			Eep_Global.ebCmd = E2_RDSR;
-			if( SPI_TRANSMIT_FUNC(CFG_P()->EepCmd2Sequence,job ) != E_OK ) {
-				assert(0);
+			if( SPI_TRANSMIT_FUNC(CFG_P()->EepCmd2Sequence,job ) == E_OK )
+			{
+				SET_STATE(1,JOB_READ_STATUS_RESULT);
 			}
-			SET_STATE(1,JOB_READ_STATUS_RESULT);
+			else
+			{
+				SET_STATE(1,JOB_READ_STATUS);
+			}
 			break;
 
 		case JOB_READ_STATUS_RESULT:
 			DEBUG(DEBUG_LOW,"%s: READ_STATUS_RESULT\n",MODULE_NAME);
-			if( Eep_Global.ebReadStatus&1 ) {
+			if( Eep_Global.ebReadStatus & 1 ) {
 				SET_STATE(0,JOB_READ_STATUS);
 			} else {
 				SET_STATE(0,JOB_MAIN);
@@ -433,32 +444,53 @@ static Spi_SeqResultType Eep_ProcessJob( Eep_JobInfoType *job ) {
 			break;
 
 		case JOB_MAIN:
-			if( job->left != 0 ) {
+			if( job->left > 0 ) {
 				if( job->left <= job->chunkSize ) {
-					job->chunkSize = job->left;
+					chunkSize = job->left;
+				} else {
+					chunkSize = job->chunkSize;
 				}
 
 				Spi_ConvertToSpiAddr(Eep_Global.ebE2Addr,job->eepAddr);
 
-				switch(job->mainState) {
+			BOOL spiTransmitOK = FALSE;
 
+			switch(job->mainState)
+			{
 				case EEP_ERASE:
 					/* NOT USED */
 					break;
 				case EEP_READ:
 				case EEP_COMPARE:
-				  DEBUG(DEBUG_LOW,"%s: READ s:%04x d:%04x l:%04x\n",MODULE_NAME,job->eepAddr, job->targetAddr, job->left);
+					DEBUG(DEBUG_LOW,"%s: READ s:%04x d:%04x l:%04x\n",MODULE_NAME,job->eepAddr, job->targetAddr, job->left);
 					Eep_Global.ebCmd = E2_READ;
-					Spi_SetupEB( CFG_P()->EepDataChannel, NULL ,job->targetAddr,job->chunkSize);
-					SPI_TRANSMIT_FUNC(CFG_P()->EepReadSequence,job );
+					Spi_SetupEB( CFG_P()->EepDataChannel, NULL ,(Spi_DataType*)job->targetAddr,chunkSize);
+					if (SPI_TRANSMIT_FUNC(CFG_P()->EepReadSequence,job) == E_OK) {
+						spiTransmitOK = TRUE;
+					}
 					break;
 
 				case EEP_WRITE:
 					DEBUG(DEBUG_LOW,"%s: WRITE d:%04x s:%04x first data:%02x\n",MODULE_NAME,job->eepAddr,job->targetAddr,*job->targetAddr);
+
+					// Calculate how much space there is left in the current EEPROM page.
+					sizeLeftInPage = job->pageSize - (job->eepAddr % job->pageSize);
+
+					// Handle EEPROM page boundaries, i.e. make sure that we limit the chunk
+					// size so we don't write over the page boundary.
+					if (chunkSize > sizeLeftInPage) {
+						chunkSize = sizeLeftInPage;
+					} else {
+						// Do nothing since the size of the chunk to write is less than the
+						// available space left in the page.
+					}
+
 					Eep_Global.ebCmd = E2_WRITE;
 					Spi_ConvertToSpiAddr(Eep_Global.ebE2Addr,job->eepAddr);
-					Spi_SetupEB( CFG_P()->EepDataChannel, job->targetAddr, NULL, job->chunkSize);
-					SPI_TRANSMIT_FUNC(CFG_P()->EepWriteSequence,job );
+					Spi_SetupEB( CFG_P()->EepDataChannel, (const Spi_DataType*)job->targetAddr, NULL, chunkSize);
+					if (SPI_TRANSMIT_FUNC(CFG_P()->EepWriteSequence,job ) == E_OK) {
+						spiTransmitOK = TRUE;
+					}
 					break;
 
 				default:
@@ -466,10 +498,15 @@ static Spi_SeqResultType Eep_ProcessJob( Eep_JobInfoType *job ) {
 					break;
 				}
 
-				job->eepAddr += job->chunkSize;
-				job->targetAddr += job->chunkSize;
-				job->left -= job->chunkSize;
-				SET_STATE(1,JOB_READ_STATUS);
+				if (spiTransmitOK) {
+					job->eepAddr += chunkSize;
+					job->targetAddr += chunkSize;
+					job->left -= chunkSize;
+
+					SET_STATE(1,JOB_READ_STATUS);
+				} else {
+					SET_STATE(1,JOB_MAIN);
+				}
 
 			} else {
 				/* We are done :) */
@@ -560,12 +597,13 @@ void Eep_MainFunction( void )
 				readJob.targetAddr = Eep_CompareBuffer;
 			} else {
 			  // all other cases are bad
-			  firstTime = 1;
-        Eep_Global.jobResultType = MEMIF_JOB_FAILED;
-        Eep_Global.jobType = EEP_NONE;
-        Eep_Global.status = MEMIF_IDLE;
+				firstTime = 1;
+				Eep_Global.jobResultType = MEMIF_JOB_FAILED;
+				Eep_Global.jobType = EEP_NONE;
+				Eep_Global.status = MEMIF_IDLE;
 
-				DET_REPORTERROR(MODULE_ID_EEP,0, 0x9, MEMIF_JOB_FAILED );
+				DET_REPORTERROR(MODULE_ID_EEP,0, EEP_COMPARE_ID, EEP_E_COM_FAILURE ); // EEP056 (reporting to DET because DEM is missing)
+				DET_REPORTERROR(MODULE_ID_EEP,0, EEP_COMPARE_ID, MEMIF_JOB_FAILED );
 				EEP_JOB_ERROR_NOTIFICATION();
 			}
 		}
@@ -582,27 +620,33 @@ void Eep_MainFunction( void )
     		Eep_Global.jobResultType = MEMIF_JOB_OK;
     		Eep_Global.jobType = EEP_NONE;
     		Eep_Global.status = MEMIF_IDLE;
-        EEP_JOB_END_NOTIFICATION();
-      } else if( jobResult == SPI_SEQ_PENDING )  {
-        /* Busy, Do nothing */
-      } else {
-        // Error
-      	Eep_Global.jobResultType = MEMIF_JOB_FAILED;
-        Eep_Global.jobType = EEP_NONE;
-        Eep_Global.status = MEMIF_IDLE;
+			EEP_JOB_END_NOTIFICATION();
+		} else if( jobResult == SPI_SEQ_PENDING )  {
+        	/* Busy, Do nothing */
+		} else {
+			// Error
 
-      	switch(Eep_Global.jobType) {
-      	case EEP_ERASE:
-      		DET_REPORTERROR(MODULE_ID_EEP,0, 0x9, MEMIF_JOB_FAILED );
+			Eep_EcoreJobType failedJobType = Eep_Global.jobType;
+
+			Eep_Global.jobResultType = MEMIF_JOB_FAILED;
+			Eep_Global.jobType = EEP_NONE;
+			Eep_Global.status = MEMIF_IDLE;
+
+			switch(failedJobType) {
+				case EEP_ERASE:
+					DET_REPORTERROR(MODULE_ID_EEP,0, EEP_ERASE_ID, EEP_E_COM_FAILURE ); // EEP056 (reporting to DET because DEM is missing)
+					DET_REPORTERROR(MODULE_ID_EEP,0, EEP_ERASE_ID, MEMIF_JOB_FAILED );
 					break;
-      	case EEP_READ:
-      		DET_REPORTERROR(MODULE_ID_EEP,0, 0x9, MEMIF_JOB_FAILED );
+				case EEP_READ:
+					DET_REPORTERROR(MODULE_ID_EEP,0, EEP_READ_ID, EEP_E_COM_FAILURE ); // EEP056 (reporting to DET because DEM is missing)
+					DET_REPORTERROR(MODULE_ID_EEP,0, EEP_READ_ID, MEMIF_JOB_FAILED );
 					break;
-      	case EEP_WRITE:
-      		DET_REPORTERROR(MODULE_ID_EEP,0, 0x9, MEMIF_JOB_FAILED );
+				case EEP_WRITE:
+					DET_REPORTERROR(MODULE_ID_EEP,0, EEP_WRITE_ID, EEP_E_COM_FAILURE ); // EEP056 (reporting to DET because DEM is missing)
+					DET_REPORTERROR(MODULE_ID_EEP,0, EEP_WRITE_ID, MEMIF_JOB_FAILED );
 					break;
-      	default:
-      		assert(0);
+				default:
+					assert(0);
       	}
 
         EEP_JOB_ERROR_NOTIFICATION();
