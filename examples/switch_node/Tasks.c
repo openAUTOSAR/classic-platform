@@ -25,9 +25,11 @@
 #include "EcuM.h"
 #include <stdio.h>
 #include <assert.h>
-#include "debug.h"
 #include "Com.h"
 #include "Adc.h"
+
+//#define USE_LDEBUG_PRINTF // Uncomment this to turn debug statements on.
+#include "debug.h"
 
 void OsIdle( void ) {
 	for(;;);
