@@ -40,7 +40,7 @@ const Mcu_PerClockConfigType McuPerClockConfigData =
 						 RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOC | RCC_APB2Periph_AFIO),
 };
 
-const Mcu_ClockSettingConfigType Mcu_ClockSettingConfigData[] =
+Mcu_ClockSettingConfigType Mcu_ClockSettingConfigData[] =
 {
   {
     .McuClockReferencePointFrequency = 8000000UL,
@@ -51,7 +51,7 @@ const Mcu_ClockSettingConfigType Mcu_ClockSettingConfigData[] =
 };
 
 
- const Mcu_ConfigType McuConfigData[] = {
+const Mcu_ConfigType McuConfigData[] = {
   {
   //  Enables/Disables clock failure notification. In case this feature is not supported
   //  by HW the setting should be disabled.

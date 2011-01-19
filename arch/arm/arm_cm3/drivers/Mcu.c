@@ -180,10 +180,13 @@ static uint32_t GetPllValueFromMult(uint8_t pll)
 {
 	return (((uint32_t)pll - 2) << 18);
 }
+
+#ifdef STM32F10X_CL
 static uint32_t GetPll2ValueFromMult(uint8_t pll)
 {
 	return (((uint32_t)pll - 2) << 8);
 }
+#endif
 
 /**
   * Set bus clocks. SysClk,AHBClk,APB1Clk,APB2Clk
