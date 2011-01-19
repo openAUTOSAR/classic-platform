@@ -145,7 +145,6 @@
 #include "Det.h"
 #include <stdlib.h>
 
-//#define USE_TRACE 1
 //#define USE_LDEBUG_PRINTF	1
 #undef DEBUG_LVL
 #define DEBUG_LVL DEBUG_HIGH
