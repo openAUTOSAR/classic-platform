@@ -34,8 +34,7 @@
 #include "Port_Cfg.h" /** @req PORT130 */
 
 #if (PORT_VERSION_INFO_API == STD_ON)
-void
-Port_GetVersionInfo(Std_VersionInfoType *versionInfo);
+void Port_GetVersionInfo(Std_VersionInfoType *versionInfo);
 #endif 
 
 /** @name Error Codes */
@@ -75,17 +74,16 @@ typedef uint8 Port_PinModeType;
 typedef uint32 Port_PinModeType;
 #endif
 
-void
-Port_Init(const Port_ConfigType *configType);
-#if ( PORT_PIN_DIRECTION_CHANGES_ALLOWED == STD_ON )
-void
-Port_SetPinDirection(Port_PinType pin, Port_PinDirectionType direction);
+void Port_Init(const Port_ConfigType *configType);
+
+#if ( PORT_SET_PIN_DIRECTION_API == STD_ON )
+void Port_SetPinDirection(Port_PinType pin, Port_PinDirectionType direction);
 #endif
-void
-Port_RefreshPortDirection(void);
+
+void Port_RefreshPortDirection(void);
+
 #if (PORT_SET_PIN_MODE_API == STD_ON)
-void
-Port_SetPinMode(Port_PinType Pin, Port_PinModeType Mode);
+void Port_SetPinMode(Port_PinType Pin, Port_PinModeType Mode);
 #endif
 
 #endif /*PORT_H_*/
