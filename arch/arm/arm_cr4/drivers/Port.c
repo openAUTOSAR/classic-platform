@@ -130,10 +130,7 @@ void Port_RefreshPin(uint16 pinNumber) {
 	}
 
 	// Set pin direction
-	if (conf & PORT_PIN_IN) {
-		Port_Base[port]->DIR &= ~mask;
-
-	} else {
+	if (conf & PORT_PIN_OUT) {
 		Port_Base[port]->DIR |= mask;
 
 		// Set open drain
@@ -142,6 +139,9 @@ void Port_RefreshPin(uint16 pinNumber) {
 		} else {
 			Port_Base[port]->PDR &= ~mask;
 		}
+
+	} else {
+		Port_Base[port]->DIR &= ~mask;
 	}
 
 	// Set pull up or down or nothing.
