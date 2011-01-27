@@ -25,14 +25,16 @@
 #include "WdgM_Cfg.h"
 
 // API Service ID's
-#define WDGM_INIT_ID                        0x00
-#define WDGM_SETMODE_ID                     0x03
-#define WDGM_UPDATEALIVECOUNTER_ID			0x04
-#define WDGM_ACTIVATEALIVESUPERVISION_ID    0x05
-#define WDGM_DEACTIVATEALIVESUPERVISION_ID  0x06
-#define WDGM_GETMODE_ID                     0x0b
-#define WDGM_GETALIVESUPERVISION_ID         0x0c
-#define WDGM_GETGLOBALSTATUS_ID             0x0d
+#define WDGM_INIT_ID                          0x00
+#define WDGM_SETMODE_ID                       0x03
+#define WDGM_UPDATEALIVECOUNTER_ID			  0x04
+#define WDGM_ACTIVATEALIVESUPERVISION_ID      0x05
+#define WDGM_DEACTIVATEALIVESUPERVISION_ID    0x06
+#define WDGM_MAINFUNCTION_TRIGGER_ID          0x06
+#define WDGM_MAINFUNCTION_ALIVESUPERVISION_ID 0x08
+#define WDGM_GETMODE_ID                       0x0b
+#define WDGM_GETALIVESUPERVISION_ID           0x0c
+#define WDGM_GETGLOBALSTATUS_ID               0x0d
 
 
 /** @req WDGM004 **/
@@ -59,6 +61,7 @@ Std_ReturnType WdgM_DeactivateAliveSupervision (WdgM_SupervisedEntityIdType SEid
 Std_ReturnType WdgM_GetGlobalStatus (WdgM_AliveSupervisionStatusType *Status);
 Std_ReturnType WdgM_GetAliveSupervisionStatus (WdgM_SupervisedEntityIdType SEid, WdgM_AliveSupervisionStatusType *Status);
 void WdgM_Init(const WdgM_ConfigType* ConfigPtr);
+void WdgM_DeInit(void);
 Std_ReturnType WdgM_SetMode(WdgM_ModeType Mode);
 void WdgM_MainFunction_AliveSupervision (void);
 void WdgM_MainFunction_Trigger (void);

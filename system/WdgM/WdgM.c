@@ -54,6 +54,7 @@ Std_ReturnType WdgM_UpdateAliveCounter (WdgM_SupervisedEntityIdType SEid)
 {
   Std_ReturnType ret = E_NOT_OK;
   VALIDATE_ENTITY_ID(SEid, WDGM_UPDATEALIVECOUNTER_ID);
+  VALIDATE((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_UPDATEALIVECOUNTER_ID, WDGM_E_NO_INIT);
   WdgM_SupervisionType *supervisionPtr = &(wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_SupervisionPtr)[SEid];
 
   /** @req WDGM083 **/
@@ -76,6 +77,7 @@ Std_ReturnType WdgM_ActivateAliveSupervision (WdgM_SupervisedEntityIdType SEid)
 {
   Std_ReturnType ret = E_NOT_OK;
   VALIDATE_ENTITY_ID(SEid, WDGM_ACTIVATEALIVESUPERVISION_ID);
+  VALIDATE((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_ACTIVATEALIVESUPERVISION_ID, WDGM_E_NO_INIT);
   WdgM_SupervisionType *supervisionPtr = &(wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_SupervisionPtr)[SEid];
 
   supervisionPtr->ActivationStatus = WDBG_SUPERVISION_ENABLED;
@@ -89,6 +91,7 @@ Std_ReturnType WdgM_DeactivateAliveSupervision (WdgM_SupervisedEntityIdType SEid
 {
   Std_ReturnType ret;
   VALIDATE_ENTITY_ID(SEid, WDGM_DEACTIVATEALIVESUPERVISION_ID);
+  VALIDATE((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_DEACTIVATEALIVESUPERVISION_ID, WDGM_E_NO_INIT);
   WdgM_SupervisionType *supervisionPtr = &(wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_SupervisionPtr)[SEid];
 
   /** @req WDGM114 **/
@@ -105,6 +108,7 @@ Std_ReturnType WdgM_GetAliveSupervisionStatus (WdgM_SupervisedEntityIdType SEid,
 {
 	Std_ReturnType ret;
 	VALIDATE_ENTITY_ID(SEid, WDGM_GETALIVESUPERVISION_ID);
+	VALIDATE((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_GETALIVESUPERVISION_ID, WDGM_E_NO_INIT);
 	WdgM_SupervisionType *supervisionPtr = &(wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_SupervisionPtr)[SEid];
 	*Status = supervisionPtr->SupervisionStatus;
 	ret = E_OK;
@@ -190,6 +194,14 @@ void WdgM_Init(const WdgM_ConfigType *ConfigPtr)
   wdgMInternalState.WdgM_ConfigPtr = ConfigPtr;
 }
 
+/* Non standard API for test purpose.  */
+void WdgM_DeInit( void)
+{
+	wdgMInternalState.WdgM_GlobalSupervisionStatus = 0;
+	wdgMInternalState.WdgM_ConfigPtr = 0;
+}
+
+
 /** @req WDGM060 **/
 /** @req WDGM061 **/
 /** @req WDGM063 **/
@@ -197,6 +209,8 @@ void WdgM_Init(const WdgM_ConfigType *ConfigPtr)
 /** @req WDGM159 **/
 void WdgM_MainFunction_AliveSupervision (void)
 {
+  VALIDATE_NO_RETURNVAL((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_MAINFUNCTION_ALIVESUPERVISION_ID, WDGM_E_NO_INIT);
+
   WdgM_SupervisedEntityIdType SEid;
   WdgM_SupervisionType *supervisionPtr;
   const WdgM_SupervisedEntityType *entityPtr;
@@ -332,6 +346,8 @@ boolean WdgM_IsAlive(void)
 void WdgM_MainFunction_Trigger (void)
 {
   uint8 i;
+  /** @req WDGM068 **/
+  VALIDATE_NO_RETURNVAL((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_MAINFUNCTION_TRIGGER_ID, WDGM_E_NO_INIT);
 
   /* Update trigger counter. */
   wdgMInternalState.WdgMTriggerCounter++;
@@ -348,7 +364,7 @@ void WdgM_MainFunction_Trigger (void)
 		/** @req WDGM109 **/
 		/* Time to trig this particular watchdog instance? */
 	   if (0 == (wdgMInternalState.WdgMTriggerCounter %
-			   wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Trigger[i].WdgM_TriggerReferenceCycle))
+			     wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Trigger[i].WdgM_TriggerReferenceCycle))
 	   {
 		 /** @req WDGM066 **/
 	     WdgIf_Trigger(wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Trigger[i].WdgM_WatchdogRef);
