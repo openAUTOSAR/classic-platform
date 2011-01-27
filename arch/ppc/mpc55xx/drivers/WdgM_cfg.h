@@ -27,6 +27,7 @@
 #include "Std_Types.h"
 #include "WdgM_Lcfg.h"
 
+
 typedef enum
 {
   WDBG_ALIVE_OK,
@@ -34,7 +35,7 @@ typedef enum
   WDBG_ALIVE_EXPIRED,
   WDBG_ALIVE_STOPPED,
   WDBG_ALIVE_DEACTIVATED,
-}WdgM_SupervisedStatusType;
+}WdgM_AliveSupervisionStatusType;
 
 typedef enum
 {
@@ -46,11 +47,11 @@ typedef int16_t WdgM_SupervisionCounterType ;
 
 typedef struct
 {
-  WdgM_SupervisionCounterType AliveCounter;
-  WdgM_SupervisionCounterType SupervisionCycle;
-  WdgM_SupervisedStatusType SupervisionStatus;
-  WdgM_SupervisionCounterType NbrOfFailedRefCycles;
-  WdgM_ActivationStatusType ActivationStatus;
+  WdgM_SupervisionCounterType     AliveCounter;
+  WdgM_SupervisionCounterType     SupervisionCycle;
+  WdgM_AliveSupervisionStatusType SupervisionStatus;
+  WdgM_SupervisionCounterType     NbrOfFailedRefCycles;
+  WdgM_ActivationStatusType       ActivationStatus;
 }Wdgm_SupervisionType;
 
 typedef struct
