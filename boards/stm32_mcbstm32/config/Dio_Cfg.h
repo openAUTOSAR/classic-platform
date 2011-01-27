@@ -13,6 +13,10 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+
+
+#warning "This default file may only be used as an example!"
+
 #ifndef DIO_CFG_H_
 #define DIO_CFG_H_
 
@@ -146,13 +150,19 @@ typedef enum {
 	DIO_PORT_F,
 } Dio_Hw_PortType;
 
-#define LED_CHANNEL1 (DIO_CHANNEL_B13)
-#define LED_CHANNEL2 (DIO_CHANNEL_B14)
+// Channels
+#define DIO_CHANNEL_NAME_LED_CHANNEL1 (DIO_CHANNEL_B13)
+#define DIO_CHANNEL_NAME_LED_CHANNEL2 (DIO_CHANNEL_B14)
 
-#define LED_PORT 		(DIO_PORT_B)
+// Channel group
+#define DIO_GROUP_NAME_LED_GROUP			(&DioConfigData[0])
 
-#define LED_GROUP			(&DioConfigData[0])
+// Ports
+#define DIO_PORT_NAME_LED_PORT 		(DIO_PORT_B)
 
+
+
+// Pointers for convenience.
 // Channels
 extern const Dio_ChannelType DioChannelConfigData[];
 // Port

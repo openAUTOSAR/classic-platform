@@ -83,19 +83,19 @@ static const Port_ConfigType * _configPtr = &PortConfigData;
 #define VALIDATE_PARAM_CONFIG(_ptr,_api) \
 	if( (_ptr)==((void *)0) ) { \
 		Det_ReportError(MODULE_ID_PORT, 0, _api, PORT_E_PARAM_CONFIG ); \
-		goto cleanup; \
+		return; \
 	}
 
 #define VALIDATE_STATE_INIT(_api)\
 	if(PORT_INITIALIZED!=_portState){\
 		Det_ReportError(MODULE_ID_PORT, 0, _api, PORT_E_UNINIT ); \
-		goto cleanup; \
+		return; \
 	}
 
 #define VALIDATE_PARAM_PIN(_pin, _api)\
 	if(GET_PIN_PORT(_pin) >= PORT_NUMBER_OF_PORTS || Port_Base[GET_PIN_PORT(_pin)] == PORT_NOT_CONFIGURED || GET_PIN_PIN(_pin) > 7 ){\
 		Det_ReportError(MODULE_ID_PORT, 0, _api, PORT_E_PARAM_PIN ); \
-		goto cleanup; \
+		return; \
 	}
 
 #else
@@ -175,7 +175,7 @@ void Port_Init(const Port_ConfigType *configType) {
 
 	_portState = PORT_INITIALIZED;
 
-	cleanup:return;
+	return;
 }
 
 #if ( PORT_SET_PIN_DIRECTION_API == STD_ON )
@@ -195,7 +195,7 @@ void Port_SetPinDirection( Port_PinType pin, Port_PinDirectionType direction )
 
 	}
 
-cleanup:return;
+	return;
 }
 #endif
 
@@ -207,7 +207,7 @@ void Port_RefreshPortDirection( void )
 			Port_RefreshPin(i);
 		}
 	}
-cleanup:return;
+	return;
 }
 
 
@@ -216,7 +216,7 @@ void Port_GetVersionInfo(Std_VersionInfoType* versionInfo)
 {
   VALIDATE_STATE_INIT(PORT_GET_VERSION_INFO_ID);
   memcpy(versionInfo, &_Port_VersionInfo, sizeof(Std_VersionInfoType));
-  cleanup: return;
+  return;
 }
 #endif
 
@@ -231,6 +231,6 @@ void Port_SetPinMode(Port_PinType Pin, Port_PinModeType Mode) {
 
     Port_Base[port]->FUN &= ~mask;
     Port_Base[port]->FUN |= ((Mode & 1) << pin);
-    cleanup: return;
+    return;
 }
 #endif

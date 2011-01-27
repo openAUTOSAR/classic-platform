@@ -52,19 +52,19 @@ static const Port_ConfigType * _configPtr = &PortConfigData;
 #define VALIDATE_PARAM_CONFIG(_ptr,_api) \
 	if( (_ptr)==((void *)0) ) { \
 		Det_ReportError(MODULE_ID_PORT, 0, _api, PORT_E_PARAM_CONFIG ); \
-		goto cleanup; \
+		return; \
 	}
 
 #define VALIDATE_STATE_INIT(_api)\
 	if(PORT_INITIALIZED!=_portState){\
 		Det_ReportError(MODULE_ID_PORT, 0, _api, PORT_E_UNINIT ); \
-		goto cleanup; \
+		return; \
 	}
 
 #define VALIDATE_PARAM_PIN(_pin, _api)\
 	if(_pin>sizeof(SIU.PCR)){\
 		Det_ReportError(MODULE_ID_PORT, 0, _api, PORT_E_PARAM_PIN ); \
-		goto cleanup; \
+		return; \
 	}
 #else
 #define VALIDATE_PARAM_CONFIG(_ptr,_api)
@@ -102,7 +102,7 @@ void Port_Init(const Port_ConfigType *configType)
   //memcpy((void *)inConfig, configType->inConfig, configType->inCnt);
   _portState = PORT_INITIALIZED;
   _configPtr = configType;
-  cleanup: return;
+  return;
 }
 
 #if ( PORT_SET_PIN_DIRECTION_API == STD_ON )
@@ -126,7 +126,7 @@ void Port_SetPinDirection( Port_PinType pin, Port_PinDirectionType direction )
     SIU.PCR[pin].B.OBE = 1;
     _Irq_Disable_restore(state); // Restore interrupts
   }
-cleanup:return;
+  return;
 }
 #endif
 
@@ -147,7 +147,7 @@ void Port_RefreshPortDirection( void )
     padCfgPtr++;
   }
 
-  cleanup:return;
+  return;
 }
 
 #if PORT_VERSION_INFO_API == STD_ON
@@ -155,7 +155,7 @@ void Port_GetVersionInfo(Std_VersionInfoType* versionInfo)
 {
   VALIDATE_STATE_INIT(PORT_GET_VERSION_INFO_ID);
   memcpy(versionInfo, &_Port_VersionInfo, sizeof(Std_VersionInfoType));
-  cleanup: return;
+  return;
 }
 #endif
 
@@ -168,6 +168,6 @@ void Port_SetPinMode(Port_PinType Pin, Port_PinModeType Mode)
   //characteristics of external pins. The PCRs can select the multiplexed function of a pin, selection of pullup
   //or pulldown devices, the slew rate of I/O signals, open drain mode for output pins, and hysteresis.
   SIU.PCR[Pin].R = Mode; // Put the selected mode to the PCR register
-  cleanup: return;
+  return;
 }
 #endif

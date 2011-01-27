@@ -48,6 +48,11 @@
 #include "Os.h"
 #endif
 #include "Mcu.h"
+#if PWM_NOTIFICATION_SUPPORTED==STD_ON
+#include "irq.h"
+#include "arc.h"
+#endif
+
 
 #if PWM_DEV_EROR_DETECT==STD_ON
 	#define PWM_VALIDATE(_exp, _errid) \

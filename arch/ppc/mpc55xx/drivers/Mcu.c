@@ -34,7 +34,6 @@
 #include "Os.h"
 #include "irq.h"
 
-//#define USE_TRACE 1
 //#define USE_LDEBUG_PRINTF 1
 #include "debug.h"
 
