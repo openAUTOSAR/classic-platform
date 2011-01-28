@@ -1,0 +1,28 @@
+
+Elmicro Card12 HC12 Controller Module with MC9S12DP512
+
+  http://elmicro.com/en/card12.html
+
+MC9S12DP512 Microcontroller Info:
+  MC9S12DP512 MCU with LQFP112 package
+  512 KB Flash
+  4 KB EEPROM
+  14 KB RAM
+  3x SPI
+  2x SCI
+  5x CAN
+  Enhanced Capture Timer
+  8 Channel PWM
+  16 Channel 10 Bit A/D-Converter
+  
+  
+Board Features:
+  16 MHz Quarz Clock (8 MHz System Clock)
+  RS232 Ports with Transceiver MAX232A
+  PCA82C251 CAN Physical Interface
+  Special Reset Controller
+  Reset Switch
+  LED
+  BDM (Background Debug Mode) connector
+  All controller pins are available at two double row headers
+  5V power supply

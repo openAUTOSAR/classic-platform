@@ -1,0 +1,4 @@
+
+intvecs(R) : ORIGIN = 0x0000000, LENGTH = 0x60
+flash(R) : ORIGIN = 0x00000060, LENGTH = 2M
+ram(RW)  : ORIGIN = 0x08000000, LENGTH = 160K

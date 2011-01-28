@@ -16,7 +16,6 @@
 #include "Os.h"
 #include "internal.h"
 #include "stm32f10x.h"
-#include "core_cm3.h"
 #include "irq.h"
 #include "arc.h"
 
@@ -45,9 +44,6 @@ void Os_SysTickStart(uint32_t period_ticks) {
 
 	SysTick_Config(period_ticks);
 
-	 /* Set SysTick Priority to 3 */
-	NVIC_SetPriority(SysTick_IRQn, 0x0C);
-
 #if 0
 	// SysTick interrupt each 250ms with counter clock equal to 9MHz
 	if (SysTick_Config((SystemFrequency / 8) / 4)) {
@@ -66,7 +62,18 @@ void Os_SysTickStart(uint32_t period_ticks) {
  * @return
  */
 
-uint32_t Os_SysTickGetTimeElapsed( void )
+uint32_t Os_SysTickGetValue( void )
 {
-	return (SysTick->VAL);
+	return (SysTick->LOAD) - (SysTick->VAL);
 }
+
+
+TickType Os_SysTickGetElapsedValue( uint32_t preValue ) {
+	uint32_t curr;
+	uint32_t max;
+
+	curr = (SysTick->VAL);
+	max  = (SysTick->LOAD);
+	return Os_CounterDiff((max - curr),preValue,max);
+}
+

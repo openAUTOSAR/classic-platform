@@ -1,0 +1,18 @@
+
+The Freescale MPC5510 is an PowerPC process with a e200Z1+e200Z0 core. 
+The simulator environment ONLY supports one core.
+	
+Datasheets:
+ 
+  MPC5516/7
+    http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC5510&webpageId=1067371573986721160325&nodeId=0162468rH3bTdG06C10325&fromPage=tax
+ 
+Info:	
+  MPC5516
+  1.5MB Flash (MPC5516 1MB)
+  80KB SRAM   (MPC5516 64KB)
+  .. 
+  
+Memory Map:
+ 0x0000_0000 ->           Flash
+ 0x4000_0000 ->           SRAM

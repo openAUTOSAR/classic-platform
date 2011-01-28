@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #ifndef COM_CFG_H_
 #define COM_CFG_H_
 
@@ -47,7 +49,7 @@
 #define COM_E_TOO_MANY_SIGNAL 107
 #define COM_E_TOO_MANY_GROUPSIGNAL 108
 
-#define CPU_ENDIANESS BIG_ENDIAN
+#define CPU_ENDIANESS COM_BIG_ENDIAN
 
 /*
  * ComGeneral pre-compile time configuration parameters.

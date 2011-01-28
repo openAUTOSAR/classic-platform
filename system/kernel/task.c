@@ -23,7 +23,7 @@
 /** @req OS067 */
 
 _Bool os_pcb_pid_valid( OsPcbType *restrict pcb ) {
-	return ( pcb->pid > Os_CfgGetTaskCnt() ) ? 0 : 1;
+	return ( pcb->pid > OS_TASK_CNT ) ? 0 : 1;
 }
 /**
  * Start an extended task.
@@ -34,15 +34,29 @@ _Bool os_pcb_pid_valid( OsPcbType *restrict pcb ) {
  *
  */
 void Os_TaskStartExtended( void ) {
+
 	OsPcbType *pcb;
 
-	PRETASKHOOK();
-
 	pcb = Os_TaskGetCurrent();
+#if 0
 	Os_ResourceGetInternal();
 	Os_TaskMakeRunning(pcb);
+#endif
+
+//	PRETASKHOOK();
 
 	Os_ArchFirstCall();
+
+	/* We got back without any TerminateTask() or ChainTask()
+	 *
+	 * OSEK:
+	 *    Each task shall terminate itself at the end of its code.
+	 *    Ending the task without a call to TerminateTask or ChainTask
+	 *    is strictly forbidden and causes undefined behaviour.
+	 *
+	 * Autosar:
+	 *    OS052, OS069, OS070 and OS239
+	 * */
 
 	/** @req OS239 */
 	Irq_Disable();
@@ -50,7 +64,10 @@ void Os_TaskStartExtended( void ) {
 		Os_IrqClearAll();
 	}
 
-// TODO:Dont I have to check this at terminate task also?
+	/** @req OS070 */
+	if( Os_TaskOccupiesResources(pcb) ) {
+		Os_ResourceFreeAll(pcb);
+	}
 
 	/** @req OS069 */
 	ERRORHOOK(E_OS_MISSINGEND);
@@ -65,20 +82,28 @@ void Os_TaskStartExtended( void ) {
  */
 
 void Os_TaskStartBasic( void ) {
+
 	OsPcbType *pcb;
 
-	PRETASKHOOK();
-
 	pcb = Os_TaskGetCurrent();
+#if 0
 	Os_ResourceGetInternal();
 	Os_TaskMakeRunning(pcb);
-	Os_ArchFirstCall();
+#endif
 
+//	PRETASKHOOK();
+
+	Os_ArchFirstCall();
 
 	/** @req OS239 */
 	Irq_Disable();
 	if( Os_IrqAnyDisabled() ) {
 		Os_IrqClearAll();
+	}
+
+	/** @req OS070 */
+	if( Os_TaskOccupiesResources(pcb) ) {
+		Os_ResourceFreeAll(pcb);
 	}
 
 	/** @req OS069 */
@@ -220,7 +245,7 @@ OsPcbType *Os_TaskGetTop( void ){
 	OsPcbType *top_prio_pcb = NULL;
 	OsPriorityType top_prio = PRIO_ILLEGAL;
 
-	OS_DEBUG(D_TASK,"os_find_top_prio_proc\n");
+//	OS_DEBUG(D_TASK,"os_find_top_prio_proc\n");
 
 	TAILQ_FOREACH(i_pcb,& os_sys.ready_head,ready_list) {
 		// all ready task are canidates
@@ -284,32 +309,86 @@ OsPcbType *Os_FindTopPrioTask( void ) {
  *   ActivateTask()
  *   WaitEvent()
  *   TerminateTask()
+ *   ChainTask()
  *
  * @param force Force a re-scheduling
  *
  */
-void Os_Dispatch( _Bool force ) {
+void Os_Dispatch( uint32_t op ) {
 	OsPcbType *pcbPtr;
-	OsPcbType *currPcbPtr;
-	(void)force;
+	OsPcbType *currPcbPtr = Os_TaskGetCurrent();
 
 	assert(os_sys.int_nest_cnt == 0);
-	assert(os_sys.scheduler_lock == 0 );
+	assert(Os_SchedulerResourceIsFree());
+
+	/* When calling post hook we must still be in ST_RUNNING */
+	assert( currPcbPtr->state & ST_RUNNING );
+	POSTTASKHOOK();
+
+	/* Go the correct state for running task */
+	if( op  & ( OP_SET_EVENT | OP_SCHEDULE | OP_RELEASE_RESOURCE )) {
+		Os_TaskRunningToReady(currPcbPtr);
+	} else if( op & OP_WAIT_EVENT ) {
+		Os_TaskMakeWaiting(currPcbPtr);
+	} else if( op & OP_ACTIVATE_TASK ) {
+		Os_TaskMakeReady(currPcbPtr);
+	} else if( op & OP_CHAIN_TASK ) {
+		assert( os_sys.chainedPcbPtr != NULL );
+
+		/*  #  from chain  top
+		 * ----------------------------------------------------------
+		 *  1    1     1     1    1->RUNNING
+		 *  2    1     1     2    1->READY,            2->RUNNING
+		 *  3    1     2     2    1->SUSPENDED/READY*, 2->RUNNING
+		 *  4    1     2     3    1->SUSPENDED/READY*, 2->READY  , 3-RUNNING
+		 *
+		 *  *) Depends on the number of activations.
+		 *
+		 *  - Chained task is always READY when coming from ChainTask()
+		 */
+		if( currPcbPtr != os_sys.chainedPcbPtr ) {
+			/* #3 and #4 */
+			--currPcbPtr->activations;
+			if( currPcbPtr->activations <= 0 ) {
+				currPcbPtr->activations = 0;
+				Os_TaskMakeSuspended(currPcbPtr);
+			} else {
+				Os_TaskRunningToReady(currPcbPtr);
+			}
+			/* Chained task is already in READY */
+		}
+		os_sys.chainedPcbPtr = NULL;
+
+	} else if( op & OP_TERMINATE_TASK ) {
+		/*@req OSEK TerminateTask
+		 * In case of tasks with multiple activation requests,
+		 * terminating the current instance of the task automatically puts the next
+		 * instance of the same task into the ready state
+		 */
+		--currPcbPtr->activations;
+
+		if( currPcbPtr->activations <= 0 ) {
+			currPcbPtr->activations = 0;
+			Os_TaskMakeSuspended(currPcbPtr);
+		}
+	} else {
+		assert(0);
+	}
 
 	pcbPtr = Os_TaskGetTop();
-	currPcbPtr = Os_TaskGetCurrent();
+
+
+
 	/* Swap if we found any process or are forced (multiple activations)*/
 	if( pcbPtr != currPcbPtr ) {
-		/* Add us to the ready list */
-		if( currPcbPtr->state & ST_RUNNING ) {
+
+		if( (op & OP_CHAIN_TASK) && ( currPcbPtr == os_sys.chainedPcbPtr ) ) {
+			/* #2 */
 			Os_TaskRunningToReady(currPcbPtr);
 		}
-
 		/*
 		 * Swap context
 		 */
-		/** @req OS052 */
-		POSTTASKHOOK();
 		assert(pcbPtr!=NULL);
 
 		Os_ResourceReleaseInternal();
@@ -324,52 +403,67 @@ void Os_Dispatch( _Bool force ) {
 #endif
 		}
 #endif
+		OS_DEBUG(D_TASK,"Swapping to: %s\n",pcbPtr->name);
+		Os_TaskSwapContext(currPcbPtr,pcbPtr);
 
-		Os_ArchSwapContext(currPcbPtr,pcbPtr);
+		/* ActivateTask, SetEvent, Schedule, .. */
+//		pcbPtr = Os_TaskGetCurrent();
+//		Os_TaskMakeRunning(pcbPtr);
+//		PRETASKHOOK();
 
-		pcbPtr = Os_TaskGetCurrent();
-		Os_TaskMakeRunning(pcbPtr);
-
-		Os_ResourceGetInternal();
-
-		PRETASKHOOK();
+//		Os_ResourceGetInternal();
 
 	} else {
-		/* We want to run the same task, again. This only happens
-		 * when we have multiple activation of a basic task (
-		 * extended tasks have an activation limit of 1)
-		 */
-
+		OS_DEBUG(D_TASK,"Continuing task %s\n",pcbPtr->name);
 		/* Setup the stack again, and just call the basic task */
 		Os_StackSetup(pcbPtr);
+		/* TODO: release and get the internal resource ? */
+		Os_TaskMakeRunning(pcbPtr);
+		PRETASKHOOK();
 		Os_ArchSetSpAndCall(pcbPtr->stack.curr,Os_TaskStartBasic);
+		assert(0);
 	}
 }
 
-// We come here from
-// - os_init
 
-volatile static int a1, b1, c1;
-volatile static OsPcbType *o1;
-volatile static OsPcbType *n1;
+/*
+ * Thoughts on task switching and memory protection
+ *
+ * If we would have had memory protection:
+ * - Applications have their own MMU settings.
+ * - Swapping between tasks in same Application does NOT involve the MMU.
+ * - When running a non-trusted Application I need will have to:
+ *   - Run kernel in supervisor mode.
+ *   - Trap the start of each task
+ *   - All calls to the kernel will have a trap interface, i.e.  Os_ResourceGetInternal(ActivateTask(TASK_ID_foo);
+ *   - An ISR2:
+ *     - The interupt is taken, the kernel runs in supervisor mode
+ *     - If the ISR2 activates
+ *
+ * Stack design:
+ * ALT1: 1 kernel stack...
+ * ALT2:
+ *
+ *  Do we need virtual memory??
+ */
 
-void hej(int a, int b, int c, OsPcbType *o, OsPcbType *n) {
-	a1 = a;
-	b1 = b;
-	c1 = c;
-	o1 = o;
-	n1 = n;
+void Os_TaskSwapContext(OsPcbType *old_pcb, OsPcbType *new_pcb ) {
+	set_curr_pcb(new_pcb);
+	Os_ResourceGetInternal();
+	Os_TaskMakeRunning(new_pcb);
+	/* TODO: The pretask hook is not called with the right stack
+	 * (it's called on the old task stack, not the new ) */
+	PRETASKHOOK();
+	Os_ArchSwapContext(old_pcb,new_pcb);
 }
 
-/**
- * Called when a task is to be run for the first time.
- */
 void Os_TaskSwapContextTo(OsPcbType *old_pcb, OsPcbType *new_pcb ) {
-
-	hej(1, 2, 3, old_pcb, new_pcb);
-
+	set_curr_pcb(new_pcb);
+	Os_ResourceGetInternal();
+	Os_TaskMakeRunning(new_pcb);
+	PRETASKHOOK();
 	Os_ArchSwapContextTo(old_pcb,new_pcb);
-	/* TODO: When do we return here ?? */
+	assert(0);
 }
 
 
@@ -384,6 +478,13 @@ void Os_Arc_GetStackInfo( TaskType task, StackInfoType *s) {
 }
 
 
+#define TASK_CHECK_ID(x) 				\
+	if( (x) > OS_TASK_CNT) { \
+		rv = E_OS_ID;					\
+		goto err; 						\
+	}
+
+
 /**
  * Returns the state of a task (running, ready, waiting, suspended)
  * at the time of calling GetTaskState.
@@ -393,8 +494,12 @@ void Os_Arc_GetStackInfo( TaskType task, StackInfoType *s) {
  */
 
 StatusType GetTaskState(TaskType TaskId, TaskStateRefType State) {
-	state_t curr_state = os_pcb_get_state(os_get_pcb(TaskId));
+	state_t curr_state;
 	StatusType rv = E_OK;
+
+	TASK_CHECK_ID(TaskId);
+
+	curr_state = os_pcb_get_state(os_get_pcb(TaskId));
 
 	// TODO: Lazy impl. for now */
 	switch(curr_state) {
@@ -418,9 +523,22 @@ StatusType GetTaskState(TaskType TaskId, TaskStateRefType State) {
  * @param task_id Reference to the task which is currently running
  * @return
  */
-StatusType GetTaskID( TaskRefType task_id ) {
-	*task_id = os_sys.curr_pcb->pid;
-	return E_OK;
+StatusType GetTaskID( TaskRefType TaskID ) {
+	StatusType rv = E_OK;
+	*TaskID = INVALID_TASK;
+
+	/* Test specification say return CALLEVEL if in ISR
+	 * but impl. spec says otherwise */
+	if( os_sys.int_nest_cnt == 0 ) {
+		if( os_sys.curr_pcb->state & ST_RUNNING ) {
+			*TaskID = os_sys.curr_pcb->pid;
+		} else {
+			/* This is not a real error since this could
+			 * be the case when called from ErrorHook */
+		}
+	}
+
+    return rv;
 }
 
 
@@ -435,12 +553,18 @@ ISRType GetISRID( void ) {
 	return (ISRType)Os_TaskGetCurrent()->pid;
 }
 
-#define TASK_CHECK_ID(x) 				\
-	if( (x) > Os_CfgGetTaskCnt()) { \
-		rv = E_OS_ID;					\
-		goto err; 						\
+static inline void Os_Arc_SetCleanContext( OsPcbType *pcb ) {
+	if (pcb->proc_type == PROC_EXTENDED) {
+		/** @req OSEK ActivateTask Cleanup events
+		 * OSEK,ActivateTask, When an extended task is transferred from suspended
+		 * state into ready state all its events are cleared.*/
+		pcb->ev_set = 0;
+		pcb->ev_wait = 0;
 	}
-
+	Os_StackSetup(pcb);
+	Os_ArchSetTaskEntry(pcb);
+	Os_ArchSetupContext(pcb);
+}
 
 /**
  * The task <TaskID> is transferred from the suspended state into
@@ -471,58 +595,45 @@ StatusType ActivateTask( TaskType TaskID ) {
 	OsPcbType *pcb = os_get_pcb(TaskID);
 	StatusType rv = E_OK;
 
-	OS_DEBUG(D_TASK,"ActivateTask %s\n",pcb->name);
+	OS_DEBUG(D_TASK,"# ActivateTask %s\n",pcb->name);
 
 #if (OS_STATUS_EXTENDED == STD_ON )
+	/* extended */
 	TASK_CHECK_ID(TaskID);
-
-	/* @req OS093 ActivateTask */
-	if( Os_IrqAnyDisabled() ) {
-		rv = E_OS_DISABLEDINT;
-		goto err;
-	}
 #endif
 
 	Irq_Save(msr);
-
-	if( os_pcb_get_state(pcb) == ST_SUSPENDED ) {
-		pcb->activations++;
-		if (pcb->proc_type == PROC_EXTENDED) {
-			/** @req OSEK ActivateTask Cleanup events
-			 * OSEK,ActivateTask, When an extended task is transferred from suspended
-			 * state into ready state all its events are cleared.*/
-			pcb->ev_set = 0;
-			pcb->ev_wait = 0;
-		}
-		Os_StackSetup(pcb);
-		Os_ArchSetTaskEntry(pcb);
-		Os_ArchSetupContext(pcb);
-		Os_TaskMakeReady(pcb);
-	} else {
-
-		if( pcb->proc_type == PROC_EXTENDED ) {
-			/** @req OSEK Activate task.
-			 * An extended task be activated once. See Chapter 4.3 in OSEK
-			 */
-			rv = E_OS_LIMIT;
-			goto err;
-		}
-
-		/** @req OSEK_? Too many task activations */
-		if( pcb->activations == pcb->activationLimit ) {
-			rv=E_OS_LIMIT;
-			goto err;
-		} else {
-			pcb->activations++;
-		}
+	/* @req OS093 ActivateTask */
+	if( Os_IrqAnyDisabled() ) {
+		/* Standard */
+		rv = E_OS_DISABLEDINT;
+		goto err;
 	}
 
+	pcb->activations++;
+	if( os_pcb_get_state(pcb) != ST_SUSPENDED ) {
+		/** @req OSEK_? Too many task activations */
+		if( pcb->activations >= (pcb->activationLimit + 1) ) {
+			/* Standard */
+			rv=E_OS_LIMIT;
+			Irq_Restore(msr);
+			--pcb->activations;
+			goto err;
+		}
+	} else {
+		/* We have a suspended task, make it ready for use */
+		assert( pcb->activations == 1 );
+		Os_Arc_SetCleanContext(pcb);
+		Os_TaskMakeReady(pcb);
+	}
 
-	/* Preempt only if higher prio than us */
-	if(	(pcb->scheduling == FULL) &&
-		(os_sys.int_nest_cnt == 0) && (pcb->prio > Os_TaskGetCurrent()->prio) )
+	/* Preempt only if we are preemptable and target has higher prio than us */
+	if(	(Os_TaskGetCurrent()->scheduling == FULL) &&
+		(os_sys.int_nest_cnt == 0) &&
+		(pcb->prio > Os_TaskGetCurrent()->prio) &&
+		(Os_SchedulerResourceIsFree()))
 	{
-		Os_Dispatch(0);
+		Os_Dispatch(OP_ACTIVATE_TASK);
 	}
 
 	Irq_Restore(msr);
@@ -564,7 +675,7 @@ StatusType TerminateTask( void ) {
 	StatusType rv = E_OK;
 	uint32_t flags;
 
-	OS_DEBUG(D_TASK,"TerminateTask %s\n",curr_pcb->name);
+	OS_DEBUG(D_TASK,"# TerminateTask %s\n",curr_pcb->name);
 
 #if (OS_STATUS_EXTENDED == STD_ON )
 
@@ -574,73 +685,96 @@ StatusType TerminateTask( void ) {
 		goto err;
 	}
 
-	/** @req OS070 */
-	if( Os_ResourceCheckAndRelease(curr_pcb) == 1 ) {
+#if 0
+	if ( Os_SchedulerResourceIsOccupied() ) {
 		rv =  E_OS_RESOURCE;
 		goto err;
-
 	}
-
-
 #endif
 
-
-	Irq_Save(flags);
-
-	--curr_pcb->activations;
-
-
-//	assert(curr_pcb->activations>=0);
-
-	/*@req OSEK TerminateTask
-	 * In case of tasks with multiple activation requests,
-	 * terminating the current instance of the task automatically puts the next
-	 * instance of the same task into the ready state
-	 */
-	if( curr_pcb->activations <= 0 ) {
-		curr_pcb->activations = 0;
-		Os_TaskMakeSuspended(curr_pcb);
-	} else {
-		/* We need to add ourselves to the ready list again,
-		 * with a startup context. */
+	if( Os_TaskOccupiesResources(curr_pcb) ) {
+		/* Note! Do NOT release the resource here */
+		rv =  E_OS_RESOURCE;
+		goto err;
 	}
 
-//	Os_ContextReInit(curr_pcb);
+#endif
+	Irq_Save(flags);
 
 	/* Force the dispatcher to find something, even if its us */
-	Os_Dispatch(1);
+	Os_Dispatch(OP_TERMINATE_TASK);
 
-	Irq_Restore(flags);
-	// It must find something here...otherwise something is very wrong..
 	assert(0);
-
-	rv = E_NOT_OK;
-	goto err;
-
 
 	OS_STD_END(OSServiceId_TerminateTask);
 }
 
 StatusType ChainTask( TaskType TaskId ) {
-	StatusType rv;
+	OsPcbType *curr_pcb = Os_TaskGetCurrent();
+	StatusType rv = E_OK;
 	uint32_t flags;
+	OsPcbType *pcb = os_get_pcb(TaskId);
+
+
+	OS_DEBUG(D_TASK,"# ChainTask %s\n",curr_pcb->name);
 
 #if (OS_STATUS_EXTENDED == STD_ON )
+	/* extended */
 	TASK_CHECK_ID(TaskId);
 
 	if( os_sys.int_nest_cnt != 0 ) {
-		rv =  E_OS_CALLEVEL;
+		/* extended */
+		rv = E_OS_CALLEVEL;
+		goto err;
+	}
+
+#endif
+
+	Irq_Save(flags);
+
+#if (OS_STATUS_EXTENDED == STD_ON )
+#if 0
+	if ( Os_SchedulerResourceIsOccupied() ) {
+		/* extended */
+		rv = E_OS_RESOURCE;
+		Irq_Restore(flags);
 		goto err;
 	}
 #endif
 
-	Irq_Save(flags);
-	rv = ActivateTask(TaskId);
-	/* TODO: more more here..*/
-	TerminateTask();
-	Irq_Restore(flags);
+	if( Os_TaskOccupiesResources(curr_pcb) ) {
+		/* extended */
+		rv = E_OS_RESOURCE;
+		Irq_Restore(flags);
+		goto err;
+	}
+#endif
 
-	if (rv != E_OK) goto err;
+//	if( os_pcb_get_state(pcb) != ST_SUSPENDED ) {
+	if (curr_pcb != pcb) {
+		/** @req OSEK_? Too many task activations */
+		if( (pcb->activations + 1) >  pcb->activationLimit ) {
+			/* standard */
+			rv = E_OS_LIMIT;
+			Irq_Restore(flags);
+			goto err;
+		}
+
+		if( os_pcb_get_state(pcb) == ST_SUSPENDED ) {
+			assert( pcb->activations == 0 );
+			Os_Arc_SetCleanContext(pcb);
+			Os_TaskMakeReady(pcb);
+		}
+
+		pcb->activations++;
+
+	}
+
+	os_sys.chainedPcbPtr = pcb;
+
+	Os_Dispatch(OP_CHAIN_TASK);
+
+	assert( 0 );
 
 	OS_STD_END_1(OSServiceId_ChainTask,TaskId);
 }
@@ -658,10 +792,24 @@ StatusType ChainTask( TaskType TaskId ) {
  *
  */
 StatusType Schedule( void ) {
-//	OsPcbType *pcb;
-//	OsPcbType *curr_pcb = get_curr_pcb();
 	StatusType rv = E_OK;
 	uint32_t flags;
+	OsPcbType *curr_pcb = get_curr_pcb();
+
+	OS_DEBUG(D_TASK,"# Schedule %s\n",Os_TaskGetCurrent()->name);
+
+	/* Check that we are not calling from interrupt context */
+	if( os_sys.int_nest_cnt != 0 ) {
+		rv =  E_OS_CALLEVEL;
+		goto err;
+	}
+
+	if ( Os_TaskOccupiesResources(curr_pcb) ) {
+		rv = E_OS_RESOURCE;
+		goto err;
+	}
+
+	assert( Os_TaskGetCurrent()->state & ST_RUNNING );
 
 	/* We need to figure out if we have an internal resource,
 	 * otherwise no re-scheduling.
@@ -673,23 +821,14 @@ StatusType Schedule( void ) {
 		return E_OK;
 	}
 
-#if 0
-	if( os_get_resource_int_p() == NULL ) {
-		/* We do nothing */
-		return E_OK;
-	}
-#endif
-
-	/* Check that we are not calling from interrupt context */
-	if( os_sys.int_nest_cnt != 0 ) {
-		rv =  E_OS_CALLEVEL;
-		goto err;
-	}
-
 	Irq_Save(flags);
-	Os_Dispatch(0);
-	Irq_Restore(flags);
+	OsPcbType* top_pcb = Os_TaskGetTop();
+	/* only dispatch if some other ready task has higher prio */
+	if (top_pcb->prio > Os_TaskGetCurrent()->prio) {
+		Os_Dispatch(OP_SCHEDULE);
+	}
 
+	Irq_Restore(flags);
 	// Prevent label warning. Remove this when proper error handling is implemented.
 	if (0) goto err;
 

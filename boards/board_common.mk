@@ -1,21 +1,41 @@
 obj-$(CFG_PPC) += crt0.o
-obj-$(CFG_HCS12D) += crt0.o
-vpath-$(CFG_ARM_CM3) += $(ARCH_PATH-y)kernel
-obj-$(CFG_ARM_CM3) += system_stm32f10x.o
+obj-$(CFG_HC1X) += crt0.o
+vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
+vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32F10x_StdPeriph_Driver/src
+vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32_ETH_Driver/src
+inc-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32F10x_StdPeriph_Driver/inc
+inc-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32_ETH_Driver/inc
 obj-$(CFG_ARM_CM3) += core_cm3.o
+obj-$(CFG_ARM_CM3) += startup_stm32f10x.o
+#stm32 lib files needed by drivers
+obj-$(CFG_ARM_CM3) += stm32f10x_rcc.o
+obj-$(CFG_ARM_CM3)-$(USE_CAN) += stm32f10x_can.o
+obj-$(CFG_ARM_CM3)-$(USE_PORT) += stm32f10x_gpio.o
+obj-$(CFG_ARM_CM3)-$(USE_ADC) += stm32f10x_adc.o
+obj-$(CFG_ARM_CM3)-$(USE_ADC) += stm32f10x_dma.o
+obj-$(CFG_ARM_CM3)-$(USE_FLS) += stm32f10x_flash.o
+obj-$(CFG_ARM_CM3)-$(USE_PWM) += stm32f10x_tim.o
+obj-$(CFG_ARM_CM3)-$(USE_LWIP) += stm32_eth.o
 
-obj-$(CFG_STM32_MD) += startup_stm32f10x_md.o
-obj-$(CFG_STM32_LD) += startup_stm32f10x_ld.o
-obj-$(CFG_STM32_HD) += startup_stm32f10x_hd.o
-obj-$(CFG_STM32_CL) += startup_stm32f10x_cl.o
+obj-$(USE_TTY_TMS570_KEIL) += GLCD.o
+obj-$(USE_TTY_TMS570_KEIL) += emif.o
+
+# Cortex R4
+obj-$(CFG_ARM_CR4) += startup_cr4.o
+
+# OS object files. 
+# (checking if already included for compatability)
+ifeq ($(filter Os_Cfg.o,$(obj-y)),)
+obj-$(USE_KERNEL) += Os_Cfg.o
+endif
 
 #Ecu
-#obj-y += EcuM_$(BOARDDIR).o
-obj-y += EcuM.o
-obj-y += EcuM_Cfg.o
-obj-y += EcuM_Callout_template.o
-inc-y += $(ROOTDIR)/system/EcuM
-vpath-y += $(ROOTDIR)/system/EcuM
+obj-$(USE_ECUM) += EcuM.o
+obj-$(USE_ECUM) += EcuM_Main.o
+obj-$(USE_ECUM) += EcuM_Cfg.o
+obj-$(USE_ECUM) += EcuM_Callout_template.o
+inc-$(USE_ECUM) += $(ROOTDIR)/system/EcuM
+vpath-$(USE_ECUM) += $(ROOTDIR)/system/EcuM
 
 # Gpt
 obj-$(USE_GPT) += Gpt.o
@@ -34,7 +54,7 @@ obj-$(CFG_MPC55XX)-$(USE_MCU) += Mcu_Exceptions.o
 # Flash
 obj-$(USE_FLS) += Fls.o
 obj-$(USE_FLS) += Fls_Cfg.o
-obj-$(USE_FLS) += Fls_H7F.o
+obj-$(CFG_MPC55XX)-$(USE_FLS) += Fls_H7F.o
 
 # Bring in the freescale driver source  
 inc-$(CFG_MPC55XX) +=  $(ROOTDIR)/$(ARCH_PATH-y)/delivery/mpc5500_h7f/include
@@ -66,11 +86,25 @@ obj-$(USE_ADC) += Adc.o
 obj-$(USE_ADC) += Adc_Cfg.o
 
 # Include the kernel
+ifneq ($(USE_KERNEL),)
 include $(ROOTDIR)/system/kernel/makefile
+endif
 
 # Spi
 obj-$(USE_SPI) += Spi.o
 obj-$(USE_SPI) += Spi_Lcfg.o
+
+# NvM
+obj-$(USE_NVM) += NvM.o
+obj-$(USE_NVM) += NvM_Cfg.o
+inc-$(USE_NVM) += $(ROOTDIR)/memory/NvM
+vpath-$(USE_NVM) += $(ROOTDIR)/memory/NvM
+
+# Fee
+obj-$(USE_FEE) += Fee.o
+obj-$(USE_FEE) += Fee_Cfg.o
+inc-$(USE_FEE) += $(ROOTDIR)/memory/Fee
+vpath-$(USE_FEE) += $(ROOTDIR)/memory/Fee
 
 #Eep
 obj-$(USE_EEP) += Eep.o
@@ -94,7 +128,7 @@ obj-$(USE_PWM) += Pwm.o
 obj-$(USE_PWM) += Pwm_Cfg.o
 
 # Misc
-obj-y += Det.o
+obj-$(USE_DET) += Det.o
 
 # Lin
 obj-$(USE_LIN) += Lin_PBcfg.o
@@ -113,20 +147,36 @@ inc-y += $(ROOTDIR)/communication/ComM
 
 # ComM
 obj-$(USE_COMM) += ComM.o
+obj-$(USE_COMM) += ComM_Cfg.o
 inc-$(USE_COMM) += $(ROOTDIR)/communication/ComM
 vpath-$(USE_COMM) += $(ROOTDIR)/communication/ComM
 vpath-y += $(ROOTDIR)/communication/ComM
 inc-$(USE_COMM) += $(ROOTDIR)/communication/ComM
 
+# Nm
+obj-$(USE_NM) += Nm.o
+obj-$(USE_NM) += Nm_Cfg.o
+inc-$(USE_NM) += $(ROOTDIR)/communication/Nm
+vpath-$(USE_NM) += $(ROOTDIR)/communication/Nm
+
+# CanNm
+obj-$(USE_CANNM) += CanNm.o
+obj-$(USE_CANNM) += CanNm_LCfg.o
+inc-$(USE_CANNM) += $(ROOTDIR)/communication/CanNm
+vpath-$(USE_CANNM) += $(ROOTDIR)/communication/CanNm
+
+# CanSm
+obj-$(USE_CANSM) += CanSM.o
+obj-$(USE_CANSM) += CanSM_LCfg.o
+inc-$(USE_CANSM) += $(ROOTDIR)/communication/CanSM
+vpath-$(USE_CANSM) += $(ROOTDIR)/communication/CanSM
 
 # Com
 obj-$(USE_COM) += Com_PbCfg.o
 obj-$(USE_COM) += Com_Com.o
 obj-$(USE_COM) += Com_Sched.o
 obj-$(USE_COM) += Com.o
-obj-$(USE_COM) += Com_RunTest.o
 obj-$(USE_COM) += Com_misc.o
-#obj-$(USE_COM) += Com_TestData.o
 inc-$(USE_PDUR) += $(ROOTDIR)/communication/Com
 inc-$(USE_COM) += $(ROOTDIR)/communication/Com
 vpath-$(USE_COM) += $(ROOTDIR)/communication/Com
@@ -162,52 +212,40 @@ obj-$(USE_DCM) += Dcm_LCfg.o
 inc-$(USE_DCM) += $(ROOTDIR)/diagnostic/Dcm
 vpath-$(USE_DCM) += $(ROOTDIR)/diagnostic/Dcm
 
-
-
-#tests
-#obj-y += RunTests.o
-#obj-$(USE_CAN) += can_test.o
-#obj-$(USE_DIO) += dio_test.o
-#obj-$(USE_PORT) += port_test.o
-#obj-$(USE_CANIF) += canif_test.o
-#obj-$(USE_FLS) += fls_test.o
-#obj-y += mahi_test.o
-#obj-$(USE_GPT) += gpt_test.o
-#obj-$(USE_SPI) += spi_test.o
-#obj-$(USE_EEP) += eep_test.o
-#obj-y += det_test.o
-#obj-$(USE_MCU) += mcu_test.o
-#obj-$(USE_FLS_SST25XX) += xfls_test.o
-#obj-y += lin_test.o
-#obj-$(USE_PDUR) += pdur_test.o
-#obj-$(USE_COM) += com_test.o
-
-#inc-$(USE_TESTS) += $(ROOTDIR)/embunit/embUnit
-#inc-$(USE_TESTS) += $(ROOTDIR)/embunit/textui
-#inc-$(USE_TESTS) += $(ROOTDIR)/embunit
-
-#libitem-$(USE_TESTS) += $(ROOTDIR)/embunit/embUnit/obj_$(ARCH)/libembunit.a
-#libitem-$(USE_TESTS) += $(ROOTDIR)/embunit/textui/obj_$(ARCH)/libtextui.a
-
-
-
-# Common
-obj-y += xtoa.o
-obj-y += arc.o
-#obj-y += malloc.o
 obj-$(USE_RAMLOG) += ramlog.o
 
-# If we have configured console output we include printf. 
-# Overridden to use lib implementation with CFG_USE_NEWLIB_PRINTF
-ifndef (CFG_USE_NEWLIB_PRINTF)
-ifneq (,$(SELECT_CONSOLE) $(SELECT_OS_CONSOLE))
-obj-y += printf.o
-endif
-endif
-
+# Common stuff, if speciied
 VPATH += $(ROOTDIR)/common
 
+
+#TCF
+obj-$(USE_TCF) += tcf.o
+obj-$(USE_TCF) += Tcf_Cfg.o
+obj-$(USE_TCF) += sys_monitor.o
+obj-$(USE_TCF) += streams.o
+inc-$(USE_TCF) += $(ROOTDIR)/common/tcf
+vpath-$(USE_TCF) += $(ROOTDIR)/common/tcf
+
+#SLEEP
+obj-$(USE_SLEEP) += sleep.o
+
+
+# Newlib overrides (overridden by default)
+ifneq ($(CFG_STANDARD_NEWLIB),y)
+obj-y += xtoa.o
 obj-y += newlib_port.o
+# If we have configured console output we include printf. 
+# Overridden to use lib implementation with CFG_NEWLIB_PRINTF
+ifneq ($(CFG_NEWLIB_PRINTF),y)
+# TODO: This assumes that you print to console.. but you could
+#       just print to a buffer, e.g. sprintf() 
+ifneq (,$(SELECT_CONSOLE) $(SELECT_OS_CONSOLE))
+obj-y += printf.o
+
+endif # SELECT_CONSOLE
+endif # CFG_NEWLIB_PRINTF
+endif # CFG_STANDARD_NEWLIB
+
 obj-y += $(obj-y-y)
 
 vpath-y += $(ROOTDIR)/$(ARCH_PATH-y)/kernel

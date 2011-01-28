@@ -21,6 +21,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #define PDUR_MODULE_ID		51
 #define PDUR_INSTANCE_ID	0
 
@@ -70,14 +72,14 @@
 #endif
 
 // Interfaces
-#define PDUR_CANIF_SUPPORT
-//#define PDUR_CANTP_SUPPORT
-//#define PDUR_FRIF_SUPPORT
-//#define PDUR_FRTP_SUPPORT
-#define PDUR_LINIF_SUPPORT
-//#define PDUR_LINTP_SUPPORT
-#define PDUR_COM_SUPPORT
-#define PDUR_DCM_SUPPORT
+#define PDUR_CANIF_SUPPORT			STD_ON
+#define PDUR_CANTP_SUPPORT			STD_OFF
+#define PDUR_FRIF_SUPPORT			STD_OFF
+#define PDUR_FRTP_SUPPORT			STD_OFF
+#define PDUR_LINIF_SUPPORT			STD_OFF
+#define PDUR_LINTP_SUPPORT			STD_OFF
+#define PDUR_COM_SUPPORT			STD_ON
+#define PDUR_DCM_SUPPORT			STD_OFF
 
 
 //#define PDUR_MAX_TX_BUFFER_NUMBER

@@ -22,6 +22,36 @@
 #ifndef DCM_INTERNAL_H_
 #define DCM_INTERNAL_H_
 
+
+#if  ( DCM_DEV_ERROR_DETECT == STD_ON )
+#include "Det.h"
+#define VALIDATE(_exp,_api,_err ) \
+        if( !(_exp) ) { \
+          Det_ReportError(MODULE_ID_DCM, 0, _api, _err); \
+          return E_NOT_OK; \
+        }
+
+#define VALIDATE_RV(_exp,_api,_err,_rv ) \
+        if( !(_exp) ) { \
+          Det_ReportError(MODULE_ID_DCM, 0, _api, _err); \
+          return _rv; \
+        }
+
+#define VALIDATE_NO_RV(_exp,_api,_err ) \
+  if( !(_exp) ) { \
+          Det_ReportError(MODULE_ID_DCM, 0, _api, _err); \
+          return; \
+        }
+#define DET_REPORTERROR(_x,_y,_z,_q) Det_ReportError(_x, _y, _z, _q)
+
+#else
+#define VALIDATE(_exp,_api,_err )
+#define VALIDATE_RV(_exp,_api,_err,_rv )
+#define VALIDATE_NO_RV(_exp,_api,_err )
+#define DET_REPORTERROR(_x,_y,_z,_q)
+#endif
+
+
 // SID table
 #define SID_DIAGNOSTIC_SESSION_CONTROL			0x10
 #define SID_ECU_RESET							0x11
@@ -40,9 +70,9 @@
 #define SID_CONTROL_DTC_SETTING					0x85
 
 // Misc definitions
-#define SUPPRESS_POS_RESP_BIT		0x80
-#define SID_RESPONSE_BIT			0x40
-#define VALUE_IS_NOT_USED			0x00
+#define SUPPRESS_POS_RESP_BIT		(uint8)0x80
+#define SID_RESPONSE_BIT			(uint8)0x40
+#define VALUE_IS_NOT_USED			(uint8)0x00
 
 typedef enum {
 	DSD_TX_RESPONSE_READY,
@@ -66,8 +96,8 @@ void DspUdsWriteDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduT
 void DspUdsControlDtcSetting(const PduInfoType *pduRxData, PduInfoType *pduTxData);
 void DspDcmConfirmation(PduIdType confirmPduId);
 
-boolean DspCheckSessionLevel(const Dcm_DspSessionRowType **sessionLevelRefTable);
-boolean DspCheckSecurityLevel(const Dcm_DspSecurityRowType	**securityLevelRefTable);
+boolean DspCheckSessionLevel(Dcm_DspSessionRowType const* const* sessionLevelRefTable);
+boolean DspCheckSecurityLevel(Dcm_DspSecurityRowType const* const* securityLevelRefTable);
 
 
 /*
@@ -87,7 +117,7 @@ void DsdDslDataIndication(const PduInfoType *pduRxData, const Dcm_DsdServiceTabl
 void DslInit(void);
 void DslMain(void);
 void DslHandleResponseTransmission(void);
-void DslDsdProcessingDone(PduIdType txPduId, DsdProcessingDoneResultType result);
+void DslDsdProcessingDone(PduIdType rxPduIdRef, DsdProcessingDoneResultType responseResult);
 void DslGetCurrentServiceTable(const Dcm_DsdServiceTableType **currentServiceTable);
 
 BufReq_ReturnType DslProvideRxBufferToPdur(PduIdType dcmRxPduId, PduLengthType tpSduLength, const PduInfoType **pduInfoPtr);
@@ -95,7 +125,7 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result);
 Std_ReturnType DslGetActiveProtocol(Dcm_ProtocolType *protocolId);
 void DslSetSecurityLevel(Dcm_SecLevelType secLevel);
 Std_ReturnType DslGetSecurityLevel(Dcm_SecLevelType *secLevel);
-void DslSetSesCtrlType(Dcm_SesCtrlType sesCtrlType);
+void DslSetSesCtrlType(Dcm_SesCtrlType sesCtrl);
 Std_ReturnType DslGetSesCtrlType(Dcm_SesCtrlType *sesCtrlType);
 BufReq_ReturnType DslProvideTxBuffer(PduIdType dcmTxPduId, const PduInfoType **pduInfoPtr, PduLengthType length);
 void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result);

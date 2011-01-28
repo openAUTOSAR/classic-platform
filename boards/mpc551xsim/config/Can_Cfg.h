@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #ifndef CAN_CFG_H_
 #define CAN_CFG_H_
 

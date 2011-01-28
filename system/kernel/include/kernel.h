@@ -35,17 +35,17 @@ extern uint32_t os_dbg_mask;
  *
  * Use cases:
  * 1. We don't have a RAMLOG (low on RAM) so we want to print to serial console:
- *     #define CFG_OS_DEBUG
+ *     #define CFG_OS_DEBUG = STD_ON
  *     #define USE_SERIAL_PORT
  *     #define SELECT_OS_CONSOLE=TTY_SERIAL0
  * 2. We have a RAMLOG but we have a debugger connected and want the OS debug
  *    to go there instead:
- *     #define CFG_OS_DEBUG
+ *     #define CFG_OS_DEBUG = STD_ON
  *     #define USE_RAMLOG
  *     #define USE_TTY_T32
  *     #define SELECT_OS_CONSOLE=TTY_T32
  * 3. We have only the ramlog:
- *     #define CFG_OS_DEBUG
+ *     #define CFG_OS_DEBUG = STD_ON
  *     #define USE_RAMLOG
  *     #define SELECT_OS_CONSOLE=TTY_RAMLOG
  * 4. We use no debug.
@@ -53,7 +53,7 @@ extern uint32_t os_dbg_mask;
   *
  */
 
-#if defined(CFG_OS_DEBUG)
+#if (CFG_OS_DEBUG == STD_ON)
 # if (SELECT_OS_CONSOLE==RAMLOG)
 #  ifndef USE_RAMLOG
 #  error  USE_RAMLOG must be defined.
@@ -72,7 +72,7 @@ extern uint32_t os_dbg_mask;
 #  define OS_DEBUG(_mask,...) \
 	do { \
 		if( os_dbg_mask & (_mask) ) { \
-			printf("[%08u] : ",(unsigned)GetOsTick()); \
+			printf("[%08u] : %s %d ",(unsigned)GetOsTick(), __FUNCTION__, __LINE__ ); \
 			printf(__VA_ARGS__ );	\
 		}; \
 	} while(0);
@@ -168,7 +168,7 @@ typedef struct OsResource {
 
 typedef enum {
 	LOCK_TYPE_RESOURCE,
-	LOCK_TYPE_INTERRUPT,
+	LOCK_TYPE_INTERRUPT
 } OsLocktypeType;
 
 typedef struct OsLockingtime {

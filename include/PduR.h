@@ -20,8 +20,8 @@
 
 
 
-#ifndef _PDUR_H_
-#define _PDUR_H_
+#ifndef PDUR_H
+#define PDUR_H
 
 #define PDUR_VENDOR_ID			1
 #define PDUR_AR_MAJOR_VERSION  2
@@ -42,7 +42,7 @@
 
 #define PDUR_INSTANCE_ID	0
 
-#include "modules.h"
+#include "Modules.h"
 
 #include "PduR_Cfg.h"
 #include "PduR_Types.h"
@@ -59,38 +59,40 @@
 /* Contain the current state of the PDU router. The router is uninitialized
  * until PduR_Init has been run.
  */
-PduR_StateType PduRState;
+//PduR_StateType PduRState;
 
 extern const PduR_PBConfigType *PduRConfig;
+
+/*
+ * The state of the PDU router.
+ */
+extern PduR_StateType PduRState;
 
 
 #if (PDUR_DEV_ERROR_DETECT == STD_ON)
 
-#undef DET_REPORTERROR
-#define DET_REPORTERROR(_x,_y,_z,_q) Det_ReportError(_x,_y,_z,_q)
+#define PDUR_DET_REPORTERROR(_x,_y,_z,_q) Det_ReportError(_x,_y,_z,_q)
 
 // Define macro for state, parameter and data pointer checks.
 // TODO Implement data range check if needed.
-#define DevCheck(PduId,PduPtr,ApiId,...) \
-	if (PduRState == PDUR_UNINIT || PduRState == PDUR_REDUCED) { \
-		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_INVALID_REQUEST); \
-		DEBUG(DEBUG_LOW,"PDU Router not initialized. Routing request ignored.\n"); \
+#define PduR_DevCheck(PduId,PduPtr,ApiId,...) \
+	if ((PduRState == PDUR_UNINIT) || (PduRState == PDUR_REDUCED)) { \
+		PDUR_DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_INVALID_REQUEST); \
 		return __VA_ARGS__; \
 	} \
-	if (PduPtr == 0 && PDUR_DEV_ERROR_DETECT) { \
-		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_DATA_PTR_INVALID); \
+	if ((PduPtr == 0) && (PDUR_DEV_ERROR_DETECT)) { \
+		PDUR_DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_DATA_PTR_INVALID); \
 		return __VA_ARGS__; \
 	} \
 	if ((PduId >= PduRConfig->PduRRoutingTable->NRoutingPaths) && PDUR_DEV_ERROR_DETECT) { \
-		DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_PDU_ID_INVALID); \
+		PDUR_DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_PDU_ID_INVALID); \
 		return __VA_ARGS__; \
-	} \
+	}
 
 
 #else
-#undef DET_REPORTERROR
-#define DET_REPORTERROR(_x,_y,_z,_q)
-#define DevCheck(...)
+#define PDUR_DET_REPORTERROR(_x,_y,_z,_q)
+#define PduR_DevCheck(...)
 
 #endif
 
@@ -111,22 +113,26 @@ void PduR_ChangeParameterRequest(PduR_ParameterValueType PduParameterValue,
 //#error fail
 void PduR_Init(const PduR_PBConfigType* ConfigPtr);
 void PduR_GetVersionInfo(Std_VersionInfoType* versionInfo);
-uint32 PduR_GetConfigurationId();
+uint32 PduR_GetConfigurationId(void);
 
+void PduR_BufferInc(PduRTxBuffer_type *Buffer, uint8 **ptr);
 void PduR_BufferQueue(PduRTxBuffer_type *Buffer, const uint8 * SduPtr);
 void PduR_BufferDeQueue(PduRTxBuffer_type *Buffer, uint8 *SduPtr);
 void PduR_BufferFlush(PduRTxBuffer_type *Buffer);
 uint8 PduR_BufferIsFull(PduRTxBuffer_type *Buffer);
+void PduR_LoIfRxIndication(PduIdType PduId, const uint8* SduPtr);
+void PduR_LoIfTxConfirmation(PduIdType PduId);
+void PduR_LoIfTriggerTransmit(PduIdType PduId, uint8* SduPtr);
 
 /*
  * Macros
  */
-#define setTxConfP(R) R->PduRDestPdu.TxBufferRef->TxConfP = 1
-#define clearTxConfP(R) R->PduRDestPdu.TxBufferRef->TxConfP = 0
+#define setTxConfP(R) (R->PduRDestPdu.TxBufferRef->TxConfP = 1)
+#define clearTxConfP(R) (R->PduRDestPdu.TxBufferRef->TxConfP = 0)
 
 #endif
 
 extern PduR_FctPtrType PduR_StdCanFctPtrs;
 extern PduR_FctPtrType PduR_StdLinFctPtrs;
 
-#endif /* _PDUR_H_ */
+#endif /* PDUR_H */

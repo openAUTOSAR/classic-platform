@@ -44,8 +44,20 @@ StatusType WaitEvent( EventMaskType Mask ) {
 	OsPcbType *curr_pcb = get_curr_pcb();
 	StatusType rv = E_OK;
 
+	OS_DEBUG(D_EVENT,"# WaitEvent %s\n",Os_TaskGetCurrent()->name);
+
 	if( os_sys.int_nest_cnt != 0 ) {
 		rv =  E_OS_CALLEVEL;
+		goto err;
+	}
+
+	if (curr_pcb->proc_type != PROC_EXTENDED) {
+		rv = E_OS_ACCESS;
+		goto err;
+	}
+
+	if ( Os_TaskOccupiesResources(curr_pcb) ) {
+		rv = E_OS_RESOURCE;
 		goto err;
 	}
 
@@ -57,8 +69,14 @@ StatusType WaitEvent( EventMaskType Mask ) {
 	if( !(curr_pcb->ev_set & Mask) ) {
 
 		curr_pcb->ev_wait = Mask;
-		Os_TaskMakeWaiting(curr_pcb);
-		Os_Dispatch(0);
+
+		if ( Os_SchedulerResourceIsFree() ) {
+			// Os_TaskMakeWaiting(curr_pcb);
+			Os_Dispatch(OP_WAIT_EVENT);
+			assert( curr_pcb->state & ST_RUNNING );
+		} else {
+			Os_TaskMakeWaiting(curr_pcb);
+		}
 	}
 
 	Irq_Enable();
@@ -87,11 +105,18 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 	OsPcbType *currPcbPtr;
 	uint32_t flags;
 
+	OS_DEBUG(D_EVENT,"# SetEvent %s\n",Os_TaskGetCurrent()->name);
+
+	if( TaskID  >= OS_TASK_CNT ) {
+		rv = E_OS_ID;
+		goto err;
+	}
+
 	dest_pcb = os_get_pcb(TaskID);
 
-
-	if( TaskID  >= Os_CfgGetTaskCnt() ) {
-		rv = E_OS_ID;
+#if (OS_STATUS_EXTENDED == STD_ON )
+	if( dest_pcb->proc_type != PROC_EXTENDED ) {
+		rv = E_OS_ACCESS;
 		goto err;
 	}
 
@@ -99,11 +124,7 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 		rv = E_OS_STATE;
 		goto err;
 	}
-
-	if( dest_pcb->proc_type != PROC_EXTENDED ) {
-		rv = E_OS_ACCESS;
-		goto err;
-	}
+#endif
 
 	Irq_Save(flags);
 
@@ -121,20 +142,24 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 	dest_pcb->ev_set |= Mask;
 
 	if( (Mask & dest_pcb->ev_wait) ) {
-		/* We have a an event match */
+		/* We have an event match */
 		if( dest_pcb->state & ST_WAITING) {
 			Os_TaskMakeReady(dest_pcb);
 
 			currPcbPtr = Os_TaskGetCurrent();
 			/* Checking "4.6.2  Non preemptive scheduling" it does not dispatch if NON  */
 			if( (os_sys.int_nest_cnt == 0) &&
-				(currPcbPtr->scheduling == FULL) )
+				(currPcbPtr->scheduling == FULL) &&
+				(dest_pcb->prio > currPcbPtr->prio) &&
+				(Os_SchedulerResourceIsFree()) )
 			{
-				Os_Dispatch(0);
+				Os_Dispatch(OP_SET_EVENT);
 			}
 
-		}  else if(dest_pcb->state & ST_READY ) {
+		}  else if(dest_pcb->state & (ST_READY|ST_RUNNING) ) {
 			/* Hmm, we do nothing */
+		} else {
+			assert( 0 );
 		}
 	}
 
@@ -143,15 +168,33 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 	OS_STD_END_2(OSServiceId_SetEvent,TaskID, Mask);
 }
 
+
+/**
+ * This service returns the current state of all event bits of the task
+ * <TaskID>, not the events that the task is waiting for.
+ * The service may be called from interrupt service routines, task
+ * level and some hook routines (see Figure 12-1).
+ *  The current status of the event mask of task <TaskID> is copied
+ * to <Event>.
+ *
+ * @param TaskId Task whose event mask is to be returned.
+ * @param Mask   Reference to the memory of the return data.
+ * @return
+ */
 StatusType GetEvent( TaskType TaskId, EventMaskRefType Mask) {
 
 	OsPcbType *dest_pcb;
 	StatusType rv = E_OK;
 
+	if( TaskId  >= OS_TASK_CNT ) {
+		rv = E_OS_ID;
+		goto err;
+	}
+
 	dest_pcb = os_get_pcb(TaskId);
 
-	VALIDATE_W_RV(dest_pcb->state & ST_SUSPENDED,E_OS_STATE);
 	VALIDATE_W_RV(dest_pcb->proc_type != PROC_EXTENDED,E_OS_ACCESS);
+	VALIDATE_W_RV(dest_pcb->state & ST_SUSPENDED,E_OS_STATE);
 
 	*Mask = dest_pcb->ev_set;
 
@@ -161,6 +204,14 @@ StatusType GetEvent( TaskType TaskId, EventMaskRefType Mask) {
 }
 
 
+/**
+ * The events of the extended task calling ClearEvent are cleared
+ * according to the event mask <Mask>.
+ *
+ *
+ * @param Mask
+ * @return
+ */
 StatusType ClearEvent( EventMaskType Mask) {
     StatusType rv = E_OK;
 	OsPcbType *pcb;
@@ -171,6 +222,12 @@ StatusType ClearEvent( EventMaskType Mask) {
 	}
 
 	pcb = get_curr_pcb();
+
+	if (pcb->proc_type != PROC_EXTENDED) {
+		rv = E_OS_ACCESS;
+		goto err;
+	}
+
 	pcb->ev_set &= ~Mask;
 
 	if (0) goto err;

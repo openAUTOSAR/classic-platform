@@ -27,7 +27,7 @@
 
 void PduR_CanIfRxIndication(PduIdType CanRxPduId,const uint8* CanSduPtr) {
 #if (PDUR_CANIF_SUPPORT == STD_ON)
-	DevCheck(CanRxPduId,CanSduPtr,0x0e);
+	PduR_DevCheck(CanRxPduId,CanSduPtr,0x0e);
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
 	DEBUG(DEBUG_LOW,"PduR_CanIfRxIndication: received indication with id %d and data %d\n", CanRxPduId, *CanSduPtr);
@@ -40,7 +40,7 @@ void PduR_CanIfRxIndication(PduIdType CanRxPduId,const uint8* CanSduPtr) {
 
 void PduR_CanIfTxConfirmation(PduIdType CanTxPduId) {
 #if (PDUR_CANIF_SUPPORT == STD_ON)
-	DevCheck(CanTxPduId,1,0x0f);
+	PduR_DevCheck(CanTxPduId,1,0x0f);
 
 	DEBUG(DEBUG_LOW,"----------------------\n");
 	DEBUG(DEBUG_LOW,"PduR_CanIfTxConfirmation: received confirmation with id %d\n", CanTxPduId);

@@ -29,9 +29,15 @@
  *    snprintf(buf,) ->                      vsnprintf(buf,)
  *
  * IMPLEMENTATION NOTE:
- *  If printing more than the limit, e.g. using vsnprintf() then
- *  the emit function will only stop printing, but not interrupted
- *  (The code will get more complicated that way)
+ *  - If printing more than the limit, e.g. using vsnprintf() then
+ *    the emit function will only stop printing, but not interrupted
+ *    (The code will get more complicated that way)
+ *  - ANSI-C and POSIX, streams and POSIX filenumbers.
+ *    POSIX file-numbers exist in unistd.h and are only to be used by the porting
+ *    newlib interface i.e. newlib_port.c.
+ *    The filenumber is actually just a cast of the steampointer and save in the member
+ *    _cookie in FILE.
+ *
  */
 
 #include <unistd.h>
@@ -42,26 +48,25 @@
 
 //#define HOST_TEST	1
 
-#ifdef HOST_TEST
-#define _STDOUT 	stdout
-#define _STDIN 	stdin
-#define _STDERR	stderr
-#else
-#define _STDOUT 	(FILE *)STDOUT_FILENO
-#define _STDINT 	STDIN_FILENO
-#define _STDERR	(FILE *)STDERR_FILENO
-#endif
-
-
 int arc_putchar(int fd, int c);
 int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap);
+static inline int emitChar( FILE *file, char **buf, char c, int *left );
+
+int fputs( const char *s, FILE *file ) {
+	int left = ~(size_t)0;
+	while(*s) {
+		emitChar(file,NULL,*s++,&left);
+	}
+	return 0;
+}
+
 
 int printf(const char *format, ...) {
 	va_list ap;
 	int rv;
 
 	va_start(ap, format);
-	rv = vfprintf(_STDOUT, format, ap);
+	rv = vfprintf(stdout, format, ap);
 	va_end(ap);
 	return rv;
 }
@@ -98,7 +103,7 @@ int snprintf(char *buffer, size_t n, const char *format, ...) {
 }
 
 int vprintf(const char *format, va_list ap) {
-	return vfprintf(_STDOUT, format, ap);
+	return vfprintf(stdout, format, ap);
 }
 
 int vsprintf(char *buffer, const char *format, va_list ap) {
@@ -107,10 +112,11 @@ int vsprintf(char *buffer, const char *format, va_list ap) {
 
 int vfprintf(FILE *file, const char *format, va_list ap) {
 	int rv;
-	/* Just print to _STDOUT */
+	/* Just print to stdout */
 	rv = print(file,NULL,~(size_t)0, format,ap);
 	return rv;
 }
+
 
 int vsnprintf(char *buffer, size_t n, const char *format, va_list ap) {
 	int rv;
@@ -119,6 +125,17 @@ int vsnprintf(char *buffer, size_t n, const char *format, va_list ap) {
 	return rv;
 }
 
+
+/*
+ * The integer only counterpart
+ */
+int iprintf(const char *format, ...) __attribute__ ((alias("printf")));
+int fiprintf(FILE *file, const char *format, ...) __attribute__ ((alias("fprintf")));
+int siprintf(char *buffer, const char *format, ...) __attribute__ ((alias("sprintf")));
+int sniprintf(char *buffer, size_t n, const char *format, ...) __attribute__ ((alias("snprintf")));
+int viprintf(const char *format, va_list ap) __attribute__ ((alias("vprintf")));
+int vsiprintf(char *buffer, const char *format, va_list ap) __attribute__ ((alias("vsprintf")));
+int vfiprintf(FILE *file, const char *format, va_list ap) __attribute__ ((alias("vfprintf")));
 
 /**
  *
@@ -134,10 +151,10 @@ static inline int emitChar( FILE *file, char **buf, char c, int *left ) {
 	--(*left);
 	if( buf == NULL ) {
 #if HOST_TEST
-		putc(c, _STDOUT);
-		fflush(_STDOUT);
+		putc(c, stdout);
+		fflush(stdout);
 #else
-		arc_putchar((int)file, c);
+		arc_putchar((int)file->_cookie, c);
 #endif
 	} else {
 		**buf = c;
@@ -200,7 +217,7 @@ extern void xtoa( unsigned long val, char* str, int base, int negative);
 #define FL_ALIGN_LEFT			(1<<4)
 #define FL_TYPE_SIGNED_INT		(1<<5)
 #define FL_TYPE_UNSIGNED_INT	(1<<6)
-
+#define FL_TYPE_POINTER			(1<<7)
 
 static void emitString( FILE *file, char **buffer, char *string, int width, int flags, int *left) {
 	char pad;
@@ -239,23 +256,19 @@ static void emitString( FILE *file, char **buffer, char *string, int width, int 
 	}
 }
 
-void emitInt( FILE *file, char **buffer, int base, int width, int flags, va_list ap, int *left )
+void emitInt( FILE *file, char **buffer, int val, int base, int width, int flags, int *left )
 {
 	char lBuf[12];	// longest is base 10, 2^32
 	char *str = lBuf;
-	int val;
 
 	if( flags & FL_TYPE_SIGNED_INT ) {
-		val = (int )va_arg( ap, int );
 		xtoa(val,str,base ,(val < 0));
 	} else {
-		xtoa((unsigned)va_arg( ap, int ),str,base ,0);
+		xtoa((unsigned)val,str,base ,0);
 	}
 
 	emitString(file,buffer,str,width,flags,left);
 }
-
-
 
 #define PRINT_CHAR(_c)  *buffer++= (_c);
 
@@ -302,21 +315,23 @@ int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap)
 			}
 
 			/* Find flags */
-			switch (ch) {
-			case '0':
+			if (ch == '0')
+			{
 				flags = FL_ZERO;
-				break;
-			case ' ':
+			}
+			else if (ch == ' ')
+			{
 				flags = FL_SPACE;
-				break;
-			case '-':
+			}
+			else if (ch == '-')
+			{
 				flags = FL_ALIGN_LEFT;
-				break;
-			default:
+			}
+			else
+			{
 				/* Not supported or no flag */
 				flags = FL_NONE;
 				format--;
-				break;
 			}
 
 			ch = *format++;
@@ -330,23 +345,32 @@ int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap)
 			}
 
 			/* Find type */
-			switch (ch) {
-			case 'c':
+			if (ch =='c')
+			{
 				emitChar(file,buffer,(char )va_arg( ap, int ),&left);
-				break;
-			case 'd':
+			}
+			else if (ch == 'd')
+			{
 				flags |= FL_TYPE_SIGNED_INT;
-				emitInt(file,buffer,10,width,flags,ap,&left);
-				break;
-			case 'u':
+				emitInt(file,buffer,va_arg( ap, int ),10,width,flags,&left);
+			}
+			else if (ch == 'u')
+			{
 				flags |= FL_TYPE_UNSIGNED_INT;
-				emitInt(file,buffer,10,width,flags,ap,&left);
-				break;
-			case 'x':
+				emitInt(file,buffer,va_arg( ap, int ),10,width,flags,&left);
+			}
+			else if (ch == 'x')
+			{
 				flags |= FL_TYPE_UNSIGNED_INT;
-				emitInt(file,buffer,16,width,flags,ap,&left);
-				break;
-			case 's':
+				emitInt(file,buffer,va_arg( ap, int ),16,width,flags,&left);
+			}
+			else if (ch == 'p')
+			{
+				flags |= FL_TYPE_POINTER;
+				emitInt(file,buffer,va_arg( ap, int ),16,width,flags,&left);
+			}
+			else if (ch == 's')
+			{
 				str = (char *)va_arg( ap, int );
 
 				if( str == NULL ) {
@@ -354,18 +378,17 @@ int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap)
 				}
 
 				emitString(file,buffer,str,width,flags,&left);
-				break;
-			default:
-				assert(0); // oops
-				break;
 			}
-
+			else
+			{
+				assert(0); // oops
+			}
 		} else {
 			flags = FL_NONE;
 			emitChar(file,buffer,ch,&left);
 		}
 	}
-	va_end(ap);
+//	va_end(ap);		// Removed, TODO: Check the va_start/va_end handling (used in calling functions also).
 	if(buffer!=0) {
 		left = 0;
 		emitChar(file,buffer,'\0',&left);
@@ -373,7 +396,7 @@ int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap)
 	return 0; // Wrong.. but for now.
 }
 
-#if defined(HOST_TEST)
+#if 0
 int main(void) {
 	char *ptr = NULL;
 	char buff[30];
@@ -402,7 +425,7 @@ int main(void) {
 
 	printf("decimal:  00c000   = %06x \n", 0xc000);
 
-	fprintf(_STDOUT, "string: %s = foobar \n", "foobar");
+	fprintf(stdout, "string: %s = foobar \n", "foobar");
 	sprintf(buff, "string: %s = foobar \n", "foobar");
 	printf("%s",buff);
 

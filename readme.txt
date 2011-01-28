@@ -1,21 +1,15 @@
 
-OsTick
+Arctic Core - the open source AUTOSAR embedded platform
 
-   GENERATED
-   OsTickType OsTickFreq = 1000;
 
-	
-	SYSTICK SETUP
-	{
-		uint32_t sys_freq = McuE_GetSystemClock();
-		Os_SysTickInit();
-		Os_SysTickStart(sys_freq/OsTickFreq);
-	}
+For information on getting started with Arctic Core, please take a look at: 
+  http://arccore.com/wiki/Quick-start_Tutorial
 
-USE CASE
-   I want to setup a 4ms alarm?
-   
-   
+For more general information and help, browse the wiki at:
+  http://arccore.com/wiki/
+
+or post a question in the forum:
+  https://arccore.com/forum/
 
 
 

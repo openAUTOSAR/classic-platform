@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #ifndef CANIF_CFG_H_
 #define CANIF_CFG_H_
 
@@ -84,18 +86,6 @@ typedef enum {
 #define CANIF_WAKEUP_EVENT_API				    STD_OFF  // Not supported
 #define CANIF_TRANSCEIVER_API             STD_OFF  // Not supported
 #define CANIF_TRANSMIT_CANCELLATION       STD_OFF  // Not supported
-
-//-------------------------------------------------------------------
-
-typedef struct {
-	void (*CancelTxConfirmation)( void *);  // (const Can_PduType *);
-	void (*RxIndication)(void *); //(const Can_PduType *);
-	void (*ControllerBusOff)(uint8);
-	void (*ControllerWakeup)(uint8);
-	void (*Arc_Error)(uint8,uint32);
-} CanIf_CallbackType;
-
-
 
 //-------------------------------------------------------------------
 /*

@@ -72,6 +72,7 @@ static void os_pcb_rom_copy( OsPcbType *pcb, const OsRomPcbType *r_pcb ) {
 //	pcb->app = &app_list[r_pcb->app];
 //	pcb->app_mask = app_mask[r_pcb->app];
 	strncpy(pcb->name,r_pcb->name,16);
+	pcb->name[15] = '\0';
 }
 
 static _Bool init_os_called = 0;
@@ -103,17 +104,21 @@ void InitOS( void ) {
 	// Calc interrupt stack
 	Os_CfgGetInterruptStackInfo(&int_stack);
 	// TODO: 16 is arch dependent
-	os_sys.int_stack = int_stack.top + int_stack.size - 16;
+	os_sys.int_stack = (void *)((size_t)int_stack.top + (size_t)int_stack.size - 16);
 
 	// Init counter.. with alarms and schedule tables
+#if OS_COUNTER_CNT!=0
 	Os_CounterInit();
+#endif
+#if OS_SCHTBL_CNT!=0
 	Os_SchTblInit();
+#endif
 
 	// Put all tasks in the pcb list
 	// Put the one that belong in the ready queue there
 	// TODO: we should really hash on priority here to get speed, but I don't care for the moment
 	// TODO: Isn't this just EXTENED tasks ???
-	for( i=0; i < Os_CfgGetTaskCnt(); i++) {
+	for( i=0; i < OS_TASK_CNT; i++) {
 		tmp_pcb = os_get_pcb(i);
 
 		assert(tmp_pcb->prio<=OS_TASK_PRIORITY_MAX);
@@ -153,23 +158,13 @@ static void os_start( void ) {
 	}
 
 	/* Alarm autostart */
-	for(int j=0; j < Os_CfgGetAlarmCnt(); j++ ) {
-		OsAlarmType *alarmPtr;
-		alarmPtr = Os_CfgGetAlarmObj(j);
-		if(alarmPtr->autostartPtr != NULL ) {
-			const OsAlarmAutostartType *autoPtr = alarmPtr->autostartPtr;
+#if OS_ALARM_CNT!=0
+	Os_AlarmAutostart();
+#endif
 
-			if( os_sys.appMode & autoPtr->appModeRef) {
-			if( autoPtr->autostartType == ALARM_AUTOSTART_ABSOLUTE ) {
-				SetAbsAlarm(j,autoPtr->alarmTime, autoPtr->cycleTime);
-			} else {
-				SetRelAlarm(j,autoPtr->alarmTime, autoPtr->cycleTime);
-			}
-		}
-	}
-	}
-
+#if OS_SCHTBL_CNT!=0
 	Os_SchTblAutostart();
+#endif
 
 	// Set up the systick interrupt
 	{
@@ -197,6 +192,11 @@ static void os_start( void ) {
 	{
 		// FIXME: Do this in a more structured way.. setting os_sys.curr_pcb manually is not the way to go..
 		os_sys.curr_pcb = tmp_pcb;
+
+		// register this auto-start activation
+		assert(tmp_pcb->activations < tmp_pcb->activationLimit);
+		tmp_pcb->activations++;
+
 		// NOTE! We don't go for os_swap_context() here..
 		// first arg(NULL) is dummy only
 		Os_TaskSwapContextTo(NULL,tmp_pcb);

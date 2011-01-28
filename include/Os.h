@@ -28,6 +28,32 @@
 #include "MemMap.h"
 #include "Cpu.h"
 
+typedef uint8 StatusType;
+
+#define E_OS_ACCESS (StatusType)1               /**< STD OSEK */
+#define	E_OS_CALLEVEL (StatusType)2             /**< STD OSEK */
+#define	E_OS_ID	(StatusType)3                   /**< STD OSEK */
+#define	E_OS_LIMIT (StatusType)4                /**< STD OSEK */
+#define	E_OS_NOFUNC (StatusType)5               /**< STD OSEK */
+#define	E_OS_RESOURCE (StatusType)6             /**< STD OSEK */
+#define	E_OS_STATE (StatusType)7                /**< STD OSEK */
+#define	E_OS_VALUE (StatusType)8                /**< STD OSEK */
+
+#define	E_OS_SERVICEID (StatusType)9                /**< AUTOSAR, see 7.10 */
+#define	E_OS_RATE (StatusType)10                    /**< AUTOSAR, see 7.10 */
+#define	E_OS_ILLEGAL_ADDRESS (StatusType)11         /**< AUTOSAR, see 7.10 */
+#define	E_OS_MISSINGEND (StatusType)12              /**< AUTOSAR, see 7.10 */
+#define	E_OS_DISABLEDINT (StatusType)13             /**< AUTOSAR, see 7.10 */
+#define	E_OS_STACKFAULT (StatusType)14              /**< AUTOSAR, see 7.10 */
+#define	E_OS_PROTECTION_MEMORY (StatusType)15       /**< AUTOSAR, see 7.10 */
+#define	E_OS_PROTECTION_TIME (StatusType)16         /**< AUTOSAR, see 7.10 */
+#define	E_OS_PROTECTION_LOCKED (StatusType)17       /**< AUTOSAR, see 7.10 */
+#define	E_OS_PROTECTION_EXCEPTION (StatusType)18    /**< AUTOSAR, see 7.10 */
+#define	E_OS_PROTECTION_RATE (StatusType)19          /**< AUTOSAR, see 7.10 */
+
+#define E_COM_ID 255 // TODO: var ska E_COM_ID vara?"
+
+
 typedef uint32_t 		EventMaskType;
 typedef EventMaskType *	EventMaskRefType;
 typedef uint16_t 		TaskType;
@@ -37,9 +63,10 @@ typedef enum {
 	TASK_STATE_WAITING,
 	TASK_STATE_READY,
 	TASK_STATE_SUSPENDED,
-	TASK_STATE_RUNNING,
+	TASK_STATE_RUNNING
 } TaskStateType;
 
+#define INVALID_TASK	0xdeadU
 
 typedef TaskStateType *TaskStateRefType;
 
@@ -144,6 +171,7 @@ void StartOS( AppModeType Mode );
 
 ApplicationType GetApplicationID( void );
 ISRType GetISRID( void );
+StatusType GetActiveApplicationMode( AppModeType* mode);
 
 typedef int8_t Os_IntCounterType;
 
@@ -168,7 +196,7 @@ static inline void DisableAllInterrupts( void ) {
 	Irq_Disable();
 	Os_IntDisableAllCnt++;
 	/* No nesting allowed */
-	assert(Os_IntDisableAllCnt>1);
+	assert(Os_IntDisableAllCnt==1);
 }
 
 static inline void EnableAllInterrupts( void ) {
@@ -240,15 +268,15 @@ StatusType 	TerminateTask( void );
 StatusType 	ChainTask( TaskType TaskID );
 StatusType 	Schedule( void );
 
-typedef uint32 ResourceType;
+typedef uint8 ResourceType;
 #define DeclareResource(x) extern ResourceType (x);
 StatusType GetResource( ResourceType ResID );
 StatusType ReleaseResource( ResourceType ResID);
 
 /*
- * Define the scheduler resource as 0
+ * Define scheduler as topmost
  */
-#define	RES_SCHEDULER 			~(ResourceType)0
+#define	RES_SCHEDULER 			OS_RESOURCE_CNT
 
 /*
  * Priorities of tasks and resources
@@ -262,13 +290,7 @@ typedef struct OsDriver_s {
 	int	OsGptChannelRef;
 } OsDriver;
 
-/*-------------------------------------------------------------------
- * Free running timer
- *-----------------------------------------------------------------*/
-typedef const uint32 OsTickType;
-void Os_SysTickInit( void );
-void Os_SysTickStart(uint32_t period_ticks);
-uint32_t Os_SysTickGetTimeElapsed( void );
+
 
 /*-------------------------------------------------------------------
  * Counters
@@ -281,6 +303,16 @@ typedef TickType *TickRefType;
 StatusType IncrementCounter( CounterType );
 StatusType GetCounterValue( CounterType, TickRefType );
 StatusType GetElapsedCounterValue( CounterType, TickRefType val, TickRefType elapsed_val);
+
+
+/*-------------------------------------------------------------------
+ * System timer
+ *-----------------------------------------------------------------*/
+typedef const uint32 OsTickType;
+void Os_SysTickInit( void );
+void Os_SysTickStart(TickType period_ticks);
+TickType Os_SysTickGetValue( void );
+TickType Os_SysTickGetElapsedValue( TickType preValue );
 
 /*-------------------------------------------------------------------
  * Schedule Tables
@@ -344,24 +376,24 @@ typedef enum {
     OSServiceId_PostTaskHook,
     OSServiceId_StartupHook,
     OSServiceId_ShutdownHook,
-    OSServiceId_GetTaskState,
-} OsServiceIdType;;
+    OSServiceId_GetTaskState
+} OsServiceIdType;
 
-typedef struct os_error_s {
+typedef struct OsError {
 	OsServiceIdType serviceId;
 	uint32_t param1;
 	uint32_t param2;
 	uint32_t param3;
-} os_error_t;
+} OsErrorType;
 
-extern os_error_t os_error;
+extern OsErrorType os_error;
 
 // TODO: Add the service id to all OS service methods.
 static inline OsServiceIdType OSErrorGetServiceId(void)  {
 	return os_error.serviceId;
 }
 
-extern os_error_t os_error;
+extern OsErrorType os_error;
 
 #define OSError_ActivateTask_TaskID ((TaskType) os_error.param1)
 #define OSError_ChainTask_TaskID ((TaskType) os_error.param1)

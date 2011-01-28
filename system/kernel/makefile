@@ -5,7 +5,7 @@ vpath-y += $(ARCH_PATH-y)/kernel
 #obj-y += asm_sample.o
 #CFLAGS_asm_sample.o += -O3
 obj-y += arch_krn.o
-obj-$(CFG_HCS12D) += arch_irq.o
+obj-$(CFG_HC1X) += arch_irq.o
 #obj-y += stm32f10x_it.o
 
 # object files 
@@ -26,6 +26,7 @@ obj-y += sys_tick.o
 #obj-y += stack.o
 obj-y += isr.o
 obj-y += os_arctest.o
+obj-y += application.o
 
 
 # These are VERY cpu dependent.. remove
@@ -36,7 +37,6 @@ obj-y += irq.o
 dep-y += asm_offset.h
 dep-y += kernel_offset.h
 dep-$(CFG_ARM_CM3) += arch_offset.h
-obj-$(CFG_ARM_CM3) += misc.o
 
 
 # ARM assembler generates "define STACK_APA $12". The extra '$' we want to go.
@@ -65,9 +65,6 @@ inc-y += $(ROOTDIR)/arch/$(ARCH_FAM)/$(ARCH)/drivers
 inc-y += $(ROOTDIR)/arch/$(ARCH_FAM)/$(ARCH)/config
 inc-y += $(ROOTDIR)/arch/$(ARCH)
 inc-y += $(ROOTDIR)/include/$(ARCH_FAM)
-
-
-build-lib-y = $(ROOTDIR)/libs/libkernel_$(ARCH_MCU).a
  
 
 

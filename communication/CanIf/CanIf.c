@@ -25,14 +25,17 @@
 
 #include "Can.h"
 #include "CanIf_Cbk.h"
-#include "string.h"
+#include <string.h>
 
-// Added by Mattias 2008-11-18
 #include "debug.h"
 #include "PduR.h"
 
 #if defined(USE_CANTP)
 #include "CanTp_Cbk.h"
+#endif
+
+#if defined(USE_CANNM)
+#include "CanNm.h"
 #endif
 
 #if 0
@@ -58,7 +61,6 @@
           Det_ReportError(MODULE_ID_CANIF, 0, _api, _err); \
           return; \
         }
-#undef DET_REPORTERROR
 #define DET_REPORTERROR(_x,_y,_z,_q) Det_ReportError(_x, _y, _z, _q)
 
 #else
@@ -88,6 +90,8 @@ typedef struct
   CanIf_ChannelPrivateType channelData[CANIF_CHANNEL_CNT];
 } CanIf_GlobalType;
 
+void CanIf_PreInit_InitController(uint8 Controller, uint8 ConfigurationIndex);
+
 static CanIf_Arc_ChannelIdType CanIf_Arc_FindHrhChannel( Can_Arc_HRHType hrh )
 {
   const CanIf_InitHohConfigType *hohConfig;
@@ -105,8 +109,9 @@ static CanIf_Arc_ChannelIdType CanIf_Arc_FindHrhChannel( Can_Arc_HRHType hrh )
     do
     {
       hrhConfig++;
-      if (hrhConfig->CanIfHrhIdSymRef == hrh)
+      if (hrhConfig->CanIfHrhIdSymRef == hrh){
         return hrhConfig->CanIfCanControllerHrhIdRef;
+      }
     } while(!hrhConfig->CanIf_Arc_EOL);
   } while(!hohConfig->CanIf_Arc_EOL);
 
@@ -124,14 +129,13 @@ void CanIf_Init(const CanIf_ConfigType *ConfigPtr)
 
   CanIf_ConfigPtr = ConfigPtr;
 
-  for (uint16 i = 0; i < CANIF_CHANNEL_CNT; i++)
+  for (uint8 i = 0; i < CANIF_CHANNEL_CNT; i++)
   {
     CanIf_Global.channelData[i].ControllerMode = CANIF_CS_STOPPED;
     CanIf_Global.channelData[i].PduMode = CANIF_GET_OFFLINE;
+    CanIf_PreInit_InitController(i, CanIf_ConfigPtr->Arc_ChannelDefaultConfIndex[i]);
   }
 
-  // NOTE!
-  // Do NOT initialise the Can Drivers and Tranceivers, see CANIF085
 
   CanIf_Global.initRun = TRUE;
 }
@@ -143,29 +147,16 @@ void CanIf_Init(const CanIf_ConfigType *ConfigPtr)
 /*
  * Controller :: CanIf_Arc_ChannelIdType (CanIf-specific id to abstract from Can driver/controllers)
  * ConfigurationIndex :: CanIf_Arc_ConfigurationIndexType
- *   /tojo
  */
 void CanIf_InitController(uint8 Controller, uint8 ConfigurationIndex)
 {
   // We call this a CanIf channel. Hopefully makes it easier to follow.
   CanIf_Arc_ChannelIdType channel = Controller;
+  CanIf_ControllerModeType mode;
 
   VALIDATE_NO_RV(CanIf_Global.initRun, CANIF_INIT_CONTROLLER_ID, CANIF_E_UNINIT );
   VALIDATE_NO_RV(channel < CANIF_CHANNEL_CNT, CANIF_INIT_CONTROLLER_ID, CANIF_E_PARAM_CONTROLLER);
   VALIDATE_NO_RV(ConfigurationIndex < CANIF_CHANNEL_CONFIGURATION_CNT, CANIF_INIT_CONTROLLER_ID, CANIF_E_PARAM_POINTER);
-
-#if (CANIF_DEV_ERROR_DETECT == STD_ON)
-  CanIf_ControllerModeType mode;
-
-  if (CanIf_GetControllerMode(channel, &mode) == E_OK)
-  {
-    VALIDATE_NO_RV((mode != CANIF_CS_UNINIT), CANIF_INIT_CONTROLLER_ID, CANIF_E_PARAM_CONTROLLER_MODE );
-  }
-  else
-  {
-    VALIDATE_NO_RV(FALSE, CANIF_INIT_CONTROLLER_ID, CANIF_E_PARAM_CONTROLLER_MODE);
-  }
-#endif
 
   if (CanIf_GetControllerMode(channel, &mode) == E_OK)
   {
@@ -176,7 +167,11 @@ void CanIf_InitController(uint8 Controller, uint8 ConfigurationIndex)
     else if (mode != CANIF_CS_STOPPED)
     {
       VALIDATE_NO_RV(FALSE, CANIF_INIT_CONTROLLER_ID, CANIF_E_PARAM_CONTROLLER_MODE); // CANIF092
-   }
+    }
+  }
+  else
+  {
+    VALIDATE_NO_RV(FALSE, CANIF_INIT_CONTROLLER_ID, CANIF_E_PARAM_CONTROLLER_MODE);
   }
 
   // CANIF293: ..Subsequently the CAN Interface calls the corresponding
@@ -201,6 +196,24 @@ void CanIf_InitController(uint8 Controller, uint8 ConfigurationIndex)
 
   // Set mode to stopped
   CanIf_SetControllerMode(channel, CANIF_CS_STOPPED);
+}
+
+void CanIf_PreInit_InitController(uint8 Controller, uint8 ConfigurationIndex){
+	// We call this a CanIf channel. Hopefully makes it easier to follow.
+	CanIf_Arc_ChannelIdType channel = Controller;
+
+	VALIDATE_NO_RV(channel < CANIF_CHANNEL_CNT, CANIF_INIT_ID, CANIF_E_PARAM_CONTROLLER);
+	VALIDATE_NO_RV(ConfigurationIndex < CANIF_CHANNEL_CONFIGURATION_CNT, CANIF_INIT_ID, CANIF_E_PARAM_POINTER);
+
+
+	const CanControllerIdType canControllerId = ARC_GET_CHANNEL_CONTROLLER(channel);
+	// Validate that the configuration at the index match the right channel
+	VALIDATE_NO_RV(CanIf_ConfigPtr->ControllerConfig[ConfigurationIndex].CanIfControllerIdRef == channel, CANIF_INIT_CONTROLLER_ID, CANIF_E_PARAM_CONTROLLER);
+	const Can_ControllerConfigType *canConfig = CanIf_ConfigPtr->ControllerConfig[ConfigurationIndex].CanIfInitControllerRef;
+	// Validate that the CanIfControllerConfig points to configuration for the right Can Controller
+	VALIDATE_NO_RV(canConfig->CanControllerId == canControllerId, CANIF_INIT_CONTROLLER_ID, CANIF_E_PARAM_CONTROLLER);
+
+	Can_InitController(canControllerId, canConfig);
 }
 
 //-------------------------------------------------------------------
@@ -232,8 +245,9 @@ Std_ReturnType CanIf_SetControllerMode(uint8 Controller,
     switch (oldMode)
     {
       case CANIF_CS_SLEEP:
-        if (Can_SetControllerMode(canControllerId, CAN_T_STOP) == CAN_NOT_OK)
+        if (Can_SetControllerMode(canControllerId, CAN_T_STOP) == CAN_NOT_OK){
           return E_NOT_OK;
+        }
         CanIf_Global.channelData[channel].ControllerMode = CANIF_CS_STOPPED;
         break;
       default:
@@ -242,8 +256,9 @@ Std_ReturnType CanIf_SetControllerMode(uint8 Controller,
     }
 
     CanIf_SetPduMode(channel, CANIF_SET_ONLINE);
-    if (Can_SetControllerMode(canControllerId, CAN_T_START) == CAN_NOT_OK)
+    if (Can_SetControllerMode(canControllerId, CAN_T_START) == CAN_NOT_OK){
       return E_NOT_OK;
+    }
     CanIf_Global.channelData[channel].ControllerMode = CANIF_CS_STARTED;
   }
   break;
@@ -252,8 +267,9 @@ Std_ReturnType CanIf_SetControllerMode(uint8 Controller,
   {
     switch (oldMode) {
       case CANIF_CS_STARTED:
-        if (Can_SetControllerMode(canControllerId, CAN_T_STOP) == CAN_NOT_OK)
+        if (Can_SetControllerMode(canControllerId, CAN_T_STOP) == CAN_NOT_OK){
           return E_NOT_OK;
+        }
         CanIf_Global.channelData[channel].ControllerMode = CANIF_CS_STOPPED;
         break;
       default:
@@ -261,8 +277,9 @@ Std_ReturnType CanIf_SetControllerMode(uint8 Controller,
         break;
     }
 
-    if (Can_SetControllerMode(canControllerId, CAN_T_SLEEP) == CAN_NOT_OK)
+    if (Can_SetControllerMode(canControllerId, CAN_T_SLEEP) == CAN_NOT_OK){
       return E_NOT_OK;
+    }
     CanIf_Global.channelData[channel].ControllerMode = CANIF_CS_SLEEP;
   }
 
@@ -271,8 +288,9 @@ Std_ReturnType CanIf_SetControllerMode(uint8 Controller,
     switch (oldMode)
     {
       case CANIF_CS_SLEEP:
-        if (Can_SetControllerMode(canControllerId, CAN_T_WAKEUP) == CAN_NOT_OK)
+        if (Can_SetControllerMode(canControllerId, CAN_T_WAKEUP) == CAN_NOT_OK){
           return E_NOT_OK;
+        }
         break;
       default:
         // Just fall through for other cases
@@ -280,9 +298,11 @@ Std_ReturnType CanIf_SetControllerMode(uint8 Controller,
     }
 
     CanIf_SetPduMode(channel, CANIF_SET_OFFLINE);
-    if (Can_SetControllerMode(canControllerId, CAN_T_STOP) == CAN_NOT_OK)
+    if (Can_SetControllerMode(canControllerId, CAN_T_STOP) == CAN_NOT_OK){
       return E_NOT_OK;
+    }
     CanIf_Global.channelData[channel].ControllerMode = CANIF_CS_STOPPED;
+    break;
   }
 
   case CANIF_CS_UNINIT:
@@ -322,19 +342,7 @@ static const CanIf_TxPduConfigType * CanIf_FindTxPduEntry(PduIdType id)
 	} else {
 		return &CanIf_ConfigPtr->InitConfig->CanIfTxPduConfigPtr[id];
 	}
-/*
-  for (uint16 i = 0; i < CanIf_ConfigPtr->InitConfig->CanIfNumberOfCanTXPduIds; i++)
-  {
-    if (entry->CanIfTxPduId == id)
-    {
-      return entry;
-    }
-    entry++;
   }
-
-  return 0;
-  */
-}
 
 //-------------------------------------------------------------------
 
@@ -361,18 +369,22 @@ Std_ReturnType CanIf_Transmit(PduIdType CanTxPduId,
   CanIf_Arc_ChannelIdType channel = txEntry->CanIfCanTxPduHthRef->CanIfCanControllerIdRef;
 
   // Get and verify the controller mode
-  if (CanIf_GetControllerMode(channel, &csMode) == E_NOT_OK)
+  if (CanIf_GetControllerMode(channel, &csMode) == E_NOT_OK){
     return E_NOT_OK;
+  }
 
-  if (csMode != CANIF_CS_STARTED)  // CANIF_161
+  if (csMode != CANIF_CS_STARTED){  // CANIF_161
     return E_NOT_OK;
+  }
 
   // Get and verify the PDU channel mode control
-  if (CanIf_GetPduMode(channel, &pduMode) == E_NOT_OK)
+  if (CanIf_GetPduMode(channel, &pduMode) == E_NOT_OK){
     return E_NOT_OK;
+  }
 
-  if ((pduMode != CANIF_GET_TX_ONLINE) && (pduMode != CANIF_GET_ONLINE))
+  if ((pduMode != CANIF_GET_TX_ONLINE) && (pduMode != CANIF_GET_ONLINE)){
     return E_NOT_OK;
+  }
 
   canPdu.id = txEntry->CanIfCanTxPduIdCanId;
 
@@ -382,8 +394,9 @@ Std_ReturnType CanIf_Transmit(PduIdType CanTxPduId,
 
   Can_ReturnType rVal = Can_Write(txEntry->CanIfCanTxPduHthRef->CanIfHthIdSymRef, &canPdu);
 
-  if (rVal == CAN_NOT_OK)
+  if (rVal == CAN_NOT_OK){
     return E_NOT_OK;
+  }
 
   if (rVal == CAN_BUSY)  // CANIF 082, CANIF 161
   {
@@ -471,46 +484,50 @@ Std_ReturnType CanIf_SetPduMode(uint8 Controller,
     CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE;
     break;
   case CANIF_SET_RX_OFFLINE:
-    if (oldMode == CANIF_GET_RX_ONLINE)
+    if (oldMode == CANIF_GET_RX_ONLINE){
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE;
-    else if (oldMode == CANIF_GET_ONLINE)
+    } else if (oldMode == CANIF_GET_ONLINE){
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_TX_ONLINE;
-    else if (oldMode == CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE)
+    } else if (oldMode == CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE){
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE_ACTIVE;
+    }
 
     // Other oldmodes don't care
     break;
   case CANIF_SET_RX_ONLINE:
-    if (oldMode == CANIF_GET_OFFLINE)
+    if (oldMode == CANIF_GET_OFFLINE){
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_RX_ONLINE;
-    else if (oldMode == CANIF_GET_TX_ONLINE)
+    } else if (oldMode == CANIF_GET_TX_ONLINE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_ONLINE;
-    else if (oldMode == CANIF_GET_OFFLINE_ACTIVE)
+    } else if (oldMode == CANIF_GET_OFFLINE_ACTIVE){
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE;
+    }
 
     // Other oldmodes don't care
     break;
   case CANIF_SET_TX_OFFLINE:
-    if (oldMode == CANIF_GET_TX_ONLINE)
+    if (oldMode == CANIF_GET_TX_ONLINE){
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE;
-    else if (oldMode == CANIF_GET_ONLINE)
+    } else if (oldMode == CANIF_GET_ONLINE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_RX_ONLINE;
-    else if (oldMode == CANIF_GET_OFFLINE_ACTIVE)
+    } else if (oldMode == CANIF_GET_OFFLINE_ACTIVE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE;
-    else if (oldMode == CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE)
+    } else if (oldMode == CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_RX_ONLINE;
+    }
 
     // Other oldmodes don't care
     break;
   case CANIF_SET_TX_ONLINE:
-    if (oldMode == CANIF_GET_OFFLINE)
+    if (oldMode == CANIF_GET_OFFLINE){
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_TX_ONLINE;
-    else if (oldMode == CANIF_GET_RX_ONLINE)
+    } else if (oldMode == CANIF_GET_RX_ONLINE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_ONLINE;
-    else if (oldMode == CANIF_GET_OFFLINE_ACTIVE)
+    } else if (oldMode == CANIF_GET_OFFLINE_ACTIVE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_TX_ONLINE;
-    else if (oldMode == CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE)
+    } else if (oldMode == CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_ONLINE;
+    }
 
     // Other oldmodes don't care
     break;
@@ -519,14 +536,15 @@ Std_ReturnType CanIf_SetPduMode(uint8 Controller,
     break;
 
   case CANIF_SET_TX_OFFLINE_ACTIVE:
-    if (oldMode == CANIF_GET_OFFLINE)
+    if (oldMode == CANIF_GET_OFFLINE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE_ACTIVE;
-    else if (oldMode == CANIF_GET_RX_ONLINE)
+    } else if (oldMode == CANIF_GET_RX_ONLINE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE;
-    else if (oldMode == CANIF_GET_TX_ONLINE)
+    } else if (oldMode == CANIF_GET_TX_ONLINE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE_ACTIVE;
-    else if (oldMode == CANIF_GET_ONLINE)
+    } else if (oldMode == CANIF_GET_ONLINE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE;
+    }
 
     // Other oldmodes don't care
     break;
@@ -575,8 +593,8 @@ void CanIf_SetDynamicTxId(PduIdType CanTxPduId, Can_IdType CanId)
   }
 
   // Check that this is an extended or standard id
-  if (((CanId & 0x80000000) && (txEntry->CanIfTxPduIdCanIdType == ARC_CAN_ID_TYPE_29)) ||
-      (((CanId & 0x80000000) == 0) && (txEntry->CanIfTxPduIdCanIdType == ARC_CAN_ID_TYPE_11)))
+  if (((CanId & U0x80000000) && (txEntry->CanIfTxPduIdCanIdType == ARC_CAN_ID_TYPE_29)) ||
+      (((CanId & U0x80000000) == 0) && (txEntry->CanIfTxPduIdCanIdType == ARC_CAN_ID_TYPE_11)))
   {
     // Update the CanID
     //txEntry->CanIfCanTxPduIdCanId = CanId;  // TODO How do we fix this from a const pointer
@@ -658,13 +676,6 @@ void CanIf_TxConfirmation(PduIdType canTxPduId)
   const CanIf_TxPduConfigType* entry =
     &CanIf_ConfigPtr->InitConfig->CanIfTxPduConfigPtr[canTxPduId];
 
-  /* Find the CAN id in the TxPduList */
-  /*
-  for (uint16 i = 0; i < CanIf_ConfigPtr->InitConfig->CanIfNumberOfCanTXPduIds; i++)
-  {
-    if (entry->CanIfTxPduId == canTxPduId)
-    {
-    */
       if (entry->CanIfUserTxConfirmation != NULL)
       {
         CanIf_ChannelGetModeType mode;
@@ -676,14 +687,6 @@ void CanIf_TxConfirmation(PduIdType canTxPduId)
         }
       }
       return;
-      /*
-    }
-
-    entry++;
-  }
-  */
-  // Did not find the PDU, something is wrong
-
 }
 
 void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
@@ -702,8 +705,8 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
 
   if (CanIf_GetPduMode(channel, &mode) == E_OK)
   {
-    if (mode == CANIF_GET_OFFLINE || mode == CANIF_GET_TX_ONLINE ||
-        mode == CANIF_GET_OFFLINE_ACTIVE)
+    if ( (mode == CANIF_GET_OFFLINE) || (mode == CANIF_GET_TX_ONLINE) ||
+        (mode == CANIF_GET_OFFLINE_ACTIVE) )
     {
       // Receiver path is disabled so just drop it
       return;
@@ -736,7 +739,7 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
             else
             {
               entry++;
-              continue; // Not a supported filter type, so just drop the frame
+              continue; // Go to next entry
             }
           }
           else
@@ -766,20 +769,28 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
         break;
 
         case CANIF_USER_TYPE_CAN_NM:
+#if defined(USE_CANNM)
+        	CanNm_RxIndication(entry->CanIfCanRxPduId,CanSduPtr);
+        	return;
+#endif
+        	break;
+
         case CANIF_USER_TYPE_CAN_PDUR:
             // Send Can frame to PDU router
+#if defined(USE_PDUR)
             PduR_CanIfRxIndication(entry->CanIfCanRxPduId,CanSduPtr);
             return;
+#endif
             break;
 
         case CANIF_USER_TYPE_CAN_TP:
           // Send Can frame to CAN TP
 #if defined(USE_CANTP)
             {
-                PduInfoType CanTpRxPdu;
-                CanTpRxPdu.SduLength = CanDlc;
-                CanTpRxPdu.SduDataPtr = (uint8 *)CanSduPtr;
-                CanTp_RxIndication(entry->CanIfCanRxPduId, &CanTpRxPdu); /** @req CANTP019 */
+        	    PduInfoType CanTpRxPdu;
+        	    CanTpRxPdu.SduLength = CanDlc;
+        	    CanTpRxPdu.SduDataPtr = (uint8 *)CanSduPtr;
+                CanTp_RxIndication(entry->CanIfCanRxPduId, &CanTpRxPdu);
             }
             return;
 #endif
@@ -831,8 +842,10 @@ void CanIf_ControllerBusOff(uint8 Controller)
 
 void CanIf_SetWakeupEvent(uint8 Controller)
 {
+#if  ( CANIF_DEV_ERROR_DETECT == STD_ON )
   // We call this a CanIf channel. Hopefully makes it easier to follow.
   CanIf_Arc_ChannelIdType channel = Controller;
+#endif
 
   VALIDATE_NO_RV(FALSE, CANIF_SETWAKEUPEVENT_ID, CANIF_E_NOK_NOSUPPORT);
   VALIDATE_NO_RV( CanIf_Global.initRun, CANIF_SETWAKEUPEVENT_ID, CANIF_E_UNINIT );
@@ -843,8 +856,10 @@ void CanIf_SetWakeupEvent(uint8 Controller)
 
 void CanIf_Arc_Error(uint8 Controller, Can_Arc_ErrorType Error)
 {
+#if  ( CANIF_DEV_ERROR_DETECT == STD_ON )
   // We call this a CanIf channel. Hopefully makes it easier to follow.
   CanIf_Arc_ChannelIdType channel = Controller;
+#endif
 
   VALIDATE_NO_RV( CanIf_Global.initRun, CANIF_ARCERROR_ID, CANIF_E_UNINIT );
   VALIDATE_NO_RV( channel < CANIF_CHANNEL_CNT, CANIF_ARCERROR_ID, CANIF_E_PARAM_CONTROLLER );

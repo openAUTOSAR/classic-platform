@@ -22,20 +22,22 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "Com_Com.h"
+#include "Com_Arc_Types.h"
+#include "Com.h"
+#include "Com_Internal.h"
+#include "Com_misc.h"
 #include "debug.h"
-#include "CanIf.h"
 #include "PduR.h"
-#include "PduR_Com.h"
-#include "Byteorder.h"
+#include "Det.h"
+
 
 uint8 Com_SendSignal(Com_SignalIdType SignalId, const void *SignalDataPtr) {
-	COM_VALIDATE_SIGNAL(SignalId, 0x0a, E_NOT_OK);
+	VALIDATE_SIGNAL(SignalId, 0x0a, E_NOT_OK);
 	// Store pointer to signal for easier coding.
-	ComGetSignal(SignalId);
-	ComGetArcSignal(SignalId);
-	ComGetIPdu(Arc_Signal->ComIPduHandleId);
-	ComGetArcIPdu(Arc_Signal->ComIPduHandleId);
+	const ComSignal_type * Signal = GET_Signal(SignalId);
+	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(SignalId);
+	const ComIPdu_type *IPdu = GET_IPdu(Arc_Signal->ComIPduHandleId);
+	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
 
 	//DEBUG(DEBUG_LOW, "Com_SendSignal: id %d, nBytes %d, BitPosition %d, intVal %d\n", SignalId, nBytes, signal->ComBitPosition, (uint32)*(uint8 *)SignalDataPtr);
 
@@ -45,7 +47,7 @@ uint8 Com_SendSignal(Com_SignalIdType SignalId, const void *SignalDataPtr) {
 
 	// If the signal has an update bit. Set it!
 	if (Signal->ComSignalArcUseUpdateBit) {
-		setBit(Arc_IPdu->ComIPduDataPtr, Signal->ComUpdateBitPosition);
+		SETBIT(Arc_IPdu->ComIPduDataPtr, Signal->ComUpdateBitPosition);
 	}
 
 	/*
@@ -58,7 +60,7 @@ uint8 Com_SendSignal(Com_SignalIdType SignalId, const void *SignalDataPtr) {
 }
 
 uint8 Com_ReceiveSignal(Com_SignalIdType SignalId, void* SignalDataPtr) {
-	COM_VALIDATE_SIGNAL(SignalId, 0x0b, E_NOT_OK);
+	VALIDATE_SIGNAL(SignalId, 0x0b, E_NOT_OK);
 	DEBUG(DEBUG_LOW, "Com_ReceiveSignal: SignalId %d\n", SignalId);
 
 	// Com_CopyFromSignal(&ComConfig->ComSignal[SignalId], SignalDataPtr);
@@ -71,7 +73,7 @@ uint8 Com_ReceiveSignal(Com_SignalIdType SignalId, void* SignalDataPtr) {
 }
 
 Std_ReturnType Com_TriggerTransmit(PduIdType ComTxPduId, uint8 *SduPtr) {
-	PduIdCheck(ComTxPduId, 0x13, E_NOT_OK);
+	PDU_ID_CHECK(ComTxPduId, 0x13, E_NOT_OK);
 	/*
 	 * COM260: This function must not check the transmission mode of the I-PDU
 	 * since it should be possible to use it regardless of the transmission mode.
@@ -80,20 +82,21 @@ Std_ReturnType Com_TriggerTransmit(PduIdType ComTxPduId, uint8 *SduPtr) {
 	/*
 	 * COM395: This function must override the IPdu callouts used in Com_TriggerIPduTransmit();
 	 */
-	ComGetIPdu(ComTxPduId);
-	ComGetArcIPdu(ComTxPduId);
+	const ComIPdu_type *IPdu = GET_IPdu(ComTxPduId);
+	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(ComTxPduId);
 
 	memcpy(SduPtr, Arc_IPdu->ComIPduDataPtr, IPdu->ComIPduSize);
 	return E_OK;
 }
 
 
+//lint -esym(904, Com_TriggerIPduSend) //PC-Lint Exception of rule 14.7
 void Com_TriggerIPduSend(PduIdType ComTxPduId) {
-	PduIdCheck(ComTxPduId, 0x17);
+	PDU_ID_CHECK(ComTxPduId, 0x17);
 
 	//DEBUG(DEBUG_MEDIUM, "Com_TriggerIPduSend sending IPdu %d... ", ComTxPduId);
-	ComGetIPdu(ComTxPduId);
-	ComGetArcIPdu(ComTxPduId);
+	const ComIPdu_type *IPdu = GET_IPdu(ComTxPduId);
+	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(ComTxPduId);
 
 	// Is the IPdu ready for transmission?
 	if (Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduMinimumDelayTimer == 0) {
@@ -121,9 +124,10 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
 		// Send IPdu!
 		if (PduR_ComTransmit(IPdu->ArcIPduOutgoingId, &Com_Arc_Config.OutgoingPdu) == E_OK) {
 			// Clear all update bits for the contained signals
-			for (int i = 0; i < Arc_IPdu->NComIPduSignalRef; i++) {
+			for (uint8 i = 0; (IPdu->ComIPduSignalRef != NULL) && (IPdu->ComIPduSignalRef[i] != NULL); i++) {
+			//for (int i = 0; i < Arc_IPdu->NComIPduSignalRef; i++) {
 				if (IPdu->ComIPduSignalRef[i]->ComSignalArcUseUpdateBit) {
-					clearBit(Arc_IPdu->ComIPduDataPtr, IPdu->ComIPduSignalRef[i]->ComUpdateBitPosition);
+					CLEARBIT(Arc_IPdu->ComIPduDataPtr, IPdu->ComIPduSignalRef[i]->ComUpdateBitPosition);
 				}
 			}
 		}
@@ -139,15 +143,16 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
 	}
 }
 
-Std_ReturnType Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr) {
-	PduIdCheck(ComRxPduId, 0x14, E_NOT_OK);
+//lint -esym(904, Com_RxIndication) //PC-Lint Exception of rule 14.7
+void Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr) {
+	PDU_ID_CHECK(ComRxPduId, 0x14);
 
-	ComGetIPdu(ComRxPduId);
-	ComGetArcIPdu(ComRxPduId);
+	const ComIPdu_type *IPdu = GET_IPdu(ComRxPduId);
+	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(ComRxPduId);
 
 	// If Ipdu is stopped
 	if (!Arc_IPdu->Com_Arc_IpduStarted) {
-		return E_OK;
+		return;
 	}
 
 	// Check callout status
@@ -155,7 +160,7 @@ Std_ReturnType Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr) {
 		if (!IPdu->ComIPduCallout(ComRxPduId, SduPtr)) {
 			// TODO Report error to DET.
 			// Det_ReportError();
-			return E_NOT_OK;
+			return;
 		}
 	}
 
@@ -163,66 +168,57 @@ Std_ReturnType Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr) {
 	memcpy(Arc_IPdu->ComIPduDataPtr, SduPtr, IPdu->ComIPduSize);
 
 	// For each signal.
-	const ComSignal_type *signal;
-	for (int i = 0; IPdu->ComIPduSignalRef[i] != NULL; i++) {
-		signal = IPdu->ComIPduSignalRef[i];
-		ComGetArcSignal(signal->ComHandleId);
+	const ComSignal_type *comSignal;
+	for (uint8 i = 0; IPdu->ComIPduSignalRef[i] != NULL; i++) {
+		comSignal = IPdu->ComIPduSignalRef[i];
+		Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(comSignal->ComHandleId);
 
 		// If this signal uses an update bit, then it is only considered if this bit is set.
-		if (!signal->ComSignalArcUseUpdateBit ||
-			(signal->ComSignalArcUseUpdateBit && testBit(Arc_IPdu->ComIPduDataPtr, signal->ComUpdateBitPosition))) {
+		if ( (!comSignal->ComSignalArcUseUpdateBit) ||
+			( (comSignal->ComSignalArcUseUpdateBit) && (TESTBIT(Arc_IPdu->ComIPduDataPtr, comSignal->ComUpdateBitPosition)) ) ) {
 
-			if (signal->ComTimeoutFactor > 0) { // If reception deadline monitoring is used.
+			if (comSignal->ComTimeoutFactor > 0) { // If reception deadline monitoring is used.
 				// Reset the deadline monitoring timer.
-				Arc_Signal->Com_Arc_DeadlineCounter = signal->ComTimeoutFactor;
+				Arc_Signal->Com_Arc_DeadlineCounter = comSignal->ComTimeoutFactor;
 			}
 
-			/*
-			// Zero new filter value.
-			IPdu->ComIPduSignalRef[i]->ComFilter.ComFilterArcNewValue = 0;
-
-			//Fix this!!!
-			Com_CopyFromSignal(IPdu->ComIPduSignalRef[i], &IPdu->ComIPduSignalRef[i]->ComFilter.ComFilterArcNewValue);
-			*/
-			// Perform filtering
-			//if (Com_Filter(IPdu->ComIPduSignalRef[i])) {
-
-				// Check the signal processing mode.
-				if (IPdu->ComIPduSignalProcessing == IMMEDIATE) {
-					// If signal processing mode is IMMEDIATE, notify the signal callback.
-					if (IPdu->ComIPduSignalRef[i]->ComNotification != NULL) {
-						IPdu->ComIPduSignalRef[i]->ComNotification();
-					}
-
-				} else {
-					// Signal processing mode is DEFERRED, mark the signal as updated.
-					Arc_Signal->ComSignalUpdated = 1;
+			// Check the signal processing mode.
+			if (IPdu->ComIPduSignalProcessing == IMMEDIATE) {
+				// If signal processing mode is IMMEDIATE, notify the signal callback.
+				if (IPdu->ComIPduSignalRef[i]->ComNotification != NULL) {
+					IPdu->ComIPduSignalRef[i]->ComNotification();
 				}
-			//}
+
+			} else {
+				// Signal processing mode is DEFERRED, mark the signal as updated.
+				Arc_Signal->ComSignalUpdated = 1;
+			}
+
 		} else {
-			DEBUG(DEBUG_LOW, "Com_RxIndication: Ignored signal %d of I-PD %d since its update bit was not set\n", signal->ComHandleId, ComRxPduId);
+			DEBUG(DEBUG_LOW, "Com_RxIndication: Ignored signal %d of I-PD %d since its update bit was not set\n", comSignal->ComHandleId, ComRxPduId);
 		}
 	}
 
-	return E_OK;
+	return;
 }
 
 void Com_TxConfirmation(PduIdType ComTxPduId) {
-	PduIdCheck(ComTxPduId, 0x15);
+	PDU_ID_CHECK(ComTxPduId, 0x15);
+	(void)ComTxPduId; // Nothing to be done. This is just to avoid Lint warning.
 }
 
 
 Std_ReturnType Com_SendSignalGroup(Com_SignalGroupIdType SignalGroupId) {
 //#warning Com_SendSignalGroup should be performed atomically. Should we disable interrupts here?
-	ComGetSignal(SignalGroupId);
-	ComGetArcSignal(SignalGroupId);
-	ComGetArcIPdu(Arc_Signal->ComIPduHandleId);
-	ComGetIPdu(Arc_Signal->ComIPduHandleId);
+	const ComSignal_type * Signal = GET_Signal(SignalGroupId);
+	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(SignalGroupId);
+	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
+	const ComIPdu_type *IPdu = GET_IPdu(Arc_Signal->ComIPduHandleId);
 
 
 	// Copy shadow buffer to Ipdu data space
 	const ComGroupSignal_type *groupSignal;
-	for (int i = 0; Signal->ComGroupSignal[i] != NULL; i++) {
+	for (uint8 i = 0; Signal->ComGroupSignal[i] != NULL; i++) {
 		groupSignal = Signal->ComGroupSignal[i];
 		// TODO CopyData
 		// Com_CopyData(Arc_IPdu->ComIPduDataPtr, Arc_Signal->Com_Arc_ShadowBuffer,  groupSignal->ComBitSize, groupSignal->ComBitPosition, groupSignal->ComBitPosition);
@@ -231,7 +227,7 @@ Std_ReturnType Com_SendSignalGroup(Com_SignalGroupIdType SignalGroupId) {
 
 	// If the signal has an update bit. Set it!
 	if (Signal->ComSignalArcUseUpdateBit) {
-		setBit(Arc_IPdu->ComIPduDataPtr, Signal->ComUpdateBitPosition);
+		SETBIT(Arc_IPdu->ComIPduDataPtr, Signal->ComUpdateBitPosition);
 	}
 
 	/*
@@ -247,12 +243,12 @@ Std_ReturnType Com_SendSignalGroup(Com_SignalGroupIdType SignalGroupId) {
 
 Std_ReturnType Com_ReceiveSignalGroup(Com_SignalGroupIdType SignalGroupId) {
 //#warning Com_ReceiveSignalGroup should be performed atomically. Should we disable interrupts here?
-	ComGetSignal(SignalGroupId);
-	ComGetArcSignal(SignalGroupId);
+	const ComSignal_type * Signal = GET_Signal(SignalGroupId);
+	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(SignalGroupId);
 
 	// Copy Ipdu data buffer to shadow buffer.
 	const ComGroupSignal_type *groupSignal;
-	for (int i = 0; Signal->ComGroupSignal[i] != NULL; i++) {
+	for (uint8 i = 0; Signal->ComGroupSignal[i] != NULL; i++) {
 		groupSignal = Signal->ComGroupSignal[i];
 		// TODO: CopyData
 		// Com_CopyData(Arc_Signal->Com_Arc_ShadowBuffer, Arc_IPdu->ComIPduDataPtr, groupSignal->ComBitSize, groupSignal->ComBitPosition, groupSignal->ComBitPosition);
@@ -264,14 +260,14 @@ Std_ReturnType Com_ReceiveSignalGroup(Com_SignalGroupIdType SignalGroupId) {
 }
 
 void Com_UpdateShadowSignal(Com_SignalIdType SignalId, const void *SignalDataPtr) {
-	ComGetArcGroupSignal(SignalId);
+	Com_Arc_GroupSignal_type *Arc_GroupSignal = GET_ArcGroupSignal(SignalId);
 	// TODO: CopyData
 	// Com_CopyData(Arc_GroupSignal->Com_Arc_ShadowBuffer, SignalDataPtr, GroupSignal->ComBitSize, GroupSignal->ComBitPosition, 0);
 	Com_WriteSignalDataToPduBuffer(SignalId, TRUE, SignalDataPtr, (void *)Arc_GroupSignal->Com_Arc_ShadowBuffer);
 }
 
 void Com_ReceiveShadowSignal(Com_SignalIdType SignalId, void *SignalDataPtr) {
-	ComGetArcGroupSignal(SignalId);
+	Com_Arc_GroupSignal_type *Arc_GroupSignal = GET_ArcGroupSignal(SignalId);
 	// TODO: CopyData
 	// Com_CopyData(SignalDataPtr, Arc_GroupSignal->Com_Arc_ShadowBuffer, GroupSignal->ComBitSize, 0, GroupSignal->ComBitPosition);
 	Com_ReadSignalDataFromPduBuffer(SignalId, TRUE, SignalDataPtr, (void *)Arc_GroupSignal->Com_Arc_ShadowBuffer);

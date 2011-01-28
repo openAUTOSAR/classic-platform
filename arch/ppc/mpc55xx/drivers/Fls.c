@@ -74,11 +74,19 @@
  * High: 8x128K
  */
 
-#define H7F_REG_BASE 			0xFFFF8000
+#define H7F_REG_BASE 			(UINT32)&FLASH
 #define MAIN_ARRAY_BASE 		0x00000000
-#define SHADOW_ROW_BASE  	0x00FF8000
+
+#ifdef CFG_MPC5516
+#define SHADOW_ROW_BASE  		0x00FF8000
+#elif defined(CFG_MPC5567)
+#define SHADOW_ROW_BASE  		0x00FFFC00
+#endif
+
 #define SHADOW_ROW_SIZE 		0x00008000
 #define FLASH_PAGE_SIZE    H7FB_PAGE_SIZE
+
+#define FLASH_TOTAL_BLOCKS ( 20 )
 
 #if 0
 #define VFLAGS_ADDR_SECT		(1<<0)
@@ -171,6 +179,22 @@ static inline int Fls_Validate( uint32 addr,uint32 length, uint32 api,uint32 rv 
   return _rv; \
   }
 
+#define FLS_VALIDATE_READ_PARAM_ADDRESS_PAGE_W_RV(_addr, _api, _rv)\
+  int sectorIndex;\
+  int addrOk=0;\
+  const Fls_SectorType* sector;\
+  for (sectorIndex=0; sectorIndex<Fls_Global.config->FlsSectorListSize;sectorIndex++) {\
+    sector = &Fls_Global.config->FlsSectorList[sectorIndex];\
+    if((((uint32)_addr-sector->FlsSectorStartaddress) / sector->FlsSectorSize)<sector->FlsNumberOfSectors){\
+      /* Within the right adress space */\
+        addrOk=1;\
+    }\
+  }\
+  if (1!=addrOk){\
+  Det_ReportError(MODULE_ID_FLS,0,_api,FLS_E_PARAM_ADDRESS ); \
+  return _rv; \
+  }
+
 #define FLS_VALIDATE_PARAM_LENGTH_PAGE_W_RV(_addr, _length, _api, _rv)\
   int i;\
   int lengthOk=0;\
@@ -181,6 +205,21 @@ static inline int Fls_Validate( uint32 addr,uint32 length, uint32 api,uint32 rv 
         lengthOk=1;\
         break;\
       }\
+    }\
+    sectorPtr++;\
+  }\
+  if (!lengthOk){\
+    Det_ReportError(MODULE_ID_FLS,0,_api,FLS_E_PARAM_LENGTH ); \
+    return _rv; \
+  }
+
+#define FLS_VALIDATE_READ_PARAM_LENGTH_PAGE_W_RV(_addr, _length, _api, _rv)\
+  int i;\
+  int lengthOk=0;\
+  const Fls_SectorType* sectorPtr= &Fls_Global.config->FlsSectorList[0];\
+  for (i=0; i<Fls_Global.config->FlsSectorListSize;i++) {\
+    if ((sectorPtr->FlsSectorStartaddress + (sectorPtr->FlsNumberOfSectors * sectorPtr->FlsSectorSize))>=(uint32_t)(_addr+(_length))){\
+    	lengthOk=1;\
     }\
     sectorPtr++;\
   }\
@@ -226,15 +265,17 @@ static inline int Fls_Validate( uint32 addr,uint32 length, uint32 api,uint32 rv 
   }
 
 #define FLS_VALIDATE_PARAM_DATA_W_RV(_ptr,_api, _rv) \
-  if( (_ptr)==((void *)0)) { \
+  if(( (uint32)(_ptr)%FLS_READ_PAGE_SIZE != 0 ) || ( (_ptr)==((void *)0))) { \
     Det_ReportError(MODULE_ID_FLS,0,_api,FLS_E_PARAM_DATA); \
     return _rv; \
   }
 #else
   #define FLS_VALIDATE_PARAM_ADDRESS_SECTOR_W_RV(_addr, _api, _rv)
   #define FLS_VALIDATE_PARAM_ADDRESS_PAGE_W_RV(_addr, _api, _rv)
+  #define FLS_VALIDATE_READ_PARAM_ADDRESS_PAGE_W_RV(_addr, _api, _rv)
   #define FLS_VALIDATE_PARAM_LENGTH_SECTOR_W_RV(_addr, _length, _api, _rv)
   #define FLS_VALIDATE_PARAM_LENGTH_PAGE_W_RV(_addr, _length, _api, _rv)
+  #define FLS_VALIDATE_READ_PARAM_LENGTH_PAGE_W_RV(_addr, _length, _api, _rv)
   #define FLS_VALIDATE_STATUS_UNINIT_W_RV(_status, _api, _rv)
   #define FLS_VALIDATE_STATUS_BUSY(_status, _api)
   #define FLS_VALIDATE_STATUS_BUSY_W_RV(_status, _api, _rv)
@@ -322,9 +363,9 @@ typedef struct {
   MemIf_StatusType    status;
   MemIf_JobResultType jobResultType;
   Fls_Arc_JobType	jobType;
-  MemIf_AddressType   sourceAddr;
+  Fls_AddressType   sourceAddr;
   uint8 *targetAddr;
-  MemIf_LengthType length;
+  Fls_LengthType length;
 
   Fls_ProgInfoType flashWriteInfo;
 
@@ -354,9 +395,9 @@ typedef struct {
   MemIf_StatusType    status;
   MemIf_JobResultType jobResultType;
   Fls_Arc_JobType	jobType;
-  MemIf_AddressType   sourceAddr;
+  Fls_AddressType   sourceAddr;
   uint8 *targetAddr;
-  MemIf_LengthType length;
+  Fls_LengthType length;
 
   Fls_ProgInfoType flashWriteInfo;
 } Fls_GlobalType;
@@ -441,7 +482,7 @@ static void address_to_erase_blocks( Fls_EraseBlockType *eraseBlocks, uint32 add
   endBlock = address_to_block( addr + size - 1,&rem );
 
   // Check so our implementation holds..
-  assert( endBlock<=32 );
+  assert( endBlock <= FLASH_TOTAL_BLOCKS );
 
 #define BLOCK_MASK 0x0003ffffUL
 
@@ -452,9 +493,9 @@ static void address_to_erase_blocks( Fls_EraseBlockType *eraseBlocks, uint32 add
 
 
   // shift things in to make freescale driver happy
-  eraseBlocks->lowEnabledBlocks = mask&0x3f; // ????
-  eraseBlocks->midEnabledBlocks = (mask>>10)&3; // ????
-  eraseBlocks->highEnabledBlocks = mask>>12;
+  eraseBlocks->lowEnabledBlocks = mask&0x3ff;   // Bits 0..9 indicats low blocks
+  eraseBlocks->midEnabledBlocks = (mask>>10)&3; // Bits 10..11 indicats mid blocks
+  eraseBlocks->highEnabledBlocks = mask>>12;    // Bits 12..19 indicats high blocks
 
 
   return ;
@@ -494,11 +535,11 @@ void Fls_Init( const Fls_ConfigType *ConfigPtr )
 }
 
 /* TargetAddress always from 0 to FLS_TOTAL_SIZE */
-Std_ReturnType Fls_Erase(	MemIf_AddressType   TargetAddress,
-                          MemIf_LengthType    Length )
+Std_ReturnType Fls_Erase(	Fls_AddressType   TargetAddress,
+                          Fls_LengthType    Length )
 {
-  uint32 block;
-  uint32 sBlock;
+  uint32 endBlock;
+  uint32 startBlock;
   uint32 rem;
   Fls_EraseBlockType eraseBlock;
   Fls_EraseInfoType eraseInfo;
@@ -514,14 +555,14 @@ Std_ReturnType Fls_Erase(	MemIf_AddressType   TargetAddress,
      return E_NOT_OK;
 
   // TargetAddress
-  sBlock = address_to_block(TargetAddress,&rem);
+  startBlock = address_to_block(TargetAddress,&rem);
 
-  if( (sBlock == (-1)) || (rem!=0) ) {
+  if( (startBlock == (-1)) || (rem!=0) ) {
     DET_REPORTERROR(MODULE_ID_FLS,0,0x0,FLS_E_PARAM_ADDRESS );
     return E_NOT_OK;
   }
 
-  block = address_to_block(TargetAddress+Length,&rem);
+  endBlock = address_to_block(TargetAddress+Length,&rem);
 
   // Check if we trying to erase a partition that we are executing in
   pc = Fls_GetPc();
@@ -530,8 +571,7 @@ Std_ReturnType Fls_Erase(	MemIf_AddressType   TargetAddress,
   	uint32 pcBlock = address_to_block(pc,&rem);
   	uint8 *partMap = Fls_Global.config->FlsBlockToPartitionMap;
 
-  	if( (partMap[pcBlock] >= partMap[sBlock]) && (partMap[pcBlock] <= partMap[block]) ) {
-//    if( address_to_block(pc,&rem) == Fls_Global.config->FlsBlockToPartitionMap[block] ) {
+  	if( (partMap[pcBlock] >= partMap[startBlock]) && (partMap[pcBlock] <= partMap[endBlock]) ) {
         // Can't erase and in the same partition we are executing
         assert(0);
     }
@@ -562,9 +602,9 @@ Std_ReturnType Fls_Erase(	MemIf_AddressType   TargetAddress,
 }
 
 
-Std_ReturnType Fls_Write (    MemIf_AddressType   TargetAddress,
+Std_ReturnType Fls_Write (    Fls_AddressType   TargetAddress,
                         const uint8         *SourceAddressPtr,
-                        MemIf_LengthType    Length )
+                        Fls_LengthType    Length )
 {
   Fls_EraseBlockType eraseBlock;
 
@@ -681,6 +721,7 @@ void Fls_MainFunction( void )
       Fls_Global.jobResultType = MEMIF_JOB_OK;
       Fls_Global.status = MEMIF_IDLE;
       Fls_Global.jobType = FLS_JOB_NONE;
+      FEE_JOB_END_NOTIFICATION();
       break;
     case FLS_JOB_WRITE:
     {
@@ -724,15 +765,15 @@ void Fls_MainFunction( void )
   }
 }
 
-Std_ReturnType Fls_Read (	MemIf_AddressType SourceAddress,
+Std_ReturnType Fls_Read (	Fls_AddressType SourceAddress,
               uint8 *TargetAddressPtr,
-              MemIf_LengthType Length )
+              Fls_LengthType Length )
 {
   FLS_VALIDATE_STATUS_UNINIT_W_RV(Fls_Global.status, FLS_READ_ID, E_NOT_OK);
   FLS_VALIDATE_STATUS_BUSY_W_RV(Fls_Global.status, FLS_READ_ID, E_NOT_OK);
-  FLS_VALIDATE_PARAM_ADDRESS_PAGE_W_RV(SourceAddress, FLS_READ_ID, E_NOT_OK);
-  FLS_VALIDATE_PARAM_LENGTH_PAGE_W_RV(SourceAddress, Length, FLS_READ_ID, E_NOT_OK);
-  FLS_VALIDATE_PARAM_DATA_W_RV((void*)SourceAddress, FLS_READ_ID, E_NOT_OK)
+  FLS_VALIDATE_READ_PARAM_ADDRESS_PAGE_W_RV(SourceAddress, FLS_READ_ID, E_NOT_OK);
+  FLS_VALIDATE_READ_PARAM_LENGTH_PAGE_W_RV(SourceAddress, Length, FLS_READ_ID, E_NOT_OK);
+  FLS_VALIDATE_PARAM_DATA_W_RV((void*)TargetAddressPtr, FLS_READ_ID, E_NOT_OK)
 
   // Always check if status is not busy
   if (Fls_Global.status == MEMIF_BUSY )
@@ -750,9 +791,9 @@ Std_ReturnType Fls_Read (	MemIf_AddressType SourceAddress,
 }
 
 #if ( FLS_COMPARE_API == STD_ON )
-Std_ReturnType Fls_Compare( MemIf_AddressType SourceAddress,
+Std_ReturnType Fls_Compare( Fls_AddressType SourceAddress,
               uint8 *TargetAddressPtr,
-              MemIf_LengthType Length )
+              Fls_LengthType Length )
 {
   FLS_VALIDATE_STATUS_UNINIT_W_RV(Fls_Global.status, FLS_COMPARE_ID, E_NOT_OK);
   FLS_VALIDATE_STATUS_BUSY_W_RV(Fls_Global.status, FLS_COMPARE_ID, E_NOT_OK);
@@ -788,5 +829,27 @@ void Fls_GetVersionInfo( Std_VersionInfoType *VersioninfoPtr )
   memcpy(VersioninfoPtr, &_Fls_VersionInfo, sizeof(Std_VersionInfoType));
 }
 
+void Fls_Check( uint32 flsBaseAddress, uint32 flsTotalSize )
+{
+  // ECC checking is always on by default.
+  // If a non correctable error is discovered
+  // we will get an IVOR2 exception.
+
+  // Enable Flash Non_Correctible Reporting,
+  // Not really necessary but makes more information
+  // available in the MCM registers if an error occurs.
+  MCM.ECR.B.EFNCR = 1;
+
+  // Read flash in 32bit chunks, it's most efficient.
+  uint32* memoryChunkPtr = (uint32*)flsBaseAddress;
+  uint32* flsTotalSizePtr = (uint32*)flsTotalSize;
+  uint32  memoryChunk = *memoryChunkPtr; // The first read
+
+  // Read the rest of the flash, chunk by chunk
+  while(memoryChunkPtr < flsTotalSizePtr)
+  {
+    memoryChunk=*(memoryChunkPtr++);
+  }
+}
 
 

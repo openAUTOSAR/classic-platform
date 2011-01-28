@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #ifndef LINSM_CFG_H_
 #define LINSM_CFG_H_
 

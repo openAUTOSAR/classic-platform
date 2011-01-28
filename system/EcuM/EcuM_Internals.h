@@ -25,6 +25,35 @@
 #ifndef _ECUM_INTERNALS_H_
 #define _ECUM_INTERNALS_H_
 
+#if  ( ECUM_DEV_ERROR_DETECT == STD_ON )
+#include "Det.h"
+#define VALIDATE(_exp,_api,_err ) \
+        if( !(_exp) ) { \
+          Det_ReportError(MODULE_ID_ECUM, 0, _api, _err); \
+        }
+
+#define VALIDATE_RV(_exp,_api,_err,_rv ) \
+        if( !(_exp) ) { \
+          Det_ReportError(MODULE_ID_ECUM, 0, _api, _err); \
+          return _rv; \
+        }
+
+#define VALIDATE_NO_RV(_exp,_api,_err ) \
+  if( !(_exp) ) { \
+          Det_ReportError(MODULE_ID_ECUM, 0, _api, _err); \
+          return; \
+        }
+#define DET_REPORTERROR(_module,_instance,_api,_err) Det_ReportError(_module,_instance,_api,_err)
+
+#else
+#define VALIDATE(_exp,_api,_err )
+#define VALIDATE_RV(_exp,_api,_err,_rv )
+#define VALIDATE_NO_RV(_exp,_api,_err )
+#define DET_REPORTERROR(_module,_instance,_api,_err)
+#endif
+
+
+
 typedef struct
 {
 	boolean initiated;
@@ -33,8 +62,15 @@ typedef struct
 	uint8 shutdown_mode;
 	AppModeType app_mode;
 	EcuM_StateType current_state;
+#if defined(USE_COMM)
+	uint32 run_comm_requests;
+#endif
+	uint32 run_requests;
+	uint32 postrun_requests;
 } EcuM_GobalType;
 
 extern EcuM_GobalType internal_data;
+
+void EcuM_enter_run_mode(void);
 
 #endif /*_ECUM_INTERNALS_H_*/

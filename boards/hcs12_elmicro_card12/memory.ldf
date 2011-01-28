@@ -1,0 +1,55 @@
+
+
+/* The board Elmicro Card12 comes with MC912D60A or MC912DG128A.
+ * This memory mapping is for MC9S12DG128 but is also compatible 
+ * with MC912D60A (which has more memory).
+ */
+ 
+page0 (rwx) : ORIGIN = 0x0, LENGTH = 256
+
+/* RAM */
+data (rwx)  : ORIGIN = 0x1000, LENGTH = 12k
+
+eeprom (rx): ORIGIN = 0x0400, LENGTH = 3k
+text (rx)  : ORIGIN = 0x4000, LENGTH = 48k
+  
+/* high fixed bank, reserve 0x100 vectors and security. */
+text_h (rx)  : ORIGIN = 0xc002, LENGTH = 16k-0x102
+vectors (rx)  : ORIGIN = 0xff80, LENGTH = 0x80
+  
+/* Flash memory banks VMA:s */
+bank_A  (rx)   : ORIGIN = 0x0f0000, LENGTH = 16k
+bank_B  (rx)   : ORIGIN = 0x0f4000, LENGTH = 16k
+bank_C (rx)   : ORIGIN = 0x0f8000, LENGTH = 16k
+bank_D (rx)   : ORIGIN = 0x0fc000, LENGTH = 16k
+bank_E (rx)   : ORIGIN = 0x100000, LENGTH = 16k
+bank_F (rx)   : ORIGIN = 0x104000, LENGTH = 16k
+  
+bank_FIX1 (rx)   : ORIGIN = 0x108000, LENGTH = 16k
+bank_FIX2 (rx)   : ORIGIN = 0x10c002, LENGTH = 16k-0x102
+  
+/* Flash memory banks LMA:s */
+/* iSystem winIDEA */
+bank_A_lma  (rx)   : ORIGIN = 0x0f0000, LENGTH = 16k
+bank_B_lma  (rx)   : ORIGIN = 0x0f4000, LENGTH = 16k
+bank_C_lma (rx)   : ORIGIN = 0x0f8000, LENGTH = 16k
+bank_D_lma (rx)   : ORIGIN = 0x0fc000, LENGTH = 16k
+bank_E_lma (rx)   : ORIGIN = 0x100000, LENGTH = 16k
+bank_F_lma (rx)   : ORIGIN = 0x104000, LENGTH = 16k
+
+bank_FIX1_lma (rx)   : ORIGIN = 0x108000, LENGTH = 16k
+bank_FIX2_lma (rx)   : ORIGIN = 0x10c002, LENGTH = 16k-0x102
+vectors_lma (rx)  : ORIGIN = 0x10ff80, LENGTH = 0x80
+  
+/* Freescale Codewarrior Hiwave (s19, TBDML)
+bank_A_lma  (rx)   : ORIGIN = 0x388000, LENGTH = 16k
+bank_B_lma  (rx)   : ORIGIN = 0x398000, LENGTH = 16k
+bank_C_lma (rx)   : ORIGIN = 0x3a8000, LENGTH = 16k
+bank_D_lma (rx)   : ORIGIN = 0x3b8000, LENGTH = 16k
+bank_E_lma (rx)   : ORIGIN = 0x3c8000, LENGTH = 16k
+bank_F_lma (rx)   : ORIGIN = 0x3d8000, LENGTH = 16k
+
+bank_FIX1_lma (rx)   : ORIGIN = 0x3e8000, LENGTH = 16k
+bank_FIX2_lma (rx)   : ORIGIN = 0x3f8002, LENGTH = 16k-0x102
+vectors_lma (rx)  : ORIGIN = 0x3fff80, LENGTH = 0x80
+*/

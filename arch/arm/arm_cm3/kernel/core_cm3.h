@@ -23,6 +23,8 @@
 #ifndef __CM3_CORE_H__
 #define __CM3_CORE_H__
 
+
+
 #ifdef __cplusplus
  extern "C" {
 #endif 
@@ -1184,10 +1186,12 @@ static __INLINE uint32_t NVIC_GetActive(IRQn_Type IRQn)
  */
 static __INLINE void NVIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
 {
+  uint32_t prio = ((priority << (8 - __NVIC_PRIO_BITS)) & 0xff);
+
   if(IRQn < 0) {
-    SCB->SHP[((uint32_t)(IRQn) & 0xF)-4] = ((priority << (8 - __NVIC_PRIO_BITS)) & 0xff); } /* set Priority for Cortex-M3 System Interrupts */
+    SCB->SHP[((uint32_t)(IRQn) & 0xF)-4] = prio; } /* set Priority for Cortex-M3 System Interrupts */
   else {
-    NVIC->IP[(uint32_t)(IRQn)] = ((priority << (8 - __NVIC_PRIO_BITS)) & 0xff);    }        /* set Priority for device specific Interrupts      */
+    NVIC->IP[(uint32_t)(IRQn)] = prio;    }        /* set Priority for device specific Interrupts      */
 }
 
 /**
@@ -1302,7 +1306,7 @@ static __INLINE uint32_t SysTick_Config(uint32_t ticks)
   if (ticks > SYSTICK_MAXCOUNT)  return (1);                                             /* Reload value impossible */
 
   SysTick->LOAD  =  (ticks & SYSTICK_MAXCOUNT) - 1;                                      /* set reload register */
-  NVIC_SetPriority (SysTick_IRQn, (1<<__NVIC_PRIO_BITS) - 1);                            /* set Priority for Cortex-M0 System Interrupts */
+  //NVIC_SetPriority (SysTick_IRQn, (1<<__NVIC_PRIO_BITS) - 1);                            /* set Priority for Cortex-M0 System Interrupts */
   SysTick->VAL   =  (0x00);                                                              /* Load the SysTick Counter Value */
   SysTick->CTRL = (1 << SYSTICK_CLKSOURCE) | (1<<SYSTICK_ENABLE) | (1<<SYSTICK_TICKINT); /* Enable SysTick IRQ and SysTick Timer */
   return (0);                                                                            /* Function successful */
@@ -1358,6 +1362,22 @@ static __INLINE uint32_t ITM_SendChar (uint32_t ch)
   }  
   return (ch);
 }
+
+/* ---  Arctic Core --- */
+
+static inline unsigned long _Irq_Save(void)
+{
+   unsigned long val = __get_PRIMASK();
+   __disable_irq();
+   return val;
+}
+
+
+static inline void _Irq_Restore(unsigned mask) {
+	__set_PRIMASK(mask);
+}
+
+
 
 #ifdef __cplusplus
 }

@@ -9,7 +9,7 @@ if CPU()=="HC12DG128A"
   gosub &var
 )
 ELSE
-  gosub &cmd
+  gosub &cmd &arg1
 
 
 
@@ -32,10 +32,13 @@ dialog:
 //-------------------------------------------------------------
 load:
   LOCAL &file
-  dialog.file "&cfg_project_path_g"/*.elf
   ENTRY &file
-
-  IF OS.FILE(&file)
+  IF "&file"==""
+  (
+    dialog.file "&cfg_project_path_g"/*.elf
+    ENTRY &file
+  )
+  IF OS.FILE("&file")
     &cfg_loadfile_g="&file"
 
   do config save
@@ -89,13 +92,15 @@ postload_CortexM3:
   r.s MSP 0x20005000
   RETURN
 
-postload_mpc5516:
-postload_MPC5554:
+postload_MPC5516:
 postload_MPC5554:
 postload_mpc5633M:
   RETURN
 
 postload_HC12DG128A:
+  RETURN
+
+postload_CortexR4F:
   RETURN
 
 //-------------------------------------------------------------
@@ -112,6 +117,9 @@ path:
   y.spath + &cfg_project_path_g/system/kernel
   y.spath.SETRECURSEDIR &cfg_project_path_g
   RETURN
+
+
+
 
 
 

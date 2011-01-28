@@ -18,6 +18,14 @@
 #define IRQ_TYPES_H
 
 
+#define Irq_SOI()
+
+/**
+ * End-Of-Interrupt. Called by the OS it wants to clear the interrupt.
+ */
+void Irq_EOI( void );
+
+
 typedef enum
 {
   /* Software interrupts. */
@@ -576,7 +584,7 @@ typedef enum
   DATA_TLB_EXCEPTION,
   INSTRUCTION_TLB_EXCEPTION,
   DEBUG_EXCEPTION,
-  NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS,
+  NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS
 }IrqType;
 
 typedef enum {
@@ -601,7 +609,7 @@ typedef enum {
   PERIPHERAL_CLOCK_ESCI_G,
   PERIPHERAL_CLOCK_ESCI_H,
   PERIPHERAL_CLOCK_IIC_A,
-  PERIPHERAL_CLOCK_MLB,
+  PERIPHERAL_CLOCK_MLB
 } McuE_PeriperalClock_t;
 
 
@@ -612,7 +620,7 @@ typedef enum {
 
 typedef enum {
 	CPU_CORE0,
-	CPU_CORE1,
+	CPU_CORE1
 } Cpu_t;
 
 #define IRQ_INTERRUPT_OFFSET		0

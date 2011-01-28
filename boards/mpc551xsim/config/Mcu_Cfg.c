@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #ifndef MCU_CFG_C_
 #define MCU_CFG_C_
 

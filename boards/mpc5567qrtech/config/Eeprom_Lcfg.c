@@ -21,11 +21,12 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #include "Eep.h"
 #include "Spi.h"
 #include "Spi_Cfg.h"
 
-//#define USE_TRACE 1
 //#define USE_LDEBUG_PRINTF	1
 #undef DEBUG_LVL
 #define DEBUG_LVL DEBUG_LOW

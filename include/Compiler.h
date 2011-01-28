@@ -27,8 +27,10 @@
 
 /* REQ:COMPILER040,049,051 */
 #define AUTOMATIC
-#define _STATIC_ 	static
+#define STATIC 	static
 #define NULL_PTR	((void *)0)
+
+#define CC_EXTENSION 	__extension__
 
 /* REQ:COMPILER005 */
 /* TODO: skip the memclass for now */

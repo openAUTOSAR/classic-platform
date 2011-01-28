@@ -22,7 +22,7 @@
 #define COUNTER_MAX(x) 			(x)->counter->alarm_base.maxallowedvalue
 #define COUNTER_MIN_CYCLE(x) 	(x)->counter->alarm_base.mincycle
 #define ALARM_CHECK_ID(x) 				\
-	if( (x) > Os_CfgGetAlarmCnt()) { \
+	if( (x) > OS_ALARM_CNT) { \
 		rv = E_OS_ID;					\
 		goto err; 						\
 	}
@@ -112,11 +112,9 @@ StatusType SetRelAlarm(AlarmType AlarmId, TickType Increment, TickType Cycle){
 		rv =  E_OS_VALUE;
 		goto err;
 	} else {
-		if(  Cycle == 0 ||
-			(Cycle >= COUNTER_MIN_CYCLE(aPtr)) ||
-			(Cycle <= COUNTER_MAX(aPtr)) ) {
-			/* OK */
-		} else {
+		if( Cycle != 0 &&
+			( (Cycle < COUNTER_MIN_CYCLE(aPtr)) ||
+			  (Cycle > COUNTER_MAX(aPtr)) ) ) {
 			/** @req OS304 */
 			rv =  E_OS_VALUE;
 			goto err;
@@ -148,6 +146,37 @@ StatusType SetRelAlarm(AlarmType AlarmId, TickType Increment, TickType Cycle){
 	OS_STD_END_3(OSServiceId_SetRelAlarm,AlarmId, Increment, Cycle);
 }
 
+/**
+ * The  system  service  occupies  the  alarm  <AlarmID>  element.
+ * When <start> ticks are reached, the task assigned to the alarm
+ *
+ * If the absolute value <start> is very close to the current counter
+ * value, the alarm may expire, and the task may become ready or
+ * the  alarm-callback  may  be  called  before  the  system  service
+ * returns to the user.
+ * If  the  absolute  value  <start>  already  was  reached  before  the
+ * system call, the alarm shall only expire when the absolute value
+ * <start>  is  reached  again,  i.e.  after  the  next  overrun  of  the
+ * counter.
+ *
+ * If <cycle> is unequal zero, the alarm element is logged on again
+ * immediately after expiry with the relative value <cycle>.
+ *
+ * The alarm <AlarmID> shall not already be in use.
+ * To  change  values  of  alarms  already  in  use  the  alarm  shall  be
+ * cancelled first.
+ *
+ * If  the  alarm  is  already  in  use,  this  call  will  be  ignored  and  the
+ * error E_OS_STATE is returned.
+ *
+ * Allowed on task level and in ISR, but not in hook routines.
+ *
+ * @param AlarmId
+ * @param Start
+ * @param Cycle
+ * @return
+ */
+
 StatusType SetAbsAlarm(AlarmType AlarmId, TickType Start, TickType Cycle) {
 
 	OsAlarmType *aPtr;
@@ -162,21 +191,20 @@ StatusType SetAbsAlarm(AlarmType AlarmId, TickType Start, TickType Cycle) {
 		/** @req OS304 */
 		rv =  E_OS_VALUE;
 		goto err;
-	} else {
-		if(  Cycle == 0 ||
-			(Cycle >= COUNTER_MIN_CYCLE(aPtr)) ||
-			(Cycle <= COUNTER_MAX(aPtr)) ) {
-			/* OK */
-		} else {
-			/** @req OS304 */
-			rv =  E_OS_VALUE;
-			goto err;
-		}
+	}
+
+	if( Cycle != 0 &&
+		( (Cycle < COUNTER_MIN_CYCLE(aPtr)) ||
+		  (Cycle > COUNTER_MAX(aPtr)) ) ) {
+		/** @req OS304 */
+		rv =  E_OS_VALUE;
+		goto err;
 	}
 
 	Irq_Save(flags);
 	if( aPtr->active == 1 ) {
 		rv = E_OS_STATE;
+		Irq_Restore(flags);
 		goto err;
 	}
 
@@ -271,6 +299,25 @@ void Os_AlarmCheck( OsCounterType *c_p ) {
 				break;
 			default:
 				assert(0);
+			}
+		}
+	}
+}
+
+void Os_AlarmAutostart(void) {
+	int j;
+	for (j = 0; j < OS_ALARM_CNT; j++) {
+		OsAlarmType *alarmPtr;
+		alarmPtr = Os_CfgGetAlarmObj(j);
+		if (alarmPtr->autostartPtr != NULL) {
+			const OsAlarmAutostartType *autoPtr = alarmPtr->autostartPtr;
+
+			if (os_sys.appMode & autoPtr->appModeRef) {
+				if (autoPtr->autostartType == ALARM_AUTOSTART_ABSOLUTE) {
+					SetAbsAlarm(j, autoPtr->alarmTime, autoPtr->cycleTime);
+				} else {
+					SetRelAlarm(j, autoPtr->alarmTime, autoPtr->cycleTime);
+				}
 			}
 		}
 	}

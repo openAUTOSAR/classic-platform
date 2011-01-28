@@ -24,9 +24,9 @@
 #include "Mcu.h"
 #include "debug.h"
 #include "Det.h"
-#include "irq_types.h"
 #include "Os.h"
 #include "arc.h"
+#include "irq.h"
 
 #define FIRST_OC_REG 0x50
 
@@ -277,7 +277,6 @@ void Gpt_DeInit(void)
 // period is in "ticks" !!
 void Gpt_StartTimer(Gpt_ChannelType channel, Gpt_ValueType period_ticks)
 {
-  uint32_t tmp;
   int confCh;
 
   VALIDATE( (Gpt_Global.initRun == STD_ON), GPT_STARTTIMER_SERVICE_ID, GPT_E_UNINIT );

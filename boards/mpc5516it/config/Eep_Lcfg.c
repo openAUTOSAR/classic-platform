@@ -21,11 +21,12 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #include "Eep.h"
 #include "Spi.h"
 #include "Spi_Cfg.h"
 
-//#define USE_TRACE 1
 //#define USE_LDEBUG_PRINTF	1
 #undef DEBUG_LVL
 #define DEBUG_LVL DEBUG_LOW
@@ -74,7 +75,8 @@ const Eep_ConfigType EepConfigData[] = {
     .EepJobCallCycle = 0.2,
 
     // This parameter is the used size of EEPROM device in bytes.
-    .EepSize = 0x8000,
+//    .EepSize = 0x8000,
+    .EepSize = 0x2000,
 
     // This parameter is a reference to a callback function for positive job result
     .Eep_JobEndNotification = &_JobEndNotify,
@@ -82,19 +84,23 @@ const Eep_ConfigType EepConfigData[] = {
     // This parameter is the default EEPROM device mode after initialization.
     .EepDefaultMode = MEMIF_MODE_FAST,
 
+    // Number of bytes read within one job processing cycle in normal mode.
+    .EepNormalReadBlockSize = 4,
+
     // This parameter is the number of bytes read within one job processing cycle in fast mode
     .EepFastReadBlockSize = 64,
-
-    .EepNormalReadBlockSize = 4,
 
     // Number of bytes written within one job processing cycle in normal mode.
     .EepNormalWriteBlockSize = 1,
 
+    // This parameter is the number of bytes written within one job processing cycle in fast mode
+    .EepFastWriteBlockSize = 64,
+
     // This parameter is a reference to a callback function for negative job result
     .Eep_JobErrorNotification = &_JobErrorNotify,
 
-    // This parameter is the number of bytes written within one job processing cycle in fast mode
-    .EepFastWriteBlockSize = 64,
+    // This parameter is the EEPROM page size, i.e. number of bytes.
+    .EepPageSize = 64,
 
     // This parameter is the EEPROM device base address.
     .EepBaseAddress =  0

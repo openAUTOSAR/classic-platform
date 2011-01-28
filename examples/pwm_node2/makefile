@@ -9,8 +9,8 @@ obj-y += Hooks.o
 inc-y += $(ROOTDIR)/system/kernel/$(objdir)
 inc-y += $(ROOTDIR)/system/kernel/include
 
-# OS object files.
-obj-y += Os_Cfg.o
+VPATH += ../
+
 # Board object files
 include $(ROOTDIR)/boards/board_common.mk
 
@@ -23,17 +23,18 @@ inc-y := ../config/$(BOARDDIR) ../config $(inc-y)
 inc-y += $(ROOTDIR)/system/kernel/$(objdir)
 
 #TODO: Remove?, Build other way?
-VPATH += $(ROOTDIR)/$(SUBDIR)/Rte
-inc-y += $(ROOTDIR)/$(SUBDIR)/Rte
+VPATH += ../Rte
+inc-y += ../Rte
 VPATH += $(ROOTDIR)/components/fading_led
 inc-y += $(ROOTDIR)/components/fading_led
 
 
 # libs needed by us 
-libitem-y += $(ROOTDIR)/libs/libkernel_$(ARCH_MCU).a
+#libitem-y +=
 
 #linkfile
-ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
+ldcmdfile-y = linkscript_gcc.ldp
+vpath %.ldf $(ROOTDIR)/$(ARCH_PATH-y)/scripts
 
 # What I want to build
 build-exe-y = pwm_node2.elf

@@ -14,10 +14,12 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
+// PC-Lint Exception to MISRA rule 19.12: stdio ok in debug.h.
+//lint -e(829)
+
 
 #ifndef DEBUG_H_
 #define DEBUG_H_
-
 
 /**
  *
@@ -73,9 +75,11 @@
 #endif
 
 #if defined(USE_LDEBUG_PRINTF)
-#define LDEBUG_PRINTF(format,...) printf(format,## __VA_ARGS__ )
+#define LDEBUG_PRINTF(format,...) 	printf(format,## __VA_ARGS__ )
+#define LDEBUG_FPUTS(_str) 			fputs((_str),stdout)
 #else
 #define LDEBUG_PRINTF(format,...)
+#define LDEBUG_FPUTS(_str)
 #endif
 
 

@@ -20,6 +20,8 @@
 
 
 
+#warning "This default file may only be used as an example!"
+
 #include "Com_PbCfg.h"
 #include "Com_RunTest.h"
 
@@ -42,7 +44,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComNotification = NULL,
 		//.ComRxDataTimeoutAction (NOT IMPLEMENTED)
 		//.ComSignalDataInvalidValue (NOT IMPLEMENTED)
-		.ComSignalEndianess = BIG_ENDIAN,
+		.ComSignalEndianess = COM_BIG_ENDIAN,
 		.ComSignalInitValue = 0x0,
 		.ComSignalLength = 0,
 		.ComSignalType = UINT8,
@@ -72,7 +74,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComNotification = NULL,
 		//.ComRxDataTimeoutAction (NOT IMPLEMENTED)
 		//.ComSignalDataInvalidValue (NOT IMPLEMENTED)
-		.ComSignalEndianess = BIG_ENDIAN,
+		.ComSignalEndianess = COM_BIG_ENDIAN,
 		.ComSignalInitValue = 0x00,
 		.ComSignalLength = 0,
 		.ComSignalType = UINT8,
@@ -102,7 +104,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComNotification = NULL,
 		//.ComRxDataTimeoutAction (NOT IMPLEMENTED)
 		//.ComSignalDataInvalidValue (NOT IMPLEMENTED)
-		.ComSignalEndianess = BIG_ENDIAN,
+		.ComSignalEndianess = COM_BIG_ENDIAN,
 		.ComSignalInitValue = 0x00,
 		.ComSignalLength = 0,
 		.ComSignalType = UINT8,
@@ -132,7 +134,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComNotification = NULL,
 		//.ComRxDataTimeoutAction (NOT IMPLEMENTED)
 		//.ComSignalDataInvalidValue (NOT IMPLEMENTED)
-		.ComSignalEndianess = BIG_ENDIAN,
+		.ComSignalEndianess = COM_BIG_ENDIAN,
 		.ComSignalInitValue = 0x00,
 		.ComSignalLength = 0,
 		.ComSignalType = UINT8,
@@ -166,7 +168,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComNotification = NULL,
 		//.ComRxDataTimeoutAction (NOT IMPLEMENTED)
 		//.ComSignalDataInvalidValue (NOT IMPLEMENTED)
-		.ComSignalEndianess = BIG_ENDIAN,
+		.ComSignalEndianess = COM_BIG_ENDIAN,
 		.ComSignalInitValue = 0x0,
 		.ComSignalLength = 0,
 		.ComSignalType = UINT8,
@@ -196,7 +198,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComNotification = NULL,
 		//.ComRxDataTimeoutAction (NOT IMPLEMENTED)
 		//.ComSignalDataInvalidValue (NOT IMPLEMENTED)
-		.ComSignalEndianess = BIG_ENDIAN,
+		.ComSignalEndianess = COM_BIG_ENDIAN,
 		.ComSignalInitValue = 0x00,
 		.ComSignalLength = 0,
 		.ComSignalType = UINT8,
@@ -226,7 +228,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComNotification = NULL,
 		//.ComRxDataTimeoutAction (NOT IMPLEMENTED)
 		//.ComSignalDataInvalidValue (NOT IMPLEMENTED)
-		.ComSignalEndianess = BIG_ENDIAN,
+		.ComSignalEndianess = COM_BIG_ENDIAN,
 		.ComSignalInitValue = 0x00,
 		.ComSignalLength = 0,
 		.ComSignalType = UINT8,
@@ -256,7 +258,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComNotification = NULL,
 		//.ComRxDataTimeoutAction (NOT IMPLEMENTED)
 		//.ComSignalDataInvalidValue (NOT IMPLEMENTED)
-		.ComSignalEndianess = BIG_ENDIAN,
+		.ComSignalEndianess = COM_BIG_ENDIAN,
 		.ComSignalInitValue = 0x00,
 		.ComSignalLength = 0,
 		.ComSignalType = UINT8,
@@ -288,7 +290,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComNotification = NULL,
 		//.ComRxDataTimeoutAction (NOT IMPLEMENTED)
 		//.ComSignalDataInvalidValue (NOT IMPLEMENTED)
-		.ComSignalEndianess = BIG_ENDIAN,
+		.ComSignalEndianess = COM_BIG_ENDIAN,
 		.ComSignalInitValue = 0x0,
 		.ComSignalLength = 0,
 		.ComSignalType = UINT8,
@@ -318,7 +320,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComNotification = NULL,
 		//.ComRxDataTimeoutAction (NOT IMPLEMENTED)
 		//.ComSignalDataInvalidValue (NOT IMPLEMENTED)
-		.ComSignalEndianess = BIG_ENDIAN,
+		.ComSignalEndianess = COM_BIG_ENDIAN,
 		.ComSignalInitValue = 0x00,
 		.ComSignalLength = 0,
 		.ComSignalType = UINT8,
@@ -348,7 +350,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComNotification = NULL,
 		//.ComRxDataTimeoutAction (NOT IMPLEMENTED)
 		//.ComSignalDataInvalidValue (NOT IMPLEMENTED)
-		.ComSignalEndianess = BIG_ENDIAN,
+		.ComSignalEndianess = COM_BIG_ENDIAN,
 		.ComSignalInitValue = 0x00,
 		.ComSignalLength = 0,
 		.ComSignalType = UINT8,
@@ -378,7 +380,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComNotification = NULL,
 		//.ComRxDataTimeoutAction (NOT IMPLEMENTED)
 		//.ComSignalDataInvalidValue (NOT IMPLEMENTED)
-		.ComSignalEndianess = BIG_ENDIAN,
+		.ComSignalEndianess = COM_BIG_ENDIAN,
 		.ComSignalInitValue = 0x00,
 		.ComSignalLength = 0,
 		.ComSignalType = UINT8,
@@ -410,7 +412,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComNotification = NULL,
 		//.ComRxDataTimeoutAction (NOT IMPLEMENTED)
 		//.ComSignalDataInvalidValue (NOT IMPLEMENTED)
-		.ComSignalEndianess = BIG_ENDIAN,
+		.ComSignalEndianess = COM_BIG_ENDIAN,
 		.ComSignalInitValue = 0x0,
 		.ComSignalLength = 0,
 		.ComSignalType = UINT8,
@@ -440,7 +442,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComNotification = NULL,
 		//.ComRxDataTimeoutAction (NOT IMPLEMENTED)
 		//.ComSignalDataInvalidValue (NOT IMPLEMENTED)
-		.ComSignalEndianess = BIG_ENDIAN,
+		.ComSignalEndianess = COM_BIG_ENDIAN,
 		.ComSignalInitValue = 0x00,
 		.ComSignalLength = 0,
 		.ComSignalType = UINT8,
@@ -470,7 +472,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComNotification = NULL,
 		//.ComRxDataTimeoutAction (NOT IMPLEMENTED)
 		//.ComSignalDataInvalidValue (NOT IMPLEMENTED)
-		.ComSignalEndianess = BIG_ENDIAN,
+		.ComSignalEndianess = COM_BIG_ENDIAN,
 		.ComSignalInitValue = 0x00,
 		.ComSignalLength = 0,
 		.ComSignalType = UINT8,
@@ -500,7 +502,7 @@ ComSignal_type PCAN_ComSignal[] = {
 		.ComNotification = NULL,
 		//.ComRxDataTimeoutAction (NOT IMPLEMENTED)
 		//.ComSignalDataInvalidValue (NOT IMPLEMENTED)
-		.ComSignalEndianess = BIG_ENDIAN,
+		.ComSignalEndianess = COM_BIG_ENDIAN,
 		.ComSignalInitValue = 0x00,
 		.ComSignalLength = 0,
 		.ComSignalType = UINT8,
@@ -679,7 +681,7 @@ ComSignal_type HardwareTest_ComSignal[] = {
 		.ComNotification = NULL,
 		//.ComRxDataTimeoutAction (NOT IMPLEMENTED)
 		//.ComSignalDataInvalidValue (NOT IMPLEMENTED)
-		.ComSignalEndianess = BIG_ENDIAN,
+		.ComSignalEndianess = COM_BIG_ENDIAN,
 		.ComSignalInitValue = 0xFF,
 		.ComSignalLength = 0,
 		.ComSignalType = UINT16,
@@ -709,7 +711,7 @@ ComSignal_type HardwareTest_ComSignal[] = {
 		.ComNotification = RTE_EngineChangeSpeed,
 		//.ComRxDataTimeoutAction (NOT IMPLEMENTED)
 		//.ComSignalDataInvalidValue (NOT IMPLEMENTED)
-		.ComSignalEndianess = BIG_ENDIAN,
+		.ComSignalEndianess = COM_BIG_ENDIAN,
 		.ComSignalInitValue = 0x00,
 		.ComSignalLength = 0,
 		.ComSignalType = UINT16,
@@ -741,7 +743,7 @@ ComSignal_type HardwareTest_ComSignal[] = {
 		.ComNotification = RTE_SIL2MESSAGE,
 		//.ComRxDataTimeoutAction (NOT IMPLEMENTED)
 		//.ComSignalDataInvalidValue (NOT IMPLEMENTED)
-		//.ComSignalEndianess = BIG_ENDIAN,
+		//.ComSignalEndianess = COM_BIG_ENDIAN,
 		//.ComSignalInitValue = 0xFF,
 		//.ComSignalLength = 0,
 		//.ComSignalType = UINT16,

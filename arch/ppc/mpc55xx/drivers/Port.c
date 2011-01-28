@@ -23,9 +23,9 @@
 #include "Std_Types.h"
 #include "Port.h"
 #include "mpc55xx.h"
-#include <string.h>
 #include "Det.h"
 #include "Cpu.h"
+#include <string.h>
 /* SHORT ON HW
  *  Have a bunch of ports:
  *  - PAxx, input only port
@@ -40,25 +40,31 @@
  *
  */
 
+typedef enum
+{
+    PORT_UNINITIALIZED = 0, PORT_INITIALIZED,
+} Port_StateType;
+
 static Port_StateType _portState = PORT_UNINITIALIZED;
+static const Port_ConfigType * _configPtr = &PortConfigData;
 
 #if (PORT_DEV_ERROR_DETECT)
 #define VALIDATE_PARAM_CONFIG(_ptr,_api) \
 	if( (_ptr)==((void *)0) ) { \
 		Det_ReportError(MODULE_ID_PORT, 0, _api, PORT_E_PARAM_CONFIG ); \
-		goto cleanup; \
+		return; \
 	}
 
 #define VALIDATE_STATE_INIT(_api)\
 	if(PORT_INITIALIZED!=_portState){\
 		Det_ReportError(MODULE_ID_PORT, 0, _api, PORT_E_UNINIT ); \
-		goto cleanup; \
+		return; \
 	}
 
 #define VALIDATE_PARAM_PIN(_pin, _api)\
 	if(_pin>sizeof(SIU.PCR)){\
 		Det_ReportError(MODULE_ID_PORT, 0, _api, PORT_E_PARAM_PIN ); \
-		goto cleanup; \
+		return; \
 	}
 #else
 #define VALIDATE_PARAM_CONFIG(_ptr,_api)
@@ -70,7 +76,7 @@ static Port_StateType _portState = PORT_UNINITIALIZED;
 static Std_VersionInfoType _Port_VersionInfo =
 {
   .vendorID   = (uint16)1,
-  .moduleID   = (uint16)1,
+  .moduleID   = (uint16) MODULE_ID_PORT,
   .instanceID = (uint8)1,
   .sw_major_version = (uint8)PORT_SW_MAJOR_VERSION,
   .sw_minor_version = (uint8)PORT_SW_MINOR_VERSION,
@@ -81,7 +87,6 @@ static Std_VersionInfoType _Port_VersionInfo =
 };
 #endif
 
-const Port_ConfigType * _configPtr = &PortConfigData;
 void Port_Init(const Port_ConfigType *configType)
 {
   VALIDATE_PARAM_CONFIG(configType, PORT_INIT_ID);
@@ -89,7 +94,7 @@ void Port_Init(const Port_ConfigType *configType)
   // Pointers to the register memory areas
   vuint16_t * padConfig = &(SIU.PCR[0].R);
   vuint8_t * outConfig = &(SIU.GPDO[0].R);
-//  vuint8_t * inConfig = &(SIU.GPDI[0].R);
+//  vuint8_t * inConfig = &(SIU.GPDI[0].R); // Read only
 
   // Copy config to register areas
   memcpy((void *)outConfig, configType->outConfig, configType->outCnt);
@@ -97,10 +102,10 @@ void Port_Init(const Port_ConfigType *configType)
   //memcpy((void *)inConfig, configType->inConfig, configType->inCnt);
   _portState = PORT_INITIALIZED;
   _configPtr = configType;
-  cleanup: return;
+  return;
 }
 
-#if ( PORT_PIN_DIRECTION_CHANGES_ALLOWED == STD_ON )
+#if ( PORT_SET_PIN_DIRECTION_API == STD_ON )
 void Port_SetPinDirection( Port_PinType pin, Port_PinDirectionType direction )
 {
   VALIDATE_STATE_INIT(PORT_SET_PIN_DIRECTION_ID);
@@ -112,24 +117,25 @@ void Port_SetPinDirection( Port_PinType pin, Port_PinDirectionType direction )
     state = _Irq_Disable_save(); // Lock interrupts
     SIU.PCR[pin].B.IBE = 1;
     SIU.PCR[pin].B.OBE = 0;
-    _Irq_Disable_restore(state); // Restore interrups
+    _Irq_Disable_restore(state); // Restore interrupts
   }
   else
   {
     state = _Irq_Disable_save(); // Lock interrupts
     SIU.PCR[pin].B.IBE = 0;
     SIU.PCR[pin].B.OBE = 1;
-    _Irq_Disable_restore(state); // Restore interrups
+    _Irq_Disable_restore(state); // Restore interrupts
   }
-cleanup:return;
+  return;
 }
+#endif
 
 void Port_RefreshPortDirection( void )
 {
   VALIDATE_STATE_INIT(PORT_REFRESH_PORT_DIRECTION_ID);
   vuint16_t * pcrPtr = &(SIU.PCR[0].R);
   const uint16_t * padCfgPtr = _configPtr->padConfig;
-  uint16_t bitMask = IBE_ENABLE|OBE_ENABLE;
+  uint16_t bitMask = PORT_IBE_ENABLE|PORT_OBE_ENABLE;
   int i;
   unsigned long state;
   for (i=0; i < sizeof(SIU.PCR); i++)
@@ -141,19 +147,19 @@ void Port_RefreshPortDirection( void )
     padCfgPtr++;
   }
 
-  cleanup:return;
+  return;
 }
-#endif
 
 #if PORT_VERSION_INFO_API == STD_ON
 void Port_GetVersionInfo(Std_VersionInfoType* versionInfo)
 {
   VALIDATE_STATE_INIT(PORT_GET_VERSION_INFO_ID);
   memcpy(versionInfo, &_Port_VersionInfo, sizeof(Std_VersionInfoType));
-  cleanup: return;
+  return;
 }
 #endif
 
+#if (PORT_SET_PIN_MODE_API == STD_ON)
 void Port_SetPinMode(Port_PinType Pin, Port_PinModeType Mode)
 {
   VALIDATE_STATE_INIT(PORT_SET_PIN_MODE_ID);
@@ -162,6 +168,6 @@ void Port_SetPinMode(Port_PinType Pin, Port_PinModeType Mode)
   //characteristics of external pins. The PCRs can select the multiplexed function of a pin, selection of pullup
   //or pulldown devices, the slew rate of I/O signals, open drain mode for output pins, and hysteresis.
   SIU.PCR[Pin].R = Mode; // Put the selected mode to the PCR register
-  cleanup: return;
+  return;
 }
-
+#endif

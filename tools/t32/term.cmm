@@ -1,3 +1,10 @@
+// Manage T32 terminal   
+// 
+// args
+//   1 - file, if non-empty output is also written to this file.
+
+LOCAL &file
+ENtry &file
 winclear my_term
 WinPOS 50% 50% 50% 50% 1. 1. my_term
 term.size 80. 300.
@@ -12,10 +19,12 @@ IF CPUFAMILY()=="ARM"
 ELSE
 (
   term.view e:address.offset(v.address(t32_outport)) e:0
-  term.write e:address.offset(v.address(t32_outport))  hoppsan.log 
+  IF "&file"!=""
+    term.write e:address.offset(v.address(t32_outport)) "&file"
 )
 
 enddo
+
 
 
 

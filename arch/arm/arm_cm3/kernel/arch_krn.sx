@@ -1,7 +1,9 @@
 
-#
-# Copyright ArcCore AB
-#
+/*
+ *  Copyright ArcCore AB
+ *
+ *
+ */
 
 #define _ASSEMBLER_
 #include "kernel_offset.h"
@@ -9,6 +11,7 @@
 #include "stack.h"
 
 .extern os_sys
+.extern TailChaining
 
 	.syntax unified
 	.cpu cortex-m3
@@ -19,6 +22,10 @@
 
  	.global Irq_Handler
     .type	Irq_Handler, %function
+ 	.global SVC_Handler
+    .type	SVC_Handler, %function
+ 	.global PendSV_Handler
+    .type	PendSV_Handler, %function
 
 #define IRQ_ENABLE() 		cpsie 	i
 #define IRQ_DISABLE()		cpsid 	i
@@ -27,17 +34,46 @@
 // lr
 #define REG_SAVE r4-r8,r10,r11
 
+SVC_Handler: 
+    add     sp,sp,#(8*4)    /* remove one interrupt frame from the stack */
+    bx      lr              /* return to the preempted task */
 
-Irq_Handler:
+PendSV_Handler:
+    IRQ_DISABLE()
+    push    {REG_SAVE,lr}
+    sub.w   sp,sp,#C_SIZE
+    mov.w   r4,#LC_PATTERN
+    str     r4,[sp,#C_CONTEXT_OFFS]    
+    mov 	r2,sp			// stack as first arg
+
+	mov     r1,#0x01000000  // make up a task xPSR that has only the T bit set 
+	ldr     r0,=TailChaining   // load the address of scheduler wrapper (new PC) 
+	push    {r0-r1}         // push xPSR,PC 
+	sub     sp,sp,#(5*4)    // don't care for lr,r12,r3,r2,r1
+    push    {r2}            // stack as first arg
+ 	bx      lr              // interrupt return to the scheduler wrapper
+ 
+Irq_Handler:        
     push    {REG_SAVE,lr}
     sub.w   sp,sp,#C_SIZE
     mov.w   r4,#LC_PATTERN
     str     r4,[sp,#C_CONTEXT_OFFS]    
     mov 	r0,sp			// stack as first arg
+
+    // When at interrupt nest count = 0, load interrupt stack    
+	ldr      r4,=os_sys
+	ldr      r5,[r4,#SYS_INT_NEST_CNT]
+	cmp      r5, #0
+	bgt      arggg  
+	ldr      sp,[r4,#SYS_INT_STACK]         
+arggg:  
     bl      Irq_Entry
     mov     sp, r0			// pop from returned stack
-    b 		os_lc_restore
-	
+
+	/* Do a normal exception return */
+    add.w   sp,sp,#C_SIZE
+    pop     {REG_SAVE,lr}
+    bx 		lr	
 	
 /**
  * Fake an interrupt stack to be able to return to thread mode.
@@ -54,18 +90,17 @@ Irq_Handler:
  *
  * Don't really know what bits matter on the xPSR here. Not setting
  * the EPSR[T] is really bad since it will generate a INVSTATE exception.
- *
- * @param r0 Pointer to PC to set
  */
  	.global Irq_EOI2
  	.type	Irq_EOI2, %function
 
 Irq_EOI2:
 	mov.w	r1,0x01000000	/* EPSR[T] bit */
+	mov		r0,lr
 	push 	{r0,r1}			/* Push PC and xPSR */
 	sub.w sp,sp,#(6*4)		/* r0,r1,r2,r3, r12,lr,pc,xPSR */
-	mov.w	lr,#0xfffffff9	/* Return with MSR */
-	bx lr
+	mov.w	lr,#0xfffffff9	/* interrupt return with stack=MSR */
+	bx 		lr				/* do return */
 
 
 /**
@@ -150,27 +185,27 @@ os_stack_problem:
 	 */
 os_sc_restore:
     add.w   sp,sp,#C_SIZE
-
     pop     {REG_SAVE,lr}
     bx      lr
 
 
-	/* Restore the large context. Cases:
-	 *  - Directly from Irq_Handler()
-	 *    (the preempted task got swapped in directly)
-	 *  - The preempted task, got preemted by a task and
-	 *    we have already returned from handler mode.
-	 */
-
+/* Restore the large context. Cases:
+ *  1. Directly from Irq_Handler()
+ *    (the preempted task got swapped in directly)
+ *  2. The preempted task, got preemted by a task and
+ *    we have already returned from handler mode.
+ *
+ * NOTE ! Only case 2 is covered here, case 1 is handled in Irq_Handler
+ *        prologue
+ */
+ 
 os_lc_restore:
     add.w   sp,sp,#C_SIZE
+    /* Pop function stack (LR will be 0xffff_fff9 here, just ignore */
     pop     {REG_SAVE,lr}
+    IRQ_ENABLE()       /* Enable interrupts to allow svc */
+    svc 0              /* cause exception to return to the preempted task */
+
+
     
-    /* The usual case is that we are in handler mode (=handling exceptions).
-     * So, LR(=r14) should be 0xffff_fffx, and x in this case should return 
-     * to threaded mode (=not handling exeptions) 0b1001. (EXC_RETURN)
-     */
-    bx      lr
-
-
 

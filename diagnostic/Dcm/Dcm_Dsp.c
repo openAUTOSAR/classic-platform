@@ -13,25 +13,35 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+//lint -esym(754, SID)	//Structure member SID not used in udsReadDtcInfoSub_0x01_0x07_0x11_0x12() and udsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15()
 
+
+/*
+ *  General requirements
+ */
+/** @req DCM273 */ /** @req DCM272 */
+/** @req DCM039 */ /** @req DCM038 */ /** @req DCM269 */
+/** @req DCM271 */ /** @req DCM274 */ /** @req DCM275 */ /** @req DCM424 */
+/** @req DCM007 */
 
 #include <string.h>
 #include "Dcm.h"
 #include "Dcm_Internal.h"
 #include "Dem.h"
-#include "Det.h"
 #include "MemMap.h"
+#if defined(USE_MCU)
 #include "Mcu.h"
+#endif
 
 #define ZERO_SUB_FUNCTION			0x00
 
 /*
  * Macros
  */
-#define BYTES_TO_DTC(hb, mb, lb)	(((hb) << 16) | ((mb) << 8) | (lb))
-#define DTC_HIGH_BYTE(dtc)			(((dtc)>> 16) & 0xFF)
-#define DTC_MID_BYTE(dtc)			(((dtc)>> 8) & 0xFF)
-#define DTC_LOW_BYTE(dtc)			((dtc) & 0xFF)
+#define BYTES_TO_DTC(hb, mb, lb)	(((uint32)(hb) << 16) | ((uint32)(mb) << 8) | (uint32)(lb))
+#define DTC_HIGH_BYTE(dtc)			(((uint32)(dtc) >> 16) & 0xFFu)
+#define DTC_MID_BYTE(dtc)			(((uint32)(dtc) >> 8) & 0xFFu)
+#define DTC_LOW_BYTE(dtc)			((uint32)(dtc) & 0xFFu)
 
 
 typedef struct {
@@ -64,38 +74,44 @@ void DspMain(void)
 }
 
 
-boolean DspCheckSessionLevel(const Dcm_DspSessionRowType **sessionLevelRefTable)
+boolean DspCheckSessionLevel(Dcm_DspSessionRowType const* const* sessionLevelRefTable)
 {
-	boolean returnStatus = TRUE;
+	Std_ReturnType returnStatus;
+	boolean levelFound = FALSE;
 	Dcm_SesCtrlType currentSession;
 
-	DslGetSesCtrlType(&currentSession);
-	while (((*sessionLevelRefTable)->DspSessionLevel != currentSession) && !(*sessionLevelRefTable)->Arc_EOL) {
-		sessionLevelRefTable++;
+	returnStatus = DslGetSesCtrlType(&currentSession);
+	if (returnStatus == E_OK) {
+		while ( ((*sessionLevelRefTable)->DspSessionLevel != currentSession) && (!(*sessionLevelRefTable)->Arc_EOL) ) {
+			sessionLevelRefTable++;
+		}
+
+		if (!(*sessionLevelRefTable)->Arc_EOL) {
+			levelFound = TRUE;
+		}
 	}
 
-	if ((*sessionLevelRefTable)->Arc_EOL) {
-		returnStatus = FALSE;
-	}
-
-	return returnStatus;
+	return levelFound;
 }
 
 
-boolean DspCheckSecurityLevel(const Dcm_DspSecurityRowType	**securityLevelRefTable)
+boolean DspCheckSecurityLevel(Dcm_DspSecurityRowType const* const* securityLevelRefTable)
 {
-	boolean returnStatus = TRUE;
+	Std_ReturnType returnStatus;
+	boolean levelFound = FALSE;
 	Dcm_SecLevelType currentSecurityLevel;
 
-	DslGetSecurityLevel(&currentSecurityLevel);
-	while (((*securityLevelRefTable)->DspSecurityLevel != currentSecurityLevel) && !(*securityLevelRefTable)->Arc_EOL) {
-		securityLevelRefTable++;
-	}
-	if ((*securityLevelRefTable)->Arc_EOL) {
-		returnStatus = FALSE;
+	returnStatus = DslGetSecurityLevel(&currentSecurityLevel);
+	if (returnStatus == E_OK) {
+		while ( ((*securityLevelRefTable)->DspSecurityLevel != currentSecurityLevel) && (!(*securityLevelRefTable)->Arc_EOL) ) {
+			securityLevelRefTable++;
+		}
+		if (!(*securityLevelRefTable)->Arc_EOL) {
+			levelFound = TRUE;
+		}
 	}
 
-	return returnStatus;
+	return levelFound;
 }
 
 
@@ -106,12 +122,16 @@ static Std_ReturnType askApplicationForSessionPermission(Dcm_SesCtrlType newSess
 	Dcm_SesCtrlType currentSessionLevel;
 	Std_ReturnType result;
 
-	while (!sesControl->Arc_EOL && (returnCode != E_SESSION_NOT_ALLOWED)) {
+	while ( (!sesControl->Arc_EOL) && (returnCode != E_SESSION_NOT_ALLOWED)) {
 		if (sesControl->GetSesChgPermission != NULL) {
-			Dcm_GetSesCtrlType(&currentSessionLevel);
-			result = sesControl->GetSesChgPermission(currentSessionLevel ,newSessionLevel);
-			if (result != E_OK) {
-				returnCode = result;
+			result = Dcm_GetSesCtrlType(&currentSessionLevel);
+			if (result == E_OK) {
+				result = sesControl->GetSesChgPermission(currentSessionLevel ,newSessionLevel);
+				if (result != E_OK) {
+					returnCode = result;
+				}
+			} else {
+				returnCode = E_NOT_OK;
 			}
 		}
 		sesControl++;
@@ -123,7 +143,7 @@ static Std_ReturnType askApplicationForSessionPermission(Dcm_SesCtrlType newSess
 
 void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
-	// @req DCM250 **/
+	/** @req DCM250 */
 	const Dcm_DspSessionRowType *sessionRow = DCM_Config.Dsp->DspSession->DspSessionRow;
 	Dcm_SesCtrlType reqSessionType;
 	Std_ReturnType result;
@@ -131,39 +151,38 @@ void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduInfoType *p
 	if (pduRxData->SduLength == 2) {
 		reqSessionType = pduRxData->SduDataPtr[1];
 		// Check if type exist in session table
-		while ((sessionRow->DspSessionLevel != reqSessionType) && !sessionRow->Arc_EOL) {
+		while ((sessionRow->DspSessionLevel != reqSessionType) && (!sessionRow->Arc_EOL) ) {
 			sessionRow++;
 		}
 
 		if (!sessionRow->Arc_EOL) {
 			result = askApplicationForSessionPermission(reqSessionType);
 			if (result == E_OK) {
-				DslSetSesCtrlType(reqSessionType);		/** @req DCM311 **/
+				DslSetSesCtrlType(reqSessionType);		/** @req DCM311 */
 				// Create positive response
-				/** @req DCM039.2 **/
 				pduTxData->SduDataPtr[1] = reqSessionType;
 				pduTxData->SduLength = 2;
-				DsdDspProcessingDone(DCM_E_POSITIVERESPONSE); /** @req DCM269.2 **/
+				DsdDspProcessingDone(DCM_E_POSITIVERESPONSE);
 			}
 			else {
 				// TODO: Add handling of special case of E_FORCE_RCRRP (Dcm138)
-				DsdDspProcessingDone(DCM_E_CONDITIONSNOTCORRECT);	/** @req DCM308 **/
+				DsdDspProcessingDone(DCM_E_CONDITIONSNOTCORRECT);	/** @req DCM308 */
 			}
 		}
 		else {
-			DsdDspProcessingDone(DCM_E_SUBFUNCTIONNOTSUPPORTED);	/** @req DCM307 **/
+			DsdDspProcessingDone(DCM_E_SUBFUNCTIONNOTSUPPORTED);	/** @req DCM307 */
 		}
 	}
 	else {
 		// Wrong length
-		DsdDspProcessingDone(DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT);	/** @req DCM272.1 **/
+		DsdDspProcessingDone(DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT);
 	}
 }
 
 
 void DspUdsEcuReset(const PduInfoType *pduRxData, PduIdType txPduId, PduInfoType *pduTxData)
 {
-	// @req DCM260 **/
+	/** @req DCM260 */
 	uint8 reqResetType;
 
 	if (pduRxData->SduLength == 2) {
@@ -179,41 +198,40 @@ void DspUdsEcuReset(const PduInfoType *pduRxData, PduIdType txPduId, PduInfoType
 			dspUdsEcuResetData.resetPduId = txPduId;
 
 			// Create positive response
-			/** @req DCM039.1 **/
 			pduTxData->SduDataPtr[1] = reqResetType;
 			pduTxData->SduLength = 2;
-			DsdDspProcessingDone(DCM_E_POSITIVERESPONSE); /** @req DCM269.3 **/
+			DsdDspProcessingDone(DCM_E_POSITIVERESPONSE);
 			break;
 
 		default:
-			DsdDspProcessingDone(DCM_E_SUBFUNCTIONNOTSUPPORTED);	/** @req DCM273.3 **/
+			DsdDspProcessingDone(DCM_E_SUBFUNCTIONNOTSUPPORTED);
 			break;
 		}
 	}
 	else {
 		// Wrong length
-		DsdDspProcessingDone(DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT);	/** @req DCM272.3 **/
+		DsdDspProcessingDone(DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT);
 	}
 }
 
 
 void DspUdsClearDiagnosticInformation(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
+	/** @req DCM247 */
 	uint32 dtc;
 	Dem_ReturnClearDTCType result;
 
 	if (pduRxData->SduLength == 4) {
 		dtc = BYTES_TO_DTC(pduRxData->SduDataPtr[1], pduRxData->SduDataPtr[2], pduRxData->SduDataPtr[3]);
 
-		result = Dem_ClearDTC(dtc, DEM_DTC_KIND_ALL_DTCS, DEM_DTC_ORIGIN_PRIMARY_MEMORY);
+		result = Dem_ClearDTC(dtc, DEM_DTC_KIND_ALL_DTCS, DEM_DTC_ORIGIN_PRIMARY_MEMORY); /** @req DCM005 */
 
 		switch (result)
 		{
 		case DEM_CLEAR_OK:
 			// Create positive response
-			/** @req DCM039.1 **/
 			pduTxData->SduLength = 1;
-			DsdDspProcessingDone(DCM_E_POSITIVERESPONSE); /** @req DCM269.4 **/
+			DsdDspProcessingDone(DCM_E_POSITIVERESPONSE);
 			break;
 
 		default:
@@ -223,7 +241,7 @@ void DspUdsClearDiagnosticInformation(const PduInfoType *pduRxData, PduInfoType 
 	}
 	else {
 		// Wrong length
-		DsdDspProcessingDone(DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT);	/** @req DCM272.1 **/
+		DsdDspProcessingDone(DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT);
 	}
 }
 
@@ -243,7 +261,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x01_0x07_0x11_0x12(const 
 	Dem_ReturnSetDTCFilterType setDtcFilterResult;
 
 	// Setup the DTC filter
-	switch (pduRxData->SduDataPtr[1]) 	/** @reg DCM293 **/
+	switch (pduRxData->SduDataPtr[1]) 	/** @req DCM293 */
 	{
 	case 0x01:	// reportNumberOfDTCByStatusMask
 		setDtcFilterResult = Dem_SetDTCFilter(pduRxData->SduDataPtr[2], DEM_DTC_KIND_ALL_DTCS, DEM_DTC_ORIGIN_PRIMARY_MEMORY, DEM_FILTER_WITH_SEVERITY_NO, VALUE_IS_NOT_USED, DEM_FILTER_FOR_FDC_NO);
@@ -263,29 +281,37 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x01_0x07_0x11_0x12(const 
 
 	default:
 		setDtcFilterResult = DEM_WRONG_FILTER;
-#if (DCM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DCM, 0, DCM_UDS_READ_DTC_INFO, DCM_E_UNEXPECTED_PARAM);
-#endif
 		break;
 	}
 
 	if (setDtcFilterResult == DEM_FILTER_ACCEPTED) {
+		Std_ReturnType result;
+		Dem_ReturnGetNumberOfFilteredDTCType getNumerResult;
 		uint16 numberOfFilteredDtc;
 		uint8 dtcStatusMask;
+		//lint --e(826)	PC-Lint exception - Suspicious pointer conversion
+		//lint --e(927)	PC-Lint exception - Pointer to pointer cast
 		TxDataType *txData = (TxDataType*)pduTxData->SduDataPtr;
 
-		/** @reg DCM376 **/
-		Dem_GetNumberOfFilteredDtc(&numberOfFilteredDtc);
-		Dem_GetDTCStatusAvailabilityMask(&dtcStatusMask);
+		/** @req DCM376 */
+		getNumerResult = Dem_GetNumberOfFilteredDtc(&numberOfFilteredDtc);
+		if (getNumerResult == DEM_NUMBER_OK) {
+			result = Dem_GetDTCStatusAvailabilityMask(&dtcStatusMask);
+			if (result != E_OK) {
+				dtcStatusMask = 0;
+			}
 
-		// Create positive response (ISO 14229-1 table 251)
-		/** @req DCM039.0x19 **/
-		txData->reportType = pduRxData->SduDataPtr[1];			// reportType
-		txData->dtcStatusAvailabilityMask = dtcStatusMask;					// DTCStatusAvailabilityMask
-		txData->dtcFormatIdentifier = Dem_GetTranslationType();				// DTCFormatIdentifier
-		txData->dtcCountHighByte = (numberOfFilteredDtc >> 8);				// DTCCount high byte
-		txData->dtcCountLowByte = (numberOfFilteredDtc & 0xFF);				// DTCCount low byte
-		pduTxData->SduLength = 6;
+			// Create positive response (ISO 14229-1 table 251)
+			txData->reportType = pduRxData->SduDataPtr[1];						// reportType
+			txData->dtcStatusAvailabilityMask = dtcStatusMask;					// DTCStatusAvailabilityMask
+			txData->dtcFormatIdentifier = Dem_GetTranslationType();				// DTCFormatIdentifier
+			txData->dtcCountHighByte = (numberOfFilteredDtc >> 8);				// DTCCount high byte
+			txData->dtcCountLowByte = (numberOfFilteredDtc & 0xFFu);			// DTCCount low byte
+			pduTxData->SduLength = 6;
+		} else {
+			// TODO: What to do?
+			responseCode = DCM_E_GENERALREJECT;
+		}
 	}
 	else {
 		responseCode = DCM_E_REQUESTOUTOFRANGE;
@@ -315,7 +341,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15(c
 	} TxDataType;
 
 	// Setup the DTC filter
-	switch (pduRxData->SduDataPtr[1]) 	/** @reg DCM378 **/
+	switch (pduRxData->SduDataPtr[1]) 	/** @req DCM378 */
 	{
 	case 0x02:	// reportDTCByStatusMask
 		setDtcFilterResult = Dem_SetDTCFilter(pduRxData->SduDataPtr[2], DEM_DTC_KIND_ALL_DTCS, DEM_DTC_ORIGIN_PRIMARY_MEMORY, DEM_FILTER_WITH_SEVERITY_NO, VALUE_IS_NOT_USED, DEM_FILTER_FOR_FDC_NO);
@@ -339,29 +365,31 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15(c
 
 	default:
 		setDtcFilterResult = DEM_WRONG_FILTER;
-#if (DCM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DCM, 0, DCM_UDS_READ_DTC_INFO, DCM_E_UNEXPECTED_PARAM);
-#endif
 		break;
 	}
 
 	if (setDtcFilterResult == DEM_FILTER_ACCEPTED) {
 		uint8 dtcStatusMask;
+		//lint --e(826)	PC-Lint exception - Suspicious pointer conversion
+		//lint --e(927)	PC-Lint exception - Pointer to pointer cast
 		TxDataType *txData = (TxDataType*)pduTxData->SduDataPtr;
 		Dem_ReturnGetNextFilteredDTCType getNextFilteredDtcResult;
 		uint32 dtc;
 		Dem_EventStatusExtendedType dtcStatus;
 		uint16 nrOfDtcs = 0;
+		Std_ReturnType result;
 
-		/** @reg DCM377 **/
-		Dem_GetDTCStatusAvailabilityMask(&dtcStatusMask);
+		/** @req DCM377 */
+		result = Dem_GetDTCStatusAvailabilityMask(&dtcStatusMask);
+		if (result != E_OK) {
+			dtcStatusMask = 0;
+		}
 
 		// Create positive response (ISO 14229-1 table 252)
-		/** @req DCM039.0x19 **/
 		txData->reportType = pduRxData->SduDataPtr[1];
 		txData->dtcStatusAvailabilityMask = dtcStatusMask;
 
-		if (dtcStatusMask != 0x00) {	/** @req DCM008 **/
+		if (dtcStatusMask != 0x00) {	/** @req DCM008 */
 			getNextFilteredDtcResult = Dem_GetNextFilteredDTC(&dtc, &dtcStatus);
 			while (getNextFilteredDtcResult == DEM_FILTERED_OK) {
 				txData->dtcAndStatusRecord[nrOfDtcs].dtcHighByte = DTC_HIGH_BYTE(dtc);
@@ -376,7 +404,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15(c
 				responseCode = DCM_E_REQUESTOUTOFRANGE;
 			}
 		}
-		pduTxData->SduLength = 3 + nrOfDtcs * sizeof(dtcAndStatusRecordType);
+		pduTxData->SduLength = (PduLengthType)(3 + (nrOfDtcs * sizeof(dtcAndStatusRecordType)));
 	}
 	else {
 		responseCode = DCM_E_REQUESTOUTOFRANGE;
@@ -385,7 +413,8 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15(c
 	return responseCode;
 }
 
-
+// PC-Lint (715 etc): Remove errors until function is filled.
+//lint -e{715, 838, 818}		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x08(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -397,6 +426,8 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x08(const PduInfoType *pd
 }
 
 
+// PC-Lint (715 etc): Remove errors until function is filled.
+//lint -e{715, 838, 818}		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x09(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -411,12 +442,12 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x09(const PduInfoType *pd
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x06_0x10(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
-	Dem_DTCOriginType dtcOrigin = NULL;
+	Dem_DTCOriginType dtcOrigin;
 	uint8 startRecNum;
 	uint8 endRecNum;
 
 	// Switch on sub function
-	switch (pduRxData->SduDataPtr[1]) 	/** @reg DCM378 **/
+	switch (pduRxData->SduDataPtr[1]) 	/** @req DCM378 */
 	{
 	case 0x06:	// reportDTCExtendedDataRecordByDTCNumber
 		dtcOrigin = DEM_DTC_ORIGIN_PRIMARY_MEMORY;
@@ -428,9 +459,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x06_0x10(const PduInfoTyp
 
 	default:
 		responseCode = DCM_E_SUBFUNCTIONNOTSUPPORTED;
-#if (DCM_DEV_ERROR_DETECT == STD_ON)
-		Det_ReportError(MODULE_ID_DCM, 0, DCM_UDS_READ_DTC_INFO, DCM_E_UNEXPECTED_PARAM);
-#endif
+		dtcOrigin = 0;
 		break;
 	}
 
@@ -459,27 +488,27 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x06_0x10(const PduInfoTyp
 		Dem_EventStatusExtendedType statusOfDtc;
 
 		dtc = BYTES_TO_DTC(pduRxData->SduDataPtr[2], pduRxData->SduDataPtr[3], pduRxData->SduDataPtr[4]);
-		getStatusOfDtcResult = Dem_GetStatusOfDTC(dtc, DEM_DTC_KIND_ALL_DTCS, dtcOrigin, &statusOfDtc); /** @req DCM295 **/ /** @req DCM475 **/
+		getStatusOfDtcResult = Dem_GetStatusOfDTC(dtc, DEM_DTC_KIND_ALL_DTCS, dtcOrigin, &statusOfDtc); /** @req DCM295 */ /** @req DCM475 */
 		if (getStatusOfDtcResult == DEM_STATUS_OK) {
 			Dem_ReturnGetExtendedDataRecordByDTCType getExtendedDataRecordByDtcResult;
-			uint16 recNum;
-			uint8 recLength;
+			uint8 recNum;
+			uint16 recLength;
 			uint16 txIndex = 6;
 
-			/** @req DCM297 **/ /** @req DCM474 **/ /** @req DCM386 **/
+			/** @req DCM297 */ /** @req DCM474 */ /** @req DCM386 */
 			pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];			// Sub function
 			pduTxData->SduDataPtr[2] = DTC_HIGH_BYTE(dtc);					// DTC high byte
 			pduTxData->SduDataPtr[3] = DTC_MID_BYTE(dtc);					// DTC mid byte
 			pduTxData->SduDataPtr[4] = DTC_LOW_BYTE(dtc);					// DTC low byte
 			pduTxData->SduDataPtr[5] = statusOfDtc;							// DTC status
 			for (recNum = startRecNum; recNum <= endRecNum; recNum++) {
-				recLength = pduTxData->SduLength - txIndex -1;	// Calculate what's left in buffer
-				/** @req DCM296 **/ /** @req DCM476 **/ /** @req DCM382 **/
+				recLength = pduTxData->SduLength - (txIndex + 1);	// Calculate what's left in buffer
+				/** @req DCM296 */ /** @req DCM476 */ /** @req DCM382 */
 				getExtendedDataRecordByDtcResult = Dem_GetExtendedDataRecordByDTC(dtc, DEM_DTC_KIND_ALL_DTCS, dtcOrigin, recNum, &pduTxData->SduDataPtr[txIndex+1], &recLength);
 				if (getExtendedDataRecordByDtcResult == DEM_RECORD_OK) {
 					pduTxData->SduDataPtr[txIndex++] = recNum;
 					/* Instead of calling Dem_GetSizeOfExtendedDataRecordByDTC() the result from Dem_GetExtendedDataRecordByDTC() is used */
-					/** @req DCM478 **/ /** @req DCM479 **/ /** @req DCM480 **/
+					/** @req DCM478 */ /** @req DCM479 */ /** @req DCM480 */
 					txIndex += recLength;
 				}
 				else {
@@ -497,6 +526,8 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x06_0x10(const PduInfoTyp
 }
 
 
+// PC-Lint (715 etc): Remove errors until function is filled.
+//lint -e{715, 838, 818}		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x03(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -508,6 +539,8 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x03(const PduInfoType *pd
 }
 
 
+// PC-Lint (715 etc): Remove errors until function is filled.
+//lint -e{715, 838, 818}		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x04(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -519,6 +552,8 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x04(const PduInfoType *pd
 }
 
 
+// PC-Lint (715 etc): Remove errors until function is filled.
+//lint -e{715, 838, 818}		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x05(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -530,6 +565,8 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x05(const PduInfoType *pd
 }
 
 
+// PC-Lint (715 etc): Remove errors until function is filled.
+//lint -e{715, 838, 818}		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x0B_0x0C_0x0D_0x0E(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -541,6 +578,8 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x0B_0x0C_0x0D_0x0E(const 
 }
 
 
+// PC-Lint (715 etc): Remove errors until function is filled.
+//lint -e{715, 838, 818}		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x14(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -554,7 +593,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x14(const PduInfoType *pd
 
 void DspUdsReadDtcInformation(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
-	/** @reg DCM248 **/
+	/** @req DCM248 */
 	// Sub function number         0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F 10 11 12 13 14 15
 	const uint8 sduLength[0x16] = {0, 3, 3, 6, 6, 3, 6, 4, 4, 5, 2, 2, 2, 2, 2, 3, 6, 3, 3, 3, 2, 2};
 
@@ -626,7 +665,7 @@ void DspUdsReadDtcInformation(const PduInfoType *pduRxData, PduInfoType *pduTxDa
 		}
 		else {
 			// Wrong length
-			responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;	/** @req DCM272.0x19 **/
+			responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
 		}
 	}
 	else {
@@ -643,7 +682,7 @@ static boolean lookupDid(uint16 didNr, const Dcm_DspDidType **didPtr)
 	const Dcm_DspDidType *dspDid = DCM_Config.Dsp->DspDid;
 	boolean didFound = FALSE;
 
-	while ((dspDid->DspDidIdentifier != didNr) &&  !dspDid->Arc_EOL) {
+	while ((dspDid->DspDidIdentifier != didNr) &&  (!dspDid->Arc_EOL)) {
 		dspDid++;
 	}
 
@@ -660,16 +699,16 @@ static Dcm_NegativeResponseCodeType readDidData(const Dcm_DspDidType *didPtr, Pd
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 
-	if ((didPtr->DspDidInfoRef->DspDidAccess.DspDidRead != NULL) && (didPtr->DspDidConditionCheckReadFnc != NULL) && (didPtr->DspDidReadDataFnc != NULL)) {	/** @req DCM433 **/
-		if (DspCheckSessionLevel(didPtr->DspDidInfoRef->DspDidAccess.DspDidRead->DspDidReadSessionRef)) { /** @req DCM434 **/
-			if (DspCheckSecurityLevel(didPtr->DspDidInfoRef->DspDidAccess.DspDidRead->DspDidReadSecurityLevelRef)) { /** @req DCM435 **/
+	if ((didPtr->DspDidInfoRef->DspDidAccess.DspDidRead != NULL) && (didPtr->DspDidConditionCheckReadFnc != NULL) && (didPtr->DspDidReadDataFnc != NULL)) {	/** @req DCM433 */
+		if (DspCheckSessionLevel(didPtr->DspDidInfoRef->DspDidAccess.DspDidRead->DspDidReadSessionRef)) { /** @req DCM434 */
+			if (DspCheckSecurityLevel(didPtr->DspDidInfoRef->DspDidAccess.DspDidRead->DspDidReadSecurityLevelRef)) { /** @req DCM435 */
 				Std_ReturnType result;
 				Dcm_NegativeResponseCodeType errorCode;
 				result = didPtr->DspDidConditionCheckReadFnc(&errorCode);
-				if ((result == E_OK) && (errorCode == DCM_E_POSITIVERESPONSE)) {	/** @req DCM439 **/
-					uint16 didLen;
+				if ((result == E_OK) && (errorCode == DCM_E_POSITIVERESPONSE)) {	/** @req DCM439 */
+					uint16 didLen = 0;
 					result = E_NOT_OK;
-					if (didPtr->DspDidInfoRef->DspDidFixedLength) {	/** @req DCM436 **/
+					if (didPtr->DspDidInfoRef->DspDidFixedLength) {	/** @req DCM436 */
 						didLen = didPtr->DspDidSize;
 						result = E_OK;
 					}
@@ -682,11 +721,11 @@ static Dcm_NegativeResponseCodeType readDidData(const Dcm_DspDidType *didPtr, Pd
 					if (result == E_OK) {
 						// Now ready for reading the data!
 						if ((*txPos + didLen + 2) <= pduTxData->SduLength) {
-							pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 8) & 0xFF;
+							pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 8) & 0xFFu;
 							(*txPos)++;
-							pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 0) & 0xFF;
+							pduTxData->SduDataPtr[*txPos] = didPtr->DspDidIdentifier & 0xFFu;
 							(*txPos)++;
-							result = didPtr->DspDidReadDataFnc(&pduTxData->SduDataPtr[*txPos]);	/** @req DCM437 **/
+							result = didPtr->DspDidReadDataFnc(&pduTxData->SduDataPtr[*txPos]);	/** @req DCM437 */
 							*txPos += didLen;
 
 							if (result != E_OK) {
@@ -718,7 +757,7 @@ static Dcm_NegativeResponseCodeType readDidData(const Dcm_DspDidType *didPtr, Pd
 	}
 
 	if (responseCode == DCM_E_POSITIVERESPONSE) {
-		// Recurse trough the rest of the dids. 	/** @req DCM440 **/
+		// Recurse trough the rest of the dids. 	/** @req DCM440 */
 		uint16 i;
 		for (i=0; (!didPtr->DspDidRef[i]->Arc_EOL) && (responseCode == DCM_E_POSITIVERESPONSE); i++) {
 			responseCode = readDidData(didPtr->DspDidRef[i], pduTxData, txPos);
@@ -730,21 +769,21 @@ static Dcm_NegativeResponseCodeType readDidData(const Dcm_DspDidType *didPtr, Pd
 
 void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
-	/** @req DCM253 **/
+	/** @req DCM253 */
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
-	uint8 nrOfDids;
+	uint16 nrOfDids;
 	uint16 didNr;
 	const Dcm_DspDidType *didPtr = NULL;
 
 	uint16 txPos = 1;
 	uint16 i;
 
-	if ((pduRxData->SduLength - 1) % 2 == 0 ) {
+	if ( ((pduRxData->SduLength - 1) % 2) == 0 ) {
 		nrOfDids = (pduRxData->SduLength - 1) / 2;
 
 		for (i = 0; (i < nrOfDids) && (responseCode == DCM_E_POSITIVERESPONSE); i++) {
-			didNr = (pduRxData->SduDataPtr[1+i*2] << 8) + pduRxData->SduDataPtr[2+i*2];
-			if (lookupDid(didNr, &didPtr)) {	/** @req DCM438 **/
+			didNr = (uint16)((uint16)pduRxData->SduDataPtr[1+(i*2)] << 8) + pduRxData->SduDataPtr[2+(i*2)];
+			if (lookupDid(didNr, &didPtr)) {	/** @req DCM438 */
 				responseCode = readDidData(didPtr, pduTxData, &txPos);
 			}
 			else { // DID not found
@@ -764,7 +803,7 @@ void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTx
 }
 
 
-static Dcm_NegativeResponseCodeType readDidScalingData(const Dcm_DspDidType *didPtr, PduInfoType *pduTxData, uint16 *txPos)
+static Dcm_NegativeResponseCodeType readDidScalingData(const Dcm_DspDidType *didPtr, const PduInfoType *pduTxData, uint16 *txPos)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 
@@ -776,11 +815,11 @@ static Dcm_NegativeResponseCodeType readDidScalingData(const Dcm_DspDidType *did
 			Std_ReturnType result;
 			Dcm_NegativeResponseCodeType errorCode;
 
-			pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 8) & 0xFF;
+			pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 8) & 0xFFu;
 			(*txPos)++;
-			pduTxData->SduDataPtr[*txPos] = (didPtr->DspDidIdentifier >> 0) & 0xFF;
+			pduTxData->SduDataPtr[*txPos] = didPtr->DspDidIdentifier & 0xFFu;
 			(*txPos)++;
-			result = didPtr->DspDidGetScalingInfoFnc(&pduTxData->SduDataPtr[*txPos], &errorCode);	/** @req DCM394 **/
+			result = didPtr->DspDidGetScalingInfoFnc(&pduTxData->SduDataPtr[*txPos], &errorCode);	/** @req DCM394 */
 			*txPos += scalingInfoLen;
 
 			if ((result != E_OK) || (errorCode != DCM_E_POSITIVERESPONSE)) {
@@ -800,7 +839,7 @@ static Dcm_NegativeResponseCodeType readDidScalingData(const Dcm_DspDidType *did
 
 void DspUdsReadScalingDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
-	/** @req DCM258 **/
+	/** @req DCM258 */
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 	uint16 didNr;
 	const Dcm_DspDidType *didPtr = NULL;
@@ -808,7 +847,7 @@ void DspUdsReadScalingDataByIdentifier(const PduInfoType *pduRxData, PduInfoType
 	uint16 txPos = 1;
 
 	if (pduRxData->SduLength == 3) {
-		didNr = (pduRxData->SduDataPtr[1] << 8) + pduRxData->SduDataPtr[2];
+		didNr = (uint16)((uint16)pduRxData->SduDataPtr[1] << 8) + pduRxData->SduDataPtr[2];
 		if (lookupDid(didNr, &didPtr)) {
 			responseCode = readDidScalingData(didPtr, pduTxData, &txPos);
 		}
@@ -833,28 +872,27 @@ static Dcm_NegativeResponseCodeType writeDidData(const Dcm_DspDidType *didPtr, c
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 
-	if ((didPtr->DspDidInfoRef->DspDidAccess.DspDidWrite != NULL) && (didPtr->DspDidConditionCheckWriteFnc != NULL) && (didPtr->DspDidWriteDataFnc != NULL)) {	/** @req DCM468 **/
-		if (DspCheckSessionLevel(didPtr->DspDidInfoRef->DspDidAccess.DspDidWrite->DspDidWriteSessionRef)) { /** @req DCM469 **/
-			if (DspCheckSecurityLevel(didPtr->DspDidInfoRef->DspDidAccess.DspDidWrite->DspDidWriteSecurityLevelRef)) { /** @req DCM470 **/
+	if ((didPtr->DspDidInfoRef->DspDidAccess.DspDidWrite != NULL) && (didPtr->DspDidConditionCheckWriteFnc != NULL) && (didPtr->DspDidWriteDataFnc != NULL)) {	/** @req DCM468 */
+		if (DspCheckSessionLevel(didPtr->DspDidInfoRef->DspDidAccess.DspDidWrite->DspDidWriteSessionRef)) { /** @req DCM469 */
+			if (DspCheckSecurityLevel(didPtr->DspDidInfoRef->DspDidAccess.DspDidWrite->DspDidWriteSecurityLevelRef)) { /** @req DCM470 */
 				Std_ReturnType result;
 				Dcm_NegativeResponseCodeType errorCode;
-				result = didPtr->DspDidConditionCheckWriteFnc(&errorCode);	/** @req DCM471 **/
+				result = didPtr->DspDidConditionCheckWriteFnc(&errorCode);	/** @req DCM471 */
 				if ((result == E_OK) && (errorCode == DCM_E_POSITIVERESPONSE)) {
-					uint16 didLen;
+					uint16 didLen = 0;
 					result = E_NOT_OK;
-					if (didPtr->DspDidInfoRef->DspDidFixedLength) {	/** @req DCM472 **/
+					if (didPtr->DspDidInfoRef->DspDidFixedLength) {	/** @req DCM472 */
 						didLen = didPtr->DspDidSize;
 						result = E_OK;
 					}
 					else {
 						if (didPtr->DspDidReadDataLengthFnc != NULL) {
 							result = didPtr->DspDidReadDataLengthFnc(&didLen);
-						}
-					}
+						}					}
 
 					if (result == E_OK) {
-						if (didLen == writeDidLen) {	/** @req DCM473 **/
-							result = didPtr->DspDidWriteDataFnc(&pduRxData->SduDataPtr[3], didLen, &errorCode);	/** @req DCM395 **/
+						if (didLen == writeDidLen) {	/** @req DCM473 */
+							result = didPtr->DspDidWriteDataFnc(&pduRxData->SduDataPtr[3], (uint8)didLen, &errorCode);	/** @req DCM395 */
 							if ((result != E_OK) || (errorCode != DCM_E_POSITIVERESPONSE)) {
 								responseCode = DCM_E_CONDITIONSNOTCORRECT;
 							}
@@ -888,7 +926,7 @@ static Dcm_NegativeResponseCodeType writeDidData(const Dcm_DspDidType *didPtr, c
 
 void DspUdsWriteDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
-	/** @req DCM255 **/
+	/** @req DCM255 */
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 	uint16 didNr;
 	const Dcm_DspDidType *didPtr = NULL;
@@ -896,8 +934,8 @@ void DspUdsWriteDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduT
 	uint16 didDataLength;
 
 	didDataLength = pduRxData->SduLength - 3;
-	didNr = (pduRxData->SduDataPtr[1] << 8) + pduRxData->SduDataPtr[2];
-	if (lookupDid(didNr, &didPtr)) {	/** @req DCM467 **/
+	didNr = (uint16)((uint16)pduRxData->SduDataPtr[1] << 8) + pduRxData->SduDataPtr[2];
+	if (lookupDid(didNr, &didPtr)) {	/** @req DCM467 */
 		responseCode = writeDidData(didPtr, pduRxData, didDataLength);
 	}
 	else { // DID not found
@@ -906,8 +944,8 @@ void DspUdsWriteDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduT
 
 	if (responseCode == DCM_E_POSITIVERESPONSE) {
 		pduTxData->SduLength = 3;
-		pduTxData->SduDataPtr[1] = (didNr >> 8) & 0xFF;
-		pduTxData->SduDataPtr[2] = (didNr >> 0) & 0xFF;
+		pduTxData->SduDataPtr[1] = (didNr >> 8) & 0xFFu;
+		pduTxData->SduDataPtr[2] = didNr & 0xFFu;
 	}
 
 	DsdDspProcessingDone(responseCode);
@@ -916,51 +954,61 @@ void DspUdsWriteDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduT
 
 void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
-	/** @req DCM252 **/
+	/** @req DCM252 */
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 
 	// Check sub function range (0x01 to 0x42)
 	if ((pduRxData->SduDataPtr[1] >= 0x01) && (pduRxData->SduDataPtr[1] <= 0x42)) {
-		boolean isRequestSeed = pduRxData->SduDataPtr[1] & 0x01;
+		boolean isRequestSeed = pduRxData->SduDataPtr[1] & 0x01u;
 		Dcm_SecLevelType requestedSecurityLevel = (pduRxData->SduDataPtr[1]-1)/2;
-		Std_ReturnType getSeedResult;
 		Dcm_NegativeResponseCodeType getSeedErrorCode;
 
 		if (isRequestSeed) {
 			// requestSeed message
 			// Check if type exist in security table
 			const Dcm_DspSecurityRowType *securityRow = &DCM_Config.Dsp->DspSecurity->DspSecurityRow[0];
-			while ((securityRow->DspSecurityLevel != requestedSecurityLevel) && !securityRow->Arc_EOL) {
+			while ((securityRow->DspSecurityLevel != requestedSecurityLevel) && (!securityRow->Arc_EOL)) {
 				securityRow++;
 			}
 			if (!securityRow->Arc_EOL) {
 				// Check length
-				if (pduRxData->SduLength == (2 + securityRow->DspSecurityADRSize)) {	/** @req DCM321.1 **/
+				if (pduRxData->SduLength == (2 + securityRow->DspSecurityADRSize)) {	/** @req DCM321.RequestSeed */
 					Dcm_SecLevelType activeSecLevel;
-					Dcm_GetSecurityLevel(&activeSecLevel);
-					if (requestedSecurityLevel == activeSecLevel) {		/** @req DCM323 **/
-						pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];
-						// If same level set the seed to zeroes
-						memset(&pduTxData->SduDataPtr[2], 0, securityRow->DspSecuritySeedSize);
-						pduTxData->SduLength = 2 + securityRow->DspSecuritySeedSize;
-					}
-					else {
-						// New security level ask for seed
-						getSeedResult = securityRow->GetSeed(&pduRxData->SduDataPtr[2], &pduTxData->SduDataPtr[2], &getSeedErrorCode);
-						if ((getSeedResult == E_OK) && (getSeedErrorCode == E_OK)) {
-							// Everything ok add sub function to tx message and send it.
+					Std_ReturnType result;
+					result = Dcm_GetSecurityLevel(&activeSecLevel);
+					if (result == E_OK) {
+						if (requestedSecurityLevel == activeSecLevel) {		/** @req DCM323 */
 							pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];
+							// If same level set the seed to zeroes
+							memset(&pduTxData->SduDataPtr[2], 0, securityRow->DspSecuritySeedSize);
 							pduTxData->SduLength = 2 + securityRow->DspSecuritySeedSize;
+						} else {
+							// New security level ask for seed
+							if (securityRow->GetSeed != NULL) {
+								Std_ReturnType getSeedResult;
+								getSeedResult = securityRow->GetSeed(&pduRxData->SduDataPtr[2], &pduTxData->SduDataPtr[2], &getSeedErrorCode); /** @req DCM324.RequestSeed */
+								if ((getSeedResult == E_OK) && (getSeedErrorCode == E_OK)) {
+									// Everything ok add sub function to tx message and send it.
+									pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];
+									pduTxData->SduLength = 2 + securityRow->DspSecuritySeedSize;
 
-							dspUdsSecurityAccesData.reqSecLevel = requestedSecurityLevel;
-							dspUdsSecurityAccesData.reqSecLevelRef = securityRow;
-							dspUdsSecurityAccesData.reqInProgress = TRUE;
+									dspUdsSecurityAccesData.reqSecLevel = requestedSecurityLevel;
+									dspUdsSecurityAccesData.reqSecLevelRef = securityRow;
+									dspUdsSecurityAccesData.reqInProgress = TRUE;
+								}
+								else {
+									// GetSeed returned not ok
+									responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+								}
+							} else {
+								responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+							}
 						}
-						else {
-							// GetSeed returned not ok
-							responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
-						}
+					} else {
+						// TODO: What to do?
+						responseCode = DCM_E_GENERALREJECT;
 					}
+
 				}
 				else {
 					// Length not ok
@@ -975,19 +1023,23 @@ void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 		else {
 			// sendKey message
 			if (dspUdsSecurityAccesData.reqInProgress) {
-				if (pduRxData->SduLength == (2 + dspUdsSecurityAccesData.reqSecLevelRef->DspSecurityKeySize)) {	/** @req DCM321 **/
+				if (pduRxData->SduLength == (2 + dspUdsSecurityAccesData.reqSecLevelRef->DspSecurityKeySize)) {	/** @req DCM321.SendKey */
 					if (requestedSecurityLevel == dspUdsSecurityAccesData.reqSecLevel) {
-						Std_ReturnType compareKeyResult;
-						compareKeyResult = dspUdsSecurityAccesData.reqSecLevelRef->CompareKey(&pduRxData->SduDataPtr[2]);
-						if (compareKeyResult == E_OK) {
-							// Request accepted
-							// Kill timer
-							DslSetSecurityLevel(dspUdsSecurityAccesData.reqSecLevelRef->DspSecurityLevel);
-							dspUdsSecurityAccesData.reqInProgress = FALSE;
-							pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];
-							pduTxData->SduLength = 2;
-						}
-						else {
+						if (dspUdsSecurityAccesData.reqSecLevelRef->CompareKey != NULL) {
+							Std_ReturnType compareKeyResult;
+							compareKeyResult = dspUdsSecurityAccesData.reqSecLevelRef->CompareKey(&pduRxData->SduDataPtr[2]); /** @req DCM324.SendKey */
+							if (compareKeyResult == E_OK) {
+								// Request accepted
+								// Kill timer
+								DslSetSecurityLevel(dspUdsSecurityAccesData.reqSecLevelRef->DspSecurityLevel); /** @req DCM325 */
+								dspUdsSecurityAccesData.reqInProgress = FALSE;
+								pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];
+								pduTxData->SduLength = 2;
+							}
+							else {
+								responseCode = DCM_E_CONDITIONSNOTCORRECT;
+							}
+						} else {
 							responseCode = DCM_E_CONDITIONSNOTCORRECT;
 						}
 					}
@@ -1016,39 +1068,40 @@ void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 
 void DspUdsTesterPresent(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
+	/** @req DCM251 */
 	if (pduRxData->SduLength == 2) {
 		switch (pduRxData->SduDataPtr[1])
 		{
 		case ZERO_SUB_FUNCTION:
 			DslResetSessionTimeoutTimer();
 			// Create positive response
-			/** @req DCM039.1 **/
 			pduTxData->SduDataPtr[1] = ZERO_SUB_FUNCTION;
 			pduTxData->SduLength = 2;
-			DsdDspProcessingDone(DCM_E_POSITIVERESPONSE); /** @req DCM269.1 **/
+			DsdDspProcessingDone(DCM_E_POSITIVERESPONSE);
 			break;
 
 		default:
-			DsdDspProcessingDone(DCM_E_SUBFUNCTIONNOTSUPPORTED);	/** @req DCM273.1 **/
+			DsdDspProcessingDone(DCM_E_SUBFUNCTIONNOTSUPPORTED);
 			break;
 		}
 	}
 	else {
 		// Wrong length
-		DsdDspProcessingDone(DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT);	/** @req DCM272.1 **/
+		DsdDspProcessingDone(DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT);
 	}
 }
 
 
 void DspUdsControlDtcSetting(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
+	/** @req DCM249 */
 	Dem_ReturnControlDTCStorageType resultCode;
 
 	if (pduRxData->SduLength == 2) {
 		switch (pduRxData->SduDataPtr[1])
 		{
-		case 0x01:	// ON	/** @req DCM249.1 **/
-			resultCode = Dem_EnableDTCStorage(DEM_DTC_GROUP_ALL_DTCS, DEM_DTC_KIND_ALL_DTCS);		/** @req DCM304 **/
+		case 0x01:	// ON
+			resultCode = Dem_EnableDTCStorage(DEM_DTC_GROUP_ALL_DTCS, DEM_DTC_KIND_ALL_DTCS);		/** @req DCM304 */
 			if (resultCode == DEM_CONTROL_DTC_STORAGE_OK) {
 				pduTxData->SduDataPtr[1] = 0x01;
 				pduTxData->SduLength = 2;
@@ -1059,8 +1112,8 @@ void DspUdsControlDtcSetting(const PduInfoType *pduRxData, PduInfoType *pduTxDat
 			}
 			break;
 
-		case 0x02:	// OFF	/** @req DCM249.2 **/
-			resultCode = Dem_DisableDTCStorage(DEM_DTC_GROUP_ALL_DTCS, DEM_DTC_KIND_ALL_DTCS);		/** @req DCM406 **/
+		case 0x02:	// OFF
+			resultCode = Dem_DisableDTCStorage(DEM_DTC_GROUP_ALL_DTCS, DEM_DTC_KIND_ALL_DTCS);		/** @req DCM406 */
 			if (resultCode == DEM_CONTROL_DTC_STORAGE_OK) {
 				pduTxData->SduDataPtr[1] = 0x02;
 				pduTxData->SduLength = 2;
@@ -1088,7 +1141,11 @@ void DspDcmConfirmation(PduIdType confirmPduId)
 	if (dspUdsEcuResetData.resetPending) {
 		if (confirmPduId == dspUdsEcuResetData.resetPduId) {
 			dspUdsEcuResetData.resetPending = FALSE;
+#if defined(USE_MCU) && ( MCU_PERFORM_RESET_API == STD_ON )
 			Mcu_PerformReset();
+#else
+			DET_REPORTERROR(MODULE_ID_DCM, 0, DCM_UDS_RESET_ID, DCM_E_NOT_SUPPORTED);
+#endif
 		}
 	}
 }

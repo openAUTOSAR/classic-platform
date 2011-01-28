@@ -24,8 +24,8 @@
 // Module Id:s from document "List of Basic Sofware Modules" Rev 1.2.1  Part of release 3.0
 //
 
-#ifndef _MODULES_H_
-#define _MODULES_H_
+#ifndef MODULES_H
+#define MODULES_H
 
 #include "Std_Types.h"
 

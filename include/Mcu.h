@@ -87,7 +87,11 @@ typedef enum {
 	MCU_POWER_ON_RESET,
 	MCU_WATCHDOG_RESET,
 	MCU_SW_RESET,
-	MCU_RESET_UNDEFINED
+	MCU_RESET_UNDEFINED,
+	MCU_OSC_FAILURE_RESET,
+    MCU_CPU_RESET,
+    MCU_EXT_RESET,
+    MCU_VSW_RESET
 } Mcu_ResetType;
 
 typedef struct {
@@ -98,6 +102,7 @@ typedef struct {
 	uint8 Pll1; // PLL setting 1
 	uint8 Pll2; // PLL setting 2
 	uint8 Pll3; // PLL setting 3
+	uint8 Pll4; // PLL setting 4
 
 } Mcu_ClockSettingConfigType;
 
@@ -178,18 +183,16 @@ void Mcu_SetMode( const Mcu_ModeType McuMode );
 #define Mcu_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,MCU)
 #endif
 
-typedef uint32_t imask_t;
-
 /* ArcCore extensions */
+
 void Irq_InstallVector(void (*func)(), IrqType vector, uint8_t priority, Cpu_t cpu );
 void Irq_GenerateSoftInt( IrqType vector );
 uint8_t Irq_GetCurrentPriority( Cpu_t cpu);
 uint32_t McuE_GetSystemClock( void );
-#if defined(CFG_MPC55XX)
+#if defined(CFG_MPC55XX) || defined(CFG_ARM_CR4)
 uint32_t McuE_GetPeripheralClock( McuE_PeriperalClock_t type );
 #endif
-imask_t McuE_EnterCriticalSection(void);
-void McuE_ExitCriticalSection(imask_t old_state);
+#include "McuExtensions.h"
 
 
 

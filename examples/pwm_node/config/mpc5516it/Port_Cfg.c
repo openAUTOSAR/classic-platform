@@ -21,336 +21,337 @@
 
 
 
+#include "Port.h"
 #include "Port_Cfg.h"
 
 // All: 	PA,OBE,IBE,ODE,HYS,SRC,WPE,WPS
 // Input: 	PA,OBE,IBE,HYS,WPE,WPS
 // Output:  PA,OBE,IBE,ODE,SRC,(WPE,WPS)
 
-#define 	PCR_PWM			PCR_BOOTCFG
+#define 	PCR_PWM			PORT_PCR_BOOTCFG
 #define 	PCR_ADC			(0)
-#define	PCR_IO_INPUT	PCR_BOOTCFG
-#define	PCR_IO_OUTPUT	OBE_ENABLE
-#define	PCR_CAN			(0)
-#define 	PCR_SPI			PCR_BOOTCFG
-#define 	PCR_I2C			PCR_BOOTCFG
+#define		PCR_IO_INPUT	PORT_PCR_BOOTCFG
+#define		PCR_IO_OUTPUT	PORT_OBE_ENABLE
+#define		PCR_CAN			(0)
+#define 	PCR_SPI			PORT_PCR_BOOTCFG
+#define 	PCR_I2C			PORT_PCR_BOOTCFG
 
 const uint16_t PortPadConfigData[] =
 {
   // pad 0-15
-  PCR_RESET, /* PA0, AN0 */
-  PCR_RESET, /* PA1      */
-  PCR_RESET, /* PA2      */
-  PCR_RESET, /* PA3      */
-  PCR_RESET, /* PA4      */
-  PCR_RESET, /* PA5 		*/
-  PCR_RESET, /* PA6,     */
-  PCR_RESET, /* PA7(input only) */
-  PCR_RESET, /* PA8(input only) */
-  PCR_RESET, /* PA9(input only) */
-  PCR_RESET, /* PA10(input only) */
-  PCR_RESET, /* PA11(input only) */
-  PCR_RESET, /* PA12(input only) */
-  PCR_RESET, /* PA13(input only) */
-  PCR_RESET, /* PA14(input only) */
-  PCR_RESET, /* PA15(input only) */
+  PORT_PCR_RESET, /* PA0, AN0 */
+  PORT_PCR_RESET, /* PA1      */
+  PORT_PCR_RESET, /* PA2      */
+  PORT_PCR_RESET, /* PA3      */
+  PORT_PCR_RESET, /* PA4      */
+  PORT_PCR_RESET, /* PA5 		*/
+  PORT_PCR_RESET, /* PA6,     */
+  PORT_PCR_RESET, /* PA7(input only) */
+  PORT_PCR_RESET, /* PA8(input only) */
+  PORT_PCR_RESET, /* PA9(input only) */
+  PORT_PCR_RESET, /* PA10(input only) */
+  PORT_PCR_RESET, /* PA11(input only) */
+  PORT_PCR_RESET, /* PA12(input only) */
+  PORT_PCR_RESET, /* PA13(input only) */
+  PORT_PCR_RESET, /* PA14(input only) */
+  PORT_PCR_RESET, /* PA15(input only) */
 
   // pad 16-31
-  PCR_RESET, /* PB0 */
-  PCR_RESET, /* PB1 */
-  PCR_RESET, /* PB2 */
-  PCR_RESET, /* PB3 */
-  PCR_RESET, /* PB4 */
-  PCR_RESET, /* PB5 */
-  PCR_RESET, /* PB6 */
-  PCR_RESET, /* PB7 */
-  PCR_RESET, /* PB8 */
-  PCR_RESET, /* PB9 */
-  PCR_RESET, /* PB10 */
-  PCR_RESET, /* PB11 */
-  PCR_RESET, /* PB12 */
-  PCR_RESET, /* PB13 */
-  PCR_RESET, /* PB14 */
-  PCR_RESET, /* PB15 */
+  PORT_PCR_RESET, /* PB0 */
+  PORT_PCR_RESET, /* PB1 */
+  PORT_PCR_RESET, /* PB2 */
+  PORT_PCR_RESET, /* PB3 */
+  PORT_PCR_RESET, /* PB4 */
+  PORT_PCR_RESET, /* PB5 */
+  PORT_PCR_RESET, /* PB6 */
+  PORT_PCR_RESET, /* PB7 */
+  PORT_PCR_RESET, /* PB8 */
+  PORT_PCR_RESET, /* PB9 */
+  PORT_PCR_RESET, /* PB10 */
+  PORT_PCR_RESET, /* PB11 */
+  PORT_PCR_RESET, /* PB12 */
+  PORT_PCR_RESET, /* PB13 */
+  PORT_PCR_RESET, /* PB14 */
+  PORT_PCR_RESET, /* PB15 */
 
   // pad 32-47
-  PA_FUNC1|OBE_ENABLE, /* PC0/emios0 */
-  PCR_RESET, // PC1
-  PCR_RESET, // PC2
-  PA_FUNC1|OBE_ENABLE, /* PC3 emios3, pin 117 */
-  PCR_RESET, /* PC4 */
-  PCR_RESET, /* PC5 */
-  PCR_RESET, /* PC6 */
-  PCR_RESET, /* PC7 */
-  PCR_RESET, /* PC8 */
-  PCR_RESET, /* PC9 */
-  PCR_RESET, /* PC10 */
-  PCR_RESET, /* PC11 */
-  PCR_RESET, /* PC12 */
-  PCR_RESET, /* PC13 */
-  PCR_RESET, /* PC14 */
-  PCR_RESET, /* PC15 */
+  PORT_PA_FUNC1|PORT_OBE_ENABLE, /* PC0/emios0 */
+  PORT_PCR_RESET, // PC1
+  PORT_PCR_RESET, // PC2
+  PORT_PA_FUNC1|PORT_OBE_ENABLE, /* PC3 emios3, pin 117 */
+  PORT_PCR_RESET, /* PC4 */
+  PORT_PCR_RESET, /* PC5 */
+  PORT_PCR_RESET, /* PC6 */
+  PORT_PCR_RESET, /* PC7 */
+  PORT_PCR_RESET, /* PC8 */
+  PORT_PCR_RESET, /* PC9 */
+  PORT_PCR_RESET, /* PC10 */
+  PORT_PCR_RESET, /* PC11 */
+  PORT_PCR_RESET, /* PC12 */
+  PORT_PCR_RESET, /* PC13 */
+  PORT_PCR_RESET, /* PC14 */
+  PORT_PCR_RESET, /* PC15 */
 
   // pad 48-63
-  PCR_RESET, /* PD0, CAN_A, Tx */
-  PCR_RESET, /* PD1, CAN_A, Rx */
-  PCR_BOOTCFG, /* PD2 */
-  PCR_RESET, /* PD3 */
-  PA_FUNC2|OBE_ENABLE, /* PD4, LED */
-  PA_FUNC2|OBE_ENABLE, /* PD5, LED */
-  PCR_RESET, /* PD6 , SCI_RS232??*/
-  PCR_RESET, /* PD7 , SCI_RS232??*/
-  (PA_FUNC1 | OBE_ENABLE | SLEW_RATE_MAX), /* PD8 LIN TX */
-  (PA_FUNC1 | IBE_ENABLE), /* PD9 LIN RX */
-  PCR_RESET, /* PD10 */
-  PCR_RESET, /* PD11 */
-  (PA_FUNC1 | OBE_ENABLE | SLEW_RATE_MAX), /* PD12 SPIB_CS0 */
-  (PA_FUNC1 | OBE_ENABLE | SLEW_RATE_MAX), /* PD13 SPIB_CLK*/
-  (PA_FUNC1 | OBE_ENABLE | SLEW_RATE_MAX), /* PD14 SPIB_SO*/
-  (PA_FUNC1 | IBE_ENABLE),                 /* PD15 SPIB_SI*/
+  PORT_PCR_RESET, /* PD0, CAN_A, Tx */
+  PORT_PCR_RESET, /* PD1, CAN_A, Rx */
+  PORT_PCR_BOOTCFG, /* PD2 */
+  PORT_PCR_RESET, /* PD3 */
+  PORT_PA_FUNC2|PORT_OBE_ENABLE, /* PD4, LED */
+  PORT_PA_FUNC2|PORT_OBE_ENABLE, /* PD5, LED */
+  PORT_PCR_RESET, /* PD6 , SCI_RS232??*/
+  PORT_PCR_RESET, /* PD7 , SCI_RS232??*/
+  (PORT_PA_FUNC1 | PORT_OBE_ENABLE | PORT_SLEW_RATE_MAX), /* PD8 LIN TX */
+  (PORT_PA_FUNC1 | PORT_IBE_ENABLE), /* PD9 LIN RX */
+  PORT_PCR_RESET, /* PD10 */
+  PORT_PCR_RESET, /* PD11 */
+  (PORT_PA_FUNC1 | PORT_OBE_ENABLE | PORT_SLEW_RATE_MAX), /* PD12 SPIB_CS0 */
+  (PORT_PA_FUNC1 | PORT_OBE_ENABLE | PORT_SLEW_RATE_MAX), /* PD13 SPIB_CLK*/
+  (PORT_PA_FUNC1 | PORT_OBE_ENABLE | PORT_SLEW_RATE_MAX), /* PD14 SPIB_SO*/
+  (PORT_PA_FUNC1 | PORT_IBE_ENABLE),                 /* PD15 SPIB_SI*/
 
   // pad 64-79
-  (PA_FUNC1 | OBE_ENABLE | SLEW_RATE_MAX), /* PE0 SPIA_CS1 */
-  (PA_FUNC1 | OBE_ENABLE | SLEW_RATE_MAX), /* PE1 SPIA_CS2*/
-  PCR_RESET, /* PE2 */
-  (PA_FUNC1 | OBE_ENABLE | SLEW_RATE_MAX), /* PE3 SPIA_CLK*/
-  (PA_FUNC1 | OBE_ENABLE | SLEW_RATE_MAX), /* PE4 SPIA_SO*/
-  (PA_FUNC1 | IBE_ENABLE),                 /* PE5 SPIA_SI*/
-  PCR_RESET, /* PE6 */
-  PCR_RESET, /* PE7 */
-  PCR_RESET, /* PE8 */
-  PCR_RESET, /* PE9 */
-  PCR_RESET, /* PE10 */
-  PCR_RESET, /* PE11 */
-  PCR_RESET, /* PE12 */
-  PCR_RESET, /* PE13 */
-  PCR_RESET, /* PE14 */
-  PCR_RESET, /* PE15 */
+  (PORT_PA_FUNC1 | PORT_OBE_ENABLE | PORT_SLEW_RATE_MAX), /* PE0 SPIA_CS1 */
+  (PORT_PA_FUNC1 | PORT_OBE_ENABLE | PORT_SLEW_RATE_MAX), /* PE1 SPIA_CS2*/
+  PORT_PCR_RESET, /* PE2 */
+  (PORT_PA_FUNC1 | PORT_OBE_ENABLE | PORT_SLEW_RATE_MAX), /* PE3 SPIA_CLK*/
+  (PORT_PA_FUNC1 | PORT_OBE_ENABLE | PORT_SLEW_RATE_MAX), /* PE4 SPIA_SO*/
+  (PORT_PA_FUNC1 | PORT_IBE_ENABLE),                 /* PE5 SPIA_SI*/
+  PORT_PCR_RESET, /* PE6 */
+  PORT_PCR_RESET, /* PE7 */
+  PORT_PCR_RESET, /* PE8 */
+  PORT_PCR_RESET, /* PE9 */
+  PORT_PCR_RESET, /* PE10 */
+  PORT_PCR_RESET, /* PE11 */
+  PORT_PCR_RESET, /* PE12 */
+  PORT_PCR_RESET, /* PE13 */
+  PORT_PCR_RESET, /* PE14 */
+  PORT_PCR_RESET, /* PE15 */
 
   // pad 80-95
-  PCR_RESET, /* PF0 */
-  PCR_RESET, /* PF1 */
-  PCR_RESET, /* PF2 */
-  PCR_RESET, /* PF3 */
-  PCR_RESET, /* PF4 */
-  PCR_RESET, /* PF5 */
-  PCR_RESET, /* PF6 */
-  PCR_RESET, /* PF7 */
-  PCR_RESET, /* PF8 */
-  PCR_RESET, /* PF9 */
-  PCR_RESET, /* PF10 */
-  PCR_RESET, /* PF11 */
-  PA_FUNC2|OBE_ENABLE|PULL_UP, /* PF12 SCI_D Transmit, J1708 Tx*/
-  PA_FUNC2|IBE_ENABLE|PULL_UP, /* PF13 SCI_D Receive, J1708 Rx*/
-  PCR_RESET, /* PF14 */
-  PCR_RESET, /* PF15 */
+  PORT_PCR_RESET, /* PF0 */
+  PORT_PCR_RESET, /* PF1 */
+  PORT_PCR_RESET, /* PF2 */
+  PORT_PCR_RESET, /* PF3 */
+  PORT_PCR_RESET, /* PF4 */
+  PORT_PCR_RESET, /* PF5 */
+  PORT_PCR_RESET, /* PF6 */
+  PORT_PCR_RESET, /* PF7 */
+  PORT_PCR_RESET, /* PF8 */
+  PORT_PCR_RESET, /* PF9 */
+  PORT_PCR_RESET, /* PF10 */
+  PORT_PCR_RESET, /* PF11 */
+  PORT_PA_FUNC2|PORT_OBE_ENABLE|PORT_PULL_UP, /* PF12 SCI_D Transmit, J1708 Tx*/
+  PORT_PA_FUNC2|PORT_IBE_ENABLE|PORT_PULL_UP, /* PF13 SCI_D Receive, J1708 Rx*/
+  PORT_PCR_RESET, /* PF14 */
+  PORT_PCR_RESET, /* PF15 */
 
   // pad 96-111
-  PCR_RESET, /* PG0  */
-  PA_FUNC2|IBE_ENABLE|PULL_UP, /* PG1 eMIOS[17], J1708 Edgedetect*/
-  PCR_RESET, /* PG2 */
-  PCR_RESET, /* PG3 */
-  PCR_RESET, /* PG4 */
-  PCR_RESET, /* PG5 */
-  PCR_RESET, /* PG6 */
-  PCR_RESET, /* PG7 */
-  PCR_RESET, /* PG8 */
-  PCR_RESET, /* PG9 */
-  PCR_RESET, /* PG10 */
-  PCR_RESET, /* PG11 */
-  PCR_RESET, /* PG12 */
-  PCR_RESET, /* PG13 */
-  PCR_RESET, /* PG14 */
-  PCR_RESET, /* PG15 */
+  PORT_PCR_RESET, /* PG0  */
+  PORT_PA_FUNC2|PORT_IBE_ENABLE|PORT_PULL_UP, /* PG1 eMIOS[17], J1708 Edgedetect*/
+  PORT_PCR_RESET, /* PG2 */
+  PORT_PCR_RESET, /* PG3 */
+  PORT_PCR_RESET, /* PG4 */
+  PORT_PCR_RESET, /* PG5 */
+  PORT_PCR_RESET, /* PG6 */
+  PORT_PCR_RESET, /* PG7 */
+  PORT_PCR_RESET, /* PG8 */
+  PORT_PCR_RESET, /* PG9 */
+  PORT_PCR_RESET, /* PG10 */
+  PORT_PCR_RESET, /* PG11 */
+  PORT_PCR_RESET, /* PG12 */
+  PORT_PCR_RESET, /* PG13 */
+  PORT_PCR_RESET, /* PG14 */
+  PORT_PCR_RESET, /* PG15 */
 
   // pad 112-127
-  PCR_RESET, /* PH0 */
-  PCR_RESET, /* PH1 */
-  PCR_RESET, /* PH2 */
-  PCR_RESET, /* PH3 */
-  PCR_RESET, /* PH4 */
-  PCR_RESET, /* PH5 */
-  PCR_RESET, /* PH6 */
-  PCR_RESET, /* PH7 */
-  PCR_RESET, /* PH8 */
-  PCR_RESET, /* PH9 */
-  PCR_RESET, /* PH10 */
-  PCR_RESET, /* PH11 */
-  PCR_RESET, /* PH12 */
-  PCR_RESET, /* PH13 */
-  PCR_RESET, /* PH14 */
-  PCR_RESET, /* PH15 */
+  PORT_PCR_RESET, /* PH0 */
+  PORT_PCR_RESET, /* PH1 */
+  PORT_PCR_RESET, /* PH2 */
+  PORT_PCR_RESET, /* PH3 */
+  PORT_PCR_RESET, /* PH4 */
+  PORT_PCR_RESET, /* PH5 */
+  PORT_PCR_RESET, /* PH6 */
+  PORT_PCR_RESET, /* PH7 */
+  PORT_PCR_RESET, /* PH8 */
+  PORT_PCR_RESET, /* PH9 */
+  PORT_PCR_RESET, /* PH10 */
+  PORT_PCR_RESET, /* PH11 */
+  PORT_PCR_RESET, /* PH12 */
+  PORT_PCR_RESET, /* PH13 */
+  PORT_PCR_RESET, /* PH14 */
+  PORT_PCR_RESET, /* PH15 */
 
   // pad 128-143
-  PCR_RESET, /* PJ0 */
-  PCR_RESET, /* PJ1 */
-  PCR_RESET, /* PJ2 */
-  PCR_RESET, /* PJ3 */
-  PCR_RESET, /* PJ4 */
-  PCR_RESET, /* PJ5 */
-  PCR_RESET, /* PJ6 */
-  PCR_RESET, /* PJ7 */
-  PCR_RESET, /* PJ8 */
-  PCR_RESET, /* PJ9 */
-  PCR_RESET, /* PJ10 */
-  PCR_RESET, /* PJ11 */
-  PCR_RESET, /* PJ12 */
-  PCR_RESET, /* PJ13 */
-  PCR_RESET, /* PJ14 */
-  PCR_RESET, /* PJ15 */
+  PORT_PCR_RESET, /* PJ0 */
+  PORT_PCR_RESET, /* PJ1 */
+  PORT_PCR_RESET, /* PJ2 */
+  PORT_PCR_RESET, /* PJ3 */
+  PORT_PCR_RESET, /* PJ4 */
+  PORT_PCR_RESET, /* PJ5 */
+  PORT_PCR_RESET, /* PJ6 */
+  PORT_PCR_RESET, /* PJ7 */
+  PORT_PCR_RESET, /* PJ8 */
+  PORT_PCR_RESET, /* PJ9 */
+  PORT_PCR_RESET, /* PJ10 */
+  PORT_PCR_RESET, /* PJ11 */
+  PORT_PCR_RESET, /* PJ12 */
+  PORT_PCR_RESET, /* PJ13 */
+  PORT_PCR_RESET, /* PJ14 */
+  PORT_PCR_RESET, /* PJ15 */
 
   // pad 144-145
-  PCR_RESET, /* PK0 (input only) */
-  PCR_RESET, /* PK1 (input only)*/
+  PORT_PCR_RESET, /* PK0 (input only) */
+  PORT_PCR_RESET, /* PK1 (input only)*/
 };
 
-#define GPDO_RESET 0
+#define PORT_GPDO_RESET 0
 
 const uint8_t PortOutConfigData[] =
 {
   // pad 16-31
-  GPDO_RESET, /* PB0 */
-  GPDO_RESET, /* PB1 */
-  GPDO_RESET, /* PB2 */
-  GPDO_RESET, /* PB3 */
-  GPDO_RESET, /* PB4 */
-  GPDO_RESET, /* PB5 */
-  GPDO_RESET, /* PB6 */
-  GPDO_RESET, /* PB7 */
-  GPDO_RESET, /* PB8 */
-  GPDO_RESET, /* PB9 */
-  GPDO_RESET, /* PB10 */
-  GPDO_RESET, /* PB11 */
-  GPDO_RESET, /* PB12 */
-  GPDO_RESET, /* PB13 */
-  GPDO_RESET, /* PB14 */
-  GPDO_RESET, /* PB15 */
+  PORT_GPDO_RESET, /* PB0 */
+  PORT_GPDO_RESET, /* PB1 */
+  PORT_GPDO_RESET, /* PB2 */
+  PORT_GPDO_RESET, /* PB3 */
+  PORT_GPDO_RESET, /* PB4 */
+  PORT_GPDO_RESET, /* PB5 */
+  PORT_GPDO_RESET, /* PB6 */
+  PORT_GPDO_RESET, /* PB7 */
+  PORT_GPDO_RESET, /* PB8 */
+  PORT_GPDO_RESET, /* PB9 */
+  PORT_GPDO_RESET, /* PB10 */
+  PORT_GPDO_RESET, /* PB11 */
+  PORT_GPDO_RESET, /* PB12 */
+  PORT_GPDO_RESET, /* PB13 */
+  PORT_GPDO_RESET, /* PB14 */
+  PORT_GPDO_RESET, /* PB15 */
 
   // pad 32-47
-  GPDO_RESET, /* PC0 */
-  GPDO_RESET, /* PC1 */
-  GPDO_RESET, /* PC2 */
-  GPDO_RESET, /* PC3 */
-  GPDO_RESET, /* PC4 */
-  GPDO_RESET, /* PC5 */
-  GPDO_RESET, /* PC6 */
-  GPDO_RESET, /* PC7 */
-  GPDO_RESET, /* PC8 */
-  GPDO_RESET, /* PC9 */
-  GPDO_RESET, /* PC10 */
-  GPDO_RESET, /* PC11 */
-  GPDO_RESET, /* PC12 */
-  GPDO_RESET, /* PC13 */
-  GPDO_RESET, /* PC14 */
-  GPDO_RESET, /* PC15 */
+  PORT_GPDO_RESET, /* PC0 */
+  PORT_GPDO_RESET, /* PC1 */
+  PORT_GPDO_RESET, /* PC2 */
+  PORT_GPDO_RESET, /* PC3 */
+  PORT_GPDO_RESET, /* PC4 */
+  PORT_GPDO_RESET, /* PC5 */
+  PORT_GPDO_RESET, /* PC6 */
+  PORT_GPDO_RESET, /* PC7 */
+  PORT_GPDO_RESET, /* PC8 */
+  PORT_GPDO_RESET, /* PC9 */
+  PORT_GPDO_RESET, /* PC10 */
+  PORT_GPDO_RESET, /* PC11 */
+  PORT_GPDO_RESET, /* PC12 */
+  PORT_GPDO_RESET, /* PC13 */
+  PORT_GPDO_RESET, /* PC14 */
+  PORT_GPDO_RESET, /* PC15 */
 
   // pad 48-63
-  GPDO_RESET, /* PD0 */
-  GPDO_RESET, /* PD1 */
-  GPDO_RESET, /* PD2 */
-  GPDO_RESET, /* PD3 */
-  GPDO_RESET, /* PD4 */
-  GPDO_RESET, /* PD5 */
-  GPDO_RESET, /* PD6 */
-  GPDO_RESET, /* PD7 */
-  GPDO_RESET, /* PD8 */
-  GPDO_RESET, /* PD9 */
-  GPDO_RESET, /* PD10 */
-  GPDO_RESET, /* PD11 */
-  GPDO_RESET, /* PD12 */
-  GPDO_RESET, /* PD13 */
-  GPDO_RESET, /* PD14 */
-  GPDO_RESET, /* PD15 */
+  PORT_GPDO_RESET, /* PD0 */
+  PORT_GPDO_RESET, /* PD1 */
+  PORT_GPDO_RESET, /* PD2 */
+  PORT_GPDO_RESET, /* PD3 */
+  PORT_GPDO_RESET, /* PD4 */
+  PORT_GPDO_RESET, /* PD5 */
+  PORT_GPDO_RESET, /* PD6 */
+  PORT_GPDO_RESET, /* PD7 */
+  PORT_GPDO_RESET, /* PD8 */
+  PORT_GPDO_RESET, /* PD9 */
+  PORT_GPDO_RESET, /* PD10 */
+  PORT_GPDO_RESET, /* PD11 */
+  PORT_GPDO_RESET, /* PD12 */
+  PORT_GPDO_RESET, /* PD13 */
+  PORT_GPDO_RESET, /* PD14 */
+  PORT_GPDO_RESET, /* PD15 */
 
   // pad 64-79
-  GPDO_RESET, /* PE0 */
-  GPDO_RESET, /* PE1 */
-  GPDO_RESET, /* PE2 */
-  GPDO_RESET, /* PE3 */
-  GPDO_RESET, /* PE4 */
-  GPDO_RESET, /* PE5 */
-  GPDO_RESET, /* PE6 */
-  GPDO_RESET, /* PE7 */
-  GPDO_RESET, /* PE8 */
-  GPDO_RESET, /* PE9 */
-  GPDO_RESET, /* PE10 */
-  GPDO_RESET, /* PE11 */
-  GPDO_RESET, /* PE12 */
-  GPDO_RESET, /* PE13 */
-  GPDO_RESET, /* PE14 */
-  GPDO_RESET, /* PE15 */
+  PORT_GPDO_RESET, /* PE0 */
+  PORT_GPDO_RESET, /* PE1 */
+  PORT_GPDO_RESET, /* PE2 */
+  PORT_GPDO_RESET, /* PE3 */
+  PORT_GPDO_RESET, /* PE4 */
+  PORT_GPDO_RESET, /* PE5 */
+  PORT_GPDO_RESET, /* PE6 */
+  PORT_GPDO_RESET, /* PE7 */
+  PORT_GPDO_RESET, /* PE8 */
+  PORT_GPDO_RESET, /* PE9 */
+  PORT_GPDO_RESET, /* PE10 */
+  PORT_GPDO_RESET, /* PE11 */
+  PORT_GPDO_RESET, /* PE12 */
+  PORT_GPDO_RESET, /* PE13 */
+  PORT_GPDO_RESET, /* PE14 */
+  PORT_GPDO_RESET, /* PE15 */
 
   // pad 80-95
-  GPDO_RESET, /* PF0 */
-  GPDO_RESET, /* PF1 */
-  GPDO_RESET, /* PF2 */
-  GPDO_RESET, /* PF3 */
-  GPDO_RESET, /* PF4 */
-  GPDO_RESET, /* PF5 */
-  GPDO_RESET, /* PF6 */
-  GPDO_RESET, /* PF7 */
-  GPDO_RESET, /* PF8 */
-  GPDO_RESET, /* PF9 */
-  GPDO_RESET, /* PF10 */
-  GPDO_RESET, /* PF11 */
-  GPDO_RESET, /* PF12 */
-  GPDO_RESET, /* PF13 */
-  GPDO_RESET, /* PF14 */
-  GPDO_RESET, /* PF15 */
+  PORT_GPDO_RESET, /* PF0 */
+  PORT_GPDO_RESET, /* PF1 */
+  PORT_GPDO_RESET, /* PF2 */
+  PORT_GPDO_RESET, /* PF3 */
+  PORT_GPDO_RESET, /* PF4 */
+  PORT_GPDO_RESET, /* PF5 */
+  PORT_GPDO_RESET, /* PF6 */
+  PORT_GPDO_RESET, /* PF7 */
+  PORT_GPDO_RESET, /* PF8 */
+  PORT_GPDO_RESET, /* PF9 */
+  PORT_GPDO_RESET, /* PF10 */
+  PORT_GPDO_RESET, /* PF11 */
+  PORT_GPDO_RESET, /* PF12 */
+  PORT_GPDO_RESET, /* PF13 */
+  PORT_GPDO_RESET, /* PF14 */
+  PORT_GPDO_RESET, /* PF15 */
 
   // pad 96-111
-  GPDO_RESET, /* PG0 */
-  GPDO_RESET, /* PG1 */
-  GPDO_RESET, /* PG2 */
-  GPDO_RESET, /* PG3 */
-  GPDO_RESET, /* PG4 */
-  GPDO_RESET, /* PG5 */
-  GPDO_RESET, /* PG6 */
-  GPDO_RESET, /* PG7 */
-  GPDO_RESET, /* PG8 */
-  GPDO_RESET, /* PG9 */
-  GPDO_RESET, /* PG10 */
-  GPDO_RESET, /* PG11 */
-  GPDO_RESET, /* PG12 */
-  GPDO_RESET, /* PG13 */
-  GPDO_RESET, /* PG14 */
-  GPDO_RESET, /* PG15 */
+  PORT_GPDO_RESET, /* PG0 */
+  PORT_GPDO_RESET, /* PG1 */
+  PORT_GPDO_RESET, /* PG2 */
+  PORT_GPDO_RESET, /* PG3 */
+  PORT_GPDO_RESET, /* PG4 */
+  PORT_GPDO_RESET, /* PG5 */
+  PORT_GPDO_RESET, /* PG6 */
+  PORT_GPDO_RESET, /* PG7 */
+  PORT_GPDO_RESET, /* PG8 */
+  PORT_GPDO_RESET, /* PG9 */
+  PORT_GPDO_RESET, /* PG10 */
+  PORT_GPDO_RESET, /* PG11 */
+  PORT_GPDO_RESET, /* PG12 */
+  PORT_GPDO_RESET, /* PG13 */
+  PORT_GPDO_RESET, /* PG14 */
+  PORT_GPDO_RESET, /* PG15 */
 
   // pad 112-127
-  GPDO_RESET, /* PH0 */
-  GPDO_RESET, /* PH1 */
-  GPDO_RESET, /* PH2 */
-  GPDO_RESET, /* PH3 */
-  GPDO_RESET, /* PH4 */
-  GPDO_RESET, /* PH5 */
-  GPDO_RESET, /* PH6 */
-  GPDO_RESET, /* PH7 */
-  GPDO_RESET, /* PH8 */
-  GPDO_RESET, /* PH9 */
-  GPDO_RESET, /* PH10 */
-  GPDO_RESET, /* PH11 */
-  GPDO_RESET, /* PH12 */
-  GPDO_RESET, /* PH13 */
-  GPDO_RESET, /* PH14 */
-  GPDO_RESET, /* PH15 */
+  PORT_GPDO_RESET, /* PH0 */
+  PORT_GPDO_RESET, /* PH1 */
+  PORT_GPDO_RESET, /* PH2 */
+  PORT_GPDO_RESET, /* PH3 */
+  PORT_GPDO_RESET, /* PH4 */
+  PORT_GPDO_RESET, /* PH5 */
+  PORT_GPDO_RESET, /* PH6 */
+  PORT_GPDO_RESET, /* PH7 */
+  PORT_GPDO_RESET, /* PH8 */
+  PORT_GPDO_RESET, /* PH9 */
+  PORT_GPDO_RESET, /* PH10 */
+  PORT_GPDO_RESET, /* PH11 */
+  PORT_GPDO_RESET, /* PH12 */
+  PORT_GPDO_RESET, /* PH13 */
+  PORT_GPDO_RESET, /* PH14 */
+  PORT_GPDO_RESET, /* PH15 */
 
   // pad 128-143
-  GPDO_RESET, /* PJ0 */
-  GPDO_RESET, /* PJ1 */
-  GPDO_RESET, /* PJ2 */
-  GPDO_RESET, /* PJ3 */
-  GPDO_RESET, /* PJ4 */
-  GPDO_RESET, /* PJ5 */
-  GPDO_RESET, /* PJ6 */
-  GPDO_RESET, /* PJ7 */
-  GPDO_RESET, /* PJ8 */
-  GPDO_RESET, /* PJ9 */
-  GPDO_RESET, /* PJ10 */
-  GPDO_RESET, /* PJ11 */
-  GPDO_RESET, /* PJ12 */
-  GPDO_RESET, /* PJ13 */
-  GPDO_RESET, /* PJ14 */
-  GPDO_RESET, /* PJ15 */
+  PORT_GPDO_RESET, /* PJ0 */
+  PORT_GPDO_RESET, /* PJ1 */
+  PORT_GPDO_RESET, /* PJ2 */
+  PORT_GPDO_RESET, /* PJ3 */
+  PORT_GPDO_RESET, /* PJ4 */
+  PORT_GPDO_RESET, /* PJ5 */
+  PORT_GPDO_RESET, /* PJ6 */
+  PORT_GPDO_RESET, /* PJ7 */
+  PORT_GPDO_RESET, /* PJ8 */
+  PORT_GPDO_RESET, /* PJ9 */
+  PORT_GPDO_RESET, /* PJ10 */
+  PORT_GPDO_RESET, /* PJ11 */
+  PORT_GPDO_RESET, /* PJ12 */
+  PORT_GPDO_RESET, /* PJ13 */
+  PORT_GPDO_RESET, /* PJ14 */
+  PORT_GPDO_RESET, /* PJ15 */
 };
 
 //#define GPDI_RESET		0

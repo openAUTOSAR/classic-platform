@@ -129,11 +129,17 @@
 
 
 #define PRETASKHOOK() \
+	assert( os_sys.curr_pcb->state & ST_RUNNING ); \
+	assert( os_sys.curr_pcb->flags == SYS_FLAG_HOOK_STATE_EXPECTING_PRE );  \
+	os_sys.curr_pcb->flags = SYS_FLAG_HOOK_STATE_EXPECTING_POST;   \
 	if( os_sys.hooks->PreTaskHook != NULL ) { \
 		os_sys.hooks->PreTaskHook(); \
 	}
 
 #define POSTTASKHOOK() \
+	assert( os_sys.curr_pcb->state & ST_RUNNING ); \
+	assert( os_sys.curr_pcb->flags == SYS_FLAG_HOOK_STATE_EXPECTING_POST );  \
+	os_sys.curr_pcb->flags = SYS_FLAG_HOOK_STATE_EXPECTING_PRE;   \
 	if( os_sys.hooks->PostTaskHook != NULL ) { 	\
 		os_sys.hooks->PostTaskHook();			\
 	}
@@ -185,7 +191,7 @@ static inline struct OsResource *os_get_resource_int_p( void ) {
  */
 
 static inline uint32_t os_task_nr_to_mask( uint32_t nr ) {
-	return (1<<nr);
+	return ((uint32_t) 1 << nr); // 701 PC-lint [10.5]: OK om skriver 1u... får då istället: 960 PC-lint [10.5]: Båda ok om skriver 1ul eller castar till uint32_t
 }
 
 // task_i.c
@@ -195,9 +201,22 @@ OsPcbType *os_find_task( TaskType tid );
 // resource.c
 void Os_ResourceGetInternal(void );
 void Os_ResourceReleaseInternal( void );
+void Os_ResourceAlloc( OsResourceType *rPtr, OsPcbType *pcbPtr);
+void Os_ResourceFree( OsResourceType *rPtr , OsPcbType *pcbPtr);
 
 void Os_ResourceInit( void );
 
+
+static inline void Os_ResourceFreeAll( OsPcbType *pcbPtr ) {
+	OsResourceType *rPtr;
+
+	/* Pop the queue */
+	TAILQ_FOREACH(rPtr, &pcbPtr->resource_head, listEntry ) {
+		Os_ResourceFree(rPtr,pcbPtr);
+	}
+}
+
+#if 0
 /**
  *
  * @return 1 - if any resources were found.
@@ -220,7 +239,39 @@ static inline _Bool Os_ResourceCheckAndRelease( OsPcbType *pcb )  {
 	}
 	return rv;
 }
+#endif
 
+static inline _Bool Os_TaskOccupiesResources( OsPcbType *pcb ) {
+	return !(TAILQ_EMPTY(&pcb->resource_head));
+}
+
+/*
+static inline void Os_GetSchedulerResource() {
+	os_sys.scheduler_lock = 1;
+}
+
+static inline void Os_ReleaseSchedulerResource() {
+	os_sys.scheduler_lock = 0;
+}
+*/
+/*
+static inline _Bool Os_SchedulerResourceIsOccupied() {
+#if 0
+	return (os_sys.resScheduler.owner != NO_TASK_OWNER );
+#else
+	return (os_sys.scheduler_lock == 1);
+#endif
+}
+*/
+#define NO_TASK_OWNER 	(TaskType)(~0)
+
+static inline _Bool Os_SchedulerResourceIsFree() {
+#if 1
+	return (os_sys.resScheduler.owner == NO_TASK_OWNER );
+#else
+	return (os_sys.scheduler_lock == 0);
+#endif
+}
 
 // Create.c
 OsPcbType * os_alloc_new_pcb( void );
@@ -229,8 +280,13 @@ void os_dispatch(void);
 
 void OsTick( void );
 
+#if defined(CFG_ARM_CM3)
+void Os_Isr_cm3( void *isr_p );
+void TailChaining(void *stack);
+#endif
+
 void *Os_Isr( void *stack, void *pcb_p );
-void Os_Dispatch( _Bool force );
+void Os_Dispatch( uint32_t op );
 
 #define STACK_PATTERN	0x42
 
@@ -255,12 +311,25 @@ static inline _Bool Os_StackIsEndmarkOk( OsPcbType *pcbPtr ) {
 	uint8_t *end = pcbPtr->stack.top;
 	rv =  ( *end == STACK_PATTERN);
 	if( !rv ) {
-		OS_DEBUG(D_TASK,"Stack End Mark is bad for %s curr: %08x curr: %08x\n",
+		OS_DEBUG(D_TASK,"Stack End Mark is bad for %s curr: %p curr: %p\n",
 				pcbPtr->name,
 				pcbPtr->stack.curr,
 				pcbPtr->stack.top );
 	}
 	return rv;
+}
+
+static inline void Os_StackPerformCheck( OsPcbType *pcbPtr ) {
+#if (OS_STACK_MONITORING == 1)
+		if( !Os_StackIsEndmarkOk(pcbPtr) ) {
+#if (  OS_SC1 == 1) || (  OS_SC2 == 1)
+			/** @req OS068 */
+			ShutdownOS(E_OS_STACKFAULT);
+#else
+#error SC3 or SC4 not supported. Protection hook should be called here
+#endif
+		}
+#endif
 }
 
 

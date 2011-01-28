@@ -29,10 +29,6 @@
 
 #include "Std_Types.h"
 
-// Proposed by Mattias
-// We need a place to store the global PDU ids?
-#include "ComGlobals.h"
-
 
 // Zero-based integer number
 // The size of this global type depends on the maximum
@@ -66,7 +62,7 @@ typedef enum {
 	BUFREQ_OK=0,
 	BUFREQ_NOT_OK,
 	BUFREQ_BUSY,
-	BUFREQ_OVFL,
+	BUFREQ_OVFL
 } BufReq_ReturnType;
 
 // 0x00--0x1e General return types

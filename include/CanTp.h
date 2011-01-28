@@ -25,6 +25,9 @@
 #ifndef CANTP_H_
 #define CANTP_H_
 
+#define CANTP_MODULE_ID				MODULE_ID_CANTP	/** @req CANTP115 */
+#define CANTP_VENDOR_ID				1
+
 #define CANTP_SW_MAJOR_VERSION    	1
 #define CANTP_SW_MINOR_VERSION 		0
 #define CANTP_SW_PATCH_VERSION    	0
@@ -36,14 +39,14 @@
 #include "ComStack_Types.h"
 #include "Std_Types.h"
 #include "CanTp_Cfg.h"  /** @req CANTP221 */
-//#include "Dem.h"  // TODO: req: CanTp156
+//#include "Dem.h"
 
 /*
  *
  * Errors described by CanTp 7.4 Error classification.
  *
  ****************************/
-
+/** @req CANTP101 */
 #define CANTP_E_PARAM_CONFIG		0x01
 #define CANTP_E_PARAM_ID			0x02
 #define CANTP_E_PARAM_ADDRESS		0x04
@@ -87,17 +90,19 @@ typedef enum {
  * Implemented functions
  ****************************/
 
-void CanTp_Init(); /** req : CanTp208 **/
+void CanTp_Init(void); /** @req CANTP208 **/
 
-void CanTp_GetVersionInfo( Std_VersionInfoType* versioninfo ); /** req : CanTp210 **/
+#if ( CANTP_VERSION_INFO_API == STD_ON ) /** @req CANTP162 *//** @req CANTP163 */
+#define CanTp_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,CANTP) /** @req CANTP210 */ /* @req CANTP218 */
+#endif /* CANTP_VERSION_INFO_API */
 
-void CanTp_Shutdown();
+void CanTp_Shutdown(void); /** @req CANTP211 */
 
-Std_ReturnType CanTp_Transmit( PduIdType CanTpTxSduId, const PduInfoType * CanTpTxInfoPtr );
+Std_ReturnType CanTp_Transmit( PduIdType CanTpTxSduId, const PduInfoType * CanTpTxInfoPtr ); /** @req CANTP212 */
 
-Std_ReturnType FrTp_CancelTransmitRequest( PduIdType FrTpTxPduId, FrTp_CancelReasonType FrTpCancelReason );
+Std_ReturnType FrTp_CancelTransmitRequest( PduIdType FrTpTxPduId, FrTp_CancelReasonType FrTpCancelReason ); /** @req CANTP246 */
 
-void CanTp_MainFunction();
+void CanTp_MainFunction(void); /** @req CANTP213 */
 
 
 #endif /* CANTP_H_ */

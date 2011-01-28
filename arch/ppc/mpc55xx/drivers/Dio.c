@@ -31,20 +31,10 @@
 #include <string.h>
 #include "mpc55xx.h"
 
-#if ( DIO_VERSION_INFO_API == STD_ON )
-static Std_VersionInfoType _Dio_VersionInfo =
-{
-  .vendorID   = (uint16)1,
-  .moduleID   = (uint16)1,
-  .instanceID = (uint8)1,
-  .sw_major_version = (uint8)DIO_SW_MAJOR_VERSION,
-  .sw_minor_version = (uint8)DIO_SW_MINOR_VERSION,
-  .sw_patch_version = (uint8)DIO_SW_PATCH_VERSION,
-  .ar_major_version = (uint8)DIO_AR_MAJOR_VERSION,
-  .ar_minor_version = (uint8)DIO_AR_MINOR_VERSION,
-  .ar_patch_version = (uint8)DIO_AR_PATCH_VERSION,
-};
-#endif
+#define CHANNEL_PTR		(&DioChannelConfigData)
+#define CHANNEL_GRP_PTR	(&DioConfigData)
+#define PORT_PTR		(&DioPortConfigData)
+
 
 #if ( DIO_DEV_ERROR_DETECT == STD_ON )
 static int Channel_Config_Contains(Dio_ChannelType channelId)
@@ -125,7 +115,10 @@ Dio_LevelType Dio_ReadChannel(Dio_ChannelType channelId)
   {
     level = STD_LOW;
   }
-  cleanup: return (level);
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+  cleanup:
+#endif
+  return (level);
 }
 
 void Dio_WriteChannel(Dio_ChannelType channelId, Dio_LevelType level)
@@ -133,7 +126,10 @@ void Dio_WriteChannel(Dio_ChannelType channelId, Dio_LevelType level)
   VALIDATE_CHANNEL(channelId, DIO_WRITECHANNEL_ID);
   // Write level to SIU.
   SIU.GPDO [channelId].R = level;
-  cleanup: return;
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+  cleanup:
+#endif
+  return;
 }
 
 Dio_PortLevelType Dio_ReadPort(Dio_PortType portId)
@@ -147,7 +143,10 @@ Dio_PortLevelType Dio_ReadPort(Dio_PortType portId)
   vuint16_t *ptr = (vuint16_t *)&SIU.PGPDI0; // The GPDI 0-3 is organized in 32bit chunks but we want to step them in 16bit port-widths
 #endif
   level = ptr[portId]; // Read the bit pattern (16bits) to the port
-  cleanup: return level;
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+  cleanup:
+#endif
+  return level;
 }
 
 void Dio_WritePort(Dio_PortType portId, Dio_PortLevelType level)
@@ -161,7 +160,10 @@ void Dio_WritePort(Dio_PortType portId, Dio_PortLevelType level)
   vuint16_t *ptr = (vuint16_t *)&SIU.PGPDO0; // The GPDO 0-3 is organized in 32bit chunks but we want to step them in 16bit port-widths
 #endif
   ptr[portId] = level; // Write the bit pattern (16bits) to the port
-  cleanup: return;
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+  cleanup:
+#endif
+  return;
 }
 
 Dio_PortLevelType Dio_ReadChannelGroup(
@@ -182,7 +184,10 @@ Dio_PortLevelType Dio_ReadChannelGroup(
 
   // Shift down
   level<<=channelGroupIdPtr->offset;
-  cleanup: return level;
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+  cleanup:
+#endif
+  return level;
 }
 
 void Dio_WriteChannelGroup(const Dio_ChannelGroupType *channelGroupIdPtr,
@@ -196,16 +201,12 @@ void Dio_WriteChannelGroup(const Dio_ChannelGroupType *channelGroupIdPtr,
   // Build the 32 bits Mask_Valule, and write to masked output register
   ptr[channelGroupIdPtr->port] = (channelGroupIdPtr->mask << 16)&((level
       <<channelGroupIdPtr->offset)|0xFFFF);
-  cleanup: return;
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+  cleanup:
+#endif
+  return;
 #else
   return;
 #endif
 }
-
-#if (DIO_VERSION_INFO_API == STD_ON)
-void Dio_GetVersionInfo(Std_VersionInfoType *versionInfo)
-{
-  memcpy(versionInfo, &_Dio_VersionInfo, sizeof(Std_VersionInfoType));
-}
-#endif
 

@@ -43,12 +43,21 @@
 
 /** @name Service id's */
 //@{
+#define ECUM_REQUESTRUN_ID (0x03)
+#define ECUM_RELEASERUN_ID (0x04)
+#define ECUM_SELECTSHUTDOWNTARGET_ID (0x06)
 #define ECUM_GETSTATE_ID (0x07)
+#define ECUM_GETSHUTDOWNTARGET_ID (0x09)
+#define ECUM_COMM_REQUESTRUN_ID (0x0e)
+#define ECUM_REQUESTPOSTRUN_ID (0x0a)
+#define ECUM_RELEASEPOSTRUN_ID (0x0b)
 #define ECUM_SELECTAPPMODE_ID (0x0f)
+#define ECUM_COMM_RELEASERUN_ID (0x10)
 #define ECUM_GETAPPMODE_ID (0x11)
 #define ECUM_SELECT_BOOTARGET_ID (0x12)
 #define ECUM_GET_BOOTARGET_ID (0x13)
 #define ECUM_MAINFUNCTION_ID (0x18)
+#define ECUM_COMM_HASREQUESTEDRUN_ID (0x1b)
 
 /** Possible states */
 typedef enum {
@@ -105,7 +114,7 @@ enum {
 	 *  If hardware cannot distinguish between a
 	 *  power cycle and a reset reason, then this
 	 *  shall be the default wakeup source */
-	ECUM_WKSOURCE_RESET = 0x02,
+	ECUM_WKSOURCE_RESET = 0x02
 };
 
 typedef uint32 EcuM_WakeupSourceType;
@@ -115,40 +124,43 @@ typedef enum
 	ECUM_WKSTATUS_NONE = 0,        /**< No pending wakeup event was detected */
 	ECUM_WKSTATUS_PENDING = 1,     /**< The wakeup event was detected but not yet validated */
 	ECUM_WKSTATUS_VALIDATED = 2,   /**< The wakeup event is valid */
-	ECUM_WKSTATUS_EXPIRED = 3,     /**< The wakeup event has not been validated and has expired therefore */
+	ECUM_WKSTATUS_EXPIRED = 3     /**< The wakeup event has not been validated and has expired therefore */
 } EcuM_WakeupStatusType;
 
 typedef enum
 {
 	ECUM_WWKACT_RUN = 0,       /**< Initialization into RUN state */
 	ECUM_WKACT_TTII = 2,       /**< Execute time triggered increased inoperation protocol and shutdown */
-	ECUM_WKACT_SHUTDOWN = 3,   /**< Immediate shutdown */
+	ECUM_WKACT_SHUTDOWN = 3   /**< Immediate shutdown */
 } EcuM_WakeupReactionType;
 
 typedef enum
 {
 	ECUM_BOOT_TARGET_APP = 0,          /**< The Ecu will boot into the application */
-	ECUM_BOOT_TARGET_BOOTLOADER = 1,   /**< The Ecu will boot into the bootloader */
+	ECUM_BOOT_TARGET_BOOTLOADER = 1   /**< The Ecu will boot into the bootloader */
 } EcuM_BootTargetType;
 
 
-#define ECUM_SW_MAJOR_VERSION    	1
-#define ECUM_SW_MINOR_VERSION   	0
-#define ECUM_SW_PATCH_VERSION    	0
+#define ECUM_MODULE_ID			MODULE_ID_ECUM
+#define ECUM_VENDOR_ID			1
 
-#define ECUM_AR_MAJOR_VERSION     1
-#define ECUM_AR_MINOR_VERSION     2
-#define ECUM_AR_PATCH_VERSION     2
+#define ECUM_SW_MAJOR_VERSION	2
+#define ECUM_SW_MINOR_VERSION	0
+#define ECUM_SW_PATCH_VERSION	0
+
+#define ECUM_AR_MAJOR_VERSION	1
+#define ECUM_AR_MINOR_VERSION	2
+#define ECUM_AR_PATCH_VERSION	2
 
 #include "EcuM_Cfg.h"
 
 #if ( ECUM_VERSION_INFO_API == STD_ON)
-void EcuM_GetVersionInfo( Std_VersionInfoType *versionInfo );
+#define EcuM_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,ECUM)
 #endif
 
 void EcuM_Init( void );
-void EcuM_StartupTwo();
-void EcuM_Shutdown();
+void EcuM_StartupTwo(void);
+void EcuM_Shutdown(void);
 
 Std_ReturnType EcuM_GetState(EcuM_StateType* state);
 
@@ -158,7 +170,7 @@ Std_ReturnType EcuM_ReleaseRUN(EcuM_UserType user);
 Std_ReturnType EcuM_RequestPOST_RUN(EcuM_UserType user);
 Std_ReturnType EcuM_ReleasePOST_RUN(EcuM_UserType user);
 
-void EcuM_KillAllRUNRequests();
+void EcuM_KillAllRUNRequests(void);
 
 #if defined(USE_COM)
 Std_ReturnType EcuM_ComM_RequestRUN(NetworkHandleType channel);
@@ -170,10 +182,10 @@ Std_ReturnType EcuM_SelectShutdownTarget(EcuM_StateType target, uint8 mode);
 Std_ReturnType EcuM_GetShutdownTarget(EcuM_StateType* target, uint8* mode);
 Std_ReturnType EcuM_GetLastShutdownTarget(EcuM_StateType* target, uint8* mode);
 
-EcuM_WakeupSourceType EcuM_GetPendingWakeupEvents();
+EcuM_WakeupSourceType EcuM_GetPendingWakeupEvents(void);
 void EcuM_ClearWakeupEvent(EcuM_WakeupSourceType sources);
-EcuM_WakeupSourceType EcuM_GetValidatedWakeupEvents();
-EcuM_WakeupSourceType EcuM_GetExpiredWakeupEvents();
+EcuM_WakeupSourceType EcuM_GetValidatedWakeupEvents(void);
+EcuM_WakeupSourceType EcuM_GetExpiredWakeupEvents(void);
 EcuM_WakeupStatusType EcuM_GetStatusOfWakeupSource(EcuM_WakeupSourceType sources);
 
 Std_ReturnType EcuM_SelectApplicationMode(AppModeType appMode);
@@ -183,9 +195,6 @@ Std_ReturnType EcuM_SelectBootTarget(EcuM_BootTargetType target);
 Std_ReturnType EcuM_GetBootTarget(EcuM_BootTargetType* target);
 
 void EcuM_MainFunction(void);
-
-void EcuM_OnGoOffTwo( void );
-void EcuM_AL_SwitchOff( void );
 
 #endif /*ECUM_H_*/
 /** @} */

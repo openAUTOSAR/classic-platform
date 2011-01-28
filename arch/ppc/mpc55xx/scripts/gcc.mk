@@ -8,12 +8,12 @@ ppc_common-y	+= -msdata=none
 gcc_version := $(word 3,$(shell ${CROSS_COMPILE}gcc --version))
 gcc_split = $(subst ., ,$(gcc_version))
 
-# If version 4.3 or above then use -te500v1
-ifeq ($(word 1,$(gcc_split)),4)
-ifneq ($(filter $(word 2,$(gcc_split)),3 4 5 6 7 8 9),)
-ppc_common-$(CFG_SPE)		+= -te500v1 -mhard-float # -mfloat-gprs=single -mspe=yes -mhard-float
-endif
-endif
+# If version 4.3 or above then use -te500v1 (CodeSourcery)
+#ifeq ($(word 1,$(gcc_split)),4)
+#ifneq ($(filter $(word 2,$(gcc_split)),3 4 5 6 7 8 9),)
+#ppc_common-$(CFG_SPE)		+= -te500v1 -mhard-float # -mfloat-gprs=single -mspe=yes -mhard-float
+#endif
+#endif
 ifeq ($(ppc_common-y),)
 ppc_common-$(CFG_SPE)		+= -mfloat-gprs=single -mspe=yes -mhard-float -mcpu=8540 -mno-eabi
 endif
