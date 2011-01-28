@@ -18,7 +18,7 @@
 #include "EcuM.h"
 #include "Modules.h"
 #include <string.h>
-#include "Os.h"
+#include <Os.h>
 #include "EcuM_Internals.h"
 #include "EcuM_Cbk.h"
 #include "Mcu.h"
@@ -31,7 +31,7 @@
 #include "Rte_Main.h"
 #endif
 
-EcuM_GobalType internal_data;
+EcuM_GlobalType internal_data;
 
 void EcuM_Init( void )
 {
@@ -117,10 +117,10 @@ void EcuM_StartupTwo(void)
 			// TODO: Generate error?
 		}
 	} while( (readAllResult == NVM_REQ_PENDING) && (tickTimerElapsed < internal_data.config->EcuMNvramReadAllTimeout) );
-#endif
 
 	// Initialize drivers that need NVRAM data
 	EcuM_AL_DriverInitThree(internal_data.config);
+#endif
 
 	// Indicate mode change to RTE
 	// TODO

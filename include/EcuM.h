@@ -24,7 +24,7 @@
 #define ECUM_H_
 
 #include "Std_Types.h"
-#include "Os.h"
+#include <Os.h>
 #if defined(USE_COM)
 #include "ComStack_Types.h"
 #endif

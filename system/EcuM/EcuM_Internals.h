@@ -67,9 +67,9 @@ typedef struct
 #endif
 	uint32 run_requests;
 	uint32 postrun_requests;
-} EcuM_GobalType;
+} EcuM_GlobalType;
 
-extern EcuM_GobalType internal_data;
+extern EcuM_GlobalType internal_data;
 
 void EcuM_enter_run_mode(void);
 
