@@ -55,13 +55,13 @@ static Port_ConfigType * _configPtr = NULL;
 #define VALIDATE_PARAM_CONFIG(_ptr,_api) \
 	if( (_ptr)==((void *)0) ) { \
 		Det_ReportError(MODULE_ID_PORT, 0, _api, PORT_E_PARAM_CONFIG ); \
-		goto cleanup; \
+		return; \
 	}
 
 #define VALIDATE_STATE_INIT(_api)\
 	if(PORT_INITIALIZED!=_portState){\
 		Det_ReportError(MODULE_ID_PORT, 0, _api, PORT_E_UNINIT ); \
-		goto cleanup; \
+		return; \
 	}
 
 #else
@@ -70,6 +70,7 @@ static Port_ConfigType * _configPtr = NULL;
 #define VALIDATE_PARAM_PIN(_api)
 #endif
 
+#if (PORT_VERSION_INFO_API == STD_ON)
 static Std_VersionInfoType _Port_VersionInfo =
 { .vendorID = (uint16)1, .moduleID = (uint16) MODULE_ID_PORT,
         .instanceID = (uint8)1,
@@ -79,6 +80,7 @@ static Std_VersionInfoType _Port_VersionInfo =
         .ar_major_version = (uint8)PORT_AR_MAJOR_VERSION,
         .ar_minor_version = (uint8)PORT_AR_MINOR_VERSION,
         .ar_patch_version = (uint8)PORT_AR_PATCH_VERSION, };
+#endif
 
 /** @req PORT140 */
 /** @req PORT041 Comment: To reduce flash usage the configuration tool can disable configuration of some ports  */
@@ -116,7 +118,7 @@ void Port_Init(const Port_ConfigType *configType)
 
     _portState = PORT_INITIALIZED;
     _configPtr = (Port_ConfigType *)configType;
-    cleanup: return;
+    return;
 }
 
 /** @req PORT141 */
@@ -160,7 +162,7 @@ void Port_SetPinDirection( Port_PinType pin, Port_PinDirectionType direction )
     *gpioAddr |= (GPIO_OUTPUT_2MHz_MODE | GPIO_OUTPUT_PUSHPULL_CNF) << bit; // TODO shall this be added to conf?
   }
 
-  cleanup:return;
+  return;
 }
 #endif
 
@@ -173,7 +175,7 @@ void Port_RefreshPortDirection(void)
     VALIDATE_STATE_INIT(PORT_REFRESH_PORT_DIRECTION_ID);
 
     /* TODO Not implemented yet */
-    cleanup: return;
+    return;
 }
 
 /** req PORT143 */
@@ -184,7 +186,7 @@ void Port_GetVersionInfo(Std_VersionInfoType* versionInfo)
 {
     VALIDATE_STATE_INIT(PORT_GET_VERSION_INFO_ID);
     memcpy(versionInfo, &_Port_VersionInfo, sizeof(Std_VersionInfoType));
-    cleanup: return;
+    return;
 }
 #endif
 
@@ -201,6 +203,6 @@ void Port_SetPinMode(Port_PinType Pin, Port_PinModeType Mode)
     Det_ReportError(MODULE_ID_PORT, 0, PORT_SET_PIN_MODE_ID, PORT_E_MODE_UNCHANGEABLE );
 #endif
 
-    cleanup: return;
+    return;
 }
 #endif

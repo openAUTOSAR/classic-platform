@@ -14,6 +14,8 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
+#warning "This default file may only be used as an example!"
+
 #ifndef MCU_CFG_H_
 #define MCU_CFG_H_
 

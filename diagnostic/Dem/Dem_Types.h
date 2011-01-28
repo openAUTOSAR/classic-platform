@@ -23,7 +23,7 @@
 #ifndef DEM_TYPES_H_
 #define DEM_TYPES_H_
 #include "Std_Types.h" /** @req DEM176.Std */
-
+#include "Rte_Dem.h"
 #define DEM_EVENT_DESTINATION_END_OF_LIST 0
 
 /*
@@ -34,11 +34,6 @@ typedef uint8 Dem_ReturnTypeOfDtcSupportedType;
 #define DEM_ISO14229_1		0x01
 #define DEM_SAEJ1939_73		0x02
 #define DEM_ISO_11992_4		0x03
-
-/*
- * Dem_EventIdType
- */
-typedef uint16 Dem_EventIdType;
 
 /*
  * Dem_DTCGroupType
@@ -55,7 +50,6 @@ typedef uint32 Dem_DTCGroupType;
 /*
  * DemDTCKindType
  */
-typedef uint8 Dem_DTCKindType;
 #define	DEM_DTC_KIND_ALL_DTCS			(Dem_DTCKindType)0x01
 #define	DEM_DTC_KIND_EMISSION_REL_DTCS	(Dem_DTCKindType)0x02
 
@@ -68,10 +62,6 @@ typedef uint8 Dem_DTCOriginType;
 #define	DEM_DTC_ORIGIN_PERMANENT_MEMORY	(Dem_DTCOriginType)0x03
 #define	DEM_DTC_ORIGIN_MIRROR_MEMORY	(Dem_DTCOriginType)0x04
 
-/*
- * DemEventStatusExtendedType
- */
-typedef uint8 Dem_EventStatusExtendedType;
 #define	DEM_TEST_FAILED 							(Dem_EventStatusExtendedType)0x01
 #define	DEM_TEST_FAILED_THIS_OPERATION_CYCLE 		(Dem_EventStatusExtendedType)0x02
 #define	DEM_PENDING_DTC 							(Dem_EventStatusExtendedType)0x04
@@ -81,10 +71,6 @@ typedef uint8 Dem_EventStatusExtendedType;
 #define	DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE (Dem_EventStatusExtendedType)0x40
 #define	DEM_WARNING_INDICATOR_REQUESTED 			(Dem_EventStatusExtendedType)0x80
 
-/*
- * DemOperationCycleType
- */
-typedef uint8 Dem_OperationCycleIdType;	// TODO: Check type and values
 enum {
 	DEM_ACTIVE,		// Started by DEM on Dem_PreInit and stopped on Dem_Shutdown
 
@@ -96,10 +82,6 @@ enum {
 	DEM_OPERATION_CYCLE_ID_ENDMARK
 }; /** @req DEM142 */
 
-/*
- * Dem_OperationCycleStateType
- */
-typedef uint8 Dem_OperationCycleStateType;
 #define DEM_CYCLE_STATE_START		(Dem_OperationCycleStateType)1
 #define DEM_CYCLE_STATE_END			(Dem_OperationCycleStateType)2
 
@@ -126,31 +108,14 @@ typedef uint8 Dem_EventStatusType;
 #define DEM_EVENT_STATUS_PREPASSED	(Dem_EventStatusType)2
 #define DEM_EVENT_STATUS_PREFAILED	(Dem_EventStatusType)3
 
-/*
- * Dem_DTCType
- */
-typedef uint32 Dem_DTCType;
-
-/*
- * Dem_InitMonitorKindType
- */
-typedef uint8 Dem_InitMonitorKindType;
 #define DEM_INIT_MONITOR_CLEAR		(Dem_InitMonitorKindType)1
 #define DEM_INIT_MONITOR_RESTART	(Dem_InitMonitorKindType)2
 
-/*
- * Dem_IndicatorStatusType
- */
-typedef uint8 Dem_IndicatorStatusType;
+
 #define DEM_INDICATOR_OFF			(Dem_IndicatorStatusType)0
 #define DEM_INDICATOR_CONTINUOUS	(Dem_IndicatorStatusType)1
 #define DEM_INDICATOR_BLINKING		(Dem_IndicatorStatusType)2
 #define DEM_INDICATOR_BLINK_CONT	(Dem_IndicatorStatusType)3
-
-/*
- * Dem_FaultDetectionCpunterType
- */
-typedef sint8 Dem_FaultDetectionCounterType;
 
 /*
  * Dem_PreDebounceNameType

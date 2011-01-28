@@ -18,7 +18,7 @@
 #include "Mcu.h"
 #include "arc.h"
 
-#define USE_LDEBUG_PRINTF
+//#define USE_LDEBUG_PRINTF // Uncomment this to turn debug statements on.
 #include "debug.h"
 
 // How many errors to keep in error log.
@@ -105,11 +105,9 @@ ProtectionReturnType ProtectionHook( StatusType FatalError ) {
 }
 
 void StartupHook( void ) {
-	uint32_t sys_freq = McuE_GetSystemClock();
-
 	LDEBUG_FPUTS("## StartupHook\n");
 
-	LDEBUG_PRINTF("Sys clock %u Hz\n",(unsigned)sys_freq);
+	LDEBUG_PRINTF("Sys clock %u Hz\n",(unsigned)McuE_GetSystemClock());
 }
 
 void ShutdownHook( StatusType Error ) {

@@ -25,21 +25,6 @@ GIO_RegisterType *GPIO_ports[] = { GIO_PORTA_BASE, GIO_PORTB_BASE };
 #define DIO_GET_PORT_FROM_CHANNEL_ID(_channelId) (_channelId >> 8)
 #define DIO_GET_BIT_FROM_CHANNEL_ID(_channelId) (1 << (_channelId & 0x1F))
 
-#if ( DIO_VERSION_INFO_API == STD_ON )
-static Std_VersionInfoType _Dio_VersionInfo =
-{
-	.vendorID   = (uint16)1,
-	.moduleID   = (uint16)1,
-	.instanceID = (uint8)1,
-	.sw_major_version = (uint8)DIO_SW_MAJOR_VERSION,
-	.sw_minor_version = (uint8)DIO_SW_MINOR_VERSION,
-	.sw_patch_version = (uint8)DIO_SW_PATCH_VERSION,
-	.ar_major_version = (uint8)DIO_AR_MAJOR_VERSION,
-	.ar_minor_version = (uint8)DIO_AR_MINOR_VERSION,
-	.ar_patch_version = (uint8)DIO_AR_PATCH_VERSION,
-};
-#endif
-
 #if ( DIO_DEV_ERROR_DETECT == STD_ON )
 static int Channel_Config_Contains(Dio_ChannelType channelId)
 {
@@ -117,7 +102,10 @@ Dio_PortLevelType Dio_ReadPort(Dio_PortType portId)
 
 	level = (uint8)GPIO_ports[portId]->DIN;
 
-	cleanup: return level;
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+	cleanup:
+#endif
+	return level;
 }
 
 void Dio_WritePort(Dio_PortType portId, Dio_PortLevelType level)
@@ -126,7 +114,10 @@ void Dio_WritePort(Dio_PortType portId, Dio_PortLevelType level)
 
 	GPIO_ports[portId]->DOUT = (uint32)level;
 
-    cleanup: return;
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+	cleanup:
+#endif
+	return;
 }
 
 Dio_LevelType Dio_ReadChannel(Dio_ChannelType channelId)
@@ -143,7 +134,10 @@ Dio_LevelType Dio_ReadChannel(Dio_ChannelType channelId)
 		level = STD_LOW;
 	}
 
-	cleanup: return (level);
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+	cleanup:
+#endif
+	return (level);
 }
 
 void Dio_WriteChannel(Dio_ChannelType channelId, Dio_LevelType level)
@@ -183,7 +177,10 @@ Dio_PortLevelType Dio_ReadChannelGroup(
 	// Shift down
 	level = level >> channelGroupIdPtr->offset;
 
-	cleanup: return level;
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+	cleanup:
+#endif
+	return level;
 }
 
 void Dio_WriteChannelGroup(const Dio_ChannelGroupType *channelGroupIdPtr,
@@ -202,7 +199,10 @@ void Dio_WriteChannelGroup(const Dio_ChannelGroupType *channelGroupIdPtr,
 
 	Dio_WritePort(channelGroupIdPtr->port, portVal);
 
-	cleanup: return;
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+	cleanup:
+#endif
+	return;
 }
 
 
