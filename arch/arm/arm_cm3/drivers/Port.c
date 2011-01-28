@@ -70,6 +70,7 @@ static Port_ConfigType * _configPtr = NULL;
 #define VALIDATE_PARAM_PIN(_api)
 #endif
 
+#if (PORT_VERSION_INFO_API == STD_ON)
 static Std_VersionInfoType _Port_VersionInfo =
 { .vendorID = (uint16)1, .moduleID = (uint16) MODULE_ID_PORT,
         .instanceID = (uint8)1,
@@ -79,6 +80,7 @@ static Std_VersionInfoType _Port_VersionInfo =
         .ar_major_version = (uint8)PORT_AR_MAJOR_VERSION,
         .ar_minor_version = (uint8)PORT_AR_MINOR_VERSION,
         .ar_patch_version = (uint8)PORT_AR_PATCH_VERSION, };
+#endif
 
 /** @req PORT140 */
 /** @req PORT041 Comment: To reduce flash usage the configuration tool can disable configuration of some ports  */

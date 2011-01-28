@@ -102,7 +102,10 @@ Dio_PortLevelType Dio_ReadPort(Dio_PortType portId)
 
 	level = (uint8)GPIO_ports[portId]->DIN;
 
-	cleanup: return level;
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+	cleanup:
+#endif
+	return level;
 }
 
 void Dio_WritePort(Dio_PortType portId, Dio_PortLevelType level)
@@ -111,7 +114,10 @@ void Dio_WritePort(Dio_PortType portId, Dio_PortLevelType level)
 
 	GPIO_ports[portId]->DOUT = (uint32)level;
 
-    cleanup: return;
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+	cleanup:
+#endif
+	return;
 }
 
 Dio_LevelType Dio_ReadChannel(Dio_ChannelType channelId)
@@ -128,7 +134,10 @@ Dio_LevelType Dio_ReadChannel(Dio_ChannelType channelId)
 		level = STD_LOW;
 	}
 
-	cleanup: return (level);
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+	cleanup:
+#endif
+	return (level);
 }
 
 void Dio_WriteChannel(Dio_ChannelType channelId, Dio_LevelType level)
@@ -168,7 +177,10 @@ Dio_PortLevelType Dio_ReadChannelGroup(
 	// Shift down
 	level = level >> channelGroupIdPtr->offset;
 
-	cleanup: return level;
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+	cleanup:
+#endif
+	return level;
 }
 
 void Dio_WriteChannelGroup(const Dio_ChannelGroupType *channelGroupIdPtr,
@@ -187,7 +199,10 @@ void Dio_WriteChannelGroup(const Dio_ChannelGroupType *channelGroupIdPtr,
 
 	Dio_WritePort(channelGroupIdPtr->port, portVal);
 
-	cleanup: return;
+#if ( DIO_DEV_ERROR_DETECT == STD_ON )
+	cleanup:
+#endif
+	return;
 }
 
 
