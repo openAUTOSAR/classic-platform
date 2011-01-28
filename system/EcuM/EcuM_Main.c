@@ -34,8 +34,9 @@ static uint32 internal_data_go_off_one_state_timeout = 0;
 void EcuM_enter_run_mode(void)
 {
 	internal_data.current_state = ECUM_STATE_APP_RUN;
-	EcuM_OnEnterRUN();
-	internal_data_run_state_timeout = internal_data.config->EcuMRunMinimumDuration / ECUM_MAIN_FUNCTION_PERIOD;
+	EcuM_OnEnterRUN(); /** @req EcuM2308 */
+	//TODO: Call ComM_EcuM_RunModeIndication(NetworkHandleType Channel) for all channels that have requested run.
+	internal_data_run_state_timeout = internal_data.config->EcuMRunMinimumDuration / ECUM_MAIN_FUNCTION_PERIOD; /** @req EcuM2310 */
 }
 
 static inline void enter_post_run_mode(void)
@@ -106,8 +107,8 @@ VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_NOT_INITIAT
 
 		if ((!hasRunRequests()) && (internal_data_run_state_timeout == 0))
 		{
-			EcuM_OnExitRun();	// ECUM_2865
-			enter_post_run_mode();
+			EcuM_OnExitRun();	/** @req EcuM2865 */
+			enter_post_run_mode();/** @req EcuM2865 */
 			/*lint --e(904)*/ return;
 		}
 	}
@@ -116,14 +117,14 @@ VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_NOT_INITIAT
 	{
 		if (hasRunRequests())
 		{
-			EcuM_enter_run_mode(); // ECUM_2866
+			EcuM_enter_run_mode(); /** @req EcuM2866 */
 			/*lint --e(904)*/ return;
 		}
 
 		if (!hasPostRunRequests())
 		{
-			EcuM_OnExitPostRun(); // ECUM_2761
-			enter_prep_shutdown_mode();
+			EcuM_OnExitPostRun(); /** @req EcuM2761 */
+			enter_prep_shutdown_mode();/** @req EcuM2761 */
 			/*lint --e(904)*/ return;
 		}
 	}
