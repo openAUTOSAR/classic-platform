@@ -33,7 +33,7 @@
 #define WDGM_MAINFUNCTION_TRIGGER_ID          0x06
 #define WDGM_MAINFUNCTION_ALIVESUPERVISION_ID 0x08
 #define WDGM_GETMODE_ID                       0x0b
-#define WDGM_GETALIVESUPERVISION_ID           0x0c
+#define WDGM_GETALIVESUPERVISIONSTATUS_ID     0x0c
 #define WDGM_GETGLOBALSTATUS_ID               0x0d
 
 
@@ -48,12 +48,14 @@
 //#define WDGM_E_ALIVE_SUPERVISION          DEM assigned
 //#define WDGM_E_SET_MODE                   DEM assigned
 
-typedef enum
+/*typedef enum
 {
 	WDGM_OFF_MODE,
 	WDGM_SLOW_MODE,
 	WDGM_FAST_MODE,
 }WdgM_ModeType;
+TODO to be removed??*/
+
 
 Std_ReturnType WdgM_UpdateAliveCounter (WdgM_SupervisedEntityIdType SEid);
 Std_ReturnType WdgM_ActivateAliveSupervision (WdgM_SupervisedEntityIdType SEid);

@@ -16,7 +16,7 @@ typedef enum
 }WdgIf_ModeType;
 
 typedef void (*Wdg_TriggerLocationPtrType)(void);
-typedef void (*Wdg_SetModeLocationPtrType)(WdgIf_ModeType Mode);
+typedef Std_ReturnType (*Wdg_SetModeLocationPtrType)(WdgIf_ModeType Mode);
 
 typedef struct
 {

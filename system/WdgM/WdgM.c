@@ -25,7 +25,7 @@
 #include "Det.h"
 
 #define VALIDATE_ENTITY_ID(_SEId, _api) \
-	if(_SEId >= WDBG_NBR_OF_ALIVE_SIGNALS) {	\
+	if(_SEId >= WDGM_NBR_OF_ALIVE_SIGNALS) {	\
 		Det_ReportError(MODULE_ID_WDGM,0,_api,WDGM_E_PARAM_SEID ); \
 		ret = E_NOT_OK;	\
 		return ret;	\
@@ -48,22 +48,29 @@ struct
 	const WdgM_ConfigType           *WdgM_ConfigPtr;
 	WdgM_AliveSupervisionStatusType WdgM_GlobalSupervisionStatus;
 	WdgM_TriggerCounterType         WdgMTriggerCounter;
+	WdgM_ModeType                   WdgMActiveMode;
 }wdgMInternalState;
 
+/* Helper macros */
+#define GET_ENTITY_STATE_PTR(_SEId)       (&(wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_AliveEntityStatePtr)[_SEId])
+#define GET_SUPERVISED_ENTITY_PTR(_SEId)  ()
+//WdgM_Mode[wdgMInternalState.WdgMActiveMode]
 Std_ReturnType WdgM_UpdateAliveCounter (WdgM_SupervisedEntityIdType SEid)
 {
   Std_ReturnType ret = E_NOT_OK;
+  /** @req WDGM027 **/
   VALIDATE_ENTITY_ID(SEid, WDGM_UPDATEALIVECOUNTER_ID);
+  /** @req WDGM028 **/
   VALIDATE((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_UPDATEALIVECOUNTER_ID, WDGM_E_NO_INIT);
-  WdgM_SupervisionType *supervisionPtr = &(wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_SupervisionPtr)[SEid];
+  WdgM_AliveEntityStateType *entityStatePtr = GET_ENTITY_STATE_PTR(SEid);
 
   /** @req WDGM083 **/
-  if (supervisionPtr->ActivationStatus == WDBG_SUPERVISION_ENABLED)
+  if (entityStatePtr->ActivationStatus == WDGM_SUPERVISION_ENABLED)
   {
 	  /** @req WDGM114 **/
-	  if (supervisionPtr->SupervisionStatus < WDBG_ALIVE_EXPIRED)
+	  if (entityStatePtr->SupervisionStatus < WDGM_ALIVE_EXPIRED)
 	  {
-		  supervisionPtr->AliveCounter++;
+		  entityStatePtr->AliveCounter++;
 		  ret = E_OK;
 	  }
   }
@@ -76,11 +83,13 @@ Std_ReturnType WdgM_UpdateAliveCounter (WdgM_SupervisedEntityIdType SEid)
 Std_ReturnType WdgM_ActivateAliveSupervision (WdgM_SupervisedEntityIdType SEid)
 {
   Std_ReturnType ret = E_NOT_OK;
+  /** @req WDGM055 **/
   VALIDATE_ENTITY_ID(SEid, WDGM_ACTIVATEALIVESUPERVISION_ID);
+  /** @req WDGM056 **/
   VALIDATE((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_ACTIVATEALIVESUPERVISION_ID, WDGM_E_NO_INIT);
-  WdgM_SupervisionType *supervisionPtr = &(wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_SupervisionPtr)[SEid];
+  WdgM_AliveEntityStateType *entityStatePtr = GET_ENTITY_STATE_PTR(SEid);
 
-  supervisionPtr->ActivationStatus = WDBG_SUPERVISION_ENABLED;
+  entityStatePtr->ActivationStatus = WDGM_SUPERVISION_ENABLED;
   ret = E_OK;
   return (ret);
 }
@@ -89,17 +98,25 @@ Std_ReturnType WdgM_ActivateAliveSupervision (WdgM_SupervisedEntityIdType SEid)
 /** @req WDGM157 **/
 Std_ReturnType WdgM_DeactivateAliveSupervision (WdgM_SupervisedEntityIdType SEid)
 {
-  Std_ReturnType ret;
+  Std_ReturnType ret = E_NOT_OK;
+  /** @req WDGM057 **/
   VALIDATE_ENTITY_ID(SEid, WDGM_DEACTIVATEALIVESUPERVISION_ID);
+  /** @req WDGM058 **/
   VALIDATE((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_DEACTIVATEALIVESUPERVISION_ID, WDGM_E_NO_INIT);
-  WdgM_SupervisionType *supervisionPtr = &(wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_SupervisionPtr)[SEid];
+  WdgM_AliveEntityStateType *entityStatePtr = GET_ENTITY_STATE_PTR(SEid);
+  const WdgM_SupervisedEntityType *supervisedEntityPtr = wdgMInternalState.WdgM_ConfigPtr->WdgM_General->WdgM_SupervisedEntityPtr;
+  /** @req WDGM082 **/
+  /** @req WDGM174 **/
+  /** @req WDGM108 **/
+  VALIDATE((supervisedEntityPtr->WdgM_DeactivationAccessEnabled != 0), WDGM_DEACTIVATEALIVESUPERVISION_ID, WDGM_E_DEACTIVATE_NOT_ALLOWED);
 
   /** @req WDGM114 **/
-  if (supervisionPtr->SupervisionStatus < WDBG_ALIVE_EXPIRED)
+  if (entityStatePtr->SupervisionStatus < WDGM_ALIVE_EXPIRED)
   {
-	  supervisionPtr->ActivationStatus = WDBG_SUPERVISION_DISABLED;
+	  entityStatePtr->ActivationStatus = WDGM_SUPERVISION_DISABLED;
+	  ret = E_OK;
   }
-  ret = E_OK;
+
   return (ret);
 }
 
@@ -107,10 +124,13 @@ Std_ReturnType WdgM_DeactivateAliveSupervision (WdgM_SupervisedEntityIdType SEid
 Std_ReturnType WdgM_GetAliveSupervisionStatus (WdgM_SupervisedEntityIdType SEid, WdgM_AliveSupervisionStatusType *Status)
 {
 	Std_ReturnType ret;
-	VALIDATE_ENTITY_ID(SEid, WDGM_GETALIVESUPERVISION_ID);
-	VALIDATE((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_GETALIVESUPERVISION_ID, WDGM_E_NO_INIT);
-	WdgM_SupervisionType *supervisionPtr = &(wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_SupervisionPtr)[SEid];
-	*Status = supervisionPtr->SupervisionStatus;
+	/** @req WDGM172 **/
+	VALIDATE_ENTITY_ID(SEid, WDGM_GETALIVESUPERVISIONSTATUS_ID);
+	/** @req WDGM173 **/
+	VALIDATE((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_GETALIVESUPERVISIONSTATUS_ID, WDGM_E_NO_INIT);
+	VALIDATE((Status != 0), WDGM_GETALIVESUPERVISIONSTATUS_ID, WDGM_E_NULL_POINTER);
+	WdgM_AliveEntityStateType *entityStatePtr = GET_ENTITY_STATE_PTR(SEid);
+	*Status = entityStatePtr->SupervisionStatus;
 	ret = E_OK;
 	return ret;
 }
@@ -119,6 +139,7 @@ Std_ReturnType WdgM_GetAliveSupervisionStatus (WdgM_SupervisedEntityIdType SEid,
 Std_ReturnType WdgM_GetGlobalStatus (WdgM_AliveSupervisionStatusType *Status)
 {
 	Std_ReturnType ret = E_NOT_OK;
+	/** @req WDGM176 **/
 	VALIDATE((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_GETGLOBALSTATUS_ID, WDGM_E_NO_INIT);
 	*Status = wdgMInternalState.WdgM_GlobalSupervisionStatus;
 	ret = E_OK;
@@ -129,69 +150,74 @@ Std_ReturnType WdgM_GetGlobalStatus (WdgM_AliveSupervisionStatusType *Status)
 Std_ReturnType WdgM_SetMode(WdgM_ModeType Mode)
 {
   Std_ReturnType ret = E_NOT_OK;
+  /** @req WDGM021 **/
   VALIDATE((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_SETMODE_ID, WDGM_E_NO_INIT);
+  /** @req WDGM020 **/
+  VALIDATE(((Mode >= 0) && (Mode < WDGM_NBR_OF_MODES)), WDGM_SETMODE_ID, WDGM_E_PARAM_MODE);
 
   WdgIf_ModeType mode;
   uint8 i;
-  uint8 modeFound = 0;
 
-  switch (Mode)
-  {
-  case WDGM_OFF_MODE:
-	  mode = WDGIF_OFF_MODE;
-	  modeFound = 1;
-	  break;
-  case WDGM_SLOW_MODE:
-	  mode = WDGIF_SLOW_MODE;
-	  modeFound = 1;
-	  break;
-  case WDGM_FAST_MODE:
-	  mode = WDGIF_FAST_MODE;
-	  modeFound = 1;
-	break;
 
-  }
-  if (modeFound)
+  /** @req WDGM145 **/
+  if (wdgMInternalState.WdgM_GlobalSupervisionStatus == WDGM_ALIVE_OK)
   {
+	  mode = wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[Mode].WdgM_Trigger->WdgM_WatchdogMode;
+
+	  /* Write new mode to internal state. */
+	  wdgMInternalState.WdgMActiveMode = Mode;
+
+	  /* Pass mode to all watchdog instances. */
 	  for (i = 0; i < wdgMInternalState.WdgM_ConfigPtr->WdgM_General->WdgM_NumberOfWatchdogs;i++)
 	  {
-		  WdgIf_SetMode (wdgMInternalState.WdgM_ConfigPtr->WdgM_General->WdgM_Watchdog->WdgM_DeviceRef[i].WdgIf_DeviceIndex, mode);
+		  /** @req WDGM139 **/
+		  if (E_NOT_OK == WdgIf_SetMode (wdgMInternalState.WdgM_ConfigPtr->WdgM_General->WdgM_Watchdog->WdgM_DeviceRef[i].WdgIf_DeviceIndex, mode))
+		  {
+			  wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_STOPPED;
+		  }
 	  }
 	  ret = E_OK;
   }
-
   return (ret);
 }
 
 /** @req WDGM168 **/
-//Std_ReturnType WdgM_GetMode(WdgM_ModeType *Mode)
-//{
-//
-//}
+Std_ReturnType WdgM_GetMode(WdgM_ModeType *Mode)
+{
+	Std_ReturnType ret = E_NOT_OK;
+	/** @req WDGM170 **/
+	VALIDATE((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_GETMODE_ID, WDGM_E_NO_INIT);
+	VALIDATE((Mode != 0), WDGM_GETMODE_ID, WDGM_E_NULL_POINTER);
+
+	*Mode = wdgMInternalState.WdgMActiveMode;
+	ret = E_OK;
+	return ret;
+}
 
 /** @req WDGM151 **/
 void WdgM_Init(const WdgM_ConfigType *ConfigPtr)
 {
   WdgM_SupervisedEntityIdType SEid;
-  WdgM_SupervisionType *supervisionPtr;
-  WdgM_SupervisedEntityType* supervisedEntityPtr;
+  WdgM_AliveEntityStateType *entityStatePtr;
+  WdgM_ModeType initialMode;
 
   /** @req WDGM010 **/
   VALIDATE_NO_RETURNVAL((ConfigPtr != 0),WDGM_INIT_ID, WDGM_E_PARAM_CONFIG);
 
-  /** @req WDGM018 **/
-  for (SEid = 0; SEid < WDBG_NBR_OF_ALIVE_SIGNALS; SEid++)
-  {
-    supervisionPtr = &(ConfigPtr->WdgM_ConfigSet->WdgM_SupervisionPtr)[SEid];
-    supervisedEntityPtr = (WdgM_SupervisedEntityType*)&(ConfigPtr->WdgM_ConfigSet->WdgM_SupervisedEntityPtr)[SEid];
-    supervisionPtr->ActivationStatus = supervisedEntityPtr->WdgM_ActivationStatus;
-    supervisionPtr->AliveCounter         = 0;
-    supervisionPtr->SupervisionCycle     = 0;
-    supervisionPtr->SupervisionStatus    = 0;
-    supervisionPtr->NbrOfFailedRefCycles = 0;
-  }
-  wdgMInternalState.WdgM_GlobalSupervisionStatus = WDBG_ALIVE_OK;
   wdgMInternalState.WdgM_ConfigPtr = ConfigPtr;
+  initialMode = wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_InitialMode;
+  /** @req WDGM018 **/
+  for (SEid = 0; SEid < WDGM_NBR_OF_ALIVE_SIGNALS; SEid++)
+  {
+	entityStatePtr = GET_ENTITY_STATE_PTR(SEid);
+    entityStatePtr->ActivationStatus = wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[initialMode].WdgM_AliveSupervisionPtr[SEid].WdgM_ActivationStatus;
+    entityStatePtr->AliveCounter         = 0;
+    entityStatePtr->SupervisionCycle     = 0;
+    entityStatePtr->SupervisionStatus    = 0;
+    entityStatePtr->NbrOfFailedRefCycles = 0;
+  }
+  wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_OK;
+  wdgMInternalState.WdgMActiveMode = wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_InitialMode;
 }
 
 /* Non standard API for test purpose.  */
@@ -212,24 +238,24 @@ void WdgM_MainFunction_AliveSupervision (void)
   VALIDATE_NO_RETURNVAL((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_MAINFUNCTION_ALIVESUPERVISION_ID, WDGM_E_NO_INIT);
 
   WdgM_SupervisedEntityIdType SEid;
-  WdgM_SupervisionType *supervisionPtr;
-  const WdgM_SupervisedEntityType *entityPtr;
+  WdgM_AliveEntityStateType *entityStatePtr;
+  const WdgM_AliveSupervisionType *entityPtr;
   WdgM_SupervisionCounterType aliveCalc, nSC, nAl, eai;
-  WdgM_AliveSupervisionStatusType maxLocal = WDBG_ALIVE_OK;
+  WdgM_AliveSupervisionStatusType maxLocal = WDGM_ALIVE_OK;
   static WdgM_SupervisionCounterType expiredSupervisionCycles = 0;
 
   for (SEid = 0; SEid < wdgMInternalState.WdgM_ConfigPtr->WdgM_General->WdgM_NumberOfSupervisedEntities; SEid++)
   {
-    supervisionPtr = &(wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_SupervisionPtr)[SEid];
-    entityPtr      = &(wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_SupervisedEntityPtr)[SEid];
+	entityStatePtr = GET_ENTITY_STATE_PTR(SEid);
+    entityPtr      = &(wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode].WdgM_AliveSupervisionPtr)[SEid];
 
     /** @req WDGM083 **/
-    if (WDBG_SUPERVISION_ENABLED == supervisionPtr->ActivationStatus)
+    if (WDGM_SUPERVISION_ENABLED == entityStatePtr->ActivationStatus)
     {
-      supervisionPtr->SupervisionCycle++;
+    	entityStatePtr->SupervisionCycle++;
       /** @req WDGM090 **/
       /* Only perform supervision on the reference cycle. */
-      if (supervisionPtr->SupervisionCycle == entityPtr->WdgM_SupervisionReferenceCycle)
+      if (entityStatePtr->SupervisionCycle == entityPtr->WdgM_SupervisionReferenceCycle)
       {
         /* Alive algorithm. *
          * n (Al) - n(SC) + EAI == 0 */
@@ -244,55 +270,54 @@ void WdgM_MainFunction_AliveSupervision (void)
           /* Scenario B */
           eai = entityPtr->WdgM_SupervisionReferenceCycle - 1;
         }
-        nSC = supervisionPtr->SupervisionCycle;
-        nAl = supervisionPtr->AliveCounter;
+        nSC = entityStatePtr->SupervisionCycle;
+        nAl = entityStatePtr->AliveCounter;
         aliveCalc = nAl - nSC + eai;
-        supervisionPtr->test_aliveCalc = aliveCalc;
 
         /** @req WDGM091 **/
         if ((aliveCalc <= entityPtr->WdgM_MaxMargin) &&
-            (aliveCalc >= -entityPtr->WdgM_MinMargin))
+            (aliveCalc >= entityPtr->WdgM_MinMargin))
         {
           /* Entity alive OK. */
           /** @req WDGM113 **/
-          if (supervisionPtr->SupervisionStatus <= WDBG_ALIVE_FAILED)
+          if (entityStatePtr->SupervisionStatus <= WDGM_ALIVE_FAILED)
           {
-            supervisionPtr->SupervisionStatus = WDBG_ALIVE_OK;
+        	  entityStatePtr->SupervisionStatus = WDGM_ALIVE_OK;
           }
         }
         else
         {
           /** @req WDGM024 **/
           /* Entity alive NOK. */
-          supervisionPtr->SupervisionStatus = WDBG_ALIVE_FAILED;
-          if (WDBG_ALIVE_FAILED > maxLocal)
+        	entityStatePtr->SupervisionStatus = WDGM_ALIVE_FAILED;
+          if (WDGM_ALIVE_FAILED > maxLocal)
           {
-            maxLocal = WDBG_ALIVE_FAILED;
+            maxLocal = WDGM_ALIVE_FAILED;
           }
         }
 
         /** @req WDGM097 **/
-        if (WDBG_ALIVE_FAILED == supervisionPtr->SupervisionStatus)
+        if (WDGM_ALIVE_FAILED == entityStatePtr->SupervisionStatus)
         {
           /** @req WDGM125 **/
           /** @req WDGM130 **/
-          if (supervisionPtr->NbrOfFailedRefCycles > entityPtr->WdgM_FailedSupervisionReferenceCycleTolerance)
+          if (entityStatePtr->NbrOfFailedRefCycles > entityPtr->WdgM_FailedSupervisionReferenceCycleTolerance)
           {
-            supervisionPtr->SupervisionStatus = WDBG_ALIVE_EXPIRED;
-            if (WDBG_ALIVE_EXPIRED > maxLocal)
+        	  entityStatePtr->SupervisionStatus = WDGM_ALIVE_EXPIRED;
+            if (WDGM_ALIVE_EXPIRED > maxLocal)
             {
-              maxLocal = WDBG_ALIVE_EXPIRED;
+              maxLocal = WDGM_ALIVE_EXPIRED;
             }
           }
           else
           {
-            supervisionPtr->NbrOfFailedRefCycles++;
+        	  entityStatePtr->NbrOfFailedRefCycles++;
           }
         }
 
         /* Reset counters. */
-        supervisionPtr->SupervisionCycle = 0;
-        supervisionPtr->AliveCounter = 0;
+        entityStatePtr->SupervisionCycle = 0;
+        entityStatePtr->AliveCounter = 0;
       }
     }
   }
@@ -303,24 +328,24 @@ void WdgM_MainFunction_AliveSupervision (void)
   /** @req WDGM100 **/
   /** @req WDGM101 **/
   /* Try to heal global status. */
-  if (WDBG_ALIVE_EXPIRED != wdgMInternalState.WdgM_GlobalSupervisionStatus)
+  if (WDGM_ALIVE_EXPIRED != wdgMInternalState.WdgM_GlobalSupervisionStatus)
   {
 	  wdgMInternalState.WdgM_GlobalSupervisionStatus = maxLocal;
   }
   else
   {
-	  wdgMInternalState.WdgM_GlobalSupervisionStatus = WDBG_ALIVE_EXPIRED;
+	  wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_EXPIRED;
   }
 
-  if (WDBG_ALIVE_EXPIRED == wdgMInternalState.WdgM_GlobalSupervisionStatus)
+  if (WDGM_ALIVE_EXPIRED == wdgMInternalState.WdgM_GlobalSupervisionStatus)
   {
     expiredSupervisionCycles++;
   }
 
   /** @req WDGM117 **/
-  if (expiredSupervisionCycles >= wdgMInternalState.WdgM_ConfigPtr->WdgM_ExpiredSupervisionCycleTolerance)
+  if (expiredSupervisionCycles >= wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode].WdgM_ExpiredSupervisionCycleTol)
   {
-	  wdgMInternalState.WdgM_GlobalSupervisionStatus = WDBG_ALIVE_STOPPED;
+	  wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_STOPPED;
   }
 }
 
@@ -330,7 +355,7 @@ boolean WdgM_IsAlive(void)
   /** @req WDGM120 **/
   /** @req WDGM121 **/
   /** @req WDGM122 **/
-  if (WDBG_ALIVE_STOPPED > wdgMInternalState.WdgM_GlobalSupervisionStatus)
+  if (WDGM_ALIVE_STOPPED > wdgMInternalState.WdgM_GlobalSupervisionStatus)
   {
     return (TRUE);
   }
@@ -364,10 +389,10 @@ void WdgM_MainFunction_Trigger (void)
 		/** @req WDGM109 **/
 		/* Time to trig this particular watchdog instance? */
 	   if (0 == (wdgMInternalState.WdgMTriggerCounter %
-			     wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Trigger[i].WdgM_TriggerReferenceCycle))
+			     wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode].WdgM_Trigger[i].WdgM_TriggerReferenceCycle))
 	   {
 		 /** @req WDGM066 **/
-	     WdgIf_Trigger(wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Trigger[i].WdgM_WatchdogRef);
+	     WdgIf_Trigger(wdgMInternalState.WdgM_ConfigPtr->WdgM_General->WdgM_Watchdog[i].WdgM_DeviceRef->WdgIf_DeviceIndex);
 	   }
 	}
   }
