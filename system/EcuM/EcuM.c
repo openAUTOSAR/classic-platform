@@ -59,6 +59,7 @@ void EcuM_Init( void )
 	// TODO Mcu_ResetType type = Mcu_GetResetReason();
 
 	// Set default shutdown target
+	// TODO: Skriva om till funktion(EcuM_SelectShutdownTarget), och testa om satt! //REQ:Ecum2181
 	internal_data.shutdown_target = internal_data.config->EcuMDefaultShutdownTarget;
 	internal_data.shutdown_mode = internal_data.config->EcuMDefaultShutdownMode;
 
@@ -97,7 +98,7 @@ void EcuM_StartupTwo(void)
 	// Start timer to wait for NVM job to complete
 	tickTimerStatus = GetCounterValue(Os_Arc_OsTickCounter , &tickTimerStart);
 	if (tickTimerStatus != E_OK) {
-		// TODO: Generate error?
+		Det_ReportError(MODULE_ID_ECUM, 0, ECUM_ARC_STARTUPTWO_ID, ECUM_E_ARC_TIMERERROR);
 	}
 #endif
 
@@ -114,7 +115,7 @@ void EcuM_StartupTwo(void)
 		tickTimer = tickTimerStart;	// Save this because the GetElapsedCounterValue() will destroy it.
 		tickTimerStatus =  GetElapsedCounterValue(Os_Arc_OsTickCounter, &tickTimer, &tickTimerElapsed);
 		if (tickTimerStatus != E_OK) {
-			// TODO: Generate error?
+			Det_ReportError(MODULE_ID_ECUM, 0, ECUM_ARC_STARTUPTWO_ID, ECUM_E_ARC_TIMERERROR);
 		}
 	} while( (readAllResult == NVM_REQ_PENDING) && (tickTimerElapsed < internal_data.config->EcuMNvramReadAllTimeout) );
 
@@ -158,6 +159,7 @@ void EcuM_Shutdown(void)
 
 Std_ReturnType EcuM_GetState(EcuM_StateType* state)
 {
+	VALIDATE_RV(internal_data.initiated, ECUM_GETSTATE_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
 	VALIDATE_RV(state != NULL, ECUM_GETSTATE_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
 
 	*state = internal_data.current_state;
@@ -222,6 +224,8 @@ Std_ReturnType EcuM_SelectShutdownTarget(EcuM_StateType target, uint8 mode)
 Std_ReturnType EcuM_GetShutdownTarget(EcuM_StateType *target, uint8 *mode)
 {
 	VALIDATE_RV(internal_data.initiated, ECUM_GETSHUTDOWNTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV(target != NULL, ECUM_GETSHUTDOWNTARGET_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
+	VALIDATE_RV(mode != NULL, ECUM_GETSHUTDOWNTARGET_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
 
 	*target = internal_data.shutdown_target;
 	*mode = internal_data.shutdown_mode;
@@ -271,6 +275,7 @@ Std_ReturnType EcuM_ComM_ReleaseRUN(NetworkHandleType user)
 	return E_OK;
 }
 
+// TODO: Fix this function, should only return bool, but do also return Std_ReturnType.
 boolean EcuM_ComM_HasRequestedRUN(NetworkHandleType user)
 {
 	VALIDATE_RV(internal_data.initiated, ECUM_COMM_HASREQUESTEDRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);

@@ -149,8 +149,9 @@ VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_NOT_INITIAT
 	if (internal_data.current_state == ECUM_STATE_GO_OFF_ONE)
 	{
 #if defined(USE_NVM)
-		if (internal_data_go_off_one_state_timeout)
+		if (internal_data_go_off_one_state_timeout){
 			internal_data_go_off_one_state_timeout--;
+		}
 
 		// Wait for the NVM job (NvmWriteAll) to terminate
 		NvM_GetErrorStatus(0, &writeAllResult);

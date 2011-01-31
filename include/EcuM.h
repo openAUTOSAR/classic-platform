@@ -39,6 +39,7 @@
 #define ECUM_E_MISMATCHED_RUN_RELEASE (0x15)
 #define ECUM_E_STATE_PAR_OUT_OF_RANGE (0x16)
 #define ECUM_E_UNKNOWN_WAKEUP_SOURCE (0x17)
+#define ECUM_E_ARC_TIMERERROR (0x18)
 //@}
 
 /** @name Service id's */
@@ -58,6 +59,7 @@
 #define ECUM_GET_BOOTARGET_ID (0x13)
 #define ECUM_MAINFUNCTION_ID (0x18)
 #define ECUM_COMM_HASREQUESTEDRUN_ID (0x1b)
+#define ECUM_ARC_STARTUPTWO_ID (0x20)
 
 /** Possible states */
 typedef enum {
@@ -172,7 +174,7 @@ Std_ReturnType EcuM_ReleasePOST_RUN(EcuM_UserType user);
 
 void EcuM_KillAllRUNRequests(void);
 
-#if defined(USE_COM)
+#if defined(USE_COMM)
 Std_ReturnType EcuM_ComM_RequestRUN(NetworkHandleType channel);
 Std_ReturnType EcuM_ComM_ReleaseRUN(NetworkHandleType channel);
 boolean EcuM_ComM_HasRequestedRUN(NetworkHandleType channel);
