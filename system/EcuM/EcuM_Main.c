@@ -98,8 +98,10 @@ static NvM_RequestResultType writeAllResult;
 
 VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_NOT_INITIATED);
 
-	if (internal_data.current_state == ECUM_STATE_APP_RUN)
-	{
+
+switch(internal_data.current_state){
+
+	case ECUM_STATE_APP_RUN:
 		if (internal_data_run_state_timeout)
 		{
 			internal_data_run_state_timeout--;
@@ -111,10 +113,8 @@ VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_NOT_INITIAT
 			enter_post_run_mode();/** @req EcuM2865 */
 			/*lint --e(904)*/ return;
 		}
-	}
-
-	if (internal_data.current_state == ECUM_STATE_APP_POST_RUN)
-	{
+		break;
+	case ECUM_STATE_APP_POST_RUN:
 		if (hasRunRequests())
 		{
 			EcuM_enter_run_mode(); /** @req EcuM2866 */
@@ -127,10 +127,8 @@ VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_NOT_INITIAT
 			enter_prep_shutdown_mode();/** @req EcuM2761 */
 			/*lint --e(904)*/ return;
 		}
-	}
-
-	if (internal_data.current_state == ECUM_STATE_PREP_SHUTDOWN)
-	{
+		break;
+	case ECUM_STATE_PREP_SHUTDOWN:
 #if defined(USE_DEM)
 		// DEM shutdown
 		Dem_Shutdown();
@@ -144,10 +142,8 @@ VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_NOT_INITIAT
 		if (internal_data.shutdown_target == ECUM_STATE_SLEEP) {
 			enter_go_sleep_mode();
 		}
-	}
-
-	if (internal_data.current_state == ECUM_STATE_GO_OFF_ONE)
-	{
+		break;
+	case ECUM_STATE_GO_OFF_ONE:
 #if defined(USE_NVM)
 		if (internal_data_go_off_one_state_timeout){
 			internal_data_go_off_one_state_timeout--;
@@ -162,11 +158,13 @@ VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_NOT_INITIAT
 #else
 		ShutdownOS(E_OK);
 #endif
-	}
-
-	if (internal_data.current_state == ECUM_STATE_GO_SLEEP)
-	{
+		break;
+	case ECUM_STATE_GO_SLEEP:
 		// TODO: Fill out
-	}
+		break;
+	default:
+		//TODO: Do something if the state does not belong to main at all?
+		break;
+}
 
 }
