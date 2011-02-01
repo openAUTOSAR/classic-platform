@@ -48,12 +48,6 @@ typedef uint32 Dem_DTCGroupType;
 
 
 /*
- * DemDTCKindType
- */
-#define	DEM_DTC_KIND_ALL_DTCS			(Dem_DTCKindType)0x01
-#define	DEM_DTC_KIND_EMISSION_REL_DTCS	(Dem_DTCKindType)0x02
-
-/*
  * DemDTCOriginType
  */
 typedef uint8 Dem_DTCOriginType;
@@ -61,29 +55,6 @@ typedef uint8 Dem_DTCOriginType;
 #define	DEM_DTC_ORIGIN_PRIMARY_MEMORY	(Dem_DTCOriginType)0x02
 #define	DEM_DTC_ORIGIN_PERMANENT_MEMORY	(Dem_DTCOriginType)0x03
 #define	DEM_DTC_ORIGIN_MIRROR_MEMORY	(Dem_DTCOriginType)0x04
-
-#define	DEM_TEST_FAILED 							(Dem_EventStatusExtendedType)0x01
-#define	DEM_TEST_FAILED_THIS_OPERATION_CYCLE 		(Dem_EventStatusExtendedType)0x02
-#define	DEM_PENDING_DTC 							(Dem_EventStatusExtendedType)0x04
-#define	DEM_CONFIRMED_DTC 							(Dem_EventStatusExtendedType)0x08
-#define	DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR 	(Dem_EventStatusExtendedType)0x10
-#define	DEM_TEST_FAILED_SINCE_LAST_CLEAR 			(Dem_EventStatusExtendedType)0x20
-#define	DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE (Dem_EventStatusExtendedType)0x40
-#define	DEM_WARNING_INDICATOR_REQUESTED 			(Dem_EventStatusExtendedType)0x80
-
-enum {
-	DEM_ACTIVE,		// Started by DEM on Dem_PreInit and stopped on Dem_Shutdown
-
-	DEM_POWER,		// Power ON/OFF Cycle
-	DEM_IGNITION,	// Ignition ON/OF Cycle
-	DEM_WARMUP,		// OBD Warm up Cycle
-	DEM_OBD_DCY,	// OBD Driving Cycle
-
-	DEM_OPERATION_CYCLE_ID_ENDMARK
-}; /** @req DEM142 */
-
-#define DEM_CYCLE_STATE_START		(Dem_OperationCycleStateType)1
-#define DEM_CYCLE_STATE_END			(Dem_OperationCycleStateType)2
 
 /*
  * Dem_FreezeFrameKindType
@@ -107,15 +78,6 @@ typedef uint8 Dem_EventStatusType;
 #define DEM_EVENT_STATUS_FAILED		(Dem_EventStatusType)1
 #define DEM_EVENT_STATUS_PREPASSED	(Dem_EventStatusType)2
 #define DEM_EVENT_STATUS_PREFAILED	(Dem_EventStatusType)3
-
-#define DEM_INIT_MONITOR_CLEAR		(Dem_InitMonitorKindType)1
-#define DEM_INIT_MONITOR_RESTART	(Dem_InitMonitorKindType)2
-
-
-#define DEM_INDICATOR_OFF			(Dem_IndicatorStatusType)0
-#define DEM_INDICATOR_CONTINUOUS	(Dem_IndicatorStatusType)1
-#define DEM_INDICATOR_BLINKING		(Dem_IndicatorStatusType)2
-#define DEM_INDICATOR_BLINK_CONT	(Dem_IndicatorStatusType)3
 
 /*
  * Dem_PreDebounceNameType
@@ -294,6 +256,63 @@ typedef uint8 Dem_ReturnGetSeverityOfDTCType;
 #define DEM_GET_SEVERITYOFDTC_WRONG_DTC		(Dem_ReturnGetSeverityOfDTCType)0x01
 #define DEM_GET_SEVERITYOFDTC_WRONG_ORIGIN	(Dem_ReturnGetSeverityOfDTCType)0x02
 #define DEM_GET_SEVERITYOFDTC_NOSEVERITY	(Dem_ReturnGetSeverityOfDTCType)0x03
+
+
+/*******************************************************
+ * Definitions where the type is declared in Rte_Dem.h *
+ *******************************************************/
+/*
+ * DemEventStatusExtendedType definitions
+ */
+#define	DEM_TEST_FAILED 							(Dem_EventStatusExtendedType)0x01
+#define	DEM_TEST_FAILED_THIS_OPERATION_CYCLE 		(Dem_EventStatusExtendedType)0x02
+#define	DEM_PENDING_DTC 							(Dem_EventStatusExtendedType)0x04
+#define	DEM_CONFIRMED_DTC 							(Dem_EventStatusExtendedType)0x08
+#define	DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR 	(Dem_EventStatusExtendedType)0x10
+#define	DEM_TEST_FAILED_SINCE_LAST_CLEAR 			(Dem_EventStatusExtendedType)0x20
+#define	DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE (Dem_EventStatusExtendedType)0x40
+#define	DEM_WARNING_INDICATOR_REQUESTED 			(Dem_EventStatusExtendedType)0x80
+
+/*
+ * DemDTCKindType definitions
+ */
+#define	DEM_DTC_KIND_ALL_DTCS			(Dem_DTCKindType)0x01
+#define	DEM_DTC_KIND_EMISSION_REL_DTCS	(Dem_DTCKindType)0x02
+
+/*
+ * Dem_InitMonitorKindType definitions
+ */
+#define DEM_INIT_MONITOR_CLEAR		(Dem_InitMonitorKindType)1
+#define DEM_INIT_MONITOR_RESTART	(Dem_InitMonitorKindType)2
+
+
+/*
+ * Dem_IndicatorStatusType definitions
+ */
+#define DEM_INDICATOR_OFF			(Dem_IndicatorStatusType)0
+#define DEM_INDICATOR_CONTINUOUS	(Dem_IndicatorStatusType)1
+#define DEM_INDICATOR_BLINKING		(Dem_IndicatorStatusType)2
+#define DEM_INDICATOR_BLINK_CONT	(Dem_IndicatorStatusType)3
+
+/*
+ * DemOperationCycleType definitions
+ */
+enum {
+	DEM_ACTIVE,		// Started by DEM on Dem_PreInit and stopped on Dem_Shutdown
+
+	DEM_POWER,		// Power ON/OFF Cycle
+	DEM_IGNITION,	// Ignition ON/OF Cycle
+	DEM_WARMUP,		// OBD Warm up Cycle
+	DEM_OBD_DCY,	// OBD Driving Cycle
+
+	DEM_OPERATION_CYCLE_ID_ENDMARK
+}; /** @req DEM142 */
+
+/*
+ * Dem_OperationCycleStateType definitions
+ */
+#define DEM_CYCLE_STATE_START		(Dem_OperationCycleStateType)1
+#define DEM_CYCLE_STATE_END			(Dem_OperationCycleStateType)2
 
 
 
