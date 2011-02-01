@@ -49,8 +49,7 @@ void EcuM_Init( void )
 	// Determine PostBuild configuration
 	internal_data.config = EcuM_DeterminePbConfiguration();
 
-	// Check consistency of PB configuration
-	// TODO
+	// TODO: Check consistency of PB configuration
 
 	// Initialize drivers needed before the OS-starts
 	EcuM_AL_DriverInitOne(internal_data.config);
@@ -59,7 +58,7 @@ void EcuM_Init( void )
 	// TODO Mcu_ResetType type = Mcu_GetResetReason();
 
 	// Set default shutdown target
-	// TODO: Skriva om till funktion(EcuM_SelectShutdownTarget), och testa om satt! //REQ:Ecum2181
+	// TODO: Rewrite into function (EcuM_SelectShutdownTarget). //REQ:Ecum2181
 	internal_data.shutdown_target = internal_data.config->EcuMDefaultShutdownTarget;
 	internal_data.shutdown_mode = internal_data.config->EcuMDefaultShutdownMode;
 
@@ -123,8 +122,7 @@ void EcuM_StartupTwo(void)
 	EcuM_AL_DriverInitThree(internal_data.config);
 #endif
 
-	// Indicate mode change to RTE
-	// TODO
+	// TODO: Indicate mode change to RTE
 
 	// If coming from startup sequence, enter Run mode
 //	if (internal_data.current_state == ECUM_STATE_STARTUP_TWO)
@@ -275,11 +273,10 @@ Std_ReturnType EcuM_ComM_ReleaseRUN(NetworkHandleType user)
 	return E_OK;
 }
 
-// TODO: Fix this function, should only return bool, but do also return Std_ReturnType.
 boolean EcuM_ComM_HasRequestedRUN(NetworkHandleType user)
 {
-	VALIDATE_RV(internal_data.initiated, ECUM_COMM_HASREQUESTEDRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
-	VALIDATE_RV(user < 32, ECUM_COMM_HASREQUESTEDRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
+	VALIDATE_RV(internal_data.initiated, ECUM_COMM_HASREQUESTEDRUN_ID, ECUM_E_NOT_INITIATED, FALSE);
+	VALIDATE_RV(user < 32, ECUM_COMM_HASREQUESTEDRUN_ID, ECUM_E_INVALID_PAR, FALSE);
 
 	return (internal_data.run_comm_requests &((uint32)1 << user)) != 0;
 }
