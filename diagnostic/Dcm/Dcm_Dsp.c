@@ -1094,7 +1094,7 @@ static Dcm_NegativeResponseCodeType startRoutine(const Dcm_DspRoutineType *routi
 		if (((routinePtr->DspRoutineInfoRef->DspStartRoutine->DspStartRoutineCtrlOptRecSize + 4) == pduRxData->SduLength)
 			&& ((routinePtr->DspRoutineInfoRef->DspStartRoutine->DspStartRoutineStsOptRecSize + 4) <= pduTxData->SduLength)) {
 			pduTxData->SduLength = routinePtr->DspRoutineInfoRef->DspStartRoutine->DspStartRoutineStsOptRecSize + 4;
-			routineResult = routinePtr->DspStartRoutineFnc(&pduRxData->SduDataPtr[4], &pduTxData->SduDataPtr[4], &responseCode);
+			routineResult = routinePtr->DspStartRoutineFnc(&pduRxData->SduDataPtr[4], &pduTxData->SduDataPtr[4], &responseCode);	/** @req DCM400 */ /** @req DCM401 */
 			if (routineResult != E_OK) {
 				responseCode = DCM_E_CONDITIONSNOTCORRECT;
 			}
@@ -1121,7 +1121,7 @@ static Dcm_NegativeResponseCodeType stopRoutine(const Dcm_DspRoutineType *routin
 		if (((routinePtr->DspRoutineInfoRef->DspRoutineStop->DspStopRoutineCtrlOptRecSize + 4) == pduRxData->SduLength)
 			&& ((routinePtr->DspRoutineInfoRef->DspRoutineStop->DspStopRoutineStsOptRecSize + 4) <= pduTxData->SduLength)) {
 			pduTxData->SduLength = routinePtr->DspRoutineInfoRef->DspRoutineStop->DspStopRoutineStsOptRecSize + 4;
-			routineResult = routinePtr->DspStopRoutineFnc(&pduRxData->SduDataPtr[4], &pduTxData->SduDataPtr[4], &responseCode);
+			routineResult = routinePtr->DspStopRoutineFnc(&pduRxData->SduDataPtr[4], &pduTxData->SduDataPtr[4], &responseCode);	/** @req DCM402 */ /** @req DCM403 */
 			if (routineResult != E_OK) {
 				responseCode = DCM_E_CONDITIONSNOTCORRECT;
 			}
@@ -1147,7 +1147,7 @@ static Dcm_NegativeResponseCodeType requestRoutineResults(const Dcm_DspRoutineTy
 	if ((routinePtr->DspRequestResultRoutineFnc != NULL) && (routinePtr->DspRoutineInfoRef->DspRoutineRequestRes != NULL)) {
 		if ((routinePtr->DspRoutineInfoRef->DspRoutineRequestRes->DspReqResRtnCtrlOptRecSize + 4) <= pduTxData->SduLength) {
 			pduTxData->SduLength = routinePtr->DspRoutineInfoRef->DspRoutineRequestRes->DspReqResRtnCtrlOptRecSize + 4;
-			routineResult = routinePtr->DspRequestResultRoutineFnc(&pduTxData->SduDataPtr[4], &responseCode);
+			routineResult = routinePtr->DspRequestResultRoutineFnc(&pduTxData->SduDataPtr[4], &responseCode);	/** @req DCM404 */ /** @req DCM405 */
 			if (routineResult != E_OK) {
 				responseCode = DCM_E_CONDITIONSNOTCORRECT;
 			}
@@ -1166,6 +1166,7 @@ static Dcm_NegativeResponseCodeType requestRoutineResults(const Dcm_DspRoutineTy
 
 void DspUdsRoutineControl(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
+	/** @req DCM257 */
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 	uint8 subFunctionNumber = 0;
 	uint16 routineId = 0;
