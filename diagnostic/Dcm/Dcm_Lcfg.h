@@ -250,7 +250,6 @@ typedef struct {
 	const Dcm_DspStartRoutineType			*DspStartRoutine;			// (1)
 	const Dcm_DspRoutineStopType			*DspRoutineStop;			// (0..1)
 	const Dcm_DspRoutineRequestResType		*DspRoutineRequestRes;		// (0..1)
-	boolean									Arc_EOL;
 } Dcm_DspRoutineInfoType; /** @req DCM643 */
 
 // 10.2.35
