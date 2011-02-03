@@ -20,7 +20,7 @@
 EcuM_ConfigType EcuMConfig =
 {
 	.EcuMDefaultShutdownTarget = ECUM_STATE_RESET,
-	.EcuMDefaultShutdownMode = 0, // Don't care
+	.EcuMDefaultSleepMode = 0, // Don't care
 	.EcuMDefaultAppMode = OSDEFAULTAPPMODE,
 	.EcuMNvramReadAllTimeout = ECUM_NVRAM_READALL_TIMEOUT,
 	.EcuMNvramWriteAllTimeout = ECUM_NVRAM_WRITEALL_TIMEOUT,
