@@ -180,9 +180,9 @@ Std_ReturnType EcuM_ComM_ReleaseRUN(NetworkHandleType channel);
 boolean EcuM_ComM_HasRequestedRUN(NetworkHandleType channel);
 #endif
 
-Std_ReturnType EcuM_SelectShutdownTarget(EcuM_StateType target, uint8 mode);
-Std_ReturnType EcuM_GetShutdownTarget(EcuM_StateType* target, uint8* mode);
-Std_ReturnType EcuM_GetLastShutdownTarget(EcuM_StateType* target, uint8* mode);
+Std_ReturnType EcuM_SelectShutdownTarget(EcuM_StateType shutdownTarget, uint8 sleepMode);
+Std_ReturnType EcuM_GetShutdownTarget(EcuM_StateType* shutdownTarget, uint8* sleepMode);
+Std_ReturnType EcuM_GetLastShutdownTarget(EcuM_StateType* shutdownTarget, uint8* sleepMode);
 
 EcuM_WakeupSourceType EcuM_GetPendingWakeupEvents(void);
 void EcuM_ClearWakeupEvent(EcuM_WakeupSourceType sources);

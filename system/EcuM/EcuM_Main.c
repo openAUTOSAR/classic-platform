@@ -105,6 +105,8 @@ static inline void in_state_appPostRun(void){
 		internal_data.current_state = ECUM_STATE_PREP_SHUTDOWN;/** @req EcuM2761 */
 
 		EcuM_OnPrepShutdown();
+	} else {
+		// TODO: Do something?
 	}
 }
 

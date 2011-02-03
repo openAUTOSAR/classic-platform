@@ -59,7 +59,7 @@ typedef struct
 	boolean initiated;
 	EcuM_ConfigType* config;
 	EcuM_StateType shutdown_target;
-	uint8 shutdown_mode;
+	uint8 sleep_mode;
 	AppModeType app_mode;
 	EcuM_StateType current_state;
 #if defined(USE_COMM)
