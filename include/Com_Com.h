@@ -23,8 +23,8 @@
 #ifndef COM_COM_H_
 #define COM_COM_H_
 
-#include "Com.h"
-#include "PduR.h"
+#include <Com.h>
+#include <PduR.h>
 
 uint8 Com_SendSignal(Com_SignalIdType SignalId, const void *SignalDataPtr);
 uint8 Com_ReceiveSignal(Com_SignalIdType SignalId, void* SignalDataPtr);

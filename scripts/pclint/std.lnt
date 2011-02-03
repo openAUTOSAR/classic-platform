@@ -19,8 +19,9 @@ lnt\co-gcc.lnt
 // SET WARNING LEVEL:
 -w3 //-wlib(0)// 1:only errors, 2: +warnings 3: + infos
 
-//Reset which files are viewed library-files to only treat <> as such
-+libclass(angle)
+//Reset which files are viewed library-files to only treat the ones in msys library as such
++libclass()
++libdir(*/msys/include*)
 
 //+os(lintOutput.TMP) //append output to file
 //+oe(lintErrorOutput.TMP)//append error output to file
