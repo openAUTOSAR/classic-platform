@@ -159,23 +159,30 @@ Std_ReturnType WdgM_SetMode(WdgM_ModeType Mode)
   /** @req WDGM020 **/
   VALIDATE(((Mode >= 0) && (Mode < WDGM_NBR_OF_MODES)), WDGM_SETMODE_ID, WDGM_E_PARAM_MODE);
 
+#if WDGM_OFF_MODE_ENABLED == STD_OFF
+  const WdgM_ModeConfigType * modeConfigPtr = &wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[Mode];
+  /** @req WDGM031 **/
+  VALIDATE((modeConfigPtr->WdgM_Trigger->WdgM_WatchdogMode != WDGIF_OFF_MODE),WDGM_SETMODE_ID, WDGM_E_DISABLE_NOT_ALLOWED);
+#endif
+
   WdgIf_ModeType mode;
+  uint8 deviceIndex;
   uint8 i;
 
 
   /** @req WDGM145 **/
   if (wdgMInternalState.WdgM_GlobalSupervisionStatus == WDGM_ALIVE_OK)
   {
-	  mode = wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[Mode].WdgM_Trigger->WdgM_WatchdogMode;
-
 	  /* Write new mode to internal state. */
 	  wdgMInternalState.WdgMActiveMode = Mode;
 
 	  /* Pass mode to all watchdog instances. */
 	  for (i = 0; i < wdgMInternalState.WdgM_ConfigPtr->WdgM_General->WdgM_NumberOfWatchdogs;i++)
 	  {
+		  mode = wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[Mode].WdgM_Trigger[i].WdgM_WatchdogMode;
+		  deviceIndex = wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[Mode].WdgM_Trigger[i].WdgM_WatchdogRef->WdgM_DeviceRef->WdgIf_DeviceIndex;
 		  /** @req WDGM139 **/
-		  if (E_NOT_OK == WdgIf_SetMode (wdgMInternalState.WdgM_ConfigPtr->WdgM_General->WdgM_Watchdog->WdgM_DeviceRef[i].WdgIf_DeviceIndex, mode))
+		  if (E_NOT_OK == WdgIf_SetMode (deviceIndex, mode))
 		  {
 			  wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_STOPPED;
 		  }
@@ -204,12 +211,19 @@ void WdgM_Init(const WdgM_ConfigType *ConfigPtr)
   WdgM_SupervisedEntityIdType SEid;
   WdgM_AliveEntityStateType *entityStatePtr;
   WdgM_ModeType initialMode;
+  const WdgM_ModeConfigType *modeConfigPtr;
 
   /** @req WDGM010 **/
   VALIDATE_NO_RETURNVAL((ConfigPtr != 0),WDGM_INIT_ID, WDGM_E_PARAM_CONFIG);
-
   wdgMInternalState.WdgM_ConfigPtr = ConfigPtr;
   initialMode = wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_InitialMode;
+  modeConfigPtr = &wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[initialMode];
+
+#if WDGM_OFF_MODE_ENABLED == STD_OFF
+  /** @req WDGM030 **/
+  VALIDATE_NO_RETURNVAL((modeConfigPtr->WdgM_Trigger->WdgM_WatchdogMode != WDGIF_OFF_MODE),WDGM_INIT_ID, WDGM_E_DISABLE_NOT_ALLOWED);
+#endif
+
   /** @req WDGM018 **/
   for (SEid = 0; SEid < WDGM_NBR_OF_ALIVE_SIGNALS; SEid++)
   {
@@ -226,8 +240,12 @@ void WdgM_Init(const WdgM_ConfigType *ConfigPtr)
     entityStatePtr->SupervisionCycle     = 0;
     entityStatePtr->NbrOfFailedRefCycles = 0;
   }
+
+  /* Start initial mode. */
+  WdgM_SetMode(initialMode);
+
   wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_OK;
-  wdgMInternalState.WdgMActiveMode = wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_InitialMode;
+  wdgMInternalState.WdgMActiveMode = initialMode;
   wdgMInternalState.WdgM_ExpiredSupervisionCycles = 0;
   wdgMInternalState.WdgMTriggerCounter = 0;
 }

@@ -48,14 +48,6 @@
 //#define WDGM_E_ALIVE_SUPERVISION          DEM assigned
 //#define WDGM_E_SET_MODE                   DEM assigned
 
-/*typedef enum
-{
-	WDGM_OFF_MODE,
-	WDGM_SLOW_MODE,
-	WDGM_FAST_MODE,
-}WdgM_ModeType;
-TODO to be removed??*/
-
 
 Std_ReturnType WdgM_UpdateAliveCounter (WdgM_SupervisedEntityIdType SEid);
 Std_ReturnType WdgM_ActivateAliveSupervision (WdgM_SupervisedEntityIdType SEid);
@@ -65,6 +57,7 @@ Std_ReturnType WdgM_GetAliveSupervisionStatus (WdgM_SupervisedEntityIdType SEid,
 void WdgM_Init(const WdgM_ConfigType* ConfigPtr);
 void WdgM_DeInit(void);
 Std_ReturnType WdgM_SetMode(WdgM_ModeType Mode);
+Std_ReturnType WdgM_GetMode(WdgM_ModeType *Mode);
 void WdgM_MainFunction_AliveSupervision (void);
 void WdgM_MainFunction_Trigger (void);
 
