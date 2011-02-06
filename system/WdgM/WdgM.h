@@ -21,7 +21,7 @@
 #ifndef WDGM_H_
 #define WDGM_H_
 
-
+#include "Std_Types.h"
 #include "WdgM_Cfg.h"
 
 // API Service ID's
@@ -47,7 +47,6 @@
 #define WDGM_E_DEACTIVATE_NOT_ALLOWED       0x16
 //#define WDGM_E_ALIVE_SUPERVISION          DEM assigned
 //#define WDGM_E_SET_MODE                   DEM assigned
-
 
 Std_ReturnType WdgM_UpdateAliveCounter (WdgM_SupervisedEntityIdType SEid);
 Std_ReturnType WdgM_ActivateAliveSupervision (WdgM_SupervisedEntityIdType SEid);
