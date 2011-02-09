@@ -24,10 +24,13 @@
 #include "pcb.h"
 //#include "app_i.h"
 #include "sys.h"
+#include "arch_stack.h"
 
 
 
 void  oil_foo(void) {
+
+/* PCB */
 
 	DECLARE(PCB_T_SIZE,			sizeof(OsPcbType));
 #if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )

@@ -49,7 +49,7 @@ inc-$(USE_DMA) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers
 # Mcu
 obj-$(USE_MCU) += Mcu.o
 obj-$(USE_MCU) += Mcu_Cfg.o
-obj-$(CFG_MPC55XX)-$(USE_MCU) += Mcu_Exceptions.o
+#obj-$(CFG_MPC55XX)-$(USE_MCU) += Mcu_Exceptions.o
 
 # Flash
 obj-$(USE_FLS) += Fls.o
