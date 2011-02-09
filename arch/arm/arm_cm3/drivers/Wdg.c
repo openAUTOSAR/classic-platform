@@ -61,8 +61,9 @@ void Wdg_WWDG_Trigger (void)
 	}
 }
 
-void Wdg_IWDG_SetMode (WdgIf_ModeType Mode)
+Std_ReturnType Wdg_IWDG_SetMode (WdgIf_ModeType Mode)
 {
+	Std_ReturnType res = E_NOT_OK;
 	switch (Mode)
 	{
 	case WDGIF_OFF_MODE:
@@ -100,13 +101,14 @@ void Wdg_IWDG_SetMode (WdgIf_ModeType Mode)
 		{
 			/* There is no way to disable this watchdog.. */
 		}
+		res = E_OK;
 	}
+	return res;
 }
 
-void Wdg_WWDG_SetMode (WdgIf_ModeType Mode)
+Std_ReturnType Wdg_WWDG_SetMode (WdgIf_ModeType Mode)
 {
-    //const Wdg_WWDG_SettingsType *modeCfg;
-
+	Std_ReturnType res = E_NOT_OK;
 	switch (Mode)
 	{
 	case WDGIF_OFF_MODE:
@@ -155,7 +157,9 @@ void Wdg_WWDG_SetMode (WdgIf_ModeType Mode)
 
 		/* Clear EWI flag. */
 		WWDG->SR = 0;
+		res = E_OK;
 	}
+	return res;
 }
 
 

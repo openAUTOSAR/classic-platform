@@ -267,7 +267,7 @@ void WdgM_MainFunction_AliveSupervision (void)
   WdgM_SupervisedEntityIdType SEid;
   WdgM_AliveEntityStateType *entityStatePtr;
   const WdgM_AliveSupervisionType *entityPtr;
-  WdgM_SupervisionCounterType aliveCalc, nSC, nAl, eai;
+  WdgM_SupervisionCounterType aliveCalc, nSC, nAl, f;
   WdgM_AliveSupervisionStatusType maxLocal = WDGM_ALIVE_OK;
 
   for (SEid = 0; SEid < wdgMInternalState.WdgM_ConfigPtr->WdgM_General->WdgM_NumberOfSupervisedEntities; SEid++)
@@ -284,25 +284,17 @@ void WdgM_MainFunction_AliveSupervision (void)
       if (entityStatePtr->SupervisionCycle == entityPtr->WdgM_SupervisionReferenceCycle)
       {
         /* Alive algorithm. *
-         * n (Al) - n(SC) + EAI == 0 */
-        if (entityPtr->WdgM_ExpectedAliveIndications > entityPtr->WdgM_SupervisionReferenceCycle)
-        {
-          /* Scenario A */
-          eai = -entityPtr->WdgM_ExpectedAliveIndications + 1;
-
-        }
-        else
-        {
-          /* Scenario B */
-          eai = entityPtr->WdgM_SupervisionReferenceCycle - 1;
-        }
+         * n (Al) - n(SC) + f(SRC,EAI) == 0; f(SRC,EAI) = SRC - EAI
+         * This algorithm is from revision 4.0 of the WdgM specification.
+         * Revision 3.1 does not seem to work.. */
         nSC = entityStatePtr->SupervisionCycle;
         nAl = entityStatePtr->AliveCounter;
-        aliveCalc = nAl - nSC + eai;
+        f = entityPtr->WdgM_SupervisionReferenceCycle - entityPtr->WdgM_ExpectedAliveIndications;
+        aliveCalc = nAl - nSC + f;
 
         /** @req WDGM091 **/
         if ((aliveCalc <= entityPtr->WdgM_MaxMargin) &&
-            (aliveCalc >= entityPtr->WdgM_MinMargin))
+            (aliveCalc >= -entityPtr->WdgM_MinMargin))
         {
           /* Entity alive OK. */
           /** @req WDGM113 **/
@@ -366,7 +358,7 @@ void WdgM_MainFunction_AliveSupervision (void)
 	  if (WDGM_ALIVE_FAILED == maxLocal)
 	  {
 		  wdgMInternalState.WdgM_ExpiredSupervisionCycles = 1;
-		  if (wdgMInternalState.WdgM_ExpiredSupervisionCycles >=
+		  if (wdgMInternalState.WdgM_ExpiredSupervisionCycles >
 				  wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode].WdgM_ExpiredSupervisionCycleTol)
 		  {
 			  wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_STOPPED;
@@ -379,7 +371,7 @@ void WdgM_MainFunction_AliveSupervision (void)
 	  else if (WDGM_ALIVE_EXPIRED == maxLocal)
 	  {
 		  wdgMInternalState.WdgM_ExpiredSupervisionCycles = 1;
-		  if (wdgMInternalState.WdgM_ExpiredSupervisionCycles >=
+		  if (wdgMInternalState.WdgM_ExpiredSupervisionCycles >
 				  wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode].WdgM_ExpiredSupervisionCycleTol)
 		  {
 			  wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_STOPPED;
@@ -396,7 +388,7 @@ void WdgM_MainFunction_AliveSupervision (void)
 	  }
 	  break;
   case WDGM_ALIVE_EXPIRED:
-      if (++wdgMInternalState.WdgM_ExpiredSupervisionCycles >=
+      if (++wdgMInternalState.WdgM_ExpiredSupervisionCycles >
 	      wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode].WdgM_ExpiredSupervisionCycleTol)
 	  {
 		 wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_STOPPED;
