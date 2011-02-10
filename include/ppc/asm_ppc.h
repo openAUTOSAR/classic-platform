@@ -45,26 +45,6 @@
  *
  */
 
-/*
- * -------- botton(high address )
- *  Context
- * --------
- *
- * -------- top
- *
- *  kind of frames...
- * -------------------------------
- *  C_xxxx  - common frame to both large and small context
- *  EXC_xxx - exception frame
- *  SC_xxx  - small context frame
- *  LC_xxx  - large context frame
- *
- *
- *
- *
- */
-
-
 #define SPR_SRR0		26
 #define SPR_SRR1		27
 
@@ -85,7 +65,9 @@
 #define SPR_XER		1
 #define SPR_CTR		9
 
+#define INTC_SSCIR7 0xFFF48027
 
+#if defined(_ASSEMBLER_)
 /*
  * Misc macros
  */
@@ -96,6 +78,7 @@
 #define LOAD_ADDR_32(reg, addr ) \
         addis   reg, 0, addr@ha; \
         addi    reg, reg, addr@l
+
 
 
 /* GPRS */
@@ -132,5 +115,6 @@
 #define r29     29
 #define r30     30
 #define r31     31
+#endif
 
 #endif /*PPC_ASM_H_*/

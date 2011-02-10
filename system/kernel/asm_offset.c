@@ -31,11 +31,11 @@
 void  asm_foo(void) {
 #elif defined(__CWCC__)
 #define DECLARE(_var,_offset) \
-    __declspec(section ".apa") char _var[(_offset)]
+    __declspec(section ".apa") char _var[100+ (_offset)]
 #pragma section ".apa" ".apa"
 #endif
 
-	DECLARE(PCB_STACK_CURR_P,	offsetof(OsPcbType, stack) + 6 );
+	DECLARE(PCB_STACK_CURR_P,	offsetof(OsPcbType, stack));
 	DECLARE(PCB_ENTRY_P,		offsetof(OsPcbType, entry));
 	DECLARE(SYS_CURR_PCB_P,		offsetof(sys_t, curr_pcb));
 	DECLARE(SYS_INT_NEST_CNT, offsetof(sys_t, int_nest_cnt));

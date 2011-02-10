@@ -31,9 +31,6 @@ typedef enum  {
 typedef struct sys_s {
 //	OsApplicationType *curr_application;
 	/* Current running task*/
-#if defined(__CWCC__)
-	unsigned should_not_be_here_but_i_have_a_buggy_compiler;
-#endif
 	OsPcbType *curr_pcb;
 
 	/* List of all tasks */

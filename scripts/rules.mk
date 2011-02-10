@@ -187,19 +187,9 @@ endif
 # PP Assembler	
 #.SECONDARY %.s:
 
-ifeq ($(COMPILER),gcc)
 %.s: %.sx
 	@echo "  >> CPP $(notdir $<)"
 	$(Q)$(CPP) $(CPP_ASM_FLAGS) -o $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
-else  ifeq ($(COMPILER),cw)
-%.s: %.sx
-	@echo "  >> CPP $(notdir $<)"
-	$(Q)$(CPP) $(CPP_ASM_FLAGS) -o $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
-endif  
-
-
-
-
 
 # Board linker files are in the board directory 
 inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
@@ -207,7 +197,7 @@ inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
 # Preprocess linker files..
 %.ldp: %.ldf
 	@echo "  >> CPP $<"
-	$(Q)$(CPP) -E -P -x assembler-with-cpp -o $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
+	$(Q)$(CPP) -E -P $(CPP_ASM_FLAGS) -o $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
 #	@cat $@ 
 	
@@ -236,8 +226,12 @@ $(build-exe-y): $(dep-y) $(obj-y) $(sim-y) $(libitem-y) $(ldcmdfile-y)
 	@echo "  >> LD $@"
 ifeq ($(CROSS_COMPILE),)
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	
-else	
-	$(Q)$(LD) $(LDFLAGS) -T $(ldcmdfile-y) -o $@ $(libpath-y) --start-group $(obj-y) $(lib-y) $(libitem-y) --end-group $(LDMAPFILE)
+else
+ifeq ($(COMPILER),cw)	
+	$(Q)$(LD) $(LDFLAGS) $(LD_FILE) $(subst .ldp,.ldf,$(ldcmdfile-y)) $(libpath-y) $(LD_START_GRP) $(obj-y) $(lib-y) $(libitem-y) $(LD_END_GRP) -map apa.map
+else
+	$(Q)$(LD) $(LDFLAGS) $(LD_FILE) $(ldcmdfile-y) -o $@ $(libpath-y) $(LD_START_GRP) $(obj-y) $(lib-y) $(libitem-y) $(LD_END_GRP) $(LDMAPFILE)
+endif
 ifdef CFG_MC912DG128A
 	@$(CROSS_COMPILE)objdump -h $@ | gawk -f $(ROOTDIR)/scripts/hc1x_memory.awk
 else

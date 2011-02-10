@@ -1,5 +1,5 @@
 
-#obj-$(CFG_PPC) += crt0.o
+obj-$(CFG_PPC) += crt0.o
 obj-$(CFG_HC1X) += crt0.o
 vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
 vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32F10x_StdPeriph_Driver/src
@@ -50,7 +50,7 @@ inc-$(USE_DMA) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers
 # Mcu
 obj-$(USE_MCU) += Mcu.o
 obj-$(USE_MCU) += Mcu_Cfg.o
-obj-$(CFG_MPC55XX)-$(USE_MCU) += Mcu_Exceptions.o
+#obj-$(CFG_MPC55XX)-$(USE_MCU) += Mcu_Exceptions.o
 
 # Flash
 obj-$(USE_FLS) += Fls.o
@@ -230,22 +230,24 @@ vpath-$(USE_TCF) += $(ROOTDIR)/common/tcf
 #SLEEP
 obj-$(USE_SLEEP) += sleep.o
 
-
-# Newlib overrides (overridden by default)
-ifneq ($(CFG_STANDARD_NEWLIB),y)
 obj-y += xtoa.o
-obj-y += newlib_port.o
-# If we have configured console output we include printf. 
-# Overridden to use lib implementation with CFG_NEWLIB_PRINTF
-ifneq ($(CFG_NEWLIB_PRINTF),y)
-# TODO: This assumes that you print to console.. but you could
-#       just print to a buffer, e.g. sprintf() 
-ifneq (,$(SELECT_CONSOLE) $(SELECT_OS_CONSOLE))
-obj-y += printf.o
 
-endif # SELECT_CONSOLE
-endif # CFG_NEWLIB_PRINTF
-endif # CFG_STANDARD_NEWLIB
+SELECT_CLIB?=CLIB_NEWLIB
+
+ifeq ($(SELECT_CLIB),CLIB_CW)
+  # This is not good, but don't know what to do right now....
+else
+  # Newlib
+  obj-y += newlib_port.o
+  # If we have configured console output we include printf. 
+  # Overridden to use lib implementation with CFG_NEWLIB_PRINTF
+  ifneq ($(CFG_NEWLIB_PRINTF),y)
+    ifneq (,$(SELECT_CONSOLE) $(SELECT_OS_CONSOLE))
+      obj-y += printf.o
+    endif # SELECT_CONSOLE
+  endif # CFG_NEWLIB_PRINTF
+endif # SELECT_CLIB 
+
 
 obj-y += $(obj-y-y)
 

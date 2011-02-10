@@ -405,14 +405,6 @@ void Os_Dispatch( uint32_t op ) {
 #endif
 		OS_DEBUG(D_TASK,"Swapping to: %s\n",pcbPtr->name);
 		Os_TaskSwapContext(currPcbPtr,pcbPtr);
-
-		/* ActivateTask, SetEvent, Schedule, .. */
-//		pcbPtr = Os_TaskGetCurrent();
-//		Os_TaskMakeRunning(pcbPtr);
-//		PRETASKHOOK();
-
-//		Os_ResourceGetInternal();
-
 	} else {
 		OS_DEBUG(D_TASK,"Continuing task %s\n",pcbPtr->name);
 		/* Setup the stack again, and just call the basic task */

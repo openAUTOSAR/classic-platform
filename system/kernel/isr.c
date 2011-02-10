@@ -13,7 +13,9 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+#if defined(__GNUC__)
 #include <sys/types.h>
+#endif
 #include <stdint.h>
 #include <string.h>
 #include "internal.h"
@@ -30,6 +32,9 @@
 
 #endif
 
+#if defined(CFG_PPC)
+#include "arch_stack.h"
+#endif
 
 // TODO: remove. Make soft links or whatever
 #if defined(CFG_ARM_CM3)
@@ -38,7 +43,12 @@
 //#include "stm32f10x_arc.h"
 #endif
 
+#if defined(__GNUC__)
+/* Really newlib */
 extern caddr_t *sbrk(int);
+#elif defined(__CWCC__)
+extern void *sbrk ( uint32_t delta );
+#endif
 
 #define os_alloc(_x)	sbrk(_x)
 
@@ -187,15 +197,30 @@ void Os_Isr_cm3( void *isr_p ) {
 void *Os_Isr( void *stack, void *isr_p ) {
 	struct OsPcb *isrPtr;
 	struct OsPcb *pPtr = NULL;
+#if defined(CFG_PPC)
+	/* PPC just supplies the stack */
+
+
+
+#endif
 
 	/* Check if we interrupted a task or ISR */
 	if( os_sys.int_nest_cnt == 0 ) {
+#if defined(CFG_PPC)
+		Os_IsrFrameType *excFrame;
+
+#endif
+
 		/* We interrupted a task */
 		POSTTASKHOOK();
 
 		/* Save info for preempted pcb */
 		pPtr = get_curr_pcb();
 		pPtr->stack.curr = stack;
+
+#if defined(CFG_PPC)
+		excFrame = pPtr->stack.curr;
+#endif
 		pPtr->state = ST_READY;
 		OS_DEBUG(D_TASK,"Preempted %s\n",pPtr->name);
 

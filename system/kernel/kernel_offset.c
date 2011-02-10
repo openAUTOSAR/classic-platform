@@ -21,6 +21,7 @@
 #include "pcb.h"
 //#include "app_i.h"
 #include "sys.h"
+#include "arch_stack.h"
 
 
 #if defined(__GNUC__)
@@ -30,9 +31,11 @@
 
 void  oil_foo(void) {
 
+/* PCB */
+
 #elif defined(__CWCC__)
 #define DECLARE(_var,_offset) \
-    __declspec(section ".apa") char _var[(_offset)]
+    __declspec(section ".apa") char _var[100+(_offset)]
 #pragma section ".apa" ".apa"
 #endif
 

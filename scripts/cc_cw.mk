@@ -104,6 +104,7 @@ cw_lib_path += -L$(CW_COMPILE)/PowerPC_EABI_Support/MSL/MSL_C/PPC_EABI/Lib
 cc_inc_path += $(CW_COMPILE)/PowerPC_EABI_Support/MSL/MSL_C/MSL_Common/Include
 cc_inc_path += $(CW_COMPILE)/PowerPC_EABI_Support/MSL/MSL_C/PPC_EABI/Include
 inc-y += $(cc_inc_path)
+libpath-y += $(cw_lib_path)
 
 
 # libnames .bare - No operating system
@@ -134,8 +135,10 @@ C_TO_ASM = -P
 
 LD = $(CW_BIN)/mwldeppc.exe
 
+LD_FILE = -lcf
+
 ldflags-y += -romaddr 0x0 -rambuffer 0x0
-ldflags-y += -nodefaults -lcf $(LDSCRIPT)
+ldflags-y += -nodefaults
 
 LDOUT 		= -o $@
 TE = elf

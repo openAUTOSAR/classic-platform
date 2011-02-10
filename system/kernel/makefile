@@ -34,6 +34,7 @@ obj-y += application.o
 obj-y += irq.o
 
 # We are compiling the kernel
+dep-$(CFG_PPC) += arch_offset.h
 dep-y += asm_offset.h
 dep-y += kernel_offset.h
 dep-$(CFG_ARM_CM3) += arch_offset.h
@@ -62,7 +63,7 @@ ifeq ($(COMPILER),cw)
 %_offset.h: %_offset.c
 	@echo "  >> generating $@ from $<"
 	$(Q)$(CC) -dis $(CFLAGS) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $< > 123.tmp
-	gawk '$$9 ~/.apa/ && $$0 ~/OBJ/ { gsub(/\r/,""); printf("#define %s %d\n",$$10,$$5) }' 123.tmp > $@
+	gawk '$$9 ~/.apa/ && $$0 ~/OBJ/ { gsub(/\r/,""); printf("#define %s %d\n",$$10,$$5-100) }' 123.tmp > $@
 endif
 
 #VPATH += ..
