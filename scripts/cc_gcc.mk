@@ -51,6 +51,7 @@ CCOUT 		= -o $@
 # Preprocessor
 
 CPP	= 	$(CC) -E
+CPP_ASM_FLAGS = -x assembler-with-cpp 
 
 comma = ,
 empty = 

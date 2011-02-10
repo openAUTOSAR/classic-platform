@@ -59,8 +59,10 @@ ARCH_PATH-y = arch/$(ARCH_FAM)/$(ARCH)
 
 # Include compiler generic and arch specific
 COMPILER?=gcc
-ifneq ($(ARCH),)
-include $(ROOTDIR)/$(ARCH_PATH-y)/scripts/gcc.mk
+ifeq ($(COMPILER),gcc)
+ ifneq ($(ARCH),)
+ include $(ROOTDIR)/$(ARCH_PATH-y)/scripts/gcc.mk
+ endif
 endif
 include $(ROOTDIR)/scripts/cc_$(COMPILER).mk
 ifneq ($(PCLINT),)
@@ -171,7 +173,7 @@ endif
 %.o: %.c
 	@echo "  >> CC $(notdir $<)"
 # compile
-	$(Q)$(CC) -c $(CFLAGS) -o $(goal) $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
+	$(Q)$(CC) -c $(CFLAGS) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
 # run lint if enabled
 	$(run_pclint)
 	$(run_splint)
@@ -185,9 +187,18 @@ endif
 # PP Assembler	
 #.SECONDARY %.s:
 
+ifeq ($(COMPILER),gcc)
 %.s: %.sx
 	@echo "  >> CPP $(notdir $<)"
-	$(Q)$(CPP) -x assembler-with-cpp -E -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
+	$(Q)$(CPP) $(CPP_ASM_FLAGS) -o $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
+else  ifeq ($(COMPILER),cw)
+%.s: %.sx
+	@echo "  >> CPP $(notdir $<)"
+	$(Q)$(CPP) $(CPP_ASM_FLAGS) -o $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
+endif  
+
+
+
 
 
 # Board linker files are in the board directory 
@@ -196,7 +207,7 @@ inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
 # Preprocess linker files..
 %.ldp: %.ldf
 	@echo "  >> CPP $<"
-	$(Q)$(CPP) -E -P -x assembler-with-cpp -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
+	$(Q)$(CPP) -E -P -x assembler-with-cpp -o $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
 #	@cat $@ 
 	

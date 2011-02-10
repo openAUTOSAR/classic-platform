@@ -1,4 +1,5 @@
-obj-$(CFG_PPC) += crt0.o
+
+#obj-$(CFG_PPC) += crt0.o
 obj-$(CFG_HC1X) += crt0.o
 vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
 vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32F10x_StdPeriph_Driver/src
