@@ -25,8 +25,8 @@
 #include "Pwm.h"
 #include <stdio.h>
 #include <assert.h>
-#define USE_TRACE	1
-#define USE_LDEBUG_PRINTF 1
+
+//#define USE_LDEBUG_PRINTF // Uncomment this to turn debug statements on.
 #include "debug.h"
 
 /* Notification callback from channel 0 */
@@ -55,9 +55,7 @@ ProtectionReturnType ProtectionHook( StatusType FatalError ) {
 void StartupHook( void ) {
 	LDEBUG_FPUTS("## StartupHook\n");
 
-	uint32_t sys_freq = McuE_GetSystemClock();
-
-	LDEBUG_PRINTF("Sys clock %d Hz\n",sys_freq);
+	LDEBUG_PRINTF("Sys clock %u Hz\n",(unsigned)McuE_GetSystemClock());
 }
 
 void ShutdownHook( StatusType Error ) {
@@ -89,14 +87,3 @@ void PostTaskHook( void ) {
 	}
 //	LDEBUG_PRINTF("## PostTaskHook, taskid=%d\n",task);
 }
-
-#if 0
-struct OsHooks os_conf_global_hooks = {
-		.StartupHook = StartupHook,
-		.ProtectionHook = ProtectionHook,
-		.ShutdownHook = ShutdownHook,
-		.ErrorHook = ErrorHook,
-		.PreTaskHook = PreTaskHook,
-		.PostTaskHook = PostTaskHook
-		};
-#endif

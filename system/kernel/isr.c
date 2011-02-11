@@ -102,7 +102,7 @@ StatusType Os_IsrAddResource( TaskType isr, ResourceType resource ) {
 }
 
 #if defined(CFG_ARM_CM3)
-extern void Irq_EOI2( void );
+extern void Irq_EOI( void );
 
 void TailChaining(void *stack)
 {

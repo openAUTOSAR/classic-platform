@@ -28,35 +28,26 @@
 static uint32 internal_data_run_state_timeout = 0;
 #if defined(USE_NVM)
 static uint32 internal_data_go_off_one_state_timeout = 0;
+static NvM_RequestResultType writeAllResult;
 #endif
 
 
-void EcuM_enter_run_mode(void)
-{
+void EcuM_enter_run_mode(void){
 	internal_data.current_state = ECUM_STATE_APP_RUN;
-	EcuM_OnEnterRUN();
-	internal_data_run_state_timeout = internal_data.config->EcuMRunMinimumDuration / ECUM_MAIN_FUNCTION_PERIOD;
+	EcuM_OnEnterRUN(); /** @req EcuM2308 */
+	//TODO: Call ComM_EcuM_RunModeIndication(NetworkHandleType Channel) for all channels that have requested run.
+	internal_data_run_state_timeout = internal_data.config->EcuMRunMinimumDuration / ECUM_MAIN_FUNCTION_PERIOD; /** @req EcuM2310 */
 }
 
-static inline void enter_post_run_mode(void)
-{
-	internal_data.current_state = ECUM_STATE_APP_POST_RUN;
-}
 
-static inline void enter_prep_shutdown_mode(void)
-{
-	internal_data.current_state = ECUM_STATE_PREP_SHUTDOWN;
-	EcuM_OnPrepShutdown();
-}
+//--------- Local functions ------------------------------------------------------------------------------------------------
 
-static inline void enter_go_sleep_mode(void)
-{
+static inline void enter_go_sleep_mode(void){
 	internal_data.current_state = ECUM_STATE_GO_SLEEP;
 	EcuM_OnGoSleep();
 }
 
-static inline void enter_go_off_one_mode(void)
-{
+static inline void enter_go_off_one_mode(void){
 	internal_data.current_state = ECUM_STATE_GO_OFF_ONE;
 	EcuM_OnGoOffOne();
 
@@ -73,8 +64,8 @@ static inline void enter_go_off_one_mode(void)
 #endif
 }
 
-static inline boolean hasRunRequests(void)
-{
+
+static inline boolean hasRunRequests(void){
 	uint32 result = internal_data.run_requests;
 
 #if defined(USE_COMM)
@@ -84,87 +75,102 @@ static inline boolean hasRunRequests(void)
 	return (result != 0);
 }
 
-static inline boolean hasPostRunRequests(void)
-{
+static inline boolean hasPostRunRequests(void){
 	return (internal_data.postrun_requests != 0);
 }
 
-void EcuM_MainFunction(void)
-{
-#if defined(USE_NVM)
-static NvM_RequestResultType writeAllResult;
-#endif
 
-VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_NOT_INITIATED);
 
-	if (internal_data.current_state == ECUM_STATE_APP_RUN)
-	{
-		if (internal_data_run_state_timeout)
-		{
-			internal_data_run_state_timeout--;
-		}
-
-		if ((!hasRunRequests()) && (internal_data_run_state_timeout == 0))
-		{
-			EcuM_OnExitRun();	// ECUM_2865
-			enter_post_run_mode();
-			/*lint --e(904)*/ return;
-		}
+static inline void in_state_appRun(void){
+	if (internal_data_run_state_timeout){
+		internal_data_run_state_timeout--;
 	}
 
-	if (internal_data.current_state == ECUM_STATE_APP_POST_RUN)
-	{
-		if (hasRunRequests())
-		{
-			EcuM_enter_run_mode(); // ECUM_2866
-			/*lint --e(904)*/ return;
-		}
-
-		if (!hasPostRunRequests())
-		{
-			EcuM_OnExitPostRun(); // ECUM_2761
-			enter_prep_shutdown_mode();
-			/*lint --e(904)*/ return;
-		}
+	if ((!hasRunRequests()) && (internal_data_run_state_timeout == 0)){
+		EcuM_OnExitRun();	/** @req EcuM2865 */
+		internal_data.current_state = ECUM_STATE_APP_POST_RUN;/** @req EcuM2865 */
 	}
+}
 
-	if (internal_data.current_state == ECUM_STATE_PREP_SHUTDOWN)
-	{
+
+static inline void in_state_appPostRun(void){
+	if (hasRunRequests()){
+		internal_data.current_state = ECUM_STATE_APP_RUN;/** @req EcuM2866 */ /** @req EcuM2308 */
+		EcuM_OnEnterRUN(); /** @req EcuM2308 */
+		//TODO: Call ComM_EcuM_RunModeIndication(NetworkHandleType Channel) for all channels that have requested run.
+		internal_data_run_state_timeout = internal_data.config->EcuMRunMinimumDuration / ECUM_MAIN_FUNCTION_PERIOD; /** @req EcuM2310 */
+
+	} else if (!hasPostRunRequests()){
+		EcuM_OnExitPostRun(); /** @req EcuM2761 */
+		internal_data.current_state = ECUM_STATE_PREP_SHUTDOWN;/** @req EcuM2761 */
+
+		EcuM_OnPrepShutdown();
+	} else {
+		// TODO: Do something?
+	}
+}
+
+static inline void in_state_prepShutdown(void){
 #if defined(USE_DEM)
-		// DEM shutdown
-		Dem_Shutdown();
+	// DEM shutdown
+	Dem_Shutdown();
 #endif
 
-		// Switch shutdown mode
-		if ((internal_data.shutdown_target == ECUM_STATE_OFF) || (internal_data.shutdown_target == ECUM_STATE_RESET)) {
+	// Switch shutdown mode
+	switch(internal_data.shutdown_target){
+		//If in state Off or Reset go into Go_Off_One:
+		case ECUM_STATE_OFF:
+		case ECUM_STATE_RESET:
 			enter_go_off_one_mode();
-		}
-
-		if (internal_data.shutdown_target == ECUM_STATE_SLEEP) {
+			break;
+		case ECUM_STATE_SLEEP:
 			enter_go_sleep_mode();
-		}
+			break;
+		default:
+			//TODO: Report error.
+			break;
 	}
+}
 
-	if (internal_data.current_state == ECUM_STATE_GO_OFF_ONE)
-	{
+static inline void in_state_goOffOne(void){
 #if defined(USE_NVM)
-		if (internal_data_go_off_one_state_timeout)
+		if (internal_data_go_off_one_state_timeout){
 			internal_data_go_off_one_state_timeout--;
-
+		}
 		// Wait for the NVM job (NvmWriteAll) to terminate
 		NvM_GetErrorStatus(0, &writeAllResult);
-		if ((writeAllResult != NVM_REQ_PENDING) || (internal_data_go_off_one_state_timeout == 0))
-		{
+		if ((writeAllResult != NVM_REQ_PENDING) || (internal_data_go_off_one_state_timeout == 0)){
 			ShutdownOS(E_OK);
 		}
 #else
 		ShutdownOS(E_OK);
 #endif
-	}
+}
 
-	if (internal_data.current_state == ECUM_STATE_GO_SLEEP)
-	{
-		// TODO: Fill out
-	}
 
+//----- MAIN -----------------------------------------------------------------------------------------------------------------
+void EcuM_MainFunction(void){
+	VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_NOT_INITIATED);
+
+	switch(internal_data.current_state){
+
+		case ECUM_STATE_APP_RUN:
+			in_state_appRun();
+			break;
+		case ECUM_STATE_APP_POST_RUN:
+			in_state_appPostRun();
+			break;
+		case ECUM_STATE_PREP_SHUTDOWN:
+			in_state_prepShutdown();
+			break;
+		case ECUM_STATE_GO_OFF_ONE:
+			in_state_goOffOne();
+			break;
+		case ECUM_STATE_GO_SLEEP:
+			// TODO: Fill out
+			break;
+		default:
+			//TODO: Report error.
+			break;
+	}
 }

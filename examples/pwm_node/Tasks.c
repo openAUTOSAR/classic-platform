@@ -27,8 +27,9 @@
 #include <stdio.h>
 #include <assert.h>
 #include "pwm_sine_main.h"
+
+//#define USE_LDEBUG_PRINTF // Uncomment this to turn debug statements on.
 #include "debug.h"
-//#include "WdgM.h"
 
 
 void OsIdle( void ) {

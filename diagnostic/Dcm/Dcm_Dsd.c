@@ -120,6 +120,10 @@ static void selectServiceFunction(uint8 sid)
 		DspUdsWriteDataByIdentifier(msgData.pduRxData, msgData.pduTxData);
 		break;
 
+	case SID_ROUTINE_CONTROL:
+		DspUdsRoutineControl(msgData.pduRxData, msgData.pduTxData);
+		break;
+
 	case SID_TESTER_PRESENT:
 		DspUdsTesterPresent(msgData.pduRxData, msgData.pduTxData);
 		break;
@@ -131,7 +135,6 @@ static void selectServiceFunction(uint8 sid)
 	case SID_READ_DATA_BY_PERIODIC_IDENTIFIER:
 	case SID_DYNAMICALLY_DEFINE_DATA_IDENTIFIER:
 	case SID_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER:
-	case SID_ROUTINE_CONTROL:
 	default:
 		/* Non implemented service */
 		createAndSendNcr(DCM_E_SERVICENOTSUPPORTED);

@@ -91,8 +91,8 @@
 
 void EcuM_AL_DriverInitZero(void)
 {
-	Det_Init();
-    Det_Start();
+	Det_Init();/** @req EcuM2783 */
+    Det_Start();/** @req EcuM2634 */
 }
 
 EcuM_ConfigType* EcuM_DeterminePbConfiguration(void)

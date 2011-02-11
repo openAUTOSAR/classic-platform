@@ -145,7 +145,7 @@ void Irq_Init( void ) {
 
 void Irq_EOI( void ) {
 #if defined(CFG_MPC5516)
-	struct INTC_tag *intc = &INTC;
+	volatile struct INTC_tag *intc = &INTC;
 	intc->EOIR_PRC0.R = 0;
 #elif defined(CFG_MPC5554)||defined(CFG_MPC5567)
 	volatile struct INTC_tag *intc = &INTC;
@@ -175,7 +175,7 @@ void *Irq_Entry( void *stack_p )
 	else
 	{
 #if defined(CFG_MPC5516)
-		struct INTC_tag *intc = &INTC;
+		volatile struct INTC_tag *intc = &INTC;
 		vector = (intc->IACKR_PRC0.B.INTVEC_PRC0);
 #elif defined(CFG_MPC5554)||defined(CFG_MPC5567)
 		volatile struct INTC_tag *intc = &INTC;

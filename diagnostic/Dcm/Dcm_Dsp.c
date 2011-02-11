@@ -1066,6 +1066,169 @@ void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 }
 
 
+static boolean lookupRoutine(uint16 routineId, const Dcm_DspRoutineType **routinePtr)
+{
+	const Dcm_DspRoutineType *dspRoutine = DCM_Config.Dsp->DspRoutine;
+	boolean routineFound = FALSE;
+
+	while ((dspRoutine->DspRoutineIdentifier != routineId) &&  (!dspRoutine->Arc_EOL)) {
+		dspRoutine++;
+	}
+
+	if (!dspRoutine->Arc_EOL) {
+		routineFound = TRUE;
+		*routinePtr = dspRoutine;
+	}
+
+	return routineFound;
+}
+
+
+static Dcm_NegativeResponseCodeType startRoutine(const Dcm_DspRoutineType *routinePtr, const PduInfoType *pduRxData, PduInfoType *pduTxData)
+{
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+	Std_ReturnType routineResult;
+
+	// startRoutine
+	if ((routinePtr->DspStartRoutineFnc != NULL) && (routinePtr->DspRoutineInfoRef->DspStartRoutine != NULL)) {
+		if (((routinePtr->DspRoutineInfoRef->DspStartRoutine->DspStartRoutineCtrlOptRecSize + 4) == pduRxData->SduLength)
+			&& ((routinePtr->DspRoutineInfoRef->DspStartRoutine->DspStartRoutineStsOptRecSize + 4) <= pduTxData->SduLength)) {
+			pduTxData->SduLength = routinePtr->DspRoutineInfoRef->DspStartRoutine->DspStartRoutineStsOptRecSize + 4;
+			routineResult = routinePtr->DspStartRoutineFnc(&pduRxData->SduDataPtr[4], &pduTxData->SduDataPtr[4], &responseCode);	/** @req DCM400 */ /** @req DCM401 */
+			if (routineResult != E_OK) {
+				responseCode = DCM_E_CONDITIONSNOTCORRECT;
+			}
+		}
+		else {
+			responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+		}
+	}
+	else {
+		responseCode = DCM_E_CONDITIONSNOTCORRECT;
+	}
+
+	return responseCode;
+}
+
+
+static Dcm_NegativeResponseCodeType stopRoutine(const Dcm_DspRoutineType *routinePtr, const PduInfoType *pduRxData, PduInfoType *pduTxData)
+{
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+	Std_ReturnType routineResult;
+
+	// stopRoutine
+	if ((routinePtr->DspStopRoutineFnc != NULL) && (routinePtr->DspRoutineInfoRef->DspRoutineStop != NULL)) {
+		if (((routinePtr->DspRoutineInfoRef->DspRoutineStop->DspStopRoutineCtrlOptRecSize + 4) == pduRxData->SduLength)
+			&& ((routinePtr->DspRoutineInfoRef->DspRoutineStop->DspStopRoutineStsOptRecSize + 4) <= pduTxData->SduLength)) {
+			pduTxData->SduLength = routinePtr->DspRoutineInfoRef->DspRoutineStop->DspStopRoutineStsOptRecSize + 4;
+			routineResult = routinePtr->DspStopRoutineFnc(&pduRxData->SduDataPtr[4], &pduTxData->SduDataPtr[4], &responseCode);	/** @req DCM402 */ /** @req DCM403 */
+			if (routineResult != E_OK) {
+				responseCode = DCM_E_CONDITIONSNOTCORRECT;
+			}
+		}
+		else {
+			responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+		}
+	}
+	else {
+		responseCode = DCM_E_CONDITIONSNOTCORRECT;
+	}
+
+	return responseCode;
+}
+
+
+static Dcm_NegativeResponseCodeType requestRoutineResults(const Dcm_DspRoutineType *routinePtr, PduInfoType *pduTxData)
+{
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+	Std_ReturnType routineResult;
+
+	// requestRoutineResults
+	if ((routinePtr->DspRequestResultRoutineFnc != NULL) && (routinePtr->DspRoutineInfoRef->DspRoutineRequestRes != NULL)) {
+		if ((routinePtr->DspRoutineInfoRef->DspRoutineRequestRes->DspReqResRtnCtrlOptRecSize + 4) <= pduTxData->SduLength) {
+			pduTxData->SduLength = routinePtr->DspRoutineInfoRef->DspRoutineRequestRes->DspReqResRtnCtrlOptRecSize + 4;
+			routineResult = routinePtr->DspRequestResultRoutineFnc(&pduTxData->SduDataPtr[4], &responseCode);	/** @req DCM404 */ /** @req DCM405 */
+			if (routineResult != E_OK) {
+				responseCode = DCM_E_CONDITIONSNOTCORRECT;
+			}
+		}
+		else {
+			responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+		}
+	}
+	else {
+		responseCode = DCM_E_CONDITIONSNOTCORRECT;
+	}
+
+	return responseCode;
+}
+
+
+void DspUdsRoutineControl(const PduInfoType *pduRxData, PduInfoType *pduTxData)
+{
+	/** @req DCM257 */
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+	uint8 subFunctionNumber = 0;
+	uint16 routineId = 0;
+	const Dcm_DspRoutineType *routinePtr = NULL;
+
+	if (pduRxData->SduLength >= 4) {
+		subFunctionNumber = pduRxData->SduDataPtr[1];
+		if ((subFunctionNumber > 0) && (subFunctionNumber < 4)) {
+			routineId = (uint16)((uint16)pduRxData->SduDataPtr[2] << 8) + pduRxData->SduDataPtr[3];
+			if (lookupRoutine(routineId, &routinePtr)) {
+				if (DspCheckSessionLevel(routinePtr->DspRoutineInfoRef->DspRoutineAuthorization.DspRoutineSessionRef)) {
+					if (DspCheckSecurityLevel(routinePtr->DspRoutineInfoRef->DspRoutineAuthorization.DspRoutineSecurityLevelRef)) {
+						switch (subFunctionNumber) {
+						case 0x01:	// startRoutine
+							responseCode = startRoutine(routinePtr, pduRxData, pduTxData);
+							break;
+
+						case 0x02:	// stopRoutine
+							responseCode = stopRoutine(routinePtr, pduRxData, pduTxData);
+							break;
+
+						case 0x03:	// requestRoutineResults
+							responseCode =  requestRoutineResults(routinePtr, pduTxData);
+							break;
+
+						default:	// This shall never happen
+							responseCode = DCM_E_SUBFUNCTIONNOTSUPPORTED;
+							break;
+						}
+					}
+					else {	// Not allowed in current security level
+						responseCode = DCM_E_SECUTITYACCESSDENIED;
+					}
+				}
+				else {	// Not allowed in current session
+					responseCode = DCM_E_SERVICENOTSUPPORTEDINACTIVESESSION;
+				}
+			}
+			else {	// Unknown routine identifier
+				responseCode = DCM_E_REQUESTOUTOFRANGE;
+			}
+		}
+		else {	// Sub function not supported
+			responseCode = DCM_E_SUBFUNCTIONNOTSUPPORTED;
+		}
+	}
+	else {
+		// Wrong length
+		responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+	}
+
+	if (responseCode == DCM_E_POSITIVERESPONSE) {
+		// Add header to the positive response message
+		pduTxData->SduDataPtr[1] = subFunctionNumber;
+		pduTxData->SduDataPtr[2] = (routineId >> 8) & 0xFFu;
+		pduTxData->SduDataPtr[3] = routineId & 0xFFu;
+	}
+
+	DsdDspProcessingDone(responseCode);
+}
+
+
 void DspUdsTesterPresent(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	/** @req DCM251 */

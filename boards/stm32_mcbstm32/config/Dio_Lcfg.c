@@ -17,14 +17,14 @@
 
 const Dio_ChannelType DioChannelConfigData[] =
 {
-	LED_CHANNEL1,
-	LED_CHANNEL2,
+		DIO_CHANNEL_NAME_LED_CHANNEL1,
+		DIO_CHANNEL_NAME_LED_CHANNEL2,
 	DIO_END_OF_LIST,
 };
 
 const Dio_PortType DioPortConfigData[] =
 {
-	LED_PORT,
+		DIO_PORT_NAME_LED_PORT,
 	DIO_END_OF_LIST
 };
 

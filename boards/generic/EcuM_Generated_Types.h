@@ -79,7 +79,7 @@
 typedef struct
 {
 	EcuM_StateType EcuMDefaultShutdownTarget;
-	uint8 EcuMDefaultShutdownMode;
+	uint8 EcuMDefaultSleepMode;
 	AppModeType EcuMDefaultAppMode;
 	uint32 EcuMRunMinimumDuration;
 	uint32 EcuMNvramReadAllTimeout;
