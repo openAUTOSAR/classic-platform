@@ -54,6 +54,12 @@
 #if defined(USE_GPT)
 #include "Gpt.h"
 #endif
+#if defined(USE_WDG)
+#include "Wdg.h"
+#endif
+#if defined(USE_WDGM)
+#include "WdgM.h"
+#endif
 #if defined(USE_COMM)
 #include "ComM.h"
 #endif
@@ -117,6 +123,12 @@ typedef struct
 #endif
 #if defined(USE_ADC)
     const Adc_ConfigType* AdcConfig;
+#endif
+#if defined(USE_WDG)
+    const Wdg_ConfigType* WdgConfig;
+#endif
+#if defined(USE_WDGM)
+    const WdgM_ConfigType* WdgMConfig;
 #endif
 #if defined(USE_GPT)
     const Gpt_ConfigType* GptConfig;

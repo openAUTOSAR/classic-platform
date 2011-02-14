@@ -65,8 +65,14 @@ EcuM_ConfigType EcuMConfig =
 #if defined(USE_PWM)
         .PwmConfig = &PwmConfig,
 #endif
+#if defined(USE_WDG)
+    .WdgConfig = &WdgConfig,
+#endif
+#if defined(USE_WDGM)
+    .WdgMConfig = &WdgMConfig,
+#endif
 #if defined(USE_GPT)
-        .GptConfig = GptConfigData,
+    .GptConfig = GptConfigData,
 #endif
 #if defined(USE_FLS)
 	.FlashConfig = FlsConfigSet,

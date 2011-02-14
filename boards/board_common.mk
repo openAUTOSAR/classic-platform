@@ -118,10 +118,19 @@ vpath-y += $(ROOTDIR)/peripherals
 
 #Wdg
 obj-$(USE_WDG) += Wdg.o
+obj-$(USE_WDG) += Wdg_Lcfg.o
+
+#WdgIf
+obj-$(USE_WDG) += WdgIf.o
+obj-$(USE_WDG) += WdgIf_Cfg.o
+inc-y += $(ROOTDIR)/system/WdgIf
+vpath-y += $(ROOTDIR)/system/WdgIf
 
 #WdgM
 obj-$(USE_WDGM) += WdgM.o
-obj-$(USE_WDGM) += WdgM_Cfg.o
+obj-$(USE_WDGM) += WdgM_PBcfg.o
+inc-y += $(ROOTDIR)/system/WdgM
+vpath-y += $(ROOTDIR)/system/WdgM
 
 #Pwm
 obj-$(USE_PWM) += Pwm.o
