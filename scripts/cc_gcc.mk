@@ -62,6 +62,9 @@ space = $(empty) $(empty)
 # lib/gcc/<machine>/<version>/<multilib>
 # Libs related to the library (libc.a,libm.a,etc) are under:
 # <machine>/lib/<multilib>
+# 
+# Can't remember why haven't I just used gcc to link instead of ld? (it should 
+# figure out the things below by itself)
 
 # It seems some versions of make want "\=" and some "="
 # "=" - msys cpmake on windows 7 
@@ -95,6 +98,10 @@ TE = elf
 LDMAPFILE = -M > $(subst .$(TE),.map, $@)
 
 libitem-y += $(libitem-yy)
+
+LD_START_GRP = --start-group
+LD_END_GRP = --end-group
+
 #LDFLAGS += --gc-section
 
 # ---------------------------------------------------------------------------

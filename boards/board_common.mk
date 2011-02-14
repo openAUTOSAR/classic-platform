@@ -1,6 +1,7 @@
 
 obj-$(CFG_PPC) += crt0.o
 obj-$(CFG_HC1X) += crt0.o
+
 vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
 vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32F10x_StdPeriph_Driver/src
 vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32_ETH_Driver/src
@@ -236,6 +237,7 @@ SELECT_CLIB?=CLIB_NEWLIB
 
 ifeq ($(SELECT_CLIB),CLIB_CW)
   # This is not good, but don't know what to do right now....
+  obj-y += msl_port.o
 else
   # Newlib
   obj-y += newlib_port.o

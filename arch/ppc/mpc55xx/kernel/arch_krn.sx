@@ -400,7 +400,11 @@ exception_IVOR10:
 handleException:
 	b  handleException		
 	
+#if defined(__GNUC__)	
 .section ".exception_tbl","ax"
+#elif defined(__CWCC__)
+.section .exception_tbl,4,"rw"
+#endif
 .balign 0x1000
 .global exception_tbl
 

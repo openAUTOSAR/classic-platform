@@ -195,7 +195,7 @@ endif
 inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
 
 # Preprocess linker files..
-%.ldp: %.ldf
+%.lcf: %.ldf
 	@echo "  >> CPP $<"
 	$(Q)$(CPP) -E -P $(CPP_ASM_FLAGS) -o $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
@@ -228,18 +228,20 @@ ifeq ($(CROSS_COMPILE),)
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	
 else
 ifeq ($(COMPILER),cw)	
-	$(Q)$(LD) $(LDFLAGS) $(LD_FILE) $(subst .ldp,.ldf,$(ldcmdfile-y)) $(libpath-y) $(LD_START_GRP) $(obj-y) $(lib-y) $(libitem-y) $(LD_END_GRP) -map apa.map
+	$(Q)$(LD) $(LDFLAGS) $(LD_FILE) $(ldcmdfile-y) -o $@ $(libpath-y) $(LD_START_GRP) $(obj-y) $(lib-y) $(libitem-y) $(LD_END_GRP)
 else
 	$(Q)$(LD) $(LDFLAGS) $(LD_FILE) $(ldcmdfile-y) -o $@ $(libpath-y) $(LD_START_GRP) $(obj-y) $(lib-y) $(libitem-y) $(LD_END_GRP) $(LDMAPFILE)
 endif
 ifdef CFG_MC912DG128A
 	@$(CROSS_COMPILE)objdump -h $@ | gawk -f $(ROOTDIR)/scripts/hc1x_memory.awk
-else
+else 
+ifeq ($(COMPILER),gcc)	
 	@echo "Image size: (decimal)"
 	@gawk --non-decimal-data 	'/^\.text/ { print "  text:"  $$3+0 " bytes"; rom+=$$3 };\
 	 							/^\.data/ { print "  data:"  $$3+0 " bytes"; rom+=$$3; ram+=$$3}; \
 	 							/^\.bss/ { print "  bss :"  $$3+0 " bytes"; ram+=$$3}; \
 	 							END { print "  ROM: ~" rom " bytes"; print "  RAM: ~" ram " bytes"}' $(subst .elf,.map,$@)
+endif	 							
 ifeq ($(BUILD_LOAD_MODULE),y)
 	@$(CROSS_COMPILE)objcopy -O srec $@ $@.raw.s19
 	srec_cat $@.raw.s19 --crop 0x8008000 0x803fffc --fill 0x00 0x8008000 0x803fffc --l-e-crc32 0x803fffc -o $@.lm.s19

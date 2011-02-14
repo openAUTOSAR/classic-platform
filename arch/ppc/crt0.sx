@@ -1,6 +1,12 @@
 #include "asm_ppc.h"
 
+#if defined(__GNUC__)
 .section ".rcw","ax"
+.balign  4
+#elif defined(__CWCC__)
+.section .rcw,4,"r"
+#endif
+
 .global _resetconfiguration
 _resetconfiguration:
 	.byte  0x00   #no watchdog

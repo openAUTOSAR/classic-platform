@@ -25,7 +25,7 @@ CW_LIB=$(CW_COMPILE)/PowerPC_EABI_Support/Runtime/Lib
 
 CC	= 	$(CW_BIN)/mwcceppc.exe
 #cflags-$(CFG_OPT_RELEASE) += -O3
-#cflags-$(CFG_OPT_DEBUG) += -g -O0
+#cflags-$(CFG_OPT_DEBUG) += make  -O0
 
 # Remove sections if needed.. may be problems with other compilers here.
 #cflags-y += -ffunction-sections
@@ -114,7 +114,7 @@ libpath-y += $(cw_lib_path)
 # nothing really matches.......
 lib-$(CFG_VLE) += -lRuntime.PPCEABI.VS.a   # is this VLE?
 lib-$(CFG_VLE) += -lMSL_C.PPCEABI.bare.SZ.VS.a
-ifneq ($(VLE),y)
+ifneq ($(CFG_VLE),y)
 lib-y += -lRuntime.PPCEABI.S.a 
 lib-y += -lMSL_C.PPCEABI.bare.SZ.S.a
 endif
@@ -135,14 +135,18 @@ C_TO_ASM = -P
 
 LD = $(CW_BIN)/mwldeppc.exe
 
-LD_FILE = -lcf
+LDSCRIPT = -lcf
 
-ldflags-y += -romaddr 0x0 -rambuffer 0x0
-ldflags-y += -nodefaults
+#ldflags-y += -romaddr 0x0 -rambuffer 0x0
+#ldflags-y += -nodefaults
+ldflags-y += -gdwarf-2
 
+LDFLAGS += $(ldflags-y) 
 LDOUT 		= -o $@
 TE = elf
 LDMAPFILE = -M > $(subst .$(TE),.map, $@)
+
+LD_FILE = -lcf
 
 libitem-y += $(libitem-yy)
 #LDFLAGS += --gc-section

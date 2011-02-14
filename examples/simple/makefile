@@ -20,7 +20,7 @@ include $(ROOTDIR)/boards/board_common.mk
 #libitem-y += 
 
 #linkfile
-ldcmdfile-y = linkscript_$(COMPILER).ldp
+ldcmdfile-y = linkscript_$(COMPILER).lcf
 vpath %.ldf $(ROOTDIR)/$(ARCH_PATH-y)/scripts
 #ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldp
 
