@@ -14,8 +14,8 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
+// 904 PC-Lint MISRA 14.7: OK. Allow VALIDATE_ENTITY_ID, VALIDATE and VALIDATE_NO_RETURNVAL to return value.
+//lint -emacro(904,VALIDATE_ENTITY_ID,VALIDATE,VALIDATE_NO_RETURNVAL)
 
 #include "WdgM.h"
 #include "WdgIf.h"
