@@ -164,7 +164,8 @@ libitem-y += $(libitem-yy)
 
 AS	= 	$(CW_BIN)/mwasmeppc.exe
 
-asflags-y = -proc e500 -gdwarf-2
+asflags-y += -gnu_mode
+asflags-y += -proc e500 -gdwarf-2
 asflags-$(CFG_VLE) += -vle
 ASFLAGS += $(asflags-y)
 ASOUT = -o $@
