@@ -137,14 +137,19 @@ LD = $(CW_BIN)/mwldeppc.exe
 
 LDSCRIPT = -lcf
 
-#ldflags-y += -romaddr 0x0 -rambuffer 0x0
+ldflags-y += -romaddr 0x0 
+ldflags-y += -rambuffer 0x0
 #ldflags-y += -nodefaults
 ldflags-y += -gdwarf-2
+ldflags-y += -m _start
+TE = elf
+ldflags-y += -map $(subst .$(TE),.map, $@)
 
 LDFLAGS += $(ldflags-y) 
 LDOUT 		= -o $@
-TE = elf
-LDMAPFILE = -M > $(subst .$(TE),.map, $@)
+
+#LDMAPFILE = -M > $(subst .$(TE),.map, $@)
+
 
 LD_FILE = -lcf
 
