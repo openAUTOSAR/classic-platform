@@ -81,7 +81,8 @@ void EcuM_Init( void )
 
 	// Start this baby up
 	AppModeType appMode;
-	StartOS(EcuM_GetApplicationMode(&appMode)); /** @req EcuM2141 */
+	EcuM_GetApplicationMode(&appMode);
+	StartOS(appMode); /** @req EcuM2141 */
 }
 
 void EcuM_StartupTwo(void)
