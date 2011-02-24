@@ -105,16 +105,24 @@ static int Channel_Group_Config_Contains(const Dio_ChannelGroupType* _channelGro
 
 Dio_LevelType Dio_ReadChannel(Dio_ChannelType channelId)
 {
-  Dio_LevelType level;
+  Dio_LevelType level = STD_LOW;
   VALIDATE_CHANNEL(channelId, DIO_READCHANNEL_ID);
-  // Read level from SIU.
-  if (SIU.GPDI [channelId].R)
-  {
-    level = STD_HIGH;
-  } else
-  {
-    level = STD_LOW;
+  if (SIU.PCR[channelId].B.IBE) {
+    // Read level from SIU.
+    if (SIU.GPDI [channelId].R) {
+      level = STD_HIGH;
+    } else {
+      level = STD_LOW;
+    }
+  } else if(SIU.PCR[channelId].B.OBE) {
+    // Read level from SIU.
+    if (SIU.GPDO [channelId].R) {
+      level = STD_HIGH;
+    } else {
+      level = STD_LOW;
+    }
   }
+
   cleanup: return (level);
 }
 
@@ -122,7 +130,9 @@ void Dio_WriteChannel(Dio_ChannelType channelId, Dio_LevelType level)
 {
   VALIDATE_CHANNEL(channelId, DIO_WRITECHANNEL_ID);
   // Write level to SIU.
-  SIU.GPDO [channelId].R = level;
+  if(SIU.PCR[channelId].B.OBE) {
+    SIU.GPDO [channelId].R = level;
+  }
   cleanup: return;
 }
 
