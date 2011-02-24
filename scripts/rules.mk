@@ -14,6 +14,7 @@ goal=$@
 include $(ROOTDIR)/boards/$(BOARDDIR)/build_config.mk
 -include ../build_config.mk
 
+
 define MOD_AVAIL_template
 	MOD_$(1)=y
 endef
@@ -63,6 +64,8 @@ ifneq ($(ARCH),)
 include $(ROOTDIR)/$(ARCH_PATH-y)/scripts/gcc.mk
 endif
 include $(ROOTDIR)/scripts/cc_$(COMPILER).mk
+
+# Include pclint or splint settings
 ifneq ($(PCLINT),)
 include $(ROOTDIR)/scripts/cc_pclint.mk
 endif
@@ -75,6 +78,8 @@ endif
 # Get object files
 include ../makefile
 
+# Perform build system version check
+include $(ROOTDIR)/scripts/version_check.mk
 
 ##### For backwards compatability with older project makefiles
 # Remove dependency on libkernel
