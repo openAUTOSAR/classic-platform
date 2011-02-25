@@ -335,7 +335,11 @@ Std_ReturnType CanIf_GetControllerMode(uint8 Controller,
  *
  * @returns Ptr a TxPdu
  */
+#if ( CANIF_ARC_RUNTIME_PDU_CONFIGURATION == STD_ON )
+CanIf_TxPduConfigType * CanIf_FindTxPduEntry(PduIdType id)
+#else
 static const CanIf_TxPduConfigType * CanIf_FindTxPduEntry(PduIdType id)
+#endif
 {
 	if (id >= CanIf_ConfigPtr->InitConfig->CanIfNumberOfCanTXPduIds) {
 		return NULL;
@@ -343,6 +347,75 @@ static const CanIf_TxPduConfigType * CanIf_FindTxPduEntry(PduIdType id)
 		return &CanIf_ConfigPtr->InitConfig->CanIfTxPduConfigPtr[id];
 	}
   }
+
+#if ( CANIF_ARC_RUNTIME_PDU_CONFIGURATION == STD_ON )
+CanIf_RxPduConfigType * CanIf_FindRxPduEntry(PduIdType id)
+#else
+static const CanIf_RxPduConfigType * CanIf_FindRxPduEntry(PduIdType id)
+#endif
+{
+	if (id >= CanIf_ConfigPtr->InitConfig->CanIfNumberOfCanRxPduIds) {
+		return NULL;
+	} else {
+		return &CanIf_ConfigPtr->InitConfig->CanIfRxPduConfigPtr[id];
+	}
+}
+
+#if ( CANIF_ARC_RUNTIME_PDU_CONFIGURATION == STD_ON )
+const CanIf_HrhConfigType* CanIf_Arc_GetReceiveHandler(CanIf_Arc_ChannelIdType Channel) {
+  const CanIf_InitHohConfigType *hohConfig;
+  const CanIf_HrhConfigType *hrhConfig;
+
+  // foreach(hoh){ foreach(hrh in hoh) {} }
+  hohConfig = CanIf_ConfigPtr->InitConfig->CanIfHohConfigPtr;
+  hohConfig--;
+  do
+  {
+	hohConfig++;
+
+	hrhConfig = hohConfig->CanIfHrhConfig;
+    hrhConfig--;
+    do
+    {
+      hrhConfig++;
+      if (hrhConfig->CanIfCanControllerHrhIdRef == Channel)
+        return hrhConfig;
+	} while(!hrhConfig->CanIf_Arc_EOL);
+
+  } while(!hohConfig->CanIf_Arc_EOL);
+
+  DET_REPORTERROR(MODULE_ID_CANIF, 0, 0xFF, CANIF_E_PARAM_HRH);
+
+  return NULL;
+}
+
+const CanIf_HthConfigType* CanIf_Arc_GetTransmitHandler(CanIf_Arc_ChannelIdType Channel) {
+  const CanIf_InitHohConfigType *hohConfig;
+  const CanIf_HthConfigType *hthConfig;
+
+  // foreach(hoh){ foreach(hrh in hoh) {} }
+  hohConfig = CanIf_ConfigPtr->InitConfig->CanIfHohConfigPtr;
+  hohConfig--;
+  do
+  {
+	hohConfig++;
+
+	hthConfig = hohConfig->CanIfHthConfig;
+	hthConfig--;
+    do
+    {
+    	hthConfig++;
+      if (hthConfig->CanIfCanControllerIdRef == Channel)
+        return hthConfig;
+	} while(!hthConfig->CanIf_Arc_EOL);
+
+  } while(!hohConfig->CanIf_Arc_EOL);
+
+  DET_REPORTERROR(MODULE_ID_CANIF, 0, 0xFF, CANIF_E_PARAM_HTH);
+
+  return NULL;
+}
+#endif
 
 //-------------------------------------------------------------------
 
@@ -569,11 +642,10 @@ Std_ReturnType CanIf_GetPduMode(uint8 Controller,
   return E_OK;
 }
 
-#if ( CANIF_SETDYNAMICTXID_API == STD_ON )
+#if ( CANIF_ARC_RUNTIME_PDU_CONFIGURATION == STD_ON )
 void CanIf_SetDynamicTxId(PduIdType CanTxPduId, Can_IdType CanId)
 {
-  const CanIf_TxPduConfigType *txEntry;
-  VALIDATE(FALSE, CANIF_SETDYNAMICTX_ID, CANIF_E_NOK_NOSUPPORT);
+  CanIf_TxPduConfigType *txEntry;
   VALIDATE_NO_RV(CanIf_Global.initRun, CANIF_SETDYNAMICTX_ID, CANIF_E_UNINIT );
 
   // Get the controller from L-PDU handle
@@ -762,8 +834,13 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
       {
         case CANIF_USER_TYPE_CAN_SPECIAL:
         {
-            ((CanIf_FuncTypeCanSpecial) (entry->CanIfUserRxIndication))(entry->CanIfCanRxPduId,
-                                          CanSduPtr, CanDlc, CanId);
+          ( (CanIf_FuncTypeCanSpecial)(entry->CanIfUserRxIndication) )(
+            entry->CanIfCanRxPduHrhRef->CanIfCanControllerHrhIdRef,
+            entry->CanIfCanRxPduId,
+            CanSduPtr,
+            CanDlc,
+            CanId);
+
             return;
         }
         break;
@@ -869,3 +946,8 @@ void CanIf_Arc_Error(uint8 Controller, Can_Arc_ErrorType Error)
     CanIf_ConfigPtr->DispatchConfig->CanIfErrorNotificaton(Controller, Error);
   }
 }
+uint8 CanIf_Arc_GetChannelDefaultConfIndex(CanIf_Arc_ChannelIdType Channel)
+{
+	return CanIf_Config.Arc_ChannelDefaultConfIndex[Channel];
+};
+
