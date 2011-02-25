@@ -58,6 +58,9 @@ void EcuM_Init( void )
 	// Determine the reset/wakeup reason
 	// TODO Mcu_ResetType type = Mcu_GetResetReason();
 
+	// Moved this here because EcuM_SelectShutdownTarget needs us to be initilized.
+	internal_data.initiated = TRUE;
+
 	// Set default shutdown target
 	status = EcuM_SelectShutdownTarget(internal_data.config->EcuMDefaultShutdownTarget,internal_data.config->EcuMDefaultSleepMode);/** @req EcuM2181 */
 	if(status!=E_OK){
@@ -76,8 +79,6 @@ void EcuM_Init( void )
 #endif
 	internal_data.run_requests = 0;
 	internal_data.postrun_requests = 0;
-
-	internal_data.initiated = TRUE;
 
 	// Start this baby up
 	AppModeType appMode;
