@@ -47,13 +47,19 @@ struct
 	WdgM_SupervisionCounterType     WdgM_ExpiredSupervisionCycles;
 	WdgM_TriggerCounterType         WdgMTriggerCounter;
 	WdgM_ModeType                   WdgMActiveMode;
+	boolean							WdgMModeConfigured;
 }wdgMInternalState;
 
 
 /* Helper macros */
 #define GET_ENTITY_STATE_PTR(_SEId)       (&(wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_AliveEntityStatePtr)[_SEId])
-#define GET_SUPERVISED_ENTITY_PTR(_SEId)  ()
-//WdgM_Mode[wdgMInternalState.WdgMActiveMode]
+
+/* Function prototypes. */
+static boolean WdgM_IsAlive(void);
+static void wdgm_Check_AliveSupervision (void);
+static void wdgm_Trigger (void);
+
+
 Std_ReturnType WdgM_UpdateAliveCounter (WdgM_SupervisedEntityIdType SEid)
 {
   Std_ReturnType ret = E_NOT_OK;
@@ -158,7 +164,8 @@ Std_ReturnType WdgM_SetMode(WdgM_ModeType Mode)
 
 #if WDGM_OFF_MODE_ENABLED == STD_OFF
   const WdgM_ModeConfigType * modeConfigPtr = &wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[Mode];
-  /** @req WDGM031 **/
+  const WdgM_ModeConfigType * oldModeConfigPtr = &wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode];
+    /** @req WDGM031 **/
   VALIDATE((modeConfigPtr->WdgM_Trigger->WdgM_WatchdogMode != WDGIF_OFF_MODE),WDGM_SETMODE_ID, WDGM_E_DISABLE_NOT_ALLOWED);
 #endif
 
@@ -166,10 +173,41 @@ Std_ReturnType WdgM_SetMode(WdgM_ModeType Mode)
   uint8 deviceIndex;
   uint8 i;
 
-
   /** @req WDGM145 **/
   if (wdgMInternalState.WdgM_GlobalSupervisionStatus == WDGM_ALIVE_OK)
   {
+	  /* Compare activation type between new and old mode. */
+	  if (oldModeConfigPtr->WdgM_Activation.WdgM_IsGPTActivated != modeConfigPtr->WdgM_Activation.WdgM_IsGPTActivated)
+	  {
+		  /** @req WDGM188 **/
+		  if (modeConfigPtr->WdgM_Activation.WdgM_IsGPTActivated)
+		  {
+			  const WdgM_ActivationGPTType * gptConfigPtr = &modeConfigPtr->WdgM_Activation.WdgM_ActivationGPT;
+			  /* New mode is activated from GPT callback. Start GPT. */
+			  Gpt_StartTimer(gptConfigPtr->WdgM_GptChannelRef, gptConfigPtr->WdgM_GptCycle);
+			  Gpt_EnableNotification(gptConfigPtr->WdgM_GptChannelRef);
+		  }
+		  /** @req WDGM187 **/
+		  else
+		  {
+			  /* Only if a mode already have been configured. */
+			  if (wdgMInternalState.WdgMModeConfigured)
+			  {
+				  /* Old mode was GPT driven, but not new mode. Disable GPT. */
+				  const WdgM_ActivationGPTType * oldGptConfigPtr = &oldModeConfigPtr->WdgM_Activation.WdgM_ActivationGPT;
+				  Gpt_DisableNotification(oldGptConfigPtr->WdgM_GptChannelRef);
+				  Gpt_StopTimer(oldGptConfigPtr->WdgM_GptChannelRef);
+			  }
+			  else
+			  {
+				  /* Do nothing since no mode have been configured. */
+			  }
+		  }
+	  }
+	  else
+	  {
+		  /* No activation change needed. */
+	  }
 	  /* Write new mode to internal state. */
 	  wdgMInternalState.WdgMActiveMode = Mode;
 
@@ -186,6 +224,7 @@ Std_ReturnType WdgM_SetMode(WdgM_ModeType Mode)
 	  }
 	  ret = E_OK;
   }
+  wdgMInternalState.WdgMModeConfigured = TRUE;
   return (ret);
 }
 
@@ -238,13 +277,14 @@ void WdgM_Init(const WdgM_ConfigType *ConfigPtr)
     entityStatePtr->NbrOfFailedRefCycles = 0;
   }
 
-  /* Start initial mode. */
-  WdgM_SetMode(initialMode);
+  /* Start initial mode. Raise error if initial mode was not entered properly. */
+  VALIDATE_NO_RETURNVAL((WdgM_SetMode(initialMode) != E_OK),WDGM_INIT_ID, WDGM_E_PARAM_CONFIG);
 
   wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_OK;
   wdgMInternalState.WdgMActiveMode = initialMode;
   wdgMInternalState.WdgM_ExpiredSupervisionCycles = 0;
   wdgMInternalState.WdgMTriggerCounter = 0;
+  wdgMInternalState.WdgMModeConfigured = FALSE;
 }
 
 /* Non standard API for test purpose.  */
@@ -254,16 +294,8 @@ void WdgM_DeInit( void)
 	wdgMInternalState.WdgM_ConfigPtr = 0;
 }
 
-
-/** @req WDGM060 **/
-/** @req WDGM061 **/
-/** @req WDGM063 **/
-/** @req WDGM099 **/
-/** @req WDGM159 **/
-void WdgM_MainFunction_AliveSupervision (void)
+static void wdgm_Check_AliveSupervision (void)
 {
-  VALIDATE_NO_RETURNVAL((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_MAINFUNCTION_ALIVESUPERVISION_ID, WDGM_E_NO_INIT);
-
   WdgM_SupervisedEntityIdType SEid;
   WdgM_AliveEntityStateType *entityStatePtr;
   const WdgM_AliveSupervisionType *entityPtr;
@@ -290,7 +322,7 @@ void WdgM_MainFunction_AliveSupervision (void)
         nSC = entityStatePtr->SupervisionCycle;
         nAl = entityStatePtr->AliveCounter;
         f = entityPtr->WdgM_SupervisionReferenceCycle - entityPtr->WdgM_ExpectedAliveIndications;
-        aliveCalc = nAl - nSC + f;
+        aliveCalc = nAl + f - nSC;
 
         /** @req WDGM091 **/
         if ((aliveCalc <= entityPtr->WdgM_MaxMargin) &&
@@ -359,7 +391,7 @@ void WdgM_MainFunction_AliveSupervision (void)
 	  {
 		  wdgMInternalState.WdgM_ExpiredSupervisionCycles = 1;
 		  if (wdgMInternalState.WdgM_ExpiredSupervisionCycles >
-				  wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode].WdgM_ExpiredSupervisionCycleTol)
+              wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode].WdgM_ExpiredSupervisionCycleTol)
 		  {
 			  wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_STOPPED;
 		  }
@@ -372,7 +404,7 @@ void WdgM_MainFunction_AliveSupervision (void)
 	  {
 		  wdgMInternalState.WdgM_ExpiredSupervisionCycles = 1;
 		  if (wdgMInternalState.WdgM_ExpiredSupervisionCycles >
-				  wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode].WdgM_ExpiredSupervisionCycleTol)
+		      wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode].WdgM_ExpiredSupervisionCycleTol)
 		  {
 			  wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_STOPPED;
 		  }
@@ -385,6 +417,10 @@ void WdgM_MainFunction_AliveSupervision (void)
 	  {
 		  wdgMInternalState.WdgM_ExpiredSupervisionCycles = 0;
 		  wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_OK;
+	  }
+	  else
+	  {
+		  /* No more exits from state. Do nothing. */
 	  }
 	  break;
   case WDGM_ALIVE_EXPIRED:
@@ -400,30 +436,47 @@ void WdgM_MainFunction_AliveSupervision (void)
   }
 }
 
-boolean WdgM_IsAlive(void)
+/** @req WDGM060 **/
+/** @req WDGM061 **/
+/** @req WDGM063 **/
+/** @req WDGM099 **/
+/** @req WDGM159 **/
+void WdgM_MainFunction_AliveSupervision (void)
 {
-  /** @req WDGM119 **/
-  /** @req WDGM120 **/
-  /** @req WDGM121 **/
-  /** @req WDGM122 **/
-  if (WDGM_ALIVE_STOPPED > wdgMInternalState.WdgM_GlobalSupervisionStatus)
-  {
-    return (TRUE);
-  }
-  else
-  {
-    return (FALSE);
-  }
+	VALIDATE_NO_RETURNVAL((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_MAINFUNCTION_ALIVESUPERVISION_ID, WDGM_E_NO_INIT);
+
+	const WdgM_ModeConfigType * modeConfigPtr = &wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode];
+
+	/** @req WDGM189 **/
+	if (!modeConfigPtr->WdgM_Activation.WdgM_IsGPTActivated)
+	{
+		wdgm_Check_AliveSupervision();
+	}
+}
+
+static boolean WdgM_IsAlive(void)
+{
+    boolean res;
+	/** @req WDGM119 **/
+	/** @req WDGM120 **/
+	/** @req WDGM121 **/
+	/** @req WDGM122 **/
+	if (WDGM_ALIVE_STOPPED > wdgMInternalState.WdgM_GlobalSupervisionStatus)
+	{
+		res = TRUE;
+	}
+	else
+	{
+		res = FALSE;
+	}
+	return res;
 }
 
 /** @req WDGM002 **/
 /** @req WDGM065 **/
-/** @req WDGM160 **/
-void WdgM_MainFunction_Trigger (void)
+static void wdgm_Trigger (void)
 {
   uint8 i;
-  /** @req WDGM068 **/
-  VALIDATE_NO_RETURNVAL((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_MAINFUNCTION_TRIGGER_ID, WDGM_E_NO_INIT);
 
   /* Update trigger counter. */
   wdgMInternalState.WdgMTriggerCounter++;
@@ -449,4 +502,30 @@ void WdgM_MainFunction_Trigger (void)
   }
 }
 
+/** @req WDGM160 **/
+void WdgM_MainFunction_Trigger (void)
+{
+	/** @req WDGM068 **/
+	VALIDATE_NO_RETURNVAL((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_MAINFUNCTION_TRIGGER_ID, WDGM_E_NO_INIT);
+	const WdgM_ModeConfigType * modeConfigPtr = &wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode];
+
+	/** @req WDGM189 **/
+	if (!modeConfigPtr->WdgM_Activation.WdgM_IsGPTActivated)
+	{
+		wdgm_Trigger();
+	}
+}
+
+void WdgM_Cbk_GptNotification (void)
+{
+	VALIDATE_NO_RETURNVAL((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_MAINFUNCTION_TRIGGER_ID, WDGM_E_NO_INIT);
+	const WdgM_ModeConfigType * modeConfigPtr = &wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode];
+
+	/** @req WDGM190 **/
+	if (modeConfigPtr->WdgM_Activation.WdgM_IsGPTActivated)
+	{
+		wdgm_Check_AliveSupervision();
+		wdgm_Trigger();
+	}
+}
 

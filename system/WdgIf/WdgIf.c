@@ -18,6 +18,9 @@
  *      Author: Fredrik
  */
 
+// 904 PC-Lint MISRA 14.7: OK. Allow VALIDATE_ENTITY_ID, VALIDATE and VALIDATE_NO_RETURNVAL to return value.
+//lint -emacro(904,VALIDATE,VALIDATE_NO_RETURNVAL)
+
 #include "WdgIf.h"
 #include "Det.h"
 

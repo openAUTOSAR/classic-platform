@@ -25,7 +25,7 @@ typedef enum
 {
 	WDGIF_FAST_MODE,
 	WDGIF_OFF_MODE,
-	WDGIF_SLOW_MODE,
+	WDGIF_SLOW_MODE
 }WdgIf_ModeType;
 
 typedef void (*Wdg_TriggerLocationPtrType)(void);
