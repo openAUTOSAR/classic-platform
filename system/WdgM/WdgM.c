@@ -58,6 +58,7 @@ struct
 static boolean WdgM_IsAlive(void);
 static void wdgm_Check_AliveSupervision (void);
 static void wdgm_Trigger (void);
+void WdgM_Cbk_GptNotification (void);
 
 
 Std_ReturnType WdgM_UpdateAliveCounter (WdgM_SupervisedEntityIdType SEid)
@@ -385,55 +386,55 @@ static void wdgm_Check_AliveSupervision (void)
   /* Handle the global status. */
   switch (wdgMInternalState.WdgM_GlobalSupervisionStatus)
   {
-  case WDGM_ALIVE_OK:
-  case WDGM_ALIVE_FAILED:
-	  if (WDGM_ALIVE_FAILED == maxLocal)
-	  {
-		  wdgMInternalState.WdgM_ExpiredSupervisionCycles = 1;
-		  if (wdgMInternalState.WdgM_ExpiredSupervisionCycles >
-              wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode].WdgM_ExpiredSupervisionCycleTol)
-		  {
-			  wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_STOPPED;
-		  }
-		  else
-		  {
-			  wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_FAILED;
-		  }
-	  }
-	  else if (WDGM_ALIVE_EXPIRED == maxLocal)
-	  {
-		  wdgMInternalState.WdgM_ExpiredSupervisionCycles = 1;
-		  if (wdgMInternalState.WdgM_ExpiredSupervisionCycles >
-		      wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode].WdgM_ExpiredSupervisionCycleTol)
-		  {
-			  wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_STOPPED;
-		  }
-		  else
-		  {
-			  wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_EXPIRED;
-		  }
-	  }
-	  else if (WDGM_ALIVE_OK == maxLocal)
-	  {
-		  wdgMInternalState.WdgM_ExpiredSupervisionCycles = 0;
-		  wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_OK;
-	  }
-	  else
-	  {
-		  /* No more exits from state. Do nothing. */
-	  }
-	  break;
-  case WDGM_ALIVE_EXPIRED:
+    case WDGM_ALIVE_OK:
+    case WDGM_ALIVE_FAILED:
+      if (WDGM_ALIVE_FAILED == maxLocal)
+        {
+          wdgMInternalState.WdgM_ExpiredSupervisionCycles = 1;
+          if (wdgMInternalState.WdgM_ExpiredSupervisionCycles >
+    wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode].WdgM_ExpiredSupervisionCycleTol)
+            {
+              wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_STOPPED;
+            }
+          else
+            {
+              wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_FAILED;
+            }
+        }
+      else if (WDGM_ALIVE_EXPIRED == maxLocal)
+        {
+          wdgMInternalState.WdgM_ExpiredSupervisionCycles = 1;
+          if (wdgMInternalState.WdgM_ExpiredSupervisionCycles >
+          wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode].WdgM_ExpiredSupervisionCycleTol)
+            {
+              wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_STOPPED;
+            }
+          else
+            {
+              wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_EXPIRED;
+            }
+        }
+      else if (WDGM_ALIVE_OK == maxLocal)
+        {
+          wdgMInternalState.WdgM_ExpiredSupervisionCycles = 0;
+          wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_OK;
+        }
+      else
+        {
+          /* No more exits from state. Do nothing. */
+        }
+      break;
+    case WDGM_ALIVE_EXPIRED:
       if (++wdgMInternalState.WdgM_ExpiredSupervisionCycles >
-	      wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode].WdgM_ExpiredSupervisionCycleTol)
-	  {
-		 wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_STOPPED;
-	  }
-	  break;
-  case WDGM_ALIVE_DEACTIVATED:
-  case WDGM_ALIVE_STOPPED:
-	  break;
-  }
+      wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode].WdgM_ExpiredSupervisionCycleTol)
+        {
+          wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_STOPPED;
+        }
+      break;
+    case WDGM_ALIVE_DEACTIVATED:
+    case WDGM_ALIVE_STOPPED:
+      break;
+    }
 }
 
 /** @req WDGM060 **/
