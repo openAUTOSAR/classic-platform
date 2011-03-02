@@ -27,30 +27,17 @@ CC	= 	$(CW_BIN)/mwcceppc.exe
 #cflags-$(CFG_OPT_RELEASE) += -O3
 #cflags-$(CFG_OPT_DEBUG) += make  -O0
 
-# Remove sections if needed.. may be problems with other compilers here.
-#cflags-y += -ffunction-sections
-
-#ifneq ($(filter -O2 -O3 -O1,$(cflags-y)),) 
-#	cflags-y += -fno-schedule-insns -fno-schedule-insns2
-#endif
-
 #cflags-y 		+= -c 
-#cflags-y 		+= -fno-common
-#cflags-y 		+= -std=gnu99
 cflags-y 		+= -dialect=c99
 cflags-y 		+= -gccext=on
 cflags-y 		+= -gdwarf-2
 cflags-y 		+= -gccinc
 
 # Generate dependencies
-#cflags-y 		+= -MMD
 cflags-y 		+= -gccdepends -MMD
 
 # Warnings
 cflags-y          += -W=most
-#cflags-y          += -Wall
-#cflags-y          += -Winline	# warn if inline failed
-#cflags-y          += -pedantic
 
 # Conformance
 cflags-y          += -abi=eabi
@@ -76,28 +63,13 @@ CCOUT 		= -o $@
 
 CPP	= 	$(CC) -E
 
-CPP_ASM_FLAGS += -ppopt noline
+CPP_ASM_FLAGS += -ppopt noline -dialect c
 
 comma = ,
 empty = 
 space = $(empty) $(empty)
 
-# Note!
-# Libs related to GCC(libgcc.a, libgcov.a) is located under 
-# lib/gcc/<machine>/<version>/<multilib>
-# Libs related to the library (libc.a,libm.a,etc) are under:
-# <machine>/lib/<multilib>
 
-# It seems some versions of make want "\=" and some "="
-# "=" - msys cpmake on windows 7 
-#gcc_lib_path := "$(subst /libgcc.a,,$(shell $(CC) $(CFLAGS) --print-libgcc-file-name))" 
-#gcc_lib_path := $(subst \libgcc.a,,$(gcc_lib_path)) 
-#lib_lib_path := "$(subst /libc.a,,$(shell $(CC) $(CFLAGS) --print-file-name=libc.a))"
-#lib_lib_path := $(subst \libc.a,,$(lib_lib_path))
-#text_chunk := $(subst \,/,$(shell touch i_m_here.c; $(CC) -v -c i_m_here.c &> i_m_here.txt;gawk -f $(TOPDIR)/scripts/gcc_getinclude.awk i_m_here.txt))
-#cc_inc_path := $(realpath $(text_chunk))
-#libpath-y += -L$(lib_lib_path)
-#libpath-y += -L$(gcc_lib_path)
 
 cw_lib_path += -L$(CW_COMPILE)/PowerPC_EABI_Support/Runtime/Lib
 cw_lib_path += -L$(CW_COMPILE)/PowerPC_EABI_Support/MSL/MSL_C/PPC_EABI/Lib
@@ -137,6 +109,7 @@ LD = $(CW_BIN)/mwldeppc.exe
 
 LDSCRIPT = -lcf
 
+# To make "rom" images (make LOAD() work)
 ldflags-y += -romaddr 0x0 
 ldflags-y += -rambuffer 0x0
 #ldflags-y += -nodefaults
@@ -148,13 +121,9 @@ ldflags-y += -map $(subst .$(TE),.map, $@)
 LDFLAGS += $(ldflags-y) 
 LDOUT 		= -o $@
 
-#LDMAPFILE = -M > $(subst .$(TE),.map, $@)
-
-
 LD_FILE = -lcf
 
 libitem-y += $(libitem-yy)
-#LDFLAGS += --gc-section
 
 # ---------------------------------------------------------------------------
 # Assembler
@@ -175,15 +144,15 @@ ASOUT = -o $@
 
 #DDUMP          = $(Q)$(COMPILER_ROOT)/$(cross_machine-y)-objcopy
 #DDUMP_FLAGS    = -O srec
-OBJCOPY 		= $(CROSS_COMPILE)objcopy
+#OBJCOPY 		= $(CROSS_COMPILE)objcopy
 
 # ---------------------------------------------------------------------------
 # Archiver
 #
 # AROUT 		- archiver flags
 
-AR	= 	$(CROSS_COMPILE)ar
-AROUT 	= $@
+#AR	= 	$(CROSS_COMPILE)ar
+#AROUT 	= $@
 
 
 

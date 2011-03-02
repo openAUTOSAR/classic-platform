@@ -91,11 +91,12 @@ libpath-y += -L$(gcc_lib_path)
 
 LD = $(CROSS_COMPILE)ld
 
+
 LD_FILE = -T
 
 LDOUT 		= -o $@
 TE = elf
-LDMAPFILE = -M > $(subst .$(TE),.map, $@)
+LDFLAGS += -Map $(subst .$(TE),.map, $@)
 
 libitem-y += $(libitem-yy)
 
