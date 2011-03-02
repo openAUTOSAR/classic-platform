@@ -19,14 +19,7 @@
 #include "arch_stack.h"
 
 
-#if 0
-#include "Os.h"
-#include "kernel.h"
-#include "pcb.h"
-//#include "app_i.h"f
-#include "sys.h"
-#include "arch_stack.h"
-#endif
+
 
 
 #if defined(__GNUC__)
@@ -80,6 +73,12 @@ void  oil_foo(void) {
 	DECLARE(FUNC_FRM_R29, offsetof(Os_FuncFrameType,r29));
 	DECLARE(FUNC_FRM_R30, offsetof(Os_FuncFrameType,r30));
 	DECLARE(FUNC_FRM_R31, offsetof(Os_FuncFrameType,r31));
+
+#if defined(CFG_SPE)
+	DECLARE(ISR_FRM_SPE_FSCR, offsetof(Os_IsrFrameType,fscr));
+	DECLARE(ISR_FRM_SPE_ACC, offsetof(Os_IsrFrameType,acc));
+	DECLARE(ISR_FRM_R3, offsetof(Os_IsrFrameType,acc));
+#endif
 
 	DECLARE(ISR_FRM_SIZE,	sizeof(Os_IsrFrameType));
 	DECLARE(ISR_FRM_R0, offsetof(Os_IsrFrameType,r0));
