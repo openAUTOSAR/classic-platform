@@ -116,6 +116,75 @@ typedef struct {
 	uint32_t pad;
 } Os_ExceptionFrameType;
 
+#if defined(CFG_SPE)
+typedef struct {
+	uint32_t sp;
+	uint32_t backchain;
+	uint32_t padding;
+	uint32_t pattern;
+	uint32_t cr;
+	uint32_t lr;
+	uint64_t r14;
+	uint64_t r15;
+	uint64_t r16;
+	uint64_t r17;
+	uint64_t r18;
+	uint64_t r19;
+	uint64_t r20;
+	uint64_t r21;
+	uint64_t r22;
+	uint64_t r23;
+	uint64_t r24;
+	uint64_t r25;
+	uint64_t r26;
+	uint64_t r27;
+	uint64_t r28;
+	uint64_t r29;
+	uint64_t r30;
+	uint64_t r31;
+} Os_FuncFrameType;
+
+typedef struct  {
+	uint32_t sr;
+	uint32_t backchain;
+	uint32_t padding;
+	uint32_t pattern;
+	uint64_t fscr;
+	uint64_t acc;
+	uint64_t r0;
+	/* r1 */
+	/* r2 */
+	uint64_t r3;
+	uint64_t r4;
+	uint64_t r5;
+	uint64_t r6;
+	uint64_t r7;
+	uint64_t r8;
+	uint64_t r9;
+	uint64_t r10;
+	uint64_t r11;
+	uint64_t r12;
+	/* r13 */
+	uint64_t r14;
+	uint64_t r15;
+	uint64_t r16;
+	uint64_t r17;
+	uint64_t r18;
+	uint64_t r19;
+	uint64_t r20;
+	uint64_t r21;
+	uint64_t r22;
+	uint64_t r23;
+	uint64_t r24;
+	uint64_t r25;
+	uint64_t r26;
+	uint64_t r27;
+	uint64_t r28;
+	uint64_t r29;
+	uint64_t r30;
+	uint64_t r31;
+} Os_IsrFrameType;
+#else
 typedef struct {
 	uint32_t sp;
 	uint32_t backchain;
@@ -151,7 +220,7 @@ typedef struct  {
 	uint32_t r0;
 	/* r1 */
 	/* r2 */
-	/* r3 */
+	/* r3, already save in exception frame */
 	uint32_t r4;
 	uint32_t r5;
 	uint32_t r6;
@@ -182,41 +251,8 @@ typedef struct  {
 	uint32_t r31;	    /* 3+32-4 + 1= 31 */
 } Os_IsrFrameType;
 
-struct Os_IsrSpeFrame  {
-	uint64_t spefscr;
-	uint64_t acc;
-	uint64_t r0;
-	uint64_t r3;
-	uint64_t r4;
-	uint64_t r5;
-	uint64_t r6;
-	uint64_t r7;
-	uint64_t r8;
-	uint64_t r9;
-	uint64_t r10;
-	uint64_t r11;
-	uint64_t r12;
-	uint64_t r13;
-	uint64_t r14;
-	uint64_t r15;
-	uint64_t r16;
-	uint64_t r17;
-	uint64_t r18;
-	uint64_t r19;
-	uint64_t r20;
-	uint64_t r21;
-	uint64_t r22;
-	uint64_t r23;
-	uint64_t r24;
-	uint64_t r25;
-	uint64_t r26;
-	uint64_t r27;
-	uint64_t r28;
-	uint64_t r29;
-	uint64_t r30;
-	uint64_t r31;
-	uint32_t pattern;
-};
+#endif /* defined(CFG_SPE) */
+
 #endif /* !defined(_ASSEMLBER_) */
 
 

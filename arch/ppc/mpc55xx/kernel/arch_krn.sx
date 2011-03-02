@@ -48,13 +48,25 @@
 .extern os_intc_pcb_tbl
 .extern os_intc_types_tbl
 .extern os_sys
+.extern Os_ArchPanic
+
+#if defined(CFG_VLE)
+#define lis		e_lis
+#define li		se_li
+#define lwz	    e_lwz
+#define stwu	e_stwu
+#define stw		e_stw
+#define b		e_b
+#define addi	e_addi		/* true ?*/
+#define subi	e_subi		/* true ?*/
+#endif		
 
 /* ----------------------------[private define]------------------------------*/
 
-#define INTC_IACKR_PRC0		0xfff48010  /* MPC551x CPU #0  */ 
-#define INTC_EOIR_PRC0		0xfff48018  /* MPC551x CPU #0  */
-#define INTC_IACKR			0xfff48010  /* MPC555x         */
-#define INTC_EOIR			0xfff48018  /* MPC555x         */
+#define INTC_IACKR_PRC0		0xfff48010 
+#define INTC_EOIR_PRC0		0xfff48018
+#define INTC_IACKR			0xfff48010
+#define INTC_EOIR			0xfff48018
 #define INTC_SSCIR0			0xfff48020
 
 /* ----------------------------[private macro]-------------------------------*/
@@ -109,8 +121,8 @@ Os_ArchSwapContext:
 	/* Save context indicator */
 	li		r0,FUNC_PATTERN
 	stw		r0,FUNC_FRM_PATTERN(sp)
-	
-	/* Save registers preserved by function call */
+
+#if defined(CFG_SPE)
 	stw		r14, FUNC_FRM_R14(sp)
 	stw		r15, FUNC_FRM_R15(sp)
 	stw		r16, FUNC_FRM_R16(sp)
@@ -130,6 +142,27 @@ Os_ArchSwapContext:
 	stw		r30, FUNC_FRM_R30(sp)
 	stw		r31, FUNC_FRM_R31(sp)
 
+#else
+	/* Save registers preserved by function call */
+	stw		r14, FUNC_FRM_R14(sp)
+	stw		r15, FUNC_FRM_R15(sp)
+	stw		r16, FUNC_FRM_R16(sp)
+	stw		r17, FUNC_FRM_R17(sp)
+	stw		r18, FUNC_FRM_R18(sp)
+	stw		r19, FUNC_FRM_R19(sp)
+	stw		r20, FUNC_FRM_R20(sp)
+	stw		r21, FUNC_FRM_R21(sp)
+	stw		r22, FUNC_FRM_R22(sp)
+	stw		r23, FUNC_FRM_R23(sp)
+	stw		r24, FUNC_FRM_R24(sp)
+	stw		r25, FUNC_FRM_R25(sp)
+	stw		r26, FUNC_FRM_R26(sp)
+	stw		r27, FUNC_FRM_R27(sp)
+	stw		r28, FUNC_FRM_R28(sp)
+	stw		r29, FUNC_FRM_R29(sp)
+	stw		r30, FUNC_FRM_R30(sp)
+	stw		r31, FUNC_FRM_R31(sp)
+#endif
 
 	/* Save stack ptr... */
 	stw		sp,PCB_STACK_CURR_P(r3)
@@ -167,6 +200,27 @@ Os_ArchSwapContextTo:
 	b		Os_ArchPanic
 
 restoreFuncContext:
+#if defined(CFG_SPE)
+	evldd	r14, FUNC_FRM_R14(sp)
+	evldd	r15, FUNC_FRM_R15(sp)
+	evldd	r16, FUNC_FRM_R16(sp)
+	evldd	r17, FUNC_FRM_R17(sp)
+	evldd	r18, FUNC_FRM_R18(sp)
+	evldd	r19, FUNC_FRM_R19(sp)
+	evldd	r20, FUNC_FRM_R20(sp)
+	evldd	r21, FUNC_FRM_R21(sp)
+	evldd	r22, FUNC_FRM_R22(sp)
+	evldd	r23, FUNC_FRM_R23(sp)
+	evldd	r24, FUNC_FRM_R24(sp)
+	evldd	r25, FUNC_FRM_R25(sp)
+	evldd	r26, FUNC_FRM_R26(sp)
+	evldd	r27, FUNC_FRM_R27(sp)
+	evldd	r28, FUNC_FRM_R28(sp)
+	evldd	r29, FUNC_FRM_R29(sp)
+	evldd	r30, FUNC_FRM_R30(sp)
+	evldd	r31, FUNC_FRM_R31(sp)
+	addi 	sp,sp,(FUNC_FRM_SIZE)
+#else 
 	lwz		r14, FUNC_FRM_R14(sp)
 	lwz		r15, FUNC_FRM_R15(sp)
 	lwz		r16, FUNC_FRM_R16(sp)
@@ -186,7 +240,7 @@ restoreFuncContext:
 	lwz		r30, FUNC_FRM_R30(sp)
 	lwz		r31, FUNC_FRM_R31(sp)
 	addi 	sp,sp,(FUNC_FRM_SIZE)
-	
+#endif	
 	/* TODO: Call Os_PosttaskHook()? */
 	
 	blr
@@ -221,7 +275,59 @@ exception_IVOR4:
 	
 	li		r3,4
 	stw 	r3, EXC_FRM_VECTOR(sp)
+#if defined(CFG_SPE)	
+
+	/* Enable SPE (exceptions turns it off) */
+	mfmsr		r3
+    oris   		r3,r3,0x0200
+	mtmsr 		r3
+	isync
+
+	/* Create the frame */
+	addi 	sp,sp,-ISR_FRM_SIZE
+	evstdd		r3, ISR_FRM_R3(sp)		/* Save work reg */	
 	
+	/* SPEFSCR	*/
+	mfspr		r3,SPR_SPEFSCR
+	clrlwi		r3,r3,24	 			/* Mask off non-status bits */
+	stw			r3,ISR_FRM_SPE_FSCR(sp)
+
+	/* Save SPE acc  */
+	evsubfw 	r3,r3,r3				/* zero r3 */
+	evaddumiaaw r3,r3					/* Add r3 = r3 + acc -> r3 = acc */
+	evstdd 		r3,ISR_FRM_SPE_ACC(r1)
+	
+	evstdd		r0, ISR_FRM_R0(sp)
+	evstdd		r4, ISR_FRM_R4(sp)
+	evstdd		r5, ISR_FRM_R5(sp)
+	evstdd		r6, ISR_FRM_R6(sp)
+	evstdd		r7, ISR_FRM_R7(sp)
+	evstdd		r8, ISR_FRM_R8(sp)
+	evstdd		r9, ISR_FRM_R9(sp)
+	evstdd		r10, ISR_FRM_R10(sp)
+	evstdd		r11, ISR_FRM_R11(sp)
+	evstdd		r12, ISR_FRM_R12(sp)
+	evstdd		r14, ISR_FRM_R14(sp)
+	evstdd		r15, ISR_FRM_R15(sp)
+	evstdd		r16, ISR_FRM_R16(sp)
+	evstdd		r17, ISR_FRM_R17(sp)
+	evstdd		r18, ISR_FRM_R18(sp)
+	evstdd		r19, ISR_FRM_R19(sp)
+	evstdd		r20, ISR_FRM_R20(sp)
+	evstdd		r21, ISR_FRM_R21(sp)
+	evstdd		r22, ISR_FRM_R22(sp)
+	evstdd		r23, ISR_FRM_R23(sp)
+	evstdd		r24, ISR_FRM_R24(sp)
+	evstdd		r25, ISR_FRM_R25(sp)
+	evstdd		r26, ISR_FRM_R26(sp)
+	evstdd		r27, ISR_FRM_R27(sp)
+	evstdd		r28, ISR_FRM_R28(sp)
+	evstdd		r29, ISR_FRM_R29(sp)
+	evstdd		r30, ISR_FRM_R30(sp)
+	addi		sp,sp,8
+	evstdd		r31, (ISR_FRM_R31-8)(sp)
+	addi		sp,sp,-8
+#else
 	/* Save the ISR frame */
 	addi 	sp,sp,-ISR_FRM_SIZE
 	stw		r0, ISR_FRM_R0(sp)
@@ -252,20 +358,20 @@ exception_IVOR4:
 	stw		r29, ISR_FRM_R29(sp)
 	stw		r30, ISR_FRM_R30(sp)
 	stw		r31, ISR_FRM_R31(sp)
-
+#endif
 	
 	li 		r3,ISR_PATTERN
 	stw		r3,ISR_FRM_PATTERN(sp)
-	// Save the stack so it later can be saved in the pcb	
+	/* Save the stack so it later can be saved in the pcb */	
 	mr		r4,sp			
 	
-	// Switch to interrupt stack if at depth 0
-	// Load the value os_sys.int_nest_cnt
+	/* Switch to interrupt stack if at depth 0 */
+	/* Load the value os_sys.int_nest_cnt */
 	LOAD_IND_32(r3,os_sys+SYS_INT_NEST_CNT)
 	cmpli	0,r3,0
 	bne-	on_int_stack
 
-	// Load the interrupt stack
+	/* Load the interrupt stack */
 	LOAD_IND_32(r3,os_sys+SYS_INT_STACK)
 
 on_int_stack:
@@ -279,7 +385,6 @@ on_int_stack:
 #endif
 	/* Check for 0 entry */
 	mr		r5,r6
-	extrwi  r5,r5,9,21
 	cmpli 	0,r5,0
 	bne+	vectorOk
 	/* The entry was 0, call panic */
@@ -289,6 +394,7 @@ on_int_stack:
 	b 		Os_ArchPanic
 	
 vectorOk:
+	extrwi  r5,r5,9,21
 	/* Check for soft INT */
 	cmpli 	0,r5,7
 	bgt		noSoftInt
@@ -315,7 +421,50 @@ noSoftInt:
 	mr 		sp,r3
 
 	/* Restore */
-restoreIsrContext:		
+restoreIsrContext:
+#if defined(CFG_SPE) 
+
+	// Restore SPE control/status reg.
+	lwz		r3,ISR_FRM_SPE_FSCR(sp)
+	mtspr	SPR_CSRR0,r3
+
+	/* Restore SPE acc */
+	evldd r3,ISR_FRM_SPE_ACC(r1)
+	evmra r3,r3
+	
+
+	evldd	r0, ISR_FRM_R0(sp)
+	evldd	r3, ISR_FRM_R4(sp)
+	evldd	r4, ISR_FRM_R4(sp)
+	evldd	r5, ISR_FRM_R5(sp)
+	evldd	r6, ISR_FRM_R6(sp)
+	evldd	r7, ISR_FRM_R7(sp)
+	evldd	r8, ISR_FRM_R8(sp)
+	evldd	r9, ISR_FRM_R9(sp)
+	evldd	r10, ISR_FRM_R10(sp)
+	evldd	r11, ISR_FRM_R11(sp)
+	evldd	r12, ISR_FRM_R12(sp)
+	evldd	r14, ISR_FRM_R14(sp)
+	evldd	r15, ISR_FRM_R15(sp)
+	evldd	r16, ISR_FRM_R16(sp)
+	evldd	r17, ISR_FRM_R17(sp)
+	evldd	r18, ISR_FRM_R18(sp)
+	evldd	r19, ISR_FRM_R19(sp)
+	evldd	r20, ISR_FRM_R20(sp)
+	evldd	r21, ISR_FRM_R21(sp)
+	evldd	r22, ISR_FRM_R22(sp)
+	evldd	r23, ISR_FRM_R23(sp)
+	evldd	r24, ISR_FRM_R24(sp)
+	evldd	r25, ISR_FRM_R25(sp)
+	evldd	r26, ISR_FRM_R26(sp)
+	evldd	r27, ISR_FRM_R27(sp)
+	evldd	r28, ISR_FRM_R28(sp)
+	evldd	r29, ISR_FRM_R29(sp)
+	evldd	r30, ISR_FRM_R30(sp)
+	addi	sp,sp,8
+	evldd	r31, (ISR_FRM_R31-8)(sp)
+	addi	sp,sp,-8
+#else
 	lwz		r0, ISR_FRM_R0(sp)
 	lwz		r4, ISR_FRM_R4(sp)
 	lwz		r5, ISR_FRM_R5(sp)
@@ -344,6 +493,7 @@ restoreIsrContext:
 	lwz		r29, ISR_FRM_R29(sp)
 	lwz		r30, ISR_FRM_R30(sp)
 	lwz		r31, ISR_FRM_R31(sp)
+#endif	
 	
 	/* back to the exception frame */
 	addi 	sp,sp,ISR_FRM_SIZE
@@ -374,11 +524,11 @@ exception_IVOR10:
     stwu  	r3,-8(sp)
     stw   	r4,4(sp)
 
-    # ack dec int
+    /* ack dec int */
     lis 	r3,0x0800
     mtspr   SPR_TSR,r3
 
-    # Set soft int
+    /* Set soft int */
     li  	r4,2
     lis     r3, INTC_SSCIR7@ha
     stb     r4, INTC_SSCIR7@l(r3)
@@ -389,9 +539,6 @@ exception_IVOR10:
     rfi
 
 
-
-
-
 /* Getting here means that the exception stack is started with:
  * sp - saved
  * r3 - saved and contains the exception number 
@@ -399,9 +546,11 @@ exception_IVOR10:
 handleException:
 	b  handleException		
 	
-# Force this jump table to this address to match the
-# value written to z1 IVPR
+#if defined(__GNUC__)	
 .section ".exception_tbl","ax"
+#elif defined(__CWCC__)
+.section .exception_tbl,4,"rw"
+#endif
 .balign 0x1000
 .global exception_tbl
 
@@ -423,11 +572,11 @@ exception_tbl:
 	EXC_TABLE_CODE(12)
 	EXC_TABLE_CODE(13)
 	EXC_TABLE_CODE(14)
-
-
-
-// ------------------------------------------------------------------
-
+#if defined(CFG_SPE)
+	EXC_TABLE_CODE(32)
+	EXC_TABLE_CODE(33)
+	EXC_TABLE_CODE(34)
+#endif
 
 
 
