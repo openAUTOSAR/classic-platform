@@ -30,7 +30,11 @@
 #define STATIC 	static
 #define NULL_PTR	((void *)0)
 
+#if defined(__GNUC__)
 #define CC_EXTENSION 	__extension__
+#elif defined(__CWCC__)
+#define CC_EXTENSION
+#endif
 
 /* REQ:COMPILER005 */
 /* TODO: skip the memclass for now */

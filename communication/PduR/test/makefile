@@ -95,7 +95,7 @@ libitem-y += $(ROOTDIR)/embunit/embUnit/obj_$(ARCH)/libembunit.a
 libitem-y += $(ROOTDIR)/embunit/textui/obj_$(ARCH)/libtextui.a
 
 #linkfile
-ldcmdfile-$(CFG_MPC55XX) = $(ROOTDIR)/arch/$(ARCH)/scripts/linkscript_gcc.ldf
+ldcmdfile-$(CFG_MPC55XX) = $(ROOTDIR)/arch/$(ARCH)/scripts/linkscript_$(COMPILER).ldf
 
 build-exe-y = ../../../$(target)_$(ARCH).$(TE)
 

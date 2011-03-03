@@ -55,6 +55,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include "MemMap.h"
 
 
 
@@ -65,10 +66,10 @@
 #define RAMLOG_MAGIC	  1
 
 
-static unsigned char ramlog[CFG_RAMLOG_SIZE] __attribute__ ((section (".ramlog")));
+SECTION_RAMLOG static unsigned char ramlog[CFG_RAMLOG_SIZE];
 #if defined(CFG_RAMLOG_SESSION)
-static unsigned ramlog_curr __attribute__ ((section (".ramlog")));
-static unsigned ramlog_session __attribute__ ((section (".ramlog")));
+SECTION_RAMLOG static unsigned ramlog_curr;
+SECTION_RAMLOG static unsigned ramlog_session;
 #else
 static unsigned ramlog_curr = 0;
 #endif

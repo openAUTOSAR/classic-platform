@@ -14,7 +14,6 @@ goal=$@
 include $(ROOTDIR)/boards/$(BOARDDIR)/build_config.mk
 -include ../build_config.mk
 
-
 define MOD_AVAIL_template
 	MOD_$(1)=y
 endef
@@ -60,8 +59,10 @@ ARCH_PATH-y = arch/$(ARCH_FAM)/$(ARCH)
 
 # Include compiler generic and arch specific
 COMPILER?=gcc
-ifneq ($(ARCH),)
-include $(ROOTDIR)/$(ARCH_PATH-y)/scripts/gcc.mk
+ifeq ($(COMPILER),gcc)
+ ifneq ($(ARCH),)
+ include $(ROOTDIR)/$(ARCH_PATH-y)/scripts/gcc.mk
+ endif
 endif
 include $(ROOTDIR)/scripts/cc_$(COMPILER).mk
 
@@ -176,7 +177,7 @@ endif
 %.o: %.c
 	@echo "  >> CC $(notdir $<)"
 # compile
-	$(Q)$(CC) -c $(CFLAGS) -o $(goal) $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
+	$(Q)$(CC) -c $(CFLAGS) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
 # run lint if enabled
 	$(run_pclint)
 	$(run_splint)
@@ -192,16 +193,15 @@ endif
 
 %.s: %.sx
 	@echo "  >> CPP $(notdir $<)"
-	$(Q)$(CPP) -x assembler-with-cpp -E -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
-
+	$(Q)$(CPP) $(CPP_ASM_FLAGS) -o $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
 # Board linker files are in the board directory 
 inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
 
 # Preprocess linker files..
-%.ldp: %.ldf
+%.lcf: %.ldf
 	@echo "  >> CPP $<"
-	$(Q)$(CPP) -E -P -x assembler-with-cpp -o $@ $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
+	$(Q)$(CPP) -E -P $(CPP_ASM_FLAGS) -o $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
 #	@cat $@ 
 	
@@ -230,20 +230,22 @@ $(build-exe-y): $(dep-y) $(obj-y) $(sim-y) $(libitem-y) $(ldcmdfile-y)
 	@echo "  >> LD $@"
 ifeq ($(CROSS_COMPILE),)
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	
-else	
-	$(Q)$(LD) $(LDFLAGS) -T $(ldcmdfile-y) -o $@ $(libpath-y) --start-group $(obj-y) $(lib-y) $(libitem-y) --end-group $(LDMAPFILE)
+else
+	$(Q)$(LD) $(LDFLAGS) $(LD_FILE) $(ldcmdfile-y) -o $@ $(libpath-y) $(LD_START_GRP) $(obj-y) $(lib-y) $(libitem-y) $(LD_END_GRP) $(LDMAPFILE)
+endif
 ifdef CFG_MC912DG128A
 	@$(CROSS_COMPILE)objdump -h $@ | gawk -f $(ROOTDIR)/scripts/hc1x_memory.awk
-else
+else 
+ifeq ($(COMPILER),gcc)	
 	@echo "Image size: (decimal)"
 	@gawk --non-decimal-data 	'/^\.text/ { print "  text:"  $$3+0 " bytes"; rom+=$$3 };\
 	 							/^\.data/ { print "  data:"  $$3+0 " bytes"; rom+=$$3; ram+=$$3}; \
 	 							/^\.bss/ { print "  bss :"  $$3+0 " bytes"; ram+=$$3}; \
 	 							END { print "  ROM: ~" rom " bytes"; print "  RAM: ~" ram " bytes"}' $(subst .elf,.map,$@)
+endif # ($(COMPILER),gcc)	 							
 ifeq ($(BUILD_LOAD_MODULE),y)
 	@$(CROSS_COMPILE)objcopy -O srec $@ $@.raw.s19
 	srec_cat $@.raw.s19 --crop 0x8008000 0x803fffc --fill 0x00 0x8008000 0x803fffc --l-e-crc32 0x803fffc -o $@.lm.s19
-endif
 endif
 endif
 	@echo

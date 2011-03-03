@@ -8,8 +8,7 @@
  // arg 3-debug : 0 
  
  sim.load mpc55xx_sim.dll 20000 0 1
- ;sim.load C:\projects\t32sim\Debug\mpc55xx_sim.dll 20000 0 0
-; sim.load &dll 0xfff84000 0
+// sim.load C:\projects\workspace\t32_sim\Release\mpc55xx_sim.dll 20000 0 1
 
 enddo
 
@@ -35,6 +34,8 @@ enddo
 
  winpos ,,,,,,, iconic
  port.get
+
+
 
 
 
