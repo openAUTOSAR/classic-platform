@@ -13,10 +13,12 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+//lint -emacro(904,VALIDATE,VALIDATE_RV,VALIDATE_NO_RV) //904 PC-Lint exception to MISRA 14.7 (validate macros).
+
 #include "EcuM.h"
 #include "Modules.h"
-#include "string.h"
-#include "Os.h"
+#include <string.h>
+#include <Os.h>
 #include "EcuM_Internals.h"
 #include "EcuM_Cbk.h"
 #include "Mcu.h"
@@ -25,11 +27,15 @@
 #if defined(USE_NVM)
 #include "Nvm.h"
 #endif
+#if defined(USE_RTE)
+#include "Rte_Main.h"
+#endif
 
-EcuM_GobalType internal_data;
+EcuM_GlobalType internal_data;
 
 void EcuM_Init( void )
 {
+	Std_ReturnType status;
 	internal_data.current_state = ECUM_STATE_STARTUP_ONE;
 
 	// Initialize drivers that are needed to determine PostBuild configuration
@@ -44,8 +50,7 @@ void EcuM_Init( void )
 	// Determine PostBuild configuration
 	internal_data.config = EcuM_DeterminePbConfiguration();
 
-	// Check consistency of PB configuration
-	// TODO
+	// TODO: Check consistency of PB configuration
 
 	// Initialize drivers needed before the OS-starts
 	EcuM_AL_DriverInitOne(internal_data.config);
@@ -53,26 +58,37 @@ void EcuM_Init( void )
 	// Determine the reset/wakeup reason
 	// TODO Mcu_ResetType type = Mcu_GetResetReason();
 
+	// Moved this here because EcuM_SelectShutdownTarget needs us to be initilized.
+	internal_data.initiated = TRUE;
+
 	// Set default shutdown target
-	internal_data.shutdown_target = internal_data.config->EcuMDefaultShutdownTarget;
-	internal_data.shutdown_mode = internal_data.config->EcuMDefaultShutdownMode;
+	status = EcuM_SelectShutdownTarget(internal_data.config->EcuMDefaultShutdownTarget,internal_data.config->EcuMDefaultSleepMode);/** @req EcuM2181 */
+	if(status!=E_OK){
+		//TODO: Report error.
+	}
+
 
 	// Set default application mode
-	internal_data.app_mode = internal_data.config->EcuMDefaultAppMode;
+	status =  EcuM_SelectApplicationMode(internal_data.config->EcuMDefaultAppMode);
+	if(status!=E_OK){
+		//TODO: Report error.
+	}
+
 #if defined(USE_COMM)
 	internal_data.run_comm_requests = 0;
 #endif
 	internal_data.run_requests = 0;
 	internal_data.postrun_requests = 0;
 
-	internal_data.initiated = TRUE;
-
 	// Start this baby up
-	StartOS(internal_data.app_mode);
+	AppModeType appMode;
+	EcuM_GetApplicationMode(&appMode);
+	StartOS(appMode); /** @req EcuM2141 */
 }
 
-void EcuM_StartupTwo()
+void EcuM_StartupTwo(void)
 {
+	//TODO:  Validate that we are in state STARTUP_ONE.
 #if defined(USE_NVM)
 	extern CounterType Os_Arc_OsTickCounter;
 	TickType tickTimerStart, tickTimer, tickTimerElapsed;
@@ -92,7 +108,7 @@ void EcuM_StartupTwo()
 	// Start timer to wait for NVM job to complete
 	tickTimerStatus = GetCounterValue(Os_Arc_OsTickCounter , &tickTimerStart);
 	if (tickTimerStatus != E_OK) {
-		// TODO: Generate error?
+		Det_ReportError(MODULE_ID_ECUM, 0, ECUM_ARC_STARTUPTWO_ID, ECUM_E_ARC_TIMERERROR);
 	}
 #endif
 
@@ -109,16 +125,15 @@ void EcuM_StartupTwo()
 		tickTimer = tickTimerStart;	// Save this because the GetElapsedCounterValue() will destroy it.
 		tickTimerStatus =  GetElapsedCounterValue(Os_Arc_OsTickCounter, &tickTimer, &tickTimerElapsed);
 		if (tickTimerStatus != E_OK) {
-			// TODO: Generate error?
+			Det_ReportError(MODULE_ID_ECUM, 0, ECUM_ARC_STARTUPTWO_ID, ECUM_E_ARC_TIMERERROR);
 		}
 	} while( (readAllResult == NVM_REQ_PENDING) && (tickTimerElapsed < internal_data.config->EcuMNvramReadAllTimeout) );
-#endif
 
 	// Initialize drivers that need NVRAM data
 	EcuM_AL_DriverInitThree(internal_data.config);
+#endif
 
-	// Indicate mode change to RTE
-	// TODO
+	// TODO: Indicate mode change to RTE
 
 	// If coming from startup sequence, enter Run mode
 //	if (internal_data.current_state == ECUM_STATE_STARTUP_TWO)
@@ -127,7 +142,7 @@ void EcuM_StartupTwo()
 }
 
 // Typically called from OS shutdown hook
-void EcuM_Shutdown()
+void EcuM_Shutdown(void)
 {
 	internal_data.current_state = ECUM_STATE_GO_OFF_TWO;
 
@@ -143,13 +158,17 @@ void EcuM_Shutdown()
 #if (MCU_PERFORM_RESET_API == STD_ON)
 		Mcu_PerformReset();
 #else
-		for(;;);
+		for(;;)
+                {
+                  ;
+                }
 #endif
 	}
 }
 
 Std_ReturnType EcuM_GetState(EcuM_StateType* state)
 {
+	VALIDATE_RV(internal_data.initiated, ECUM_GETSTATE_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
 	VALIDATE_RV(state != NULL, ECUM_GETSTATE_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
 
 	*state = internal_data.current_state;
@@ -161,9 +180,9 @@ Std_ReturnType EcuM_SelectApplicationMode(AppModeType appMode)
 {
 	VALIDATE_RV(internal_data.initiated, ECUM_SELECTAPPMODE_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
 
-	// TODO Save this application mode for next startup
+	internal_data.app_mode = appMode;
 
-	return E_NOT_OK;
+	return E_OK;
 }
 
 Std_ReturnType EcuM_GetApplicationMode(AppModeType* appMode)
@@ -181,6 +200,7 @@ Std_ReturnType EcuM_SelectBootTarget(EcuM_BootTargetType target)
 	VALIDATE_RV(internal_data.initiated, ECUM_SELECT_BOOTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
 
 	// TODO Do something great here
+	(void) target;
 
 	return E_NOT_OK;
 }
@@ -191,29 +211,32 @@ Std_ReturnType EcuM_GetBootTarget(EcuM_BootTargetType* target)
 	VALIDATE_RV(target != NULL, ECUM_GET_BOOTARGET_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
 
 	// TODO Return selected boot target here
+	(void) target;
 
 	return E_NOT_OK;
 }
 
 
-Std_ReturnType EcuM_SelectShutdownTarget(EcuM_StateType target, uint8 mode)
+Std_ReturnType EcuM_SelectShutdownTarget(EcuM_StateType shutdownTarget, uint8 sleepMode)
 {
 	VALIDATE_RV(internal_data.initiated, ECUM_SELECTSHUTDOWNTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
-	VALIDATE_RV((target == ECUM_STATE_OFF) || (target == ECUM_STATE_RESET) || (target == ECUM_STATE_SLEEP), ECUM_SELECTSHUTDOWNTARGET_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
+	VALIDATE_RV((shutdownTarget == ECUM_STATE_OFF) || (shutdownTarget == ECUM_STATE_RESET) || (shutdownTarget == ECUM_STATE_SLEEP), ECUM_SELECTSHUTDOWNTARGET_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
 
-	internal_data.shutdown_target = target;
-	internal_data.shutdown_mode = mode;
+	internal_data.shutdown_target = shutdownTarget;
+	internal_data.sleep_mode = sleepMode;
 
 	return E_OK;
 }
 
 
-Std_ReturnType EcuM_GetShutdownTarget(EcuM_StateType *shutdownTarget, uint8 *sleepMode)
+Std_ReturnType EcuM_GetShutdownTarget(EcuM_StateType* shutdownTarget, uint8* sleepMode) /** @req EcuM2824 */
 {
 	VALIDATE_RV(internal_data.initiated, ECUM_GETSHUTDOWNTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV(shutdownTarget != NULL, ECUM_GETSHUTDOWNTARGET_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
+	VALIDATE_RV(sleepMode != NULL, ECUM_GETSHUTDOWNTARGET_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
 
 	*shutdownTarget = internal_data.shutdown_target;
-	*sleepMode = internal_data.shutdown_mode;
+	*sleepMode = internal_data.sleep_mode;
 
 	return E_OK;
 }
@@ -240,32 +263,32 @@ Std_ReturnType EcuM_ReleaseRUN(EcuM_UserType user)
 }
 
 #if defined(USE_COMM)
-Std_ReturnType EcuM_ComM_RequestRUN(NetworkHandleType user)
+Std_ReturnType EcuM_ComM_RequestRUN(NetworkHandleType channel)
 {
 	VALIDATE_RV(internal_data.initiated, ECUM_COMM_REQUESTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
-	VALIDATE_RV(user < 32, ECUM_COMM_REQUESTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
+	VALIDATE_RV(channel < 32, ECUM_COMM_REQUESTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
 
-	internal_data.run_comm_requests |= (uint32)1 << user;
+	internal_data.run_comm_requests |= (uint32)1 << channel;
 
 	return E_OK;
 }
 
-Std_ReturnType EcuM_ComM_ReleaseRUN(NetworkHandleType user)
+Std_ReturnType EcuM_ComM_ReleaseRUN(NetworkHandleType channel)
 {
 	VALIDATE_RV(internal_data.initiated, ECUM_COMM_RELEASERUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
-	VALIDATE_RV(user < 32, ECUM_COMM_RELEASERUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
+	VALIDATE_RV(channel < 32, ECUM_COMM_RELEASERUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
 
-	internal_data.run_comm_requests &= ~((uint32)1 << user);
+	internal_data.run_comm_requests &= ~((uint32)1 << channel);
 
 	return E_OK;
 }
 
-boolean EcuM_ComM_HasRequestedRUN(NetworkHandleType user)
+boolean EcuM_ComM_HasRequestedRUN(NetworkHandleType channel)
 {
-	VALIDATE_RV(internal_data.initiated, ECUM_COMM_HASREQUESTEDRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
-	VALIDATE_RV(user < 32, ECUM_COMM_HASREQUESTEDRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
+	VALIDATE_RV(internal_data.initiated, ECUM_COMM_HASREQUESTEDRUN_ID, ECUM_E_NOT_INITIATED, FALSE);
+	VALIDATE_RV(channel < 32, ECUM_COMM_HASREQUESTEDRUN_ID, ECUM_E_INVALID_PAR, FALSE);
 
-	return (internal_data.run_comm_requests &((uint32)1 << user)) != 0;
+	return (internal_data.run_comm_requests &((uint32)1 << channel)) != 0;
 }
 #endif
 

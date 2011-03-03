@@ -23,8 +23,8 @@
 #ifndef COM_COM_H_
 #define COM_COM_H_
 
-#include "Com.h"
-#include "PduR.h"
+#include <Com.h>
+#include <PduR.h>
 
 uint8 Com_SendSignal(Com_SignalIdType SignalId, const void *SignalDataPtr);
 uint8 Com_ReceiveSignal(Com_SignalIdType SignalId, void* SignalDataPtr);
@@ -33,7 +33,7 @@ Std_ReturnType Com_TriggerTransmit(PduIdType ComTxPduId, uint8 *SduPtr);
 
 void Com_TriggerIPduSend(PduIdType ComTxPduId);
 
-Std_ReturnType Com_RxIndication(PduIdType ComRxPduId, const uint8* PduInfoPtr);
+void Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr); // TODO: Parameter SduPtr should be const PduInfoType* PduInfoPtr
 void Com_TxConfirmation(PduIdType ComTxPduId);
 
 

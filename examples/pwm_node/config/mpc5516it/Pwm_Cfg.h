@@ -13,7 +13,7 @@
 */
 
 
-#if (PWM_SW_MAJOR_VERSION != 1) 
+#if !(((PWM_SW_MAJOR_VERSION == 1) && (PWM_SW_MINOR_VERSION == 0)) )
 #error "Pwm: Configuration file version differs from BSW version."
 #endif
 

@@ -20,25 +20,26 @@
  * General platform type definitions.
  */
 
-#ifndef _PLATFORM_TYPES_H_
-#define _PLATFORM_TYPES_H_
+#include <stdbool.h>
+
+#ifndef PLATFORM_TYPES_H
+#define PLATFORM_TYPES_H
 
 #define CPU_TYPE            CPU_TYPE_32 
 #define CPU_BIT_ORDER       MSB_FIRST 
 #define CPU_BYTE_ORDER      HIGH_BYTE_FIRST
 
-#if !defined(FALSE)
-#define FALSE		0
-#define TRUE		1
-#endif
+#define FALSE		(boolean)false
+#define TRUE		(boolean)true
 
-typedef unsigned long       boolean;         
+//typedef unsigned long       boolean;
+typedef _Bool      boolean;
 typedef signed char         sint8;        
 typedef unsigned char       uint8;        
 typedef signed short        sint16;       
 typedef unsigned short      uint16;       
 typedef signed long         sint32;       
-typedef unsigned long       uint32;    
+typedef unsigned long       uint32;
 typedef unsigned long long  uint64;
 typedef unsigned long       uint8_least;  
 typedef unsigned long       uint16_least; 

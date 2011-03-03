@@ -20,10 +20,10 @@
 
 
 
-#ifndef COMM_DCM_H_
-#define COMM_DCM_H_
+#ifndef COMM_DCM_H
+#define COMM_DCM_H
 
-void ComM_DCM_ActiveDiagnostic();
-void ComM_DCM_InactiveDiagnostic();
+void ComM_DCM_ActiveDiagnostic(void);
+void ComM_DCM_InactiveDiagnostic(void);
 
-#endif /*COMM_DCM_H_*/
+#endif /*COMM_DCM_H*/

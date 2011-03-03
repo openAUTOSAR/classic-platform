@@ -27,7 +27,7 @@
 
 #if (PDUR_ZERO_COST_OPERATION == STD_OFF)
 
-	void PduR_CanIfRxIndication (PduIdType CanRxPduId, const uint8 *CanSudPtr );
+	void PduR_CanIfRxIndication (PduIdType CanRxPduId, const uint8 *CanSduPtr );
 	void PduR_CanIfTxConfirmation(PduIdType CanTxPduId);
 
 #else // Zero cost operation active

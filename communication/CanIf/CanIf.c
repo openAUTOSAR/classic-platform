@@ -25,7 +25,7 @@
 
 #include "Can.h"
 #include "CanIf_Cbk.h"
-#include "string.h"
+#include <string.h>
 
 #include "debug.h"
 #include "PduR.h"
@@ -109,8 +109,9 @@ static CanIf_Arc_ChannelIdType CanIf_Arc_FindHrhChannel( Can_Arc_HRHType hrh )
     do
     {
       hrhConfig++;
-      if (hrhConfig->CanIfHrhIdSymRef == hrh)
+      if (hrhConfig->CanIfHrhIdSymRef == hrh){
         return hrhConfig->CanIfCanControllerHrhIdRef;
+      }
     } while(!hrhConfig->CanIf_Arc_EOL);
   } while(!hohConfig->CanIf_Arc_EOL);
 
@@ -244,8 +245,9 @@ Std_ReturnType CanIf_SetControllerMode(uint8 Controller,
     switch (oldMode)
     {
       case CANIF_CS_SLEEP:
-        if (Can_SetControllerMode(canControllerId, CAN_T_STOP) == CAN_NOT_OK)
+        if (Can_SetControllerMode(canControllerId, CAN_T_STOP) == CAN_NOT_OK){
           return E_NOT_OK;
+        }
         CanIf_Global.channelData[channel].ControllerMode = CANIF_CS_STOPPED;
         break;
       default:
@@ -254,8 +256,9 @@ Std_ReturnType CanIf_SetControllerMode(uint8 Controller,
     }
 
     CanIf_SetPduMode(channel, CANIF_SET_ONLINE);
-    if (Can_SetControllerMode(canControllerId, CAN_T_START) == CAN_NOT_OK)
+    if (Can_SetControllerMode(canControllerId, CAN_T_START) == CAN_NOT_OK){
       return E_NOT_OK;
+    }
     CanIf_Global.channelData[channel].ControllerMode = CANIF_CS_STARTED;
   }
   break;
@@ -264,8 +267,9 @@ Std_ReturnType CanIf_SetControllerMode(uint8 Controller,
   {
     switch (oldMode) {
       case CANIF_CS_STARTED:
-        if (Can_SetControllerMode(canControllerId, CAN_T_STOP) == CAN_NOT_OK)
+        if (Can_SetControllerMode(canControllerId, CAN_T_STOP) == CAN_NOT_OK){
           return E_NOT_OK;
+        }
         CanIf_Global.channelData[channel].ControllerMode = CANIF_CS_STOPPED;
         break;
       default:
@@ -273,8 +277,9 @@ Std_ReturnType CanIf_SetControllerMode(uint8 Controller,
         break;
     }
 
-    if (Can_SetControllerMode(canControllerId, CAN_T_SLEEP) == CAN_NOT_OK)
+    if (Can_SetControllerMode(canControllerId, CAN_T_SLEEP) == CAN_NOT_OK){
       return E_NOT_OK;
+    }
     CanIf_Global.channelData[channel].ControllerMode = CANIF_CS_SLEEP;
   }
 
@@ -283,8 +288,9 @@ Std_ReturnType CanIf_SetControllerMode(uint8 Controller,
     switch (oldMode)
     {
       case CANIF_CS_SLEEP:
-        if (Can_SetControllerMode(canControllerId, CAN_T_WAKEUP) == CAN_NOT_OK)
+        if (Can_SetControllerMode(canControllerId, CAN_T_WAKEUP) == CAN_NOT_OK){
           return E_NOT_OK;
+        }
         break;
       default:
         // Just fall through for other cases
@@ -292,9 +298,11 @@ Std_ReturnType CanIf_SetControllerMode(uint8 Controller,
     }
 
     CanIf_SetPduMode(channel, CANIF_SET_OFFLINE);
-    if (Can_SetControllerMode(canControllerId, CAN_T_STOP) == CAN_NOT_OK)
+    if (Can_SetControllerMode(canControllerId, CAN_T_STOP) == CAN_NOT_OK){
       return E_NOT_OK;
+    }
     CanIf_Global.channelData[channel].ControllerMode = CANIF_CS_STOPPED;
+    break;
   }
 
   case CANIF_CS_UNINIT:
@@ -327,26 +335,87 @@ Std_ReturnType CanIf_GetControllerMode(uint8 Controller,
  *
  * @returns Ptr a TxPdu
  */
+#if ( CANIF_ARC_RUNTIME_PDU_CONFIGURATION == STD_ON )
+CanIf_TxPduConfigType * CanIf_FindTxPduEntry(PduIdType id)
+#else
 static const CanIf_TxPduConfigType * CanIf_FindTxPduEntry(PduIdType id)
+#endif
 {
 	if (id >= CanIf_ConfigPtr->InitConfig->CanIfNumberOfCanTXPduIds) {
 		return NULL;
 	} else {
 		return &CanIf_ConfigPtr->InitConfig->CanIfTxPduConfigPtr[id];
 	}
-/*
-  for (uint16 i = 0; i < CanIf_ConfigPtr->InitConfig->CanIfNumberOfCanTXPduIds; i++)
-  {
-    if (entry->CanIfTxPduId == id)
-    {
-      return entry;
-    }
-    entry++;
   }
 
-  return 0;
-  */
+#if ( CANIF_ARC_RUNTIME_PDU_CONFIGURATION == STD_ON )
+CanIf_RxPduConfigType * CanIf_FindRxPduEntry(PduIdType id)
+#else
+static const CanIf_RxPduConfigType * CanIf_FindRxPduEntry(PduIdType id)
+#endif
+{
+	if (id >= CanIf_ConfigPtr->InitConfig->CanIfNumberOfCanRxPduIds) {
+		return NULL;
+	} else {
+		return &CanIf_ConfigPtr->InitConfig->CanIfRxPduConfigPtr[id];
+	}
 }
+
+#if ( CANIF_ARC_RUNTIME_PDU_CONFIGURATION == STD_ON )
+const CanIf_HrhConfigType* CanIf_Arc_GetReceiveHandler(CanIf_Arc_ChannelIdType Channel) {
+  const CanIf_InitHohConfigType *hohConfig;
+  const CanIf_HrhConfigType *hrhConfig;
+
+  // foreach(hoh){ foreach(hrh in hoh) {} }
+  hohConfig = CanIf_ConfigPtr->InitConfig->CanIfHohConfigPtr;
+  hohConfig--;
+  do
+  {
+	hohConfig++;
+
+	hrhConfig = hohConfig->CanIfHrhConfig;
+    hrhConfig--;
+    do
+    {
+      hrhConfig++;
+      if (hrhConfig->CanIfCanControllerHrhIdRef == Channel)
+        return hrhConfig;
+	} while(!hrhConfig->CanIf_Arc_EOL);
+
+  } while(!hohConfig->CanIf_Arc_EOL);
+
+  DET_REPORTERROR(MODULE_ID_CANIF, 0, 0xFF, CANIF_E_PARAM_HRH);
+
+  return NULL;
+}
+
+const CanIf_HthConfigType* CanIf_Arc_GetTransmitHandler(CanIf_Arc_ChannelIdType Channel) {
+  const CanIf_InitHohConfigType *hohConfig;
+  const CanIf_HthConfigType *hthConfig;
+
+  // foreach(hoh){ foreach(hrh in hoh) {} }
+  hohConfig = CanIf_ConfigPtr->InitConfig->CanIfHohConfigPtr;
+  hohConfig--;
+  do
+  {
+	hohConfig++;
+
+	hthConfig = hohConfig->CanIfHthConfig;
+	hthConfig--;
+    do
+    {
+    	hthConfig++;
+      if (hthConfig->CanIfCanControllerIdRef == Channel)
+        return hthConfig;
+	} while(!hthConfig->CanIf_Arc_EOL);
+
+  } while(!hohConfig->CanIf_Arc_EOL);
+
+  DET_REPORTERROR(MODULE_ID_CANIF, 0, 0xFF, CANIF_E_PARAM_HTH);
+
+  return NULL;
+}
+#endif
 
 //-------------------------------------------------------------------
 
@@ -373,18 +442,22 @@ Std_ReturnType CanIf_Transmit(PduIdType CanTxPduId,
   CanIf_Arc_ChannelIdType channel = txEntry->CanIfCanTxPduHthRef->CanIfCanControllerIdRef;
 
   // Get and verify the controller mode
-  if (CanIf_GetControllerMode(channel, &csMode) == E_NOT_OK)
+  if (CanIf_GetControllerMode(channel, &csMode) == E_NOT_OK){
     return E_NOT_OK;
+  }
 
-  if (csMode != CANIF_CS_STARTED)  // CANIF_161
+  if (csMode != CANIF_CS_STARTED){  // CANIF_161
     return E_NOT_OK;
+  }
 
   // Get and verify the PDU channel mode control
-  if (CanIf_GetPduMode(channel, &pduMode) == E_NOT_OK)
+  if (CanIf_GetPduMode(channel, &pduMode) == E_NOT_OK){
     return E_NOT_OK;
+  }
 
-  if ((pduMode != CANIF_GET_TX_ONLINE) && (pduMode != CANIF_GET_ONLINE))
+  if ((pduMode != CANIF_GET_TX_ONLINE) && (pduMode != CANIF_GET_ONLINE)){
     return E_NOT_OK;
+  }
 
   canPdu.id = txEntry->CanIfCanTxPduIdCanId;
 
@@ -394,8 +467,9 @@ Std_ReturnType CanIf_Transmit(PduIdType CanTxPduId,
 
   Can_ReturnType rVal = Can_Write(txEntry->CanIfCanTxPduHthRef->CanIfHthIdSymRef, &canPdu);
 
-  if (rVal == CAN_NOT_OK)
+  if (rVal == CAN_NOT_OK){
     return E_NOT_OK;
+  }
 
   if (rVal == CAN_BUSY)  // CANIF 082, CANIF 161
   {
@@ -483,46 +557,50 @@ Std_ReturnType CanIf_SetPduMode(uint8 Controller,
     CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE;
     break;
   case CANIF_SET_RX_OFFLINE:
-    if (oldMode == CANIF_GET_RX_ONLINE)
+    if (oldMode == CANIF_GET_RX_ONLINE){
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE;
-    else if (oldMode == CANIF_GET_ONLINE)
+    } else if (oldMode == CANIF_GET_ONLINE){
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_TX_ONLINE;
-    else if (oldMode == CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE)
+    } else if (oldMode == CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE){
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE_ACTIVE;
+    }
 
     // Other oldmodes don't care
     break;
   case CANIF_SET_RX_ONLINE:
-    if (oldMode == CANIF_GET_OFFLINE)
+    if (oldMode == CANIF_GET_OFFLINE){
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_RX_ONLINE;
-    else if (oldMode == CANIF_GET_TX_ONLINE)
+    } else if (oldMode == CANIF_GET_TX_ONLINE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_ONLINE;
-    else if (oldMode == CANIF_GET_OFFLINE_ACTIVE)
+    } else if (oldMode == CANIF_GET_OFFLINE_ACTIVE){
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE;
+    }
 
     // Other oldmodes don't care
     break;
   case CANIF_SET_TX_OFFLINE:
-    if (oldMode == CANIF_GET_TX_ONLINE)
+    if (oldMode == CANIF_GET_TX_ONLINE){
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE;
-    else if (oldMode == CANIF_GET_ONLINE)
+    } else if (oldMode == CANIF_GET_ONLINE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_RX_ONLINE;
-    else if (oldMode == CANIF_GET_OFFLINE_ACTIVE)
+    } else if (oldMode == CANIF_GET_OFFLINE_ACTIVE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE;
-    else if (oldMode == CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE)
+    } else if (oldMode == CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_RX_ONLINE;
+    }
 
     // Other oldmodes don't care
     break;
   case CANIF_SET_TX_ONLINE:
-    if (oldMode == CANIF_GET_OFFLINE)
+    if (oldMode == CANIF_GET_OFFLINE){
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_TX_ONLINE;
-    else if (oldMode == CANIF_GET_RX_ONLINE)
+    } else if (oldMode == CANIF_GET_RX_ONLINE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_ONLINE;
-    else if (oldMode == CANIF_GET_OFFLINE_ACTIVE)
+    } else if (oldMode == CANIF_GET_OFFLINE_ACTIVE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_TX_ONLINE;
-    else if (oldMode == CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE)
+    } else if (oldMode == CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_ONLINE;
+    }
 
     // Other oldmodes don't care
     break;
@@ -531,14 +609,15 @@ Std_ReturnType CanIf_SetPduMode(uint8 Controller,
     break;
 
   case CANIF_SET_TX_OFFLINE_ACTIVE:
-    if (oldMode == CANIF_GET_OFFLINE)
+    if (oldMode == CANIF_GET_OFFLINE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE_ACTIVE;
-    else if (oldMode == CANIF_GET_RX_ONLINE)
+    } else if (oldMode == CANIF_GET_RX_ONLINE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE;
-    else if (oldMode == CANIF_GET_TX_ONLINE)
+    } else if (oldMode == CANIF_GET_TX_ONLINE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE_ACTIVE;
-    else if (oldMode == CANIF_GET_ONLINE)
+    } else if (oldMode == CANIF_GET_ONLINE) {
       CanIf_Global.channelData[channel].PduMode = CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE;
+    }
 
     // Other oldmodes don't care
     break;
@@ -563,11 +642,10 @@ Std_ReturnType CanIf_GetPduMode(uint8 Controller,
   return E_OK;
 }
 
-#if ( CANIF_SETDYNAMICTXID_API == STD_ON )
+#if ( CANIF_ARC_RUNTIME_PDU_CONFIGURATION == STD_ON )
 void CanIf_SetDynamicTxId(PduIdType CanTxPduId, Can_IdType CanId)
 {
-  const CanIf_TxPduConfigType *txEntry;
-  VALIDATE(FALSE, CANIF_SETDYNAMICTX_ID, CANIF_E_NOK_NOSUPPORT);
+  CanIf_TxPduConfigType *txEntry;
   VALIDATE_NO_RV(CanIf_Global.initRun, CANIF_SETDYNAMICTX_ID, CANIF_E_UNINIT );
 
   // Get the controller from L-PDU handle
@@ -587,8 +665,8 @@ void CanIf_SetDynamicTxId(PduIdType CanTxPduId, Can_IdType CanId)
   }
 
   // Check that this is an extended or standard id
-  if (((CanId & 0x80000000) && (txEntry->CanIfTxPduIdCanIdType == ARC_CAN_ID_TYPE_29)) ||
-      (((CanId & 0x80000000) == 0) && (txEntry->CanIfTxPduIdCanIdType == ARC_CAN_ID_TYPE_11)))
+  if (((CanId & U0x80000000) && (txEntry->CanIfTxPduIdCanIdType == ARC_CAN_ID_TYPE_29)) ||
+      (((CanId & U0x80000000) == 0) && (txEntry->CanIfTxPduIdCanIdType == ARC_CAN_ID_TYPE_11)))
   {
     // Update the CanID
     //txEntry->CanIfCanTxPduIdCanId = CanId;  // TODO How do we fix this from a const pointer
@@ -670,13 +748,6 @@ void CanIf_TxConfirmation(PduIdType canTxPduId)
   const CanIf_TxPduConfigType* entry =
     &CanIf_ConfigPtr->InitConfig->CanIfTxPduConfigPtr[canTxPduId];
 
-  /* Find the CAN id in the TxPduList */
-  /*
-  for (uint16 i = 0; i < CanIf_ConfigPtr->InitConfig->CanIfNumberOfCanTXPduIds; i++)
-  {
-    if (entry->CanIfTxPduId == canTxPduId)
-    {
-    */
       if (entry->CanIfUserTxConfirmation != NULL)
       {
         CanIf_ChannelGetModeType mode;
@@ -688,14 +759,6 @@ void CanIf_TxConfirmation(PduIdType canTxPduId)
         }
       }
       return;
-      /*
-    }
-
-    entry++;
-  }
-  */
-  // Did not find the PDU, something is wrong
-
 }
 
 void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
@@ -714,8 +777,8 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
 
   if (CanIf_GetPduMode(channel, &mode) == E_OK)
   {
-    if (mode == CANIF_GET_OFFLINE || mode == CANIF_GET_TX_ONLINE ||
-        mode == CANIF_GET_OFFLINE_ACTIVE)
+    if ( (mode == CANIF_GET_OFFLINE) || (mode == CANIF_GET_TX_ONLINE) ||
+        (mode == CANIF_GET_OFFLINE_ACTIVE) )
     {
       // Receiver path is disabled so just drop it
       return;
@@ -748,7 +811,7 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
             else
             {
               entry++;
-              continue; // Not a supported filter type, so just drop the frame
+              continue; // Go to next entry
             }
           }
           else
@@ -771,8 +834,13 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
       {
         case CANIF_USER_TYPE_CAN_SPECIAL:
         {
-            ((CanIf_FuncTypeCanSpecial) (entry->CanIfUserRxIndication))(entry->CanIfCanRxPduId,
-                                          CanSduPtr, CanDlc, CanId);
+          ( (CanIf_FuncTypeCanSpecial)(entry->CanIfUserRxIndication) )(
+            entry->CanIfCanRxPduHrhRef->CanIfCanControllerHrhIdRef,
+            entry->CanIfCanRxPduId,
+            CanSduPtr,
+            CanDlc,
+            CanId);
+
             return;
         }
         break;
@@ -878,3 +946,8 @@ void CanIf_Arc_Error(uint8 Controller, Can_Arc_ErrorType Error)
     CanIf_ConfigPtr->DispatchConfig->CanIfErrorNotificaton(Controller, Error);
   }
 }
+uint8 CanIf_Arc_GetChannelDefaultConfIndex(CanIf_Arc_ChannelIdType Channel)
+{
+	return CanIf_Config.Arc_ChannelDefaultConfIndex[Channel];
+};
+

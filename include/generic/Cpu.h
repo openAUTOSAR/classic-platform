@@ -20,8 +20,8 @@
 
 #include "Std_Types.h"
 
-#define Irq_Save(flags)
-#define Irq_Restore(flags)
+#define Irq_Save(flags)		((flags) = 0)		// Dummy assignment to avoid compiler warnings
+#define Irq_Restore(flags)	(void)(flags)
 
 #define Irq_Disable()
 #define Irq_Enable()

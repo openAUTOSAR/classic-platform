@@ -22,8 +22,10 @@
 #ifndef COM_INTERNAL_H_
 #define COM_INTERNAL_H_
 
+#include "Com_Arc_Types.h"
 
-extern const Com_ConfigType * ComConfig;
+extern const Com_ConfigType *ComConfig;
+extern Com_Arc_Config_type Com_Arc_Config;
 
 
 
@@ -56,27 +58,28 @@ extern const Com_ConfigType * ComConfig;
 #endif
 
 
-#define TESTBIT(source,bit) (*((uint8 *)source + (bit / 8)) & (1 << (bit % 8)))
-#define SETBIT(dest,bit) *((uint8 *)dest + (bit / 8)) |= (1 << (bit % 8))
-#define CLEARBIT(dest,bit) *((uint8 *)dest + (bit / 8)) &= ~(1 << (bit % 8))
+#define TESTBIT(source,bit)	( *( (uint8 *)source  + (bit / 8) ) &  (uint8)(1u << (bit % 8)) )
+#define SETBIT(dest,bit)	( *( (uint8 *)dest    + (bit / 8) ) |= (uint8)(1u << (bit % 8)) )
+#define CLEARBIT(dest,bit)	( *( (uint8 *)dest    + (bit / 8) ) &= (uint8)~(uint8)(1u << (bit % 8)) )
+
 
 #define GET_Signal(SignalId) \
-	const ComSignal_type * Signal = &ComConfig->ComSignal[SignalId]\
+	(&ComConfig->ComSignal[SignalId])
 
 #define GET_ArcSignal(SignalId) \
-	Com_Arc_Signal_type * Arc_Signal = &Com_Arc_Config.ComSignal[SignalId]\
+	(&Com_Arc_Config.ComSignal[SignalId])
 
 #define GET_IPdu(IPduId) \
-	const ComIPdu_type *IPdu = &ComConfig->ComIPdu[IPduId]\
+	(&ComConfig->ComIPdu[IPduId])
 
 #define GET_ArcIPdu(IPduId) \
-	Com_Arc_IPdu_type *Arc_IPdu = &Com_Arc_Config.ComIPdu[IPduId]\
+	(&Com_Arc_Config.ComIPdu[IPduId])
 
 #define GET_GroupSignal(GroupSignalId) \
-	const ComGroupSignal_type *GroupSignal = &ComConfig->ComGroupSignal[GroupSignalId]\
+	(&ComConfig->ComGroupSignal[GroupSignalId])
 
 #define GET_ArcGroupSignal(GroupSignalId) \
-	Com_Arc_GroupSignal_type *Arc_GroupSignal = &Com_Arc_Config.ComGroupSignal[GroupSignalId]\
+	(&Com_Arc_Config.ComGroupSignal[GroupSignalId])
 
 
 

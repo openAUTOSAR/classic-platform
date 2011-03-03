@@ -318,13 +318,13 @@ void Gpt_StartTimer(Gpt_ChannelType channel, Gpt_ValueType period_ticks)
 		TimAddr[channel]->CR1 |= (TIM_CR1_CEN | TIM_CR1_URS | TIM_CR1_DIR);
 		TimAddr[channel]->CR1 &= ~TIM_CR1_UDIS;
 	}
-
+	#if ( GPT_ENABLE_DISABLE_NOTIFICATION_API == STD_ON )
 	if( Gpt_Global.config[confCh].GptNotification != NULL )
 	{
 		// GPT275
 		Gpt_EnableNotification(channel);
 	}
-
+	#endif
 	Gpt_Unit[channel].state = GPT_STATE_STARTED;
 }
 
@@ -339,8 +339,9 @@ void Gpt_StopTimer(Gpt_ChannelType channel)
 		// Disable timer
 		TimAddr[channel]->CR1 &= ~TIM_CR1_CEN;
 	}
-
+	#if ( GPT_ENABLE_DISABLE_NOTIFICATION_API == STD_ON )
 	Gpt_DisableNotification(channel);
+	#endif
 	Gpt_Unit[channel].state = GPT_STATE_STOPPED;
 }
 

@@ -24,6 +24,8 @@
 /** @req CANTP239 */
 /** @req CANTP242 */
 
+//lint -save -e451 //PC-Lint Wrong interpretation, "Platform_Types.h included twice without a standard include guard."
+
 #ifndef CANTP_TYPES_H_
 #define CANTP_TYPES_H_
 
@@ -87,8 +89,8 @@ typedef struct {
 
 
 typedef struct {
-	const int CanIf_FcPduId; // The polite CanIf PDU index.
-	const int PduR_PduId; // The polite PduR index.
+	const PduIdType CanIf_FcPduId; // The polite CanIf PDU index.
+	const PduIdType PduR_PduId; // The polite PduR index.
 	const CanTp_AddressingFormantType CanTpAddressingFormant;	/** @req CANTP242 */
 	const uint8 CanTpBs; /** @req CANTP243 */ /* Sets the maximum number of messages of N-PDUs before flow control. */
 	const uint16 CanTpNar; /** @req CANTP244 */ /* Timeout for transmission of a CAN frame (ms). */
@@ -110,8 +112,8 @@ typedef struct {
 } CanTp_RxNSduType; /** @req CANTP137 */
 
 typedef struct {
-	const int CanIf_PduId; // The polite CanIf index.
-	const int PduR_PduId; // The polite PduR index.
+	const PduIdType CanIf_PduId; // The polite CanIf index.
+	const PduIdType PduR_PduId; // The polite PduR index.
 	const CanTp_AddressingFormantType CanTpAddressingMode; /** @req CANTP262 */
 	const uint16 CanTpNas; /** @req CANTP263 */ /* N_As timeout for transmission of any CAN frame. */
 	const uint16 CanTpNbs; /** @req CANTP264 */ /* N_Bs timeout of transmission until reception of next Flow Control. */

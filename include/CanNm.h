@@ -14,8 +14,8 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-#ifndef CANNM_H_
-#define CANNM_H_
+#ifndef CANNM_H
+#define CANNM_H
 
 #include "ComStack_Types.h"
 #include "NmStack_Types.h"
@@ -39,37 +39,37 @@
 #include "CanNm_Cfg.h"
 
 /** @req CANNM018 */
-#define CANNM_E_NO_INIT						0x01 /**< API service used */
-#define CANNM_E_INVALID_CHANNEL				0x02 /**< API service called with wrong channel handle */
+#define CANNM_E_NO_INIT						0x01u /**< API service used */
+#define CANNM_E_INVALID_CHANNEL				0x02u /**< API service called with wrong channel handle */
 /** NM-Timeout Timer has abnormally expired outside of the Ready Sleep State;
 it may happen: (1) because of Bus-Off state, (2) if some ECU requests bus communication or node detection shortly
 before the NMTimeout Timer expires so that a NM message can not be transmitted in time;
 this race condition applies to event-triggered systems */
-#define CANNM_E_DEV_NETWORK_TIMEOUT			0x11
-#define NM_E_NULL_POINTER					0x12 /**< Null pointer has been passed as an argument (Does not apply to function CanNm_Init) */
+#define CANNM_E_DEV_NETWORK_TIMEOUT			0x11u
+#define NM_E_NULL_POINTER					0x12u /**< Null pointer has been passed as an argument (Does not apply to function CanNm_Init) */
 
 
-#define CANNM_SERVICEID_INIT								0x00
-#define CANNM_SERVICEID_PASSIVESTARTUP						0x01
-#define CANNM_SERVICEID_NETWORKREQUEST						0x02
-#define CANNM_SERVICEID_NETWORKRELEASE						0x03
-#define CANNM_SERVICEID_DISABLECOMMUNICATION				0x0C
-#define CANNM_SERVICEID_ENABLECOMMUNICATION					0x0D
-#define CANNM_SERVICEID_SETUSERDATA							0x04
-#define CANNM_SERVICEID_GETUSERDATA							0x05
-#define CANNM_SERVICEID_GETNODEIDENTIFIER					0x06
-#define CANNM_SERVICEID_GETLOCALNODEIDENTIFIER				0x07
-#define CANNM_SERVICEID_REPEATMESSAGEREQUEST				0x08
-#define CANNM_SERVICEID_GETPDUDATA							0x0A
-#define CANNM_SERVICEID_GETSTATE							0x0B
-#define CANNM_SERVICEID_GETVERSIONINFO						0xF1
-#define CANNM_SERVICEID_REQUESTBUSSYNCHRONIZATION			0xC0
-#define CANNM_SERVICEID_CHECKREMOTESLEEPINDICATION			0xD0
-#define CANNM_SERVICEID_TXCONFIRMATION						0x0F
-#define CANNM_SERVICEID_RXINDICATION						0x10
-#define CANNM_SERVICEID_ARC_MAINFUNCTION					0x13
+#define CANNM_SERVICEID_INIT								0x00u
+#define CANNM_SERVICEID_PASSIVESTARTUP						0x01u
+#define CANNM_SERVICEID_NETWORKREQUEST						0x02u
+#define CANNM_SERVICEID_NETWORKRELEASE						0x03u
+#define CANNM_SERVICEID_DISABLECOMMUNICATION				0x0Cu
+#define CANNM_SERVICEID_ENABLECOMMUNICATION					0x0Du
+#define CANNM_SERVICEID_SETUSERDATA							0x04u
+#define CANNM_SERVICEID_GETUSERDATA							0x05u
+#define CANNM_SERVICEID_GETNODEIDENTIFIER					0x06u
+#define CANNM_SERVICEID_GETLOCALNODEIDENTIFIER				0x07u
+#define CANNM_SERVICEID_REPEATMESSAGEREQUEST				0x08u
+#define CANNM_SERVICEID_GETPDUDATA							0x0Au
+#define CANNM_SERVICEID_GETSTATE							0x0Bu
+#define CANNM_SERVICEID_GETVERSIONINFO						0xF1u
+#define CANNM_SERVICEID_REQUESTBUSSYNCHRONIZATION			0xC0u
+#define CANNM_SERVICEID_CHECKREMOTESLEEPINDICATION			0xD0u
+#define CANNM_SERVICEID_TXCONFIRMATION						0x0Fu
+#define CANNM_SERVICEID_RXINDICATION						0x10u
+#define CANNM_SERVICEID_ARC_MAINFUNCTION					0x13u
 
-#define CANNM_CBV_REPEAT_MESSAGE_REQUEST					(1 << 0)  /**< @req CANNM045 */
+#define CANNM_CBV_REPEAT_MESSAGE_REQUEST					0x01u  /**< @req CANNM045 */
 
 // Functions called by NM Interface
 // --------------------------------
@@ -121,7 +121,9 @@ Nm_ReturnType CanNm_GetPduData( const NetworkHandleType nmChannelHandle, uint8 *
 Nm_ReturnType CanNm_GetState( const NetworkHandleType nmChannelHandle, Nm_StateType * const nmStatePtr, Nm_ModeType * const nmModePtr );
 
 /** This service returns the version information of this module. */
-void CanNm_GetVersionInfo( Std_VersionInfoType * versioninfo );
+#if ( CANNM_VERSION_INFO_API == STD_ON )
+#define CanNm_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,CANNM)
+#endif /* CANNM_VERSION_INFO_API */
 
 /** Request bus synchronization. */
 Nm_ReturnType CanNm_RequestBusSynchronization( const NetworkHandleType nmChannelHandle );
@@ -143,4 +145,4 @@ void CanNm_TxConfirmation( PduIdType canNmTxPduId );
 void CanNm_RxIndication( PduIdType canNmRxPduId, const uint8 *canSduPtr );
 
 
-#endif /* CANNM_H_ */
+#endif /* CANNM_H */

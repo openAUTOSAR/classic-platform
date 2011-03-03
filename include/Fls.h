@@ -143,5 +143,6 @@ void Fls_SetMode(		Fls_ModeType Mode );
 
 void Fls_GetVersionInfo( Std_VersionInfoType *VersioninfoPtr );
 
+void Fls_Check( uint32 flsBaseAddress, uint32 flsTotalSize );
 
 #endif /*FLS_H_*/

@@ -30,31 +30,31 @@ void EcuM_ValidateWakeupEvent(EcuM_WakeupSourceType sources);
 
 void EcuM_ErrorHook(Std_ReturnType reason);
 
-void EcuM_AL_DriverInitZero();
-EcuM_ConfigType* EcuM_DeterminePbConfiguration();
+void EcuM_AL_DriverInitZero(void);
+EcuM_ConfigType* EcuM_DeterminePbConfiguration(void);
 void EcuM_AL_DriverInitOne(const EcuM_ConfigType* ConfigPtr);
 void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr);
 void EcuM_AL_DriverInitThree(const EcuM_ConfigType* ConfigPtr);
 
-void EcuM_OnRTEStartup();
+void EcuM_OnRTEStartup(void);
 
-void EcuM_OnEnterRUN();
-void EcuM_OnExitRun();
-void EcuM_OnExitPostRun();
+void EcuM_OnEnterRUN(void);
+void EcuM_OnExitRun(void);
+void EcuM_OnExitPostRun(void);
 
-void EcuM_OnPrepShutdown();
-void EcuM_OnGoSleep();
-void EcuM_OnGoOffOne();
-void EcuM_OnGoOffTwo();
+void EcuM_OnPrepShutdown(void);
+void EcuM_OnGoSleep(void);
+void EcuM_OnGoOffOne(void);
+void EcuM_OnGoOffTwo(void);
 
 void EcuM_EnableWakeupSources(EcuM_WakeupSourceType wakeupSource);
 void Ecum_DisableWakeupSources(EcuM_WakeupSourceType wakeupSource);
 
-void EcuM_GenerateRamHash();
-uint8 EcuM_CheckRamHash();
+void EcuM_GenerateRamHash(void);
+uint8 EcuM_CheckRamHash(void);
 
-void EcuM_AL_SwitchOff();
-void Ecum_AL_DriverRestart();
+void EcuM_AL_SwitchOff(void);
+void Ecum_AL_DriverRestart(void);
 
 void EcuM_StartWakeupSources(EcuM_WakeupSourceType wakeupSource);
 void EcuM_CheckValidation(EcuM_WakeupSourceType wakeupSource);
@@ -63,6 +63,6 @@ void EcuM_StopWakeupSources(EcuM_WakeupSourceType wakeupSource);
 EcuM_WakeupReactionType EcuM_OnWakeupReaction(EcuM_WakeupReactionType wact);
 
 void EcuM_CheckWakeup(EcuM_WakeupSourceType wakeupSource);
-void EcuM_SleepActivity();
+void EcuM_SleepActivity(void);
 
 #endif /*ECUM_CBK_H_*/

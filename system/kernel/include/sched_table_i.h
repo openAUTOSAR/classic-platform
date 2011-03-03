@@ -46,7 +46,7 @@ enum OsScheduleTableAutostartType {
 	// Start with StartScheduleTableRel()
 	SCHTBL_AUTOSTART_RELATIVE,
 	// Start with StartScheduleTableSyncon()
-	SCHTBL_AUTOSTART_SYNCHRONE,
+	SCHTBL_AUTOSTART_SYNCHRONE
 };
 
 

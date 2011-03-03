@@ -30,7 +30,6 @@
 #include "isr.h"
 
 /* ----------------------------[private define]------------------------------*/
-//#define USE_TRACE 1
 //#define USE_LDEBUG_PRINTF 1
 #include "debug.h"
 
@@ -113,6 +112,13 @@ void Mcu_LossOfLock( void  ) {
 #if defined(USE_DEM)
 	Dem_ReportErrorStatus(MCU_E_CLOCK_FAILURE, DEM_EVENT_STATUS_FAILED);
 #endif
+
+  /*
+   * NOTE!!!
+   * This interrupt may be triggered more than expected.
+   * If you are going to use this interrupt, see [Freescale Device Errata MPC5510ACE, Rev. 10 APR 2009, errata ID: 6764].
+   *
+   */
 
 	Mcu_Global.stats.lossOfLockCnt++;
 	// Clear interrupt

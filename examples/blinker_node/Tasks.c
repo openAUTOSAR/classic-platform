@@ -18,6 +18,8 @@
 
 #include "EcuM.h"
 #include "blinker_main.h"
+
+//#define USE_LDEBUG_PRINTF // Uncomment this to turn debug statements on.
 #include "debug.h"
 
 

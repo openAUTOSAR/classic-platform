@@ -147,7 +147,7 @@ void Nm_StateChangeNotification(
   * cyclic scheduling. This function is supplied for the NM coordinator functionality
   * (Nm020). However, specific implementation may not need it (Nm093) */
 /** @req NM118 */
-void Nm_MainFunction();
+void Nm_MainFunction(void);
 
 
 #endif /* NM_H_ */

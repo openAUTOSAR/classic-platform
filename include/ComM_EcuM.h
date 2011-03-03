@@ -20,10 +20,10 @@
 
 
 
-#ifndef COMM_ECUM_H_
-#define COMM_ECUM_H_
+#ifndef COMM_ECUM_H
+#define COMM_ECUM_H
 
-void ComM_EcuM_RunModeIndication( NetworkHandleType channel );
+void ComM_EcuM_RunModeIndication( NetworkHandleType Channel );
 void ComM_EcuM_WakeUpIndication( NetworkHandleType Channel );
 
-#endif /*COMM_ECUM_H_*/
+#endif /*COMM_ECUM_H*/

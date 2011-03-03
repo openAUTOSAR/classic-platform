@@ -38,7 +38,7 @@
 #define CANIF_AR_PATCH_VERSION   2
 
 #define CANIF_SW_MAJOR_VERSION   1
-#define CANIF_SW_MINOR_VERSION   1
+#define CANIF_SW_MINOR_VERSION   2
 #define CANIF_SW_PATCH_VERSION   0
 
 #include "Det.h"
@@ -102,8 +102,12 @@ CanIf_NotifStatusType CanIf_ReadRxNotifStatus(PduIdType CanRxPduId);
 Std_ReturnType CanIf_SetPduMode( uint8 Controller, CanIf_ChannelSetModeType PduModeRequest );
 Std_ReturnType CanIf_GetPduMode( uint8 Controller, CanIf_ChannelGetModeType *PduModePtr );
 
-#if ( CANIF_SETDYNAMICTXID_API == STD_ON )
+#if ( CANIF_ARC_RUNTIME_PDU_CONFIGURATION == STD_ON )
 void CanIf_SetDynamicTxId( PduIdType CanTxPduId, Can_IdType CanId );
+CanIf_TxPduConfigType * CanIf_FindTxPduEntry(PduIdType id);
+CanIf_RxPduConfigType * CanIf_FindRxPduEntry(PduIdType id);
+const CanIf_HrhConfigType* CanIf_Arc_GetReceiveHandler(CanIf_Arc_ChannelIdType Channel);
+const CanIf_HthConfigType* CanIf_Arc_GetTransmitHandler(CanIf_Arc_ChannelIdType Channel);
 #endif
 
 #if ( CANIF_TRANSCEIVER_API == STD_ON )
@@ -121,5 +125,7 @@ Std_ReturnType CanIf_CheckValidation( EcuM_WakeupSourceType WakeupSource );
 #if ( CANIF_VERSION_INFO_API == STD_ON )
 #define CanIf_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,CANIF)
 #endif
+
+uint8 CanIf_Arc_GetChannelDefaultConfIndex(CanIf_Arc_ChannelIdType Channel);
 
 #endif /*CANIF_H_*/

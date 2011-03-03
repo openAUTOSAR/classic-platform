@@ -25,8 +25,8 @@
 
 #include "Com.h"
 
-void Com_MainFunctionRx();
-void Com_MainFunctionTx();
+void Com_MainFunctionRx(void);
+void Com_MainFunctionTx(void);
 
 // Not supported in this version.
 //void Com_MainFunctionRouteSignals();

@@ -24,7 +24,7 @@
 #define ECUM_H_
 
 #include "Std_Types.h"
-#include "Os.h"
+#include <Os.h>
 #if defined(USE_COM)
 #include "ComStack_Types.h"
 #endif
@@ -39,6 +39,7 @@
 #define ECUM_E_MISMATCHED_RUN_RELEASE (0x15)
 #define ECUM_E_STATE_PAR_OUT_OF_RANGE (0x16)
 #define ECUM_E_UNKNOWN_WAKEUP_SOURCE (0x17)
+#define ECUM_E_ARC_TIMERERROR (0x18)
 //@}
 
 /** @name Service id's */
@@ -58,6 +59,7 @@
 #define ECUM_GET_BOOTARGET_ID (0x13)
 #define ECUM_MAINFUNCTION_ID (0x18)
 #define ECUM_COMM_HASREQUESTEDRUN_ID (0x1b)
+#define ECUM_ARC_STARTUPTWO_ID (0x20)
 
 /** Possible states */
 typedef enum {
@@ -114,7 +116,7 @@ enum {
 	 *  If hardware cannot distinguish between a
 	 *  power cycle and a reset reason, then this
 	 *  shall be the default wakeup source */
-	ECUM_WKSOURCE_RESET = 0x02,
+	ECUM_WKSOURCE_RESET = 0x02
 };
 
 typedef uint32 EcuM_WakeupSourceType;
@@ -124,20 +126,20 @@ typedef enum
 	ECUM_WKSTATUS_NONE = 0,        /**< No pending wakeup event was detected */
 	ECUM_WKSTATUS_PENDING = 1,     /**< The wakeup event was detected but not yet validated */
 	ECUM_WKSTATUS_VALIDATED = 2,   /**< The wakeup event is valid */
-	ECUM_WKSTATUS_EXPIRED = 3,     /**< The wakeup event has not been validated and has expired therefore */
+	ECUM_WKSTATUS_EXPIRED = 3     /**< The wakeup event has not been validated and has expired therefore */
 } EcuM_WakeupStatusType;
 
 typedef enum
 {
 	ECUM_WWKACT_RUN = 0,       /**< Initialization into RUN state */
 	ECUM_WKACT_TTII = 2,       /**< Execute time triggered increased inoperation protocol and shutdown */
-	ECUM_WKACT_SHUTDOWN = 3,   /**< Immediate shutdown */
+	ECUM_WKACT_SHUTDOWN = 3   /**< Immediate shutdown */
 } EcuM_WakeupReactionType;
 
 typedef enum
 {
 	ECUM_BOOT_TARGET_APP = 0,          /**< The Ecu will boot into the application */
-	ECUM_BOOT_TARGET_BOOTLOADER = 1,   /**< The Ecu will boot into the bootloader */
+	ECUM_BOOT_TARGET_BOOTLOADER = 1   /**< The Ecu will boot into the bootloader */
 } EcuM_BootTargetType;
 
 
@@ -159,8 +161,8 @@ typedef enum
 #endif
 
 void EcuM_Init( void );
-void EcuM_StartupTwo();
-void EcuM_Shutdown();
+void EcuM_StartupTwo(void);
+void EcuM_Shutdown(void);
 
 Std_ReturnType EcuM_GetState(EcuM_StateType* state);
 
@@ -170,22 +172,22 @@ Std_ReturnType EcuM_ReleaseRUN(EcuM_UserType user);
 Std_ReturnType EcuM_RequestPOST_RUN(EcuM_UserType user);
 Std_ReturnType EcuM_ReleasePOST_RUN(EcuM_UserType user);
 
-void EcuM_KillAllRUNRequests();
+void EcuM_KillAllRUNRequests(void);
 
-#if defined(USE_COM)
+#if defined(USE_COMM)
 Std_ReturnType EcuM_ComM_RequestRUN(NetworkHandleType channel);
 Std_ReturnType EcuM_ComM_ReleaseRUN(NetworkHandleType channel);
 boolean EcuM_ComM_HasRequestedRUN(NetworkHandleType channel);
 #endif
 
-Std_ReturnType EcuM_SelectShutdownTarget(EcuM_StateType target, uint8 mode);
-Std_ReturnType EcuM_GetShutdownTarget(EcuM_StateType* target, uint8* mode);
-Std_ReturnType EcuM_GetLastShutdownTarget(EcuM_StateType* target, uint8* mode);
+Std_ReturnType EcuM_SelectShutdownTarget(EcuM_StateType shutdownTarget, uint8 sleepMode);
+Std_ReturnType EcuM_GetShutdownTarget(EcuM_StateType* shutdownTarget, uint8* sleepMode);
+Std_ReturnType EcuM_GetLastShutdownTarget(EcuM_StateType* shutdownTarget, uint8* sleepMode);
 
-EcuM_WakeupSourceType EcuM_GetPendingWakeupEvents();
+EcuM_WakeupSourceType EcuM_GetPendingWakeupEvents(void);
 void EcuM_ClearWakeupEvent(EcuM_WakeupSourceType sources);
-EcuM_WakeupSourceType EcuM_GetValidatedWakeupEvents();
-EcuM_WakeupSourceType EcuM_GetExpiredWakeupEvents();
+EcuM_WakeupSourceType EcuM_GetValidatedWakeupEvents(void);
+EcuM_WakeupSourceType EcuM_GetExpiredWakeupEvents(void);
 EcuM_WakeupStatusType EcuM_GetStatusOfWakeupSource(EcuM_WakeupSourceType sources);
 
 Std_ReturnType EcuM_SelectApplicationMode(AppModeType appMode);
@@ -195,9 +197,6 @@ Std_ReturnType EcuM_SelectBootTarget(EcuM_BootTargetType target);
 Std_ReturnType EcuM_GetBootTarget(EcuM_BootTargetType* target);
 
 void EcuM_MainFunction(void);
-
-void EcuM_OnGoOffTwo( void );
-void EcuM_AL_SwitchOff( void );
 
 #endif /*ECUM_H_*/
 /** @} */

@@ -16,6 +16,7 @@
 #warning "This default file may only be used as an example!"
 
 #include "EcuM.h"
+#include "EcuM_Cbk.h"
 #include "Det.h"
 #if defined(USE_DEM)
 #include "Dem.h"
@@ -80,29 +81,40 @@
 #if defined(USE_LINSM)
 #include "LinSM.h"
 #endif
+#if defined(USE_WDG)
+#include "Wdg.h"
+#endif
+#if defined(USE_WDGM)
+#include "WdgM.h"
+#endif
 
-void EcuM_AL_DriverInitZero()
+
+void EcuM_AL_DriverInitZero(void)
 {
-	Det_Init();
-    Det_Start();
+	Det_Init();/** @req EcuM2783 */
+    Det_Start();/** @req EcuM2634 */
 }
 
-EcuM_ConfigType* EcuM_DeterminePbConfiguration()
+EcuM_ConfigType* EcuM_DeterminePbConfiguration(void)
 {
 	return &EcuMConfig;
 }
 
 void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
 {
+  //lint --e{715}       PC-Lint (715) - ConfigPtr usage depends on configuration of modules
 #if defined(USE_MCU)
 	Mcu_Init(ConfigPtr->McuConfig);
 
-	// Set up default clock (Mcu_InitClock requires initRun==1)
-	Mcu_InitClock( ConfigPtr->McuConfig->McuDefaultClockSettings );
+	/* Set up default clock (Mcu_InitClock requires initRun==1) */
+	/* Ignoring return value */
+	(void) Mcu_InitClock( ConfigPtr->McuConfig->McuDefaultClockSettings );
 
 	// Wait for PLL to sync.
 	while (Mcu_GetPllStatus() != MCU_PLL_LOCKED)
+	{
 	  ;
+	}
 #endif
 
 #if defined(USE_DEM)
@@ -122,7 +134,13 @@ void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
 #endif
 
 	// Setup watchdog
-	// TODO
+	#if defined(USE_WDG)
+	Wdg_Init(ConfigPtr->WdgConfig);
+#endif
+#if defined(USE_WDGM)
+	WdgM_Init(ConfigPtr->WdgMConfig);
+#endif
+
 
 #if defined(USE_DMA)
 	// Setup DMA
@@ -146,6 +164,8 @@ void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
 
 void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 {
+  //lint --e{715}       PC-Lint (715) - ConfigPtr usage depends on configuration of modules
+
 #if defined(USE_SPI)
 	// Setup SPI
 	Spi_Init(ConfigPtr->SpiConfig);
@@ -231,11 +251,12 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 	// Setup IO hardware abstraction layer
 	IoHwAb_Init();
 #endif
-
 }
 
-void EcuM_AL_DriverInitThree(const EcuM_ConfigType ConfigPtr)
+void EcuM_AL_DriverInitThree(const EcuM_ConfigType* ConfigPtr)
 {
+  //lint --e{715}       PC-Lint (715) - ConfigPtr usage depends on configuration of modules
+
 #if defined(USE_DEM)
 	// Setup DEM
 	Dem_Init();

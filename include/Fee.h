@@ -88,14 +88,14 @@
 void Fee_MainFunction(void);	/** @req FEE097 */
 
 void Fee_Init(void);	/** @req FEE085 */
-void Fee_SetMode(MemIf_ModeType Mode);	/** @req FEE086 */
-Std_ReturnType Fee_Read(uint16 BlockNumber, uint16 BlockOffset, uint8* DataBufferPtr, uint16 Length); /** @req FEE087 */
-Std_ReturnType Fee_Write(uint16 BlockNumber, uint8* DataBufferPtr); /** @req FEE088 */
+void Fee_SetMode(MemIf_ModeType mode);	/** @req FEE086 */
+Std_ReturnType Fee_Read(uint16 blockNumber, uint16 blockOffset, uint8* dataBufferPtr, uint16 length); /** @req FEE087 */
+Std_ReturnType Fee_Write(uint16 blockNumber, uint8* dataBufferPtr); /** @req FEE088 */
 void Fee_Cancel(void);	/** @req FEE089 */
 MemIf_StatusType Fee_GetStatus(void);	/** @req FEE090 */
 MemIf_JobResultType Fee_GetJobResult(void);	/** @req FEE091 */
-Std_ReturnType Fee_InvalidateBlock(uint16 BlockNumber);	/** @req FEE092 */
-Std_ReturnType Fee_EraseImmediateBlock(uint16 BlockNumber);	/** @req FEE094 */
+Std_ReturnType Fee_InvalidateBlock(uint16 blockNumber);	/** @req FEE092 */
+Std_ReturnType Fee_EraseImmediateBlock(uint16 blockNumber);	/** @req FEE094 */
 
 
 

@@ -1,5 +1,9 @@
+
+_BOARD_COMMON_MK:=y  # Include guard for backwards compatability
+
 obj-$(CFG_PPC) += crt0.o
 obj-$(CFG_HC1X) += crt0.o
+
 vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
 vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32F10x_StdPeriph_Driver/src
 vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32_ETH_Driver/src
@@ -10,7 +14,7 @@ obj-$(CFG_ARM_CM3) += startup_stm32f10x.o
 #stm32 lib files needed by drivers
 obj-$(CFG_ARM_CM3) += stm32f10x_rcc.o
 obj-$(CFG_ARM_CM3)-$(USE_CAN) += stm32f10x_can.o
-obj-$(CFG_ARM_CM3)-$(USE_DIO) += stm32f10x_gpio.o
+obj-$(CFG_ARM_CM3)-$(USE_PORT) += stm32f10x_gpio.o
 obj-$(CFG_ARM_CM3)-$(USE_ADC) += stm32f10x_adc.o
 obj-$(CFG_ARM_CM3)-$(USE_ADC) += stm32f10x_dma.o
 obj-$(CFG_ARM_CM3)-$(USE_FLS) += stm32f10x_flash.o
@@ -49,7 +53,7 @@ inc-$(USE_DMA) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers
 # Mcu
 obj-$(USE_MCU) += Mcu.o
 obj-$(USE_MCU) += Mcu_Cfg.o
-obj-$(CFG_MPC55XX)-$(USE_MCU) += Mcu_Exceptions.o
+#obj-$(CFG_MPC55XX)-$(USE_MCU) += Mcu_Exceptions.o
 
 # Flash
 obj-$(USE_FLS) += Fls.o
@@ -118,10 +122,19 @@ vpath-y += $(ROOTDIR)/peripherals
 
 #Wdg
 obj-$(USE_WDG) += Wdg.o
+obj-$(USE_WDG) += Wdg_Lcfg.o
+
+#WdgIf
+obj-$(USE_WDG) += WdgIf.o
+obj-$(USE_WDG) += WdgIf_Cfg.o
+inc-y += $(ROOTDIR)/system/WdgIf
+vpath-y += $(ROOTDIR)/system/WdgIf
 
 #WdgM
 obj-$(USE_WDGM) += WdgM.o
-obj-$(USE_WDGM) += WdgM_Cfg.o
+obj-$(USE_WDGM) += WdgM_PBcfg.o
+inc-y += $(ROOTDIR)/system/WdgM
+vpath-y += $(ROOTDIR)/system/WdgM
 
 #Pwm
 obj-$(USE_PWM) += Pwm.o
@@ -176,9 +189,7 @@ obj-$(USE_COM) += Com_PbCfg.o
 obj-$(USE_COM) += Com_Com.o
 obj-$(USE_COM) += Com_Sched.o
 obj-$(USE_COM) += Com.o
-obj-$(USE_COM) += Com_RunTest.o
 obj-$(USE_COM) += Com_misc.o
-#obj-$(USE_COM) += Com_TestData.o
 inc-$(USE_PDUR) += $(ROOTDIR)/communication/Com
 inc-$(USE_COM) += $(ROOTDIR)/communication/Com
 vpath-$(USE_COM) += $(ROOTDIR)/communication/Com
@@ -231,22 +242,25 @@ vpath-$(USE_TCF) += $(ROOTDIR)/common/tcf
 #SLEEP
 obj-$(USE_SLEEP) += sleep.o
 
-
-# Newlib overrides (overridden by default)
-ifneq ($(CFG_STANDARD_NEWLIB),y)
 obj-y += xtoa.o
-obj-y += newlib_port.o
-# If we have configured console output we include printf. 
-# Overridden to use lib implementation with CFG_NEWLIB_PRINTF
-ifneq ($(CFG_NEWLIB_PRINTF),y)
-# TODO: This assumes that you print to console.. but you could
-#       just print to a buffer, e.g. sprintf() 
-ifneq (,$(SELECT_CONSOLE) $(SELECT_OS_CONSOLE))
-obj-y += printf.o
 
-endif # SELECT_CONSOLE
-endif # CFG_NEWLIB_PRINTF
-endif # CFG_STANDARD_NEWLIB
+SELECT_CLIB?=CLIB_NEWLIB
+
+ifeq ($(SELECT_CLIB),CLIB_CW)
+  # This is not good, but don't know what to do right now....
+  obj-y += msl_port.o
+else
+  # Newlib
+  obj-y += newlib_port.o
+  # If we have configured console output we include printf. 
+  # Overridden to use lib implementation with CFG_NEWLIB_PRINTF
+  ifneq ($(CFG_NEWLIB_PRINTF),y)
+    ifneq (,$(SELECT_CONSOLE) $(SELECT_OS_CONSOLE))
+      obj-y += printf.o
+    endif # SELECT_CONSOLE
+  endif # CFG_NEWLIB_PRINTF
+endif # SELECT_CLIB 
+
 
 obj-y += $(obj-y-y)
 
@@ -283,3 +297,4 @@ VPATH += $(vpath-y)
 
 # libs needed by us
 #build-lib-y += $(ROOTDIR)/libs/libboard_$(BOARDDIR).a
+

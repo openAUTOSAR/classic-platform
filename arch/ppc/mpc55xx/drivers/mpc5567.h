@@ -40,6 +40,7 @@
 #ifndef _MPC5567_H_
 #define _MPC5567_H_
 
+#include "Compiler.h"
 #include "typedefs.h"
 
 #ifdef  __cplusplus

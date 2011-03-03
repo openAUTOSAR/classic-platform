@@ -1,6 +1,12 @@
 #include "asm_ppc.h"
 
+#if defined(__GNUC__)
 .section ".rcw","ax"
+.balign  4
+#elif defined(__CWCC__)
+.section .rcw,4,"r"
+#endif
+
 .global _resetconfiguration
 _resetconfiguration:
 	.byte  0x00   #no watchdog
@@ -10,6 +16,17 @@ _resetconfiguration:
 	.long _start
 
 
+	.extern _SDA_BASE_
+	.extern _SDA2_BASE_
+	.extern __SP_INIT
+	.extern __DATA_RAM
+	.extern __DATA_END
+	.extern __BSS_START
+	.extern __BSS_END
+	.extern __DATA_ROM
+	.extern exit
+	.extern main
+	
 	.text
 	.align		4
 
@@ -28,6 +45,7 @@ _redled:
 	stw r0, 8(r3)
 	b _exit
 
+__start:
 _start:
 	// Set up the reserved registers in EABI: r1,r2 and r13
 
@@ -53,12 +71,12 @@ _start:
 	lbz r4,0(r3)
 #endif
 
-       # Clear all SRAM
+	/*  Clear all SRAM */
 init_RAM:
 	lis r11,0x4000 # base address of the SRAM, 64-bit word aligned
 	ori r11,r11,0 # not needed for this address but could be for others
 	li r12,640 # loop counter to get all of SRAM;
-	# 80k/4 bytes/32 GPRs = 640
+	/* 80k/4 bytes/32 GPRs = 640 */
 	mtctr r12
 
 init_ram_loop:
@@ -85,32 +103,32 @@ init_ram_loop:
 	beq		skip_data
 	subi	r3,r3,1
 	subi	r4,r4,1
-1:
+copy_data:
 	lbzu	r6,1(r3)
 	stbu	r6,1(r4)
 	cmplw	r4,r5
-	bne+	1b
+	bne+	copy_data
 skip_data:
 
-	# Clear uninitialized data( holds both bss and sbss )
+	/* Clear uninitialized data( holds both bss and sbss ) */
 	lis		r3,__BSS_START@h
 	ori		r3,r3,__BSS_START@l
 	lis		r4,__BSS_END@h
 	ori		r4,r4,__BSS_END@l
 	cmplw	r3,r4
-	beq		3f
+	beq		skip_bss
 	li		r0,0
 	subi	r3,r3,1
-2:
+copy_bss:
 	stbu	r0,1(r3)
 	cmplw	r3,r4
-	bne+	2b
-3:
-	# Call main() with argc set to 1 and argv ignored
+	bne+	copy_bss
+skip_bss:
+	/* Call main() with argc set to 1 and argv ignored */
 	li	r3,1
 	bl	main
 
-	# Call exit() with the return value from main() as argument
+	/* Call exit() with the return value from main() as argument */
 	b	exit
 
 	.globl	_exit

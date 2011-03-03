@@ -101,59 +101,54 @@ Gpt_GlobalType Gpt_Global;
 
 //-------------------------------------------------------------------
 
-
-/**
- * ISR helper-function that handles the HW channels( 0 to 8 )
- *
- * @param channel - Channel that the raised the interrupt
+/*
+ * ISR for a given PIT channel (macro)
  */
-
-static void Gpt_IsrCh(Gpt_ChannelType channel)
-{
-  const Gpt_ConfigType *config;
-  int confCh;
-
-  confCh = Gpt_Global.channelMap[channel];
-  assert(confCh != GPT_CHANNEL_ILL);
-
-  config = &Gpt_Global.config[confCh];
-
-  if (config->GptChannelMode == GPT_MODE_ONESHOT)
-  {
-    // Disable the channel
-    PIT.EN.R &= ~(1<<channel);
-
-    Gpt_Unit[channel].state = GPT_STATE_STOPPED;
+#define GPT_ISR( _channel )                            \
+  static void Gpt_Isr_Channel##_channel( void )        \
+  {                                                    \
+    const Gpt_ConfigType *config;                      \
+    int confCh;                                        \
+                                                       \
+    /* Find the config entry for the PIT channel. */   \
+    confCh = Gpt_Global.channelMap[ _channel ];        \
+    assert(confCh != GPT_CHANNEL_ILL);                 \
+    config = &Gpt_Global.config[ confCh ];             \
+                                                       \
+    if( config->GptChannelMode == GPT_MODE_ONESHOT )   \
+    {                                                  \
+      /* Disable the channel. */                       \
+      PIT.EN.R &= ~( 1 << _channel );                  \
+                                                       \
+      Gpt_Unit[_channel].state = GPT_STATE_STOPPED;    \
+    }                                                  \
+    config->GptNotification();                         \
+                                                       \
+    /* Clear interrupt. */                             \
+    PIT.FLG.R = ( 1 << _channel );                     \
   }
-  config->GptNotification();
 
-  // Clear interrupt
-  PIT.FLG.R = (1<<channel); // Added by Mattias 2009-01
-}
+#define STR__(x)	#x
+#define XSTR__(x) STR__(x)
 
-//-------------------------------------------------------------------
-// Macro that counts leading zeroes.
-#define CNTLZW_INV(x) (31-cntlzw(x))
-
-/**
- * ISR that handles all interrupts to the PIT channels
- * ( NOT the decrementer )
+/*
+ * Create instances of the ISR for each PIT channel.
  */
+GPT_ISR( 0 );
+GPT_ISR( 1 );
+GPT_ISR( 2 );
+GPT_ISR( 3 );
+GPT_ISR( 4 );
+GPT_ISR( 5 );
+GPT_ISR( 6 );
+GPT_ISR( 7 );
+GPT_ISR( 8 );
 
-static void Gpt_Isr(void)
-{
-  uint32 flgMask= PIT.FLG.R;
-  uint8 chNr = 0;
-
-  // Loop over all interrupts
-  for (; flgMask; flgMask&=~(1<<chNr))
-  {
-    // Find first channel that is requesting service.
-    chNr = CNTLZW_INV(flgMask);
-    Gpt_IsrCh(chNr);
-    // Clear interrupt
-    PIT.FLG.R = (1<<chNr);
-  }
+#define GPT_ISR_INSTALL( _channel, _prio )													\
+{																					\
+	TaskType tid;																	\
+	tid = Os_Arc_CreateIsr(Gpt_Isr_Channel##_channel, _prio, XSTR__(Gpt_##_channel));	\
+	Irq_AttachIsr2(tid, NULL, PIT_PITFLG_RTIF + _channel);							\
 }
 
 //-------------------------------------------------------------------
@@ -190,14 +185,24 @@ void Gpt_Init(const Gpt_ConfigType *config)
     {
       if (cfg->GptNotification != NULL)
       {
-
-#if defined(USE_KERNEL)
-			TaskType tid;
-			tid = Os_Arc_CreateIsr(Gpt_Isr, 2, "Gpt_Isr");
-			Irq_AttachIsr2(tid, NULL, PIT_PITFLG_RTIF + ch);
-#else
-			IntCtrl_InstallVector(Gpt_Isr, PIT_PITFLG_RTIF + ch, 1, CPU_Z1);
-#endif
+        switch( ch )
+        {
+          case 0: GPT_ISR_INSTALL( 0, cfg->GptNotificationPriority ); break;
+          case 1: GPT_ISR_INSTALL( 1, cfg->GptNotificationPriority ); break;
+          case 2: GPT_ISR_INSTALL( 2, cfg->GptNotificationPriority ); break;
+          case 3: GPT_ISR_INSTALL( 3, cfg->GptNotificationPriority ); break;
+          case 4: GPT_ISR_INSTALL( 4, cfg->GptNotificationPriority ); break;
+          case 5: GPT_ISR_INSTALL( 5, cfg->GptNotificationPriority ); break;
+          case 6: GPT_ISR_INSTALL( 6, cfg->GptNotificationPriority ); break;
+          case 7: GPT_ISR_INSTALL( 7, cfg->GptNotificationPriority ); break;
+          case 8: GPT_ISR_INSTALL( 8, cfg->GptNotificationPriority ); break;
+          default:
+          {
+            // Unknown PIT channel.
+            assert( 0 );
+            break;
+          }
+        }
       }
     }
 #if defined(USE_KERNEL)
@@ -345,6 +350,11 @@ Gpt_ValueType Gpt_GetTimeRemaining(Gpt_ChannelType channel)
   {
     remaining = get_spr(SPR_DEC);
   }
+  else
+  {
+    /* We have written a fault in the fault log. Return 0. */
+    remaining = 0;
+  }
 
 return remaining;
 }
@@ -371,6 +381,11 @@ Gpt_ValueType Gpt_GetTimeElapsed(Gpt_ChannelType channel)
   else if (channel == GPT_CHANNEL_DEC)
   {
     timer = get_spr(SPR_DECAR) - get_spr(SPR_DEC);
+  }
+  else
+  {
+    /* We have written a fault in the fault log. Return 0. */
+    timer = 0;
   }
 
   return (timer);

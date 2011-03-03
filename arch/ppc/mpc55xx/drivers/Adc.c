@@ -32,6 +32,7 @@
 #if defined(USE_KERNEL)
 #include "Os.h"
 #include "isr.h"
+#include "arc.h"
 #endif
 
 

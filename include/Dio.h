@@ -38,7 +38,7 @@
 #define DIO_E_PARAM_INVALID_PORT_ID 		20
 #define DIO_E_PARAM_INVALID_GROUP_ID 		31
 
-#if defined(CFG_HC1X)
+#if defined(CFG_HC1X) || defined(CFG_TMS570)
 typedef uint8 Dio_ChannelType;
 typedef uint8 Dio_PortType;
 

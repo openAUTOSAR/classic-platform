@@ -52,7 +52,7 @@ typedef Std_ReturnType (*Dcm_CallbackGetPIDValueFncType)(uint8 *dataValueBuffer)
 
 // DidServices_<DID>
 typedef Std_ReturnType (*Dcm_CallbackReadDataFncType)(uint8 *data);
-typedef Std_ReturnType (*Dcm_CallbackWriteDataFncType)(uint8 *data, uint8 dataLength, Dcm_NegativeResponseCodeType *errorCode);
+typedef Std_ReturnType (*Dcm_CallbackWriteDataFncType)(uint8 *data, uint16 dataLength, Dcm_NegativeResponseCodeType *errorCode);
 typedef Std_ReturnType (*Dcm_CallbackReadDataLengthFncType)(uint16 *didLength);
 typedef Std_ReturnType (*Dcm_CallbackConditionCheckReadFncType)(Dcm_NegativeResponseCodeType *errorCode);
 typedef Std_ReturnType (*Dcm_CallbackConditionCheckWriteFncType)(Dcm_NegativeResponseCodeType *errorCode);
@@ -69,9 +69,9 @@ typedef Std_ReturnType (*Dcm_CallbackGetInfoTypeValueFncType)(uint8 *dataValueBu
 typedef Std_ReturnType (*Dcm_CallbackGgetDTRValueFncType)(uint16 *testval, uint16 *minlimit, uint16 *maxlimit, uint8 *status);
 
 // RoutineServices_<ROUTINENAME>
-typedef Std_ReturnType (*Dcm_CallbackStartFncType)(uint8 *inBuffer, uint8 *outBuffer, Dcm_NegativeResponseCodeType *errorCode);
-typedef Std_ReturnType (*Dcm_CallbackStopFncType)(uint8 *inBuffer, uint8 *outBuffer, Dcm_NegativeResponseCodeType *errorCode);
-typedef Std_ReturnType (*Dcm_CallbackRequestResultFncType)(uint8 *outBuffer, Dcm_NegativeResponseCodeType *errorCode);
+typedef Std_ReturnType (*Dcm_CallbackStartRoutineFncType)(uint8 *inBuffer, uint8 *outBuffer, Dcm_NegativeResponseCodeType *errorCode);
+typedef Std_ReturnType (*Dcm_CallbackStopRoutineFncType)(uint8 *inBuffer, uint8 *outBuffer, Dcm_NegativeResponseCodeType *errorCode);
+typedef Std_ReturnType (*Dcm_CallbackRequestResultRoutineFncType)(uint8 *outBuffer, Dcm_NegativeResponseCodeType *errorCode);
 
 // RequestControlServices_<TID>
 typedef Std_ReturnType (*Dcm_CallbackRequestControlType)(uint8 *outBuffer, uint8 *inBuffer);
@@ -165,11 +165,11 @@ typedef struct {
 } Dcm_DspDidInfoType; /** @req DCM607 */
 
 // 10.2.22
-typedef struct _Dcm_DspDidType {
+typedef struct Dcm_DspDidType {
 	boolean										DspDidUsePort;					// (1)
 	uint16										DspDidIdentifier;				// (1)		/** @req DCM602 */
 	const Dcm_DspDidInfoType					*DspDidInfoRef;					// (1)		/** @req DCM604 */
-	const struct _Dcm_DspDidType				**DspDidRef;					// (0..*)	/** @req DCM606 */
+	const struct Dcm_DspDidType					**DspDidRef;					// (0..*)	/** @req DCM606 */
 	uint16										DspDidSize;						// (1)		/** @req DCM605 */
 	Dcm_CallbackReadDataLengthFncType			DspDidReadDataLengthFnc;		// (0..1)	/** @req DCM671 */
 	Dcm_CallbackConditionCheckReadFncType		DspDidConditionCheckReadFnc;	// (0..1)	/** @req DCM677 */
@@ -222,8 +222,8 @@ typedef struct {
 
 // 10.2.37
 typedef struct {
-	const Dcm_DspSessionRowType		*DspRoutineSessionRef;			// (1..*)	/** @req DCM649 */
-	const Dcm_DspSecurityRowType	*DspRoutineSecurityLevelRef;	// (1..*)	/** @req DCM648 */
+	const Dcm_DspSessionRowType		**DspRoutineSessionRef;			// (1..*)	/** @req DCM649 */
+	const Dcm_DspSecurityRowType	**DspRoutineSecurityLevelRef;	// (1..*)	/** @req DCM648 */
 } Dcm_DspRoutineAuthorizationType; /** @req DCM644 */
 
 // 10.2.38
@@ -246,20 +246,21 @@ typedef struct {
 // 10.2.36
 typedef struct {
 	// Containers
-	const Dcm_DspRoutineAuthorizationType	*DspRoutineAuthorization;	// (1)
-	const Dcm_DspRoutineRequestResType		*DspRoutineRequestRes;		// (0..1)
-	const Dcm_DspRoutineStopType			*DspRoutineStop;			// (0..1)
+	const Dcm_DspRoutineAuthorizationType	DspRoutineAuthorization;	// (1)
 	const Dcm_DspStartRoutineType			*DspStartRoutine;			// (1)
+	const Dcm_DspRoutineStopType			*DspRoutineStop;			// (0..1)
+	const Dcm_DspRoutineRequestResType		*DspRoutineRequestRes;		// (0..1)
 } Dcm_DspRoutineInfoType; /** @req DCM643 */
 
 // 10.2.35
 typedef struct {
-	boolean								DspRoutineUsePort;			// (1)
-	uint16								DspRoutineIdentifier;		// (1)		/** @req DCM641 */
-	const Dcm_DspRoutineInfoType		*DspRoutineInfoRef;			// (1)		/** @req DCM642 */
-	Dcm_CallbackStartFncType			DspStartRoutineFnc;			// (0..1)	/** @req DCM664 */
-	Dcm_CallbackStopFncType				DspStopRoutineFnc;			// (0..1)	/** @req DCM665 */
-	Dcm_CallbackRequestResultFncType	DspRequestResultRoutineFnc;	// (0..1)	/** @req DCM665 */
+	boolean									DspRoutineUsePort;			// (1)
+	uint16									DspRoutineIdentifier;		// (1)		/** @req DCM641 */
+	const Dcm_DspRoutineInfoType			*DspRoutineInfoRef;			// (1)		/** @req DCM642 */
+	Dcm_CallbackStartRoutineFncType			DspStartRoutineFnc;			// (0..1)	/** @req DCM664 */
+	Dcm_CallbackStopRoutineFncType			DspStopRoutineFnc;			// (0..1)	/** @req DCM665 */
+	Dcm_CallbackRequestResultRoutineFncType	DspRequestResultRoutineFnc;	// (0..1)	/** @req DCM665 */
+	boolean									Arc_EOL;
 } Dcm_DspRoutineType; /** @req DCM640 */
 
 // 10.2.41
@@ -353,7 +354,7 @@ typedef struct {
 typedef enum
 {
 	BUFFER_AVAILABLE,
-	BUFFER_BUSY,
+	BUFFER_BUSY
 }Dcm_DslBufferStatusType;
 
 
@@ -426,7 +427,7 @@ typedef struct Dcm_DslProtocolRxType_t Dcm_DslProtocolRxType;
 struct Dcm_DslProtocolRxType_t {
 	const Dcm_DslMainConnectionType	*DslMainConnectionParent;				// (1) /* Cross reference. */
 	const Dcm_ProtocolAddrTypeType	DslProtocolAddrType;					// (1)
-	const uint32					DcmDslProtocolRxPduId;					// (1)
+	const PduIdType					DcmDslProtocolRxPduId;					// (1)
 	const uint32					DcmDslProtocolRxTesterSourceAddr_v4;	// (1)
 	const uint8						DcmDslProtocolRxChannelId_v4;			// (1)
 	const boolean					Arc_EOL;
@@ -439,7 +440,7 @@ typedef struct Dcm_DslProtocolTxType_t Dcm_DslProtocolTxType;
 // 10.2.14
 struct Dcm_DslProtocolTxType_t {
 	const Dcm_DslMainConnectionType	*DslMainConnectionParent;	// (1) /* Cross reference. */
-	const uint32					DcmDslProtocolTxPduId;		// (1) /* Will be removed (polite), kept for reference. */
+	const PduIdType					DcmDslProtocolTxPduId;		// (1) /* Will be removed (polite), kept for reference. */
 	const boolean					Arc_EOL;
 };
 

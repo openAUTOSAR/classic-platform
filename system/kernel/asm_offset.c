@@ -24,17 +24,23 @@
 #include <stddef.h>
 #include "internal.h"
 
+#if defined(__GNUC__)
 #define DECLARE(sym,val) \
 	__asm("#define\t" #sym "\t%0" : : "n" ((val)))
 
 void  asm_foo(void) {
-	DECLARE(PCB_STACK_CURR_P,	offsetof(OsTaskVarType, stack));
+#elif defined(__CWCC__)
+#define DECLARE(_var,_offset) \
+    __declspec(section ".apa") char _var[100+ (_offset)]
+#pragma section ".apa" ".apa"
+#endif
+DECLARE(PCB_STACK_CURR_P,	offsetof(OsTaskVarType, stack));
 	DECLARE(PCB_CONST_P,		offsetof(OsTaskVarType, constPtr));
 //	DECLARE(PCB_ENTRY_P,		offsetof(OsTaskVarType, entry));
 	DECLARE(SYS_CURR_PCB_P,		offsetof(Os_SysType, currTaskPtr));
 	DECLARE(SYS_INT_NEST_CNT, offsetof(Os_SysType, intNestCnt));
 	DECLARE(SYS_INT_STACK, offsetof(Os_SysType, intStack));
+#if defined(__GNUC__)
 }
-
-
+#endif
 

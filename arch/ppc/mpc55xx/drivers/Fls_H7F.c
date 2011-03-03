@@ -375,6 +375,7 @@ UINT32 Fls_H7F_Program ( PSSD_CONFIG pSSDConfig, Fls_ProgInfoType *pInfo )
       returnCode = Fls_H7F_ProgramStatus(pSSDConfig,pInfo);
       break;
     default:
+      returnCode = 0;
       assert(0);
       break;
     }

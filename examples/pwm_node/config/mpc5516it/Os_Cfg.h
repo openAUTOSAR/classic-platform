@@ -13,7 +13,7 @@
 */
 
 
-#if (OS_SW_MAJOR_VERSION != 2) 
+#if !(((OS_SW_MAJOR_VERSION == 2) && (OS_SW_MINOR_VERSION == 0)) )
 #error "Os: Configuration file version differs from BSW version."
 #endif
 

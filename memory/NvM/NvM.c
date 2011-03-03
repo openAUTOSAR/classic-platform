@@ -29,8 +29,16 @@
  * and shall not be used.
  */
 
+//lint -esym(522,CalcCrc) // 522 PC-Lint exception for empty functions
+//lint -emacro(904,VALIDATE_RV,VALIDATE_NO_RV) //904 PC-Lint exception to MISRA 14.7 (validate macros).
+
+// Exception made as a result of that NVM_DATASET_SELECTION_BITS can be zero
+//lint -emacro(835, BLOCK_BASE_AND_SET_TO_BLOCKNR) // 835 PC-lint: A zero has been given as right argument to operator '<<' or '>>'
+
+
 
 #include "NvM.h"
+#include "NvM_Cbk.h"
 #include "Rte.h" // ???
 #if defined(USE_DEM)
 #include "Dem.h"
@@ -52,14 +60,16 @@
           Det_ReportError(MODULE_ID_NVM, 0, _api, _err); \
         }
 
+/*
 #define VALIDATE_RV(_exp,_api,_err,_rv ) \
         if( !(_exp) ) { \
           Det_ReportError(MODULE_ID_NVM, 0, _api, _err); \
           return _rv; \
         }
+*/
 
 #define VALIDATE_NO_RV(_exp,_api,_err ) \
-  if( !(_exp) ) { \
+        if( !(_exp) ) { \
           Det_ReportError(MODULE_ID_NVM, 0, _api, _err); \
           return; \
         }
@@ -71,6 +81,9 @@
 #define VALIDATE_NO_RV(_exp,_api,_err )
 #define DET_REPORTERROR(_module,_instance,_api,_err)
 #endif
+
+#define BLOCK_BASE_AND_SET_TO_BLOCKNR(_blockbase, _set)	((uint16)(_blockbase << NVM_DATASET_SELECTION_BITS) | _set)
+
 
 // State variable
 typedef enum {
@@ -85,11 +98,6 @@ typedef enum {
 } NvmStateType;
 
 typedef enum {
-	MEMIF_STATE_IDLE,
-	MEMIF_STATE_PENDING
-} MemIfStateType;
-
-typedef enum {
 	BLOCK_STATE_IDLE,
 	BLOCK_STATE_RECALC_CRC,
 	BLOCK_STATE_RECALC_CRC_DONE,
@@ -97,12 +105,12 @@ typedef enum {
 	BLOCK_STATE_POSTCALC_CRC_DONE,
 
 	BLOCK_STATE_LOAD_FROM_NV,
-	BLOCK_STATE_LOAD_FROM_NV_DONE,
-	BLOCK_STATE_LOAD_FROM_NV_REDUNDANT,
-	BLOCK_STATE_LOAD_FROM_ROM,
+//	BLOCK_STATE_LOAD_FROM_NV_DONE,
+//	BLOCK_STATE_LOAD_FROM_NV_REDUNDANT,
+//	BLOCK_STATE_LOAD_FROM_ROM,
 
-	BLOCK_STATE_WRITE_TO_NV,
-	BLOCK_STATE_WRITE_TO_NV_DONE,
+	BLOCK_STATE_WRITE_TO_NV
+//	BLOCK_STATE_WRITE_TO_NV_DONE
 } BlockStateType;
 
 
@@ -224,7 +232,7 @@ static void ReadBlock(const NvM_BlockDescriptorType *blockDescriptor, Administra
 		SetMemifJobBusy();
 		MemIfJobAdmin.BlockAdmin = adminBlock;
 		MemIfJobAdmin.BlockDescriptor = blockDescriptor;
-		returnCode = MemIf_Read(blockDescriptor->NvramDeviceId, (blockDescriptor->NvBlockBaseNumber << NVM_DATASET_SELECTION_BITS) | setNumber, blockOffset, destAddress, blockDescriptor->NvBlockLength);
+		returnCode = MemIf_Read(blockDescriptor->NvramDeviceId, BLOCK_BASE_AND_SET_TO_BLOCKNR(blockDescriptor->NvBlockBaseNumber, setNumber), blockOffset, destAddress, blockDescriptor->NvBlockLength);
 		if (returnCode != E_OK) {
 			AbortMemIfJob(MEMIF_JOB_FAILED);
 		}
@@ -254,10 +262,10 @@ static void ReadAllInit(void)
 	AdminMultiReq.NextBlockIndex = 0;
 
 	for (i = 0; i < NVM_NUM_OF_NVRAM_BLOCKS; i++) {
-		if (BlockDescriptorList->SelectBlockForReadall
+		if ((BlockDescriptorList->SelectBlockForReadall)
 #if (NVM_SET_RAM_BLOCK_STATUS_API == STD_ON)						/** @req NVM345 */
-				&& (!AdminBlockTable->BlockValid		// TODO: Check if this is to be done like this
-				|| !AdminBlockTable->BlockChanged)		// TODO: Check if this is to be done like this
+				&& ((!AdminBlockTable->BlockValid)			// TODO: Check if this is to be done like this
+				|| (!AdminBlockTable->BlockChanged))		// TODO: Check if this is to be done like this
 #endif
 				) {
 			VALIDATE_NO_RV(BlockDescriptorList->RamBlockDataAddress != NULL, NVM_READ_ALL_ID, NVM_E_WRONG_CONFIG);
@@ -350,7 +358,7 @@ static void ReadAllCheckReadResult(void)
 			}
 
 			if (MemIfJobAdmin.BlockDescriptor->SingleBlockCallback != NULL) {
-				MemIfJobAdmin.BlockDescriptor->SingleBlockCallback(NVM_SERVICE_ID, MemIfJobAdmin.BlockAdmin->ErrorStatus); /** @req NVM281 */
+				(void)MemIfJobAdmin.BlockDescriptor->SingleBlockCallback(NVM_SERVICE_ID, MemIfJobAdmin.BlockAdmin->ErrorStatus); /** @req NVM281 */
 			}
 		}
 	} else {
@@ -389,7 +397,7 @@ static void ReadAllCheckReadResult(void)
 		}
 
 		if (MemIfJobAdmin.BlockDescriptor->SingleBlockCallback != NULL) {
-			MemIfJobAdmin.BlockDescriptor->SingleBlockCallback(NVM_SERVICE_ID, MemIfJobAdmin.BlockAdmin->ErrorStatus); /** @req NVM281 */
+			(void)MemIfJobAdmin.BlockDescriptor->SingleBlockCallback(NVM_SERVICE_ID, MemIfJobAdmin.BlockAdmin->ErrorStatus); /** @req NVM281 */
 		}
 	}
 	nvmState = NVM_READ_ALL_PROCESSING;
@@ -407,7 +415,7 @@ static void WriteBlock(const NvM_BlockDescriptorType *blockDescriptor, Administr
 		SetMemifJobBusy();
 		MemIfJobAdmin.BlockAdmin = adminBlock;
 		MemIfJobAdmin.BlockDescriptor = blockDescriptor;
-		returnCode = MemIf_Write(blockDescriptor->NvramDeviceId, (blockDescriptor->NvBlockBaseNumber << NVM_DATASET_SELECTION_BITS) | setNumber, sourceAddress);
+		returnCode = MemIf_Write(blockDescriptor->NvramDeviceId, BLOCK_BASE_AND_SET_TO_BLOCKNR(blockDescriptor->NvBlockBaseNumber, setNumber), sourceAddress);
 		if (returnCode != E_OK) {
 			AbortMemIfJob(MEMIF_JOB_FAILED);
 		}
@@ -434,10 +442,10 @@ static void WriteAllInit(void)
 	for (i = 0; i < NVM_NUM_OF_NVRAM_BLOCKS; i++) {
 		if ((BlockDescriptorList->RamBlockDataAddress != NULL)
 #if (NVM_SET_RAM_BLOCK_STATUS_API == STD_ON)						/** @req NVM344 */
-				&& AdminBlockTable->BlockValid						/** @req NVM682 */
-				&& AdminBlockTable->BlockChanged					/** @req NVM682 */
+				&& (AdminBlockTable->BlockValid)					/** @req NVM682 */
+				&& (AdminBlockTable->BlockChanged)					/** @req NVM682 */
 #endif
-				&& !AdminBlockTable->BlockWriteProtected){			/** @req NVM432 *//** @req NVM433 */
+				&& (!AdminBlockTable->BlockWriteProtected)){			/** @req NVM432 *//** @req NVM433 */
 			if (BlockDescriptorList->BlockUseCrc) {
 				AdminBlockTable->BlockState = BLOCK_STATE_RECALC_CRC;	/** @req NVM253 */
 			} else {
@@ -522,7 +530,7 @@ static void WriteAllCheckWriteResult(void)
 		MemIfJobAdmin.BlockAdmin->ErrorStatus = NVM_REQ_OK;
 
 		if (MemIfJobAdmin.BlockDescriptor->SingleBlockCallback != NULL) {
-			MemIfJobAdmin.BlockDescriptor->SingleBlockCallback(NVM_SERVICE_ID, MemIfJobAdmin.BlockAdmin->ErrorStatus);
+			(void)MemIfJobAdmin.BlockDescriptor->SingleBlockCallback(NVM_SERVICE_ID, MemIfJobAdmin.BlockAdmin->ErrorStatus);
 		}
 	} else {
 		MemIfJobAdmin.BlockAdmin->NumberOfWriteFailed++;
@@ -539,7 +547,7 @@ static void WriteAllCheckWriteResult(void)
 #endif
 
 			if (MemIfJobAdmin.BlockDescriptor->SingleBlockCallback != NULL) {
-				MemIfJobAdmin.BlockDescriptor->SingleBlockCallback(NVM_SERVICE_ID, MemIfJobAdmin.BlockAdmin->ErrorStatus);
+				(void)MemIfJobAdmin.BlockDescriptor->SingleBlockCallback(NVM_SERVICE_ID, MemIfJobAdmin.BlockAdmin->ErrorStatus);
 			}
 		}
 	}

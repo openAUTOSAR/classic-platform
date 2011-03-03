@@ -23,20 +23,26 @@
 /*
  * Development Error Tracer driver
  *
- * Specification: Autosar v2.0.1, Final
- *
  */
 
-#ifndef _DET_H_
-#define _DET_H_
+
+/*
+ *  General requirements
+ */
+/** @req DET004 */
+
+#ifndef DET_H
+#define DET_H
 
 #define DET_MODULE_ID            MODULE_ID_DET
 #define DET_VENDOR_ID            1
 
+/* Implementation version */
 #define DET_SW_MAJOR_VERSION     1
 #define DET_SW_MINOR_VERSION     0
 #define DET_SW_PATCH_VERSION     0
 
+/* AUTOSAR specification document version */
 #define DET_AR_MAJOR_VERSION     2
 #define DET_AR_MINOR_VERSION     2
 #define DET_AR_PATCH_VERSION     2
@@ -51,6 +57,8 @@
 
 #define DET_CALLBACK_API              0xFF
 
+#define DET_CBK_REGISTRATION_FAILED_INDEX	0xFF
+
 // Type used to store errors
 typedef struct
 {
@@ -61,25 +69,26 @@ typedef struct
 } Det_EntryType;
 
 #if ( DET_ENABLE_CALLBACKS == STD_ON )
-typedef void *(*detCbk_t)( uint16 ModuleId, uint8 InstanceId , uint8 ApiId, uint8 ErrorId);
+typedef void (*detCbk_t)( uint16 ModuleId, uint8 InstanceId , uint8 ApiId, uint8 ErrorId);
 
 /*
  * Add a callback function to the array of callback. After a call to Det_ReportError the callback
  * is called. This can be used in for instance unit tests to verify that correct errors are
  * reported when sending invalid parameters to a function.
  * This function returns the index of the callback in the array when registration is successful. If
- * not -1 is returned. The index can be used to remove a callback with the Det_RemoveCbk.
+ * not DET_CBK_REGISTRATION_FAILED_INDEX is returned.
+ * The index can be used to remove a callback with the Det_RemoveCbk.
  */
 uint8 Det_AddCbk ( detCbk_t detCbk);
 void Det_RemoveCbk ( uint8 detCbkIndex);
 #endif
 
-void Det_Init( void );
+void Det_Init( void ); /** @req DET008 */
 #if DET_DEINIT_API == STD_ON
 void Det_DeInit( void );
 #endif
-void Det_ReportError( uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 ErrorId);
-void Det_Start( void );
-#define Det_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,DET)
+void Det_ReportError( uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 ErrorId); /** @req DET009 */
+void Det_Start( void ); /** @req DET010 */
+#define Det_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,DET) /** @req DET011 */ /** @req DET012 */
 
-#endif /*_DET_H_*/
+#endif /*DET_H*/

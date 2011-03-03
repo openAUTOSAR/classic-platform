@@ -42,7 +42,7 @@ typedef enum alarm_action_type_e {
 	ALARM_ACTION_ACTIVATETASK=0,
 	ALARM_ACTION_SETEVENT,
 	ALARM_ACTION_ALARMCALLBACK,		/* Only class 1 */
-	ALARM_ACTION_INCREMENTCOUNTER, /* SWS OS302 */
+	ALARM_ACTION_INCREMENTCOUNTER/* SWS OS302 */
 } alarm_action_type_t;
 
 
@@ -64,7 +64,7 @@ enum OsAlarmAutostartTypeType {
 	// Start with SetAbsAlarm()
 	ALARM_AUTOSTART_ABSOLUTE,
 	// Start with SetRelAlarm()
-	ALARM_AUTOSTART_RELATIVE,
+	ALARM_AUTOSTART_RELATIVE
 };
 
 
