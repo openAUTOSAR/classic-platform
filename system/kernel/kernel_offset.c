@@ -21,7 +21,7 @@
 #include "pcb.h"
 //#include "app_i.h"
 #include "sys.h"
-#include "arch_stack.h"
+//#include "arch_stack.h"
 
 
 #if defined(__GNUC__)

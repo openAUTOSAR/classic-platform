@@ -1,4 +1,6 @@
 
+_BOARD_COMMON_MK:=y  # Include guard for backwards compatability
+
 obj-$(CFG_PPC) += crt0.o
 obj-$(CFG_HC1X) += crt0.o
 
@@ -295,3 +297,4 @@ VPATH += $(vpath-y)
 
 # libs needed by us
 #build-lib-y += $(ROOTDIR)/libs/libboard_$(BOARDDIR).a
+

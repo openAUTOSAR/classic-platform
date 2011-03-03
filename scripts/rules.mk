@@ -1,18 +1,29 @@
 
-CFG_ARCH_$(ARCH):=y
 
-RELDIR := $(subst $(TOPDIR)/,,$(CURDIR))
+###############################################################################
+# BUILD SETTINGS                                                              #
+###############################################################################
 
-# Create the target name... 
-target := $(subst /,_,$(SUBDIR))
-
-#goal=$(subst /cygdrive/c/,c:/,$(abspath $@))
-#goal=$(abspath $@)
-goal=$@
-
-#===== MODULE CONFIGURATION =====
+# Board settings
 include $(ROOTDIR)/boards/$(BOARDDIR)/build_config.mk
+
+# Project settings
 -include ../build_config.mk
+
+# Perform build system version check
+include $(ROOTDIR)/scripts/version_check.mk
+
+
+
+###############################################################################
+# MODULE CONFIGURATION                                                        #
+###############################################################################
+
+# Some useful vars
+CFG_ARCH_$(ARCH):=y
+RELDIR := $(subst $(TOPDIR)/,,$(CURDIR))
+target := $(subst /,_,$(SUBDIR))
+goal=$@
 
 define MOD_AVAIL_template
 	MOD_$(1)=y
@@ -46,7 +57,11 @@ ifneq ($(not_avail),)
 $(error Trying to build a module that is not available: $(not_avail))
 endif
 
-#===== COMPILER CONFIG =====
+
+
+###############################################################################
+# TOOLS CONFIGURATION                                                         #
+###############################################################################
 
 # set debug optimization level as default
 ifeq ($(SELECT_OPT),)
@@ -57,13 +72,8 @@ $(eval CFG_$(SELECT_OPT)=y)
 
 ARCH_PATH-y = arch/$(ARCH_FAM)/$(ARCH)
 
-# Include compiler generic and arch specific
+# Include compiler settings
 COMPILER?=gcc
-ifeq ($(COMPILER),gcc)
- ifneq ($(ARCH),)
- include $(ROOTDIR)/$(ARCH_PATH-y)/scripts/gcc.mk
- endif
-endif
 include $(ROOTDIR)/scripts/cc_$(COMPILER).mk
 
 # Include pclint or splint settings
@@ -76,13 +86,21 @@ endif
 
 
 
-# Get object files
+###############################################################################
+# PROJECT MAKEFILE                                                            #
+###############################################################################
+
+# Include project makefile
 include ../makefile
 
-# Perform build system version check
-include $(ROOTDIR)/scripts/version_check.mk
+# All module object files (guarded for backwards compatability)
+ifndef _BOARD_COMMON_MK
+include $(ROOTDIR)/boards/board_common.mk
+endif
 
-##### For backwards compatability with older project makefiles
+
+##### For backwards compatability with older project makefiles:
+
 # Remove dependency on libkernel
 deprecated-libs += $(ROOTDIR)/libs/libkernel_$(ARCH_MCU).a
 deprecated-libs-included = $(filter $(deprecated-libs),$(libitem-y))
@@ -103,46 +121,20 @@ endif
 
 #####
 
+inc-y += ../include
 inc-y += $(ROOTDIR)/include
 inc-y += $(ROOTDIR)/include/$(ARCH_FAM)
 inc-y += $(ROOTDIR)/include/$(ARCH_FAM)/$(ARCH)
-
-
-.PHONY clean: 
-clean: FORCE
-	@-rm -f *.o *.d *.h *.elf *.a *.ldp
-
-.PHONY config: 
-config: FORCE
-	@echo "board   modules:" $(MOD_AVAIL)
-	@echo "example modules:" $(MOD_USE)
-	@echo $(MOD) ${def-y}
-
-FORCE:
-
-$(ROOTDIR)/binaries:
-	@mkdir -p $@
-
-# build- targets are "end" target that the included makefile want's to build
-.PHONY all:
-all: $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $(ROOTDIR)/binaries
-	@cp -v $(build-lib-y) $(build-exe-y) $(build-hex-y) $(build-bin-y) $(ROOTDIR)/binaries
-
-
-# Determine what kind of filetype to build from  
+  
 VPATH += $(ROOTDIR)/$(SUBDIR)/src
 VPATH += $(ROOTDIR)/$(SUBDIR)
 
-inc-y += ../include
 
-.SUFFIXES:
 
-# Simple depencendy stuff
--include $(subst .o,.d,$(obj-y))
-# Some dependency for xxx_offset.c/h also
--include $(subst .h,.d,$(dep-y))
+###############################################################################
+# LINT                                                                        #
+###############################################################################
 
-#LINT:
 LINT_EXCLUDE_PATHS := $(abspath $(LINT_EXCLUDE_PATHS))
 $(info $(LINT_EXCLUDE_PATHS))
 
@@ -173,17 +165,53 @@ endef
 endif
 
 
+
+###############################################################################
+# TOP-LEVEL TARGETS                                                           #
+###############################################################################
+
+.PHONY clean: 
+clean: FORCE
+	@-rm -f *.o *.d *.h *.elf *.a *.ldp
+
+.PHONY config: 
+config: FORCE
+	@echo "board   modules:" $(MOD_AVAIL)
+	@echo "example modules:" $(MOD_USE)
+	@echo $(MOD) ${def-y}
+
+FORCE:
+
+$(ROOTDIR)/binaries:
+	@mkdir -p $@
+
+.PHONY all:
+all: $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $(ROOTDIR)/binaries
+	@cp -v $(build-lib-y) $(build-exe-y) $(build-hex-y) $(build-bin-y) $(ROOTDIR)/binaries
+
+
+.SUFFIXES:
+
+
+
+###############################################################################
+# TARGETS                                                                     #
+###############################################################################
+	
+# Simple depencendy stuff
+-include $(subst .o,.d,$(obj-y))
+# Some dependency for xxx_offset.c/h also
+-include $(subst .h,.d,$(dep-y))
+
 # Compile
 %.o: %.c
 	@echo "  >> CC $(notdir $<)"
-# compile
 	$(Q)$(CC) -c $(CFLAGS) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
 # run lint if enabled
 	$(run_pclint)
 	$(run_splint)
 
 # Assembler
-
 %.o: %.s
 	@echo "  >> AS $(notdir $<)  $(ASFLAGS)"
 	$(Q)$(AS) $(ASFLAGS) -o $(goal) $<
@@ -199,61 +227,57 @@ endif
 inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
 
 # Preprocess linker files..
-%.lcf: %.ldf
+%.ldp %.lcf: %.ldf
 	@echo "  >> CPP $<"
 	$(Q)$(CPP) -E -P $(CPP_ASM_FLAGS) -o $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
-#	@cat $@ 
-	
 .PHONY $(ROOTDIR)/libs:
 $(ROOTDIR)/libs:
 	$(Q)mkdir -p $@
 
 dep-y += $(ROOTDIR)/libs
 	
-# lib	
+# lib output
 $(build-lib-y): $(dep-y) $(obj-y)
 	@echo "  >> AR $@"   
 	$(Q)$(AR) -r -o $@ $(obj-y) 2> /dev/null
 
+# hex output
 $(build-hex-y): $(build-exe-y)
 	@echo "  >> OBJCOPY $@"   
 	$(Q)$(CROSS_COMPILE)objcopy -O ihex $< $@
 	
+# bin output
 $(build-bin-y): $(build-exe-y)
 	@echo "  >> OBJCOPY $@"   
 	$(Q)$(CROSS_COMPILE)objcopy -O binary $< $@	
 
 # Linker
-# Could use readelf -S instead of parsing the *.map file.
 $(build-exe-y): $(dep-y) $(obj-y) $(sim-y) $(libitem-y) $(ldcmdfile-y)
 	@echo "  >> LD $@"
 ifeq ($(CROSS_COMPILE),)
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	
 else
 	$(Q)$(LD) $(LDFLAGS) $(LD_FILE) $(ldcmdfile-y) -o $@ $(libpath-y) $(LD_START_GRP) $(obj-y) $(lib-y) $(libitem-y) $(LD_END_GRP) $(LDMAPFILE)
-endif
-ifdef CFG_MC912DG128A
+ ifdef CFG_MC912DG128A
+    # Print memory layout
 	@$(CROSS_COMPILE)objdump -h $@ | gawk -f $(ROOTDIR)/scripts/hc1x_memory.awk
-else 
-ifeq ($(COMPILER),gcc)	
-	@echo "Image size: (decimal)"
-	@gawk --non-decimal-data 	'/^\.text/ { print "  text:"  $$3+0 " bytes"; rom+=$$3 };\
-	 							/^\.data/ { print "  data:"  $$3+0 " bytes"; rom+=$$3; ram+=$$3}; \
-	 							/^\.bss/ { print "  bss :"  $$3+0 " bytes"; ram+=$$3}; \
-	 							END { print "  ROM: ~" rom " bytes"; print "  RAM: ~" ram " bytes"}' $(subst .elf,.map,$@)
-endif # ($(COMPILER),gcc)	 							
-ifeq ($(BUILD_LOAD_MODULE),y)
+ else
+  ifeq ($(COMPILER),gcc)	
+    # Print memory layout
+	@echo ""
+	@gawk --non-decimal-data -f $(ROOTDIR)/scripts/gcc_map_memory.awk $(subst .elf,.map,$@)
+  endif # ($(COMPILER),gcc)
+   
+  ifeq ($(BUILD_LOAD_MODULE),y)
 	@$(CROSS_COMPILE)objcopy -O srec $@ $@.raw.s19
 	srec_cat $@.raw.s19 --crop 0x8008000 0x803fffc --fill 0x00 0x8008000 0x803fffc --l-e-crc32 0x803fffc -o $@.lm.s19
-endif
-endif
+  endif #($(BUILD_LOAD_MODULE),y)
+   
+ endif #CFG_MC912DG128A
+
+endif #($(CROSS_COMPILE),)
 	@echo
 	@echo "  >>>>>>>  DONE  <<<<<<<<<"
 	@echo
 	
-	
-$(size-exe-y): $(build-exe-y)
-	$(Q)$(OBJDUMP) -h $<
-	@echo TODO: Parse the file....
-
