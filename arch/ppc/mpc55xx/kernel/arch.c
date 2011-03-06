@@ -30,8 +30,8 @@ void Os_ArchFirstCall( void )
 
 	// Assume that regs[0] is setup before and contains the settings
 	// to switch to user mode.
-	register uint32_t msr asm("r3") = Os_Sys.curr_pcb->regs[0];
-	register void *ea asm("r4") = (void *) Os_Sys.curr_pcb->entry;
+	register uint32_t msr asm("r3") = Os_Sys.currTaskPtr->regs[0];
+	register void *ea asm("r4") = (void *) Os_Sys.currTaskPtr->entry;
 
 	// Do the switch
 	asm volatile(
@@ -43,7 +43,7 @@ void Os_ArchFirstCall( void )
 #else
 // TODO: This really depends on if scheduling policy
 	Irq_Enable();
-	Os_Sys.curr_pcb->entry();
+	Os_Sys.currTaskPtr->constPtr->entry();
 #endif
 }
 
@@ -66,8 +66,8 @@ unsigned int Os_ArchGetScSize( void ) {
 extern void os_arch_setup_context_asm( void *context,unsigned int msr);
 
 // TODO: I have no clue why I wrote this????
-void os_arch_stack_to_small(OsPcbType *pcb ,uint32_t size_min) {
-	OsPcbType *t;
+void os_arch_stack_to_small(OsTaskVarType *pcb ,uint32_t size_min) {
+	OsTaskVarType *t;
 	uint32_t min;
 
 	while(1) {
@@ -92,7 +92,7 @@ void os_arch_stack_to_small(OsPcbType *pcb ,uint32_t size_min) {
  *
  */
 
-void Os_ArchSetupContext( OsPcbType *pcb ) {
+void Os_ArchSetupContext( OsTaskVarType *pcb ) {
 	uint32_t msr;
 
 	msr = MSR_EE;
@@ -101,11 +101,13 @@ void Os_ArchSetupContext( OsPcbType *pcb ) {
 	msr |= MSR_SPE;
 #endif
 
-#if (  OS_SC3 == STD_ON) || (  OS_SC4== STD_ON)
+#if (OS_USE_APPLICATIONS == STD_ON)
+#if 0
 	if( !pcb->application->trusted ) {
 		// Non-trusted = User mode..
 		msr |= MSR_PR | MSR_DS | MSR_IS;
 	}
+#endif
 #endif
 	pcb->regs[0] = msr;
 }
@@ -115,15 +117,15 @@ void Os_ArchSetupContext( OsPcbType *pcb ) {
  * @param pcbPtr
  */
 
-void Os_ArchSetTaskEntry(OsPcbType *pcbPtr ) {
+void Os_ArchSetTaskEntry(OsTaskVarType *pcbPtr ) {
 	uint32_t *context = (uint32_t *)pcbPtr->stack.curr;
 
 	context[C_CONTEXT_OFF/4] = SC_PATTERN;
 
 	/* Set LR to start function */
-	if( pcbPtr->proc_type == PROC_EXTENDED ) {
+	if( pcbPtr->constPtr->proc_type == PROC_EXTENDED ) {
 		context[C_LR_OFF/4] = (uint32_t)Os_TaskStartExtended;
-	} else if( pcbPtr->proc_type == PROC_BASIC ) {
+	} else if( pcbPtr->constPtr->proc_type == PROC_BASIC ) {
 		context[C_LR_OFF/4] = (uint32_t)Os_TaskStartBasic;
 	}
 }
@@ -133,10 +135,10 @@ void Os_ArchSetTaskEntry(OsPcbType *pcbPtr ) {
 #define C_LR_OFF		16
 #define C_CR_OFF		20
 
-void os_arch_print_context( char *str, OsPcbType *pcb ) {
+void os_arch_print_context( char *str, OsTaskVarType *pcb ) {
 	uint32_t *stack;
 
-	LDEBUG_PRINTF("%s CONTEXT: %d\n",str, pcb->pid);
+	LDEBUG_PRINTF("%s CONTEXT: %d\n",str, pcb->constPtr->pid);
 	LDEBUG_PRINTF("  stack: curr=%p top=%p bottom=%p\n",
 					pcb->stack.curr,
 					pcb->stack.top,

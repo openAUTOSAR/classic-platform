@@ -21,7 +21,7 @@
 #include "EcuM_Cbk.h"
 #include "Mcu.h"
 #include "Det.h"
-#include "irq.h"
+//#include "isr.h"
 #if defined(USE_NVM)
 #include "Nvm.h"
 #endif
@@ -39,7 +39,7 @@ void EcuM_Init( void )
 	InitOS();
 
 	// Enable interrupts
-	Irq_Init();
+	Isr_Init();
 
 	// Determine PostBuild configuration
 	internal_data.config = EcuM_DeterminePbConfiguration();

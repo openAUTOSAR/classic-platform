@@ -27,7 +27,7 @@
 #include "Cpu.h"
 #include "Ramlog.h"
 #include "Os.h"
-#include "irq.h"
+#include "isr.h"
 
 /* ----------------------------[private define]------------------------------*/
 //#define USE_TRACE 1
@@ -109,7 +109,7 @@ Mcu_GlobalType Mcu_Global =
 /**
  * ISR wh
  */
-static void Mcu_LossOfLock( void  ) {
+void Mcu_LossOfLock( void  ) {
 #if defined(USE_DEM)
 	Dem_ReportErrorStatus(MCU_E_CLOCK_FAILURE, DEM_EVENT_STATUS_FAILED);
 #endif
@@ -123,7 +123,7 @@ static void Mcu_LossOfLock( void  ) {
 /**
  *
  */
-static void Mcu_LossOfClock( void  ) {
+void Mcu_LossOfClock( void  ) {
 
 	/* Should report MCU_E_CLOCK_FAILURE with DEM here */
 
@@ -256,11 +256,14 @@ static uint32 Mcu_CheckCpu( void ) {
 }
 
 
+
 //-------------------------------------------------------------------
 
 void Mcu_Init(const Mcu_ConfigType *configPtr) {
-	IRQ_DECL_ISR1( PLL_SYNSR_LOLF,  CPU_CORE0, 10, Mcu_LossOfLock  );
-	IRQ_DECL_ISR1( PLL_SYNSR_LOCF,  CPU_CORE0, 10, Mcu_LossOfClock );
+#if 0
+	IRQ_DECL_ISR1( "LossOfLock", PLL_SYNSR_LOLF,  CPU_CORE0, 10, Mcu_LossOfLock  );
+	IRQ_DECL_ISR1( "LossOfClock", PLL_SYNSR_LOCF,  CPU_CORE0, 10, Mcu_LossOfClock );
+#endif
 
 	VALIDATE( ( NULL != configPtr ), MCU_INIT_SERVICE_ID, MCU_E_PARAM_CONFIG );
 
@@ -281,7 +284,8 @@ void Mcu_Init(const Mcu_ConfigType *configPtr) {
 	if (Mcu_Global.config->McuClockSrcFailureNotification == TRUE) {
 		// Enable loss of lock interrupt
 
-		Irq_Attach( &IRQ_NAME(PLL_SYNSR_LOLF) );
+//		IRQ_ATTACH( PLL_SYNSR_LOLF );
+		//Irq_Attach( &IRQ_NAME(PLL_SYNSR_LOLF) );
 //		Irq_AttachIsr1(Mcu_LossOfLock, NULL, PLL_SYNSR_LOLF, 10);
 #if defined(CFG_MPC5516)
 		FMPLL.ESYNCR2.B.LOLIRQ = 1;
@@ -289,7 +293,8 @@ void Mcu_Init(const Mcu_ConfigType *configPtr) {
 		FMPLL.SYNCR.B.LOLIRQ = 1;
 #endif
 
-		Irq_Attach( &IRQ_NAME(PLL_SYNSR_LOLF));
+//		IRQ_ATTACH( PLL_SYNSR_LOLF );
+//		Irq_Attach( &IRQ_NAME(PLL_SYNSR_LOLF));
 //		Irq_AttachIsr1(Mcu_LossOfClock, NULL, PLL_SYNSR_LOCF, 10);
 #if defined(CFG_MPC5516)
 		FMPLL.ESYNCR2.B.LOCIRQ = 1;

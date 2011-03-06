@@ -25,7 +25,7 @@
 #include "Det.h"
 #if defined(USE_KERNEL)
 #include "Os.h"
-#include "irq.h"
+#include "isr.h"
 #endif
 
 

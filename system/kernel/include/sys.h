@@ -34,17 +34,17 @@ typedef enum  {
 typedef struct Os_Sys {
 //	OsApplicationType *curr_application;
 	/* Current running task*/
-	OsPcbType *curr_pcb;
+	OsTaskVarType *currTaskPtr;
 	/* List of all tasks */
-	OsPcbType *pcb_list;
+	OsTaskVarType *pcb_list;
 
-	OsPcbType *chainedPcbPtr;
+	OsTaskVarType *chainedPcbPtr;
 	/* Interrupt nested count */
-	uint32 int_nest_cnt;
+	uint32 intNestCnt;
 	/* The current operation */
 	uint8_t op;
 	/* Ptr to the interrupt stack */
-	void *int_stack;
+	void *intStack;
 	// The os tick
 	TickType tick;
 	// 1-The scheduler is locked (by GetResource() or something else)
@@ -61,7 +61,7 @@ typedef struct Os_Sys {
 	/* Current Application mode */
 	AppModeType appMode;
 
-#if (OS_SC3==STD_ON) || (OS_SC4==STD_ON)
+#if	(OS_USE_APPLICATIONS == STD_ON)
 	ApplicationStateType currApplState;
 	ApplicationType currApplId;
 #endif
@@ -72,9 +72,11 @@ typedef struct Os_Sys {
 	/* List of all pcb's,
 	 * Only needed for non-static configuration of the kernel
 	 */
-	TAILQ_HEAD(,OsPcb) pcb_head;
+//	TAILQ_HEAD(,OsTaskVar) pcb_head;
 	/* Ready queue */
-	TAILQ_HEAD(,OsPcb) ready_head;
+	TAILQ_HEAD(,OsTaskVar) ready_head;
+
+//	TAILQ_HEAD(,OsIsrVar) isrHead;
 
 	/* Occording to OSEK 8.3 RES_SCHEDULER is accessible to all tasks */
 	OsResourceType resScheduler;
@@ -82,8 +84,8 @@ typedef struct Os_Sys {
 
 extern Os_SysType Os_Sys;
 
-static inline OsPcbType *Os_TaskGetCurrent(  void ) {
-	return Os_Sys.curr_pcb;
+static inline OsTaskVarType *Os_TaskGetCurrent(  void ) {
+	return Os_Sys.currTaskPtr;
 }
 
 #if 0

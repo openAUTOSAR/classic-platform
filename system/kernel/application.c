@@ -48,7 +48,39 @@ OsAppVarType Os_AppVar[OS_APPLICATION_CNT];
  */
 
 
-#if ((OS_SC3==STD_ON)||(OS_SC4==STD_ON))
+#if	(OS_USE_APPLICATIONS == STD_ON)
+
+/**
+ * This service determines the currently running OS-Application (a unique
+ * identifier has to be allocated to each application).
+ *
+ * @return <identifier of running OS-Application> or INVALID_OSAPPLICATION
+ */
+
+ApplicationType GetApplicationID( void ) {
+	return Os_Sys.currApplId;
+}
+
+
+/**
+ * A (trusted or non-trusted) OS-Application uses this service to call a trusted
+ * function
+ *
+ * @param FunctionIndex		Index of the function to be called.
+ * @param FunctionParams    Pointer to the parameters for the function -
+ * 							specified by the FunctionIndex - to be called.
+ * 							If no parameters are provided, a NULL pointer has
+ * 							to be passed.
+ * @return
+ */
+StatusType 	CallTrustedFunction(	TrustedFunctionIndexType FunctionIndex,
+									TrustedFunctionParameterRefType FunctionParams ) {
+
+
+	return E_OK;
+}
+
+
 
 /**
  * This service checks if a memory region is write/read/execute accessible
@@ -125,11 +157,11 @@ AccessType CheckTaskMemoryAccess( 	TaskType taskId,
  */
 ObjectAccessType CheckObjectAccess( ApplicationType ApplId,
 									ObjectTypeType ObjectType,
-									void *object )
+									uint32_t objectId )
 {
 	uint32 appMask = APPL_ID_TO_MASK(ApplId);
 	ObjectAccessType orv;
-	_Bool rv;
+	_Bool rv = 0;
 
 
 	/* @req OS423
@@ -154,10 +186,10 @@ ObjectAccessType CheckObjectAccess( ApplicationType ApplId,
 	/* TODO: check id */
 	switch( ObjectType ) {
 	case OBJECT_ALARM:
-		rv =  ((OsAlarmType *)object)->accessingApplMask & (appMask);
+		rv =  ((OsAlarmType *)objectId)->accessingApplMask & (appMask);
 		break;
 	case OBJECT_COUNTER:
-		rv =  ((OsCounterType *)object)->accessingApplMask & (appMask);
+		rv =  ((OsCounterType *)objectId)->accessingApplMask & (appMask);
 		break;
 	case OBJECT_ISR:
 		/* TODO: Add more things here for missing objects */
@@ -167,7 +199,7 @@ ObjectAccessType CheckObjectAccess( ApplicationType ApplId,
 	case OBJECT_SCHEDULETABLE:
 		break;
 	case OBJECT_TASK:
-		rv = ((OsCounterType *)object)->accessingApplMask & (appMask);
+		rv = ((OsCounterType *)objectId)->accessingApplMask & (appMask);
 		break;
 	default:
 		/* @req OS423 */
@@ -190,21 +222,39 @@ ObjectAccessType CheckObjectAccess( ApplicationType ApplId,
  * INVALID_OSAPPLICATION if the object does not exists
  */
 ApplicationType CheckObjectOwnership( ObjectTypeType ObjectType,
-									void *object )
+									uint32_t objectId )
 {
+	ApplicationType rv = INVALID_OSAPPLICATION;
+
 	switch( ObjectType ) {
 	case OBJECT_ALARM:
+		break;
 	case OBJECT_COUNTER:
+		break;
 	case OBJECT_ISR:
+		break;
 	case OBJECT_MESSAGE:
+		break;
 	case OBJECT_RESOURCE:
+		break;
 	case OBJECT_SCHEDULETABLE:
+		break;
 	case OBJECT_TASK:
+#if 0
+		if( objectId < OS_TASK_CNT ) {
+			rv = Os_TaskGet(objectId)
+		}
+
+
+		OsTaskVarTypeapplOwnerId
+		if( objectId > OS_MAX )
+#endif
+		break;
 	default:
 		break;
 	}
 
-	return INVALID_OSAPPLICATION;
+	return rv;
 }
 
 
@@ -282,4 +332,22 @@ StatusType GetActiveApplicationMode( AppModeType* mode) {
 	 *mode = Os_Sys.appMode;
 	 return E_OK;
 }
+
+/**
+ *
+ */
+void Os_ApplStart( void ) {
+	uint16_t i;
+
+	/* Call startuphooks for all applications */
+	for(i=0;i<OS_APPLICATION_CNT;i++) {
+
+		Os_AppVar[i].state = APPLICATION_ACCESSIBLE;
+
+		if( Os_AppConst[i].StartupHook != NULL ) {
+			Os_AppConst[i].StartupHook();
+		}
+	}
+}
+
 #endif

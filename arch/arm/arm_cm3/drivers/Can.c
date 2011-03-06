@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Os.h"
-#include "irq.h"
+#include "isr.h"
 #include "arc.h"
 
 

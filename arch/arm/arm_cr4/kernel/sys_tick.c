@@ -16,7 +16,7 @@
 #include "Os.h"
 #include "internal.h"
 #include "core_cr4.h"
-#include "irq.h"
+#include "isr.h"
 #include "arc.h"
 
 #define RTICLK_PRESCALER 10

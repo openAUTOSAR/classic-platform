@@ -56,7 +56,7 @@ typedef TaskStateType *TaskStateRefType;
 #define INVALID_OSAPPLICATION (-1)
 
 /* TODO, I have no idea what this should be*/
-#if (OS_SC3==STD_ON) || (OS_SC4==STD_ON)
+#if (OS_USE_APPLICATIONS == STD_ON)
 typedef sint32 ApplicationType;
 
 typedef enum {
@@ -140,6 +140,8 @@ typedef  void * TrustedFunctionParameterRefType;
 #define INVALID_ISR		((sint16)(-1))
 typedef	sint16 ISRType;
 
+#define APP_NO_OWNER	(-1UL)
+
 typedef void * MemoryStartAddressType;
 typedef uint32 MemorySizeType;
 
@@ -158,7 +160,6 @@ void StartOS( AppModeType Mode );
 
 
 
-ApplicationType GetApplicationID( void );
 ISRType GetISRID( void );
 StatusType GetActiveApplicationMode( AppModeType* mode);
 
@@ -236,7 +237,9 @@ static inline void ResumeOSInterrupts( void ) {
 /*
  * Class 2,3 and 4 API
  */
-#if (OS_SC3==STD_ON) || (OS_SC4==STD_ON)
+
+#if (OS_USE_APPLICATIONS == STD_ON)
+
 ApplicationType GetApplicationID( void );
 AccessType 	CheckISRMemoryAccess( 	ISRType ISRID,
 									MemoryStartAddressType Address,
@@ -248,9 +251,9 @@ AccessType 	CheckTaskMemoryAccess( 	TaskType TaskID,
 
 ObjectAccessType CheckObjectAccess( ApplicationType ApplId,
 									ObjectTypeType ObjectType,
-									void *object );
+									uint32_t objectId );
 ApplicationType CheckObjectOwnership( ObjectTypeType ObjectType,
-									void *object );
+									uint32_t objectId );
 StatusType TerminateApplication(  ApplicationType Application, RestartType RestartOption );
 StatusType AllowAccess( void );
 StatusType GetApplicationState(   ApplicationType Application,  ApplicationStateRefType Value );

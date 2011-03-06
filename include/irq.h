@@ -17,33 +17,13 @@
 #ifndef IRQ_H_
 #define IRQ_H_
 
+#include <stdint.h>
+#include "os.h"
 #include "irq_types.h"
 #include "bit.h"
 
 typedef void ( * func_t)(void);
 
-extern uint8_t Irq_PriorityTable[];
-extern uint8_t Irq_IsrTypeTable[];
-
-#define ISR_TYPE_1			0
-#define ISR_TYPE_2			1
-
-typedef struct {
-	char 			name[16];
-	uint8_t			prio;
-	uint8_t			core;
-	int				vector; 				// ISR
-	void 			(*entry)();
-} OsIsrType_CONST;
-
-#define IRQ_DECL_ISR1(_vector, _core, _prio, _entry  ) \
-		const OsIsrType_CONST IrqVector ## _ ## _vector = { 	\
-		.name = "",						\
-		.prio = (_prio),					\
-		.vector = (_vector),				\
-		.entry = (_entry),					\
-		.core = (_core)						\
-	}
 
 
 #if (OS_SC2==STD_ON) || (OS_SC4==STD_ON)
@@ -52,7 +32,7 @@ typedef struct {
 #define HAVE_SC2_SC4(_value)
 #endif
 
-#define IRQ_NAME(_vector)		IrqVector ## _ ## _vector
+#define IRQ_NAME(_vector)		IrqVector_ ## _vector
 
 #define IRQ_DECL_ISR2_TIMING_PROT(	\
 				_name, \
@@ -62,7 +42,32 @@ typedef struct {
 				_time_frame, \
 				_resource_lock_list )
 
-#define IRQ_DECL_ISR2(_name, _vector, _core, _prio, _entry, _resource_mask, _timing_prot)
+
+#define IRQ_DECL_ISR1(_name, _vector, _core, _prio, _entry  ) \
+		const OsIsrConstType Irq_VectorConst_ ## _vector = { 	\
+		.name = _name,						\
+		.vector = (_vector),				\
+		.core = (_core),					\
+		.prio = (_prio),					\
+		.entry = (_entry),					\
+		.type = ISR_TYPE_1,					\
+	}
+
+
+#define IRQ_DECL_ISR2(_name,_vector, _core, _prio, _entry, _resource_mask, _timing_prot) \
+		const OsIsrConstType Irq_VectorConst_ ## _vector = { 	\
+		.name = _name,						\
+		.vector = (_vector),				\
+		.core = (_core),					\
+		.prio = (_prio),					\
+		.entry = (_entry),					\
+		.type = ISR_TYPE_2,					\
+		.resourceMask = (_resource_mask),	\
+		.timingProtPtr = (_timing_prot)     \
+	}
+
+
+#define IRQ_ATTACH(_vector)	Irq_Attach(&Irq_VectorConst_ ## _vector)
 
 /* Example:
  * IRQ_DECL_ISR2_RESOURCE(res2, RES_ID_2, 500000U );   			// Max 50us
@@ -71,16 +76,12 @@ typedef struct {
  *
  */
 
-
-
 // typedef _Bool IsrType;
 
 /**
  * Init the interrupt controller
  */
 void Irq_Init( void );
-
-
 
 
 #if defined(CFG_HC1X)
@@ -105,7 +106,10 @@ void *Irq_Entry( uint8_t irq_nr, void *stack );
 void *Irq_Entry( void *stack_p );
 #endif
 
-ISRType Irq_Attach( const OsIsrType_CONST *isrPtr );
+//ISRType Irq_Attach( const OsIsrConstType *isrPtr );
+ISRType Irq_Attach( int vector );
+ISRType Irq_Attach2( const OsIsrConstType * );
+
 /**
  * Attach an ISR type 1 to the interrupt controller.
  *
@@ -137,17 +141,19 @@ void Irq_GenerateSoftInt( IrqType vector );
  */
 uint8_t Irq_GetCurrentPriority( Cpu_t cpu);
 
-
 /**
  * Set the priority in the interrupt controller for vector
  */
 void Irq_SetPriority( Cpu_t cpu,  IrqType vector, uint8_t prio );
+
+void Irq_EnableVector( int16_t vector, int priority, int core );
 
 /**
  *
  * @param vector
  * @param type
  */
+#if 0
 static inline void Irq_SetIsrType( IrqType vector, int8_t type ) {
 	Irq_IsrTypeTable[vector] = type;
 }
@@ -161,6 +167,7 @@ static inline void Irq_SetIsrType( IrqType vector, int8_t type ) {
 static inline int8_t Irq_GetIsrType( IrqType vector )  {
 	return Irq_IsrTypeTable[vector];
 }
+#endif
 
 
 #if 0

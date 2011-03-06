@@ -35,7 +35,7 @@
 // Quick fix
 //#include "Kernel_Offset.h"
 
-extern uint8_t pcb_list[];
+extern uint8_t Os_TaskVarList[];
 
 #endif
 #endif

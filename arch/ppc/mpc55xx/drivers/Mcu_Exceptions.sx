@@ -85,7 +85,6 @@ exception_IVOR4:
     stw   r3,EXC_VECTOR_OFF(r4)
 	mr	  r4,r1		// save stack
 
-#ifdef USE_KERNEL
 	li 		r3,LC_PATTERN
 	stw		r3,C_CONTEXT_OFF(sp)
 
@@ -97,7 +96,6 @@ exception_IVOR4:
 	LOAD_IND_32(sp,Os_Sys+SYS_INT_STACK)
 on_int_stack:
 
-#endif
 
     lis   r3, Irq_Entry@h
     ori   r3, r3,Irq_Entry@l
@@ -106,10 +104,8 @@ on_int_stack:
     mr    r3,r4  /* "old" stack as arg1 */
     blrl
 
-#ifdef USE_KERNEL
 // Set the retun value as new stack
 	mr		sp,r3
-#endif
 	addi 	r1,r1,C_SIZE
 	RESTORE_NVGPR(1,0)
 	addi	r1,r1,-C_SIZE

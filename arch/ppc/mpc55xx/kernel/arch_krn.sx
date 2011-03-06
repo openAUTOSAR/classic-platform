@@ -36,12 +36,54 @@
 
 
 .extern os_proc_start_extended
+.extern OsSysCallTable
 
 //-------------------------------------------------------------------
 
+
+/**
+ * Syscall handler. 
+ *
+ * Stack: Still on task stack 
+ *
+ * @param r0       - index to the function to call.
+ * @param r3,r4,r5 - arguments to syscall 
+ */
     .global os_exception_IVOR8
     .balign 16
 os_exception_IVOR8:
+#if 0
+	/* What do we need to do:
+	 */
+	 
+	/* Exception frame */ 
+	stwu 	sp,-24(sp) 
+	mfspr	r10,SPR_SRR0
+	stw		r10,4(sp)
+	mfspr	r10,SPR_SRR1
+	stw		r10,8(sp)
+	
+#if CFG_KERNEL_STACK==STD_ON	
+	/* Swap to kernel stack */
+
+#endif
+	 
+	/* Load address the sc call table at index r0*/ 
+	addis 	r10,0, OsSysCallTable@ha
+	addi 	r0,r10,OsSysCallTable@l
+/* 	lwz */			
+	
+	
+
+	 
+#if CFG_KERNEL_STACK==STD_ON	 
+	/* Swap to user stack */
+	
+#endif	
+	
+	rfi
+
+#else 
 	stwu	sp,-(EXC_SIZE+VGPR_SIZE)(sp)
 	stw  	r3,EXC_R3_OFF(r1)
 	stw  	r4,EXC_R4_OFF(r1)
@@ -49,11 +91,24 @@ os_exception_IVOR8:
 	SAVE_VGPR(1,EXC_SIZE);
 	li		r3,328
 	stw  	r3,EXC_VECTOR_OFF(r1)
-
+#endif
 	rfi
 
 dummy_int:
 		b dummy_int
+
+#if 0
+.global ActivateTask
+ActivateTask:
+	stwu r0,0(sp)		/* Save r0 */
+	li 	 r0,0			/* Load service index */		
+	sc					/* Do the call */   
+	addi  sp,sp,-4		/* Adjust the stack back for pushing r0*/
+	blr					/* Normal function return */	
+	   	
+#endif
+
+
 
 /*--------------------------------------------------------------------
  * void os_swap_context(pcb_t *old, pcb_t *new )

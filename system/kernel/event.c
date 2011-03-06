@@ -41,17 +41,17 @@
 
 StatusType WaitEvent( EventMaskType Mask ) {
 
-	OsPcbType *curr_pcb = get_curr_pcb();
+	OsTaskVarType *curr_pcb = get_curr_pcb();
 	StatusType rv = E_OK;
 
 	OS_DEBUG(D_EVENT,"# WaitEvent %s\n",Os_TaskGetCurrent()->name);
 
-	if( Os_Sys.int_nest_cnt != 0 ) {
+	if( Os_Sys.intNestCnt != 0 ) {
 		rv =  E_OS_CALLEVEL;
 		goto err;
 	}
 
-	if (curr_pcb->proc_type != PROC_EXTENDED) {
+	if (curr_pcb->constPtr->proc_type != PROC_EXTENDED) {
 		rv = E_OS_ACCESS;
 		goto err;
 	}
@@ -71,7 +71,7 @@ StatusType WaitEvent( EventMaskType Mask ) {
 		curr_pcb->ev_wait = Mask;
 
 		if ( Os_SchedulerResourceIsFree() ) {
-			// Os_TaskMakeWaiting(curr_pcb);
+			// Os_TaskMakeWaiting(currTaskPtr);
 			Os_Dispatch(OP_WAIT_EVENT);
 			assert( curr_pcb->state & ST_RUNNING );
 		} else {
@@ -101,8 +101,8 @@ StatusType WaitEvent( EventMaskType Mask ) {
 
 StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 	StatusType rv = E_OK;
-	OsPcbType *dest_pcb;
-	OsPcbType *currPcbPtr;
+	OsTaskVarType *destPcbPtr;
+	OsTaskVarType *currPcbPtr;
 	uint32_t flags;
 
 	OS_DEBUG(D_EVENT,"# SetEvent %s\n",Os_TaskGetCurrent()->name);
@@ -112,15 +112,25 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 		goto err;
 	}
 
-	dest_pcb = os_get_pcb(TaskID);
+	destPcbPtr = Os_TaskGet(TaskID);
+
+#if	(OS_USE_APPLICATIONS == STD_ON)
+	if( destPcbPtr->constPtr->applOwnerId != Os_Sys.currApplId ) {
+		/* We are activating a task in another application */
+		if( Os_AppVar[Os_Sys.currApplId].state != APPLICATION_ACCESSIBLE ) {
+			rv=E_OS_ACCESS;
+			goto err;
+		}
+	}
+#endif
 
 #if (OS_STATUS_EXTENDED == STD_ON )
-	if( dest_pcb->proc_type != PROC_EXTENDED ) {
+	if( destPcbPtr->constPtr->proc_type != PROC_EXTENDED ) {
 		rv = E_OS_ACCESS;
 		goto err;
 	}
 
-	if( (dest_pcb->state & ST_SUSPENDED ) ) {
+	if( (destPcbPtr->state & ST_SUSPENDED ) ) {
 		rv = E_OS_STATE;
 		goto err;
 	}
@@ -139,24 +149,24 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 	 * defined, see chapter 9.2)
 	 * ... */
 
-	dest_pcb->ev_set |= Mask;
+	destPcbPtr->ev_set |= Mask;
 
-	if( (Mask & dest_pcb->ev_wait) ) {
+	if( (Mask & destPcbPtr->ev_wait) ) {
 		/* We have an event match */
-		if( dest_pcb->state & ST_WAITING) {
-			Os_TaskMakeReady(dest_pcb);
+		if( destPcbPtr->state & ST_WAITING) {
+			Os_TaskMakeReady(destPcbPtr);
 
 			currPcbPtr = Os_TaskGetCurrent();
 			/* Checking "4.6.2  Non preemptive scheduling" it does not dispatch if NON  */
-			if( (Os_Sys.int_nest_cnt == 0) &&
-				(currPcbPtr->scheduling == FULL) &&
-				(dest_pcb->prio > currPcbPtr->prio) &&
+			if( (Os_Sys.intNestCnt == 0) &&
+				(currPcbPtr->constPtr->scheduling == FULL) &&
+				(destPcbPtr->activePriority > currPcbPtr->activePriority) &&
 				(Os_SchedulerResourceIsFree()) )
 			{
 				Os_Dispatch(OP_SET_EVENT);
 			}
 
-		}  else if(dest_pcb->state & (ST_READY|ST_RUNNING) ) {
+		}  else if(destPcbPtr->state & (ST_READY|ST_RUNNING) ) {
 			/* Hmm, we do nothing */
 		} else {
 			assert( 0 );
@@ -183,7 +193,7 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
  */
 StatusType GetEvent( TaskType TaskId, EventMaskRefType Mask) {
 
-	OsPcbType *dest_pcb;
+	OsTaskVarType *destPcbPtr;
 	StatusType rv = E_OK;
 
 	if( TaskId  >= OS_TASK_CNT ) {
@@ -191,12 +201,12 @@ StatusType GetEvent( TaskType TaskId, EventMaskRefType Mask) {
 		goto err;
 	}
 
-	dest_pcb = os_get_pcb(TaskId);
+	destPcbPtr = Os_TaskGet(TaskId);
 
-	VALIDATE_W_RV(dest_pcb->proc_type != PROC_EXTENDED,E_OS_ACCESS);
-	VALIDATE_W_RV(dest_pcb->state & ST_SUSPENDED,E_OS_STATE);
+	VALIDATE_W_RV(destPcbPtr->constPtr->proc_type != PROC_EXTENDED,E_OS_ACCESS);
+	VALIDATE_W_RV(destPcbPtr->state & ST_SUSPENDED,E_OS_STATE);
 
-	*Mask = dest_pcb->ev_set;
+	*Mask = destPcbPtr->ev_set;
 
 	if (0) goto err;
 
@@ -214,16 +224,16 @@ StatusType GetEvent( TaskType TaskId, EventMaskRefType Mask) {
  */
 StatusType ClearEvent( EventMaskType Mask) {
     StatusType rv = E_OK;
-	OsPcbType *pcb;
+	OsTaskVarType *pcb;
 
-	if( Os_Sys.int_nest_cnt != 0 ) {
+	if( Os_Sys.intNestCnt != 0 ) {
 		rv =  E_OS_CALLEVEL;
 		goto err;
 	}
 
 	pcb = get_curr_pcb();
 
-	if (pcb->proc_type != PROC_EXTENDED) {
+	if (pcb->constPtr->proc_type != PROC_EXTENDED) {
 		rv = E_OS_ACCESS;
 		goto err;
 	}

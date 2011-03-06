@@ -52,7 +52,7 @@
 
 
 
-#if ( OS_SC3 == STD_ON) || ( OS_SC4 == STD_ON )
+#if (OS_USE_APPLICATIONS == STD_ON)
 
 /* STD container : OsApplicationHooks
  * class: 3,4
@@ -93,9 +93,6 @@ typedef struct OsAppVar {
 
 	/* NOTE! Refs here is memory management issue */
 
-	/* The application hooks */
-	OsAppHooksType hooks;
-
 	/* The current state of the application */
 	ApplicationStateType state;
 
@@ -114,21 +111,31 @@ typedef struct OsApplication {
 
 	/* hooks, the names are StartupHook_<name>(), etc. */
 	void (*StartupHook)( void );
-	void (*ShutdownHook)( Std_ReturnType Error );
-	void (*ErrorHook)( Std_ReturnType Error );
+	void (*ShutdownHook)( StatusType Error );
+	void (*ErrorHook)( StatusType Error );
+
+	/* The application hooks */
+//	OsAppHooksType hooks;
+
 
 	/* Ref is ~0U terminated */
+#if 0
 	const uint8_t *alarmRef;
 	const uint8_t *counterRef;
 	const uint8_t *isrRef;
 	const uint8_t *resourceRef;
 	const uint8_t *schtblRef;
 	const uint8_t *taskRef;
+#endif
 
 	int 	restartTaskId;
 } OsAppConstType;
 
-#endif /*  ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON ) */
+#if OS_APPLICATION_CNT!=0
+extern OsAppVarType Os_AppVar[OS_APPLICATION_CNT];
+#endif
+
+#endif /*  (OS_USE_APPLICATIONS == STD_ON) */
 
 
 #endif /* APPLICATION_H_ */

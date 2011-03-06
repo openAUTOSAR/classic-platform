@@ -54,7 +54,7 @@ uint16_t handle_SysMonEvent(TCF_Event* event, char* buf){
 
 
 uint16_t handle_SysMonCommand(TCF_Command* command, char* buf) {
-	OsPcbType *iterPcbPtr;
+	OsTaskVarType *iterPcbPtr;
 
 	/* Start building return message */
 	start_tcf_field(buf, (char *)TCF_S_R); /* Start */

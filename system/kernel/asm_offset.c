@@ -28,11 +28,12 @@
 	__asm("#define\t" #sym "\t%0" : : "n" ((val)))
 
 void  asm_foo(void) {
-	DECLARE(PCB_STACK_CURR_P,	offsetof(OsPcbType, stack));
-	DECLARE(PCB_ENTRY_P,		offsetof(OsPcbType, entry));
-	DECLARE(SYS_CURR_PCB_P,		offsetof(Os_SysType, curr_pcb));
-	DECLARE(SYS_INT_NEST_CNT, offsetof(Os_SysType, int_nest_cnt));
-	DECLARE(SYS_INT_STACK, offsetof(Os_SysType, int_stack));
+	DECLARE(PCB_STACK_CURR_P,	offsetof(OsTaskVarType, stack));
+	DECLARE(PCB_CONST_P,		offsetof(OsTaskVarType, constPtr));
+//	DECLARE(PCB_ENTRY_P,		offsetof(OsTaskVarType, entry));
+	DECLARE(SYS_CURR_PCB_P,		offsetof(Os_SysType, currTaskPtr));
+	DECLARE(SYS_INT_NEST_CNT, offsetof(Os_SysType, intNestCnt));
+	DECLARE(SYS_INT_STACK, offsetof(Os_SysType, intStack));
 }
 
 

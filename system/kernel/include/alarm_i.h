@@ -92,7 +92,8 @@ typedef struct OsAlarm {
 	/* Reference to counter */
 	struct OsCounter *counter;
 
-#if (OS_SC3==STD_ON) || (OS_SC4==STD_ON)
+#if	(OS_USE_APPLICATIONS == STD_ON)
+	ApplicationType applOwnerId;
 	uint32 accessingApplMask;
 #endif
 

@@ -1,3 +1,4 @@
+
 /* -------------------------------- Arctic Core ------------------------------
  * Arctic Core - the open source AUTOSAR platform http://arccore.com
  *
@@ -35,7 +36,8 @@
 #include "task_i.h"
 #include "hooks.h"
 #include "debug.h"
-#include "irq.h"
+#include "isr.h"
+#include "irq_config.h"
 #include <stdint.h>
 
 /* ----------------------------[private define]------------------------------*/
@@ -44,8 +46,9 @@
 typedef void (*f_t)( uint32_t *);
 
 /* ----------------------------[private function prototypes]-----------------*/
-extern uintptr_t Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
-extern uint8 Irq_IsrTypeTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
+//extern uintptr_t Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
+//extern uint8 Irq_IsrTypeTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
+//extern const OsIsrConstType *Irq_Map[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
 
 static void dumpExceptionRegs( uint32_t *regs );
 
@@ -128,7 +131,6 @@ void Irq_Init( void ) {
 	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
 	  INTC.CPR.B.PRI = 0;
 	#endif
-
 }
 
 void Irq_EOI( void ) {
@@ -154,6 +156,7 @@ void *Irq_Entry( void *stack_p )
 	uint32_t vector;
 	uint32_t *stack = (uint32_t *)stack_p;
 	uint32_t exc_vector = (EXC_OFF_FROM_BOTTOM+EXC_VECTOR_OFF)  / sizeof(uint32_t);
+	const OsIsrConstType *isr;
 
 	// Check for exception
 	if( stack[exc_vector]>=CRITICAL_INPUT_EXCEPTION )
@@ -181,14 +184,12 @@ void *Irq_Entry( void *stack_p )
 		}
 	}
 
-	if( Irq_GetIsrType(vector) == ISR_TYPE_1 ) {
-		// It's a function, just call it.
-		((func_t)Irq_VectorTable[vector])();
+	isr = Os_IsrGet(exc_vector);
+	if( isr->type == ISR_TYPE_1 ) {
+		isr->entry();
 		return stack;
 	} else {
-		// It's a PCB
-		// Let the kernel handle the rest,
-		return Os_Isr(stack, (void *)Irq_VectorTable[vector]);
+		return Os_Isr(stack, vector);
 	}
 }
 
@@ -231,29 +232,51 @@ void Irq_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector,uint8_
 }
 #endif
 
-/**
- *
- * @param isrPtr
- * @param type
- * @param int_ctrl
- */
-ISRType Irq_Attach( const OsIsrType_CONST *isrPtr ) {
-//	Os_Sys.isrCnt
-	uint32_t vector = isrPtr->vector;
 
-	Irq_VectorTable[vector] = (uintptr_t)isrPtr;
-//	Irq_IsrTypeTable[vector] = type;
+void Irq_EnableVector( int16_t vector, int priority, int core ) {
 
 	if (vector < INTC_NUMBER_OF_INTERRUPTS) {
-		Irq_SetPriority(CPU_CORE0,vector + IRQ_INTERRUPT_OFFSET, osPrioToCpuPio(isrPtr->prio));
+		Irq_SetPriority(core,vector + IRQ_INTERRUPT_OFFSET, osPrioToCpuPio(priority));
 	} else if ((vector >= CRITICAL_INPUT_EXCEPTION)
 			&& (vector<= DEBUG_EXCEPTION)) {
 	} else {
 		/* Invalid vector! */
 		assert(0);
 	}
-	return 0;
 }
+
+
+
+#if 0
+
+/**
+ *
+ * @param isrPtr
+ * @param type
+ * @param int_ctrl
+ */
+ISRType Irq_Attach( int vector ) {
+//	Os_Sys.isrCnt
+//	uint32_t vector = isrPtr->vector;
+
+	//Irq_VectorTable[vector] = (uintptr_t)isrPtr;
+//	Irq_IsrTypeTable[vector] = type;
+//	Irq_VectorTable[vector] = isrPtr;
+
+
+	if (vector < INTC_NUMBER_OF_INTERRUPTS) {
+		Irq_SetPriority(Irq_Map[vector]->core ,vector + IRQ_INTERRUPT_OFFSET, osPrioToCpuPio(Irq_Map[vector]->priority));
+	} else if ((vector >= CRITICAL_INPUT_EXCEPTION)
+			&& (vector<= DEBUG_EXCEPTION)) {
+	} else {
+		/* Invalid vector! */
+		assert(0);
+	}
+
+
+	return;
+}
+#endif
 
 #if 0
 /**
@@ -264,9 +287,9 @@ ISRType Irq_Attach( const OsIsrType_CONST *isrPtr ) {
  * @param vector
  */
 void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
-	OsPcbType *pcb;
+	OsTaskVarType *pcb;
 
-	pcb = os_find_task(tid);
+	pcb = Os_TaskGet(tid);
 	Irq_VectorTable[vector] = (void *)pcb;
 	Irq_IsrTypeTable[vector] = PROC_ISR2;
 

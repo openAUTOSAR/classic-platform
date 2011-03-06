@@ -32,15 +32,12 @@
 								assert(#_a  #_b); \
 							  }
 
-
-
-
 void Os_CfgValidate(void ) {
 	OS_VALIDATE(OS_COUNTER_CNT,ARRAY_SIZE(counter_list));
 #if (RESOURCE_CNT!=0)
 	OS_VALIDATE(OS_RESOURCE_CNT,ARRAY_SIZE(resource_list));
 #endif
-	OS_VALIDATE(OS_TASK_CNT ,ARRAY_SIZE(rom_pcb_list));
+	OS_VALIDATE(OS_TASK_CNT ,ARRAY_SIZE( Os_TaskConstList));
 #if (RESOURCE_CNT!=0)
 	OS_VALIDATE(OS_ALARM_CNT,ARRAY_SIZE(alarm_list));
 #endif
@@ -66,7 +63,7 @@ trusted_func_t oil_trusted_func_list[SERVICE_CNT];
 
 /*-----------------------------------------------------------------*/
 #if 0
-#if (  OS_SC3 == STD_ON) || (  OS_SC4==STD_ON)
+#if (OS_USE_APPLICATIONS == STD_ON)
 
 OsRomApplicationType *Os_CfgGetApplObj( ApplicationType appId ) {
 	return &rom_app_list[application_id];
@@ -151,7 +148,7 @@ uint32 Os_CfgGetMessageCnt(void ) {
 
 /*-----------------------------------------------------------------*/
 
-#if (  OS_SC3 == STD_ON) || (  OS_SC4 == STD_ON)
+#if (OS_USE_APPLICATIONS == STD_ON)
 uint32 Os_CfgGetServiceCnt( void ) {
 	return OS_SERVICE_CNT;
 }

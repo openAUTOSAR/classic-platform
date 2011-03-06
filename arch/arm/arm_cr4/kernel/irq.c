@@ -16,7 +16,7 @@
 #include "internal.h"
 #include "task_i.h"
 #include "hooks.h"
-#include "irq.h"
+#include "isr.h"
 #include "core_cr4.h"
 
 extern TaskType Os_Arc_CreateIsr( void (*entry)(void ), uint8_t prio, const char *name );
@@ -74,7 +74,7 @@ void *Irq_Entry( void *stack_p )
 	}
 
 	stack = (uint32_t *)stack_p;
-	struct OsPcb * pcb = (struct OsPcb *)Irq_VectorTable[virtualChannel];
+	struct OsTaskVar * pcb = (struct OsTaskVar *)Irq_VectorTable[virtualChannel];
 	// Save the hardware channel in the PCB, so that Os_Isr knows which interrupt channel to deactivate.
 	pcb->vector = channel;
 	stack = Os_Isr(stack, (void *)pcb);
@@ -123,9 +123,9 @@ static inline int osPrioToCpuPio( uint8_t prio ) {
  * @param vector
  */
 void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
-	OsPcbType *pcb;
+	OsTaskVarType *pcb;
 
-	pcb = os_find_task(tid);
+	pcb = Os_TaskGet(tid);
 	Irq_VectorTable[vector] = (void *)pcb;
 	IrqActivateChannel(vector);
 

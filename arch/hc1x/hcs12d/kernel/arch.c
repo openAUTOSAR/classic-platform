@@ -25,7 +25,7 @@ void Os_ArchFirstCall( void )
 {
 	// TODO: make switch here... for now just call func.
 	Irq_Enable();
-	Os_Sys.curr_pcb->entry();
+	Os_Sys.currTaskPtr->entry();
 }
 
 void *Os_ArchGetStackPtr( void ) {
@@ -42,7 +42,7 @@ unsigned int Os_ArchGetScSize( void ) {
 }
 
 
-void Os_ArchSetupContext( OsPcbType *pcb ) {
+void Os_ArchSetupContext( OsTaskVarType *pcb ) {
   // Nothing to be done here
 }
 
@@ -51,7 +51,7 @@ void Os_ArchSetupContext( OsPcbType *pcb ) {
  * @param pcbPtr
  */
 
-void Os_ArchSetTaskEntry(OsPcbType *pcbPtr ) {
+void Os_ArchSetTaskEntry(OsTaskVarType *pcbPtr ) {
 	uint8_t *context_bytes = (uint8_t *)pcbPtr->stack.curr;
 	uint16_t temp;
 

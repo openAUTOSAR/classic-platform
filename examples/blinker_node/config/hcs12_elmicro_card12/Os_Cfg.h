@@ -65,7 +65,7 @@ void bTask25( void );
 #define OS_OSIDLE_STACK_SIZE 512
 
 #define OS_ALARM_CNT			3 
-#define OS_TASK_CNT				5
+#define OS_TASK_CNT				6
 #define OS_SCHTBL_CNT			0
 #define OS_COUNTER_CNT			1
 #define OS_EVENTS_CNT			0

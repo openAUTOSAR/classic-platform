@@ -17,17 +17,17 @@
 #define EXT_CONFIG_H_
 
 /* Created in Os_CfgConfig */
-struct OsPcb;
+struct OsTaskVar;
 struct OsAlarm;
 struct OsCounter;
 struct OsSchTbl;
 struct OsResource;
 struct OsMessage;
-#if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
+#if	(OS_USE_APPLICATIONS == STD_ON)
 struct OsRomApplication;
 #endif
 
-#if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
+#if	(OS_USE_APPLICATIONS == STD_ON)
 extern const OsAppConstType Os_AppConst[OS_APPLICATION_CNT];
 
 struct OsRomApplication *Os_CfgGetApplObj( ApplicationType application_id );

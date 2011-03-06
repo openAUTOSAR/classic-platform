@@ -207,7 +207,7 @@ void OsTick( void ) {
 }
 
 TickType GetOsTick( void ) {
-	return get_os_tick();
+	return Os_Sys.tick;
 }
 
 

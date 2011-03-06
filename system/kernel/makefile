@@ -35,7 +35,7 @@ obj-y += irq.o
 
 # We are compiling the kernel
 dep-y += asm_offset.h
-dep-y += kernel_offset.h
+#dep-y += kernel_offset.h
 dep-$(CFG_ARM_CM3) += arch_offset.h
 
 

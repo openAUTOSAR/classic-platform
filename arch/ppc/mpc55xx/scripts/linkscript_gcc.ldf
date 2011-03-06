@@ -10,7 +10,33 @@ OUTPUT_FORMAT("elf32-powerpc", "elf32-powerpc", "elf32-powerpc")
 OUTPUT_ARCH(powerpc)
 ENTRY(_start)
 
-
+/*
+ * _idata - Start of .data in flash 
+ * _data  - start address of .data in RAM
+ * _edata  - end address of .data  in RAM
+ * _bss   - start address of .bss
+ * _ebss   - end address of .bss
+ * _etext  - end of .text
+ * _end    - End of something.... 
+ * 
+ * More stuff:
+ *    
+ *  _arc_heap_start
+ *  _arc_heap_end
+ *  _arc_stack
+ *
+ * Dwarf stuff: (same as Dwarf3 .debug_frame? )
+ *  eh_frame_hdr (C++ only? unwind info for C++ exceptions?)
+ *  eh_frame     (C++ only?)
+ *
+ * Exception table:
+ *  _exc_frame_start
+ *  _exc_frame_end
+ *
+ *  PowerPC EABI special:
+ *  _SDA2_BASE_
+ *  _SDA_BASE
+ */
 
 MEMORY
 {
@@ -114,7 +140,8 @@ __FLS_PROG_START__ = 0;	/* Must be aligned to a sector start. */
 
 	.data : {
 		. = . + ALIGN(4);
-		__DATA_RAM = .; *(.data .data.* .gnu.linkonce.d.* .gnu.linkonce.r.* .eh_frame)
+		__DATA_RAM = .; 
+		*(.data .data.* .gnu.linkonce.d.* .gnu.linkonce.r.* .eh_frame)
 	} > ram AT> flash
 
 	.sdata : {
@@ -132,20 +159,54 @@ __FLS_PROG_START__ = 0;	/* Must be aligned to a sector start. */
 		__SBSS_START__ = .;
 		*(.sbss .sbss.* .scommon .gnu.linkonce.sb.* .t32_outport);
 		__SBSS_END__ = .;
+		_end = .;
 	} > ram
 
-    .got2 ALIGN(0x10): {. = . + ALIGN(16);*(.got2);	. = . + ALIGN(8); } > ram
-    .fixup : { . = . + ALIGN(16);*(.fixup);	. = . + ALIGN(8); } 		> ram
-	.t32_outport ALIGN(0x10): { *(.t32_outport); } 			> ram
-	.got : AT(ALIGN(LOADADDR(.sdata)+SIZEOF(.sdata),4)) { *(.got.plt) *(.got) } > ram
-	/* .bss : { *(.bss .bss.* COMMON .gnu.linkonce.b.*);__BSS_END 	= .; } 	> ram */
-	.bss : AT(ADDR(.bss)) { *(.bss .bss.* COMMON .gnu.linkonce.b.*);__BSS_END 	= .; } 	> ram
-	.init_stack ALIGN(16) (NOLOAD) : {	__SP_END	= .;. = . + 1000; 	__SP_INIT 	= .; } > ram
+    .got2 ALIGN(0x10): 
+    {
+    	. = . + ALIGN(16);
+    	*(.got2);	
+    	. = . + ALIGN(8); 
+    } > ram
+    .fixup : 
+    { 
+    	. = . + ALIGN(16);
+    	*(.fixup);
+    	. = . + ALIGN(8); 
+    } 		> ram
+	.t32_outport ALIGN(0x10): 
+	{ 
+		*(.t32_outport); 
+	} 			> ram
+	
+	.got : AT(ALIGN(LOADADDR(.sdata)+SIZEOF(.sdata),4)) 
+	{ 
+		*(.got.plt) *(.got) 
+	} > ram
+	
+	.bss : AT(ADDR(.bss)) 
+	{ 
+		*(.bss .bss.* COMMON .gnu.linkonce.b.*);
+		__BSS_END 	= .; 
+	} 	> ram
+	.init_stack ALIGN(16) (NOLOAD) : 
+	{	
+		__SP_END	= .;
+		. = . + 1000; 	
+		__SP_INIT 	= .; 
+	} > ram
+	
 	/* Fls RAM section */
 	.fls_ram ALIGN(16) (NOLOAD) : {
 		__FLS_ERASE_RAM__ = .;
 		. = . + SIZEOF(.fls_rom);
 	} > ram
+	
+	/* Always place last in RAM */
+	.heap ALIGN(0x4): {
+		PROVIDE(_heap_start = .);
+	} > ram
+		
 
   .ctors          :
   {
@@ -191,6 +252,8 @@ __FLS_PROG_START__ = 0;	/* Must be aligned to a sector start. */
   .debug_typenames 0 : { *(.debug_typenames) }
   .debug_varnames  0 : { *(.debug_varnames) }
 }
+
+_heap_end = ORIGIN(ram) + LENGTH(ram);
 
 __TEXT_START    	= ADDR(.text);
 __RAM_START    		= ADDR(.sdata);

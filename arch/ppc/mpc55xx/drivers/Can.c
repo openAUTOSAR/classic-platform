@@ -14,12 +14,6 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
-
 #include "Can.h"
 
 #ifndef USE_CAN_STUB
@@ -36,7 +30,7 @@
 #include <string.h>
 #if defined(USE_KERNEL)
 #include "Os.h"
-#include "irq.h"
+#include "isr.h"
 #endif
 
 
@@ -136,6 +130,40 @@
 									&CanUnit[_controller]
 
 #define GET_CONTROLLER_CNT() (CAN_CONTROLLER_CNT)
+
+
+#define _INSTALL_HANDLER(_can_entry, _unique, _vector,_priority,_core)        \
+	do { \
+	  const OsIsrConstType _can_entry ## _unique = { \
+			.vector = _vector,   \
+			.type = ISR_TYPE_2, \
+			.priority = _priority,      \
+			.entry = _can_entry,      \
+			.core = _core,  \
+			.name = "Can",      \
+			.resourceMask = 0,  \
+			.appOwner = 0,      \
+		  };                    \
+	  Os_IsrAdd( & _can_entry ## _unique);   \
+	} while(0);
+
+
+
+#define INSTALL_HANDLER(_can_entry, _vector,_priority,_core)        \
+		_INSTALL_HANDLER(_can_entry, __LINE__, _vector,_priority,_core)        \
+
+#define INSTALL_HANDLER4(_can_entry, _vector,_priority,_core)\
+		INSTALL_HANDLER(_can_entry, _vector+0,_priority,_core) \
+		INSTALL_HANDLER(_can_entry, _vector+1,_priority,_core) \
+		INSTALL_HANDLER(_can_entry, _vector+2,_priority,_core) \
+		INSTALL_HANDLER(_can_entry, _vector+3,_priority,_core)
+
+#define INSTALL_HANDLER16(_can_entry, _vector,_priority,_core)\
+		INSTALL_HANDLER4(_can_entry, _vector+0,_priority,_core) \
+		INSTALL_HANDLER4(_can_entry, _vector+4,_priority,_core) \
+		INSTALL_HANDLER4(_can_entry, _vector+8,_priority,_core) \
+		INSTALL_HANDLER4(_can_entry, _vector+12,_priority,_core)
+
 
 //-------------------------------------------------------------------
 
@@ -268,27 +296,9 @@ typedef struct {
 
 } Can_UnitType;
 
-#if defined(CFG_MPC5567)
 Can_UnitType CanUnit[CAN_CONTROLLER_CNT] =
 {
   {
-    .state = CANIF_CS_UNINIT,
-  },{
-    .state = CANIF_CS_UNINIT,
-  },{
-    .state = CANIF_CS_UNINIT,
-  },{
-    .state = CANIF_CS_UNINIT,
-  },{
-    .state = CANIF_CS_UNINIT,
-  },
-};
-#else
-Can_UnitType CanUnit[CAN_CONTROLLER_CNT] =
-{
-  {
-    .state = CANIF_CS_UNINIT,
-  },{
     .state = CANIF_CS_UNINIT,
   },{
     .state = CANIF_CS_UNINIT,
@@ -299,8 +309,12 @@ Can_UnitType CanUnit[CAN_CONTROLLER_CNT] =
   },{
     .state = CANIF_CS_UNINIT,
   }
-};
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
+  ,{
+    .state = CANIF_CS_UNINIT,
+  }
 #endif
+};
 
 //-------------------------------------------------------------------
 
@@ -353,8 +367,7 @@ void Can_B_Isr( void  ) {	Can_Isr(CAN_CTRL_B); }
 void Can_C_Isr( void  ) {	Can_Isr(CAN_CTRL_C); }
 void Can_D_Isr( void  ) {	Can_Isr(CAN_CTRL_D); }
 void Can_E_Isr( void  ) {	Can_Isr(CAN_CTRL_E); }
-#if defined(CFG_MPC5567)
-#else
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
 void Can_F_Isr( void  ) {	Can_Isr(CAN_CTRL_F); }
 #endif
 
@@ -363,8 +376,7 @@ void Can_B_Err( void  ) {	Can_Err(CAN_CTRL_B); }
 void Can_C_Err( void  ) {	Can_Err(CAN_CTRL_C); }
 void Can_D_Err( void  ) {	Can_Err(CAN_CTRL_D); }
 void Can_E_Err( void  ) {	Can_Err(CAN_CTRL_E); }
-#if defined(CFG_MPC5567)
-#else
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
 void Can_F_Err( void  ) {	Can_Err(CAN_CTRL_F); }
 #endif
 
@@ -373,8 +385,7 @@ void Can_B_BusOff( void  ) {	Can_BusOff(CAN_CTRL_B); }
 void Can_C_BusOff( void  ) {	Can_BusOff(CAN_CTRL_C); }
 void Can_D_BusOff( void  ) {	Can_BusOff(CAN_CTRL_D); }
 void Can_E_BusOff( void  ) {	Can_BusOff(CAN_CTRL_E); }
-#if defined(CFG_MPC5567)
-#else
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
 void Can_F_BusOff( void  ) {	Can_BusOff(CAN_CTRL_F); }
 #endif
 //-------------------------------------------------------------------
@@ -658,29 +669,9 @@ static void Can_Isr(int unit) {
   }
 }
 
+
 //-------------------------------------------------------------------
 
-#if defined(USE_KERNEL)
-#define INSTALL_HANDLERS( _can_name,_boff,_err,_start,_stop) \
-  do { \
-    TaskType tid; \
-    tid = Os_Arc_CreateIsr(_can_name ## _BusOff,2/*prio*/,"Can"); \
-    Irq_AttachIsr2(tid,NULL,_boff); \
-    tid = Os_Arc_CreateIsr(_can_name ## _Err,2/*prio*/,"Can"); \
-    Irq_AttachIsr2(tid,NULL,_err); \
-    for(i=_start;i<=_stop;i++) {  \
-      tid = Os_Arc_CreateIsr(_can_name ## _Isr,2/*prio*/,"Can"); \
-			Irq_AttachIsr2(tid,NULL,i); \
-    } \
-  } while(0);
-#else
-#define INSTALL_HANDLERS( _can_name,_boff,_err,_start,_stop) \
-  Irq_InstallVector(_can_name ## _BusOff, _boff, 1, CPU_Z1); \
-  Irq_InstallVector(_can_name ## _Err, _err, 1, CPU_Z1);    \
-  for(i=_start;i<=_stop;i++) {																\
-    Irq_InstallVector(_can_name ## _Isr, i, 1, CPU_Z1); \
-  }
-#endif
 
 // This initiates ALL can controllers
 void Can_Init( const Can_ConfigType *config ) {
@@ -731,42 +722,53 @@ void Can_Init( const Can_ConfigType *config ) {
       }
     } while (!hoh->Can_Arc_EOL);
 
+
+
     // Note!
     // Could install handlers depending on HW objects to trap more errors
     // in configuration
-#if defined(CFG_MPC5567)
     switch( canHwConfig->CanControllerId ) {
     case CAN_CTRL_A:
-        INSTALL_HANDLERS(Can_A, FLEXCAN_A_ESR_BOFF_INT, FLEXCAN_A_ESR_ERR_INT, FLEXCAN_A_IFLAG1_BUF0I, FLEXCAN_A_IFLAG1_BUF31_16I);	break;
+    	INSTALL_HANDLER(   Can_A_BusOff, FLEXCAN_A_ESR_BOFF_INT,     2, CPU_CORE0 );
+    	INSTALL_HANDLER(   Can_A_Err,    FLEXCAN_A_ESR_ERR_INT,      2, CPU_CORE0 );
+    	INSTALL_HANDLER16( Can_A_Isr,    FLEXCAN_A_IFLAG1_BUF0I,     2, CPU_CORE0 );
+    	INSTALL_HANDLER(   Can_A_Isr,    FLEXCAN_A_IFLAG1_BUF31_16I, 2, CPU_CORE0 );
+    	break;
     case CAN_CTRL_B:
-        INSTALL_HANDLERS(Can_B, FLEXCAN_B_ESR_BOFF_INT, FLEXCAN_B_ESR_ERR_INT, FLEXCAN_B_IFLAG1_BUF0I, FLEXCAN_B_IFLAG1_BUF31_16I);	break;
+    	INSTALL_HANDLER(   Can_B_BusOff, FLEXCAN_B_ESR_BOFF_INT,     2, CPU_CORE0 );
+    	INSTALL_HANDLER(   Can_B_Err,    FLEXCAN_B_ESR_ERR_INT,      2, CPU_CORE0 );
+    	INSTALL_HANDLER16( Can_B_Isr,    FLEXCAN_B_IFLAG1_BUF0I,     2, CPU_CORE0 );
+    	INSTALL_HANDLER(   Can_B_Isr,    FLEXCAN_B_IFLAG1_BUF31_16I, 2, CPU_CORE0 );
+    	break;
     case CAN_CTRL_C:
-        INSTALL_HANDLERS(Can_C, FLEXCAN_C_ESR_BOFF_INT, FLEXCAN_C_ESR_ERR_INT, FLEXCAN_C_IFLAG1_BUF0I, FLEXCAN_C_IFLAG1_BUF31_16I);	break;
+    	INSTALL_HANDLER(   Can_C_BusOff, FLEXCAN_C_ESR_BOFF_INT,     2, CPU_CORE0 );
+    	INSTALL_HANDLER(   Can_C_Err,    FLEXCAN_C_ESR_ERR_INT,      2, CPU_CORE0 );
+    	INSTALL_HANDLER16( Can_C_Isr,    FLEXCAN_C_IFLAG1_BUF0I,     2, CPU_CORE0 );
+    	INSTALL_HANDLER(   Can_C_Isr,    FLEXCAN_C_IFLAG1_BUF31_16I, 2, CPU_CORE0 );
+    	break;
     case CAN_CTRL_D:
-        INSTALL_HANDLERS(Can_D, FLEXCAN_D_ESR_BOFF_INT, FLEXCAN_D_ESR_ERR_INT, FLEXCAN_D_IFLAG1_BUF0I, FLEXCAN_D_IFLAG1_BUF31_16I);	break;
+    	INSTALL_HANDLER(   Can_D_BusOff, FLEXCAN_D_ESR_BOFF_INT,     2, CPU_CORE0 );
+    	INSTALL_HANDLER(   Can_D_Err,    FLEXCAN_D_ESR_ERR_INT,      2, CPU_CORE0 );
+    	INSTALL_HANDLER16( Can_D_Isr,    FLEXCAN_D_IFLAG1_BUF0I,     2, CPU_CORE0 );
+    	INSTALL_HANDLER(   Can_D_Isr,    FLEXCAN_D_IFLAG1_BUF31_16I, 2, CPU_CORE0 );
+    	break;
     case CAN_CTRL_E:
-        INSTALL_HANDLERS(Can_E, FLEXCAN_E_ESR_BOFF_INT, FLEXCAN_E_ESR_ERR_INT, FLEXCAN_E_IFLAG1_BUF0I, FLEXCAN_E_IFLAG1_BUF31_16I);	break;
-    default:
-        assert(0);
-    }
-#else
-    switch( canHwConfig->CanControllerId ) {
-    case CAN_CTRL_A:
-        INSTALL_HANDLERS(Can_A, FLEXCAN_A_ESR_BOFF_INT, FLEXCAN_A_ESR_ERR_INT, FLEXCAN_A_IFLAG1_BUF0I, FLEXCAN_A_IFLAG1_BUF31_16I);	break;
-    case CAN_CTRL_B:
-        INSTALL_HANDLERS(Can_B, FLEXCAN_B_ESR_BOFF_INT, FLEXCAN_B_ESR_ERR_INT, FLEXCAN_B_IFLAG1_BUF0I, FLEXCAN_B_IFLAG1_BUF31_16I);	break;
-    case CAN_CTRL_C:
-        INSTALL_HANDLERS(Can_C, FLEXCAN_C_ESR_BOFF_INT, FLEXCAN_C_ESR_ERR_INT, FLEXCAN_C_IFLAG1_BUF0I, FLEXCAN_C_IFLAG1_BUF31_16I);	break;
-    case CAN_CTRL_D:
-        INSTALL_HANDLERS(Can_D, FLEXCAN_D_ESR_BOFF_INT, FLEXCAN_D_ESR_ERR_INT, FLEXCAN_D_IFLAG1_BUF0I, FLEXCAN_D_IFLAG1_BUF31_16I);	break;
-    case CAN_CTRL_E:
-        INSTALL_HANDLERS(Can_E, FLEXCAN_E_ESR_BOFF_INT, FLEXCAN_E_ESR_ERR_INT, FLEXCAN_E_IFLAG1_BUF0I, FLEXCAN_E_IFLAG1_BUF31_16I);	break;
+    	INSTALL_HANDLER(   Can_E_BusOff, FLEXCAN_E_ESR_BOFF_INT,     2, CPU_CORE0 );
+    	INSTALL_HANDLER(   Can_E_Err,    FLEXCAN_E_ESR_ERR_INT,      2, CPU_CORE0 );
+    	INSTALL_HANDLER16( Can_E_Isr,    FLEXCAN_E_IFLAG1_BUF0I,     2, CPU_CORE0 );
+    	INSTALL_HANDLER(   Can_E_Isr,    FLEXCAN_E_IFLAG1_BUF31_16I, 2, CPU_CORE0 );
+    	break;
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
     case CAN_CTRL_F:
-        INSTALL_HANDLERS(Can_F, FLEXCAN_F_ESR_BOFF_INT, FLEXCAN_F_ESR_ERR_INT, FLEXCAN_F_IFLAG1_BUF0I, FLEXCAN_F_IFLAG1_BUF31_16I);	break;
+    	INSTALL_HANDLER(   Can_F_BusOff, FLEXCAN_F_ESR_BOFF_INT,     2, CPU_CORE0 );
+    	INSTALL_HANDLER(   Can_F_Err,    FLEXCAN_F_ESR_ERR_INT,      2, CPU_CORE0 );
+    	INSTALL_HANDLER16( Can_F_Isr,    FLEXCAN_F_IFLAG1_BUF0I,     2, CPU_CORE0 );
+    	INSTALL_HANDLER(   Can_F_Isr,    FLEXCAN_F_IFLAG1_BUF31_16I, 2, CPU_CORE0 );
+    	break;
+#endif
     default:
         assert(0);
     }
-#endif
   }
   return;
 }
