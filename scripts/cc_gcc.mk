@@ -78,7 +78,7 @@ gcc_lib_path := "$(subst /libgcc.a,,$(shell $(CC) $(CFLAGS) --print-libgcc-file-
 gcc_lib_path := $(subst \libgcc.a,,$(gcc_lib_path)) 
 lib_lib_path := "$(subst /libc.a,,$(shell $(CC) $(CFLAGS) --print-file-name=libc.a))"
 lib_lib_path := $(subst \libc.a,,$(lib_lib_path))
-text_chunk := $(subst \,/,$(shell touch i_m_here.c; $(CC) -v -c i_m_here.c &> i_m_here.txt;gawk -f $(TOPDIR)/scripts/gcc_getinclude.awk i_m_here.txt))
+text_chunk := $(subst \,/,$(shell touch gcc_path_probe.c; $(CC) -v -c gcc_path_probe.c &> gcc_path_probe.tmp;gawk -f $(TOPDIR)/scripts/gcc_getinclude.awk gcc_path_probe.tmp))
 cc_inc_path := $(realpath $(text_chunk))
 libpath-y += -L$(lib_lib_path)
 libpath-y += -L$(gcc_lib_path)

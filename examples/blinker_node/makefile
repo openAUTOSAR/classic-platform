@@ -7,9 +7,6 @@ obj-y += Rte.o
 
 VPATH += ../
 
-# Board object files
-include $(ROOTDIR)/boards/board_common.mk
-
 ABSDIR := $(subst $(TOPDIR)/,,$(CURDIR))
 
 # The more precise configuration, the higher preceedance.
@@ -24,7 +21,6 @@ VPATH += ../Rte
 inc-y += ../Rte
 VPATH += $(ROOTDIR)/components/blinker
 inc-y += $(ROOTDIR)/components/blinker
-
 
 # libs needed by us 
 #libitem-y +=

@@ -179,12 +179,15 @@ endif
 
 .PHONY clean: 
 clean: FORCE
-	@-rm -f *.o *.d *.h *.elf *.a *.ldp
+	@echo
+	@echo "  >> Cleaning $(CURDIR)"
+	$(Q)-rm -f *.o *.d *.h *.elf *.a *.ldp *.tmp *.s *.c *.map
+	@echo
 
 .PHONY config: 
 config: FORCE
 	@echo "board   modules:" $(MOD_AVAIL)
-	@echo "example modules:" $(MOD_USE)
+	@echo "enabled modules:" $(MOD_USE)
 	@echo $(MOD) ${def-y}
 
 FORCE:
@@ -212,6 +215,7 @@ all: $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $(ROOTDIR)/bina
 
 # Compile
 %.o: %.c
+	@echo
 	@echo "  >> CC $(notdir $<)"
 	$(Q)$(CC) -c $(CFLAGS) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
 # run lint if enabled
@@ -220,6 +224,7 @@ all: $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $(ROOTDIR)/bina
 
 # Assembler
 %.o: %.s
+	@echo
 	@echo "  >> AS $(notdir $<)  $(ASFLAGS)"
 	$(Q)$(AS) $(ASFLAGS) -o $(goal) $<
 	
@@ -227,6 +232,7 @@ all: $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $(ROOTDIR)/bina
 #.SECONDARY %.s:
 
 %.s: %.sx
+	@echo
 	@echo "  >> CPP $(notdir $<)"
 	$(Q)$(CPP) $(CPP_ASM_FLAGS) -o $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
@@ -235,6 +241,7 @@ inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
 
 # Preprocess linker files..
 %.ldp %.lcf: %.ldf
+	@echo
 	@echo "  >> CPP $<"
 	$(Q)$(CPP) -E -P $(CPP_ASM_FLAGS) -o $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
@@ -246,21 +253,25 @@ dep-y += $(ROOTDIR)/libs
 	
 # lib output
 $(build-lib-y): $(dep-y) $(obj-y)
+	@echo
 	@echo "  >> AR $@"   
 	$(Q)$(AR) -r -o $@ $(obj-y) 2> /dev/null
 
 # hex output
 $(build-hex-y): $(build-exe-y)
+	@echo
 	@echo "  >> OBJCOPY $@"   
 	$(Q)$(CROSS_COMPILE)objcopy -O ihex $< $@
 	
 # bin output
 $(build-bin-y): $(build-exe-y)
+	@echo
 	@echo "  >> OBJCOPY $@"   
 	$(Q)$(CROSS_COMPILE)objcopy -O binary $< $@	
 
 # Linker
 $(build-exe-y): $(dep-y) $(obj-y) $(sim-y) $(libitem-y) $(ldcmdfile-y)
+	@echo
 	@echo "  >> LD $@"
 ifeq ($(CROSS_COMPILE),)
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	

@@ -11,9 +11,6 @@ inc-y += $(ROOTDIR)/system/kernel/include
 
 VPATH += ../
 
-# Board object files
-include $(ROOTDIR)/boards/board_common.mk
-
 ABSDIR := $(subst $(TOPDIR)/,,$(CURDIR))
 
 # The more precise configuration, the higher preceedance.
@@ -27,7 +24,6 @@ VPATH += ../Rte
 inc-y += ../Rte
 VPATH += $(ROOTDIR)/components/switch
 inc-y += $(ROOTDIR)/components/switch
-
 
 # libs needed by us 
 #libitem-y +=
