@@ -225,7 +225,7 @@ all: $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $(ROOTDIR)/bina
 # Assembler
 %.o: %.s
 	@echo
-	@echo "  >> AS $(notdir $<)  $(ASFLAGS)"
+	@echo "  >> AS $(notdir $<)"
 	$(Q)$(AS) $(ASFLAGS) -o $(goal) $<
 	
 # PP Assembler	
@@ -242,7 +242,7 @@ inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
 # Preprocess linker files..
 %.ldp %.lcf: %.ldf
 	@echo
-	@echo "  >> CPP $<"
+	@echo "  >> CPP $(notdir $<)"
 	$(Q)$(CPP) -E -P $(CPP_ASM_FLAGS) -o $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
 .PHONY $(ROOTDIR)/libs:

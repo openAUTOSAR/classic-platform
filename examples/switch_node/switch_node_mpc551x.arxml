@@ -25,7 +25,7 @@
                 <SD GID="MCU">MPC551x</SD>
                 <SD GID="AUTHOR">ArcCore AB</SD>
                 <SD GID="COPYRIGHT">Copyright ArcCore AB 2010</SD>
-                <SD GID="GENDIR" />
+                <SD GID="GENDIR"></SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>
@@ -369,6 +369,10 @@
                 </BOOLEAN-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/CanIf/CanIfPublicConfiguration/CanIfWakeupEventApi</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/CanIf/CanIfPublicConfiguration/ArcCanIfDynamicPduConfiguration</DEFINITION-REF>
                   <VALUE>false</VALUE>
                 </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
@@ -1242,6 +1246,12 @@
                   <VALUE>10.0</VALUE>
                 </FLOAT-VALUE>
               </PARAMETER-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="ec2998b8-c318-48ad-867e-296ef16e5907">
+                  <SHORT-NAME>EcuMUserConfig</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMUserConfig</DEFINITION-REF>
+                </CONTAINER>
+              </SUB-CONTAINERS>
             </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
@@ -1253,7 +1263,7 @@
         <AR-PACKAGE UUID="a12472d5-8544-45a1-a68e-b72607912e76">
           <SHORT-NAME>GeneratedSystemSignals</SHORT-NAME>
           <ELEMENTS>
-            <SYSTEM-SIGNAL UUID="aa8d91e9-05a9-41ba-8a22-0bcb423997f9">
+            <SYSTEM-SIGNAL UUID="80ba5c99-3e11-4f2c-b044-7824c8f405c0">
               <SHORT-NAME>SetLedLevelTx</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
@@ -1314,7 +1324,7 @@
                     <CONSTANT-SPECIFICATION>
                       <SHORT-NAME>SetLedLevelTxInitValue</SHORT-NAME>
                       <VALUE>
-                        <INTEGER-LITERAL UUID="c12f4ad5-c594-438d-b7ef-0cc98e0e17b6">
+                        <INTEGER-LITERAL UUID="bace0409-bee2-4397-8e98-3326f5829b1e">
                           <SHORT-NAME>SetLedLevelTxInitValueLiteral</SHORT-NAME>
                           <VALUE>0</VALUE>
                         </INTEGER-LITERAL>
