@@ -28,6 +28,32 @@
 #include "MemMap.h"
 #include "Cpu.h"
 
+typedef uint8 StatusType;
+
+#define E_OS_ACCESS (StatusType)1               /**< STD OSEK */
+#define	E_OS_CALLEVEL (StatusType)2             /**< STD OSEK */
+#define	E_OS_ID	(StatusType)3                   /**< STD OSEK */
+#define	E_OS_LIMIT (StatusType)4                /**< STD OSEK */
+#define	E_OS_NOFUNC (StatusType)5               /**< STD OSEK */
+#define	E_OS_RESOURCE (StatusType)6             /**< STD OSEK */
+#define	E_OS_STATE (StatusType)7                /**< STD OSEK */
+#define	E_OS_VALUE (StatusType)8                /**< STD OSEK */
+
+#define	E_OS_SERVICEID (StatusType)9                /**< AUTOSAR, see 7.10 */
+#define	E_OS_RATE (StatusType)10                    /**< AUTOSAR, see 7.10 */
+#define	E_OS_ILLEGAL_ADDRESS (StatusType)11         /**< AUTOSAR, see 7.10 */
+#define	E_OS_MISSINGEND (StatusType)12              /**< AUTOSAR, see 7.10 */
+#define	E_OS_DISABLEDINT (StatusType)13             /**< AUTOSAR, see 7.10 */
+#define	E_OS_STACKFAULT (StatusType)14              /**< AUTOSAR, see 7.10 */
+#define	E_OS_PROTECTION_MEMORY (StatusType)15       /**< AUTOSAR, see 7.10 */
+#define	E_OS_PROTECTION_TIME (StatusType)16         /**< AUTOSAR, see 7.10 */
+#define	E_OS_PROTECTION_LOCKED (StatusType)17       /**< AUTOSAR, see 7.10 */
+#define	E_OS_PROTECTION_EXCEPTION (StatusType)18    /**< AUTOSAR, see 7.10 */
+#define	E_OS_PROTECTION_RATE (StatusType)19          /**< AUTOSAR, see 7.10 */
+
+#define E_COM_ID 255 // TODO: var ska E_COM_ID vara?"
+
+
 typedef uint32_t 		EventMaskType;
 typedef EventMaskType *	EventMaskRefType;
 typedef uint16_t 		TaskType;
@@ -37,7 +63,7 @@ typedef enum {
 	TASK_STATE_WAITING,
 	TASK_STATE_READY,
 	TASK_STATE_SUSPENDED,
-	TASK_STATE_RUNNING,
+	TASK_STATE_RUNNING
 } TaskStateType;
 
 #define INVALID_TASK	0xdeadU
@@ -46,12 +72,27 @@ typedef TaskStateType *TaskStateRefType;
 
 /* FIXME: OSMEMORY_IS__ , see 8.2*/
 
+#define OSMEMORY_IS_READABLE(_access)
+#define OSMEMORY_IS_WRITEABLE(_access)
+#define OSMEMORY_IS_EXECUTABLE(_access)
+#define OSMEMORY_IS_STACKSPACE(_access)
+
 #define OSDEFAULTAPPMODE  1
 
 #define INVALID_OSAPPLICATION (-1)
 
 /* TODO, I have no idea what this should be*/
+#if (OS_USE_APPLICATIONS == STD_ON)
 typedef sint32 ApplicationType;
+
+typedef enum {
+	APPLICATION_ACCESSIBLE,
+	APPLICATION_RESTARTING,
+	APPLICATION_TERMINATED
+} ApplicationStateType;
+
+typedef ApplicationStateType *ApplicationStateRefType;
+#endif
 
 /* See oil config for defines */
 typedef sint32 AppModeType;
@@ -125,6 +166,8 @@ typedef  void * TrustedFunctionParameterRefType;
 #define INVALID_ISR		((sint16)(-1))
 typedef	sint16 ISRType;
 
+#define APP_NO_OWNER	(-1UL)
+
 typedef void * MemoryStartAddressType;
 typedef uint32 MemorySizeType;
 
@@ -141,7 +184,6 @@ StatusType GetEvent( TaskType TaskId, EventMaskRefType Mask);
 void InitOS( void );
 void StartOS( AppModeType Mode );
 
-ApplicationType GetApplicationID( void );
 ISRType GetISRID( void );
 StatusType GetActiveApplicationMode( AppModeType* mode);
 
@@ -219,6 +261,9 @@ static inline void ResumeOSInterrupts( void ) {
 /*
  * Class 2,3 and 4 API
  */
+
+#if (OS_USE_APPLICATIONS == STD_ON)
+
 ApplicationType GetApplicationID( void );
 AccessType 	CheckISRMemoryAccess( 	ISRType ISRID,
 									MemoryStartAddressType Address,
@@ -228,8 +273,17 @@ AccessType 	CheckTaskMemoryAccess( 	TaskType TaskID,
 									MemoryStartAddressType Address,
 									MemorySizeType Size );
 
+ObjectAccessType CheckObjectAccess( ApplicationType ApplId,
+									ObjectTypeType ObjectType,
+									uint32_t objectId );
+ApplicationType CheckObjectOwnership( ObjectTypeType ObjectType,
+									uint32_t objectId );
+StatusType TerminateApplication(  ApplicationType Application, RestartType RestartOption );
+StatusType AllowAccess( void );
+StatusType GetApplicationState(   ApplicationType Application,  ApplicationStateRefType Value );
 StatusType 	CallTrustedFunction(	TrustedFunctionIndexType FunctionIndex,
 									TrustedFunctionParameterRefType FunctionParams );
+#endif
 
 StatusType 	GetTaskID(		TaskRefType TaskID );
 StatusType 	GetTaskState(	TaskType task_id, TaskStateRefType state);
@@ -353,8 +407,8 @@ typedef enum {
     OSServiceId_PostTaskHook,
     OSServiceId_StartupHook,
     OSServiceId_ShutdownHook,
-    OSServiceId_GetTaskState,
-} OsServiceIdType;;
+    OSServiceId_GetTaskState
+} OsServiceIdType;
 
 typedef struct OsError {
 	OsServiceIdType serviceId;

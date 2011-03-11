@@ -15,7 +15,7 @@
 
 #include "Os.h"
 #include "internal.h"
-#include "irq.h"
+#include "isr.h"
 #include "arc.h"
 #include "regs.h"
 #include "Mcu.h"

@@ -448,7 +448,7 @@ typedef volatile struct gioBase
     unsigned FLG;       /**< 0x0020: Interrupt Flag Register */
     unsigned OFFSET0;   /**< 0x0024: Interrupt Offset A Register */
     unsigned OFFSET1;   /**< 0x0028: Interrupt Offset B Register */
-} gioBASE_t;
+} GIO_Base_RegisterType;
 
 
 /** @struct gioPort
@@ -469,7 +469,10 @@ typedef volatile struct gioPort
     unsigned PDR;    /**< 0x0014: Open Drain Regsiter */
     unsigned PULDIS; /**< 0x0018: Pullup Disable Register */
     unsigned PSL;    /**< 0x001C: Pull Up/Down Selection Register */
-} gioPORT_t;
+} GIO_RegisterType;
+
+#define GIO_PORTA_BASE ((GIO_RegisterType *)0xFFF7BC34)
+#define GIO_PORTB_BASE ((GIO_RegisterType *)0xFFF7BC54)
 
 
 /** @def gioREG
@@ -477,7 +480,7 @@ typedef volatile struct gioPort
 *
 *   This pointer is used by the GIO driver to access the gio module registers.
 */
-#define gioREG   ((gioBASE_t *)0xFFF7BC00U)
+#define gioREG   ((GIO_Base_RegisterType *)0xFFF7BC00U)
 
 /** @def gioPORTA
 *   @brief GIO Port (A) Register Pointer

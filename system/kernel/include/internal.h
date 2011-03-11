@@ -20,11 +20,11 @@
  *
  * Os.h
  *  |
- *  |--- Os_Cfg.h
- *  |
  *  |--- Std_Types.h
  *  |    |--- Platform_Types.h (std?)
  *  |    |--- Compiler.h       (std?)
+ *  |
+ *  |--- Os_Cfg.h
  *  |
  *  |--- MemMap.h
  *
@@ -123,158 +123,126 @@
  */
 
 #define ERRORHOOK(x) \
-	if( os_sys.hooks->ErrorHook != NULL  ) { \
-		os_sys.hooks->ErrorHook(x); \
+	if( Os_Sys.hooks->ErrorHook != NULL  ) { \
+		Os_Sys.hooks->ErrorHook(x); \
 	}
+
+#if	(OS_USE_APPLICATIONS == STD_ON)
+#define PROTECTIONHOOK(_x) \
+	do { \
+		if( Os_Sys.hooks->ProtectionHook != NULL ) { \
+			Os_Sys.hooks->ProtectionHook(_x); \
+		} \
+    } while(0)
+
+#endif
 
 
 #define PRETASKHOOK() \
-	assert( os_sys.curr_pcb->state & ST_RUNNING ); \
-	assert( os_sys.curr_pcb->flags == SYS_FLAG_HOOK_STATE_EXPECTING_PRE );  \
-	os_sys.curr_pcb->flags = SYS_FLAG_HOOK_STATE_EXPECTING_POST;   \
-	if( os_sys.hooks->PreTaskHook != NULL ) { \
-		os_sys.hooks->PreTaskHook(); \
+	assert( Os_Sys.currTaskPtr->state & ST_RUNNING ); \
+	assert( Os_Sys.currTaskPtr->flags == SYS_FLAG_HOOK_STATE_EXPECTING_PRE );  \
+	Os_Sys.currTaskPtr->flags = SYS_FLAG_HOOK_STATE_EXPECTING_POST;   \
+	if( Os_Sys.hooks->PreTaskHook != NULL ) { \
+		Os_Sys.hooks->PreTaskHook(); \
 	}
 
 #define POSTTASKHOOK() \
-	assert( os_sys.curr_pcb->state & ST_RUNNING ); \
-	assert( os_sys.curr_pcb->flags == SYS_FLAG_HOOK_STATE_EXPECTING_POST );  \
-	os_sys.curr_pcb->flags = SYS_FLAG_HOOK_STATE_EXPECTING_PRE;   \
-	if( os_sys.hooks->PostTaskHook != NULL ) { 	\
-		os_sys.hooks->PostTaskHook();			\
+	assert( Os_Sys.currTaskPtr->state & ST_RUNNING ); \
+	assert( Os_Sys.currTaskPtr->flags == SYS_FLAG_HOOK_STATE_EXPECTING_POST );  \
+	Os_Sys.currTaskPtr->flags = SYS_FLAG_HOOK_STATE_EXPECTING_PRE;   \
+	if( Os_Sys.hooks->PostTaskHook != NULL ) { 	\
+		Os_Sys.hooks->PostTaskHook();			\
 	}
 
 /*
  * PCB manipulating functions
  */
 
+#if 0
 static inline OsTaskidType get_curr_pid( void ) {
-	return os_sys.curr_pcb->pid;
-}
-
-static inline OsPcbType *get_curr_pcb( void ) {
-	return os_sys.curr_pcb;
-}
-
-static inline void set_curr_pcb( OsPcbType *pcb ) {
-	os_sys.curr_pcb = pcb;
-}
-
-static inline _Bool is_idle_task( OsPcbType *pcb ){
-	return (pcb->pid == 0);
-}
-
-static inline OsTaskidType get_curr_prio( void ){
-	return os_sys.curr_pcb->prio;
-}
-
-static inline TickType get_os_tick( void ) {
-	return os_sys.tick;
-}
-
-#if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
-static inline OsApplicationType *get_curr_application( void ) {
-	return get_curr_pcb()->application;
-}
-
-static inline uint32_t get_curr_application_id( void ) {
-	return get_curr_pcb()->application->application_id;
+	return Os_Sys.currTaskPtr->pid;
 }
 #endif
 
-static inline struct OsResource *os_get_resource_int_p( void ) {
-	return get_curr_pcb()->resource_int_p;
+static inline OsTaskVarType *get_curr_pcb( void ) {
+	return Os_Sys.currTaskPtr;
 }
+
+static inline void set_curr_pcb( OsTaskVarType *pcb ) {
+	Os_Sys.currTaskPtr = pcb;
+}
+#if 0
+static inline _Bool is_idle_task( OsTaskVarType *pcb ){
+	return (pcb->pid == 0);
+}
+
+
+static inline OsTaskidType get_curr_prio( void ){
+	return Os_Sys.currTaskPtr->prio;
+}
+
+
+static inline TickType get_os_tick( void ) {
+	return Os_Sys.tick;
+}
+
+
+static inline struct OsResource *os_get_resource_int_p( void ) {
+	return get_curr_pcb()->resourceIntPtr;
+}
+#endif
 
 /*
  * Misc
  */
 
 static inline uint32_t os_task_nr_to_mask( uint32_t nr ) {
-	return (1<<nr);
+	return ((uint32_t) 1 << nr); // 701 PC-lint [10.5]: OK om skriver 1u... får då istället: 960 PC-lint [10.5]: Båda ok om skriver 1ul eller castar till uint32_t
 }
 
 // task_i.c
-OsPcbType *Os_TaskGetTop( void );
-OsPcbType *os_find_task( TaskType tid );
+OsTaskVarType *Os_TaskGetTop( void );
+OsTaskVarType *Os_TaskGet( TaskType tid );
 
 // resource.c
 void Os_ResourceGetInternal(void );
 void Os_ResourceReleaseInternal( void );
-void Os_ResourceAlloc( OsResourceType *rPtr, OsPcbType *pcbPtr);
-void Os_ResourceFree( OsResourceType *rPtr , OsPcbType *pcbPtr);
+void Os_ResourceAlloc( OsResourceType *rPtr, OsTaskVarType *pcbPtr);
+void Os_ResourceFree( OsResourceType *rPtr , OsTaskVarType *pcbPtr);
 
 void Os_ResourceInit( void );
 
 
-static inline void Os_ResourceFreeAll( OsPcbType *pcbPtr ) {
+/* Application */
+#if	(OS_USE_APPLICATIONS == STD_ON)
+void Os_ApplStart( void );
+#endif
+
+static inline void Os_ResourceFreeAll( OsTaskVarType *pcbPtr ) {
 	OsResourceType *rPtr;
 
 	/* Pop the queue */
-	TAILQ_FOREACH(rPtr, &pcbPtr->resource_head, listEntry ) {
+	TAILQ_FOREACH(rPtr, &pcbPtr->resourceHead, listEntry ) {
 		Os_ResourceFree(rPtr,pcbPtr);
 	}
 }
 
-#if 0
-/**
- *
- * @return 1 - if any resources were found.
- */
-static inline _Bool Os_ResourceCheckAndRelease( OsPcbType *pcb )  {
-	_Bool rv = 0;
-	if( !TAILQ_EMPTY(&pcb->resource_head) ) {
-		OsResourceType *rPtr;
-
-		TAILQ_FOREACH(rPtr, &pcb->resource_head, listEntry ) {
-			ReleaseResource(rPtr->nr);
-			/* Requirements are a little fuzzy here, no explicit
-			 * requirement for this.
-			 *
-			 * For OSEK this is a req.
-			 */
-			ERRORHOOK(E_OS_RESOURCE);
-			rv = 1;
-		}
-	}
-	return rv;
-}
-#endif
-
-static inline _Bool Os_TaskOccupiesResources( OsPcbType *pcb ) {
-	return !(TAILQ_EMPTY(&pcb->resource_head));
+static inline _Bool Os_TaskOccupiesResources( OsTaskVarType *pcb ) {
+	return !(TAILQ_EMPTY(&pcb->resourceHead));
 }
 
-/*
-static inline void Os_GetSchedulerResource() {
-	os_sys.scheduler_lock = 1;
-}
-
-static inline void Os_ReleaseSchedulerResource() {
-	os_sys.scheduler_lock = 0;
-}
-*/
-/*
-static inline _Bool Os_SchedulerResourceIsOccupied() {
-#if 0
-	return (os_sys.resScheduler.owner != NO_TASK_OWNER );
-#else
-	return (os_sys.scheduler_lock == 1);
-#endif
-}
-*/
 #define NO_TASK_OWNER 	(TaskType)(~0)
 
 static inline _Bool Os_SchedulerResourceIsFree() {
 #if 1
-	return (os_sys.resScheduler.owner == NO_TASK_OWNER );
+	return (Os_Sys.resScheduler.owner == NO_TASK_OWNER );
 #else
-	return (os_sys.scheduler_lock == 0);
+	return (Os_Sys.scheduler_lock == 0);
 #endif
 }
 
 // Create.c
-OsPcbType * os_alloc_new_pcb( void );
+OsTaskVarType * os_alloc_new_pcb( void );
 
 void os_dispatch(void);
 
@@ -285,12 +253,12 @@ void Os_Isr_cm3( void *isr_p );
 void TailChaining(void *stack);
 #endif
 
-void *Os_Isr( void *stack, void *pcb_p );
+void *Os_Isr( void *stack, int16_t vector);
 void Os_Dispatch( uint32_t op );
 
 #define STACK_PATTERN	0x42
 
-static inline void *Os_StackGetUsage( OsPcbType *pcb ) {
+static inline void *Os_StackGetUsage( OsTaskVarType *pcb ) {
 
 	uint8_t *p = pcb->stack.curr;
 	uint8_t *end = pcb->stack.top;
@@ -301,12 +269,12 @@ static inline void *Os_StackGetUsage( OsPcbType *pcb ) {
 	return (void *)end;
 }
 
-static inline void Os_StackSetEndmark( OsPcbType *pcbPtr ) {
+static inline void Os_StackSetEndmark( OsTaskVarType *pcbPtr ) {
 	uint8_t *end = pcbPtr->stack.top;
 	*end = STACK_PATTERN;
 }
 
-static inline _Bool Os_StackIsEndmarkOk( OsPcbType *pcbPtr ) {
+static inline _Bool Os_StackIsEndmarkOk( OsTaskVarType *pcbPtr ) {
 	_Bool rv;
 	uint8_t *end = pcbPtr->stack.top;
 	rv =  ( *end == STACK_PATTERN);
@@ -319,14 +287,15 @@ static inline _Bool Os_StackIsEndmarkOk( OsPcbType *pcbPtr ) {
 	return rv;
 }
 
-static inline void Os_StackPerformCheck( OsPcbType *pcbPtr ) {
+static inline void Os_StackPerformCheck( OsTaskVarType *pcbPtr ) {
 #if (OS_STACK_MONITORING == 1)
 		if( !Os_StackIsEndmarkOk(pcbPtr) ) {
-#if (  OS_SC1 == 1) || (  OS_SC2 == 1)
+#if (OS_SC1 == STD_ON) || (OS_SC2 == STD_ON)
 			/** @req OS068 */
 			ShutdownOS(E_OS_STACKFAULT);
-#else
-#error SC3 or SC4 not supported. Protection hook should be called here
+#elif (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
+			/** @req OS396 */
+			PROTECTIONHOOK(E_OS_STACKFAULT);
 #endif
 		}
 #endif
@@ -334,7 +303,7 @@ static inline void Os_StackPerformCheck( OsPcbType *pcbPtr ) {
 
 
 int Os_CfgGetTaskCnt(void);
-void Os_ContextReInit( OsPcbType *pcbPtr );
+void Os_ContextReInit( OsTaskVarType *pcbPtr );
 
 
 static inline _Bool Os_IrqAnyDisabled( void ) {

@@ -67,7 +67,7 @@ void Dma_ConfigureChannel (struct tcd_t *tcd, Dma_ChannelType channel)
   }
 }
 
-struct tcd_t * Dma_GetTcd( Dma_ChannelType channel ) {
+volatile struct tcd_t * Dma_GetTcd( Dma_ChannelType channel ) {
 		return &EDMA.TCD[channel];
 }
 

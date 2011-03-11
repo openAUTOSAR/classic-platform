@@ -312,7 +312,7 @@ void Os_AlarmAutostart(void) {
 		if (alarmPtr->autostartPtr != NULL) {
 			const OsAlarmAutostartType *autoPtr = alarmPtr->autostartPtr;
 
-			if (os_sys.appMode & autoPtr->appModeRef) {
+			if (Os_Sys.appMode & autoPtr->appModeRef) {
 				if (autoPtr->autostartType == ALARM_AUTOSTART_ABSOLUTE) {
 					SetAbsAlarm(j, autoPtr->alarmTime, autoPtr->cycleTime);
 				} else {

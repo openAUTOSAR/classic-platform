@@ -14,12 +14,12 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
+#ifndef COM_ARC_TYPES_H_
+#define COM_ARC_TYPES_H_
 
 #include "Std_Types.h"
 #include "Com_Types.h"
 
-#define COM_ARC_FILTER_ENABLED	STD_OFF
 
 typedef struct {
 	uint32 ComFilterArcN;
@@ -29,15 +29,11 @@ typedef struct {
 
 typedef struct {
 
-#if (COM_ARC_FILTER_ENABLED == STD_ON)
-	Com_Arc_Filter_type ComFilter;
-#endif
-
 	uint32 Com_Arc_DeadlineCounter;
 	uint32 ComTimeoutFactor;
 	void *ComIPduDataPtr;
 
-	uint8 ComIPduHandleId;
+	uint16 ComIPduHandleId;
 	uint8 ComSignalUpdated;
 
 	/* For signal groups */
@@ -73,3 +69,5 @@ typedef struct {
 	Com_Arc_GroupSignal_type *ComGroupSignal;
 	PduInfoType OutgoingPdu;
 } Com_Arc_Config_type;
+
+#endif

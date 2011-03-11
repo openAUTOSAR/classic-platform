@@ -14,7 +14,7 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 #include "internal.h"
-#include "irq.h"
+#include "isr.h"
 #include "irq_types.h"
 #include "regs.h"
 
@@ -94,9 +94,9 @@ void Irq_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector, uint8
  * @param vector
  */
 void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
-	OsPcbType *pcb;
+	OsTaskVarType *pcb;
 
-	pcb = os_find_task(tid);
+	pcb = Os_TaskGet(tid);
 	Irq_VectorTable[vector] = (void *)pcb;
 	Irq_IsrTypeTable[vector] = PROC_ISR2;
 

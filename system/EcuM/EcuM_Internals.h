@@ -59,7 +59,7 @@ typedef struct
 	boolean initiated;
 	EcuM_ConfigType* config;
 	EcuM_StateType shutdown_target;
-	uint8 shutdown_mode;
+	uint8 sleep_mode;
 	AppModeType app_mode;
 	EcuM_StateType current_state;
 #if defined(USE_COMM)
@@ -67,9 +67,9 @@ typedef struct
 #endif
 	uint32 run_requests;
 	uint32 postrun_requests;
-} EcuM_GobalType;
+} EcuM_GlobalType;
 
-extern EcuM_GobalType internal_data;
+extern EcuM_GlobalType internal_data;
 
 void EcuM_enter_run_mode(void);
 

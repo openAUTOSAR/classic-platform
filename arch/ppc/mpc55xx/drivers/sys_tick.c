@@ -15,16 +15,26 @@
 
 #include "Os.h"
 #include "internal.h"
-#include "irq.h"
+#include "isr.h"
 #include "arc.h"
 
 /**
  * Init of free running timer.
  */
 void Os_SysTickInit( void ) {
-	TaskType tid;
+//	TaskType tid;
+
+//	Irq_Attach(INTC_SSCIR0_CLR7);
+//	Irq_Attach2( INTC_SSCIR0_CLR7 );
+
+#if 0
+	IRQ_DECL_ISR2("MyIsr", 7 , CPU_CORE0, 6	, OsTick, 0 , NULL );
+	IRQ_ATTACH(7);
+
+// else
 	tid = Os_Arc_CreateIsr(OsTick,6/*prio*/,"OsTick");
 	Irq_AttachIsr2(tid,NULL,7);
+#endif
 }
 
 /**

@@ -36,7 +36,7 @@ typedef uint8 Com_SignalGroupIdType;
 
 typedef enum {
 	IMMEDIATE,
-	DEFERRED,
+	DEFERRED
 } Com_IPduSignalProcessingMode;
 
 typedef enum {
@@ -60,14 +60,14 @@ typedef enum {
 
 typedef enum {
 	PENDING,
-	TRIGGERED,
+	TRIGGERED
 } ComTransferProperty_type;
 
 typedef enum {
 	DIRECT,
 	MIXED,
 	NONE,
-	PERIODIC,
+	PERIODIC
 } ComTxModeMode_type;
 
 
@@ -79,13 +79,13 @@ typedef enum {
 	NEVER,
 	NEW_IS_OUTSIDE,
 	NEW_IS_WITHIN,
-	ONE_EVERY_N,
+	ONE_EVERY_N
 } ComFilterAlgorithm_type;
 
 typedef enum {
 	COM_BIG_ENDIAN,
 	COM_LITTLE_ENDIAN,
-	COM_OPAQUE,
+	COM_OPAQUE
 } ComSignalEndianess_type;
 
 typedef enum {
@@ -119,7 +119,7 @@ typedef enum {
 	type == SINT32  ? sizeof(sint32) : sizeof(boolean)) \
 
 #define SignalTypeSignedness(type) \
-		((type == SINT8 || type == SINT16 || type == SINT32) ? \
+		(( (type == SINT8) || (type == SINT16) || (type == SINT32) ) ? \
 				COM_SIGNALTYPE_SIGNED : COM_SIGNALTYPE_UNSIGNED)
 
 /** Filter configuration type.
@@ -174,7 +174,7 @@ typedef struct {
 	/** Filter for this signal.
 	 * NOT SUPPORTED
 	 */
-	const ComFilter_type ComFilter;
+	//const ComFilter_type ComFilter;
 
 	/* Pointer to the shadow buffer of the signal group that this group signal is contained in.
 	 *
@@ -238,7 +238,7 @@ typedef struct {
 	/** The number of bytes if the signal has type UINT8_N;
 	 * Range 1 to 8.
 	 */
-	const uint8 ComSignalLength;
+	//const uint8 ComSignalLength;
 
 	/** Defines the type of the signal. */
 	const Com_SignalType ComSignalType;
@@ -265,7 +265,7 @@ typedef struct {
 	/** Filter for this signal.
 	 * NOT SUPPORTED.
 	 */
-	const ComFilter_type ComFilter;
+	//const ComFilter_type ComFilter;
 
 	/** Marks if this signal is a signal group.
 	 * Should be set to 1 if the signal is a signal group.
@@ -374,9 +374,6 @@ typedef struct {
 	 */
 	boolean (*ComIPduCallout)(PduIdType PduId, const uint8 *IPduData);
 
-
-	/** The ID of this IPDU. */
-	const uint8 ComIPduRxHandleId;
 
 	/** The outgoing PDU id. For polite PDU id handling. */
 	const uint8 ArcIPduOutgoingId;

@@ -1,5 +1,11 @@
 
 
+# Arch specific settings
+ifneq ($(ARCH),)
+ include $(ROOTDIR)/$(ARCH_PATH-y)/scripts/gcc.mk
+endif
+
+
 HOST := $(shell uname)
 export prefix
 
@@ -33,7 +39,7 @@ cflags-y 		+= -MMD
 
 # Warnings
 cflags-y          += -Wall
-cflags-y          += -Winline	# warn if inline failed
+#cflags-y          += -Winline	# warn if inline failed
 #cflags-y          += -pedantic
 
 # Conformance
@@ -51,6 +57,7 @@ CCOUT 		= -o $@
 # Preprocessor
 
 CPP	= 	$(CC) -E
+CPP_ASM_FLAGS = -x assembler-with-cpp 
 
 comma = ,
 empty = 
@@ -61,6 +68,9 @@ space = $(empty) $(empty)
 # lib/gcc/<machine>/<version>/<multilib>
 # Libs related to the library (libc.a,libm.a,etc) are under:
 # <machine>/lib/<multilib>
+# 
+# Can't remember why haven't I just used gcc to link instead of ld? (it should 
+# figure out the things below by itself)
 
 # It seems some versions of make want "\=" and some "="
 # "=" - msys cpmake on windows 7 
@@ -87,11 +97,18 @@ libpath-y += -L$(gcc_lib_path)
 
 LD = $(CROSS_COMPILE)ld
 
+
+LD_FILE = -T
+
 LDOUT 		= -o $@
 TE = elf
-LDMAPFILE = -M > $(subst .$(TE),.map, $@)
+LDFLAGS += -Map $(subst .$(TE),.map, $@)
 
 libitem-y += $(libitem-yy)
+
+LD_START_GRP = --start-group
+LD_END_GRP = --end-group
+
 #LDFLAGS += --gc-section
 
 # ---------------------------------------------------------------------------

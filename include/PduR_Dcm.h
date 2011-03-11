@@ -34,7 +34,7 @@
 
 	#else
 
-		#define PduR_DcmTransmit(... )
+		#define PduR_DcmTransmit(... )		E_OK
 
 	#endif
 

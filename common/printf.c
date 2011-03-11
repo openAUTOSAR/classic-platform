@@ -50,6 +50,16 @@
 
 int arc_putchar(int fd, int c);
 int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap);
+static inline int emitChar( FILE *file, char **buf, char c, int *left );
+
+int fputs( const char *s, FILE *file ) {
+	int left = ~(size_t)0;
+	while(*s) {
+		emitChar(file,NULL,*s++,&left);
+	}
+	return 0;
+}
+
 
 int printf(const char *format, ...) {
 	va_list ap;

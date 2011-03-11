@@ -11,7 +11,7 @@
 #   BOARDDIR=<board dir> 
 #       Select what board to build for 
 #   BDIR=<dir>[,<dir>] 
-#       Select what directories to build. The kernel if always built.
+#       Select what directories to build. The kernel is always built.
 #   CROSS_COMPILE
 #       Specify the compiler to use.  
 #   Q=[(@)/empty] 
@@ -74,20 +74,17 @@ export objdir = obj_$(BOARDDIR)
 
 .PHONY: help
 help:
-	@echo "Make kernel and a simple example"
+	@echo "Build a simple example"
 	@echo "  > make BOARDDIR=mpc551xsim CROSS_COMPILE=/opt/powerpc-eabi/bin/powerpc-eabi- BDIR=examples/simple all"
-	@echo ""
-	@echo "Save the config (CROSS_COMPILE and BDIR)"
-	@echo "  > make BOARDDIR=mpc551xsim CROSS_COMPILE=/opt/powerpc-eabi/bin/powerpc-eabi- BDIR=examples/simple save"
 	@echo ""
 	@echo "Clean"
 	@echo "  > make clean"
 	@echo ""
 	@echo "Present config:"
-	@echo "  ARCH=$(ARCH)"
-	@echo "  ARCH_FAM=$(ARCH_FAM)"
-	@echo "  BOARDDIR =$(BOARDDIR)"
-	@echo "  CROSS_COMPILE =$(CROSS_COMPILE)"
+	@echo "  BDIR          = ${BDIR}"
+	@echo "  BOARDDIR      = $(BOARDDIR)"
+	@echo "  CROSS_COMPILE = $(CROSS_COMPILE)"
+	@echo "  CWD           = ${CWD}"
 	@echo ""
 	
 export CFG_MCU 
@@ -134,15 +131,17 @@ test:
 	@echo $(all_boards)
 
 show_build:
-	@echo "BUILD INFO"
+	@echo ""
+	@echo "==========[ BUILD INFO ]==========="
 	@echo "BOARDDIR:      $(BOARDDIR) [$(origin BOARDDIR)]"
 	@echo "BDIR:          $(BDIR) [$(origin BDIR)]"
 	@echo "CROSS_COMPILE: $(CROSS_COMPILE) [$(origin CROSS_COMPILE)]"
-	@echo "cmd_cmd_goals: $(cmd_cmd_goals)"
+	@echo "CWD:           ${CWD}"
 	
 	
 $(dir_cmd_goals) :: show_build FORCE 	
-	@echo ==========[ $@  ]===========
+	@echo ""
+	@echo ==========[ ${abspath $@}  ]===========
 	@if [ ! -d $@ ]; then echo "No such directory: \"$@\" quitting"; exit 1; fi
 	+@[ -d $@/$(objdir) ] || mkdir -p $@/$(objdir)
 	@chmod 777 $@/$(objdir)

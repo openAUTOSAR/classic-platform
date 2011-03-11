@@ -42,7 +42,7 @@ typedef enum alarm_action_type_e {
 	ALARM_ACTION_ACTIVATETASK=0,
 	ALARM_ACTION_SETEVENT,
 	ALARM_ACTION_ALARMCALLBACK,		/* Only class 1 */
-	ALARM_ACTION_INCREMENTCOUNTER, /* SWS OS302 */
+	ALARM_ACTION_INCREMENTCOUNTER/* SWS OS302 */
 } alarm_action_type_t;
 
 
@@ -64,7 +64,7 @@ enum OsAlarmAutostartTypeType {
 	// Start with SetAbsAlarm()
 	ALARM_AUTOSTART_ABSOLUTE,
 	// Start with SetRelAlarm()
-	ALARM_AUTOSTART_RELATIVE,
+	ALARM_AUTOSTART_RELATIVE
 };
 
 
@@ -82,7 +82,7 @@ typedef struct OsAlarmAutostart {
 } OsAlarmAutostartType;
 
 /* STD container : OsAlarm
- * OsAlarmAccessionApplication: 0..* Ref to OS application
+ * OsAlarmAccessingApplication: 0..* Ref to OS application
  * OsAlamCounterRef:            1    Ref to counter
  * OsAlarmAction[C]             1    Action when alarm expires
  * OsAlarmAutostart[C]          0..1 Autostart
@@ -91,6 +91,11 @@ typedef struct OsAlarm {
 	char 	name[16];
 	/* Reference to counter */
 	struct OsCounter *counter;
+
+#if	(OS_USE_APPLICATIONS == STD_ON)
+	ApplicationType applOwnerId;
+	uint32 accessingApplMask;
+#endif
 
 	CounterType counter_id;
 	/* cycle, 0 = no cycle */
@@ -122,5 +127,6 @@ typedef struct OsAlarm {
 
 
 void Os_AlarmCheck(OsCounterType *c_p);
+void Os_AlarmAutostart(void);
 
 #endif /*ALARM_I_H_*/

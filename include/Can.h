@@ -94,15 +94,15 @@ typedef enum {
 typedef enum {
 	CAN_OK,
 	CAN_NOT_OK,
-	CAN_BUSY,
+	CAN_BUSY
 // 	CAN_WAKEUP,		// Removed in 3.0
 } Can_ReturnType;
 
 /* Error from  CAN controller */
 typedef union {
-	volatile uint32_t R;
+     volatile uint32_t R;
      struct {
-         volatile uint32_t:24;
+    	 volatile uint32_t:24;
          volatile uint32_t BIT1ERR:1;
          volatile uint32_t BIT0ERR:1;
          volatile uint32_t ACKERR:1;
@@ -121,7 +121,7 @@ typedef union {
 #include "Can_Cfg.h"
 
 void Can_Init( const Can_ConfigType *Config );
-void Can_DeInit();
+void Can_DeInit(void);
 
 #if ( CAN_VERSION_INFO_API == STD_ON )
 #define Can_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,CAN)

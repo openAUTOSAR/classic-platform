@@ -28,12 +28,13 @@
 
 
 #define COM_SW_MAJOR_VERSION   1
-#define COM_SW_MINOR_VERSION   0
+#define COM_SW_MINOR_VERSION   1
 #define COM_SW_PATCH_VERSION   0
 
 #include "Com_Cfg.h"
 #include "Com_Types.h"
 #include "Com_PbCfg.h"
+//#include "Com_Internal.h" //TODO: Remove completely?
 #include "Com_Com.h"
 #include "Com_Sched.h"
 
@@ -71,7 +72,7 @@
 
 
 // From Autosar
-void Com_Init(const Com_ConfigType * ConfigPtr);
+void Com_Init(const Com_ConfigType * config);
 void Com_DeInit(void);
 
 void Com_IpduGroupStart(Com_PduGroupIdType IpduGroupId, boolean Initialize);

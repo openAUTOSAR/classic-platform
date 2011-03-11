@@ -24,55 +24,41 @@
 #include "Dcm.h"
 #include "Dcm_Internal.h"
 #include "MemMap.h"
+#if defined(USE_COMM)
 #include "ComM_Dcm.h"
+#endif
 #include "PduR_Dcm.h"
 #include "ComStack_Types.h"
 //#define USE_DEBUG_PRINTF
 #include "debug.h"
 
-#define DECREMENT(timer) { if (timer > 0) timer--; }
+#define DECREMENT(timer) { if (timer > 0){timer--;} }
 #define DCM_CONVERT_MS_TO_MAIN_CYCLES(x)  ((x)/DCM_MAIN_FUNCTION_PERIOD_TIME_MS)
 
+
+#if (DCM_PAGEDBUFFER_ENABLED)
+#error "DCM_PAGEDBUFFER_ENABLED is set to STD_ON, this is not supported by the code."
+#endif
 
 /*
  * Type definitions.
  */
-typedef struct {
-	const Dcm_DslProtocolRxType *protocolRx;
-	const Dcm_DslMainConnectionType *mainConnection;
-	const Dcm_DslConnectionType *connection;
-	const Dcm_DslProtocolRowType *protocolRow;
-} DcmDsl_ProtocolConfigurationType;
-
-#define MAX_PARALLEL_PROTOCOLS_ALLOWED		1
+// #define MAX_PARALLEL_PROTOCOLS_ALLOWED		1
 
 typedef struct {
 	boolean initRun;
 	//boolean diagnosticRequestPending; // This is a "semaphore" because DSD and DCM can handle multiple/parallel request at the moment.
-	const Dcm_DslProtocolRowType *preemptedProtocol; // Points to the currently active protocol.
 	const Dcm_DslProtocolRowType *activeProtocol; // Points to the currently active protocol.
-	Dcm_DslRunTimeProtocolParametersType
-			protocolList[MAX_PARALLEL_PROTOCOLS_ALLOWED];
+//	const Dcm_DslProtocolRowType *preemptedProtocol; // Points to the currently active protocol - reserved for future use
+//	Dcm_DslRunTimeProtocolParametersType protocolList[MAX_PARALLEL_PROTOCOLS_ALLOWED];	// Reserved for future use
 } DcmDsl_RunTimeDataType;
 
 static DcmDsl_RunTimeDataType DcmDslRunTimeData = {
 		.initRun = FALSE,
-		.preemptedProtocol = NULL,
-		.activeProtocol = NULL };
-
-// ################# DUMMIES START #################
-
-/*
- * Local types
- */
-
-void ComM_DCM_ActivateDiagnostic() {
-	;
-}
-
-void ComM_DCM_InactivateDiagnostic() {
-	;
-}
+		.activeProtocol = NULL
+//		.preemptedProtocol = NULL,
+//		.protocolList = {}
+};
 
 // ################# HELPER FUNCTIONS START #################
 
@@ -141,9 +127,10 @@ static void changeDiagnosticSession(Dcm_DslRunTimeProtocolParametersType *runtim
 
 // - - - - - - - - - - -
 
-void DslResetSessionTimeoutTimer() {
-	const Dcm_DslProtocolRowType *activeProtocol = NULL;
-	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
+void DslResetSessionTimeoutTimer(void) {
+	const Dcm_DslProtocolRowType *activeProtocol;
+	Dcm_DslRunTimeProtocolParametersType *runtime;
+
 	activeProtocol = DcmDslRunTimeData.activeProtocol;
 	runtime = activeProtocol->DslRunTimeProtocolParameters;
 	startS3SessionTimer(runtime, activeProtocol); /** @req DCM141 */
@@ -152,7 +139,8 @@ void DslResetSessionTimeoutTimer() {
 // - - - - - - - - - - -
 
 void DslGetCurrentServiceTable(const Dcm_DsdServiceTableType **currentServiceTable) { /** @req DCM195 */
-	const Dcm_DslProtocolRowType *activeProtocol = NULL;
+	const Dcm_DslProtocolRowType *activeProtocol;
+
 	activeProtocol = DcmDslRunTimeData.activeProtocol;
 	if (activeProtocol != NULL) {
 		*currentServiceTable = activeProtocol->DslProtocolSIDTable;
@@ -163,7 +151,8 @@ void DslGetCurrentServiceTable(const Dcm_DsdServiceTableType **currentServiceTab
 
 Std_ReturnType DslGetActiveProtocol(Dcm_ProtocolType *protocolId) { /** @req DCM340 */
 	Std_ReturnType ret = E_NOT_OK;
-	const Dcm_DslProtocolRowType *activeProtocol = NULL;
+	const Dcm_DslProtocolRowType *activeProtocol;
+
 	activeProtocol = DcmDslRunTimeData.activeProtocol;
 	if (activeProtocol != NULL) {
 		*protocolId = activeProtocol->DslProtocolID;
@@ -175,8 +164,9 @@ Std_ReturnType DslGetActiveProtocol(Dcm_ProtocolType *protocolId) { /** @req DCM
 // - - - - - - - - - - -
 
 void DslSetSecurityLevel(Dcm_SecLevelType secLevel) { /** @req DCM020 */
-	const Dcm_DslProtocolRowType *activeProtocol = NULL;
-	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
+	const Dcm_DslProtocolRowType *activeProtocol;
+	Dcm_DslRunTimeProtocolParametersType *runtime;
+
 	activeProtocol = DcmDslRunTimeData.activeProtocol;
 	runtime = activeProtocol->DslRunTimeProtocolParameters;
 	runtime->securityLevel = secLevel;
@@ -186,8 +176,9 @@ void DslSetSecurityLevel(Dcm_SecLevelType secLevel) { /** @req DCM020 */
 
 Std_ReturnType DslGetSecurityLevel(Dcm_SecLevelType *secLevel) {  /** @req DCM020 *//** @req DCM338 */
 	Std_ReturnType ret = E_NOT_OK;
-	const Dcm_DslProtocolRowType *activeProtocol = NULL;
+	const Dcm_DslProtocolRowType *activeProtocol;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
+
 	activeProtocol = DcmDslRunTimeData.activeProtocol;
 	if (activeProtocol != NULL) {
 		runtime = activeProtocol->DslRunTimeProtocolParameters;
@@ -200,8 +191,9 @@ Std_ReturnType DslGetSecurityLevel(Dcm_SecLevelType *secLevel) {  /** @req DCM02
 // - - - - - - - - - - -
 
 void DslSetSesCtrlType(Dcm_SesCtrlType sesCtrl) {  /** @req DCM022 */
-	const Dcm_DslProtocolRowType *activeProtocol = NULL;
+	const Dcm_DslProtocolRowType *activeProtocol;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
+
 	activeProtocol = DcmDslRunTimeData.activeProtocol;
 	if (activeProtocol != NULL) {
 		runtime = activeProtocol->DslRunTimeProtocolParameters;
@@ -216,8 +208,9 @@ void DslSetSesCtrlType(Dcm_SesCtrlType sesCtrl) {  /** @req DCM022 */
 
 Std_ReturnType DslGetSesCtrlType(Dcm_SesCtrlType *sesCtrlType) { /** @req DCM022 *//** @req DCM339 */
 	Std_ReturnType ret = E_NOT_OK;
-	const Dcm_DslProtocolRowType *activeProtocol = NULL;
+	const Dcm_DslProtocolRowType *activeProtocol;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
+
 	activeProtocol = DcmDslRunTimeData.activeProtocol;
 	if (activeProtocol != NULL) {
 		runtime = activeProtocol->DslRunTimeProtocolParameters;
@@ -343,6 +336,7 @@ static void sendResponse(const Dcm_DslProtocolRowType *protocol,
 	const Dcm_DslConnectionType *connection = NULL;
 	const Dcm_DslProtocolRowType *protocolRow = NULL;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
+	Std_ReturnType transmitResult;
 
 	/** @req DCM119 */
 	imask_t state = McuE_EnterCriticalSection();
@@ -355,7 +349,10 @@ static void sendResponse(const Dcm_DslProtocolRowType *protocol,
 			runtime->localTxBuffer.PduInfo.SduDataPtr = runtime->localTxBuffer.buffer;
 			runtime->localTxBuffer.PduInfo.SduLength = 3;
 			runtime->localTxBuffer.status = DCM_TRANSMIT_SIGNALED; // In the DslProvideTxBuffer 'callback' this state signals it is the local buffer we are interested in sending.
-			PduR_DcmTransmit(mainConnection->DslProtocolTx->DcmDslProtocolTxPduId, &(runtime->localTxBuffer.PduInfo));/** @req DCM115.Partially */ /* The P2ServerMin has not been implemented. */
+			transmitResult = PduR_DcmTransmit(mainConnection->DslProtocolTx->DcmDslProtocolTxPduId, &(runtime->localTxBuffer.PduInfo));/** @req DCM115.Partially */ /* The P2ServerMin has not been implemented. */
+			if (transmitResult != E_OK) {
+				// TODO: What to do here?
+			}
 		}
 	}
 	McuE_ExitCriticalSection(state);
@@ -383,7 +380,7 @@ static Std_ReturnType StartProtocolHelper(Dcm_ProtocolType protocolId) {
 static boolean isTesterPresentCommand(const PduInfoType *rxPdu) {
 	boolean ret = FALSE;
 	if ((rxPdu->SduDataPtr[0] == SID_TESTER_PRESENT) && (rxPdu->SduDataPtr[1] & SUPPRESS_POS_RESP_BIT)) {
-		return TRUE;
+		ret = TRUE;
 	}
 	return ret;
 }
@@ -392,7 +389,7 @@ static boolean isTesterPresentCommand(const PduInfoType *rxPdu) {
 //	Implements 'void Dcm_Init(void)' for DSL.
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void DslInit(void) {
-	const Dcm_DslProtocolRowType *listEntry = NULL;
+	const Dcm_DslProtocolRowType *listEntry;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
 
 	listEntry = DCM_Config.Dsl->DslProtocol->DslProtocolRowList;
@@ -417,10 +414,9 @@ void DslInit(void) {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 void DslMain(void) {
-	const Dcm_DslProtocolRowType *protocolRowEntry = NULL;
+	const Dcm_DslProtocolRowType *protocolRowEntry;
 	const Dcm_DslProtocolTimingRowType *timeParams = NULL;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
-	int debug_count = 0;
 
 	protocolRowEntry = DCM_Config.Dsl->DslProtocol->DslProtocolRowList;
 	while (protocolRowEntry->Arc_EOL == FALSE) {
@@ -473,18 +469,26 @@ void DslMain(void) {
 					const Dcm_DslMainConnectionType *mainConnection = NULL;
 					const Dcm_DslConnectionType *connection = NULL;
 					const Dcm_DslProtocolRowType *protocolRow = NULL;
+					Std_ReturnType transmitResult;
+
 					if (findRxPduIdParentConfigurationLeafs(runtime->diagReqestRxPduId, &protocolRx, &mainConnection, &connection, &protocolRow, &runtime)) {
-						const uint32 txPduId = mainConnection->DslProtocolTx->DcmDslProtocolTxPduId;
+						const PduIdType txPduId = mainConnection->DslProtocolTx->DcmDslProtocolTxPduId;
 						DEBUG( DEBUG_MEDIUM, "runtime->externalTxBufferStatus enter state DCM_TRANSMIT_SIGNALED.\n" );
 						runtime->externalTxBufferStatus = DCM_TRANSMIT_SIGNALED;
-						PduR_DcmTransmit(txPduId, &runtime->diagnosticResponseFromDsd); /** @req DCM237 *//* Will trigger PduR (CanTP) to call DslProvideTxBuffer(). */
+						transmitResult = PduR_DcmTransmit(txPduId, &runtime->diagnosticResponseFromDsd); /** @req DCM237 *//* Will trigger PduR (CanTP) to call DslProvideTxBuffer(). */
+						if (transmitResult != E_OK) {
+							// TODO: What to do here?
+						}
 					} else {
 						DEBUG( DEBUG_MEDIUM, "***** WARNING, THIS IS UNEXPECTED !!! ********.\n" );
-						const uint32 txPduId = protocolRowEntry->DslConnection->DslMainConnection->DslProtocolTx->DcmDslProtocolTxPduId;
+						const PduIdType txPduId = protocolRowEntry->DslConnection->DslMainConnection->DslProtocolTx->DcmDslProtocolTxPduId;
 						DEBUG( DEBUG_MEDIUM, "runtime->externalTxBufferStatus enter state DSD_PENDING_RESPONSE_SIGNALED.\n", txPduId);
 						runtime->externalTxBufferStatus = DCM_TRANSMIT_SIGNALED;
 						DEBUG( DEBUG_MEDIUM, "Calling PduR_DcmTransmit with txPduId = %d from DslMain\n", txPduId);
-						PduR_DcmTransmit(txPduId, &runtime->diagnosticResponseFromDsd); /** @req DCM237 *//* Will trigger PduR (CanTP) to call DslProvideTxBuffer(). */
+						transmitResult = PduR_DcmTransmit(txPduId, &runtime->diagnosticResponseFromDsd); /** @req DCM237 *//* Will trigger PduR (CanTP) to call DslProvideTxBuffer(). */
+						if (transmitResult != E_OK) {
+							// TODO: What to do here?
+						}
 					}
 				}
 				break;
@@ -499,7 +503,6 @@ void DslMain(void) {
 			}
 		}
 		protocolRowEntry++;
-		debug_count++;
 	}
 }
 
@@ -511,8 +514,7 @@ void DslMain(void) {
 //  received a FF or a single frame and needs to obtain a buffer from the
 //  receiver so that received data can be forwarded.
 
-BufReq_ReturnType DslProvideRxBufferToPdur(PduIdType dcmRxPduId,
-		PduLengthType tpSduLength, const PduInfoType **pduInfoPtr) {
+BufReq_ReturnType DslProvideRxBufferToPdur(PduIdType dcmRxPduId, PduLengthType tpSduLength, const PduInfoType **pduInfoPtr) {
 	BufReq_ReturnType ret = BUFREQ_NOT_OK;
 	const Dcm_DslProtocolRxType *protocolRx = NULL;
 	const Dcm_DslMainConnectionType *mainConnection = NULL;
@@ -608,7 +610,9 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {
 					}
 					if (runtime->protocolStarted == TRUE) {
 						if (runtime->diagnosticActiveComM == FALSE) {
+#if defined(USE_COMM)
 							ComM_DCM_ActivateDiagnostic(); /** @req DCM163 */
+#endif
 							runtime->diagnosticActiveComM = TRUE;
 						}
 						timeParams = protocolRow->DslProtocolTimeLimit;
@@ -674,6 +678,7 @@ BufReq_ReturnType DslProvideTxBuffer(PduIdType dcmTxPduId, const PduInfoType **p
 	const Dcm_DslProtocolRowType *protocolRow = NULL;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
 
+	(void)length;		// Currently not used, this is only to remove compilation warnings
 	DEBUG( DEBUG_MEDIUM, "DslProvideTxBuffer=%d\n", dcmTxPduId);
 	if (findTxPduIdParentConfigurationLeafs(dcmTxPduId, &protocolTx, &mainConnection, &connection, &protocolRow, &runtime)) {
 		switch (runtime->externalTxBufferStatus) { // ### EXTERNAL TX BUFFER ###
@@ -732,7 +737,9 @@ void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result) {
 		state = McuE_EnterCriticalSection();
 		switch (runtime->externalTxBufferStatus) { // ### EXTERNAL TX BUFFER ###
 		case PROVIDED_TO_PDUR: {
+#if defined(USE_COMM)
 			ComM_DCM_InactivateDiagnostic(); /** @req DCM164 */
+#endif
 			startS3SessionTimer(runtime, protocolRow); /** @req DCM141 */
 			releaseExternalRxTxBuffers(protocolRow, runtime); /** @req DCM118 *//** @req DCM352 *//** @req DCM353 *//** @req DCM354 */
 			externalBufferReleased = TRUE;
@@ -743,7 +750,7 @@ void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result) {
 		default:
 			break;
 		}
-		if (externalBufferReleased == FALSE) {
+		if (!externalBufferReleased) {
 			switch (runtime->localTxBuffer.status) { // ### LOCAL TX BUFFER ###
 			case PROVIDED_TO_PDUR:
 				DEBUG( DEBUG_MEDIUM, "Released local buffer buffer OK!\n");

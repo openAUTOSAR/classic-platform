@@ -17,35 +17,28 @@
 #define EXT_CONFIG_H_
 
 /* Created in Os_CfgConfig */
-struct OsPcb;
+struct OsTaskVar;
 struct OsAlarm;
 struct OsCounter;
 struct OsSchTbl;
 struct OsResource;
 struct OsMessage;
-#if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
+#if	(OS_USE_APPLICATIONS == STD_ON)
 struct OsRomApplication;
 #endif
 
-#if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
-int Os_CfgGetApplCnt(void);
+#if	(OS_USE_APPLICATIONS == STD_ON)
+extern const OsAppConstType Os_AppConst[OS_APPLICATION_CNT];
+
 struct OsRomApplication *Os_CfgGetApplObj( ApplicationType application_id );
 #endif
-int Os_CfgGetTaskCnt(void);
 void *Os_CfgGetIdleProcStack(void);
-int Os_CfgGetResourceCnt(void);
 StatusType Os_CfgGetAlarmBase(AlarmType alarm_id, AlarmBaseRefType info);
-uint32 Os_CfgGetAlarmCnt(void);
 struct OsAlarm *Os_CfgGetAlarmObj( AlarmType alarm_id );
 struct OsCounter *Os_CfgGetCounter(CounterType);
-uint32 Os_CfgGetCounterCnt(void );
-uint32 Os_CfgGetSchedCnt( void );
 struct OsSchTbl *Os_CfgGetSched( ScheduleTableType sched_id );
-uint32 Os_CfgGetServiceCnt( void ) ;
 struct OsResource *Os_CfgGetResource( ResourceType resource );
-
 struct OsMessage *Os_CfgGetMessage(MessageType message_id);
-uint32 Os_CfgGetMessageCnt(void );
 void Os_CfgValidate( void );
 
 #endif /*EXT_CONFIG_H_*/

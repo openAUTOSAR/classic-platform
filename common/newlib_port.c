@@ -450,8 +450,27 @@ int arc_putchar(int fd, int c) {
 
 /* If we use malloc and it runs out of memory it calls sbrk()
  */
-#if 1
 
+#if defined(PPC)
+
+/* linker symbols */
+extern char _heap_start;
+extern char _heap_end;		// same as _end?
+
+void * sbrk( ptrdiff_t incr )
+{
+    char *prevEnd;
+    static char *nextAvailMemPtr = (char *)&_heap_start;
+
+    if( nextAvailMemPtr + incr >  (char*)&_heap_end) {
+		write( 2, "Heap overflow!\n", 15 );
+		abort();
+	}
+    prevEnd = nextAvailMemPtr;
+    nextAvailMemPtr += incr;
+    return prevEnd;
+}
+#else
 extern char _end[];
 
 //static char *curbrk = _end;
@@ -475,10 +494,10 @@ void * sbrk( ptrdiff_t incr )
     unsigned char *prev_heap_end;
 
 /* initialize */
-    if( heap_end == 0 )
+    if( heap_end == 0 ){
     	heap_end = _heap;
-
-	prev_heap_end = heap_end;
+    }
+    prev_heap_end = heap_end;
 
 	if( heap_end + incr - _heap > HEAPSIZE ) {
 	/* heap overflow - announce on stderr */
@@ -489,12 +508,6 @@ void * sbrk( ptrdiff_t incr )
    heap_end += incr;
 
    return (caddr_t) prev_heap_end;
-}
-#else
-void *sbrk(int inc )
-{
-	/* We use our own malloc */
-	return (void *)(-1);
 }
 #endif
 

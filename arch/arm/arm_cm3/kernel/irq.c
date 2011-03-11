@@ -17,7 +17,7 @@
 #include "task_i.h"
 #include "hooks.h"
 #include "stm32f10x.h"
-#include "irq.h"
+#include "isr.h"
 
 extern void *Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
 
@@ -147,9 +147,9 @@ static inline int osPrioToCpuPio( uint8_t prio ) {
  * @param vector
  */
 void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
-	OsPcbType *pcb;
+	OsTaskVarType *pcb;
 
-	pcb = os_find_task(tid);
+	pcb = Os_TaskGet(tid);
 	Irq_VectorTable[vector+16] = (void *)pcb;
 
 	NVIC_InitVector(vector, osPrioToCpuPio(pcb->prio));

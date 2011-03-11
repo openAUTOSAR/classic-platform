@@ -18,6 +18,9 @@
 
 
 
+#if !(((PORT_SW_MAJOR_VERSION == 1) && (PORT_SW_MINOR_VERSION == 0)) )
+#error "Port: Configuration file version differs from BSW version."
+#endif
 
 
 #ifndef PORT_CFG_H_

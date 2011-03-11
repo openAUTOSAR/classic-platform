@@ -21,6 +21,7 @@
 #ifndef BIT_H_
 #define BIT_H_
 
+#include <stdint.h>
 /**
  * @param aPtr 	Ptr to an array of unsigned chars.
  * @param num	The bit number to get.

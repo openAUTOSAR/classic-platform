@@ -67,7 +67,7 @@ void Os_ArchSwapContextTo(void *old,void *new);
  *
  * @param pcb Ptr to pcb
  */
-void Os_ArchSetupContext( OsPcbType *pcb );
+void Os_ArchSetupContext( OsTaskVarType *pcb );
 
 /**
  * Get current stack pointer
@@ -117,7 +117,7 @@ void Os_ArchReboot( int type );
  */
 unsigned int Os_ArchGetScSize( void );
 
-void Os_ArchSetTaskEntry(OsPcbType *pcbPtr );
+void Os_ArchSetTaskEntry(OsTaskVarType *pcbPtr );
 
 
 #endif /*ARCH_H_*/

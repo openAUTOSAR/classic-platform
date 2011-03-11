@@ -46,7 +46,7 @@ enum OsScheduleTableAutostartType {
 	// Start with StartScheduleTableRel()
 	SCHTBL_AUTOSTART_RELATIVE,
 	// Start with StartScheduleTableSyncon()
-	SCHTBL_AUTOSTART_SYNCHRONE,
+	SCHTBL_AUTOSTART_SYNCHRONE
 };
 
 
@@ -150,6 +150,10 @@ typedef struct OsSchTbl {
 	/** @req OS413 */
 	_Bool repeating;
 
+#if defined(SC3) || defined(SC4)
+	uint32 accessingApplMask;
+#endif
+
 	// pointer to this tables counter
 	// OsScheduleTableCounterRef
 	/** @req OS409 */
@@ -161,7 +165,7 @@ typedef struct OsSchTbl {
 	/* NULL if NONE, and non-NULL if EXPLICIT and IMPLICIT */
 	struct OsScheduleTableSync *sync;
 
-#if (OS_SC3 == STD_ON ) || (OS_SC4 == STD_ON )
+#if	(OS_USE_APPLICATIONS == STD_ON)
 	uint32 app_mask;
 #endif
 

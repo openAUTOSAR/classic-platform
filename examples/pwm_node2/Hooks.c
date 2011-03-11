@@ -21,45 +21,29 @@
 
 
 #include "Os.h"
+#include "Mcu.h"
 #include <stdio.h>
 #include <assert.h>
-#define USE_TRACE	1
+
+//#define USE_LDEBUG_PRINTF // Uncomment this to turn debug statements on.
 #include "debug.h"
-#include "Mcu.h"
-
-
-#if 0
-#ifdef USE_STARTUPHOOK
-#ifdef CFG_MPC55XX
-#if !defined(USE_SIMULATOR)
-// Quick fix
-//#include "Kernel_Offset.h"
-
-extern uint8_t pcb_list[];
-
-#endif
-#endif
-#endif
-#endif
 
 
 
 /* Global hooks */
 ProtectionReturnType ProtectionHook( StatusType FatalError ) {
-	LDEBUG_PRINTF("## ProtectionHook\n");
+	LDEBUG_FPUTS("## ProtectionHook\n");
 	return PRO_KILLAPPL;
 }
 
 void StartupHook( void ) {
-	LDEBUG_PRINTF("## StartupHook\n");
+	LDEBUG_FPUTS("## StartupHook\n");
 
-	uint32_t sys_freq = McuE_GetSystemClock();
-
-	LDEBUG_PRINTF("Sys clock %d Hz\n",sys_freq);
+	LDEBUG_PRINTF("Sys clock %u Hz\n",(unsigned)McuE_GetSystemClock());
 }
 
 void ShutdownHook( StatusType Error ) {
-	LDEBUG_PRINTF("## ShutdownHook\n");
+	LDEBUG_FPUTS("## ShutdownHook\n");
 	while(1);
 }
 
@@ -77,14 +61,3 @@ void PreTaskHook( void ) {
 void PostTaskHook( void ) {
 //	LDEBUG_PRINTF("## PostTaskHook, taskid=%d\n",task);
 }
-
-#if 0
-struct OsHooks os_conf_global_hooks = {
-		.StartupHook = StartupHook,
-		.ProtectionHook = ProtectionHook,
-		.ShutdownHook = ShutdownHook,
-		.ErrorHook = ErrorHook,
-		.PreTaskHook = PreTaskHook,
-		.PostTaskHook = PostTaskHook
-		};
-#endif

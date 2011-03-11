@@ -23,6 +23,7 @@
 #ifndef DCM_CBK_H_
 #define DCM_CBK_H_
 
+//lint -e451 //451 PC-Lint OK. Slå av regel helt?
 #include "ComStack_Types.h"
 
 /*

@@ -21,7 +21,7 @@
 
 int Os_ArcTest_GetTaskActivationLimit( TaskType TaskId ) {
 
-	return os_get_pcb(TaskId)->activationLimit;
+	return Os_TaskGet(TaskId)->constPtr->activationLimit;
 }
 
 /**
@@ -32,7 +32,7 @@ int Os_ArcTest_GetTaskActivationLimit( TaskType TaskId ) {
 
 void Os_ArcTest_SetIrqNestLevel( int level ) {
 
-	os_sys.int_nest_cnt = level;
+	Os_Sys.intNestCnt = level;
 
 	return;
 }

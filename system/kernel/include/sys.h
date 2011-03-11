@@ -25,24 +25,29 @@ typedef enum  {
 	OP_TERMINATE_TASK = 8,
 	OP_SCHEDULE = 16,
 	OP_CHAIN_TASK = 32,
-	OP_RELEASE_RESOURCE = 64,
+	OP_RELEASE_RESOURCE = 64
 	OP_SLEEP = 128,
+
 } OpType ;
 
-typedef struct sys_s {
+/*
+ * Global system structure
+ */
+typedef struct Os_Sys {
 //	OsApplicationType *curr_application;
 	/* Current running task*/
-	OsPcbType *curr_pcb;
-	/* List of all tasks */
-	OsPcbType *pcb_list;
+	OsTaskVarType *currTaskPtr;
 
-	OsPcbType *chainedPcbPtr;
+	/* List of all tasks */
+	OsTaskVarType *pcb_list;
+
+	OsTaskVarType *chainedPcbPtr;
 	/* Interrupt nested count */
-	uint32 int_nest_cnt;
+	uint32 intNestCnt;
 	/* The current operation */
 	uint8_t op;
 	/* Ptr to the interrupt stack */
-	void *int_stack;
+	void *intStack;
 	// The os tick
 	TickType tick;
 	// 1-The scheduler is locked (by GetResource() or something else)
@@ -59,35 +64,42 @@ typedef struct sys_s {
 	/* Current Application mode */
 	AppModeType appMode;
 
-//	uint32_t flags;
+#if	(OS_USE_APPLICATIONS == STD_ON)
+	ApplicationStateType currApplState;
+	ApplicationType currApplId;
+#endif
 
 	uint32_t task_cnt;
 
+	uint32_t isrCnt;
 #if defined(USE_KERNEL_EXTRA)
-	/* List of PCB's to be put in ready list when timeout */
+
+/* List of PCB's to be put in ready list when timeout */
 	TAILQ_HEAD(,OsPcb) timerHead;		// TASK
 #endif
 
 	/* List of all pcb's,
 	 * Only needed for non-static configuration of the kernel
 	 */
-	TAILQ_HEAD(,OsPcb) pcb_head;
+//	TAILQ_HEAD(,OsTaskVar) pcb_head;
 	/* Ready queue */
-	TAILQ_HEAD(,OsPcb) ready_head;
+	TAILQ_HEAD(,OsTaskVar) ready_head;
+
+//	TAILQ_HEAD(,OsIsrVar) isrHead;
 
 	/* Occording to OSEK 8.3 RES_SCHEDULER is accessible to all tasks */
 	OsResourceType resScheduler;
-} sys_t;
+} Os_SysType;
 
-extern sys_t os_sys;
+extern Os_SysType Os_Sys;
 
-static inline OsPcbType *Os_TaskGetCurrent(  void ) {
-	return os_sys.curr_pcb;
+static inline OsTaskVarType *Os_TaskGetCurrent(  void ) {
+	return Os_Sys.currTaskPtr;
 }
 
 #if 0
 static uint32_t OSErrorGetServiceId( void ) {
-	return os_sys.serviceId;
+	return Os_Sys.serviceId;
 }
 #endif
 

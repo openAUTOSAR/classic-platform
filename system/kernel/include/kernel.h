@@ -148,8 +148,8 @@ typedef struct OsResource {
 
 	// What application may access this resource. A resource may only be
 	// accessed by one application
-#if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
-	uint32 application_owner_id;
+#if defined(SC3) || defined(SC4)
+	uint32 accessingApplMask;
 #endif
 	// What tasks may access this resource. A resource may be be shared
 	// several tasks.
@@ -168,7 +168,7 @@ typedef struct OsResource {
 
 typedef enum {
 	LOCK_TYPE_RESOURCE,
-	LOCK_TYPE_INTERRUPT,
+	LOCK_TYPE_INTERRUPT
 } OsLocktypeType;
 
 typedef struct OsLockingtime {
@@ -204,6 +204,8 @@ typedef struct OsTimingProtection {
 #include "application.h"
 #include "pcb.h"
 #include "sys.h"
+#include "isr.h"
+//#include "isr.h"
 
 /*-----------------------------------------------------------------*/
 

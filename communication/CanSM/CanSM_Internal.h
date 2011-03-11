@@ -14,8 +14,8 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-#ifndef CANSM_INTERNAL_H_
-#define CANSM_INTERNAL_H_
+#ifndef CANSM_INTERNAL_H
+#define CANSM_INTERNAL_H
 
 #include "CanSM.h"
 
@@ -49,7 +49,7 @@
 
 typedef enum {
 	CANSM_STATUS_UNINIT,
-	CANSM_STATUS_INIT,
+	CANSM_STATUS_INIT
 } CanSM_Internal_InitStatusType;
 
 
@@ -72,4 +72,4 @@ Std_ReturnType CanSM_Internal_RequestComMode( NetworkHandleType NetworkHandle, C
 Std_ReturnType CanSM_Internal_RequestCanIfMode( NetworkHandleType NetworkHandle, ComM_ModeType ComM_Mode );
 Std_ReturnType CanSM_Internal_RequestComGroupMode( NetworkHandleType NetworkHandle, ComM_ModeType ComM_Mode );
 
-#endif /* CANSM_INTERNAL_H_ */
+#endif /* CANSM_INTERNAL_H */

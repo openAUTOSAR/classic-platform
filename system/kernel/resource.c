@@ -106,31 +106,31 @@ TODO:
 #define valid_internal_id() (rPtr->nr < OS_RESOURCE_CNT) //&& (rPtr->type == RESOURCE_TYPE_INTERNAL) )
 
 
-void Os_ResourceAlloc( OsResourceType *rPtr, OsPcbType *pcbPtr) {
+void Os_ResourceAlloc( OsResourceType *rPtr, OsTaskVarType *pcbPtr) {
 	/* Save old task prio in resource and set new task prio */
-	rPtr->owner = pcbPtr->pid;
-	rPtr->old_task_prio = pcbPtr->prio;
-	pcbPtr->prio = rPtr->ceiling_priority;
+	rPtr->owner = pcbPtr->constPtr->pid;
+	rPtr->old_task_prio = pcbPtr->activePriority;
+	pcbPtr->activePriority = rPtr->ceiling_priority;
 
 	if( rPtr->type != RESOURCE_TYPE_INTERNAL ) {
-		TAILQ_INSERT_TAIL(&pcbPtr->resource_head, rPtr, listEntry);
+		TAILQ_INSERT_TAIL(&pcbPtr->resourceHead, rPtr, listEntry);
 	}
 }
 
-void Os_ResourceFree( OsResourceType *rPtr , OsPcbType *pcbPtr) {
-	assert( rPtr->owner == pcbPtr->pid );
+void Os_ResourceFree( OsResourceType *rPtr , OsTaskVarType *pcbPtr) {
+	assert( rPtr->owner == pcbPtr->constPtr->pid );
 	rPtr->owner = NO_TASK_OWNER;
-	pcbPtr->prio = rPtr->old_task_prio;
+	pcbPtr->activePriority = rPtr->old_task_prio;
 
 	if( rPtr->type != RESOURCE_TYPE_INTERNAL ) {
 		/* The list can't be empty here */
-		assert( !TAILQ_EMPTY(&pcbPtr->resource_head) );
+		assert( !TAILQ_EMPTY(&pcbPtr->resourceHead) );
 
 		/* The list should be popped in LIFO order */
-		assert( TAILQ_LAST(&pcbPtr->resource_head, head) == rPtr );
+		assert( TAILQ_LAST(&pcbPtr->resourceHead, head) == rPtr );
 
 		/* Remove the entry */
-		TAILQ_REMOVE(&pcbPtr->resource_head, rPtr, listEntry);
+		TAILQ_REMOVE(&pcbPtr->resourceHead, rPtr, listEntry);
 	}
 }
 
@@ -162,7 +162,7 @@ void Os_ResourceFree( OsResourceType *rPtr , OsPcbType *pcbPtr) {
 
 StatusType GetResource( ResourceType ResID ) {
 	StatusType rv = E_OK;
-	OsPcbType *pcbPtr = Os_TaskGetCurrent();
+	OsTaskVarType *pcbPtr = Os_TaskGetCurrent();
 	OsResourceType *rPtr;
 	uint32_t flags;
 
@@ -170,10 +170,10 @@ StatusType GetResource( ResourceType ResID ) {
 
 	if( ResID == RES_SCHEDULER ) {
 
-		rPtr = &os_sys.resScheduler;
+		rPtr = &Os_Sys.resScheduler;
 	} else {
 		/* Check we can access it */
-		if( (pcbPtr->resourceAccess & (1<< ResID)) == 0 ) {
+		if( (pcbPtr->constPtr->resourceAccess & (1<< ResID)) == 0 ) {
 			rv = E_OS_ID;
 			goto err;
 		}
@@ -183,7 +183,7 @@ StatusType GetResource( ResourceType ResID ) {
 
 	/* Check for invalid configuration */
 	if( (rPtr->owner != NO_TASK_OWNER) ||
-		(pcbPtr->prio > rPtr->ceiling_priority) )
+		(pcbPtr->activePriority > rPtr->ceiling_priority) )
 	{
 		rv = E_OS_ACCESS;
 		Irq_Restore(flags);
@@ -214,16 +214,16 @@ StatusType GetResource( ResourceType ResID ) {
 
 StatusType ReleaseResource( ResourceType ResID) {
 	StatusType rv = E_OK;
-	OsPcbType *pcbPtr = Os_TaskGetCurrent();
+	OsTaskVarType *pcbPtr = Os_TaskGetCurrent();
 	OsResourceType *rPtr;
 	uint32_t flags;
 
 	Irq_Save(flags);
 	if( ResID == RES_SCHEDULER ) {
-		rPtr = &os_sys.resScheduler;
+		rPtr = &Os_Sys.resScheduler;
 	} else {
 		/* Check we can access it */
-		if( (pcbPtr->resourceAccess & (1<< ResID)) == 0 ) {
+		if( (pcbPtr->constPtr->resourceAccess & (1<< ResID)) == 0 ) {
 			rv = E_OS_ID;
 			goto err;
 		}
@@ -238,7 +238,7 @@ StatusType ReleaseResource( ResourceType ResID) {
 		goto err;
 	}
 
-	if( (pcbPtr->prio < rPtr->ceiling_priority))
+	if( (pcbPtr->activePriority < rPtr->ceiling_priority))
 	{
 		rv = E_OS_ACCESS;
 		Irq_Restore(flags);
@@ -248,14 +248,14 @@ StatusType ReleaseResource( ResourceType ResID) {
 	Os_ResourceFree(rPtr,pcbPtr);
 
 	/* do a rescheduling (in some cases) (see OSEK OS 4.6.1) */
-	if ( (pcbPtr->scheduling == FULL) &&
-		 (os_sys.int_nest_cnt == 0) &&
+	if ( (pcbPtr->constPtr->scheduling == FULL) &&
+		 (Os_Sys.intNestCnt == 0) &&
 		 (Os_SchedulerResourceIsFree()) ) {
 
-		OsPcbType* top_pcb = Os_TaskGetTop();
+		OsTaskVarType* top_pcb = Os_TaskGetTop();
 
 		/* only dispatch if some other ready task has higher prio */
-		if (top_pcb->prio > Os_TaskGetCurrent()->prio) {
+		if (top_pcb->activePriority > Os_TaskGetCurrent()->activePriority) {
 			Os_Dispatch(OP_RELEASE_RESOURCE);
 		}
 	}
@@ -266,8 +266,8 @@ StatusType ReleaseResource( ResourceType ResID) {
 
 
 void Os_ResourceGetInternal( void ) {
-	OsPcbType *pcbPtr = Os_TaskGetCurrent();
-	OsResourceType *rt = pcbPtr->resource_int_p;
+	OsTaskVarType *pcbPtr = Os_TaskGetCurrent();
+	OsResourceType *rt = pcbPtr->constPtr->resourceIntPtr;
 
 	if( rt != NULL ) {
 		OS_DEBUG(D_RESOURCE,"Get IR proc:%s prio:%u old_task_prio:%u\n",
@@ -279,8 +279,8 @@ void Os_ResourceGetInternal( void ) {
 }
 
 void Os_ResourceReleaseInternal( void ) {
-	OsPcbType *pcbPtr = Os_TaskGetCurrent();
-	OsResourceType *rt = pcbPtr->resource_int_p;
+	OsTaskVarType *pcbPtr = Os_TaskGetCurrent();
+	OsResourceType *rt = pcbPtr->constPtr->resourceIntPtr;
 
 	if(  rt != NULL ) {
 		OS_DEBUG(D_RESOURCE,"Rel IR proc:%s prio:%u old_task_prio:%u\n",
@@ -299,17 +299,17 @@ void Os_ResourceReleaseInternal( void ) {
  * @return
  */
 void Os_ResourceInit( void ) {
-	//TAILQ_INIT(&pcb_p->resource_head);
-	OsPcbType *pcb_p;
+	//TAILQ_INIT(&pcb_p->resourceHead);
+	OsTaskVarType *pcb_p;
 	OsResourceType *rsrc_p;
 	int topPrio;
 
 
 	/* For now, assign the scheduler resource here */
-	os_sys.resScheduler.ceiling_priority = OS_RES_SCHEDULER_PRIO;
-	strcpy(os_sys.resScheduler.id,"RES_SCHEDULER");
-	os_sys.resScheduler.nr = RES_SCHEDULER;
-	os_sys.resScheduler.owner = NO_TASK_OWNER;
+	Os_Sys.resScheduler.ceiling_priority = OS_RES_SCHEDULER_PRIO;
+	strcpy(Os_Sys.resScheduler.id,"RES_SCHEDULER");
+	Os_Sys.resScheduler.nr = RES_SCHEDULER;
+	Os_Sys.resScheduler.owner = NO_TASK_OWNER;
 
 	/* Calculate ceiling priority
 	 * We make this as simple as possible. The ceiling priority
@@ -324,15 +324,15 @@ void Os_ResourceInit( void ) {
 
 		for( int pi = 0; pi < OS_TASK_CNT; pi++) {
 
-			pcb_p = os_get_pcb(pi);
+			pcb_p = Os_TaskGet(pi);
 
 
-			if(pcb_p->resourceAccess & (1<<i) ) {
-				topPrio = MAX(topPrio,pcb_p->prio);
+			if(pcb_p->constPtr->resourceAccess & (1<<i) ) {
+				topPrio = MAX(topPrio,pcb_p->constPtr->prio);
 			}
 
 			/* Generator fix, add RES_SCHEDULER */
-			pcb_p->resourceAccess |= (1 << RES_SCHEDULER) ;
+//			pcb_p->constPtr->resourceAccess |= (1 << RES_SCHEDULER) ;
 		}
 		rsrc_p->ceiling_priority = topPrio;
 	}

@@ -24,6 +24,8 @@
  *
  */
 
+#include "Os.h"
+
 void apa(void *);
 
 void interrupt(void) __attribute__((__interrupt__));
@@ -35,6 +37,7 @@ void interrupt( void ) {
 
 
 void func1( int a ) {
+
 
 }
 

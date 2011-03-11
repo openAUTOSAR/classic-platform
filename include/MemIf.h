@@ -35,6 +35,14 @@
 #include "Std_Types.h"
 #include "MemIf_Cfg.h"
 
+#if defined(USE_FEE)
+#include "Fee.h"
+#endif
+
+#if defined(USE_EA)
+#include "Ea.h"
+#endif
+
 #if (MEMIF_VERSION_INFO_API == STD_ON)
 #define MemIf_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi, MEMIF)
 #endif /* MEMIF_VERSION_INFO_API */
@@ -52,8 +60,6 @@
 
 #if (MEMIF_NUMBER_OF_DEVICES == 1)
 #if (MEMIF_DEVICE_TO_USE == FLS_DRIVER_INDEX)
-#include "Fee.h"
-
 #define MemIf_SetMode(_mode)	Fee_SetMode(_mode)
 #define MemIf_Read(_deviceIndex,_blockNumber,_blockOffset,_dataBufferPtr,_length)	Fee_Read(_blockNumber,_blockOffset,_dataBufferPtr,_length)
 #define MemIf_Write(_deviceIndex,_blockNumber,_dataBufferPtr)	Fee_Write(_blockNumber,_dataBufferPtr)
@@ -64,8 +70,6 @@
 #define MemIf_EraseImmediateBlock(_deviceIndex,_blockNumber)	Fee_EraseImmediateBlock(_blockNumber)
 
 #elif (MEMIF_DEVICE_TO_USE == EEP_DRIVER_INDEX)
-#include "Ea.h"
-
 #define MemIf_SetMode(_mode)	Ea_SetMode(_mode)
 #define MemIf_Read(_deviceIndex,_blockNumber,_blockOffset,_dataBufferPtr,_length)	Ea_Read(_blockNumber,_blockOffset,_dataBufferPtr,_length)
 #define MemIf_Write(_deviceIndex,_blockNumber,_dataBufferPtr)	Ea_Write(_blockNumber,_dataBufferPtr)

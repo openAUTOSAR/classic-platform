@@ -157,7 +157,7 @@ void Dma_ConfigureSourceAddress (uint32_t sourceAddr, Dma_ChannelType channel);
 void Dma_StartChannel (Dma_ChannelType channel);
 void Dma_StopChannel (Dma_ChannelType channel);
 Std_ReturnType Dma_ChannelDone (Dma_ChannelType channel);
-struct tcd_t * Dma_GetTcd( Dma_ChannelType channel );
+volatile struct tcd_t * Dma_GetTcd( Dma_ChannelType channel );
 boolean Dma_CheckConfig( void );
 
 #endif /* DMA_H_ */

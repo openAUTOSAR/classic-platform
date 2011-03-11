@@ -56,7 +56,7 @@ typedef enum {
 	CANSM_UNINITED,
 	CANSM_NO_COMMUNICATION,
 	CANSM_SILENT_COMMUNICATION,
-	CANSM_FULL_COMMUNICATION,
+	CANSM_FULL_COMMUNICATION
 } CanSM_NetworkModeStateType;
 
 /** This type shall define the states of the bus-off recovery state machine. */
@@ -67,8 +67,8 @@ typedef enum {
 	CANSM_BOR_TXOFF_L1, /**<  Bus-off recovery level 1 state, TX disabled */
 	CANSM_BOR_CHECK_L1, /**<  Bus-off recovery level 1 state, TX enabled again */
 	CANSM_BOR_TXOFF_L2, /**<  Bus-off recovery level 2 state, TX disabled */
-	CANSM_BOR_CHECK_L2, /**<  Bus-off recovery level 2 state, TX enabled again */
-};
+	CANSM_BOR_CHECK_L2 /**<  Bus-off recovery level 2 state, TX enabled again */
+} CanSM_BusOffRecoveryStateType; /** @req CANSM169 */
 
 /** @req CANSM037 */
 
@@ -93,7 +93,7 @@ Std_ReturnType CanSM_GetCurrentComMode( NetworkHandleType NetworkHandle, ComM_Mo
 
 /** Scheduled function of the CanSM */
 /** @req CANSM065 */
-void CanSM_MainFunction();
+void CanSM_MainFunction(void);
 
 
 

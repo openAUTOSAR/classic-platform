@@ -19,6 +19,8 @@
  *  Created on: 2009-okt-02
  *      Author: jonte
  */
+#warning "This default file may only be used as an example!"
+
 #ifndef PWM_CFG_H_
 #define PWM_CFG_H_
 

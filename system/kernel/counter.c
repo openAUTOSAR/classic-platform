@@ -112,7 +112,7 @@ StatusType GetCounterValue( CounterType counter_id , TickRefType tick_ref)
 	if( cPtr->type == COUNTER_TYPE_HARD ) {
 		if( cPtr->driver == NULL ) {
 			/* It's OSINTERNAL */
-			*tick_ref = os_sys.tick;
+			*tick_ref = Os_Sys.tick;
 		} else {
 #if 0
 		/* We support only GPT for now */
@@ -195,7 +195,7 @@ void OsTick( void ) {
 		OsPcbType *pcbPtr;
 #endif
 
-		os_sys.tick++;
+		Os_Sys.tick++;
 
 		cPtr->val = Os_CounterAdd( cPtr->val, Os_CounterGetMaxValue(cPtr), 1 );
 
@@ -221,7 +221,7 @@ void OsTick( void ) {
 }
 
 TickType GetOsTick( void ) {
-	return get_os_tick();
+	return Os_Sys.tick;
 }
 
 

@@ -1,0 +1,181 @@
+
+
+add
+toolbar
+(
+ toolitem "Reload"
+ [
+
+    ggg ggg
+    g g g
+    g g g
+    ggg gg   gg
+    gg  g
+    g g g
+    g g ggg
+
+g   ggg ggg gg
+g   g g g g g g
+g   g g g g g g
+g   g g ggg g g
+g   g g g g g g
+g   g g g g g g
+ggg ggg g g gg
+ ]
+ (
+    do load reload 
+ )
+ toolitem "Reload"
+ [
+
+
+
+ggg ggg gg  g g
+ g  g   g g g g
+ g  g   g g ggg
+ g  gg  gg  g g
+ g  g   ggg g g
+ g  g   g g g g
+ g  ggg g g g g
+
+
+
+
+
+
+ ]
+ (
+    do term
+ )
+ toolitem "Reload"
+ [
+
+
+   RRRRRR
+   R     R
+   R     R
+   R     R
+   RRRRRR
+   R  R
+   R   R
+   R    R
+   R     R
+
+
+
+
+
+ ]
+ (
+    sys.up
+ )
+ toolitem "Layout"
+ [
+
+
+
+
+  m   mmm m m
+  m   m m m m
+  m   m m m m
+  m   mmm mmm
+  m   m m  m
+  m   m m  m
+  m   m m  m
+  mmm m m  m
+
+
+
+
+ ]
+ (
+   	do lay
+ )
+ toolitem "Ramlog"
+ [
+
+
+  mm   m  m m
+  m m m m mmm
+  mm  m m m m
+  m m mmm m m
+  m m m m m m
+  m m m m m m
+
+  m    m   mm
+  m   m m m
+  m   m m m
+  m   m m m m
+  m   m m m m
+  mmm  m   mm
+
+ ]
+ (
+   	do ramlog
+ )
+
+)
+
+add
+menu
+(
+  popup "ArcCore"
+  (
+    popup "&Breakpoint"
+    (
+      menuitem "Save breakpoints,ALT+q" "store bp.cmm break"
+      menuitem "Load breakpoints,ALT+w" "do bp"
+      menuitem "Set det,F12" "b.s Det_ReportError"
+    )
+    menuitem "Load,ALT+l" "do load load"
+    menuitem "Reload,ALT+a" "do load reload"
+    menuitem "Restart" "do start"
+    menuitem "Change config" "do config dialog_project"
+    menuitem "Reset,ALT+r" "sys.up"
+    menuitem "Restore layout,CTRL+l" "do lay"
+    menuitem "View ramlog,CTRL+s" "do ramlog"
+    menuitem "Run kernel testsuite" "do test"
+  )  
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

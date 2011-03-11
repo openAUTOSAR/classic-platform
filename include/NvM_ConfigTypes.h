@@ -20,11 +20,10 @@
 
 #include "NvM_Types.h"
 
-typedef enum {
-	NVM_API_CONFIG_CLASS_1,
-	NVM_API_CONFIG_CLASS_2,
-	NVM_API_CONFIG_CLASS_3
-} NvM_ApiConfigClassType;	/** @req NVM491 */
+/* NvM_ApiConfigClassType */	/** @req NVM491 */
+#define NVM_API_CONFIG_CLASS_1	0
+#define NVM_API_CONFIG_CLASS_2	1
+#define NVM_API_CONFIG_CLASS_3	2
 
 typedef enum {
 	NVM_CRC16,
@@ -54,10 +53,12 @@ typedef struct {
 	// The rest of the parameters is realized in NvM_Cfg.h
 } NvM_CommonType;
 
+#if 0	// Currently not used
 typedef struct {
 //	???			EaRef;	// TODO: Check this
 //	???			FeeRef;	// TODO: Check this
 } NvM_TargetBlockReferenceType;
+#endif
 
 typedef struct {
 	// NVRAM block global settings
@@ -90,7 +91,9 @@ typedef struct {
 	NvM_InitBlockCallbackFunctionType	InitBlockCallback;		/** @req NVM116 */
 
 	// Containers
+#if 0	// Currently not used
 	NvM_TargetBlockReferenceType		TargetBlockReference;	/** @req NVM486 */
+#endif
 } NvM_BlockDescriptorType;	/** @req NVM061 */
 
 typedef struct {

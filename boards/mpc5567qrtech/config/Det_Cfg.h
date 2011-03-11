@@ -28,8 +28,8 @@
  * Specification: Autosar v2.0.1, Final
  *
  */
-#ifndef _DET_CFG_H_
-#define _DET_CFG_H_
+#ifndef DET_CFG_H
+#define DET_CFG_H
 
 #define DET_ENABLE_CALLBACKS STD_ON  // Enable to use callback on errors
 #define DET_USE_RAMLOG       STD_ON  // Enable to log DET errors to ramlog
@@ -41,4 +41,4 @@
 #define DET_RAMLOG_SIZE (32)        // Number of entries in ramlog
 #define DET_NUMBER_OF_CALLBACKS (5) // Number of callbacks
 
-#endif /*_DET_CFG_H_*/
+#endif /*DET_CFG_H*/

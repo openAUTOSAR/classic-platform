@@ -32,16 +32,6 @@
 
 const Com_ConfigType * ComConfig;
 
-Com_Arc_IPdu_type Com_Arc_IPdu[COM_N_IPDUS];
-Com_Arc_Signal_type Com_Arc_Signal[COM_N_SIGNALS];
-Com_Arc_GroupSignal_type Com_Arc_GroupSignal[COM_N_GROUP_SIGNALS];
-
-Com_Arc_Config_type Com_Arc_Config = {
-	.ComIPdu = Com_Arc_IPdu,
-	.ComSignal = Com_Arc_Signal,
-	.ComGroupSignal = Com_Arc_GroupSignal
-};
-
 
 void Com_Init(const Com_ConfigType *config ) {
 	DEBUG(DEBUG_LOW, "--Initialization of COM--\n");
@@ -53,43 +43,34 @@ void Com_Init(const Com_ConfigType *config ) {
 	uint32 earliestDeadline;
 	uint32 firstTimeout;
 
-	Com_Arc_Config.OutgoingPdu.SduDataPtr = malloc(8);
-
 	// Initialize each IPdu
 	//ComIPdu_type *IPdu;
 	//Com_Arc_IPdu_type *Arc_IPdu;
 	const ComSignal_type *Signal;
 	const ComGroupSignal_type *GroupSignal;
-	for (int i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
+	for (uint16 i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
 		Com_Arc_Config.ComNIPdu++;
 
-		GET_IPdu(i);
-		GET_ArcIPdu(i);
+		const ComIPdu_type *IPdu = GET_IPdu(i);
+		Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(i);
 
 		if (i >= COM_N_IPDUS) {
 			DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_TOO_MANY_IPDU);
-			assert(0);
 			failure = 1;
 			break;
 		}
 
 		// If this is a TX and cyclic IPdu, configure the first deadline.
-		if (IPdu->ComIPduDirection == SEND &&
-				(IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeMode == PERIODIC || IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeMode == MIXED)) {
+		if ( (IPdu->ComIPduDirection == SEND) &&
+				( (IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeMode == PERIODIC) || (IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeMode == MIXED) )) {
 			//IPdu->Com_Arc_TxIPduTimers.ComTxModeTimePeriodTimer = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeTimeOffsetFactor;
 			Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeTimePeriodTimer = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeTimeOffsetFactor;
 		}
 
 
 		// Reset earliest deadline.
-		earliestDeadline = -1; // Gives the max value of uint32 due to overflow.
-		firstTimeout = -1;
-
-		// Reserve memory for all defined signals.
-		Arc_IPdu->ComIPduDataPtr = malloc(IPdu->ComIPduSize);
-		if (Arc_IPdu->ComIPduDataPtr == NULL) {
-			failure = 1;
-		}
+		earliestDeadline = 0xffffffffu;
+		firstTimeout = 0xffffffffu;
 
 		// Initialize the memory with the default value.
 		if (IPdu->ComIPduDirection == SEND) {
@@ -98,9 +79,9 @@ void Com_Init(const Com_ConfigType *config ) {
 
 		// For each signal in this PDU.
 		//Arc_IPdu->NComIPduSignalRef = 0;
-		for (int j = 0; IPdu->ComIPduSignalRef != NULL && IPdu->ComIPduSignalRef[j] != NULL; j++) {
+		for (uint16 j = 0; (IPdu->ComIPduSignalRef != NULL) && (IPdu->ComIPduSignalRef[j] != NULL) ; j++) {
 			Signal = IPdu->ComIPduSignalRef[j];
-			GET_ArcSignal(Signal->ComHandleId);
+			Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
 
 			// If this signal already has been configured this is most likely an error.
 			if (Arc_Signal->ComIPduDataPtr != NULL) {
@@ -141,16 +122,11 @@ void Com_Init(const Com_ConfigType *config ) {
 
 			// If this signal is a signal group
 			if (Signal->Com_Arc_IsSignalGroup) {
-				Arc_Signal->Com_Arc_ShadowBuffer = malloc(IPdu->ComIPduSize);
-
-				if (Arc_Signal->Com_Arc_ShadowBuffer == NULL) {
-					failure = 1;
-				}
 
 				// For each group signal of this signal group.
-				for(int h = 0; Signal->ComGroupSignal[h] != NULL; h++) {
+				for(uint8 h = 0; Signal->ComGroupSignal[h] != NULL; h++) {
 					GroupSignal = Signal->ComGroupSignal[h];
-					GET_ArcGroupSignal(GroupSignal->ComHandleId);
+					Com_Arc_GroupSignal_type *Arc_GroupSignal = GET_ArcGroupSignal(GroupSignal->ComHandleId);
 					// Set pointer to shadow buffer
 					Arc_GroupSignal->Com_Arc_ShadowBuffer = Arc_Signal->Com_Arc_ShadowBuffer;
 					// Initialize group signal data.
@@ -161,46 +137,14 @@ void Com_Init(const Com_ConfigType *config ) {
 				// Initialize signal data.
 				Com_WriteSignalDataToPdu(Signal->ComHandleId, Signal->ComSignalInitValue);
 			}
-
-			// Check filter configuration
-			if (IPdu->ComIPduDirection == RECEIVE) {
-
-				// This represents an invalid configuration of the UINT8_N datatype
-				if ((Signal->ComSignalType == UINT8_N
-					&&
-					(Signal->ComFilter.ComFilterAlgorithm == MASKED_NEW_EQUALS_X
-					|| Signal->ComFilter.ComFilterAlgorithm == MASKED_NEW_DIFFERS_X
-					|| Signal->ComFilter.ComFilterAlgorithm == MASKED_NEW_DIFFERS_MASKED_OLD
-					|| Signal->ComFilter.ComFilterAlgorithm == NEW_IS_WITHIN
-					|| Signal->ComFilter.ComFilterAlgorithm == NEW_IS_OUTSIDE
-					|| Signal->ComFilter.ComFilterAlgorithm == ONE_EVERY_N))) {
-
-					DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_FILTER_CONFIGURATION);
-					failure = 1;
-				}
-
-				// This represens an invalid configuration of the BOOLEAN datatype
-				if ((Signal->ComSignalType == BOOLEAN
-					&&
-					(Signal->ComFilter.ComFilterAlgorithm == NEW_IS_WITHIN
-					|| Signal->ComFilter.ComFilterAlgorithm == NEW_IS_OUTSIDE))) {
-
-
-					DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_FILTER_CONFIGURATION);
-					failure = 1;
-				}
-			// Initialize filter values. COM230
-			//signal.ComFilter.ComFilterNewValue = ComConfig->ComIPdu[i].ComTxIPdu.ComTxIPduUnusedAreasDefault;
-			//signal.ComFilter.ComFilterOldValue = ComConfig->ComIPdu[i].ComTxIPdu.ComTxIPduUnusedAreasDefault;
-			}
 		}
 
 		// Configure per I-PDU based deadline monitoring.
-		for (int j = 0; IPdu->ComIPduSignalRef != NULL && IPdu->ComIPduSignalRef[j] != NULL; j++) {
+		for (uint16 j = 0; (IPdu->ComIPduSignalRef != NULL) && (IPdu->ComIPduSignalRef[j] != NULL); j++) {
 			Signal = IPdu->ComIPduSignalRef[j];
-			GET_ArcSignal(Signal->ComHandleId);
+			Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
 
-			if (Signal->ComTimeoutFactor > 0 && !Signal->ComSignalArcUseUpdateBit) {
+			if ( (Signal->ComTimeoutFactor > 0) && (!Signal->ComSignalArcUseUpdateBit) ) {
 				Arc_Signal->ComTimeoutFactor = earliestDeadline;
 				Arc_Signal->Com_Arc_DeadlineCounter = firstTimeout;
 			}
@@ -210,11 +154,6 @@ void Com_Init(const Com_ConfigType *config ) {
 
 	// An error occurred.
 	if (failure) {
-		// Free allocated memory
-		for (int i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
-			// Release memory for all defined signals.
-			//free(ComConfig->ComIPdu[i].ComIPduDataPtr);
-		}
 		DEBUG(DEBUG_LOW, "--Initialization of COM failed--\n");
 		//DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_FILTER_CONFIGURATION);
 	} else {
@@ -228,7 +167,8 @@ void Com_DeInit( void ) {
 }
 
 void Com_IpduGroupStart(Com_PduGroupIdType IpduGroupId,boolean Initialize) {
-	for (int i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
+	(void)Initialize; // Nothing to be done. This is just to avoid Lint warning.
+	for (uint16 i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
 		if (ComConfig->ComIPdu[i].ComIPduGroupRef == IpduGroupId) {
 			Com_Arc_Config.ComIPdu[i].Com_Arc_IpduStarted = 1;
 		}
@@ -236,7 +176,7 @@ void Com_IpduGroupStart(Com_PduGroupIdType IpduGroupId,boolean Initialize) {
 }
 
 void Com_IpduGroupStop(Com_PduGroupIdType IpduGroupId) {
-	for (int i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
+	for (uint16 i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
 		if (ComConfig->ComIPdu[i].ComIPduGroupRef == IpduGroupId) {
 			Com_Arc_Config.ComIPdu[i].Com_Arc_IpduStarted = 0;
 		}
