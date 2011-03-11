@@ -46,8 +46,6 @@ static Det_StateType detState = DET_UNINITIALIZED;
 
 #if ( DET_USE_RAMLOG == STD_ON )
 
-#pragma section RW ".ramlog" ".ramlog"
-
 // Ram log variables in uninitialized memory
 SECTION_RAMLOG uint32 Det_RamlogIndex;
 /*lint -esym(552,Det_RamLog)*/ /* PC-Lint OK. supress lintwarning about Det_Ramlog not being accessed */

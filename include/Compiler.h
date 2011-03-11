@@ -36,6 +36,13 @@
 #define CC_EXTENSION
 #endif
 
+#if defined(__GNUC__)
+#define SECTION_BALIGN(_align )  __attribute__ ((aligned (_align)))
+#else
+#error SECTION_BALIGN not defined for compiler
+#endif
+
+
 /* REQ:COMPILER005 */
 /* TODO: skip the memclass for now */
 #define FUNC(rettype,memclass) rettype

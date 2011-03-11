@@ -26,6 +26,7 @@ struct OsTaskConst;
 #define ST_SUSPENDED		(1<<2)
 #define ST_RUNNING			(1<<3)
 #define ST_NOT_STARTED  	(1<<4)
+#define ST_SLEEPING		(1<<5)
 
 #define ST_ISR_RUNNING			1
 #define ST_ISR_NOT_RUNNING 		2
@@ -42,49 +43,6 @@ typedef EventMaskType 	OsEventType;
 typedef sint8 OsPriorityType;
 
 #define TASK_NAME_SIZE		16
-
-
-/* STD container : OsIsr
- * Class: ALL
- *
- * OsIsrCategory:				1    CATEGORY_1 or CATEGORY_2
- * OsIsrResourceRef:			0..* Reference to OsResources
- * OsIsrTimingProtection[C] 	0..1
- * */
-
-
-
-
-/* STD container : OsIsrResourceLock
- * Class: 2 and 4
- *
- * OsIsrResourceLockBudget  	1    Float in seconds (MAXRESOURCELOCKINGTIME)
- * OsIsrResourceLockResourceRef 1    Ref to OsResource
- * */
-
-typedef struct OsIsrResourceLock {
-	uint32_t lockBudget;
-	uint32_t lockResourceRef; 	/* Wrong type */
-} OsIsrResourceLockType;
-
-
-/* STD container : OsIsrTimingProtection
- * Class: 2 and 4
- *
- * OsIsrAllInterruptLockBudget  0..1 float
- * OsIsrExecutionBudget 		0..1 float
- * OsIsrOsInterruptLockBudget 	0..1 float
- * OsIsrTimeFrame 				0..1 float
- * OsIsrResourceLock[C] 		0..*
- * */
-
-typedef struct OsIsrTimingProtection {
-	uint32_t allInterruptLockBudget;
-	uint32_t executionBudget;
-	uint32_t osInterruptLockBudget;
-	uint32_t timeFrame;
-	uint32_t resourceLock;		/* Wrong type */
-} OsIsrTimingProtectionType;
 
 
 
@@ -203,6 +161,10 @@ typedef struct OsTaskVar {
 
 	/* TODO: Arch specific regs .. make space for them later...*/
 	uint32_t	regs[16]; 				// TASK
+#if defined(USE_KERNEL_EXTRA)
+	TAILQ_ENTRY(OsTaskVar) timerEntry;		// TASK
+	int32_t		   timerDec;
+#endif
 	/* List of PCB's */
 //	TAILQ_ENTRY(OsTaskVar) pcb_list;		// TASK
 	/* ready list */

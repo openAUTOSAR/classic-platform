@@ -240,15 +240,9 @@ ApplicationType CheckObjectOwnership( ObjectTypeType ObjectType,
 	case OBJECT_SCHEDULETABLE:
 		break;
 	case OBJECT_TASK:
-#if 0
 		if( objectId < OS_TASK_CNT ) {
-			rv = Os_TaskGet(objectId)
+			rv = Os_TaskGetApplicationOwner((TaskType)objectId);
 		}
-
-
-		OsTaskVarTypeapplOwnerId
-		if( objectId > OS_MAX )
-#endif
 		break;
 	default:
 		break;
@@ -333,6 +327,7 @@ StatusType GetActiveApplicationMode( AppModeType* mode) {
 	 return E_OK;
 }
 
+
 /**
  *
  */
@@ -349,5 +344,11 @@ void Os_ApplStart( void ) {
 		}
 	}
 }
+
+uint8_t Os_ApplGetCore( ApplicationType appl )
+{
+	return Os_AppConst[appl].core;
+}
+
 
 #endif

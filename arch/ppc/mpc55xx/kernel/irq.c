@@ -27,7 +27,6 @@
 /* ----------------------------[includes]------------------------------------*/
 
 #include "internal.h"
-#include "asm_book_e.h"
 #include "irq_types.h"
 #include "mpc55xx.h"
 #include "pcb.h"
@@ -37,7 +36,6 @@
 #include "hooks.h"
 #include "debug.h"
 #include "isr.h"
-#include "irq_config.h"
 #include <stdint.h>
 
 /* ----------------------------[private define]------------------------------*/
@@ -135,7 +133,7 @@ void Irq_Init( void ) {
 
 void Irq_EOI( void ) {
 #if defined(CFG_MPC5516)
-	struct INTC_tag *intc = &INTC;
+	volatile struct INTC_tag *intc = &INTC;
 	intc->EOIR_PRC0.R = 0;
 #elif defined(CFG_MPC5554)||defined(CFG_MPC5567)
 	volatile struct INTC_tag *intc = &INTC;
@@ -143,7 +141,7 @@ void Irq_EOI( void ) {
 #endif
 }
 
-
+#if 0
 /**
  *
  * @param stack_p Ptr to the current stack.
@@ -192,6 +190,8 @@ void *Irq_Entry( void *stack_p )
 		return Os_Isr(stack, vector);
 	}
 }
+#endif
+
 
 static inline int osPrioToCpuPio( uint8_t prio ) {
 	assert(prio<32);

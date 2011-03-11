@@ -155,14 +155,6 @@ uint32 Os_CfgGetServiceCnt( void ) {
 #endif
 
 
-/*-----------------------------------------------------------------*/
-
-void Os_CfgGetInterruptStackInfo( OsStackType *stack ) {
-	stack->top = os_interrupt_stack;
-	stack->size = sizeof(os_interrupt_stack);
-}
-
-
 
 
 

@@ -45,7 +45,7 @@ void EcuM_Init( void )
 	InitOS();
 
 	// Enable interrupts
-	Isr_Init();
+	Os_IsrInit();
 
 	// Determine PostBuild configuration
 	internal_data.config = EcuM_DeterminePbConfiguration();

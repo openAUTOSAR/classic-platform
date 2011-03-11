@@ -166,7 +166,7 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 				Os_Dispatch(OP_SET_EVENT);
 			}
 
-		}  else if(destPcbPtr->state & (ST_READY|ST_RUNNING) ) {
+		}  else if(destPcbPtr->state & (ST_READY|ST_RUNNING|ST_SLEEPING) ) {
 			/* Hmm, we do nothing */
 		} else {
 			assert( 0 );

@@ -13,9 +13,11 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+
 #include <sys/types.h>
 #include <stdint.h>
 #include <string.h>
+#include "Compiler.h"
 #include "internal.h"
 #include "isr.h"
 #include "irq.h"
@@ -28,6 +30,8 @@ extern const OsIsrConstType Os_IsrConstList[OS_ISR_CNT];
 #if OS_ISR_MAX_CNT!=0
 OsIsrVarType Os_IsrVarList[OS_ISR_MAX_CNT];
 #endif
+
+SECTION_BALIGN(0x10) uint8_t Os_IsrStack[OS_INTERRUPT_STACK_SIZE];
 
 // TODO: remove. Make soft links or whatever
 #if defined(CFG_ARM_CM3)
@@ -56,6 +60,8 @@ OsTaskVarType * os_alloc_new_pcb( void ) {
 
 void Os_IsrInit( void ) {
 
+	Irq_Init();
+
 	/* Attach the interrupts */
 	for (int i = 0; i < sizeof(Os_IsrConstList) / sizeof(OsIsrConstType); i++) {
 		Os_IsrAdd(&Os_IsrConstList[i]);
@@ -78,7 +84,8 @@ ISRType Os_IsrAdd( const OsIsrConstType * restrict isrPtr ) {
 	if( isrPtr->type == ISR_TYPE_2) {
 		Os_IsrVarList[id].constPtr = isrPtr;
 	}
-	Irq_EnableVector( isrPtr->vector, isrPtr->priority, isrPtr->core  );
+
+	Irq_EnableVector( isrPtr->vector, isrPtr->priority, Os_ApplGetCore(isrPtr->appOwner )  );
 
 	return id;
 }
@@ -220,6 +227,13 @@ void Os_Isr_cm3( void *isr_p ) {
 	*((uint32_t volatile *)0xE000ED04) = 0x10000000; // PendSV
 }
 #endif
+
+/*-----------------------------------------------------------------*/
+
+void Os_IsrGetStackInfo( OsIsrStackType *stack ) {
+	stack->top = Os_IsrStack;
+	stack->size = sizeof(Os_IsrStack);
+}
 
 
 /**

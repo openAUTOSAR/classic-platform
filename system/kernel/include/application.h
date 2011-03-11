@@ -108,25 +108,12 @@ typedef struct OsApplication {
 	uint32 	appId;
 	char 	name[16];
 	_Bool	trusted;
+	uint8_t core;
 
 	/* hooks, the names are StartupHook_<name>(), etc. */
 	void (*StartupHook)( void );
 	void (*ShutdownHook)( StatusType Error );
 	void (*ErrorHook)( StatusType Error );
-
-	/* The application hooks */
-//	OsAppHooksType hooks;
-
-
-	/* Ref is ~0U terminated */
-#if 0
-	const uint8_t *alarmRef;
-	const uint8_t *counterRef;
-	const uint8_t *isrRef;
-	const uint8_t *resourceRef;
-	const uint8_t *schtblRef;
-	const uint8_t *taskRef;
-#endif
 
 	int 	restartTaskId;
 } OsAppConstType;
@@ -134,6 +121,8 @@ typedef struct OsApplication {
 #if OS_APPLICATION_CNT!=0
 extern OsAppVarType Os_AppVar[OS_APPLICATION_CNT];
 #endif
+
+uint8_t Os_ApplGetCore( ApplicationType appl );
 
 #endif /*  (OS_USE_APPLICATIONS == STD_ON) */
 

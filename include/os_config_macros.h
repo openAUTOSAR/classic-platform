@@ -36,13 +36,14 @@
 // +1 here.. easy to have a reference..
 #define GEN_TRUSTEDFUNCTIONS_LIST trusted_func_t os_cfg_trusted_list[OS_SERVICE_CNT];
 
-#define GEN_APPLICATION_HEAD const OsAppConstType Os_AppConst[OS_APPLICATION_CNT] =
+#define GEN_APPLICATION_HEAD const OsAppConstType Os_AppConst[OS_APPLICATION_CNT]
 
-#define GEN_APPLICATION(	_id,_name,_trusted,_startuphook,_shutdownhook, _errorhook, \
+#define GEN_APPLICATION(	_id,_name, _core, _trusted,_startuphook,_shutdownhook, _errorhook, \
 							_restart_task  ) \
 {												\
 	.appId = _id, 						\
 	.name = _name,								\
+	.core = _core,                              \
 	.trusted = _trusted,						\
 	.StartupHook = _startuphook,				\
 	.ShutdownHook = _shutdownhook,				\
@@ -50,7 +51,7 @@
 	.restartTaskId = _restart_task				\
 }
 
-#define GEN_TASK_HEAD const OsTaskConstType  Os_TaskConstList[OS_TASK_CNT] =
+#define GEN_TASK_HEAD const OsTaskConstType  Os_TaskConstList[OS_TASK_CNT]
 
 
 
@@ -107,6 +108,35 @@
 	.accessingApplMask = _accessing_appl_mask, \
 }
 
+#define GEN_ISR_HEAD const OsIsrConstType Os_IsrConstList[OS_ISR_CNT]
+
+#define GEN_ISR1( _name, _vector, _priority, _entry, _appOwner ) \
+{                                      \
+		.vector = _vector,             \
+		.type = ISR_TYPE_1,            \
+		.priority = _priority,         \
+		.entry = _entry,               \
+		.name = _name,                 \
+		.resourceMask = 0,             \
+		.appOwner = _appOwner,         \
+}
+
+#define GEN_ISR2( _name, _vector, _priority, _entry, _appOwner, _resourceMask ) \
+{                                      \
+		.vector = _vector,             \
+		.type = ISR_TYPE_1,            \
+		.priority = _priority,         \
+		.entry = _entry,               \
+		.name = _name,                 \
+		.resourceMask = _resourceMask, \
+		.appOwner = _appOwner,         \
+}
+
+
+#define GEN_ISR_MAP const uint8_t Os_VectorToIsr[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS]
+
+
+#if 0
 #define GEN_ISR_2( _id, _name, _entry, _priority,  _vector ) \
 {									\
 	.pid = _id,						\
@@ -127,6 +157,8 @@
 	.proc_type = PROC_ISR1,		\
 	.vector = _vector,              \
 }
+#endif
+
 
 //#define GEN_PCB_LIST()	uint8_t Os_TaskVarList[PCB_T_SIZE*ARRAY_SIZE( Os_TaskConstList)];
 #define GEN_PCB_LIST()	OsTaskVarType Os_TaskVarList[ARRAY_SIZE( Os_TaskConstList)];
@@ -172,7 +204,7 @@
  *    NOT USED. Set to 0
  */
 
-#define GEN_COUNTER_HEAD OsCounterType counter_list[OS_COUNTER_CNT] =
+#define GEN_COUNTER_HEAD OsCounterType counter_list[OS_COUNTER_CNT]
 #define GEN_COUNTER( _id, _name, _type, _unit, 	\
 					_maxallowedvalue, 			\
 					_ticksperbase, 				\
@@ -208,7 +240,7 @@
 			.appModeRef = _app_mode \
 		}
 
-#define GEN_ALARM_HEAD OsAlarmType alarm_list[OS_ALARM_CNT] =
+#define GEN_ALARM_HEAD OsAlarmType alarm_list[OS_ALARM_CNT]
 
 /**
  * _id

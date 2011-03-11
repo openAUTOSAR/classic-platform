@@ -36,7 +36,6 @@ Os_IntCounterType Os_IntSuspendOsCnt;
 /* ----------------------------[private functions]---------------------------*/
 /* ----------------------------[public functions]----------------------------*/
 
-extern void Os_CfgGetInterruptStackInfo( OsStackType *stack );
 extern uint32_t McuE_GetSystemClock( void );
 extern OsTickType OsTickFreq;
 
@@ -99,7 +98,7 @@ static _Bool init_os_called = 0;
 void InitOS( void ) {
 	int i;
 	OsTaskVarType *tmpPcbPtr;
-	OsStackType intStack;
+	OsIsrStackType intStack;
 
 	init_os_called = 1;
 
@@ -114,9 +113,12 @@ void InitOS( void ) {
 	Os_Sys.pcb_list = Os_TaskVarList;
 	TAILQ_INIT(& Os_Sys.ready_head);
 //	TAILQ_INIT(& Os_Sys.pcb_head);
+#if defined(USE_KERNEL_EXTRA)
+	TAILQ_INIT(& Os_Sys.timerHead);
+#endif
 
 	// Calc interrupt stack
-	Os_CfgGetInterruptStackInfo(&intStack);
+	Os_IsrGetStackInfo(&intStack);
 	// TODO: 16 is arch dependent
 	Os_Sys.intStack = (void *)((size_t)intStack.top + (size_t)intStack.size - 16);
 
