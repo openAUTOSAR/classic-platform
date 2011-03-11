@@ -372,7 +372,7 @@ exception_IVOR4:
 	bne-	on_int_stack
 
 	/* Load the interrupt stack */
-	LOAD_IND_32(r3,os_sys+SYS_INT_STACK)
+	LOAD_IND_32(r1,os_sys+SYS_INT_STACK)
 
 on_int_stack:
 
