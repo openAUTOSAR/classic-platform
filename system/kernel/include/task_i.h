@@ -60,6 +60,18 @@ static inline void Os_TaskMakeWaiting( OsTaskVarType *pcb )
 	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->name);
 }
 
+// Sleeping
+#if defined(USE_KERNEL_EXTRA)
+static inline void Os_TaskMakeSleeping( OsTaskVarType *pcb )
+{
+	assert( pcb->state & (ST_READY|ST_RUNNING) );
+
+	pcb->state = ST_WAITING | ST_SLEEPING;
+	TAILQ_REMOVE(&Os_Sys.ready_head,pcb,ready_list);
+	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->name);
+}
+#endif
+
 // Terminate task
 static inline void Os_TaskMakeSuspended( OsTaskVarType *pcb )
 	{

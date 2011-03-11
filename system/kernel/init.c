@@ -114,7 +114,7 @@ void InitOS( void ) {
 	TAILQ_INIT(& Os_Sys.ready_head);
 //	TAILQ_INIT(& Os_Sys.pcb_head);
 #if defined(USE_KERNEL_EXTRA)
-	TAILQ_INIT(& os_sys.timerHead);
+	TAILQ_INIT(& Os_Sys.timerHead);
 #endif
 
 	// Calc interrupt stack

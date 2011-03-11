@@ -25,9 +25,8 @@ typedef enum  {
 	OP_TERMINATE_TASK = 8,
 	OP_SCHEDULE = 16,
 	OP_CHAIN_TASK = 32,
-	OP_RELEASE_RESOURCE = 64
+	OP_RELEASE_RESOURCE = 64,
 	OP_SLEEP = 128,
-
 } OpType ;
 
 /*
@@ -75,7 +74,7 @@ typedef struct Os_Sys {
 #if defined(USE_KERNEL_EXTRA)
 
 /* List of PCB's to be put in ready list when timeout */
-	TAILQ_HEAD(,OsPcb) timerHead;		// TASK
+	TAILQ_HEAD(,OsTaskVar) timerHead;		// TASK
 #endif
 
 	/* List of all pcb's,

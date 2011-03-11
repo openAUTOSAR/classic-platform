@@ -192,7 +192,7 @@ void OsTick( void ) {
 
 		OsCounterType *cPtr = Os_CfgGetCounter(Os_Arc_OsTickCounter);
 #if defined(USE_KERNEL_EXTRA)
-		OsPcbType *pcbPtr;
+		OsTaskVarType *pcbPtr;
 #endif
 
 		Os_Sys.tick++;
@@ -201,11 +201,11 @@ void OsTick( void ) {
 
 #if defined(USE_KERNEL_EXTRA)
 		/* Check sleep() (ST_WAITING) tasks */
-		TAILQ_FOREACH(pcbPtr, &os_sys.timerHead, timerEntry ) {
+		TAILQ_FOREACH(pcbPtr, &Os_Sys.timerHead, timerEntry ) {
 			--pcbPtr->timerDec;
 			if( pcbPtr->timerDec <= 0 ) {
 				/* Remove from the timer queue */
-				TAILQ_REMOVE(&os_sys.timerHead, pcbPtr, timerEntry);
+				TAILQ_REMOVE(&Os_Sys.timerHead, pcbPtr, timerEntry);
 				/* ... and add to the ready queue */
 				Os_TaskMakeReady(pcbPtr);
 			}

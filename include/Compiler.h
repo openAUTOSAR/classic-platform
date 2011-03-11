@@ -37,7 +37,7 @@
 #endif
 
 #if defined(__GNUC__)
-#define SECTION_BALIGN(_align )  __attribute__ ((aligned (_align)));
+#define SECTION_BALIGN(_align )  __attribute__ ((aligned (_align)))
 #else
 #error SECTION_BALIGN not defined for compiler
 #endif

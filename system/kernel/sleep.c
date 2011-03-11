@@ -18,13 +18,14 @@
  */
 
 StatusType Sleep( TickType sleep ) {
-	OsPcbType *pcbPtr = Os_TaskGetCurrent();
+	OsTaskVarType *pcbPtr;
 	uint32_t flags;
 
 	Irq_Save(flags);
 
+	pcbPtr = Os_TaskGetCurrent();
 
-	if (pcbPtr->proc_type != PROC_EXTENDED) {
+	if (pcbPtr->constPtr->proc_type != PROC_EXTENDED) {
 		return E_OS_ACCESS;
 	}
 
@@ -34,7 +35,7 @@ StatusType Sleep( TickType sleep ) {
 
 	if ( Os_SchedulerResourceIsFree() ) {
 		if( sleep != 0 ) {
-			TAILQ_INSERT_TAIL(&os_sys.timerHead,pcbPtr,timerEntry);
+			TAILQ_INSERT_TAIL(&Os_Sys.timerHead,pcbPtr,timerEntry);
 			pcbPtr->timerDec = sleep;
 			Os_Dispatch(OP_SLEEP);
 		} else {

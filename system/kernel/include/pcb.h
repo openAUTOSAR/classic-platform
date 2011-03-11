@@ -162,7 +162,7 @@ typedef struct OsTaskVar {
 	/* TODO: Arch specific regs .. make space for them later...*/
 	uint32_t	regs[16]; 				// TASK
 #if defined(USE_KERNEL_EXTRA)
-	TAILQ_ENTRY(OsPcb) timerEntry;		// TASK
+	TAILQ_ENTRY(OsTaskVar) timerEntry;		// TASK
 	int32_t		   timerDec;
 #endif
 	/* List of PCB's */
