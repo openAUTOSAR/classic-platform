@@ -28,7 +28,7 @@ obj-y += isr.o
 obj-y += os_arctest.o
 obj-y += application.o
 obj-$(USE_KERNEL_EXTRA) += sleep.o
-#obj-$(USE_KERNEL_EXTRA) += semaphore.o
+obj-$(USE_KERNEL_EXTRA) += semaphore.o
 
 
 # These are VERY cpu dependent.. remove

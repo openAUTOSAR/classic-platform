@@ -38,7 +38,7 @@
 
 #define GEN_APPLICATION_HEAD const OsAppConstType Os_AppConst[OS_APPLICATION_CNT]
 
-#define GEN_APPLICATION(	_id,_name, _core, _trusted,_startuphook,_shutdownhook, _errorhook, \
+#define GEN_APPLICATION(	_id,_name, _trusted, _core, _startuphook,_shutdownhook, _errorhook, \
 							_restart_task  ) \
 {												\
 	.appId = _id, 						\
@@ -163,7 +163,7 @@
 //#define GEN_PCB_LIST()	uint8_t Os_TaskVarList[PCB_T_SIZE*ARRAY_SIZE( Os_TaskConstList)];
 #define GEN_PCB_LIST()	OsTaskVarType Os_TaskVarList[ARRAY_SIZE( Os_TaskConstList)];
 
-#define GEN_RESOURCE_HEAD OsResourceType resource_list[OS_RESOURCE_CNT] =
+#define GEN_RESOURCE_HEAD OsResourceType resource_list[OS_RESOURCE_CNT]
 
 
 /**
@@ -171,12 +171,14 @@
  * _type              RESOURCE_TYPE_STANDARD, RESOURCE_TYPE_LINKED or RESOURCE_TYPE_INTERNAL
  * _ceiling_priority  The calculated ceiling priority
  */
-#define GEN_RESOURCE( _id, _type, _ceiling_priority ) \
+#define GEN_RESOURCE( _id, _type, _ceiling_priority, _appl_owner, _accessing_appl_mask ) \
 {												\
 	.nr= _id,									\
 	.type= _type,								\
 	.ceiling_priority = _ceiling_priority,		\
 	.owner = (-1),								\
+	.applOwnerId = _appl_owner, 				\
+	.accessingApplMask = _accessing_appl_mask 	\
 }
 
 /**

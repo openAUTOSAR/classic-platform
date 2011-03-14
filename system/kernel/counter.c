@@ -200,7 +200,7 @@ void OsTick( void ) {
 		cPtr->val = Os_CounterAdd( cPtr->val, Os_CounterGetMaxValue(cPtr), 1 );
 
 #if defined(USE_KERNEL_EXTRA)
-		/* Check sleep() (ST_WAITING) tasks */
+		/* Check tasks in the timer queue (here from Sleep() or WaitSemaphore() ) */
 		TAILQ_FOREACH(pcbPtr, &Os_Sys.timerHead, timerEntry ) {
 			--pcbPtr->timerDec;
 			if( pcbPtr->timerDec <= 0 ) {

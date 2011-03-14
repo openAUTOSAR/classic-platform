@@ -27,6 +27,8 @@
 #include "Os_Cfg.h"
 #include "MemMap.h"
 #include "Cpu.h"
+#include "limits.h"
+#include <sys/queue.h>
 
 typedef uint8 StatusType;
 
@@ -340,8 +342,26 @@ void Os_SysTickStart(TickType period_ticks);
 TickType Os_SysTickGetValue( void );
 TickType Os_SysTickGetElapsedValue( TickType preValue );
 
+/*-------------------------------------------------------------------
+ * Kernel extra
+ *-----------------------------------------------------------------*/
+
 #if defined(USE_KERNEL_EXTRA)
+
+#define TICK_MAX 	UINT_MAX
+
+typedef struct OsSemaphore {
+	int val;
+	STAILQ_HEAD(,OsTaskVar) taskHead;
+} OsSemaphoreType;
+
+typedef OsSemaphoreType OsMutexType;
+
 StatusType Sleep( TickType ticks );
+StatusType WaitSemaphore( OsSemaphoreType *semPtr, TickType tmo );
+void SignalSemaphore( OsSemaphoreType *semPtr );
+StatusType WaitMutex( OsMutexType *mutexPtr );
+StatusType ReleaseMutex( OsMutexType *mutexPtr );
 #endif
 
 

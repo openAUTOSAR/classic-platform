@@ -26,7 +26,8 @@ struct OsTaskConst;
 #define ST_SUSPENDED		(1<<2)
 #define ST_RUNNING			(1<<3)
 #define ST_NOT_STARTED  	(1<<4)
-#define ST_SLEEPING		(1<<5)
+#define ST_SLEEPING			(1<<5)
+#define ST_WAITING_SEM		(1<<6)
 
 #define ST_ISR_RUNNING			1
 #define ST_ISR_NOT_RUNNING 		2
@@ -164,6 +165,9 @@ typedef struct OsTaskVar {
 #if defined(USE_KERNEL_EXTRA)
 	TAILQ_ENTRY(OsTaskVar) timerEntry;		// TASK
 	int32_t		   timerDec;
+
+	/* Semaphore list */
+	STAILQ_ENTRY(OsTaskVar) semEntry;		// TASK
 #endif
 	/* List of PCB's */
 //	TAILQ_ENTRY(OsTaskVar) pcb_list;		// TASK
@@ -196,7 +200,7 @@ typedef struct OsTaskConst {
 	proc_type_t  	proc_type;
 	uint8	 	 	autostart;
 	OsStackType 	stack;
-	int				vector; 		// ISR
+//	int				vector; 		// ISR
 
 #if	(OS_USE_APPLICATIONS == STD_ON)
 	/* Application that owns this task */

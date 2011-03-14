@@ -70,6 +70,18 @@ static inline void Os_TaskMakeSleeping( OsTaskVarType *pcb )
 	TAILQ_REMOVE(&Os_Sys.ready_head,pcb,ready_list);
 	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->name);
 }
+
+
+static inline void Os_TaskMakeWaitingOnSem( OsTaskVarType *pcb )
+{
+	assert( pcb->state & (ST_READY|ST_RUNNING) );
+
+	pcb->state = ST_WAITING_SEM;
+	TAILQ_REMOVE(&Os_Sys.ready_head,pcb,ready_list);
+	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->name);
+}
+
+
 #endif
 
 // Terminate task

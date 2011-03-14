@@ -348,8 +348,14 @@ void Os_Dispatch( uint32_t op ) {
 	/* Go the correct state for running task */
 	if( op  & ( OP_SET_EVENT | OP_SCHEDULE | OP_RELEASE_RESOURCE )) {
 		Os_TaskRunningToReady(currPcbPtr);
-	} else if( op & (OP_WAIT_EVENT )) {
+	} else if( op & (OP_WAIT_EVENT) ) {
 		Os_TaskMakeWaiting(currPcbPtr);
+#if defined(USE_KERNEL_EXTRA)
+	} else if( op & OP_WAIT_SEMAPHORE) {
+		Os_TaskMakeWaitingOnSem(currPcbPtr);
+	} else if( op & OP_SIGNAL_SEMAPHORE) {
+		Os_TaskRunningToReady(currPcbPtr);
+#endif
 	} else if( op & (OP_SLEEP )) {
 		Os_TaskMakeSleeping(currPcbPtr);
 	} else if( op & OP_ACTIVATE_TASK ) {

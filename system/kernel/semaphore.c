@@ -1,3 +1,5 @@
+
+
 /*
  * semaphore.c
  *
@@ -8,7 +10,8 @@
  * - Serialized access to a global resource. The same task
  *   ALWAYS first use Os_WaitMutex() and the Os_ReleaseMutex()
  *   Should mutex be as GetResource()/ReleaseResource() be able to
- *   tinker with priotities..
+ *   tinker with priotities? Yeees, raise the priority to the
+ *   priority of the calling task ( Second call to WaitMutex() )
  *
  *
  *   Task1:
@@ -31,31 +34,107 @@
  *   Task:
  *     Os_WaitSemaphore(my_semaphore)
  *
+ *
+ * Mutex vs Resource's
+ *   A task, say TASK_A calls GetResource(RES_1) any task that has anything to do
+ *   with the RES_1 will not be able to run (since the priority of TASK_A will be
+ *   raised to the priority of the task with the highest priority accessing the
+ *   resource). This does not encourage the use of resources that is scarcely used
+ *   within a high priority task (since it will not get runtime when the resource is
+ *   held).
+ *
+ *   Mutex:es on the other hand will make other tasks run that shares the resource
+ *   but the priority of the task that take the mutex for the second time makes the
+ *   first task inherit the priority of that task.
  */
 
-StatusType WaitSemaphore( OsSemaphore *semPtr ) {
+/* ----------------------------[includes]------------------------------------*/
+#include "internal.h"
+/* ----------------------------[private define]------------------------------*/
+/* ----------------------------[private macro]-------------------------------*/
+/* ----------------------------[private typedef]-----------------------------*/
+/* ----------------------------[private function prototypes]-----------------*/
+/* ----------------------------[private variables]---------------------------*/
+/* ----------------------------[private functions]---------------------------*/
+/* ----------------------------[public functions]----------------------------*/
+
+
+/**
+ * Wait for a semaphore.
+ *
+ * The value of the semaphore is decremented. If the value is negative the
+ * caller is put in WAITING state.
+ *
+ * If the scheduler is locked (hold RES_SCHEDULER) the call will and return E_NOT_OK.
+ *
+ * @param semPtr
+ * @param tmo     A timeout of 0 can be used for polling the semaphore.
+ * @return
+ */
+
+StatusType WaitSemaphore( OsSemaphoreType *semPtr, TickType tmo ) {
+	OsTaskVarType *pcbPtr;
 	uint32_t flags;
+	StatusType rv = E_OK;
+	(void)tmo;
 
 	Irq_Save(flags);
 
 	--semPtr->val;
 
+	pcbPtr = Os_TaskGetCurrent();
+
+	if (pcbPtr->constPtr->proc_type != PROC_EXTENDED) {
+		return E_OS_ACCESS;
+	}
+
 	if(semPtr->val < 0 ) {
-		/* Wait for the semaphore to be signaled */
-		Os_Dispatch(OP_WAIT_SEMAPHORE);
+		/* To WAITING state */
+		if( tmo == 0 ) {
+			/* Failed to acquire the semaphore */
+			rv = E_NOT_OK;
+		} else {
+			/* Add this task to the semaphore */
+			STAILQ_INSERT_TAIL(&semPtr->taskHead,pcbPtr,semEntry);
+
+			Os_Dispatch(OP_WAIT_SEMAPHORE);
+		}
+	} else {
+		/* We got the semaphore */
+		if( tmo == 0 ) {
+
+			rv = E_NOT_OK;
+		} else {
+			/*
+			 * Wait for the semaphore to be signaled or timeout
+			 */
+			if ( Os_SchedulerResourceIsFree() ) {
+				/* Set the timeout */
+				if( tmo != TICK_MAX ) {
+					TAILQ_INSERT_TAIL(&Os_Sys.timerHead,pcbPtr,timerEntry);
+					pcbPtr->timerDec = tmo;
+				}
+
+				Os_Dispatch(OP_WAIT_SEMAPHORE);
+			} else {
+				/* We hold RES_SCHEDULER */
+				rv = E_NOT_OK;
+			}
+		}
 	}
 
 	Irq_Restore(flags);
 
-	return E_OK;
+	return rv;
 }
 
+
 /**
- * Increate the semaphore value by 1.
+ * Increase the semaphore value by 1. If
  *
  * @param semPtr
  */
-void SignalSemaphore( OsSemaphore *semPtr ) {
+void SignalSemaphore( OsSemaphoreType *semPtr ) {
 	uint32_t flags;
 
 	Irq_Save(flags);
@@ -64,7 +143,11 @@ void SignalSemaphore( OsSemaphore *semPtr ) {
 
 	++semPtr->val;
 
+	/* Remove the first task that waits at the semaphore */
 	if(semPtr->val <= 0 ) {
+		/* Release the first task in queue */
+		STAILQ_REMOVE_HEAD(&semPtr->taskHead,semEntry);
+
 		Os_Dispatch(OP_SIGNAL_SEMAPHORE);
 	}
 
@@ -74,29 +157,39 @@ void SignalSemaphore( OsSemaphore *semPtr ) {
 }
 
 
+#if 0
 /*
  * Usage:
  */
-StatusType CreateSemaphore( OsSemaphore *, int initialCount  ) {
+StatusType CreateSemaphore( OsSemaphoreType *, int initialCount  ) {
 
 
 }
 
 
 /* With priority inheretance */
-StatusType CreateMutex( OsMutex *mutexPtr ) {
+StatusType CreateMutex( OsMutexType *mutexPtr ) {
 
 
 }
+#endif
 
-StatusType WaitMutex( OsMutex *mutexPtr ) {
+/**
+ *
+ * @param mutexPtr
+ * @return
+ */
 
+StatusType WaitMutex( OsMutexType *mutexPtr ) {
 
+	(void)mutexPtr;
+	return E_OK;
 }
 
-StatusType Os_ReleaseMutex( OsMutex *mutexPtr ) {
+StatusType ReleaseMutex( OsMutexType *mutexPtr ) {
 
-
+	(void)mutexPtr;
+	return E_OK;
 }
 
 

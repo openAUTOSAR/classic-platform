@@ -161,6 +161,13 @@ typedef struct OsResource {
 	// used only if type is RESOURCE_TYPE_LINKED
 	ResourceType    linked_resource;
 
+#if	(OS_USE_APPLICATIONS == STD_ON)
+	/* Application that owns this task */
+	ApplicationType applOwnerId;
+	/* Applications that may access task when state is APPLICATION_ACCESSIBLE */
+	uint32			accessingApplMask;
+#endif
+
 	/* List of resources for each task. */
 	TAILQ_ENTRY(OsResource) listEntry;
 
