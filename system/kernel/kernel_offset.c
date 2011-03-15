@@ -16,18 +16,29 @@
 
 #include <stddef.h>
 
-#define DECLARE(sym,val) \
-	__asm("#define " #sym " %0" : : "i" ((val)))
-
 #include "Os.h"
 #include "kernel.h"
 #include "pcb.h"
 //#include "app_i.h"
 #include "sys.h"
+//#include "arch_stack.h"
 
 
+#if defined(__GNUC__)
+
+#define DECLARE(sym,val) \
+	__asm("#define " #sym " %0" : : "i" ((val)))
 
 void  oil_foo(void) {
+
+/* PCB */
+
+#elif defined(__CWCC__)
+#define DECLARE(_var,_offset) \
+    __declspec(section ".apa") char _var[100+(_offset)]
+#pragma section ".apa" ".apa"
+#endif
+
 
 	DECLARE(PCB_T_SIZE,			sizeof(OsPcbType));
 #if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
@@ -38,5 +49,7 @@ void  oil_foo(void) {
 	DECLARE(SYS_CURR_PCB_P,		offsetof(sys_t, curr_pcb));
 	DECLARE(SYS_INT_NEST_CNT, 	offsetof(sys_t, int_nest_cnt));
 	DECLARE(SYS_INT_STACK, 		offsetof(sys_t, int_stack));
+#if defined(__GNUC__)
 }
+#endif
 

@@ -1,74 +1,97 @@
-
-/*
- * IVOR4
- * 1. Save stack frames: EXC, VGPR, NVGPR and C
- * 2. Call Irq_Entry(void *curr_stack)
- * 2.1 Check for exception
- * 2.2 If softint, clear it.
- * 2.3 If PROC_ISR1, then just call the function
- * 2.4 If PROC_ISR2 -> it's a PCB, let the OS handle it.
+/* 
+ *
+ *  The Irq_IsrTypeTable does not exist any more.
+ *  The Irq_VectorTable is now a pure function table (not mixed pcb and functions )
+ *  The PPC interrupt handling is a bit faster.
+ * 
+ *
+ *   New files for arch offsets? 
+ *   Bypassed Irq_Entry()...
+ *  TODO:
+ *    Move pre/post hooks into swap code?
+ *
+ *
+ * IMPLEMENTATION NOTES
+ *  OPT: For ISR1 (interrupts always off) the there is no need to save r13-r31 since
+ *  it will be saved by the C-function. 
  */
-
-#define _ASSEMBLER_
-#include "asm_ppc.h"
-#include "asm_offset.h"
-#include "asm_book_e.h"
-.extern os_intc_pcb_tbl
-.extern os_intc_types_tbl
-.extern os_sys
-
-
+	
 /*
  * Small assembler school
- * Compare imm(32-bit)
- * > cmpwi rA,100
- * Extract bits and right adjust
- * > extrwi rA,rS,n,b  ( n-number of bits, b- startbit )
+ *  Compare imm(32-bit)
+ *   $ cmpwi rA,100
+ *  Extract bits and right adjust
+ *   $ extrwi rA,rS,n,b  ( n-number of bits, b- startbit )
+ *  Use of @ha,@h,@l. Use @ha for arithmetic instructions to compensate for sign.
+ *  To cause less confusion use load and logical instructions instead of arithmetic ones.
+ *   $ lis r3,0x8000@h    
+ *   $ ori r3,r3,0x08000@l
+ *  is the same as 
+ *   $ addis r3,0x8000@ha    
+ *   $ addi r3,r3,0x08000@l
  *
  * Note!
- * The offset's (d or D)for SPE instructins are rediculously low.
+ * The offset's (d or D)for SPE instructions are ridiculously low.
  * Normally you have 16-bits offset, but when using spe load and store
  * you can use only 8-bit.
 */
 
+
+/* ----------------------------[includes]------------------------------------*/
+#define _ASSEMBLER_
+#include "asm_ppc.h"
+#include "arch_offset.h"
+#include "asm_offset.h"
+#include "arch_stack.h"
+
+// #include "asm_book_e.h"
+.extern os_intc_pcb_tbl
+.extern os_intc_types_tbl
+.extern os_sys
+.extern Os_ArchPanic
+
+#if defined(CFG_VLE)
+#define lis		e_lis
+#define li		se_li
+#define lwz	    e_lwz
+#define stwu	e_stwu
+#define stw		e_stw
+#define b		e_b
+#define addi	e_addi		/* true ?*/
+#define subi	e_subi		/* true ?*/
+#endif		
+
+/* ----------------------------[private define]------------------------------*/
+
+#define INTC_IACKR_PRC0		0xfff48010 
+#define INTC_EOIR_PRC0		0xfff48018
+#define INTC_IACKR			0xfff48010
+#define INTC_EOIR			0xfff48018
+#define INTC_SSCIR0			0xfff48020
+
+/* ----------------------------[private macro]-------------------------------*/
+
 #define	LOCK()			wrteei	0
 #define	UNLOCK()		wrteei	1
 
+#define EXC_TABLE_CODE(_exc_nr) 	\
+	stwu	sp,-EXC_FRM_SIZE(sp); 	\
+	stw		r3,EXC_FRM_R3(sp);		\
+	li	    r3,_exc_nr;				\
+	b		handleException			
 
-.extern os_proc_start_extended
+#if ISR_FRM_PATTERN!=FUNC_FRM_PATTERN
+#error Context pattern must be in the same place
+#endif
 
-//-------------------------------------------------------------------
+/* ----------------------------[private typedef]-----------------------------*/
+/* ----------------------------[private function prototypes]-----------------*/
+/* ----------------------------[private variables]---------------------------*/
+/* ----------------------------[private functions]---------------------------*/
+/* ----------------------------[public functions]----------------------------*/
 
-    .global os_exception_IVOR8
-    .balign 16
-os_exception_IVOR8:
-	stwu	sp,-(EXC_SIZE+VGPR_SIZE)(sp)
-	stw  	r3,EXC_R3_OFF(r1)
-	stw  	r4,EXC_R4_OFF(r1)
-	SAVE_EXC_FRAME(3,1,0,SPR_SRR0,SPR_SRR1)
-	SAVE_VGPR(1,EXC_SIZE);
-	li		r3,328
-	stw  	r3,EXC_VECTOR_OFF(r1)
+.extern Os_Isr
 
-	rfi
-
-dummy_int:
-		b dummy_int
-
-/*--------------------------------------------------------------------
- * void os_swap_context(pcb_t *old, pcb_t *new )
- *
- * Saves a small context on current stack, pops a new one from new context
- *
- * r3 - pcb for old process
- * r4 - pcb for new process
- *
- *--------------------------------------------------------------------*/
-
-// TODO: this assumes that both are in user mode?.. can this happen under trusted functions?
-//       When I get here we're ALWAYS in kernel mode
-
-.global Os_ArchSwapContextToW
 .global Os_ArchSwapContextTo
 .global Os_ArchSwapContext
 .global Os_ArchSetSpAndCall
@@ -79,111 +102,481 @@ Os_ArchSetSpAndCall:
 		mtlr r4
 		blr
 
-Os_ArchSwapContextToW:
-		mr 		r1,r5
-		b 		Os_ArchSwapContextTo
-
+/**
+ * void Os_ArchSwapContext(pcb_t *old, pcb_t *new )
+ *
+ * Saves a function context on current stack, pops a new one from new context
+ *
+ * r3 - pcb for old task
+ * r4 - pcb for new task
+ *
+ */
 Os_ArchSwapContext:
-		// allocate space for context+nvgpr
-		// (no need for proper stack-frame here)
- 		stwu    r1,-(C_SIZE+NVGPR_SIZE)(r1)
-		// save lr and cr */
-		mflr 	r0
-		stw		r0,C_LR_OFF(sp)
-		mfcr	r0
-		stw		r0,C_CR_OFF(sp)
-		// Save small-context pattern
-		li		r0,SC_PATTERN
-		stw		r0,C_CONTEXT_OFF(sp)
-		// Save registers preserved by function call
-		SAVE_NVGPR(sp,(C_SIZE-14*GPR_SIZE))
-// Save stack ptr...
-		stw		sp,PCB_STACK_CURR_P(r3)
+	stwu 	sp,-FUNC_FRM_SIZE(sp)
+	mflr 	r0
+	stw		r0,FUNC_FRM_LR(sp)
+	mfcr	r0
+	stw		r0,FUNC_FRM_CR(sp)
+	
+	/* Save context indicator */
+	li		r0,FUNC_PATTERN
+	stw		r0,FUNC_FRM_PATTERN(sp)
 
-// Stack frame here
-// --------- bottom( high address )
-//  SC_xxx
-//  C_xxx
-// --------- <- stack.curr
-//
-// --------- top( low address )
+#if defined(CFG_SPE)
+	stw		r14, FUNC_FRM_R14(sp)
+	stw		r15, FUNC_FRM_R15(sp)
+	stw		r16, FUNC_FRM_R16(sp)
+	stw		r17, FUNC_FRM_R17(sp)
+	stw		r18, FUNC_FRM_R18(sp)
+	stw		r19, FUNC_FRM_R19(sp)
+	stw		r20, FUNC_FRM_R20(sp)
+	stw		r21, FUNC_FRM_R21(sp)
+	stw		r22, FUNC_FRM_R22(sp)
+	stw		r23, FUNC_FRM_R23(sp)
+	stw		r24, FUNC_FRM_R24(sp)
+	stw		r25, FUNC_FRM_R25(sp)
+	stw		r26, FUNC_FRM_R26(sp)
+	stw		r27, FUNC_FRM_R27(sp)
+	stw		r28, FUNC_FRM_R28(sp)
+	stw		r29, FUNC_FRM_R29(sp)
+	stw		r30, FUNC_FRM_R30(sp)
+	stw		r31, FUNC_FRM_R31(sp)
 
+#else
+	/* Save registers preserved by function call */
+	stw		r14, FUNC_FRM_R14(sp)
+	stw		r15, FUNC_FRM_R15(sp)
+	stw		r16, FUNC_FRM_R16(sp)
+	stw		r17, FUNC_FRM_R17(sp)
+	stw		r18, FUNC_FRM_R18(sp)
+	stw		r19, FUNC_FRM_R19(sp)
+	stw		r20, FUNC_FRM_R20(sp)
+	stw		r21, FUNC_FRM_R21(sp)
+	stw		r22, FUNC_FRM_R22(sp)
+	stw		r23, FUNC_FRM_R23(sp)
+	stw		r24, FUNC_FRM_R24(sp)
+	stw		r25, FUNC_FRM_R25(sp)
+	stw		r26, FUNC_FRM_R26(sp)
+	stw		r27, FUNC_FRM_R27(sp)
+	stw		r28, FUNC_FRM_R28(sp)
+	stw		r29, FUNC_FRM_R29(sp)
+	stw		r30, FUNC_FRM_R30(sp)
+	stw		r31, FUNC_FRM_R31(sp)
+#endif
 
-// TODO: If we change application we must change mmu setup
+	/* Save stack ptr... */
+	stw		sp,PCB_STACK_CURR_P(r3)
+
+	/* TODO: Call Os_PretaskHook()? */ 
+	
+	/* 	Flow down  */
+	
+/**
+ * void Os_ArchSwapContextTo( NULL, pcb_t *new )
+ * r3 - always NULL
+ * r4 - The pcb to switch to.
+ */ 	
 Os_ArchSwapContextTo:
-// Get stack for new task
-		lwz		sp,PCB_STACK_CURR_P(r4)
+	/* Get stack for new task */
+	lwz		sp,PCB_STACK_CURR_P(r4)
 
-// Set new current process
-		LOAD_ADDR_32(3,os_sys)
-		stw		r4,SYS_CURR_PCB_P(r3)
+	/* Set new current task */
+	LOAD_ADDR_32(3,os_sys)
+	stw		r4,SYS_CURR_PCB_P(r3)
 
-// Restore C context
-        lwz     r0,C_CR_OFF(sp)
-        mtcr    r0
-        lwz     r0,C_LR_OFF (sp)
-        mtlr    r0
+	/* Restore C context */
+	lwz     r0,FUNC_FRM_CR(sp)
+    mtcr    r0
+    lwz     r0,FUNC_FRM_LR (sp)
+    mtlr    r0
 
-// Get the context type
-		lwz		r0,C_CONTEXT_OFF(sp)
-		cmpli	0,r0,SC_PATTERN
-		beq+	os_sc_restore
-		cmpli	0,r0,LC_PATTERN
-		beq+ 	os_lc_restore
-		b		os_bad_bad
+	/* Get the context type */
+	lwz		r0, FUNC_FRM_PATTERN(sp)
+	cmpli	0, r0, FUNC_PATTERN
+	beq+	restoreFuncContext
+	cmpli	0, r0,ISR_PATTERN
+	beq+ 	restoreIsrContext
+	li 		r3, OS_ERR_BAD_CONTEXT
+	b		Os_ArchPanic
+
+restoreFuncContext:
+#if defined(CFG_SPE)
+	evldd	r14, FUNC_FRM_R14(sp)
+	evldd	r15, FUNC_FRM_R15(sp)
+	evldd	r16, FUNC_FRM_R16(sp)
+	evldd	r17, FUNC_FRM_R17(sp)
+	evldd	r18, FUNC_FRM_R18(sp)
+	evldd	r19, FUNC_FRM_R19(sp)
+	evldd	r20, FUNC_FRM_R20(sp)
+	evldd	r21, FUNC_FRM_R21(sp)
+	evldd	r22, FUNC_FRM_R22(sp)
+	evldd	r23, FUNC_FRM_R23(sp)
+	evldd	r24, FUNC_FRM_R24(sp)
+	evldd	r25, FUNC_FRM_R25(sp)
+	evldd	r26, FUNC_FRM_R26(sp)
+	evldd	r27, FUNC_FRM_R27(sp)
+	evldd	r28, FUNC_FRM_R28(sp)
+	evldd	r29, FUNC_FRM_R29(sp)
+	evldd	r30, FUNC_FRM_R30(sp)
+	evldd	r31, FUNC_FRM_R31(sp)
+	addi 	sp,sp,(FUNC_FRM_SIZE)
+#else 
+	lwz		r14, FUNC_FRM_R14(sp)
+	lwz		r15, FUNC_FRM_R15(sp)
+	lwz		r16, FUNC_FRM_R16(sp)
+	lwz		r17, FUNC_FRM_R17(sp)
+	lwz		r18, FUNC_FRM_R18(sp)
+	lwz		r19, FUNC_FRM_R19(sp)
+	lwz		r20, FUNC_FRM_R20(sp)
+	lwz		r21, FUNC_FRM_R21(sp)
+	lwz		r22, FUNC_FRM_R22(sp)
+	lwz		r23, FUNC_FRM_R23(sp)
+	lwz		r24, FUNC_FRM_R24(sp)
+	lwz		r25, FUNC_FRM_R25(sp)
+	lwz		r26, FUNC_FRM_R26(sp)
+	lwz		r27, FUNC_FRM_R27(sp)
+	lwz		r28, FUNC_FRM_R28(sp)
+	lwz		r29, FUNC_FRM_R29(sp)
+	lwz		r30, FUNC_FRM_R30(sp)
+	lwz		r31, FUNC_FRM_R31(sp)
+	addi 	sp,sp,(FUNC_FRM_SIZE)
+#endif	
+	/* TODO: Call Os_PosttaskHook()? */
+	
+	blr
 
 
-// SC_xxx
-// C_xxxx <- We point here
+/**
+ * External input exception handlers 
+ */ 
+		.global exception_IVOR4
+		.global restoreIsrContext
+		.balign 16
+exception_IVOR4:
 
-os_sc_restore:
-		RESTORE_NVGPR(sp,(C_SIZE-14*GPR_SIZE))
-		addi 	sp,sp,(C_SIZE+NVGPR_SIZE)
-		// TODO: The blr will not do the trick if swapping to a user land task.
-		blr
+	/* Save the exception frame */
+	stwu	sp,-EXC_FRM_SIZE(sp)
 
-os_lc_restore:
-	addi 	r1,r1,C_SIZE
-	RESTORE_NVGPR(1,0)
-	addi	r1,r1,-C_SIZE
-	RESTORE_VGPR(1,C_SIZE)
+	stw  	r3,EXC_FRM_R3(sp)
 
-	RESTORE_WORK_AND_MORE
+	mfsrr0 	r3
+	stw 	r3, EXC_FRM_SRR0(sp)
+	mfsrr1 	r3
+	stw 	r3, EXC_FRM_SRR1(sp)
+
+	mfcr 	r3
+	stw 	r3, EXC_FRM_CR(sp)	
+	mfxer 	r3 
+	stw 	r3, EXC_FRM_XER(sp)
+	mfctr 	r3
+	stw 	r3, EXC_FRM_CTR(sp)
+	mflr 	r3
+	stw 	r3, EXC_FRM_LR(sp)	
+	
+	li		r3,4
+	stw 	r3, EXC_FRM_VECTOR(sp)
+#if defined(CFG_SPE)	
+
+	/* Enable SPE (exceptions turns it off) */
+	mfmsr		r3
+    oris   		r3,r3,0x0200
+	mtmsr 		r3
+	isync
+
+	/* Create the frame */
+	addi 	sp,sp,-ISR_FRM_SIZE
+	evstdd		r3, ISR_FRM_R3(sp)		/* Save work reg */	
+	
+	/* SPEFSCR	*/
+	mfspr		r3,SPR_SPEFSCR
+	clrlwi		r3,r3,24	 			/* Mask off non-status bits */
+	stw			r3,ISR_FRM_SPE_FSCR(sp)
+
+	/* Save SPE acc  */
+	evsubfw 	r3,r3,r3				/* zero r3 */
+	evaddumiaaw r3,r3					/* Add r3 = r3 + acc -> r3 = acc */
+	evstdd 		r3,ISR_FRM_SPE_ACC(r1)
+	
+	evstdd		r0, ISR_FRM_R0(sp)
+	evstdd		r4, ISR_FRM_R4(sp)
+	evstdd		r5, ISR_FRM_R5(sp)
+	evstdd		r6, ISR_FRM_R6(sp)
+	evstdd		r7, ISR_FRM_R7(sp)
+	evstdd		r8, ISR_FRM_R8(sp)
+	evstdd		r9, ISR_FRM_R9(sp)
+	evstdd		r10, ISR_FRM_R10(sp)
+	evstdd		r11, ISR_FRM_R11(sp)
+	evstdd		r12, ISR_FRM_R12(sp)
+	evstdd		r14, ISR_FRM_R14(sp)
+	evstdd		r15, ISR_FRM_R15(sp)
+	evstdd		r16, ISR_FRM_R16(sp)
+	evstdd		r17, ISR_FRM_R17(sp)
+	evstdd		r18, ISR_FRM_R18(sp)
+	evstdd		r19, ISR_FRM_R19(sp)
+	evstdd		r20, ISR_FRM_R20(sp)
+	evstdd		r21, ISR_FRM_R21(sp)
+	evstdd		r22, ISR_FRM_R22(sp)
+	evstdd		r23, ISR_FRM_R23(sp)
+	evstdd		r24, ISR_FRM_R24(sp)
+	evstdd		r25, ISR_FRM_R25(sp)
+	evstdd		r26, ISR_FRM_R26(sp)
+	evstdd		r27, ISR_FRM_R27(sp)
+	evstdd		r28, ISR_FRM_R28(sp)
+	evstdd		r29, ISR_FRM_R29(sp)
+	evstdd		r30, ISR_FRM_R30(sp)
+	addi		sp,sp,8
+	evstdd		r31, (ISR_FRM_R31-8)(sp)
+	addi		sp,sp,-8
+#else
+	/* Save the ISR frame */
+	addi 	sp,sp,-ISR_FRM_SIZE
+	stw		r0, ISR_FRM_R0(sp)
+	stw		r4, ISR_FRM_R4(sp)
+	stw		r5, ISR_FRM_R5(sp)
+	stw		r6, ISR_FRM_R6(sp)
+	stw		r7, ISR_FRM_R7(sp)
+	stw		r8, ISR_FRM_R8(sp)
+	stw		r9, ISR_FRM_R9(sp)
+	stw		r10, ISR_FRM_R10(sp)
+	stw		r11, ISR_FRM_R11(sp)
+	stw		r12, ISR_FRM_R12(sp)
+	stw		r14, ISR_FRM_R14(sp)
+	stw		r15, ISR_FRM_R15(sp)
+	stw		r16, ISR_FRM_R16(sp)
+	stw		r17, ISR_FRM_R17(sp)
+	stw		r18, ISR_FRM_R18(sp)
+	stw		r19, ISR_FRM_R19(sp)
+	stw		r20, ISR_FRM_R20(sp)
+	stw		r21, ISR_FRM_R21(sp)
+	stw		r22, ISR_FRM_R22(sp)
+	stw		r23, ISR_FRM_R23(sp)
+	stw		r24, ISR_FRM_R24(sp)
+	stw		r25, ISR_FRM_R25(sp)
+	stw		r26, ISR_FRM_R26(sp)
+	stw		r27, ISR_FRM_R27(sp)
+	stw		r28, ISR_FRM_R28(sp)
+	stw		r29, ISR_FRM_R29(sp)
+	stw		r30, ISR_FRM_R30(sp)
+	stw		r31, ISR_FRM_R31(sp)
+#endif
+	
+	li 		r3,ISR_PATTERN
+	stw		r3,ISR_FRM_PATTERN(sp)
+	/* Save the stack so it later can be saved in the pcb */	
+	mr		r4,sp			
+	
+	/* Switch to interrupt stack if at depth 0 */
+	/* Load the value os_sys.int_nest_cnt */
+	LOAD_IND_32(r3,os_sys+SYS_INT_NEST_CNT)
+	cmpli	0,r3,0
+	bne-	on_int_stack
+
+	/* Load the interrupt stack */
+	LOAD_IND_32(r1,os_sys+SYS_INT_STACK)
+
+on_int_stack:
+
+#if defined(CFG_MPC5516)
+	lis r6, INTC_IACKR_PRC0@ha
+	lwz r6, INTC_IACKR_PRC0@l(r6)
+#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
+	lis r6, INTC_IACKR@ha 
+	lwz r6, INTC_IACKR@l(r6)
+#endif
+	/* Check for 0 entry */
+	mr		r5,r6
+	cmpli 	0,r5,0
+	bne+	vectorOk
+	/* The entry was 0, call panic */
+	li 		r3,OS_ERR_SPURIOUS_INTERRUPT
+	li 		r4, 0
+	mr		r5,r1
+	b 		Os_ArchPanic
+	
+vectorOk:
+	extrwi  r5,r5,9,21
+	/* Check for soft INT */
+	cmpli 	0,r5,7
+	bgt		noSoftInt
+	/* Clear soft interrupt */
+	li		r0,1	
+	lis		r3, INTC_SSCIR0@h
+	ori		r3, r3, INTC_SSCIR0@l
+	stbx	r0,r5,r3			
+	
+noSoftInt:	
+
+	lis   r3, Os_Isr@h
+    ori   r3, r3,Os_Isr@l
+    mtlr  r3
+	mr    r3,r4  		/* "old" stack as arg1 */
+    lwz   r4, 0x0(r6) 	/* Read the address from the for function/pcb entry */
+    blrl		 		/* Call the entry */
+
+	/* Notes!
+	 * The OS interrupt is ACK'd in Os_Isr(). For ISR1 it needs to call Irq_EOI()
+	 */
+	 
+	/* Irq_Entry have returned the stack we shall use */
+	mr 		sp,r3
+
+	/* Restore */
+restoreIsrContext:
+#if defined(CFG_SPE) 
+
+	// Restore SPE control/status reg.
+	lwz		r3,ISR_FRM_SPE_FSCR(sp)
+	mtspr	SPR_CSRR0,r3
+
+	/* Restore SPE acc */
+	evldd r3,ISR_FRM_SPE_ACC(r1)
+	evmra r3,r3
+	
+
+	evldd	r0, ISR_FRM_R0(sp)
+	evldd	r3, ISR_FRM_R4(sp)
+	evldd	r4, ISR_FRM_R4(sp)
+	evldd	r5, ISR_FRM_R5(sp)
+	evldd	r6, ISR_FRM_R6(sp)
+	evldd	r7, ISR_FRM_R7(sp)
+	evldd	r8, ISR_FRM_R8(sp)
+	evldd	r9, ISR_FRM_R9(sp)
+	evldd	r10, ISR_FRM_R10(sp)
+	evldd	r11, ISR_FRM_R11(sp)
+	evldd	r12, ISR_FRM_R12(sp)
+	evldd	r14, ISR_FRM_R14(sp)
+	evldd	r15, ISR_FRM_R15(sp)
+	evldd	r16, ISR_FRM_R16(sp)
+	evldd	r17, ISR_FRM_R17(sp)
+	evldd	r18, ISR_FRM_R18(sp)
+	evldd	r19, ISR_FRM_R19(sp)
+	evldd	r20, ISR_FRM_R20(sp)
+	evldd	r21, ISR_FRM_R21(sp)
+	evldd	r22, ISR_FRM_R22(sp)
+	evldd	r23, ISR_FRM_R23(sp)
+	evldd	r24, ISR_FRM_R24(sp)
+	evldd	r25, ISR_FRM_R25(sp)
+	evldd	r26, ISR_FRM_R26(sp)
+	evldd	r27, ISR_FRM_R27(sp)
+	evldd	r28, ISR_FRM_R28(sp)
+	evldd	r29, ISR_FRM_R29(sp)
+	evldd	r30, ISR_FRM_R30(sp)
+	addi	sp,sp,8
+	evldd	r31, (ISR_FRM_R31-8)(sp)
+	addi	sp,sp,-8
+#else
+	lwz		r0, ISR_FRM_R0(sp)
+	lwz		r4, ISR_FRM_R4(sp)
+	lwz		r5, ISR_FRM_R5(sp)
+	lwz		r6, ISR_FRM_R6(sp)
+	lwz		r7, ISR_FRM_R7(sp)
+	lwz		r8, ISR_FRM_R8(sp)
+	lwz		r9, ISR_FRM_R9(sp)
+	lwz		r10, ISR_FRM_R10(sp)
+	lwz		r11, ISR_FRM_R11(sp)
+	lwz		r12, ISR_FRM_R12(sp)
+	lwz		r14, ISR_FRM_R14(sp)
+	lwz		r15, ISR_FRM_R15(sp)
+	lwz		r16, ISR_FRM_R16(sp)
+	lwz		r17, ISR_FRM_R17(sp)
+	lwz		r18, ISR_FRM_R18(sp)
+	lwz		r19, ISR_FRM_R19(sp)
+	lwz		r20, ISR_FRM_R20(sp)
+	lwz		r21, ISR_FRM_R21(sp)
+	lwz		r22, ISR_FRM_R22(sp)
+	lwz		r23, ISR_FRM_R23(sp)
+	lwz		r24, ISR_FRM_R24(sp)
+	lwz		r25, ISR_FRM_R25(sp)
+	lwz		r26, ISR_FRM_R26(sp)
+	lwz		r27, ISR_FRM_R27(sp)
+	lwz		r28, ISR_FRM_R28(sp)
+	lwz		r29, ISR_FRM_R29(sp)
+	lwz		r30, ISR_FRM_R30(sp)
+	lwz		r31, ISR_FRM_R31(sp)
+#endif	
+	
+	/* back to the exception frame */
+	addi 	sp,sp,ISR_FRM_SIZE
+	
+	lwz 	r3, EXC_FRM_LR(sp)
+	mtlr 	r3
+	lwz	 	r3, EXC_FRM_CTR(sp)
+	mtctr 	r3
+	lwz 	r3, EXC_FRM_XER(sp)
+	mtxer 	r3
+	lwz 	r3, EXC_FRM_CR(sp)
+	mtcr	r3
+	lwz 	r3, EXC_FRM_SRR0(sp)
+	mtsrr0 	r3
+	lwz 	r3, EXC_FRM_SRR1(sp)
+	mtsrr1 	r3
+	lwz 	r3, EXC_FRM_R3(sp)
+	addi	sp,sp,EXC_FRM_SIZE
 	rfi
 
-// When something really bad happens we end up here for the moment
-os_bad_bad:
-		b	os_bad_bad
 
 
-
-
-// ------------------------------------------------------------------
-
-/*
- * Trap interface !!!! See article http://www.linuxjournal.com/article/6516
- * http://www.osweekly.com/index.php?option=com_content&task=view&id=2229
+/**
+ * Decrementer exception. It just triggers soft interrupt 7.
+ *
  */
+exception_IVOR10:
+    stwu  	r3,-8(sp)
+    stw   	r4,4(sp)
 
-/* The T32 instruction sim can't handle trap's so we have to make something
- * - write SRR0, SRR1, MSR
- * - jump to there routines
+    /* ack dec int */
+    lis 	r3,0x0800
+    mtspr   SPR_TSR,r3
+
+    /* Set soft int */
+    li  	r4,2
+    lis     r3, INTC_SSCIR7@ha
+    stb     r4, INTC_SSCIR7@l(r3)
+
+    lwz     r3,0(sp)
+    lwz     r4,4(sp)
+    addi  	sp,sp,8
+    rfi
+
+
+/* Getting here means that the exception stack is started with:
+ * sp - saved
+ * r3 - saved and contains the exception number 
  */
+handleException:
+	b  handleException		
+	
+#if defined(__GNUC__)	
+.section ".exception_tbl","ax"
+#elif defined(__CWCC__)
+.section .exception_tbl,4,"rw"
+#endif
+.balign 0x1000
+.global exception_tbl
 
-// ------------------------------------------------------------------
-
-
-// System call, use this for trusted function ???
-// TODO: The example in autosar is not neccesary.. sc here here instead??
-//
-// NOTE!!!!!
-// Since the sc is a sync call, it should be enough to save NV regs(14->)
-// If I don't use the NV regs here I shouldn't need to save them
-// TODO: Inform compiler in SC_CALL() that I clobber volatile regs( r0, r3->
-//      (since the compiler does not know it's a function call)
-// TODO: Could probably do this shorter....only NV regs that I use need saving
-//       ( only cr2->cr4 according to e500 ABI )
-
+exception_tbl:
+	EXC_TABLE_CODE(0)
+	EXC_TABLE_CODE(1)
+	EXC_TABLE_CODE(2)
+	EXC_TABLE_CODE(3)
+    b      exception_IVOR4
+    .skip   +0xc
+	EXC_TABLE_CODE(5)
+	EXC_TABLE_CODE(6)
+	EXC_TABLE_CODE(7)
+	EXC_TABLE_CODE(8)
+	EXC_TABLE_CODE(9)
+    b	   exception_IVOR10
+    .skip   +0xc
+	EXC_TABLE_CODE(11)
+	EXC_TABLE_CODE(12)
+	EXC_TABLE_CODE(13)
+	EXC_TABLE_CODE(14)
+#if defined(CFG_SPE)
+	EXC_TABLE_CODE(32)
+	EXC_TABLE_CODE(33)
+	EXC_TABLE_CODE(34)
+#endif
 
 
 

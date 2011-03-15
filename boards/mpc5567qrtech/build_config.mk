@@ -17,4 +17,6 @@ MOD_AVAIL+=CANIF CANTP COM DCM DEM DET ECUM IOHWAB KERNEL PDUR WDGM RTE
 # Additional
 MOD_AVAIL+=RAMLOG 
 
+# Default cross compiler
+DEFAULT_CROSS_COMPILE = /opt/powerpc-eabispe/bin/powerpc-eabispe-
 

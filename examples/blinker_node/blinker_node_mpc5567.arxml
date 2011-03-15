@@ -437,6 +437,12 @@
                   <VALUE>10.0</VALUE>
                 </FLOAT-VALUE>
               </PARAMETER-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="09379f9e-7192-46f2-a7d8-a91e796beb1b">
+                  <SHORT-NAME>EcuMUserConfig</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMUserConfig</DEFINITION-REF>
+                </CONTAINER>
+              </SUB-CONTAINERS>
             </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
@@ -447,7 +453,7 @@
               <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.2</SD>
-                <SD GID="GENERATE_AND_VALIDATE">false</SD>
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>
@@ -548,7 +554,7 @@
               <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.2</SD>
-                <SD GID="GENERATE_AND_VALIDATE">false</SD>
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>
@@ -639,7 +645,7 @@
               <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.0</SD>
-                <SD GID="GENERATE_AND_VALIDATE">false</SD>
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>

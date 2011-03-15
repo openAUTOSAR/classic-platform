@@ -13,14 +13,11 @@ inc-y += $(ROOTDIR)/system/kernel/include
 VPATH := ../config/$(BOARDDIR) ../config $(VPATH)
 inc-y := ../config/$(BOARDDIR) ../config $(inc-y)
 
-# Board object files
-include $(ROOTDIR)/boards/board_common.mk
-
 # libs needed by us 
 #libitem-y += 
 
 #linkfile
-ldcmdfile-y = linkscript_gcc.ldp
+ldcmdfile-y = linkscript_$(COMPILER).lcf
 vpath %.ldf $(ROOTDIR)/$(ARCH_PATH-y)/scripts
 #ldcmdfile-y = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldp
 

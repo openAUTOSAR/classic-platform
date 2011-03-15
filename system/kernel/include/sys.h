@@ -32,6 +32,7 @@ typedef struct sys_s {
 //	OsApplicationType *curr_application;
 	/* Current running task*/
 	OsPcbType *curr_pcb;
+
 	/* List of all tasks */
 	OsPcbType *pcb_list;
 

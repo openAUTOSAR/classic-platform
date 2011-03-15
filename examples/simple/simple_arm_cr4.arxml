@@ -12,7 +12,7 @@
             <SDGS>
               <SDG GID="Arccore::EcuOptions">
                 <SD GID="MCU">TMS570</SD>
-                <SD GID="GENDIR">/simple/config/ti_tms570ls</SD>
+                <SD GID="GENDIR"></SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>

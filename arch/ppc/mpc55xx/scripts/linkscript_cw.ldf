@@ -1,0 +1,55 @@
+
+MEMORY
+{
+    flash: org = 0x00000000,   len = 0x00060000 
+    sram:  org = 0x40000000,   len = 0x00008000 
+}
+
+SECTIONS
+{
+   GROUP : {
+      .rcw : { *(.rcw) }
+      .text : { 
+      		 *(.exception_tbl)
+             *(.text)
+             *(.rodata)
+             *(.ctors)
+             *(.dtors)    
+             *(.init) 
+             *(.fini) 		
+             *(.eini)
+             . = (.+15);
+        } 
+	    .sdata2       : {}  /* really PPC.EMB.sdata2?, r2 should point here */
+	    extab      : {}  
+	    extabindex : {}
+	    . = ALIGN(0x10);
+	    __DATA_ROM = .;
+	    .=.+SIZEOF(.data);
+	    __SDATA = .;
+	    .=.+SIZEOF(.sdata);
+	    __SDATA0 = .;
+	    .=.+SIZEOF(.PPC.EMB.sdata0);
+	 }	 > flash
+
+	GROUP : {
+		__DATA_RAM = .;	
+		.data (DATA) LOAD(ADDR(__DATA_ROM)) :  {}
+		.sdata (DATA) LOAD(ADDR(__SDATA)): {}    /* .sdata - Initialized small data */
+	    __DATA_END = . ;
+	} > sram
+	
+	GROUP : {
+	  __BSS_START = .;
+	  .sbss  (BSS)  : {}  	/* sbss - un-initialized small data */									
+	  .bss   (BSS)  : {}  
+	  __BSS_END = .;
+      .PPC.EMB.sdata0 LOAD(ADDR(__SDATA0)) : {}	/* Small data with offset to 0 */	    
+      .PPC.EMB.sbss0  : {}
+      .ramlog (DATA) : { *(.ramlog) }
+	  _heap_addr = .;      
+	} > sram
+}   
+
+_heap_end   = ADDR(sram)+SIZEOF(sram);
+__SP_INIT = _heap_end;

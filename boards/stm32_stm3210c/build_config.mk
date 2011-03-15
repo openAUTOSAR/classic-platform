@@ -39,3 +39,7 @@ MOD_AVAIL+=RAMLOG TCF LWIP SLEEP RTE
 # [ STM32F10X_LD | STM32F10X_MD |  STM32F10X_HD |STM32F10X_CL ]
 def-y += STM32F10X_CL
 
+
+# Default cross compiler
+DEFAULT_CROSS_COMPILE = /opt/arm-none-eabi/bin/arm-none-eabi-
+

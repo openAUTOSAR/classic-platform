@@ -32,6 +32,13 @@
 #define ARRAY_SIZE(_x)		(sizeof(_x)/sizeof((_x)[0]))
 #endif
 
+#if defined(CFG_PPC)
+#define VECTOR_TBL_ALIGNMENT __attribute__ ((aligned (0x800)))
+#else
+#define VECTOR_TBL_ALIGNMENT
+#endif
+
+
 
 // +1 here.. easy to have a reference..
 #define GEN_TRUSTEDFUNCTIONS_LIST trusted_func_t os_cfg_trusted_list[SERVICE_CNT];
@@ -371,7 +378,7 @@ struct OsHooks os_conf_global_hooks = { \
 
 
 #define GEN_IRQ_VECTOR_TABLE_HEAD 	\
-		 void * Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS] =
+		 void * Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS] VECTOR_TBL_ALIGNMENT =
 
 #define GEN_IRQ_ISR_TYPE_TABLE_HEAD \
 		 uint8_t Irq_IsrTypeTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS]  =

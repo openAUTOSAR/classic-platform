@@ -1,5 +1,11 @@
 
 
+# Arch specific settings
+ifneq ($(ARCH),)
+ include $(ROOTDIR)/$(ARCH_PATH-y)/scripts/gcc.mk
+endif
+
+
 HOST := $(shell uname)
 export prefix
 
@@ -51,6 +57,7 @@ CCOUT 		= -o $@
 # Preprocessor
 
 CPP	= 	$(CC) -E
+CPP_ASM_FLAGS = -x assembler-with-cpp 
 
 comma = ,
 empty = 
@@ -61,6 +68,9 @@ space = $(empty) $(empty)
 # lib/gcc/<machine>/<version>/<multilib>
 # Libs related to the library (libc.a,libm.a,etc) are under:
 # <machine>/lib/<multilib>
+# 
+# Can't remember why haven't I just used gcc to link instead of ld? (it should 
+# figure out the things below by itself)
 
 # It seems some versions of make want "\=" and some "="
 # "=" - msys cpmake on windows 7 
@@ -68,7 +78,7 @@ gcc_lib_path := "$(subst /libgcc.a,,$(shell $(CC) $(CFLAGS) --print-libgcc-file-
 gcc_lib_path := $(subst \libgcc.a,,$(gcc_lib_path)) 
 lib_lib_path := "$(subst /libc.a,,$(shell $(CC) $(CFLAGS) --print-file-name=libc.a))"
 lib_lib_path := $(subst \libc.a,,$(lib_lib_path))
-text_chunk := $(subst \,/,$(shell touch i_m_here.c; $(CC) -v -c i_m_here.c &> i_m_here.txt;gawk -f $(TOPDIR)/scripts/gcc_getinclude.awk i_m_here.txt))
+text_chunk := $(subst \,/,$(shell touch gcc_path_probe.c; $(CC) -v -c gcc_path_probe.c &> gcc_path_probe.tmp;gawk -f $(TOPDIR)/scripts/gcc_getinclude.awk gcc_path_probe.tmp))
 cc_inc_path := $(realpath $(text_chunk))
 libpath-y += -L$(lib_lib_path)
 libpath-y += -L$(gcc_lib_path)
@@ -87,11 +97,18 @@ libpath-y += -L$(gcc_lib_path)
 
 LD = $(CROSS_COMPILE)ld
 
+
+LD_FILE = -T
+
 LDOUT 		= -o $@
 TE = elf
-LDMAPFILE = -M > $(subst .$(TE),.map, $@)
+LDFLAGS += -Map $(subst .$(TE),.map, $@)
 
 libitem-y += $(libitem-yy)
+
+LD_START_GRP = --start-group
+LD_END_GRP = --end-group
+
 #LDFLAGS += --gc-section
 
 # ---------------------------------------------------------------------------

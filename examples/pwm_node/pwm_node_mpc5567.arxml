@@ -25,7 +25,7 @@
                 <SD GID="MCU">MPC5567</SD>
                 <SD GID="COPYRIGHT">Copyright ArcCore AB 2010</SD>
                 <SD GID="AUTHOR">ArcCore AB</SD>
-                <SD GID="GENDIR" />
+                <SD GID="GENDIR"></SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>

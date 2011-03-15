@@ -34,25 +34,38 @@ obj-y += application.o
 obj-y += irq.o
 
 # We are compiling the kernel
+dep-$(CFG_PPC) += arch_offset.h
 dep-y += asm_offset.h
 dep-y += kernel_offset.h
 dep-$(CFG_ARM_CM3) += arch_offset.h
 
 
+ifeq ($(COMPILER),gcc)
 # ARM assembler generates "define STACK_APA $12". The extra '$' we want to go.
 # Assembler offsets
 %_offset.h: %_offset.c
 	@echo "  >> generating $@ from $<"
-	$(Q)$(CC) -S $(CFLAGS) -o $(@:.h=.s) $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<
+	$(Q)$(CC) -S $(CFLAGS) -o $(@:.h=.s) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
 	$(Q)gawk '/.*define/ { print $$1 " " $$2 " " gensub("#","","g",$$3) }' $(@:.h=.s)  > $@
 
 # Assembler offsets
 asm_offset.h: asm_offset.c
 	@echo "  >> asm offset gen $<"
-	$(Q)$(CC) -S $(CFLAGS) -o $(<:.c=.s) $(addprefix -I ,$(inc-y)) $(addprefix -D,$(def-y)) $<	
+	$(Q)$(CC) -S $(CFLAGS) -o $(<:.c=.s) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<	
 	@$(SED) -n "/#define/p" $(<:.c=.s) > $@
 	@rm 	$(<:.c=.s)
-	
+endif
+
+ifeq ($(COMPILER),cw)
+# The "\r" in the awk is a little strang...sed and awk if that does not work 
+#  sed -e '/.apa/!d' -e '/OBJ/!d' -e 's/\[//' 123.tmp | gawk '{ print "#define " $9 " " $4 }'
+
+%_offset.h: %_offset.c
+	@echo "  >> generating $@ from $<"
+	$(Q)$(CC) -dis $(CFLAGS) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $< > 123.tmp
+	gawk '$$9 ~/.apa/ && $$0 ~/OBJ/ { gsub(/\r/,""); printf("#define %s %d\n",$$10,$$5-100) }' 123.tmp > $@
+endif
+
 #VPATH += ..
 VPATH += $(ROOTDIR)/system/kernel
 VPATH += $(ROOTDIR)/arch/$(ARCH_FAM)/$(ARCH)/kernel

@@ -45,10 +45,11 @@ typedef enum
 static Det_StateType detState = DET_UNINITIALIZED;
 
 #if ( DET_USE_RAMLOG == STD_ON )
+
 // Ram log variables in uninitialized memory
-uint32 Det_RamlogIndex __attribute__ ((section (".ramlog")));
+SECTION_RAMLOG uint32 Det_RamlogIndex;
 /*lint -esym(552,Det_RamLog)*/ /* PC-Lint OK. supress lintwarning about Det_Ramlog not being accessed */
-Det_EntryType Det_RamLog[DET_RAMLOG_SIZE] __attribute__ ((section (".ramlog")));
+SECTION_RAMLOG Det_EntryType Det_RamLog[DET_RAMLOG_SIZE] ;
 #endif
 
 #if ( DET_ENABLE_CALLBACKS == STD_ON )
