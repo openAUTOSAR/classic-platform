@@ -15,7 +15,7 @@
               <SDG GID="Arccore::EcuOptions">
                 <SD GID="MCU">HCS12</SD>
                 <SD GID="AUTHOR">Arccore AB</SD>
-                <SD GID="GENDIR">/pwm_hcs12/config/hcs12x_elmicro_tboard</SD>
+                <SD GID="GENDIR"></SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>

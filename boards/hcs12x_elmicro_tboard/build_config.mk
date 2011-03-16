@@ -13,3 +13,7 @@ MOD_AVAIL+=KERNEL MCU GPT DIO PORT COM CAN CANIF PWM ADC DEM DCM PDUR COMM NM CA
 
 # Needed by us (These become USE_XXX=y and def-y += USE_XXX )
 MOD_USE=KERNEL MCU
+
+
+# Default cross compiler
+DEFAULT_CROSS_COMPILE = /opt/m6811-elf/bin/m6811-elf-

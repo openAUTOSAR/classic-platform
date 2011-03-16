@@ -758,6 +758,12 @@
                   <VALUE>10.0</VALUE>
                 </FLOAT-VALUE>
               </PARAMETER-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="8f389e13-7d30-42bd-ae07-72b9c23c291d">
+                  <SHORT-NAME>EcuMUserConfig</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMUserConfig</DEFINITION-REF>
+                </CONTAINER>
+              </SUB-CONTAINERS>
             </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>

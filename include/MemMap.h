@@ -25,9 +25,16 @@
 
 
 #if defined(__GNUC__)
+
    #define SECTION_RAMLOG	__attribute__ ((section (".ramlog")))
+
+
 #elif defined(__CWCC__)
+
    #pragma section RW ".ramlog" ".ramlog"
+
    #define SECTION_RAMLOG	__declspec(section ".ramlog")
+
+
 #endif
 

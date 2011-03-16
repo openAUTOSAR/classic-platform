@@ -13,9 +13,6 @@ inc-y += $(ROOTDIR)/system/kernel/include
 VPATH := ../config/$(BOARDDIR) ../config $(VPATH)
 inc-y := ../config/$(BOARDDIR) ../config $(inc-y)
 
-# Board object files
-include $(ROOTDIR)/boards/board_common.mk
-
 # libs needed by us 
 #libitem-y +=
 
