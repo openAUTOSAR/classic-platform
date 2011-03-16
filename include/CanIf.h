@@ -38,7 +38,7 @@
 #define CANIF_AR_PATCH_VERSION   2
 
 #define CANIF_SW_MAJOR_VERSION   1
-#define CANIF_SW_MINOR_VERSION   2
+#define CANIF_SW_MINOR_VERSION   3
 #define CANIF_SW_PATCH_VERSION   0
 
 #include "Det.h"
