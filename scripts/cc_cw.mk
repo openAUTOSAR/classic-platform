@@ -63,12 +63,11 @@ CCOUT 		= -o $@
 
 CPP	= 	$(CC) -E
 
-CPP_ASM_FLAGS += -ppopt noline -dialect c
+CPP_ASM_FLAGS += -ppopt noline -ppopt nopragma -dialect c
 
 comma = ,
 empty = 
 space = $(empty) $(empty)
-
 
 
 cw_lib_path += -L$(CW_COMPILE)/PowerPC_EABI_Support/Runtime/Lib

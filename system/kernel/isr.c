@@ -14,14 +14,15 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
+#if defined(__GNUC__)
 #include <sys/types.h>
+#endif
 #include <stdint.h>
 #include <string.h>
 #include "Compiler.h"
 #include "internal.h"
 #include "isr.h"
 #include "irq.h"
-//#include "irq_config.h"
 
 
 extern const uint8_t Os_VectorToIsr[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
@@ -40,6 +41,7 @@ SECTION_BALIGN(0x10) uint8_t Os_IsrStack[OS_INTERRUPT_STACK_SIZE];
 //#include "stm32f10x_arc.h"
 #endif
 
+#if 0
 extern caddr_t *sbrk(int);
 
 #define os_alloc(_x)	sbrk(_x)
@@ -50,6 +52,7 @@ OsTaskVarType * os_alloc_new_pcb( void ) {
 	assert(h!=NULL);
 	return h;
 }
+#endif
 
 
 //extern TaskType Os_AddTask( OsTaskVarType *pcb );

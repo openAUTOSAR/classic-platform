@@ -18,7 +18,7 @@
 #define IRQ_H_
 
 #include <stdint.h>
-#include "os.h"
+#include "Os.h"
 #include "irq_types.h"
 #include "bit.h"
 

@@ -152,8 +152,6 @@ void SignalSemaphore( OsSemaphoreType *semPtr ) {
 	}
 
 	Irq_Restore(flags);
-
-	return E_OK;
 }
 
 

@@ -275,8 +275,8 @@ vpath-y += $(ROOTDIR)/diagnostic/Det
 
 # include files need by us
 inc-y += $(ROOTDIR)/include
-inc-y += $(ROOTDIR)/kernel/test
-inc-y += $(ROOTDIR)/kernel/include
+inc-y += $(ROOTDIR)/system/kernel/test
+inc-y += $(ROOTDIR)/system/kernel/include
 inc-y += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
 inc-y += $(ROOTDIR)/$(ARCH_PATH-y)/drivers
 inc-y += $(ROOTDIR)/boards/$(BOARDDIR)/config

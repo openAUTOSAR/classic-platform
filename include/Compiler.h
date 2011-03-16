@@ -38,8 +38,8 @@
 
 #if defined(__GNUC__)
 #define SECTION_BALIGN(_align )  __attribute__ ((aligned (_align)))
-#else
-#error SECTION_BALIGN not defined for compiler
+#elif defined(__CWCC__)
+#define SECTION_BALIGN(_align )  __attribute__ ((aligned (_align)))
 #endif
 
 

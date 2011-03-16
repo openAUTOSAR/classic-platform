@@ -57,6 +57,7 @@ void exit(int exit ) {
 
 void *sbrk(int inc )
 {
+	(void)inc;
 	/* We use our own malloc */
 	return (void *)(-1);
 }

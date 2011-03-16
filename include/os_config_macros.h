@@ -136,33 +136,6 @@
 #define GEN_ISR_MAP const uint8_t Os_VectorToIsr[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS]
 
 
-#if 0
-#define GEN_ISR_2( _id, _name, _entry, _priority,  _vector ) \
-{									\
-	.pid = _id,						\
-	.name = _name,					\
-	.entry = _entry,				\
-	.prio = _priority,				\
-	.proc_type = PROC_ISR2,		    \
-	.vector = _vector,              \
-}
-
-
-#define GEN_ISR_1( _id, _name, _entry, _priority , _vector ) \
-{									\
-	.pid = _id,						\
-	.name = _name,					\
-	.entry = _entry,				\
-	.prio = _priority,				\
-	.proc_type = PROC_ISR1,		\
-	.vector = _vector,              \
-}
-#endif
-
-
-//#define GEN_PCB_LIST()	uint8_t Os_TaskVarList[PCB_T_SIZE*ARRAY_SIZE( Os_TaskConstList)];
-#define GEN_PCB_LIST()	OsTaskVarType Os_TaskVarList[ARRAY_SIZE( Os_TaskConstList)];
-
 #define GEN_RESOURCE_HEAD OsResourceType resource_list[OS_RESOURCE_CNT]
 
 
