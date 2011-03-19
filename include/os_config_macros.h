@@ -133,7 +133,7 @@
 }
 
 
-#define GEN_ISR_MAP const uint8_t Os_VectorToIsr[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS]
+#define GEN_ISR_MAP uint8_t Os_VectorToIsr[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS]
 
 
 #define GEN_RESOURCE_HEAD OsResourceType resource_list[OS_RESOURCE_CNT]

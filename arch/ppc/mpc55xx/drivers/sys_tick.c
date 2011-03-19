@@ -22,6 +22,9 @@
  * Init of free running timer.
  */
 void Os_SysTickInit( void ) {
+
+	ISR_INSTALL_ISR2("OsTick",OsTick,7,6,0);
+
 //	TaskType tid;
 
 //	Irq_Attach(INTC_SSCIR0_CLR7);

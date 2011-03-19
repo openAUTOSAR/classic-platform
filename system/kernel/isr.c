@@ -25,8 +25,10 @@
 #include "irq.h"
 
 
-extern const uint8_t Os_VectorToIsr[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
+extern uint8_t Os_VectorToIsr[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
+#if OS_ISR_CNT!=0
 extern const OsIsrConstType Os_IsrConstList[OS_ISR_CNT];
+#endif
 
 #if OS_ISR_MAX_CNT!=0
 OsIsrVarType Os_IsrVarList[OS_ISR_MAX_CNT];
@@ -65,10 +67,12 @@ void Os_IsrInit( void ) {
 
 	Irq_Init();
 
+#if OS_ISR_CNT != 0
 	/* Attach the interrupts */
 	for (int i = 0; i < sizeof(Os_IsrConstList) / sizeof(OsIsrConstType); i++) {
 		Os_IsrAdd(&Os_IsrConstList[i]);
 	}
+#endif
 }
 
 
@@ -87,15 +91,17 @@ ISRType Os_IsrAdd( const OsIsrConstType * restrict isrPtr ) {
 	if( isrPtr->type == ISR_TYPE_2) {
 		Os_IsrVarList[id].constPtr = isrPtr;
 	}
-
+	Os_VectorToIsr[isrPtr->vector] = id;
 	Irq_EnableVector( isrPtr->vector, isrPtr->priority, Os_ApplGetCore(isrPtr->appOwner )  );
 
 	return id;
 }
 
+#if 0
 const OsIsrConstType * Os_IsrGet( int16_t vector) {
 	return &Os_IsrConstList[Os_VectorToIsr[vector]];
 }
+#endif
 
 #if 0
 void Os_IsrDisable( ISRType isr) {
@@ -273,10 +279,10 @@ void *Os_Isr( void *stack, int16_t vector ) {
 	Irq_SOI();
 
 #if defined(CFG_HCS12D)
-	Os_IsrConstList[isrId].entry();
+	Os_IsrVarList[isrId].constPtr->entry();
 #else
 	Irq_Enable();
-	Os_IsrConstList[isrId].entry();
+	Os_IsrVarList[isrId].constPtr->entry();
 	Irq_Disable();
 #endif
 

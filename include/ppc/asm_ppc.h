@@ -69,8 +69,24 @@
 
 #if defined(_ASSEMBLER_)
 /*
- * Misc macros
+ * PPC vs VLE assembler:
+ *   Most PPC assembler instructions can be pre-processed to VLE assembler.
+ *   I can't find any way to load a 32-bit immediate with just search/replace (number
+ *   of operators differ for addis and e_add2is )
+ *   Thats why there are different load macros below.
+ *
  */
+
+#if defined(CFG_VLE)
+#define LOAD_IND_32( reg, addr) \
+	lis    reg, addr@ha;     \
+    lwz    reg, addr@l(reg)
+
+#define LOAD_ADDR_32(reg, addr ) \
+    e_add2is   reg, addr@ha; \
+    e_add16i    reg, reg, addr@l
+
+#else
 #define LOAD_IND_32( reg, addr) \
     lis    reg, addr@ha;     \
       lwz    reg, addr@l(reg)
@@ -78,6 +94,8 @@
 #define LOAD_ADDR_32(reg, addr ) \
         addis   reg, 0, addr@ha; \
         addi    reg, reg, addr@l
+
+#endif
 
 
 
@@ -115,6 +133,38 @@
 #define r29     29
 #define r30     30
 #define r31     31
+
+
+#if defined(CFG_VLE)
+
+#define lis		e_lis
+#define li		e_li
+#define lwz	    e_lwz
+#define lbzu	e_lbzu
+#define stwu	e_stwu
+#define stw		e_stw
+#define stbu	e_stbu
+#define b		e_b
+//#define addi	e_addi		/* true ?*/
+#define addi	e_add16i		/* true ?*/
+//#define addis	e_add16i
+#define subi	e_subi		/* true ?*/
+#define blr		se_blr
+#define rfi		se_rfi
+#define stb		e_stb
+#define cmplwi	e_cmpl16i
+#define ori		e_ori
+#define beq		e_beq
+//#define bne- 	e_bne-
+#define bne		e_bne
+#define bgt		e_bgt
+#define extrwi	e_extrwi
+#define blrl	se_blrl
+#define stmw	e_stmw
+#define bdnz	e_bdnz
+#define	bl		e_bl
 #endif
+
+#endif /* _ASSEMBLER_ */
 
 #endif /*PPC_ASM_H_*/

@@ -42,6 +42,7 @@ cflags-y          += -W=most
 # Conformance
 cflags-y          += -abi=eabi
 cflags-$(CFG_VLE) += -ppc_asm_to_vle  # Convert ppc to vle ppc
+cflags-$(CFG_VLE) += -vle  # Convert ppc to vle ppc
 cflags-y          += -abi=eabi
 cflags-y          += -proc=5565
 cflags-y          += -fp=soft

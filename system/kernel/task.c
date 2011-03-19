@@ -355,9 +355,10 @@ void Os_Dispatch( uint32_t op ) {
 		Os_TaskMakeWaitingOnSem(currPcbPtr);
 	} else if( op & OP_SIGNAL_SEMAPHORE) {
 		Os_TaskRunningToReady(currPcbPtr);
-#endif
+
 	} else if( op & (OP_SLEEP )) {
 		Os_TaskMakeSleeping(currPcbPtr);
+#endif
 	} else if( op & OP_ACTIVATE_TASK ) {
 		Os_TaskMakeReady(currPcbPtr);
 	} else if( op & OP_CHAIN_TASK ) {
