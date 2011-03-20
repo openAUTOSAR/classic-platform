@@ -11,7 +11,11 @@
 
 .global _resetconfiguration
 _resetconfiguration:
+#if defined(CFG_VLE)
+	.byte  0x01   #no watchdog, VLE
+#else
 	.byte  0x00   #no watchdog
+#endif	
 	.byte  0x5A   #Boot identifier
 	.byte  0x00
 	.byte  0x00
