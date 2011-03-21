@@ -1,28 +1,42 @@
 
-ifeq (${MAKELEVEL},0)
 
-boarddir=$(subst $(root_path)/boards/,,$(board_path))
+ifndef ROOTDIR
+$(error ROOTDIR is not set. This makefile is invoked the wrong way)
+endif
 
-export CROSS_COMPILE=/opt/powerpc-eabispe/bin/powerpc-eabispe-
+ifndef BOARDDIR
+# Assume in-tree-build 
+boardpath=$(realpath $(CURDIR)/../..)
+boarddir=$(subst $(realpath $(ROOTDIR)/boards)/,,$(boardpath))
+ugh=1
+else
+  # BOARDIR is defined
+  ifndef BDIR
+    # Assume that we want to build current directory
+    BDIR=$(CURDIR)
+    ugh=1
+  else
+    # BOARDIR and BDIR are defined 
+    # out-of-tree build
+  endif
+endif
 
-root_path=$(abspath $(CURDIR)/../../../..)
-board_path=$(abspath $(CURDIR)/../..)
-
-#ifeq (${MAKELEVEL},0)
-boarddir=$(subst $(root_path)/boards/,,$(board_path))
+ifeq ($(ugh),1) 
+export example:=$(subst $(abspath $(CURDIR)/..)/,,$(CURDIR))
 
 .PHONY: all clean
 all:
-	$(Q)$(MAKE) -C $(root_path) BOARDDIR=$(boarddir) BDIR=$(CURDIR) all
+	@echo "==========[ Building \"$(example)\" ]=========="
+	$(Q)$(MAKE) -C $(ROOTDIR) BOARDDIR=$(boarddir) BDIR=$(CURDIR) all
 	
 clean:	
 	@echo Cleaning dir $(boarddir) 
 	$(Q)rm -rf obj_$(boarddir)
 	@echo done!
 
-export example:=$(subst $(abspath $(CURDIR)/..)/,,$(CURDIR))
+endif
 
-else
+ifneq (${MAKELEVEL},0)
 
 VPATH += ..
 VPATH += $(ROOTDIR)/examples
@@ -35,3 +49,4 @@ vpath %.ldf $(ROOTDIR)/$(ARCH_PATH-y)/scripts
 build-exe-y = $(example).elf
 
 endif
+
