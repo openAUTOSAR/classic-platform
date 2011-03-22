@@ -59,13 +59,13 @@ asm_offset.h: asm_offset.c
 endif
 
 ifeq ($(COMPILER),cw)
-# The "\r" in the awk is a little strang...sed and awk if that does not work 
+# The "\r" in the awk is a little strange...sed and awk if that does not work 
 #  sed -e '/.apa/!d' -e '/OBJ/!d' -e 's/\[//' 123.tmp | gawk '{ print "#define " $9 " " $4 }'
 
 %_offset.h: %_offset.c
 	@echo "  >> generating $@ from $<"
 	$(Q)$(CC) -dis $(CFLAGS) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $< > 123.tmp
-	gawk '$$9 ~/.apa/ && $$0 ~/OBJ/ { gsub(/\r/,""); printf("#define %s %d\n",$$10,$$5-100) }' 123.tmp > $@
+	$(Q)gawk '$$9 ~/.apa/ && $$0 ~/OBJ/ { gsub(/\r/,""); printf("#define %s %d\n",$$10,$$5-100) }' 123.tmp > $@
 endif
 
 #VPATH += ..

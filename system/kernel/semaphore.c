@@ -46,6 +46,8 @@
  *   Mutex:es on the other hand will make other tasks run that shares the resource
  *   but the priority of the task that take the mutex for the second time makes the
  *   first task inherit the priority of that task.
+ *
+ *   Resources is deadlock safe while mutex:es are not (circular lock dependencies)
  */
 
 /* ----------------------------[includes]------------------------------------*/

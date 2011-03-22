@@ -276,7 +276,7 @@ $(build-exe-y): $(dep-y) $(obj-y) $(sim-y) $(libitem-y) $(ldcmdfile-y)
 ifeq ($(CROSS_COMPILE),)
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	
 else
-	@echo LDFLAGS $(LDFLAGS) 
+	@echo LDFLAGS $(LDFLAGS)
 	@echo LD_FILE  $(LD_FILE)
 	$(Q)$(LD) $(LDFLAGS) $(LD_FILE) $(ldcmdfile-y) -o $@ $(libpath-y) $(LD_START_GRP) $(obj-y) $(lib-y) $(libitem-y) $(LD_END_GRP) $(LDMAPFILE)
  ifdef CFG_MC912DG128A

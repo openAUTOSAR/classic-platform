@@ -1,6 +1,6 @@
 
 
-
+EXAMPLENAME=simple
 ROOTDIR?=../../../..
 include $(ROOTDIR)/examples/build_example.mk
 
@@ -10,6 +10,7 @@ ifneq (${MAKELEVEL},0)
 obj-y += simple_main.o
 
 endif
+
 
 
 

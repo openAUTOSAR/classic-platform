@@ -1,8 +1,14 @@
 
 
+ifeq ($(EXAMPLENAME),)
+$(error whyyyyyy)
+endif
+
 ifndef ROOTDIR
 $(error ROOTDIR is not set. This makefile is invoked the wrong way)
 endif
+
+#export EXAMPLENAME
 
 ifndef BOARDDIR
 # Assume in-tree-build 
@@ -22,6 +28,7 @@ else
 endif
 
 ifeq ($(ugh),1) 
+
 export example:=$(subst $(abspath $(CURDIR)/..)/,,$(CURDIR))
 
 .PHONY: all clean
@@ -46,7 +53,7 @@ ldcmdfile-y = linkscript_$(COMPILER).lcf
 vpath %.ldf $(ROOTDIR)/$(ARCH_PATH-y)/scripts
 	
 # What I want to build
-build-exe-y = $(example).elf
+build-exe-y = $(EXAMPLENAME).elf
 
 endif
 
