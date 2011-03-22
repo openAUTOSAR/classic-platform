@@ -83,7 +83,7 @@
     lwz    reg, addr@l(reg)
 
 #define LOAD_ADDR_32(reg, addr ) \
-    e_add2is   reg, addr@ha; \
+    e_lis       reg, addr@ha; \
     e_add16i    reg, reg, addr@l
 
 #else
