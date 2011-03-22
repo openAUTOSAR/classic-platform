@@ -67,7 +67,7 @@ _start:
 	LOAD_ADDR_32(13,_SDA_BASE_)
 
 	// r2, base of .sdata2 and .sbss2
-	LOAD_ADDR_32(13,_SDA2_BASE_)
+	LOAD_ADDR_32(r2,_SDA2_BASE_)
 
 	// make space for initial backchain..
 	subi    r1,r1,16
