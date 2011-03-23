@@ -132,34 +132,21 @@
 
 #define GET_CONTROLLER_CNT() (CAN_CONTROLLER_CNT)
 
-#if 0
-#define _INSTALL_HANDLER(_can_entry, _unique, _vector,_priority,_app )        \
+#define INSTALL_HANDLER4(_name, _can_entry, _vector, _priority, _app)\
 	do { \
-	  const OsIsrConstType _can_entry ## _unique = { \
-			.vector = _vector,   \
-			.type = ISR_TYPE_2, \
-			.priority = _priority,      \
-			.entry = _can_entry,      \
-			.name = "Can",      \
-			.resourceMask = 0,  \
-			.timingProtPtr = NULL, \
-			.appOwner = _app,      \
-		  };                    \
-	  Os_IsrAdd( & _can_entry ## _unique);   \
-	} while(0);
-#endif
+		ISR_INSTALL_ISR2(_name, _can_entry, _vector+0, _priority, _app); \
+		ISR_INSTALL_ISR2(_name, _can_entry, _vector+1, _priority, _app); \
+		ISR_INSTALL_ISR2(_name, _can_entry, _vector+2, _priority, _app); \
+		ISR_INSTALL_ISR2(_name, _can_entry, _vector+3, _priority, _app); \
+	} while(0)
 
-#define INSTALL_HANDLER4(_name,_can_entry, _vector,_priority,_app)\
-		ISR_INSTALL_ISR2(_name,_can_entry, _vector+0,_priority,_app) \
-		ISR_INSTALL_ISR2(_name,_can_entry, _vector+1,_priority,_app) \
-		ISR_INSTALL_ISR2(_name,_can_entry, _vector+2,_priority,_app) \
-		ISR_INSTALL_ISR2(_name,_can_entry, _vector+3,_priority,_app)
-
-#define INSTALL_HANDLER16(_name,_can_entry, _vector,_priority,_app)\
-		INSTALL_HANDLER4(_name,_can_entry, _vector+0,_priority,_app) \
-		INSTALL_HANDLER4(_name,_can_entry, _vector+4,_priority,_app) \
-		INSTALL_HANDLER4(_name,_can_entry, _vector+8,_priority,_app) \
-		INSTALL_HANDLER4(_name,_can_entry, _vector+12,_priority,_app)
+#define INSTALL_HANDLER16(_name, _can_entry, _vector, _priority, _app)\
+	do { \
+		INSTALL_HANDLER4(_name, _can_entry, _vector+0, _priority, _app); \
+		INSTALL_HANDLER4(_name, _can_entry, _vector+4, _priority, _app); \
+		INSTALL_HANDLER4(_name, _can_entry, _vector+8, _priority, _app); \
+		INSTALL_HANDLER4(_name, _can_entry, _vector+12,_priority, _app); \
+	} while(0)
 
 
 //-------------------------------------------------------------------

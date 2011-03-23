@@ -60,5 +60,5 @@ $(build-lib-y): $(dep-y) $(obj-y)
 $(build-exe-y): $(obj-y) $(sim-y) $(libitem-y)
 	@echo "  >> LD $(RELDIR)/$@"   
 	$(LD) $(LDFLAGS) $(ldcmdfile-y) -o $@ $(obj-y) $(libpath-y) --start-group $(lib-y) $(libitem-y) --end-group $(LDMAPFILE)
-	@echo "  >>>>>>>  DONE  <<<<<<<<<"
+	@echo "  >>>>>>>>>  DONE  <<<<<<<<<"
 	

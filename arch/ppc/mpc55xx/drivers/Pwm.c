@@ -119,11 +119,6 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
         #endif
     #endif
 
-    #if PWM_NOTIFICATION_SUPPORTED==STD_ON
-        // Create a task for our interrupt service routine.
-        TaskType tid = Os_Arc_CreateIsr(Pwm_Isr, PWM_ISR_PRIORITY /*prio*/, "PwmIsr");
-    #endif
-
     /* Clock scaler uses system clock (~64MHz) as source, so prescaler 64 => 1MHz. */
     EMIOS.MCR.B.GPRE = PWM_PRESCALER - 1;
 
@@ -155,7 +150,26 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
                 // Pwm_DisableNotification(channel);
 
                 // Install ISR
-                Irq_AttachIsr2(tid, NULL, EMISOS200_FLAG_F0 + channel);
+                switch (channel) {
+					case 0x0: ISR_INSTALL_ISR2( "Pwm0",  Pwm_Isr, EMISOS200_FLAG_F0,  PWM_ISR_PRIORITY, 0 ); break;
+					case 0x1: ISR_INSTALL_ISR2( "Pwm1",  Pwm_Isr, EMISOS200_FLAG_F1,  PWM_ISR_PRIORITY, 0 ); break;
+					case 0x2: ISR_INSTALL_ISR2( "Pwm2",  Pwm_Isr, EMISOS200_FLAG_F2,  PWM_ISR_PRIORITY, 0 ); break;
+					case 0x3: ISR_INSTALL_ISR2( "Pwm3",  Pwm_Isr, EMISOS200_FLAG_F3,  PWM_ISR_PRIORITY, 0 ); break;
+					case 0x4: ISR_INSTALL_ISR2( "Pwm4",  Pwm_Isr, EMISOS200_FLAG_F4,  PWM_ISR_PRIORITY, 0 ); break;
+					case 0x5: ISR_INSTALL_ISR2( "Pwm5",  Pwm_Isr, EMISOS200_FLAG_F5,  PWM_ISR_PRIORITY, 0 ); break;
+					case 0x6: ISR_INSTALL_ISR2( "Pwm6",  Pwm_Isr, EMISOS200_FLAG_F6,  PWM_ISR_PRIORITY, 0 ); break;
+					case 0x7: ISR_INSTALL_ISR2( "Pwm7",  Pwm_Isr, EMISOS200_FLAG_F7,  PWM_ISR_PRIORITY, 0 ); break;
+					case 0x8: ISR_INSTALL_ISR2( "Pwm8",  Pwm_Isr, EMISOS200_FLAG_F8,  PWM_ISR_PRIORITY, 0 ); break;
+					case 0x9: ISR_INSTALL_ISR2( "Pwm9",  Pwm_Isr, EMISOS200_FLAG_F9,  PWM_ISR_PRIORITY, 0 ); break;
+					case 0xA: ISR_INSTALL_ISR2( "Pwm10", Pwm_Isr, EMISOS200_FLAG_F10, PWM_ISR_PRIORITY, 0 ); break;
+					case 0xB: ISR_INSTALL_ISR2( "Pwm11", Pwm_Isr, EMISOS200_FLAG_F11, PWM_ISR_PRIORITY, 0 ); break;
+					case 0xC: ISR_INSTALL_ISR2( "Pwm12", Pwm_Isr, EMISOS200_FLAG_F12, PWM_ISR_PRIORITY, 0 ); break;
+					case 0xD: ISR_INSTALL_ISR2( "Pwm13", Pwm_Isr, EMISOS200_FLAG_F13, PWM_ISR_PRIORITY, 0 ); break;
+					case 0xE: ISR_INSTALL_ISR2( "Pwm14", Pwm_Isr, EMISOS200_FLAG_F14, PWM_ISR_PRIORITY, 0 ); break;
+					case 0xF: ISR_INSTALL_ISR2( "Pwm15", Pwm_Isr, EMISOS200_FLAG_F15, PWM_ISR_PRIORITY, 0 ); break;
+					default: assert(0); break;
+				}
+
                 ChannelRuntimeStruct[channel].NotificationRoutine
                         = ConfigPtr->NotificationHandlers[channel_iterator];
         #endif

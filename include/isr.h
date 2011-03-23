@@ -39,35 +39,35 @@
 #define ISR_TYPE_2			1
 
 /* ----------------------------[macro]---------------------------------------*/
-#define ISR_DECLARE_ISR2(_name, _entry, _unique, _vector,_priority,_app )        \
+#define ISR_DECLARE_ISR2( _name, _entry, _unique, _vector, _priority, _app )        \
 	  const OsIsrConstType _entry ## _unique = { \
-			.vector = _vector,   \
-			.type = ISR_TYPE_2, \
-			.priority = _priority,      \
-			.entry = _entry,      \
-			.name = _name,      \
-			.resourceMask = 0,  \
-			.timingProtPtr = NULL, \
-			.appOwner = _app,      \
-		  };                    \
+			.vector =          _vector,       \
+			.type =             ISR_TYPE_2,   \
+			.priority =        _priority,     \
+			.entry =           _entry,        \
+			.name =            _name,         \
+			.resourceMask =     0,            \
+			.timingProtPtr =    NULL,         \
+			.appOwner =        _app,          \
+		  }
 
-#define _ISR_INSTALL_ISR2(_name, _entry, _unique, _vector,_priority,_app )        \
-	do { \
+#define _ISR_INSTALL_ISR2( _name, _entry, _unique, _vector, _priority, _app )        \
+	do {                                         \
 	  const OsIsrConstType _entry ## _unique = { \
-			.vector = _vector,   \
-			.type = ISR_TYPE_2, \
-			.priority = _priority,      \
-			.entry = _entry,      \
-			.name = _name,      \
-			.resourceMask = 0,  \
-			.timingProtPtr = NULL, \
-			.appOwner = _app,      \
-		  };                    \
-	  Os_IsrAdd( & _entry ## _unique);   \
-	} while(0);
+			.vector =          _vector,       \
+			.type =             ISR_TYPE_2,   \
+			.priority =        _priority,     \
+			.entry =           _entry,        \
+			.name =            _name,         \
+			.resourceMask =     0,            \
+			.timingProtPtr =    NULL,         \
+			.appOwner =        _app,          \
+		  };                                  \
+	  Os_IsrAdd( & _entry ## _unique);        \
+	} while(0)
 
-#define ISR_INSTALL_ISR2(_name,_entry, _vector,_priority,_app)        \
-		_ISR_INSTALL_ISR2(_name,_entry, __LINE__, _vector,_priority,_app)
+#define ISR_INSTALL_ISR2( _name, _entry, _vector, _priority, _app )        \
+		_ISR_INSTALL_ISR2( _name, _entry, __LINE__, _vector, _priority, _app )
 
 
 /* ----------------------------[typedef]-------------------------------------*/

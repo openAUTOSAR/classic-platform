@@ -702,31 +702,11 @@ void Adc_ConfigureEQADCInterrupts (void)
 {
   Adc_GroupType group;
 
-#if defined(USE_KERNEL)
-  TaskType tid;
-  tid = Os_Arc_CreateIsr(Adc_EQADCError,EQADC_FISR_OVER_PRIORITY,"Adc_Err");
-  Irq_AttachIsr2(tid,NULL,EQADC_FISR_OVER);
+  ISR_INSTALL_ISR2( "Adc_Err",  Adc_EQADCError,               EQADC_FISR_OVER,   EQADC_FISR_OVER_PRIORITY,          0 );
+  ISR_INSTALL_ISR2( "Adc_Grp0", Adc_Group0ConversionComplete, EQADC_FISR0_EOQF0, EQADC_FIFO0_END_OF_QUEUE_PRIORITY, 0 );
+  ISR_INSTALL_ISR2( "Adc_Grp1", Adc_Group1ConversionComplete, EQADC_FISR1_EOQF1, EQADC_FIFO1_END_OF_QUEUE_PRIORITY, 0 );
 
-  tid = Os_Arc_CreateIsr(Adc_Group0ConversionComplete,EQADC_FIFO0_END_OF_QUEUE_PRIORITY,"Adc_Grp0");
-  Irq_AttachIsr2(tid,NULL,EQADC_FISR0_EOQF0);
 
-  tid = Os_Arc_CreateIsr(Adc_Group1ConversionComplete,EQADC_FIFO1_END_OF_QUEUE_PRIORITY,"Adc_Grp1");
-  Irq_AttachIsr2(tid,NULL,EQADC_FISR1_EOQF1);
-
-#else
-  Irq_InstallVector (Adc_EQADCError,
-                            EQADC_FISR_OVER,
-                            EQADC_FISR_OVER_PRIORITY, CPU_Z1);
-
-  Irq_InstallVector (Adc_Group0ConversionComplete,
-                          EQADC_FISR0_EOQF0,
-                          EQADC_FIFO0_END_OF_QUEUE_PRIORITY, CPU_Z1);
-
-  Irq_InstallVector (Adc_Group1ConversionComplete,
-                          EQADC_FISR1_EOQF1,
-                          EQADC_FIFO1_END_OF_QUEUE_PRIORITY, CPU_Z1);
-
-#endif
   for (group = ADC_GROUP0; group < AdcConfigPtr->nbrOfGroups; group++)
   {
     /* Enable end of queue, queue overflow/underflow interrupts. Clear corresponding flags. */
