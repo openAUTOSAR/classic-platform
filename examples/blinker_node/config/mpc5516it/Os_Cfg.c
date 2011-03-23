@@ -21,11 +21,17 @@
 #include "Os.h"				// includes Os_Cfg.h
 #include "os_config_macros.h"
 #include "kernel.h"
-#include "kernel_offset.h"
+//#include "isr.h"
+//#include "kernel_offset.h"
 #include "alist_i.h"
 #include "Mcu.h"
 
-extern void dec_exception( void );
+// ###############################    EXTERNAL REFERENCES    #############################
+
+/* Application externals */
+
+/* Interrupt externals */
+
 
 // Set the os tick frequency
 OsTickType OsTickFreq = 1000;
@@ -34,25 +40,39 @@ OsTickType OsTickFreq = 1000;
 // ###############################    DEBUG OUTPUT     #############################
 uint32 os_dbg_mask = 0;
  
-
-
+// ###############################    APPLICATIONS     #############################
+GEN_APPLICATION_HEAD = {
+	GEN_APPLICATION(
+				/* id           */ APPLICATION_ID_OsApplication1,
+				/* name         */ "OsApplication1",
+				/* trusted      */ true,	/* NOT CONFIGURABLE IN TOOLS */
+				0,
+				/* StartupHook  */ NULL,	/* Startup Hook */
+				/* ShutdownHook */ NULL,	/* Shutdown Hook */
+				/* ErrorHook    */ NULL,	/* Error Hook */
+				/* rstrtTaskId  */ 0	/* NOT CONFIGURABLE IN TOOLS */
+				),					
+};
 // #################################    COUNTERS     ###############################
-GEN_COUNTER_HEAD {
+GEN_COUNTER_HEAD = {
 	GEN_COUNTER(	COUNTER_ID_OsTick,
 					"OsTick",
 					COUNTER_TYPE_HARD,
 					COUNTER_UNIT_NANO,
 					0xffff,
 					1,
+					1,
 					0,
-					0),
+					APPLICATION_ID_OsApplication1,	/* Application owner */
+					0	/* Accessing application mask */
+				),
 };
 
 CounterType Os_Arc_OsTickCounter = COUNTER_ID_OsTick;
 
 // ##################################    ALARMS     ################################
 
-GEN_ALARM_HEAD {
+GEN_ALARM_HEAD = {
 	GEN_ALARM(	ALARM_ID_alarm10,
 				"alarm10",
 				COUNTER_ID_OsTick,
@@ -60,7 +80,10 @@ GEN_ALARM_HEAD {
 				ALARM_ACTION_ACTIVATETASK,
 				TASK_ID_bTask10,
 				NULL,
-				NULL ),
+				NULL,
+				APPLICATION_ID_OsApplication1,	/* Application owner */
+				0	/* Accessing application mask */
+			),
 	GEN_ALARM(	ALARM_ID_alarm100,
 				"alarm100",
 				COUNTER_ID_OsTick,
@@ -68,7 +91,10 @@ GEN_ALARM_HEAD {
 				ALARM_ACTION_ACTIVATETASK,
 				TASK_ID_bTask100,
 				NULL,
-				NULL ),
+				NULL,
+				APPLICATION_ID_OsApplication1,	/* Application owner */
+				0	/* Accessing application mask */
+			),
 	GEN_ALARM(	ALARM_ID_alarm25,
 				"alarm25",
 				COUNTER_ID_OsTick,
@@ -76,12 +102,13 @@ GEN_ALARM_HEAD {
 				ALARM_ACTION_ACTIVATETASK,
 				TASK_ID_bTask25,
 				NULL,
-				NULL ),
+				NULL,
+				APPLICATION_ID_OsApplication1,	/* Application owner */
+				0	/* Accessing application mask */
+			),
 };
 
 // ################################    RESOURCES     ###############################
-GEN_RESOURCE_HEAD {
-};
 
 // ##############################    STACKS (TASKS)     ############################
 DECLARE_STACK(OsIdle,OS_OSIDLE_STACK_SIZE);
@@ -91,54 +118,68 @@ DECLARE_STACK(bTask100,2048);
 DECLARE_STACK(bTask25,2048);
 
 // ##################################    TASKS     #################################
-GEN_TASK_HEAD {
+GEN_TASK_HEAD = {
 	GEN_ETASK(	OsIdle,
+				"OsIdle",
 				0,
 				FULL,
 				TRUE,
 				NULL,
+				RES_SCHEDULER,
+				0,
 				0 
 	),
 	GEN_BTASK(
-		Startup,
-		2,
-		FULL,
-		TRUE,
-		NULL,
-		0,
-		1
+		/* 	        		*/Startup,
+		/* name        		*/"Startup",
+		/* priority    		*/2,
+		/* schedule    		*/FULL,
+		/* autostart   		*/TRUE,
+		/* resource_int_p   */NULL,
+		/* resource mask	*/0,
+		/* activation lim. 	*/1,
+		/* App owner    	*/APPLICATION_ID_OsApplication1,
+		/* Accessing apps   */0
 	),
 				
 	GEN_BTASK(
-		bTask10,
-		1,
-		FULL,
-		FALSE,
-		NULL,
-		0,
-		1
+		/* 	        		*/bTask10,
+		/* name        		*/"bTask10",
+		/* priority    		*/1,
+		/* schedule    		*/FULL,
+		/* autostart   		*/FALSE,
+		/* resource_int_p   */NULL,
+		/* resource mask	*/0,
+		/* activation lim. 	*/1,
+		/* App owner    	*/APPLICATION_ID_OsApplication1,
+		/* Accessing apps   */0
 	),
 				
 	GEN_BTASK(
-		bTask100,
-		1,
-		FULL,
-		FALSE,
-		NULL,
-		0,
-		1
+		/* 	        		*/bTask100,
+		/* name        		*/"bTask100",
+		/* priority    		*/1,
+		/* schedule    		*/FULL,
+		/* autostart   		*/FALSE,
+		/* resource_int_p   */NULL,
+		/* resource mask	*/0,
+		/* activation lim. 	*/1,
+		/* App owner    	*/APPLICATION_ID_OsApplication1,
+		/* Accessing apps   */0
 	),
 				
 	GEN_BTASK(
-		bTask25,
-		1,
-		FULL,
-		FALSE,
-		NULL,
-		0,
-		1
+		/* 	        		*/bTask25,
+		/* name        		*/"bTask25",
+		/* priority    		*/1,
+		/* schedule    		*/FULL,
+		/* autostart   		*/FALSE,
+		/* resource_int_p   */NULL,
+		/* resource mask	*/0,
+		/* activation lim. 	*/1,
+		/* App owner    	*/APPLICATION_ID_OsApplication1,
+		/* Accessing apps   */0
 	),
-				
 };
 
 // ##################################    HOOKS     #################################
@@ -152,20 +193,15 @@ GEN_HOOKS(
 );
 
 // ##################################    ISRS     ##################################
+#if OS_ISR_CNT!=0
+GEN_ISR_HEAD = {
+};
+#endif
 
+GEN_ISR_MAP = { 0
+};
 
 // ############################    SCHEDULE TABLES     #############################
 
-// Table heads
-GEN_SCHTBL_HEAD {
-};
-
-GEN_PCB_LIST()
-
-uint8_t os_interrupt_stack[OS_INTERRUPT_STACK_SIZE] __attribute__ ((aligned (0x10)));
-
-GEN_IRQ_VECTOR_TABLE_HEAD {};
-GEN_IRQ_ISR_TYPE_TABLE_HEAD {};
-GEN_IRQ_PRIORITY_TABLE_HEAD {};
 
 #include "os_config_funcs.h"

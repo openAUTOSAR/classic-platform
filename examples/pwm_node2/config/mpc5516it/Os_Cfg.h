@@ -19,9 +19,12 @@
 #endif
 
 
+
 #ifndef OS_CFG_H_
 #define OS_CFG_H_
 
+// Application Id's
+#define APPLICATION_ID_OsApplication1  0
 
 // Alarm Id's
 #define ALARM_ID_ComAlarm	0
@@ -67,14 +70,28 @@ void StartupTask( void );
 #define OS_ISRS_CNT				0
 #define OS_RESOURCE_CNT			0
 #define OS_LINKED_RESOURCE_CNT	0
-
+#define OS_APPLICATION_CNT		1
+#define OS_SERVICE_CNT			0  /* ARCTICSTUDIO_GENERATOR_TODO */
 #define CFG_OS_DEBUG				STD_OFF
 
-#define OS_SC1 						STD_ON     
+#define OS_SC1 						STD_ON	/* NOT CONFIGURABLE IN TOOLS */
+#define OS_USE_APPLICATIONS			STD_ON
+#define OS_USE_MEMORY_PROT			STD_OFF	/* NOT CONFIGURABLE IN TOOLS */
+#define OS_USE_TASK_TIMING_PROT		STD_OFF	/* NOT CONFIGURABLE IN TOOLS */
+#define OS_USE_ISR_TIMING_PROT		STD_OFF	/* NOT CONFIGURABLE IN TOOLS */
+//#define OS_SC3 					STD_ON	/* NOT CONFIGURABLE IN TOOLS */  
 #define OS_STACK_MONITORING			STD_ON
 #define OS_STATUS_EXTENDED			STD_ON
 #define OS_USE_GET_SERVICE_ID		STD_ON
 #define OS_USE_PARAMETER_ACCESS		STD_ON
-#define OS_RES_SCHEDULER			STD_ON
+#define OS_RES_SCHEDULER			STD_ON	/* NOT CONFIGURABLE IN TOOLS */
+
+#define OS_ISR_CNT			0
+#define OS_ISR2_CNT 		0
+#define OS_ISR1_CNT			0
+
+/* New */
+#define OS_ISR_MAX_CNT		10	/* NOT CONFIGURABLE IN TOOLS */
+
 
 #endif /*OS_CFG_H_*/
