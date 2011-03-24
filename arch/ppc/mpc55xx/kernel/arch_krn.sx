@@ -84,6 +84,7 @@
 .global Os_ArchSwapContextTo
 .global Os_ArchSwapContext
 .global Os_ArchSetSpAndCall
+.global Os_Test_And_Set
 #if defined(__CWCC__) && defined(CFG_VLE)
 .section .text_vle,text_vle
 #else
@@ -387,6 +388,28 @@ on_int_stack:
 	li 		r3,OS_ERR_SPURIOUS_INTERRUPT
 	li 		r4, 0
 	mr		r5,r1
+	b 		Os_ArchPanic	
+	
+/**
+ * int Os_Test_And_Set(int* lock, int value)
+ *
+ * returns the old value of lock
+ * 0  : unlocked
+ * >0 : locked  
+ *
+ * r3 - address of lock
+ * r4 - the new value of lock
+ *
+ */
+Os_Test_And_Set: 
+	lwarx 	r5,0,r3 				#load and reserve
+	cmpwi 	r5,0 					#done if word
+	bne 	Os_Test_And_Set_done	#not equal to 0 (already locked)
+	stwcx. 	r4,0,r3 				#try to store non-0
+	bne		Os_Test_And_Set			#loop if lost reservation
+Os_Test_And_Set_done:
+	mr	r3,r5
+	blrl
 	b 		Os_ArchPanic
 	
 vectorOk:
