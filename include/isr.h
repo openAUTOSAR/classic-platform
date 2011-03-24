@@ -39,17 +39,11 @@
 #define ISR_TYPE_2			1
 
 /* ----------------------------[macro]---------------------------------------*/
-#define ISR_DECLARE_ISR2( _name, _entry, _unique, _vector, _priority, _app )        \
-	  const OsIsrConstType _entry ## _unique = { \
-			.vector =          _vector,       \
-			.type =             ISR_TYPE_2,   \
-			.priority =        _priority,     \
-			.entry =           _entry,        \
-			.name =            _name,         \
-			.resourceMask =     0,            \
-			.timingProtPtr =    NULL,         \
-			.appOwner =        _app,          \
-		  }
+#ifdef CFG_DRIVERS_USE_CONFIG_ISRS
+
+#define ISR_INSTALL_ISR2( _name, _entry, _vector, _priority, _app )
+
+#else /* CFG_DRIVERS_USE_CONFIG_ISRS */
 
 #define _ISR_INSTALL_ISR2( _name, _entry, _unique, _vector, _priority, _app )        \
 	do {                                         \
@@ -69,6 +63,7 @@
 #define ISR_INSTALL_ISR2( _name, _entry, _vector, _priority, _app )        \
 		_ISR_INSTALL_ISR2( _name, _entry, __LINE__, _vector, _priority, _app )
 
+#endif /* CFG_DRIVERS_USE_CONFIG_ISRS */
 
 /* ----------------------------[typedef]-------------------------------------*/
 

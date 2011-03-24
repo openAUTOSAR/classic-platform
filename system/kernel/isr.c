@@ -295,10 +295,13 @@ void *Os_Isr( void *stack, int16_t vector ) {
 
 	/* Check so that the ISR2 have called ReleaseResource() for each GetResource() */
 	/** @req OS369 */
+	/* Removed because of null pointer.
+	 * TODO: ISR2 can't use Resources yet
 	if( Os_TaskOccupiesResources(taskPtr) ) {
 		Os_ResourceFreeAll(taskPtr);
 		ERRORHOOK(E_OS_RESOURCE);
 	}
+	*/
 
 	Os_IsrVarList[isrId].state = ST_ISR_NOT_RUNNING;
 

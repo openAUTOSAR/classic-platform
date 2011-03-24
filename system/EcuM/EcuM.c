@@ -19,6 +19,7 @@
 #include "Modules.h"
 #include <string.h>
 #include <Os.h>
+#include "isr.h"
 #include "EcuM_Internals.h"
 #include "EcuM_Cbk.h"
 #include "Mcu.h"

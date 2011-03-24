@@ -33,7 +33,9 @@
 							  }
 
 void Os_CfgValidate(void ) {
+#if (COUNTER_CNT!=0)
 	OS_VALIDATE(OS_COUNTER_CNT,ARRAY_SIZE(counter_list));
+#endif
 #if (RESOURCE_CNT!=0)
 	OS_VALIDATE(OS_RESOURCE_CNT,ARRAY_SIZE(resource_list));
 #endif
@@ -84,7 +86,11 @@ OsResourceType *Os_CfgGetResource( ResourceType resource ) {
 /*-----------------------------------------------------------------*/
 
 OsCounterType *Os_CfgGetCounter(CounterType count_id) {
+#if OS_COUNTER_CNT!=0
 	return &counter_list[count_id];
+#else
+	return NULL;
+#endif
 }
 
 /*-----------------------------------------------------------------*/
@@ -116,17 +122,18 @@ OsAlarmType *Os_CfgGetAlarmObj( AlarmType alarm_id ) {
 }
 
 StatusType Os_CfgGetAlarmBase(AlarmType alarm_id, AlarmBaseRefType info) {
-
+#if (OS_ALARM_CNT!=0)
 	StatusType rv = E_OK;
 
 	if( alarm_id >= OS_ALARM_CNT ) {
 		rv = E_OS_ID;
 	} else {
-#if (OS_ALARM_CNT!=0)
 		*info = alarm_list[alarm_id].counter->alarm_base;
-#endif
 	}
 	return rv;
+#else
+	return E_OS_ID;
+#endif
 }
 
 

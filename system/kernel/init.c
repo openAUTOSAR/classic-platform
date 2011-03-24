@@ -109,9 +109,6 @@ void InitOS( void ) {
 
 	Os_ArchInit();
 
-	/* Get the numbers defined in the editor */
-	Os_Sys.isrCnt = OS_ISR_CNT;
-
 	// Assign pcb list and init ready queue
 	Os_Sys.pcb_list = Os_TaskVarList;
 	TAILQ_INIT(& Os_Sys.ready_head);

@@ -38,7 +38,7 @@
 
 #define GEN_APPLICATION_HEAD const OsAppConstType Os_AppConst[OS_APPLICATION_CNT]
 
-#define GEN_APPLICATION(	_id,_name, _trusted, _core, _startuphook,_shutdownhook, _errorhook, \
+#define GEN_APPLICATION(	_id, _name, _trusted, _core, _startuphook, _shutdownhook, _errorhook, \
 							_restart_task  ) \
 {												\
 	.appId = _id, 						\
@@ -124,7 +124,7 @@
 #define GEN_ISR2( _name, _vector, _priority, _entry, _appOwner, _resourceMask ) \
 {                                      \
 		.vector = _vector,             \
-		.type = ISR_TYPE_1,            \
+		.type = ISR_TYPE_2,            \
 		.priority = _priority,         \
 		.entry = _entry,               \
 		.name = _name,                 \
