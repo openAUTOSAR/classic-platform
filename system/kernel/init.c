@@ -20,10 +20,19 @@
 #include "internal.h"
 #include "arc.h"
 #include "debug.h"
+#include "task_i.h"
+#include "sys.h"
+#include "isr.h"
+#include "counter_i.h"
+#include "application.h"
+#include "alarm_i.h"
 #include "arch.h"
 
 /* ----------------------------[private define]------------------------------*/
 /* ----------------------------[private macro]-------------------------------*/
+#define OS_VALIDATE(_a,_b)   if((_a)!=(_b) ) { \
+								assert(#_a  #_b); \
+							  }
 /* ----------------------------[private typedef]-----------------------------*/
 /* ----------------------------[private function prototypes]-----------------*/
 /* ----------------------------[private variables]---------------------------*/
@@ -33,7 +42,31 @@ Os_IntCounterType Os_IntDisableAllCnt;
 Os_IntCounterType Os_IntSuspendAllCnt;
 Os_IntCounterType Os_IntSuspendOsCnt;
 
+OsErrorType os_error;
+
 /* ----------------------------[private functions]---------------------------*/
+
+
+static void Os_CfgValidate(void ) {
+
+#if 0
+	OS_VALIDATE(OS_COUNTER_CNT,ARRAY_SIZE(counter_list));
+#if (RESOURCE_CNT!=0)
+	OS_VALIDATE(OS_RESOURCE_CNT,ARRAY_SIZE(resource_list));
+#endif
+	OS_VALIDATE(OS_TASK_CNT ,ARRAY_SIZE( Os_TaskConstList));
+#if (RESOURCE_CNT!=0)
+	OS_VALIDATE(OS_ALARM_CNT,ARRAY_SIZE(alarm_list));
+#endif
+#if (OS_SCHTBL_CNT!=0)
+	OS_VALIDATE(OS_SCHTBL_CNT, ARRAY_SIZE(sched_list));
+#endif
+#else
+#warning Enable this again
+#endif
+
+}
+
 /* ----------------------------[public functions]----------------------------*/
 
 extern uint32_t McuE_GetSystemClock( void );

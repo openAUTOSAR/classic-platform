@@ -274,6 +274,10 @@
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsEvent/OsEventMask</DEFINITION-REF>
                   <VALUE>1</VALUE>
                 </INTEGER-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsEvent/ArcOsEventAutoMask</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
             <CONTAINER UUID="3602409e-1b1a-4c75-bf15-45449d37570f">
@@ -357,6 +361,10 @@
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsEvent/OsEventMask</DEFINITION-REF>
                   <VALUE>1</VALUE>
                 </INTEGER-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsEvent/ArcOsEventAutoMask</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
             <CONTAINER UUID="fb419017-ef2b-4217-b417-098a2317e6b0">

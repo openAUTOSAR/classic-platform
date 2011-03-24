@@ -19,6 +19,8 @@
 #include "Os.h"
 
 #include "internal.h"
+#include "task_i.h"
+#include "sys.h"
 #include "arc.h"
 #include "arch.h"
 
@@ -32,6 +34,67 @@ OsTaskVarType Os_TaskVarList[OS_TASK_CNT];
 #endif
 
 /* ----------------------------[private functions]---------------------------*/
+// schedule()
+static inline void Os_TaskRunningToReady( OsTaskVarType *pcb ) {
+	assert(pcb->state == ST_RUNNING );
+	pcb->state = ST_READY;
+}
+
+
+// ActivateTask(pid)
+// SetEvent(pid)
+void Os_TaskMakeReady( OsTaskVarType *pcb ) {
+	if( !( pcb->state & ( ST_READY | ST_RUNNING )) ) {
+		pcb->state = ST_READY;
+		TAILQ_INSERT_TAIL(& Os_Sys.ready_head,pcb,ready_list);
+		OS_DEBUG(D_TASK,"Added %s to ready list\n",pcb->name);
+	}
+}
+
+// WaitEvent
+void Os_TaskMakeWaiting( OsTaskVarType *pcb )
+{
+	assert( pcb->state & (ST_READY|ST_RUNNING) );
+
+	pcb->state = ST_WAITING;
+	TAILQ_REMOVE(&Os_Sys.ready_head,pcb,ready_list);
+	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->name);
+}
+
+// Sleeping
+#if defined(USE_KERNEL_EXTRA)
+static inline void Os_TaskMakeSleeping( OsTaskVarType *pcb )
+{
+	assert( pcb->state & (ST_READY|ST_RUNNING) );
+
+	pcb->state = ST_WAITING | ST_SLEEPING;
+	TAILQ_REMOVE(&Os_Sys.ready_head,pcb,ready_list);
+	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->name);
+}
+
+
+static inline void Os_TaskMakeWaitingOnSem( OsTaskVarType *pcb )
+{
+	assert( pcb->state & (ST_READY|ST_RUNNING) );
+
+	pcb->state = ST_WAITING_SEM;
+	TAILQ_REMOVE(&Os_Sys.ready_head,pcb,ready_list);
+	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->name);
+}
+
+
+#endif
+
+// Terminate task
+static inline void Os_TaskMakeSuspended( OsTaskVarType *pcb )
+	{
+	assert( pcb->state & (ST_READY|ST_RUNNING) );
+	pcb->state = ST_SUSPENDED;
+	TAILQ_REMOVE(&Os_Sys.ready_head,pcb,ready_list);
+	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->name);
+}
+
+
 /* ----------------------------[public functions]----------------------------*/
 
 
@@ -53,7 +116,7 @@ void Os_TaskStartExtended( void ) {
 
 	OsTaskVarType *pcb;
 
-	pcb = Os_TaskGetCurrent();
+	pcb = Os_SysTaskGetCurr();
 #if 0
 	Os_ResourceGetInternal();
 	Os_TaskMakeRunning(pcb);
@@ -76,13 +139,13 @@ void Os_TaskStartExtended( void ) {
 
 	/** @req OS239 */
 	Irq_Disable();
-	if( Os_IrqAnyDisabled() ) {
-		Os_IrqClearAll();
+	if( Os_SysIntAnyDisabled() ) {
+		Os_SysIntClearAll();
 	}
 
 	/** @req OS070 */
 	if( Os_TaskOccupiesResources(pcb) ) {
-		Os_ResourceFreeAll(pcb);
+		Os_TaskResourceFreeAll(pcb);
 	}
 
 	/** @req OS069 */
@@ -101,7 +164,7 @@ void Os_TaskStartBasic( void ) {
 
 	OsTaskVarType *pcb;
 
-	pcb = Os_TaskGetCurrent();
+	pcb = Os_SysTaskGetCurr();
 #if 0
 	Os_ResourceGetInternal();
 	Os_TaskMakeRunning(pcb);
@@ -113,13 +176,13 @@ void Os_TaskStartBasic( void ) {
 
 	/** @req OS239 */
 	Irq_Disable();
-	if( Os_IrqAnyDisabled() ) {
-		Os_IrqClearAll();
+	if( Os_SysIntAnyDisabled() ) {
+		Os_SysIntClearAll();
 	}
 
 	/** @req OS070 */
 	if( Os_TaskOccupiesResources(pcb) ) {
-		Os_ResourceFreeAll(pcb);
+		Os_TaskResourceFreeAll(pcb);
 	}
 
 	/** @req OS069 */
@@ -336,7 +399,7 @@ OsTaskVarType *Os_FindTopPrioTask( void ) {
  */
 void Os_Dispatch( uint32_t op ) {
 	OsTaskVarType *pcbPtr;
-	OsTaskVarType *currPcbPtr = Os_TaskGetCurrent();
+	OsTaskVarType *currPcbPtr = Os_SysTaskGetCurr();
 
 	assert(Os_Sys.intNestCnt == 0);
 	assert(Os_SchedulerResourceIsFree());
@@ -474,7 +537,7 @@ void Os_Dispatch( uint32_t op ) {
  */
 
 void Os_TaskSwapContext(OsTaskVarType *old_pcb, OsTaskVarType *new_pcb ) {
-	set_curr_pcb(new_pcb);
+	Os_SysTaskSetCurr(new_pcb);
 #if	(OS_USE_APPLICATIONS == STD_ON)
 	Os_Sys.currApplId = new_pcb->constPtr->applOwnerId;
 #endif
@@ -487,7 +550,7 @@ void Os_TaskSwapContext(OsTaskVarType *old_pcb, OsTaskVarType *new_pcb ) {
 }
 
 void Os_TaskSwapContextTo(OsTaskVarType *old_pcb, OsTaskVarType *new_pcb ) {
-	set_curr_pcb(new_pcb);
+	Os_SysTaskSetCurr(new_pcb);
 #if	(OS_USE_APPLICATIONS == STD_ON)
 	Os_Sys.currApplId = new_pcb->constPtr->applOwnerId;
 #endif
@@ -590,7 +653,7 @@ ISRType GetISRID( void ) {
 	}
 
 	/** @req OS263 */
-	return (ISRType)Os_TaskGetCurrent()->constPtr->pid;
+	return (ISRType)Os_SysTaskGetCurr()->constPtr->pid;
 }
 
 static inline void Os_Arc_SetCleanContext( OsTaskVarType *pcb ) {
@@ -652,7 +715,10 @@ StatusType ActivateTask( TaskType TaskID ) {
      * */
 	if( pcb->constPtr->applOwnerId != Os_Sys.currApplId ) {
 		/* We are activating a task in another application */
-		if( Os_AppVar[Os_Sys.currApplId].state != APPLICATION_ACCESSIBLE ) {
+		ApplicationStateType state;
+		/* We are activating a task in another application */
+		GetApplicationState(Os_Sys.currApplId,&state);
+		if( state != APPLICATION_ACCESSIBLE ) {
 			rv=E_OS_ACCESS;
 			goto err;
 		}
@@ -660,7 +726,7 @@ StatusType ActivateTask( TaskType TaskID ) {
 #endif
 
 	/* @req OS093 ActivateTask */
-	if( Os_IrqAnyDisabled() ) {
+	if( Os_SysIntAnyDisabled() ) {
 		/* Standard */
 		rv = E_OS_DISABLEDINT;
 		goto err;
@@ -684,9 +750,9 @@ StatusType ActivateTask( TaskType TaskID ) {
 	}
 
 	/* Preempt only if we are preemptable and target has higher prio than us */
-	if(	(Os_TaskGetCurrent()->constPtr->scheduling == FULL) &&
+	if(	(Os_SysTaskGetCurr()->constPtr->scheduling == FULL) &&
 		(Os_Sys.intNestCnt == 0) &&
-		(pcb->activePriority > Os_TaskGetCurrent()->activePriority) &&
+		(pcb->activePriority > Os_SysTaskGetCurr()->activePriority) &&
 		(Os_SchedulerResourceIsFree()))
 	{
 		Os_Dispatch(OP_ACTIVATE_TASK);
@@ -727,7 +793,7 @@ StatusType ActivateTask( TaskType TaskID ) {
  */
 
 StatusType TerminateTask( void ) {
-	OsTaskVarType *curr_pcb = Os_TaskGetCurrent();
+	OsTaskVarType *curr_pcb = Os_SysTaskGetCurr();
 	StatusType rv = E_OK;
 	uint32_t flags;
 
@@ -766,7 +832,7 @@ StatusType TerminateTask( void ) {
 }
 
 StatusType ChainTask( TaskType TaskId ) {
-	OsTaskVarType *curr_pcb = Os_TaskGetCurrent();
+	OsTaskVarType *curr_pcb = Os_SysTaskGetCurr();
 	StatusType rv = E_OK;
 	uint32_t flags;
 	OsTaskVarType *pcb = Os_TaskGet(TaskId);
@@ -850,9 +916,9 @@ StatusType ChainTask( TaskType TaskId ) {
 StatusType Schedule( void ) {
 	StatusType rv = E_OK;
 	uint32_t flags;
-	OsTaskVarType *curr_pcb = get_curr_pcb();
+	OsTaskVarType *curr_pcb = Os_SysTaskGetCurr();
 
-	OS_DEBUG(D_TASK,"# Schedule %s\n",Os_TaskGetCurrent()->name);
+	OS_DEBUG(D_TASK,"# Schedule %s\n",Os_SysTaskGetCurr()->name);
 
 	/* Check that we are not calling from interrupt context */
 	if( Os_Sys.intNestCnt != 0 ) {
@@ -865,7 +931,7 @@ StatusType Schedule( void ) {
 		goto err;
 	}
 
-	assert( Os_TaskGetCurrent()->state & ST_RUNNING );
+	assert( Os_SysTaskGetCurr()->state & ST_RUNNING );
 
 	/* We need to figure out if we have an internal resource,
 	 * otherwise no re-scheduling.
@@ -873,14 +939,14 @@ StatusType Schedule( void ) {
 	 * FULL - Assigned internal resource OR
 	 *        No assigned internal resource.
 	 * */
-	if( Os_TaskGetCurrent()->constPtr->scheduling != NON ) {
+	if( Os_SysTaskGetCurr()->constPtr->scheduling != NON ) {
 		return E_OK;
 	}
 
 	Irq_Save(flags);
 	OsTaskVarType* top_pcb = Os_TaskGetTop();
 	/* only dispatch if some other ready task has higher prio */
-	if (top_pcb->activePriority > Os_TaskGetCurrent()->activePriority) {
+	if (top_pcb->activePriority > Os_SysTaskGetCurr()->activePriority) {
 		Os_Dispatch(OP_SCHEDULE);
 	}
 

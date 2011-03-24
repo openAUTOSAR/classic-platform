@@ -1,0 +1,30 @@
+
+
+
+NAMING
+  Internal calls are prefixed with Os_<module>. Example Os_TaskResourceFreeAll
+ 
+
+MEMORY 
+  The kernel is designed to be quite modest in allocating RAM. To do this there is a 
+  mix of os-resources being allocated as .data and as .bss+const.  
+  .data
+    Alarms
+    + more.
+    
+  .bss+const
+    Tasks:    Const: ~12*4*<task_cnt> bytes.
+              Is it worth it? 500 bytes for 10 tasks
+    Isr:      Const: ~24*<isr_cnt>
+              In a PPC system have lots of ISRs. Only CAN can be easily be 48 interrupts
+              so that amounts to 24*48= 1152bytes.                      
+ 
+   Having lots of const data will of course have an impact on speed since RAM is usually 
+   much faster than Flash.   
+ 
+ 
+IMPROVEMENT:
+  - Implement a common stack for tasks with same priority (on what level, internal resource?) 
+  - PPC, Implement SPE exception and only save 64-bit registers for the tasks that use it. 
+         (usually floating point)
+  

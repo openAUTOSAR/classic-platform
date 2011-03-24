@@ -1,4 +1,5 @@
 
+EXAMPLENAME=kernel_extra
 ROOTDIR?=../../../..
 include $(ROOTDIR)/examples/build_example.mk
 

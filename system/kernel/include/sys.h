@@ -16,6 +16,41 @@
 #ifndef SYS_H_
 #define SYS_H_
 
+#include "task_i.h"
+
+/* STD container : OsOs. OSEK properties
+ * Class: ALL
+ *
+ * OsScalabilityClass:			0..1 SC1,SC2,SC3,SC4
+ * OsStackMonitoring:			1    Stack monitoring of tasks/category 2
+ * OsStatus                 	1    EXTENDED or STANDARD status
+ * OsUseGetServiceId			1    We can use the  OSErrorGetServiceId() function
+ * OsUseParameterAccess			1    We save the parameters in OSError_XX_YY()
+ * OsUseResScheduler			1
+ * OsHooks[C]               	1
+ *
+ * From OSEK/VDX oil:
+ *
+ * OS ExampleOS {
+ *   STATUS = STANDARD;
+ *   STARTUPHOOK = TRUE;
+ *   ERRORHOOK = TRUE;
+ *   SHUTDOWNHOOK = TRUE;
+ *   PRETASKHOOK = FALSE;
+ *   POSTTASKHOOK = FALSE;
+ *   USEGETSERVICEID = FALSE;
+ *   USEPARAMETERACCESS = FALSE;
+ *   USERESSCHEDULER = TRUE;
+ * };
+ *
+ * OS_SC1 | OS_SC2 | OS_SC3 | OS_SC4
+ * OS_STACK_MONITORING
+ * OS_STATUS_EXTENDED  / OS_STATUS_STANDARD
+ * OS_USE_GET_SERVICE_ID
+ * OS_USE_PARAMETER_ACCESS
+ * OS_RES_SCHEDULER
+ * */
+
 struct os_conf_global_hook_s;
 
 typedef enum  {
@@ -94,15 +129,36 @@ typedef struct Os_Sys {
 
 extern Os_SysType Os_Sys;
 
-static inline OsTaskVarType *Os_TaskGetCurrent(  void ) {
+static inline _Bool Os_SchedulerResourceIsFree() {
+	return (Os_Sys.resScheduler.owner == NO_TASK_OWNER );
+}
+
+static inline void Os_SysTaskSetCurr( OsTaskVarType *pcb ) {
+	Os_Sys.currTaskPtr = pcb;
+}
+
+static inline OsTaskVarType *Os_SysTaskGetCurr( void ) {
 	return Os_Sys.currTaskPtr;
 }
 
-#if 0
-static uint32_t OSErrorGetServiceId( void ) {
-	return Os_Sys.serviceId;
+/**
+ * Check if any of the interrupt disable/suspends counters is != 0
+ *
+ * @return 1 if there are outstanding disable/suspends
+ */
+static inline _Bool Os_SysIntAnyDisabled( void ) {
+	return ((Os_IntDisableAllCnt | Os_IntSuspendAllCnt | Os_IntSuspendOsCnt) != 0);
 }
-#endif
+
+/**
+ * Clear all disable/system interrupts
+ */
+static inline void Os_SysIntClearAll( void ) {
+	Os_IntDisableAllCnt = 0;
+	Os_IntSuspendAllCnt = 0;
+	Os_IntSuspendOsCnt = 0;
+}
+
 
 
 #endif /*SYS_H_*/

@@ -1,6 +1,8 @@
 
 #include "Os.h"
 #include "internal.h"
+#include "task_i.h"
+#include "sys.h"
 #include <assert.h>
 #include <string.h>
 
@@ -23,7 +25,7 @@ StatusType Sleep( TickType sleep ) {
 
 	Irq_Save(flags);
 
-	pcbPtr = Os_TaskGetCurrent();
+	pcbPtr = Os_SysTaskGetCurr();
 
 	if (pcbPtr->constPtr->proc_type != PROC_EXTENDED) {
 		return E_OS_ACCESS;

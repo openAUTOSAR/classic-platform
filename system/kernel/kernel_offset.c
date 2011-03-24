@@ -17,9 +17,8 @@
 #include <stddef.h>
 
 #include "Os.h"
-#include "kernel.h"
-#include "pcb.h"
 //#include "app_i.h"
+#include "task_i.h"
 #include "sys.h"
 #include "application.h"
 

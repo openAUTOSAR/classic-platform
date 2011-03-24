@@ -16,6 +16,7 @@
 #include "Os.h"
 #include "internal.h"
 #include "isr.h"
+#include "counter_i.h"
 #include "arc.h"
 
 /**

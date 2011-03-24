@@ -15,6 +15,9 @@
 
 #include "Os.h"
 #include "internal.h"
+#include "task_i.h"
+#include "resource_i.h"
+#include "sys.h"
 #include <assert.h>
 #include <string.h>
 
@@ -106,33 +109,6 @@ TODO:
 #define valid_internal_id() (rPtr->nr < OS_RESOURCE_CNT) //&& (rPtr->type == RESOURCE_TYPE_INTERNAL) )
 
 
-void Os_ResourceAlloc( OsResourceType *rPtr, OsTaskVarType *pcbPtr) {
-	/* Save old task prio in resource and set new task prio */
-	rPtr->owner = pcbPtr->constPtr->pid;
-	rPtr->old_task_prio = pcbPtr->activePriority;
-	pcbPtr->activePriority = rPtr->ceiling_priority;
-
-	if( rPtr->type != RESOURCE_TYPE_INTERNAL ) {
-		TAILQ_INSERT_TAIL(&pcbPtr->resourceHead, rPtr, listEntry);
-	}
-}
-
-void Os_ResourceFree( OsResourceType *rPtr , OsTaskVarType *pcbPtr) {
-	assert( rPtr->owner == pcbPtr->constPtr->pid );
-	rPtr->owner = NO_TASK_OWNER;
-	pcbPtr->activePriority = rPtr->old_task_prio;
-
-	if( rPtr->type != RESOURCE_TYPE_INTERNAL ) {
-		/* The list can't be empty here */
-		assert( !TAILQ_EMPTY(&pcbPtr->resourceHead) );
-
-		/* The list should be popped in LIFO order */
-		assert( TAILQ_LAST(&pcbPtr->resourceHead, head) == rPtr );
-
-		/* Remove the entry */
-		TAILQ_REMOVE(&pcbPtr->resourceHead, rPtr, listEntry);
-	}
-}
 
 /**
  * This call serves to enter critical sections in the code that are
@@ -162,7 +138,7 @@ void Os_ResourceFree( OsResourceType *rPtr , OsTaskVarType *pcbPtr) {
 
 StatusType GetResource( ResourceType ResID ) {
 	StatusType rv = E_OK;
-	OsTaskVarType *pcbPtr = Os_TaskGetCurrent();
+	OsTaskVarType *pcbPtr = Os_SysTaskGetCurr();
 	OsResourceType *rPtr;
 	uint32_t flags;
 
@@ -178,7 +154,7 @@ StatusType GetResource( ResourceType ResID ) {
 			goto err;
 		}
 
-		rPtr = Os_CfgGetResource(ResID);
+		rPtr = Os_ResourceGet(ResID);
 	}
 
 	/* Check for invalid configuration */
@@ -190,7 +166,7 @@ StatusType GetResource( ResourceType ResID ) {
 		goto err;
 	}
 
-	Os_ResourceAlloc(rPtr,pcbPtr);
+	Os_TaskResourceAdd(rPtr,pcbPtr);
 	Irq_Restore(flags);
 
 	if (rv != E_OK)
@@ -214,7 +190,7 @@ StatusType GetResource( ResourceType ResID ) {
 
 StatusType ReleaseResource( ResourceType ResID) {
 	StatusType rv = E_OK;
-	OsTaskVarType *pcbPtr = Os_TaskGetCurrent();
+	OsTaskVarType *pcbPtr = Os_SysTaskGetCurr();
 	OsResourceType *rPtr;
 	uint32_t flags;
 
@@ -227,7 +203,7 @@ StatusType ReleaseResource( ResourceType ResID) {
 			rv = E_OS_ID;
 			goto err;
 		}
-		rPtr = Os_CfgGetResource(ResID);
+		rPtr = Os_ResourceGet(ResID);
 	}
 
 	/* Check for invalid configuration */
@@ -245,7 +221,7 @@ StatusType ReleaseResource( ResourceType ResID) {
 		goto err;
 	}
 
-	Os_ResourceFree(rPtr,pcbPtr);
+	Os_TaskResourceRemove(rPtr,pcbPtr);
 
 	/* do a rescheduling (in some cases) (see OSEK OS 4.6.1) */
 	if ( (pcbPtr->constPtr->scheduling == FULL) &&
@@ -255,7 +231,7 @@ StatusType ReleaseResource( ResourceType ResID) {
 		OsTaskVarType* top_pcb = Os_TaskGetTop();
 
 		/* only dispatch if some other ready task has higher prio */
-		if (top_pcb->activePriority > Os_TaskGetCurrent()->activePriority) {
+		if (top_pcb->activePriority > Os_SysTaskGetCurr()->activePriority) {
 			Os_Dispatch(OP_RELEASE_RESOURCE);
 		}
 	}
@@ -266,28 +242,28 @@ StatusType ReleaseResource( ResourceType ResID) {
 
 
 void Os_ResourceGetInternal( void ) {
-	OsTaskVarType *pcbPtr = Os_TaskGetCurrent();
+	OsTaskVarType *pcbPtr = Os_SysTaskGetCurr();
 	OsResourceType *rt = pcbPtr->constPtr->resourceIntPtr;
 
 	if( rt != NULL ) {
 		OS_DEBUG(D_RESOURCE,"Get IR proc:%s prio:%u old_task_prio:%u\n",
-				get_curr_pcb()->name,
+				Os_SysTaskGetCurr()->name,
 				(unsigned)rt->ceiling_priority,
 				(unsigned)rt->old_task_prio);
-		Os_ResourceAlloc(rt,pcbPtr);
+		Os_TaskResourceAdd(rt,pcbPtr);
 	}
 }
 
 void Os_ResourceReleaseInternal( void ) {
-	OsTaskVarType *pcbPtr = Os_TaskGetCurrent();
+	OsTaskVarType *pcbPtr = Os_SysTaskGetCurr();
 	OsResourceType *rt = pcbPtr->constPtr->resourceIntPtr;
 
 	if(  rt != NULL ) {
 		OS_DEBUG(D_RESOURCE,"Rel IR proc:%s prio:%u old_task_prio:%u\n",
-				get_curr_pcb()->name,
+				Os_SysTaskGetCurr()->name,
 				(unsigned)rt->ceiling_priority,
 				(unsigned)rt->old_task_prio);
-		Os_ResourceFree(rt,pcbPtr);
+		Os_TaskResourceRemove(rt,pcbPtr);
 	}
 }
 
@@ -319,7 +295,7 @@ void Os_ResourceInit( void ) {
 	 * Note that this applies both internal and standard resources.
 	 * */
 	for( int i=0; i < OS_RESOURCE_CNT; i++) {
-		rsrc_p = Os_CfgGetResource(i);
+		rsrc_p = Os_ResourceGet(i);
 		topPrio = 0;
 
 		for( int pi = 0; pi < OS_TASK_CNT; pi++) {

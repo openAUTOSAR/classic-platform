@@ -155,5 +155,21 @@ void Os_IsrInit( void );
 ISRType Os_IsrAdd( const OsIsrConstType * restrict isrPtr );
 const OsIsrConstType * Os_IsrGet( int16_t vector);
 void Os_IsrGetStackInfo( OsIsrStackType *stack );
+void *Os_Isr( void *stack, int16_t vector);
+#if defined(CFG_ARM_CM3)
+void Os_Isr_cm3( void *isr_p );
+void TailChaining(void *stack);
+#endif
+
+static inline ApplicationType Os_IsrGetApplicationOwner( ISRType id ) {
+	ApplicationType rv = INVALID_OSAPPLICATION;
+
+#if (OS_ISR_CNT!=0)
+	if( id < OS_ISR_CNT ) {
+		Os_IsrVarList[id]->constPtr->appOwner;
+	}
+#endif
+	return rv;
+}
 
 #endif /*ISR_H_*/

@@ -17,6 +17,8 @@
 /* ----------------------------[includes]------------------------------------*/
 
 #include "internal.h"
+#include "Cpu.h"
+#include "sys.h"
 #include "asm_ppc.h"
 #include "mpc55xx.h"
 #include "arch_stack.h"

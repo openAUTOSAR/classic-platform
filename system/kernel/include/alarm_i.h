@@ -125,8 +125,48 @@ typedef struct OsAlarm {
 
 } OsAlarmType;
 
+extern GEN_ALARM_HEAD;
 
 void Os_AlarmCheck(OsCounterType *c_p);
 void Os_AlarmAutostart(void);
+
+static inline OsAlarmType *Os_AlarmGet( AlarmType alarm_id ) {
+#if (OS_ALARM_CNT!=0)
+	if( alarm_id < OS_ALARM_CNT) {
+	  return &alarm_list[alarm_id];
+	} else {
+		return NULL;
+	}
+#else
+	return NULL;
+#endif
+}
+
+
+static inline StatusType Os_AlarmGetBase(AlarmType alarm_id, AlarmBaseRefType info) {
+
+	StatusType rv = E_OK;
+
+	if( alarm_id >= OS_ALARM_CNT ) {
+		rv = E_OS_ID;
+	} else {
+#if (OS_ALARM_CNT!=0)
+		*info = alarm_list[alarm_id].counter->alarm_base;
+#endif
+	}
+	return rv;
+}
+
+
+static inline ApplicationType Os_AlarmGetApplicationOwner( AlarmType id ) {
+	ApplicationType rv;
+	if( id < OS_ALARM_CNT ) {
+		rv = Os_AlarmGet(id)->applOwnerId;
+	} else {
+		rv = INVALID_OSAPPLICATION;
+	}
+	return rv;
+}
+
 
 #endif /*ALARM_I_H_*/

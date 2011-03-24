@@ -19,8 +19,11 @@
 #endif
 #include <stdint.h>
 #include <string.h>
+#include "Os.h"
 #include "Compiler.h"
 #include "internal.h"
+#include "application.h"
+#include "sys.h"
 #include "isr.h"
 #include "irq.h"
 
@@ -170,7 +173,7 @@ void TailChaining(void *stack)
 	POSTTASKHOOK();
 
 	/* Save info for preempted pcb */
-	pPtr = get_curr_pcb();
+	pPtr = Os_SysTaskGetCurr();
 	pPtr->stack.curr = stack;
 	pPtr->state = ST_READY;
 	OS_DEBUG(D_TASK,"Preempted %s\n",pPtr->name);
@@ -214,15 +217,15 @@ void Os_Isr_cm3( void *isr_p ) {
 
 	/* Check so that ISR2 haven't disabled the interrupts */
 	/** @req OS368 */
-	if( Os_IrqAnyDisabled() ) {
-		Os_IrqClearAll();
+	if( Os_SysIntAnyDisabled() ) {
+		Os_SysIntClearAll();
 		ERRORHOOK(E_OS_DISABLEDINT);
 	}
 
 	/* Check so that the ISR2 have called ReleaseResource() for each GetResource() */
 	/** @req OS369 */
 	if( Os_TaskOccupiesResources(isrPtr) ) {
-		Os_ResourceFreeAll(isrPtr);
+		Os_TaskResourceFreeAll(isrPtr);
 		ERRORHOOK(E_OS_RESOURCE);
 	}
 
@@ -261,7 +264,7 @@ void *Os_Isr( void *stack, int16_t vector ) {
 		POSTTASKHOOK();
 
 		/* Save info for preempted pcb */
-		taskPtr = get_curr_pcb();
+		taskPtr = Os_SysTaskGetCurr();
 		taskPtr->stack.curr = stack;
 		taskPtr->state = ST_READY;
 		OS_DEBUG(D_TASK,"Preempted %s\n",taskPtr->name);
@@ -288,15 +291,15 @@ void *Os_Isr( void *stack, int16_t vector ) {
 
 	/* Check so that ISR2 haven't disabled the interrupts */
 	/** @req OS368 */
-	if( Os_IrqAnyDisabled() ) {
-		Os_IrqClearAll();
+	if( Os_SysIntAnyDisabled() ) {
+		Os_SysIntClearAll();
 		ERRORHOOK(E_OS_DISABLEDINT);
 	}
 
 	/* Check so that the ISR2 have called ReleaseResource() for each GetResource() */
 	/** @req OS369 */
 	if( Os_TaskOccupiesResources(taskPtr) ) {
-		Os_ResourceFreeAll(taskPtr);
+		Os_TaskResourceFreeAll(taskPtr);
 		ERRORHOOK(E_OS_RESOURCE);
 	}
 

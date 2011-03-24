@@ -54,6 +54,8 @@
 
 #if (OS_USE_APPLICATIONS == STD_ON)
 
+#include "os_config_macros.h"
+
 /* STD container : OsApplicationHooks
  * class: 3,4
  * OsAppErrorHook:				1    Bool
@@ -118,11 +120,22 @@ typedef struct OsApplication {
 	int 	restartTaskId;
 } OsAppConstType;
 
+#if ( OS_SC1 == STD_ON ) || ( OS_SC4 == STD_ON )
+typedef void ( * trusted_func_t)( TrustedFunctionIndexType , TrustedFunctionParameterRefType );
+#endif
+
 #if OS_APPLICATION_CNT!=0
 extern OsAppVarType Os_AppVar[OS_APPLICATION_CNT];
 #endif
 
-uint8_t Os_ApplGetCore( ApplicationType appl );
+extern GEN_APPLICATION_HEAD;
+
+static inline uint8_t Os_ApplGetCore( ApplicationType appl )
+{
+	return Os_AppConst[appl].core;
+}
+
+void Os_ApplStart( void );
 
 #endif /*  (OS_USE_APPLICATIONS == STD_ON) */
 

@@ -16,6 +16,8 @@
 #include <sys/queue.h>
 #include <stdlib.h>
 #include "Os.h"
+#include "task_i.h"
+#include "sys.h"
 #include "internal.h"
 
 #define VALIDATE_W_RV(_exp,_rv) \
@@ -41,10 +43,10 @@
 
 StatusType WaitEvent( EventMaskType Mask ) {
 
-	OsTaskVarType *curr_pcb = get_curr_pcb();
+	OsTaskVarType *curr_pcb = Os_SysTaskGetCurr();
 	StatusType rv = E_OK;
 
-	OS_DEBUG(D_EVENT,"# WaitEvent %s\n",Os_TaskGetCurrent()->name);
+	OS_DEBUG(D_EVENT,"# WaitEvent %s\n",Os_SysTaskGetCurr()->name);
 
 	if( Os_Sys.intNestCnt != 0 ) {
 		rv =  E_OS_CALLEVEL;
@@ -105,7 +107,7 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 	OsTaskVarType *currPcbPtr;
 	uint32_t flags;
 
-	OS_DEBUG(D_EVENT,"# SetEvent %s\n",Os_TaskGetCurrent()->name);
+	OS_DEBUG(D_EVENT,"# SetEvent %s\n",Os_SysTaskGetCurr()->name);
 
 	if( TaskID  >= OS_TASK_CNT ) {
 		rv = E_OS_ID;
@@ -116,8 +118,11 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 
 #if	(OS_USE_APPLICATIONS == STD_ON)
 	if( destPcbPtr->constPtr->applOwnerId != Os_Sys.currApplId ) {
+
+		ApplicationStateType state;
 		/* We are activating a task in another application */
-		if( Os_AppVar[Os_Sys.currApplId].state != APPLICATION_ACCESSIBLE ) {
+		GetApplicationState(Os_Sys.currApplId,&state);
+		if( state != APPLICATION_ACCESSIBLE ) {
 			rv=E_OS_ACCESS;
 			goto err;
 		}
@@ -156,7 +161,7 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 		if( destPcbPtr->state & ST_WAITING) {
 			Os_TaskMakeReady(destPcbPtr);
 
-			currPcbPtr = Os_TaskGetCurrent();
+			currPcbPtr = Os_SysTaskGetCurr();
 			/* Checking "4.6.2  Non preemptive scheduling" it does not dispatch if NON  */
 			if( (Os_Sys.intNestCnt == 0) &&
 				(currPcbPtr->constPtr->scheduling == FULL) &&
@@ -231,7 +236,7 @@ StatusType ClearEvent( EventMaskType Mask) {
 		goto err;
 	}
 
-	pcb = get_curr_pcb();
+	pcb = Os_SysTaskGetCurr();
 
 	if (pcb->constPtr->proc_type != PROC_EXTENDED) {
 		rv = E_OS_ACCESS;

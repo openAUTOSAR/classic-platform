@@ -16,6 +16,8 @@
 #ifndef INTERNAL_H_
 #define INTERNAL_H_
 
+#include "Platform_Types.h"
+
 /* Using internal.h
  *
  * Os.h
@@ -54,17 +56,85 @@
  */
 
 
+/*
+ * debug settings for os_debug_mask
+ *
+ */
+
+// print to STDOUT. If not set it prints to ramlog
+#define D_STDOUT					0
+#define D_RAMLOG					0
+#define D_MASTER_PRINT				0
+#define D_ISR_MASTER_PRINT			0
+#define D_ISR_RAMLOG				0
+
+#define D_TASK						(1<<0)
+#define D_ALARM						(1<<1)
+#define D_RESOURCE					(1<<2)
+#define D_SCHTBL					(1<<3)
+#define D_EVENT						(1<<4)
+#define D_MESSAGE					(1<<5)
 
 
-#include <stdio.h>
-#include <assert.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include "kernel.h"
-#include "task_i.h"
-#include "ext_config.h"
+/*
+ * Configuration tree:
+ * USE_OS_DEBUG               - Turn on/off all Os_DbgPrintf()
+ * SELECT_OS_CONSOLE          - Select console
+ * USE_RAMLOG                 - Compile ramlog code...
+ *
+ *
+ * Default is to print to RAMLOG.
+ *
+ *
+ * Use cases:
+ * 1. We don't have a RAMLOG (low on RAM) so we want to print to serial console:
+ *     #define CFG_OS_DEBUG = STD_ON
+ *     #define USE_SERIAL_PORT
+ *     #define SELECT_OS_CONSOLE=TTY_SERIAL0
+ * 2. We have a RAMLOG but we have a debugger connected and want the OS debug
+ *    to go there instead:
+ *     #define CFG_OS_DEBUG = STD_ON
+ *     #define USE_RAMLOG
+ *     #define USE_TTY_T32
+ *     #define SELECT_OS_CONSOLE=TTY_T32
+ * 3. We have only the ramlog:
+ *     #define CFG_OS_DEBUG = STD_ON
+ *     #define USE_RAMLOG
+ *     #define SELECT_OS_CONSOLE=TTY_RAMLOG
+ * 4. We use no debug.
+ *    <empty>
+  *
+ */
 
+#if (CFG_OS_DEBUG == STD_ON)
+# if (SELECT_OS_CONSOLE==RAMLOG)
+#  ifndef USE_RAMLOG
+#  error  USE_RAMLOG must be defined.
+#  endif
 
+#  define OS_DEBUG(_mask,...) \
+	do { \
+		if( os_dbg_mask & (_mask) ) { \
+			ramlog_printf("[%08u] : ",(unsigned)GetOsTick()); \
+			ramlog_printf(__VA_ARGS__ );	\
+		}; \
+	} while(0);
+# elif (SELECT_OS_CONSOLE==TTY_NONE)
+#   define OS_DEBUG(_mask,...)
+# else
+#  define OS_DEBUG(_mask,...) \
+	do { \
+		if( os_dbg_mask & (_mask) ) { \
+			printf("[%08u] : %s %d ",(unsigned)GetOsTick(), __FUNCTION__, __LINE__ ); \
+			printf(__VA_ARGS__ );	\
+		}; \
+	} while(0);
+# endif
+#else
+# define OS_DEBUG(_mask,...)
+#endif
+
+extern uint32 os_dbg_mask;
 
 /*
  * Macros for error handling
@@ -153,168 +223,5 @@
 	if( Os_Sys.hooks->PostTaskHook != NULL ) { 	\
 		Os_Sys.hooks->PostTaskHook();			\
 	}
-
-/*
- * PCB manipulating functions
- */
-
-#if 0
-static inline OsTaskidType get_curr_pid( void ) {
-	return Os_Sys.currTaskPtr->pid;
-}
-#endif
-
-static inline OsTaskVarType *get_curr_pcb( void ) {
-	return Os_Sys.currTaskPtr;
-}
-
-static inline void set_curr_pcb( OsTaskVarType *pcb ) {
-	Os_Sys.currTaskPtr = pcb;
-}
-#if 0
-static inline _Bool is_idle_task( OsTaskVarType *pcb ){
-	return (pcb->pid == 0);
-}
-
-
-static inline OsTaskidType get_curr_prio( void ){
-	return Os_Sys.currTaskPtr->prio;
-}
-
-
-static inline TickType get_os_tick( void ) {
-	return Os_Sys.tick;
-}
-
-
-static inline struct OsResource *os_get_resource_int_p( void ) {
-	return get_curr_pcb()->resourceIntPtr;
-}
-#endif
-
-/*
- * Misc
- */
-
-static inline uint32_t os_task_nr_to_mask( uint32_t nr ) {
-	return ((uint32_t) 1 << nr); // 701 PC-lint [10.5]: OK om skriver 1u... får då istället: 960 PC-lint [10.5]: Båda ok om skriver 1ul eller castar till uint32_t
-}
-
-// task_i.c
-OsTaskVarType *Os_TaskGetTop( void );
-OsTaskVarType *Os_TaskGet( TaskType tid );
-
-// resource.c
-void Os_ResourceGetInternal(void );
-void Os_ResourceReleaseInternal( void );
-void Os_ResourceAlloc( OsResourceType *rPtr, OsTaskVarType *pcbPtr);
-void Os_ResourceFree( OsResourceType *rPtr , OsTaskVarType *pcbPtr);
-
-void Os_ResourceInit( void );
-
-
-/* Application */
-#if	(OS_USE_APPLICATIONS == STD_ON)
-void Os_ApplStart( void );
-#endif
-
-static inline void Os_ResourceFreeAll( OsTaskVarType *pcbPtr ) {
-	OsResourceType *rPtr;
-
-	/* Pop the queue */
-	TAILQ_FOREACH(rPtr, &pcbPtr->resourceHead, listEntry ) {
-		Os_ResourceFree(rPtr,pcbPtr);
-	}
-}
-
-static inline _Bool Os_TaskOccupiesResources( OsTaskVarType *pcb ) {
-	return !(TAILQ_EMPTY(&pcb->resourceHead));
-}
-
-#define NO_TASK_OWNER 	(TaskType)(~0)
-
-static inline _Bool Os_SchedulerResourceIsFree() {
-#if 1
-	return (Os_Sys.resScheduler.owner == NO_TASK_OWNER );
-#else
-	return (Os_Sys.scheduler_lock == 0);
-#endif
-}
-
-// Create.c
-OsTaskVarType * os_alloc_new_pcb( void );
-
-void os_dispatch(void);
-
-void OsTick( void );
-
-#if defined(CFG_ARM_CM3)
-void Os_Isr_cm3( void *isr_p );
-void TailChaining(void *stack);
-#endif
-
-void *Os_Isr( void *stack, int16_t vector);
-void Os_Dispatch( uint32_t op );
-
-#define STACK_PATTERN	0x42
-
-static inline void *Os_StackGetUsage( OsTaskVarType *pcb ) {
-
-	uint8_t *p = pcb->stack.curr;
-	uint8_t *end = pcb->stack.top;
-
-	while( (*end == STACK_PATTERN) && (end<p)) {
-			end++;
-		}
-	return (void *)end;
-}
-
-static inline void Os_StackSetEndmark( OsTaskVarType *pcbPtr ) {
-	uint8_t *end = pcbPtr->stack.top;
-	*end = STACK_PATTERN;
-}
-
-static inline _Bool Os_StackIsEndmarkOk( OsTaskVarType *pcbPtr ) {
-	_Bool rv;
-	uint8_t *end = pcbPtr->stack.top;
-	rv =  ( *end == STACK_PATTERN);
-	if( !rv ) {
-		OS_DEBUG(D_TASK,"Stack End Mark is bad for %s curr: %p curr: %p\n",
-				pcbPtr->name,
-				pcbPtr->stack.curr,
-				pcbPtr->stack.top );
-	}
-	return rv;
-}
-
-static inline void Os_StackPerformCheck( OsTaskVarType *pcbPtr ) {
-#if (OS_STACK_MONITORING == 1)
-		if( !Os_StackIsEndmarkOk(pcbPtr) ) {
-#if (OS_SC1 == STD_ON) || (OS_SC2 == STD_ON)
-			/** @req OS068 */
-			ShutdownOS(E_OS_STACKFAULT);
-#elif (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
-			/** @req OS396 */
-			PROTECTIONHOOK(E_OS_STACKFAULT);
-#endif
-		}
-#endif
-}
-
-
-int Os_CfgGetTaskCnt(void);
-void Os_ContextReInit( OsTaskVarType *pcbPtr );
-
-
-static inline _Bool Os_IrqAnyDisabled( void ) {
-	return ((Os_IntDisableAllCnt | Os_IntSuspendAllCnt | Os_IntSuspendOsCnt) != 0);
-}
-
-static inline void Os_IrqClearAll( void ) {
-	Os_IntDisableAllCnt = 0;
-	Os_IntSuspendAllCnt = 0;
-	Os_IntSuspendOsCnt = 0;
-}
-
 
 #endif /*INTERNAL_H_*/

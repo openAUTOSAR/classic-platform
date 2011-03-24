@@ -150,7 +150,8 @@ typedef struct OsSchTbl {
 	/** @req OS413 */
 	_Bool repeating;
 
-#if defined(SC3) || defined(SC4)
+#if (OS_USE_APPLICATIONS == STD_ON)
+	ApplicationType applOwnerId;
 	uint32 accessingApplMask;
 #endif
 
@@ -164,10 +165,6 @@ typedef struct OsSchTbl {
 
 	/* NULL if NONE, and non-NULL if EXPLICIT and IMPLICIT */
 	struct OsScheduleTableSync *sync;
-
-#if	(OS_USE_APPLICATIONS == STD_ON)
-	uint32 app_mask;
-#endif
 
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 	struct OsSchTblAdjExpPoint adjExpPoint;
@@ -216,6 +213,17 @@ void Os_SchTblCalcExpire( OsSchTblType *stbl );
 void Os_SchTblCheck(OsCounterType *c_p);
 void Os_SchTblAutostart( void );
 
+static inline OsSchTblType *Os_SchTblGet( ScheduleTableType sched_id ) {
+#if (OS_SCHTBL_CNT!=0)
+	if(sched_id < OS_SCHTBL_CNT) {
+		return &sched_list[sched_id];
+	} else {
+		return NULL;
+	}
+#else
+	return NULL;
+#endif
+}
 
 static inline TickType Os_SchTblGetInitialOffset( OsSchTblType *sPtr ) {
 	return SA_LIST_GET(&sPtr->expirePointList,0)->offset;
@@ -226,7 +234,39 @@ static inline TickType Os_SchTblGetFinalOffset( OsSchTblType *sPtr ) {
 			SA_LIST_GET(&sPtr->expirePointList, SA_LIST_CNT(&sPtr->expirePointList)-1)->offset);
 }
 
+static inline ApplicationType Os_SchTblGetApplicationOwner( ScheduleTableType id ) {
+	ApplicationType rv;
+#if (OS_SCHTBL_CNT!=0)
+
+	if( id < OS_SCHTBL_CNT ) {
+		rv = Os_SchTblGet(id)->applOwnerId;
+	} else {
+		rv = INVALID_OSAPPLICATION;
+	}
+#endif
+	return rv;
+}
+
+
 void Os_SchTblCheck(OsCounterType *c_p);
+
+/* Accessor functions */
+#if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
+static inline OsSchTblAdjExpPointType *getAdjExpPoint( OsSchTblType *stblPtr ) {
+	return &stblPtr->adjExpPoint;
+}
+#endif
+
+
+static inline const struct OsSchTblAutostart *getAutoStart( OsSchTblType *stblPtr ) {
+	return stblPtr->autostartPtr;
+}
+
+#if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
+static inline struct OsScheduleTableSync *getSync( OsSchTblType *stblPtr ) {
+	return &stblPtr->sync;
+}
+#endif
 
 
 #endif /*SCHED_TABLE_I_H_*/

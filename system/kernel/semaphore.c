@@ -52,6 +52,8 @@
 
 /* ----------------------------[includes]------------------------------------*/
 #include "internal.h"
+#include "task_i.h"
+#include "sys.h"
 /* ----------------------------[private define]------------------------------*/
 /* ----------------------------[private macro]-------------------------------*/
 /* ----------------------------[private typedef]-----------------------------*/
@@ -84,7 +86,7 @@ StatusType WaitSemaphore( OsSemaphoreType *semPtr, TickType tmo ) {
 
 	--semPtr->val;
 
-	pcbPtr = Os_TaskGetCurrent();
+	pcbPtr = Os_SysTaskGetCurr();
 
 	if (pcbPtr->constPtr->proc_type != PROC_EXTENDED) {
 		return E_OS_ACCESS;

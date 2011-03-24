@@ -23,7 +23,6 @@
 
 #include "Os.h"
 #include "Cpu.h"
-#include "ext_config.h"
 
 
 StatusType CallTrustedFunction(	TrustedFunctionIndexType ix,

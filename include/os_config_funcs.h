@@ -15,9 +15,12 @@
 /*
  * This file only be use with the Os_Cfg.c file and os_config_macros.h
  */
-#include "kernel.h"
+#include "internal.h"
 #include "Os_Cfg.h"
 
+#error os_config_funcs.h is deprecated
+
+#if 0
 /** @req OS327 */
 #if (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
 #if (OS_STATUS_STANDARD == STD_ON )
@@ -28,106 +31,19 @@
 
 // COUNTER, RESOURCE, TSAK, must be at least 1
 
-#define OS_VALIDATE(_a,_b)   if((_a)!=(_b) ) { \
-								assert(#_a  #_b); \
-							  }
-
-void Os_CfgValidate(void ) {
-	OS_VALIDATE(OS_COUNTER_CNT,ARRAY_SIZE(counter_list));
-#if (RESOURCE_CNT!=0)
-	OS_VALIDATE(OS_RESOURCE_CNT,ARRAY_SIZE(resource_list));
-#endif
-	OS_VALIDATE(OS_TASK_CNT ,ARRAY_SIZE( Os_TaskConstList));
-#if (RESOURCE_CNT!=0)
-	OS_VALIDATE(OS_ALARM_CNT,ARRAY_SIZE(alarm_list));
-#endif
-#if (OS_SCHTBL_CNT!=0)
-	OS_VALIDATE(OS_SCHTBL_CNT, ARRAY_SIZE(sched_list));
-#endif
-}
 
 OsErrorType os_error;
 
 //-------------------------------------------------------------------
 
-
-/*
- * Accessor functions for os_config.c
- */
-
-#if 0
-#if SERVICE_CNT!=0
-trusted_func_t oil_trusted_func_list[SERVICE_CNT];
-#endif
-#endif
-
 /*-----------------------------------------------------------------*/
-#if 0
-#if (OS_USE_APPLICATIONS == STD_ON)
-
-OsRomApplicationType *Os_CfgGetApplObj( ApplicationType appId ) {
-	return &rom_app_list[application_id];
-}
-#endif
-#endif
 
 /*-----------------------------------------------------------------*/
 
-OsResourceType *Os_CfgGetResource( ResourceType resource ) {
-#if OS_RESOURCE_CNT!=0
-	return &resource_list[resource];
-#else
-	return NULL;
-#endif
-}
-
 /*-----------------------------------------------------------------*/
 
-OsCounterType *Os_CfgGetCounter(CounterType count_id) {
-	return &counter_list[count_id];
-}
 
 /*-----------------------------------------------------------------*/
-
-OsSchTblType *Os_CfgGetSched( ScheduleTableType sched_id ) {
-#if (OS_SCHTBL_CNT!=0)
-	if(sched_id < OS_SCHTBL_CNT) {
-		return &sched_list[sched_id];
-	} else {
-		return NULL;
-	}
-#else
-	return NULL;
-#endif
-}
-
-/*-----------------------------------------------------------------*/
-
-OsAlarmType *Os_CfgGetAlarmObj( AlarmType alarm_id ) {
-#if (OS_ALARM_CNT!=0)
-	if( alarm_id < OS_ALARM_CNT) {
-	  return &alarm_list[alarm_id];
-	} else {
-		return NULL;
-	}
-#else
-	return NULL;
-#endif
-}
-
-StatusType Os_CfgGetAlarmBase(AlarmType alarm_id, AlarmBaseRefType info) {
-
-	StatusType rv = E_OK;
-
-	if( alarm_id >= OS_ALARM_CNT ) {
-		rv = E_OS_ID;
-	} else {
-#if (OS_ALARM_CNT!=0)
-		*info = alarm_list[alarm_id].counter->alarm_base;
-#endif
-	}
-	return rv;
-}
 
 
 /*-----------------------------------------------------------------*/
@@ -153,7 +69,7 @@ uint32 Os_CfgGetServiceCnt( void ) {
 	return OS_SERVICE_CNT;
 }
 #endif
-
+#endif
 
 
 

@@ -17,7 +17,8 @@
 #include <stdlib.h>
 #include "Os.h"
 #include "internal.h"
-
+#include "alarm_i.h"
+#include "sys.h"
 
 #define COUNTER_MAX(x) 			(x)->counter->alarm_base.maxallowedvalue
 #define COUNTER_MIN_CYCLE(x) 	(x)->counter->alarm_base.mincycle
@@ -38,7 +39,7 @@
  * @return
  */
 StatusType GetAlarmBase( AlarmType AlarmId, AlarmBaseRefType Info ) {
-    StatusType rv = Os_CfgGetAlarmBase(AlarmId,Info);
+    StatusType rv = Os_AlarmGetBase(AlarmId,Info);
     if (rv != E_OK) {
         goto err;
     }
@@ -60,7 +61,7 @@ StatusType GetAlarm(AlarmType AlarmId, TickRefType Tick) {
     long flags;
 
     ALARM_CHECK_ID(AlarmId);
-    aPtr = Os_CfgGetAlarmObj(AlarmId);
+    aPtr = Os_AlarmGet(AlarmId);
 
 	Irq_Save(flags);
 	if( aPtr->active == 0 ) {
@@ -99,7 +100,7 @@ StatusType SetRelAlarm(AlarmType AlarmId, TickType Increment, TickType Cycle){
 
 	ALARM_CHECK_ID(AlarmId);
 
-	aPtr = Os_CfgGetAlarmObj(AlarmId);
+	aPtr = Os_AlarmGet(AlarmId);
 
 	OS_DEBUG(D_ALARM,"SetRelAlarm id:%d inc:%u cycle:%u\n",
 					AlarmId,
@@ -185,7 +186,7 @@ StatusType SetAbsAlarm(AlarmType AlarmId, TickType Start, TickType Cycle) {
 
 	ALARM_CHECK_ID(AlarmId);
 
-	aPtr = Os_CfgGetAlarmObj(AlarmId);
+	aPtr = Os_AlarmGet(AlarmId);
 
 	if( Start > COUNTER_MAX(aPtr) ) {
 		/** @req OS304 */
@@ -229,7 +230,7 @@ StatusType CancelAlarm(AlarmType AlarmId) {
 
 	ALARM_CHECK_ID(AlarmId);
 
-	aPtr = Os_CfgGetAlarmObj(AlarmId);
+	aPtr = Os_AlarmGet(AlarmId);
 
 	Irq_Save(flags);
 	if( aPtr->active == 0 ) {
@@ -308,7 +309,7 @@ void Os_AlarmAutostart(void) {
 	int j;
 	for (j = 0; j < OS_ALARM_CNT; j++) {
 		OsAlarmType *alarmPtr;
-		alarmPtr = Os_CfgGetAlarmObj(j);
+		alarmPtr = Os_AlarmGet(j);
 		if (alarmPtr->autostartPtr != NULL) {
 			const OsAlarmAutostartType *autoPtr = alarmPtr->autostartPtr;
 

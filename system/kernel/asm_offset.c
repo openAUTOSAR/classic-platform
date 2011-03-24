@@ -22,7 +22,8 @@
  */
 
 #include <stddef.h>
-#include "internal.h"
+#include "task_i.h"
+#include "sys.h"
 
 #if defined(__GNUC__)
 #define DECLARE(sym,val) \

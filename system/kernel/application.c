@@ -20,8 +20,16 @@
 #include "Os.h"
 
 #include "internal.h"
-#include "arc.h"
-#include "arch.h"
+#include "task_i.h"
+#include "alarm_i.h"
+#include "counter_i.h"
+#include "sched_table_i.h"
+#include "application.h"
+#include "isr.h"
+#include "resource_i.h"
+#include "sys.h"
+//#include "arc.h"
+//#include "arch.h"
 
 /* ----------------------------[private define]------------------------------*/
 /* ----------------------------[private macro]-------------------------------*/
@@ -183,23 +191,37 @@ ObjectAccessType CheckObjectAccess( ApplicationType ApplId,
 		return NO_ACCESS;
 	}
 
+
 	/* TODO: check id */
 	switch( ObjectType ) {
 	case OBJECT_ALARM:
-		rv =  ((OsAlarmType *)objectId)->accessingApplMask & (appMask);
+		if( objectId < OS_ALARM_CNT ) {
+			rv =  ((OsAlarmType *)objectId)->accessingApplMask & (appMask);
+		}
 		break;
 	case OBJECT_COUNTER:
-		rv =  ((OsCounterType *)objectId)->accessingApplMask & (appMask);
+		if( objectId < OS_COUNTER_CNT ) {
+			rv =  ((OsCounterType *)objectId)->accessingApplMask & (appMask);
+		}
 		break;
 	case OBJECT_ISR:
 		/* TODO: Add more things here for missing objects */
 		break;
 	case OBJECT_MESSAGE:
+		break;
 	case OBJECT_RESOURCE:
+		if( objectId < OS_RESOURCE_CNT ) {
+			rv =  ((OsResourceType *)objectId)->accessingApplMask & (appMask);
+		}
 	case OBJECT_SCHEDULETABLE:
+		if( objectId < OS_SCHTBL_CNT ) {
+			rv =  ((OsSchTblType *)objectId)->accessingApplMask & (appMask);
+		}
 		break;
 	case OBJECT_TASK:
-		rv = ((OsCounterType *)objectId)->accessingApplMask & (appMask);
+		if( objectId < OS_COUNTER_CNT ) {
+			rv =  ((OsTaskVarType *)objectId)->constPtr->accessingApplMask & (appMask);
+		}
 		break;
 	default:
 		/* @req OS423 */
@@ -228,21 +250,29 @@ ApplicationType CheckObjectOwnership( ObjectTypeType ObjectType,
 
 	switch( ObjectType ) {
 	case OBJECT_ALARM:
+		rv = Os_AlarmGetApplicationOwner((TaskType)objectId);
 		break;
 	case OBJECT_COUNTER:
+		rv = Os_CounterGetApplicationOwner((TaskType)objectId);
 		break;
 	case OBJECT_ISR:
+		rv = Os_IsrGetApplicationOwner((TaskType)objectId);
 		break;
 	case OBJECT_MESSAGE:
+#if 0
+		if( objectId < OS_SCHTBL_CNT ) {
+			rv = Os_SchTblkGetApplicationOwner((TaskType)objectId);
+		}
+#endif
 		break;
 	case OBJECT_RESOURCE:
+		rv = Os_ResourceGetApplicationOwner((TaskType)objectId);
 		break;
 	case OBJECT_SCHEDULETABLE:
+		rv = Os_SchTblGetApplicationOwner((TaskType)objectId);
 		break;
 	case OBJECT_TASK:
-		if( objectId < OS_TASK_CNT ) {
-			rv = Os_TaskGetApplicationOwner((TaskType)objectId);
-		}
+		rv = Os_TaskGetApplicationOwner((TaskType)objectId);
 		break;
 	default:
 		break;
@@ -343,11 +373,6 @@ void Os_ApplStart( void ) {
 			Os_AppConst[i].StartupHook();
 		}
 	}
-}
-
-uint8_t Os_ApplGetCore( ApplicationType appl )
-{
-	return Os_AppConst[appl].core;
 }
 
 

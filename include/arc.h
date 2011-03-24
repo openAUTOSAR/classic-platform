@@ -2,8 +2,9 @@
 #ifndef ARC_H_
 #define ARC_H_
 
-
+#ifndef ARRAY_SIZE
 #define ARRAY_SIZE(_x) 	sizeof(_x)/sizeof((_x)[0])
+#endif
 
 #define OS_STR__(x)		#x
 #define OS_STRSTR__(x) 	OS_STR__(x)

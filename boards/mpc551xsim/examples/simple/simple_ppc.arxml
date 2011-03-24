@@ -323,6 +323,12 @@
                   <VALUE-REF DEST="CONTAINER">/simpler_ppc/Os/Event1</VALUE-REF>
                 </REFERENCE-VALUE>
               </REFERENCE-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="a61640a5-1808-4dd1-b47a-1ce43cd74723">
+                  <SHORT-NAME>OsTaskAutostart</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask/OsTaskAutostart</DEFINITION-REF>
+                </CONTAINER>
+              </SUB-CONTAINERS>
             </CONTAINER>
             <CONTAINER UUID="9ebec7a5-3b4a-4deb-92c5-77a67eda979b">
               <SHORT-NAME>Event1</SHORT-NAME>
@@ -337,6 +343,10 @@
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsEvent/OsEventMask</DEFINITION-REF>
                   <VALUE>1</VALUE>
                 </INTEGER-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsEvent/ArcOsEventAutoMask</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
             <CONTAINER UUID="b3d27dc1-6efc-4eb8-8c33-1502ae5ab5ea">
@@ -352,6 +362,10 @@
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsEvent/OsEventMask</DEFINITION-REF>
                   <VALUE>2</VALUE>
                 </INTEGER-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsEvent/ArcOsEventAutoMask</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
             <CONTAINER UUID="f7992fcb-1ea5-400d-a4d3-0910c9eafef8">
