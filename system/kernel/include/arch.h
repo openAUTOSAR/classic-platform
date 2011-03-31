@@ -119,22 +119,4 @@ unsigned int Os_ArchGetScSize( void );
 
 void Os_ArchSetTaskEntry(OsTaskVarType *pcbPtr );
 
-/**
- * int Os_Test_And_Set(int* lock, int value)
- *
- * returns the old value of lock
- * 0  : unlocked
- * >0 : locked
- *
- * r3 - address of lock
- * r4 - the new value of lock
- *
- * usage example:
- * int x = 0;
- * if (test_and_set(&x,1) == 0) {
- * 	// got lock
- * }
- */
-int Os_Test_And_Set(int* lock, int value);
-
 #endif /*ARCH_H_*/
