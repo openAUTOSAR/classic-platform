@@ -8,7 +8,27 @@ MEMORY
 SECTIONS
 {
    GROUP : {
-      .rcw : { *(.rcw) }
+      .rcw : { }      
+      .exception_tbl (VLECODE) : {}
+#if defined(CFG_VLE)
+       .text_vle (VLECODE) ALIGN(0x1000): {
+             *(.text)
+             *(.text_vle)
+             *(.fini)
+             *(.eini)
+         }
+       .init  : {}
+       .init_vle (VLECODE) : {
+             *(.init)
+             *(.init_vle)
+          }
+        .ctors : {}
+        .dtors : {}
+        .rodata (CONST) : {
+            *(.rdata)
+            *(.rodata)
+         }
+#else       
       .text : { 
       		 *(.exception_tbl)
              *(.text)
@@ -19,7 +39,8 @@ SECTIONS
              *(.fini) 		
              *(.eini)
              . = (.+15);
-        } 
+        }
+#endif
 	    .sdata2       : {}  /* really PPC.EMB.sdata2?, r2 should point here */
 	    extab      : {}  
 	    extabindex : {}

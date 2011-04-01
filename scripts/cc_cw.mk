@@ -14,9 +14,9 @@ endif
 # libs:  PowerPC_EABI_Support/Runtime/Lib/Runtime.XXXX
 #        PowerPC_EABI_Support/MSL/MSL_C/PPC_EABI/Lib
 
-CW_COMPILE=/c/devtools/cw_55xx
-CW_BIN=$(CW_COMPILE)/PowerPC_EABI_Tools/Command_Line_Tools
-CW_LIB=$(CW_COMPILE)/PowerPC_EABI_Support/Runtime/Lib
+CW_COMPILE ?= $(CROSS_COMPILE)
+CW_BIN = $(CW_COMPILE)/PowerPC_EABI_Tools/Command_Line_Tools
+CW_LIB = $(CW_COMPILE)/PowerPC_EABI_Support/Runtime/Lib
 
 
 # ---------------------------------------------------------------------------
@@ -42,6 +42,7 @@ cflags-y          += -W=most
 # Conformance
 cflags-y          += -abi=eabi
 cflags-$(CFG_VLE) += -ppc_asm_to_vle  # Convert ppc to vle ppc
+cflags-$(CFG_VLE) += -vle  # Convert ppc to vle ppc
 cflags-y          += -abi=eabi
 cflags-y          += -proc=5565
 cflags-y          += -fp=soft
@@ -63,12 +64,11 @@ CCOUT 		= -o $@
 
 CPP	= 	$(CC) -E
 
-CPP_ASM_FLAGS += -ppopt noline -dialect c
+CPP_ASM_FLAGS += -ppopt noline -ppopt nopragma -dialect c
 
 comma = ,
 empty = 
 space = $(empty) $(empty)
-
 
 
 cw_lib_path += -L$(CW_COMPILE)/PowerPC_EABI_Support/Runtime/Lib
