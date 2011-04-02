@@ -196,7 +196,6 @@ typedef struct OsSchTbl {
 	/* Entry in the list of schedule tables connected to a specific
 	 * counter  */
 	SLIST_ENTRY(OsSchTbl) sched_list;
-
 } OsSchTblType;
 
 /*
@@ -212,6 +211,8 @@ void Os_SchTblAutostart( void );
 void Os_SchTblCalcExpire( OsSchTblType *stbl );
 void Os_SchTblCheck(OsCounterType *c_p);
 void Os_SchTblAutostart( void );
+
+extern GEN_SCHTBL_HEAD;
 
 static inline OsSchTblType *Os_SchTblGet( ScheduleTableType sched_id ) {
 #if (OS_SCHTBL_CNT!=0)

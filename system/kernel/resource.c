@@ -138,35 +138,62 @@ TODO:
 
 StatusType GetResource( ResourceType ResID ) {
 	StatusType rv = E_OK;
-	OsTaskVarType *pcbPtr = Os_SysTaskGetCurr();
 	OsResourceType *rPtr;
 	uint32_t flags;
 
 	Irq_Save(flags);
 
-	if( ResID == RES_SCHEDULER ) {
 
-		rPtr = &Os_Sys.resScheduler;
-	} else {
+	if( Os_Sys.intNestCnt != 0 ) {
+
+		/* For interrupts to the scheduler resource seems just dumb to get */
+		OsIsrVarType *isrPtr = Os_SysIsrGetCurr();
+
 		/* Check we can access it */
-		if( (pcbPtr->constPtr->resourceAccess & (1<< ResID)) == 0 ) {
+		if( ((isrPtr->constPtr->resourceMask & (1<< ResID)) == 0) ||
+			( ResID == RES_SCHEDULER )	) {
 			rv = E_OS_ID;
 			goto err;
 		}
 
 		rPtr = Os_ResourceGet(ResID);
+
+		/* ceiling prio for ISR seems strange...so no */
+		if( rPtr->owner != NO_TASK_OWNER ) {
+			rv = E_OS_ACCESS;
+			Irq_Restore(flags);
+			goto err;
+		}
+		/* Add the resource to the list of resources held by this isr */
+		Os_IsrResourceAdd(rPtr,isrPtr);
+
+	} else {
+		OsTaskVarType *taskPtr = Os_SysTaskGetCurr();
+
+		if( ResID == RES_SCHEDULER ) {
+			rPtr = &Os_Sys.resScheduler;
+		} else {
+			/* Check we can access it */
+			if( (taskPtr->constPtr->resourceAccess & (1<< ResID)) == 0 ) {
+				rv = E_OS_ID;
+				goto err;
+			}
+
+			rPtr = Os_ResourceGet(ResID);
+		}
+
+		/* Check for invalid configuration */
+		if( (rPtr->owner != NO_TASK_OWNER) ||
+			(taskPtr->activePriority > rPtr->ceiling_priority) )
+		{
+			rv = E_OS_ACCESS;
+			Irq_Restore(flags);
+			goto err;
+		}
+		/* Add the resource to the list of resources held by this task */
+		Os_TaskResourceAdd(rPtr,taskPtr);
 	}
 
-	/* Check for invalid configuration */
-	if( (rPtr->owner != NO_TASK_OWNER) ||
-		(pcbPtr->activePriority > rPtr->ceiling_priority) )
-	{
-		rv = E_OS_ACCESS;
-		Irq_Restore(flags);
-		goto err;
-	}
-
-	Os_TaskResourceAdd(rPtr,pcbPtr);
 	Irq_Restore(flags);
 
 	if (rv != E_OK)

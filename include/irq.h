@@ -148,33 +148,4 @@ void Irq_SetPriority( Cpu_t cpu,  IrqType vector, uint8_t prio );
 
 void Irq_EnableVector( int16_t vector, int priority, int core );
 
-/**
- *
- * @param vector
- * @param type
- */
-#if 0
-static inline void Irq_SetIsrType( IrqType vector, int8_t type ) {
-	Irq_IsrTypeTable[vector] = type;
-}
-
-/**
- *
- * @param vector
- * @return 0 - Isr1
- *         1 - Isr2
- */
-static inline int8_t Irq_GetIsrType( IrqType vector )  {
-	return Irq_IsrTypeTable[vector];
-}
-#endif
-
-
-#if 0
-typedef struct {
-	uint32_t dummy;
-} exc_stack_t;
-#endif
-
-
 #endif /* IRQ_H_ */

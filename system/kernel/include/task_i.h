@@ -16,16 +16,20 @@
 #ifndef TASK_I_H_
 #define TASK_I_H_
 
+/* ----------------------------[includes]------------------------------------*/
+
+
+
 #include <stdlib.h>
 #include <assert.h>
 #include "Os.h"
 #include "resource_i.h"
 #include "internal.h"
-// #include "sys.h"
-//#include "internal.h"
-
-
 #include "Ramlog.h"
+
+/* ----------------------------[define]--------------------------------------*/
+/* ----------------------------[macro]---------------------------------------*/
+
 
 struct OsApplication;
 struct OsTaskConst;
@@ -47,6 +51,11 @@ struct OsTaskConst;
 #define ST_ISR_RUNNING			1
 #define ST_ISR_NOT_RUNNING 		2
 
+#define TASK_NAME_SIZE		16
+
+
+/* ----------------------------[typedef]-------------------------------------*/
+
 typedef uint16_t state_t;
 
 /* from Os.h types */
@@ -57,9 +66,6 @@ typedef EventMaskType 	OsEventType;
  * 31- Lowest
  */
 typedef sint8 OsPriorityType;
-
-#define TASK_NAME_SIZE		16
-
 
 
 /* STD container : OsHooks
@@ -208,6 +214,12 @@ typedef struct OsTaskConst {
 } OsTaskConstType;
 
 
+/* ----------------------------[function prototypes]-------------------------*/
+
+extern OsTaskVarType Os_TaskVarList[OS_TASK_CNT];
+extern GEN_TASK_HEAD;
+
+
 /**
  * Set the task to running state and remove from ready list
  *
@@ -229,13 +241,6 @@ TaskType Os_AddTask( OsTaskVarType *pcb );
 #if 0 // Not used any more
 OsTaskVarType  *os_find_higher_priority_task( OsPriorityType prio );
 #endif
-
-
-
-
-extern OsTaskVarType Os_TaskVarList[OS_TASK_CNT];
-//extern OsTaskConstType Os_TaskConstList[OS_TASK_CNT];
-extern GEN_TASK_HEAD;
 
 static inline OsTaskVarType * Os_TaskGet( TaskType pid ) {
 	return &Os_TaskVarList[pid];
@@ -353,7 +358,6 @@ void Os_TaskResourceRemove( OsResourceType *rPtr , OsTaskVarType *pcbPtr);
 
 void Os_TaskMakeReady( OsTaskVarType *pcb );
 void Os_TaskMakeWaiting( OsTaskVarType *pcb );
-
 
 
 #endif /*TASK_I_H_*/

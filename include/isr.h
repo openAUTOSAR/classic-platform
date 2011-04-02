@@ -16,6 +16,9 @@
 #ifndef ISR_H_
 #define ISR_H_
 
+#include "task_i.h"
+#include "resource_i.h"
+
 /*
  * INCLUDE "RULES"
  *  Since this types and methods defined here are used by the drivers, they should
@@ -143,17 +146,22 @@ typedef struct {
  */
 typedef struct {
 	ISRType id;
-	OsIsrStackType		stack;
+//	OsIsrStackType		stack;
 	int					state;
 	const OsIsrConstType *constPtr;
+	/* List of resource held by this ISR */
+	TAILQ_HEAD(,OsResource) resourceHead;
 } OsIsrVarType;
 
 
 /* ----------------------------[functions]-----------------------------------*/
 
+#if OS_ISR_MAX_CNT!=0
+extern OsIsrVarType Os_IsrVarList[OS_ISR_MAX_CNT];
+#endif
+
 void Os_IsrInit( void );
 ISRType Os_IsrAdd( const OsIsrConstType * restrict isrPtr );
-const OsIsrConstType * Os_IsrGet( int16_t vector);
 void Os_IsrGetStackInfo( OsIsrStackType *stack );
 void *Os_Isr( void *stack, int16_t vector);
 #if defined(CFG_ARM_CM3)
@@ -161,15 +169,59 @@ void Os_Isr_cm3( void *isr_p );
 void TailChaining(void *stack);
 #endif
 
+static inline const OsIsrVarType *Os_IsrGet( ISRType id ) {
+	return &Os_IsrVarList[id];
+}
+
 static inline ApplicationType Os_IsrGetApplicationOwner( ISRType id ) {
 	ApplicationType rv = INVALID_OSAPPLICATION;
 
 #if (OS_ISR_CNT!=0)
 	if( id < OS_ISR_CNT ) {
-		Os_IsrVarList[id]->constPtr->appOwner;
+		rv = Os_IsrGet(id)->constPtr->appOwner;
 	}
 #endif
 	return rv;
 }
+
+static inline void Os_IsrResourceAdd( OsResourceType *rPtr, OsIsrVarType *isrPtr) {
+	/* Save old task prio in resource and set new task prio */
+	rPtr->owner = isrPtr->id;
+
+	assert( rPtr->type != RESOURCE_TYPE_INTERNAL );
+}
+
+static inline  void Os_IsrResourceRemove( OsResourceType *rPtr , OsIsrVarType *isrPtr) {
+	assert( rPtr->owner == isrPtr->id );
+	rPtr->owner = NO_TASK_OWNER;
+
+	if( rPtr->type != RESOURCE_TYPE_INTERNAL ) {
+		/* The list can't be empty here */
+		assert( !TAILQ_EMPTY(&isrPtr->resourceHead) );
+
+		/* The list should be popped in LIFO order */
+		assert( TAILQ_LAST(&isrPtr->resourceHead, head) == rPtr );
+
+		/* Remove the entry */
+		TAILQ_REMOVE(&isrPtr->resourceHead, rPtr, listEntry);
+	}
+}
+
+static inline void Os_IsrResourceFreeAll( OsIsrVarType *isrPtr ) {
+	OsResourceType *rPtr;
+
+	/* Pop the queue */
+	TAILQ_FOREACH(rPtr, &isrPtr->resourceHead, listEntry ) {
+		Os_IsrResourceRemove(rPtr,isrPtr);
+	}
+}
+
+static inline _Bool Os_IsrOccupiesResources(  OsIsrVarType *isrPtr ) {
+	return !(TAILQ_EMPTY(&isrPtr->resourceHead));
+}
+
+
+
+
 
 #endif /*ISR_H_*/

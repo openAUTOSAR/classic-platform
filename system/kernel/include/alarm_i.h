@@ -143,6 +143,7 @@ static inline OsAlarmType *Os_AlarmGet( AlarmType alarm_id ) {
 }
 
 
+#if OS_ALARM_CNT!=0
 static inline StatusType Os_AlarmGetBase(AlarmType alarm_id, AlarmBaseRefType info) {
 
 	StatusType rv = E_OK;
@@ -156,17 +157,17 @@ static inline StatusType Os_AlarmGetBase(AlarmType alarm_id, AlarmBaseRefType in
 	}
 	return rv;
 }
+#endif
 
 
 static inline ApplicationType Os_AlarmGetApplicationOwner( AlarmType id ) {
 	ApplicationType rv;
-	if( id < OS_ALARM_CNT ) {
-		rv = Os_AlarmGet(id)->applOwnerId;
-	} else {
-		rv = INVALID_OSAPPLICATION;
-	}
+#if (OS_RESOURCE_CNT!=0)
+	rv = (id < OS_ALARM_CNT) ? Os_AlarmGet(id)->applOwnerId : INVALID_OSAPPLICATION;
+#else
+	rv = INVALID_OSAPPLICATION;
+#endif
 	return rv;
 }
-
 
 #endif /*ALARM_I_H_*/

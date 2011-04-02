@@ -25,6 +25,7 @@
 #include "isr.h"
 #include "counter_i.h"
 #include "application.h"
+#include "sched_table_i.h"
 #include "alarm_i.h"
 #include "arch.h"
 
@@ -48,8 +49,6 @@ OsErrorType os_error;
 
 
 static void Os_CfgValidate(void ) {
-
-#if 0
 	OS_VALIDATE(OS_COUNTER_CNT,ARRAY_SIZE(counter_list));
 #if (RESOURCE_CNT!=0)
 	OS_VALIDATE(OS_RESOURCE_CNT,ARRAY_SIZE(resource_list));
@@ -61,10 +60,6 @@ static void Os_CfgValidate(void ) {
 #if (OS_SCHTBL_CNT!=0)
 	OS_VALIDATE(OS_SCHTBL_CNT, ARRAY_SIZE(sched_list));
 #endif
-#else
-#warning Enable this again
-#endif
-
 }
 
 /* ----------------------------[public functions]----------------------------*/
@@ -81,44 +76,10 @@ extern OsTickType OsTickFreq;
  */
 
 static void copyPcbParts( OsTaskVarType *pcb, const OsTaskConstType *r_pcb ) {
-
-	/* Copy VAR stuff first */
-
-
-
-
-#if 0 //?????
-	// Check to that the memory is ok
-	{
-		int cnt = sizeof(OsTaskVarType);
-		for(int i=0;i<cnt;i++) {
-			if( *((unsigned char *)pcb) != 0 ) {
-				while(1);
-			}
-		}
-	}
-#endif
-
-//	memset(pcb,sizeof(OsTaskVarType),0);
-//	pcb->pid = r_pcb->pid;
 	assert(r_pcb->prio<=OS_TASK_PRIORITY_MAX);
 	pcb->activePriority = r_pcb->prio;
-#if	(OS_USE_APPLICATIONS == STD_ON)
-//	pcb->accessingApp = Os_CfgGetApplObj(r_pcb->application_id);
-#endif
-//	pcb->entry = r_pcb->entry;
-//	pcb->proc_type = r_pcb->proc_type;
-//	pcb->autostart =  r_pcb->autostart;
 	pcb->stack= r_pcb->stack;
 	pcb->constPtr = r_pcb;
-//	pcb->resourceIntPtr = r_pcb->resourceIntPtr;
-//	pcb->scheduling = r_pcb->scheduling;
-//	pcb->resourceAccess = r_pcb->resourceAccess;
-//	pcb->activationLimit = r_pcb->activationLimit;
-//	pcb->app = &app_list[r_pcb->app];
-//	pcb->app_mask = app_mask[r_pcb->app];
-//	strncpy(pcb->name,r_pcb->name,16);
-//	pcb->name[15] = '\0';
 }
 
 static _Bool init_os_called = 0;
@@ -134,6 +95,8 @@ void InitOS( void ) {
 	OsIsrStackType intStack;
 
 	init_os_called = 1;
+
+	Os_CfgValidate();
 
 	DEBUG(DEBUG_LOW,"os_init");
 
@@ -174,15 +137,7 @@ void InitOS( void ) {
 		tmpPcbPtr = Os_TaskGet(i);
 
 		copyPcbParts(tmpPcbPtr,&Os_TaskConstList[i]);
-
-#if 1
 		Os_TaskContextInit(tmpPcbPtr);
-#else
-		if( !(tmpPcbPtr->constPtr->proc_type & PROC_ISR) ) {
-			Os_TaskContextInit(tmpPcbPtr);
-		}
-#endif
-
 		TAILQ_INIT(&tmpPcbPtr->resourceHead);
 
 #if 0

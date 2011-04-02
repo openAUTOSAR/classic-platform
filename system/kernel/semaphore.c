@@ -69,7 +69,8 @@
  * The value of the semaphore is decremented. If the value is negative the
  * caller is put in WAITING state.
  *
- * If the scheduler is locked (hold RES_SCHEDULER) the call will and return E_NOT_OK.
+ * If the scheduler is locked (hold RES_SCHEDULER) the call will fail and
+ * return E_NOT_OK.
  *
  * @param semPtr
  * @param tmo     A timeout of 0 can be used for polling the semaphore.

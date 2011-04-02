@@ -255,7 +255,7 @@ void Os_IsrGetStackInfo( OsIsrStackType *stack ) {
  * @param vector
  */
 void *Os_Isr( void *stack, int16_t vector ) {
-	uint8_t isrId = Os_VectorToIsr[vector];
+	OsIsrVarType *isrPtr =  &Os_IsrVarList[Os_VectorToIsr[vector]];
 	OsTaskVarType *taskPtr = NULL;
 
 	/* Check if we interrupted a task or ISR */
@@ -277,15 +277,15 @@ void *Os_Isr( void *stack, int16_t vector ) {
 	Os_Sys.intNestCnt++;
 
 	/* Grab the ISR "pcb" */
-	Os_IsrVarList[isrId].state = ST_ISR_RUNNING;
+	isrPtr->state = ST_ISR_RUNNING;
 
 	Irq_SOI();
 
 #if defined(CFG_HCS12D)
-	Os_IsrVarList[isrId].constPtr->entry();
+	isrPtr->constPtr->entry();
 #else
 	Irq_Enable();
-	Os_IsrVarList[isrId].constPtr->entry();
+	isrPtr->constPtr->entry();
 	Irq_Disable();
 #endif
 
@@ -298,12 +298,13 @@ void *Os_Isr( void *stack, int16_t vector ) {
 
 	/* Check so that the ISR2 have called ReleaseResource() for each GetResource() */
 	/** @req OS369 */
-	if( Os_TaskOccupiesResources(taskPtr) ) {
-		Os_TaskResourceFreeAll(taskPtr);
+	if( Os_IsrOccupiesResources(isrPtr) ) {
+		Os_IsrResourceFreeAll(isrPtr);
 		ERRORHOOK(E_OS_RESOURCE);
 	}
 
-	Os_IsrVarList[isrId].state = ST_ISR_NOT_RUNNING;
+	isrPtr->state = ST_ISR_NOT_RUNNING;
+	Os_Sys.currIsrPtr = isrPtr;
 
 	Irq_EOI();
 

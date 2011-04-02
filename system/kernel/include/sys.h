@@ -17,6 +17,7 @@
 #define SYS_H_
 
 #include "task_i.h"
+#include "isr.h"
 
 /* STD container : OsOs. OSEK properties
  * Class: ALL
@@ -74,6 +75,8 @@ typedef struct Os_Sys {
 	/* Current running task*/
 	OsTaskVarType *currTaskPtr;
 
+	OsIsrVarType *currIsrPtr;
+
 	/* List of all tasks */
 	OsTaskVarType *pcb_list;
 
@@ -123,7 +126,7 @@ typedef struct Os_Sys {
 
 //	TAILQ_HEAD(,OsIsrVar) isrHead;
 
-	/* Occording to OSEK 8.3 RES_SCHEDULER is accessible to all tasks */
+	/* According to OSEK 8.3 RES_SCHEDULER is accessible to all tasks */
 	OsResourceType resScheduler;
 } Os_SysType;
 
@@ -139,6 +142,10 @@ static inline void Os_SysTaskSetCurr( OsTaskVarType *pcb ) {
 
 static inline OsTaskVarType *Os_SysTaskGetCurr( void ) {
 	return Os_Sys.currTaskPtr;
+}
+
+static inline OsIsrVarType *Os_SysIsrGetCurr( void ) {
+	return Os_Sys.currIsrPtr;
 }
 
 /**

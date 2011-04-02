@@ -20,6 +20,7 @@
 #include "alarm_i.h"
 #include "sys.h"
 
+#if (OS_ALARM_CNT!=0)
 #define COUNTER_MAX(x) 			(x)->counter->alarm_base.maxallowedvalue
 #define COUNTER_MIN_CYCLE(x) 	(x)->counter->alarm_base.mincycle
 #define ALARM_CHECK_ID(x) 				\
@@ -323,6 +324,6 @@ void Os_AlarmAutostart(void) {
 		}
 	}
 }
-
+#endif
 
 

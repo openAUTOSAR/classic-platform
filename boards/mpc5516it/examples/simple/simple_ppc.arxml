@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<AUTOSAR xmlns="http://autosar.org/3.1.4"><TOP-LEVEL-PACKAGES>
+<AUTOSAR xmlns="http://autosar.org/3.1.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/3.1.4 autosar_3-1-4.xsd">
+  <TOP-LEVEL-PACKAGES>
     <AR-PACKAGE>
       <SHORT-NAME>NewEcu</SHORT-NAME>
       <ELEMENTS>
@@ -7,7 +8,7 @@
           <SHORT-NAME>simple_ppc</SHORT-NAME>
           <ADMIN-DATA>
             <DOC-REVISIONS>
-              <DOC-REVISION/>
+              <DOC-REVISION />
             </DOC-REVISIONS>
             <SDGS>
               <SDG GID="Arccore::EcuOptions">
@@ -28,7 +29,7 @@
           <SHORT-NAME>Os</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG/>
+              <SDG />
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.22</SD>
@@ -97,6 +98,10 @@
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsDebugEvent</DEFINITION-REF>
                   <VALUE>false</VALUE>
                 </BOOLEAN-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsOS/ArcOsIsrMaxCount</DEFINITION-REF>
+                  <VALUE>10</VALUE>
+                </INTEGER-VALUE>
               </PARAMETER-VALUES>
               <SUB-CONTAINERS>
                 <CONTAINER UUID="e3564f08-19f7-49f1-830b-cf36426e3737">
@@ -135,7 +140,7 @@
               <SHORT-NAME>Alarm1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm</DEFINITION-REF>
@@ -150,17 +155,17 @@
                   <SHORT-NAME>OsAlarmAction</SHORT-NAME>
                   <DEFINITION-REF DEST="CHOICE-CONTAINER-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction</DEFINITION-REF>
                   <SUB-CONTAINERS>
-                    <CONTAINER UUID="6a76c2ca-0cb0-44e0-ba70-1fdbdbf604c3">
+                    <CONTAINER UUID="d448045c-da6f-4b95-833d-bff6bc2ec9ea">
                       <SHORT-NAME>OsAlarmSetEvent</SHORT-NAME>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent</DEFINITION-REF>
                       <REFERENCE-VALUES>
                         <REFERENCE-VALUE>
                           <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventRef</DEFINITION-REF>
-                          <VALUE-REF DEST="CONTAINER">/NewEcu/Os/Event2</VALUE-REF>
+                          <VALUE-REF DEST="CONTAINER">/NewEcu/Os/Event1</VALUE-REF>
                         </REFERENCE-VALUE>
                         <REFERENCE-VALUE>
                           <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventTaskRef</DEFINITION-REF>
-                          <VALUE-REF DEST="CONTAINER">/NewEcu/Os/eTask1</VALUE-REF>
+                          <VALUE-REF DEST="CONTAINER">/NewEcu/Os/eTask2</VALUE-REF>
                         </REFERENCE-VALUE>
                       </REFERENCE-VALUES>
                     </CONTAINER>
@@ -186,38 +191,11 @@
                 </CONTAINER>
               </SUB-CONTAINERS>
             </CONTAINER>
-            <CONTAINER UUID="c58fe505-4564-412a-9fcd-3a2d56284eb9">
-              <SHORT-NAME>Counter1</SHORT-NAME>
-              <ADMIN-DATA>
-                <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
-                </SDGS>
-              </ADMIN-DATA>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsCounter</DEFINITION-REF>
-              <PARAMETER-VALUES>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterMaxAllowedValue</DEFINITION-REF>
-                  <VALUE>65535</VALUE>
-                </INTEGER-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterMinCycle</DEFINITION-REF>
-                  <VALUE>1</VALUE>
-                </INTEGER-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterTicksPerBase</DEFINITION-REF>
-                  <VALUE>0</VALUE>
-                </INTEGER-VALUE>
-                <ENUMERATION-VALUE>
-                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterType</DEFINITION-REF>
-                  <VALUE>OS_TICK</VALUE>
-                </ENUMERATION-VALUE>
-              </PARAMETER-VALUES>
-            </CONTAINER>
             <CONTAINER UUID="eb2e6ebd-d088-41d5-813a-abadaa8f1f0b">
               <SHORT-NAME>bTask3</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
@@ -248,7 +226,7 @@
               <SHORT-NAME>eTask1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
@@ -291,7 +269,7 @@
               <SHORT-NAME>eTask2</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
@@ -328,7 +306,7 @@
               <SHORT-NAME>Event1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsEvent</DEFINITION-REF>
@@ -339,7 +317,7 @@
                 </INTEGER-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsEvent/ArcOsEventAutoMask</DEFINITION-REF>
-                  <VALUE>false</VALUE>
+                  <VALUE>true</VALUE>
                 </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
@@ -347,7 +325,7 @@
               <SHORT-NAME>Event2</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsEvent</DEFINITION-REF>
@@ -358,7 +336,7 @@
                 </INTEGER-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsEvent/ArcOsEventAutoMask</DEFINITION-REF>
-                  <VALUE>false</VALUE>
+                  <VALUE>true</VALUE>
                 </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
@@ -366,7 +344,7 @@
               <SHORT-NAME>OsApplication1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsApplication</DEFINITION-REF>
@@ -386,10 +364,6 @@
                   <VALUE-REF DEST="CONTAINER">/NewEcu/Os/Alarm1</VALUE-REF>
                 </REFERENCE-VALUE>
                 <REFERENCE-VALUE>
-                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppCounterRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/NewEcu/Os/Counter1</VALUE-REF>
-                </REFERENCE-VALUE>
-                <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppTaskRef</DEFINITION-REF>
                   <VALUE-REF DEST="CONTAINER">/NewEcu/Os/bTask3</VALUE-REF>
                 </REFERENCE-VALUE>
@@ -400,6 +374,10 @@
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppTaskRef</DEFINITION-REF>
                   <VALUE-REF DEST="CONTAINER">/NewEcu/Os/eTask2</VALUE-REF>
+                </REFERENCE-VALUE>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppCounterRef</DEFINITION-REF>
+                  <VALUE-REF DEST="CONTAINER">/NewEcu/Os/Counter1</VALUE-REF>
                 </REFERENCE-VALUE>
               </REFERENCE-VALUES>
               <SUB-CONTAINERS>
@@ -423,8 +401,37 @@
                 </CONTAINER>
               </SUB-CONTAINERS>
             </CONTAINER>
+            <CONTAINER UUID="adaa85ff-963b-46a3-8704-d8042922a24b">
+              <SHORT-NAME>Counter1</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                </SDGS>
+              </ADMIN-DATA>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsCounter</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterMaxAllowedValue</DEFINITION-REF>
+                  <VALUE>65535</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterMinCycle</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterTicksPerBase</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterType</DEFINITION-REF>
+                  <VALUE>OS_TICK</VALUE>
+                </ENUMERATION-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
       </ELEMENTS>
     </AR-PACKAGE>
-  </TOP-LEVEL-PACKAGES></AUTOSAR>
+  </TOP-LEVEL-PACKAGES>
+</AUTOSAR>
+

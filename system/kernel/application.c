@@ -28,8 +28,6 @@
 #include "isr.h"
 #include "resource_i.h"
 #include "sys.h"
-//#include "arc.h"
-//#include "arch.h"
 
 /* ----------------------------[private define]------------------------------*/
 /* ----------------------------[private macro]-------------------------------*/

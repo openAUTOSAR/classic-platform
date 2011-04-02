@@ -23,6 +23,7 @@
 #include "resource_i.h"
 #include "counter_i.h"
 #include "alarm_i.h"
+#include "sched_table_i.h"
 #include "isr.h"
 #include "Mcu.h"
 

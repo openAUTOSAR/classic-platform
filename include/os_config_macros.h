@@ -313,7 +313,7 @@
 
 #define GEN_SCHTBL_AUTOSTART_NAME(_id)	&(Os_SchTblAutoStart_ ## _id)
 
-#define GEN_SCHTBL_HEAD OsSchTblType sched_list[] =
+#define GEN_SCHTBL_HEAD OsSchTblType sched_list[OS_SCHTBL_CNT]
 
 /**
  * _id
@@ -342,8 +342,10 @@
  */
 
 #define GEN_SCHEDULETABLE(  _id, _name, _counter_id, _repeating, \
-							_duration,       \
-							_autostart_ref ) \
+							_duration,              \
+							_autostart_ref,         \
+							_appl_owner, 	    	\
+							_accessing_appl_mask )  \
 {											 \
 	.name = _name,						     \
 	.counter = &counter_list[_counter_id],	     \
@@ -353,7 +355,9 @@
 	  .data = (void *)( Os_SchTblExpPointList_ ## _id ), \
 	  .cnt = ARRAY_SIZE(Os_SchTblExpPointList_ ## _id), \
 	 }, \
-	.autostartPtr = _autostart_ref, 			 \
+	 .autostartPtr = _autostart_ref,\
+	.applOwnerId = _appl_owner, \
+	.accessingApplMask = _accessing_appl_mask, \
 }
 
 
