@@ -36,6 +36,13 @@
 #define CC_EXTENSION
 #endif
 
+#if defined(__GNUC__)
+#define SECTION_BALIGN(_align )  __attribute__ ((aligned (_align)))
+#elif defined(__CWCC__)
+#define SECTION_BALIGN(_align )  __attribute__ ((aligned (_align)))
+#endif
+
+
 /* REQ:COMPILER005 */
 /* TODO: skip the memclass for now */
 #define FUNC(rettype,memclass) rettype

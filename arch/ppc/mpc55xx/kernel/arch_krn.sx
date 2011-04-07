@@ -50,18 +50,10 @@
 .extern os_sys
 .extern Os_ArchPanic
 
-#if defined(CFG_VLE)
-#define lis		e_lis
-#define li		se_li
-#define lwz	    e_lwz
-#define stwu	e_stwu
-#define stw		e_stw
-#define b		e_b
-#define addi	e_addi		/* true ?*/
-#define subi	e_subi		/* true ?*/
-#endif		
 
 /* ----------------------------[private define]------------------------------*/
+
+//#define OLD_CALL		
 
 #define INTC_IACKR_PRC0		0xfff48010 
 #define INTC_EOIR_PRC0		0xfff48018
@@ -95,7 +87,14 @@
 .global Os_ArchSwapContextTo
 .global Os_ArchSwapContext
 .global Os_ArchSetSpAndCall
+#if defined(__CWCC__) && defined(CFG_VLE)
+.section .text_vle,text_vle
+#else
 .section .text
+#endif
+
+
+
 
 Os_ArchSetSpAndCall:
 		mr r1,r3
@@ -192,9 +191,9 @@ Os_ArchSwapContextTo:
 
 	/* Get the context type */
 	lwz		r0, FUNC_FRM_PATTERN(sp)
-	cmpli	0, r0, FUNC_PATTERN
+	cmplwi	r0, FUNC_PATTERN
 	beq+	restoreFuncContext
-	cmpli	0, r0,ISR_PATTERN
+	cmplwi	r0,ISR_PATTERN
 	beq+ 	restoreIsrContext
 	li 		r3, OS_ERR_BAD_CONTEXT
 	b		Os_ArchPanic
@@ -368,8 +367,8 @@ exception_IVOR4:
 	/* Switch to interrupt stack if at depth 0 */
 	/* Load the value os_sys.int_nest_cnt */
 	LOAD_IND_32(r3,os_sys+SYS_INT_NEST_CNT)
-	cmpli	0,r3,0
-	bne-	on_int_stack
+	cmplwi	r3,0
+	bne		on_int_stack
 
 	/* Load the interrupt stack */
 	LOAD_IND_32(r1,os_sys+SYS_INT_STACK)
@@ -385,7 +384,7 @@ on_int_stack:
 #endif
 	/* Check for 0 entry */
 	mr		r5,r6
-	cmpli 	0,r5,0
+	cmplwi 	r5,0
 	bne+	vectorOk
 	/* The entry was 0, call panic */
 	li 		r3,OS_ERR_SPURIOUS_INTERRUPT
@@ -396,21 +395,26 @@ on_int_stack:
 vectorOk:
 	extrwi  r5,r5,9,21
 	/* Check for soft INT */
-	cmpli 	0,r5,7
+	cmplwi 	r5,7
 	bgt		noSoftInt
 	/* Clear soft interrupt */
-	li		r0,1	
-	lis		r3, INTC_SSCIR0@h
-	ori		r3, r3, INTC_SSCIR0@l
+	li		r0,1
+	LOAD_ADDR_32(3,INTC_SSCIR0)
+//	lis		r3, INTC_SSCIR0@h
+//	ori		r3, r3, INTC_SSCIR0@l
 	stbx	r0,r5,r3			
 	
 noSoftInt:	
-
-	lis   r3, Os_Isr@h
-    ori   r3, r3,Os_Isr@l
+	LOAD_ADDR_32(3,Os_Isr)
+//	lis   r3, Os_Isr@h
+//    ori   r3, r3,Os_Isr@l
     mtlr  r3
 	mr    r3,r4  		/* "old" stack as arg1 */
+#if defined(OLD_CALL)	
     lwz   r4, 0x0(r6) 	/* Read the address from the for function/pcb entry */
+#else
+	mr	 r4,r5
+#endif    
     blrl		 		/* Call the entry */
 
 	/* Notes!
@@ -549,7 +553,11 @@ handleException:
 #if defined(__GNUC__)	
 .section ".exception_tbl","ax"
 #elif defined(__CWCC__)
+#if defined(CFG_VLE)
+.section .exception_tbl,text_vle
+#else
 .section .exception_tbl,4,"rw"
+#endif
 #endif
 .balign 0x1000
 .global exception_tbl

@@ -14,11 +14,13 @@ include $(ROOTDIR)/boards/$(BOARDDIR)/build_config.mk
 include $(ROOTDIR)/scripts/version_check.mk
 
 # Check cross compiler setting against default from board config
+ifneq (${COMPILER},cw)
 ifneq (${DEFAULT_CROSS_COMPILE},)
 ifneq (${CROSS_COMPILE},${DEFAULT_CROSS_COMPILE})
 ${warning Not using default cross compiler for architecture.}
 ${warning CROSS_COMPILE:         ${CROSS_COMPILE} [${origin CROSS_COMPILE}]}
 ${warning DEFAULT_CROSS_COMPILE: ${DEFAULT_CROSS_COMPILE} [${origin DEFAULT_CROSS_COMPILE}]}
+endif
 endif
 endif
 
@@ -183,7 +185,7 @@ clean: FORCE
 	@echo "  >> Cleaning $(CURDIR)"
 	$(Q)-rm -f *.o *.d *.h *.elf *.a *.ldp *.tmp *.s *.c *.map
 	@echo
-
+	
 .PHONY config: 
 config: FORCE
 	@echo "board   modules:" $(MOD_AVAIL)

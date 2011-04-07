@@ -1,3 +1,4 @@
+#define _ASSEMBLER_
 #include "asm_ppc.h"
 
 #if defined(__GNUC__)
@@ -7,9 +8,14 @@
 .section .rcw,4,"r"
 #endif
 
+
 .global _resetconfiguration
 _resetconfiguration:
+#if defined(CFG_VLE)
+	.byte  0x01   #no watchdog, VLE
+#else
 	.byte  0x00   #no watchdog
+#endif	
 	.byte  0x5A   #Boot identifier
 	.byte  0x00
 	.byte  0x00
@@ -27,7 +33,11 @@ _resetconfiguration:
 	.extern exit
 	.extern main
 	
-	.text
+#if defined(__CWCC__) && defined(CFG_VLE)
+.section .text_vle,text_vle
+#else
+.section .text
+#endif
 	.align		4
 
 	.globl	_start
@@ -35,7 +45,7 @@ _resetconfiguration:
 
 	// Good information about the E500 is freescale doc: E500ABIUG.pdf
 	
-
+#if 0
 .global _redled
 _redled:
 	// mpc5567qrtech: light up led K2 
@@ -44,22 +54,20 @@ _redled:
 	ori r3, r3, 0xC3F90130@l
 	stw r0, 8(r3)
 	b _exit
+#endif
 
 __start:
 _start:
 	// Set up the reserved registers in EABI: r1,r2 and r13
 
 	// r1, stack pointer
-	lis	r1,__SP_INIT@h
-	ori	r1,r1,__SP_INIT@l
-
+	LOAD_ADDR_32(1,__SP_INIT)
+	
 	// r13, base of .sdata
-	lis	r13,_SDA_BASE_@h
-	ori	r13,r13,_SDA_BASE_@l
+	LOAD_ADDR_32(13,_SDA_BASE_)
 
 	// r2, base of .sdata2 and .sbss2
-	lis	r2,_SDA2_BASE_@h
-	ori	r2,r2,_SDA2_BASE_@l
+	LOAD_ADDR_32(13,_SDA2_BASE_)
 
 	// make space for initial backchain..
 	subi    r1,r1,16
@@ -73,8 +81,7 @@ _start:
 
 	/*  Clear all SRAM */
 init_RAM:
-	lis r11,0x4000 # base address of the SRAM, 64-bit word aligned
-	ori r11,r11,0 # not needed for this address but could be for others
+	LOAD_ADDR_32(11,0x40000000)
 	li r12,640 # loop counter to get all of SRAM;
 	/* 80k/4 bytes/32 GPRs = 640 */
 	mtctr r12
@@ -90,13 +97,10 @@ init_ram_loop:
 #endif
 
 	// Copy initialized data from ROM to RAM
-	lis		r3,__DATA_ROM@h
-	ori		r3,r3,__DATA_ROM@l
-	lis		r4,__DATA_RAM@h
-	ori		r4,r4,__DATA_RAM@l
-	lis		r5,__DATA_END@h
-	ori		r5,r5,__DATA_END@l
-
+	LOAD_ADDR_32(3,__DATA_ROM)
+	LOAD_ADDR_32(4,__DATA_RAM)
+	LOAD_ADDR_32(5,__DATA_END)
+	
 	cmplw	r3,r4
 	beq		skip_data
 	cmplw	r4,r5
@@ -111,10 +115,8 @@ copy_data:
 skip_data:
 
 	/* Clear uninitialized data( holds both bss and sbss ) */
-	lis		r3,__BSS_START@h
-	ori		r3,r3,__BSS_START@l
-	lis		r4,__BSS_END@h
-	ori		r4,r4,__BSS_END@l
+	LOAD_ADDR_32(3,__BSS_START)
+	LOAD_ADDR_32(4,__BSS_END)
 	cmplw	r3,r4
 	beq		skip_bss
 	li		r0,0
