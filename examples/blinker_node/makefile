@@ -26,7 +26,7 @@ inc-y += $(ROOTDIR)/components/blinker
 #libitem-y +=
 
 #linkfile
-ldcmdfile-y = linkscript_gcc.ldp
+ldcmdfile-y = linkscript_$(COMPILER).lcf
 vpath %.ldf $(ROOTDIR)/$(ARCH_PATH-y)/scripts
 
 # What I want to build
