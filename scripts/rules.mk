@@ -183,7 +183,7 @@ endif
 clean: FORCE
 	@echo
 	@echo "  >> Cleaning $(CURDIR)"
-	$(Q)-rm -f *.o *.d *.h *.elf *.a *.ldp *.tmp *.s *.c *.map
+	$(Q)-rm -f *.o *.d *.h *.elf *.a *.ldp *.lcf *.tmp *.s *.c *.map
 	@echo
 	
 .PHONY config: 
