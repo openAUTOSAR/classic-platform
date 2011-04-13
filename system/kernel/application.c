@@ -83,6 +83,8 @@ StatusType 	CallTrustedFunction(	TrustedFunctionIndexType FunctionIndex,
 									TrustedFunctionParameterRefType FunctionParams ) {
 
 
+	(void)FunctionIndex;
+	(void)FunctionParams;
 	return E_OK;
 }
 

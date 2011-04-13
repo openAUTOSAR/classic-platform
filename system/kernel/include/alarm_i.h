@@ -165,6 +165,7 @@ static inline ApplicationType Os_AlarmGetApplicationOwner( AlarmType id ) {
 #if (OS_RESOURCE_CNT!=0)
 	rv = (id < OS_ALARM_CNT) ? Os_AlarmGet(id)->applOwnerId : INVALID_OSAPPLICATION;
 #else
+	(void)id;
 	rv = INVALID_OSAPPLICATION;
 #endif
 	return rv;

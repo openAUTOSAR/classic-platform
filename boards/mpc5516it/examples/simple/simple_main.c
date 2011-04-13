@@ -94,12 +94,13 @@ void eTask2( void ) {
  */
 
 void OsIdle( void ) {
-	for(;;);
+	for(;;) {}
 }
 
 
 /* Global hooks */
 ProtectionReturnType ProtectionHook( StatusType FatalError ) {
+	(void)FatalError;
 	LDEBUG_FPUTS("## ProtectionHook\n");
 	return PRO_KILLAPPL;
 }
@@ -111,8 +112,9 @@ void StartupHook( void ) {
 }
 
 void ShutdownHook( StatusType Error ) {
+	(void)Error;
 	LDEBUG_FPUTS("## ShutdownHook\n");
-	while(1);
+	while(1) {};
 }
 
 struct LogBad_s {
@@ -174,7 +176,7 @@ void ErrorHook( StatusType Error ) {
 	ErrorCount++;
 
 	// Stall if buffer is full.
-	while(ErrorCount >= ERROR_LOG_SIZE);
+	while(ErrorCount >= ERROR_LOG_SIZE) {};
 }
 
 void PreTaskHook( void ) {

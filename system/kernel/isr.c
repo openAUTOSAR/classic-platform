@@ -160,6 +160,9 @@ void Os_IsrEnable( ISRType isr) {
  * @return
  */
 StatusType Os_IsrAddResource( TaskType isr, ResourceType resource ) {
+	(void)isr;
+	(void)resource;
+
 	return E_OK;
 }
 

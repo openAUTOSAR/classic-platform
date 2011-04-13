@@ -95,6 +95,7 @@ static inline OsResourceType *Os_ResourceGet( ResourceType resource ) {
 #if OS_RESOURCE_CNT!=0
 	return &resource_list[resource];
 #else
+	(void)resource;
 	return NULL;
 #endif
 }
@@ -105,6 +106,8 @@ static inline ApplicationType Os_ResourceGetApplicationOwner( ResourceType id ) 
 	if( id < OS_RESOURCE_CNT ) {
 		rv = Os_ResourceGet(id)->applOwnerId;
 	}
+#else
+	(void)id;
 #endif
 	return rv;
 }

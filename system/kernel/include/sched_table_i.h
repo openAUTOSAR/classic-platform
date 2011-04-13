@@ -224,6 +224,7 @@ static inline OsSchTblType *Os_SchTblGet( ScheduleTableType sched_id ) {
 		return NULL;
 	}
 #else
+	(void)sched_id;
 	return NULL;
 #endif
 }
@@ -246,6 +247,8 @@ static inline ApplicationType Os_SchTblGetApplicationOwner( ScheduleTableType id
 	} else {
 		rv = INVALID_OSAPPLICATION;
 	}
+#else
+	(void)id;
 #endif
 	return rv;
 }

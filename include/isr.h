@@ -180,6 +180,8 @@ static inline ApplicationType Os_IsrGetApplicationOwner( ISRType id ) {
 	if( id < OS_ISR_CNT ) {
 		rv = Os_IsrGet(id)->constPtr->appOwner;
 	}
+#else
+	(void)id;
 #endif
 	return rv;
 }

@@ -236,7 +236,7 @@ void Irq_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector,uint8_
 void Irq_EnableVector( int16_t vector, int priority, int core ) {
 
 	if (vector < INTC_NUMBER_OF_INTERRUPTS) {
-		Irq_SetPriority(core,vector + IRQ_INTERRUPT_OFFSET, osPrioToCpuPio(priority));
+		Irq_SetPriority(core, (IrqType)(vector + IRQ_INTERRUPT_OFFSET), osPrioToCpuPio(priority));
 	} else if ((vector >= CRITICAL_INPUT_EXCEPTION)
 			&& (vector<= DEBUG_EXCEPTION)) {
 	} else {
@@ -339,7 +339,7 @@ uint8_t Irq_GetCurrentPriority( Cpu_t cpu) {
 	return prio;
 }
 
-
+#if 0
 
 void dummy (void);
 
@@ -510,5 +510,7 @@ static void dumpExceptionRegs( uint32_t *regs ) {
 #else
 static void dumpExceptionRegs( uint32_t *regs ) {
 }
+#endif
+
 #endif
 
