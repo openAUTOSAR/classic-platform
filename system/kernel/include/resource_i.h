@@ -87,7 +87,9 @@ typedef struct OsTimingProtection {
 	OsLockingtimeType *lockingTime;
 } OsTimingProtectionType;
 
+#if OS_RESOURCE_CNT!=0
 extern GEN_RESOURCE_HEAD;
+#endif
 
 static inline OsResourceType *Os_ResourceGet( ResourceType resource ) {
 #if OS_RESOURCE_CNT!=0

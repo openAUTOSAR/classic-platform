@@ -212,7 +212,9 @@ void Os_SchTblCalcExpire( OsSchTblType *stbl );
 void Os_SchTblCheck(OsCounterType *c_p);
 void Os_SchTblAutostart( void );
 
+#if (OS_SCHTBL_CNT!=0)
 extern GEN_SCHTBL_HEAD;
+#endif
 
 static inline OsSchTblType *Os_SchTblGet( ScheduleTableType sched_id ) {
 #if (OS_SCHTBL_CNT!=0)
