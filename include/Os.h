@@ -358,6 +358,7 @@ typedef struct OsSemaphore {
 typedef OsSemaphoreType OsMutexType;
 
 StatusType Sleep( TickType ticks );
+StatusType InitSemaphore( OsSemaphoreType *semPtr, int initialCount  );
 StatusType WaitSemaphore( OsSemaphoreType *semPtr, TickType tmo );
 void SignalSemaphore( OsSemaphoreType *semPtr );
 StatusType WaitMutex( OsMutexType *mutexPtr );

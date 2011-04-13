@@ -5,7 +5,7 @@
  *      Author: mahi
  *
  * DESCRIPTION
- *  Shows the features of KERNEL_EXTRA
+ *  Shows the features of KERNEL_EXTRA and normal resources.
  *
  */
 
@@ -18,6 +18,14 @@ OsMutexType mutex;
 OsSemaphoreType semIsr;
 
 static int state = 0;
+
+enum {
+	DEMO_SEMAPHORE = 0,
+	DEMO_SEMAPHORE_SLEEP,
+	DEMO_SLEEP,
+	DEMO_MUTEX,
+	DEMO_RESOURCE
+};
 
 /**
  * Function that prints str to stdout and can activate
@@ -39,9 +47,13 @@ void mutexPrint( bool interrupt, char *str ) {
 void resourcePrint( bool interrupt, char *str ) {
 	GetResource(RES_ID_Resource1);
 	if( interrupt ) {
+		/* Activating another task (although it could have higher prio)
+		 * will not change anything, since the priority of the activated
+		 * task will be at most equal after getting the resource.
+		 */
 		ActivateTask(TASK_ID_bTask);
 	}
-	printf("Mutex protected: %s\n",str);
+	printf("Resource protected: %s\n",str);
 	ReleaseResource(RES_ID_Resource1);
 }
 
@@ -50,14 +62,17 @@ void bTask( void ) {
 
 	switch(state) {
 	case 0:
+		fputs("SignalSemaphore\n",stdout);
 		SignalSemaphore(&semIsr);
 		break;
 	case 1:
-		mutexPrint(false, "from bTask");
-		break;
-	case 2:
 		resourcePrint(false,"from bTask");
 		break;
+/*
+	case 1:
+		mutexPrint(false, "from bTask");
+		break;
+*/
 	default:
 		assert(0);
 	}
@@ -67,6 +82,8 @@ void bTask( void ) {
 
 
 void eTask1( void ) {
+
+	InitSemaphore(&semIsr,0 );
 
 	for(;;) {
 
@@ -80,19 +97,19 @@ void eTask1( void ) {
 		WaitSemaphore(&semIsr, TICK_MAX);
 
 		/*
+		 * Example: Traditional GetResource() and ReleaseResource() calls
+		 */
+		state = 1;
+		resourcePrint( true,"from eTask1");
+
+#if 0
+		/*
 		 * Example: Use a shared resource that is protected with
 		 *          WaitMutex() and  ReleaseMutex()
 		 */
-		state = 1;
-		mutexPrint( true,"from eTask1");
-
-
-		/*
-		 * Example: Traditional GetResource() and ReleaseResource() calls
-		 */
 		state = 2;
-		resourcePrint( true,"from eTask1");
-
+		mutexPrint( true,"from eTask1");
+#endif
 
 		/* OSEK resources */
 		GetResource(RES_ID_Resource1);

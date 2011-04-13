@@ -88,6 +88,7 @@ StatusType WaitSemaphore( OsSemaphoreType *semPtr, TickType tmo ) {
 	--semPtr->val;
 
 	pcbPtr = Os_SysTaskGetCurr();
+	assert(Os_Sys.intNestCnt == 0 );
 
 	if (pcbPtr->constPtr->proc_type != PROC_EXTENDED) {
 		return E_OS_ACCESS;
@@ -141,6 +142,7 @@ StatusType WaitSemaphore( OsSemaphoreType *semPtr, TickType tmo ) {
  */
 void SignalSemaphore( OsSemaphoreType *semPtr ) {
 	uint32_t flags;
+	OsTaskVarType *taskPtr;
 
 	Irq_Save(flags);
 
@@ -149,26 +151,35 @@ void SignalSemaphore( OsSemaphoreType *semPtr ) {
 	++semPtr->val;
 
 	/* Remove the first task that waits at the semaphore */
-	if(semPtr->val <= 0 ) {
+	if( semPtr->val <= 0 ) {
+
+		taskPtr = STAILQ_FIRST(&semPtr->taskHead);
+		/* Make the first task ready */
+		Os_TaskMakeReady(taskPtr);
+
 		/* Release the first task in queue */
 		STAILQ_REMOVE_HEAD(&semPtr->taskHead,semEntry);
 
-		Os_Dispatch(OP_SIGNAL_SEMAPHORE);
+		if( taskPtr->activePriority > Os_SysTaskGetCurr()->activePriority ) {
+			Os_Dispatch(OP_SIGNAL_SEMAPHORE);
+		}
 	}
 
 	Irq_Restore(flags);
 }
 
 
-#if 0
 /*
  * Usage:
  */
-StatusType CreateSemaphore( OsSemaphoreType *, int initialCount  ) {
+StatusType InitSemaphore( OsSemaphoreType *semPtr, int initialCount  ) {
 
-
+	semPtr->val = initialCount;
+	STAILQ_INIT(&semPtr->taskHead);
+	return E_OK;
 }
 
+#if 0
 
 /* With priority inheretance */
 StatusType CreateMutex( OsMutexType *mutexPtr ) {
