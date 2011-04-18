@@ -90,10 +90,7 @@ ISRType Os_IsrAdd( const OsIsrConstType * restrict isrPtr ) {
 	ISRType id;
 
 	id = Os_Sys.isrCnt++;
-	/* We have no VAR entires for ISR1 */
-	if( isrPtr->type == ISR_TYPE_2) {
-		Os_IsrVarList[id].constPtr = isrPtr;
-	}
+	Os_IsrVarList[id].constPtr = isrPtr;
 	Os_VectorToIsr[isrPtr->vector] = id;
 	Irq_EnableVector( isrPtr->vector, isrPtr->priority, Os_ApplGetCore(isrPtr->appOwner )  );
 
@@ -260,6 +257,16 @@ void Os_IsrGetStackInfo( OsIsrStackType *stack ) {
 void *Os_Isr( void *stack, int16_t vector ) {
 	OsIsrVarType *isrPtr =  &Os_IsrVarList[Os_VectorToIsr[vector]];
 	OsTaskVarType *taskPtr = NULL;
+
+	assert( isrPtr != NULL );
+//	if( isrPtr == NULL ) {
+//		Os_ArchPanic(OS_ERR_SPURIOUS_INTERRUPT, NULL, NULL );
+//	}
+
+	if( isrPtr->constPtr->type == ISR_TYPE_1) {
+		isrPtr->constPtr->entry();
+		return stack;
+	}
 
 	/* Check if we interrupted a task or ISR */
 	if( Os_Sys.intNestCnt == 0 ) {

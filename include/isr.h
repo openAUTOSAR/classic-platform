@@ -21,7 +21,7 @@
 
 /*
  * INCLUDE "RULES"
- *  Since this types and methods defined here are used by the drivers, they should
+ *  Since the types and methods defined here are used by the drivers, they should
  *  include it. E.g. #include "isr.h"
  *
  *  This file is also used internally by the kernel
@@ -54,7 +54,8 @@
 			.appOwner = _app,      \
 		  };                    \
 
-#define _ISR_INSTALL_ISR2(_name, _entry, _unique, _vector,_priority,_app )        \
+
+#define __ISR_INSTALL_ISR2(_name, _entry, _unique, _vector,_priority,_app )        \
 	do { \
 	  const OsIsrConstType _entry ## _unique = { \
 			.vector = _vector,   \
@@ -69,8 +70,48 @@
 	  Os_IsrAdd( & _entry ## _unique);   \
 	} while(0);
 
+
+
+#define _ISR_INSTALL_ISR2(_name,_entry, _unique, _vector,_priority,_app)        \
+		__ISR_INSTALL_ISR2(_name,_entry, _unique, _vector,_priority,_app)
+
 #define ISR_INSTALL_ISR2(_name,_entry, _vector,_priority,_app)        \
 		_ISR_INSTALL_ISR2(_name,_entry, __LINE__, _vector,_priority,_app)
+
+
+#define ISR_DECLARE_ISR1(_name, _entry, _unique, _vector,_priority,_app )        \
+	  const OsIsrConstType _entry ## _unique = { \
+			.vector = _vector,   \
+			.type = ISR_TYPE_1, \
+			.priority = _priority,      \
+			.entry = _entry,      \
+			.name = _name,      \
+			.resourceMask = 0,  \
+			.timingProtPtr = NULL, \
+			.appOwner = _app,      \
+		  };                    \
+
+#define __ISR_INSTALL_ISR1(_name, _entry, _unique, _vector,_priority,_app )        \
+	do { \
+	  const OsIsrConstType _entry ## _unique = { \
+			.vector = _vector,   \
+			.type = ISR_TYPE_2, \
+			.priority = _priority,      \
+			.entry = _entry,      \
+			.name = _name,      \
+			.resourceMask = 0,  \
+			.timingProtPtr = NULL, \
+			.appOwner = _app,      \
+		  };                    \
+	  Os_IsrAdd( & _entry ## _unique);   \
+	} while(0);
+
+#define _ISR_INSTALL_ISR1(_name,_entry, _unique, _vector,_priority,_app)        \
+		__ISR_INSTALL_ISR1(_name,_entry, _unique, _vector,_priority,_app)
+
+#define ISR_INSTALL_ISR1(_name,_entry, _vector,_priority,_app)        \
+		_ISR_INSTALL_ISR1(_name,_entry, __LINE__, _vector,_priority,_app)
+
 
 
 /* ----------------------------[typedef]-------------------------------------*/
@@ -123,7 +164,7 @@ typedef struct {
  * OsIsrTimingProtection[C] 	0..1
  * */
 
-typedef struct {
+typedef struct OsIsrConst {
 	const char 		*name;
 	uint8_t			core;
 	int16_t			vector;

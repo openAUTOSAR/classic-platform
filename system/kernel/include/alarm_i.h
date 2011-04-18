@@ -88,7 +88,8 @@ typedef struct OsAlarmAutostart {
  * OsAlarmAutostart[C]          0..1 Autostart
  */
 typedef struct OsAlarm {
-	char 	name[16];
+	//char 	name[16];
+	char 	*name;
 	/* Reference to counter */
 	struct OsCounter *counter;
 
@@ -162,7 +163,7 @@ static inline StatusType Os_AlarmGetBase(AlarmType alarm_id, AlarmBaseRefType in
 
 static inline ApplicationType Os_AlarmGetApplicationOwner( AlarmType id ) {
 	ApplicationType rv;
-#if (OS_RESOURCE_CNT!=0)
+#if (OS_ALARM_CNT!=0)
 	rv = (id < OS_ALARM_CNT) ? Os_AlarmGet(id)->applOwnerId : INVALID_OSAPPLICATION;
 #else
 	(void)id;

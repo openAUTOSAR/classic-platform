@@ -205,6 +205,7 @@ typedef struct OsTaskConst {
 	char 		 	name[16];
 	enum OsTaskSchedule scheduling;
 	uint32_t 		resourceAccess;
+	uint32_t 		eventMask;
 	// pointer to internal resource
 	// NULL if none
 	OsResourceType	*resourceIntPtr;

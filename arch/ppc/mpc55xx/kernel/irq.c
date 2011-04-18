@@ -48,7 +48,7 @@ typedef void (*f_t)( uint32_t *);
 //extern uint8 Irq_IsrTypeTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
 //extern const OsIsrConstType *Irq_Map[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
 
-static void dumpExceptionRegs( uint32_t *regs );
+//static void dumpExceptionRegs( uint32_t *regs );
 
 /* ----------------------------[private variables]---------------------------*/
 extern void exception_tbl(void);

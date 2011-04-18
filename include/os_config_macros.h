@@ -69,7 +69,7 @@
  *                  Currently used for calculating the ceiling priority.
  */
 #define GEN_ETASK( 	_id, _name, _priority, _scheduling, \
-					_autostart, _resource_int_p,  _resource_mask, \
+					_autostart, _resource_int_p,  _resource_mask, _event_mask, \
 					_appl_owner, _accessing_appl_mask ) \
 {									\
 	.pid = TASK_ID_ ## _id,           			\
@@ -83,6 +83,7 @@
 	.resourceIntPtr = _resource_int_p, \
 	.scheduling = _scheduling, \
 	.resourceAccess = _resource_mask, \
+	.eventMask = _event_mask, \
 	.activationLimit = 1, \
 	.applOwnerId = _appl_owner, \
 	.accessingApplMask = _accessing_appl_mask, \
@@ -124,7 +125,7 @@
 #define GEN_ISR2( _name, _vector, _priority, _entry, _appOwner, _resourceMask ) \
 {                                      \
 		.vector = _vector,             \
-		.type = ISR_TYPE_1,            \
+		.type = ISR_TYPE_2,            \
 		.priority = _priority,         \
 		.entry = _entry,               \
 		.name = _name,                 \

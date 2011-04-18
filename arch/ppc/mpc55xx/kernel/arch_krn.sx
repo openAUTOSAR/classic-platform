@@ -50,7 +50,6 @@
 
 /* ----------------------------[private define]------------------------------*/
 
-//#define OLD_CALL		
 
 #define INTC_IACKR_PRC0		0xfff48010 
 #define INTC_EOIR_PRC0		0xfff48018
@@ -381,6 +380,7 @@ on_int_stack:
 #endif
 	/* Check for 0 entry */
 	mr		r5,r6
+#if 0	
 	cmplwi 	r5,0
 	bne+	vectorOk
 	/* The entry was 0, call panic */
@@ -388,8 +388,10 @@ on_int_stack:
 	li 		r4, 0
 	mr		r5,r1
 	b 		Os_ArchPanic
+#endif	
 	
 vectorOk:
+    /* extract vector */
 	extrwi  r5,r5,9,21
 	/* Check for soft INT */
 	cmplwi 	r5,7
@@ -397,21 +399,13 @@ vectorOk:
 	/* Clear soft interrupt */
 	li		r0,1
 	LOAD_ADDR_32(3,INTC_SSCIR0)
-//	lis		r3, INTC_SSCIR0@h
-//	ori		r3, r3, INTC_SSCIR0@l
 	stbx	r0,r5,r3			
 	
 noSoftInt:	
 	LOAD_ADDR_32(3,Os_Isr)
-//	lis   r3, Os_Isr@h
-//    ori   r3, r3,Os_Isr@l
     mtlr  r3
 	mr    r3,r4  		/* "old" stack as arg1 */
-#if defined(OLD_CALL)	
-    lwz   r4, 0x0(r6) 	/* Read the address from the for function/pcb entry */
-#else
-	mr	 r4,r5
-#endif    
+	mr	 r4,r5          /* Vector as arg2 */
     blrl		 		/* Call the entry */
 
 	/* Notes!

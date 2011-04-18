@@ -106,9 +106,10 @@ void *Irq_Entry( uint8_t irq_nr, void *stack );
 void *Irq_Entry( void *stack_p );
 #endif
 
-//ISRType Irq_Attach( const OsIsrConstType *isrPtr );
+struct OsIsrConst;
+
 ISRType Irq_Attach( int vector );
-ISRType Irq_Attach2( const OsIsrConstType * );
+ISRType Irq_Attach2( const struct OsIsrConst * );
 
 /**
  * Attach an ISR type 1 to the interrupt controller.

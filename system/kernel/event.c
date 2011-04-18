@@ -37,6 +37,11 @@
  * This service shall only be called from the extended task owning
  * the event.
  *
+ * From 7.6.1 in Autosar OS 4.0
+ * An event is accessible if the task for which the event can be set
+ * is accessible. Access means that these Operating System objects are
+ * allowed as parameters to API services.
+ *
  * @param Mask Mask of the events waited for
  * @return
  */
