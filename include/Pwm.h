@@ -24,7 +24,7 @@
 #define PWM_H_
 
 #define PWM_SW_MAJOR_VERSION	1
-#define PWM_SW_MINOR_VERSION	0
+#define PWM_SW_MINOR_VERSION	1
 #define PWM_SW_PATCH_VERSION	0
 
 /*
