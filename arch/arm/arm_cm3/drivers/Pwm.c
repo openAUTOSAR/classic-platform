@@ -27,7 +27,7 @@
 #include "Pwm.h"
 #include "stm32f10x_tim.h"
 
-#if PWM_DEV_EROR_DETECT==ON
+#if PWM_DEV_ERROR_DETECT==ON
 	#define PWM_VALIDATE(_exp, _errid) \
 		if (!(_exp)) { \
 			Pwm_ReportError(_errid); \
@@ -77,7 +77,7 @@ void Pwm_Init( const Pwm_ConfigType *ConfigPtr )
     TIM_OCInitTypeDef  TIM_OCInitStructure;
 
     Pwm_VALIDATE_UNINITIALIZED();
-    #if PWM_DEV_EROR_DETECT==ON
+    #if PWM_DEV_ERROR_DETECT==ON
         /*
          * PWM046: If development error detection is enabled for the Pwm module,
          * the function Pwm_Init shall raise development error PWM_E_PARAM_CONFIG
