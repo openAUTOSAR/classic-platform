@@ -24,7 +24,7 @@
 #define PWM_H_
 
 #define PWM_SW_MAJOR_VERSION	1
-#define PWM_SW_MINOR_VERSION	0
+#define PWM_SW_MINOR_VERSION	2
 #define PWM_SW_PATCH_VERSION	0
 
 /*
@@ -44,7 +44,7 @@
  * service of the Development Error Tracer (DET) if the pre-processor
  * PwmDevErorDetect is set.
  */
-#if PWM_DEV_EROR_DETECT==STD_ON
+#if PWM_DEV_ERROR_DETECT==STD_ON
 #	define Pwm_ReportError(ErrorId) Det_ReportError( MODULE_ID_PWM, 0, 0, ErrorId);
 #else
 #   define Pwm_ReportError(ErrorId)
