@@ -520,6 +520,14 @@ uint32_t McuE_GetSystemClock(void)
 
   f_sys =  CALC_SYSTEM_CLOCK(extal,emfd,eprediv,erfd);
 
+#if defined(CFG_MPC5516)
+  // Scale according to SYSCLKDIV to get "System Clock". See RM Figure 3-1
+  uint32_t sysclkdiv = SIU.SYSCLK.B.SYSCLKDIV;
+  f_sys = f_sys / (1 << sysclkdiv);
+#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5633)
+  // TODO: Do these CPUs have an equvalent?
+#endif
+
   return f_sys;
 }
 
