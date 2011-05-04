@@ -61,6 +61,7 @@ void exit(int exit ) {
 extern char _end[];
 
 //static char *curbrk = _end;
+#if 0
 
 #ifndef HEAPSIZE
 #define HEAPSIZE 16000
@@ -74,6 +75,21 @@ extern char _end[];
 
 unsigned char _heap[HEAPSIZE] __attribute__((aligned (4)));
 //__attribute__((section(".heap")));
+
+#else
+
+/* The linker will allocate a heap for us
+ * Importing variables set by the linker is never pretty... */
+extern unsigned char _heap_addr[];
+extern void _heap_size(void);
+
+const ptrdiff_t _heap_size_proper = (const ptrdiff_t) &_heap_size; // Casting this to get a proper type
+
+#define HEAPSIZE 	_heap_size_proper
+#define _heap 		_heap_addr
+
+#endif
+
 
 void * sbrk( ptrdiff_t incr )
 {

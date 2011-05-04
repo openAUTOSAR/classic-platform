@@ -17,14 +17,18 @@
 #include "internal.h"
 #include "irq.h"
 #include "arc.h"
-
+#include "mpc55xx.h"
 /**
  * Init of free running timer.
  */
+
+extern void OsTick( void );
+extern OsTickType OsTickFreq;
 void Os_SysTickInit( void ) {
 	TaskType tid;
 	tid = Os_Arc_CreateIsr(OsTick,6/*prio*/,"OsTick");
-	Irq_AttachIsr2(tid,NULL,7);
+	Irq_AttachIsr2(tid,NULL,38);
+    //Irq_AttachIsr1(OsTick,NULL,60,6);
 }
 
 /**
@@ -35,26 +39,41 @@ void Os_SysTickInit( void ) {
  *
  */
 void Os_SysTickStart(uint32_t period_ticks) {
-	uint32_t tmp;
+#if defined(CFG_MPC5606S)
+#if 1
+	CGM.SXOSC_CTL.B.OSCON = 1;	//Enable the osc for RTC
+	//RTC.RTCSUPV.B.SUPV = 1;
+	RTC.RTCC.B.CNTEN = 1;
+	RTC.RTCC.B.RTCIE = 1;
+	RTC.RTCC.B.FRZEN = 1;
+	RTC.RTCC.B.RTCVAL = (16000000/OsTickFreq)/1024;
+	RTC.RTCC.B.CLKSEL = 2;
+	INTC.PSR[38].R = 0x02;
+	//INTC.CPR.B.PRI = 0;
+	//Irq_Enable();
+#endif
+#else
+    	uint32_t tmp;
 
-	// Enable the TB
-	tmp = get_spr(SPR_HID0);
-	tmp |= HID0_TBEN;
-	set_spr(SPR_HID0, tmp);
+    	// Enable the TB
+    	tmp = get_spr(SPR_HID0);
+    	tmp |= HID0_TBEN;
+    	set_spr(SPR_HID0, tmp);
 
-	/* Initialize the Decrementer */
-	set_spr(SPR_DEC, period_ticks);
-	set_spr(SPR_DECAR, period_ticks);
+    	/* Initialize the Decrementer */
+    	set_spr(SPR_DEC, period_ticks);
+    	set_spr(SPR_DECAR, period_ticks);
 
-	/* Set autoreload */
-	tmp = get_spr(SPR_TCR);
-	tmp |= TCR_ARE;
-	set_spr(SPR_TCR, tmp);
+    	/* Set autoreload */
+    	tmp = get_spr(SPR_TCR);
+    	tmp |= TCR_ARE;
+    	set_spr(SPR_TCR, tmp);
 
-	/* Enable notification */
-    tmp = get_spr(SPR_TCR);
-    tmp |= TCR_DIE;
-    set_spr(SPR_TCR, tmp );
+    	/* Enable notification */
+        tmp = get_spr(SPR_TCR);
+        tmp |= TCR_DIE;
+        set_spr(SPR_TCR, tmp );
+#endif
 }
 
 /**

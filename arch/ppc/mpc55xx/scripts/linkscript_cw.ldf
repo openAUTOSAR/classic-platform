@@ -1,8 +1,8 @@
 
 MEMORY
 {
-    flash: org = 0x00000000,   len = 0x00060000 
-    sram:  org = 0x40000000,   len = 0x00008000 
+    flash: org = 0x00000000,   len = 0x00080000 
+    sram:  org = 0x40000000,   len = 0x0000c000 
 }
 
 SECTIONS
@@ -73,4 +73,5 @@ SECTIONS
 }   
 
 _heap_end   = ADDR(sram)+SIZEOF(sram);
+_heap_size  = _heap_end - _heap_addr;
 __SP_INIT = _heap_end;

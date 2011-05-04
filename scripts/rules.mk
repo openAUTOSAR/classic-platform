@@ -231,7 +231,8 @@ all: $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $(ROOTDIR)/bina
 	$(Q)$(AS) $(ASFLAGS) -o $(goal) $<
 	
 # PP Assembler	
-#.SECONDARY %.s:
+
+.SECONDARY %.s: # Don't remove *.s files (needed for debugging)
 
 %.s: %.sx
 	@echo

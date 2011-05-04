@@ -92,6 +92,8 @@ typedef struct  {
 	/** Function pointer to callback function */
 	void (*GptNotification)();
 
+	/** changed by LEE down line */
+	uint8 GptNotificationPriority;
 	/** GPT module specific prescaler factor per channel */
 	uint32 GptChannelPrescale;
 

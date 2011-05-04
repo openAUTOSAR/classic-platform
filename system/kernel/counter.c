@@ -18,6 +18,7 @@
 #include "Os.h"
 #include "internal.h"
 #include "arc.h"
+#include "mpc5606s.h" //added by lee
 
 #define COUNTER_STD_END 	\
 		goto ok;		\

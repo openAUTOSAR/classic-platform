@@ -41,7 +41,7 @@
 
 typedef void (*f_t)( uint32_t *);
 extern void exception_tbl(void);
-
+extern OsTickType OsTickFreq;
 
 extern void * Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
 //extern uint8 Irq_IsrTypeTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
@@ -98,7 +98,7 @@ void Irq_Init( void ) {
 	#if defined(CFG_MPC5516)
 	  INTC.MCR.B.HVEN_PRC0 = 0; // Soft vector mode
 	  INTC.MCR.B.VTES_PRC0 = 0; // 4 byte offset between entries
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)|| defined(CFG_MPC5606S)
 	  INTC.MCR.B.HVEN = 0; // Soft vector mode
 	  INTC.MCR.B.VTES = 0; // 4 byte offset between entries
 	#endif
@@ -110,6 +110,8 @@ void Irq_Init( void ) {
 	  assert( (((uint32_t)&Irq_VectorTable[0]) & 0x7ff) == 0 );
 	#if defined(CFG_MPC5516)
 	  INTC.IACKR_PRC0.R = (uint32_t) & Irq_VectorTable[0]; // Set INTC ISR vector table
+	#elif defined(CFG_MPC5606S)
+	  INTC.IACKR.R = (uint32_t) & Irq_VectorTable[0];
 	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
 	  INTC.IACKR.R = (uint32_t) & Irq_VectorTable[0]; // Set INTC ISR vector table
 	#endif
@@ -119,7 +121,7 @@ void Irq_Init( void ) {
 	  {
 	#if defined(CFG_MPC5516)
 	    INTC.EOIR_PRC0.R = 0;
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)|| defined(CFG_MPC5606S)
 	    INTC.EOIR.R = 0;
 	#endif
 	  }
@@ -127,7 +129,7 @@ void Irq_Init( void ) {
 	  // Accept interrupts
 	#if defined(CFG_MPC5516)
 	  INTC.CPR_PRC0.B.PRI = 0;
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)|| defined(CFG_MPC5606S)
 	  INTC.CPR.B.PRI = 0;
 	#endif
 
@@ -137,8 +139,13 @@ void Irq_EOI( void ) {
 #if defined(CFG_MPC5516)
 	volatile struct INTC_tag *intc = &INTC;
 	intc->EOIR_PRC0.R = 0;
-#elif defined(CFG_MPC5554)||defined(CFG_MPC5567)
+#elif defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC5606S)
 	volatile struct INTC_tag *intc = &INTC;
+	#if defined(CFG_MPC5606S)
+	RTC.RTCC.B.CNTEN = 0;
+	RTC.RTCC.B.CNTEN = 1;
+	RTC.RTCS.B.RTCF = 1;
+	#endif
 	intc->EOIR.R = 0;
 #endif
 }
@@ -158,7 +165,7 @@ void *Irq_Entry( void *stack_p )
 
 #if defined(CFG_MPC5516)
 	vector = (intc->IACKR_PRC0.B.INTVEC_PRC0);
-#elif defined(CFG_MPC5554)||defined(CFG_MPC5567)
+#elif defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC5606S)
 	vector = (intc->IACKR.B.INTVEC);
 #endif
 	// Clear software int if that was it.
@@ -273,7 +280,7 @@ uint8_t Irq_GetCurrentPriority( Cpu_t cpu) {
 	} else if ( cpu == CPU_Z0 ) {
 		prio = INTC.CPR_PRC1.B.PRI;
 	}
-#elif defined(CFG_MPC5554)||defined(CFG_MPC5567)
+#elif defined(CFG_MPC5554)||defined(CFG_MPC5567)|| defined(CFG_MPC5606S)
 	prio = INTC.CPR.B.PRI;
 #endif
 
