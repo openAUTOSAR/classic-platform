@@ -49,8 +49,7 @@ typedef void (*vfunc_t)();
 /* Function declarations. */
 static void Mcu_ConfigureFlash(void);
 
-typedef struct
-{
+typedef struct{
 	uint32 lossOfLockCnt;
 	uint32 lossOfClockCnt;
 } Mcu_Stats;
@@ -95,8 +94,7 @@ Mcu_GlobalType Mcu_Global =
 
 //-------------------------------------------------------------------
 
-static void Mcu_LossOfLock( void  )
-{
+static void Mcu_LossOfLock( void  ){
 #if defined(USE_DEM)
 	Dem_ReportErrorStatus(MCU_E_CLOCK_FAILURE, DEM_EVENT_STATUS_FAILED);
 #endif
@@ -118,8 +116,7 @@ static void Mcu_LossOfLock( void  )
 
 //-------------------------------------------------------------------
 
-static void Mcu_LossOfCLock( void  )
-{
+static void Mcu_LossOfCLock( void  ){
 	/* Should report MCU_E_CLOCK_FAILURE with DEM here */
 #if defined(CFG_MPC5606S)
 	/*not support*/
@@ -139,20 +136,17 @@ static void Mcu_LossOfCLock( void  )
 #define CORE_PVR_E200Z6   	0x81170000UL
 #define CORE_PVR_E200Z0H   	0x817F0000UL
 
-typedef struct
-{
+typedef struct{
 	char *name;
 	uint32 pvr;
 } core_info_t;
 
-typedef struct
-{
+typedef struct{
 	char *name;
 	uint32 pvr;
 } cpu_info_t;
 
-cpu_info_t cpu_info_list[] =
-{
+cpu_info_t cpu_info_list[] = {
 #if defined(CFG_MPC5516)
     {
     	.name = "MPC5516",
@@ -180,8 +174,7 @@ cpu_info_t cpu_info_list[] =
 #endif
 };
 
-core_info_t core_info_list[] =
-{
+core_info_t core_info_list[] = {
 #if defined(CFG_MPC5516)
 	{
 		.name = "CORE_E200Z1",
@@ -218,10 +211,8 @@ static cpu_info_t *Mcu_IdentifyCpu(uint32 pvr)
 {
     int i;
 
-    for (i = 0; i < ARRAY_SIZE(cpu_info_list); i++)
-    {
-    	if (cpu_info_list[i].pvr == pvr)
-    	{
+    for (i = 0; i < ARRAY_SIZE(cpu_info_list); i++) {
+    	if (cpu_info_list[i].pvr == pvr) {
     		return &cpu_info_list[i];
         }
     }
@@ -233,10 +224,8 @@ static core_info_t *Mcu_IdentifyCore(uint32 pvr)
 {
 	int i;
 
-	for (i = 0; i < ARRAY_SIZE(core_info_list); i++)
-	{
-		if (core_info_list[i].pvr == pvr)
-		{
+	for (i = 0; i < ARRAY_SIZE(core_info_list); i++) {
+		if (core_info_list[i].pvr == pvr) {
 			return &core_info_list[i];
 		}
     }
@@ -244,8 +233,7 @@ static core_info_t *Mcu_IdentifyCore(uint32 pvr)
   return NULL;
 }
 
-static uint32 Mcu_CheckCpu( void )
-{
+static uint32 Mcu_CheckCpu( void ) {
 	uint32 pvr;
 	uint32 pir;
 	cpu_info_t *cpuType;
@@ -258,8 +246,7 @@ static uint32 Mcu_CheckCpu( void )
     cpuType = Mcu_IdentifyCpu(pvr);
     coreType = Mcu_IdentifyCore(pvr);
 
-    if( (cpuType == NULL) || (coreType == NULL) )
-    {
+    if( (cpuType == NULL) || (coreType == NULL) ) {
     	// Just hang
     	while(1);
     }
@@ -276,8 +263,7 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
 {
 	VALIDATE( ( NULL != configPtr ), MCU_INIT_SERVICE_ID, MCU_E_PARAM_CONFIG );
 
-    if( !SIMULATOR() )
-    {
+    if( !SIMULATOR() ) {
     	Mcu_CheckCpu();
     }
 
@@ -295,8 +281,7 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
 
     Mcu_Global.initRun = 1;
 
-    if( Mcu_Global.config->McuClockSrcFailureNotification == TRUE  )
-    {
+    if( Mcu_Global.config->McuClockSrcFailureNotification == TRUE  ) {
 #if defined(CFG_MPC5606S)
     	/*not support*/
 #else
@@ -375,7 +360,10 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     	uint32  extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePointFrequency;
     	uint32  f_sys;
 
-    	f_sys = CALC_SYSTEM_CLOCK( extal,clockSettingsPtr->Pll2,clockSettingsPtr->Pll1,clockSettingsPtr->Pll3 );
+    	f_sys = CALC_SYSTEM_CLOCK( extal,
+    		clockSettingsPtr->Pll2,
+    		clockSettingsPtr->Pll1,
+    		clockSettingsPtr->Pll3 );
 
         //DEBUG(DEBUG_HIGH,"/drivers/mcu: F_sys will be:%08d Hz\n",f_sys);
     }
@@ -440,15 +428,7 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
 
     FMPLL.SYNCR.B.LOLIRQ	= 1;
 #endif
-#if 0
-/* for check the system clock*/
-    CGM.OC_EN.B.EN = 1;
-    CGM.OCDS_SC.B.SELDIV = 0;
-    CGM.OCDS_SC.B.SELCTL = 0;
-    SIU.PCR[103].B.PA = 3;
-    SIU.PCR[103].B.OBE = 1;
 
-#endif
     return E_OK;
 }
 
@@ -479,8 +459,7 @@ Mcu_PllStatusType Mcu_GetPllStatus(void)
     	if ( !CGM.FMPLL[0].CR.B.S_LOCK )
     	{
     		rv = MCU_PLL_UNLOCKED;
-    	}
-    	else
+    	} else
     	{
     		rv = MCU_PLL_LOCKED;
     	}
@@ -488,8 +467,7 @@ Mcu_PllStatusType Mcu_GetPllStatus(void)
     	if ( !FMPLL.SYNSR.B.LOCK )
     	{
     		rv = MCU_PLL_UNLOCKED;
-    	}
-    	else
+    	} else
     	{
     		rv = MCU_PLL_LOCKED;
     	}
@@ -513,37 +491,23 @@ Mcu_ResetType Mcu_GetResetReason(void)
 	VALIDATE_W_RV( ( 1 == Mcu_Global.initRun ), MCU_GETRESETREASON_SERVICE_ID, MCU_E_UNINIT, MCU_RESET_UNDEFINED );
 
 #if defined(CFG_MPC5606S)
-	if( RGM.FES.B.F_SOFT )
-	{
+	if( RGM.FES.B.F_SOFT ) {
 		rv = MCU_SW_RESET;
-	}
-	else if( RGM.DES.B.F_SWT )
-	{
+	} else if( RGM.DES.B.F_SWT ) {
 		rv = MCU_WATCHDOG_RESET;
-	}
-	else if( RGM.DES.B.F_POR )
-	{
+	} else if( RGM.DES.B.F_POR ) {
 		rv = MCU_POWER_ON_RESET;
-	}
-	else
-	{
+	} else {
 		rv = MCU_RESET_UNDEFINED;
 	}
 #else
-	if( SIU.RSR.B.SSRS )
-	{
+	if( SIU.RSR.B.SSRS ) {
 		rv = MCU_SW_RESET;
-	}
-	else if( SIU.RSR.B.WDRS )
-	{
+	} else if( SIU.RSR.B.WDRS ) {
 		rv = MCU_WATCHDOG_RESET;
-	}
-	else if( SIU.RSR.B.PORS || SIU.RSR.B.ERS )
-	{
+	} else if( SIU.RSR.B.PORS || SIU.RSR.B.ERS ) {
 		rv = MCU_POWER_ON_RESET;
-	}
-	else
-	{
+	} else {
 		rv = MCU_RESET_UNDEFINED;
 	}
 #endif
@@ -557,8 +521,7 @@ Mcu_RawResetType Mcu_GetResetRawValue(void)
 {
 	VALIDATE_W_RV( ( 1 == Mcu_Global.initRun ), MCU_GETRESETREASON_SERVICE_ID, MCU_E_UNINIT, MCU_GETRESETRAWVALUE_UNINIT_RV );
 
-	if( !Mcu_Global.initRun )
-	{
+	if( !Mcu_Global.initRun ) {
 		return MCU_GETRESETRAWVALUE_UNINIT_RV;
 	}
 

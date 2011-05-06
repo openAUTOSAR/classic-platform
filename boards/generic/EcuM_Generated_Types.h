@@ -125,7 +125,7 @@ typedef struct
     const Adc_ConfigType* AdcConfig;
 #endif
 #if defined(USE_WDG)
-    const Wdg_ConfigType* WdgConfig;
+    //const Wdg_ConfigType* WdgConfig; /* WDG is not AUTOSAR compliant for ArctiCore */
 #endif
 #if defined(USE_WDGM)
     const WdgM_ConfigType* WdgMConfig;

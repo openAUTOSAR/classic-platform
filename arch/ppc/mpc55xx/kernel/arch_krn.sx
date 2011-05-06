@@ -375,10 +375,10 @@ exception_IVOR4:
 
 on_int_stack:
 
-#if defined(CFG_MPC5516) 
+#if defined(CFG_MPC5516)
 	lis r6, INTC_IACKR_PRC0@ha
 	lwz r6, INTC_IACKR_PRC0@l(r6)
-#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)|| defined(CFG_MPC5606S)
+#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5606S)
 	lis r6, INTC_IACKR@ha 
 	lwz r6, INTC_IACKR@l(r6)
 #endif
@@ -413,7 +413,7 @@ noSoftInt:
 #if defined(OLD_CALL)	
     lwz   r4, 0x0(r6) 	/* Read the address from the for function/pcb entry */
 #elif defined(CFG_MPC5606S)
-	mr	 r4,r5
+	mr    r4, r5
 	lwz   r4, 0x0(r6)
 #else
 	mr	 r4,r5
@@ -552,6 +552,7 @@ exception_IVOR10:
  */
 handleException:
 	b  handleException		
+	
 #if defined(__GNUC__)	
 .section ".exception_tbl","ax"
 #elif defined(__CWCC__)

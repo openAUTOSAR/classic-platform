@@ -15,6 +15,11 @@
 
 
 
+
+
+
+
+
 #include "Can.h"
 
 #ifndef USE_CAN_STUB
@@ -119,7 +124,6 @@
         					((struct FLEXCAN2_tag *)(0xFFFC0000 + 0x4000*(_controller)))
 #elif defined(CFG_MPC5606S)
 
-/*This Added By LEO@I-SOFT*/
 #define GET_CONTROLLER(_controller) 	\
         					((struct FLEXCAN_tag *)(0xFFFC0000 + 0x4000*(_controller)))
 
@@ -174,24 +178,19 @@
 //-------------------------------------------------------------------
 
 // Message box status defines
-#define MB_TX_ONCE		    0xC
-#define MB_INACTIVE	        0x8
+#define MB_TX_ONCE		0xc
+#define MB_INACTIVE	0x8
 #define MB_RX				0x4
 #define MB_ABORT			0x9
-
-
 
 //-------------------------------------------------------------------
 typedef enum
 {
-	CAN_UNINIT = 0,
-	CAN_READY
+  CAN_UNINIT = 0,
+  CAN_READY
 } Can_DriverStateType;
 
-
-
-typedef union
-{
+typedef union {
     vuint32_t R;
     struct {
         vuint32_t:14;
@@ -217,7 +216,6 @@ typedef union
 
 #if defined(CFG_MPC5567)
 typedef struct FLEXCAN2_tag flexcan_t;
-/*This Added By LEO@-SOFT To Supported MPC5606S*/
 #elif defined(CFG_MPC5606S)
 typedef struct FLEXCAN_tag flexcan_t;
 #else
@@ -233,8 +231,7 @@ typedef struct Can_Arc_ObjectHOHMapStruct
 } Can_Arc_ObjectHOHMapType;
 
 /* Type for holding global information used by the driver */
-typedef struct
-{
+typedef struct {
   Can_DriverStateType initRun;
 
   // Our config
@@ -251,10 +248,7 @@ typedef struct
   // This is a map that maps the HTH:s with the controller and Hoh. It is built
   // during Can_Init and is used to make things faster during a transmit.
   Can_Arc_ObjectHOHMapType CanHTHMap[NUM_OF_HTHS];
-
 } Can_GlobalType;
-
-
 
 // Global config
 Can_GlobalType Can_Global =
@@ -264,8 +258,7 @@ Can_GlobalType Can_Global =
 
 
 /* Type for holding information about each controller */
-typedef struct
-{
+typedef struct {
   CanIf_ControllerModeType state;
   uint32		lock_cnt;
   // Interrupt masks that is for all Mb's in this controller
@@ -298,14 +291,11 @@ Can_UnitType CanUnit[CAN_CONTROLLER_CNT] =
     .state = CANIF_CS_UNINIT,
   },
 };
-/*This Added By LEO@I-SOFT To Supported MCP5606S*/
 #elif defined(CFG_MPC5606S)
-Can_UnitType CanUnit[CAN_CONTROLLER_CNT] =
-{
+Can_UnitType CanUnit[CAN_CONTROLLER_CNT] ={
   {
 	.state = CANIF_CS_UNINIT,
-  },
-  {
+  },{
 	.state = CANIF_CS_UNINIT,
   }
 };
@@ -338,9 +328,9 @@ Can_UnitType CanUnit[CAN_CONTROLLER_CNT] =
  * @param hth The transmit handle
  * @returns Ptr to the Hoh
  */
-static const Can_HardwareObjectType *Can_FindHoh( Can_Arc_HTHType hth , uint32* controller)
+static const Can_HardwareObjectType * Can_FindHoh( Can_Arc_HTHType hth , uint32* controller)
 {
-  const Can_HardwareObjectType   *hohObj;
+  const Can_HardwareObjectType *hohObj;
   const Can_Arc_ObjectHOHMapType *map;
   const Can_ControllerConfigType *canHwConfig;
 
@@ -374,11 +364,9 @@ static void Can_Isr( int unit );
 static void Can_Err( int unit );
 static void Can_BusOff( int unit );
 
-
-/*This Code Modified By LEO@I-SOFT To Supported MPC5606S*/
 void Can_A_Isr( void  ) {	Can_Isr(CAN_CTRL_A); }
 void Can_B_Isr( void  ) {	Can_Isr(CAN_CTRL_B); }
-#if defined(CFG_MPC5567) || defined(CFG_MPC5516) || defined(CFG_MPC5554)
+#if !defined(CFG_MPC5606S)
 void Can_C_Isr( void  ) {	Can_Isr(CAN_CTRL_C); }
 void Can_D_Isr( void  ) {	Can_Isr(CAN_CTRL_D); }
 void Can_E_Isr( void  ) {	Can_Isr(CAN_CTRL_E); }
@@ -388,12 +376,9 @@ void Can_F_Isr( void  ) {	Can_Isr(CAN_CTRL_F); }
 #endif
 #endif
 
-
-
-
 void Can_A_Err( void  ) {	Can_Err(CAN_CTRL_A); }
 void Can_B_Err( void  ) {	Can_Err(CAN_CTRL_B); }
-#if defined(CFG_MPC5567) || defined(CFG_MPC5516) || defined(CFG_MPC5554)
+#if !defined(CFG_MPC5606S)
 void Can_C_Err( void  ) {	Can_Err(CAN_CTRL_C); }
 void Can_D_Err( void  ) {	Can_Err(CAN_CTRL_D); }
 void Can_E_Err( void  ) {	Can_Err(CAN_CTRL_E); }
@@ -403,12 +388,9 @@ void Can_F_Err( void  ) {	Can_Err(CAN_CTRL_F); }
 #endif
 #endif
 
-
-
-
 void Can_A_BusOff( void  ) {	Can_BusOff(CAN_CTRL_A); }
 void Can_B_BusOff( void  ) {	Can_BusOff(CAN_CTRL_B); }
-#if defined(CFG_MPC5567) || defined(CFG_MPC5516) || defined(CFG_MPC5554)
+#if !defined(CFG_MPC5606S)
 void Can_C_BusOff( void  ) {	Can_BusOff(CAN_CTRL_C); }
 void Can_D_BusOff( void  ) {	Can_BusOff(CAN_CTRL_D); }
 void Can_E_BusOff( void  ) {	Can_BusOff(CAN_CTRL_E); }
@@ -426,8 +408,7 @@ void Can_F_BusOff( void  ) {	Can_BusOff(CAN_CTRL_F); }
  * @param unit CAN controller number( from 0 )
  */
 
-static void Can_Err( int unit )
-{
+static void Can_Err( int unit ) {
   flexcan_t *canHw = GET_CONTROLLER(unit);
   Can_Arc_ErrorType err;
   ESRType esr;
@@ -435,14 +416,14 @@ static void Can_Err( int unit )
 
   esr.R = canHw->ESR.R;
 
-  err.B.ACKERR  = esr.B.ACKERR;
+  err.B.ACKERR = esr.B.ACKERR;
   err.B.BIT0ERR = esr.B.BIT0ERR;
   err.B.BIT1ERR = esr.B.BIT1ERR;
-  err.B.CRCERR  = esr.B.CRCERR;
-  err.B.FRMERR  = esr.B.FRMERR;
-  err.B.STFERR  = esr.B.STFERR;
-  err.B.RXWRN   = esr.B.RXWRN;
-  err.B.TXWRN   = esr.B.TXWRN;
+  err.B.CRCERR = esr.B.CRCERR;
+  err.B.FRMERR = esr.B.FRMERR;
+  err.B.STFERR = esr.B.STFERR;
+  err.B.RXWRN = esr.B.RXWRN;
+  err.B.TXWRN = esr.B.TXWRN;
 
   if (GET_CALLBACKS()->Arc_Error != NULL)
   {
@@ -454,8 +435,7 @@ static void Can_Err( int unit )
 
 
 // Uses 25.4.5.1 Transmission Abort Mechanism
-static void Can_AbortTx( flexcan_t *canHw, Can_UnitType *canUnit )
-{
+static void Can_AbortTx( flexcan_t *canHw, Can_UnitType *canUnit ) {
   uint32 mbMask;
   uint8 mbNr;
 
@@ -463,20 +443,18 @@ static void Can_AbortTx( flexcan_t *canHw, Can_UnitType *canUnit )
   mbMask = canUnit->Can_Arc_TxMbMask;
 
   // Loop over the Mb's set to abort
-  for (; mbMask; mbMask&=~(1<<mbNr))
-  {
+  for (; mbMask; mbMask&=~(1<<mbNr)) {
     mbNr = ilog2(mbMask);
 
     canHw->BUF[mbNr].CS.B.CODE = MB_ABORT;
 
     // Did it take
-    if( canHw->BUF[mbNr].CS.B.CODE != MB_ABORT )
-    {
-		// nope..
+    if( canHw->BUF[mbNr].CS.B.CODE != MB_ABORT ) {
+			// nope..
 
     	// it's not sent... or being sent.
     	// Just wait for it
-        int i = 0;
+      int i = 0;
     	while( canHw->IFRL.R == (1<<mbNr) )
     	{
     	  i++;
@@ -498,8 +476,7 @@ static void Can_AbortTx( flexcan_t *canHw, Can_UnitType *canUnit )
  *
  * @param unit CAN controller number( from 0 )
  */
-static void Can_BusOff( int unit )
-{
+static void Can_BusOff( int unit ) {
   flexcan_t *canHw = GET_CONTROLLER(unit);
   Can_UnitType *canUnit = GET_PRIVATE_DATA(unit);
   Can_Arc_ErrorType err;
@@ -527,8 +504,7 @@ static void Can_BusOff( int unit )
     }
   }
 
-  if( canHw->ESR.B.BOFFINT )
-  {
+  if( canHw->ESR.B.BOFFINT ) {
 
     canUnit->stats.boffCnt++;
     if (GET_CALLBACKS()->ControllerBusOff != NULL)
@@ -550,8 +526,7 @@ static void Can_BusOff( int unit )
  *
  * @param unit CAN controller number( from 0 )
  */
-static void Can_Isr(int unit)
-{
+static void Can_Isr(int unit) {
 
   flexcan_t *canHw= GET_CONTROLLER(unit);
   const Can_ControllerConfigType *canHwConfig= GET_CONTROLLER_CONFIG(Can_Global.channelMap[unit]);
@@ -559,33 +534,28 @@ static void Can_Isr(int unit)
   Can_UnitType *canUnit = GET_PRIVATE_DATA(unit);
 
   // Read interrupt flags to seeTxConfirmation what interrupt triggered the interrupt
-  if (iFlagLow & canHw->IMRL.R)
-  {
+  if (iFlagLow & canHw->IMRL.R) {
     // Check FIFO
-	/*This Code Added By LEO@I-SOFT To Supported MPC5606S*/
+
 #if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S)
   	// Note!
   	//   FIFO code NOT tested
-    if (canHw->MCR.B.FEN)
-    {
+    if (canHw->MCR.B.FEN) {
 
       // Check overflow
-      if (iFlagLow & (1<<7))
-      {
+      if (iFlagLow & (1<<7)) {
         canUnit->stats.fifoOverflow++;
         canHw->IFRL.B.BUF07I = 1;
       }
 
       // Check warning
-      if (iFlagLow & (1<<6))
-      {
+      if (iFlagLow & (1<<6)) {
         canUnit->stats.fifoWarning++;
         canHw->IFRL.B.BUF06I = 1;
       }
 
       // Pop fifo "realtime"
-      while (canHw->IFRL.B.BUF05I)
-      {
+      while (canHw->IFRL.B.BUF05I) {
         // At
         // TODO MAHI: Must read the entire data-buffer to unlock??
       	if (GET_CALLBACKS()->RxIndication != NULL)
@@ -612,8 +582,7 @@ static void Can_Isr(int unit)
       // Rx
       hohObj= canHwConfig->Can_Arc_Hoh;
       --hohObj;
-      do
-      {
+      do {
         ++hohObj;
 
         mbMask = hohObj->Can_Arc_MbMask & iFlagLow;
@@ -621,8 +590,7 @@ static void Can_Isr(int unit)
         if (hohObj->CanObjectType == CAN_OBJECT_TYPE_RECEIVE)
         {
           // Loop over the Mb's for this Hoh
-          for (; mbMask; mbMask&=~(1<<mbNr))
-          {
+          for (; mbMask; mbMask&=~(1<<mbNr)) {
             mbNr = ilog2(mbMask);
 
             // Do the necessary dummy reads to keep controller happy
@@ -630,13 +598,10 @@ static void Can_Isr(int unit)
             data = canHw->BUF[mbNr].DATA.W[0];
 
             // According to autosar MSB shuould be set if extended
-            if (hohObj->CanIdType == CAN_ID_TYPE_EXTENDED)
-            {
+            if (hohObj->CanIdType == CAN_ID_TYPE_EXTENDED) {
               id = canHw->BUF[mbNr].ID.R;
               id |= 0x80000000;
-            }
-            else
-            {
+            } else {
               id = canHw->BUF[mbNr].ID.B.STD_ID;
             }
 
@@ -662,8 +627,7 @@ static void Can_Isr(int unit)
       // Tx
       hohObj= canHwConfig->Can_Arc_Hoh;
       --hohObj;
-      do
-      {
+      do {
         ++hohObj;
 
         if (hohObj->CanObjectType == CAN_OBJECT_TYPE_TRANSMIT)
@@ -671,8 +635,7 @@ static void Can_Isr(int unit)
           mbMask = hohObj->Can_Arc_MbMask & iFlagLow;
 
           // Loop over the Mb's for this Hoh
-          for (; mbMask; mbMask&=~(1<<mbNr))
-          {
+          for (; mbMask; mbMask&=~(1<<mbNr)) {
             mbNr = ilog2(mbMask);
 
             if (GET_CALLBACKS()->TxConfirmation != NULL)
@@ -690,16 +653,13 @@ static void Can_Isr(int unit)
 #if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S)
     } // FIFO code
 #endif
-  }
-  else
-  {
+  } else {
     // Note! Over 32 boxes is not implemented
     // Other reasons that we end up here
     // - Interupt on a masked box
   }
 
-  if (canHwConfig->Can_Arc_Fifo)
-  {
+  if (canHwConfig->Can_Arc_Fifo) {
     /*
      * NOTE!!!
      * Do not enable RxFIFO. See [Freescale Device Errata MPC5510ACE, Rev. 10 APR 2009, errata ID: 14593].
@@ -708,8 +668,7 @@ static void Can_Isr(int unit)
   	/* Note
   	 * NOT tested at all
   	 */
-    while (canHw->IFRL.B.BUF05I)
-    {
+    while (canHw->IFRL.B.BUF05I) {
       // At
       // TODO MAHI: Must read the entire data-buffer to unlock??
       if (GET_CALLBACKS()->RxIndication != NULL)
@@ -750,17 +709,8 @@ static void Can_Isr(int unit)
   }
 #endif
 
-
-
-
-
-
-
-
-
 // This initiates ALL can controllers
-void Can_Init( const Can_ConfigType *config )
-{
+void Can_Init( const Can_ConfigType *config ) {
   Can_UnitType *canUnit;
   const Can_ControllerConfigType *canHwConfig;
   int i;
@@ -770,12 +720,11 @@ void Can_Init( const Can_ConfigType *config )
   VALIDATE_NO_RV( (config != NULL ), 0x0, CAN_E_PARAM_POINTER );
 
   // Save config
-  Can_Global.config  = config;
+  Can_Global.config = config;
   Can_Global.initRun = CAN_READY;
 
 
-  for (int configId=0; configId < CAN_ARC_CTRL_CONFIG_CNT; configId++)
-  {
+  for (int configId=0; configId < CAN_ARC_CTRL_CONFIG_CNT; configId++) {
     canHwConfig = GET_CONTROLLER_CONFIG(configId);
     ctlrId = canHwConfig->CanControllerId;
 
@@ -813,8 +762,7 @@ void Can_Init( const Can_ConfigType *config )
     // Could install handlers depending on HW objects to trap more errors
     // in configuration
 #if defined(CFG_MPC5567)
-    switch( canHwConfig->CanControllerId )
-    {
+    switch( canHwConfig->CanControllerId ) {
     case CAN_CTRL_A:
         INSTALL_HANDLERS(Can_A, FLEXCAN_A_ESR_BOFF_INT, FLEXCAN_A_ESR_ERR_INT, FLEXCAN_A_IFLAG1_BUF0I, FLEXCAN_A_IFLAG1_BUF31_16I);	break;
     case CAN_CTRL_B:
@@ -828,7 +776,7 @@ void Can_Init( const Can_ConfigType *config )
     default:
         assert(0);
     }
-#elif defined(CFG_MPC5606S)    /*This Code Added By LEO@I-SOFT TO Supported MPC5606S*/
+#elif defined(CFG_MPC5606S)
     switch( canHwConfig->CanControllerId )
     {
         case CAN_CTRL_A:
@@ -841,8 +789,7 @@ void Can_Init( const Can_ConfigType *config )
             assert(0);
     }
 #else
-    switch( canHwConfig->CanControllerId )
-    {
+    switch( canHwConfig->CanControllerId ) {
     case CAN_CTRL_A:
         INSTALL_HANDLERS(Can_A, FLEXCAN_A_ESR_BOFF_INT, FLEXCAN_A_ESR_ERR_INT, FLEXCAN_A_IFLAG1_BUF0I, FLEXCAN_A_IFLAG1_BUF31_16I);	break;
     case CAN_CTRL_B:
@@ -919,21 +866,19 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
   canHw->MCR.B.MDIS = 0;
 
   // Wait for it to reset
-  if( !SIMULATOR() )
-  {
+  if( !SIMULATOR() ) {
     // Make a reset so we have a known state
-    //canHw->MCR.B.SOFTRST = 1;           /*This Code Modified By LEO@I-SOFT*/
+    //canHw->MCR.B.SOFTRST = 1;  /* commented out for step-in debug mode */
     //while( canHw->MCR.B.SOFTRST == 1);
     // Freeze to write all mem mapped registers ( see 25.4.8.1 )
     canHw->MCR.B.FRZ = 1;
-    //while( canHw->MCR.B.FRZACK == 0);	   /*This Code Modified By LEO@I-SOFT*/
+    //while( canHw->MCR.B.FRZACK == 0);
   }
 
 #if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S)
   // Note!
   // FIFO implemenation not tested
-  if( config->Can_Arc_Fifo )
-  {
+  if( config->Can_Arc_Fifo ) {
     canHw->MCR.B.FEN = 1;	// Enable FIFO
     canHw->MCR.B.IDAM = 0; 	// We want extended id's to match with
   }
@@ -973,19 +918,20 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
 
   canHw->CR.B.PRESDIV = clock/(config->CanControllerBaudRate*1000*tq) - 1;
   canHw->CR.B.PROPSEG = config->CanControllerPropSeg;
-  canHw->CR.B.PSEG1   = config->CanControllerSeg1;
-  canHw->CR.B.PSEG2   = config->CanControllerSeg2;
-  canHw->CR.B.SMP     = 1;	// 3 samples better than 1 ??
-  canHw->CR.B.LPB     =	config->Can_Arc_Loopback;
+  canHw->CR.B.PSEG1 = config->CanControllerSeg1;
+  canHw->CR.B.PSEG2 = config->CanControllerSeg2;
+  canHw->CR.B.SMP = 	1;	// 3 samples better than 1 ??
+  canHw->CR.B.LPB =	config->Can_Arc_Loopback;
   canHw->CR.B.BOFFREC = 1;  // Disable bus off recovery
+
+  SIU.PSMI[0].R = 0x00;
+  SIU.PSMI[1].R = 0x00;
 
 #if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S)
   // Check if we use individual masks. If so accept anything(=0) for now
-  if( canHw->MCR.B.BCC )
-  {
+  if( canHw->MCR.B.BCC ) {
     i = (config->Can_Arc_Fifo ? 8 : 0 );
-    for(;i<63;i++)
-    {
+    for(;i<63;i++) {
       canHw->RXIMR[i].R = 0;
     }
   }
@@ -995,21 +941,17 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
   canHw->MCR.B.MBFEN = 1;
 #endif
   // Set the id's
-  if( config->Can_Arc_Fifo )
-  {
+  if( config->Can_Arc_Fifo ) {
     // Clear ID's in FIFO also, MUST set extended bit here
     uint32_t *fifoId = (uint32_t*)(((uint8_t *)canHw)+0xe0);
-
-    for(int k=0;k<8;k++)
-    {
+    for(int k=0;k<8;k++) {
       fifoId[k] = 0x40000000; 	// accept extended frames
     }
   }
 
   // Mark all slots as inactive( depending on fifo )
   i = (config->Can_Arc_Fifo ? 8 : 0 );
-  for(; i < 63; i++)
-  {
+  for(; i < 63; i++) {
     //canHw->BUF[i].CS.B.CODE = 0;
     canHw->BUF[i].CS.R = 0;
     canHw->BUF[i].ID.R = 0;
@@ -1024,8 +966,7 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
     // Rx
     hohObj = canHwConfig->Can_Arc_Hoh;
     --hohObj;
-    do
-    {
+    do {
       ++hohObj;
 
       mbMask = hohObj->Can_Arc_MbMask;
@@ -1033,8 +974,7 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
 
       if (hohObj->CanObjectType == CAN_OBJECT_TYPE_RECEIVE)
       {
-        for(;mbMask;mbMask&=~(1<<mbNr))
-        {
+        for(;mbMask;mbMask&=~(1<<mbNr)) {
           mbNr = ilog2(mbMask);
           canHw->BUF[mbNr].CS.B.CODE = MB_RX;
           if ( hohObj->CanIdType == CAN_ID_TYPE_EXTENDED )
@@ -1059,8 +999,7 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
 
         // Add to global mask
         canUnit->Can_Arc_RxMbMask |= hohObj->Can_Arc_MbMask;
-        if( hohObj->CanFilterMaskRef != NULL  )
-        {
+        if( hohObj->CanFilterMaskRef != NULL  ) {
           mask &= *hohObj->CanFilterMaskRef;
         }
       }
@@ -1089,8 +1028,7 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
 }
 
 
-Can_ReturnType Can_SetControllerMode( uint8 controller, Can_StateTransitionType transition )
-{
+Can_ReturnType Can_SetControllerMode( uint8 controller, Can_StateTransitionType transition ) {
   flexcan_t *canHw;
   Can_ReturnType rv = CAN_OK;
   VALIDATE( (controller < GET_CONTROLLER_CNT()), 0x3, CAN_E_PARAM_CONTROLLER );
@@ -1170,8 +1108,7 @@ void Can_DisableControllerInterrupts( uint8 controller )
   canHw->CR.B.RWRNMSK = 0;	/* Disable Rx warning */
 }
 
-void Can_EnableControllerInterrupts( uint8 controller )
-{
+void Can_EnableControllerInterrupts( uint8 controller ) {
   Can_UnitType *canUnit;
   flexcan_t *canHw;
   const Can_ControllerConfigType *canHwConfig;
@@ -1188,8 +1125,7 @@ void Can_EnableControllerInterrupts( uint8 controller )
     canUnit->lock_cnt--;
     McuE_ExitCriticalSection(state);
     return;
-  }
-  else if (canUnit->lock_cnt == 1)
+  } else if (canUnit->lock_cnt == 1)
   {
     canUnit->lock_cnt = 0;
   }
@@ -1202,21 +1138,18 @@ void Can_EnableControllerInterrupts( uint8 controller )
   canHw->IMRH.R = 0;
   canHw->IMRL.R = 0;
 
-  if( canHwConfig->CanRxProcessing == CAN_ARC_PROCESS_TYPE_INTERRUPT )
-  {
+  if( canHwConfig->CanRxProcessing == CAN_ARC_PROCESS_TYPE_INTERRUPT ) {
     /* Turn on the interrupt mailboxes */
     canHw->IMRL.R = canUnit->Can_Arc_RxMbMask;
   }
 
-  if( canHwConfig->CanTxProcessing == CAN_ARC_PROCESS_TYPE_INTERRUPT )
-  {
+  if( canHwConfig->CanTxProcessing == CAN_ARC_PROCESS_TYPE_INTERRUPT ) {
     /* Turn on the interrupt mailboxes */
     canHw->IMRL.R |= canUnit->Can_Arc_TxMbMask;
   }
 
   // BusOff here represents all errors and warnings
-  if( canHwConfig->CanBusOffProcessing == CAN_ARC_PROCESS_TYPE_INTERRUPT )
-  {
+  if( canHwConfig->CanBusOffProcessing == CAN_ARC_PROCESS_TYPE_INTERRUPT ) {
     canHw->MCR.B.WRNEN = 1;  	/* Turn On warning int */
 
     canHw->CR.B.ERRMSK = 1;  	/* Enable error interrupt */
@@ -1228,11 +1161,7 @@ void Can_EnableControllerInterrupts( uint8 controller )
   return;
 }
 
-
-
-
-Can_ReturnType Can_Write( Can_Arc_HTHType hth, Can_PduType *pduInfo )
-{
+Can_ReturnType Can_Write( Can_Arc_HTHType hth, Can_PduType *pduInfo ) {
   uint16_t timer;
   uint32_t iflag;
   Can_ReturnType rv = CAN_OK;
@@ -1253,44 +1182,35 @@ Can_ReturnType Can_Write( Can_Arc_HTHType hth, Can_PduType *pduInfo )
 
   Can_UnitType *canUnit = GET_PRIVATE_DATA(controller);
 
-  canHw  = GET_CONTROLLER(controller);
+  canHw = GET_CONTROLLER(controller);
   oldMsr = McuE_EnterCriticalSection();
-  iflag  = canHw->IFRL.R & canUnit->Can_Arc_TxMbMask;
+  iflag = canHw->IFRL.R & canUnit->Can_Arc_TxMbMask;
 
   // check for any free box
   // Normally we would just use the iflag to get the free box
   // but that does not work the first time( iflag == 0 ) so we
   // create one( iflagStart )
-  if( iflag | canUnit->iflagStart )
-  {
+  if( iflag | canUnit->iflagStart ) {
     mbNr =  ilog2((iflag | canUnit->iflagStart));	// find mb number
     // clear flag
     canHw->IFRL.R = (1<<mbNr);
     canUnit->iflagStart &= ~(1<<mbNr);
 
     // Setup message box type
-    if( hohObj->CanIdType == CAN_ID_TYPE_EXTENDED )
-    {
+    if( hohObj->CanIdType == CAN_ID_TYPE_EXTENDED ) {
       canHw->BUF[mbNr].CS.B.IDE = 1;
-    }
-    else if ( hohObj->CanIdType == CAN_ID_TYPE_STANDARD )
-    {
+    } else if ( hohObj->CanIdType == CAN_ID_TYPE_STANDARD ) {
       canHw->BUF[mbNr].CS.B.IDE = 0;
-    }
-    else
-    {
+    } else {
       // No support for mixed in this processor
       assert(0);
     }
 
     // Send on buf
     canHw->BUF[mbNr].CS.B.CODE = MB_INACTIVE;	// Hold the transmit buffer inactive
-    if( hohObj->CanIdType == CAN_ID_TYPE_EXTENDED )
-    {
+    if( hohObj->CanIdType == CAN_ID_TYPE_EXTENDED ) {
       canHw->BUF[mbNr].ID.R = pduInfo->id; // Write 29-bit MB IDs
-    }
-    else
-    {
+    } else {
       assert( !(pduInfo->id & 0xfffff800) );
       canHw->BUF[mbNr].ID.B.STD_ID = pduInfo->id;
     }
@@ -1314,9 +1234,7 @@ Can_ReturnType Can_Write( Can_Arc_HTHType hth, Can_PduType *pduInfo )
     // Store pdu handle in unit to be used by TxConfirmation
     canUnit->swPduHandles[mbNr] = pduInfo->swPduHandle;
 
-  }
-  else
-  {
+  } else {
     rv = CAN_BUSY;
   }
   McuE_ExitCriticalSection(oldMsr);
@@ -1324,21 +1242,18 @@ Can_ReturnType Can_Write( Can_Arc_HTHType hth, Can_PduType *pduInfo )
   return rv;
 }
 
-void Can_MainFunction_Read( void )
-{
+void Can_MainFunction_Read( void ) {
 
 	/* NOT SUPPORTED */
 }
 
-void Can_MainFunction_BusOff( void )
-{
+void Can_MainFunction_BusOff( void ) {
   /* Bus-off polling events */
 
 	/* NOT SUPPORTED */
 }
 
-void Can_MainFunction_Wakeup( void )
-{
+void Can_MainFunction_Wakeup( void ) {
   /* Wakeup polling events */
 
 	/* NOT SUPPORTED */

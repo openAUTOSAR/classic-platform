@@ -30,7 +30,7 @@
 /** Build version info API */
 #define PORT_VERSION_INFO_API				STD_ON
 /** Enable Development Error Trace */
-#define PORT_DEV_ERROR_DETECT				STD_OFF
+#define PORT_DEV_ERROR_DETECT				STD_ON
 /** Allow Pin mode changes during runtime */
 #define PORT_SET_PIN_MODE_API				STD_ON
 /** Build change pin direction API */
@@ -160,7 +160,6 @@ typedef enum
 	/*PORT_PH6,Reserved*/
 	/*PORT_PH7,Reserved*/
 	/*PORT_PH8,Reserved*/
-#if 1
 	/*PORT_PH9,Reserved*/
 	/*PORT_PH10,Reserved*/
 	/*PORT_PH11,Reserved*/
@@ -200,7 +199,6 @@ typedef enum
   	/* PORT_PK13,Reserved*/
   	/* PORT_PK14,Reserved*/
   	/* PORT_PK15 Reserved*/
-#endif
 } Port_PinType;
 
 /** @name HW specific register bits. */
@@ -241,10 +239,9 @@ typedef enum
 #define   PORT_PA_FUNC1			(PORT_BIT5)
 #define   PORT_PA_FUNC2			(PORT_BIT4)
 #define   PORT_PA_FUNC3			(PORT_BIT4|PORT_BIT5)
-/*********Added by Cobb Song**************/
 #define   PORT_APC_ENABLE		(PORT_BIT2)
 #define   PORT_SMC_ENABLE		(PORT_BIT1)
-/**************END************************/
+
 
 #define   PORT_NORMAL_INPUT	(PORT_BIT15)
 

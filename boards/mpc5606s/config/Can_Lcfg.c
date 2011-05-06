@@ -49,9 +49,10 @@
 
 // Accept everything = 0
 Can_FilterMaskType Can_FilterMaskConfigData = 0;
+extern void Test_Can_Callback( uint8 Hrh, Can_IdType CanId, uint8 CanDlc, const uint8 *CanSduPtr );
 
 
-// HOH:s for CAN_CTRL_A--->This Configure Data is Modified By LEO@I-SOFT
+
 const Can_HardwareObjectType CanHardwareObjectConfig_CTRL_A[] =
 {
 	{
@@ -83,7 +84,7 @@ const Can_HardwareObjectType CanHardwareObjectConfig_CTRL_B[] =
 {
 	{
 		.CanHandleType    = CAN_ARC_HANDLE_TYPE_BASIC,
-		.CanIdType        = CAN_ID_TYPE_STANDARD,
+		.CanIdType        = CAN_ID_TYPE_EXTENDED,
 		.CanObjectType    = CAN_OBJECT_TYPE_RECEIVE,
 		.CanObjectId      = CAN_HRH_B_1,
 		.CanFilterMaskRef = &Can_FilterMaskConfigData,
@@ -93,7 +94,7 @@ const Can_HardwareObjectType CanHardwareObjectConfig_CTRL_B[] =
 	},
 	{
 		.CanHandleType    = CAN_ARC_HANDLE_TYPE_BASIC,
-		.CanIdType 		  = CAN_ID_TYPE_STANDARD,
+		.CanIdType 		  = CAN_ID_TYPE_EXTENDED,
 		.CanObjectType    = CAN_OBJECT_TYPE_TRANSMIT,
 		.CanObjectId      = CAN_HTH_B_1,
 		.CanFilterMaskRef = &Can_FilterMaskConfigData,
@@ -105,11 +106,12 @@ const Can_HardwareObjectType CanHardwareObjectConfig_CTRL_B[] =
 
 
 
+
+
 /* CAN controller data for ALL controllers that are to be configured
  * See Autosar release 3.0 specification for more info
  */
 const Can_ControllerConfigType CanControllerConfigData[] =
-//Can_ControllerConfigType CanControllerConfigData[] __attribute__((section(".rodata"))) =
 {
 	{
 		.CanControllerActivation = TRUE,
@@ -148,14 +150,15 @@ const Can_ControllerConfigType CanControllerConfigData[] =
 };
 
 
+
+
 /* Callbacks for the can drivers
  * See Autosar release 3.0 specification for more info
  */
 const Can_CallbackType CanCallbackConfigData =
-//Can_CallbackType CanCallbackConfigData __attribute__((section(".rodata"))) =
 {
     NULL, //CanIf_CancelTxConfirmation,
-    NULL, //CanIf_RxIndication,     			/* This Code Modified By LEO @I-SOFT */
+    Test_Can_Callback,//CanIf_RxIndication,     			/* This Code Modified By LEO @I-SOFT */
     NULL, //CanIf_ControllerBusOff,				/* This Code Modified By LEO @I-SOFT */
     NULL, //CanIf_TxConfirmation,				/* This Code Modified By LEO @I-SOFT */
     NULL, //CanIf_ControllerWakeup,
@@ -163,22 +166,22 @@ const Can_CallbackType CanCallbackConfigData =
 };
 
 
+
+
+
 /* Configset configuration information
  * See Autosar release 3.0 specification for more info
  */
 const Can_ConfigSetType CanConfigSetData =
-//Can_ConfigSetType CanConfigSetData __attribute__((section(".rodata"))) =
 {
 	.CanController = CanControllerConfigData,
     .CanCallbacks  = &CanCallbackConfigData,
 };
 
 
-//uint16_t PortPadConfigData[] __attribute__((section(".rodata")))
 
 /* Top config struct passed to Can_Init() */
 const Can_ConfigType CanConfigData  =
-//Can_ConfigType CanConfigData __attribute__((section(".rodata"))) =
 {
     .CanConfigSet = &CanConfigSetData,
 };

@@ -38,12 +38,16 @@
 #define PWM_DEV_EROR_DETECT STD_ON
 /** Build GetOutputState() */
 #define PWM_GET_OUTPUT_STATE STD_ON
+/** Build GetOutputState() */
+#define PWM_SET_OUTPUT_TO_IDLE STD_ON
 /** Determines if module is configurable at runtime */
 #define PWM_STATICALLY_CONFIGURED STD_OFF
 /** Use notifications */
 #define PWM_NOTIFICATION_SUPPORTED STD_ON
 /** Build period and duty API */
 #define PWM_SET_PERIOD_AND_DUTY STD_ON
+/** Build DUTYCYCLE API */
+#define PWM_SET_DUTYCYCLE STD_ON
 /** Build De_init API */
 #define PWM_DEINIT_API 				STD_ON
 
@@ -205,8 +209,14 @@ typedef struct {
 typedef struct {
 	Pwm_ChannelConfigurationType Channels[PWM_NUMBER_OF_CHANNELS];
 
+	Pwm_OutputStateType IdleState[PWM_NUMBER_OF_CHANNELS];
+
+	#if PWM_SET_PERIOD_AND_DUTY==STD_ON
+		Pwm_ChannelClassType  ChannelClass[PWM_NUMBER_OF_CHANNELS];
+	#endif
+
 	#if PWM_NOTIFICATION_SUPPORTED==STD_ON
-	Pwm_NotificationHandlerType NotificationHandlers[PWM_NUMBER_OF_CHANNELS];
+		Pwm_NotificationHandlerType NotificationHandlers[PWM_NUMBER_OF_CHANNELS];
 	#endif
 
 } Pwm_ConfigType;

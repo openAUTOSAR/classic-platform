@@ -66,7 +66,7 @@ EcuM_ConfigType EcuMConfig =
         .PwmConfig = &PwmConfig,
 #endif
 #if defined(USE_WDG)
-    .WdgConfig = &WdgConfig,
+    //.WdgConfig = &WdgConfig, /* WDG is not AUTOSAR compliant for ArctiCore */
 #endif
 #if defined(USE_WDGM)
     .WdgMConfig = &WdgMConfig,

@@ -135,7 +135,7 @@ void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
 
 	// Setup watchdog
 	#if defined(USE_WDG)
-	Wdg_Init(ConfigPtr->WdgConfig);
+	//Wdg_Init(ConfigPtr->WdgConfig); /* WDG is not AUTOSAR compliant for ArctiCore */
 #endif
 #if defined(USE_WDGM)
 	WdgM_Init(ConfigPtr->WdgMConfig);

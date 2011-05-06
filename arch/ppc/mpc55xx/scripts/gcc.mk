@@ -19,8 +19,7 @@ ppc_common-$(CFG_SPE)		+= -mfloat-gprs=single -mspe=yes -mhard-float -mcpu=8540 
 endif
 #
 ppc_common-y 	+= -mmultiple
-#ppc_common-$(CFG_MPC5516)	+= -msoft-float -mcpu=8540 -mno-eabi
-ppc_common-$(CFG_MPC5606S)	+= -msoft-float -mcpu=8540 -mno-eabi
+ppc_common-$(CFG_MPC5516)	+= -msoft-float -mcpu=8540 -mno-eabi
 ppc_common-y 	+= -mstrict-align
 ppc_common-y 	+= -gdwarf-2
 ppc_common-y   += -D_PPC

@@ -18,6 +18,7 @@
 #include "irq.h"
 #include "arc.h"
 #include "mpc55xx.h"
+
 /**
  * Init of free running timer.
  */
@@ -27,8 +28,7 @@ extern OsTickType OsTickFreq;
 void Os_SysTickInit( void ) {
 	TaskType tid;
 	tid = Os_Arc_CreateIsr(OsTick,6/*prio*/,"OsTick");
-	Irq_AttachIsr2(tid,NULL,38);
-    //Irq_AttachIsr1(OsTick,NULL,60,6);
+	Irq_AttachIsr2(tid,NULL,38);  /* Attach ISR2 to RTC interrupt */
 }
 
 /**
@@ -40,18 +40,13 @@ void Os_SysTickInit( void ) {
  */
 void Os_SysTickStart(uint32_t period_ticks) {
 #if defined(CFG_MPC5606S)
-#if 1
-	CGM.SXOSC_CTL.B.OSCON = 1;	//Enable the osc for RTC
-	//RTC.RTCSUPV.B.SUPV = 1;
+	CGM.SXOSC_CTL.B.OSCON = 1;	/* Enable the osc for RTC */
 	RTC.RTCC.B.CNTEN = 1;
 	RTC.RTCC.B.RTCIE = 1;
 	RTC.RTCC.B.FRZEN = 1;
 	RTC.RTCC.B.RTCVAL = (16000000/OsTickFreq)/1024;
 	RTC.RTCC.B.CLKSEL = 2;
 	INTC.PSR[38].R = 0x02;
-	//INTC.CPR.B.PRI = 0;
-	//Irq_Enable();
-#endif
 #else
     	uint32_t tmp;
 

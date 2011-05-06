@@ -2,10 +2,12 @@
 PROJECT_C_FILES=$(notdir $(wildcard ../*.c))
 obj-y += $(PROJECT_C_FILES:%.c=%.o)
 
-obj-y += Gpt_test.o
-obj-y += PortDio_test.o
-obj-y += Pwm_test.o
-obj-y += Can_test.o
+obj-y += Gpt_Test.o
+obj-y += Port_Test.o
+obj-y += Dio_Test.o
+obj-y += Pwm_Test.o
+obj-y += Can_Test.o
+obj-y += Wdg_Test.o
 
 VPATH += ..
 

@@ -24,6 +24,9 @@
 #include "Port.h"
 #include "mpc55xx.h"
 #include "Det.h"
+#if defined(USE_DEM)
+#include "Dem.h"
+#endif
 #include "Cpu.h"
 #include <string.h>
 /* SHORT ON HW
@@ -42,8 +45,7 @@
 
 typedef enum
 {
-	PORT_UNINITIALIZED = 0,
-	PORT_INITIALIZED
+    PORT_UNINITIALIZED = 0, PORT_INITIALIZED,
 } Port_StateType;
 
 static Port_StateType _portState = PORT_UNINITIALIZED;
@@ -76,46 +78,47 @@ static const Port_ConfigType * _configPtr = &PortConfigData;
 #if PORT_VERSION_INFO_API == STD_ON
 static Std_VersionInfoType _Port_VersionInfo =
 {
-	.vendorID   = (uint16)1,
-	.moduleID   = (uint16) MODULE_ID_PORT,
-	.instanceID = (uint8)1,
-	.sw_major_version = (uint8)PORT_SW_MAJOR_VERSION,
-	.sw_minor_version = (uint8)PORT_SW_MINOR_VERSION,
-	.sw_patch_version = (uint8)PORT_SW_PATCH_VERSION,
-	.ar_major_version = (uint8)PORT_AR_MAJOR_VERSION,
-	.ar_minor_version = (uint8)PORT_AR_MINOR_VERSION,
-	.ar_patch_version = (uint8)PORT_AR_PATCH_VERSION,
+  .vendorID   = (uint16)1,
+  .moduleID   = (uint16) MODULE_ID_PORT,
+  .instanceID = (uint8)1,
+  .sw_major_version = (uint8)PORT_SW_MAJOR_VERSION,
+  .sw_minor_version = (uint8)PORT_SW_MINOR_VERSION,
+  .sw_patch_version = (uint8)PORT_SW_PATCH_VERSION,
+  .ar_major_version = (uint8)PORT_AR_MAJOR_VERSION,
+  .ar_minor_version = (uint8)PORT_AR_MINOR_VERSION,
+  .ar_patch_version = (uint8)PORT_AR_PATCH_VERSION,
 };
 #endif
 
 void Port_Init(const Port_ConfigType *configType)
 {
-	VALIDATE_PARAM_CONFIG(configType, PORT_INIT_ID);
+  VALIDATE_PARAM_CONFIG(configType, PORT_INIT_ID);
 
-	// Pointers to the register memory areas
-	vuint16_t * padConfig = &(SIU.PCR[0].R);
-	vuint8_t * outConfig = &(SIU.GPDO[0].R);
+  // Pointers to the register memory areas
+  vuint16_t * padConfig = &(SIU.PCR[0].R);
+  vuint8_t * outConfig = &(SIU.GPDO[0].R);
 
-	/*****************Added by Cobb*****************/
 #if defined(CFG_MPC5606S)
 	vuint16_t i = 0;
 	vuint16_t j = 0;
-	while(i<configType->padCnt)
+
+	while(i < configType->padCnt)
     {
 		SIU.PCR[i].R = configType->padConfig[i];
     	++i;
-    	/*Out of reset pins PH[0:3](PCR99~PCR102) are available as JTAG pins(TCK,TDI,TDO and TMS respectively)
-    	 * It is up to the user to configure pins PH[0:3]when need.
-		*/
+
+    	// Out of reset pins PH[0:3](PCR99~PCR102) are available as JTAG pins(TCK,TDI,TDO and TMS respectively)
+    	// It is up to the user to configure pins PH[0:3]when need.
+        // TODO: To be removed if dont use JTAG
     	if(99 == i || 100 == i || 101 == i || 102 == i) i=103;
 	}
 
-	while(j<configType->outCnt)
+	while(j < configType->outCnt)
 	{
     	SIU.GPDO[j].B.PDO = configType->outConfig[j];
     	++j;
 	}
-	/********************END************************/
+
 #else
 	//  vuint8_t * inConfig = &(SIU.GPDI[0].R); // Read only
 	// Copy config to register areas
@@ -133,74 +136,73 @@ void Port_Init(const Port_ConfigType *configType)
 #if ( PORT_SET_PIN_DIRECTION_API == STD_ON )
 void Port_SetPinDirection( Port_PinType pin, Port_PinDirectionType direction )
 {
-	VALIDATE_STATE_INIT(PORT_SET_PIN_DIRECTION_ID);
-	VALIDATE_PARAM_PIN(pin, PORT_SET_PIN_DIRECTION_ID);
+  VALIDATE_STATE_INIT(PORT_SET_PIN_DIRECTION_ID);
+  VALIDATE_PARAM_PIN(pin, PORT_SET_PIN_DIRECTION_ID);
+  unsigned long state;
 
-	unsigned long state;
-
-	if (direction==PORT_PIN_IN)
-	{
-		state = _Irq_Disable_save(); // Lock interrupts
-		SIU.PCR[pin].B.IBE = 1;
-		SIU.PCR[pin].B.OBE = 0;
-		_Irq_Disable_restore(state); // Restore interrupts
-	}
-	else
-	{
-		state = _Irq_Disable_save(); // Lock interrupts
-		SIU.PCR[pin].B.IBE = 0;
-		SIU.PCR[pin].B.OBE = 1;
-		_Irq_Disable_restore(state); // Restore interrupts
-	}
-
-	return;
+  if (direction==PORT_PIN_IN)
+  {
+    state = _Irq_Disable_save(); // Lock interrupts
+    SIU.PCR[pin].B.IBE = 1;
+    SIU.PCR[pin].B.OBE = 0;
+    _Irq_Disable_restore(state); // Restore interrupts
+  }
+  else
+  {
+    state = _Irq_Disable_save(); // Lock interrupts
+    SIU.PCR[pin].B.IBE = 0;
+    SIU.PCR[pin].B.OBE = 1;
+    _Irq_Disable_restore(state); // Restore interrupts
+  }
+  return;
 }
 #endif
 
 void Port_RefreshPortDirection( void )
 {
-	VALIDATE_STATE_INIT(PORT_REFRESH_PORT_DIRECTION_ID);
-	vuint16_t * pcrPtr = &(SIU.PCR[0].R);
+  VALIDATE_STATE_INIT(PORT_REFRESH_PORT_DIRECTION_ID);
+  vuint16_t * pcrPtr = &(SIU.PCR[0].R);
+  const uint16_t * padCfgPtr = _configPtr->padConfig;
+  uint16_t bitMask = PORT_IBE_ENABLE|PORT_OBE_ENABLE;
+  int i,j=0;
+  unsigned long state;
+  for (i=0; i < sizeof(SIU.PCR)/sizeof(SIU.PCR[0]); i++)
+  {
+    state = _Irq_Disable_save(); // Lock interrupts
+    *pcrPtr = (*pcrPtr & ~bitMask) | (*padCfgPtr & bitMask);
+    _Irq_Disable_restore(state); // Restore interrups
+    pcrPtr++;
+    padCfgPtr++;
+    if(98 == i)
+    {
+    	i=103;
+    	pcrPtr = pcrPtr+5;
+    	padCfgPtr = padCfgPtr+5;
+    }
+    j++;
+  }
 
-	const uint16_t * padCfgPtr = _configPtr->padConfig;
-	uint16_t bitMask = PORT_IBE_ENABLE|PORT_OBE_ENABLE;
-	int i;
-	unsigned long state;
-
-	for (i=0; i < sizeof(SIU.PCR); i++)
-	{
-		state = _Irq_Disable_save(); // Lock interrupts
-		*pcrPtr = (*pcrPtr & ~bitMask) | (*padCfgPtr & bitMask);
-		_Irq_Disable_restore(state); // Restore interrups
-		pcrPtr++;
-		padCfgPtr++;
-	}
-
-	return;
+  return;
 }
 
 #if PORT_VERSION_INFO_API == STD_ON
 void Port_GetVersionInfo(Std_VersionInfoType* versionInfo)
 {
-	VALIDATE_STATE_INIT(PORT_GET_VERSION_INFO_ID);
-
-	memcpy(versionInfo, &_Port_VersionInfo, sizeof(Std_VersionInfoType));
-
-	return;
+  VALIDATE_STATE_INIT(PORT_GET_VERSION_INFO_ID);
+  memcpy(versionInfo, &_Port_VersionInfo, sizeof(Std_VersionInfoType));
+  return;
 }
 #endif
 
 #if (PORT_SET_PIN_MODE_API == STD_ON)
 void Port_SetPinMode(Port_PinType Pin, Port_PinModeType Mode)
 {
-	VALIDATE_STATE_INIT(PORT_SET_PIN_MODE_ID);
-	VALIDATE_PARAM_PIN(Pin, PORT_SET_PIN_MODE_ID);
-
-	//The pad configuration registers (SIU_PCR) in the SIU allow software control of the static electrical
-	//characteristics of external pins. The PCRs can select the multiplexed function of a pin, selection of pullup
-	//or pulldown devices, the slew rate of I/O signals, open drain mode for output pins, and hysteresis.
-	SIU.PCR[Pin].R = Mode; // Put the selected mode to the PCR register
-
-	return;
+  VALIDATE_STATE_INIT(PORT_SET_PIN_MODE_ID);
+  VALIDATE_PARAM_PIN(Pin, PORT_SET_PIN_MODE_ID);
+  //The pad configuration registers (SIU_PCR) in the SIU allow software control of the static electrical
+  //characteristics of external pins. The PCRs can select the multiplexed function of a pin, selection of pullup
+  //or pulldown devices, the slew rate of I/O signals, open drain mode for output pins, and hysteresis.
+  SIU.PCR[Pin].R = Mode; // Put the selected mode to the PCR register
+  return;
 }
 #endif

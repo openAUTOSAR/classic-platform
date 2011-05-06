@@ -25,10 +25,6 @@
 
 #include "Port_Cfg.h"
 
-// All: 	PA,OBE,IBE,ODE,HYS,SRC,WPE,WPS
-// Input: 	PA,OBE,IBE,HYS,WPE,WPS
-// Output:  PA,OBE,IBE,ODE,SRC,(WPE,WPS)
-
 #define 	PCR_PWM			PORT_PCR_BOOTCFG
 #define 	PCR_ADC			(0)
 #define		PCR_IO_INPUT	PORT_PCR_BOOTCFG
@@ -38,17 +34,17 @@
 #define 	PCR_I2C			PORT_PCR_BOOTCFG
 
 
-const uint16_t PortPadConfigData[] /*__attribute__((section(".rodata"))) */=
+const uint16_t PortPadConfigData[] =
 {
 	// pad 0-15
-	( PORT_PA_FUNC2 | PORT_OBE_ENABLE ), /* PA0, AN0 */
-	( PORT_PA_FUNC2 | PORT_OBE_ENABLE ), /* PA1      */
-	( PORT_PA_FUNC2 | PORT_OBE_ENABLE ), /* PA2      */
-	( PORT_PA_FUNC2 | PORT_OBE_ENABLE ),/* PA3      */
-	( PORT_PA_FUNC2 | PORT_OBE_ENABLE ), /* PA4      */
-	( PORT_PA_FUNC2 | PORT_OBE_ENABLE ), /* PA5 		*/
-	( PORT_PA_FUNC2 | PORT_OBE_ENABLE ), /* PA6,     */
-	( PORT_PA_FUNC2 | PORT_OBE_ENABLE ), /* PA7(input only) */
+	( PORT_PCR_RESET | PORT_OBE_ENABLE | PORT_IBE_ENABLE), /* PA0, AN0 */
+	( PORT_PCR_RESET | PORT_OBE_ENABLE | PORT_IBE_ENABLE), /* PA1      */
+	( PORT_PCR_RESET | PORT_OBE_ENABLE | PORT_IBE_ENABLE), /* PA2      */
+	( PORT_PCR_RESET | PORT_OBE_ENABLE | PORT_IBE_ENABLE),/* PA3      */
+	( PORT_PCR_RESET | PORT_OBE_ENABLE | PORT_IBE_ENABLE), /* PA4      */
+	( PORT_PCR_RESET | PORT_OBE_ENABLE | PORT_IBE_ENABLE), /* PA5 		*/
+	( PORT_PCR_RESET | PORT_OBE_ENABLE | PORT_IBE_ENABLE), /* PA6,     */
+	( PORT_PCR_RESET | PORT_OBE_ENABLE | PORT_IBE_ENABLE), /* PA7(input only) */
 	( PORT_PCR_RESET | PORT_OBE_ENABLE | PORT_IBE_ENABLE), /* PA8(input only) */
 	( PORT_PCR_RESET | PORT_OBE_ENABLE | PORT_IBE_ENABLE), /* PA9(input only) */
 	( PORT_PCR_RESET | PORT_OBE_ENABLE | PORT_IBE_ENABLE), /* PA10(input only) */
@@ -59,8 +55,8 @@ const uint16_t PortPadConfigData[] /*__attribute__((section(".rodata"))) */=
 	( PORT_PCR_RESET | PORT_OBE_ENABLE | PORT_IBE_ENABLE), /* PA15(input only) */
 
 	// pad 16-29
-	PORT_PCR_RESET, /* PB0 */
-	PORT_PCR_RESET, /* PB1 */
+	(PORT_PA_FUNC1 | PORT_OBE_ENABLE | PORT_SLEW_RATE_MED | PORT_ODE_ENABLE), /* PB0 */
+	(PORT_PA_FUNC1 | PORT_IBE_ENABLE), /* PB1 */
 	PORT_PCR_RESET, /* PB2 */
 	PORT_PCR_RESET, /* PB3 */
 	PORT_PCR_RESET|PORT_IBE_ENABLE, /* PB4 */
@@ -69,8 +65,8 @@ const uint16_t PortPadConfigData[] /*__attribute__((section(".rodata"))) */=
 	PORT_PCR_RESET|PORT_IBE_ENABLE, /* PB7 */
 	PORT_PCR_RESET|PORT_IBE_ENABLE, /* PB8 */
 	PORT_PCR_RESET|PORT_IBE_ENABLE, /* PB9 */
-	PORT_PCR_RESET, /* PB10 */
-	PORT_PCR_RESET, /* PB11 */
+	(PORT_PA_FUNC1 | PORT_IBE_ENABLE), /* PB10 */
+	(PORT_PA_FUNC1 | PORT_OBE_ENABLE | PORT_SLEW_RATE_MED | PORT_ODE_ENABLE), /* PB11 */
 	PORT_PCR_RESET, /* PB12 */
 	PORT_PCR_RESET, /* PB13 */
 	//PORT_PCR_RESET, /* PB14 ,Reserved*/
@@ -137,10 +133,10 @@ const uint16_t PortPadConfigData[] /*__attribute__((section(".rodata"))) */=
 	PORT_PCR_RESET, /* PF3 */
 	PORT_PCR_RESET, /* PF4 */
 	PORT_PCR_RESET, /* PF5 */
-	PORT_PCR_RESET, /* PF6 */
-	PORT_PCR_RESET, /* PF7 */
-	PORT_PCR_RESET, /* PF8 */
-	PORT_PCR_RESET, /* PF9 */
+	( PORT_PCR_RESET | PORT_OBE_ENABLE | PORT_IBE_ENABLE ), /* PF6 */
+	( PORT_PCR_RESET | PORT_OBE_ENABLE | PORT_IBE_ENABLE ), /* PF7 */
+	( PORT_PCR_RESET | PORT_OBE_ENABLE | PORT_IBE_ENABLE ), /* PF8 */
+	( PORT_PCR_RESET | PORT_OBE_ENABLE | PORT_IBE_ENABLE ), /* PF9 */
 	PORT_PCR_RESET, /* PF10 */
 	PORT_PCR_RESET, /* PF11 */
 	PORT_PA_FUNC1|PORT_OBE_ENABLE|PORT_PULL_UP, /* PF12 SCI_D Transmit, J1708 Tx*/
@@ -171,12 +167,11 @@ const uint16_t PortPadConfigData[] /*__attribute__((section(".rodata"))) */=
 	PORT_PCR_RESET, /* PH1 ,As TCK of JTAG*/
 	PORT_PCR_RESET, /* PH2 ,As TCK of JTAG*/
 	PORT_PCR_RESET, /* PH3 ,As TCK of JTAG*/
-	PORT_PCR_RESET, /* PH4 */
+	(PORT_PA_FUNC3|PORT_OBE_ENABLE), /* PH4 */
 	PORT_PCR_RESET, /* PH5 */
 	//PORT_PCR_RESET, /* PH6 ,Reserved*/
 	//PORT_PCR_RESET, /* PH7 ,Reserved*/
 	//PORT_PCR_RESET,  /* PH8 ,Reserved*/
-	#if 1
 	//PORT_PCR_RESET, /* PH9 ,Reserved*/
 	//PORT_PCR_RESET, /* PH10 ,Reserved*/
 
@@ -222,14 +217,11 @@ const uint16_t PortPadConfigData[] /*__attribute__((section(".rodata"))) */=
 	//PORT_PCR_RESET, /* PK13 ,Reserved*/
 	//PORT_PCR_RESET, /* PK14 ,Reserved*/
 	//PORT_PCR_RESET  /* PK15 ,Reserved*/
-	/**********END*******************/
-	#endif
-
 };
 
-#define PORT_GPDO_RESET 1
+#define PORT_GPDO_RESET 0
 
-const uint8_t PortOutConfigData[]/* __attribute__((section(".rodata"))) */=
+const uint8_t PortOutConfigData[]=
 {
 	// pad 0-15 added by Cobb
 	PORT_GPDO_RESET, /* PA0 */
@@ -367,7 +359,6 @@ const uint8_t PortOutConfigData[]/* __attribute__((section(".rodata"))) */=
 	//PORT_GPDO_RESET, /* PH6 ,Reserved*/
 	//PORT_GPDO_RESET, /* PH7 ,Reserved*/
 	//PORT_GPDO_RESET,  /* PH8 ,Reserved*/
-	#if 1
 	//PORT_GPDO_RESET, /* PH9 ,Reserved*/
 	//PORT_GPDO_RESET, /* PH10 ,Reserved*/
 	//PORT_GPDO_RESET, /* PH11 ,Reserved*/
@@ -411,180 +402,9 @@ const uint8_t PortOutConfigData[]/* __attribute__((section(".rodata"))) */=
 	//PORT_GPDO_RESET, /* PK13 ,Reserved*/
 	//PORT_GPDO_RESET, /* PK14 ,Reserved*/
 	//PORT_GPDO_RESET,  /* PK15 ,Reserved*/
-	#endif
 };
 
-//#define GPDI_RESET		0
-//const uint8_t PortInConfigData[] =
-//{
-//  // pad 0-15
-//  GPDI_RESET, /* PA0(input only) */
-//  GPDI_RESET, /* PA1(input only) */
-//  GPDI_RESET, /* PA2(input only) */
-//  GPDI_RESET, /* PA3(input only) */
-//  GPDI_RESET, /* PA4(input only) */
-//  GPDI_RESET, /* PA5(input only) */
-//  GPDI_RESET, /* PA6(input only) */
-//  GPDI_RESET, /* PA7(input only) */
-//  GPDI_RESET, /* PA8(input only) */
-//  GPDI_RESET, /* PA9(input only) */
-//  GPDI_RESET, /* PA10(input only) */
-//  GPDI_RESET, /* PA11(input only) */
-//  GPDI_RESET, /* PA12(input only) */
-//  GPDI_RESET, /* PA13(input only) */
-//  GPDI_RESET, /* PA14(input only) */
-//  GPDI_RESET, /* PA15(input only) */
-//
-//  // pad 16-31
-//  GPDI_RESET, /* PB0 */
-//  GPDI_RESET, /* PB1 */
-//  GPDI_RESET, /* PB2 */
-//  GPDI_RESET, /* PB3 */
-//  GPDI_RESET, /* PB4 */
-//  GPDI_RESET, /* PB5 */
-//  GPDI_RESET, /* PB6 */
-//  GPDI_RESET, /* PB7 */
-//  GPDI_RESET, /* PB8 */
-//  GPDI_RESET, /* PB9 */
-//  GPDI_RESET, /* PB10 */
-//  GPDI_RESET, /* PB11 */
-//  GPDI_RESET, /* PB12 */
-//  GPDI_RESET, /* PB13 */
-//  GPDI_RESET, /* PB14 */
-//  GPDI_RESET, /* PB15 */
-//
-//  // pad 32-47
-//  GPDI_RESET, /* PC0 */
-//  GPDI_RESET, /* PC1 */
-//  GPDI_RESET, /* PC2 */
-//  GPDI_RESET, /* PC3 */
-//  GPDI_RESET, /* PC4 */
-//  GPDI_RESET, /* PC5 */
-//  GPDI_RESET, /* PC6 */
-//  GPDI_RESET, /* PC7 */
-//  GPDI_RESET, /* PC8 */
-//  GPDI_RESET, /* PC9 */
-//  GPDI_RESET, /* PC10 */
-//  GPDI_RESET, /* PC11 */
-//  GPDI_RESET, /* PC12 */
-//  GPDI_RESET, /* PC13 */
-//  GPDI_RESET, /* PC14 */
-//  GPDI_RESET, /* PC15 */
-//
-//  // pad 48-63
-//  GPDI_RESET, /* PD0 */
-//  GPDI_RESET, /* PD1 */
-//  GPDI_RESET, /* PD2 */
-//  GPDI_RESET, /* PD3 */
-//  GPDI_RESET, /* PD4 */
-//  GPDI_RESET, /* PD5 */
-//  GPDI_RESET, /* PD6 */
-//  GPDI_RESET, /* PD7 */
-//  GPDI_RESET, /* PD8 */
-//  GPDI_RESET, /* PD9 */
-//  GPDI_RESET, /* PD10 */
-//  GPDI_RESET, /* PD11 */
-//  GPDI_RESET, /* PD12 */
-//  GPDI_RESET, /* PD13 */
-//  GPDI_RESET, /* PD14 */
-//  GPDI_RESET, /* PD15 */
-//
-//  // pad 64-79
-//  GPDI_RESET, /* PE0 */
-//  GPDI_RESET, /* PE1 */
-//  GPDI_RESET, /* PE2 */
-//  GPDI_RESET, /* PE3 */
-//  GPDI_RESET, /* PE4 */
-//  GPDI_RESET, /* PE5 */
-//  GPDI_RESET, /* PE6 */
-//  GPDI_RESET, /* PE7 */
-//  GPDI_RESET, /* PE8 */
-//  GPDI_RESET, /* PE9 */
-//  GPDI_RESET, /* PE10 */
-//  GPDI_RESET, /* PE11 */
-//  GPDI_RESET, /* PE12 */
-//  GPDI_RESET, /* PE13 */
-//  GPDI_RESET, /* PE14 */
-//  GPDI_RESET, /* PE15 */
-//
-//  // pad 80-95
-//  GPDI_RESET, /* PF0 */
-//  GPDI_RESET, /* PF1 */
-//  GPDI_RESET, /* PF2 */
-//  GPDI_RESET, /* PF3 */
-//  GPDI_RESET, /* PF4 */
-//  GPDI_RESET, /* PF5 */
-//  GPDI_RESET, /* PF6 */
-//  GPDI_RESET, /* PF7 */
-//  GPDI_RESET, /* PF8 */
-//  GPDI_RESET, /* PF9 */
-//  GPDI_RESET, /* PF10 */
-//  GPDI_RESET, /* PF11 */
-//  GPDI_RESET, /* PF12 */
-//  GPDI_RESET, /* PF13 */
-//  GPDI_RESET, /* PF14 */
-//  GPDI_RESET, /* PF15 */
-//
-//  // pad 96-111
-//  GPDI_RESET, /* PG0 */
-//  GPDI_RESET, /* PG1 */
-//  GPDI_RESET, /* PG2 */
-//  GPDI_RESET, /* PG3 */
-//  GPDI_RESET, /* PG4 */
-//  GPDI_RESET, /* PG5 */
-//  GPDI_RESET, /* PG6 */
-//  GPDI_RESET, /* PG7 */
-//  GPDI_RESET, /* PG8 */
-//  GPDI_RESET, /* PG9 */
-//  GPDI_RESET, /* PG10 */
-//  GPDI_RESET, /* PG11 */
-//  GPDI_RESET, /* PG12 */
-//  GPDI_RESET, /* PG13 */
-//  GPDI_RESET, /* PG14 */
-//  GPDI_RESET, /* PG15 */
-//
-//  // pad 112-127
-//  GPDI_RESET, /* PH0 */
-//  GPDI_RESET, /* PH1 */
-//  GPDI_RESET, /* PH2 */
-//  GPDI_RESET, /* PH3 */
-//  GPDI_RESET, /* PH4 */
-//  GPDI_RESET, /* PH5 */
-//  GPDI_RESET, /* PH6 */
-//  GPDI_RESET, /* PH7 */
-//  GPDI_RESET, /* PH8 */
-//  GPDI_RESET, /* PH9 */
-//  GPDI_RESET, /* PH10 */
-//  GPDI_RESET, /* PH11 */
-//  GPDI_RESET, /* PH12 */
-//  GPDI_RESET, /* PH13 */
-//  GPDI_RESET, /* PH14 */
-//  GPDI_RESET, /* PH15 */
-//
-//  // pad 128-143
-//  GPDI_RESET, /* PJ0 */
-//  GPDI_RESET, /* PJ1 */
-//  GPDI_RESET, /* PJ2 */
-//  GPDI_RESET, /* PJ3 */
-//  GPDI_RESET, /* PJ4 */
-//  GPDI_RESET, /* PJ5 */
-//  GPDI_RESET, /* PJ6 */
-//  GPDI_RESET, /* PJ7 */
-//  GPDI_RESET, /* PJ8 */
-//  GPDI_RESET, /* PJ9 */
-//  GPDI_RESET, /* PJ10 */
-//  GPDI_RESET, /* PJ11 */
-//  GPDI_RESET, /* PJ12 */
-//  GPDI_RESET, /* PJ13 */
-//  GPDI_RESET, /* PJ14 */
-//  GPDI_RESET, /* PJ15 */
-//
-//  // pad 144-145
-//  GPDI_RESET, /* PK0 (input only) */
-//  GPDI_RESET, /* PK1 (input only) */
-//};
-
-const Port_ConfigType PortConfigData/* __attribute__((section(".rodata")))*/ =
+const Port_ConfigType PortConfigData =
 {
 	//.padCnt = sizeof(PortPadConfigData),
 	.padCnt = sizeof(PortPadConfigData)/sizeof(PortPadConfigData[0]),

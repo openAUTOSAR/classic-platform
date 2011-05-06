@@ -41,7 +41,7 @@
 
 typedef void (*f_t)( uint32_t *);
 extern void exception_tbl(void);
-extern OsTickType OsTickFreq;
+
 
 extern void * Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
 //extern uint8 Irq_IsrTypeTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
@@ -98,7 +98,7 @@ void Irq_Init( void ) {
 	#if defined(CFG_MPC5516)
 	  INTC.MCR.B.HVEN_PRC0 = 0; // Soft vector mode
 	  INTC.MCR.B.VTES_PRC0 = 0; // 4 byte offset between entries
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)|| defined(CFG_MPC5606S)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5606S)
 	  INTC.MCR.B.HVEN = 0; // Soft vector mode
 	  INTC.MCR.B.VTES = 0; // 4 byte offset between entries
 	#endif
@@ -121,7 +121,7 @@ void Irq_Init( void ) {
 	  {
 	#if defined(CFG_MPC5516)
 	    INTC.EOIR_PRC0.R = 0;
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)|| defined(CFG_MPC5606S)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5606S)
 	    INTC.EOIR.R = 0;
 	#endif
 	  }
@@ -129,7 +129,7 @@ void Irq_Init( void ) {
 	  // Accept interrupts
 	#if defined(CFG_MPC5516)
 	  INTC.CPR_PRC0.B.PRI = 0;
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)|| defined(CFG_MPC5606S)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5606S)
 	  INTC.CPR.B.PRI = 0;
 	#endif
 
@@ -280,7 +280,7 @@ uint8_t Irq_GetCurrentPriority( Cpu_t cpu) {
 	} else if ( cpu == CPU_Z0 ) {
 		prio = INTC.CPR_PRC1.B.PRI;
 	}
-#elif defined(CFG_MPC5554)||defined(CFG_MPC5567)|| defined(CFG_MPC5606S)
+#elif defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC5606S)
 	prio = INTC.CPR.B.PRI;
 #endif
 

@@ -21,6 +21,7 @@
 #include "arc.h"
 #include "debug.h"
 #include "arch.h"
+
 extern void Os_CfgGetInterruptStackInfo( OsStackType *stack );
 extern uint32_t McuE_GetSystemClock( void );
 extern OsTickType OsTickFreq;
@@ -140,7 +141,6 @@ void InitOS( void ) {
 }
 
 static void os_start( void ) {
-	int j;
 	OsPcbType *tmp_pcb;
 
 	// We will be setting up interrupts,
@@ -222,7 +222,8 @@ void noooo( void ) {
 extern void EcuM_Init();
 int main( void )
 {
-	  EcuM_Init();
+	EcuM_Init();
+
 }
 
 /**

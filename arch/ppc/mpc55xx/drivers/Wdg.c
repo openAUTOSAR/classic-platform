@@ -37,7 +37,7 @@ void StartWatchdog(void)
 #if defined(CFG_MPC5567)
 	ECSM.SWTCR.R =  0x00D8;;
 #elif defined(CFG_MPC5606S)
-	SWT.CR.R = 0x8000011B;
+	SWT.CR.R = 0x8000011B; //Default time-out period, 10ms@128khz.
 #else
 	MCM.SWTCR.R = 0x00D8;
 #endif

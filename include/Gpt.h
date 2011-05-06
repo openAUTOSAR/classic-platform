@@ -125,6 +125,7 @@ void Gpt_EnableWakeup( Gpt_ChannelType channel );
 void Gpt_Cbk_CheckWakeup( EcuM_WakeupSourceType wakeupSource );
 #endif
 
+/** GPT292 */
 extern void Gpt_Notification_0( void );
 extern void Gpt_Notification_1( void );
 extern void Gpt_Notification_2( void );

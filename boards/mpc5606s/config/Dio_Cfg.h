@@ -41,10 +41,8 @@ typedef enum
 	DIO_PORT_F,
 	DIO_PORT_G,
 	DIO_PORT_H,
-#if 1
 	DIO_PORT_J,
 	DIO_PORT_K
-#endif
 } Dio_PortTypesType;
 
 /** @name DIO channels
@@ -180,7 +178,6 @@ typedef enum
 //#define DIO_CHANNEL_H6		118 , Reserved
 //#define DIO_CHANNEL_H7		119 , Reserved
 //#define DIO_CHANNEL_H8		120 , Reserved
-#if 1
 //#define DIO_CHANNEL_H9		121 , Reserved
 //#define DIO_CHANNEL_H10		122 , Reserved
 
@@ -209,7 +206,6 @@ typedef enum
 
 #define DIO_CHANNEL_K0		121
 #define DIO_CHANNEL_K1		122
-/**********Added by Cobb for according with MPC5606S*******/
 #define DIO_CHANNEL_K2		123
 #define DIO_CHANNEL_K3		124
 #define DIO_CHANNEL_K4		125
@@ -224,8 +220,6 @@ typedef enum
 //#define DIO_CHANNEL_K13		157 , Reserved
 //#define DIO_CHANNEL_K14		158 , Reserved
 //#define DIO_CHANNEL_K15		159 , Reserved
-/*****************************END**************************/
-#endif
 //@}
 
 // Channels	
