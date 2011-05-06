@@ -12,7 +12,18 @@
  *           on Fri Jan 21 11:28:13 CET 2011
  */
 
-
+#if defined(USE_CANSM)
+extern const CanSM_ConfigType CanSM_Config;
+#endif
+#if defined(USE_NM)
+extern const Nm_ConfigType Nm_Config;
+#endif
+#if defined(USE_CANNM)
+extern const CanNm_ConfigType CanNm_Config;
+#endif
+#if defined(USE_COMM)
+extern const ComM_ConfigType ComM_Config;
+#endif
 
 #include "EcuM.h"
 

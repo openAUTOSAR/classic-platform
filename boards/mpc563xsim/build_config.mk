@@ -10,10 +10,12 @@ CFG=PPC BOOKE E200Z3 MPC55XX MPC5633 BRD_MPC5633SIM SPE SIMULATOR
 # What buildable modules does this board have, 
 # default or private
 
-# Memory + Peripherals
+# MCAL
 MOD_AVAIL+=ADC DIO DMA CAN GPT LIN MCU PORT PWM WDG    
 # System + Communication + Diagnostic
 MOD_AVAIL+=CANIF CANTP COM DCM DEM DET ECUM IOHWAB KERNEL PDUR WDGM RTE
+# Network management
+MOD_AVAIL+=COMM NM CANNM CANSM
 # Additional
 MOD_AVAIL+=RAMLOG 
 
