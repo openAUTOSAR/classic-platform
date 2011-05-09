@@ -41,7 +41,10 @@ SECTIONS
              . = (.+15);
         }
 #endif
-	    .sdata2       : {}  /* really PPC.EMB.sdata2?, r2 should point here */
+      __SDATA2_START = .;
+      .sdata2         : {}
+      .sbss2          : {}
+      __SBSS2_END = .;
 	    extab      : {}  
 	    extabindex : {}
 	    . = ALIGN(0x10);
