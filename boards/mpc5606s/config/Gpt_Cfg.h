@@ -36,18 +36,9 @@
 
 /** HW PIT channels */
 
-#define GPT_CHANNEL_PIT_0	0
-#define GPT_CHANNEL_PIT_1	1
-#define GPT_CHANNEL_PIT_2	2
-#define GPT_CHANNEL_PIT_3	3
+#define GPT_PIT_CNT		(0)
 
-
-#define GPT_PIT_CNT		(GPT_CHANNEL_PIT_3 + 1)
-
-/** Decrementer */
-#define GPT_CHANNEL_DEC	4
-
-#define GPT_CHANNEL_CNT	(GPT_CHANNEL_DEC+1)
+#define GPT_CHANNEL_CNT	(0)
 
 // Illegal channel
 #define GPT_CHANNEL_ILL	31

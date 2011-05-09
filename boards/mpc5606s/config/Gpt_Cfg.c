@@ -27,42 +27,6 @@
 const Gpt_ConfigType GptConfigData[] =
 {
 	{
-		.GptChannelId = GPT_CHANNEL_PIT_0,
-		.GptChannelMode = GPT_MODE_CONTINUOUS,
-		.GptChannelClkSrc = 0,
-		.GptNotification = &Gpt_Notification_0,
-		.GptNotificationPriority = 4,
-		.GptChannelPrescale = 0,
-		.GptEnableWakeup = TRUE,
-	},
-	{
-		.GptChannelId = GPT_CHANNEL_PIT_1,
-		.GptChannelMode = GPT_MODE_CONTINUOUS,
-		.GptChannelClkSrc = 0,
-		.GptNotification = &Gpt_Notification_1,
-		.GptNotificationPriority = 5,
-		.GptChannelPrescale = 0,
-		.GptEnableWakeup = FALSE,
-	},
-	{
-		.GptChannelId = GPT_CHANNEL_PIT_2,
-		.GptChannelMode = GPT_MODE_ONESHOT,
-		.GptChannelClkSrc = 0,
-		.GptNotification = &Gpt_Notification_2,
-		.GptNotificationPriority = 6,
-		.GptChannelPrescale = 0,
-		.GptEnableWakeup = FALSE,
-	},
-	{
-		.GptChannelId = GPT_CHANNEL_PIT_3,
-		.GptChannelMode = GPT_MODE_CONTINUOUS,
-		.GptChannelClkSrc = 0,
-		.GptNotification = &Gpt_Notification_3,
-		.GptNotificationPriority = 7,
-		.GptChannelPrescale = 0,
-		.GptEnableWakeup = FALSE,
-	},
-	{
 	// Last channel in list
 	.GptChannelId = GPT_CHANNEL_ILL,
 	}
