@@ -140,9 +140,11 @@
 #define lis		e_lis
 #define li		e_li
 #define lwz	    e_lwz
+#define lbz		e_lbz
 #define lbzu	e_lbzu
 #define stwu	e_stwu
 #define stw		e_stw
+#define stb		e_stb
 #define stbu	e_stbu
 #define b		e_b
 //#define addi	e_addi		/* true ?*/

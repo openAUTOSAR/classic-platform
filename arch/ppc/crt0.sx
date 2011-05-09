@@ -89,8 +89,7 @@ _start:
 
 /* Store winIDEA terminal connected status */
 #if defined(USE_TTY_WINIDEA)
-	lis	r3,g_TConn@h
-	ori	r3,r3,g_TConn@l
+	LOAD_ADDR_32(3,g_TConn)
 	lbz r4,0(r3)
 #endif
 
