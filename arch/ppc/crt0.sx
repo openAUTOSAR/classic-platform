@@ -89,8 +89,8 @@ _start:
 
 /* Store winIDEA terminal connected status */
 #if defined(USE_TTY_WINIDEA)
-	LOAD_ADDR_32(3,g_TConn)
-	lbz r4,0(r3)
+	LOAD_ADDR_32(r8,g_TConn)
+	lbz r9,0(r8)
 #endif
 
 	/*  Clear all SRAM */
@@ -105,10 +105,6 @@ init_ram_loop:
 	addi r11,r11,128 # inc the ram ptr; 32 GPRs * 4 bytes = 128
 	bdnz init_ram_loop # loop for 80k of SRAM
 
-/* Restore winIDEA terminal connected status */
-#if defined(USE_TTY_WINIDEA)
-	stb		r4,0(r3)
-#endif
 
 	// Copy initialized data from ROM to RAM
 	LOAD_ADDR_32(3,__DATA_ROM)
@@ -140,6 +136,12 @@ copy_bss:
 	cmplw	r3,r4
 	bne+	copy_bss
 skip_bss:
+
+/* Restore winIDEA terminal connected status */
+#if defined(USE_TTY_WINIDEA)
+	stb		r9,0(r8)
+#endif
+
 	/* Call main() with argc set to 1 and argv ignored */
 	li	r3,1
 	bl	main
