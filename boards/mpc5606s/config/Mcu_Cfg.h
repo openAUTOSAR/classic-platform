@@ -25,7 +25,7 @@
 #ifndef MCU_CFG_H_
 #define MCU_CFG_H_
 
-#include "mpc55xx.h"
+#include "mpc5606s.h"
 
 /** Enable Development Error Trace */
 #define MCU_DEV_ERROR_DETECT 	STD_ON

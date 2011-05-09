@@ -38,7 +38,6 @@ int  InitializeUART(void)
 
 int ReadUARTN( char* buf, int cnt )
 {
-	(void)g_TRBuffer[0];
 	(void)buf;
 	(void)cnt;
 	return 0;
@@ -63,16 +62,17 @@ int WriteUARTN( char* buf, int cnt )
 			TWBUFF_TPTR = nLen;
 		}
 	}
-
-	return 0;
-
-#else
-
-	(void)buf;
-	(void)cnt;
-	return 0;
-
 #endif
+#if defined(USE_RAMLOG)
+		{
+			char *pbuf = buf;
+			for (int i = 0; i < cnt; i++) {
+				ramlog_chr (*(pbuf + i));
+			}
+		}
+#endif
+
+	return 0;
 }
 
 int WriteUART1(char c) {

@@ -148,26 +148,26 @@ typedef enum
 #define DIO_CHANNEL_F10		80
 #define DIO_CHANNEL_F11		81
 #define DIO_CHANNEL_F12		82
-//#define DIO_CHANNEL_F13		93 , Reserved
-//#define DIO_CHANNEL_F14		94 , Reserved
-//#define DIO_CHANNEL_F15		95 , Reserved
+#define DIO_CHANNEL_F13		83
+#define DIO_CHANNEL_F14		84
+#define DIO_CHANNEL_F15		85
 
-#define DIO_CHANNEL_G0		83
-#define DIO_CHANNEL_G1		84
-#define DIO_CHANNEL_G2		85
-#define DIO_CHANNEL_G3		86
-#define DIO_CHANNEL_G4		87
-#define DIO_CHANNEL_G5		88
-#define DIO_CHANNEL_G6		89
-#define DIO_CHANNEL_G7		90
-#define DIO_CHANNEL_G8		91
-#define DIO_CHANNEL_G9		92
-#define DIO_CHANNEL_G10		92
-#define DIO_CHANNEL_G11		94
-#define DIO_CHANNEL_G12		95
-#define DIO_CHANNEL_G13		96
-#define DIO_CHANNEL_G14		97
-#define DIO_CHANNEL_G15		98
+#define DIO_CHANNEL_G0		86
+#define DIO_CHANNEL_G1		87
+#define DIO_CHANNEL_G2		88
+#define DIO_CHANNEL_G3		89
+#define DIO_CHANNEL_G4		90
+#define DIO_CHANNEL_G5		91
+#define DIO_CHANNEL_G6		92
+#define DIO_CHANNEL_G7		93
+#define DIO_CHANNEL_G8		94
+#define DIO_CHANNEL_G9		95
+#define DIO_CHANNEL_G10		96
+#define DIO_CHANNEL_G11		97
+#define DIO_CHANNEL_G12		98
+//#define DIO_CHANNEL_G13		99, reserved
+//#define DIO_CHANNEL_G14		100, reserved
+//#define DIO_CHANNEL_G15		101, reserved
 
 #define DIO_CHANNEL_H0		99
 #define DIO_CHANNEL_H1		100
@@ -230,18 +230,20 @@ extern const Dio_PortType DioPortConfigData[];
 extern const Dio_ChannelGroupType DioConfigData[];
 
 // Mapping of logical ports to physical 
-#ifdef CFG_BRD_MPC5516IT
+#ifdef CFG_BRD_MPC5606S
 
 // Channels	
-#define DIO_CHANNEL_NAME_LEDS_LED4		(DIO_CHANNEL_D4)
-#define DIO_CHANNEL_NAME_LEDS_LED5		(DIO_CHANNEL_D5)
+#define DIO_CHANNEL_NAME_LEDS_LED4		(DIO_CHANNEL_E4)
+#define DIO_CHANNEL_NAME_LEDS_LED5		(DIO_CHANNEL_E5)
+#define DIO_CHANNEL_NAME_LEDS_LED6		(DIO_CHANNEL_E6)
+#define DIO_CHANNEL_NAME_LEDS_LED7		(DIO_CHANNEL_E7)
 
 // Standard board test led
 #define DIO_CHANNEL_NAME_BOARD_LED		DIO_CHANNEL_NAME_LEDS_LED4
 
 
 // Port
-#define DIO_PORT_NAME_LED_PORT 			(DIO_PORT_D)
+#define DIO_PORT_NAME_LED_PORT 			(DIO_PORT_E)
 
 // Channel group
 #define DIO_GROUP_NAME_LED_GRP_PTR		(&DioConfigData[0])
