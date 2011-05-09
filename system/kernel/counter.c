@@ -187,16 +187,16 @@ StatusType GetElapsedCounterValue( CounterType counter_id, TickRefType val, Tick
 CounterType Os_Arc_OsTickCounter __attribute__((weak)) = -1;
 
 void OsTick( void ) {
-	// if not used, os_tick_counter < 0
+
+	// Internal counter, always updated
+	os_sys.tick++;
+
+	// If proper OsCounter for os tick is not used, os_tick_counter < 0
 	if (Os_Arc_OsTickCounter >= 0) {
 
 		OsCounterType *cPtr = Os_CfgGetCounter(Os_Arc_OsTickCounter);
-
-		os_sys.tick++;
-
 		cPtr->val = Os_CounterAdd( cPtr->val, Os_CounterGetMaxValue(cPtr), 1 );
 
-	//	os_sys.tick = cPtr->val;
 #if OS_ALARM_CNT!=0
 		Os_AlarmCheck(cPtr);
 #endif

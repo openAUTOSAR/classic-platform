@@ -40,15 +40,22 @@ void Os_SysTickInit( void ) {
  */
 void Os_SysTickStart(uint32_t period_ticks) {
 #if defined(CFG_MPC5606S)
-	CGM.SXOSC_CTL.B.OSCON = 1;	/* Enable the osc for RTC */
-	RTC.RTCC.B.CNTEN = 1;
-	RTC.RTCC.B.RTCIE = 1;
-	RTC.RTCC.B.FRZEN = 1;
-	RTC.RTCC.B.RTCVAL = (16000000/OsTickFreq)/1024;
-	RTC.RTCC.B.CLKSEL = 2;
-	INTC.PSR[38].R = 0x02;
+	CGM.SXOSC_CTL.B.OSCON = 1;	// enable the osc for RTC
+	RTC.RTCC.B.CNTEN = 0;		// disable RTC
+	RTC.RTCC.B.APIEN = 0;		// disable API
+	RTC.RTCC.B.APIIE = 0;		// disable API interrupt
+	RTC.RTCS.B.RTCF = 1;		// clear RTC interrupt flag
+	RTC.RTCS.B.APIF = 1;		// clear API interrupt flag
+	RTC.RTCC.B.RTCIE = 1;		// enable RTC interrupt
+	RTC.RTCC.B.FRZEN = 1;		// enable freeze mode
+	RTC.RTCC.B.CLKSEL = 2;		// set 16MHz FIRC as input clock
+
+	//TODO: Why does it not work to use OsTickFreq = 1000 Hz ??
+	// ignore period_ticks, and set RTC compare value
+	RTC.RTCC.B.RTCVAL = ( ( (uint32_t)(16000000/100 /*OsTickFreq*/) ) >> 10);
+
+	RTC.RTCC.B.CNTEN = 1;		// start RTC
 #else
-    	uint32_t tmp;
 
     	// Enable the TB
     	tmp = get_spr(SPR_HID0);
