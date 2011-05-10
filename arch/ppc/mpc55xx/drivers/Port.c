@@ -108,8 +108,7 @@ void Port_Init(const Port_ConfigType *configType)
     	++i;
 
     	// Out of reset pins PH[0:3](PCR99~PCR102) are available as JTAG pins(TCK,TDI,TDO and TMS respectively)
-    	// It is up to the user to configure pins PH[0:3]when need.
-        // TODO: To be removed if dont use JTAG
+        // TODO: Remove this if JTAG is not used or if the configuration should have priority
     	if(99 == i || 100 == i || 101 == i || 102 == i) i=103;
 	}
 

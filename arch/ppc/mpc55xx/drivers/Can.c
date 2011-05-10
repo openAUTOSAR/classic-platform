@@ -122,11 +122,6 @@
 #if defined(CFG_MPC5567)
 #define GET_CONTROLLER(_controller) 	\
         					((struct FLEXCAN2_tag *)(0xFFFC0000 + 0x4000*(_controller)))
-#elif defined(CFG_MPC5606S)
-
-#define GET_CONTROLLER(_controller) 	\
-        					((struct FLEXCAN_tag *)(0xFFFC0000 + 0x4000*(_controller)))
-
 #else
 #define GET_CONTROLLER(_controller) 	\
         					((struct FLEXCAN_tag *)(0xFFFC0000 + 0x4000*(_controller)))
@@ -216,8 +211,6 @@ typedef union {
 
 #if defined(CFG_MPC5567)
 typedef struct FLEXCAN2_tag flexcan_t;
-#elif defined(CFG_MPC5606S)
-typedef struct FLEXCAN_tag flexcan_t;
 #else
 typedef struct FLEXCAN_tag flexcan_t;
 #endif

@@ -38,9 +38,12 @@ int  InitializeUART(void)
 
 int ReadUARTN( char* buf, int cnt )
 {
+#ifdef USE_TTY_WINIDEA
+	(void)g_TRBuffer[0];
+#endif
 	(void)buf;
 	(void)cnt;
-	return 0;
+	return 0; // No error
 }
 
 int ReadUART1(char* c) {
@@ -72,7 +75,10 @@ int WriteUARTN( char* buf, int cnt )
 		}
 #endif
 
-	return 0;
+	(void)buf;
+	(void)cnt;
+	
+	return 0; // No error
 }
 
 int WriteUART1(char c) {
