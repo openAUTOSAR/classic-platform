@@ -169,7 +169,7 @@ static uint32 Mcu_CheckCpu( void ) {
 
   if( (coreType == NULL) ) {
     // Just hang
-    while(1);
+    while(1) ;
   }
 
   return 0;

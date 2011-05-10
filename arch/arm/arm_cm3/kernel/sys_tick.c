@@ -48,8 +48,7 @@ void Os_SysTickStart(uint32_t period_ticks) {
 	// SysTick interrupt each 250ms with counter clock equal to 9MHz
 	if (SysTick_Config((SystemFrequency / 8) / 4)) {
 		// Capture error
-		while (1)
-			;
+		while (1) ;
 	}
 
 	// Select HCLK/8 as SysTick clock source

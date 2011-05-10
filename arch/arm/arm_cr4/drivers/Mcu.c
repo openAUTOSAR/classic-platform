@@ -245,7 +245,7 @@ static void InitMcuClocks(Mcu_ClockSettingConfigType *clockSettingsPtr)
 		| ((clockSettingsPtr->Pll3 - 1) << MCU_ODPLL_OFFSET);
 
 	/** - Wait for until clocks are locked */
-	while ((systemREG1->CSVSTAT & ((systemREG1->CSDIS ^ 0xFF) & 0xFF)) != ((systemREG1->CSDIS ^ 0xFF) & 0xFF));
+	while ((systemREG1->CSVSTAT & ((systemREG1->CSDIS ^ 0xFF) & 0xFF)) != ((systemREG1->CSDIS ^ 0xFF) & 0xFF)) ;
 
 
 }
@@ -273,7 +273,7 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
 
 
 	/** - Wait for until clocks are locked */
-	while ((systemREG1->CSVSTAT & ((systemREG1->CSDIS ^ 0xFF) & 0xFF)) != ((systemREG1->CSDIS ^ 0xFF) & 0xFF));
+	while ((systemREG1->CSVSTAT & ((systemREG1->CSDIS ^ 0xFF) & 0xFF)) != ((systemREG1->CSDIS ^ 0xFF) & 0xFF)) ;
 
 	/** - Setup GCLK, HCLK and VCLK clock source for normal operation, power down mode and after wakeup */
 	systemREG1->GHVSRC = (SYS_PLL << 24U) // Selectes PLL clock (clock source 1) as wakeup clock source.

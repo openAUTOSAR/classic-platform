@@ -248,7 +248,7 @@ static uint32 Mcu_CheckCpu( void ) {
 
     if( (cpuType == NULL) || (coreType == NULL) ) {
     	// Just hang
-    	while(1);
+    	while(1) ;
     }
 
     //DEBUG(DEBUG_HIGH,"/drivers/mcu: Cpu:  %s( 0x%08x )\n",cpuType->name,pvr);
@@ -423,8 +423,7 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     FMPLL.SYNCR.B.RFD    	= clockSettingsPtr->Pll3;
 
 	// Wait for PLL to sync.
-    while (Mcu_GetPllStatus() != MCU_PLL_LOCKED)
-    ;
+    while (Mcu_GetPllStatus() != MCU_PLL_LOCKED) ;
 
     FMPLL.SYNCR.B.LOLIRQ	= 1;
 #endif

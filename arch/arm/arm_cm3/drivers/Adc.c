@@ -148,13 +148,13 @@ Std_ReturnType Adc_Init (const Adc_ConfigType *ConfigPtr)
     /* Enable ADC1 reset calibaration register */
     ADC_ResetCalibration(ADC1);
     /* Check the end of ADC1 reset calibration register */
-    while(ADC_GetResetCalibrationStatus(ADC1));
+    while(ADC_GetResetCalibrationStatus(ADC1)) ;
 
     /* Start ADC1 calibaration */
     ADC_StartCalibration(ADC1);
 
     /* Check the end of ADC1 calibration */
-    while(ADC_GetCalibrationStatus(ADC1));
+    while(ADC_GetCalibrationStatus(ADC1)) ;
 
     /* Move on to INIT state. */
     adcState = ADC_INIT;

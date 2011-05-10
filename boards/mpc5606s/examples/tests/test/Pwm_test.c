@@ -6,7 +6,7 @@ void Test_Pwm_Case0()
 	Pwm_SetDutyCycle(PWM_CHANNEL_14,0x4000);
 	Pwm_SetDutyCycle(PWM_CHANNEL_15,0x0000);
 	Pwm_SetDutyCycle(PWM_CHANNEL_16,0x8000);
-	while(1);
+	while(1) ;
 }
 
 void Test_Pwm_Case1()
@@ -15,7 +15,7 @@ void Test_Pwm_Case1()
 	Pwm_SetPeriodAndDuty( PWM_CHANNEL_14, 60000, 0x8000 );
 	Pwm_SetPeriodAndDuty( PWM_CHANNEL_15, 200,   0x5000 );
 	Pwm_SetPeriodAndDuty( PWM_CHANNEL_16, 5000,  0x2000 );
-	while(1);
+	while(1) ;
 }
 
 void Test_Pwm_Case2()
@@ -23,14 +23,14 @@ void Test_Pwm_Case2()
 	uint32 i = 0, j = 0;
 	for(i = 0; i <1000; i++)
 	{
-		for(j = 0; j < 3000; j++);
+		for(j = 0; j < 3000; j++) ;
 	}
 
 	Pwm_SetOutputToIdle(PWM_CHANNEL_13);
 	Pwm_SetOutputToIdle(PWM_CHANNEL_14);
 	Pwm_SetOutputToIdle(PWM_CHANNEL_15);
 	Pwm_SetOutputToIdle(PWM_CHANNEL_16);
-	while(1);
+	while(1) ;
 }
 
 void Test_Pwm_Case3()
@@ -53,7 +53,7 @@ void Test_Pwm_Case4()
 	uint32 i = 0, j = 0;
 	for(i = 0; i <1000; i++)
 	{
-		for(j = 0; j < 30000; j++);
+		for(j = 0; j < 30000; j++) ;
 	}
 
 	Pwm_SetOutputToIdle(PWM_CHANNEL_13);
@@ -62,20 +62,20 @@ void Test_Pwm_Case4()
 	Pwm_SetOutputToIdle(PWM_CHANNEL_16);
 	for(i = 0; i <1000; i++)
 		{
-			for(j = 0; j < 30000; j++);
+			for(j = 0; j < 30000; j++) ;
 	}
 	    Pwm_SetPeriodAndDuty( PWM_CHANNEL_13, 500,   0x0000 );
 		Pwm_SetPeriodAndDuty( PWM_CHANNEL_14, 60000, 0x8000 );
 		Pwm_SetPeriodAndDuty( PWM_CHANNEL_15, 200,   0x5000 );
 		Pwm_SetPeriodAndDuty( PWM_CHANNEL_16, 5000,  0x2000 );
-	while(1);
+	while(1) ;
 }
 void Test_Pwm_Case5()
 {
 	uint32 i = 0, j = 0;
 	for(i = 0; i <1000; i++)
 	{
-		for(j = 0; j < 30000; j++);
+		for(j = 0; j < 30000; j++) ;
 	}
 
 	Pwm_SetOutputToIdle(PWM_CHANNEL_13);
@@ -84,11 +84,11 @@ void Test_Pwm_Case5()
 	Pwm_SetOutputToIdle(PWM_CHANNEL_16);
 	for(i = 0; i <1000; i++)
 		{
-			for(j = 0; j < 30000; j++);
+			for(j = 0; j < 30000; j++) ;
 	}
 	Pwm_SetDutyCycle(PWM_CHANNEL_13,0x1000);
 	Pwm_SetDutyCycle(PWM_CHANNEL_14,0x4000);
 	Pwm_SetDutyCycle(PWM_CHANNEL_15,0x5000);
 	Pwm_SetDutyCycle(PWM_CHANNEL_16,0x6000);
-	while(1);
+	while(1) ;
 }

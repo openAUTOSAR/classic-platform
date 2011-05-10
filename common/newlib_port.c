@@ -371,7 +371,7 @@ int write(  int fd, const void *_buf, size_t nbytes)
 		  unsigned char nCnt,nLen;
 		  for(nCnt=0; nCnt<nbytes; nCnt++)
 			{
-			while(TWBUFF_FULL());
+			while(TWBUFF_FULL()) ;
 			nLen=TWBUFF_TPTR;
 			g_TWBuffer[nLen]=buf[nCnt];
 			nLen=TWBUFF_INC(nLen);
@@ -539,7 +539,7 @@ void _exit( int status ) {
 	__asm("        .global C$$EXIT");
 	__asm("C$$EXIT: nop");
 #endif
-	while(1);
+	while(1) ;
 }
 #endif
 

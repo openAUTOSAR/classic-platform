@@ -48,7 +48,7 @@ static void os_pcb_rom_copy( OsPcbType *pcb, const OsRomPcbType *r_pcb ) {
 		int cnt = sizeof(OsPcbType);
 		for(int i=0;i<cnt;i++) {
 			if( *((unsigned char *)pcb) != 0 ) {
-				while(1);
+				while(1) ;
 			}
 		}
 	}
@@ -216,7 +216,7 @@ int test_bss = 0;
 
 
 void noooo( void ) {
-	while(1);
+	while(1) ;
 }
 
 extern void EcuM_Init();

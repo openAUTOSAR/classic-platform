@@ -33,6 +33,7 @@
 
 /* Global hooks */
 ProtectionReturnType ProtectionHook( StatusType FatalError ) {
+	(void)FatalError;
 	LDEBUG_PRINTF("## ProtectionHook\n");
 	return PRO_KILLAPPL;
 }
@@ -44,22 +45,23 @@ void StartupHook( void ) {
 }
 
 void ShutdownHook( StatusType Error ) {
+	(void)Error;
 	LDEBUG_PRINTF("## ShutdownHook\n");
-	while(1);
+	while(1){}
 }
 
 void ErrorHook( StatusType Error ) {
 	DisableAllInterrupts();
-
+	(void)Error;
 	LDEBUG_PRINTF("## ErrorHook err=%d\n",Error);
-	while(1);
+	while(1){}
 }
 
 void PreTaskHook( void ) {
 	TaskType task;
 	GetTaskID(&task);
 	if( task > 10 ) {
-		while(1);
+		while(1){}
 	}
 // 	LDEBUG_PRINTF("## PreTaskHook, taskid=%d\n",task);
 }
@@ -68,7 +70,7 @@ void PostTaskHook( void ) {
 	TaskType task;
 	GetTaskID(&task);
 	if( task > 10 ) {
-		while(1);
+		while(1){}
 	}
 //	LDEBUG_PRINTF("## PostTaskHook, taskid=%d\n",task);
 }

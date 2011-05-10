@@ -46,17 +46,17 @@
 void Os_ArchPanic( uint32_t err, void *errFramePtr , Os_ExceptionFrameType *excFramePtr) {
 	switch(err) {
 	case OS_ERR_BAD_CONTEXT:
-		while(1);
+		while(1) ;
 		break;
 	case OS_ERR_SPURIOUS_INTERRUPT:
 		fputs("Spurious interrupt\n",stdout);
 		printf(" vector : %02lx\n", excFramePtr->vector);
 		printf(" srr0   : %08lx\n", excFramePtr->srr0);
 		printf(" srr1   : %08lx\n", excFramePtr->srr1);
-		while(1);
+		while(1) ;
 		break;
 	default:
-		while(1);
+		while(1) ;
 		break;
 	}
 }

@@ -694,7 +694,7 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
 
   // Start this baby up
   canHw->CTL0 = BM_INITRQ;				// request Init Mode
-  while((canHw->CTL1 & BM_INITAK) == 0);   // wait until Init Mode is established
+  while((canHw->CTL1 & BM_INITAK) == 0) ;   // wait until Init Mode is established
 
   // set CAN enable bit, deactivate listen-only mode,
   // use Bus Clock as clock source and select loop back mode on/off
@@ -753,7 +753,7 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
   canHw->BTR1 = (config->CanControllerSeg2 << 4) | config->CanControllerSeg1;
 
   canHw->CTL0 &= ~BM_INITRQ;				// exit Init Mode
-  while((canHw->CTL1 & BM_INITAK) != 0);// wait until Normal Mode is established
+  while((canHw->CTL1 & BM_INITAK) != 0) ;// wait until Normal Mode is established
 
   canHw->TBSEL = BM_TX0;					// use (only) TX buffer 0
 

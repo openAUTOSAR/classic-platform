@@ -1500,7 +1500,7 @@ Std_ReturnType Spi_SetupEB( Spi_ChannelType Channel,
 	} else {
 		/* NOT SUPPORTED */
 		assert(0);
-		while(1);
+		while(1) ;
 	}
 
 	return E_OK;

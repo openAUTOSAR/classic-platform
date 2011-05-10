@@ -75,7 +75,7 @@ void main(void){
 		}
 		else;
 	}
-	while(1);
+	while(1) ;
 }
 #endif
 void etask_1( void ) {
@@ -86,7 +86,7 @@ void etask_1( void ) {
 	//EcuM_StartupTwo();
 	LDEBUG_FPUTS("etask_1 start\n");
 	for(;;) {
-		for(i=0;i<300000;i++);
+		for(i=0;i<300000;i++) ;
 		SIU.GPDO[69].B.PDO = ~SIU.GPDO[69].B.PDO;
 		SetEvent(TASK_ID_etask_2,EVENT_MASK_EVENT_1);
 		WaitEvent(EVENT_MASK_EVENT_2);
@@ -111,7 +111,7 @@ void etask_2( void ) {
 	SIU.PCR[69].B.OBE = 1;
 
 	for(;;) {
-		for(i=0;i<300000;i++);
+		for(i=0;i<300000;i++) ;
 		SIU.GPDO[69].B.PDO = ~SIU.GPDO[69].B.PDO;
 		WaitEvent(EVENT_MASK_EVENT_1);
 		ClearEvent(EVENT_MASK_EVENT_1);
@@ -156,7 +156,7 @@ for(i=0;i<100000;i++){}
 
 	INTC.PSR[4].R = 2;
 	INTC.SSCIR[4].R = 2;
-while(1);
+while(1) ;
 }
 
 
@@ -174,7 +174,7 @@ void StartupHook( void ) {
 
 void ShutdownHook( StatusType Error ) {
 	LDEBUG_FPUTS("## ShutdownHook\n");
-	while(1);
+	while(1) ;
 }
 
 struct LogBad_s {
@@ -236,7 +236,7 @@ void ErrorHook( StatusType Error ) {
 	ErrorCount++;
 
 	// Stall if buffer is full.
-	while(ErrorCount >= ERROR_LOG_SIZE);
+	while(ErrorCount >= ERROR_LOG_SIZE) ;
 }
 
 void PreTaskHook( void ) {

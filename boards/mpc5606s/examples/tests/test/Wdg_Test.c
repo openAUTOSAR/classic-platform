@@ -14,7 +14,7 @@ void Test_Wdg_Case0(void)
 
 	for(i = 0; i < 100; i++)
 	{
-		for(j = 0; j < 300000; j++);
+		for(j = 0; j < 300000; j++) ;
 		KickWatchdog();
 		SIU.GPDO[68].B.PDO = ~SIU.GPDO[68].B.PDO;
 
@@ -22,7 +22,7 @@ void Test_Wdg_Case0(void)
 
 	StopWatchdog();
 
-	while(1);
+	while(1) ;
 }
 
 
@@ -31,6 +31,6 @@ void Test_Wdg_Case1(void)
 
 	StartWatchdog();
 
-	while(1);
+	while(1) ;
 }
 

@@ -33,7 +33,7 @@
 
 
 void OsIdle( void ) {
-	for(;;);
+	for(;;) ;
 }
 
 /*

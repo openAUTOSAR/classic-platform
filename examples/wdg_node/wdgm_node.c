@@ -140,7 +140,7 @@ void etask_2( void ) {
  */
 
 void OsIdle( void ) {
-	for(;;);
+	for(;;) ;
 }
 
 
@@ -160,7 +160,7 @@ void StartupHook( void ) {
 
 void ShutdownHook( StatusType Error ) {
 	LDEBUG_PRINTF("## ShutdownHook\n");
-	while(1);
+	while(1) ;
 }
 
 struct LogBad_s {
@@ -222,7 +222,7 @@ void ErrorHook( StatusType Error ) {
 	ErrorCount++;
 
 	// Stall if buffer is full.
-	while(ErrorCount >= ERROR_LOG_SIZE);
+	while(ErrorCount >= ERROR_LOG_SIZE) ;
 }
 
 void PreTaskHook( void ) {

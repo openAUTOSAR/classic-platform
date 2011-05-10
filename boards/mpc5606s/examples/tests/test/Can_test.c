@@ -4,7 +4,7 @@ void delayms(int ms){
     int i,j;
     if (ms<1) ms=1;
     for(i=0;i<ms;i++)
-        for(j=0;j<1335;j++);
+        for(j=0;j<1335;j++) ;
 }
 
 void Test_Can_Callback(uint8 Hrh, Can_IdType CanId, uint8 CanDlc, const uint8 *CanSduPtr ){
@@ -15,11 +15,11 @@ void Test_Can_Callback(uint8 Hrh, Can_IdType CanId, uint8 CanDlc, const uint8 *C
 	 *  DATA = 0001020304050607
 	 *  CanIdType = CAN_ID_TYPE_STANDARD
 	 * */
-	while(Hrh !=(1));
-	while(CanId != 0x80000000);				//canHw->BUF[0].ID.B.EXT_ID
-	while(CanDlc != 0x08); 				//canHw->BUF[0].CS.B.LENGTH
+	while(Hrh !=(1)) ;
+	while(CanId != 0x80000000) ;				//canHw->BUF[0].ID.B.EXT_ID
+	while(CanDlc != 0x08) ; 				//canHw->BUF[0].CS.B.LENGTH
 	for (i = 0; i < CanDlc; i++){
-	while(*(CanSduPtr+i) != i);			//(uint8 *)&canHw->BUF[0].DATA.W[0]
+	while(*(CanSduPtr+i) != i) ;			//(uint8 *)&canHw->BUF[0].DATA.W[0]
 	}
 }
 
@@ -33,7 +33,7 @@ void Test_Can_Case0(void){
 	Can_SetControllerMode(CAN_CTRL_A, CAN_T_START);
 	Can_SetControllerMode(CAN_CTRL_B, CAN_T_START);
 
-	while(1);
+	while(1) ;
 }
 
 void Test_Can_Case1(void){

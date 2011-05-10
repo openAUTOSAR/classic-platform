@@ -1332,7 +1332,7 @@ static __INLINE void NVIC_SystemReset(void)
 {
   SCB->AIRCR  = (NVIC_AIRCR_VECTKEY | (SCB->AIRCR & (0x700)) | (1<<NVIC_SYSRESETREQ)); /* Keep priority group unchanged */
   __DSB();                                                                             /* Ensure completion of memory access */              
-  while(1);                                                                            /* wait until reset */
+  while(1) ;                                                                            /* wait until reset */
 }
 
 
@@ -1357,7 +1357,7 @@ static __INLINE uint32_t ITM_SendChar (uint32_t ch)
       (ITM->TCR & ITM_TCR_ITMENA)                  &&
       (ITM->TER & (1UL << 0))  ) 
   {
-    while (ITM->PORT[0].u32 == 0);
+    while (ITM->PORT[0].u32 == 0) ;
     ITM->PORT[0].u8 = (uint8_t) ch;
   }  
   return (ch);

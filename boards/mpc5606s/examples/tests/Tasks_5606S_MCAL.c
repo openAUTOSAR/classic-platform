@@ -51,7 +51,7 @@ void Startup_Task( void ) {
 
 
 void OsIdle( void ) {
-	while(1);
+	while(1) ;
 }
 
 
@@ -88,7 +88,7 @@ void ErrorHook ( StatusType Error ) {
 	ErrorCount++;
 
 	// Stall if buffer is full.
-	while(ErrorCount >= ERROR_LOG_SIZE);
+	while(ErrorCount >= ERROR_LOG_SIZE) ;
 
 }
 
@@ -106,7 +106,7 @@ void PreTaskHook ( void ) {
 
 void ShutdownHook ( StatusType Error ) {
 	LDEBUG_PRINTF("## ShutdownHook\n");
-	while(1);
+	while(1) ;
 }
 
 void StartupHook ( void ) {

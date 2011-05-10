@@ -60,21 +60,21 @@ void StartupHook( void ) {
 
 void ShutdownHook( StatusType Error ) {
 	LDEBUG_FPUTS("## ShutdownHook\n");
-	while(1);
+	while(1) ;
 }
 
 void ErrorHook( StatusType Error ) {
 	DisableAllInterrupts();
 
 	LDEBUG_PRINTF("## ErrorHook err=%d\n",Error);
-	while(1);
+	while(1) ;
 }
 
 void PreTaskHook( void ) {
 	TaskType task;
 	GetTaskID(&task);
 	if( task > 10 ) {
-		while(1);
+		while(1) ;
 	}
 // 	LDEBUG_PRINTF("## PreTaskHook, taskid=%d\n",task);
 }
@@ -83,7 +83,7 @@ void PostTaskHook( void ) {
 	TaskType task;
 	GetTaskID(&task);
 	if( task > 10 ) {
-		while(1);
+		while(1) ;
 	}
 //	LDEBUG_PRINTF("## PostTaskHook, taskid=%d\n",task);
 }

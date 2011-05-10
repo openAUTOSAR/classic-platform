@@ -63,7 +63,7 @@ ifeq ($(COMPILER),cw)
 %_offset.h: %_offset.c
 	@echo "  >> generating $@ from $<"
 	$(Q)$(CC) -dis $(CFLAGS) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $< > 123.tmp
-	gawk '$$9 ~/.apa/ && $$0 ~/OBJ/ { gsub(/\r/,""); printf("#define %s %d\n",$$10,$$5-100) }' 123.tmp > $@
+	$(Q)gawk '$$9 ~/.apa/ && $$0 ~/OBJ/ { gsub(/\r/,""); printf("#define %s %d\n",$$10,$$5-100) }' 123.tmp > $@
 endif
 
 #VPATH += ..

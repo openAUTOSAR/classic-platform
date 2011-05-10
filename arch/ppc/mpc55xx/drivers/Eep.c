@@ -244,11 +244,11 @@ void Eep_Init( const Eep_ConfigType* ConfigPtr ){
   Eep_WREN();
 
   if( (Eep_ReadStatusReg() & 0x2) == 0 ) {
-    while(1);
+    while(1) ;
   }
   Eep_WRDI();
   if( (Eep_ReadStatusReg() & 0x2)  ) {
-    while(1);
+    while(1) ;
   }
 
 #endif

@@ -31,7 +31,7 @@ void Test_Gpt_Case0(void)
 	elapsed_value[3] = Gpt_GetTimeElapsed( GPT_CHANNEL_PIT_3 );
 	remaining_value[3] = Gpt_GetTimeRemaining( GPT_CHANNEL_PIT_3 );
 
-	while(1);
+	while(1) ;
 }
 
 void Test_Gpt_Case1(void)
@@ -43,12 +43,12 @@ void Test_Gpt_Case1(void)
 
 	for(i = 0; i <100; i++)
 	{
-		for(j = 0; j < 300000; j++);
+		for(j = 0; j < 300000; j++) ;
 	}
 
 	Gpt_StopTimer( GPT_CHANNEL_PIT_0 );
 
-	while(1);
+	while(1) ;
 }
 
 void Test_Gpt_Case2(void)
@@ -58,6 +58,6 @@ void Test_Gpt_Case2(void)
 
 	Gpt_DisableNotification( GPT_CHANNEL_PIT_1 );
 
-	while(1);
+	while(1) ;
 
 }
