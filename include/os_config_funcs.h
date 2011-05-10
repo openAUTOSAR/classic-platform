@@ -36,7 +36,9 @@
 
 
 void Os_CfgValidate(void ) {
+#if (OS_ALARM_CNT!=0)
 	OS_VALIDATE(OS_COUNTER_CNT,ARRAY_SIZE(counter_list));
+#endif
 #if (RESOURCE_CNT!=0)
 	OS_VALIDATE(OS_RESOURCE_CNT,ARRAY_SIZE(resource_list));
 #endif

@@ -38,7 +38,9 @@ int  InitializeUART(void)
 
 int ReadUARTN( char* buf, int cnt )
 {
+#ifdef USE_TTY_WINIDEA
 	(void)g_TRBuffer[0];
+#endif
 	(void)buf;
 	(void)cnt;
 	return 0;
