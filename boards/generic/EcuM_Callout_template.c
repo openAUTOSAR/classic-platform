@@ -102,6 +102,7 @@ EcuM_ConfigType* EcuM_DeterminePbConfiguration(void)
 
 void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
 {
+	(void)ConfigPtr;
   //lint --e{715}       PC-Lint (715) - ConfigPtr usage depends on configuration of modules
 #if defined(USE_MCU)
 	Mcu_Init(ConfigPtr->McuConfig);
@@ -164,6 +165,7 @@ void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
 
 void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 {
+	(void)ConfigPtr;
   //lint --e{715}       PC-Lint (715) - ConfigPtr usage depends on configuration of modules
 
 #if defined(USE_SPI)
@@ -255,6 +257,7 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 
 void EcuM_AL_DriverInitThree(const EcuM_ConfigType* ConfigPtr)
 {
+	(void)ConfigPtr;
   //lint --e{715}       PC-Lint (715) - ConfigPtr usage depends on configuration of modules
 
 #if defined(USE_DEM)

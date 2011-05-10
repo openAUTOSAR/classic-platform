@@ -197,6 +197,8 @@ static inline int osPrioToCpuPio( uint8_t prio ) {
 }
 
 void Irq_SetPriority( Cpu_t cpu,  IrqType vector, uint8_t prio ) {
+	(void)cpu;
+	(void)vector;
 #if defined(CFG_MPC5516)
 	INTC.PSR[vector].B.PRC_SEL = cpu;
 #endif
@@ -214,11 +216,12 @@ void Irq_SetPriority( Cpu_t cpu,  IrqType vector, uint8_t prio ) {
  * @param prio
  */
 void Irq_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector,uint8_t prio) {
+	(void)int_ctrl;
 	Irq_VectorTable[vector] = (void *)entry;
-	Irq_SetIsrType(vector, ISR_TYPE_1);
+	Irq_SetIsrType((IrqType)vector, ISR_TYPE_1 );
 
 	if (vector < INTC_NUMBER_OF_INTERRUPTS) {
-		Irq_SetPriority(CPU_CORE0,vector + IRQ_INTERRUPT_OFFSET, osPrioToCpuPio(prio));
+		Irq_SetPriority(CPU_CORE0, (IrqType)(vector + IRQ_INTERRUPT_OFFSET), osPrioToCpuPio(prio));
 	} else if ((vector >= CRITICAL_INPUT_EXCEPTION) && (vector
 			<= DEBUG_EXCEPTION)) {
 	} else {
@@ -238,12 +241,13 @@ void Irq_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector,uint8_
 void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
 	OsPcbType *pcb;
 
+	(void)int_ctrl;
 	pcb = os_find_task(tid);
 	Irq_VectorTable[vector] = pcb;
 	Irq_IsrTypeTable[vector] = PROC_ISR2;
 
 	if (vector < INTC_NUMBER_OF_INTERRUPTS) {
-		Irq_SetPriority(CPU_CORE0,vector + IRQ_INTERRUPT_OFFSET, osPrioToCpuPio(pcb->prio));
+		Irq_SetPriority(CPU_CORE0, (IrqType)(vector + IRQ_INTERRUPT_OFFSET), osPrioToCpuPio(pcb->prio));
 	} else if ((vector >= CRITICAL_INPUT_EXCEPTION) && (vector
 			<= DEBUG_EXCEPTION)) {
 	} else {
@@ -282,6 +286,9 @@ uint8_t Irq_GetCurrentPriority( Cpu_t cpu) {
 	}
 #elif defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC5606S)
 	prio = INTC.CPR.B.PRI;
+	(void)cpu;
+#else
+	(void)cpu;
 #endif
 
 	return prio;

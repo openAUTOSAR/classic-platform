@@ -27,8 +27,8 @@ extern void OsTick( void );
 extern OsTickType OsTickFreq;
 void Os_SysTickInit( void ) {
 	TaskType tid;
-	tid = Os_Arc_CreateIsr(OsTick,6/*prio*/,"OsTick");
-	Irq_AttachIsr2(tid,NULL,38);  /* Attach ISR2 to RTC interrupt */
+	tid = Os_Arc_CreateIsr(OsTick, 6 /*prio*/, "OsTick");
+	Irq_AttachIsr2(tid, NULL, RTC_INT);  /* Attach ISR2 to RTC interrupt */
 }
 
 /**
@@ -51,6 +51,8 @@ void Os_SysTickStart(uint32_t period_ticks) {
 	RTC.RTCC.B.CLKSEL = 2;		// set 16MHz FIRC as input clock
 	// ignore period_ticks, and set RTC compare value
 	RTC.RTCC.B.RTCVAL = ( ( (uint32_t)(16000000/OsTickFreq) ) >> 10);
+	(void)period_ticks;
+
 	RTC.RTCC.B.CNTEN = 1;		// start RTC
 #else
 

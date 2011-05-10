@@ -220,10 +220,13 @@ uint32 PduR_GetConfigurationId (void) {
 
 Std_ReturnType PduR_CancelTransmitRequest(PduR_CancelReasonType PduCancelReason, PduIdType PduId) {
 	// TODO Implement!
+	(void)PduCancelReason;
+	(void)PduId;
 	return E_NOT_OK;
 }
 
 void PduR_ChangeParameterRequest(PduR_ParameterValueType PduParameterValue, PduIdType PduId) {
 	// TODO Implement!
-
+	(void)PduParameterValue;
+	(void)PduId;
 }

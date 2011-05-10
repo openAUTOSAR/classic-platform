@@ -108,6 +108,8 @@ TaskType Os_Arc_CreateIsr( void (*entry)(void ), uint8_t prio, const char *name 
  * @return
  */
 StatusType Os_IsrAddResource( TaskType isr, ResourceType resource ) {
+	(void)isr;
+	(void)resource;
 	return E_OK;
 }
 

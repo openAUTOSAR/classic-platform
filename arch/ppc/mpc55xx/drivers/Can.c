@@ -609,7 +609,7 @@ static void Can_Isr(int unit) {
             canUnit->stats.rxSuccessCnt++;
 
             // unlock MB (dummy read timer)
-            canHw->TIMER.R;
+            (void)canHw->TIMER.R;
 
             // Clear interrupt
             canHw->IFRL.R = (1<<mbNr);
@@ -685,12 +685,12 @@ static void Can_Isr(int unit) {
   do { \
     TaskType tid; \
     tid = Os_Arc_CreateIsr(_can_name ## _BusOff,2/*prio*/,"Can"); \
-    Irq_AttachIsr2(tid,NULL,_boff); \
+    Irq_AttachIsr2(tid, NULL, (IrqType) _boff); \
     tid = Os_Arc_CreateIsr(_can_name ## _Err,2/*prio*/,"Can"); \
-    Irq_AttachIsr2(tid,NULL,_err); \
+    Irq_AttachIsr2(tid, NULL, (IrqType) _err); \
     for(i=_start;i<=_stop;i++) {  \
       tid = Os_Arc_CreateIsr(_can_name ## _Isr,2/*prio*/,"Can"); \
-			Irq_AttachIsr2(tid,NULL,i); \
+			Irq_AttachIsr2(tid, NULL, (IrqType) i); \
     } \
   } while(0);
 #else
@@ -907,7 +907,7 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
   VALIDATE_DEM_NO_RV(( (tq>8) && (tq<25 )), CAN_E_TIMEOUT );
 
   // Assume we're using the peripheral clock instead of the crystal.
-  clock = McuE_GetPeripheralClock(config->CanCpuClockRef);
+  clock = McuE_GetPeripheralClock( (McuE_PeriperalClock_t) config->CanCpuClockRef );
 
   canHw->CR.B.PRESDIV = clock/(config->CanControllerBaudRate*1000*tq) - 1;
   canHw->CR.B.PROPSEG = config->CanControllerPropSeg;

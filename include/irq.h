@@ -25,8 +25,8 @@ typedef void ( * func_t)(void);
 extern uint8_t Irq_PriorityTable[];
 extern uint8_t Irq_IsrTypeTable[];
 
-#define ISR_TYPE_1			0
-#define ISR_TYPE_2			1
+#define ISR_TYPE_1			( (IsrType) 0 )
+#define ISR_TYPE_2			( (IsrType) 1 )
 
 typedef _Bool IsrType;
 

@@ -44,6 +44,7 @@
  * @param excFramePtr   Pointer to the exception frame, that cause the error.
  */
 void Os_ArchPanic( uint32_t err, void *errFramePtr , Os_ExceptionFrameType *excFramePtr) {
+	(void)errFramePtr;
 	switch(err) {
 	case OS_ERR_BAD_CONTEXT:
 		while(1) ;

@@ -83,6 +83,7 @@ OsResourceType *Os_CfgGetResource( ResourceType resource ) {
 #if OS_RESOURCE_CNT!=0
 	return &resource_list[resource];
 #else
+	(void)resource;
 	return NULL;
 #endif
 }
@@ -103,6 +104,7 @@ OsSchTblType *Os_CfgGetSched( ScheduleTableType sched_id ) {
 		return NULL;
 	}
 #else
+	(void)sched_id;
 	return NULL;
 #endif
 }
