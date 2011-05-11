@@ -25,9 +25,12 @@ CFG+=STM32_CL
 # What buildable modules does this board have, 
 # default or private
 
-MOD_AVAIL+=MCU
+# MCAL
+MOD_AVAIL+=MCU CAN PORT DIO
 # System + Communication + Diagnostic
-MOD_AVAIL+=CANIF CANTP COM DCM DEM DET ECUM IOHWAB KERNEL PDUR WDGM RTE CAN PORT DIO
+MOD_AVAIL+=CANIF CANTP COM DCM DEM DET ECUM IOHWAB KERNEL PDUR WDGM RTE 
+# Network management
+MOD_AVAIL+=COMM NM CANNM CANSM
 # Additional
 MOD_AVAIL+=RAMLOG 
 

@@ -16,6 +16,19 @@
 
 #include "EcuM.h"
 
+#if defined(USE_CANSM)
+extern const CanSM_ConfigType CanSM_Config;
+#endif
+#if defined(USE_NM)
+extern const Nm_ConfigType Nm_Config;
+#endif
+#if defined(USE_CANNM)
+extern const CanNm_ConfigType CanNm_Config;
+#endif
+#if defined(USE_COMM)
+extern const ComM_ConfigType ComM_Config;
+#endif
+
 EcuM_ConfigType EcuMConfig =
 {
 	.EcuMDefaultShutdownTarget = ECUM_STATE_RESET,

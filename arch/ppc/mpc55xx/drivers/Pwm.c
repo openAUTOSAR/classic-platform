@@ -56,19 +56,22 @@
 #endif
 
 
-#if PWM_DEV_EROR_DETECT==STD_ON
+#if PWM_DEV_ERROR_DETECT==STD_ON
 	#define PWM_VALIDATE(_exp, _errid) \
 		if (!(_exp)) { \
 			Pwm_ReportError(_errid); \
 			return; \
 		}
     #if defined(CFG_MPC5516)||defined (CFG_MPC5567)
-
-	#define Pwm_VALIDATE_CHANNEL(_ch) PWM_VALIDATE(_ch <= 15, PWM_E_PARAM_CHANNEL)
+		
+		#define PWM_RUNTIME_CHANNEL_COUNT	16
+		#define Pwm_VALIDATE_CHANNEL(_ch) PWM_VALIDATE(_ch < 16, PWM_E_PARAM_CHANNEL)
 
 	#elif  defined(CFG_MPC5606S)
-
+	
+		#define PWM_RUNTIME_CHANNEL_COUNT	48
 		#define Pwm_VALIDATE_CHANNEL(_ch) PWM_VALIDATE(((_ch <= PWM_MAX_CHANNEL-1) && (_ch >= 40)) ||((_ch <= 23) && (_ch >= 16)), PWM_E_PARAM_CHANNEL)
+	
 	#endif
 
 	#define Pwm_VALIDATE_INITIALIZED() PWM_VALIDATE(Pwm_ModuleState == PWM_STATE_INITIALIZED, PWM_E_UNINIT)
@@ -98,7 +101,7 @@ typedef struct {
 } Pwm_ChannelStructType;
 
 // We use Pwm_ChannelType as index here
-Pwm_ChannelStructType ChannelRuntimeStruct[48];
+Pwm_ChannelStructType ChannelRuntimeStruct[PWM_RUNTIME_CHANNEL_COUNT];
 
 /* Local functions */
 void inline Pwm_InitChannel(Pwm_ChannelType Channel);
@@ -108,14 +111,51 @@ void inline Pwm_DeInitChannel(Pwm_ChannelType Channel);
 static void Pwm_Isr(void);
 #endif
 
+
+static void calcPeriodTicksAndPrescaler(
+    const Pwm_ChannelConfigurationType* channelConfig,
+    uint16_t* ticks, Pwm_ChannelPrescalerType* prescaler) {
+
+  uint32_t f_in = McuE_GetPeripheralClock( PERIPHERAL_CLOCK_EMIOS );
+  uint32_t f_target = channelConfig->frequency;
+  uint32_t pre_global = EMIOS.MCR.B.GPRE;
+
+  Pwm_ChannelPrescalerType pre;
+  uint32_t ticks_temp;
+
+  if (channelConfig->prescaler == PWM_CHANNEL_PRESCALER_AUTO) {
+    // Go from lowest to highest prescaler
+    for (pre = PWM_CHANNEL_PRESCALER_1; pre < PWM_CHANNEL_PRESCALER_4; ++pre) {
+      ticks_temp = f_in / (f_target * (pre_global + 1) * (pre + 1)); // Calc ticks
+      if (ticks_temp > 0xffff) {
+        ticks_temp = 0xffff;  // Prescaler too low
+      } else {
+        break;                // Prescaler ok
+      }
+    }
+  } else {
+    pre = channelConfig->prescaler; // Use config setting
+    ticks_temp = f_in / (f_target * pre_global * (pre+1)); // Calc ticks
+    if (ticks_temp > 0xffff) {
+      ticks_temp = 0xffff;  // Prescaler too low
+    }
+  }
+
+  (*ticks) = (uint16_t) ticks_temp;
+  (*prescaler) = pre;
+}
+
+
 void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
     Pwm_ChannelType channel_iterator;
 
     Pwm_VALIDATE_UNINITIALIZED();
+    #if defined(CFG_MPC5606S)
 	CGM.AC1_SC.R = 0x03000000; /* MPC56xxS: Select aux. set 1 clock to be FMPLL0 */
 	CGM.AC2_SC.R = 0x03000000; /* MPC56xxS: Select aux. set 2 clock to be FMPLL0 */
-
-    #if PWM_DEV_EROR_DETECT==STD_ON
+	#endif
+	
+    #if PWM_DEV_ERROR_DETECT==STD_ON
         /*
          * PWM046: If development error detection is enabled for the Pwm module,
          * the function Pwm_Init shall raise development error PWM_E_PARAM_CONFIG
@@ -200,7 +240,7 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
                         = ConfigPtr->NotificationHandlers[channel_iterator];
         	#endif
 		}
-     #else
+	#else
 
     /* Clock scaler uses system clock (~64MHz) as source, so prescaler 64 => 1MHz. */
     EMIOS.MCR.B.GPRE = PWM_PRESCALER - 1;
@@ -217,12 +257,26 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
     Pwm_ModuleState = PWM_STATE_INITIALIZED;
 
     for (channel_iterator = 0; channel_iterator < PWM_NUMBER_OF_CHANNELS; channel_iterator++) {
-        Pwm_ChannelType channel = ConfigPtr->Channels[channel_iterator].channel;
+      const Pwm_ChannelConfigurationType* channelConfig = &ConfigPtr->Channels[channel_iterator];
+      Pwm_ChannelType channel = channelConfig->channel;
 
-        // Set up the registers in hw
-        memcpy((void*) &EMIOS.CH[channel],
-                (void*) &ConfigPtr->Channels[channel_iterator].r,
-                sizeof(Pwm_ChannelRegisterType));
+        EMIOS.CH[channel].CCR.B.MODE = PWM_EMIOS_OPWM;
+        EMIOS.CH[channel].CCR.B.DMA = 0;
+        EMIOS.CH[channel].CCR.B.BSL = 3;
+        EMIOS.CH[channel].CCR.B.ODIS = 0;
+
+        Pwm_ChannelPrescalerType prescaler;  uint16_t period_ticks;
+        calcPeriodTicksAndPrescaler( channelConfig, &period_ticks, &prescaler );
+
+        EMIOS.CH[channel].CBDR.R = period_ticks;
+        EMIOS.CH[channel].CCR.B.UCPRE = prescaler;
+        EMIOS.CH[channel].CCR.B.UCPREN = 1;
+
+        // 0 A match on comparator A clears the output flip-flop, while a match on comparator B sets it
+        // 1 A match on comparator A sets the output flip-flop, while a match on comparator B clears it
+        // A duty cycle of X % should give a signal with state 'channelConfig->polarity' during
+        // X % of the period time.
+        EMIOS.CH[channel].CCR.B.EDPOL = (channelConfig->polarity == PWM_LOW) ? 1 : 0;
 
         #if PWM_NOTIFICATION_SUPPORTED==STD_ON
                 /*
@@ -304,11 +358,6 @@ void Pwm_DeInit() {
 }
 #endif
 
-# if 0  /* Pwm_GetVersionInfo is implemented as Macro in header file */
-void Pwm_GetVersionInfo(Std_VersionInfoType* VersionInfo) {
-	/* TODO: Implement Pwm_GetVersionInfo */
-}
-#endif
 
 /*
  * PWM083: The function Pwm_SetPeriodAndDuty shall be pre compile time
@@ -362,14 +411,19 @@ void Pwm_GetVersionInfo(Std_VersionInfoType* VersionInfo) {
  */
 #if PWM_SET_DUTYCYCLE==STD_ON
 
-	void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
-	{
+void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
+{
+	Pwm_VALIDATE_INITIALIZED();
+	Pwm_VALIDATE_CHANNEL(Channel);
+
+	#ifdef CFG_MPC5516
+
+		uint16 leading_edge_position = (uint16) ((EMIOS.CH[Channel].CBDR.R
+					* (uint32) DutyCycle) >> 15);
+
+
 		Pwm_VALIDATE_INITIALIZED();
 		Pwm_VALIDATE_CHANNEL(Channel);
-
-		#ifdef CFG_MPC5516
-
-			uint16 leading_edge_position = (uint16) ((EMIOS.CH[Channel].CBDR.R * (uint32) DutyCycle) >> 15);
 
 		/* Timer instant for leading edge */
 
@@ -383,33 +437,26 @@ void Pwm_GetVersionInfo(Std_VersionInfoType* VersionInfo) {
 		 * to the configured polarity parameter [which is already set from
 		 * Pwm_InitChannel], when the duty parameter is 0% [=0] or 100% [=0x8000].
 		 */
-			if (DutyCycle == Pwm_100_Procent || DutyCycle == Pwm_0_Procent)
-			{
-				EMIOS.CH[Channel].CADR.R = 0;
-			}
-			else
-			{
-				EMIOS.CH[Channel].CADR.R = leading_edge_position;
-			}
+		EMIOS.CH[Channel].CADR.R = leading_edge_position;
 
-		#elif defined(CFG_MPC5606S)
+	#elif defined(CFG_MPC5606S)
 
-			if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1)
-			{
-				uint16 leading_edge_position = (uint16) ((EMIOS_0.CH[Channel].CBDR.R* (uint32) DutyCycle) >> 15);
+		if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1)
+		{
+			uint16 leading_edge_position = (uint16) ((EMIOS_0.CH[Channel].CBDR.R* (uint32) DutyCycle) >> 15);
 
-					EMIOS_0.CH[Channel].CADR.R = leading_edge_position;
+			EMIOS_0.CH[Channel].CADR.R = leading_edge_position;
 
-			}
-			else
-			{
-				uint16 leading_edge_position = (uint16) ((EMIOS_1.CH[Channel-PWM_NUMBER_OF_EACH_EMIOS].CBDR.R* (uint32) DutyCycle) >> 15);
+		}
+		else
+		{
+			uint16 leading_edge_position = (uint16) ((EMIOS_1.CH[Channel-PWM_NUMBER_OF_EACH_EMIOS].CBDR.R* (uint32) DutyCycle) >> 15);
 
-				EMIOS_1.CH[Channel-PWM_NUMBER_OF_EACH_EMIOS].CADR.R = leading_edge_position;
+			EMIOS_1.CH[Channel-PWM_NUMBER_OF_EACH_EMIOS].CADR.R = leading_edge_position;
 
-			}
-		#endif
-	}
+		}
+	#endif
+}
 #endif
 
 #if  PWM_SET_OUTPUT_TO_IDLE == STD_ON

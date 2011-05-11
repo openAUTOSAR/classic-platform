@@ -24,7 +24,7 @@
 #define PWM_H_
 
 #define PWM_SW_MAJOR_VERSION	1
-#define PWM_SW_MINOR_VERSION	0
+#define PWM_SW_MINOR_VERSION	2
 #define PWM_SW_PATCH_VERSION	0
 
 /*
@@ -44,7 +44,7 @@
  * service of the Development Error Tracer (DET) if the pre-processor
  * PwmDevErorDetect is set.
  */
-#if PWM_DEV_EROR_DETECT==STD_ON
+#if PWM_DEV_ERROR_DETECT==STD_ON
 #	define Pwm_ReportError(ErrorId) Det_ReportError( MODULE_ID_PWM, 0, 0, ErrorId);
 #else
 #   define Pwm_ReportError(ErrorId)
@@ -144,25 +144,19 @@ extern const Pwm_ConfigType PwmConfig;
 #define PWM_MODULE_ID			MODULE_ID_PWM
 #define PWM_VENDOR_ID			1
 
-#define PWM_SW_MAJOR_VERSION	1
-#define PWM_SW_MINOR_VERSION	0
-#define PWM_SW_PATCH_VERSION	0
-
 #define PWM_AR_MAJOR_VERSION	2
 #define PWM_AR_MINOR_VERSION	2
 #define PWM_AR_PATCH_VERSION	1
 
 
-/** @req DIO124 */
 #if ( PWM_VERSION_INFO_API == STD_ON)
-/** @req DIO139 */
-#define PWM_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,PWM)
+#define Pwm_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,PWM)
 #endif
 
 
 void Pwm_Init(const Pwm_ConfigType* ConfigPtr);
 void Pwm_DeInit();
-void Pwm_GetVersionInfo(Std_VersionInfoType* VersionInfo);
+
 #if PWM_SET_PERIOD_AND_DUTY==STD_ON
 void Pwm_SetPeriodAndDuty(Pwm_ChannelType Channel, Pwm_PeriodType Period,
 		Pwm_DutyCycleType DutyCycle);

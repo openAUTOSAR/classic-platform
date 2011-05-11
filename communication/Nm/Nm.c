@@ -113,10 +113,12 @@ Nm_ReturnType Nm_GetPduData( const NetworkHandleType NetworkHandle, uint8 * cons
 /** Set Repeat Message Request Bit for NM messages transmitted next on the bus.
   * For that purpose <BusNm>_RepeatMessageRequest shall be called
   * (e.g. CanNm_RepeatMessageRequest function is called if channel is configured as CAN) */
+#if (NM_NODE_DETECTION_ENABLED == STD_ON)
 Nm_ReturnType Nm_RepeatMessageRequest( const NetworkHandleType NetworkHandle ){
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
 	NM_CALL_BUSNM(RepeatMessageRequest, ChannelConf)
 }
+#endif
 
 /** Get node identifier out of the last successfully received NM-message.
   * The function <BusNm>_GetNodeIdentifier shall be called. */
