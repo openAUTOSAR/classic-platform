@@ -56,13 +56,19 @@
 #endif
 
 
+#if defined(CFG_MPC5606S)
+	#define PWM_RUNTIME_CHANNEL_COUNT	48
+#else
+	#define PWM_RUNTIME_CHANNEL_COUNT	16
+#endif
+
 #if PWM_DEV_ERROR_DETECT==STD_ON
 	#define PWM_VALIDATE(_exp, _errid) \
 		if (!(_exp)) { \
 			Pwm_ReportError(_errid); \
 			return; \
 		}
-    #if defined(CFG_MPC5516)||defined (CFG_MPC5567)
+    #if ( defined(CFG_MPC5516) || defined (CFG_MPC5567) )
 		
 		#define PWM_RUNTIME_CHANNEL_COUNT	16
 		#define Pwm_VALIDATE_CHANNEL(_ch) PWM_VALIDATE(_ch < 16, PWM_E_PARAM_CHANNEL)
@@ -111,7 +117,7 @@ void inline Pwm_DeInitChannel(Pwm_ChannelType Channel);
 static void Pwm_Isr(void);
 #endif
 
-
+#if ( defined(CFG_MPC5516) || defined (CFG_MPC5567) )
 static void calcPeriodTicksAndPrescaler(
     const Pwm_ChannelConfigurationType* channelConfig,
     uint16_t* ticks, Pwm_ChannelPrescalerType* prescaler) {
@@ -144,15 +150,15 @@ static void calcPeriodTicksAndPrescaler(
   (*ticks) = (uint16_t) ticks_temp;
   (*prescaler) = pre;
 }
-
+#endif
 
 void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
     Pwm_ChannelType channel_iterator;
 
     Pwm_VALIDATE_UNINITIALIZED();
     #if defined(CFG_MPC5606S)
-	CGM.AC1_SC.R = 0x03000000; /* MPC56xxS: Select aux. set 1 clock to be FMPLL0 */
-	CGM.AC2_SC.R = 0x03000000; /* MPC56xxS: Select aux. set 2 clock to be FMPLL0 */
+		CGM.AC1_SC.R = 0x03000000; /* MPC56xxS: Select aux. set 1 clock to be FMPLL0 */
+		CGM.AC2_SC.R = 0x03000000; /* MPC56xxS: Select aux. set 2 clock to be FMPLL0 */
 	#endif
 	
     #if PWM_DEV_ERROR_DETECT==STD_ON
@@ -207,7 +213,7 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
 
 			if(channel <= PWM_NUMBER_OF_EACH_EMIOS-1)
 			{
-			memcpy((void*) &EMIOS_0.CH[channel],
+				memcpy((void*) &EMIOS_0.CH[channel],
 							(void*) &ConfigPtr->Channels[channel_iterator].r,
 							sizeof(Pwm_ChannelRegisterType));
 			}
