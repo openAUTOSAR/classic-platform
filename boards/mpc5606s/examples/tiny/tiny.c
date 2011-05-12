@@ -94,13 +94,15 @@ void etask_2( void ) {
  */
 
 void OsIdle( void ) {
-	for(;;) ;
+	for(;;){}
 }
 
 
 /* Global hooks */
 ProtectionReturnType ProtectionHook( StatusType FatalError ) {
 	LDEBUG_FPUTS("## ProtectionHook\n");
+	const char *err;
+		err = Arc_StatusToString(FatalError);
 	return PRO_KILLAPPL;
 }
 
@@ -112,7 +114,9 @@ void StartupHook( void ) {
 
 void ShutdownHook( StatusType Error ) {
 	LDEBUG_FPUTS("## ShutdownHook\n");
-	while(1) ;
+	while(1){
+		Error = Error;
+	}
 }
 
 struct LogBad_s {
@@ -174,7 +178,7 @@ void ErrorHook( StatusType Error ) {
 	ErrorCount++;
 
 	// Stall if buffer is full.
-	while(ErrorCount >= ERROR_LOG_SIZE) ;
+	while(ErrorCount >= ERROR_LOG_SIZE){}
 }
 
 void PreTaskHook( void ) {

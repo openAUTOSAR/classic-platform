@@ -33,8 +33,9 @@
 
 /* Global hooks */
 ProtectionReturnType ProtectionHook( StatusType FatalError ) {
-	(void)FatalError;
 	LDEBUG_PRINTF("## ProtectionHook\n");
+	// Get rid of warning in blinker_node example
+	FatalError = FatalError;
 	return PRO_KILLAPPL;
 }
 
@@ -45,15 +46,17 @@ void StartupHook( void ) {
 }
 
 void ShutdownHook( StatusType Error ) {
-	(void)Error;
 	LDEBUG_PRINTF("## ShutdownHook\n");
+	// Get rid of warning in blinker_node example
+	Error = Error;
 	while(1){}
 }
 
 void ErrorHook( StatusType Error ) {
 	DisableAllInterrupts();
-	(void)Error;
-	LDEBUG_PRINTF("## ErrorHook err=%d\n",Error);
+	LDEBUG_PRINTF("## ErrorHook err=%d\n");
+	// Get rid of warning in blinker_node example
+	Error = Error;
 	while(1){}
 }
 

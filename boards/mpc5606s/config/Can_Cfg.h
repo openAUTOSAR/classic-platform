@@ -68,9 +68,6 @@
 /** Wakeup handling. Polling not supported. */
 #define CAN_WAKEUP_PROCESSING         INTERRUPT
 
-
-
-/*This Code Modified By LEO@I-SOFT Because MPC5606S Not Supported*/
 /** Available HW controllers. */
 typedef enum
 {
