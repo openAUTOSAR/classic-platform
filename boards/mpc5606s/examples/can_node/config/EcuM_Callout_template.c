@@ -244,6 +244,8 @@ void EcuM_AL_DriverInitThree(const EcuM_ConfigType* ConfigPtr)
 {
   //lint --e{715}       PC-Lint (715) - ConfigPtr usage depends on configuration of modules
 
+	// Get rid of warning in can_node example
+	ConfigPtr = ConfigPtr;
 #if defined(USE_DEM)
 	// Setup DEM
 	Dem_Init();

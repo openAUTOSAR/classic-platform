@@ -1,3 +1,24 @@
+/*****************************************************************
+ * FILE        : 56xxS_0204.h
+ *
+ * DESCRIPTION : This is the header file describing the register
+ *               set for:
+ *               MPC5606S, mask set = 0M25V
+ *               SPC560S6, mask set = FS60X2
+ *
+ * COPYRIGHT   :(c) 2010, Freescale & STMicroelectronics
+ *
+ * VERSION     : 2.04
+ * DATE        : February 9 2010
+ * AUTHOR      : ttz778
+ * HISTORY     : Original source taken from jdp_0100.h
+ * 2.0  : Updates to match Reference Manual Rev 3
+ * 2.01 : Correction to CGM SC_DC bitfield
+ * 2.02 : Correction to DCU M_DMA_TRANS_FINISH bitfield
+ * 2.03 : Amended SIU.PCR[].B.SMC bitfield; tidied embedded comments
+ * 2.04 : eMIOS channel width 24->16 bits;
+ *        Expanded bitfields in WKUP (use .R rather than .B.nnnn if setting/clearing more than one)
+ ******************************************************************/
 /*>>>>NOTE! this file is auto-generated please do not edit it!<<<<*/
 
 /***************************************************************** 
@@ -3980,7 +4001,7 @@ extern "C" {
 
         vint32_t DLAST_SGA;
 
-        vuint16_t BITERE_LINK:1;       /* beginning (æˆajorï¿?iteration count */
+        vuint16_t BITERE_LINK:1;       /* beginning ("major") iteration count */
         vuint16_t BITERLINKCH:6;
         vuint16_t BITER:9;
 
