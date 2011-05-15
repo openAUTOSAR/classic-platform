@@ -26,6 +26,8 @@
 #include "sys.h"
 
 #if defined(__GNUC__)
+
+/* For ARM this will generate to #define APA #12 */
 #define DECLARE(sym,val) \
 	__asm("#define\t" #sym "\t%0" : : "n" ((val)))
 

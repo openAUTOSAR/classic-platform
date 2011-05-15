@@ -14,6 +14,7 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 #include "Os.h"
+#include "application.h"
 #include "internal.h"
 #include "task_i.h"
 #include "resource_i.h"
@@ -141,8 +142,16 @@ StatusType GetResource( ResourceType ResID ) {
 	OsResourceType *rPtr;
 	uint32_t flags;
 
-	Irq_Save(flags);
+#if	(OS_APPLICATION_CNT > 1)
 
+	rv = Os_ApplHaveAccess( Os_ResourceGet(ResID)->accessingApplMask );
+	if( rv != E_OK ) {
+		goto err;
+	}
+
+#endif
+
+	Irq_Save(flags);
 
 	if( Os_Sys.intNestCnt != 0 ) {
 

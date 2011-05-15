@@ -186,6 +186,13 @@ extern uint32 os_dbg_mask;
         return rv;
 
 
+#define OS_SAVE_PARAM_3(_service_id,_p1,_p2,_p3) \
+		 os_error.serviceId=_service_id;\
+		 os_error.param1 = (uint32_t) _p1; \
+		 os_error.param2 = (uint32_t) _p2; \
+		 os_error.param3 = (uint32_t) _p3; \
+		 ERRORHOOK(rv);  \
+
 
 /* Called for sequence of error hook calls in case a service
  * does not return with E_OK. Note that in this case the general error hook and the OS-
@@ -195,7 +202,10 @@ extern uint32 os_dbg_mask;
 #define ERRORHOOK(x) \
 	if( Os_Sys.hooks->ErrorHook != NULL  ) { \
 		Os_Sys.hooks->ErrorHook(x); \
-	}
+	} \
+	OS_APP_CALL_ERRORHOOKS(x);
+
+
 
 #if	(OS_USE_APPLICATIONS == STD_ON)
 #define PROTECTIONHOOK(_x) \

@@ -107,29 +107,6 @@ void *Irq_Entry( void *stack_p );
 #endif
 
 struct OsIsrConst;
-
-ISRType Irq_Attach( int vector );
-ISRType Irq_Attach2( const struct OsIsrConst * );
-
-/**
- * Attach an ISR type 1 to the interrupt controller.
- *
- * @param entry
- * @param int_ctrl
- * @param vector
- * @param prio
- */
-void Irq_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector, uint8_t prio);
-
-/**
- * Attach a ISR type 2 to the interrupt controller.
- *
- * @param tid       The task id
- * @param int_ctrl  The interrupt controller, The is NULL for now.
- * @param vector 	The vector to attach to
- */
-void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector );
-
 /**
  * Generates a soft interrupt
  * @param vector

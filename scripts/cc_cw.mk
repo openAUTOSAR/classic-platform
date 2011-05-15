@@ -14,7 +14,7 @@ endif
 # libs:  PowerPC_EABI_Support/Runtime/Lib/Runtime.XXXX
 #        PowerPC_EABI_Support/MSL/MSL_C/PPC_EABI/Lib
 
-CW_COMPILE=/c/devtools/cw_55xx
+#CW_COMPILE=/c/devtools/cw_55xx
 CW_BIN=$(CW_COMPILE)/PowerPC_EABI_Tools/Command_Line_Tools
 CW_LIB=$(CW_COMPILE)/PowerPC_EABI_Support/Runtime/Lib
 

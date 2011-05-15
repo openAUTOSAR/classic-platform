@@ -21,6 +21,7 @@
 #include "sys.h"
 #include "alarm_i.h"
 #include "sched_table_i.h"
+#include "application.h"
 #include "arc.h"
 
 #define COUNTER_STD_END 	\
@@ -46,6 +47,16 @@ StatusType IncrementCounter( CounterType counter_id ) {
 	OsCounterType *cPtr;
 	uint32_t flags;
 	cPtr = Os_CounterGet(counter_id);
+
+#if	(OS_APPLICATION_CNT > 1)
+
+	rv = Os_ApplHaveAccess( cPtr->accessingApplMask );
+	if( rv != E_OK ) {
+		goto err;
+	}
+
+#endif
+
 
 	Irq_Save(flags);
 	/** @req OS376 */

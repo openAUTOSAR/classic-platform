@@ -428,7 +428,28 @@ typedef enum {
     OSServiceId_PostTaskHook,
     OSServiceId_StartupHook,
     OSServiceId_ShutdownHook,
-    OSServiceId_GetTaskState
+    OSServiceId_GetTaskState,
+    OSServiceId_GetApplicationID,
+    OSServiceId_GetISRID,
+    OSServiceId_CallTrustedFunction,
+    OSServiceId_CheckISRMemoryAccess,
+    OSServiceId_TaskMemoryAccess,
+    OSServiceId_CheckObjectAccess,
+    OSServiceId_CheckObjectOwnership,
+    OSServiceId_StartScheduleTableRel,
+    OSServiceId_StartScheduleTableAbs,
+    OSServiceId_StopScheduleTable,
+    OSServiceId_NextScheduleTable,
+    OSServiceId_StartScheduleTableSynchron,
+    OSServiceId_SyncScheduleTable,
+    OSServiceId_GetScheduleTable,
+    OSServiceId_SetScheduleTableAsync,
+    OSServiceId_IncrementCounter,
+    OSServiceId_GetCounterValue,
+    OSServiceId_GetElapsedValue,
+    OSServiceId_TerminateApplication,
+    OSServiceId_AllowAccess,
+    OSServiceId_GetApplicationState
 } OsServiceIdType;
 
 typedef struct OsError {

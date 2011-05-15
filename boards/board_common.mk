@@ -244,6 +244,10 @@ obj-$(USE_SLEEP) += sleep.o
 
 obj-y += xtoa.o
 
+ifeq ($(COMPILER),cw)
+SELECT_CLIB?=CLIB_CW
+endif
+
 SELECT_CLIB?=CLIB_NEWLIB
 
 ifeq ($(SELECT_CLIB),CLIB_CW)

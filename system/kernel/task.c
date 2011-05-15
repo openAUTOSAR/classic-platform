@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include "Os.h"
 
+#include "application.h"
 #include "internal.h"
 #include "task_i.h"
 #include "sys.h"
@@ -693,6 +694,7 @@ static inline void Os_Arc_SetCleanContext( OsTaskVarType *pcb ) {
  * @return
  */
 
+
 StatusType ActivateTask( TaskType TaskID ) {
 	long msr;
 	OsTaskVarType *pcb = Os_TaskGet(TaskID);
@@ -707,22 +709,13 @@ StatusType ActivateTask( TaskType TaskID ) {
 
 	Irq_Save(msr);
 
-#if	(OS_USE_APPLICATIONS == STD_ON)
-	/* @req OS504/ActivateTask
-	 * The Operating System module shall deny access to Operating System
-	 * objects from other OS-Applications to an OS-Application which is not in state
-     * APPLICATION_ACCESSIBLE.
-     * */
-	if( pcb->constPtr->applOwnerId != Os_Sys.currApplId ) {
-		/* We are activating a task in another application */
-		ApplicationStateType state;
-		/* We are activating a task in another application */
-		GetApplicationState(Os_Sys.currApplId,&state);
-		if( state != APPLICATION_ACCESSIBLE ) {
-			rv=E_OS_ACCESS;
-			goto err;
-		}
+#if	(OS_APPLICATION_CNT > 1)
+
+	rv = Os_ApplHaveAccess( pcb->constPtr->accessingApplMask );
+	if( rv != E_OK ) {
+		goto err;
 	}
+
 #endif
 
 	/* @req OS093 ActivateTask */

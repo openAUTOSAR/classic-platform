@@ -257,6 +257,9 @@ static inline ApplicationType Os_TaskGetApplicationOwner( TaskType id ) {
 	return rv;
 }
 
+
+
+
 static inline void Os_TaskResourceAdd( OsResourceType *rPtr, OsTaskVarType *pcbPtr) {
 	/* Save old task prio in resource and set new task prio */
 	rPtr->owner = pcbPtr->constPtr->pid;

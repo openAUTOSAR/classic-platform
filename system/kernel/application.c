@@ -31,8 +31,6 @@
 
 /* ----------------------------[private define]------------------------------*/
 /* ----------------------------[private macro]-------------------------------*/
-#define APPL_ID_TO_MASK(_x)   (1<<(_x))
-
 /* ----------------------------[private typedef]-----------------------------*/
 /* ----------------------------[private function prototypes]-----------------*/
 /* ----------------------------[private variables]---------------------------*/
@@ -64,6 +62,8 @@ OsAppVarType Os_AppVar[OS_APPLICATION_CNT];
  */
 
 ApplicationType GetApplicationID( void ) {
+
+	/* TODO: Still missing the case when no application is running */
 	return Os_Sys.currApplId;
 }
 
@@ -168,9 +168,8 @@ ObjectAccessType CheckObjectAccess( ApplicationType ApplId,
 									uint32_t objectId )
 {
 	uint32 appMask = APPL_ID_TO_MASK(ApplId);
-	ObjectAccessType orv;
-	_Bool rv = 0;
-
+	ObjectAccessType rv = NO_ACCESS;
+	_Bool rvMask = 0;
 
 	/* @req OS423
 	 * If in a call of CheckObjectAccess() the object to  be examined
@@ -178,7 +177,7 @@ ObjectAccessType CheckObjectAccess( ApplicationType ApplId,
 	 * invalid THEN CheckObjectAccess() shall return NO_ACCESS.
 	 */
 	if( ApplId > OS_APPLICATION_CNT ) {
-		return NO_ACCESS;
+		goto err;
 	}
 
 	/* @req OS272
@@ -188,7 +187,7 @@ ObjectAccessType CheckObjectAccess( ApplicationType ApplId,
 	 * TODO: Could be that OS450 comes into play here....and then this is wrong.
 	 */
 	if( Os_AppVar[ApplId].state != APPLICATION_ACCESSIBLE ) {
-		return NO_ACCESS;
+		goto err;
 	}
 
 
@@ -196,42 +195,45 @@ ObjectAccessType CheckObjectAccess( ApplicationType ApplId,
 	switch( ObjectType ) {
 	case OBJECT_ALARM:
 		if( objectId < OS_ALARM_CNT ) {
-			rv =  ((OsAlarmType *)objectId)->accessingApplMask & (appMask);
+			rvMask =  Os_AlarmGet((AlarmType)objectId)->accessingApplMask & (appMask);
 		}
 		break;
 	case OBJECT_COUNTER:
 		if( objectId < OS_COUNTER_CNT ) {
-			rv =  ((OsCounterType *)objectId)->accessingApplMask & (appMask);
+			rvMask =  Os_CounterGet((CounterType)objectId)->accessingApplMask & (appMask);
 		}
 		break;
 	case OBJECT_ISR:
-		/* TODO: Add more things here for missing objects */
+		/* An ISR do not have accessingApplicationMask, just check if owner */
+		if( objectId < OS_ISR_CNT ) {
+			rvMask =  (Os_IsrGet((ISRType)objectId)->constPtr->appOwner == ApplId);
+		}
 		break;
 	case OBJECT_MESSAGE:
 		break;
 	case OBJECT_RESOURCE:
 		if( objectId < OS_RESOURCE_CNT ) {
-			rv =  ((OsResourceType *)objectId)->accessingApplMask & (appMask);
+			rvMask =  Os_ResourceGet((ResourceType)objectId)->accessingApplMask & (appMask);
 		}
 	case OBJECT_SCHEDULETABLE:
 		if( objectId < OS_SCHTBL_CNT ) {
-			rv =  ((OsSchTblType *)objectId)->accessingApplMask & (appMask);
+			rvMask =  Os_SchTblGet((ScheduleTableType)objectId)->accessingApplMask & (appMask);
 		}
 		break;
 	case OBJECT_TASK:
-		if( objectId < OS_COUNTER_CNT ) {
-			rv =  ((OsTaskVarType *)objectId)->constPtr->accessingApplMask & (appMask);
+		if( objectId < OS_TASK_CNT ) {
+			rvMask =  Os_TaskGet((TaskType)objectId)->constPtr->accessingApplMask & (appMask);
 		}
 		break;
 	default:
 		/* @req OS423 */
-		rv = NO_ACCESS;
+		// rvMask = NO_ACCESS;
 		break;
 	}
 
-	orv = rv ? ACCESS : NO_ACCESS;
+	rv = rvMask ? ACCESS : NO_ACCESS;
 
-	return orv;
+	OS_STD_END_3(OSServiceId_CheckObjectAccess,ApplId,ObjectType,objectId);
 }
 
 /**
@@ -278,7 +280,11 @@ ApplicationType CheckObjectOwnership( ObjectTypeType ObjectType,
 		break;
 	}
 
-	return rv;
+	if( rv == INVALID_OSAPPLICATION ) {
+		goto err;
+	}
+
+	OS_STD_END_2(OSServiceId_CheckObjectOwnership,ObjectType,objectId);
 }
 
 
@@ -300,9 +306,54 @@ ApplicationType CheckObjectOwnership( ObjectTypeType ObjectType,
  * 			E_OS_STATE: The state of <Application> does not allow terminating <Application>
  */
 StatusType TerminateApplication(  ApplicationType applId, RestartType restartOption ) {
+	StatusType rv = E_OK;
+
 	(void)applId;
 	(void)restartOption;
-	return E_OK;
+
+	/* @req OS493 */
+	if( applId > OS_APPLICATION_CNT) {
+		rv = E_OS_ID;
+		goto err;
+	}
+
+	/* @req OS459 */
+	if( restartOption > NO_RESTART ) {
+		rv = E_OS_VALUE;
+		goto err;
+	}
+
+	/* @req OS507 */
+	if( Os_ApplGet(applId)->state == APPLICATION_TERMINATED ) {
+		rv = E_OS_STATE;
+		goto err;
+	}
+
+	/* @req OS508 */
+	if( (Os_ApplGet(applId)->state == APPLICATION_RESTARTING ) &&
+		 ( applId != Os_Sys.currApplId ) ) {
+		rv = E_OS_STATE;
+		goto err;
+	}
+
+	/* @req OS508 */
+	if( (Os_ApplGet(applId)->state == APPLICATION_RESTARTING ) &&
+		 ( applId != Os_Sys.currApplId ) ) {
+		rv = E_OS_STATE;
+		goto err;
+	}
+
+	/* @req OS548 */
+	if( (Os_ApplGet(applId)->state == APPLICATION_RESTARTING ) &&
+		 ( applId == Os_Sys.currApplId ) &&
+		 ( restartOption == RESTART ) ) {
+		rv = E_OS_STATE;
+		goto err;
+	}
+
+	/* TODO: MISSING OS494, OS287, OS535, OS536 */
+
+	OS_STD_END_2(OSServiceId_TerminateApplication,applId,restartOption);
 }
 
 
@@ -315,16 +366,17 @@ StatusType TerminateApplication(  ApplicationType applId, RestartType restartOpt
 state
  */
 StatusType AllowAccess( void ) {
+	StatusType rv = E_OK;
 	ApplicationType applId = Os_Sys.currApplId;
 
 	/* @req OS497 */
 	if( Os_AppVar[applId].state != APPLICATION_RESTARTING ) {
-		return E_OS_STATE;
+		rv = E_OS_STATE;
 	}
 
 	/* @req OS498 */
 	Os_AppVar[applId].state = APPLICATION_ACCESSIBLE;
-	return E_OK;
+	OS_STD_END(OSServiceId_AllowAccess);
 }
 
 /**
@@ -336,14 +388,16 @@ StatusType AllowAccess( void ) {
  * @return  E_OK: No errors, E_OS_ID: <Application> is not valid
  */
 StatusType GetApplicationState(   ApplicationType applId,  ApplicationStateRefType value ) {
+	StatusType rv = E_OK;
 
 	if(applId > OS_APPLICATION_CNT ) {
-		return E_OS_ID;
+		rv = E_OS_ID;
+		goto err;
 	}
 
 	*value = Os_AppVar[applId].state;
 
-	return E_OK;
+	OS_STD_END_2(OSServiceId_GetApplicationID,applId,value);
 }
 
 

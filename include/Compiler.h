@@ -42,6 +42,7 @@
 #define SECTION_BALIGN(_align )  __attribute__ ((aligned (_align)))
 #endif
 
+#define DECLARE_WEAK			__attribute__ ((weak))
 
 /* REQ:COMPILER005 */
 /* TODO: skip the memclass for now */

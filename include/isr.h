@@ -43,7 +43,7 @@
 
 /* ----------------------------[macro]---------------------------------------*/
 #define ISR_DECLARE_ISR2(_name, _entry, _unique, _vector,_priority,_app )        \
-	  const OsIsrConstType _entry ## _unique = { \
+	  static const OsIsrConstType _entry ## _unique = { \
 			.vector = _vector,   \
 			.type = ISR_TYPE_2, \
 			.priority = _priority,      \
@@ -57,7 +57,7 @@
 
 #define __ISR_INSTALL_ISR2(_name, _entry, _unique, _vector,_priority,_app )        \
 	do { \
-	  const OsIsrConstType _entry ## _unique = { \
+	  static const OsIsrConstType _entry ## _unique = { \
 			.vector = _vector,   \
 			.type = ISR_TYPE_2, \
 			.priority = _priority,      \
@@ -80,7 +80,7 @@
 
 
 #define ISR_DECLARE_ISR1(_name, _entry, _unique, _vector,_priority,_app )        \
-	  const OsIsrConstType _entry ## _unique = { \
+	  static const OsIsrConstType _entry ## _unique = { \
 			.vector = _vector,   \
 			.type = ISR_TYPE_1, \
 			.priority = _priority,      \
@@ -93,7 +93,7 @@
 
 #define __ISR_INSTALL_ISR1(_name, _entry, _unique, _vector,_priority,_app )        \
 	do { \
-	  const OsIsrConstType _entry ## _unique = { \
+	  static const OsIsrConstType _entry ## _unique = { \
 			.vector = _vector,   \
 			.type = ISR_TYPE_2, \
 			.priority = _priority,      \
@@ -206,7 +206,7 @@ ISRType Os_IsrAdd( const OsIsrConstType * restrict isrPtr );
 void Os_IsrGetStackInfo( OsIsrStackType *stack );
 void *Os_Isr( void *stack, int16_t vector);
 #if defined(CFG_ARM_CM3)
-void Os_Isr_cm3( void *isr_p );
+void Os_Isr_cm3( int16_t vector );
 void TailChaining(void *stack);
 #endif
 

@@ -16,6 +16,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include "Os.h"
+#include "application.h"
 #include "internal.h"
 #include "alarm_i.h"
 #include "sys.h"
@@ -108,6 +109,14 @@ StatusType SetRelAlarm(AlarmType AlarmId, TickType Increment, TickType Cycle){
 					(unsigned)Increment,
 					(unsigned)Cycle);
 
+#if	(OS_APPLICATION_CNT > 1)
+
+	rv = Os_ApplHaveAccess( Os_AlarmGet(AlarmId)->accessingApplMask );
+	if( rv != E_OK ) {
+		goto err;
+	}
+
+#endif
 
 	if( (Increment == 0) || (Increment > COUNTER_MAX(aPtr)) ) {
 		/** @req OS304 */
@@ -188,6 +197,15 @@ StatusType SetAbsAlarm(AlarmType AlarmId, TickType Start, TickType Cycle) {
 	ALARM_CHECK_ID(AlarmId);
 
 	aPtr = Os_AlarmGet(AlarmId);
+
+#if	(OS_APPLICATION_CNT > 1)
+
+	rv = Os_ApplHaveAccess( aPtr->accessingApplMask );
+	if( rv != E_OK ) {
+		goto err;
+	}
+
+#endif
 
 	if( Start > COUNTER_MAX(aPtr) ) {
 		/** @req OS304 */

@@ -64,7 +64,11 @@ OsTaskVarType * os_alloc_new_pcb( void ) {
 
 //static uint8 stackTop = 0x42;
 
-
+static void Os_IsrAddWithId( const OsIsrConstType * restrict isrPtr, int id ) {
+	Os_IsrVarList[id].constPtr = isrPtr;
+	Os_VectorToIsr[isrPtr->vector] = id;
+	Irq_EnableVector( isrPtr->vector, isrPtr->priority, Os_ApplGetCore(isrPtr->appOwner )  );
+}
 
 void Os_IsrInit( void ) {
 
@@ -72,8 +76,8 @@ void Os_IsrInit( void ) {
 
 #if OS_ISR_CNT != 0
 	/* Attach the interrupts */
-	for (int i = 0; i < sizeof(Os_IsrConstList) / sizeof(OsIsrConstType); i++) {
-		Os_IsrAdd(&Os_IsrConstList[i]);
+	for (int i = 0; i < Os_Sys.isrCnt; i++) {
+		Os_IsrAddWithId(&Os_IsrConstList[i],i);
 	}
 #endif
 }
@@ -89,9 +93,11 @@ void Os_IsrInit( void ) {
 ISRType Os_IsrAdd( const OsIsrConstType * restrict isrPtr ) {
 	ISRType id;
 
+	assert( isrPtr != NULL );
+
 	id = Os_Sys.isrCnt++;
 	Os_IsrVarList[id].constPtr = isrPtr;
-	Os_VectorToIsr[isrPtr->vector] = id;
+	Os_VectorToIsr[isrPtr->vector + IRQ_INTERRUPT_OFFSET ] = id;
 	Irq_EnableVector( isrPtr->vector, isrPtr->priority, Os_ApplGetCore(isrPtr->appOwner )  );
 
 	return id;
@@ -186,7 +192,7 @@ void TailChaining(void *stack)
 	Os_StackPerformCheck(new_pcb);
 
 	if(     (new_pcb == Os_Sys.currTaskPtr) ||
-			(Os_Sys.currTaskPtr->scheduling == NON) ||
+			(Os_Sys.currTaskPtr->constPtr->scheduling == NON) ||
 			!Os_SchedulerResourceIsFree() )
 	{
 		/* Just bring the preempted task back to running */
@@ -197,22 +203,22 @@ void TailChaining(void *stack)
 	}
 }
 
-void Os_Isr_cm3( void *isr_p ) {
+void Os_Isr_cm3( int16_t vector ) {
 
-	struct OsTaskVar *isrPtr;
+	OsIsrVarType *isrPtr =  &Os_IsrVarList[Os_VectorToIsr[vector]];
 
-	Os_Sys.intNestCnt++;
+	assert( isrPtr != NULL );
 
-	/* Grab the ISR "pcb" */
-	isrPtr = (struct OsTaskVar *)isr_p;
-	isrPtr->state = ST_RUNNING;
-
-	if( isrPtr->proc_type & ( PROC_EXTENDED | PROC_BASIC ) ) {
-		assert(0);
+	if( isrPtr->constPtr->type == ISR_TYPE_1) {
+		isrPtr->constPtr->entry();
+		return;
 	}
 
+	Os_Sys.intNestCnt++;
+	isrPtr->state = ST_ISR_RUNNING;
+
 	Irq_Enable();
-	isrPtr->entry();
+	isrPtr->constPtr->entry();
 	Irq_Disable();
 
 	/* Check so that ISR2 haven't disabled the interrupts */
@@ -224,8 +230,8 @@ void Os_Isr_cm3( void *isr_p ) {
 
 	/* Check so that the ISR2 have called ReleaseResource() for each GetResource() */
 	/** @req OS369 */
-	if( Os_TaskOccupiesResources(isrPtr) ) {
-		Os_TaskResourceFreeAll(isrPtr);
+	if( Os_IsrOccupiesResources(isrPtr) ) {
+		Os_IsrResourceFreeAll(isrPtr);
 		ERRORHOOK(E_OS_RESOURCE);
 	}
 
@@ -259,9 +265,6 @@ void *Os_Isr( void *stack, int16_t vector ) {
 	OsTaskVarType *taskPtr = NULL;
 
 	assert( isrPtr != NULL );
-//	if( isrPtr == NULL ) {
-//		Os_ArchPanic(OS_ERR_SPURIOUS_INTERRUPT, NULL, NULL );
-//	}
 
 	if( isrPtr->constPtr->type == ISR_TYPE_1) {
 		isrPtr->constPtr->entry();
@@ -286,7 +289,6 @@ void *Os_Isr( void *stack, int16_t vector ) {
 
 	Os_Sys.intNestCnt++;
 
-	/* Grab the ISR "pcb" */
 	isrPtr->state = ST_ISR_RUNNING;
 
 	Irq_SOI();

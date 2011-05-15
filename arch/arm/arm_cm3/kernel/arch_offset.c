@@ -20,7 +20,7 @@
 	__asm("#define " #_sym " %0 ": : "i" (_val))
 
 
-#include "stack.h"
+#include "arch_stack.h"
 
 void  arch_foo(void) {
 	/* StackNvgprType */

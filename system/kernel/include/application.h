@@ -55,6 +55,10 @@
 #if (OS_USE_APPLICATIONS == STD_ON)
 
 #include "os_config_macros.h"
+#include "sys.h"
+
+#define APPL_ID_TO_MASK(_x)   (1<<(_x))
+
 
 /* STD container : OsApplicationHooks
  * class: 3,4
@@ -130,9 +134,48 @@ extern OsAppVarType Os_AppVar[OS_APPLICATION_CNT];
 
 extern GEN_APPLICATION_HEAD;
 
+static inline OsAppVarType *Os_ApplGet(ApplicationType id) {
+	return &Os_AppVar[id];
+}
+
 static inline uint8_t Os_ApplGetCore( ApplicationType appl )
 {
 	return Os_AppConst[appl].core;
+}
+
+#define OS_APP_CALL_ERRORHOOKS( x ) \
+	for(int i=0;i<OS_APPLICATION_CNT;i++) { \
+		if( Os_AppConst[i].StartupHook != NULL ) { \
+			Os_AppConst[i].StartupHook(); \
+		} \
+	}
+
+/**
+ *
+ * @param mask  Target accessing application mask
+ * @return
+ */
+static inline StatusType Os_ApplHaveAccess( uint32_t mask ) {
+	ApplicationStateType state;
+
+	/* @req OS056 */
+	if( (APPL_ID_TO_MASK(Os_Sys.currApplId) & mask) == 0 ) {
+		return E_OS_ACCESS;
+	}
+
+	/* @req OS504/ActivateTask
+	 * The Operating System module shall deny access to Operating System
+	 * objects from other OS-Applications to an OS-Application which is not in state
+     * APPLICATION_ACCESSIBLE.
+     * */
+
+	/* We are activating a task in another application */
+	GetApplicationState(Os_Sys.currApplId,&state);
+	if( state != APPLICATION_ACCESSIBLE ) {
+		return E_OS_ACCESS;
+	}
+
+	return E_OK;
 }
 
 void Os_ApplStart( void );

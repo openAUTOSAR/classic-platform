@@ -18,6 +18,7 @@
 #include "Os.h"
 #include "task_i.h"
 #include "sys.h"
+#include "application.h"
 #include "internal.h"
 
 #define VALIDATE_W_RV(_exp,_rv) \

@@ -62,6 +62,7 @@
 #include "sched_table_i.h"
 #include "sys.h"
 #include "alist_i.h"
+#include "application.h"
 
 
 /* ----------------------------[private define]------------------------------*/
@@ -255,6 +256,15 @@ StatusType StartScheduleTableRel(ScheduleTableType sid, TickType offset) {
 
 	sPtr = Os_SchTblGet(sid);
 
+#if	(OS_APPLICATION_CNT > 1)
+
+	rv = Os_ApplHaveAccess( sPtr->accessingApplMask );
+	if( rv != E_OK ) {
+		goto err;
+	}
+
+#endif
+
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 	if( sPtr->sync != NULL ) {
 		/* EXPLICIT or IMPLICIT */
@@ -303,6 +313,15 @@ StatusType StartScheduleTableAbs(ScheduleTableType sid, TickType start ){
 	/** @req OS348 */
 	SCHED_CHECK_ID(sid);
 	sTblPtr =  Os_SchTblGet(sid);
+
+#if	(OS_APPLICATION_CNT > 1)
+
+	rv = Os_ApplHaveAccess( sTblPtr->accessingApplMask );
+	if( rv != E_OK ) {
+		goto err;
+	}
+
+#endif
 
 	/** @req OS349 */
 	if( start > Os_CounterGetMaxValue(sTblPtr->counter) ) {

@@ -1,33 +1,30 @@
+#
+# This makefile helps to build the examples. It tries to figure out if 
+# it is an in-tree-build or if it is a seperate project (it's then invoked 
+# from the top makefile)  
+#
 
-
-ifeq ($(EXAMPLENAME),)
-$(error whyyyyyy)
+ifndef EXAMPLENAME
+$(error EXAMPLENAME is not set. . This makefile is invoked the wrong way))
 endif
 
 ifndef ROOTDIR
 $(error ROOTDIR is not set. This makefile is invoked the wrong way)
 endif
 
-#export EXAMPLENAME
+ifeq (${MAKELEVEL},0)
+  	BUILD_IN_TREE=y
 
-ifndef BOARDDIR
-# Assume in-tree-build 
-boardpath=$(realpath $(CURDIR)/../..)
-boarddir=$(subst $(realpath $(ROOTDIR)/boards)/,,$(boardpath))
-ugh=1
-else
-  # BOARDIR is defined
-  ifndef BDIR
-    # Assume that we want to build current directory
-    BDIR=$(CURDIR)
-    ugh=1
-  else
-    # BOARDIR and BDIR are defined 
-    # out-of-tree build
-  endif
+	ifneq ($(BOARDDIR),)
+	$(warning BOARDDIR defined in an in-tree-build)
+	endif
+	
+	boardpath=$(realpath $(CURDIR)/../..)
+	boarddir=$(subst $(realpath $(ROOTDIR)/boards)/,,$(boardpath))
+	
 endif
 
-ifeq ($(ugh),1) 
+ifeq (${BUILD_IN_TREE},y) 
 
 export example:=$(subst $(abspath $(CURDIR)/..)/,,$(CURDIR))
 

@@ -102,6 +102,10 @@
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsOS/ArcOsIsrMaxCount</DEFINITION-REF>
                   <VALUE>10</VALUE>
                 </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsOS/OsNumberOfCores</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
               </PARAMETER-VALUES>
               <SUB-CONTAINERS>
                 <CONTAINER UUID="e3564f08-19f7-49f1-830b-cf36426e3737">
