@@ -10,7 +10,6 @@ OUTPUT_FORMAT("elf32-powerpc", "elf32-powerpc", "elf32-powerpc")
 OUTPUT_ARCH(powerpc)
 ENTRY(_start)
 
-#include "board_cfg.h"
 
 /*
  * _idata - Start of .data in flash 
@@ -42,10 +41,7 @@ ENTRY(_start)
 
 MEMORY
 {
-	LINKERFILE_MEMORY_1
-	LINKERFILE_MEMORY_2
-	LINKERFILE_MEMORY_3
-	LINKERFILE_MEMORY_4
+	#include "memory.ldf"
 }
 
 SECTIONS

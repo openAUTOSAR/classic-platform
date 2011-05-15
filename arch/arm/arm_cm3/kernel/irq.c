@@ -75,9 +75,11 @@ void Irq_EOI( void ) {
  * Registers. INTISR[0] has vector number 16.
  *
  */
+#if 0
 static uint32_t NVIC_GetActiveVector( void) {
 	return (SCB->ICSR &  ICSR_VECTACTIVE);
 }
+#endif
 
 
 #if 0

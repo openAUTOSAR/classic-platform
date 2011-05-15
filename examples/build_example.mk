@@ -13,15 +13,14 @@ $(error ROOTDIR is not set. This makefile is invoked the wrong way)
 endif
 
 ifeq (${MAKELEVEL},0)
-  	BUILD_IN_TREE=y
+BUILD_IN_TREE=y
 
-	ifneq ($(BOARDDIR),)
-	$(warning BOARDDIR defined in an in-tree-build)
-	endif
-	
-	boardpath=$(realpath $(CURDIR)/../..)
-	boarddir=$(subst $(realpath $(ROOTDIR)/boards)/,,$(boardpath))
-	
+    ifneq ($(BOARDDIR),)
+    $(warning BOARDDIR defined in an in-tree-build)
+    endif
+
+    boardpath=$(realpath $(CURDIR)/../..)
+    boarddir=$(subst $(realpath $(ROOTDIR)/boards)/,,$(boardpath))
 endif
 
 ifeq (${BUILD_IN_TREE},y) 

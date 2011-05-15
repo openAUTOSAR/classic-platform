@@ -23,7 +23,7 @@
 #include "EcuM_Cbk.h"
 #include "Mcu.h"
 #include "Det.h"
-//#include "isr.h"
+#include "isr.h"
 #if defined(USE_NVM)
 #include "Nvm.h"
 #endif

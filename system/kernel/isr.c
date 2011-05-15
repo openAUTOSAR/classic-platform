@@ -63,12 +63,13 @@ OsTaskVarType * os_alloc_new_pcb( void ) {
 //extern TaskType Os_AddTask( OsTaskVarType *pcb );
 
 //static uint8 stackTop = 0x42;
-
+#if OS_ISR_CNT != 0
 static void Os_IsrAddWithId( const OsIsrConstType * restrict isrPtr, int id ) {
 	Os_IsrVarList[id].constPtr = isrPtr;
 	Os_VectorToIsr[isrPtr->vector] = id;
 	Irq_EnableVector( isrPtr->vector, isrPtr->priority, Os_ApplGetCore(isrPtr->appOwner )  );
 }
+#endif
 
 void Os_IsrInit( void ) {
 

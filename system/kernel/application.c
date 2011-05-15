@@ -372,6 +372,7 @@ StatusType AllowAccess( void ) {
 	/* @req OS497 */
 	if( Os_AppVar[applId].state != APPLICATION_RESTARTING ) {
 		rv = E_OS_STATE;
+		goto err;
 	}
 
 	/* @req OS498 */

@@ -239,13 +239,11 @@ static inline TickType Os_SchTblGetFinalOffset( OsSchTblType *sPtr ) {
 }
 
 static inline ApplicationType Os_SchTblGetApplicationOwner( ScheduleTableType id ) {
-	ApplicationType rv;
+	ApplicationType rv = INVALID_OSAPPLICATION;
 #if (OS_SCHTBL_CNT!=0)
 
 	if( id < OS_SCHTBL_CNT ) {
 		rv = Os_SchTblGet(id)->applOwnerId;
-	} else {
-		rv = INVALID_OSAPPLICATION;
 	}
 #else
 	(void)id;

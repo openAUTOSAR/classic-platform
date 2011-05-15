@@ -2,7 +2,7 @@
 
 #VPATH += $(ROOTDIR)/arch/arm/arm_cm3/kernel
 vpath-y += $(ARCH_PATH-y)/kernel
-obj-y += asm_sample.o
+#obj-y += asm_sample.o
 #CFLAGS_asm_sample.o += -O3
 obj-y += arch_krn.o
 obj-$(CFG_HC1X) += arch_irq.o
@@ -54,9 +54,7 @@ ifeq ($(COMPILER),gcc)
 asm_offset.h: asm_offset.c
 	@echo "  >> asm offset gen $<"
 	$(Q)$(CC) -S $(CFLAGS) -o $(<:.c=.s) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y))  $<
-#	$(Q)$(CC) -S $(CFLAGS) -o $(<:.c=.s) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
 	@$(SED) -e "/#define/!d" -e "s/#//2g" $(<:.c=.s) > $@	
-#	@$(SED) -n "/#define/p" $(<:.c=.s) > $@
 	@rm 	$(<:.c=.s)
 endif
 
