@@ -23,7 +23,7 @@
 #ifndef PDUR_H
 #define PDUR_H
 
-#define PDUR_VENDOR_ID			1
+#define PDUR_VENDOR_ID		   1
 #define PDUR_AR_MAJOR_VERSION  2
 #define PDUR_AR_MINOR_VERSION  2
 #define PDUR_AR_PATCH_VERSION  2
@@ -48,6 +48,7 @@
 #include "PduR_Types.h"
 #include "PduR_PbCfg.h"
 
+#include "PduR_If.h"
 #include "PduR_Com.h"
 #include "PduR_CanIf.h"
 #include "PduR_LinIf.h"
@@ -68,31 +69,40 @@ extern const PduR_PBConfigType *PduRConfig;
  */
 extern PduR_StateType PduRState;
 
+#define PduR_IsUpModule(_mod) ((_mod > ARC_PDUR_UP_MODULES) && (_mod < ARC_PDUR_LOIF_MODULES))
+#define PduR_IsIfModule(_mod) ((_mod > ARC_PDUR_LOIF_MODULES) && (_mod < ARC_PDUR_LOTP_MODULES))
+#define PduR_IsTpModule(_mod) ((_mod > ARC_PDUR_LOTP_MODULES) && (_mod < ARC_PDUR_END_OF_MODULES))
+#define PduR_IsLoModule(_mod) (PduR_IsIfModule(_mod) || PduR_IsTpModule(_mod))
+
 
 #if (PDUR_DEV_ERROR_DETECT == STD_ON)
 
-#define PDUR_DET_REPORTERROR(_x,_y,_z,_q) Det_ReportError(_x,_y,_z,_q)
+#define PDUR_DET_REPORTERROR(_x,_y,_z,_o) Det_ReportError(_x,_y,_z,_o)
 
-// Define macro for state, parameter and data pointer checks.
-// TODO Implement data range check if needed.
-#define PduR_DevCheck(PduId,PduPtr,ApiId,...) \
+#define PDUR_VALIDATE_INITIALIZED(_api,...) \
 	if ((PduRState == PDUR_UNINIT) || (PduRState == PDUR_REDUCED)) { \
-		PDUR_DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_INVALID_REQUEST); \
+		Det_ReportError(MODULE_ID_PDUR, PDUR_INSTANCE_ID, _api, PDUR_E_INVALID_REQUEST); \
 		return __VA_ARGS__; \
-	} \
-	if ((PduPtr == 0) && (PDUR_DEV_ERROR_DETECT)) { \
-		PDUR_DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_DATA_PTR_INVALID); \
+	}
+
+#define PDUR_VALIDATE_PDUPTR(_api, _pduPtr, ...) \
+	if ((_pduPtr == NULL) && (PDUR_DEV_ERROR_DETECT)) { \
+		Det_ReportError(MODULE_ID_PDUR, PDUR_INSTANCE_ID, _api, PDUR_E_DATA_PTR_INVALID); \
 		return __VA_ARGS__; \
-	} \
-	if ((PduId >= PduRConfig->PduRRoutingTable->NRoutingPaths) && PDUR_DEV_ERROR_DETECT) { \
-		PDUR_DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, ApiId, PDUR_E_PDU_ID_INVALID); \
+	}
+
+#define PDUR_VALIDATE_PDUID(_api, _pduId, ...) \
+	if ((_pduId >= PduRConfig->NRoutingPaths) && PDUR_DEV_ERROR_DETECT) { \
+		Det_ReportError(MODULE_ID_PDUR, PDUR_INSTANCE_ID, _api, PDUR_E_PDU_ID_INVALID); \
 		return __VA_ARGS__; \
 	}
 
 
 #else
-#define PDUR_DET_REPORTERROR(_x,_y,_z,_q)
-#define PduR_DevCheck(...)
+#define PDUR_DET_REPORTERROR(_x,_y,_z,_o)
+#define PDUR_VALIDATE_INITIALIZED(_api,...)
+#define PDUR_VALIDATE_PDUPTR(_api, _pduPtr, ...)
+#define PDUR_VALIDATE_PDUID(_api, _pduId, ...)
 
 #endif
 
@@ -127,12 +137,9 @@ void PduR_LoIfTriggerTransmit(PduIdType PduId, uint8* SduPtr);
 /*
  * Macros
  */
-#define setTxConfP(R) (R->PduRDestPdu.TxBufferRef->TxConfP = 1)
-#define clearTxConfP(R) (R->PduRDestPdu.TxBufferRef->TxConfP = 0)
+#define setTxConfP(_B) (_B->TxConfP = 1)
+#define clearTxConfP(_B) (_B->TxConfP = 0)
 
 #endif
-
-extern PduR_FctPtrType PduR_StdCanFctPtrs;
-extern PduR_FctPtrType PduR_StdLinFctPtrs;
 
 #endif /* PDUR_H */

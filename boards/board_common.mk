@@ -3,7 +3,6 @@ _BOARD_COMMON_MK:=y  # Include guard for backwards compatability
 
 obj-$(CFG_PPC) += crt0.o
 obj-$(CFG_HC1X) += crt0.o
-
 vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
 vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32F10x_StdPeriph_Driver/src
 vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32_ETH_Driver/src
@@ -196,12 +195,14 @@ vpath-$(USE_COM) += $(ROOTDIR)/communication/Com
 
 # PduR
 obj-$(USE_PDUR) += PduR_Com.o
-obj-$(USE_PDUR) += PduR_If.o
+obj-$(USE_PDUR) += PduR_Logic.o
 obj-$(USE_PDUR) += PduR_LinIf.o
 obj-$(USE_PDUR) += PduR_PbCfg.o
 obj-$(USE_PDUR) += PduR_CanIf.o
 obj-$(USE_PDUR) += PduR_CanTp.o
 obj-$(USE_PDUR) += PduR_Dcm.o
+obj-$(USE_PDUR) += PduR_SoAd.o
+obj-$(USE_PDUR) += PduR_Routing.o
 obj-$(USE_PDUR) += PduR.o
 inc-$(USE_PDUR) += $(ROOTDIR)/communication/PduR
 inc-$(USE_COM) += $(ROOTDIR)/communication/PduR

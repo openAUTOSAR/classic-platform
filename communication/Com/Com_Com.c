@@ -72,7 +72,7 @@ uint8 Com_ReceiveSignal(Com_SignalIdType SignalId, void* SignalDataPtr) {
 	return E_OK;
 }
 
-Std_ReturnType Com_TriggerTransmit(PduIdType ComTxPduId, uint8 *SduPtr) {
+Std_ReturnType Com_TriggerTransmit(PduIdType ComTxPduId, PduInfoType *PduInfoPtr) {
 	PDU_ID_CHECK(ComTxPduId, 0x13, E_NOT_OK);
 	/*
 	 * COM260: This function must not check the transmission mode of the I-PDU
@@ -85,7 +85,7 @@ Std_ReturnType Com_TriggerTransmit(PduIdType ComTxPduId, uint8 *SduPtr) {
 	const ComIPdu_type *IPdu = GET_IPdu(ComTxPduId);
 	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(ComTxPduId);
 
-	memcpy(SduPtr, Arc_IPdu->ComIPduDataPtr, IPdu->ComIPduSize);
+	memcpy(PduInfoPtr->SduDataPtr, Arc_IPdu->ComIPduDataPtr, IPdu->ComIPduSize);
 	return E_OK;
 }
 
@@ -144,7 +144,7 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
 }
 
 //lint -esym(904, Com_RxIndication) //PC-Lint Exception of rule 14.7
-void Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr) {
+void Com_RxIndication(PduIdType ComRxPduId, const PduInfoType* PduInfoPtr) {
 	PDU_ID_CHECK(ComRxPduId, 0x14);
 
 	const ComIPdu_type *IPdu = GET_IPdu(ComRxPduId);
@@ -157,7 +157,7 @@ void Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr) {
 
 	// Check callout status
 	if (IPdu->ComIPduCallout != NULL) {
-		if (!IPdu->ComIPduCallout(ComRxPduId, SduPtr)) {
+		if (!IPdu->ComIPduCallout(ComRxPduId, PduInfoPtr)) {
 			// TODO Report error to DET.
 			// Det_ReportError();
 			return;
@@ -165,7 +165,7 @@ void Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr) {
 	}
 
 	// Copy IPDU data
-	memcpy(Arc_IPdu->ComIPduDataPtr, SduPtr, IPdu->ComIPduSize);
+	memcpy(Arc_IPdu->ComIPduDataPtr, PduInfoPtr->SduDataPtr, IPdu->ComIPduSize);
 
 	// For each signal.
 	const ComSignal_type *comSignal;

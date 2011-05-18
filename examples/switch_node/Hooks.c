@@ -45,14 +45,14 @@ void StartupHook( void ) {
 
 void ShutdownHook( StatusType Error ) {
 	LDEBUG_PRINTF("## ShutdownHook\n");
-	while(1) ;
+	while(1);
 }
 
 void ErrorHook( StatusType Error ) {
 	DisableAllInterrupts();
 
 	LDEBUG_PRINTF("## ErrorHook err=%d\n",Error);
-	while(1) ;
+	while(1);
 }
 
 void PreTaskHook( void ) {

@@ -16,26 +16,10 @@
 
 #include "PduR.h"
 
-#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
-
-#include "debug.h"
-
-#if (PDUR_DCM_SUPPORT == STD_ON)
+#if PDUR_ZERO_COST_OPERATION == STD_OFF
 
 Std_ReturnType PduR_DcmTransmit(PduIdType DcmTxPduId, const PduInfoType* PduInfoPtr) {
-	BufReq_ReturnType retVal = BUFREQ_NOT_OK;
-#if (PDUR_DCM_SUPPORT == STD_ON)
-	PduR_DevCheck(DcmTxPduId,PduInfoPtr,0x15, E_NOT_OK);
-
-	//DEBUG(DEBUG_LOW,"PduR_ComTransmit: received transmit request with id %d and data %d\n", ComTxPduId, *PduInfoPtr->SduDataPtr);
-
-
-	PduRRoutingPath_type *route = &PduRConfig->PduRRoutingTable->PduRRoutingPath[DcmTxPduId];
-	retVal = route->FctPtrs.TargetTransmitFctPtr(route->PduRDestPdu.DestPduId, PduInfoPtr);
-#endif
-	return retVal;
+	return PduR_ARC_Transmit(DcmTxPduId, PduInfoPtr, 0x16);
 }
-
-#endif
 
 #endif

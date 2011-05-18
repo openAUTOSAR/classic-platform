@@ -33,19 +33,18 @@
 #include "McuExtensions.h"
 #include "debug.h"
 
-
 /*
  * The state of the PDU router.
  */
 PduR_StateType PduRState = PDUR_UNINIT; // 960, 31 PC-Lint: Borde åtgärdas
 
+
+#if PDUR_ZERO_COST_OPERATION == STD_OFF
+
+
+
 const PduR_PBConfigType * PduRConfig;
 
-
-/* ############### Zero Cost Operation Mode ############# */
-/* Only define the following functions if zero cost operation
- * mode is not used! They are defined as macros in PduR.h otherwise. */
-#if PDUR_ZERO_COST_OPERATION == STD_OFF
 
 /*
  * Initializes the PDU Router.
@@ -75,50 +74,40 @@ void PduR_Init (const PduR_PBConfigType* ConfigPtr) {
 	uint8 failed = 0;
 
 	// Initialize buffers.
+	/*
 	uint16 bufferNr = 0;
-	PduRRoutingPath_type *path;
-	PduRConfig->PduRRoutingTable->NRoutingPaths = 0;
-	for (uint16 i = 0; (!PduRConfig->PduRRoutingTable->PduRRoutingPath[i].PduR_Arc_EOL) && (!failed); i++) {
-		PduRConfig->PduRRoutingTable->NRoutingPaths++;
-		path = &PduRConfig->PduRRoutingTable->PduRRoutingPath[i];
+	for (uint16 i = 0; PduRConfig->RoutingPaths[i] != NULL && (!failed); i++) {
+		const PduRRoutingPath_type *path = PduRConfig->RoutingPaths[i];
 
-		if (path->PduRDestPdu.DataProvision != PDUR_NO_PROVISION) {
-			// Allocate memory for new buffer.
-			PduRTxBuffer_type *buffer = path->PduRDestPdu.TxBufferRef;
-
-			if (bufferNr >= PDUR_MAX_TX_BUFFER_NUMBER) {
-				DEBUG(DEBUG_LOW,"PduR_Init: Initialization of buffer failed due to erroneous configuration.\nThe number of buffer exceeded the maximum number of allowed buffers.\n");
-				failed = 1;
-				break;
-			}
-			// 586 PC-Lint (malloc) ticket #135
-			if	((buffer->Buffer = (uint8 *)malloc(buffer->Depth * sizeof(uint8) * path->SduLength)) == 0) {
-				DEBUG(DEBUG_LOW,"PduR_Init: Initialization of buffer failed. Buffer space could not be allocated for buffer number %d\n", bufferNr);
-				failed = 1;
-				break;
-			}
-
-			buffer->First = buffer->Buffer;
-			buffer->Last = buffer->Buffer;
+		for (uint8 j = 0; path->PduRDestPdus[j] != NULL; j++) {
+			const PduRDestPdu_type *destination = path->PduRDestPdus[j];
 
 
-			// Initialize the new buffer.
-			buffer->BufferId = i; // Set buffer id.
-			buffer->BufferType = path->PduRDestPdu.DataProvision; // Set buffer data provision mode.
-			buffer->Length = path->SduLength; // Set buffer sdu length.
+			if (destination->DataProvision == PDUR_TRIGGER_TRANSMIT) {
+				// Allocate memory for new buffer.
 
-			if (path->PduRDestPdu.DataProvision == PDUR_TRIGGER_TRANSMIT) {
-				//memcpy(buffer->First, path->PduRDefaultValue.PduRDefaultValueElement->DefaultValueElement,path->SduLength);
-				PduR_BufferQueue(buffer, path->PduRDefaultValue.PduRDefaultValueElement->DefaultValueElement);
+
+				// Initialize the new buffer.
+				buffer->BufferId = i; // Set buffer id.
+				buffer->BufferType = destination->DataProvision; // Set buffer data provision mode.
+				buffer->Length = path->SduLength; // Set buffer sdu length.
+
+				if (destination->DataProvision == PDUR_TRIGGER_TRANSMIT) {
+					//memcpy(buffer->First, path->PduRDefaultValue.PduRDefaultValueElement->DefaultValueElement,path->SduLength);
+					PduR_BufferQueue(buffer, path->PduRDefaultValue.PduRDefaultValueElement->DefaultValueElement);
+				}
+
+				// Save pointer to the new buffer.
+				//PduR_RTable_LoIf.RoutingTable[i].TxBufferRef = &PduRBuffers[bufferNr];
+
+				DEBUG(DEBUG_LOW,"Initialized buffer %d. Id: %d, Type: %d, Depth: %d\n", bufferNr, buffer->BufferId, buffer->BufferType, buffer->Depth);
+				bufferNr++;
+
 			}
 
-			// Save pointer to the new buffer.
-			//PduR_RTable_LoIf.RoutingTable[i].TxBufferRef = &PduRBuffers[bufferNr];
-
-			DEBUG(DEBUG_LOW,"Initialized buffer %d. Id: %d, Type: %d, Depth: %d\n", bufferNr, buffer->BufferId, buffer->BufferType, buffer->Depth);
-			bufferNr++;
 		}
 	}
+	*/
 
 	if (failed) {
 		// TODO Report PDUR_E_INIT_FAILED to Dem.
@@ -134,6 +123,7 @@ void PduR_Init (const PduR_PBConfigType* ConfigPtr) {
 	}
 }
 
+/*
 void PduR_BufferInc(PduRTxBuffer_type *Buffer, uint8 **ptr) {
 	(*ptr) = (*ptr) + Buffer->Length;
 
@@ -142,7 +132,7 @@ void PduR_BufferInc(PduRTxBuffer_type *Buffer, uint8 **ptr) {
 	if ( *ptr >= ( Buffer->Buffer + (Buffer->Depth * Buffer->Length) ) ) {
 		*ptr = Buffer->Buffer;
 	}
-	//*val = (*val + 1) % Buffer->Depth;
+	//  *val = (*val + 1) % Buffer->Depth;
 }
 
 void PduR_BufferQueue(PduRTxBuffer_type *Buffer, const uint8 * SduPtr) {
@@ -201,6 +191,8 @@ uint8 PduR_BufferIsFull(PduRTxBuffer_type *Buffer) {
 	McuE_ExitCriticalSection(state);
 	return rv;
 }
+*/
+
 
 
 #if PDUR_VERSION_INFO_API == STD_ON
@@ -216,17 +208,15 @@ uint32 PduR_GetConfigurationId (void) {
 	//PduR_DevCheck(0,1,0x18,E_NOT_OK);
 	return PduRConfig->PduRConfigurationId;
 }
-#endif // End of not Zero Cost Operation Mode
 
 Std_ReturnType PduR_CancelTransmitRequest(PduR_CancelReasonType PduCancelReason, PduIdType PduId) {
 	// TODO Implement!
-	(void)PduCancelReason;
-	(void)PduId;
 	return E_NOT_OK;
 }
 
 void PduR_ChangeParameterRequest(PduR_ParameterValueType PduParameterValue, PduIdType PduId) {
 	// TODO Implement!
-	(void)PduParameterValue;
-	(void)PduId;
+
 }
+
+#endif

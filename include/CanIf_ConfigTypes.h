@@ -255,7 +255,7 @@ typedef struct {
   /** Name of target indication services to target upper layers (PduRouter,
    *  CanNm, CanTp and ComplexDeviceDrivers). If parameter is 0 no call-out
    *  function is configured. */
-	CanIf_FuncTypeCanSpecial CanIfUserRxIndication;
+	void *CanIfUserRxIndication;
 
   /** The HRH to which Rx L-PDU belongs to, is referred through this
    *  parameter. */
