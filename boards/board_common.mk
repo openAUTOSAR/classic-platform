@@ -243,15 +243,20 @@ vpath-$(USE_TCF) += $(ROOTDIR)/common/tcf
 #SLEEP
 obj-$(USE_SLEEP) += sleep.o
 
-obj-y += xtoa.o
+
 
 SELECT_CLIB?=CLIB_NEWLIB
 
-ifeq ($(SELECT_CLIB),CLIB_CW)
+ifeq ($(SELECT_CLIB),CLIB_NATIVE)
+  # Just use native clib 
+  
+else ifeq ($(SELECT_CLIB),CLIB_CW)
   # This is not good, but don't know what to do right now....
+  obj-y += xtoa.o
   obj-y += msl_port.o
 else
   # Newlib
+  obj-y += xtoa.o
   obj-y += newlib_port.o
   # If we have configured console output we include printf. 
   # Overridden to use lib implementation with CFG_NEWLIB_PRINTF
