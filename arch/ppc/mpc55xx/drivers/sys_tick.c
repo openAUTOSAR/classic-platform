@@ -28,7 +28,11 @@ extern OsTickType OsTickFreq;
 void Os_SysTickInit( void ) {
 	TaskType tid;
 	tid = Os_Arc_CreateIsr(OsTick, 6 /*prio*/, "OsTick");
+#if defined(CFG_MPC5606S)
 	Irq_AttachIsr2(tid, NULL, RTC_INT);  /* Attach ISR2 to RTC interrupt */
+#else
+	Irq_AttachIsr2(tid, NULL, 7);  /* Attach ISR2 to RTC interrupt */
+#endif
 }
 
 /**
@@ -57,6 +61,7 @@ void Os_SysTickStart(uint32_t period_ticks) {
 #else
 
     	// Enable the TB
+		uint32_t tmp;
     	tmp = get_spr(SPR_HID0);
     	tmp |= HID0_TBEN;
     	set_spr(SPR_HID0, tmp);
