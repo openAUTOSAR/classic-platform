@@ -102,7 +102,13 @@ LD_FILE = -T
 
 LDOUT 		= -o $@
 TE = elf
-LDFLAGS += -Map $(subst .$(TE),.map, $@)
+
+# Don't use a map file if we are compiling for native target.
+ifneq ($(CROSS_COMPILE),) 
+LDFLAGS += -Map $(subst .$(TE),.map, $@) 
+endif
+
+
 
 libitem-y += $(libitem-yy)
 
