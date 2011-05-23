@@ -25,28 +25,12 @@
 
 #include "PduR.h"
 
-#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
+#if PDUR_ZERO_COST_OPERATION == STD_OFF
 
-	void PduR_LinIfRxIndication(PduIdType LinRxPduId,const uint8* LinSduPtr);
-	void PduR_LinIfTxConfirmation(PduIdType LinTxPduId);
-	void PduR_LinIfTriggerTransmit(PduIdType LinTxPduId,uint8* LinSduPtr);
+void PduR_LinIfRxIndication(PduIdType LinRxPduId,const PduInfoType* PduInfoPtr);
+void PduR_LinIfTxConfirmation(PduIdType LinTxPduId);
+Std_ReturnType PduR_LinIfTriggerTransmit(PduIdType LinTxPduId,PduInfoType* PduInfoPtr);
 
-#else // Zero cost operation active
-
-	#if (PDUR_LINIF_SUPPORT == STD_ON)
-
-		#define PduR_LinIfRxIndication Com_RxIndication
-		#define PduR_LinIfTxConfirmation Com_TxConfirmation
-		#define PduR_LinIfTriggerTransmit Com_TriggerTransmit
-
-	#else
-
-		#define PduR_LinIfRxIndication(...)
-		#define PduR_LinIfTxConfirmation(...)
-		#define PduR_LinIfTriggerTransmit(...)
-
-	#endif
-
-#endif // Zero cost operation active
+#endif
 
 #endif /*PDUR_LINIF_H_*/

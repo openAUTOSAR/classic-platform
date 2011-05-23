@@ -32,7 +32,7 @@
 #include "debug.h"
 
 void OsIdle( void ) {
-	for(;;) ;
+	for(;;);
 }
 
 

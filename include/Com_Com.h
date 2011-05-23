@@ -29,11 +29,11 @@
 uint8 Com_SendSignal(Com_SignalIdType SignalId, const void *SignalDataPtr);
 uint8 Com_ReceiveSignal(Com_SignalIdType SignalId, void* SignalDataPtr);
 
-Std_ReturnType Com_TriggerTransmit(PduIdType ComTxPduId, uint8 *SduPtr);
+Std_ReturnType Com_TriggerTransmit(PduIdType ComTxPduId, PduInfoType *PduInfoPtr);
 
 void Com_TriggerIPduSend(PduIdType ComTxPduId);
 
-void Com_RxIndication(PduIdType ComRxPduId, const uint8* SduPtr); // TODO: Parameter SduPtr should be const PduInfoType* PduInfoPtr
+void Com_RxIndication(PduIdType ComRxPduId, const PduInfoType* PduInfoPtr);
 void Com_TxConfirmation(PduIdType ComTxPduId);
 
 

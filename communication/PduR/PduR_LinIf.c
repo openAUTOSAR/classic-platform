@@ -16,51 +16,20 @@
 
 
 
-
-
 #include "PduR.h"
 
-#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
+#if PDUR_ZERO_COST_OPERATION == STD_OFF
 
-#include "debug.h"
-
-void PduR_LinIfRxIndication(PduIdType LinRxPduId, const uint8* LinSduPtr) {
-#if (PDUR_LINIF_SUPPORT == STD_ON)
-	PduR_DevCheck(LinRxPduId,LinSduPtr,0x0e);
-
-	DEBUG(DEBUG_LOW,"----------------------\n");
-	DEBUG(DEBUG_LOW,"PduR_LinIfRxIndication: received indication with id %d and data %d\n", LinRxPduId, *LinSduPtr);
-
-	PduR_LoIfRxIndication(LinRxPduId, LinSduPtr);
-
-	DEBUG(DEBUG_LOW,"----------------------\n");
-#endif
+void PduR_LinIfRxIndication(PduIdType LinRxPduId, const PduInfoType* PduInfoPtr) {
+	PduR_ARC_RxIndication(LinRxPduId, PduInfoPtr, 0x0e);
 }
 
 void PduR_LinIfTxConfirmation(PduIdType LinTxPduId) {
-#if (PDUR_LINIF_SUPPORT == STD_ON)
-	PduR_DevCheck(LinTxPduId,1,0x0f);
-
-	DEBUG(DEBUG_LOW,"----------------------\n");
-	DEBUG(DEBUG_LOW,"PduR_LinIfTxConfirmation: received confirmation with id %d\n", LinTxPduId);
-
-	PduR_LoIfTxConfirmation(LinTxPduId);
-
-	DEBUG(DEBUG_LOW,"----------------------\n");
-#endif
+	PduR_ARC_TxConfirmation(LinTxPduId, NULL, 0x0f);
 }
 
-void PduR_LinIfTriggerTransmit(PduIdType LinTxPduId, uint8* LinSduPtr) {
-#if (PDUR_LINIF_SUPPORT == STD_ON)
-	PduR_DevCheck(LinTxPduId,LinSduPtr,0x10);
-
-	DEBUG(DEBUG_LOW,"----------------------\n");
-	DEBUG(DEBUG_LOW,"PduR_LinIfTriggerTransmit: received request with id %d\n", LinTxPduId);
-
-	PduR_LoIfTriggerTransmit(LinTxPduId, LinSduPtr);
-
-	DEBUG(DEBUG_LOW,"----------------------\n");
-#endif
+Std_ReturnType PduR_LinIfTriggerTransmit(PduIdType LinTxPduId, PduInfoType* PduInfoPtr) {
+	return PduR_ARC_TriggerTransmit(LinTxPduId, PduInfoPtr, 0x10);
 }
 
 #endif

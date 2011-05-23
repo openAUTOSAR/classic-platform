@@ -25,6 +25,26 @@
 
 #include "ComStack_Types.h"
 
+typedef enum {
+	ARC_PDUR_UP_MODULES = 0,
+	ARC_PDUR_COM,
+	ARC_PDUR_DCM,
+
+	ARC_PDUR_LOIF_MODULES,
+	ARC_PDUR_CANIF,
+	ARC_PDUR_LINIF,
+	ARC_PDUR_SOADIF,
+
+	ARC_PDUR_LOTP_MODULES,
+	ARC_PDUR_CANTP,
+	ARC_PDUR_LINTP,
+	ARC_PDUR_SOADTP,
+	ARC_PDUR_SOAD,
+
+	ARC_PDUR_END_OF_MODULES
+
+} ARC_PduR_ModuleType;
+
 /** PduR_StateType defines the states of which the PDU router can be in */
 typedef enum {
 	PDUR_UNINIT, /**< PDU Router is not initialized. */
@@ -46,32 +66,9 @@ typedef enum {
 	PDUR_DIRECT /**< Data provision type. */
 } PduR_DataProvisionType;
 
-
-
-
-/* ################ NEW DEFINITIONS ################### */
+/*
 typedef struct {
-	Std_ReturnType (*TargetIndicationFctPtr)(PduIdType pduId, const uint8* data); /**< Pointer to target function in layer above PDU router. */
-	Std_ReturnType (*TargetTransmitFctPtr)(PduIdType pduId, const PduInfoType* pduInfo); /**< Pointer to target function below PDU router. */
 
-
-	void (*TargetConfirmationFctPtr)(PduIdType pduId);
-
-	/**
-	 * Target function for trigger transmit requests from the interface modules, e.g. Com_TriggerTransmit. Only
-	 * needed if gateway mode is not used, that is, if .DataProvision is set to PDUR_NO_PROVISION.
-	 */
-	Std_ReturnType (*TargetTriggerTransmitFctPtr)(PduIdType pduId, uint8* data);
-
-
-	Std_ReturnType (*TargetGatewayFctPtr)(PduIdType pduId, const PduInfoType* pduInfo);
-
-} PduR_FctPtrType;
-
-typedef struct {
-	/*
-	 * Not part of autosar standard. Added by ArcCore.
-	 */
 	uint16 BufferId;
 	PduR_DataProvisionType BufferType;
 	//uint8 SduLength;
@@ -82,61 +79,48 @@ typedef struct {
 	// uint8 TxIdx; // This is the same as First, hence left out.
 	uint8 *Buffer;
 
-	/**
-	 * Depth of buffer
-	 */
+
 	uint8 Depth;
 
-	/**
-	 * Length of buffer
-	 */
 	uint8 Length;
 
 } PduRTxBuffer_type;
+*/
+typedef uint8 *PduRTxBuffer_type;
+
+typedef enum {
+	PDUR_BUFFER_FREE = 0,
+	PDUR_BUFFER_RX_BUSY,
+	PDUR_BUFFER_TX_READY,
+	PDUR_BUFFER_TX_BUSY
+} PduRTpBufferStatus_type;
 
 typedef struct {
-	/**
-	 * The maximum numbers of Tx buffers.
-	 */
-	uint16 PduRMaxTxBufferNumber; // ???
-
-	PduRTxBuffer_type PduRTxBuffer[];
-} PduRTxBufferTable_type;
-
-typedef struct {
-	/**
-	 * PDU identifier assigned by the PDU router.
-	 */
-	uint16 SrcPduId;
-
-	/**
-	 * Reference to unique PDU identifier.
-	 */
-	// SrcPduRef
-
-} PduRSrcPdu_type;
+	PduInfoType *pduInfoPtr;
+	PduRTpBufferStatus_type status;
+} PduRTpBufferInfo_type;
 
 typedef struct {
 
 	/**
 	 * Data provision mode for this PDU.
 	 */
-	PduR_DataProvisionType DataProvision;
+	const PduR_DataProvisionType DataProvision;
 
 	/**
 	 * Reference to unique PDU identifier which shall
 	 * be used by the PDU router instead of the source identifier.
 	 */
-	//DestPduRef
-	// For the moment replaced by this
-	uint16 DestPduId;
+	const uint16 DestPduId;
 
 	/**
 	 * Reference to the assigned Tx buffer.
 	 *
 	 * Comment: Only required for non-TP gateway PDUs.
 	 */
-	PduRTxBuffer_type *TxBufferRef;
+	PduRTxBuffer_type * const TxBufferRef;
+
+	const ARC_PduR_ModuleType DestModule;
 
 } PduRDestPdu_type;
 
@@ -153,18 +137,11 @@ typedef struct {
 
 typedef struct {
 	/**
-	 * Not part of standard
-	 */
-	PduR_FctPtrType FctPtrs;
-	uint8 PduR_Arc_EOL;
-	uint8 PduR_GatewayMode;
-
-	/**
 	 * Length of PDU data.
 	 *
 	 * Comment: Only required if a TX buffer is configured.
 	 */
-	uint8 SduLength;
+	const uint8 SduLength;
 
 	/**
 	 * Chunk size for routing on the fly.
@@ -181,32 +158,21 @@ typedef struct {
 	PduRDefaultValue_type PduRDefaultValue;
 
 	/**
-	 * Specifies the source of the PDU to be routed.
+	 * Specifies the source ID of the PDU to be routed.
 	 */
-	PduRSrcPdu_type PduRSrcPdu;
+	const uint16 SrcPduId;
+
+	/**
+	 * Specifies the source module for this route.
+	 */
+	const ARC_PduR_ModuleType SrcModule;
 
 	/**
 	 * Specifies the destination(s) of the PDU to be routed.
-	 *
-	 * Comment: Multicast (many destinations) is not supported in this implementation.
 	 */
-	PduRDestPdu_type PduRDestPdu;
+	const PduRDestPdu_type * const *PduRDestPdus;
 
 } PduRRoutingPath_type;
-
-typedef struct {
-	/*
-	 * Non-standards
-	 */
-	uint16 NRoutingPaths;
-
-	/**
-	 * References to the routing paths defined for this configuration.
-	 */
-	PduRRoutingPath_type PduRRoutingPath[];
-
-} PduRRoutingTable_type;
-
 
 typedef struct {
 	/**
@@ -214,23 +180,15 @@ typedef struct {
 	 */
 	uint8 PduRConfigurationId;
 
+	uint8 NRoutingPaths;
+
 	/**
 	 * The routing table of this PDU router configuration.
 	 */
-	PduRRoutingTable_type *PduRRoutingTable;
+	const PduRRoutingPath_type * const*RoutingPaths;
 
-
-	/**
-	 * The buffers used for TP gateway operation.
-	 *
-	 * Comment: Not implemented in this version.
-	 */
-	//PduRTpBufferTable_type PduRTpBufferTable;
-
-	/**
-	 * The buffers used for non-TP gateway operation.
-	 */
-	PduRTxBufferTable_type *PduRTxBufferTable;
+	PduRTpBufferInfo_type *TpBuffers;
+	PduRTpBufferInfo_type **TpRouteBuffers;
 
 } PduR_PBConfigType;
 

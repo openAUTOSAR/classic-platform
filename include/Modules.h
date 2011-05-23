@@ -57,6 +57,7 @@
 #define MODULE_ID_IPDUM   (52) // IPDU Multiplexer
 #define MODULE_ID_DCM     (53) // Diagnostic Communication Manager
 #define MODULE_ID_DEM     (54) // Diagnostic Event Manager
+#define MODULE_ID_SOAD    (56) // Socket Adaptor
 
 #define MODULE_ID_CANIF   (60) // CAN Interface
 #define MODULE_ID_FRIF    (61) // Flexray interface

@@ -14,41 +14,17 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
 #include "PduR.h"
 
-#if (PDUR_ZERO_COST_OPERATION == STD_OFF)
+#if PDUR_ZERO_COST_OPERATION == STD_OFF
 
-#include "Det.h"
-#include "debug.h"
-
-void PduR_CanIfRxIndication(PduIdType CanRxPduId,const uint8* CanSduPtr) {
-#if (PDUR_CANIF_SUPPORT == STD_ON)
-	PduR_DevCheck(CanRxPduId,CanSduPtr,0x0e);
-
-	DEBUG(DEBUG_LOW,"----------------------\n");
-	DEBUG(DEBUG_LOW,"PduR_CanIfRxIndication: received indication with id %d and data %d\n", CanRxPduId, *CanSduPtr);
-
-	PduR_LoIfRxIndication(CanRxPduId, CanSduPtr);
-
-	DEBUG(DEBUG_LOW,"----------------------\n");
-#endif
+void PduR_CanIfRxIndication(PduIdType CanRxPduId,const PduInfoType* PduInfoPtr) {
+	PduR_ARC_RxIndication(CanRxPduId, PduInfoPtr, 0x01);
 }
 
 void PduR_CanIfTxConfirmation(PduIdType CanTxPduId) {
-#if (PDUR_CANIF_SUPPORT == STD_ON)
-	PduR_DevCheck(CanTxPduId,1,0x0f);
-
-	DEBUG(DEBUG_LOW,"----------------------\n");
-	DEBUG(DEBUG_LOW,"PduR_CanIfTxConfirmation: received confirmation with id %d\n", CanTxPduId);
-
-	PduR_LoIfTxConfirmation(CanTxPduId);
-
-	DEBUG(DEBUG_LOW,"----------------------\n");
-#endif
+	uint8 dummy = 0;
+	PduR_ARC_TxConfirmation(CanTxPduId,dummy,0x02);
 }
 
 #endif
