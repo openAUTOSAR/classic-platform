@@ -917,8 +917,10 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
   canHw->CR.B.LPB =	config->Can_Arc_Loopback;
   canHw->CR.B.BOFFREC = 1;  // Disable bus off recovery
 
+#if defined(CFG_MPC5606S)
   SIU.PSMI[0].R = 0x00;
   SIU.PSMI[1].R = 0x00;
+#endif
 
 #if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S)
   // Check if we use individual masks. If so accept anything(=0) for now
