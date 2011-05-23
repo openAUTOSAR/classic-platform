@@ -1,0 +1,138 @@
+
+
+
+NAMING
+  Internal calls are prefixed with Os_<module>. Example Os_TaskResourceFreeAll
+
+
+C-STD
+  Keep to C99.
+  -- Use restrict keyword when possible --
+
+MEMORY 
+  The kernel is designed to be quite modest in allocating RAM. To do this there is a 
+  mix of os-resources being allocated as .data and as .bss+const.  
+  .data
+    Alarms
+    + more.
+    
+  .bss+const
+    Tasks:    Const: ~12*4*<task_cnt> bytes.
+              Is it worth it? 500 bytes for 10 tasks
+    Isr:      Const: ~24*<isr_cnt>
+              In a PPC system have lots of ISRs. Only CAN can be easily be 48 interrupts
+              so that amounts to 24*48= 1152bytes.                      
+ 
+   Having lots of const data will of course have an impact on speed since RAM is usually 
+   much faster than Flash.   
+ 
+  IMPROVEMENTS:
+    - Implement a common stack for tasks with same priority (on what level, internal resource?) 
+    - PPC, Implement SPE exception and only save 64-bit registers for the tasks that use it. 
+         (usually floating point)
+  
+  
+DYNAMIC API (NOT IMPLEMENTED)
+  The module concept (USE,CFG in build_config.mk) encourages the use of dynamically creates
+  objects. This would be great for things that is used only by debug, e.g. a shell and the
+  ability to check tasks, drivers and more.  
+  Control by CFG_OS_DYNAMIC_API
+  
+  
+  Usage:
+  ALT1
+    id = TaskCreate( "name",
+                     PROC_BASIC,
+                     stacksize,
+                     scheduling,
+                     resourceMask,
+                     activationLimit,
+                     applicationOwner
+                     applicationAccessingMask )
+    ActivateTask( id );
+  
+  ALT2
+    TASK_DECLARE_STACK( myStack, 1000)  
+    TASK_DECLARE( myTask,
+                  "name"
+                  PROC_BASIC,
+                  &myStack,
+                  .. )
+    TaskAdd( myTask );   // Add the task,                     
+    ActivateTask( id );                  
+
+SHELL/CONSOLE/DEVICES (NOT IMPLEMENTED)
+  The shell is a work in progress and needs a device handler to be good.
+  
+  NEWLIB
+    Newlib already contains handling of stdio using _reent and _impure_ptr.
+    The library declares one _reent structure during initialization and points 
+    _impure_ptr at it. To have different environment for each task a _reent 
+    structure for each task have to be created and at context switch the 
+    _impure_ptr and to be pointed to that _reent structure.
+    
+    This is very nice but the problem is that the _reent structure is HUGE.
+    If compiled with _REENT_SMALL the ram usage falls to ~100 bytes.
+    
+    Seems that by default? (or is this controlled by target?) Newlib is compiled
+    with !_REENT_SMALL. Soo, it's probably not wise to compile the kernel with
+    _REENT_SMALL and use the !_REENT_SMALL libarary. A message thread found here patches
+    this in some way.
+    
+      http://comments.gmane.org/gmane.comp.lib.newlib/6169
+    
+    Ooops, an article on newlib porting :)
+      http://www.eetimes.com/discussion/other/4024637/Embedding-with-GNU-
+  --    
+    
+  Most of the things in reent.h (newlib) is stuff that is not needed in a small embedded
+  system (time, strtok states, exit functions, non standard file handlers).
+  So the sane thing would probably we do create a new "reent" structure that only contains
+  the stuff that is needed (stdin, stdout, stderr ).
+  
+  So, what is sane approach to make this work. Use case:
+   1. Want normal putc/getc output to be to the console.
+   2. Want puts/getc from for example telnet to print to telnet, not to console
+  
+  Now we need a device of some sort, in case 1 the console driver should be used and in case 2
+  the telnet driver. The printf() itself does not contain any information on what device to
+  write so this information must be held in the task (as in newlib).
+  
+  Dev_Init() 
+  Dev_Register(DevType *) - Use: A new telnet session
+  Dev_UnRegister(char *name ) - Use: A telnet session that is no more.
+  
+  Assuming that the driver calls Dev_Register() what functions to register ? Reasonable
+  to assume that the driver have the functions as write() and read() from the porting interface,
+  "int write(  int fd, const void *_buf, size_t nbytes)" etc.
+  
+  Calltree
+  puts 
+   |--->write(), in write we check what devices are ...... 
+  
+   
+  
+  
+  
+  
+    
+  
+  
+  
+      
+    
+    
+     
+    
+    
+    
+     
+
+                
+                
+                 
+  
+  
+    
+  
+  

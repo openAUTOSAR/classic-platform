@@ -17,7 +17,8 @@
 #define COUNTER_I_H_
 
 #include "Os.h"
-#include "kernel.h"
+#include "internal.h"
+#include "os_config_macros.h"
 #include <sys/queue.h>
 
 #define COUNTER_TYPE_HARD 	0
@@ -46,7 +47,10 @@ typedef struct OsCounter {
 	// The counter value ( if software counter )
 	uint32_t val;
 	// Application mask, SWS OS317
-	uint32_t app_mask;
+#if (OS_USE_APPLICATIONS == STD_ON)
+	ApplicationType applOwnerId;
+	uint32 accessingApplMask;
+#endif
 	//  hmm, strange to call it alarm base.... but see spec.
 	AlarmBaseType alarm_base;
 	/* Used only if we configure a GPT timer as os timer */
@@ -59,6 +63,8 @@ typedef struct OsCounter {
 } OsCounterType;
 
 
+extern GEN_COUNTER_HEAD;
+
 static inline TickType Os_CounterGetMaxValue(OsCounterType *cPtr ) {
 	return cPtr->alarm_base.maxallowedvalue;
 }
@@ -70,6 +76,21 @@ static inline TickType Os_CounterGetMinCycle(OsCounterType *cPtr ) {
 static inline TickType Os_CounterGetValue( OsCounterType *cPtr ) {
 	return cPtr->val;
 }
+
+static inline OsCounterType *Os_CounterGet(CounterType id) {
+	return &counter_list[id];
+}
+
+static inline ApplicationType Os_CounterGetApplicationOwner( CounterType id ) {
+	ApplicationType rv;
+	if( id < OS_COUNTER_CNT ) {
+		rv = Os_CounterGet(id)->applOwnerId;
+	} else {
+		rv = INVALID_OSAPPLICATION;
+	}
+	return rv;
+}
+
 
 
 static inline TickType Os_CounterDiff( TickType curr, TickType old, TickType max ) {

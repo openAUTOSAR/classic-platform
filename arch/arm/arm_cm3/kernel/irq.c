@@ -17,7 +17,8 @@
 #include "task_i.h"
 #include "hooks.h"
 #include "stm32f10x.h"
-#include "irq.h"
+#include "isr.h"
+#include "irq_types.h"
 
 extern void *Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
 
@@ -74,11 +75,14 @@ void Irq_EOI( void ) {
  * Registers. INTISR[0] has vector number 16.
  *
  */
+#if 0
 static uint32_t NVIC_GetActiveVector( void) {
 	return (SCB->ICSR &  ICSR_VECTACTIVE);
 }
+#endif
 
 
+#if 0
 /**
  *
  * @param stack_p Ptr to the current stack.
@@ -106,19 +110,8 @@ void *Irq_Entry( void *stack_p ){
 
 	return stack_p;
 }
+#endif
 
-/**
- * Attach an ISR type 1 to the interrupt controller.
- *
- * @param entry
- * @param int_ctrl
- * @param vector
- * @param prio
- */
-void Irq_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector, uint8_t prio) {
-
-	// TODO: Use NVIC_InitVector(vector, osPrioToCpuPio(pcb->prio)); here
-}
 
 /**
  * NVIC prio have priority 0-31, 0-highest priority.
@@ -139,6 +132,7 @@ static inline int osPrioToCpuPio( uint8_t prio ) {
 	return prio;
 }
 
+#if 0
 /**
  * Attach a ISR type 2 to the interrupt controller.
  *
@@ -147,14 +141,20 @@ static inline int osPrioToCpuPio( uint8_t prio ) {
  * @param vector
  */
 void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
-	OsPcbType *pcb;
+	OsTaskVarType *pcb;
 
-	pcb = os_find_task(tid);
+	pcb = Os_TaskGet(tid);
 	Irq_VectorTable[vector+16] = (void *)pcb;
 
 	NVIC_InitVector(vector, osPrioToCpuPio(pcb->prio));
 }
+#endif
 
+
+void Irq_EnableVector( int16_t vector, int priority, int core ) {
+	(void)core;
+	NVIC_InitVector(vector, priority);
+}
 
 /**
  * Generates a soft interrupt, ie sets pending bit.

@@ -13,20 +13,6 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-#include "Os.h"
-#include "internal.h"
-#include "alist_i.h"
-
-/*
- * Generic requirements this module can handle
- */
- /** @req OS007 */
- /** @req OS410 */
- /** @req OS411 */
- /** @req OS347 */
- /** @req OS358 */
- /** @req OS428 */
-
 /*
  * How Autosar sees the scheduletable
  *
@@ -59,13 +45,33 @@
  *
  */
 
+/*
+ * Generic requirements this module can handle
+ */
+ /** @req OS007 */
+ /** @req OS410 */
+ /** @req OS411 */
+ /** @req OS347 */
+ /** @req OS358 */
+ /** @req OS428 */
 
-// Cancel
 
-#define SCHED_CHECK_ID(x) 				\
-	if( (x) > OS_SCHTBL_CNT) { \
-		rv = E_OS_ID;					\
-		goto err; 						\
+/* ----------------------------[includes]------------------------------------*/
+
+#include "Os.h"
+#include "sched_table_i.h"
+#include "sys.h"
+#include "alist_i.h"
+#include "application.h"
+
+
+/* ----------------------------[private define]------------------------------*/
+/* ----------------------------[private macro]-------------------------------*/
+
+#define SCHED_CHECK_ID(x) 		\
+	if( (x) > OS_SCHTBL_CNT) { 	\
+		rv = E_OS_ID;			\
+		goto err; 				\
 	}
 
 #define SCHED_STD_END 	\
@@ -74,9 +80,104 @@
 		ERRORHOOK(rv);  \
 		return rv;
 
-extern TickType GetCountValue( OsCounterType *counter );
+/* ----------------------------[private typedef]-----------------------------*/
+/* ----------------------------[private function prototypes]-----------------*/
+/* ----------------------------[private variables]---------------------------*/
+/* ----------------------------[private functions]---------------------------*/
 
-static void Os_SchTblUpdateState( OsSchTblType *stbl );
+
+/**
+ * Calculates expire value and changes state depending it's state.
+ *
+ * Note!
+ * We can't cheat with the final + initial expire-point, instead we
+ * must setup trigger after the final delay and set the "previous"
+ * table to SCHEDULETABLE_STOPPED and the new to SCHEDULETABLE_RUNNING.
+ *
+ * @param stbl Ptr to a Schedule Table.
+ */
+static void Os_SchTblUpdateState( OsSchTblType *stbl ) {
+
+	TickType delta;
+	TickType initalOffset;
+	TickType finalOffset;
+	OsSchTblType *nextStblPtr;
+	_Bool handleLast = 0;
+
+	if( (stbl->expire_curr_index) == (SA_LIST_CNT(&stbl->expirePointList) - 1) ) {
+		/* We are at the last expiry point */
+		finalOffset = Os_SchTblGetFinalOffset(stbl);
+
+		if (finalOffset != 0) {
+			stbl->expire_val =	Os_CounterAdd(
+							Os_CounterGetValue(stbl->counter),
+							Os_CounterGetMaxValue(stbl->counter),
+							finalOffset );
+
+			stbl->expire_curr_index++;
+			return;
+		} else {
+			/* Only single shot may have an offset of 0 */
+			assert(stbl->repeating == SINGLE_SHOT);
+			handleLast = 1;
+		}
+	}
+
+	if( handleLast ||
+		( (stbl->expire_curr_index) == SA_LIST_CNT(&stbl->expirePointList) ) )
+	{
+		/* At final offset */
+		/** @req OS194 */
+		if( (stbl->repeating == REPEATING) || (stbl->next != NULL) ) {
+			if( stbl->next != NULL ) {
+				/** @req OS284 */
+				nextStblPtr = stbl->next;
+				/* NextScheduleTable() have been called */
+				assert( nextStblPtr->state==SCHEDULETABLE_NEXT );
+
+				/* We don't care about REPEATING or SINGLE_SHOT here */
+				initalOffset = Os_SchTblGetInitialOffset(nextStblPtr);
+				stbl->state = SCHEDULETABLE_STOPPED;
+				nextStblPtr->state = SCHEDULETABLE_RUNNING;
+			} else {
+				/** @req OS414 */
+
+				/* REPEATING */
+				assert( stbl->repeating == REPEATING );
+				initalOffset = Os_SchTblGetInitialOffset(stbl);
+			}
+
+			stbl->expire_val =	Os_CounterAdd(
+							Os_CounterGetValue(stbl->counter),
+							Os_CounterGetMaxValue(stbl->counter),
+							initalOffset );
+
+		} else {
+			assert( stbl->repeating == SINGLE_SHOT );
+			/** @req OS009 */
+			stbl->state = SCHEDULETABLE_STOPPED;
+		}
+		stbl->expire_curr_index = 0;
+
+	} else {
+
+		delta = SA_LIST_GET(&stbl->expirePointList,stbl->expire_curr_index+1)->offset -
+				SA_LIST_GET(&stbl->expirePointList,stbl->expire_curr_index)->offset ;
+
+		stbl->expire_val =	Os_CounterAdd(
+						Os_CounterGetValue(stbl->counter),
+						Os_CounterGetMaxValue(stbl->counter),
+						delta );
+
+		stbl->expire_curr_index++;
+
+	}
+
+	return;
+}
+
+
+/* ----------------------------[public functions]----------------------------*/
 
 #if 0
 enum OsScheduleTableSyncStrategy getSyncStrategy( OsSchTblType *stblPtr ) {
@@ -153,7 +254,16 @@ StatusType StartScheduleTableRel(ScheduleTableType sid, TickType offset) {
 	SCHED_CHECK_ID(sid);
 #endif
 
-	sPtr = Os_CfgGetSched(sid);
+	sPtr = Os_SchTblGet(sid);
+
+#if	(OS_APPLICATION_CNT > 1)
+
+	rv = Os_ApplHaveAccess( sPtr->accessingApplMask );
+	if( rv != E_OK ) {
+		goto err;
+	}
+
+#endif
 
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 	if( sPtr->sync != NULL ) {
@@ -202,7 +312,16 @@ StatusType StartScheduleTableAbs(ScheduleTableType sid, TickType start ){
 
 	/** @req OS348 */
 	SCHED_CHECK_ID(sid);
-	sTblPtr =  Os_CfgGetSched(sid);
+	sTblPtr =  Os_SchTblGet(sid);
+
+#if	(OS_APPLICATION_CNT > 1)
+
+	rv = Os_ApplHaveAccess( sTblPtr->accessingApplMask );
+	if( rv != E_OK ) {
+		goto err;
+	}
+
+#endif
 
 	/** @req OS349 */
 	if( start > Os_CounterGetMaxValue(sTblPtr->counter) ) {
@@ -271,7 +390,7 @@ StatusType StopScheduleTable(ScheduleTableType sid) {
 	OsSchTblType *sPtr;
 	/** @req OS279 */
 	SCHED_CHECK_ID(sid);
-	sPtr = Os_CfgGetSched(sid);
+	sPtr = Os_SchTblGet(sid);
 
 	/** @req OS280 */
 	if(sPtr->state == SCHEDULETABLE_STOPPED ) {
@@ -298,8 +417,8 @@ StatusType NextScheduleTable( ScheduleTableType sid_curr, ScheduleTableType sid_
 	SCHED_CHECK_ID(sid_curr);
 	SCHED_CHECK_ID(sid_next);
 
-	sFromPtr = Os_CfgGetSched(sid_curr);
-	sToPtr = Os_CfgGetSched(sid_curr);
+	sFromPtr = Os_SchTblGet(sid_curr);
+	sToPtr = Os_SchTblGet(sid_curr);
 
 	/** @req OS330 */
 	if( sFromPtr->counter != sToPtr->counter) {
@@ -354,7 +473,7 @@ StatusType NextScheduleTable( ScheduleTableType sid_curr, ScheduleTableType sid_
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 StatusType SyncScheduleTable( ScheduleTableType sid, GlobalTimeTickType globalTime  ) {
 	StatusType rv = E_OK;
-	OsSchTblType *s_p =  Os_CfgGetSched(sid);
+	OsSchTblType *s_p =  Os_SchTblGet(sid);
 
 	SCHED_CHECK_ID(sid);
 
@@ -425,7 +544,7 @@ StatusType GetScheduleTableStatus( ScheduleTableType sid, ScheduleTableStatusRef
 	/** @req OS293 */
 	SCHED_CHECK_ID(sid);
 
-	s_p = Os_CfgGetSched(sid);
+	s_p = Os_SchTblGet(sid);
 	Irq_Disable();
 
 	switch(s_p->state) {
@@ -460,7 +579,7 @@ StatusType GetScheduleTableStatus( ScheduleTableType sid, ScheduleTableStatusRef
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 StatusType SetScheduleTableAsync( ScheduleTableType sid ) {
 	StatusType rv = E_OK;
-	OsSchTblType *s_p = Os_CfgGetSched(sid);
+	OsSchTblType *s_p = Os_SchTblGet(sid);
 
 	SCHED_CHECK_ID(sid);
 
@@ -566,7 +685,7 @@ void Os_SchTblCheck(OsCounterType *c_p) {
 void Os_SchTblInit( void ) {
 	OsSchTblType *s_p;
 	for( int i=0; i < OS_SCHTBL_CNT;i++ ) {
-		s_p = Os_CfgGetSched(i);
+		s_p = Os_SchTblGet(i);
 
 		ScheduleTableConsistenyCheck(s_p);
 	}
@@ -576,13 +695,13 @@ void Os_SchTblAutostart( void ) {
 
 	for(int j=0; j < OS_SCHTBL_CNT; j++ ) {
 		OsSchTblType *sPtr;
-		sPtr = Os_CfgGetSched(j);
+		sPtr = Os_SchTblGet(j);
 
 		if( sPtr->autostartPtr != NULL ) {
 			const struct OsSchTblAutostart *autoPtr = sPtr->autostartPtr;
 
 			/* Check appmode */
-			if( os_sys.appMode & autoPtr->appMode ) {
+			if( Os_Sys.appMode & autoPtr->appMode ) {
 
 				/* Start the schedule table */
 				switch(autoPtr->type) {
@@ -604,97 +723,6 @@ void Os_SchTblAutostart( void ) {
 			}
 		}
 	}
-}
-
-
-/**
- * Calculates expire value and changes state depending it's state.
- *
- * Note!
- * We can't cheat with the final + initial expire-point, instead we
- * must setup trigger after the final delay and set the "previous"
- * table to SCHEDULETABLE_STOPPED and the new to SCHEDULETABLE_RUNNING.
- *
- * @param stbl Ptr to a Schedule Table.
- */
-static void Os_SchTblUpdateState( OsSchTblType *stbl ) {
-
-	TickType delta;
-	TickType initalOffset;
-	TickType finalOffset;
-	OsSchTblType *nextStblPtr;
-	_Bool handleLast = 0;
-
-	if( (stbl->expire_curr_index) == (SA_LIST_CNT(&stbl->expirePointList) - 1) ) {
-		/* We are at the last expiry point */
-		finalOffset = Os_SchTblGetFinalOffset(stbl);
-
-		if (finalOffset != 0) {
-			stbl->expire_val =	Os_CounterAdd(
-							Os_CounterGetValue(stbl->counter),
-							Os_CounterGetMaxValue(stbl->counter),
-							finalOffset );
-
-			stbl->expire_curr_index++;
-			return;
-		} else {
-			/* Only single shot may have an offset of 0 */
-			assert(stbl->repeating == SINGLE_SHOT);
-			handleLast = 1;
-		}
-	}
-
-	if( handleLast ||
-		( (stbl->expire_curr_index) == SA_LIST_CNT(&stbl->expirePointList) ) )
-	{
-		/* At final offset */
-		/** @req OS194 */
-		if( (stbl->repeating == REPEATING) || (stbl->next != NULL) ) {
-			if( stbl->next != NULL ) {
-				/** @req OS284 */
-				nextStblPtr = stbl->next;
-				/* NextScheduleTable() have been called */
-				assert( nextStblPtr->state==SCHEDULETABLE_NEXT );
-
-				/* We don't care about REPEATING or SINGLE_SHOT here */
-				initalOffset = Os_SchTblGetInitialOffset(nextStblPtr);
-				stbl->state = SCHEDULETABLE_STOPPED;
-				nextStblPtr->state = SCHEDULETABLE_RUNNING;
-			} else {
-				/** @req OS414 */
-
-				/* REPEATING */
-				assert( stbl->repeating == REPEATING );
-				initalOffset = Os_SchTblGetInitialOffset(stbl);
-			}
-
-			stbl->expire_val =	Os_CounterAdd(
-							Os_CounterGetValue(stbl->counter),
-							Os_CounterGetMaxValue(stbl->counter),
-							initalOffset );
-
-		} else {
-			assert( stbl->repeating == SINGLE_SHOT );
-			/** @req OS009 */
-			stbl->state = SCHEDULETABLE_STOPPED;
-		}
-		stbl->expire_curr_index = 0;
-
-	} else {
-
-		delta = SA_LIST_GET(&stbl->expirePointList,stbl->expire_curr_index+1)->offset -
-				SA_LIST_GET(&stbl->expirePointList,stbl->expire_curr_index)->offset ;
-
-		stbl->expire_val =	Os_CounterAdd(
-						Os_CounterGetValue(stbl->counter),
-						Os_CounterGetMaxValue(stbl->counter),
-						delta );
-
-		stbl->expire_curr_index++;
-
-	}
-
-	return;
 }
 
 

@@ -31,10 +31,7 @@
  *   $ addi r3,r3,0x08000@l
  *
  * Note!
- * The offset's (d or D)for SPE instructions are ridiculously low.
- * Normally you have 16-bits offset, but when using spe load and store
- * you can use only 8-bit.
-*/
+ */
 
 
 /* ----------------------------[includes]------------------------------------*/
@@ -47,13 +44,12 @@
 // #include "asm_book_e.h"
 .extern os_intc_pcb_tbl
 .extern os_intc_types_tbl
-.extern os_sys
+.extern Os_Sys
 .extern Os_ArchPanic
 
 
 /* ----------------------------[private define]------------------------------*/
 
-//#define OLD_CALL		
 
 #define INTC_IACKR_PRC0		0xfff48010 
 #define INTC_EOIR_PRC0		0xfff48018
@@ -180,7 +176,7 @@ Os_ArchSwapContextTo:
 	lwz		sp,PCB_STACK_CURR_P(r4)
 
 	/* Set new current task */
-	LOAD_ADDR_32(3,os_sys)
+	LOAD_ADDR_32(3,Os_Sys)
 	stw		r4,SYS_CURR_PCB_P(r3)
 
 	/* Restore C context */
@@ -365,25 +361,26 @@ exception_IVOR4:
 	mr		r4,sp			
 	
 	/* Switch to interrupt stack if at depth 0 */
-	/* Load the value os_sys.int_nest_cnt */
-	LOAD_IND_32(r3,os_sys+SYS_INT_NEST_CNT)
+	/* Load the value Os_Sys.int_nest_cnt */
+	LOAD_IND_32(r3,Os_Sys+SYS_INT_NEST_CNT)
 	cmplwi	r3,0
 	bne		on_int_stack
 
 	/* Load the interrupt stack */
-	LOAD_IND_32(r1,os_sys+SYS_INT_STACK)
+	LOAD_IND_32(r1,Os_Sys+SYS_INT_STACK)
 
 on_int_stack:
 
 #if defined(CFG_MPC5516)
 	lis r6, INTC_IACKR_PRC0@ha
 	lwz r6, INTC_IACKR_PRC0@l(r6)
-#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5606S)
+#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
 	lis r6, INTC_IACKR@ha 
 	lwz r6, INTC_IACKR@l(r6)
 #endif
 	/* Check for 0 entry */
 	mr		r5,r6
+#if 0	
 	cmplwi 	r5,0
 	bne+	vectorOk
 	/* The entry was 0, call panic */
@@ -391,8 +388,10 @@ on_int_stack:
 	li 		r4, 0
 	mr		r5,r1
 	b 		Os_ArchPanic
+#endif	
 	
 vectorOk:
+    /* extract vector */
 	extrwi  r5,r5,9,21
 	/* Check for soft INT */
 	cmplwi 	r5,7
@@ -400,24 +399,13 @@ vectorOk:
 	/* Clear soft interrupt */
 	li		r0,1
 	LOAD_ADDR_32(3,INTC_SSCIR0)
-//	lis		r3, INTC_SSCIR0@h
-//	ori		r3, r3, INTC_SSCIR0@l
 	stbx	r0,r5,r3			
 	
 noSoftInt:	
 	LOAD_ADDR_32(3,Os_Isr)
-//	lis   r3, Os_Isr@h
-//    ori   r3, r3,Os_Isr@l
     mtlr  r3
 	mr    r3,r4  		/* "old" stack as arg1 */
-#if defined(OLD_CALL)	
-    lwz   r4, 0x0(r6) 	/* Read the address from the for function/pcb entry */
-#elif defined(CFG_MPC5606S)
-	mr    r4, r5
-	lwz   r4, 0x0(r6)
-#else
-	mr	 r4,r5
-#endif    
+	mr	 r4,r5          /* Vector as arg2 */
     blrl		 		/* Call the entry */
 
 	/* Notes!

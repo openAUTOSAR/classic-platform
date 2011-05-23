@@ -6,11 +6,11 @@
  */
 
 #define _ASSEMBLER_
-#include "kernel_offset.h"
+#include "asm_offset.h"
 #include "arch_offset.h"
-#include "stack.h"
+#include "arch_stack.h"
 
-.extern os_sys
+.extern Os_Sys
 .extern TailChaining
 
 	.syntax unified
@@ -29,6 +29,9 @@
 
 #define IRQ_ENABLE() 		cpsie 	i
 #define IRQ_DISABLE()		cpsid 	i
+
+#define SCB_ICSR 		0xE000ED04
+#define ICSR_VECTACTIVE	0x1ff
 
 
 // lr
@@ -58,17 +61,26 @@ Irq_Handler:
     sub.w   sp,sp,#C_SIZE
     mov.w   r4,#LC_PATTERN
     str     r4,[sp,#C_CONTEXT_OFFS]    
-    mov 	r0,sp			// stack as first arg
+    mov 	r6,sp			// save stack for later..
 
     // When at interrupt nest count = 0, load interrupt stack    
-	ldr      r4,=os_sys
+	ldr      r4,=Os_Sys
 	ldr      r5,[r4,#SYS_INT_NEST_CNT]
 	cmp      r5, #0
 	bgt      arggg  
 	ldr      sp,[r4,#SYS_INT_STACK]         
 arggg:  
-    bl      Irq_Entry
-    mov     sp, r0			// pop from returned stack
+
+	IRQ_DISABLE()
+	ldr 	r4,=SCB_ICSR
+	ldr     r3, [r4, #0]
+	ldr     r4,=ICSR_VECTACTIVE
+	and.w   r0,r3,r4  				/* Pass vector as arg */
+	bl      Os_Isr_cm3
+	IRQ_ENABLE()
+
+/*    bl      Irq_Entry */
+    mov     sp, r6			// pop from returned stack
 
 	/* Do a normal exception return */
     add.w   sp,sp,#C_SIZE
@@ -163,7 +175,7 @@ Os_ArchSwapContextTo:
 
 // TODO: Fix this for all arch's..call pre,post hooks. Done here or after?
 // Set new current pcb
-    ldr     r5,= os_sys
+    ldr     r5,= Os_Sys
     str     r1,[r5,#SYS_CURR_PCB_P]
 
 // Restore C context

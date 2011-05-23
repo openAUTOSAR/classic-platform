@@ -27,6 +27,8 @@ obj-y += sys_tick.o
 obj-y += isr.o
 obj-y += os_arctest.o
 obj-y += application.o
+obj-$(USE_KERNEL_EXTRA) += sleep.o
+obj-$(USE_KERNEL_EXTRA) += semaphore.o
 
 
 # These are VERY cpu dependent.. remove
@@ -36,7 +38,7 @@ obj-y += irq.o
 # We are compiling the kernel
 dep-$(CFG_PPC) += arch_offset.h
 dep-y += asm_offset.h
-dep-y += kernel_offset.h
+#dep-y += kernel_offset.h
 dep-$(CFG_ARM_CM3) += arch_offset.h
 
 
@@ -51,13 +53,13 @@ ifeq ($(COMPILER),gcc)
 # Assembler offsets
 asm_offset.h: asm_offset.c
 	@echo "  >> asm offset gen $<"
-	$(Q)$(CC) -S $(CFLAGS) -o $(<:.c=.s) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<	
-	@$(SED) -n "/#define/p" $(<:.c=.s) > $@
+	$(Q)$(CC) -S $(CFLAGS) -o $(<:.c=.s) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y))  $<
+	@$(SED) -e "/#define/!d" -e "s/#//2g" $(<:.c=.s) > $@	
 	@rm 	$(<:.c=.s)
 endif
 
 ifeq ($(COMPILER),cw)
-# The "\r" in the awk is a little strang...sed and awk if that does not work 
+# The "\r" in the awk is a little strange...sed and awk if that does not work 
 #  sed -e '/.apa/!d' -e '/OBJ/!d' -e 's/\[//' 123.tmp | gawk '{ print "#define " $9 " " $4 }'
 
 %_offset.h: %_offset.c

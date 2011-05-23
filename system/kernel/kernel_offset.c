@@ -17,11 +17,10 @@
 #include <stddef.h>
 
 #include "Os.h"
-#include "kernel.h"
-#include "pcb.h"
 //#include "app_i.h"
+#include "task_i.h"
 #include "sys.h"
-//#include "arch_stack.h"
+#include "application.h"
 
 
 #if defined(__GNUC__)
@@ -40,15 +39,16 @@ void  oil_foo(void) {
 #endif
 
 
-	DECLARE(PCB_T_SIZE,			sizeof(OsPcbType));
-#if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
-	DECLARE(APP_T_SIZE,			sizeof(OsApplicationType));
+	DECLARE(PCB_T_SIZE,			sizeof(OsTaskVarType));
+#if	(OS_USE_APPLICATIONS == STD_ON)
+//	DECLARE(APP_T_SIZE,			sizeof(OsApplicationType));
+
 #endif
-	DECLARE(PCB_STACK_CURR_P,	offsetof(OsPcbType, stack));
-	DECLARE(PCB_ENTRY_P,		offsetof(OsPcbType, entry));
-	DECLARE(SYS_CURR_PCB_P,		offsetof(sys_t, curr_pcb));
-	DECLARE(SYS_INT_NEST_CNT, 	offsetof(sys_t, int_nest_cnt));
-	DECLARE(SYS_INT_STACK, 		offsetof(sys_t, int_stack));
+	DECLARE(PCB_STACK_CURR_P,	offsetof(OsTaskVarType, stack));
+	DECLARE(PCB_ENTRY_P,		offsetof(OsTaskVarType, entry));
+	DECLARE(SYS_CURR_PCB_P,		offsetof(Os_SysType, currTaskPtr));
+	DECLARE(SYS_INT_NEST_CNT, 	offsetof(Os_SysType, intNestCnt));
+	DECLARE(SYS_INT_STACK, 		offsetof(Os_SysType, intStack));
 #if defined(__GNUC__)
 }
 #endif

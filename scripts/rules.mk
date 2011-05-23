@@ -189,7 +189,7 @@ clean: FORCE
 .PHONY config: 
 config: FORCE
 	@echo "board   modules:" $(MOD_AVAIL)
-	@echo "enabled modules:" $(MOD_USE)
+	@echo "example modules:" $(MOD_USE)
 	@echo $(MOD) ${def-y}
 
 FORCE:
@@ -279,6 +279,8 @@ $(build-exe-y): $(dep-y) $(obj-y) $(sim-y) $(libitem-y) $(ldcmdfile-y)
 ifeq ($(CROSS_COMPILE),)
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	
 else
+	@echo LDFLAGS $(LDFLAGS)
+	@echo LD_FILE  $(LD_FILE)
 	$(Q)$(LD) $(LDFLAGS) $(LD_FILE) $(ldcmdfile-y) -o $@ $(libpath-y) $(LD_START_GRP) $(obj-y) $(lib-y) $(libitem-y) $(LD_END_GRP) $(LDMAPFILE)
  ifdef CFG_MC912DG128A
     # Print memory layout

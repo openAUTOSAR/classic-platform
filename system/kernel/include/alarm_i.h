@@ -82,15 +82,21 @@ typedef struct OsAlarmAutostart {
 } OsAlarmAutostartType;
 
 /* STD container : OsAlarm
- * OsAlarmAccessionApplication: 0..* Ref to OS application
+ * OsAlarmAccessingApplication: 0..* Ref to OS application
  * OsAlamCounterRef:            1    Ref to counter
  * OsAlarmAction[C]             1    Action when alarm expires
  * OsAlarmAutostart[C]          0..1 Autostart
  */
 typedef struct OsAlarm {
-	char 	name[16];
+	//char 	name[16];
+	char 	*name;
 	/* Reference to counter */
 	struct OsCounter *counter;
+
+#if	(OS_USE_APPLICATIONS == STD_ON)
+	ApplicationType applOwnerId;
+	uint32 accessingApplMask;
+#endif
 
 	CounterType counter_id;
 	/* cycle, 0 = no cycle */
@@ -120,8 +126,50 @@ typedef struct OsAlarm {
 
 } OsAlarmType;
 
+extern GEN_ALARM_HEAD;
 
 void Os_AlarmCheck(OsCounterType *c_p);
 void Os_AlarmAutostart(void);
+
+static inline OsAlarmType *Os_AlarmGet( AlarmType alarm_id ) {
+#if (OS_ALARM_CNT!=0)
+	if( alarm_id < OS_ALARM_CNT) {
+	  return &alarm_list[alarm_id];
+	} else {
+		return NULL;
+	}
+#else
+	return NULL;
+#endif
+}
+
+
+#if OS_ALARM_CNT!=0
+static inline StatusType Os_AlarmGetBase(AlarmType alarm_id, AlarmBaseRefType info) {
+
+	StatusType rv = E_OK;
+
+	if( alarm_id >= OS_ALARM_CNT ) {
+		rv = E_OS_ID;
+	} else {
+#if (OS_ALARM_CNT!=0)
+		*info = alarm_list[alarm_id].counter->alarm_base;
+#endif
+	}
+	return rv;
+}
+#endif
+
+
+static inline ApplicationType Os_AlarmGetApplicationOwner( AlarmType id ) {
+	ApplicationType rv;
+#if (OS_ALARM_CNT!=0)
+	rv = (id < OS_ALARM_CNT) ? Os_AlarmGet(id)->applOwnerId : INVALID_OSAPPLICATION;
+#else
+	(void)id;
+	rv = INVALID_OSAPPLICATION;
+#endif
+	return rv;
+}
 
 #endif /*ALARM_I_H_*/

@@ -6,7 +6,7 @@
 #include "asm_hc1x.sx"
 #include "context.sx"
 
-.extern os_sys
+.extern Os_Sys
 .extern os_proc_start_extended
 
 #define IRQ_ENABLE() 		cpsie 	i
@@ -53,7 +53,7 @@ Os_ArchSwapContextTo_get_args:
 		
 Os_ArchSwapContextTo_do:
 // Set current process
-		sty		os_sys					// new (Y) --> os_sys.curr_pcb
+		sty		Os_Sys					// new (Y) --> Os_Sys.curr_pcb
 // Restore context
 		lds		PCB_STACK_CURR_P, y		// new->stack.curr --> SP
 		

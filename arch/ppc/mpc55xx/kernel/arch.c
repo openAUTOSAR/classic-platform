@@ -17,6 +17,8 @@
 /* ----------------------------[includes]------------------------------------*/
 
 #include "internal.h"
+#include "Cpu.h"
+#include "sys.h"
 #include "asm_ppc.h"
 #include "mpc55xx.h"
 #include "arch_stack.h"
@@ -25,7 +27,6 @@
 #define USE_LDEBUG_PRINTF
 #include "debug.h"
 
-/* ----------------------------[includes]------------------------------------*/
 /* ----------------------------[private define]------------------------------*/
 /* ----------------------------[private macro]-------------------------------*/
 /* ----------------------------[private typedef]-----------------------------*/
@@ -41,9 +42,10 @@
  *
  * @param err			The error code.
  * @param errFramePtr   Pointer to extra information about the error, if any.
- * @param excFramePtr   Pointer to the exception frame, that cause the error.
+ * @param excFramePtr   Pointer to the exception frame, that caused the error.
  */
 void Os_ArchPanic( uint32_t err, void *errFramePtr , Os_ExceptionFrameType *excFramePtr) {
+	(void)excFramePtr;
 	(void)errFramePtr;
 	switch(err) {
 	case OS_ERR_BAD_CONTEXT:
@@ -85,7 +87,8 @@ void Os_ArchFirstCall( void )
 #else
 // TODO: This really depends on if scheduling policy
 	Irq_Enable();
-	os_sys.curr_pcb->entry();
+	Os_Sys.currTaskPtr->constPtr->entry();
+	//os_sys.curr_pcb->entry();
 #endif
 }
 
@@ -111,7 +114,7 @@ unsigned int Os_ArchGetScSize( void ) {
  *
  * @param pcb Pointer to the pcb to setup
  */
-void Os_ArchSetupContext( OsPcbType *pcbPtr ) {
+void Os_ArchSetupContext( OsTaskVarType *pcbPtr ) {
 	Os_FuncFrameType *cPtr = (Os_FuncFrameType *)pcbPtr->stack.curr;
 	uint32_t msr;
 	msr = MSR_EE;
@@ -120,11 +123,13 @@ void Os_ArchSetupContext( OsPcbType *pcbPtr ) {
 	msr |= MSR_SPE;
 #endif
 
-#if (  OS_SC3 == STD_ON) || (  OS_SC4== STD_ON)
+#if (OS_USE_APPLICATIONS == STD_ON)
+#if 0
 	if( !pcb->application->trusted ) {
 		// Non-trusted = User mode..
 		msr |= MSR_PR | MSR_DS | MSR_IS;
 	}
+#endif
 #endif
 	pcbPtr->regs[0] = msr;
 
@@ -136,12 +141,12 @@ void Os_ArchSetupContext( OsPcbType *pcbPtr ) {
  * @param pcbPtr
  */
 
-void Os_ArchSetTaskEntry(OsPcbType *pcbPtr ) {
+void Os_ArchSetTaskEntry(OsTaskVarType *pcbPtr ) {
 	Os_FuncFrameType *cPtr = (Os_FuncFrameType *)pcbPtr->stack.curr;
 
-	if( pcbPtr->proc_type == PROC_EXTENDED ) {
+	if( pcbPtr->constPtr->proc_type == PROC_EXTENDED ) {
 		cPtr->lr = (uint32_t)Os_TaskStartExtended;
-	} else if( pcbPtr->proc_type == PROC_BASIC ) {
+	} else if( pcbPtr->constPtr->proc_type == PROC_BASIC ) {
 		cPtr->lr = (uint32_t)Os_TaskStartBasic;
 	}
 

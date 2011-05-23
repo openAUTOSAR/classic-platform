@@ -30,7 +30,7 @@
 #include "LinIf_Cbk.h"
 #if defined(USE_KERNEL)
 #include "Os.h"
-#include "irq.h"
+#include "isr.h"
 #endif
 
 #define ESCI(exp) (volatile struct ESCI_tag *)(0xFFFA0000 + (0x4000 * exp))

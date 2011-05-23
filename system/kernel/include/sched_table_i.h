@@ -150,6 +150,11 @@ typedef struct OsSchTbl {
 	/** @req OS413 */
 	_Bool repeating;
 
+#if (OS_USE_APPLICATIONS == STD_ON)
+	ApplicationType applOwnerId;
+	uint32 accessingApplMask;
+#endif
+
 	// pointer to this tables counter
 	// OsScheduleTableCounterRef
 	/** @req OS409 */
@@ -160,10 +165,6 @@ typedef struct OsSchTbl {
 
 	/* NULL if NONE, and non-NULL if EXPLICIT and IMPLICIT */
 	struct OsScheduleTableSync *sync;
-
-#if (OS_SC3 == STD_ON ) || (OS_SC4 == STD_ON )
-	uint32 app_mask;
-#endif
 
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 	struct OsSchTblAdjExpPoint adjExpPoint;
@@ -195,7 +196,6 @@ typedef struct OsSchTbl {
 	/* Entry in the list of schedule tables connected to a specific
 	 * counter  */
 	SLIST_ENTRY(OsSchTbl) sched_list;
-
 } OsSchTblType;
 
 /*
@@ -212,6 +212,22 @@ void Os_SchTblCalcExpire( OsSchTblType *stbl );
 void Os_SchTblCheck(OsCounterType *c_p);
 void Os_SchTblAutostart( void );
 
+#if (OS_SCHTBL_CNT!=0)
+extern GEN_SCHTBL_HEAD;
+#endif
+
+static inline OsSchTblType *Os_SchTblGet( ScheduleTableType sched_id ) {
+#if (OS_SCHTBL_CNT!=0)
+	if(sched_id < OS_SCHTBL_CNT) {
+		return &sched_list[sched_id];
+	} else {
+		return NULL;
+	}
+#else
+	(void)sched_id;
+	return NULL;
+#endif
+}
 
 static inline TickType Os_SchTblGetInitialOffset( OsSchTblType *sPtr ) {
 	return SA_LIST_GET(&sPtr->expirePointList,0)->offset;
@@ -222,7 +238,39 @@ static inline TickType Os_SchTblGetFinalOffset( OsSchTblType *sPtr ) {
 			SA_LIST_GET(&sPtr->expirePointList, SA_LIST_CNT(&sPtr->expirePointList)-1)->offset);
 }
 
+static inline ApplicationType Os_SchTblGetApplicationOwner( ScheduleTableType id ) {
+	ApplicationType rv = INVALID_OSAPPLICATION;
+#if (OS_SCHTBL_CNT!=0)
+
+	if( id < OS_SCHTBL_CNT ) {
+		rv = Os_SchTblGet(id)->applOwnerId;
+	}
+#else
+	(void)id;
+#endif
+	return rv;
+}
+
+
 void Os_SchTblCheck(OsCounterType *c_p);
+
+/* Accessor functions */
+#if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
+static inline OsSchTblAdjExpPointType *getAdjExpPoint( OsSchTblType *stblPtr ) {
+	return &stblPtr->adjExpPoint;
+}
+#endif
+
+
+static inline const struct OsSchTblAutostart *getAutoStart( OsSchTblType *stblPtr ) {
+	return stblPtr->autostartPtr;
+}
+
+#if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
+static inline struct OsScheduleTableSync *getSync( OsSchTblType *stblPtr ) {
+	return &stblPtr->sync;
+}
+#endif
 
 
 #endif /*SCHED_TABLE_I_H_*/

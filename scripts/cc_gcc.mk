@@ -43,7 +43,7 @@ cflags-y          += -Wall
 #cflags-y          += -pedantic
 
 # Conformance
-cflags-y          += -fno-strict-aliasing
+cflags-y          += -fno-strict-aliasing	# Use restict keyword instead.
 cflags-y          += -fno-builtin
 
 # Get machine cflags

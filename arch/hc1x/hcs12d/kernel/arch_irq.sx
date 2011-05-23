@@ -21,7 +21,7 @@
 #include "context.h"
 #include "irq_defines.h"
 
-.extern os_sys
+.extern Os_Sys
 
 
 /* 

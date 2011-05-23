@@ -245,6 +245,10 @@ obj-$(USE_SLEEP) += sleep.o
 
 
 
+ifeq ($(COMPILER),cw)
+SELECT_CLIB?=CLIB_CW
+endif
+
 SELECT_CLIB?=CLIB_NEWLIB
 
 ifeq ($(SELECT_CLIB),CLIB_NATIVE)
@@ -281,8 +285,8 @@ vpath-y += $(ROOTDIR)/diagnostic/Det
 
 # include files need by us
 inc-y += $(ROOTDIR)/include
-inc-y += $(ROOTDIR)/kernel/test
-inc-y += $(ROOTDIR)/kernel/include
+inc-y += $(ROOTDIR)/system/kernel/test
+inc-y += $(ROOTDIR)/system/kernel/include
 inc-y += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
 inc-y += $(ROOTDIR)/$(ARCH_PATH-y)/drivers
 inc-y += $(ROOTDIR)/boards/$(BOARDDIR)/config

@@ -26,7 +26,7 @@
 #include "Det.h"
 #include "Os.h"
 #include "arc.h"
-#include "irq.h"
+#include "isr.h"
 
 #define FIRST_OC_REG 0x50
 

@@ -17,6 +17,11 @@
 #include <stdlib.h>
 #include "Os.h"
 #include "internal.h"
+#include "counter_i.h"
+#include "sys.h"
+#include "alarm_i.h"
+#include "sched_table_i.h"
+#include "application.h"
 #include "arc.h"
 
 #define COUNTER_STD_END 	\
@@ -26,24 +31,6 @@
 	ok:					\
 		return rv;
 
-
-/* Accessor functions */
-#if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
-static inline OsSchTblAdjExpPointType *getAdjExpPoint( OsSchTblType *stblPtr ) {
-	return &stblPtr->adjExpPoint;
-}
-#endif
-
-
-static inline const struct OsSchTblAutostart *getAutoStart( OsSchTblType *stblPtr ) {
-	return stblPtr->autostartPtr;
-}
-
-#if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
-static inline struct OsScheduleTableSync *getSync( OsSchTblType *stblPtr ) {
-	return &stblPtr->sync;
-}
-#endif
 
 
 #define IsCounterValid(_counterId)   ((_counterId) <= OS_COUNTER_CNT)
@@ -59,7 +46,17 @@ StatusType IncrementCounter( CounterType counter_id ) {
 	StatusType rv = E_OK;
 	OsCounterType *cPtr;
 	uint32_t flags;
-	cPtr = Os_CfgGetCounter(counter_id);
+	cPtr = Os_CounterGet(counter_id);
+
+#if	(OS_APPLICATION_CNT > 1)
+
+	rv = Os_ApplHaveAccess( cPtr->accessingApplMask );
+	if( rv != E_OK ) {
+		goto err;
+	}
+
+#endif
+
 
 	Irq_Save(flags);
 	/** @req OS376 */
@@ -100,7 +97,7 @@ StatusType GetCounterValue( CounterType counter_id , TickRefType tick_ref)
 {
 	StatusType rv = E_OK;
 	OsCounterType *cPtr;
-	cPtr = Os_CfgGetCounter(counter_id);
+	cPtr = Os_CounterGet(counter_id);
 
 	/** @req OS376 */
 	if( !IsCounterValid(counter_id) ) {
@@ -112,7 +109,7 @@ StatusType GetCounterValue( CounterType counter_id , TickRefType tick_ref)
 	if( cPtr->type == COUNTER_TYPE_HARD ) {
 		if( cPtr->driver == NULL ) {
 			/* It's OSINTERNAL */
-			*tick_ref = os_sys.tick;
+			*tick_ref = Os_Sys.tick;
 		} else {
 #if 0
 		/* We support only GPT for now */
@@ -144,7 +141,7 @@ StatusType GetElapsedCounterValue( CounterType counter_id, TickRefType val, Tick
 	TickType currTick = 0;
 	TickType max;
 
-	cPtr = Os_CfgGetCounter(counter_id);
+	cPtr = Os_CounterGet(counter_id);
 
 	/** @req OS381 */
 	if( !IsCounterValid(counter_id) ) {
@@ -187,16 +184,30 @@ StatusType GetElapsedCounterValue( CounterType counter_id, TickRefType val, Tick
 CounterType Os_Arc_OsTickCounter __attribute__((weak)) = -1;
 
 void OsTick( void ) {
-
-	// Internal counter, always updated
-	os_sys.tick++;
-
-	// If proper OsCounter for os tick is not used, os_tick_counter < 0
+	// if not used, os_tick_counter < 0
 	if (Os_Arc_OsTickCounter >= 0) {
 
-		OsCounterType *cPtr = Os_CfgGetCounter(Os_Arc_OsTickCounter);
+		OsCounterType *cPtr = Os_CounterGet(Os_Arc_OsTickCounter);
+#if defined(USE_KERNEL_EXTRA)
+		OsTaskVarType *pcbPtr;
+#endif
+
+		Os_Sys.tick++;
+
 		cPtr->val = Os_CounterAdd( cPtr->val, Os_CounterGetMaxValue(cPtr), 1 );
 
+#if defined(USE_KERNEL_EXTRA)
+		/* Check tasks in the timer queue (here from Sleep() or WaitSemaphore() ) */
+		TAILQ_FOREACH(pcbPtr, &Os_Sys.timerHead, timerEntry ) {
+			--pcbPtr->timerDec;
+			if( pcbPtr->timerDec <= 0 ) {
+				/* Remove from the timer queue */
+				TAILQ_REMOVE(&Os_Sys.timerHead, pcbPtr, timerEntry);
+				/* ... and add to the ready queue */
+				Os_TaskMakeReady(pcbPtr);
+			}
+		}
+#endif
 #if OS_ALARM_CNT!=0
 		Os_AlarmCheck(cPtr);
 #endif
@@ -207,7 +218,7 @@ void OsTick( void ) {
 }
 
 TickType GetOsTick( void ) {
-	return get_os_tick();
+	return Os_Sys.tick;
 }
 
 
@@ -222,7 +233,7 @@ void Os_CounterInit( void ) {
 
 		/* Add the alarms to counters */
 		for (int i = 0; i < OS_ALARM_CNT; i++) {
-			aPtr = Os_CfgGetAlarmObj(i);
+			aPtr = Os_AlarmGet(i);
 			cPtr = aPtr->counter;
 			SLIST_INSERT_HEAD(&cPtr->alarm_head, aPtr, alarm_list);
 		}
@@ -237,7 +248,7 @@ void Os_CounterInit( void ) {
 		/* Add the schedule tables to counters */
 		for(int i=0; i < OS_SCHTBL_CNT; i++ ) {
 
-			sPtr = Os_CfgGetSched(i);
+			sPtr = Os_SchTblGet(i);
 			cPtr = sPtr->counter;
 			SLIST_INSERT_HEAD(&cPtr->sched_head, sPtr, sched_list);
 		}

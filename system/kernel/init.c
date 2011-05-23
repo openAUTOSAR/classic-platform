@@ -13,24 +13,59 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
+/* ----------------------------[includes]------------------------------------*/
 #include <stdlib.h>
 #include <string.h>
 #include "Os.h"
 #include "internal.h"
 #include "arc.h"
 #include "debug.h"
+#include "task_i.h"
+#include "sys.h"
+#include "isr.h"
+#include "counter_i.h"
+#include "application.h"
+#include "sched_table_i.h"
+#include "alarm_i.h"
 #include "arch.h"
 
-extern void Os_CfgGetInterruptStackInfo( OsStackType *stack );
-extern uint32_t McuE_GetSystemClock( void );
-extern OsTickType OsTickFreq;
-
-sys_t os_sys;
+/* ----------------------------[private define]------------------------------*/
+/* ----------------------------[private macro]-------------------------------*/
+#define OS_VALIDATE(_a,_b)   if((_a)!=(_b) ) { \
+								assert(#_a  #_b); \
+							  }
+/* ----------------------------[private typedef]-----------------------------*/
+/* ----------------------------[private function prototypes]-----------------*/
+/* ----------------------------[private variables]---------------------------*/
+Os_SysType Os_Sys;
 
 Os_IntCounterType Os_IntDisableAllCnt;
 Os_IntCounterType Os_IntSuspendAllCnt;
 Os_IntCounterType Os_IntSuspendOsCnt;
+
+OsErrorType os_error;
+
+/* ----------------------------[private functions]---------------------------*/
+
+
+static void Os_CfgValidate(void ) {
+	OS_VALIDATE(OS_COUNTER_CNT,ARRAY_SIZE(counter_list));
+#if (RESOURCE_CNT!=0)
+	OS_VALIDATE(OS_RESOURCE_CNT,ARRAY_SIZE(resource_list));
+#endif
+	OS_VALIDATE(OS_TASK_CNT ,ARRAY_SIZE( Os_TaskConstList));
+#if (RESOURCE_CNT!=0)
+	OS_VALIDATE(OS_ALARM_CNT,ARRAY_SIZE(alarm_list));
+#endif
+#if (OS_SCHTBL_CNT!=0)
+	OS_VALIDATE(OS_SCHTBL_CNT, ARRAY_SIZE(sched_list));
+#endif
+}
+
+/* ----------------------------[public functions]----------------------------*/
+
+extern uint32_t McuE_GetSystemClock( void );
+extern OsTickType OsTickFreq;
 
 
 /**
@@ -40,39 +75,11 @@ Os_IntCounterType Os_IntSuspendOsCnt;
  * @param 	r_pcb	rom data
  */
 
-static void os_pcb_rom_copy( OsPcbType *pcb, const OsRomPcbType *r_pcb ) {
-
-#if 0 //?????
-	// Check to that the memory is ok
-	{
-		int cnt = sizeof(OsPcbType);
-		for(int i=0;i<cnt;i++) {
-			if( *((unsigned char *)pcb) != 0 ) {
-				while(1) ;
-			}
-		}
-	}
-#endif
-
-//	memset(pcb,sizeof(OsPcbType),0);
-	pcb->pid = r_pcb->pid;
-	pcb->prio = r_pcb->prio;
-#if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
-	pcb->application = Os_CfgGetApplObj(r_pcb->application_id);
-#endif
-	pcb->entry = r_pcb->entry;
-	pcb->proc_type = r_pcb->proc_type;
-	pcb->autostart =  r_pcb->autostart;
+static void copyPcbParts( OsTaskVarType *pcb, const OsTaskConstType *r_pcb ) {
+	assert(r_pcb->prio<=OS_TASK_PRIORITY_MAX);
+	pcb->activePriority = r_pcb->prio;
 	pcb->stack= r_pcb->stack;
-	pcb->pcb_rom_p = r_pcb;
-	pcb->resource_int_p = r_pcb->resource_int_p;
-	pcb->scheduling = r_pcb->scheduling;
-	pcb->resourceAccess = r_pcb->resourceAccess;
-	pcb->activationLimit = r_pcb->activationLimit;
-//	pcb->app = &app_list[r_pcb->app];
-//	pcb->app_mask = app_mask[r_pcb->app];
-	strncpy(pcb->name,r_pcb->name,16);
-	pcb->name[15] = '\0';
+	pcb->constPtr = r_pcb;
 }
 
 static _Bool init_os_called = 0;
@@ -84,27 +91,35 @@ static _Bool init_os_called = 0;
 
 void InitOS( void ) {
 	int i;
-	OsPcbType *tmp_pcb;
-	OsStackType int_stack;
+	OsTaskVarType *tmpPcbPtr;
+	OsIsrStackType intStack;
 
 	init_os_called = 1;
+
+	Os_CfgValidate();
 
 	DEBUG(DEBUG_LOW,"os_init");
 
 	/* Clear sys */
-	memset(&os_sys,0,sizeof(sys_t));
+	memset(&Os_Sys,0,sizeof(Os_SysType));
 
 	Os_ArchInit();
 
+	/* Get the numbers defined in the editor */
+	Os_Sys.isrCnt = OS_ISR_CNT;
+
 	// Assign pcb list and init ready queue
-	os_sys.pcb_list = pcb_list;
-	TAILQ_INIT(& os_sys.ready_head);
-	TAILQ_INIT(& os_sys.pcb_head);
+	Os_Sys.pcb_list = Os_TaskVarList;
+	TAILQ_INIT(& Os_Sys.ready_head);
+//	TAILQ_INIT(& Os_Sys.pcb_head);
+#if defined(USE_KERNEL_EXTRA)
+	TAILQ_INIT(& Os_Sys.timerHead);
+#endif
 
 	// Calc interrupt stack
-	Os_CfgGetInterruptStackInfo(&int_stack);
+	Os_IsrGetStackInfo(&intStack);
 	// TODO: 16 is arch dependent
-	os_sys.int_stack = (void *)((size_t)int_stack.top + (size_t)int_stack.size - 16);
+	Os_Sys.intStack = (void *)((size_t)intStack.top + (size_t)intStack.size - 16);
 
 	// Init counter.. with alarms and schedule tables
 #if OS_COUNTER_CNT!=0
@@ -119,20 +134,17 @@ void InitOS( void ) {
 	// TODO: we should really hash on priority here to get speed, but I don't care for the moment
 	// TODO: Isn't this just EXTENED tasks ???
 	for( i=0; i < OS_TASK_CNT; i++) {
-		tmp_pcb = os_get_pcb(i);
+		tmpPcbPtr = Os_TaskGet(i);
 
-		assert(tmp_pcb->prio<=OS_TASK_PRIORITY_MAX);
+		copyPcbParts(tmpPcbPtr,&Os_TaskConstList[i]);
+		Os_TaskContextInit(tmpPcbPtr);
+		TAILQ_INIT(&tmpPcbPtr->resourceHead);
 
-		os_pcb_rom_copy(tmp_pcb,os_get_rom_pcb(i));
-		if( !(tmp_pcb->proc_type & PROC_ISR) ) {
-			Os_ContextInit(tmp_pcb);
-		}
+#if 0
+		Os_AddTask(tmpPcbPtr);
+#endif
 
-		TAILQ_INIT(&tmp_pcb->resource_head);
-
-		Os_AddTask(tmp_pcb);
-
-		DEBUG(DEBUG_LOW,"pid:%d name:%s prio:%d\n",tmp_pcb->pid,tmp_pcb->name,tmp_pcb->prio);
+		DEBUG(DEBUG_LOW,"pid:%d name:%s prio:%d\n",tmpPcbPtr->pid,tmpPcbPtr->name,tmpPcbPtr->prio);
 	}
 
 	Os_ResourceInit();
@@ -141,7 +153,8 @@ void InitOS( void ) {
 }
 
 static void os_start( void ) {
-	OsPcbType *tmp_pcb;
+	uint16_t i;
+	OsTaskVarType *tmpPcbPtr = NULL;
 
 	// We will be setting up interrupts,
 	// but we don't want them to fire just yet
@@ -152,10 +165,17 @@ static void os_start( void ) {
 	/* TODO: fix ugly */
 	/* Call the startup hook */
 	extern struct OsHooks os_conf_global_hooks;
-	os_sys.hooks = &os_conf_global_hooks;
-	if( os_sys.hooks->StartupHook!=NULL ) {
-		os_sys.hooks->StartupHook();
+	Os_Sys.hooks = &os_conf_global_hooks;
+	if( Os_Sys.hooks->StartupHook!=NULL ) {
+		Os_Sys.hooks->StartupHook();
 	}
+
+
+#if	(OS_USE_APPLICATIONS == STD_ON)
+	/* Start applications */
+	Os_ApplStart();
+#endif
+
 
 	/* Alarm autostart */
 #if OS_ALARM_CNT!=0
@@ -175,31 +195,46 @@ static void os_start( void ) {
 
 	/* Find highest Autostart task */
 	{
-		OsPcbType *iterPcbPtr;
+		OsTaskVarType *iterPcbPtr;
 		OsPriorityType topPrio = -1;
 
-		TAILQ_FOREACH(iterPcbPtr,& os_sys.pcb_head,pcb_list) {
-			if(	iterPcbPtr->autostart ) {
-				if( iterPcbPtr->prio > topPrio ) {
-					tmp_pcb = iterPcbPtr;
-					topPrio = iterPcbPtr->prio;
+		for(i=0;i<OS_TASK_CNT;i++) {
+			iterPcbPtr = Os_TaskGet(i);
+			if(	iterPcbPtr->constPtr->autostart ) {
+				if( iterPcbPtr->activePriority > topPrio ) {
+					tmpPcbPtr = iterPcbPtr;
+					topPrio = iterPcbPtr->activePriority;
+				}
+			}
+		}
+#if 0
+		TAILQ_FOREACH(iterPcbPtr,& Os_Sys.pcb_head,pcb_list) {
+			if(	iterPcbPtr->constPtr->autostart ) {
+				if( iterPcbPtr->activePriority > topPrio ) {
+					tmpPcbPtr = iterPcbPtr;
+					topPrio = iterPcbPtr->activePriority;
 				}
 			}
  		}
+#endif
 	}
 
 	// Swap in prio proc.
 	{
-		// FIXME: Do this in a more structured way.. setting os_sys.curr_pcb manually is not the way to go..
-		os_sys.curr_pcb = tmp_pcb;
+		// FIXME: Do this in a more structured way.. setting Os_Sys.currTaskPtr manually is not the way to go..
+		Os_Sys.currTaskPtr = tmpPcbPtr;
+#if	(OS_USE_APPLICATIONS == STD_ON)
+		/* Set current application */
+		Os_Sys.currApplId = tmpPcbPtr->constPtr->applOwnerId;
+#endif
 
 		// register this auto-start activation
-		assert(tmp_pcb->activations < tmp_pcb->activationLimit);
-		tmp_pcb->activations++;
+		assert(tmpPcbPtr->activations < tmpPcbPtr->constPtr->activationLimit);
+		tmpPcbPtr->activations++;
 
 		// NOTE! We don't go for os_swap_context() here..
 		// first arg(NULL) is dummy only
-		Os_TaskSwapContextTo(NULL,tmp_pcb);
+		Os_TaskSwapContextTo(NULL,tmpPcbPtr);
 		// We should not return here
 		assert(0);
 	}
@@ -216,7 +251,7 @@ int test_bss = 0;
 
 
 void noooo( void ) {
-	while(1) ;
+	while(1);
 }
 
 extern void EcuM_Init();
@@ -243,7 +278,7 @@ void StartOS(AppModeType Mode) {
 		noooo();
 	}
 
-	os_sys.appMode = Mode;
+	Os_Sys.appMode = Mode;
 
 	Os_CfgValidate();
 
@@ -262,8 +297,8 @@ void StartOS(AppModeType Mode) {
 /** @req OS071 */
 void ShutdownOS( StatusType Error ) {
 
-	if( os_sys.hooks->ShutdownHook != NULL ) {
-		os_sys.hooks->ShutdownHook(Error);
+	if( Os_Sys.hooks->ShutdownHook != NULL ) {
+		Os_Sys.hooks->ShutdownHook(Error);
 	}
 
 	Irq_Disable();

@@ -16,6 +16,9 @@ LOCAL &datafile &file &rfile &data &tmpfile &stop &testfiles
 
 &tdir="&cfg_project_path_g\binaries\*osek*.elf"
 os cmd /c dir &tdir/B /O:N > &datafile
+&tdir="&cfg_project_path_g\binaries\*os_*.elf"
+os cmd /c dir &tdir/B /O:N >> &datafile
+
 
 os cmd /c del &rfile
 os cmd /c echo "" > &rfile
@@ -76,6 +79,7 @@ testrun:
   b.d /all
   term.close
   RETURN
+
 
 
 

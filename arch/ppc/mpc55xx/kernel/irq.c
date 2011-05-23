@@ -1,3 +1,4 @@
+
 /* -------------------------------- Arctic Core ------------------------------
  * Arctic Core - the open source AUTOSAR platform http://arccore.com
  *
@@ -23,28 +24,37 @@
 /* ----------------------------[public functions]----------------------------*/
 
 
+/* ----------------------------[includes]------------------------------------*/
+
 #include "internal.h"
 #include "irq_types.h"
 #include "mpc55xx.h"
-
-
-#include "pcb.h"
+//#include "pcb.h"
 #include "sys.h"
 #include "internal.h"
 #include "task_i.h"
 #include "hooks.h"
-
-
 #include "debug.h"
+#include "isr.h"
+#include <stdint.h>
 
-#include "irq.h"
-
+/* ----------------------------[private define]------------------------------*/
+/* ----------------------------[private macro]-------------------------------*/
+/* ----------------------------[private typedef]-----------------------------*/
 typedef void (*f_t)( uint32_t *);
+
+/* ----------------------------[private function prototypes]-----------------*/
+//extern uintptr_t Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
+//extern uint8 Irq_IsrTypeTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
+//extern const OsIsrConstType *Irq_Map[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
+
+//static void dumpExceptionRegs( uint32_t *regs );
+
+/* ----------------------------[private variables]---------------------------*/
 extern void exception_tbl(void);
 
-
-extern void * Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
-//extern uint8 Irq_IsrTypeTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
+/* ----------------------------[private functions]---------------------------*/
+/* ----------------------------[public functions]----------------------------*/
 
 // write 0 to pop INTC stack
 void Irq_Init( void ) {
@@ -98,30 +108,17 @@ void Irq_Init( void ) {
 	#if defined(CFG_MPC5516)
 	  INTC.MCR.B.HVEN_PRC0 = 0; // Soft vector mode
 	  INTC.MCR.B.VTES_PRC0 = 0; // 4 byte offset between entries
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5606S)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
 	  INTC.MCR.B.HVEN = 0; // Soft vector mode
 	  INTC.MCR.B.VTES = 0; // 4 byte offset between entries
 	#endif
 
-
-
-#if 1
-	  // Check alignment requirements for the INTC table
-	  assert( (((uint32_t)&Irq_VectorTable[0]) & 0x7ff) == 0 );
-	#if defined(CFG_MPC5516)
-	  INTC.IACKR_PRC0.R = (uint32_t) & Irq_VectorTable[0]; // Set INTC ISR vector table
-	#elif defined(CFG_MPC5606S)
-	  INTC.IACKR.R = (uint32_t) & Irq_VectorTable[0];
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
-	  INTC.IACKR.R = (uint32_t) & Irq_VectorTable[0]; // Set INTC ISR vector table
-	#endif
-#endif
 	  // Pop the FIFO queue
 	  for (int i = 0; i < 15; i++)
 	  {
 	#if defined(CFG_MPC5516)
 	    INTC.EOIR_PRC0.R = 0;
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5606S)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
 	    INTC.EOIR.R = 0;
 	#endif
 	  }
@@ -129,67 +126,20 @@ void Irq_Init( void ) {
 	  // Accept interrupts
 	#if defined(CFG_MPC5516)
 	  INTC.CPR_PRC0.B.PRI = 0;
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5606S)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
 	  INTC.CPR.B.PRI = 0;
 	#endif
-
 }
 
 void Irq_EOI( void ) {
 #if defined(CFG_MPC5516)
 	volatile struct INTC_tag *intc = &INTC;
 	intc->EOIR_PRC0.R = 0;
-#elif defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC5606S)
+#elif defined(CFG_MPC5554)||defined(CFG_MPC5567)
 	volatile struct INTC_tag *intc = &INTC;
-	#if defined(CFG_MPC5606S)
-	RTC.RTCC.B.CNTEN = 0;
-	RTC.RTCC.B.CNTEN = 1;
-	RTC.RTCS.B.RTCF = 1;
-	#endif
 	intc->EOIR.R = 0;
 #endif
 }
-
-#if 0
-/**
- *
- * @param stack_p Ptr to the current stack.
- *
- * The stack holds C, NVGPR, VGPR and the EXC frame.
- *
- */
-void *Irq_Entry( void *stack_p )
-{
-	uint32_t vector;
-	volatile struct INTC_tag *intc = &INTC;
-
-#if defined(CFG_MPC5516)
-	vector = (intc->IACKR_PRC0.B.INTVEC_PRC0);
-#elif defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC5606S)
-	vector = (intc->IACKR.B.INTVEC);
-#endif
-	// Clear software int if that was it.
-	if(vector<=INTC_SSCIR0_CLR7)
-	{
-		intc->SSCIR[vector].B.CLR = 1;
-		asm("mbar 0");
-	}
-
-	if( Irq_GetIsrType(vector) == ISR_TYPE_1 ) {
-		// It's a function, just call it.
-		((func_t)Irq_VectorTable[vector])();
-		return stack_p;
-	} else {
-		// It's a PCB
-		// Let the kernel handle the rest,
-		return Os_Isr(stack_p, (void *)Irq_VectorTable[vector]);
-	}
-}
-
-#endif
-
-
-
 
 static inline int osPrioToCpuPio( uint8_t prio ) {
 	assert(prio<32);
@@ -197,8 +147,6 @@ static inline int osPrioToCpuPio( uint8_t prio ) {
 }
 
 void Irq_SetPriority( Cpu_t cpu,  IrqType vector, uint8_t prio ) {
-	(void)cpu;
-	(void)vector;
 #if defined(CFG_MPC5516)
 	INTC.PSR[vector].B.PRC_SEL = cpu;
 #endif
@@ -207,54 +155,20 @@ void Irq_SetPriority( Cpu_t cpu,  IrqType vector, uint8_t prio ) {
 
 
 
-/**
- * Attach an ISR type 1 to the interrupt controller.
- *
- * @param entry
- * @param int_ctrl
- * @param vector
- * @param prio
- */
-void Irq_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector,uint8_t prio) {
-	(void)int_ctrl;
-	Irq_VectorTable[vector] = (void *)entry;
-	Irq_SetIsrType((IrqType)vector, ISR_TYPE_1 );
+
+void Irq_EnableVector( int16_t vector, int priority, int core ) {
 
 	if (vector < INTC_NUMBER_OF_INTERRUPTS) {
-		Irq_SetPriority(CPU_CORE0, (IrqType)(vector + IRQ_INTERRUPT_OFFSET), osPrioToCpuPio(prio));
-	} else if ((vector >= CRITICAL_INPUT_EXCEPTION) && (vector
-			<= DEBUG_EXCEPTION)) {
-	} else {
-		/* Invalid vector! */
-		assert(0);
-	}
-
-}
-
-/**
- * Attach a ISR type 2 to the interrupt controller.
- *
- * @param tid
- * @param int_ctrl
- * @param vector
- */
-void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
-	OsPcbType *pcb;
-
-	(void)int_ctrl;
-	pcb = os_find_task(tid);
-	Irq_VectorTable[vector] = pcb;
-	Irq_IsrTypeTable[vector] = PROC_ISR2;
-
-	if (vector < INTC_NUMBER_OF_INTERRUPTS) {
-		Irq_SetPriority(CPU_CORE0, (IrqType)(vector + IRQ_INTERRUPT_OFFSET), osPrioToCpuPio(pcb->prio));
-	} else if ((vector >= CRITICAL_INPUT_EXCEPTION) && (vector
-			<= DEBUG_EXCEPTION)) {
+		Irq_SetPriority(core, (IrqType)(vector + IRQ_INTERRUPT_OFFSET), osPrioToCpuPio(priority));
+	} else if ((vector >= CRITICAL_INPUT_EXCEPTION)
+			&& (vector<= DEBUG_EXCEPTION)) {
 	} else {
 		/* Invalid vector! */
 		assert(0);
 	}
 }
+
+
 
 
 /**
@@ -284,11 +198,8 @@ uint8_t Irq_GetCurrentPriority( Cpu_t cpu) {
 	} else if ( cpu == CPU_Z0 ) {
 		prio = INTC.CPR_PRC1.B.PRI;
 	}
-#elif defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC5606S)
+#elif defined(CFG_MPC5554)||defined(CFG_MPC5567)
 	prio = INTC.CPR.B.PRI;
-	(void)cpu;
-#else
-	(void)cpu;
 #endif
 
 	return prio;

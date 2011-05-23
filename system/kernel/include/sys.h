@@ -16,6 +16,42 @@
 #ifndef SYS_H_
 #define SYS_H_
 
+#include "task_i.h"
+#include "isr.h"
+
+/* STD container : OsOs. OSEK properties
+ * Class: ALL
+ *
+ * OsScalabilityClass:			0..1 SC1,SC2,SC3,SC4
+ * OsStackMonitoring:			1    Stack monitoring of tasks/category 2
+ * OsStatus                 	1    EXTENDED or STANDARD status
+ * OsUseGetServiceId			1    We can use the  OSErrorGetServiceId() function
+ * OsUseParameterAccess			1    We save the parameters in OSError_XX_YY()
+ * OsUseResScheduler			1
+ * OsHooks[C]               	1
+ *
+ * From OSEK/VDX oil:
+ *
+ * OS ExampleOS {
+ *   STATUS = STANDARD;
+ *   STARTUPHOOK = TRUE;
+ *   ERRORHOOK = TRUE;
+ *   SHUTDOWNHOOK = TRUE;
+ *   PRETASKHOOK = FALSE;
+ *   POSTTASKHOOK = FALSE;
+ *   USEGETSERVICEID = FALSE;
+ *   USEPARAMETERACCESS = FALSE;
+ *   USERESSCHEDULER = TRUE;
+ * };
+ *
+ * OS_SC1 | OS_SC2 | OS_SC3 | OS_SC4
+ * OS_STACK_MONITORING
+ * OS_STATUS_EXTENDED  / OS_STATUS_STANDARD
+ * OS_USE_GET_SERVICE_ID
+ * OS_USE_PARAMETER_ACCESS
+ * OS_RES_SCHEDULER
+ * */
+
 struct os_conf_global_hook_s;
 
 typedef enum  {
@@ -25,24 +61,32 @@ typedef enum  {
 	OP_TERMINATE_TASK = 8,
 	OP_SCHEDULE = 16,
 	OP_CHAIN_TASK = 32,
-	OP_RELEASE_RESOURCE = 64
+	OP_RELEASE_RESOURCE = 64,
+	OP_SLEEP = 128,
+	OP_WAIT_SEMAPHORE = 256,
+	OP_SIGNAL_SEMAPHORE = 512
 } OpType ;
 
-typedef struct sys_s {
+/*
+ * Global system structure
+ */
+typedef struct Os_Sys {
 //	OsApplicationType *curr_application;
 	/* Current running task*/
-	OsPcbType *curr_pcb;
+	OsTaskVarType *currTaskPtr;
+
+	OsIsrVarType *currIsrPtr;
 
 	/* List of all tasks */
-	OsPcbType *pcb_list;
+	OsTaskVarType *pcb_list;
 
-	OsPcbType *chainedPcbPtr;
+	OsTaskVarType *chainedPcbPtr;
 	/* Interrupt nested count */
-	uint32 int_nest_cnt;
+	uint32 intNestCnt;
 	/* The current operation */
 	uint8_t op;
 	/* Ptr to the interrupt stack */
-	void *int_stack;
+	void *intStack;
 	// The os tick
 	TickType tick;
 	// 1-The scheduler is locked (by GetResource() or something else)
@@ -59,31 +103,69 @@ typedef struct sys_s {
 	/* Current Application mode */
 	AppModeType appMode;
 
-//	uint32_t flags;
+#if	(OS_USE_APPLICATIONS == STD_ON)
+	ApplicationStateType currApplState;
+	ApplicationType currApplId;
+#endif
 
 	uint32_t task_cnt;
+
+	uint32_t isrCnt;
+#if defined(USE_KERNEL_EXTRA)
+
+/* List of PCB's to be put in ready list when timeout */
+	TAILQ_HEAD(,OsTaskVar) timerHead;		// TASK
+#endif
+
 	/* List of all pcb's,
 	 * Only needed for non-static configuration of the kernel
 	 */
-	TAILQ_HEAD(,OsPcb) pcb_head;
+//	TAILQ_HEAD(,OsTaskVar) pcb_head;
 	/* Ready queue */
-	TAILQ_HEAD(,OsPcb) ready_head;
+	TAILQ_HEAD(,OsTaskVar) ready_head;
 
-	/* Occording to OSEK 8.3 RES_SCHEDULER is accessible to all tasks */
+//	TAILQ_HEAD(,OsIsrVar) isrHead;
+
+	/* According to OSEK 8.3 RES_SCHEDULER is accessible to all tasks */
 	OsResourceType resScheduler;
-} sys_t;
+} Os_SysType;
 
-extern sys_t os_sys;
+extern Os_SysType Os_Sys;
 
-static inline OsPcbType *Os_TaskGetCurrent(  void ) {
-	return os_sys.curr_pcb;
+static inline _Bool Os_SchedulerResourceIsFree() {
+	return (Os_Sys.resScheduler.owner == NO_TASK_OWNER );
 }
 
-#if 0
-static uint32_t OSErrorGetServiceId( void ) {
-	return os_sys.serviceId;
+static inline void Os_SysTaskSetCurr( OsTaskVarType *pcb ) {
+	Os_Sys.currTaskPtr = pcb;
 }
-#endif
+
+static inline OsTaskVarType *Os_SysTaskGetCurr( void ) {
+	return Os_Sys.currTaskPtr;
+}
+
+static inline OsIsrVarType *Os_SysIsrGetCurr( void ) {
+	return Os_Sys.currIsrPtr;
+}
+
+/**
+ * Check if any of the interrupt disable/suspends counters is != 0
+ *
+ * @return 1 if there are outstanding disable/suspends
+ */
+static inline _Bool Os_SysIntAnyDisabled( void ) {
+	return ((Os_IntDisableAllCnt | Os_IntSuspendAllCnt | Os_IntSuspendOsCnt) != 0);
+}
+
+/**
+ * Clear all disable/system interrupts
+ */
+static inline void Os_SysIntClearAll( void ) {
+	Os_IntDisableAllCnt = 0;
+	Os_IntSuspendAllCnt = 0;
+	Os_IntSuspendOsCnt = 0;
+}
+
 
 
 #endif /*SYS_H_*/

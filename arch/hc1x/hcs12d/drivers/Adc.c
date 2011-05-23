@@ -20,7 +20,7 @@
 #include "Adc.h"
 #include "Det.h"
 #include "Os.h"
-#include "irq.h"
+#include "isr.h"
 #include "regs.h"
 #include "arc.h"
 

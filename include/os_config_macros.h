@@ -32,39 +32,26 @@
 #define ARRAY_SIZE(_x)		(sizeof(_x)/sizeof((_x)[0]))
 #endif
 
-#if defined(CFG_PPC)
-#define VECTOR_TBL_ALIGNMENT __attribute__ ((aligned (0x800)))
-#else
-#define VECTOR_TBL_ALIGNMENT
-#endif
-
-
 
 // +1 here.. easy to have a reference..
-#define GEN_TRUSTEDFUNCTIONS_LIST trusted_func_t os_cfg_trusted_list[SERVICE_CNT];
+#define GEN_TRUSTEDFUNCTIONS_LIST trusted_func_t os_cfg_trusted_list[OS_SERVICE_CNT];
 
-#define GEN_APPLICATION_HEAD const OsRomApplicationType rom_app_list[] =
+#define GEN_APPLICATION_HEAD const OsAppConstType Os_AppConst[OS_APPLICATION_CNT]
 
-#define GEN_APPLICATON(	_id,_name,_trusted,_startuphook,_shutdownhook, \
-						_errorhook,_isr_mask,_scheduletable_mask, _alarm_mask, \
-						_counter_mask,_resource_mask,_message_mask ) \
+#define GEN_APPLICATION(	_id,_name, _trusted, _core, _startuphook,_shutdownhook, _errorhook, \
+							_restart_task  ) \
 {												\
-	.application_id = _id, 						\
+	.appId = _id, 						\
 	.name = _name,								\
+	.core = _core,                              \
 	.trusted = _trusted,						\
 	.StartupHook = _startuphook,				\
 	.ShutdownHook = _shutdownhook,				\
 	.ErrorHook = _errorhook,					\
-	.isr_mask = _isr_mask,						\
-	.scheduletable_mask  = _scheduletable_mask,	\
-	.alarm_mask  = _alarm_mask,					\
-	.counter_mask  = _counter_mask,				\
-	.resource_mask  = _resource_mask,			\
-	.message_mask  = _message_mask,				\
+	.restartTaskId = _restart_task				\
 }
 
-
-#define GEN_TASK_HEAD const OsRomPcbType rom_pcb_list[] =
+#define GEN_TASK_HEAD const OsTaskConstType  Os_TaskConstList[OS_TASK_CNT]
 
 
 
@@ -81,63 +68,76 @@
  *                  become (1<<2)|(1<<4) = 0x14 (limits resources to 32).
  *                  Currently used for calculating the ceiling priority.
  */
-#define GEN_ETASK( _id, _priority, _scheduling, _autostart, _resource_int_p,  _resource_mask ) \
+#define GEN_ETASK( 	_id, _name, _priority, _scheduling, \
+					_autostart, _resource_int_p,  _resource_mask, _event_mask, \
+					_appl_owner, _accessing_appl_mask ) \
 {									\
-	.pid = TASK_ID_##_id,           \
-	.name = #_id,					\
+	.pid = TASK_ID_ ## _id,           			\
+	.name = _name,					\
 	.entry = _id,				\
 	.prio = _priority,				\
 	.proc_type = PROC_EXTENDED,		\
 	.stack.size = sizeof stack_##_id,	\
 	.stack.top = stack_##_id,		\
 	.autostart = _autostart,		\
-	.resource_int_p = _resource_int_p, \
+	.resourceIntPtr = _resource_int_p, \
 	.scheduling = _scheduling, \
 	.resourceAccess = _resource_mask, \
+	.eventMask = _event_mask, \
 	.activationLimit = 1, \
+	.applOwnerId = _appl_owner, \
+	.accessingApplMask = _accessing_appl_mask, \
 }
 
-#define GEN_BTASK( _id, _priority, _scheduling, _autostart, _resource_int_p,  _resource_mask, _activation_limit ) \
+#define GEN_BTASK( 	_id, _name, _priority, _scheduling, \
+					_autostart, _resource_int_p,  _resource_mask, \
+					_activation_limit, _appl_owner, _accessing_appl_mask ) \
 {									\
-	.pid = TASK_ID_##_id,           \
-	.name = #_id,					\
+	.pid = TASK_ID_ ## _id,           			\
+	.name = _name,					\
 	.entry = _id,				\
 	.prio = _priority,				\
 	.proc_type = PROC_BASIC,		\
 	.stack.size = sizeof stack_##_id,	\
 	.stack.top = stack_##_id,		\
 	.autostart = _autostart,		\
-	.resource_int_p = _resource_int_p, \
+	.resourceIntPtr = _resource_int_p, \
 	.scheduling = _scheduling, \
 	.resourceAccess = _resource_mask, \
 	.activationLimit = _activation_limit, \
+	.applOwnerId = _appl_owner, \
+	.accessingApplMask = _accessing_appl_mask, \
 }
 
-#define GEN_ISR_2( _id, _name, _entry, _priority,  _vector ) \
-{									\
-	.pid = _id,						\
-	.name = _name,					\
-	.entry = _entry,				\
-	.prio = _priority,				\
-	.proc_type = PROC_ISR2,		    \
-	.vector = _vector,              \
+#define GEN_ISR_HEAD const OsIsrConstType Os_IsrConstList[OS_ISR_CNT]
+
+#define GEN_ISR1( _name, _vector, _priority, _entry, _appOwner ) \
+{                                      \
+		.vector = _vector,             \
+		.type = ISR_TYPE_1,            \
+		.priority = _priority,         \
+		.entry = _entry,               \
+		.name = _name,                 \
+		.resourceMask = 0,             \
+		.appOwner = _appOwner,         \
+}
+
+#define GEN_ISR2( _name, _vector, _priority, _entry, _appOwner, _resourceMask ) \
+{                                      \
+		.vector = _vector,             \
+		.type = ISR_TYPE_2,            \
+		.priority = _priority,         \
+		.entry = _entry,               \
+		.name = _name,                 \
+		.resourceMask = _resourceMask, \
+		.appOwner = _appOwner,         \
 }
 
 
-#define GEN_ISR_1( _id, _name, _entry, _priority , _vector ) \
-{									\
-	.pid = _id,						\
-	.name = _name,					\
-	.entry = _entry,				\
-	.prio = _priority,				\
-	.proc_type = PROC_ISR1,		\
-	.vector = _vector,              \
-}
+#define GEN_ISR_MAP uint8_t Os_VectorToIsr[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS]
 
-//#define GEN_PCB_LIST()	uint8_t pcb_list[PCB_T_SIZE*ARRAY_SIZE(rom_pcb_list)];
-#define GEN_PCB_LIST()	OsPcbType pcb_list[ARRAY_SIZE(rom_pcb_list)];
 
-#define GEN_RESOURCE_HEAD OsResourceType resource_list[] =
+#define GEN_RESOURCE_HEAD OsResourceType resource_list[OS_RESOURCE_CNT]
 
 
 /**
@@ -145,12 +145,14 @@
  * _type              RESOURCE_TYPE_STANDARD, RESOURCE_TYPE_LINKED or RESOURCE_TYPE_INTERNAL
  * _ceiling_priority  The calculated ceiling priority
  */
-#define GEN_RESOURCE( _id, _type, _ceiling_priority ) \
+#define GEN_RESOURCE( _id, _type, _ceiling_priority, _appl_owner, _accessing_appl_mask ) \
 {												\
 	.nr= _id,									\
 	.type= _type,								\
 	.ceiling_priority = _ceiling_priority,		\
 	.owner = (-1),								\
+	.applOwnerId = _appl_owner, 				\
+	.accessingApplMask = _accessing_appl_mask 	\
 }
 
 /**
@@ -178,24 +180,23 @@
  *    NOT USED. Set to 0
  */
 
-#define GEN_COUNTER_HEAD OsCounterType counter_list[] =
+#define GEN_COUNTER_HEAD OsCounterType counter_list[OS_COUNTER_CNT]
 #define GEN_COUNTER( _id, _name, _type, _unit, 	\
 					_maxallowedvalue, 			\
 					_ticksperbase, 				\
 					_mincycle,          \
-					_gpt_ch ) 				\
+					_gpt_ch,				\
+					_appl_owner, \
+					_accessing_appl_mask )  \
 {												\
 	.type = _type,								\
 	.unit = _unit,								\
 	.alarm_base.maxallowedvalue = _maxallowedvalue,	\
 	.alarm_base.tickperbase = _ticksperbase,		\
 	.alarm_base.mincycle = _mincycle,				\
+	.applOwnerId = _appl_owner, \
+	.accessingApplMask = _accessing_appl_mask, \
 }
-#if 0
-	// For now...
-	.driver.OsGptChannelRef = _gpt_ch
-#endif
-
 
 #define	GEN_ALARM_AUTOSTART_NAME(_id)    &(Os_AlarmAutoStart_ ## _id)
 
@@ -215,7 +216,7 @@
 			.appModeRef = _app_mode \
 		}
 
-#define GEN_ALARM_HEAD OsAlarmType alarm_list[] =
+#define GEN_ALARM_HEAD OsAlarmType alarm_list[OS_ALARM_CNT]
 
 /**
  * _id
@@ -244,23 +245,27 @@
  * _X_counter_id - The counter ID if type is ALARM_ACTION_INCREMENTCOUNTER
  *
  */
-#define GEN_ALARM( _id, _name, _counter_id,	\
-		    _autostart_ref,                 \
-			_action_type,					\
-			_action_task_id,				\
-			_action_event_id,				\
-			_action_counter_id )			\
+#define GEN_ALARM( _id, _name, _counter_id,		\
+		    _autostart_ref,                 	\
+			_action_type,						\
+			_action_task_id,					\
+			_action_event_id,					\
+			_action_counter_id,					\
+			_appl_owner, 						\
+			_accessing_appl_mask ) 				\
 {											\
 	.name = _name,							\
 	.counter = &counter_list[_counter_id],	\
 	.counter_id = _counter_id,				\
-	.autostartPtr = _autostart_ref,            \
+	.autostartPtr = _autostart_ref,         \
 	.action = {								\
 		.type = _action_type,				\
 		.task_id = _action_task_id,			\
 		.event_id = _action_event_id,		\
 		.counter_id = _action_counter_id 	\
 	},										\
+	.applOwnerId = _appl_owner, \
+	.accessingApplMask = _accessing_appl_mask, \
 }
 
 /*
@@ -309,7 +314,7 @@
 
 #define GEN_SCHTBL_AUTOSTART_NAME(_id)	&(Os_SchTblAutoStart_ ## _id)
 
-#define GEN_SCHTBL_HEAD OsSchTblType sched_list[] =
+#define GEN_SCHTBL_HEAD OsSchTblType sched_list[OS_SCHTBL_CNT]
 
 /**
  * _id
@@ -338,8 +343,10 @@
  */
 
 #define GEN_SCHEDULETABLE(  _id, _name, _counter_id, _repeating, \
-							_duration,       \
-							_autostart_ref ) \
+							_duration,              \
+							_autostart_ref,         \
+							_appl_owner, 	    	\
+							_accessing_appl_mask )  \
 {											 \
 	.name = _name,						     \
 	.counter = &counter_list[_counter_id],	     \
@@ -349,12 +356,12 @@
 	  .data = (void *)( Os_SchTblExpPointList_ ## _id ), \
 	  .cnt = ARRAY_SIZE(Os_SchTblExpPointList_ ## _id), \
 	 }, \
-	.autostartPtr = _autostart_ref, 			 \
+	 .autostartPtr = _autostart_ref,\
+	.applOwnerId = _appl_owner, \
+	.accessingApplMask = _accessing_appl_mask, \
 }
 
 
-#if (  OS_SC3 == STD_ON) || (  OS_SC4 == STD_ON)
-#error OLD or NOT implemented
 #define GEN_HOOKS( _startup, _protection, _shutdown, _error, _pretask, _posttask ) \
 struct OsHooks os_conf_global_hooks = { \
 		.StartupHook = _startup, 		\
@@ -364,27 +371,6 @@ struct OsHooks os_conf_global_hooks = { \
 		.PreTaskHook = _pretask,		\
 		.PostTaskHook = _posttask		\
 }
-#else
-#define GEN_HOOKS( _startup, _protection, _shutdown, _error, _pretask, _posttask ) \
-struct OsHooks os_conf_global_hooks = { \
-		.StartupHook = _startup, 		\
-		.ShutdownHook = _shutdown,		\
-		.ErrorHook = _error,			\
-		.PreTaskHook = _pretask,		\
-		.PostTaskHook = _posttask		\
-}
-
-#endif
-
-
-#define GEN_IRQ_VECTOR_TABLE_HEAD 	\
-		 void * Irq_VectorTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS] VECTOR_TBL_ALIGNMENT =
-
-#define GEN_IRQ_ISR_TYPE_TABLE_HEAD \
-		 uint8_t Irq_IsrTypeTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS]  =
-
-#define GEN_IRQ_PRIORITY_TABLE_HEAD \
-		 uint8_t Irq_PriorityTable[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS]  =
 
 #define ALIGN_16(x) (((x)>>4)<<4)
 

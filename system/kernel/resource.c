@@ -14,7 +14,11 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 #include "Os.h"
+#include "application.h"
 #include "internal.h"
+#include "task_i.h"
+#include "resource_i.h"
+#include "sys.h"
 #include <assert.h>
 #include <string.h>
 
@@ -106,33 +110,6 @@ TODO:
 #define valid_internal_id() (rPtr->nr < OS_RESOURCE_CNT) //&& (rPtr->type == RESOURCE_TYPE_INTERNAL) )
 
 
-void Os_ResourceAlloc( OsResourceType *rPtr, OsPcbType *pcbPtr) {
-	/* Save old task prio in resource and set new task prio */
-	rPtr->owner = pcbPtr->pid;
-	rPtr->old_task_prio = pcbPtr->prio;
-	pcbPtr->prio = rPtr->ceiling_priority;
-
-	if( rPtr->type != RESOURCE_TYPE_INTERNAL ) {
-		TAILQ_INSERT_TAIL(&pcbPtr->resource_head, rPtr, listEntry);
-	}
-}
-
-void Os_ResourceFree( OsResourceType *rPtr , OsPcbType *pcbPtr) {
-	assert( rPtr->owner == pcbPtr->pid );
-	rPtr->owner = NO_TASK_OWNER;
-	pcbPtr->prio = rPtr->old_task_prio;
-
-	if( rPtr->type != RESOURCE_TYPE_INTERNAL ) {
-		/* The list can't be empty here */
-		assert( !TAILQ_EMPTY(&pcbPtr->resource_head) );
-
-		/* The list should be popped in LIFO order */
-		assert( TAILQ_LAST(&pcbPtr->resource_head, head) == rPtr );
-
-		/* Remove the entry */
-		TAILQ_REMOVE(&pcbPtr->resource_head, rPtr, listEntry);
-	}
-}
 
 /**
  * This call serves to enter critical sections in the code that are
@@ -162,35 +139,70 @@ void Os_ResourceFree( OsResourceType *rPtr , OsPcbType *pcbPtr) {
 
 StatusType GetResource( ResourceType ResID ) {
 	StatusType rv = E_OK;
-	OsPcbType *pcbPtr = Os_TaskGetCurrent();
 	OsResourceType *rPtr;
 	uint32_t flags;
 
+#if	(OS_APPLICATION_CNT > 1)
+
+	rv = Os_ApplHaveAccess( Os_ResourceGet(ResID)->accessingApplMask );
+	if( rv != E_OK ) {
+		goto err;
+	}
+
+#endif
+
 	Irq_Save(flags);
 
-	if( ResID == RES_SCHEDULER ) {
+	if( Os_Sys.intNestCnt != 0 ) {
 
-		rPtr = &os_sys.resScheduler;
-	} else {
+		/* For interrupts to the scheduler resource seems just dumb to get */
+		OsIsrVarType *isrPtr = Os_SysIsrGetCurr();
+
 		/* Check we can access it */
-		if( (pcbPtr->resourceAccess & ( (uint32_t) 1 << ResID)) == 0 ) {
+		if( ((isrPtr->constPtr->resourceMask & (1<< ResID)) == 0) ||
+			( ResID == RES_SCHEDULER )	) {
 			rv = E_OS_ID;
 			goto err;
 		}
 
-		rPtr = Os_CfgGetResource(ResID);
+		rPtr = Os_ResourceGet(ResID);
+
+		/* ceiling prio for ISR seems strange...so no */
+		if( rPtr->owner != NO_TASK_OWNER ) {
+			rv = E_OS_ACCESS;
+			Irq_Restore(flags);
+			goto err;
+		}
+		/* Add the resource to the list of resources held by this isr */
+		Os_IsrResourceAdd(rPtr,isrPtr);
+
+	} else {
+		OsTaskVarType *taskPtr = Os_SysTaskGetCurr();
+
+		if( ResID == RES_SCHEDULER ) {
+			rPtr = &Os_Sys.resScheduler;
+		} else {
+			/* Check we can access it */
+			if( (taskPtr->constPtr->resourceAccess & (1<< ResID)) == 0 ) {
+				rv = E_OS_ID;
+				goto err;
+			}
+
+			rPtr = Os_ResourceGet(ResID);
+		}
+
+		/* Check for invalid configuration */
+		if( (rPtr->owner != NO_TASK_OWNER) ||
+			(taskPtr->activePriority > rPtr->ceiling_priority) )
+		{
+			rv = E_OS_ACCESS;
+			Irq_Restore(flags);
+			goto err;
+		}
+		/* Add the resource to the list of resources held by this task */
+		Os_TaskResourceAdd(rPtr,taskPtr);
 	}
 
-	/* Check for invalid configuration */
-	if( (rPtr->owner != NO_TASK_OWNER) ||
-		(pcbPtr->prio > rPtr->ceiling_priority) )
-	{
-		rv = E_OS_ACCESS;
-		Irq_Restore(flags);
-		goto err;
-	}
-
-	Os_ResourceAlloc(rPtr,pcbPtr);
 	Irq_Restore(flags);
 
 	if (rv != E_OK)
@@ -214,20 +226,20 @@ StatusType GetResource( ResourceType ResID ) {
 
 StatusType ReleaseResource( ResourceType ResID) {
 	StatusType rv = E_OK;
-	OsPcbType *pcbPtr = Os_TaskGetCurrent();
+	OsTaskVarType *pcbPtr = Os_SysTaskGetCurr();
 	OsResourceType *rPtr;
 	uint32_t flags;
 
 	Irq_Save(flags);
 	if( ResID == RES_SCHEDULER ) {
-		rPtr = &os_sys.resScheduler;
+		rPtr = &Os_Sys.resScheduler;
 	} else {
 		/* Check we can access it */
-		if( (pcbPtr->resourceAccess & ( (uint32_t) 1 << ResID) ) == 0 ) {// 960 PC-lint [10.5]: varför klagar? funkar inte heller om (unsigned char)1 )
+		if( (pcbPtr->constPtr->resourceAccess & (1<< ResID)) == 0 ) {
 			rv = E_OS_ID;
 			goto err;
 		}
-		rPtr = Os_CfgGetResource(ResID);
+		rPtr = Os_ResourceGet(ResID);
 	}
 
 	/* Check for invalid configuration */
@@ -238,24 +250,24 @@ StatusType ReleaseResource( ResourceType ResID) {
 		goto err;
 	}
 
-	if( (pcbPtr->prio < rPtr->ceiling_priority))
+	if( (pcbPtr->activePriority < rPtr->ceiling_priority))
 	{
 		rv = E_OS_ACCESS;
 		Irq_Restore(flags);
 		goto err;
 	}
 
-	Os_ResourceFree(rPtr,pcbPtr);
+	Os_TaskResourceRemove(rPtr,pcbPtr);
 
 	/* do a rescheduling (in some cases) (see OSEK OS 4.6.1) */
-	if ( (pcbPtr->scheduling == FULL) &&
-		 (os_sys.int_nest_cnt == 0) &&
+	if ( (pcbPtr->constPtr->scheduling == FULL) &&
+		 (Os_Sys.intNestCnt == 0) &&
 		 (Os_SchedulerResourceIsFree()) ) {
 
-		OsPcbType* top_pcb = Os_TaskGetTop();
+		OsTaskVarType* top_pcb = Os_TaskGetTop();
 
 		/* only dispatch if some other ready task has higher prio */
-		if (top_pcb->prio > Os_TaskGetCurrent()->prio) {
+		if (top_pcb->activePriority > Os_SysTaskGetCurr()->activePriority) {
 			Os_Dispatch(OP_RELEASE_RESOURCE);
 		}
 	}
@@ -266,28 +278,28 @@ StatusType ReleaseResource( ResourceType ResID) {
 
 
 void Os_ResourceGetInternal( void ) {
-	OsPcbType *pcbPtr = Os_TaskGetCurrent();
-	OsResourceType *rt = pcbPtr->resource_int_p;
+	OsTaskVarType *pcbPtr = Os_SysTaskGetCurr();
+	OsResourceType *rt = pcbPtr->constPtr->resourceIntPtr;
 
 	if( rt != NULL ) {
 		OS_DEBUG(D_RESOURCE,"Get IR proc:%s prio:%u old_task_prio:%u\n",
-				get_curr_pcb()->name,
+				Os_SysTaskGetCurr()->name,
 				(unsigned)rt->ceiling_priority,
 				(unsigned)rt->old_task_prio);
-		Os_ResourceAlloc(rt,pcbPtr);
+		Os_TaskResourceAdd(rt,pcbPtr);
 	}
 }
 
 void Os_ResourceReleaseInternal( void ) {
-	OsPcbType *pcbPtr = Os_TaskGetCurrent();
-	OsResourceType *rt = pcbPtr->resource_int_p;
+	OsTaskVarType *pcbPtr = Os_SysTaskGetCurr();
+	OsResourceType *rt = pcbPtr->constPtr->resourceIntPtr;
 
 	if(  rt != NULL ) {
 		OS_DEBUG(D_RESOURCE,"Rel IR proc:%s prio:%u old_task_prio:%u\n",
-				get_curr_pcb()->name,
+				Os_SysTaskGetCurr()->name,
 				(unsigned)rt->ceiling_priority,
 				(unsigned)rt->old_task_prio);
-		Os_ResourceFree(rt,pcbPtr);
+		Os_TaskResourceRemove(rt,pcbPtr);
 	}
 }
 
@@ -299,17 +311,17 @@ void Os_ResourceReleaseInternal( void ) {
  * @return
  */
 void Os_ResourceInit( void ) {
-	//TAILQ_INIT(&pcb_p->resource_head);
-	OsPcbType *pcb_p;
+	//TAILQ_INIT(&pcb_p->resourceHead);
+	OsTaskVarType *pcb_p;
 	OsResourceType *rsrc_p;
 	int topPrio;
 
 
 	/* For now, assign the scheduler resource here */
-	os_sys.resScheduler.ceiling_priority = OS_RES_SCHEDULER_PRIO;
-	strcpy(os_sys.resScheduler.id,"RES_SCHEDULER");
-	os_sys.resScheduler.nr = RES_SCHEDULER;
-	os_sys.resScheduler.owner = NO_TASK_OWNER;
+	Os_Sys.resScheduler.ceiling_priority = OS_RES_SCHEDULER_PRIO;
+	strcpy(Os_Sys.resScheduler.id,"RES_SCHEDULER");
+	Os_Sys.resScheduler.nr = RES_SCHEDULER;
+	Os_Sys.resScheduler.owner = NO_TASK_OWNER;
 
 	/* Calculate ceiling priority
 	 * We make this as simple as possible. The ceiling priority
@@ -319,20 +331,20 @@ void Os_ResourceInit( void ) {
 	 * Note that this applies both internal and standard resources.
 	 * */
 	for( int i=0; i < OS_RESOURCE_CNT; i++) {
-		rsrc_p = Os_CfgGetResource(i);
+		rsrc_p = Os_ResourceGet(i);
 		topPrio = 0;
 
 		for( int pi = 0; pi < OS_TASK_CNT; pi++) {
 
-			pcb_p = os_get_pcb(pi);
+			pcb_p = Os_TaskGet(pi);
 
 
-			if(pcb_p->resourceAccess & ( (uint32_t) 1<<i) ) {
-				topPrio = MAX(topPrio,pcb_p->prio);
+			if(pcb_p->constPtr->resourceAccess & (1<<i) ) {
+				topPrio = MAX(topPrio,pcb_p->constPtr->prio);
 			}
 
 			/* Generator fix, add RES_SCHEDULER */
-			pcb_p->resourceAccess |= (1 << RES_SCHEDULER) ;
+//			pcb_p->constPtr->resourceAccess |= (1 << RES_SCHEDULER) ;
 		}
 		rsrc_p->ceiling_priority = topPrio;
 	}

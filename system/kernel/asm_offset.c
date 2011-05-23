@@ -22,9 +22,12 @@
  */
 
 #include <stddef.h>
-#include "internal.h"
+#include "task_i.h"
+#include "sys.h"
 
 #if defined(__GNUC__)
+
+/* For ARM this will generate to #define APA #12 */
 #define DECLARE(sym,val) \
 	__asm("#define\t" #sym "\t%0" : : "n" ((val)))
 
@@ -34,12 +37,12 @@ void  asm_foo(void) {
     __declspec(section ".apa") char _var[100+ (_offset)]
 #pragma section ".apa" ".apa"
 #endif
-
-	DECLARE(PCB_STACK_CURR_P,	offsetof(OsPcbType, stack));
-	DECLARE(PCB_ENTRY_P,		offsetof(OsPcbType, entry));
-	DECLARE(SYS_CURR_PCB_P,		offsetof(sys_t, curr_pcb));
-	DECLARE(SYS_INT_NEST_CNT, offsetof(sys_t, int_nest_cnt));
-	DECLARE(SYS_INT_STACK, offsetof(sys_t, int_stack));
+DECLARE(PCB_STACK_CURR_P,	offsetof(OsTaskVarType, stack));
+	DECLARE(PCB_CONST_P,		offsetof(OsTaskVarType, constPtr));
+//	DECLARE(PCB_ENTRY_P,		offsetof(OsTaskVarType, entry));
+	DECLARE(SYS_CURR_PCB_P,		offsetof(Os_SysType, currTaskPtr));
+	DECLARE(SYS_INT_NEST_CNT, offsetof(Os_SysType, intNestCnt));
+	DECLARE(SYS_INT_STACK, offsetof(Os_SysType, intStack));
 #if defined(__GNUC__)
 }
 #endif

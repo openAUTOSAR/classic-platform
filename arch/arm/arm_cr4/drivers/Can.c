@@ -22,7 +22,7 @@
 #include "Det.h"
 #include "CanIf_Cbk.h"
 #include "Os.h"
-#include "irq.h"
+#include "isr.h"
 #include "Mcu.h"
 #include "arc.h"
 

@@ -14,7 +14,9 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 #include "internal.h"
-#include "stack.h"
+#include "Cpu.h"
+#include "sys.h"
+#include "arch_stack.h"
 #include "stm32f10x.h"
 
 
@@ -27,7 +29,7 @@ void Os_ArchFirstCall( void )
 {
 	// TODO: make switch here... for now just call func.
 	Irq_Enable();
-	os_sys.curr_pcb->entry();
+	Os_Sys.currTaskPtr->constPtr->entry();
 }
 
 void *Os_ArchGetStackPtr( void ) {
@@ -39,22 +41,22 @@ unsigned int Os_ArchGetScSize( void ) {
 	return SC_SIZE;
 }
 
-void Os_ArchSetTaskEntry(OsPcbType *pcbPtr ) {
+void Os_ArchSetTaskEntry(OsTaskVarType *pcbPtr ) {
 	// TODO: Add lots of things here, see ppc55xx
 	uint32_t *context = (uint32_t *)pcbPtr->stack.curr;
 
 	context[C_CONTEXT_OFFS/4] = SC_PATTERN;
 
 	/* Set LR to start function */
-	if( pcbPtr->proc_type == PROC_EXTENDED ) {
+	if( pcbPtr->constPtr->proc_type == PROC_EXTENDED ) {
 		context[VGPR_LR_OFF/4] = (uint32_t)Os_TaskStartExtended;
-	} else if( pcbPtr->proc_type == PROC_BASIC ) {
+	} else if( pcbPtr->constPtr->proc_type == PROC_BASIC ) {
 		context[VGPR_LR_OFF/4] = (uint32_t)Os_TaskStartBasic;
 	}
 
 }
 
-void Os_ArchSetupContext( OsPcbType *pcb ) {
+void Os_ArchSetupContext( OsTaskVarType *pcb ) {
 	// TODO: Add lots of things here, see ppc55xx
 	// uint32_t *context = (uint32_t *)pcb->stack.curr;
 

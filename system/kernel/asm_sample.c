@@ -24,6 +24,9 @@
  *
  */
 
+
+#include "Os.h"
+
 void apa(void *);
 
 void interrupt(void) __attribute__((__interrupt__));
@@ -35,14 +38,14 @@ void interrupt( void ) {
 
 
 void func1( int a ) {
-
+	(void)a;
 }
 
-int func3( int a ) {
+uint32_t func3( int a ) {
 	if( a == 0) {
 		return 5;
 	}
-	return 4;
+	return (*(uint32_t *)0xE000ED04 ) & 0x1f7;
 }
 
 int func2( void ) {
