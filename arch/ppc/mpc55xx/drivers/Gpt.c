@@ -179,14 +179,7 @@ GPT_ISR( 8 );
 	Irq_AttachIsr2(tid, NULL, PIT_INT ##_channel);							          \
 }
 #else
-#define GPT_ISR_INSTALL( _channel, _prio )													\
-{																					\
-	TaskType tid;																	\
-	tid = Os_Arc_CreateIsr(Gpt_Isr_Channel##_channel, _prio, XSTR__(Gpt_##_channel));	\
-	Irq_AttachIsr2(tid, NULL, PIT_PITFLG_RTIF + _channel);							\
-}
 #endif
-
 //-------------------------------------------------------------------
 
 void Gpt_Init(const Gpt_ConfigType *config)
@@ -244,15 +237,16 @@ void Gpt_Init(const Gpt_ConfigType *config)
       {
         switch( ch )
         {
-          case 0: GPT_ISR_INSTALL( 0, cfg->GptNotificationPriority ); break;
-          case 1: GPT_ISR_INSTALL( 1, cfg->GptNotificationPriority ); break;
-          case 2: GPT_ISR_INSTALL( 2, cfg->GptNotificationPriority ); break;
-          case 3: GPT_ISR_INSTALL( 3, cfg->GptNotificationPriority ); break;
-          case 4: GPT_ISR_INSTALL( 4, cfg->GptNotificationPriority ); break;
-          case 5: GPT_ISR_INSTALL( 5, cfg->GptNotificationPriority ); break;
-          case 6: GPT_ISR_INSTALL( 6, cfg->GptNotificationPriority ); break;
-          case 7: GPT_ISR_INSTALL( 7, cfg->GptNotificationPriority ); break;
-          case 8: GPT_ISR_INSTALL( 8, cfg->GptNotificationPriority ); break;
+          // TODO: What to do with cfg->GptNotificationPriority ?
+          case 0: ISR_INSTALL_ISR2( "Gpt_0", Gpt_Isr_Channel0, PIT_PITFLG_RTIF, 2, 0 ); break;
+          case 1: ISR_INSTALL_ISR2( "Gpt_1", Gpt_Isr_Channel1, PIT_PITFLG_PIT1, 2, 0 ); break;
+          case 2: ISR_INSTALL_ISR2( "Gpt_2", Gpt_Isr_Channel2, PIT_PITFLG_PIT2, 2, 0 ); break;
+          case 3: ISR_INSTALL_ISR2( "Gpt_3", Gpt_Isr_Channel3, PIT_PITFLG_PIT3, 2, 0 ); break;
+          case 4: ISR_INSTALL_ISR2( "Gpt_4", Gpt_Isr_Channel4, PIT_PITFLG_PIT4, 2, 0 ); break;
+          case 5: ISR_INSTALL_ISR2( "Gpt_5", Gpt_Isr_Channel5, PIT_PITFLG_PIT5, 2, 0 ); break;
+          case 6: ISR_INSTALL_ISR2( "Gpt_6", Gpt_Isr_Channel6, PIT_PITFLG_PIT6, 2, 0 ); break;
+          case 7: ISR_INSTALL_ISR2( "Gpt_7", Gpt_Isr_Channel7, PIT_PITFLG_PIT7, 2, 0 ); break;
+          case 8: ISR_INSTALL_ISR2( "Gpt_8", Gpt_Isr_Channel8, PIT_PITFLG_PIT8, 2, 0 ); break;
           default:
           {
             // Unknown PIT channel.
@@ -267,15 +261,6 @@ void Gpt_Init(const Gpt_ConfigType *config)
 #if defined(CFG_MPC5606S)
     //nothing needed to do
 #else
-#if defined(USE_KERNEL)
-    // Don't install if we use kernel.. it handles that.
-#else
-    else if (ch == GPT_CHANNEL_DEC)
-    {
-      // Decrementer event is default an exception. Use software interrupt 7 as wrapper.
-      Irq_InstallVector(config[i].GptNotification, INTC_SSCIR0_CLR7, 1, CPU_Z1);
-    }
-#endif
 #endif
     cfg++;
     i++;

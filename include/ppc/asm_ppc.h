@@ -147,6 +147,7 @@
 #define stb		e_stb
 #define stbu	e_stbu
 #define b		e_b
+#define bne		e_bne
 //#define addi	e_addi		/* true ?*/
 #define addi	e_add16i		/* true ?*/
 //#define addis	e_add16i
@@ -155,6 +156,7 @@
 #define rfi		se_rfi
 #define stb		e_stb
 #define cmplwi	e_cmpl16i
+#define cmpwi 	se_cmpi
 #define ori		e_ori
 #define beq		e_beq
 //#define bne- 	e_bne-
@@ -165,6 +167,8 @@
 #define stmw	e_stmw
 #define bdnz	e_bdnz
 #define	bl		e_bl
+#define	bc		e_bc
+#define mr		se_mr
 #endif
 
 #endif /* _ASSEMBLER_ */

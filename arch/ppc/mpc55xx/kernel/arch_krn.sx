@@ -83,6 +83,7 @@
 .global Os_ArchSwapContextTo
 .global Os_ArchSwapContext
 .global Os_ArchSetSpAndCall
+.global Os_Test_And_Set
 #if defined(__CWCC__) && defined(CFG_VLE)
 .section .text_vle,text_vle
 #else
@@ -387,7 +388,7 @@ on_int_stack:
 	li 		r3,OS_ERR_SPURIOUS_INTERRUPT
 	li 		r4, 0
 	mr		r5,r1
-	b 		Os_ArchPanic
+	b 		Os_ArchPanic	
 #endif	
 	
 vectorOk:

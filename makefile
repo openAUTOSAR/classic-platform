@@ -161,7 +161,7 @@ clean_all:
 	$(Q)find . -type d -name obj_* | xargs rm -rf
 	$(Q)find . -type f -name *.a | xargs rm -rf
 	@echo
-	@echo "  >>>>>>>  DONE  <<<<<<<<<"
+	@echo "  >>>>>>>>>  DONE  <<<<<<<<<"
 	@echo
 	
 config: $(dir_cmd_goals)	
@@ -174,7 +174,7 @@ clean: $(dir_cmd_goals)
 	$(Q)find . -type f -name *.a| xargs rm -rf
 	$(Q)rm   -rf libs/*
 	@echo
-	@echo "  >>>>>>>  DONE  <<<<<<<<<"
+	@echo "  >>>>>>>>>  DONE  <<<<<<<<<"
 	@echo
 
 		

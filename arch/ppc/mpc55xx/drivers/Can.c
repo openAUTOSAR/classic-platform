@@ -138,6 +138,20 @@
 
 #define GET_CONTROLLER_CNT() (CAN_CONTROLLER_CNT)
 
+#define INSTALL_HANDLER4(_name, _can_entry, _vector, _priority, _app)\
+	do { \
+		ISR_INSTALL_ISR2(_name, _can_entry, _vector+0, _priority, _app); \
+		ISR_INSTALL_ISR2(_name, _can_entry, _vector+1, _priority, _app); \
+		ISR_INSTALL_ISR2(_name, _can_entry, _vector+2, _priority, _app); \
+		ISR_INSTALL_ISR2(_name, _can_entry, _vector+3, _priority, _app); \
+	} while(0)
+#define INSTALL_HANDLER16(_name, _can_entry, _vector, _priority, _app)\
+	do { \
+		INSTALL_HANDLER4(_name, _can_entry, _vector+0, _priority, _app); \
+		INSTALL_HANDLER4(_name, _can_entry, _vector+4, _priority, _app); \
+		INSTALL_HANDLER4(_name, _can_entry, _vector+8, _priority, _app); \
+		INSTALL_HANDLER4(_name, _can_entry, _vector+12,_priority, _app); \
+	} while(0)
 //-------------------------------------------------------------------
 
 #if ( CAN_DEV_ERROR_DETECT == STD_ON )

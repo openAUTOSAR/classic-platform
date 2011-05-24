@@ -119,5 +119,4 @@ unsigned int Os_ArchGetScSize( void );
 
 void Os_ArchSetTaskEntry(OsTaskVarType *pcbPtr );
 
-
 #endif /*ARCH_H_*/

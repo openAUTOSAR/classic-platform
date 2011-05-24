@@ -262,14 +262,6 @@ static void LinInterruptH()
 	LinInterrupt(LIN_CTRL_H);
 }
 
-static const void const * aIntFnc[] =  {LinInterruptA,
-										LinInterruptB,
-										LinInterruptC,
-										LinInterruptD,
-										LinInterruptE,
-										LinInterruptF,
-										LinInterruptG,
-										LinInterruptH,};
 
 void Lin_Init( const Lin_ConfigType* Config )
 {
@@ -330,26 +322,18 @@ void Lin_InitChannel(  uint8 Channel,   const Lin_ChannelConfigType* Config )
 	VALIDATE( (LinDriverStatus != LIN_UNINIT), LIN_INIT_CHANNEL_SERVICE_ID, LIN_E_UNINIT );
 	VALIDATE( (Channel < LIN_CONTROLLER_CNT), LIN_INIT_CHANNEL_SERVICE_ID, LIN_E_INVALID_CHANNEL );
 
+
 	// Install the interrupt
-	if (Channel > 3)
-	{
-#if defined(USE_KERNEL)
-		TaskType tid;
-		tid = Os_Arc_CreateIsr(aIntFnc[Channel],LIN_PRIO,"Lin");
-		Irq_AttachIsr2(tid,NULL,SCI_E_COMB + Channel);
-#else
-	  Irq_InstallVector(aIntFnc[Channel],SCI_E_COMB + Channel,LIN_PRIO,CPU_Z1);
-#endif
-	}
-	else
-	{
-#if defined(USE_KERNEL)
-		TaskType tid;
-		tid = Os_Arc_CreateIsr(aIntFnc[Channel],LIN_PRIO,"Lin");
-		Irq_AttachIsr2(tid,NULL,SCI_A_COMB + Channel);
-#else
-	  Irq_InstallVector(aIntFnc[Channel],SCI_A_COMB + Channel,LIN_PRIO,CPU_Z1);
-#endif
+	switch (Channel) {
+		case 0: ISR_INSTALL_ISR2( "LinA", LinInterruptA, SCI_A_COMB, LIN_PRIO, 0 ); break;
+		case 1: ISR_INSTALL_ISR2( "LinB", LinInterruptB, SCI_B_COMB, LIN_PRIO, 0 ); break;
+		case 2: ISR_INSTALL_ISR2( "LinC", LinInterruptC, SCI_C_COMB, LIN_PRIO, 0 ); break;
+		case 3: ISR_INSTALL_ISR2( "LinD", LinInterruptD, SCI_D_COMB, LIN_PRIO, 0 ); break;
+		case 4: ISR_INSTALL_ISR2( "LinE", LinInterruptE, SCI_E_COMB, LIN_PRIO, 0 ); break;
+		case 5: ISR_INSTALL_ISR2( "LinF", LinInterruptF, SCI_F_COMB, LIN_PRIO, 0 ); break;
+		case 6: ISR_INSTALL_ISR2( "LinG", LinInterruptG, SCI_G_COMB, LIN_PRIO, 0 ); break;
+		case 7: ISR_INSTALL_ISR2( "LinH", LinInterruptH, SCI_H_COMB, LIN_PRIO, 0 ); break;
+		default: assert(0); break;
 	}
 
 	esciHw->CR2.B.MDIS = 0;/* The module is enabled by writing the ESCIx_CR2[MDIS] bit to 0. */
