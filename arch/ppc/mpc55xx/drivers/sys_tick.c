@@ -31,7 +31,7 @@ void Os_SysTickInit( void ) {
 #if defined(CFG_MPC5606S)
 	Irq_AttachIsr2(tid, NULL, RTC_INT);  /* Attach ISR2 to RTC interrupt */
 #else
-	Irq_AttachIsr2(tid, NULL, 7);  /* Attach ISR2 to RTC interrupt */
+	Irq_AttachIsr2(tid, NULL, 7);  /* Attach ISR2 to INTC_SSCIR0_CLR7  */
 #endif
 }
 
