@@ -13,7 +13,7 @@
             <SDGS>
               <SDG GID="Arccore::EcuOptions">
                 <SD GID="MCU">MPC551x</SD>
-                <SD GID="GENDIR">/arc_isr/boards/mpc551xsim/examples/simple</SD>
+                <SD GID="GENDIR">${fileDir}</SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>

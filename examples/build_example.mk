@@ -43,6 +43,7 @@ ifneq (${MAKELEVEL},0)
 
 VPATH += ..
 VPATH += $(ROOTDIR)/examples
+VPATH += $(ROOTDIR)/examples/$(example)
 inc-y += ..
 
 ldcmdfile-y = linkscript_$(COMPILER).lcf

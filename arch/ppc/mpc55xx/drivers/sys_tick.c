@@ -15,24 +15,23 @@
 
 #include "Os.h"
 #include "internal.h"
+#include "isr.h"
 #include "irq.h"
 #include "arc.h"
 #include "irq_types.h"
+#include "counter_i.h"
 
 /**
  * Init of free running timer.
  */
-	ISR_INSTALL_ISR2( "OsTick", OsTick, INTC_SSCIR0_CLR7, 6, 0 );
-
 extern void OsTick( void );
 extern OsTickType OsTickFreq;
+
 void Os_SysTickInit( void ) {
-	TaskType tid;
-	tid = ISR_INSTALL_ISR2( "OsTick", OsTick, _vector, 6/*prio*/, 0 );
 #if defined(CFG_MPC5606S)
-	Irq_AttachIsr2(tid, NULL, RTC_INT);  /* Attach ISR2 to RTC interrupt */
+	ISR_INSTALL_ISR2("OsTick",OsTick,RTC_INT,6,0);
 #else
-	Irq_AttachIsr2(tid, NULL, 7);  /* Attach ISR2 to INTC_SSCIR0_CLR7  */
+	ISR_INSTALL_ISR2("OsTick",OsTick,INTC_SSCIR0_CLR7,6,0);
 #endif
 }
 
