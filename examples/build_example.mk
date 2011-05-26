@@ -42,9 +42,11 @@ endif
 ifneq (${MAKELEVEL},0)
 
 VPATH += ..
+VPATH += ../config
 VPATH += $(ROOTDIR)/examples
 VPATH += $(ROOTDIR)/examples/$(example)
 inc-y += ..
+inc-y += ../config
 
 ldcmdfile-y = linkscript_$(COMPILER).lcf
 vpath %.ldf $(ROOTDIR)/$(ARCH_PATH-y)/scripts

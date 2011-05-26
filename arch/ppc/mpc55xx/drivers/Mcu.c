@@ -127,7 +127,7 @@ void Mcu_LossOfLock( void  ) {
 
 /**
  */
-static void Mcu_LossOfClock( void  ){
+void Mcu_LossOfClock( void  ){
 	/* Should report MCU_E_CLOCK_FAILURE with DEM here */
 #if defined(CFG_MPC5606S)
 	/*not support*/

@@ -1,4 +1,0 @@
-
-
-def-y += HEAPSIZE=1000
-def-y += CFG_RAMLOG_SIZE=1024
