@@ -1,0 +1,11 @@
+
+DESCRIPTION
+  This is a very simple example just to demonstrate some basic OS functionally
+  
+WHAT IT DOES
+   1. An alarm sets Event1 in eTask1
+   2. eTask1 sets Event2 in eTask2 and waits for a new Event1
+   3. eTask2 activates bTask3 and waits for a new Event2
+   4. Back to 1
+  
+  
