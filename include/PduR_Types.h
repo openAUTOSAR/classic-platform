@@ -98,6 +98,7 @@ typedef enum {
 typedef struct {
 	PduInfoType *pduInfoPtr;
 	PduRTpBufferStatus_type status;
+	const uint16 bufferSize;
 } PduRTpBufferInfo_type;
 
 typedef struct {
@@ -141,7 +142,7 @@ typedef struct {
 	 *
 	 * Comment: Only required if a TX buffer is configured.
 	 */
-	const uint8 SduLength;
+	const uint16 SduLength;
 
 	/**
 	 * Chunk size for routing on the fly.

@@ -39,10 +39,11 @@ BufReq_ReturnType PduR_ARC_AllocateRxBuffer(PduIdType PduId, PduLengthType TpSdu
 	BufReq_ReturnType failRetVal = BUFREQ_BUSY;
 	for (uint8 i = 0; PduRTpBuffer(i)->pduInfoPtr != NULL; i++) {
 		if (PduRTpBuffer(i)->status == PDUR_BUFFER_FREE) {
-			if (PduRTpBuffer(i)->pduInfoPtr->SduLength < TpSduLength) {
+			if (PduRTpBuffer(i)->bufferSize < TpSduLength) {
 				failRetVal = BUFREQ_OVFL;
 			} else {
 				PduRTpRouteBuffer(PduId) = PduRTpBuffer(i);
+				PduRTpBuffer(i)->pduInfoPtr->SduLength = TpSduLength;
 				PduRTpRouteBuffer(PduId)->status = PDUR_BUFFER_RX_BUSY;
 				return BUFREQ_OK;
 			}
@@ -53,7 +54,7 @@ BufReq_ReturnType PduR_ARC_AllocateRxBuffer(PduIdType PduId, PduLengthType TpSdu
 
 BufReq_ReturnType PduR_ARC_AllocateTxBuffer(PduIdType PduId, uint16 length) {
 	if (PduRTpRouteBuffer(PduId)->status == PDUR_BUFFER_TX_READY) {
-		if (length >= PduRTpRouteBuffer(PduId)->pduInfoPtr->SduLength) {
+		if ((length >= PduRTpRouteBuffer(PduId)->pduInfoPtr->SduLength) || (length == 0)) {
 			PduRTpRouteBuffer(PduId)->status = PDUR_BUFFER_TX_BUSY;
 			return BUFREQ_OK;
 		} else {
