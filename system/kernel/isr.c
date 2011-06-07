@@ -264,6 +264,8 @@ void Os_IsrGetStackInfo( OsIsrStackType *stack ) {
 void *Os_Isr( void *stack, int16_t vector ) {
 	OsIsrVarType *isrPtr =  &Os_IsrVarList[Os_VectorToIsr[vector]];
 	OsTaskVarType *taskPtr = NULL;
+#include "mpc55xx.h"
+	RTC.RTCS.B.APIF = 1;
 
 	assert( isrPtr != NULL );
 

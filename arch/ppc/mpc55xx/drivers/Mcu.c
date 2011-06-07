@@ -375,6 +375,12 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     assert(clockSettingsPtr->Pll2 < 16);
     assert(clockSettingsPtr->Pll1 <= 4);
     assert(clockSettingsPtr->Pll3 < 8);
+
+#elif defined(CFG_MPC5606S)
+    /* MPC5606S (normal mode)
+     *   PHI = ClkIn * LDF / (IDF * ODF )
+     */
+#warning Do more here...
 #else
 #error CPU not defined
 #endif
@@ -416,6 +422,7 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     /* Peri. Cfg. 1 settings: only run in RUN0 mode */
     ME.RUNPC[1].R = 0x00000010;
     /* MPC56xxB/S: select ME.RUNPC[1] */
+    ME.PCTL[4].R = 0x01; //SPI_0 control
     ME.PCTL[68].R = 0x01; //SIUL control
     ME.PCTL[91].R = 0x01; //RTC/API control
     ME.PCTL[92].R = 0x01; //PIT_RTI control

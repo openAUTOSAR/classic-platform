@@ -144,23 +144,24 @@
 #include <limits.h>
 #include "Det.h"
 #include <stdlib.h>
+#include "isr.h"
 
 //#define USE_LDEBUG_PRINTF	1
 #undef DEBUG_LVL
 #define DEBUG_LVL DEBUG_HIGH
 #include "debug.h"
 
+#define STEP_VALIDATION		1
+
 #define MODULE_NAME 	"/driver/Spi"
 
-#define ARRAY_SIZE(_x) (sizeof(_x) / sizeof((_x)[0]))
-
 #define GET_SPI_HW_PTR(_unit) 	\
-        ((struct DSPI_tag *)(0xFFF90000 + 0x4000*(_unit)))
+        ((volatile struct DSPI_tag *)(0xFFF90000 + 0x4000*(_unit)))
 
 #define GET_SPI_UNIT_PTR(_unit) &Spi_Unit[_unit]
 
-#define ENABLE_EOQ_INTERRUPT(_spi_hw) _spi_hw->RSER.B.EOQFRE = 1
-#define DISABLE_EOQ_INTERRUPT(_spi_hw) _spi_hw->RSER.B.EOQFRE = 0
+#define ENABLE_EOQ_INTERRUPT(_spi_hw) _spi_hw->RSER.B.EOQF_RE = 1
+#define DISABLE_EOQ_INTERRUPT(_spi_hw) _spi_hw->RSER.B.EOQF_RE = 0
 
 /* Development error macros. */
 #if ( SPI_DEV_ERROR_DETECT == STD_ON )
@@ -206,7 +207,7 @@ typedef SPICommandType Spi_CommandType;
 
 
 /* Templates for Rx/Tx DMA structures */
-struct tcd_t Spi_DmaTx =
+Dma_TcdType Spi_DmaTx =
 {
 
     .SADDR = 0,
@@ -215,7 +216,7 @@ struct tcd_t Spi_DmaTx =
     .DMOD = 0,
     .DSIZE = DMA_TRANSFER_SIZE_32BITS,
     .SOFF = 4,
-    .NBYTES = 4,
+    .NBYTESu = 4,
     .SLAST = 0,
     .DADDR = 0,
     .CITERE_LINK = 0,
@@ -236,7 +237,7 @@ struct tcd_t Spi_DmaTx =
     .START = 0
 };
 
-struct tcd_t Spi_DmaRx =
+Dma_TcdType Spi_DmaRx =
 {
     .SADDR = 0,
     .SMOD = 0,
@@ -244,7 +245,7 @@ struct tcd_t Spi_DmaRx =
     .DMOD = 0,
     .DSIZE = DMA_TRANSFER_SIZE_32BITS,
     .SOFF = 0,
-    .NBYTES = 4,
+    .NBYTESu = 4,
     .SLAST = 0,
     .DADDR = 0,
     .CITERE_LINK = 0,
@@ -269,7 +270,7 @@ struct tcd_t Spi_DmaRx =
     .START = 0
 };
 
-#define GET_HW(_channel)    ( struct DSPI_tag *)((uint32)&DSPI_A + 0x4000 * _channel )
+#define GET_HW(_channel)    ( volatile struct DSPI_tag *)((uint32)&DSPI_A + 0x4000 * _channel )
 
 
 
@@ -310,11 +311,11 @@ typedef struct {
 
 	// Tx DMA channel information
 	Dma_ChannelType dmaTxChannel;
-	struct tcd_t dmaTxTCD;
+	Dma_TcdType dmaTxTCD;
 
 	// Rx DMA channel information
 	Dma_ChannelType dmaRxChannel;
-	struct tcd_t dmaRxTCD;
+	Dma_TcdType dmaRxTCD;
 
 	// Pointed to by SADDR of DMA
 	Spi_CommandType txQueue[SPI_INTERNAL_MTU];
@@ -334,7 +335,7 @@ typedef struct {
 	// The current job
 	const Spi_JobConfigType *currJob;
 	// Points array of jobs current
-	const uint32 *currJobIndexPtr;
+	const Spi_JobType *currJobIndexPtr;
 	// The Sequence
 	const Spi_SequenceConfigType *currSeqPtr;
 
@@ -377,8 +378,15 @@ typedef struct {
   uint32 totalNbrOfWaitTXRXS;
   uint32 totalNbrOfWaitRxDMA;
 
-} Spi_GlobalType;
+#if  defined(STEP_VALIDATION)
+  int eoqf_cnt;
+  int txrxs_cnt;
+  uint32_t dma_status;
 
+  volatile struct EDMA_tag *dmaHwPtr;
+#endif
+
+} Spi_GlobalType;
 
 //
 // Instances
@@ -386,6 +394,9 @@ typedef struct {
 Spi_GlobalType Spi_Global = {
     .initRun = FALSE,
     .asyncMode = SPI_INTERRUPT_MODE, // TODO: according to SPI151 it should be polling
+#if  defined(STEP_VALIDATION)
+    .dmaHwPtr = (volatile struct EDMA_tag *)0xFFF44000UL,
+#endif
 };
 
 Spi_UnitType Spi_Unit[4];
@@ -398,41 +409,6 @@ static void Spi_Isr_A( void ) { Spi_Isr(DSPI_CTRL_A); }
 static void Spi_Isr_B( void ) { Spi_Isr(DSPI_CTRL_B); }
 static void Spi_Isr_C( void ) { Spi_Isr(DSPI_CTRL_C); }
 static void Spi_Isr_D( void ) { Spi_Isr(DSPI_CTRL_D); }
-
-typedef struct Spi_IsrInfo {
-	void (*entry)(void);
-	IrqType vector;
-	uint8_t priority;
-	Cpu_t cpu;
-} Spi_IsrInfoType;
-
-
-Spi_IsrInfoType Spi_Isr_Info[] = {
-{
-		.entry = Spi_Isr_A,
-		.vector = DSPI_A_ISR_EOQF,
-		.priority = 1,
-		.cpu = CPU_Z1,
-},
-{
-		.entry = Spi_Isr_B,
-		.vector = DSPI_B_ISR_EOQF,
-		.priority = 1,
-		.cpu = CPU_Z1,
-},
-{
-		.entry = Spi_Isr_C,
-		.vector = DSPI_C_ISR_EOQF,
-		.priority = 1,
-		.cpu = CPU_Z1,
-},
-{
-		.entry = Spi_Isr_D,
-		.vector = DSPI_D_ISR_EOQF,
-		.priority = 1,
-		.cpu = CPU_Z1,
-},
-};
 
 #if 0
 static void Spi_Isr_DMA( void )
@@ -506,7 +482,7 @@ static Spi_UnitType *Spi_GetUnitPtrFromIndex( uint32 unit ) {
 static boolean Spi_ShareJobs(Spi_SequenceType seq1, Spi_SequenceType seq2 ) {
   uint32 seqMask1 = 0;
   uint32 seqMask2 = 0;
-  const uint32 *jobPtr;
+  const Spi_JobType *jobPtr;
   const Spi_SequenceConfigType *seqConfig;
 
   // Search for jobs in sequence 1
@@ -553,7 +529,7 @@ static void Spi_SetSequenceResult(Spi_SequenceType Sequence, Spi_SeqResultType r
  * @param spiUnit The SPI unit
  * @return The job ID. -1 if no more jobs
  */
-static uint32 Spi_GetNextJob(Spi_UnitType *spiUnit ) {
+static Spi_JobType Spi_GetNextJob(Spi_UnitType *spiUnit ) {
 	spiUnit->currJobIndexPtr++;
 	return *(spiUnit->currJobIndexPtr);
 }
@@ -565,7 +541,7 @@ static uint32 Spi_GetNextJob(Spi_UnitType *spiUnit ) {
  * @param spiUnit The SPI unit
  */
 static int Spi_WriteNextJob( Spi_UnitType *spiUnit ) {
-	uint32 nextJob;
+	Spi_JobType nextJob;
 	// Re-cap.
 	// - Jobs have the controller
 	// - Sequences can we interruptible between jobs.
@@ -576,7 +552,7 @@ static int Spi_WriteNextJob( Spi_UnitType *spiUnit ) {
 	// So, I no clue what to use the priority thing for :(
 
 	nextJob = Spi_GetNextJob(spiUnit);
-	if( nextJob == NOT_VALID) {
+	if( (int)nextJob == NOT_VALID) {
 	  return NOT_VALID;
 
 	} else {
@@ -677,7 +653,7 @@ static int Spi_PostTransmit( Spi_UnitType *spiUnit ) {
  * @param unit The HW unit it happend on
  */
 static void Spi_Isr( uint32 unit ) {
-	struct DSPI_tag *spiHw = GET_SPI_HW_PTR(unit);
+	volatile struct DSPI_tag *spiHw = GET_SPI_HW_PTR(unit);
 	Spi_UnitType *spiUnit = GET_SPI_UNIT_PTR(unit);
 	int rv;
 
@@ -808,7 +784,7 @@ static void Spi_SetupCTAR( Spi_HWUnitType unit,
 	int j;
 	uint32 tmp;
 
-	struct DSPI_tag *spiHw = GET_SPI_HW_PTR(unit);
+	volatile struct DSPI_tag *spiHw = GET_SPI_HW_PTR(unit);
 	/* BAUDRATE CALCULATION
 	 * -----------------------------
 	 * Baudrate = Fsys/ PBR * ( 1+ DBR) / BR
@@ -957,7 +933,7 @@ static void Spi_SetupCTAR( Spi_HWUnitType unit,
 //-------------------------------------------------------------------
 
 static void Spi_InitController( uint32 unit ) {
-	struct DSPI_tag *spiHw = GET_SPI_HW_PTR(unit);
+	volatile struct DSPI_tag *spiHw = GET_SPI_HW_PTR(unit);
 	Spi_UnitType *spiUnit = GET_SPI_UNIT_PTR(unit);
 
 	/* Module configuration register. */
@@ -981,12 +957,12 @@ static void Spi_InitController( uint32 unit ) {
 	spiHw->MCR.B.PCSIS5 = 1;
 
 	/* DMA TX FIFO fill. */
-	spiHw->RSER.B.TFFFRE = 1;
-	spiHw->RSER.B.TFFFDIRS = 1;
+	spiHw->RSER.B.TFFF_RE = 1;
+	spiHw->RSER.B.TFFF_DIRS = 1;
 
 	/* DMA RX FIFO drain. */
-	spiHw->RSER.B.RFDFRE = 1;
-	spiHw->RSER.B.RFDFDIRS = 1;
+	spiHw->RSER.B.RFDF_RE = 1;
+	spiHw->RSER.B.RFDF_DIRS = 1;
 
 	// Setup CTAR's channel codes..
 	for(int i=0;i<7;i++) {
@@ -1006,15 +982,33 @@ static void Spi_InitController( uint32 unit ) {
 #endif
 
 	// Install EOFQ int..
+#if 1
+	switch(unit) {
+#if defined(CFG_MPC5606S)
+	case 0:
+		ISR_INSTALL_ISR2("SPI_A",Spi_Isr_A, DSPI_0_ISR_EOQF, 1, 0);
+		break;
+	case 1:
+		ISR_INSTALL_ISR2("SPI_B",Spi_Isr_B, DSPI_1_ISR_EOQF, 1, 0);
+		break;
+#else
+#error ISR NOT installed.
+#endif
+
+	}
+
+#else
 	Irq_InstallVector(Spi_Isr_Info[unit].entry, Spi_Isr_Info[unit].vector,
 	                       Spi_Global.configPtr->SpiHwConfig[unit].IsrPriority, Spi_Isr_Info[unit].cpu);
+
+#endif
 }
 
 //-------------------------------------------------------------------
 
 static void Spi_DmaSetup(uint32 unit ) {
 
-	struct tcd_t *tcd;
+	Dma_TcdType *tcd;
 
 	tcd = &Spi_Unit[unit].dmaTxTCD;
 	*tcd = Spi_DmaTx;
@@ -1045,7 +1039,7 @@ void Spi_Init( const Spi_ConfigType *ConfigPtr ) {
 //	Spi_Global.currSeq = NOT_VALID;
 
 	// Set all sequence results to OK
-	for(int i=0;i<SPI_MAX_SEQUENCE;i++) {
+	for(Spi_SequenceType i=(Spi_SequenceType)0;i<SPI_MAX_SEQUENCE;i++) {
 		Spi_SetSequenceResult(i,SPI_SEQ_OK);
 	}
 
@@ -1104,7 +1098,7 @@ void Spi_Init( const Spi_ConfigType *ConfigPtr ) {
 	    Spi_Global.spiHwConfigured |= (1<<jobConfig->SpiHwUnit);
 
 	    // ..and set the job status
-	    Spi_SetJobResult(j,SPI_JOB_OK);
+	    Spi_SetJobResult((Spi_JobType)j,SPI_JOB_OK);
 
 	    l=0;
 	    // Go through all the jobs and it's channels to setup CTAS
@@ -1131,8 +1125,8 @@ void Spi_Init( const Spi_ConfigType *ConfigPtr ) {
 	          DEBUG(DEBUG_LOW,"%s: Channel %d uses    CTAR %d@%d . device=%d,width=%d\n",MODULE_NAME,channelIndex,k,jobConfig->SpiHwUnit,jobConfig->DeviceAssignment,chConfig->SpiDataWidth);
 
 	          Spi_SetupCTAR(  jobConfig->SpiHwUnit,
-														Spi_GetExternalDevicePtrFromIndex( jobConfig->DeviceAssignment ),
-	                          k,
+	        		  	  	  Spi_GetExternalDevicePtrFromIndex( jobConfig->DeviceAssignment ),
+	        		  	  	  (Spi_ChannelType)k,
 	                          chConfig->SpiDataWidth );
 
 	          Spi_ChannelInfo[channelIndex].ctarId = k;
@@ -1149,7 +1143,7 @@ void Spi_Init( const Spi_ConfigType *ConfigPtr ) {
 //-------------------------------------------------------------------
 
 Std_ReturnType Spi_DeInit( void ){
-  struct DSPI_tag *spiHw;
+  volatile struct DSPI_tag *spiHw;
   uint32 confMask;
   uint8  confNr;
 
@@ -1197,7 +1191,7 @@ static void Spi_JobWrite( Spi_JobType jobIndex ) {
 	int k = 0;
 	int j = 0;
 	int channelIndex;
-	struct DSPI_tag *spiHw;
+	volatile struct DSPI_tag *spiHw;
 
 	cmd.R = 0;
 
@@ -1283,11 +1277,11 @@ static void Spi_JobWrite( Spi_JobType jobIndex ) {
 		uint32 unit = jobConfig->SpiHwUnit;
 
 		Spi_UnitType *spiUnit =	GET_SPI_UNIT_PTR(unit);
-		struct DSPI_tag *spiHw = GET_SPI_HW_PTR(unit);
+		volatile struct DSPI_tag *spiHw = GET_SPI_HW_PTR(unit);
 
 
-		Dma_ConfigureChannel ((struct tcd_t *)&spiUnit->dmaTxTCD, spiUnit->dmaTxChannel);
-		Dma_ConfigureChannel ((struct tcd_t *)&spiUnit->dmaRxTCD, spiUnit->dmaRxChannel );
+		Dma_ConfigureChannel ((Dma_TcdType *)&spiUnit->dmaTxTCD, spiUnit->dmaTxChannel);
+		Dma_ConfigureChannel ((Dma_TcdType *)&spiUnit->dmaRxTCD, spiUnit->dmaRxChannel );
 		/* Flush TX/Rx FIFO.  Ref. man. 23.5.1 step 8 */
 		spiHw->MCR.B.CLR_RXF = 1;
 		spiHw->MCR.B.CLR_TXF = 1;
@@ -1296,7 +1290,7 @@ static void Spi_JobWrite( Spi_JobType jobIndex ) {
 		Dma_StartChannel (spiUnit->dmaTxChannel);
 
 		// Step 9. Clear TCNT
-		spiHw->TCR.B.TCNT = 0;
+		spiHw->TCR.B.SPI_TCNT = 0;
 
 		if( ( Spi_Global.asyncMode == SPI_INTERRUPT_MODE ) &&
 		  ( spiUnit->callType == SPI_ASYNC ) )
@@ -1312,11 +1306,16 @@ static void Spi_JobWrite( Spi_JobType jobIndex ) {
 
 		// Since it's not obvious on how to tell when a SPI sequence
 		// is sent, keep things below to what things have been tested.
-	#if 0
+	#if defined(STEP_VALIDATION)
+#if 0
 		/* Wait for transfer to complete. */
-		while (!spiHw->SR.B.EOQF) {	arrggg++; }
-	  while (spiHw->SR.B.TXRXS)	{	arrggg2++;}
+		while (!spiHw->SR.B.EOQF) {
+			Spi_Global.eoqf_cnt++;
+			Spi_Global.dma_status = EDMA.ES.R;
+		}
+	    while (spiHw->SR.B.TXRXS)	{	Spi_Global.txrxs_cnt++;}
 		while( EDMA.TCD[spiUnit->dmaRxChannel].ACTIVE ) {;}
+#endif
 
 	#endif
 
@@ -1601,7 +1600,7 @@ void Spi_MainFunction_Handling( void ) {
 //-------------------------------------------------------------------
 
 void Spi_MainFunction_Driving( void ) {
-  struct DSPI_tag *spiHw;
+  volatile struct DSPI_tag *spiHw;
   uint32 confMask;
   uint8  confNr;
   Spi_UnitType *spiUnit;

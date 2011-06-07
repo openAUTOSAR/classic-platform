@@ -27,11 +27,32 @@
  *   a limitation for the EEP driver also.
  * - The specification if SPI functions should be blocking or not. For now
  *   the driver uses blocking SPI communication.
+ *
+ * CONFIG NOTES
+ *   Look at the 10.4 example in the 4.0 specs, quite good.
+ *   Normally the SPI E2 have a number of instructions: READ, WRITE, WRDI, WREN, etc
+ *   These instructions have can different sequences. For example WREN can be just
+ *   the instruction while WRIE consist of the WRITE instruction, an address and the
+ *   data to write.
+ *
+ *   1. Identify the channels. Best way to do that is to have a look at the E2 instruction
+ *      set and its sequences. Example:
+ *        READ :  READ| ADDRESS | DATA |
+ *         bits    8      16       upto 32*8
+ *
+ *        WRITE: WRITE | ADDRESS | DATA
+ *         bits    8      16       upto 32*8
+ *
+ *        WREN:   WREN
+ *         bits    8
+ *
+ *        RDSR:    RDSR | DATA
+ *                  8       8
  */
 
 /* DEVICE SUPPORT
- *   STMicroelectronics:
- *     M95256
+ *   Microchip:
+ *     25LC160
  */
 
 /* REQUIREMENTS
@@ -50,7 +71,9 @@
 
 #include "Eep.h"
 #include "Spi.h"
-//#include "Dem.h"
+#if defined(USE_DEM)
+#include "Dem.h"
+#endif
 #include "Det.h"
 #include <stdlib.h>
 #include <assert.h>
@@ -66,6 +89,8 @@
 
 /* The width in bytes used by this eeprom */
 #define ADDR_LENGTH 	2
+
+
 
 /* Helper macro for the process function */
 #define SET_STATE(_done,_state) done=(_done);job->state=(_state)
@@ -159,9 +184,9 @@ typedef struct {
   Eep_Arc_JobType    jobType;
 
   // Saved information from API calls.
-  MemIf_AddressType   e2Addr;
+  Eep_AddressType   e2Addr;
   uint8        				*targetAddr;
-  MemIf_LengthType    length;
+  Eep_LengthType    length;
 
   // Data containers for EB buffers
   Spi_DataType ebCmd;
@@ -228,6 +253,8 @@ static uint8 Eep_ReadStatusReg( void ) {
 
 void Eep_Init( const Eep_ConfigType* ConfigPtr ){
   VALIDATE( (ConfigPtr != NULL) , EEP_INIT_ID, EEP_E_PARAM_CONFIG );
+  VALIDATE( ( Eep_Global.status != MEMIF_BUSY ), EEP_INIT_ID, EEP_E_BUSY );
+
   Eep_Global.config = ConfigPtr;
 
   Spi_SetupEB( CFG_P()->EepCmdChannel,  &Eep_Global.ebCmd,NULL,sizeof(Eep_Global.ebCmd)/sizeof(Eep_Global.ebCmd));
@@ -453,7 +480,7 @@ static Spi_SeqResultType Eep_ProcessJob( Eep_JobInfoType *job ) {
 
 				Spi_ConvertToSpiAddr(Eep_Global.ebE2Addr,job->eepAddr);
 
-			BOOL spiTransmitOK = FALSE;
+			boolean spiTransmitOK = FALSE;
 
 			switch(job->mainState)
 			{
@@ -602,7 +629,9 @@ void Eep_MainFunction( void )
 				Eep_Global.jobType = EEP_NONE;
 				Eep_Global.status = MEMIF_IDLE;
 
-				DET_REPORTERROR(MODULE_ID_EEP,0, EEP_COMPARE_ID, EEP_E_COM_FAILURE ); // EEP056 (reporting to DET because DEM is missing)
+				#if defined(USE_DEM)
+				Dem_ReportErrorStatus(EEP_E_COM_FAILURE, DEM_EVENT_STATUS_FAILED );
+				#endif
 				DET_REPORTERROR(MODULE_ID_EEP,0, EEP_COMPARE_ID, MEMIF_JOB_FAILED );
 				EEP_JOB_ERROR_NOTIFICATION();
 			}
@@ -626,7 +655,7 @@ void Eep_MainFunction( void )
 		} else {
 			// Error
 
-			Eep_EcoreJobType failedJobType = Eep_Global.jobType;
+			Eep_Arc_JobType failedJobType = Eep_Global.jobType;
 
 			Eep_Global.jobResultType = MEMIF_JOB_FAILED;
 			Eep_Global.jobType = EEP_NONE;
@@ -634,15 +663,21 @@ void Eep_MainFunction( void )
 
 			switch(failedJobType) {
 				case EEP_ERASE:
-					DET_REPORTERROR(MODULE_ID_EEP,0, EEP_ERASE_ID, EEP_E_COM_FAILURE ); // EEP056 (reporting to DET because DEM is missing)
+					#if defined(USE_DEM)
+					Dem_ReportErrorStatus(EEP_E_COM_FAILURE, DEM_EVENT_STATUS_FAILED );
+					#endif
 					DET_REPORTERROR(MODULE_ID_EEP,0, EEP_ERASE_ID, MEMIF_JOB_FAILED );
 					break;
 				case EEP_READ:
-					DET_REPORTERROR(MODULE_ID_EEP,0, EEP_READ_ID, EEP_E_COM_FAILURE ); // EEP056 (reporting to DET because DEM is missing)
+					#if defined(USE_DEM)
+					Dem_ReportErrorStatus(EEP_E_COM_FAILURE, DEM_EVENT_STATUS_FAILED );
+					#endif
 					DET_REPORTERROR(MODULE_ID_EEP,0, EEP_READ_ID, MEMIF_JOB_FAILED );
 					break;
 				case EEP_WRITE:
-					DET_REPORTERROR(MODULE_ID_EEP,0, EEP_WRITE_ID, EEP_E_COM_FAILURE ); // EEP056 (reporting to DET because DEM is missing)
+					#if defined(USE_DEM)
+					Dem_ReportErrorStatus(EEP_E_COM_FAILURE, DEM_EVENT_STATUS_FAILED );
+					#endif
 					DET_REPORTERROR(MODULE_ID_EEP,0, EEP_WRITE_ID, MEMIF_JOB_FAILED );
 					break;
 				default:

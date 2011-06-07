@@ -13,13 +13,6 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
 #ifndef EEP_H_
 #define EEP_H_
 
@@ -45,9 +38,13 @@ typedef Eep_AddressType Eep_LengthType;
 #define EEP_E_PARAM_ADDRESS			0x11
 #define EEP_E_PARAM_DATA 			  0x12
 #define EEP_E_PARAM_LENGTH			0x13
+#define EEP_E_PARAM_POINTER			0x23
+
 // EEPROM state checking
 #define EEP_E_UNINIT				    0x20
 #define EEP_E_BUSY					    0x21
+#define EEP_E_TIMEOUT					0x22
+
 
 /* Production errors */
 // #define EEP_E_COM_FAILURE       0x30 /* Shall be located in DemIntErrId.h when its available */

@@ -53,6 +53,8 @@ void eTask1( void ) {
 	TaskType currTask;
 
 	LDEBUG_FPUTS("eTask1 start\n");
+
+	ActivateTask(TASK_ID_eTask2);
 	for(;;) {
 		SetEvent(TASK_ID_eTask2,EVENT_MASK_Event1);
 		WaitEvent(EVENT_MASK_Event2);
@@ -94,5 +96,5 @@ void eTask2( void ) {
  */
 
 void OsIdle( void ) {
-	for(;;);
+	for(;;) {}
 }

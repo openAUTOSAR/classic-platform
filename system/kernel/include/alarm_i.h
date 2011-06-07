@@ -126,7 +126,9 @@ typedef struct OsAlarm {
 
 } OsAlarmType;
 
+#if OS_ALARM_CNT!=0
 extern GEN_ALARM_HEAD;
+#endif
 
 void Os_AlarmCheck(OsCounterType *c_p);
 void Os_AlarmAutostart(void);
@@ -139,6 +141,7 @@ static inline OsAlarmType *Os_AlarmGet( AlarmType alarm_id ) {
 		return NULL;
 	}
 #else
+	(void)alarm_id;
 	return NULL;
 #endif
 }

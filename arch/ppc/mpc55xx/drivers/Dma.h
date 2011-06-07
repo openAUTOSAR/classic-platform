@@ -137,7 +137,7 @@ typedef enum
 typedef struct
 {
 	// 5567 has no Dma Mux, but maybe this should be left in anyway?
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || (CFG_MPC5606S)
   const Dma_MuxConfigType          *dmaMuxConfigPtr;
 #endif
   const Dma_ChannelConfigType      *dmaChannelConfigPtr;
@@ -148,7 +148,7 @@ extern const Dma_ConfigType DmaConfig [];
 
 
 void Dma_Init (const Dma_ConfigType *ConfigPtr);
-void Dma_ConfigureChannel (struct tcd_t *tcd, Dma_ChannelType channel);
+void Dma_ConfigureChannel (Dma_TcdType *tcd, Dma_ChannelType channel);
 void Dma_ConfigureChannelTranferSize (uint32_t nbrOfIterations, Dma_ChannelType channel);
 void Dma_ConfigureChannelSourceCorr (uint32_t sourceCorrection, Dma_ChannelType channel);
 void Dma_ConfigureChannelDestinationCorr (uint32_t destinationCorrection, Dma_ChannelType channel);
@@ -157,7 +157,7 @@ void Dma_ConfigureSourceAddress (uint32_t sourceAddr, Dma_ChannelType channel);
 void Dma_StartChannel (Dma_ChannelType channel);
 void Dma_StopChannel (Dma_ChannelType channel);
 Std_ReturnType Dma_ChannelDone (Dma_ChannelType channel);
-volatile struct tcd_t * Dma_GetTcd( Dma_ChannelType channel );
+volatile Dma_TcdType * Dma_GetTcd( Dma_ChannelType channel );
 boolean Dma_CheckConfig( void );
 
 #endif /* DMA_H_ */
