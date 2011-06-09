@@ -43,6 +43,7 @@
 
 #include "Det.h"
 #include "CanIf_Types.h"
+#include "CanIf_SpecialPdus.h"
 #include "CanIf_Cfg.h"
 
 
