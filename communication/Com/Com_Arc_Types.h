@@ -67,7 +67,6 @@ typedef struct {
 	Com_Arc_IPdu_type *ComIPdu; // Only used in PduIdCheck()
 	Com_Arc_Signal_type *ComSignal;
 	Com_Arc_GroupSignal_type *ComGroupSignal;
-	PduInfoType OutgoingPdu;
 } Com_Arc_Config_type;
 
 #endif
