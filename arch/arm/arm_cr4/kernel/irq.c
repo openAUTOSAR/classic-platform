@@ -126,6 +126,7 @@ static inline int osPrioToCpuPio( uint8_t prio ) {
  * @param int_ctrl
  * @param vector
  */
+/*
 void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
 	OsTaskVarType *pcb;
 
@@ -134,6 +135,16 @@ void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
 	IrqActivateChannel(vector);
 
 	// TOdo replace NVIC_InitVector(vector, osPrioToCpuPio(pcb->prio));
+}
+*/
+void Irq_EnableVector( int16_t vector, int priority, int core ) {
+
+	if (vector < NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS) {
+		IrqActivateChannel(vector);
+	} else {
+		/* Invalid vector! */
+		assert(0);
+	}
 }
 
 /**

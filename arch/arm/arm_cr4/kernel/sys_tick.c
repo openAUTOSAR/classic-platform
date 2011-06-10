@@ -19,6 +19,7 @@
 #include "irq_types.h"
 #include "isr.h"
 #include "arc.h"
+#include "counter_i.h"
 
 #define RTICLK_PRESCALER 10
 
