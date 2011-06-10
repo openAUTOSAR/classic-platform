@@ -126,6 +126,8 @@ void Irq_SetPriority( Cpu_t cpu,  IrqType vector, uint8_t prio );
 
 void Irq_EnableVector( int16_t vector, int priority, int core );
 
+#ifndef Irq_EOI
 void Irq_EOI( void );
+#endif
 
 #endif /* IRQ_H_ */
