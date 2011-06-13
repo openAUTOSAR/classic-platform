@@ -15,7 +15,7 @@
 #define TFLG1_1   0x02
 #define TFLG1_0   0x01
 
-#include "kernel_offset.h"
+#include "asm_offset.h"
 #include "asm_hc1x.sx"
 #include "context.sx"
 #include "context.h"

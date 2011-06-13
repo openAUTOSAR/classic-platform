@@ -53,55 +53,9 @@ void bad_irq(uint8_t irq_nr, void **stack) {
 
 void *Irq_Entry( uint8_t irq_nr, void *stack )
 {
-	void* vector = (void *)Irq_VectorTable[irq_nr];
-
-	// trap uninitialized interrupts
-	if (vector == NULL) {
-		bad_irq(irq_nr, stack);
-	}
-
-	if( Irq_GetIsrType(irq_nr) == ISR_TYPE_1 ) {
-		// It's a function, just call it.
-		((func_t)vector)();
-		return stack;
-
-	} else {
-		// It's a PCB
-		// Let the kernel handle the rest,
-		return Os_Isr(stack, vector);
-	}
+	//** Move to asm **/
+	return Os_Isr(stack, irq_nr);
 }
-
-/**
- * Attach an ISR type 1 to the interrupt controller.
- *
- * @param entry
- * @param int_ctrl
- * @param vector
- * @param prio
- */
-void Irq_AttachIsr1( void (*entry)(void), void *int_ctrl, uint32_t vector, uint8_t prio) {
-	Irq_VectorTable[vector] = (void *)entry;
-	Irq_SetIsrType(vector, ISR_TYPE_1);
-}
-
-
-/**
- * Attach a ISR type 2 to the interrupt controller.
- *
- * @param tid
- * @param int_ctrl
- * @param vector
- */
-void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
-	OsTaskVarType *pcb;
-
-	pcb = Os_TaskGet(tid);
-	Irq_VectorTable[vector] = (void *)pcb;
-	Irq_IsrTypeTable[vector] = PROC_ISR2;
-
-}
-
 
 /**
  * Generates a soft interrupt, ie sets pending bit.
@@ -134,6 +88,9 @@ uint8_t Irq_GetCurrentPriority( Cpu_t cpu) {
 	return prio;
 }
 
+void Irq_EnableVector( int16_t vector, int priority, int core ) {
+	// TODO Check manual here
+}
 
 // #####################  INTERRUPT TRANSLATE TABLE #######################
 #define IRQ_MAP(x) irq_##x

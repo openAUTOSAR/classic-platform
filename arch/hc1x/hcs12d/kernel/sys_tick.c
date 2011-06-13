@@ -34,9 +34,7 @@ void Os_SysTickInit( void ) {
 
 	ICSYS = 0;
 
-	TaskType tid;
-	tid = Os_Arc_CreateIsr(OsTick, 6/*prio*/, "OsTick");
-	Irq_AttachIsr2(tid, NULL, IRQ_TYPE_MCCNT_UNDERFLOW);
+	ISR_INSTALL_ISR2("OsTick",OsTick,IRQ_TYPE_MCCNT_UNDERFLOW,6,0);
 
 	// Modulus counter
 	// MCZI, enable interrupt, MCEN enable modulus counter
