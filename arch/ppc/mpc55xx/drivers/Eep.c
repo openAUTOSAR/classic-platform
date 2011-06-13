@@ -14,13 +14,6 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
-
-
 /*
  * IMPLEMENTATION NOTES
  * - The SPI implementation only supports 64 bytes in one go so this is
@@ -176,16 +169,16 @@ typedef struct {
  */
 typedef struct {
 	// The configuration
-  const Eep_ConfigType *config;
+  const Eep_ConfigType 	*config;
 
   // Status of driver
-  MemIf_StatusType    status;
-  MemIf_JobResultType jobResultType;
-  Eep_Arc_JobType    jobType;
+  MemIf_StatusType    	status;
+  MemIf_JobResultType 	jobResultType;
+  Eep_Arc_JobType    	jobType;
 
   // Saved information from API calls.
   Eep_AddressType   e2Addr;
-  uint8        				*targetAddr;
+  uint8        		*targetAddr;
   Eep_LengthType    length;
 
   // Data containers for EB buffers
@@ -213,7 +206,8 @@ Std_ReturnType Eep_AsyncTransmit(Spi_SequenceType Sequence,Eep_JobInfoType *job)
 }
 #endif
 
-#define CFG_P()	Eep_Global.config
+//#define CFG_P()	Eep_Global.config
+#define CFG_SPI_P() Eep_Global.config->externalDriver
 
 Eep_GlobalType Eep_Global;
 
@@ -232,21 +226,21 @@ static void Spi_ConvertToSpiAddr(Spi_DataType *spiAddr, Eep_AddressType eepAddr 
 #if defined(CHECK_SANE)
 static void Eep_WREN( void ) {
   Eep_Global.ebCmd = E2_WREN;
-  Spi_SetupEB( CFG_P()->EepDataChannel, NULL ,NULL ,1);
-  Spi_SyncTransmit(CFG_P()->EepCmdSequence);
+  Spi_SetupEB( CFG_SPI_P()->EepDataChannel, NULL ,NULL ,1);
+  Spi_SyncTransmit(CFG_SPI_P()->EepCmdSequence);
 }
 
 static void Eep_WRDI( void ) {
   Eep_Global.ebCmd = E2_WRDI;
-  Spi_SetupEB( CFG_P()->EepDataChannel, NULL ,NULL ,1);
-  Spi_SyncTransmit(CFG_P()->EepCmdSequence);
+  Spi_SetupEB( CFG_SPI_P()->EepDataChannel, NULL ,NULL ,1);
+  Spi_SyncTransmit(CFG_SPI_P()->EepCmdSequence);
 
 }
 
 static uint8 Eep_ReadStatusReg( void ) {
-  Spi_SetupEB( CFG_P()->EepDataChannel, NULL, &Eep_Global.ebReadStatus, 1);
+  Spi_SetupEB( CFG_SPI_P()->EepDataChannel, NULL, &Eep_Global.ebReadStatus, 1);
   Eep_Global.ebCmd = E2_RDSR;
-  Spi_SyncTransmit(CFG_P()->EepCmd2Sequence);
+  Spi_SyncTransmit(CFG_SPI_P()->EepCmd2Sequence);
   return Eep_Global.ebReadStatus;
 }
 #endif
@@ -257,9 +251,9 @@ void Eep_Init( const Eep_ConfigType* ConfigPtr ){
 
   Eep_Global.config = ConfigPtr;
 
-  Spi_SetupEB( CFG_P()->EepCmdChannel,  &Eep_Global.ebCmd,NULL,sizeof(Eep_Global.ebCmd)/sizeof(Eep_Global.ebCmd));
-  Spi_SetupEB( CFG_P()->EepAddrChannel,  Eep_Global.ebE2Addr,NULL,sizeof(Eep_Global.ebE2Addr)/sizeof(Eep_Global.ebE2Addr[0]));
-  Spi_SetupEB( CFG_P()->EepWrenChannel,  NULL,NULL,1);
+  Spi_SetupEB( CFG_SPI_P()->EepCmdChannel,  &Eep_Global.ebCmd,NULL,sizeof(Eep_Global.ebCmd)/sizeof(Eep_Global.ebCmd));
+  Spi_SetupEB( CFG_SPI_P()->EepAddrChannel,  Eep_Global.ebE2Addr,NULL,sizeof(Eep_Global.ebE2Addr)/sizeof(Eep_Global.ebE2Addr[0]));
+  Spi_SetupEB( CFG_SPI_P()->EepWrenChannel,  NULL,NULL,1);
 
 #if defined( CHECK_SANE )
 
@@ -283,7 +277,7 @@ void Eep_Init( const Eep_ConfigType* ConfigPtr ){
   Eep_Global.status     = MEMIF_IDLE;
   Eep_Global.jobResultType  = MEMIF_JOB_OK;
 
-  Eep_SetMode( CFG_P()->EepDefaultMode );
+  Eep_SetMode( Eep_Global.config->EepDefaultMode );
 
 }
 
@@ -449,9 +443,9 @@ static Spi_SeqResultType Eep_ProcessJob( Eep_JobInfoType *job ) {
 		case JOB_READ_STATUS:
 			DEBUG(DEBUG_LOW,"%s: READ_STATUS\n",MODULE_NAME);
 			/* Check status from erase cmd, read status from flash */
-			Spi_SetupEB( CFG_P()->EepDataChannel, NULL, &Eep_Global.ebReadStatus, 1);
+			Spi_SetupEB( CFG_SPI_P()->EepDataChannel, NULL, &Eep_Global.ebReadStatus, 1);
 			Eep_Global.ebCmd = E2_RDSR;
-			if( SPI_TRANSMIT_FUNC(CFG_P()->EepCmd2Sequence,job ) == E_OK )
+			if( SPI_TRANSMIT_FUNC(CFG_SPI_P()->EepCmd2Sequence,job ) == E_OK )
 			{
 				SET_STATE(1,JOB_READ_STATUS_RESULT);
 			}
@@ -491,8 +485,8 @@ static Spi_SeqResultType Eep_ProcessJob( Eep_JobInfoType *job ) {
 				case EEP_COMPARE:
 					DEBUG(DEBUG_LOW,"%s: READ s:%04x d:%04x l:%04x\n",MODULE_NAME,job->eepAddr, job->targetAddr, job->left);
 					Eep_Global.ebCmd = E2_READ;
-					Spi_SetupEB( CFG_P()->EepDataChannel, NULL ,(Spi_DataType*)job->targetAddr,chunkSize);
-					if (SPI_TRANSMIT_FUNC(CFG_P()->EepReadSequence,job) == E_OK) {
+					Spi_SetupEB( CFG_SPI_P()->EepDataChannel, NULL ,(Spi_DataType*)job->targetAddr,chunkSize);
+					if (SPI_TRANSMIT_FUNC(CFG_SPI_P()->EepReadSequence,job) == E_OK) {
 						spiTransmitOK = TRUE;
 					}
 					break;
@@ -514,8 +508,8 @@ static Spi_SeqResultType Eep_ProcessJob( Eep_JobInfoType *job ) {
 
 					Eep_Global.ebCmd = E2_WRITE;
 					Spi_ConvertToSpiAddr(Eep_Global.ebE2Addr,job->eepAddr);
-					Spi_SetupEB( CFG_P()->EepDataChannel, (const Spi_DataType*)job->targetAddr, NULL, chunkSize);
-					if (SPI_TRANSMIT_FUNC(CFG_P()->EepWriteSequence,job ) == E_OK) {
+					Spi_SetupEB( CFG_SPI_P()->EepDataChannel, (const Spi_DataType*)job->targetAddr, NULL, chunkSize);
+					if (SPI_TRANSMIT_FUNC(CFG_SPI_P()->EepWriteSequence,job ) == E_OK) {
 						spiTransmitOK = TRUE;
 					}
 					break;

@@ -16,7 +16,7 @@
 #ifndef INTERNAL_H_
 #define INTERNAL_H_
 
-#include "Platform_Types.h"
+#include "Os.h"
 
 /* Using internal.h
  *

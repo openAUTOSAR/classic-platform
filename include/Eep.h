@@ -61,7 +61,6 @@ typedef Eep_AddressType Eep_LengthType;
 #define EEP_GETJOBSTATUS_ID     0x08
 #define EEP_GETVERSIONINFO_ID   0x0A
 
-
 #include "Eep_Cfg.h"
 
 void Eep_Init( const Eep_ConfigType *ConfigPtr );

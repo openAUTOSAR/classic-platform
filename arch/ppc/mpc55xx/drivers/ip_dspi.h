@@ -115,7 +115,16 @@
                 vuint32_t CTAS:3;
                 vuint32_t EOQ:1;
                 vuint32_t CTCNT:1;
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
+                vuint32_t:4;
+  			    vuint32_t PCS5:1;
+				vuint32_t PCS4:1;
+				vuint32_t PCS3:1;
+#elif defined(CFG_MPC5606S)
                   vuint32_t:7;
+#else
+#error CPU run with this header file
+#endif
                 vuint32_t PCS2:1;
                 vuint32_t PCS1:1;
                 vuint32_t PCS0:1;
@@ -150,6 +159,64 @@
         } RXFR[4];                     /* Transmit FIFO Registers */
 
         vuint32_t DSPI_reserved_rxf[12];
+
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
+
+        union {
+                   vuint32_t R;
+                   struct {
+                       vuint32_t MTOE:1;
+                         vuint32_t:1;
+                       vuint32_t MTOCNT:6;
+                         vuint32_t:4;
+                       vuint32_t TXSS:1;
+                       vuint32_t TPOL:1;
+                       vuint32_t TRRE:1;
+                       vuint32_t CID:1;
+                       vuint32_t DCONT:1;
+                       vuint32_t DSICTAS:3;
+                         vuint32_t:6;
+                       vuint32_t DPCS5:1;
+                       vuint32_t DPCS4:1;
+                       vuint32_t DPCS3:1;
+                       vuint32_t DPCS2:1;
+                       vuint32_t DPCS1:1;
+                       vuint32_t DPCS0:1;
+                   } B;
+               } DSICR;                /* DSI Configuration Register */
+
+               union {
+                   vuint32_t R;
+                   struct {
+                       vuint32_t:16;
+                       vuint32_t SER_DATA:16;
+                   } B;
+               } SDR;                  /* DSI Serialization Data Register */
+
+               union {
+                   vuint32_t R;
+                   struct {
+                       vuint32_t:16;
+                       vuint32_t ASER_DATA:16;
+                   } B;
+               } ASDR;                 /* DSI Alternate Serialization Data Register */
+
+               union {
+                   vuint32_t R;
+                   struct {
+                       vuint32_t:16;
+                       vuint32_t COMP_DATA:16;
+                   } B;
+               } COMPR;                /* DSI Transmit Comparison Register */
+
+               union {
+                   vuint32_t R;
+                   struct {
+                       vuint32_t:16;
+                       vuint32_t DESER_DATA:16;
+                   } B;
+               } DDR;                  /* DSI deserialization Data Register */
+#endif
 
     };                                 /* end of DSPI_tag */
 #endif /* IP_DSPI_H_ */
