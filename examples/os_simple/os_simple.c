@@ -54,9 +54,9 @@ void eTask1( void ) {
 
 	LDEBUG_FPUTS("eTask1 start\n");
 	for(;;) {
-		SetEvent(TASK_ID_eTask2,EVENT_MASK_Event1);
-		WaitEvent(EVENT_MASK_Event2);
-		ClearEvent(EVENT_MASK_Event2);
+		SetEvent(TASK_ID_eTask2,EVENT_MASK_Event2);
+		WaitEvent(EVENT_MASK_Event1);
+		ClearEvent(EVENT_MASK_Event1);
 		tryFloatingPoint += 1.0F;
 		GetTaskID(&currTask);
 		Os_Arc_GetStackInfo(currTask,&si);
@@ -74,8 +74,8 @@ void eTask2( void ) {
 	LDEBUG_FPUTS("eTask2 start\n");
 
 	for(;;) {
-		WaitEvent(EVENT_MASK_Event1);
-		ClearEvent(EVENT_MASK_Event1);
+		WaitEvent(EVENT_MASK_Event2);
+		ClearEvent(EVENT_MASK_Event2);
 		ActivateTask(TASK_ID_bTask3);
 		{
 			StackInfoType si;
