@@ -186,11 +186,17 @@ clean: FORCE
 	$(Q)-rm -f *.o *.d *.h *.elf *.a *.ldp *.lcf *.tmp *.s *.c *.map *.out
 	@echo
 	
-.PHONY config: 
+.PHONY : config 
 config: FORCE
-	@echo "board   modules:" $(MOD_AVAIL)
-	@echo "example modules:" $(MOD_USE)
+	@echo ">>>> Available modules:" $(MOD_AVAIL)
+	@echo ">>>> Used modules:     " $(MOD_USE)
 	@echo $(MOD) ${def-y}
+
+.PHONY : module_config
+module_config: FORCE
+	@echo ">>>> Available modules:" $(MOD_AVAIL)
+	@echo ">>>> Used modules:     " $(MOD_USE)
+
 
 FORCE:
 
@@ -198,7 +204,7 @@ $(ROOTDIR)/binaries:
 	@mkdir -p $@
 
 .PHONY all:
-all: $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $(ROOTDIR)/binaries
+all: module_config $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $(ROOTDIR)/binaries
 	@cp -v $(build-lib-y) $(build-exe-y) $(build-hex-y) $(build-bin-y) $(ROOTDIR)/binaries
 
 
