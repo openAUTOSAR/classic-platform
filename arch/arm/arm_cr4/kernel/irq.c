@@ -75,15 +75,7 @@ void *Irq_Entry( void *stack_p )
 	}
 
 	stack = (uint32_t *)stack_p;
-
-	/*
-	struct OsTaskVar * pcb = (struct OsTaskVar *)Irq_VectorTable[virtualChannel];
-	// Save the hardware channel in the PCB, so that Os_Isr knows which interrupt channel to deactivate.
-	pcb->vector = channel;
-	*/
-	// Don't know what to pass here yet. Use the virtual channel for now, but
-	// probably need to pass channel as well.
-	stack = Os_Isr(stack, virtualChannel);
+	stack = Os_Isr_cr4(stack, virtualChannel, channel);
 
 	//Irq_Enable();
 	return stack;
@@ -121,24 +113,6 @@ static inline int osPrioToCpuPio( uint8_t prio ) {
 	return (prio>>1);
 }
 
-/**
- * Attach a ISR type 2 to the interrupt controller.
- *
- * @param tid
- * @param int_ctrl
- * @param vector
- */
-/*
-void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
-	OsTaskVarType *pcb;
-
-	pcb = Os_TaskGet(tid);
-	Irq_VectorTable[vector] = (void *)pcb;
-	IrqActivateChannel(vector);
-
-	// TOdo replace NVIC_InitVector(vector, osPrioToCpuPio(pcb->prio));
-}
-*/
 void Irq_EnableVector( int16_t vector, int priority, int core ) {
 
 	if (vector < NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS) {

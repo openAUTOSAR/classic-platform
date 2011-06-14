@@ -39,11 +39,11 @@
 
 
 #define Irq_SOI() \
-	IrqDeactivateChannel(isrPtr->constPtr->vector)
+	IrqDeactivateChannel(isrPtr->activeVector)
 
 
 #define Irq_EOI() \
-	IrqActivateChannel(isrPtr->constPtr->vector)
+	IrqActivateChannel(isrPtr->activeVector)
 
 
 typedef enum {

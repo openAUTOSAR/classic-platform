@@ -194,6 +194,10 @@ typedef struct {
 //	OsIsrStackType		stack;
 	int					state;
 	const OsIsrConstType *constPtr;
+#if defined(CFG_ARM_CR4)
+	int16_t activeVector;
+#endif
+
 	/* List of resource held by this ISR */
 	TAILQ_HEAD(,OsResource) resourceHead;
 } OsIsrVarType;
@@ -209,6 +213,9 @@ void Os_IsrInit( void );
 ISRType Os_IsrAdd( const OsIsrConstType * restrict isrPtr );
 void Os_IsrGetStackInfo( OsIsrStackType *stack );
 void *Os_Isr( void *stack, int16_t vector);
+#if defined(CFG_ARM_CR4)
+void *Os_Isr_cr4( void *stack, int16_t virtualVector, int16_t vector );
+#endif
 #if defined(CFG_ARM_CM3)
 void Os_Isr_cm3( int16_t vector );
 void TailChaining(void *stack);
