@@ -145,6 +145,7 @@ void Irq_EOI( void ) {
 
 static inline int osPrioToCpuPio( uint8_t prio ) {
 	assert(prio<32);
+	assert(prio>1);
 	return prio>>1;		// Os have 32 -> 16
 }
 

@@ -140,7 +140,12 @@ typedef uint8_t Spi_SequenceType;
 #endif
 
 
+#define SPI_EB_MAX_LENGTH 64
 
+#define CSIB0	0
+#define CSIB1   1
+#define CSIB2   2
+#define CSIB3   3
 
 typedef enum {
 	SPI_UNINIT=0, // The SPI Handler/Driver is not initialized or not usable.
@@ -347,7 +352,7 @@ typedef struct Spi_SequenceConfig
 typedef struct Spi_HwConfig
 {
   /* Interrupt priority level for this SPI channel. */
-  uint8 IsrPriority;
+//  uint8 IsrPriority;
 
   /* This channel is to be activated for use. */
   uint8 Activated;
@@ -359,7 +364,7 @@ typedef struct Spi_HwConfig
   Dma_ChannelType TxDmaChannel;
 
   /* Peripheral clock source. */
-  McuE_PeriperalClock_t PeripheralClock;
+//  McuE_PeriperalClock_t PeripheralClock;
 }Spi_HwConfigType;
 
 
@@ -424,7 +429,7 @@ typedef struct Spi_Driver
   // All data needed to configure one SPI-sequence
   const struct Spi_SequenceConfig * SpiSequenceConfig;
 
-  const struct Spi_HwConfig *SpiHwConfig;
+//  const struct Spi_HwConfig *SpiHwConfig;
 } Spi_DriverType;
 
 typedef Spi_DriverType Spi_ConfigType;

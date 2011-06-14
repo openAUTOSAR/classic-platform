@@ -34,15 +34,15 @@ static void _JobErrorNotify(){
 /*
  * TODO: probably better to
  */
-#define SPI_SEQ_EEP_CMD		SPI_SEQ_E2_CMD
-#define SPI_SEQ_EEP_CMD2	SPI_SEQ_E2_CMD2
-#define SPI_SEQ_EEP_READ	SPI_SEQ_E2_READ
-#define SPI_SEQ_EEP_WRITE	SPI_SEQ_E2_WRITE
+#define SPI_SEQ_EEP_CMD		SPI_SEQ_CMD
+#define SPI_SEQ_EEP_CMD2	SPI_SEQ_CMD2
+#define SPI_SEQ_EEP_READ	SPI_SEQ_READ
+#define SPI_SEQ_EEP_WRITE	SPI_SEQ_WRITE
 
-#define SPI_CH_EEP_CMD		SPI_CH_E2_CMD
-#define SPI_CH_EEP_ADDR		SPI_CH_E2_ADDR
-#define SPI_CH_EEP_WREN		SPI_CH_E2_WREN
-#define SPI_CH_EEP_DATA		SPI_CH_E2_DATA
+#define SPI_CH_EEP_CMD		SPI_CH_CMD
+#define SPI_CH_EEP_ADDR		SPI_CH_ADDR
+#define SPI_CH_EEP_WREN		SPI_CH_WREN
+#define SPI_CH_EEP_DATA		SPI_CH_DATA
 
 
 const Eep_ExternalDriverType EepExternalDriver = {

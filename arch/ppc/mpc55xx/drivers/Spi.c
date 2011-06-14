@@ -110,16 +110,17 @@
 
 /* ----------------------------[includes]------------------------------------*/
 
+#include <stdlib.h>
+#include <assert.h>
+#include <limits.h>
+#include <string.h>
 #include "Spi.h"
 #include "mpc55xx.h"
 //#include <stdio.h>
 #include "Mcu.h"
 #include "math.h"
 #include "Dma.h"
-#include <assert.h>
-#include <limits.h>
 #include "Det.h"
-#include <stdlib.h>
 #include "isr.h"
 /* ----------------------------[private define]------------------------------*/
 
@@ -150,7 +151,7 @@
 #define DEBUG_LVL DEBUG_NONE
 #include "debug.h"
 
-#define USE_LOCAL_RAMLOG
+//#define USE_LOCAL_RAMLOG
 
 #if defined(USE_LOCAL_RAMLOG)
 #define RAMLOG_STR(_x) ramlog_str(_x)
@@ -198,6 +199,16 @@
 #endif
 
 /* ----------------------------[private typedef]-----------------------------*/
+
+#if (SPI_IMPLEMENTATION == IMPL_DMA )
+typedef struct Spi_DmaConfig {
+	 Dma_ChannelType RxDmaChannel;
+	 Dma_ChannelType TxDmaChannel;
+} Spi_DmaConfigType;
+
+#endif
+
+
 
 typedef union {
 	vuint32_t R;
@@ -390,16 +401,59 @@ Spi_EbType Spi_Eb[SPI_MAX_CHANNEL];
 
 Spi_ChannelInfoType Spi_ChannelInfo[SPI_MAX_CHANNEL];
 
-Spi_GlobalType Spi_Global = { .initRun = FALSE,
-		.asyncMode = SPI_INTERRUPT_MODE, // TODO: according to SPI151 it should be polling
-		};
+Spi_GlobalType Spi_Global;
 
 Spi_UnitType Spi_Unit[4];
 Spi_SeqUnitType Spi_SeqUnit[SPI_MAX_SEQUENCE];
 Spi_JobUnitType Spi_JobUnit[SPI_MAX_JOB];
 
+
+#if (SPI_IMPLEMENTATION == IMPL_DMA)
+/* When using DMA it assumes predefined names */
+Spi_DmaConfigType  Spi_DmaConfig[4] = {
+#if (SPI_USE_HW_UNIT_0 == STD_ON )
+	{
+	    .RxDmaChannel = DMA_DSPI_A_RESULT_CHANNEL,
+	    .TxDmaChannel = DMA_DSPI_A_COMMAND_CHANNEL,
+	},
+#else
+	{ -1, -1 },
+#endif
+#if (SPI_USE_HW_UNIT_1 == STD_ON )
+	{
+	    .RxDmaChannel = DMA_DSPI_B_RESULT_CHANNEL,
+	    .TxDmaChannel = DMA_DSPI_B_COMMAND_CHANNEL,
+	},
+#else
+	{ -1, -1 },
+#endif
+#if (SPI_USE_HW_UNIT_2 == STD_ON )
+	{
+	    .RxDmaChannel = DMA_DSPI_C_RESULT_CHANNEL,
+	    .TxDmaChannel = DMA_DSPI_C_COMMAND_CHANNEL,
+	},
+#else
+	{ -1, -1 },
+#endif
+#if (SPI_USE_HW_UNIT_3 == STD_ON )
+	{
+	    .RxDmaChannel = DMA_DSPI_D_RESULT_CHANNEL,
+	    .TxDmaChannel = DMA_DSPI_D_COMMAND_CHANNEL,
+	}
+#else
+	{ -1, -1 },
+#endif
+};
+#endif
+
+
+
+
+
+
 /* ----------------------------[private functions]---------------------------*/
 
+#if (SPI_IMPLEMENTATION == IMPL_FIFO )
 /**
  * Get the buffer for a channel.
  *
@@ -433,6 +487,7 @@ static const Spi_DataType *spiGetTxBuf(Spi_ChannelType ch, Spi_NumberOfDataType 
 	return buf;
 }
 
+#endif
 
 static void Spi_Isr(uint32);
 
@@ -848,10 +903,17 @@ static void Spi_Isr(uint32 unit) {
 
 #if (SPI_IMPLEMENTATION == IMPL_DMA)
 	// To be 100% sure also wait for the DMA transfer to complete.
+#if 0
 	while (!Dma_ChannelDone(
 			Spi_Global.configPtr->SpiHwConfig[unit].RxDmaChannel)) {
 		Spi_Global.totalNbrOfWaitRxDMA++;
 	}
+#else
+	while (!Dma_ChannelDone(Spi_Unit[unit].dmaRxChannel)) {
+		Spi_Global.totalNbrOfWaitRxDMA++;
+	}
+
+#endif
 #endif
 
 	/* Halt DSPI unit until we are ready for next transfer. */
@@ -983,6 +1045,7 @@ static void Spi_SetupCTAR(Spi_HWUnitType unit,
 	int i;
 	int j;
 	uint32 tmp;
+	McuE_PeriperalClock_t perClock;
 
 	volatile struct DSPI_tag *spiHw = GET_SPI_HW_PTR(unit);
 	/* BAUDRATE CALCULATION
@@ -996,8 +1059,31 @@ static void Spi_SetupCTAR(Spi_HWUnitType unit,
 	 * --> BR=Fsys/(Baudrate.* 2 )
 	 *
 	 */
-	clock = McuE_GetPeripheralClock(
-			Spi_Global.configPtr->SpiHwConfig[unit].PeripheralClock);
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S)
+	switch(unit) {
+	case 0:
+		perClock = PERIPHERAL_CLOCK_DSPI_A;
+		break;
+	case 1:
+		perClock = PERIPHERAL_CLOCK_DSPI_B;
+		break;
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
+	case 2:
+		perClock = PERIPHERAL_CLOCK_DSPI_C;
+		break;
+	case 3:
+		perClock = PERIPHERAL_CLOCK_DSPI_D;
+		break;
+#endif
+	default:
+		assert(0);
+		break;
+	}
+#else
+#error CPU not supported
+#endif
+	clock = McuE_GetPeripheralClock(perClock);
+
 	DEBUG(DEBUG_MEDIUM,"%s: Peripheral clock at %d Mhz\n",MODULE_NAME,clock);
 
 	DEBUG(DEBUG_MEDIUM,"%s: Want to run at %d Mhz\n",MODULE_NAME,extDev->SpiBaudrate);
@@ -1189,23 +1275,23 @@ static void Spi_InitController(uint32 unit) {
 	switch (unit) {
 #if defined(CFG_MPC5606S)
 	case 0:
-	ISR_INSTALL_ISR2("SPI_A",Spi_Isr_A, DSPI_0_ISR_EOQF, 1, 0);
+	ISR_INSTALL_ISR2("SPI_A",Spi_Isr_A, DSPI_0_ISR_EOQF, 15, 0);
 	break;
 	case 1:
-	ISR_INSTALL_ISR2("SPI_B",Spi_Isr_B, DSPI_1_ISR_EOQF, 1, 0);
+	ISR_INSTALL_ISR2("SPI_B",Spi_Isr_B, DSPI_1_ISR_EOQF, 15, 0);
 	break;
 #elif defined(CFG_MPC5516) || defined(CFG_MPC5517)
 	case 0:
-	ISR_INSTALL_ISR2("SPI_A",Spi_Isr_A, DSPI_A_ISR_EOQF, 1, 0);
+	ISR_INSTALL_ISR2("SPI_A",Spi_Isr_A, DSPI_A_ISR_EOQF, 15, 0);
 	break;
 	case 1:
-	ISR_INSTALL_ISR2("SPI_B",Spi_Isr_B, DSPI_B_ISR_EOQF, 1, 0);
+	ISR_INSTALL_ISR2("SPI_B",Spi_Isr_B, DSPI_B_ISR_EOQF, 15, 0);
 	break;
 	case 2:
-	ISR_INSTALL_ISR2("SPI_A",Spi_Isr_C, DSPI_C_ISR_EOQF, 1, 0);
+	ISR_INSTALL_ISR2("SPI_A",Spi_Isr_C, DSPI_C_ISR_EOQF, 15, 0);
 	break;
 	case 3:
-	ISR_INSTALL_ISR2("SPI_B",Spi_Isr_D, DSPI_D_ISR_EOQF, 1, 0);
+	ISR_INSTALL_ISR2("SPI_B",Spi_Isr_D, DSPI_D_ISR_EOQF, 15, 0);
 	break;
 #else
 #error ISR NOT installed.
@@ -1245,8 +1331,13 @@ static void Spi_DmaSetup(uint32 unit) {
 void Spi_Init(const Spi_ConfigType *ConfigPtr) {
 
 	const Spi_JobConfigType *jobConfig2;
+
+	memset(&Spi_Global,0,sizeof(Spi_Global));
 	Spi_Global.configPtr = ConfigPtr;
 	Spi_Global.extBufPtr = Spi_Eb;
+
+	Spi_Global.asyncMode = SPI_INTERRUPT_MODE;
+
 	//	Spi_Global.currSeq = SEQ_NOT_VALID;
 
 	// Set all sequence results to OK
@@ -1278,12 +1369,13 @@ void Spi_Init(const Spi_ConfigType *ConfigPtr) {
 			//
 
 			/* Make sure that this channel shall be used. */
-			assert (ConfigPtr->SpiHwConfig[confNr].Activated);
+			//assert (ConfigPtr->SpiHwConfig[confNr].Activated);
+			assert(Spi_DmaConfig[confNr].TxDmaChannel != (-1));
+			assert(Spi_DmaConfig[confNr].RxDmaChannel != (-1));
 
-			Spi_Unit[confNr].dmaTxChannel
-					= ConfigPtr->SpiHwConfig[confNr].TxDmaChannel;
-			Spi_Unit[confNr].dmaRxChannel
-					= ConfigPtr->SpiHwConfig[confNr].RxDmaChannel;
+			Spi_Unit[confNr].dmaTxChannel = Spi_DmaConfig[confNr].TxDmaChannel;
+			Spi_Unit[confNr].dmaRxChannel = Spi_DmaConfig[confNr].RxDmaChannel;
+
 			Spi_DmaSetup(confNr);
 #endif
 
