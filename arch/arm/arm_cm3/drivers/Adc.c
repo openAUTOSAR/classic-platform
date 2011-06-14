@@ -98,9 +98,7 @@ Std_ReturnType Adc_Init (const Adc_ConfigType *ConfigPtr)
     DMA_Init(DMA1_Channel1, &DMA_InitStructure);
 
       // Connect interrupt to correct isr
-	TaskType tid;
-	tid = Os_Arc_CreateIsr(Adc_Group0ConversionComplete,6/*prio*/,"DMA1");
-	Irq_AttachIsr2(tid,NULL, DMA1_Channel1_IRQn);
+	ISR_INSTALL_ISR2( "DMA1", Adc_Group0ConversionComplete, DMA1_Channel1_IRQn, 6, 0 );
 
     /* Enable DMA1 channel1 */
     DMA_Cmd(DMA1_Channel1, ENABLE);
