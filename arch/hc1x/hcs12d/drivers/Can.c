@@ -561,15 +561,10 @@ static void Can_TxIsr(int unit) {
 
 #define INSTALL_HANDLERS(_can_name,_err,_wake,_rx,_tx) \
   do { \
-    TaskType tid; \
-    tid = Os_Arc_CreateIsr(_can_name ## _ErrIsr,2/*prio*/,"Can"); \
-    Irq_AttachIsr2(tid,NULL,_err); \
-    tid = Os_Arc_CreateIsr(_can_name ## _WakeIsr,2/*prio*/,"Can"); \
-    Irq_AttachIsr2(tid,NULL,_wake); \
-    tid = Os_Arc_CreateIsr(_can_name ## _RxIsr,2/*prio*/,"Can"); \
-	Irq_AttachIsr2(tid,NULL,_rx); \
-    tid = Os_Arc_CreateIsr(_can_name ## _TxIsr,2/*prio*/,"Can"); \
-	Irq_AttachIsr2(tid,NULL,_tx); \
+    ISR_INSTALL_ISR2("Can",_can_name ## _ErrIsr,_err,2,0); \
+	ISR_INSTALL_ISR2("Can",_can_name ## _WakeIsr,_wake,2,0); \
+	ISR_INSTALL_ISR2("Can",_can_name ## _RxIsr,_rx,2,0); \
+	ISR_INSTALL_ISR2("Can",_can_name ## _TxIsr,_tx,2,0); \
   } while(0);
 
 // This initiates ALL can controllers

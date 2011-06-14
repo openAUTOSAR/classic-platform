@@ -211,35 +211,32 @@ void Gpt_Init(const Gpt_ConfigType *config)
     {
       if (cfg->GptNotification != NULL)
       {
-    	TaskType tid = 0;
     	switch (ch) {
     	case 0:
-    		tid = Os_Arc_CreateIsr(Gpt_Isr_0, 1, "Gpt_Isr_0");
+        	ISR_INSTALL_ISR2("Gpt_Isr_0",Gpt_Isr_0,IRQ_NR_TC0,1,0);
     		break;
     	case 1:
-    	    tid = Os_Arc_CreateIsr(Gpt_Isr_1, 1, "Gpt_Isr_1");
+        	ISR_INSTALL_ISR2("Gpt_Isr_1",Gpt_Isr_1,IRQ_NR_TC1,1,0);
     	    break;
     	case 2:
-			tid = Os_Arc_CreateIsr(Gpt_Isr_2, 1, "Gpt_Isr_2");
+	    	ISR_INSTALL_ISR2("Gpt_Isr_2",Gpt_Isr_2,IRQ_NR_TC2,1,0);
 			break;
     	case 3:
-			tid = Os_Arc_CreateIsr(Gpt_Isr_3, 1, "Gpt_Isr_3");
+	    	ISR_INSTALL_ISR2("Gpt_Isr_3",Gpt_Isr_3,IRQ_NR_TC3,1,0);
 			break;
     	case 4:
-			tid = Os_Arc_CreateIsr(Gpt_Isr_4, 1, "Gpt_Isr_4");
+	    	ISR_INSTALL_ISR2("Gpt_Isr_4",Gpt_Isr_4,IRQ_NR_TC4,1,0);
 			break;
     	case 5:
-			tid = Os_Arc_CreateIsr(Gpt_Isr_5, 1, "Gpt_Isr_5");
+	    	ISR_INSTALL_ISR2("Gpt_Isr_5",Gpt_Isr_5,IRQ_NR_TC5,1,0);
 			break;
     	case 6:
-    		tid = Os_Arc_CreateIsr(Gpt_Isr_6, 1, "Gpt_Isr_6");
+        	ISR_INSTALL_ISR2("Gpt_Isr_6",Gpt_Isr_6,IRQ_NR_TC6,1,0);
     		break;
     	case 7:
-    	    tid = Os_Arc_CreateIsr(Gpt_Isr_7, 1, "Gpt_Isr_7");
+        	ISR_INSTALL_ISR2("Gpt_Isr_7",Gpt_Isr_7,IRQ_NR_TC7,1,0);
     	    break;
     	}
-
-    	Irq_AttachIsr2(tid, NULL, (IRQ_NR_TC0 - ch));
       }
     }
 
