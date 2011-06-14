@@ -39,11 +39,11 @@
 
 
 #define Irq_SOI() \
-	IrqDeactivateChannel(isrPtr->vector)
+	IrqDeactivateChannel(isrPtr->activeVector)
 
 
 #define Irq_EOI() \
-	IrqActivateChannel(isrPtr->vector)
+	IrqActivateChannel(isrPtr->activeVector)
 
 
 typedef enum {
@@ -116,6 +116,11 @@ typedef enum {
 /* Total number of interrupts and exceptions
  */
 #define NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS 65
+
+/* Offset from start of exceptions to interrupts
+ * Exceptions have negative offsets while interrupts have positive
+ */
+#define IRQ_INTERRUPT_OFFSET 0
 
 typedef enum {
 	  PERIPHERAL_CLOCK_AHB,

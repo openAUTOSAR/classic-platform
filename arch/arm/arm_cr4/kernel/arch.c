@@ -15,6 +15,8 @@
 
 #include "internal.h"
 #include "stack.h"
+#include "sys.h"
+#include "Cpu.h"
 #include "core_cr4.h"
 
 
@@ -27,7 +29,7 @@ void Os_ArchFirstCall( void )
 {
 	// TODO: make switch here... for now just call func.
 	Irq_Enable();
-	Os_Sys.currTaskPtr->entry();
+	Os_Sys.currTaskPtr->constPtr->entry();
 }
 
 void *Os_ArchGetStackPtr( void ) {
@@ -46,9 +48,9 @@ void Os_ArchSetTaskEntry(OsTaskVarType *pcbPtr ) {
 	context[C_CONTEXT_OFFS/4] = SC_PATTERN;
 
 	/* Set LR to start function */
-	if( pcbPtr->proc_type == PROC_EXTENDED ) {
+	if( pcbPtr->constPtr->proc_type == PROC_EXTENDED ) {
 		context[VGPR_LR_OFF/4] = (uint32_t)Os_TaskStartExtended;
-	} else if( pcbPtr->proc_type == PROC_BASIC ) {
+	} else if( pcbPtr->constPtr->proc_type == PROC_BASIC ) {
 		context[VGPR_LR_OFF/4] = (uint32_t)Os_TaskStartBasic;
 	}
 
