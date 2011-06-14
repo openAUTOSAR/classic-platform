@@ -45,7 +45,7 @@ void EcuM_Init( void )
 	// Initialize the OS
 	InitOS();
 
-	// Enable interrupts
+	// Setup interrupts
 	Os_IsrInit();
 
 	// Determine PostBuild configuration
