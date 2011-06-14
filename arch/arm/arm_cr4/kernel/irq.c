@@ -31,7 +31,7 @@ static inline void Irq_Setup() {
 
 void Irq_Init( void ) {
 	Irq_Setup();
-	Irq_Enable();
+	//Irq_Enable();
 }
 
 
@@ -74,7 +74,9 @@ void *Irq_Entry( void *stack_p )
 		virtualChannel = systemREG1->SSISR1;
 	}
 
-	/*stack = (uint32_t *)stack_p;
+	stack = (uint32_t *)stack_p;
+
+	/*
 	struct OsTaskVar * pcb = (struct OsTaskVar *)Irq_VectorTable[virtualChannel];
 	// Save the hardware channel in the PCB, so that Os_Isr knows which interrupt channel to deactivate.
 	pcb->vector = channel;
