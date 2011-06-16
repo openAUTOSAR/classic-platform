@@ -417,7 +417,7 @@ Spi_DmaConfigType  Spi_DmaConfig[4] = {
 	    .TxDmaChannel = DMA_DSPI_A_COMMAND_CHANNEL,
 	},
 #else
-	{ -1, -1 },
+	{ (Dma_ChannelType)0, (Dma_ChannelType)0 },
 #endif
 #if (SPI_USE_HW_UNIT_1 == STD_ON )
 	{
@@ -425,7 +425,7 @@ Spi_DmaConfigType  Spi_DmaConfig[4] = {
 	    .TxDmaChannel = DMA_DSPI_B_COMMAND_CHANNEL,
 	},
 #else
-	{ -1, -1 },
+	{ (Dma_ChannelType)0, (Dma_ChannelType)0 },
 #endif
 #if (SPI_USE_HW_UNIT_2 == STD_ON )
 	{
@@ -433,7 +433,7 @@ Spi_DmaConfigType  Spi_DmaConfig[4] = {
 	    .TxDmaChannel = DMA_DSPI_C_COMMAND_CHANNEL,
 	},
 #else
-	{ -1, -1 },
+	{ (Dma_ChannelType)0, (Dma_ChannelType)0 },
 #endif
 #if (SPI_USE_HW_UNIT_3 == STD_ON )
 	{
@@ -441,7 +441,7 @@ Spi_DmaConfigType  Spi_DmaConfig[4] = {
 	    .TxDmaChannel = DMA_DSPI_D_COMMAND_CHANNEL,
 	}
 #else
-	{ -1, -1 },
+	{ (Dma_ChannelType)0, (Dma_ChannelType)0 },
 #endif
 };
 #endif
@@ -1523,6 +1523,7 @@ static void Spi_DoWrite_DMA(	Spi_UnitType *spiUnit,Spi_JobType jobIndex,
 
 		if (extChBuff->active == 0) {
 			LDEBUG_PRINTF("Err:External buffer %d@job %d not setup\n",channelIndex,jobIndex);
+			(void)jobIndex;
 			assert(0);
 		}
 

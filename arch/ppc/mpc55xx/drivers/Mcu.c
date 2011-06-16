@@ -422,7 +422,6 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     /* Peri. Cfg. 1 settings: only run in RUN0 mode */
     ME.RUNPC[1].R = 0x00000010;
     /* MPC56xxB/S: select ME.RUNPC[1] */
-    ME.PCTL[4].R = 0x01; //SPI_0 control
     ME.PCTL[68].R = 0x01; //SIUL control
     ME.PCTL[91].R = 0x01; //RTC/API control
     ME.PCTL[92].R = 0x01; //PIT_RTI control
@@ -430,7 +429,11 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     ME.PCTL[73].R = 0x01; //eMIOS1 control
     ME.PCTL[16].R = 0x01; //FlexCAN0 control
     ME.PCTL[17].R = 0x01; //FlexCAN1 control
+    ME.PCTL[4].R = 0x01;  /* MPC56xxB/P/S DSPI0:  select ME.RUNPC[0] */
+    ME.PCTL[5].R = 0x01;  /* MPC56xxB/P/S DSPI1:  select ME.RUNPC[0] */
     ME.PCTL[32].R = 0x01; //ADC0 control
+    ME.PCTL[23].R = 0x01; //DMAMUX control
+    ME.PCTL[48].R = 0x01; /* MPC56xxB/P/S LINFlex 0: select ME.RUNPC[1] */
 
     /* Mode Transition to enter RUN0 mode: */
     /* Enter RUN0 Mode & Key */
