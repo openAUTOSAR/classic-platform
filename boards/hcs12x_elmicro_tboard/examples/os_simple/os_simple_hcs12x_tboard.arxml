@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AUTOSAR xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://autosar.org/3.1.5" xsi:schemaLocation="http://autosar.org/3.1.5 autosar_3-1-5.xsd"><TOP-LEVEL-PACKAGES>
+    <AR-PACKAGE>
+      <SHORT-NAME>os_simple_hcs12x_tboard</SHORT-NAME>
+      <ELEMENTS>
+        <ECU-CONFIGURATION UUID="14ede0a2-8cce-475c-bae3-e161aacfc77d">
+          <SHORT-NAME>os_simple_hcs12x_tboard</SHORT-NAME>
+          <ADMIN-DATA>
+            <SDGS>
+              <SDG GID="Arccore::EcuOptions">
+                <SD GID="MCU">HCS12</SD>
+                <SD GID="GENDIR">${RESOURCE_LOC}</SD>
+              </SDG>
+            </SDGS>
+          </ADMIN-DATA>
+          <ECU-SW-COMPOSITION-REF DEST="ECU-SW-COMPOSITION">/os_simple_hcs12x_tboard/SwComposition_os_simple_hcs12x_tboard</ECU-SW-COMPOSITION-REF>
+        </ECU-CONFIGURATION>
+        <ECU-SW-COMPOSITION UUID="4679704b-7a7e-4b31-a628-d20621465499">
+          <SHORT-NAME>SwComposition_os_simple_hcs12x_tboard</SHORT-NAME>
+        </ECU-SW-COMPOSITION>
+      </ELEMENTS>
+    </AR-PACKAGE>
+  </TOP-LEVEL-PACKAGES></AUTOSAR>
