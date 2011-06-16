@@ -11,7 +11,6 @@ OUTPUT_ARCH(powerpc)
 ENTRY(_start)
 
 /*
-/*
  * _idata - Start of .data in flash 
  * _data  - start address of .data in RAM
  * _edata  - end address of .data  in RAM

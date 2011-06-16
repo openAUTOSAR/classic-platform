@@ -11,27 +11,21 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
-
-
-
-
-
-
-
-
-/*
- * Wdg.h
- *
- *  Created on: 2009-jul-22
- *      Author: rosa
+ * -------------------------------- Arctic Core ------------------------------
  */
 
 #ifndef WDG_H_
 #define WDG_H_
 
-void StartWatchdog(void);
-void StopWatchdog(void);
-void KickWatchdog(void);
+#include "Wdg_Cfg.h"
+
+void Wdg_Init (const Wdg_ConfigType* ConfigPtr);
+void Wdg_Trigger (void);
+Std_ReturnType Wdg_SetMode (WdgIf_ModeType Mode);
+
+#if (WDG_VERSION_INFO_API == STD_ON)
+void Wdg_GetVersionInfo( Std_VersionInfoType *versionInfo );
+#define Wdg_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,WDG)
+#endif
 
 #endif /* WDG_H_ */

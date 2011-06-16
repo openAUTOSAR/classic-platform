@@ -377,10 +377,6 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     assert(clockSettingsPtr->Pll3 < 8);
 
 #elif defined(CFG_MPC5606S)
-    /* MPC5606S (normal mode)
-     *   PHI = ClkIn * LDF / (IDF * ODF )
-     */
-#warning Do more here...
 #else
 #error CPU not defined
 #endif
