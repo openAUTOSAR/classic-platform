@@ -855,7 +855,12 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
         case CANIF_USER_TYPE_CAN_PDUR:
             // Send Can frame to PDU router
 #if defined(USE_PDUR)
-            PduR_CanIfRxIndication(entry->CanIfCanRxPduId,CanSduPtr);
+        	{
+        		PduInfoType pduInfo;
+        		pduInfo.SduLength = CanDlc;
+        		pduInfo.SduDataPtr = (uint8 *)CanSduPtr;
+            	PduR_CanIfRxIndication(entry->CanIfCanRxPduId,&pduInfo);
+        	}
             return;
 #endif
             break;
