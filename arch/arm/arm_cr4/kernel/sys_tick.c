@@ -16,8 +16,10 @@
 #include "Os.h"
 #include "internal.h"
 #include "core_cr4.h"
+#include "irq_types.h"
 #include "isr.h"
 #include "arc.h"
+#include "counter_i.h"
 
 #define RTICLK_PRESCALER 10
 
@@ -35,9 +37,7 @@ void CortexR4OsTick() {
  * Init of free running timer.
  */
 void Os_SysTickInit( void ) {
-	TaskType tid;
-	tid = Os_Arc_CreateIsr(CortexR4OsTick,6,"OsTick");
-	Irq_AttachIsr2(tid,NULL, RTI_COMPARE_0);
+	ISR_INSTALL_ISR2("OsTick",CortexR4OsTick,RTI_COMPARE_0,6,0);
 }
 
 

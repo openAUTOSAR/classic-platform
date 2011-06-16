@@ -49,11 +49,25 @@
 #include "PduR_PbCfg.h"
 
 #include "PduR_If.h"
+
+#if PDUR_COM_SUPPORT == STD_ON
 #include "PduR_Com.h"
+#endif
+#if PDUR_CANIF_SUPPORT == STD_ON
 #include "PduR_CanIf.h"
+#endif
+#if PDUR_LINIF_SUPPORT == STD_ON
 #include "PduR_LinIf.h"
+#endif
+#if PDUR_CANTP_SUPPORT == STD_ON
 #include "PduR_CanTp.h"
+#endif
+#if PDUR_DCM_SUPPORT == STD_ON
 #include "PduR_Dcm.h"
+#endif
+#if PDUR_SOAD_SUPPORT == STD_ON
+#include "PduR_SoAd.h"
+#endif
 
 
 

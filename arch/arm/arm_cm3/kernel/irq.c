@@ -132,24 +132,6 @@ static inline int osPrioToCpuPio( uint8_t prio ) {
 	return prio;
 }
 
-#if 0
-/**
- * Attach a ISR type 2 to the interrupt controller.
- *
- * @param tid
- * @param int_ctrl
- * @param vector
- */
-void Irq_AttachIsr2(TaskType tid,void *int_ctrl,IrqType vector ) {
-	OsTaskVarType *pcb;
-
-	pcb = Os_TaskGet(tid);
-	Irq_VectorTable[vector+16] = (void *)pcb;
-
-	NVIC_InitVector(vector, osPrioToCpuPio(pcb->prio));
-}
-#endif
-
 
 void Irq_EnableVector( int16_t vector, int priority, int core ) {
 	(void)core;

@@ -21,29 +21,31 @@
 	(((volatile sint8)vimREG->IRQIVEC) - 1)
 
 /** IrqActivateChannel turns the selected channel on in the VIM */
-#define IrqActivateChannel(_channel) \
-	if (_channel > 31) { \
-		vimREG->REQMASKSET1 |= (1 << (_channel - 32)); \
+#define IrqActivateChannel(_c) \
+	uint8 _ch1 = _c; \
+	if (_ch1 > 31) { \
+		vimREG->REQMASKSET1 |= (1 << (_ch1 - 32)); \
 	} else { \
-		vimREG->REQMASKSET0 |= (1 << _channel); \
+		vimREG->REQMASKSET0 |= (1 << _ch1); \
 	}
 
 
 /** IrqDeactivateChannel turns the selected channel off in the VIM */
-#define IrqDeactivateChannel(_channel) \
-	if (_channel > 31) { \
-		vimREG->REQMASKCLR1 = (1 << (_channel - 32)); \
+#define IrqDeactivateChannel(_c) \
+	uint8 _ch2 = _c; \
+	if (_ch2 > 31) { \
+		vimREG->REQMASKCLR1 = (1 << (_ch2 - 32)); \
 	} else { \
-		vimREG->REQMASKCLR0 = (1 << _channel); \
+		vimREG->REQMASKCLR0 = (1 << _ch2); \
 	}
 
 
 #define Irq_SOI() \
-	IrqDeactivateChannel(isrPtr->vector)
+	IrqDeactivateChannel(isrPtr->activeVector)
 
 
 #define Irq_EOI() \
-	IrqActivateChannel(isrPtr->vector)
+	IrqActivateChannel(isrPtr->activeVector)
 
 
 typedef enum {
@@ -68,7 +70,7 @@ typedef enum {
   FR_LEVEL_0,
   CRC_1,
   ESM_LEVEL_1,
-  SSI = 21,
+  SSI,
   PMU,
   DIO_LEVEL_1,
   HET_LEVEL_1,
@@ -116,6 +118,11 @@ typedef enum {
 /* Total number of interrupts and exceptions
  */
 #define NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS 65
+
+/* Offset from start of exceptions to interrupts
+ * Exceptions have negative offsets while interrupts have positive
+ */
+#define IRQ_INTERRUPT_OFFSET 0
 
 typedef enum {
 	  PERIPHERAL_CLOCK_AHB,

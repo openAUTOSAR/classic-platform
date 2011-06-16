@@ -255,6 +255,14 @@ void Os_IsrGetStackInfo( OsIsrStackType *stack ) {
 }
 
 
+#if defined(CFG_ARM_CR4)
+void *Os_Isr_cr4( void *stack, int16_t virtualVector, int16_t vector ) {
+	OsIsrVarType *isrPtr =  &Os_IsrVarList[Os_VectorToIsr[virtualVector]];
+	isrPtr->activeVector = vector;
+	return Os_Isr(stack, virtualVector);
+}
+#endif
+
 /**
  * Handle ISR type 2 interrupts from interrupt controller.
  *
@@ -262,6 +270,7 @@ void Os_IsrGetStackInfo( OsIsrStackType *stack ) {
  * @param vector
  */
 void *Os_Isr( void *stack, int16_t vector ) {
+
 	OsIsrVarType *isrPtr =  &Os_IsrVarList[Os_VectorToIsr[vector]];
 	OsTaskVarType *taskPtr = NULL;
 

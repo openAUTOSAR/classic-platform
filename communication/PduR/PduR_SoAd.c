@@ -20,7 +20,7 @@
 #include "Det.h"
 #include "debug.h"
 
-#if PDUR_ZERO_COST_OPERATION == STD_OFF
+#if (PDUR_ZERO_COST_OPERATION == STD_OFF) && (PDUR_SOAD_SUPPORT == STD_ON)
 
 BufReq_ReturnType PduR_SoAdTpProvideRxBuffer(PduIdType dcmRxPduId, PduLengthType sduLength, PduInfoType **pduInfoPtr) {
     return PduR_ARC_ProvideRxBuffer(dcmRxPduId, sduLength, pduInfoPtr, 0x03);

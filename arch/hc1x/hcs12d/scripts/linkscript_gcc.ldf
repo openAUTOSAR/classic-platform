@@ -147,7 +147,6 @@ SECTIONS
     EcuM_Callout_template.o(.text)
     Mcu.o(.text)
     event.o(.text)
-    init.o(.text)
     arch.o(.text)
     task.o(.text)
     alarm.o(.text)
@@ -182,6 +181,7 @@ SECTIONS
     *(.text.bank_C*)
 
     /* BANK_C MODULES */
+    init.o(.text)
     printf.o(.text)	
 	*_memcpy.o(.text)
 	*_memset.o(.text)

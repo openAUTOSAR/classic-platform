@@ -18,7 +18,7 @@
 
 #include "PduR.h"
 
-#if PDUR_ZERO_COST_OPERATION == STD_OFF
+#if (PDUR_ZERO_COST_OPERATION == STD_OFF) && (PDUR_LINIF_SUPPORT == STD_ON)
 
 void PduR_LinIfRxIndication(PduIdType LinRxPduId, const PduInfoType* PduInfoPtr) {
 	PduR_ARC_RxIndication(LinRxPduId, PduInfoPtr, 0x0e);

@@ -103,9 +103,8 @@ Std_ReturnType Adc_Init (const Adc_ConfigType *ConfigPtr)
     AdcConfigPtr = ConfigPtr;
 
     // Connect interrupt to correct isr
-	TaskType tid;
-	tid = Os_Arc_CreateIsr(Adc_GroupConversionComplete,6/*prio*/,"ADC");
-	Irq_AttachIsr2(tid,NULL, IRQ_TYPE_ATD0);
+	ISR_INSTALL_ISR2("ADC",Adc_GroupConversionComplete,IRQ_TYPE_ATD0,6,0);
+
 
 	ATD0CTL2   = BM_ADPU | BM_AFFC | BM_ASCIE;	/* power enable, Fast Flag Clear, irq enable*/
     ATD0CTL3   = 0x00;	/* 8 conversions per sequence default */

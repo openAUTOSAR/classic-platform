@@ -14,7 +14,8 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 #define _ASSEMBLER_
-#include "kernel_offset.h"
+//#include "kernel_offset.h"
+#include "asm_offset.h"
 #include "stack.h"
 
 .extern Os_Sys
