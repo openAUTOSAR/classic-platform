@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<AUTOSAR xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://autosar.org/3.1.5" xsi:schemaLocation="http://autosar.org/3.1.5 autosar_3-1-5.xsd"><ADMIN-DATA>
+<AUTOSAR xmlns="http://autosar.org/3.1.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/3.1.5 autosar_3-1-5.xsd">
+  <ADMIN-DATA>
     <SDGS>
       <SDG GID="Arccore::AutosarOptions">
         <SD GID="GENDIR">/arc</SD>
       </SDG>
     </SDGS>
-  </ADMIN-DATA><TOP-LEVEL-PACKAGES>
+  </ADMIN-DATA>
+  <TOP-LEVEL-PACKAGES>
     <AR-PACKAGE>
       <SHORT-NAME>rte_simple_extract</SHORT-NAME>
       <ELEMENTS>
@@ -62,6 +64,28 @@
                   </COMPONENT-IREF>
                 </COMPONENT-IREFS>
               </SWC-TO-IMPL-MAPPING>
+              <SWC-TO-IMPL-MAPPING UUID="7238f806-540e-46b2-b680-aea2e57f85be">
+                <SHORT-NAME>Logger_prototypeImplMapping</SHORT-NAME>
+                <COMPONENT-IMPLEMENTATION-REF DEST="SWC-IMPLEMENTATION">/rte_simple_lib/LoggerKit/LoggerImplementation</COMPONENT-IMPLEMENTATION-REF>
+                <COMPONENT-IREFS>
+                  <COMPONENT-IREF>
+                    <SOFTWARE-COMPOSITION-REF DEST="SOFTWARE-COMPOSITION">/rte_simple_extract/rte_simple_extract/rte_simple_extract_softwareComposition</SOFTWARE-COMPOSITION-REF>
+                    <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Logger_prototype</COMPONENT-PROTOTYPE-REF>
+                    <TARGET-COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Logger_prototype</TARGET-COMPONENT-PROTOTYPE-REF>
+                  </COMPONENT-IREF>
+                </COMPONENT-IREFS>
+              </SWC-TO-IMPL-MAPPING>
+              <SWC-TO-IMPL-MAPPING UUID="75acf75e-788a-489d-b3e0-b80fe4ae10a9">
+                <SHORT-NAME>Logger2_prototypeImplMapping</SHORT-NAME>
+                <COMPONENT-IMPLEMENTATION-REF DEST="SWC-IMPLEMENTATION">/rte_simple_lib/Logger2Kit/Logger2Implementation</COMPONENT-IMPLEMENTATION-REF>
+                <COMPONENT-IREFS>
+                  <COMPONENT-IREF>
+                    <SOFTWARE-COMPOSITION-REF DEST="SOFTWARE-COMPOSITION">/rte_simple_extract/rte_simple_extract/rte_simple_extract_softwareComposition</SOFTWARE-COMPOSITION-REF>
+                    <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Logger2_prototype</COMPONENT-PROTOTYPE-REF>
+                    <TARGET-COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Logger2_prototype</TARGET-COMPONENT-PROTOTYPE-REF>
+                  </COMPONENT-IREF>
+                </COMPONENT-IREFS>
+              </SWC-TO-IMPL-MAPPING>
             </SW-IMPL-MAPPINGS>
           </MAPPING>
           <SOFTWARE-COMPOSITION UUID="5ed18781-89b2-4c16-ba29-388d7db0041a">
@@ -90,13 +114,21 @@
               <SHORT-NAME>Tester_prototype</SHORT-NAME>
               <TYPE-TREF DEST="APPLICATION-SOFTWARE-COMPONENT-TYPE">/rte_simple_lib/TesterKit/Tester</TYPE-TREF>
             </COMPONENT-PROTOTYPE>
+            <COMPONENT-PROTOTYPE UUID="b6ade70b-cb76-4a85-8772-8181a1259f4f">
+              <SHORT-NAME>Logger_prototype</SHORT-NAME>
+              <TYPE-TREF DEST="APPLICATION-SOFTWARE-COMPONENT-TYPE">/rte_simple_lib/LoggerKit/Logger</TYPE-TREF>
+            </COMPONENT-PROTOTYPE>
+            <COMPONENT-PROTOTYPE UUID="072fc95d-23ab-41bc-8787-b78697032be8">
+              <SHORT-NAME>Logger2_prototype</SHORT-NAME>
+              <TYPE-TREF DEST="APPLICATION-SOFTWARE-COMPONENT-TYPE">/rte_simple_lib/Logger2Kit/Logger2</TYPE-TREF>
+            </COMPONENT-PROTOTYPE>
           </COMPONENTS>
           <CONNECTORS>
             <ASSEMBLY-CONNECTOR-PROTOTYPE UUID="bddfee29-5694-4008-8df4-a0e2f372138e">
               <SHORT-NAME>Port_connector</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                   <SDG GID="Arccore::AutoconnecteOptions">
                     <SD GID="AUTOCONNECTED">FALSE</SD>
                   </SDG>
@@ -115,7 +147,7 @@
               <SHORT-NAME>Arguments_delegate_connector</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <INNER-PORT-IREF>
@@ -128,7 +160,7 @@
               <SHORT-NAME>Result_delegate_connector</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <INNER-PORT-IREF>
@@ -137,8 +169,48 @@
               </INNER-PORT-IREF>
               <OUTER-PORT-REF DEST="P-PORT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Result</OUTER-PORT-REF>
             </DELEGATION-CONNECTOR-PROTOTYPE>
+            <ASSEMBLY-CONNECTOR-PROTOTYPE UUID="c376a52e-be33-45d4-893e-29b861d5b94d">
+              <SHORT-NAME>Result_connector</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::AutoconnecteOptions">
+                    <SD GID="AUTOCONNECTED">FALSE</SD>
+                  </SDG>
+                </SDGS>
+              </ADMIN-DATA>
+              <PROVIDER-IREF>
+                <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Tester_prototype</COMPONENT-PROTOTYPE-REF>
+                <P-PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/rte_simple_lib/TesterKit/Tester/Result</P-PORT-PROTOTYPE-REF>
+              </PROVIDER-IREF>
+              <REQUESTER-IREF>
+                <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Logger_prototype</COMPONENT-PROTOTYPE-REF>
+                <R-PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/rte_simple_lib/LoggerKit/Logger/Result</R-PORT-PROTOTYPE-REF>
+              </REQUESTER-IREF>
+            </ASSEMBLY-CONNECTOR-PROTOTYPE>
+            <ASSEMBLY-CONNECTOR-PROTOTYPE UUID="a201247e-4c40-4bb4-98e3-1ffb23b951cc">
+              <SHORT-NAME>Result_connector2</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::AutoconnecteOptions">
+                    <SD GID="AUTOCONNECTED">FALSE</SD>
+                  </SDG>
+                </SDGS>
+              </ADMIN-DATA>
+              <PROVIDER-IREF>
+                <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Tester_prototype</COMPONENT-PROTOTYPE-REF>
+                <P-PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/rte_simple_lib/TesterKit/Tester/Result</P-PORT-PROTOTYPE-REF>
+              </PROVIDER-IREF>
+              <REQUESTER-IREF>
+                <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Logger2_prototype</COMPONENT-PROTOTYPE-REF>
+                <R-PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/rte_simple_lib/Logger2Kit/Logger2/Result</R-PORT-PROTOTYPE-REF>
+              </REQUESTER-IREF>
+            </ASSEMBLY-CONNECTOR-PROTOTYPE>
           </CONNECTORS>
         </COMPOSITION-TYPE>
       </ELEMENTS>
     </AR-PACKAGE>
-  </TOP-LEVEL-PACKAGES></AUTOSAR>
+  </TOP-LEVEL-PACKAGES>
+</AUTOSAR>
+

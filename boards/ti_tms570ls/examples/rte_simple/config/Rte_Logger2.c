@@ -1,5 +1,5 @@
 /*
-* Configuration of module: Rte (Rte_Calculator.c)
+* Configuration of module: Rte (Rte_Logger2.c)
 *
 * Created by:              
 * Copyright:               
@@ -13,12 +13,16 @@
 *           on Thu Jun 16 13:26:20 CEST 2011
 */
 
-/* Rte_Calculator.c */
+/* Rte_Logger2.c */
 #include <string.h>
 #include "Os.h"
-#include "Rte_Calculator.h"
+#include "Rte_Logger2.h"
 #include "Rte_Data.h"
 #include "Com.h"
 
-extern Rte_CDS_Calculator Rte_Inst_Calculator;
+extern Rte_CDS_Logger2 Rte_Inst_Logger2;
+
+UInt16 Rte_IRead_Logger2Runnable_Result_result() {
+	return Rte_Inst_Logger2.Logger2Runnable_Result_result->value;
+}
 
