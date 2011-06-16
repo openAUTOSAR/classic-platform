@@ -16,7 +16,7 @@
 
 #include "PduR.h"
 
-#if PDUR_ZERO_COST_OPERATION == STD_OFF
+#if (PDUR_ZERO_COST_OPERATION == STD_OFF) && (PDUR_CANIF_SUPPORT == STD_ON)
 
 void PduR_CanIfRxIndication(PduIdType CanRxPduId,const PduInfoType* PduInfoPtr) {
 	PduR_ARC_RxIndication(CanRxPduId, PduInfoPtr, 0x01);
