@@ -239,8 +239,6 @@ void Dio_WriteChannelGroup(const Dio_ChannelGroupType *channelGroupIdPtr,
 	cleanup:
 #endif
 	return;
-#else
-  return;
 #endif
 
 #if defined(CFG_MPC5516)
@@ -254,8 +252,6 @@ void Dio_WriteChannelGroup(const Dio_ChannelGroupType *channelGroupIdPtr,
 #if ( DIO_DEV_ERROR_DETECT == STD_ON )
   cleanup:
 #endif
-  return;
-#else
   return;
 #endif
 }
