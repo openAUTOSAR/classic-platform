@@ -14,25 +14,6 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-#include "Os.h"
-#include "Mcu.h"
-#include "arc.h"
-
-//#define USE_LDEBUG_PRINTF // Uncomment this to turn debug statements on.
-#include "debug.h"
-
-// How many errors to keep in error log.
-#define ERROR_LOG_SIZE 20
-
-
-
-void StartupTask( void ) {
-	LDEBUG_FPUTS("StartupTask start\n");
-
-
-}
-
-
 /*
  * Functions that must be supplied by the example
  */
