@@ -283,7 +283,7 @@ Can_UnitType CanUnit[CAN_CONTROLLER_CNT] =
   },{
     .state = CANIF_CS_UNINIT,
   },
-#if defined(MPC5516) || defined(MPC5517) ||  defined(CFG_MPC5567)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) ||  defined(CFG_MPC5567)
   {
     .state = CANIF_CS_UNINIT,
   },{
@@ -292,7 +292,7 @@ Can_UnitType CanUnit[CAN_CONTROLLER_CNT] =
     .state = CANIF_CS_UNINIT,
   },
 #endif
-#if defined(MPC5516) || defined(MPC5517)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
   {
     .state = CANIF_CS_UNINIT,
   }
@@ -348,34 +348,34 @@ static void Can_BusOff( int unit );
 
 void Can_A_Isr( void  ) {	Can_Isr(CAN_CTRL_A); }
 void Can_B_Isr( void  ) {	Can_Isr(CAN_CTRL_B); }
-#if defined(MPC5516) || defined(MPC5517) || defined(MPC5567)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567)
 void Can_C_Isr( void  ) {	Can_Isr(CAN_CTRL_C); }
 void Can_D_Isr( void  ) {	Can_Isr(CAN_CTRL_D); }
 void Can_E_Isr( void  ) {	Can_Isr(CAN_CTRL_E); }
 #endif
-#if defined(MPC5516) || defined(MPC5517)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
 void Can_F_Isr( void  ) {	Can_Isr(CAN_CTRL_F); }
 #endif
 
 void Can_A_Err( void  ) {	Can_Err(CAN_CTRL_A); }
 void Can_B_Err( void  ) {	Can_Err(CAN_CTRL_B); }
-#if defined(MPC5516) || defined(MPC5517) || defined(MPC5567)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567)
 void Can_C_Err( void  ) {	Can_Err(CAN_CTRL_C); }
 void Can_D_Err( void  ) {	Can_Err(CAN_CTRL_D); }
 void Can_E_Err( void  ) {	Can_Err(CAN_CTRL_E); }
 #endif
-#if defined(MPC5516) || defined(MPC5517)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
 void Can_F_Err( void  ) {	Can_Err(CAN_CTRL_F); }
 #endif
 
 void Can_A_BusOff( void  ) {	Can_BusOff(CAN_CTRL_A); }
 void Can_B_BusOff( void  ) {	Can_BusOff(CAN_CTRL_B); }
-#if defined(MPC5516) || defined(MPC5517) || defined(MPC5567)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567)
 void Can_C_BusOff( void  ) {	Can_BusOff(CAN_CTRL_C); }
 void Can_D_BusOff( void  ) {	Can_BusOff(CAN_CTRL_D); }
 void Can_E_BusOff( void  ) {	Can_BusOff(CAN_CTRL_E); }
 #endif
-#if defined(MPC5516) || defined(MPC5517)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
 void Can_F_BusOff( void  ) {	Can_BusOff(CAN_CTRL_F); }
 #endif
 //-------------------------------------------------------------------
@@ -742,7 +742,7 @@ void Can_Init( const Can_ConfigType *config ) {
      	INSTALL_HANDLER16( "Can", Can_B_Isr,    FLEXCAN_B_IFLAG1_BUF0I,     2, 0 );
      	ISR_INSTALL_ISR2(  "Can", Can_B_Isr,    FLEXCAN_B_IFLAG1_BUF31_16I, 2, 0 );
      	break;
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(MPC5567)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567)
      case CAN_CTRL_C:
      	ISR_INSTALL_ISR2(  "Can", Can_C_BusOff, FLEXCAN_C_ESR_BOFF_INT,     2, 0 );
      	ISR_INSTALL_ISR2(  "Can", Can_C_Err,    FLEXCAN_C_ESR_ERR_INT,      2, 0 );
