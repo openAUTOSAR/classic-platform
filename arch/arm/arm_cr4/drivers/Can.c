@@ -216,7 +216,7 @@ static inline Can_ReturnType handleRxMsgObject(uint8 MsgNr, const Can_HardwareOb
 	uint8  *SduPtr;
 
 	/* Wait until Busy Flag is 0 */
-	DCAN_WAIT_UNTIL_NOT_BUSY_NO_RV(controller, IfRegId);
+	DCAN_WAIT_UNTIL_NOT_BUSY(controller, IfRegId);
 
 	// Read message control
 	uint32 mc = CanRegs[controller]->IFx[IfRegId].MC;
