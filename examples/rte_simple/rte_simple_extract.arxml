@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AUTOSAR xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://autosar.org/3.1.5" xsi:schemaLocation="http://autosar.org/3.1.5 autosar_3-1-5.xsd"><ADMIN-DATA>
+    <SDGS>
+      <SDG GID="Arccore::AutosarOptions">
+        <SD GID="GENDIR">/arc</SD>
+      </SDG>
+    </SDGS>
+  </ADMIN-DATA><TOP-LEVEL-PACKAGES>
+    <AR-PACKAGE>
+      <SHORT-NAME>rte_simple_extract</SHORT-NAME>
+      <ELEMENTS>
+        <SYSTEM UUID="bb47d070-a0b5-48b5-8de5-314b4fc4204d">
+          <SHORT-NAME>rte_simple_extract</SHORT-NAME>
+          <MAPPING UUID="ee1d2d78-21ca-4764-b235-8747d67f3653">
+            <SHORT-NAME>rte_simple_extract_mapping</SHORT-NAME>
+            <DATA-MAPPINGS>
+              <SENDER-RECEIVER-TO-SIGNAL-MAPPING>
+                <DATA-ELEMENT-IREF>
+                  <SOFTWARE-COMPOSITION-REF DEST="SOFTWARE-COMPOSITION">/rte_simple_extract/rte_simple_extract/rte_simple_extract_softwareComposition</SOFTWARE-COMPOSITION-REF>
+                  <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Arguments</PORT-PROTOTYPE-REF>
+                  <DATA-ELEMENT-REF DEST="DATA-ELEMENT-PROTOTYPE">/rte_simple_lib/Interfaces/ArgumentIf/arg1</DATA-ELEMENT-REF>
+                </DATA-ELEMENT-IREF>
+                <SIGNAL-REF DEST="SYSTEM-SIGNAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Arg1</SIGNAL-REF>
+              </SENDER-RECEIVER-TO-SIGNAL-MAPPING>
+              <SENDER-RECEIVER-TO-SIGNAL-MAPPING>
+                <DATA-ELEMENT-IREF>
+                  <SOFTWARE-COMPOSITION-REF DEST="SOFTWARE-COMPOSITION">/rte_simple_extract/rte_simple_extract/rte_simple_extract_softwareComposition</SOFTWARE-COMPOSITION-REF>
+                  <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Arguments</PORT-PROTOTYPE-REF>
+                  <DATA-ELEMENT-REF DEST="DATA-ELEMENT-PROTOTYPE">/rte_simple_lib/Interfaces/ArgumentIf/arg2</DATA-ELEMENT-REF>
+                </DATA-ELEMENT-IREF>
+                <SIGNAL-REF DEST="SYSTEM-SIGNAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Arg2</SIGNAL-REF>
+              </SENDER-RECEIVER-TO-SIGNAL-MAPPING>
+              <SENDER-RECEIVER-TO-SIGNAL-MAPPING>
+                <DATA-ELEMENT-IREF>
+                  <SOFTWARE-COMPOSITION-REF DEST="SOFTWARE-COMPOSITION">/rte_simple_extract/rte_simple_extract/rte_simple_extract_softwareComposition</SOFTWARE-COMPOSITION-REF>
+                  <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Result</PORT-PROTOTYPE-REF>
+                  <DATA-ELEMENT-REF DEST="DATA-ELEMENT-PROTOTYPE">/rte_simple_lib/Interfaces/ResultIf/result</DATA-ELEMENT-REF>
+                </DATA-ELEMENT-IREF>
+                <SIGNAL-REF DEST="SYSTEM-SIGNAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Result</SIGNAL-REF>
+              </SENDER-RECEIVER-TO-SIGNAL-MAPPING>
+            </DATA-MAPPINGS>
+            <SW-IMPL-MAPPINGS>
+              <SWC-TO-IMPL-MAPPING UUID="82bfa1c7-e38e-4bad-b8d2-7ee82c981ccc">
+                <SHORT-NAME>Calculator_prototypeImplMapping</SHORT-NAME>
+                <COMPONENT-IMPLEMENTATION-REF DEST="SWC-IMPLEMENTATION">/rte_simple_lib/CalculatorKit/CalculatorImplementation</COMPONENT-IMPLEMENTATION-REF>
+                <COMPONENT-IREFS>
+                  <COMPONENT-IREF>
+                    <SOFTWARE-COMPOSITION-REF DEST="SOFTWARE-COMPOSITION">/rte_simple_extract/rte_simple_extract/rte_simple_extract_softwareComposition</SOFTWARE-COMPOSITION-REF>
+                    <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Calculator_prototype</COMPONENT-PROTOTYPE-REF>
+                    <TARGET-COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Calculator_prototype</TARGET-COMPONENT-PROTOTYPE-REF>
+                  </COMPONENT-IREF>
+                </COMPONENT-IREFS>
+              </SWC-TO-IMPL-MAPPING>
+              <SWC-TO-IMPL-MAPPING UUID="6ee5a47a-3465-451b-9eb8-d947d62df29b">
+                <SHORT-NAME>Tester_prototypeImplMapping</SHORT-NAME>
+                <COMPONENT-IMPLEMENTATION-REF DEST="SWC-IMPLEMENTATION">/rte_simple_lib/TesterKit/TesterImplementation</COMPONENT-IMPLEMENTATION-REF>
+                <COMPONENT-IREFS>
+                  <COMPONENT-IREF>
+                    <SOFTWARE-COMPOSITION-REF DEST="SOFTWARE-COMPOSITION">/rte_simple_extract/rte_simple_extract/rte_simple_extract_softwareComposition</SOFTWARE-COMPOSITION-REF>
+                    <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Tester_prototype</COMPONENT-PROTOTYPE-REF>
+                    <TARGET-COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Tester_prototype</TARGET-COMPONENT-PROTOTYPE-REF>
+                  </COMPONENT-IREF>
+                </COMPONENT-IREFS>
+              </SWC-TO-IMPL-MAPPING>
+            </SW-IMPL-MAPPINGS>
+          </MAPPING>
+          <SOFTWARE-COMPOSITION UUID="5ed18781-89b2-4c16-ba29-388d7db0041a">
+            <SHORT-NAME>rte_simple_extract_softwareComposition</SHORT-NAME>
+            <SOFTWARE-COMPOSITION-TREF DEST="COMPOSITION-TYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition</SOFTWARE-COMPOSITION-TREF>
+          </SOFTWARE-COMPOSITION>
+        </SYSTEM>
+        <COMPOSITION-TYPE UUID="e9b113b6-d5a3-4c1d-8d37-2d708a74636b">
+          <SHORT-NAME>rte_simple_extract_toplevelcomposition</SHORT-NAME>
+          <PORTS>
+            <R-PORT-PROTOTYPE UUID="e39fc0a7-5932-4568-9848-5f60ccc9e9cf">
+              <SHORT-NAME>Arguments</SHORT-NAME>
+              <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/rte_simple_lib/Interfaces/ArgumentIf</REQUIRED-INTERFACE-TREF>
+            </R-PORT-PROTOTYPE>
+            <P-PORT-PROTOTYPE UUID="e04beb49-0c3f-4821-9546-a57ffa53c70b">
+              <SHORT-NAME>Result</SHORT-NAME>
+              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/rte_simple_lib/Interfaces/ResultIf</PROVIDED-INTERFACE-TREF>
+            </P-PORT-PROTOTYPE>
+          </PORTS>
+          <COMPONENTS>
+            <COMPONENT-PROTOTYPE UUID="f8e31b3a-e8b1-4e75-99b7-50fdb0e0f029">
+              <SHORT-NAME>Calculator_prototype</SHORT-NAME>
+              <TYPE-TREF DEST="APPLICATION-SOFTWARE-COMPONENT-TYPE">/rte_simple_lib/CalculatorKit/Calculator</TYPE-TREF>
+            </COMPONENT-PROTOTYPE>
+            <COMPONENT-PROTOTYPE UUID="0101e867-37bc-4e67-95f5-a42579a48f62">
+              <SHORT-NAME>Tester_prototype</SHORT-NAME>
+              <TYPE-TREF DEST="APPLICATION-SOFTWARE-COMPONENT-TYPE">/rte_simple_lib/TesterKit/Tester</TYPE-TREF>
+            </COMPONENT-PROTOTYPE>
+          </COMPONENTS>
+          <CONNECTORS>
+            <ASSEMBLY-CONNECTOR-PROTOTYPE UUID="bddfee29-5694-4008-8df4-a0e2f372138e">
+              <SHORT-NAME>Port_connector</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::AutoconnecteOptions">
+                    <SD GID="AUTOCONNECTED">FALSE</SD>
+                  </SDG>
+                </SDGS>
+              </ADMIN-DATA>
+              <PROVIDER-IREF>
+                <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Calculator_prototype</COMPONENT-PROTOTYPE-REF>
+                <P-PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/rte_simple_lib/CalculatorKit/Calculator/Port</P-PORT-PROTOTYPE-REF>
+              </PROVIDER-IREF>
+              <REQUESTER-IREF>
+                <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Tester_prototype</COMPONENT-PROTOTYPE-REF>
+                <R-PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/rte_simple_lib/TesterKit/Tester/Calculator</R-PORT-PROTOTYPE-REF>
+              </REQUESTER-IREF>
+            </ASSEMBLY-CONNECTOR-PROTOTYPE>
+            <DELEGATION-CONNECTOR-PROTOTYPE UUID="716243fc-46ee-4395-853f-950d201a3dc2">
+              <SHORT-NAME>Arguments_delegate_connector</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions"/>
+                </SDGS>
+              </ADMIN-DATA>
+              <INNER-PORT-IREF>
+                <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Tester_prototype</COMPONENT-PROTOTYPE-REF>
+                <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/rte_simple_lib/TesterKit/Tester/Arguments</PORT-PROTOTYPE-REF>
+              </INNER-PORT-IREF>
+              <OUTER-PORT-REF DEST="R-PORT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Arguments</OUTER-PORT-REF>
+            </DELEGATION-CONNECTOR-PROTOTYPE>
+            <DELEGATION-CONNECTOR-PROTOTYPE UUID="d5ef017c-bc14-430e-b540-f8caa2d28fbd">
+              <SHORT-NAME>Result_delegate_connector</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions"/>
+                </SDGS>
+              </ADMIN-DATA>
+              <INNER-PORT-IREF>
+                <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Tester_prototype</COMPONENT-PROTOTYPE-REF>
+                <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/rte_simple_lib/TesterKit/Tester/Result</PORT-PROTOTYPE-REF>
+              </INNER-PORT-IREF>
+              <OUTER-PORT-REF DEST="P-PORT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Result</OUTER-PORT-REF>
+            </DELEGATION-CONNECTOR-PROTOTYPE>
+          </CONNECTORS>
+        </COMPOSITION-TYPE>
+      </ELEMENTS>
+    </AR-PACKAGE>
+  </TOP-LEVEL-PACKAGES></AUTOSAR>

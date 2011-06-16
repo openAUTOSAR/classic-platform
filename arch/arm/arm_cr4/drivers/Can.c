@@ -517,27 +517,17 @@ void Can_Init(const Can_ConfigType *Config)
 #endif
 
         // Install interrupt handlers
-		TaskType tid;
 		if (CanControllerConfigData[Controller].CanControllerId == DCAN1) {
-			tid = Os_Arc_CreateIsr(Can1_InterruptHandler, 2 ,"DCAN1Level0");
-			Irq_AttachIsr2(tid, NULL, 16);
-
-			tid = Os_Arc_CreateIsr(Can1_InterruptHandler, 2, "DCAN1Level1");
-			Irq_AttachIsr2(tid, NULL, 29);
+			ISR_INSTALL_ISR2("DCAN1Level0",Can1_InterruptHandler,CAN1_LEVEL_0,2,0);
+			ISR_INSTALL_ISR2("DCAN1Level1",Can1_InterruptHandler,CAN1_LEVEL_1,2,0);
 
 		} else if (CanControllerConfigData[Controller].CanControllerId == DCAN2) {
-			tid = Os_Arc_CreateIsr(Can2_InterruptHandler, 2 ,"DCAN2Level0");
-			Irq_AttachIsr2(tid, NULL, 35);
-
-			tid = Os_Arc_CreateIsr(Can2_InterruptHandler, 2, "DCAN2Level1");
-			Irq_AttachIsr2(tid, NULL, 42);
+			ISR_INSTALL_ISR2("DCAN2Level0",Can2_InterruptHandler,CAN2_LEVEL_0,2,0);
+			ISR_INSTALL_ISR2("DCAN2Level1",Can2_InterruptHandler,CAN2_LEVEL_1,2,0);
 
 		} else if (CanControllerConfigData[Controller].CanControllerId == DCAN3) {
-			tid = Os_Arc_CreateIsr(Can3_InterruptHandler, 2 ,"DCAN3Level0");
-			Irq_AttachIsr2(tid, NULL, 45);
-
-			tid = Os_Arc_CreateIsr(Can3_InterruptHandler, 2, "DCAN3Level1");
-			Irq_AttachIsr2(tid, NULL, 55);
+			ISR_INSTALL_ISR2("DCAN3Level0",Can3_InterruptHandler,CAN3_LEVEL_0,2,0);
+			ISR_INSTALL_ISR2("DCAN3Level1",Can3_InterruptHandler,CAN3_LEVEL_1,2,0);
 
 		}
 
