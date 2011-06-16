@@ -5,9 +5,8 @@
  *      Author: maek
  */
 
-#include "Os.h"
-#include "Mcu.h"
-#include "arc.h"
+#include "EcuM.h"
+#include "CanIf.h"
 
 //#define USE_LDEBUG_PRINTF // Uncomment this to turn debug statements on.
 #include "debug.h"
