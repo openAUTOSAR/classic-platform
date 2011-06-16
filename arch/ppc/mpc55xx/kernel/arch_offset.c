@@ -15,6 +15,7 @@
 
 
 #include <stddef.h>
+#include "Os.h"
 #include "internal.h"
 #include "arch_stack.h"
 

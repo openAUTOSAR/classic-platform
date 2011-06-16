@@ -54,7 +54,11 @@
 #include "Fls.h"
 /* Freescale driver */
 #include "ssd_types.h"
+#if defined(CFG_MPC5606S)
+#include "ssd_c90fl.h"
+#else
 #include "ssd_h7f.h"
+#endif
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
@@ -64,28 +68,46 @@
 #endif
 #include "Cpu.h"
 #include "mpc55xx.h"
+#if defined(CFG_MPC5606S)
+#include "Fls_C90FL.h"
+#else
 #include "Fls_H7F.h"
-
-
+#endif
 /* Flash layout for MPC5516 */
 /*
  * Low:  8x16K + 2x64k
  * Mid:  2x128K
  * High: 8x128K
  */
-
+#if defined(CFG_MPC5606S)
+#define C90FL_REG_BASE          (UINT32)&CFLASH0
+#define C90FL_CODE1_REG_BASE    (UINT32)&CFLASH1
+#define C90FL_DATA_REG_BASE     (UINT32)&DFLASH
+#else
 #define H7F_REG_BASE 			(UINT32)&FLASH
+#endif
 #define MAIN_ARRAY_BASE 		0x00000000
+
+#if defined(CFG_MPC5606S)
+#define MAIN_CODE1_ARRAY_BASE   0x00080000
+#define MAIN_DATA_ARRAY_BASE    0x00800000
+#endif
 
 #ifdef CFG_MPC5516
 #define SHADOW_ROW_BASE  		0x00FF8000
 #elif defined(CFG_MPC5567)
 #define SHADOW_ROW_BASE  		0x00FFFC00
+#elif defined(CFG_MPC5606S)
+#define SHADOW_ROW_BASE         0x00200000
 #endif
 
+#if defined(CFG_MPC5606S)
+#define SHADOW_ROW_SIZE         0x00004000
+#define FLASH_PAGE_SIZE         C90FL_PAGE_SIZE_08
+#else
 #define SHADOW_ROW_SIZE 		0x00008000
 #define FLASH_PAGE_SIZE    H7FB_PAGE_SIZE
-
+#endif
 #define FLASH_TOTAL_BLOCKS ( 20 )
 
 #if 0
@@ -218,7 +240,7 @@ static inline int Fls_Validate( uint32 addr,uint32 length, uint32 api,uint32 rv 
   int lengthOk=0;\
   const Fls_SectorType* sectorPtr= &Fls_Global.config->FlsSectorList[0];\
   for (i=0; i<Fls_Global.config->FlsSectorListSize;i++) {\
-    if ((sectorPtr->FlsSectorStartaddress + (sectorPtr->FlsNumberOfSectors * sectorPtr->FlsSectorSize))>=(uint32_t)(_addr+(_length))){\
+    if ((_length!=0) && (sectorPtr->FlsSectorStartaddress + (sectorPtr->FlsNumberOfSectors * sectorPtr->FlsSectorSize))>=(uint32_t)(_addr+(_length))){\
     	lengthOk=1;\
     }\
     sectorPtr++;\
@@ -244,6 +266,12 @@ static inline int Fls_Validate( uint32 addr,uint32 length, uint32 api,uint32 rv 
   if (!lengthOk){\
     Det_ReportError(MODULE_ID_FLS,0,_api,FLS_E_PARAM_LENGTH ); \
     return _rv; \
+  }
+
+#define FLS_VALIDATE_STATUS_UNINIT(_status, _api)\
+  if (MEMIF_UNINIT == _status){\
+    Det_ReportError(MODULE_ID_FLS,0,_api,FLS_E_UNINIT); \
+    return; \
   }
 
 #define FLS_VALIDATE_STATUS_UNINIT_W_RV(_status, _api, _rv)\
@@ -324,8 +352,12 @@ typedef struct {
 
 
 SSD_CONFIG ssdConfig = {
-    H7F_REG_BASE,           /* H7F control register base */
-    MAIN_ARRAY_BASE,        /* base of main array */
+#if defined(CFG_MPC5606S)
+	C90FL_REG_BASE,         /* C90FL Flash control register base */
+#else
+	H7F_REG_BASE,           /* H7F control register base */
+#endif
+	MAIN_ARRAY_BASE,        /* base of main array */
     0,                      /* size of main array */
     SHADOW_ROW_BASE,        /* base of shadow row */
     SHADOW_ROW_SIZE,        /* size of shadow row */
@@ -335,6 +367,34 @@ SSD_CONFIG ssdConfig = {
     8,        				/* page size */
     FALSE,                   /* debug mode selection */
 };
+
+#if defined(CFG_MPC5606S)
+SSD_CONFIG ssdCode1Config = {
+	C90FL_CODE1_REG_BASE,    /* C90FL Data Flash control register base */
+	MAIN_CODE1_ARRAY_BASE,   /* base of main array */
+    0,                      /* size of main array */
+    0,                      /* base of shadow row. Not available on DFlash */
+    0,                      /* size of shadow row. Not available on DFlash */
+    0,                      /* block number in low address space */
+    0,                      /* block number in middle address space */
+    0,                      /* block number in high address space */
+    FLASH_PAGE_SIZE,        /* flash page size selection */
+    FALSE                   /* debug mode selection */
+};
+
+SSD_CONFIG ssdDataConfig = {
+	C90FL_DATA_REG_BASE,    /* C90FL Data Flash control register base */
+	MAIN_DATA_ARRAY_BASE,   /* base of main array */
+    0,                      /* size of main array */
+    0,                      /* base of shadow row. Not available on DFlash */
+    0,                      /* size of shadow row. Not available on DFlash */
+    0,                      /* block number in low address space */
+    0,                      /* block number in middle address space */
+    0,                      /* block number in high address space */
+    FLASH_PAGE_SIZE,        /* flash page size selection */
+    FALSE                   /* debug mode selection */
+};
+#endif
 
 static Std_VersionInfoType _Fls_VersionInfo = {
     .vendorID 			= (uint16)1,
@@ -435,6 +495,40 @@ static inline uint32 rlwimi(uint32 val, uint16 sh, uint16 mb,uint16 me)
 static uint32 address_to_block( uint32 addr, uint32 *rem ) {
   uint32 block;
 
+#if defined(CFG_MPC5606S)
+  /* CFLASH0 */
+  if( addr < 0x80000 ) {
+	  if ( addr < 0x8000) {
+		  block = addr / 0x8000;
+		  *rem = addr % 0x8000;
+	  } else if ( addr < 0x10000) {
+		  block = 1 + ( addr - 0x8000 ) / 0x4000;
+		  *rem = addr % 0x4000;
+	  } else if ( addr < 0x20000 ) {
+		  block = 3 + ( addr - 0x10000 ) / 0x8000;
+		  *rem = addr % 0x8000;
+	  } else  {
+		  block = 5 + ( addr - 0x20000 ) / 0x20000;
+		  *rem = addr % 0x20000;
+	  }
+  }
+  /* CFLASH1 */
+  else if( addr < 0x100000 ) {
+	  block = (addr - 0x80000) / 0x20000;
+	  *rem = (addr - 0x80000) % 0x20000;
+  }
+  /* DFLASH */
+  else if (( addr >= 0x800000 )&(addr < 0x810000)) {
+		  block = (addr - 0x800000) / 0x4000;
+		  *rem = (addr - 0x800000) % 0x4000;
+  }
+  else {
+		  block = (-1);
+		  *rem = (-1);
+  }
+
+
+#else
   if( addr < 0x20000) {
     // Low range, 8x16K
     block = addr / 0x4000;
@@ -455,6 +549,7 @@ static uint32 address_to_block( uint32 addr, uint32 *rem ) {
     block = (-1);
     *rem = (-1);
   }
+#endif
   return block;
 }
 
@@ -491,12 +586,16 @@ static void address_to_erase_blocks( Fls_EraseBlockType *eraseBlocks, uint32 add
   mask2 = ((-1UL)>>startBlock)<<startBlock;
   mask = mask1 & mask2;
 
-
+#if defined( MPC5606S )
+  eraseBlocks->lowEnabledBlocks = mask&0xffff;   // Bits 0..15 indicats low blocks
+  eraseBlocks->midEnabledBlocks = (mask>>16)&3; // Bits 16..17 indicats mid blocks
+  eraseBlocks->highEnabledBlocks = mask>>18;    // Bits 18..23 indicats high blocks
+#else
   // shift things in to make freescale driver happy
   eraseBlocks->lowEnabledBlocks = mask&0x3ff;   // Bits 0..9 indicats low blocks
   eraseBlocks->midEnabledBlocks = (mask>>10)&3; // Bits 10..11 indicats mid blocks
   eraseBlocks->highEnabledBlocks = mask>>12;    // Bits 12..19 indicats high blocks
-
+#endif
 
   return ;
 }
@@ -520,6 +619,10 @@ void Fls_Init( const Fls_ConfigType *ConfigPtr )
 
 
   returnCode = FlashInit( &ssdConfig );
+#if defined( CFG_MPC5606S )
+  returnCode = FlashInit( &ssdCode1Config );
+  returnCode = FlashInit( &ssdDataConfig );
+#endif
 
   // Lock shadow row..
   eraseBlocks.lowEnabledBlocks = 0;
@@ -527,7 +630,11 @@ void Fls_Init( const Fls_ConfigType *ConfigPtr )
   eraseBlocks.highEnabledBlocks = 0;
   eraseBlocks.shadowBlocks = 1;
 
+#if defined(CFG_MPC5606S)
+  Fls_C90FL_SetLock(&ssdConfig,&eraseBlocks,1);
+#else
   Fls_H7F_SetLock(&eraseBlocks,1);
+#endif
 
   Fls_Global.status 		= MEMIF_IDLE;
   Fls_Global.jobResultType 	= MEMIF_JOB_OK;
@@ -585,12 +692,55 @@ Std_ReturnType Fls_Erase(	Fls_AddressType   TargetAddress,
 
   eraseBlock.shadowBlocks = 0;
   // Unlock
-  Fls_H7F_SetLock(&eraseBlock,0);
 
+#if defined( CFG_MPC5606S )
+  if ( TargetAddress < 0x80000 ) {
+	  Fls_C90FL_SetLock(&ssdConfig, &eraseBlock,0);
+  }
+  else if ( TargetAddress < 0x100000 ){
+	  Fls_C90FL_SetLock(&ssdCode1Config, &eraseBlock,0);
+  }
+  else {
+	  Fls_C90FL_SetLock(&ssdDataConfig, &eraseBlock,0);
+  }
+#else
+  Fls_H7F_SetLock(&eraseBlock,0);
+#endif
   eraseInfo.state  = 0; // Always set this
 
 
+#if defined( CFG_MPC5606S )
+	Fls_Global.sourceAddr = TargetAddress;
 
+  if ( TargetAddress < 0x80000 ) {
+	  Fls_C90FL_FlashErase ( &ssdConfig ,
+	              0, // shadowFlag...
+	              eraseBlock.lowEnabledBlocks,
+	              eraseBlock.midEnabledBlocks,
+	              eraseBlock.highEnabledBlocks,
+	              &eraseInfo
+	                      );
+   }
+   else if ( TargetAddress < 0x100000 ){
+	   Fls_C90FL_FlashErase ( &ssdCode1Config ,
+	  	              0, // shadowFlag...
+	  	              eraseBlock.lowEnabledBlocks,
+	  	              eraseBlock.midEnabledBlocks,
+	  	              eraseBlock.highEnabledBlocks,
+	  	              &eraseInfo
+	  	                      );
+   }
+   else {
+	   Fls_C90FL_FlashErase ( &ssdDataConfig ,
+	  	              0, // shadowFlag...
+	  	              eraseBlock.lowEnabledBlocks,
+	  	              eraseBlock.midEnabledBlocks,
+	  	              eraseBlock.highEnabledBlocks,
+	  	              &eraseInfo
+	  	                      );
+   }
+
+#else
   Fls_H7F_FlashErase ( 	&ssdConfig ,
           0, // shadowFlag...
           eraseBlock.lowEnabledBlocks,
@@ -598,6 +748,7 @@ Std_ReturnType Fls_Erase(	Fls_AddressType   TargetAddress,
           eraseBlock.highEnabledBlocks,
           &eraseInfo
                   );
+#endif
   return E_OK;
 }
 
@@ -631,8 +782,20 @@ Std_ReturnType Fls_Write (    Fls_AddressType   TargetAddress,
   // unlock flash....
   address_to_erase_blocks(&eraseBlock,TargetAddress,Length);
   eraseBlock.shadowBlocks = 0;
-  Fls_H7F_SetLock(&eraseBlock,0);
 
+#if defined( CFG_MPC5606S )
+  if ( TargetAddress < 0x80000 ) {
+	  Fls_C90FL_SetLock(&ssdConfig, &eraseBlock,0);
+  }
+  else if ( TargetAddress < 0x100000 ){
+	  Fls_C90FL_SetLock(&ssdCode1Config, &eraseBlock,0);
+  }
+  else {
+	  Fls_C90FL_SetLock(&ssdDataConfig, &eraseBlock,0);
+  }
+#else
+  Fls_H7F_SetLock(&eraseBlock,0);
+#endif
   return E_OK;
 }
 
@@ -659,10 +822,14 @@ MemIf_JobResultType Fls_GetJobResult( void )
 }
 #endif
 
+
 void Fls_MainFunction( void )
 {
   uint32 flashStatus;
   int result;
+
+  FLS_VALIDATE_STATUS_UNINIT(Fls_Global.status, FLS_ERASE_ID);
+
   if( Fls_Global.jobResultType == MEMIF_JOB_PENDING ) {
     switch(Fls_Global.jobType) {
     case FLS_JOB_COMPARE:
@@ -673,7 +840,7 @@ void Fls_MainFunction( void )
       if( result == 0 ) {
         Fls_Global.jobResultType = MEMIF_JOB_OK;
       } else {
-        Fls_Global.jobResultType = MEMIF_JOB_FAILED;
+    	Fls_Global.jobResultType = MEMIF_BLOCK_INCONSISTENT;
       }
       Fls_Global.status = MEMIF_IDLE;
       Fls_Global.jobType = FLS_JOB_NONE;
@@ -683,7 +850,50 @@ void Fls_MainFunction( void )
     {
 //      uint32 failAddress;
 //      uint32 failData;
+#if defined(CFG_MPC5606S)
+      if ( Fls_Global.sourceAddr < 0x80000 ) {
+    	  flashStatus = Fls_C90FL_EraseStatus(&ssdConfig);
+      }
+      else if ( Fls_Global.sourceAddr < 0x100000 ){
+    	  flashStatus = Fls_C90FL_EraseStatus(&ssdCode1Config);
+      }
+      else {
+    	  flashStatus = Fls_C90FL_EraseStatus(&ssdDataConfig);
+      }
+      if( flashStatus == C90FL_OK ) {
+              Fls_EraseBlockType blocks;
+              // Lock all.
+              blocks.highEnabledBlocks = (-1UL);
+              blocks.midEnabledBlocks = (-1UL);
+              blocks.highEnabledBlocks = (-1UL);
+              blocks.shadowBlocks = (-1UL);
 
+              if ( Fls_Global.sourceAddr < 0x80000 ) {
+              	  Fls_C90FL_SetLock(&ssdConfig, &blocks,1);
+                }
+                else if ( Fls_Global.sourceAddr < 0x100000 ){
+              	  Fls_C90FL_SetLock(&ssdCode1Config, &blocks,1);
+                }
+                else {
+              	  Fls_C90FL_SetLock(&ssdDataConfig, &blocks,1);
+                }
+              Fls_Global.jobResultType = MEMIF_JOB_OK;
+              Fls_Global.jobType = FLS_JOB_NONE;
+              Fls_Global.status = MEMIF_IDLE;
+              FEE_JOB_END_NOTIFICATION();
+            } else if( flashStatus == C90FL_BUSY )  {
+              /* Busy, Do nothing */
+            } else {
+              // Error
+              Fls_Global.jobResultType = MEMIF_JOB_FAILED;
+              Fls_Global.jobType = FLS_JOB_NONE;
+              Fls_Global.status = MEMIF_IDLE;
+      #if defined(USE_DEM)
+      		Dem_ReportErrorStatus(FLS_E_WRITE_FAILED, DEM_EVENT_STATUS_FAILED);
+      #endif
+              FEE_JOB_ERROR_NOTIFICATION();
+            }
+#else
       flashStatus = Fls_H7F_EraseStatus(&ssdConfig);
       if( flashStatus == H7F_OK ) {
         Fls_EraseBlockType blocks;
@@ -711,6 +921,7 @@ void Fls_MainFunction( void )
 #endif
         FEE_JOB_ERROR_NOTIFICATION();
       }
+#endif
       break;
     }
     case FLS_JOB_READ:
@@ -726,7 +937,51 @@ void Fls_MainFunction( void )
     case FLS_JOB_WRITE:
     {
       // NOT implemented. Hardware error = FLS_E_READ_FAILED
+#if defined(CFG_MPC5606S)
+      if ( Fls_Global.flashWriteInfo.dest < 0x80000) {
+    	  flashStatus = Fls_C90FL_Program( &ssdConfig,&Fls_Global.flashWriteInfo);
+      }
+      else if ( Fls_Global.flashWriteInfo.dest < 0x100000) {
+    	  flashStatus = Fls_C90FL_Program( &ssdCode1Config,&Fls_Global.flashWriteInfo);
+      }
+      else {
+    	  flashStatus = Fls_C90FL_Program( &ssdDataConfig,&Fls_Global.flashWriteInfo);
+      }
+      if( flashStatus == C90FL_OK ) {
+              Fls_EraseBlockType blocks;
+              blocks.highEnabledBlocks = (-1UL);
+              blocks.midEnabledBlocks = (-1UL);
+              blocks.highEnabledBlocks = (-1UL);
+              blocks.shadowBlocks = (-1UL);
 
+              // Lock all
+              if ( Fls_Global.flashWriteInfo.dest < 0x80000 ) {
+				  Fls_C90FL_SetLock(&ssdConfig, &blocks,1);
+			  }
+			  else if ( Fls_Global.flashWriteInfo.dest < 0x100000 ){
+				  Fls_C90FL_SetLock(&ssdCode1Config, &blocks,1);
+			  }
+			  else {
+				  Fls_C90FL_SetLock(&ssdDataConfig, &blocks,1);
+			  }
+
+              Fls_Global.jobResultType = MEMIF_JOB_OK;
+              Fls_Global.jobType = FLS_JOB_NONE;
+              Fls_Global.status = MEMIF_IDLE;
+              FEE_JOB_END_NOTIFICATION();
+            } else if( flashStatus == C90FL_BUSY )  {
+              /* Busy, Do nothing */
+            } else {
+              // Error
+              Fls_Global.jobResultType = MEMIF_JOB_FAILED;
+              Fls_Global.jobType = FLS_JOB_NONE;
+              Fls_Global.status = MEMIF_IDLE;
+      #if defined(USE_DEM)
+      		Dem_ReportErrorStatus(FLS_E_WRITE_FAILED, DEM_EVENT_STATUS_FAILED);
+      #endif
+      		FEE_JOB_ERROR_NOTIFICATION();
+            }
+#else
       flashStatus = Fls_H7F_Program( &ssdConfig,&Fls_Global.flashWriteInfo);
 
       if( flashStatus == H7F_OK ) {
@@ -755,7 +1010,7 @@ void Fls_MainFunction( void )
 #endif
 		FEE_JOB_ERROR_NOTIFICATION();
       }
-
+#endif
       break;
     }
     case FLS_JOB_NONE:
@@ -764,6 +1019,7 @@ void Fls_MainFunction( void )
     }
   }
 }
+
 
 Std_ReturnType Fls_Read (	Fls_AddressType SourceAddress,
               uint8 *TargetAddressPtr,
@@ -824,10 +1080,12 @@ void Fls_SetMode(		MemIf_ModeType Mode )
 }
 #endif
 
+#if ( FLS_VERSION_INFO_API == STD_ON )
 void Fls_GetVersionInfo( Std_VersionInfoType *VersioninfoPtr )
 {
   memcpy(VersioninfoPtr, &_Fls_VersionInfo, sizeof(Std_VersionInfoType));
 }
+#endif
 
 void Fls_Check( uint32 flsBaseAddress, uint32 flsTotalSize )
 {
@@ -838,7 +1096,11 @@ void Fls_Check( uint32 flsBaseAddress, uint32 flsTotalSize )
   // Enable Flash Non_Correctible Reporting,
   // Not really necessary but makes more information
   // available in the MCM registers if an error occurs.
+#if defined(CFG_MPC5606S)
+  ECSM.ECR.B.EFNCR = 1;
+#else
   MCM.ECR.B.EFNCR = 1;
+#endif
 
   // Read flash in 32bit chunks, it's most efficient.
   uint32* memoryChunkPtr = (uint32*)flsBaseAddress;

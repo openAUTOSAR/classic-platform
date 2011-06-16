@@ -63,7 +63,9 @@ typedef struct OsCounter {
 } OsCounterType;
 
 
+#if OS_COUNTER_CNT!=0
 extern GEN_COUNTER_HEAD;
+#endif
 
 static inline TickType Os_CounterGetMaxValue(OsCounterType *cPtr ) {
 	return cPtr->alarm_base.maxallowedvalue;
@@ -78,7 +80,12 @@ static inline TickType Os_CounterGetValue( OsCounterType *cPtr ) {
 }
 
 static inline OsCounterType *Os_CounterGet(CounterType id) {
+#if OS_COUNTER_CNT!=0
 	return &counter_list[id];
+#else
+	(void)id;
+	return NULL;
+#endif
 }
 
 static inline ApplicationType Os_CounterGetApplicationOwner( CounterType id ) {

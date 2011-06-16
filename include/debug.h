@@ -53,6 +53,7 @@
 #define DEBUG_LOW		1
 #define DEBUG_MEDIUM	2
 #define DEBUG_HIGH		3
+#define DEBUG_NONE		4
 
 #ifndef DEBUG_LVL
 #define DEBUG_LVL		2

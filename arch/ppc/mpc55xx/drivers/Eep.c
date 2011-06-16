@@ -14,24 +14,38 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
-
-
 /*
  * IMPLEMENTATION NOTES
  * - The SPI implementation only supports 64 bytes in one go so this is
  *   a limitation for the EEP driver also.
  * - The specification if SPI functions should be blocking or not. For now
  *   the driver uses blocking SPI communication.
+ *
+ * CONFIG NOTES
+ *   Look at the 10.4 example in the 4.0 specs, quite good.
+ *   Normally the SPI E2 have a number of instructions: READ, WRITE, WRDI, WREN, etc
+ *   These instructions have can different sequences. For example WREN can be just
+ *   the instruction while WRIE consist of the WRITE instruction, an address and the
+ *   data to write.
+ *
+ *   1. Identify the channels. Best way to do that is to have a look at the E2 instruction
+ *      set and its sequences. Example:
+ *        READ :  READ| ADDRESS | DATA |
+ *         bits    8      16       upto 32*8
+ *
+ *        WRITE: WRITE | ADDRESS | DATA
+ *         bits    8      16       upto 32*8
+ *
+ *        WREN:   WREN
+ *         bits    8
+ *
+ *        RDSR:    RDSR | DATA
+ *                  8       8
  */
 
 /* DEVICE SUPPORT
- *   STMicroelectronics:
- *     M95256
+ *   Microchip:
+ *     25LC160
  */
 
 /* REQUIREMENTS
@@ -50,7 +64,9 @@
 
 #include "Eep.h"
 #include "Spi.h"
-//#include "Dem.h"
+#if defined(USE_DEM)
+#include "Dem.h"
+#endif
 #include "Det.h"
 #include <stdlib.h>
 #include <assert.h>
@@ -66,6 +82,8 @@
 
 /* The width in bytes used by this eeprom */
 #define ADDR_LENGTH 	2
+
+
 
 /* Helper macro for the process function */
 #define SET_STATE(_done,_state) done=(_done);job->state=(_state)
@@ -151,17 +169,17 @@ typedef struct {
  */
 typedef struct {
 	// The configuration
-  const Eep_ConfigType *config;
+  const Eep_ConfigType 	*config;
 
   // Status of driver
-  MemIf_StatusType    status;
-  MemIf_JobResultType jobResultType;
-  Eep_Arc_JobType    jobType;
+  MemIf_StatusType    	status;
+  MemIf_JobResultType 	jobResultType;
+  Eep_Arc_JobType    	jobType;
 
   // Saved information from API calls.
-  MemIf_AddressType   e2Addr;
-  uint8        				*targetAddr;
-  MemIf_LengthType    length;
+  Eep_AddressType   e2Addr;
+  uint8        		*targetAddr;
+  Eep_LengthType    length;
 
   // Data containers for EB buffers
   Spi_DataType ebCmd;
@@ -188,7 +206,8 @@ Std_ReturnType Eep_AsyncTransmit(Spi_SequenceType Sequence,Eep_JobInfoType *job)
 }
 #endif
 
-#define CFG_P()	Eep_Global.config
+//#define CFG_P()	Eep_Global.config
+#define CFG_SPI_P() Eep_Global.config->externalDriver
 
 Eep_GlobalType Eep_Global;
 
@@ -207,32 +226,34 @@ static void Spi_ConvertToSpiAddr(Spi_DataType *spiAddr, Eep_AddressType eepAddr 
 #if defined(CHECK_SANE)
 static void Eep_WREN( void ) {
   Eep_Global.ebCmd = E2_WREN;
-  Spi_SetupEB( CFG_P()->EepDataChannel, NULL ,NULL ,1);
-  Spi_SyncTransmit(CFG_P()->EepCmdSequence);
+  Spi_SetupEB( CFG_SPI_P()->EepDataChannel, NULL ,NULL ,1);
+  Spi_SyncTransmit(CFG_SPI_P()->EepCmdSequence);
 }
 
 static void Eep_WRDI( void ) {
   Eep_Global.ebCmd = E2_WRDI;
-  Spi_SetupEB( CFG_P()->EepDataChannel, NULL ,NULL ,1);
-  Spi_SyncTransmit(CFG_P()->EepCmdSequence);
+  Spi_SetupEB( CFG_SPI_P()->EepDataChannel, NULL ,NULL ,1);
+  Spi_SyncTransmit(CFG_SPI_P()->EepCmdSequence);
 
 }
 
 static uint8 Eep_ReadStatusReg( void ) {
-  Spi_SetupEB( CFG_P()->EepDataChannel, NULL, &Eep_Global.ebReadStatus, 1);
+  Spi_SetupEB( CFG_SPI_P()->EepDataChannel, NULL, &Eep_Global.ebReadStatus, 1);
   Eep_Global.ebCmd = E2_RDSR;
-  Spi_SyncTransmit(CFG_P()->EepCmd2Sequence);
+  Spi_SyncTransmit(CFG_SPI_P()->EepCmd2Sequence);
   return Eep_Global.ebReadStatus;
 }
 #endif
 
 void Eep_Init( const Eep_ConfigType* ConfigPtr ){
   VALIDATE( (ConfigPtr != NULL) , EEP_INIT_ID, EEP_E_PARAM_CONFIG );
+  VALIDATE( ( Eep_Global.status != MEMIF_BUSY ), EEP_INIT_ID, EEP_E_BUSY );
+
   Eep_Global.config = ConfigPtr;
 
-  Spi_SetupEB( CFG_P()->EepCmdChannel,  &Eep_Global.ebCmd,NULL,sizeof(Eep_Global.ebCmd)/sizeof(Eep_Global.ebCmd));
-  Spi_SetupEB( CFG_P()->EepAddrChannel,  Eep_Global.ebE2Addr,NULL,sizeof(Eep_Global.ebE2Addr)/sizeof(Eep_Global.ebE2Addr[0]));
-  Spi_SetupEB( CFG_P()->EepWrenChannel,  NULL,NULL,1);
+  Spi_SetupEB( CFG_SPI_P()->EepCmdChannel,  &Eep_Global.ebCmd,NULL,sizeof(Eep_Global.ebCmd)/sizeof(Eep_Global.ebCmd));
+  Spi_SetupEB( CFG_SPI_P()->EepAddrChannel,  Eep_Global.ebE2Addr,NULL,sizeof(Eep_Global.ebE2Addr)/sizeof(Eep_Global.ebE2Addr[0]));
+  Spi_SetupEB( CFG_SPI_P()->EepWrenChannel,  NULL,NULL,1);
 
 #if defined( CHECK_SANE )
 
@@ -256,7 +277,7 @@ void Eep_Init( const Eep_ConfigType* ConfigPtr ){
   Eep_Global.status     = MEMIF_IDLE;
   Eep_Global.jobResultType  = MEMIF_JOB_OK;
 
-  Eep_SetMode( CFG_P()->EepDefaultMode );
+  Eep_SetMode( Eep_Global.config->EepDefaultMode );
 
 }
 
@@ -422,9 +443,9 @@ static Spi_SeqResultType Eep_ProcessJob( Eep_JobInfoType *job ) {
 		case JOB_READ_STATUS:
 			DEBUG(DEBUG_LOW,"%s: READ_STATUS\n",MODULE_NAME);
 			/* Check status from erase cmd, read status from flash */
-			Spi_SetupEB( CFG_P()->EepDataChannel, NULL, &Eep_Global.ebReadStatus, 1);
+			Spi_SetupEB( CFG_SPI_P()->EepDataChannel, NULL, &Eep_Global.ebReadStatus, 1);
 			Eep_Global.ebCmd = E2_RDSR;
-			if( SPI_TRANSMIT_FUNC(CFG_P()->EepCmd2Sequence,job ) == E_OK )
+			if( SPI_TRANSMIT_FUNC(CFG_SPI_P()->EepCmd2Sequence,job ) == E_OK )
 			{
 				SET_STATE(1,JOB_READ_STATUS_RESULT);
 			}
@@ -453,7 +474,7 @@ static Spi_SeqResultType Eep_ProcessJob( Eep_JobInfoType *job ) {
 
 				Spi_ConvertToSpiAddr(Eep_Global.ebE2Addr,job->eepAddr);
 
-			BOOL spiTransmitOK = FALSE;
+			boolean spiTransmitOK = FALSE;
 
 			switch(job->mainState)
 			{
@@ -464,8 +485,8 @@ static Spi_SeqResultType Eep_ProcessJob( Eep_JobInfoType *job ) {
 				case EEP_COMPARE:
 					DEBUG(DEBUG_LOW,"%s: READ s:%04x d:%04x l:%04x\n",MODULE_NAME,job->eepAddr, job->targetAddr, job->left);
 					Eep_Global.ebCmd = E2_READ;
-					Spi_SetupEB( CFG_P()->EepDataChannel, NULL ,(Spi_DataType*)job->targetAddr,chunkSize);
-					if (SPI_TRANSMIT_FUNC(CFG_P()->EepReadSequence,job) == E_OK) {
+					Spi_SetupEB( CFG_SPI_P()->EepDataChannel, NULL ,(Spi_DataType*)job->targetAddr,chunkSize);
+					if (SPI_TRANSMIT_FUNC(CFG_SPI_P()->EepReadSequence,job) == E_OK) {
 						spiTransmitOK = TRUE;
 					}
 					break;
@@ -487,8 +508,8 @@ static Spi_SeqResultType Eep_ProcessJob( Eep_JobInfoType *job ) {
 
 					Eep_Global.ebCmd = E2_WRITE;
 					Spi_ConvertToSpiAddr(Eep_Global.ebE2Addr,job->eepAddr);
-					Spi_SetupEB( CFG_P()->EepDataChannel, (const Spi_DataType*)job->targetAddr, NULL, chunkSize);
-					if (SPI_TRANSMIT_FUNC(CFG_P()->EepWriteSequence,job ) == E_OK) {
+					Spi_SetupEB( CFG_SPI_P()->EepDataChannel, (const Spi_DataType*)job->targetAddr, NULL, chunkSize);
+					if (SPI_TRANSMIT_FUNC(CFG_SPI_P()->EepWriteSequence,job ) == E_OK) {
 						spiTransmitOK = TRUE;
 					}
 					break;
@@ -602,7 +623,9 @@ void Eep_MainFunction( void )
 				Eep_Global.jobType = EEP_NONE;
 				Eep_Global.status = MEMIF_IDLE;
 
-				DET_REPORTERROR(MODULE_ID_EEP,0, EEP_COMPARE_ID, EEP_E_COM_FAILURE ); // EEP056 (reporting to DET because DEM is missing)
+				#if defined(USE_DEM)
+				Dem_ReportErrorStatus(EEP_E_COM_FAILURE, DEM_EVENT_STATUS_FAILED );
+				#endif
 				DET_REPORTERROR(MODULE_ID_EEP,0, EEP_COMPARE_ID, MEMIF_JOB_FAILED );
 				EEP_JOB_ERROR_NOTIFICATION();
 			}
@@ -626,7 +649,7 @@ void Eep_MainFunction( void )
 		} else {
 			// Error
 
-			Eep_EcoreJobType failedJobType = Eep_Global.jobType;
+			Eep_Arc_JobType failedJobType = Eep_Global.jobType;
 
 			Eep_Global.jobResultType = MEMIF_JOB_FAILED;
 			Eep_Global.jobType = EEP_NONE;
@@ -634,15 +657,21 @@ void Eep_MainFunction( void )
 
 			switch(failedJobType) {
 				case EEP_ERASE:
-					DET_REPORTERROR(MODULE_ID_EEP,0, EEP_ERASE_ID, EEP_E_COM_FAILURE ); // EEP056 (reporting to DET because DEM is missing)
+					#if defined(USE_DEM)
+					Dem_ReportErrorStatus(EEP_E_COM_FAILURE, DEM_EVENT_STATUS_FAILED );
+					#endif
 					DET_REPORTERROR(MODULE_ID_EEP,0, EEP_ERASE_ID, MEMIF_JOB_FAILED );
 					break;
 				case EEP_READ:
-					DET_REPORTERROR(MODULE_ID_EEP,0, EEP_READ_ID, EEP_E_COM_FAILURE ); // EEP056 (reporting to DET because DEM is missing)
+					#if defined(USE_DEM)
+					Dem_ReportErrorStatus(EEP_E_COM_FAILURE, DEM_EVENT_STATUS_FAILED );
+					#endif
 					DET_REPORTERROR(MODULE_ID_EEP,0, EEP_READ_ID, MEMIF_JOB_FAILED );
 					break;
 				case EEP_WRITE:
-					DET_REPORTERROR(MODULE_ID_EEP,0, EEP_WRITE_ID, EEP_E_COM_FAILURE ); // EEP056 (reporting to DET because DEM is missing)
+					#if defined(USE_DEM)
+					Dem_ReportErrorStatus(EEP_E_COM_FAILURE, DEM_EVENT_STATUS_FAILED );
+					#endif
 					DET_REPORTERROR(MODULE_ID_EEP,0, EEP_WRITE_ID, MEMIF_JOB_FAILED );
 					break;
 				default:

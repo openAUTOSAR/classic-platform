@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<AUTOSAR xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://autosar.org/3.1.5" xsi:schemaLocation="http://autosar.org/3.1.5 autosar_3-1-5.xsd"><TOP-LEVEL-PACKAGES>
+<AUTOSAR xmlns="http://autosar.org/3.1.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/3.1.5 autosar_3-1-5.xsd">
+  <TOP-LEVEL-PACKAGES>
     <AR-PACKAGE>
       <SHORT-NAME>os_schtbl_mpc551xsim</SHORT-NAME>
       <ELEMENTS>
@@ -7,7 +8,7 @@
           <SHORT-NAME>os_schtbl_mpc551xsim</SHORT-NAME>
           <ADMIN-DATA>
             <DOC-REVISIONS>
-              <DOC-REVISION/>
+              <DOC-REVISION />
             </DOC-REVISIONS>
             <SDGS>
               <SDG GID="Arccore::EcuOptions">
@@ -29,7 +30,7 @@
           <SHORT-NAME>Mcu</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG/>
+              <SDG />
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.0</SD>
@@ -152,7 +153,7 @@
           <SHORT-NAME>Os</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG/>
+              <SDG />
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.24</SD>
@@ -267,7 +268,7 @@
               <SHORT-NAME>OsApplication1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsApplication</DEFINITION-REF>
@@ -328,7 +329,7 @@
               <SHORT-NAME>Counter1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsCounter</DEFINITION-REF>
@@ -355,7 +356,7 @@
               <SHORT-NAME>Event1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsEvent</DEFINITION-REF>
@@ -378,7 +379,7 @@
               <SHORT-NAME>Event2</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsEvent</DEFINITION-REF>
@@ -401,7 +402,7 @@
               <SHORT-NAME>ScheduleTable_1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsScheduleTable</DEFINITION-REF>
@@ -426,7 +427,7 @@
                   <SHORT-NAME>ExpiryPoint</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions"/>
+                      <SDG GID="Arccore::IdentifiableOptions" />
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsScheduleTable/OsScheduleTableExpiryPoint</DEFINITION-REF>
@@ -441,7 +442,7 @@
                       <SHORT-NAME>TaskActivation1</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions"/>
+                          <SDG GID="Arccore::IdentifiableOptions" />
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsScheduleTable/OsScheduleTableExpiryPoint/OsScheduleTableTaskActivation</DEFINITION-REF>
@@ -458,7 +459,7 @@
                   <SHORT-NAME>ExpiryPoint1</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions"/>
+                      <SDG GID="Arccore::IdentifiableOptions" />
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsScheduleTable/OsScheduleTableExpiryPoint</DEFINITION-REF>
@@ -473,7 +474,7 @@
                       <SHORT-NAME>EventSetting1</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions"/>
+                          <SDG GID="Arccore::IdentifiableOptions" />
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsScheduleTable/OsScheduleTableExpiryPoint/OsScheduleTableEventSetting</DEFINITION-REF>
@@ -494,7 +495,7 @@
                   <SHORT-NAME>ExpiryPoint2</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions"/>
+                      <SDG GID="Arccore::IdentifiableOptions" />
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsScheduleTable/OsScheduleTableExpiryPoint</DEFINITION-REF>
@@ -509,7 +510,7 @@
                       <SHORT-NAME>EventSetting1</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions"/>
+                          <SDG GID="Arccore::IdentifiableOptions" />
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsScheduleTable/OsScheduleTableExpiryPoint/OsScheduleTableEventSetting</DEFINITION-REF>
@@ -546,7 +547,7 @@
               <SHORT-NAME>eTask1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
@@ -589,7 +590,7 @@
               <SHORT-NAME>eTask2</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
@@ -632,7 +633,7 @@
               <SHORT-NAME>bTask3</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
@@ -663,4 +664,6 @@
         </MODULE-CONFIGURATION>
       </ELEMENTS>
     </AR-PACKAGE>
-  </TOP-LEVEL-PACKAGES></AUTOSAR>
+  </TOP-LEVEL-PACKAGES>
+</AUTOSAR>
+

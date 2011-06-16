@@ -795,7 +795,7 @@
                     </ENUMERATION-VALUE>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalInitValue</DEFINITION-REF>
-                      <VALUE>0</VALUE>
+                      <VALUE>5</VALUE>
                     </INTEGER-VALUE>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalLength</DEFINITION-REF>
@@ -874,7 +874,7 @@
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
-                      <VALUE>PENDING</VALUE>
+                      <VALUE>TRIGGERED</VALUE>
                     </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
@@ -913,7 +913,7 @@
                     </ENUMERATION-VALUE>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalInitValue</DEFINITION-REF>
-                      <VALUE>0</VALUE>
+                      <VALUE>3</VALUE>
                     </INTEGER-VALUE>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalLength</DEFINITION-REF>
@@ -1366,7 +1366,7 @@
               </SUB-CONTAINERS>
             </CONTAINER>
             <CONTAINER UUID="84a7ccc3-bbf0-4c38-99cc-8920f0405b93">
-              <SHORT-NAME>Alarm1</SHORT-NAME>
+              <SHORT-NAME>StepAlarm</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
                   <SDG GID="Arccore::IdentifiableOptions" />
@@ -1386,7 +1386,7 @@
                   <PARAMETER-VALUES>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmAlarmTime</DEFINITION-REF>
-                      <VALUE>100</VALUE>
+                      <VALUE>20</VALUE>
                     </INTEGER-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmAutostartType</DEFINITION-REF>
@@ -1394,7 +1394,7 @@
                     </ENUMERATION-VALUE>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmCycleTime</DEFINITION-REF>
-                      <VALUE>10</VALUE>
+                      <VALUE>100</VALUE>
                     </INTEGER-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
@@ -1462,7 +1462,7 @@
               <REFERENCE-VALUES>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppAlarmRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/Alarm1</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/StepAlarm</VALUE-REF>
                 </REFERENCE-VALUE>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppCounterRef</DEFINITION-REF>
@@ -1475,6 +1475,14 @@
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppTaskRef</DEFINITION-REF>
                   <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/StepTask</VALUE-REF>
+                </REFERENCE-VALUE>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppAlarmRef</DEFINITION-REF>
+                  <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/MainFunctionAlarm</VALUE-REF>
+                </REFERENCE-VALUE>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppTaskRef</DEFINITION-REF>
+                  <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/MainFunctionTask</VALUE-REF>
                 </REFERENCE-VALUE>
               </REFERENCE-VALUES>
               <SUB-CONTAINERS>
@@ -1516,6 +1524,82 @@
                   <VALUE>true</VALUE>
                 </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="f6b88c14-731f-4156-9dc2-b1bb542da0db">
+              <SHORT-NAME>MainFunctionTask</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                </SDGS>
+              </ADMIN-DATA>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskActivation</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskPriority</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskProcessType</DEFINITION-REF>
+                  <VALUE>BASIC</VALUE>
+                </ENUMERATION-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/ArcCoreOsTaskStackSize</DEFINITION-REF>
+                  <VALUE>2048</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskSchedule</DEFINITION-REF>
+                  <VALUE>FULL</VALUE>
+                </ENUMERATION-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="3d4a6633-3d19-4ecb-925d-f32c746f4587">
+              <SHORT-NAME>MainFunctionAlarm</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                </SDGS>
+              </ADMIN-DATA>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm</DEFINITION-REF>
+              <REFERENCE-VALUES>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmCounterRef</DEFINITION-REF>
+                  <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/Counter1</VALUE-REF>
+                </REFERENCE-VALUE>
+              </REFERENCE-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="28437fdb-6270-49f7-b169-03383189afed">
+                  <SHORT-NAME>OsAlarmAutostart</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmAlarmTime</DEFINITION-REF>
+                      <VALUE>10</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmAutostartType</DEFINITION-REF>
+                      <VALUE>ABSOLUTE</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmCycleTime</DEFINITION-REF>
+                      <VALUE>10</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="f4199712-bda0-4366-a22f-45747fc2d2e7">
+                  <SHORT-NAME>OsAlarmActivateTask</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask</DEFINITION-REF>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask/OsAlarmActivateTaskRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/MainFunctionTask</VALUE-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                </CONTAINER>
+              </SUB-CONTAINERS>
             </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
@@ -1959,7 +2043,7 @@
                 </ENUMERATION-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Rte/RteGeneration/ArcGenerateWeakRunnableStubs</DEFINITION-REF>
-                  <VALUE>true</VALUE>
+                  <VALUE>false</VALUE>
                 </BOOLEAN-VALUE>
                 <INTEGER-VALUE>
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Rte/RteGeneration/ArcCalibrationFlashStartAddress</DEFINITION-REF>
@@ -2080,6 +2164,120 @@
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="FOREIGN-REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/RTEEventRef</DEFINITION-REF>
                       <VALUE-REF DEST="TIMING-EVENT">/rte_simple_lib/TesterKit/TesterBehavior/StepTester</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/MappedToTaskRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/StepTask</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/UsedOsEventRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/StepEvent</VALUE-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+            <CONTAINER UUID="ddd7699f-c755-47d4-a7c0-1c57a5660814">
+              <SHORT-NAME>Logger_prototypeInstance</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Rte/SwComponentInstance</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/ArcGenerationEnabled</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+              </PARAMETER-VALUES>
+              <REFERENCE-VALUES>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="FOREIGN-REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/ImplementationRef</DEFINITION-REF>
+                  <VALUE-REF DEST="SWC-IMPLEMENTATION">/rte_simple_lib/LoggerKit/LoggerImplementation</VALUE-REF>
+                </REFERENCE-VALUE>
+                <INSTANCE-REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="INSTANCE-REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/SoftwareComponentInstanceRef</DEFINITION-REF>
+                  <VALUE-IREF>
+                    <VALUE-REF DEST="COMPONENT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Logger_prototype</VALUE-REF>
+                  </VALUE-IREF>
+                </INSTANCE-REFERENCE-VALUE>
+              </REFERENCE-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="b5d323ea-4a98-40b9-9b93-e3052850e0bc">
+                  <SHORT-NAME>LoggerRunnable_RunnableMapping</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <FLOAT-VALUE>
+                      <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/ActivationOffset</DEFINITION-REF>
+                      <VALUE>0.0</VALUE>
+                    </FLOAT-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/PositionInTask</DEFINITION-REF>
+                      <VALUE>2</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="FOREIGN-REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/RTEEventRef</DEFINITION-REF>
+                      <VALUE-REF DEST="TIMING-EVENT">/rte_simple_lib/LoggerKit/LoggerBehavior/StepLogger</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/MappedToTaskRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/StepTask</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/UsedOsEventRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/StepEvent</VALUE-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+            <CONTAINER UUID="7fd52427-487a-4900-81a9-39fcaf7c6949">
+              <SHORT-NAME>Logger2_prototypeInstance</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Rte/SwComponentInstance</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/ArcGenerationEnabled</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+              </PARAMETER-VALUES>
+              <REFERENCE-VALUES>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="FOREIGN-REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/ImplementationRef</DEFINITION-REF>
+                  <VALUE-REF DEST="SWC-IMPLEMENTATION">/rte_simple_lib/Logger2Kit/Logger2Implementation</VALUE-REF>
+                </REFERENCE-VALUE>
+                <INSTANCE-REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="INSTANCE-REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/SoftwareComponentInstanceRef</DEFINITION-REF>
+                  <VALUE-IREF>
+                    <VALUE-REF DEST="COMPONENT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Logger2_prototype</VALUE-REF>
+                  </VALUE-IREF>
+                </INSTANCE-REFERENCE-VALUE>
+              </REFERENCE-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="6d1f4bbd-77cf-4adb-96f8-213914bad26d">
+                  <SHORT-NAME>Logger2Runnable_RunnableMapping</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <FLOAT-VALUE>
+                      <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/ActivationOffset</DEFINITION-REF>
+                      <VALUE>0.0</VALUE>
+                    </FLOAT-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/PositionInTask</DEFINITION-REF>
+                      <VALUE>1</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="FOREIGN-REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/RTEEventRef</DEFINITION-REF>
+                      <VALUE-REF DEST="TIMING-EVENT">/rte_simple_lib/Logger2Kit/Logger2Behavior/StepLogger2</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/MappedToTaskRef</DEFINITION-REF>
@@ -2238,7 +2436,7 @@
                       <VALUE>
                         <INTEGER-LITERAL UUID="080df379-fc64-4efd-bbc9-d32088afb7cc">
                           <SHORT-NAME>Arg1InitValueLiteral</SHORT-NAME>
-                          <VALUE>0</VALUE>
+                          <VALUE>5</VALUE>
                         </INTEGER-LITERAL>
                       </VALUE>
                     </CONSTANT-SPECIFICATION>
@@ -2256,7 +2454,7 @@
                       <VALUE>
                         <INTEGER-LITERAL UUID="a958db62-4b46-4945-bf1e-361f33bac22a">
                           <SHORT-NAME>Arg2InitValueLiteral</SHORT-NAME>
-                          <VALUE>0</VALUE>
+                          <VALUE>3</VALUE>
                         </INTEGER-LITERAL>
                       </VALUE>
                     </CONSTANT-SPECIFICATION>

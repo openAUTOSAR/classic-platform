@@ -175,7 +175,7 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 
 #if defined(USE_EEP)
 	// Setup EEP
-	Eep_Init(ConfigPtr->EEpConfig);
+	Eep_Init(ConfigPtr->EepConfig);
 #endif
 
 #if defined(USE_FLS)

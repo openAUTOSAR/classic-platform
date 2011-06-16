@@ -108,7 +108,7 @@ void Irq_Init( void ) {
 	#if defined(CFG_MPC5516)
 	  INTC.MCR.B.HVEN_PRC0 = 0; // Soft vector mode
 	  INTC.MCR.B.VTES_PRC0 = 0; // 4 byte offset between entries
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5606S)
 	  INTC.MCR.B.HVEN = 0; // Soft vector mode
 	  INTC.MCR.B.VTES = 0; // 4 byte offset between entries
 	#endif
@@ -118,7 +118,7 @@ void Irq_Init( void ) {
 	  {
 	#if defined(CFG_MPC5516)
 	    INTC.EOIR_PRC0.R = 0;
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5606S)
 	    INTC.EOIR.R = 0;
 	#endif
 	  }
@@ -126,7 +126,7 @@ void Irq_Init( void ) {
 	  // Accept interrupts
 	#if defined(CFG_MPC5516)
 	  INTC.CPR_PRC0.B.PRI = 0;
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5606S)
 	  INTC.CPR.B.PRI = 0;
 	#endif
 }
@@ -135,20 +135,25 @@ void Irq_EOI( void ) {
 #if defined(CFG_MPC5516)
 	volatile struct INTC_tag *intc = &INTC;
 	intc->EOIR_PRC0.R = 0;
-#elif defined(CFG_MPC5554)||defined(CFG_MPC5567)
+#elif defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC5606S)
 	volatile struct INTC_tag *intc = &INTC;
 	intc->EOIR.R = 0;
+#else
+#error No CPU defined
 #endif
 }
 
 static inline int osPrioToCpuPio( uint8_t prio ) {
 	assert(prio<32);
+	assert(prio>1);
 	return prio>>1;		// Os have 32 -> 16
 }
 
 void Irq_SetPriority( Cpu_t cpu,  IrqType vector, uint8_t prio ) {
 #if defined(CFG_MPC5516)
 	INTC.PSR[vector].B.PRC_SEL = cpu;
+#else
+	(void)cpu;
 #endif
 	INTC.PSR[vector].B.PRI = prio;
 }
@@ -159,7 +164,7 @@ void Irq_SetPriority( Cpu_t cpu,  IrqType vector, uint8_t prio ) {
 void Irq_EnableVector( int16_t vector, int priority, int core ) {
 
 	if (vector < INTC_NUMBER_OF_INTERRUPTS) {
-		Irq_SetPriority(core, (IrqType)(vector + IRQ_INTERRUPT_OFFSET), osPrioToCpuPio(priority));
+		Irq_SetPriority((Cpu_t)core, (IrqType)(vector + IRQ_INTERRUPT_OFFSET), osPrioToCpuPio(priority));
 	} else if ((vector >= CRITICAL_INPUT_EXCEPTION)
 			&& (vector<= DEBUG_EXCEPTION)) {
 	} else {
@@ -198,8 +203,11 @@ uint8_t Irq_GetCurrentPriority( Cpu_t cpu) {
 	} else if ( cpu == CPU_Z0 ) {
 		prio = INTC.CPR_PRC1.B.PRI;
 	}
-#elif defined(CFG_MPC5554)||defined(CFG_MPC5567)
+#elif defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC5606S)
+	(void)cpu;
 	prio = INTC.CPR.B.PRI;
+#else
+#error No CPU defined
 #endif
 
 	return prio;

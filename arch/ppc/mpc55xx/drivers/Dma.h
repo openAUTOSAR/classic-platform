@@ -28,6 +28,88 @@
 #include "Dma_Cfg.h"
 #include "mpc55xx.h"
 
+
+#if defined(CFG_MPC5606S)
+typedef enum
+{
+  DMA_CHANNEL_DISABLED,
+
+  DMA_DSPI_0_TX,
+  DMA_DSPI_0_RX,
+  DMA_DSPI_1_TX,
+  DMA_DSPI_1_RX,
+
+  DMA_QuadSPI_0_TFFF,
+  DMA_QuadSPI_0_RFDF,
+
+  DMA_I2C_0_TX,
+  DMA_I2C_0_RX,
+  DMA_I2C_1_TX,
+  DMA_I2C_1_RX,
+  DMA_I2C_2_TX,
+  DMA_I2C_2_RX,
+  DMA_I2C_3_TX,
+  DMA_I2C_3_RX,
+
+  DMA_EMIOS200_0_FLAG_F0,
+  DMA_EMIOS200_0_FLAG_F1,
+  DMA_EMIOS200_0_FLAG_F2,
+  DMA_EMIOS200_0_FLAG_F3,
+  DMA_EMIOS200_0_FLAG_F4,
+  DMA_EMIOS200_0_FLAG_F5,
+  DMA_EMIOS200_0_FLAG_F6,
+  DMA_EMIOS200_0_FLAG_F7,
+  DMA_EMIOS200_0_FLAG_F8,
+  DMA_EMIOS200_0_FLAG_F9,
+  DMA_EMIOS200_0_FLAG_F10,
+  DMA_EMIOS200_0_FLAG_F11,
+  DMA_EMIOS200_0_FLAG_F12,
+  DMA_EMIOS200_0_FLAG_F13,
+  DMA_EMIOS200_0_FLAG_F14,
+  DMA_EMIOS200_0_FLAG_F15,
+  DMA_EMIOS200_1_FLAG_F0,
+  DMA_EMIOS200_1_FLAG_F1,
+  DMA_EMIOS200_1_FLAG_F2,
+  DMA_EMIOS200_1_FLAG_F3,
+  DMA_EMIOS200_1_FLAG_F4,
+  DMA_EMIOS200_1_FLAG_F5,
+  DMA_EMIOS200_1_FLAG_F6,
+  DMA_EMIOS200_1_FLAG_F7,
+
+  DMA_RESERVED1,
+  DMA_RESERVED2,
+  DMA_RESERVED3,
+  DMA_RESERVED4,
+  DMA_RESERVED5,
+  DMA_RESERVED6,
+  DMA_RESERVED7,
+  DMA_RESERVED8,
+
+  DMA_SIU_EISR_E1F1,
+  DMA_SIU_EISR_E1F2,
+  DMA_SIU_EISR_E1F3,
+  DMA_SIU_EISR_E1F4,
+
+  DMA_ADC,
+
+  DMA_RESERVED9,
+
+  DMA_DCU,
+
+  DMA_RESERVED10,
+  DMA_RESERVED11,
+
+  DMA_ALWAYS_REQUESTORS1,
+  DMA_ALWAYS_REQUESTORS2,
+  DMA_ALWAYS_REQUESTORS3,
+  DMA_ALWAYS_REQUESTORS4,
+  DMA_ALWAYS_REQUESTORS5,
+  DMA_ALWAYS_REQUESTORS6,
+  DMA_ALWAYS_REQUESTORS7,
+  DMA_ALWAYS_REQUESTORS8
+}Dma_MuxChannels;
+
+#else
 typedef enum
 {
   DMA_CHANNEL_DISABLED,
@@ -105,6 +187,8 @@ typedef enum
   DMA_ALWAYS_ENABLED8
 }Dma_MuxChannels;
 
+#endif
+
 typedef struct
 {
   vuint8_t DMA_CHANNEL_ENABLE;
@@ -137,7 +221,7 @@ typedef enum
 typedef struct
 {
 	// 5567 has no Dma Mux, but maybe this should be left in anyway?
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || (CFG_MPC5606S)
   const Dma_MuxConfigType          *dmaMuxConfigPtr;
 #endif
   const Dma_ChannelConfigType      *dmaChannelConfigPtr;
@@ -148,7 +232,7 @@ extern const Dma_ConfigType DmaConfig [];
 
 
 void Dma_Init (const Dma_ConfigType *ConfigPtr);
-void Dma_ConfigureChannel (struct tcd_t *tcd, Dma_ChannelType channel);
+void Dma_ConfigureChannel (Dma_TcdType *tcd, Dma_ChannelType channel);
 void Dma_ConfigureChannelTranferSize (uint32_t nbrOfIterations, Dma_ChannelType channel);
 void Dma_ConfigureChannelSourceCorr (uint32_t sourceCorrection, Dma_ChannelType channel);
 void Dma_ConfigureChannelDestinationCorr (uint32_t destinationCorrection, Dma_ChannelType channel);
@@ -157,7 +241,7 @@ void Dma_ConfigureSourceAddress (uint32_t sourceAddr, Dma_ChannelType channel);
 void Dma_StartChannel (Dma_ChannelType channel);
 void Dma_StopChannel (Dma_ChannelType channel);
 Std_ReturnType Dma_ChannelDone (Dma_ChannelType channel);
-volatile struct tcd_t * Dma_GetTcd( Dma_ChannelType channel );
+volatile Dma_TcdType * Dma_GetTcd( Dma_ChannelType channel );
 boolean Dma_CheckConfig( void );
 
 #endif /* DMA_H_ */

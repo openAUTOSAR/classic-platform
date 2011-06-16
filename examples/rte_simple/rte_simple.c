@@ -13,10 +13,18 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+#include "Com.h"
+#include "Os.h"
 
 /*
  * Functions that must be supplied by the example
  */
 void OsIdle( void ) {
 	for(;;);
+}
+
+void MainFunctionTask( void ) {
+	Com_MainFunctionRx();
+	Com_MainFunctionTx();
+	TerminateTask();
 }

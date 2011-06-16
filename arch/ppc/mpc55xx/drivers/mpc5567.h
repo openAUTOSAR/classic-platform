@@ -1996,6 +1996,7 @@ extern "C" {
 /****************************************************************************/
 /*                          MODULE : eDMA                                   */
 /****************************************************************************/
+#include "ip_edma.h"
     CC_EXTENSION struct EDMA_tag {
         union {
             vuint32_t R;
@@ -2029,7 +2030,7 @@ extern "C" {
                 vuint32_t SBE:1;
                 vuint32_t DBE:1;
             } B;
-        } ESR;                  /* Error Status Register */
+        } ES;                  /* Error Status Register */
         uint32_t edma_reserved_erqrh;
 
         union {
@@ -2068,7 +2069,7 @@ extern "C" {
                 vuint32_t ERQ01:1;
                 vuint32_t ERQ00:1;
             } B;
-        } ERQRL;                /* DMA Enable Request Register Low */
+        } ERQL;                /* DMA Enable Request Register Low */
         uint32_t edma_reserved_eeirh;
 
         union {
@@ -2107,39 +2108,39 @@ extern "C" {
                 vuint32_t EEI01:1;
                 vuint32_t EEI00:1;
             } B;
-        } EEIRL;                /* DMA Enable Error Interrupt Register Low */
+        } EEIL;                /* DMA Enable Error Interrupt Register Low */
         union {
             vuint8_t R;
             vuint8_t B;
-        } SERQR;                /* DMA Set Enable Request Register */
+        } SERQ;                /* DMA Set Enable Request Register */
         union {
             vuint8_t R;
             vuint8_t B;
-        } CERQR;                /* DMA Clear Enable Request Register */
+        } CERQ;                /* DMA Clear Enable Request Register */
         union {
             vuint8_t R;
             vuint8_t B;
-        } SEEIR;                /* DMA Set Enable Error Interrupt Register */
+        } SEEI;                /* DMA Set Enable Error Interrupt Register */
         union {
             vuint8_t R;
             vuint8_t B;
-        } CEEIR;                /* DMA Clear Enable Error Interrupt Register */
+        } CEEI;                /* DMA Clear Enable Error Interrupt Register */
         union {
             vuint8_t R;
             vuint8_t B;
-        } CIRQR;                /* DMA Clear Interrupt Request Register */
+        } CINT;                /* DMA Clear Interrupt Request Register */
         union {
             vuint8_t R;
             vuint8_t B;
-        } CER;                  /* DMA Clear error Register */
+        } CERR;                  /* DMA Clear error Register */
         union {
             vuint8_t R;
             vuint8_t B;
-        } SSBR;                 /* Set Start Bit Register */
+        } SSRT;                 /* Set Start Bit Register */
         union {
             vuint8_t R;
             vuint8_t B;
-        } CDSBR;                /* Clear Done Status Bit Register */
+        } CDNE;                /* Clear Done Status Bit Register */
         uint32_t edma_reserved_irqrh;
 
         union {
@@ -2178,7 +2179,7 @@ extern "C" {
                 vuint32_t INT01:1;
                 vuint32_t INT00:1;
             } B;
-        } IRQRL;                /* DMA Interrupt Request Low */
+        } INTL;                /* DMA Interrupt Request Low */
         uint32_t edma_reserved_erh;
 
         union {
@@ -2217,7 +2218,7 @@ extern "C" {
                 vuint32_t ERR01:1;
                 vuint32_t ERR00:1;
             } B;
-        } ERL;                  /* DMA Error Low */
+        } ERRL;                  /* DMA Error Low */
         uint32_t edma_reserved1[52];
 
         union {

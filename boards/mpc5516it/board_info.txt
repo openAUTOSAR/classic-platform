@@ -24,3 +24,36 @@ Info:
 Memory Map:
  0x0000_0000 ->           Flash
  0x4000_0000 ->           SRAM
+
+SPI
+ There is a total of 3 SPI devices:
+  - M95256 ,     E2, SPI_A , CS1 (from 0)   
+  - M95256 ,     E2, SPI_B , CS2 (from 0)
+  - S25FL016, Flash, SPI_A , CS0 (from 0)
+
+CPU  PAD        Func     Schema     
+  --- HOLD PINS --- (pull HIGH)
+ 37  102(PG6)			 SPI_B_WP  (E2) 
+ 38  101(PG5)            SPI_A_WP2 (flash)
+ 42  97 (PG1)            SPI_A_WP1 (E2)
+               
+  --- SPI_A/SPI_B CLOCK AND CS ---               
+ 81  69 (PE5)   SIN_A 
+ 82  68 (PE4)   SOUT_A
+ 83  67 (PE3)   SCK_A 
+ .. 
+ 85  65 (PE1)   PCS_A[1]  SPI_A_CE2 (flash)
+ 86  64 (PE0)   PCS_A[2]  SPI_A_CE1 (E2)
+ 87  63 (PD15)  SIN_B	  SPI_B_SO	
+ 88  62 (PD14)  SOUT_B    SPI_B_SI
+ 89  61 (PD13)  SCK_B     SPI_B_SCK   
+ 90  60 (PD12)  PCS_B[0]  SPI_B_CE            
+ 
+ 
+ 
+   
+ 
+ 
+ 
+ 
+ 

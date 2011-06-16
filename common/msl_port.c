@@ -147,7 +147,7 @@ const ptrdiff_t _heap_size_proper = (const ptrdiff_t) &_heap_size; // Casting th
 
 void * sbrk( ptrdiff_t incr )
 {
-	(void)inc;
+    static unsigned char *heap_end;
     unsigned char *prev_heap_end;
 
 /* initialize */
