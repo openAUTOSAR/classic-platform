@@ -16,6 +16,7 @@
 #include "Os.h"
 #include "Dio.h"
 #include "Com.h"
+#include "EcuM.h"
 
 // #define USE_LDEBUG_PRINTF // Uncomment this to turn debug statements on.
 #include "debug.h"
@@ -24,6 +25,17 @@
 boolean IncommingFreqReq(PduIdType PduId, const uint8 *IPduData)
 {
 	SetEvent(TASK_ID_ComReceiveTask, EVENT_MASK_FreqReciveEvent);
+
+	return true;
+}
+
+// Call second stage of startup.
+void StartTask()
+{
+	EcuM_StartupTwo();
+
+	Com_IpduGroupStart(ComPduGroup, false);
+	CanIf_SetControllerMode(CANIF_CONTROLLER_ID_CAN0, CANIF_CS_STARTED);
 }
 
 // Task that changes the frequency of the LED when a new
@@ -35,6 +47,7 @@ void ComReceiveTask( void )
 	for(;;)
 	{
 		WaitEvent(EVENT_MASK_FreqReciveEvent);
+		ClearEvent(EVENT_MASK_FreqReciveEvent);
 
 		Com_ReceiveSignal(FreqReqSig, &freqreq);
 
