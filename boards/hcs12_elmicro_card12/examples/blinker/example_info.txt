@@ -1,0 +1,6 @@
+A simple application that flashes the LED on the board. Default
+frequency is 1 Hz. The frequency can be changed by sending a
+new period in a CAN message. The first 32 bit in a message with 
+CAN Id 100 is treated as the new period (in system ticks). A CAN
+message with CAN Id 102 is transmitted every 100 ms to indicate
+the current period.
