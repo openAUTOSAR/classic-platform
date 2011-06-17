@@ -1,0 +1,298 @@
+### mwcceppc.exe Compiler:
+#    File: ..\..\..\..\..\system\kernel\asm_offset.c
+# --------------------------------------------------
+#      45:  DECLARE(SYS_INT_STACK, offsetof(Os_SysType, intStack));  
+# Warning:                                                        ^
+#   'RW' object 'SYS_INT_STACK' is being put into section '.apa' with access 
+#   permission 'R';
+#   section's access permission will be changed to 'RW'
+Analyzing: C:\projects\workspace\arc\boards\mpc5606s_xpc560s\examples\os_simple\obj_mpc5606s_xpc560s\asm_offset.o
+Header idenfication: 0x7f, ELF, 32 bit MSB v1
+    type:           1, machine:         20
+    version: 00000001, entry:     00000000, phoff:  00000000
+    shoff:   00001690, flags:     80000000, ehsize:       52, phentsize:  0
+    phnum:          0, shentsize:       40, shnum:        15, shstrndx:  13
+
+
+==> .shstrtab
+    [  1]	.rodata
+    [  9]	.debug_info
+    [ 21]	.debug_loc
+    [ 32]	.debug_line
+    [ 44]	.debug_pubnames
+    [ 60]	.debug_abbrev
+    [ 74]	.apa
+    [ 79]	.rela.debug_info
+    [ 96]	.rela.debug_loc
+    [ 112]	.rela.debug_pubnames
+    [ 133]	.symtab
+    [ 141]	.strtab
+    [ 149]	.shstrtab
+    [ 159]	.comment
+
+==> .rodata [1]: Section Header
+    type:    00000001, flags:  00000002
+    address: 00000000, offset: 00000038, size: 00000059
+    link:    00000000, info:   00000000, alignment: 8, entry size: 0
+
+
+==> .debug_info [2]: Section Header
+    type:    00000001, flags:  00000000
+    address: 00000000, offset: 00000091, size: 00000215
+    link:    00000000, info:   00000000, alignment: 0, entry size: 1
+
+
+==> .debug_loc [3]: Section Header
+    type:    00000001, flags:  00000000
+    address: 00000000, offset: 000002a6, size: 000000cf
+    link:    00000000, info:   00000000, alignment: 1, entry size: 1
+
+
+==> .debug_line [4]: Section Header
+    type:    00000001, flags:  00000000
+    address: 00000000, offset: 00000375, size: 00000426
+    link:    00000000, info:   00000000, alignment: 0, entry size: 1
+
+
+==> .debug_pubnames [5]: Section Header
+    type:    00000001, flags:  00000000
+    address: 00000000, offset: 0000079b, size: 00000071
+    link:    00000000, info:   00000000, alignment: 1, entry size: 1
+
+
+==> .debug_abbrev [6]: Section Header
+    type:    00000001, flags:  00000000
+    address: 00000000, offset: 0000080c, size: 00000043
+    link:    00000000, info:   00000000, alignment: 1, entry size: 1
+
+
+==> .apa [7]: Section Header
+    type:    00000001, flags:  00000003
+    address: 00000000, offset: 00000850, size: 0000024c
+    link:    00000000, info:   00000000, alignment: 4, entry size: 0
+
+
+==> .rela.debug_info [8]: Section Header
+    type:    00000004, flags:  00000000
+    address: 00000000, offset: 00000a9c, size: 0000015c
+    link:    0000000b, info:   00000002, alignment: 4, entry size: 12
+
+
+==> .rela.debug_loc [9]: Section Header
+    type:    00000004, flags:  00000000
+    address: 00000000, offset: 00000bf8, size: 0000006c
+    link:    0000000b, info:   00000003, alignment: 4, entry size: 12
+
+
+==> .rela.debug_pubnames [10]: Section Header
+    type:    00000004, flags:  00000000
+    address: 00000000, offset: 00000c64, size: 00000018
+    link:    0000000b, info:   00000005, alignment: 4, entry size: 12
+
+
+==> .symtab [11]: Section Header
+    type:    00000002, flags:  00000000
+    address: 00000000, offset: 00000c7c, size: 00000390
+    link:    0000000c, info:   00000024, alignment: 4, entry size: 16
+
+
+==> .strtab [12]: Section Header
+    type:    00000003, flags:  00000000
+    address: 00000000, offset: 0000100c, size: 000003e6
+    link:    00000000, info:   00000000, alignment: 1, entry size: 1
+
+
+==> .shstrtab [13]: Section Header
+    type:    00000003, flags:  00000000
+    address: 00000000, offset: 000013f2, size: 000000a8
+    link:    00000000, info:   00000000, alignment: 1, entry size: 1
+
+
+==> .comment [14]: Section Header
+    type:    00000001, flags:  00000000
+    address: 00000000, offset: 0000149a, size: 000001f4
+    link:    00000000, info:   00000000, alignment: 1, entry size: 1
+
+
+==> .strtab
+    [  1]	asm_offset.c
+    [ 14]	__func__$53
+    [ 26]	__func__$210
+    [ 39]	__func__$295
+    [ 52]	__func__$300
+    [ 65]	.dwarf_header.346
+    [ 83]	.dwarf_line_prologue.347
+    [ 108]	.dwarf_tcu.348
+    [ 123]	.dwarf.__func__$53
+    [ 142]	.dwarf_loc.__func__$53
+    [ 165]	.dwarf.__func__$210
+    [ 185]	.dwarf_loc.__func__$210
+    [ 209]	.dwarf.__func__$295
+    [ 229]	.dwarf_loc.__func__$295
+    [ 253]	.dwarf.__func__$300
+    [ 273]	.dwarf_loc.__func__$300
+    [ 297]	.dwarf_type.349
+    [ 313]	.dwarf_type.350
+    [ 329]	.dwarf_type.351
+    [ 345]	.dwarf_type.352
+    [ 361]	.dwarf_type.353
+    [ 377]	.dwarf_type.354
+    [ 393]	.dwarf_type.355
+    [ 409]	.dwarf_type.356
+    [ 425]	.dwarf_type.357
+    [ 441]	.dwarf_null.358
+    [ 457]	.dwarf_pubnames_prologue.359
+    [ 486]	.dwarf_pubnames_null.360
+    [ 511]	SYS_INT_STACK
+    [ 525]	SYS_INT_NEST_CNT
+    [ 542]	SYS_CURR_PCB_P
+    [ 557]	PCB_CONST_P
+    [ 569]	PCB_STACK_CURR_P
+    [ 586]	.dwarf.SYS_INT_STACK
+    [ 607]	.dwarf_loc.SYS_INT_STACK
+    [ 632]	.dwarf.SYS_INT_NEST_CNT
+    [ 656]	.dwarf_loc.SYS_INT_NEST_CNT
+    [ 684]	.dwarf.SYS_CURR_PCB_P
+    [ 706]	.dwarf_loc.SYS_CURR_PCB_P
+    [ 732]	.dwarf.PCB_CONST_P
+    [ 751]	.dwarf_loc.PCB_CONST_P
+    [ 774]	.dwarf.PCB_STACK_CURR_P
+    [ 798]	.dwarf_loc.PCB_STACK_CURR_P
+    [ 826]	.dwarf_type.char
+    [ 843]	.dwarf_pubnames.SYS_INT_STACK
+    [ 873]	.dwarf_pubnames.SYS_INT_NEST_CNT
+    [ 906]	.dwarf_pubnames.SYS_CURR_PCB_P
+    [ 937]	.dwarf_pubnames.PCB_CONST_P
+    [ 965]	.dwarf_pubnames.PCB_STACK_CURR_P
+
+==> .symtab
+    entry  spndx   value      size   bind   type  other    shndx         name
+    [   0]     0   00000000      0   LOC    NULL      0    UND           
+    [   1]     1   00000000      0   LOC    FILE      0    ABS           asm_offset.c
+    [   2]     0   00000000      0   LOC    SECT      0    .rodata       .rodata
+    [   3]     0   00000000      0   LOC    SECT      0    .apa          .apa
+    [   4]    14   00000000     21   LOC    OBJ       0    .rodata       __func__$53
+    [   5]     0   00000000      0   LOC    SECT      0    .debug_info   .debug_info
+    [   6]     0   00000000      0   LOC    SECT      0    .debug_loc    .debug_loc
+    [   7]     0   00000000      0   LOC    SECT      0    .debug_line   .debug_line
+    [   8]     0   00000000      0   LOC    SECT      0    .debug_abbrev .debug_abbrev
+    [   9]     0   00000000      0   LOC    SECT      0    .debug_pubnames .debug_pubnames
+    [  10]    26   00000018     22   LOC    OBJ       0    .rodata       __func__$210
+    [  11]    39   00000030     18   LOC    OBJ       0    .rodata       __func__$295
+    [  12]    52   00000044     21   LOC    OBJ       0    .rodata       __func__$300
+    [  13]    65   00000000     11   LOC    OBJ       0    .debug_info   .dwarf_header.346
+    [  14]    83   00000000   1062   LOC    OBJ       0    .debug_line   .dwarf_line_prologue.347
+    [  15]   108   0000000b    128   LOC    OBJ       0    .debug_info   .dwarf_tcu.348
+    [  16]   123   0000008b     24   LOC    OBJ       0    .debug_info   .dwarf.__func__$53
+    [  17]   142   00000000     23   LOC    OBJ       0    .debug_loc    .dwarf_loc.__func__$53
+    [  18]   165   000000a3     24   LOC    OBJ       0    .debug_info   .dwarf.__func__$210
+    [  19]   185   00000017     23   LOC    OBJ       0    .debug_loc    .dwarf_loc.__func__$210
+    [  20]   209   000000bb     24   LOC    OBJ       0    .debug_info   .dwarf.__func__$295
+    [  21]   229   0000002e     23   LOC    OBJ       0    .debug_loc    .dwarf_loc.__func__$295
+    [  22]   253   000000d3     24   LOC    OBJ       0    .debug_info   .dwarf.__func__$300
+    [  23]   273   00000045     23   LOC    OBJ       0    .debug_loc    .dwarf_loc.__func__$300
+    [  24]   297   00000181     15   LOC    OBJ       0    .debug_info   .dwarf_type.349
+    [  25]   313   0000019c     15   LOC    OBJ       0    .debug_info   .dwarf_type.350
+    [  26]   329   000001ab     15   LOC    OBJ       0    .debug_info   .dwarf_type.351
+    [  27]   345   000001ba     15   LOC    OBJ       0    .debug_info   .dwarf_type.352
+    [  28]   361   000001c9     15   LOC    OBJ       0    .debug_info   .dwarf_type.353
+    [  29]   377   000001d8     15   LOC    OBJ       0    .debug_info   .dwarf_type.354
+    [  30]   393   000001e7     15   LOC    OBJ       0    .debug_info   .dwarf_type.355
+    [  31]   409   000001f6     15   LOC    OBJ       0    .debug_info   .dwarf_type.356
+    [  32]   425   00000205     15   LOC    OBJ       0    .debug_info   .dwarf_type.357
+    [  33]   441   00000214      1   LOC    OBJ       0    .debug_info   .dwarf_null.358
+    [  34]   457   00000000     14   LOC    OBJ       0    .debug_pubnames .dwarf_pubnames_prologue.359
+    [  35]   486   0000006d      4   LOC    OBJ       0    .debug_pubnames .dwarf_pubnames_null.360
+    [  36]   511   00000000    124   GLOB   OBJ       0    .apa          SYS_INT_STACK
+    [  37]   525   0000007c    116   GLOB   OBJ       0    .apa          SYS_INT_NEST_CNT
+    [  38]   542   000000f0    100   GLOB   OBJ       0    .apa          SYS_CURR_PCB_P
+    [  39]   557   00000154    148   GLOB   OBJ       0    .apa          PCB_CONST_P
+    [  40]   569   000001e8    100   GLOB   OBJ       0    .apa          PCB_STACK_CURR_P
+    [  41]   586   000000eb     29   GLOB   OBJ       0    .debug_info   .dwarf.SYS_INT_STACK
+    [  42]   607   0000005c     23   GLOB   OBJ       0    .debug_loc    .dwarf_loc.SYS_INT_STACK
+    [  43]   632   00000108     32   GLOB   OBJ       0    .debug_info   .dwarf.SYS_INT_NEST_CNT
+    [  44]   656   00000073     23   GLOB   OBJ       0    .debug_loc    .dwarf_loc.SYS_INT_NEST_CNT
+    [  45]   684   00000128     30   GLOB   OBJ       0    .debug_info   .dwarf.SYS_CURR_PCB_P
+    [  46]   706   0000008a     23   GLOB   OBJ       0    .debug_loc    .dwarf_loc.SYS_CURR_PCB_P
+    [  47]   732   00000146     27   GLOB   OBJ       0    .debug_info   .dwarf.PCB_CONST_P
+    [  48]   751   000000a1     23   GLOB   OBJ       0    .debug_loc    .dwarf_loc.PCB_CONST_P
+    [  49]   774   00000161     32   GLOB   OBJ       0    .debug_info   .dwarf.PCB_STACK_CURR_P
+    [  50]   798   000000b8     23   GLOB   OBJ       0    .debug_loc    .dwarf_loc.PCB_STACK_CURR_P
+    [  51]   826   00000190     12   WEAK   OBJ       0    .debug_info   .dwarf_type.char
+    [  52]   843   0000000e     18   GLOB   OBJ       0    .debug_pubnames .dwarf_pubnames.SYS_INT_STACK
+    [  53]   873   00000020     21   GLOB   OBJ       0    .debug_pubnames .dwarf_pubnames.SYS_INT_NEST_CNT
+    [  54]   906   00000035     19   GLOB   OBJ       0    .debug_pubnames .dwarf_pubnames.SYS_CURR_PCB_P
+    [  55]   937   00000048     16   GLOB   OBJ       0    .debug_pubnames .dwarf_pubnames.PCB_CONST_P
+    [  56]   965   00000058     21   GLOB   OBJ       0    .debug_pubnames .dwarf_pubnames.PCB_STACK_CURR_P
+
+==> .rodata
+__func__$53:
+00000000: 44697361  626C6541  6C6C496E  74657272 'DisableAllInterr'
+00000010: 75707473  00000000                     'upts....        '
+__func__$210:
+00000018:                     4F735F54  61736B52 '        Os_TaskR'
+00000020: 65736F75  72636552  656D6F76  65000000 'esourceRemove...'
+__func__$295:
+00000030: 4F735F49  73725265  736F7572  63654164 'Os_IsrResourceAd'
+00000040: 64000000                               'd...            '
+__func__$300:
+00000044:           4F735F49  73725265  736F7572 '    Os_IsrResour'
+00000050: 63655265  6D6F7665  00                 'ceRemove.       '
+
+==> .apa
+SYS_INT_STACK:
+00000000: 00000000  00000000  00000000  00000000 '................'
+00000010: 00000000  00000000  00000000  00000000 '................'
+00000020: 00000000  00000000  00000000  00000000 '................'
+00000030: 00000000  00000000  00000000  00000000 '................'
+00000040: 00000000  00000000  00000000  00000000 '................'
+00000050: 00000000  00000000  00000000  00000000 '................'
+00000060: 00000000  00000000  00000000  00000000 '................'
+00000070: 00000000  00000000  00000000           '............    '
+SYS_INT_NEST_CNT:
+0000007C:                               00000000 '            ....'
+00000080: 00000000  00000000  00000000  00000000 '................'
+00000090: 00000000  00000000  00000000  00000000 '................'
+000000A0: 00000000  00000000  00000000  00000000 '................'
+000000B0: 00000000  00000000  00000000  00000000 '................'
+000000C0: 00000000  00000000  00000000  00000000 '................'
+000000D0: 00000000  00000000  00000000  00000000 '................'
+000000E0: 00000000  00000000  00000000  00000000 '................'
+SYS_CURR_PCB_P:
+000000F0: 00000000  00000000  00000000  00000000 '................'
+00000100: 00000000  00000000  00000000  00000000 '................'
+00000110: 00000000  00000000  00000000  00000000 '................'
+00000120: 00000000  00000000  00000000  00000000 '................'
+00000130: 00000000  00000000  00000000  00000000 '................'
+00000140: 00000000  00000000  00000000  00000000 '................'
+00000150: 00000000                               '....            '
+PCB_CONST_P:
+00000154:           00000000  00000000  00000000 '    ............'
+00000160: 00000000  00000000  00000000  00000000 '................'
+00000170: 00000000  00000000  00000000  00000000 '................'
+00000180: 00000000  00000000  00000000  00000000 '................'
+00000190: 00000000  00000000  00000000  00000000 '................'
+000001A0: 00000000  00000000  00000000  00000000 '................'
+000001B0: 00000000  00000000  00000000  00000000 '................'
+000001C0: 00000000  00000000  00000000  00000000 '................'
+000001D0: 00000000  00000000  00000000  00000000 '................'
+000001E0: 00000000  00000000                     '........        '
+PCB_STACK_CURR_P:
+000001E8:                     00000000  00000000 '        ........'
+000001F0: 00000000  00000000  00000000  00000000 '................'
+00000200: 00000000  00000000  00000000  00000000 '................'
+00000210: 00000000  00000000  00000000  00000000 '................'
+00000220: 00000000  00000000  00000000  00000000 '................'
+00000230: 00000000  00000000  00000000  00000000 '................'
+00000240: 00000000  00000000  00000000           '............    '
+
+==> .comment
+MagicWord: CodeWarrior
+Comment section version: 15
+Compiler version: 4.0.0
+CW Compiler generated
+Pooled data: true
+PPC EABI compliant
+FP Support: Software
+Processor: Zen
+Char Signedness: signed

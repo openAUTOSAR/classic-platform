@@ -248,8 +248,14 @@ all: module_config $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $
 # Board linker files are in the board directory 
 inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
 
+
+# *.ldf (file on disc) -> *.lcf (preprocessed *.ldf file)
 # Preprocess linker files..
-%.ldp %.lcf: %.ldf
+ifeq ($(COMPILER),cw)
+%.lcf: %.ldf
+else
+%.ldp: %.ldf
+endif
 	@echo
 	@echo "  >> CPP $(notdir $<)"
 	$(Q)$(CPP) -E -P $(CPP_ASM_FLAGS) -o $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<

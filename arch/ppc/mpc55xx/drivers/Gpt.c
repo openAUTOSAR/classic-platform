@@ -13,13 +13,6 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
 #include "Std_Types.h"
 #include "Gpt.h"
 #include "Cpu.h"
@@ -29,10 +22,8 @@
 #include "Mcu.h"
 #include "debug.h"
 #include "Det.h"
-#if defined(USE_KERNEL)
 #include "Os.h"
 #include "isr.h"
-#endif
 
 // Implementation specific
 
@@ -159,16 +150,16 @@ Gpt_GlobalType Gpt_Global;
 /*
  * Create instances of the ISR for each PIT channel.
  */
-GPT_ISR( 0 );
-GPT_ISR( 1 );
-GPT_ISR( 2 );
-GPT_ISR( 3 );
+GPT_ISR( 0 )
+GPT_ISR( 1 )
+GPT_ISR( 2 )
+GPT_ISR( 3 )
 #if !defined(CFG_MPC5606S)
-GPT_ISR( 4 );
-GPT_ISR( 5 );
-GPT_ISR( 6 );
-GPT_ISR( 7 );
-GPT_ISR( 8 );
+GPT_ISR( 4 )
+GPT_ISR( 5 )
+GPT_ISR( 6 )
+GPT_ISR( 7 )
+GPT_ISR( 8 )
 #endif
 
 #if defined(CFG_MPC5606S)
@@ -217,10 +208,11 @@ void Gpt_Init(const Gpt_ConfigType *config)
 			{
 				switch( ch )
 				{
-					case 0: GPT_ISR_INSTALL( 0, cfg->GptNotificationPriority ); break;
-					case 1: GPT_ISR_INSTALL( 1, cfg->GptNotificationPriority ); break;
-					case 2: GPT_ISR_INSTALL( 2, cfg->GptNotificationPriority ); break;
-					case 3: GPT_ISR_INSTALL( 3, cfg->GptNotificationPriority ); break;
+					case 0: ISR_INSTALL_ISR2( "Gpt_0", Gpt_Isr_Channel0, PIT_INT0, 2, 0 ); break;
+					case 1: ISR_INSTALL_ISR2( "Gpt_1", Gpt_Isr_Channel1, PIT_INT1, 2, 0 ); break;
+					case 2: ISR_INSTALL_ISR2( "Gpt_2", Gpt_Isr_Channel2, PIT_INT2, 2, 0 ); break;
+					case 3: ISR_INSTALL_ISR2( "Gpt_3", Gpt_Isr_Channel3, PIT_INT3, 2, 0 ); break;
+
 					default:
 					{
 						// Unknown PIT channel.
@@ -306,7 +298,9 @@ void Gpt_DeInit(void)
 // period is in "ticks" !!
 void Gpt_StartTimer(Gpt_ChannelType channel, Gpt_ValueType period_ticks)
 {
+#if !defined(CFG_MPC5606S)
   uint32_t tmp;
+#endif
   int confCh;
 
   VALIDATE( (Gpt_Global.initRun == STD_ON), GPT_STARTTIMER_SERVICE_ID, GPT_E_UNINIT );

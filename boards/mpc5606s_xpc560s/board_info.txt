@@ -1,0 +1,63 @@
+
+
+
+The Freescale MPC5510 is an PowerPC process with a e200Z1+e200Z0 core. 
+	
+Datasheets:
+  Eval board:
+      http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=XPC560SKIT  
+      http://cache.freescale.com/files/microcontrollers/hardware_tools/schematics/XPC560SADPT176SSCH.pdf?fpsp=1
+      http://cache.freescale.com/files/32bit/doc/user_guide/XPC560SEVBUM.pdf?fpsp=1
+     Mainboard schematic
+      http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC560xB_EVB&parentCode=XPC56xxMB&fpsp=1&nodeId=01624606C1427E
+     
+  MPC560x
+    http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC5510&webpageId=1067371573986721160325&nodeId=0162468rH3bTdG06C10325&fromPage=tax
+
+Board:
+  8Mhz external crystal
+ 
+Info:	
+  MPC5516/7 (I think that the board is always equipped with a MPC5517E now)
+  e200Z1 + e200Z0 (VLE only)
+  48-66Mhz
+  1.5MB Flash (MPC5516 1MB)
+  80KB SRAM   (MPC5516 64KB)
+  .. 
+  
+Memory Map:
+ 0x0000_0000 ->           Flash
+ 0x4000_0000 ->           SRAM
+
+
+
+== SPI == 
+
+Adding a SPI EEPROM (Microship 25LC160B)
+
+To the left are the pins as they are names in XPC56xxMBSCH (schema for the main board, page 11 of 12) 
+
+<- XPC560S ->#<---------------------- MCU ---------------------------------------->
+             #       PAD Func         Per     #       Shared with
+--------------------------------------------------------------------------------------------
+SINB,PJ1-7   # PB[7]  23  1  SIN_0     DSPI_0  56      (SIUL/PWM/Timer)
+SOUTB,PJ1-8  # PB[8]  24  1  SOUT_0    DSPI_0  55      (SIUL/PWM/Timer) 
+SCKB,PJ1-9   # PB[9]  25  1  SCK_0     DSPI_0  54      (SIUL/PWM/Timer) 
+PCSB2,PJ1-12 # PB[12] 28  3  PCS2_0    DSPI_0  48      (SIUL/LinFlex_1/Timer)
+PCSB1,PJ1-11 # PB[13] 29  3  PCS1_0    DSPI_0  49      (SIUL/LinFlex_1/Timer)
+PCSB0,PJ1-10 # PH[4]  103 1  PCS0_0    DSPI_0  61      (SIUL/PWM/Timer/Control)   Control=CLKOUT
+
+25LC160B
+ CS - Connect to PJ1-11
+ /WP - High
+ /HOLD - Low
+ Rest of the pins are obvious
+ 
+ Connected with 5V logic
+
+
+
+  
+  
+  
+

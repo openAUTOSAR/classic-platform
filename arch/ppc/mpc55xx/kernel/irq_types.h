@@ -503,7 +503,7 @@ typedef enum
 #endif
 
 	/* FlexCAN A */
-
+#if defined(CFG_MPC5516) || defined(CFG_MPC5554)||defined(CFG_MPC5567)
 	FLEXCAN_A_ESR_BOFF_INT, // 54-152, 16-127
 	FLEXCAN_A_ESR_ERR_INT,
 	RESERVED18,
@@ -525,6 +525,7 @@ typedef enum
 	FLEXCAN_A_IFLAG1_BUF15I,
 	FLEXCAN_A_IFLAG1_BUF31_16I,
 	FLEXCAN_A_IFLAG1_BUF63_32I,
+#endif
 
 #if defined(CFG_MPC5516)
 	/* Periodic interrupt timer */
