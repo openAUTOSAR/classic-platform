@@ -11,7 +11,6 @@ OUTPUT_ARCH(powerpc)
 ENTRY(_start)
 
 /*
-/*
  * _idata - Start of .data in flash 
  * _data  - start address of .data in RAM
  * _edata  - end address of .data  in RAM
@@ -202,19 +201,18 @@ __FLS_PROG_START__ = 0;	/* Must be aligned to a sector start. */
 		__FLS_ERASE_RAM__ = .;
 		. = . + SIZEOF(.fls_rom);
 	} > ram
-	
-	/* Always place last in RAM */
-	.heap ALIGN(0x4): {
-		PROVIDE(_heap_start = .);
-	} > ram
-		
-
   .ctors          :
   {
     KEEP (*(SORT(.ctors.*)))
   }
 
-	.uninit ALIGN(0x10): { *(.winidea_port .ramlog .dem_eventmemory_pri) ; } 			> ram
+.uninit ALIGN(0x10): { *(.winidea_port .ramlog .dem_eventmemory_pri) ; } 			> ram
+
+	/* Always place last in RAM */
+	.heap ALIGN(0x4): {
+		PROVIDE(_heap_start = .);
+	} > ram
+
 
 	__FLS_SIZE__ = SIZEOF(.fls_rom);
 	__FLS_WRITE_RAM__ =  __FLS_ERASE_RAM__ + (__FLS_WRITE_ROM__ - __FLS_ERASE_ROM__);

@@ -248,8 +248,14 @@ all: module_config $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $
 # Board linker files are in the board directory 
 inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
 
+
+# *.ldf (file on disc) -> *.lcf (preprocessed *.ldf file)
 # Preprocess linker files..
-%.ldp %.lcf: %.ldf
+ifeq ($(COMPILER),cw)
+%.lcf: %.ldf
+else
+%.ldp: %.ldf
+endif
 	@echo
 	@echo "  >> CPP $(notdir $<)"
 	$(Q)$(CPP) -E -P $(CPP_ASM_FLAGS) -o $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
@@ -286,7 +292,7 @@ ifeq ($(CROSS_COMPILE),)
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	
 else
 	$(Q)$(LD) $(LDFLAGS) $(LD_FILE) $(ldcmdfile-y) -o $@ $(libpath-y) $(LD_START_GRP) $(obj-y) $(lib-y) $(libitem-y) $(LD_END_GRP) $(LDMAPFILE)
- ifdef CFG_HC1X
+ ifdef CFG_MC912DG128A
     # Print memory layout
 	@$(CROSS_COMPILE)objdump -h $@ | gawk -f $(ROOTDIR)/scripts/hc1x_memory.awk
  else

@@ -49,12 +49,14 @@ OsErrorType os_error;
 
 
 static void Os_CfgValidate(void ) {
+#if (OS_COUNTER_CNT!=0)
 	OS_VALIDATE(OS_COUNTER_CNT,ARRAY_SIZE(counter_list));
-#if (RESOURCE_CNT!=0)
+#endif
+#if (OS_RESOURCE_CNT!=0)
 	OS_VALIDATE(OS_RESOURCE_CNT,ARRAY_SIZE(resource_list));
 #endif
 	OS_VALIDATE(OS_TASK_CNT ,ARRAY_SIZE( Os_TaskConstList));
-#if (RESOURCE_CNT!=0)
+#if (OS_ALARM_CNT!=0)
 	OS_VALIDATE(OS_ALARM_CNT,ARRAY_SIZE(alarm_list));
 #endif
 #if (OS_SCHTBL_CNT!=0)
@@ -251,7 +253,7 @@ int test_bss = 0;
 
 
 void noooo( void ) {
-	while(1);
+	while(1) {}
 }
 
 extern void EcuM_Init();

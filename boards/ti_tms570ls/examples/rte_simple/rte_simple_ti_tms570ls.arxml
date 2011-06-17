@@ -949,7 +949,7 @@
                 </FLOAT-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Com/ComGeneral/ComConfigurationUseDet</DEFINITION-REF>
-                  <VALUE>false</VALUE>
+                  <VALUE>true</VALUE>
                 </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>

@@ -14,19 +14,6 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
-
-/*
- * mpc55xx.h
- *
- *  Created on: Jul 13, 2009
- *      Author: mahi
- */
-
 #ifndef MPC55XX_H_
 #define MPC55XX_H_
 
@@ -45,6 +32,7 @@
 #error NO MCU SELECTED!!!!
 #endif
 
-//#include "mpc55xx_aos.h"
+/* Harmonization */
+typedef struct EDMA_TCD_STD_tag Dma_TcdType;
 
 #endif /* MPC55XX_H_ */

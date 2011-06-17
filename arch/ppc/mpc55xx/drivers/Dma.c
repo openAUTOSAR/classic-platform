@@ -30,9 +30,9 @@
 void Dma_Init (const Dma_ConfigType *ConfigPtr)
 {
   Dma_ChannelType channel;
-  for (channel = 0; channel < DMA_NUMBER_OF_CHANNELS; channel++)
+  for (channel = (Dma_ChannelType)0; channel < DMA_NUMBER_OF_CHANNELS; channel++)
   {
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S)
     /* DMA mux configuration. */
     DMAMUX.CHCONFIG[channel].B.ENBL = ConfigPtr->dmaMuxConfigPtr[channel].DMA_CHANNEL_ENABLE;
     DMAMUX.CHCONFIG[channel].B.TRIG = ConfigPtr->dmaMuxConfigPtr[channel].DMA_CHANNEL_TRIG_ENABLE;
@@ -48,16 +48,16 @@ void Dma_Init (const Dma_ConfigType *ConfigPtr)
   EDMA.CR.B.ERCA = ConfigPtr->dmaChannelArbitration;
 }
 
-void Dma_ConfigureChannel (struct tcd_t *tcd, Dma_ChannelType channel)
+void Dma_ConfigureChannel (Dma_TcdType *tcd, Dma_ChannelType channel)
 {
   /* Copy transfer configuration to correct channel. */
   EDMA.TCD[channel] = *tcd;
 
   /* Disable channel. */
-  EDMA.CERQR.R = channel;
+  EDMA.CERQ.R = channel;
 
   /* Check configuration. */
-  if (EDMA.ESR.B.VLD)
+  if (EDMA.ES.B.VLD)
   {
     assert(0);
   }
@@ -67,13 +67,13 @@ void Dma_ConfigureChannel (struct tcd_t *tcd, Dma_ChannelType channel)
   }
 }
 
-volatile struct tcd_t * Dma_GetTcd( Dma_ChannelType channel ) {
+volatile Dma_TcdType * Dma_GetTcd( Dma_ChannelType channel ) {
 		return &EDMA.TCD[channel];
 }
 
 boolean Dma_CheckConfig( void ) {
   /* Check configuration. */
-  if (EDMA.ESR.B.VLD)
+  if (EDMA.ES.B.VLD)
   {
     assert(0);
   }
@@ -117,7 +117,7 @@ int Dma_Active(Dma_ChannelType channel) {
 void Dma_StartChannel (Dma_ChannelType channel)
 {
   /* Start the channel... */
-  EDMA.SERQR.R = channel;
+  EDMA.SERQ.R = channel;
 }
 
 #if 0
@@ -131,7 +131,8 @@ void Dma_EnableInterrupt (Dma_ChannelType channel)
 void Dma_ClearInterrupt (Dma_ChannelType channel)
 {
   /* Start the channel... */
-  EDMA.CIRQR.R = channel;
+  //EDMA.CIRQ.R = channel;
+  EDMA.CINT.R = channel;
 }
 
 
@@ -139,7 +140,7 @@ void Dma_ClearInterrupt (Dma_ChannelType channel)
 void Dma_StopChannel (Dma_ChannelType channel)
 {
   /* Stop the channel... */
-  EDMA.CERQR.R = channel;
+  EDMA.CERQ.R = channel;
 }
 
 Std_ReturnType Dma_ChannelDone (Dma_ChannelType channel)

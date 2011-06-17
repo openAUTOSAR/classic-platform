@@ -29,7 +29,7 @@ extern Com_Arc_Config_type Com_Arc_Config;
 
 
 
-#ifdef COM_DEV_ERROR_DETECT
+#if COM_DEV_ERROR_DETECT == STD_ON
 #include "Det.h"
 
 #define DET_REPORTERROR(_x,_y,_z,_q) Det_ReportError(_x,_y,_z,_q)
@@ -37,14 +37,14 @@ extern Com_Arc_Config_type Com_Arc_Config;
 
 // Define macro for parameter check.
 #define PDU_ID_CHECK(PduId,ApiId,...) \
-	if (PduId >= Com_Arc_Config.ComNIPdu) { \
+	if (PduId >= COM_N_IPDUS) { \
 		DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, ApiId, COM_INVALID_PDU_ID); \
 		return __VA_ARGS__; \
 	} \
 
 #define VALIDATE_SIGNAL(SignalId, ApiId, ...) \
-	if (ComConfig->ComSignal[SignalId].Com_Arc_IsSignalGroup) { \
-		DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, ApiId, COM_ERROR_SIGNAL_IS_SIGNALGROUP); \
+	if (SignalId >= COM_N_SIGNALS) { \
+		DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, ApiId, COM_INVALID_SIGNAL_ID); \
 		return __VA_ARGS__; \
 	} \
 

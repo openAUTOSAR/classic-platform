@@ -503,7 +503,7 @@ typedef enum
 #endif
 
 	/* FlexCAN A */
-
+#if defined(CFG_MPC5516) || defined(CFG_MPC5554)||defined(CFG_MPC5567)
 	FLEXCAN_A_ESR_BOFF_INT, // 54-152, 16-127
 	FLEXCAN_A_ESR_ERR_INT,
 	RESERVED18,
@@ -525,6 +525,7 @@ typedef enum
 	FLEXCAN_A_IFLAG1_BUF15I,
 	FLEXCAN_A_IFLAG1_BUF31_16I,
 	FLEXCAN_A_IFLAG1_BUF63_32I,
+#endif
 
 #if defined(CFG_MPC5516)
 	/* Periodic interrupt timer */
@@ -867,12 +868,16 @@ typedef enum
 	PERIPHERAL_CLOCK_ESCI_F,
 	PERIPHERAL_CLOCK_ESCI_G,
 	PERIPHERAL_CLOCK_ESCI_H,
+#if defined(CFG_MPC5606S)
+	PERIPHERAL_CLOCK_LIN_A,
+	PERIPHERAL_CLOCK_LIN_B,
+#endif
 	PERIPHERAL_CLOCK_IIC_A,
 	PERIPHERAL_CLOCK_MLB
 } McuE_PeriperalClock_t;
 
 
-#if defined(CFG_MPC5516)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5606S)
 #define CPU_Z1 	0
 #define CPU_Z0	1
 #endif

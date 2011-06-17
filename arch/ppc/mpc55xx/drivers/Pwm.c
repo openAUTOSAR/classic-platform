@@ -71,18 +71,22 @@
     #if ( defined(CFG_MPC5516) || defined (CFG_MPC5567) )
 		
 		#define PWM_RUNTIME_CHANNEL_COUNT	16
-		#define Pwm_VALIDATE_CHANNEL(_ch) PWM_VALIDATE(_ch < 16, PWM_E_PARAM_CHANNEL)
+		#define PWM_VALID_CHANNEL(_ch)		(_ch < 16)
+		#define Pwm_VALIDATE_CHANNEL(_ch)	PWM_VALIDATE( PWM_VALID_CHANNEL(_ch), PWM_E_PARAM_CHANNEL )
 
 	#elif  defined(CFG_MPC5606S)
 	
 		#define PWM_RUNTIME_CHANNEL_COUNT	48
-		#define Pwm_VALIDATE_CHANNEL(_ch) PWM_VALIDATE(((_ch <= PWM_MAX_CHANNEL-1) && (_ch >= 40)) ||((_ch <= 23) && (_ch >= 16)), PWM_E_PARAM_CHANNEL)
+		#define PWM_VALID_CHANNEL(_ch)		( ((_ch <= PWM_MAX_CHANNEL-1) && (_ch >= 40)) || ((_ch <= 23) && (_ch >= 16)) )
+		#define Pwm_VALIDATE_CHANNEL(_ch)	PWM_VALIDATE( PWM_VALID_CHANNEL(_ch), PWM_E_PARAM_CHANNEL )
 	
 	#endif
 
 	#define Pwm_VALIDATE_INITIALIZED() PWM_VALIDATE(Pwm_ModuleState == PWM_STATE_INITIALIZED, PWM_E_UNINIT)
 	#define Pwm_VALIDATE_UNINITIALIZED() PWM_VALIDATE(Pwm_ModuleState != PWM_STATE_INITIALIZED, PWM_E_ALREADY_INITIALIZED)
 #else
+	#define PWM_VALIDATE(_exp, _errid)
+	#define PWM_VALID_CHANNEL(_ch)	(1)
 	#define Pwm_VALIDATE_CHANNEL(ch)
 	#define Pwm_VALIDATE_INITIALIZED()
 	#define Pwm_VALIDATE_UNINITIALIZED()
@@ -527,7 +531,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 	Pwm_OutputStateType Pwm_GetOutputState(Pwm_ChannelType Channel)
 	{
 		// We need to return something, even in presence of errors
-		if (Channel >= PWM_MAX_CHANNEL ||Channel < 16 || Channel >23 && Channel <40 )
+		if ( ! PWM_VALID_CHANNEL(Channel) )
 		{
 			Pwm_ReportError(PWM_E_PARAM_CHANNEL);
 
@@ -573,7 +577,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 		Pwm_VALIDATE_INITIALIZED();
 
 		// Disable flags on this channel
-		#ifdef CFG_MPC5516
+		#if defined(CFG_MPC5516)
 
 			EMIOS.CH[Channel].CCR.B.FEN = 0;
 
@@ -599,7 +603,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 		ChannelRuntimeStruct[Channel].NotificationState = Notification;
 
 		// Enable flags on this channel
-		#ifdef CFG_MPC5516
+		#if defined(CFG_MPC5516)
 
 			EMIOS.CH[Channel].CCR.B.FEN = 1;
 
@@ -619,29 +623,30 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 	static void Pwm_Isr(void)
 	{
 		// Find out which channel that triggered the interrupt
-		#ifdef CFG_MPC5516
-			uint32_t flagmask = EMIOS.GFLAG.R;
-		#elif defined(CFG_MPC5567)
-			uint32_t flagmask = EMIOS.GFR.R;
+		#if defined(CFG_MPC5516) || defined(CFG_MPC5567)
+			#if defined(CFG_MPC5516)
+				uint32_t flagmask = EMIOS.GFLAG.R;
+			#elif defined(CFG_MPC5567)
+				uint32_t flagmask = EMIOS.GFR.R;
+			#endif
 
-		// There are 24 channels specified in the global flag register, but
-		// we only listen to the first 16 as only these support OPWfM
-		for (Pwm_ChannelType emios_ch = 0; emios_ch < 16; emios_ch++) {
-			if (flagmask & (1 << emios_ch)) {
+			// There are 24 channels specified in the global flag register, but
+			// we only listen to the first 16 as only these support OPWfM
+			for (Pwm_ChannelType emios_ch = 0; emios_ch < 16; emios_ch++) {
+				if (flagmask & (1 << emios_ch)) {
 
-				if (ChannelRuntimeStruct[emios_ch].NotificationRoutine != NULL && EMIOS.CH[emios_ch].CCR.B.FEN) {
+					if (ChannelRuntimeStruct[emios_ch].NotificationRoutine != NULL && EMIOS.CH[emios_ch].CCR.B.FEN) {
 
-					Pwm_EdgeNotificationType notification = ChannelRuntimeStruct[emios_ch].NotificationState;
-					if (notification == PWM_BOTH_EDGES ||
-							notification == EMIOS.CH[emios_ch].CSR.B.UCOUT) {
-					{
-							ChannelRuntimeStruct[emios_ch].NotificationRoutine();
+						Pwm_EdgeNotificationType notification = ChannelRuntimeStruct[emios_ch].NotificationState;
+						if (notification == PWM_BOTH_EDGES || notification == EMIOS.CH[emios_ch].CSR.B.UCOUT)
+						{
+								ChannelRuntimeStruct[emios_ch].NotificationRoutine();
+						}
 					}
+					// Clear interrupt
+					EMIOS.CH[emios_ch].CSR.B.FLAG = 1;
 				}
-				// Clear interrupt
-				EMIOS.CH[emios_ch].CSR.B.FLAG = 1;
 			}
-		}
         #elif defined(CFG_MPC5606S)
 			uint32_t flagmask_0 = EMIOS_0.GFR.R;
 			uint32_t flagmask_1 = EMIOS_1.GFR.R;
@@ -656,11 +661,9 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 					if (ChannelRuntimeStruct[channel_iterator].NotificationRoutine != NULL && EMIOS_0.CH[emios_ch].CCR.B.FEN)
 					{
 						Pwm_EdgeNotificationType notification = ChannelRuntimeStruct[channel_iterator].NotificationState;
-						if (notification == PWM_BOTH_EDGES ||
-
-								notification == EMIOS_0.CH[emios_ch].CSR.B.UCOUT)
+						if (notification == PWM_BOTH_EDGES || notification == EMIOS_0.CH[emios_ch].CSR.B.UCOUT)
 						{
-								ChannelRuntimeStruct[channel_iterator].NotificationRoutine();
+							ChannelRuntimeStruct[channel_iterator].NotificationRoutine();
 						}
 					}
 

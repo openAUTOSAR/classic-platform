@@ -375,9 +375,11 @@ on_int_stack:
 #if defined(CFG_MPC5516)
 	lis r6, INTC_IACKR_PRC0@ha
 	lwz r6, INTC_IACKR_PRC0@l(r6)
-#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
+#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)  || defined(CFG_MPC5606S)
 	lis r6, INTC_IACKR@ha 
 	lwz r6, INTC_IACKR@l(r6)
+#else
+#error No CPU selected	
 #endif
 	/* Check for 0 entry */
 	mr		r5,r6

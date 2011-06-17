@@ -14,7 +14,7 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-#warning "This default file may only be used as an example!"
+#error "This default file may only be used as an example!"
 
 #if ((ECUM_SW_MAJOR_VERSION != 2) && (ECUM_SW_MINOR_VERSION != 0))
 #error "EcuM: Configuration file version differs from BSW version."
@@ -53,6 +53,12 @@
 #endif
 #if defined(USE_GPT)
 #include "Gpt.h"
+#endif
+#if defined(USE_FLS)
+#include "Fls.h"
+#endif
+#if defined(USE_EEP)
+#include "Eep.h"
 #endif
 #if defined(USE_WDG)
 #include "Wdg.h"
@@ -135,6 +141,9 @@ typedef struct
 #endif
 #if defined(USE_FLS)
 	const Fls_ConfigType* FlashConfig;
+#endif
+#if defined(USE_EEP)
+	const Eep_ConfigType* EepConfig;
 #endif
 } EcuM_ConfigType;
 

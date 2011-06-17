@@ -112,7 +112,7 @@ vpath-$(USE_FEE) += $(ROOTDIR)/memory/Fee
 #Eep
 obj-$(USE_EEP) += Eep.o
 obj-$(USE_EEP) += Eep_Lcfg.o
-obj-$(USE_EEP) += Eeprom_Lcfg.o
+#obj-$(USE_EEP) += Eeprom_Lcfg.o
 
 #Fls ext
 obj-$(USE_FLS_SST25XX) += Fls_SST25xx.o

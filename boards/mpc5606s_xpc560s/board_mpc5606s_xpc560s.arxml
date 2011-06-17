@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AUTOSAR xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://autosar.org/3.1.5" xsi:schemaLocation="http://autosar.org/3.1.5 autosar_3-1-5.xsd"><TOP-LEVEL-PACKAGES>
+    <AR-PACKAGE>
+      <SHORT-NAME>board_mpc5606s_xpc560s</SHORT-NAME>
+      <ELEMENTS>
+        <ECU-CONFIGURATION UUID="c582a01a-853f-4e23-913b-a6879e1e16df">
+          <SHORT-NAME>board_mpc5606s_xpc560s</SHORT-NAME>
+          <ADMIN-DATA>
+            <SDGS>
+              <SDG GID="Arccore::EcuOptions">
+                <SD GID="MCU">MPC560x</SD>
+                <SD GID="GENDIR">${RESOURCE_LOC}</SD>
+              </SDG>
+            </SDGS>
+          </ADMIN-DATA>
+          <ECU-SW-COMPOSITION-REF DEST="ECU-SW-COMPOSITION">/board_mpc5606s_xpc560s/SwComposition_board_mpc5606s_xpc560s</ECU-SW-COMPOSITION-REF>
+        </ECU-CONFIGURATION>
+        <ECU-SW-COMPOSITION UUID="d3b2a44e-fc68-44fb-8af5-3e67acf5a3c5">
+          <SHORT-NAME>SwComposition_board_mpc5606s_xpc560s</SHORT-NAME>
+        </ECU-SW-COMPOSITION>
+      </ELEMENTS>
+    </AR-PACKAGE>
+  </TOP-LEVEL-PACKAGES></AUTOSAR>

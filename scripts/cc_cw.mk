@@ -32,6 +32,7 @@ cflags-y 		+= -dialect=c99
 cflags-y 		+= -gccext=on
 cflags-y 		+= -gdwarf-2
 cflags-y 		+= -gccinc
+cflags-y 		+= -cwd explicit
 
 # Generate dependencies
 cflags-y 		+= -gccdepends -MMD

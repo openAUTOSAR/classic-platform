@@ -42,7 +42,8 @@
 #define ISR_TYPE_2			1
 
 /* ----------------------------[macro]---------------------------------------*/
-#ifdef CFG_DRIVERS_USE_CONFIG_ISRS
+#if 0
+//#ifdef CFG_DRIVERS_USE_CONFIG_ISRS
 #define ISR_INSTALL_ISR2( _name, _entry, _vector, _priority, _app )
 #define ISR_INSTALL_ISR1(_name,_entry, _vector,_priority,_app)
 #else
