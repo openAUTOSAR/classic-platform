@@ -183,6 +183,7 @@ void Pwm_SetPeriodAndDuty(Pwm_ChannelType Channel, Pwm_PeriodType Period,
  * @param Channel PWM channel to use. 0 <= Channel < PWM_NUMBER_OF_CHANNELS <= 7
  * @param DutyCycle 0 <= DutyCycle <= 0x8000
  */
+#if PWM_SET_DUTY_CYCLE_API==STD_ON
 void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle) {
 	Pwm_VALIDATE_INITIALIZED();
 	Pwm_VALIDATE_CHANNEL(Channel);
@@ -211,7 +212,9 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle) {
     	*pCtr = 0;
  	}
 }
+#endif
 
+#if PWM_SET_OUTPUT_TO_IDLE_API==STD_ON
 void Pwm_SetOutputToIdle(Pwm_ChannelType Channel) {
 	Pwm_VALIDATE_CHANNEL(Channel);
 	Pwm_VALIDATE_INITIALIZED();
@@ -236,6 +239,7 @@ void Pwm_SetOutputToIdle(Pwm_ChannelType Channel) {
 		}
 	}
 }
+#endif
 
 /*
  * PWM085: The function Pwm_GetOutputState shall be pre compile configurable
