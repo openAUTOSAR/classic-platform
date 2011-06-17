@@ -15,6 +15,7 @@
 #define ERROR_LOG_SIZE 20
 
 
+
 void StartupTask( void ) {
 	LDEBUG_FPUTS("StartupTask start\n");
 

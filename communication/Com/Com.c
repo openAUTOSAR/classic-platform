@@ -49,7 +49,6 @@ void Com_Init(const Com_ConfigType *config ) {
 	const ComSignal_type *Signal;
 	const ComGroupSignal_type *GroupSignal;
 	for (uint16 i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
-		Com_Arc_Config.ComNIPdu++;
 
 		const ComIPdu_type *IPdu = GET_IPdu(i);
 		Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(i);
