@@ -798,7 +798,7 @@
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalEndianess</DEFINITION-REF>
-                      <VALUE>LITTLE_ENDIAN</VALUE>
+                      <VALUE>BIG_ENDIAN</VALUE>
                     </ENUMERATION-VALUE>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalInitValue</DEFINITION-REF>
@@ -857,7 +857,7 @@
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalEndianess</DEFINITION-REF>
-                      <VALUE>LITTLE_ENDIAN</VALUE>
+                      <VALUE>BIG_ENDIAN</VALUE>
                     </ENUMERATION-VALUE>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalInitValue</DEFINITION-REF>

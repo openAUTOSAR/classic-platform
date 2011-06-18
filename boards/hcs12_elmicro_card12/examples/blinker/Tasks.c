@@ -36,6 +36,9 @@ void StartTask()
 
 	Com_IpduGroupStart(ComPduGroup, false);
 	CanIf_SetControllerMode(CANIF_CONTROLLER_ID_CAN0, CANIF_CS_STARTED);
+
+	// Makes the inital value on the bus be correct
+	SetEvent(TASK_ID_ComReceiveTask, EVENT_MASK_FreqReciveEvent);
 }
 
 // Task that changes the frequency of the LED when a new
