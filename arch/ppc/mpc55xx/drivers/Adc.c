@@ -592,13 +592,26 @@ void Adc_Group0ConversionComplete (void)
     if(ADC_CONV_MODE_ONESHOT == AdcConfigPtr->groupConfigPtr[s_CurrGroupId].conversionMode)
     {
     	adcGroup.status->groupStatus = ADC_STREAM_COMPLETED;
+    	  /* Call notification if enabled. */
+    	#if (ADC_GRP_NOTIF_CAPABILITY == STD_ON)
+		if (adcGroup.status->notifictionEnable && adcGroup.groupCallback != NULL)
+		{
+		  adcGroup.groupCallback();
+		}
+    	#endif
     }
     else
     {
       if(ADC_ACCESS_MODE_SINGLE == adcGroup.accessMode )
       {
     	  adcGroup.status->groupStatus = ADC_STREAM_COMPLETED;
-
+    	  /* Call notification if enabled. */
+    	#if (ADC_GRP_NOTIF_CAPABILITY == STD_ON)
+    	  if (adcGroup.status->notifictionEnable && adcGroup.groupCallback != NULL)
+    	  {
+    		  adcGroup.groupCallback();
+    	  }
+    	#endif
         /* Disable trigger normal conversions for ADC0 */
         ADC_0.MCR.B.NSTART = 0;
       }
@@ -619,8 +632,14 @@ void Adc_Group0ConversionComplete (void)
             else
             {
               /* Sample completed. */
-            	adcGroup.status->groupStatus = ADC_STREAM_COMPLETED;
+              adcGroup.status->groupStatus = ADC_STREAM_COMPLETED;
 
+              /* Call notification if enabled. */
+            #if (ADC_GRP_NOTIF_CAPABILITY == STD_ON)
+              if (adcGroup.status->notifictionEnable && adcGroup.groupCallback != NULL){
+            	adcGroup.groupCallback();
+              }
+            #endif
               /* Disable ECH interrupt */
               ADC_0.IMR.B.MSKECH = 0;
 
@@ -656,7 +675,13 @@ void Adc_Group0ConversionComplete (void)
             {
               /* Sample completed. */
               adcGroup.status->groupStatus = ADC_STREAM_COMPLETED;
-
+              /* Call notification if enabled. */
+            #if (ADC_GRP_NOTIF_CAPABILITY == STD_ON)
+              if (adcGroup.status->notifictionEnable && adcGroup.groupCallback != NULL)
+              {
+            	  adcGroup.groupCallback();
+              }
+            #endif
               s_CurrSampleCount = 0;
 
 #ifndef DONT_USE_DMA_IN_ADC_MPC5606S
@@ -676,14 +701,6 @@ void Adc_Group0ConversionComplete (void)
         }
       }
     }
-
-  /* Call notification if enabled. */
-#if (ADC_GRP_NOTIF_CAPABILITY == STD_ON)
-  if (adcGroup.status->notifictionEnable && adcGroup.groupCallback != NULL)
-  {
-	  adcGroup.groupCallback();
-  }
-#endif
 }
 
 void Adc_WatchdogError (void)
