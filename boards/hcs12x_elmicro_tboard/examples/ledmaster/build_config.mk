@@ -1,4 +1,4 @@
-
+include $(CURDIR)/../config/EcuM.mk
 
 #CFG+=VLE
 MOD_USE+= DET ECUM MCU KERNEL RAMLOG

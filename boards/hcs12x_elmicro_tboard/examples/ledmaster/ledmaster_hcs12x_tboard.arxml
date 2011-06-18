@@ -24,13 +24,12 @@
             <MODULE-REF DEST="MODULE-CONFIGURATION">/ledmaster_hcs12x_tboard/Pwm</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/ledmaster_hcs12x_tboard/Dio</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/ledmaster_hcs12x_tboard/Port</MODULE-REF>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/ledmaster_hcs12x_tboard/Adc</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/ledmaster_hcs12x_tboard/Os</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/ledmaster_hcs12x_tboard/EcuM</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/ledmaster_hcs12x_tboard/EcuC</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/ledmaster_hcs12x_tboard/Can</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/ledmaster_hcs12x_tboard/CanIf</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/ledmaster_hcs12x_tboard/Com</MODULE-REF>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/ledmaster_hcs12x_tboard/EcuC</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/ledmaster_hcs12x_tboard/PduR</MODULE-REF>
           </MODULE-REFS>
         </ECU-CONFIGURATION>
@@ -203,6 +202,11 @@
               <SUB-CONTAINERS>
                 <CONTAINER UUID="0d1ebc17-ef4d-4193-a492-7d8291ed2dca">
                   <SHORT-NAME>GreenLED</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel</DEFINITION-REF>
                   <PARAMETER-VALUES>
                     <BOOLEAN-VALUE>
@@ -224,48 +228,6 @@
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel/PwmDutycycleDefault</DEFINITION-REF>
                       <VALUE>4096</VALUE>
-                    </INTEGER-VALUE>
-                    <ENUMERATION-VALUE>
-                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel/PwmIdleState</DEFINITION-REF>
-                      <VALUE>PWM_LOW</VALUE>
-                    </ENUMERATION-VALUE>
-                    <FUNCTION-NAME-VALUE>
-                      <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel/PwmNotification</DEFINITION-REF>
-                      <VALUE />
-                    </FUNCTION-NAME-VALUE>
-                    <FLOAT-VALUE>
-                      <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel/PwmPeriodDefault</DEFINITION-REF>
-                      <VALUE>188.0</VALUE>
-                    </FLOAT-VALUE>
-                    <ENUMERATION-VALUE>
-                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel/PwmPolarity</DEFINITION-REF>
-                      <VALUE>POLARITY_NORMAL</VALUE>
-                    </ENUMERATION-VALUE>
-                  </PARAMETER-VALUES>
-                </CONTAINER>
-                <CONTAINER UUID="a05dbf4b-56e8-4e6b-8139-4864371f67c2">
-                  <SHORT-NAME>RedLED</SHORT-NAME>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel</DEFINITION-REF>
-                  <PARAMETER-VALUES>
-                    <BOOLEAN-VALUE>
-                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel/ArcPwmCenterAlign</DEFINITION-REF>
-                      <VALUE>false</VALUE>
-                    </BOOLEAN-VALUE>
-                    <BOOLEAN-VALUE>
-                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel/ArcPwmScaledClockEnable</DEFINITION-REF>
-                      <VALUE>true</VALUE>
-                    </BOOLEAN-VALUE>
-                    <ENUMERATION-VALUE>
-                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel/PwmChannelClass</DEFINITION-REF>
-                      <VALUE>PWM_VARIABLE_PERIOD</VALUE>
-                    </ENUMERATION-VALUE>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel/PwmChannelId</DEFINITION-REF>
-                      <VALUE>0</VALUE>
-                    </INTEGER-VALUE>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel/PwmDutycycleDefault</DEFINITION-REF>
-                      <VALUE>24576</VALUE>
                     </INTEGER-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Pwm/PwmChannelConfigSet/PwmChannel/PwmIdleState</DEFINITION-REF>
@@ -509,6 +471,11 @@
             </CONTAINER>
             <CONTAINER UUID="c1093841-bee5-4737-aa88-b314fe6464f8">
               <SHORT-NAME>LEDBar</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                </SDGS>
+              </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Dio/DioPort</DEFINITION-REF>
               <PARAMETER-VALUES>
                 <INTEGER-VALUE>
@@ -658,6 +625,42 @@
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Dio/DioPort/DioChannel/DioChannelId</DEFINITION-REF>
                       <VALUE>74</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+            <CONTAINER UUID="8cda9fe5-c6db-46d8-adc5-3c5ea5158cdc">
+              <SHORT-NAME>PWMPort</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                </SDGS>
+              </ADMIN-DATA>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Dio/DioPort</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Dio/DioPort/DioPortId</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <STRING-VALUE>
+                  <DEFINITION-REF DEST="STRING-PARAM-DEF">/ArcCore/Dio/DioPort/ArcCoreDioPhysicalPort</DEFINITION-REF>
+                  <VALUE>DIO_PORT_P</VALUE>
+                </STRING-VALUE>
+              </PARAMETER-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="cbd96498-bac3-4de5-8c2c-1246c0d273ef">
+                  <SHORT-NAME>RedLED</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Dio/DioPort/DioChannel</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Dio/DioPort/DioChannel/DioChannelId</DEFINITION-REF>
+                      <VALUE>56</VALUE>
                     </INTEGER-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
@@ -1776,6 +1779,11 @@
                   <SUB-CONTAINERS>
                     <CONTAINER UUID="89bf9c10-ceb3-4d60-961c-1051ed4b031d">
                       <SHORT-NAME>PP0</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
                       <PARAMETER-VALUES>
                         <ENUMERATION-VALUE>
@@ -1822,6 +1830,11 @@
                     </CONTAINER>
                     <CONTAINER UUID="182cd6da-fc4c-4b21-8ad3-57e3e8c3568a">
                       <SHORT-NAME>PP1</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
                       <PARAMETER-VALUES>
                         <ENUMERATION-VALUE>
@@ -2182,212 +2195,6 @@
             </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
-        <MODULE-CONFIGURATION UUID="49ca7e73-5773-48d0-9052-e026693e14db">
-          <SHORT-NAME>Adc</SHORT-NAME>
-          <ADMIN-DATA>
-            <SDGS>
-              <SDG />
-              <SDG GID="Arccore::ModuleOptions">
-                <SD GID="GENERATE_AND_VALIDATE">true</SD>
-                <SD GID="ARCCORE_EDITOR_VERSION">2.0.0</SD>
-              </SDG>
-            </SDGS>
-          </ADMIN-DATA>
-          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Adc</DEFINITION-REF>
-          <CONTAINERS>
-            <CONTAINER UUID="7c6487cf-772e-4147-9ff8-983da1c0e10d">
-              <SHORT-NAME>AdcConfigSet</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Adc/AdcConfigSet</DEFINITION-REF>
-              <SUB-CONTAINERS>
-                <CONTAINER UUID="a5769895-426a-4730-a0f7-3a2d98ed70fa">
-                  <SHORT-NAME>ADCUnit</SHORT-NAME>
-                  <ADMIN-DATA>
-                    <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
-                    </SDGS>
-                  </ADMIN-DATA>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit</DEFINITION-REF>
-                  <PARAMETER-VALUES>
-                    <ENUMERATION-VALUE>
-                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/ArcAdcResolution</DEFINITION-REF>
-                      <VALUE>8_BIT</VALUE>
-                    </ENUMERATION-VALUE>
-                    <ENUMERATION-VALUE>
-                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/ArcAdcConvTime</DEFINITION-REF>
-                      <VALUE>8_CLOCKS</VALUE>
-                    </ENUMERATION-VALUE>
-                    <ENUMERATION-VALUE>
-                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/ArcAdcPrescaleDivideFactor</DEFINITION-REF>
-                      <VALUE>6</VALUE>
-                    </ENUMERATION-VALUE>
-                  </PARAMETER-VALUES>
-                  <SUB-CONTAINERS>
-                    <CONTAINER UUID="b83744a9-e502-487e-ad45-c8cc031b694c">
-                      <SHORT-NAME>PAD02</SHORT-NAME>
-                      <ADMIN-DATA>
-                        <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
-                        </SDGS>
-                      </ADMIN-DATA>
-                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcChannel</DEFINITION-REF>
-                      <PARAMETER-VALUES>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcChannel/AdcChannelConvTime</DEFINITION-REF>
-                          <VALUE>0</VALUE>
-                        </INTEGER-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcChannel/ArcAdcChannelId</DEFINITION-REF>
-                          <VALUE>ADC_CH2</VALUE>
-                        </ENUMERATION-VALUE>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcChannel/AdcChannelRefVoltsrcHigh</DEFINITION-REF>
-                          <VALUE>0</VALUE>
-                        </INTEGER-VALUE>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcChannel/AdcChannelRefVoltsrcLow</DEFINITION-REF>
-                          <VALUE>0</VALUE>
-                        </INTEGER-VALUE>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcChannel/AdcChannelResolution</DEFINITION-REF>
-                          <VALUE>0</VALUE>
-                        </INTEGER-VALUE>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcChannel/AdcChannelSampTime</DEFINITION-REF>
-                          <VALUE>0</VALUE>
-                        </INTEGER-VALUE>
-                      </PARAMETER-VALUES>
-                    </CONTAINER>
-                    <CONTAINER UUID="d898a490-c9de-4403-804e-7ac0ee538b3a">
-                      <SHORT-NAME>ADCGroup1</SHORT-NAME>
-                      <ADMIN-DATA>
-                        <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
-                        </SDGS>
-                      </ADMIN-DATA>
-                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcGroup</DEFINITION-REF>
-                      <PARAMETER-VALUES>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcGroup/AdcGroupAccessMode</DEFINITION-REF>
-                          <VALUE />
-                        </ENUMERATION-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcGroup/AdcGroupConversionMode</DEFINITION-REF>
-                          <VALUE>ADC_CONV_MODE_CONTINUOUS</VALUE>
-                        </ENUMERATION-VALUE>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcGroup/AdcGroupId</DEFINITION-REF>
-                          <VALUE>0</VALUE>
-                        </INTEGER-VALUE>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcGroup/AdcGroupPriority</DEFINITION-REF>
-                          <VALUE>0</VALUE>
-                        </INTEGER-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcGroup/AdcGroupReplacement</DEFINITION-REF>
-                          <VALUE />
-                        </ENUMERATION-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcGroup/AdcGroupTriggSrc</DEFINITION-REF>
-                          <VALUE>ADC_TRIGG_SRC_SW</VALUE>
-                        </ENUMERATION-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcGroup/AdcHwTrigSignal</DEFINITION-REF>
-                          <VALUE />
-                        </ENUMERATION-VALUE>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcGroup/AdcHwTrigTimer</DEFINITION-REF>
-                          <VALUE>0</VALUE>
-                        </INTEGER-VALUE>
-                        <FUNCTION-NAME-VALUE>
-                          <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcGroup/AdcNotification</DEFINITION-REF>
-                          <VALUE />
-                        </FUNCTION-NAME-VALUE>
-                        <LINKER-SYMBOL-VALUE>
-                          <DEFINITION-REF DEST="LINKER-SYMBOL-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcGroup/AdcResultBufferPointer</DEFINITION-REF>
-                          <VALUE />
-                        </LINKER-SYMBOL-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcGroup/AdcStreamingBufferMode</DEFINITION-REF>
-                          <VALUE />
-                        </ENUMERATION-VALUE>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcGroup/AdcStreamingNumSamples</DEFINITION-REF>
-                          <VALUE>1</VALUE>
-                        </INTEGER-VALUE>
-                      </PARAMETER-VALUES>
-                      <REFERENCE-VALUES>
-                        <REFERENCE-VALUE>
-                          <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Adc/AdcConfigSet/AdcHwUnit/AdcGroup/AdcGroupDefinition</DEFINITION-REF>
-                          <VALUE-REF DEST="CONTAINER">/ledmaster_hcs12x_tboard/Adc/AdcConfigSet/ADCUnit/PAD02</VALUE-REF>
-                        </REFERENCE-VALUE>
-                      </REFERENCE-VALUES>
-                    </CONTAINER>
-                  </SUB-CONTAINERS>
-                </CONTAINER>
-              </SUB-CONTAINERS>
-            </CONTAINER>
-            <CONTAINER UUID="ebdb5da1-a62b-4375-b654-165fa88ae2a0">
-              <SHORT-NAME>AdcGeneral</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Adc/AdcGeneral</DEFINITION-REF>
-              <PARAMETER-VALUES>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Adc/AdcGeneral/AdcDeInitApi</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Adc/AdcGeneral/AdcDevErrorDetect</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Adc/AdcGeneral/AdcEnableQueuing</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Adc/AdcGeneral/AdcEnableStartStopGroupApi</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Adc/AdcGeneral/AdcGrpNotifCapability</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Adc/AdcGeneral/AdcHwTriggerApi</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-                <ENUMERATION-VALUE>
-                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Adc/AdcGeneral/AdcPriorityImplementation</DEFINITION-REF>
-                  <VALUE />
-                </ENUMERATION-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Adc/AdcGeneral/AdcReadGroupApi</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Adc/AdcGeneral/AdcVersionInfoApi</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-              </PARAMETER-VALUES>
-            </CONTAINER>
-            <CONTAINER UUID="3c1258d8-4c34-4a9c-89c3-9eb67e1d84cb">
-              <SHORT-NAME>AdcPublishedInformation</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Adc/AdcPublishedInformation</DEFINITION-REF>
-              <PARAMETER-VALUES>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Adc/AdcPublishedInformation/AdcChannelValueSigned</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Adc/AdcPublishedInformation/AdcGroupFirstChannelFixed</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Adc/AdcPublishedInformation/AdcMaxChannelResolution</DEFINITION-REF>
-                  <VALUE>0</VALUE>
-                </INTEGER-VALUE>
-              </PARAMETER-VALUES>
-            </CONTAINER>
-          </CONTAINERS>
-        </MODULE-CONFIGURATION>
         <MODULE-CONFIGURATION UUID="d3807b15-d838-41b3-84b7-a1e27277fb63">
           <SHORT-NAME>Os</SHORT-NAME>
           <ADMIN-DATA>
@@ -2427,7 +2234,7 @@
                 </BOOLEAN-VALUE>
                 <INTEGER-VALUE>
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsOS/OsTickFrequency</DEFINITION-REF>
-                  <VALUE>100</VALUE>
+                  <VALUE>1000</VALUE>
                 </INTEGER-VALUE>
                 <INTEGER-VALUE>
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsOS/OsInterruptStackSize</DEFINITION-REF>
@@ -2542,6 +2349,22 @@
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppTaskRef</DEFINITION-REF>
                   <VALUE-REF DEST="CONTAINER">/ledmaster_hcs12x_tboard/Os/DipTask</VALUE-REF>
                 </REFERENCE-VALUE>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppTaskRef</DEFINITION-REF>
+                  <VALUE-REF DEST="CONTAINER">/ledmaster_hcs12x_tboard/Os/StartTask</VALUE-REF>
+                </REFERENCE-VALUE>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppTaskRef</DEFINITION-REF>
+                  <VALUE-REF DEST="CONTAINER">/ledmaster_hcs12x_tboard/Os/ComTask</VALUE-REF>
+                </REFERENCE-VALUE>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppTaskRef</DEFINITION-REF>
+                  <VALUE-REF DEST="CONTAINER">/ledmaster_hcs12x_tboard/Os/ComReceiveTask</VALUE-REF>
+                </REFERENCE-VALUE>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppAlarmRef</DEFINITION-REF>
+                  <VALUE-REF DEST="CONTAINER">/ledmaster_hcs12x_tboard/Os/ComAlarm</VALUE-REF>
+                </REFERENCE-VALUE>
               </REFERENCE-VALUES>
               <SUB-CONTAINERS>
                 <CONTAINER UUID="57801a6e-fa4c-4c50-8225-ecae7cf80c70">
@@ -2630,7 +2453,7 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask/OsAlarmActivateTaskRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/ledmaster_hcs12x_tboard/Os/DipTask</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/ledmaster_hcs12x_tboard/Os/LedTask</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
@@ -2675,7 +2498,7 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask/OsAlarmActivateTaskRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/ledmaster_hcs12x_tboard/Os/LedTask</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/ledmaster_hcs12x_tboard/Os/DipTask</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
@@ -2743,6 +2566,181 @@
                 </ENUMERATION-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
+            <CONTAINER UUID="5b71185b-cfb1-4474-8da0-f6736ea10596">
+              <SHORT-NAME>StartTask</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                </SDGS>
+              </ADMIN-DATA>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskActivation</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskPriority</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskProcessType</DEFINITION-REF>
+                  <VALUE>BASIC</VALUE>
+                </ENUMERATION-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/ArcCoreOsTaskStackSize</DEFINITION-REF>
+                  <VALUE>512</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskSchedule</DEFINITION-REF>
+                  <VALUE>FULL</VALUE>
+                </ENUMERATION-VALUE>
+              </PARAMETER-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="38232a84-4fae-4894-ae23-56aea910c65a">
+                  <SHORT-NAME>OsTaskAutostart</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask/OsTaskAutostart</DEFINITION-REF>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+            <CONTAINER UUID="d97091cf-059f-40de-b0df-d4b0fe53ae81">
+              <SHORT-NAME>FreqReciveEvent</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                </SDGS>
+              </ADMIN-DATA>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsEvent</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsEvent/ArcOsEventId</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsEvent/ArcOsEventAutoMask</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="74e73423-ad86-431e-88a8-68b113c68106">
+              <SHORT-NAME>ComTask</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                </SDGS>
+              </ADMIN-DATA>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskActivation</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskPriority</DEFINITION-REF>
+                  <VALUE>4</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskProcessType</DEFINITION-REF>
+                  <VALUE>BASIC</VALUE>
+                </ENUMERATION-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/ArcCoreOsTaskStackSize</DEFINITION-REF>
+                  <VALUE>512</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskSchedule</DEFINITION-REF>
+                  <VALUE>FULL</VALUE>
+                </ENUMERATION-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="4339b7bb-921e-451f-8ee3-9dc257ea60b7">
+              <SHORT-NAME>ComReceiveTask</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                </SDGS>
+              </ADMIN-DATA>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskActivation</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskPriority</DEFINITION-REF>
+                  <VALUE>5</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskProcessType</DEFINITION-REF>
+                  <VALUE>EXTENDED</VALUE>
+                </ENUMERATION-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/ArcCoreOsTaskStackSize</DEFINITION-REF>
+                  <VALUE>512</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskSchedule</DEFINITION-REF>
+                  <VALUE>FULL</VALUE>
+                </ENUMERATION-VALUE>
+              </PARAMETER-VALUES>
+              <REFERENCE-VALUES>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskEventRef</DEFINITION-REF>
+                  <VALUE-REF DEST="CONTAINER">/ledmaster_hcs12x_tboard/Os/FreqReciveEvent</VALUE-REF>
+                </REFERENCE-VALUE>
+              </REFERENCE-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="18395a97-5a27-4e37-a3e0-c3aa90667496">
+                  <SHORT-NAME>OsTaskAutostart</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask/OsTaskAutostart</DEFINITION-REF>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+            <CONTAINER UUID="224a4469-b0d0-4656-bd91-6e71ea13e75f">
+              <SHORT-NAME>ComAlarm</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                </SDGS>
+              </ADMIN-DATA>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm</DEFINITION-REF>
+              <REFERENCE-VALUES>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmCounterRef</DEFINITION-REF>
+                  <VALUE-REF DEST="CONTAINER">/ledmaster_hcs12x_tboard/Os/MainCounter</VALUE-REF>
+                </REFERENCE-VALUE>
+              </REFERENCE-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="3ee68922-5819-4f7a-a858-47e10e179536">
+                  <SHORT-NAME>OsAlarmAutostart</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmAlarmTime</DEFINITION-REF>
+                      <VALUE>50</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmAutostartType</DEFINITION-REF>
+                      <VALUE>ABSOLUTE</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmCycleTime</DEFINITION-REF>
+                      <VALUE>100</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="557e62c6-b291-4783-aba2-50aa549e7e88">
+                  <SHORT-NAME>OsAlarmActivateTask</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask</DEFINITION-REF>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask/OsAlarmActivateTaskRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/ledmaster_hcs12x_tboard/Os/ComTask</VALUE-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
         <MODULE-CONFIGURATION UUID="672d5045-b7bb-407e-990a-9fd585890afc">
@@ -2801,6 +2799,57 @@
                 <CONTAINER UUID="4650b9cf-2107-4671-9678-b985a64a94fd">
                   <SHORT-NAME>User_1</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMUserConfig</DEFINITION-REF>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+          </CONTAINERS>
+        </MODULE-CONFIGURATION>
+        <MODULE-CONFIGURATION UUID="45a78ecc-5afb-437c-afcd-381d763d6838">
+          <SHORT-NAME>EcuC</SHORT-NAME>
+          <ADMIN-DATA>
+            <SDGS>
+              <SDG />
+              <SDG GID="Arccore::ModuleOptions">
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.0.0</SD>
+              </SDG>
+            </SDGS>
+          </ADMIN-DATA>
+          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/EcuC</DEFINITION-REF>
+          <CONTAINERS>
+            <CONTAINER UUID="8362a113-e05e-470e-9582-235655bda77e">
+              <SHORT-NAME>PduCollection</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuC/PduCollection</DEFINITION-REF>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="8a860b15-807d-4d3f-8e3c-3c5a0960cb58">
+                  <SHORT-NAME>FreqReq</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuC/PduCollection/Pdu</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/EcuC/PduCollection/Pdu/PduLength</DEFINITION-REF>
+                      <VALUE>64</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="cd22c1ab-ae24-4838-a8c5-a0246cdf84b4">
+                  <SHORT-NAME>FreqInd</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuC/PduCollection/Pdu</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/EcuC/PduCollection/Pdu/PduLength</DEFINITION-REF>
+                      <VALUE>64</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
                 </CONTAINER>
               </SUB-CONTAINERS>
             </CONTAINER>
@@ -3172,7 +3221,7 @@
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfRxPduConfig/PduIdRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/blinker_hcs12_card12/EcuC/PduCollection/FreqReq</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/ledmaster_hcs12x_tboard/EcuC/PduCollection/FreqReq</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
@@ -3225,7 +3274,7 @@
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfTxPduConfig/PduIdRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/blinker_hcs12_card12/EcuC/PduCollection/FreqInd</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/ledmaster_hcs12x_tboard/EcuC/PduCollection/FreqInd</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
@@ -3389,7 +3438,7 @@
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/PduIdRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/blinker_hcs12_card12/EcuC/PduCollection/FreqReq</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/ledmaster_hcs12x_tboard/EcuC/PduCollection/FreqReq</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduSignalRef</DEFINITION-REF>
@@ -3480,7 +3529,7 @@
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/PduIdRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/blinker_hcs12_card12/EcuC/PduCollection/FreqInd</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/ledmaster_hcs12x_tboard/EcuC/PduCollection/FreqInd</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduSignalRef</DEFINITION-REF>
@@ -3569,7 +3618,7 @@
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalEndianess</DEFINITION-REF>
-                      <VALUE>LITTLE_ENDIAN</VALUE>
+                      <VALUE>BIG_ENDIAN</VALUE>
                     </ENUMERATION-VALUE>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalInitValue</DEFINITION-REF>
@@ -3628,7 +3677,7 @@
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalEndianess</DEFINITION-REF>
-                      <VALUE>LITTLE_ENDIAN</VALUE>
+                      <VALUE>BIG_ENDIAN</VALUE>
                     </ENUMERATION-VALUE>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalInitValue</DEFINITION-REF>
@@ -3674,58 +3723,7 @@
             </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
-        <MODULE-CONFIGURATION UUID="45a78ecc-5afb-437c-afcd-381d763d6838">
-          <SHORT-NAME>EcuC</SHORT-NAME>
-          <ADMIN-DATA>
-            <SDGS>
-              <SDG />
-              <SDG GID="Arccore::ModuleOptions">
-                <SD GID="GENERATE_AND_VALIDATE">true</SD>
-                <SD GID="ARCCORE_EDITOR_VERSION">2.0.0</SD>
-              </SDG>
-            </SDGS>
-          </ADMIN-DATA>
-          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/EcuC</DEFINITION-REF>
-          <CONTAINERS>
-            <CONTAINER UUID="8362a113-e05e-470e-9582-235655bda77e">
-              <SHORT-NAME>PduCollection</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuC/PduCollection</DEFINITION-REF>
-              <SUB-CONTAINERS>
-                <CONTAINER UUID="8a860b15-807d-4d3f-8e3c-3c5a0960cb58">
-                  <SHORT-NAME>FreqReq</SHORT-NAME>
-                  <ADMIN-DATA>
-                    <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
-                    </SDGS>
-                  </ADMIN-DATA>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuC/PduCollection/Pdu</DEFINITION-REF>
-                  <PARAMETER-VALUES>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/EcuC/PduCollection/Pdu/PduLength</DEFINITION-REF>
-                      <VALUE>64</VALUE>
-                    </INTEGER-VALUE>
-                  </PARAMETER-VALUES>
-                </CONTAINER>
-                <CONTAINER UUID="cd22c1ab-ae24-4838-a8c5-a0246cdf84b4">
-                  <SHORT-NAME>FreqInd</SHORT-NAME>
-                  <ADMIN-DATA>
-                    <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
-                    </SDGS>
-                  </ADMIN-DATA>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuC/PduCollection/Pdu</DEFINITION-REF>
-                  <PARAMETER-VALUES>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/EcuC/PduCollection/Pdu/PduLength</DEFINITION-REF>
-                      <VALUE>64</VALUE>
-                    </INTEGER-VALUE>
-                  </PARAMETER-VALUES>
-                </CONTAINER>
-              </SUB-CONTAINERS>
-            </CONTAINER>
-          </CONTAINERS>
-        </MODULE-CONFIGURATION>
-        <MODULE-CONFIGURATION UUID="adaee502-109e-4213-8031-21d4c56a2ca2">
+        <MODULE-CONFIGURATION UUID="cb894de5-428e-4eec-a9a0-4d3790984e55">
           <SHORT-NAME>PduR</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
@@ -3738,7 +3736,7 @@
           </ADMIN-DATA>
           <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/PduR</DEFINITION-REF>
           <CONTAINERS>
-            <CONTAINER UUID="ec542e97-58da-44f8-8559-0a51dca55ca9">
+            <CONTAINER UUID="de12683e-d241-40e5-9930-a20e62eacfeb">
               <SHORT-NAME>PduRGeneral</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/PduR/PduRGeneral</DEFINITION-REF>
               <PARAMETER-VALUES>
@@ -3860,7 +3858,7 @@
                 </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
-            <CONTAINER UUID="7167b770-3459-48ec-bcea-4696e8802aec">
+            <CONTAINER UUID="05eb3799-a846-48c7-9c63-b7548de48a6f">
               <SHORT-NAME>PduRGlobalConfig</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/PduR/PduRGlobalConfig</DEFINITION-REF>
               <PARAMETER-VALUES>
@@ -3870,11 +3868,11 @@
                 </INTEGER-VALUE>
               </PARAMETER-VALUES>
               <SUB-CONTAINERS>
-                <CONTAINER UUID="e7eb3722-30f8-4320-ab2d-cf1a43ae2902">
+                <CONTAINER UUID="58c170a0-528a-42fe-9a7c-193cba85eb41">
                   <SHORT-NAME>PduRRoutingTable</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable</DEFINITION-REF>
                 </CONTAINER>
-                <CONTAINER UUID="1c668a0d-185e-485e-87f4-7acb3be316f3">
+                <CONTAINER UUID="6397e153-0352-4c2e-9b3b-ab74bfcae179">
                   <SHORT-NAME>PduRTpBufferTable</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRTpBufferTable</DEFINITION-REF>
                   <PARAMETER-VALUES>
@@ -3890,10 +3888,10 @@
         </MODULE-CONFIGURATION>
       </ELEMENTS>
       <SUB-PACKAGES>
-        <AR-PACKAGE UUID="f94de63e-87b3-45be-8710-0ceb02b56259">
+        <AR-PACKAGE UUID="3ee55bc9-1d64-4c83-9c19-7243e284be1a">
           <SHORT-NAME>GeneratedSystemSignals</SHORT-NAME>
           <ELEMENTS>
-            <SYSTEM-SIGNAL UUID="ba069dfc-0fe1-4544-b76f-51c19be140f9">
+            <SYSTEM-SIGNAL UUID="849b909e-627d-44c4-98a0-e7ebede30dec">
               <SHORT-NAME>FreqIndSig</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
@@ -3905,7 +3903,7 @@
               <INIT-VALUE-REF DEST="INTEGER-LITERAL">/ledmaster_hcs12x_tboard/GeneratedSystemSignals/Data/IntegerLiterals/FreqIndSigInitValue/FreqIndSigInitValueLiteral</INIT-VALUE-REF>
               <LENGTH>32</LENGTH>
             </SYSTEM-SIGNAL>
-            <SYSTEM-SIGNAL UUID="4b45bf98-35d5-4e05-9e0d-72adddc535e7">
+            <SYSTEM-SIGNAL UUID="9486d72e-c029-42b2-86a5-f18bc9585ba1">
               <SHORT-NAME>FreqReqSig</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
@@ -3966,7 +3964,7 @@
                     <CONSTANT-SPECIFICATION>
                       <SHORT-NAME>FreqIndSigInitValue</SHORT-NAME>
                       <VALUE>
-                        <INTEGER-LITERAL UUID="2c705e76-ec84-42de-a60b-92f231c8b54c">
+                        <INTEGER-LITERAL UUID="e6ae50b6-d0ce-49d3-9fa3-8d8083763d83">
                           <SHORT-NAME>FreqIndSigInitValueLiteral</SHORT-NAME>
                           <VALUE>0</VALUE>
                         </INTEGER-LITERAL>
@@ -3975,7 +3973,7 @@
                     <CONSTANT-SPECIFICATION>
                       <SHORT-NAME>FreqReqSigInitValue</SHORT-NAME>
                       <VALUE>
-                        <INTEGER-LITERAL UUID="4d1f9523-9c46-4652-8d7c-c2e868f68ab1">
+                        <INTEGER-LITERAL UUID="05cede51-b0a6-4b74-93e2-fbb794eb0208">
                           <SHORT-NAME>FreqReqSigInitValueLiteral</SHORT-NAME>
                           <VALUE>1000</VALUE>
                         </INTEGER-LITERAL>

@@ -9,4 +9,4 @@ The DIP switches on the board are used to set the LEDs in the
 LEDBar.
 
 The adjusteable resistor is used to set the intensity of the
-LED.
+Green LED.

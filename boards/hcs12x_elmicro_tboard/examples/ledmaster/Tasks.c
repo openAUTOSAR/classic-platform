@@ -14,22 +14,84 @@
 */
 
 #include "Os.h"
+#include "EcuM.h"
+#include "Dio.h"
+#include "Pwm.h"
+#include "Com.h"
+#include "CanIf.h"
 
 // #define USE_LDEBUG_PRINTF // Uncomment this to turn debug statements on.
 #include "debug.h"
 
+// Callback when the FreqReq PDU has arrived on COM
+boolean IncommingFreqReq(PduIdType PduId, const uint8 *IPduData)
+{
+	SetEvent(TASK_ID_ComReceiveTask, EVENT_MASK_FreqReciveEvent);
+
+	return true;
+}
 
 // Tasks
+static uint16 y = 0;
 void DipTask( void ) {
+	uint16 value = Dio_ReadPort(DIO_PORT_NAME_DipSwitch);
+	Dio_WritePort(DIO_PORT_NAME_LEDBar, value);
+
+	Pwm_SetDutyCycle(GREENLED, y);
+	y = y + 0xF00;
+	if (y > 0x8000)
+		y = 0;
 
 	TerminateTask();
 }
 
+// Call second stage of startup.
+void StartTask()
+{
+	EcuM_StartupTwo();
+
+	Com_IpduGroupStart(ComPduGroup, false);
+	CanIf_SetControllerMode(CANIF_CONTROLLER_ID_CAN0, CANIF_CS_STARTED);
+
+	// Makes the inital value on the bus be correct
+	SetEvent(TASK_ID_ComReceiveTask, EVENT_MASK_FreqReciveEvent);
+}
+
+// Task that toggles the LED
+Dio_LevelType level = 1;
 void LedTask( void ) {
+	level = !level;
+	Dio_WriteChannel(DIO_CHANNEL_NAME_RedLED, level);
+	TerminateTask();
+}
+
+// Simple task that drives the COM stack.
+void ComTask( void ) {
+	Com_MainFunctionRx();
+	Com_MainFunctionTx();
 
 	TerminateTask();
 }
 
+// Task that changes the frequency of the LED when a new
+// request is recieved from COM
+void ComReceiveTask( void )
+{
+	uint32 freqreq;
+
+	for(;;)
+	{
+		WaitEvent(EVENT_MASK_FreqReciveEvent);
+		ClearEvent(EVENT_MASK_FreqReciveEvent);
+
+		Com_ReceiveSignal(FreqReqSig, &freqreq);
+
+		CancelAlarm(ALARM_ID_LedAlarm);
+		SetRelAlarm(ALARM_ID_LedAlarm, 1, freqreq);
+
+		Com_SendSignal(FreqIndSig, &freqreq);
+	}
+}
 
 void OsIdle( void ) {
 	while(1);
