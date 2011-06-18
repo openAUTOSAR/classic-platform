@@ -225,11 +225,12 @@ static Std_ReturnType Adc_CheckDeInit (void);
 static Std_ReturnType Adc_CheckSetupResultBuffer (Adc_GroupType group);
 
 
-/* isoft - static variable declarations */
+/* static variable declarations */
 static Adc_StateType adcState = ADC_UNINIT;
 static const Adc_ConfigType *AdcConfigPtr;      /* Pointer to configuration structure. */
 static Adc_GroupType s_CurrGroupId;       /* current group Id */
 static Adc_StreamNumSampleType s_CurrSampleCount = 0;   /* Streaming sample counter of current group */
+static Adc_ValueGroupType *currResultBufPtr = 0;   /* Streaming sample current buffer pointer */
 static uint32_t loopCnt = 0;
 
 
@@ -516,17 +517,17 @@ Std_ReturnType Adc_ReadGroup (Adc_GroupType group, Adc_ValueGroupType *dataBuffe
   {
     if(ADC_CONV_MODE_ONESHOT == AdcConfigPtr->groupConfigPtr[s_CurrGroupId].conversionMode)
     {
-      dataBufferPtr[channel] = (uint16)(AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr[channel]);
+      dataBufferPtr[channel] = currResultBufPtr[channel];
     }
     else
     {
       if(ADC_ACCESS_MODE_SINGLE == AdcConfigPtr->groupConfigPtr[s_CurrGroupId].accessMode )
       {
-        dataBufferPtr[channel] = (uint16)(AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr[channel]);
+        dataBufferPtr[channel] = currResultBufPtr[channel];
       }
       else
       {
-        Adc_ValueGroupType *lastSamplePointer = AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr;
+        Adc_ValueGroupType *lastSamplePointer = currResultBufPtr;
         lastSamplePointer += (AdcConfigPtr->groupConfigPtr[group].numberOfChannels) * (s_CurrSampleCount % AdcConfigPtr->groupConfigPtr[group].streamNumSamples);
         dataBufferPtr[channel] = lastSamplePointer[channel];
 	    }
@@ -584,7 +585,7 @@ void Adc_Group0ConversionComplete (void)
 	/* Copy to result buffer */
 	for(uint8 index=0; index < adcGroup.numberOfChannels; index++)
 	{
-		adcGroup.status->resultBufferPtr[index] = ADC_0.CDR[32+adcGroup.channelList[index]].B.CDATA;
+		currResultBufPtr[index] = ADC_0.CDR[32+adcGroup.channelList[index]].B.CDATA;
 	}
 #endif
  
@@ -609,7 +610,7 @@ void Adc_Group0ConversionComplete (void)
             if(s_CurrSampleCount < adcGroup.streamNumSamples)
             {
 #ifdef DONT_USE_DMA_IN_ADC_MPC5606S
-              adcGroup.status->resultBufferPtr += adcGroup.numberOfChannels;
+            	currResultBufPtr += adcGroup.numberOfChannels;
 #endif
               adcGroup.status->groupStatus = ADC_COMPLETED;
               
@@ -633,33 +634,35 @@ void Adc_Group0ConversionComplete (void)
         else if(ADC_STREAM_BUFFER_CIRCULAR == adcGroup.streamBufferMode)
         {
 #ifdef DONT_USE_DMA_IN_ADC_MPC5606S
-        	  static Adc_ValueGroupType *oldResultBufferPtr = 0;
+        	static Adc_ValueGroupType *oldResultBufferPtr = 0;
             
             if( s_CurrSampleCount == 0) {
-            	oldResultBufferPtr = adcGroup.status->resultBufferPtr;
+            	oldResultBufferPtr = currResultBufPtr;
             }
 #endif
             s_CurrSampleCount++;
             if(s_CurrSampleCount < adcGroup.streamNumSamples)
             {
 #ifdef DONT_USE_DMA_IN_ADC_MPC5606S
-            	adcGroup.status->resultBufferPtr += adcGroup.numberOfChannels;
+            	currResultBufPtr += adcGroup.numberOfChannels;
 #endif
-            	adcGroup.status->groupStatus = ADC_COMPLETED;
+                if( adcGroup.status->groupStatus != ADC_STREAM_COMPLETED){
+                	adcGroup.status->groupStatus = ADC_COMPLETED;
+                }
                 
                 ADC_0.IMR.B.MSKECH = 1;
             }
             else
             {
               /* Sample completed. */
-            	adcGroup.status->groupStatus = ADC_STREAM_COMPLETED;
+              adcGroup.status->groupStatus = ADC_STREAM_COMPLETED;
 
               s_CurrSampleCount = 0;
 
 #ifndef DONT_USE_DMA_IN_ADC_MPC5606S
-              Dma_ConfigureDestinationAddress((uint32_t)adcGroup.status->resultBufferPtr, DMA_ADC_GROUP0_RESULT_CHANNEL);
+              Dma_ConfigureDestinationAddress((uint32_t)currResultBufPtr, DMA_ADC_GROUP0_RESULT_CHANNEL);
 #else
-              adcGroup.status->resultBufferPtr = oldResultBufferPtr;
+              currResultBufPtr = oldResultBufferPtr;
 #endif
               loopCnt++;
 
@@ -919,16 +922,22 @@ void Adc_ConfigureADCInterrupts (void)
 void Adc_StartGroupConversion (Adc_GroupType group)
 {
   uint32 groupChannelIdMask = 0;
-  
-  s_CurrGroupId = group;
-  s_CurrSampleCount = 0;
-  
+    
    /* Run development error check. */
   if (E_OK == Adc_CheckStartGroupConversion (group))
-  {
+  {    	
+    /* Abort conversion, for safety before resetting resultbuffer */
+  	ADC_0.MCR.B.ABORTCHAIN = 1;  
+  	/* Disable trigger normal conversions for ADC0 */
+  	ADC_0.MCR.B.NSTART = 0;
+
+    s_CurrGroupId = group;
+    s_CurrSampleCount = 0;
+
+	  currResultBufPtr = AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr; /* Set current result buffer */
 #ifndef DONT_USE_DMA_IN_ADC_MPC5606S
    	  Dma_ConfigureChannel ((struct tcd_t *)(AdcConfigPtr->groupConfigPtr[group].groupDMAResults), DMA_ADC_GROUP0_RESULT_CHANNEL);
-	  Dma_ConfigureDestinationAddress ((uint32_t)AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr, DMA_ADC_GROUP0_RESULT_CHANNEL);
+	  Dma_ConfigureDestinationAddress ((uint32_t)currResultBufPtr, DMA_ADC_GROUP0_RESULT_CHANNEL);
 #endif
 	  /* Set conversion mode. */
 	  ADC_0.MCR.B.MODE = AdcConfigPtr->groupConfigPtr[group].conversionMode;
