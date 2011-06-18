@@ -121,7 +121,7 @@ vpath-y += $(ROOTDIR)/peripherals
 
 #Wdg
 obj-$(USE_WDG) += Wdg.o
-#obj-$(USE_WDG) += Wdg_Lcfg.o
+obj-$(USE_WDG) += Wdg_Lcfg.o
 
 #WdgIf
 obj-$(USE_WDGIF) += WdgIf.o
