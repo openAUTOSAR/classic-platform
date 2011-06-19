@@ -58,6 +58,17 @@ _redled:
 
 __start:
 _start:
+#if (CFG_MPC5606S)
+	// For now, close down the watchdog.
+	LOAD_ADDR_32(r8,0xFFF38000)
+	LOAD_ADDR_32(r9,0x0000c520)
+	stw		r9,0x10(r8)	
+	LOAD_ADDR_32(r9,0x0000d928)
+	stw		r9,0x10(r8)
+	LOAD_ADDR_32(r9,0x8000010A)
+	stw		r9,0x0(r8)
+#endif	
+	
 	// Set up the reserved registers in EABI: r1,r2 and r13
 
 	// r1, stack pointer

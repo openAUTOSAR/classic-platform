@@ -79,8 +79,8 @@
 
 #if defined(CFG_VLE)
 #define LOAD_IND_32( reg, addr) \
-	lis    reg, addr@ha;     \
-    lwz    reg, addr@l(reg)
+	e_lis    reg, addr@ha;     \
+    e_lwz    reg, addr@l(reg)
 
 #define LOAD_ADDR_32(reg, addr ) \
     e_lis       reg, addr@ha; \
