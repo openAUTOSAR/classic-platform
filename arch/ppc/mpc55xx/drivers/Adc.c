@@ -1411,12 +1411,12 @@ static Std_ReturnType Adc_CheckDeInit (void)
 	Std_ReturnType returnValue = E_OK;
 
 #if ( ADC_DEV_ERROR_DETECT == STD_ON )
-	if(ValidateInit(ADC_STOPGROUPCONVERSION_ID) == E_OK)
+	if(ValidateInit(ADC_DEINIT_ID) == E_OK)
 	{
 		for (Adc_GroupType group = ADC_GROUP0; group < AdcConfigPtr->nbrOfGroups; group++)
 		{
 			/*  Check ADC is IDLE or COMPLETE*/
-			if((AdcConfigPtr->groupConfigPtr[group].status->groupStatus != ADC_IDLE)||(AdcConfigPtr->groupConfigPtr[group].status->groupStatus == ADC_STREAM_COMPLETED))
+			if((AdcConfigPtr->groupConfigPtr[group].status->groupStatus != ADC_IDLE) && (AdcConfigPtr->groupConfigPtr[group].status->groupStatus != ADC_STREAM_COMPLETED))
 			{
 				Det_ReportError(MODULE_ID_ADC,0,ADC_DEINIT_ID, ADC_E_BUSY );
 				returnValue = E_NOT_OK;
@@ -1438,8 +1438,7 @@ static Std_ReturnType Adc_CheckSetupResultBuffer (Adc_GroupType group)
   Std_ReturnType returnValue = E_OK;
 
 #if ( ADC_DEV_ERROR_DETECT == STD_ON )
-  if( (ValidateInit(ADC_SETUPRESULTBUFFER_ID) == E_NOT_OK) ||
-      (ValidateGroup(group, ADC_SETUPRESULTBUFFER_ID) == E_NOT_OK))
+  if(ValidateGroup(group, ADC_SETUPRESULTBUFFER_ID) == E_NOT_OK)
   {
 	  returnValue = E_NOT_OK;
   }
