@@ -26,7 +26,7 @@
 #include "Cpu.h"
 #include "Ramlog.h"
 #include "Os.h"
-#include "irq.h"
+#include "isr.h"
 
 //#define USE_LDEBUG_PRINTF 1
 #include "debug.h"
@@ -116,7 +116,7 @@ static void Mcu_LossOfLock( void  ){
 
 //-------------------------------------------------------------------
 
-static void Mcu_LossOfCLock( void  ){
+static void Mcu_LossOfClock( void  ){
 	/* Should report MCU_E_CLOCK_FAILURE with DEM here */
 #if defined(CFG_MPC5606S)
 	/*not support*/
@@ -296,13 +296,13 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
 #if defined(CFG_MPC5606S)
     	/*not support*/
 #else
-    	Irq_AttachIsr1(Mcu_LossOfLock, NULL, PLL_SYNSR_LOLF,10 );
+    	ISR_INSTALL_ISR1("LossOfLock", Mcu_LossOfLock, PLL_SYNSR_LOLF, 10 , 0 );
 #if defined(CFG_MPC5516)
     	FMPLL.ESYNCR2.B.LOLIRQ = 1;
 #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
     	FMPLL.SYNCR.B.LOLIRQ = 1;
 #endif
-    	Irq_AttachIsr1(Mcu_LossOfCLock, NULL, PLL_SYNSR_LOCF,10 );
+    	ISR_INSTALL_ISR1("LossOfClock", Mcu_LossOfClock, PLL_SYNSR_LOLF, 10 , 0 );
 #if defined(CFG_MPC5516)
     	FMPLL.ESYNCR2.B.LOCIRQ = 1;
 #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
@@ -784,12 +784,4 @@ void McuE_EnableInterrupts(void)
 void McuE_DisableInterrupts(void)
 {
 	Irq_Disable();
-}
-
- void Irq_InstallVector(void (*func)(), IrqType vector, uint8_t priority, Cpu_t cpu ) 
-{ 	
-	(void)cpu;
-  	TaskType tid; 	
-	tid = Os_Arc_CreateIsr(func, priority, "ISR_Default"); 	
-	Irq_AttachIsr2(tid, NULL, vector); 
 }
