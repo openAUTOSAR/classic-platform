@@ -138,7 +138,7 @@ const Adc_CommandType AdcCalibrationCommandQueue [] =
 };
 
 /* DMA configuration for calibration sequence. */
-const struct tcd_t AdcCalibrationDMACommandConfig =
+const Dma_TcdType AdcCalibrationDMACommandConfig =
 {
   .SADDR = (uint32_t)AdcCalibrationCommandQueue,
   .SMOD = 0,
@@ -167,7 +167,7 @@ const struct tcd_t AdcCalibrationDMACommandConfig =
   .START = 0,
 };
 
-const struct tcd_t AdcCalibrationDMAResultConfig =
+const Dma_TcdType AdcCalibrationDMAResultConfig =
 {
   .SADDR = (vint32_t)&EQADC.RFPR[0].R + 2,
   .SMOD = 0,
@@ -449,8 +449,8 @@ Std_ReturnType Adc_Init (const Adc_ConfigType *ConfigPtr)
       /* ADC307. */
       ConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_IDLE;
 
-      Dma_ConfigureChannel ((struct tcd_t *)ConfigPtr->groupConfigPtr [group].groupDMAResults, ConfigPtr->groupConfigPtr [group].dmaResultChannel);
-      Dma_ConfigureChannel ((struct tcd_t *)ConfigPtr->groupConfigPtr [group].groupDMACommands, ConfigPtr->groupConfigPtr [group].dmaCommandChannel);
+      Dma_ConfigureChannel ((Dma_TcdType *)ConfigPtr->groupConfigPtr [group].groupDMAResults, ConfigPtr->groupConfigPtr [group].dmaResultChannel);
+      Dma_ConfigureChannel ((Dma_TcdType *)ConfigPtr->groupConfigPtr [group].groupDMACommands, ConfigPtr->groupConfigPtr [group].dmaCommandChannel);
     }
 
     /* Start DMA channels. */
@@ -502,23 +502,7 @@ Adc_StreamNumSampleType Adc_GetStreamLastPointer(Adc_GroupType group, Adc_ValueG
 	if ( (E_OK == Adc_CheckGetStreamLastPointer (group)) &&
 		 (AdcConfigPtr->groupConfigPtr[group].status->groupStatus != ADC_BUSY) )
 	{
-	    if ((ADC_CONV_MODE_CONTINOUS == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
-	         ((ADC_STREAM_COMPLETED    == AdcConfigPtr->groupConfigPtr[group].status->groupStatus) ||
-	          (ADC_COMPLETED           == AdcConfigPtr->groupConfigPtr[group].status->groupStatus)))
-	    {
-	      /** @req ADC326 */
-	      /** @req ADC328 */
-	      AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_BUSY;
-	    }
-	    else if ((ADC_CONV_MODE_ONESHOT == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
-	             (ADC_STREAM_COMPLETED  == AdcConfigPtr->groupConfigPtr[group].status->groupStatus))
-	    {
-	      /** @req ADC327. */
-	      AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_IDLE;
-	    }
-	    else{/* Keep status. */}
-
-	      /* Copy the result to application buffer. */
+	    /* Copy the result to application buffer. */
 #if defined(CFG_MPC5606S)
 		if(ADC_CONV_MODE_ONESHOT == AdcConfigPtr->groupConfigPtr[group].conversionMode)
 		{
@@ -532,17 +516,50 @@ Adc_StreamNumSampleType Adc_GetStreamLastPointer(Adc_GroupType group, Adc_ValueG
 		  }
 		  else
 		  {
-			Adc_ValueGroupType *lastSamplePointer = currResultBufPtr[currGroupId];
-			lastSamplePointer += (AdcConfigPtr->groupConfigPtr[group].numberOfChannels) * (currSampleCount[group] % AdcConfigPtr->groupConfigPtr[group].streamNumSamples);
-			*PtrToSamplePtr = lastSamplePointer;
+			*PtrToSamplePtr = currResultBufPtr[currGroupId];
 		  }
 		}
 #else
-		*PtrToSamplePtr = AdcConfigPtr->groupConfigPtr[group].resultBuffer;
+		*PtrToSamplePtr = AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr;
 #endif
+
+	    if ((ADC_CONV_MODE_CONTINOUS == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
+	         ((ADC_STREAM_COMPLETED    == AdcConfigPtr->groupConfigPtr[group].status->groupStatus) ||
+	          (ADC_COMPLETED           == AdcConfigPtr->groupConfigPtr[group].status->groupStatus)))
+	    {
+	        /* Restart continous mode, and reset result buffer */
+	        if ((ADC_CONV_MODE_CONTINOUS == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
+	            (ADC_STREAM_COMPLETED    == AdcConfigPtr->groupConfigPtr[group].status->groupStatus))
+	        {
+	  		  /* Start continous conversion again */
+	          currSampleCount[currGroupId] = 0;
+
+#ifndef DONT_USE_DMA_IN_ADC_MPC5606S
+			  Dma_ConfigureChannel ((Dma_TcdType *)(AdcConfigPtr->groupConfigPtr[group].groupDMAResults), DMA_ADC_GROUP0_RESULT_CHANNEL);
+			  Dma_ConfigureDestinationAddress((uint32_t)AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr, DMA_ADC_GROUP0_RESULT_CHANNEL);
+			  Dma_StartChannel(DMA_ADC_GROUP0_RESULT_CHANNEL);
+#else
+	          currResultBufPtr[currGroupId] = AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr;
+#endif
+
+	  		  ADC_0.IMR.B.MSKECH = 1;
+	  		  ADC_0.MCR.B.NSTART=1;
+	        }
+			/** @req ADC326 */
+			/** @req ADC328 */
+			AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_BUSY;
+	    }
+	    else if ((ADC_CONV_MODE_ONESHOT == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
+	             (ADC_STREAM_COMPLETED  == AdcConfigPtr->groupConfigPtr[group].status->groupStatus))
+	    {
+	      /** @req ADC327. */
+	      AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_IDLE;
+	    }
+	    else{/* Keep status. */}
 	}
 	else
 	{
+		/* Some condition not met */
 		*PtrToSamplePtr = NULL;
 	}
 
@@ -573,16 +590,14 @@ Std_ReturnType Adc_ReadGroup (Adc_GroupType group, Adc_ValueGroupType *dataBuffe
 		  }
 		  else
 		  {
-			Adc_ValueGroupType *lastSamplePointer = currResultBufPtr[group];
-			lastSamplePointer += (AdcConfigPtr->groupConfigPtr[group].numberOfChannels) * (currSampleCount[group] % AdcConfigPtr->groupConfigPtr[group].streamNumSamples);
-			dataBufferPtr[channel] = lastSamplePointer[channel];
+			dataBufferPtr[channel] = currResultBufPtr[group][channel];
 		  }
 		}
 	  }
 #else
     for (channel = 0; channel < AdcConfigPtr->groupConfigPtr[group].numberOfChannels; channel++)
     {
-       dataBufferPtr[channel] = AdcConfigPtr->groupConfigPtr[group].resultBuffer[channel];
+       dataBufferPtr[channel] = AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr[channel];
     }
 #endif
 
@@ -590,18 +605,27 @@ Std_ReturnType Adc_ReadGroup (Adc_GroupType group, Adc_ValueGroupType *dataBuffe
          ((ADC_STREAM_COMPLETED    == AdcConfigPtr->groupConfigPtr[group].status->groupStatus) ||
           (ADC_COMPLETED           == AdcConfigPtr->groupConfigPtr[group].status->groupStatus)))
     {
-      /* Not really sure about this behaviour but how can we else protect data buffer */
+      /* Restart continous mode, and reset result buffer */
       if ((ADC_CONV_MODE_CONTINOUS == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
           (ADC_STREAM_COMPLETED    == AdcConfigPtr->groupConfigPtr[group].status->groupStatus))
       {
 		  /* Start continous conversion again */
+          currSampleCount[currGroupId] = 0;
+
+#ifndef DONT_USE_DMA_IN_ADC_MPC5606S
+   	      Dma_ConfigureChannel ((Dma_TcdType *)(AdcConfigPtr->groupConfigPtr[group].groupDMAResults), DMA_ADC_GROUP0_RESULT_CHANNEL);
+          Dma_ConfigureDestinationAddress((uint32_t)AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr, DMA_ADC_GROUP0_RESULT_CHANNEL);
+          Dma_StartChannel(DMA_ADC_GROUP0_RESULT_CHANNEL);
+#else
+          currResultBufPtr[currGroupId] = AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr;
+#endif
+
 		  ADC_0.IMR.B.MSKECH = 1;
 		  ADC_0.MCR.B.NSTART=1;
       }
       /** @req ADC329 */
       /** @req ADC331 */
       AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_BUSY;
-
     }
     else if ((ADC_CONV_MODE_ONESHOT == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
              (ADC_STREAM_COMPLETED  == AdcConfigPtr->groupConfigPtr[group].status->groupStatus))
@@ -688,9 +712,7 @@ void Adc_Group0ConversionComplete (void)
             currSampleCount[currGroupId]++;
             if(currSampleCount[currGroupId] < adcGroup.streamNumSamples)
             {
-#ifdef DONT_USE_DMA_IN_ADC_MPC5606S
-            	currResultBufPtr[currGroupId] += adcGroup.numberOfChannels;
-#endif
+              currResultBufPtr[currGroupId] += adcGroup.numberOfChannels;
               adcGroup.status->groupStatus = ADC_COMPLETED;
               
               ADC_0.IMR.B.MSKECH = 1;
@@ -715,20 +737,12 @@ void Adc_Group0ConversionComplete (void)
         }
         else if(ADC_STREAM_BUFFER_CIRCULAR == adcGroup.streamBufferMode)
         {
-#ifdef DONT_USE_DMA_IN_ADC_MPC5606S
-        	static Adc_ValueGroupType *oldResultBufferPtr = 0;
-            
-            if( currSampleCount[currGroupId] == 0) {
-            	oldResultBufferPtr = currResultBufPtr[currGroupId];
-            }
-#endif
             currSampleCount[currGroupId]++;
             if(currSampleCount[currGroupId] < adcGroup.streamNumSamples)
             {
-#ifdef DONT_USE_DMA_IN_ADC_MPC5606S
             	currResultBufPtr[currGroupId] += adcGroup.numberOfChannels;
-#endif
-                if( adcGroup.status->groupStatus != ADC_STREAM_COMPLETED){
+
+            	if( adcGroup.status->groupStatus != ADC_STREAM_COMPLETED){
                 	adcGroup.status->groupStatus = ADC_COMPLETED;
                 }
                 
@@ -737,6 +751,9 @@ void Adc_Group0ConversionComplete (void)
             else
             {
               /* Sample completed. */
+              /* Disable trigger normal conversions for ADC0 */
+              ADC_0.MCR.B.NSTART=0;
+
               adcGroup.status->groupStatus = ADC_STREAM_COMPLETED;
               /* Call notification if enabled. */
             #if (ADC_GRP_NOTIF_CAPABILITY == STD_ON)
@@ -745,15 +762,6 @@ void Adc_Group0ConversionComplete (void)
             	  adcGroup.groupCallback();
               }
             #endif
-              currSampleCount[currGroupId] = 0;
-
-#ifndef DONT_USE_DMA_IN_ADC_MPC5606S
-              Dma_ConfigureDestinationAddress((uint32_t)currResultBufPtr[currGroupId], DMA_ADC_GROUP0_RESULT_CHANNEL);
-#else
-              currResultBufPtr[currGroupId] = oldResultBufferPtr;
-#endif
-              /* Disable trigger normal conversions for ADC0 */
-              ADC_0.MCR.B.NSTART=0;
             }
         }
         else
@@ -1014,7 +1022,7 @@ void Adc_StartGroupConversion (Adc_GroupType group)
 
 	  currResultBufPtr[group] = AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr; /* Set current result buffer */
 #ifndef DONT_USE_DMA_IN_ADC_MPC5606S
-   	  Dma_ConfigureChannel ((struct tcd_t *)(AdcConfigPtr->groupConfigPtr[group].groupDMAResults), DMA_ADC_GROUP0_RESULT_CHANNEL);
+   	  Dma_ConfigureChannel ((Dma_TcdType *)(AdcConfigPtr->groupConfigPtr[group].groupDMAResults), DMA_ADC_GROUP0_RESULT_CHANNEL);
 	  Dma_ConfigureDestinationAddress ((uint32_t)currResultBufPtr[group], DMA_ADC_GROUP0_RESULT_CHANNEL);
 #endif
 	  /* Set conversion mode. */
@@ -1044,6 +1052,8 @@ void Adc_StartGroupConversion (Adc_GroupType group)
 
         /* Enable DMA Transfer */
         ADC_0.DMAR[1].R = groupChannelIdMask;
+
+        Dma_StartChannel(DMA_ADC_GROUP0_RESULT_CHANNEL);        /* Enable EDMA channel for ADC */
 #endif
 
         /* Enable Channel Interrupt */
@@ -1051,12 +1061,6 @@ void Adc_StartGroupConversion (Adc_GroupType group)
 
         /* Enable ECH interrupt */
         ADC_0.IMR.B.MSKECH = 1;
-
-#ifndef DONT_USE_DMA_IN_ADC_MPC5606S
-        EDMA.SERQR.R = DMA_ADC_GROUP0_RESULT_CHANNEL;        /* Enable EDMA channel for ADC */
-
-        EDMA.TCD[0].START  = 0;
-#endif
 
         /* Trigger normal conversions for ADC0 */
         ADC_0.MCR.B.NSTART = 1;
@@ -1184,12 +1188,12 @@ static void Adc_EQADCCalibrationSequence (void)
   };
 
   /* Use group 0 DMA channel for calibration. */
-  Dma_ConfigureChannel ((struct tcd_t *)&AdcCalibrationDMACommandConfig,DMA_ADC_GROUP0_COMMAND_CHANNEL);
+  Dma_ConfigureChannel ((Dma_TcdType *)&AdcCalibrationDMACommandConfig,DMA_ADC_GROUP0_COMMAND_CHANNEL);
   Dma_ConfigureChannelTranferSize (sizeof(AdcCalibrationCommandQueue)/sizeof(AdcCalibrationCommandQueue[0]),
 		                           DMA_ADC_GROUP0_COMMAND_CHANNEL);
   Dma_ConfigureChannelSourceCorr (-sizeof(AdcCalibrationCommandQueue), DMA_ADC_GROUP0_COMMAND_CHANNEL);
 
-  Dma_ConfigureChannel ((struct tcd_t *)&AdcCalibrationDMAResultConfig, DMA_ADC_GROUP0_RESULT_CHANNEL);
+  Dma_ConfigureChannel ((Dma_TcdType *)&AdcCalibrationDMAResultConfig, DMA_ADC_GROUP0_RESULT_CHANNEL);
   Dma_ConfigureChannelTranferSize (sizeof(calibrationResult)/sizeof(calibrationResult[0]),
 		                           DMA_ADC_GROUP0_RESULT_CHANNEL);
   Dma_ConfigureChannelDestinationCorr (-sizeof(calibrationResult), DMA_ADC_GROUP0_RESULT_CHANNEL);
