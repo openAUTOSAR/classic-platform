@@ -41,12 +41,10 @@ SECTIONS
              . = (.+15);
         }
 #endif
-      __SDATA2_START = .;
-      .sdata2         : {}
-      .sbss2          : {}
-      __SBSS2_END = .;
 	    extab      : {}  
 	    extabindex : {}
+        .sdata2     : {}   /* SHF_ALLOC + possibly SHF_WRITE (prob. ReadOnly)*/
+        .sbss2      : {}      /* SHF_ALLOC +  SHF_WRITE , e.g const int apa = 0;*/
 	    . = ALIGN(0x10);
 	    __DATA_ROM = .;
 	    .=.+SIZEOF(.data);
@@ -65,8 +63,8 @@ SECTIONS
 	
 	GROUP : {
 	  __BSS_START = .;
-	  .sbss  (BSS)  : {}  	/* sbss - un-initialized small data */									
-	  .bss   (BSS)  : {}  
+	  .sbss    : {}  	/* sbss - un-initialized small data */									
+	  .bss    : {}  
 	  __BSS_END = .;
       .PPC.EMB.sdata0 LOAD(ADDR(__SDATA0)) : {}	/* Small data with offset to 0 */	    
       .PPC.EMB.sbss0  : {}
