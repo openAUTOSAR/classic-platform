@@ -37,7 +37,6 @@
 #include "irq.h"
 #include "arc.h"
 
-
 #if !defined(CFG_MPC5606S)
 typedef union
 {
@@ -223,16 +222,37 @@ static Std_ReturnType Adc_CheckStopGroupConversion (Adc_GroupType group);
 static Std_ReturnType Adc_CheckInit (const Adc_ConfigType *ConfigPtr);
 static Std_ReturnType Adc_CheckDeInit (void);
 static Std_ReturnType Adc_CheckSetupResultBuffer (Adc_GroupType group);
-
+static Std_ReturnType Adc_CheckGetStreamLastPointer (Adc_GroupType group);
 
 /* static variable declarations */
 static Adc_StateType adcState = ADC_UNINIT;
 static const Adc_ConfigType *AdcConfigPtr;      /* Pointer to configuration structure. */
-static Adc_GroupType s_CurrGroupId;       /* current group Id */
-static Adc_StreamNumSampleType s_CurrSampleCount = 0;   /* Streaming sample counter of current group */
-static Adc_ValueGroupType *currResultBufPtr = 0;   /* Streaming sample current buffer pointer */
-static uint32_t loopCnt = 0;
+static Adc_GroupType currGroupId;       /* current group Id */
+static Adc_StreamNumSampleType currSampleCount[ADC_NBR_OF_GROUPS];   /* Streaming sample counter of current group */
+static Adc_ValueGroupType *currResultBufPtr[ADC_NBR_OF_GROUPS];   /* Streaming sample current buffer pointer */
 
+
+/* Validate functions used for development error check */
+#if ( ADC_DEV_ERROR_DETECT == STD_ON )
+Std_ReturnType ValidateInit(Adc_APIServiceIDType api)
+{
+	Std_ReturnType res = E_OK;
+	if(!(ADC_INIT == adcState)) {
+		Det_ReportError(MODULE_ID_ADC,0,api,ADC_E_UNINIT );
+		res = E_NOT_OK;
+	}
+	return res;
+}
+Std_ReturnType ValidateGroup(Adc_GroupType group,Adc_APIServiceIDType api)
+{
+	Std_ReturnType res = E_OK;
+	if(!((group >= 0) && (group < AdcConfig->nbrOfGroups))) {
+		Det_ReportError(MODULE_ID_ADC,0,api,ADC_E_PARAM_GROUP );
+		res = E_NOT_OK;
+	}
+	return res;
+}
+#endif
 
 #if (ADC_DEINIT_API == STD_ON)
 Std_ReturnType Adc_DeInit (const Adc_ConfigType *ConfigPtr)
@@ -269,7 +289,7 @@ Std_ReturnType Adc_DeInit (const Adc_ConfigType *ConfigPtr)
   Adc_GroupType group;
   boolean queueStopped;
 
-  if (ADC_UNINIT != adcState)
+  if (E_OK == Adc_CheckDeInit())
   {
     /* Stop all queues. */
     for (queue = ADC_EQADC_QUEUE_0; queue < ADC_EQADC_NBR_OF_QUEUES; queue++)
@@ -460,7 +480,7 @@ Std_ReturnType Adc_Init (const Adc_ConfigType *ConfigPtr)
 
 Std_ReturnType Adc_SetupResultBuffer (Adc_GroupType group, Adc_ValueGroupType *bufferPtr)
 {
-  Std_ReturnType returnValue;
+  Std_ReturnType returnValue = E_NOT_OK;
 
   /* Check for development errors. */
   if (E_OK == Adc_CheckSetupResultBuffer (group))
@@ -469,79 +489,125 @@ Std_ReturnType Adc_SetupResultBuffer (Adc_GroupType group, Adc_ValueGroupType *b
     
     returnValue = E_OK;
   }
-  else
-  {
-    /* An error have been raised from Adc_CheckSetupResultBuffer(). */
-    returnValue = E_NOT_OK;
-  }
 
   return (returnValue);
+}
+
+Adc_StreamNumSampleType Adc_GetStreamLastPointer(Adc_GroupType group, Adc_ValueGroupType** PtrToSamplePtr)
+{
+	Adc_StreamNumSampleType nofSample = 0;
+
+	/** @req ADC216 */
+	/* Check for development errors. */
+	if ( (E_OK == Adc_CheckGetStreamLastPointer (group)) &&
+		 (AdcConfigPtr->groupConfigPtr[group].status->groupStatus != ADC_BUSY) )
+	{
+	    if ((ADC_CONV_MODE_CONTINOUS == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
+	         ((ADC_STREAM_COMPLETED    == AdcConfigPtr->groupConfigPtr[group].status->groupStatus) ||
+	          (ADC_COMPLETED           == AdcConfigPtr->groupConfigPtr[group].status->groupStatus)))
+	    {
+	      /** @req ADC326 */
+	      /** @req ADC328 */
+	      AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_BUSY;
+	    }
+	    else if ((ADC_CONV_MODE_ONESHOT == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
+	             (ADC_STREAM_COMPLETED  == AdcConfigPtr->groupConfigPtr[group].status->groupStatus))
+	    {
+	      /** @req ADC327. */
+	      AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_IDLE;
+	    }
+	    else{/* Keep status. */}
+
+	      /* Copy the result to application buffer. */
+#if defined(CFG_MPC5606S)
+		if(ADC_CONV_MODE_ONESHOT == AdcConfigPtr->groupConfigPtr[group].conversionMode)
+		{
+		  *PtrToSamplePtr = currResultBufPtr[group];
+		}
+		else
+		{
+		  if(ADC_ACCESS_MODE_SINGLE == AdcConfigPtr->groupConfigPtr[group].accessMode )
+		  {
+			*PtrToSamplePtr = currResultBufPtr[group];
+		  }
+		  else
+		  {
+			Adc_ValueGroupType *lastSamplePointer = currResultBufPtr[currGroupId];
+			lastSamplePointer += (AdcConfigPtr->groupConfigPtr[group].numberOfChannels) * (currSampleCount[group] % AdcConfigPtr->groupConfigPtr[group].streamNumSamples);
+			*PtrToSamplePtr = lastSamplePointer;
+		  }
+		}
+#else
+		*PtrToSamplePtr = AdcConfigPtr->groupConfigPtr[group].resultBuffer;
+#endif
+	}
+	else
+	{
+		*PtrToSamplePtr = NULL;
+	}
+
+	return nofSample;
 }
 
 #if (ADC_READ_GROUP_API == STD_ON)
 Std_ReturnType Adc_ReadGroup (Adc_GroupType group, Adc_ValueGroupType *dataBufferPtr)
 {
-  Std_ReturnType returnValue;
+  Std_ReturnType returnValue = E_OK;
   uint8_t channel;
 
   if (E_OK == Adc_CheckReadGroup (group))
   {
-    if ((ADC_CONV_MODE_CONTINOUS == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
-         ((ADC_STREAM_COMPLETED    == AdcConfigPtr->groupConfigPtr[group].status->groupStatus) ||
-          (ADC_COMPLETED           == AdcConfigPtr->groupConfigPtr[group].status->groupStatus)))
-    {
-      /* ADC329, ADC331. */
-      AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_BUSY;
-      returnValue = E_OK;
-    }
-    else if ((ADC_CONV_MODE_ONESHOT == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
-             (ADC_STREAM_COMPLETED  == AdcConfigPtr->groupConfigPtr[group].status->groupStatus))
-    {
-      /* ADC330. */
-      AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_IDLE;
-
-      returnValue = E_OK;
-    }
-    else
-    {
-      /* Keep status. */
-      returnValue = E_OK;
-    }
-
-    if (E_OK == returnValue)
-    {
       /* Copy the result to application buffer. */
 #if defined(CFG_MPC5606S)
-
       for (channel = 0; channel < AdcConfigPtr->groupConfigPtr[group].numberOfChannels; channel++)
-  {
-    if(ADC_CONV_MODE_ONESHOT == AdcConfigPtr->groupConfigPtr[s_CurrGroupId].conversionMode)
-    {
-      dataBufferPtr[channel] = currResultBufPtr[channel];
-    }
-    else
-    {
-      if(ADC_ACCESS_MODE_SINGLE == AdcConfigPtr->groupConfigPtr[s_CurrGroupId].accessMode )
-      {
-        dataBufferPtr[channel] = currResultBufPtr[channel];
-      }
-      else
-      {
-        Adc_ValueGroupType *lastSamplePointer = currResultBufPtr;
-        lastSamplePointer += (AdcConfigPtr->groupConfigPtr[group].numberOfChannels) * (s_CurrSampleCount % AdcConfigPtr->groupConfigPtr[group].streamNumSamples);
-        dataBufferPtr[channel] = lastSamplePointer[channel];
-	    }
-    }
-  }
-        
+	  {
+		if(ADC_CONV_MODE_ONESHOT == AdcConfigPtr->groupConfigPtr[group].conversionMode)
+		{
+		  dataBufferPtr[channel] = currResultBufPtr[group][channel];
+		}
+		else
+		{
+		  if(ADC_ACCESS_MODE_SINGLE == AdcConfigPtr->groupConfigPtr[group].accessMode )
+		  {
+			dataBufferPtr[channel] = currResultBufPtr[group][channel];
+		  }
+		  else
+		  {
+			Adc_ValueGroupType *lastSamplePointer = currResultBufPtr[group];
+			lastSamplePointer += (AdcConfigPtr->groupConfigPtr[group].numberOfChannels) * (currSampleCount[group] % AdcConfigPtr->groupConfigPtr[group].streamNumSamples);
+			dataBufferPtr[channel] = lastSamplePointer[channel];
+		  }
+		}
+	  }
 #else
-
     for (channel = 0; channel < AdcConfigPtr->groupConfigPtr[group].numberOfChannels; channel++)
     {
        dataBufferPtr[channel] = AdcConfigPtr->groupConfigPtr[group].resultBuffer[channel];
     }
 #endif
 
+    if ((ADC_CONV_MODE_CONTINOUS == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
+         ((ADC_STREAM_COMPLETED    == AdcConfigPtr->groupConfigPtr[group].status->groupStatus) ||
+          (ADC_COMPLETED           == AdcConfigPtr->groupConfigPtr[group].status->groupStatus)))
+    {
+      /* Not really sure about this behaviour but how can we else protect data buffer */
+      if ((ADC_CONV_MODE_CONTINOUS == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
+          (ADC_STREAM_COMPLETED    == AdcConfigPtr->groupConfigPtr[group].status->groupStatus))
+      {
+		  /* Start continous conversion again */
+		  ADC_0.IMR.B.MSKECH = 1;
+		  ADC_0.MCR.B.NSTART=1;
+      }
+      /** @req ADC329 */
+      /** @req ADC331 */
+      AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_BUSY;
+
+    }
+    else if ((ADC_CONV_MODE_ONESHOT == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
+             (ADC_STREAM_COMPLETED  == AdcConfigPtr->groupConfigPtr[group].status->groupStatus))
+    {
+      /** @req ADC330. */
+      AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_IDLE;
     }
   }
   else
@@ -580,16 +646,16 @@ void Adc_Group0ConversionComplete (void)
 	ADC_0.ISR.B.ECH = 1;
 	ADC_0.IMR.B.MSKECH = 0;
 
-	Adc_GroupDefType adcGroup = AdcConfigPtr->groupConfigPtr[s_CurrGroupId];
+	Adc_GroupDefType adcGroup = AdcConfigPtr->groupConfigPtr[currGroupId];
 #ifdef DONT_USE_DMA_IN_ADC_MPC5606S
 	/* Copy to result buffer */
 	for(uint8 index=0; index < adcGroup.numberOfChannels; index++)
 	{
-		currResultBufPtr[index] = ADC_0.CDR[32+adcGroup.channelList[index]].B.CDATA;
+		currResultBufPtr[currGroupId][index] = ADC_0.CDR[32+adcGroup.channelList[index]].B.CDATA;
 	}
 #endif
  
-    if(ADC_CONV_MODE_ONESHOT == AdcConfigPtr->groupConfigPtr[s_CurrGroupId].conversionMode)
+    if(ADC_CONV_MODE_ONESHOT == AdcConfigPtr->groupConfigPtr[currGroupId].conversionMode)
     {
     	adcGroup.status->groupStatus = ADC_STREAM_COMPLETED;
     	  /* Call notification if enabled. */
@@ -619,11 +685,11 @@ void Adc_Group0ConversionComplete (void)
       {
         if(ADC_STREAM_BUFFER_LINEAR == adcGroup.streamBufferMode)
         {
-            s_CurrSampleCount++;
-            if(s_CurrSampleCount < adcGroup.streamNumSamples)
+            currSampleCount[currGroupId]++;
+            if(currSampleCount[currGroupId] < adcGroup.streamNumSamples)
             {
 #ifdef DONT_USE_DMA_IN_ADC_MPC5606S
-            	currResultBufPtr += adcGroup.numberOfChannels;
+            	currResultBufPtr[currGroupId] += adcGroup.numberOfChannels;
 #endif
               adcGroup.status->groupStatus = ADC_COMPLETED;
               
@@ -631,7 +697,7 @@ void Adc_Group0ConversionComplete (void)
             }
             else
             {
-              /* Sample completed. */
+              /* All sample completed. */
               adcGroup.status->groupStatus = ADC_STREAM_COMPLETED;
 
               /* Call notification if enabled. */
@@ -640,9 +706,6 @@ void Adc_Group0ConversionComplete (void)
             	adcGroup.groupCallback();
               }
             #endif
-              /* Disable ECH interrupt */
-              ADC_0.IMR.B.MSKECH = 0;
-
               /* Abort conversion */
               ADC_0.MCR.B.ABORTCHAIN = 1;
 
@@ -655,15 +718,15 @@ void Adc_Group0ConversionComplete (void)
 #ifdef DONT_USE_DMA_IN_ADC_MPC5606S
         	static Adc_ValueGroupType *oldResultBufferPtr = 0;
             
-            if( s_CurrSampleCount == 0) {
-            	oldResultBufferPtr = currResultBufPtr;
+            if( currSampleCount[currGroupId] == 0) {
+            	oldResultBufferPtr = currResultBufPtr[currGroupId];
             }
 #endif
-            s_CurrSampleCount++;
-            if(s_CurrSampleCount < adcGroup.streamNumSamples)
+            currSampleCount[currGroupId]++;
+            if(currSampleCount[currGroupId] < adcGroup.streamNumSamples)
             {
 #ifdef DONT_USE_DMA_IN_ADC_MPC5606S
-            	currResultBufPtr += adcGroup.numberOfChannels;
+            	currResultBufPtr[currGroupId] += adcGroup.numberOfChannels;
 #endif
                 if( adcGroup.status->groupStatus != ADC_STREAM_COMPLETED){
                 	adcGroup.status->groupStatus = ADC_COMPLETED;
@@ -682,17 +745,15 @@ void Adc_Group0ConversionComplete (void)
             	  adcGroup.groupCallback();
               }
             #endif
-              s_CurrSampleCount = 0;
+              currSampleCount[currGroupId] = 0;
 
 #ifndef DONT_USE_DMA_IN_ADC_MPC5606S
-              Dma_ConfigureDestinationAddress((uint32_t)currResultBufPtr, DMA_ADC_GROUP0_RESULT_CHANNEL);
+              Dma_ConfigureDestinationAddress((uint32_t)currResultBufPtr[currGroupId], DMA_ADC_GROUP0_RESULT_CHANNEL);
 #else
-              currResultBufPtr = oldResultBufferPtr;
+              currResultBufPtr[currGroupId] = oldResultBufferPtr;
 #endif
-              loopCnt++;
-
-              /* Enable  ECH interrupt */
-              ADC_0.IMR.B.MSKECH = 1;
+              /* Disable trigger normal conversions for ADC0 */
+              ADC_0.MCR.B.NSTART=0;
             }
         }
         else
@@ -948,13 +1009,13 @@ void Adc_StartGroupConversion (Adc_GroupType group)
   	/* Disable trigger normal conversions for ADC0 */
   	ADC_0.MCR.B.NSTART = 0;
 
-    s_CurrGroupId = group;
-    s_CurrSampleCount = 0;
+    currGroupId = group;
+    currSampleCount[group] = 0;
 
-	  currResultBufPtr = AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr; /* Set current result buffer */
+	  currResultBufPtr[group] = AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr; /* Set current result buffer */
 #ifndef DONT_USE_DMA_IN_ADC_MPC5606S
    	  Dma_ConfigureChannel ((struct tcd_t *)(AdcConfigPtr->groupConfigPtr[group].groupDMAResults), DMA_ADC_GROUP0_RESULT_CHANNEL);
-	  Dma_ConfigureDestinationAddress ((uint32_t)currResultBufPtr, DMA_ADC_GROUP0_RESULT_CHANNEL);
+	  Dma_ConfigureDestinationAddress ((uint32_t)currResultBufPtr[group], DMA_ADC_GROUP0_RESULT_CHANNEL);
 #endif
 	  /* Set conversion mode. */
 	  ADC_0.MCR.B.MODE = AdcConfigPtr->groupConfigPtr[group].conversionMode;
@@ -1201,17 +1262,10 @@ static Std_ReturnType Adc_CheckReadGroup (Adc_GroupType group)
 
 #if ( ADC_DEV_ERROR_DETECT == STD_ON )
 
-  if (ADC_UNINIT == adcState)
+  if( (ValidateInit(ADC_READGROUP_ID) == E_NOT_OK) ||
+      (ValidateGroup(group, ADC_READGROUP_ID) == E_NOT_OK))
   {
-    /* ADC296. */
-    returnValue = E_NOT_OK;
-    Det_ReportError(MODULE_ID_ADC,0,ADC_READGROUP_ID ,ADC_E_UNINIT );
-  }
-  else if ((group < ADC_GROUP0) || (group >= AdcConfigPtr->nbrOfGroups))
-  {
-    /* ADC152. */
-    returnValue = E_NOT_OK;
-    Det_ReportError(MODULE_ID_ADC,0,ADC_READGROUP_ID ,ADC_E_PARAM_GROUP );
+	  returnValue = E_NOT_OK;
   }
   else if ((ADC_IDLE == AdcConfigPtr->groupConfigPtr[group].status->groupStatus) 
     && (!AdcConfigPtr->groupConfigPtr[group].status->isConversionStarted) )
@@ -1236,25 +1290,20 @@ static Std_ReturnType Adc_CheckReadGroup (Adc_GroupType group)
 static Std_ReturnType Adc_CheckStartGroupConversion (Adc_GroupType group)
 {
   Std_ReturnType returnValue;
+
 #if ( ADC_DEV_ERROR_DETECT == STD_ON )
-  if (!(ADC_INIT == adcState))
+
+  if( (ValidateInit(ADC_STARTGROUPCONVERSION_ID) == E_NOT_OK) ||
+      (ValidateGroup(group, ADC_STARTGROUPCONVERSION_ID) == E_NOT_OK))
   {
-    /* ADC not initialised, ADC294. */
-    Det_ReportError(MODULE_ID_ADC,0,ADC_STARTGROUPCONVERSION_ID, ADC_E_UNINIT );
-    returnValue = E_NOT_OK;
+	  returnValue = E_NOT_OK;
   }
-  else  if (!((group >= 0) && (group < AdcConfig->nbrOfGroups)))
+  else if ( NULL == AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr )
   {
-    /* Wrong group ID, ADC125 */
-    Det_ReportError(MODULE_ID_ADC,0,ADC_STARTGROUPCONVERSION_ID, ADC_E_PARAM_GROUP );
-    returnValue = E_NOT_OK;
-  }
-  else  if ( NULL == AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr )
-    {
       /* ResultBuffer not set, ADC424 */
 	  Det_ReportError(MODULE_ID_ADC,0,ADC_STARTGROUPCONVERSION_ID, ADC_E_BUFFER_UNINIT );
 	  returnValue = E_NOT_OK;
-    }
+  }
   else if (!(ADC_TRIGG_SRC_SW == AdcConfigPtr->groupConfigPtr[group].triggerSrc))
   {
     /* Wrong trig source, ADC133. */
@@ -1284,44 +1333,40 @@ static Std_ReturnType Adc_CheckStartGroupConversion (Adc_GroupType group)
 #else
   returnValue = E_OK;
 #endif
+
   return (returnValue);
 }
 
 static Std_ReturnType Adc_CheckStopGroupConversion (Adc_GroupType group)
 {
   Std_ReturnType returnValue;
-	#if ( ADC_DEV_ERROR_DETECT == STD_ON )
-	  if (!(ADC_INIT == adcState))
-	  {
-		/* ADC not initialized, ADC295. */
-		Det_ReportError(MODULE_ID_ADC,0,ADC_STOPGROUPCONVERSION_ID, ADC_E_UNINIT );
-		returnValue = E_NOT_OK;
-	  }
-	  else  if (!((group >= 0) && (group < AdcConfig->nbrOfGroups)))
-	  {
-		/* Wrong group ID, ADC126 */
-		Det_ReportError(MODULE_ID_ADC,0,ADC_STOPGROUPCONVERSION_ID, ADC_E_PARAM_GROUP );
-		returnValue = E_NOT_OK;
-	  }
-	  else if (!(ADC_TRIGG_SRC_SW == AdcConfigPtr->groupConfigPtr[group].triggerSrc))
-	  {
-		/* Wrong trig source, ADC164. */
-		Det_ReportError(MODULE_ID_ADC,0,ADC_STOPGROUPCONVERSION_ID, ADC_E_WRONG_TRIGG_SRC);
-		returnValue = E_NOT_OK;
-	  }
-	  else if (ADC_IDLE == AdcConfigPtr->groupConfigPtr[group].status->groupStatus)
-	  {
-		/* Group status not OK, ADC241 */
-		Det_ReportError(MODULE_ID_ADC,0,ADC_STOPGROUPCONVERSION_ID, ADC_IDLE );
-		returnValue = E_NOT_OK;
-	  }
-	  else
-	  {
-		returnValue = E_OK;
-	  }
-	#else
-	  returnValue = E_OK;
-	#endif
+
+#if ( ADC_DEV_ERROR_DETECT == STD_ON )
+  if( (ValidateInit(ADC_STOPGROUPCONVERSION_ID) == E_NOT_OK) ||
+      (ValidateGroup(group, ADC_STOPGROUPCONVERSION_ID) == E_NOT_OK))
+  {
+	  returnValue = E_NOT_OK;
+  }
+  else if (!(ADC_TRIGG_SRC_SW == AdcConfigPtr->groupConfigPtr[group].triggerSrc))
+  {
+	/* Wrong trig source, ADC164. */
+	Det_ReportError(MODULE_ID_ADC,0,ADC_STOPGROUPCONVERSION_ID, ADC_E_WRONG_TRIGG_SRC);
+	returnValue = E_NOT_OK;
+  }
+  else if (ADC_IDLE == AdcConfigPtr->groupConfigPtr[group].status->groupStatus)
+  {
+	/* Group status not OK, ADC241 */
+	Det_ReportError(MODULE_ID_ADC,0,ADC_STOPGROUPCONVERSION_ID, ADC_IDLE );
+	returnValue = E_NOT_OK;
+  }
+  else
+  {
+	returnValue = E_OK;
+  }
+#else
+  returnValue = E_OK;
+#endif
+
   return (returnValue);
 }
 #endif
@@ -1351,37 +1396,32 @@ static Std_ReturnType Adc_CheckInit (const Adc_ConfigType *ConfigPtr)
 #else
     returnValue = E_OK;
 #endif
+#if ( ADC_DEV_ERROR_DETECT == STD_ON )
+  cleanup:
+#endif
   return (returnValue);
 }
 
 static Std_ReturnType Adc_CheckDeInit (void)
 {
-	Std_ReturnType returnValue;
+	Std_ReturnType returnValue = E_OK;
 
 #if ( ADC_DEV_ERROR_DETECT == STD_ON )
-	if (ADC_UNINIT == adcState)
+	if(ValidateInit(ADC_STOPGROUPCONVERSION_ID) == E_OK)
 	{
-		/* Oops, already initialised. */
-		Det_ReportError(MODULE_ID_ADC,0,ADC_DEINIT_ID, ADC_E_UNINIT );
-		returnValue = E_NOT_OK;
+		for (Adc_GroupType group = ADC_GROUP0; group < AdcConfigPtr->nbrOfGroups; group++)
+		{
+			/*  Check ADC is IDLE or COMPLETE*/
+			if((AdcConfigPtr->groupConfigPtr[group].status->groupStatus != ADC_IDLE)||(AdcConfigPtr->groupConfigPtr[group].status->groupStatus == ADC_STREAM_COMPLETED))
+			{
+				Det_ReportError(MODULE_ID_ADC,0,ADC_DEINIT_ID, ADC_E_BUSY );
+				returnValue = E_NOT_OK;
+			}
+		}
 	}
 	else
 	{
-		/* Looks good!! */
-		returnValue = E_OK;
-	}
-	for (Adc_GroupType group = ADC_GROUP0; group < AdcConfigPtr->nbrOfGroups; group++)
-	{
-		/*  Check ADC is IDLE or COMPLETE*/
-		if((AdcConfigPtr->groupConfigPtr[group].status->groupStatus != ADC_IDLE)||(AdcConfigPtr->groupConfigPtr[group].status->groupStatus == ADC_STREAM_COMPLETED))
-		{
-			Det_ReportError(MODULE_ID_ADC,0,ADC_DEINIT_ID, ADC_E_BUSY );
-			returnValue = E_NOT_OK;
-		}
-		else
-		{
-			returnValue = E_OK;
-		}
+		returnValue = E_NOT_OK;
 	}
 #else
 	returnValue = E_OK;
@@ -1391,30 +1431,40 @@ static Std_ReturnType Adc_CheckDeInit (void)
 
 static Std_ReturnType Adc_CheckSetupResultBuffer (Adc_GroupType group)
 {
-  Std_ReturnType returnValue;
+  Std_ReturnType returnValue = E_OK;
 
 #if ( ADC_DEV_ERROR_DETECT == STD_ON )
-  if (ADC_UNINIT == adcState)
+  if( (ValidateInit(ADC_SETUPRESULTBUFFER_ID) == E_NOT_OK) ||
+      (ValidateGroup(group, ADC_SETUPRESULTBUFFER_ID) == E_NOT_OK))
   {
-    /* Driver not initialised. */
-    Det_ReportError(MODULE_ID_ADC,0,ADC_SETUPRESULTBUFFER_ID,ADC_E_UNINIT );
-    returnValue = E_NOT_OK;
-  }
-  else if (group > AdcConfigPtr->nbrOfGroups)
-  {
-    /* ADC423 */
-    Det_ReportError(MODULE_ID_ADC,0,ADC_SETUPRESULTBUFFER_ID,ADC_E_PARAM_GROUP );
-    returnValue = E_NOT_OK;
-  }
-  else
-  {
-    /* Looks good!! */
-    returnValue = E_OK;
+	  returnValue = E_NOT_OK;
   }
 #else
   returnValue = E_OK;
 #endif
   return (returnValue);
 }
+
+static Std_ReturnType Adc_CheckGetStreamLastPointer (Adc_GroupType group)
+{
+  Std_ReturnType returnValue = E_OK;
+
+#if ( ADC_DEV_ERROR_DETECT == STD_ON )
+  if( (ValidateInit(ADC_GETSTREAMLASTPOINTER_ID) == E_NOT_OK) ||
+	  (ValidateGroup(group, ADC_GETSTREAMLASTPOINTER_ID) == E_NOT_OK))
+  {
+	  returnValue = E_NOT_OK;
+  }
+  else if(AdcConfigPtr->groupConfigPtr[group].status->groupStatus == ADC_IDLE)
+  { /** @req ADC215 Check ADC is not in IDLE */
+	Det_ReportError(MODULE_ID_ADC,0,ADC_GETSTREAMLASTPOINTER_ID, ADC_E_IDLE );
+	returnValue = E_NOT_OK;
+  }
+#else
+  returnValue = E_OK;
+#endif
+  return (returnValue);
+}
+
 
 
