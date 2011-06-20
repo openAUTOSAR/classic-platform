@@ -13,13 +13,24 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+#ifndef EA_TYPES_H_
+#define EA_TYPES_H_
 
+#include "Std_Types.h"
 
-#ifndef EA_CBK_H_
-#define EA_CBK_H_
+/*
+	ITEM NAME:		<Ea_JobType>
+	SCOPE:			<EA Module>
+	DESCRIPTION:
+		define all job in EA module 	
+*/
+typedef enum 
+{	
+	EA_JOB_NONE,
+	EA_JOB_COMPARE,
+	EA_JOB_ERASE,
+	EA_JOB_READ,
+	EA_JOB_WRITE,
+} Ea_JobType;
 
-/** @req EA114 */
-void Ea_JobEndNotification(void);	/** @req EA094 */
-void Ea_JobErrorNotification(void);	/** @req EA095 */
-
-#endif /*EA_CBK_H_*/
+#endif
