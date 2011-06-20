@@ -646,20 +646,21 @@ Std_ReturnType Adc_ReadGroup (Adc_GroupType group, Adc_ValueGroupType *dataBuffe
 
 Adc_StatusType Adc_GetGroupStatus (Adc_GroupType group)
 {
-  Adc_StatusType returnValue;
-  if ((ADC_INIT == adcState) && (AdcConfigPtr != NULL))
-  {
-    /* Adc initilised, OK to move on... */
-    returnValue = AdcConfigPtr->groupConfigPtr[group].status->groupStatus;
-  }
-  else
-  {
-    returnValue = ADC_IDLE;
-#if ( ADC_DEV_ERROR_DETECT == STD_ON )
-    Det_ReportError(MODULE_ID_ADC,0,ADC_GETGROUPSTATUS_ID, ADC_E_UNINIT );
-#endif
-    }
+	Adc_StatusType returnValue;
 
+#if ( ADC_DEV_ERROR_DETECT == STD_ON )
+	if( (ValidateInit(ADC_GETGROUPSTATUS_ID) == E_NOT_OK) ||
+		(ValidateGroup(group, ADC_GETGROUPSTATUS_ID) == E_NOT_OK))
+	{
+		returnValue = ADC_IDLE;
+	}
+	else
+	{
+		returnValue = AdcConfigPtr->groupConfigPtr[group].status->groupStatus;
+	}
+#else
+  returnValue = AdcConfigPtr->groupConfigPtr[group].status->groupStatus;
+#endif
   return (returnValue);
 }
 
@@ -973,12 +974,58 @@ static Adc_EQADCRegister Adc_ReadEQADCRegister (Adc_EQADCRegisterType reg)
 #if (ADC_GRP_NOTIF_CAPABILITY == STD_ON)
 void Adc_EnableGroupNotification (Adc_GroupType group)
 {
-  AdcConfigPtr->groupConfigPtr[group].status->notifictionEnable = 1;
+	Std_ReturnType res;
+
+#if ( ADC_DEV_ERROR_DETECT == STD_ON )
+	if( (ValidateInit(ADC_ENABLEGROUPNOTIFICATION_ID) == E_NOT_OK) ||
+		(ValidateGroup(group, ADC_ENABLEGROUPNOTIFICATION_ID) == E_NOT_OK))
+	{
+		res = E_NOT_OK;
+	}
+	else if (AdcConfigPtr->groupConfigPtr[group].groupCallback == NULL)
+	{
+		res = E_NOT_OK;
+		Det_ReportError(MODULE_ID_ADC,0,ADC_ENABLEGROUPNOTIFICATION_ID ,ADC_E_NOTIF_CAPABILITY );
+	}
+	else
+	{
+		/* Nothing strange. Go on... */
+		res = E_OK;
+	}
+#else
+	res = E_OK;
+#endif
+	if (E_OK == res){
+		AdcConfigPtr->groupConfigPtr[group].status->notifictionEnable = 1;
+	}
 }
 
 void Adc_DisableGroupNotification (Adc_GroupType group)
 {
-  AdcConfigPtr->groupConfigPtr[group].status->notifictionEnable = 0;
+	Std_ReturnType res;
+
+#if ( ADC_DEV_ERROR_DETECT == STD_ON )
+	if( (ValidateInit(ADC_DISABLEGROUPNOTIFICATION_ID) == E_NOT_OK) ||
+		(ValidateGroup(group, ADC_DISABLEGROUPNOTIFICATION_ID) == E_NOT_OK))
+	{
+		res = E_NOT_OK;
+	}
+	else if (AdcConfigPtr->groupConfigPtr[group].groupCallback == NULL)
+	{
+		res = E_NOT_OK;
+		Det_ReportError(MODULE_ID_ADC,0,ADC_DISABLEGROUPNOTIFICATION_ID ,ADC_E_NOTIF_CAPABILITY );
+	}
+	else
+	{
+		/* Nothing strange. Go on... */
+		res = E_OK;
+	}
+#else
+	res = E_OK;
+#endif
+	if (E_OK == res){
+		AdcConfigPtr->groupConfigPtr[group].status->notifictionEnable = 0;
+	}
 }
 #endif
 
@@ -1064,8 +1111,6 @@ void Adc_StartGroupConversion (Adc_GroupType group)
 
         /* Trigger normal conversions for ADC0 */
         ADC_0.MCR.B.NSTART = 1;
-
-        AdcConfigPtr->groupConfigPtr[group].status->isConversionStarted = TRUE;
   }
   else
   {
@@ -1271,8 +1316,7 @@ static Std_ReturnType Adc_CheckReadGroup (Adc_GroupType group)
   {
 	  returnValue = E_NOT_OK;
   }
-  else if ((ADC_IDLE == AdcConfigPtr->groupConfigPtr[group].status->groupStatus) 
-    && (!AdcConfigPtr->groupConfigPtr[group].status->isConversionStarted) )
+  else if (ADC_IDLE == AdcConfigPtr->groupConfigPtr[group].status->groupStatus)
   {
     /* ADC388. */
     returnValue = E_NOT_OK;
@@ -1360,7 +1404,7 @@ static Std_ReturnType Adc_CheckStopGroupConversion (Adc_GroupType group)
   else if (ADC_IDLE == AdcConfigPtr->groupConfigPtr[group].status->groupStatus)
   {
 	/* Group status not OK, ADC241 */
-	Det_ReportError(MODULE_ID_ADC,0,ADC_STOPGROUPCONVERSION_ID, ADC_IDLE );
+	Det_ReportError(MODULE_ID_ADC,0,ADC_STOPGROUPCONVERSION_ID, ADC_E_IDLE );
 	returnValue = E_NOT_OK;
   }
   else
