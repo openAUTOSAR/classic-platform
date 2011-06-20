@@ -1131,8 +1131,10 @@ void Adc_StopGroupConversion (Adc_GroupType group)
 	/* Set group state to IDLE. */
 	AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_IDLE;
 
-	/* Disable group notification. */
-	Adc_DisableGroupNotification (group);
+	/* Disable group notification if enabled. */
+    if(1 == AdcConfigPtr->groupConfigPtr[group].status->notifictionEnable){
+    	Adc_DisableGroupNotification (group);
+    }
   }
   else
   {
