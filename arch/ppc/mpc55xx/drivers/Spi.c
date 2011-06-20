@@ -128,21 +128,18 @@
 #define SPIE_OK				0
 #define SPIE_MORE_TO_SEND   1
 
-
-
-#define IMPL_SIMPLE			0
-#define IMPL_FIFO			1
+#define IMPL_SIMPLE			0   /* Not implemented, NOT TESTED */
+#define IMPL_FIFO			1	/* Partly implemented, NOT TESTED */
 #define IMPL_DMA			2
 
 #define SPI_IMPLEMENTATION	IMPL_DMA
-//typedef uint8 Spi_DataType;
 
 // E2 read = cmd + addr + data = 1 + 2 + 64 ) = 67 ~ 72
 #define SPI_INTERNAL_MTU    72
 
 #define FIFO_DEPTH			5
 
-#define STEP_VALIDATION		1
+//#define STEP_VALIDATION		1
 
 #define MODULE_NAME 	"/driver/Spi"
 
