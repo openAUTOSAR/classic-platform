@@ -504,28 +504,28 @@ Adc_StreamNumSampleType Adc_GetStreamLastPointer(Adc_GroupType group, Adc_ValueG
 	{
 	    /* Copy the result to application buffer. */
 #if defined(CFG_MPC5606S)
-		if(ADC_CONV_MODE_ONESHOT == AdcConfigPtr->groupConfigPtr[group].conversionMode)
-		{
-		  *PtrToSamplePtr = currResultBufPtr[group];
-		}
-		else
-		{
-		  if(ADC_ACCESS_MODE_SINGLE == AdcConfigPtr->groupConfigPtr[group].accessMode )
-		  {
-			*PtrToSamplePtr = currResultBufPtr[group];
-		  }
-		  else
-		  {
-			*PtrToSamplePtr = currResultBufPtr[currGroupId];
-		  }
-		}
+		*PtrToSamplePtr = currResultBufPtr[group];
 #else
 		*PtrToSamplePtr = AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr;
 #endif
 
-	    if ((ADC_CONV_MODE_CONTINOUS == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
-	         ((ADC_STREAM_COMPLETED    == AdcConfigPtr->groupConfigPtr[group].status->groupStatus) ||
-	          (ADC_COMPLETED           == AdcConfigPtr->groupConfigPtr[group].status->groupStatus)))
+	    if ((ADC_CONV_MODE_ONESHOT == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
+	        (ADC_STREAM_COMPLETED  == AdcConfigPtr->groupConfigPtr[group].status->groupStatus))
+	    {
+			/** @req ADC327. */
+			AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_IDLE;
+	    }
+	    else if ((ADC_CONV_MODE_CONTINOUS == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
+	             (ADC_ACCESS_MODE_STREAMING == AdcConfigPtr->groupConfigPtr[group].accessMode) &&
+	             (ADC_STREAM_BUFFER_LINEAR == AdcConfigPtr->groupConfigPtr[group].streamBufferMode) &&
+	             (ADC_STREAM_COMPLETED    == AdcConfigPtr->groupConfigPtr[group].status->groupStatus))
+	    {
+			/** @req ADC327. */
+			AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_IDLE;
+	    }
+	    else if ( (ADC_CONV_MODE_CONTINOUS == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
+	              ((ADC_STREAM_COMPLETED    == AdcConfigPtr->groupConfigPtr[group].status->groupStatus) ||
+	               (ADC_COMPLETED           == AdcConfigPtr->groupConfigPtr[group].status->groupStatus)) )
 	    {
 	        /* Restart continous mode, and reset result buffer */
 	        if ((ADC_CONV_MODE_CONTINOUS == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
@@ -548,12 +548,6 @@ Adc_StreamNumSampleType Adc_GetStreamLastPointer(Adc_GroupType group, Adc_ValueG
 			/** @req ADC326 */
 			/** @req ADC328 */
 			AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_BUSY;
-	    }
-	    else if ((ADC_CONV_MODE_ONESHOT == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
-	             (ADC_STREAM_COMPLETED  == AdcConfigPtr->groupConfigPtr[group].status->groupStatus))
-	    {
-	      /** @req ADC327. */
-	      AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_IDLE;
 	    }
 	    else{/* Keep status. */}
 	}
@@ -578,21 +572,7 @@ Std_ReturnType Adc_ReadGroup (Adc_GroupType group, Adc_ValueGroupType *dataBuffe
 #if defined(CFG_MPC5606S)
       for (channel = 0; channel < AdcConfigPtr->groupConfigPtr[group].numberOfChannels; channel++)
 	  {
-		if(ADC_CONV_MODE_ONESHOT == AdcConfigPtr->groupConfigPtr[group].conversionMode)
-		{
 		  dataBufferPtr[channel] = currResultBufPtr[group][channel];
-		}
-		else
-		{
-		  if(ADC_ACCESS_MODE_SINGLE == AdcConfigPtr->groupConfigPtr[group].accessMode )
-		  {
-			dataBufferPtr[channel] = currResultBufPtr[group][channel];
-		  }
-		  else
-		  {
-			dataBufferPtr[channel] = currResultBufPtr[group][channel];
-		  }
-		}
 	  }
 #else
     for (channel = 0; channel < AdcConfigPtr->groupConfigPtr[group].numberOfChannels; channel++)
@@ -601,10 +581,25 @@ Std_ReturnType Adc_ReadGroup (Adc_GroupType group, Adc_ValueGroupType *dataBuffe
     }
 #endif
 
-    if ((ADC_CONV_MODE_CONTINOUS == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
-         ((ADC_STREAM_COMPLETED    == AdcConfigPtr->groupConfigPtr[group].status->groupStatus) ||
-          (ADC_COMPLETED           == AdcConfigPtr->groupConfigPtr[group].status->groupStatus)))
+    if ((ADC_CONV_MODE_ONESHOT == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
+        (ADC_STREAM_COMPLETED  == AdcConfigPtr->groupConfigPtr[group].status->groupStatus))
     {
+		/** @req ADC330. */
+		AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_IDLE;
+    }
+    else if ((ADC_CONV_MODE_CONTINOUS == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
+             (ADC_STREAM_BUFFER_LINEAR == AdcConfigPtr->groupConfigPtr[group].streamBufferMode) &&
+             (ADC_ACCESS_MODE_STREAMING == AdcConfigPtr->groupConfigPtr[group].accessMode) &&
+             (ADC_STREAM_COMPLETED    == AdcConfigPtr->groupConfigPtr[group].status->groupStatus))
+    {
+		/** @req ADC330. */
+		AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_IDLE;
+    }
+    else if ((ADC_CONV_MODE_CONTINOUS == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
+             ((ADC_STREAM_COMPLETED    == AdcConfigPtr->groupConfigPtr[group].status->groupStatus) ||
+              (ADC_COMPLETED           == AdcConfigPtr->groupConfigPtr[group].status->groupStatus)))
+    {
+    	/** @req ADC329 */
       /* Restart continous mode, and reset result buffer */
       if ((ADC_CONV_MODE_CONTINOUS == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
           (ADC_STREAM_COMPLETED    == AdcConfigPtr->groupConfigPtr[group].status->groupStatus))
@@ -627,12 +622,7 @@ Std_ReturnType Adc_ReadGroup (Adc_GroupType group, Adc_ValueGroupType *dataBuffe
       /** @req ADC331 */
       AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_BUSY;
     }
-    else if ((ADC_CONV_MODE_ONESHOT == AdcConfigPtr->groupConfigPtr[group].conversionMode) &&
-             (ADC_STREAM_COMPLETED  == AdcConfigPtr->groupConfigPtr[group].status->groupStatus))
-    {
-      /** @req ADC330. */
-      AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_IDLE;
-    }
+    else{/* Keep status. */}
   }
   else
   {
@@ -1040,8 +1030,10 @@ static void  Adc_ConfigureADC (const Adc_ConfigType *ConfigPtr)
   /* Power on ADC */
   ADC_0.MCR.B.PWDN = 0;
 
+#ifndef DONT_USE_DMA_IN_ADC_MPC5606S
   /* Enable DMA. */
   ADC_0.DMAE.B.DMAEN = 1;
+#endif
 }
 
 void Adc_ConfigureADCInterrupts (void)
@@ -1059,13 +1051,11 @@ void Adc_StartGroupConversion (Adc_GroupType group)
    /* Run development error check. */
   if (E_OK == Adc_CheckStartGroupConversion (group))
   {    	
-    /* Abort conversion, for safety before resetting resultbuffer */
-  	ADC_0.MCR.B.ABORTCHAIN = 1;  
-  	/* Disable trigger normal conversions for ADC0 */
-  	ADC_0.MCR.B.NSTART = 0;
+  	  /* Disable trigger normal conversions for ADC0 */
+  	  ADC_0.MCR.B.NSTART = 0;
 
-    currGroupId = group;
-    currSampleCount[group] = 0;
+      currGroupId = group;
+      currSampleCount[group] = 0;
 
 	  currResultBufPtr[group] = AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr; /* Set current result buffer */
 #ifndef DONT_USE_DMA_IN_ADC_MPC5606S
@@ -1106,6 +1096,8 @@ void Adc_StartGroupConversion (Adc_GroupType group)
         /* Enable Channel Interrupt */
         ADC_0.CIMR[1].R = groupChannelIdMask;
 
+        /* Clear interrupts */
+    	ADC_0.ISR.B.ECH = 1;
         /* Enable ECH interrupt */
         ADC_0.IMR.B.MSKECH = 1;
 
