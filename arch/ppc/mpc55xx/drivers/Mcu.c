@@ -94,7 +94,7 @@ Mcu_GlobalType Mcu_Global =
 
 //-------------------------------------------------------------------
 
-static void Mcu_LossOfLock( void  ){
+void Mcu_LossOfLock( void  ){
 #if defined(USE_DEM)
 	Dem_ReportErrorStatus(MCU_E_CLOCK_FAILURE, DEM_EVENT_STATUS_FAILED);
 #endif
@@ -116,7 +116,7 @@ static void Mcu_LossOfLock( void  ){
 
 //-------------------------------------------------------------------
 
-static void Mcu_LossOfClock( void  ){
+void Mcu_LossOfClock( void  ){
 	/* Should report MCU_E_CLOCK_FAILURE with DEM here */
 #if defined(CFG_MPC5606S)
 	/*not support*/

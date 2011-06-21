@@ -541,6 +541,57 @@
                     </INTEGER-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
+                <CONTAINER UUID="ef94daf5-3e59-4674-ae5e-3659e571073f">
+                  <SHORT-NAME>ExpiryPoint4</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsScheduleTable/OsScheduleTableExpiryPoint</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsScheduleTable/OsScheduleTableExpiryPoint/OsScheduleTblExpPointOffset</DEFINITION-REF>
+                      <VALUE>9</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                  <SUB-CONTAINERS>
+                    <CONTAINER UUID="26031837-476e-4eba-91df-b70ab7a71f8e">
+                      <SHORT-NAME>EventSetting1</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsScheduleTable/OsScheduleTableExpiryPoint/OsScheduleTableEventSetting</DEFINITION-REF>
+                      <REFERENCE-VALUES>
+                        <REFERENCE-VALUE>
+                          <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsScheduleTable/OsScheduleTableExpiryPoint/OsScheduleTableEventSetting/OsScheduleTableSetEventRef</DEFINITION-REF>
+                          <VALUE-REF DEST="CONTAINER">/os_schtbl_mpc551xsim/Os/Event1</VALUE-REF>
+                        </REFERENCE-VALUE>
+                        <REFERENCE-VALUE>
+                          <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsScheduleTable/OsScheduleTableExpiryPoint/OsScheduleTableEventSetting/OsScheduleTableSetEventTaskRef</DEFINITION-REF>
+                          <VALUE-REF DEST="CONTAINER">/os_schtbl_mpc551xsim/Os/eTask1</VALUE-REF>
+                        </REFERENCE-VALUE>
+                      </REFERENCE-VALUES>
+                    </CONTAINER>
+                    <CONTAINER UUID="198af8d1-3e40-43a8-90c6-b822c1f14be6">
+                      <SHORT-NAME>TaskActivation1</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsScheduleTable/OsScheduleTableExpiryPoint/OsScheduleTableTaskActivation</DEFINITION-REF>
+                      <REFERENCE-VALUES>
+                        <REFERENCE-VALUE>
+                          <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsScheduleTable/OsScheduleTableExpiryPoint/OsScheduleTableTaskActivation/OsScheduleTableActivateTaskRef</DEFINITION-REF>
+                          <VALUE-REF DEST="CONTAINER">/os_schtbl_mpc551xsim/Os/bTask3</VALUE-REF>
+                        </REFERENCE-VALUE>
+                      </REFERENCE-VALUES>
+                    </CONTAINER>
+                  </SUB-CONTAINERS>
+                </CONTAINER>
               </SUB-CONTAINERS>
             </CONTAINER>
             <CONTAINER UUID="e9b2de76-5e7f-4c07-86fe-a4385118fb55">
