@@ -40,6 +40,10 @@ obj-$(USE_ECUM) += EcuM_Callout_template.o
 inc-$(USE_ECUM) += $(ROOTDIR)/system/EcuM
 vpath-$(USE_ECUM) += $(ROOTDIR)/system/EcuM
 
+#Ea
+obj-$(USE_EA) += Ea.o
+vpath-$(USE_EA) += $(ROOTDIR)/memory/Ea
+
 # Gpt
 obj-$(USE_GPT) += Gpt.o
 obj-$(USE_GPT) += Gpt_Cfg.o

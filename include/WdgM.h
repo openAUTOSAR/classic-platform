@@ -21,6 +21,10 @@
 #ifndef WDGM_H_
 #define WDGM_H_
 
+#define WDGM_SW_MAJOR_VERSION	1
+#define WDGM_SW_MINOR_VERSION	0
+#define WDGM_SW_PATCH_VERSION	0
+
 #include "Std_Types.h"
 #include "WdgM_Cfg.h"
 

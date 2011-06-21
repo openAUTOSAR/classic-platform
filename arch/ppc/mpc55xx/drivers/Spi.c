@@ -128,21 +128,20 @@
 #define SPIE_OK				0
 #define SPIE_MORE_TO_SEND   1
 
-
-
-#define IMPL_SIMPLE			0
-#define IMPL_FIFO			1
+#define IMPL_SIMPLE			0   /* Not implemented, NOT TESTED */
+#define IMPL_FIFO			1	/* Partly implemented, NOT TESTED */
 #define IMPL_DMA			2
 
 #define SPI_IMPLEMENTATION	IMPL_DMA
-//typedef uint8 Spi_DataType;
 
 // E2 read = cmd + addr + data = 1 + 2 + 64 ) = 67 ~ 72
 #define SPI_INTERNAL_MTU    72
 
+/* The depth of the HW FIFO */
 #define FIFO_DEPTH			5
 
-#define STEP_VALIDATION		1
+/* Define for debug purposes, checks that SPI/DMA is ok */
+//#define STEP_VALIDATION		1
 
 #define MODULE_NAME 	"/driver/Spi"
 
@@ -1037,9 +1036,12 @@ uint8 clk_table_pbr[] = { 2, 3, 5, 7 };
  * @param ctar_unit - The ctar unit number to setup
  * @param width - The width in bits of the data to send with the CTAR
  */
-static void Spi_SetupCTAR(Spi_HWUnitType unit,
-		const Spi_ExternalDeviceType *extDev, Spi_ChannelType ctar_unit,
-		uint8 width) {
+static void Spi_SetupCTAR(	Spi_HWUnitType unit,
+							const Spi_ExternalDeviceType *extDev,
+							Spi_ChannelType ctar_unit,
+							Spi_TransferStartType transferStart,
+							uint8 width)
+{
 	uint32 clock;
 	uint32 pre_br;
 	int i;
@@ -1202,7 +1204,8 @@ static void Spi_SetupCTAR(Spi_HWUnitType unit,
 			clk_table_asc[spiHw->CTAR[ctar_unit].B.DT]*1000/(clock/1000000));
 
 	/* Data is transferred MSB first */
-	spiHw->CTAR[ctar_unit].B.LSBFE = 0;
+
+	spiHw->CTAR[ctar_unit].B.LSBFE = (transferStart == SPI_TRANSFER_START_MSB ) ? 0 : 1;
 
 	/* Set mode */
 	spiHw->CTAR[ctar_unit].B.FMSZ = width - 1;
@@ -1423,9 +1426,10 @@ void Spi_Init(const Spi_ConfigType *ConfigPtr) {
 				chConfig = &Spi_Global.configPtr->SpiChannelConfig[channelIndex];
 
 				// Form a channel code from
-				// <external_device_id><channel width>
-				channelCode = ((jobConfig->DeviceAssignment << 8)
-						+ chConfig->SpiDataWidth);
+				// <MSB/LSB><external_device_id><channel width>
+				channelCode = ( ((uint32_t)chConfig->SpiTransferStart << 16) +
+								(jobConfig->DeviceAssignment << 8) +
+								chConfig->SpiDataWidth);
 
 				for (k = 0; k < 7; k++) {
 					if (spiUnit->channelCodes[k] == channelCode) {
@@ -1441,15 +1445,19 @@ void Spi_Init(const Spi_ConfigType *ConfigPtr) {
 						// Assign the CTAR index to channel info..
 						DEBUG(DEBUG_LOW,"%s: Channel %d uses    CTAR %d@%d . device=%d,width=%d\n",MODULE_NAME,channelIndex,k,jobConfig->SpiHwUnit,jobConfig->DeviceAssignment,chConfig->SpiDataWidth);
 
-						Spi_SetupCTAR(jobConfig->SpiHwUnit,
-								Spi_GetExternalDevicePtrFromIndex(
-										jobConfig->DeviceAssignment),
-								(Spi_ChannelType) k, chConfig->SpiDataWidth);
+						Spi_SetupCTAR(
+								jobConfig->SpiHwUnit,
+								Spi_GetExternalDevicePtrFromIndex( jobConfig->DeviceAssignment),
+								(Spi_ChannelType) k,
+								chConfig->SpiTransferStart,
+								chConfig->SpiDataWidth);
 
 						Spi_ChannelInfo[channelIndex].ctarId = k;
 						break;
 					}
 				}
+				/* No more CTARS */
+				assert(k<7);
 			}
 		}
 	}

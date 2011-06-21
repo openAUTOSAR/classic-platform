@@ -81,13 +81,15 @@
 #if defined(USE_LINSM)
 #include "LinSM.h"
 #endif
+#if defined(USE_SPI)
+#include "Spi.h"
+#endif
 #if defined(USE_WDG)
 #include "Wdg.h"
 #endif
 #if defined(USE_WDGM)
 #include "WdgM.h"
 #endif
-
 
 void EcuM_AL_DriverInitZero(void)
 {
@@ -135,8 +137,8 @@ void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
 #endif
 
 	// Setup watchdog
-	#if defined(USE_WDG)
-	//Wdg_Init(ConfigPtr->WdgConfig); /* WDG is not AUTOSAR compliant for ArctiCore */
+#if defined(USE_WDG)
+	Wdg_Init(ConfigPtr->WdgConfig);
 #endif
 #if defined(USE_WDGM)
 	WdgM_Init(ConfigPtr->WdgMConfig);

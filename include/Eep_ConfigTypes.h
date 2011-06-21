@@ -12,6 +12,7 @@
  * EepSpiReference:				1..*  Ref to SPI sequence
  */
 
+#if defined(EEP_USES_EXTERNAL_DRIVER)
 typedef struct {
   /* Reference to SPI sequence (required for external EEPROM drivers).
    *
@@ -54,8 +55,8 @@ typedef struct {
   Spi_ChannelType EepCmdChannel;
   Spi_ChannelType EepDataChannel;
   Spi_ChannelType EepWrenChannel;
-
 } Eep_ExternalDriverType;
+#endif
 
 
 /* STD container : EepInitConfiguration
@@ -109,8 +110,9 @@ typedef struct {
   // This parameter is the EEPROM page size, i.e. number of bytes.
   Eep_LengthType EepPageSize;
 
+#if defined(EEP_USES_EXTERNAL_DRIVER)
   Eep_ExternalDriverType *externalDriver;
-
+#endif
 } Eep_ConfigType;
 
 

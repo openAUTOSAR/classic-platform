@@ -11,30 +11,26 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
- * -------------------------------- Arctic Core ------------------------------
- * WdgIf.h
- *
- *  Created on: 22 feb 2010
- *      Author: Fredrik
- */
+ * -------------------------------- Arctic Core ------------------------------*/
 
-#ifndef WDGIF_H_
-#define WDGIF_H_
-
-#define WDGIF_SW_MAJOR_VERSION	1
-#define WDGIF_SW_MINOR_VERSION	0
-#define WDGIF_SW_PATCH_VERSION	0
+#ifndef EA_TYPES_H_
+#define EA_TYPES_H_
 
 #include "Std_Types.h"
-#include "WdgIf_Cfg.h"
 
-#define WDGIF_SETMODE_ID             0x01
-#define WDGIF_TRIGGER_ID             0x02
+/*
+	ITEM NAME:		<Ea_JobType>
+	SCOPE:			<EA Module>
+	DESCRIPTION:
+		define all job in EA module 	
+*/
+typedef enum 
+{	
+	EA_JOB_NONE,
+	EA_JOB_COMPARE,
+	EA_JOB_ERASE,
+	EA_JOB_READ,
+	EA_JOB_WRITE,
+} Ea_JobType;
 
-#define WDGIF_E_PARAM_DEVICE         0x01
-
-Std_ReturnType WdgIf_SetMode (uint8 DeviceIndex, WdgIf_ModeType Mode);
-
-void WdgIf_Trigger (uint8 DeviceIndex);
-
-#endif /* WDGIF_H_ */
+#endif

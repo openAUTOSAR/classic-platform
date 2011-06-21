@@ -18,6 +18,7 @@
 #define EEP_CFG_H_
 
 
+#define EEP_USES_EXTERNAL_DRIVER
 
 #include "Spi.h"
 #include "Eep_ConfigTypes.h"

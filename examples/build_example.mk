@@ -37,6 +37,8 @@ clean:
 	$(Q)rm -rf obj_$(boarddir)
 	@echo done!
 
+else 
+export example:=$(EXAMPLENAME)
 endif
 
 ifneq (${MAKELEVEL},0)

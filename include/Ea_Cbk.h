@@ -15,14 +15,10 @@
 
 
 
-
-
-
-
-
 #ifndef EA_CBK_H_
 #define EA_CBK_H_
 
+/** @req EA114 */
 void Ea_JobEndNotification(void);	/** @req EA094 */
 void Ea_JobErrorNotification(void);	/** @req EA095 */
 
