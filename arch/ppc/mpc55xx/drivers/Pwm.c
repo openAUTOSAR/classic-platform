@@ -44,41 +44,17 @@
 #include "Os.h"
 #include "Mcu.h"
 #if PWM_NOTIFICATION_SUPPORTED==STD_ON
+#include "isr.h"
 #include "irq.h"
 #include "arc.h"
 #endif
 
-
 #if defined(CFG_MPC5606S)
 	#define PWM_RUNTIME_CHANNEL_COUNT	48
+    #define CHANNELS_OK (((Channel <= PWM_MAX_CHANNEL-1) && (Channel >= 40)) || ((Channel <= 23) && (Channel >= 16)))
 #else
 	#define PWM_RUNTIME_CHANNEL_COUNT	16
-#endif
-
-#if PWM_DEV_ERROR_DETECT==STD_ON
-	#define PWM_VALIDATE(_exp, _errid) \
-		if (!(_exp)) { \
-			Pwm_ReportError(_errid); \
-			return; \
-		}
-    #if ( defined(CFG_MPC5516) || defined (CFG_MPC5567) )
-		
-		#define PWM_RUNTIME_CHANNEL_COUNT	16
-		#define Pwm_VALIDATE_CHANNEL(_ch) PWM_VALIDATE(_ch < 16, PWM_E_PARAM_CHANNEL)
-
-	#elif  defined(CFG_MPC5606S)
-	
-		#define PWM_RUNTIME_CHANNEL_COUNT	48
-		#define Pwm_VALIDATE_CHANNEL(_ch) PWM_VALIDATE(((_ch <= PWM_MAX_CHANNEL-1) && (_ch >= 40)) ||((_ch <= 23) && (_ch >= 16)), PWM_E_PARAM_CHANNEL)
-	
-	#endif
-
-	#define Pwm_VALIDATE_INITIALIZED() PWM_VALIDATE(Pwm_ModuleState == PWM_STATE_INITIALIZED, PWM_E_UNINIT)
-	#define Pwm_VALIDATE_UNINITIALIZED() PWM_VALIDATE(Pwm_ModuleState != PWM_STATE_INITIALIZED, PWM_E_ALREADY_INITIALIZED)
-#else
-	#define Pwm_VALIDATE_CHANNEL(ch)
-	#define Pwm_VALIDATE_INITIALIZED()
-	#define Pwm_VALIDATE_UNINITIALIZED()
+	#define CHANNELS_OK (Channel < 16)
 #endif
 
 const Pwm_ConfigType* PwmConfigPtr = NULL;
@@ -102,7 +78,34 @@ typedef struct {
 // We use Pwm_ChannelType as index here
 Pwm_ChannelStructType ChannelRuntimeStruct[PWM_RUNTIME_CHANNEL_COUNT];
 
+
 /* Local functions */
+Std_ReturnType Pwm_ValidateInitialized(Pwm_APIServiceIDType apiId)
+{
+	Std_ReturnType result = E_OK;
+    if( Pwm_ModuleState == PWM_STATE_UNINITIALIZED )
+    {
+#if PWM_DEV_ERROR_DETECT==STD_ON
+    	Det_ReportError(PWM_MODULE_ID,0, apiId,PWM_E_UNINIT);
+    	result = E_NOT_OK;
+#endif
+    }
+    return result;
+}
+
+Std_ReturnType Pwm_ValidateChannel(Pwm_ChannelType Channel,Pwm_APIServiceIDType apiId)
+{
+	Std_ReturnType result = E_OK;
+    if( !CHANNELS_OK  )
+    {
+#if PWM_DEV_ERROR_DETECT==STD_ON
+    	Det_ReportError(PWM_MODULE_ID,0, apiId,PWM_E_PARAM_CHANNEL);
+    	result = E_NOT_OK;
+#endif
+    }
+    return result;
+}
+
 void inline Pwm_InitChannel(Pwm_ChannelType Channel);
 void inline Pwm_DeInitChannel(Pwm_ChannelType Channel);
 
@@ -221,7 +224,15 @@ static void configureChannel(Pwm_ChannelType channel_iterator, const Pwm_Channel
 void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
     Pwm_ChannelType channel_iterator;
 
-    Pwm_VALIDATE_UNINITIALIZED();
+    /** @req PWM118 */
+    /** @req PWM121 */
+    if( Pwm_ModuleState == PWM_STATE_INITIALIZED ) {
+#if PWM_DEV_ERROR_DETECT==STD_ON
+    	Det_ReportError(PWM_MODULE_ID,0,PWM_INIT_ID,PWM_E_ALREADY_INITIALIZED);
+#endif
+    	return;
+    }
+
     #if defined(CFG_MPC5606S)
 		CGM.AC1_SC.R = 0x03000000; /* MPC56xxS: Select aux. set 1 clock to be FMPLL0 */
 		CGM.AC2_SC.R = 0x03000000; /* MPC56xxS: Select aux. set 2 clock to be FMPLL0 */
@@ -237,19 +248,13 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
          * pointer shall be passed to the initialization routine. In this case the
          * check for this NULL pointer has to be omitted.
          */
-        #if PWM_STATICALLY_CONFIGURED==OFF
+        #if PWM_STATICALLY_CONFIGURED==STD_OFF
             if (ConfigPtr == NULL) {
-                Pwm_ReportError(PWM_E_PARAM_CONFIG);
+                Det_ReportError(PWM_MODULE_ID,0,PWM_INIT_ID,PWM_E_PARAM_CONFIG);
                 return;
             }
         #endif
     #endif
-
-    #if PWM_NOTIFICATION_SUPPORTED==STD_ON
-        // Create a task for our interrupt service routine.
-        TaskType tid = Os_Arc_CreateIsr(Pwm_Isr, PWM_ISR_PRIORITY /*prio*/, "PwmIsr");
-    #endif
-
 
 	#if defined(CFG_MPC5606S)
 
@@ -303,14 +308,14 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
 			#if defined(CFG_MPC5606S)
 				if(channel <= PWM_NUMBER_OF_EACH_EMIOS-1)
 				{
-					 Irq_AttachIsr2(tid, NULL, (IrqType)(EMIOS_0_GFR_F16_F17 + (channel-16)/2));
+		            ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F16_F17 + (channel-16)/2),PWM_ISR_PRIORITY, 0);
 				}
 				else
 				{
-					 Irq_AttachIsr2(tid, NULL, (IrqType)(EMIOS_1_GFR_F16_F17 + (channel-40)/2 ));
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F16_F17 + (channel-40)/2),PWM_ISR_PRIORITY, 0);
 				}
 			#else
-                Irq_AttachIsr2(tid, NULL, EMISOS200_FLAG_F0 + channel);
+            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F0 + channel),PWM_ISR_PRIORITY, 0);
         	#endif
 
             ChannelRuntimeStruct[channel].NotificationRoutine
@@ -324,9 +329,6 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
 
 // TODO: Test that this function in fact turns the channel off.
 void inline Pwm_DeInitChannel(Pwm_ChannelType Channel) {
-	Pwm_VALIDATE_CHANNEL(Channel);
-	Pwm_VALIDATE_INITIALIZED();
-
     Pwm_SetOutputToIdle(Channel);
 
     #ifdef CFG_MPC5516
@@ -358,7 +360,10 @@ void Pwm_DeInit() {
 	/* TODO: Implement Pwm_DeInit() */
 	Pwm_ChannelType channel_iterator;
 
-	Pwm_VALIDATE_INITIALIZED();
+	if(E_OK != Pwm_ValidateInitialized(PWM_DEINIT_ID))
+	{
+		return;
+	}
 
 	for (channel_iterator = 0; channel_iterator < PWM_NUMBER_OF_CHANNELS; channel_iterator++) {
 		Pwm_ChannelType channel = PwmConfigPtr->Channels[channel_iterator].channel;
@@ -392,9 +397,18 @@ void Pwm_DeInit() {
 	void Pwm_SetPeriodAndDuty(Pwm_ChannelType Channel, Pwm_PeriodType Period,
 			Pwm_DutyCycleType DutyCycle) {
 
-		Pwm_VALIDATE_INITIALIZED();
-		Pwm_VALIDATE_CHANNEL(Channel);
-		PWM_VALIDATE(ChannelRuntimeStruct[Channel].Class == PWM_VARIABLE_PERIOD, PWM_E_PERIOD_UNCHANGEABLE);
+		if ((E_OK != Pwm_ValidateInitialized(PWM_SETPERIODANDDUTY_ID)) ||
+			(E_OK != Pwm_ValidateChannel(Channel, PWM_SETPERIODANDDUTY_ID)))
+		{
+			return;
+		}
+		if(ChannelRuntimeStruct[Channel].Class != PWM_VARIABLE_PERIOD)
+		{
+#if PWM_DEV_ERROR_DETECT==STD_ON
+			Det_ReportError(PWM_MODULE_ID,0, PWM_SETPERIODANDDUTY_ID, PWM_E_PERIOD_UNCHANGEABLE);
+#endif
+			return;
+		}
 
 		uint16 leading_edge_position = (uint16) (((uint32) Period
 				* (uint32) DutyCycle) >> 15);
@@ -438,17 +452,16 @@ void Pwm_DeInit() {
 
 void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 {
-	Pwm_VALIDATE_INITIALIZED();
-	Pwm_VALIDATE_CHANNEL(Channel);
+	if ((E_OK != Pwm_ValidateInitialized(PWM_SETDUTYCYCLE_ID)) ||
+		(E_OK != Pwm_ValidateChannel(Channel, PWM_SETDUTYCYCLE_ID)))
+	{
+		return;
+	}
 
 	#ifdef CFG_MPC5516
 
 		uint16 leading_edge_position = (uint16) ((EMIOS.CH[Channel].CBDR.R
 					* (uint32) DutyCycle) >> 15);
-
-
-		Pwm_VALIDATE_INITIALIZED();
-		Pwm_VALIDATE_CHANNEL(Channel);
 
 		/* Timer instant for leading edge */
 
@@ -487,8 +500,11 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 #if  PWM_SET_OUTPUT_TO_IDLE == STD_ON
 	void Pwm_SetOutputToIdle(Pwm_ChannelType Channel)
 	{
-		Pwm_VALIDATE_CHANNEL(Channel);
-		Pwm_VALIDATE_INITIALIZED();
+		if ((E_OK != Pwm_ValidateInitialized(PWM_SETOUTPUTTOIDLE_ID)) ||
+			(E_OK != Pwm_ValidateChannel(Channel, PWM_SETOUTPUTTOIDLE_ID)))
+		{
+			return;
+		}
 
 		/* TODO: Make Pwm_SetOutputToIdle sensitive to PwmIdleState (currently uses PwmPolarity) */
 
@@ -531,23 +547,9 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 	 */
 	Pwm_OutputStateType Pwm_GetOutputState(Pwm_ChannelType Channel)
 	{
-		// We need to return something, even in presence of errors
-		if (Channel >= PWM_MAX_CHANNEL ||Channel < 16 || Channel >23 && Channel <40 )
+		if ((E_OK != Pwm_ValidateInitialized(PWM_GETOUTPUTSTATE_ID)) ||
+			(E_OK != Pwm_ValidateChannel(Channel, PWM_GETOUTPUTSTATE_ID)))
 		{
-			Pwm_ReportError(PWM_E_PARAM_CHANNEL);
-
-			/*
-			 * Accordingly to PWM025, we should return PWM_LOW on failure.
-			 */
-			return PWM_LOW;
-
-		}
-		else if (Pwm_ModuleState != PWM_STATE_INITIALIZED)
-		{
-			Pwm_ReportError(PWM_E_UNINIT);
-			/*
-			 * Accordingly to PWM025, we should return PWM_LOW on failure.
-			 */
 			return PWM_LOW;
 		}
 
@@ -574,8 +576,11 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 
 	void Pwm_DisableNotification(Pwm_ChannelType Channel)
 	{
-		Pwm_VALIDATE_CHANNEL(Channel);
-		Pwm_VALIDATE_INITIALIZED();
+		if ((E_OK != Pwm_ValidateInitialized(PWM_DISABLENOTIFICATION_ID)) ||
+			(E_OK != Pwm_ValidateChannel(Channel, PWM_DISABLENOTIFICATION_ID)))
+		{
+			return;
+		}
 
 		// Disable flags on this channel
 		#ifdef CFG_MPC5516
@@ -598,8 +603,11 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 
 	void Pwm_EnableNotification(Pwm_ChannelType Channel,Pwm_EdgeNotificationType Notification)
 	{
-		Pwm_VALIDATE_CHANNEL(Channel);
-		Pwm_VALIDATE_INITIALIZED();
+		if ((E_OK != Pwm_ValidateInitialized(PWM_ENABLENOTIFICATION_ID)) ||
+			(E_OK != Pwm_ValidateChannel(Channel, PWM_ENABLENOTIFICATION_ID)))
+		{
+			return;
+		}
 
 		ChannelRuntimeStruct[Channel].NotificationState = Notification;
 

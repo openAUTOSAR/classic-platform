@@ -50,11 +50,6 @@
 #   define Pwm_ReportError(ErrorId)
 #endif
 
-#if PWM_DEV_ERROR_DETECT==STD_ON
-#       define Pwm_ReportError(ErrorId) Det_ReportError( MODULE_ID_PWM, 0, 0, ErrorId);
-#else
-#   define Pwm_ReportError(ErrorId)
-#endif
 
 /**************************************************************
  *  Type definitions
@@ -112,31 +107,29 @@ extern const Pwm_ConfigType PwmConfig;
 #error "Unbuffered PWM currently not supported by this driver."
 #endif
 
-/*
- * Constants
- *****************/
-/** @name Error Codes */
-//@{
-/** Pwm_Init called with the wrong parameter */
-//const Pwm_ErrorType PWM_E_PARAM_CONFIG = 0x10;
-#define PWM_E_PARAM_CONFIG 			0x10
+/* DET errors that the PWM can produce. */
+typedef enum
+{
+  PWM_E_PARAM_CONFIG              = 0x10,
+  PWM_E_UNINIT,
+  PWM_E_PARAM_CHANNEL,
+  PWM_E_PERIOD_UNCHANGEABLE,
+  PWM_E_ALREADY_INITIALIZED
+}Pwm_DetErrorType;
 
-/** PWM is not initialized yet */
-//const Pwm_ErrorType PWM_E_UNINIT = 0x11;
-#define PWM_E_UNINIT 					0x11
-
-/** Invalid PWM channel identifier */
-//const Pwm_ErrorType PWM_E_PARAM_CHANNEL = 0x12;
-#define PWM_E_PARAM_CHANNEL 			0x12
-
-/** Use of unauthorized service on PWM channel configured fixed period */
-//const Pwm_ErrorType PWM_E_PERIOD_UNCHANGEABLE = 0x13;
-#define PWM_E_PERIOD_UNCHANGEABLE 		0x13
-
-/** Pwm_Init called when already initialized */
-//const Pwm_ErrorType PWM_E_ALREADY_INITIALIZED = 0x14;
-#define PWM_E_ALREADY_INITIALIZED 		0x14
-//@}
+/** API service ID's */
+typedef enum
+{
+	  PWM_INIT_ID = 0x00,
+	  PWM_DEINIT_ID,
+	  PWM_SETDUTYCYCLE_ID,
+	  PWM_SETPERIODANDDUTY_ID,
+	  PWM_SETOUTPUTTOIDLE_ID,
+	  PWM_GETOUTPUTSTATE_ID,
+	  PWM_DISABLENOTIFICATION_ID,
+	  PWM_ENABLENOTIFICATION_ID,
+	  PWM_GETVERSIONINFO_ID,
+}Pwm_APIServiceIDType;
 
 /*
  * Implemented functions
@@ -157,20 +150,16 @@ extern const Pwm_ConfigType PwmConfig;
 void Pwm_Init(const Pwm_ConfigType* ConfigPtr);
 void Pwm_DeInit();
 
-#if PWM_SET_PERIOD_AND_DUTY==STD_ON
-void Pwm_SetPeriodAndDuty(Pwm_ChannelType Channel, Pwm_PeriodType Period,
+void Pwm_SetPeriodAndDuty(Pwm_ChannelType ChannelNumber, Pwm_PeriodType Period,
 		Pwm_DutyCycleType DutyCycle);
-#endif
 
-void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle);
+void Pwm_SetDutyCycle(Pwm_ChannelType ChannelNumber, Pwm_DutyCycleType DutyCycle);
 void Pwm_SetOutputToIdle(Pwm_ChannelType ChannelNumber);
 /*
  * PWM085: The function Pwm_GetOutputState shall be pre compile configurable
  * ON/OFF by the configuration parameter PwmGetOutputState
  */
-#if PWM_GET_OUTPUT_STATE==STD_ON
-Pwm_OutputStateType Pwm_GetOutputState(Pwm_ChannelType Channel);
-#endif
+Pwm_OutputStateType Pwm_GetOutputState(Pwm_ChannelType ChannelNumber);
 
 /*
  * PWM113: The function EnableNotification shall be pre compile configurable
@@ -179,11 +168,9 @@ Pwm_OutputStateType Pwm_GetOutputState(Pwm_ChannelType Channel);
  * PWM112: The function DisableNotification shall be pre compile configurable
  * ON/OFF by the configuration parameter PwmNotificationSupported
  */
-#if PWM_NOTIFICATION_SUPPORTED==STD_ON
-void Pwm_DisableNotification(Pwm_ChannelType Channel);
+void Pwm_DisableNotification(Pwm_ChannelType ChannelNumber);
 void Pwm_EnableNotification(Pwm_ChannelType ChannelNumber,
 		Pwm_EdgeNotificationType Notification);
-#endif
 
 #endif /* PWM_H_ */
 /** @} */

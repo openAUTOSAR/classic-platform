@@ -162,15 +162,6 @@ GPT_ISR( 7 )
 GPT_ISR( 8 )
 #endif
 
-#if defined(CFG_MPC5606S)
-#define GPT_ISR_INSTALL( _channel, _prio )										      \
-{																					  \
-	TaskType tid;																	  \
-	tid = Os_Arc_CreateIsr(Gpt_Isr_Channel##_channel, _prio, XSTR__(Gpt_##_channel)); \
-	Irq_AttachIsr2(tid, NULL, PIT_INT ##_channel);							          \
-}
-#else
-#endif
 //-------------------------------------------------------------------
 
 void Gpt_Init(const Gpt_ConfigType *config)
