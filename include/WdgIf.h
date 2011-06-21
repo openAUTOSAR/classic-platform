@@ -21,6 +21,10 @@
 #ifndef WDGIF_H_
 #define WDGIF_H_
 
+#define WDGIF_SW_MAJOR_VERSION	1
+#define WDGIF_SW_MINOR_VERSION	0
+#define WDGIF_SW_PATCH_VERSION	0
+
 #include "Std_Types.h"
 #include "WdgIf_Cfg.h"
 

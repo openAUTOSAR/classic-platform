@@ -84,6 +84,9 @@ EcuM_ConfigType EcuMConfig =
 #if defined(USE_WDGM)
     .WdgMConfig = &WdgMConfig,
 #endif
+#if defined(USE_WDGIF)
+    .WdgIfConfig = &WdgIfConfig,
+#endif
 #if defined(USE_GPT)
     .GptConfig = GptConfigData,
 #endif

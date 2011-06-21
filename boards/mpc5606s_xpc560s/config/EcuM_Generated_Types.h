@@ -76,7 +76,15 @@
 #if defined(USE_SPI)
 #include "Spi.h"
 #endif
-
+#if defined(USE_WDG)
+#include "Wdg.h"
+#endif
+#if defined(USE_WDGM)
+#include "WdgM.h"
+#endif
+#if defined(USE_WDGIF)
+#include "WdgIf.h"
+#endif
 typedef struct
 {
 	EcuM_StateType EcuMDefaultShutdownTarget;
@@ -136,6 +144,12 @@ typedef struct
 #endif
 #if defined(USE_SPI)
 	const Spi_ConfigType* SpiConfig;
+#endif
+#if defined(USE_WDGM)
+    const WdgM_ConfigType* WdgMConfig;
+#endif
+#if defined(USE_WDGIF)
+    const WdgIf_ConfigType* WdgIfConfig;
 #endif
 } EcuM_ConfigType;
 

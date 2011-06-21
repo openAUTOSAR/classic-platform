@@ -66,6 +66,9 @@
 #if defined(USE_WDGM)
 #include "WdgM.h"
 #endif
+#if defined(USE_WDGIF)
+#include "WdgIf.h"
+#endif
 #if defined(USE_COMM)
 #include "ComM.h"
 #endif
