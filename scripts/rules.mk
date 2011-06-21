@@ -13,6 +13,16 @@ include $(ROOTDIR)/boards/$(BOARDDIR)/build_config.mk
 # Perform build system version check
 include $(ROOTDIR)/scripts/version_check.mk
 
+COMPILER?=gcc
+ifeq (${COMPILER},gcc)
+# Assume that the board have set DEFAULT_CROSS_COMPILE
+CROSS_COMPILE?=${DEFAULT_CROSS_COMPILE}
+endif
+
+ifeq (${COMPILER},cw)
+CW_COMPILE=${DEFAULT_CW_COMPILE}
+endif
+
 # Check cross compiler setting against default from board config
 ifneq (${COMPILER},cw)
 ifneq (${DEFAULT_CROSS_COMPILE},)
@@ -82,7 +92,6 @@ $(eval CFG_$(SELECT_OPT)=y)
 ARCH_PATH-y = arch/$(ARCH_FAM)/$(ARCH)
 
 # Include compiler settings
-COMPILER?=gcc
 include $(ROOTDIR)/scripts/cc_$(COMPILER).mk
 
 # Include pclint or splint settings
@@ -284,7 +293,7 @@ $(build-bin-y): $(build-exe-y)
 $(build-exe-y): $(dep-y) $(obj-y) $(sim-y) $(libitem-y) $(ldcmdfile-y)
 	@echo
 	@echo "  >> LD $@"
-ifeq ($(CROSS_COMPILE),)
+ifeq ( $(CROSS_COMPILE) $(filter $(COMPILER),gcc),)
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	
 else
 	$(Q)$(LD) $(LDFLAGS) $(LD_FILE) $(ldcmdfile-y) -o $@ $(libpath-y) $(LD_START_GRP) $(obj-y) $(lib-y) $(libitem-y) $(LD_END_GRP) $(LDMAPFILE)
