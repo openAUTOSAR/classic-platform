@@ -1,6 +1,6 @@
 
 
-EXAMPLENAME=simple
+EXAMPLENAME=os_simple
 ROOTDIR?=../../../..
 include $(ROOTDIR)/examples/build_example.mk
 
