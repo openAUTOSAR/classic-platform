@@ -66,6 +66,9 @@
 #if defined(USE_WDGM)
 #include "WdgM.h"
 #endif
+#if defined(USE_WDGIF)
+#include "WdgIf.h"
+#endif
 #if defined(USE_COMM)
 #include "ComM.h"
 #endif
@@ -131,7 +134,10 @@ typedef struct
     const Adc_ConfigType* AdcConfig;
 #endif
 #if defined(USE_WDG)
-    //const Wdg_ConfigType* WdgConfig; /* WDG is not AUTOSAR compliant for ArctiCore */
+    const Wdg_ConfigType* WdgConfig;
+#endif
+#if defined(USE_WDGIF)
+    const WdgIf_ConfigType* WdgIfConfig;
 #endif
 #if defined(USE_WDGM)
     const WdgM_ConfigType* WdgMConfig;
@@ -144,6 +150,9 @@ typedef struct
 #endif
 #if defined(USE_EEP)
 	const Eep_ConfigType* EepConfig;
+#endif
+#if defined(USE_SPI)
+	const Spi_ConfigType* SpiConfig;
 #endif
 } EcuM_ConfigType;
 
