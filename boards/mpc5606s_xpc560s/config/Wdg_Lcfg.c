@@ -20,12 +20,12 @@ const Wdg_ModeConfigType WdgModeConfig =
 	.Wdg_DefaultMode = WDGIF_OFF_MODE,
 	.WdgSettingsFast =
 	{
-		.ReloadValue = 0x200,
+		.ReloadValue = 0x280,	// 5 ms
 		.ActivationBit = 1,
 	},
 	.WdgSettingsSlow =
 	{
-		.ReloadValue = 0x7D00,
+		.ReloadValue = 0xA00,	// 20 ms
 		.ActivationBit = 1,
 	},
 	.WdgSettingsOff =
