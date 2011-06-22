@@ -37,22 +37,6 @@
 #include "regs.h"
 #include "arc.h"
 
-#if PWM_DEV_ERROR_DETECT==STD_ON
-	#define PWM_VALIDATE(_exp, _errid) \
-		if (!(_exp)) { \
-			Pwm_ReportError(_errid); \
-			return; \
-		}
-	#define Pwm_VALIDATE_CHANNEL(_ch) PWM_VALIDATE(_ch <= 7, PWM_E_PARAM_CHANNEL)
-	#define Pwm_VALIDATE_INITIALIZED() PWM_VALIDATE(Pwm_ModuleState == PWM_STATE_INITIALIZED, PWM_E_UNINIT)
-	#define Pwm_VALIDATE_UNINITIALIZED() PWM_VALIDATE(Pwm_ModuleState != PWM_STATE_INITIALIZED, PWM_E_ALREADY_INITIALIZED)
-#else
-        #define PWM_VALIDATE(_exp, _errid)
-	#define Pwm_VALIDATE_CHANNEL(ch)
-	#define Pwm_VALIDATE_INITIALIZED()
-	#define Pwm_VALIDATE_UNINITIALIZED()
-#endif
-
 typedef enum {
 	PWM_STATE_UNINITIALIZED,
 	PWM_STATE_INITIALIZED
@@ -78,14 +62,49 @@ typedef struct {
 	Pwm_OutputStateType IdleState;
 } Pwm_ChannelStructType;
 
+/* Local functions */
+Std_ReturnType Pwm_ValidateInitialized(Pwm_APIServiceIDType apiId)
+{
+	Std_ReturnType result = E_OK;
+    if( Pwm_ModuleState == PWM_STATE_UNINITIALIZED )
+    {
+#if PWM_DEV_ERROR_DETECT==STD_ON
+    	Det_ReportError(PWM_MODULE_ID,0, apiId,PWM_E_UNINIT);
+    	result = E_NOT_OK;
+#endif
+    }
+    return result;
+}
+
+Std_ReturnType Pwm_ValidateChannel(Pwm_ChannelType Channel,Pwm_APIServiceIDType apiId)
+{
+	Std_ReturnType result = E_OK;
+    if( Channel > 7  )
+    {
+#if PWM_DEV_ERROR_DETECT==STD_ON
+    	Det_ReportError(PWM_MODULE_ID,0, apiId,PWM_E_PARAM_CHANNEL);
+    	result = E_NOT_OK;
+#endif
+    }
+    return result;
+}
+
 // We use Pwm_ChannelType as index here
 static Pwm_ChannelStructType ChannelRuntimeStruct[8];
 
 void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
     Pwm_ChannelType channel_iterator;
 
-    Pwm_VALIDATE_UNINITIALIZED();
-    #if PWM_DEV_ERROR_DETECT==STD_ON
+    /** @req PWM118 */
+    /** @req PWM121 */
+    if( Pwm_ModuleState == PWM_STATE_INITIALIZED ) {
+#if PWM_DEV_ERROR_DETECT==STD_ON
+    	Det_ReportError(PWM_MODULE_ID,0,PWM_INIT_ID,PWM_E_ALREADY_INITIALIZED);
+#endif
+    	return;
+    }
+
+#if PWM_DEV_ERROR_DETECT==STD_ON
         /*
          * PWM046: If development error detection is enabled for the Pwm module,
          * the function Pwm_Init shall raise development error PWM_E_PARAM_CONFIG
@@ -95,9 +114,9 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
          * pointer shall be passed to the initialization routine. In this case the
          * check for this NULL pointer has to be omitted.
          */
-        #if PWM_STATICALLY_CONFIGURED==OFF
+        #if PWM_STATICALLY_CONFIGURED==STD_OFF
             if (ConfigPtr == NULL) {
-                Pwm_ReportError(PWM_E_PARAM_CONFIG);
+            	Det_ReportError(PWM_MODULE_ID,0,PWM_INIT_ID,PWM_E_PARAM_CONFIG);
                 return;
             }
         #endif
@@ -138,11 +157,14 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
     }
 }
 
-#if PWM_DEINIT_API==STD_ON
+#if PWM_DE_INIT_API==STD_ON
 
 void Pwm_DeInit() {
 
-	Pwm_VALIDATE_INITIALIZED();
+	if(E_OK != Pwm_ValidateInitialized(PWM_DEINIT_ID))
+	{
+		return;
+	}
 
 	PWME = 0;
 
@@ -154,13 +176,22 @@ void Pwm_DeInit() {
  * PWM083: The function Pwm_SetPeriodAndDuty shall be pre compile time
  * changeable ON/OFF by the configuration parameter PwmSetPeriodAndDuty.
  */
-#if PWM_SET_PERIOD_AND_DUTY==STD_ON
+#if PWM_SET_PERIOD_AND_DUTY_API==STD_ON
 void Pwm_SetPeriodAndDuty(Pwm_ChannelType Channel, Pwm_PeriodType Period,
 		Pwm_DutyCycleType DutyCycle)
 {
-	Pwm_VALIDATE_INITIALIZED();
-	Pwm_VALIDATE_CHANNEL(Channel);
-	PWM_VALIDATE(ChannelRuntimeStruct[Channel].Class == PWM_VARIABLE_PERIOD, PWM_E_PERIOD_UNCHANGEABLE);
+	if ((E_OK != Pwm_ValidateInitialized(PWM_SETPERIODANDDUTY_ID)) ||
+		(E_OK != Pwm_ValidateChannel(Channel, PWM_SETPERIODANDDUTY_ID)))
+	{
+		return;
+	}
+	if(ChannelRuntimeStruct[Channel].Class != PWM_VARIABLE_PERIOD)
+	{
+#if PWM_DEV_ERROR_DETECT==STD_ON
+		Det_ReportError(PWM_MODULE_ID,0, PWM_SETPERIODANDDUTY_ID, PWM_E_PERIOD_UNCHANGEABLE);
+#endif
+		return;
+	}
 
 	volatile uint8 *pDuty = &PWMDTY0+Channel;
 	*pDuty = (uint8)((uint32)((uint32)DutyCycle*(uint32)Period)>>15);
@@ -185,8 +216,11 @@ void Pwm_SetPeriodAndDuty(Pwm_ChannelType Channel, Pwm_PeriodType Period,
  */
 #if PWM_SET_DUTY_CYCLE_API==STD_ON
 void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle) {
-	Pwm_VALIDATE_INITIALIZED();
-	Pwm_VALIDATE_CHANNEL(Channel);
+	if ((E_OK != Pwm_ValidateInitialized(PWM_SETDUTYCYCLE_ID)) ||
+		(E_OK != Pwm_ValidateChannel(Channel, PWM_SETDUTYCYCLE_ID)))
+	{
+		return;
+	}
 
 	volatile uint8 *pDuty = &PWMDTY0+Channel;
 
@@ -216,8 +250,11 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle) {
 
 #if PWM_SET_OUTPUT_TO_IDLE_API==STD_ON
 void Pwm_SetOutputToIdle(Pwm_ChannelType Channel) {
-	Pwm_VALIDATE_CHANNEL(Channel);
-	Pwm_VALIDATE_INITIALIZED();
+	if ((E_OK != Pwm_ValidateInitialized(PWM_SETOUTPUTTOIDLE_ID)) ||
+		(E_OK != Pwm_ValidateChannel(Channel, PWM_SETOUTPUTTOIDLE_ID)))
+	{
+		return;
+	}
 
 	volatile uint8 *pDuty = &PWMDTY0+Channel;
 	if(ChannelRuntimeStruct[Channel].IdleState == PWM_HIGH)
@@ -245,27 +282,16 @@ void Pwm_SetOutputToIdle(Pwm_ChannelType Channel) {
  * PWM085: The function Pwm_GetOutputState shall be pre compile configurable
  * ON/OFF by the configuration parameter PwmGetOutputState
  */
-#if PWM_GET_OUTPUT_STATE==STD_ON
+#if PWM_GET_OUTPUT_STATE_API==STD_ON
 /*
  * PWM022: The function Pwm_GetOutputState shall read the internal state
  * of the PWM output signal and return it.
  */
 Pwm_OutputStateType Pwm_GetOutputState(Pwm_ChannelType Channel)
 {
-	// We need to return something, even in presence of errors
-	if (Channel >= 8) {
-		Pwm_ReportError(PWM_E_PARAM_CHANNEL);
-
-		/*
-		 * Accordingly to PWM025, we should return PWM_LOW on failure.
-		 */
-		return PWM_LOW;
-
-	} else if (Pwm_ModuleState != PWM_STATE_INITIALIZED) {
-		Pwm_ReportError(PWM_E_UNINIT);
-		/*
-		 * Accordingly to PWM025, we should return PWM_LOW on failure.
-		 */
+	if ((E_OK != Pwm_ValidateInitialized(PWM_GETOUTPUTSTATE_ID)) ||
+		(E_OK != Pwm_ValidateChannel(Channel, PWM_GETOUTPUTSTATE_ID)))
+	{
 		return PWM_LOW;
 	}
 

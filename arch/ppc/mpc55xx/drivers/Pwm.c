@@ -306,16 +306,113 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
 
                 // Install ISR
 			#if defined(CFG_MPC5606S)
-				if(channel <= PWM_NUMBER_OF_EACH_EMIOS-1)
+				switch(channel)
 				{
-		            ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F16_F17 + (channel-16)/2),PWM_ISR_PRIORITY, 0);
-				}
-				else
-				{
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F16_F17 + (channel-40)/2),PWM_ISR_PRIORITY, 0);
-				}
+				case 16:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F16_F17),PWM_ISR_PRIORITY, 0);
+					break;
+				case 17:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F16_F17),PWM_ISR_PRIORITY, 0);
+			    break;
+				case 18:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F18_F19),PWM_ISR_PRIORITY, 0);
+					break;
+				case 19:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F18_F19),PWM_ISR_PRIORITY, 0);
+			    break;
+				case 20:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F20_F21),PWM_ISR_PRIORITY, 0);
+					break;
+				case 21:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F20_F21),PWM_ISR_PRIORITY, 0);
+			    break;
+				case 22:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F22_F23),PWM_ISR_PRIORITY, 0);
+					break;
+				case 23:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F22_F23),PWM_ISR_PRIORITY, 0);
+			    break;
+				case 40:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F16_F17),PWM_ISR_PRIORITY, 0);
+					break;
+				case 41:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F16_F17),PWM_ISR_PRIORITY, 0);
+			    break;
+				case 42:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F18_F19),PWM_ISR_PRIORITY, 0);
+					break;
+				case 43:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F18_F19),PWM_ISR_PRIORITY, 0);
+			    break;
+				case 44:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F20_F21),PWM_ISR_PRIORITY, 0);
+					break;
+				case 45:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F20_F21),PWM_ISR_PRIORITY, 0);
+			    break;
+				case 46:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F22_F23),PWM_ISR_PRIORITY, 0);
+					break;
+				case 47:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F22_F23),PWM_ISR_PRIORITY, 0);
+			    break;
+				default:
+					break;
+			    }
 			#else
-            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F0 + channel),PWM_ISR_PRIORITY, 0);
+				switch(channel)
+				{
+				case 0:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F0),PWM_ISR_PRIORITY, 0);
+					break;
+				case 1:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F1),PWM_ISR_PRIORITY, 0);
+					break;
+				case 2:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F2),PWM_ISR_PRIORITY, 0);
+					break;
+				case 3:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F3),PWM_ISR_PRIORITY, 0);
+					break;
+				case 4:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F4),PWM_ISR_PRIORITY, 0);
+					break;
+				case 5:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F5),PWM_ISR_PRIORITY, 0);
+					break;
+				case 6:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F6),PWM_ISR_PRIORITY, 0);
+					break;
+				case 7:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F7),PWM_ISR_PRIORITY, 0);
+					break;
+				case 8:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F8),PWM_ISR_PRIORITY, 0);
+					break;
+				case 9:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F9),PWM_ISR_PRIORITY, 0);
+					break;
+				case 10:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F10),PWM_ISR_PRIORITY, 0);
+					break;
+				case 11:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F11),PWM_ISR_PRIORITY, 0);
+					break;
+				case 12:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F12),PWM_ISR_PRIORITY, 0);
+					break;
+				case 13:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F13),PWM_ISR_PRIORITY, 0);
+					break;
+				case 14:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F14),PWM_ISR_PRIORITY, 0);
+					break;
+				case 15:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F15),PWM_ISR_PRIORITY, 0);
+					break;
+				default:
+					break;
+			    }
         	#endif
 
             ChannelRuntimeStruct[channel].NotificationRoutine
@@ -325,7 +422,7 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
     }
 }
 
-#if PWM_DEINIT_API==STD_ON
+#if PWM_DE_INIT_API==STD_ON
 
 // TODO: Test that this function in fact turns the channel off.
 void inline Pwm_DeInitChannel(Pwm_ChannelType Channel) {
@@ -393,7 +490,7 @@ void Pwm_DeInit() {
  * PWM083: The function Pwm_SetPeriodAndDuty shall be pre compile time
  * changeable ON/OFF by the configuration parameter PwmSetPeriodAndDuty.
  */
-#if PWM_SET_PERIOD_AND_DUTY==STD_ON
+#if PWM_SET_PERIOD_AND_DUTY_API==STD_ON
 	void Pwm_SetPeriodAndDuty(Pwm_ChannelType Channel, Pwm_PeriodType Period,
 			Pwm_DutyCycleType DutyCycle) {
 
@@ -448,8 +545,7 @@ void Pwm_DeInit() {
  * @param Channel PWM channel to use. 0 <= Channel < PWM_NUMBER_OF_CHANNELS <= 16
  * @param DutyCycle 0 <= DutyCycle <= 0x8000
  */
-#if PWM_SET_DUTYCYCLE==STD_ON
-
+#if PWM_SET_DUTY_CYCLE_API==STD_ON
 void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 {
 	if ((E_OK != Pwm_ValidateInitialized(PWM_SETDUTYCYCLE_ID)) ||
@@ -497,7 +593,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 }
 #endif
 
-#if  PWM_SET_OUTPUT_TO_IDLE == STD_ON
+#if  PWM_SET_OUTPUT_TO_IDLE_API == STD_ON
 	void Pwm_SetOutputToIdle(Pwm_ChannelType Channel)
 	{
 		if ((E_OK != Pwm_ValidateInitialized(PWM_SETOUTPUTTOIDLE_ID)) ||
@@ -540,7 +636,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
  * PWM085: The function Pwm_GetOutputState shall be pre compile configurable
  * ON/OFF by the configuration parameter PwmGetOutputState
  */
-#if PWM_GET_OUTPUT_STATE==STD_ON
+#if PWM_GET_OUTPUT_STATE_API==STD_ON
 	/*
 	 * PWM022: The function Pwm_GetOutputState shall read the internal state
 	 * of the PWM output signal and return it.
@@ -632,11 +728,13 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 	static void Pwm_Isr(void)
 	{
 		// Find out which channel that triggered the interrupt
-		#ifdef CFG_MPC5516
+		#if defined (CFG_MPC5516)
 			uint32_t flagmask = EMIOS.GFLAG.R;
 		#elif defined(CFG_MPC5567)
 			uint32_t flagmask = EMIOS.GFR.R;
+        #endif
 
+        #if defined(CFG_MPC5516) || defined(CFG_MPC5567)
 		// There are 24 channels specified in the global flag register, but
 		// we only listen to the first 16 as only these support OPWfM
 		for (Pwm_ChannelType emios_ch = 0; emios_ch < 16; emios_ch++) {
@@ -646,7 +744,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 
 					Pwm_EdgeNotificationType notification = ChannelRuntimeStruct[emios_ch].NotificationState;
 					if (notification == PWM_BOTH_EDGES ||
-							notification == EMIOS.CH[emios_ch].CSR.B.UCOUT) {
+							notification == EMIOS.CH[emios_ch].CSR.B.UCOUT)
 					{
 							ChannelRuntimeStruct[emios_ch].NotificationRoutine();
 					}

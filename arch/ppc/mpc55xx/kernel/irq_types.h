@@ -888,6 +888,7 @@ typedef enum
 	CPU_CORE1
 } Cpu_t;
 
+/* Offset from exceptions to interrupts */
 #define IRQ_INTERRUPT_OFFSET		0
 
 #endif /* IRQ_H_ */
