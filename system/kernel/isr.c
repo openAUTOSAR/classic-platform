@@ -27,6 +27,7 @@
 #include "isr.h"
 #include "irq.h"
 
+#define ILL_VECTOR	0xff
 
 extern uint8_t Os_VectorToIsr[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
 #if OS_ISR_CNT!=0
@@ -75,6 +76,9 @@ void Os_IsrInit( void ) {
 
 	Irq_Init();
 
+	/* Probably something smarter, but I cant figure out what */
+	memset(&Os_VectorToIsr[OS_ISR_CNT],ILL_VECTOR,OS_ISR_MAX_CNT-OS_ISR_CNT);
+
 #if OS_ISR_CNT != 0
 	/* Attach the interrupts */
 	for (int i = 0; i < Os_Sys.isrCnt; i++) {
@@ -82,7 +86,6 @@ void Os_IsrInit( void ) {
 	}
 #endif
 }
-
 
 /**
  * Adds an ISR to a list of Isr's. The ISRType (id) is returned
@@ -93,13 +96,28 @@ void Os_IsrInit( void ) {
  */
 ISRType Os_IsrAdd( const OsIsrConstType * restrict isrPtr ) {
 	ISRType id;
+	ISRType installedId;
 
 	assert( isrPtr != NULL );
+	assert( (isrPtr->vector + IRQ_INTERRUPT_OFFSET) < NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS );
 
-	id = Os_Sys.isrCnt++;
-	Os_IsrVarList[id].constPtr = isrPtr;
-	Os_VectorToIsr[isrPtr->vector + IRQ_INTERRUPT_OFFSET ] = id;
-	Irq_EnableVector( isrPtr->vector, isrPtr->priority, Os_ApplGetCore(isrPtr->appOwner )  );
+	/* Check if we already have installed it */
+	installedId = Os_VectorToIsr[isrPtr->vector + IRQ_INTERRUPT_OFFSET ];
+
+	if( installedId != ILL_VECTOR ) {
+		/* The vector is already installed */
+		id = installedId;
+	} else {
+		/* It a new vector */
+		id = Os_Sys.isrCnt++;
+		/* Since OS_ISR_MAX_CNT defines the allocation limit for Os_IsrVarList,
+		 * we must not allocate more IDs than that */
+		assert(id<OS_ISR_MAX_CNT);
+
+		Os_IsrVarList[id].constPtr = isrPtr;
+		Os_VectorToIsr[isrPtr->vector + IRQ_INTERRUPT_OFFSET ] = id;
+		Irq_EnableVector( isrPtr->vector, isrPtr->priority, Os_ApplGetCore(isrPtr->appOwner )  );
+	}
 
 	return id;
 }

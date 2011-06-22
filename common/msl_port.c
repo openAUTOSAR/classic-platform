@@ -9,6 +9,7 @@
 Methods called by MW MSL libraries to perform console IO:
 */
 
+#include "Os.h"
 #include "stddef.h"
 
 #ifdef USE_TTY_WINIDEA
@@ -108,6 +109,8 @@ void __init_user(void)
 
 void exit(int exit ) {
 	(void)exit;
+	DisableAllInterrupts();
+	while(1);
 }
 
 

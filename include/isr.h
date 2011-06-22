@@ -190,7 +190,7 @@ typedef struct OsIsrConst {
 /*
  *
  */
-typedef struct {
+typedef struct OsIsrVar{
 	ISRType id;
 //	OsIsrStackType		stack;
 	int					state;
