@@ -310,52 +310,55 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
 				{
 				case 16:
 					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F16_F17),PWM_ISR_PRIORITY, 0);
-					break
+					break;
 				case 17:
 					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F16_F17),PWM_ISR_PRIORITY, 0);
 			    break;
 				case 18:
 					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F18_F19),PWM_ISR_PRIORITY, 0);
-					break
+					break;
 				case 19:
 					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F18_F19),PWM_ISR_PRIORITY, 0);
 			    break;
 				case 20:
 					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F20_F21),PWM_ISR_PRIORITY, 0);
-					break
+					break;
 				case 21:
 					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F20_F21),PWM_ISR_PRIORITY, 0);
 			    break;
 				case 22:
 					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F22_F23),PWM_ISR_PRIORITY, 0);
-					break
+					break;
 				case 23:
 					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F22_F23),PWM_ISR_PRIORITY, 0);
 			    break;
 				case 40:
 					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F16_F17),PWM_ISR_PRIORITY, 0);
-					break
+					break;
 				case 41:
 					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F16_F17),PWM_ISR_PRIORITY, 0);
 			    break;
 				case 42:
 					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F18_F19),PWM_ISR_PRIORITY, 0);
-					break
+					break;
 				case 43:
 					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F18_F19),PWM_ISR_PRIORITY, 0);
 			    break;
 				case 44:
 					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F20_F21),PWM_ISR_PRIORITY, 0);
-					break
+					break;
 				case 45:
 					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F20_F21),PWM_ISR_PRIORITY, 0);
 			    break;
 				case 46:
 					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F22_F23),PWM_ISR_PRIORITY, 0);
-					break
+					break;
 				case 47:
 					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F22_F23),PWM_ISR_PRIORITY, 0);
 			    break;
+				default:
+					break;
+			    }
 			#else
 				switch(channel)
 				{
@@ -725,11 +728,13 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 	static void Pwm_Isr(void)
 	{
 		// Find out which channel that triggered the interrupt
-		#ifdef CFG_MPC5516
+		#if defined (CFG_MPC5516)
 			uint32_t flagmask = EMIOS.GFLAG.R;
 		#elif defined(CFG_MPC5567)
 			uint32_t flagmask = EMIOS.GFR.R;
+        #endif
 
+        #if defined(CFG_MPC5516) || defined(CFG_MPC5567)
 		// There are 24 channels specified in the global flag register, but
 		// we only listen to the first 16 as only these support OPWfM
 		for (Pwm_ChannelType emios_ch = 0; emios_ch < 16; emios_ch++) {
@@ -739,7 +744,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 
 					Pwm_EdgeNotificationType notification = ChannelRuntimeStruct[emios_ch].NotificationState;
 					if (notification == PWM_BOTH_EDGES ||
-							notification == EMIOS.CH[emios_ch].CSR.B.UCOUT) {
+							notification == EMIOS.CH[emios_ch].CSR.B.UCOUT)
 					{
 							ChannelRuntimeStruct[emios_ch].NotificationRoutine();
 					}
