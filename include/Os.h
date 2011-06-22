@@ -32,6 +32,10 @@
 
 typedef uint8 StatusType;
 
+#if (OS_ISR_CNT > OS_ISR_MAX_CNT)
+#error OS configuration error. OS_ISR_MAX_CNT must be bigger or equal to OS_ISR_CNT
+#endif
+
 #define E_OS_ACCESS (StatusType)1               /**< STD OSEK */
 #define	E_OS_CALLEVEL (StatusType)2             /**< STD OSEK */
 #define	E_OS_ID	(StatusType)3                   /**< STD OSEK */

@@ -9,6 +9,7 @@
 Methods called by MW MSL libraries to perform console IO:
 */
 
+#include "Os.h"
 #include "stddef.h"
 
 #ifdef USE_TTY_WINIDEA
@@ -108,6 +109,16 @@ void __init_user(void)
 
 void exit(int exit ) {
 	(void)exit;
+	/* !! WARNING !! !! WARNING !! !! WARNING !!
+	 *
+	 * ENDING UP HERE CAN BE VERY BAD:
+	 * 1. You got an assert() (calls exit())
+	 * 2. For some other reason (deliberately exited main() ?)
+	 *
+	 * TODO: Call reset of card?
+	 * */
+	DisableAllInterrupts();
+	while(1);
 }
 
 
