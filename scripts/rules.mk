@@ -20,11 +20,17 @@ CROSS_COMPILE?=${DEFAULT_CROSS_COMPILE}
 endif
 
 ifeq (${COMPILER},cw)
-CW_COMPILE=${DEFAULT_CW_COMPILE}
+CW_COMPILE?=${DEFAULT_CW_COMPILE}
 endif
 
 # Check cross compiler setting against default from board config
-ifneq (${COMPILER},cw)
+ifeq (${COMPILER},cw)
+ifneq (${CW_COMPILE},${DEFAULT_CW_COMPILE})
+${warning Not using default cross compiler for architecture.}
+${warning CROSS_COMPILE:         ${CW_COMPILE} [${origin CW_COMPILE}]}
+${warning DEFAULT_CROSS_COMPILE: ${DEFAULT_CW_COMPILE} [${origin DEFAULT_CW_COMPILE}]}
+endif
+else
 ifneq (${DEFAULT_CROSS_COMPILE},)
 ifneq (${CROSS_COMPILE},${DEFAULT_CROSS_COMPILE})
 ${warning Not using default cross compiler for architecture.}
@@ -289,11 +295,15 @@ $(build-bin-y): $(build-exe-y)
 	@echo "  >> OBJCOPY $@"   
 	$(Q)$(CROSS_COMPILE)objcopy -O binary $< $@	
 
+#$(error $(COMPILER))
+#$(error $(origin $(COMPILER)))
+
 # Linker
 $(build-exe-y): $(dep-y) $(obj-y) $(sim-y) $(libitem-y) $(ldcmdfile-y)
 	@echo
 	@echo "  >> LD $@"
-ifeq ( $(CROSS_COMPILE) $(filter $(COMPILER),gcc),)
+	@echo bajs $(CROSS_COMPILE) $(COMPILER)
+ifeq ($(CROSS_COMPILE)$(COMPILER),gcc)
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	
 else
 	$(Q)$(LD) $(LDFLAGS) $(LD_FILE) $(ldcmdfile-y) -o $@ $(libpath-y) $(LD_START_GRP) $(obj-y) $(lib-y) $(libitem-y) $(LD_END_GRP) $(LDMAPFILE)
