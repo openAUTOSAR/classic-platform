@@ -260,7 +260,7 @@ inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
 
 # *.ldf (file on disc) -> *.lcf (preprocessed *.ldf file)
 # Preprocess linker files..
-%.lcf: %.ldf
+%.lcf %.ldp: %.ldf
 	@echo
 	@echo "  >> CPP $(notdir $<)"
 	$(Q)$(CPP) -E -P $(CPP_ASM_FLAGS) -o $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
