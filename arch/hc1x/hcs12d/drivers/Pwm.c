@@ -138,7 +138,7 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
     }
 }
 
-#if PWM_DEINIT_API==STD_ON
+#if PWM_DE_INIT_API==STD_ON
 
 void Pwm_DeInit() {
 
@@ -154,7 +154,7 @@ void Pwm_DeInit() {
  * PWM083: The function Pwm_SetPeriodAndDuty shall be pre compile time
  * changeable ON/OFF by the configuration parameter PwmSetPeriodAndDuty.
  */
-#if PWM_SET_PERIOD_AND_DUTY==STD_ON
+#if PWM_SET_PERIOD_AND_DUTY_API==STD_ON
 void Pwm_SetPeriodAndDuty(Pwm_ChannelType Channel, Pwm_PeriodType Period,
 		Pwm_DutyCycleType DutyCycle)
 {
@@ -245,7 +245,7 @@ void Pwm_SetOutputToIdle(Pwm_ChannelType Channel) {
  * PWM085: The function Pwm_GetOutputState shall be pre compile configurable
  * ON/OFF by the configuration parameter PwmGetOutputState
  */
-#if PWM_GET_OUTPUT_STATE==STD_ON
+#if PWM_GET_OUTPUT_STATE_API==STD_ON
 /*
  * PWM022: The function Pwm_GetOutputState shall read the internal state
  * of the PWM output signal and return it.
