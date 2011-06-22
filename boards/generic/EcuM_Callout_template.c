@@ -192,7 +192,7 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 
 #if defined(USE_EA)
 	// Setup EA
-	Ea_init();
+	Ea_Init();
 #endif
 
 #if defined(USE_NVM)

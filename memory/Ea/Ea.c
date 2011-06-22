@@ -123,7 +123,6 @@ typedef struct {
 	const Ea_BlockConfigType *EaBlockConfig;
 	const Ea_GeneralType	*EaGeneralPtr;
 	uint8 					CurBlockIndex;
-	uint16					EaBlockBaseNum;
 	MemIf_StatusType    	ModuleStatus;
 	MemIf_JobResultType 	JobResult;
 	Ea_JobType    			JobType;
@@ -167,7 +166,6 @@ void Ea_Init(void)
 	/*init internal variables*/
 	Ea_Global.EaBlockConfig = Ea_BlockConfigData;
 	Ea_Global.EaGeneralPtr = &Ea_GeneralData;
-	Ea_Global.EaBlockBaseNum = Ea_BlockConfigData[0].EaBlockNumber >> NVM_DATASET_SEL_BITS;
 	Ea_Global.JobResult = MEMIF_JOB_OK;
 	Ea_Global.JobType = EA_JOB_NONE;
 	Ea_Global.JobStatus = EA_PENDING_NONE;
@@ -195,6 +193,8 @@ Std_ReturnType Ea_Read(uint16 BlockNumber, uint16 BlockOffset, uint8* DataBuffer
 	const Ea_BlockConfigType *EaBlockCon;
 	Std_ReturnType ReturnValue;
 
+	/*@req <EA137>
+	*/
 	/* Lock down the module to ourself */
 	imask_t mask = McuE_EnterCriticalSection();
 	if (Ea_Global.ModuleStatus != MEMIF_IDLE)
@@ -258,6 +258,8 @@ Std_ReturnType Ea_Write(uint16 BlockNumber, uint8* DataBufferPtr)
 	uint16 BlockIndex;
 	const Ea_BlockConfigType *EaBlockCon;
 
+	/*@req <EA137>
+	*/
 	/* Lock down the module to ourself */
 	imask_t mask = McuE_EnterCriticalSection();
 	if (Ea_Global.ModuleStatus != MEMIF_IDLE)
@@ -350,6 +352,8 @@ Std_ReturnType Ea_InvalidateBlock(uint16 BlockNumber)
 	const Ea_BlockConfigType *EaBlockCon;
 	Std_ReturnType ReturnValue;
 
+	/*@req <EA137>
+	*/
 	/* Lock down the module to ourself */
 	imask_t mask = McuE_EnterCriticalSection();
 	if (Ea_Global.ModuleStatus != MEMIF_IDLE)
