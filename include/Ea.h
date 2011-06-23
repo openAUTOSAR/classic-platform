@@ -23,38 +23,41 @@
 #define EA_SW_MAJOR_VERSION	1
 #define EA_SW_MINOR_VERSION	0
 #define EA_SW_PATCH_VERSION	0
-#define EA_AR_MAJOR_VERSION	3
+#define EA_AR_MAJOR_VERSION	4   // Implemented after the 4.0.2 specification due to the poor quality of 3.1 specification
 #define EA_AR_MINOR_VERSION	0
-#define EA_AR_PATCH_VERSION	1
+#define EA_AR_PATCH_VERSION	2
 
 #include "Eep.h"
 #include "Ea_Cfg.h"
 
 /*
-	DESCRIPTION:
-		API parameter checking
-*/
-/** @req EA010 */
+ *  API parameter checking
+ */
+/** @req EA139 */
+#define EA_E_NOT_INITIALIZED		0x01
+/** @req EA140 */
 #define EA_E_INVALID_BLOCK_NO		0x02
-/** @req EA017 */
-#define EA_E_BUSY		0x21
 
 /*
-	DESCRIPTION:
-		EA Module Service ID Macro Collection
+ * EA Module Service ID Macro Collection
 */
-#define EA_INIT_ID					0x00
-#define EA_SETMODE_ID          		0x01
-#define EA_READ_ID             		0x02
-#define EA_WRITE_ID            		0x03
-#define EA_CANCEL_ID				0x04
-#define EA_GETSTATUS_ID        		0x05
-#define EA_GETJOBRESULT_ID			0x06
-#define EA_INVALIDATEBLOCK_ID		0x07
-#define EA_GETVERSIONINFO_ID		0x08
-#define EA_ERASEIMMEDIATEBLOCK_ID	0x09
-#define EA_MAIN_ID					0x12
+typedef enum {
+	 EA_INIT_ID = 0x00,
+	 EA_SETMODE_ID,
+	 EA_READ_ID,
+	 EA_WRITE_ID,
+	 EA_CANCEL_ID,
+	 EA_GETSTATUS_ID,
+	 EA_GETJOBRESULT_ID,
+	 EA_INVALIDATEBLOCK_ID,
+	 EA_GETVERSIONINFO_ID,
+	 EA_ERASEIMMEDIATEBLOCK_ID,
+	 EA_MAIN_ID = 0x12
+} Ea_APIServiceIDType;
 
+/*@req <EA061> */
+/*@req <EA062> */
+/*@req <EA082> */
 #if ( EA_VERSION_INFO_API == STD_ON )
 #define Ea_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi, EA)	/** @req EA092 */
 #endif /* EA_VERSION_INFO_API */
