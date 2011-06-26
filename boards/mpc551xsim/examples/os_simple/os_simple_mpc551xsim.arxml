@@ -200,7 +200,7 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/os_simple_mpc551xsim/Os/Event2</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/os_simple_mpc551xsim/Os/Event1</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventTaskRef</DEFINITION-REF>
@@ -274,7 +274,7 @@
               <REFERENCE-VALUES>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskEventRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/os_simple_mpc551xsim/Os/Event2</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/os_simple_mpc551xsim/Os/Event1</VALUE-REF>
                 </REFERENCE-VALUE>
               </REFERENCE-VALUES>
               <SUB-CONTAINERS>
@@ -317,7 +317,7 @@
               <REFERENCE-VALUES>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskEventRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/os_simple_mpc551xsim/Os/Event1</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/os_simple_mpc551xsim/Os/Event2</VALUE-REF>
                 </REFERENCE-VALUE>
               </REFERENCE-VALUES>
             </CONTAINER>
