@@ -93,4 +93,11 @@ EcuM_ConfigType EcuMConfig =
 #if defined(USE_FLS)
 	.FlashConfig = FlsConfigSet,
 #endif
+#if defined(USE_EEP)
+	.EepConfig = EepConfigData,
+#endif
+#if defined(USE_SPI)
+	.SpiConfig = &SpiConfigData,
+#endif
+
 };
