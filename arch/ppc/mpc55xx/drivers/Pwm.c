@@ -117,11 +117,12 @@ static void calcPeriodTicksAndPrescaler(
 				const Pwm_ChannelConfigurationType* channelConfig,
 				uint16_t* ticks, Pwm_ChannelPrescalerType* prescaler) {
 
-	Pwm_ChannelType channel = channelConfig->channel;
 	uint32_t pre_global = 0;
 	uint32_t f_in = 0;
 
 #if defined(CFG_MPC5606S)
+	Pwm_ChannelType channel = channelConfig->channel;
+
 	if(channel <= PWM_NUMBER_OF_EACH_EMIOS-1) {
 		f_in = McuE_GetPeripheralClock( PERIPHERAL_CLOCK_EMIOS_0 );
 		pre_global = EMIOS_0.MCR.B.GPRE;
@@ -174,8 +175,6 @@ static void configureChannel(Pwm_ChannelType channel_iterator, const Pwm_Channel
 			emiosHw = &EMIOS_1;
 		}
 
-		ChannelRuntimeStruct[channel].Class = ConfigPtr->ChannelClass[channel_iterator];
-
 		emiosHw->CH[channel].CCR.B.MODE = PWM_EMIOS_OPWM;
 		emiosHw->CH[channel].CCR.B.DMA = 0;
 		emiosHw->CH[channel].CCR.B.BSL = 3;
@@ -194,7 +193,7 @@ static void configureChannel(Pwm_ChannelType channel_iterator, const Pwm_Channel
 		// X % of the period time.
 		emiosHw->CH[channel].CCR.B.EDPOL = (channelConfig->polarity == PWM_LOW) ? 1 : 0;
 
-		#if PWM_SET_PERIOD_AND_DUTY==STD_ON
+		#if PWM_SET_PERIOD_AND_DUTY_API==STD_ON
 			ChannelRuntimeStruct[channel].Class = ConfigPtr->ChannelClass[channel_iterator];
 		#endif
 
@@ -217,6 +216,10 @@ static void configureChannel(Pwm_ChannelType channel_iterator, const Pwm_Channel
 		// A duty cycle of X % should give a signal with state 'channelConfig->polarity' during
 		// X % of the period time.
 		EMIOS.CH[channel].CCR.B.EDPOL = (channelConfig->polarity == PWM_LOW) ? 1 : 0;
+
+		#if PWM_SET_PERIOD_AND_DUTY_API==STD_ON
+			ChannelRuntimeStruct[channel].Class = ConfigPtr->ChannelClass[channel_iterator];
+		#endif
 	#endif
 
 }
@@ -428,10 +431,9 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
 void inline Pwm_DeInitChannel(Pwm_ChannelType Channel) {
     Pwm_SetOutputToIdle(Channel);
 
-    #ifdef CFG_MPC5516
+	#if defined(CFG_MPC5516)
         // Set the disable bit for this channel
-        EMIOS.UCDIS.R |= (1 << (31 - Channel));
-
+    	EMIOS.UCDIS.R |= (1 << (31 - Channel));
     #elif defined(CFG_MPC5606S)
         // Set the disable bit for this channel
         if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1)
@@ -470,7 +472,7 @@ void Pwm_DeInit() {
 
 	// Disable module
 
-	#ifdef CFG_MPC5516
+	#if defined(CFG_MPC5516) || defined(CFG_MPC5567)
 
 		EMIOS.MCR.B.MDIS = 1;
 
@@ -507,10 +509,9 @@ void Pwm_DeInit() {
 			return;
 		}
 
-		uint16 leading_edge_position = (uint16) (((uint32) Period
-				* (uint32) DutyCycle) >> 15);
+		uint16 leading_edge_position = (uint16) (((uint32) Period * (uint32) DutyCycle) >> 15);
 
-		#ifdef CFG_MPC5516
+		#if defined(CFG_MPC5516) || defined(CFG_MPC5567)
 
 			/* Timer instant for leading edge */
 			EMIOS.CH[Channel].CADR.R = leading_edge_position;
@@ -554,7 +555,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 		return;
 	}
 
-	#ifdef CFG_MPC5516
+	#if defined(CFG_MPC5516) || defined(CFG_MPC5567)
 
 		uint16 leading_edge_position = (uint16) ((EMIOS.CH[Channel].CBDR.R
 					* (uint32) DutyCycle) >> 15);
@@ -604,7 +605,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 
 		/* TODO: Make Pwm_SetOutputToIdle sensitive to PwmIdleState (currently uses PwmPolarity) */
 
-		#ifdef CFG_MPC5516
+		#if defined(CFG_MPC5516) || defined(CFG_MPC5567)
 
 			EMIOS.CH[Channel].CADR.R = 0;
 
@@ -649,7 +650,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 			return PWM_LOW;
 		}
 
-		#ifdef CFG_MPC5516
+		#if defined(CFG_MPC5516) || defined(CFG_MPC5567)
 
 			return EMIOS.CH[Channel].CSR.B.UCOUT;
 
@@ -679,7 +680,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 		}
 
 		// Disable flags on this channel
-		#ifdef CFG_MPC5516
+		#if defined(CFG_MPC5516) || defined(CFG_MPC5567)
 
 			EMIOS.CH[Channel].CCR.B.FEN = 0;
 
@@ -708,7 +709,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 		ChannelRuntimeStruct[Channel].NotificationState = Notification;
 
 		// Enable flags on this channel
-		#ifdef CFG_MPC5516
+		#if defined(CFG_MPC5516) || defined(CFG_MPC5567)
 
 			EMIOS.CH[Channel].CCR.B.FEN = 1;
 

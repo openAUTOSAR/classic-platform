@@ -94,15 +94,11 @@ void Port_Init(const Port_ConfigType *configType)
 {
   VALIDATE_PARAM_CONFIG(configType, PORT_INIT_ID);
 
-  // Pointers to the register memory areas
-  vuint16_t * padConfig = &(SIU.PCR[0].R);
-  vuint8_t * outConfig = &(SIU.GPDO[0].R);
-
 #if defined(CFG_MPC5606S)
 	vuint16_t i = 0;
 	vuint16_t j = 0;
 
-	while(i < configType->padCnt)
+	while(i < (configType->padCnt/sizeof(uint16_t)))
     {
 		SIU.PCR[i].R = configType->padConfig[i];
     	++i;
@@ -119,6 +115,10 @@ void Port_Init(const Port_ConfigType *configType)
 	}
 
 #else
+	// Pointers to the register memory areas
+	vuint16_t * padConfig = &(SIU.PCR[0].R);
+	vuint8_t * outConfig = &(SIU.GPDO[0].R);
+
 	//  vuint8_t * inConfig = &(SIU.GPDI[0].R); // Read only
 	// Copy config to register areas
 	memcpy((void *)outConfig, configType->outConfig, configType->outCnt);
