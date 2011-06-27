@@ -34,6 +34,9 @@ MOD_AVAIL+=COMM NM CANNM CANSM
 # Additional
 MOD_AVAIL+=RAMLOG TCF LWIP SLEEP RTE
 
+# Required modules
+MOD_USE += MCU KERNEL ECUM DET
+
 #
 # Extra defines 
 #

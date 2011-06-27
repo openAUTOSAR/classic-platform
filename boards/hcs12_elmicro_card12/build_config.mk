@@ -17,6 +17,9 @@ MOD_AVAIL+=COMM NM CANNM CANSM
 # Additional
 MOD_AVAIL+=RAMLOG
 
+# Required modules
+MOD_USE += MCU KERNEL ECUM DET
+
 
 # Needed by us (These become USE_XXX=y and def-y += USE_XXX )
 MOD_USE=KERNEL MCU

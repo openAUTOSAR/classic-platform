@@ -15,6 +15,9 @@ MOD_AVAIL+=COM PDUR WDGM WDGIF DET DCM DEM CANTP CANIF RTE FEE NVM ECUM MCU EA
 # Network management
 MOD_AVAIL+=COMM NM CANNM CANSM
 
+# Required modules
+#MOD_USE += 
+
 # Needed by us
 MOD_USE=
 
