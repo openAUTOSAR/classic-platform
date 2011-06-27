@@ -65,7 +65,7 @@ define CFG_template
 endef
 
 $(foreach mod,$(MOD_AVAIL),$(eval $(call MOD_AVAIL_template,${mod})))
-$(foreach mod,$(MOD_USE),$(eval $(call MOD_USE_template,${mod})))
+$(foreach mod,$(sort $(MOD_USE)),$(eval $(call MOD_USE_template,${mod})))
 $(foreach mod,$(CFG),$(eval $(call CFG_template,${mod})))
 #def-y += $(ARCH) $(ARCH_FAM) $(ARCH_MCU) 
 
@@ -77,7 +77,7 @@ def-y += SELECT_OS_CONSOLE=$(if $(SELECT_OS_CONSOLE),$(SELECT_OS_CONSOLE),TTY_NO
 def-y += SELECT_CONSOLE=$(if $(SELECT_CONSOLE),$(SELECT_CONSOLE),TTY_NONE)
 def-$(USE_DEBUG_PRINTF) += USE_DEBUG_PRINTF 
 
-not_avail = $(filter-out $(MOD_AVAIL),$(MOD_USE))
+not_avail = $(filter-out $(MOD_AVAIL),$(sort $(MOD_USE)))
 ifneq ($(not_avail),)
 $(error Trying to build a module that is not available: $(not_avail))
 endif
@@ -203,14 +203,14 @@ clean: FORCE
 	
 .PHONY : config 
 config: FORCE
-	@echo ">>>> Available modules:" $(MOD_AVAIL)
-	@echo ">>>> Used modules:     " $(MOD_USE)
+	@echo ">>>> Available modules:" $(sort $(MOD_AVAIL))
+	@echo ">>>> Used modules:     " $(sort $(MOD_USE)) 
 	@echo $(MOD) ${def-y}
 
 .PHONY : module_config
 module_config: FORCE
-	@echo ">>>> Available modules:" $(MOD_AVAIL)
-	@echo ">>>> Used modules:     " $(MOD_USE)
+	@echo ">>>> Available modules:" $(sort $(MOD_AVAIL))
+	@echo ">>>> Used modules:     " $(sort $(MOD_USE)) 
 
 
 FORCE:
