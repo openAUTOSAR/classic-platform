@@ -30,7 +30,7 @@ typedef enum
   ADC_CH5,
   ADC_CH6,
   ADC_CH7,
-  ADC_NOF_CHANNELS,
+  ADC_NBR_OF_CHANNELS,
 }Adc_ChannelType;
 
 /* Std-type, supplier defined */
@@ -79,6 +79,15 @@ typedef enum
   ADC_CONVERSION_TIME_16_CLOCKS
 }Adc_ConversionTimeType;
 
+/* Channel definitions, std container */
+typedef struct
+{
+  Adc_ConversionTimeType adcChannelConvTime;
+  // NOT SUPPORTED Adc_VoltageSourceType  adcChannelRefVoltSrcLow;
+  // NOT SUPPORTED Adc_VoltageSourceType  adcChannelRefVoltSrcHigh;
+  // NOT SUPPORTED Adc_ResolutionType     adcChannelResolution;
+  // NOT SUPPORTED Adc_CalibrationType    adcChannelCalibrationEnable;
+} Adc_ChannelConfigurationType;
 
 typedef enum
 {

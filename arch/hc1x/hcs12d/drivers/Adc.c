@@ -72,8 +72,12 @@ typedef enum
 /* Function prototypes. */
 
 /* Development error checking. */
+#if (ADC_READ_GROUP_API == STD_ON)
 static Std_ReturnType Adc_CheckReadGroup (Adc_GroupType group);
+#endif
+#if (ADC_ENABLE_START_STOP_GROUP_API == STD_ON)
 static Std_ReturnType Adc_CheckStartGroupConversion (Adc_GroupType group);
+#endif
 static Std_ReturnType Adc_CheckInit (const Adc_ConfigType *ConfigPtr);
 static Std_ReturnType Adc_CheckSetupResultBuffer (Adc_GroupType group);
 

@@ -19,6 +19,7 @@
 #include "Pwm.h"
 #include "Com.h"
 #include "CanIf.h"
+#include "Adc.h"
 
 // #define USE_LDEBUG_PRINTF // Uncomment this to turn debug statements on.
 #include "debug.h"
@@ -32,15 +33,14 @@ boolean IncommingFreqReq(PduIdType PduId, const uint8 *IPduData)
 }
 
 // Tasks
-static uint16 y = 0;
 void DipTask( void ) {
 	uint16 value = Dio_ReadPort(DIO_PORT_NAME_DipSwitch);
 	Dio_WritePort(DIO_PORT_NAME_LEDBar, value);
 
-	Pwm_SetDutyCycle(GREENLED, y);
-	y = y + 0xF00;
-	if (y > 0x8000)
-		y = 0;
+	// Read from Adc to set the green red intensity
+	Adc_ReadGroup(ADC_GROUP0, &value);
+	value = value*128; // Scale to be between 0 and 32767
+	Pwm_SetDutyCycle(GreenLED, value);
 
 	TerminateTask();
 }
@@ -55,6 +55,9 @@ void StartTask()
 
 	// Makes the inital value on the bus be correct
 	SetEvent(TASK_ID_ComReceiveTask, EVENT_MASK_FreqReciveEvent);
+
+	// Start Group Conversion of ADC
+	Adc_StartGroupConversion(ADC_GROUP0);
 }
 
 // Task that toggles the LED
