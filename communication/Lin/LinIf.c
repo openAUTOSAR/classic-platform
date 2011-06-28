@@ -209,7 +209,10 @@ void LinIf_MainFunction()
 				// Handle received and sent frames
 				if(ptrFrame->LinIfPduDirection == LinIfRxPdu){
 					if(Lin_GetStatus(LinIfChannelCfg[chIndex].LinIfChannelId, &Lin_SduPtr) == LIN_RX_OK){
-						PduR_LinIfRxIndication(ptrFrame->LinIfTxTargetPduId,Lin_SduPtr);
+						PduInfoType outgoingPdu;
+						outgoingPdu.SduDataPtr = Lin_SduPtr;
+						outgoingPdu.SduLength = ptrFrame->LinIfLength;
+						PduR_LinIfRxIndication(ptrFrame->LinIfTxTargetPduId,&outgoingPdu);
 					}else{// RX_ERROR or BUSY
 #if defined(USE_DEM)
 				        Dem_ReportErrorStatus(LINIF_E_RESPONSE, DEM_EVENT_STATUS_FAILED);
@@ -264,8 +267,11 @@ void LinIf_MainFunction()
 
 					// Maybe send response also
 					if(ptrFrame->LinIfPduDirection == LinIfTxPdu){
+						PduInfoType outgoingPdu;
+						outgoingPdu.SduDataPtr = PduInfo.SduPtr;
+						outgoingPdu.SduLength = PduInfo.DI;
 						//TX
-					    PduR_LinIfTriggerTransmit(ptrFrame->LinIfTxTargetPduId,PduInfo.SduPtr);
+					    PduR_LinIfTriggerTransmit(ptrFrame->LinIfTxTargetPduId, &outgoingPdu);
 					    Lin_SendHeader(LinIfChannelCfg[chIndex].LinIfChannelId,  &PduInfo);
 						Lin_SendResponse(LinIfChannelCfg[chIndex].LinIfChannelId,  &PduInfo);
 					}
