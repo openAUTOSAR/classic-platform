@@ -21,25 +21,35 @@
 #include "Std_Types.h"
 #include "Det.h"
 #include "Mcu.h"
-#if defined(USE_KERNEL)
 #include "Os.h"
-#endif
 #include "Pwm.h"
 #include "stm32f10x_tim.h"
+#if PWM_NOTIFICATION_SUPPORTED==STD_ON
+#include "isr.h"
+#include "irq.h"
+#include "arc.h"
+#endif
 
-#if PWM_DEV_ERROR_DETECT==ON
-	#define PWM_VALIDATE(_exp, _errid) \
+#if defined(USE_DET)
+#	define Pwm_Det_ReportError(ApiId, ErrorId) Det_ReportError( MODULE_ID_PWM, 0, ApiId, ErrorId);
+#else
+#   define Pwm_Det_ReportError(ApiId, ErrorId)
+#endif
+
+#if PWM_DEV_ERROR_DETECT==STD_ON
+	#define PWM_VALIDATE(_exp, _apiid, _errid) \
 		if (!(_exp)) { \
-			Pwm_ReportError(_errid); \
+			Pwm_Det_ReportError( _apiid, _errid); \
 			return; \
 		}
-	#define Pwm_VALIDATE_CHANNEL(_ch) PWM_VALIDATE(_ch <= PWM_TOTAL_NOF_CHANNELS, PWM_E_PARAM_CHANNEL)
-	#define Pwm_VALIDATE_INITIALIZED() PWM_VALIDATE(Pwm_ModuleState == PWM_STATE_INITIALIZED, PWM_E_UNINIT)
-	#define Pwm_VALIDATE_UNINITIALIZED() PWM_VALIDATE(Pwm_ModuleState != PWM_STATE_INITIALIZED, PWM_E_ALREADY_INITIALIZED)
+	#define Pwm_VALIDATE_CHANNEL(_apiid, _ch) PWM_VALIDATE( (_ch <= PWM_TOTAL_NOF_CHANNELS), _apiid, PWM_E_PARAM_CHANNEL)
+	#define Pwm_VALIDATE_INITIALIZED(_apiid) PWM_VALIDATE( (Pwm_ModuleState == PWM_STATE_INITIALIZED), _apiid, PWM_E_UNINIT)
+	#define Pwm_VALIDATE_UNINITIALIZED(_apiid) PWM_VALIDATE( (Pwm_ModuleState != PWM_STATE_INITIALIZED), _apiid, PWM_E_ALREADY_INITIALIZED)
 #else
-	#define Pwm_VALIDATE_CHANNEL(ch)
-	#define Pwm_VALIDATE_INITIALIZED()
-	#define Pwm_VALIDATE_UNINITIALIZED()
+	#define PWM_VALIDATE(_exp, _apiid, _errid)
+	#define Pwm_VALIDATE_CHANNEL(_apiid, _ch)
+	#define Pwm_VALIDATE_INITIALIZED(_apiid)
+	#define Pwm_VALIDATE_UNINITIALIZED(_apiid)
 #endif
 
 typedef enum {
@@ -49,7 +59,7 @@ typedef enum {
 static Pwm_ModuleStateType Pwm_ModuleState = PWM_STATE_UNINITIALIZED;
 
 /* Local functions */
-#if PWM_NOTIFICATION_SUPPORTED==ON
+#if PWM_NOTIFICATION_SUPPORTED==STD_ON
 static void Pwm_Isr(void);
 #endif
 
@@ -76,24 +86,19 @@ void Pwm_Init( const Pwm_ConfigType *ConfigPtr )
     TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
     TIM_OCInitTypeDef  TIM_OCInitStructure;
 
-    Pwm_VALIDATE_UNINITIALIZED();
-    #if PWM_DEV_ERROR_DETECT==ON
-        /*
-         * PWM046: If development error detection is enabled for the Pwm module,
-         * the function Pwm_Init shall raise development error PWM_E_PARAM_CONFIG
-         * if ConfigPtr is a null pointer.
-         *
-         * PWM120: For pre-compile and link-time configuration variants, a NULL
-         * pointer shall be passed to the initialization routine. In this case the
-         * check for this NULL pointer has to be omitted.
-         */
-        #if PWM_STATICALLY_CONFIGURED==OFF
-            if (ConfigPtr == NULL) {
-                Pwm_ReportError(PWM_E_PARAM_CONFIG);
-                return;
-            }
-        #endif
-    #endif
+    Pwm_VALIDATE_UNINITIALIZED( PWM_INIT_ID );
+	/*
+	 * PWM046: If development error detection is enabled for the Pwm module,
+	 * the function Pwm_Init shall raise development error PWM_E_PARAM_CONFIG
+	 * if ConfigPtr is a null pointer.
+	 *
+	 * PWM120: For pre-compile and link-time configuration variants, a NULL
+	 * pointer shall be passed to the initialization routine. In this case the
+	 * check for this NULL pointer has to be omitted.
+	 */
+	#if PWM_STATICALLY_CONFIGURED==STD_OFF
+		PWM_VALIDATE((ConfigPtr != NULL), PWM_INIT_ID, PWM_E_PARAM_CONFIG);
+	#endif
         
   for (i=0;i<PWM_NUMBER_OF_CHANNELS;i++){
     TIM_TypeDef *TIMx;
@@ -145,7 +150,7 @@ void Pwm_Init( const Pwm_ConfigType *ConfigPtr )
 
   }
 
-#if PWM_NOTIFICATION_SUPPORTED==ON
+#if PWM_NOTIFICATION_SUPPORTED==STD_ON
   ISR_INSTALL_ISR2( "Pwm1", Pwm_Isr, TIM1_CC_IRQn, 6, 0 );
   ISR_INSTALL_ISR2( "Pwm2", Pwm_Isr, TIM2_IRQn,    6, 0 );
   ISR_INSTALL_ISR2( "Pwm3", Pwm_Isr, TIM3_IRQn,    6, 0 );
@@ -154,7 +159,7 @@ void Pwm_Init( const Pwm_ConfigType *ConfigPtr )
 
   Pwm_ModuleState = PWM_STATE_INITIALIZED;
 }
-
+#if 0
 void Pwm_DeInitChannel(Pwm_ChannelType Channel) {
 	Pwm_VALIDATE_CHANNEL(Channel);
 	Pwm_VALIDATE_INITIALIZED();
@@ -167,20 +172,23 @@ void Pwm_DeInitChannel(Pwm_ChannelType Channel) {
     /*
      * PWM052: The function Pwm_DeInit shall disable all notifications.
      */
-    #if PWM_NOTIFICATION_SUPPORTED==ON
+    #if PWM_NOTIFICATION_SUPPORTED==STD_ON
         Pwm_DisableNotification(Channel);
     #endif
 }
+#endif
 
 void Pwm_DeInit( void )
 {
+  Pwm_VALIDATE_INITIALIZED( PWM_DEINIT_ID );
+
   uint8 i;
 
   /*
    * PWM052: The function Pwm_DeInit shall disable all notifications.
    */
   for (i=0;i<PWM_TOTAL_NOF_CHANNELS;i++){
-#if PWM_NOTIFICATION_SUPPORTED==ON
+#if PWM_NOTIFICATION_SUPPORTED==STD_ON
       Pwm_DisableNotification(i);
 #endif
   }
@@ -195,8 +203,8 @@ void Pwm_DeInit( void )
 void Pwm_SetDutyCycle( Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle )
 {
   TIM_TypeDef *TIMx;
-  Pwm_VALIDATE_CHANNEL(Channel);
-  Pwm_VALIDATE_INITIALIZED();
+  Pwm_VALIDATE_CHANNEL( PWM_SETDUTYCYCLE_ID, Channel );
+  Pwm_VALIDATE_INITIALIZED( PWM_SETDUTYCYCLE_ID );
   
   TIMx = GetTimeBaseFromChannel(Channel);
 
@@ -222,16 +230,16 @@ void Pwm_SetDutyCycle( Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle )
 
 /*
  * PWM083: The function Pwm_SetPeriodAndDuty shall be pre compile time
- * changeable ON/OFF by the configuration parameter PwmSetPeriodAndDuty.
+ * changeable STD_ON/STD_OFF by the configuration parameter PwmSetPeriodAndDuty.
  */
-#if PWM_SET_PERIOD_AND_DUTY==ON
+#if PWM_SET_PERIOD_AND_DUTY_API==STD_ON
 void Pwm_SetPeriodAndDuty(Pwm_ChannelType Channel, Pwm_PeriodType Period,
 		Pwm_DutyCycleType DutyCycle) {
     TIM_TypeDef *TIMx;
     TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
 
-	Pwm_VALIDATE_INITIALIZED();
-	Pwm_VALIDATE_CHANNEL(Channel);
+	Pwm_VALIDATE_INITIALIZED( PWM_SETPERIODANDDUTY_ID );
+	Pwm_VALIDATE_CHANNEL( PWM_SETPERIODANDDUTY_ID, Channel );
 
 	TIMx = GetTimeBaseFromChannel(Channel);
 
@@ -246,13 +254,13 @@ void Pwm_SetPeriodAndDuty(Pwm_ChannelType Channel, Pwm_PeriodType Period,
 }
 #endif
 
-#if PWM_NOTIFICATION_SUPPORTED==ON
+#if PWM_NOTIFICATION_SUPPORTED==STD_ON
 void Pwm_DisableNotification(Pwm_ChannelType Channel) 
 {
     TIM_TypeDef *TIMx;
     uint16_t tim_it = 0;
-    Pwm_VALIDATE_CHANNEL(Channel);
-    Pwm_VALIDATE_INITIALIZED();
+    Pwm_VALIDATE_CHANNEL( PWM_DISABLENOTIFICATION_ID, Channel );
+    Pwm_VALIDATE_INITIALIZED( PWM_DISABLENOTIFICATION_ID );
 
     TIMx = GetTimeBaseFromChannel(Channel);
 
@@ -274,8 +282,8 @@ void Pwm_EnableNotification(Pwm_ChannelType Channel,
 {
     TIM_TypeDef *TIMx;
     uint16_t tim_it = 0;
-    Pwm_VALIDATE_CHANNEL(Channel);
-    Pwm_VALIDATE_INITIALIZED();
+    Pwm_VALIDATE_CHANNEL( PWM_ENABLENOTIFICATION_ID, Channel );
+    Pwm_VALIDATE_INITIALIZED( PWM_ENABLENOTIFICATION_ID );
 
     TIMx = GetTimeBaseFromChannel(Channel);
 
@@ -315,12 +323,12 @@ static void Pwm_Isr(void) {
     	status = 0;
     }
 }
-#endif //PWM_NOTIFICATION_SUPPORTED==ON
+#endif //PWM_NOTIFICATION_SUPPORTED==STD_ON
 
 void Pwm_SetOutputToIdle(Pwm_ChannelType Channel) {
 	TIM_TypeDef *TIMx;
-	Pwm_VALIDATE_CHANNEL(Channel);
-	Pwm_VALIDATE_INITIALIZED();
+	Pwm_VALIDATE_CHANNEL( PWM_SETOUTPUTTOIDLE_ID, Channel );
+	Pwm_VALIDATE_INITIALIZED( PWM_SETOUTPUTTOIDLE_ID );
 
     TIMx = GetTimeBaseFromChannel(Channel);
 
@@ -337,9 +345,9 @@ void Pwm_SetOutputToIdle(Pwm_ChannelType Channel) {
 
 /*
  * PWM085: The function Pwm_GetOutputState shall be pre compile configurable
- * ON/OFF by the configuration parameter PwmGetOutputState
+ * STD_ON/STD_OFF by the configuration parameter PwmGetOutputState
  */
-#if PWM_GET_OUTPUT_STATE==ON
+#if PWM_GET_OUTPUT_STATE_API==STD_ON
 /*
  * PWM022: The function Pwm_GetOutputState shall read the internal state
  * of the PWM output signal and return it.
@@ -348,7 +356,7 @@ Pwm_OutputStateType Pwm_GetOutputState(Pwm_ChannelType Channel) {
 
 	// We need to return something, even in presence of errors
 	if (Channel >= PWM_TOTAL_NOF_CHANNELS) {
-		Pwm_ReportError(PWM_E_PARAM_CHANNEL);
+		Pwm_Det_ReportError( PWM_GETOUTPUTSTATE_ID, PWM_E_PARAM_CHANNEL );
 
 		/*
 		 * Accordingly to PWM025, we should return PWM_LOW on failure.
@@ -356,7 +364,7 @@ Pwm_OutputStateType Pwm_GetOutputState(Pwm_ChannelType Channel) {
 		return PWM_LOW;
 
 	} else if (Pwm_ModuleState != PWM_STATE_INITIALIZED) {
-		Pwm_ReportError(PWM_E_UNINIT);
+		Pwm_Det_ReportError( PWM_GETOUTPUTSTATE_ID, PWM_E_UNINIT );
 
 		/*
 		 * Accordingly to PWM025, we should return PWM_LOW on failure.
