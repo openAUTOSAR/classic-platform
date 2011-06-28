@@ -141,7 +141,7 @@ Std_ReturnType Adc_Init (const Adc_ConfigType *ConfigPtr)
 
 
 	ATD0CTL2   = BM_ADPU | BM_AFFC | BM_ASCIE;	/* power enable, Fast Flag Clear, irq enable*/
-    ATD0CTL3   = 0x00;	/* 8 conversions per sequence default */
+    ATD0CTL3   = 0x03;	/* 8 conversions per sequence default, freeze enable */
 
     ATD0CTL4   = (ConfigPtr->hwConfigPtr->resolution << 7) |
     		     (ConfigPtr->hwConfigPtr->convTime << 5) |
@@ -323,8 +323,7 @@ void Adc_StopGroupConversion (Adc_GroupType group)
   /* Run development error check. */
   if (E_OK == Adc_CheckStopGroupConversion (group))
   {
-	   ATD0CTL5 = 0;	/* Set back to single shot */
-	   ATD0CTL3 = 0x00; /* Hard write to stop current conversion */
+	   ATD0CTL3 = 0x03; /* Hard write to stop current conversion */
   }
   else
   {
