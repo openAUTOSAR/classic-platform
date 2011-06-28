@@ -127,7 +127,7 @@ Std_ReturnType Adc_SetupResultBuffer (Adc_GroupType group, Adc_ValueGroupType *b
 #if (ADC_ENABLE_START_STOP_GROUP_API == STD_ON)
 /** Starts the conversion of all channels of the requested ADC Channel group. */
 void           Adc_StartGroupConversion (Adc_GroupType group);
-//void           Adc_StopGroupConversion (Adc_GroupType group);
+void           Adc_StopGroupConversion (Adc_GroupType group);
 #endif
 #if (ADC_READ_GROUP_API == STD_ON)
 /** Reads results from last conversion into buffer */

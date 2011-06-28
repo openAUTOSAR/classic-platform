@@ -27,3 +27,5 @@ Board Features:
   BDM (Background Debug Mode) connector
   All controller pins are available at two double row headers
   5V power supply
+  
+  The LEDmaster example is configured for all available IO on the board.

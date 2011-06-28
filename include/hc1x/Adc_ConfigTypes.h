@@ -133,6 +133,7 @@ typedef struct
 {
   const Adc_HWConfigurationType*      hwConfigPtr;
   const Adc_GroupDefType*             groupConfigPtr;
+  const uint16_t                      nbrOfGroups;
 } Adc_ConfigType;
 
 extern const Adc_ConfigType AdcConfig[];
