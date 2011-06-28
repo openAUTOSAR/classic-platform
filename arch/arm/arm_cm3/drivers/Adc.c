@@ -54,12 +54,41 @@ static Adc_StateType adcState = ADC_UNINIT;
 /* Pointer to configuration structure. */
 static const Adc_ConfigType *AdcConfigPtr;
 
+/* VALIDATION MACROS */
+#if (defined(USE_DET))
+	#define ADC_REPORT_ERROR(apiid, errorid) \
+		Det_ReportError(MODULE_ID_ADC, 0, apiid, errorid)
+#else
+	#define ADC_REPORT_ERROR(apiid, errorid)
+#endif
+
+#if (ADC_DEV_ERROR_DETECT == STD_ON)
+	#define ADC_VALIDATE(_exp, _apiid, _errid, ...) \
+		if (!(_exp)) { \
+			ADC_REPORT_ERROR( _apiid, _errid); \
+			return __VA_ARGS__; \
+		}
+#else
+	#define ADC_VALIDATE(_exp, _apiid, _errid, ...)
+#endif
+
+#define ADC_VALIDATE_INITIALIZED(apiid, ...) \
+			ADC_VALIDATE( (adcState == ADC_INIT), apiid, ADC_E_UNINIT, __VA_ARGS__)
+#define ADC_VALIDATE_NOT_INITIALIZED(apiid, ...) \
+			ADC_VALIDATE( (adcState != ADC_INIT), apiid, ADC_E_ALREADY_INITIALIZED, __VA_ARGS__)
+
+/* VALIDATION MACROS */
+
 
 #if (ADC_DEINIT_API == STD_ON)
 Std_ReturnType Adc_DeInit (const Adc_ConfigType *ConfigPtr)
 {
+  ADC_VALIDATE_INITIALIZED( ADC_DEINIT_ID, E_NOT_OK );
+
   DMA_DeInit(DMA1_Channel1);
   ADC_DeInit(ADC1);
+
+  adcState = ADC_UNINIT;
 
   return (E_OK);
 }
@@ -67,6 +96,8 @@ Std_ReturnType Adc_DeInit (const Adc_ConfigType *ConfigPtr)
 
 Std_ReturnType Adc_Init (const Adc_ConfigType *ConfigPtr)
 {
+  ADC_VALIDATE_NOT_INITIALIZED( ADC_INIT_ID, E_NOT_OK );
+
   Std_ReturnType returnValue;
   Adc_ChannelType channel;
   Adc_ChannelType channelId;
@@ -437,7 +468,7 @@ static Std_ReturnType Adc_CheckSetupResultBuffer (Adc_GroupType group)
     Det_ReportError(MODULE_ID_ADC,0,ADC_SETUPRESULTBUFFER_ID,ADC_E_UNINIT );
     returnValue = E_NOT_OK;
   }
-  else if (group < AdcConfigPtr->nbrOfGroups)
+  else if (group >= AdcConfigPtr->nbrOfGroups)
   {
     /* ADC423 */
     Det_ReportError(MODULE_ID_ADC,0,ADC_SETUPRESULTBUFFER_ID,ADC_E_PARAM_GROUP );
