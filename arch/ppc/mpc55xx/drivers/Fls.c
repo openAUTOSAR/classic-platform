@@ -293,7 +293,7 @@ static inline int Fls_Validate( uint32 addr,uint32 length, uint32 api,uint32 rv 
   }
 
 #define FLS_VALIDATE_PARAM_DATA_W_RV(_ptr,_api, _rv) \
-  if(( (uint32)(_ptr)%FLS_READ_PAGE_SIZE != 0 ) || ( (_ptr)==((void *)0))) { \
+  if( (_ptr)==((void *)0) ) { \
     Det_ReportError(MODULE_ID_FLS,0,_api,FLS_E_PARAM_DATA); \
     return _rv; \
   }
@@ -1055,7 +1055,7 @@ Std_ReturnType Fls_Compare( Fls_AddressType SourceAddress,
   FLS_VALIDATE_STATUS_BUSY_W_RV(Fls_Global.status, FLS_COMPARE_ID, E_NOT_OK);
   FLS_VALIDATE_PARAM_ADDRESS_PAGE_W_RV(SourceAddress, FLS_COMPARE_ID, E_NOT_OK);
   FLS_VALIDATE_PARAM_LENGTH_PAGE_W_RV(SourceAddress, Length, FLS_COMPARE_ID, E_NOT_OK);
-  FLS_VALIDATE_PARAM_DATA_W_RV((void*)SourceAddress,FLS_COMPARE_ID, E_NOT_OK)
+  FLS_VALIDATE_PARAM_DATA_W_RV((void*)TargetAddressPtr,FLS_COMPARE_ID, E_NOT_OK)
 
   // Always check if status is not busy
   if (Fls_Global.status == MEMIF_BUSY )
