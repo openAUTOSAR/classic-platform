@@ -1,7 +1,7 @@
 
 MEMORY
 {
-    flash: org = 0x00000000,   len = 0x00080000 
+    flash: org = 0x00000000,   len = 0x00100000 
     sram:  org = 0x40000000,   len = 0x0000c000 
 }
 
