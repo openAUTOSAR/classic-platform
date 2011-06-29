@@ -146,7 +146,7 @@ typedef struct{
 	uint32 pvr;
 } cpu_info_t;
 
-cpu_info_t cpu_info_list[] = {
+const cpu_info_t cpu_info_list[] = {
 #if defined(CFG_MPC5516)
     {
     	.name = "MPC5516",
@@ -174,7 +174,7 @@ cpu_info_t cpu_info_list[] = {
 #endif
 };
 
-core_info_t core_info_list[] = {
+const core_info_t core_info_list[] = {
 #if defined(CFG_MPC5516)
 	{
 		.name = "CORE_E200Z1",
@@ -207,7 +207,7 @@ core_info_t core_info_list[] = {
 #define ARRAY_SIZE(_x)  (sizeof(_x)/sizeof((_x)[0]))
 #endif
 
-static cpu_info_t *Mcu_IdentifyCpu(uint32 pvr)
+static const cpu_info_t *Mcu_IdentifyCpu(uint32 pvr)
 {
     int i;
 
@@ -220,7 +220,7 @@ static cpu_info_t *Mcu_IdentifyCpu(uint32 pvr)
     return NULL;
 }
 
-static core_info_t *Mcu_IdentifyCore(uint32 pvr)
+static const core_info_t *Mcu_IdentifyCore(uint32 pvr)
 {
 	int i;
 
@@ -236,8 +236,8 @@ static core_info_t *Mcu_IdentifyCore(uint32 pvr)
 static uint32 Mcu_CheckCpu( void ) {
 	uint32 pvr;
 	uint32 pir;
-	cpu_info_t *cpuType;
-	core_info_t *coreType;
+	const cpu_info_t *cpuType;
+	const core_info_t *coreType;
 
     // We have to registers to read here, PIR and PVR
     pir = get_spr(SPR_PIR);

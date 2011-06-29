@@ -22,8 +22,6 @@
  *
  */
 
-
-
 #if defined(__GNUC__)
 
    #define SECTION_RAMLOG	__attribute__ ((section (".ramlog")))
@@ -31,9 +29,22 @@
 
 #elif defined(__CWCC__)
 
-   #pragma section RW ".ramlog" ".ramlog"
+/* The compiler manual states:
+ *   The section name specified in the
+ *   __declspec(section <section_name>) statement must be the
+ *   name of an initialized data section.  It is an error to use the uninitialized
+ *   data section name.
+ *
+ * NOTE!! The initialized data section name is __declspec() does not mean that
+ *        it will end up in that section, if its BSS data it will end-up in
+ *        ramlog_bss instead.
+ *
+ * NOTE!! Naming the initialized and uninitialized data section to the same
+ *        name will generate strange linker warnings (sometimes)
+ */
 
-   #define SECTION_RAMLOG	__declspec(section ".ramlog")
+   #pragma section RW ".ramlog_data" ".ramlog_bss"
+   #define SECTION_RAMLOG	__declspec(section ".ramlog_data")
 
 
 #endif

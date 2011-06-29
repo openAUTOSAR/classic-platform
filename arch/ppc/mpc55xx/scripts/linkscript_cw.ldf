@@ -44,12 +44,14 @@ SECTIONS
 	    extab      : {}  
 	    extabindex : {}
         .sdata2     : {}   /* SHF_ALLOC + possibly SHF_WRITE (prob. ReadOnly)*/
-        .sbss2      : {}      /* SHF_ALLOC +  SHF_WRITE , e.g const int apa = 0;*/
-	    . = ALIGN(0x10);
+        .sbss2      : {}   /* SHF_ALLOC +  SHF_WRITE , e.g const int apa = 0;*/
+	    . = ALIGN(0x10);   /* Section alignment is 0x10 */ 	
 	    __DATA_ROM = .;
 	    .=.+SIZEOF(.data);
+	    . = ALIGN(0x10);  /* Section alignment is 0x10 */
 	    __SDATA = .;
 	    .=.+SIZEOF(.sdata);
+	    . = ALIGN(0x10);  /* Section alignment is 0x10 */
 	    __SDATA0 = .;
 	    .=.+SIZEOF(.PPC.EMB.sdata0);
 	 }	 > flash
@@ -68,7 +70,7 @@ SECTIONS
 	  __BSS_END = .;
       .PPC.EMB.sdata0 LOAD(ADDR(__SDATA0)) : {}	/* Small data with offset to 0 */	    
       .PPC.EMB.sbss0  : {}
-      .ramlog (DATA) : { *(.ramlog) }
+      .ramlog : { *(.ramlog_data) *(.ramlog_bss) }
 	  _heap_addr = .;      
 	} > sram
 }   

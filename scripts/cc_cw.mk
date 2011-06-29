@@ -48,7 +48,8 @@ cflags-y          += -abi=eabi
 cflags-y          += -proc=5565
 cflags-y          += -fp=soft
 cflags-y          += -use_isel=on
-cflags-y          += -sdata=0xFFFF -sdata2=16
+#cflags-y          += -sdata=0xFFFF -sdata2=16
+cflags-y          += -sdata=0xFFFF -sdata2=0
 
 #cflags-y          += -fno-strict-aliasing
 #cflags-y          += -fno-builtin

@@ -247,18 +247,49 @@ static void os_start( void ) {
 }
 #endif
 
-#define TEST_DATA  12345
-int test_data = TEST_DATA;
-int test_bss = 0;
+#define TEST_DATA  0x12345
+#define TEST_SDATA2	0x3344
+volatile int test_data = TEST_DATA;
+volatile int test_bss = 0;
+#if defined(CFG_PPC) && defined(__CWCC__)
+/* Note! It does not matter if the data is initialized to 0,
+ * it still sbss2.
+ */
+volatile const int test_sbss2;
+
+/* Initialized small data */
+volatile const int test_sdata2 = TEST_SDATA2;
+#endif
 
 
-void noooo( void ) {
-	while(1) {}
-}
+#define BAD_LINK_FILE() 	while(1) {}
 
 extern void EcuM_Init();
 int main( void )
 {
+	/* Check link file */
+	if (TEST_DATA != test_data) {
+		BAD_LINK_FILE();
+	}
+
+	if (test_bss != 0) {
+		BAD_LINK_FILE();
+	}
+
+#if defined(CFG_PPC) && defined(__CWCC__)
+	/* check sdata2 */
+	if (test_sdata2 != TEST_SDATA2) {
+		BAD_LINK_FILE();
+	}
+#endif
+
+#if defined(CFG_PPC) && defined(__CWCC__)
+	/* check sdata2 */
+	if (test_sbss2 != 0) {
+		BAD_LINK_FILE();
+	}
+#endif
+
 	EcuM_Init();
 
 }
@@ -270,15 +301,6 @@ int main( void )
  *
  */
 void StartOS(AppModeType Mode) {
-
-	/* Check link file */
-	if (TEST_DATA != test_data) {
-		noooo();
-	}
-
-	if (test_bss != 0) {
-		noooo();
-	}
 
 	Os_Sys.appMode = Mode;
 
