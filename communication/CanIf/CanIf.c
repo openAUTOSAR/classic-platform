@@ -72,7 +72,7 @@
 
 // Helper to get the Can Controller refered to by a CanIf Channel
 #define ARC_GET_CHANNEL_CONTROLLER(_channel) \
-	CanIf_ConfigPtr->Arc_ChannelToControllerMap[channel]
+	CanIf_ConfigPtr->Arc_ChannelToControllerMap[_channel]
 
 /* Global configure */
 static const CanIf_ConfigType *CanIf_ConfigPtr;
