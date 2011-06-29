@@ -1096,10 +1096,12 @@ void Fls_Check( uint32 flsBaseAddress, uint32 flsTotalSize )
   // Enable Flash Non_Correctible Reporting,
   // Not really necessary but makes more information
   // available in the MCM registers if an error occurs.
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC5606S) || defined(CFG_MPC5567)
   ECSM.ECR.B.EFNCR = 1;
-#else
+#elif defined (CFG_MPC5516)
   MCM.ECR.B.EFNCR = 1;
+#else
+#error "Non supported processor"
 #endif
 
   // Read flash in 32bit chunks, it's most efficient.
