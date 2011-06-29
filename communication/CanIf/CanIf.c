@@ -346,14 +346,11 @@ static const CanIf_TxPduConfigType * CanIf_FindTxPduEntry(PduIdType id)
 	} else {
 		return &CanIf_ConfigPtr->InitConfig->CanIfTxPduConfigPtr[id];
 	}
-  }
+}
+
 
 #if ( CANIF_ARC_RUNTIME_PDU_CONFIGURATION == STD_ON )
-CanIf_RxPduConfigType * CanIf_FindRxPduEntry(PduIdType id)
-#else
-static const CanIf_RxPduConfigType * CanIf_FindRxPduEntry(PduIdType id)
-#endif
-{
+CanIf_RxPduConfigType * CanIf_FindRxPduEntry(PduIdType id) {
 	if (id >= CanIf_ConfigPtr->InitConfig->CanIfNumberOfCanRxPduIds) {
 		return NULL;
 	} else {
@@ -361,7 +358,6 @@ static const CanIf_RxPduConfigType * CanIf_FindRxPduEntry(PduIdType id)
 	}
 }
 
-#if ( CANIF_ARC_RUNTIME_PDU_CONFIGURATION == STD_ON )
 const CanIf_HrhConfigType* CanIf_Arc_GetReceiveHandler(CanIf_Arc_ChannelIdType Channel) {
   const CanIf_InitHohConfigType *hohConfig;
   const CanIf_HrhConfigType *hrhConfig;
