@@ -250,6 +250,25 @@
                 </DATA-ELEMENT-PROTOTYPE>
               </DATA-ELEMENTS>
             </SENDER-RECEIVER-INTERFACE>
+            <SENDER-RECEIVER-INTERFACE UUID="699ad9cb-26aa-4519-b929-ba36857b87a3">
+              <SHORT-NAME>FreqReqIf</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                </SDGS>
+              </ADMIN-DATA>
+              <DATA-ELEMENTS>
+                <DATA-ELEMENT-PROTOTYPE UUID="b8b7f76d-6239-44b4-a6d8-24352202c5d1">
+                  <SHORT-NAME>freq</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <TYPE-TREF DEST="INTEGER-TYPE">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Data/UInt32</TYPE-TREF>
+                </DATA-ELEMENT-PROTOTYPE>
+              </DATA-ELEMENTS>
+            </SENDER-RECEIVER-INTERFACE>
           </ELEMENTS>
         </AR-PACKAGE>
         <AR-PACKAGE UUID="8f7c42a9-4a8f-48a6-baf5-12ce5139560e">
@@ -295,6 +314,24 @@
                   </ADMIN-DATA>
                   <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/rte_simple_lib/Interfaces/ResultIf</PROVIDED-INTERFACE-TREF>
                 </P-PORT-PROTOTYPE>
+                <R-PORT-PROTOTYPE UUID="23038d9a-c189-4ebc-876c-17333a9a8abf">
+                  <SHORT-NAME>FreqReq</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/rte_simple_lib/Interfaces/FreqReqIf</REQUIRED-INTERFACE-TREF>
+                </R-PORT-PROTOTYPE>
+                <P-PORT-PROTOTYPE UUID="eb3e6ff1-b668-465e-82ca-43c1ce2cd641">
+                  <SHORT-NAME>FreqReqInd</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/rte_simple_lib/Interfaces/FreqReqIf</PROVIDED-INTERFACE-TREF>
+                </P-PORT-PROTOTYPE>
               </PORTS>
             </APPLICATION-SOFTWARE-COMPONENT-TYPE>
             <INTERNAL-BEHAVIOR UUID="3ebab261-60c4-48b8-86a9-0efb1d25f853">
@@ -316,6 +353,19 @@
                   <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/rte_simple_lib/TesterKit/TesterBehavior/TesterRunnable</START-ON-EVENT-REF>
                   <PERIOD>0.1</PERIOD>
                 </TIMING-EVENT>
+                <DATA-RECEIVED-EVENT UUID="2dcc42b8-d811-4d53-a1ab-4500ccfb9306">
+                  <SHORT-NAME>RecFreqReq</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/rte_simple_lib/TesterKit/TesterBehavior/FreqReqRunnable</START-ON-EVENT-REF>
+                  <DATA-IREF>
+                    <R-PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/rte_simple_lib/TesterKit/Tester/FreqReq</R-PORT-PROTOTYPE-REF>
+                    <DATA-ELEMENT-PROTOTYPE-REF DEST="DATA-ELEMENT-PROTOTYPE">/rte_simple_lib/Interfaces/FreqReqIf/freq</DATA-ELEMENT-PROTOTYPE-REF>
+                  </DATA-IREF>
+                </DATA-RECEIVED-EVENT>
               </EVENTS>
               <RUNNABLES>
                 <RUNNABLE-ENTITY UUID="4afb847f-3d34-4218-9d8f-bc589a0f5850">
@@ -383,6 +433,44 @@
                     </SYNCHRONOUS-SERVER-CALL-POINT>
                   </SERVER-CALL-POINTS>
                   <SYMBOL>TesterRunnable</SYMBOL>
+                </RUNNABLE-ENTITY>
+                <RUNNABLE-ENTITY UUID="2b14cc50-ac0a-48de-b3d0-4db1d439d8de">
+                  <SHORT-NAME>FreqReqRunnable</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <CAN-BE-INVOKED-CONCURRENTLY>true</CAN-BE-INVOKED-CONCURRENTLY>
+                  <DATA-READ-ACCESSS>
+                    <DATA-READ-ACCESS UUID="856726c0-a043-4fa7-92df-80114b9cee36">
+                      <SHORT-NAME>ReadFreqReq</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DATA-ELEMENT-IREF>
+                        <R-PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/rte_simple_lib/TesterKit/Tester/FreqReq</R-PORT-PROTOTYPE-REF>
+                        <DATA-ELEMENT-PROTOTYPE-REF DEST="DATA-ELEMENT-PROTOTYPE">/rte_simple_lib/Interfaces/FreqReqIf/freq</DATA-ELEMENT-PROTOTYPE-REF>
+                      </DATA-ELEMENT-IREF>
+                    </DATA-READ-ACCESS>
+                  </DATA-READ-ACCESSS>
+                  <DATA-WRITE-ACCESSS>
+                    <DATA-WRITE-ACCESS UUID="40c25556-1f39-43f6-a2ff-c3d63418fcf4">
+                      <SHORT-NAME>WriteFreqReqInd</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DATA-ELEMENT-IREF>
+                        <P-PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/rte_simple_lib/TesterKit/Tester/FreqReqInd</P-PORT-PROTOTYPE-REF>
+                        <DATA-ELEMENT-PROTOTYPE-REF DEST="DATA-ELEMENT-PROTOTYPE">/rte_simple_lib/Interfaces/FreqReqIf/freq</DATA-ELEMENT-PROTOTYPE-REF>
+                      </DATA-ELEMENT-IREF>
+                    </DATA-WRITE-ACCESS>
+                  </DATA-WRITE-ACCESSS>
+                  <SYMBOL>FreqReqRunnable</SYMBOL>
                 </RUNNABLE-ENTITY>
               </RUNNABLES>
             </INTERNAL-BEHAVIOR>

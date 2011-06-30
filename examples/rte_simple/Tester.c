@@ -6,6 +6,7 @@
  */
 
 #include "Rte_Tester.h"
+#include "Os.h"
 
 void TesterRunnable() {
 	UInt8 arg1 = Rte_IRead_TesterRunnable_Arguments_arg1();
@@ -18,4 +19,16 @@ void TesterRunnable() {
 	} else {
 		Rte_IWrite_TesterRunnable_Result_result(0);
 	}
+}
+
+void FreqReqRunnable() {
+	// Get frequency from COM stack.
+	UInt32 freqReq = Rte_IRead_FreqReqRunnable_FreqReq_freq();
+
+	// Set the alarm that triggers the blinker.
+	CancelAlarm(ALARM_ID_BlinkerAlarm);
+	SetRelAlarm(ALARM_ID_BlinkerAlarm, 1, freqReq);
+
+	// Echo the frequency back to COM stack.
+	Rte_IWrite_FreqReqRunnable_FreqReqInd_freq(freqReq);
 }

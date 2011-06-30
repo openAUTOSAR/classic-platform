@@ -40,6 +40,22 @@
                 </DATA-ELEMENT-IREF>
                 <SIGNAL-REF DEST="SYSTEM-SIGNAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Result</SIGNAL-REF>
               </SENDER-RECEIVER-TO-SIGNAL-MAPPING>
+              <SENDER-RECEIVER-TO-SIGNAL-MAPPING>
+                <DATA-ELEMENT-IREF>
+                  <SOFTWARE-COMPOSITION-REF DEST="SOFTWARE-COMPOSITION">/rte_simple_extract/rte_simple_extract/rte_simple_extract_softwareComposition</SOFTWARE-COMPOSITION-REF>
+                  <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/FreqReq</PORT-PROTOTYPE-REF>
+                  <DATA-ELEMENT-REF DEST="DATA-ELEMENT-PROTOTYPE">/rte_simple_lib/Interfaces/FreqReqIf/freq</DATA-ELEMENT-REF>
+                </DATA-ELEMENT-IREF>
+                <SIGNAL-REF DEST="SYSTEM-SIGNAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/FreqReqSig</SIGNAL-REF>
+              </SENDER-RECEIVER-TO-SIGNAL-MAPPING>
+              <SENDER-RECEIVER-TO-SIGNAL-MAPPING>
+                <DATA-ELEMENT-IREF>
+                  <SOFTWARE-COMPOSITION-REF DEST="SOFTWARE-COMPOSITION">/rte_simple_extract/rte_simple_extract/rte_simple_extract_softwareComposition</SOFTWARE-COMPOSITION-REF>
+                  <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/FreqReqInd</PORT-PROTOTYPE-REF>
+                  <DATA-ELEMENT-REF DEST="DATA-ELEMENT-PROTOTYPE">/rte_simple_lib/Interfaces/FreqReqIf/freq</DATA-ELEMENT-REF>
+                </DATA-ELEMENT-IREF>
+                <SIGNAL-REF DEST="SYSTEM-SIGNAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/FreqIndSig</SIGNAL-REF>
+              </SENDER-RECEIVER-TO-SIGNAL-MAPPING>
             </DATA-MAPPINGS>
             <SW-IMPL-MAPPINGS>
               <SWC-TO-IMPL-MAPPING UUID="82bfa1c7-e38e-4bad-b8d2-7ee82c981ccc">
@@ -103,6 +119,14 @@
             <P-PORT-PROTOTYPE UUID="e04beb49-0c3f-4821-9546-a57ffa53c70b">
               <SHORT-NAME>Result</SHORT-NAME>
               <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/rte_simple_lib/Interfaces/ResultIf</PROVIDED-INTERFACE-TREF>
+            </P-PORT-PROTOTYPE>
+            <R-PORT-PROTOTYPE UUID="69046e6f-8734-4e1e-aaa2-7701765913b8">
+              <SHORT-NAME>FreqReq</SHORT-NAME>
+              <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/rte_simple_lib/Interfaces/FreqReqIf</REQUIRED-INTERFACE-TREF>
+            </R-PORT-PROTOTYPE>
+            <P-PORT-PROTOTYPE UUID="1c681e54-ed61-45e6-988b-49c9abc44c06">
+              <SHORT-NAME>FreqReqInd</SHORT-NAME>
+              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/rte_simple_lib/Interfaces/FreqReqIf</PROVIDED-INTERFACE-TREF>
             </P-PORT-PROTOTYPE>
           </PORTS>
           <COMPONENTS>
@@ -207,6 +231,32 @@
                 <R-PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/rte_simple_lib/Logger2Kit/Logger2/Result</R-PORT-PROTOTYPE-REF>
               </REQUESTER-IREF>
             </ASSEMBLY-CONNECTOR-PROTOTYPE>
+            <DELEGATION-CONNECTOR-PROTOTYPE UUID="98da66ed-f266-4db0-9500-8698691102a4">
+              <SHORT-NAME>FreqReq_delegate_connector</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                </SDGS>
+              </ADMIN-DATA>
+              <INNER-PORT-IREF>
+                <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Tester_prototype</COMPONENT-PROTOTYPE-REF>
+                <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/rte_simple_lib/TesterKit/Tester/FreqReq</PORT-PROTOTYPE-REF>
+              </INNER-PORT-IREF>
+              <OUTER-PORT-REF DEST="R-PORT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/FreqReq</OUTER-PORT-REF>
+            </DELEGATION-CONNECTOR-PROTOTYPE>
+            <DELEGATION-CONNECTOR-PROTOTYPE UUID="fbfa001c-7451-4518-8e83-cd6af831cde6">
+              <SHORT-NAME>FreqReqInd_delegate_connector</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                </SDGS>
+              </ADMIN-DATA>
+              <INNER-PORT-IREF>
+                <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Tester_prototype</COMPONENT-PROTOTYPE-REF>
+                <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/rte_simple_lib/TesterKit/Tester/FreqReqInd</PORT-PROTOTYPE-REF>
+              </INNER-PORT-IREF>
+              <OUTER-PORT-REF DEST="P-PORT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/FreqReqInd</OUTER-PORT-REF>
+            </DELEGATION-CONNECTOR-PROTOTYPE>
           </CONNECTORS>
         </COMPOSITION-TYPE>
       </ELEMENTS>

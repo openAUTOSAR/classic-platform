@@ -1,5 +1,5 @@
 /*
-* Configuration of module: Rte (Rte_Logger.h)
+* Configuration of module: Rte (Rte_Calculator_Internal_.h)
 *
 * Created by:              
 * Copyright:               
@@ -13,15 +13,13 @@
 *           on Thu Jun 30 17:29:02 CEST 2011
 */
 
-/* Rte_Logger.h */
+/* Rte_Calculator.h */
 
-#ifndef RTE_LOGGER_H
-#define RTE_LOGGER_H
+#ifndef RTE_CALCULATOR_H
+#define RTE_CALCULATOR_H
 
 #include "Rte_Types.h"
 
-UInt16 Rte_IRead_LoggerRunnable_Result_result();
-
-void LoggerRunnable();
+Std_ReturnType Multiply(const UInt8 arg1, const UInt8 arg2, UInt16* result);
 
 #endif

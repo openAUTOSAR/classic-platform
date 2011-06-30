@@ -1,5 +1,5 @@
 /*
-* Configuration of module: Rte (Rte_Logger.h)
+* Configuration of module: Rte (Rte_Logger_Internal_.h)
 *
 * Created by:              
 * Copyright:               

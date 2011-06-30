@@ -1,5 +1,5 @@
 /*
-* Configuration of module: Rte (Rte_Tester.h)
+* Configuration of module: Rte (Rte_Tester_Internal_.h)
 *
 * Created by:              
 * Copyright:               
@@ -19,8 +19,6 @@
 #define RTE_TESTER_H
 
 #include "Rte_Types.h"
-
-#define Rte_Call_Calculator_Multiply Rte_Call_Tester_Calculator_Multiply
 
 UInt8 Rte_IRead_TesterRunnable_Arguments_arg1();
 
