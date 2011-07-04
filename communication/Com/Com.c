@@ -30,6 +30,12 @@
 #include "Com_misc.h"
 #include "debug.h"
 
+
+/* TODO: Better way to get endianness across all compilers? */
+static const uint32_t endianness_test = 0xdeadbeef;
+ComSignalEndianess_type Com_SystemEndianness;
+
+
 const Com_ConfigType * ComConfig;
 
 
@@ -42,6 +48,14 @@ void Com_Init(const Com_ConfigType *config ) {
 
 	uint32 earliestDeadline;
 	uint32 firstTimeout;
+
+	uint8 endiannessByte = *(const uint8 *)&endianness_test;
+	if      ( endiannessByte == 0xef ) { Com_SystemEndianness = COM_LITTLE_ENDIAN; }
+	else if ( endiannessByte == 0xde ) { Com_SystemEndianness = COM_BIG_ENDIAN; }
+	else {
+		// No other endianness supported
+		assert(0);
+	}
 
 	// Initialize each IPdu
 	//ComIPdu_type *IPdu;

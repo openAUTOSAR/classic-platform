@@ -56,7 +56,8 @@ void Com_WriteSignalDataToPduBuffer(
 		const uint16 signalId,
 		const boolean isGroupSignal,
 		const void *signalData,
-		void *pduBuffer);
+		void *pduBuffer,
+		const uint8 pduSize);
 
 /*
  * This function copies numBits bits of data from Source to Destination with the possibility to offset
@@ -71,7 +72,7 @@ void Com_WriteSignalDataToPduBuffer(
 void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByteLength,
 		uint8 segmentStartBitOffset, uint8 segmentBitLength, boolean signedOutput);
 
-void Com_WriteDataSegment(uint8 *pdu, const uint8 *signalDataPtr, uint8 destByteLength,
+void Com_WriteDataSegment(uint8 *pdu, uint8 *pduSignalMask, const uint8 *signalDataPtr, uint8 destByteLength,
 		uint8 segmentStartBitOffset, uint8 segmentBitLength);
 
 uint8 motorolaBitNrToPduOffset (uint8 motorolaBitNr);

@@ -79,4 +79,6 @@ void Com_IpduGroupStart(Com_PduGroupIdType IpduGroupId, boolean Initialize);
 void Com_IpduGroupStop(Com_PduGroupIdType IpduGroupId);
 
 
+extern ComSignalEndianess_type Com_SystemEndianness;
+
 #endif /*COM_H_*/

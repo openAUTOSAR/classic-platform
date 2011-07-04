@@ -14,10 +14,8 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
 #include <string.h>
+#include <assert.h>
 
 #include "Com_Arc_Types.h"
 #include "Com.h"
@@ -93,10 +91,11 @@ void Com_ReadSignalDataFromPduBuffer(
 
 	// Pointer to a byte of the source and dest respectively.
 	uint8 *signalDataBytes = (uint8 *)signalData;
+	uint8 signalDataBytesArray[8];
 	const uint8 *pduBufferBytes = (const uint8 *)pduBuffer;
 	uint8 startBitOffset = 0;
 
-	if (signalEndianess != CPU_ENDIANESS) {
+	if (signalEndianess == COM_LITTLE_ENDIAN) {
 		// Swap source bytes before reading
 		// TODO: Must adapt to larger PDUs!
 		uint8 pduBufferBytes_swap[8];
@@ -106,17 +105,33 @@ void Com_ReadSignalDataFromPduBuffer(
 		startBitOffset = intelBitNrToPduOffset(bitPosition, bitSize, 64);
 		//lint -save -esym(960,12.5) PC-Lint Exception: OK. PC-Lint Wrong interpretation of MISRA rule 12.5.
 		Com_ReadDataSegment(
-				signalDataBytes, pduBufferBytes_swap, destSize,
+				signalDataBytesArray, pduBufferBytes_swap, destSize,
 				startBitOffset, bitSize,
 				SignalTypeSignedness(signalType));
 		//lint -restore
 	} else {
 		startBitOffset = motorolaBitNrToPduOffset(bitPosition);
 		Com_ReadDataSegment(
-				signalDataBytes, pduBufferBytes, destSize,
+				signalDataBytesArray, pduBufferBytes, destSize,
 				startBitOffset, bitSize,
 				SignalTypeSignedness(signalType));
 	}
+
+	if (Com_SystemEndianness == COM_BIG_ENDIAN) {
+		// Straight copy
+		int i;
+		for (i = 0; i < destSize; i++) {
+			signalDataBytes[i] = signalDataBytesArray[i];
+		}
+
+	} else if (Com_SystemEndianness == COM_LITTLE_ENDIAN) {
+		// Data copy algorithm creates big-endian output data so we swap
+		int i;
+		for (i = 0; i < destSize; i++) {
+			signalDataBytes[destSize - 1 - i] = signalDataBytesArray[i];
+		}
+	}
+
 }
 
 
@@ -125,16 +140,18 @@ void Com_WriteSignalDataToPdu(
 			const void *signalData) {
 
 	// Get PDU
-	const ComSignal_type * Signal =  GET_Signal(signalId);
-	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
-	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
+	const ComSignal_type *Signal     = GET_Signal(signalId);
+	Com_Arc_Signal_type  *Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
+	Com_Arc_IPdu_type    *Arc_IPdu   = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
+	const ComIPdu_type   *IPdu       = GET_IPdu(Arc_Signal->ComIPduHandleId);
 
 	// Get data
 	Com_WriteSignalDataToPduBuffer(
 			signalId,
 			FALSE,
 			signalData,
-			Arc_IPdu->ComIPduDataPtr);
+			Arc_IPdu->ComIPduDataPtr,
+			IPdu->ComIPduSize);
 }
 
 void Com_WriteGroupSignalDataToPdu(
@@ -143,16 +160,18 @@ void Com_WriteGroupSignalDataToPdu(
 		const void *signalData) {
 
 	// Get PDU
-	const ComSignal_type * Signal =  GET_Signal(parentSignalId);
-	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
-	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
+	const ComSignal_type *Signal     = GET_Signal(parentSignalId);
+	Com_Arc_Signal_type  *Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
+	Com_Arc_IPdu_type    *Arc_IPdu   = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
+	const ComIPdu_type   *IPdu       = GET_IPdu(Arc_Signal->ComIPduHandleId);
 
 	// Get data
 	Com_WriteSignalDataToPduBuffer(
 			groupSignalId,
 			TRUE,
 			signalData,
-			Arc_IPdu->ComIPduDataPtr);
+			Arc_IPdu->ComIPduDataPtr,
+			IPdu->ComIPduSize);
 }
 
 
@@ -160,13 +179,15 @@ void Com_WriteSignalDataToPduBuffer(
 			const uint16 signalId,
 			const boolean isGroupSignal,
 			const void *signalData,
-			void *pduBuffer) {
+			void *pduBuffer,
+			const uint8 pduSize) {
 	// TODO: Implement writing little-endian signals
 
 	Com_SignalType signalType;
 	uint8 signalLength;
 	uint8 bitPosition;
 	uint8 bitSize;
+	ComSignalEndianess_type endian;
 
 	if (!isGroupSignal) {
 		const ComSignal_type * Signal =  GET_Signal(signalId);
@@ -174,21 +195,57 @@ void Com_WriteSignalDataToPduBuffer(
 		signalLength = Signal->ComBitSize / 8;
 		bitPosition = Signal->ComBitPosition;
 		bitSize = Signal->ComBitSize;
+		endian = Signal->ComSignalEndianess;
 	} else {
 		const ComGroupSignal_type *GroupSignal = GET_GroupSignal(signalId);
 		signalType = GroupSignal->ComSignalType;
 		signalLength = GroupSignal->ComBitSize / 8;
 		bitPosition = GroupSignal->ComBitPosition;
 		bitSize = GroupSignal->ComBitSize;
+		endian = GroupSignal->ComSignalEndianess;
 	}
 
-
-	const uint8 *signalDataBytes = (const uint8 *)signalData;
-	uint8 *pduBufferBytes = (uint8 *)pduBuffer;
-	uint8 startBitOffset = motorolaBitNrToPduOffset(bitPosition);
 	uint8 signalBufferSize = SignalTypeToSize(signalType, signalLength);
+	uint8 pduSignalMask[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-	Com_WriteDataSegment(pduBufferBytes, signalDataBytes, signalBufferSize, startBitOffset, bitSize);
+	uint8 signalDataBytesArray[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+	const uint8 *signalDataBytes = (const uint8 *)signalData;
+	if (Com_SystemEndianness == COM_BIG_ENDIAN) {
+		// Straight copy
+		int i;
+		for (i = 0; i < signalBufferSize; i++) {
+			signalDataBytesArray[i] = signalDataBytes[i];
+		}
+
+	} else if (Com_SystemEndianness == COM_LITTLE_ENDIAN) {
+		// Data copy algorithm assumes big-endian input data so we swap
+		int i;
+		for (i = 0; i < signalBufferSize; i++) {
+			signalDataBytesArray[signalBufferSize - 1 - i] = signalDataBytes[i];
+		}
+	}
+
+	if (endian == COM_BIG_ENDIAN) {
+		uint8 *pduBufferBytes = (uint8 *)pduBuffer;
+		uint8 startBitOffset = motorolaBitNrToPduOffset(bitPosition);
+
+		Com_WriteDataSegment(pduBufferBytes, pduSignalMask,
+				signalDataBytesArray, signalBufferSize, startBitOffset, bitSize);
+
+	} else {
+		uint8 startBitOffset = intelBitNrToPduOffset(bitPosition, bitSize, pduSize * 8);
+		uint8 pduBufferBytesSwapped[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+		Com_WriteDataSegment(pduBufferBytesSwapped, pduSignalMask,
+				signalDataBytesArray, signalBufferSize, startBitOffset, bitSize);
+
+		uint8 *pduBufferBytes = (uint8 *)pduBuffer;
+		uint8 i;
+		for (i = 0; i < pduSize; i++) {
+			pduBufferBytes[ i ]  &=       ~( pduSignalMask[ (pduSize - 1) - i ] );
+			pduBufferBytes[ i ]  |=  pduBufferBytesSwapped[ (pduSize - 1) - i ];
+		}
+	}
 }
 
 
@@ -304,8 +361,10 @@ void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByteLength,
  * Copies the <segmentBitLength> least significant bits from <signal> into <pdu>.
  * The bit segment is placed in <pdu> so that the most significant bit ends up
  * at <segmentStartBitOffset> from the msb of <pdu>.
+ * <pduSignalMask> is cleared and written to contain a mask with 1´s where the
+ * signal is located in the <pdu>.
  */
-void Com_WriteDataSegment(uint8 *pdu, const uint8 *signalDataPtr, uint8 destByteLength,
+void Com_WriteDataSegment(uint8 *pdu, uint8 *pduSignalMask, const uint8 *signalDataPtr, uint8 destByteLength,
 		uint8 segmentStartBitOffset, uint8 segmentBitLength) {
 	uint8 pduEndBitOffset = segmentStartBitOffset + segmentBitLength - 1;
 	uint8 pduStartByte = segmentStartBitOffset / 8;
@@ -323,8 +382,13 @@ void Com_WriteDataSegment(uint8 *pdu, const uint8 *signalDataPtr, uint8 destByte
 	uint16 shiftReg = 0;
 	uint16 clearReg = 0;
 
+	// clear pduSignalMask all the way from 0
+	memset(pduSignalMask, 0x00, pduEndByte);
+
 	// setup to point to end (LSB) of buffers
-	pdu += pduEndByte;
+	pdu           += pduEndByte;
+	pduSignalMask += pduEndByte;
+
 	signalDataPtr += destByteLength - 1;
 
 	// splits and writes one source byte on each iteration
@@ -339,8 +403,9 @@ void Com_WriteDataSegment(uint8 *pdu, const uint8 *signalDataPtr, uint8 destByte
 			shiftReg &= pduStartByteMask;
 			clearReg &= pduStartByteMask;
 		}
-		*(pdu - pduByteNr) &= (uint16)~(clearReg & 0x00FFu);
-		*(pdu - pduByteNr) |= shiftReg & 0x00FFu;
+		*(pdu           - pduByteNr) &= (uint16)~(clearReg & 0x00FFu);
+		*(pduSignalMask - pduByteNr) |= (uint16) (clearReg & 0x00FFu);
+		*(pdu           - pduByteNr) |= shiftReg & 0x00FFu;
 
 		pduByteNr++;
 		if ( (pduAlignmentShift != 0)
@@ -357,8 +422,9 @@ void Com_WriteDataSegment(uint8 *pdu, const uint8 *signalDataPtr, uint8 destByte
 				shiftReg &= pduStartByteMask;
 				clearReg &= pduStartByteMask;
 			}
-			*(pdu - pduByteNr) &= (uint16)~(clearReg & 0x00FFu);
-			*(pdu - pduByteNr) |= shiftReg & 0x00FFu;
+			*(pdu           - pduByteNr) &= (uint16)~(clearReg & 0x00FFu);
+			*(pduSignalMask - pduByteNr) |= (uint16) (clearReg & 0x00FFu);
+			*(pdu           - pduByteNr) |= shiftReg & 0x00FFu;
 		}
 		signalByteNr++;
 	} while (signalByteNr < segmentByteLength);
