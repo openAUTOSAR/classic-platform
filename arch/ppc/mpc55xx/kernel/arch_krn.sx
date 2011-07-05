@@ -63,6 +63,7 @@
 #define	UNLOCK()		wrteei	1
 
 #define EXC_TABLE_CODE(_exc_nr) 	\
+ 	.balign 16;                     \
 	stwu	sp,-EXC_FRM_SIZE(sp); 	\
 	stw		r3,EXC_FRM_R3(sp);		\
 	li	    r3,_exc_nr;				\
@@ -561,15 +562,19 @@ exception_tbl:
 	EXC_TABLE_CODE(1)
 	EXC_TABLE_CODE(2)
 	EXC_TABLE_CODE(3)
+    .balign 16
     b      exception_IVOR4
-    .skip   +0xc
 	EXC_TABLE_CODE(5)
 	EXC_TABLE_CODE(6)
 	EXC_TABLE_CODE(7)
 	EXC_TABLE_CODE(8)
 	EXC_TABLE_CODE(9)
+#if defined(CFG_MPC5606S)
+ 	EXC_TABLE_CODE(10)
+#else  	 	
+    .balign 16
     b	   exception_IVOR10
-    .skip   +0xc
+#endif    
 	EXC_TABLE_CODE(11)
 	EXC_TABLE_CODE(12)
 	EXC_TABLE_CODE(13)

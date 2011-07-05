@@ -251,14 +251,19 @@ static void os_start( void ) {
 #define TEST_SDATA2	0x3344
 volatile int test_data = TEST_DATA;
 volatile int test_bss = 0;
+/* Define if compiler is set to use small data section */
+/* #define CC_USE_SMALL_DATA */
+
 #if defined(CFG_PPC) && defined(__CWCC__)
 /* Note! It does not matter if the data is initialized to 0,
  * it still sbss2.
  */
+#if defined(CC_USE_SMALL_DATA)
 volatile const int test_sbss2;
-
+#endif
 /* Initialized small data */
 volatile const int test_sdata2 = TEST_SDATA2;
+
 #endif
 
 
@@ -283,7 +288,7 @@ int main( void )
 	}
 #endif
 
-#if defined(CFG_PPC) && defined(__CWCC__)
+#if defined(CC_USE_SMALL_DATA) && defined(CFG_PPC) && defined(__CWCC__)
 	/* check sdata2 */
 	if (test_sbss2 != 0) {
 		BAD_LINK_FILE();
