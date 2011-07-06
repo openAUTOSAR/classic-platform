@@ -16,3 +16,5 @@ syntax: regexp
 
 syntax: regexp
 ^.project$
+syntax: glob
+binaries/*
