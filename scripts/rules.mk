@@ -215,12 +215,13 @@ module_config: FORCE
 
 FORCE:
 
-$(ROOTDIR)/binaries:
+$(ROOTDIR)/binaries/$(BOARDDIR):
 	@mkdir -p $@
 
 .PHONY all:
-all: module_config $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $(ROOTDIR)/binaries
-	@cp -v $(build-lib-y) $(build-exe-y) $(build-hex-y) $(build-bin-y) $(ROOTDIR)/binaries
+all: module_config $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $(ROOTDIR)/binaries/$(BOARDDIR)
+	$(Q)cp -v $(build-lib-y) $(build-exe-y) $(build-hex-y) $(build-bin-y) $(ROOTDIR)/binaries/$(BOARDDIR)
+	
 
 
 .SUFFIXES:
