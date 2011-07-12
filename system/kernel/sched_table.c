@@ -247,6 +247,7 @@ StatusType StartScheduleTableRel(ScheduleTableType sid, TickType offset) {
 	StatusType rv = E_OK;
 	OsSchTblType *sPtr;
 	TickType max_offset;
+	imask_t state;
 
 
 #if (OS_STATUS_EXTENDED == STD_ON )
@@ -293,7 +294,7 @@ StatusType StartScheduleTableRel(ScheduleTableType sid, TickType offset) {
 		goto err;
 	}
 
-	Irq_Disable();
+	Irq_Save(state);
 	/* calculate the expire value.. */
 	/** @req OS278 */
 	sPtr->expire_val = Os_CounterAdd(
@@ -301,7 +302,7 @@ StatusType StartScheduleTableRel(ScheduleTableType sid, TickType offset) {
 							max_offset,
 							offset + Os_SchTblGetInitialOffset(sPtr) );
 	sPtr->state = SCHEDULETABLE_RUNNING;
-	Irq_Enable();
+	Irq_Restore(state);
 
 	SCHED_STD_END;
 }
@@ -309,6 +310,7 @@ StatusType StartScheduleTableRel(ScheduleTableType sid, TickType offset) {
 StatusType StartScheduleTableAbs(ScheduleTableType sid, TickType start ){
 	StatusType rv = E_OK;
 	OsSchTblType *sTblPtr;
+	imask_t state;
 
 	/** @req OS348 */
 	SCHED_CHECK_ID(sid);
@@ -336,11 +338,11 @@ StatusType StartScheduleTableAbs(ScheduleTableType sid, TickType start ){
 	}
 
 
-	Irq_Disable();
+	Irq_Save(state);
 	/** @req OS351 */
 	sTblPtr->expire_val = start + Os_SchTblGetInitialOffset(sTblPtr);
 	sTblPtr->state = SCHEDULETABLE_RUNNING;
-	Irq_Enable();
+	Irq_Restore(state);
 
 	SCHED_STD_END;
 }
@@ -355,8 +357,9 @@ StatusType StartScheduleTableAbs(ScheduleTableType sid, TickType start ){
 StatusType StartScheduleTableSynchron(ScheduleTableType sid ){
 	OsSchTblType *s_p;
 	StatusType rv = E_OK;
+	imask_t state;
 
-	Irq_Disable();
+	Irq_Save(state);
 
 	SCHED_CHECK_ID(sid);
 
@@ -375,7 +378,7 @@ StatusType StartScheduleTableSynchron(ScheduleTableType sid ){
 	/** @req OS389 */
 	s_p->state = SCHEDULETABLE_WAITING;
 
-	Irq_Enable();
+	Irq_Restore(state);
 
 	SCHED_STD_END;
 }
@@ -413,6 +416,8 @@ StatusType NextScheduleTable( ScheduleTableType sid_curr, ScheduleTableType sid_
 	OsSchTblType *sFromPtr;
 	OsSchTblType *sToPtr;
 
+	imask_t state;
+
 	/** @req OS282 */
 	SCHED_CHECK_ID(sid_curr);
 	SCHED_CHECK_ID(sid_next);
@@ -440,7 +445,7 @@ StatusType NextScheduleTable( ScheduleTableType sid_curr, ScheduleTableType sid_
 		goto err;
 	}
 
-	Irq_Disable();
+	Irq_Save(state);
 
 	/** @req OS453 */
 	if( sFromPtr->state == SCHEDULETABLE_STOPPED ) {
@@ -457,7 +462,7 @@ StatusType NextScheduleTable( ScheduleTableType sid_curr, ScheduleTableType sid_
 		sToPtr->expire_curr_index = 0;
 	}
 
-	Irq_Enable();
+	Irq_Restore(state);
 
 	SCHED_STD_END;
 }
@@ -474,6 +479,7 @@ StatusType NextScheduleTable( ScheduleTableType sid_curr, ScheduleTableType sid_
 StatusType SyncScheduleTable( ScheduleTableType sid, GlobalTimeTickType globalTime  ) {
 	StatusType rv = E_OK;
 	OsSchTblType *s_p =  Os_SchTblGet(sid);
+	imask_t state;
 
 	SCHED_CHECK_ID(sid);
 
@@ -490,7 +496,7 @@ StatusType SyncScheduleTable( ScheduleTableType sid, GlobalTimeTickType globalTi
 		goto err;
 	}
 
-	Irq_Disable();
+	Irq_Save(state);
 
 	/** @req OS456 */
 	if( (s_p->state == SCHEDULETABLE_STOPPED) ||
@@ -521,7 +527,7 @@ StatusType SyncScheduleTable( ScheduleTableType sid, GlobalTimeTickType globalTi
 		break;
 	}
 
-	Irq_Enable();
+	Irq_Restore(state);
 
 	SCHED_STD_END;
 }
@@ -541,11 +547,13 @@ StatusType GetScheduleTableStatus( ScheduleTableType sid, ScheduleTableStatusRef
 	StatusType rv = E_OK;
 	OsSchTblType *s_p;
 	(void)status;
+	imask_t state;
+
 	/** @req OS293 */
 	SCHED_CHECK_ID(sid);
 
 	s_p = Os_SchTblGet(sid);
-	Irq_Disable();
+	Irq_Save(state);
 
 	switch(s_p->state) {
 		/** @req OS289 */
@@ -565,7 +573,7 @@ StatusType GetScheduleTableStatus( ScheduleTableType sid, ScheduleTableStatusRef
 
 	}
 
-	Irq_Enable();
+	Irq_Restore(state);
 
 	SCHED_STD_END;
 }
@@ -580,6 +588,7 @@ StatusType GetScheduleTableStatus( ScheduleTableType sid, ScheduleTableStatusRef
 StatusType SetScheduleTableAsync( ScheduleTableType sid ) {
 	StatusType rv = E_OK;
 	OsSchTblType *s_p = Os_SchTblGet(sid);
+	imask_t state;
 
 	SCHED_CHECK_ID(sid);
 
@@ -589,7 +598,7 @@ StatusType SetScheduleTableAsync( ScheduleTableType sid ) {
 		goto err;
 	}
 
-	Irq_Disable();
+	Irq_Save(state);
 
 	/** @req_todo OS362 */
 	/** @req_todo OS323 */
@@ -597,7 +606,7 @@ StatusType SetScheduleTableAsync( ScheduleTableType sid ) {
 	/** @req OS300 */
 	s_p->state = SCHEDULETABLE_RUNNING;
 
-	Irq_Enable();
+	Irq_Restore(state);
 
 	SCHED_STD_END;
 }
