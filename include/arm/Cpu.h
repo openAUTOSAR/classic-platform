@@ -24,6 +24,9 @@
 #include "core_cr4.h"
 #endif
 
+#include "Std_Types.h"
+typedef uint32_t imask_t;
+
 /* Call architecture specific code */
 #define Irq_Disable()		__disable_irq()
 #define Irq_Enable()		__enable_irq()

@@ -19,6 +19,7 @@
 #define CPU_H
 
 #include "Std_Types.h"
+typedef uint32_t imask_t;
 
 #define Irq_Save(flags)		((flags) = 0)		// Dummy assignment to avoid compiler warnings
 #define Irq_Restore(flags)	(void)(flags)

@@ -68,50 +68,6 @@ void Irq_EOI( void ) {
 
 #define ICSR_VECTACTIVE		0x1ff
 
-/**
- * Get Active ISR number field.
- * You can subtract 16 from the VECTACTIVE field to index into the Interrupt
- * Clear/Set Enable, Interrupt Clear Pending/SetPending and Interrupt Priority
- * Registers. INTISR[0] has vector number 16.
- *
- */
-#if 0
-static uint32_t NVIC_GetActiveVector( void) {
-	return (SCB->ICSR &  ICSR_VECTACTIVE);
-}
-#endif
-
-
-#if 0
-/**
- *
- * @param stack_p Ptr to the current stack.
- *
- * The stack holds C, NVGPR, VGPR and the EXC frame.
- *
- */
-void *Irq_Entry( void *stack_p ){
-	uint32_t vector = 0;
-
-	Irq_Disable();
-
-	/* 0. Set the default handler here....
-	 * 1. Grab the vector from the interrupt controller
-	 *    INT_CTRL_ST[VECTACTIVE]
-	 * 2. Irq_VectorTable[vector] is odd -> ISR1
-	 *    Irq_VectorTable[vector] is even-> ISR2
-	 */
-
-
-	vector = NVIC_GetActiveVector();
-
-	Os_Isr_cm3((void *)Irq_VectorTable[vector]);
-	Irq_Enable();
-
-	return stack_p;
-}
-#endif
-
 
 /**
  * NVIC prio have priority 0-31, 0-highest priority.

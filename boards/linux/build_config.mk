@@ -20,6 +20,3 @@ MOD_AVAIL+=COMM NM CANNM CANSM
 
 # Needed by us
 MOD_USE=
-
-# Stubs
-obj-y += McuExtensionsStub.o

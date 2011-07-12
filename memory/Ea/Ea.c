@@ -190,6 +190,7 @@ Std_ReturnType Ea_Read(uint16 BlockNumber, uint16 BlockOffset, uint8* DataBuffer
 {
 	uint16 BlockIndex;
 	const Ea_BlockConfigType *EaBlockCon;
+    imask_t state;
 
 	/*@req <EA130> */
 	if (E_OK != Ea_ValidateInitialized(EA_READ_ID))
@@ -201,15 +202,15 @@ Std_ReturnType Ea_Read(uint16 BlockNumber, uint16 BlockOffset, uint8* DataBuffer
 
 	/*@req <EA137> */
 	/* Lock down the module to ourself */
-	imask_t mask = McuE_EnterCriticalSection();
+    Irq_Save(state);
 	if (Ea_Global.ModuleStatus != MEMIF_IDLE)
 	{
-		McuE_ExitCriticalSection(mask);
+	    Irq_Restore(state);
 		return E_NOT_OK;
 	}
 	/*set current state is internal busy*/
 	Ea_Global.ModuleStatus = MEMIF_BUSY_INTERNAL;
-	McuE_ExitCriticalSection(mask);
+    Irq_Restore(state);
 
 	BlockIndex = EA_GET_BLOCK(BlockNumber);
 
@@ -254,6 +255,7 @@ Std_ReturnType Ea_Write(uint16 BlockNumber, uint8* DataBufferPtr)
 	uint16 BlockIndex;
 	const Ea_BlockConfigType *EaBlockCon;
 	Ea_AdminBlock* adminBlock;
+    imask_t state;
 
 	/*@req <EA131> */
 	if (E_OK != Ea_ValidateInitialized(EA_WRITE_ID))
@@ -266,15 +268,15 @@ Std_ReturnType Ea_Write(uint16 BlockNumber, uint8* DataBufferPtr)
 	/*@req <EA137>
 	*/
 	/* Lock down the module to ourself */
-	imask_t mask = McuE_EnterCriticalSection();
+    Irq_Save(state);
 	if (Ea_Global.ModuleStatus != MEMIF_IDLE)
 	{
-		McuE_ExitCriticalSection(mask);
+	    Irq_Restore(state);
 		return E_NOT_OK;
 	}
 	/*set current state is internal busy*/
 	Ea_Global.ModuleStatus = MEMIF_BUSY_INTERNAL;
-	McuE_ExitCriticalSection(mask);
+    Irq_Restore(state);
 
 	BlockIndex = EA_GET_BLOCK(BlockNumber);
 
@@ -372,6 +374,7 @@ Std_ReturnType Ea_InvalidateBlock(uint16 BlockNumber)
 	const Ea_BlockConfigType *EaBlockCon;
 	Ea_AdminBlock* adminBlock;
 	Std_ReturnType result;
+    imask_t state;
 
 	/*@req <EA135> */
 	if (E_OK != Ea_ValidateInitialized(EA_INVALIDATEBLOCK_ID))
@@ -384,15 +387,15 @@ Std_ReturnType Ea_InvalidateBlock(uint16 BlockNumber)
 	/*@req <EA137>
 	*/
 	/* Lock down the module to ourself */
-	imask_t mask = McuE_EnterCriticalSection();
+    Irq_Save(state);
 	if (Ea_Global.ModuleStatus != MEMIF_IDLE)
 	{
-		McuE_ExitCriticalSection(mask);
+	    Irq_Restore(state);
 		return E_NOT_OK;
 	}
 	/*set current state is internal busy*/
 	Ea_Global.ModuleStatus = MEMIF_BUSY_INTERNAL;
-	McuE_ExitCriticalSection(mask);
+    Irq_Restore(state);
 
 	BlockIndex = EA_GET_BLOCK(BlockNumber);
 
@@ -427,11 +430,11 @@ Std_ReturnType Ea_InvalidateBlock(uint16 BlockNumber)
 	result = Eep_Write(Ea_Global.EepAddress, (const uint8*) Ea_TempBuffer, sizeof(Ea_AdminBlock));
 	if (E_OK == result)
 	{
-		mask = McuE_EnterCriticalSection();
+	    Irq_Save(state);
 		MemIf_StatusType status = Eep_GetStatus();
 		if ((status == MEMIF_BUSY) || (status == MEMIF_BUSY_INTERNAL))
 			Ea_Global.JobStatus = EA_PENDING_ADMIN_WRITE;
-		McuE_ExitCriticalSection(mask);
+	    Irq_Restore(state);
 	}
 	else
 	{
@@ -450,6 +453,7 @@ Std_ReturnType Ea_EraseImmediateBlock(uint16 BlockNumber)
 {
 	uint16 BlockIndex;
 	const Ea_BlockConfigType *EaBlockCon;
+	imask_t state;
 
 	/*@req <EA136> */
 	if (E_OK != Ea_ValidateInitialized(EA_ERASEIMMEDIATEBLOCK_ID))
@@ -462,15 +466,15 @@ Std_ReturnType Ea_EraseImmediateBlock(uint16 BlockNumber)
 	/*@req <EA137>
 	*/
 	/* Lock down the module to ourself */
-	imask_t mask = McuE_EnterCriticalSection();
+    Irq_Save(state);
 	if (Ea_Global.ModuleStatus != MEMIF_IDLE)
 	{
-		McuE_ExitCriticalSection(mask);
+	    Irq_Restore(state);
 		return E_NOT_OK;
 	}
 	/*set current state is internal busy*/
 	Ea_Global.ModuleStatus = MEMIF_BUSY_INTERNAL;
-	McuE_ExitCriticalSection(mask);
+    Irq_Restore(state);
 
 	BlockIndex = EA_GET_BLOCK(BlockNumber);
 
@@ -512,7 +516,7 @@ Std_ReturnType Ea_EraseImmediateBlock(uint16 BlockNumber)
 void Ea_MainFunction(void)
 {
 	Std_ReturnType result;
-	imask_t mask;
+	imask_t state;
 
 	if ((MEMIF_JOB_PENDING == Ea_Global.JobResult) && (Ea_Global.JobStatus == EA_PENDING_NONE))
 	{
@@ -525,11 +529,11 @@ void Ea_MainFunction(void)
 					result = Eep_Write(Ea_Global.EepAddress, (const uint8*) Ea_TempBuffer, Ea_Global.Length);
 					if (E_OK == result)
 					{
-						mask = McuE_EnterCriticalSection();
+					    Irq_Save(state);
 						MemIf_StatusType status = Eep_GetStatus();
 						if ((status == MEMIF_BUSY) || (status == MEMIF_BUSY_INTERNAL))
 							Ea_Global.JobStatus = EA_PENDING_WRITE;
-						McuE_ExitCriticalSection(mask);
+					    Irq_Restore(state);
 					}
 				}
 				break;
@@ -540,11 +544,11 @@ void Ea_MainFunction(void)
 					result = Eep_Read(Ea_Global.EepAddress, (uint8*) Ea_TempBuffer, Ea_Global.Length);
 					if (E_OK == result)
 					{
-						mask = McuE_EnterCriticalSection();
+					    Irq_Save(state);
 						MemIf_StatusType status = Eep_GetStatus();
 						if ((status == MEMIF_BUSY) || (status == MEMIF_BUSY_INTERNAL))
 							Ea_Global.JobStatus = EA_PENDING_READ;
-						McuE_ExitCriticalSection(mask);
+					    Irq_Restore(state);
 					}
 				}
 				break;
@@ -554,11 +558,11 @@ void Ea_MainFunction(void)
 					result = Eep_Erase(Ea_Global.EepAddress, Ea_Global.Length);
 					if (E_OK == result)
 					{
-						mask = McuE_EnterCriticalSection();
+					    Irq_Save(state);
 						MemIf_StatusType status = Eep_GetStatus();
 						if ((status == MEMIF_BUSY) || (status == MEMIF_BUSY_INTERNAL))
 							Ea_Global.JobStatus = EA_PENDING_ERASE;
-						McuE_ExitCriticalSection(mask);
+					    Irq_Restore(state);
 					}
 				}
 				break;
@@ -673,7 +677,7 @@ void handleLowerLayerWrite()
 {
 	Ea_AdminBlock* adminBlock;
 	Std_ReturnType result;
-	imask_t mask;
+	imask_t state;
 
 	if (Ea_Global.JobResult == MEMIF_JOB_OK)
 	{
@@ -687,11 +691,11 @@ void handleLowerLayerWrite()
 		result = Eep_Write(Ea_Global.EepAddress, (const uint8*) Ea_TempBuffer, sizeof(Ea_AdminBlock));
 		if (E_OK == result)
 		{
-			mask = McuE_EnterCriticalSection();
+		    Irq_Save(state);
 			MemIf_StatusType status = Eep_GetStatus();
 			if ((status == MEMIF_BUSY) || (status == MEMIF_BUSY_INTERNAL))
 				Ea_Global.JobStatus = EA_PENDING_ADMIN_WRITE;
-			McuE_ExitCriticalSection(mask);
+		    Irq_Restore(state);
 		} else
 		{
 			Ea_Global.JobResult = MEMIF_JOB_FAILED;
@@ -721,7 +725,7 @@ void handleLowerLayerErase()
 {
 	Ea_AdminBlock* adminBlock;
 	Std_ReturnType result;
-	imask_t mask;
+	imask_t state;
 
 	if (Ea_Global.JobResult == MEMIF_JOB_OK)
 	{
@@ -735,11 +739,11 @@ void handleLowerLayerErase()
 		result = Eep_Write(Ea_Global.EepAddress, (const uint8*) Ea_TempBuffer, sizeof(Ea_AdminBlock));
 		if (E_OK == result)
 		{
-			mask = McuE_EnterCriticalSection();
+		    Irq_Save(state);
 			MemIf_StatusType status = Eep_GetStatus();
 			if ((status == MEMIF_BUSY) || (status == MEMIF_BUSY_INTERNAL))
 				Ea_Global.JobStatus = EA_PENDING_ADMIN_WRITE;
-			McuE_ExitCriticalSection(mask);
+		    Irq_Restore(state);
 		} else
 		{
 			Ea_Global.JobResult = MEMIF_JOB_FAILED;
@@ -770,15 +774,17 @@ void handleLowerLayerErase()
 /*@req <EA102> */
 void Ea_JobErrorNotification(void)
 {
-	imask_t mask = McuE_EnterCriticalSection();
-	/*@req EA154*/
+	imask_t state;
+    Irq_Save(state);
+
+    /*@req EA154*/
 	if (Ea_Global.JobResult == MEMIF_JOB_PENDING)
 		Ea_Global.JobResult = MEMIF_JOB_FAILED;
 
 	Ea_Global.JobType = EA_JOB_NONE;
 	Ea_Global.JobStatus = EA_PENDING_NONE;
 	Ea_Global.ModuleStatus = MEMIF_IDLE;
-	McuE_ExitCriticalSection(mask);
+    Irq_Restore(state);
 
 	/*@req <EA055> */
 	/*@req <EA144> */

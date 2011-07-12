@@ -192,9 +192,6 @@ uint32_t McuE_GetSystemClock( void );
 #if defined(CFG_MPC55XX) || defined(CFG_ARM_CR4)
 uint32_t McuE_GetPeripheralClock( McuE_PeriperalClock_t type );
 #endif
-#include "McuExtensions.h"
-
-
 
 #endif /*MCU_H_*/
 /** @} */

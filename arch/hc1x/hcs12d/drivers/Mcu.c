@@ -307,26 +307,6 @@ uint32_t McuE_GetSystemClock(void)
   return f_sys;
 }
 
-imask_t McuE_EnterCriticalSection()
-{
-#if 0
-  uint32_t msr = get_msr();
-  Irq_Disable();
-  return msr;
-#endif
-  return 0;
-}
-
-void McuE_ExitCriticalSection(uint32_t old_state)
-{
-#if 0
-  set_msr(old_state);
-#endif
-}
-
-
-
-
 /**
  * Function to setup the internal flash for optimal performance
  */

@@ -376,6 +376,7 @@ void Can_Init(const Can_ConfigType *Config)
     uint8                     MsgNr;
     uint32                    ErrCounter;
     uint32                    Eob;
+    imask_t state;
 
 /* DET Error Check */
 #if(CAN_DEV_ERROR_DETECT == STD_ON)
@@ -391,7 +392,7 @@ void Can_Init(const Can_ConfigType *Config)
     }
 #endif 
 
-    imask_t i_state = McuE_EnterCriticalSection();
+    Irq_Save(state);
 
     // TODO This should be used instead of other variables in the Can_Lcfg file.
     CurConfig        = Config;
@@ -537,7 +538,7 @@ void Can_Init(const Can_ConfigType *Config)
     ModuleState = CAN_READY;
 #endif
 
-    McuE_ExitCriticalSection(i_state);
+    Irq_Restore(state);
 
 }
 
@@ -547,6 +548,7 @@ void Can_InitController(uint8 Controller, const Can_ControllerConfigType* Config
 {
     uint8   MsgNr;
     uint32  ErrCounter;
+    imask_t state;
 
 #if(CAN_DEV_ERROR_DETECT == STD_ON)
     if(Config == NULL)
@@ -571,7 +573,7 @@ void Can_InitController(uint8 Controller, const Can_ControllerConfigType* Config
     }
 #endif 
 
-    imask_t i_state = McuE_EnterCriticalSection();
+    Irq_Save(state);
 
     ErrCounter = CAN_TIMEOUT_DURATION;
     
@@ -616,7 +618,7 @@ void Can_InitController(uint8 Controller, const Can_ControllerConfigType* Config
     /* Clear CCE Bit */
     CanRegs[Controller]->CTL &= ~0x00000040;
 
-    McuE_ExitCriticalSection(i_state);
+    Irq_Restore(state);
 }
 
 
@@ -794,6 +796,7 @@ Can_ReturnType Can_Write(Can_Arc_HTHType Hth, Can_PduType *PduInfo)
     Can_PduType           *CurPduArrayPtr;
     uint8                 *CurCancelRqstPtr;
     uint8                 *CurTxRqstPtr;
+    imask_t state;
 
     CurSduPtr       = PduInfo->sdu;
     
@@ -866,7 +869,7 @@ Can_ReturnType Can_Write(Can_Arc_HTHType Hth, Can_PduType *PduInfo)
     DCAN_WAIT_UNTIL_NOT_BUSY(ControllerId, IfRegId);
 
     // We cannot allow an interrupt or other task to play with the COM, MC and ARB registers here.
-    imask_t i_state = McuE_EnterCriticalSection();
+    Irq_Save(state);
 
 
     /* Set NewDat, TxIE (dep on ControllerConfig), TxRqst, EoB and DLC */
@@ -895,7 +898,7 @@ Can_ReturnType Can_Write(Can_Arc_HTHType Hth, Can_PduType *PduInfo)
     
     IfRegId ^= 1;
        
-    McuE_ExitCriticalSection(i_state);
+    Irq_Restore(state);
     return CAN_OK;
 }
 

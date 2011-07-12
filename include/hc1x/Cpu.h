@@ -16,6 +16,9 @@
 #ifndef CPU_H_
 #define CPU_H_
 
+#include "Std_Types.h"
+typedef uint32_t imask_t;
+
 #define Irq_Disable()		asm volatile (" sei");
 #define Irq_Enable()		asm volatile (" cli");
 

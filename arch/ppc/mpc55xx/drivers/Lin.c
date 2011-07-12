@@ -409,12 +409,13 @@ void Lin_DeInitChannel( uint8 Channel )
 
 Std_ReturnType Lin_SendHeader(  uint8 Channel,  Lin_PduType* PduInfoPtr )
 {
-  LinSRtype tmp;
-  LinLTRType tmpLtr;
+    LinSRtype tmp;
+    LinLTRType tmpLtr;
 	volatile struct ESCI_tag * esciHw = ESCI(Channel);
+	imask_t state;
 
 	// LIN021
-	imask_t state = McuE_EnterCriticalSection();
+    Irq_Save(state);
 	if(LinChannelStatus[Channel] == LIN_TX_BUSY || LinChannelStatus[Channel] == LIN_TX_ERROR ||
 	   LinChannelStatus[Channel] == LIN_RX_BUSY || LinChannelStatus[Channel] == LIN_RX_ERROR){
 		LinChannelStatus[Channel]=LIN_CH_OPERATIONAL;
@@ -426,7 +427,7 @@ Std_ReturnType Lin_SendHeader(  uint8 Channel,  Lin_PduType* PduInfoPtr )
 		// Clear flags
 		esciHw->SR.R=0xffffffff;
 	}
-	McuE_ExitCriticalSection(state);
+    Irq_Restore(state);
 
 
 	VALIDATE_W_RV( (LinDriverStatus != LIN_UNINIT), LIN_SEND_HEADER_SERVICE_ID, LIN_E_UNINIT, E_NOT_OK);
@@ -587,12 +588,13 @@ Std_ReturnType Lin_WakeUp( uint8 Channel )
 
 Lin_StatusType Lin_GetStatus( uint8 Channel, uint8** Lin_SduPtr )
 {
+	imask_t state;
 	VALIDATE_W_RV( (LinDriverStatus != LIN_UNINIT), LIN_GETSTATUS_SERVICE_ID, LIN_E_UNINIT, E_NOT_OK);
 	VALIDATE_W_RV( (LinChannelStatus[Channel] != LIN_CH_UNINIT), LIN_GETSTATUS_SERVICE_ID, LIN_E_CHANNEL_UNINIT, E_NOT_OK);
 	VALIDATE_W_RV( (Channel < LIN_CONTROLLER_CNT), LIN_GETSTATUS_SERVICE_ID, LIN_E_INVALID_CHANNEL, E_NOT_OK);
 	VALIDATE_W_RV( (Lin_SduPtr!=NULL), LIN_GETSTATUS_SERVICE_ID, LIN_E_INVALID_POINTER, E_NOT_OK);
 
-	imask_t state = McuE_EnterCriticalSection();
+    Irq_Save(state);
 	Lin_StatusType res = LinChannelStatus[Channel];
 	// We can only check for valid sdu ptr when LIN_RX_OK
 	if(LinChannelStatus[Channel] == LIN_RX_OK || LinChannelStatus[Channel] == LIN_RX_ERROR){
@@ -601,7 +603,7 @@ Lin_StatusType Lin_GetStatus( uint8 Channel, uint8** Lin_SduPtr )
 	} else if(LinChannelStatus[Channel] == LIN_TX_OK || LinChannelStatus[Channel] == LIN_TX_ERROR){
 		LinChannelStatus[Channel]=LIN_CH_OPERATIONAL;
 	}
-	McuE_ExitCriticalSection(state);
+    Irq_Restore(state);
 	return res;
 }
 

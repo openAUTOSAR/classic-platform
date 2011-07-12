@@ -51,6 +51,7 @@ StatusType WaitEvent( EventMaskType Mask ) {
 
 	OsTaskVarType *curr_pcb = Os_SysTaskGetCurr();
 	StatusType rv = E_OK;
+	imask_t state;
 
 	OS_DEBUG(D_EVENT,"# WaitEvent %s\n",Os_SysTaskGetCurr()->name);
 
@@ -70,7 +71,7 @@ StatusType WaitEvent( EventMaskType Mask ) {
 	}
 
 	/* Remove from ready queue */
-	Irq_Disable();
+	Irq_Save(state);
 
 	// OSEK/VDX footnote 5. The call of WaitEvent does not lead to a waiting state if one of the events passed in the event mask to
     // WaitEvent is already set. In this case WaitEvent does not lead to a rescheduling.
@@ -87,7 +88,7 @@ StatusType WaitEvent( EventMaskType Mask ) {
 		}
 	}
 
-	Irq_Enable();
+	Irq_Restore(state);
 
 	// The following line disables the unused label warning. Remove when
 	// proper error handling is implemented.

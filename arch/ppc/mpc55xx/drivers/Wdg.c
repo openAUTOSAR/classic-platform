@@ -97,9 +97,9 @@ Std_ReturnType Wdg_SetMode (WdgIf_ModeType Mode)
 /* This function services the internal Watchdog timer */
 void Wdg_Trigger (void)
 {
-	uint32 tmp;
+	imask_t state;
 
-	tmp = McuE_EnterCriticalSection();
+    Irq_Save(state);
 
 	//  According to MPC55xx manual:
 	//  To prevent the watchdog timer from interrupting or resetting
@@ -117,5 +117,5 @@ void Wdg_Trigger (void)
 	MCM.SWTSR.R = 0xAA;
 #endif
 
-	McuE_ExitCriticalSection(tmp);
+    Irq_Restore(state);
 }

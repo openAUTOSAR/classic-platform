@@ -29,7 +29,6 @@
 #include "debug.h"
 #include "PduR.h"
 #include "Det.h"
-#include "McuExtensions.h"
 
 
 uint8 Com_SendSignal(Com_SignalIdType SignalId, const void *SignalDataPtr) {
@@ -102,13 +101,15 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
 	// Is the IPdu ready for transmission?
 	if (Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduMinimumDelayTimer == 0) {
 
-		imask_t mask = McuE_EnterCriticalSection();
+        imask_t state;
+
+        Irq_Save(state);
 		// Check callout status
 		if (IPdu->ComIPduCallout != NULL) {
 			if (!IPdu->ComIPduCallout(ComTxPduId, Arc_IPdu->ComIPduDataPtr)) {
 				// TODO Report error to DET.
 				// Det_ReportError();
-				McuE_ExitCriticalSection(mask);
+			    Irq_Restore(state);
 				return;
 			}
 		}
@@ -127,7 +128,7 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
 				}
 			}
 		}
-		McuE_ExitCriticalSection(mask);
+	    Irq_Restore(state);
 
 		// Reset miminum delay timer.
 		Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduMinimumDelayTimer = IPdu->ComTxIPdu.ComTxIPduMinimumDelayFactor;

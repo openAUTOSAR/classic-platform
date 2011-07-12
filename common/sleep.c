@@ -38,7 +38,8 @@ void SleepInit()
 
 void Sleep(uint32_t nofTicks, TaskType TaskID, EventMaskType Mask )
 {
-	uint32 pval = McuE_EnterCriticalSection();
+	imask_t state;
+    Irq_Save(state);
 	if(nofTicks == 0){
 		nofTicks=1;
 	}
@@ -50,7 +51,7 @@ void Sleep(uint32_t nofTicks, TaskType TaskID, EventMaskType Mask )
         /* Error */
     	ErrorHook(E_OS_LIMIT);
     }
-	McuE_ExitCriticalSection(pval);
+    Irq_Restore(state);
 }
 
 

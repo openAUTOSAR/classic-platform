@@ -25,6 +25,7 @@
 #define CPU_H
 
 #include "Std_Types.h"
+typedef uint32_t imask_t;
 
 // Used if we are running a T32 instruction set simulator
 #define SIMULATOR() (SIU.MIDR.R==0)

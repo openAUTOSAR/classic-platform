@@ -139,20 +139,18 @@ void Port_SetPinDirection( Port_PinType pin, Port_PinDirectionType direction )
   VALIDATE_PARAM_PIN(pin, PORT_SET_PIN_DIRECTION_ID);
   unsigned long state;
 
+  Irq_Save(state); // Lock interrupts
   if (direction==PORT_PIN_IN)
   {
-    state = _Irq_Disable_save(); // Lock interrupts
     SIU.PCR[pin].B.IBE = 1;
     SIU.PCR[pin].B.OBE = 0;
-    _Irq_Disable_restore(state); // Restore interrupts
   }
   else
   {
-    state = _Irq_Disable_save(); // Lock interrupts
     SIU.PCR[pin].B.IBE = 0;
     SIU.PCR[pin].B.OBE = 1;
-    _Irq_Disable_restore(state); // Restore interrupts
   }
+  Irq_Restore(state); // Restore interrupts
   return;
 }
 #endif
@@ -167,9 +165,9 @@ void Port_RefreshPortDirection( void )
   unsigned long state;
   for (i=0; i < sizeof(SIU.PCR)/sizeof(SIU.PCR[0]); i++)
   {
-    state = _Irq_Disable_save(); // Lock interrupts
+	Irq_Save(state); // Lock interrupts
     *pcrPtr = (*pcrPtr & ~bitMask) | (*padCfgPtr & bitMask);
-    _Irq_Disable_restore(state); // Restore interrups
+    Irq_Restore(state); // Restore interrupts
     pcrPtr++;
     padCfgPtr++;
     if(98 == i)

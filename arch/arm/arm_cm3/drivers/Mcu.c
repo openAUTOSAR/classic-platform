@@ -527,18 +527,6 @@ uint32_t McuE_GetSystemClock(void)
   return f_sys;
 }
 
-imask_t McuE_EnterCriticalSection()
-{
-	uint32_t val;
-	Irq_Save(val);
-	return val;
-}
-
-void McuE_ExitCriticalSection(uint32_t old_state)
-{
-	Irq_Restore(old_state);
-}
-
 /**
  * Get the peripheral clock in Hz for a specific device
  */
@@ -572,14 +560,4 @@ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 void Mcu_ConfigureFlash(void)
 {
 
-}
-
-void McuE_EnableInterrupts(void)
-{
-  Irq_Enable();
-}
-
-void McuE_DisableInterrupts(void)
-{
-  Irq_Disable();
 }

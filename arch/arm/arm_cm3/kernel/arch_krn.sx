@@ -79,7 +79,6 @@ arggg:
 	bl      Os_Isr_cm3
 	IRQ_ENABLE()
 
-/*    bl      Irq_Entry */
     mov     sp, r6			// pop from returned stack
 
 	/* Do a normal exception return */

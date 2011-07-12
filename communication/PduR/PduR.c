@@ -30,7 +30,6 @@
 #include "Dem.h"
 #endif
 #include "PduR.h"
-#include "McuExtensions.h"
 #include "debug.h"
 
 /*
@@ -136,7 +135,8 @@ void PduR_BufferInc(PduRTxBuffer_type *Buffer, uint8 **ptr) {
 }
 
 void PduR_BufferQueue(PduRTxBuffer_type *Buffer, const uint8 * SduPtr) {
-	imask_t state = McuE_EnterCriticalSection();
+    imask_t state;
+    Irq_Save(state);
 
 	if (PduR_BufferIsFull(Buffer)) { // Buffer is full
 		PduR_BufferFlush(Buffer);
@@ -153,11 +153,12 @@ void PduR_BufferQueue(PduRTxBuffer_type *Buffer, const uint8 * SduPtr) {
 		DEBUG(DEBUG_LOW,"\tBuffer %d: Queued data %d. Status: NrItems %d, First %d, Last %d\n", Buffer->BufferId, *SduPtr, Buffer->NrItems, *Buffer->First, *Buffer->Last);
 
 	}
-	McuE_ExitCriticalSection(state);
+    Irq_Restore(state);
 }
 
 void PduR_BufferDeQueue(PduRTxBuffer_type *Buffer, uint8 *SduPtr) {
-	imask_t state = McuE_EnterCriticalSection();
+    imask_t state;
+    Irq_Save(state);
 
 	if (Buffer->NrItems > 0) {
 		memcpy(SduPtr, Buffer->First, sizeof(uint8) * Buffer->Length);
@@ -167,28 +168,30 @@ void PduR_BufferDeQueue(PduRTxBuffer_type *Buffer, uint8 *SduPtr) {
 	} else {
 		DEBUG(DEBUG_LOW,"\tBuffer %d: Buffer is empty, nothing to dequeue!\n", Buffer->BufferId);
 	}
-	McuE_ExitCriticalSection(state);
+    Irq_Restore(state);
 }
 
 void PduR_BufferFlush(PduRTxBuffer_type *Buffer) {
 	DEBUG(DEBUG_LOW,"\tBuffer %d: Flushing!\n", Buffer->BufferId);
-	imask_t state = McuE_EnterCriticalSection();
+    imask_t state;
+    Irq_Save(state);
 	Buffer->NrItems = 0;
 	Buffer->First = Buffer->Buffer;
 	Buffer->Last = Buffer->Buffer;
 	Buffer->TxConfP = 0;
-	McuE_ExitCriticalSection(state);
+    Irq_Restore(state);
 }
 
 uint8 PduR_BufferIsFull(PduRTxBuffer_type *Buffer) {
-	imask_t state = McuE_EnterCriticalSection();
+    imask_t state;
+    Irq_Save(state);
 	uint8 rv = 0;
 	if (Buffer->NrItems < Buffer->Depth) {
 		rv = 0;
 	} else {
 		rv = 1;
 	}
-	McuE_ExitCriticalSection(state);
+    Irq_Restore(state);
 	return rv;
 }
 */

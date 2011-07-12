@@ -1006,6 +1006,7 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
 
 Can_ReturnType Can_SetControllerMode( uint8 controller, Can_StateTransitionType transition ) {
   flexcan_t *canHw;
+  imask_t state;
   Can_ReturnType rv = CAN_OK;
   VALIDATE( (controller < GET_CONTROLLER_CNT()), 0x3, CAN_E_PARAM_CONTROLLER );
 
@@ -1020,12 +1021,12 @@ Can_ReturnType Can_SetControllerMode( uint8 controller, Can_StateTransitionType 
     canHw->MCR.B.FRZ = 0;
     canHw->MCR.B.HALT = 0;
     canUnit->state = CANIF_CS_STARTED;
-    imask_t state = McuE_EnterCriticalSection();
+    Irq_Save(state);
     if (canUnit->lock_cnt == 0)   // REQ CAN196
     {
       Can_EnableControllerInterrupts(controller);
     }
-    McuE_ExitCriticalSection(state);
+    Irq_Restore(state);
     break;
   case CAN_T_WAKEUP:  //CAN267
   case CAN_T_SLEEP:  //CAN258, CAN290
@@ -1051,6 +1052,7 @@ void Can_DisableControllerInterrupts( uint8 controller )
 {
   Can_UnitType *canUnit;
   flexcan_t *canHw;
+  imask_t state;
 
   VALIDATE_NO_RV( (controller < GET_CONTROLLER_CNT()), 0x4, CAN_E_PARAM_CONTROLLER );
 
@@ -1058,16 +1060,16 @@ void Can_DisableControllerInterrupts( uint8 controller )
 
   VALIDATE_NO_RV( (canUnit->state!=CANIF_CS_UNINIT), 0x4, CAN_E_UNINIT );
 
-  imask_t state = McuE_EnterCriticalSection();
+  Irq_Save(state);
   if(canUnit->lock_cnt > 0 )
   {
     // Interrupts already disabled
     canUnit->lock_cnt++;
-    McuE_ExitCriticalSection(state);
+    Irq_Restore(state);
     return;
   }
   canUnit->lock_cnt++;
-  McuE_ExitCriticalSection(state);
+  Irq_Restore(state);
 
   /* Don't try to be intelligent, turn everything off */
   canHw = GET_CONTROLLER(controller);
@@ -1087,6 +1089,7 @@ void Can_DisableControllerInterrupts( uint8 controller )
 void Can_EnableControllerInterrupts( uint8 controller ) {
   Can_UnitType *canUnit;
   flexcan_t *canHw;
+  imask_t state;
   const Can_ControllerConfigType *canHwConfig;
   VALIDATE_NO_RV( (controller < GET_CONTROLLER_CNT()), 0x5, CAN_E_PARAM_CONTROLLER );
 
@@ -1094,18 +1097,18 @@ void Can_EnableControllerInterrupts( uint8 controller ) {
 
   VALIDATE_NO_RV( (canUnit->state!=CANIF_CS_UNINIT), 0x5, CAN_E_UNINIT );
 
-  imask_t state = McuE_EnterCriticalSection();
+  Irq_Save(state);
   if( canUnit->lock_cnt > 1 )
   {
     // IRQ should still be disabled so just decrement counter
     canUnit->lock_cnt--;
-    McuE_ExitCriticalSection(state);
+    Irq_Restore(state);
     return;
   } else if (canUnit->lock_cnt == 1)
   {
     canUnit->lock_cnt = 0;
   }
-  McuE_ExitCriticalSection(state);
+  Irq_Restore(state);
 
   canHw = GET_CONTROLLER(controller);
 
@@ -1145,7 +1148,7 @@ Can_ReturnType Can_Write( Can_Arc_HTHType hth, Can_PduType *pduInfo ) {
   flexcan_t *canHw;
   const Can_HardwareObjectType *hohObj;
   uint32 controller;
-  uint32 oldMsr;
+  imask_t state;
 
   VALIDATE( (Can_Global.initRun == CAN_READY), 0x6, CAN_E_UNINIT );
   VALIDATE( (pduInfo != NULL), 0x6, CAN_E_PARAM_POINTER );
@@ -1159,7 +1162,7 @@ Can_ReturnType Can_Write( Can_Arc_HTHType hth, Can_PduType *pduInfo ) {
   Can_UnitType *canUnit = GET_PRIVATE_DATA(controller);
 
   canHw = GET_CONTROLLER(controller);
-  oldMsr = McuE_EnterCriticalSection();
+  Irq_Save(state);
   iflag = canHw->IFRL.R & canUnit->Can_Arc_TxMbMask;
 
   // check for any free box
@@ -1213,7 +1216,7 @@ Can_ReturnType Can_Write( Can_Arc_HTHType hth, Can_PduType *pduInfo ) {
   } else {
     rv = CAN_BUSY;
   }
-  McuE_ExitCriticalSection(oldMsr);
+  Irq_Restore(state);
 
   return rv;
 }

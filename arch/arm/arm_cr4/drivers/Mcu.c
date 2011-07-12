@@ -476,18 +476,6 @@ uint32_t McuE_GetSystemClock(void)
   return f_sys;
 }
 
-imask_t McuE_EnterCriticalSection()
-{
-	imask_t state;
-	Irq_Save(state);
-	return state;
-}
-
-void McuE_ExitCriticalSection(uint32_t old_state)
-{
-	Irq_Restore(old_state);
-}
-
 /**
  * Get the peripheral clock in Hz for a specific device
  */

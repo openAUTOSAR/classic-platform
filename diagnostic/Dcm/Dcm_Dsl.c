@@ -20,7 +20,6 @@
 
 
 #include <string.h>
-#include "McuExtensions.h"
 #include "Dcm.h"
 #include "Dcm_Internal.h"
 #include "MemMap.h"
@@ -305,7 +304,8 @@ void DslDsdProcessingDone(PduIdType rxPduIdRef, DsdProcessingDoneResultType resp
 	DEBUG( DEBUG_MEDIUM, "DslDsdProcessingDone rxPduIdRef=%d\n", rxPduIdRef);
 
 	if (findRxPduIdParentConfigurationLeafs(rxPduIdRef, &protocolRx, &mainConnection, &connection, &protocolRow, &runtime)) {
-		imask_t state = McuE_EnterCriticalSection();
+	    imask_t state;
+	    Irq_Save(state);
 		switch (responseResult) {
 		case DSD_TX_RESPONSE_READY:
 			runtime->externalTxBufferStatus = DSD_PENDING_RESPONSE_SIGNALED; /** @req DCM114 */
@@ -318,7 +318,7 @@ void DslDsdProcessingDone(PduIdType rxPduIdRef, DsdProcessingDoneResultType resp
 			DEBUG( DEBUG_MEDIUM, "Unknown response result from DslDsdProcessingDone!\n");
 			break;
 		}
-		McuE_ExitCriticalSection(state);
+	    Irq_Restore(state);
 	}
 }
 
@@ -337,9 +337,10 @@ static void sendResponse(const Dcm_DslProtocolRowType *protocol,
 	const Dcm_DslProtocolRowType *protocolRow = NULL;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
 	Std_ReturnType transmitResult;
+    imask_t state;
 
+    Irq_Save(state);
 	/** @req DCM119 */
-	imask_t state = McuE_EnterCriticalSection();
 	if (findRxPduIdParentConfigurationLeafs(protocol->DslRunTimeProtocolParameters->diagReqestRxPduId, &protocolRx,	&mainConnection, &connection, &protocolRow, &runtime)) {
 		if (runtime->localTxBuffer.status == NOT_IN_USE) {
 			runtime->localTxBuffer.status = PROVIDED_TO_DSD;
@@ -355,7 +356,7 @@ static void sendResponse(const Dcm_DslProtocolRowType *protocol,
 			}
 		}
 	}
-	McuE_ExitCriticalSection(state);
+    Irq_Restore(state);
 }
 
 // - - - - - - - - - - -
@@ -521,9 +522,10 @@ BufReq_ReturnType DslProvideRxBufferToPdur(PduIdType dcmRxPduId, PduLengthType t
 	const Dcm_DslConnectionType *connection = NULL;
 	const Dcm_DslProtocolRowType *protocolRow = NULL;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
+    imask_t state;
 
 	DEBUG( DEBUG_MEDIUM, "DslProvideRxBufferToPdur(dcmRxPduId=%d) called!\n", dcmRxPduId);
-	imask_t state = McuE_EnterCriticalSection();
+    Irq_Save(state);
 	if (findRxPduIdParentConfigurationLeafs(dcmRxPduId, &protocolRx, &mainConnection, &connection, &protocolRow, &runtime)) {
 		const Dcm_DslBufferType *externalRxBuffer = protocolRow->DslProtocolRxBufferID;
 		if (externalRxBuffer->pduInfo.SduLength >= tpSduLength) { /** @req DCM443 */
@@ -565,7 +567,7 @@ BufReq_ReturnType DslProvideRxBufferToPdur(PduIdType dcmRxPduId, PduLengthType t
 			stopS3SessionTimer(runtime); /** @req DCM141 */
 		}
 	}
-	McuE_ExitCriticalSection(state);
+    Irq_Restore(state);
 	return ret;
 }
 
@@ -593,7 +595,7 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {
 		// We need to find out in what buffer we can find our Rx data (it can
 		// be either in the normal RX-buffer or the 'extra' buffer for implementing
 		// the Concurrent "Test Present" functionality.
-		state = McuE_EnterCriticalSection();
+	    Irq_Save(state);
 		if (runtime->externalRxBufferStatus == PROVIDED_TO_PDUR) {
 			if ( result == NTFRSLT_OK ) { /** @req DCM111 */
 				if (isTesterPresentCommand(&(protocolRow->DslProtocolRxBufferID->pduInfo))) {
@@ -656,7 +658,7 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {
 				runtime->localRxBuffer.status = NOT_IN_USE;
 			}
 		}
-		McuE_ExitCriticalSection(state);
+	    Irq_Restore(state);
 	}
 }
 
@@ -734,7 +736,7 @@ void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result) {
 		boolean externalBufferReleased = FALSE;
 
 		// Free the buffer and free the Pdu runtime data buffer.
-		state = McuE_EnterCriticalSection();
+	    Irq_Save(state);
 		switch (runtime->externalTxBufferStatus) { // ### EXTERNAL TX BUFFER ###
 		case PROVIDED_TO_PDUR: {
 #if defined(USE_COMM)
@@ -761,7 +763,7 @@ void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result) {
 				break;
 			}
 		}
-		McuE_ExitCriticalSection(state);
+	    Irq_Restore(state);
 	}
 }
 
