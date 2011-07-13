@@ -28,6 +28,7 @@
 #endif
 #include "PduR_Dcm.h"
 #include "ComStack_Types.h"
+#include "Cpu.h"
 //#define USE_DEBUG_PRINTF
 #include "debug.h"
 

@@ -48,6 +48,7 @@
 //#include "Nvm.h"
 //#include "SchM_Dem.h"
 #include "MemMap.h"
+#include "Cpu.h"
 
 /*
  * Local defines
