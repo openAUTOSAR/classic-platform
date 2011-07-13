@@ -29,6 +29,7 @@
 #include "debug.h"
 #include "PduR.h"
 #include "Det.h"
+#include "Cpu.h"
 
 
 uint8 Com_SendSignal(Com_SignalIdType SignalId, const void *SignalDataPtr) {
