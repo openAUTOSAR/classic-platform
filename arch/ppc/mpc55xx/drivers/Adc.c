@@ -15,11 +15,23 @@
 
 
 
-/* Uncomment this only if you now what you are doing. This will make the mpc5606s driver use DMA.
+/* Uncomment this only if you know what you are doing. This will make the mpc5606s driver use DMA.
  * The DMA based ADC demands channels being sequential in a group i.e. 1,2,3 or 5,6,7 and NOT 1,3,7.
  * This also forbids the use of streamed buffers at the moment. Work is ongoing to correct DMA behaviour.
  */
 #define DONT_USE_DMA_IN_ADC_MPC5606S
+
+
+/* Are we gonna use Dma? */
+#if (  !defined(CFG_MPC5606S) || \
+      ( defined(CFG_MPC5606S) && defined(DONT_USE_DMA_IN_ADC_MPC5606S) ) )
+	#define ADC_USES_DMA
+#endif
+
+#if ( defined(ADC_USES_DMA) && !defined(USE_DMA) )
+	#error Adc is configured to use Dma but the module is not enabled.
+#endif
+
 
 #include <assert.h>
 #include <stdlib.h>
@@ -28,7 +40,7 @@
 #include "Modules.h"
 #include "Mcu.h"
 #include "Adc.h"
-#ifndef DONT_USE_DMA_IN_ADC_MPC5606S
+#if defined(ADC_USES_DMA)
 #include "Dma.h"
 #endif
 #include "Det.h"
@@ -146,7 +158,7 @@ const Dma_TcdType AdcCalibrationDMACommandConfig =
   .DMOD = 0,
   .DSIZE = DMA_TRANSFER_SIZE_32BITS,
   .SOFF = sizeof(Adc_CommandType),
-  .NBYTES = sizeof(Adc_CommandType),
+  .NBYTESu.B.NBYTES = sizeof(Adc_CommandType),
   .SLAST = 0,
   .DADDR = (vint32_t)&EQADC.CFPR[0].R,
   .CITERE_LINK = 0,
@@ -175,7 +187,7 @@ const Dma_TcdType AdcCalibrationDMAResultConfig =
   .DMOD = 0,
   .DSIZE = DMA_TRANSFER_SIZE_16BITS,
   .SOFF = 0,
-  .NBYTES = sizeof(Adc_ValueGroupType),
+  .NBYTESu.B.NBYTES = sizeof(Adc_ValueGroupType),
   .SLAST = 0,
   .DADDR = 0, /* Dynamic address, written later. */
   .CITERE_LINK = 0,
@@ -486,6 +498,12 @@ Std_ReturnType Adc_SetupResultBuffer (Adc_GroupType group, Adc_ValueGroupType *b
   if (E_OK == Adc_CheckSetupResultBuffer (group))
   {
     AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr = bufferPtr;
+
+#if defined(ADC_USES_DMA)
+    Dma_ConfigureDestinationAddress(
+    		(uint32_t)AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr,
+    		AdcConfigPtr->groupConfigPtr[group].dmaResultChannel);
+#endif
     
     returnValue = E_OK;
   }
@@ -496,6 +514,12 @@ Std_ReturnType Adc_SetupResultBuffer (Adc_GroupType group, Adc_ValueGroupType *b
 Adc_StreamNumSampleType Adc_GetStreamLastPointer(Adc_GroupType group, Adc_ValueGroupType** PtrToSamplePtr)
 {
 	Adc_StreamNumSampleType nofSample = 0;
+	
+#if !defined(CFG_MPC5606S)
+
+	// Not implemented
+	
+#else
 
 	/** @req ADC216 */
 	/* Check for development errors. */
@@ -534,7 +558,7 @@ Adc_StreamNumSampleType Adc_GetStreamLastPointer(Adc_GroupType group, Adc_ValueG
 	  		  /* Start continous conversion again */
 	          currSampleCount[currGroupId] = 0;
 
-#ifndef DONT_USE_DMA_IN_ADC_MPC5606S
+#if defined(ADC_USES_DMA)
 			  Dma_ConfigureChannel ((Dma_TcdType *)(AdcConfigPtr->groupConfigPtr[group].groupDMAResults), DMA_ADC_GROUP0_RESULT_CHANNEL);
 			  Dma_ConfigureDestinationAddress((uint32_t)AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr, DMA_ADC_GROUP0_RESULT_CHANNEL);
 			  Dma_StartChannel(DMA_ADC_GROUP0_RESULT_CHANNEL);
@@ -556,8 +580,11 @@ Adc_StreamNumSampleType Adc_GetStreamLastPointer(Adc_GroupType group, Adc_ValueG
 		/* Some condition not met */
 		*PtrToSamplePtr = NULL;
 	}
+	
+#endif
 
 	return nofSample;
+
 }
 
 #if (ADC_READ_GROUP_API == STD_ON)
@@ -607,7 +634,7 @@ Std_ReturnType Adc_ReadGroup (Adc_GroupType group, Adc_ValueGroupType *dataBuffe
 		  /* Start continous conversion again */
           currSampleCount[currGroupId] = 0;
 
-#ifndef DONT_USE_DMA_IN_ADC_MPC5606S
+#if defined(ADC_USES_DMA)
    	      Dma_ConfigureChannel ((Dma_TcdType *)(AdcConfigPtr->groupConfigPtr[group].groupDMAResults), DMA_ADC_GROUP0_RESULT_CHANNEL);
           Dma_ConfigureDestinationAddress((uint32_t)AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr, DMA_ADC_GROUP0_RESULT_CHANNEL);
           Dma_StartChannel(DMA_ADC_GROUP0_RESULT_CHANNEL);
@@ -615,8 +642,10 @@ Std_ReturnType Adc_ReadGroup (Adc_GroupType group, Adc_ValueGroupType *dataBuffe
           currResultBufPtr[currGroupId] = AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr;
 #endif
 
+#if defined(CFG_MPC5606S)
 		  ADC_0.IMR.B.MSKECH = 1;
 		  ADC_0.MCR.B.NSTART=1;
+#endif
       }
       /** @req ADC329 */
       /** @req ADC331 */
@@ -1030,7 +1059,7 @@ static void  Adc_ConfigureADC (const Adc_ConfigType *ConfigPtr)
   /* Power on ADC */
   ADC_0.MCR.B.PWDN = 0;
 
-#ifndef DONT_USE_DMA_IN_ADC_MPC5606S
+#if defined(ADC_USES_DMA)
   /* Enable DMA. */
   ADC_0.DMAE.B.DMAEN = 1;
 #endif
@@ -1058,7 +1087,7 @@ void Adc_StartGroupConversion (Adc_GroupType group)
       currSampleCount[group] = 0;
 
 	  currResultBufPtr[group] = AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr; /* Set current result buffer */
-#ifndef DONT_USE_DMA_IN_ADC_MPC5606S
+#if defined(ADC_USES_DMA)
    	  Dma_ConfigureChannel ((Dma_TcdType *)(AdcConfigPtr->groupConfigPtr[group].groupDMAResults), DMA_ADC_GROUP0_RESULT_CHANNEL);
 	  Dma_ConfigureDestinationAddress ((uint32_t)currResultBufPtr[group], DMA_ADC_GROUP0_RESULT_CHANNEL);
 #endif
@@ -1084,7 +1113,7 @@ void Adc_StartGroupConversion (Adc_GroupType group)
         /* Enable Normal conversion */
         ADC_0.NCMR[1].R = groupChannelIdMask;
 
-#ifndef DONT_USE_DMA_IN_ADC_MPC5606S
+#if defined(ADC_USES_DMA)
         ADC_0.DMAE.R = 0x01;
 
         /* Enable DMA Transfer */
