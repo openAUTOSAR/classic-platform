@@ -144,7 +144,7 @@ StatusType GetResource( ResourceType ResID ) {
 
 #if	(OS_APPLICATION_CNT > 1)
 
-	if (ResID != RES_SCHEDULER)
+	if (ResID != RES_SCHEDULER) {
 		rv = Os_ApplHaveAccess( Os_ResourceGet(ResID)->accessingApplMask );
 		if( rv != E_OK ) {
 			goto err;
