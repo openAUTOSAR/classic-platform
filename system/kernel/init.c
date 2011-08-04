@@ -249,8 +249,8 @@ static void os_start( void ) {
 
 #define TEST_DATA  0x12345
 #define TEST_SDATA2	0x3344
-volatile int test_data = TEST_DATA;
-volatile int test_bss = 0;
+volatile uint32_t test_data = TEST_DATA;
+volatile uint32_t test_bss = 0;
 /* Define if compiler is set to use small data section */
 /* #define CC_USE_SMALL_DATA */
 
