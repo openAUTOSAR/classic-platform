@@ -39,7 +39,8 @@
 //typedef unsigned long       boolean;
 typedef _Bool      boolean;
 typedef signed char         sint8;        
-typedef unsigned char       uint8;        
+typedef unsigned char       uint8;
+typedef char				char_t;
 typedef signed short        sint16;       
 typedef unsigned short      uint16;       
 typedef signed long         sint32;       
