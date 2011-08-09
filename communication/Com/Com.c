@@ -14,7 +14,7 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
+//lint -esym(960,8.7)	PC-Lint misunderstanding of Misra 8.7 for Com_SystenEndianness and endianess_test
 
 
 
@@ -32,7 +32,7 @@
 
 
 /* TODO: Better way to get endianness across all compilers? */
-static const uint32_t endianness_test = 0xdeadbeef;
+static const uint32_t endianness_test = 0xdeadbeefU;
 ComSignalEndianess_type Com_SystemEndianness;
 
 
@@ -49,11 +49,13 @@ void Com_Init(const Com_ConfigType *config ) {
 	uint32 earliestDeadline;
 	uint32 firstTimeout;
 
+	//lint --e(928)	PC-Lint exception Misra 11.4, Must be like this. /tojo
 	uint8 endiannessByte = *(const uint8 *)&endianness_test;
 	if      ( endiannessByte == 0xef ) { Com_SystemEndianness = COM_LITTLE_ENDIAN; }
 	else if ( endiannessByte == 0xde ) { Com_SystemEndianness = COM_BIG_ENDIAN; }
 	else {
 		// No other endianness supported
+		//lint --e(506)	PC-Lint exception Misra 13.7, 14.1, Allow boolean to always be false.
 		assert(0);
 	}
 

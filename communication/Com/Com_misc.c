@@ -14,6 +14,8 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
+//lint -esym(960,8.7)	PC-Lint misunderstanding of Misra 8.7 for Com_SystenEndianness and endianess_test
+
 #include <string.h>
 #include <assert.h>
 
@@ -119,17 +121,20 @@ void Com_ReadSignalDataFromPduBuffer(
 
 	if (Com_SystemEndianness == COM_BIG_ENDIAN) {
 		// Straight copy
-		int i;
+		uint8 i;
 		for (i = 0; i < destSize; i++) {
 			signalDataBytes[i] = signalDataBytesArray[i];
 		}
 
 	} else if (Com_SystemEndianness == COM_LITTLE_ENDIAN) {
 		// Data copy algorithm creates big-endian output data so we swap
-		int i;
+		uint8 i;
 		for (i = 0; i < destSize; i++) {
-			signalDataBytes[destSize - 1 - i] = signalDataBytesArray[i];
+			signalDataBytes[(destSize - 1) - i] = signalDataBytesArray[i];
 		}
+	} else {
+		//lint --e(506)	PC-Lint exception Misra 13.7, 14.1, Allow boolean to always be false.
+		assert(0);
 	}
 
 }
@@ -212,17 +217,20 @@ void Com_WriteSignalDataToPduBuffer(
 	const uint8 *signalDataBytes = (const uint8 *)signalData;
 	if (Com_SystemEndianness == COM_BIG_ENDIAN) {
 		// Straight copy
-		int i;
+		uint8 i;
 		for (i = 0; i < signalBufferSize; i++) {
 			signalDataBytesArray[i] = signalDataBytes[i];
 		}
 
 	} else if (Com_SystemEndianness == COM_LITTLE_ENDIAN) {
 		// Data copy algorithm assumes big-endian input data so we swap
-		int i;
+		uint8 i;
 		for (i = 0; i < signalBufferSize; i++) {
-			signalDataBytesArray[signalBufferSize - 1 - i] = signalDataBytes[i];
+			signalDataBytesArray[(signalBufferSize - 1) - i] = signalDataBytes[i];
 		}
+	} else {
+		//lint --e(506)	PC-Lint exception Misra 13.7, 14.1, Allow boolean to always be false.
+		assert(0);
 	}
 
 	if (endian == COM_BIG_ENDIAN) {
@@ -233,7 +241,7 @@ void Com_WriteSignalDataToPduBuffer(
 				signalDataBytesArray, signalBufferSize, startBitOffset, bitSize);
 
 	} else {
-		uint8 startBitOffset = intelBitNrToPduOffset(bitPosition, bitSize, pduSize * 8);
+		uint8 startBitOffset = intelBitNrToPduOffset(bitPosition, bitSize, (uint8)(pduSize * 8));
 		uint8 pduBufferBytesSwapped[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 		Com_WriteDataSegment(pduBufferBytesSwapped, pduSignalMask,

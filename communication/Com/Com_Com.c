@@ -14,7 +14,7 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
+//lint -esym(960,8.7)	PC-Lint misunderstanding of Misra 8.7 for Com_SystenEndianness and endianess_test
 
 
 
@@ -104,6 +104,7 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
 
         imask_t state;
 
+        //lint --e(725)	Suppress PC-Lint warning "Expected positive indentation...". What means?
         Irq_Save(state);
 		// Check callout status
 		if (IPdu->ComIPduCallout != NULL) {
