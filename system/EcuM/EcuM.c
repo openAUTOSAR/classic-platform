@@ -82,7 +82,10 @@ void EcuM_Init( void )
 
 	// Start this baby up
 	AppModeType appMode;
-	EcuM_GetApplicationMode(&appMode);
+	status = EcuM_GetApplicationMode(&appMode);
+	if(status!=E_OK){
+		//TODO: Report error.
+	}
 	StartOS(appMode); /** @req EcuM2141 */
 }
 
