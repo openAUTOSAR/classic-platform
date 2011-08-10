@@ -222,9 +222,11 @@ void Os_Isr_cm3( int16_t vector );
 void TailChaining(void *stack);
 #endif
 
+#if OS_ISR_CNT != 0
 static inline const OsIsrVarType *Os_IsrGet( ISRType id ) {
 	return &Os_IsrVarList[id];
 }
+#endif
 
 static inline ApplicationType Os_IsrGetApplicationOwner( ISRType id ) {
 	ApplicationType rv = INVALID_OSAPPLICATION;
