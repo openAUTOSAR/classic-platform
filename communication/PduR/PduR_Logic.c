@@ -37,20 +37,21 @@
 
 
 BufReq_ReturnType PduR_ARC_AllocateRxBuffer(PduIdType PduId, PduLengthType TpSduLength) {
-	BufReq_ReturnType failRetVal = BUFREQ_BUSY;
+	BufReq_ReturnType retVal = BUFREQ_BUSY;
 	for (uint8 i = 0; PduRTpBuffer(i)->pduInfoPtr != NULL; i++) {
 		if (PduRTpBuffer(i)->status == PDUR_BUFFER_FREE) {
 			if (PduRTpBuffer(i)->bufferSize < TpSduLength) {
-				failRetVal = BUFREQ_OVFL;
+				retVal = BUFREQ_OVFL;
 			} else {
 				PduRTpRouteBuffer(PduId) = PduRTpBuffer(i);
 				PduRTpBuffer(i)->pduInfoPtr->SduLength = TpSduLength;
 				PduRTpRouteBuffer(PduId)->status = PDUR_BUFFER_RX_BUSY;
-				return BUFREQ_OK;
+				retVal = BUFREQ_OK;
+				break;
 			}
 		}
 	}
-	return failRetVal;
+	return retVal;
 }
 
 BufReq_ReturnType PduR_ARC_AllocateTxBuffer(PduIdType PduId, uint16 length) {
@@ -107,10 +108,10 @@ Std_ReturnType PduR_ARC_Transmit(PduIdType PduId, const PduInfoType* PduInfo, ui
 	return retVal;
 }
 
-void PduR_ARC_RxIndicationTT(const PduRDestPdu_type * destination, const PduInfoType *PduInfo, uint8 BufferLength) {
+void PduR_ARC_RxIndicationTT(const PduRDestPdu_type * destination, const PduInfoType *PduInfo, uint16 BufferLength) {
 	Std_ReturnType retVal = E_OK;
 
-	uint8 bytesToCopy = 0;
+	uint16 bytesToCopy = 0;
 	if (PduInfo->SduLength > BufferLength){ bytesToCopy = BufferLength;}
 	else {bytesToCopy = PduInfo->SduLength;}
 
@@ -229,7 +230,7 @@ Std_ReturnType PduR_ARC_TriggerTransmit(PduIdType PduId, PduInfoType* PduInfo, u
 
 	} else if (PduR_IsLoModule(route->SrcModule)) {
 		if (destination->DataProvision == PDUR_TRIGGER_TRANSMIT) {
-			uint8 bytesToCopy = 0;
+			uint16 bytesToCopy = 0;
 			if (PduInfo->SduLength > route->SduLength){ bytesToCopy = route->SduLength;}
 			else {bytesToCopy = PduInfo->SduLength;}
 
