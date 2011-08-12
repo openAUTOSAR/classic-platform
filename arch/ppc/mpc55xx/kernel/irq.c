@@ -36,6 +36,7 @@
 #include "hooks.h"
 #include "debug.h"
 #include "isr.h"
+#include "Ramlog.h"
 #include <stdint.h>
 
 /* ----------------------------[private define]------------------------------*/
