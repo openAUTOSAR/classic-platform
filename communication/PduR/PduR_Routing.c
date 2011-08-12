@@ -47,38 +47,39 @@
 #if PDUR_ZERO_COST_OPERATION == STD_OFF
 
 Std_ReturnType PduR_ARC_RouteTransmit(const PduRDestPdu_type * destination, const PduInfoType * pduInfo) {
-
+	Std_ReturnType retVal = E_NOT_OK;
 	switch (destination->DestModule) {
 	case ARC_PDUR_CANIF:
 #if PDUR_CANIF_SUPPORT == STD_ON
-		return CanIf_Transmit(destination->DestPduId, pduInfo);
+		retVal = CanIf_Transmit(destination->DestPduId, pduInfo);
 #endif
 		break;
 	case ARC_PDUR_LINIF:
 #if PDUR_LINIF_SUPPORT == STD_ON
-		return LinIf_Transmit(destination->DestPduId, pduInfo);
+		retVal = LinIf_Transmit(destination->DestPduId, pduInfo);
 #endif
 		break;
 	case ARC_PDUR_CANTP:
 #if PDUR_CANTP_SUPPORT == STD_ON
-		return CanTp_Transmit(destination->DestPduId, pduInfo);
+		retVal = CanTp_Transmit(destination->DestPduId, pduInfo);
 #endif
 		break;
 	case ARC_PDUR_SOADIF:
 #if PDUR_SOAD_SUPPORT == STD_ON
-		return SoAdIf_Transmit(destination->DestPduId, pduInfo);
+		retVal = SoAdIf_Transmit(destination->DestPduId, pduInfo);
 #endif
 		break;
 	case ARC_PDUR_SOADTP:
 #if PDUR_SOAD_SUPPORT == STD_ON
-		return SoAdTp_Transmit(destination->DestPduId, pduInfo);
+		retVal = SoAdTp_Transmit(destination->DestPduId, pduInfo);
 #endif
 		break;
 	default:
+		retVal = E_NOT_OK;
 		break;
 	}
 	// TODO error reporting here.
-	return E_NOT_OK;
+	return retVal;
 }
 
 void PduR_ARC_RouteRxIndication(const PduRDestPdu_type * destination, const PduInfoType *PduInfo) {
@@ -119,45 +120,51 @@ void PduR_ARC_RouteTxConfirmation(const PduRRoutingPath_type *route, uint8 resul
 }
 
 Std_ReturnType PduR_ARC_RouteTriggerTransmit(const PduRRoutingPath_type *route, PduInfoType * pduInfo) {
+	Std_ReturnType retVal = E_NOT_OK;
 	switch (route->SrcModule) {
 	case ARC_PDUR_COM:
 #if PDUR_COM_SUPPORT == STD_ON
-		return Com_TriggerTransmit(route->SrcPduId, pduInfo);
+		retVal = Com_TriggerTransmit(route->SrcPduId, pduInfo);
 #endif
 		break;
 	default:
+		retVal = E_NOT_OK;
 		break;
 	}
 	// TODO error reporting here.
-	return E_NOT_OK;
+	return retVal;
 }
 
 BufReq_ReturnType PduR_ARC_RouteProvideRxBuffer(const PduRDestPdu_type * destination, PduLengthType TpSduLength, PduInfoType** PduInfoPtr) {
+	BufReq_ReturnType retVal;
 	switch (destination->DestModule) {
 	case ARC_PDUR_DCM:
 #if PDUR_DCM_SUPPORT == STD_ON
-		return Dcm_ProvideRxBuffer(destination->DestPduId, TpSduLength, PduInfoPtr);
+		retVal = Dcm_ProvideRxBuffer(destination->DestPduId, TpSduLength, PduInfoPtr);
 #endif
 		break;
 	default:
+		retVal = BUFREQ_NOT_OK;
 		break;
 	}
 	// TODO error reporting here.
-	return BUFREQ_NOT_OK;
+	return retVal;
 }
 
 BufReq_ReturnType PduR_ARC_RouteProvideTxBuffer(const PduRRoutingPath_type *route, PduLengthType TpSduLength, PduInfoType** PduInfoPtr) {
+	BufReq_ReturnType retVal;
 	switch (route->SrcModule) {
 	case ARC_PDUR_DCM:
 #if PDUR_DCM_SUPPORT == STD_ON
-		return Dcm_ProvideTxBuffer(route->SrcPduId, PduInfoPtr, TpSduLength);
+		retVal = Dcm_ProvideTxBuffer(route->SrcPduId, PduInfoPtr, TpSduLength);
 #endif
 		break;
 	default:
+		retVal = BUFREQ_NOT_OK;
 		break;
 	}
 	// TODO error reporting here.
-	return BUFREQ_NOT_OK;
+	return retVal;
 }
 
 #endif

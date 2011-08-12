@@ -214,10 +214,14 @@ uint32 PduR_GetConfigurationId (void) {
 
 Std_ReturnType PduR_CancelTransmitRequest(PduR_CancelReasonType PduCancelReason, PduIdType PduId) {
 	// TODO Implement!
+	void PduCancelReason;//to avoid lint errors
+	void PduId;//to avoid lint errors
 	return E_NOT_OK;
 }
 
 void PduR_ChangeParameterRequest(PduR_ParameterValueType PduParameterValue, PduIdType PduId) {
+	void PduParameterValue;//to avoid lint errors
+	void PduId;//to avoid lint errors
 	// TODO Implement!
 
 }

@@ -13,8 +13,9 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
+//lint -emacro(904,PDUR_VALIDATE_INITIALIZED,PDUR_VALIDATE_PDUPTR,PDUR_VALIDATE_PDUID) //904 PC-Lint exception to MISRA 14.7 (validate macros).
+//lint -emacro(506,PDUR_VALIDATE_PDUPTR,PDUR_VALIDATE_PDUID) //PC-Lint exception Misra 13.7, 14.1 Allow configuration variables in boolean expression.
+//lint -emacro(774,PDUR_VALIDATE_PDUPTR,PDUR_VALIDATE_PDUID) //PC-Lint exception Misra 13.7, 14.1 Allow configuration variables in boolean expression.
 
 
 
@@ -53,33 +54,42 @@ BufReq_ReturnType PduR_ARC_AllocateRxBuffer(PduIdType PduId, PduLengthType TpSdu
 }
 
 BufReq_ReturnType PduR_ARC_AllocateTxBuffer(PduIdType PduId, uint16 length) {
+	BufReq_ReturnType retVal;
 	if (PduRTpRouteBuffer(PduId)->status == PDUR_BUFFER_TX_READY) {
 		if ((length >= PduRTpRouteBuffer(PduId)->pduInfoPtr->SduLength) || (length == 0)) {
 			PduRTpRouteBuffer(PduId)->status = PDUR_BUFFER_TX_BUSY;
-			return BUFREQ_OK;
+			retVal = BUFREQ_OK;
 		} else {
-			return BUFREQ_NOT_OK;
+			retVal = BUFREQ_NOT_OK;
 		}
+	} else {
+		retVal = BUFREQ_BUSY;
 	}
-	return BUFREQ_BUSY;
+	return retVal;
 }
 
 BufReq_ReturnType PduR_ARC_ReleaseRxBuffer(PduIdType PduId) {
-	if (PduRTpRouteBuffer(PduId) == NULL) return BUFREQ_OK;
-	if (PduRTpRouteBuffer(PduId)->status == PDUR_BUFFER_RX_BUSY) {
-		PduRTpRouteBuffer(PduId)->status = PDUR_BUFFER_TX_READY;
-		return BUFREQ_BUSY;
+	BufReq_ReturnType retVal;
+	if (PduRTpRouteBuffer(PduId) == NULL){ 
+		retVal = BUFREQ_OK;
 	}
-	return BUFREQ_OK;
+	else if (PduRTpRouteBuffer(PduId)->status == PDUR_BUFFER_RX_BUSY) {
+		PduRTpRouteBuffer(PduId)->status = PDUR_BUFFER_TX_READY;
+		retVal = BUFREQ_BUSY;
+	} else {
+		retVal = BUFREQ_OK;
+	}
+	return retVal;
 }
 
 BufReq_ReturnType PduR_ARC_ReleaseTxBuffer(PduIdType PduId) {
+	BufReq_ReturnType retVal = BUFREQ_NOT_OK;
 	if (PduRTpRouteBuffer(PduId)->status == PDUR_BUFFER_TX_BUSY) {
 		PduRTpRouteBuffer(PduId)->status = PDUR_BUFFER_FREE;
 		PduRTpRouteBuffer(PduId) = NULL;
-		return BUFREQ_OK;
+		retVal = BUFREQ_OK;
 	}
-	return BUFREQ_NOT_OK;
+	return retVal;
 }
 
 Std_ReturnType PduR_ARC_Transmit(PduIdType PduId, const PduInfoType* PduInfo, uint8 serviceId) {
@@ -89,7 +99,7 @@ Std_ReturnType PduR_ARC_Transmit(PduIdType PduId, const PduInfoType* PduInfo, ui
 
 	Std_ReturnType retVal = E_OK;
 	const PduRRoutingPath_type *route = PduRConfig->RoutingPaths[PduId];
-	for (int i = 0; route->PduRDestPdus[i] != NULL; i++) {
+	for (uint8 i = 0; route->PduRDestPdus[i] != NULL; i++) {
 		const PduRDestPdu_type * destination = route->PduRDestPdus[i];
 
 		retVal |= PduR_ARC_RouteTransmit(destination, PduInfo);
@@ -101,10 +111,10 @@ void PduR_ARC_RxIndicationTT(const PduRDestPdu_type * destination, const PduInfo
 	Std_ReturnType retVal = E_OK;
 
 	uint8 bytesToCopy = 0;
-	if (PduInfo->SduLength > BufferLength) bytesToCopy = BufferLength;
-	else bytesToCopy = PduInfo->SduLength;
+	if (PduInfo->SduLength > BufferLength){ bytesToCopy = BufferLength;}
+	else {bytesToCopy = PduInfo->SduLength;}
 
-	if (!memcpy(destination->TxBufferRef, PduInfo->SduDataPtr, bytesToCopy)) retVal |= E_NOT_OK;
+	if (!memcpy(destination->TxBufferRef, PduInfo->SduDataPtr, bytesToCopy)){ retVal |= E_NOT_OK;}
 	retVal |= PduR_ARC_RouteTransmit(destination, PduInfo);
 
 	if (retVal != E_OK) {
@@ -152,7 +162,7 @@ void PduR_ARC_RxIndication(PduIdType PduId, const PduInfoType* PduInfo, uint8 se
 
 	const PduRRoutingPath_type *route = PduRConfig->RoutingPaths[PduId];
 
-	for (int i = 0; route->PduRDestPdus[i] != NULL; i++) {
+	for (uint8 i = 0; route->PduRDestPdus[i] != NULL; i++) {
 		const PduRDestPdu_type * destination = route->PduRDestPdus[i];
 
 		if (PduR_IsUpModule(destination->DestModule)) {
@@ -163,7 +173,10 @@ void PduR_ARC_RxIndication(PduIdType PduId, const PduInfoType* PduInfo, uint8 se
 			if (PduR_IsTpModule(destination->DestModule)) { // TP Gateway
 				if (PduR_ARC_ReleaseRxBuffer(PduId) == BUFREQ_BUSY) {
 					// Transmit previous rx buffer
-					PduR_ARC_RouteTransmit(destination, PduRTpRouteBuffer(PduId)->pduInfoPtr);
+					Std_ReturnType status = PduR_ARC_RouteTransmit(destination, PduRTpRouteBuffer(PduId)->pduInfoPtr);
+					if(status!=E_OK){
+						// TODO: do error reporting?
+					}
 				}
 
 			} else if (destination->DataProvision == PDUR_TRIGGER_TRANSMIT) {
@@ -172,7 +185,11 @@ void PduR_ARC_RxIndication(PduIdType PduId, const PduInfoType* PduInfo, uint8 se
 			} else if (destination->DataProvision == PDUR_DIRECT) {
 				PduR_ARC_RxIndicationDirect(destination, PduInfo);
 
+			} else {
+				// Do nothing
 			}
+		} else {
+			// Do nothing
 		}
 	}
 }
@@ -188,11 +205,17 @@ void PduR_ARC_TxConfirmation(PduIdType PduId, uint8 result, uint8 serviceId) {
 
 	} else if (PduR_IsLoModule(route->SrcModule)) {
 		// Release any buffer hold by this route.
-		PduR_ARC_ReleaseTxBuffer(PduId);
+		BufReq_ReturnType status=PduR_ARC_ReleaseTxBuffer(PduId);
+		if(status!=BUFREQ_OK){
+		// TODO: do something?
+		}
+	} else {
+		// Do nothing
 	}
 }
 
 Std_ReturnType PduR_ARC_TriggerTransmit(PduIdType PduId, PduInfoType* PduInfo, uint8 serviceId) {
+	/*lint -esym(613,PduInfo)*/ /* PC-Lint 613 misunderstanding: PduInfo is not null since it is validated in PDUR_VALIDATE_PDUPTR */
 	PDUR_VALIDATE_INITIALIZED(serviceId, E_NOT_OK);
 	PDUR_VALIDATE_PDUPTR(serviceId, PduInfo, E_NOT_OK);
 	PDUR_VALIDATE_PDUID(serviceId, PduId, E_NOT_OK);
@@ -207,13 +230,15 @@ Std_ReturnType PduR_ARC_TriggerTransmit(PduIdType PduId, PduInfoType* PduInfo, u
 	} else if (PduR_IsLoModule(route->SrcModule)) {
 		if (destination->DataProvision == PDUR_TRIGGER_TRANSMIT) {
 			uint8 bytesToCopy = 0;
-			if (PduInfo->SduLength > route->SduLength) bytesToCopy = route->SduLength;
-			else bytesToCopy = PduInfo->SduLength;
+			if (PduInfo->SduLength > route->SduLength){ bytesToCopy = route->SduLength;}
+			else {bytesToCopy = PduInfo->SduLength;}
 
 			if (!memcpy((void *)PduInfo->SduDataPtr, (void *)destination->TxBufferRef, bytesToCopy)) {
 				retVal = E_NOT_OK;
 			}
 		}
+	} else {
+		// TODO: Do nothing???? or retVal = E_OK or E_NOT_OK?
 	}
 	return retVal;
 }
@@ -223,7 +248,7 @@ BufReq_ReturnType PduR_ARC_ProvideRxBuffer(PduIdType PduId, PduLengthType TpSduL
 	PDUR_VALIDATE_PDUPTR(serviceId, PduInfoPtr, BUFREQ_NOT_OK);
 	PDUR_VALIDATE_PDUID(serviceId, PduId, BUFREQ_NOT_OK);
 
-	BufReq_ReturnType retVal = BUFREQ_NOT_OK;
+	BufReq_ReturnType retVal;
 	const PduRRoutingPath_type *route = PduRConfig->RoutingPaths[PduId];
 	const PduRDestPdu_type * destination = route->PduRDestPdus[0];
 
@@ -233,13 +258,19 @@ BufReq_ReturnType PduR_ARC_ProvideRxBuffer(PduIdType PduId, PduLengthType TpSduL
 	} else if (PduR_IsLoModule(destination->DestModule)) {
 		if (PduR_ARC_ReleaseRxBuffer(PduId) == BUFREQ_BUSY) {
 			// Transmit previous rx buffer
-			PduR_ARC_RouteTransmit(destination, PduRTpRouteBuffer(PduId)->pduInfoPtr);
+			Std_ReturnType status=PduR_ARC_RouteTransmit(destination, PduRTpRouteBuffer(PduId)->pduInfoPtr);
+			if(status!=E_OK){
+			// TODO: do something?
+			}
 		}
 
 		retVal = PduR_ARC_AllocateRxBuffer(PduId, TpSduLength);
 		if (retVal == BUFREQ_OK) {
+			/*lint -esym(613,PduInfoPtr)*/ /* PC-Lint 613 misunderstanding: PduInfoPtr is not null since it is validated in PDUR_VALIDATE_PDUPTR */
 			*PduInfoPtr = PduRTpRouteBuffer(PduId)->pduInfoPtr;
 		}
+	} else {
+		retVal = BUFREQ_NOT_OK;
 	}
 	return retVal;
 }
@@ -249,7 +280,7 @@ BufReq_ReturnType PduR_ARC_ProvideTxBuffer(PduIdType PduId, PduInfoType** PduInf
 	PDUR_VALIDATE_PDUPTR(serviceId, PduInfoPtr, BUFREQ_NOT_OK);
 	PDUR_VALIDATE_PDUID(serviceId, PduId, BUFREQ_NOT_OK);
 
-	BufReq_ReturnType retVal = BUFREQ_NOT_OK;
+	BufReq_ReturnType retVal;
 	const PduRRoutingPath_type *route = PduRConfig->RoutingPaths[PduId];
 
 	if (PduR_IsUpModule(route->SrcModule)) {
@@ -258,8 +289,11 @@ BufReq_ReturnType PduR_ARC_ProvideTxBuffer(PduIdType PduId, PduInfoType** PduInf
 	} else if (PduR_IsLoModule(route->SrcModule)) {
 		retVal = PduR_ARC_AllocateTxBuffer(PduId, Length);
 		if (retVal == BUFREQ_OK) {
+			/*lint -esym(613,PduInfoPtr)*/ /* PC-Lint 613 misunderstanding: PduInfoPtr is not null since it is validated in PDUR_VALIDATE_PDUPTR */
 			*PduInfoPtr = PduRTpRouteBuffer(PduId)->pduInfoPtr;
 		}
+	} else {
+		retVal = BUFREQ_NOT_OK;
 	}
 	return retVal;
 }
