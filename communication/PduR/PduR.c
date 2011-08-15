@@ -35,7 +35,8 @@
 /*
  * The state of the PDU router.
  */
-PduR_StateType PduRState = PDUR_UNINIT; // 960, 31 PC-Lint: Borde åtgärdas
+//lint -esym(960,8.7) PC-Lint misunderstanding of Misra 8.7 for PduRState.
+PduR_StateType PduRState = PDUR_UNINIT;
 
 
 #if PDUR_ZERO_COST_OPERATION == STD_OFF
@@ -57,69 +58,31 @@ void PduR_Init (const PduR_PBConfigType* ConfigPtr) {
 	if (PduRState != PDUR_UNINIT) {
 		// Raise error and return.
 		PDUR_DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, 0x00, PDUR_E_INVALID_REQUEST);
-		return;
 	}
 
-	if (ConfigPtr == NULL) {
+	else if (ConfigPtr == NULL) {
 		PDUR_DET_REPORTERROR(MODULE_ID_PDUR, PDUR_INSTANCE_ID, 0x00, PDUR_E_CONFIG_PTR_INVALID);
-		return;
 	} else {
 		PduRConfig = ConfigPtr;
-	}
 
-	// Start initialization!
-	DEBUG(DEBUG_LOW,"--Initialization of PDU router--\n");
+		// Start initialization!
+		DEBUG(DEBUG_LOW,"--Initialization of PDU router--\n");
 
-	uint8 failed = 0;
+		//uint8 failed = 0;
 
-	// Initialize buffers.
-	/*
-	uint16 bufferNr = 0;
-	for (uint16 i = 0; PduRConfig->RoutingPaths[i] != NULL && (!failed); i++) {
-		const PduRRoutingPath_type *path = PduRConfig->RoutingPaths[i];
+		// Initialize buffers.
 
-		for (uint8 j = 0; path->PduRDestPdus[j] != NULL; j++) {
-			const PduRDestPdu_type *destination = path->PduRDestPdus[j];
+		/*if (failed) {
+			// TODO Report PDUR_E_INIT_FAILED to Dem.
+			PduRState = PDUR_REDUCED;
+			DEBUG(DEBUG_LOW,"--Initialization of PDU router failed--\n");
+		}*/
 
-
-			if (destination->DataProvision == PDUR_TRIGGER_TRANSMIT) {
-				// Allocate memory for new buffer.
-
-
-				// Initialize the new buffer.
-				buffer->BufferId = i; // Set buffer id.
-				buffer->BufferType = destination->DataProvision; // Set buffer data provision mode.
-				buffer->Length = path->SduLength; // Set buffer sdu length.
-
-				if (destination->DataProvision == PDUR_TRIGGER_TRANSMIT) {
-					//memcpy(buffer->First, path->PduRDefaultValue.PduRDefaultValueElement->DefaultValueElement,path->SduLength);
-					PduR_BufferQueue(buffer, path->PduRDefaultValue.PduRDefaultValueElement->DefaultValueElement);
-				}
-
-				// Save pointer to the new buffer.
-				//PduR_RTable_LoIf.RoutingTable[i].TxBufferRef = &PduRBuffers[bufferNr];
-
-				DEBUG(DEBUG_LOW,"Initialized buffer %d. Id: %d, Type: %d, Depth: %d\n", bufferNr, buffer->BufferId, buffer->BufferType, buffer->Depth);
-				bufferNr++;
-
-			}
-
-		}
-	}
-	*/
-
-	if (failed) {
-		// TODO Report PDUR_E_INIT_FAILED to Dem.
-		PduRState = PDUR_REDUCED;
-		DEBUG(DEBUG_LOW,"--Initialization of PDU router failed--\n");
-
-
-	} else {
 		// The initialization succeeded!
-		PduRState = PDUR_ONLINE;
-		DEBUG(DEBUG_LOW,"--Initialization of PDU router completed --\n");
-
+			PduRState = PDUR_ONLINE;
+			DEBUG(DEBUG_LOW,"--Initialization of PDU router completed --\n");
 	}
+
 }
 
 /*

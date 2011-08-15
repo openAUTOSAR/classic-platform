@@ -39,6 +39,14 @@ Std_ReturnType PduR_ARC_TriggerTransmit(PduIdType PduId, PduInfoType* PduInfo, u
 BufReq_ReturnType PduR_ARC_ProvideRxBuffer(PduIdType PduId, PduLengthType TpSduLength, PduInfoType** PduInfoPtr, uint8 serviceId);
 BufReq_ReturnType PduR_ARC_ProvideTxBuffer(PduIdType PduId, PduInfoType** PduInfoPtr, uint16 Length, uint8 serviceId);
 
+// Prototypes for functions used locally in file PduR_Logic.c (prototypes needed to remove lint errors)
+BufReq_ReturnType PduR_ARC_AllocateRxBuffer(PduIdType PduId, PduLengthType TpSduLength);
+BufReq_ReturnType PduR_ARC_AllocateTxBuffer(PduIdType PduId, uint16 length);
+BufReq_ReturnType PduR_ARC_ReleaseRxBuffer(PduIdType PduId);
+BufReq_ReturnType PduR_ARC_ReleaseTxBuffer(PduIdType PduId);
+void PduR_ARC_RxIndicationDirect(const PduRDestPdu_type * destination, const PduInfoType *PduInfo);
+void PduR_ARC_RxIndicationTT(const PduRDestPdu_type * destination, const PduInfoType *PduInfo, uint16 BufferLength);
+
 #endif
 
 #endif /* PDUR_IF_H_ */
