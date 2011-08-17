@@ -21,6 +21,10 @@
 #include "WdgIf.h"
 #include "Det.h"
 
+#if (WDGM_DEV_ERROR_DETECT == STD_ON)
+#define WDGM_REPORT_ERROR(_api,_errorcode) \
+	Det_ReportError(MODULE_ID_WDGM,0,_api,_errorcode );
+
 #define VALIDATE_ENTITY_ID(_SEId, _api) \
 	if(_SEId >= WDGM_NBR_OF_ALIVE_SIGNALS) {	\
 		Det_ReportError(MODULE_ID_WDGM,0,_api,WDGM_E_PARAM_SEID ); \
@@ -40,6 +44,13 @@
 		Det_ReportError(MODULE_ID_WDGM,0,_api,_errorcode ); \
 		return;	\
 		}
+#else
+#define WDGM_REPORT_ERROR(_api,_errorcode)
+#define VALIDATE_ENTITY_ID(_SEId, _api)
+#define VALIDATE(_expr, _api, _errorcode)
+#define VALIDATE_NO_RETURNVAL(_expr, _api, _errorcode)
+#endif
+
 struct
 {
 	const WdgM_ConfigType           *WdgM_ConfigPtr;
@@ -183,10 +194,14 @@ Std_ReturnType WdgM_SetMode(WdgM_ModeType Mode)
 		  /** @req WDGM188 **/
 		  if (modeConfigPtr->WdgM_Activation.WdgM_IsGPTActivated)
 		  {
-			  const WdgM_ActivationGPTType * gptConfigPtr = &modeConfigPtr->WdgM_Activation.WdgM_ActivationGPT;
-			  /* New mode is activated from GPT callback. Start GPT. */
-			  Gpt_StartTimer(gptConfigPtr->WdgM_GptChannelRef, gptConfigPtr->WdgM_GptCycle);
-			  Gpt_EnableNotification(gptConfigPtr->WdgM_GptChannelRef);
+			  #if WDGM_GPT_USED == STD_ON
+				  const WdgM_ActivationGPTType * gptConfigPtr = &modeConfigPtr->WdgM_Activation.WdgM_ActivationGPT;
+				  /* New mode is activated from GPT callback. Start GPT. */
+				  Gpt_StartTimer(gptConfigPtr->WdgM_GptChannelRef, gptConfigPtr->WdgM_GptCycle);
+				  Gpt_EnableNotification(gptConfigPtr->WdgM_GptChannelRef);
+			  #else
+				  WDGM_REPORT_ERROR( WDGM_SETMODE_ID, WDGM_E_PARAM_MODE );
+			  #endif
 		  }
 		  /** @req WDGM187 **/
 		  else
@@ -194,10 +209,14 @@ Std_ReturnType WdgM_SetMode(WdgM_ModeType Mode)
 			  /* Only if a mode already have been configured. */
 			  if (wdgMInternalState.WdgMModeConfigured)
 			  {
-				  /* Old mode was GPT driven, but not new mode. Disable GPT. */
-				  const WdgM_ActivationGPTType * oldGptConfigPtr = &oldModeConfigPtr->WdgM_Activation.WdgM_ActivationGPT;
-				  Gpt_DisableNotification(oldGptConfigPtr->WdgM_GptChannelRef);
-				  Gpt_StopTimer(oldGptConfigPtr->WdgM_GptChannelRef);
+				  #if WDGM_GPT_USED == STD_ON
+					  /* Old mode was GPT driven, but not new mode. Disable GPT. */
+					  const WdgM_ActivationGPTType * oldGptConfigPtr = &oldModeConfigPtr->WdgM_Activation.WdgM_ActivationGPT;
+					  Gpt_DisableNotification(oldGptConfigPtr->WdgM_GptChannelRef);
+					  Gpt_StopTimer(oldGptConfigPtr->WdgM_GptChannelRef);
+				  #else
+				  	  WDGM_REPORT_ERROR( WDGM_SETMODE_ID, WDGM_E_PARAM_MODE );
+				  #endif
 			  }
 			  else
 			  {
@@ -279,7 +298,7 @@ void WdgM_Init(const WdgM_ConfigType *ConfigPtr)
   }
 
   /* Start initial mode. Raise error if initial mode was not entered properly. */
-  VALIDATE_NO_RETURNVAL((WdgM_SetMode(initialMode) != E_OK),WDGM_INIT_ID, WDGM_E_PARAM_CONFIG);
+  VALIDATE_NO_RETURNVAL((WdgM_SetMode(initialMode) == E_OK),WDGM_INIT_ID, WDGM_E_PARAM_CONFIG);
 
   wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_OK;
   wdgMInternalState.WdgMActiveMode = initialMode;
