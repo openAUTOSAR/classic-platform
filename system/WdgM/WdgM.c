@@ -127,7 +127,7 @@ Std_ReturnType WdgM_DeactivateAliveSupervision (WdgM_SupervisedEntityIdType SEid
   /** @req WDGM082 **/
   /** @req WDGM174 **/
   /** @req WDGM108 **/
-  VALIDATE((supervisedEntityPtr->WdgM_DeactivationAccessEnabled != 0), WDGM_DEACTIVATEALIVESUPERVISION_ID, WDGM_E_DEACTIVATE_NOT_ALLOWED);
+  VALIDATE((supervisedEntityPtr[SEid].WdgM_DeactivationAccessEnabled != 0), WDGM_DEACTIVATEALIVESUPERVISION_ID, WDGM_E_DEACTIVATE_NOT_ALLOWED);
 
   /** @req WDGM114 **/
   if (WDGM_ALIVE_EXPIRED > entityStatePtr->SupervisionStatus)
