@@ -16,6 +16,7 @@
 
 // 904 PC-Lint MISRA 14.7: OK. Allow VALIDATE_ENTITY_ID, VALIDATE and VALIDATE_NO_RETURNVAL to return value.
 //lint -emacro(904,VALIDATE_ENTITY_ID,VALIDATE,VALIDATE_NO_RETURNVAL)
+// lint -emacro(750,WDGM_REPORT_ERROR) //PC-Lint exception. Is used if Gpt is activated and no Gpt is available.
 
 #include "WdgM.h"
 #include "WdgIf.h"

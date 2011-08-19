@@ -23,7 +23,7 @@ typedef enum
   WDGM_ALIVE_FAILED,
   WDGM_ALIVE_EXPIRED,
   WDGM_ALIVE_STOPPED,
-  WDGM_ALIVE_DEACTIVATED,
+  WDGM_ALIVE_DEACTIVATED
 }WdgM_AliveSupervisionStatusType;
 
 
@@ -72,7 +72,7 @@ typedef struct
 
 typedef struct
 {
-	const sint8            *WdgM_WatchdogName;
+	const char_t           *WdgM_WatchdogName;
 	const WdgIf_DeviceType *WdgM_DeviceRef;
 }WdgM_WatchdogType;
 
