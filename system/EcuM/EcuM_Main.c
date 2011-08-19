@@ -22,7 +22,7 @@
 #include "Dem.h"
 #endif
 #if defined(USE_NVM)
-#include "Nvm.h"
+#include "NvM.h"
 #endif
 
 static uint32 internal_data_run_state_timeout = 0;

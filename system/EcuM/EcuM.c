@@ -25,7 +25,7 @@
 #include "Det.h"
 #include "isr.h"
 #if defined(USE_NVM)
-#include "Nvm.h"
+#include "NvM.h"
 #endif
 #if defined(USE_RTE)
 #include "Rte_Main.h"

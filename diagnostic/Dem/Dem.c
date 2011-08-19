@@ -45,7 +45,7 @@
 #include <string.h>
 #include "Dem.h"
 //#include "Fim.h"
-//#include "Nvm.h"
+//#include "NvM.h"
 //#include "SchM_Dem.h"
 #include "MemMap.h"
 #include "Cpu.h"
