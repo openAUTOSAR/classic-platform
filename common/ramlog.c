@@ -105,7 +105,6 @@ void ramlog_puts( char *str ) {
  *
  * @param format The format string.
  */
-// extern int standard_simple_sprintf(int fd, char *out, const char *format, ...);
 void ramlog_printf( const char *format, ... ) {
 
 	// Fast and ugly ramlog support.

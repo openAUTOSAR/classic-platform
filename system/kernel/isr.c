@@ -308,7 +308,7 @@ void *Os_Isr( void *stack, int16_t vector ) {
 		taskPtr = Os_SysTaskGetCurr();
 		taskPtr->stack.curr = stack;
 		taskPtr->state = ST_READY;
-		OS_DEBUG(D_TASK,"Preempted %s\n",taskPtr->name);
+		OS_DEBUG(D_TASK,"Preempted %s\n",taskPtr->constPtr->name);
 
 		Os_StackPerformCheck(taskPtr);
 	} else {
@@ -368,7 +368,7 @@ void *Os_Isr( void *stack, int16_t vector ) {
 			Os_Sys.currTaskPtr->state = ST_RUNNING;
 			PRETASKHOOK();
 		} else {
-			OS_DEBUG(D_TASK,"Found candidate %s\n",new_pcb->name);
+			OS_DEBUG(D_TASK,"Found candidate %s\n",new_pcb->constPtr->name);
 			Os_TaskSwapContextTo(NULL,new_pcb);
 		}
 	} else {
