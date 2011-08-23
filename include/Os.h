@@ -453,7 +453,11 @@ typedef enum {
     OSServiceId_GetElapsedValue,
     OSServiceId_TerminateApplication,
     OSServiceId_AllowAccess,
-    OSServiceId_GetApplicationState
+    OSServiceId_GetApplicationState,
+
+#if defined(USE_KERNEL_EXTRA)
+    OSServiceId_Sleep,
+#endif
 } OsServiceIdType;
 
 typedef struct OsError {
