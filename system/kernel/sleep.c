@@ -10,11 +10,7 @@
 /**
  * Will sleep for sleep ticks. This works only for extended
  * tasks. If sleep is 0 it will just call the dispatcher to
- * see if there is anything with higher priority to run.
- *
- * Sleep(0) only makes sense from a NON task (since they highest
- * prio task is always running). SetEvent() nor ActivateTask() will
- * activate a sleeping task.
+ * see if there is anything with higher or equal priority to run.
  *
  * @param sleep
  * @return E_OS_ACCESS if called from a basic task
@@ -56,12 +52,14 @@ StatusType Sleep( TickType sleep ) {
 			Os_Dispatch(OP_SLEEP);
 		} else {
 
-			if( Os_SysTaskGetCurr()->constPtr->scheduling != NON ) {
-				return E_OK;
-			}
+			/* Put us last in the ready list */
+			TAILQ_REMOVE(&Os_Sys.ready_head,pcbPtr,ready_list);
+
+			/* Add us again */
+			TAILQ_INSERT_TAIL(& Os_Sys.ready_head,pcbPtr,ready_list);
 
 			OsTaskVarType *topTask = Os_TaskGetTop();
-			if( topTask->activePriority  != pcbPtr->activePriority ) {
+			if( topTask != pcbPtr ) {
 				Os_Dispatch(OP_SCHEDULE);
 			}
 		}

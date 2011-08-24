@@ -470,8 +470,6 @@ void Os_Dispatch( uint32_t op ) {
 
 	pcbPtr = Os_TaskGetTop();
 
-
-
 	/* Swap if we found any process or are forced (multiple activations)*/
 	if( pcbPtr != currPcbPtr ) {
 
