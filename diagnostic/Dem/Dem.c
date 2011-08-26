@@ -15,12 +15,17 @@
 
 // 904 PC-Lint MISRA 14.7: OK. Allow VALIDATE, VALIDATE_RV and VALIDATE_NO_RV to return value.
 //lint -emacro(904,VALIDATE_RV,VALIDATE_NO_RV,VALIDATE)
+
 // 522 PC-Lint exception for empty functions
 //lint -esym(522,storeFreezeFrameDataEvtMem)
 //lint -esym(522,deleteFreezeFrameDataPriMem)
 //lint -esym(522,storeFreezeFrameDataPreInit)
 //lint -esym(522,storeFreezeFrameDataPriMem)
 //lint -esym(522,updateFreezeFrameOccurrencePreInit)
+
+// PC-Lint misunderstanding of MISRA 8.12, 18.1: Empty arrays are OK as long as size 0 is specified.
+//lint -esym(85,preInitFreezeFrameBuffer)
+//lint -esym(85,priMemFreezeFrameBuffer)
 
 
 /*
@@ -133,6 +138,7 @@ typedef struct {
 	ChecksumType		checksum;
 } EventRecType;
 
+//lint -save -e43 //PC-Lint misunderstanding: Array of size 0 is OK.
 typedef struct {
 	Dem_EventIdType		eventId;
 	uint16				occurrence;
@@ -140,6 +146,7 @@ typedef struct {
 	sint8				data[DEM_MAX_SIZE_FF_DATA];
 	ChecksumType		checksum;
 } FreezeFrameRecType;
+//lint -restore
 
 typedef struct {
 	Dem_EventIdType		eventId;
@@ -203,6 +210,8 @@ static ExtDataRecType		priMemExtDataBuffer[DEM_MAX_NUMBER_EXT_DATA_PRI_MEM] __at
  * Procedure:	zeroPriMemBuffers
  * Description:	Fill the primary buffers with zeroes
  */
+//lint -save
+//lint -e84 //PC-Lint exception, size 0 is OK.
 //lint -e957	PC-Lint exception - Used only by DemTest
 void demZeroPriMemBuffers(void)
 {
@@ -210,7 +219,7 @@ void demZeroPriMemBuffers(void)
 	memset(priMemFreezeFrameBuffer, 0, sizeof(priMemFreezeFrameBuffer));
 	memset(priMemExtDataBuffer, 0, sizeof(priMemExtDataBuffer));
 }
-
+//lint -restore
 
 /*
  * Procedure:	calcChecksum
@@ -1477,6 +1486,9 @@ void Dem_PreInit(void)
 		eventStatusBuffer[i].errorStatusChanged = FALSE;
 	}
 
+	//lint -save
+	//lint -e568 -e685 //PC-Lint exception.
+	//lint -e681 //PC-Lint exception to MISRA 14.1: Loop is not entered. This only happens when config variable is zero. Keep as it is for less complex code.
 	// Initialize the pre init buffers
 	for (i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRE_INIT; i++) {
 		preInitFreezeFrameBuffer[i].checksum = 0;
@@ -1487,6 +1499,7 @@ void Dem_PreInit(void)
 			preInitFreezeFrameBuffer[i].data[j] = 0;
 		}
 	}
+	//lint -restore
 
 	for (i = 0; i < DEM_MAX_NUMBER_EXT_DATA_PRE_INIT; i++) {
 		preInitExtDataBuffer[i].checksum = 0;
@@ -1544,6 +1557,10 @@ void Dem_Init(void)
 		}
 	}
 
+	//lint -save
+	//lint -e568 //PC-Lint exception.
+	//lint -e685 //PC-Lint exception.
+	//lint -e681 //PC-Lint exception to MISRA 14.1: Loop is not entered. This only happens when DEM_MAX_NUMBER_FF_DATA_PRE_INIT is zero. Keep as it is for less complex code.
 	// Validate freeze frame records stored in primary memory
 	for (i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++) {
 		cSum = calcChecksum(&priMemFreezeFrameBuffer[i], sizeof(FreezeFrameRecType)-sizeof(ChecksumType));
@@ -1552,6 +1569,7 @@ void Dem_Init(void)
 			memset(&priMemFreezeFrameBuffer[i], 0, sizeof(FreezeFrameRecType));
 		}
 	}
+	//lint -restore
 
 	/*
 	 *  Handle errors stored in temporary buffer (if any)
@@ -1574,6 +1592,10 @@ void Dem_Init(void)
 		}
 	}
 
+	//lint -save
+	//lint -e568 //PC-Lint exception.
+	//lint -e685 //PC-Lint exception.
+	//lint -e681 //PC-Lint exception to MISRA 14.1: Loop is not entered. This only happens when DEM_MAX_NUMBER_FF_DATA_PRE_INIT is zero. Keep as it is for less complex code.
 	// Transfer freeze frames to event memory
 	for (i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRE_INIT; i++) {
 		if (preInitFreezeFrameBuffer[i].eventId != DEM_EVENT_ID_NULL) {
@@ -1581,6 +1603,7 @@ void Dem_Init(void)
 			storeFreezeFrameDataEvtMem(eventParam, &preInitFreezeFrameBuffer[i]);
 		}
 	}
+	//lint -restore
 
 	// Init the dtc filter
 	dtcFilter.dtcStatusMask = DEM_DTC_STATUS_MASK_ALL;					// All allowed
