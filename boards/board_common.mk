@@ -267,8 +267,10 @@ else ifeq ($(SELECT_CLIB),CLIB_CW)
   # This is not good, but don't know what to do right now....
   obj-y += xtoa.o
   obj-y += msl_port.o
+  def-y += USE_CLIB_CW
 else
   # Newlib
+  def-y += USE_NEWLIB
   obj-y += xtoa.o
   obj-y += newlib_port.o
   # If we have configured console output we include printf. 

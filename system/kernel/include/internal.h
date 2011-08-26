@@ -17,6 +17,9 @@
 #define INTERNAL_H_
 
 #include "Os.h"
+#if defined(USE_RAMLOG)
+#include "Ramlog.h"
+#endif
 
 /* Using internal.h
  *

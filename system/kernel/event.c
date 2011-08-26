@@ -53,7 +53,7 @@ StatusType WaitEvent( EventMaskType Mask ) {
 	StatusType rv = E_OK;
 	imask_t state;
 
-	OS_DEBUG(D_EVENT,"# WaitEvent %s\n",Os_SysTaskGetCurr()->name);
+	OS_DEBUG(D_EVENT,"# WaitEvent %s\n",Os_SysTaskGetCurr()->constPtr->name);
 
 	if( Os_Sys.intNestCnt != 0 ) {
 		rv =  E_OS_CALLEVEL;
@@ -114,7 +114,7 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 	OsTaskVarType *currPcbPtr;
 	uint32_t flags;
 
-	OS_DEBUG(D_EVENT,"# SetEvent %s\n",Os_SysTaskGetCurr()->name);
+	OS_DEBUG(D_EVENT,"# SetEvent %s\n",Os_SysTaskGetCurr()->constPtr->name);
 
 	if( TaskID  >= OS_TASK_CNT ) {
 		rv = E_OS_ID;

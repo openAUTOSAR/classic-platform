@@ -35,8 +35,23 @@
  *  - ANSI-C and POSIX, streams and POSIX filenumbers.
  *    POSIX file-numbers exist in unistd.h and are only to be used by the porting
  *    newlib interface i.e. newlib_port.c.
- *    The filenumber is actually just a cast of the steampointer and save in the member
- *    _cookie in FILE.
+ *
+ *
+ * NEWLIB: File handles vs files
+ *   This printf() family of functions does not use newlib at all.
+ *   At this point the following can have happend:
+ *   1. A call to any of the file functions in newlib have been called.
+ *      This then calls a number of functions (sbrk, __sinit(_impure_ptr), etc ).
+ *      __sinit(_impure_ptr) initializes the standard files, stdin, stdout, stderr.
+ *      file->_file is the actual posix file number (stdin=0, stdout=1, stderr=2)
+ *   2. No calls is done to newlib file functions. The impure_data is then empty and
+ *      all fields are 0.
+ *
+ *  Code for checking if the newlib have initialized (or we have explicitly called __sinit(_impure_ptr)
+ * 	if( _impure_ptr->__sdidinit == 1 ) {
+ *	  // We use the real filenumber
+ *	  arc_putchar((int)(file->_file), c);
+ *	)
  *
  */
 
@@ -45,7 +60,9 @@
 #include <stdarg.h>
 #include <assert.h>
 #include <string.h>
-
+#if defined(USE_NEWLIB)
+#include "reent.h"
+#endif
 //#define HOST_TEST	1
 
 int arc_putchar(int fd, int c);
@@ -66,7 +83,7 @@ int printf(const char *format, ...) {
 	int rv;
 
 	va_start(ap, format);
-	rv = vfprintf(stdout, format, ap);
+	rv = vfprintf((FILE *)STDOUT_FILENO, format, ap);
 	va_end(ap);
 	return rv;
 }
@@ -103,7 +120,7 @@ int snprintf(char *buffer, size_t n, const char *format, ...) {
 }
 
 int vprintf(const char *format, va_list ap) {
-	return vfprintf(stdout, format, ap);
+	return vfprintf((FILE *)STDOUT_FILENO, format, ap);
 }
 
 int vsprintf(char *buffer, const char *format, va_list ap) {
@@ -154,8 +171,14 @@ static inline int emitChar( FILE *file, char **buf, char c, int *left ) {
 		putc(c, stdout);
 		fflush(stdout);
 #else
-		arc_putchar((int)file->_cookie, c);
+#if defined(USE_NEWLIB)
+		/* We are trying to print with newlib file descriptor.
+		 * That's wrong since we are using the POSIX file numbers here instead
+		 * Check stdout */
+		assert( file != _impure_ptr->_stdout );
 #endif
+		arc_putchar((int)(file), c);
+#endif /* HOST_TEST */
 	} else {
 		**buf = c;
 		(*buf)++;

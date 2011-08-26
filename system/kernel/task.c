@@ -48,7 +48,7 @@ void Os_TaskMakeReady( OsTaskVarType *pcb ) {
 	if( !( pcb->state & ( ST_READY | ST_RUNNING )) ) {
 		pcb->state = ST_READY;
 		TAILQ_INSERT_TAIL(& Os_Sys.ready_head,pcb,ready_list);
-		OS_DEBUG(D_TASK,"Added %s to ready list\n",pcb->name);
+		OS_DEBUG(D_TASK,"Added %s to ready list\n",pcb->constPtr->name);
 	}
 }
 
@@ -59,7 +59,7 @@ void Os_TaskMakeWaiting( OsTaskVarType *pcb )
 
 	pcb->state = ST_WAITING;
 	TAILQ_REMOVE(&Os_Sys.ready_head,pcb,ready_list);
-	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->name);
+	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->constPtr->name);
 }
 
 // Sleeping
@@ -70,7 +70,7 @@ static inline void Os_TaskMakeSleeping( OsTaskVarType *pcb )
 
 	pcb->state = ST_WAITING | ST_SLEEPING;
 	TAILQ_REMOVE(&Os_Sys.ready_head,pcb,ready_list);
-	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->name);
+	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->constPtr->name);
 }
 
 
@@ -80,7 +80,7 @@ static inline void Os_TaskMakeWaitingOnSem( OsTaskVarType *pcb )
 
 	pcb->state = ST_WAITING_SEM;
 	TAILQ_REMOVE(&Os_Sys.ready_head,pcb,ready_list);
-	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->name);
+	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->constPtr->name);
 }
 
 
@@ -92,7 +92,7 @@ static inline void Os_TaskMakeSuspended( OsTaskVarType *pcb )
 	assert( pcb->state & (ST_READY|ST_RUNNING) );
 	pcb->state = ST_SUSPENDED;
 	TAILQ_REMOVE(&Os_Sys.ready_head,pcb,ready_list);
-	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->name);
+	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->constPtr->name);
 }
 
 
@@ -350,7 +350,7 @@ OsTaskVarType *Os_TaskGetTop( void ){
 
 	assert(top_prio_pcb!=NULL);
 
-	OS_DEBUG(D_TASK,"Found %s\n",top_prio_pcb->name);
+	OS_DEBUG(D_TASK,"Found %s\n",top_prio_pcb->constPtr->name);
 
 	return top_prio_pcb;
 }
@@ -470,8 +470,6 @@ void Os_Dispatch( uint32_t op ) {
 
 	pcbPtr = Os_TaskGetTop();
 
-
-
 	/* Swap if we found any process or are forced (multiple activations)*/
 	if( pcbPtr != currPcbPtr ) {
 
@@ -501,10 +499,10 @@ void Os_Dispatch( uint32_t op ) {
 #endif
 		}
 #endif
-		OS_DEBUG(D_TASK,"Swapping to: %s\n",pcbPtr->name);
+		OS_DEBUG(D_TASK,"Swapping to: %s\n",pcbPtr->constPtr->name);
 		Os_TaskSwapContext(currPcbPtr,pcbPtr);
 	} else {
-		OS_DEBUG(D_TASK,"Continuing task %s\n",pcbPtr->name);
+		OS_DEBUG(D_TASK,"Continuing task %s\n",pcbPtr->constPtr->name);
 		/* Setup the stack again, and just call the basic task */
 		Os_StackSetup(pcbPtr);
 		/* TODO: release and get the internal resource ? */
@@ -700,7 +698,7 @@ StatusType ActivateTask( TaskType TaskID ) {
 	OsTaskVarType *pcb = Os_TaskGet(TaskID);
 	StatusType rv = E_OK;
 
-	OS_DEBUG(D_TASK,"# ActivateTask %s\n",pcb->name);
+	OS_DEBUG(D_TASK,"# ActivateTask %s\n",pcb->constPtr->name);
 
 #if (OS_STATUS_EXTENDED == STD_ON )
 	/* extended */
@@ -790,7 +788,7 @@ StatusType TerminateTask( void ) {
 	StatusType rv = E_OK;
 	uint32_t flags;
 
-	OS_DEBUG(D_TASK,"# TerminateTask %s\n",currTaskPtr->name);
+	OS_DEBUG(D_TASK,"# TerminateTask %s\n",curr_pcb->constPtr->name);
 
 #if (OS_STATUS_EXTENDED == STD_ON )
 
@@ -831,7 +829,7 @@ StatusType ChainTask( TaskType TaskId ) {
 	OsTaskVarType *pcb = Os_TaskGet(TaskId);
 
 
-	OS_DEBUG(D_TASK,"# ChainTask %s\n",currTaskPtr->name);
+	OS_DEBUG(D_TASK,"# ChainTask %s\n",curr_pcb->constPtr->name);
 
 #if (OS_STATUS_EXTENDED == STD_ON )
 	/* extended */
@@ -911,7 +909,7 @@ StatusType Schedule( void ) {
 	uint32_t flags;
 	OsTaskVarType *curr_pcb = Os_SysTaskGetCurr();
 
-	OS_DEBUG(D_TASK,"# Schedule %s\n",Os_SysTaskGetCurr()->name);
+	OS_DEBUG(D_TASK,"# Schedule %s\n",curr_pcb->constPtr->name);
 
 	/* Check that we are not calling from interrupt context */
 	if( Os_Sys.intNestCnt != 0 ) {
