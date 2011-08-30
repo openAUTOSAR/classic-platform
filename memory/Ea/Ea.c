@@ -889,7 +889,7 @@ static uint8 verifyChecksum(Ea_AdminBlock* block)
 	result += array[1];
 	result += array[2];
 
-	result = result ^ 0xaa;
+	result = result ^ 0xaaU;
 
 	return (result == block->check);
 }
@@ -903,7 +903,7 @@ static void addChecksum(Ea_AdminBlock* block)
 	result += array[1];
 	result += array[2];
 
-	result = result ^ 0xaa;
+	result = result ^ 0xaaU;
 
 	block->check = result;
 }
