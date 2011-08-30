@@ -23,6 +23,15 @@
 #include "Ea_Cbk.h"
 #include "Ea_Types.h"
 
+#include "Mcu.h"
+
+/** @req EA011 */
+/** @req EA045 */
+#if (STD_ON == EA_DEV_ERROR_DETECT)
+#include "Det.h"
+#endif
+
+
 
 // States used by EA_MainFunction to control the internal state of the module.
 typedef enum
@@ -35,13 +44,6 @@ typedef enum
 
 } Ea_JobStatus;
 
-#include "Mcu.h"
-
-/** @req EA011 */
-/** @req EA045 */
-#if (STD_ON == EA_DEV_ERROR_DETECT)
-#include "Det.h"
-#endif
 
 /*
 		define EA module notification callback macro 	
@@ -111,9 +113,9 @@ static uint8 Ea_TempBuffer[EA_MAX_BLOCK_SIZE + sizeof(Ea_AdminBlock)];
 static uint16 EA_GET_BLOCK(uint16 BlockNumber);
 static Eep_AddressType calculateEepAddress(uint16 BlockIndex);
 static uint16 calculateBlockLength(uint16 BlockIndex);
-static void handleLowerLayerRead();
-static void handleLowerLayerWrite();
-static void handleLowerLayerErase();
+static void handleLowerLayerRead(void);
+static void handleLowerLayerWrite(void);
+static void handleLowerLayerErase(void);
 static uint8 verifyChecksum(Ea_AdminBlock* block);
 static void addChecksum(Ea_AdminBlock* block);
 
@@ -193,13 +195,13 @@ Std_ReturnType Ea_Read(uint16 BlockNumber, uint16 BlockOffset, uint8* DataBuffer
     imask_t state;
 
 	/*@req <EA130> */
-	if (E_OK != Ea_ValidateInitialized(EA_READ_ID))
+	if (E_OK != Ea_ValidateInitialized(EA_READ_ID)){
 		return E_NOT_OK;
-
+	}
 	/*@req <EA147> */
-	if (E_OK != Ea_ValidateBlock(BlockNumber, EA_READ_ID))
+	if (E_OK != Ea_ValidateBlock(BlockNumber, EA_READ_ID)){
 		return E_NOT_OK;
-
+	}
 	/*@req <EA137> */
 	/* Lock down the module to ourself */
     Irq_Save(state);
@@ -258,13 +260,13 @@ Std_ReturnType Ea_Write(uint16 BlockNumber, uint8* DataBufferPtr)
     imask_t state;
 
 	/*@req <EA131> */
-	if (E_OK != Ea_ValidateInitialized(EA_WRITE_ID))
+	if (E_OK != Ea_ValidateInitialized(EA_WRITE_ID)){
 		return E_NOT_OK;
-
+	}
 	/*@req <EA148> */
-	if (E_OK != Ea_ValidateBlock(BlockNumber, EA_WRITE_ID))
+	if (E_OK != Ea_ValidateBlock(BlockNumber, EA_WRITE_ID)){
 		return E_NOT_OK;
-
+	}
 	/*@req <EA137>
 	*/
 	/* Lock down the module to ourself */
@@ -320,16 +322,17 @@ Std_ReturnType Ea_Write(uint16 BlockNumber, uint8* DataBufferPtr)
 void Ea_Cancel(void)
 {
 	/*@req <EA132> */
-	if (E_OK != Ea_ValidateInitialized(EA_CANCEL_ID))
-		return;
+	if (E_OK != Ea_ValidateInitialized(EA_CANCEL_ID)){
+		// Do nothing.
+	} else {
+		/*@req <EA078> [Reset the Ea module's internal variables to make the module ready for a new job request.]*/
+		Ea_Global.JobType = EA_JOB_NONE;
+		Ea_Global.ModuleStatus = MEMIF_IDLE;
+		Ea_Global.JobResult = MEMIF_JOB_CANCELLED;
 
-	/*@req <EA078> [Reset the Ea module's internal variables to make the module ready for a new job request.]*/
-	Ea_Global.JobType = EA_JOB_NONE;
-	Ea_Global.ModuleStatus = MEMIF_IDLE;
-	Ea_Global.JobResult = MEMIF_JOB_CANCELLED;
-
-	/*@req <EA077> [Call the cancel function of the underlying EEPROM driver.]*/
-	Eep_Cancel();
+		/*@req <EA077> [Call the cancel function of the underlying EEPROM driver.]*/
+		Eep_Cancel();
+	}
 
 	return;
 }
@@ -337,34 +340,39 @@ void Ea_Cancel(void)
 /*@req EA089 */
 MemIf_StatusType Ea_GetStatus(void)
 {
+	MemIf_StatusType rv;
+
 	/*@req <EA133> */
 	/*@req <EA034> */
-	if (E_OK != Ea_ValidateInitialized(EA_GETSTATUS_ID))
-		return MEMIF_UNINIT;
-
-	/*@req <EA156> */
-	if (MEMIF_IDLE == Ea_Global.ModuleStatus)
-		return MEMIF_IDLE;
-
-	/*@req <EA073> [check if EA Module is busy with internal management operations.]*/	
-	if (MEMIF_BUSY_INTERNAL == Ea_Global.ModuleStatus)
-	{
-		return MEMIF_BUSY_INTERNAL;
+	if (E_OK != Ea_ValidateInitialized(EA_GETSTATUS_ID)){
+		rv = MEMIF_UNINIT;
 	}
-
-	/*@req <EA157> */
-	return MEMIF_BUSY;
+	/*@req <EA156> */
+	else if (MEMIF_IDLE == Ea_Global.ModuleStatus){
+		rv = MEMIF_IDLE;
+	}
+	/*@req <EA073> [check if EA Module is busy with internal management operations.]*/	
+	else if (MEMIF_BUSY_INTERNAL == Ea_Global.ModuleStatus){
+		rv = MEMIF_BUSY_INTERNAL;
+	} else {
+		/*@req <EA157> */
+		rv = MEMIF_BUSY;
+	}
+	return rv;
 }
 
 /*@req <EA090> */
 MemIf_JobResultType Ea_GetJobResult(void)
 {
+	MemIf_JobResultType rv;
 	/*@req <EA134> */
-	if (E_OK != Ea_ValidateInitialized(EA_GETJOBRESULT_ID))
-		return MEMIF_JOB_FAILED;
-
-	/*@req <EA035> */
-	return Ea_Global.JobResult;
+	if (E_OK != Ea_ValidateInitialized(EA_GETJOBRESULT_ID)){
+		rv = MEMIF_JOB_FAILED;
+	} else {
+		/*@req <EA035> */
+		rv = Ea_Global.JobResult;
+	}
+	return rv;
 }
 
 /*@req <EA091> */
@@ -377,13 +385,13 @@ Std_ReturnType Ea_InvalidateBlock(uint16 BlockNumber)
     imask_t state;
 
 	/*@req <EA135> */
-	if (E_OK != Ea_ValidateInitialized(EA_INVALIDATEBLOCK_ID))
+	if (E_OK != Ea_ValidateInitialized(EA_INVALIDATEBLOCK_ID)){
 		return E_NOT_OK;
-
+	}
 	/*@req <EA149> */
-	if (E_OK != Ea_ValidateBlock(BlockNumber, EA_INVALIDATEBLOCK_ID))
+	if (E_OK != Ea_ValidateBlock(BlockNumber, EA_INVALIDATEBLOCK_ID)){
 		return E_NOT_OK;
-
+	}
 	/*@req <EA137>
 	*/
 	/* Lock down the module to ourself */
@@ -432,8 +440,9 @@ Std_ReturnType Ea_InvalidateBlock(uint16 BlockNumber)
 	{
 	    Irq_Save(state);
 		MemIf_StatusType status = Eep_GetStatus();
-		if ((status == MEMIF_BUSY) || (status == MEMIF_BUSY_INTERNAL))
+		if ((status == MEMIF_BUSY) || (status == MEMIF_BUSY_INTERNAL)){
 			Ea_Global.JobStatus = EA_PENDING_ADMIN_WRITE;
+		}
 	    Irq_Restore(state);
 	}
 	else
@@ -456,13 +465,13 @@ Std_ReturnType Ea_EraseImmediateBlock(uint16 BlockNumber)
 	imask_t state;
 
 	/*@req <EA136> */
-	if (E_OK != Ea_ValidateInitialized(EA_ERASEIMMEDIATEBLOCK_ID))
+	if (E_OK != Ea_ValidateInitialized(EA_ERASEIMMEDIATEBLOCK_ID)){
 		return E_NOT_OK;
-
+	}
 	/*@req <EA152> */
-	if (E_OK != Ea_ValidateBlock(BlockNumber, EA_ERASEIMMEDIATEBLOCK_ID))
+	if (E_OK != Ea_ValidateBlock(BlockNumber, EA_ERASEIMMEDIATEBLOCK_ID)){
 		return E_NOT_OK;
-
+	}
 	/*@req <EA137>
 	*/
 	/* Lock down the module to ourself */
@@ -531,8 +540,9 @@ void Ea_MainFunction(void)
 					{
 					    Irq_Save(state);
 						MemIf_StatusType status = Eep_GetStatus();
-						if ((status == MEMIF_BUSY) || (status == MEMIF_BUSY_INTERNAL))
+						if ((status == MEMIF_BUSY) || (status == MEMIF_BUSY_INTERNAL)){
 							Ea_Global.JobStatus = EA_PENDING_WRITE;
+						}
 					    Irq_Restore(state);
 					}
 				}
@@ -546,8 +556,9 @@ void Ea_MainFunction(void)
 					{
 					    Irq_Save(state);
 						MemIf_StatusType status = Eep_GetStatus();
-						if ((status == MEMIF_BUSY) || (status == MEMIF_BUSY_INTERNAL))
+						if ((status == MEMIF_BUSY) || (status == MEMIF_BUSY_INTERNAL)){
 							Ea_Global.JobStatus = EA_PENDING_READ;
+						}
 					    Irq_Restore(state);
 					}
 				}
@@ -560,8 +571,9 @@ void Ea_MainFunction(void)
 					{
 					    Irq_Save(state);
 						MemIf_StatusType status = Eep_GetStatus();
-						if ((status == MEMIF_BUSY) || (status == MEMIF_BUSY_INTERNAL))
+						if ((status == MEMIF_BUSY) || (status == MEMIF_BUSY_INTERNAL)){
 							Ea_Global.JobStatus = EA_PENDING_ERASE;
+						}
 					    Irq_Restore(state);
 					}
 				}
@@ -598,39 +610,40 @@ void Ea_JobEndNotification(void)
 		Ea_Global.JobResult = MEMIF_JOB_CANCELLED;
 		Ea_Global.JobStatus = EA_PENDING_NONE;
 		Ea_Global.ModuleStatus = MEMIF_IDLE;
-		return; // Should we  call upper layer here?
-	}
-
-	/*@req <EA051> */
-	/*@req <EA054> */
-	switch(Ea_Global.JobStatus)
-	{
-	case EA_PENDING_READ:
-		handleLowerLayerRead();
-		break;
-	case EA_PENDING_WRITE:
-		handleLowerLayerWrite();
-		break;
-	case EA_PENDING_ERASE:
-		handleLowerLayerErase();
-		break;
-	case EA_PENDING_ADMIN_WRITE:
-		Ea_Global.JobType = EA_JOB_NONE;
-		Ea_Global.JobStatus = EA_PENDING_NONE;
-		Ea_Global.ModuleStatus = MEMIF_IDLE;
-		/*@req <EA141> */
+		// Should we  call upper layer here?
+	} else {
+		/*@req <EA051> */
 		/*@req <EA054> */
-		/*@req <EA142> */
-		/*@req <EA143> */
-		EA_JOB_END_NOTIFICATION();
-		break;
-	default:
-		assert(0); // Should never come here
-		break;
+		switch(Ea_Global.JobStatus)
+		{
+		case EA_PENDING_READ:
+			handleLowerLayerRead();
+			break;
+		case EA_PENDING_WRITE:
+			handleLowerLayerWrite();
+			break;
+		case EA_PENDING_ERASE:
+			handleLowerLayerErase();
+			break;
+		case EA_PENDING_ADMIN_WRITE:
+			Ea_Global.JobType = EA_JOB_NONE;
+			Ea_Global.JobStatus = EA_PENDING_NONE;
+			Ea_Global.ModuleStatus = MEMIF_IDLE;
+			/*@req <EA141> */
+			/*@req <EA054> */
+			/*@req <EA142> */
+			/*@req <EA143> */
+			EA_JOB_END_NOTIFICATION();
+			break;
+		default:
+			assert(0); // Should never come here
+			break;
+		}
 	}
+	return;
 }
 
-void handleLowerLayerRead()
+static void handleLowerLayerRead()
 {
 	Ea_AdminBlock* adminBlock;
 
@@ -673,7 +686,7 @@ void handleLowerLayerRead()
 	EA_JOB_END_NOTIFICATION();
 }
 
-void handleLowerLayerWrite()
+static void handleLowerLayerWrite()
 {
 	Ea_AdminBlock* adminBlock;
 	Std_ReturnType result;
@@ -693,8 +706,9 @@ void handleLowerLayerWrite()
 		{
 		    Irq_Save(state);
 			MemIf_StatusType status = Eep_GetStatus();
-			if ((status == MEMIF_BUSY) || (status == MEMIF_BUSY_INTERNAL))
+			if ((status == MEMIF_BUSY) || (status == MEMIF_BUSY_INTERNAL)){
 				Ea_Global.JobStatus = EA_PENDING_ADMIN_WRITE;
+			}
 		    Irq_Restore(state);
 		} else
 		{
@@ -721,7 +735,7 @@ void handleLowerLayerWrite()
 	}
 }
 
-void handleLowerLayerErase()
+static void handleLowerLayerErase()
 {
 	Ea_AdminBlock* adminBlock;
 	Std_ReturnType result;
@@ -741,8 +755,9 @@ void handleLowerLayerErase()
 		{
 		    Irq_Save(state);
 			MemIf_StatusType status = Eep_GetStatus();
-			if ((status == MEMIF_BUSY) || (status == MEMIF_BUSY_INTERNAL))
+			if ((status == MEMIF_BUSY) || (status == MEMIF_BUSY_INTERNAL)){
 				Ea_Global.JobStatus = EA_PENDING_ADMIN_WRITE;
+			}
 		    Irq_Restore(state);
 		} else
 		{
@@ -778,8 +793,9 @@ void Ea_JobErrorNotification(void)
     Irq_Save(state);
 
     /*@req EA154*/
-	if (Ea_Global.JobResult == MEMIF_JOB_PENDING)
+	if (Ea_Global.JobResult == MEMIF_JOB_PENDING){
 		Ea_Global.JobResult = MEMIF_JOB_FAILED;
+	}
 
 	Ea_Global.JobType = EA_JOB_NONE;
 	Ea_Global.JobStatus = EA_PENDING_NONE;
@@ -818,11 +834,11 @@ static uint16 EA_GET_BLOCK(uint16 BlockNumber)
  * Local service to calculate the actual eep address.
  */
 /*@req <EA007>*/
-Eep_AddressType calculateEepAddress(uint16 BlockIndex)
+static Eep_AddressType calculateEepAddress(uint16 BlockIndex)
 {
 	const Ea_BlockConfigType *EaBlockCon;
 	uint32 totalNumOfBlocks = 0;
-	uint16 i = 0;
+	uint16 i;
 
 	EaBlockCon = Ea_Global.EaBlockConfig;
 	uint16 blockNum = EaBlockCon[BlockIndex].EaBlockNumber;
@@ -836,8 +852,9 @@ Eep_AddressType calculateEepAddress(uint16 BlockIndex)
 			{
 				int blocksize = EaBlockCon[i].EaBlockSize + sizeof(Ea_AdminBlock);
 				int numOfBlocks = blocksize / EA_VIRTUAL_PAGE_SIZE;
-				if (blocksize % EA_VIRTUAL_PAGE_SIZE)
+				if (blocksize % EA_VIRTUAL_PAGE_SIZE){
 					numOfBlocks++;
+				}
 
 				totalNumOfBlocks = totalNumOfBlocks + numOfBlocks;
 			}
@@ -847,24 +864,25 @@ Eep_AddressType calculateEepAddress(uint16 BlockIndex)
 	return totalNumOfBlocks * EA_VIRTUAL_PAGE_SIZE;
 }
 
-uint16 calculateBlockLength(uint16 BlockIndex)
+static uint16 calculateBlockLength(uint16 BlockIndex)
 {
 	const Ea_BlockConfigType *EaBlockCon;
 
 	EaBlockCon = Ea_Global.EaBlockConfig;
 	int blocksize = EaBlockCon[BlockIndex].EaBlockSize + sizeof(Ea_AdminBlock);
 	int numOfBlocks = blocksize / EA_VIRTUAL_PAGE_SIZE;
-	if (blocksize % EA_VIRTUAL_PAGE_SIZE)
+	if (blocksize % EA_VIRTUAL_PAGE_SIZE){
 		numOfBlocks++;
+	}
 
-	return numOfBlocks * EA_VIRTUAL_PAGE_SIZE;
+	return numOfBlocks * EA_VIRTUAL_PAGE_SIZE);
 }
 
 /* Some very simple checksum calculations */
 /* Better than nothing :-) */
 static uint8 verifyChecksum(Ea_AdminBlock* block)
 {
-	uint8 result = 0;
+	uint8 result;
 	uint8* array = (uint8*) block;
 
 	result = array[0];
@@ -878,7 +896,7 @@ static uint8 verifyChecksum(Ea_AdminBlock* block)
 
 static void addChecksum(Ea_AdminBlock* block)
 {
-	uint8 result = 0;
+	uint8 result;
 	uint8* array = (uint8*) block;
 
 	result = array[0];

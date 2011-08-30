@@ -30,7 +30,7 @@ typedef enum
 	EA_JOB_COMPARE,
 	EA_JOB_ERASE,
 	EA_JOB_READ,
-	EA_JOB_WRITE,
+	EA_JOB_WRITE
 } Ea_JobType;
 
 #endif
