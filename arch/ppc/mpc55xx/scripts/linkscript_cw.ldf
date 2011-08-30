@@ -71,6 +71,7 @@ SECTIONS
       .PPC.EMB.sdata0 LOAD(ADDR(__SDATA0)) : {}	/* Small data with offset to 0 */	    
       .PPC.EMB.sbss0  : {}
       .ramlog : { *(.ramlog_data) *(.ramlog_bss) }
+      .dem : { *(.dem_eventmemory_pri) }
 	  _heap_addr = .;      
 	} > sram
 }   
