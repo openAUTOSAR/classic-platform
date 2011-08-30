@@ -875,7 +875,7 @@ static uint16 calculateBlockLength(uint16 BlockIndex)
 		numOfBlocks++;
 	}
 
-	return numOfBlocks * EA_VIRTUAL_PAGE_SIZE);
+	return numOfBlocks * EA_VIRTUAL_PAGE_SIZE;
 }
 
 /* Some very simple checksum calculations */
