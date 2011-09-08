@@ -296,6 +296,7 @@ void *Os_Isr( void *stack, int16_t vector ) {
 
 	if( isrPtr->constPtr->type == ISR_TYPE_1) {
 		isrPtr->constPtr->entry();
+		Irq_EOI();
 		return stack;
 	}
 

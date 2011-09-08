@@ -14,9 +14,9 @@ LOCAL &datafile &file &rfile &data &tmpfile &stop &testfiles
 &rfile="test_result.txt"
 &testfiles=0.
 
-&tdir="&cfg_project_path_g\binaries\*osek*.elf"
+&tdir="&cfg_project_path_g\binaries\mpc551xsim\*osek*.elf"
 os cmd /c dir &tdir/B /O:N > &datafile
-&tdir="&cfg_project_path_g\binaries\*os_*.elf"
+&tdir="&cfg_project_path_g\binaries\mpc551xsim\*os_*.elf"
 os cmd /c dir &tdir/B /O:N >> &datafile
 
 
@@ -30,7 +30,7 @@ READ #10 &data
 WHILE "&data"!=""
 ( 
 //	&file="&cfg_project_path_g"+"/binaries/system_kernel_testsystem_"+"&data"+".elf"
-	&file="&cfg_project_path_g"+"/binaries/"+"&data"
+	&file="&cfg_project_path_g"+"/binaries/mpc551xsim/"+"&data"
 
   IF OS.FILE("&file")
   (
@@ -79,6 +79,7 @@ testrun:
   b.d /all
   term.close
   RETURN
+
 
 
 
