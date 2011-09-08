@@ -51,6 +51,18 @@ typedef struct {
 	PduLengthType SduLength;	// length of SDU
 } PduInfoType;
 
+typedef enum {
+	TP_DATACONF,
+	TP_DATARETRY,
+	TP_CONFPENDING,
+	TP_NORETRY,
+} TpDataStateType;
+
+typedef struct {
+	TpDataStateType TpDataState;
+	PduLengthType TxTpDataCnt;
+} RetryInfoType;
+
 /*
 typedef struct {
    P2VAR(uint8,AUTOMATIC,AUTOSAR_COMSTACKDATA) SduDataPtr

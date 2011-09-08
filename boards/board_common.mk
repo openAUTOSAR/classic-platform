@@ -97,6 +97,11 @@ obj-$(USE_PORT) += Port_Cfg.o
 obj-$(USE_ADC) += Adc.o
 obj-$(USE_ADC) += Adc_Cfg.o
 
+# J1939Tp
+obj-$(USE_J1939TP) += J1939Tp.o
+inc-$(USE_J1939TP) += $(ROOTDIR)/communication/J1939Tp
+vpath-$(USE_J1939TP) += $(ROOTDIR)/communication/J1939Tp
+
 # Include the kernel
 ifneq ($(USE_KERNEL),)
 include $(ROOTDIR)/system/kernel/makefile

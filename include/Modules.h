@@ -47,7 +47,7 @@
 #define MODULE_ID_FRNM    (32) // Flexray network management
 #define MODULE_ID_CANTP   (35) // Can transport layer
 #define MODULE_ID_FRTP    (36) // Flexray transport protocol
-
+#define MODULE_ID_J1939TP (37) // J1939 Transport protocol (Autosar 4)
 #define MODULE_ID_EA      (40) // EEPROM Abstraction
 
 #define MODULE_ID_WDGIF   (43) // Watchdog interface
