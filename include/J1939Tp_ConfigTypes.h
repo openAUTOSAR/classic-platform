@@ -29,45 +29,30 @@ typedef enum {
  * for a J1939 transport protocol session using CMDT. TP.CM in reverse direction
  * is used for intermediate and final ack of received  data and to abort the connection
  */
-typedef struct {
-	const PduIdType	Pdu;
-} J1939Tp_FcNPduType;
 
-typedef struct {
-	const PduIdType	Pdu;
-} J1939Tp_CmNPduType;
 
-typedef struct {
-	const PduIdType	Pdu;
-}J1939Tp_DtNPduType;
+typedef struct J1939Tp_ChannelType_ J1939Tp_ChannelType;
+typedef struct J1939Tp_PgType_ J1939Tp_PgType;
 
-typedef struct {
-	const PduIdType Pdu;
-} J1939Tp_NSduType;
-
-typedef struct {
-	const PduIdType	Pdu;
-} J1939Tp_DirectNPduType;
-
-typedef struct {
+struct J1939Tp_PgType_ {
 	const boolean 					DynLength;
 	const uint32  					Pgn;
-	const J1939Tp_DirectNPduType 	DirectNPdu; /** only set when DynLength = true */
-	const J1939Tp_NSduType			NSdu;
-} J1939Tp_PgType;
+	const PduIdType 				DirectNPdu; /** only set when DynLength = true */
+	const PduIdType					NSdu;
+	const J1939Tp_ChannelType*		Channel;
+};
 
-typedef struct {
+struct J1939Tp_ChannelType_ {
 	const J1939Tp_ProtocolType 	Protocol;
-	const J1939Tp_DtNPduType 	DtNPdu;
-	const J1939Tp_CmNPduType 	CmNPdu;
-	const J1939Tp_PgType 		*Pgs;
-	const J1939Tp_FcNPduType 	FcNPdu; /** only set when Protocol == J1939TP_PROTOCOL_CMDT */
-} J1939Tp_ChannelType;
+	const PduIdType 			DtNPdu;
+	const PduIdType 			CmNPdu;
+	const PduIdType	 			FcNPdu; /** only set when Protocol == J1939TP_PROTOCOL_CMDT */
+} ;
 
 /** @req J1939TP0175 */
 typedef struct {
-	const J1939Tp_RxChannelType *RxChannels;
-	const J1939Tp_TxChannelType *TxChannels;
+	const J1939Tp_PgType* RxPgs;
+	const J1939Tp_PgType* TxPgs;
 } J1939Tp_ConfigType;
 
 #endif

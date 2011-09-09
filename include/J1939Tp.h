@@ -20,6 +20,8 @@
 #include "Std_Types.h"
 #include "ComStack_Types.h" /** @req J1939TP0016 */
 #include "J1939Tp_ConfigTypes.h"
+#include "J1939Tp_Cfg.h" /** @req J1939TP0009 */
+
 
 
 /** Global requirements */
