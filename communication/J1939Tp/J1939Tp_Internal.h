@@ -44,14 +44,28 @@
 #define RTS_PGN_VALUE_3			0x00
 
 /** @req J1939TP0019 */
+
 typedef enum {
 	J1939TP_ON,
 	J1939TP_OFF
-} J1939Tp_GlobalStateType;
+} J1939Tp_Internal_GlobalStateType
+typedef struct {
+	J1939Tp_Internal_GlobalStateType State;
+	uint32 TimeElapsed;
+} J1939Tp_Internal_GlobalStateInfoType;
+
+typedef enum {
+	J1939TP_IDLE,
+	J1939TP_RTS_SENT,
+	J1939TP_WAITING_FOR_CM,
+} J1939Tp_Internal_TxPgStateType;
+
+enum states { IDLE, STATE_2, STATE_3, MAX_STATES } current_state;
+enum events { EVENT_1, EVENT_2, MAX_EVENTS } new_event;
 
 typedef struct {
-	boolean waitingForCts;
-} J1939Tp_Internal_TxPduStateType;
+	J1939Tp_Internal_TxPgStateType State;
+} J1939Tp_Internal_TxPgStateInfoType;
 
 static inline const J1939Tp_PgType* J1939Tp_Internal_ConfGetTxPg(uint32 txPduId);
 static void J1939Tp_Internal_SendRts(PduIdType TxSduId, const PduInfoType* TxInfoPtr);

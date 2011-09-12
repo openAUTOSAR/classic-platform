@@ -4,8 +4,13 @@
 #include "PdurR_J1939Tp.h"
 
 /** @req J1939TP0019 */
-static J1939Tp_GlobalStateType globalState = J1939TP_OFF;
+static J1939Tp_Internal_GlobalStateInfoType globalState = {
+		.State = J1939TP_OFF,
+};
 static const J1939Tp_ConfigType* J1939Tp_ConfigPtr;
+static J1939Tp_Internal_TxPgStateType txPgState[J1939TP_TX_PG_COUNT];
+
+
 
 /** @req J1939TP0087 */
 void J1939Tp_Init(const J1939Tp_ConfigType* ConfigPtr) {
@@ -17,10 +22,22 @@ void J1939Tp_Init(const J1939Tp_ConfigType* ConfigPtr) {
 	}
 	#endif
 	J1939Tp_ConfigPtr = ConfigPtr;
-	globalState = J1939TP_ON; /** @req J1939TP0022 */
+	globalState.State = J1939TP_ON; /** @req J1939TP0022 */
 }
 void J1939Tp_RxIndication(PduIdType RxPduId, PduInfoType* PduInfoPtr) {
 
+}
+
+void J1939_MainFunction(void) {
+	for (int i = 0; i < J1939TP_TX_PG_COUNT; i++) {
+		switch (J1939Tp_Internal_GetTxPg(i)->State) {
+			case J1939TP_WAITING_FOR_CM:
+
+				break;
+			default:
+				break;
+		}
+	}
 }
 
 /** @req J1939TP0180 */
@@ -51,15 +68,28 @@ Std_ReturnType J1939Tp_Transmit(PduIdType TxSduId, const PduInfoType* TxInfoPtr)
 				break;
 			case J1939TP_PROTOCOL_CMDT:
 				J1939Tp_Internal_SendRts(TxSduId,TxInfoPtr);
+				J1939Tp_Internal_SetStateTxPg(TxSduId,J1939TP_RTS_SENT);
 				break;
 		}
 	}
 	return E_OK;
 }
 
-
-static inline const J1939Tp_PgType* J1939Tp_Internal_ConfGetTxPg(uint32 txPduId) {
-	return &(J1939Tp_ConfigPtr->TxPgs[txPduId]);
+void J1939Tp_TxIndication(PduIdType TxPduId) {
+	J1939Tp_Internal_TxPgStateInfoType* pgState = J1939Tp_Internal_GetTxPg(TxPduId);
+	switch (pgState) {
+		case J1939TP_RTS_SENT:
+			J1939Tp_Internal_SetStateTxPg(TxSduId,J1939TP_WAIT_FOR_CM);
+			break;
+		default:
+			break;
+	}
+}
+static inline void J1939Tp_Internal_SetStateTxPg(uint32 txPduId,J1939Tp_Internal_TxPgStateType state) {
+	txPgState[txPduId].State = state;
+}
+static inline J1939Tp_Internal_TxPgStateInfoType* J1939Tp_Internal_GetTxPg(uint32 txPduId) {
+	return &(txPgState[txPduId]);
 }
 static inline const J1939Tp_ChannelType* J1939Tp_Internal_ConfGetTxChannel(uint32 txPduId) {
 	return J1939Tp_ConfigPtr->TxPgs[txPduId].Channel;
