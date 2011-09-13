@@ -21,7 +21,7 @@
 #include "ComStack_Types.h" /** @req J1939TP0016 */
 #include "J1939Tp_ConfigTypes.h"
 #include "J1939Tp_Cfg.h" /** @req J1939TP0009 */
-
+#include "CanIf.h"
 
 
 /** Global requirements */
@@ -51,6 +51,6 @@ Std_ReturnType J1939Tp_CancelReceiveRequest(PduIdType RxSduId);
 Std_ReturnType J1939Tp_ChangeParameterRequest(PduIdType SduId, TPParameterType Parameter, uint16 value);
 
 /** Main function, used for scheduling purpose and timeout supervision */
-void J1939_MainFunction(void);
+void J1939Tp_MainFunction(void);
 
 #endif

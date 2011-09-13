@@ -51,8 +51,9 @@ struct J1939Tp_ChannelType_ {
 
 /** @req J1939TP0175 */
 typedef struct {
-	const J1939Tp_PgType* RxPgs;
-	const J1939Tp_PgType* TxPgs;
+	const J1939Tp_PgType* Pgs;
+	const J1939Tp_ChannelType* TxChannels;
+	const J1939Tp_ChannelType* RxChannels;
 } J1939Tp_ConfigType;
 
 #endif
