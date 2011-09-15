@@ -71,7 +71,9 @@
 #if PDUR_SOAD_SUPPORT == STD_ON
 #include "PduR_SoAd.h"
 #endif
-
+#if PDUR_J1939TP_SUPPORT == STD_ON
+#include "PduR_J1939Tp.h"
+#endif
 
 
 /* Contain the current state of the PDU router. The router is uninitialized
