@@ -24,6 +24,10 @@ typedef enum {
 	J1939TP_PROTOCOL_CMDT
 } J1939Tp_ProtocolType;
 
+typedef enum {
+	J1939TP_RX,
+	J1939TP_TX
+} J1939Tp_DirectionType;
 
 /** This N-PDU represents the TP.CM frame that is used in reverese direction
  * for a J1939 transport protocol session using CMDT. TP.CM in reverse direction
@@ -33,10 +37,11 @@ typedef enum {
 
 typedef struct J1939Tp_ChannelType_ J1939Tp_ChannelType;
 typedef struct J1939Tp_PgType_ J1939Tp_PgType;
+typedef uint32 J1939Tp_PgnType;
 
 struct J1939Tp_PgType_ {
 	const boolean 					DynLength;
-	const uint32  					Pgn;
+	const J1939Tp_PgnType			Pgn;
 	const PduIdType 				DirectNPdu; /** only set when DynLength = true */
 	const PduIdType					NSdu;
 	const J1939Tp_ChannelType*		Channel;
@@ -47,13 +52,13 @@ struct J1939Tp_ChannelType_ {
 	const PduIdType 			DtNPdu;
 	const PduIdType 			CmNPdu;
 	const PduIdType	 			FcNPdu; /** only set when Protocol == J1939TP_PROTOCOL_CMDT */
+	const J1939Tp_DirectionType Direction;
 } ;
 
 /** @req J1939TP0175 */
 typedef struct {
 	const J1939Tp_PgType* Pgs;
-	const J1939Tp_ChannelType* TxChannels;
-	const J1939Tp_ChannelType* RxChannels;
+	const J1939Tp_ChannelType* Channels;
 } J1939Tp_ConfigType;
 
 #endif

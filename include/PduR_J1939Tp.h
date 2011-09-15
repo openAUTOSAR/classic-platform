@@ -21,9 +21,11 @@
 #include "PduR.h"
 
 #if PDUR_ZERO_COST_OPERATION == STD_OFF
-
+BufReq_ReturnType PduR_J1939TpProvideRxBuffer(PduIdType dcmRxPduId, PduLengthType sduLength, PduInfoType **pduInfoPtr);
 BufReq_ReturnType PduR_J1939TpProvideTxBuffer(PduIdType J1939TpTxId,PduInfoType** PduInfoPtr, uint16 Length);
 void PduR_J1939TpTxConfirmation(PduIdType CanTpTxPduId, NotifResultType Result);
+BufReq_ReturnType PduR_J1939TpStartOfReception(PduIdType id, PduLengthType TpSduLength, PduLengthType* bufferSizePtr);
+void PduR_J1939TpRxIndication(PduIdType id, NotifResultType Result);
 
 #endif
 
