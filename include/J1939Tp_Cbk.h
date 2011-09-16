@@ -21,7 +21,7 @@
 void J1939Tp_RxIndication(PduIdType RxPduId, PduInfoType* PduInfoPtr);
 
 /** The lower layer communication module confirms the transmission of an I-PDU */
-void J1939Tp_TxIndication(PduIdType TxPduId);
+void J1939Tp_TxConfirmation(PduIdType TxPduId);
 
 
 #endif
