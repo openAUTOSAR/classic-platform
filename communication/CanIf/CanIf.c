@@ -34,6 +34,10 @@
 #include "CanTp_Cbk.h"
 #endif
 
+#if defined(USE_J1939TP)
+#include "J1939Tp_Cbk.h"
+#endif
+
 #if defined(USE_CANNM)
 #include "CanNm.h"
 #endif
@@ -873,7 +877,21 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
             return;
 #endif
             break;
+
+        case CANIF_USER_TYPE_J1939TP:
+          // Send Can frame to CAN TP
+#if defined(USE_J1939TP)
+            {
+        	    PduInfoType J1939TpRxPdu;
+        	    J1939TpRxPdu.SduLength = CanDlc;
+        	    J1939TpRxPdu.SduDataPtr = (uint8 *)CanSduPtr;
+        	    J1939Tp_RxIndication(entry->CanIfCanRxPduId, &J1939TpRxPdu);
+            }
+            return;
+#endif
+            break;
       }
+
     }
 
     entry++;
