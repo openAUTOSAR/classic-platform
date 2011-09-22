@@ -29,10 +29,26 @@ typedef enum {
 	J1939TP_TX
 } J1939Tp_DirectionType;
 
-/** This N-PDU represents the TP.CM frame that is used in reverese direction
- * for a J1939 transport protocol session using CMDT. TP.CM in reverse direction
- * is used for intermediate and final ack of received  data and to abort the connection
- */
+typedef enum {
+	J1939TP_TX_IDLE,
+	J1939TP_TX_WAIT_RTS_CANIF_CONFIRM,
+	J1939TP_TX_WAIT_DIRECT_SEND_CANIF_CONFIRM,
+	J1939TP_TX_WAITING_FOR_CTS,
+	J1939TP_TX_WAIT_DT_CANIF_CONFIRM,
+	J1939TP_TX_WAITING_FOR_END_OF_MSG_ACK
+} J1939Tp_Internal_TxChannelStateType;
+typedef enum {
+	J1939TP_RX_IDLE,
+	J1939TP_RX_WAIT_CTS_CANIF_CONFIRM,
+	J1939TP_RX_RECEIVING_DT,
+	J1939TP_RX_WAIT_ENDOFMSGACK_CANIF_CONFIRM,
+} J1939Tp_Internal_RxChannelStateType;
+typedef struct {
+	uint32 Timer;
+	uint32 TimerExpire;
+} J1939Tp_Internal_TimerType;
+typedef uint32 J1939Tp_Internal_PgnType;
+typedef uint32 J1939Tp_Internal_DtPayloadSizeType;
 
 
 typedef struct J1939Tp_ChannelType_ J1939Tp_ChannelType;
@@ -47,17 +63,59 @@ struct J1939Tp_PgType_ {
 	const J1939Tp_ChannelType*		Channel;
 };
 
+
+typedef struct {
+	J1939Tp_Internal_TxChannelStateType State;
+	J1939Tp_Internal_TimerType TimerInfo;
+	uint8 SentDtCount;
+	uint8 DtToSendBeforeCtsCount;
+	J1939Tp_Internal_DtPayloadSizeType TotalMessageSize;
+	uint8 TotalSentDtCount;
+	uint16 TotalBytesSent;
+	PduIdType PduRPdu;
+	J1939Tp_PgType* CurrentPgPtr;
+} J1939Tp_Internal_TxChannelInfoType;
+
+typedef struct {
+	J1939Tp_Internal_RxChannelStateType State;
+	J1939Tp_Internal_TimerType TimerInfo;
+	uint8 TotalReceivedDtCount;
+	uint8 TotalDtToReceiveCount;
+	J1939Tp_Internal_DtPayloadSizeType TotalMessageSize;
+	J1939Tp_PgType* CurrentPgPtr;
+} J1939Tp_Internal_RxChannelInfoType;
+
+typedef struct {
+	J1939Tp_Internal_TxChannelInfoType*		TxState; /* setup in init */
+	J1939Tp_Internal_RxChannelInfoType*		RxState; /* setup in init */
+} J1939Tp_Internal_ChannelInfoType;
+
 struct J1939Tp_ChannelType_ {
-	const J1939Tp_ProtocolType 	Protocol;
-	const PduIdType 			DtNPdu;
-	const PduIdType 			CmNPdu;
-	const PduIdType	 			FcNPdu; /** only set when Protocol == J1939TP_PROTOCOL_CMDT */
-	const J1939Tp_DirectionType Direction;
+	const J1939Tp_ProtocolType 				Protocol;
+	const PduIdType 						DtNPdu;
+	const PduIdType 						CmNPdu;
+	const PduIdType	 						FcNPdu; /** only set when Protocol == J1939TP_PROTOCOL_CMDT */
+	const J1939Tp_DirectionType 			Direction;
+	const uint16							PgCount;
+	const J1939Tp_PgType*					Pgs;
 } ;
+
+typedef enum {
+	J1939TP_REVERSE_CM,
+	J1939TP_CM,
+	J1939TP_DT,
+	J1939TP_DIRECT
+} J1939Tp_RxPduType;
+
+typedef struct {
+	const J1939Tp_RxPduType		PacketType;
+	const uint8*				ChannelIndex;
+} J1939Tp_RxPduInfoType;
 
 /** @req J1939TP0175 */
 typedef struct {
 	const J1939Tp_PgType* Pgs;
+	const J1939Tp_RxPduInfoType RxPdus;
 	const J1939Tp_ChannelType* Channels;
 } J1939Tp_ConfigType;
 
