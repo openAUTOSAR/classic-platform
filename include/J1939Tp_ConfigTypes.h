@@ -64,32 +64,6 @@ struct J1939Tp_PgType_ {
 };
 
 
-typedef struct {
-	J1939Tp_Internal_TxChannelStateType State;
-	J1939Tp_Internal_TimerType TimerInfo;
-	uint8 SentDtCount;
-	uint8 DtToSendBeforeCtsCount;
-	J1939Tp_Internal_DtPayloadSizeType TotalMessageSize;
-	uint8 TotalSentDtCount;
-	uint16 TotalBytesSent;
-	PduIdType PduRPdu;
-	J1939Tp_PgType* CurrentPgPtr;
-} J1939Tp_Internal_TxChannelInfoType;
-
-typedef struct {
-	J1939Tp_Internal_RxChannelStateType State;
-	J1939Tp_Internal_TimerType TimerInfo;
-	uint8 TotalReceivedDtCount;
-	uint8 TotalDtToReceiveCount;
-	J1939Tp_Internal_DtPayloadSizeType TotalMessageSize;
-	J1939Tp_PgType* CurrentPgPtr;
-} J1939Tp_Internal_RxChannelInfoType;
-
-typedef struct {
-	J1939Tp_Internal_TxChannelInfoType*		TxState; /* setup in init */
-	J1939Tp_Internal_RxChannelInfoType*		RxState; /* setup in init */
-} J1939Tp_Internal_ChannelInfoType;
-
 struct J1939Tp_ChannelType_ {
 	const J1939Tp_ProtocolType 				Protocol;
 	const PduIdType 						DtNPdu;
@@ -97,7 +71,7 @@ struct J1939Tp_ChannelType_ {
 	const PduIdType	 						FcNPdu; /** only set when Protocol == J1939TP_PROTOCOL_CMDT */
 	const J1939Tp_DirectionType 			Direction;
 	const uint16							PgCount;
-	const J1939Tp_PgType*					Pgs;
+	const J1939Tp_PgType**					Pgs;
 } ;
 
 typedef enum {
@@ -109,14 +83,14 @@ typedef enum {
 
 typedef struct {
 	const J1939Tp_RxPduType		PacketType;
-	const uint8*				ChannelIndex;
+	const uint8					ChannelIndex;
 } J1939Tp_RxPduInfoType;
 
 /** @req J1939TP0175 */
 typedef struct {
-	const J1939Tp_PgType* Pgs;
-	const J1939Tp_RxPduInfoType RxPdus;
+	const J1939Tp_RxPduInfoType* RxPdus;
 	const J1939Tp_ChannelType* Channels;
+	const J1939Tp_PgType* Pgs;
 } J1939Tp_ConfigType;
 
 #endif

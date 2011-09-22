@@ -30,8 +30,6 @@
 
 #define J1939TP_PACKET_SIZE 7
 
-
-
 /** @req J1939TP0019 */
 
 typedef enum {
@@ -42,43 +40,73 @@ typedef enum {
 	J1939TP_EXPIRED,
 	J1939TP_NOT_EXPIRED
 } J1939Tp_Internal_TimerStatusType;
+typedef struct {
+	J1939Tp_Internal_TxChannelStateType State;
+	J1939Tp_Internal_TimerType TimerInfo;
+	uint8 SentDtCount;
+	uint8 DtToSendBeforeCtsCount;
+	J1939Tp_Internal_DtPayloadSizeType TotalMessageSize;
+	uint8 TotalSentDtCount;
+	uint16 TotalBytesSent;
+	PduIdType PduRPdu;
+	const J1939Tp_PgType* CurrentPgPtr;
+} J1939Tp_Internal_TxChannelInfoType;
 
+typedef struct {
+	J1939Tp_Internal_RxChannelStateType State;
+	J1939Tp_Internal_TimerType TimerInfo;
+	uint8 TotalReceivedDtCount;
+	uint8 TotalDtToReceiveCount;
+	J1939Tp_Internal_DtPayloadSizeType TotalMessageSize;
+	const J1939Tp_PgType* CurrentPgPtr;
+} J1939Tp_Internal_RxChannelInfoType;
+
+typedef struct {
+	const J1939Tp_ChannelType* 					ChannelConfPtr;
+	J1939Tp_Internal_TxChannelInfoType*		TxState; /* setup in init */
+	J1939Tp_Internal_RxChannelInfoType*		RxState; /* setup in init */
+} J1939Tp_Internal_ChannelInfoType;
+
+typedef struct {
+	J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr;
+	const J1939Tp_PgType* PgConfPtr;
+} J1939Tp_Internal_PgInfoType;
 
 typedef struct {
 	J1939Tp_Internal_GlobalStateType State;
 } J1939Tp_Internal_GlobalStateInfoType;
 
 
-
-
 typedef uint8 J1939Tp_Internal_ControlByteType;
 
-
-
-static inline Std_ReturnType J1939Tp_Internal_ValidatePacketType(J1939Tp_RxPduInfoType* RxPduInfo);
-
-static inline void J1939Tp_Internal_RxIndication_Dt(PduInfoType* PduInfoPtr, J1939Tp_ChannelType* Channel);
-static inline void J1939Tp_Internal_RxIndication_Cm(PduInfoType* PduInfoPtr, J1939Tp_ChannelType* Channel);
-static inline void J1939Tp_Internal_RxIndication_ReverseCm(PduInfoType* PduInfoPtr, J1939Tp_ChannelType* Channel);
+static J1939Tp_ProtocolType J1939Tp_Internal_GetProtocol(uint8 pf);
+static inline uint8 J1939Tp_Internal_GetPf(J1939Tp_PgnType pgn);
+static inline Std_ReturnType J1939Tp_Internal_ValidatePacketType(const J1939Tp_RxPduInfoType* RxPduInfo);
+static inline J1939Tp_Internal_ChannelInfoType* J1939Tp_Internal_GetChannelState(const J1939Tp_RxPduInfoType* RxPduInfo);
+static inline const J1939Tp_ChannelType* J1939Tp_Internal_GetChannel(const J1939Tp_RxPduInfoType* RxPduInfo);
+static inline void J1939Tp_Internal_RxIndication_Dt(PduInfoType* PduInfoPtr, J1939Tp_Internal_ChannelInfoType* Channel);
+static inline void J1939Tp_Internal_RxIndication_Cm(PduInfoType* PduInfoPtr, J1939Tp_Internal_ChannelInfoType* Channel);
+static inline void J1939Tp_Internal_RxIndication_ReverseCm(PduInfoType* PduInfoPtr, J1939Tp_Internal_ChannelInfoType* Channel);
 Std_ReturnType J1939Tp_ChangeParameterRequest(PduIdType SduId, TPParameterType Parameter, uint16 value);
-static inline void J1939Tp_Internal_TxConfirmation_RxChannel(J1939Tp_RxPduInfoType RxPdu);
+static inline void J1939Tp_Internal_TxConfirmation_RxChannel(J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr, const J1939Tp_RxPduInfoType* RxPduInfo);
 static inline boolean J1939Tp_Internal_IsDtPacketAlreadySent(uint8 nextPacket, uint8 totalPacketsSent);
-static inline Std_ReturnType J1939Tp_Internal_GetRxPduInfo(PduIdType RxPdu,J1939Tp_RxPduInfoType* RxPduInfo);
-static inline Std_ReturnType J1939Tp_Internal_GetPgFromPgn(const J1939Tp_ChannelType* channel, const J1939Tp_Internal_PgnType Pgn, J1939Tp_PgType* Pg);
+static inline Std_ReturnType J1939Tp_Internal_GetRxPduInfo(PduIdType RxPdu,const J1939Tp_RxPduInfoType** RxPduInfo);
+static inline Std_ReturnType J1939Tp_Internal_GetPgFromPgn(const J1939Tp_ChannelType* channel, J1939Tp_Internal_PgnType Pgn, const J1939Tp_PgType* Pg);
 static inline boolean J1939Tp_Internal_IsLastDt(J1939Tp_Internal_RxChannelInfoType* rxPgInfo);
-static inline void J1939Tp_Internal_TxConfirmation_TxChannel(J1939Tp_RxPduInfoType* RxPduInfo);
+static inline void J1939Tp_Internal_TxConfirmation_TxChannel(J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr,const J1939Tp_RxPduInfoType* RxPduInfo);
+
 /** @req J1939TP0096 */
 Std_ReturnType J1939Tp_Transmit(PduIdType TxSduId, const PduInfoType* TxInfoPtr);
 static inline uint16 J1939Tp_Internal_GetRtsMessageSize(PduInfoType* pduInfo);
 static inline boolean J1939Tp_Internal_WaitForCts(J1939Tp_Internal_TxChannelInfoType* TxChannelState);
 static inline boolean J1939Tp_Internal_WaitForEndOfMsgAck(J1939Tp_Internal_TxChannelInfoType* TxPgState);
-static inline Std_ReturnType J1939Tp_Internal_ConfGetPg(PduIdType NSduId, J1939Tp_PgType* Pg);
+static inline Std_ReturnType J1939Tp_Internal_ConfGetPg(PduIdType NSduId, const J1939Tp_PgType* Pg);
 static inline J1939Tp_Internal_TimerStatusType J1939Tp_Internal_IncAndCheckTimer(J1939Tp_Internal_TimerType* TimerInfo);
 
-static inline void J1939Tp_Internal_SendDt(J1939Tp_ChannelType* Channel);
-static inline void J1939Tp_Internal_SendRts(J1939Tp_ChannelType* Channel, const PduInfoType* TxInfoPtr);
-static inline void J1939Tp_Internal_SendEndOfMsgAck(J1939Tp_ChannelType* Channel);
-static inline void J1939Tp_Internal_SendCts(J1939Tp_ChannelType* Channel, PduInfoType* RtsPduInfoPtr);
+static inline void J1939Tp_Internal_SendDt(J1939Tp_Internal_ChannelInfoType* Channel);
+static inline void J1939Tp_Internal_SendRts(J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr, const PduInfoType* TxInfoPtr);
+static inline void J1939Tp_Internal_SendEndOfMsgAck(J1939Tp_Internal_ChannelInfoType* Channel);
+static inline void J1939Tp_Internal_SendCts(J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr, PduInfoType* RtsPduInfoPtr);
 static inline void J1939Tp_Internal_SendConnectionAbort(PduIdType CmNPdu, J1939Tp_PgnType Pgn);
 static inline void J1939Tp_Internal_TxSessionStartTimer(J1939Tp_Internal_TxChannelInfoType* Tx,uint16 TimerExpire);
 static inline void J1939Tp_Internal_RxSessionStartTimer(J1939Tp_Internal_RxChannelInfoType* Rx,uint16 TimerExpire);
