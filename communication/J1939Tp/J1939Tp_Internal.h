@@ -47,7 +47,6 @@ typedef struct {
 	uint8 DtToSendBeforeCtsCount;
 	J1939Tp_Internal_DtPayloadSizeType TotalMessageSize;
 	uint8 TotalSentDtCount;
-	uint16 TotalBytesSent;
 	PduIdType PduRPdu;
 	const J1939Tp_PgType* CurrentPgPtr;
 } J1939Tp_Internal_TxChannelInfoType;
@@ -91,7 +90,7 @@ Std_ReturnType J1939Tp_ChangeParameterRequest(PduIdType SduId, TPParameterType P
 static inline void J1939Tp_Internal_TxConfirmation_RxChannel(J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr, const J1939Tp_RxPduInfoType* RxPduInfo);
 static inline boolean J1939Tp_Internal_IsDtPacketAlreadySent(uint8 nextPacket, uint8 totalPacketsSent);
 static inline Std_ReturnType J1939Tp_Internal_GetRxPduInfo(PduIdType RxPdu,const J1939Tp_RxPduInfoType** RxPduInfo);
-static inline Std_ReturnType J1939Tp_Internal_GetPgFromPgn(const J1939Tp_ChannelType* channel, J1939Tp_Internal_PgnType Pgn, const J1939Tp_PgType* Pg);
+static inline Std_ReturnType J1939Tp_Internal_GetPgFromPgn(const J1939Tp_ChannelType* channel, J1939Tp_Internal_PgnType Pgn, const J1939Tp_PgType** Pg);
 static inline boolean J1939Tp_Internal_IsLastDt(J1939Tp_Internal_RxChannelInfoType* rxPgInfo);
 static inline void J1939Tp_Internal_TxConfirmation_TxChannel(J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr,const J1939Tp_RxPduInfoType* RxPduInfo);
 
