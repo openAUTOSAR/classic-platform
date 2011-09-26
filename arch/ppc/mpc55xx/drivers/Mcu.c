@@ -134,6 +134,7 @@ void Mcu_LossOfClock( void  ){
 #define CORE_PVR_E200Z0   	0x81710000UL
 #define CORE_PVR_E200Z3 	0x81120000UL
 #define CORE_PVR_E200Z6   	0x81170000UL
+#define CORE_PVR_E200Z65   	0x81150000UL	/* Is actually a 5668 */
 #define CORE_PVR_E200Z0H   	0x817F0000UL
 
 typedef struct{
@@ -171,6 +172,15 @@ const cpu_info_t cpu_info_list[] = {
     	.name = "MPC5606S",
     	.pvr = CORE_PVR_E200Z0H,
     },
+#elif defined(CFG_MPC5668)
+	{
+		.name = "MPC5668",
+		.pvr = CORE_PVR_E200Z65,
+	},
+	{
+		.name = "MPC5668",
+		.pvr = CORE_PVR_E200Z0,
+	},
 #endif
 };
 
@@ -198,6 +208,15 @@ const core_info_t core_info_list[] = {
     {
     	.name = "MPC5606S",
     	.pvr = CORE_PVR_E200Z0H,
+    },
+#elif defined(CFG_MPC5668)
+    {
+    	.name = "CORE_E200Z65",
+    	.pvr = CORE_PVR_E200Z65,
+    },
+    {
+    	.name = "CORE_E200Z0",
+    	.pvr = CORE_PVR_E200Z1,
     },
 #endif
 };
@@ -297,13 +316,13 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
     	/*not support*/
 #else
     	ISR_INSTALL_ISR1("LossOfLock", Mcu_LossOfLock, PLL_SYNSR_LOLF, 10 , 0 );
-#if defined(CFG_MPC5516)
+#if defined(CFG_MPC5516)  || defined(CFG_MPC5668)
     	FMPLL.ESYNCR2.B.LOLIRQ = 1;
 #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
     	FMPLL.SYNCR.B.LOLIRQ = 1;
 #endif
     	ISR_INSTALL_ISR1("LossOfClock", Mcu_LossOfClock, PLL_SYNSR_LOLF, 10 , 0 );
-#if defined(CFG_MPC5516)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
     	FMPLL.ESYNCR2.B.LOCIRQ = 1;
 #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
     	FMPLL.SYNCR.B.LOCIRQ = 1;
@@ -344,7 +363,7 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
 
     // TODO: find out if the 5554 really works like the 5516 here
     // All three (16, 54, 67) used to run the same code here though, so i'm sticking it with 5516
-#if defined(CFG_MPC5516) || defined(CFG_MPC5554)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5554) || defined(CFG_MPC5668)
     /* 5516clock info:
      * Fsys - System frequency ( CPU + all periperals? )
      *
@@ -380,7 +399,11 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     }
 #endif
 
-#if defined(CFG_MPC5516)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
+
+    // set post divider to next valid value to ensure that an overshoot during lock phase
+    // won't result in a too high freq
+    FMPLL.ESYNCR2.B.ERFD = (clockSettingsPtr->Pll3 + 1) | 1;
 
     // External crystal PLL mode.
     FMPLL.ESYNCR1.B.CLKCFG = 7; //TODO: Hur ställa detta för 5567?
@@ -388,10 +411,13 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     // Write pll parameters.
     FMPLL.ESYNCR1.B.EPREDIV = clockSettingsPtr->Pll1;
     FMPLL.ESYNCR1.B.EMFD    = clockSettingsPtr->Pll2;
-    FMPLL.ESYNCR2.B.ERFD    = clockSettingsPtr->Pll3;
 
+    while(FMPLL.SYNSR.B.LOCK != 1) {};
+
+    FMPLL.ESYNCR2.B.ERFD    = clockSettingsPtr->Pll3;
     // Connect SYSCLK to FMPLL
     SIU.SYSCLK.B.SYSCLKSEL = SYSCLOCK_SELECT_PLL;
+
 #elif defined(CFG_MPC5606S)
     // Write pll parameters.
     CGM.FMPLL[0].CR.B.IDF = clockSettingsPtr->Pll1;
@@ -597,7 +623,7 @@ uint32_t McuE_GetSystemClock(void)
 	 * 563x -  We run in legacy mode = 5567
 	 * 5606s - f_sys = extal * emfd / ((eprediv+1)*(2<<(erfd)));
 	 */
-#if defined(CFG_MPC5516)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 	uint32_t eprediv = FMPLL.ESYNCR1.B.EPREDIV;
 	uint32_t emfd = FMPLL.ESYNCR1.B.EMFD;
 	uint32_t erfd = FMPLL.ESYNCR2.B.ERFD;
@@ -619,6 +645,51 @@ uint32_t McuE_GetSystemClock(void)
     return f_sys;
 }
 
+#if defined(CFG_MPC5668)
+uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type) {
+	uint32_t sysClock = McuE_GetSystemClock();
+	vuint32_t prescaler;
+
+	switch (type)
+	{
+		case PERIPHERAL_CLOCK_FLEXCAN_A:
+		case PERIPHERAL_CLOCK_FLEXCAN_B:
+		case PERIPHERAL_CLOCK_FLEXCAN_C:
+		case PERIPHERAL_CLOCK_FLEXCAN_D:
+		case PERIPHERAL_CLOCK_FLEXCAN_E:
+		case PERIPHERAL_CLOCK_FLEXCAN_F:
+		case PERIPHERAL_CLOCK_DSPI_A:
+		case PERIPHERAL_CLOCK_DSPI_B:
+		case PERIPHERAL_CLOCK_DSPI_C:
+		case PERIPHERAL_CLOCK_DSPI_D:
+			prescaler = SIU.SYSCLK.B.LPCLKDIV1;
+			break;
+		case PERIPHERAL_CLOCK_ESCI_A:
+		case PERIPHERAL_CLOCK_ESCI_B:
+		case PERIPHERAL_CLOCK_ESCI_C:
+		case PERIPHERAL_CLOCK_ESCI_D:
+		case PERIPHERAL_CLOCK_ESCI_E:
+		case PERIPHERAL_CLOCK_ESCI_F:
+		case PERIPHERAL_CLOCK_IIC_A:
+		case PERIPHERAL_CLOCK_IIC_B:
+			prescaler = SIU.SYSCLK.B.LPCLKDIV0;
+			break;
+		case PERIPHERAL_CLOCK_ADC_A:
+			prescaler = SIU.SYSCLK.B.LPCLKDIV2;
+			break;
+		case PERIPHERAL_CLOCK_EMIOS:
+			prescaler = SIU.SYSCLK.B.LPCLKDIV3;
+			break;
+		default:
+			assert(0);
+			break;
+	}
+
+	return sysClock/(1<<prescaler);
+
+}
+
+#else
 
 /**
  * Get the peripheral clock in Hz for a specific device
@@ -719,7 +790,7 @@ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 	return sysClock/(1<<prescaler);
 #endif
 }
-
+#endif
 
 /**
  * Function to setup the internal flash for optimal performance
@@ -760,6 +831,16 @@ static void Mcu_ConfigureFlash(void)
 
 	/* Enable pipelined reads again. */
 	FLASH.MCR.B.PRD = 0;
+#elif defined(CFG_MPC5668)
+	/* Check values from cookbook and MPC5668x Microcontroller Data Sheet */
+
+	/* Should probably trim this values */
+	const typeof(FLASH.PFCRP0.B) val = {.M0PFE = 1, .M2PFE=1, .APC=3,
+								 .RWSC=3, .WWSC =1, .DPFEN =1, .IPFEN = 1, .PFLIM =2,
+								 .BFEN  = 1 };
+	FLASH.PFCRP0.B = val;
+
+	/* Enable pipelined reads again. */
 #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
 	//TODO: Lägg till flash för mpc5554 &67
 #endif

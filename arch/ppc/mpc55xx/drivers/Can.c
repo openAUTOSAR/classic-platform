@@ -286,7 +286,7 @@ Can_UnitType CanUnit[CAN_CONTROLLER_CNT] =
   },{
     .state = CANIF_CS_UNINIT,
   },
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) ||  defined(CFG_MPC5567)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) ||  defined(CFG_MPC5567) || defined(CFG_MPC5668)
   {
     .state = CANIF_CS_UNINIT,
   },{
@@ -295,7 +295,7 @@ Can_UnitType CanUnit[CAN_CONTROLLER_CNT] =
     .state = CANIF_CS_UNINIT,
   },
 #endif
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5668)
   {
     .state = CANIF_CS_UNINIT,
   }
@@ -351,34 +351,34 @@ static void Can_BusOff( int unit );
 
 void Can_A_Isr( void  ) {	Can_Isr(CAN_CTRL_A); }
 void Can_B_Isr( void  ) {	Can_Isr(CAN_CTRL_B); }
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567) || defined(CFG_MPC5668)
 void Can_C_Isr( void  ) {	Can_Isr(CAN_CTRL_C); }
 void Can_D_Isr( void  ) {	Can_Isr(CAN_CTRL_D); }
 void Can_E_Isr( void  ) {	Can_Isr(CAN_CTRL_E); }
 #endif
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5668)
 void Can_F_Isr( void  ) {	Can_Isr(CAN_CTRL_F); }
 #endif
 
 void Can_A_Err( void  ) {	Can_Err(CAN_CTRL_A); }
 void Can_B_Err( void  ) {	Can_Err(CAN_CTRL_B); }
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567) || defined(CFG_MPC5668)
 void Can_C_Err( void  ) {	Can_Err(CAN_CTRL_C); }
 void Can_D_Err( void  ) {	Can_Err(CAN_CTRL_D); }
 void Can_E_Err( void  ) {	Can_Err(CAN_CTRL_E); }
 #endif
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5668)
 void Can_F_Err( void  ) {	Can_Err(CAN_CTRL_F); }
 #endif
 
 void Can_A_BusOff( void  ) {	Can_BusOff(CAN_CTRL_A); }
 void Can_B_BusOff( void  ) {	Can_BusOff(CAN_CTRL_B); }
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567) || defined(CFG_MPC5668)
 void Can_C_BusOff( void  ) {	Can_BusOff(CAN_CTRL_C); }
 void Can_D_BusOff( void  ) {	Can_BusOff(CAN_CTRL_D); }
 void Can_E_BusOff( void  ) {	Can_BusOff(CAN_CTRL_E); }
 #endif
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5668)
 void Can_F_BusOff( void  ) {	Can_BusOff(CAN_CTRL_F); }
 #endif
 //-------------------------------------------------------------------
@@ -394,25 +394,27 @@ static void Can_Err( int unit ) {
   flexcan_t *canHw = GET_CONTROLLER(unit);
   Can_Arc_ErrorType err;
   ESRType esr;
+  const ESRType esrWrite = { .B.ERRINT = 1 };
   err.R = 0;
 
+  /* Clear bits 16-23 by read */
   esr.R = canHw->ESR.R;
-
-  err.B.ACKERR = esr.B.ACKERR;
-  err.B.BIT0ERR = esr.B.BIT0ERR;
-  err.B.BIT1ERR = esr.B.BIT1ERR;
-  err.B.CRCERR = esr.B.CRCERR;
-  err.B.FRMERR = esr.B.FRMERR;
-  err.B.STFERR = esr.B.STFERR;
-  err.B.RXWRN = esr.B.RXWRN;
-  err.B.TXWRN = esr.B.TXWRN;
 
   if (GET_CALLBACKS()->Arc_Error != NULL)
   {
     GET_CALLBACKS()->Arc_Error(unit, err );
   }
+
+  /* TODO: To avoid flooding the CPU with errors some intelligent
+   * decisions have to be made here. CanSM should handle this.
+   * (not implemented)
+   *
+   * So, turn the interrupts OFF.
+   */
+  canHw->CR.B.ERRMSK = 0;
+
   // Clear ERRINT
-  canHw->ESR.B.ERRINT = 1;
+  canHw->ESR.R = esrWrite.R;
 }
 
 

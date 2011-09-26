@@ -68,7 +68,7 @@ void Irq_Init( void ) {
 	  ramlog_dec(20);
 
 	  // TODO: The 5516 simulator still thinks it's a 5554 so setup the rest
-#if (defined(CFG_SIMULATOR) && defined(CFG_MPC5516)) || defined(CFG_MPC5567) || defined(CFG_MPC5554)
+#if (defined(CFG_SIMULATOR) && defined(CFG_MPC5516)) || defined(CFG_MPC5567) || defined(CFG_MPC5554)  || defined(CFG_MPC5668)
 	    set_spr(SPR_IVOR0,((uint32_t)&exception_tbl+0x0) );
 	    set_spr(SPR_IVOR1,((uint32_t)&exception_tbl+0x10) );
 	    set_spr(SPR_IVOR2,((uint32_t)&exception_tbl+0x20) );
@@ -104,9 +104,7 @@ void Irq_Init( void ) {
 	  // 5. lower PRI in INTC_CPR_PRCx to zero
 	  // 6. enable processor(s) recognition of interrupts
 
-	  // Z1 init
-
-	#if defined(CFG_MPC5516)
+	#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 	  INTC.MCR.B.HVEN_PRC0 = 0; // Soft vector mode
 	  INTC.MCR.B.VTES_PRC0 = 0; // 4 byte offset between entries
 	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5606S)
@@ -117,7 +115,7 @@ void Irq_Init( void ) {
 	  // Pop the FIFO queue
 	  for (int i = 0; i < 15; i++)
 	  {
-	#if defined(CFG_MPC5516)
+	#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 	    INTC.EOIR_PRC0.R = 0;
 	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5606S)
 	    INTC.EOIR.R = 0;
@@ -125,7 +123,7 @@ void Irq_Init( void ) {
 	  }
 
 	  // Accept interrupts
-	#if defined(CFG_MPC5516)
+	#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 	  INTC.CPR_PRC0.B.PRI = 0;
 	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5606S)
 	  INTC.CPR.B.PRI = 0;
@@ -133,7 +131,7 @@ void Irq_Init( void ) {
 }
 
 void Irq_EOI( void ) {
-#if defined(CFG_MPC5516)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 	volatile struct INTC_tag *intc = &INTC;
 	intc->EOIR_PRC0.R = 0;
 #elif defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC5606S)
@@ -151,7 +149,7 @@ static inline int osPrioToCpuPio( uint8_t prio ) {
 }
 
 void Irq_SetPriority( Cpu_t cpu,  IrqType vector, uint8_t prio ) {
-#if defined(CFG_MPC5516)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 	INTC.PSR[vector].B.PRC_SEL = cpu;
 #else
 	(void)cpu;
@@ -198,12 +196,12 @@ uint8_t Irq_GetCurrentPriority( Cpu_t cpu) {
 
 	uint8_t prio = 0;
 
-#if defined(CFG_MPC5516)
-	if( cpu == CPU_Z1 ) {
+#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
+	if( cpu == CPU_CORE0 ) {
 		prio = INTC.CPR_PRC0.B.PRI;
-	} else if ( cpu == CPU_Z0 ) {
+	} else if ( cpu == CPU_CORE1 ) {
 		prio = INTC.CPR_PRC1.B.PRI;
-	}
+	 }
 #elif defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC5606S)
 	(void)cpu;
 	prio = INTC.CPR.B.PRI;

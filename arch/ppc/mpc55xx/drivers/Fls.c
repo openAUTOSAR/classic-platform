@@ -99,6 +99,8 @@
 #define SHADOW_ROW_BASE  		0x00FFFC00
 #elif defined(CFG_MPC5606S)
 #define SHADOW_ROW_BASE         0x00200000
+#elif defined(CFG_MPC5668)
+#define SHADOW_ROW_BASE         0x00200000
 #endif
 
 #if defined(CFG_MPC5606S)
@@ -1101,7 +1103,7 @@ void Fls_Check( uint32 flsBaseAddress, uint32 flsTotalSize )
 #elif defined (CFG_MPC5516)
   MCM.ECR.B.EFNCR = 1;
 #else
-#error "Non supported processor"
+#warning "Non supported processor"
 #endif
 
   // Read flash in 32bit chunks, it's most efficient.
