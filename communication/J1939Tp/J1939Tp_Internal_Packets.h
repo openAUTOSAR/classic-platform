@@ -9,17 +9,6 @@
 #define CM_PGN_BYTE_3			7
 #define CM_BYTE_CONTROL			0
 
-/* Rts message */
-#define RTS_SIZE				8
-#define RTS_BYTE_CONTROL		CM_BYTE_CONTROL
-#define RTS_BYTE_LENGTH_1		1
-#define RTS_BYTE_LENGTH_2		2
-#define RTS_BYTE_NUM_PACKETS	3
-#define RTS_BYTE_SAE_ASSIGN		4
-#define RTS_BYTE_PGN_1			CM_PGN_BYTE_1
-#define RTS_BYTE_PGN_2			CM_PGN_BYTE_2
-#define RTS_BYTE_PGN_3			CM_PGN_BYTE_3
-#define RTS_CONTROL_VALUE		16
 
 /* Cts message */
 #define CTS_SIZE 				8
@@ -33,6 +22,18 @@
 #define CTS_BYTE_PGN_3			CM_PGN_BYTE_3
 #define CTS_START_SEQ_NUM		0
 #define CTS_CONTROL_VALUE		17
+
+#define BAM_RTS_SIZE				8
+#define BAM_RTS_BYTE_CONTROL		CM_BYTE_CONTROL
+#define BAM_RTS_BYTE_LENGTH_1		1
+#define BAM_RTS_BYTE_LENGTH_2		2
+#define BAM_RTS_BYTE_NUM_PACKETS	3
+#define BAM_RTS_BYTE_SAE_ASSIGN		4
+#define BAM_RTS_BYTE_PGN_1			CM_PGN_BYTE_1
+#define BAM_RTS_BYTE_PGN_2			CM_PGN_BYTE_2
+#define BAM_RTS_BYTE_PGN_3			CM_PGN_BYTE_3
+#define BAM_CONTROL_VALUE		32
+#define RTS_CONTROL_VALUE		16
 
 /* Dt message */
 #define DT_SIZE 				8

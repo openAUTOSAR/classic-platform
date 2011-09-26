@@ -83,10 +83,11 @@ typedef enum {
 // more
 typedef uint8 NotifResultType;
 
-#define NTFRSLT_OK				0x00
-#define NTFRSLT_E_NOT_OK		0x01
-#define NTFRSLT_E_WRONG_SN 		0x05
-#define NTFRSLT_E_NO_BUFFER 	0x09
+#define NTFRSLT_OK						0x00
+#define NTFRSLT_E_NOT_OK				0x01
+#define NTFRSLT_E_CANCELATION_NOT_OK	0x0C
+#define NTFRSLT_E_WRONG_SN 				0x05
+#define NTFRSLT_E_NO_BUFFER 			0x09
 
 
 // TODO, more

@@ -98,10 +98,11 @@ static inline void J1939Tp_Internal_TxConfirmation_TxChannel(J1939Tp_Internal_Ch
 Std_ReturnType J1939Tp_Transmit(PduIdType TxSduId, const PduInfoType* TxInfoPtr);
 static inline uint16 J1939Tp_Internal_GetRtsMessageSize(PduInfoType* pduInfo);
 static inline boolean J1939Tp_Internal_WaitForCts(J1939Tp_Internal_TxChannelInfoType* TxChannelState);
-static inline boolean J1939Tp_Internal_WaitForEndOfMsgAck(J1939Tp_Internal_TxChannelInfoType* TxPgState);
+static inline boolean J1939Tp_Internal_LastDtSent(J1939Tp_Internal_TxChannelInfoType* TxPgState);
 static inline Std_ReturnType J1939Tp_Internal_ConfGetPg(PduIdType NSduId, const J1939Tp_PgType* Pg);
 static inline J1939Tp_Internal_TimerStatusType J1939Tp_Internal_IncAndCheckTimer(J1939Tp_Internal_TimerType* TimerInfo);
 
+static inline void J1939Tp_Internal_SendBam(J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr,const PduInfoType* TxInfoPtr);
 static inline void J1939Tp_Internal_SendDt(J1939Tp_Internal_ChannelInfoType* Channel);
 static inline void J1939Tp_Internal_SendRts(J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr, const PduInfoType* TxInfoPtr);
 static inline void J1939Tp_Internal_SendEndOfMsgAck(J1939Tp_Internal_ChannelInfoType* Channel);
@@ -111,6 +112,7 @@ static inline void J1939Tp_Internal_TxSessionStartTimer(J1939Tp_Internal_TxChann
 static inline void J1939Tp_Internal_RxSessionStartTimer(J1939Tp_Internal_RxChannelInfoType* Rx,uint16 TimerExpire);
 static inline void J1939Tp_Internal_SetPgn(uint8* PgnBytes,J1939Tp_PgnType pgn );
 static inline J1939Tp_PgnType J1939Tp_Internal_GetPgn(uint8* PgnBytes);
+static inline uint8 J1939TP_Internal_GetNumDtPacketsToSend(uint16 messageSize);
 
 static inline void J1939Tp_Internal_ReportError(uint8 ApiId, uint8 ErrorId);
 #endif
