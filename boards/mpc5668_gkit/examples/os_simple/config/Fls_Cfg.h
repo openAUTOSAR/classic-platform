@@ -69,7 +69,7 @@
 #define FLS_TOTAL_SIZE              (48*1024)
 #elif defined(CFG_MPC5668G)
 #define FLASH_BANK_CNT				1
-#define FLASH_MAX_SECTORS			15
+#define FLASH_MAX_SECTORS			19
 #define FLS_TOTAL_SIZE              (2*1024*1024)
 #else
 #error CPU not supported
@@ -78,13 +78,14 @@
 #if (USE_FLS_INFO==STD_ON)
 
 typedef struct Flash {
-	uint32_t size;
-	uint32_t sectCnt;
-	uint32_t bankSize;
-	uint32_t regBase;
-	uint32_t sectAddr[FLASH_MAX_SECTORS];
-	uint16_t addrSpace[FLASH_MAX_SECTORS];
+    uint32_t size;
+    uint32_t sectCnt;
+    uint32_t bankSize;
+    uint32_t regBase;
+    uint32_t sectAddr[FLASH_MAX_SECTORS];
+    uint16_t addrSpace[FLASH_MAX_SECTORS];
 } FlashType;
+
 
 #else
 typedef struct {
@@ -96,23 +97,25 @@ typedef struct {
 #endif
 
 
+struct Flash;
+
 typedef struct {
 	void (*FlsAcErase)();					/* NO SUPPORT */
 	void (*FlsAcWrite)();					/* NO SUPPORT */
 	// FlsCallCycle N/A in core.
 	void (*FlsJobEndNotification)();
 	void (*FlsJobErrorNotification)();
-	uint32 FlsMaxReadFastMode;				/* NO SUPPORT */
-	uint32 FlsMaxReadNormalMode;			/* NO SUPPORT */
-	uint32 FlsMaxWriteFastMode;				/* NO SUPPORT */
-	uint32 FlsMaxWriteNormalMode;			/* NO SUPPORT */
-	uint32 FlsProtection;					/* NO SUPPORT */
+	uint32_t FlsMaxReadFastMode;				/* NO SUPPORT */
+	uint32_t FlsMaxReadNormalMode;			/* NO SUPPORT */
+	uint32_t FlsMaxWriteFastMode;				/* NO SUPPORT */
+	uint32_t FlsMaxWriteNormalMode;			/* NO SUPPORT */
+	uint32_t FlsProtection;					/* NO SUPPORT */
 #if (USE_FLS_INFO==STD_ON)
-	const FlashType *flashInfo;
+	const struct Flash *FlsInfo;
 #else
 	const Fls_SectorType *FlsSectorList;
 #endif
-	const uint32 FlsSectorListSize;			/* NO SUPPORT */
+//	const uint32 FlsSectorListSize;			/* NO SUPPORT */
 } Fls_ConfigSetType;
 
 typedef Fls_ConfigSetType Fls_ConfigType;

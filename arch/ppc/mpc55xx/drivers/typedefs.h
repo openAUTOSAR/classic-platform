@@ -72,6 +72,10 @@
     typedef volatile int32_t vint32_t;
     typedef volatile uint32_t vuint32_t;
 
+    typedef volatile signed long long vint64_t;
+    typedef volatile unsigned long long vuint64_t;
+
+
 #else
 #ifdef __ghs__    //GreenHills
     #include <stdint.h>
@@ -85,6 +89,10 @@
 
     typedef volatile int32_t vint32_t;
     typedef volatile uint32_t vuint32_t;
+
+    typedef volatile signed long long vint64_t;
+    typedef volatile unsigned long long vuint64_t;
+
 
 #else
 
@@ -108,6 +116,10 @@
 
     typedef volatile signed int vint32_t;
     typedef volatile unsigned int vuint32_t;    
+
+    typedef volatile signed long long vint64_t;
+    typedef volatile unsigned long long vuint64_t;
+
 #endif
 #endif
 #endif

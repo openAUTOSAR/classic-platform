@@ -64,49 +64,49 @@
 /** @req FLS172 */
 #warning ENABLE THESE AGAIN
 
-/** req FLS169 */
-/** req FLS285 */
-/** req FLS286 */
-/** req FLS287 */
-/** req FLS288 */
-/** req FLS289 */
-/** req FLS290 */
-/** req FLS291 */
-/** req FLS170 */
-/** req FLS292 */
-/** req FLS293 */
+/** !req FLS169 */
+/** !req FLS285 */
+/** !req FLS286 */
+/** !req FLS287 */
+/** !req FLS288 */
+/** !req FLS289 */
+/** !req FLS290 */
+/** !req FLS291 */
+/** !req FLS170 */
+/** !req FLS292 */
+/** !req FLS293 */
 
 /* FlsConfigSet, Complete for 3.0 */
-/** req FLS174 */
-/** req FLS270 */
-/** req FLS271 */
-/** req FLS272 */
+/** !req FLS174 */
+/** !req FLS270 */
+/** !req FLS271 */
+/** !req FLS272 */
 /** @req FLS273 */
 /** @req FLS274 */
-/** req FLS275 */
-/** req FLS276 */
+/** !req FLS275 */
+/** !req FLS276 */
 /** @req FLS277 */
 /** @req FLS278 */
-/** req FLS279  N/A in core */
+/** !req FLS279  N/A in core */
 
 /* FlsPublishedInformation, Complete for 3.0 */
-/** req FLS294 */
-/** req FLS295 */
-/** req FLS296 */
-/** req FLS297 */
-/** req FLS298 */
-/** req FLS299 */
-/** req FLS300 */
-/** req FLS198 */
-/** req FLS301 */
+/** !req FLS294 */
+/** !req FLS295 */
+/** !req FLS296 */
+/** !req FLS297 */
+/** !req FLS298 */
+/** !req FLS299 */
+/** !req FLS300 */
+/** !req FLS198 */
+/** !req FLS301 */
 
 /* FlsSectorList and FlsSector , Complete for 3.0 */
-/** req FLS201 N/A in core since we use own format */
-/** req FLS202 N/A in core since we use own format */
-/** req FLS280 N/A in core since we use own format */
-/** req FLS281 N/A in core since we use own format */
-/** req FLS282 N/A in core since we use own format */
-/** req FLS283 N/A in core since we use own format */
+/** !req FLS201 N/A in core since we use own format */
+/** !req FLS202 N/A in core since we use own format */
+/** !req FLS280 N/A in core since we use own format */
+/** !req FLS281 N/A in core since we use own format */
+/** !req FLS282 N/A in core since we use own format */
+/** !req FLS283 N/A in core since we use own format */
 
 
 /* ----------------------------[includes]------------------------------------*/
@@ -311,10 +311,10 @@ Std_ReturnType Fls_Erase(Fls_AddressType TargetAddress, Fls_LengthType Length) {
 	/** @req FLS023 */
 	VALIDATE_W_RV( Fls_Global.status != MEMIF_BUSY, FLS_ERASE_ID, FLS_E_BUSY, E_NOT_OK );
     /** @req FLS020 3.0/4.0 */
-	VALIDATE_W_RV( Flash_SectorAligned(Fls_Global.config->flashInfo, FLS_BASE_ADDRESS + TargetAddress ),
+	VALIDATE_W_RV( Flash_SectorAligned(Fls_Global.config->FlsInfo, FLS_BASE_ADDRESS + TargetAddress ),
 	        FLS_ERASE_ID, FLS_E_PARAM_ADDRESS, E_NOT_OK );
     /** @req FLS021 3.0/4.0 */
-    VALIDATE_W_RV( (Length != 0) && Flash_SectorAligned( Fls_Global.config->flashInfo, FLS_BASE_ADDRESS + TargetAddress + Length),
+    VALIDATE_W_RV( (Length != 0) && Flash_SectorAligned( Fls_Global.config->FlsInfo, FLS_BASE_ADDRESS + TargetAddress + Length),
             FLS_ERASE_ID, FLS_E_PARAM_LENGTH, E_NOT_OK );
 
 	// Check if we trying to erase a partition that we are executing in
@@ -327,10 +327,10 @@ Std_ReturnType Fls_Erase(Fls_AddressType TargetAddress, Fls_LengthType Length) {
 	Fls_Global.jobResultType = MEMIF_JOB_PENDING;   /** @req FLS329 4.0 */
 	Fls_Global.jobType = FLS_JOB_ERASE;
 	/* Unlock */
-	Flash_Lock(Fls_Global.config->flashInfo,FLASH_OP_UNLOCK,TargetAddress, Length );
+	Flash_Lock(Fls_Global.config->FlsInfo,FLASH_OP_UNLOCK,TargetAddress, Length );
 
 	/** @req FLS145 */
-	Flash_Erase(Fls_Global.config->flashInfo,TargetAddress, Length, NULL );
+	Flash_Erase(Fls_Global.config->FlsInfo,TargetAddress, Length, NULL );
 
 	return E_OK;	/** @req FLS330 4.0 */
 }
@@ -388,10 +388,10 @@ Std_ReturnType Fls_Write(Fls_AddressType TargetAddress,
 	Fls_Global.flashWriteInfo.left = Length;
 
 	// unlock flash....
-	Flash_Lock(Fls_Global.config->flashInfo,FLASH_OP_UNLOCK, TargetAddress, Length );
+	Flash_Lock(Fls_Global.config->FlsInfo,FLASH_OP_UNLOCK, TargetAddress, Length );
 	// Program
 	/** @req FLS146 3.0/4.0 */
-	Flash_ProgramPageStart(	Fls_Global.config->flashInfo,
+	Flash_ProgramPageStart(	Fls_Global.config->FlsInfo,
 							&Fls_Global.flashWriteInfo.dest,
 							&Fls_Global.flashWriteInfo.source,
 							&Fls_Global.flashWriteInfo.left,
@@ -425,22 +425,23 @@ void Fls_MainFunction(void) {
 	/** @req FLS255 */
 	/** @req FLS266 */
 	/** @req FLS038 */
-	/** req FLS040  No support for Fls_ConfigSetType.FlsMaxXXXX */
-	/** req FLS104 */
-	/** req FLS105 */
-	/** req FLS106 */
-	/** req FLS154 */
-	/** req FLS200 */
-	/** req FLS022 */
-	/** req FLS055 */
-	/** req FLS056 */
-	/** req FLS052 */
-	/** req FLS232 */
-	/** req FLS233 */
-	/** req FLS234 */
-	/** req FLS235 */
-	/** req FLS272 */
-	/** req FLS196 */
+	/** !req FLS040  No support for Fls_ConfigSetType.FlsMaxXXXX */
+	/** !req FLS104 */
+	/** !req FLS105 */
+	/** !req FLS106 */
+	/** !req FLS154 */
+	/** !req FLS200 */
+	/** !req FLS022 */
+	/** !req FLS055 */
+	/** !req FLS056 */
+	/** !req FLS052 */
+	/** !req FLS232 */
+	/** !req FLS233 */
+	/** !req FLS234 */
+	/** !req FLS235 */
+	/** !req FLS272 */
+	/** !req FLS196 */
+
 
 
 	uint32 flashStatus;
@@ -450,15 +451,15 @@ void Fls_MainFunction(void) {
 	VALIDATE_NO_RV(Fls_Global.status != MEMIF_UNINIT,FLS_ERASE_ID, FLS_E_UNINIT );
 
 	/** @req FLS039 */
-	if (Fls_Global.jobResultType == MEMIF_JOB_PENDING) {
+	if ( Fls_Global.jobResultType == MEMIF_JOB_PENDING) {
 		switch (Fls_Global.jobType) {
 		case FLS_JOB_COMPARE:
-		    /* @req FLS243 */
+		    /** @req FLS243 */
 
 			// NOT implemented. Hardware error = FLS_E_COMPARE_FAILED
 			// ( we are reading directly from flash so it makes no sense )
 
-		    /* @req FLS244 */
+		    /** @req FLS244 */
 			result = memcmp(Fls_Global.targetAddr,
 					(void *) Fls_Global.sourceAddr, Fls_Global.length);
 			if (result == 0) {
@@ -472,7 +473,7 @@ void Fls_MainFunction(void) {
 			break;
 		case FLS_JOB_ERASE: {
 
-			flashStatus = Flash_CheckStatus(Fls_Global.config->flashInfo);
+			flashStatus = Flash_CheckStatus(Fls_Global.config->FlsInfo);
 
 			if (flashStatus == EE_OK ) {
 				Fls_Global.jobResultType = MEMIF_JOB_OK;
@@ -485,7 +486,8 @@ void Fls_MainFunction(void) {
 				// Error
 				fls_EraseFail();
 			}
-			break;
+            break;
+		}
 		case FLS_JOB_READ:
 			/** @req FLS238 */
 			/** @req FLS239 */
@@ -499,10 +501,12 @@ void Fls_MainFunction(void) {
 			Fls_Global.jobType = FLS_JOB_NONE;
 			FEE_JOB_END_NOTIFICATION();
 			break;
-		case FLS_JOB_WRITE: {
 
-			do {
-				flashStatus = Flash_CheckStatus(Fls_Global.config->flashInfo);
+		case FLS_JOB_WRITE:
+		{
+
+		    do {
+				flashStatus = Flash_CheckStatus(Fls_Global.config->FlsInfo);
 
 				if (flashStatus == EE_OK ) {
 
@@ -512,7 +516,7 @@ void Fls_MainFunction(void) {
 						break;
 					}
 
-					flashStatus = Flash_ProgramPageStart(Fls_Global.config->flashInfo,
+					flashStatus = Flash_ProgramPageStart(Fls_Global.config->FlsInfo,
 											&Fls_Global.flashWriteInfo.dest,
 											&Fls_Global.flashWriteInfo.source,
 											&Fls_Global.flashWriteInfo.left,
@@ -537,8 +541,12 @@ void Fls_MainFunction(void) {
 		case FLS_JOB_NONE:
 			assert(0);
 			break;
-		}
-	}
+
+		default:
+		    break;
+		} /* switch */
+
+	}   /* if */
 }
 
 Std_ReturnType Fls_Read(	Fls_AddressType SourceAddress,

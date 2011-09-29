@@ -16,14 +16,21 @@
 
 /* ----------------------------[includes]------------------------------------*/
 
-#include "common.h"
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
+#include <assert.h>
 #include "flash_ll_h7f_c90.h"
 #include "flash.h"
+#include "typedefs.h"
 #include "io.h"
-#include "flash_mpc5xxx.h"
+//#include "flash_mpc5xxx.h"
+#include "Fls_Cfg.h"
 
 #define USE_DEBUG_PRINTF
 #include "debug.h"
+
+#define ASSERT(_x)  assert(_x)
 
 /* ----------------------------[private define]------------------------------*/
 
@@ -204,6 +211,7 @@ uint32_t Flash_Erase( const FlashType *fPtr, uintptr_t dest, uint32_t size, flas
 }
 
 
+#if 0
 /**
  *
  * @param to
@@ -264,7 +272,40 @@ uint32_t Flash_ProgramStart( const FlashType *fPtr, uint32_t *to, uint32_t * fro
 	}
 	return EE_OK;
 }
+#endif
 
+
+/**
+ *
+ * @param to
+ * @param from
+ * @param size
+ * @return
+ */
+uint32_t Flash_ProgramPageStart( const FlashType *fPtr, uint32_t *to, uint32_t * from, uint32_t * size, flashCbType cb) {
+    uint32_t flashBlocks[ADDR_SPACE_CNT];
+    const FlashType *bPtr;
+    bool affected;
+
+
+    /* Check double word alignment */
+    ASSERT((*size % 8) == 0 );
+
+    /* FSL functions are for each bank, so loop over banks */
+    for (int bank = 0; bank < FLASH_BANK_CNT; bank++) {
+        bPtr = &fPtr[bank];
+
+        affected = getAffectedBlocks(bPtr, *to, *size, &flashBlocks);
+        if( affected == false ) {
+            /* This bank was not affected */
+            continue;
+        }
+
+        return FSL_FlashProgramStart(bPtr->regBase, to, size, from);
+    }
+
+    return EE_OK;
+}
 uint32_t Flash_CheckStatus( const FlashType *fPtr ) {
 	return FSL_FlashCheckStatus(fPtr->regBase);
 }
@@ -277,7 +318,7 @@ uint32_t Flash_SectorAligned( const FlashType *fPtr, uintptr_t addr ) {
         bPtr = &fPtr[bank];
 
         /* In range of bank */
-        if( (addr >= bPtr->sectAddr[sector]) &&
+        if( (addr >= bPtr->sectAddr[0]) &&
             (addr <= (bPtr->sectAddr[bPtr->sectCnt])) )
         {
             for (int sector = 0; sector < bPtr->sectCnt; sector++)

@@ -76,6 +76,13 @@ typedef struct {
 	}
 //lint -restore
 
+#ifndef MIN
+#define MIN(_x,_y) (((_x) < (_y)) ? (_x) : (_y))
+#endif
+#ifndef MAX
+#define MAX(_x,_y) (((_x) > (_y)) ? (_x) : (_y))
+#endif
+
 
 typedef uint8 Std_ReturnType;
 

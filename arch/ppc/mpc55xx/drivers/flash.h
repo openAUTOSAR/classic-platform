@@ -29,22 +29,23 @@
 #define ADDR_SPACE_GET_PART(_x)		(((_x)>>10)&3)
 #define ADDR_SPACE_SET_PART(_x)		(((_x)&3)<<10)
 
-#define ADDR_SPACE(_sector,_space,_partion)	     \
+#define ADDR_SPACE(_sector,_space,_partition)	     \
 					( ADDR_SPACE_SET_PART(_partition) | \
-					 ADDR_SPACE_SET(_space ) | (_sector)
+					 ADDR_SPACE_SET(_space ) | (_sector) )
 
+struct Flash;
 
-extern const FlashType flashInfo[];
+//extern const FlashType flashInfo[];
 
 
 typedef void (*flashCbType)( void );
 
 void Flash_Init( void );
-uint32_t Flash_Lock(const FlashType *fPtr, uint32_t op, uintptr_t from, uint32_t size);
-uint32_t Flash_Erase(const FlashType *fPtr, uintptr_t dest, uint32_t size, flashCbType sb);
-//uint32_t Flash_Program(const FlashType *fPtr, uintptr_t to, uintptr_t from,uint32_t size, flashCbType sb);
-uint32_t Flash_ProgramPageStart(const FlashType *fPtr, uint32_t *to, uint32_t *from,uint32_t *size, flashCbType sb);
-uint32_t Flash_CheckStatus( const FlashType *fPtr );
-uint32_t Flash_SectorAligned( const FlashType *fPtr, uintptr_t addr );
+uint32_t Flash_Lock(const struct Flash *fPtr, uint32_t op, uintptr_t from, uint32_t size);
+uint32_t Flash_Erase(const struct Flash *fPtr, uintptr_t dest, uint32_t size, flashCbType sb);
+//uint32_t Flash_Program(const struct Flash *fPtr, uintptr_t to, uintptr_t from,uint32_t size, flashCbType sb);
+uint32_t Flash_ProgramPageStart(const struct Flash *fPtr, uint32_t *to, uint32_t *from,uint32_t *size, flashCbType sb);
+uint32_t Flash_CheckStatus( const struct Flash *fPtr );
+uint32_t Flash_SectorAligned( const struct Flash *fPtr, uintptr_t addr );
 
 #endif /* FLASH_H_ */

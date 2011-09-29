@@ -75,7 +75,7 @@ const FlashType flashInfo[] = {
 	[2].addrSpace[3] = ADDR_SPACE_SET(ADDR_SPACE_LOW) + 3,
 	[2].sectAddr[4] = 0x100000, /* End, NOT a sector */
 };
-#elif defined(MPC5668G)
+#elif defined(CFG_MPC5668G)
 	/* RWW between partitions*
 	 *
 	 * LOW   8*16KB + 2*64KB   = 256KB
@@ -131,7 +131,7 @@ const FlashType flashInfo[] = {
 	[0].sectAddr[17] = 0x001c0000, /* 5, B0F9, LOW */
 	[0].addrSpace[17] = ADDR_SPACE(5, ADDR_SPACE_HIGH, 7 ),
 	[0].sectAddr[18] = 0x00200000,	/* End, NOT a sector */
-}
+};
 #else
 #error CPU NOT supported
 #endif
@@ -152,6 +152,6 @@ const Fls_ConfigType FlsConfigSet[]=
     .FlsInfo = flashInfo,
 //    .FlsSectorList = &fls_evbSectorList[0],
 //    .FlsSectorListSize = sizeof(fls_evbSectorList)/sizeof(Fls_SectorType),
-    .FlsBlockToPartitionMap = Fls_BlockToPartitionMap,
+//    .FlsBlockToPartitionMap = Fls_BlockToPartitionMap,
   }
 };

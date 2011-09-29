@@ -12,7 +12,9 @@
  *
  */
 /* ----------------------------[includes]------------------------------------*/
-#include "common.h"
+#include <stdint.h>
+#include <stdbool.h>
+#include "typedefs.h"
 #include "flash_ll_h7f_c90.h"
 #include "cpu.h"
 #include "io.h"
