@@ -936,17 +936,27 @@ void CanIf_SetWakeupEvent(uint8 Controller)
 
 void CanIf_Arc_Error(uint8 Controller, Can_Arc_ErrorType Error)
 {
-#if  ( CANIF_DEV_ERROR_DETECT == STD_ON )
   // We call this a CanIf channel. Hopefully makes it easier to follow.
-  CanIf_Arc_ChannelIdType channel = Controller;
-#endif
+  CanIf_Arc_ChannelIdType channel = (CanIf_Arc_ChannelIdType) Controller;
 
   VALIDATE_NO_RV( CanIf_Global.initRun, CANIF_ARCERROR_ID, CANIF_E_UNINIT );
   VALIDATE_NO_RV( channel < CANIF_CHANNEL_CNT, CANIF_ARCERROR_ID, CANIF_E_PARAM_CONTROLLER );
 
+  /* Same handling for Arc error as for BUS_OFF even if not in AR req.
+   * This because we do want same handling for upper layer for restart of channel
+   * According to figure 35 in canif spec this should be done in
+   * Can driver but it is better to do it here */
+  CanIf_SetControllerMode(channel, CANIF_CS_STOPPED);
+
   if (CanIf_ConfigPtr->DispatchConfig->CanIfErrorNotificaton != NULL)
   {
     CanIf_ConfigPtr->DispatchConfig->CanIfErrorNotificaton(Controller, Error);
+  }
+
+  // Special fix for restart of bus incase of general can error i.e. connection to CanSM
+  if (CanIf_ConfigPtr->DispatchConfig->CanIfBusOffNotification != NULL)
+  {
+    CanIf_ConfigPtr->DispatchConfig->CanIfBusOffNotification(channel);
   }
 }
 

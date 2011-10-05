@@ -131,10 +131,10 @@ void EcuM_StartupTwo(void)
 			Det_ReportError(MODULE_ID_ECUM, 0, ECUM_ARC_STARTUPTWO_ID, ECUM_E_ARC_TIMERERROR);
 		}
 	} while( (readAllResult == NVM_REQ_PENDING) && (tickTimerElapsed < internal_data.config->EcuMNvramReadAllTimeout) );
+#endif
 
 	// Initialize drivers that need NVRAM data
 	EcuM_AL_DriverInitThree(internal_data.config);
-#endif
 
 	// TODO: Indicate mode change to RTE
 

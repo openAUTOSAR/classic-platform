@@ -52,15 +52,12 @@ typedef enum {
 	CANSM_STATUS_INIT
 } CanSM_Internal_InitStatusType;
 
-
 typedef struct {
-	uint8						CanIfControllerId;
-} CanSM_Internal_ControllerType;
-
-typedef struct {
-	CanSM_Internal_ControllerType*		Controllers;
-	ComM_ModeType						CurrentMode;
-	ComM_ModeType						RequestedMode;
+	uint16 timer;
+	uint8 counter;
+	boolean busoffevent;
+	ComM_ModeType requestedMode;
+	CanSM_BusOffRecoveryStateType       BusOffRecoveryState;
 } CanSM_Internal_NetworkType;
 
 typedef struct {

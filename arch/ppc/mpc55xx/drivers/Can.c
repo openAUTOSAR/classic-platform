@@ -383,39 +383,6 @@ void Can_F_BusOff( void  ) {	Can_BusOff(CAN_CTRL_F); }
 #endif
 //-------------------------------------------------------------------
 
-
-/**
- * Hardware error ISR for CAN
- *
- * @param unit CAN controller number( from 0 )
- */
-
-static void Can_Err( int unit ) {
-  flexcan_t *canHw = GET_CONTROLLER(unit);
-  Can_Arc_ErrorType err;
-  ESRType esr;
-  err.R = 0;
-
-  esr.R = canHw->ESR.R;
-
-  err.B.ACKERR = esr.B.ACKERR;
-  err.B.BIT0ERR = esr.B.BIT0ERR;
-  err.B.BIT1ERR = esr.B.BIT1ERR;
-  err.B.CRCERR = esr.B.CRCERR;
-  err.B.FRMERR = esr.B.FRMERR;
-  err.B.STFERR = esr.B.STFERR;
-  err.B.RXWRN = esr.B.RXWRN;
-  err.B.TXWRN = esr.B.TXWRN;
-
-  if (GET_CALLBACKS()->Arc_Error != NULL)
-  {
-    GET_CALLBACKS()->Arc_Error(unit, err );
-  }
-  // Clear ERRINT
-  canHw->ESR.B.ERRINT = 1;
-}
-
-
 // Uses 25.4.5.1 Transmission Abort Mechanism
 static void Can_AbortTx( flexcan_t *canHw, Can_UnitType *canUnit ) {
   uint32 mbMask;
@@ -449,6 +416,43 @@ static void Can_AbortTx( flexcan_t *canHw, Can_UnitType *canUnit ) {
   // Ack tx interrupts
   canHw->IFRL.R = canUnit->Can_Arc_TxMbMask;
   canUnit->iflagStart = canUnit->Can_Arc_TxMbMask;
+}
+
+/**
+ * Hardware error ISR for CAN
+ *
+ * @param unit CAN controller number( from 0 )
+ */
+
+static void Can_Err( int unit ) {
+  flexcan_t *canHw = GET_CONTROLLER(unit);
+  Can_UnitType *canUnit = GET_PRIVATE_DATA(unit);
+  Can_Arc_ErrorType err;
+  ESRType esr;
+  err.R = 0;
+
+  esr.R = canHw->ESR.R;
+
+  err.B.ACKERR = esr.B.ACKERR;
+  err.B.BIT0ERR = esr.B.BIT0ERR;
+  err.B.BIT1ERR = esr.B.BIT1ERR;
+  err.B.CRCERR = esr.B.CRCERR;
+  err.B.FRMERR = esr.B.FRMERR;
+  err.B.STFERR = esr.B.STFERR;
+  err.B.RXWRN = esr.B.RXWRN;
+  err.B.TXWRN = esr.B.TXWRN;
+
+  if (GET_CALLBACKS()->Arc_Error != NULL)
+  {
+    GET_CALLBACKS()->Arc_Error(unit, err );
+  }
+
+  // Do same handling as within BUS_OFF even though no real AR req
+  Can_SetControllerMode(unit, CAN_T_STOP); // CANIF272
+  Can_AbortTx( canHw, canUnit ); // CANIF273
+
+  // Clear ERRINT
+  canHw->ESR.B.ERRINT = 1;
 }
 
 //-------------------------------------------------------------------
