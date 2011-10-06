@@ -215,6 +215,7 @@ obj-$(USE_PDUR) += PduR_LinIf.o
 obj-$(USE_PDUR) += PduR_PbCfg.o
 obj-$(USE_PDUR) += PduR_CanIf.o
 obj-$(USE_PDUR) += PduR_CanTp.o
+obj-$(USE_PDUR) += PduR_J1939Tp.o
 obj-$(USE_PDUR) += PduR_Dcm.o
 obj-$(USE_PDUR) += PduR_SoAd.o
 obj-$(USE_PDUR) += PduR_Routing.o
