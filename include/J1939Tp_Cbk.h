@@ -17,6 +17,7 @@
 #ifndef J1939TP_CBK_H_
 #define J1939TP_CBK_H_
 
+/** @req J1939TP0102 **/
 /** Indication of a received I-PDU from a lower layer communication module */
 void J1939Tp_RxIndication(PduIdType RxPduId, PduInfoType* PduInfoPtr);
 

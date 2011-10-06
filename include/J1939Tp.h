@@ -13,21 +13,38 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** Global requirements */
+/** @req J1939TP0005*/
 
 #ifndef J1939TP_H_
 #define J1939TP_H_
 
 #include "Std_Types.h"
-#include "ComStack_Types.h" /** @req J1939TP0016 */
+/** @req J1939TP0016 */
+#include "ComStack_Types.h"
 #include "J1939Tp_ConfigTypes.h"
-#include "J1939Tp_Cfg.h" /** @req J1939TP0009 */
+/** @req J1939TP0009 */
 #include "CanIf.h"
 
 
-/** Global requirements */
-/** @req J1939TP0005*/
+#define J1939TP_VENDOR_ID			1
+#define J1939TP_MODULE_ID			MODULE_ID_J1939TP
+
+#define J1939TP_AR_MAJOR_VERSION	1
+#define J1939TP_AR_MINOR_VERSION	0
+#define J1939TP_AR_PATCH_VERSION	0
+
+#define J1939TP_SW_MAJOR_VERSION	1
+#define J1939TP_SW_MINOR_VERSION	0
+#define J1939TP_SW_PATCH_VERSION	0
+
+#include "J1939Tp_Cfg.h"
 
 typedef int TPParameterType;
+
+#if (J1939TP_VERSION_INFO_API == STD_ON)
+#define J1939TP_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,J1939TP)
+#endif
 
 /** Initializes the module */
 void J1939Tp_Init(const J1939Tp_ConfigType* ConfigPtr);

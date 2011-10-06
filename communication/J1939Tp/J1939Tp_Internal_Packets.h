@@ -1,6 +1,8 @@
 #ifndef J1939TP_PACKETS_INTERNAL_H_
 #define J1939TP_PACKETS_INTERNAL_H_
 
+#define DIRECT_TRANSMIT_SIZE	8
+
 #define CM_PGN_VALUE_1			0x00
 #define CM_PGN_VALUE_2			0xCE
 #define CM_PGN_VALUE_3			0x00
@@ -20,7 +22,7 @@
 #define CTS_BYTE_PGN_1			CM_PGN_BYTE_1
 #define CTS_BYTE_PGN_2			CM_PGN_BYTE_2
 #define CTS_BYTE_PGN_3			CM_PGN_BYTE_3
-#define CTS_START_SEQ_NUM		0
+#define CTS_START_SEQ_NUM		1
 #define CTS_CONTROL_VALUE		17
 
 #define BAM_RTS_SIZE				8
