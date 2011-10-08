@@ -42,5 +42,13 @@ void PduR_J1939TpTxConfirmation(PduIdType J1939TpTxId, NotifResultType Result) {
 	PduR_ARC_TxConfirmation(J1939TpTxId, Result, 0x0f);
 }
 
+/* autosar 4 api */
+BufReq_ReturnType PduR_J1939TpCopyTxData(PduIdType id, PduInfoType* info, RetryInfoType* retry, PduLengthType* availableDataPtr) {
+#if PDUR_COM_SUPPORT == STD_OFF
+	return BUFREQ_NOT_OK;
+#endif
+	const PduRRoutingPath_type *route = PduRConfig->RoutingPaths[id];
+	return Com_CopyTxData(route->SrcModule, info,0 ,availableDataPtr);
+}
 
 #endif

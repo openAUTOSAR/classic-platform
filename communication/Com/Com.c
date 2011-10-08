@@ -31,6 +31,10 @@
 #include "debug.h"
 
 
+
+
+extern Com_BufferPduStateType Com_BufferPduState[];
+
 /* TODO: Better way to get endianness across all compilers? */
 static const uint32_t endianness_test = 0xdeadbeefU;
 ComSignalEndianess_type Com_SystemEndianness;
@@ -165,7 +169,9 @@ void Com_Init(const Com_ConfigType *config ) {
 			}
 		}
 	}
-
+	for (uint16 i = 0; i < COM_N_IPDUS; i++) {
+		Com_BufferPduState[i].currentPosition = 0;
+	}
 
 	// An error occurred.
 	if (failure) {
@@ -196,4 +202,26 @@ void Com_IpduGroupStop(Com_PduGroupIdType IpduGroupId) {
 			Com_Arc_Config.ComIPdu[i].Com_Arc_IpduStarted = 0;
 		}
 	}
+}
+
+/**
+ *
+ * @param PduId
+ * @param PduInfoPtr
+ * @param RetryInfoPtr not supported
+ * @param TxDataCntPtr
+ * @return
+ */
+BufReq_ReturnType Com_CopyTxData(PduIdType PduId, PduInfoType* PduInfoPtr, RetryInfoType* RetryInfoPtr, PduLengthType* TxDataCntPtr) {
+	imask_t state;
+	Irq_Save(state);
+	if (PduInfoPtr->SduLength != 0) {
+		Com_BufferPduState[PduId].locked = true;
+	}
+	memcpy(PduInfoPtr->SduDataPtr,Com_Arc_Config.ComIPdu[PduId].ComIPduDataPtr + Com_BufferPduState[PduId].currentPosition, PduInfoPtr->SduLength);
+	Com_BufferPduState[PduId].currentPosition += PduInfoPtr->SduLength;
+	const ComIPdu_type *IPdu = GET_IPdu(PduId);
+	*TxDataCntPtr = IPdu->ComIPduSize - Com_BufferPduState[PduId].currentPosition;
+	Irq_Restore(state);
+	return BUFREQ_OK;
 }

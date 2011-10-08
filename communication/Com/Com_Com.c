@@ -31,6 +31,7 @@
 #include "Det.h"
 #include "Cpu.h"
 
+Com_BufferPduStateType Com_BufferPduState[COM_N_IPDUS];
 
 uint8 Com_SendSignal(Com_SignalIdType SignalId, const void *SignalDataPtr) {
 	VALIDATE_SIGNAL(SignalId, 0x0a, E_NOT_OK);
@@ -200,8 +201,13 @@ void Com_RxIndication(PduIdType ComRxPduId, const PduInfoType* PduInfoPtr) {
 }
 
 void Com_TxConfirmation(PduIdType ComTxPduId) {
+	imask_t state;
+	Irq_Save(state);
 	PDU_ID_CHECK(ComTxPduId, 0x15);
+	Com_BufferPduState[ComTxPduId].locked = false;
+	Com_BufferPduState[ComTxPduId].currentPosition = 0;
 	(void)ComTxPduId; // Nothing to be done. This is just to avoid Lint warning.
+	Irq_Restore(state);
 }
 
 
@@ -270,3 +276,6 @@ void Com_ReceiveShadowSignal(Com_SignalIdType SignalId, void *SignalDataPtr) {
 	// Com_CopyData(SignalDataPtr, Arc_GroupSignal->Com_Arc_ShadowBuffer, GroupSignal->ComBitSize, 0, GroupSignal->ComBitPosition);
 	Com_ReadSignalDataFromPduBuffer(SignalId, TRUE, SignalDataPtr, (void *)Arc_GroupSignal->Com_Arc_ShadowBuffer);
 }
+
+
+

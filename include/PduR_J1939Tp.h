@@ -27,6 +27,9 @@ void PduR_J1939TpTxConfirmation(PduIdType CanTpTxPduId, NotifResultType Result);
 BufReq_ReturnType PduR_J1939TpStartOfReception(PduIdType id, PduLengthType TpSduLength, PduLengthType* bufferSizePtr);
 void PduR_J1939TpRxIndication(PduIdType id, NotifResultType Result);
 
+/* autosar 4 api */
+BufReq_ReturnType PduR_J1939TpCopyTxData(PduIdType id, PduInfoType* info, RetryInfoType* retry, PduLengthType* availableDataPtr);
+
 #endif
 
 #endif /* PDUR_CANTP_H_ */

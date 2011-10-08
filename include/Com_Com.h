@@ -36,7 +36,6 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId);
 void Com_RxIndication(PduIdType ComRxPduId, const PduInfoType* PduInfoPtr);
 void Com_TxConfirmation(PduIdType ComTxPduId);
 
-
 /* Signal Groups */
 
 Std_ReturnType Com_SendSignalGroup(Com_SignalGroupIdType SignalGroupId);
@@ -45,5 +44,8 @@ Std_ReturnType Com_ReceiveSignalGroup(Com_SignalGroupIdType SignalGroupId);
 void Com_UpdateShadowSignal(Com_SignalIdType SignalId, const void *SignalDataPtr);
 void Com_ReceiveShadowSignal(Com_SignalIdType SignalId, void *SignalDataPtr);
 
+
+/* Autosar 4 Api */
+BufReq_ReturnType Com_CopyTxData(PduIdType PduId, PduInfoType* PduInfoPtr, RetryInfoType* RetryInfoPtr, PduLengthType* TxDataCntPtr);
 
 #endif /* COM_COM_H_ */

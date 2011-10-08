@@ -24,6 +24,11 @@
 
 #include "Com_Arc_Types.h"
 
+typedef struct {
+	PduLengthType currentPosition;
+	boolean locked;
+} Com_BufferPduStateType;
+
 extern const Com_ConfigType *ComConfig;
 extern Com_Arc_Config_type Com_Arc_Config;
 
