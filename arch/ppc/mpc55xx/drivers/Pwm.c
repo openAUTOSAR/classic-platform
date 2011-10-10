@@ -16,27 +16,11 @@
 
 
 
-
-
-
-
-/*
- * Pwm.c
- *
- * TODO: Implement DMA support for PWM
- * TODO: Test PWM for MPC5567 and MPC5554
- *
- *  Created on: 2009-jul-09
- *      Author: nian
- */
-
-
 #include <assert.h>
 #include <string.h>
 
 #include "Pwm.h"
 #include "MemMap.h"
-//#include "SchM_Pwm.h"
 #include "Det.h"
 
 #include "mpc55xx.h"
@@ -173,6 +157,7 @@ static void configureChannel(Pwm_ChannelType channel_iterator, const Pwm_Channel
 			emiosHw = &EMIOS_0;
 		} else {
 			emiosHw = &EMIOS_1;
+			channel -= PWM_NUMBER_OF_EACH_EMIOS;
 		}
 
 		emiosHw->CH[channel].CCR.B.MODE = PWM_EMIOS_OPWM;
@@ -194,7 +179,7 @@ static void configureChannel(Pwm_ChannelType channel_iterator, const Pwm_Channel
 		emiosHw->CH[channel].CCR.B.EDPOL = (channelConfig->polarity == PWM_LOW) ? 1 : 0;
 
 		#if PWM_SET_PERIOD_AND_DUTY_API==STD_ON
-			ChannelRuntimeStruct[channel].Class = ConfigPtr->ChannelClass[channel_iterator];
+			ChannelRuntimeStruct[channelConfig->channel].Class = ConfigPtr->ChannelClass[channel_iterator];
 		#endif
 
 	#else
@@ -765,34 +750,34 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 
 				if (flagmask_0 & (1 << emios_ch))
 				{
-					if (ChannelRuntimeStruct[channel_iterator].NotificationRoutine != NULL && EMIOS_0.CH[emios_ch].CCR.B.FEN)
+					if (ChannelRuntimeStruct[emios_ch].NotificationRoutine != NULL && EMIOS_0.CH[emios_ch].CCR.B.FEN)
 					{
-						Pwm_EdgeNotificationType notification = ChannelRuntimeStruct[channel_iterator].NotificationState;
+						Pwm_EdgeNotificationType notification = ChannelRuntimeStruct[emios_ch].NotificationState;
 						if (notification == PWM_BOTH_EDGES ||
 
 								notification == EMIOS_0.CH[emios_ch].CSR.B.UCOUT)
 						{
-								ChannelRuntimeStruct[channel_iterator].NotificationRoutine();
+								ChannelRuntimeStruct[emios_ch].NotificationRoutine();
 						}
 					}
 
 					// Clear interrupt
 					EMIOS_0.CH[emios_ch].CSR.B.FLAG = 1;
 				}
-				else if (flagmask_1 & (1 << emios_ch - 24 ))
+				else if (flagmask_1 & (1 << emios_ch - PWM_NUMBER_OF_EACH_EMIOS ))
 				{
-					if (ChannelRuntimeStruct[channel_iterator].NotificationRoutine != NULL && EMIOS_1.CH[emios_ch - 24].CCR.B.FEN)
+					if (ChannelRuntimeStruct[emios_ch].NotificationRoutine != NULL && EMIOS_1.CH[emios_ch - PWM_NUMBER_OF_EACH_EMIOS].CCR.B.FEN)
 					{
-						Pwm_EdgeNotificationType notification = ChannelRuntimeStruct[channel_iterator].NotificationState;
+						Pwm_EdgeNotificationType notification = ChannelRuntimeStruct[emios_ch].NotificationState;
 						if (notification == PWM_BOTH_EDGES ||
-								notification == EMIOS_1.CH[emios_ch - 24].CSR.B.UCOUT)
+								notification == EMIOS_1.CH[emios_ch - PWM_NUMBER_OF_EACH_EMIOS].CSR.B.UCOUT)
 							{
-								ChannelRuntimeStruct[channel_iterator].NotificationRoutine();
+								ChannelRuntimeStruct[emios_ch].NotificationRoutine();
 							}
 						}
 
 					// Clear interrupt
-					EMIOS_1.CH[emios_ch - 24].CSR.B.FLAG = 1;
+					EMIOS_1.CH[emios_ch - PWM_NUMBER_OF_EACH_EMIOS].CSR.B.FLAG = 1;
 				}
 			}
 
