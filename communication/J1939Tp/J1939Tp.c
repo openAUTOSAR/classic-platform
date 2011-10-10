@@ -170,8 +170,8 @@ void J1939Tp_MainFunction(void) {
 						ChannelInfoPtr->RxState->State = J1939TP_RX_IDLE;
 						if (Channel->Protocol == J1939TP_PROTOCOL_CMDT) {
 							J1939Tp_Internal_SendConnectionAbort(Channel->FcNPdu,ChannelInfoPtr->RxState->CurrentPgPtr->Pgn);
-							PduR_J1939TpRxIndication(ChannelInfoPtr->RxState->CurrentPgPtr->NSdu,NTFRSLT_E_NOT_OK);
 						}
+						PduR_J1939TpRxIndication(ChannelInfoPtr->RxState->CurrentPgPtr->NSdu,NTFRSLT_E_NOT_OK);
 					}
 				default:
 					break;
@@ -237,12 +237,15 @@ static inline void J1939Tp_Internal_RxIndication_Direct(PduInfoType* PduInfoPtr,
 		return;
 	}
 	const J1939Tp_PgType* Pg = ChannelInfoPtr->RxState->CurrentPgPtr;
-	PduInfoType* rxPduInfo;
-	BufReq_ReturnType r = PduR_J1939TpProvideRxBuffer(Pg->NSdu, DIRECT_TRANSMIT_SIZE, &rxPduInfo);
-	if (r == BUFREQ_OK) {
-		memcpy(rxPduInfo->SduDataPtr,&(PduInfoPtr),DIRECT_TRANSMIT_SIZE);
-		PduR_J1939TpRxIndication(Pg->NSdu,NTFRSLT_OK);
-		ChannelInfoPtr->RxState->State = J1939TP_RX_IDLE;
+	PduLengthType remainingBuffer;
+	if (PduR_J1939TpStartOfReception(Pg->NSdu, PduInfoPtr->SduLength, &remainingBuffer) == BUFREQ_OK) {
+		BufReq_ReturnType r = PduR_J1939TpCopyRxData(Pg->NSdu, PduInfoPtr,&remainingBuffer);
+		if (r == BUFREQ_OK) {
+			ChannelInfoPtr->RxState->State = J1939TP_RX_IDLE;
+			PduR_J1939TpRxIndication(Pg->NSdu,NTFRSLT_OK);
+		} else {
+			PduR_J1939TpRxIndication(Pg->NSdu,NTFRSLT_E_NOT_OK);
+		}
 	}
 }
 static inline uint8 J1939Tp_Internal_GetDtPacketsInNextCts(uint8 receivedDtPackets, uint8 totalDtPacketsToReceive) {
@@ -254,7 +257,6 @@ static inline uint8 J1939Tp_Internal_GetDtPacketsInNextCts(uint8 receivedDtPacke
 	}
 }
 static inline void J1939Tp_Internal_RxIndication_Dt(PduInfoType* PduInfoPtr, J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr) {
-	PduInfoType* rxPduInfo;
 	if (ChannelInfoPtr->RxState->CurrentPgPtr == 0) {
 		return;
 	}
@@ -262,8 +264,6 @@ static inline void J1939Tp_Internal_RxIndication_Dt(PduInfoType* PduInfoPtr, J19
 		return;
 	}
 	PduIdType PduRSdu = ChannelInfoPtr->RxState->CurrentPgPtr->NSdu;
-	uint8 requestSize = DT_DATA_SIZE;
-	boolean lastMessage = false;
 
 	ChannelInfoPtr->RxState->ReceivedDtCount++;
 	uint8 expectedSeqNumber = ChannelInfoPtr->RxState->ReceivedDtCount;
@@ -274,11 +274,21 @@ static inline void J1939Tp_Internal_RxIndication_Dt(PduInfoType* PduInfoPtr, J19
 			J1939Tp_PgnType pgn = ChannelInfoPtr->RxState->CurrentPgPtr->Pgn;
 			J1939Tp_Internal_SendConnectionAbort(ChannelInfoPtr->ChannelConfPtr->FcNPdu,pgn);
 		}
+		PduR_J1939TpRxIndication(ChannelInfoPtr->RxState->CurrentPgPtr->NSdu,NTFRSLT_E_NOT_OK);
 		return;
 	}
-	BufReq_ReturnType r = PduR_J1939TpProvideRxBuffer(PduRSdu, requestSize, &rxPduInfo);
-	if (r == BUFREQ_OK) {
-		memcpy(rxPduInfo->SduDataPtr,&(PduInfoPtr[DT_BYTE_DATA_1]),requestSize);
+	PduLengthType remainingBytesInRxBuffer = 0;
+	PduInfoType PduInfoRxCopy;
+	PduInfoRxCopy.SduLength = J1939Tp_Internal_GetDtDataSize(seqNumber,ChannelInfoPtr->RxState->TotalMessageSize);
+	PduInfoRxCopy.SduDataPtr = &(PduInfoPtr->SduDataPtr[DT_BYTE_DATA_1]);
+	BufReq_ReturnType r = PduR_J1939TpCopyRxData(ChannelInfoPtr->RxState->CurrentPgPtr->NSdu, &PduInfoRxCopy,&remainingBytesInRxBuffer);
+	if (r != BUFREQ_OK) {
+		if (ChannelInfoPtr->ChannelConfPtr->Protocol == J1939TP_PROTOCOL_CMDT) {
+			J1939Tp_PgnType pgn = ChannelInfoPtr->RxState->CurrentPgPtr->Pgn;
+			J1939Tp_Internal_SendConnectionAbort(ChannelInfoPtr->ChannelConfPtr->FcNPdu,pgn);
+		}
+		ChannelInfoPtr->RxState->State = J1939TP_RX_IDLE;
+		return;
 	}
 	if (J1939Tp_Internal_IsLastDtBeforeNextCts(ChannelInfoPtr->RxState)) {
 		J1939Tp_PgnType pgn = ChannelInfoPtr->RxState->CurrentPgPtr->Pgn;
@@ -287,10 +297,9 @@ static inline void J1939Tp_Internal_RxIndication_Dt(PduInfoType* PduInfoPtr, J19
 		J1939Tp_Internal_SendCts(ChannelInfoPtr, pgn, ChannelInfoPtr->RxState->ReceivedDtCount+1,requestPackets);
 	}
 	else if (J1939Tp_Internal_IsLastDt(ChannelInfoPtr->RxState)) {
-		lastMessage = true;
-		J1939Tp_Internal_DtPayloadSizeType receivedBytes = ChannelInfoPtr->RxState->ReceivedDtCount*DT_DATA_SIZE;
-		requestSize = ChannelInfoPtr->RxState->TotalMessageSize - receivedBytes;
-		J1939Tp_Internal_SendEndOfMsgAck(ChannelInfoPtr);
+		if (ChannelInfoPtr->ChannelConfPtr->Protocol == J1939TP_PROTOCOL_CMDT) {
+			J1939Tp_Internal_SendEndOfMsgAck(ChannelInfoPtr);
+		}
 		ChannelInfoPtr->RxState->State = J1939TP_RX_IDLE;
 		PduR_J1939TpRxIndication(PduRSdu,NTFRSLT_OK);
 	} else {
@@ -298,6 +307,13 @@ static inline void J1939Tp_Internal_RxIndication_Dt(PduInfoType* PduInfoPtr, J19
 	}
 }
 
+static inline uint8 J1939Tp_Internal_GetDtDataSize(uint8 currentSeqNum, uint8 totalSize) {
+	if (currentSeqNum*DT_DATA_SIZE <= totalSize) {
+		return DT_DATA_SIZE;
+	} else {
+		return DT_DATA_SIZE - ((currentSeqNum*DT_DATA_SIZE) - totalSize);
+	}
+}
 static inline void J1939Tp_Internal_RxIndication_Cm(PduInfoType* PduInfoPtr, J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr) {
 	const J1939Tp_PgType* pg = 0;
 	J1939Tp_PgnType pgn = J1939Tp_Internal_GetPgn(&(PduInfoPtr->SduDataPtr[CM_PGN_BYTE_1]));
@@ -325,13 +341,20 @@ static inline void J1939Tp_Internal_RxIndication_Cm(PduInfoType* PduInfoPtr, J19
 		ChannelInfoPtr->RxState->TotalMessageSize = messageSize;
 		ChannelInfoPtr->RxState->CurrentPgPtr = pg;
 		if (Command == RTS_CONTROL_VALUE) {
-			ChannelInfoPtr->RxState->State = J1939TP_RX_WAIT_CTS_CANIF_CONFIRM;
-			J1939Tp_Internal_RxSessionStartTimer(ChannelInfoPtr->RxState,J1939TP_TX_CONF_TIMEOUT);
-			J1939Tp_Internal_SendCts(ChannelInfoPtr,pgn,CTS_START_SEQ_NUM,J1939TP_PACKETS_PER_BLOCK);
-
+			PduLengthType remainingBuffer = 0;
+			if (PduR_J1939TpStartOfReception(pg->NSdu, messageSize, &remainingBuffer) == BUFREQ_OK) {
+				ChannelInfoPtr->RxState->State = J1939TP_RX_WAIT_CTS_CANIF_CONFIRM;
+				J1939Tp_Internal_RxSessionStartTimer(ChannelInfoPtr->RxState,J1939TP_TX_CONF_TIMEOUT);
+				J1939Tp_Internal_SendCts(ChannelInfoPtr,pgn,CTS_START_SEQ_NUM,J1939TP_PACKETS_PER_BLOCK);
+			} else {
+				J1939Tp_Internal_SendConnectionAbort(pg->Channel->CmNPdu,pgn);
+			}
 		} else if (Command == BAM_CONTROL_VALUE) {
-			J1939Tp_Internal_RxSessionStartTimer(ChannelInfoPtr->RxState,J1939TP_T2_TIMEOUT_MS);
-			ChannelInfoPtr->RxState->State = J1939TP_RX_RECEIVING_DT;
+			PduLengthType remainingBuffer = 0;
+			if (PduR_J1939TpStartOfReception(pg->NSdu, messageSize, &remainingBuffer) == BUFREQ_OK) {
+				J1939Tp_Internal_RxSessionStartTimer(ChannelInfoPtr->RxState,J1939TP_T2_TIMEOUT_MS);
+				ChannelInfoPtr->RxState->State = J1939TP_RX_RECEIVING_DT;
+			}
 		}
 	} else if (Command == CONNABORT_BYTE_CONTROL) {
 		ChannelInfoPtr->RxState->State = J1939TP_RX_IDLE;
@@ -533,12 +556,16 @@ Std_ReturnType J1939Tp_Transmit(PduIdType TxSduId, const PduInfoType* TxInfoPtr)
 			}
 			if (r == E_OK) {
 				if (TxInfoPtr->SduLength <= 8) { // direct transmit
-					PduInfoType* ToSendTxInfoPtr;
-					if (PduR_J1939TpProvideTxBuffer(Pg->NSdu, &ToSendTxInfoPtr, TxInfoPtr->SduLength) == BUFREQ_OK) {
+					PduInfoType ToSendTxInfoPtr;
+					uint8 dataPtr[TxInfoPtr->SduLength];
+					ToSendTxInfoPtr.SduLength = TxInfoPtr->SduLength;
+					ToSendTxInfoPtr.SduDataPtr = dataPtr;
+					PduLengthType remainingBytes;
+					if (PduR_J1939TpCopyTxData(Pg->NSdu, &ToSendTxInfoPtr, 0, &remainingBytes) == BUFREQ_OK) {
 						PduIdType CanIfPdu = Pg->DirectNPdu;
 						ChannelInfoPtr->TxState->State = J1939TP_TX_WAIT_DIRECT_SEND_CANIF_CONFIRM;
 						ChannelInfoPtr->TxState->CurrentPgPtr = Pg;
-						CanIf_Transmit(CanIfPdu,ToSendTxInfoPtr);
+						CanIf_Transmit(CanIfPdu,&ToSendTxInfoPtr);
 					} else {
 						r = E_NOT_OK;
 					}
@@ -589,7 +616,7 @@ static inline void J1939Tp_Internal_SendBam(J1939Tp_Internal_ChannelInfoType* Ch
 	CanIf_Transmit(ChannelInfoPtr->ChannelConfPtr->CmNPdu,&cmBamPdu);
 }
 static inline uint16 J1939Tp_Internal_GetRtsMessageSize(PduInfoType* pduInfo) {
-	return (((uint16)pduInfo->SduDataPtr[BAM_RTS_BYTE_LENGTH_1]) << 8) | pduInfo->SduDataPtr[BAM_RTS_BYTE_LENGTH_2];
+	return (((uint16)pduInfo->SduDataPtr[BAM_RTS_BYTE_LENGTH_2]) << 8) | pduInfo->SduDataPtr[BAM_RTS_BYTE_LENGTH_1];
 }
 
 static inline boolean J1939Tp_Internal_WaitForCts(J1939Tp_Internal_TxChannelInfoType* TxChannelState) {
@@ -645,16 +672,17 @@ static inline Std_ReturnType J1939Tp_Internal_SendDt(J1939Tp_Internal_ChannelInf
 	// prepare dt message
 	uint8 dtBuffer[DT_SIZE] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 	PduInfoType dtPduInfoBuffer;
-	dtPduInfoBuffer.SduLength = DT_SIZE;
-	dtPduInfoBuffer.SduDataPtr = dtBuffer;
+	dtPduInfoBuffer.SduLength = DT_DATA_SIZE;
+	dtPduInfoBuffer.SduDataPtr = &(dtBuffer[DT_BYTE_DATA_1]);
 
 	BufReq_ReturnType allocateBufferRes;
-	PduInfoType* dataPduInfoBuffer;
 	PduIdType Pdur_NSdu = ChannelInfoPtr->TxState->CurrentPgPtr->NSdu;
-	allocateBufferRes = PduR_J1939TpProvideTxBuffer(Pdur_NSdu, &dataPduInfoBuffer, requestLength);
+	PduLengthType remainingBytes;
+	allocateBufferRes = PduR_J1939TpCopyTxData(Pdur_NSdu, &dtPduInfoBuffer, 0, &remainingBytes);
+	dtPduInfoBuffer.SduLength = DT_SIZE;
+	dtPduInfoBuffer.SduDataPtr = dtBuffer;
 	if (allocateBufferRes == BUFREQ_OK) {
 		dtPduInfoBuffer.SduDataPtr[DT_BYTE_SEQ_NUM] = ChannelInfoPtr->TxState->SentDtCount+1;
-		memcpy(&(dtPduInfoBuffer.SduDataPtr[DT_BYTE_DATA_1]), dataPduInfoBuffer, requestLength);
 		PduIdType CanIf_NSdu = ChannelInfoPtr->ChannelConfPtr->DtNPdu;
 		CanIf_Transmit(CanIf_NSdu, &dtPduInfoBuffer);
 		return E_OK;
@@ -756,9 +784,9 @@ static inline void J1939Tp_Internal_SetPgn(uint8* PgnBytes,J1939Tp_PgnType pgn )
  */
 static inline J1939Tp_PgnType J1939Tp_Internal_GetPgn(uint8* PgnBytes) {
 	J1939Tp_PgnType pgn = 0;
-	pgn = ((uint32)PgnBytes[0]) << 16;
+	pgn = ((uint32)PgnBytes[2]) << 16;
 	pgn = pgn | (((uint32)PgnBytes[1]) << 8);
-	pgn = pgn | ((uint32)PgnBytes[2]);
+	pgn = pgn | ((uint32)PgnBytes[0]);
 	return pgn;
 }
 

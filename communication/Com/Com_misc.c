@@ -461,3 +461,18 @@ uint8 motorolaBitNrToPduOffset (uint8 motorolaBitNr) {
 uint8 intelBitNrToPduOffset (uint8 intelBitNr, uint8 segmentBitLength, uint8 pduBitLength) {
 	return pduBitLength - (intelBitNr + segmentBitLength);
 }
+
+boolean isPduBufferLocked(PduIdType id) {
+	imask_t state;
+	Irq_Save(state);
+	boolean bufferLocked = Com_BufferPduState[id].locked;
+	Irq_Restore(state);
+	if (bufferLocked) {
+		return true;
+	} else {
+		return false;
+	}
+}
+PduIdType getPduId(const ComIPdu_type* IPdu) {
+	return (PduIdType)(IPdu - (ComConfig->ComIPdu));
+}

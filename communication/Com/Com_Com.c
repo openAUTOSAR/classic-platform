@@ -33,6 +33,7 @@
 
 Com_BufferPduStateType Com_BufferPduState[COM_N_IPDUS];
 
+
 uint8 Com_SendSignal(Com_SignalIdType SignalId, const void *SignalDataPtr) {
 	VALIDATE_SIGNAL(SignalId, 0x0a, E_NOT_OK);
 	// Store pointer to signal for easier coding.
@@ -41,6 +42,9 @@ uint8 Com_SendSignal(Com_SignalIdType SignalId, const void *SignalDataPtr) {
 	const ComIPdu_type *IPdu = GET_IPdu(Arc_Signal->ComIPduHandleId);
 	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
 
+	if (isPduBufferLocked(getPduId(IPdu))) {
+		return COM_BUSY;
+	}
 	//DEBUG(DEBUG_LOW, "Com_SendSignal: id %d, nBytes %d, BitPosition %d, intVal %d\n", SignalId, nBytes, signal->ComBitPosition, (uint32)*(uint8 *)SignalDataPtr);
 
 	// TODO: CopyData
@@ -64,6 +68,13 @@ uint8 Com_SendSignal(Com_SignalIdType SignalId, const void *SignalDataPtr) {
 uint8 Com_ReceiveSignal(Com_SignalIdType SignalId, void* SignalDataPtr) {
 	VALIDATE_SIGNAL(SignalId, 0x0b, E_NOT_OK);
 	DEBUG(DEBUG_LOW, "Com_ReceiveSignal: SignalId %d\n", SignalId);
+
+	const ComSignal_type * Signal = GET_Signal(SignalId);
+	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
+	const ComIPdu_type *IPdu = GET_IPdu(Arc_Signal->ComIPduHandleId);
+	if (isPduBufferLocked(getPduId(IPdu))) {
+		return COM_BUSY;
+	}
 
 	// Com_CopyFromSignal(&ComConfig->ComSignal[SignalId], SignalDataPtr);
 	Com_ReadSignalDataFromPdu(SignalId, SignalDataPtr);
@@ -161,7 +172,10 @@ void Com_RxIndication(PduIdType ComRxPduId, const PduInfoType* PduInfoPtr) {
 			return;
 		}
 	}
-
+	if (isPduBufferLocked(ComRxPduId)) {
+		Com_BufferPduState[ComRxPduId].locked = false;
+		Com_BufferPduState[ComRxPduId].currentPosition = 0;
+	}
 	// Copy IPDU data
 	memcpy(Arc_IPdu->ComIPduDataPtr, PduInfoPtr->SduDataPtr, IPdu->ComIPduSize);
 
@@ -201,13 +215,12 @@ void Com_RxIndication(PduIdType ComRxPduId, const PduInfoType* PduInfoPtr) {
 }
 
 void Com_TxConfirmation(PduIdType ComTxPduId) {
-	imask_t state;
-	Irq_Save(state);
 	PDU_ID_CHECK(ComTxPduId, 0x15);
-	Com_BufferPduState[ComTxPduId].locked = false;
-	Com_BufferPduState[ComTxPduId].currentPosition = 0;
+	if (isPduBufferLocked(ComTxPduId)) {
+		Com_BufferPduState[ComTxPduId].locked = false;
+		Com_BufferPduState[ComTxPduId].currentPosition = 0;
+	}
 	(void)ComTxPduId; // Nothing to be done. This is just to avoid Lint warning.
-	Irq_Restore(state);
 }
 
 
@@ -218,6 +231,9 @@ Std_ReturnType Com_SendSignalGroup(Com_SignalGroupIdType SignalGroupId) {
 	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
 	const ComIPdu_type *IPdu = GET_IPdu(Arc_Signal->ComIPduHandleId);
 
+	if (isPduBufferLocked(getPduId(IPdu))) {
+		return COM_BUSY;
+	}
 
 	// Copy shadow buffer to Ipdu data space
 	const ComGroupSignal_type *groupSignal;
@@ -248,7 +264,11 @@ Std_ReturnType Com_ReceiveSignalGroup(Com_SignalGroupIdType SignalGroupId) {
 //#warning Com_ReceiveSignalGroup should be performed atomically. Should we disable interrupts here?
 	const ComSignal_type * Signal = GET_Signal(SignalGroupId);
 	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(SignalGroupId);
+	const ComIPdu_type *IPdu = GET_IPdu(Arc_Signal->ComIPduHandleId);
 
+	if (isPduBufferLocked(getPduId(IPdu))) {
+		return COM_BUSY;
+	}
 	// Copy Ipdu data buffer to shadow buffer.
 	const ComGroupSignal_type *groupSignal;
 	for (uint8 i = 0; Signal->ComGroupSignal[i] != NULL; i++) {

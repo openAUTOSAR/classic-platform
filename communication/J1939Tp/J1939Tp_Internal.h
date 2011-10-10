@@ -101,6 +101,7 @@ static inline boolean J1939Tp_Internal_WaitForCts(J1939Tp_Internal_TxChannelInfo
 static inline boolean J1939Tp_Internal_LastDtSent(J1939Tp_Internal_TxChannelInfoType* TxPgState);
 static inline Std_ReturnType J1939Tp_Internal_ConfGetPg(PduIdType NSduId, const J1939Tp_PgType* Pg);
 static inline J1939Tp_Internal_TimerStatusType J1939Tp_Internal_IncAndCheckTimer(J1939Tp_Internal_TimerType* TimerInfo);
+static inline uint8 J1939Tp_Internal_GetDtDataSize(uint8 currentSeqNum, uint8 totalSize);
 
 static inline void J1939Tp_Internal_SendBam(J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr,const PduInfoType* TxInfoPtr);
 static inline Std_ReturnType J1939Tp_Internal_SendDt(J1939Tp_Internal_ChannelInfoType* Channel);

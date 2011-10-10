@@ -28,6 +28,7 @@ typedef struct {
 	PduLengthType currentPosition;
 	boolean locked;
 } Com_BufferPduStateType;
+extern Com_BufferPduStateType Com_BufferPduState[];
 
 extern const Com_ConfigType *ComConfig;
 extern Com_Arc_Config_type Com_Arc_Config;

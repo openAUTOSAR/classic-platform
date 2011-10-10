@@ -46,9 +46,29 @@ void PduR_J1939TpTxConfirmation(PduIdType J1939TpTxId, NotifResultType Result) {
 BufReq_ReturnType PduR_J1939TpCopyTxData(PduIdType id, PduInfoType* info, RetryInfoType* retry, PduLengthType* availableDataPtr) {
 #if PDUR_COM_SUPPORT == STD_OFF
 	return BUFREQ_NOT_OK;
-#endif
+#else
 	const PduRRoutingPath_type *route = PduRConfig->RoutingPaths[id];
 	return Com_CopyTxData(route->SrcModule, info,0 ,availableDataPtr);
+#endif
+}
+BufReq_ReturnType PduR_J1939TpCopyRxData(PduIdType id, PduInfoType* info, PduLengthType* bufferSizePtr) {
+#if PDUR_COM_SUPPORT == STD_OFF
+	return BUFREQ_NOT_OK;
+#else
+	const PduRRoutingPath_type *route = PduRConfig->RoutingPaths[id];
+	// Limitation, Just sends to the first destination
+	return Com_CopyRxData(route->PduRDestPdus[0]->DestPduId, info,bufferSizePtr);
+#endif
+}
+
+BufReq_ReturnType PduR_J1939TpStartOfReception(PduIdType id, PduLengthType TpSduLength, PduLengthType* bufferSizePtr) {
+#if PDUR_COM_SUPPORT == STD_OFF
+	return BUFREQ_NOT_OK;
+#else
+	const PduRRoutingPath_type *route = PduRConfig->RoutingPaths[id];
+	// Limitation, Just sends to the first destination
+	return Com_StartOfReception(route->PduRDestPdus[0]->DestPduId, TpSduLength, bufferSizePtr);
+#endif
 }
 
 #endif

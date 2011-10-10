@@ -33,7 +33,7 @@
 
 
 
-extern Com_BufferPduStateType Com_BufferPduState[];
+
 
 /* TODO: Better way to get endianness across all compilers? */
 static const uint32_t endianness_test = 0xdeadbeefU;
@@ -171,6 +171,7 @@ void Com_Init(const Com_ConfigType *config ) {
 	}
 	for (uint16 i = 0; i < COM_N_IPDUS; i++) {
 		Com_BufferPduState[i].currentPosition = 0;
+		Com_BufferPduState[i].locked = false;
 	}
 
 	// An error occurred.
@@ -215,13 +216,55 @@ void Com_IpduGroupStop(Com_PduGroupIdType IpduGroupId) {
 BufReq_ReturnType Com_CopyTxData(PduIdType PduId, PduInfoType* PduInfoPtr, RetryInfoType* RetryInfoPtr, PduLengthType* TxDataCntPtr) {
 	imask_t state;
 	Irq_Save(state);
-	if (PduInfoPtr->SduLength != 0) {
-		Com_BufferPduState[PduId].locked = true;
+	BufReq_ReturnType r = BUFREQ_OK;
+	if (ComConfig->ComIPdu[PduId].ComIPduDirection == SEND) {
+		memcpy(PduInfoPtr->SduDataPtr,Com_Arc_Config.ComIPdu[PduId].ComIPduDataPtr + Com_BufferPduState[PduId].currentPosition, PduInfoPtr->SduLength);
+		Com_BufferPduState[PduId].currentPosition += PduInfoPtr->SduLength;
+		const ComIPdu_type *IPdu = GET_IPdu(PduId);
+		*TxDataCntPtr = IPdu->ComIPduSize - Com_BufferPduState[PduId].currentPosition;
+	} else {
+		r = BUFREQ_NOT_OK;
 	}
-	memcpy(PduInfoPtr->SduDataPtr,Com_Arc_Config.ComIPdu[PduId].ComIPduDataPtr + Com_BufferPduState[PduId].currentPosition, PduInfoPtr->SduLength);
-	Com_BufferPduState[PduId].currentPosition += PduInfoPtr->SduLength;
-	const ComIPdu_type *IPdu = GET_IPdu(PduId);
-	*TxDataCntPtr = IPdu->ComIPduSize - Com_BufferPduState[PduId].currentPosition;
 	Irq_Restore(state);
-	return BUFREQ_OK;
+	return r;
+}
+BufReq_ReturnType Com_CopyRxData(PduIdType PduId, const PduInfoType* PduInfoPtr, PduLengthType* RxBufferSizePtr) {
+	imask_t state;
+	Irq_Save(state);
+	BufReq_ReturnType r = BUFREQ_OK;
+	uint8 remainingBytes = ComConfig->ComIPdu[PduId].ComIPduSize - Com_BufferPduState[PduId].currentPosition;
+	boolean sizeOk = remainingBytes >= PduInfoPtr->SduLength;
+	boolean dirOk = ComConfig->ComIPdu[PduId].ComIPduDirection == RECEIVE;
+	boolean lockOk = isPduBufferLocked(PduId);
+	if (dirOk && lockOk && sizeOk) {
+		memcpy(Com_Arc_Config.ComIPdu[PduId].ComIPduDataPtr, PduInfoPtr->SduDataPtr, PduInfoPtr->SduLength);
+		Com_BufferPduState[PduId].currentPosition += PduInfoPtr->SduLength;
+		*RxBufferSizePtr = ComConfig->ComIPdu[PduId].ComIPduSize - Com_BufferPduState[PduId].currentPosition;
+	} else {
+		r = BUFREQ_NOT_OK;
+	}
+	return r;
+	Irq_Restore(state);
+}
+BufReq_ReturnType Com_StartOfReception(PduIdType ComRxPduId, PduLengthType TpSduLength, PduLengthType* RxBufferSizePtr) {
+	imask_t state;
+	Irq_Save(state);
+	BufReq_ReturnType r = BUFREQ_OK;
+	if (ComConfig->ComIPdu[ComRxPduId].ComIPduDirection == RECEIVE) {
+		if (!Com_BufferPduState[ComRxPduId].locked) {
+			if (ComConfig->ComIPdu[ComRxPduId].ComIPduSize >= TpSduLength) {
+				Com_BufferPduState[ComRxPduId].locked = true;
+				*RxBufferSizePtr = ComConfig->ComIPdu[ComRxPduId].ComIPduSize;
+				Com_BufferPduState[ComRxPduId].locked = true;
+			} else {
+				r = BUFREQ_OVFL;
+			}
+		} else {
+			r = BUFREQ_BUSY;
+		}
+	} else {
+		r = BUFREQ_NOT_OK;
+	}
+	Irq_Restore(state);
+	return r;
 }
