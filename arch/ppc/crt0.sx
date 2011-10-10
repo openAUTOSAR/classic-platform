@@ -92,8 +92,13 @@ _start:
 	/*  Clear all SRAM */
 init_RAM:
 	LOAD_ADDR_32(11,0x40000000)
+#if (CFG_MPC5606S)
 	li r12,384 # loop counter to get all of SRAM;
 	/* 48k/4 bytes/32 GPRs = 384, only 48k ram for MPC5606s */
+#else
+	li r12,640 # loop counter to get all of SRAM;
+	/* 80k/4 bytes/32 GPRs = 640 */
+#endif
 	mtctr r12
 
 init_ram_loop:
