@@ -154,14 +154,19 @@ obj-$(USE_DET) += Det.o
 # Lin
 obj-$(USE_LIN) += Lin_PBcfg.o
 obj-$(USE_LIN) += Lin_Lcfg.o
-obj-$(USE_LIN) += LinIf_Lcfg.o
-obj-$(USE_LIN) += LinIf_PBcfg.o
-obj-$(USE_LIN) += LinSM_Lcfg.o
-obj-$(USE_LIN) += LinSM_PBcfg.o
-obj-$(USE_LIN) += LinSM_Cfg.o
 obj-$(USE_LIN) += Lin.o
-obj-$(USE_LIN) += LinIf.o
-obj-$(USE_LIN) += LinSM.o
+
+# LinIf
+obj-$(USE_LINIF) += LinIf_Lcfg.o
+obj-$(USE_LINIF) += LinIf_PBcfg.o
+obj-$(USE_LINIF) += LinIf.o
+
+# LinSm
+obj-$(USE_LINSM) += LinSM_Lcfg.o
+obj-$(USE_LINSM) += LinSM_PBcfg.o
+obj-$(USE_LINSM) += LinSM_Cfg.o
+obj-$(USE_LINSM) += LinSM.o
+
 vpath-y += $(ROOTDIR)/drivers/Lin/
 vpath-y += $(ROOTDIR)/communication/Lin
 inc-y += $(ROOTDIR)/communication/ComM

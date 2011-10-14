@@ -34,7 +34,9 @@
 #include "Std_Types.h"
 #include "LinSM_Cfg.h"
 #include "Com_Types.h"
+#if defined(USE_COM)
 #include "Com.h"
+#endif
 #include "ComM_Types.h"
 #include "LinIf.h"
 

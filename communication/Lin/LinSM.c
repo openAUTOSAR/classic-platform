@@ -27,7 +27,9 @@
 #include "Lin_Cfg.h"
 #include "LinSM_Cbk.h"
 #include "LinIf_Types.h"
+#if defined(USE_COM)
 #include "Com.h"
+#endif
 #include "ComM_Types.h"
 #include "ComStack_Types.h"
 #include "Com_Types.h"

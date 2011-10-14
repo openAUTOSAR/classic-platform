@@ -27,7 +27,9 @@
 #include "LinIf_Cfg.h"
 #include "Lin.h"
 #include "LinSM_Cbk.h"
+#if defined(USE_PDUR)
 #include "PduR_LinIf.h"
+#endif
 #include "Det.h"
 #if defined(USE_DEM)
 #include "Dem.h"
