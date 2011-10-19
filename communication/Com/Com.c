@@ -217,10 +217,14 @@ BufReq_ReturnType Com_CopyTxData(PduIdType PduId, PduInfoType* PduInfoPtr, Retry
 	imask_t state;
 	Irq_Save(state);
 	BufReq_ReturnType r = BUFREQ_OK;
-	if (ComConfig->ComIPdu[PduId].ComIPduDirection == SEND) {
-		memcpy(PduInfoPtr->SduDataPtr,Com_Arc_Config.ComIPdu[PduId].ComIPduDataPtr + Com_BufferPduState[PduId].currentPosition, PduInfoPtr->SduLength);
+	const ComIPdu_type *IPdu = GET_IPdu(PduId);
+	boolean dirOk = ComConfig->ComIPdu[PduId].ComIPduDirection == SEND;
+	boolean sizeOk = IPdu->ComIPduSize >= Com_BufferPduState[PduId].currentPosition + PduInfoPtr->SduLength;
+	if (dirOk && sizeOk) {
+		Com_BufferPduState[PduId].locked = true;
+		void* source = GET_ArcIPdu(PduId)->ComIPduDataPtr;
+		memcpy(PduInfoPtr->SduDataPtr,source + Com_BufferPduState[PduId].currentPosition, PduInfoPtr->SduLength);
 		Com_BufferPduState[PduId].currentPosition += PduInfoPtr->SduLength;
-		const ComIPdu_type *IPdu = GET_IPdu(PduId);
 		*TxDataCntPtr = IPdu->ComIPduSize - Com_BufferPduState[PduId].currentPosition;
 	} else {
 		r = BUFREQ_NOT_OK;
@@ -232,14 +236,14 @@ BufReq_ReturnType Com_CopyRxData(PduIdType PduId, const PduInfoType* PduInfoPtr,
 	imask_t state;
 	Irq_Save(state);
 	BufReq_ReturnType r = BUFREQ_OK;
-	uint8 remainingBytes = ComConfig->ComIPdu[PduId].ComIPduSize - Com_BufferPduState[PduId].currentPosition;
+	uint8 remainingBytes = GET_IPdu(PduId)->ComIPduSize - Com_BufferPduState[PduId].currentPosition;
 	boolean sizeOk = remainingBytes >= PduInfoPtr->SduLength;
-	boolean dirOk = ComConfig->ComIPdu[PduId].ComIPduDirection == RECEIVE;
+	boolean dirOk = GET_IPdu(PduId)->ComIPduDirection == RECEIVE;
 	boolean lockOk = isPduBufferLocked(PduId);
 	if (dirOk && lockOk && sizeOk) {
-		memcpy(Com_Arc_Config.ComIPdu[PduId].ComIPduDataPtr, PduInfoPtr->SduDataPtr, PduInfoPtr->SduLength);
+		memcpy(GET_ArcIPdu(PduId)->ComIPduDataPtr+Com_BufferPduState[PduId].currentPosition, PduInfoPtr->SduDataPtr, PduInfoPtr->SduLength);
 		Com_BufferPduState[PduId].currentPosition += PduInfoPtr->SduLength;
-		*RxBufferSizePtr = ComConfig->ComIPdu[PduId].ComIPduSize - Com_BufferPduState[PduId].currentPosition;
+		*RxBufferSizePtr = GET_IPdu(PduId)->ComIPduSize - Com_BufferPduState[PduId].currentPosition;
 	} else {
 		r = BUFREQ_NOT_OK;
 	}
@@ -250,17 +254,20 @@ BufReq_ReturnType Com_StartOfReception(PduIdType ComRxPduId, PduLengthType TpSdu
 	imask_t state;
 	Irq_Save(state);
 	BufReq_ReturnType r = BUFREQ_OK;
-	if (ComConfig->ComIPdu[ComRxPduId].ComIPduDirection == RECEIVE) {
-		if (!Com_BufferPduState[ComRxPduId].locked) {
-			if (ComConfig->ComIPdu[ComRxPduId].ComIPduSize >= TpSduLength) {
-				Com_BufferPduState[ComRxPduId].locked = true;
-				*RxBufferSizePtr = ComConfig->ComIPdu[ComRxPduId].ComIPduSize;
-				Com_BufferPduState[ComRxPduId].locked = true;
+	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(ComRxPduId);
+	if (Arc_IPdu->Com_Arc_IpduStarted) {
+		if (GET_IPdu(ComRxPduId)->ComIPduDirection == RECEIVE) {
+			if (!Com_BufferPduState[ComRxPduId].locked) {
+				if (GET_IPdu(ComRxPduId)->ComIPduSize >= TpSduLength) {
+					Com_BufferPduState[ComRxPduId].locked = true;
+					*RxBufferSizePtr = GET_IPdu(ComRxPduId)->ComIPduSize;
+					Com_BufferPduState[ComRxPduId].locked = true;
+				} else {
+					r = BUFREQ_OVFL;
+				}
 			} else {
-				r = BUFREQ_OVFL;
+				r = BUFREQ_BUSY;
 			}
-		} else {
-			r = BUFREQ_BUSY;
 		}
 	} else {
 		r = BUFREQ_NOT_OK;

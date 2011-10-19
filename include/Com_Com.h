@@ -48,4 +48,6 @@ void Com_ReceiveShadowSignal(Com_SignalIdType SignalId, void *SignalDataPtr);
 /* Autosar 4 Api */
 BufReq_ReturnType Com_CopyTxData(PduIdType PduId, PduInfoType* PduInfoPtr, RetryInfoType* RetryInfoPtr, PduLengthType* TxDataCntPtr);
 BufReq_ReturnType Com_StartOfReception(PduIdType ComRxPduId, PduLengthType TpSduLength, PduLengthType* RxBufferSizePtr);
+void Com_TpRxIndication(PduIdType PduId, NotifResultType Result);
+
 #endif /* COM_COM_H_ */

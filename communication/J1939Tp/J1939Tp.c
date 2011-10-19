@@ -119,62 +119,55 @@ void J1939Tp_MainFunction(void) {
 			J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr = &(channelInfos[i]);
 			const J1939Tp_ChannelType* Channel = ChannelInfoPtr->ChannelConfPtr;
 			J1939Tp_Internal_TimerStatusType timer = J1939TP_NOT_EXPIRED;
-			switch (Channel->Direction) {
-				case J1939TP_TX:
+			if (Channel->Direction == J1939TP_TX) {
+				timer = J1939Tp_Internal_IncAndCheckTimer(&(ChannelInfoPtr->TxState->TimerInfo));
+				if (timer == J1939TP_EXPIRED) {
+					timer = J1939TP_NOT_EXPIRED;
 					switch (ChannelInfoPtr->TxState->State) {
 						case J1939TP_TX_WAIT_DIRECT_SEND_CANIF_CONFIRM:
+							PduR_J1939TpTxConfirmation(ChannelInfoPtr->TxState->CurrentPgPtr->NSdu,NTFRSLT_E_NOT_OK);
+							break;
 						case J1939TP_TX_WAITING_FOR_CTS:
 						case J1939TP_TX_WAITING_FOR_END_OF_MSG_ACK:
 						case J1939TP_TX_WAIT_DT_CANIF_CONFIRM:
 						case J1939TP_TX_WAIT_RTS_CANIF_CONFIRM:
-							timer = J1939Tp_Internal_IncAndCheckTimer(&(ChannelInfoPtr->TxState->TimerInfo));
-							if (timer == J1939TP_EXPIRED) {
-								timer = J1939TP_NOT_EXPIRED;
-								ChannelInfoPtr->TxState->State = J1939TP_TX_IDLE;
-								if (ChannelInfoPtr->TxState->CurrentPgPtr != 0) {
-									J1939Tp_Internal_SendConnectionAbort(Channel->CmNPdu,ChannelInfoPtr->TxState->CurrentPgPtr->Pgn);
-									PduR_J1939TpTxConfirmation(ChannelInfoPtr->TxState->CurrentPgPtr->NSdu,NTFRSLT_E_NOT_OK);
-								}
+							ChannelInfoPtr->TxState->State = J1939TP_TX_IDLE;
+							if (ChannelInfoPtr->TxState->CurrentPgPtr != 0) {
+								J1939Tp_Internal_SendConnectionAbort(Channel->CmNPdu,ChannelInfoPtr->TxState->CurrentPgPtr->Pgn);
+								PduR_J1939TpTxConfirmation(ChannelInfoPtr->TxState->CurrentPgPtr->NSdu,NTFRSLT_E_NOT_OK);
 							}
 							break;
 						case J1939TP_TX_WAITING_FOR_T1_TIMEOUT:
-							timer = J1939Tp_Internal_IncAndCheckTimer(&(ChannelInfoPtr->TxState->TimerInfo));
-							if (timer == J1939TP_EXPIRED) {
-								timer = J1939TP_NOT_EXPIRED;
-								ChannelInfoPtr->TxState->State = J1939TP_TX_WAIT_DT_BAM_CANIF_CONFIRM;
-								J1939Tp_Internal_TxSessionStartTimer(ChannelInfoPtr->TxState,J1939TP_TX_CONF_TIMEOUT);
-								if (J1939Tp_Internal_SendDt(ChannelInfoPtr) == E_NOT_OK) {
-									ChannelInfoPtr->TxState->State = J1939TP_TX_IDLE;
-									PduR_J1939TpTxConfirmation(ChannelInfoPtr->TxState->CurrentPgPtr->NSdu,NTFRSLT_E_NOT_OK);
-									J1939Tp_Internal_SendConnectionAbort(ChannelInfoPtr->ChannelConfPtr->CmNPdu,ChannelInfoPtr->TxState->CurrentPgPtr->Pgn);
-								}
-
+							ChannelInfoPtr->TxState->State = J1939TP_TX_WAIT_DT_BAM_CANIF_CONFIRM;
+							J1939Tp_Internal_TxSessionStartTimer(ChannelInfoPtr->TxState,J1939TP_TX_CONF_TIMEOUT);
+							if (J1939Tp_Internal_SendDt(ChannelInfoPtr) == E_NOT_OK) {
+								ChannelInfoPtr->TxState->State = J1939TP_TX_IDLE;
+								PduR_J1939TpTxConfirmation(ChannelInfoPtr->TxState->CurrentPgPtr->NSdu,NTFRSLT_E_NOT_OK);
+								J1939Tp_Internal_SendConnectionAbort(ChannelInfoPtr->ChannelConfPtr->CmNPdu,ChannelInfoPtr->TxState->CurrentPgPtr->Pgn);
 							}
 							break;
 						default:
 						break;
 					}
-
-					break;;
-				case J1939TP_RX:
-					switch (ChannelInfoPtr->RxState->State) {
-						case J1939TP_RX_WAIT_CTS_CANIF_CONFIRM:
-						case J1939TP_RX_RECEIVING_DT:
-						case J1939TP_RX_WAIT_ENDOFMSGACK_CANIF_CONFIRM:
-							timer = J1939Tp_Internal_IncAndCheckTimer(&(ChannelInfoPtr->RxState->TimerInfo));
-						default:
-							break;
+				}
+			}
+			else if (Channel->Direction == J1939TP_RX) {
+				switch (ChannelInfoPtr->RxState->State) {
+					case J1939TP_RX_WAIT_CTS_CANIF_CONFIRM:
+					case J1939TP_RX_RECEIVING_DT:
+					case J1939TP_RX_WAIT_ENDOFMSGACK_CANIF_CONFIRM:
+						timer = J1939Tp_Internal_IncAndCheckTimer(&(ChannelInfoPtr->RxState->TimerInfo));
+					default:
+						break;
+				}
+				if (timer == J1939TP_EXPIRED) {
+					timer = J1939TP_NOT_EXPIRED;
+					ChannelInfoPtr->RxState->State = J1939TP_RX_IDLE;
+					if (Channel->Protocol == J1939TP_PROTOCOL_CMDT) {
+						J1939Tp_Internal_SendConnectionAbort(Channel->FcNPdu,ChannelInfoPtr->RxState->CurrentPgPtr->Pgn);
 					}
-					if (timer == J1939TP_EXPIRED) {
-						timer = J1939TP_NOT_EXPIRED;
-						ChannelInfoPtr->RxState->State = J1939TP_RX_IDLE;
-						if (Channel->Protocol == J1939TP_PROTOCOL_CMDT) {
-							J1939Tp_Internal_SendConnectionAbort(Channel->FcNPdu,ChannelInfoPtr->RxState->CurrentPgPtr->Pgn);
-						}
-						PduR_J1939TpRxIndication(ChannelInfoPtr->RxState->CurrentPgPtr->NSdu,NTFRSLT_E_NOT_OK);
-					}
-				default:
-					break;
+					PduR_J1939TpRxIndication(ChannelInfoPtr->RxState->CurrentPgPtr->NSdu,NTFRSLT_E_NOT_OK);
+				}
 			}
 		}
 	}
@@ -264,13 +257,13 @@ static inline void J1939Tp_Internal_RxIndication_Dt(PduInfoType* PduInfoPtr, J19
 		return;
 	}
 	PduIdType PduRSdu = ChannelInfoPtr->RxState->CurrentPgPtr->NSdu;
-
+	const J1939Tp_ProtocolType protocol = ChannelInfoPtr->ChannelConfPtr->Protocol;
 	ChannelInfoPtr->RxState->ReceivedDtCount++;
 	uint8 expectedSeqNumber = ChannelInfoPtr->RxState->ReceivedDtCount;
 	uint8 seqNumber = PduInfoPtr->SduDataPtr[DT_BYTE_SEQ_NUM];
 	if (seqNumber != expectedSeqNumber) {
 		ChannelInfoPtr->RxState->State = J1939TP_RX_IDLE;
-		if (ChannelInfoPtr->ChannelConfPtr->Protocol == J1939TP_PROTOCOL_CMDT) {
+		if (protocol == J1939TP_PROTOCOL_CMDT) {
 			J1939Tp_PgnType pgn = ChannelInfoPtr->RxState->CurrentPgPtr->Pgn;
 			J1939Tp_Internal_SendConnectionAbort(ChannelInfoPtr->ChannelConfPtr->FcNPdu,pgn);
 		}
@@ -283,14 +276,14 @@ static inline void J1939Tp_Internal_RxIndication_Dt(PduInfoType* PduInfoPtr, J19
 	PduInfoRxCopy.SduDataPtr = &(PduInfoPtr->SduDataPtr[DT_BYTE_DATA_1]);
 	BufReq_ReturnType r = PduR_J1939TpCopyRxData(ChannelInfoPtr->RxState->CurrentPgPtr->NSdu, &PduInfoRxCopy,&remainingBytesInRxBuffer);
 	if (r != BUFREQ_OK) {
-		if (ChannelInfoPtr->ChannelConfPtr->Protocol == J1939TP_PROTOCOL_CMDT) {
+		if (protocol == J1939TP_PROTOCOL_CMDT) {
 			J1939Tp_PgnType pgn = ChannelInfoPtr->RxState->CurrentPgPtr->Pgn;
 			J1939Tp_Internal_SendConnectionAbort(ChannelInfoPtr->ChannelConfPtr->FcNPdu,pgn);
 		}
 		ChannelInfoPtr->RxState->State = J1939TP_RX_IDLE;
 		return;
 	}
-	if (J1939Tp_Internal_IsLastDtBeforeNextCts(ChannelInfoPtr->RxState)) {
+	if (protocol == J1939TP_PROTOCOL_CMDT && J1939Tp_Internal_IsLastDtBeforeNextCts(ChannelInfoPtr->RxState)) {
 		J1939Tp_PgnType pgn = ChannelInfoPtr->RxState->CurrentPgPtr->Pgn;
 		uint8 requestPackets = J1939Tp_Internal_GetDtPacketsInNextCts(ChannelInfoPtr->RxState->ReceivedDtCount,ChannelInfoPtr->RxState->DtToReceiveCount);
 		ChannelInfoPtr->RxState->State = J1939TP_RX_WAIT_CTS_CANIF_CONFIRM;
@@ -563,6 +556,7 @@ Std_ReturnType J1939Tp_Transmit(PduIdType TxSduId, const PduInfoType* TxInfoPtr)
 					PduLengthType remainingBytes;
 					if (PduR_J1939TpCopyTxData(Pg->NSdu, &ToSendTxInfoPtr, 0, &remainingBytes) == BUFREQ_OK) {
 						PduIdType CanIfPdu = Pg->DirectNPdu;
+						J1939Tp_Internal_TxSessionStartTimer(ChannelInfoPtr->TxState,J1939TP_TX_CONF_TIMEOUT);
 						ChannelInfoPtr->TxState->State = J1939TP_TX_WAIT_DIRECT_SEND_CANIF_CONFIRM;
 						ChannelInfoPtr->TxState->CurrentPgPtr = Pg;
 						CanIf_Transmit(CanIfPdu,&ToSendTxInfoPtr);
@@ -773,9 +767,9 @@ static inline void J1939Tp_Internal_RxSessionStartTimer(J1939Tp_Internal_RxChann
  * @param pgn
  */
 static inline void J1939Tp_Internal_SetPgn(uint8* PgnBytes,J1939Tp_PgnType pgn ) {
-	PgnBytes[2] = pgn; /* get first byte */
+	PgnBytes[0] = pgn; /* get first byte */
 	PgnBytes[1] = pgn >> 8; /* get next byte */
-	PgnBytes[0] = (pgn >> 16) & 0x3; /* get next two bits */
+	PgnBytes[2] = (pgn >> 16) & 0x3; /* get next two bits */
 }
 /**
  * return a 18 bit pgn value from three bytes

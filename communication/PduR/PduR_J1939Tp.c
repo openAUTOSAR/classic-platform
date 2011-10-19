@@ -20,23 +20,11 @@
 
 #if (PDUR_ZERO_COST_OPERATION == STD_OFF) && (PDUR_J1939TP_SUPPORT == STD_ON)
 
-BufReq_ReturnType PduR_J1939TpProvideRxBuffer(PduIdType J1939TpTxId, PduLengthType sduLength, PduInfoType **pduInfoPtr) {
-	return PduR_ARC_ProvideRxBuffer(J1939TpTxId, sduLength, pduInfoPtr, 0x03);
-}
-
-
 void PduR_J1939TpRxIndication(PduIdType id, NotifResultType Result) {
-	PduInfoType PduInfo = {
-		.SduDataPtr = &Result,
-		.SduLength = 0 // To fix PC-Lint 785
-	};
-	PduR_ARC_RxIndication(id, &PduInfo, 0x04);
+	//PduR_ARC_RxIndication(id, &PduInfo, 0x04);
+	const PduRRoutingPath_type *route = PduRConfig->RoutingPaths[id];
+	Com_TpRxIndication(route->PduRDestPdus[0]->DestPduId, Result);
 }
-
-BufReq_ReturnType PduR_J1939TpProvideTxBuffer(PduIdType J1939TpTxId,PduInfoType** PduInfoPtr, uint16 Length) {
-	return PduR_ARC_ProvideTxBuffer(J1939TpTxId, PduInfoPtr, Length, 0x03);
-}
-
 
 void PduR_J1939TpTxConfirmation(PduIdType J1939TpTxId, NotifResultType Result) {
 	PduR_ARC_TxConfirmation(J1939TpTxId, Result, 0x0f);
@@ -48,7 +36,7 @@ BufReq_ReturnType PduR_J1939TpCopyTxData(PduIdType id, PduInfoType* info, RetryI
 	return BUFREQ_NOT_OK;
 #else
 	const PduRRoutingPath_type *route = PduRConfig->RoutingPaths[id];
-	return Com_CopyTxData(route->SrcModule, info,0 ,availableDataPtr);
+	return Com_CopyTxData(route->SrcPduId, info,0 ,availableDataPtr);
 #endif
 }
 BufReq_ReturnType PduR_J1939TpCopyRxData(PduIdType id, PduInfoType* info, PduLengthType* bufferSizePtr) {

@@ -172,46 +172,33 @@ void Com_RxIndication(PduIdType ComRxPduId, const PduInfoType* PduInfoPtr) {
 			return;
 		}
 	}
-	if (isPduBufferLocked(ComRxPduId)) {
-		Com_BufferPduState[ComRxPduId].locked = false;
-		Com_BufferPduState[ComRxPduId].currentPosition = 0;
-	}
+
 	// Copy IPDU data
 	memcpy(Arc_IPdu->ComIPduDataPtr, PduInfoPtr->SduDataPtr, IPdu->ComIPduSize);
 
-	// For each signal.
-	const ComSignal_type *comSignal;
-	for (uint8 i = 0; IPdu->ComIPduSignalRef[i] != NULL; i++) {
-		comSignal = IPdu->ComIPduSignalRef[i];
-		Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(comSignal->ComHandleId);
-
-		// If this signal uses an update bit, then it is only considered if this bit is set.
-		if ( (!comSignal->ComSignalArcUseUpdateBit) ||
-			( (comSignal->ComSignalArcUseUpdateBit) && (TESTBIT(Arc_IPdu->ComIPduDataPtr, comSignal->ComUpdateBitPosition)) ) ) {
-
-			if (comSignal->ComTimeoutFactor > 0) { // If reception deadline monitoring is used.
-				// Reset the deadline monitoring timer.
-				Arc_Signal->Com_Arc_DeadlineCounter = comSignal->ComTimeoutFactor;
-			}
-
-			// Check the signal processing mode.
-			if (IPdu->ComIPduSignalProcessing == IMMEDIATE) {
-				// If signal processing mode is IMMEDIATE, notify the signal callback.
-				if (IPdu->ComIPduSignalRef[i]->ComNotification != NULL) {
-					IPdu->ComIPduSignalRef[i]->ComNotification();
-				}
-
-			} else {
-				// Signal processing mode is DEFERRED, mark the signal as updated.
-				Arc_Signal->ComSignalUpdated = 1;
-			}
-
-		} else {
-			DEBUG(DEBUG_LOW, "Com_RxIndication: Ignored signal %d of I-PD %d since its update bit was not set\n", comSignal->ComHandleId, ComRxPduId);
-		}
-	}
+	Com_RxProcessSignals(IPdu,Arc_IPdu);
 
 	return;
+}
+
+void Com_TpRxIndication(PduIdType PduId, NotifResultType Result) {
+	PDU_ID_CHECK(ComRxPduId, 0x14);
+
+	const ComIPdu_type *IPdu = GET_IPdu(PduId);
+	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(PduId);
+
+	// If Ipdu is stopped
+	if (!Arc_IPdu->Com_Arc_IpduStarted) {
+		return;
+	}
+	// unlock buffer
+	if (isPduBufferLocked(PduId)) {
+		Com_BufferPduState[PduId].locked = false;
+		Com_BufferPduState[PduId].currentPosition = 0;
+	}
+	if (Result == NTFRSLT_OK) {
+		Com_RxProcessSignals(IPdu,Arc_IPdu);
+	}
 }
 
 void Com_TxConfirmation(PduIdType ComTxPduId) {

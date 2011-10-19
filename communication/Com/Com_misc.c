@@ -23,7 +23,7 @@
 #include "Com.h"
 #include "Com_Internal.h"
 #include "Com_misc.h"
-
+#include "debug.h"
 
 
 void Com_ReadSignalDataFromPdu(
@@ -462,6 +462,38 @@ uint8 intelBitNrToPduOffset (uint8 intelBitNr, uint8 segmentBitLength, uint8 pdu
 	return pduBitLength - (intelBitNr + segmentBitLength);
 }
 
+void Com_RxProcessSignals(const ComIPdu_type *IPdu,Com_Arc_IPdu_type *Arc_IPdu) {
+	const ComSignal_type *comSignal;
+	for (uint8 i = 0; IPdu->ComIPduSignalRef[i] != NULL; i++) {
+		comSignal = IPdu->ComIPduSignalRef[i];
+		Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(comSignal->ComHandleId);
+
+		// If this signal uses an update bit, then it is only considered if this bit is set.
+		if ( (!comSignal->ComSignalArcUseUpdateBit) ||
+			( (comSignal->ComSignalArcUseUpdateBit) && (TESTBIT(Arc_IPdu->ComIPduDataPtr, comSignal->ComUpdateBitPosition)) ) ) {
+
+			if (comSignal->ComTimeoutFactor > 0) { // If reception deadline monitoring is used.
+				// Reset the deadline monitoring timer.
+				Arc_Signal->Com_Arc_DeadlineCounter = comSignal->ComTimeoutFactor;
+			}
+
+			// Check the signal processing mode.
+			if (IPdu->ComIPduSignalProcessing == IMMEDIATE) {
+				// If signal processing mode is IMMEDIATE, notify the signal callback.
+				if (IPdu->ComIPduSignalRef[i]->ComNotification != NULL) {
+					IPdu->ComIPduSignalRef[i]->ComNotification();
+				}
+
+			} else {
+				// Signal processing mode is DEFERRED, mark the signal as updated.
+				Arc_Signal->ComSignalUpdated = 1;
+			}
+
+		} else {
+			DEBUG(DEBUG_LOW, "Com_RxIndication: Ignored signal %d of I-PD %d since its update bit was not set\n", comSignal->ComHandleId, ComRxPduId);
+		}
+	}
+}
 boolean isPduBufferLocked(PduIdType id) {
 	imask_t state;
 	Irq_Save(state);
