@@ -21,10 +21,9 @@
  */
 #define DONT_USE_DMA_IN_ADC_MPC5606S
 
-
 /* Are we gonna use Dma? */
 #if (  !defined(CFG_MPC5606S) || \
-      ( defined(CFG_MPC5606S) && defined(DONT_USE_DMA_IN_ADC_MPC5606S) ) )
+      ( defined(CFG_MPC5606S) && !defined(DONT_USE_DMA_IN_ADC_MPC5606S) ) )
 	#define ADC_USES_DMA
 #endif
 
@@ -691,7 +690,7 @@ void Adc_Group0ConversionComplete (void)
 	ADC_0.IMR.B.MSKECH = 0;
 
 	Adc_GroupDefType adcGroup = AdcConfigPtr->groupConfigPtr[currGroupId];
-#ifdef DONT_USE_DMA_IN_ADC_MPC5606S
+#if !defined (ADC_USES_DMA)
 	/* Copy to result buffer */
 	for(uint8 index=0; index < adcGroup.numberOfChannels; index++)
 	{
