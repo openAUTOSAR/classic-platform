@@ -84,14 +84,21 @@ typedef enum {
 	J1939TP_DIRECT
 } J1939Tp_RxPduType;
 
+
 typedef struct {
 	const J1939Tp_RxPduType		PacketType;
 	const uint8					ChannelIndex;
+	const J1939Tp_PgType* PgPtr;
 } J1939Tp_RxPduInfoType;
+
+typedef struct {
+	const J1939Tp_RxPduInfoType** RxPdus;
+	const PduIdType RxPduCount;
+} J1939Tp_RxPduInfoRelationsType;
 
 /** @req J1939TP0175 */
 typedef struct {
-	const J1939Tp_RxPduInfoType* RxPdus;
+	const J1939Tp_RxPduInfoRelationsType* RxPduRelations;
 	const J1939Tp_ChannelType* Channels;
 	const J1939Tp_PgType* Pgs;
 } J1939Tp_ConfigType;

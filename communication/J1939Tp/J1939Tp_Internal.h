@@ -84,11 +84,11 @@ static inline const J1939Tp_ChannelType* J1939Tp_Internal_GetChannel(const J1939
 static inline void J1939Tp_Internal_RxIndication_Dt(PduInfoType* PduInfoPtr, J1939Tp_Internal_ChannelInfoType* Channel);
 static inline void J1939Tp_Internal_RxIndication_Cm(PduInfoType* PduInfoPtr, J1939Tp_Internal_ChannelInfoType* Channel);
 static inline void J1939Tp_Internal_RxIndication_ReverseCm(PduInfoType* PduInfoPtr, J1939Tp_Internal_ChannelInfoType* Channel);
-static inline void J1939Tp_Internal_RxIndication_Direct(PduInfoType* PduInfoPtr, J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr);
+static inline void J1939Tp_Internal_RxIndication_Direct(PduInfoType* PduInfoPtr, const J1939Tp_RxPduInfoType* RxPduInfoPtr);
 Std_ReturnType J1939Tp_ChangeParameterRequest(PduIdType SduId, TPParameterType Parameter, uint16 value);
 static inline void J1939Tp_Internal_TxConfirmation_RxChannel(J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr, const J1939Tp_RxPduInfoType* RxPduInfo);
 static inline boolean J1939Tp_Internal_IsDtPacketAlreadySent(uint8 nextPacket, uint8 totalPacketsSent);
-static inline Std_ReturnType J1939Tp_Internal_GetRxPduInfo(PduIdType RxPdu,const J1939Tp_RxPduInfoType** RxPduInfo);
+static inline Std_ReturnType J1939Tp_Internal_GetRxPduRelationsInfo(PduIdType RxPdu,const J1939Tp_RxPduInfoRelationsType** RxPduInfo);
 static inline Std_ReturnType J1939Tp_Internal_GetPgFromPgn(const J1939Tp_ChannelType* channel, J1939Tp_Internal_PgnType Pgn, const J1939Tp_PgType** Pg);
 static inline boolean J1939Tp_Internal_IsLastDt(J1939Tp_Internal_RxChannelInfoType* rxPgInfo);
 static inline void J1939Tp_Internal_TxConfirmation_TxChannel(J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr,const J1939Tp_RxPduInfoType* RxPduInfo);
