@@ -13,52 +13,105 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
-
-
-/**
- * @file Fls.c
- * @breif Autosar Flash driver for Freescale MPC55xx.
- */
-
-
+/* ----------------------------[information]----------------------------------*/
 /*
- * IMPLEMENTATION NOTES
- * - It seems that the Autosar specification is not consistent. For
- *   FLS_AC_LOAD_ON_JOB_START == STD_ON it seems that the driver suddenly
- *   becomes blocking.
+ * Author: mahi
+ *
+ * Part of Release:
+ *   3.0 (R3.0 V002)
+ *
+ * Description:
+ *   Implements the Fls module (flash driver)
+ *
+ * Support:
+ *   General				  Have Support
+ *   -------------------------------------------
+ *   FLS_AC_LOAD_ON_JOB_START	 Y
+ *   FLS_BASE_ADDRESS			 Y, taken from FlashInfo
+ *   FLS_CANCEL_API				 N
+ *   FLS_COMPARE_API			 Y
+ *   FLS_DEV_ERROR_DETECT		 Y
+ *   FLS_GET_JOB_RESULT_API		 Y
+ *   FLS_GET_STATUS_API			 Y
+ *   FLS_SET_MODE_API            N
+ *   FLS_TOTAL_SIZE				 Y, taken from FlashInfo
+ *   FLS_USE_INTERRUPTS			 N, no hardware support
+ *   FLS_VERSION_INFO_API		 Y
+ *
+ *   Device
+ *   - MPC5668  , No support for shadow flash
+ *   - MPC5606S , Support for dataflash only
+ *
+ * Implementation Notes:
+ *   Affected files:
+ *   - Fls.c
+ *   - Fls_Cfg.c/.h
+ *   - flash_h7f_c90.c     middle level driver
+ *   - flash_ll_h7f_c90.c  low level driver
+ *   - flash.h             interface for flash_xxx
+ *
+ *   Can't really tell if FlsMaxWriteFastMode, FlsMaxWriteNormalMode, etc is only
+ *   for SPI flashes or not. Is it?
+ *
+ * Things left:
+ *   - Virtual addresses, FLS209 is not done (code assumes FLS_BASE_ADDRESS is 0)
  *
  */
 
-/*
- * Use cases:
- * 1. Bootloader, self replace
- * 2. Bootloader, application loading
- *
- * In case 2 it's very straight forward and you can just use all the functions
- * as intended. In case 1. there are some problems understanding how Autosar
- * want to implement it. What is given from spec is.
- * - If FLS_AC_LOAD_ON_JOB_START == STD_ON we copy the flash access routines
- *   to RAM( to FlsAcErase and FlsAcWrite ).
- *
- * Strange things:
- * - What happens to all the other functions that is needed to get the status
- *   for the flash driver. Did the driver just get blocking ??
- *
- */
+/* ----------------------------[requirements]--------------------------------*/
 
+/* FlsGeneral, Complete for 3.0 */
+/** @req FLS172 */
+#warning ENABLE THESE AGAIN
+
+/** !req FLS169 */
+/** !req FLS285 */
+/** !req FLS286 */
+/** !req FLS287 */
+/** !req FLS288 */
+/** !req FLS289 */
+/** !req FLS290 */
+/** !req FLS291 */
+/** !req FLS170 */
+/** !req FLS292 */
+/** !req FLS293 */
+
+/* FlsConfigSet, Complete for 3.0 */
+/** !req FLS174 */
+/** !req FLS270 */
+/** !req FLS271 */
+/** !req FLS272 */
+/** @req FLS273 */
+/** @req FLS274 */
+/** !req FLS275 */
+/** !req FLS276 */
+/** @req FLS277 */
+/** @req FLS278 */
+/** !req FLS279  N/A in core */
+
+/* FlsPublishedInformation, Complete for 3.0 */
+/** !req FLS294 */
+/** !req FLS295 */
+/** !req FLS296 */
+/** !req FLS297 */
+/** !req FLS298 */
+/** !req FLS299 */
+/** !req FLS300 */
+/** !req FLS198 */
+/** !req FLS301 */
+
+/* FlsSectorList and FlsSector , Complete for 3.0 */
+/** !req FLS201 N/A in core since we use own format */
+/** !req FLS202 N/A in core since we use own format */
+/** !req FLS280 N/A in core since we use own format */
+/** !req FLS281 N/A in core since we use own format */
+/** !req FLS282 N/A in core since we use own format */
+/** !req FLS283 N/A in core since we use own format */
+
+
+/* ----------------------------[includes]------------------------------------*/
 #include "Fls.h"
-/* Freescale driver */
-#include "ssd_types.h"
-#if defined(CFG_MPC5606S)
-#include "ssd_c90fl.h"
-#else
-#include "ssd_h7f.h"
-#endif
+#include "flash.h"
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
@@ -68,268 +121,107 @@
 #endif
 #include "Cpu.h"
 #include "mpc55xx.h"
-#if defined(CFG_MPC5606S)
-#include "Fls_C90FL.h"
-#else
-#include "Fls_H7F.h"
-#endif
-/* Flash layout for MPC5516 */
-/*
- * Low:  8x16K + 2x64k
- * Mid:  2x128K
- * High: 8x128K
- */
-#if defined(CFG_MPC5606S)
-#define C90FL_REG_BASE          (UINT32)&CFLASH0
-#define C90FL_CODE1_REG_BASE    (UINT32)&CFLASH1
-#define C90FL_DATA_REG_BASE     (UINT32)&DFLASH
-#else
-#define H7F_REG_BASE 			(UINT32)&FLASH
-#endif
-#define MAIN_ARRAY_BASE 		0x00000000
 
-#if defined(CFG_MPC5606S)
-#define MAIN_CODE1_ARRAY_BASE   0x00080000
-#define MAIN_DATA_ARRAY_BASE    0x00800000
+#if (FLS_BASE_ADDRESS != 0)
+#error Virtual addresses not supported
 #endif
 
-#ifdef CFG_MPC5516
-#define SHADOW_ROW_BASE  		0x00FF8000
-#elif defined(CFG_MPC5567)
-#define SHADOW_ROW_BASE  		0x00FFFC00
-#elif defined(CFG_MPC5606S)
-#define SHADOW_ROW_BASE         0x00200000
-#endif
+/* ----------------------------[private define]------------------------------*/
+/* ----------------------------[private macro]-------------------------------*/
 
-#if defined(CFG_MPC5606S)
-#define SHADOW_ROW_SIZE         0x00004000
-#define FLASH_PAGE_SIZE         C90FL_PAGE_SIZE_08
-#else
-#define SHADOW_ROW_SIZE 		0x00008000
-#define FLASH_PAGE_SIZE    H7FB_PAGE_SIZE
-#endif
-#define FLASH_TOTAL_BLOCKS ( 20 )
-
-#if 0
-#define VFLAGS_ADDR_SECT		(1<<0)
-#define VFLAGS_ADDR_PAGE		(1<<1)
-#define VFLAGS_LEN_SECT			(1<<2)
-#define VFLAGS_LEN_PAGE			(1<<3)
-
-static inline int Fls_Validate( uint32 addr,uint32 length, uint32 api,uint32 rv ) {
-  int i;
-  int addrOk=0;
-  uint32 flags_ok;
-  const Fls_SectorType* sector;
-  Fls_ConfigType *cfg = Fls_Global.config;
-
-  // Pre checks.
-	if( flags & VFLAGS_LEN_SECT ) {
-		if( (addr + length) > FLS_TOTAL_SIZE ) {
-			return (-1);
-		}
-	}
-
-  for(i=0;i<cfg->FlsSectorListSize;i++) {
-  	sector = &cfg->FlsSectorList[sectorIndex];
-  	if( addr > (sector->FlsSectorStartaddress + sector->FlsNumberOfSectors * sector->FlsNumberOfSectors) ) {
-  		continue;
-  	}
-  	if( flags & VFLAGS_ADDR_SECT ) {
-  		if( (addr % sector->FlsSectorSize) == 0) {
-  			flags &= ~VFLAGS_ADDR_SECT;
-  		}
-  	}
-  	if( flags & VFLAGS_ADDR_PAGE ) {
-  		if( (addr % sector->FlsPageSize) == 0) {
-  			flags &= ~VFLAGS_ADDR_PAGE;
-  		}
-  	}
-  	if( flags & VFLAGS_LEN_SECT ) {
-  		// Check
-  		if( (0!= length) && (length < sectorPtr->FlsSectorSize) ) {
-  			flags &= ~VFLAGS_ADDR_SECT;
-  		}
-  	}
-  	if( flags & VFLAGS_LEN_PAGE ) {
-  		if( (0!= length) && (length < sectorPtr->FlsPageSize)) {
-  			flags &= ~VFLAGS_ADDR_PAGE;
-  		}
-  	}
-  }
-}
-#endif
-
-#if ( FLS_DEV_ERROR_DETECT == STD_ON )
-#define FLS_VALIDATE_PARAM_ADDRESS_SECTOR_W_RV(_addr, _api, _rv)\
-  int sectorIndex;\
-  int addrOk=0;\
-  const Fls_SectorType* sector;\
-  for (sectorIndex=0; sectorIndex<Fls_Global.config->FlsSectorListSize;sectorIndex++) {\
-    sector = &Fls_Global.config->FlsSectorList[sectorIndex];\
-    if((((uint32)_addr-sector->FlsSectorStartaddress) / sector->FlsSectorSize)<sector->FlsNumberOfSectors){\
-      /* Within the right adress space */\
-      if (!(((uint32)_addr-sector->FlsSectorStartaddress) % sector->FlsSectorSize)){\
-        /* Address is correctly aligned */\
-        addrOk=1;\
-        break;\
-      }\
-    }\
-  }\
-  if (1!=addrOk){\
-  Det_ReportError(MODULE_ID_FLS,0,_api,FLS_E_PARAM_ADDRESS ); \
-  return _rv; \
-  }
-
-#define FLS_VALIDATE_PARAM_ADDRESS_PAGE_W_RV(_addr, _api, _rv)\
-  int sectorIndex;\
-  int addrOk=0;\
-  const Fls_SectorType* sector;\
-  for (sectorIndex=0; sectorIndex<Fls_Global.config->FlsSectorListSize;sectorIndex++) {\
-    sector = &Fls_Global.config->FlsSectorList[sectorIndex];\
-    if((((uint32)_addr-sector->FlsSectorStartaddress) / sector->FlsSectorSize)<sector->FlsNumberOfSectors){\
-      /* Within the right adress space */\
-      if (!(((uint32)_addr-sector->FlsSectorStartaddress) % sector->FlsPageSize)){\
-        /* Address is correctly aligned */\
-        addrOk=1;\
-        break;\
-      }\
-    }\
-  }\
-  if (1!=addrOk){\
-  Det_ReportError(MODULE_ID_FLS,0,_api,FLS_E_PARAM_ADDRESS ); \
-  return _rv; \
-  }
-
-#define FLS_VALIDATE_READ_PARAM_ADDRESS_PAGE_W_RV(_addr, _api, _rv)\
-  int sectorIndex;\
-  int addrOk=0;\
-  const Fls_SectorType* sector;\
-  for (sectorIndex=0; sectorIndex<Fls_Global.config->FlsSectorListSize;sectorIndex++) {\
-    sector = &Fls_Global.config->FlsSectorList[sectorIndex];\
-    if((((uint32)_addr-sector->FlsSectorStartaddress) / sector->FlsSectorSize)<sector->FlsNumberOfSectors){\
-      /* Within the right adress space */\
-        addrOk=1;\
-    }\
-  }\
-  if (1!=addrOk){\
-  Det_ReportError(MODULE_ID_FLS,0,_api,FLS_E_PARAM_ADDRESS ); \
-  return _rv; \
-  }
-
-#define FLS_VALIDATE_PARAM_LENGTH_PAGE_W_RV(_addr, _length, _api, _rv)\
-  int i;\
-  int lengthOk=0;\
-  const Fls_SectorType* sectorPtr= &Fls_Global.config->FlsSectorList[0];\
-  for (i=0; i<Fls_Global.config->FlsSectorListSize;i++) {\
-    if ((sectorPtr->FlsSectorStartaddress + (sectorPtr->FlsNumberOfSectors * sectorPtr->FlsSectorSize))>=(uint32_t)(_addr+(_length))){\
-      if ((0!=_length)&&!(_length % sectorPtr->FlsPageSize)){\
-        lengthOk=1;\
-        break;\
-      }\
-    }\
-    sectorPtr++;\
-  }\
-  if (!lengthOk){\
-    Det_ReportError(MODULE_ID_FLS,0,_api,FLS_E_PARAM_LENGTH ); \
-    return _rv; \
-  }
-
-#define FLS_VALIDATE_READ_PARAM_LENGTH_PAGE_W_RV(_addr, _length, _api, _rv)\
-  int i;\
-  int lengthOk=0;\
-  const Fls_SectorType* sectorPtr= &Fls_Global.config->FlsSectorList[0];\
-  for (i=0; i<Fls_Global.config->FlsSectorListSize;i++) {\
-    if ((_length!=0) && (sectorPtr->FlsSectorStartaddress + (sectorPtr->FlsNumberOfSectors * sectorPtr->FlsSectorSize))>=(uint32_t)(_addr+(_length))){\
-    	lengthOk=1;\
-    }\
-    sectorPtr++;\
-  }\
-  if (!lengthOk){\
-    Det_ReportError(MODULE_ID_FLS,0,_api,FLS_E_PARAM_LENGTH ); \
-    return _rv; \
-  }
-
-#define FLS_VALIDATE_PARAM_LENGTH_SECTOR_W_RV(_addr, _length, _api, _rv)\
-  int i;\
-  int lengthOk=0;\
-  const Fls_SectorType* sectorPtr= &Fls_Global.config->FlsSectorList[0];\
-  for (i=0; i<Fls_Global.config->FlsSectorListSize;i++) {\
-    if ((sectorPtr->FlsSectorStartaddress + (sectorPtr->FlsNumberOfSectors * sectorPtr->FlsSectorSize))>=(uint32_t)(_addr+(_length))){\
-      if ((0!=_length)&& !(_length % sectorPtr->FlsSectorSize)){\
-        lengthOk=1;\
-        break;\
-      }\
-    }\
-    sectorPtr++;\
-  }\
-  if (!lengthOk){\
-    Det_ReportError(MODULE_ID_FLS,0,_api,FLS_E_PARAM_LENGTH ); \
-    return _rv; \
-  }
-
-#define FLS_VALIDATE_STATUS_UNINIT(_status, _api)\
-  if (MEMIF_UNINIT == _status){\
-    Det_ReportError(MODULE_ID_FLS,0,_api,FLS_E_UNINIT); \
-    return; \
-  }
-
-#define FLS_VALIDATE_STATUS_UNINIT_W_RV(_status, _api, _rv)\
-  if (MEMIF_UNINIT == _status){\
-    Det_ReportError(MODULE_ID_FLS,0,_api,FLS_E_UNINIT); \
-    return _rv; \
-  }
-
-#define FLS_VALIDATE_STATUS_BUSY(_status, _api)\
-  if (MEMIF_BUSY == _status){\
-    Det_ReportError(MODULE_ID_FLS,0,_api,FLS_E_BUSY); \
-    return; \
-  }
-
-#define FLS_VALIDATE_STATUS_BUSY_W_RV(_status, _api, _rv)\
-  if (MEMIF_BUSY == _status){\
-    Det_ReportError(MODULE_ID_FLS,0,_api,FLS_E_BUSY); \
-    return _rv; \
-  }
-
-#define FLS_VALIDATE_PARAM_DATA_W_RV(_ptr,_api, _rv) \
-  if( (_ptr)==((void *)0) ) { \
-    Det_ReportError(MODULE_ID_FLS,0,_api,FLS_E_PARAM_DATA); \
-    return _rv; \
-  }
-#else
-  #define FLS_VALIDATE_PARAM_ADDRESS_SECTOR_W_RV(_addr, _api, _rv)
-  #define FLS_VALIDATE_PARAM_ADDRESS_PAGE_W_RV(_addr, _api, _rv)
-  #define FLS_VALIDATE_READ_PARAM_ADDRESS_PAGE_W_RV(_addr, _api, _rv)
-  #define FLS_VALIDATE_PARAM_LENGTH_SECTOR_W_RV(_addr, _length, _api, _rv)
-  #define FLS_VALIDATE_PARAM_LENGTH_PAGE_W_RV(_addr, _length, _api, _rv)
-  #define FLS_VALIDATE_READ_PARAM_LENGTH_PAGE_W_RV(_addr, _length, _api, _rv)
-  #define FLS_VALIDATE_STATUS_UNINIT_W_RV(_status, _api, _rv)
-  #define FLS_VALIDATE_STATUS_BUSY(_status, _api)
-  #define FLS_VALIDATE_STATUS_BUSY_W_RV(_status, _api, _rv)
-  #define FLS_VALIDATE_PARAM_DATA_W_RV(_ptr,_api,_rv)
-#endif
 
 #if ( FLS_DEV_ERROR_DETECT == STD_ON )
 #define DET_REPORTERROR(_x,_y,_z,_q) Det_ReportError(MODULE_ID_FLS, _y, _z, _q)
-#else
-#define DET_REPORTERROR(_x,_y,_z,_q)
-#endif
 
-#if ( FLS_GET_JOB_RESULT_API == STD_ON)
 #define FEE_JOB_END_NOTIFICATION() \
   if( Fls_Global.config->FlsJobEndNotification != NULL ) { \
     Fls_Global.config->FlsJobEndNotification(); \
   }
+
 #define FEE_JOB_ERROR_NOTIFICATION() \
   if( Fls_Global.config->FlsJobErrorNotification != NULL ) { \
     Fls_Global.config->FlsJobErrorNotification(); \
   }
+
+#define VALIDATE(_exp,_api,_err ) \
+        if( !(_exp) ) { \
+          Det_ReportError(MODULE_ID_FLS,0,_api,_err); \
+          return E_NOT_OK; \
+        }
+
+#define VALIDATE_NO_RV(_exp,_api,_err ) \
+        if( !(_exp) ) { \
+          Det_ReportError(MODULE_ID_FLS,0,_api,_err); \
+          return; \
+        }
+
+#define VALIDATE_W_RV(_exp,_api,_err,_rv ) \
+        if( !(_exp) ) { \
+          Det_ReportError(MODULE_ID_FLS,0,_api,_err); \
+          return (_rv); \
+        }
+
+
 #else
+#define DET_REPORTERROR(_x,_y,_z,_q)
 #define FEE_JOB_END_NOTIFICATION()
 #define FEE_JOB_ERROR_NOTIFICATION()
+#define VALIDATE(_exp,_api,_err )
+#define VALIDATE_NO_RV(_exp,_api,_err )
+#define VALIDATE_W_RV(_exp,_api,_err,_rv )
+#define DET_REPORTERROR(_x,_y,_z,_q)
 #endif
 
+/* ----------------------------[private typedef]-----------------------------*/
+
+typedef enum {
+	FLS_JOB_NONE, FLS_JOB_COMPARE, FLS_JOB_ERASE, FLS_JOB_READ, FLS_JOB_WRITE,
+} Fls_Arc_JobType;
+
+typedef struct {
+	uint32_t dest;
+	uint32_t size;
+	uint32_t source;
+	uint32_t left;
+} Fls_ProgInfoType;
+
+
+typedef struct {
+	const Fls_ConfigType * config;
+	MemIf_StatusType 	status;
+	MemIf_JobResultType jobResultType;
+	Fls_Arc_JobType 	jobType;
+	Fls_AddressType 	sourceAddr;
+	uint8 * 			targetAddr;
+	Fls_LengthType 		length;
+	Fls_ProgInfoType 	flashWriteInfo;
+	bool				mustCheck;
+} Fls_GlobalType;
+
+Fls_GlobalType Fls_Global = {
+	.status = MEMIF_UNINIT,
+	.jobResultType = MEMIF_JOB_OK,
+	.jobType = FLS_JOB_NONE,
+	.mustCheck = 0,
+};
+
+
+
+/* ----------------------------[private function prototypes]-----------------*/
+/* ----------------------------[private variables]---------------------------*/
+static Std_VersionInfoType _Fls_VersionInfo = {
+		.vendorID = (uint16) 1,
+		.moduleID = (uint16) MODULE_ID_FLS,
+		.instanceID = (uint8) 1,
+		/* Vendor numbers */
+		.sw_major_version = (uint8) FLS_SW_MAJOR_VERSION,
+		.sw_minor_version = (uint8) FLS_SW_MINOR_VERSION,
+		.sw_patch_version = (uint8) FLS_SW_PATCH_VERSION,
+		.ar_major_version = (uint8) FLS_AR_MAJOR_VERSION,
+		.ar_minor_version = (uint8) FLS_AR_MINOR_VERSION,
+		.ar_patch_version = (uint8) FLS_AR_PATCH_VERSION, };
+
+/* ----------------------------[private functions]---------------------------*/
 
 
 /**
@@ -337,466 +229,170 @@ static inline int Fls_Validate( uint32 addr,uint32 length, uint32 api,uint32 rv 
  * Since you can't read the PC on PPC, do the next best thing.
  * Ensure that the function is not inlined
  */
-static uint32 Fls_GetPc( void ) __attribute__ ((noinline));
+#if 0
+static uint32 Fls_GetPc(void) __attribute__ ((noinline));
 
-static uint32 Fls_GetPc( void )
-{
-  return get_spr(SPR_LR);
+static uint32 Fls_GetPc(void) {
+	return get_spr(SPR_LR);
+}
+#endif
+
+static void fls_EraseFail( void ) {
+	Fls_Global.jobResultType = MEMIF_JOB_FAILED;
+	Fls_Global.jobType = FLS_JOB_NONE;
+	Fls_Global.status = MEMIF_IDLE;
+#if defined(USE_DEM)
+	Dem_ReportErrorStatus(FLS_E_ERASE_FAILED, DEM_EVENT_STATUS_FAILED);
+#endif
+	FEE_JOB_ERROR_NOTIFICATION();
 }
 
-
-typedef struct {
-  uint32 addr;
-  uint32 size;
-} Fls_InternalSectorType;
-
-
-SSD_CONFIG ssdConfig = {
-#if defined(CFG_MPC5606S)
-	C90FL_REG_BASE,         /* C90FL Flash control register base */
-#else
-	H7F_REG_BASE,           /* H7F control register base */
+static void fls_WriteFail( void ) {
+	Fls_Global.jobResultType = MEMIF_JOB_FAILED;
+	Fls_Global.jobType = FLS_JOB_NONE;
+	Fls_Global.status = MEMIF_IDLE;
+#if defined(USE_DEM)
+	Dem_ReportErrorStatus(FLS_E_WRITE_FAILED, DEM_EVENT_STATUS_FAILED);
 #endif
-	MAIN_ARRAY_BASE,        /* base of main array */
-    0,                      /* size of main array */
-    SHADOW_ROW_BASE,        /* base of shadow row */
-    SHADOW_ROW_SIZE,        /* size of shadow row */
-    0,                      /* block number in low address space */
-    0,                      /* block number in middle address space */
-    0,                      /* block number in high address space */
-    8,        				/* page size */
-    FALSE,                   /* debug mode selection */
-};
+	FEE_JOB_ERROR_NOTIFICATION();
 
-#if defined(CFG_MPC5606S)
-SSD_CONFIG ssdCode1Config = {
-	C90FL_CODE1_REG_BASE,    /* C90FL Data Flash control register base */
-	MAIN_CODE1_ARRAY_BASE,   /* base of main array */
-    0,                      /* size of main array */
-    0,                      /* base of shadow row. Not available on DFlash */
-    0,                      /* size of shadow row. Not available on DFlash */
-    0,                      /* block number in low address space */
-    0,                      /* block number in middle address space */
-    0,                      /* block number in high address space */
-    FLASH_PAGE_SIZE,        /* flash page size selection */
-    FALSE                   /* debug mode selection */
-};
-
-SSD_CONFIG ssdDataConfig = {
-	C90FL_DATA_REG_BASE,    /* C90FL Data Flash control register base */
-	MAIN_DATA_ARRAY_BASE,   /* base of main array */
-    0,                      /* size of main array */
-    0,                      /* base of shadow row. Not available on DFlash */
-    0,                      /* size of shadow row. Not available on DFlash */
-    0,                      /* block number in low address space */
-    0,                      /* block number in middle address space */
-    0,                      /* block number in high address space */
-    FLASH_PAGE_SIZE,        /* flash page size selection */
-    FALSE                   /* debug mode selection */
-};
-#endif
-
-static Std_VersionInfoType _Fls_VersionInfo = {
-    .vendorID 			= (uint16)1,
-    .moduleID 			= (uint16) MODULE_ID_FLS,
-    .instanceID			= (uint8)1,
-    /* Vendor numbers */
-    .sw_major_version	= (uint8)FLS_SW_MAJOR_VERSION,
-    .sw_minor_version	= (uint8)FLS_SW_MINOR_VERSION,
-    .sw_patch_version	= (uint8)FLS_SW_PATCH_VERSION,
-    .ar_major_version	= (uint8)FLS_AR_MAJOR_VERSION,
-    .ar_minor_version	= (uint8)FLS_AR_MINOR_VERSION,
-    .ar_patch_version	= (uint8)FLS_AR_PATCH_VERSION,
-};
-
-//
-typedef enum {
-  FLS_JOB_NONE,
-  FLS_JOB_COMPARE,
-  FLS_JOB_ERASE,
-  FLS_JOB_READ,
-  FLS_JOB_WRITE,
-} Fls_Arc_JobType;
-
-#if 0
-typedef struct {
-  MemIf_StatusType    status;
-  MemIf_JobResultType jobResultType;
-  Fls_Arc_JobType	jobType;
-  Fls_AddressType   sourceAddr;
-  uint8 *targetAddr;
-  Fls_LengthType length;
-
-  Fls_ProgInfoType flashWriteInfo;
-
-} FlsUnit_t;
-#endif
-
-
-#if 0
-static FlsUnit_t privData = {
-    .status = MEMIF_UNINIT,
-    .jobResultType = MEMIF_JOB_OK,
-    .jobType = FLS_JOB_NONE,
-
-};
-#endif
-
-// Default Config
-#if 0
-const Fls_ConfigType * configDataPtr = &FlsConfigSet[0];
-#endif
-
-// TODO: Comment and cleanup
-typedef struct {
-  const Fls_ConfigType * config;
-  Fls_EraseBlockType lockBits;
-
-  MemIf_StatusType    status;
-  MemIf_JobResultType jobResultType;
-  Fls_Arc_JobType	jobType;
-  Fls_AddressType   sourceAddr;
-  uint8 *targetAddr;
-  Fls_LengthType length;
-
-  Fls_ProgInfoType flashWriteInfo;
-} Fls_GlobalType;
-
-Fls_GlobalType Fls_Global = {
-    .status = MEMIF_UNINIT,
-    .jobResultType = MEMIF_JOB_OK,
-    .jobType = FLS_JOB_NONE,
-};
-
-
-#if 0
-static inline uint32 rlwimi(uint32 val, uint16 sh, uint16 mb,uint16 me)
-{
-  uint32 result;
-  asm volatile("rlwimi %0,%1,8,16,23"
-          : "=r" (result)
-          : "r" (val),"g" (sh), "g" (mb), "g" (me) );
-  return result;
 }
 
-#define CREATE_MASK(_start,_stop) rlwimi(0xffffffff,0x0,0x0,0x10)
-#endif
+/* ----------------------------[public functions]----------------------------*/
 
 /**
- * Converts an address to a freescale erase block.
- * Assumes addr is located from FLS_BASE_ADDRESS
  *
- * @param addr address to convert
- * @param rem pointer to reminder that gets filled in by the function
- * @return A block number
+ * @param ConfigPtr
  */
 
-// TODO: This have hardcoded limits. Get from config instead
-static uint32 address_to_block( uint32 addr, uint32 *rem ) {
-  uint32 block;
+void Fls_Init(const Fls_ConfigType *ConfigPtr) {
+	/** @req FLS249 3.0 */
+	/** @req FLS191 3.0 */
+	/** @req FLS014 3.0 */
+	/** @req FLS086 3.0 */
+	/** @req FLS015 3.0 */
+	/** !req FLS048 TODO, true?    */
+	/** !req FLS271 NO_SUPPORT 3.0 */
+	/** !req FLS325 NO_SUPPORT 4.0 */
+	/** !req FLS326 NO_SUPPORT 4.0 */
 
-#if defined(CFG_MPC5606S)
-  /* CFLASH0 */
-  if( addr < 0x80000 ) {
-	  if ( addr < 0x8000) {
-		  block = addr / 0x8000;
-		  *rem = addr % 0x8000;
-	  } else if ( addr < 0x10000) {
-		  block = 1 + ( addr - 0x8000 ) / 0x4000;
-		  *rem = addr % 0x4000;
-	  } else if ( addr < 0x20000 ) {
-		  block = 3 + ( addr - 0x10000 ) / 0x8000;
-		  *rem = addr % 0x8000;
-	  } else  {
-		  block = 5 + ( addr - 0x20000 ) / 0x20000;
-		  *rem = addr % 0x20000;
-	  }
-  }
-  /* CFLASH1 */
-  else if( addr < 0x100000 ) {
-	  block = (addr - 0x80000) / 0x20000;
-	  *rem = (addr - 0x80000) % 0x20000;
-  }
-  /* DFLASH */
-  else if (( addr >= 0x800000 )&(addr < 0x810000)) {
-		  block = (addr - 0x800000) / 0x4000;
-		  *rem = (addr - 0x800000) % 0x4000;
-  }
-  else {
-		  block = (-1);
-		  *rem = (-1);
-  }
+	/** @req FLS268 */
+	VALIDATE_NO_RV(Fls_Global.status!=MEMIF_BUSY,FLS_INIT_ID, FLS_E_BUSY );
 
+	Fls_Global.status = MEMIF_UNINIT;
+	Fls_Global.jobResultType = MEMIF_JOB_PENDING;
+	// TODO: FLS_E_PARAM_CONFIG
 
-#else
-  if( addr < 0x20000) {
-    // Low range, 8x16K
-    block = addr / 0x4000;
-    *rem   = addr % 0x4000;
-  } else if ( addr < 0x40000) {
-    // Low range, 2x64k range
-    block = 8 + ( addr - 0x20000 ) / 0x10000;
-    *rem   = addr % 0x10000;
-  } else if( addr < 0x80000 ) {
-    // mid range
-    block = 10 + ( addr - 0x40000 ) / 0x20000;
-    *rem = addr % 0x20000;
-  } else if( addr < 0x180000 ) {
-    // high range
-    block = 12 + ( addr - 0x80000 ) / 0x20000;
-    *rem = addr % 0x20000;
-  } else {
-    block = (-1);
-    *rem = (-1);
-  }
+	/** @req FLS191 */
+	Fls_Global.config = ConfigPtr;
+
+	Flash_Init();
+
+	/** @req FLS016 3.0 *//** @req FLS323 4.0 *//** @req FLS324 4.0*/
+	Fls_Global.status = MEMIF_IDLE;
+	Fls_Global.jobResultType = MEMIF_JOB_OK;
+	return;
+}
+
+/**
+ * Erase flash sectors
+ *
+ * @param TargetAddress Always from 0 to FLS_TOTAL_SIZE
+ * @param Length
+ * @return
+ */
+Std_ReturnType Fls_Erase(Fls_AddressType TargetAddress, Fls_LengthType Length) {
+	TargetAddress += FLS_BASE_ADDRESS;
+
+	/** @req FLS250 3.0/4.0 */
+	/** @req FLS218 3.0/4.0 */
+	/** @req FLS220 3.0/4.0 */
+	/** @req FLS327 4.0     */
+
+	/** @req FLS065 */
+	VALIDATE_W_RV( Fls_Global.status != MEMIF_UNINIT, FLS_ERASE_ID, FLS_E_UNINIT, E_NOT_OK );
+	/** @req FLS023 */
+	VALIDATE_W_RV( Fls_Global.status != MEMIF_BUSY, FLS_ERASE_ID, FLS_E_BUSY, E_NOT_OK );
+    /** @req FLS020 3.0/4.0 */
+	VALIDATE_W_RV( EE_OK == Flash_SectorAligned(Fls_Global.config->FlsInfo, TargetAddress ),
+	        FLS_ERASE_ID, FLS_E_PARAM_ADDRESS, E_NOT_OK );
+    /** @req FLS021 3.0/4.0 */
+    VALIDATE_W_RV( (Length != 0) && (EE_OK == Flash_SectorAligned( Fls_Global.config->FlsInfo, TargetAddress + Length)),
+            FLS_ERASE_ID, FLS_E_PARAM_LENGTH, E_NOT_OK );
+
+	// Check if we trying to erase a partition that we are executing in
+#if 0
+	pc = Fls_GetPc();
 #endif
-  return block;
+
+
+	Fls_Global.status = MEMIF_BUSY;				    /** @req FLS219 3.0 */ /** @req FLS328 4.0 */
+	Fls_Global.jobResultType = MEMIF_JOB_PENDING;   /** @req FLS329 4.0 */
+	Fls_Global.jobType = FLS_JOB_ERASE;
+	/* Unlock */
+	Flash_Lock(Fls_Global.config->FlsInfo,FLASH_OP_UNLOCK,TargetAddress, Length );
+
+	/** @req FLS145 */
+	Flash_Erase(Fls_Global.config->FlsInfo,TargetAddress, Length, NULL );
+
+	return E_OK;	/** @req FLS330 4.0 */
 }
 
 
 /**
- * Converts an address range( addr to addr + size) to freescale bit erase
- * blocks. The function adds the erase block information to eraseBlocks ptr.
+ * Programs flash sectors
  *
- * @param eraseBlocks Ptr to an erase structure
- * @param addr The start-address to convert
- * @param size The size of the block
- * @return The test results
+ * @param TargetAddress
+ * @param SourceAddressPtr
+ * @param Length
+ * @return
  */
-static void address_to_erase_blocks( Fls_EraseBlockType *eraseBlocks, uint32 addr, uint32 size ) {
-//	EraseBlock_t eraseBlocks;
-  uint32 startBlock;
-  uint32 endBlock;
-  uint32 mask1;
-  uint32 mask2;
-  uint32 mask;
-  uint32 rem;
 
-  /* Create a mask with continuous set of 1's */
-  startBlock = address_to_block( addr,&rem );
-  endBlock = address_to_block( addr + size - 1,&rem );
+Std_ReturnType Fls_Write(Fls_AddressType TargetAddress,
+		const uint8 *SourceAddressPtr, Fls_LengthType Length) {
+	TargetAddress += FLS_BASE_ADDRESS;
 
-  // Check so our implementation holds..
-  assert( endBlock <= FLASH_TOTAL_BLOCKS );
+	/** @req FLS251 3.0 */
+	/** @req FLS223 3.0 */
+	/** @req FLS225 3.0/4.0 */
+	/** @req FLS226 3.0/4.0 */
 
-#define BLOCK_MASK 0x0003ffffUL
+	/** @req FLS066 3.0/4.0 */
+	/** @req FLS030 3.0/4.0 */
+	/** @req FLS157 3.0/4.0 */
+	/** @req FLS026 3.0/4.0 */
+	/** @req FLS027 3.0/4.0 */
+	VALIDATE_W_RV(Fls_Global.status != MEMIF_UNINIT,FLS_WRITE_ID, FLS_E_UNINIT,E_NOT_OK );
+	VALIDATE_W_RV(Fls_Global.status != MEMIF_BUSY,FLS_WRITE_ID, FLS_E_BUSY,E_NOT_OK );
+	VALIDATE_W_RV(SourceAddressPtr != ((void *)0),FLS_WRITE_ID, FLS_E_PARAM_DATA,E_NOT_OK );
+	VALIDATE_W_RV( TargetAddress % FLASH_PAGE_SIZE == 0, FLS_WRITE_ID, FLS_E_PARAM_ADDRESS, E_NOT_OK );
+	VALIDATE_W_RV( (Length != 0) && (((TargetAddress + Length) % FLASH_PAGE_SIZE) == 0) && ((TargetAddress + Length) < (FLS_BASE_ADDRESS + FLS_TOTAL_SIZE)),
+			FLS_WRITE_ID, FLS_E_PARAM_LENGTH, E_NOT_OK );
 
-  // create the mask
-  mask1 = ((-1UL)<<(31-endBlock))>>(31-endBlock);
-  mask2 = ((-1UL)>>startBlock)<<startBlock;
-  mask = mask1 & mask2;
+	// Destination is FLS_BASE_ADDRESS + TargetAddress
+	/** @req FLS224 3.0 */ /** @req FLS333 4.0 */
+	Fls_Global.jobResultType = MEMIF_JOB_PENDING;
+	/** @req FLS332 4.0 */
+	Fls_Global.status = MEMIF_BUSY;
+	Fls_Global.jobType = FLS_JOB_WRITE;
 
-#if defined( MPC5606S )
-  eraseBlocks->lowEnabledBlocks = mask&0xffff;   // Bits 0..15 indicats low blocks
-  eraseBlocks->midEnabledBlocks = (mask>>16)&3; // Bits 16..17 indicats mid blocks
-  eraseBlocks->highEnabledBlocks = mask>>18;    // Bits 18..23 indicats high blocks
-#else
-  // shift things in to make freescale driver happy
-  eraseBlocks->lowEnabledBlocks = mask&0x3ff;   // Bits 0..9 indicats low blocks
-  eraseBlocks->midEnabledBlocks = (mask>>10)&3; // Bits 10..11 indicats mid blocks
-  eraseBlocks->highEnabledBlocks = mask>>12;    // Bits 12..19 indicats high blocks
-#endif
+	// Fill in the required fields for programming...
+	/** @req FLS331 4.0 */
+	Fls_Global.flashWriteInfo.source = (uint32) SourceAddressPtr;
+	Fls_Global.flashWriteInfo.dest = TargetAddress;
+	Fls_Global.flashWriteInfo.left = Length;
 
-  return ;
-}
+	// unlock flash....
+	Flash_Lock(Fls_Global.config->FlsInfo,FLASH_OP_UNLOCK, TargetAddress, Length );
+	// Program
+	/** @req FLS146 3.0/4.0 */
+	Flash_ProgramPageStart(	Fls_Global.config->FlsInfo,
+							&Fls_Global.flashWriteInfo.dest,
+							&Fls_Global.flashWriteInfo.source,
+							&Fls_Global.flashWriteInfo.left,
+							NULL);
 
-
-void Fls_Init( const Fls_ConfigType *ConfigPtr )
-{
-  FLS_VALIDATE_STATUS_BUSY(Fls_Global.status, FLS_INIT_ID);
-  Fls_Global.status 		= MEMIF_UNINIT;
-  Fls_Global.jobResultType 	= MEMIF_JOB_PENDING;
-  uint32 returnCode;
-  Fls_EraseBlockType eraseBlocks;
-  // TODO: FLS_E_PARAM_CONFIG
-  Fls_Global.config = ConfigPtr;
-
-#if (FLS_AC_LOAD_ON_JOB_START == STD_ON )
-  /* Copy fls routines to RAM */
-  memcpy(__FLS_ERASE_RAM__,__FLS_ERASE_ROM__, (size_t)&__FLS_SIZE__);
-
-#endif
-
-
-  returnCode = FlashInit( &ssdConfig );
-#if defined( CFG_MPC5606S )
-  returnCode = FlashInit( &ssdCode1Config );
-  returnCode = FlashInit( &ssdDataConfig );
-#endif
-
-  // Lock shadow row..
-  eraseBlocks.lowEnabledBlocks = 0;
-  eraseBlocks.midEnabledBlocks = 0;
-  eraseBlocks.highEnabledBlocks = 0;
-  eraseBlocks.shadowBlocks = 1;
-
-#if defined(CFG_MPC5606S)
-  Fls_C90FL_SetLock(&ssdConfig,&eraseBlocks,1);
-#else
-  Fls_H7F_SetLock(&eraseBlocks,1);
-#endif
-
-  Fls_Global.status 		= MEMIF_IDLE;
-  Fls_Global.jobResultType 	= MEMIF_JOB_OK;
-  return;
-}
-
-/* TargetAddress always from 0 to FLS_TOTAL_SIZE */
-Std_ReturnType Fls_Erase(	Fls_AddressType   TargetAddress,
-                          Fls_LengthType    Length )
-{
-  uint32 endBlock;
-  uint32 startBlock;
-  uint32 rem;
-  Fls_EraseBlockType eraseBlock;
-  Fls_EraseInfoType eraseInfo;
-  uint32 pc;
-
-  FLS_VALIDATE_STATUS_UNINIT_W_RV(Fls_Global.status, FLS_ERASE_ID, E_NOT_OK);
-  FLS_VALIDATE_STATUS_BUSY_W_RV(Fls_Global.status, FLS_ERASE_ID, E_NOT_OK);
-  FLS_VALIDATE_PARAM_ADDRESS_SECTOR_W_RV(TargetAddress, FLS_ERASE_ID, E_NOT_OK);
-  FLS_VALIDATE_PARAM_LENGTH_SECTOR_W_RV(TargetAddress, Length, FLS_ERASE_ID, E_NOT_OK);
-
-  // Always check if status is not busy
-  if (Fls_Global.status == MEMIF_BUSY )
-     return E_NOT_OK;
-
-  // TargetAddress
-  startBlock = address_to_block(TargetAddress,&rem);
-
-  if( (startBlock == (-1)) || (rem!=0) ) {
-    DET_REPORTERROR(MODULE_ID_FLS,0,0x0,FLS_E_PARAM_ADDRESS );
-    return E_NOT_OK;
-  }
-
-  endBlock = address_to_block(TargetAddress+Length,&rem);
-
-  // Check if we trying to erase a partition that we are executing in
-  pc = Fls_GetPc();
-  if( (pc >= FLS_BASE_ADDRESS) && ( pc <= (FLS_BASE_ADDRESS + FLS_TOTAL_SIZE) ) ) {
-    // In flash erase
-  	uint32 pcBlock = address_to_block(pc,&rem);
-  	uint8 *partMap = Fls_Global.config->FlsBlockToPartitionMap;
-
-  	if( (partMap[pcBlock] >= partMap[startBlock]) && (partMap[pcBlock] <= partMap[endBlock]) ) {
-        // Can't erase and in the same partition we are executing
-        assert(0);
-    }
-  }
-
-  Fls_Global.status = MEMIF_BUSY;
-  Fls_Global.jobResultType = MEMIF_JOB_PENDING;
-  Fls_Global.jobType = FLS_JOB_ERASE;
-
-  address_to_erase_blocks(&eraseBlock,TargetAddress,Length);
-
-  eraseBlock.shadowBlocks = 0;
-  // Unlock
-
-#if defined( CFG_MPC5606S )
-  if ( TargetAddress < 0x80000 ) {
-	  Fls_C90FL_SetLock(&ssdConfig, &eraseBlock,0);
-  }
-  else if ( TargetAddress < 0x100000 ){
-	  Fls_C90FL_SetLock(&ssdCode1Config, &eraseBlock,0);
-  }
-  else {
-	  Fls_C90FL_SetLock(&ssdDataConfig, &eraseBlock,0);
-  }
-#else
-  Fls_H7F_SetLock(&eraseBlock,0);
-#endif
-  eraseInfo.state  = 0; // Always set this
-
-
-#if defined( CFG_MPC5606S )
-	Fls_Global.sourceAddr = TargetAddress;
-
-  if ( TargetAddress < 0x80000 ) {
-	  Fls_C90FL_FlashErase ( &ssdConfig ,
-	              0, // shadowFlag...
-	              eraseBlock.lowEnabledBlocks,
-	              eraseBlock.midEnabledBlocks,
-	              eraseBlock.highEnabledBlocks,
-	              &eraseInfo
-	                      );
-   }
-   else if ( TargetAddress < 0x100000 ){
-	   Fls_C90FL_FlashErase ( &ssdCode1Config ,
-	  	              0, // shadowFlag...
-	  	              eraseBlock.lowEnabledBlocks,
-	  	              eraseBlock.midEnabledBlocks,
-	  	              eraseBlock.highEnabledBlocks,
-	  	              &eraseInfo
-	  	                      );
-   }
-   else {
-	   Fls_C90FL_FlashErase ( &ssdDataConfig ,
-	  	              0, // shadowFlag...
-	  	              eraseBlock.lowEnabledBlocks,
-	  	              eraseBlock.midEnabledBlocks,
-	  	              eraseBlock.highEnabledBlocks,
-	  	              &eraseInfo
-	  	                      );
-   }
-
-#else
-  Fls_H7F_FlashErase ( 	&ssdConfig ,
-          0, // shadowFlag...
-          eraseBlock.lowEnabledBlocks,
-          eraseBlock.midEnabledBlocks,
-          eraseBlock.highEnabledBlocks,
-          &eraseInfo
-                  );
-#endif
-  return E_OK;
-}
-
-
-Std_ReturnType Fls_Write (    Fls_AddressType   TargetAddress,
-                        const uint8         *SourceAddressPtr,
-                        Fls_LengthType    Length )
-{
-  Fls_EraseBlockType eraseBlock;
-
-  FLS_VALIDATE_STATUS_UNINIT_W_RV(Fls_Global.status, FLS_WRITE_ID, E_NOT_OK);
-  FLS_VALIDATE_STATUS_BUSY_W_RV(Fls_Global.status, FLS_WRITE_ID, E_NOT_OK);
-  FLS_VALIDATE_PARAM_ADDRESS_PAGE_W_RV(TargetAddress, FLS_WRITE_ID, E_NOT_OK);
-  FLS_VALIDATE_PARAM_LENGTH_PAGE_W_RV(TargetAddress, Length, FLS_WRITE_ID, E_NOT_OK);
-  FLS_VALIDATE_PARAM_DATA_W_RV(SourceAddressPtr, FLS_WRITE_ID, E_NOT_OK)
-
-  // Always check if status is not busy
-  if (Fls_Global.status == MEMIF_BUSY )
-     return E_NOT_OK;
-
-  // Destination is FLS_BASE_ADDRESS + TargetAddress
-  Fls_Global.jobResultType = MEMIF_JOB_PENDING;
-  Fls_Global.status = MEMIF_BUSY;
-  Fls_Global.jobType = FLS_JOB_WRITE;
-
-  // Fill in the required fields for programming...
-  Fls_Global.flashWriteInfo.source = (uint32)SourceAddressPtr;
-  Fls_Global.flashWriteInfo.dest = TargetAddress;
-  Fls_Global.flashWriteInfo.size = Length;
-
-  // unlock flash....
-  address_to_erase_blocks(&eraseBlock,TargetAddress,Length);
-  eraseBlock.shadowBlocks = 0;
-
-#if defined( CFG_MPC5606S )
-  if ( TargetAddress < 0x80000 ) {
-	  Fls_C90FL_SetLock(&ssdConfig, &eraseBlock,0);
-  }
-  else if ( TargetAddress < 0x100000 ){
-	  Fls_C90FL_SetLock(&ssdCode1Config, &eraseBlock,0);
-  }
-  else {
-	  Fls_C90FL_SetLock(&ssdDataConfig, &eraseBlock,0);
-  }
-#else
-  Fls_H7F_SetLock(&eraseBlock,0);
-#endif
-  return E_OK;
+	return E_OK; /** @req FLS334 4.0 */
 }
 
 #if ( FLS_CANCEL_API == STD_ON )
@@ -806,314 +402,278 @@ void Fls_Cancel( void )
 }
 #endif
 
-
 #if ( FLS_GET_STATUS_API == STD_ON )
-MemIf_StatusType Fls_GetStatus(	void )
+MemIf_StatusType Fls_GetStatus( void )
 {
-  return Fls_Global.status;
+	return Fls_Global.status;
 }
 #endif
-
 
 #if ( FLS_GET_JOB_RESULT_API == STD_ON )
 MemIf_JobResultType Fls_GetJobResult( void )
 {
-  return Fls_Global.jobResultType;
+	return Fls_Global.jobResultType;
 }
 #endif
 
+void Fls_MainFunction(void) {
+	/** @req FLS255 */
+	/** @req FLS266 */
+	/** @req FLS038 */
+	/** !req FLS040  No support for Fls_ConfigSetType.FlsMaxXXXX */
+	/** !req FLS104 */
+	/** !req FLS105 */
+	/** !req FLS106 */
+	/** !req FLS154 */
+	/** !req FLS200 */
+	/** !req FLS022 */
+	/** !req FLS055 */
+	/** !req FLS056 */
+	/** !req FLS052 */
+	/** !req FLS232 */
+	/** !req FLS233 */
+	/** !req FLS234 */
+	/** !req FLS235 */
+	/** !req FLS272 */
+	/** !req FLS196 */
 
-void Fls_MainFunction( void )
-{
-  uint32 flashStatus;
-  int result;
 
-  FLS_VALIDATE_STATUS_UNINIT(Fls_Global.status, FLS_ERASE_ID);
 
-  if( Fls_Global.jobResultType == MEMIF_JOB_PENDING ) {
-    switch(Fls_Global.jobType) {
-    case FLS_JOB_COMPARE:
-      // NOT implemented. Hardware error = FLS_E_COMPARE_FAILED
-      // ( we are reading directly from flash so it makes no sense )
+	uint32 flashStatus;
+	int result;
 
-      result = memcmp(Fls_Global.targetAddr,(void *)Fls_Global.sourceAddr,Fls_Global.length);
-      if( result == 0 ) {
-        Fls_Global.jobResultType = MEMIF_JOB_OK;
-      } else {
-    	Fls_Global.jobResultType = MEMIF_BLOCK_INCONSISTENT;
-      }
-      Fls_Global.status = MEMIF_IDLE;
-      Fls_Global.jobType = FLS_JOB_NONE;
+	/** @req FLS117 */
+	VALIDATE_NO_RV(Fls_Global.status != MEMIF_UNINIT,FLS_MAIN_FUNCTION_ID, FLS_E_UNINIT );
 
-      break;
-    case FLS_JOB_ERASE:
-    {
-//      uint32 failAddress;
-//      uint32 failData;
-#if defined(CFG_MPC5606S)
-      if ( Fls_Global.sourceAddr < 0x80000 ) {
-    	  flashStatus = Fls_C90FL_EraseStatus(&ssdConfig);
-      }
-      else if ( Fls_Global.sourceAddr < 0x100000 ){
-    	  flashStatus = Fls_C90FL_EraseStatus(&ssdCode1Config);
-      }
-      else {
-    	  flashStatus = Fls_C90FL_EraseStatus(&ssdDataConfig);
-      }
-      if( flashStatus == C90FL_OK ) {
-              Fls_EraseBlockType blocks;
-              // Lock all.
-              blocks.highEnabledBlocks = (-1UL);
-              blocks.midEnabledBlocks = (-1UL);
-              blocks.highEnabledBlocks = (-1UL);
-              blocks.shadowBlocks = (-1UL);
+	/** @req FLS039 */
+	if ( Fls_Global.jobResultType == MEMIF_JOB_PENDING) {
+		switch (Fls_Global.jobType) {
+		case FLS_JOB_COMPARE:
+		    /** @req FLS243 */
 
-              if ( Fls_Global.sourceAddr < 0x80000 ) {
-              	  Fls_C90FL_SetLock(&ssdConfig, &blocks,1);
-                }
-                else if ( Fls_Global.sourceAddr < 0x100000 ){
-              	  Fls_C90FL_SetLock(&ssdCode1Config, &blocks,1);
-                }
-                else {
-              	  Fls_C90FL_SetLock(&ssdDataConfig, &blocks,1);
-                }
-              Fls_Global.jobResultType = MEMIF_JOB_OK;
-              Fls_Global.jobType = FLS_JOB_NONE;
-              Fls_Global.status = MEMIF_IDLE;
-              FEE_JOB_END_NOTIFICATION();
-            } else if( flashStatus == C90FL_BUSY )  {
-              /* Busy, Do nothing */
-            } else {
-              // Error
-              Fls_Global.jobResultType = MEMIF_JOB_FAILED;
-              Fls_Global.jobType = FLS_JOB_NONE;
-              Fls_Global.status = MEMIF_IDLE;
-      #if defined(USE_DEM)
-      		Dem_ReportErrorStatus(FLS_E_WRITE_FAILED, DEM_EVENT_STATUS_FAILED);
-      #endif
-              FEE_JOB_ERROR_NOTIFICATION();
-            }
-#else
-      flashStatus = Fls_H7F_EraseStatus(&ssdConfig);
-      if( flashStatus == H7F_OK ) {
-        Fls_EraseBlockType blocks;
-        // Lock all.
-        blocks.highEnabledBlocks = (-1UL);
-        blocks.midEnabledBlocks = (-1UL);
-        blocks.highEnabledBlocks = (-1UL);
-        blocks.shadowBlocks = (-1UL);
+			// NOT implemented. Hardware error = FLS_E_COMPARE_FAILED
+			// ( we are reading directly from flash so it makes no sense )
 
-        Fls_H7F_SetLock(&blocks,1);
+		    /** @req FLS244 */
+			result = memcmp(Fls_Global.targetAddr,
+					(void *) Fls_Global.sourceAddr, Fls_Global.length);
+			if (result == 0) {
+				Fls_Global.jobResultType = MEMIF_JOB_OK;
+			} else {
+				Fls_Global.jobResultType = MEMIF_BLOCK_INCONSISTENT;
+			}
+			Fls_Global.status = MEMIF_IDLE;
+			Fls_Global.jobType = FLS_JOB_NONE;
 
-        Fls_Global.jobResultType = MEMIF_JOB_OK;
-        Fls_Global.jobType = FLS_JOB_NONE;
-        Fls_Global.status = MEMIF_IDLE;
-        FEE_JOB_END_NOTIFICATION();
-      } else if( flashStatus == H7F_BUSY )  {
-        /* Busy, Do nothing */
-      } else {
-        // Error
-        Fls_Global.jobResultType = MEMIF_JOB_FAILED;
-        Fls_Global.jobType = FLS_JOB_NONE;
-        Fls_Global.status = MEMIF_IDLE;
-#if defined(USE_DEM)
-		Dem_ReportErrorStatus(FLS_E_WRITE_FAILED, DEM_EVENT_STATUS_FAILED);
-#endif
-        FEE_JOB_ERROR_NOTIFICATION();
-      }
-#endif
-      break;
-    }
-    case FLS_JOB_READ:
+			break;
+		case FLS_JOB_ERASE: {
 
-      // NOT implemented. Hardware error = FLS_E_READ_FAILED
-      // ( we are reading directly from flash so it makes no sense )
-      memcpy(Fls_Global.targetAddr,(void *)Fls_Global.sourceAddr,Fls_Global.length);
-      Fls_Global.jobResultType = MEMIF_JOB_OK;
-      Fls_Global.status = MEMIF_IDLE;
-      Fls_Global.jobType = FLS_JOB_NONE;
-      FEE_JOB_END_NOTIFICATION();
-      break;
-    case FLS_JOB_WRITE:
-    {
-      // NOT implemented. Hardware error = FLS_E_READ_FAILED
-#if defined(CFG_MPC5606S)
-      if ( Fls_Global.flashWriteInfo.dest < 0x80000) {
-    	  flashStatus = Fls_C90FL_Program( &ssdConfig,&Fls_Global.flashWriteInfo);
-      }
-      else if ( Fls_Global.flashWriteInfo.dest < 0x100000) {
-    	  flashStatus = Fls_C90FL_Program( &ssdCode1Config,&Fls_Global.flashWriteInfo);
-      }
-      else {
-    	  flashStatus = Fls_C90FL_Program( &ssdDataConfig,&Fls_Global.flashWriteInfo);
-      }
-      if( flashStatus == C90FL_OK ) {
-              Fls_EraseBlockType blocks;
-              blocks.highEnabledBlocks = (-1UL);
-              blocks.midEnabledBlocks = (-1UL);
-              blocks.highEnabledBlocks = (-1UL);
-              blocks.shadowBlocks = (-1UL);
+			flashStatus = Flash_CheckStatus(Fls_Global.config->FlsInfo);
 
-              // Lock all
-              if ( Fls_Global.flashWriteInfo.dest < 0x80000 ) {
-				  Fls_C90FL_SetLock(&ssdConfig, &blocks,1);
-			  }
-			  else if ( Fls_Global.flashWriteInfo.dest < 0x100000 ){
-				  Fls_C90FL_SetLock(&ssdCode1Config, &blocks,1);
-			  }
-			  else {
-				  Fls_C90FL_SetLock(&ssdDataConfig, &blocks,1);
-			  }
+			if (flashStatus == EE_OK ) {
+				Fls_Global.jobResultType = MEMIF_JOB_OK;
+				Fls_Global.jobType = FLS_JOB_NONE;
+				Fls_Global.status = MEMIF_IDLE;
+				FEE_JOB_END_NOTIFICATION();
+			} else if (flashStatus == EE_INFO_HVOP_INPROGRESS) {
+				/* Busy, Do nothing */
+			} else {
+				// Error
+				fls_EraseFail();
+			}
+            break;
+		}
+		case FLS_JOB_READ:
+			/** @req FLS238 */
+			/** @req FLS239 */
 
-              Fls_Global.jobResultType = MEMIF_JOB_OK;
-              Fls_Global.jobType = FLS_JOB_NONE;
-              Fls_Global.status = MEMIF_IDLE;
-              FEE_JOB_END_NOTIFICATION();
-            } else if( flashStatus == C90FL_BUSY )  {
-              /* Busy, Do nothing */
-            } else {
-              // Error
-              Fls_Global.jobResultType = MEMIF_JOB_FAILED;
-              Fls_Global.jobType = FLS_JOB_NONE;
-              Fls_Global.status = MEMIF_IDLE;
-      #if defined(USE_DEM)
-      		Dem_ReportErrorStatus(FLS_E_WRITE_FAILED, DEM_EVENT_STATUS_FAILED);
-      #endif
-      		FEE_JOB_ERROR_NOTIFICATION();
-            }
-#else
-      flashStatus = Fls_H7F_Program( &ssdConfig,&Fls_Global.flashWriteInfo);
+			// NOT implemented. Hardware error = FLS_E_READ_FAILED
+			// ( we are reading directly from flash so it makes no sense )
+			memcpy(Fls_Global.targetAddr, (void *) Fls_Global.sourceAddr,
+					Fls_Global.length);
+			Fls_Global.jobResultType = MEMIF_JOB_OK;
+			Fls_Global.status = MEMIF_IDLE;
+			Fls_Global.jobType = FLS_JOB_NONE;
+			FEE_JOB_END_NOTIFICATION();
+			break;
 
-      if( flashStatus == H7F_OK ) {
-        Fls_EraseBlockType blocks;
-        blocks.highEnabledBlocks = (-1UL);
-        blocks.midEnabledBlocks = (-1UL);
-        blocks.highEnabledBlocks = (-1UL);
-        blocks.shadowBlocks = (-1UL);
+		case FLS_JOB_WRITE:
+		{
 
-        // Lock all
-        Fls_H7F_SetLock(&blocks,1);
+		    do {
+				flashStatus = Flash_CheckStatus(Fls_Global.config->FlsInfo);
 
-        Fls_Global.jobResultType = MEMIF_JOB_OK;
-        Fls_Global.jobType = FLS_JOB_NONE;
-        Fls_Global.status = MEMIF_IDLE;
-        FEE_JOB_END_NOTIFICATION();
-      } else if( flashStatus == H7F_BUSY )  {
-        /* Busy, Do nothing */
-      } else {
-        // Error
-        Fls_Global.jobResultType = MEMIF_JOB_FAILED;
-        Fls_Global.jobType = FLS_JOB_NONE;
-        Fls_Global.status = MEMIF_IDLE;
-#if defined(USE_DEM)
-		Dem_ReportErrorStatus(FLS_E_WRITE_FAILED, DEM_EVENT_STATUS_FAILED);
-#endif
-		FEE_JOB_ERROR_NOTIFICATION();
-      }
-#endif
-      break;
-    }
-    case FLS_JOB_NONE:
-      assert(0);
-      break;
-    }
-  }
+				if (flashStatus == EE_OK ) {
+
+					if( Fls_Global.flashWriteInfo.left == 0 ) {
+						Fls_Global.mustCheck = 0;
+						/* Done! */
+      			Fls_Global.jobResultType = MEMIF_JOB_OK;
+      			Fls_Global.status = MEMIF_IDLE;
+      			Fls_Global.jobType = FLS_JOB_NONE;
+      			FEE_JOB_END_NOTIFICATION();
+						break;
+					}
+
+					flashStatus = Flash_ProgramPageStart(Fls_Global.config->FlsInfo,
+											&Fls_Global.flashWriteInfo.dest,
+											&Fls_Global.flashWriteInfo.source,
+											&Fls_Global.flashWriteInfo.left,
+											NULL);
+					Fls_Global.mustCheck = 1;
+					if( flashStatus != EE_OK ) {
+						Fls_Global.mustCheck = 0;
+						fls_WriteFail();
+						break;
+					}
+				} else if( flashStatus == EE_INFO_HVOP_INPROGRESS ) {
+					/* Wait for it */
+				} else {
+					fls_WriteFail();
+					/* Nothing to do, quit loop */
+					break;
+				}
+			} while(Fls_Global.flashWriteInfo.left && Fls_Global.mustCheck );
+
+			break;
+		}
+		case FLS_JOB_NONE:
+			assert(0);
+			break;
+
+		default:
+		    break;
+		} /* switch */
+
+	}   /* if */
 }
 
-
-Std_ReturnType Fls_Read (	Fls_AddressType SourceAddress,
-              uint8 *TargetAddressPtr,
-              Fls_LengthType Length )
+Std_ReturnType Fls_Read(	Fls_AddressType SourceAddress,
+							uint8 *TargetAddressPtr,
+							Fls_LengthType Length)
 {
-  FLS_VALIDATE_STATUS_UNINIT_W_RV(Fls_Global.status, FLS_READ_ID, E_NOT_OK);
-  FLS_VALIDATE_STATUS_BUSY_W_RV(Fls_Global.status, FLS_READ_ID, E_NOT_OK);
-  FLS_VALIDATE_READ_PARAM_ADDRESS_PAGE_W_RV(SourceAddress, FLS_READ_ID, E_NOT_OK);
-  FLS_VALIDATE_READ_PARAM_LENGTH_PAGE_W_RV(SourceAddress, Length, FLS_READ_ID, E_NOT_OK);
-  FLS_VALIDATE_PARAM_DATA_W_RV((void*)TargetAddressPtr, FLS_READ_ID, E_NOT_OK)
+	SourceAddress += FLS_BASE_ADDRESS;
+	/** @req FLS256 */
+	/** @req FLS236 */
+	/** !req FLS239 TODO */
+	/** !req FLS240 Have no idea what the requirement means*/
 
-  // Always check if status is not busy
-  if (Fls_Global.status == MEMIF_BUSY )
-     return E_NOT_OK;
+	/** @req FLS099 */
+	VALIDATE_W_RV(Fls_Global.status != MEMIF_UNINIT,FLS_READ_ID, FLS_E_UNINIT,E_NOT_OK );
+	/** @req FLS100 */
+	VALIDATE_W_RV( Fls_Global.status != MEMIF_BUSY, FLS_READ_ID, FLS_E_BUSY, E_NOT_OK );
+	/** @req FLS158 */
+	VALIDATE_W_RV( TargetAddressPtr != NULL , FLS_READ_ID, FLS_E_PARAM_DATA, E_NOT_OK );
+	/** @req FLS097  */
+	VALIDATE_W_RV( SourceAddress < FLS_TOTAL_SIZE, FLS_READ_ID, FLS_E_PARAM_ADDRESS, E_NOT_OK );
+	/** @req FLS098  */
+	VALIDATE_W_RV( (Length != 0) && ((SourceAddress + Length) < (FLS_BASE_ADDRESS + FLS_TOTAL_SIZE)),
+			FLS_READ_ID, FLS_E_PARAM_LENGTH, E_NOT_OK );
 
-  Fls_Global.status = MEMIF_BUSY;
-  Fls_Global.jobResultType = MEMIF_JOB_PENDING;
-  Fls_Global.jobType = FLS_JOB_READ;
+	// Always check if status is not busy
+	if (Fls_Global.status == MEMIF_BUSY)
+		return E_NOT_OK;
 
-  Fls_Global.sourceAddr = SourceAddress;
-  Fls_Global.targetAddr = TargetAddressPtr;
-  Fls_Global.length = Length;
+	Fls_Global.status = MEMIF_BUSY;
+	Fls_Global.jobResultType = MEMIF_JOB_PENDING;
+	Fls_Global.jobType = FLS_JOB_READ;
 
-  return E_OK;
+	/** @req FLS237 */
+	Fls_Global.sourceAddr = SourceAddress;
+	Fls_Global.targetAddr = TargetAddressPtr;
+	Fls_Global.length = Length;
+
+	return E_OK;
 }
 
 #if ( FLS_COMPARE_API == STD_ON )
 Std_ReturnType Fls_Compare( Fls_AddressType SourceAddress,
-              uint8 *TargetAddressPtr,
-              Fls_LengthType Length )
+							uint8 *TargetAddressPtr,
+							Fls_LengthType Length )
 {
-  FLS_VALIDATE_STATUS_UNINIT_W_RV(Fls_Global.status, FLS_COMPARE_ID, E_NOT_OK);
-  FLS_VALIDATE_STATUS_BUSY_W_RV(Fls_Global.status, FLS_COMPARE_ID, E_NOT_OK);
-  FLS_VALIDATE_PARAM_ADDRESS_PAGE_W_RV(SourceAddress, FLS_COMPARE_ID, E_NOT_OK);
-  FLS_VALIDATE_PARAM_LENGTH_PAGE_W_RV(SourceAddress, Length, FLS_COMPARE_ID, E_NOT_OK);
-  FLS_VALIDATE_PARAM_DATA_W_RV((void*)TargetAddressPtr,FLS_COMPARE_ID, E_NOT_OK)
+	SourceAddress += FLS_BASE_ADDRESS;
+    /** @req FLS257 */
+    /** @req FLS241 */
+    /** @req FLS186 */
 
-  // Always check if status is not busy
-  if (Fls_Global.status == MEMIF_BUSY )
-     return E_NOT_OK;
+    /** @req FLS152 */
+    VALIDATE_W_RV(Fls_Global.status != MEMIF_UNINIT,FLS_COMPARE_ID, FLS_E_UNINIT,E_NOT_OK );
+    /** @req FLS153 */
+    VALIDATE_W_RV( Fls_Global.status != MEMIF_BUSY, FLS_COMPARE_ID, FLS_E_BUSY, E_NOT_OK );
+    /** @req FLS273 */
+    VALIDATE_W_RV( TargetAddressPtr != NULL , FLS_COMPARE_ID, FLS_E_PARAM_DATA, E_NOT_OK );
+	/** @req FLS150  */
+	VALIDATE_W_RV( SourceAddress < FLS_TOTAL_SIZE, FLS_COMPARE_ID, FLS_E_PARAM_ADDRESS, E_NOT_OK );
+	/** @req FLS151  */
+	VALIDATE_W_RV( (Length != 0) && ((SourceAddress + Length) < (FLS_BASE_ADDRESS + FLS_TOTAL_SIZE)),
+			FLS_COMPARE_ID, FLS_E_PARAM_LENGTH, E_NOT_OK );
 
-  Fls_Global.status = MEMIF_BUSY;
-  Fls_Global.jobResultType = MEMIF_JOB_PENDING;
-  Fls_Global.jobType = FLS_JOB_COMPARE;
 
-  Fls_Global.sourceAddr = SourceAddress;
-  Fls_Global.targetAddr = TargetAddressPtr;
-  Fls_Global.length = Length;
+	// Always check if status is not busy
+	if (Fls_Global.status == MEMIF_BUSY )
+	    return E_NOT_OK;
 
-  return E_OK;
+	Fls_Global.status = MEMIF_BUSY;
+	Fls_Global.jobResultType = MEMIF_JOB_PENDING;
+	Fls_Global.jobType = FLS_JOB_COMPARE;
+	/* @req FLS242 */
+	Fls_Global.sourceAddr = SourceAddress;
+	Fls_Global.targetAddr = TargetAddressPtr;
+	Fls_Global.length = Length;
+
+	return E_OK;
 }
 #endif
 
 #if ( FLS_SET_MODE_API == STD_ON )
-void Fls_SetMode(		MemIf_ModeType Mode )
+void Fls_SetMode( MemIf_ModeType Mode )
 {
-	/* API NOT SUPPORTED */
+    /** !req FLS258 */
+    /** !req FLS155 */
+    /** !req FLS187 */
+
+    /* API NOT SUPPORTED */
 }
 #endif
 
 #if ( FLS_VERSION_INFO_API == STD_ON )
 void Fls_GetVersionInfo( Std_VersionInfoType *VersioninfoPtr )
 {
-  memcpy(VersioninfoPtr, &_Fls_VersionInfo, sizeof(Std_VersionInfoType));
+    /** @req FLS259 */
+    /** @req FLS165 */
+    /** @req FLS166 */
+    /** !req FLS166 Change if moved to macro */
+
+	memcpy(VersioninfoPtr, &_Fls_VersionInfo, sizeof(Std_VersionInfoType));
 }
 #endif
 
-void Fls_Check( uint32 flsBaseAddress, uint32 flsTotalSize )
-{
-  // ECC checking is always on by default.
-  // If a non correctable error is discovered
-  // we will get an IVOR2 exception.
+#if 0
+void Fls_Check(uint32 flsBaseAddress, uint32 flsTotalSize) {
+	// ECC checking is always on by default.
+	// If a non correctable error is discovered
+	// we will get an IVOR2 exception.
 
-  // Enable Flash Non_Correctible Reporting,
-  // Not really necessary but makes more information
-  // available in the MCM registers if an error occurs.
+	// Enable Flash Non_Correctible Reporting,
+	// Not really necessary but makes more information
+	// available in the MCM registers if an error occurs.
 #if defined(CFG_MPC5606S) || defined(CFG_MPC5567)
-  ECSM.ECR.B.EFNCR = 1;
+	ECSM.ECR.B.EFNCR = 1;
 #elif defined (CFG_MPC5516)
-  MCM.ECR.B.EFNCR = 1;
+	MCM.ECR.B.EFNCR = 1;
 #else
-#error "Non supported processor"
+#warning "Non supported processor"
 #endif
 
-  // Read flash in 32bit chunks, it's most efficient.
-  uint32* memoryChunkPtr = (uint32*)flsBaseAddress;
-  uint32* flsTotalSizePtr = (uint32*)flsTotalSize;
-  uint32  memoryChunk = *memoryChunkPtr; // The first read
+	// Read flash in 32bit chunks, it's most efficient.
+	uint32* memoryChunkPtr = (uint32*) flsBaseAddress;
+	uint32* flsTotalSizePtr = (uint32*) flsTotalSize;
+	uint32 memoryChunk = *memoryChunkPtr; // The first read
 
-  // Read the rest of the flash, chunk by chunk
-  while(memoryChunkPtr < flsTotalSizePtr)
-  {
-    memoryChunk=*(memoryChunkPtr++);
-  }
+	// Read the rest of the flash, chunk by chunk
+	while (memoryChunkPtr < flsTotalSizePtr) {
+		memoryChunk = *(memoryChunkPtr++);
+	}
 }
-
+#endif
 
