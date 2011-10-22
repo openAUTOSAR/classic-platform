@@ -115,7 +115,7 @@ uint32_t Flash_Lock(const FlashType *fPtr, uint32_t op, uintptr_t from, uint32_t
 		getAffectedBlocks(bPtr, from, size, &flashBlocks);
 
 		/* ---------- Low/Mid ---------- */
-	    lock = (flashBlocks[ADDR_SPACE_MID]<<14) | flashBlocks[ADDR_SPACE_LOW];
+	    lock = (flashBlocks[ADDR_SPACE_MID]<<16) | flashBlocks[ADDR_SPACE_LOW];
 	    if( lock != 0 ) {
 			regAddr = bPtr->regBase + C90FL_LML;
 
