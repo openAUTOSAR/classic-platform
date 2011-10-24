@@ -199,12 +199,14 @@ void Com_TpRxIndication(PduIdType PduId, NotifResultType Result) {
 		Com_RxProcessSignals(IPdu,Arc_IPdu);
 	}
 }
-
-void Com_TxConfirmation(PduIdType ComTxPduId) {
+void Com_TpTxConfirmation(PduIdType PduId, NotifResultType Result) {
 	PDU_ID_CHECK(ComTxPduId, 0x15);
 
-	Com_BufferPduState[ComTxPduId].locked = false;
-	Com_BufferPduState[ComTxPduId].currentPosition = 0;
+	Com_BufferPduState[PduId].locked = false;
+	Com_BufferPduState[PduId].currentPosition = 0;
+}
+void Com_TxConfirmation(PduIdType ComTxPduId) {
+	PDU_ID_CHECK(ComTxPduId, 0x15);
 
 	(void)ComTxPduId; // Nothing to be done. This is just to avoid Lint warning.
 }

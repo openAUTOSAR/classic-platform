@@ -21,13 +21,20 @@
 #if (PDUR_ZERO_COST_OPERATION == STD_OFF) && (PDUR_J1939TP_SUPPORT == STD_ON)
 
 void PduR_J1939TpRxIndication(PduIdType id, NotifResultType Result) {
-	//PduR_ARC_RxIndication(id, &PduInfo, 0x04);
+#if PDUR_COM_SUPPORT == STD_OFF
+	return BUFREQ_NOT_OK;
+#else
 	const PduRRoutingPath_type *route = PduRConfig->RoutingPaths[id];
 	Com_TpRxIndication(route->PduRDestPdus[0]->DestPduId, Result);
+#endif
 }
 
 void PduR_J1939TpTxConfirmation(PduIdType J1939TpTxId, NotifResultType Result) {
-	PduR_ARC_TxConfirmation(J1939TpTxId, Result, 0x0f);
+#if PDUR_COM_SUPPORT == STD_OFF
+	return;
+#else
+	Com_TpTxConfirmation(J1939TpTxId, Result);
+#endif
 }
 
 /* autosar 4 api */
