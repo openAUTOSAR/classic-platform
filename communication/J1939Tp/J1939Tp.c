@@ -507,7 +507,7 @@ static inline void J1939Tp_Internal_TxConfirmation_TxChannel(J1939Tp_Internal_Ch
 		case J1939TP_DIRECT:
 			if (PgInfo->TxState == J1939TP_PG_TX_WAIT_DIRECT_SEND_CANIF_CONFIRM) {
 				PgInfo->TxState = J1939TP_PG_TX_IDLE;
-				PduR_J1939TpTxConfirmation(RxPduInfo->PgPtr->DirectNPdu, NTFRSLT_OK);
+				PduR_J1939TpTxConfirmation(RxPduInfo->PgPtr->NSdu, NTFRSLT_OK);
 			}
 			break;
 		default:

@@ -33,7 +33,8 @@ void PduR_J1939TpTxConfirmation(PduIdType J1939TpTxId, NotifResultType Result) {
 #if PDUR_COM_SUPPORT == STD_OFF
 	return;
 #else
-	Com_TpTxConfirmation(J1939TpTxId, Result);
+	const PduRRoutingPath_type *route = PduRConfig->RoutingPaths[J1939TpTxId];
+	Com_TpTxConfirmation(route->SrcPduId, Result);
 #endif
 }
 
