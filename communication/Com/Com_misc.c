@@ -24,6 +24,7 @@
 #include "Com_Internal.h"
 #include "Com_misc.h"
 #include "debug.h"
+#include "Cpu.h"
 
 
 void Com_ReadSignalDataFromPdu(
