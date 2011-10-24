@@ -137,8 +137,9 @@ void J1939Tp_MainFunction(void) {
 								PduR_J1939TpTxConfirmation(ChannelInfoPtr->TxState->CurrentPgPtr->NSdu,NTFRSLT_E_NOT_OK);
 							}
 							break;
-						case J1939TP_TX_WAITING_FOR_T1_TIMEOUT:
+						case J1939TP_TX_WAITING_FOR_BAM_DT_SEND_TIMEOUT:
 							ChannelInfoPtr->TxState->State = J1939TP_TX_WAIT_DT_BAM_CANIF_CONFIRM;
+
 							J1939Tp_Internal_StartTimer(&(ChannelInfoPtr->TxState->TimerInfo),J1939TP_TX_CONF_TIMEOUT);
 							if (J1939Tp_Internal_SendDt(ChannelInfoPtr) == E_NOT_OK) {
 								ChannelInfoPtr->TxState->State = J1939TP_TX_IDLE;
@@ -474,8 +475,8 @@ static inline void J1939Tp_Internal_TxConfirmation_TxChannel(J1939Tp_Internal_Ch
 				ChannelInfoPtr->TxState->State = J1939TP_TX_WAITING_FOR_CTS;
 				J1939Tp_Internal_StartTimer(&(ChannelInfoPtr->TxState->TimerInfo),J1939TP_T3_TIMEOUT_MS);
 			} else if (State == J1939TP_TX_WAIT_BAM_CANIF_CONFIRM) {
-				ChannelInfoPtr->TxState->State = J1939TP_TX_WAITING_FOR_T1_TIMEOUT;
-				J1939Tp_Internal_StartTimer(&(ChannelInfoPtr->TxState->TimerInfo),J1939TP_T1_TIMEOUT_MS);
+				ChannelInfoPtr->TxState->State = J1939TP_TX_WAITING_FOR_BAM_DT_SEND_TIMEOUT;
+				J1939Tp_Internal_StartTimer(&(ChannelInfoPtr->TxState->TimerInfo),J1939TP_DT_BROADCAST_MIN_INTERVAL);
 			}
 			break;
 		case J1939TP_DT:
@@ -498,8 +499,8 @@ static inline void J1939Tp_Internal_TxConfirmation_TxChannel(J1939Tp_Internal_Ch
 					ChannelInfoPtr->TxState->State = J1939TP_TX_IDLE;
 					PduR_J1939TpTxConfirmation(ChannelInfoPtr->TxState->CurrentPgPtr->NSdu,NTFRSLT_OK);
 				} else {
-					ChannelInfoPtr->TxState->State = J1939TP_TX_WAITING_FOR_T1_TIMEOUT;
-					J1939Tp_Internal_StartTimer(&(ChannelInfoPtr->TxState->TimerInfo),J1939TP_T1_TIMEOUT_MS);
+					ChannelInfoPtr->TxState->State = J1939TP_TX_WAITING_FOR_BAM_DT_SEND_TIMEOUT;
+					J1939Tp_Internal_StartTimer(&(ChannelInfoPtr->TxState->TimerInfo),J1939TP_DT_BROADCAST_MIN_INTERVAL);
 				}
 			}
 			break;
