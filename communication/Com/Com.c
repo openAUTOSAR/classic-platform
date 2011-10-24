@@ -165,7 +165,10 @@ void Com_Init(const Com_ConfigType *config ) {
 			}
 		}
 	}
-
+	for (uint16 i = 0; i < COM_N_IPDUS; i++) {
+		Com_BufferPduState[i].currentPosition = 0;
+		Com_BufferPduState[i].locked = false;
+	}
 
 	// An error occurred.
 	if (failure) {
@@ -196,4 +199,74 @@ void Com_IpduGroupStop(Com_PduGroupIdType IpduGroupId) {
 			Com_Arc_Config.ComIPdu[i].Com_Arc_IpduStarted = 0;
 		}
 	}
+}
+
+/**
+ *
+ * @param PduId
+ * @param PduInfoPtr
+ * @param RetryInfoPtr not supported
+ * @param TxDataCntPtr
+ * @return
+ */
+BufReq_ReturnType Com_CopyTxData(PduIdType PduId, PduInfoType* PduInfoPtr, RetryInfoType* RetryInfoPtr, PduLengthType* TxDataCntPtr) {
+	imask_t state;
+	Irq_Save(state);
+	BufReq_ReturnType r = BUFREQ_OK;
+	const ComIPdu_type *IPdu = GET_IPdu(PduId);
+	boolean dirOk = ComConfig->ComIPdu[PduId].ComIPduDirection == SEND;
+	boolean sizeOk = IPdu->ComIPduSize >= Com_BufferPduState[PduId].currentPosition + PduInfoPtr->SduLength;
+	if (dirOk && sizeOk) {
+		void* source = GET_ArcIPdu(PduId)->ComIPduDataPtr;
+		memcpy(PduInfoPtr->SduDataPtr,source + Com_BufferPduState[PduId].currentPosition, PduInfoPtr->SduLength);
+		Com_BufferPduState[PduId].currentPosition += PduInfoPtr->SduLength;
+		*TxDataCntPtr = IPdu->ComIPduSize - Com_BufferPduState[PduId].currentPosition;
+	} else {
+		r = BUFREQ_NOT_OK;
+	}
+	Irq_Restore(state);
+	return r;
+}
+BufReq_ReturnType Com_CopyRxData(PduIdType PduId, const PduInfoType* PduInfoPtr, PduLengthType* RxBufferSizePtr) {
+	imask_t state;
+	Irq_Save(state);
+	BufReq_ReturnType r = BUFREQ_OK;
+	uint8 remainingBytes = GET_IPdu(PduId)->ComIPduSize - Com_BufferPduState[PduId].currentPosition;
+	boolean sizeOk = remainingBytes >= PduInfoPtr->SduLength;
+	boolean dirOk = GET_IPdu(PduId)->ComIPduDirection == RECEIVE;
+	boolean lockOk = isPduBufferLocked(PduId);
+	if (dirOk && lockOk && sizeOk) {
+		memcpy(GET_ArcIPdu(PduId)->ComIPduDataPtr+Com_BufferPduState[PduId].currentPosition, PduInfoPtr->SduDataPtr, PduInfoPtr->SduLength);
+		Com_BufferPduState[PduId].currentPosition += PduInfoPtr->SduLength;
+		*RxBufferSizePtr = GET_IPdu(PduId)->ComIPduSize - Com_BufferPduState[PduId].currentPosition;
+	} else {
+		r = BUFREQ_NOT_OK;
+	}
+	return r;
+	Irq_Restore(state);
+}
+BufReq_ReturnType Com_StartOfReception(PduIdType ComRxPduId, PduLengthType TpSduLength, PduLengthType* RxBufferSizePtr) {
+	imask_t state;
+	Irq_Save(state);
+	BufReq_ReturnType r = BUFREQ_OK;
+	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(ComRxPduId);
+	if (Arc_IPdu->Com_Arc_IpduStarted) {
+		if (GET_IPdu(ComRxPduId)->ComIPduDirection == RECEIVE) {
+			if (!Com_BufferPduState[ComRxPduId].locked) {
+				if (GET_IPdu(ComRxPduId)->ComIPduSize >= TpSduLength) {
+					Com_BufferPduState[ComRxPduId].locked = true;
+					*RxBufferSizePtr = GET_IPdu(ComRxPduId)->ComIPduSize;
+					Com_BufferPduState[ComRxPduId].locked = true;
+				} else {
+					r = BUFREQ_OVFL;
+				}
+			} else {
+				r = BUFREQ_BUSY;
+			}
+		}
+	} else {
+		r = BUFREQ_NOT_OK;
+	}
+	Irq_Restore(state);
+	return r;
 }

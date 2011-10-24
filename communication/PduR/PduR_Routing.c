@@ -42,6 +42,9 @@
 #if PDUR_SOAD_SUPPORT == STD_ON
 #include "SoAd.h"
 #endif
+#if PDUR_J1939TP_SUPPORT == STD_ON
+#include "J1939Tp.h"
+#endif
 
 
 #if PDUR_ZERO_COST_OPERATION == STD_OFF
@@ -72,6 +75,11 @@ Std_ReturnType PduR_ARC_RouteTransmit(const PduRDestPdu_type * destination, cons
 	case ARC_PDUR_SOADTP:
 #if PDUR_SOAD_SUPPORT == STD_ON
 		retVal = SoAdTp_Transmit(destination->DestPduId, pduInfo);
+#endif
+		break;
+	case ARC_PDUR_J1939TP:
+#if PDUR_J1939TP_SUPPORT == STD_ON
+		retVal = J1939Tp_Transmit(destination->DestPduId, pduInfo);
 #endif
 		break;
 	default:

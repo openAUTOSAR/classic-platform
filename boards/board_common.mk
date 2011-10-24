@@ -97,6 +97,12 @@ obj-$(USE_PORT) += Port_Cfg.o
 obj-$(USE_ADC) += Adc.o
 obj-$(USE_ADC) += Adc_Cfg.o
 
+# J1939Tp
+obj-$(USE_J1939TP) += J1939Tp.o
+obj-$(USE_J1939TP) += J1939Tp_LCfg.o
+inc-$(USE_J1939TP) += $(ROOTDIR)/communication/J1939Tp
+vpath-$(USE_J1939TP) += $(ROOTDIR)/communication/J1939Tp
+
 # Include the kernel
 ifneq ($(USE_KERNEL),)
 include $(ROOTDIR)/system/kernel/makefile
@@ -214,6 +220,7 @@ obj-$(USE_PDUR) += PduR_LinIf.o
 obj-$(USE_PDUR) += PduR_PbCfg.o
 obj-$(USE_PDUR) += PduR_CanIf.o
 obj-$(USE_PDUR) += PduR_CanTp.o
+obj-$(USE_PDUR) += PduR_J1939Tp.o
 obj-$(USE_PDUR) += PduR_Dcm.o
 obj-$(USE_PDUR) += PduR_SoAd.o
 obj-$(USE_PDUR) += PduR_Routing.o

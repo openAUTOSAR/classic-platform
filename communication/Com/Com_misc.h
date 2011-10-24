@@ -77,6 +77,9 @@ void Com_WriteDataSegment(uint8 *pdu, uint8 *pduSignalMask, const uint8 *signalD
 
 uint8 motorolaBitNrToPduOffset (uint8 motorolaBitNr);
 uint8 intelBitNrToPduOffset (uint8 intelBitNr, uint8 segmentBitLength, uint8 pduBitLength);
+void Com_RxProcessSignals(const ComIPdu_type *IPdu,Com_Arc_IPdu_type *Arc_IPdu);
+PduIdType getPduId(const ComIPdu_type* IPdu);
 
+boolean isPduBufferLocked(PduIdType pduId);
 
 #endif /* COM_MISC_H_ */
