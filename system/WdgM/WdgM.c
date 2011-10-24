@@ -175,9 +175,10 @@ Std_ReturnType WdgM_SetMode(WdgM_ModeType Mode)
   /** @req WDGM020 **/
   VALIDATE(((Mode >= 0) && (Mode < WDGM_NBR_OF_MODES)), WDGM_SETMODE_ID, WDGM_E_PARAM_MODE);
 
-#if WDGM_OFF_MODE_ENABLED == STD_OFF
   const WdgM_ModeConfigType * modeConfigPtr = &wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[Mode];
   const WdgM_ModeConfigType * oldModeConfigPtr = &wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode];
+
+#if WDGM_OFF_MODE_ENABLED == STD_OFF
     /** @req WDGM031 **/
   VALIDATE((modeConfigPtr->WdgM_Trigger->WdgM_WatchdogMode != WDGIF_OFF_MODE),WDGM_SETMODE_ID, WDGM_E_DISABLE_NOT_ALLOWED);
 #endif
@@ -273,6 +274,7 @@ void WdgM_Init(const WdgM_ConfigType *ConfigPtr)
   /** @req WDGM010 **/
   VALIDATE_NO_RETURNVAL((ConfigPtr != 0),WDGM_INIT_ID, WDGM_E_PARAM_CONFIG);
   wdgMInternalState.WdgM_ConfigPtr = ConfigPtr;
+
   initialMode = wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_InitialMode;
   modeConfigPtr = &wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[initialMode];
 
