@@ -64,9 +64,16 @@ typedef struct {
 	J1939Tp_Internal_RxChannelInfoType*		RxState; /* setup in init */
 } J1939Tp_Internal_ChannelInfoType;
 
+typedef enum {
+	J1939TP_PG_TX_IDLE,
+	J1939TP_PG_TX_WAIT_DIRECT_SEND_CANIF_CONFIRM,
+} J1939Tp_Internal_PgDirectState;
+
 typedef struct {
 	J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr;
 	const J1939Tp_PgType* PgConfPtr;
+	J1939Tp_Internal_PgDirectState TxState;
+	J1939Tp_Internal_TimerType TimerInfo;
 } J1939Tp_Internal_PgInfoType;
 
 typedef struct {
@@ -109,11 +116,12 @@ static inline void J1939Tp_Internal_SendRts(J1939Tp_Internal_ChannelInfoType* Ch
 static inline void J1939Tp_Internal_SendEndOfMsgAck(J1939Tp_Internal_ChannelInfoType* Channel);
 static inline void J1939Tp_Internal_SendCts(J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr, J1939Tp_PgnType Pgn, uint8 NextPacketSeqNum,uint8 NumPackets);
 static inline void J1939Tp_Internal_SendConnectionAbort(PduIdType CmNPdu, J1939Tp_PgnType Pgn);
-static inline void J1939Tp_Internal_TxSessionStartTimer(J1939Tp_Internal_TxChannelInfoType* Tx,uint16 TimerExpire);
-static inline void J1939Tp_Internal_RxSessionStartTimer(J1939Tp_Internal_RxChannelInfoType* Rx,uint16 TimerExpire);
+static inline void J1939Tp_Internal_StartTimer(J1939Tp_Internal_TimerType* TimerInfo,uint16 TimerExpire);
 static inline void J1939Tp_Internal_SetPgn(uint8* PgnBytes,J1939Tp_PgnType pgn );
 static inline J1939Tp_PgnType J1939Tp_Internal_GetPgn(uint8* PgnBytes);
 static inline uint8 J1939TP_Internal_GetNumDtPacketsToSend(uint16 messageSize);
+static inline Std_ReturnType J1939Tp_Internal_DirectTransmit(const PduInfoType* TxInfoPtr, J1939Tp_Internal_PgInfoType* PgInfo);
+static inline J1939Tp_Internal_PgInfoType* J1939Tp_GetPgInfo(const J1939Tp_PgType* Pg);
 
 static inline void J1939Tp_Internal_ReportError(uint8 ApiId, uint8 ErrorId);
 #endif

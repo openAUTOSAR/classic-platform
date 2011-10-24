@@ -192,10 +192,9 @@ void Com_TpRxIndication(PduIdType PduId, NotifResultType Result) {
 		return;
 	}
 	// unlock buffer
-	if (isPduBufferLocked(PduId)) {
-		Com_BufferPduState[PduId].locked = false;
-		Com_BufferPduState[PduId].currentPosition = 0;
-	}
+	Com_BufferPduState[PduId].locked = false;
+	Com_BufferPduState[PduId].currentPosition = 0;
+
 	if (Result == NTFRSLT_OK) {
 		Com_RxProcessSignals(IPdu,Arc_IPdu);
 	}
@@ -203,10 +202,10 @@ void Com_TpRxIndication(PduIdType PduId, NotifResultType Result) {
 
 void Com_TxConfirmation(PduIdType ComTxPduId) {
 	PDU_ID_CHECK(ComTxPduId, 0x15);
-	if (isPduBufferLocked(ComTxPduId)) {
-		Com_BufferPduState[ComTxPduId].locked = false;
-		Com_BufferPduState[ComTxPduId].currentPosition = 0;
-	}
+
+	Com_BufferPduState[ComTxPduId].locked = false;
+	Com_BufferPduState[ComTxPduId].currentPosition = 0;
+
 	(void)ComTxPduId; // Nothing to be done. This is just to avoid Lint warning.
 }
 

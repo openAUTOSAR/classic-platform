@@ -221,7 +221,6 @@ BufReq_ReturnType Com_CopyTxData(PduIdType PduId, PduInfoType* PduInfoPtr, Retry
 	boolean dirOk = ComConfig->ComIPdu[PduId].ComIPduDirection == SEND;
 	boolean sizeOk = IPdu->ComIPduSize >= Com_BufferPduState[PduId].currentPosition + PduInfoPtr->SduLength;
 	if (dirOk && sizeOk) {
-		Com_BufferPduState[PduId].locked = true;
 		void* source = GET_ArcIPdu(PduId)->ComIPduDataPtr;
 		memcpy(PduInfoPtr->SduDataPtr,source + Com_BufferPduState[PduId].currentPosition, PduInfoPtr->SduLength);
 		Com_BufferPduState[PduId].currentPosition += PduInfoPtr->SduLength;
