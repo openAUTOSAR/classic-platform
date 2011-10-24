@@ -82,6 +82,9 @@ void Com_IpduGroupStop(Com_PduGroupIdType IpduGroupId);
 BufReq_ReturnType Com_CopyTxData(PduIdType PduId, PduInfoType* PduInfoPtr, RetryInfoType* RetryInfoPtr, PduLengthType* TxDataCntPtr);
 BufReq_ReturnType Com_CopyRxData(PduIdType PduId, const PduInfoType* PduInfoPtr, PduLengthType* RxBufferSizePtr);
 BufReq_ReturnType Com_StartOfReception(PduIdType ComRxPduId, PduLengthType TpSduLength, PduLengthType* RxBufferSizePtr);
+void Com_TpRxIndication(PduIdType PduId, NotifResultType Result);
+void Com_TpTxConfirmation(PduIdType PduId, NotifResultType Result);
+
 
 extern ComSignalEndianess_type Com_SystemEndianness;
 
