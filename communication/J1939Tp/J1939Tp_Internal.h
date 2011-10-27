@@ -83,7 +83,7 @@ typedef struct {
 
 typedef uint8 J1939Tp_Internal_ControlByteType;
 
-static J1939Tp_ProtocolType J1939Tp_Internal_GetProtocol(uint8 pf);
+
 static inline uint8 J1939Tp_Internal_GetPf(J1939Tp_PgnType pgn);
 static inline Std_ReturnType J1939Tp_Internal_ValidatePacketType(const J1939Tp_RxPduInfoType* RxPduInfo);
 static inline J1939Tp_Internal_ChannelInfoType* J1939Tp_Internal_GetChannelState(const J1939Tp_RxPduInfoType* RxPduInfo);
