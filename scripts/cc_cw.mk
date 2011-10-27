@@ -24,8 +24,8 @@ CW_LIB = $(CW_COMPILE)/PowerPC_EABI_Support/Runtime/Lib
 # CCFLAGS - compile flags
 
 CC	= 	$(CW_BIN)/mwcceppc.exe
-#cflags-$(CFG_OPT_RELEASE) += -O3
-#cflags-$(CFG_OPT_DEBUG) += make  -O0
+cflags-$(CFG_OPT_RELEASE)        += -opt level=2
+cflags-$(CFG_OPT_DEBUG)        += -opt off 
 
 #cflags-y 		+= -c 
 cflags-y 		+= -dialect=c99

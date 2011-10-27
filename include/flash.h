@@ -42,7 +42,6 @@ uint32_t Flash_Lock(const struct Flash *fPtr, uint32_t op, uintptr_t from, uint3
 uint32_t Flash_Erase(const struct Flash *fPtr, uintptr_t dest, uint32_t size, flashCbType sb);
 //uint32_t Flash_Program(const struct Flash *fPtr, uintptr_t to, uintptr_t from,uint32_t size, flashCbType sb);
 uint32_t Flash_ProgramPageStart(const struct Flash *fPtr, uint32_t *to, uint32_t *from,uint32_t *size, flashCbType sb);
-uint32_t Flash_CheckStatus( const struct Flash *fPtr );
-uint32_t Flash_SectorAligned( const struct Flash *fPtr, uintptr_t addr );
+uint32_t Flash_CheckStatus( const struct Flash *fPtr, uint32_t *to );
 
 #endif /* FLASH_H_ */

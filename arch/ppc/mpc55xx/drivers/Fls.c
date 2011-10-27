@@ -223,6 +223,49 @@ static Std_VersionInfoType _Fls_VersionInfo = {
 
 /* ----------------------------[private functions]---------------------------*/
 
+static Std_ReturnType fls_SectorAligned( Fls_AddressType SourceAddress ) {
+	Std_ReturnType rv = E_NOT_OK;
+    const FlashType *bPtr;
+
+    for (int bank = 0; bank < FLASH_BANK_CNT; bank++) {
+        bPtr = &Fls_Global.config->FlsInfo[bank];
+
+        /* In range of bank */
+        if( (SourceAddress >= bPtr->sectAddr[0]) &&
+            (SourceAddress <= (bPtr->sectAddr[bPtr->sectCnt])) )
+        {
+            for (int sector = 0; sector < bPtr->sectCnt + 1; sector++)
+            {
+                if( SourceAddress == bPtr->sectAddr[sector] ) {
+                    rv = E_OK;
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    return rv;
+}
+
+static Std_ReturnType fls_CheckValidAddress( Fls_AddressType SourceAddress ) {
+	Std_ReturnType rv = E_NOT_OK;
+    const FlashType *bPtr;
+
+    for (int bank = 0; bank < FLASH_BANK_CNT; bank++) {
+        bPtr = &Fls_Global.config->FlsInfo[bank];
+
+		for (int sector = 0; sector < bPtr->sectCnt; sector++)
+		{
+			if( (SourceAddress >= bPtr->sectAddr[sector]) &&
+				(SourceAddress < bPtr->sectAddr[sector+1]) )
+			{
+				rv = E_OK;
+				break;
+			}
+		}
+    }
+    return rv;
+}
 
 /**
  * Get PC.
@@ -230,9 +273,9 @@ static Std_VersionInfoType _Fls_VersionInfo = {
  * Ensure that the function is not inlined
  */
 #if 0
-static uint32 Fls_GetPc(void) __attribute__ ((noinline));
+static uint32 fls_GetPc(void) __attribute__ ((noinline));
 
-static uint32 Fls_GetPc(void) {
+static uint32 fls_GetPc(void) {
 	return get_spr(SPR_LR);
 }
 #endif
@@ -314,21 +357,23 @@ Std_ReturnType Fls_Erase(Fls_AddressType TargetAddress, Fls_LengthType Length) {
 	/** @req FLS023 */
 	VALIDATE_W_RV( Fls_Global.status != MEMIF_BUSY, FLS_ERASE_ID, FLS_E_BUSY, E_NOT_OK );
     /** @req FLS020 3.0/4.0 */
-	VALIDATE_W_RV( EE_OK == Flash_SectorAligned(Fls_Global.config->FlsInfo, TargetAddress ),
+	VALIDATE_W_RV( E_OK == fls_SectorAligned( TargetAddress ),
 	        FLS_ERASE_ID, FLS_E_PARAM_ADDRESS, E_NOT_OK );
     /** @req FLS021 3.0/4.0 */
-    VALIDATE_W_RV( (Length != 0) && (EE_OK == Flash_SectorAligned( Fls_Global.config->FlsInfo, TargetAddress + Length)),
+    VALIDATE_W_RV( (Length != 0) && (EE_OK == fls_SectorAligned( TargetAddress + Length)),
             FLS_ERASE_ID, FLS_E_PARAM_LENGTH, E_NOT_OK );
 
 	// Check if we trying to erase a partition that we are executing in
 #if 0
-	pc = Fls_GetPc();
+	pc = fls_GetPc();
 #endif
 
 
 	Fls_Global.status = MEMIF_BUSY;				    /** @req FLS219 3.0 */ /** @req FLS328 4.0 */
 	Fls_Global.jobResultType = MEMIF_JOB_PENDING;   /** @req FLS329 4.0 */
 	Fls_Global.jobType = FLS_JOB_ERASE;
+	Fls_Global.targetAddr = TargetAddress;
+
 	/* Unlock */
 	Flash_Lock(Fls_Global.config->FlsInfo,FLASH_OP_UNLOCK,TargetAddress, Length );
 
@@ -365,8 +410,9 @@ Std_ReturnType Fls_Write(Fls_AddressType TargetAddress,
 	VALIDATE_W_RV(Fls_Global.status != MEMIF_UNINIT,FLS_WRITE_ID, FLS_E_UNINIT,E_NOT_OK );
 	VALIDATE_W_RV(Fls_Global.status != MEMIF_BUSY,FLS_WRITE_ID, FLS_E_BUSY,E_NOT_OK );
 	VALIDATE_W_RV(SourceAddressPtr != ((void *)0),FLS_WRITE_ID, FLS_E_PARAM_DATA,E_NOT_OK );
-	VALIDATE_W_RV( TargetAddress % FLASH_PAGE_SIZE == 0, FLS_WRITE_ID, FLS_E_PARAM_ADDRESS, E_NOT_OK );
-	VALIDATE_W_RV( (Length != 0) && (((TargetAddress + Length) % FLASH_PAGE_SIZE) == 0) && ((TargetAddress + Length) < (FLS_BASE_ADDRESS + FLS_TOTAL_SIZE)),
+	VALIDATE_W_RV( (TargetAddress % FLASH_PAGE_SIZE == 0) && (E_OK == fls_CheckValidAddress(TargetAddress)),
+			FLS_WRITE_ID, FLS_E_PARAM_ADDRESS, E_NOT_OK );
+	VALIDATE_W_RV( (Length != 0) && (((TargetAddress + Length) % FLASH_PAGE_SIZE) == 0 && (E_OK == fls_CheckValidAddress(TargetAddress + Length))),
 			FLS_WRITE_ID, FLS_E_PARAM_LENGTH, E_NOT_OK );
 
 	// Destination is FLS_BASE_ADDRESS + TargetAddress
@@ -468,7 +514,7 @@ void Fls_MainFunction(void) {
 			break;
 		case FLS_JOB_ERASE: {
 
-			flashStatus = Flash_CheckStatus(Fls_Global.config->FlsInfo);
+			flashStatus = Flash_CheckStatus(Fls_Global.config->FlsInfo, Fls_Global.targetAddr);
 
 			if (flashStatus == EE_OK ) {
 				Fls_Global.jobResultType = MEMIF_JOB_OK;
@@ -501,7 +547,7 @@ void Fls_MainFunction(void) {
 		{
 
 		    do {
-				flashStatus = Flash_CheckStatus(Fls_Global.config->FlsInfo);
+				flashStatus = Flash_CheckStatus(Fls_Global.config->FlsInfo, &Fls_Global.flashWriteInfo.dest);
 
 				if (flashStatus == EE_OK ) {
 
@@ -565,10 +611,9 @@ Std_ReturnType Fls_Read(	Fls_AddressType SourceAddress,
 	/** @req FLS158 */
 	VALIDATE_W_RV( TargetAddressPtr != NULL , FLS_READ_ID, FLS_E_PARAM_DATA, E_NOT_OK );
 	/** @req FLS097  */
-	VALIDATE_W_RV( SourceAddress < FLS_TOTAL_SIZE, FLS_READ_ID, FLS_E_PARAM_ADDRESS, E_NOT_OK );
+	VALIDATE_W_RV( E_OK == fls_CheckValidAddress(SourceAddress), FLS_READ_ID, FLS_E_PARAM_ADDRESS, E_NOT_OK );
 	/** @req FLS098  */
-	VALIDATE_W_RV( (Length != 0) && ((SourceAddress + Length) < (FLS_BASE_ADDRESS + FLS_TOTAL_SIZE)),
-			FLS_READ_ID, FLS_E_PARAM_LENGTH, E_NOT_OK );
+	VALIDATE_W_RV( (Length != 0) && (E_OK == fls_CheckValidAddress(SourceAddress + Length)), FLS_READ_ID, FLS_E_PARAM_LENGTH, E_NOT_OK );
 
 	// Always check if status is not busy
 	if (Fls_Global.status == MEMIF_BUSY)
@@ -603,9 +648,9 @@ Std_ReturnType Fls_Compare( Fls_AddressType SourceAddress,
     /** @req FLS273 */
     VALIDATE_W_RV( TargetAddressPtr != NULL , FLS_COMPARE_ID, FLS_E_PARAM_DATA, E_NOT_OK );
 	/** @req FLS150  */
-	VALIDATE_W_RV( SourceAddress < FLS_TOTAL_SIZE, FLS_COMPARE_ID, FLS_E_PARAM_ADDRESS, E_NOT_OK );
+	VALIDATE_W_RV( E_OK == fls_CheckValidAddress(SourceAddress), FLS_COMPARE_ID, FLS_E_PARAM_ADDRESS, E_NOT_OK );
 	/** @req FLS151  */
-	VALIDATE_W_RV( (Length != 0) && ((SourceAddress + Length) < (FLS_BASE_ADDRESS + FLS_TOTAL_SIZE)),
+	VALIDATE_W_RV( (Length != 0) && (E_OK == fls_CheckValidAddress(SourceAddress + Length)),
 			FLS_COMPARE_ID, FLS_E_PARAM_LENGTH, E_NOT_OK );
 
 
