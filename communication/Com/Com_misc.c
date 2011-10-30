@@ -35,13 +35,14 @@ void Com_ReadSignalDataFromPdu(
 	const ComSignal_type * Signal = GET_Signal(signalId);
 	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
 	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
-
+	uint8 pduSize = GET_IPdu(Arc_Signal->ComIPduHandleId)->ComIPduSize;
 	// Get data
 	Com_ReadSignalDataFromPduBuffer(
 			signalId,
 			FALSE,
 			signalData,
-			Arc_IPdu->ComIPduDataPtr);
+			Arc_IPdu->ComIPduDataPtr,
+			pduSize);
 }
 
 void Com_ReadGroupSignalDataFromPdu(
@@ -53,25 +54,27 @@ void Com_ReadGroupSignalDataFromPdu(
 	const ComSignal_type * Signal = GET_Signal(parentSignalId);
 	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
 	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
-
+	uint8 pduSize = GET_IPdu(Arc_Signal->ComIPduHandleId)->ComIPduSize;
 	// Get data
 	Com_ReadSignalDataFromPduBuffer(
 			groupSignalId,
 			TRUE,
 			signalData,
-			Arc_IPdu->ComIPduDataPtr);
+			Arc_IPdu->ComIPduDataPtr,
+			pduSize);
 }
 
 void Com_ReadSignalDataFromPduBuffer(
 		const uint16 signalId,
 		const boolean isGroupSignal,
 		void *signalData,
-		const void *pduBuffer) {
+		const void *pduBuffer,
+		uint8 pduSize) {
 
 	Com_SignalType signalType;
 	ComSignalEndianess_type signalEndianess;
 	uint8 signalLength;
-	uint8 bitPosition;
+	Com_BitPositionType bitPosition;
 	uint8 bitSize;
 
 	if (!isGroupSignal) {
@@ -96,16 +99,16 @@ void Com_ReadSignalDataFromPduBuffer(
 	uint8 *signalDataBytes = (uint8 *)signalData;
 	uint8 signalDataBytesArray[8];
 	const uint8 *pduBufferBytes = (const uint8 *)pduBuffer;
-	uint8 startBitOffset = 0;
+	Com_BitPositionType startBitOffset = 0;
 
 	if (signalEndianess == COM_LITTLE_ENDIAN) {
 		// Swap source bytes before reading
 		// TODO: Must adapt to larger PDUs!
-		uint8 pduBufferBytes_swap[8];
-		for (uint8 i = 0; i < 8; ++i) {
-			pduBufferBytes_swap[i] = pduBufferBytes[7 - i];
+		uint8 pduBufferBytes_swap[pduSize];
+		for (uint8 i = 0; i < pduSize; ++i) {
+			pduBufferBytes_swap[i] = pduBufferBytes[(pduSize-1) - i];
 		}
-		startBitOffset = intelBitNrToPduOffset(bitPosition, bitSize, 64);
+		startBitOffset = intelBitNrToPduOffset(bitPosition, bitSize, pduSize*8);
 		//lint -save -esym(960,12.5) PC-Lint Exception: OK. PC-Lint Wrong interpretation of MISRA rule 12.5.
 		Com_ReadDataSegment(
 				signalDataBytesArray, pduBufferBytes_swap, destSize,
@@ -191,7 +194,7 @@ void Com_WriteSignalDataToPduBuffer(
 
 	Com_SignalType signalType;
 	uint8 signalLength;
-	uint8 bitPosition;
+	Com_BitPositionType bitPosition;
 	uint8 bitSize;
 	ComSignalEndianess_type endian;
 
@@ -212,7 +215,10 @@ void Com_WriteSignalDataToPduBuffer(
 	}
 
 	uint8 signalBufferSize = SignalTypeToSize(signalType, signalLength);
-	uint8 pduSignalMask[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+	uint8 pduSignalMask[pduSize];
+	for (uint8 i = 0; i < pduSize; i++) {
+		pduSignalMask[i] = 0x00;
+	}
 
 	uint8 signalDataBytesArray[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 	const uint8 *signalDataBytes = (const uint8 *)signalData;
@@ -236,15 +242,17 @@ void Com_WriteSignalDataToPduBuffer(
 
 	if (endian == COM_BIG_ENDIAN) {
 		uint8 *pduBufferBytes = (uint8 *)pduBuffer;
-		uint8 startBitOffset = motorolaBitNrToPduOffset(bitPosition);
+		Com_BitPositionType startBitOffset = motorolaBitNrToPduOffset(bitPosition);
 
 		Com_WriteDataSegment(pduBufferBytes, pduSignalMask,
 				signalDataBytesArray, signalBufferSize, startBitOffset, bitSize);
 
 	} else {
-		uint8 startBitOffset = intelBitNrToPduOffset(bitPosition, bitSize, (uint8)(pduSize * 8));
-		uint8 pduBufferBytesSwapped[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-
+		Com_BitPositionType startBitOffset = intelBitNrToPduOffset(bitPosition, bitSize, (Com_BitPositionType)(pduSize * 8));
+		uint8 pduBufferBytesSwapped[pduSize];
+		for (uint8 i = 0; i < pduSize; i++) {
+			pduBufferBytesSwapped[i] = 0x00;
+		}
 		Com_WriteDataSegment(pduBufferBytesSwapped, pduSignalMask,
 				signalDataBytesArray, signalBufferSize, startBitOffset, bitSize);
 
@@ -283,10 +291,10 @@ void Com_WriteSignalDataToPduBuffer(
  *
  */
 void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByteLength,
-		uint8 segmentStartBitOffset, uint8 segmentBitLength, boolean signedOutput) {
+		Com_BitPositionType segmentStartBitOffset, uint8 segmentBitLength, boolean signedOutput) {
 
-	uint8 sourceEndBitOffset = segmentStartBitOffset + segmentBitLength - 1;
-	uint8 sourceStartByte = segmentStartBitOffset / 8;
+	Com_BitPositionType sourceEndBitOffset = segmentStartBitOffset + segmentBitLength - 1;
+	Com_BitPositionType sourceStartByte = segmentStartBitOffset / 8;
 	uint8 sourceEndByte = (sourceEndBitOffset) / 8;
 	uint8 sourceByteLength = sourceEndByte - sourceStartByte;
 
@@ -374,8 +382,8 @@ void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByteLength,
  * signal is located in the <pdu>.
  */
 void Com_WriteDataSegment(uint8 *pdu, uint8 *pduSignalMask, const uint8 *signalDataPtr, uint8 destByteLength,
-		uint8 segmentStartBitOffset, uint8 segmentBitLength) {
-	uint8 pduEndBitOffset = segmentStartBitOffset + segmentBitLength - 1;
+		Com_BitPositionType segmentStartBitOffset, uint8 segmentBitLength) {
+	Com_BitPositionType pduEndBitOffset = segmentStartBitOffset + segmentBitLength - 1;
 	uint8 pduStartByte = segmentStartBitOffset / 8;
 	uint8 pduEndByte = (pduEndBitOffset) / 8;
 	uint8 pduByteLength = pduEndByte - pduStartByte;
@@ -445,11 +453,11 @@ void Com_WriteDataSegment(uint8 *pdu, uint8 *pduSignalMask, const uint8 *signalD
  *             motorolaBitNr:  7  6  5  4  3  2  1  0 15 14 13 12 ...
  *  motorolaBitNrToPduOffset:  0  1  2  3  4  5  6  7  8  9 10 11 ...
  */
-uint8 motorolaBitNrToPduOffset (uint8 motorolaBitNr) {
+Com_BitPositionType motorolaBitNrToPduOffset (Com_BitPositionType motorolaBitNr) {
 	uint8 byte = motorolaBitNr / 8;
-	uint8 offsetToByteStart = (uint8) (byte * 8u);
-	uint8 offsetInsideByte = motorolaBitNr % 8;
-	return (uint8) (offsetToByteStart + (7u - offsetInsideByte));
+	Com_BitPositionType offsetToByteStart = (Com_BitPositionType) (byte * 8u);
+	Com_BitPositionType offsetInsideByte = motorolaBitNr % 8;
+	return (Com_BitPositionType) (offsetToByteStart + (7u - offsetInsideByte));
 }
 
 /*
@@ -459,7 +467,7 @@ uint8 motorolaBitNrToPduOffset (uint8 motorolaBitNr) {
  *  intelBitNr (after PDU byte-swap): 39 38 37 36 35 34 33 32 31 ...  3  2  1  0
  *             intelBitNrToPduOffset:  0  1  2  3  4  5  6  7  8 ... 36 37 38 39
  */
-uint8 intelBitNrToPduOffset (uint8 intelBitNr, uint8 segmentBitLength, uint8 pduBitLength) {
+Com_BitPositionType intelBitNrToPduOffset (Com_BitPositionType intelBitNr, Com_BitPositionType segmentBitLength, Com_BitPositionType pduBitLength) {
 	return pduBitLength - (intelBitNr + segmentBitLength);
 }
 

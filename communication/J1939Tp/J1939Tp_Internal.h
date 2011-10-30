@@ -83,7 +83,7 @@ typedef struct {
 
 typedef uint8 J1939Tp_Internal_ControlByteType;
 
-static J1939Tp_ProtocolType J1939Tp_Internal_GetProtocol(uint8 pf);
+
 static inline uint8 J1939Tp_Internal_GetPf(J1939Tp_PgnType pgn);
 static inline Std_ReturnType J1939Tp_Internal_ValidatePacketType(const J1939Tp_RxPduInfoType* RxPduInfo);
 static inline J1939Tp_Internal_ChannelInfoType* J1939Tp_Internal_GetChannelState(const J1939Tp_RxPduInfoType* RxPduInfo);
@@ -117,6 +117,7 @@ static inline void J1939Tp_Internal_SendEndOfMsgAck(J1939Tp_Internal_ChannelInfo
 static inline void J1939Tp_Internal_SendCts(J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr, J1939Tp_PgnType Pgn, uint8 NextPacketSeqNum,uint8 NumPackets);
 static inline void J1939Tp_Internal_SendConnectionAbort(PduIdType CmNPdu, J1939Tp_PgnType Pgn);
 static inline void J1939Tp_Internal_StartTimer(J1939Tp_Internal_TimerType* TimerInfo,uint16 TimerExpire);
+static inline void J1939Tp_Internal_StopTimer(J1939Tp_Internal_TimerType* TimerInfo);
 static inline void J1939Tp_Internal_SetPgn(uint8* PgnBytes,J1939Tp_PgnType pgn );
 static inline J1939Tp_PgnType J1939Tp_Internal_GetPgn(uint8* PgnBytes);
 static inline uint8 J1939TP_Internal_GetNumDtPacketsToSend(uint16 messageSize);

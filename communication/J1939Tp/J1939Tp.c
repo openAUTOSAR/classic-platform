@@ -125,7 +125,7 @@ void J1939Tp_MainFunction(void) {
 				Irq_Save(state);
 				timer = J1939Tp_Internal_IncAndCheckTimer(&(ChannelInfoPtr->TxState->TimerInfo));
 				if (timer == J1939TP_EXPIRED) {
-					timer = J1939TP_NOT_EXPIRED;
+					J1939Tp_Internal_StopTimer(&(ChannelInfoPtr->TxState->TimerInfo));
 					switch (ChannelInfoPtr->TxState->State) {
 						case J1939TP_TX_WAITING_FOR_CTS:
 						case J1939TP_TX_WAITING_FOR_END_OF_MSG_ACK:
@@ -165,7 +165,7 @@ void J1939Tp_MainFunction(void) {
 						break;
 				}
 				if (timer == J1939TP_EXPIRED) {
-					timer = J1939TP_NOT_EXPIRED;
+					J1939Tp_Internal_StopTimer(&(ChannelInfoPtr->RxState->TimerInfo));
 					ChannelInfoPtr->RxState->State = J1939TP_RX_IDLE;
 					if (Channel->Protocol == J1939TP_PROTOCOL_CMDT) {
 						J1939Tp_Internal_SendConnectionAbort(Channel->FcNPdu,ChannelInfoPtr->RxState->CurrentPgPtr->Pgn);
@@ -329,8 +329,6 @@ static inline uint8 J1939Tp_Internal_GetDtDataSize(uint8 currentSeqNum, uint8 to
 static inline void J1939Tp_Internal_RxIndication_Cm(PduInfoType* PduInfoPtr, J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr) {
 	const J1939Tp_PgType* pg = 0;
 	J1939Tp_PgnType pgn = J1939Tp_Internal_GetPgn(&(PduInfoPtr->SduDataPtr[CM_PGN_BYTE_1]));
-	uint8 pf = J1939Tp_Internal_GetPf(pgn);
-	J1939Tp_ProtocolType protocol = J1939Tp_Internal_GetProtocol(pf);
 	if (J1939Tp_Internal_GetPgFromPgn(ChannelInfoPtr->ChannelConfPtr,pgn,&pg) != E_OK) {
 		return;
 	}
@@ -407,8 +405,10 @@ static inline void J1939Tp_Internal_RxIndication_ReverseCm(PduInfoType* PduInfoP
 			}
 			break;
 		case CONNABORT_CONTROL_VALUE:
-			PduR_J1939TpTxConfirmation(pg->NSdu,NTFRSLT_E_NOT_OK);
-			ChannelInfoPtr->TxState->State = J1939TP_TX_IDLE;
+			if (ChannelInfoPtr->TxState->State != J1939TP_TX_IDLE) {
+				PduR_J1939TpTxConfirmation(pg->NSdu,NTFRSLT_E_NOT_OK);
+				ChannelInfoPtr->TxState->State = J1939TP_TX_IDLE;
+			}
 			break;
 		default:
 			break;
@@ -675,6 +675,9 @@ static inline Std_ReturnType J1939Tp_Internal_ConfGetPg(PduIdType NSduId, const 
 }
 
 static inline J1939Tp_Internal_TimerStatusType J1939Tp_Internal_IncAndCheckTimer(J1939Tp_Internal_TimerType* TimerInfo) {
+	if (TimerInfo->Timer == 0 && TimerInfo->TimerExpire == 0) {
+		return J1939TP_NOT_EXPIRED;
+	}
 	TimerInfo->Timer += J1939TP_MAIN_FUNCTION_PERIOD;
 	if (TimerInfo->Timer >= TimerInfo->TimerExpire) {
 		return J1939TP_EXPIRED;
@@ -684,13 +687,7 @@ static inline J1939Tp_Internal_TimerStatusType J1939Tp_Internal_IncAndCheckTimer
 static inline uint8 J1939Tp_Internal_GetPf(J1939Tp_PgnType pgn) {
 	return  (uint8)(pgn >> 8);
 }
-static J1939Tp_ProtocolType J1939Tp_Internal_GetProtocol(uint8 pf) {
-	if (pf < 240) {
-		return J1939TP_PROTOCOL_CMDT;
-	} else {
-		return J1939TP_PROTOCOL_BAM;
-	}
-}
+
 
 
 static inline Std_ReturnType J1939Tp_Internal_SendDt(J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr) {
@@ -793,7 +790,10 @@ static inline void J1939Tp_Internal_StartTimer(J1939Tp_Internal_TimerType* Timer
 	TimerInfo->Timer = 0;
 	TimerInfo->TimerExpire = TimerExpire;
 }
-
+static inline void J1939Tp_Internal_StopTimer(J1939Tp_Internal_TimerType* TimerInfo) {
+	TimerInfo->Timer = 0;
+	TimerInfo->TimerExpire = 0;
+}
 /**
  * set three bytes to a 18 bit pgn value
  * @param PgnBytes must be three uint8 bytes
