@@ -98,49 +98,59 @@ void Com_ReadSignalDataFromPduBuffer(
 	// Pointer to a byte of the source and dest respectively.
 	uint8 *signalDataBytes = (uint8 *)signalData;
 	uint8 signalDataBytesArray[8];
-	const uint8 *pduBufferBytes = (const uint8 *)pduBuffer;
+	const uint8 *pduBufferBytes = (const uint8 *)pduBuffer + (bitPosition/8);
 	Com_BitPositionType startBitOffset = 0;
 
-	if (signalEndianess == COM_LITTLE_ENDIAN) {
-		// Swap source bytes before reading
-		// TODO: Must adapt to larger PDUs!
-		uint8 pduBufferBytes_swap[pduSize];
-		for (uint8 i = 0; i < pduSize; ++i) {
-			pduBufferBytes_swap[i] = pduBufferBytes[(pduSize-1) - i];
-		}
-		startBitOffset = intelBitNrToPduOffset(bitPosition, bitSize, pduSize*8);
-		//lint -save -esym(960,12.5) PC-Lint Exception: OK. PC-Lint Wrong interpretation of MISRA rule 12.5.
-		Com_ReadDataSegment(
-				signalDataBytesArray, pduBufferBytes_swap, destSize,
-				startBitOffset, bitSize,
-				SignalTypeSignedness(signalType));
-		//lint -restore
+	if (signalEndianess == COM_OPAQUE || signalType == UINT8_N) {
+		// Aligned opaque data -> straight copy
+
+		//assert(bitPosition % 8 == 0);
+		//assert(bitSize % 8 == 0);
+		memcpy(signalDataBytes, pduBufferBytes, destSize);
+
 	} else {
-		startBitOffset = motorolaBitNrToPduOffset(bitPosition);
-		Com_ReadDataSegment(
-				signalDataBytesArray, pduBufferBytes, destSize,
-				startBitOffset, bitSize,
-				SignalTypeSignedness(signalType));
-	}
+		// Unaligned data and/or endianness conversion
 
-	if (Com_SystemEndianness == COM_BIG_ENDIAN) {
-		// Straight copy
-		uint8 i;
-		for (i = 0; i < destSize; i++) {
-			signalDataBytes[i] = signalDataBytesArray[i];
+		if (signalEndianess == COM_LITTLE_ENDIAN) {
+			// Swap source bytes before reading
+			// TODO: Must adapt to larger PDUs!
+			uint8 pduBufferBytes_swap[8];
+			for (uint8 i = 0; i < 8; ++i) {
+				pduBufferBytes_swap[i] = pduBufferBytes[7 - i];
+			}
+			startBitOffset = intelBitNrToPduOffset(bitPosition%8, bitSize, 64);
+			//lint -save -esym(960,12.5) PC-Lint Exception: OK. PC-Lint Wrong interpretation of MISRA rule 12.5.
+			Com_ReadDataSegment(
+					signalDataBytesArray, pduBufferBytes_swap, destSize,
+					startBitOffset, bitSize,
+					SignalTypeSignedness(signalType));
+			//lint -restore
+		} else {
+			startBitOffset = motorolaBitNrToPduOffset(bitPosition%8);
+			Com_ReadDataSegment(
+					signalDataBytesArray, pduBufferBytes, destSize,
+					startBitOffset, bitSize,
+					SignalTypeSignedness(signalType));
 		}
 
-	} else if (Com_SystemEndianness == COM_LITTLE_ENDIAN) {
-		// Data copy algorithm creates big-endian output data so we swap
-		uint8 i;
-		for (i = 0; i < destSize; i++) {
-			signalDataBytes[(destSize - 1) - i] = signalDataBytesArray[i];
-		}
-	} else {
-		//lint --e(506)	PC-Lint exception Misra 13.7, 14.1, Allow boolean to always be false.
-		assert(0);
-	}
+		if (Com_SystemEndianness == COM_BIG_ENDIAN) {
+			// Straight copy
+			uint8 i;
+			for (i = 0; i < destSize; i++) {
+				signalDataBytes[i] = signalDataBytesArray[i];
+			}
 
+		} else if (Com_SystemEndianness == COM_LITTLE_ENDIAN) {
+			// Data copy algorithm creates big-endian output data so we swap
+			uint8 i;
+			for (i = 0; i < destSize; i++) {
+				signalDataBytes[(destSize - 1) - i] = signalDataBytesArray[i];
+			}
+		} else {
+			//lint --e(506)	PC-Lint exception Misra 13.7, 14.1, Allow boolean to always be false.
+			assert(0);
+		}
+	}
 }
 
 
@@ -215,52 +225,71 @@ void Com_WriteSignalDataToPduBuffer(
 	}
 
 	uint8 signalBufferSize = SignalTypeToSize(signalType, signalLength);
-	uint8 pduSignalMask[pduSize];
-	for (uint8 i = 0; i < pduSize; i++) {
-		pduSignalMask[i] = 0x00;
-	}
+	uint8 pduSignalMask[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 	uint8 signalDataBytesArray[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 	const uint8 *signalDataBytes = (const uint8 *)signalData;
-	if (Com_SystemEndianness == COM_BIG_ENDIAN) {
-		// Straight copy
-		uint8 i;
-		for (i = 0; i < signalBufferSize; i++) {
-			signalDataBytesArray[i] = signalDataBytes[i];
-		}
-
-	} else if (Com_SystemEndianness == COM_LITTLE_ENDIAN) {
-		// Data copy algorithm assumes big-endian input data so we swap
-		uint8 i;
-		for (i = 0; i < signalBufferSize; i++) {
-			signalDataBytesArray[(signalBufferSize - 1) - i] = signalDataBytes[i];
-		}
-	} else {
-		//lint --e(506)	PC-Lint exception Misra 13.7, 14.1, Allow boolean to always be false.
-		assert(0);
-	}
-
-	if (endian == COM_BIG_ENDIAN) {
+	if (endian == COM_OPAQUE || signalType == UINT8_N) {
+		//assert(bitPosition % 8 == 0);
+		//assert(bitSize % 8 == 0);
 		uint8 *pduBufferBytes = (uint8 *)pduBuffer;
-		Com_BitPositionType startBitOffset = motorolaBitNrToPduOffset(bitPosition);
-
-		Com_WriteDataSegment(pduBufferBytes, pduSignalMask,
-				signalDataBytesArray, signalBufferSize, startBitOffset, bitSize);
-
+		uint8 startFromPduByte = bitPosition / 8;
+		memcpy(pduBufferBytes + startFromPduByte, signalDataBytes, signalLength);
 	} else {
-		Com_BitPositionType startBitOffset = intelBitNrToPduOffset(bitPosition, bitSize, (Com_BitPositionType)(pduSize * 8));
-		uint8 pduBufferBytesSwapped[pduSize];
-		for (uint8 i = 0; i < pduSize; i++) {
-			pduBufferBytesSwapped[i] = 0x00;
-		}
-		Com_WriteDataSegment(pduBufferBytesSwapped, pduSignalMask,
-				signalDataBytesArray, signalBufferSize, startBitOffset, bitSize);
+		if (Com_SystemEndianness == COM_BIG_ENDIAN) {
+			// Straight copy
+			uint8 i;
+			for (i = 0; i < signalBufferSize; i++) {
+				signalDataBytesArray[i] = signalDataBytes[i];
+			}
 
-		uint8 *pduBufferBytes = (uint8 *)pduBuffer;
-		uint8 i;
-		for (i = 0; i < pduSize; i++) {
-			pduBufferBytes[ i ]  &=       ~( pduSignalMask[ (pduSize - 1) - i ] );
-			pduBufferBytes[ i ]  |=  pduBufferBytesSwapped[ (pduSize - 1) - i ];
+		} else if (Com_SystemEndianness == COM_LITTLE_ENDIAN) {
+			// Data copy algorithm assumes big-endian input data so we swap
+			uint8 i;
+			for (i = 0; i < signalBufferSize; i++) {
+				signalDataBytesArray[(signalBufferSize - 1) - i] = signalDataBytes[i];
+			}
+		} else {
+			//lint --e(506)	PC-Lint exception Misra 13.7, 14.1, Allow boolean to always be false.
+			assert(0);
+		}
+
+		if (endian == COM_BIG_ENDIAN) {
+			Com_BitPositionType startBitOffset = motorolaBitNrToPduOffset(bitPosition%8);
+			uint8 pduBufferBytesStraight[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+			Com_WriteDataSegment(pduBufferBytesStraight, pduSignalMask,
+					signalDataBytesArray, signalBufferSize, startBitOffset, bitSize);
+
+			// Straight copy into real pdu buffer (with mutex)
+			uint8 *pduBufferBytes = ((uint8 *)pduBuffer)+(bitPosition/8);
+			uint8 i;
+			imask_t irq_state;
+			Irq_Save(irq_state);
+			for (i = 0; i < 8; i++) {
+				pduBufferBytes[ i ]  &=        ~( pduSignalMask[ i ] );
+				pduBufferBytes[ i ]  |=  pduBufferBytesStraight[ i ];
+			}
+			Irq_Restore(irq_state);
+
+		} else {
+			uint8 startBitOffset = intelBitNrToPduOffset(bitPosition%8, bitSize, 64);
+			uint8 pduBufferBytesSwapped[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+			Com_WriteDataSegment(pduBufferBytesSwapped, pduSignalMask,
+					signalDataBytesArray, signalBufferSize, startBitOffset, bitSize);
+
+			// Swapped copy into real pdu buffer (with mutex)
+			uint8 *pduBufferBytes = ((uint8 *)pduBuffer)+(bitPosition/8);
+			uint8 i;
+			imask_t irq_state;
+			Irq_Save(irq_state);
+			// actually it is only necessary to iterate through the bytes that are written.
+			for (i = 0; i < 8; i++) {
+				pduBufferBytes[ i ]  &=       ~( pduSignalMask[ (8 - 1) - i ] );
+				pduBufferBytes[ i ]  |=  pduBufferBytesSwapped[ (8 - 1) - i ];
+			}
+			Irq_Restore(irq_state);
 		}
 	}
 }
