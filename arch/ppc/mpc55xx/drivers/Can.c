@@ -110,6 +110,9 @@
  *
  */
 
+
+/* ----------------------------[includes]------------------------------------*/
+
 #include "Can.h"
 
 //#include "ip_flexcan.h"
@@ -130,99 +133,25 @@
 #include "irq.h"
 #include "arc.h"
 
-/* CONFIGURATION NOTES
- * ------------------------------------------------------------------
- * - CanHandleType must be CAN_ARC_HANDLE_TYPE_BASIC
- *   i.e. CanHandleType=CAN_ARC_HANDLE_TYPE_FULL NOT supported
- *   i.e CanIdValue is NOT supported
- * - All CanXXXProcessing must be CAN_ARC_PROCESS_TYPE_INTERRUPT
- *   ie CAN_ARC_PROCESS_TYPE_POLLED not supported
- * - To select the Mailboxes to use in the CAN controller use Can_Arc_MbMask
- * - HOH's for Tx are global and Rx are for each controller
- * - CanControllerTimeQuanta is NOT used. The other CanControllerXXX selects
- *   the proper time-quanta
- * - Can_Arc_MbMask for Tx HOH must NOT overlap Can_Arc_MbMask for Rx.
- * - ONLY global mask is supported( NOT 14,15 and individual )
- * - Numbering the CanObjectId for Tx:
- *     To do this correctly there are a number of things that are good to know
- *     1. HTH's have unique numbers.
- *     2. One HTH/HRH is maped to one HOH
- *     3. The extension Can_Arc_MbMask binds FULL CAN boxes together.
- *
- *     Example:
- *
- *     HTH   B/F C  HOH
- *     ---------------------
- *      0    F   0  0
- *      1    F   0  1
- *      ..
- *      16   B   0  16  |
- *                  17  |    The use of Can_Arc_MbMask=0x000f0000 binds these to HTH 16
- *                  18  |    ( bits 16 to 19 set here )
- *                  19  |
- *           ...
- *      32   ... 1  32
- *
- *
- *        B - BASIC CAN
- *        F - FULL CAN
- *        C - Controller number
- *
- */
 
-/* IMPLEMENTATION NOTES
- * -----------------------------------------------
- * - A HOH us unique for a controller( not a config-set )
- * - Hrh's are numbered for each controller from 0
- * - HOH is numbered for each controller in sequences of 0-31
- *   ( since we have 6 controllers and Hth is only uint8( See Can_Write() proto )
- * - loopback in HW NOT supported
- * - 32 of 64 boxes supported ( limited by Hth type )
- */
+/* ----------------------------[private define]------------------------------*/
 
-/* ABBREVATIONS
- *  -----------------------------------------------
- * - Can Hardware unit - One or multiple Can controllers of the same type.
- * - Hrh - HOH with receive definitions
- * - Hth - HOH with transmit definitions
- *
- */
+#define MAX_NUM_OF_MAILBOXES    64
+#define USE_CAN_STATISTICS      STD_OFF
 
-/* HW INFO
- * ------------------------------------------------------------------
- *   This controller should really be called FlexCan+ or something because
- *   it's enhanced with:
- *   - A RX Fifo !!!!! ( yep, it's fantastic ;) )
- *   - A better matching process. From 25.4.4
- *   "By programming	more than one MB with the same ID, received messages will
- *    be queued into the MBs. The CPU can examine the time stamp field of the
- *    MBs to determine the order in which the messages arrived."
- *
- *   Soo, now it seems that Freescale have finally done something right.
- */
+// Message box status defines
+#define MB_TX_ONCE              0xc
+#define MB_INACTIVE             0x8
+#define MB_RX                   0x4
+#define MB_ABORT                0x9
 
-//-------------------------------------------------------------------
+/* ----------------------------[private macro]-------------------------------*/
 
-// Number of mailboxes used for each controller ( power of 2 only )
-#define MAX_NUM_OF_MAILBOXES 64
-
+#define CTRL_TO_UNIT_PTR(_controller)   &CanUnit[Can_CtrlToUnitMap[_controller]]
+#define VALID_CONTROLLER(_ctrl)         (Can_Global.configured & (1<<(_ctrl)))
+#define GET_CALLBACKS()                 (Can_Global.config->CanConfigSet->CanCallbacks)
 #define GET_CONTROLLER(_controller) 	\
         					((struct FLEXCAN_tag *)(0xFFFC0000 + 0x4000*(_controller)))
-
-#define GET_CONTROLLER_CONFIG(_controller)	\
-        					&Can_Global.config->CanConfigSet->CanController[(_controller)]
-
-#define GET_CALLBACKS() \
-							(Can_Global.config->CanConfigSet->CanCallbacks)
-
-#define CTRL_TO_UNIT_PTR(_controller) &CanUnit[Can_CtrlToUnitMap[_controller]]
-
-#define GET_CONTROLLER_CNT() (CAN_CONTROLLER_CNT)
-
-#define VALID_CONTROLLER(_ctrl)  (Can_Global.configured & (1<<(_ctrl)))
-
-
-
 
 #define INSTALL_HANDLER4(_name, _can_entry, _vector, _priority, _app)\
 	do { \
@@ -273,18 +202,15 @@
 #endif
 
 
-//-------------------------------------------------------------------
+/* ----------------------------[private typedef]-----------------------------*/
 
-// Message box status defines
-#define MB_TX_ONCE		0xc
-#define MB_INACTIVE	0x8
-#define MB_RX				0x4
-#define MB_ABORT			0x9
 
-//-------------------------------------------------------------------
+typedef struct FLEXCAN_tag flexcan_t;
+
 typedef enum {
     CAN_UNINIT = 0, CAN_READY
 } Can_DriverStateType;
+
 
 typedef union {
     vuint32_t R;
@@ -310,14 +236,6 @@ typedef union {
     } B;
 } ESRType; /* Error and Status Register */
 
-typedef struct FLEXCAN_tag flexcan_t;
-
-// Mapping between HRH and Controller//HOH
-typedef struct Can_Arc_ObjectHOHMapStruct {
-    uint32 HxHRef; // Reference to HRH or HTH
-    CanControllerIdType CanControllerRef; // Reference to controller
-    const Can_HardwareObjectType* CanHOHRef; // Reference to HOH.
-} Can_Arc_ObjectHOHMapType;
 
 /* Type for holding global information used by the driver */
 typedef struct {
@@ -332,16 +250,8 @@ typedef struct {
     // 0 - NOT configured
     uint32 configured;
     // Maps the a channel id to a configured channel id
-//    uint8 channelMap[CAN_CONTROLLER_CNT];
-
-    // This is a map that maps the HTH:s with the controller and Hoh. It is built
-    // during Can_Init and is used to make things faster during a transmit.
-    Can_Arc_ObjectHOHMapType CanHTHMap[NUM_OF_HTHS];
 } Can_GlobalType;
 
-
-// Global config
-Can_GlobalType Can_Global = { .initRun = CAN_UNINIT, };
 
 /* Type for holding information about each controller */
 typedef struct {
@@ -358,13 +268,15 @@ typedef struct {
 
     uint8_t mbMax;     // Maximum number of used MB for this controller
 
+#if (USE_CAN_STATISTICS == STD_ON)
     // Statistics
     Can_Arc_StatisticsType stats;
+#endif
 
     // Data stored for Txconfirmation callbacks to CanIf
-    PduIdType swPduHandles[MAX_NUM_OF_MAILBOXES];
+    PduIdType   swPduHandles[MAX_NUM_OF_MAILBOXES];
 
-    uint8_t mbToHrh[MAX_NUM_OF_MAILBOXES];
+    uint8_t     mbToHrh[MAX_NUM_OF_MAILBOXES];
 
     /* List of controllers */
     const Can_ControllerConfigType *cfgCtrlPtr;
@@ -374,7 +286,14 @@ typedef struct {
     flexcan_t *hwPtr;
 } Can_UnitType;
 
+/* ----------------------------[private function prototypes]-----------------*/
+/* ----------------------------[private variables]---------------------------*/
+
+
 Can_UnitType CanUnit[CAN_ARC_CTRL_CONFIG_CNT];
+
+// Global config
+Can_GlobalType Can_Global = { .initRun = CAN_UNINIT, };
 
 /* Used by ISR */
 uint8_t Can_CtrlToUnitMap[CAN_ARC_CTRL_CONFIG_CNT];
@@ -383,6 +302,7 @@ uint8_t Can_CtrlToUnitMap[CAN_ARC_CTRL_CONFIG_CNT];
 uint8_t Can_HthToUnitIdMap[NUM_OF_HTHS];
 uint8_t Can_HthToHohMap[NUM_OF_HTHS];
 
+/* ----------------------------[private functions]---------------------------*/
 
 static void clearMbFlag( flexcan_t * hw,  uint8_t mb ) {
     if( mb >= 32) {
@@ -392,7 +312,6 @@ static void clearMbFlag( flexcan_t * hw,  uint8_t mb ) {
     }
 }
 
-//-------------------------------------------------------------------
 
 static inline uint64_t ilog2_64( uint64_t val ) {
     uint32_t t = val >> 32;
@@ -403,8 +322,6 @@ static inline uint64_t ilog2_64( uint64_t val ) {
     return ilog2((uint32_t)val);
 }
 
-
-//-------------------------------------------------------------------
 
 static void Can_Isr(int unit);
 static void Can_Err(int unit);
@@ -520,8 +437,11 @@ static void Can_AbortTx(flexcan_t *canHw, Can_UnitType *canUnit)
         if (canHw->BUF[mbNr].CS.B.CODE != MB_ABORT) {
             // nope..
 
-            // it's not sent... or being sent.
-            // Just wait for it
+            /* it's not sent... or being sent.
+             * Just wait for it
+             *
+             * TODO: Add 64 box support
+             */
             int i = 0;
             while (canHw->IFRL.R == (1 << mbNr)) {
                 i++;
@@ -531,15 +451,13 @@ static void Can_AbortTx(flexcan_t *canHw, Can_UnitType *canUnit)
         }
     }
 
-    // Ack tx interrupts
+    // Ack tx interrupts, TODO: Add 64bit support
     canHw->IFRL.R = canUnit->Can_Arc_TxMbMask;
-//    canUnit->iflagStart = canUnit->Can_Arc_TxMbMask;
 }
 
-//-------------------------------------------------------------------
 
 /**
- * BussOff ISR for CAN
+ * BusOff ISR for CAN
  *
  * @param unit CAN controller number( from 0 )
  */
@@ -550,6 +468,7 @@ static void Can_BusOff(int unit)
     Can_Arc_ErrorType err;
     err.R = 0;
 
+#if (USE_CAN_STATISTICS == STD_ON)
     if (canHw->ESR.B.TWRNINT) {
         err.B.TXWRN = canHw->ESR.B.TXWRN;
         canUnit->stats.txErrorCnt++;
@@ -561,6 +480,7 @@ static void Can_BusOff(int unit)
         canUnit->stats.rxErrorCnt++;
         canHw->ESR.B.RWRNINT = 1;
     }
+#endif
 
     if (err.R != 0) {
         if (GET_CALLBACKS()->Arc_Error != NULL) {
@@ -569,8 +489,9 @@ static void Can_BusOff(int unit)
     }
 
     if (canHw->ESR.B.BOFFINT) {
-
+#if (USE_CAN_STATISTICS == STD_ON)
         canUnit->stats.boffCnt++;
+#endif
         if (GET_CALLBACKS()->ControllerBusOff != NULL) {
             GET_CALLBACKS()->ControllerBusOff(unit);
         }
@@ -582,9 +503,10 @@ static void Can_BusOff(int unit)
     }
 }
 
-//-------------------------------------------------------------------
-
-
+/**
+ *
+ * @param uPtr
+ */
 static void Can_Isr_Tx(Can_UnitType *uPtr)
 {
     uint8 mbNr;
@@ -636,6 +558,7 @@ static void Can_Isr_Rx(Can_UnitType *uPtr)
         /* Check for FIFO interrupt */
         if (canHw->MCR.B.FEN && (iFlagLow & (1 << 5))) {
 
+#if (USE_CAN_STATISTICS == STD_ON)
             /* Check overflow */
             if (iFlagLow & (1 << 7)) {
                 uPtr->stats.fifoOverflow++;
@@ -647,6 +570,7 @@ static void Can_Isr_Rx(Can_UnitType *uPtr)
                 uPtr->stats.fifoWarning++;
                 canHw->IFRL.B.BUF06I = 1;
             }
+#endif
 
             /* The manual is "fuzzy" here, read control and status */
             (void) canHw->BUF[0].CS.R;
@@ -702,8 +626,9 @@ static void Can_Isr_Rx(Can_UnitType *uPtr)
                         canHw->BUF[mbNr].CS.B.LENGTH,
                         (uint8 *) &canHw->BUF[mbNr].DATA.W[0]);
             }
-
+#if (USE_CAN_STATISTICS == STD_ON)
             uPtr->stats.rxSuccessCnt++;
+#endif
             /* unlock MB (dummy read timer) */
             (void) canHw->TIMER.R;
 
@@ -889,7 +814,7 @@ void Can_DeInit()
     uint32 ctlrId;
 
     for (int configId = 0; configId < CAN_ARC_CTRL_CONFIG_CNT; configId++) {
-        cfgCtrlPtr = GET_CONTROLLER_CONFIG(configId);
+        cfgCtrlPtr = &Can_Global.config->CanConfigSet->CanController[(configId)];
         ctlrId = cfgCtrlPtr->CanControllerId;
 
         canUnit = CTRL_TO_UNIT_PTR(ctlrId);
@@ -899,8 +824,10 @@ void Can_DeInit()
 
         canUnit->lock_cnt = 0;
 
+#if (USE_CAN_STATISTICS == STD_ON)
         // Clear stats
         memset(&canUnit->stats, 0, sizeof(Can_Arc_StatisticsType));
+#endif
     }
 
     Can_Global.config = NULL;
@@ -954,10 +881,10 @@ void Can_InitController(uint8 controller,
     }
 
     if( config->Can_Arc_Flags & CAN_CTRL_FIFO ) {
-        canHw->MCR.B.FEN = 1; // Enable FIFO
-        canHw->MCR.B.IDAM = 0; // We want extended id's to match with
+        canHw->MCR.B.FEN = 1;       /*  Enable FIFO */
+        canHw->MCR.B.IDAM = 0;      /* We want extended id's to match with */
     }
-    canHw->MCR.B.BCC = 1; // Enable all nice features
+    canHw->MCR.B.BCC = 1;           /* Enable all nice features */
 
     /* Use Fsys derivate */
     canHw->CR.B.CLKSRC = 1;
@@ -967,19 +894,19 @@ void Can_InitController(uint8 controller,
     /* Disable selfreception, if not loopback  */
     canHw->MCR.B.SRXDIS = (config->Can_Arc_Flags & CAN_CTRL_LOOPBACK) ? 0 : 1;
 
-    // Clock calucation
-    // -------------------------------------------------------------------
-    //
-    // * 1 TQ = Sclk period( also called SCK )
-    // * Ftq = Fcanclk / ( PRESDIV + 1 ) = Sclk
-    //   ( Fcanclk can come from crystal or from the peripheral dividers )
-    //
-    // -->
-    // TQ = 1/Ftq = (PRESDIV+1)/Fcanclk --> PRESDIV = (TQ * Fcanclk - 1 )
-    // TQ is between 8 and 25
+    /* Clock calucation
+     * -------------------------------------------------------------------
+     *
+     * * 1 TQ = Sclk period( also called SCK )
+     * * Ftq = Fcanclk / ( PRESDIV + 1 ) = Sclk
+     *   ( Fcanclk can come from crystal or from the peripheral dividers )
+     *
+     * -->
+     * TQ = 1/Ftq = (PRESDIV+1)/Fcanclk --> PRESDIV = (TQ * Fcanclk - 1 )
+     * TQ is between 8 and 25
+     */
 
-    // Calculate the number of timequanta's
-    // From "Protocol Timing"( chap. 25.4.7.4 )
+    /* Calculate the number of timequanta's (from "Protocol Timing"( chap. 25.4.7.4 )) */
     tq1 = (config->CanControllerPropSeg + config->CanControllerSeg1 + 2);
     tq2 = (config->CanControllerSeg2 + 1);
     tq = 1 + tq1 + tq2;
@@ -990,15 +917,14 @@ void Can_InitController(uint8 controller,
     VALIDATE_DEM_NO_RV(( (tq>8) && (tq<25 )), CAN_E_TIMEOUT );
 
     // Assume we're using the peripheral clock instead of the crystal.
-    clock = McuE_GetPeripheralClock(
-            (McuE_PeriperalClock_t) config->CanCpuClockRef);
+    clock = McuE_GetPeripheralClock((McuE_PeriperalClock_t) config->CanCpuClockRef);
 
     canHw->CR.B.PRESDIV = clock / (config->CanControllerBaudRate * 1000 * tq) - 1;
     canHw->CR.B.PROPSEG = config->CanControllerPropSeg;
-    canHw->CR.B.PSEG1 = config->CanControllerSeg1;
-    canHw->CR.B.PSEG2 = config->CanControllerSeg2;
-    canHw->CR.B.SMP = 1; // 3 samples better than 1 ??
-    canHw->CR.B.LPB = (config->Can_Arc_Flags & CAN_CTRL_LOOPBACK) ? 1 : 0;
+    canHw->CR.B.PSEG1   = config->CanControllerSeg1;
+    canHw->CR.B.PSEG2   = config->CanControllerSeg2;
+    canHw->CR.B.SMP     = 1; // 3 samples better than 1 ??
+    canHw->CR.B.LPB     = (config->Can_Arc_Flags & CAN_CTRL_LOOPBACK) ? 1 : 0;
     canHw->CR.B.BOFFREC = 1; // Disable bus off recovery
 
 #if defined(CFG_MPC5606S)
@@ -1044,24 +970,19 @@ void Can_InitController(uint8 controller,
             canHw->RXIMR[fifoNr].R = *hohPtr->CanFilterMaskRef;
             fifoNr++;
         } else {
-            canHw->BUF[mbNr].CS.B.CODE = MB_RX;
-            canHw->RXIMR[mbNr].R = *hohPtr->CanFilterMaskRef;
+            canHw->BUF[mbNr].CS.B.CODE  = MB_RX;
+            canHw->RXIMR[mbNr].R        = *hohPtr->CanFilterMaskRef;
 
             if (hohPtr->CanIdType == CAN_ID_TYPE_EXTENDED) {
-                canHw->BUF[mbNr].CS.B.IDE = 1;
-                canHw->BUF[mbNr].ID.R = hohPtr->CanIdValue;
+                canHw->BUF[mbNr].CS.B.IDE    = 1;
+                canHw->BUF[mbNr].ID.R        = hohPtr->CanIdValue;
             } else {
-                canHw->BUF[mbNr].CS.B.IDE = 0;
+                canHw->BUF[mbNr].CS.B.IDE    = 0;
                 canHw->BUF[mbNr].ID.B.STD_ID = hohPtr->CanIdValue;
             }
             mbNr++;
         }
     }
-
-//    canHw->MCR.B.MAXMB = MAX(8,mbNr) - 1 ;
-
-
-//    canUnit->iflagStart = canUnit->Can_Arc_TxMbMask;
 
     canUnit->mbTxFree = canUnit->Can_Arc_TxMbMask;
     canUnit->state = CANIF_CS_STOPPED;
@@ -1263,13 +1184,6 @@ Can_ReturnType Can_Write(Can_Arc_HTHType hth, Can_PduType *pduInfo)
     uint64_t iHwFlag = (  (uint64_t)(canHw->IFRH.R & canHw->IMRH.R)<<32) +
                         (canHw->IFRL.R & canHw->IMRL.R);
 
-
-    /*
-     * IFRX
-     *  0   Sending or free
-     *  1   Done sending, may wait for TX conf
-     */
-
     iflag = (iHwFlag & (canUnit->Can_Arc_TxMbMask)) |  canUnit->mbTxFree;
 
     /** @req 3.1.5/CAN212 */
@@ -1312,7 +1226,9 @@ Can_ReturnType Can_Write(Can_Arc_HTHType hth, Can_PduType *pduInfo)
         canHw->BUF[mbNr].CS.B.CODE = MB_TX_ONCE; // Write tx once code
         timer = canHw->TIMER.R; // Unlock Message buffers
 
+#if (USE_CAN_STATISTICS == STD_ON)
         canUnit->stats.txSuccessCnt++;
+#endif
 
         // Store pdu handle in unit to be used by TxConfirmation
         canUnit->swPduHandles[mbNr] = pduInfo->swPduHandle;
@@ -1345,7 +1261,6 @@ void Can_MainFunction_Write( void ) {
     for(int i=0;i<CAN_ARC_CTRL_CONFIG_CNT; i++ ) {
         uPtr = &CanUnit[i];
         if( (uPtr->cfgCtrlPtr->Can_Arc_Flags & CAN_CTRL_TX_PROCESSING_INTERRUPT) == 0 ) {
-            /* Handle Read Only */
             Can_Isr_Tx(uPtr);
         }
     }
@@ -1362,7 +1277,6 @@ void Can_MainFunction_Read(void)
     for(int i=0;i<CAN_ARC_CTRL_CONFIG_CNT; i++ ) {
         uPtr = &CanUnit[i];
         if( (uPtr->cfgCtrlPtr->Can_Arc_Flags & CAN_CTRL_RX_PROCESSING_INTERRUPT) == 0 ) {
-            /* Handle Read Only */
             Can_Isr_Rx(uPtr);
         }
     }
@@ -1389,6 +1303,7 @@ void Can_MainFunction_Wakeup(void)
     /* NOT SUPPORTED */
 }
 
+#if (USE_CAN_STATISTICS == STD_ON)
 /**
  * Get send/receive/error statistics for a controller
  *
@@ -1396,9 +1311,11 @@ void Can_MainFunction_Wakeup(void)
  * @param stats Pointer to data to copy statistics to
  */
 
+
 void Can_Arc_GetStatistics(uint8 controller, Can_Arc_StatisticsType *stats)
 {
     Can_UnitType *canUnit = CTRL_TO_UNIT_PTR(controller);
     *stats = canUnit->stats;
 }
+#endif
 
