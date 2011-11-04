@@ -633,6 +633,7 @@ Std_ReturnType Adc_ReadGroup (Adc_GroupType group, Adc_ValueGroupType *dataBuffe
 		  /* Start continous conversion again */
           currSampleCount[currGroupId] = 0;
 
+#if defined(CFG_MPC5606S)
 #if defined(ADC_USES_DMA)
    	      Dma_ConfigureChannel ((Dma_TcdType *)(AdcConfigPtr->groupConfigPtr[group].groupDMAResults), DMA_ADC_GROUP0_RESULT_CHANNEL);
           Dma_ConfigureDestinationAddress((uint32_t)AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr, DMA_ADC_GROUP0_RESULT_CHANNEL);
@@ -641,7 +642,6 @@ Std_ReturnType Adc_ReadGroup (Adc_GroupType group, Adc_ValueGroupType *dataBuffe
           currResultBufPtr[currGroupId] = AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr;
 #endif
 
-#if defined(CFG_MPC5606S)
 		  ADC_0.IMR.B.MSKECH = 1;
 		  ADC_0.MCR.B.NSTART=1;
 #endif
@@ -1241,8 +1241,29 @@ void Adc_StartGroupConversion (Adc_GroupType group)
   }
 }
 
+void Adc_StopGroupConversion (Adc_GroupType group)
+{
+  if (E_OK == Adc_CheckStopGroupConversion (group))
+  {
+	/* Abort conversion */
 
+	/* Disable trigger normal conversions for ADC0 */
+
+	/* Set group state to IDLE. */
+	AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_IDLE;
+
+	/* Disable group notification if enabled. */
+    if(1 == AdcConfigPtr->groupConfigPtr[group].status->notifictionEnable){
+    	Adc_DisableGroupNotification (group);
+    }
+  }
+  else
+  {
+	/* Error have been set within Adc_CheckStartGroupConversion(). */
+  }
+}
 #endif
+
 static void Adc_EQADCCalibrationSequence (void)
 {
   Adc_ValueGroupType calibrationResult[sizeof(AdcCalibrationCommandQueue)/sizeof(AdcCalibrationCommandQueue[0])];
@@ -1386,13 +1407,6 @@ static Std_ReturnType Adc_CheckStartGroupConversion (Adc_GroupType group)
     /* Group status not OK, ADC351, ADC428 */
     Det_ReportError(MODULE_ID_ADC,0,ADC_STARTGROUPCONVERSION_ID, ADC_E_BUSY );
 
-    /*
-     * This is a BUG!
-     * Sometimes the ADC-interrupt gets lost which means that the status is never reset to ADC_IDLE (done in Adc_ReadGroup).
-     * Therefor another group conversion is never started...
-     *
-     * The temporary fix is to always return E_OK here. But the reason for the bug needs to be investigated further.
-     */
     //returnValue = E_NOT_OK;
     returnValue = E_OK;
   }
