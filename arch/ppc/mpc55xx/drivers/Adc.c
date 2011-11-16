@@ -19,7 +19,7 @@
  * The DMA based ADC demands channels being sequential in a group i.e. 1,2,3 or 5,6,7 and NOT 1,3,7.
  * This also forbids the use of streamed buffers at the moment. Work is ongoing to correct DMA behaviour.
  */
-#define DONT_USE_DMA_IN_ADC_MPC5606S
+//#define DONT_USE_DMA_IN_ADC_MPC5606S
 
 /* Are we gonna use Dma? */
 #if (  !defined(CFG_MPC5606S) || \
@@ -676,6 +676,7 @@ void Adc_GroupConversionComplete (Adc_GroupType group)
 
 #if defined(CFG_MPC5606S)
 		ADC_0.IMR.B.MSKECH = 1;
+	  ADC_0.MCR.B.NSTART=1;
 #else
 		/* Set single scan enable bit */
 		EQADC.CFCR[group].B.SSE = 1;
@@ -717,6 +718,7 @@ void Adc_GroupConversionComplete (Adc_GroupType group)
 
 #if defined(CFG_MPC5606S)
 			ADC_0.IMR.B.MSKECH = 1;
+		  ADC_0.MCR.B.NSTART=1;
 #else
 			/* Set single scan enable bit */
 			EQADC.CFCR[group].B.SSE = 1;
@@ -758,17 +760,18 @@ void Adc_Group0ConversionComplete (void)
 	// Check which group is busy, only one is allowed to be busy at a time in a hw unit
 	for (int group = 0; group < ADC_NBR_OF_GROUPS; group++)
 	{
-	  if(AdcConfigPtr->groupConfigPtr[group].status->groupStatus == ADC_BUSY)
+	  if((AdcConfigPtr->groupConfigPtr[group].status->groupStatus == ADC_BUSY) ||
+       (AdcConfigPtr->groupConfigPtr[group].status->groupStatus == ADC_COMPLETED))
 	  {
 #if !defined (ADC_USES_DMA)
 		/* Copy to result buffer */
 		for(uint8 index=0; index < AdcConfigPtr->groupConfigPtr[group].numberOfChannels; index++)
 		{
-			currResultBufPtr[index] = ADC_0.CDR[32+AdcConfigPtr->groupConfigPtr[group].channelList[index]].B.CDATA;
+			AdcConfigPtr->groupConfigPtr[group].status->currResultBufPtr[index] = ADC_0.CDR[32+AdcConfigPtr->groupConfigPtr[group].channelList[index]].B.CDATA;
 		}
 #endif
 
-	    Adc_GroupConversionComplete(group);
+	    Adc_GroupConversionComplete((Adc_GroupType)group);
 		break;
 	  }
 	}
@@ -821,11 +824,20 @@ void Adc_StartGroupConversion (Adc_GroupType group)
 		groupPtr->status->currResultBufPtr = groupPtr->status->resultBufferPtr; /* Set current result buffer */
 
 #if defined(ADC_USES_DMA)
-		Dma_ConfigureChannel ((Dma_TcdType *)groupPtr->groupDMAResults), groupPtr->dmaResultChannel);
-		Dma_ConfigureDestinationAddress ((uint32_t)currResultBufPtr, groupPtr->dmaResultChannel);
+		Dma_ConfigureChannel ((Dma_TcdType *)groupPtr->groupDMAResults, groupPtr->dmaResultChannel);
+		Dma_ConfigureDestinationAddress ((uint32_t)groupPtr->status->currResultBufPtr, groupPtr->dmaResultChannel);
 #endif
-		/* Set conversion mode. */
-		ADC_0.MCR.B.MODE = groupPtr->conversionMode;
+		/* Always use single shot in streaming mode */
+		if( groupPtr->accessMode == ADC_ACCESS_MODE_STREAMING)
+		{
+			/* Set conversion mode. */
+			ADC_0.MCR.B.MODE = ADC_CONV_MODE_ONESHOT;
+		}
+		else
+		{
+			/* Set conversion mode. */
+			ADC_0.MCR.B.MODE = groupPtr->conversionMode;
+		}
 
 		/* Enable Overwrite*/
 		ADC_0.MCR.B.OWREN = 1;
