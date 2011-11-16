@@ -807,6 +807,10 @@
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Com/ComGeneral/ComConfigurationUseDet</DEFINITION-REF>
                   <VALUE>false</VALUE>
                 </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Com/ComGeneral/ArcComBitPositionVersionAutosar4</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
           </CONTAINERS>
@@ -926,20 +930,16 @@
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRSbTxBufferSupport</DEFINITION-REF>
                   <VALUE>false</VALUE>
                 </BOOLEAN-VALUE>
-                <ENUMERATION-VALUE>
-                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRSingleIf</DEFINITION-REF>
-                  <VALUE />
-                </ENUMERATION-VALUE>
-                <ENUMERATION-VALUE>
-                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRSingleTp</DEFINITION-REF>
-                  <VALUE />
-                </ENUMERATION-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRVersionInfoApi</DEFINITION-REF>
                   <VALUE>false</VALUE>
                 </BOOLEAN-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRZeroCostOperation</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/ArcPduRJ1939TpSupport</DEFINITION-REF>
                   <VALUE>false</VALUE>
                 </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
