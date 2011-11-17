@@ -14,13 +14,6 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-/* Uncomment this only if you know what you are doing. This will make the mpc5606s driver use DMA.
- * The DMA based ADC demands channels being sequential in a group i.e. 1,2,3 or 5,6,7 and NOT 1,3,7.
- * This also forbids the use of streamed buffers at the moment. Work is ongoing to correct DMA behaviour.
- */
-//#define DONT_USE_DMA_IN_ADC_MPC5606S
-
 /* Are we gonna use Dma? */
 #if (  !defined(CFG_MPC5606S) || \
       ( defined(CFG_MPC5606S) && !defined(DONT_USE_DMA_IN_ADC_MPC5606S) ) )
