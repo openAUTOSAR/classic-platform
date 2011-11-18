@@ -532,6 +532,11 @@ void Com_RxProcessSignals(const ComIPdu_type *IPdu,Com_Arc_IPdu_type *Arc_IPdu) 
 		}
 	}
 }
+void UnlockTpBuffer(PduIdType PduId) {
+	Com_BufferPduState[PduId].locked = false;
+	Com_BufferPduState[PduId].currentPosition = 0;
+}
+
 boolean isPduBufferLocked(PduIdType id) {
 	imask_t state;
 	Irq_Save(state);

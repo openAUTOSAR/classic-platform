@@ -81,6 +81,7 @@ Com_BitPositionType intelBitNrToPduOffset (Com_BitPositionType intelBitNr, Com_B
 void Com_RxProcessSignals(const ComIPdu_type *IPdu,Com_Arc_IPdu_type *Arc_IPdu);
 PduIdType getPduId(const ComIPdu_type* IPdu);
 
+void UnlockTpBuffer(PduIdType PduId);
 boolean isPduBufferLocked(PduIdType pduId);
 
 #endif /* COM_MISC_H_ */

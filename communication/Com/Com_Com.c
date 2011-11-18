@@ -141,6 +141,8 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
 					CLEARBIT(Arc_IPdu->ComIPduDataPtr, IPdu->ComIPduSignalRef[i]->ComUpdateBitPosition);
 				}
 			}
+		} else {
+			UnlockTpBuffer(getPduId(IPdu));
 		}
 	    Irq_Restore(state);
 
@@ -192,8 +194,10 @@ void Com_TpRxIndication(PduIdType PduId, NotifResultType Result) {
 		return;
 	}
 	// unlock buffer
-	Com_BufferPduState[PduId].locked = false;
-	Com_BufferPduState[PduId].currentPosition = 0;
+	imask_t state;
+	Irq_Save(state);
+	UnlockTpBuffer(getPduId(IPdu));
+	Irq_Restore(state);
 
 	if (Result == NTFRSLT_OK) {
 		Com_RxProcessSignals(IPdu,Arc_IPdu);
@@ -201,9 +205,12 @@ void Com_TpRxIndication(PduIdType PduId, NotifResultType Result) {
 }
 void Com_TpTxConfirmation(PduIdType PduId, NotifResultType Result) {
 	PDU_ID_CHECK(ComTxPduId, 0x15);
+	const ComIPdu_type *IPdu = GET_IPdu(PduId);
 
-	Com_BufferPduState[PduId].locked = false;
-	Com_BufferPduState[PduId].currentPosition = 0;
+	imask_t state;
+	Irq_Save(state);
+	UnlockTpBuffer(getPduId(IPdu));
+	Irq_Restore(state);
 }
 void Com_TxConfirmation(PduIdType ComTxPduId) {
 	PDU_ID_CHECK(ComTxPduId, 0x15);
