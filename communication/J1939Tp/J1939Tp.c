@@ -182,7 +182,7 @@ void J1939Tp_MainFunction(void) {
 		if (pgInfos[i].TxState != J1939TP_PG_TX_IDLE) {
 			if (J1939Tp_Internal_IncAndCheckTimer(&(pgInfos[i].TimerInfo)) == J1939TP_EXPIRED) {
 				pgInfos[i].TxState = J1939TP_PG_TX_IDLE;
-				PduR_J1939TpRxIndication(pgInfos[i].PgConfPtr->DirectNPdu,NTFRSLT_E_NOT_OK);
+				PduR_J1939TpTxConfirmation(pgInfos[i].PgConfPtr->NSdu,NTFRSLT_E_NOT_OK);
 			}
 		}
 		Irq_Restore(state);
