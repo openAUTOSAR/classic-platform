@@ -184,7 +184,7 @@ void Com_RxIndication(PduIdType ComRxPduId, const PduInfoType* PduInfoPtr) {
 }
 
 void Com_TpRxIndication(PduIdType PduId, NotifResultType Result) {
-	PDU_ID_CHECK(ComRxPduId, 0x14);
+	PDU_ID_CHECK(PduId, 0x14);
 
 	const ComIPdu_type *IPdu = GET_IPdu(PduId);
 	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(PduId);
@@ -204,7 +204,7 @@ void Com_TpRxIndication(PduIdType PduId, NotifResultType Result) {
 	}
 }
 void Com_TpTxConfirmation(PduIdType PduId, NotifResultType Result) {
-	PDU_ID_CHECK(ComTxPduId, 0x15);
+	PDU_ID_CHECK(PduId, 0x15);
 	const ComIPdu_type *IPdu = GET_IPdu(PduId);
 
 	imask_t state;
