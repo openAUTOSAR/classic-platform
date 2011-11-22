@@ -1121,12 +1121,6 @@ void Adc_ConfigureEQADCInterrupts (void)
 {
   Adc_GroupType group;
   ISR_INSTALL_ISR2( "Adc_Err", Adc_EQADCError, EQADC_FISR_OVER,     2, 0);
-  ISR_INSTALL_ISR2( "Adc_Grp0", Adc_Group0ConversionComplete, EQADC_FISR0_EOQF0,     2, 0);
-  ISR_INSTALL_ISR2( "Adc_Grp1", Adc_Group1ConversionComplete, EQADC_FISR1_EOQF1,     2, 0);
-  ISR_INSTALL_ISR2( "Adc_Grp2", Adc_Group2ConversionComplete, EQADC_FISR2_EOQF2,     2, 0);
-  ISR_INSTALL_ISR2( "Adc_Grp3", Adc_Group3ConversionComplete, EQADC_FISR3_EOQF3,     2, 0);
-  ISR_INSTALL_ISR2( "Adc_Grp4", Adc_Group4ConversionComplete, EQADC_FISR4_EOQF4,     2, 0);
-  ISR_INSTALL_ISR2( "Adc_Grp5", Adc_Group5ConversionComplete, EQADC_FISR5_EOQF5,     2, 0);
   for (group = ADC_GROUP0; group < AdcConfigPtr->nbrOfGroups; group++)
   {
     /* Enable end of queue, queue overflow/underflow interrupts. Clear corresponding flags. */
@@ -1141,6 +1135,19 @@ void Adc_ConfigureEQADCInterrupts (void)
 
     EQADC.FISR[group].B.EOQF = 1;
     EQADC.IDCR[group].B.EOQIE = 1;
+    if(group == 0){
+    	ISR_INSTALL_ISR2( "Adc_Grp0", Adc_Group0ConversionComplete, EQADC_FISR0_EOQF0,     2, 0);
+    }else if(group == 1){
+    	ISR_INSTALL_ISR2( "Adc_Grp1", Adc_Group1ConversionComplete, EQADC_FISR1_EOQF1,     2, 0);
+	}else if(group == 2){
+		ISR_INSTALL_ISR2( "Adc_Grp2", Adc_Group2ConversionComplete, EQADC_FISR2_EOQF2,     2, 0);
+	}else if(group == 3){
+		ISR_INSTALL_ISR2( "Adc_Grp3", Adc_Group3ConversionComplete, EQADC_FISR3_EOQF3,     2, 0);
+	}else if(group == 4){
+		ISR_INSTALL_ISR2( "Adc_Grp4", Adc_Group4ConversionComplete, EQADC_FISR4_EOQF4,     2, 0);
+	}else if(group == 5){
+		ISR_INSTALL_ISR2( "Adc_Grp5", Adc_Group5ConversionComplete, EQADC_FISR5_EOQF5,     2, 0);
+	}
   }
 }
 
