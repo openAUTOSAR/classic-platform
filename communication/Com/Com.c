@@ -69,6 +69,7 @@ void Com_Init(const Com_ConfigType *config ) {
 
 		const ComIPdu_type *IPdu = GET_IPdu(i);
 		Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(i);
+		Arc_IPdu->Com_Arc_DynSignalLength = 0;
 
 		if (i >= COM_N_IPDUS) {
 			DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_TOO_MANY_IPDU);
