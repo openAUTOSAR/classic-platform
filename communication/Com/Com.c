@@ -99,12 +99,6 @@ void Com_Init(const Com_ConfigType *config ) {
 			Signal = IPdu->ComIPduSignalRef[j];
 			Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
 
-			// If this signal already has been configured this is most likely an error.
-			if (Arc_Signal->ComIPduDataPtr != NULL) {
-				// DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_SIGNAL_CONFIGURATION);
-				// failure = 1;
-			}
-
 			// Configure signal deadline monitoring if used.
 			if (Signal->ComTimeoutFactor > 0) {
 
@@ -128,7 +122,7 @@ void Com_Init(const Com_ConfigType *config ) {
 			// Increment helper counters
 		    //Arc_IPdu->NComIPduSignalRef = j + 1;
 
-			Arc_Signal->ComIPduDataPtr = Arc_IPdu->ComIPduDataPtr;
+			//Arc_Signal->ComIPduDataPtr = Arc_IPdu->ComIPduDataPtr;
 			Arc_Signal->ComIPduHandleId = i;
 
 			// Clear update bits
