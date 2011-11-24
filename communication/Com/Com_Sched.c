@@ -38,10 +38,10 @@ void Com_MainFunctionRx(void) {
 	for (uint16 i = 0; !ComConfig->ComSignal[i].Com_Arc_EOL; i++) {
 		signal = &ComConfig->ComSignal[i];
 		Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(signal->ComHandleId);
-		Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
+		Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(signal->ComIPduHandleId);
 
 		// Monitor signal reception deadline
-		if ( (Arc_IPdu->Com_Arc_IpduStarted) && (Arc_Signal->ComTimeoutFactor > 0) ) {
+		if ( (Arc_IPdu->Com_Arc_IpduStarted) && (signal->ComTimeoutFactor > 0) ) {
 
 			// Decrease deadline monitoring timer.
 			timerDec(Arc_Signal->Com_Arc_DeadlineCounter);
@@ -60,7 +60,7 @@ void Com_MainFunctionRx(void) {
 				}
 
 				// Restart timer
-				Arc_Signal->Com_Arc_DeadlineCounter = Arc_Signal->ComTimeoutFactor;
+				Arc_Signal->Com_Arc_DeadlineCounter = signal->ComTimeoutFactor;
 			}
 		}
 

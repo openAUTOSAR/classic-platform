@@ -278,7 +278,7 @@ typedef struct {
 	const ComGroupSignal_type * const *ComGroupSignal;
 
 
-	//void *Com_Arc_ShadowBuffer;
+	const void *Com_Arc_ShadowBuffer;
 	//void *Com_Arc_IPduDataPtr;
 
 	/* Pointer to the data storage of this signals IPDU.
@@ -290,7 +290,7 @@ typedef struct {
 	 * This is initialized by Com_Init() and should not be configured.
 	 */
 
-	//const uint8 ComIPduHandleId;
+	const uint16 ComIPduHandleId;
 	//const uint8 ComSignalUpdated;
 
 	/* Callback function used when an invalid signal is received.
@@ -394,6 +394,9 @@ typedef struct {
 
 	/** Container of transmission related parameters. */
 	const ComTxIPdu_type ComTxIPdu;
+
+	/** Reference to the actual pdu data storage */
+	const void *ComIPduDataPtr;
 
 	/** References to all signals and signal groups contained in this IPDU.
 	 * It probably makes little sense not to define at least one signal or signal group for each IPDU.

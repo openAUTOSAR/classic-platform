@@ -33,15 +33,13 @@ void Com_ReadSignalDataFromPdu(
 
 	// Get PDU
 	const ComSignal_type * Signal = GET_Signal(signalId);
-	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
-	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
-	uint8 pduSize = GET_IPdu(Arc_Signal->ComIPduHandleId)->ComIPduSize;
+	uint8 pduSize = GET_IPdu(Signal->ComIPduHandleId)->ComIPduSize;
 	// Get data
 	Com_ReadSignalDataFromPduBuffer(
 			signalId,
 			FALSE,
 			signalData,
-			Arc_IPdu->ComIPduDataPtr,
+			GET_IPdu(Signal->ComIPduHandleId)->ComIPduDataPtr,
 			pduSize);
 }
 
@@ -52,15 +50,13 @@ void Com_ReadGroupSignalDataFromPdu(
 
 	// Get PDU
 	const ComSignal_type * Signal = GET_Signal(parentSignalId);
-	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
-	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
-	uint8 pduSize = GET_IPdu(Arc_Signal->ComIPduHandleId)->ComIPduSize;
+	uint8 pduSize = GET_IPdu(Signal->ComIPduHandleId)->ComIPduSize;
 	// Get data
 	Com_ReadSignalDataFromPduBuffer(
 			groupSignalId,
 			TRUE,
 			signalData,
-			Arc_IPdu->ComIPduDataPtr,
+			GET_IPdu(Signal->ComIPduHandleId)->ComIPduDataPtr,
 			pduSize);
 }
 
@@ -160,16 +156,14 @@ void Com_WriteSignalDataToPdu(
 
 	// Get PDU
 	const ComSignal_type *Signal     = GET_Signal(signalId);
-	Com_Arc_Signal_type  *Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
-	Com_Arc_IPdu_type    *Arc_IPdu   = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
-	const ComIPdu_type   *IPdu       = GET_IPdu(Arc_Signal->ComIPduHandleId);
+	const ComIPdu_type   *IPdu       = GET_IPdu(Signal->ComIPduHandleId);
 
 	// Get data
 	Com_WriteSignalDataToPduBuffer(
 			signalId,
 			FALSE,
 			signalData,
-			Arc_IPdu->ComIPduDataPtr,
+			(void *)IPdu->ComIPduDataPtr,
 			IPdu->ComIPduSize);
 }
 
@@ -180,16 +174,14 @@ void Com_WriteGroupSignalDataToPdu(
 
 	// Get PDU
 	const ComSignal_type *Signal     = GET_Signal(parentSignalId);
-	Com_Arc_Signal_type  *Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
-	Com_Arc_IPdu_type    *Arc_IPdu   = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
-	const ComIPdu_type   *IPdu       = GET_IPdu(Arc_Signal->ComIPduHandleId);
+	const ComIPdu_type   *IPdu       = GET_IPdu(Signal->ComIPduHandleId);
 
 	// Get data
 	Com_WriteSignalDataToPduBuffer(
 			groupSignalId,
 			TRUE,
 			signalData,
-			Arc_IPdu->ComIPduDataPtr,
+			(void *)IPdu->ComIPduDataPtr,
 			IPdu->ComIPduSize);
 }
 
@@ -508,7 +500,7 @@ void Com_RxProcessSignals(const ComIPdu_type *IPdu,Com_Arc_IPdu_type *Arc_IPdu) 
 
 		// If this signal uses an update bit, then it is only considered if this bit is set.
 		if ( (!comSignal->ComSignalArcUseUpdateBit) ||
-			( (comSignal->ComSignalArcUseUpdateBit) && (TESTBIT(Arc_IPdu->ComIPduDataPtr, comSignal->ComUpdateBitPosition)) ) ) {
+			( (comSignal->ComSignalArcUseUpdateBit) && (TESTBIT(IPdu->ComIPduDataPtr, comSignal->ComUpdateBitPosition)) ) ) {
 
 			if (comSignal->ComTimeoutFactor > 0) { // If reception deadline monitoring is used.
 				// Reset the deadline monitoring timer.
