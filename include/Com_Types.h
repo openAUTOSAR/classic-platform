@@ -401,7 +401,7 @@ typedef struct {
 	 */
 	const ComSignal_type * const *ComIPduSignalRef;
 
-	const ComSignal_type * const ComIPduDynSignalRef
+	const ComSignal_type * const ComIPduDynSignalRef;
 
 	/*
 	 * The following two variables are used to control the per I-PDU based Rx/Tx-deadline monitoring.

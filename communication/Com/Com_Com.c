@@ -85,23 +85,40 @@ uint8 Com_ReceiveSignal(Com_SignalIdType SignalId, void* SignalDataPtr) {
 	return E_OK;
 }
 
-uint8 Com_ReceiveDynSignal(ComSignalIdType SignalId, void* SignalDataPtr, uint16* Length) {
-
-}
-uint8 Com_SendDynSignal(ComSignalIdType SignalId, const void* SignalDataPtr, uint16 Length) {
-	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
+uint8 Com_ReceiveDynSignal(Com_SignalIdType SignalId, void* SignalDataPtr, uint16* Length) {
 	const ComSignal_type * Signal = GET_Signal(SignalId);
+	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
+	Com_Arc_IPdu_type    *Arc_IPdu   = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
+	const ComIPdu_type   *IPdu       = GET_IPdu(Arc_Signal->ComIPduHandleId);
+
+	Com_SignalType signalType = Signal->ComSignalType;
+	if (signalType != UINT8_DYN || isPduBufferLocked(getPduId(IPdu))) {
+		return COM_SERVICE_NOT_AVAILABLE;
+	}
+
+	if (*Length > Arc_IPdu->Com_Arc_DynSignalLength) {
+		*Length = Arc_IPdu->Com_Arc_DynSignalLength;
+	}
+	uint8 startFromPduByte = (Signal->ComBitPosition) / 8;
+	memcpy(SignalDataPtr, Arc_IPdu->ComIPduDataPtr + startFromPduByte, *Length);
+	return E_OK;
+}
+
+uint8 Com_SendDynSignal(Com_SignalIdType SignalId, const void* SignalDataPtr, uint16 Length) {
+	const ComSignal_type * Signal = GET_Signal(SignalId);
+	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
 	Com_Arc_IPdu_type    *Arc_IPdu   = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
 	const ComIPdu_type   *IPdu       = GET_IPdu(Arc_Signal->ComIPduHandleId);
 
 	Com_SignalType signalType = Signal->ComSignalType;
 	if (signalType != UINT8_DYN) {
-		return E_NOT_OK;
+		return COM_SERVICE_NOT_AVAILABLE;
 	}
-	Com_Arc_IPdu* Arc_IPdu = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
+	if (isPduBufferLocked(getPduId(IPdu))) {
+		return COM_BUSY;
+	}
 	uint8 signalLength = Signal->ComBitSize / 8;
 	Com_BitPositionType bitPosition = Signal->ComBitPosition;
-	uint8 bitSize = Signal->ComBitSize;
 	if (signalLength < Length) {
 		return E_NOT_OK;
 	}
@@ -117,8 +134,6 @@ uint8 Com_SendDynSignal(ComSignalIdType SignalId, const void* SignalDataPtr, uin
 		Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduNumberOfRepetitionsLeft = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeNumberOfRepetitions + 1;
 	}
 	return E_OK;
-
-
 }
 
 Std_ReturnType Com_TriggerTransmit(PduIdType ComTxPduId, PduInfoType *PduInfoPtr) {

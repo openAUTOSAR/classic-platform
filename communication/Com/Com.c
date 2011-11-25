@@ -248,6 +248,17 @@ BufReq_ReturnType Com_CopyRxData(PduIdType PduId, const PduInfoType* PduInfoPtr,
 	return r;
 	Irq_Restore(state);
 }
+
+static void Com_SetDynSignalLength(PduIdType ComRxPduId,PduLengthType TpSduLength) {
+	const ComIPdu_type *IPdu = GET_IPdu(ComRxPduId);
+	if (IPdu->ComIPduDynSignalRef == 0) {
+		return;
+	}
+	const ComSignal_type * const dynSignal = IPdu->ComIPduDynSignalRef;
+	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(ComRxPduId);
+	Arc_IPdu->Com_Arc_DynSignalLength = TpSduLength - (dynSignal->ComBitPosition/8);
+	return;
+}
 BufReq_ReturnType Com_StartOfReception(PduIdType ComRxPduId, PduLengthType TpSduLength, PduLengthType* RxBufferSizePtr) {
 	PduLengthType ComIPduSize;
 	imask_t state;
@@ -261,7 +272,7 @@ BufReq_ReturnType Com_StartOfReception(PduIdType ComRxPduId, PduLengthType TpSdu
 				if (ComIPduSize >= TpSduLength) {
 					Com_BufferPduState[ComRxPduId].locked = true;
 					*RxBufferSizePtr = ComIPduSize;
-					Com_BufferPduState[ComRxPduId].locked = true;
+					Com_SetDynSignalLength(ComRxPduId,TpSduLength);
 				} else {
 					r = BUFREQ_OVFL;
 				}
