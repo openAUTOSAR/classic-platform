@@ -306,7 +306,7 @@ uint8_t Can_HthToHohMap[NUM_OF_HTHS];
 
 static void clearMbFlag( flexcan_t * hw,  uint8_t mb ) {
     if( mb >= 32) {
-        hw->IFRH.R = (1<<(32-mb));
+        hw->IFRH.R = (1<<(mb-32));
     } else {
         hw->IFRL.R = (1<<mb);
     }
@@ -514,14 +514,14 @@ static void Can_Isr_Tx(Can_UnitType *uPtr)
 
     canHw = uPtr->hwPtr;
 
-    uint64_t mbMask = ((uint64_t) (canHw->IFRH.R)<< 32) + canHw->IFRL.R;
+    uint64_t mbMask = *(uint64_t *) (&canHw->IFRH.R);
     mbMask &= uPtr->Can_Arc_TxMbMask;
 
     /*
      * Tx
      */
-    for (; mbMask; mbMask &= ~(1 << mbNr)) {
-        mbNr = ilog2(mbMask);
+    for (; mbMask; mbMask &= ~(1ull << mbNr)) {
+        mbNr = ilog2_64(mbMask);
 
         if (GET_CALLBACKS()->TxConfirmation != NULL) {
             GET_CALLBACKS()->TxConfirmation(uPtr->swPduHandles[mbNr]);
@@ -530,7 +530,7 @@ static void Can_Isr_Tx(Can_UnitType *uPtr)
 
         // Clear interrupt
         clearMbFlag(canHw,mbNr);
-        uPtr->mbTxFree |= (1 << mbNr);
+        uPtr->mbTxFree |= (1ull << mbNr);
     }
 }
 
@@ -545,18 +545,16 @@ static void Can_Isr_Rx(Can_UnitType *uPtr)
 
     canHw = uPtr->hwPtr;
 
-    uint32 iFlagLow = (canHw->IFRL.R & canHw->IMRL.R);
-    uint64_t iFlag = ((uint64_t) (canHw->IFRH.R & canHw->IMRH.R) << 32)
-            + iFlagLow;
+    uint64_t iFlag = *(uint64_t*) (&canHw->IFRH.R);
 
     while (iFlag & uPtr->Can_Arc_RxMbMask) {
 
         /* Find mailbox */
         mbNr = ilog2_64(iFlag);
-        iFlag ^= 1 << mbNr;
+        iFlag ^= 1ull << mbNr;
 
         /* Check for FIFO interrupt */
-        if (canHw->MCR.B.FEN && (iFlagLow & (1 << 5))) {
+        if (canHw->MCR.B.FEN && ((uint32_t)iFlag & (1 << 5))) {
 
 #if (USE_CAN_STATISTICS == STD_ON)
             /* Check overflow */
@@ -669,18 +667,18 @@ static void Can_BuildMaps(Can_UnitType *uPtr)
             /* First 8 boxes are FIFO */
             if (hohPtr->Can_Arc_Flags & CAN_HOH_FIFO_MASK) {
                 uPtr->mbToHrh[fifoNr++] = hohPtr->CanObjectId;
-                uPtr->Can_Arc_RxMbMask |= (1<<0);
+                uPtr->Can_Arc_RxMbMask |= (1<<5);
             } else {
                 uint64_t mask = (-1ULL);
                 uPtr->mbToHrh[mbNr] = hohPtr->CanObjectId;
 
                 mask >>= (mbNr);
                 mask <<= (mbNr);
-                mask <<= 64 - (mbNr + hohPtr->Can_Arc_MbCount);
-                mask >>= 64 - (mbNr + hohPtr->Can_Arc_MbCount);
+                mask <<= 64 - (mbNr + hohPtr->Can_ArcCanNumMailboxes);
+                mask >>= 64 - (mbNr + hohPtr->Can_ArcCanNumMailboxes);
                 uPtr->Can_Arc_RxMbMask |= mask;
 
-                mbNr += hohPtr->Can_Arc_MbCount;
+                mbNr += hohPtr->Can_ArcCanNumMailboxes;
             }
             printf("mbNr=%d fifoNr=%d\n", mbNr, fifoNr);
 
@@ -696,10 +694,10 @@ static void Can_BuildMaps(Can_UnitType *uPtr)
 
             mask >>= (mbNr);
             mask <<= (mbNr);
-            mask <<= 64 - (mbNr + hohPtr->Can_Arc_MbCount);
-            mask >>= 64 - (mbNr + hohPtr->Can_Arc_MbCount);
+            mask <<= 64 - (mbNr + hohPtr->Can_ArcCanNumMailboxes);
+            mask >>= 64 - (mbNr + hohPtr->Can_ArcCanNumMailboxes);
             uPtr->Can_Arc_TxMbMask |= mask;
-            mbNr += hohPtr->Can_Arc_MbCount;
+            mbNr += hohPtr->Can_ArcCanNumMailboxes;
         }
     }
     uPtr->mbMax = mbNr;
@@ -765,30 +763,35 @@ void Can_Init(const Can_ConfigType *config)
         ISR_INSTALL_ISR2( "Can", Can_A_Err, FLEXCAN_A_ESR_ERR_INT, 2, 0 );
         INSTALL_HANDLER16( "Can", Can_A_Isr, FLEXCAN_A_IFLAG1_BUF0I, 2, 0 );
         ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_A_IFLAG1_BUF31_16I, 2, 0 );
+        ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_A_IFLAG1_BUF63_32I, 2, 0 );
         break;
         case CAN_CTRL_B:
         ISR_INSTALL_ISR2( "Can", Can_B_BusOff, FLEXCAN_B_ESR_BOFF_INT, 2, 0 );
         ISR_INSTALL_ISR2( "Can", Can_B_Err, FLEXCAN_B_ESR_ERR_INT, 2, 0 );
         INSTALL_HANDLER16( "Can", Can_B_Isr, FLEXCAN_B_IFLAG1_BUF0I, 2, 0 );
         ISR_INSTALL_ISR2( "Can", Can_B_Isr, FLEXCAN_B_IFLAG1_BUF31_16I, 2, 0 );
+        ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_B_IFLAG1_BUF63_32I, 2, 0 );
         break;
         case CAN_CTRL_C:
         ISR_INSTALL_ISR2( "Can", Can_C_BusOff, FLEXCAN_C_ESR_BOFF_INT, 2, 0 );
         ISR_INSTALL_ISR2( "Can", Can_C_Err, FLEXCAN_C_ESR_ERR_INT, 2, 0 );
         INSTALL_HANDLER16( "Can", Can_C_Isr, FLEXCAN_C_IFLAG1_BUF0I, 2, 0 );
         ISR_INSTALL_ISR2( "Can", Can_C_Isr, FLEXCAN_C_IFLAG1_BUF31_16I, 2, 0 );
+        ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_C_IFLAG1_BUF63_32I, 2, 0 );
         break;
         case CAN_CTRL_D:
         ISR_INSTALL_ISR2( "Can", Can_D_BusOff, FLEXCAN_D_ESR_BOFF_INT, 2, 0 );
         ISR_INSTALL_ISR2( "Can", Can_D_Err, FLEXCAN_D_ESR_ERR_INT, 2, 0 );
         INSTALL_HANDLER16( "Can", Can_D_Isr, FLEXCAN_D_IFLAG1_BUF0I, 2, 0 );
         ISR_INSTALL_ISR2( "Can", Can_D_Isr, FLEXCAN_D_IFLAG1_BUF31_16I, 2, 0 );
+        ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_D_IFLAG1_BUF63_32I, 2, 0 );
         break;
         case CAN_CTRL_E:
         ISR_INSTALL_ISR2( "Can", Can_E_BusOff, FLEXCAN_E_ESR_BOFF_INT, 2, 0 );
         ISR_INSTALL_ISR2( "Can", Can_E_Err, FLEXCAN_E_ESR_ERR_INT, 2, 0 );
         INSTALL_HANDLER16( "Can", Can_E_Isr, FLEXCAN_E_IFLAG1_BUF0I, 2, 0 );
         ISR_INSTALL_ISR2( "Can", Can_E_Isr, FLEXCAN_E_IFLAG1_BUF31_16I, 2, 0 );
+        ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_E_IFLAG1_BUF63_32I, 2, 0 );
         break;
 #endif
 #if defined(CFG_MPC5516) || defined(CFG_MPC5517)
@@ -797,6 +800,7 @@ void Can_Init(const Can_ConfigType *config)
         ISR_INSTALL_ISR2( "Can", Can_F_Err, FLEXCAN_F_ESR_ERR_INT, 2, 0 );
         INSTALL_HANDLER16( "Can", Can_F_Isr, FLEXCAN_F_IFLAG1_BUF0I, 2, 0 );
         ISR_INSTALL_ISR2( "Can", Can_F_Isr, FLEXCAN_F_IFLAG1_BUF31_16I, 2, 0 );
+        ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_F_IFLAG1_BUF63_32I, 2, 0 );
         break;
 #endif
         default:
@@ -1128,11 +1132,13 @@ void Can_EnableControllerInterrupts(uint8 controller)
     if (canUnit->cfgCtrlPtr->Can_Arc_Flags & CAN_CTRL_RX_PROCESSING_INTERRUPT ) {
         /* Turn on the interrupt mailboxes */
         canHw->IMRL.R = canUnit->Can_Arc_RxMbMask;
+        canHw->IMRH.R = (uint32_t)(canUnit->Can_Arc_RxMbMask>>32);
     }
 
     if (canUnit->cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_TX_PROCESSING_INTERRUPT) {
         /* Turn on the interrupt mailboxes */
         canHw->IMRL.R |= canUnit->Can_Arc_TxMbMask;
+        canHw->IMRH.R |= (uint32_t)(canUnit->Can_Arc_TxMbMask>>32);
     }
 
     // BusOff here represents all errors and warnings
@@ -1181,8 +1187,7 @@ Can_ReturnType Can_Write(Can_Arc_HTHType hth, Can_PduType *pduInfo)
     /* We have the hohObj, we need to know what box we can send on */
 
     Irq_Save(state);
-    uint64_t iHwFlag = (  (uint64_t)(canHw->IFRH.R & canHw->IMRH.R)<<32) +
-                        (canHw->IFRL.R & canHw->IMRL.R);
+    uint64_t iHwFlag = *(uint64_t *)(&canHw->IFRH.R);
 
     iflag = (iHwFlag & (canUnit->Can_Arc_TxMbMask)) |  canUnit->mbTxFree;
 
@@ -1191,7 +1196,7 @@ Can_ReturnType Can_Write(Can_Arc_HTHType hth, Can_PduType *pduInfo)
         mbNr = ilog2_64(iflag ); // find mb number
 
         /* Indicate that we are sending this MB */
-        canUnit->mbTxFree &= ~(1<<mbNr);
+        canUnit->mbTxFree &= ~(1ull<<mbNr);
 
         // Setup message box type
         if (hohObj->CanIdType == CAN_ID_TYPE_EXTENDED) {
