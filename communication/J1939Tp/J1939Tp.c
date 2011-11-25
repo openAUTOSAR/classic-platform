@@ -573,7 +573,7 @@ Std_ReturnType J1939Tp_Transmit(PduIdType TxSduId, const PduInfoType* TxInfoPtr)
 							ChannelInfoPtr->TxState->CurrentPgPtr = Pg;
 							ChannelInfoPtr->TxState->SentDtCount = 0;
 							J1939Tp_Internal_StartTimer(&(ChannelInfoPtr->TxState->TimerInfo),J1939TP_TX_CONF_TIMEOUT);
-							J1939Tp_Internal_SendBam(ChannelInfoPtr,TxInfoPtr);
+							r = J1939Tp_Internal_SendBam(ChannelInfoPtr,TxInfoPtr);
 							break;
 						case J1939TP_PROTOCOL_CMDT:
 							ChannelInfoPtr->TxState->State = J1939TP_TX_WAIT_RTS_CANIF_CONFIRM;
@@ -581,7 +581,7 @@ Std_ReturnType J1939Tp_Transmit(PduIdType TxSduId, const PduInfoType* TxInfoPtr)
 							ChannelInfoPtr->TxState->PduRPdu = TxSduId;
 							ChannelInfoPtr->TxState->CurrentPgPtr = Pg;
 							ChannelInfoPtr->TxState->SentDtCount = 0;
-							J1939Tp_Internal_SendRts(ChannelInfoPtr,TxInfoPtr);
+							r = J1939Tp_Internal_SendRts(ChannelInfoPtr,TxInfoPtr);
 							J1939Tp_Internal_StartTimer(&(ChannelInfoPtr->TxState->TimerInfo),J1939TP_TX_CONF_TIMEOUT);
 							break;
 					}
@@ -628,7 +628,8 @@ static inline Std_ReturnType J1939Tp_Internal_DirectTransmit(const PduInfoType* 
 }
 
 
-static inline void J1939Tp_Internal_SendBam(J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr,const PduInfoType* TxInfoPtr) {
+static inline Std_ReturnType J1939Tp_Internal_SendBam(J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr,const PduInfoType* TxInfoPtr) {
+	Std_ReturnType r;
 	uint8 cmBamData[BAM_RTS_SIZE];
 	cmBamData[BAM_RTS_BYTE_CONTROL] = BAM_CONTROL_VALUE;
 	cmBamData[BAM_RTS_BYTE_LENGTH_1] = (uint8)(TxInfoPtr->SduLength & 0x00FF);
@@ -643,7 +644,8 @@ static inline void J1939Tp_Internal_SendBam(J1939Tp_Internal_ChannelInfoType* Ch
 	cmBamPdu.SduLength = BAM_RTS_SIZE;
 	cmBamPdu.SduDataPtr = cmBamData;
 
-	CanIf_Transmit(ChannelInfoPtr->ChannelConfPtr->CmNPdu,&cmBamPdu);
+	r = CanIf_Transmit(ChannelInfoPtr->ChannelConfPtr->CmNPdu,&cmBamPdu);
+	return r;
 }
 static inline uint16 J1939Tp_Internal_GetRtsMessageSize(PduInfoType* pduInfo) {
 	return (((uint16)pduInfo->SduDataPtr[BAM_RTS_BYTE_LENGTH_2]) << 8) | pduInfo->SduDataPtr[BAM_RTS_BYTE_LENGTH_1];
@@ -719,7 +721,7 @@ static inline Std_ReturnType J1939Tp_Internal_SendDt(J1939Tp_Internal_ChannelInf
 
 }
 
-static inline void J1939Tp_Internal_SendRts(J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr, const PduInfoType* TxInfoPtr) {
+static inline Std_ReturnType J1939Tp_Internal_SendRts(J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr, const PduInfoType* TxInfoPtr) {
 	uint8 cmRtsData[BAM_RTS_SIZE];
 	cmRtsData[BAM_RTS_BYTE_CONTROL] = 16;
 	cmRtsData[BAM_RTS_BYTE_LENGTH_1] = (uint8)(TxInfoPtr->SduLength);
@@ -733,8 +735,9 @@ static inline void J1939Tp_Internal_SendRts(J1939Tp_Internal_ChannelInfoType* Ch
 	PduInfoType cmRtsPdu;
 	cmRtsPdu.SduLength = BAM_RTS_SIZE;
 	cmRtsPdu.SduDataPtr = cmRtsData;
-
-	CanIf_Transmit(ChannelInfoPtr->ChannelConfPtr->CmNPdu,&cmRtsPdu);
+	Std_ReturnType r;
+	r = CanIf_Transmit(ChannelInfoPtr->ChannelConfPtr->CmNPdu,&cmRtsPdu);
+	return r;
 }
 
 static inline void J1939Tp_Internal_SendEndOfMsgAck(J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr) {
