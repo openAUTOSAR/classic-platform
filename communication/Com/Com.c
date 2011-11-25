@@ -245,8 +245,8 @@ BufReq_ReturnType Com_CopyRxData(PduIdType PduId, const PduInfoType* PduInfoPtr,
 	} else {
 		r = BUFREQ_NOT_OK;
 	}
-	return r;
 	Irq_Restore(state);
+	return r;
 }
 
 static void Com_SetDynSignalLength(PduIdType ComRxPduId,PduLengthType TpSduLength) {
