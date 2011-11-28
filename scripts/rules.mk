@@ -226,7 +226,11 @@ all: module_config $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $
 
 .SUFFIXES:
 
-
+ifeq ($(COMPILER),cw)
+define run_mem_usage-$(CFG_PRINT_MEM_USAGE)
+	@gawk -f $(ROOTDIR)/scripts/mem_usage_cw.awk  $(subst .$(TE),.map, $@)
+endef
+endif
 
 ###############################################################################
 # TARGETS                                                                     #
@@ -304,6 +308,7 @@ ifeq ($(CROSS_COMPILE)$(COMPILER),gcc)
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	
 else
 	$(Q)$(LD) $(LDFLAGS) $(LD_FILE) $(ldcmdfile-y) -o $@ $(libpath-y) $(LD_START_GRP) $(obj-y) $(lib-y) $(libitem-y) $(LD_END_GRP) $(LDMAPFILE)
+	$(run_mem_usage-y)
  ifdef CFG_HC1X
     # Print memory layout
 	@$(CROSS_COMPILE)objdump -h $@ | gawk -f $(ROOTDIR)/scripts/hc1x_memory.awk
