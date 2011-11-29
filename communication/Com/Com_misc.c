@@ -99,9 +99,6 @@ void Com_ReadSignalDataFromPduBuffer(
 
 	if (signalEndianess == COM_OPAQUE || signalType == UINT8_N) {
 		// Aligned opaque data -> straight copy
-
-		//assert(bitPosition % 8 == 0);
-		//assert(bitSize % 8 == 0);
 		memcpy(signalDataBytes, pduBufferBytes, destSize);
 
 	} else {

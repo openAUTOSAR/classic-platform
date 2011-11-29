@@ -51,6 +51,7 @@ typedef struct {
 
 	Com_Arc_TxIPduTimer_type Com_Arc_TxIPduTimers;
 	uint8 Com_Arc_IpduStarted;
+	uint16 Com_Arc_DynSignalLength;
 } Com_Arc_IPdu_type;
 
 typedef struct {

@@ -50,6 +50,7 @@ typedef enum {
 	UINT16,
 	UINT32,
 	UINT8_N,
+	UINT8_DYN,
 	SINT8,
 	SINT16,
 	SINT32
@@ -402,6 +403,8 @@ typedef struct {
 	 * It probably makes little sense not to define at least one signal or signal group for each IPDU.
 	 */
 	const ComSignal_type * const *ComIPduSignalRef;
+
+	const ComSignal_type * const ComIPduDynSignalRef;
 
 	/*
 	 * The following two variables are used to control the per I-PDU based Rx/Tx-deadline monitoring.
