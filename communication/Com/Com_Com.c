@@ -38,7 +38,6 @@ uint8 Com_SendSignal(Com_SignalIdType SignalId, const void *SignalDataPtr) {
 	VALIDATE_SIGNAL(SignalId, 0x0a, E_NOT_OK);
 	// Store pointer to signal for easier coding.
 	const ComSignal_type * Signal = GET_Signal(SignalId);
-//	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(SignalId);
 	const ComIPdu_type *IPdu = GET_IPdu(Signal->ComIPduHandleId);
 	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(Signal->ComIPduHandleId);
 
@@ -70,7 +69,6 @@ uint8 Com_ReceiveSignal(Com_SignalIdType SignalId, void* SignalDataPtr) {
 	DEBUG(DEBUG_LOW, "Com_ReceiveSignal: SignalId %d\n", SignalId);
 
 	const ComSignal_type * Signal = GET_Signal(SignalId);
-//	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
 	const ComIPdu_type *IPdu = GET_IPdu(Signal->ComIPduHandleId);
 	if (isPduBufferLocked(getPduId(IPdu))) {
 		return COM_BUSY;
@@ -96,7 +94,6 @@ Std_ReturnType Com_TriggerTransmit(PduIdType ComTxPduId, PduInfoType *PduInfoPtr
 	 * COM395: This function must override the IPdu callouts used in Com_TriggerIPduTransmit();
 	 */
 	const ComIPdu_type *IPdu = GET_IPdu(ComTxPduId);
-//	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(ComTxPduId);
 
 	memcpy(PduInfoPtr->SduDataPtr, IPdu->ComIPduDataPtr, IPdu->ComIPduSize);
 	PduInfoPtr->SduLength = IPdu->ComIPduSize;
@@ -222,7 +219,6 @@ void Com_TxConfirmation(PduIdType ComTxPduId) {
 Std_ReturnType Com_SendSignalGroup(Com_SignalGroupIdType SignalGroupId) {
 //#warning Com_SendSignalGroup should be performed atomically. Should we disable interrupts here?
 	const ComSignal_type * Signal = GET_Signal(SignalGroupId);
-//	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(SignalGroupId);
 	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(Signal->ComIPduHandleId);
 	const ComIPdu_type *IPdu = GET_IPdu(Signal->ComIPduHandleId);
 
@@ -258,7 +254,6 @@ Std_ReturnType Com_SendSignalGroup(Com_SignalGroupIdType SignalGroupId) {
 Std_ReturnType Com_ReceiveSignalGroup(Com_SignalGroupIdType SignalGroupId) {
 //#warning Com_ReceiveSignalGroup should be performed atomically. Should we disable interrupts here?
 	const ComSignal_type * Signal = GET_Signal(SignalGroupId);
-//	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(SignalGroupId);
 	const ComIPdu_type *IPdu = GET_IPdu(Signal->ComIPduHandleId);
 
 	if (isPduBufferLocked(getPduId(IPdu))) {

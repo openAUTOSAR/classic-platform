@@ -30,9 +30,6 @@ typedef struct {
 typedef struct {
 
 	uint32 Com_Arc_DeadlineCounter;
-//	uint32 ComTimeoutFactor;
-
-//	uint16 ComIPduHandleId;
 	uint8 ComSignalUpdated;
 } Com_Arc_Signal_type;
 
