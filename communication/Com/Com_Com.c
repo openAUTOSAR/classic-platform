@@ -85,9 +85,8 @@ uint8 Com_ReceiveSignal(Com_SignalIdType SignalId, void* SignalDataPtr) {
 
 uint8 Com_ReceiveDynSignal(Com_SignalIdType SignalId, void* SignalDataPtr, uint16* Length) {
 	const ComSignal_type * Signal = GET_Signal(SignalId);
-	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
-	Com_Arc_IPdu_type    *Arc_IPdu   = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
-	const ComIPdu_type   *IPdu       = GET_IPdu(Arc_Signal->ComIPduHandleId);
+	Com_Arc_IPdu_type    *Arc_IPdu   = GET_ArcIPdu(Signal->ComIPduHandleId);
+	const ComIPdu_type   *IPdu       = GET_IPdu(Signal->ComIPduHandleId);
 
 	Com_SignalType signalType = Signal->ComSignalType;
 	if (signalType != UINT8_DYN || isPduBufferLocked(getPduId(IPdu))) {
@@ -98,15 +97,14 @@ uint8 Com_ReceiveDynSignal(Com_SignalIdType SignalId, void* SignalDataPtr, uint1
 		*Length = Arc_IPdu->Com_Arc_DynSignalLength;
 	}
 	uint8 startFromPduByte = (Signal->ComBitPosition) / 8;
-	memcpy(SignalDataPtr, Arc_IPdu->ComIPduDataPtr + startFromPduByte, *Length);
+	memcpy(SignalDataPtr, IPdu->ComIPduDataPtr + startFromPduByte, *Length);
 	return E_OK;
 }
 
 uint8 Com_SendDynSignal(Com_SignalIdType SignalId, const void* SignalDataPtr, uint16 Length) {
 	const ComSignal_type * Signal = GET_Signal(SignalId);
-	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
-	Com_Arc_IPdu_type    *Arc_IPdu   = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
-	const ComIPdu_type   *IPdu       = GET_IPdu(Arc_Signal->ComIPduHandleId);
+	Com_Arc_IPdu_type    *Arc_IPdu   = GET_ArcIPdu(Signal->ComIPduHandleId);
+	const ComIPdu_type   *IPdu       = GET_IPdu(Signal->ComIPduHandleId);
 
 	Com_SignalType signalType = Signal->ComSignalType;
 	if (signalType != UINT8_DYN) {
@@ -121,11 +119,11 @@ uint8 Com_SendDynSignal(Com_SignalIdType SignalId, const void* SignalDataPtr, ui
 		return E_NOT_OK;
 	}
 	uint8 startFromPduByte = bitPosition / 8;
-	memcpy(Arc_IPdu->ComIPduDataPtr + startFromPduByte, SignalDataPtr, Length);
+	memcpy((void *)(IPdu->ComIPduDataPtr + startFromPduByte), SignalDataPtr, Length);
 	Arc_IPdu->Com_Arc_DynSignalLength = Length;
 	// If the signal has an update bit. Set it!
 	if (Signal->ComSignalArcUseUpdateBit) {
-		SETBIT(Arc_IPdu->ComIPduDataPtr, Signal->ComUpdateBitPosition);
+		SETBIT(IPdu->ComIPduDataPtr, Signal->ComUpdateBitPosition);
 	}
 	 // If signal has triggered transmit property, trigger a transmission!
 	if (Signal->ComTransferProperty == TRIGGERED) {
@@ -176,7 +174,7 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
 			}
 		}
 		PduInfoType PduInfoPackage;
-		PduInfoPackage.SduDataPtr = Arc_IPdu->ComIPduDataPtr;
+		PduInfoPackage.SduDataPtr = (uint8 *)IPdu->ComIPduDataPtr;
 		if (IPdu->ComIPduDynSignalRef != 0) {
 			uint8 sizeWithoutDynSignal = IPdu->ComIPduSize - (IPdu->ComIPduDynSignalRef->ComBitSize/8);
 			PduInfoPackage.SduLength = sizeWithoutDynSignal + Arc_IPdu->Com_Arc_DynSignalLength;
