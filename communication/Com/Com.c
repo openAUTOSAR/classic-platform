@@ -171,6 +171,7 @@ void Com_IpduGroupStart(Com_PduGroupIdType IpduGroupId,boolean Initialize) {
 	for (uint16 i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
 		if (ComConfig->ComIPdu[i].ComIPduGroupRef == IpduGroupId) {
 			Com_Arc_Config.ComIPdu[i].Com_Arc_IpduStarted = 1;
+			break;
 		}
 	}
 }
@@ -179,6 +180,7 @@ void Com_IpduGroupStop(Com_PduGroupIdType IpduGroupId) {
 	for (uint16 i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
 		if (ComConfig->ComIPdu[i].ComIPduGroupRef == IpduGroupId) {
 			Com_Arc_Config.ComIPdu[i].Com_Arc_IpduStarted = 0;
+			break;
 		}
 	}
 }
@@ -193,11 +195,14 @@ void Com_IpduGroupStop(Com_PduGroupIdType IpduGroupId) {
  */
 BufReq_ReturnType Com_CopyTxData(PduIdType PduId, PduInfoType* PduInfoPtr, RetryInfoType* RetryInfoPtr, PduLengthType* TxDataCntPtr) {
 	imask_t state;
-	Irq_Save(state);
 	BufReq_ReturnType r = BUFREQ_OK;
 	const ComIPdu_type *IPdu = GET_IPdu(PduId);
 	boolean dirOk = ComConfig->ComIPdu[PduId].ComIPduDirection == SEND;
-	boolean sizeOk = IPdu->ComIPduSize >= Com_BufferPduState[PduId].currentPosition + PduInfoPtr->SduLength;
+	boolean sizeOk;
+
+	Irq_Save(state);
+
+	sizeOk = IPdu->ComIPduSize >= Com_BufferPduState[PduId].currentPosition + PduInfoPtr->SduLength;
 	Com_BufferPduState[PduId].locked = true;
 	if (dirOk && sizeOk) {
 		void* source = (void *)IPdu->ComIPduDataPtr;
@@ -212,12 +217,18 @@ BufReq_ReturnType Com_CopyTxData(PduIdType PduId, PduInfoType* PduInfoPtr, Retry
 }
 BufReq_ReturnType Com_CopyRxData(PduIdType PduId, const PduInfoType* PduInfoPtr, PduLengthType* RxBufferSizePtr) {
 	imask_t state;
-	Irq_Save(state);
 	BufReq_ReturnType r = BUFREQ_OK;
-	uint8 remainingBytes = GET_IPdu(PduId)->ComIPduSize - Com_BufferPduState[PduId].currentPosition;
-	boolean sizeOk = remainingBytes >= PduInfoPtr->SduLength;
-	boolean dirOk = GET_IPdu(PduId)->ComIPduDirection == RECEIVE;
-	boolean lockOk = isPduBufferLocked(PduId);
+	uint8 remainingBytes;
+	boolean sizeOk;
+	boolean dirOk;
+	boolean lockOk;
+
+	Irq_Save(state);
+
+	remainingBytes = GET_IPdu(PduId)->ComIPduSize - Com_BufferPduState[PduId].currentPosition;
+	sizeOk = remainingBytes >= PduInfoPtr->SduLength;
+    dirOk = GET_IPdu(PduId)->ComIPduDirection == RECEIVE;
+	lockOk = isPduBufferLocked(PduId);
 	if (dirOk && lockOk && sizeOk) {
 		memcpy((void *)(GET_IPdu(PduId)->ComIPduDataPtr+Com_BufferPduState[PduId].currentPosition), PduInfoPtr->SduDataPtr, PduInfoPtr->SduLength);
 		Com_BufferPduState[PduId].currentPosition += PduInfoPtr->SduLength;
@@ -243,9 +254,10 @@ static void Com_SetDynSignalLength(PduIdType ComRxPduId,PduLengthType TpSduLengt
 BufReq_ReturnType Com_StartOfReception(PduIdType ComRxPduId, PduLengthType TpSduLength, PduLengthType* RxBufferSizePtr) {
 	PduLengthType ComIPduSize;
 	imask_t state;
-	Irq_Save(state);
 	BufReq_ReturnType r = BUFREQ_OK;
 	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(ComRxPduId);
+
+	Irq_Save(state);
 	if (Arc_IPdu->Com_Arc_IpduStarted) {
 		if (GET_IPdu(ComRxPduId)->ComIPduDirection == RECEIVE) {
 			if (!Com_BufferPduState[ComRxPduId].locked) {

@@ -39,6 +39,9 @@ void Com_MainFunctionRx(void) {
 		signal = &ComConfig->ComSignal[i];
 		Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(signal->ComHandleId);
 		Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(signal->ComIPduHandleId);
+		imask_t irq_state;
+
+		Irq_Save(irq_state);
 
 		// Monitor signal reception deadline
 		if ( (Arc_IPdu->Com_Arc_IpduStarted) && (signal->ComTimeoutFactor > 0) ) {
@@ -70,17 +73,23 @@ void Com_MainFunctionRx(void) {
 			}
 			Arc_Signal->ComSignalUpdated = 0;
 		}
+
+		Irq_Restore(irq_state);
 	}
 }
 
 
 void Com_MainFunctionTx(void) {
+	imask_t irq_state;
+
 	//DEBUG(DEBUG_MEDIUM, "Com_MainFunctionTx() excecuting\n");
 	// Decrease timers.
 	const ComIPdu_type *IPdu;
 	for (uint16 i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
 		IPdu = &ComConfig->ComIPdu[i];
 		Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(i);
+
+		Irq_Save(irq_state);
 
 		// Is this a IPdu that should be transmitted?
 		if ( (IPdu->ComIPduDirection == SEND) && (Arc_IPdu->Com_Arc_IpduStarted) ) {
@@ -145,5 +154,7 @@ void Com_MainFunctionTx(void) {
 				// Don't send!
 			}
 		}
+
+		Irq_Restore(irq_state);
 	}
 }

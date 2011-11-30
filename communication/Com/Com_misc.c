@@ -26,6 +26,11 @@
 #include "debug.h"
 #include "Cpu.h"
 
+static void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByteLength,
+		Com_BitPositionType segmentStartBitOffset, uint8 segmentBitLength, boolean signedOutput);
+
+static void Com_WriteDataSegment(uint8 *pdu, uint8 *pduSignalMask, const uint8 *signalDataPtr, uint8 destByteLength,
+		Com_BitPositionType segmentStartBitOffset, uint8 segmentBitLength);
 
 void Com_ReadSignalDataFromPdu(
 			const Com_SignalIdType signalId,
@@ -96,6 +101,8 @@ void Com_ReadSignalDataFromPduBuffer(
 	uint8 signalDataBytesArray[8];
 	const uint8 *pduBufferBytes = (const uint8 *)pduBuffer + (bitPosition/8);
 	Com_BitPositionType startBitOffset = 0;
+	imask_t state;
+	Irq_Save(state);
 
 	if (signalEndianess == COM_OPAQUE || signalType == UINT8_N) {
 		// Aligned opaque data -> straight copy
@@ -144,6 +151,7 @@ void Com_ReadSignalDataFromPduBuffer(
 			assert(0);
 		}
 	}
+	Irq_Restore(state);
 }
 
 
@@ -218,6 +226,9 @@ void Com_WriteSignalDataToPduBuffer(
 
 	uint8 signalDataBytesArray[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 	const uint8 *signalDataBytes = (const uint8 *)signalData;
+	imask_t irq_state;
+
+	Irq_Save(irq_state);
 	if (endian == COM_OPAQUE || signalType == UINT8_N) {
 		//assert(bitPosition % 8 == 0);
 		//assert(bitSize % 8 == 0);
@@ -253,13 +264,10 @@ void Com_WriteSignalDataToPduBuffer(
 			// Straight copy into real pdu buffer (with mutex)
 			uint8 *pduBufferBytes = ((uint8 *)pduBuffer)+(bitPosition/8);
 			uint8 i;
-			imask_t irq_state;
-			Irq_Save(irq_state);
 			for (i = 0; i < 8; i++) {
 				pduBufferBytes[ i ]  &=        ~( pduSignalMask[ i ] );
 				pduBufferBytes[ i ]  |=  pduBufferBytesStraight[ i ];
 			}
-			Irq_Restore(irq_state);
 
 		} else {
 			uint8 startBitOffset = intelBitNrToPduOffset(bitPosition%8, bitSize, 64);
@@ -271,16 +279,14 @@ void Com_WriteSignalDataToPduBuffer(
 			// Swapped copy into real pdu buffer (with mutex)
 			uint8 *pduBufferBytes = ((uint8 *)pduBuffer)+(bitPosition/8);
 			uint8 i;
-			imask_t irq_state;
-			Irq_Save(irq_state);
 			// actually it is only necessary to iterate through the bytes that are written.
 			for (i = 0; i < 8; i++) {
 				pduBufferBytes[ i ]  &=       ~( pduSignalMask[ (8 - 1) - i ] );
 				pduBufferBytes[ i ]  |=  pduBufferBytesSwapped[ (8 - 1) - i ];
 			}
-			Irq_Restore(irq_state);
 		}
 	}
+	Irq_Restore(irq_state);
 }
 
 
@@ -308,7 +314,7 @@ void Com_WriteSignalDataToPduBuffer(
  *    | -------- | -------A | BCDEFGHI | JKLMNOPQ |
  *
  */
-void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByteLength,
+static void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByteLength,
 		Com_BitPositionType segmentStartBitOffset, uint8 segmentBitLength, boolean signedOutput) {
 
 	Com_BitPositionType sourceEndBitOffset = segmentStartBitOffset + segmentBitLength - 1;
