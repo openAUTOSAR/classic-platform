@@ -343,7 +343,8 @@ static inline void J1939Tp_Internal_RxIndication_Cm(PduInfoType* PduInfoPtr, J19
 		ChannelInfoPtr->RxState->DtToReceiveCount = PduInfoPtr->SduDataPtr[BAM_RTS_BYTE_NUM_PACKETS];
 		ChannelInfoPtr->RxState->TotalMessageSize = messageSize;
 		ChannelInfoPtr->RxState->CurrentPgPtr = pg;
-		if (Command == RTS_CONTROL_VALUE) {
+		J1939Tp_ProtocolType channelProtocol = ChannelInfoPtr->ChannelConfPtr->Protocol;
+		if (Command == RTS_CONTROL_VALUE && channelProtocol == J1939TP_PROTOCOL_CMDT) {
 			PduLengthType remainingBuffer = 0;
 			if (PduR_J1939TpStartOfReception(pg->NSdu, messageSize, &remainingBuffer) == BUFREQ_OK) {
 				ChannelInfoPtr->RxState->State = J1939TP_RX_WAIT_CTS_CANIF_CONFIRM;
@@ -352,7 +353,7 @@ static inline void J1939Tp_Internal_RxIndication_Cm(PduInfoType* PduInfoPtr, J19
 			} else {
 				J1939Tp_Internal_SendConnectionAbort(pg->Channel->CmNPdu,pgn);
 			}
-		} else if (Command == BAM_CONTROL_VALUE) {
+		} else if (Command == BAM_CONTROL_VALUE && channelProtocol == J1939TP_PROTOCOL_BAM) {
 			PduLengthType remainingBuffer = 0;
 			if (PduR_J1939TpStartOfReception(pg->NSdu, messageSize, &remainingBuffer) == BUFREQ_OK) {
 				J1939Tp_Internal_StartTimer(&(ChannelInfoPtr->RxState->TimerInfo),J1939TP_T2_TIMEOUT_MS);
