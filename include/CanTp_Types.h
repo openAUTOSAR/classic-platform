@@ -115,6 +115,7 @@ typedef struct {
 typedef struct {
 	const PduIdType CanIf_PduId; // The polite CanIf index.
 	const PduIdType PduR_PduId; // The polite PduR index.
+	const PduIdType CanTp_FcPduId;
 	const CanTp_AddressingFormantType CanTpAddressingMode; /** @req CANTP262 */
 	const uint16 CanTpNas; /** @req CANTP263 */ /* N_As timeout for transmission of any CAN frame. */
 	const uint16 CanTpNbs; /** @req CANTP264 */ /* N_Bs timeout of transmission until reception of next Flow Control. */
