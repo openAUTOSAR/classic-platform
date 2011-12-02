@@ -70,12 +70,6 @@ void Com_WriteSignalDataToPduBuffer(
 
 //void Com_CopyData2(char *dest, const char *source, uint8 destByteLength, uint8 segmentStartBitOffset, uint8 segmentBitLength);
 
-void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByteLength,
-		Com_BitPositionType segmentStartBitOffset, uint8 segmentBitLength, boolean signedOutput);
-
-void Com_WriteDataSegment(uint8 *pdu, uint8 *pduSignalMask, const uint8 *signalDataPtr, uint8 destByteLength,
-		Com_BitPositionType segmentStartBitOffset, uint8 segmentBitLength);
-
 Com_BitPositionType motorolaBitNrToPduOffset (Com_BitPositionType motorolaBitNr);
 Com_BitPositionType intelBitNrToPduOffset (Com_BitPositionType intelBitNr, Com_BitPositionType segmentBitLength, Com_BitPositionType pduBitLength);
 void Com_RxProcessSignals(const ComIPdu_type *IPdu,Com_Arc_IPdu_type *Arc_IPdu);

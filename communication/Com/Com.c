@@ -47,7 +47,6 @@ void Com_Init(const Com_ConfigType *config ) {
 
 	uint8 failure = 0;
 
-	uint32 earliestDeadline;
 	uint32 firstTimeout;
 
 	//lint --e(928)	PC-Lint exception Misra 11.4, Must be like this. /tojo
@@ -69,6 +68,7 @@ void Com_Init(const Com_ConfigType *config ) {
 
 		const ComIPdu_type *IPdu = GET_IPdu(i);
 		Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(i);
+		Arc_IPdu->Com_Arc_DynSignalLength = 0;
 
 		if (i >= COM_N_IPDUS) {
 			DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_TOO_MANY_IPDU);
@@ -84,13 +84,12 @@ void Com_Init(const Com_ConfigType *config ) {
 		}
 
 
-		// Reset earliest deadline.
-		earliestDeadline = 0xffffffffu;
+		// Reset firstTimeout.
 		firstTimeout = 0xffffffffu;
 
 		// Initialize the memory with the default value.
 		if (IPdu->ComIPduDirection == SEND) {
-			memset(Arc_IPdu->ComIPduDataPtr, IPdu->ComTxIPdu.ComTxIPduUnusedAreasDefault, IPdu->ComIPduSize);
+			memset((void *)IPdu->ComIPduDataPtr, IPdu->ComTxIPdu.ComTxIPduUnusedAreasDefault, IPdu->ComIPduSize);
 		}
 
 		// For each signal in this PDU.
@@ -99,41 +98,24 @@ void Com_Init(const Com_ConfigType *config ) {
 			Signal = IPdu->ComIPduSignalRef[j];
 			Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
 
-			// If this signal already has been configured this is most likely an error.
-			if (Arc_Signal->ComIPduDataPtr != NULL) {
-				// DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, 0x01, COM_E_INVALID_SIGNAL_CONFIGURATION);
-				// failure = 1;
-			}
-
 			// Configure signal deadline monitoring if used.
 			if (Signal->ComTimeoutFactor > 0) {
 
 				if (Signal->ComSignalArcUseUpdateBit) {
 					// This signal uses an update bit, and hence has its own deadline monitoring.
 					Arc_Signal->Com_Arc_DeadlineCounter = Signal->ComFirstTimeoutFactor; // Configure the deadline counter
-					Arc_Signal->ComTimeoutFactor = Signal->ComTimeoutFactor;
 
 				} else {
 					// This signal does not use an update bit, and should therefore use per I-PDU deadline monitoring.
-					// Find the earliest deadline for this I-PDU and setup the deadline later.
-					if (earliestDeadline > Signal->ComTimeoutFactor) {
-						earliestDeadline = Signal->ComTimeoutFactor;
-					}
 					if (firstTimeout > Signal->ComFirstTimeoutFactor) {
 						firstTimeout = Signal->ComFirstTimeoutFactor;
 					}
 				}
 			}
 
-			// Increment helper counters
-		    //Arc_IPdu->NComIPduSignalRef = j + 1;
-
-			Arc_Signal->ComIPduDataPtr = Arc_IPdu->ComIPduDataPtr;
-			Arc_Signal->ComIPduHandleId = i;
-
 			// Clear update bits
 			if (Signal->ComSignalArcUseUpdateBit) {
-				CLEARBIT(Arc_IPdu->ComIPduDataPtr, Signal->ComUpdateBitPosition);
+				CLEARBIT(IPdu->ComIPduDataPtr, Signal->ComUpdateBitPosition);
 			}
 
 			// If this signal is a signal group
@@ -144,24 +126,25 @@ void Com_Init(const Com_ConfigType *config ) {
 					GroupSignal = Signal->ComGroupSignal[h];
 					Com_Arc_GroupSignal_type *Arc_GroupSignal = GET_ArcGroupSignal(GroupSignal->ComHandleId);
 					// Set pointer to shadow buffer
-					Arc_GroupSignal->Com_Arc_ShadowBuffer = Arc_Signal->Com_Arc_ShadowBuffer;
+					Arc_GroupSignal->Com_Arc_ShadowBuffer = (void *)Signal->Com_Arc_ShadowBuffer;
 					// Initialize group signal data.
 					Com_WriteGroupSignalDataToPdu(Signal->ComHandleId, GroupSignal->ComHandleId, GroupSignal->ComSignalInitValue);
 				}
-
 			} else {
 				// Initialize signal data.
 				Com_WriteSignalDataToPdu(Signal->ComHandleId, Signal->ComSignalInitValue);
 			}
 		}
-
+		if (IPdu->ComIPduDirection == RECEIVE && IPdu->ComIPduSignalProcessing == DEFERRED) {
+			// Copy the initialized pdu to deferred buffer
+			memcpy(IPdu->ComIPduDeferredDataPtr,IPdu->ComIPduDataPtr,IPdu->ComIPduSize);
+		}
 		// Configure per I-PDU based deadline monitoring.
 		for (uint16 j = 0; (IPdu->ComIPduSignalRef != NULL) && (IPdu->ComIPduSignalRef[j] != NULL); j++) {
 			Signal = IPdu->ComIPduSignalRef[j];
 			Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
 
 			if ( (Signal->ComTimeoutFactor > 0) && (!Signal->ComSignalArcUseUpdateBit) ) {
-				Arc_Signal->ComTimeoutFactor = earliestDeadline;
 				Arc_Signal->Com_Arc_DeadlineCounter = firstTimeout;
 			}
 		}
@@ -212,14 +195,17 @@ void Com_IpduGroupStop(Com_PduGroupIdType IpduGroupId) {
  */
 BufReq_ReturnType Com_CopyTxData(PduIdType PduId, PduInfoType* PduInfoPtr, RetryInfoType* RetryInfoPtr, PduLengthType* TxDataCntPtr) {
 	imask_t state;
-	Irq_Save(state);
 	BufReq_ReturnType r = BUFREQ_OK;
 	const ComIPdu_type *IPdu = GET_IPdu(PduId);
 	boolean dirOk = ComConfig->ComIPdu[PduId].ComIPduDirection == SEND;
-	boolean sizeOk = IPdu->ComIPduSize >= Com_BufferPduState[PduId].currentPosition + PduInfoPtr->SduLength;
+	boolean sizeOk;
+	(void)RetryInfoPtr; // get rid of compiler warning
+
+	Irq_Save(state);
+	sizeOk = IPdu->ComIPduSize >= Com_BufferPduState[PduId].currentPosition + PduInfoPtr->SduLength;
 	Com_BufferPduState[PduId].locked = true;
 	if (dirOk && sizeOk) {
-		void* source = GET_ArcIPdu(PduId)->ComIPduDataPtr;
+		void* source = (void *)IPdu->ComIPduDataPtr;
 		memcpy(PduInfoPtr->SduDataPtr,source + Com_BufferPduState[PduId].currentPosition, PduInfoPtr->SduLength);
 		Com_BufferPduState[PduId].currentPosition += PduInfoPtr->SduLength;
 		*TxDataCntPtr = IPdu->ComIPduSize - Com_BufferPduState[PduId].currentPosition;
@@ -231,28 +217,47 @@ BufReq_ReturnType Com_CopyTxData(PduIdType PduId, PduInfoType* PduInfoPtr, Retry
 }
 BufReq_ReturnType Com_CopyRxData(PduIdType PduId, const PduInfoType* PduInfoPtr, PduLengthType* RxBufferSizePtr) {
 	imask_t state;
-	Irq_Save(state);
 	BufReq_ReturnType r = BUFREQ_OK;
-	uint8 remainingBytes = GET_IPdu(PduId)->ComIPduSize - Com_BufferPduState[PduId].currentPosition;
-	boolean sizeOk = remainingBytes >= PduInfoPtr->SduLength;
-	boolean dirOk = GET_IPdu(PduId)->ComIPduDirection == RECEIVE;
-	boolean lockOk = isPduBufferLocked(PduId);
+	uint8 remainingBytes;
+	boolean sizeOk;
+	boolean dirOk;
+	boolean lockOk;
+
+	Irq_Save(state);
+
+	remainingBytes = GET_IPdu(PduId)->ComIPduSize - Com_BufferPduState[PduId].currentPosition;
+	sizeOk = remainingBytes >= PduInfoPtr->SduLength;
+    dirOk = GET_IPdu(PduId)->ComIPduDirection == RECEIVE;
+	lockOk = isPduBufferLocked(PduId);
 	if (dirOk && lockOk && sizeOk) {
-		memcpy(GET_ArcIPdu(PduId)->ComIPduDataPtr+Com_BufferPduState[PduId].currentPosition, PduInfoPtr->SduDataPtr, PduInfoPtr->SduLength);
+		memcpy((void *)(GET_IPdu(PduId)->ComIPduDataPtr+Com_BufferPduState[PduId].currentPosition), PduInfoPtr->SduDataPtr, PduInfoPtr->SduLength);
 		Com_BufferPduState[PduId].currentPosition += PduInfoPtr->SduLength;
 		*RxBufferSizePtr = GET_IPdu(PduId)->ComIPduSize - Com_BufferPduState[PduId].currentPosition;
 	} else {
 		r = BUFREQ_NOT_OK;
 	}
-	return r;
 	Irq_Restore(state);
+	return r;
 }
+
+static void Com_SetDynSignalLength(PduIdType ComRxPduId,PduLengthType TpSduLength) {
+	const ComIPdu_type *IPdu = GET_IPdu(ComRxPduId);
+	if (IPdu->ComIPduDynSignalRef == 0) {
+		return;
+	}
+	const ComSignal_type * const dynSignal = IPdu->ComIPduDynSignalRef;
+	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(ComRxPduId);
+	Arc_IPdu->Com_Arc_DynSignalLength = TpSduLength - (dynSignal->ComBitPosition/8);
+	return;
+}
+
 BufReq_ReturnType Com_StartOfReception(PduIdType ComRxPduId, PduLengthType TpSduLength, PduLengthType* RxBufferSizePtr) {
 	PduLengthType ComIPduSize;
 	imask_t state;
-	Irq_Save(state);
 	BufReq_ReturnType r = BUFREQ_OK;
 	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(ComRxPduId);
+
+	Irq_Save(state);
 	if (Arc_IPdu->Com_Arc_IpduStarted) {
 		if (GET_IPdu(ComRxPduId)->ComIPduDirection == RECEIVE) {
 			if (!Com_BufferPduState[ComRxPduId].locked) {
@@ -260,7 +265,7 @@ BufReq_ReturnType Com_StartOfReception(PduIdType ComRxPduId, PduLengthType TpSdu
 				if (ComIPduSize >= TpSduLength) {
 					Com_BufferPduState[ComRxPduId].locked = true;
 					*RxBufferSizePtr = ComIPduSize;
-					Com_BufferPduState[ComRxPduId].locked = true;
+					Com_SetDynSignalLength(ComRxPduId,TpSduLength);
 				} else {
 					r = BUFREQ_OVFL;
 				}
