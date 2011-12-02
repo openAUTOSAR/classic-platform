@@ -328,6 +328,9 @@ static inline uint8 J1939Tp_Internal_GetDtDataSize(uint8 currentSeqNum, uint8 to
 }
 static inline void J1939Tp_Internal_RxIndication_Cm(PduInfoType* PduInfoPtr, J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr) {
 	const J1939Tp_PgType* pg = 0;
+	if (ChannelInfoPtr->RxState->State != J1939TP_RX_IDLE) {
+		return;
+	}
 	J1939Tp_PgnType pgn = J1939Tp_Internal_GetPgn(&(PduInfoPtr->SduDataPtr[CM_PGN_BYTE_1]));
 	if (J1939Tp_Internal_GetPgFromPgn(ChannelInfoPtr->ChannelConfPtr,pgn,&pg) != E_OK) {
 		return;
