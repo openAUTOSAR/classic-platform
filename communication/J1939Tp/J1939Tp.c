@@ -195,12 +195,12 @@ void J1939Tp_TxConfirmation(PduIdType RxPdu) {
 	if (globalState.State == J1939TP_ON) {
 		const J1939Tp_RxPduInfoRelationsType* RxPduRelationsInfo = 0;
 		if (J1939Tp_Internal_GetRxPduRelationsInfo(RxPdu, &RxPduRelationsInfo) == E_OK) {
+			imask_t state;
+			Irq_Save(state);
 			for (PduIdType i = 0; i < RxPduRelationsInfo->RxPduCount; i++) {
 				const J1939Tp_RxPduInfoType* RxPduInfo = RxPduRelationsInfo->RxPdus[i];
 				const J1939Tp_ChannelType* Channel = J1939Tp_Internal_GetChannel(RxPduInfo);
 				J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr = J1939Tp_Internal_GetChannelState(RxPduInfo);
-				imask_t state;
-				Irq_Save(state);
 				switch (Channel->Direction) {
 					case J1939TP_TX:
 						J1939Tp_Internal_TxConfirmation_TxChannel(ChannelInfoPtr, RxPduInfo);
@@ -211,8 +211,8 @@ void J1939Tp_TxConfirmation(PduIdType RxPdu) {
 					default:
 						break;
 				}
-				Irq_Restore(state);
 			}
+			Irq_Restore(state);
 		}
 	}
 }
