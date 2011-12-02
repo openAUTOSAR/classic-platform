@@ -397,7 +397,8 @@ typedef struct {
 	const ComTxIPdu_type ComTxIPdu;
 
 	/** Reference to the actual pdu data storage */
-	const void *ComIPduDataPtr;
+	void *const ComIPduDataPtr;
+	void *const ComIPduDeferredDataPtr;
 
 	/** References to all signals and signal groups contained in this IPDU.
 	 * It probably makes little sense not to define at least one signal or signal group for each IPDU.

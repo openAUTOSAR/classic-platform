@@ -76,8 +76,18 @@ uint8 Com_ReceiveSignal(Com_SignalIdType SignalId, void* SignalDataPtr) {
 	if (isPduBufferLocked(getPduId(IPdu))) {
 		return COM_BUSY;
 	}
-
-	Com_ReadSignalDataFromPdu(SignalId, SignalDataPtr);
+	const void* pduDataPtr = 0;
+	if (IPdu->ComIPduSignalProcessing == DEFERRED && IPdu->ComIPduDirection == RECEIVE) {
+		pduDataPtr = IPdu->ComIPduDeferredDataPtr;
+	} else {
+		pduDataPtr = IPdu->ComIPduDataPtr;
+	}
+	Com_ReadSignalDataFromPduBuffer(
+			SignalId,
+			FALSE,
+			SignalDataPtr,
+			pduDataPtr,
+			IPdu->ComIPduSize);
 
 	return E_OK;
 }
@@ -99,7 +109,14 @@ uint8 Com_ReceiveDynSignal(Com_SignalIdType SignalId, void* SignalDataPtr, uint1
 		*Length = Arc_IPdu->Com_Arc_DynSignalLength;
 	}
 	uint8 startFromPduByte = (Signal->ComBitPosition) / 8;
-	memcpy(SignalDataPtr, IPdu->ComIPduDataPtr + startFromPduByte, *Length);
+
+	const void* pduDataPtr = 0;
+	if (IPdu->ComIPduSignalProcessing == DEFERRED && IPdu->ComIPduDirection == RECEIVE) {
+		pduDataPtr = IPdu->ComIPduDeferredDataPtr;
+	} else {
+		pduDataPtr = IPdu->ComIPduDataPtr;
+	}
+	memcpy(SignalDataPtr, pduDataPtr + startFromPduByte, *Length);
 
     Irq_Restore(state);
 
@@ -243,7 +260,7 @@ void Com_RxIndication(PduIdType ComRxPduId, const PduInfoType* PduInfoPtr) {
 	}
 
 	// Copy IPDU data
-	memcpy((void *)IPdu->ComIPduDataPtr, PduInfoPtr->SduDataPtr, IPdu->ComIPduSize);
+	memcpy(IPdu->ComIPduDataPtr, PduInfoPtr->SduDataPtr, IPdu->ComIPduSize);
 
 	Com_RxProcessSignals(IPdu,Arc_IPdu);
 
@@ -266,25 +283,28 @@ void Com_TpRxIndication(PduIdType PduId, NotifResultType Result) {
 		Irq_Restore(state);
 		return;
 	}
-
-	// unlock buffer
-	UnlockTpBuffer(getPduId(IPdu));
-
 	if (Result == NTFRSLT_OK) {
+		if (IPdu->ComIPduSignalProcessing == IMMEDIATE) {
+			// irqs needs to be disabled until signal notifications have been called
+			// Otherwise a new Tp session can start and fill up pdus
+			UnlockTpBuffer(getPduId(IPdu));
+		}
+		// In deferred mode, buffers are unlocked in mainfunction
 		Com_RxProcessSignals(IPdu,Arc_IPdu);
+	} else {
+		UnlockTpBuffer(getPduId(IPdu));
 	}
-
 	Irq_Restore(state);
+
 }
 
 void Com_TpTxConfirmation(PduIdType PduId, NotifResultType Result) {
 	PDU_ID_CHECK(PduId, 0x15);
-	const ComIPdu_type *IPdu = GET_IPdu(PduId);
 	(void)Result; // touch
 
 	imask_t state;
 	Irq_Save(state);
-	UnlockTpBuffer(getPduId(IPdu));
+	UnlockTpBuffer(PduId);
 	Irq_Restore(state);
 }
 void Com_TxConfirmation(PduIdType ComTxPduId) {

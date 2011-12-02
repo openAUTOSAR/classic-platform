@@ -130,13 +130,15 @@ void Com_Init(const Com_ConfigType *config ) {
 					// Initialize group signal data.
 					Com_WriteGroupSignalDataToPdu(Signal->ComHandleId, GroupSignal->ComHandleId, GroupSignal->ComSignalInitValue);
 				}
-
 			} else {
 				// Initialize signal data.
 				Com_WriteSignalDataToPdu(Signal->ComHandleId, Signal->ComSignalInitValue);
 			}
 		}
-
+		if (IPdu->ComIPduDirection == RECEIVE && IPdu->ComIPduSignalProcessing == DEFERRED) {
+			// Copy the initialized pdu to deferred buffer
+			memcpy(IPdu->ComIPduDeferredDataPtr,IPdu->ComIPduDataPtr,IPdu->ComIPduSize);
+		}
 		// Configure per I-PDU based deadline monitoring.
 		for (uint16 j = 0; (IPdu->ComIPduSignalRef != NULL) && (IPdu->ComIPduSignalRef[j] != NULL); j++) {
 			Signal = IPdu->ComIPduSignalRef[j];
@@ -171,7 +173,6 @@ void Com_IpduGroupStart(Com_PduGroupIdType IpduGroupId,boolean Initialize) {
 	for (uint16 i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
 		if (ComConfig->ComIPdu[i].ComIPduGroupRef == IpduGroupId) {
 			Com_Arc_Config.ComIPdu[i].Com_Arc_IpduStarted = 1;
-			break;
 		}
 	}
 }
@@ -180,7 +181,6 @@ void Com_IpduGroupStop(Com_PduGroupIdType IpduGroupId) {
 	for (uint16 i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
 		if (ComConfig->ComIPdu[i].ComIPduGroupRef == IpduGroupId) {
 			Com_Arc_Config.ComIPdu[i].Com_Arc_IpduStarted = 0;
-			break;
 		}
 	}
 }
@@ -199,9 +199,9 @@ BufReq_ReturnType Com_CopyTxData(PduIdType PduId, PduInfoType* PduInfoPtr, Retry
 	const ComIPdu_type *IPdu = GET_IPdu(PduId);
 	boolean dirOk = ComConfig->ComIPdu[PduId].ComIPduDirection == SEND;
 	boolean sizeOk;
+	(void)RetryInfoPtr; // get rid of compiler warning
 
 	Irq_Save(state);
-
 	sizeOk = IPdu->ComIPduSize >= Com_BufferPduState[PduId].currentPosition + PduInfoPtr->SduLength;
 	Com_BufferPduState[PduId].locked = true;
 	if (dirOk && sizeOk) {
