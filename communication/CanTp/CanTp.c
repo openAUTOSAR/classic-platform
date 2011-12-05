@@ -1104,7 +1104,7 @@ static INLINE BufReq_ReturnType canTpTransmitHelper(const CanTp_TxNSduType *txCo
 // - - - - - - - - - - - - - -
 
 static Std_ReturnType getFcIndex(const PduIdType rxId, const CanTp_AddressingFormantType *formatType,
-		const PduInfoType *CanTpRxPduPtr ) {
+		const PduInfoType *CanTpRxPduPtr, uint16* fcIndex ) {
 	Std_ReturnType retValue = E_NOT_OK;
 	uint8 txId = START_OF_TX_CONFIG;
 	CanTp_TxNSduType* txConfig;
@@ -1115,6 +1115,7 @@ static Std_ReturnType getFcIndex(const PduIdType rxId, const CanTp_AddressingFor
 		if( txConfig->CanTp_FcPduId == rxId ) {
 			if( !(CANTP_EXTENDED == *formatType) &&
 					CANTP_EXTENDED != txConfig->CanTpAddressingMode ) {
+				*fcIndex = txId;
 				retValue = E_OK;
 				break;
 			} else {
@@ -1127,7 +1128,7 @@ static Std_ReturnType getFcIndex(const PduIdType rxId, const CanTp_AddressingFor
 				}
 			}
 		}
-	} while( CanTpConfig.CanTpNSduList[txId].listItemType != CANTP_END_OF_LIST );
+	} while( CanTpConfig.CanTpNSduList[txId++].listItemType != CANTP_END_OF_LIST );
 
 	return retValue;
 }
@@ -1254,6 +1255,8 @@ void CanTp_RxIndication_Main(PduIdType CanTpRxPduId,
 	const CanTp_AddressingFormantType *addressingFormat; // Configured
 	CanTp_ChannelPrivateType *runtimeParams; // Params reside in RAM.
 	ISO15765FrameType frameType;
+	uint16 fcIndex;
+	CanTp_AddressingFormantType standardAddressing = CANTP_STANDARD;
 
 	DEBUG( DEBUG_MEDIUM, "CanTp_RxIndication: PduId=%d, [", CanTpRxPduId);
 	for (int i=0; i<CanTpRxPduPtr->SduLength; i++) {
@@ -1264,13 +1267,20 @@ void CanTp_RxIndication_Main(PduIdType CanTpRxPduId,
 	VALIDATE_NO_RV( CanTpRunTimeData.internalState == CANTP_ON,
 			SERVICE_ID_CANTP_RX_INDICATION, CANTP_E_UNINIT ); /** @req CANTP031 */
 
-	if ( CanTpConfig.CanTpNSduList[CanTpRxPduId].direction == IS015765_TRANSMIT ) {
-		DEBUG( DEBUG_MEDIUM, "Received pduId which is not RECEIVE - ignoring!\n");
-	} else {
-		rxConfigParams = (CanTp_RxNSduType*)&CanTpConfig.CanTpNSduList[CanTpRxPduId].configData;  /** @req CANTP120 */
-		addressingFormat = &rxConfigParams->CanTpAddressingFormant;
-		runtimeParams = &CanTpRunTimeData.runtimeDataList[rxConfigParams->CanTpRxChannel];  /** @req CANTP096 *//** @req CANTP121 *//** @req CANTP122 *//** @req CANTP190 */
-		txConfigParams = NULL;
+	if( CanTpRxPduId < START_OF_NON_POLITE )
+	{
+		if ( CanTpConfig.CanTpNSduList[CanTpRxPduId].direction == IS015765_TRANSMIT ) {
+			DEBUG( DEBUG_MEDIUM, "Received pduId which is not RECEIVE - ignoring!\n");
+		} else {
+			rxConfigParams = (CanTp_RxNSduType*)&CanTpConfig.CanTpNSduList[CanTpRxPduId].configData;  /** @req CANTP120 */
+			addressingFormat = &rxConfigParams->CanTpAddressingFormant;
+			runtimeParams = &CanTpRunTimeData.runtimeDataList[rxConfigParams->CanTpRxChannel];  /** @req CANTP096 *//** @req CANTP121 *//** @req CANTP122 *//** @req CANTP190 */
+			txConfigParams = NULL;
+		}
+	}
+	else {
+		/* TODO: John - Assume standard when receiving out of P-Index - probably needs refactoring to solve */
+		addressingFormat = &standardAddressing;
 	}
 
 	/* TODO: John - Note that the addressing format is taken from the rxConfig
@@ -1278,13 +1288,14 @@ void CanTp_RxIndication_Main(PduIdType CanTpRxPduId,
 	frameType = getFrameType(addressingFormat, CanTpRxPduPtr); /** @req CANTP094 *//** @req CANTP095 */
 
 	if( frameType == FLOW_CONTROL_CTS_FRAME ) {
-		Std_ReturnType ret = getFcIndex(CanTpRxPduId, addressingFormat, CanTpRxPduPtr );
+		Std_ReturnType ret = getFcIndex(CanTpRxPduId, addressingFormat, CanTpRxPduPtr, &fcIndex );
 		if( ret != E_OK ) {
 			/* No Tx channel found - set to NULL in order to ignore */
 			txConfigParams = NULL;
 			runtimeParams = NULL;
 		}
 		else {
+			txConfigParams = (CanTp_TxNSduType*)&CanTpConfig.CanTpNSduList[fcIndex].configData;
 			runtimeParams = &CanTpRunTimeData.runtimeDataList[txConfigParams->CanTpTxChannel];  /** @req CANTP096 *//** @req CANTP121 *//** @req CANTP122 *//** @req CANTP190 */
 		}
 		rxConfigParams = NULL;
