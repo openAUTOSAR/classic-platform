@@ -87,7 +87,10 @@
 .global Os_Test_And_Set
 #if defined(__CWCC__) && defined(CFG_VLE)
 .section .text_vle,text_vle
-#else
+#elif defined(__DCC__)
+	// Must be indented (diab)
+	.section .text_vle,x
+#elif defined(__GNUC__)
 .section .text
 #endif
 
@@ -553,9 +556,13 @@ handleException:
 #else
 .section .exception_tbl,4,"rw"
 #endif
+#elif defined(__DCC__)
+	// Must be indented (diab)
+	.section .text_vle,x
 #endif
-.balign 0x1000
-.global exception_tbl
+
+	.balign 0x1000
+	.global exception_tbl
 
 exception_tbl:
 	EXC_TABLE_CODE(0)
