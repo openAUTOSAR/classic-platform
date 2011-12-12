@@ -73,13 +73,15 @@ uint8 Com_ReceiveSignal(Com_SignalIdType SignalId, void* SignalDataPtr) {
 
 	const ComSignal_type * Signal = GET_Signal(SignalId);
 	const ComIPdu_type *IPdu = GET_IPdu(Signal->ComIPduHandleId);
-	if (isPduBufferLocked(getPduId(IPdu))) {
-		return COM_BUSY;
-	}
+
+	uint8 r = E_OK;
 	const void* pduDataPtr = 0;
 	if (IPdu->ComIPduSignalProcessing == DEFERRED && IPdu->ComIPduDirection == RECEIVE) {
 		pduDataPtr = IPdu->ComIPduDeferredDataPtr;
 	} else {
+		if (isPduBufferLocked(getPduId(IPdu))) {
+			r = COM_BUSY;
+		}
 		pduDataPtr = IPdu->ComIPduDataPtr;
 	}
 	Com_ReadSignalDataFromPduBuffer(
@@ -89,7 +91,7 @@ uint8 Com_ReceiveSignal(Com_SignalIdType SignalId, void* SignalDataPtr) {
 			pduDataPtr,
 			IPdu->ComIPduSize);
 
-	return E_OK;
+	return r;
 }
 
 uint8 Com_ReceiveDynSignal(Com_SignalIdType SignalId, void* SignalDataPtr, uint16* Length) {
@@ -99,7 +101,7 @@ uint8 Com_ReceiveDynSignal(Com_SignalIdType SignalId, void* SignalDataPtr, uint1
     imask_t state;
 
 	Com_SignalType signalType = Signal->ComSignalType;
-	if (signalType != UINT8_DYN || isPduBufferLocked(getPduId(IPdu))) {
+	if (signalType != UINT8_DYN) {
 		return COM_SERVICE_NOT_AVAILABLE;
 	}
 
@@ -109,18 +111,21 @@ uint8 Com_ReceiveDynSignal(Com_SignalIdType SignalId, void* SignalDataPtr, uint1
 		*Length = Arc_IPdu->Com_Arc_DynSignalLength;
 	}
 	uint8 startFromPduByte = (Signal->ComBitPosition) / 8;
-
+	uint8 r = E_OK;
 	const void* pduDataPtr = 0;
 	if (IPdu->ComIPduSignalProcessing == DEFERRED && IPdu->ComIPduDirection == RECEIVE) {
 		pduDataPtr = IPdu->ComIPduDeferredDataPtr;
 	} else {
+		if (isPduBufferLocked(getPduId(IPdu))) {
+			r = COM_BUSY;
+		}
 		pduDataPtr = IPdu->ComIPduDataPtr;
 	}
 	memcpy(SignalDataPtr, pduDataPtr + startFromPduByte, *Length);
 
     Irq_Restore(state);
 
-	return E_OK;
+	return r;
 }
 
 uint8 Com_SendDynSignal(Com_SignalIdType SignalId, const void* SignalDataPtr, uint16 Length) {
