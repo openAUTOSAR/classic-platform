@@ -139,9 +139,9 @@ typedef uint8_t Spi_SequenceType;
 
 #endif
 
-#define IMPL_SIMPLE         0   /* Not implemented, NOT TESTED */
-#define IMPL_FIFO           1
-#define IMPL_DMA            2
+#define SPI_SIMPLE         0   /* Not implemented, NOT TESTED */
+#define SPI_FIFO           1
+#define SPI_DMA            2
 
 #define SPI_EB_MAX_LENGTH 64
 
@@ -333,6 +333,7 @@ typedef struct Spi_ExternalDevice
   // ArcCore extension...
   // The controller ID(0..3)
   //uint32 SpiControllerId;
+  void (*SpiCsCallback)(int);
 
 } Spi_ExternalDeviceType;
 
