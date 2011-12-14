@@ -139,6 +139,9 @@ typedef uint8_t Spi_SequenceType;
 
 #endif
 
+#define IMPL_SIMPLE         0   /* Not implemented, NOT TESTED */
+#define IMPL_FIFO           1
+#define IMPL_DMA            2
 
 #define SPI_EB_MAX_LENGTH 64
 
