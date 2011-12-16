@@ -36,6 +36,10 @@
  *   SPI_LEVEL_DELIVERED            Y/N, supports only level 2 (0:sync,1:sync,2:both)
  *   SPI_VERSION_INFO_API           Y
  *
+ *   Extra:
+ *   - DMA and FIFO is implementations
+ *   - Soft CS by callback
+ *
  *
  *   Device
  *   - MPC5606S
@@ -603,7 +607,7 @@ static Spi_JobType Spi_GetNextJob(Spi_UnitType *spiUnit) {
  * @param spiUnit Ptr to a SPI unit
  */
 
-static int Spi_PostTransmit_DMA(Spi_UnitType *spiUnit) {
+static int Spi_Rx_DMA(Spi_UnitType *spiUnit) {
 	_Bool printedSomeThing = 0;
 
 	/* Stop the channels */
@@ -839,7 +843,14 @@ static void Spi_Isr(uint32 unit) {
 
 	// Update external buffers
 #if (SPI_IMPLEMENTATION==SPI_DMA)
-	rv = Spi_PostTransmit_DMA(spiUnit);
+	rv = Spi_Rx_DMA(spiUnit);
+
+#if (USE_DIO_CS == STD_ON)
+    void (*cb)(int) = Spi_JobUnit[spiUnit->currJobIndex].extDeviceCfgPtr->SpiCsCallback;
+    if( cb != NULL ) {
+        cb(0);
+    }
+#endif
 #elif (SPI_IMPLEMENTATION==SPI_FIFO)
 	rv = Spi_Rx_FIFO(spiUnit);
 
@@ -855,7 +866,6 @@ static void Spi_Isr(uint32 unit) {
 	    if( cb != NULL ) {
 	        cb(0);
 	    }
-//	    Spi_JobUnit[spiUnit->currJobIndex].extDeviceCfgPtr->SpiCsCallback(1);
 	}
 #endif
 #endif
@@ -1731,15 +1741,16 @@ static void Spi_JobWrite(Spi_JobType jobIndex) {
 	Spi_SetHWUnitStatus(Spi_JobUnit[jobIndex].jobCfgPtr->SpiHwUnit, SPI_BUSY);
 	Spi_SetJobResult(jobIndex, SPI_JOB_PENDING);
 
-#if (SPI_IMPLEMENTATION==SPI_DMA)
-	Spi_DoWrite_DMA( unitPtr, jobIndex, Spi_JobUnit[jobIndex].jobCfgPtr );
-#elif (SPI_IMPLEMENTATION==SPI_FIFO)
-	Spi_JobUnit[jobIndex].currTxChIndex = 0;
 #if (USE_DIO_CS == STD_ON)
     if( Spi_JobUnit[jobIndex].extDeviceCfgPtr->SpiCsCallback != NULL ) {
         Spi_JobUnit[jobIndex].extDeviceCfgPtr->SpiCsCallback(1);
     }
 #endif
+
+#if (SPI_IMPLEMENTATION==SPI_DMA)
+	Spi_DoWrite_DMA( unitPtr, jobIndex, Spi_JobUnit[jobIndex].jobCfgPtr );
+#elif (SPI_IMPLEMENTATION==SPI_FIFO)
+	Spi_JobUnit[jobIndex].currTxChIndex = 0;
 	Spi_WriteJob_FIFO ( jobIndex );
 #endif
 
