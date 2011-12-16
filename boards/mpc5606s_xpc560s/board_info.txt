@@ -71,8 +71,8 @@ PORT J will have the following layout
   SCK/Blue   9-X  X-10  
   CS/Green  11-X  X-12
             13-X  X-14
-  Gnd/Black 15-X  X-16 VCC/Red 
-    
+            15-X  X-16  
+  Gnd/Black 17-X  X-18 VCC/Red   
 
 
 
