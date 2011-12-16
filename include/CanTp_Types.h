@@ -158,6 +158,12 @@ typedef struct {
 	} configData;
 } CanTp_NSduType;
 
+typedef struct {
+	const CanTp_AddressingFormantType CanTpAddressingMode;
+	const PduIdType CanTpNSduIndex;
+	const PduIdType CanTpReferringTxIndex;
+} CanTp_RxIdType;
+
 // - - - - - - - - - - -
 
 /** Top level config container for CANTP implementation. */
@@ -167,6 +173,8 @@ typedef struct {
 
 	/** */
 	const CanTp_NSduType *CanTpNSduList;
+
+	const CanTp_RxIdType *CanTpRxIdList;
 
 	/**  */
 	//const CanTp_RxNSduType 	*CanTpRxNSduList;
