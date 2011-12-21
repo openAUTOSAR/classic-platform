@@ -130,6 +130,9 @@ typedef enum
   ADC_CONV_MODE_CONTINUOUS = 9,
 } Adc_GroupConvModeType;
 
+/** Not supported. */
+typedef uint16_t Adc_StreamNumSampleType;
+
 /* Implementation specific */
 typedef struct
 {
