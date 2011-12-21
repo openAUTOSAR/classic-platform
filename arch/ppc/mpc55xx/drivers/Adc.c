@@ -394,8 +394,8 @@ Std_ReturnType Adc_Init (const Adc_ConfigType *ConfigPtr)
 #else
 
   Std_ReturnType returnValue;
-  Adc_ChannelType channel;
-  Adc_ChannelType channelId;
+  Adc_InternalChannelIdType channel;
+  Adc_InternalChannelIdType channelId;
   Adc_GroupType group;
   Adc_CommandType *commandQueue;
   Adc_CommandType command;
