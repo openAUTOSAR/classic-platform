@@ -40,7 +40,8 @@ void Com_ReadSignalDataFromPduBuffer(
 		const uint16 signalId,
 		const boolean isGroupSignal,
 		void *signalData,
-		const void *pduBuffer);
+		const void *pduBuffer,
+		uint8 pduSize);
 
 // write data to PDU
 void Com_WriteSignalDataToPdu(
@@ -69,14 +70,12 @@ void Com_WriteSignalDataToPduBuffer(
 
 //void Com_CopyData2(char *dest, const char *source, uint8 destByteLength, uint8 segmentStartBitOffset, uint8 segmentBitLength);
 
-void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByteLength,
-		uint8 segmentStartBitOffset, uint8 segmentBitLength, boolean signedOutput);
+Com_BitPositionType motorolaBitNrToPduOffset (Com_BitPositionType motorolaBitNr);
+Com_BitPositionType intelBitNrToPduOffset (Com_BitPositionType intelBitNr, Com_BitPositionType segmentBitLength, Com_BitPositionType pduBitLength);
+void Com_RxProcessSignals(const ComIPdu_type *IPdu,Com_Arc_IPdu_type *Arc_IPdu);
+PduIdType getPduId(const ComIPdu_type* IPdu);
 
-void Com_WriteDataSegment(uint8 *pdu, uint8 *pduSignalMask, const uint8 *signalDataPtr, uint8 destByteLength,
-		uint8 segmentStartBitOffset, uint8 segmentBitLength);
-
-uint8 motorolaBitNrToPduOffset (uint8 motorolaBitNr);
-uint8 intelBitNrToPduOffset (uint8 intelBitNr, uint8 segmentBitLength, uint8 pduBitLength);
-
+void UnlockTpBuffer(PduIdType PduId);
+boolean isPduBufferLocked(PduIdType pduId);
 
 #endif /* COM_MISC_H_ */

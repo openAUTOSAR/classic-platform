@@ -33,7 +33,7 @@
 typedef uint8 Com_PduGroupIdType;
 typedef uint16 Com_SignalIdType;
 typedef uint8 Com_SignalGroupIdType;
-
+typedef uint16 Com_BitPositionType;
 typedef enum {
 	IMMEDIATE,
 	DEFERRED
@@ -50,6 +50,7 @@ typedef enum {
 	UINT16,
 	UINT32,
 	UINT8_N,
+	UINT8_DYN,
 	SINT8,
 	SINT16,
 	SINT32
@@ -149,7 +150,7 @@ typedef struct {
 	/** Starting position (bit) of the signal within the IPDU.
 	 * Range 0 to 63.
 	 */
-	const uint8 ComBitPosition;
+	const Com_BitPositionType ComBitPosition;
 
 	/** The size of the signal in bits.
 	 * Range 0 to 64.
@@ -203,9 +204,9 @@ typedef struct {
 typedef struct {
 
 	/** Starting position (bit) of the signal within the IPDU.
-	 * Range 0 to 63.
+	 * Range 0 to 2031.
 	 */
-	const uint8 ComBitPosition;
+	const Com_BitPositionType ComBitPosition;
 
 	/** The size of the signal in bits.
 	 * Range 0 to 63.
@@ -252,10 +253,10 @@ typedef struct {
 	const ComTransferProperty_type ComTransferProperty;
 
 	/** The bit position in the PDU for this signal's update bit.
-	 * Range 0 to 63.
+	 * Range 0 to 2031.
 	 * Only applicable if an update bit is used. NULL otherwise.
 	 */
-	const uint8 ComUpdateBitPosition;
+	const Com_BitPositionType ComUpdateBitPosition;
 
 	/** Marks if this signal uses an update bit.
 	 * Should be set to one if an update bit is used.
@@ -278,7 +279,7 @@ typedef struct {
 	const ComGroupSignal_type * const *ComGroupSignal;
 
 
-	//void *Com_Arc_ShadowBuffer;
+	const void *Com_Arc_ShadowBuffer;
 	//void *Com_Arc_IPduDataPtr;
 
 	/* Pointer to the data storage of this signals IPDU.
@@ -290,7 +291,7 @@ typedef struct {
 	 * This is initialized by Com_Init() and should not be configured.
 	 */
 
-	//const uint8 ComIPduHandleId;
+	const uint16 ComIPduHandleId;
 	//const uint8 ComSignalUpdated;
 
 	/* Callback function used when an invalid signal is received.
@@ -395,10 +396,16 @@ typedef struct {
 	/** Container of transmission related parameters. */
 	const ComTxIPdu_type ComTxIPdu;
 
+	/** Reference to the actual pdu data storage */
+	void *const ComIPduDataPtr;
+	void *const ComIPduDeferredDataPtr;
+
 	/** References to all signals and signal groups contained in this IPDU.
 	 * It probably makes little sense not to define at least one signal or signal group for each IPDU.
 	 */
 	const ComSignal_type * const *ComIPduSignalRef;
+
+	const ComSignal_type * const ComIPduDynSignalRef;
 
 	/*
 	 * The following two variables are used to control the per I-PDU based Rx/Tx-deadline monitoring.

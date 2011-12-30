@@ -57,6 +57,7 @@ CCOUT 		= -o $@
 # Preprocessor
 
 CPP	= 	$(CC) -E
+CPPOUT = -o
 CPP_ASM_FLAGS = -x assembler-with-cpp 
 
 comma = ,
@@ -143,6 +144,16 @@ OBJCOPY 		= $(CROSS_COMPILE)objcopy
 AR	= 	$(CROSS_COMPILE)ar
 AROUT 	= $@
 
+
+ifdef CFG_HC1X
+define do-memory-footprint
+	@$(CROSS_COMPILE)objdump -h $@ | gawk -f $(ROOTDIR)/scripts/hc1x_memory.awk
+endef	
+else
+define do-memory-footprint
+	@gawk --non-decimal-data -f $(ROOTDIR)/scripts/memory_footprint_gcc.awk $(subst .elf,.map,$@)
+endef
+endif	
 
 
 

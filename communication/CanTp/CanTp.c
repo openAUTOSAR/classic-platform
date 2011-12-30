@@ -1101,6 +1101,7 @@ static INLINE BufReq_ReturnType canTpTransmitHelper(const CanTp_TxNSduType *txCo
 	return pdurResp;
 }
 
+
 // - - - - - - - - - - - - - -
 
 
@@ -1111,6 +1112,7 @@ Std_ReturnType CanTp_Transmit(PduIdType CanTpTxSduId,
 	CanTp_ChannelPrivateType *txRuntime = NULL;
 	BufReq_ReturnType res = BUFREQ_NOT_OK;
 	Std_ReturnType ret = 0;
+	PduIdType CanTp_InternalTxNSduId;
 
 	DEBUG( DEBUG_MEDIUM, "CanTp_Transmit called in polite index: %d!\n", CanTpTxSduId);
 
@@ -1118,38 +1120,43 @@ Std_ReturnType CanTp_Transmit(PduIdType CanTpTxSduId,
 			SERVICE_ID_CANTP_TRANSMIT, CANTP_E_PARAM_ADDRESS ); /** @req CANTP031 */
 	VALIDATE( CanTpRunTimeData.internalState == CANTP_ON, /** @req CANTP238 */
 			SERVICE_ID_CANTP_TRANSMIT, CANTP_E_UNINIT ); /** @req CANTP031 */
-	VALIDATE( CanTpTxSduId < CANTP_NSDU_CONFIG_LIST_SIZE, SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TX_ID );
+	VALIDATE( CanTpTxSduId < CANTP_RXID_LIST_SIZE, SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TX_ID );
 
-	txConfig =&CanTpConfig.CanTpNSduList[CanTpTxSduId].configData.CanTpTxNSdu;
+	if( CanTpConfig.CanTpRxIdList[CanTpTxSduId].CanTpNSduIndex != 0xFFFF ) {
+		CanTp_InternalTxNSduId = CanTpConfig.CanTpRxIdList[CanTpTxSduId].CanTpNSduIndex;
 
-	txRuntime = &CanTpRunTimeData.runtimeDataList[txConfig->CanTpTxChannel]; // Runtime data.
-	if (txRuntime->iso15765.state == IDLE) {
-		txRuntime->pdurBufferCount = 0;
-		txRuntime->pdurBufferCount = 0;
-		txRuntime->transferCount = 0;
-		txRuntime->iso15765.framesHandledCount = 0;
-		txRuntime->transferTotal = CanTpTxInfoPtr->SduLength; /** @req CANTP225 */
-		txRuntime->iso15765.stateTimeoutCount = CANTP_CONVERT_MS_TO_MAIN_CYCLES(txConfig->CanTpNcs);
-		txRuntime->mode = CANTP_TX_PROCESSING;
-		txRuntime->iso15765.state = TX_WAIT_CAN_TP_TRANSMIT_CAN_TP_PROVIDE_TX_BUFFER;
+		txConfig =&CanTpConfig.CanTpNSduList[CanTp_InternalTxNSduId].configData.CanTpTxNSdu;
 
-		res = canTpTransmitHelper(txConfig, txRuntime);
-		switch (res) {
-		case BUFREQ_OK:
-		case BUFREQ_BUSY:
-			ret = E_OK;
-			break;
-		case BUFREQ_NOT_OK:
-			ret = E_NOT_OK; /** @req CANTP072 */
-			break;
-		default:
-			ret = E_NOT_OK;
-			break;
+		txRuntime = &CanTpRunTimeData.runtimeDataList[txConfig->CanTpTxChannel]; // Runtime data.
+		if (txRuntime->iso15765.state == IDLE) {
+			txRuntime->pdurBufferCount = 0;
+			txRuntime->pdurBufferCount = 0;
+			txRuntime->transferCount = 0;
+			txRuntime->iso15765.framesHandledCount = 0;
+			txRuntime->transferTotal = CanTpTxInfoPtr->SduLength; /** @req CANTP225 */
+			txRuntime->iso15765.stateTimeoutCount = CANTP_CONVERT_MS_TO_MAIN_CYCLES(txConfig->CanTpNcs);
+			txRuntime->mode = CANTP_TX_PROCESSING;
+			txRuntime->iso15765.state = TX_WAIT_CAN_TP_TRANSMIT_CAN_TP_PROVIDE_TX_BUFFER;
+
+			res = canTpTransmitHelper(txConfig, txRuntime);
+			switch (res) {
+			case BUFREQ_OK:
+			case BUFREQ_BUSY:
+				ret = E_OK;
+				break;
+			case BUFREQ_NOT_OK:
+				ret = E_NOT_OK; /** @req CANTP072 */
+				break;
+			default:
+				ret = E_NOT_OK;
+				break;
+			}
+		} else {
+			DEBUG( DEBUG_MEDIUM, "CanTp can't transmit, it is already occupied!\n", CanTpTxSduId);
+			ret = E_NOT_OK;  /** @req CANTP123 *//** @req CANTP206 */
 		}
-	} else {
-		DEBUG( DEBUG_MEDIUM, "CanTp can't transmit, it is already occupied!\n", CanTpTxSduId);
-		ret = E_NOT_OK;  /** @req CANTP123 *//** @req CANTP206 */
 	}
+
 	return ret; // CAN level error code.
 }
 
@@ -1224,6 +1231,7 @@ void CanTp_RxIndication_Main(PduIdType CanTpRxPduId,
 	const CanTp_AddressingFormantType *addressingFormat; // Configured
 	CanTp_ChannelPrivateType *runtimeParams; // Params reside in RAM.
 	ISO15765FrameType frameType;
+	PduIdType CanTpTxNSduId, CanTpRxNSduId;
 
 	DEBUG( DEBUG_MEDIUM, "CanTp_RxIndication: PduId=%d, [", CanTpRxPduId);
 	for (int i=0; i<CanTpRxPduPtr->SduLength; i++) {
@@ -1234,19 +1242,35 @@ void CanTp_RxIndication_Main(PduIdType CanTpRxPduId,
 	VALIDATE_NO_RV( CanTpRunTimeData.internalState == CANTP_ON,
 			SERVICE_ID_CANTP_RX_INDICATION, CANTP_E_UNINIT ); /** @req CANTP031 */
 
-	if ( CanTpConfig.CanTpNSduList[CanTpRxPduId].direction == IS015765_TRANSMIT ) {
-		txConfigParams = (CanTp_TxNSduType*)&CanTpConfig.CanTpNSduList[CanTpRxPduId].configData;  /** @req CANTP120 */
-		addressingFormat = &txConfigParams->CanTpAddressingMode;
-		runtimeParams = &CanTpRunTimeData.runtimeDataList[txConfigParams->CanTpTxChannel]; /** @req CANTP096 *//** @req CANTP121 *//** @req CANTP122 *//** @req CANTP190 */
+	addressingFormat = &CanTpConfig.CanTpRxIdList[CanTpRxPduId].CanTpAddressingMode;
+
+	/* TODO John - Use a different indication of not set than 0xFFFF? */
+	frameType = getFrameType(addressingFormat, CanTpRxPduPtr); /** @req CANTP094 *//** @req CANTP095 */
+	if( frameType == FLOW_CONTROL_CTS_FRAME ) {
+		if( CanTpConfig.CanTpRxIdList[CanTpRxPduId].CanTpReferringTxIndex != 0xFFFF ) {
+			CanTpTxNSduId = CanTpConfig.CanTpRxIdList[CanTpRxPduId].CanTpReferringTxIndex;
+			txConfigParams = (CanTp_TxNSduType*)&CanTpConfig.CanTpNSduList[CanTpTxNSduId].configData;
+			runtimeParams = &CanTpRunTimeData.runtimeDataList[txConfigParams->CanTpTxChannel];
+		}
+		else {
+			txConfigParams = NULL;
+		}
 		rxConfigParams = NULL;
-	} else {
-		rxConfigParams = (CanTp_RxNSduType*)&CanTpConfig.CanTpNSduList[CanTpRxPduId].configData;  /** @req CANTP120 */
-		addressingFormat = &rxConfigParams->CanTpAddressingFormant;
-		runtimeParams = &CanTpRunTimeData.runtimeDataList[rxConfigParams->CanTpRxChannel];  /** @req CANTP096 *//** @req CANTP121 *//** @req CANTP122 *//** @req CANTP190 */
+	}
+	else {
+		if( CanTpConfig.CanTpRxIdList[CanTpRxPduId].CanTpNSduIndex != 0xFFFF ) {
+			CanTpRxNSduId = CanTpConfig.CanTpRxIdList[CanTpRxPduId].CanTpNSduIndex;
+			rxConfigParams = (CanTp_RxNSduType*)&CanTpConfig.CanTpNSduList[CanTpRxNSduId].configData;  /** @req CANTP120 */
+			runtimeParams = &CanTpRunTimeData.runtimeDataList[rxConfigParams->CanTpRxChannel];  /** @req CANTP096 *//** @req CANTP121 *//** @req CANTP122 *//** @req CANTP190 */
+		}
+		else {
+			rxConfigParams = NULL;
+		}
 		txConfigParams = NULL;
 	}
 
-	frameType = getFrameType(addressingFormat, CanTpRxPduPtr); /** @req CANTP094 *//** @req CANTP095 */
+
+
 	switch (frameType) {
 	case SINGLE_FRAME: {
 		if (rxConfigParams != NULL) {
@@ -1299,6 +1323,7 @@ void CanTp_RxIndication_Main(PduIdType CanTpRxPduId,
 
 void CanTp_TxConfirmation(PduIdType CanTpTxPduId) /** @req CANTP076 */
 {
+	PduIdType CanTpNSduId;
 	const CanTp_RxNSduType *rxConfigParams = NULL;
 	const CanTp_TxNSduType *txConfigParams = NULL;
 
@@ -1306,20 +1331,25 @@ void CanTp_TxConfirmation(PduIdType CanTpTxPduId) /** @req CANTP076 */
 
 	VALIDATE_NO_RV( CanTpRunTimeData.internalState == CANTP_ON,
 			SERVICE_ID_CANTP_TX_CONFIRMATION, CANTP_E_UNINIT ); /** @req CANTP031 */
-	VALIDATE_NO_RV( CanTpTxPduId < CANTP_NSDU_CONFIG_LIST_SIZE,
+	VALIDATE_NO_RV( CanTpTxPduId < CANTP_RXID_LIST_SIZE,
 			SERVICE_ID_CANTP_TX_CONFIRMATION, CANTP_E_INVALID_TX_ID ); /** @req CANTP158 */
 
 	/** @req CANTP236 */
-	if ( CanTpConfig.CanTpNSduList[CanTpTxPduId].direction == IS015765_TRANSMIT ) {
-		txConfigParams = (CanTp_TxNSduType*)&CanTpConfig.CanTpNSduList[CanTpTxPduId].configData;
-		CanTpRunTimeData.runtimeDataList[txConfigParams->CanTpTxChannel].iso15765.NasNarPending = FALSE;
+	if( CanTpConfig.CanTpRxIdList[CanTpTxPduId].CanTpNSduIndex != 0xFFFF ) {
+		CanTpNSduId = CanTpConfig.CanTpRxIdList[CanTpTxPduId].CanTpNSduIndex;
+		if ( CanTpConfig.CanTpNSduList[CanTpNSduId].direction == IS015765_TRANSMIT ) {
+			txConfigParams = (CanTp_TxNSduType*)&CanTpConfig.CanTpNSduList[CanTpNSduId].configData;
+			CanTpRunTimeData.runtimeDataList[txConfigParams->CanTpTxChannel].iso15765.NasNarPending = FALSE;
 #if (CANTP_IMMEDIATE_TX_CONFIRMATION == STD_OFF)
-		CanTpRunTimeData.runtimeDataList[txConfigParams->CanTpTxChannel].iso15765.txConfirmed = TRUE;
+			CanTpRunTimeData.runtimeDataList[txConfigParams->CanTpTxChannel].iso15765.txConfirmed = TRUE;
 #endif
-	} else {
-		rxConfigParams = (CanTp_RxNSduType*)&CanTpConfig.CanTpNSduList[CanTpTxPduId].configData;
-		CanTpRunTimeData.runtimeDataList[rxConfigParams->CanTpRxChannel].iso15765.NasNarPending = FALSE;
+		} else {
+			rxConfigParams = (CanTp_RxNSduType*)&CanTpConfig.CanTpNSduList[CanTpNSduId].configData;
+			CanTpRunTimeData.runtimeDataList[rxConfigParams->CanTpRxChannel].iso15765.NasNarPending = FALSE;
+		}
 	}
+
+
 }
 
 // - - - - - - - - - - - - - -

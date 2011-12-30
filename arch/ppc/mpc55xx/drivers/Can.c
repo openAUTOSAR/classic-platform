@@ -267,11 +267,10 @@ typedef struct {
   uint32 		Can_Arc_RxMbMask;
   uint32 		Can_Arc_TxMbMask;
 
-  // Used at IFLG in controller at startup
-  uint32 		iflagStart;
 
   // Statistics
   Can_Arc_StatisticsType stats;
+  uint32_t mbTxFree;
 
   // Data stored for Txconfirmation callbacks to CanIf
   PduIdType swPduHandles[MAX_NUM_OF_MAILBOXES];
@@ -286,7 +285,7 @@ Can_UnitType CanUnit[CAN_CONTROLLER_CNT] =
   },{
     .state = CANIF_CS_UNINIT,
   },
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) ||  defined(CFG_MPC5567) || defined(CFG_MPC5668)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) ||  defined(CFG_MPC5567)
   {
     .state = CANIF_CS_UNINIT,
   },{
@@ -295,7 +294,7 @@ Can_UnitType CanUnit[CAN_CONTROLLER_CNT] =
     .state = CANIF_CS_UNINIT,
   },
 #endif
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5668)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
   {
     .state = CANIF_CS_UNINIT,
   }
@@ -351,72 +350,37 @@ static void Can_BusOff( int unit );
 
 void Can_A_Isr( void  ) {	Can_Isr(CAN_CTRL_A); }
 void Can_B_Isr( void  ) {	Can_Isr(CAN_CTRL_B); }
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567) || defined(CFG_MPC5668)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567)
 void Can_C_Isr( void  ) {	Can_Isr(CAN_CTRL_C); }
 void Can_D_Isr( void  ) {	Can_Isr(CAN_CTRL_D); }
 void Can_E_Isr( void  ) {	Can_Isr(CAN_CTRL_E); }
 #endif
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5668)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
 void Can_F_Isr( void  ) {	Can_Isr(CAN_CTRL_F); }
 #endif
 
 void Can_A_Err( void  ) {	Can_Err(CAN_CTRL_A); }
 void Can_B_Err( void  ) {	Can_Err(CAN_CTRL_B); }
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567) || defined(CFG_MPC5668)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567)
 void Can_C_Err( void  ) {	Can_Err(CAN_CTRL_C); }
 void Can_D_Err( void  ) {	Can_Err(CAN_CTRL_D); }
 void Can_E_Err( void  ) {	Can_Err(CAN_CTRL_E); }
 #endif
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5668)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
 void Can_F_Err( void  ) {	Can_Err(CAN_CTRL_F); }
 #endif
 
 void Can_A_BusOff( void  ) {	Can_BusOff(CAN_CTRL_A); }
 void Can_B_BusOff( void  ) {	Can_BusOff(CAN_CTRL_B); }
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567) || defined(CFG_MPC5668)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567)
 void Can_C_BusOff( void  ) {	Can_BusOff(CAN_CTRL_C); }
 void Can_D_BusOff( void  ) {	Can_BusOff(CAN_CTRL_D); }
 void Can_E_BusOff( void  ) {	Can_BusOff(CAN_CTRL_E); }
 #endif
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5668)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
 void Can_F_BusOff( void  ) {	Can_BusOff(CAN_CTRL_F); }
 #endif
 //-------------------------------------------------------------------
-
-
-/**
- * Hardware error ISR for CAN
- *
- * @param unit CAN controller number( from 0 )
- */
-
-static void Can_Err( int unit ) {
-  flexcan_t *canHw = GET_CONTROLLER(unit);
-  Can_Arc_ErrorType err;
-  ESRType esr;
-  const ESRType esrWrite = { .B.ERRINT = 1 };
-  err.R = 0;
-
-  /* Clear bits 16-23 by read */
-  esr.R = canHw->ESR.R;
-
-  if (GET_CALLBACKS()->Arc_Error != NULL)
-  {
-    GET_CALLBACKS()->Arc_Error(unit, err );
-  }
-
-  /* TODO: To avoid flooding the CPU with errors some intelligent
-   * decisions have to be made here. CanSM should handle this.
-   * (not implemented)
-   *
-   * So, turn the interrupts OFF.
-   */
-  canHw->CR.B.ERRMSK = 0;
-
-  // Clear ERRINT
-  canHw->ESR.R = esrWrite.R;
-}
-
 
 // Uses 25.4.5.1 Transmission Abort Mechanism
 static void Can_AbortTx( flexcan_t *canHw, Can_UnitType *canUnit ) {
@@ -450,7 +414,44 @@ static void Can_AbortTx( flexcan_t *canHw, Can_UnitType *canUnit ) {
 
   // Ack tx interrupts
   canHw->IFRL.R = canUnit->Can_Arc_TxMbMask;
-  canUnit->iflagStart = canUnit->Can_Arc_TxMbMask;
+  canUnit->mbTxFree = canUnit->Can_Arc_TxMbMask;
+}
+
+/**
+ * Hardware error ISR for CAN
+ *
+ * @param unit CAN controller number( from 0 )
+ */
+
+static void Can_Err( int unit ) {
+  flexcan_t *canHw = GET_CONTROLLER(unit);
+  Can_UnitType *canUnit = GET_PRIVATE_DATA(unit);
+  Can_Arc_ErrorType err;
+  ESRType esr;
+  err.R = 0;
+
+  esr.R = canHw->ESR.R;
+
+  err.B.ACKERR = esr.B.ACKERR;
+  err.B.BIT0ERR = esr.B.BIT0ERR;
+  err.B.BIT1ERR = esr.B.BIT1ERR;
+  err.B.CRCERR = esr.B.CRCERR;
+  err.B.FRMERR = esr.B.FRMERR;
+  err.B.STFERR = esr.B.STFERR;
+  err.B.RXWRN = esr.B.RXWRN;
+  err.B.TXWRN = esr.B.TXWRN;
+
+  if (GET_CALLBACKS()->Arc_Error != NULL)
+  {
+    GET_CALLBACKS()->Arc_Error(unit, err );
+  }
+
+  // Do same handling as within BUS_OFF even though no real AR req
+  Can_SetControllerMode(unit, CAN_T_STOP); // CANIF272
+  Can_AbortTx( canHw, canUnit ); // CANIF273
+
+  // Clear ERRINT
+  canHw->ESR.B.ERRINT = 1;
 }
 
 //-------------------------------------------------------------------
@@ -510,163 +511,102 @@ static void Can_BusOff( int unit ) {
  *
  * @param unit CAN controller number( from 0 )
  */
-static void Can_Isr(int unit) {
+static void Can_Isr(int unit)
+{
 
-  flexcan_t *canHw= GET_CONTROLLER(unit);
-  const Can_ControllerConfigType *canHwConfig= GET_CONTROLLER_CONFIG(Can_Global.channelMap[unit]);
-  uint32 iFlagLow = canHw->IFRL.R;
-  Can_UnitType *canUnit = GET_PRIVATE_DATA(unit);
+    flexcan_t *canHw = GET_CONTROLLER(unit);
+    const Can_ControllerConfigType *canHwConfig =
+            GET_CONTROLLER_CONFIG(Can_Global.channelMap[unit]);
+    uint32 iFlagLow = canHw->IFRL.R;
+    Can_UnitType *canUnit = GET_PRIVATE_DATA(unit);
 
-  // Read interrupt flags to seeTxConfirmation what interrupt triggered the interrupt
-  if (iFlagLow & canHw->IMRL.R) {
-    // Check FIFO
+    // Read interrupt flags to seeTxConfirmation what interrupt triggered the interrupt
+    if ( (iFlagLow & canHw->IMRL.R) == 0) {
+        assert(0);
+        // Other reasons that we end up here
+        // - Interupt on a masked box
+    } else {
 
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S)
-  	// Note!
-  	//   FIFO code NOT tested
-    if (canHw->MCR.B.FEN) {
+        // No FIFO used
+        const Can_HardwareObjectType *hohObj;
+        uint32 mbMask;
+        uint8 mbNr = 0;
+        uint32 data;
+        Can_IdType id;
 
-      // Check overflow
-      if (iFlagLow & (1<<7)) {
-        canUnit->stats.fifoOverflow++;
-        canHw->IFRL.B.BUF07I = 1;
-      }
 
-      // Check warning
-      if (iFlagLow & (1<<6)) {
-        canUnit->stats.fifoWarning++;
-        canHw->IFRL.B.BUF06I = 1;
-      }
+        //
+        // Loop over all the Hoh's
+        //
 
-      // Pop fifo "realtime"
-      while (canHw->IFRL.B.BUF05I) {
-        // At
-        // TODO MAHI: Must read the entire data-buffer to unlock??
-      	if (GET_CALLBACKS()->RxIndication != NULL)
-        {
-          GET_CALLBACKS()->RxIndication((-1), canHw->BUF[0].ID.B.EXT_ID,
-            canHw->BUF[0].CS.B.LENGTH, (uint8 *)&canHw->BUF[0].DATA.W[0] );
-        }
-        // Clear the interrupt
-        canHw->IFRL.B.BUF05I = 1;
-      }
-    } else
-#endif
-    {
+        // Rx
+        hohObj = canHwConfig->Can_Arc_Hoh;
+        --hohObj;
+        do {
+            ++hohObj;
 
-      // No FIFO used
-      const Can_HardwareObjectType *hohObj;
-      uint32 mbMask;
-      uint8 mbNr = 0;
-      uint32 data;
-      Can_IdType id;
+            mbMask = hohObj->Can_Arc_MbMask & iFlagLow;
 
-      //
-      // Loop over all the Hoh's
-      //
+            if (hohObj->CanObjectType == CAN_OBJECT_TYPE_RECEIVE) {
+                // Loop over the Mb's for this Hoh
+                for (; mbMask; mbMask &= ~(1 << mbNr)) {
+                    mbNr = ilog2(mbMask);
 
-      // Rx
-      hohObj= canHwConfig->Can_Arc_Hoh;
-      --hohObj;
-      do {
-        ++hohObj;
+                    // Do the necessary dummy reads to keep controller happy
+                    data = canHw->BUF[mbNr].CS.R;
+                    data = canHw->BUF[mbNr].DATA.W[0];
 
-        mbMask = hohObj->Can_Arc_MbMask & iFlagLow;
+                    // According to autosar MSB shuould be set if extended
+                    if (hohObj->CanIdType == CAN_ID_TYPE_EXTENDED) {
+                        id = canHw->BUF[mbNr].ID.R;
+                        id |= 0x80000000;
+                    } else {
+                        id = canHw->BUF[mbNr].ID.B.STD_ID;
+                    }
 
-        if (hohObj->CanObjectType == CAN_OBJECT_TYPE_RECEIVE)
-        {
-          // Loop over the Mb's for this Hoh
-          for (; mbMask; mbMask&=~(1<<mbNr)) {
-            mbNr = ilog2(mbMask);
+                    if (GET_CALLBACKS()->RxIndication != NULL) {
+                        GET_CALLBACKS()->RxIndication(hohObj->CanObjectId, id,
+                                canHw->BUF[mbNr].CS.B.LENGTH,
+                                (uint8 *) &canHw->BUF[mbNr].DATA.W[0]);
+                    }
+                    // Increment statistics
+                    canUnit->stats.rxSuccessCnt++;
 
-            // Do the necessary dummy reads to keep controller happy
-            data = canHw->BUF[mbNr].CS.R;
-            data = canHw->BUF[mbNr].DATA.W[0];
+                    // unlock MB (dummy read timer)
+                    (void) canHw->TIMER.R;
 
-            // According to autosar MSB shuould be set if extended
-            if (hohObj->CanIdType == CAN_ID_TYPE_EXTENDED) {
-              id = canHw->BUF[mbNr].ID.R;
-              id |= 0x80000000;
-            } else {
-              id = canHw->BUF[mbNr].ID.B.STD_ID;
+                    // Clear interrupt
+                    canHw->IFRL.R = (1 << mbNr);
+                }
             }
+        } while (!hohObj->Can_Arc_EOL);
 
-            if (GET_CALLBACKS()->RxIndication != NULL)
-            {
-              GET_CALLBACKS()->RxIndication(hohObj->CanObjectId,
-                                            id,
-                                            canHw->BUF[mbNr].CS.B.LENGTH,
-                                            (uint8 *)&canHw->BUF[mbNr].DATA.W[0] );
+        // Tx
+        hohObj = canHwConfig->Can_Arc_Hoh;
+        --hohObj;
+        do {
+            ++hohObj;
+
+            if (hohObj->CanObjectType == CAN_OBJECT_TYPE_TRANSMIT) {
+                mbMask = hohObj->Can_Arc_MbMask & iFlagLow;
+
+                // Loop over the Mb's for this Hoh
+                for (; mbMask; mbMask &= ~(1 << mbNr)) {
+                    mbNr = ilog2(mbMask);
+
+                    if (GET_CALLBACKS()->TxConfirmation != NULL) {
+                        GET_CALLBACKS()->TxConfirmation(
+                                canUnit->swPduHandles[mbNr]);
+                    }
+                    canUnit->swPduHandles[mbNr] = 0; // Is this really necessary ??
+
+                    // Clear interrupt
+                    canHw->IFRL.R = (1 << mbNr);
+                    canUnit->mbTxFree |= (1 << mbNr);  // This box is free
+                }
             }
-            // Increment statistics
-            canUnit->stats.rxSuccessCnt++;
-
-            // unlock MB (dummy read timer)
-            (void)canHw->TIMER.R;
-
-            // Clear interrupt
-            canHw->IFRL.R = (1<<mbNr);
-          }
-        }
-      } while ( !hohObj->Can_Arc_EOL);
-
-      // Tx
-      hohObj= canHwConfig->Can_Arc_Hoh;
-      --hohObj;
-      do {
-        ++hohObj;
-
-        if (hohObj->CanObjectType == CAN_OBJECT_TYPE_TRANSMIT)
-        {
-          mbMask = hohObj->Can_Arc_MbMask & iFlagLow;
-
-          // Loop over the Mb's for this Hoh
-          for (; mbMask; mbMask&=~(1<<mbNr)) {
-            mbNr = ilog2(mbMask);
-
-            if (GET_CALLBACKS()->TxConfirmation != NULL)
-            {
-              GET_CALLBACKS()->TxConfirmation(canUnit->swPduHandles[mbNr]);
-            }
-            canUnit->swPduHandles[mbNr] = 0;  // Is this really necessary ??
-
-            // Clear interrupt
-            canUnit->iflagStart |= (1<<mbNr);
-            canHw->IFRL.R = (1<<mbNr);
-          }
-        }
-      } while ( !hohObj->Can_Arc_EOL);
-    } // FIFO code
-  } else {
-    // Note! Over 32 boxes is not implemented
-    // Other reasons that we end up here
-    // - Interupt on a masked box
-  }
-
-  if (canHwConfig->Can_Arc_Fifo) {
-    /*
-     * NOTE!!!
-     * Do not enable RxFIFO. See [Freescale Device Errata MPC5510ACE, Rev. 10 APR 2009, errata ID: 14593].
-     */
-     
-  	/* Note
-  	 * NOT tested at all
-  	 */
-    while (canHw->IFRL.B.BUF05I) {
-      // At
-      // TODO MAHI: Must read the entire data-buffer to unlock??
-      if (GET_CALLBACKS()->RxIndication != NULL)
-      {
-        GET_CALLBACKS()->RxIndication((-1), canHw->BUF[0].ID.B.EXT_ID,
-                   canHw->BUF[0].CS.B.LENGTH, (uint8 *)&canHw->BUF[0].DATA.W[0] );
-      }
-      // Increment statistics
-      canUnit->stats.rxSuccessCnt++;
-
-      // Clear the interrupt
-      canHw->IFRL.B.BUF05I = 1;
+        } while (!hohObj->Can_Arc_EOL);
     }
-  }
 }
 
 //-------------------------------------------------------------------
@@ -997,7 +937,7 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
 #endif
   }
 
-  canUnit->iflagStart = canUnit->Can_Arc_TxMbMask;
+  canUnit->mbTxFree = canUnit->Can_Arc_TxMbMask;
 
   canUnit->state = CANIF_CS_STOPPED;
   Can_EnableControllerInterrupts(cId);
@@ -1165,58 +1105,63 @@ Can_ReturnType Can_Write( Can_Arc_HTHType hth, Can_PduType *pduInfo ) {
 
   canHw = GET_CONTROLLER(controller);
   Irq_Save(state);
-  iflag = canHw->IFRL.R & canUnit->Can_Arc_TxMbMask;
 
-  // check for any free box
-  // Normally we would just use the iflag to get the free box
-  // but that does not work the first time( iflag == 0 ) so we
-  // create one( iflagStart )
-  if( iflag | canUnit->iflagStart ) {
-    mbNr =  ilog2((iflag | canUnit->iflagStart));	// find mb number
-    // clear flag
-    canHw->IFRL.R = (1<<mbNr);
-    canUnit->iflagStart &= ~(1<<mbNr);
+  /* We must be able to send from interrupt context
+   * (ie. Can_Isr() call Can_Write(), Can_Write )
+   */
 
-    // Setup message box type
-    if( hohObj->CanIdType == CAN_ID_TYPE_EXTENDED ) {
-      canHw->BUF[mbNr].CS.B.IDE = 1;
-    } else if ( hohObj->CanIdType == CAN_ID_TYPE_STANDARD ) {
-      canHw->BUF[mbNr].CS.B.IDE = 0;
-    } else {
-      // No support for mixed in this processor
-      assert(0);
-    }
+  iflag = canUnit->Can_Arc_TxMbMask & (~canHw->IFRL.R) & canUnit->mbTxFree;
+  if( iflag  ) {
 
-    // Send on buf
-    canHw->BUF[mbNr].CS.B.CODE = MB_INACTIVE;	// Hold the transmit buffer inactive
-    if( hohObj->CanIdType == CAN_ID_TYPE_EXTENDED ) {
-      canHw->BUF[mbNr].ID.R = pduInfo->id; // Write 29-bit MB IDs
-    } else {
-      assert( !(pduInfo->id & 0xfffff800) );
-      canHw->BUF[mbNr].ID.B.STD_ID = pduInfo->id;
-    }
+      /* MbMask Iflag Start
+       *   0      0     -> 0
+       *   0      1     -> 0
+       *   1      0     -> 1
+       *   1      1     -> 0  (Waiting for Tx conf)
+       */
 
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S)
-    canHw->BUF[mbNr].ID.B.PRIO = 1; 			// Set Local Priority
-#endif
+      mbNr = ilog2( iflag ); // find mb number
 
-    memset(&canHw->BUF[mbNr].DATA, 0, 8);
-    memcpy(&canHw->BUF[mbNr].DATA, pduInfo->sdu, pduInfo->length);
+      canUnit->mbTxFree &= ~(1<<mbNr);    // Indicate that we are sending this MB
+      // Setup message box type
+      if( hohObj->CanIdType == CAN_ID_TYPE_EXTENDED ) {
+        canHw->BUF[mbNr].CS.B.IDE = 1;
+      } else if ( hohObj->CanIdType == CAN_ID_TYPE_STANDARD ) {
+        canHw->BUF[mbNr].CS.B.IDE = 0;
+      } else {
+        // No support for mixed in this processor
+        assert(0);
+      }
 
-    canHw->BUF[mbNr].CS.B.SRR = 1;
-    canHw->BUF[mbNr].CS.B.RTR = 0;
+      // Send on buf
+      canHw->BUF[mbNr].CS.B.CODE = MB_INACTIVE;   // Hold the transmit buffer inactive
+      if( hohObj->CanIdType == CAN_ID_TYPE_EXTENDED ) {
+        canHw->BUF[mbNr].ID.R = pduInfo->id; // Write 29-bit MB IDs
+      } else {
+        assert( !(pduInfo->id & 0xfffff800) );
+        canHw->BUF[mbNr].ID.B.STD_ID = pduInfo->id;
+      }
 
-    canHw->BUF[mbNr].CS.B.LENGTH = pduInfo->length;
-    canHw->BUF[mbNr].CS.B.CODE = MB_TX_ONCE;			// Write tx once code
-    timer = canHw->TIMER.R; 						// Unlock Message buffers
+  #if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S)
+      canHw->BUF[mbNr].ID.B.PRIO = 1;             // Set Local Priority
+  #endif
 
-    canUnit->stats.txSuccessCnt++;
+      memset(&canHw->BUF[mbNr].DATA, 0, 8);
+      memcpy(&canHw->BUF[mbNr].DATA, pduInfo->sdu, pduInfo->length);
 
-    // Store pdu handle in unit to be used by TxConfirmation
-    canUnit->swPduHandles[mbNr] = pduInfo->swPduHandle;
+      canHw->BUF[mbNr].CS.B.SRR = 1;
+      canHw->BUF[mbNr].CS.B.RTR = 0;
 
+      canHw->BUF[mbNr].CS.B.LENGTH = pduInfo->length;
+      canHw->BUF[mbNr].CS.B.CODE = MB_TX_ONCE;            // Write tx once code
+      timer = canHw->TIMER.R;                         // Unlock Message buffers
+
+      canUnit->stats.txSuccessCnt++;
+
+      // Store pdu handle in unit to be used by TxConfirmation
+      canUnit->swPduHandles[mbNr] = pduInfo->swPduHandle;
   } else {
-    rv = CAN_BUSY;
+      rv = CAN_BUSY;
   }
   Irq_Restore(state);
 

@@ -3,7 +3,7 @@ frequency is 1 Hz. The frequency can be changed by sending a
 new period in a CAN message. The first 32 bit in a message with 
 CAN Id 100 is treated as the new period (in system ticks). A CAN
 message with CAN Id 102 is transmitted every 1 s to indicate
-the current period. Baudrate 125 kbit/s
+the current period. Baudrate 125 kbit/s. See led_master.dbc.
 
 The DIP switches on the board are used to set the LEDs in the
 LEDBar.

@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stddef.h>
 #include "Std_Types.h"
 #include "Ramlog.h"
 
@@ -251,7 +252,7 @@ int execve(const char *path, char * const argv[], char * const envp[] ) {
   	return -1;
 }
 
-int fork() {
+pid_t fork() {
   errno=EAGAIN;
   return -1;
 }
@@ -519,7 +520,7 @@ int stat( const char *file, struct stat *st ) {
 }
 
 
-int getpid() {
+pid_t getpid() {
   return 1;
 }
 
@@ -542,10 +543,12 @@ void _fini( void )
 }
 
 
+#if defined(__GNUC__)
 void __init( void )
 {
-
 }
+#endif
+
 #if defined(CFG_ARM)
 void _exit( int status ) {
 #ifdef USE_TTY_CODE_COMPOSER

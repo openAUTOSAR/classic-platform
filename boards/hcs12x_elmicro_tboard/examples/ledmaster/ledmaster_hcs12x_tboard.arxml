@@ -3142,7 +3142,7 @@
                         </REFERENCE-VALUE>
                         <REFERENCE-VALUE>
                           <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfInitHohConfig/CanIfHrhConfig/CanIfHrhIdSymRef</DEFINITION-REF>
-                          <VALUE-REF DEST="CONTAINER">/blinker_hcs12_card12/Can/CanConfigSet/RxBox</VALUE-REF>
+                          <VALUE-REF DEST="CONTAINER">/ledmaster_hcs12x_tboard/Can/CanConfigSet/RxBox</VALUE-REF>
                         </REFERENCE-VALUE>
                       </REFERENCE-VALUES>
                     </CONTAINER>
@@ -3167,7 +3167,7 @@
                         </REFERENCE-VALUE>
                         <REFERENCE-VALUE>
                           <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfInitHohConfig/CanIfHthConfig/CanIfHthIdSymRef</DEFINITION-REF>
-                          <VALUE-REF DEST="CONTAINER">/blinker_hcs12_card12/Can/CanConfigSet/TxBox</VALUE-REF>
+                          <VALUE-REF DEST="CONTAINER">/ledmaster_hcs12x_tboard/Can/CanConfigSet/TxBox</VALUE-REF>
                         </REFERENCE-VALUE>
                       </REFERENCE-VALUES>
                     </CONTAINER>
@@ -3362,7 +3362,7 @@
               <REFERENCE-VALUES>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/CanIf/CanIfControllerConfig/CanIfControllerIdRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/blinker_hcs12_card12/Can/CanConfigSet/CAN0</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/ledmaster_hcs12x_tboard/Can/CanConfigSet/CAN0</VALUE-REF>
                 </REFERENCE-VALUE>
               </REFERENCE-VALUES>
             </CONTAINER>
@@ -3599,7 +3599,7 @@
                   <PARAMETER-VALUES>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitPosition</DEFINITION-REF>
-                      <VALUE>0</VALUE>
+                      <VALUE>7</VALUE>
                     </INTEGER-VALUE>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitSize</DEFINITION-REF>
@@ -3658,7 +3658,7 @@
                   <PARAMETER-VALUES>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitPosition</DEFINITION-REF>
-                      <VALUE>0</VALUE>
+                      <VALUE>7</VALUE>
                     </INTEGER-VALUE>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitSize</DEFINITION-REF>
@@ -3718,6 +3718,10 @@
                 </FLOAT-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Com/ComGeneral/ComConfigurationUseDet</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Com/ComGeneral/ArcComBitPositionVersionAutosar4</DEFINITION-REF>
                   <VALUE>false</VALUE>
                 </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
@@ -3856,6 +3860,10 @@
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRZeroCostOperation</DEFINITION-REF>
                   <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/ArcPduRJ1939TpSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
                 </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>

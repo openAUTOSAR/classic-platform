@@ -62,14 +62,9 @@ obj-$(USE_MCU) += Mcu_Cfg.o
 # Flash
 obj-$(USE_FLS) += Fls.o
 obj-$(USE_FLS) += Fls_Cfg.o
-
 obj-$(CFG_MPC55XX)-$(USE_FLS) += flash_h7f_c90.o
 obj-$(CFG_MPC55XX)-$(USE_FLS) += flash_ll_h7f_c90.o
-#ifeq ($(CFG_MPC5606S),y)
-#obj-$(CFG_MPC55XX)-$(USE_FLS) += Fls_C90FL.o
-#else
-#obj-$(CFG_MPC55XX)-$(USE_FLS) += Fls_H7F.o
-#endif
+
 
 # Bring in the freescale driver source  
 inc-$(CFG_MPC55XX) +=  $(ROOTDIR)/$(ARCH_PATH-y)/delivery/mpc5500_h7f/include
@@ -99,6 +94,12 @@ obj-$(USE_PORT) += Port_Cfg.o
 
 obj-$(USE_ADC) += Adc.o
 obj-$(USE_ADC) += Adc_Cfg.o
+
+# J1939Tp
+obj-$(USE_J1939TP) += J1939Tp.o
+obj-$(USE_J1939TP) += J1939Tp_LCfg.o
+inc-$(USE_J1939TP) += $(ROOTDIR)/communication/J1939Tp
+vpath-$(USE_J1939TP) += $(ROOTDIR)/communication/J1939Tp
 
 # Include the kernel
 ifneq ($(USE_KERNEL),)
@@ -157,14 +158,19 @@ obj-$(USE_DET) += Det.o
 # Lin
 obj-$(USE_LIN) += Lin_PBcfg.o
 obj-$(USE_LIN) += Lin_Lcfg.o
-obj-$(USE_LIN) += LinIf_Lcfg.o
-obj-$(USE_LIN) += LinIf_PBcfg.o
-obj-$(USE_LIN) += LinSM_Lcfg.o
-obj-$(USE_LIN) += LinSM_PBcfg.o
-obj-$(USE_LIN) += LinSM_Cfg.o
 obj-$(USE_LIN) += Lin.o
-obj-$(USE_LIN) += LinIf.o
-obj-$(USE_LIN) += LinSM.o
+
+# LinIf
+obj-$(USE_LINIF) += LinIf_Lcfg.o
+obj-$(USE_LINIF) += LinIf_PBcfg.o
+obj-$(USE_LINIF) += LinIf.o
+
+# LinSm
+obj-$(USE_LINSM) += LinSM_Lcfg.o
+obj-$(USE_LINSM) += LinSM_PBcfg.o
+obj-$(USE_LINSM) += LinSM_Cfg.o
+obj-$(USE_LINSM) += LinSM.o
+
 vpath-y += $(ROOTDIR)/drivers/Lin/
 vpath-y += $(ROOTDIR)/communication/Lin
 inc-y += $(ROOTDIR)/communication/ComM
@@ -212,6 +218,7 @@ obj-$(USE_PDUR) += PduR_LinIf.o
 obj-$(USE_PDUR) += PduR_PbCfg.o
 obj-$(USE_PDUR) += PduR_CanIf.o
 obj-$(USE_PDUR) += PduR_CanTp.o
+obj-$(USE_PDUR) += PduR_J1939Tp.o
 obj-$(USE_PDUR) += PduR_Dcm.o
 obj-$(USE_PDUR) += PduR_SoAd.o
 obj-$(USE_PDUR) += PduR_Routing.o

@@ -21,7 +21,6 @@
 #include <string.h>
 #include <assert.h>
 #include "flash_ll_h7f_c90.h"
-#include "flash.h"
 #include "typedefs.h"
 #include "io.h"
 //#include "flash_mpc5xxx.h"
@@ -116,7 +115,7 @@ uint32_t Flash_Lock(const FlashType *fPtr, uint32_t op, uintptr_t from, uint32_t
 		getAffectedBlocks(bPtr, from, size, &flashBlocks);
 
 		/* ---------- Low/Mid ---------- */
-	    lock = (flashBlocks[ADDR_SPACE_MID]<<14) | flashBlocks[ADDR_SPACE_LOW];
+	    lock = (flashBlocks[ADDR_SPACE_MID]<<16) | flashBlocks[ADDR_SPACE_LOW];
 	    if( lock != 0 ) {
 			regAddr = bPtr->regBase + C90FL_LML;
 
@@ -187,7 +186,7 @@ uint32_t Flash_Erase( const FlashType *fPtr, uintptr_t dest, uint32_t size, flas
 			continue;
 		}
 
-		rv = FSL_FlashEraseStart(bPtr->regBase, dest, flashBlocks[0],
+		rv = FSL_FlashEraseStart(bPtr->regBase, bPtr->sectAddr[0], flashBlocks[0],
 				flashBlocks[1], flashBlocks[2]);
 
 		if (rv != EE_OK) {
@@ -306,32 +305,25 @@ uint32_t Flash_ProgramPageStart( const FlashType *fPtr, uint32_t *to, uint32_t *
 
     return EE_OK;
 }
-uint32_t Flash_CheckStatus( const FlashType *fPtr ) {
-	return FSL_FlashCheckStatus(fPtr->regBase);
-}
 
-uint32_t Flash_SectorAligned( const FlashType *fPtr, uintptr_t addr ) {
-    uint32_t rv = EE_ERROR_MISMATCH;
+uint32_t Flash_CheckStatus( const FlashType *fPtr, uint32_t *to ) {
+    uint32_t flashBlocks[ADDR_SPACE_CNT];
     const FlashType *bPtr;
+    bool affected;
 
     for (int bank = 0; bank < FLASH_BANK_CNT; bank++) {
         bPtr = &fPtr[bank];
 
-        /* In range of bank */
-        if( (addr >= bPtr->sectAddr[0]) &&
-            (addr <= (bPtr->sectAddr[bPtr->sectCnt])) )
-        {
-            for (int sector = 0; sector < bPtr->sectCnt; sector++)
-            {
-                if( addr == bPtr->sectAddr[sector] ) {
-                    rv = EE_OK;
-                    break;
-                }
-            }
-            break;
+        affected = getAffectedBlocks(bPtr, *to, 1, &flashBlocks);
+        if( affected == false ) {
+            /* This bank was not affected */
+            continue;
         }
+
+	      return FSL_FlashCheckStatus(bPtr->regBase);
     }
-    return rv;
 }
+
+
 
 

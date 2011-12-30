@@ -227,7 +227,6 @@ all: module_config $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $
 .SUFFIXES:
 
 
-
 ###############################################################################
 # TARGETS                                                                     #
 ###############################################################################
@@ -242,6 +241,7 @@ all: module_config $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $
 	@echo
 	@echo "  >> CC $(notdir $<)"
 	$(Q)$(CC) -c $(CFLAGS) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
+	$(do-compile-post)
 # run lint if enabled
 	$(run_pclint)
 	$(run_splint)
@@ -259,7 +259,7 @@ all: module_config $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $
 %.s: %.sx
 	@echo
 	@echo "  >> CPP $(notdir $<)"
-	$(Q)$(CPP) $(CPP_ASM_FLAGS) -o $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
+	$(Q)$(CPP) $(CPP_ASM_FLAGS) $(CPPOUT) $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
 # Board linker files are in the board directory 
 inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
@@ -270,7 +270,7 @@ inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
 %.lcf %.ldp: %.ldf
 	@echo
 	@echo "  >> CPP $(notdir $<)"
-	$(Q)$(CPP) -E -P $(CPP_ASM_FLAGS) -o $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
+	$(Q)$(CPP) -P $(CPP_ASM_FLAGS) $(CPPOUT) $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
 .PHONY $(ROOTDIR)/libs:
 $(ROOTDIR)/libs:
@@ -304,23 +304,8 @@ ifeq ($(CROSS_COMPILE)$(COMPILER),gcc)
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	
 else
 	$(Q)$(LD) $(LDFLAGS) $(LD_FILE) $(ldcmdfile-y) -o $@ $(libpath-y) $(LD_START_GRP) $(obj-y) $(lib-y) $(libitem-y) $(LD_END_GRP) $(LDMAPFILE)
- ifdef CFG_HC1X
-    # Print memory layout
-	@$(CROSS_COMPILE)objdump -h $@ | gawk -f $(ROOTDIR)/scripts/hc1x_memory.awk
- else
-  ifeq ($(COMPILER),gcc)	
-    # Print memory layout
-	@echo ""
-	@gawk --non-decimal-data -f $(ROOTDIR)/scripts/gcc_map_memory.awk $(subst .elf,.map,$@)
-  endif # ($(COMPILER),gcc)
-   
-  ifeq ($(BUILD_LOAD_MODULE),y)
-	@$(CROSS_COMPILE)objcopy -O srec $@ $@.raw.s19
-	srec_cat $@.raw.s19 --crop 0x8008000 0x803fffc --fill 0x00 0x8008000 0x803fffc --l-e-crc32 0x803fffc -o $@.lm.s19
-  endif #($(BUILD_LOAD_MODULE),y)
-   
- endif #CFG_MC912DG128A
-
+	$(do-memory-footprint)
+	$(do-memory-footprint2-y)
 endif #($(CROSS_COMPILE),)
 	@echo
 	@echo "  >>>>>>>  DONE  <<<<<<<<<"

@@ -67,7 +67,7 @@ OsTaskVarType * os_alloc_new_pcb( void ) {
 #if OS_ISR_CNT != 0
 static void Os_IsrAddWithId( const OsIsrConstType * restrict isrPtr, int id ) {
 	Os_IsrVarList[id].constPtr = isrPtr;
-	Os_VectorToIsr[isrPtr->vector] = id;
+	Os_VectorToIsr[isrPtr->vector + IRQ_INTERRUPT_OFFSET ] = id;
 	Irq_EnableVector( isrPtr->vector, isrPtr->priority, Os_ApplGetCore(isrPtr->appOwner )  );
 }
 #endif
@@ -296,6 +296,7 @@ void *Os_Isr( void *stack, int16_t vector ) {
 
 	if( isrPtr->constPtr->type == ISR_TYPE_1) {
 		isrPtr->constPtr->entry();
+		Irq_EOI();
 		return stack;
 	}
 

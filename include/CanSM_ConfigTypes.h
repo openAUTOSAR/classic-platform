@@ -31,6 +31,13 @@ typedef struct {
 	const uint8						ComMNetworkHandle;
 	const Com_PduGroupIdType		ComRxPduGroupId;     /**< @req CANSM091 */
 	const Com_PduGroupIdType		ComTxPduGroupId;
+	const uint32                    CanSMBorTimeTxEnsured;
+	const uint32                    CanSMBorTimeL1;
+	const uint32                    CanSMBorTimeL2;
+	const uint8                     CanSMBorCounterL1ToL2;
+	const uint8                     CanSMBorCounterL2Err;
+	const boolean                   CanSMBorTxConfirmationPolling;
+	const boolean                   CanSMBorDisableRxDlMonitoring;
 } CanSM_NetworkType;
 
 typedef struct {

@@ -34,6 +34,10 @@
 #include "CanTp_Cbk.h"
 #endif
 
+#if defined(USE_J1939TP)
+#include "J1939Tp_Cbk.h"
+#endif
+
 #if defined(USE_CANNM)
 #include "CanNm.h"
 #endif
@@ -873,6 +877,18 @@ void CanIf_RxIndication(uint8 Hrh, Can_IdType CanId, uint8 CanDlc,
             return;
 #endif
             break;
+        case CANIF_USER_TYPE_J1939TP:
+          // Send Can frame to CAN TP
+#if defined(USE_J1939TP)
+            {
+        	    PduInfoType J1939TpRxPdu;
+        	    J1939TpRxPdu.SduLength = CanDlc;
+        	    J1939TpRxPdu.SduDataPtr = (uint8 *)CanSduPtr;
+        	    J1939Tp_RxIndication(entry->CanIfCanRxPduId, &J1939TpRxPdu);
+            }
+            return;
+#endif
+            break;            
       }
     }
 
@@ -936,17 +952,27 @@ void CanIf_SetWakeupEvent(uint8 Controller)
 
 void CanIf_Arc_Error(uint8 Controller, Can_Arc_ErrorType Error)
 {
-#if  ( CANIF_DEV_ERROR_DETECT == STD_ON )
   // We call this a CanIf channel. Hopefully makes it easier to follow.
-  CanIf_Arc_ChannelIdType channel = Controller;
-#endif
+  CanIf_Arc_ChannelIdType channel = (CanIf_Arc_ChannelIdType) Controller;
 
   VALIDATE_NO_RV( CanIf_Global.initRun, CANIF_ARCERROR_ID, CANIF_E_UNINIT );
   VALIDATE_NO_RV( channel < CANIF_CHANNEL_CNT, CANIF_ARCERROR_ID, CANIF_E_PARAM_CONTROLLER );
 
+  /* Same handling for Arc error as for BUS_OFF even if not in AR req.
+   * This because we do want same handling for upper layer for restart of channel
+   * According to figure 35 in canif spec this should be done in
+   * Can driver but it is better to do it here */
+  CanIf_SetControllerMode(channel, CANIF_CS_STOPPED);
+
   if (CanIf_ConfigPtr->DispatchConfig->CanIfErrorNotificaton != NULL)
   {
     CanIf_ConfigPtr->DispatchConfig->CanIfErrorNotificaton(Controller, Error);
+  }
+
+  // Special fix for restart of bus incase of general can error i.e. connection to CanSM
+  if (CanIf_ConfigPtr->DispatchConfig->CanIfBusOffNotification != NULL)
+  {
+    CanIf_ConfigPtr->DispatchConfig->CanIfBusOffNotification(channel);
   }
 }
 

@@ -13,7 +13,8 @@
 #ifndef FLASH_H7F_C90_H_
 #define FLASH_H7F_C90_H_
 
-
+#include "Std_Types.h"
+#include "flash.h"
 
 /* Offsets of C90FL Control Registers*/
 #define C90FL_MCR                    0x0000        /* Module Configuration Register */

@@ -22,7 +22,7 @@
  *
  */
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__DCC__)
 
    #define SECTION_RAMLOG	__attribute__ ((section (".ramlog")))
 

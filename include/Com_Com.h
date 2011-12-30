@@ -28,6 +28,8 @@
 
 uint8 Com_SendSignal(Com_SignalIdType SignalId, const void *SignalDataPtr);
 uint8 Com_ReceiveSignal(Com_SignalIdType SignalId, void* SignalDataPtr);
+uint8 Com_ReceiveDynSignal(Com_SignalIdType SignalId, void* SignalDataPtr, uint16* Length);
+uint8 Com_SendDynSignal(Com_SignalIdType SignalId, const void* SignalDataPtr, uint16 Length);
 
 Std_ReturnType Com_TriggerTransmit(PduIdType ComTxPduId, PduInfoType *PduInfoPtr);
 
