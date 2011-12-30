@@ -2,7 +2,7 @@
  * 5516, 1.0M
  * 5517, 1.5M
  */
-flash(R) : ORIGIN = 0x00000000, LENGTH = 1M
+flash(R) : ORIGIN = 0x00000000, LENGTH = 0x100000
 /* Ram sizes
  * 5516S, 48K
  * 5517S,5516G,5516E, 64K RAM

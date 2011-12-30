@@ -367,12 +367,12 @@ exception_IVOR4:
 	
 	/* Switch to interrupt stack if at depth 0 */
 	/* Load the value Os_Sys.int_nest_cnt */
-	LOAD_IND_32(r3,Os_Sys+SYS_INT_NEST_CNT)
+	LOAD_IND_32(r3,(Os_Sys+SYS_INT_NEST_CNT))
 	cmplwi	r3,0
 	bne		on_int_stack
 
 	/* Load the interrupt stack */
-	LOAD_IND_32(r1,Os_Sys+SYS_INT_STACK)
+	LOAD_IND_32(r1,(Os_Sys+SYS_INT_STACK))
 
 on_int_stack:
 

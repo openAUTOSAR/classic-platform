@@ -36,8 +36,11 @@ void  asm_foo(void) {
 #define DECLARE(_var,_offset) \
     __declspec(section ".apa") char _var[100+ (_offset)]
 #pragma section ".apa" ".apa"
+#elif (defined(__DCC__))
+#define DECLARE(_sym,_val) \
+	const int arc_dummy_ ## _sym = _val
 #endif
-DECLARE(PCB_STACK_CURR_P,	offsetof(OsTaskVarType, stack));
+	DECLARE(PCB_STACK_CURR_P,	offsetof(OsTaskVarType, stack));
 	DECLARE(PCB_CONST_P,		offsetof(OsTaskVarType, constPtr));
 //	DECLARE(PCB_ENTRY_P,		offsetof(OsTaskVarType, entry));
 	DECLARE(SYS_CURR_PCB_P,		offsetof(Os_SysType, currTaskPtr));

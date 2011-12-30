@@ -60,7 +60,7 @@
 #include <stdarg.h>
 #include <assert.h>
 #include <string.h>
-#if defined(USE_NEWLIB)
+#if defined(USE_NEWLIB) && defined(__GNUC__)
 #include "reent.h"
 #endif
 //#define HOST_TEST	1
@@ -171,7 +171,7 @@ static inline int emitChar( FILE *file, char **buf, char c, int *left ) {
 		putc(c, stdout);
 		fflush(stdout);
 #else
-#if defined(USE_NEWLIB)
+#if defined(USE_NEWLIB) && defined(__GNUC__)
 		/* We are trying to print with newlib file descriptor.
 		 * That's wrong since we are using the POSIX file numbers here instead
 		 * Check stdout */

@@ -270,7 +270,7 @@ inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
 %.lcf %.ldp: %.ldf
 	@echo
 	@echo "  >> CPP $(notdir $<)"
-	$(Q)$(CPP) -E -P $(CPP_ASM_FLAGS) $(CPPOUT) $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
+	$(Q)$(CPP) -P $(CPP_ASM_FLAGS) $(CPPOUT) $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
 .PHONY $(ROOTDIR)/libs:
 $(ROOTDIR)/libs:

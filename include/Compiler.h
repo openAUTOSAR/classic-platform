@@ -34,11 +34,15 @@
 #define CC_EXTENSION 	__extension__
 #elif defined(__CWCC__)
 #define CC_EXTENSION
+#elif defined(__DCC__)
+#define CC_EXTENSION
 #endif
 
 #if defined(__GNUC__)
 #define SECTION_BALIGN(_align )  __attribute__ ((aligned (_align)))
 #elif defined(__CWCC__)
+#define SECTION_BALIGN(_align )  __attribute__ ((aligned (_align)))
+#elif defined(__DCC__)
 #define SECTION_BALIGN(_align )  __attribute__ ((aligned (_align)))
 #endif
 
