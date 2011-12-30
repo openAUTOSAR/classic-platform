@@ -58,6 +58,20 @@ asm_offset.h: asm_offset.c
 	@rm 	$(<:.c=.s)
 endif
 
+ifeq ($(COMPILER),diab)
+# assembler generates this:
+# arc_dummy_EXC_FRM_SRR1:
+#	.long		16 
+# 
+# we want the size (16) and the name after arc_dummy
+# assembler offsets
+%_offset.h: %_offset.c
+	@echo "  >> generating $@ from $<"
+	$(Q)$(CC) -S -Xpreprocess-assembly $(CFLAGS) -o $(@:.h=.s) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
+	$(Q)gawk 'BEGIN { RS = "arc_dummy_"; FS = ":"} match($$2, /long\t+([0-9]+)/, ary) \
+			  {gsub("\\t", " ",$$1); print ("#define " $$1 " " ary[1]) }' $(@:.h=.s)  > $@
+endif
+
 ifeq ($(COMPILER),cw)
 # The "\r" in the awk is a little strange...sed and awk if that does not work 
 #  sed -e '/.apa/!d' -e '/OBJ/!d' -e 's/\[//' 123.tmp | gawk '{ print "#define " $9 " " $4 }'

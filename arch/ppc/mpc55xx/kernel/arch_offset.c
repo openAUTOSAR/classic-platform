@@ -18,7 +18,7 @@
 #include "Os.h"
 #include "internal.h"
 #include "arch_stack.h"
-
+#include "Compiler.h"
 
 
 
@@ -33,6 +33,9 @@
 
 #define DECLARE(_var,_offset) \
     __declspec(section ".apa") char _var[100+_offset]
+#elif (defined(__DCC__))
+#define DECLARE(_sym,_val) \
+	const int arc_dummy_ ## _sym = _val
 #endif
 
 #if defined(__GNUC__)
