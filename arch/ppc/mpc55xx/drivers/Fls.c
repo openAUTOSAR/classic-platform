@@ -180,9 +180,12 @@ typedef enum {
 
 typedef struct {
 	uint32_t dest;
-	uint32_t size;
+//	uint32_t size;
 	uint32_t source;
 	uint32_t left;
+
+    uint32_t pDest;
+    uint32_t pLeft;
 } Fls_ProgInfoType;
 
 
@@ -191,8 +194,8 @@ typedef struct {
 	MemIf_StatusType 	status;
 	MemIf_JobResultType jobResultType;
 	Fls_Arc_JobType 	jobType;
-	Fls_AddressType 	sourceAddr;
-	uint8 * 			targetAddr;
+	Fls_AddressType 	flashAddr; //sourceAddr
+	uint8 *  			ramAddr;    // targetAddr
 	Fls_LengthType 		length;
 	Fls_ProgInfoType 	flashWriteInfo;
 	bool				mustCheck;
@@ -372,7 +375,8 @@ Std_ReturnType Fls_Erase(Fls_AddressType TargetAddress, Fls_LengthType Length) {
 	Fls_Global.status = MEMIF_BUSY;				    /** @req FLS219 3.0 */ /** @req FLS328 4.0 */
 	Fls_Global.jobResultType = MEMIF_JOB_PENDING;   /** @req FLS329 4.0 */
 	Fls_Global.jobType = FLS_JOB_ERASE;
-	Fls_Global.targetAddr = TargetAddress;
+	Fls_Global.flashAddr = TargetAddress;
+	Fls_Global.length = Length;
 
 	/* Unlock */
 	Flash_Lock(Fls_Global.config->FlsInfo,FLASH_OP_UNLOCK,TargetAddress, Length );
@@ -428,11 +432,16 @@ Std_ReturnType Fls_Write(Fls_AddressType TargetAddress,
 	Fls_Global.flashWriteInfo.dest = TargetAddress;
 	Fls_Global.flashWriteInfo.left = Length;
 
-	// unlock flash....
+
+	// unlock flash for the entire range.
 	Flash_Lock(Fls_Global.config->FlsInfo,FLASH_OP_UNLOCK, TargetAddress, Length );
-	// Program
-	/** @req FLS146 3.0/4.0 */
-	Flash_ProgramPageStart(	Fls_Global.config->FlsInfo,
+
+    /* Save to original request */
+    Fls_Global.flashWriteInfo.pDest = TargetAddress;
+    Fls_Global.flashWriteInfo.pLeft = Length;
+
+    /** @req FLS146 3.0/4.0 */
+    Flash_ProgramPageStart(	Fls_Global.config->FlsInfo,
 							&Fls_Global.flashWriteInfo.dest,
 							&Fls_Global.flashWriteInfo.source,
 							&Fls_Global.flashWriteInfo.left,
@@ -501,8 +510,8 @@ void Fls_MainFunction(void) {
 			// ( we are reading directly from flash so it makes no sense )
 
 		    /** @req FLS244 */
-			result = memcmp(Fls_Global.targetAddr,
-					(void *) Fls_Global.sourceAddr, Fls_Global.length);
+			result = memcmp((void *)Fls_Global.ramAddr,
+					        (void *)Fls_Global.flashAddr, Fls_Global.length);
 			if (result == 0) {
 				Fls_Global.jobResultType = MEMIF_JOB_OK;
 			} else {
@@ -514,7 +523,7 @@ void Fls_MainFunction(void) {
 			break;
 		case FLS_JOB_ERASE: {
 
-			flashStatus = Flash_CheckStatus(Fls_Global.config->FlsInfo, Fls_Global.targetAddr);
+			flashStatus = Flash_CheckStatus(Fls_Global.config->FlsInfo, (uint32 *)Fls_Global.flashAddr, Fls_Global.length );
 
 			if (flashStatus == EE_OK ) {
 				Fls_Global.jobResultType = MEMIF_JOB_OK;
@@ -535,7 +544,7 @@ void Fls_MainFunction(void) {
 
 			// NOT implemented. Hardware error = FLS_E_READ_FAILED
 			// ( we are reading directly from flash so it makes no sense )
-			memcpy(Fls_Global.targetAddr, (void *) Fls_Global.sourceAddr,
+			memcpy( (void *)Fls_Global.ramAddr, (void *) Fls_Global.flashAddr,
 					Fls_Global.length);
 			Fls_Global.jobResultType = MEMIF_JOB_OK;
 			Fls_Global.status = MEMIF_IDLE;
@@ -547,7 +556,9 @@ void Fls_MainFunction(void) {
 		{
 
 		    do {
-				flashStatus = Flash_CheckStatus(Fls_Global.config->FlsInfo, &Fls_Global.flashWriteInfo.dest);
+				flashStatus = Flash_CheckStatus(Fls_Global.config->FlsInfo,
+				                                (uint32_t *)Fls_Global.flashWriteInfo.pDest,
+				                                Fls_Global.flashWriteInfo.left -Fls_Global.flashWriteInfo.pLeft);
 
 				if (flashStatus == EE_OK ) {
 
@@ -560,6 +571,8 @@ void Fls_MainFunction(void) {
       			FEE_JOB_END_NOTIFICATION();
 						break;
 					}
+				    Fls_Global.flashWriteInfo.pDest = Fls_Global.flashWriteInfo.dest;
+				    Fls_Global.flashWriteInfo.pLeft = Fls_Global.flashWriteInfo.left;
 
 					flashStatus = Flash_ProgramPageStart(Fls_Global.config->FlsInfo,
 											&Fls_Global.flashWriteInfo.dest,
@@ -594,6 +607,15 @@ void Fls_MainFunction(void) {
 	}   /* if */
 }
 
+
+/**
+ * Read from flash memory
+ *
+ * @param SourceAddress
+ * @param TargetAddressPtr
+ * @param Length
+ * @return
+ */
 Std_ReturnType Fls_Read(	Fls_AddressType SourceAddress,
 							uint8 *TargetAddressPtr,
 							Fls_LengthType Length)
@@ -624,8 +646,8 @@ Std_ReturnType Fls_Read(	Fls_AddressType SourceAddress,
 	Fls_Global.jobType = FLS_JOB_READ;
 
 	/** @req FLS237 */
-	Fls_Global.sourceAddr = SourceAddress;
-	Fls_Global.targetAddr = TargetAddressPtr;
+	Fls_Global.flashAddr = SourceAddress;
+	Fls_Global.ramAddr = TargetAddressPtr;
 	Fls_Global.length = Length;
 
 	return E_OK;
@@ -662,8 +684,8 @@ Std_ReturnType Fls_Compare( Fls_AddressType SourceAddress,
 	Fls_Global.jobResultType = MEMIF_JOB_PENDING;
 	Fls_Global.jobType = FLS_JOB_COMPARE;
 	/* @req FLS242 */
-	Fls_Global.sourceAddr = SourceAddress;
-	Fls_Global.targetAddr = TargetAddressPtr;
+	Fls_Global.flashAddr = SourceAddress;
+	Fls_Global.ramAddr = TargetAddressPtr;
 	Fls_Global.length = Length;
 
 	return E_OK;

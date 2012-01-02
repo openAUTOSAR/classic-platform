@@ -193,6 +193,7 @@ uint32_t Flash_Erase( const FlashType *fPtr, uintptr_t dest, uint32_t size, flas
 			return EE_ERROR_PE_OPT;
 		}
 
+#if 0
 		/* Poll status */
 		while ((rv = FSL_FlashCheckStatus(bPtr->regBase)) != EE_OK) {
 
@@ -203,82 +204,18 @@ uint32_t Flash_Erase( const FlashType *fPtr, uintptr_t dest, uint32_t size, flas
 			if( cb != NULL ) {
 				cb();
 			}
-
 		}
+#endif
 	}
 	return EE_OK;
 }
 
 
-#if 0
 /**
  *
- * @param to
- * @param from
- * @param size
- * @return
- */
-uint32_t Flash_ProgramStart( const FlashType *fPtr, uint32_t *to, uint32_t * from, uint32_t * size, flashCbType cb) {
-	uint32_t rv;
-	uint16_t fSize = size;
-	uint32_t fDest = (uint32_t) to;
-	uint32_t fSource = (uint32_t) from;
-	uint32_t flashBlocks[ADDR_SPACE_CNT];
-	uint32_t maxToProg;
-	const FlashType *bPtr;
-	bool affected;
-
-
-	/* Check double word alignment */
-	ASSERT((size % 8) == 0 );
-
-	/* FSL functions are for each bank, so loop over banks */
-	for (int bank = 0; bank < FLASH_BANK_CNT; bank++) {
-		bPtr = &fPtr[bank];
-
-		affected = getAffectedBlocks(bPtr, to, size, &flashBlocks);
-		if( affected == false ) {
-			/* This bank was not affected */
-			continue;
-		}
-
-		/* Program to the end of bank */
-		maxToProg =  MIN(fSize, (bPtr->sectAddr[0] + bPtr->bankSize - fDest));
-		fSize -= maxToProg;
-
-		while(maxToProg) {
-			/* Program page */
-			rv = FSL_FlashProgramStart(bPtr->regBase, &fDest, &maxToProg, &fSource);
-
-			if (rv != EE_OK) {
-				return EE_ERROR_PE_OPT;
-			}
-
-#if 0
-			/* Poll status */
-			while ((rv = FSL_FlashCheckStatus(bPtr->regBase)) != EE_OK) {
-
-				if (rv == EE_ERROR_PE_OPT) {
-					return rv;
-				}
-
-				if( cb != NULL ) {
-					cb();
-				}
-			}
-#endif
-		}
-	}
-	return EE_OK;
-}
-#endif
-
-
-/**
- *
- * @param to
- * @param from
- * @param size
+ * @param to     Flash address to write. Updated to next address to write for each call
+ * @param from   RAM address to read from. Updated with next address to read from for each call
+ * @param size   The size to program. Updated for each for each call.
  * @return
  */
 uint32_t Flash_ProgramPageStart( const FlashType *fPtr, uint32_t *to, uint32_t * from, uint32_t * size, flashCbType cb) {
@@ -306,24 +243,50 @@ uint32_t Flash_ProgramPageStart( const FlashType *fPtr, uint32_t *to, uint32_t *
     return EE_OK;
 }
 
-uint32_t Flash_CheckStatus( const FlashType *fPtr, uint32_t *to ) {
-    uint32_t flashBlocks[ADDR_SPACE_CNT];
+/**
+ * Check status of programming/erase
+ *
+ * @param fPtr
+ * @param to
+ * @return
+ */
+uint32_t Flash_CheckStatus( const FlashType *fPtr, uint32_t *to, uint32_t size ) {
     const FlashType *bPtr;
     bool affected;
+    uint32_t rv = E_NOT_OK;
+    uintptr_t flAddr = (uintptr_t)to;
 
     for (int bank = 0; bank < FLASH_BANK_CNT; bank++) {
         bPtr = &fPtr[bank];
 
-        affected = getAffectedBlocks(bPtr, *to, 1, &flashBlocks);
+        /* We only need to figure out what bank is used, note that multiple banks
+         * must be handled at the same time here */
+        affected = OVERLAP(flAddr,flAddr+size,bPtr->sectAddr[0],bPtr->bankSize);
         if( affected == false ) {
             /* This bank was not affected */
             continue;
         }
 
-	      return FSL_FlashCheckStatus(bPtr->regBase);
+	    rv = FSL_FlashCheckStatus(bPtr->regBase);
+	    if( rv != EE_OK) {
+	        return rv;
+	    }
+    }
+
+    return rv;
+}
+#if 0
+for (int sector = 0; sector < bPtr->sectCnt; sector++)
+{
+    if (OVERLAP( addr,addr+size-1,
+            bPtr->sectAddr[sector],bPtr->sectAddr[sector+1]-1))
+    {
+        addrSpace = bPtr->addrSpace[sector];
+        (*fb)[ADDR_SPACE_GET(addrSpace)] |= (1 << ADDR_SPACE_GET_SECTOR(addrSpace));
+        anyAffected = true;
     }
 }
-
+#endif
 
 
 
