@@ -376,7 +376,7 @@ exception_IVOR4:
 
 on_int_stack:
 
-#if defined(CFG_MPC5516)
+#if defined(CFG_MPC5516)|| defined(CFG_MPC5668) 
 	lis r6, INTC_IACKR_PRC0@ha
 	lwz r6, INTC_IACKR_PRC0@l(r6)
 #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)  || defined(CFG_MPC5606S)

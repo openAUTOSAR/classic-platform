@@ -614,7 +614,7 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {
 					if (runtime->protocolStarted == TRUE) {
 						if (runtime->diagnosticActiveComM == FALSE) {
 #if defined(USE_COMM)
-							ComM_DCM_ActivateDiagnostic(); /** @req DCM163 */
+							ComM_DCM_ActiveDiagnostic(); /** @req DCM163 */
 #endif
 							runtime->diagnosticActiveComM = TRUE;
 						}
@@ -741,7 +741,7 @@ void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result) {
 		switch (runtime->externalTxBufferStatus) { // ### EXTERNAL TX BUFFER ###
 		case PROVIDED_TO_PDUR: {
 #if defined(USE_COMM)
-			ComM_DCM_InactivateDiagnostic(); /** @req DCM164 */
+			ComM_DCM_InactiveDiagnostic(); /** @req DCM164 */
 #endif
 			startS3SessionTimer(runtime, protocolRow); /** @req DCM141 */
 			releaseExternalRxTxBuffers(protocolRow, runtime); /** @req DCM118 *//** @req DCM352 *//** @req DCM353 *//** @req DCM354 */

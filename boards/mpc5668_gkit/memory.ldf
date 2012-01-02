@@ -1,0 +1,8 @@
+/* Flash sizes
+ * 5668, 2.0M
+ */
+flash(R) : ORIGIN = 0x00000000, LENGTH = 2M
+/* Ram sizes
+ * 5668G: 512K + 80K
+ */
+ram(RW)  : ORIGIN = 0x40000000, LENGTH = 0x080000

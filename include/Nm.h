@@ -36,7 +36,7 @@
 
 /** Initializes the NM Interface. */
 /** @req NM030 */
-void Nm_Init( Nm_ConfigType * const nmConfigPtr );
+void Nm_Init( const Nm_ConfigType * const nmConfigPtr );
 
 /** This service returns the version information of this module */
 /** @req NM044 */
