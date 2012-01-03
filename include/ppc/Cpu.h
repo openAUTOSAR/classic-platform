@@ -14,21 +14,15 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
-
-
 #ifndef CPU_H
 #define CPU_H
 
 #include "Std_Types.h"
 typedef uint32_t imask_t;
-#if defined(__DCC__)
-#include <diab/ppcasm.h>
-#endif
+
+//#if defined(__DCC__)
+//#include <diab/ppcasm.h>
+//#endif
 
 // Used if we are running a T32 instruction set simulator
 #define SIMULATOR() (SIU.MIDR.R==0)
@@ -144,9 +138,13 @@ typedef uint32_t imask_t;
  * Sets a value to a specific SPR register
  */
 #if defined(__DCC__)
-#define set_spr(spr_nr, val)	(__mtspr(spr_nr,val))
+asm void set_spr(uint32 spr_nr, uint32 val)
+{
+%reg val; con spr_nr
+  mtspr spr_nr, val
+}
 #else
-#define set_spr(spr_nr, val) \
+# define set_spr(spr_nr, val) \
 	asm volatile (" mtspr " STRINGIFY__(spr_nr) ",%[_val]" : : [_val] "r" (val))
 #endif
 /**
@@ -156,7 +154,11 @@ typedef uint32_t imask_t;
  */
 
 #if defined(__DCC__)
-#define get_spr(spr_nr)		(__mfspr(spr_nr))
+asm uint32 get_spr(uint32 spr_nr)
+{
+% con spr_nr
+  mfspr r3, spr_nr
+}
 #else
 #define get_spr(spr_nr)	CC_EXTENSION \
 ({\
@@ -171,7 +173,10 @@ typedef uint32_t imask_t;
  * @return
  */
 #if defined(__DCC__)
-#define get_msr()		(__mfmsr())
+asm volatile unsigned long get_msr()
+{
+  mfmsr r3
+}
 #else
 static inline unsigned long get_msr() {
 	uint32_t msr;
@@ -186,9 +191,12 @@ static inline unsigned long get_msr() {
  * @param msr
  */
 #if defined(__DCC__)
-#define set_msr(msr)\
-	(__mtmsr(msr));\
-	(__isync());
+asm volatile void set_msr(unsigned long msr)
+{
+% reg msr
+  mtmsr msr
+  isync
+}
 #else
 static inline void set_msr(unsigned long msr) {
   asm volatile ("mtmsr %0" : : "r" (msr) );
@@ -201,7 +209,11 @@ static inline void set_msr(unsigned long msr) {
 
 /* Count the number of consecutive zero bits starting at ppc-bit 0 */
 #if defined(__DCC__)
-#define cntlzw(val)		(__cntlzw(val))
+asm volatile unsigned int cntlzw(unsigned int val)
+{
+% reg val
+  cntlzw r3, val
+}
 #else
 static inline unsigned int cntlzw(unsigned int val)
 {
@@ -230,13 +242,22 @@ static inline unsigned long _Irq_Disable_save(void)
 }
 
 /*-----------------------------------------------------------------*/
+
+static inline void _Irq_Disable_restore(unsigned long flags)
+{
+	set_msr(flags);
+}
+
+#if 0
 #if defined(__DCC__)
-#define _Irq_Disable_restore(flags)		(__mtmsr(flags))
+#define _Irq_Disable_restore(flags)		(set_msr(flags))
 #else
 static inline void _Irq_Disable_restore(unsigned long flags)
 {
+	set_msr(flags);
    asm volatile ("mtmsr %0" : : "r" (flags) );
 }
+#endif
 #endif
 /*-----------------------------------------------------------------*/
 #if defined(__DCC__)

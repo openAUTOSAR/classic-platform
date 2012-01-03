@@ -6,7 +6,6 @@ ARCH_MCU=mpc5516
 
 # CFG (y/n) macros
 CFG=PPC BOOKE E200Z1 MPC55XX MPC5516 BRD_MPC5516IT
-CFG+=VLE
 
 # What buildable modules does this board have, 
 # default or private

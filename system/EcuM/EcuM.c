@@ -22,7 +22,9 @@
 #include "EcuM_Internals.h"
 #include "EcuM_Cbk.h"
 #include "Mcu.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "isr.h"
 #if defined(USE_NVM)
 #include "NvM.h"
@@ -32,6 +34,10 @@
 #endif
 
 EcuM_GlobalType internal_data;
+
+#if !defined(USE_DET) && defined(ECUM_DEV_ERROR_DETECT)
+#error EcuM configuration error. DET is not enabled when ECUM_DEV_ERROR_DETECT is set
+#endif
 
 void EcuM_Init( void )
 {
@@ -111,7 +117,7 @@ void EcuM_StartupTwo(void)
 	// Start timer to wait for NVM job to complete
 	tickTimerStatus = GetCounterValue(Os_Arc_OsTickCounter , &tickTimerStart);
 	if (tickTimerStatus != E_OK) {
-		Det_ReportError(MODULE_ID_ECUM, 0, ECUM_ARC_STARTUPTWO_ID, ECUM_E_ARC_TIMERERROR);
+		DET_REPORTERROR(MODULE_ID_ECUM, 0, ECUM_ARC_STARTUPTWO_ID, ECUM_E_ARC_TIMERERROR);
 	}
 #endif
 
@@ -128,7 +134,7 @@ void EcuM_StartupTwo(void)
 		tickTimer = tickTimerStart;	// Save this because the GetElapsedCounterValue() will destroy it.
 		tickTimerStatus =  GetElapsedCounterValue(Os_Arc_OsTickCounter, &tickTimer, &tickTimerElapsed);
 		if (tickTimerStatus != E_OK) {
-			Det_ReportError(MODULE_ID_ECUM, 0, ECUM_ARC_STARTUPTWO_ID, ECUM_E_ARC_TIMERERROR);
+			DET_REPORTERROR(MODULE_ID_ECUM, 0, ECUM_ARC_STARTUPTWO_ID, ECUM_E_ARC_TIMERERROR);
 		}
 	} while( (readAllResult == NVM_REQ_PENDING) && (tickTimerElapsed < internal_data.config->EcuMNvramReadAllTimeout) );
 #endif
