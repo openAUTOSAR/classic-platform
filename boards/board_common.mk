@@ -73,7 +73,8 @@ inc-$(CFG_MPC55XX) +=  $(ROOTDIR)/$(ARCH_PATH-y)/delivery/mpc5500_h7f/include
 
 # Can
 obj-$(USE_CAN) += Can.o
-obj-$(USE_CAN) += Can_Lcfg.o
+#obj-$(USE_CAN) += Can_Lcfg.o
+obj-$(USE_CAN) += Can_PBcfg.o
 
 # CanIf
 obj-$(USE_CANIF) += CanIf.o

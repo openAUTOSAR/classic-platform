@@ -37,6 +37,25 @@
 // Init transition for current mode
 #define CAN_E_TRANSITION       0x06
 
+#define CAN_E_DATALOST         0x07     /** @req 4.0.3/CAN395 */
+
+/** @name Service id's */
+//@{
+#define CAN_INIT_SERVICE_ID                         0x00
+#define CAN_MAINFUNCTION_WRITE_SERVICE_ID           0x01
+#define CAN_INITCONTROLLER_SERVICE_ID               0x02
+#define CAN_SETCONTROLLERMODE_SERVICE_ID            0x03
+#define CAN_DISABLECONTROLLERINTERRUPTS_SERVICE_ID  0x04
+#define CAN_ENABLECONTROLLERINTERRUPTS_SERVICE_ID   0x05
+#define CAN_WRITE_SERVICE_ID                        0x06
+#define CAN_GETVERSIONINFO_SERVICE_ID               0x07
+#define CAN_MAINFUNCTION_READ_SERVICE_ID            0x08
+#define CAN_MAINFUNCTION_BUSOFF_SERVICE_ID          0x09
+#define CAN_MAINFUNCTION_WAKEUP_SERVICE_ID          0x0a
+#define CAN_CBK_CHECKWAKEUP_SERVICE_ID              0x0b
+//@}
+
+
 #if defined(CFG_PPC)
 
 /* HOH flags */
@@ -128,15 +147,9 @@ typedef union {
      } B;
  } Can_Arc_ErrorType;
 
- typedef enum {
-     CAN_ARC_PROCESS_TYPE_INTERRUPT,
-     CAN_ARC_PROCESS_TYPE_POLLING
- } Can_Arc_ProcessType;
 
 
 #if defined(CFG_PPC)
-
-#include "Can_Cfg.h"
 
 
  typedef enum {
@@ -146,17 +159,40 @@ typedef union {
  } Can_IdTypeType;
 
  typedef enum {
-     CAN_ARC_HANDLE_TYPE_BASIC,
-     CAN_ARC_HANDLE_TYPE_FULL
- } Can_Arc_HohType;
+      CAN_ARC_HANDLE_TYPE_BASIC,
+      CAN_ARC_HANDLE_TYPE_FULL
+  } Can_Arc_HohType;
 
+
+#if 0
+ typedef enum {
+      CAN_ARC_PROCESSING_TYPE_INTERRUPT,
+      CAN_ARC_PROCESSING_TYPE_POLLING
+  } Can_Arc_ProcessType;
 
  typedef enum {
      CAN_OBJECT_TYPE_RECEIVE,
      CAN_OBJECT_TYPE_TRANSMIT
  } Can_ObjectTypeType;
 
+#endif
+
+ typedef struct Can_Callback {
+     void (*CancelTxConfirmation)( const Can_PduType *);
+     void (*RxIndication)( uint8 ,Can_IdType ,uint8 , const uint8 * );
+     void (*ControllerBusOff)(uint8);
+     void (*TxConfirmation)(PduIdType);
+     void (*ControllerWakeup)(uint8);
+     void (*Arc_Error)(uint8,Can_Arc_ErrorType);
+ } Can_CallbackType;
+
+
+#if 0
  typedef uint32 Can_FilterMaskType;
+#endif
+
+#include "Can_Cfg.h"
+
 
  typedef struct Can_HardwareObjectStruct {
      /* PC/PB, Specifies the type (Full-CAN or Basic-CAN) of a hardware object. */
@@ -190,12 +226,16 @@ typedef union {
      uint32 Can_Arc_Flags;
 
      /* PC, Number of mailboxes that is owned by this HOH */
-     uint8  Can_Arc_MbCount;
+//     uint8  ArcCanNumMailboxes;
+     uint64  ArcMailboxMask;
  } Can_HardwareObjectType;
 
 
 
  typedef struct Can_ControllerConfig {
+
+     bool CanControllerActivation;
+
      // Specifies the buadrate of the controller in kbps.
      uint32 CanControllerBaudRate;
 
@@ -238,7 +278,18 @@ typedef union {
      uint8 Can_Arc_HohCnt;
 
      // List of Hoh id's that belong to this controller
-     const Can_HardwareObjectType  *Can_Arc_Hoh;
+     const Can_HardwareObjectType  * const Can_Arc_Hoh;
+
+     uint64 Can_Arc_RxMailBoxMask;
+     uint64 Can_Arc_TxMailBoxMask;
+
+     const uint8 * const Can_Arc_MailBoxToHrh;
+
+     PduIdType * const Can_Arc_TxPduHandles;
+
+     uint8 Can_Arc_TxMailboxStart;
+
+     uint8 Can_Arc_MailboxMax;
 
 #if 1
     //uint32 flags;
@@ -251,15 +302,6 @@ typedef union {
 
  } Can_ControllerConfigType;
 
-
- typedef struct Can_Callback {
-     void (*CancelTxConfirmation)( const Can_PduType *);
-     void (*RxIndication)( uint8 ,Can_IdType ,uint8 , const uint8 * );
-     void (*ControllerBusOff)(uint8);
-     void (*TxConfirmation)(PduIdType);
-     void (*ControllerWakeup)(uint8);
-     void (*Arc_Error)(uint8,Can_Arc_ErrorType);
- } Can_CallbackType;
 
 
 #endif /* defined(PPC) */
