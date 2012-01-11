@@ -13,18 +13,6 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-/* Are we gonna use Dma? */
-#if (  !defined(CFG_MPC5606S) || \
-      ( defined(CFG_MPC5606S) && !defined(DONT_USE_DMA_IN_ADC_MPC5606S) ) )
-	#define ADC_USES_DMA
-#endif
-
-#if ( defined(ADC_USES_DMA) && !defined(USE_DMA) )
-	#error Adc is configured to use Dma but the module is not enabled.
-#endif
-
-
 #include <assert.h>
 #include <stdlib.h>
 //#include "System.h"
@@ -32,14 +20,25 @@
 #include "Modules.h"
 #include "Mcu.h"
 #include "Adc.h"
-#if defined(ADC_USES_DMA)
-#include "Dma.h"
-#endif
 #include "Det.h"
 #include "Os.h"
 #include "isr.h"
 #include "irq.h"
 #include "arc.h"
+
+/* Uncomment and use DMA for 5606 only if you now what you are doing */
+#define DONT_USE_DMA_IN_ADC_MPC5606S
+
+/* Are we gonna use Dma? */
+#if (  !defined(CFG_MPC5606S) || \
+      ( defined(CFG_MPC5606S) && !defined(DONT_USE_DMA_IN_ADC_MPC5606S) ) )
+	#define ADC_USES_DMA
+	#include "Dma.h"
+#endif
+
+#if ( defined(ADC_USES_DMA) && !defined(USE_DMA) )
+	#error Adc is configured to use Dma but the module is not enabled.
+#endif
 
 #if !defined(CFG_MPC5606S)
 typedef union
@@ -687,8 +686,6 @@ void Adc_GroupConversionComplete (Adc_GroupType group)
 		  }
 		#endif
 #if defined(CFG_MPC5606S)
-		  /* Abort conversion */
-		  ADC_0.MCR.B.ABORTCHAIN = 1;
 		  /* Disable trigger normal conversions for ADC0 */
 		  ADC_0.MCR.B.NSTART=0;
 #else
@@ -878,9 +875,6 @@ void Adc_StopGroupConversion (Adc_GroupType group)
 {
   if (E_OK == Adc_CheckStopGroupConversion (group))
   {
-	/* Abort conversion */
-	ADC_0.MCR.B.ABORTCHAIN = 1;
-
 	/* Disable trigger normal conversions for ADC0 */
 	ADC_0.MCR.B.NSTART = 0;
 
