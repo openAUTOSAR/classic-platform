@@ -28,6 +28,10 @@
 #if defined(USE_COM)
 #include "ComStack_Types.h"
 #endif
+#if defined(USE_RTE)
+#include "Rte_Types.h"
+#endif
+
 
 /** @name Error Codes */
 //@{
@@ -61,6 +65,7 @@
 #define ECUM_COMM_HASREQUESTEDRUN_ID (0x1b)
 #define ECUM_ARC_STARTUPTWO_ID (0x20)
 
+#if !defined(USE_RTE)
 /** Possible states */
 typedef enum {
 	ECUM_STATE_APP_RUN = 0x32,
@@ -86,6 +91,7 @@ typedef enum {
 	ECUM_STATE_RESET = 0x90,
 	ECUM_STATE_GO_OFF_ONE = 0x4d
 } EcuM_StateType;
+#endif
 
 typedef uint8 EcuM_UserType;
 
@@ -136,11 +142,13 @@ typedef enum
 	ECUM_WKACT_SHUTDOWN = 3   /**< Immediate shutdown */
 } EcuM_WakeupReactionType;
 
+#if !defined(USE_RTE)
 typedef enum
 {
 	ECUM_BOOT_TARGET_APP = 0,          /**< The Ecu will boot into the application */
 	ECUM_BOOT_TARGET_BOOTLOADER = 1   /**< The Ecu will boot into the bootloader */
 } EcuM_BootTargetType;
+#endif
 
 
 #define ECUM_MODULE_ID			MODULE_ID_ECUM
