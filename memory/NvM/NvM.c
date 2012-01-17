@@ -13,7 +13,56 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
+/*
+ * RamBlockDataAddress
+ *   NULL is no permanent RAM block. Otherwise allocate the number of bytes in space (like the stack)
+ *
+ *
+ * Understanding block numbering:
+ *
+ *  NVM_DATASET_SELECTION_BIT=2
+ *
+ *    NvBlockBaseNumber
+ *          0	  Reserved (NVM478)
+ *          1     NVM_BLOCK_NATIVE,    NvBlockNum=1
+ *          2	  NVM_BLOCK_REDUNDANT, NvBlockNum=2
+ *          3     NVM_BLOCK_DATASET,   NvBlockNum=4
+ *
+ *   NvM_ReadBlock( 0, ... )    - Reserved for "multi block requests"
+ *   NvM_ReadBlock( 1, ... )    - Reserved for redundant NVRAM block which holds the configuration ID.
+ *   NvM_ReadBlock( 2--x, ... ) - "Normal" blocks
+ *
+ *
+ *  NvM_BlockIdType*)  NvBlockBaseNumber   EA_BLOCK_NUMBER
+ *      0**)
+ *      1**)                ***)
+ *      2                   1				4, (5,6,7)  ****)
+ *      3                   2				8, R9,(10,11)  ****)
+ *      4                   3				12, D13,D14,D15 ****)
+ *
+ *  *) Type used in the API.
+ *  **)   Reserved ID's
+ *  ***)  Reserved ID
+ *  ****) FEE/EA_BLOCK_NUMBER = NvBlockBaseNumber << NvmDatasetSelectionBits = NvBlockBaseNumber * 4
+ *        () - Cannot be accesses due to NvBlockNum
+ *        R9 - Redundant block
+ *        Dx - Data blocks
+ *
+ *    SIZES
+ *      Both NvM and EA/FEE have block sizes. NvM have NvNvmBlockLength (NVM479) and FEE/EA have EaBlockSize.
+ *      FEE/EA also have virtual page that is the alignment of a block, with the smallest block=size of the virtual page.
+ *
+ *      So, who allocates space for this. FEE/EA only have EaBlockSize.
+ *      NvM have NvmRamBlockDataAddress, NvmRomBlockDataAddress and mapping to a MemIf Blocks (FEE/EA blocks)
+ *
+ *      ASSUME: I can't really see a point for the FEE/EA EaBlockSize.. it will just a multiple of NvNvmBlockLength*NvBlockNum + overhead?
+ *              Click-box in EA/FEE that leaves the size calculation to NvM?
+ *              This also means that enabling NvmBlockUseCrc or set a block from NVM_BLOCK_NATIVE to NVM_BLOCK_DATASET would be "automatic"
+ *              in calculation of the EaBlockSize.
+ *
+ *      So how much data should be read from MemIf if a CRC checksum is used. Assuming that we use a physical layout where the CRC is located
+ *      after the NV Block it would be BALIGN(NvNvmBlockLength,4) + 4 bytes. The same applies to the RAM block (ROM block to not have CRC, NVM127)
+ */
 
 
 /*
@@ -36,6 +85,7 @@
 //lint -emacro(835, BLOCK_BASE_AND_SET_TO_BLOCKNR) // 835 PC-lint: A zero has been given as right argument to operator '<<' or '>>'
 
 
+/* ----------------------------[includes]------------------------------------*/
 
 #include "NvM.h"
 #include "NvM_Cbk.h"
@@ -47,11 +97,15 @@
 //#include "SchM_NvM.h"
 #include "MemMap.h"
 //#include "Crc.h" // Optional
+#include "cirq_buffer.h"
 
-/*
- * Local definitions
- */
-#define NVM_SERVICE_ID		0x00		// TODO: What number shall this ID have?
+
+/* ----------------------------[private define]------------------------------*/
+
+#define NVM_BLOCK_ALIGNMENT			4
+#define NVM_CHECKSUM_LENGTH			4
+
+//#define NVM_SERVICE_ID		0x00		// TODO: What number shall this ID have?
 
 #if  ( NVM_DEV_ERROR_DETECT == STD_ON )
 #include "Det.h"
@@ -84,17 +138,21 @@
 
 #define BLOCK_BASE_AND_SET_TO_BLOCKNR(_blockbase, _set)	((uint16)(_blockbase << NVM_DATASET_SELECTION_BITS) | _set)
 
+/* ----------------------------[private macro]-------------------------------*/
+/* ----------------------------[private typedef]-----------------------------*/
 
 // State variable
 typedef enum {
-  NVM_UNINITIALIZED = 0,
-  NVM_IDLE,
-  NVM_READ_ALL_REQUESTED,
-  NVM_READ_ALL_PROCESSING,
-  NVM_READ_ALL_PENDING,
-  NVM_WRITE_ALL_REQUESTED,
-  NVM_WRITE_ALL_PROCESSING,
-  NVM_WRITE_ALL_PENDING
+  NVM_UNINITIALIZED = 0,   //!< NVM_UNINITIALIZED
+  NVM_IDLE,                //!< NVM_IDLE
+  NVM_READ_ALL_REQUESTED,  //!< NVM_READ_ALL_REQUESTED
+  NVM_READ_ALL_PROCESSING, //!< NVM_READ_ALL_PROCESSING
+  NVM_READ_ALL_PENDING,    //!< NVM_READ_ALL_PENDING
+  NVM_WRITE_ALL_REQUESTED, //!< NVM_WRITE_ALL_REQUESTED
+  NVM_WRITE_ALL_PROCESSING,//!< NVM_WRITE_ALL_PROCESSING
+  NVM_WRITE_ALL_PENDING,    //!< NVM_WRITE_ALL_PENDING
+
+  NVM_READ_BLOCK,
 } NvmStateType;
 
 typedef enum {
@@ -113,8 +171,9 @@ typedef enum {
 //	BLOCK_STATE_WRITE_TO_NV_DONE
 } BlockStateType;
 
-
-static NvmStateType nvmState = NVM_UNINITIALIZED;
+typedef struct {
+	NvM_RequestResultType	ErrorStatus;			// Status from multi block requests i.e. Read/Write/CancelWrite-all
+} AdministrativeMultiBlockType;
 
 typedef struct {
 	BlockStateType			BlockState;
@@ -122,17 +181,49 @@ typedef struct {
 	boolean					BlockWriteProtected;	// Block write protected?
 	NvM_RequestResultType	ErrorStatus;			// Status of block
 	boolean					BlockChanged;			// Block changed?
-	boolean					BlockValid;				// Block valid?
+	boolean					BlockValid;				// Block valid? (RAM block only?)
 	uint8					NumberOfWriteFailed;	// Current write retry cycle
 } AdministrativeBlockType;
 
-static AdministrativeBlockType AdminBlock[NVM_NUM_OF_NVRAM_BLOCKS];
+typedef enum {
+	NVM_OP_READ_BLOCK,
+	NVM_OP_WRITE_BLOCK,
+	NVM_OP_RESTORE_BLOCK_DEFAULTS,
+} Nvm_OpType;
 
 typedef struct {
-	NvM_RequestResultType	ErrorStatus;			// Status from multi block requests i.e. Read/Write/CancelWrite-all
-} AdministrativeMultiBlockType;
+	Nvm_OpType		op;
+	NvM_BlockIdType blockId;
+	uint8 *			dataPtr;	/* Src or Dest ptr */
+} Nvm_QueueType;
 
+
+
+/* ----------------------------[private function prototypes]-----------------*/
+/* ----------------------------[private variables]---------------------------*/
+
+static NvmStateType 				nvmState = NVM_UNINITIALIZED;
+
+#define RB_START			0
+#define RB_WAIT_READ		1
+#define RB_CALC_CHECKSUM	2
+
+static int 							nvmSubState = 0;
+static int nvmSetNr;
+static AdministrativeBlockType 		AdminBlock[NVM_NUM_OF_NVRAM_BLOCKS];
 static AdministrativeMultiBlockType AdminMultiBlock;
+
+
+static Nvm_QueueType  nvmQueueImmData[NVM_SIZE_IMMEDIATE_JOB_QUEUE];
+static Nvm_QueueType  nvmQueueData[NVM_SIZE_STANDARD_JOB_QUEUE];
+
+CirqBufferType nvmQueue;
+
+
+/* ----------------------------[private functions]---------------------------*/
+/* ----------------------------[public functions]----------------------------*/
+
+
 
 /*
  * This function needs to be implemented!
@@ -143,11 +234,11 @@ static void CalcCrc(void)
 }
 
 typedef struct {
-	boolean JobFinished;
-	Std_ReturnType JobStatus;
-	MemIf_JobResultType JobResult;
-	const NvM_BlockDescriptorType *BlockDescriptor;
-	AdministrativeBlockType *BlockAdmin;
+	boolean 						JobFinished;
+	Std_ReturnType 					JobStatus;
+	MemIf_JobResultType 			JobResult;
+	const NvM_BlockDescriptorType *	BlockDescriptor;
+	AdministrativeBlockType *		BlockAdmin;
 } MemIfJobAdminType;
 
 static MemIfJobAdminType MemIfJobAdmin = {
@@ -164,6 +255,8 @@ typedef struct {
 } AdminMultiReqType;
 
 static AdminMultiReqType AdminMultiReq;
+
+
 
 /*
  * Set the MemIf job as busy
@@ -219,6 +312,9 @@ static void AbortMemIfJob(MemIf_JobResultType jobResult)
 	MemIfJobAdmin.JobResult = jobResult;
 }
 
+static boolean CheckJobFailed( void ) {
+	return CheckMemIfJobFinished() && (MemIfJobAdmin.JobResult == MEMIF_JOB_FAILED);
+}
 
 /*
  * Request a read of a block from MemIf
@@ -569,6 +665,9 @@ void NvM_Init(void)
 	AdministrativeBlockType *AdminBlockTable = AdminBlock;
 	uint16 i;
 
+
+	CirqBuff_Init(&nvmQueue,nvmQueueData,sizeof(nvmQueueData),sizeof(Nvm_QueueType));
+
 	// Initiate the administration blocks
 	for (i = 0; i< NVM_NUM_OF_NVRAM_BLOCKS; i++) {
 		if (BlockDescriptorList->BlockManagementType == NVM_BLOCK_DATASET) {
@@ -587,7 +686,7 @@ void NvM_Init(void)
 	AdminMultiBlock.ErrorStatus = NVM_REQ_NOT_OK;
 
 	// Set status to initialized
-	nvmState = NVM_IDLE;	/** @req NVM399 */
+	nvmState = NVM_IDLE;	/** @req 3.1.5/NVM399 */
 }
 
 
@@ -705,23 +804,247 @@ void Nvm_SetRamBlockStatus(NvM_BlockIdType blockId, boolean blockChanged)
 #endif
 
 
-/***************************************
- *         Scheduled functions         *
- ***************************************/
-/*
- * Procedure:	NvM_MainFunction
- * Reentrant:	No
+
+/**
+ * Restore default data to its corresponding RAM block.
+ *
+ * @param BlockId		NVRAM block identifier.
+ * @param NvM_DestPtr  	Pointer to the RAM block
+ * @return
+ */
+Std_ReturnType NvM_RestoreBlockDefaults( NvM_BlockIdType blockId, uint8* NvM_DestPtr )
+{
+	/* !req 3.1.5/NVM012 */	/* !req 3.1.5/NVM267 */	/* !req 3.1.5/NVM266 */
+	/* !req 3.1.5/NVM353 */	/* !req 3.1.5/NVM435 */	/* !req 3.1.5/NVM436 */	/* !req 3.1.5/NVM227 */
+	/* !req 3.1.5/NVM228 */	/* !req 3.1.5/NVM229 */	/* !req 3.1.5/NVM413 */
+
+	/* !req 3.1.5/NVM224 */
+	JobQueueType *job = CirqBuffGetNext(&Nvm_Global.jobQUeue);
+
+	job.blockId = blockId;
+	job.destPtr = NvM_DestPtr;
+}
+
+/**
+ * Service to copy the data NV block to the RAM block
+ *
+ * @param blockId		0 and 1 reserved. The block ID are sequential.
+ * @param NvM_DstPtr
+ * @return
+ */
+
+Std_ReturnType NvM_ReadBlock( NvM_BlockIdType blockId, uint8* NvM_DstPtr )
+{
+	/* !req 3.1.5/NVM010 */
+
+
+	/* !req 3.1.5/NVM278 */
+	/* !req 3.1.5/NVM340 */
+	/* !req 3.1.5/NVM354 */
+	/* !req 3.1.5/NVM200 */
+	/* !req 3.1.5/NVM366 */
+	/* !req 3.1.5/NVM206 */
+	/* !req 3.1.5/NVM341 */
+	/* !req 3.1.5/NVM358 */
+	/* !req 3.1.5/NVM359 */
+	/* !req 3.1.5/NVM279 */
+	/* !req 3.1.5/NVM316 */
+	/* !req 3.1.5/NVM317 */
+	/* !req 3.1.5/NVM201 */
+	/* !req 3.1.5/NVM202 */
+	/* !req 3.1.5/NVM203 */
+	/* !req 3.1.5/NVM204 */
+	/* !req 3.1.5/NVM409 */
+
+
+   /* logical block:
+    *
+    *    1 1 1 1 1 1
+    *   |5 4 3 2 1 0 9 8|7 6 5 4 3 2 1 0|
+    *    b b b b b b b b b b d d d d d d
+    *
+    * Here we have 10 bits for block id, 16-5 for DataSetSelection bits.
+    * - 2^10, 1024 blocks
+    * - 64 datasets for each NVRAM block
+    *
+    * How are the block numbers done in EA? Assume virtual page=8
+    * logical
+    *  Block   size
+    *  1       32
+    *   2
+    *   3
+    *   4
+    *  5       12
+    *   6
+    *  7
+    *
+    *  How can NVM/NvmNvBlockLength and EA/EaBlockSize be different?
+    *  It seems that EA/FEE does not care about that logical block 2 above is
+    *  "blocked"
+    *
+    */
+	Nvm_QueueType *q;
+
+	/** @req 3.1.5/NVM196 */ /** @req 3.1.5/NVM278 */
+	if( (qEntry->dataPtr == NULL) &&  ( NvM_Config.BlockDescriptor[blockId].RamBlockDataAddress == NULL ) ) {
+		/* It must be a permanent RAM block but no RamBlockDataAddress -> error */
+		return E_NOT_OK;
+	}
+
+
+	/* @req 3.1.5/NVM195 */
+	q = CirqBuff_PushLock(nvmQueue);
+	q->blockId = blockId;
+	q->op = NVM_OP_READ_BLOCK;
+	q->blockId = blockId;
+	q->dataPtr = NvM_DstPtr;
+	CirqBuff_PushRelease(nvmQueue);
+
+	return E_OK;
+}
+
+
+/**
+ * Service to copy a RAM block to its correspnding NVRAM block
+ *
+ * @param blockId
+ * @param NvM_SrcPtr
+ * @return
+ */
+Std_ReturnType NvM_WriteBlock( NvM_BlockIdType blockId, const uint8* NvM_SrcPtr ) {
+
+	const NvM_BlockDescriptorType *	bList = NvM_Config.BlockDescriptor;
+	AdministrativeBlockType *		aList = AdminBlock;
+
+	WriteBlock(&bList[blockId], &aList[blockId], 0, bList[blockId].RamBlockDataAddress);
+}
+
+/* Missing from Class 2
+ * - NvM_CancelWriteAll
+ * - NvM_SetDataIndex
+ * - NvM_GetDataIndex
+ * */
+
+
+
+
+
+/**
+ *
  */
 void NvM_MainFunction(void)
 {
+	int 			rv;
+	Nvm_QueueType 	qEntry;
+	const NvM_BlockDescriptorType *	bList = NvM_Config.BlockDescriptor;
+	const NvM_BlockDescriptorType *	nvmBlock;
+	const NvM_BlockDescriptorType *	currBlock;
+	AdministrativeBlockType *admBlock;
+	static uint32 crc32;
+	static uint32 crc32Left;
+
+
+	/* Check for new requested state changes */
+	if( nvmState == NVM_IDLE ) {
+		rv = CirqBuffPop( &nvmQueue, &qEntry );
+		if( rv == 0 ) {
+			/* Buffer not empty */
+			nvmState = qEntry->op;
+			nvmBlock = &bList[qEntry->blockId];
+			admBlock = &AdminBlock[qEntry->blockId];
+			nvmSubState = 0;
+		}
+	}
+
 	switch (nvmState) {
 	case NVM_UNINITIALIZED:
 		break;
 
+	case NVM_READ_BLOCK:
+	{
+		switch(nvmSubState) {
+		case RB_START:
+			/* Copy from NVRAM block to RAM block */
+			/** @req 3.1.5/NVM196 */
+			if( qEntry->dataPtr == NULL) {
+				/* Its a permanent RAM block  */
+				assert( nvmBlock->RamBlockDataAddress != NULL ); 	/** @req 3.1.5/NVM278 */
+				admBlock->BlockValid = 0;							/** @req 3.1.5/NVM198 */
+				qEntry->dataPtr = nvmBlock->RamBlockDataAddress;
+			}
+			/* Start to Read from MemIf */
+			nvmSetnr = 0;
+			ReadBlock( nvmBlock, admBlock, nvmSetnr, qEntry->dataPtr);
+			nvmSubState = RB_WAIT_READ;
+			break;
+
+		case RB_WAIT_READ:
+
+			/* Application "perspective" in 7.2.2.16.2 */
+
+			if (MemIf_GetStatus(nvmBlock->NvramDeviceId) != MEMIF_IDLE) {
+				/* ..job not done... continue to read from NVRAM to RAM */
+				break;
+			}
+
+			/* The MemIf job (reading from NVRAM to RAM) is done, check the result */
+			if( MemIf_GetJobResult(nvmBlock->NvramDeviceId) == MEMIF_JOB_OK) {
+				/** @req 3.1.5/NVM199 */
+				switch(nvmBlock->BlockManagementType) {
+				case NVM_BLOCK_REDUNDANT:
+					assert(nvmBlock->NvBlockNum == 2);		/* at least 2 block according to NVM480 */
+					break;
+				case NVM_BLOCK_NATIVE:
+					/* TODO */
+					break;
+				case NVM_BLOCK_DATASET:
+					/* TODO */
+					break;
+				}
+
+
+				/* Calculate CRC in the background */
+				if( nvmBlock->BlockUseCrc) {
+					crc32 = (-1UL);
+					crc32Left = nvmBlock->NvBlockLength;
+					nvmSubState = RB_CALC_CHECKSUM;
+				}
+			} else {
+				if ( NVM_BLOCK_REDUNDANT == nvmBlock->BlockManagementType) {
+					/* Try to read the redundant block */
+					if( RB_CALC_CHECKSUM == 0) {
+						nvmSetnr = 1;
+						ReadBlock( nvmBlock, admBlock, 1, qEntry->dataPtr);
+						nvmSubState = RB_WAIT_READ;
+					} else {
+						/* TODO: We just failed the redundant block. Read from ROM block? */
+					}
+				}
+			}
+			break;
+		case RB_CALC_CHECKSUM:
+		{
+			crc32NumToCalc = MIN(NVM_CRC_NUM_OF_BYTES,crc32Left);
+			crc32 = Crc_CalculatateCRC32(qEntry->dataPtr, crc32Left , crc32 );
+			crc32Left -= crc32NumToCalc;
+			if( crc32Left == 0) {
+				/* Compare NVRAM and RAM checksum */
+				if( crc32 != )
+			}
+		}
+			break;
+		default:
+			break;
+		}	/* switch */
+	break;
+
+
+
 	case NVM_IDLE:
+	{
 		CalcCrc();
 		break;
-
+	}
 	case NVM_READ_ALL_REQUESTED:
 		ReadAllInit();
 		break;

@@ -62,33 +62,33 @@ typedef struct {
 
 typedef struct {
 	// NVRAM block global settings
-	uint16								NvramBlockIdentifier;	/** @req NVM481 */	// TODO: Remove? Not needed if block nr correspond to array index.
-	NvM_BlockManagementTypeType			BlockManagementType;	/** @req NVM062 */
-	uint8								BlockJobPriority;		/** @req NVM477 */
-	boolean								BlockWriteProt;			/** @req NVM033 */
-	boolean								WriteBlockOnce;			/** @req NVM072 */
-	boolean								SelectBlockForReadall;	/** @req NVM117 *//** @req NVM245 */
-	boolean								ResistantToChangesSw;	/** @req NVM483 */
+	uint16								NvramBlockIdentifier;	/** @req 3.1.5|NVM481 */	// TODO: Remove? Not needed if block nr correspond to array index.
+	NvM_BlockManagementTypeType			BlockManagementType;	/** @req 3.1.5|NVM062 */
+	uint8								BlockJobPriority;		/** @req 3.1.5|NVM477 */
+	boolean								BlockWriteProt;			/** @req 3.1.5|NVM033 */
+	boolean								WriteBlockOnce;			/** @req 3.1.5|NVM072 */
+	boolean								SelectBlockForReadall;	/** @req 3.1.5|NVM117 *//** @req 3.1.5|NVM245 */
+	boolean								ResistantToChangesSw;	/** @req 3.1.5|NVM483 */
 	NvM_SingleBlockCallbackFunctionType	SingleBlockCallback;
-	uint16								NvBlockLength;			/** @req NVM479 */	// TODO: Check this
+	uint16								NvBlockLength;			/** @req 3.1.5|NVM479 */	// TODO: Check this
 
 	// CRC usage of RAM and NV blocks
-	boolean								BlockUseCrc;			/** @req NVM036 */
-	Nvm_BlockCRCTypeType				BlockCRCType;			/** @req NVM476 */
+	boolean								BlockUseCrc;			/** @req 3.1.5|NVM036 */
+	Nvm_BlockCRCTypeType				BlockCRCType;			/** @req 3.1.5|NVM476 */
 
 	// RAM block, RamBlockDataAddress == NULL means temporary block otherwise permanent block
-	uint8								*RamBlockDataAddress;	/** @req NVM482 */
-	boolean								CalcRamBlockCrc;		/** @req NVM119 */
+	uint8								*RamBlockDataAddress;	/** @req 3.1.5|NVM482 */
+	boolean								CalcRamBlockCrc;		/** @req 3.1.5|NVM119 */
 
 	// NV block, FEE/EA references
-	uint8								NvBlockNum;				/** @req NVM480 */
-	uint32								NvramDeviceId;			/** @req NVM035 */
-	uint16								NvBlockBaseNumber;		/** @req NVM478 */
+	uint8								NvBlockNum;				/** @req 3.1.5|NVM480 */
+	uint32								NvramDeviceId;			/** @req 3.1.5|NVM035 */
+	uint16								NvBlockBaseNumber;		/** @req 3.1.5|NVM478 */
 
 	// ROM block, reference, if RomBlockDataAdress == NULL no ROM data is available
-	uint16								RomBlockNum;			/** @req NVM485 */
-	uint8								*RomBlockDataAdress;	/** @req NVM484 */
-	NvM_InitBlockCallbackFunctionType	InitBlockCallback;		/** @req NVM116 */
+	uint16								RomBlockNum;			/** @req 3.1.5|NVM485 */
+	uint8								*RomBlockDataAdress;	/** @req 3.1.5|NVM484 */
+	NvM_InitBlockCallbackFunctionType	InitBlockCallback;		/** @req 3.1.5|NVM116 */
 
 	// Containers
 #if 0	// Currently not used
