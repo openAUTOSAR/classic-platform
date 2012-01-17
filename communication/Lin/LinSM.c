@@ -66,6 +66,7 @@ static LinSM_StatusType LinSMChannelStatus[LINIF_CONTROLLER_CNT];
 
 void LinSM_Init(const void* ConfigPtr)
 {
+    (void)ConfigPtr;
 	uint8 i;
 
 	for (i=0; i<LINIF_CONTROLLER_CNT; i++)
@@ -103,7 +104,15 @@ Std_ReturnType LinSM_GetCurrentComMode(NetworkHandleType network,ComM_ModeType* 
 	VALIDATE_W_RV( (network < LINIF_CONTROLLER_CNT), LINSM_GET_CURRENT_COM_MODE_SERVICE_ID, LINSM_E_NOXEXISTENT_CHANNEL, E_NOT_OK);
 	VALIDATE_W_RV( (mode != NULL), LINSM_GET_CURRENT_COM_MODE_SERVICE_ID, LINSM_E_PARAMETER_POINTER, E_NOT_OK);
 
-	*mode= LinSMChannelStatus[network];
+	switch (LinSMChannelStatus[network])
+	{
+	case LINSM_RUN_SCHEDULE:
+		*mode= COMM_FULL_COMMUNICATION;
+		break;
+	default:
+		*mode= COMM_NO_COMMUNICATION;
+		break;
+	}
 	return E_OK;
 }
 
@@ -157,10 +166,13 @@ void LinSM_WakeUp_Confirmation(NetworkHandleType channel,boolean success){
 	VALIDATE( (LinSMStatus != LINSM_UNINIT), LINSM_WAKEUP_CONF_SERVICE_ID, LINSM_E_UNINIT);
 	VALIDATE( (channel < LINIF_CONTROLLER_CNT), LINSM_WAKEUP_CONF_SERVICE_ID, LINSM_E_NOXEXISTENT_CHANNEL);
 
-	if(WakeUpTimer[channel]!=0){
-		WakeUpTimer[channel]=0;
-		ComM_BusSM_ModeIndication(channel,COMM_FULL_COMMUNICATION);
-		LinSMChannelStatus[channel] = LINSM_RUN_SCHEDULE;
+	if(TRUE == success)
+	{
+		if(WakeUpTimer[channel]!=0){
+			WakeUpTimer[channel]=0;
+			ComM_BusSM_ModeIndication(channel,COMM_FULL_COMMUNICATION);
+			LinSMChannelStatus[channel] = LINSM_RUN_SCHEDULE;
+		}
 	}
 }
 
@@ -168,10 +180,13 @@ void LinSM_GotoSleep_Confirmation(NetworkHandleType channel,boolean success){
 	VALIDATE( (LinSMStatus != LINSM_UNINIT), LINSM_GOTO_SLEEP_CONF_SERVICE_ID, LINSM_E_UNINIT);
 	VALIDATE( (channel < LINIF_CONTROLLER_CNT), LINSM_GOTO_SLEEP_CONF_SERVICE_ID, LINSM_E_NOXEXISTENT_CHANNEL);
 
-	if(GoToSleepTimer[channel]!=0){
-		GoToSleepTimer[channel]=0;
-		LinSMChannelStatus[channel] = LINSM_NO_COM;
-		ComM_BusSM_ModeIndication(channel,COMM_NO_COMMUNICATION);
+	if(TRUE == success)
+	{
+		if(GoToSleepTimer[channel]!=0){
+			GoToSleepTimer[channel]=0;
+			LinSMChannelStatus[channel] = LINSM_NO_COM;
+			ComM_BusSM_ModeIndication(channel,COMM_NO_COMMUNICATION);
+		}
 	}
 }
 

@@ -436,11 +436,12 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     ME.PCTL[73].R = 0x01; //eMIOS1 control
     ME.PCTL[16].R = 0x01; //FlexCAN0 control
     ME.PCTL[17].R = 0x01; //FlexCAN1 control
-    ME.PCTL[4].R = 0x01;  /* MPC56xxB/P/S DSPI0:  select ME.RUNPC[0] */
-    ME.PCTL[5].R = 0x01;  /* MPC56xxB/P/S DSPI1:  select ME.RUNPC[0] */
+    ME.PCTL[4].R = 0x01;  /* MPC56xxB/P/S DSPI0  */
+    ME.PCTL[5].R = 0x01;  /* MPC56xxB/P/S DSPI1:  */
     ME.PCTL[32].R = 0x01; //ADC0 control
     ME.PCTL[23].R = 0x01; //DMAMUX control
-    ME.PCTL[48].R = 0x01; /* MPC56xxB/P/S LINFlex 0: select ME.RUNPC[1] */
+    ME.PCTL[48].R = 0x01; /* MPC56xxB/P/S LINFlex  */
+    ME.PCTL[49].R = 0x01; /* MPC56xxB/P/S LINFlex  */
     /* Mode Transition to enter RUN0 mode: */
     /* Enter RUN0 Mode & Key */
     ME.MCTL.R = 0x40005AF0;
@@ -712,7 +713,7 @@ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 			prescaler = SIU.SYSCLK.B.LPCLKDIV0;
 			break;
 #elif defined(CFG_MPC5606S)
-			prescaler = CGM.SC_DC[1].R;
+			prescaler = CGM.SC_DC[1].B.DIV;
 			break;
 #endif
 
@@ -733,7 +734,7 @@ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 			prescaler = SIU.SYSCLK.B.LPCLKDIV2;
 			break;
 #elif defined(CFG_MPC5606S)
-			prescaler = CGM.SC_DC[1].R;
+			prescaler = CGM.SC_DC[1].B.DIV;
 			break;
 #endif
 
@@ -760,13 +761,13 @@ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 #if defined(CFG_MPC5606S)
 		case PERIPHERAL_CLOCK_LIN_A:
 		case PERIPHERAL_CLOCK_LIN_B:
-			prescaler = CGM.SC_DC[0].R;
+			prescaler = CGM.SC_DC[0].B.DIV;
 			break;
 		case PERIPHERAL_CLOCK_EMIOS_0:
-			prescaler = CGM.SC_DC[2].R;
+			prescaler = CGM.SC_DC[2].B.DIV;
 			break;
 		case PERIPHERAL_CLOCK_EMIOS_1:
-			prescaler = CGM.SC_DC[2].R;
+			prescaler = CGM.SC_DC[2].B.DIV;
 			break;
 #else
 		case PERIPHERAL_CLOCK_EMIOS:

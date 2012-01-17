@@ -258,6 +258,7 @@ Std_ReturnType ValidateGroup(Adc_GroupType group,Adc_APIServiceIDType api)
 #if (ADC_DEINIT_API == STD_ON)
 Std_ReturnType Adc_DeInit (const Adc_ConfigType *ConfigPtr)
 {
+  (void)ConfigPtr;
 #if defined(CFG_MPC5606S)
 
   if (E_OK == Adc_CheckDeInit())

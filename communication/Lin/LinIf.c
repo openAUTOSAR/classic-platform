@@ -74,6 +74,7 @@ static LinIf_SchHandleType newSchedule[LINIF_CONTROLLER_CNT];
 
 void LinIf_Init( const void* ConfigPtr )
 {
+	(void)ConfigPtr;
 	uint8 i;
 
 	// Initalize driver
@@ -109,6 +110,8 @@ void LinIf_DeInit()
 
 Std_ReturnType LinIf_Transmit(PduIdType LinTxPduId,const PduInfoType* PduInfoPtr)
 {
+	(void)LinTxPduId;
+	(void)PduInfoPtr;
 	// Sporadic frames not supported in this release
 	//printf("LinIf_Transmit received request. Id: %d, Data: %d\n", LinTxPduId, *(PduInfoPtr->SduDataPtr));
 	return E_OK;
