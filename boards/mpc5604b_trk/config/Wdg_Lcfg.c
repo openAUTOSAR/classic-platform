@@ -13,30 +13,40 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+#include "Wdg.h"
 
-#ifndef MPC55XX_H_
-#define MPC55XX_H_
+const Wdg_ModeConfigType WdgModeConfig =
+{
+	.Wdg_DefaultMode = WDGIF_OFF_MODE,
+	.WdgSettingsFast =
+	{
+		.ReloadValue = 0x280,	// 5 ms
+		.ActivationBit = 1,
+	},
+	.WdgSettingsSlow =
+	{
+		.ReloadValue = 0xA00,	// 20 ms
+		.ActivationBit = 1,
+	},
+	.WdgSettingsOff =
+	{
+		.ReloadValue = 0x7D00,
+		.ActivationBit = 0,
+	},
+};
+
+const Wdg_GeneralType WdgGeneral =
+{
+	.Wdg_Index = 1,
+	.Wdg_TriggerLocationPtr = Wdg_Trigger,
+	.Wdg_SetModeLocationPtr = Wdg_SetMode,
+};
 
 
-#if defined(CFG_MPC5554)
-#include "mpc5554.h"
-#elif defined(CFG_MPC5516) || defined(MPC5517)
-#include "mpc5516.h"
-#elif defined(CFG_MPC5567)
-#include "mpc5567.h"
-#elif defined(CFG_MPC5633)
-#include "mpc563m.h"
-#elif defined(CFG_MPC5604B)
-#include "MPC5604B_0M27V_0100.h"
-#elif defined(CFG_MPC5606S)
-#include "mpc5606s.h"
-#elif defined(CFG_MPC5668)
-#include "mpc5668.h"
-#else
-#error NO MCU SELECTED!!!!
-#endif
+const Wdg_ConfigType WdgConfig =
+{
+  .Wdg_General = &WdgGeneral,
+  .Wdg_ModeConfig = &WdgModeConfig,
+};
 
-/* Harmonization */
-typedef struct EDMA_TCD_STD_tag Dma_TcdType;
 
-#endif /* MPC55XX_H_ */

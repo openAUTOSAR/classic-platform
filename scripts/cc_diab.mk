@@ -1,4 +1,11 @@
 
+# Diab versions and "features"
+# 5.6.0.0->5.9.0.0  
+#  - Can't handle initializtion with a depth more that 2,e.g. .NBYTESu.B.SMLOE = 1;
+#    (in code this works fine)
+#
+#
+
 DIAB_COMPILE ?= /c/devtools/WindRiver/diab/5.9.0.0/WIN32
 DIAB_BIN = $(DIAB_COMPILE)/bin
 
@@ -26,7 +33,7 @@ cflags-y += -Werror
 #cflags-y 		+= -fno-common
 #cflags-y 		+= -std=gnu99
 cflags-y 		+= -Xc-new		# const const problems
-#cflags-y 		+= dialect-c99
+#cflags-y 		+= -Xdialect-c99
 cflags-y 		+= -Xsuppress-warnings
 cflags-y 		+= -Xkeywords=0x4		# Enable inline keywork
 
