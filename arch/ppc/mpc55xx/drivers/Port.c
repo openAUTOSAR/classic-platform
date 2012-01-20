@@ -94,7 +94,7 @@ void Port_Init(const Port_ConfigType *configType)
 {
   VALIDATE_PARAM_CONFIG(configType, PORT_INIT_ID);
 
-#if defined(CFG_MPC560x)
+#if defined(CFG_MPC560X)
 	vuint16_t i = 0;
 	vuint16_t j = 0;
 

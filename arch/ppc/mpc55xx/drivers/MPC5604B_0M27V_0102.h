@@ -2961,7 +2961,7 @@ extern "C" {
                 vuint32_t MDIS:1;
                 vuint32_t FRZ:1;
             } B;
-        } PITMCR;
+        } MCR;
 
         uint32_t pit_reserved1[63];     /* (0x0100 - 0x0004)/4 = 0x3F */
 
@@ -3705,7 +3705,7 @@ extern "C" {
 | defines and macros (scope: module-local) 
 |-----------------------------------------------------------------*/ 
 /* Define instances of modules */ 
-#define ADC       (*(volatile struct ADC_tag *)       0xFFE00000UL)
+#define ADC_0       (*(volatile struct ADC_tag *)       0xFFE00000UL)
 #define CAN_0     (*(volatile struct FLEXCAN_tag *)   0xFFFC0000UL)
 #define CAN_1     (*(volatile struct FLEXCAN_tag *)   0xFFFC4000UL)
 #define CAN_2     (*(volatile struct FLEXCAN_tag *)   0xFFFC8000UL)

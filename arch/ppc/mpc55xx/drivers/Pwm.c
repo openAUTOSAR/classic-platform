@@ -221,7 +221,7 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
     	return;
     }
 
-    #if defined(CFG_MPC5606S)
+    #if defined(CFG_MPC5606S) && !defined(CFG_MPC5604B)
 		CGM.AC1_SC.R = 0x03000000; /* MPC56xxS: Select aux. set 1 clock to be FMPLL0 */
 		CGM.AC2_SC.R = 0x03000000; /* MPC56xxS: Select aux. set 2 clock to be FMPLL0 */
 	#endif

@@ -274,8 +274,9 @@ Std_ReturnType Adc_DeInit (const Adc_ConfigType *ConfigPtr)
     }
 
     /* Disable DMA transfer*/
+#ifndef CFG_MPC5604B
     ADC_0.DMAE.B.DMAEN = 0;
-
+#endif
     /* Power down ADC */
     ADC_0.MCR.R = 0x0001;
 

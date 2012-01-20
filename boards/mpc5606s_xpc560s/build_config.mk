@@ -5,7 +5,7 @@ ARCH_FAM=ppc
 ARCH_MCU=mpc5606s
 
 # CFG (y/n) macros
-CFG=PPC E200Z0 MPC55XX MPC560x MPC5606S BRD_MPC560X_XPC560S VLE
+CFG=PPC E200Z0 MPC55XX MPC560X MPC5606S BRD_MPC560X_XPC560S VLE
 
 # What buildable modules does this board have, 
 # default or private
