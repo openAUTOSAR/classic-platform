@@ -417,7 +417,40 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     FMPLL.ESYNCR2.B.ERFD    = clockSettingsPtr->Pll3;
     // Connect SYSCLK to FMPLL
     SIU.SYSCLK.B.SYSCLKSEL = SYSCLOCK_SELECT_PLL;
+#elif defined(CFG_MPC5604B)
+    // Write pll parameters.
+    CGM.FMPLL_CR.B.IDF = clockSettingsPtr->Pll1;
+    CGM.FMPLL_CR.B.NDIV = clockSettingsPtr->Pll2;
+    CGM.FMPLL_CR.B.ODF = clockSettingsPtr->Pll3;
 
+    /* RUN0 cfg: 16MHzIRCON,OSC0ON,PLL0ON,syclk=PLL0 */
+    ME.RUN[0].R = 0x001F0074;
+    /* Peri. Cfg. 1 settings: only run in RUN0 mode */
+    ME.RUNPC[1].R = 0x00000010;
+    /* MPC56xxB/S: select ME.RUNPC[1] */
+    ME.PCTL[68].R = 0x01; //SIUL control
+    ME.PCTL[91].R = 0x01; //RTC/API control
+    ME.PCTL[92].R = 0x01; //PIT_RTI control
+    ME.PCTL[72].R = 0x01; //eMIOS0 control
+    ME.PCTL[73].R = 0x01; //eMIOS1 control
+    ME.PCTL[16].R = 0x01; //FlexCAN0 control
+    ME.PCTL[17].R = 0x01; //FlexCAN1 control
+    ME.PCTL[4].R = 0x01;  /* MPC56xxB/P/S DSPI0  */
+    ME.PCTL[5].R = 0x01;  /* MPC56xxB/P/S DSPI1:  */
+    ME.PCTL[32].R = 0x01; //ADC0 control
+    ME.PCTL[23].R = 0x01; //DMAMUX control
+    ME.PCTL[48].R = 0x01; /* MPC56xxB/P/S LINFlex  */
+    ME.PCTL[49].R = 0x01; /* MPC56xxB/P/S LINFlex  */
+    /* Mode Transition to enter RUN0 mode: */
+    /* Enter RUN0 Mode & Key */
+    ME.MCTL.R = 0x40005AF0;
+    /* Enter RUN0 Mode & Inverted Key */
+    ME.MCTL.R = 0x4000A50F;
+
+    /* Wait for mode transition to complete */
+    while (ME.GS.B.S_MTRANS) {}
+    /* Verify RUN0 is the current mode */
+    while(ME.GS.B.S_CURRENTMODE != 4) {}
 #elif defined(CFG_MPC5606S)
     // Write pll parameters.
     CGM.FMPLL[0].CR.B.IDF = clockSettingsPtr->Pll1;
@@ -495,7 +528,15 @@ Mcu_PllStatusType Mcu_GetPllStatus(void)
 
     if( !SIMULATOR() )
     {
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC5604B)
+    	if ( !CGM.FMPLL_CR.B.S_LOCK )
+    	{
+    		rv = MCU_PLL_UNLOCKED;
+    	} else
+    	{
+    		rv = MCU_PLL_LOCKED;
+    	}
+#elif defined(CFG_MPC5606S)
     	if ( !CGM.FMPLL[0].CR.B.S_LOCK )
     	{
     		rv = MCU_PLL_UNLOCKED;
@@ -632,6 +673,10 @@ uint32_t McuE_GetSystemClock(void)
 	uint32_t eprediv = FMPLL.SYNCR.B.PREDIV;
 	uint32_t emfd = FMPLL.SYNCR.B.MFD;
 	uint32_t erfd = FMPLL.SYNCR.B.RFD;
+#elif defined(CFG_MPC5604B)
+    uint32_t eprediv = CGM.FMPLL_CR.B.IDF;
+    uint32_t emfd = CGM.FMPLL_CR.B.NDIV;
+    uint32_t erfd = CGM.FMPLL_CR.B.ODF;
 #elif defined(CFG_MPC5606S)
     uint32_t eprediv = CGM.FMPLL[0].CR.B.IDF;
     uint32_t emfd = CGM.FMPLL[0].CR.B.NDIV;

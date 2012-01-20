@@ -106,8 +106,7 @@ void Port_Init(const Port_ConfigType *configType)
 #if defined(CFG_MPC5604B)
     	if(32 == i || 33 == i) i=34;
     	if(121 == i || 122 == i) i=123;
-#endif   	
-#if defined(CFG_MPC5606S)
+#elif defined(CFG_MPC5606S)
     	// Out of reset pins PH[0:3](PCR99~PCR102) are available as JTAG pins(TCK,TDI,TDO and TMS respectively)
     	if(99 == i || 100 == i || 101 == i || 102 == i) i=103;
 #endif
@@ -188,8 +187,7 @@ void Port_RefreshPortDirection( void )
     	pcrPtr = pcrPtr+2;
     	padCfgPtr = padCfgPtr+2;
     }
-#endif
-#if defined(CFG_MPC5606S)
+#elif defined(CFG_MPC5606S)
     if(98 == i)
     {
     	i=103;
