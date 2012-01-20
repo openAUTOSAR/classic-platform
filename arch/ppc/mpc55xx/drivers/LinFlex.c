@@ -121,38 +121,42 @@ void LinInterruptRx(uint8 Channel)
 {
 	volatile struct LINFLEX_tag * LINFLEXHw = LINFLEX(Channel);
 
-    if (LinChannelStatus[Channel]==LIN_RX_BUSY) {
-		if (1 == LINFLEXHw->LINSR.B.DRF) {
-			/* Clear flags */
-			LINFLEXHw->LINSR.B.DRF = 1;
+	if (1 == LINFLEXHw->LINSR.B.DRF) {
+		/* Clear flags */
+		LINFLEXHw->LINSR.B.DRF = 1;
 
+		if (LinChannelStatus[Channel]==LIN_RX_BUSY) {
 			/* receive complete */
 			LinChannelStatus[Channel] = LIN_RX_OK;
  		}
+	}else{
+		/* Other interrupt cause */
+		LINFLEXHw->LINSR.R = 0xffffffff;
+		if (LinChannelStatus[Channel]==LIN_RX_BUSY) {
+			LinChannelStatus[Channel] = LIN_RX_ERROR;
+ 		}
 	}
-    else
-    {
-    	/* error */
-    }
 }
 
 void LinInterruptTx(uint8 Channel)
 {
 	volatile struct LINFLEX_tag * LINFLEXHw = LINFLEX(Channel);
 
-    if (LinChannelStatus[Channel]==LIN_TX_BUSY) {
-		if (1 == LINFLEXHw->LINSR.B.DTF) {
-			/* Clear flags */
-			LINFLEXHw->LINSR.B.DTF = 1;
+	if (1 == LINFLEXHw->LINSR.B.DTF) {
+		/* Clear flags */
+		LINFLEXHw->LINSR.B.DTF = 1;
 
-			/* receive complete */
+		if (LinChannelStatus[Channel]==LIN_TX_BUSY) {
+			/* transmit complete */
 			LinChannelStatus[Channel] = LIN_TX_OK;
  		}
+	}else{
+		/* Other interrupt cause */
+		LINFLEXHw->LINSR.R = 0xffffffff;
+		if (LinChannelStatus[Channel]==LIN_TX_BUSY) {
+			LinChannelStatus[Channel] = LIN_TX_ERROR;
+ 		}
 	}
-    else{
-    	/* error */
-    }
-
 }
 
 void LinInterruptErr(uint8 Channel)
@@ -240,10 +244,19 @@ void Lin_InitChannel(  uint8 Channel,   const Lin_ChannelConfigType* Config )
 	}
 
 	/* configure and enable channel */
-	LINFLEXHw->LINCR1.R = 0; /* Reset all bits */
 	LINFLEXHw->LINCR1.B.INIT = 1; /* Go to init mode */
 	LINFLEXHw->LINCR1.B.MBL = 3; /* 13 bit synch */
 	LINFLEXHw->LINCR1.B.MME = 3; /* Master mode */
+	LINFLEXHw->LINCR1.B.CCD = 0;
+	LINFLEXHw->LINCR1.B.CFD = 0;
+	LINFLEXHw->LINCR1.B.LASE = 0;
+	LINFLEXHw->LINCR1.B.AWUM = 0;
+	LINFLEXHw->LINCR1.B.BF = 0;
+	LINFLEXHw->LINCR1.B.SLFM = 0;
+	LINFLEXHw->LINCR1.B.LBKM = 0;
+	LINFLEXHw->LINCR1.B.SBDT = 0;
+	LINFLEXHw->LINCR1.B.RBLM = 0;
+	LINFLEXHw->LINCR1.B.SLEEP = 0;
 
 	LINFLEXHw->LINIER.R = 0; /* Reset all bits */
 	LINFLEXHw->LINIER.B.BEIE = 1; /* Bit error */
