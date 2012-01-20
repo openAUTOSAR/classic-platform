@@ -14,29 +14,9 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-#ifndef MPC55XX_H_
-#define MPC55XX_H_
+#ifndef IOHWAB_INTERNAL_H_
+#define IOHWAB_INTERNAL_H_
 
+#include "cpu.h"
 
-#if defined(CFG_MPC5554)
-#include "mpc5554.h"
-#elif defined(CFG_MPC5516) || defined(MPC5517)
-#include "mpc5516.h"
-#elif defined(CFG_MPC5567)
-#include "mpc5567.h"
-#elif defined(CFG_MPC5633)
-#include "mpc563m.h"
-#elif defined(CFG_MPC5604B)
-#include "MPC5604B_0M27V_0102.h"
-#elif defined(CFG_MPC5606S)
-#include "mpc5606s.h"
-#elif defined(CFG_MPC5668)
-#include "mpc5668.h"
-#else
-#error NO MCU SELECTED!!!!
-#endif
-
-/* Harmonization */
-typedef struct EDMA_TCD_STD_tag Dma_TcdType;
-
-#endif /* MPC55XX_H_ */
+#endif /* IOHWAB_INTERNAL_H_ */
