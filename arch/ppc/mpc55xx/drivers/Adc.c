@@ -40,6 +40,8 @@
 	#error Adc is configured to use Dma but the module is not enabled.
 #endif
 
+#define ADC_GROUP0		0
+
 #if !defined(CFG_MPC5606S)
 typedef union
 {
@@ -225,7 +227,9 @@ static Std_ReturnType Adc_CheckReadGroup (Adc_GroupType group);
 static Std_ReturnType Adc_CheckStartGroupConversion (Adc_GroupType group);
 static Std_ReturnType Adc_CheckStopGroupConversion (Adc_GroupType group);
 static Std_ReturnType Adc_CheckInit (const Adc_ConfigType *ConfigPtr);
+#if (ADC_DEINIT_API == STD_ON)
 static Std_ReturnType Adc_CheckDeInit (void);
+#endif
 static Std_ReturnType Adc_CheckSetupResultBuffer (Adc_GroupType group);
 static Std_ReturnType Adc_CheckGetStreamLastPointer (Adc_GroupType group);
 
@@ -1490,6 +1494,7 @@ static Std_ReturnType Adc_CheckInit (const Adc_ConfigType *ConfigPtr)
   return (returnValue);
 }
 
+#if (ADC_DEINIT_API == STD_ON)
 static Std_ReturnType Adc_CheckDeInit (void)
 {
 	Std_ReturnType returnValue = E_OK;
@@ -1514,6 +1519,7 @@ static Std_ReturnType Adc_CheckDeInit (void)
 #endif
 	return (returnValue);
 }
+#endif
 
 static Std_ReturnType Adc_CheckSetupResultBuffer (Adc_GroupType group)
 {
