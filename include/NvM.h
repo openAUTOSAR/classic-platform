@@ -109,8 +109,8 @@ void Nvm_SetRamBlockStatus( NvM_BlockIdType blockId, boolean blockChanged );	/**
 #if (NVM_API_CONFIG_CLASS > NVM_API_CONFIG_CLASS_1)
 void NvM_SetDataIndex( NvM_BlockIdType blockId, uint8 dataIndex );	/** @req NVM448 */
 void NvM_GetDataIndex( NvM_BlockIdType blockId, uint8 *dataIndexPtr );	/** @req NVM449 */
-void Nvm_ReadBlock( NvM_BlockIdType blockId, uint8 *dstPtr );	/** @req NVM454 */
-void NvM_WriteBlock( NvM_BlockIdType blockId, const uint8 *srcPtr );	/** @req NVM455 */
+Std_ReturnType NvM_ReadBlock( NvM_BlockIdType blockId, uint8 *dstPtr );	/** @req NVM454 */
+Std_ReturnType NvM_WriteBlock( NvM_BlockIdType blockId, const uint8 *srcPtr );	/** @req NVM455 */
 void Nvm_RestoreBlockDefaults( NvM_BlockIdType blockId, uint8 *dstPtr );	/** @req NVM456 */
 #endif
 

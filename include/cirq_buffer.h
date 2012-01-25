@@ -45,15 +45,16 @@ int CirqBuffPush( CirqBufferType *cPtr, void *dataPtr );
 int CirqBuffPop(CirqBufferType *cPtr, void *dataPtr );
 void *CirqBuff_PushLock( CirqBufferType *cPtr);
 void *CirqBuff_PopLock(CirqBufferType *cPtr );
+void CirqBuff_Init(CirqBufferType *cirqbuffer, void *buffer, int maxCnt, size_t dataSize);
 
 static inline boolean CirqBuff_Empty(CirqBufferType *cPtr ) {
 	return (cPtr->currCnt == 0);
 }
-static inline void *CirqBuff_PushRelease( CirqBufferType *cPtr) {
+static inline void CirqBuff_PushRelease( CirqBufferType *cPtr) {
 	++cPtr->currCnt;
 }
 
-static inline void *CirqBuff_PopRelease( CirqBufferType *cPtr) {
+static inline void CirqBuff_PopRelease( CirqBufferType *cPtr) {
 	--cPtr->currCnt;
 }
 

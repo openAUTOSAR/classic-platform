@@ -57,6 +57,7 @@ void CirqBuff_Init(CirqBufferType *cirqbuffer, void *buffer, int maxCnt, size_t 
 }
 
 
+#if 0
 CirqBufferType CirqBuffStatCreate(void *buffer, int maxCnt, size_t dataSize) {
 	CirqBufferType cirqbuffer;
 	cirqbuffer.bufStart = buffer;
@@ -66,8 +67,10 @@ CirqBufferType CirqBuffStatCreate(void *buffer, int maxCnt, size_t dataSize) {
 	cirqbuffer.tail = cirqbuffer.bufStart;
 	cirqbuffer.dataSize = dataSize;
 	cirqbuffer.currCnt = 0;
+#error returning AUTO variable......
 	return cirqbuffer;
 }
+#endif
 
 CirqBufferType *CirqBuffDynCreate( size_t size, size_t dataSize ) {
 	CirqBufferType *cPtr;
