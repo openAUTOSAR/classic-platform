@@ -26,6 +26,11 @@
 #include "debug.h"
 #include "Cpu.h"
 
+static void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByteLength,
+		Com_BitPositionType segmentStartBitOffset, uint8 segmentBitLength, boolean signedOutput);
+
+static void Com_WriteDataSegment(uint8 *pdu, uint8 *pduSignalMask, const uint8 *signalDataPtr, uint8 destByteLength,
+		Com_BitPositionType segmentStartBitOffset, uint8 segmentBitLength);
 
 void Com_ReadSignalDataFromPdu(
 			const Com_SignalIdType signalId,
@@ -33,15 +38,13 @@ void Com_ReadSignalDataFromPdu(
 
 	// Get PDU
 	const ComSignal_type * Signal = GET_Signal(signalId);
-	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
-	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
-	uint8 pduSize = GET_IPdu(Arc_Signal->ComIPduHandleId)->ComIPduSize;
+	uint8 pduSize = GET_IPdu(Signal->ComIPduHandleId)->ComIPduSize;
 	// Get data
 	Com_ReadSignalDataFromPduBuffer(
 			signalId,
 			FALSE,
 			signalData,
-			Arc_IPdu->ComIPduDataPtr,
+			GET_IPdu(Signal->ComIPduHandleId)->ComIPduDataPtr,
 			pduSize);
 }
 
@@ -52,15 +55,13 @@ void Com_ReadGroupSignalDataFromPdu(
 
 	// Get PDU
 	const ComSignal_type * Signal = GET_Signal(parentSignalId);
-	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
-	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
-	uint8 pduSize = GET_IPdu(Arc_Signal->ComIPduHandleId)->ComIPduSize;
+	uint8 pduSize = GET_IPdu(Signal->ComIPduHandleId)->ComIPduSize;
 	// Get data
 	Com_ReadSignalDataFromPduBuffer(
 			groupSignalId,
 			TRUE,
 			signalData,
-			Arc_IPdu->ComIPduDataPtr,
+			GET_IPdu(Signal->ComIPduHandleId)->ComIPduDataPtr,
 			pduSize);
 }
 
@@ -100,12 +101,11 @@ void Com_ReadSignalDataFromPduBuffer(
 	uint8 signalDataBytesArray[8];
 	const uint8 *pduBufferBytes = (const uint8 *)pduBuffer + (bitPosition/8);
 	Com_BitPositionType startBitOffset = 0;
+	imask_t state;
+	Irq_Save(state);
 
 	if (signalEndianess == COM_OPAQUE || signalType == UINT8_N) {
 		// Aligned opaque data -> straight copy
-
-		//assert(bitPosition % 8 == 0);
-		//assert(bitSize % 8 == 0);
 		memcpy(signalDataBytes, pduBufferBytes, destSize);
 
 	} else {
@@ -151,6 +151,7 @@ void Com_ReadSignalDataFromPduBuffer(
 			assert(0);
 		}
 	}
+	Irq_Restore(state);
 }
 
 
@@ -160,16 +161,14 @@ void Com_WriteSignalDataToPdu(
 
 	// Get PDU
 	const ComSignal_type *Signal     = GET_Signal(signalId);
-	Com_Arc_Signal_type  *Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
-	Com_Arc_IPdu_type    *Arc_IPdu   = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
-	const ComIPdu_type   *IPdu       = GET_IPdu(Arc_Signal->ComIPduHandleId);
+	const ComIPdu_type   *IPdu       = GET_IPdu(Signal->ComIPduHandleId);
 
 	// Get data
 	Com_WriteSignalDataToPduBuffer(
 			signalId,
 			FALSE,
 			signalData,
-			Arc_IPdu->ComIPduDataPtr,
+			(void *)IPdu->ComIPduDataPtr,
 			IPdu->ComIPduSize);
 }
 
@@ -180,16 +179,14 @@ void Com_WriteGroupSignalDataToPdu(
 
 	// Get PDU
 	const ComSignal_type *Signal     = GET_Signal(parentSignalId);
-	Com_Arc_Signal_type  *Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
-	Com_Arc_IPdu_type    *Arc_IPdu   = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
-	const ComIPdu_type   *IPdu       = GET_IPdu(Arc_Signal->ComIPduHandleId);
+	const ComIPdu_type   *IPdu       = GET_IPdu(Signal->ComIPduHandleId);
 
 	// Get data
 	Com_WriteSignalDataToPduBuffer(
 			groupSignalId,
 			TRUE,
 			signalData,
-			Arc_IPdu->ComIPduDataPtr,
+			(void *)IPdu->ComIPduDataPtr,
 			IPdu->ComIPduSize);
 }
 
@@ -229,6 +226,9 @@ void Com_WriteSignalDataToPduBuffer(
 
 	uint8 signalDataBytesArray[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 	const uint8 *signalDataBytes = (const uint8 *)signalData;
+	imask_t irq_state;
+
+	Irq_Save(irq_state);
 	if (endian == COM_OPAQUE || signalType == UINT8_N) {
 		//assert(bitPosition % 8 == 0);
 		//assert(bitSize % 8 == 0);
@@ -264,13 +264,10 @@ void Com_WriteSignalDataToPduBuffer(
 			// Straight copy into real pdu buffer (with mutex)
 			uint8 *pduBufferBytes = ((uint8 *)pduBuffer)+(bitPosition/8);
 			uint8 i;
-			imask_t irq_state;
-			Irq_Save(irq_state);
 			for (i = 0; i < 8; i++) {
 				pduBufferBytes[ i ]  &=        ~( pduSignalMask[ i ] );
 				pduBufferBytes[ i ]  |=  pduBufferBytesStraight[ i ];
 			}
-			Irq_Restore(irq_state);
 
 		} else {
 			uint8 startBitOffset = intelBitNrToPduOffset(bitPosition%8, bitSize, 64);
@@ -282,16 +279,14 @@ void Com_WriteSignalDataToPduBuffer(
 			// Swapped copy into real pdu buffer (with mutex)
 			uint8 *pduBufferBytes = ((uint8 *)pduBuffer)+(bitPosition/8);
 			uint8 i;
-			imask_t irq_state;
-			Irq_Save(irq_state);
 			// actually it is only necessary to iterate through the bytes that are written.
 			for (i = 0; i < 8; i++) {
 				pduBufferBytes[ i ]  &=       ~( pduSignalMask[ (8 - 1) - i ] );
 				pduBufferBytes[ i ]  |=  pduBufferBytesSwapped[ (8 - 1) - i ];
 			}
-			Irq_Restore(irq_state);
 		}
 	}
+	Irq_Restore(irq_state);
 }
 
 
@@ -319,7 +314,7 @@ void Com_WriteSignalDataToPduBuffer(
  *    | -------- | -------A | BCDEFGHI | JKLMNOPQ |
  *
  */
-void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByteLength,
+static void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByteLength,
 		Com_BitPositionType segmentStartBitOffset, uint8 segmentBitLength, boolean signedOutput) {
 
 	Com_BitPositionType sourceEndBitOffset = segmentStartBitOffset + segmentBitLength - 1;
@@ -508,7 +503,7 @@ void Com_RxProcessSignals(const ComIPdu_type *IPdu,Com_Arc_IPdu_type *Arc_IPdu) 
 
 		// If this signal uses an update bit, then it is only considered if this bit is set.
 		if ( (!comSignal->ComSignalArcUseUpdateBit) ||
-			( (comSignal->ComSignalArcUseUpdateBit) && (TESTBIT(Arc_IPdu->ComIPduDataPtr, comSignal->ComUpdateBitPosition)) ) ) {
+			( (comSignal->ComSignalArcUseUpdateBit) && (TESTBIT(IPdu->ComIPduDataPtr, comSignal->ComUpdateBitPosition)) ) ) {
 
 			if (comSignal->ComTimeoutFactor > 0) { // If reception deadline monitoring is used.
 				// Reset the deadline monitoring timer.

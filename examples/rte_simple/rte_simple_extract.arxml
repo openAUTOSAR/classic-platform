@@ -38,7 +38,7 @@
                   <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Result</PORT-PROTOTYPE-REF>
                   <DATA-ELEMENT-REF DEST="DATA-ELEMENT-PROTOTYPE">/rte_simple_lib/Interfaces/ResultIf/result</DATA-ELEMENT-REF>
                 </DATA-ELEMENT-IREF>
-                <SIGNAL-REF DEST="SYSTEM-SIGNAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Result</SIGNAL-REF>
+                <SIGNAL-REF DEST="SYSTEM-SIGNAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/ResultSig</SIGNAL-REF>
               </SENDER-RECEIVER-TO-SIGNAL-MAPPING>
               <SENDER-RECEIVER-TO-SIGNAL-MAPPING>
                 <DATA-ELEMENT-IREF>

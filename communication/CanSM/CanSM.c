@@ -81,7 +81,7 @@ void CanSM_ControllerBusOff(uint8 Controller)
 	for (uint8 i = 0; i < CANSM_NETWORK_COUNT; ++i) {
 		const CanSM_NetworkType* Network = &CanSM_Config->Networks[i];
 		for (uint8 j = 0; j < Network->ControllerCount; ++j) {
-			const CanSM_ControllerType* ptrController = &Network->Controllers[i];
+			const CanSM_ControllerType* ptrController = &Network->Controllers[j];
 			if(ptrController->CanIfControllerId == Controller)
 			{
 				CanSM_Internal.Networks[i].busoffevent = TRUE;

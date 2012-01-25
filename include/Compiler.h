@@ -34,38 +34,36 @@
 #define CC_EXTENSION 	__extension__
 #elif defined(__CWCC__)
 #define CC_EXTENSION
+#elif defined(__DCC__)
+#define CC_EXTENSION
 #endif
 
 #if defined(__GNUC__)
 #define SECTION_BALIGN(_align )  __attribute__ ((aligned (_align)))
 #elif defined(__CWCC__)
 #define SECTION_BALIGN(_align )  __attribute__ ((aligned (_align)))
+#elif defined(__DCC__)
+#define SECTION_BALIGN(_align )  __attribute__ ((aligned (_align)))
 #endif
 
 #define DECLARE_WEAK			__attribute__ ((weak))
 
 /* REQ:COMPILER005 */
-/* TODO: skip the memclass for now */
 #define FUNC(rettype,memclass) rettype
 
-/* REQ:COMPILER006 */
-#define P2VAR(ptrtype, memclass, ptrclass) ptrtype
+#define P2VAR(ptrtype, memclass, ptrclass) ptrtype *
 
-/* TODO: memclass and more */
-#define P2CONST(ptrtype, memclass, ptrclass) ptrtype
+#define P2CONST(ptrtype, memclass, ptrclass) const ptrtype *
 
-/* TODO: memclass and more */
-#define CONSTP2VAR(ptrtype,memclass,ptrclass) ptrclass ptrtype * const
+#define CONSTP2VAR(ptrtype,memclass,ptrclass) ptrtype * const
 
-/* TODO: */
-#define P2FUNC(rettype,ptrclass,fctname) retype (*ptrclass,fctname)
+#define CONSTP2CONST(ptrtype, memclass, ptrclass) const ptrtype * const
 
-/* TODO: */
+#define P2FUNC(rettype,ptrclass,fctname) retype (*fctname)
+
 #define CONST(consttype,memclass) const consttype
 
-/* TODO: */
 #define VAR(vartype,memclass) vartype
-
 
 
 #endif /* COMPILER_H */	

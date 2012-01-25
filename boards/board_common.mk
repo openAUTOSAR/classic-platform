@@ -62,11 +62,9 @@ obj-$(USE_MCU) += Mcu_Cfg.o
 # Flash
 obj-$(USE_FLS) += Fls.o
 obj-$(USE_FLS) += Fls_Cfg.o
-ifeq ($(CFG_MPC5606S),y)
-obj-$(CFG_MPC55XX)-$(USE_FLS) += Fls_C90FL.o
-else
-obj-$(CFG_MPC55XX)-$(USE_FLS) += Fls_H7F.o
-endif
+obj-$(CFG_MPC55XX)-$(USE_FLS) += flash_h7f_c90.o
+obj-$(CFG_MPC55XX)-$(USE_FLS) += flash_ll_h7f_c90.o
+
 
 # Bring in the freescale driver source  
 inc-$(CFG_MPC55XX) +=  $(ROOTDIR)/$(ARCH_PATH-y)/delivery/mpc5500_h7f/include
@@ -160,7 +158,8 @@ obj-$(USE_DET) += Det.o
 # Lin
 obj-$(USE_LIN) += Lin_PBcfg.o
 obj-$(USE_LIN) += Lin_Lcfg.o
-obj-$(USE_LIN) += Lin.o
+obj-$(USE_LIN)-$(CFG_MPC5606S) += LinFlex.o
+obj-$(USE_LIN)-$(CFG_MPC5516) += Lin.o
 
 # LinIf
 obj-$(USE_LINIF) += LinIf_Lcfg.o

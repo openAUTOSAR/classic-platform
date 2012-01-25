@@ -4,12 +4,12 @@
 #if defined(__GNUC__)
 .section ".rcw","ax"
 .balign  4
-#elif defined(__CWCC__)
-.section .rcw,4,"r"
+#elif defined(__CWCC__) || defined(__DCC__)
+	.section .rcw,4,"r"
 #endif
 
 
-.global _resetconfiguration
+	.global _resetconfiguration
 _resetconfiguration:
 #if defined(CFG_VLE)
 	.byte  0x01   #no watchdog, VLE
@@ -35,7 +35,10 @@ _resetconfiguration:
 	
 #if defined(__CWCC__) && defined(CFG_VLE)
 .section .text_vle,text_vle
-#else
+#elif defined(__DCC__)
+	// Must be indented (diab)
+	.section .text_vle,x
+#elif defined(__GNUC__)
 .section .text
 #endif
 	.align		4

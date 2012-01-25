@@ -89,5 +89,5 @@ void Com_TpTxConfirmation(PduIdType PduId, NotifResultType Result);
 extern ComSignalEndianess_type Com_SystemEndianness;
 
 #define COM_BUSY 0x81
-
+#define COM_SERVICE_NOT_AVAILABLE 0x80
 #endif /*COM_H_*/

@@ -24,7 +24,7 @@
 const Nm_ConfigType* Nm_ConfigPtr;
 
 /** Initializes the NM Interface. */
-void Nm_Init( Nm_ConfigType * const nmConfigPtr ){
+void Nm_Init( const Nm_ConfigType * const nmConfigPtr ){
 	Nm_ConfigPtr = nmConfigPtr;
 }
 

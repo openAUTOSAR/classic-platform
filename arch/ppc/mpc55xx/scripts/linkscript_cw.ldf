@@ -8,6 +8,7 @@ MEMORY
 SECTIONS
 {
    GROUP : {
+       __rom_start=.; 
       .rcw : { }      
       .exception_tbl (VLECODE) : {}
 #if defined(CFG_VLE)
@@ -54,9 +55,11 @@ SECTIONS
 	    . = ALIGN(0x10);  /* Section alignment is 0x10 */
 	    __SDATA0 = .;
 	    .=.+SIZEOF(.PPC.EMB.sdata0);
+	    __rom_end = .;
 	 }	 > flash
 
 	GROUP : {
+		__ram_start=.;
 		__DATA_RAM = .;	
 		.data (DATA) LOAD(ADDR(__DATA_ROM)) :  {}
 		.sdata (DATA) LOAD(ADDR(__SDATA)): {}    /* .sdata - Initialized small data */
@@ -72,7 +75,8 @@ SECTIONS
       .PPC.EMB.sbss0  : {}
       .ramlog : { *(.ramlog_data) *(.ramlog_bss) }
       .dem : { *(.dem_eventmemory_pri) }
-	  _heap_addr = .;      
+	  _heap_addr = .; 
+	  __ram_end = .;
 	} > sram
 }   
 
