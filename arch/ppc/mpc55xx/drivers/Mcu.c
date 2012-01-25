@@ -451,6 +451,10 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     while (ME.GS.B.S_MTRANS) {}
     /* Verify RUN0 is the current mode */
     while(ME.GS.B.S_CURRENTMODE != 4) {}
+
+    CGM.SC_DC[0].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
+    CGM.SC_DC[1].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
+    CGM.SC_DC[2].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
 #elif defined(CFG_MPC5606S)
     // Write pll parameters.
     CGM.FMPLL[0].CR.B.IDF = clockSettingsPtr->Pll1;
@@ -485,6 +489,10 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     while (ME.GS.B.S_MTRANS) {}
     /* Verify RUN0 is the current mode */
     while(ME.GS.B.S_CURRENTMODE != 4) {}
+
+    CGM.SC_DC[0].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
+    CGM.SC_DC[1].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
+    CGM.SC_DC[2].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
 
  #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
     // Partially following the steps in MPC5567 RM..
