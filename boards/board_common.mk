@@ -95,6 +95,11 @@ obj-$(USE_PORT) += Port_Cfg.o
 obj-$(USE_ADC) += Adc.o
 obj-$(USE_ADC) += Adc_Cfg.o
 
+# Crc
+vpath-$(USE_CRC32) += $(ROOTDIR)/system/Crc
+obj-$(USE_CRC32) += Crc_32.o
+obj-$(USE_CRC16) += Crc_16.o
+
 # J1939Tp
 obj-$(USE_J1939TP) += J1939Tp.o
 obj-$(USE_J1939TP) += J1939Tp_LCfg.o

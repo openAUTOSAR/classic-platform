@@ -18,5 +18,20 @@
 #define WRITE64(address, value)     (*(vuint64_t*)(address) = (value))
 #define READ64(address)             ((uint64_t)(*(vuint64_t*)(address)))
 
+/* Not aligned reads */
+#define READ32_NA(address )			( (((uint32_t)(((uint8_t *)address)[0]))<<24) +	\
+									  (((uint32_t)(((uint8_t *)address)[1]))<<16) +	\
+									  (((uint32_t)(((uint8_t *)address)[2]))<<8) +	\
+									  ((uint32_t)(((uint8_t *)address)[3])) )
+
+#define WRITE32_NA(address, value ) \
+	do { \
+    	((uint8_t *)address)[0] = ((value&0xff)<<24); \
+    	((uint8_t *)address)[1] = ((value&0xff)<<16); \
+    	((uint8_t *)address)[2] = ((value&0xff)<<8);  \
+    	((uint8_t *)address)[3] = ((value&0xff)); \
+	} while(0)
+
+
 
 #endif /* IO_H_ */
