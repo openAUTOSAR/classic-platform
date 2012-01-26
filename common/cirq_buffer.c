@@ -40,7 +40,11 @@
 #include <assert.h>
 #endif
 
+#if defined(__GNUC__)
 #define MEMCPY(_x,_y,_z)	__builtin_memcpy(_x,_y,_z)
+#else
+#define MEMCPY(_x,_y,_z)	memcpy(_x,_y,_z)
+#endif
 //#define MEMCPY(_x,_y,_z)	memcpy(_x,_y,_z)
 
 

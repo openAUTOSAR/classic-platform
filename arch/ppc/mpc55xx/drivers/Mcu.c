@@ -254,12 +254,12 @@ static const core_info_t *Mcu_IdentifyCore(uint32 pvr)
 
 static uint32 Mcu_CheckCpu( void ) {
 	uint32 pvr;
-	uint32 pir;
+	// uint32 pir;
 	const cpu_info_t *cpuType;
 	const core_info_t *coreType;
 
     // We have to registers to read here, PIR and PVR
-    pir = get_spr(SPR_PIR);
+    // pir = get_spr(SPR_PIR);
     pvr = get_spr(SPR_PVR);
 
     cpuType = Mcu_IdentifyCpu(pvr);
