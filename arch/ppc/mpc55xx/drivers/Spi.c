@@ -1571,8 +1571,6 @@ static void Spi_WriteJob_FIFO( Spi_JobType jobIndex )
     const Spi_DataType *            buf;
     Spi_NumberOfDataType            copyCnt;
     Spi_NumberOfDataType            fifoLeft;
-    boolean                         done = 0;
-    boolean                         lastJob = 0;
 	int     i;
 	jobUnitPtr = &Spi_JobUnit[jobIndex];
 
@@ -1757,6 +1755,7 @@ static void Spi_JobWrite(Spi_JobType jobIndex) {
 }
 
 
+#if defined(USE_LDEBUG_PRINTF) && ( DEBUG_LVL <= DEBUG_HIGH )
 void Spi_PrintSeqInfo(const Spi_SequenceConfigType *seqConfigPtr) {
 	int i = 0;
 	uint32 job;
@@ -1765,8 +1764,10 @@ void Spi_PrintSeqInfo(const Spi_SequenceConfigType *seqConfigPtr) {
 	while ((job = seqConfigPtr->JobAssignment[i]) != JOB_NOT_VALID) {
 		DEBUG(DEBUG_HIGH,"%d ",job);
 		i++;
-	} DEBUG(DEBUG_HIGH,"\n");
+	}
+	DEBUG(DEBUG_HIGH,"\n");
 }
+#endif
 
 
 /**
@@ -2041,7 +2042,6 @@ void Spi_MainFunction_Driving(void) {
 	volatile struct DSPI_tag *spiHw;
 	uint32 confMask;
 	uint8 confNr;
-	Spi_UnitType *spiUnit;
 
 	// TODO: check that the queue is empty.. if so do the next job.
 	if (Spi_Global.asyncMode == SPI_POLLING_MODE) {
@@ -2055,7 +2055,6 @@ void Spi_MainFunction_Driving(void) {
 				if (spiHw->SR.B.TXRXS) {
 					// Still not done..
 				} else {
-					spiUnit = GET_SPI_UNIT_PTR(confNr);
 					Spi_Isr(confNr);
 				}
 			}

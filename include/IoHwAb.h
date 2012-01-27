@@ -59,7 +59,7 @@
 
 #define IOHWAB_E_INIT				0x01
 
-#define IOHWAB_E_PARAM_CHANNEL		0x11
+#define IOHWAB_E_PARAM_SIGNAL		0x11
 #define IOHWAB_E_PARAM_DUTY			0x12
 
 /******************************************* DET macros *******************************************/
