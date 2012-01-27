@@ -34,7 +34,7 @@
 
 
 uint32 Crc_CalculateCRC32(const uint8 *dataPtr, uint32 len, uint32 startVal );
-uint16 Crc_CalculateCRC16(	const uint8* Crc_DataPtr, uint32 len, uint16 startVal );
+uint16 Crc_CalculateCRC16(	const uint8* dataPtr, uint32 len, uint16 startVal );
 
 #if ( CRC_VERSION_INFO_API == STD_ON )
 #define Crc_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,CRC)
