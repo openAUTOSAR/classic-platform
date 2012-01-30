@@ -21,6 +21,8 @@
 #include <Os.h>
 #include "EcuM_Internals.h"
 #include "EcuM_Cbk.h"
+#include "SchM_EcuM.h"
+#include "MemMap.h"
 #include "Mcu.h"
 #if defined(USE_DET)
 #include "Det.h"
