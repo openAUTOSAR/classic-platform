@@ -90,6 +90,61 @@
  * SPEED
  *   To get some speed into this multiple thing must be done in the same MainFunction loop.
  *
+ * MEMIF
+ *   The interface is actually quite strange, so you may read from any address (through MemIf_Read())
+ *   but MemIf_Write(..) only takes a logical block and a pointer to the data to write.
+ *
+ *   See two alternatives here:
+ *    1. If the NVBlock also contains the checksum after the data then writing the data needs a
+ *       RAM that is as big as the biggest RAM block + room for checksum.
+ *    2. If checksums would be kept in a separate EA/FEE block the ALL the checksum need to be written.
+ *       For example after a NvM_WriteBlock() the checksum block would need to be written. This
+ *       will probably lead consistency problems also... what happens if we fail to write the checksum
+ *       block?
+ *
+ *
+ *
+ * MANUAL
+ *
+ *
+ *
+ *   Provide Data for the first/initial read
+ *     When a block have no
+ *
+ *     NVM085
+ *     NVM061
+ *     NVM083
+ *
+ *   Configuring CRCs
+ *     BlockUseCrc (A):      If the block (both RAM and NV) should use CRC
+ *     CalcRamBlockCrc (B):  If the permanent RAM block should re-calculate it's CRC.
+ *
+ *     A B
+ *     ------------
+ *     0 0  No error detection or recovery
+ *     0 1  N/A
+ *     1 0  ?
+ *     1 1  ?
+ *
+ * RAM BLOCK VALID/UNCHANGED
+ *   Figure 8 and 9 in 3.1.5/NVM is more confusing than good.
+ *   What we have to know is:
+ *    1. Initially the RAM block is in INVALID/UNCHANGED
+ *    ALT 2. After a NvM_ReadAll() and all is well the state goes to VALID/UNCHANGED
+ *    ALT 2. If ROM values are used we go to VALID/CHANGED (We failed to read from NVRAM)
+ *
+ *   For NvM_WriteAll()
+ *   1. A block that is INVALID can't be written
+ *   2. A block that is UNCHANGED should not be written.
+ *   -> Write only blocks that are VALID/CHANGED.
+ *
+ *   VALID/UNCHANGED - RAM == NV
+ *   VALID/CHANGED   - RAM != NV   (analog to cache memories, "dirty")
+ *
+ *   Analog to cache
+ *     VALID/CHANGED state - Dirty (since RAM != NV)
+ *     WriteBlock          - Flush (Flush the RAM block to NV)
+ *     ReadBlock           - Invalidate (NV block is read to RAM)
  */
 
 
@@ -102,7 +157,7 @@
 
 
 /*
- * NB! Even though some code exist for handling crc, the functionality is not complete
+ * NB! Even though some code exist for handling RamCrc, the functionality is not complete
  * and shall not be used.
  */
 
@@ -131,6 +186,7 @@
 #include <stdio.h>
 #include "io.h"
 #include "Crc.h"
+#include <string.h>
 
 #if NVM_NUM_OF_NVRAM_BLOCKS != 5
 #error nOOOOO
@@ -232,7 +288,7 @@ typedef enum {
 	BLOCK_STATE_MEMIF_REQ,
 //	BLOCK_STATE_START,
 	BLOCK_STATE_MEMIF_PROCESS,
-	BLOCK_STATE_MEMIF_CRC_PROCESS,
+//	BLOCK_STATE_MEMIF_CRC_PROCESS,
 	BLOCK_STATE_CALC_CRC,
 //	BLOCK_STATE_MEMIF_PROCESS_CRC,
 	BLOCK_STATE_CALC_CRC_WRITE,
@@ -265,7 +321,11 @@ typedef struct {
 	boolean					BlockChanged;			// Block changed?
 	boolean					BlockValid;				// Block valid? (RAM block only?)
 	uint8					NumberOfWriteFailed;	// Current write retry cycle
-	union Nvm_CRC			crc;
+	union Nvm_CRC			RamCrc;
+	union Nvm_CRC			NvCrc;					// The CRC of this block, read from NV
+	void *					savedDataPtr;			//
+	uint8 					crcLen;
+
 } AdministrativeBlockType;
 
 /*
@@ -306,6 +366,8 @@ static AdministrativeMultiBlockType AdminMultiBlock;
 
 static Nvm_QueueType  nvmQueueImmData[NVM_SIZE_IMMEDIATE_JOB_QUEUE];
 static Nvm_QueueType  nvmQueueData[NVM_SIZE_STANDARD_JOB_QUEUE];
+
+uint8 Nvm_WorkBuffer[200];		/* TODO */
 
 #if (NVM_SIZE_STANDARD_JOB_QUEUE == 0)
 #error NVM_SIZE_STANDARD_JOB_QUEUE have size 0
@@ -491,6 +553,19 @@ static void ReadAllInit(void)
 }
 
 
+static void writeCrcToBuffer( 	void *bufPtr,
+								const NvM_BlockDescriptorType *bPtr,
+								AdministrativeBlockType *admPtr )
+{
+	if( bPtr->BlockUseCrc ) {
+		if(bPtr->BlockCRCType == NVM_CRC16) {
+			WRITE16_NA(bufPtr + bPtr->NvBlockLength,admPtr->RamCrc.crc16);
+		} else {
+			WRITE32_NA(bufPtr + bPtr->NvBlockLength,admPtr->RamCrc.crc32);
+		}
+	}
+}
+
 
 /*
  * Drive the read state-machine
@@ -506,6 +581,7 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 							boolean multiBlock  )
 {
 	bool blockDone = 0;
+	static uint8 driveBlockCnt = 0;
 
 
 	NVM_ASSERT( admPtr->ErrorStatus == NVM_REQ_PENDING);
@@ -515,18 +591,27 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 	switch (admPtr->BlockState) {
 	case BLOCK_STATE_MEMIF_REQ:
 	{
+		void *ramData = (dataPtr != NULL) ?  dataPtr : bPtr->RamBlockDataAddress;
+
+		admPtr->savedDataPtr = ramData;
+
 		if( write ) {
 			if( multiBlock && (dataPtr!=NULL)) {
 				NVM_ASSERT(0);
 			}
-
-			if (dataPtr != NULL ) {
-				WriteBlock(bPtr, admPtr, 0, dataPtr);
-			} else {
-				WriteBlock(bPtr, admPtr, 0, bPtr->RamBlockDataAddress);
-			}
+			/* Copy to work buffer */
+			memcpy( Nvm_WorkBuffer, ramData, bPtr->NvBlockLength );
+			/* Add the CRC to write */
+			writeCrcToBuffer(Nvm_WorkBuffer, bPtr, admPtr );
+			WriteBlock(bPtr, admPtr, 0, Nvm_WorkBuffer);
 		} else {
-			ReadBlock(bPtr, admPtr, 0, 0, bPtr->RamBlockDataAddress, bPtr->NvBlockLength);
+			uint8 crcLen = 0;
+			/* Read to workbuffer */
+			if( bPtr->BlockUseCrc ) {
+				crcLen = (bPtr->BlockCRCType == NVM_CRC16) ? 2: 4;
+			}
+
+			ReadBlock(bPtr, admPtr, 0, 0, bPtr->RamBlockDataAddress, bPtr->NvBlockLength+crcLen);
 		}
 
 		admPtr->BlockState = BLOCK_STATE_MEMIF_PROCESS;
@@ -534,7 +619,6 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 	}
 
 	case BLOCK_STATE_MEMIF_PROCESS:
-	case BLOCK_STATE_MEMIF_CRC_PROCESS:
 	{
 		/* Check read */
 		MemIf_JobResultType jobResult = MemIf_GetJobResult(0);
@@ -544,13 +628,21 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 		} else if( MEMIF_JOB_OK == jobResult ) {
 			/* We are done */
 
+#if 0
 			if( BLOCK_STATE_MEMIF_CRC_PROCESS == admPtr->BlockState ) {
 				/* @req 3.1.5/NVM362 NvM_ReadAll*/
+				DEBUG_CHECKSUM("RAM CRC", (bPtr->BlockCRCType == NVM_CRC16) ?  admPtr->RamCrc.crc16 : admPtr->RamCrc.crc32);
 				admPtr->BlockState = BLOCK_STATE_CALC_CRC_READ;
 				break;
 			}
+#endif
 
 			if( write ) {
+				admPtr->BlockState = BLOCK_STATE_MEMIF_REQ;
+				admPtr->ErrorStatus = NVM_REQ_OK;
+				blockDone = 1;
+
+#if 0
 				if( bPtr->BlockUseCrc ) {
 					/* Explicit CRC calc (not dependent on NvmCalcRamBlockCrc) */
 					/* @req 3.1.5/NVM212 NvM_WriteBlock */
@@ -562,32 +654,52 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 					admPtr->ErrorStatus = NVM_REQ_OK;
 					blockDone = 1;
 				}
+#endif
 			} else {
 				/* read */
+				uint8 crcLen = 0;
 				if( bPtr->BlockUseCrc ) {
 
-					/* The CRC does not fit into RAM block so we have to read
-					 * it now.
-					 *
-					 * Note! There is no difference at this point if CalcRamBlockCrc
-					 * is TRUE or not. If CalcRamBlockCrc=FALSE we still need to save
-					 * the NV CRC checksum in the admin block. If CalcRamBlockCrc=TRUE
-					 * we need to re-calculate the RAM CRC and compare it to the one
-					 * in the NV block.
-					 */
-					ReadBlock(bPtr, admPtr, 0, bPtr->NvBlockLength,
-							(bPtr->BlockCRCType == NVM_CRC16) ?  &admPtr->crc.crc16 : &admPtr->crc.crc32 ,
-							(bPtr->BlockCRCType == NVM_CRC16)  ? 2 : 4 );
+					/* The read data is in the work buffer, read the CRC */
+					if( bPtr->BlockCRCType == NVM_CRC16) {
+						admPtr->NvCrc.crc16 = READ16_NA( Nvm_WorkBuffer + bPtr->NvBlockLength );
+						crcLen = 2;
+						DEBUG_PRINTF(">> Nv CRC %04x\n",admPtr->NvCrc.crc16);
+						admPtr->RamCrc.crc16 = admPtr->NvCrc.crc16;	/* Set RAM CRC = NvRAM CRC */
+					} else {
+						admPtr->NvCrc.crc32 = READ32_NA( Nvm_WorkBuffer + bPtr->NvBlockLength );
+						crcLen = 4;
+						DEBUG_PRINTF(">> Nv CRC %08x\n",admPtr->NvCrc.crc16);
+						admPtr->RamCrc.crc32 = admPtr->NvCrc.crc32;	/* Set RAM CRC = NvRAM CRC */
+					}
 
-					DEBUG_CHECKSUM("RAM CRC", (bPtr->BlockCRCType == NVM_CRC16) ?  admPtr->crc.crc16 : admPtr->crc.crc32);
-					admPtr->BlockState = BLOCK_STATE_MEMIF_CRC_PROCESS;
+					memcpy(admPtr->savedDataPtr, Nvm_WorkBuffer, bPtr->NvBlockLength  + crcLen );
+
+					/* Check if we should re-calculate the RAM checksum now when it's in RAM */
+					if( bPtr->CalcRamBlockCrc ) {
+						/* This block want its RAM block CRC checked */
+						DEBUG_PRINTF(">> Recalculation of RAM checksum \n",admPtr->NvCrc.crc16);
+						assert( bPtr->BlockUseCrc == 1);
+						admPtr->BlockState = BLOCK_STATE_CALC_CRC_READ;
+					} else {
+						/* Done */
+						admPtr->BlockState = BLOCK_STATE_MEMIF_REQ;
+						admPtr->ErrorStatus = NVM_REQ_OK;
+						blockDone = 1;
+					}
 
 				} else {
+					DEBUG_PRINTF(">> Block have NO CRC\n");
+
+					memcpy(admPtr->savedDataPtr, Nvm_WorkBuffer, bPtr->NvBlockLength  + crcLen );
 					/* Done */
 					admPtr->BlockState = BLOCK_STATE_MEMIF_REQ;
 					admPtr->ErrorStatus = NVM_REQ_OK;
 					blockDone = 1;
 				}
+
+				/* Copy from Workbuffer to the real buffer */
+
 			}
 			break;
 		} else {
@@ -630,52 +742,115 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 
 		/* Calculate RAM CRC checksum */
 		if( bPtr->BlockCRCType == NVM_CRC16 ) {
-			crc16 = Crc_CalculateCRC16(bPtr->RamBlockDataAddress,bPtr->NvBlockLength,0xffff);
 
+			crc16 = Crc_CalculateCRC16(bPtr->RamBlockDataAddress,bPtr->NvBlockLength,0xffff);
+			DEBUG_CHECKSUM("RAM",crc16);
+
+			/* Just save the checksum */
+			admPtr->RamCrc.crc16 = crc16;
+
+#if 0
 			/* NV CRC in admin block */
-			if( admPtr->crc.crc16 != crc16 ) {
+			if( admPtr->RamCrc.crc16 != crc16 ) {
 				NVM_ASSERT(0);		/* TODO: Corrupt CRC */
 			} else {
 				admPtr->BlockChanged = BLOCK_STATE_MEMIF_REQ;
 			}
+#endif
+
+			/* Write the block */
+			admPtr->BlockState = BLOCK_STATE_MEMIF_REQ;
 		} else {
 			/* @req 3.1.5/NVM253 */
 			crc32 = Crc_CalculateCRC32(bPtr->RamBlockDataAddress,bPtr->NvBlockLength,0xffffffffUL);
-			if( crc32 !=  admPtr->crc.crc32 ) {
+			if( crc32 !=  admPtr->RamCrc.crc32 ) {
 				/* The checksum is wrong, something have written to the RAM area without
 				 * telling the NVM */
 				NVM_ASSERT(0);
 			} else {
 				admPtr->BlockState = BLOCK_STATE_MEMIF_REQ;
 			}
-			admPtr->crc.crc32 = crc32;
+			admPtr->RamCrc.crc32 = crc32;
 		}
 		break;
 	}
 	case BLOCK_STATE_CALC_CRC_READ:
 	{
 		NVM_ASSERT(bPtr->RamBlockDataAddress != NULL );
+		NVM_ASSERT(bPtr->CalcRamBlockCrc == true );
 		uint16 crc16;
 		uint32 crc32;
 
 		/* Calculate RAM CRC checksum */
 		if( bPtr->BlockCRCType == NVM_CRC16 ) {
+
+
 			crc16 = Crc_CalculateCRC16(bPtr->RamBlockDataAddress,bPtr->NvBlockLength,0xffff);
+			DEBUG_CHECKSUM("RAM",crc16);
+
 			/* NV CRC in admin block */
-			if( admPtr->crc.crc16 != crc16 ) {
-				NVM_ASSERT(0);		/* TODO: Corrupt CRC */
+
+			if( driveBlockCnt == 1) {
+				/* The previous "loop" we filled with default data */
+				admPtr->RamCrc.crc16 = crc16;
+			}
+
+			/* @req 3.1.5/NVM387 */
+			if( admPtr->RamCrc.crc16 != crc16 ) {
+
+				/* @req 3.1.5/NVM388 Nvm_ReadAll */
+
+				/* NVM387, NVM388
+				 *
+				 * Corrupt CRC, what choices are there:
+				 * 1. Default data (=ROM) configured, just copy it.
+				 * 2. Data redundancy, get it.
+				 * 3. None of the above. Catastrophic failure. (NVM203)
+				 */
+				if( bPtr->RomBlockDataAdress != NULL ) {
+					/* TODO: Restore block from ROM */
+					NVM_ASSERT(0);
+				} else {
+					/* @req 3.1.5/NVM469 */
+					if( bPtr->InitBlockCallback != NULL ) {
+
+						DEBUG_PRINTF("Filling block with default data\n");
+						bPtr->InitBlockCallback();
+						driveBlockCnt++;
+						/* NVM085 is very vague here, but the says the application should be
+						 * able distinguish between when the init-callback have been called
+						 * or CRC is corrupt.
+						 */
+
+						/* The RAM CRC is at this point not calculated...so we must do this
+						 * .. so just stay in this state one more MainFunction.
+						 * */
+
+					} else {
+
+						/* @req 3.1.5/NVM203 */
+						DEM_REPORTERRORSTATUS(NVM_E_INTEGRITY_FAILED,DEM_EVENT_STATUS_FAILED);
+						/* @req 3.1.5/NVM204 */
+						admPtr->ErrorStatus = NVM_REQ_INTEGRITY_FAILED;
+						admPtr->BlockState = BLOCK_STATE_MEMIF_REQ;
+						blockDone = 1;
+					}
+				}
 			} else {
-				admPtr->BlockChanged = BLOCK_STATE_MEMIF_REQ;
+				DEBUG_CHECKSUM("RAM checksum ok with ",crc16);
+				admPtr->ErrorStatus = NVM_REQ_OK;
+				admPtr->BlockState = BLOCK_STATE_MEMIF_REQ;
+				blockDone = 1;
 			}
 
 		} else {
 			/* @req 3.1.5/NVM253 */
 			/* Calculate CRC on the data we just read to RAM. Compare with CRC that is located in NV block */
 			crc32 = Crc_CalculateCRC32(bPtr->RamBlockDataAddress,bPtr->NvBlockLength,0xffffffffUL);
-			if( crc32 !=  admPtr->crc.crc32 ) {
+			if( crc32 !=  admPtr->RamCrc.crc32 ) {
 				NVM_ASSERT(0);	/* TODO: Corrupt CRC */
 			} else {
-				admPtr->BlockChanged = BLOCK_STATE_MEMIF_REQ;
+				admPtr->BlockState = BLOCK_STATE_MEMIF_REQ;
 			}
 		}
 		break;
@@ -686,6 +861,15 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 	}
 
 	if( blockDone  ) {
+
+		DEBUG_PRINTF("# Block Done\n");
+
+		if( admPtr->ErrorStatus == NVM_REQ_OK ) {
+			admPtr->BlockChanged = FALSE;
+			admPtr->BlockValid = TRUE;
+		}
+
+
 		/*  @req 3.1.5/NVM281 */
 		if( bPtr->SingleBlockCallback != NULL ) {
 			bPtr->SingleBlockCallback(NVM_READ_ALL_ID, admPtr->ErrorStatus);
@@ -830,7 +1014,7 @@ static void WriteAllMain(void)
 	DriveBlock(	&NvM_Config.BlockDescriptor[AdminMultiReq.currBlockIndex],
 					&AdminBlock[AdminMultiReq.currBlockIndex],
 					NULL,
-					false,
+					true,
 					true );
 
 }
@@ -1191,22 +1375,23 @@ void NvM_MainFunction(void)
 	Nvm_QueueType 	qEntry;
 	const NvM_BlockDescriptorType *	bList = NvM_Config.BlockDescriptor;
 	const NvM_BlockDescriptorType *	nvmBlock;
-	const NvM_BlockDescriptorType *	currBlock;
+//	const NvM_BlockDescriptorType *	currBlock;
 	AdministrativeBlockType *admBlock;
-	static uint32 crc32;
-	static uint32 crc32Left;
+//	static uint32 crc32;
+//	static uint32 crc32Left;
 
 	/* Check for new requested state changes */
 	if( nvmState == NVM_IDLE ) {
-		DEBUG_PRINTF("### Popping FIFO ###\n");
 		rv = CirqBuffPop( &nvmQueue, &qEntry );
 		if( rv == 0 ) {
-			/* Buffer not empty */
+			/* Found something in buffer */
 			nvmState = qEntry.op;
 			nvmBlock = &bList[qEntry.blockId-1];
 			admBlock = &AdminBlock[qEntry.blockId-1];
 			nvmSubState = 0;
 			admBlock->ErrorStatus = NVM_REQ_PENDING;
+			DEBUG_PRINTF("### Popped Single FIFO \n");
+			DEBUG_PRINTF("### CRC On:%d Ram:%d Type:%d\n",nvmBlock->BlockUseCrc, nvmBlock->CalcRamBlockCrc, nvmBlock->BlockCRCType );
 		} else {
 			/* Check multiblock req */
 			if( AdminMultiReq.state != NVM_UNINITIALIZED ) {
@@ -1215,6 +1400,8 @@ void NvM_MainFunction(void)
 				nvmBlock = 0;
 				admBlock = 0;
 				AdminMultiReq.state = NVM_UNINITIALIZED;
+
+				DEBUG_PRINTF("### Popped MULTI\n");
 			}
 		}
 	}
