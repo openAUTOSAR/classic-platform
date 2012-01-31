@@ -29,6 +29,8 @@ typedef sint32 IoHwAb_AnalogValueType;
 
 //typedef sint32 IoHwAb_ChannelType;
 
+typedef sint32 IoHwAb_SignalType;
+
 /* Duty cycle type (per mille) */
 typedef uint32 IoHwAb_DutyType;
 #define IOHWAB_DUTY_MIN		   0		/*   0% */
