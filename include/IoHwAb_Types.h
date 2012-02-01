@@ -45,8 +45,8 @@ typedef uint32 IoHwAb_FrequencyType;
 #define	IOHWAB_FREEZECURRENTSTATE	2
 #define	IOHWAB_SHORTTERMADJUST		3
 
-/* 12-bit ADC */
-#define ADC_MAX_VALUE				4096
+/* Freescale qADC have 12-bit ADC resolution bit 14-bit result */
+#define ADC_MAX_VALUE				16384
 
 #define IOHWAB_LOW			STD_HIGH
 #define IOHWAB_HIGH			STD_LOW
