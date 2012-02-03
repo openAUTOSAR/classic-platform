@@ -272,6 +272,7 @@ typedef enum {
   NVM_WRITE_ALL,
   NVM_READ_BLOCK,
   NVM_WRITE_BLOCK,
+  NVM_RESTORE_BLOCK_DEFAULTS,
 } NvmStateType;
 
 char *StateToStr[20] = {
@@ -578,7 +579,8 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 							AdministrativeBlockType *admPtr,
 							void *dataPtr,
 							boolean write,
-							boolean multiBlock  )
+							boolean multiBlock,
+							boolean restoreFromRom )
 {
 	bool blockDone = 0;
 	static uint8 driveBlockCnt = 0;
@@ -611,7 +613,17 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 				crcLen = (bPtr->BlockCRCType == NVM_CRC16) ? 2: 4;
 			}
 
-			ReadBlock(bPtr, admPtr, 0, 0, bPtr->RamBlockDataAddress, bPtr->NvBlockLength+crcLen);
+			if( restoreFromRom ) {
+				NVM_ASSERT( bPtr->RomBlockDataAdress != NULL );
+				/* No CRC on the ROM block */
+				memcpy(ramData,bPtr->RomBlockDataAdress,bPtr->NvBlockLength);
+
+				admPtr->ErrorStatus = NVM_REQ_OK;
+				blockDone = 1;
+				break;
+			} else {
+				ReadBlock(bPtr, admPtr, 0, 0, bPtr->RamBlockDataAddress, bPtr->NvBlockLength+crcLen);
+			}
 		}
 
 		admPtr->BlockState = BLOCK_STATE_MEMIF_PROCESS;
@@ -927,7 +939,7 @@ static void ReadAllMain(void)
 					&AdminBlock[AdminMultiReq.currBlockIndex],
 					NULL,
 					false,
-					true );
+					true, false);
 }
 
 
@@ -1015,7 +1027,7 @@ static void WriteAllMain(void)
 					&AdminBlock[AdminMultiReq.currBlockIndex],
 					NULL,
 					true,
-					true );
+					true, false );
 
 }
 
@@ -1194,7 +1206,6 @@ void Nvm_SetRamBlockStatus(NvM_BlockIdType blockId, boolean blockChanged)
 
 
 
-#if 0
 /**
  * Restore default data to its corresponding RAM block.
  *
@@ -1208,13 +1219,50 @@ Std_ReturnType NvM_RestoreBlockDefaults( NvM_BlockIdType blockId, uint8* NvM_Des
 	/* !req 3.1.5/NVM353 */	/* !req 3.1.5/NVM435 */	/* !req 3.1.5/NVM436 */	/* !req 3.1.5/NVM227 */
 	/* !req 3.1.5/NVM228 */	/* !req 3.1.5/NVM229 */	/* !req 3.1.5/NVM413 */
 
-	/* !req 3.1.5/NVM224 */
-	JobQueueType *job = CirqBuffGetNext(&Nvm_Global.jobQUeue);
+	const NvM_BlockDescriptorType *	bPtr;
+	AdministrativeBlockType * 		admPtr;
+	Nvm_QueueType qEntry;
+	int rv;
 
-	job.blockId = blockId;
-	job.destPtr = NvM_DestPtr;
+	NVM_ASSERT( blockId >= 2 );	/* No support for lower numbers, yet */
+
+	/* @req 3.1.5/NVM618 */
+	VALIDATE_RV( 	blockId <= NVM_NUM_OF_NVRAM_BLOCKS,
+					NVM_WRITE_BLOCK_ID,NVM_E_PARAM_BLOCK_ID,E_NOT_OK );
+
+	bPtr = &NvM_Config.BlockDescriptor[blockId-1];
+	admPtr = &AdminBlock[blockId-1];
+
+	/** @req 3.1.5/NVM196 */ /** @req 3.1.5/NVM278 */
+	if( (NvM_DestPtr == NULL) &&  ( bPtr->RamBlockDataAddress == NULL ) ) {
+		/* It must be a permanent RAM block but no RamBlockDataAddress -> error */
+		NVM_ASSERT(0);		// TODO: See NVM210, DET error
+		return E_NOT_OK;
+	}
+
+	/* @req 3.1.5/NVM195 */
+	qEntry.blockId = blockId;
+	qEntry.op = NVM_RESTORE_BLOCK_DEFAULTS;
+	qEntry.blockId = blockId;
+	qEntry.dataPtr = (uint8_t *)NvM_DestPtr;
+	rv = CirqBuffPush(&nvmQueue,&qEntry);
+	NVM_ASSERT(rv == 0 );
+
+	/* @req 3.1.5/NVM620 */
+	VALIDATE_RV( (admPtr->ErrorStatus != NVM_REQ_PENDING), 0, NVM_E_BLOCK_PENDING , E_NOT_OK );
+
+	/* req 3.1.5/NVM185 */
+	admPtr->ErrorStatus = NVM_REQ_PENDING;
+
+	if( bPtr->BlockUseCrc) {
+		admPtr->BlockState = BLOCK_STATE_CALC_CRC_WRITE;
+	} else {
+		admPtr->BlockState = BLOCK_STATE_MEMIF_REQ;
+	}
+
+
+	return E_OK;
 }
-#endif
 
 /**
  * Service to copy the data NV block to the RAM block
@@ -1366,6 +1414,9 @@ Std_ReturnType NvM_WriteBlock( NvM_BlockIdType blockId, const uint8* NvM_SrcPtr 
 
 
 
+const NvM_BlockDescriptorType *	nvmBlock;
+AdministrativeBlockType *admBlock;
+
 /**
  *
  */
@@ -1374,9 +1425,7 @@ void NvM_MainFunction(void)
 	int 			rv;
 	Nvm_QueueType 	qEntry;
 	const NvM_BlockDescriptorType *	bList = NvM_Config.BlockDescriptor;
-	const NvM_BlockDescriptorType *	nvmBlock;
 //	const NvM_BlockDescriptorType *	currBlock;
-	AdministrativeBlockType *admBlock;
 //	static uint32 crc32;
 //	static uint32 crc32Left;
 
@@ -1392,6 +1441,7 @@ void NvM_MainFunction(void)
 			admBlock->ErrorStatus = NVM_REQ_PENDING;
 			DEBUG_PRINTF("### Popped Single FIFO \n");
 			DEBUG_PRINTF("### CRC On:%d Ram:%d Type:%d\n",nvmBlock->BlockUseCrc, nvmBlock->CalcRamBlockCrc, nvmBlock->BlockCRCType );
+			DEBUG_PRINTF("### RAM:%x ROM:%x\n", nvmBlock->RamBlockDataAddress, nvmBlock->RomBlockDataAdress );
 		} else {
 			/* Check multiblock req */
 			if( AdminMultiReq.state != NVM_UNINITIALIZED ) {
@@ -1427,11 +1477,15 @@ void NvM_MainFunction(void)
 		break;
 
 	case NVM_READ_BLOCK:
-		DriveBlock(nvmBlock,admBlock, qEntry.dataPtr, false, false );
+		DriveBlock(nvmBlock,admBlock, qEntry.dataPtr, false, false, false );
+		break;
+
+	case NVM_RESTORE_BLOCK_DEFAULTS:
+		DriveBlock(nvmBlock,admBlock, qEntry.dataPtr, false, false, true );
 		break;
 
 	case NVM_WRITE_BLOCK:
-		DriveBlock(nvmBlock,admBlock, qEntry.dataPtr, false, false );
+		DriveBlock(nvmBlock,admBlock, qEntry.dataPtr, true /*write*/, false , false );
 		break;
 
 	case NVM_WRITE_ALL:
@@ -1442,7 +1496,6 @@ void NvM_MainFunction(void)
 			WriteAllMain();
 		}
 		break;
-
 
 	default:
 		DET_REPORTERROR(MODULE_ID_NVM, 0, NVM_MAIN_FUNCTION_ID, NVM_UNEXPECTED_STATE);
