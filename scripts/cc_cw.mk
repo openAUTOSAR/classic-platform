@@ -19,7 +19,9 @@ CW_LIB = $(CW_COMPILE)/PowerPC_EABI_Support/Runtime/Lib
 
 CC	= 	$(CW_BIN)/mwcceppc.exe
 
-#cflags-y 		+= -c 
+cflags-y 		+= -cpp_exceptions=off
+cflags-y 		+= -readonlystrings
+cflags-y 		+= -RTTI=off
 cflags-y 		+= -dialect=c99
 cflags-y 		+= -gccext=on
 cflags-y 		+= -gdwarf-2
