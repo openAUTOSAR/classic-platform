@@ -1,0 +1,11 @@
+/* Flash sizes
+ * 5516, 1.0M
+ * 5517, 1.5M
+ */
+flash(R) : ORIGIN = 0x00000000, LENGTH = 1M
+/* Ram sizes
+ * 5516S, 48K
+ * 5517S,5516G,5516E, 64K RAM
+ * 5517G,E , 80K RAM
+ */
+ram(RW)  : ORIGIN = 0x40000000, LENGTH = 0x00c000

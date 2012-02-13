@@ -34,6 +34,7 @@
 #define CC_EXTENSION 	__extension__
 #elif defined(__CWCC__)
 #define CC_EXTENSION
+#pragma read_only_switch_tables on
 #elif defined(__DCC__)
 #define CC_EXTENSION
 #endif

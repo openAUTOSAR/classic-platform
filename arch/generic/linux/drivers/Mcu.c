@@ -14,9 +14,45 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-#ifndef IOHWAB_INTERNAL_H_
-#define IOHWAB_INTERNAL_H_
-
+#include <assert.h>
+#include <string.h>
+#include "Std_Types.h"
+#include "Mcu.h"
+#include "Det.h"
+#if defined(USE_DEM)
+#include "Dem.h"
+#endif
 #include "Cpu.h"
+#include "Ramlog.h"
+#include "Os.h"
+#include "isr.h"
 
-#endif /* IOHWAB_INTERNAL_H_ */
+//#define USE_LDEBUG_PRINTF 1
+#include "debug.h"
+
+
+void Mcu_Init(const Mcu_ConfigType *configPtr)
+{
+
+}
+
+
+/**
+ * Get the system clock in Hz. It calculates the clock from the
+ * different register settings in HW.
+ */
+uint32_t McuE_GetSystemClock(void)
+{
+  return 10;
+}
+Std_ReturnType Mcu_InitClock( const Mcu_ClockType ClockSetting ) {
+  return E_OK;
+}
+
+void Mcu_PerformReset( void ) {
+
+}
+
+Mcu_PllStatusType Mcu_GetPllStatus( void ) {
+
+}
