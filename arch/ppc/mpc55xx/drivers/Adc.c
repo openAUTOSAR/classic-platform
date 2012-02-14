@@ -27,11 +27,11 @@
 #include "arc.h"
 
 /* Uncomment and use DMA for 5606 only if you now what you are doing */
-#define DONT_USE_DMA_IN_ADC_MPC5606S
+#define DONT_USE_DMA_IN_ADC_MPC560X
 
 /* Are we gonna use Dma? */
-#if (  !defined(CFG_MPC5606S) || \
-      ( defined(CFG_MPC5606S) && !defined(DONT_USE_DMA_IN_ADC_MPC5606S) ) )
+#if ( !defined(CFG_MPC560X) || \
+      ( defined(CFG_MPC5606S) && !defined(DONT_USE_DMA_IN_ADC_MPC560X) ) )
 	#define ADC_USES_DMA
 	#include "Dma.h"
 #endif
@@ -42,7 +42,7 @@
 
 #define ADC_GROUP0		0
 
-#if !defined(CFG_MPC5606S)
+#if !defined(CFG_MPC560X)
 typedef union
 {
   vuint32_t R;
@@ -209,7 +209,7 @@ typedef enum
 }Adc_StateType;
 
 /* Function prototypes. */
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 static void Adc_ConfigureADC (const Adc_ConfigType *ConfigPtr);
 static void Adc_ConfigureADCInterrupts (void);
 #else
@@ -263,7 +263,7 @@ Std_ReturnType ValidateGroup(Adc_GroupType group,Adc_APIServiceIDType api)
 Std_ReturnType Adc_DeInit (const Adc_ConfigType *ConfigPtr)
 {
   (void)ConfigPtr;
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 
   if (E_OK == Adc_CheckDeInit())
   {
@@ -369,13 +369,13 @@ Std_ReturnType Adc_DeInit (const Adc_ConfigType *ConfigPtr)
     adcState = ADC_UNINIT;
   }
   return (E_OK);
-#endif /* ENDOF defined(CFG_MPC5606S) */
+#endif /* ENDOF defined(CFG_MPC560X) */
 }
 #endif
 
 Std_ReturnType Adc_Init (const Adc_ConfigType *ConfigPtr)
 {
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 
   if (E_OK == Adc_CheckInit(ConfigPtr))
   {
@@ -649,7 +649,7 @@ void Adc_GroupConversionComplete (Adc_GroupType group)
 		  adcGroup->groupCallback();
 	  }
 	#endif
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 		  /* Disable trigger normal conversions for ADC0 */
 		  ADC_0.MCR.B.NSTART=0;
 #else
@@ -672,9 +672,9 @@ void Adc_GroupConversionComplete (Adc_GroupType group)
 		Dma_ConfigureDestinationAddress((uint32_t)adcGroup->status->currResultBufPtr, adcGroup->dmaResultChannel);
 #endif
 
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 		ADC_0.IMR.B.MSKECH = 1;
-	  ADC_0.MCR.B.NSTART=1;
+	    ADC_0.MCR.B.NSTART=1;
 #else
 		/* Set single scan enable bit */
 		EQADC.CFCR[group].B.SSE = 1;
@@ -691,7 +691,7 @@ void Adc_GroupConversionComplete (Adc_GroupType group)
 			adcGroup->groupCallback();
 		  }
 		#endif
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 		  /* Disable trigger normal conversions for ADC0 */
 		  ADC_0.MCR.B.NSTART=0;
 #else
@@ -712,9 +712,9 @@ void Adc_GroupConversionComplete (Adc_GroupType group)
 #endif
 			adcGroup->status->groupStatus = ADC_COMPLETED;
 
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 			ADC_0.IMR.B.MSKECH = 1;
-		  ADC_0.MCR.B.NSTART=1;
+		    ADC_0.MCR.B.NSTART=1;
 #else
 			/* Set single scan enable bit */
 			EQADC.CFCR[group].B.SSE = 1;
@@ -723,7 +723,7 @@ void Adc_GroupConversionComplete (Adc_GroupType group)
 		else
 		{
 		  /* Sample completed. */
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 		  /* Disable trigger normal conversions for ADC*/
 		  ADC_0.MCR.B.NSTART=0;
 #else
@@ -746,7 +746,7 @@ void Adc_GroupConversionComplete (Adc_GroupType group)
 	}
   }
 }
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 void Adc_Group0ConversionComplete (void)
 {
 	/* Clear ECH Flag and disable interruput */
@@ -763,7 +763,11 @@ void Adc_Group0ConversionComplete (void)
 		/* Copy to result buffer */
 		for(uint8 index=0; index < AdcConfigPtr->groupConfigPtr[group].numberOfChannels; index++)
 		{
+#if defined(CFG_MPC5606S)
 			AdcConfigPtr->groupConfigPtr[group].status->currResultBufPtr[index] = ADC_0.CDR[32+AdcConfigPtr->groupConfigPtr[group].channelList[index]].B.CDATA;
+#else
+			AdcConfigPtr->groupConfigPtr[group].status->currResultBufPtr[index] = ADC_0.CDR[AdcConfigPtr->groupConfigPtr[group].channelList[index]].B.CDATA;
+#endif
 		}
 #endif
 
@@ -804,7 +808,6 @@ void Adc_ConfigureADCInterrupts (void)
 #if (ADC_ENABLE_START_STOP_GROUP_API == STD_ON)
 void Adc_StartGroupConversion (Adc_GroupType group)
 {
-	uint32 groupChannelIdMask = 0;
 	Adc_GroupDefType *groupPtr = (Adc_GroupDefType *)&AdcConfigPtr->groupConfigPtr[group];
 
 	/* Run development error check. */
@@ -839,6 +842,9 @@ void Adc_StartGroupConversion (Adc_GroupType group)
 		ADC_0.MCR.B.OWREN = 1;
 
 		/* Set Conversion Time. */
+#if defined(CFG_MPC5606S)
+		uint32 groupChannelIdMask = 0;
+
 		ADC_0.CTR[1].B.INPLATCH = groupPtr->adcChannelConvTime.INPLATCH;
 		ADC_0.CTR[1].B.INPCMP = groupPtr->adcChannelConvTime.INPCMP;
 		ADC_0.CTR[1].B.INPSAMP = groupPtr->adcChannelConvTime.INPSAMP;
@@ -848,21 +854,53 @@ void Adc_StartGroupConversion (Adc_GroupType group)
 			groupChannelIdMask |= (1 << groupPtr->channelList[i]);
 		}
 
-		/* Enable Normal conversion */
-		ADC_0.NCMR[1].R = groupChannelIdMask;
-
 #if defined(ADC_USES_DMA)
 		ADC_0.DMAE.R = 0x01;
-
 		/* Enable DMA Transfer */
 		ADC_0.DMAR[1].R = groupChannelIdMask;
-
 		Dma_StartChannel(DMA_ADC_GROUP0_RESULT_CHANNEL);        /* Enable EDMA channel for ADC */
 #endif
+
+		/* Enable Normal conversion */
+		ADC_0.NCMR[1].R = groupChannelIdMask;
 
 		/* Enable Channel Interrupt */
 		ADC_0.CIMR[1].R = groupChannelIdMask;
 
+#else
+		uint32 groupChannelIdMask[3] = {0,0,0};
+
+		ADC_0.CTR[0].B.INPLATCH = groupPtr->adcChannelConvTime.INPLATCH;
+		ADC_0.CTR[0].B.INPCMP = groupPtr->adcChannelConvTime.INPCMP;
+		ADC_0.CTR[0].B.INPSAMP = groupPtr->adcChannelConvTime.INPSAMP;
+		ADC_0.CTR[1].B.INPLATCH = groupPtr->adcChannelConvTime.INPLATCH;
+		ADC_0.CTR[1].B.INPCMP = groupPtr->adcChannelConvTime.INPCMP;
+		ADC_0.CTR[1].B.INPSAMP = groupPtr->adcChannelConvTime.INPSAMP;
+		ADC_0.CTR[2].B.INPLATCH = groupPtr->adcChannelConvTime.INPLATCH;
+		ADC_0.CTR[2].B.INPCMP = groupPtr->adcChannelConvTime.INPCMP;
+		ADC_0.CTR[2].B.INPSAMP = groupPtr->adcChannelConvTime.INPSAMP;
+
+		for(uint8 i =0; i < groupPtr->numberOfChannels; i++)
+		{
+			if(groupPtr->channelList[i] <= 15){
+				groupChannelIdMask[0] |= (1 << groupPtr->channelList[i]);
+			}else if((groupPtr->channelList[i] >= 32) && (groupPtr->channelList[i] <=47)){
+				groupChannelIdMask[1] |= (1 << (groupPtr->channelList[i] - 32));
+			}else if((groupPtr->channelList[i] >= 64) && (groupPtr->channelList[i] <=95)){
+				groupChannelIdMask[2] |= (1 << (groupPtr->channelList[i] - 64));
+			}
+		}
+
+		/* Enable Normal conversion */
+		ADC_0.NCMR[0].R = groupChannelIdMask[0];
+		ADC_0.NCMR[1].R = groupChannelIdMask[1];
+		ADC_0.NCMR[2].R = groupChannelIdMask[2];
+
+		/* Enable Channel Interrupt */
+		ADC_0.CIMR[0].R = groupChannelIdMask[0];
+		ADC_0.CIMR[1].R = groupChannelIdMask[1];
+		ADC_0.CIMR[2].R = groupChannelIdMask[2];
+#endif
 		/* Clear interrupts */
 		ADC_0.ISR.B.ECH = 1;
 		/* Enable ECH interrupt */

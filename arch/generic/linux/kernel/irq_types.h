@@ -293,7 +293,7 @@ typedef enum
     RESERVED75,             // 5606-214
     RESERVED76,             // 5606-215
     RESERVED77,             // 5606-216
-#else if defined (CFG_MPC5606S)
+#elif defined (CFG_MPC5606S)
     EMIOS_0_GFR_F8_F9,      // 5606-141
     EMIOS_0_GFR_F10_F11,    // 5606-142
     EMIOS_0_GFR_F12_F13,    // 5606-143

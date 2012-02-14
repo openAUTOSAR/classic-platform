@@ -33,7 +33,10 @@
 #include "arc.h"
 #endif
 
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC5604B)
+	#define PWM_RUNTIME_CHANNEL_COUNT	56
+    #define CHANNELS_OK (Channel <= PWM_MAX_CHANNEL-1)
+#elif defined(CFG_MPC5606S)
 	#define PWM_RUNTIME_CHANNEL_COUNT	48
     #define CHANNELS_OK (((Channel <= PWM_MAX_CHANNEL-1) && (Channel >= 40)) || ((Channel <= 23) && (Channel >= 16)))
 #else
@@ -104,7 +107,7 @@ static void calcPeriodTicksAndPrescaler(
 	uint32_t pre_global = 0;
 	uint32_t f_in = 0;
 
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	Pwm_ChannelType channel = channelConfig->channel;
 
 	if(channel <= PWM_NUMBER_OF_EACH_EMIOS-1) {
@@ -151,7 +154,7 @@ static void configureChannel(Pwm_ChannelType channel_iterator, const Pwm_Channel
 
 	Pwm_ChannelType channel = channelConfig->channel;
 
-	#if defined(CFG_MPC5606S)
+	#if defined(CFG_MPC560X)
 		volatile struct EMIOS_tag *emiosHw;
 		if(channel <= PWM_NUMBER_OF_EACH_EMIOS-1) {
 			emiosHw = &EMIOS_0;
@@ -244,7 +247,7 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
         #endif
     #endif
 
-	#if defined(CFG_MPC5606S)
+	#if defined(CFG_MPC560X)
 
 		PwmConfigPtr = ConfigPtr;
 		/* Clock scaler uses system clock (~64MHz) as source, so prescaler 64 => 1MHz. */
@@ -293,7 +296,125 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
                 // Pwm_DisableNotification(channel);
 
                 // Install ISR
-			#if defined(CFG_MPC5606S)
+			#if defined(CFG_MPC5604B)
+				switch(channel)
+				{
+				case 0:
+				case 1:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F0_F1),PWM_ISR_PRIORITY, 0);
+					break;
+				case 2:
+				case 3:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F2_F3),PWM_ISR_PRIORITY, 0);
+					break;
+				case 4:
+				case 5:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F4_F5),PWM_ISR_PRIORITY, 0);
+					break;
+				case 6:
+				case 7:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F6_F7),PWM_ISR_PRIORITY, 0);
+					break;
+				case 8:
+				case 9:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F8_F9),PWM_ISR_PRIORITY, 0);
+					break;
+				case 10:
+				case 11:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F10_F11),PWM_ISR_PRIORITY, 0);
+					break;
+				case 12:
+				case 13:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F12_F13),PWM_ISR_PRIORITY, 0);
+					break;
+				case 14:
+				case 15:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F14_F15),PWM_ISR_PRIORITY, 0);
+					break;
+				case 16:
+				case 17:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F16_F17),PWM_ISR_PRIORITY, 0);
+					break;
+				case 18:
+				case 19:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F18_F19),PWM_ISR_PRIORITY, 0);
+					break;
+				case 20:
+				case 21:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F20_F21),PWM_ISR_PRIORITY, 0);
+					break;
+				case 22:
+				case 23:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F22_F23),PWM_ISR_PRIORITY, 0);
+					break;
+				case 24:
+				case 25:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F24_F25),PWM_ISR_PRIORITY, 0);
+					break;
+				case 26:
+				case 27:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_0_GFR_F26_F27),PWM_ISR_PRIORITY, 0);
+					break;
+				case 28:
+				case 29:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F0_F1),PWM_ISR_PRIORITY, 0);
+					break;
+				case 30:
+				case 31:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F2_F3),PWM_ISR_PRIORITY, 0);
+					break;
+				case 32:
+				case 33:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F4_F5),PWM_ISR_PRIORITY, 0);
+					break;
+				case 34:
+				case 35:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F6_F7),PWM_ISR_PRIORITY, 0);
+					break;
+				case 36:
+				case 37:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F8_F9),PWM_ISR_PRIORITY, 0);
+					break;
+				case 38:
+				case 39:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F10_F11),PWM_ISR_PRIORITY, 0);
+					break;
+				case 40:
+				case 41:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F12_F13),PWM_ISR_PRIORITY, 0);
+					break;
+				case 42:
+				case 43:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F14_F15),PWM_ISR_PRIORITY, 0);
+					break;
+				case 44:
+				case 45:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F16_F17),PWM_ISR_PRIORITY, 0);
+					break;
+				case 46:
+				case 47:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F18_F19),PWM_ISR_PRIORITY, 0);
+					break;
+				case 48:
+				case 49:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F20_F21),PWM_ISR_PRIORITY, 0);
+					break;
+				case 50:
+				case 51:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F22_F23),PWM_ISR_PRIORITY, 0);
+					break;
+				case 52:
+				case 53:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F24_F25),PWM_ISR_PRIORITY, 0);
+					break;
+				case 54:
+				case 55:
+					ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMIOS_1_GFR_F26_F27),PWM_ISR_PRIORITY, 0);
+					break;
+				default:
+					break;
+				}
+			#elif defined(CFG_MPC5606S)
 				switch(channel)
 				{
 				case 16:
@@ -419,7 +540,7 @@ void inline Pwm_DeInitChannel(Pwm_ChannelType Channel) {
 	#if defined(CFG_MPC5516)
         // Set the disable bit for this channel
     	EMIOS.UCDIS.R |= (1 << (31 - Channel));
-    #elif defined(CFG_MPC5606S)
+    #elif defined(CFG_MPC560X)
         // Set the disable bit for this channel
         if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1)
         {
@@ -461,7 +582,7 @@ void Pwm_DeInit() {
 
 		EMIOS.MCR.B.MDIS = 1;
 
-    #elif defined(CFG_MPC5606S)
+    #elif defined(CFG_MPC560X)
 
 		EMIOS_0.MCR.B.MDIS = 1;
 		EMIOS_1.MCR.B.MDIS = 1;
@@ -504,7 +625,7 @@ void Pwm_DeInit() {
 			/* Timer instant for the period to restart */
 			EMIOS.CH[Channel].CBDR.R = Period;
 
-		#elif defined(CFG_MPC5606S)
+		#elif defined(CFG_MPC560X)
 
 			if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1)
 			{
@@ -559,7 +680,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 		 */
 		EMIOS.CH[Channel].CADR.R = leading_edge_position;
 
-	#elif defined(CFG_MPC5606S)
+	#elif defined(CFG_MPC560X)
 
 		if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1)
 		{
@@ -594,7 +715,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 
 			EMIOS.CH[Channel].CADR.R = 0;
 
-		#elif defined(CFG_MPC5606S)
+		#elif defined(CFG_MPC560X)
 
 
 			for (Pwm_ChannelType channel_iterator = 0; channel_iterator < PWM_NUMBER_OF_CHANNELS; channel_iterator++)
@@ -639,7 +760,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 
 			return EMIOS.CH[Channel].CSR.B.UCOUT;
 
-		#elif defined(CFG_MPC5606S)
+		#elif defined(CFG_MPC560X)
 
 			if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1)
 			{
@@ -669,7 +790,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 
 			EMIOS.CH[Channel].CCR.B.FEN = 0;
 
-		#elif defined(CFG_MPC5606S)
+		#elif defined(CFG_MPC560X)
 
 			if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1)
 			{
@@ -698,7 +819,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 
 			EMIOS.CH[Channel].CCR.B.FEN = 1;
 
-		#elif defined(CFG_MPC5606S)
+		#elif defined(CFG_MPC560X)
 
 			if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1)
 			{
@@ -739,7 +860,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 				EMIOS.CH[emios_ch].CSR.B.FLAG = 1;
 			}
 		}
-        #elif defined(CFG_MPC5606S)
+        #elif defined(CFG_MPC560X)
 			uint32_t flagmask_0 = EMIOS_0.GFR.R;
 			uint32_t flagmask_1 = EMIOS_1.GFR.R;
 

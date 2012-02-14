@@ -203,7 +203,7 @@ GPT_ISR( 8 )
 #if defined(CFG_MPC560X)
 	#if defined(CFG_MPC5606S)
 		#define GPT_CHANNEL_PIT_LAST GPT_CHANNEL_PIT_3
-	#else if defined(CFG_MPC5604B)
+	#elif defined(CFG_MPC5604B)
 		#define GPT_CHANNEL_PIT_LAST GPT_CHANNEL_PIT_5
 	#endif
 #endif
