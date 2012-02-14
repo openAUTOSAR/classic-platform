@@ -131,7 +131,7 @@ Gpt_GlobalType Gpt_Global;
 /*
  * ISR for a given PIT channel (macro)
  */
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 #define GPT_ISR( _channel )                                \
 	static void Gpt_Isr_Channel##_channel( void )          \
 	{                                                      \
@@ -193,9 +193,19 @@ GPT_ISR( 3 )
 #if !defined(CFG_MPC5606S)
 GPT_ISR( 4 )
 GPT_ISR( 5 )
+#if !defined(CFG_MPC5604B)
 GPT_ISR( 6 )
 GPT_ISR( 7 )
 GPT_ISR( 8 )
+#endif
+#endif
+
+#if defined(CFG_MPC560X)
+	#if defined(CFG_MPC5606S)
+		#define GPT_CHANNEL_PIT_LAST GPT_CHANNEL_PIT_3
+	#else if defined(CFG_MPC5604B)
+		#define GPT_CHANNEL_PIT_LAST GPT_CHANNEL_PIT_5
+	#endif
 #endif
 
 //-------------------------------------------------------------------
@@ -235,8 +245,8 @@ void Gpt_Init(const Gpt_ConfigType *config) {
 		Gpt_Global.channelMap[cfg->GptChannelId] = i;
 		Gpt_Global.configured |= (1 << ch);
 
-#if defined(CFG_MPC5606S)
-		if (ch <= GPT_CHANNEL_PIT_3)
+#if defined(CFG_MPC560X)
+		if (ch <= GPT_CHANNEL_PIT_LAST)
 		{
 			if (cfg->GptNotification != NULL)
 			{
@@ -246,7 +256,10 @@ void Gpt_Init(const Gpt_ConfigType *config) {
 					case 1: ISR_INSTALL_ISR2( "Gpt_1", Gpt_Isr_Channel1, PIT_INT1, 2, 0 ); break;
 					case 2: ISR_INSTALL_ISR2( "Gpt_2", Gpt_Isr_Channel2, PIT_INT2, 2, 0 ); break;
 					case 3: ISR_INSTALL_ISR2( "Gpt_3", Gpt_Isr_Channel3, PIT_INT3, 2, 0 ); break;
-
+#if !defined(CFG_MPC5606S)
+					case 4: ISR_INSTALL_ISR2( "Gpt_4", Gpt_Isr_Channel4, PIT_INT4, 2, 0 ); break;
+					case 5: ISR_INSTALL_ISR2( "Gpt_5", Gpt_Isr_Channel5, PIT_INT5, 2, 0 ); break;
+#endif
 					default:
 					{
 						// Unknown PIT channel.
@@ -307,7 +320,7 @@ void Gpt_Init(const Gpt_ConfigType *config) {
 		}
 #endif
 
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 		//nothing needed to do
 #else
 #endif
@@ -319,8 +332,8 @@ void Gpt_Init(const Gpt_ConfigType *config) {
 
 	Gpt_Global.initRun = STD_ON;
 
-#if defined(CFG_MPC5606S)
-	for(i = 0; i <= GPT_CHANNEL_PIT_3; i++)
+#if defined(CFG_MPC560X)
+	for(i = 0; i <= GPT_CHANNEL_PIT_LAST; i++)
 	{
 		PIT.CH[i].TCTRL.B.TIE = 0;
 	}
@@ -367,7 +380,7 @@ void Gpt_DeInit(void)
 //-------------------------------------------------------------------
 // period is in "ticks" !!
 void Gpt_StartTimer(Gpt_ChannelType channel, Gpt_ValueType period_ticks) {
-#if !defined(CFG_MPC5606S)
+#if !defined(CFG_MPC560X)
 	uint32_t tmp;
 #endif
 	int confCh;
@@ -378,8 +391,8 @@ void Gpt_StartTimer(Gpt_ChannelType channel, Gpt_ValueType period_ticks) {
 	DEBUG(DEBUG_HIGH, "Gpt_StartTimer ch=%d, period=%d [ticks]\n", channel, period_ticks);
 
 	confCh = Gpt_Global.channelMap[channel];
-#if defined(CFG_MPC5606S)
-	if (channel <= GPT_CHANNEL_PIT_3)
+#if defined(CFG_MPC560X)
+	if (channel <= GPT_CHANNEL_PIT_LAST)
 	{
 		PIT.CH[channel].LDVAL.R = period_ticks;
 
@@ -436,8 +449,8 @@ void Gpt_StopTimer(Gpt_ChannelType channel) {
 
 	VALIDATE( (Gpt_Global.initRun == STD_ON), GPT_STOPTIMER_SERVICE_ID, GPT_E_UNINIT ); VALIDATE( VALID_CHANNEL(channel), GPT_STOPTIMER_SERVICE_ID, GPT_E_PARAM_CHANNEL );
 
-#if defined(CFG_MPC5606S)
-	if (channel <= GPT_CHANNEL_PIT_3)
+#if defined(CFG_MPC560X)
+	if (channel <= GPT_CHANNEL_PIT_LAST)
 	{
 		// Disable timer
 		PIT.CH[channel].TCTRL.B.TEN = 0;
@@ -466,8 +479,8 @@ Gpt_ValueType Gpt_GetTimeRemaining(Gpt_ChannelType channel)
 	VALIDATE_W_RV( (Gpt_Unit[channel].state == GPT_STATE_STARTED), GPT_GETTIMEREMAINING_SERVICE_ID, GPT_E_NOT_STARTED, 0 );
 	Gpt_ValueType remaining;
 
-#if defined(CFG_MPC5606S)
-	if (channel <= GPT_CHANNEL_PIT_3)
+#if defined(CFG_MPC560X)
+	if (channel <= GPT_CHANNEL_PIT_LAST)
 	{
 		// Time remaining is the time until it hits 0, so just return the current timer value
 		remaining = PIT.CH[channel].CVAL.R;
@@ -506,8 +519,8 @@ Gpt_ValueType Gpt_GetTimeElapsed(Gpt_ChannelType channel)
 	// NOTE!
 	// These little creatures count down
 
-#if defined(CFG_MPC5606S)
-	if (channel <= GPT_CHANNEL_PIT_3)
+#if defined(CFG_MPC560X)
+	if (channel <= GPT_CHANNEL_PIT_LAST)
 	{
 		uint32 tval = PIT.CH[channel].CVAL.R;
 		uint32 tlval = PIT.CH[channel].LDVAL.R;
@@ -546,8 +559,8 @@ void Gpt_EnableNotification(Gpt_ChannelType channel)
 	VALIDATE( (Gpt_Global.initRun == STD_ON), 0x7, GPT_E_UNINIT );
 	VALIDATE( VALID_CHANNEL(channel),0x7, GPT_E_PARAM_CHANNEL );
 
-#if defined(CFG_MPC5606S)
-	if (channel <= GPT_CHANNEL_PIT_3)
+#if defined(CFG_MPC560X)
+	if (channel <= GPT_CHANNEL_PIT_LAST)
 	{
 		PIT.CH[channel].TCTRL.B.TIE = 1;
 	}
@@ -573,8 +586,8 @@ void Gpt_DisableNotification(Gpt_ChannelType channel)
 	VALIDATE( (Gpt_Global.initRun == STD_ON), 0x8, GPT_E_UNINIT );
 	VALIDATE( VALID_CHANNEL(channel),0x8, GPT_E_PARAM_CHANNEL );
 
-#if defined(CFG_MPC5606S)
-	if (channel <= GPT_CHANNEL_PIT_3)
+#if defined(CFG_MPC560X)
+	if (channel <= GPT_CHANNEL_PIT_LAST)
 	{
 		PIT.CH[channel].TCTRL.B.TIE = 0;
 	}
@@ -605,7 +618,7 @@ void Gpt_SetMode(Gpt_ModeType mode)
 	VALIDATE( (Gpt_Global.initRun == STD_ON), GPT_SETMODE_SERVIVCE_ID, GPT_E_UNINIT );
 	VALIDATE( ( mode <= GPT_MODE_SLEEP ), GPT_SETMODE_SERVIVCE_ID, GPT_E_PARAM_MODE );
 
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	if (mode == GPT_MODE_NORMAL)
 	{
 		PIT.PITMCR.B.MDIS = 0;
@@ -677,22 +690,22 @@ void Gpt_SetMode(Gpt_ModeType mode)
 #endif
 
 void Gpt_Notification_0(void) {
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	SIU.GPDO[66].B.PDO = ~SIU.GPDO[66].B.PDO;
 #endif
 }
 void Gpt_Notification_1(void) {
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	SIU.GPDO[67].B.PDO = ~SIU.GPDO[67].B.PDO;
 #endif
 }
 void Gpt_Notification_2(void) {
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	SIU.GPDO[68].B.PDO = ~SIU.GPDO[68].B.PDO;
 #endif
 }
 void Gpt_Notification_3(void) {
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	SIU.GPDO[69].B.PDO = ~SIU.GPDO[69].B.PDO;
 #endif
 }
