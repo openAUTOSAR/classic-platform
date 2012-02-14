@@ -144,7 +144,7 @@ Dio_PortLevelType Dio_ReadPort(Dio_PortType portId)
 
 #if defined(CFG_MPC5554)||defined(CFG_MPC5567)
   vuint16_t *ptr = (vuint16_t *)&SIU.GPDI;
-#elif defined(CFG_MPC5606S)
+#elif defined(CFG_MPC560X)
   vuint16_t *ptr = (vuint16_t *)&SIU.PGPDI;
 #else
   vuint16_t *ptr = (vuint16_t *)&SIU.PGPDI0; // The GPDI 0-3 is organized in 32bit chunks but we want to step them in 16bit port-widths
@@ -163,7 +163,7 @@ void Dio_WritePort(Dio_PortType portId, Dio_PortLevelType level)
   // find address of first port
 #if defined(CFG_MPC5554)||defined(CFG_MPC5567)
   vuint16_t *ptr = (vuint16_t *)&SIU.GPDO;
-#elif defined(CFG_MPC5606S)
+#elif defined(CFG_MPC560X)
   vuint16_t *ptr = (vuint16_t *)&SIU.PGPDO;
 #else
   vuint16_t *ptr = (vuint16_t *)&SIU.PGPDO0; // The GPDO 0-3 is organized in 32bit chunks but we want to step them in 16bit port-widths
@@ -184,13 +184,13 @@ Dio_PortLevelType Dio_ReadChannelGroup(
   // find address of first port
 #if defined(CFG_MPC5554)||defined(CFG_MPC5567)
   vuint16_t *ptr = (vuint16_t *)&SIU.GPDI;
-#elif defined(CFG_MPC5606S)
+#elif defined(CFG_MPC560X)
   uint32 *ptr = (uint32 *)&SIU.PGPDI;
 #else
   uint16 *ptr = (uint16 *)&SIU.PGPDI0; // The GPDI 0-3 is organized in 32bit chunks but we want to step them in 16bit port-widths
 #endif
 
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	if(channelGroupIdPtr->port % 2)
 	{
 		// Get masked values
@@ -224,7 +224,7 @@ Dio_PortLevelType Dio_ReadChannelGroup(
 void Dio_WriteChannelGroup(const Dio_ChannelGroupType *channelGroupIdPtr,
     Dio_PortLevelType level)
 {
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	VALIDATE_CHANNELGROUP(channelGroupIdPtr,DIO_WRITECHANNELGROUP_ID);
 	// find address of first port of the masked register
 	uint32 *ptr = (uint32 *)&SIU.MPGPDO[0]; // modified by Cobb.The GPDI 0-3 is organized in 32bit chunks but we want to step them in 16bit port-widths

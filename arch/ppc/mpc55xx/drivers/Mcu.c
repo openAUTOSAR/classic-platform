@@ -36,7 +36,7 @@
 #if defined(CFG_MPC5567)
 #define CALC_SYSTEM_CLOCK(_extal,_emfd,_eprediv,_erfd)  \
             ( (_extal) * ((_emfd)+4) / (((_eprediv)+1)*(1<<(_erfd))) )
-#elif defined(CFG_MPC5606S)
+#elif defined(CFG_MPC560X)
 #define CALC_SYSTEM_CLOCK(_extal,_emfd,_eprediv,_erfd)  \
 	        ( (_extal)*(_emfd) / ((_eprediv+1)*(2<<(_erfd))) )
 #else
@@ -105,7 +105,7 @@ void Mcu_LossOfLock( void  ){
    * If you are going to use this interrupt, see [Freescale Device Errata MPC5510ACE, Rev. 10 APR 2009, errata ID: 6764].
    *
    */
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	/*not support*/
 #else
 	Mcu_Global.stats.lossOfLockCnt++;
@@ -118,7 +118,7 @@ void Mcu_LossOfLock( void  ){
 
 void Mcu_LossOfClock( void  ){
 	/* Should report MCU_E_CLOCK_FAILURE with DEM here */
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	/*not support*/
 #else
 	Mcu_Global.stats.lossOfClockCnt++;
@@ -167,6 +167,11 @@ const cpu_info_t cpu_info_list[] = {
     	.name = "MPC563X",
     	.pvr = CORE_PVR_E200Z3,
     },
+#elif defined(CFG_MPC5604B)
+    {
+    	.name = "MPC5604B",
+    	.pvr = CORE_PVR_E200Z0H,
+    },
 #elif defined(CFG_MPC5606S)
     {
     	.name = "MPC5606S",
@@ -203,6 +208,11 @@ const core_info_t core_info_list[] = {
     {
 		.name = "CORE_E200Z3",
 		.pvr = CORE_PVR_E200Z3,
+    },
+#elif defined(CFG_MPC5604B)
+    {
+    	.name = "MPC5604B",
+    	.pvr = CORE_PVR_E200Z0H,
     },
 #elif defined(CFG_MPC5606S)
     {
@@ -282,7 +292,7 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
 {
 	VALIDATE( ( NULL != configPtr ), MCU_INIT_SERVICE_ID, MCU_E_PARAM_CONFIG );
 
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	/* Disable watchdog. Watchdog is enabled default after reset.*/
  	SWT.SR.R = 0x0000c520;     /* Write keys to clear soft lock bit */
  	SWT.SR.R = 0x0000d928;
@@ -304,7 +314,7 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
 
     Mcu_Global.config = configPtr;
 
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
     /* Enable DRUN, RUN0, SAFE, RESET modes */
     ME.MER.R = 0x0000001D;
 #endif
@@ -312,7 +322,7 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
     Mcu_Global.initRun = 1;
 
     if( Mcu_Global.config->McuClockSrcFailureNotification == TRUE  ) {
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
     	/*not support*/
 #else
     	ISR_INSTALL_ISR1("LossOfLock", Mcu_LossOfLock, PLL_SYNSR_LOLF, 10 , 0 );
@@ -581,7 +591,7 @@ Mcu_ResetType Mcu_GetResetReason(void)
 
 	VALIDATE_W_RV( ( 1 == Mcu_Global.initRun ), MCU_GETRESETREASON_SERVICE_ID, MCU_E_UNINIT, MCU_RESET_UNDEFINED );
 
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	if( RGM.FES.B.F_SOFT ) {
 		rv = MCU_SW_RESET;
 	} else if( RGM.DES.B.F_SWT ) {
@@ -616,7 +626,7 @@ Mcu_RawResetType Mcu_GetResetRawValue(void)
 		return MCU_GETRESETRAWVALUE_UNINIT_RV;
 	}
 
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	if( RGM.DES.R )
 		return RGM.DES.R;
 	else
@@ -635,7 +645,7 @@ void Mcu_PerformReset(void)
 	VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_PERFORMRESET_SERVICE_ID, MCU_E_UNINIT );
 
 	// Reset
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
     ME.MCTL.R = 0x00005AF0;
     ME.MCTL.R = 0x0000A50F;
 
@@ -767,7 +777,7 @@ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 #if defined(CFG_MPC5516)
 			prescaler = SIU.SYSCLK.B.LPCLKDIV0;
 			break;
-#elif defined(CFG_MPC5606S)
+#elif defined(CFG_MPC560X)
 			prescaler = CGM.SC_DC[1].B.DIV;
 			break;
 #endif
@@ -788,7 +798,7 @@ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 #if defined(CFG_MPC5516)
 			prescaler = SIU.SYSCLK.B.LPCLKDIV2;
 			break;
-#elif defined(CFG_MPC5606S)
+#elif defined(CFG_MPC560X)
 			prescaler = CGM.SC_DC[1].B.DIV;
 			break;
 #endif
@@ -813,9 +823,13 @@ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 			break;
 #endif
 
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 		case PERIPHERAL_CLOCK_LIN_A:
 		case PERIPHERAL_CLOCK_LIN_B:
+#if defined(CFG_MPC5604B)
+		case PERIPHERAL_CLOCK_LIN_C:
+		case PERIPHERAL_CLOCK_LIN_D:
+#endif
 			prescaler = CGM.SC_DC[0].B.DIV;
 			break;
 		case PERIPHERAL_CLOCK_EMIOS_0:

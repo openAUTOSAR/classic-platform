@@ -158,7 +158,7 @@ obj-$(USE_DET) += Det.o
 # Lin
 obj-$(USE_LIN) += Lin_PBcfg.o
 obj-$(USE_LIN) += Lin_Lcfg.o
-obj-$(USE_LIN)-$(CFG_MPC5606S) += LinFlex.o
+obj-$(USE_LIN)-$(CFG_MPC560X) += LinFlex.o
 obj-$(USE_LIN)-$(CFG_MPC5516) += Lin.o
 
 # LinIf

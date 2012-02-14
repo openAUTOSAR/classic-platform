@@ -37,7 +37,7 @@ typedef enum
     INTC_SSCIR0_CLR5,		// 5
     INTC_SSCIR0_CLR6,		// 6
     INTC_SSCIR0_CLR7,		// 7
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
     RESERVED0,              // 5606-8
 
     ECSM_INT,               // 5606-9
@@ -169,34 +169,36 @@ typedef enum
     RESERVED18,             // 5606-102
     RESERVED19,             // 5606-103
     RESERVED20,             // 5606-104
-    RESERVED21,             // 5606-105
-    RESERVED22,             // 5606-106
-	RESERVED23,             // 5606-107
-	RESERVED24,             // 5606-108
-	RESERVED25,             // 5606-109
-	RESERVED26,             // 5606-110
-	RESERVED27,             // 5606-111
-	RESERVED28,             // 5606-112
-	RESERVED29,             // 5606-113
-	RESERVED30,             // 5606-114
-	RESERVED31,             // 5606-115
-	RESERVED32,             // 5606-116
-	RESERVED33,             // 5606-117
-	RESERVED34,             // 5606-118
-	RESERVED35,             // 5606-119
-	RESERVED36,             // 5606-120
-	RESERVED37,             // 5606-121
-	RESERVED38,             // 5606-122
-	RESERVED39,             // 5606-123
-	RESERVED40,             // 5606-124
+    FLEXCAN_2_ESR_ERR_INT,  // 5606-105
+    FLEXCAN_2_ESR_BOFF_INT, // 5606-106
 
+	RESERVED21,             // 5606-107
+
+	FLEXCAN_2_BUF_00_03,    // 5606-108
+	FLEXCAN_2_BUF_04_07,    // 5606-109
+	FLEXCAN_2_BUF_08_11,    // 5606-110
+	FLEXCAN_2_BUF_12_15,    // 5606-111
+	FLEXCAN_2_BUF_16_31,    // 5606-112
+	FLEXCAN_2_BUF_32_63,    // 5606-113
+    DSPI_2_ISR_TFUF_RFOF,   // 5606-114
+    DSPI_2_ISR_EOQF,        // 5606-115
+    DSPI_2_ISR_TFFF,        // 5606-116
+    DSPI_2_ISR_TCF,         // 5606-117
+    DSPI_2_ISR_RFDF,        // 5606-118
+
+    LINFLEX_2_RXI,          // 5606-119
+    LINFLEX_2_TXI,          // 5606-120
+    LINFLEX_2_ERR,          // 5606-121
+    LINFLEX_3_RXI,          // 5606-122
+    LINFLEX_3_TXI,          // 5606-123
+    LINFLEX_3_ERR,          // 5606-124
     I2C_0_INT,              // 5606-125
     I2C_1_INT,              // 5606-126
 
     PIT_INT3,               // 5606-127
 
-    RESERVED41,             // 5606-128
-    RESERVED42,             // 5606-129
+    PIT_INT4,               // 5606-128
+    PIT_INT5,               // 5606-129
     RESERVED43,             // 5606-130
     RESERVED44,             // 5606-131
     RESERVED45,             // 5606-132
@@ -208,7 +210,90 @@ typedef enum
     RESERVED51,             // 5606-138
     RESERVED52,             // 5606-139
     RESERVED53,             // 5606-140
+#if defined (CFG_MPC5604B)
+    EMIOS_0_GFR_F0_F1,      // 5606-141
+    EMIOS_0_GFR_F2_F3,      // 5606-142
+    EMIOS_0_GFR_F4_F5,      // 5606-143
+    EMIOS_0_GFR_F6_F7,      // 5606-144
+    EMIOS_0_GFR_F8_F9,      // 5606-145
+    EMIOS_0_GFR_F10_F11,    // 5606-146
+    EMIOS_0_GFR_F12_F13,    // 5606-147
+    EMIOS_0_GFR_F14_F15,    // 5606-148
+    EMIOS_0_GFR_F16_F17,    // 5606-149
+    EMIOS_0_GFR_F18_F19,    // 5606-150
+    EMIOS_0_GFR_F20_F21,    // 5606-151
+    EMIOS_0_GFR_F22_F23,    // 5606-152
+    EMIOS_0_GFR_F24_F25,    // 5606-153
+    EMIOS_0_GFR_F26_F27,    // 5606-154
+    RESERVED54,             // 5606-155
+    RESERVED55,             // 5606-156
+    EMIOS_1_GFR_F0_F1,      // 5606-157
+    EMIOS_1_GFR_F2_F3,      // 5606-158
+    EMIOS_1_GFR_F4_F5,      // 5606-159
+    EMIOS_1_GFR_F6_F7,      // 5606-160
+    EMIOS_1_GFR_F8_F9,      // 5606-161
+    EMIOS_1_GFR_F10_F11,    // 5606-162
+    EMIOS_1_GFR_F12_F13,    // 5606-163
+    EMIOS_1_GFR_F14_F15,    // 5606-164
+    EMIOS_1_GFR_F16_F17,    // 5606-165
+    EMIOS_1_GFR_F18_F19,    // 5606-166
+    EMIOS_1_GFR_F20_F21,    // 5606-167
+    EMIOS_1_GFR_F22_F23,    // 5606-168
+    EMIOS_1_GFR_F24_F25,    // 5606-169
+    EMIOS_1_GFR_F26_F27,    // 5606-170
 
+	RESERVED56,             // 5606-171
+	RESERVED57,             // 5606-172
+
+    FLEXCAN_3_ESR_ERR_INT,  // 5606-173
+    FLEXCAN_3_ESR_BOFF_INT, // 5606-174
+
+	RESERVED58,             // 5606-175
+
+	FLEXCAN_3_BUF_00_03,    // 5606-176
+	FLEXCAN_3_BUF_04_07,    // 5606-177
+	FLEXCAN_3_BUF_08_11,    // 5606-178
+	FLEXCAN_3_BUF_12_15,    // 5606-179
+	FLEXCAN_3_BUF_16_31,    // 5606-180
+	FLEXCAN_3_BUF_32_63,    // 5606-181
+    RESERVED59,             // 5606-182
+    RESERVED60,             // 5606-183
+    RESERVED61,             // 5606-184
+    RESERVED62,             // 5606-185
+    RESERVED63,             // 5606-186
+    RESERVED64,             // 5606-187
+    RESERVED65,             // 5606-188
+    RESERVED66,             // 5606-189
+    FLEXCAN_4_ESR_ERR_INT,  // 5606-190
+    FLEXCAN_4_ESR_BOFF_INT, // 5606-191
+
+	RESERVED67,             // 5606-192
+
+	FLEXCAN_4_BUF_00_03,    // 5606-193
+	FLEXCAN_4_BUF_04_07,    // 5606-194
+	FLEXCAN_4_BUF_08_11,    // 5606-195
+	FLEXCAN_4_BUF_12_15,    // 5606-196
+	FLEXCAN_4_BUF_16_31,    // 5606-197
+	FLEXCAN_4_BUF_32_63,    // 5606-198
+    RESERVED68,             // 5606-199
+    RESERVED69,             // 5606-200
+    RESERVED70,             // 5606-201
+    FLEXCAN_5_ESR_ERR_INT,  // 5606-202
+    FLEXCAN_5_ESR_BOFF_INT, // 5606-203
+	RESERVED71,             // 5606-204
+	FLEXCAN_5_BUF_00_03,    // 5606-205
+	FLEXCAN_5_BUF_04_07,    // 5606-206
+	FLEXCAN_5_BUF_08_11,    // 5606-207
+	FLEXCAN_5_BUF_12_15,    // 5606-208
+	FLEXCAN_5_BUF_16_31,    // 5606-209
+	FLEXCAN_5_BUF_32_63,    // 5606-210
+    RESERVED72,             // 5606-211
+    RESERVED73,             // 5606-212
+    RESERVED74,             // 5606-213
+    RESERVED75,             // 5606-214
+    RESERVED76,             // 5606-215
+    RESERVED77,             // 5606-216
+#else if defined (CFG_MPC5606S)
     EMIOS_0_GFR_F8_F9,      // 5606-141
     EMIOS_0_GFR_F10_F11,    // 5606-142
     EMIOS_0_GFR_F12_F13,    // 5606-143
@@ -286,9 +371,10 @@ typedef enum
 	QSPI0_TCF,              // 5606-204
 	QSPI0_RFDF,             // 5606-205
 	QSPI0_IPAEF,            // 5606-206
+#endif
 
 	INTC_NUMBER_OF_INTERRUPTS,
-#else
+#else /* end CFG_MPC560X */
 	MCM_MSWTIR_SWTIC,		// 8
 	MCM_ESR_COMB,			// 9
 	/* eDMA */
@@ -854,7 +940,7 @@ typedef enum
 	PERIPHERAL_CLOCK_DSPI_B,
 	PERIPHERAL_CLOCK_DSPI_C,
 	PERIPHERAL_CLOCK_DSPI_D,
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	PERIPHERAL_CLOCK_EMIOS_0,
 	PERIPHERAL_CLOCK_EMIOS_1,
 #else
@@ -868,16 +954,18 @@ typedef enum
 	PERIPHERAL_CLOCK_ESCI_F,
 	PERIPHERAL_CLOCK_ESCI_G,
 	PERIPHERAL_CLOCK_ESCI_H,
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	PERIPHERAL_CLOCK_LIN_A,
 	PERIPHERAL_CLOCK_LIN_B,
+	PERIPHERAL_CLOCK_LIN_C,
+	PERIPHERAL_CLOCK_LIN_D,
 #endif
 	PERIPHERAL_CLOCK_IIC_A,
 	PERIPHERAL_CLOCK_MLB
 } McuE_PeriperalClock_t;
 
 
-#if defined(CFG_MPC5516) || defined(CFG_MPC5606S)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5606X)
 #define CPU_Z1 	0
 #define CPU_Z0	1
 #endif
