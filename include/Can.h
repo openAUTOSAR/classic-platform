@@ -164,19 +164,6 @@ typedef union {
   } Can_Arc_HohType;
 
 
-#if 0
- typedef enum {
-      CAN_ARC_PROCESSING_TYPE_INTERRUPT,
-      CAN_ARC_PROCESSING_TYPE_POLLING
-  } Can_Arc_ProcessType;
-
- typedef enum {
-     CAN_OBJECT_TYPE_RECEIVE,
-     CAN_OBJECT_TYPE_TRANSMIT
- } Can_ObjectTypeType;
-
-#endif
-
  typedef struct Can_Callback {
      void (*CancelTxConfirmation)( const Can_PduType *);
      void (*RxIndication)( uint8 ,Can_IdType ,uint8 , const uint8 * );
@@ -186,10 +173,6 @@ typedef union {
      void (*Arc_Error)(uint8,Can_Arc_ErrorType);
  } Can_CallbackType;
 
-
-#if 0
- typedef uint32 Can_FilterMaskType;
-#endif
 
 #include "Can_Cfg.h"
 
@@ -303,6 +286,8 @@ typedef union {
  } Can_ControllerConfigType;
 
 
+#else
+#include "Can_Cfg.h"
 
 #endif /* defined(PPC) */
 
