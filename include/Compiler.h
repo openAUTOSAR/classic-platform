@@ -59,7 +59,7 @@
 
 #define CONSTP2CONST(ptrtype, memclass, ptrclass) const ptrtype * const
 
-#define P2FUNC(rettype,ptrclass,fctname) retype (*fctname)
+#define P2FUNC(rettype,ptrclass,fctname) rettype (*fctname)
 
 #define CONST(consttype,memclass) const consttype
 
