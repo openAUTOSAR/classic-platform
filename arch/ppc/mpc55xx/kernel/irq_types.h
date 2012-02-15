@@ -169,34 +169,36 @@ typedef enum
     RESERVED18,             // 5606-102
     RESERVED19,             // 5606-103
     RESERVED20,             // 5606-104
-    RESERVED21,             // 5606-105
-    RESERVED22,             // 5606-106
-	RESERVED23,             // 5606-107
-	RESERVED24,             // 5606-108
-	RESERVED25,             // 5606-109
-	RESERVED26,             // 5606-110
-	RESERVED27,             // 5606-111
-	RESERVED28,             // 5606-112
-	RESERVED29,             // 5606-113
-	RESERVED30,             // 5606-114
-	RESERVED31,             // 5606-115
-	RESERVED32,             // 5606-116
-	RESERVED33,             // 5606-117
-	RESERVED34,             // 5606-118
-	RESERVED35,             // 5606-119
-	RESERVED36,             // 5606-120
-	RESERVED37,             // 5606-121
-	RESERVED38,             // 5606-122
-	RESERVED39,             // 5606-123
-	RESERVED40,             // 5606-124
+    FLEXCAN_2_ESR_ERR_INT,  // 5606-105
+    FLEXCAN_2_ESR_BOFF_INT, // 5606-106
 
+	RESERVED21,             // 5606-107
+
+	FLEXCAN_2_BUF_00_03,    // 5606-108
+	FLEXCAN_2_BUF_04_07,    // 5606-109
+	FLEXCAN_2_BUF_08_11,    // 5606-110
+	FLEXCAN_2_BUF_12_15,    // 5606-111
+	FLEXCAN_2_BUF_16_31,    // 5606-112
+	FLEXCAN_2_BUF_32_63,    // 5606-113
+    DSPI_2_ISR_TFUF_RFOF,   // 5606-114
+    DSPI_2_ISR_EOQF,        // 5606-115
+    DSPI_2_ISR_TFFF,        // 5606-116
+    DSPI_2_ISR_TCF,         // 5606-117
+    DSPI_2_ISR_RFDF,        // 5606-118
+
+    LINFLEX_2_RXI,          // 5606-119
+    LINFLEX_2_TXI,          // 5606-120
+    LINFLEX_2_ERR,          // 5606-121
+    LINFLEX_3_RXI,          // 5606-122
+    LINFLEX_3_TXI,          // 5606-123
+    LINFLEX_3_ERR,          // 5606-124
     I2C_0_INT,              // 5606-125
     I2C_1_INT,              // 5606-126
 
     PIT_INT3,               // 5606-127
 
-    RESERVED41,             // 5606-128
-    RESERVED42,             // 5606-129
+    PIT_INT4,               // 5606-128
+    PIT_INT5,               // 5606-129
     RESERVED43,             // 5606-130
     RESERVED44,             // 5606-131
     RESERVED45,             // 5606-132
