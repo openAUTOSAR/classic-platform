@@ -1,0 +1,33 @@
+
+
+
+The Freescale MPC5510 is an PowerPC process with a e200Z1+e200Z0 core. 
+	
+Datasheets:
+  Eval board:
+    http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC5668GKIT&parentCode=MPC5668G&fpsp=1
+    http://cache.freescale.com/files/32bit/doc/user_guide/MPC5668GKITUM.pdf?fpsp=1  
+ 
+  MPC5668G
+    http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC5668G&nodeId=01624606C1427E
+    
+Board:
+  40Mhz external crystal
+ 
+Info:	
+  e200Z6(SPE) + e200Z0 
+  116 Mhz
+  2 MB Flash 
+  592 KB SRAM 
+  
+Memory Map:
+ 0x0000_0000 ->           Flash
+ 0x4000_0000 ->           SRAM
+ 
+ 
+   
+ 
+ 
+ 
+ 
+ 

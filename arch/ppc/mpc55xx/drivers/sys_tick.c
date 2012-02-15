@@ -53,7 +53,7 @@ void Os_SysTickInit( void ) {
  *                     on PowerPC often driver by the CPU clock or some platform clock.
  *
  */
-void Os_SysTickStart(uint32_t period_ticks) {
+void Os_SysTickStart(TickType period_ticks) {
 #if defined(CFG_MPC5606S)
 	CGM.SXOSC_CTL.B.OSCON = 1;	// enable the osc for RTC
 
@@ -112,7 +112,7 @@ TickType Os_SysTickGetValue( void )
 	return (timer);
 }
 
-TickType Os_SysTickGetElapsedValue( uint32_t preValue ) {
+TickType Os_SysTickGetElapsedValue( TickType preValue ) {
 	uint32_t curr;
 	uint32_t max;
 

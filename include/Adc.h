@@ -82,7 +82,7 @@ typedef enum
  * Std-types
  *
  */
-/** Access mode to group conversion results (Not supported). */
+/** Access mode to group conversion results. */
 typedef enum
 {
   ADC_ACCESS_MODE_SINGLE,
@@ -105,7 +105,7 @@ typedef enum
   ADC_HW_TRIG_RISING_EDGE,
 }Adc_HwTriggerSignalType;
 
-/** Stream buffer type (Not supported). */
+/** Stream buffer type. */
 typedef enum
 {
   ADC_NO_STREAMING,
@@ -133,6 +133,12 @@ void           Adc_StopGroupConversion (Adc_GroupType group);
 /** Reads results from last conversion into buffer */
 Std_ReturnType Adc_ReadGroup (Adc_GroupType group, Adc_ValueGroupType *dataBufferPtr);
 #endif
+
+#if !defined(CFG_HC1X)
+/** Reads results from last streaming conversion into buffer */
+Adc_StreamNumSampleType Adc_GetStreamLastPointer(Adc_GroupType group, Adc_ValueGroupType** PtrToSamplePtr);
+#endif
+
 #if (ADC_GRP_NOTIF_CAPABILITY == STD_ON)
 /** Enables the notification mechanism for the requested ADC Channel group. */
 void           Adc_EnableGroupNotification (Adc_GroupType group);

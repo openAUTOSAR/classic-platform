@@ -226,6 +226,7 @@ static inline const OsIsrVarType *Os_IsrGet( ISRType id ) {
 #if OS_ISR_CNT != 0
 	return &Os_IsrVarList[id];
 #else
+	(void)id;
 	return NULL;
 #endif
 }

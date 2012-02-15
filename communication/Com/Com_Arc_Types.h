@@ -30,15 +30,7 @@ typedef struct {
 typedef struct {
 
 	uint32 Com_Arc_DeadlineCounter;
-	uint32 ComTimeoutFactor;
-	void *ComIPduDataPtr;
-
-	uint16 ComIPduHandleId;
 	uint8 ComSignalUpdated;
-
-	/* For signal groups */
-	void *Com_Arc_ShadowBuffer;
-
 } Com_Arc_Signal_type;
 
 
@@ -58,8 +50,8 @@ typedef struct {
 typedef struct {
 
 	Com_Arc_TxIPduTimer_type Com_Arc_TxIPduTimers;
-	void *ComIPduDataPtr;
 	uint8 Com_Arc_IpduStarted;
+	uint16 Com_Arc_DynSignalLength;
 } Com_Arc_IPdu_type;
 
 typedef struct {

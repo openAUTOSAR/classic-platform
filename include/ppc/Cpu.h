@@ -14,18 +14,15 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
-
-
 #ifndef CPU_H
 #define CPU_H
 
 #include "Std_Types.h"
 typedef uint32_t imask_t;
+
+//#if defined(__DCC__)
+//#include <diab/ppcasm.h>
+//#endif
 
 // Used if we are running a T32 instruction set simulator
 #define SIMULATOR() (SIU.MIDR.R==0)
@@ -140,55 +137,91 @@ typedef uint32_t imask_t;
 /**
  * Sets a value to a specific SPR register
  */
-
-#define set_spr(spr_nr, val) \
+#if defined(__DCC__)
+asm void set_spr(uint32 spr_nr, uint32 val)
+{
+%reg val; con spr_nr
+  mtspr spr_nr, val
+}
+#else
+# define set_spr(spr_nr, val) \
 	asm volatile (" mtspr " STRINGIFY__(spr_nr) ",%[_val]" : : [_val] "r" (val))
-
+#endif
 /**
  * Gets the value from a specific SPR register
  *
  * Note! Tried lots of other ways to do this but came up empty
  */
 
+#if defined(__DCC__)
+asm uint32 get_spr(uint32 spr_nr)
+{
+% con spr_nr
+  mfspr r3, spr_nr
+}
+#else
 #define get_spr(spr_nr)	CC_EXTENSION \
 ({\
 	uint32_t __val;\
 	asm volatile (" mfspr %0," STRINGIFY__(spr_nr) : "=r"(__val) : );\
 	__val;\
 })
-
+#endif
 
 /**
  * Get current value of the msr register
  * @return
  */
+#if defined(__DCC__)
+asm volatile unsigned long get_msr()
+{
+  mfmsr r3
+}
+#else
 static inline unsigned long get_msr() {
 	uint32_t msr;
 	asm volatile("mfmsr %[msr]":[msr] "=r" (msr ) );
 	return msr;
 }
-
+#endif
 /*-----------------------------------------------------------------*/
 
 /**
  * Set the current msr to msr
  * @param msr
  */
+#if defined(__DCC__)
+asm volatile void set_msr(unsigned long msr)
+{
+% reg msr
+  mtmsr msr
+  isync
+}
+#else
 static inline void set_msr(unsigned long msr) {
   asm volatile ("mtmsr %0" : : "r" (msr) );
 
   // This is just necessary for some manipulations of MSR
   isync();
 }
+#endif
 /*-----------------------------------------------------------------*/
 
 /* Count the number of consecutive zero bits starting at ppc-bit 0 */
+#if defined(__DCC__)
+asm volatile unsigned int cntlzw(unsigned int val)
+{
+% reg val
+  cntlzw r3, val
+}
+#else
 static inline unsigned int cntlzw(unsigned int val)
 {
    unsigned int result;
    asm volatile ("cntlzw  %[rv],%[val]" : [rv] "=r" (result) : [val] "r" (val) );
    return result;
 }
+#endif
 
 /* Something like the ilogb() functions in newlib but without math.h
  * ( and with base 2 ) */
@@ -201,11 +234,9 @@ static inline int ilog2( int val ) {
  */
 
 /*-----------------------------------------------------------------*/
-
 static inline unsigned long _Irq_Disable_save(void)
 {
-   unsigned long result;
-   asm volatile ("mfmsr %0" : "=r" (result) : );
+   unsigned long result = get_msr();
    Irq_Disable();
    return result;
 }
@@ -214,18 +245,30 @@ static inline unsigned long _Irq_Disable_save(void)
 
 static inline void _Irq_Disable_restore(unsigned long flags)
 {
-   asm volatile ("mtmsr %0" : : "r" (flags) );
+	set_msr(flags);
 }
 
+#if 0
+#if defined(__DCC__)
+#define _Irq_Disable_restore(flags)		(set_msr(flags))
+#else
+static inline void _Irq_Disable_restore(unsigned long flags)
+{
+	set_msr(flags);
+   asm volatile ("mtmsr %0" : : "r" (flags) );
+}
+#endif
+#endif
 /*-----------------------------------------------------------------*/
-
+#if defined(__DCC__)
+#else
 #define get_lr(var) \
 	do { \
 		unsigned long lr; \
 		asm volatile("mflr %[lr]":[lr] "=r" (lr ) ); \
 		var = lr; \
 	} while(0)
-
+#endif
 
 /*-----------------------------------------------------------------*/
 

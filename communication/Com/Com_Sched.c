@@ -24,6 +24,7 @@
 #include "Com_misc.h"
 #include <string.h>
 #include "debug.h"
+#include "Cpu.h"
 
 #define timerDec(timer) \
 	if (timer > 0) { \
@@ -34,53 +35,73 @@
 
 void Com_MainFunctionRx(void) {
 	//DEBUG(DEBUG_MEDIUM, "Com_MainFunctionRx() excecuting\n");
-	const ComSignal_type *signal;
-	for (uint16 i = 0; !ComConfig->ComSignal[i].Com_Arc_EOL; i++) {
-		signal = &ComConfig->ComSignal[i];
-		Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(signal->ComHandleId);
-		Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(Arc_Signal->ComIPduHandleId);
+	for (uint16 pduId = 0; !ComConfig->ComIPdu[pduId].Com_Arc_EOL; pduId++) {
+		boolean pduUpdated = false;
+		const ComIPdu_type *IPdu = GET_IPdu(pduId);
+		Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(pduId);
+		imask_t irq_state;
+		Irq_Save(irq_state);
+		for (uint16 i = 0; (IPdu->ComIPduSignalRef != NULL) && (IPdu->ComIPduSignalRef[i] != NULL); i++) {
+			const ComSignal_type *signal = IPdu->ComIPduSignalRef[i];
+			Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(signal->ComHandleId);
+			// Monitor signal reception deadline
+			if ( (Arc_IPdu->Com_Arc_IpduStarted) && (signal->ComTimeoutFactor > 0) ) {
 
-		// Monitor signal reception deadline
-		if ( (Arc_IPdu->Com_Arc_IpduStarted) && (Arc_Signal->ComTimeoutFactor > 0) ) {
+				// Decrease deadline monitoring timer.
+				timerDec(Arc_Signal->Com_Arc_DeadlineCounter);
 
-			// Decrease deadline monitoring timer.
-			timerDec(Arc_Signal->Com_Arc_DeadlineCounter);
+				// Check if a timeout has occurred.
+				if (Arc_Signal->Com_Arc_DeadlineCounter == 0) {
+					if (signal->ComRxDataTimeoutAction == COM_TIMEOUT_DATA_ACTION_REPLACE) {
+						// Replace signal data.
+						Com_WriteSignalDataToPdu(signal->ComHandleId, signal->ComSignalInitValue);
 
-			// Check if a timeout has occurred.
-			if (Arc_Signal->Com_Arc_DeadlineCounter == 0) {
-				if (signal->ComRxDataTimeoutAction == COM_TIMEOUT_DATA_ACTION_REPLACE) {
-					// Replace signal data.
-					Com_WriteSignalDataToPdu(signal->ComHandleId, signal->ComSignalInitValue);
+					}
 
+					// A timeout has occurred.
+					if (signal->ComTimeoutNotification != NULL) {
+						signal->ComTimeoutNotification();
+					}
+
+					// Restart timer
+					Arc_Signal->Com_Arc_DeadlineCounter = signal->ComTimeoutFactor;
 				}
+			}
 
-				// A timeout has occurred.
-				if (signal->ComTimeoutNotification != NULL) {
-					signal->ComTimeoutNotification();
-				}
-
-				// Restart timer
-				Arc_Signal->Com_Arc_DeadlineCounter = Arc_Signal->ComTimeoutFactor;
+			if (Arc_Signal->ComSignalUpdated) {
+				pduUpdated = true;
 			}
 		}
-
-		if (Arc_Signal->ComSignalUpdated) {
-			if (ComConfig->ComSignal[i].ComNotification != NULL) {
-				ComConfig->ComSignal[i].ComNotification();
+		if (pduUpdated && IPdu->ComIPduSignalProcessing == DEFERRED && IPdu->ComIPduDirection == RECEIVE) {
+			UnlockTpBuffer(getPduId(IPdu));
+			memcpy(IPdu->ComIPduDeferredDataPtr,IPdu->ComIPduDataPtr,IPdu->ComIPduSize);
+			for (uint16 i = 0; (IPdu->ComIPduSignalRef != NULL) && (IPdu->ComIPduSignalRef[i] != NULL); i++) {
+				const ComSignal_type *signal = IPdu->ComIPduSignalRef[i];
+				Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(signal->ComHandleId);
+				if (Arc_Signal->ComSignalUpdated) {
+					if (signal->ComNotification != NULL) {
+						signal->ComNotification();
+					}
+					Arc_Signal->ComSignalUpdated = 0;
+				}
 			}
-			Arc_Signal->ComSignalUpdated = 0;
 		}
+		Irq_Restore(irq_state);
 	}
 }
 
 
 void Com_MainFunctionTx(void) {
+	imask_t irq_state;
+
 	//DEBUG(DEBUG_MEDIUM, "Com_MainFunctionTx() excecuting\n");
 	// Decrease timers.
 	const ComIPdu_type *IPdu;
 	for (uint16 i = 0; !ComConfig->ComIPdu[i].Com_Arc_EOL; i++) {
 		IPdu = &ComConfig->ComIPdu[i];
 		Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(i);
+
+		Irq_Save(irq_state);
 
 		// Is this a IPdu that should be transmitted?
 		if ( (IPdu->ComIPduDirection == SEND) && (Arc_IPdu->Com_Arc_IpduStarted) ) {
@@ -145,5 +166,7 @@ void Com_MainFunctionTx(void) {
 				// Don't send!
 			}
 		}
+
+		Irq_Restore(irq_state);
 	}
 }

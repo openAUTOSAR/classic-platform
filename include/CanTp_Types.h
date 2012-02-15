@@ -65,7 +65,7 @@ typedef struct {
 } CanTp_NSaType; /** @req CANTP253 */
 
 typedef struct {
-	uint32 CanTpNTa; /** @req CANTP255 */
+	uint32 CanTpNTa; /** @req CANTP255 */ /* TODO John: Why is this 32-bit */
 } CanTp_NTaType; /** @req CANTP139 */
 
 typedef struct {
@@ -89,6 +89,7 @@ typedef struct {
 
 
 typedef struct {
+	const PduIdType CanTp_FcPduId; // When recieving this Pdu this conf can be used (if TA match in extended).
 	const PduIdType CanIf_FcPduId; // The polite CanIf PDU index.
 	const PduIdType PduR_PduId; // The polite PduR index.
 	const CanTp_AddressingFormantType CanTpAddressingFormant;	/** @req CANTP242 */
@@ -114,6 +115,7 @@ typedef struct {
 typedef struct {
 	const PduIdType CanIf_PduId; // The polite CanIf index.
 	const PduIdType PduR_PduId; // The polite PduR index.
+	const PduIdType CanTp_FcPduId;
 	const CanTp_AddressingFormantType CanTpAddressingMode; /** @req CANTP262 */
 	const uint16 CanTpNas; /** @req CANTP263 */ /* N_As timeout for transmission of any CAN frame. */
 	const uint16 CanTpNbs; /** @req CANTP264 */ /* N_Bs timeout of transmission until reception of next Flow Control. */
@@ -156,6 +158,12 @@ typedef struct {
 	} configData;
 } CanTp_NSduType;
 
+typedef struct {
+	const CanTp_AddressingFormantType CanTpAddressingMode;
+	const PduIdType CanTpNSduIndex;
+	const PduIdType CanTpReferringTxIndex;
+} CanTp_RxIdType;
+
 // - - - - - - - - - - -
 
 /** Top level config container for CANTP implementation. */
@@ -165,6 +173,8 @@ typedef struct {
 
 	/** */
 	const CanTp_NSduType *CanTpNSduList;
+
+	const CanTp_RxIdType *CanTpRxIdList;
 
 	/**  */
 	//const CanTp_RxNSduType 	*CanTpRxNSduList;

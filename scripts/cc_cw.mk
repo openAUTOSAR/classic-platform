@@ -3,12 +3,6 @@
 HOST := $(shell uname)
 export prefix
 
-# If we are using codesourcery and cygwin..
-ifneq ($(findstring CYGWIN,$(UNAME)),)
-cygpath:= $(shell cygpath -m $(shell which cygpath))
-export CYGPATH=$(cygpath)
-endif
-
 # CW and paths...
 # Bin:   PowerPC_EABI_Tools/Command_Line_Tools/mwXXXXXX
 # libs:  PowerPC_EABI_Support/Runtime/Lib/Runtime.XXXX
@@ -24,18 +18,23 @@ CW_LIB = $(CW_COMPILE)/PowerPC_EABI_Support/Runtime/Lib
 # CCFLAGS - compile flags
 
 CC	= 	$(CW_BIN)/mwcceppc.exe
-#cflags-$(CFG_OPT_RELEASE) += -O3
-#cflags-$(CFG_OPT_DEBUG) += make  -O0
 
-#cflags-y 		+= -c 
+cflags-y 		+= -cpp_exceptions=off
+cflags-y 		+= -readonlystrings
+cflags-y 		+= -RTTI=off
 cflags-y 		+= -dialect=c99
 cflags-y 		+= -gccext=on
 cflags-y 		+= -gdwarf-2
 cflags-y 		+= -gccinc
 cflags-y 		+= -cwd explicit
+cflags-y 		+= -msgstyle gcc
+cflags-$(CFG_OPT_RELEASE)        += -opt level=2
+cflags-$(CFG_OPT_DEBUG)        += -opt off 
 
-# Generate dependencies
-cflags-y 		+= -gccdepends -MMD
+# Generate dependencies, 
+# Should be -MMD here but it only gives the *.c files (for some reason
+# the compiler thinks all include files are system file, option?)
+cflags-y 		+= -gccdepends -MD
 
 # Warnings
 cflags-y          += -W=most
@@ -49,13 +48,13 @@ cflags-y          += -proc=5565
 cflags-y          += -fp=soft
 cflags-y          += -use_isel=on
 #cflags-y          += -sdata=0xFFFF -sdata2=16
-cflags-y          += -sdata=0xFFFF -sdata2=0
+cflags-y          += -sdata=0 -sdata2=0
 
 #cflags-y          += -fno-strict-aliasing
 #cflags-y          += -fno-builtin
 
 # Get machine cflags
-#cflags-y		+= $(cflags-$(ARCH))
+#cflags-y		+= $(cflags-$(CFG_ARCH))
 
 CFLAGS = $(cflags-y) $(cflags-yy)
 
@@ -65,6 +64,7 @@ CCOUT 		= -o $@
 # Preprocessor
 
 CPP	= 	$(CC) -E
+CPPOUT = -precompile
 
 CPP_ASM_FLAGS += -ppopt noline -ppopt nopragma -dialect c
 
@@ -141,20 +141,22 @@ asflags-$(CFG_VLE) += -vle
 ASFLAGS += $(asflags-y)
 ASOUT = -o $@
 
-# ---------------------------------------------------------------------------
-# Dumper
+# Memory footprint
+define do-memory-footprint 
+	@gawk --non-decimal-data -f $(ROOTDIR)/scripts/memory_footprint_$(COMPILER).awk $(subst .elf,.map,$@) 
+endef
 
-#DDUMP          = $(Q)$(COMPILER_ROOT)/$(cross_machine-y)-objcopy
-#DDUMP_FLAGS    = -O srec
-#OBJCOPY 		= $(CROSS_COMPILE)objcopy
+# Dependency generation
+define do-compile-post 
+	@sed -e "/.*PowerPC_EABI_Support/d;s/ \\\/ qqaass/;s/\\\/\//g;s/qqaass/\\\/" $(subst .o,.d,$@) > $(subst .o,.d,$@)d
+	@mv $(subst .o,.d,$@)d $(subst .o,.d,$@)
+endef
 
-# ---------------------------------------------------------------------------
-# Archiver
-#
-# AROUT 		- archiver flags
+define do-memory-footprint2-$(CFG_MEMORY_FOOTPRINT2)
+	@gawk -f $(ROOTDIR)/scripts/memory_footprint2_$(COMPILER).awk  $(subst .$(TE),.map, $@)
+endef
 
-#AR	= 	$(CROSS_COMPILE)ar
-#AROUT 	= $@
+
 
 
 

@@ -813,7 +813,7 @@
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduSignalRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Com/ComConfig/Result</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Com/ComConfig/ResultSig</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                   <SUB-CONTAINERS>
@@ -927,7 +927,7 @@
                   </PARAMETER-VALUES>
                 </CONTAINER>
                 <CONTAINER UUID="7dd06b07-796d-4fc1-ba0b-4f5181b6c9c8">
-                  <SHORT-NAME>Result</SHORT-NAME>
+                  <SHORT-NAME>ResultSig</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
                       <SDG GID="Arccore::IdentifiableOptions" />
@@ -1357,6 +1357,10 @@
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Com/ComGeneral/ComConfigurationUseDet</DEFINITION-REF>
                   <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Com/ComGeneral/ArcComBitPositionVersionAutosar4</DEFINITION-REF>
+                  <VALUE>false</VALUE>
                 </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
@@ -2211,20 +2215,16 @@
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRSbTxBufferSupport</DEFINITION-REF>
                   <VALUE>false</VALUE>
                 </BOOLEAN-VALUE>
-                <ENUMERATION-VALUE>
-                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRSingleIf</DEFINITION-REF>
-                  <VALUE />
-                </ENUMERATION-VALUE>
-                <ENUMERATION-VALUE>
-                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRSingleTp</DEFINITION-REF>
-                  <VALUE />
-                </ENUMERATION-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRVersionInfoApi</DEFINITION-REF>
                   <VALUE>false</VALUE>
                 </BOOLEAN-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRZeroCostOperation</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/ArcPduRJ1939TpSupport</DEFINITION-REF>
                   <VALUE>false</VALUE>
                 </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
@@ -3119,61 +3119,26 @@
           <ELEMENTS>
             <SYSTEM-SIGNAL UUID="621d2baf-b15a-4762-bdce-b3c4041fefd0">
               <SHORT-NAME>Arg1</SHORT-NAME>
-              <ADMIN-DATA>
-                <SDGS>
-                  <SDG GID="Arccore::ParallelModelOptions">
-                    <SD GID="PARALLEL_MODEL_GENERATED">TRUE</SD>
-                  </SDG>
-                </SDGS>
-              </ADMIN-DATA>
               <INIT-VALUE-REF DEST="INTEGER-LITERAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Data/IntegerLiterals/Arg1InitValue/Arg1InitValueLiteral</INIT-VALUE-REF>
               <LENGTH>8</LENGTH>
             </SYSTEM-SIGNAL>
             <SYSTEM-SIGNAL UUID="2e984323-7a3d-4dcc-a8e4-b96b83ede7ff">
-              <SHORT-NAME>Result</SHORT-NAME>
-              <ADMIN-DATA>
-                <SDGS>
-                  <SDG GID="Arccore::ParallelModelOptions">
-                    <SD GID="PARALLEL_MODEL_GENERATED">TRUE</SD>
-                  </SDG>
-                </SDGS>
-              </ADMIN-DATA>
-              <INIT-VALUE-REF DEST="INTEGER-LITERAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Data/IntegerLiterals/ResultInitValue/ResultInitValueLiteral</INIT-VALUE-REF>
+              <SHORT-NAME>ResultSig</SHORT-NAME>
+              <INIT-VALUE-REF DEST="INTEGER-LITERAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Data/IntegerLiterals/ResultSigInitValue/ResultSigInitValueLiteral</INIT-VALUE-REF>
               <LENGTH>8</LENGTH>
             </SYSTEM-SIGNAL>
             <SYSTEM-SIGNAL UUID="cd67d3b0-05a7-4484-8a09-720f56e57b43">
               <SHORT-NAME>Arg2</SHORT-NAME>
-              <ADMIN-DATA>
-                <SDGS>
-                  <SDG GID="Arccore::ParallelModelOptions">
-                    <SD GID="PARALLEL_MODEL_GENERATED">TRUE</SD>
-                  </SDG>
-                </SDGS>
-              </ADMIN-DATA>
               <INIT-VALUE-REF DEST="INTEGER-LITERAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Data/IntegerLiterals/Arg2InitValue/Arg2InitValueLiteral</INIT-VALUE-REF>
               <LENGTH>8</LENGTH>
             </SYSTEM-SIGNAL>
             <SYSTEM-SIGNAL UUID="f6e1d366-e5a5-4a15-b271-7d1ede75ff76">
               <SHORT-NAME>FreqIndSig</SHORT-NAME>
-              <ADMIN-DATA>
-                <SDGS>
-                  <SDG GID="Arccore::ParallelModelOptions">
-                    <SD GID="PARALLEL_MODEL_GENERATED">TRUE</SD>
-                  </SDG>
-                </SDGS>
-              </ADMIN-DATA>
               <INIT-VALUE-REF DEST="INTEGER-LITERAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Data/IntegerLiterals/FreqIndSigInitValue/FreqIndSigInitValueLiteral</INIT-VALUE-REF>
               <LENGTH>32</LENGTH>
             </SYSTEM-SIGNAL>
             <SYSTEM-SIGNAL UUID="edbd6fdf-d43b-45f8-9416-a267a595460e">
               <SHORT-NAME>FreqReqSig</SHORT-NAME>
-              <ADMIN-DATA>
-                <SDGS>
-                  <SDG GID="Arccore::ParallelModelOptions">
-                    <SD GID="PARALLEL_MODEL_GENERATED">TRUE</SD>
-                  </SDG>
-                </SDGS>
-              </ADMIN-DATA>
               <INIT-VALUE-REF DEST="INTEGER-LITERAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Data/IntegerLiterals/FreqReqSigInitValue/FreqReqSigInitValueLiteral</INIT-VALUE-REF>
               <LENGTH>32</LENGTH>
             </SYSTEM-SIGNAL>
@@ -3233,10 +3198,10 @@
                       </VALUE>
                     </CONSTANT-SPECIFICATION>
                     <CONSTANT-SPECIFICATION>
-                      <SHORT-NAME>ResultInitValue</SHORT-NAME>
+                      <SHORT-NAME>ResultSigInitValue</SHORT-NAME>
                       <VALUE>
                         <INTEGER-LITERAL UUID="d1928d1c-e6e5-460f-9dbd-7ae73ed5ee8b">
-                          <SHORT-NAME>ResultInitValueLiteral</SHORT-NAME>
+                          <SHORT-NAME>ResultSigInitValueLiteral</SHORT-NAME>
                           <VALUE>0</VALUE>
                         </INTEGER-LITERAL>
                       </VALUE>

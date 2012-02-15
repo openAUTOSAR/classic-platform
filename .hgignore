@@ -16,5 +16,6 @@ syntax: regexp
 
 syntax: regexp
 ^.project$
+^.settings$
 syntax: glob
 binaries/*
