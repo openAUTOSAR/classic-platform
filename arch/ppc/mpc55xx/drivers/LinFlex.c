@@ -94,24 +94,8 @@ typedef volatile union {
 
 static void ResyncDriver(uint8 Channel)
 {
-	volatile struct LINFLEX_tag * LINFLEXHw = LINFLEX(Channel);
-
-	 /* Disable tx irq */
-	 /* Disable Rx Interrupt */
-	 /* Disable Rx Interrupt */
-
-	/* Disable transmitter and receiver. */
-
-  	/* Clear flags  */
-
-	/* Prepare module for resynchronization. */
-	 /* LIN Resynchronize. First set then cleared. */
-	/* Resynchronize module. */
-	 /* LIN Resynchronize. First set then cleared. */
-
-	/* Enable transmitter and receiver. */
-
-	/* Clear set flags again */
+	/* volatile struct LINFLEX_tag * LINFLEXHw = LINFLEX(Channel); */
+    /* In case we need to re-init or re-sync driver because of error or hangup it should be done here */
 }
 
 
@@ -182,6 +166,16 @@ static void LinInterruptRxB(){LinInterruptRx(LIN_CTRL_B);}
 static void LinInterruptTxB(){LinInterruptTx(LIN_CTRL_B);}
 static void LinInterruptErrB(){LinInterruptErr(LIN_CTRL_B);}
 
+#if defined (CFG_MPC5604B)
+static void LinInterruptRxC(){LinInterruptRx(LIN_CTRL_C);}
+static void LinInterruptTxC(){LinInterruptTx(LIN_CTRL_C);}
+static void LinInterruptErrC(){LinInterruptErr(LIN_CTRL_C);}
+
+static void LinInterruptRxD(){LinInterruptRx(LIN_CTRL_D);}
+static void LinInterruptTxD(){LinInterruptTx(LIN_CTRL_D);}
+static void LinInterruptErrD(){LinInterruptErr(LIN_CTRL_D);}
+#endif
+
 void Lin_Init( const Lin_ConfigType* Config )
 {
 	(void)Config;
@@ -236,6 +230,18 @@ void Lin_InitChannel(  uint8 Channel,   const Lin_ChannelConfigType* Config )
 		ISR_INSTALL_ISR2("LinIsrTxB", LinInterruptTxB, (IrqType)(LINFLEX_1_TXI),LIN_PRIO, 0);
 		ISR_INSTALL_ISR2("LinIsrErrB", LinInterruptErrB, (IrqType)(LINFLEX_1_ERR),LIN_PRIO, 0);
 		break;
+#if defined (CFG_MPC5604B)
+	case 2:
+		ISR_INSTALL_ISR2("LinIsrRxC", LinInterruptRxC, (IrqType)(LINFLEX_2_RXI),LIN_PRIO, 0);
+		ISR_INSTALL_ISR2("LinIsrTxC", LinInterruptTxC, (IrqType)(LINFLEX_2_TXI),LIN_PRIO, 0);
+		ISR_INSTALL_ISR2("LinIsrErrC", LinInterruptErrC, (IrqType)(LINFLEX_2_ERR),LIN_PRIO, 0);
+		break;
+	case 3:
+		ISR_INSTALL_ISR2("LinIsrRxD", LinInterruptRxD, (IrqType)(LINFLEX_3_RXI),LIN_PRIO, 0);
+		ISR_INSTALL_ISR2("LinIsrTxD", LinInterruptTxD, (IrqType)(LINFLEX_3_TXI),LIN_PRIO, 0);
+		ISR_INSTALL_ISR2("LinIsrErrD", LinInterruptErrD, (IrqType)(LINFLEX_3_ERR),LIN_PRIO, 0);
+		break;
+#endif
 	default:
 		break;
 	}
