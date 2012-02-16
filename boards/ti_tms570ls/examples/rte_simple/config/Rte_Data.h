@@ -17,7 +17,7 @@
 #ifndef RTE_DATA_H
 #define RTE_DATA_H
 
-#include "Rte_Types.h"
+#include "Rte_Type.h"
 #include "cirq_buffer.h"
 
 extern UInt16 Rte_Buf_Tester_prototype_Result_result;

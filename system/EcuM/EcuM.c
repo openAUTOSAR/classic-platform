@@ -15,6 +15,7 @@
 
 //lint -emacro(904,VALIDATE,VALIDATE_RV,VALIDATE_NO_RV) //904 PC-Lint exception to MISRA 14.7 (validate macros).
 
+#include "Std_Types.h"
 #include "EcuM.h"
 #include "Modules.h"
 #include <string.h>

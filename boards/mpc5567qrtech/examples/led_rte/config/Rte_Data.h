@@ -18,7 +18,7 @@
 #ifndef RTE_DATA_H
 #define RTE_DATA_H
 
-#include "Rte_Types.h"
+#include "Rte_Type.h"
 #include "cirq_buffer.h"
 
 void Rte_BlinkerRunnable();

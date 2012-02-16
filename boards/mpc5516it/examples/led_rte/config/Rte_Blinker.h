@@ -18,7 +18,7 @@
 #ifndef RTE_BLINKER_H
 #define RTE_BLINKER_H
 
-#include "Rte_Types.h"
+#include "Rte_Type.h"
 
 #define Rte_Call_LED_Port_Write Rte_Call_Blinker_LED_Port_Write
 

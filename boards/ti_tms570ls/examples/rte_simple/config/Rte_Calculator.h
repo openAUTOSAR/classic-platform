@@ -17,7 +17,7 @@
 #ifndef RTE_CALCULATOR_H
 #define RTE_CALCULATOR_H
 
-#include "Rte_Types.h"
+#include "Rte_Type.h"
 
 Std_ReturnType Multiply(const UInt8 arg1, const UInt8 arg2, UInt16* result);
 

@@ -14,7 +14,7 @@
 */
 
 /* Rte_Stubs.c */
-#include "Rte_Types.h"
+#include "Rte_Type.h"
 
 __attribute__((weak)) void BlinkerRunnable() {
 }

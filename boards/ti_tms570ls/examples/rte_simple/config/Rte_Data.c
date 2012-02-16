@@ -15,7 +15,7 @@
 /* Rte_Data.c */
 #include "Os.h"
 #include "Rte_Data.h"
-#include "Rte_Types.h"
+#include "Rte_Type.h"
 #include <string.h>
 
 UInt16 Rte_Buf_Tester_prototype_Result_result;

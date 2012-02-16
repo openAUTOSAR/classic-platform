@@ -17,7 +17,7 @@
 #ifndef RTE_TESTER_H
 #define RTE_TESTER_H
 
-#include "Rte_Types.h"
+#include "Rte_Type.h"
 
 #define Rte_Call_Calculator_Multiply Rte_Call_Tester_Calculator_Multiply
 

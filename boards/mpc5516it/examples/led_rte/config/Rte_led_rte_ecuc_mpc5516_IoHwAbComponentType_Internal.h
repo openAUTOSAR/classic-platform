@@ -18,7 +18,7 @@
 #ifndef RTE_LED_RTE_ECUC_MPC5516_IOHWABCOMPONENTTYPE_H
 #define RTE_LED_RTE_ECUC_MPC5516_IOHWABCOMPONENTTYPE_H
 
-#include "Rte_Types.h"
+#include "Rte_Type.h"
 
 Std_ReturnType IoHwAb_Write_LEDS_LED4(const BooleanType Value);
 
