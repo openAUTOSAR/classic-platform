@@ -44,7 +44,7 @@ EcuM_GlobalType internal_data;
 void EcuM_Init( void )
 {
 	Std_ReturnType status;
-	internal_data.current_state = ECUM_STATE_STARTUP_ONE;
+	set_current_state(ECUM_STATE_STARTUP_ONE);
 
 	// Initialize drivers that are needed to determine PostBuild configuration
 	EcuM_AL_DriverInitZero();
@@ -107,7 +107,7 @@ void EcuM_StartupTwo(void)
 	static NvM_RequestResultType readAllResult;
 #endif
 
-	internal_data.current_state = ECUM_STATE_STARTUP_TWO;
+	set_current_state(ECUM_STATE_STARTUP_TWO);
 
 	// Initialize the BSW scheduler
 	// TODO SchM_Init();
@@ -155,7 +155,7 @@ void EcuM_StartupTwo(void)
 // Typically called from OS shutdown hook
 void EcuM_Shutdown(void)
 {
-	internal_data.current_state = ECUM_STATE_GO_OFF_TWO;
+	set_current_state(ECUM_STATE_GO_OFF_TWO);
 
 	// Let the last drivers do a nice shutdown
 	EcuM_OnGoOffTwo();

@@ -133,8 +133,11 @@ void           Adc_StopGroupConversion (Adc_GroupType group);
 /** Reads results from last conversion into buffer */
 Std_ReturnType Adc_ReadGroup (Adc_GroupType group, Adc_ValueGroupType *dataBufferPtr);
 #endif
+
+#if !defined(CFG_HC1X)
 /** Reads results from last streaming conversion into buffer */
 Adc_StreamNumSampleType Adc_GetStreamLastPointer(Adc_GroupType group, Adc_ValueGroupType** PtrToSamplePtr);
+#endif
 
 #if (ADC_GRP_NOTIF_CAPABILITY == STD_ON)
 /** Enables the notification mechanism for the requested ADC Channel group. */

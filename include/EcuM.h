@@ -23,8 +23,19 @@
 #ifndef ECUM_H_
 #define ECUM_H_
 
-#include "Std_Types.h"
-#include <Os.h>
+#define ECUM_MODULE_ID			MODULE_ID_ECUM
+#define ECUM_VENDOR_ID			1
+
+#define ECUM_SW_MAJOR_VERSION	2
+#define ECUM_SW_MINOR_VERSION	0
+#define ECUM_SW_PATCH_VERSION	0
+
+#define ECUM_AR_MAJOR_VERSION	1
+#define ECUM_AR_MINOR_VERSION	2
+#define ECUM_AR_PATCH_VERSION	2
+
+#include "EcuM_Cfg.h"
+
 #if defined(USE_COM)
 #include "ComStack_Types.h"
 #endif

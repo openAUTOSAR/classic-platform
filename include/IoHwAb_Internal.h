@@ -17,6 +17,6 @@
 #ifndef IOHWAB_INTERNAL_H_
 #define IOHWAB_INTERNAL_H_
 
-#include "cpu.h"
+#include "Cpu.h"
 
 #endif /* IOHWAB_INTERNAL_H_ */
