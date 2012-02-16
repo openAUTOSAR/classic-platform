@@ -39,9 +39,11 @@
 #if defined(USE_COM)
 #include "ComStack_Types.h"
 #endif
-#if defined(USE_RTE)
+#if (ECUM_USE_SERVICE_PORTS == STD_ON) && defined(USE_RTE)
 #include "Rte_Type.h"
 #endif
+
+#include "EcuM_Types.h"
 
 
 /** @name Error Codes */
@@ -75,95 +77,6 @@
 #define ECUM_MAINFUNCTION_ID (0x18)
 #define ECUM_COMM_HASREQUESTEDRUN_ID (0x1b)
 #define ECUM_ARC_STARTUPTWO_ID (0x20)
-
-#if !defined(_DEFINED_TYPEDEF_FOR_EcuM_StateType_)
-/** Possible states */
-typedef enum {
-	ECUM_STATE_APP_RUN = 0x32,
-	ECUM_STATE_SHUTDOWN = 0x40,
-	ECUM_STATE_WAKEUP = 0x20,
-	ECUM_SUBSTATE_MASK = 0x0F,
-	ECUM_STATE_WAKEUP_WAKESLEEP = 0x25,
-	ECUM_STATE_WAKEUP_ONE = 0x21,
-	ECUM_STATE_OFF = 0x80,
-	ECUM_STATE_STARTUP = 0x10,
-	ECUM_STATE_PREP_SHUTDOWN = 0x44,
-	ECUM_STATE_RUN = 0x30,
-	ECUM_STATE_STARTUP_TWO = 0x12,
-	ECUM_STATE_WAKEUP_TTII = 0x26,
-	ECUM_STATE_WAKEUP_VALIDATION = 0x22,
-	ECUM_STATE_GO_SLEEP = 0x49,
-	ECUM_STATE_STARTUP_ONE = 0x11,
-	ECUM_STATE_WAKEUP_TWO = 0x24,
-	ECUM_STATE_SLEEP = 0x50,
-	ECUM_STATE_WAKEUP_REACTION = 0x23,
-	ECUM_STATE_APP_POST_RUN = 0x33,
-	ECUM_STATE_GO_OFF_TWO = 0x4e,
-	ECUM_STATE_RESET = 0x90,
-	ECUM_STATE_GO_OFF_ONE = 0x4d
-} EcuM_StateType;
-
-#define _DEFINED_TYPEDEF_FOR_EcuM_StateType_
-
-#endif
-
-typedef uint8 EcuM_UserType;
-
-enum {
-	/** Internal reset of µC (bit 2).
-	 *  The internal reset typically only resets the µC
-	 *  core but not peripherals or memory
-	 *  controllers. The exact behavior is hardware
-	 *  specific.
-	 *  This source may also indicate an unhandled
-	 *  exception. */
-	ECUM_WKSOURCE_INTERNAL_RESET = 0x04,
-
-	/** Reset by external watchdog (bit 4), if
-	 *  detection supported by hardware */
-	ECUM_WKSOURCE_EXTERNAL_WDG = 0x10,
-
-	/** Reset by internal watchdog (bit 3) */
-	ECUM_WKSOURCE_INTERNAL_WDG = 0x08,
-
-	/** Power cycle (bit 0) */
-	ECUM_WKSOURCE_POWER = 0x01,
-
-	/** ~0 to the power of 29 */
-	ECUM_WKSOURCE_ALL_SOURCES = 0x3FFFFFFF,
-
-	/** Hardware reset (bit 1).
-	 *  If hardware cannot distinguish between a
-	 *  power cycle and a reset reason, then this
-	 *  shall be the default wakeup source */
-	ECUM_WKSOURCE_RESET = 0x02
-};
-
-typedef uint32 EcuM_WakeupSourceType;
-
-typedef enum
-{
-	ECUM_WKSTATUS_NONE = 0,        /**< No pending wakeup event was detected */
-	ECUM_WKSTATUS_PENDING = 1,     /**< The wakeup event was detected but not yet validated */
-	ECUM_WKSTATUS_VALIDATED = 2,   /**< The wakeup event is valid */
-	ECUM_WKSTATUS_EXPIRED = 3     /**< The wakeup event has not been validated and has expired therefore */
-} EcuM_WakeupStatusType;
-
-typedef enum
-{
-	ECUM_WWKACT_RUN = 0,       /**< Initialization into RUN state */
-	ECUM_WKACT_TTII = 2,       /**< Execute time triggered increased inoperation protocol and shutdown */
-	ECUM_WKACT_SHUTDOWN = 3   /**< Immediate shutdown */
-} EcuM_WakeupReactionType;
-
-#if !defined(_DEFINED_TYPEDEF_FOR_EcuM_BootTargetType_)
-typedef enum
-{
-	ECUM_BOOT_TARGET_APP = 0,          /**< The Ecu will boot into the application */
-	ECUM_BOOT_TARGET_BOOTLOADER = 1   /**< The Ecu will boot into the bootloader */
-} EcuM_BootTargetType;
-#define _DEFINED_TYPEDEF_FOR_EcuM_BootTargetType_
-#endif
 
 
 #define ECUM_MODULE_ID			MODULE_ID_ECUM
