@@ -26,7 +26,7 @@
 #define IOHWAB_VENDOR_ID		1
 
 #if defined(USE_RTE)
-#include "Rte_Types.h"
+#include "Rte_Type.h"
 #endif
 
 #include "IoHwAb_Cfg.h"

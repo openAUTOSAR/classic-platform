@@ -29,7 +29,7 @@
 #include "ComStack_Types.h"
 #endif
 #if defined(USE_RTE)
-#include "Rte_Types.h"
+#include "Rte_Type.h"
 #endif
 
 
