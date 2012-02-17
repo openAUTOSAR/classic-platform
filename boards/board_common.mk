@@ -92,7 +92,9 @@ obj-$(USE_DIO) += Dio_Lcfg.o
 obj-$(USE_PORT) += Port.o
 obj-$(USE_PORT) += Port_Cfg.o
 
-obj-$(USE_ADC) += Adc.o
+obj-$(USE_ADC)-$(CFG_MPC560X) += Adc_560x.o
+obj-$(USE_ADC)-$(CFG_MPC5516) += eQADC.o
+obj-$(USE_ADC)-$(CFG_MPC5567) += eQADC.o
 obj-$(USE_ADC) += Adc_Cfg.o
 
 # J1939Tp
