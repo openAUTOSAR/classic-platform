@@ -25,7 +25,7 @@ void StartWatchdog(void)
 {
 #if defined(CFG_MPC5567)
 	ECSM.SWTCR.R =  0x00D8;;
-#elif defined(CFG_MPC5606S)
+#elif defined(CFG_MPC560X)
 	SWT.CR.R = 0x8000011B;
 #else
 	MCM.SWTCR.R = 0x00D8;
@@ -37,7 +37,7 @@ void StartWatchdog(void)
  {
  #if defined(CFG_MPC5567)
  	ECSM.SWTCR.R =  0x0059;;
- #elif defined(CFG_MPC5606S)
+ #elif defined(CFG_MPC560X)
  	SWT.SR.R = 0x0000c520;     /* Write keys to clear soft lock bit */
  	SWT.SR.R = 0x0000d928;
  	SWT.CR.R = 0x8000010A;
@@ -77,7 +77,7 @@ Std_ReturnType Wdg_SetMode (WdgIf_ModeType Mode)
 		/* Enable watchdog if config tell us to.. */
 		if (modeWdgConfig->ActivationBit)
 		{
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 		  StopWatchdog(); // must be stopped in order to change TO
  		  SWT.TO.R = modeWdgConfig->ReloadValue;
 #endif
@@ -109,7 +109,7 @@ void Wdg_Trigger (void)
 #if defined(CFG_MPC5567)
 	ECSM.SWTSR.R = 0x55;
 	ECSM.SWTSR.R = 0xAA;
-#elif defined(CFG_MPC5606S)
+#elif defined(CFG_MPC560X)
 	SWT.SR.R = 0x0000A602;
 	SWT.SR.R = 0x0000B480;
 #else

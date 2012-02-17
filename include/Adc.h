@@ -117,10 +117,10 @@ typedef enum
 
 /* Function interface. */
 /** Initializes the ADC hardware units and driver. */
-Std_ReturnType Adc_Init (const Adc_ConfigType *ConfigPtr);
+void Adc_Init (const Adc_ConfigType *ConfigPtr);
 #if (ADC_DEINIT_API == STD_ON)
 /** Returns all ADC HW Units to a state comparable to their power on reset state. */
-Std_ReturnType Adc_DeInit (const Adc_ConfigType *ConfigPtr);
+void Adc_DeInit ();
 #endif
 /** Sets up the result buffer for a group. */
 Std_ReturnType Adc_SetupResultBuffer (Adc_GroupType group, Adc_ValueGroupType *bufferPtr);

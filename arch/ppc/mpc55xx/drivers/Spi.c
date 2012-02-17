@@ -989,7 +989,7 @@ static void Spi_SetupCTAR(	Spi_HWUnitType unit,
 	 * --> BR=Fsys/(Baudrate.* 2 )
 	 *
 	 */
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC560X)
 	switch(unit) {
 	case 0:
 		perClock = PERIPHERAL_CLOCK_DSPI_A;
@@ -997,10 +997,12 @@ static void Spi_SetupCTAR(	Spi_HWUnitType unit,
 	case 1:
 		perClock = PERIPHERAL_CLOCK_DSPI_B;
 		break;
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5604B)
 	case 2:
 		perClock = PERIPHERAL_CLOCK_DSPI_C;
 		break;
+#endif
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
 	case 3:
 		perClock = PERIPHERAL_CLOCK_DSPI_D;
 		break;
@@ -1210,13 +1212,18 @@ static void Spi_InitController(uint32 unit) {
 
 	// Install EOFQ int..
 	switch (unit) {
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	case 0:
 	ISR_INSTALL_ISR2("SPI_A",Spi_Isr_A, DSPI_0_ISR_EOQF, 15, 0);
 	break;
 	case 1:
 	ISR_INSTALL_ISR2("SPI_B",Spi_Isr_B, DSPI_1_ISR_EOQF, 15, 0);
 	break;
+#if defined(CFG_MPC5604B)
+	case 2:
+	ISR_INSTALL_ISR2("SPI_C",Spi_Isr_C, DSPI_2_ISR_EOQF, 15, 0);
+	break;
+#endif
 #elif defined(CFG_MPC5516) || defined(CFG_MPC5517)
 	case 0:
 	ISR_INSTALL_ISR2("SPI_A",Spi_Isr_A, DSPI_A_ISR_EOQF, 15, 0);

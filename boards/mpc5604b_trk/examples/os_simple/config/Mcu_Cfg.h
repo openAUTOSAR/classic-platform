@@ -13,30 +13,40 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** @addtogroup Mcu MCU Driver
+ *  @{ */
 
-#ifndef MPC55XX_H_
-#define MPC55XX_H_
+/** @file Mcu_Cfg.h
+ *  Definitions of configuration parameters for MCU Driver.
+ */
 
+#warning "This default file may only be used as an example!"
 
-#if defined(CFG_MPC5554)
-#include "mpc5554.h"
-#elif defined(CFG_MPC5516) || defined(MPC5517)
-#include "mpc5516.h"
-#elif defined(CFG_MPC5567)
-#include "mpc5567.h"
-#elif defined(CFG_MPC5633)
-#include "mpc563m.h"
-#elif defined(CFG_MPC5604B)
-#include "MPC5604B_0M27V_0102.h"
-#elif defined(CFG_MPC5606S)
+#ifndef MCU_CFG_H_
+#define MCU_CFG_H_
+
 #include "mpc5606s.h"
-#elif defined(CFG_MPC5668)
-#include "mpc5668.h"
-#else
-#error NO MCU SELECTED!!!!
-#endif
 
-/* Harmonization */
-typedef struct EDMA_TCD_STD_tag Dma_TcdType;
+/** Enable Development Error Trace */
+#define MCU_DEV_ERROR_DETECT 	STD_ON
+/** Enable/disable the use of the function Mcu_PerformReset() */
+#define MCU_PERFORM_RESET_API 	STD_ON
+/** Build version info API */
+#define MCU_VERSION_INFO_API 	STD_ON
 
-#endif /* MPC55XX_H_ */
+#include "Std_Types.h"
+
+
+/** Symbolic names for clock settings */
+typedef enum
+{
+	MCU_CLOCKTYPE_EXT_REF_8MHZ = 0,
+	MCU_CLOCKTYPE_EXT_REF_16MHZ,
+	MCU_NBR_OF_CLOCKS,
+} Mcu_ClockType;
+
+
+#define MCU_DEFAULT_CONFIG McuConfigData[0]
+
+#endif /*MCU_CFG_H_*/
+/** @} */

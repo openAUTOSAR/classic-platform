@@ -94,7 +94,7 @@ void Port_Init(const Port_ConfigType *configType)
 {
   VALIDATE_PARAM_CONFIG(configType, PORT_INIT_ID);
 
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	vuint16_t i = 0;
 	vuint16_t j = 0;
 
@@ -103,9 +103,13 @@ void Port_Init(const Port_ConfigType *configType)
 		SIU.PCR[i].R = configType->padConfig[i];
     	++i;
 
+#if defined(CFG_MPC5604B)
+    	if(32 == i || 33 == i) i=34;
+    	if(121 == i || 122 == i) i=123;
+#elif defined(CFG_MPC5606S)
     	// Out of reset pins PH[0:3](PCR99~PCR102) are available as JTAG pins(TCK,TDI,TDO and TMS respectively)
-        // TODO: Remove this if JTAG is not used or if the configuration should have priority
     	if(99 == i || 100 == i || 101 == i || 102 == i) i=103;
+#endif
 	}
 
 	while(j < configType->outCnt)
@@ -170,12 +174,28 @@ void Port_RefreshPortDirection( void )
     Irq_Restore(state); // Restore interrupts
     pcrPtr++;
     padCfgPtr++;
+#if defined(CFG_MPC5604B)
+    if(32 == i)
+    {
+    	i=34;
+    	pcrPtr = pcrPtr+2;
+    	padCfgPtr = padCfgPtr+2;
+    }
+    if(121 == i)
+    {
+    	i=123;
+    	pcrPtr = pcrPtr+2;
+    	padCfgPtr = padCfgPtr+2;
+    }
+#elif defined(CFG_MPC5606S)
     if(98 == i)
     {
     	i=103;
     	pcrPtr = pcrPtr+5;
     	padCfgPtr = padCfgPtr+5;
     }
+#endif
+
     j++;
   }
 
