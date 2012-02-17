@@ -43,23 +43,20 @@ static const Adc_ConfigType *AdcConfigPtr;
 
 
 #if (ADC_DEINIT_API == STD_ON)
-Std_ReturnType Adc_DeInit (const Adc_ConfigType *ConfigPtr)
+void Adc_DeInit ()
 {
-	if (E_OK == Adc_CheckDeInit(adcState, ConfigPtr))
+	if (E_OK == Adc_CheckDeInit(adcState, AdcConfigPtr))
 	{
 	  DMA_DeInit(DMA1_Channel1);
 	  ADC_DeInit(ADC1);
 
 	  adcState = ADC_UNINIT;
 	}
-
-    return (E_OK);
 }
 #endif
 
-Std_ReturnType Adc_Init (const Adc_ConfigType *ConfigPtr)
+void Adc_Init (const Adc_ConfigType *ConfigPtr)
 {
-  Std_ReturnType returnValue;
   Adc_GroupType group;
 
   ADC_InitTypeDef ADC_InitStructure;
@@ -130,14 +127,7 @@ Std_ReturnType Adc_Init (const Adc_ConfigType *ConfigPtr)
 
     /* Move on to INIT state. */
     adcState = ADC_INIT;
-    returnValue = E_OK;
   }
-  else
-  {
-    returnValue = E_NOT_OK;
-  }
-
-  return (returnValue);
 }
 
 Std_ReturnType Adc_SetupResultBuffer (Adc_GroupType group, Adc_ValueGroupType *bufferPtr)
@@ -145,7 +135,7 @@ Std_ReturnType Adc_SetupResultBuffer (Adc_GroupType group, Adc_ValueGroupType *b
   Std_ReturnType returnValue;
 
   /* Check for development errors. */
-  if (E_OK == Adc_CheckSetupResultBuffer (AdcConfigPtr, group))
+  if (E_OK == Adc_CheckSetupResultBuffer (adcState, AdcConfigPtr, group))
   {
     AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr = bufferPtr;
     DMA_Cmd(DMA1_Channel1, DISABLE);

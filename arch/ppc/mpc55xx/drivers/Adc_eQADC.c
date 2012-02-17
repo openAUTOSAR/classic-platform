@@ -208,15 +208,13 @@ static Adc_StateType adcState = ADC_UNINIT;
 static const Adc_ConfigType *AdcConfigPtr;      /* Pointer to configuration structure. */
 
 #if (ADC_DEINIT_API == STD_ON)
-Std_ReturnType Adc_DeInit (const Adc_ConfigType *ConfigPtr)
+void Adc_DeInit ()
 {
-  (void)ConfigPtr;
-
   Adc_eQADCQueueType queue;
   Adc_GroupType group;
   boolean queueStopped;
 
-  if (E_OK == Adc_CheckDeInit(adcState, ConfigPtr))
+  if (E_OK == Adc_CheckDeInit(adcState, AdcConfigPtr))
   {
     /* Stop all queues. */
     for (queue = ADC_EQADC_QUEUE_0; queue < ADC_EQADC_NBR_OF_QUEUES; queue++)
@@ -288,13 +286,11 @@ Std_ReturnType Adc_DeInit (const Adc_ConfigType *ConfigPtr)
     AdcConfigPtr = (Adc_ConfigType *)NULL;
     adcState = ADC_UNINIT;
   }
-  return (E_OK);
 }
 #endif
 
-Std_ReturnType Adc_Init (const Adc_ConfigType *ConfigPtr)
+void Adc_Init (const Adc_ConfigType *ConfigPtr)
 {
-  Std_ReturnType returnValue;
   Adc_InternalChannelIdType channel;
   Adc_InternalChannelIdType channelId;
   Adc_GroupType group;
@@ -370,14 +366,7 @@ Std_ReturnType Adc_Init (const Adc_ConfigType *ConfigPtr)
 
     /* Move on to INIT state. */
     adcState = ADC_INIT;
-    returnValue = E_OK;
   }
-  else
-  {
-    returnValue = E_NOT_OK;
-  }
-
-  return (returnValue);  
 }
 
 Std_ReturnType Adc_SetupResultBuffer (Adc_GroupType group, Adc_ValueGroupType *bufferPtr)
@@ -385,7 +374,7 @@ Std_ReturnType Adc_SetupResultBuffer (Adc_GroupType group, Adc_ValueGroupType *b
   Std_ReturnType returnValue = E_NOT_OK;
 
   /* Check for development errors. */
-  if (E_OK == Adc_CheckSetupResultBuffer (AdcConfigPtr, group))
+  if (E_OK == Adc_CheckSetupResultBuffer (adcState, AdcConfigPtr, group))
   {
     AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr = bufferPtr;
     

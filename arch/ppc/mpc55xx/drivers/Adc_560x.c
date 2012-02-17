@@ -54,11 +54,9 @@ static const Adc_ConfigType *AdcConfigPtr;      /* Pointer to configuration stru
 
 
 #if (ADC_DEINIT_API == STD_ON)
-Std_ReturnType Adc_DeInit (const Adc_ConfigType *ConfigPtr)
+void Adc_DeInit ()
 {
-  (void)ConfigPtr;
-
-  if (E_OK == Adc_CheckDeInit(adcState, ConfigPtr))
+  if (E_OK == Adc_CheckDeInit(adcState, AdcConfigPtr))
   {
     for(Adc_GroupType group = (Adc_GroupType)ADC_GROUP0; group < AdcConfigPtr->nbrOfGroups; group++)
     {
@@ -80,12 +78,10 @@ Std_ReturnType Adc_DeInit (const Adc_ConfigType *ConfigPtr)
     AdcConfigPtr = (Adc_ConfigType *)NULL;
     adcState = ADC_UNINIT;
   }
-
-  return (E_OK);
 }
 #endif
 
-Std_ReturnType Adc_Init (const Adc_ConfigType *ConfigPtr)
+void Adc_Init (const Adc_ConfigType *ConfigPtr)
 {
   if (E_OK == Adc_CheckInit(adcState, ConfigPtr))
   {
@@ -99,11 +95,6 @@ Std_ReturnType Adc_Init (const Adc_ConfigType *ConfigPtr)
 
             /* Move on to INIT state. */
             adcState = ADC_INIT;
-            return E_OK;
-  }
-  else
-  {
-    return E_NOT_OK;
   }
 }
 
@@ -112,7 +103,7 @@ Std_ReturnType Adc_SetupResultBuffer (Adc_GroupType group, Adc_ValueGroupType *b
   Std_ReturnType returnValue = E_NOT_OK;
 
   /* Check for development errors. */
-  if (E_OK == Adc_CheckSetupResultBuffer (AdcConfigPtr, group))
+  if (E_OK == Adc_CheckSetupResultBuffer (adcState, AdcConfigPtr, group))
   {
     AdcConfigPtr->groupConfigPtr[group].status->resultBufferPtr = bufferPtr;
     

@@ -279,12 +279,13 @@ Std_ReturnType Adc_CheckDeInit (Adc_StateType adcState, const Adc_ConfigType *Co
 }
 #endif
 
-Std_ReturnType Adc_CheckSetupResultBuffer (const Adc_ConfigType *ConfigPtr, Adc_GroupType group)
+Std_ReturnType Adc_CheckSetupResultBuffer (Adc_StateType adcState, const Adc_ConfigType *ConfigPtr, Adc_GroupType group)
 {
   Std_ReturnType returnValue = E_OK;
 
 #if ( ADC_DEV_ERROR_DETECT == STD_ON )
-  if(ValidateGroup(ConfigPtr, group, ADC_SETUPRESULTBUFFER_ID) == E_NOT_OK)
+  if( (ValidateInit(adcState, ADC_SETUPRESULTBUFFER_ID) == E_NOT_OK) ||
+	    (ValidateGroup(ConfigPtr, group, ADC_SETUPRESULTBUFFER_ID) == E_NOT_OK))
   {
 	  returnValue = E_NOT_OK;
   }

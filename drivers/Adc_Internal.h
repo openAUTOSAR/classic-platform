@@ -39,7 +39,7 @@ Std_ReturnType Adc_CheckInit (Adc_StateType adcState, const Adc_ConfigType *Conf
 #if (ADC_DEINIT_API == STD_ON)
 Std_ReturnType Adc_CheckDeInit (Adc_StateType adcState, const Adc_ConfigType *ConfigPtr);
 #endif
-Std_ReturnType Adc_CheckSetupResultBuffer (const Adc_ConfigType *ConfigPtr, Adc_GroupType group);
+Std_ReturnType Adc_CheckSetupResultBuffer (Adc_StateType adcState, const Adc_ConfigType *ConfigPtr, Adc_GroupType group);
 Std_ReturnType Adc_CheckGetStreamLastPointer (Adc_StateType adcState, const Adc_ConfigType *ConfigPtr, Adc_GroupType group);
 
 #endif /* ADC_INTERNAL_H_ */
