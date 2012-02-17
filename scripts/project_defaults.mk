@@ -41,14 +41,18 @@ else
 # In-tree-build (for examples)
 #####################################################################
 
-	BUILD_IN_TREE=y
     ifneq ($(BOARDDIR),)
     $(warning BOARDDIR defined in an in-tree-build)
     endif
 
+	BUILD_IN_TREE=y
+
+
 	# Try to get name of board
-    boardpath=$(realpath $(CURDIR)/../..)
-    boarddir=$(subst $(realpath $(ROOTDIR)/boards)/,,$(boardpath))
+	ifeq ($(boarddir),)
+      boardpath=$(realpath $(CURDIR)/../..)
+      boarddir=$(subst $(realpath $(ROOTDIR)/boards)/,,$(boardpath))
+    endif
 
 	# Redirect to normal build
 .PHONY: all clean
