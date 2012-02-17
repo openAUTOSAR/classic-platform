@@ -93,9 +93,14 @@ obj-$(USE_PORT) += Port.o
 obj-$(USE_PORT) += Port_Cfg.o
 
 obj-$(USE_ADC)-$(CFG_MPC560X) += Adc_560x.o
+obj-$(USE_ADC)-$(CFG_HC1X) += Adc.o
+obj-$(USE_ADC)-$(CFG_ARM_CM3) += Adc.o
 obj-$(USE_ADC)-$(CFG_MPC5516) += eQADC.o
 obj-$(USE_ADC)-$(CFG_MPC5567) += eQADC.o
 obj-$(USE_ADC) += Adc_Cfg.o
+obj-$(USE_ADC) += Adc_Internal.o
+vpath-y += $(ROOTDIR)/drivers
+inc-y += $(ROOTDIR)/drivers
 
 # J1939Tp
 obj-$(USE_J1939TP) += J1939Tp.o
@@ -132,7 +137,6 @@ obj-$(USE_EEP) += Eep_Lcfg.o
 #Fls ext
 obj-$(USE_FLS_SST25XX) += Fls_SST25xx.o
 obj-$(USE_FLS_SST25XX) += Fls_SST25xx_Cfg.o
-vpath-y += $(ROOTDIR)/peripherals
 
 #Wdg
 obj-$(USE_WDG) += Wdg.o

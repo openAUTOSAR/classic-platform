@@ -94,6 +94,7 @@ typedef volatile union {
 
 static void ResyncDriver(uint8 Channel)
 {
+	(void)Channel;
 	/* volatile struct LINFLEX_tag * LINFLEXHw = LINFLEX(Channel); */
     /* In case we need to re-init or re-sync driver because of error or hangup it should be done here */
 }
