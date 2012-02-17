@@ -111,7 +111,7 @@ typedef struct {
   Eep_LengthType EepPageSize;
 
 #if defined(EEP_USES_EXTERNAL_DRIVER)
-  Eep_ExternalDriverType *externalDriver;
+  const Eep_ExternalDriverType *externalDriver;
 #endif
 } Eep_ConfigType;
 

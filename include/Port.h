@@ -31,6 +31,7 @@
 #define PORT_AR_MINOR_VERSION 1
 #define PORT_AR_PATCH_VERSION 0
 
+#include "Modules.h"
 #include "Port_Cfg.h" /** @req PORT130 */
 
 #if (PORT_VERSION_INFO_API == STD_ON)

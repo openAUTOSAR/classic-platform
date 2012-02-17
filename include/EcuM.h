@@ -23,6 +23,8 @@
 #ifndef ECUM_H_
 #define ECUM_H_
 
+#include "Modules.h"
+
 #define ECUM_MODULE_ID			MODULE_ID_ECUM
 #define ECUM_VENDOR_ID			1
 

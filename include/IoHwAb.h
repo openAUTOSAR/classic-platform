@@ -33,6 +33,7 @@
 #include "IoHwAb_Types.h"
 #include "IoHwAb_Analog.h"
 #include "IoHwAb_Digital.h"
+#include "IoHwAb_Pwm.h"
 
 #include "Pwm.h"
 #include "IoHwAb_Cbk.h"
