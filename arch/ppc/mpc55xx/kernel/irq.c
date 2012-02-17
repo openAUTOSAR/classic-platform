@@ -107,7 +107,7 @@ void Irq_Init( void ) {
 	#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 	  INTC.MCR.B.HVEN_PRC0 = 0; // Soft vector mode
 	  INTC.MCR.B.VTES_PRC0 = 0; // 4 byte offset between entries
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5606S)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC560X)
 	  INTC.MCR.B.HVEN = 0; // Soft vector mode
 	  INTC.MCR.B.VTES = 0; // 4 byte offset between entries
 	#endif
@@ -117,7 +117,7 @@ void Irq_Init( void ) {
 	  {
 	#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 	    INTC.EOIR_PRC0.R = 0;
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5606S)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC560X)
 	    INTC.EOIR.R = 0;
 	#endif
 	  }
@@ -125,7 +125,7 @@ void Irq_Init( void ) {
 	  // Accept interrupts
 	#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 	  INTC.CPR_PRC0.B.PRI = 0;
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5606S)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC560X)
 	  INTC.CPR.B.PRI = 0;
 	#endif
 }
@@ -134,7 +134,7 @@ void Irq_EOI( void ) {
 #if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 	volatile struct INTC_tag *intc = &INTC;
 	intc->EOIR_PRC0.R = 0;
-#elif defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC5606S)
+#elif defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC560X)
 	volatile struct INTC_tag *intc = &INTC;
 	intc->EOIR.R = 0;
 #else
@@ -202,7 +202,7 @@ uint8_t Irq_GetCurrentPriority( Cpu_t cpu) {
 	} else if ( cpu == CPU_CORE1 ) {
 		prio = INTC.CPR_PRC1.B.PRI;
 	 }
-#elif defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC5606S)
+#elif defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC560X)
 	(void)cpu;
 	prio = INTC.CPR.B.PRI;
 #else

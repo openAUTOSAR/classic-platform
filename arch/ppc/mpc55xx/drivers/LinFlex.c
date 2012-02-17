@@ -34,10 +34,8 @@
 static Lin_DriverStatusType LinDriverStatus = LIN_UNINIT;
 
 static Lin_StatusType LinChannelStatus[LIN_CONTROLLER_CNT];
-static Lin_StatusType LinChannelOrderedStatus[LIN_CONTROLLER_CNT];
 
 /* static buffers, holds one frame at a time */
-static uint8 LinBufTx[LIN_CONTROLLER_CNT][LIN_MAX_MSG_LENGTH];
 static uint8 LinBufRx[LIN_CONTROLLER_CNT][LIN_MAX_MSG_LENGTH];
 
 typedef volatile union {
@@ -96,24 +94,9 @@ typedef volatile union {
 
 static void ResyncDriver(uint8 Channel)
 {
-	volatile struct LINFLEX_tag * LINFLEXHw = LINFLEX(Channel);
-
-	 /* Disable tx irq */
-	 /* Disable Rx Interrupt */
-	 /* Disable Rx Interrupt */
-
-	/* Disable transmitter and receiver. */
-
-  	/* Clear flags  */
-
-	/* Prepare module for resynchronization. */
-	 /* LIN Resynchronize. First set then cleared. */
-	/* Resynchronize module. */
-	 /* LIN Resynchronize. First set then cleared. */
-
-	/* Enable transmitter and receiver. */
-
-	/* Clear set flags again */
+	(void)Channel;
+	/* volatile struct LINFLEX_tag * LINFLEXHw = LINFLEX(Channel); */
+    /* In case we need to re-init or re-sync driver because of error or hangup it should be done here */
 }
 
 
@@ -121,38 +104,42 @@ void LinInterruptRx(uint8 Channel)
 {
 	volatile struct LINFLEX_tag * LINFLEXHw = LINFLEX(Channel);
 
-    if (LinChannelStatus[Channel]==LIN_RX_BUSY) {
-		if (1 == LINFLEXHw->LINSR.B.DRF) {
-			/* Clear flags */
-			LINFLEXHw->LINSR.B.DRF = 1;
+	if (1 == LINFLEXHw->LINSR.B.DRF) {
+		/* Clear flags */
+		LINFLEXHw->LINSR.B.DRF = 1;
 
+		if (LinChannelStatus[Channel]==LIN_RX_BUSY) {
 			/* receive complete */
 			LinChannelStatus[Channel] = LIN_RX_OK;
  		}
+	}else{
+		/* Other interrupt cause */
+		LINFLEXHw->LINSR.R = 0xffffffff;
+		if (LinChannelStatus[Channel]==LIN_RX_BUSY) {
+			LinChannelStatus[Channel] = LIN_RX_ERROR;
+ 		}
 	}
-    else
-    {
-    	/* error */
-    }
 }
 
 void LinInterruptTx(uint8 Channel)
 {
 	volatile struct LINFLEX_tag * LINFLEXHw = LINFLEX(Channel);
 
-    if (LinChannelStatus[Channel]==LIN_TX_BUSY) {
-		if (1 == LINFLEXHw->LINSR.B.DTF) {
-			/* Clear flags */
-			LINFLEXHw->LINSR.B.DTF = 1;
+	if (1 == LINFLEXHw->LINSR.B.DTF) {
+		/* Clear flags */
+		LINFLEXHw->LINSR.B.DTF = 1;
 
-			/* receive complete */
+		if (LinChannelStatus[Channel]==LIN_TX_BUSY) {
+			/* transmit complete */
 			LinChannelStatus[Channel] = LIN_TX_OK;
  		}
+	}else{
+		/* Other interrupt cause */
+		LINFLEXHw->LINSR.R = 0xffffffff;
+		if (LinChannelStatus[Channel]==LIN_TX_BUSY) {
+			LinChannelStatus[Channel] = LIN_TX_ERROR;
+ 		}
 	}
-    else{
-    	/* error */
-    }
-
 }
 
 void LinInterruptErr(uint8 Channel)
@@ -180,6 +167,16 @@ static void LinInterruptRxB(){LinInterruptRx(LIN_CTRL_B);}
 static void LinInterruptTxB(){LinInterruptTx(LIN_CTRL_B);}
 static void LinInterruptErrB(){LinInterruptErr(LIN_CTRL_B);}
 
+#if defined (CFG_MPC5604B)
+static void LinInterruptRxC(){LinInterruptRx(LIN_CTRL_C);}
+static void LinInterruptTxC(){LinInterruptTx(LIN_CTRL_C);}
+static void LinInterruptErrC(){LinInterruptErr(LIN_CTRL_C);}
+
+static void LinInterruptRxD(){LinInterruptRx(LIN_CTRL_D);}
+static void LinInterruptTxD(){LinInterruptTx(LIN_CTRL_D);}
+static void LinInterruptErrD(){LinInterruptErr(LIN_CTRL_D);}
+#endif
+
 void Lin_Init( const Lin_ConfigType* Config )
 {
 	(void)Config;
@@ -193,7 +190,6 @@ void Lin_Init( const Lin_ConfigType* Config )
 		/* LIN171: On entering the state LIN_INIT, the Lin module shall set each channel into
 		 * state LIN_CH_UNINIT. */
 		LinChannelStatus[i] = LIN_CH_UNINIT;
-		LinChannelOrderedStatus[i]=LIN_CH_OPERATIONAL;
 	}
 
 	/* LIN146: LIN_UNINIT -> LIN_INIT: The Lin module shall transition from LIN_UNINIT
@@ -235,15 +231,37 @@ void Lin_InitChannel(  uint8 Channel,   const Lin_ChannelConfigType* Config )
 		ISR_INSTALL_ISR2("LinIsrTxB", LinInterruptTxB, (IrqType)(LINFLEX_1_TXI),LIN_PRIO, 0);
 		ISR_INSTALL_ISR2("LinIsrErrB", LinInterruptErrB, (IrqType)(LINFLEX_1_ERR),LIN_PRIO, 0);
 		break;
+#if defined (CFG_MPC5604B)
+	case 2:
+		ISR_INSTALL_ISR2("LinIsrRxC", LinInterruptRxC, (IrqType)(LINFLEX_2_RXI),LIN_PRIO, 0);
+		ISR_INSTALL_ISR2("LinIsrTxC", LinInterruptTxC, (IrqType)(LINFLEX_2_TXI),LIN_PRIO, 0);
+		ISR_INSTALL_ISR2("LinIsrErrC", LinInterruptErrC, (IrqType)(LINFLEX_2_ERR),LIN_PRIO, 0);
+		break;
+	case 3:
+		ISR_INSTALL_ISR2("LinIsrRxD", LinInterruptRxD, (IrqType)(LINFLEX_3_RXI),LIN_PRIO, 0);
+		ISR_INSTALL_ISR2("LinIsrTxD", LinInterruptTxD, (IrqType)(LINFLEX_3_TXI),LIN_PRIO, 0);
+		ISR_INSTALL_ISR2("LinIsrErrD", LinInterruptErrD, (IrqType)(LINFLEX_3_ERR),LIN_PRIO, 0);
+		break;
+#endif
 	default:
 		break;
 	}
 
 	/* configure and enable channel */
-	LINFLEXHw->LINCR1.R = 0; /* Reset all bits */
 	LINFLEXHw->LINCR1.B.INIT = 1; /* Go to init mode */
+	LINFLEXHw->LINCR1.R = 1; /* Clear all */
 	LINFLEXHw->LINCR1.B.MBL = 3; /* 13 bit synch */
-	LINFLEXHw->LINCR1.B.MME = 3; /* Master mode */
+	LINFLEXHw->LINCR1.B.MME = 1; /* Master mode */
+	LINFLEXHw->LINCR1.B.CCD = 0;
+	LINFLEXHw->LINCR1.B.CFD = 0;
+	LINFLEXHw->LINCR1.B.LASE = 0;
+	LINFLEXHw->LINCR1.B.AWUM = 0;
+	LINFLEXHw->LINCR1.B.BF = 0;
+	LINFLEXHw->LINCR1.B.SLFM = 0;
+	LINFLEXHw->LINCR1.B.LBKM = 0;
+	LINFLEXHw->LINCR1.B.SBDT = 0;
+	LINFLEXHw->LINCR1.B.RBLM = 0;
+	LINFLEXHw->LINCR1.B.SLEEP = 0;
 
 	LINFLEXHw->LINIER.R = 0; /* Reset all bits */
 	LINFLEXHw->LINIER.B.BEIE = 1; /* Bit error */
@@ -334,7 +352,7 @@ Std_ReturnType Lin_SendHeader(  uint8 Channel,  Lin_PduType* PduInfoPtr )
 	LINFLEXHw->BIDR.B.DFL = PduInfoPtr->DI - 1;
 
 	/* Id */
-	LINFLEXHw->BIDR.B.ID = PduInfoPtr->Pid & 0x7f; /* Without parity bit */
+	LINFLEXHw->BIDR.B.ID = PduInfoPtr->Pid; /* Without parity bit */
 
 	/* Direction */
 	if (PduInfoPtr->Drc == LIN_MASTER_RESPONSE)
@@ -408,14 +426,13 @@ Std_ReturnType Lin_GoToSleep(  uint8 Channel )
 	VALIDATE_W_RV( (Channel < LIN_CONTROLLER_CNT), LIN_GO_TO_SLEEP_SERVICE_ID, LIN_E_INVALID_CHANNEL, E_NOT_OK);
 	VALIDATE_W_RV( (LinChannelStatus[Channel] != LIN_CH_SLEEP), LIN_GO_TO_SLEEP_SERVICE_ID, LIN_E_STATE_TRANSITION, E_NOT_OK);
 
-	if (LinChannelOrderedStatus[Channel]!=LIN_CH_SLEEP){
-		LinChannelOrderedStatus[Channel]=LIN_CH_SLEEP;
+	LINFLEXHw->LINCR1.B.SLEEP = 1;
 
-		LINFLEXHw->LINCR1.B.SLEEP = 1;
+	LINFLEXHw->LINIER.B.WUIE = 1; /* enable wake-up irq */
 
-		LINFLEXHw->LINIER.B.WUIE = 1; /* enable wake-up irq */
-	}
-	return E_OK;
+    LinChannelStatus[Channel]=LIN_CH_SLEEP;
+
+    return E_OK;
 }
 
 Std_ReturnType Lin_GoToSleepInternal(  uint8 Channel )
@@ -446,8 +463,45 @@ Std_ReturnType Lin_WakeUp( uint8 Channel )
 	return E_OK;
 }
 
+static void CopyToBuffer(uint8 *buf, volatile struct LINFLEX_tag * LINFLEXHw)
+{
+	for(int i = 0; i < 8;i++)
+	{
+		/* convenient with freescale reg file */
+		switch(i)
+		{
+		case 0:
+			 buf[0] = LINFLEXHw->BDRL.B.DATA0;
+			break;
+		case 1:
+			 buf[1] = LINFLEXHw->BDRL.B.DATA1;
+			break;
+		case 2:
+			 buf[2] = LINFLEXHw->BDRL.B.DATA2;
+			break;
+		case 3:
+			 buf[3] = LINFLEXHw->BDRL.B.DATA3;
+			break;
+		case 4:
+			 buf[4] = LINFLEXHw->BDRM.B.DATA4;
+			break;
+		case 5:
+			 buf[5] = LINFLEXHw->BDRM.B.DATA5;
+			break;
+		case 6:
+			 buf[6] = LINFLEXHw->BDRM.B.DATA6;
+			break;
+		case 7:
+			 buf[7] = LINFLEXHw->BDRM.B.DATA7;
+			break;
+		}
+	}
+}
+
 Lin_StatusType Lin_GetStatus( uint8 Channel, uint8** Lin_SduPtr )
 {
+	volatile struct LINFLEX_tag * LINFLEXHw = LINFLEX(Channel);
+
 	VALIDATE_W_RV( (LinDriverStatus != LIN_UNINIT), LIN_GETSTATUS_SERVICE_ID, LIN_E_UNINIT, LIN_NOT_OK);
 	VALIDATE_W_RV( (LinChannelStatus[Channel] != LIN_CH_UNINIT), LIN_GETSTATUS_SERVICE_ID, LIN_E_CHANNEL_UNINIT, LIN_NOT_OK);
 	VALIDATE_W_RV( (Channel < LIN_CONTROLLER_CNT), LIN_GETSTATUS_SERVICE_ID, LIN_E_INVALID_CHANNEL, LIN_NOT_OK);
@@ -458,6 +512,7 @@ Lin_StatusType Lin_GetStatus( uint8 Channel, uint8** Lin_SduPtr )
 	Lin_StatusType res = LinChannelStatus[Channel];
 	/* We can only check for valid sdu ptr when LIN_RX_OK */
 	if(LinChannelStatus[Channel] == LIN_RX_OK || LinChannelStatus[Channel] == LIN_RX_ERROR){
+		CopyToBuffer(LinBufRx[Channel], LINFLEXHw);
 		*Lin_SduPtr = LinBufRx[Channel];
 		if(LinChannelStatus[Channel] == LIN_RX_ERROR){
 			ResyncDriver(Channel);

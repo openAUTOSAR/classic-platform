@@ -36,7 +36,7 @@
 #if defined(CFG_MPC5567)
 #define CALC_SYSTEM_CLOCK(_extal,_emfd,_eprediv,_erfd)  \
             ( (_extal) * ((_emfd)+4) / (((_eprediv)+1)*(1<<(_erfd))) )
-#elif defined(CFG_MPC5606S)
+#elif defined(CFG_MPC560X)
 #define CALC_SYSTEM_CLOCK(_extal,_emfd,_eprediv,_erfd)  \
 	        ( (_extal)*(_emfd) / ((_eprediv+1)*(2<<(_erfd))) )
 #else
@@ -105,7 +105,7 @@ void Mcu_LossOfLock( void  ){
    * If you are going to use this interrupt, see [Freescale Device Errata MPC5510ACE, Rev. 10 APR 2009, errata ID: 6764].
    *
    */
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	/*not support*/
 #else
 	Mcu_Global.stats.lossOfLockCnt++;
@@ -118,7 +118,7 @@ void Mcu_LossOfLock( void  ){
 
 void Mcu_LossOfClock( void  ){
 	/* Should report MCU_E_CLOCK_FAILURE with DEM here */
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	/*not support*/
 #else
 	Mcu_Global.stats.lossOfClockCnt++;
@@ -167,6 +167,11 @@ const cpu_info_t cpu_info_list[] = {
     	.name = "MPC563X",
     	.pvr = CORE_PVR_E200Z3,
     },
+#elif defined(CFG_MPC5604B)
+    {
+    	.name = "MPC5604B",
+    	.pvr = CORE_PVR_E200Z0H,
+    },
 #elif defined(CFG_MPC5606S)
     {
     	.name = "MPC5606S",
@@ -203,6 +208,11 @@ const core_info_t core_info_list[] = {
     {
 		.name = "CORE_E200Z3",
 		.pvr = CORE_PVR_E200Z3,
+    },
+#elif defined(CFG_MPC5604B)
+    {
+    	.name = "MPC5604B",
+    	.pvr = CORE_PVR_E200Z0H,
     },
 #elif defined(CFG_MPC5606S)
     {
@@ -282,7 +292,7 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
 {
 	VALIDATE( ( NULL != configPtr ), MCU_INIT_SERVICE_ID, MCU_E_PARAM_CONFIG );
 
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	/* Disable watchdog. Watchdog is enabled default after reset.*/
  	SWT.SR.R = 0x0000c520;     /* Write keys to clear soft lock bit */
  	SWT.SR.R = 0x0000d928;
@@ -304,7 +314,7 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
 
     Mcu_Global.config = configPtr;
 
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
     /* Enable DRUN, RUN0, SAFE, RESET modes */
     ME.MER.R = 0x0000001D;
 #endif
@@ -312,7 +322,7 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
     Mcu_Global.initRun = 1;
 
     if( Mcu_Global.config->McuClockSrcFailureNotification == TRUE  ) {
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
     	/*not support*/
 #else
     	ISR_INSTALL_ISR1("LossOfLock", Mcu_LossOfLock, PLL_SYNSR_LOLF, 10 , 0 );
@@ -417,7 +427,44 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     FMPLL.ESYNCR2.B.ERFD    = clockSettingsPtr->Pll3;
     // Connect SYSCLK to FMPLL
     SIU.SYSCLK.B.SYSCLKSEL = SYSCLOCK_SELECT_PLL;
+#elif defined(CFG_MPC5604B)
+    // Write pll parameters.
+    CGM.FMPLL_CR.B.IDF = clockSettingsPtr->Pll1;
+    CGM.FMPLL_CR.B.NDIV = clockSettingsPtr->Pll2;
+    CGM.FMPLL_CR.B.ODF = clockSettingsPtr->Pll3;
 
+    /* RUN0 cfg: 16MHzIRCON,OSC0ON,PLL0ON,syclk=PLL0 */
+    ME.RUN[0].R = 0x001F0074;
+    /* Peri. Cfg. 1 settings: only run in RUN0 mode */
+    ME.RUNPC[1].R = 0x00000010;
+    /* MPC56xxB/S: select ME.RUNPC[1] */
+    ME.PCTL[68].R = 0x01; //SIUL control
+    ME.PCTL[91].R = 0x01; //RTC/API control
+    ME.PCTL[92].R = 0x01; //PIT_RTI control
+    ME.PCTL[72].R = 0x01; //eMIOS0 control
+    ME.PCTL[73].R = 0x01; //eMIOS1 control
+    ME.PCTL[16].R = 0x01; //FlexCAN0 control
+    ME.PCTL[17].R = 0x01; //FlexCAN1 control
+    ME.PCTL[4].R = 0x01;  /* MPC56xxB/P/S DSPI0  */
+    ME.PCTL[5].R = 0x01;  /* MPC56xxB/P/S DSPI1:  */
+    ME.PCTL[32].R = 0x01; //ADC0 control
+    ME.PCTL[23].R = 0x01; //DMAMUX control
+    ME.PCTL[48].R = 0x01; /* MPC56xxB/P/S LINFlex  */
+    ME.PCTL[49].R = 0x01; /* MPC56xxB/P/S LINFlex  */
+    /* Mode Transition to enter RUN0 mode: */
+    /* Enter RUN0 Mode & Key */
+    ME.MCTL.R = 0x40005AF0;
+    /* Enter RUN0 Mode & Inverted Key */
+    ME.MCTL.R = 0x4000A50F;
+
+    /* Wait for mode transition to complete */
+    while (ME.GS.B.S_MTRANS) {}
+    /* Verify RUN0 is the current mode */
+    while(ME.GS.B.S_CURRENTMODE != 4) {}
+
+    CGM.SC_DC[0].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
+    CGM.SC_DC[1].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
+    CGM.SC_DC[2].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
 #elif defined(CFG_MPC5606S)
     // Write pll parameters.
     CGM.FMPLL[0].CR.B.IDF = clockSettingsPtr->Pll1;
@@ -453,6 +500,10 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     /* Verify RUN0 is the current mode */
     while(ME.GS.B.S_CURRENTMODE != 4) {}
 
+    CGM.SC_DC[0].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
+    CGM.SC_DC[1].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
+    CGM.SC_DC[2].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
+
  #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
     // Partially following the steps in MPC5567 RM..
     FMPLL.SYNCR.B.DEPTH	= 0;
@@ -477,7 +528,9 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
 void Mcu_DistributePllClock(void)
 {
     VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_DISTRIBUTEPLLCLOCK_SERVICE_ID, MCU_E_UNINIT );
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC5604B)
+    VALIDATE( ( CGM.FMPLL_CR.B.S_LOCK == 1 ), MCU_DISTRIBUTEPLLCLOCK_SERVICE_ID, MCU_E_PLL_NOT_LOCKED );
+#elif defined(CFG_MPC5606S)
     VALIDATE( ( CGM.FMPLL[0].CR.B.S_LOCK == 1 ), MCU_DISTRIBUTEPLLCLOCK_SERVICE_ID, MCU_E_PLL_NOT_LOCKED );
 #else
     VALIDATE( ( FMPLL.SYNSR.B.LOCK == 1 ), MCU_DISTRIBUTEPLLCLOCK_SERVICE_ID, MCU_E_PLL_NOT_LOCKED );
@@ -495,7 +548,15 @@ Mcu_PllStatusType Mcu_GetPllStatus(void)
 
     if( !SIMULATOR() )
     {
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC5604B)
+    	if ( !CGM.FMPLL_CR.B.S_LOCK )
+    	{
+    		rv = MCU_PLL_UNLOCKED;
+    	} else
+    	{
+    		rv = MCU_PLL_LOCKED;
+    	}
+#elif defined(CFG_MPC5606S)
     	if ( !CGM.FMPLL[0].CR.B.S_LOCK )
     	{
     		rv = MCU_PLL_UNLOCKED;
@@ -530,7 +591,7 @@ Mcu_ResetType Mcu_GetResetReason(void)
 
 	VALIDATE_W_RV( ( 1 == Mcu_Global.initRun ), MCU_GETRESETREASON_SERVICE_ID, MCU_E_UNINIT, MCU_RESET_UNDEFINED );
 
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	if( RGM.FES.B.F_SOFT ) {
 		rv = MCU_SW_RESET;
 	} else if( RGM.DES.B.F_SWT ) {
@@ -565,7 +626,7 @@ Mcu_RawResetType Mcu_GetResetRawValue(void)
 		return MCU_GETRESETRAWVALUE_UNINIT_RV;
 	}
 
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 	if( RGM.DES.R )
 		return RGM.DES.R;
 	else
@@ -584,7 +645,7 @@ void Mcu_PerformReset(void)
 	VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_PERFORMRESET_SERVICE_ID, MCU_E_UNINIT );
 
 	// Reset
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
     ME.MCTL.R = 0x00005AF0;
     ME.MCTL.R = 0x0000A50F;
 
@@ -632,6 +693,10 @@ uint32_t McuE_GetSystemClock(void)
 	uint32_t eprediv = FMPLL.SYNCR.B.PREDIV;
 	uint32_t emfd = FMPLL.SYNCR.B.MFD;
 	uint32_t erfd = FMPLL.SYNCR.B.RFD;
+#elif defined(CFG_MPC5604B)
+    uint32_t eprediv = CGM.FMPLL_CR.B.IDF;
+    uint32_t emfd = CGM.FMPLL_CR.B.NDIV;
+    uint32_t erfd = CGM.FMPLL_CR.B.ODF;
 #elif defined(CFG_MPC5606S)
     uint32_t eprediv = CGM.FMPLL[0].CR.B.IDF;
     uint32_t emfd = CGM.FMPLL[0].CR.B.NDIV;
@@ -712,7 +777,7 @@ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 #if defined(CFG_MPC5516)
 			prescaler = SIU.SYSCLK.B.LPCLKDIV0;
 			break;
-#elif defined(CFG_MPC5606S)
+#elif defined(CFG_MPC560X)
 			prescaler = CGM.SC_DC[1].B.DIV;
 			break;
 #endif
@@ -733,7 +798,7 @@ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 #if defined(CFG_MPC5516)
 			prescaler = SIU.SYSCLK.B.LPCLKDIV2;
 			break;
-#elif defined(CFG_MPC5606S)
+#elif defined(CFG_MPC560X)
 			prescaler = CGM.SC_DC[1].B.DIV;
 			break;
 #endif
@@ -758,9 +823,13 @@ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 			break;
 #endif
 
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC560X)
 		case PERIPHERAL_CLOCK_LIN_A:
 		case PERIPHERAL_CLOCK_LIN_B:
+#if defined(CFG_MPC5604B)
+		case PERIPHERAL_CLOCK_LIN_C:
+		case PERIPHERAL_CLOCK_LIN_D:
+#endif
 			prescaler = CGM.SC_DC[0].B.DIV;
 			break;
 		case PERIPHERAL_CLOCK_EMIOS_0:

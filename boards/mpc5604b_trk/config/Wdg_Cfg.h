@@ -13,30 +13,33 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+#ifndef WDG_CFG_H_
+#define WDG_CFG_H_
 
-#ifndef MPC55XX_H_
-#define MPC55XX_H_
+#include "Std_Types.h"
+#include "WdgIf_Types.h"
 
+typedef struct
+{
+   uint32 ReloadValue;
+   uint8 ActivationBit;
+}Wdg_SettingsType;
 
-#if defined(CFG_MPC5554)
-#include "mpc5554.h"
-#elif defined(CFG_MPC5516) || defined(MPC5517)
-#include "mpc5516.h"
-#elif defined(CFG_MPC5567)
-#include "mpc5567.h"
-#elif defined(CFG_MPC5633)
-#include "mpc563m.h"
-#elif defined(CFG_MPC5604B)
-#include "MPC5604B_0M27V_0102.h"
-#elif defined(CFG_MPC5606S)
-#include "mpc5606s.h"
-#elif defined(CFG_MPC5668)
-#include "mpc5668.h"
-#else
-#error NO MCU SELECTED!!!!
-#endif
+typedef struct
+{
+	WdgIf_ModeType Wdg_DefaultMode;
+	Wdg_SettingsType WdgSettingsFast;
+	Wdg_SettingsType WdgSettingsSlow;
+	Wdg_SettingsType WdgSettingsOff;
+}Wdg_ModeConfigType;
 
-/* Harmonization */
-typedef struct EDMA_TCD_STD_tag Dma_TcdType;
+typedef struct
+{
+	const Wdg_GeneralType    *Wdg_General;
+	const Wdg_ModeConfigType *Wdg_ModeConfig;
+}Wdg_ConfigType;
 
-#endif /* MPC55XX_H_ */
+ extern const Wdg_GeneralType WdgGeneral;
+ extern const Wdg_ConfigType WdgConfig;
+
+#endif /* WDG_CFG_H_ */

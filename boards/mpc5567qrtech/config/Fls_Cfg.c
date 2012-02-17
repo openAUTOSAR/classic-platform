@@ -18,7 +18,7 @@
 #include <stdlib.h>
 
 
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC5606S) || defined(CFG_MPC5604B)
 
 /* TODO: This can actually be read from the flash instead */
 const FlashType flashInfo[] = {
