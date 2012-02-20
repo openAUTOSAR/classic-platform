@@ -135,10 +135,7 @@
 
 
 /* ----------------------------[includes]------------------------------------*/
-
 #include "Can.h"
-
-//#include "ip_flexcan.h"
 #include <stdio.h>
 #include "mpc55xx.h"
 #include "Cpu.h"
@@ -757,7 +754,7 @@ void Can_Init(const Can_ConfigType *config)
         Can_InitController(cfgCtrlPtr->CanControllerId,unitPtr->cfgCtrlPtr);
 
         switch (cfgCtrlPtr->CanControllerId) {
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC5606S) || defined(CFG_MPC5604B)
         case CAN_CTRL_A:
         ISR_INSTALL_ISR2( "Can", Can_A_BusOff, FLEXCAN_0_ESR_BOFF_INT, 2, 0);
         ISR_INSTALL_ISR2( "Can", Can_A_Err, FLEXCAN_0_ESR_ERR_INT, 2, 0 );
@@ -772,7 +769,38 @@ void Can_Init(const Can_ConfigType *config)
         ISR_INSTALL_ISR2( "Can", Can_B_Isr, FLEXCAN_1_BUF_16_31, 2, 0 );
         ISR_INSTALL_ISR2( "Can", Can_B_Isr, FLEXCAN_1_BUF_32_63, 2, 0 );
         break;
-#elif defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567) || defined(CFG_MPC5604B)
+#endif
+#if defined(CFG_MPC5604B)
+        case CAN_CTRL_C:
+        ISR_INSTALL_ISR2( "Can", Can_C_BusOff, FLEXCAN_2_ESR_BOFF_INT, 2, 0);
+        ISR_INSTALL_ISR2( "Can", Can_C_Err, FLEXCAN_2_ESR_ERR_INT, 2, 0 );
+        INSTALL_HANDLER4( "Can", Can_C_Isr, FLEXCAN_2_BUF_00_03, 2, 0 ); /* 0-3, 4-7, 8-11, 12-15 */
+        ISR_INSTALL_ISR2( "Can", Can_C_Isr, FLEXCAN_2_BUF_16_31, 2, 0 );
+        ISR_INSTALL_ISR2( "Can", Can_C_Isr, FLEXCAN_2_BUF_32_63, 2, 0 );
+        break;
+        case CAN_CTRL_D:
+        ISR_INSTALL_ISR2( "Can", Can_D_BusOff, FLEXCAN_3_ESR_BOFF_INT, 2, 0);
+        ISR_INSTALL_ISR2( "Can", Can_D_Err, FLEXCAN_3_ESR_ERR_INT, 2, 0 );
+        INSTALL_HANDLER4( "Can", Can_D_Isr, FLEXCAN_3_BUF_00_03, 2, 0 ); /* 0-3, 4-7, 8-11, 12-15 */
+        ISR_INSTALL_ISR2( "Can", Can_D_Isr, FLEXCAN_3_BUF_16_31, 2, 0 );
+        ISR_INSTALL_ISR2( "Can", Can_D_Isr, FLEXCAN_3_BUF_32_63, 2, 0 );
+        break;
+        case CAN_CTRL_E:
+        ISR_INSTALL_ISR2( "Can", Can_E_BusOff, FLEXCAN_4_ESR_BOFF_INT, 2, 0);
+        ISR_INSTALL_ISR2( "Can", Can_E_Err, FLEXCAN_4_ESR_ERR_INT, 2, 0 );
+        INSTALL_HANDLER4( "Can", Can_E_Isr, FLEXCAN_4_BUF_00_03, 2, 0 ); /* 0-3, 4-7, 8-11, 12-15 */
+        ISR_INSTALL_ISR2( "Can", Can_E_Isr, FLEXCAN_4_BUF_16_31, 2, 0 );
+        ISR_INSTALL_ISR2( "Can", Can_E_Isr, FLEXCAN_4_BUF_32_63, 2, 0 );
+        break;
+        case CAN_CTRL_E:
+        ISR_INSTALL_ISR2( "Can", Can_F_BusOff, FLEXCAN_5_ESR_BOFF_INT, 2, 0);
+        ISR_INSTALL_ISR2( "Can", Can_F_Err, FLEXCAN_5_ESR_ERR_INT, 2, 0 );
+        INSTALL_HANDLER4( "Can", Can_F_Isr, FLEXCAN_5_BUF_00_03, 2, 0 ); /* 0-3, 4-7, 8-11, 12-15 */
+        ISR_INSTALL_ISR2( "Can", Can_F_Isr, FLEXCAN_5_BUF_16_31, 2, 0 );
+        ISR_INSTALL_ISR2( "Can", Can_F_Isr, FLEXCAN_5_BUF_32_63, 2, 0 );
+        break;
+#endif
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567)
         case CAN_CTRL_A:
         ISR_INSTALL_ISR2( "Can", Can_A_BusOff, FLEXCAN_A_ESR_BOFF_INT, 2, 0);
         ISR_INSTALL_ISR2( "Can", Can_A_Err, FLEXCAN_A_ESR_ERR_INT, 2, 0 );
@@ -809,7 +837,7 @@ void Can_Init(const Can_ConfigType *config)
         ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_E_IFLAG1_BUF63_32I, 2, 0 );
         break;
 #endif
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5604B)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
         case CAN_CTRL_F:
         ISR_INSTALL_ISR2( "Can", Can_F_BusOff, FLEXCAN_F_ESR_BOFF_INT, 2, 0 );
         ISR_INSTALL_ISR2( "Can", Can_F_Err, FLEXCAN_F_ESR_ERR_INT, 2, 0 );
