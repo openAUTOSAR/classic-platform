@@ -576,17 +576,6 @@ void Pwm_DeInit() {
 		{
 			return;
 		}
-		volatile struct EMIOS_tag *emiosHw;
-#if defined(CFG_MPC560X)
-		if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1) {
-			emiosHw = &EMIOS_0;
-		} else {
-			emiosHw = &EMIOS_1;
-			Channel -= PWM_NUMBER_OF_EACH_EMIOS;
-		}
-#else
-		emiosHw = &EMIOS;
-#endif
 
 		for (Pwm_ChannelType channel_iterator = 0; channel_iterator < PWM_NUMBER_OF_CHANNELS; channel_iterator++)
 		{
@@ -600,6 +589,18 @@ void Pwm_DeInit() {
 				break;
 			}
 		}
+
+		volatile struct EMIOS_tag *emiosHw;
+#if defined(CFG_MPC560X)
+		if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1) {
+			emiosHw = &EMIOS_0;
+		} else {
+			emiosHw = &EMIOS_1;
+			Channel -= PWM_NUMBER_OF_EACH_EMIOS;
+		}
+#else
+		emiosHw = &EMIOS;
+#endif
 
 		uint16 leading_edge_position = (uint16) (((uint32) Period * (uint32) DutyCycle) >> 15);
 
