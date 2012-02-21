@@ -54,10 +54,7 @@ static Pwm_ModuleStateType Pwm_ModuleState = PWM_STATE_UNINITIALIZED;
 
 // Run-time variables
 typedef struct {
-	Pwm_ChannelClassType Class;
-
 	#if PWM_NOTIFICATION_SUPPORTED==STD_ON
-		Pwm_NotificationHandlerType NotificationRoutine;
 		Pwm_EdgeNotificationType NotificationState;
 	#endif
 } Pwm_ChannelStructType;
@@ -150,66 +147,50 @@ static void calcPeriodTicksAndPrescaler(
 }
 
 
-static void configureChannel(Pwm_ChannelType channel_iterator, const Pwm_ChannelConfigurationType* channelConfig, const Pwm_ConfigType* ConfigPtr){
+static void configureChannel(const Pwm_ChannelConfigurationType* channelConfig){
 
 	Pwm_ChannelType channel = channelConfig->channel;
+	volatile struct EMIOS_tag *emiosHw;
 
-	#if defined(CFG_MPC560X)
-		volatile struct EMIOS_tag *emiosHw;
-		if(channel <= PWM_NUMBER_OF_EACH_EMIOS-1) {
-			emiosHw = &EMIOS_0;
-		} else {
-			emiosHw = &EMIOS_1;
-			channel -= PWM_NUMBER_OF_EACH_EMIOS;
-		}
+#if defined(CFG_MPC560X)
+	if(channel <= PWM_NUMBER_OF_EACH_EMIOS-1) {
+		emiosHw = &EMIOS_0;
+	} else {
+		emiosHw = &EMIOS_1;
+		channel -= PWM_NUMBER_OF_EACH_EMIOS;
+	}
+#else
+	emiosHw = &EMIOS;
+#endif
 
-		emiosHw->CH[channel].CCR.B.MODE = PWM_EMIOS_OPWM;
-		emiosHw->CH[channel].CCR.B.DMA = 0;
-		emiosHw->CH[channel].CCR.B.BSL = 3;
-		emiosHw->CH[channel].CCR.B.ODIS = 0;
+#if defined (CFG_MPC5604B)
+	emiosHw->CH[channel].CCR.B.MODE = channelConfig->mode;
+	emiosHw->CH[channel].CCR.B.DMA = 0;
+	emiosHw->CH[channel].CCR.B.BSL = channelConfig->clksrc;
+	emiosHw->CH[channel].CCR.B.ODIS = 0;
+#else
+	emiosHw->CH[channel].CCR.B.MODE = PWM_EMIOS_OPWM;
+	emiosHw->CH[channel].CCR.B.DMA = 0;
+	emiosHw->CH[channel].CCR.B.BSL = 3;
+	emiosHw->CH[channel].CCR.B.ODIS = 0;
+#endif
 
-		Pwm_ChannelPrescalerType prescaler;  uint16_t period_ticks;
-		calcPeriodTicksAndPrescaler( channelConfig, &period_ticks, &prescaler );
+	Pwm_ChannelPrescalerType prescaler;  uint16_t period_ticks;
+	calcPeriodTicksAndPrescaler( channelConfig, &period_ticks, &prescaler );
 
-		emiosHw->CH[channel].CBDR.R = period_ticks;
-		emiosHw->CH[channel].CCR.B.UCPRE = prescaler;
-		emiosHw->CH[channel].CCR.B.UCPEN = 1;
+	emiosHw->CH[channel].CBDR.R = period_ticks;
+	emiosHw->CH[channel].CCR.B.UCPRE = prescaler;
+#if defined (CFG_MPC560X)
+	emiosHw->CH[channel].CCR.B.UCPEN = 1;
+#else
+	emiosHw->CH[channel].CCR.B.UCPREN = 1;
+#endif
 
-		// 0 A match on comparator A clears the output flip-flop, while a match on comparator B sets it
-		// 1 A match on comparator A sets the output flip-flop, while a match on comparator B clears it
-		// A duty cycle of X % should give a signal with state 'channelConfig->polarity' during
-		// X % of the period time.
-		emiosHw->CH[channel].CCR.B.EDPOL = (channelConfig->polarity == PWM_LOW) ? 1 : 0;
-
-		#if PWM_SET_PERIOD_AND_DUTY_API==STD_ON
-			ChannelRuntimeStruct[channelConfig->channel].Class = ConfigPtr->ChannelClass[channel_iterator];
-		#endif
-
-	#else
-
-		EMIOS.CH[channel].CCR.B.MODE = PWM_EMIOS_OPWM;
-		EMIOS.CH[channel].CCR.B.DMA = 0;
-		EMIOS.CH[channel].CCR.B.BSL = 3;
-		EMIOS.CH[channel].CCR.B.ODIS = 0;
-
-		Pwm_ChannelPrescalerType prescaler;  uint16_t period_ticks;
-		calcPeriodTicksAndPrescaler( channelConfig, &period_ticks, &prescaler );
-
-		EMIOS.CH[channel].CBDR.R = period_ticks;
-		EMIOS.CH[channel].CCR.B.UCPRE = prescaler;
-		EMIOS.CH[channel].CCR.B.UCPREN = 1;
-
-		// 0 A match on comparator A clears the output flip-flop, while a match on comparator B sets it
-		// 1 A match on comparator A sets the output flip-flop, while a match on comparator B clears it
-		// A duty cycle of X % should give a signal with state 'channelConfig->polarity' during
-		// X % of the period time.
-		EMIOS.CH[channel].CCR.B.EDPOL = (channelConfig->polarity == PWM_LOW) ? 1 : 0;
-
-		#if PWM_SET_PERIOD_AND_DUTY_API==STD_ON
-			ChannelRuntimeStruct[channel].Class = ConfigPtr->ChannelClass[channel_iterator];
-		#endif
-	#endif
-
+	// 0 A match on comparator A clears the output flip-flop, while a match on comparator B sets it
+	// 1 A match on comparator A sets the output flip-flop, while a match on comparator B clears it
+	// A duty cycle of X % should give a signal with state 'channelConfig->polarity' during
+	// X % of the period time.
+	emiosHw->CH[channel].CCR.B.EDPOL = (channelConfig->polarity == PWM_LOW) ? 1 : 0;
 }
 
 void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
@@ -247,9 +228,9 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
         #endif
     #endif
 
-	#if defined(CFG_MPC560X)
+    PwmConfigPtr = ConfigPtr;
 
-		PwmConfigPtr = ConfigPtr;
+	#if defined(CFG_MPC560X)
 		/* Clock scaler uses system clock (~64MHz) as source, so prescaler 64 => 1MHz. */
 		EMIOS_0.MCR.B.GPRE = PWM_PRESCALER - 1;
 		EMIOS_1.MCR.B.GPRE = PWM_PRESCALER - 1;
@@ -285,7 +266,7 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
     	const Pwm_ChannelConfigurationType* channelConfig = &ConfigPtr->Channels[channel_iterator];
     	Pwm_ChannelType channel = channelConfig->channel;
 
-    	configureChannel( channel_iterator, channelConfig, ConfigPtr );
+    	configureChannel( channelConfig );
 
         #if PWM_NOTIFICATION_SUPPORTED==STD_ON
                 /*
@@ -524,16 +505,12 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
 			    }
         	#endif
 
-            ChannelRuntimeStruct[channel].NotificationRoutine
-                        = ConfigPtr->NotificationHandlers[channel_iterator];
-
 		#endif
     }
 }
 
 #if PWM_DE_INIT_API==STD_ON
 
-// TODO: Test that this function in fact turns the channel off.
 void inline Pwm_DeInitChannel(Pwm_ChannelType Channel) {
     Pwm_SetOutputToIdle(Channel);
 
@@ -550,7 +527,6 @@ void inline Pwm_DeInitChannel(Pwm_ChannelType Channel) {
         {
         	EMIOS_1.UCDIS.R |= (1 << (Channel-PWM_NUMBER_OF_EACH_EMIOS));
         }
-
 	#endif
 
     /*
@@ -562,7 +538,6 @@ void inline Pwm_DeInitChannel(Pwm_ChannelType Channel) {
 }
 
 void Pwm_DeInit() {
-	/* TODO: Implement Pwm_DeInit() */
 	Pwm_ChannelType channel_iterator;
 
 	if(E_OK != Pwm_ValidateInitialized(PWM_DEINIT_ID))
@@ -573,20 +548,14 @@ void Pwm_DeInit() {
 	for (channel_iterator = 0; channel_iterator < PWM_NUMBER_OF_CHANNELS; channel_iterator++) {
 		Pwm_ChannelType channel = PwmConfigPtr->Channels[channel_iterator].channel;
 		Pwm_DeInitChannel(channel);
-
 	}
 
 	// Disable module
-
 	#if defined(CFG_MPC5516) || defined(CFG_MPC5567)
-
 		EMIOS.MCR.B.MDIS = 1;
-
     #elif defined(CFG_MPC560X)
-
 		EMIOS_0.MCR.B.MDIS = 1;
 		EMIOS_1.MCR.B.MDIS = 1;
-
 	#endif
 
 	Pwm_ModuleState = PWM_STATE_UNINITIALIZED;
@@ -607,38 +576,38 @@ void Pwm_DeInit() {
 		{
 			return;
 		}
-		if(ChannelRuntimeStruct[Channel].Class != PWM_VARIABLE_PERIOD)
-		{
-#if PWM_DEV_ERROR_DETECT==STD_ON
-			Det_ReportError(PWM_MODULE_ID,0, PWM_SETPERIODANDDUTY_ID, PWM_E_PERIOD_UNCHANGEABLE);
+		volatile struct EMIOS_tag *emiosHw;
+#if defined(CFG_MPC560X)
+		if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1) {
+			emiosHw = &EMIOS_0;
+		} else {
+			emiosHw = &EMIOS_1;
+			Channel -= PWM_NUMBER_OF_EACH_EMIOS;
+		}
+#else
+		emiosHw = &EMIOS;
 #endif
-			return;
+
+		for (Pwm_ChannelType channel_iterator = 0; channel_iterator < PWM_NUMBER_OF_CHANNELS; channel_iterator++)
+		{
+			if(Channel == PwmConfigPtr->Channels[channel_iterator].channel){
+				if(PwmConfigPtr->ChannelClass[channel_iterator] != PWM_VARIABLE_PERIOD){
+		#if PWM_DEV_ERROR_DETECT==STD_ON
+					Det_ReportError(PWM_MODULE_ID,0, PWM_SETPERIODANDDUTY_ID, PWM_E_PERIOD_UNCHANGEABLE);
+		#endif
+					return;
+				}
+				break;
+			}
 		}
 
 		uint16 leading_edge_position = (uint16) (((uint32) Period * (uint32) DutyCycle) >> 15);
 
-		#if defined(CFG_MPC5516) || defined(CFG_MPC5567)
+		/* Timer instant for leading edge */
+		emiosHw->CH[Channel].CADR.R = leading_edge_position;
 
-			/* Timer instant for leading edge */
-			EMIOS.CH[Channel].CADR.R = leading_edge_position;
-
-			/* Timer instant for the period to restart */
-			EMIOS.CH[Channel].CBDR.R = Period;
-
-		#elif defined(CFG_MPC560X)
-
-			if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1)
-			{
-				EMIOS_0.CH[Channel].CADR.R = leading_edge_position;
-				EMIOS_0.CH[Channel].CBDR.R = Period;
-			}
-			else
-			{
-			 EMIOS_1.CH[Channel - PWM_NUMBER_OF_EACH_EMIOS].CADR.R = leading_edge_position;
-			 EMIOS_1.CH[Channel - PWM_NUMBER_OF_EACH_EMIOS].CBDR.R = Period;
-			}
-
-		#endif
+		/* Timer instant for the period to restart */
+		emiosHw->CH[Channel].CBDR.R = Period;
 	}
 #endif
 
@@ -646,8 +615,6 @@ void Pwm_DeInit() {
 /**
  * PWM013: The function Pwm_SetDutyCycle shall set the duty cycle of the PWM
  * channel.
- *
- * @TODO: How to conform with PWM018: "The driver shall forbid the spike on the PWM output signal"?
  *
  * @param Channel PWM channel to use. 0 <= Channel < PWM_NUMBER_OF_CHANNELS <= 16
  * @param DutyCycle 0 <= DutyCycle <= 0x8000
@@ -660,43 +627,34 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 	{
 		return;
 	}
+	volatile struct EMIOS_tag *emiosHw;
+#if defined(CFG_MPC560X)
+	if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1) {
+		emiosHw = &EMIOS_0;
+	} else {
+		emiosHw = &EMIOS_1;
+		Channel -= PWM_NUMBER_OF_EACH_EMIOS;
+	}
+#else
+	emiosHw = &EMIOS;
+#endif
 
-	#if defined(CFG_MPC5516) || defined(CFG_MPC5567)
+	uint16 leading_edge_position = (uint16) ((emiosHw->CH[Channel].CBDR.R
+				* (uint32) DutyCycle) >> 15);
 
-		uint16 leading_edge_position = (uint16) ((EMIOS.CH[Channel].CBDR.R
-					* (uint32) DutyCycle) >> 15);
+	/* Timer instant for leading edge */
 
-		/* Timer instant for leading edge */
-
-		/*
-		 * PWM017: The function Pwm_SetDutyCycle shall update the duty cycle at
-		 * the end of the period if supported by the implementation and configured
-		 * with PwmDutycycleUpdatedEndperiod. [ This is achieved in hardware since
-		 * the A and B registers are double buffered ]
-		 *
-		 * PWM014: The function Pwm_SetDutyCycle shall set the output state according
-		 * to the configured polarity parameter [which is already set from
-		 * Pwm_InitChannel], when the duty parameter is 0% [=0] or 100% [=0x8000].
-		 */
-		EMIOS.CH[Channel].CADR.R = leading_edge_position;
-
-	#elif defined(CFG_MPC560X)
-
-		if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1)
-		{
-			uint16 leading_edge_position = (uint16) ((EMIOS_0.CH[Channel].CBDR.R* (uint32) DutyCycle) >> 15);
-
-			EMIOS_0.CH[Channel].CADR.R = leading_edge_position;
-
-		}
-		else
-		{
-			uint16 leading_edge_position = (uint16) ((EMIOS_1.CH[Channel-PWM_NUMBER_OF_EACH_EMIOS].CBDR.R* (uint32) DutyCycle) >> 15);
-
-			EMIOS_1.CH[Channel-PWM_NUMBER_OF_EACH_EMIOS].CADR.R = leading_edge_position;
-
-		}
-	#endif
+	/*
+	 * PWM017: The function Pwm_SetDutyCycle shall update the duty cycle at
+	 * the end of the period if supported by the implementation and configured
+	 * with PwmDutycycleUpdatedEndperiod. [ This is achieved in hardware since
+	 * the A and B registers are double buffered ]
+	 *
+	 * PWM014: The function Pwm_SetDutyCycle shall set the output state according
+	 * to the configured polarity parameter [which is already set from
+	 * Pwm_InitChannel], when the duty parameter is 0% [=0] or 100% [=0x8000].
+	 */
+	emiosHw->CH[Channel].CADR.R = leading_edge_position;
 }
 #endif
 
@@ -708,36 +666,20 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 		{
 			return;
 		}
+		volatile struct EMIOS_tag *emiosHw;
+	#if defined(CFG_MPC560X)
+		if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1) {
+			emiosHw = &EMIOS_0;
+		} else {
+			emiosHw = &EMIOS_1;
+			Channel -= PWM_NUMBER_OF_EACH_EMIOS;
+		}
+	#else
+		emiosHw = &EMIOS;
+	#endif
 
-		/* TODO: Make Pwm_SetOutputToIdle sensitive to PwmIdleState (currently uses PwmPolarity) */
-
-		#if defined(CFG_MPC5516) || defined(CFG_MPC5567)
-
-			EMIOS.CH[Channel].CADR.R = 0;
-
-		#elif defined(CFG_MPC560X)
-
-
-			for (Pwm_ChannelType channel_iterator = 0; channel_iterator < PWM_NUMBER_OF_CHANNELS; channel_iterator++)
-			{
-				if(Channel == PwmConfigPtr->Channels[channel_iterator].channel)
-				{
-					Pwm_OutputStateType ChannelPol = PwmConfigPtr->Channels[channel_iterator].polarity;
-					if(ChannelPol == PwmConfigPtr->IdleState[channel_iterator])
-					{
-						Pwm_SetDutyCycle(Channel,0x0000);
-					}
-					else
-					{
-						Pwm_SetDutyCycle(Channel,0x8000);
-					}
-				}
-
-			}
-
-		#endif
-
-}
+		emiosHw->CH[Channel].CADR.R = 0;
+    }
 #endif
 /*
  * PWM085: The function Pwm_GetOutputState shall be pre compile configurable
@@ -756,22 +698,19 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 			return PWM_LOW;
 		}
 
-		#if defined(CFG_MPC5516) || defined(CFG_MPC5567)
+		volatile struct EMIOS_tag *emiosHw;
+	#if defined(CFG_MPC560X)
+		if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1) {
+			emiosHw = &EMIOS_0;
+		} else {
+			emiosHw = &EMIOS_1;
+			Channel -= PWM_NUMBER_OF_EACH_EMIOS;
+		}
+	#else
+		emiosHw = &EMIOS;
+	#endif
 
-			return EMIOS.CH[Channel].CSR.B.UCOUT;
-
-		#elif defined(CFG_MPC560X)
-
-			if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1)
-			{
-				return (Pwm_OutputStateType)(EMIOS_0.CH[Channel].CSR.B.UCOUT);
-			}
-			else
-			{
-				return (Pwm_OutputStateType)(EMIOS_1.CH[Channel-PWM_NUMBER_OF_EACH_EMIOS].CSR.B.UCOUT);
-			}
-		#endif
-
+		return (Pwm_OutputStateType)emiosHw->CH[Channel].CSR.B.UCOUT;
 	}
 #endif
 
@@ -785,23 +724,20 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 			return;
 		}
 
+		volatile struct EMIOS_tag *emiosHw;
+	#if defined(CFG_MPC560X)
+		if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1) {
+			emiosHw = &EMIOS_0;
+		} else {
+			emiosHw = &EMIOS_1;
+			Channel -= PWM_NUMBER_OF_EACH_EMIOS;
+		}
+	#else
+		emiosHw = &EMIOS;
+	#endif
+
 		// Disable flags on this channel
-		#if defined(CFG_MPC5516) || defined(CFG_MPC5567)
-
-			EMIOS.CH[Channel].CCR.B.FEN = 0;
-
-		#elif defined(CFG_MPC560X)
-
-			if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1)
-			{
-				EMIOS_0.CH[Channel].CCR.B.FEN = 0;
-			}
-			else
-			{
-				EMIOS_1.CH[Channel-PWM_NUMBER_OF_EACH_EMIOS].CCR.B.FEN = 0;
-			}
-		#endif
-
+		emiosHw->CH[Channel].CCR.B.FEN = 0;
 	}
 
 	void Pwm_EnableNotification(Pwm_ChannelType Channel,Pwm_EdgeNotificationType Notification)
@@ -812,24 +748,21 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 			return;
 		}
 
+		volatile struct EMIOS_tag *emiosHw;
+	#if defined(CFG_MPC560X)
+		if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1) {
+			emiosHw = &EMIOS_0;
+		} else {
+			emiosHw = &EMIOS_1;
+			Channel -= PWM_NUMBER_OF_EACH_EMIOS;
+		}
+	#else
+		emiosHw = &EMIOS;
+	#endif
+
 		ChannelRuntimeStruct[Channel].NotificationState = Notification;
 
-		// Enable flags on this channel
-		#if defined(CFG_MPC5516) || defined(CFG_MPC5567)
-
-			EMIOS.CH[Channel].CCR.B.FEN = 1;
-
-		#elif defined(CFG_MPC560X)
-
-			if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1)
-			{
-				EMIOS_0.CH[Channel].CCR.B.FEN = 1;
-			}
-			else
-			{
-				EMIOS_1.CH[Channel-PWM_NUMBER_OF_EACH_EMIOS].CCR.B.FEN = 1;
-			}
-		#endif
+		emiosHw->CH[Channel].CCR.B.FEN = 1;
 	}
 
 	static void Pwm_Isr(void)
@@ -842,43 +775,48 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
         #endif
 
         #if defined(CFG_MPC5516) || defined(CFG_MPC5567)
-		// There are 24 channels specified in the global flag register, but
-		// we only listen to the first 16 as only these support OPWfM
-		for (Pwm_ChannelType emios_ch = 0; emios_ch < 16; emios_ch++) {
-			if (flagmask & (1 << emios_ch)) {
+			// There are 24 channels specified in the global flag register, but
+			// we only listen to the first 16 as only these support OPWfM
+			for (Pwm_ChannelType channel_iterator = 0; channel_iterator < PWM_NUMBER_OF_CHANNELS; channel_iterator++)
+			{
+				Pwm_ChannelType emios_ch = PwmConfigPtr->Channels[channel_iterator].channel;
 
-				if (ChannelRuntimeStruct[emios_ch].NotificationRoutine != NULL && EMIOS.CH[emios_ch].CCR.B.FEN) {
-
-					Pwm_EdgeNotificationType notification = ChannelRuntimeStruct[emios_ch].NotificationState;
-					if (notification == PWM_BOTH_EDGES ||
-							notification == EMIOS.CH[emios_ch].CSR.B.UCOUT)
+				if (flagmask & (1 << emios_ch))
+				{
+					if (PwmConfigPtr->NotificationHandlers[channel_iterator] != NULL && EMIOS.CH[emios_ch].CCR.B.FEN)
 					{
-							ChannelRuntimeStruct[emios_ch].NotificationRoutine();
+						Pwm_EdgeNotificationType notification = ChannelRuntimeStruct[emios_ch].NotificationState;
+						if (notification == PWM_BOTH_EDGES ||
+
+								notification == EMIOS.CH[emios_ch].CSR.B.UCOUT)
+						{
+							PwmConfigPtr->NotificationHandlers[channel_iterator]();
+						}
 					}
+
+					// Clear interrupt
+					EMIOS.CH[emios_ch].CSR.B.FLAG = 1;
 				}
-				// Clear interrupt
-				EMIOS.CH[emios_ch].CSR.B.FLAG = 1;
 			}
-		}
         #elif defined(CFG_MPC560X)
 			uint32_t flagmask_0 = EMIOS_0.GFR.R;
 			uint32_t flagmask_1 = EMIOS_1.GFR.R;
 
-			for (Pwm_ChannelType channel_iterator = 0; channel_iterator < 16; channel_iterator++)
+			for (Pwm_ChannelType channel_iterator = 0; channel_iterator < PWM_NUMBER_OF_CHANNELS; channel_iterator++)
 			{
 
 				Pwm_ChannelType emios_ch = PwmConfigPtr->Channels[channel_iterator].channel;
 
 				if (flagmask_0 & (1 << emios_ch))
 				{
-					if (ChannelRuntimeStruct[emios_ch].NotificationRoutine != NULL && EMIOS_0.CH[emios_ch].CCR.B.FEN)
+					if (PwmConfigPtr->NotificationHandlers[channel_iterator] != NULL && EMIOS_0.CH[emios_ch].CCR.B.FEN)
 					{
 						Pwm_EdgeNotificationType notification = ChannelRuntimeStruct[emios_ch].NotificationState;
 						if (notification == PWM_BOTH_EDGES ||
 
 								notification == EMIOS_0.CH[emios_ch].CSR.B.UCOUT)
 						{
-								ChannelRuntimeStruct[emios_ch].NotificationRoutine();
+							PwmConfigPtr->NotificationHandlers[channel_iterator]();
 						}
 					}
 
@@ -887,13 +825,13 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 				}
 				else if (flagmask_1 & (1 << emios_ch - PWM_NUMBER_OF_EACH_EMIOS ))
 				{
-					if (ChannelRuntimeStruct[emios_ch].NotificationRoutine != NULL && EMIOS_1.CH[emios_ch - PWM_NUMBER_OF_EACH_EMIOS].CCR.B.FEN)
+					if (PwmConfigPtr->NotificationHandlers[channel_iterator] != NULL && EMIOS_1.CH[emios_ch - PWM_NUMBER_OF_EACH_EMIOS].CCR.B.FEN)
 					{
 						Pwm_EdgeNotificationType notification = ChannelRuntimeStruct[emios_ch].NotificationState;
 						if (notification == PWM_BOTH_EDGES ||
 								notification == EMIOS_1.CH[emios_ch - PWM_NUMBER_OF_EACH_EMIOS].CSR.B.UCOUT)
 							{
-								ChannelRuntimeStruct[emios_ch].NotificationRoutine();
+							PwmConfigPtr->NotificationHandlers[channel_iterator]();
 							}
 						}
 

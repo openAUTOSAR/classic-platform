@@ -30,7 +30,7 @@ extern OsTickType OsTickFreq;
 
 
 #if defined(CFG_MPC560X)
-void Os_SysTick_MPC5606( void ) {
+void Os_SysTick_MPC560x( void ) {
 	/* Clear API interrupt */
 	RTC.RTCS.B.APIF = 1;
 
@@ -40,7 +40,7 @@ void Os_SysTick_MPC5606( void ) {
 
 void Os_SysTickInit( void ) {
 #if defined(CFG_MPC560X)
-	ISR_INSTALL_ISR2("OsTick",Os_SysTick_MPC5606,API_INT,6,0);
+	ISR_INSTALL_ISR2("OsTick",Os_SysTick_MPC560x,API_INT,6,0);
 #else
 	ISR_INSTALL_ISR2("OsTick",OsTick,INTC_SSCIR0_CLR7,6,0);
 #endif
