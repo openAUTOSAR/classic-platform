@@ -15,14 +15,12 @@
 
 /** @reqSettings DEFAULT_SPECIFICATION_REVISION=3.1.5 */
 
-/*
- * Generator TODO:
- * - Generate the Rx, Tx masks in as const
- * - CLK_SRC
- *   Not avail: MPC5606S
- *   Avail:     MPC5516 (XOSC, See 3.3)
+/* Code TODO
+ * - REMOVE1
+ * - REMOVE2
+ * - Enable SOFT_RESET to guarantee that we get the same state every time
+ *   (do in Can_InitController ?)
  */
-
 
 /* ----------------------------[information]----------------------------------*/
 /*
@@ -58,11 +56,13 @@
  *   **) The flexcan hardware cannot detect wakeup (at least now the ones
  *       this driver supports)
  *
- * Devices
- *   MPC560x
- *   MPC551x
- *   MPC5567
- *   MPC5668
+ *   Devices    CLK_SRC
+ *   ----------------------------------------------
+ *   MPC5604B   ?
+ *   MPC5606S   Only sys-clk it seems
+ *   MPC551x    Both sys-clk and XOSC, See 3.3
+ *   MPC5567    ?
+ *   MPC5668    ?
  *
  *   MPC5554 is NOT supported (no individual mask)
  *
@@ -544,7 +544,7 @@ static void Can_Isr_Rx(Can_UnitType *uPtr)
     while (iFlag & uPtr->Can_Arc_RxMbMask) {
 
         /* Find mailbox */
-        mbNr = ilog2_64(iFlag);
+        mbNr = ilog2_64(iFlag & uPtr->Can_Arc_RxMbMask);
         iFlag ^= 1ull << mbNr;
 
         /* Check for FIFO interrupt */
@@ -661,6 +661,7 @@ static void Can_Isr(int controller )
 
 static void Can_BuildMaps(Can_UnitType *uPtr)
 {
+	(void)uPtr;
 #if 0
     uint8_t mbNr = 8;
     uint8_t fifoNr = 0;
@@ -751,10 +752,12 @@ void Can_Init(const Can_ConfigType *config)
 
         Can_BuildMaps(unitPtr);
 
+        /* REMOVE2: Can_InitController() should probably not be called from Can_Init() at all
+         * This is done by CanIf */
         Can_InitController(cfgCtrlPtr->CanControllerId,unitPtr->cfgCtrlPtr);
 
         switch (cfgCtrlPtr->CanControllerId) {
-#if defined(CFG_MPC5606X)
+#if defined(CFG_MPC560X)
         case CAN_CTRL_A:
         ISR_INSTALL_ISR2( "Can", Can_A_BusOff, FLEXCAN_0_ESR_BOFF_INT, 2, 0);
         ISR_INSTALL_ISR2( "Can", Can_A_Err, FLEXCAN_0_ESR_ERR_INT, 2, 0 );
@@ -835,8 +838,7 @@ void Can_Init(const Can_ConfigType *config)
         ISR_INSTALL_ISR2( "Can", Can_E_Isr, FLEXCAN_E_IFLAG1_BUF31_16I, 2, 0 );
         ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_E_IFLAG1_BUF63_32I, 2, 0 );
         break;
-#endif
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
+	#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
         case CAN_CTRL_F:
         ISR_INSTALL_ISR2( "Can", Can_F_BusOff, FLEXCAN_F_ESR_BOFF_INT, 2, 0 );
         ISR_INSTALL_ISR2( "Can", Can_F_Err, FLEXCAN_F_ESR_ERR_INT, 2, 0 );
@@ -844,6 +846,7 @@ void Can_Init(const Can_ConfigType *config)
         ISR_INSTALL_ISR2( "Can", Can_F_Isr, FLEXCAN_F_IFLAG1_BUF31_16I, 2, 0 );
         ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_F_IFLAG1_BUF63_32I, 2, 0 );
         break;
+	#endif
 #endif
         default:
             assert(0);
@@ -934,7 +937,7 @@ void Can_InitController(uint8 controller,
     canHw->MCR.B.MAXMB = cfgCtrlPtr->Can_Arc_MailboxMax - 1;
 
 
-    /* Disable selfreception, if not loopback  */
+    /* Disable self-reception, if not loopback  */
     canHw->MCR.B.SRXDIS = (config->Can_Arc_Flags & CAN_CTRL_LOOPBACK) ? 0 : 1;
 
     /* Clock calucation
@@ -1023,7 +1026,15 @@ void Can_InitController(uint8 controller,
     }
 
     canUnit->mbTxFree = canUnit->Can_Arc_TxMbMask;
+    /* @req 3.1.5/CAN260 */
     canUnit->state = CANIF_CS_STOPPED;
+
+    // Release FREEZE to be able to write to mem mapped registers ( see 25.4.8.1 )
+
+    /* REMOVE1: Remove this cause CAN260 says it should not be able to communicate */
+    canHw->MCR.B.FRZ = 0;
+    canHw->MCR.B.HALT = 0;
+
     Can_EnableControllerInterrupts(cId);
 
     return;
@@ -1042,12 +1053,12 @@ Can_ReturnType Can_SetControllerMode(uint8 controller,
     imask_t state;
     Can_ReturnType rv = CAN_OK;
 
-    Can_UnitType *canUnit = CTRL_TO_UNIT_PTR(controller);
-
     /** @req 3.1.5/CAN198 */
-    VALIDATE( (canUnit->state!=CANIF_CS_UNINIT), 0x3, CAN_E_UNINIT );
+    VALIDATE( (Can_Global.initRun == CAN_READY), CAN_SETCONTROLLERMODE_SERVICE_ID, CAN_E_UNINIT );
+    Can_UnitType *canUnit = CTRL_TO_UNIT_PTR(controller);
+    VALIDATE( (canUnit->state!=CANIF_CS_UNINIT), CAN_SETCONTROLLERMODE_SERVICE_ID, CAN_E_UNINIT );
     /** @req 3.1.5/CAN199 */
-    VALIDATE( VALID_CONTROLLER(controller), 0x3, CAN_E_PARAM_CONTROLLER );
+    VALIDATE( VALID_CONTROLLER(controller), CAN_SETCONTROLLERMODE_SERVICE_ID, CAN_E_PARAM_CONTROLLER );
 
     canHw = canUnit->hwPtr;
 
@@ -1092,6 +1103,7 @@ void Can_DisableControllerInterrupts(uint8 controller)
     /** !req 3.1.5/CAN204 */
     /** !req 3.1.5/CAN292 */
 
+	VALIDATE_NO_RV( (Can_Global.initRun == CAN_READY), CAN_DISABLECONTROLLERINTERRUPTS_SERVICE_ID, CAN_E_UNINIT );
     Can_UnitType *canUnit = CTRL_TO_UNIT_PTR(controller);
     flexcan_t *canHw;
     imask_t state;
@@ -1139,8 +1151,9 @@ void Can_EnableControllerInterrupts(uint8 controller)
     flexcan_t *canHw;
     imask_t state;
 
-    canUnit = CTRL_TO_UNIT_PTR(controller);
     /** @req 3.1.5/CAN209 */
+	VALIDATE_NO_RV( (Can_Global.initRun == CAN_READY), CAN_ENABLECONTROLLERINTERRUPTS_SERVICE_ID, CAN_E_UNINIT );
+    canUnit = CTRL_TO_UNIT_PTR(controller);
     VALIDATE_NO_RV( (canUnit->state!=CANIF_CS_UNINIT), CAN_ENABLECONTROLLERINTERRUPTS_SERVICE_ID, CAN_E_UNINIT );
 
     /** @req 3.1.5/CAN210 */
@@ -1291,6 +1304,7 @@ void Can_Cbk_CheckWakeup( uint8 controller ) {
     /** !req 3.1.5/CAN363 */
 
     /* NOT SUPPORTED */
+	(void)controller;
 }
 
 
@@ -1370,8 +1384,11 @@ Can_Arc_ProcessType Can_Arc_ProcessingMode( uint8 controller ) {
 
 void Can_Arc_GetStatistics(uint8 controller, Can_Arc_StatisticsType *stats)
 {
-    Can_UnitType *canUnit = CTRL_TO_UNIT_PTR(controller);
-    *stats = canUnit->stats;
+	if(Can_Global.initRun == CAN_READY)
+	{
+		Can_UnitType *canUnit = CTRL_TO_UNIT_PTR(controller);
+		*stats = canUnit->stats;
+	}
 }
 #endif
 
