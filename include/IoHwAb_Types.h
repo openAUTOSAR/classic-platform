@@ -29,12 +29,14 @@ typedef sint32 IoHwAb_AnalogValueType;
 
 //typedef sint32 IoHwAb_ChannelType;
 
-//typedef sint32 IoHwAb_SignalType;
+#if !defined(IOHWAB_USE_RTE)
+typedef sint32 IoHwAb_SignalType;
+#endif
 
 /* Duty cycle type (per mille) */
 typedef uint32 IoHwAb_DutyType;
-#define IOHWAB_DUTY_MIN		   0		/*   0% */
-#define IOHWAB_DUTY_MAX		1000		/* 100% */
+#define IOHWAB_DUTY_MIN		   0u		/*   0% */
+#define IOHWAB_DUTY_MAX		1000u		/* 100% */
 
 /* Frequency type (Hz) */
 typedef uint32 IoHwAb_FrequencyType;

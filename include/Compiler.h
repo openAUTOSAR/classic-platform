@@ -48,6 +48,9 @@
 
 #define DECLARE_WEAK			__attribute__ ((weak))
 
+/* Does this really work on all compilers.... */
+#define INLINE __inline__
+
 /* REQ:COMPILER005 */
 #define FUNC(rettype,memclass) rettype
 
