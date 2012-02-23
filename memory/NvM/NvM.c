@@ -180,17 +180,12 @@
 #include "MemIf.h"
 //#include "SchM_NvM.h"
 #include "MemMap.h"
-//#include "Crc.h" // Optional
 #include "cirq_buffer.h"
 #include "Modules.h"
 #include <stdio.h>
 #include "io.h"
 #include "Crc.h"
 #include <string.h>
-
-#if NVM_NUM_OF_NVRAM_BLOCKS != 5
-#error nOOOOO
-#endif
 
 #define DEBUG_BLOCK	1
 #if defined(DEBUG_BLOCK)
@@ -216,7 +211,7 @@
 
 /* ----------------------------[private macro]-------------------------------*/
 
-#define NVM_ASSERT(_exp)		if( !(_exp) ) { while(1) { int i=0;i=1; }} //assert(_exp)
+#define NVM_ASSERT(_exp)		if( !(_exp) ) { while(1) {}; } //assert(_exp)
 
 #if  ( NVM_DEV_ERROR_DETECT == STD_ON )
 #include "Det.h"
@@ -360,12 +355,12 @@ static NvmStateType 				nvmState = NVM_UNINITIALIZED;
 #define RB_CALC_CHECKSUM	2
 
 static int 							nvmSubState = 0;
-static int nvmSetNr;
+//static int nvmSetNr;
 static AdministrativeBlockType 		AdminBlock[NVM_NUM_OF_NVRAM_BLOCKS];
 static AdministrativeMultiBlockType AdminMultiBlock;
 
 
-static Nvm_QueueType  nvmQueueImmData[NVM_SIZE_IMMEDIATE_JOB_QUEUE];
+//static Nvm_QueueType  nvmQueueImmData[NVM_SIZE_IMMEDIATE_JOB_QUEUE];
 static Nvm_QueueType  nvmQueueData[NVM_SIZE_STANDARD_JOB_QUEUE];
 
 uint8 Nvm_WorkBuffer[200];		/* TODO */
@@ -465,10 +460,12 @@ static boolean CheckMemIfJobFinished(void)
 /*
  * Check if the MemIf job is finished
  */
+
 static boolean CheckMemIfJobFinished(void)
 {
 	return MemIfJobAdmin.JobFinished;
 }
+
 #endif
 
 
@@ -482,9 +479,11 @@ static void AbortMemIfJob(MemIf_JobResultType jobResult)
 	MemIfJobAdmin.JobResult = jobResult;
 }
 
+#if 0
 static boolean CheckJobFailed( void ) {
 	return CheckMemIfJobFinished() && (MemIfJobAdmin.JobResult == MEMIF_JOB_FAILED);
 }
+#endif
 
 /*
  * Request a read of a block from MemIf
@@ -1181,7 +1180,7 @@ void NvM_GetErrorStatus(NvM_BlockIdType blockId, uint8 *requestResultPtr)
  * Procedure:	Nvm_SetRamBlockStatus
  * Reentrant:	Yes
  */
-void Nvm_SetRamBlockStatus(NvM_BlockIdType blockId, boolean blockChanged)
+void NvM_SetRamBlockStatus(NvM_BlockIdType blockId, boolean blockChanged)
 {
 	const NvM_BlockDescriptorType	*BlockDescriptorList = NvM_Config.BlockDescriptor;
 
@@ -1204,6 +1203,11 @@ void Nvm_SetRamBlockStatus(NvM_BlockIdType blockId, boolean blockChanged)
 }
 #endif
 
+
+void NvM_SetBlockLockStatus( NvM_BlockIdType blockId, boolean blockLocked ) {
+	(void)blockId;
+	(void)blockLocked;
+}
 
 
 /**

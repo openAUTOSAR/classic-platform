@@ -25,6 +25,7 @@
 #define WDGIF_SW_MINOR_VERSION	0
 #define WDGIF_SW_PATCH_VERSION	0
 
+#include "Modules.h"
 #include "Std_Types.h"
 #include "WdgIf_Cfg.h"
 

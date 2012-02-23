@@ -274,6 +274,14 @@ Std_ReturnType EcuM_ReleaseRUN(EcuM_UserType user)
 	return E_OK;
 }
 
+void EcuM_KillAllRUNRequests( void ) {
+	/* NOT IMPLEMENTED */
+}
+
+void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources) {
+	/* NOT IMPLEMENTED */
+}
+
 #if defined(USE_COMM)
 Std_ReturnType EcuM_ComM_RequestRUN(NetworkHandleType channel)
 {

@@ -134,6 +134,8 @@ Std_ReturnType EcuM_GetApplicationMode(AppModeType* appMode);
 Std_ReturnType EcuM_SelectBootTarget(EcuM_BootTargetType target);
 Std_ReturnType EcuM_GetBootTarget(EcuM_BootTargetType* target);
 
+void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources);
+
 void EcuM_MainFunction(void);
 
 #endif /*ECUM_H_*/

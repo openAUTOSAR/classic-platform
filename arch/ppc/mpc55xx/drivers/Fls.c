@@ -62,7 +62,7 @@
 
 /* FlsGeneral, Complete for 3.0 */
 /** @req FLS172 */
-#warning ENABLE THESE AGAIN
+// TODO: #warning ENABLE THESE AGAIN
 
 /** !req FLS169 */
 /** !req FLS285 */
@@ -110,11 +110,13 @@
 
 
 /* ----------------------------[includes]------------------------------------*/
-#include "Fls.h"
-#include "flash.h"
+#include <stddef.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 #include <string.h>
+#include "Fls.h"
+#include "flash.h"
 #include "Det.h"
 #if defined(USE_DEM)
 #include "Dem.h"
@@ -523,7 +525,7 @@ void Fls_MainFunction(void) {
 			break;
 		case FLS_JOB_ERASE: {
 
-			flashStatus = Flash_CheckStatus(Fls_Global.config->FlsInfo, (uint32 *)Fls_Global.flashAddr, Fls_Global.length );
+			flashStatus = Flash_CheckStatus(Fls_Global.config->FlsInfo, (uint32_t *)Fls_Global.flashAddr, Fls_Global.length );
 
 			if (flashStatus == EE_OK ) {
 				Fls_Global.jobResultType = MEMIF_JOB_OK;

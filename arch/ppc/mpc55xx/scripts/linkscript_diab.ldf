@@ -59,6 +59,11 @@ SECTIONS
 		.ramlog (DATA) : { *(.ramlog) }
 		/* Any remaining space will be used as a heap.		    */
 
+		/* TODO: Flash driver in RAM */
+		FLASHDRV (DATA) : { 
+		.=.+0x1000;
+		} 
+
 		__HEAP_START	= .;
 	} > ram
 

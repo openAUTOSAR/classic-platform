@@ -91,7 +91,9 @@ Std_ReturnType Pwm_ValidateChannel(Pwm_ChannelType Channel,Pwm_APIServiceIDType 
 }
 
 void inline Pwm_InitChannel(Pwm_ChannelType Channel);
-void inline Pwm_DeInitChannel(Pwm_ChannelType Channel);
+#if PWM_DE_INIT_API==STD_ON
+static inline void Pwm_DeInitChannel(Pwm_ChannelType Channel);
+#endif
 
 #if PWM_NOTIFICATION_SUPPORTED==STD_ON
 static void Pwm_Isr(void);
@@ -413,7 +415,7 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
 #if PWM_DE_INIT_API==STD_ON
 
 // TODO: Test that this function in fact turns the channel off.
-void inline Pwm_DeInitChannel(Pwm_ChannelType Channel) {
+static inline void Pwm_DeInitChannel(Pwm_ChannelType Channel) {
     Pwm_SetOutputToIdle(Channel);
 
 	#if defined(CFG_MPC5516)
@@ -579,7 +581,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 }
 #endif
 
-#if  PWM_SET_OUTPUT_TO_IDLE_API == STD_ON
+#if  (PWM_SET_OUTPUT_TO_IDLE_API == STD_ON) || (PWM_DE_INIT_API==STD_ON)
 	void Pwm_SetOutputToIdle(Pwm_ChannelType Channel)
 	{
 		if ((E_OK != Pwm_ValidateInitialized(PWM_SETOUTPUTTOIDLE_ID)) ||

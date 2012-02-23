@@ -38,7 +38,7 @@
 #define PFCR1				(PFLASH_CTRL_BASE + 0x20)
 #define PFAPR				(PFLASH_CTRL_BASE + 0x24)
 
-#define NVLML_LME			(1<<31)
+#define NVLML_LME			(1u<<31)
 
 
 //#define FLASH_BANK_CNT				3
