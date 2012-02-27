@@ -176,6 +176,7 @@ uint32_t Flash_Erase( const FlashType *fPtr, uintptr_t dest, uint32_t size, flas
 	uint32_t flashBlocks[ADDR_SPACE_CNT];
 	const FlashType *bPtr;
 	bool affected;
+	(void)cb;
 
 	/* FSL functions are for each bank, so loop over banks */
 	for (int bank = 0; bank < FLASH_BANK_CNT; bank++) {
@@ -192,20 +193,6 @@ uint32_t Flash_Erase( const FlashType *fPtr, uintptr_t dest, uint32_t size, flas
 		if (rv != EE_OK) {
 			return EE_ERROR_PE_OPT;
 		}
-
-#if 0
-		/* Poll status */
-		while ((rv = FSL_FlashCheckStatus(bPtr->regBase)) != EE_OK) {
-
-			if (rv == EE_ERROR_PE_OPT) {
-				return rv;
-			}
-
-			if( cb != NULL ) {
-				cb();
-			}
-		}
-#endif
 	}
 	return EE_OK;
 }
@@ -221,6 +208,7 @@ uint32_t Flash_Erase( const FlashType *fPtr, uintptr_t dest, uint32_t size, flas
 uint32_t Flash_ProgramPageStart( const FlashType *fPtr, uint32_t *to, uint32_t * from, uint32_t * size, flashCbType cb) {
     const FlashType *bPtr;
     bool affected;
+    (void)cb;
 
 
     /* Check double word alignment */
@@ -230,7 +218,10 @@ uint32_t Flash_ProgramPageStart( const FlashType *fPtr, uint32_t *to, uint32_t *
     for (int bank = 0; bank < FLASH_BANK_CNT; bank++) {
         bPtr = &fPtr[bank];
 
-        affected = OVERLAP(to,to+size-1,bPtr->sectAddr[0],bPtr->sectAddr[0] + bPtr->bankSize-1);
+        affected = OVERLAP( (uintptr_t)to,
+        		(uintptr_t)to + *size - 1,
+        		bPtr->sectAddr[0],
+        		bPtr->sectAddr[0] + bPtr->bankSize-1);
         if( affected == false ) {
             /* This bank was not affected */
             continue;
