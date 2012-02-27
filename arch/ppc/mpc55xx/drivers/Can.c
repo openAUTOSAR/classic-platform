@@ -752,10 +752,6 @@ void Can_Init(const Can_ConfigType *config)
 
         Can_BuildMaps(unitPtr);
 
-        /* REMOVE2: Can_InitController() should probably not be called from Can_Init() at all
-         * This is done by CanIf */
-        Can_InitController(cfgCtrlPtr->CanControllerId,unitPtr->cfgCtrlPtr);
-
         switch (cfgCtrlPtr->CanControllerId) {
 #if defined(CFG_MPC560X)
         case CAN_CTRL_A:
@@ -867,9 +863,10 @@ void Can_DeInit()
         ctlrId = cfgCtrlPtr->CanControllerId;
 
         canUnit = CTRL_TO_UNIT_PTR(ctlrId);
-        canUnit->state = CANIF_CS_UNINIT;
 
         Can_DisableControllerInterrupts(ctlrId);
+ 
+        canUnit->state = CANIF_CS_UNINIT;
 
         canUnit->lock_cnt = 0;
 
@@ -1029,14 +1026,6 @@ void Can_InitController(uint8 controller,
     /* @req 3.1.5/CAN260 */
     canUnit->state = CANIF_CS_STOPPED;
 
-    // Release FREEZE to be able to write to mem mapped registers ( see 25.4.8.1 )
-
-    /* REMOVE1: Remove this cause CAN260 says it should not be able to communicate */
-    canHw->MCR.B.FRZ = 0;
-    canHw->MCR.B.HALT = 0;
-
-    Can_EnableControllerInterrupts(cId);
-
     return;
 }
 
@@ -1064,7 +1053,6 @@ Can_ReturnType Can_SetControllerMode(uint8 controller,
 
     switch (transition) {
     case CAN_T_START:
-        //canHw->MCR.B.FRZ = 0;
         canHw->MCR.B.HALT = 0;
         canUnit->state = CANIF_CS_STARTED;
         Irq_Save(state);
@@ -1081,7 +1069,6 @@ Can_ReturnType Can_SetControllerMode(uint8 controller,
         VALIDATE(canUnit->state == CANIF_CS_STOPPED, 0x3, CAN_E_TRANSITION);
     case CAN_T_STOP:
         // Stop
-        //canHw->MCR.B.FRZ = 1;
         canHw->MCR.B.HALT = 1;
         canUnit->state = CANIF_CS_STOPPED;
         Can_AbortTx(canHw, canUnit); // CANIF282
