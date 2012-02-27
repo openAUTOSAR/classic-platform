@@ -219,7 +219,6 @@ uint32_t Flash_Erase( const FlashType *fPtr, uintptr_t dest, uint32_t size, flas
  * @return
  */
 uint32_t Flash_ProgramPageStart( const FlashType *fPtr, uint32_t *to, uint32_t * from, uint32_t * size, flashCbType cb) {
-    uint32_t flashBlocks[ADDR_SPACE_CNT];
     const FlashType *bPtr;
     bool affected;
 
@@ -231,7 +230,7 @@ uint32_t Flash_ProgramPageStart( const FlashType *fPtr, uint32_t *to, uint32_t *
     for (int bank = 0; bank < FLASH_BANK_CNT; bank++) {
         bPtr = &fPtr[bank];
 
-        affected = getAffectedBlocks(bPtr, *to, *size, &flashBlocks);
+        affected = OVERLAP(to,to+size-1,bPtr->sectAddr[0],bPtr->sectAddr[0] + bPtr->bankSize-1);
         if( affected == false ) {
             /* This bank was not affected */
             continue;
@@ -261,7 +260,7 @@ uint32_t Flash_CheckStatus( const FlashType *fPtr, uint32_t *to, uint32_t size )
 
         /* We only need to figure out what bank is used, note that multiple banks
          * must be handled at the same time here */
-        affected = OVERLAP(flAddr,flAddr+size,bPtr->sectAddr[0],bPtr->sectAddr[0] + bPtr->bankSize);
+        affected = OVERLAP(flAddr,flAddr+size-1,bPtr->sectAddr[0],bPtr->sectAddr[0] + bPtr->bankSize-1);
         if( affected == false ) {
             /* This bank was not affected */
             continue;
@@ -275,18 +274,5 @@ uint32_t Flash_CheckStatus( const FlashType *fPtr, uint32_t *to, uint32_t size )
 
     return rv;
 }
-#if 0
-for (int sector = 0; sector < bPtr->sectCnt; sector++)
-{
-    if (OVERLAP( addr,addr+size-1,
-            bPtr->sectAddr[sector],bPtr->sectAddr[sector+1]-1))
-    {
-        addrSpace = bPtr->addrSpace[sector];
-        (*fb)[ADDR_SPACE_GET(addrSpace)] |= (1 << ADDR_SPACE_GET_SECTOR(addrSpace));
-        anyAffected = true;
-    }
-}
-#endif
-
 
 

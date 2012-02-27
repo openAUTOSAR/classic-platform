@@ -113,9 +113,9 @@ const FlashType flashInfo[] = {
 	[2].sectAddr[1] = 0xa0000,	/* 1, B2F1, LOW  */
 	[2].addrSpace[1] = ADDR_SPACE_SET(ADDR_SPACE_LOW) + 1,
 	[2].sectAddr[2] = 0xc0000, 	/* 2, B2F2, MID  */
-	[2].addrSpace[2] = ADDR_SPACE_SET(ADDR_SPACE_LOW) + 2,
+	[2].addrSpace[2] = ADDR_SPACE_SET(ADDR_SPACE_MID) + 0,
 	[2].sectAddr[3] = 0xe0000,  /* 3, B2F3, MID  */
-	[2].addrSpace[3] = ADDR_SPACE_SET(ADDR_SPACE_LOW) + 3,
+	[2].addrSpace[3] = ADDR_SPACE_SET(ADDR_SPACE_MID) + 1,
 	[2].sectAddr[4] = 0x100000, /* End, NOT a sector */
 };
 #elif defined(CFG_MPC5668G)
