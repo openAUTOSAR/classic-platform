@@ -63,40 +63,12 @@
 #define FLS_WRITE_TIME				0				/* NO SUPPORT */
 
 /* MCU Specific */
-#if defined(CFG_MPC5604B)
-
-#define FLASH_BANK_CNT 				2
-#define FLASH_PAGE_SIZE				8
-#define FLASH_MAX_SECTORS			12
-#define FLS_TOTAL_SIZE              ((16*4+512)*1024)
-
-#elif defined(CFG_MPC5606S)
-
-#define FLASH_BANK_CNT 				3
-#define FLASH_PAGE_SIZE				8
-#define FLASH_MAX_SECTORS			16
-#define FLS_TOTAL_SIZE              ((16*4+512+512)*1024)
-
-#elif defined(CFG_MPC5668G)
-
-#define FLASH_BANK_CNT				1
-#define FLASH_PAGE_SIZE				8
-#define FLASH_MAX_SECTORS			18
-#define FLS_TOTAL_SIZE              (2*1024*1024)
-
-#elif defined(CFG_MPC5516)
+#if defined(CFG_MPC5516)
 
 #define FLASH_BANK_CNT				1
 #define FLASH_PAGE_SIZE				8
 #define FLASH_MAX_SECTORS			16
 #define FLS_TOTAL_SIZE              (1*1024*1024)
-
-#elif defined(CFG_MPC5567)
-
-#define FLASH_BANK_CNT				1
-#define FLASH_PAGE_SIZE				8
-#define FLASH_MAX_SECTORS			20
-#define FLS_TOTAL_SIZE              (2*1024*1024)
 
 #else
 #error CPU not supported
