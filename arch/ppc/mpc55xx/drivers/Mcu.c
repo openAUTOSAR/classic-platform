@@ -466,7 +466,8 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     CGM.SC_DC[1].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
     CGM.SC_DC[2].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
 
-    SIU.PSMI[0].R = 0x01;
+    SIU.PSMI[0].R = 0x01; /* CAN1RX on PCR43 */
+    SIU.PSMI[6].R = 0x01; /* CS0/DSPI_0 on PCR15 */
 
 #elif defined(CFG_MPC5606S)
     // Write pll parameters.

@@ -155,7 +155,9 @@
 //#include <stdio.h>
 #include "Mcu.h"
 #include "math.h"
+#if (SPI_IMPLEMENTATION==SPI_DMA)
 #include "Dma.h"
+#endif
 #include "Det.h"
 #include "isr.h"
 /* ----------------------------[private define]------------------------------*/
