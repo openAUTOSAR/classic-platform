@@ -63,7 +63,14 @@
 #define FLS_WRITE_TIME				0				/* NO SUPPORT */
 
 /* MCU Specific */
-#if defined(CFG_MPC5606S) || defined(CFG_MPC5604B)
+#if defined(CFG_MPC5604B)
+
+#define FLASH_BANK_CNT 				2
+#define FLASH_PAGE_SIZE				8
+#define FLASH_MAX_SECTORS			12
+#define FLS_TOTAL_SIZE              ((16*4+512)*1024)
+
+#elif defined(CFG_MPC5606S)
 
 #define FLASH_BANK_CNT 				3
 #define FLASH_PAGE_SIZE				8

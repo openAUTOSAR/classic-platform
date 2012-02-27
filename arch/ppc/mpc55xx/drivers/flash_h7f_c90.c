@@ -261,7 +261,7 @@ uint32_t Flash_CheckStatus( const FlashType *fPtr, uint32_t *to, uint32_t size )
 
         /* We only need to figure out what bank is used, note that multiple banks
          * must be handled at the same time here */
-        affected = OVERLAP(flAddr,flAddr+size,bPtr->sectAddr[0],bPtr->bankSize);
+        affected = OVERLAP(flAddr,flAddr+size,bPtr->sectAddr[0],bPtr->sectAddr[0] + bPtr->bankSize);
         if( affected == false ) {
             /* This bank was not affected */
             continue;
