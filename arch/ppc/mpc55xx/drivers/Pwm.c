@@ -232,8 +232,8 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
 
 	#if defined(CFG_MPC560X)
 		/* Clock scaler uses system clock (~64MHz) as source, so prescaler 64 => 1MHz. */
-		EMIOS_0.MCR.B.GPRE = PWM_PRESCALER - 1;
-		EMIOS_1.MCR.B.GPRE = PWM_PRESCALER - 1;
+		EMIOS_0.MCR.B.GPRE = PWM_PRESCALER_EMIOS_0 - 1;
+		EMIOS_1.MCR.B.GPRE = PWM_PRESCALER_EMIOS_1 - 1;
 
 		/* Enable eMIOS clock */
 		EMIOS_0.MCR.B.GPREN = 1;
