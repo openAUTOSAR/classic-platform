@@ -163,7 +163,7 @@ static void configureChannel(const Pwm_ChannelConfigurationType* channelConfig){
 	emiosHw = &EMIOS;
 #endif
 
-#if defined (CFG_MPC5604B)
+#if defined (CFG_MPC560X)
 	emiosHw->CH[channel].CCR.B.MODE = channelConfig->mode;
 	emiosHw->CH[channel].CCR.B.DMA = 0;
 	emiosHw->CH[channel].CCR.B.BSL = channelConfig->clksrc;
