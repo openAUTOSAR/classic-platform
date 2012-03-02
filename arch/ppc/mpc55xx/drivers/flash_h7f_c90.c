@@ -218,8 +218,8 @@ uint32_t Flash_ProgramPageStart( const FlashType *fPtr, uint32_t *to, uint32_t *
     for (int bank = 0; bank < FLASH_BANK_CNT; bank++) {
         bPtr = &fPtr[bank];
 
-        affected = OVERLAP( (uintptr_t)to,
-        		(uintptr_t)to + *size - 1,
+        affected = OVERLAP( *to,
+        		*to + *size - 1,
         		bPtr->sectAddr[0],
         		bPtr->sectAddr[0] + bPtr->bankSize-1);
         if( affected == false ) {
