@@ -30,7 +30,20 @@ Memory Map:
  0x4000_0000 -> 0x4000_bfff   SRAM
  
  
+SPI_0
+  PA[12] - SIN_0   - S_OUT/BROWN
+  PA[13] - SOUT_0  - S_IN/ORANGE 
+  PA[14] - SCK_9   - S_CLK/BLUE
+  
+  PB[12] - CS1_0   - CS/GREEN  (both for software and hardware CS *)
+                               
+*) Depends on setting in port.
 
+SPI_1
+  Never tested
+
+SPI_2
+  Never tested
 
   
   

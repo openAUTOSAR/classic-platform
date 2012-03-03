@@ -43,36 +43,74 @@ Adding a SPI EEPROM (Microship 25LC160B)
 
 To the left are the pins as they are names in XPC56xxMBSCH (schema for the main board, page 11 of 12) 
 
-<- XPC560S ->#<---------------------- MCU ---------------------------------------->
-             #       PAD Func         Per     #       Shared with
---------------------------------------------------------------------------------------------
-SINB,PJ1-7   # PB[7]  23  1  SIN_0     DSPI_0  56      (SIUL/PWM/Timer)
-SOUTB,PJ1-8  # PB[8]  24  1  SOUT_0    DSPI_0  55      (SIUL/PWM/Timer) 
-SCKB,PJ1-9   # PB[9]  25  1  SCK_0     DSPI_0  54      (SIUL/PWM/Timer) 
-PCSB2,PJ1-12 # PB[12] 28  3  PCS2_0    DSPI_0  48      (SIUL/LinFlex_1/Timer)
-PCSB1,PJ1-11 # PB[13] 29  3  PCS1_0    DSPI_0  49      (SIUL/LinFlex_1/Timer)
-PCSB0,PJ1-10 # PH[4]  103 1  PCS0_0    DSPI_0  61      (SIUL/PWM/Timer/Control)   Control=CLKOUT
+<- XPC560S ->#<---------------------- MCU --->
+             #       PAD Func              
+----------------------------------------------
+SINB,PJ1-7   # PB[7]  23  1  SIN_0    
+SOUTB,PJ1-8  # PB[8]  24  1  SOUT_0    
+SCKB,PJ1-9   # PB[9]  25  1  SCK_0      
+PCSB1,PJ1-11 # PB[13] 29  3  PCS1_0    
 
-25LC160B
- CS - Connect to PJ1-11
- /WP - High
- /HOLD - Low
- Rest of the pins are obvious
+PCSB2,PJ1-12 # PB[12] 28  3  PCS2_0    NOT USED
+PCSB0,PJ1-10 # PH[4]  103 1  PCS0_0    NOT USED
+
+SPI MEMORY 
+  25LC160B
+    CS    - Connect to PJ1-11
+    /WP   - High
+    /HOLD - Low
+    Rest of the pins are obvious
  
- Connected with 5V logic
+    Connected with 5V logic
 
-PORT J will have the following layout 
-(With ArcCore internal harness and SO/SI as seen from memory):
+---------------------------------- NOTE ----------------------------------
+  The xPC560S EVB v1.0.1 manual is total crap in chapter "3.8 Pin Mapping"
+  Known errors:
+   PJ1
+     PCS0.2, should be PCS1_0     
+   PJ9-Port F
+     As I understand it should map to Port F. However, PCS1_1 is
+     located on PCR[78]=PF[8] on CPU is connected to PF[0] on PJ9!!     
+---------------------------------- NOTE ----------------------------------  
+    
+SPI_0
+ PORT J will have the following layout 
+ (With ArcCore internal harness and SO/SI as seen from memory):
 
+               1-X  X-2
+               3-X  X-4 
+               5-X  X-6
+    SO/Brown   7-X  X-8  SI/Orange
+    SCK/Blue   9-X  X-10  
+    CS/Green  11-X  X-12
+              13-X  X-14
+              15-X  X-16  
+    Gnd/Black 17-X  X-18 VCC/Red   
+
+
+SPI_1
+
+  PCR[20]/PB[4]/SCK_1
+  PCR[21]/PB[5]/SOUT_1
+  PCR[22]/PB[6]/SIN_1
+
+               PJ5 
              1-X  X-2
              3-X  X-4
-             5-X  X-6
-  SO/Brown   7-X  X-8  SI/Orange
-  SCK/Blue   9-X  X-10  
-  CS/Green  11-X  X-12
+  SCK/Blue   5-X  X-6 SI/Orange
+    SO/Brown 7-X  X-8  
+             9-X  X-10  
+            11-X  X-12
             13-X  X-14
             15-X  X-16  
   Gnd/Black 17-X  X-18 VCC/Red   
+
+       PJ9
+             CS/Green  (See NOTE)
+             | 
+ ...   6 4 2 0
+       7 5 3 1
+
 
 
 
