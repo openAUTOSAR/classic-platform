@@ -256,22 +256,25 @@ void Eep_Init( const Eep_ConfigType* ConfigPtr ){
   Spi_SetupEB( CFG_SPI_P()->EepWrenChannel,  NULL,NULL,1);
 
 #if defined( CHECK_SANE )
+  {
+      uint8 status;
+      // Simple check,
+      // - write WREN,
+      // - check if 1 by reading with RDSR,
+      // - write WRDE
+      // - check if 0 by reading with RDSR,
+      Eep_WREN();
 
-  // Simple check,
-  // - write WREN,
-  // - check if 1 by reading with RDSR,
-  // - write WRDE
-  // - check if 0 by reading with RDSR,
-  Eep_WREN();
-
-  if( (Eep_ReadStatusReg() & 0x2) == 0 ) {
-    while(1) ;
+      status = Eep_ReadStatusReg();
+      if( (status & 0x2) == 0 ) {
+        while(1) {};
+      }
+      Eep_WRDI();
+      status = Eep_ReadStatusReg();
+      if( ( status & 0x2)  ) {
+          while(1) {};
+      }
   }
-  Eep_WRDI();
-  if( (Eep_ReadStatusReg() & 0x2)  ) {
-    while(1) ;
-  }
-
 #endif
 
   Eep_Global.status     = MEMIF_IDLE;
@@ -457,7 +460,9 @@ static Spi_SeqResultType Eep_ProcessJob( Eep_JobInfoType *job ) {
 
 		case JOB_READ_STATUS_RESULT:
 			DEBUG(DEBUG_LOW,"%s: READ_STATUS_RESULT\n",MODULE_NAME);
+			/* Check WIP (Write in Progress) bit */
 			if( Eep_Global.ebReadStatus & 1 ) {
+			    /* Still not done */
 				SET_STATE(0,JOB_READ_STATUS);
 			} else {
 				SET_STATE(0,JOB_MAIN);
@@ -524,6 +529,9 @@ static Spi_SeqResultType Eep_ProcessJob( Eep_JobInfoType *job ) {
 					job->targetAddr += chunkSize;
 					job->left -= chunkSize;
 
+					/* We have sent the data, now check for the WIP (Write In Progress)
+					 * bit to become 0
+					 */
 					SET_STATE(1,JOB_READ_STATUS);
 				} else {
 					SET_STATE(1,JOB_MAIN);

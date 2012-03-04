@@ -166,6 +166,12 @@
 #define SPIE_OK				0
 #define SPIE_JOB_NOT_DONE   1
 
+#if defined(CFG_MPC5604B)
+#define CTAR_CNT    6
+#else
+#define CTAR_CNT    8
+#endif
+
 //#define SPI_IMPLEMENTATION	SPI_FIFO
 #define USE_DIO_CS          STD_ON
 
@@ -176,7 +182,7 @@
 #define FIFO_DEPTH			4
 
 /* Define for debug purposes, checks that SPI/DMA is ok */
-#define STEP_VALIDATION		1
+//#define STEP_VALIDATION		1
 
 #define MODULE_NAME 	"/driver/Spi"
 
@@ -189,9 +195,11 @@
 #if defined(USE_LOCAL_RAMLOG)
 #define RAMLOG_STR(_x) ramlog_str(_x)
 #define RAMLOG_DEC(_x) ramlog_dec(_x)
+#define RAMLOG_HEX(_x) ramlog_hex(_x)
 #else
 #define RAMLOG_STR(_x)
 #define RAMLOG_DEC(_x)
+#define RAMLOG_HEX(_x)
 #endif
 
 #define SPI_ASSERT(_exp)	if( !(_exp) ) while(1) {}
@@ -294,7 +302,7 @@ typedef struct {
     uint32          rxQueue[SPI_INTERNAL_MTU];      // Pointed to by DADDR of DMA
 #endif
 	uint32          txCurrIndex;                    // current index for data when sending
-	uint32          channelCodes[7];                // Helper array to assign CTAR's
+	uint32          channelCodes[(CTAR_CNT-1)];                // Helper array to assign CTAR's
 	Spi_StatusType status;                          // Status for this unit
 	const Spi_JobConfigType *       currJob;         // The current job
 	const Spi_JobType *             currJobIndexPtr; // Points array of jobs current
@@ -639,6 +647,9 @@ static int Spi_Rx_DMA(Spi_UnitType *spiUnit) {
 		if (sentTx != gotTx) {
 			// Something failed
 			DEBUG(DEBUG_LOW,"%s: Expected %d bytes. Got %d bytes\n ",MODULE_NAME,sentTx, gotTx );
+#if defined(STEP_VALIDATION)
+	    SPI_ASSERT(0);
+#endif
 			return SPIE_BAD;
 		} else {
 			RAMLOG_STR("Rx "); RAMLOG_DEC(gotTx); RAMLOG_STR(" Bytes\n"); DEBUG(DEBUG_LOW,"%s: Got %d bytes\n",MODULE_NAME,gotTx);
@@ -709,12 +720,12 @@ static int Spi_Rx_FIFO(Spi_UnitType *spiUnit) {
 
 	/*
 	 * Fill receive buffers, either EB or IB
-	 * Example with 8-bit CMD, 16-bit ADDR and some data.
+	 * Example with 8-bit CMD, 16-bit ADDR and some 8-bit data.
 	 *    CMD |  ADDR   |     DATA
 	 *   | 12 | 23 | 34 | 00 | 01 | 02 | 03
 	 *      1    2    3    4    5    6           BYTE CNT
-	 *      1      2       3    4    5    6      FIFO
-	 * With a FIFO of 5 we can see that the CMD, ADDR and almost the whole
+	 *      1      2       3    4   (5)  (6)     FIFO
+	 * With a FIFO of 4 we can see that the CMD, ADDR and almost the whole
 	 * DATA channel is sent.
 	 */
     currChannel = jobUnitPtr->channelsPtr[jobUnitPtr->currRxChIndex];
@@ -754,6 +765,7 @@ static int Spi_Rx_FIFO(Spi_UnitType *spiUnit) {
         if( buf != NULL ) {
             for(i=0;i<copyCnt;i++) {
                 popVal = jobUnitPtr->hwPtr->POPR.B.RXDATA;
+                RAMLOG_STR("%");RAMLOG_HEX(popVal);
                 buf[jobUnitPtr->rxChCnt] = (Spi_DataType)popVal;
                 jobUnitPtr->rxChCnt += bInChar;
             }
@@ -761,7 +773,6 @@ static int Spi_Rx_FIFO(Spi_UnitType *spiUnit) {
             for(i=0;i<copyCnt;i++) {
                 popVal = jobUnitPtr->hwPtr->POPR.B.RXDATA;
                 jobUnitPtr->rxChCnt += bInChar;
-
             }
         }
 
@@ -1207,7 +1218,7 @@ static void Spi_InitController(Spi_UnitType *uPtr ) {
 #endif
 
 	// Setup CTAR's channel codes..
-	for (int i = 0; i < 7; i++) {
+	for (int i = 0; i < (CTAR_CNT-1); i++) {
 		uPtr->channelCodes[i] = CH_NOT_VALID;
 	}
 
@@ -1384,7 +1395,7 @@ void Spi_Init(const Spi_ConfigType *ConfigPtr) {
 								(jobConfig->DeviceAssignment << 8) +
 								chConfig->SpiDataWidth);
 
-				for (k = 0; k < 7; k++) {
+				for (k = 0; k < (CTAR_CNT-1); k++) {
 					if (spiUnit->channelCodes[k] == channelCode) {
 						Spi_ChannelInfo[channelIndex].ctarId = k;
 						DEBUG(DEBUG_LOW,"%s: Channel %d re-uses CTAR %d@%d . device=%d,width=%d\n",MODULE_NAME,channelIndex,k,jobConfig->SpiHwUnit,jobConfig->DeviceAssignment,chConfig->SpiDataWidth);
@@ -1410,7 +1421,7 @@ void Spi_Init(const Spi_ConfigType *ConfigPtr) {
 					}
 				}
 				/* No more CTARS */
-				assert(k<7);
+				assert(k<(CTAR_CNT-1));
 			}
 		}
 	}
@@ -1503,8 +1514,7 @@ static void Spi_DoWrite_DMA(	Spi_UnitType *spiUnit,Spi_JobType jobIndex,
 			cmd.B.CTAS = Spi_ChannelInfo[channelIndex].ctarId;
 			if (extChBuff->src != NULL) {
 				if (chConfig->SpiDataWidth > 8) {
-					cmd.B.TXDATA = (extChBuff->src[k] << 8) + (extChBuff->src[k
-							+ 1] & 0xff);
+					cmd.B.TXDATA = (extChBuff->src[k] << 8) + (extChBuff->src[k + 1] & 0xff);
 					k++;
 				} else {
 					cmd.B.TXDATA = extChBuff->src[k];
