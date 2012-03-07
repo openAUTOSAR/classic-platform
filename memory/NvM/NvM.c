@@ -187,12 +187,17 @@
 #include "Crc.h"
 #include <string.h>
 
-#define DEBUG_BLOCK	1
+//#define DEBUG_BLOCK	1
 #if defined(DEBUG_BLOCK)
 #define DEBUG_BLOCK_STATE(_str,_block,_state)       printf("%s BLOCK NR:%d STATE:%d\n",_str,_block, _state); fflush(stdout);
 #define DEBUG_STATE(_state,_substate)				printf("MAIN_STATE:%s/%d\n",StateToStr[_state],_substate); fflush(stdout);
 #define DEBUG_PRINTF(format,...) 					printf(format,## __VA_ARGS__ ); fflush(stdout);
 #define DEBUG_CHECKSUM(_str,_crc)					printf("%s crc=%x\n",_str,_crc);
+#else
+#define DEBUG_BLOCK_STATE(_str,_block,_state)
+#define DEBUG_STATE(_state,_substate)
+#define DEBUG_PRINTF(format,...)
+#define DEBUG_CHECKSUM(_str,_crc)
 #endif
 
 

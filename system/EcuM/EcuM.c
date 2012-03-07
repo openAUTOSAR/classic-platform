@@ -103,9 +103,10 @@ void EcuM_StartupTwo(void)
 	//TODO:  Validate that we are in state STARTUP_ONE.
 #if defined(USE_NVM)
 	extern CounterType Os_Arc_OsTickCounter;
-	TickType tickTimerStart, tickTimer, tickTimerElapsed;
-	StatusType tickTimerStatus;
+	TickType tickTimerStart, tickTimerElapsed;
 	static NvM_RequestResultType readAllResult;
+	TickType tickTimer;
+	StatusType tickTimerStatus;
 #endif
 
 	set_current_state(ECUM_STATE_STARTUP_TWO);
@@ -118,10 +119,7 @@ void EcuM_StartupTwo(void)
 
 #if defined(USE_NVM)
 	// Start timer to wait for NVM job to complete
-	tickTimerStatus = GetCounterValue(Os_Arc_OsTickCounter , &tickTimerStart);
-	if (tickTimerStatus != E_OK) {
-		DET_REPORTERROR(MODULE_ID_ECUM, 0, ECUM_ARC_STARTUPTWO_ID, ECUM_E_ARC_TIMERERROR);
-	}
+	tickTimerStart = GetOsTick();
 #endif
 
 	// Prepare the system to startup RTE
@@ -131,15 +129,33 @@ void EcuM_StartupTwo(void)
 #endif
 
 #if defined(USE_NVM)
-	// Wait for the NVM job (NvmReadAll) to terminate
+
+#if 0
+	/* Wait for the NVM job (NvmReadAll) to terminate. This assumes that:
+	 * - A task runs the memory MainFunctions, e.g. Ea_MainFunction(), Eep_MainFunction()
+	 *    Prio: HIGH
+	 * - A task runs the service functions for EcuM, Nvm.
+	 *    Prio: MIDDLE
+	 * - This task:
+	 *    Prio: LOW  (So that the service functions for the other may run)
+	 */
 	do {
-		NvM_GetErrorStatus(0, &readAllResult);	// Read the multiblock status
-		tickTimer = tickTimerStart;	// Save this because the GetElapsedCounterValue() will destroy it.
-		tickTimerStatus =  GetElapsedCounterValue(Os_Arc_OsTickCounter, &tickTimer, &tickTimerElapsed);
-		if (tickTimerStatus != E_OK) {
-			DET_REPORTERROR(MODULE_ID_ECUM, 0, ECUM_ARC_STARTUPTWO_ID, ECUM_E_ARC_TIMERERROR);
-		}
+		/* Read the multiblock status */
+		NvM_GetErrorStatus(0, &readAllResult);
+		tickTimerElapsed = OS_TICKS2MS_OsTick(GetOsTick() - tickTimerStart);
+		/* The timeout EcuMNvramReadAllTimeout is in ms */
 	} while( (readAllResult == NVM_REQ_PENDING) && (tickTimerElapsed < internal_data.config->EcuMNvramReadAllTimeout) );
+#else
+	// Wait for the NVM job (NvmReadAll) to terminate
+		do {
+			NvM_GetErrorStatus(0, &readAllResult);	// Read the multiblock status
+			tickTimer = tickTimerStart;	// Save this because the GetElapsedCounterValue() will destroy it.
+			tickTimerStatus =  GetElapsedCounterValue(Os_Arc_OsTickCounter, &tickTimer, &tickTimerElapsed);
+			if (tickTimerStatus != E_OK) {
+				DET_REPORTERROR(MODULE_ID_ECUM, 0, ECUM_ARC_STARTUPTWO_ID, ECUM_E_ARC_TIMERERROR);
+			}
+		} while( (readAllResult == NVM_REQ_PENDING) && (tickTimerElapsed < internal_data.config->EcuMNvramReadAllTimeout) );
+#endif
 #endif
 
 	// Initialize drivers that need NVRAM data
