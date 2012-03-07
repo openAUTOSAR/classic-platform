@@ -40,9 +40,9 @@
  *   - DMA and FIFO is implementations
  *   - Soft CS by callback
  *
- *
- *   Device
+ *   Devices
  *   - MPC5606S
+ *   - MPC5604B
  *
  * Implementation Notes:
  * - This driver implements SPI_LEVEL_DELIVERED = 2 but with a number
@@ -155,7 +155,9 @@
 //#include <stdio.h>
 #include "Mcu.h"
 #include "math.h"
+#if (SPI_IMPLEMENTATION==SPI_DMA)
 #include "Dma.h"
+#endif
 #include "Det.h"
 #include "isr.h"
 /* ----------------------------[private define]------------------------------*/
@@ -164,6 +166,12 @@
 #define SPIE_OK				0
 #define SPIE_JOB_NOT_DONE   1
 
+#if defined(CFG_MPC5604B)
+#define CTAR_CNT    6
+#else
+#define CTAR_CNT    8
+#endif
+
 //#define SPI_IMPLEMENTATION	SPI_FIFO
 #define USE_DIO_CS          STD_ON
 
@@ -171,7 +179,7 @@
 #define SPI_INTERNAL_MTU    72
 
 /* The depth of the HW FIFO */
-#define FIFO_DEPTH			5
+#define FIFO_DEPTH			4
 
 /* Define for debug purposes, checks that SPI/DMA is ok */
 //#define STEP_VALIDATION		1
@@ -187,10 +195,14 @@
 #if defined(USE_LOCAL_RAMLOG)
 #define RAMLOG_STR(_x) ramlog_str(_x)
 #define RAMLOG_DEC(_x) ramlog_dec(_x)
+#define RAMLOG_HEX(_x) ramlog_hex(_x)
 #else
 #define RAMLOG_STR(_x)
 #define RAMLOG_DEC(_x)
+#define RAMLOG_HEX(_x)
 #endif
+
+#define SPI_ASSERT(_exp)	if( !(_exp) ) while(1) {}
 
 /* ----------------------------[private macro]-------------------------------*/
 
@@ -204,7 +216,7 @@
 #define GET_SPI_HW_PTR(_unit) 	\
         ((volatile struct DSPI_tag *)(0xFFF90000 + 0x4000*(_unit)))
 
-#define GET_SPI_UNIT_PTR(_unit) &Spi_Unit[_unit]
+#define GET_SPI_UNIT_PTR(_unit) &Spi_Unit[Spi_CtrlToUnit[_unit]]
 
 #define ENABLE_EOQ_INTERRUPT(_spi_hw) _spi_hw->RSER.B.EOQF_RE = 1
 #define DISABLE_EOQ_INTERRUPT(_spi_hw) _spi_hw->RSER.B.EOQF_RE = 0
@@ -290,13 +302,15 @@ typedef struct {
     uint32          rxQueue[SPI_INTERNAL_MTU];      // Pointed to by DADDR of DMA
 #endif
 	uint32          txCurrIndex;                    // current index for data when sending
-	uint32          channelCodes[7];                // Helper array to assign CTAR's
+	uint32          channelCodes[(CTAR_CNT-1)];                // Helper array to assign CTAR's
 	Spi_StatusType status;                          // Status for this unit
 	const Spi_JobConfigType *       currJob;         // The current job
 	const Spi_JobType *             currJobIndexPtr; // Points array of jobs current
     Spi_JobType                     currJobIndex;
 	const Spi_SequenceConfigType *  currSeqPtr;     // The Sequence
 	Spi_CallTypeType callType;                      // 1 -  if the current job is sync. 0 - if not
+	volatile struct DSPI_tag *      hwPtr;
+	uint8							hwUnit;		// 0...
 } Spi_UnitType;
 
 typedef struct {
@@ -372,42 +386,35 @@ Spi_UnitType    Spi_Unit[SPI_CONTROLLER_CNT];
 Spi_SeqUnitType Spi_SeqUnit[SPI_MAX_SEQUENCE];
 Spi_JobUnitType Spi_JobUnit[SPI_MAX_JOB];
 Spi_ChannelInfoType Spi_ChannelInfo[SPI_MAX_CHANNEL];
+uint8 Spi_CtrlToUnit[4];
 
 
 #if (SPI_IMPLEMENTATION == SPI_DMA)
 /* When using DMA it assumes predefined names */
-Spi_DmaConfigType  Spi_DmaConfig[4] = {
+Spi_DmaConfigType  Spi_DmaConfig[SPI_CONTROLLER_CNT] = {
 #if (SPI_USE_HW_UNIT_0 == STD_ON )
 	{
 	    .RxDmaChannel = DMA_DSPI_A_RESULT_CHANNEL,
 	    .TxDmaChannel = DMA_DSPI_A_COMMAND_CHANNEL,
 	},
-#else
-	{ (Dma_ChannelType)0, (Dma_ChannelType)0 },
 #endif
 #if (SPI_USE_HW_UNIT_1 == STD_ON )
 	{
 	    .RxDmaChannel = DMA_DSPI_B_RESULT_CHANNEL,
 	    .TxDmaChannel = DMA_DSPI_B_COMMAND_CHANNEL,
 	},
-#else
-	{ (Dma_ChannelType)0, (Dma_ChannelType)0 },
 #endif
 #if (SPI_USE_HW_UNIT_2 == STD_ON )
 	{
 	    .RxDmaChannel = DMA_DSPI_C_RESULT_CHANNEL,
 	    .TxDmaChannel = DMA_DSPI_C_COMMAND_CHANNEL,
 	},
-#else
-	{ (Dma_ChannelType)0, (Dma_ChannelType)0 },
 #endif
 #if (SPI_USE_HW_UNIT_3 == STD_ON )
 	{
 	    .RxDmaChannel = DMA_DSPI_D_RESULT_CHANNEL,
 	    .TxDmaChannel = DMA_DSPI_D_COMMAND_CHANNEL,
 	}
-#else
-	{ (Dma_ChannelType)0, (Dma_ChannelType)0 },
 #endif
 };
 #endif
@@ -451,19 +458,19 @@ static const Spi_DataType *spiGetTxBuf(Spi_ChannelType ch, Spi_NumberOfDataType 
 }
 #endif
 
-static void Spi_Isr(uint32);
+static void Spi_Isr(Spi_UnitType *uPtr );
 
 static void Spi_Isr_A(void) {
-	Spi_Isr(DSPI_CTRL_A);
+	Spi_Isr(GET_SPI_UNIT_PTR(DSPI_CTRL_A));
 }
 static void Spi_Isr_B(void) {
-	Spi_Isr(DSPI_CTRL_B);
+	Spi_Isr(GET_SPI_UNIT_PTR(DSPI_CTRL_B));
 }
 static void Spi_Isr_C(void) {
-	Spi_Isr(DSPI_CTRL_C);
+	Spi_Isr(GET_SPI_UNIT_PTR(DSPI_CTRL_C));
 }
 static void Spi_Isr_D(void) {
-	Spi_Isr(DSPI_CTRL_D);
+	Spi_Isr(GET_SPI_UNIT_PTR(DSPI_CTRL_D));
 }
 /* ----------------------------[public functions]----------------------------*/
 
@@ -485,9 +492,15 @@ static void Spi_SetJobResult(Spi_JobType Job, Spi_JobResultType result) {
 	Spi_JobUnit[Job].jobResult = result;
 }
 
-static void Spi_SetHWUnitStatus(Spi_HWUnitType HWUnit, Spi_StatusType status) {
-	Spi_Unit[HWUnit].status = status;
+#if 1
+static void Spi_SetHWUnitStatus( Spi_UnitType *uPtr, Spi_StatusType status) {
+	uPtr->status = status;
 }
+#else
+static void Spi_SetHWUnitStatus(Spi_HWUnitType HWUnit, Spi_StatusType status) {
+	Spi_Unit[Spi_CtrlToUnit[HWUnit]].status = status;
+}
+#endif
 
 /**
  * Get external Ptr to device from index
@@ -526,7 +539,7 @@ static const Spi_SequenceConfigType *Spi_GetSeqPtrFromIndex(
  * @return Ptr to the SPI unit
  */
 static Spi_UnitType *Spi_GetUnitPtrFromIndex(uint32 unit) {
-	return &Spi_Unit[unit];
+	return &Spi_Unit[Spi_CtrlToUnit[unit]];
 }
 
 /**
@@ -634,6 +647,9 @@ static int Spi_Rx_DMA(Spi_UnitType *spiUnit) {
 		if (sentTx != gotTx) {
 			// Something failed
 			DEBUG(DEBUG_LOW,"%s: Expected %d bytes. Got %d bytes\n ",MODULE_NAME,sentTx, gotTx );
+#if defined(STEP_VALIDATION)
+	    SPI_ASSERT(0);
+#endif
 			return SPIE_BAD;
 		} else {
 			RAMLOG_STR("Rx "); RAMLOG_DEC(gotTx); RAMLOG_STR(" Bytes\n"); DEBUG(DEBUG_LOW,"%s: Got %d bytes\n",MODULE_NAME,gotTx);
@@ -697,19 +713,19 @@ static int Spi_Rx_FIFO(Spi_UnitType *spiUnit) {
 
 	if( jobUnitPtr->hwPtr->TCR.B.SPI_TCNT != jobUnitPtr->fifoSent ) {
 #if defined(STEP_VALIDATION)
-	    while(1) {};
+	    SPI_ASSERT(0);
 #endif
 		return SPIE_BAD;
 	}
 
 	/*
 	 * Fill receive buffers, either EB or IB
-	 * Example with 8-bit CMD, 16-bit ADDR and some data.
+	 * Example with 8-bit CMD, 16-bit ADDR and some 8-bit data.
 	 *    CMD |  ADDR   |     DATA
 	 *   | 12 | 23 | 34 | 00 | 01 | 02 | 03
 	 *      1    2    3    4    5    6           BYTE CNT
-	 *      1      2       3    4    5    6      FIFO
-	 * With a FIFO of 5 we can see that the CMD, ADDR and almost the whole
+	 *      1      2       3    4   (5)  (6)     FIFO
+	 * With a FIFO of 4 we can see that the CMD, ADDR and almost the whole
 	 * DATA channel is sent.
 	 */
     currChannel = jobUnitPtr->channelsPtr[jobUnitPtr->currRxChIndex];
@@ -717,7 +733,7 @@ static int Spi_Rx_FIFO(Spi_UnitType *spiUnit) {
 
     if( jobUnitPtr->fifoSent != jobUnitPtr->hwPtr->SR.B.RXCTR ) {
 #if defined(STEP_VALIDATION)
-        while(1) {};
+        SPI_ASSERT(0);
 #endif
         return SPIE_BAD;
     }
@@ -736,7 +752,7 @@ static int Spi_Rx_FIFO(Spi_UnitType *spiUnit) {
 
         if( copyCnt == 0  ) {
 #if defined(STEP_VALIDATION)
-        while(1) {};
+        SPI_ASSERT(0);
 #endif
             return SPIE_BAD;
         }
@@ -749,6 +765,7 @@ static int Spi_Rx_FIFO(Spi_UnitType *spiUnit) {
         if( buf != NULL ) {
             for(i=0;i<copyCnt;i++) {
                 popVal = jobUnitPtr->hwPtr->POPR.B.RXDATA;
+                RAMLOG_STR("%");RAMLOG_HEX(popVal);
                 buf[jobUnitPtr->rxChCnt] = (Spi_DataType)popVal;
                 jobUnitPtr->rxChCnt += bInChar;
             }
@@ -756,7 +773,6 @@ static int Spi_Rx_FIFO(Spi_UnitType *spiUnit) {
             for(i=0;i<copyCnt;i++) {
                 popVal = jobUnitPtr->hwPtr->POPR.B.RXDATA;
                 jobUnitPtr->rxChCnt += bInChar;
-
             }
         }
 
@@ -776,12 +792,12 @@ static int Spi_Rx_FIFO(Spi_UnitType *spiUnit) {
         }
 	}
 
+#if defined(STEP_VALIDATION)
 	/* Check if we are done with this job */
     if( 0 != jobUnitPtr->hwPtr->SR.B.RXCTR ) {
-        while(1) {};
+        SPI_ASSERT(0);
     }
-
-
+#endif
 
 	return rv;
 }
@@ -793,11 +809,13 @@ static int Spi_Rx_FIFO(Spi_UnitType *spiUnit) {
 /**
  * ISR for End of Queue interrupt
  *
+ * The interrupt handling is quite simple. Since this driver assumes
+ * that we are the master the EOQ interrupt is sufficient to check.
+ *
  * @param unit The HW unit it happend on
  */
-static void Spi_Isr(uint32 unit) {
-	volatile struct DSPI_tag *spiHw = GET_SPI_HW_PTR(unit);
-	Spi_UnitType *spiUnit = GET_SPI_UNIT_PTR(unit);
+static void Spi_Isr( Spi_UnitType *uPtr) {
+	volatile struct DSPI_tag *spiHw = uPtr->hwPtr;
 	int rv;
 
 	RAMLOG_STR("Spi_Isr\n");
@@ -818,14 +836,20 @@ static void Spi_Isr(uint32 unit) {
 	}
 
 #if (SPI_IMPLEMENTATION == SPI_DMA)
-	while (!Dma_ChannelDone(Spi_Unit[unit].dmaRxChannel)) {
+	while (!Dma_ChannelDone(uPtr->dmaRxChannel)) {
 		Spi_Global.totalNbrOfWaitRxDMA++;
 	}
+#endif
+
+#if defined(STEP_VALIDATION)
+	/* Since EOQF clears TXRXS */
+	SPI_ASSERT( (spiHw->SR.B.EOQF==1) && (spiHw->SR.B.TXRXS == 0));
 #endif
 
 	/* Halt DSPI unit until we are ready for next transfer. */
 	spiHw->MCR.B.HALT = 1;
 	spiHw->SR.B.EOQF = 1;
+
 
 	Spi_Global.totalNbrOfTranfers++;
 
@@ -843,26 +867,26 @@ static void Spi_Isr(uint32 unit) {
 
 	// Update external buffers
 #if (SPI_IMPLEMENTATION==SPI_DMA)
-	rv = Spi_Rx_DMA(spiUnit);
+	rv = Spi_Rx_DMA(uPtr);
 
 #if (USE_DIO_CS == STD_ON)
-    void (*cb)(int) = Spi_JobUnit[spiUnit->currJobIndex].extDeviceCfgPtr->SpiCsCallback;
+    void (*cb)(int) = Spi_JobUnit[uPtr->currJobIndex].extDeviceCfgPtr->SpiCsCallback;
     if( cb != NULL ) {
         cb(0);
     }
 #endif
 #elif (SPI_IMPLEMENTATION==SPI_FIFO)
-	rv = Spi_Rx_FIFO(spiUnit);
+	rv = Spi_Rx_FIFO(uPtr);
 
 	if( rv == SPIE_JOB_NOT_DONE ) {
 	    /* RX FIFO now empty, but the job is not done -> send more */
-	    Spi_WriteJob_FIFO ( spiUnit->currJobIndex );
+	    Spi_WriteJob_FIFO ( uPtr->currJobIndex );
 		RAMLOG_STR("Spi_Isr END\n");
 		return;
 	}
 #if (USE_DIO_CS == STD_ON)
 	else {
-	    void (*cb)(int) = Spi_JobUnit[spiUnit->currJobIndex].extDeviceCfgPtr->SpiCsCallback;
+	    void (*cb)(int) = Spi_JobUnit[uPtr->currJobIndex].extDeviceCfgPtr->SpiCsCallback;
 	    if( cb != NULL ) {
 	        cb(0);
 	    }
@@ -871,24 +895,24 @@ static void Spi_Isr(uint32 unit) {
 #endif
 
 	// Call notification end
-	if (spiUnit->currJob->SpiJobEndNotification != NULL) {
-		spiUnit->currJob->SpiJobEndNotification();
+	if (uPtr->currJob->SpiJobEndNotification != NULL) {
+		uPtr->currJob->SpiJobEndNotification();
 	}
 
 	if (rv == SPIE_BAD) {
 		// Fail both job and sequence
-		Spi_SetHWUnitStatus(unit, SPI_IDLE);
-		Spi_SetJobResult(spiUnit->currJob->SpiJobId, SPI_JOB_FAILED);
-		Spi_SetSequenceResult(spiUnit->currSeqPtr->SpiSequenceId,
+		Spi_SetHWUnitStatus(uPtr, SPI_IDLE);
+		Spi_SetJobResult(uPtr->currJob->SpiJobId, SPI_JOB_FAILED);
+		Spi_SetSequenceResult(uPtr->currSeqPtr->SpiSequenceId,
 				SPI_SEQ_FAILED);
 #if defined(STEP_VALIDATION)
-		while(1) {};
+		SPI_ASSERT(0);
 #endif
 	} else {
 		Spi_JobType nextJob;
 
 		// The job is at least done..
-		Spi_SetJobResult(spiUnit->currJob->SpiJobId, SPI_JOB_OK);
+		Spi_SetJobResult(uPtr->currJob->SpiJobId, SPI_JOB_OK);
 
 		// WriteNextJob should
 		// 1. Update the JobResult to SPI_JOB_OK
@@ -903,21 +927,21 @@ static void Spi_Isr(uint32 unit) {
 		//
 		// So, I no clue what to use the priority thing for :(
 
-		nextJob = Spi_GetNextJob(spiUnit);
+		nextJob = Spi_GetNextJob(uPtr);
 		if( nextJob != JOB_NOT_VALID ) {
 			Spi_JobWrite(nextJob);
 			RAMLOG_STR("more_jobs\n");
 		} else {
 			// No more jobs, so set HwUnit and sequence IDLE/OK also.
-			Spi_SetHWUnitStatus(unit, SPI_IDLE);
-			Spi_SetSequenceResult(spiUnit->currSeqPtr->SpiSequenceId,
+			Spi_SetHWUnitStatus(uPtr, SPI_IDLE);
+			Spi_SetSequenceResult(uPtr->currSeqPtr->SpiSequenceId,
 					SPI_SEQ_OK);
 
-			if (spiUnit->currSeqPtr->SpiSeqEndNotification != NULL) {
-				spiUnit->currSeqPtr->SpiSeqEndNotification();
+			if (uPtr->currSeqPtr->SpiSeqEndNotification != NULL) {
+				uPtr->currSeqPtr->SpiSeqEndNotification();
 			}
 
-			Spi_SetHWUnitStatus(unit, SPI_IDLE);
+			Spi_SetHWUnitStatus(uPtr, SPI_IDLE);
 
 			/* We are now ready for next transfer. */
 			spiHw->MCR.B.HALT = 1;
@@ -989,7 +1013,7 @@ static void Spi_SetupCTAR(	Spi_HWUnitType unit,
 	 * --> BR=Fsys/(Baudrate.* 2 )
 	 *
 	 */
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC560X)
 	switch(unit) {
 	case 0:
 		perClock = PERIPHERAL_CLOCK_DSPI_A;
@@ -997,10 +1021,12 @@ static void Spi_SetupCTAR(	Spi_HWUnitType unit,
 	case 1:
 		perClock = PERIPHERAL_CLOCK_DSPI_B;
 		break;
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5604B)
 	case 2:
 		perClock = PERIPHERAL_CLOCK_DSPI_C;
 		break;
+#endif
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
 	case 3:
 		perClock = PERIPHERAL_CLOCK_DSPI_D;
 		break;
@@ -1151,9 +1177,9 @@ static void Spi_SetupCTAR(	Spi_HWUnitType unit,
 
 //-------------------------------------------------------------------
 
-static void Spi_InitController(uint32 unit) {
-	volatile struct DSPI_tag *spiHw = GET_SPI_HW_PTR(unit);
-	Spi_UnitType *spiUnit = GET_SPI_UNIT_PTR(unit);
+static void Spi_InitController(Spi_UnitType *uPtr ) {
+
+	volatile struct DSPI_tag *spiHw = uPtr->hwPtr;
 
 	/* Module configuration register. */
 	/* Master mode. */
@@ -1192,8 +1218,8 @@ static void Spi_InitController(uint32 unit) {
 #endif
 
 	// Setup CTAR's channel codes..
-	for (int i = 0; i < 7; i++) {
-		spiUnit->channelCodes[i] = CH_NOT_VALID;
+	for (int i = 0; i < (CTAR_CNT-1); i++) {
+		uPtr->channelCodes[i] = CH_NOT_VALID;
 	}
 
 	/* Force to stopped state. */
@@ -1209,14 +1235,19 @@ static void Spi_InitController(uint32 unit) {
 #endif
 
 	// Install EOFQ int..
-	switch (unit) {
-#if defined(CFG_MPC5606S)
+	switch (uPtr->hwUnit) {
+#if defined(CFG_MPC560X)
 	case 0:
 	ISR_INSTALL_ISR2("SPI_A",Spi_Isr_A, DSPI_0_ISR_EOQF, 15, 0);
 	break;
 	case 1:
 	ISR_INSTALL_ISR2("SPI_B",Spi_Isr_B, DSPI_1_ISR_EOQF, 15, 0);
 	break;
+#if defined(CFG_MPC5604B)
+	case 2:
+	ISR_INSTALL_ISR2("SPI_C",Spi_Isr_C, DSPI_2_ISR_EOQF, 15, 0);
+	break;
+#endif
 #elif defined(CFG_MPC5516) || defined(CFG_MPC5517)
 	case 0:
 	ISR_INSTALL_ISR2("SPI_A",Spi_Isr_A, DSPI_A_ISR_EOQF, 15, 0);
@@ -1239,25 +1270,25 @@ static void Spi_InitController(uint32 unit) {
 //-------------------------------------------------------------------
 
 #if (SPI_IMPLEMENTATION==SPI_DMA)
-static void Spi_DmaSetup(uint32 unit) {
+static void Spi_DmaSetup( Spi_UnitType *uPtr ) {
 
 	Dma_TcdType *tcd;
 
-	tcd = &Spi_Unit[unit].dmaTxTCD;
+	tcd = &uPtr->dmaTxTCD;
 	*tcd = Spi_DmaTx;
-	tcd->SADDR = (uint32) Spi_Unit[unit].txQueue;
-	tcd->DADDR = (uint32) &(GET_SPI_HW_PTR(unit)->PUSHR.R);
+	tcd->SADDR = (uint32) uPtr->txQueue;
+	tcd->DADDR = (uint32) &(uPtr->hwPtr->PUSHR.R);
 
-	Dma_StopChannel(Spi_Unit[unit].dmaTxChannel);
+	Dma_StopChannel(uPtr->dmaTxChannel);
 	Dma_CheckConfig();
 
 	// CITER and BITER set when we send
-	tcd = &Spi_Unit[unit].dmaRxTCD;
+	tcd = &uPtr->dmaRxTCD;
 	*tcd = Spi_DmaRx;
-	tcd->SADDR = (uint32) &(GET_SPI_HW_PTR(unit)->POPR.R);
-	tcd->DADDR = (uint32) Spi_Unit[unit].rxQueue;
+	tcd->SADDR = (uint32) &(uPtr->hwPtr->POPR.R);
+	tcd->DADDR = (uint32) uPtr->rxQueue;
 
-	Dma_StopChannel(Spi_Unit[unit].dmaRxChannel);
+	Dma_StopChannel(uPtr->dmaRxChannel);
 	Dma_CheckConfig();
 
 }
@@ -1266,8 +1297,14 @@ static void Spi_DmaSetup(uint32 unit) {
 //-------------------------------------------------------------------
 
 void Spi_Init(const Spi_ConfigType *ConfigPtr) {
-
 	const Spi_JobConfigType *jobConfig2;
+	Spi_UnitType *uPtr;
+	uint32 confMask;
+	uint8 ctrlNr;
+#if (SPI_IMPLEMENTATION == SPI_DMA )
+	uint8 unitNr;
+#endif
+
 
 	memset(&Spi_Global,0,sizeof(Spi_Global));
 	Spi_Global.configPtr = ConfigPtr;
@@ -1279,42 +1316,39 @@ void Spi_Init(const Spi_ConfigType *ConfigPtr) {
 	for (Spi_SequenceType i = (Spi_SequenceType) 0; i < SPI_MAX_SEQUENCE; i++) {
 		Spi_SetSequenceResult(i, SPI_SEQ_OK);
 	}
-
 	// Figure out what HW controllers that are used
 	for (int j = 0; j < Spi_GetJobCnt(); j++) {
 		jobConfig2 = &Spi_Global.configPtr->SpiJobConfig[j];
 		Spi_Global.spiHwConfigured |= (1 << jobConfig2->SpiHwUnit);
 	}
 
-	// Initialize controllers used
-	{
-		uint32 confMask;
-		uint8 confNr;
+	confMask = Spi_Global.spiHwConfigured;
 
-		confMask = Spi_Global.spiHwConfigured;
-
-		for (; confMask; confMask &= ~(1 << confNr)) {
-			confNr = ilog2(confMask);
-			DEBUG(DEBUG_LOW,"%s:Configured HW controller %d\n",MODULE_NAME,confNr);
-			Spi_InitController(confNr);
-			Spi_SetHWUnitStatus(confNr, SPI_IDLE);
+	for (; confMask; confMask &= ~(1 << ctrlNr)) {
+		ctrlNr = ilog2(confMask);
+		DEBUG(DEBUG_LOW,"%s:Configured HW controller %d\n",MODULE_NAME,ctrlNr);
+		uPtr = GET_SPI_UNIT_PTR(ctrlNr);
+		uPtr->hwPtr = GET_SPI_HW_PTR(ctrlNr);
+		uPtr->hwUnit = ctrlNr;
+		Spi_InitController(uPtr);
+		Spi_SetHWUnitStatus(uPtr, SPI_IDLE);
 
 #if (SPI_IMPLEMENTATION == SPI_DMA )
-			// DMA init...
-			//
+		// DMA init...
+		//
+		unitNr = Spi_CtrlToUnit[ctrlNr];
 
-			/* Make sure that this channel shall be used. */
-			//assert (ConfigPtr->SpiHwConfig[confNr].Activated);
-			assert(Spi_DmaConfig[confNr].TxDmaChannel != (-1));
-			assert(Spi_DmaConfig[confNr].RxDmaChannel != (-1));
+		/* Make sure that this channel shall be used. */
+		//assert (ConfigPtr->SpiHwConfig[ctrlNr].Activated);
+		assert(Spi_DmaConfig[unitNr].TxDmaChannel != (-1));
+		assert(Spi_DmaConfig[unitNr].RxDmaChannel != (-1));
 
-			Spi_Unit[confNr].dmaTxChannel = Spi_DmaConfig[confNr].TxDmaChannel;
-			Spi_Unit[confNr].dmaRxChannel = Spi_DmaConfig[confNr].RxDmaChannel;
+		uPtr->dmaTxChannel = Spi_DmaConfig[unitNr].TxDmaChannel;
+		uPtr->dmaRxChannel = Spi_DmaConfig[unitNr].RxDmaChannel;
 
-			Spi_DmaSetup(confNr);
+		Spi_DmaSetup(uPtr);
 #endif
 
-		}
 	}
 
 	/* Setup the relations for Job, for easy access */
@@ -1363,7 +1397,7 @@ void Spi_Init(const Spi_ConfigType *ConfigPtr) {
 								(jobConfig->DeviceAssignment << 8) +
 								chConfig->SpiDataWidth);
 
-				for (k = 0; k < 7; k++) {
+				for (k = 0; k < (CTAR_CNT-1); k++) {
 					if (spiUnit->channelCodes[k] == channelCode) {
 						Spi_ChannelInfo[channelIndex].ctarId = k;
 						DEBUG(DEBUG_LOW,"%s: Channel %d re-uses CTAR %d@%d . device=%d,width=%d\n",MODULE_NAME,channelIndex,k,jobConfig->SpiHwUnit,jobConfig->DeviceAssignment,chConfig->SpiDataWidth);
@@ -1389,7 +1423,7 @@ void Spi_Init(const Spi_ConfigType *ConfigPtr) {
 					}
 				}
 				/* No more CTARS */
-				assert(k<7);
+				assert(k<(CTAR_CNT-1));
 			}
 		}
 	}
@@ -1403,6 +1437,8 @@ Std_ReturnType Spi_DeInit(void) {
 	volatile struct DSPI_tag *spiHw;
 	uint32 confMask;
 	uint8 confNr;
+	Spi_UnitType *uPtr;
+
 
 	VALIDATE_W_RV( ( TRUE == Spi_Global.initRun ), SPI_DEINIT_SERVICE_ID, SPI_E_UNINIT, E_NOT_OK );
 	if (Spi_GetStatus() == SPI_BUSY)
@@ -1417,9 +1453,10 @@ Std_ReturnType Spi_DeInit(void) {
 		spiHw = GET_SPI_HW_PTR(confNr);
 		// Disable the hardware..
 		spiHw->MCR.B.MDIS = 1;
+		uPtr = GET_SPI_UNIT_PTR(confNr);
 
-		Spi_InitController(confNr);
-		Spi_SetHWUnitStatus(confNr, SPI_IDLE);
+		Spi_InitController(uPtr);
+		Spi_SetHWUnitStatus(uPtr, SPI_IDLE);
 	}
 
 	// SPI022
@@ -1479,8 +1516,7 @@ static void Spi_DoWrite_DMA(	Spi_UnitType *spiUnit,Spi_JobType jobIndex,
 			cmd.B.CTAS = Spi_ChannelInfo[channelIndex].ctarId;
 			if (extChBuff->src != NULL) {
 				if (chConfig->SpiDataWidth > 8) {
-					cmd.B.TXDATA = (extChBuff->src[k] << 8) + (extChBuff->src[k
-							+ 1] & 0xff);
+					cmd.B.TXDATA = (extChBuff->src[k] << 8) + (extChBuff->src[k + 1] & 0xff);
 					k++;
 				} else {
 					cmd.B.TXDATA = extChBuff->src[k];
@@ -1571,6 +1607,8 @@ static void Spi_WriteJob_FIFO( Spi_JobType jobIndex )
     const Spi_DataType *            buf;
     Spi_NumberOfDataType            copyCnt;
     Spi_NumberOfDataType            fifoLeft;
+//    boolean                         done = 0;
+//    boolean                         lastJob = 0;
 	int     i;
 	jobUnitPtr = &Spi_JobUnit[jobIndex];
 
@@ -1581,7 +1619,7 @@ static void Spi_WriteJob_FIFO( Spi_JobType jobIndex )
 
 #if defined(STEP_VALIDATION)
     if(  jobUnitPtr->hwPtr->SR.B.TXCTR != 0 ) {
-        while(1) {};
+        SPI_ASSERT(0);
     }
 #endif
 
@@ -1603,9 +1641,11 @@ static void Spi_WriteJob_FIFO( Spi_JobType jobIndex )
         /* Set the Chip Select (PCS) */
         cmd.R |= (1 << (16 + jobUnitPtr->extDeviceCfgPtr->SpiCsIdentifier));
 
+#if defined(STEP_VALIDATION)
         if( cmd.B.EOQ == 1) {
-            while(1) {};
+            SPI_ASSERT(0);
         }
+#endif
 
         /* Push as much as we can (FIFO or Channel limits) */
         for(i=0; i < copyCnt ; i++ ) {
@@ -1661,7 +1701,7 @@ static void Spi_WriteJob_FIFO( Spi_JobType jobIndex )
 
 #if defined(STEP_VALIDATION)
 	if( jobUnitPtr->fifoSent != jobUnitPtr->hwPtr->SR.B.TXCTR ) {
-	    while(1);
+	    SPI_ASSERT(0);
 	}
 #endif
 
@@ -1681,19 +1721,19 @@ static void Spi_WriteJob_FIFO( Spi_JobType jobIndex )
         SPICommandType *curr;
         int i,lastIndex;
 
-        i = jobUnitPtr->hwPtr->SR.B.TXNXTPTR;
+        i = jobUnitPtr->hwPtr->SR.B.TXNXTPTR;	/* Next entry to send */
         lastIndex = ( i + jobUnitPtr->hwPtr->SR.B.TXCTR - 1 ) % FIFO_DEPTH;
         while( i != lastIndex )  {
             curr = base + i;
-            if( curr->B.EOQ == 1) {
-                while(1) {};
+            if( curr->B.EOQ == 1) {  /* This entry must not have EOQ set */
+                SPI_ASSERT(0);
             }
 
             i = (i + 1) % FIFO_DEPTH;
         }
         curr = base + i;
         if( curr->B.EOQ != 1) {
-            while(1) {};
+            SPI_ASSERT(0);		/* Last entry must have EOQ set */
         }
     }
 #endif
@@ -1726,17 +1766,17 @@ static void Spi_WriteJob_FIFO( Spi_JobType jobIndex )
  * @param jobIndex The job to write to the SPI bus
  */
 static void Spi_JobWrite(Spi_JobType jobIndex) {
-	Spi_UnitType *unitPtr = Spi_JobUnit[jobIndex].unitPtr;
+	Spi_UnitType *uPtr = Spi_JobUnit[jobIndex].unitPtr;
 
-	unitPtr->txCurrIndex = 0;
-	unitPtr->currJob = Spi_JobUnit[jobIndex].jobCfgPtr;
-	unitPtr->currJobIndex = jobIndex;
+	uPtr->txCurrIndex = 0;
+	uPtr->currJob = Spi_JobUnit[jobIndex].jobCfgPtr;
+	uPtr->currJobIndex = jobIndex;
 #if (SPI_IMPLEMENTATION == SPI_FIFO)
 	Spi_JobUnit[jobIndex].txChCnt = 0;
 	Spi_JobUnit[jobIndex].rxChCnt = 0;
 #endif
 
-	Spi_SetHWUnitStatus(Spi_JobUnit[jobIndex].jobCfgPtr->SpiHwUnit, SPI_BUSY);
+	Spi_SetHWUnitStatus(uPtr, SPI_BUSY);
 	Spi_SetJobResult(jobIndex, SPI_JOB_PENDING);
 
 #if (USE_DIO_CS == STD_ON)
@@ -1746,14 +1786,13 @@ static void Spi_JobWrite(Spi_JobType jobIndex) {
 #endif
 
 #if (SPI_IMPLEMENTATION==SPI_DMA)
-	Spi_DoWrite_DMA( unitPtr, jobIndex, Spi_JobUnit[jobIndex].jobCfgPtr );
+	Spi_DoWrite_DMA( uPtr, jobIndex, Spi_JobUnit[jobIndex].jobCfgPtr );
 #elif (SPI_IMPLEMENTATION==SPI_FIFO)
 	Spi_JobUnit[jobIndex].currTxChIndex = 0;
 	Spi_WriteJob_FIFO ( jobIndex );
 #endif
 
 }
-
 
 #if defined(USE_LDEBUG_PRINTF) && ( DEBUG_LVL <= DEBUG_HIGH )
 void Spi_PrintSeqInfo(const Spi_SequenceConfigType *seqConfigPtr) {
@@ -1764,8 +1803,7 @@ void Spi_PrintSeqInfo(const Spi_SequenceConfigType *seqConfigPtr) {
 	while ((job = seqConfigPtr->JobAssignment[i]) != JOB_NOT_VALID) {
 		DEBUG(DEBUG_HIGH,"%d ",job);
 		i++;
-	}
-	DEBUG(DEBUG_HIGH,"\n");
+	} DEBUG(DEBUG_HIGH,"\n");
 }
 #endif
 
@@ -1780,25 +1818,25 @@ static void Spi_SeqWrite(Spi_SequenceType seqIndex, Spi_CallTypeType sync) {
 
 	const Spi_SequenceConfigType *seqConfig;
 	const Spi_JobConfigType *jobConfig;
-	Spi_UnitType *spiUnit;
+	Spi_UnitType *uPtr;
 	Spi_JobType jobIndex;
 
 	seqConfig = Spi_GetSeqPtrFromIndex(seqIndex);
 	jobIndex = seqConfig->JobAssignment[0];
 	jobConfig = Spi_GetJobPtrFromIndex(jobIndex);
 
-	spiUnit = Spi_GetUnitPtrFromIndex(jobConfig->SpiHwUnit);
+	uPtr = Spi_GetUnitPtrFromIndex(jobConfig->SpiHwUnit);
 
 	/* Fill in the required fields for job and sequence.. */
-	spiUnit->currJobIndexPtr = &seqConfig->JobAssignment[0];
-	spiUnit->callType = sync;
-	spiUnit->currSeqPtr = seqConfig;
+	uPtr->currJobIndexPtr = &seqConfig->JobAssignment[0];
+	uPtr->callType = sync;
+	uPtr->currSeqPtr = seqConfig;
 
 	Spi_SetSequenceResult(seqIndex, SPI_SEQ_PENDING);
 
 	// Setup interrupt for end of queue
 	if (	(Spi_Global.asyncMode == SPI_INTERRUPT_MODE) &&
-			(spiUnit->callType== SPI_ASYNC_CALL)) {
+			(uPtr->callType== SPI_ASYNC_CALL)) {
 		DEBUG(DEBUG_MEDIUM,"%s: async/interrupt mode\n",MODULE_NAME);
 	} else {
 		DEBUG(DEBUG_MEDIUM,"%s: sync/polled mode\n",MODULE_NAME);
@@ -1810,9 +1848,9 @@ static void Spi_SeqWrite(Spi_SequenceType seqIndex, Spi_CallTypeType sync) {
 
 	Spi_JobWrite(jobIndex);
 
-	if (spiUnit->callType == SPI_SYNC_CALL) {
+	if (uPtr->callType == SPI_SYNC_CALL) {
 		while (Spi_GetSequenceResult(seqIndex) == SPI_SEQ_PENDING) {
-			Spi_Isr(jobConfig->SpiHwUnit);
+			Spi_Isr(uPtr);
 		}
 	}
 
@@ -1993,7 +2031,7 @@ Spi_SeqResultType Spi_GetSequenceResult(Spi_SequenceType Sequence) {
 Spi_StatusType Spi_GetHWUnitStatus(Spi_HWUnitType HWUnit) {
 	VALIDATE_W_RV( ( TRUE == Spi_Global.initRun ), SPI_GETHWUNITSTATUS_SERVICE_ID, SPI_E_UNINIT, SPI_UNINIT );
 
-	return Spi_Unit[HWUnit].status;
+	return Spi_Unit[Spi_CtrlToUnit[HWUnit]].status;
 }
 
 //-------------------------------------------------------------------
@@ -2041,21 +2079,24 @@ void Spi_MainFunction_Handling(void) {
 void Spi_MainFunction_Driving(void) {
 	volatile struct DSPI_tag *spiHw;
 	uint32 confMask;
-	uint8 confNr;
+	uint8 ctrlNr;
+	Spi_UnitType *uPtr;
 
 	// TODO: check that the queue is empty.. if so do the next job.
 	if (Spi_Global.asyncMode == SPI_POLLING_MODE) {
 		confMask = Spi_Global.spiHwConfigured;
 
-		for (; confMask; confMask &= ~(1 << confNr)) {
-			confNr = ilog2(confMask);
-			spiHw = GET_SPI_HW_PTR(confNr);
+		for (; confMask; confMask &= ~(1 << ctrlNr)) {
+			ctrlNr = ilog2(confMask);
+			uPtr = GET_SPI_UNIT_PTR(ctrlNr);
+			spiHw = uPtr->hwPtr;
 
-			if (Spi_GetHWUnitStatus(confNr) == SPI_BUSY) {
+			if (Spi_GetHWUnitStatus(ctrlNr) == SPI_BUSY) {
 				if (spiHw->SR.B.TXRXS) {
 					// Still not done..
 				} else {
-					Spi_Isr(confNr);
+					uPtr = GET_SPI_UNIT_PTR(ctrlNr);
+					Spi_Isr(uPtr);
 				}
 			}
 		}
