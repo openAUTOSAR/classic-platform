@@ -25,6 +25,7 @@
 #include "SchM_EcuM.h"
 #include "MemMap.h"
 #include "Mcu.h"
+#include "ComStack_Types.h"
 #if defined(USE_DET)
 #include "Det.h"
 #endif
@@ -83,7 +84,7 @@ void EcuM_Init( void )
 		//TODO: Report error.
 	}
 
-#if defined(USE_COMM)
+#if defined(USE_COMM) || defined(USE_ECUM_COMM)
 	internal_data.run_comm_requests = 0;
 #endif
 	internal_data.run_requests = 0;
@@ -298,7 +299,7 @@ void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources) {
 	/* NOT IMPLEMENTED */
 }
 
-#if defined(USE_COMM)
+#if defined(USE_COMM) || defined(USE_ECUM_COMM)
 Std_ReturnType EcuM_ComM_RequestRUN(NetworkHandleType channel)
 {
 	VALIDATE_RV(internal_data.initiated, ECUM_COMM_REQUESTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
