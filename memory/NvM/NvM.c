@@ -187,6 +187,8 @@
 #include "Crc.h"
 #include <string.h>
 
+#define FIXME		0
+
 //#define DEBUG_BLOCK	1
 #if defined(DEBUG_BLOCK)
 #define DEBUG_BLOCK_STATE(_str,_block,_state)       printf("%s BLOCK NR:%d STATE:%d\n",_str,_block, _state); fflush(stdout);
@@ -446,7 +448,7 @@ static boolean CheckMemIfJobFinished(void)
 	MemIf_JobResultType jobResult;
 
 	if (!MemIfJobAdmin.JobFinished) {
-		jobResult = MemIf_GetJobResult();
+		jobResult = MemIf_GetJobResult(FIXME);
 
 		if (jobResult == MEMIF_JOB_OK) {
 			MemIfJobAdmin.JobFinished = TRUE;
@@ -637,7 +639,7 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 	case BLOCK_STATE_MEMIF_PROCESS:
 	{
 		/* Check read */
-		MemIf_JobResultType jobResult = MemIf_GetJobResult(0);
+		MemIf_JobResultType jobResult = MemIf_GetJobResult(FIXME);
 
 		if( MEMIF_JOB_PENDING == jobResult ) {
 			/* Keep on waiting */
@@ -1525,7 +1527,7 @@ void NvM_JobEndNotification(void)
 {
 	MemIfJobAdmin.JobFinished = TRUE;
 	MemIfJobAdmin.JobStatus = E_OK;
-	MemIfJobAdmin.JobResult = MemIf_GetJobResult();
+	MemIfJobAdmin.JobResult = MemIf_GetJobResult(FIXME);
 }
 
 /*
@@ -1536,7 +1538,7 @@ void NvM_JobErrorNotification(void)
 {
 	MemIfJobAdmin.JobFinished = TRUE;
 	MemIfJobAdmin.JobStatus = E_NOT_OK;
-	MemIfJobAdmin.JobResult = MemIf_GetJobResult();
+	MemIfJobAdmin.JobResult = MemIf_GetJobResult(FIXME);
 }
 #endif
 
