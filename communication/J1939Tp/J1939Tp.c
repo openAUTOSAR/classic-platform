@@ -352,7 +352,8 @@ static inline void J1939Tp_Internal_RxIndication_Cm(PduInfoType* PduInfoPtr, J19
 			if (PduR_J1939TpStartOfReception(pg->NSdu, messageSize, &remainingBuffer) == BUFREQ_OK) {
 				ChannelInfoPtr->RxState->State = J1939TP_RX_WAIT_CTS_CANIF_CONFIRM;
 				J1939Tp_Internal_StartTimer(&(ChannelInfoPtr->RxState->TimerInfo),J1939TP_TX_CONF_TIMEOUT);
-				J1939Tp_Internal_SendCts(ChannelInfoPtr,pgn,CTS_START_SEQ_NUM,J1939TP_PACKETS_PER_BLOCK);
+				uint8 receive_packets = J1939Tp_Internal_GetDtPacketsInNextCts(0,ChannelInfoPtr->RxState->DtToReceiveCount);
+				J1939Tp_Internal_SendCts(ChannelInfoPtr,pgn,CTS_START_SEQ_NUM,receive_packets);
 			} else {
 				J1939Tp_Internal_SendConnectionAbort(pg->Channel->CmNPdu,pgn);
 			}
