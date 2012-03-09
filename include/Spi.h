@@ -362,10 +362,12 @@ typedef struct Spi_HwConfig
   uint8 Activated;
 
   /* Receive DMA channel. */
+#ifdef USE_DMA
   Dma_ChannelType RxDmaChannel;
 
   /* Transmit DMA channel. */
   Dma_ChannelType TxDmaChannel;
+#endif
 
   /* Peripheral clock source. */
 //  McuE_PeriperalClock_t PeripheralClock;
