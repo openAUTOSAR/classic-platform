@@ -99,6 +99,9 @@ void EcuM_Init( void )
 	StartOS(appMode); /** @req EcuM2141 */
 }
 
+/*
+ * The order defined here is found in 3.1.5/EcuM2411
+ */
 void EcuM_StartupTwo(void)
 {
 	//TODO:  Validate that we are in state STARTUP_ONE.
@@ -109,8 +112,6 @@ void EcuM_StartupTwo(void)
 	TickType tickTimer;
 	StatusType tickTimerStatus;
 #endif
-
-	set_current_state(ECUM_STATE_STARTUP_TWO);
 
 	// Initialize the BSW scheduler
 	// TODO SchM_Init();
@@ -128,6 +129,8 @@ void EcuM_StartupTwo(void)
 #if defined(USE_RTE)
 	Rte_Start();
 #endif
+
+	set_current_state(ECUM_STATE_STARTUP_TWO);
 
 #if defined(USE_NVM)
 

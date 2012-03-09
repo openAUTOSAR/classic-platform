@@ -36,7 +36,7 @@ static NvM_RequestResultType writeAllResult;
 static Rte_ModeType_EcuM_Mode currentMode;
 
 void set_current_state(EcuM_StateType state) {
-	Rte_ModeType_EcuM_Mode newMode;
+	Rte_ModeType_EcuM_Mode newMode = currentMode;
 	switch( state ) {
 	case ECUM_STATE_WAKEUP:
 	case ECUM_STATE_WAKEUP_ONE:
