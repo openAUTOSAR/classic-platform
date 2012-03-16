@@ -282,7 +282,9 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
 
     for (channel_iterator = 0; channel_iterator < PWM_NUMBER_OF_CHANNELS; channel_iterator++) {
     	const Pwm_ChannelConfigurationType* channelConfig = &ConfigPtr->Channels[channel_iterator];
+#if PWM_NOTIFICATION_SUPPORTED==STD_ON
     	Pwm_ChannelType channel = channelConfig->channel;
+#endif
 
     	configureChannel( channel_iterator, channelConfig, ConfigPtr );
 
