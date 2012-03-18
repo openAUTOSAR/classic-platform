@@ -103,7 +103,7 @@ static unsigned int crc32_tab[] = {
  * @param startVal
  * @return
  */
-uint32 Crc_CalculatateCRC32(const uint8 *s, uint32 len, uint32 startVal ) {
+uint32 Crc_CalculateCRC32(const uint8 *s, uint32 len, uint32 startVal ) {
 	uint32 i;
 	uint32 crc32val = startVal;
 

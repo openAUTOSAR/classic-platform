@@ -1301,7 +1301,9 @@ void Spi_Init(const Spi_ConfigType *ConfigPtr) {
 	Spi_UnitType *uPtr;
 	uint32 confMask;
 	uint8 ctrlNr;
+#if (SPI_IMPLEMENTATION == SPI_DMA )
 	uint8 unitNr;
+#endif
 
 
 	memset(&Spi_Global,0,sizeof(Spi_Global));
@@ -1335,6 +1337,7 @@ void Spi_Init(const Spi_ConfigType *ConfigPtr) {
 #if (SPI_IMPLEMENTATION == SPI_DMA )
 		// DMA init...
 		//
+		unitNr = Spi_CtrlToUnit[ctrlNr];
 
 		/* Make sure that this channel shall be used. */
 		//assert (ConfigPtr->SpiHwConfig[ctrlNr].Activated);
@@ -1605,8 +1608,8 @@ static void Spi_WriteJob_FIFO( Spi_JobType jobIndex )
     const Spi_DataType *            buf;
     Spi_NumberOfDataType            copyCnt;
     Spi_NumberOfDataType            fifoLeft;
-    boolean                         done = 0;
-    boolean                         lastJob = 0;
+//    boolean                         done = 0;
+//    boolean                         lastJob = 0;
 	int     i;
 	jobUnitPtr = &Spi_JobUnit[jobIndex];
 
@@ -1792,7 +1795,7 @@ static void Spi_JobWrite(Spi_JobType jobIndex) {
 
 }
 
-
+#if defined(USE_LDEBUG_PRINTF) && ( DEBUG_LVL <= DEBUG_HIGH )
 void Spi_PrintSeqInfo(const Spi_SequenceConfigType *seqConfigPtr) {
 	int i = 0;
 	uint32 job;
@@ -1803,6 +1806,7 @@ void Spi_PrintSeqInfo(const Spi_SequenceConfigType *seqConfigPtr) {
 		i++;
 	} DEBUG(DEBUG_HIGH,"\n");
 }
+#endif
 
 
 /**

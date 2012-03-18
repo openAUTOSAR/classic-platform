@@ -15,13 +15,17 @@
 
 //lint -emacro(904,VALIDATE,VALIDATE_RV,VALIDATE_NO_RV) //904 PC-Lint exception to MISRA 14.7 (validate macros).
 
+#include "Std_Types.h"
 #include "EcuM.h"
 #include "Modules.h"
 #include <string.h>
 #include <Os.h>
 #include "EcuM_Internals.h"
 #include "EcuM_Cbk.h"
+#include "SchM_EcuM.h"
+#include "MemMap.h"
 #include "Mcu.h"
+#include "ComStack_Types.h"
 #if defined(USE_DET)
 #include "Det.h"
 #endif
@@ -42,7 +46,7 @@ EcuM_GlobalType internal_data;
 void EcuM_Init( void )
 {
 	Std_ReturnType status;
-	internal_data.current_state = ECUM_STATE_STARTUP_ONE;
+	set_current_state(ECUM_STATE_STARTUP_ONE);
 
 	// Initialize drivers that are needed to determine PostBuild configuration
 	EcuM_AL_DriverInitZero();
@@ -80,7 +84,7 @@ void EcuM_Init( void )
 		//TODO: Report error.
 	}
 
-#if defined(USE_COMM)
+#if defined(USE_COMM) || defined(USE_ECUM_COMM)
 	internal_data.run_comm_requests = 0;
 #endif
 	internal_data.run_requests = 0;
@@ -95,17 +99,19 @@ void EcuM_Init( void )
 	StartOS(appMode); /** @req EcuM2141 */
 }
 
+/*
+ * The order defined here is found in 3.1.5/EcuM2411
+ */
 void EcuM_StartupTwo(void)
 {
 	//TODO:  Validate that we are in state STARTUP_ONE.
 #if defined(USE_NVM)
 	extern CounterType Os_Arc_OsTickCounter;
-	TickType tickTimerStart, tickTimer, tickTimerElapsed;
-	StatusType tickTimerStatus;
+	TickType tickTimerStart, tickTimerElapsed;
 	static NvM_RequestResultType readAllResult;
+	TickType tickTimer;
+	StatusType tickTimerStatus;
 #endif
-
-	internal_data.current_state = ECUM_STATE_STARTUP_TWO;
 
 	// Initialize the BSW scheduler
 	// TODO SchM_Init();
@@ -115,10 +121,7 @@ void EcuM_StartupTwo(void)
 
 #if defined(USE_NVM)
 	// Start timer to wait for NVM job to complete
-	tickTimerStatus = GetCounterValue(Os_Arc_OsTickCounter , &tickTimerStart);
-	if (tickTimerStatus != E_OK) {
-		DET_REPORTERROR(MODULE_ID_ECUM, 0, ECUM_ARC_STARTUPTWO_ID, ECUM_E_ARC_TIMERERROR);
-	}
+	tickTimerStart = GetOsTick();
 #endif
 
 	// Prepare the system to startup RTE
@@ -127,16 +130,36 @@ void EcuM_StartupTwo(void)
 	Rte_Start();
 #endif
 
+	set_current_state(ECUM_STATE_STARTUP_TWO);
+
 #if defined(USE_NVM)
-	// Wait for the NVM job (NvmReadAll) to terminate
+
+#if 0
+	/* Wait for the NVM job (NvmReadAll) to terminate. This assumes that:
+	 * - A task runs the memory MainFunctions, e.g. Ea_MainFunction(), Eep_MainFunction()
+	 *    Prio: HIGH
+	 * - A task runs the service functions for EcuM, Nvm.
+	 *    Prio: MIDDLE
+	 * - This task:
+	 *    Prio: LOW  (So that the service functions for the other may run)
+	 */
 	do {
-		NvM_GetErrorStatus(0, &readAllResult);	// Read the multiblock status
-		tickTimer = tickTimerStart;	// Save this because the GetElapsedCounterValue() will destroy it.
-		tickTimerStatus =  GetElapsedCounterValue(Os_Arc_OsTickCounter, &tickTimer, &tickTimerElapsed);
-		if (tickTimerStatus != E_OK) {
-			DET_REPORTERROR(MODULE_ID_ECUM, 0, ECUM_ARC_STARTUPTWO_ID, ECUM_E_ARC_TIMERERROR);
-		}
+		/* Read the multiblock status */
+		NvM_GetErrorStatus(0, &readAllResult);
+		tickTimerElapsed = OS_TICKS2MS_OsTick(GetOsTick() - tickTimerStart);
+		/* The timeout EcuMNvramReadAllTimeout is in ms */
 	} while( (readAllResult == NVM_REQ_PENDING) && (tickTimerElapsed < internal_data.config->EcuMNvramReadAllTimeout) );
+#else
+	// Wait for the NVM job (NvmReadAll) to terminate
+		do {
+			NvM_GetErrorStatus(0, &readAllResult);	// Read the multiblock status
+			tickTimer = tickTimerStart;	// Save this because the GetElapsedCounterValue() will destroy it.
+			tickTimerStatus =  GetElapsedCounterValue(Os_Arc_OsTickCounter, &tickTimer, &tickTimerElapsed);
+			if (tickTimerStatus != E_OK) {
+				DET_REPORTERROR(MODULE_ID_ECUM, 0, ECUM_ARC_STARTUPTWO_ID, ECUM_E_ARC_TIMERERROR);
+			}
+		} while( (readAllResult == NVM_REQ_PENDING) && (tickTimerElapsed < internal_data.config->EcuMNvramReadAllTimeout) );
+#endif
 #endif
 
 	// Initialize drivers that need NVRAM data
@@ -153,7 +176,7 @@ void EcuM_StartupTwo(void)
 // Typically called from OS shutdown hook
 void EcuM_Shutdown(void)
 {
-	internal_data.current_state = ECUM_STATE_GO_OFF_TWO;
+	set_current_state(ECUM_STATE_GO_OFF_TWO);
 
 	// Let the last drivers do a nice shutdown
 	EcuM_OnGoOffTwo();
@@ -271,7 +294,15 @@ Std_ReturnType EcuM_ReleaseRUN(EcuM_UserType user)
 	return E_OK;
 }
 
-#if defined(USE_COMM)
+void EcuM_KillAllRUNRequests( void ) {
+	/* NOT IMPLEMENTED */
+}
+
+void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources) {
+	/* NOT IMPLEMENTED */
+}
+
+#if defined(USE_COMM) || defined(USE_ECUM_COMM)
 Std_ReturnType EcuM_ComM_RequestRUN(NetworkHandleType channel)
 {
 	VALIDATE_RV(internal_data.initiated, ECUM_COMM_REQUESTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);

@@ -16,6 +16,6 @@
 /* Rte_Data.c */
 #include "Os.h"
 #include "Rte_Data.h"
-#include "Rte_Types.h"
+#include "Rte_Type.h"
 #include <string.h>
 

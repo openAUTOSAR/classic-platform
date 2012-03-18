@@ -17,7 +17,7 @@
 #ifndef RTE_LOGGER_H
 #define RTE_LOGGER_H
 
-#include "Rte_Types.h"
+#include "Rte_Type.h"
 
 UInt16 Rte_IRead_LoggerRunnable_Result_result();
 

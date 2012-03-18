@@ -17,7 +17,7 @@
 #ifndef RTE_TESTER_H
 #define RTE_TESTER_H
 
-#include "Rte_Types.h"
+#include "Rte_Type.h"
 
 UInt8 Rte_IRead_TesterRunnable_Arguments_arg1();
 

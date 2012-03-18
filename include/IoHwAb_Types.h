@@ -29,10 +29,14 @@ typedef sint32 IoHwAb_AnalogValueType;
 
 //typedef sint32 IoHwAb_ChannelType;
 
+#if !defined(IOHWAB_USE_RTE)
+typedef sint32 IoHwAb_SignalType;
+#endif
+
 /* Duty cycle type (per mille) */
 typedef uint32 IoHwAb_DutyType;
-#define IOHWAB_DUTY_MIN		   0		/*   0% */
-#define IOHWAB_DUTY_MAX		1000		/* 100% */
+#define IOHWAB_DUTY_MIN		   0u		/*   0% */
+#define IOHWAB_DUTY_MAX		1000u		/* 100% */
 
 /* Frequency type (Hz) */
 typedef uint32 IoHwAb_FrequencyType;
@@ -43,8 +47,8 @@ typedef uint32 IoHwAb_FrequencyType;
 #define	IOHWAB_FREEZECURRENTSTATE	2
 #define	IOHWAB_SHORTTERMADJUST		3
 
-/* 12-bit ADC */
-#define ADC_MAX_VALUE				4096
+/* Freescale qADC have 12-bit ADC resolution bit 14-bit result */
+#define ADC_MAX_VALUE				16384
 
 #define IOHWAB_LOW			STD_HIGH
 #define IOHWAB_HIGH			STD_LOW

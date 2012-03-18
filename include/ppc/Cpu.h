@@ -18,7 +18,7 @@
 #define CPU_H
 
 #include "Std_Types.h"
-typedef uint32_t imask_t;
+typedef uint32 imask_t;
 
 //#if defined(__DCC__)
 //#include <diab/ppcasm.h>
@@ -162,7 +162,7 @@ asm uint32 get_spr(uint32 spr_nr)
 #else
 #define get_spr(spr_nr)	CC_EXTENSION \
 ({\
-	uint32_t __val;\
+	uint32 __val;\
 	asm volatile (" mfspr %0," STRINGIFY__(spr_nr) : "=r"(__val) : );\
 	__val;\
 })
@@ -179,7 +179,7 @@ asm volatile unsigned long get_msr()
 }
 #else
 static inline unsigned long get_msr() {
-	uint32_t msr;
+	uint32 msr;
 	asm volatile("mfmsr %[msr]":[msr] "=r" (msr ) );
 	return msr;
 }
@@ -320,7 +320,7 @@ static inline void to_user_mode( void ) {
 // StatusType CallService(	TrustedFunctionIndexType ix,
 //							TrustedFunctionParameterRefType params )
 
-typedef void ( * service_func_t)( uint16_t , void * );
+typedef void ( * service_func_t)( uint16 , void * );
 extern service_func_t oil_trusted_func_list[];
 
 /* Macros for SC_CALL macro */
@@ -336,7 +336,7 @@ extern service_func_t oil_trusted_func_list[];
 /* TODO: Fix this.. */
 #define CallService(index,param) \
 	({ \
-		register uint32_t r3 asm ("r3"); \
+		register uint32 r3 asm ("r3"); \
 		register void * r4 asm ("r4"); \
 		r3 = index; \
 		r4 = param; \

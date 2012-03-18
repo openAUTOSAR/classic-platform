@@ -20,7 +20,9 @@
 
 #define EEP_USES_EXTERNAL_DRIVER
 
+#if defined(USE_SPI)
 #include "Spi.h"
+#endif
 #include "Eep_ConfigTypes.h"
 
 

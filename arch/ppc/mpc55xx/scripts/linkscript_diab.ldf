@@ -59,10 +59,16 @@ SECTIONS
 		.ramlog (DATA) : { *(.ramlog) }
 		/* Any remaining space will be used as a heap.		    */
 
-		__HEAP_START	= .;
+		/* TODO: Flash driver in RAM */
+		FLASHDRV (DATA) : { 
+		.=.+0x1000;
+		} 
+
+		.PPC.EMB.sdata0 (DATA) (OPTIONAL) : { }
+		
+		_heap_start = .;
 	} > ram
 
-	.PPC.EMB.sdata0 (DATA) (OPTIONAL) : { } > ram
 }
 
 __SP_INIT	= ADDR(ram)+SIZEOF(ram);
@@ -72,8 +78,9 @@ __SP_INIT_Z0 = __HEAP_END+256;
 
 /* Some targets use an extra underscore in front of identifiers
  * ------------------------------------------------------------------------ */
-___HEAP_START	= __HEAP_START;
-___HEAP_END	= __HEAP_END;
+ _heap_end = ADDR(ram) + SIZEOF(ram);
+__HEAP_START	= _heap_start;
+//___HEAP_END	= __HEAP_END;
 ___SP_INIT	= __SP_INIT;
 ___SP_END	= __SP_END;
 ___DATA_ROM	= __DATA_ROM;

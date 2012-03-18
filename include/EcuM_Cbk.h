@@ -23,9 +23,10 @@
 #ifndef ECUM_CBK_H_
 #define ECUM_CBK_H_
 
+#include "EcuM.h"
+
 //void EcuM_CB_NfyNvMJobEnd(uint8 ServiceId, NvM_RequestResultType JobResult);
 
-void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources);
 void EcuM_ValidateWakeupEvent(EcuM_WakeupSourceType sources);
 
 void EcuM_ErrorHook(Std_ReturnType reason);

@@ -49,6 +49,9 @@
 
 #define DECLARE_WEAK			__attribute__ ((weak))
 
+/* Does this really work on all compilers.... */
+#define INLINE __inline__
+
 /* REQ:COMPILER005 */
 #define FUNC(rettype,memclass) rettype
 
@@ -60,7 +63,7 @@
 
 #define CONSTP2CONST(ptrtype, memclass, ptrclass) const ptrtype * const
 
-#define P2FUNC(rettype,ptrclass,fctname) retype (*fctname)
+#define P2FUNC(rettype,ptrclass,fctname) rettype (*fctname)
 
 #define CONST(consttype,memclass) const consttype
 

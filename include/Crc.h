@@ -19,7 +19,7 @@
 
 #include "Std_Types.h"
 /** req 3.1.5|CRC022 */
-#include "Crc_Cfh.h"
+#include "Crc_Cfg.h"
 #include "Memmap.h"
 
 #define CRC_VENDOR_ID			    1
@@ -33,7 +33,8 @@
 #define CRC_SW_PATCH_VERSION		0
 
 
-uint32 Crc_CalculatateCRC32(const uint8 *dataPtr, uint32 len, uint32 startVal );
+uint32 Crc_CalculateCRC32(const uint8 *dataPtr, uint32 len, uint32 startVal );
+uint16 Crc_CalculateCRC16(	const uint8* dataPtr, uint32 len, uint16 startVal );
 
 #if ( CRC_VERSION_INFO_API == STD_ON )
 #define Crc_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,CRC)

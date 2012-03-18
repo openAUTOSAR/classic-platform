@@ -45,8 +45,21 @@
 #else
 #define MEMCPY(_x,_y,_z)	memcpy(_x,_y,_z)
 #endif
+//#define MEMCPY(_x,_y,_z)	memcpy(_x,_y,_z)
+
 
 /* TODO: Not threadsafe, add DisableAllInterrts()/EnableAllInterrupts() */
+
+void CirqBuff_Init(CirqBufferType *cirqbuffer, void *buffer, int maxCnt, size_t dataSize) {
+	cirqbuffer->bufStart = buffer;
+	cirqbuffer->maxCnt = maxCnt;
+	cirqbuffer->bufEnd = (char *)cirqbuffer->bufStart + dataSize*maxCnt;
+	cirqbuffer->head = cirqbuffer->bufStart;
+	cirqbuffer->tail = cirqbuffer->bufStart;
+	cirqbuffer->dataSize = dataSize;
+	cirqbuffer->currCnt = 0;
+}
+
 
 CirqBufferType CirqBuffStatCreate(void *buffer, int maxCnt, size_t dataSize) {
 	CirqBufferType cirqbuffer;
@@ -57,6 +70,7 @@ CirqBufferType CirqBuffStatCreate(void *buffer, int maxCnt, size_t dataSize) {
 	cirqbuffer.tail = cirqbuffer.bufStart;
 	cirqbuffer.dataSize = dataSize;
 	cirqbuffer.currCnt = 0;
+	/*return whole object */
 	return cirqbuffer;
 }
 
@@ -102,6 +116,8 @@ int CirqBuffPush( CirqBufferType *cPtr, void *dataPtr ) {
 	return 0;
 }
 
+
+
 int CirqBuffPop(CirqBufferType *cPtr, void *dataPtr ) {
 	uint32_t flags;
 	Irq_Save(flags);
@@ -117,6 +133,34 @@ int CirqBuffPop(CirqBufferType *cPtr, void *dataPtr ) {
 	--cPtr->currCnt;
 	Irq_Restore(flags);
 	return 0;
+}
+
+void *CirqBuff_PushLock( CirqBufferType *cPtr) {
+	void *dataPtr;
+	if( (cPtr->currCnt == cPtr->maxCnt) || (cPtr==NULL) ) {
+		return NULL;	/* No more room */
+	}
+	dataPtr = cPtr->head;
+	cPtr->head = (char *)cPtr->head + cPtr->dataSize;
+	if( cPtr->head == cPtr->bufEnd) {
+		cPtr->head = cPtr->bufStart;
+	}
+	return dataPtr;
+}
+
+
+void * CirqBuff_PopLock(CirqBufferType *cPtr ) {
+	void *dataPtr;
+	if( (cPtr->currCnt == 0) || (cPtr==NULL) ) {
+		return NULL;
+	}
+	dataPtr = cPtr->tail;
+	cPtr->tail = (char *)cPtr->tail + cPtr->dataSize;
+	if( cPtr->tail == cPtr->bufEnd) {
+		cPtr->tail = cPtr->bufStart;
+	}
+	--cPtr->currCnt;
+	return dataPtr;
 }
 
 

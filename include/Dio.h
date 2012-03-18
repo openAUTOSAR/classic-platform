@@ -23,6 +23,7 @@
 #ifndef DIO_H_
 #define DIO_H_
 
+#include "Modules.h"
 #include "Std_Types.h" /** @req DIO131 */
 
 // API Service ID's

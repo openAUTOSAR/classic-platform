@@ -15,7 +15,7 @@
 
 /* Rte.c */
 #include "Os.h"
-#include "Rte_Types.h"
+#include "Rte_Type.h"
 #include "Rte_Data.h"
 #include <string.h>
 #include "Rte_Blinker_Internal.h"

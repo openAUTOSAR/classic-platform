@@ -25,14 +25,15 @@
 #define IOHWAB_MODULE_ID		0xAB
 #define IOHWAB_VENDOR_ID		1
 
-#if defined(USE_RTE)
-#include "Rte_Types.h"
+#if defined(IOHWAB_USE_RTE)
+#include "Rte_Type.h"
 #endif
 
 #include "IoHwAb_Cfg.h"
 #include "IoHwAb_Types.h"
 #include "IoHwAb_Analog.h"
 #include "IoHwAb_Digital.h"
+#include "IoHwAb_Pwm.h"
 
 #include "Pwm.h"
 #include "IoHwAb_Cbk.h"
@@ -59,7 +60,7 @@
 
 #define IOHWAB_E_INIT				0x01
 
-#define IOHWAB_E_PARAM_CHANNEL		0x11
+#define IOHWAB_E_PARAM_SIGNAL		0x11
 #define IOHWAB_E_PARAM_DUTY			0x12
 
 /******************************************* DET macros *******************************************/

@@ -11,31 +11,19 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
- * -------------------------------- Arctic Core ------------------------------
- * WdgIf.h
- *
- *  Created on: 22 feb 2010
- *      Author: Fredrik
+ * -------------------------------- Arctic Core ------------------------------*/
+
+
+
+/** @addtogroup SchM
+ *  @{ */
+
+/** @file SchM_EcuM.h
  */
 
-#ifndef WDGIF_H_
-#define WDGIF_H_
 
-#define WDGIF_SW_MAJOR_VERSION	1
-#define WDGIF_SW_MINOR_VERSION	0
-#define WDGIF_SW_PATCH_VERSION	0
+#ifndef SCHM_ECUM_H_
+#define SCHM_ECUM_H_
 
-#include "Modules.h"
-#include "Std_Types.h"
-#include "WdgIf_Cfg.h"
 
-#define WDGIF_SETMODE_ID             0x01
-#define WDGIF_TRIGGER_ID             0x02
-
-#define WDGIF_E_PARAM_DEVICE         0x01
-
-Std_ReturnType WdgIf_SetMode (uint8 DeviceIndex, WdgIf_ModeType Mode);
-
-void WdgIf_Trigger (uint8 DeviceIndex);
-
-#endif /* WDGIF_H_ */
+#endif /* SCHM_ECUM_H_ */
