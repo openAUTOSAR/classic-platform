@@ -240,7 +240,7 @@ all: module_config $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $
 %.o: %.c
 	@echo
 	@echo "  >> CC $(notdir $<)"
-	$(Q)$(CC) -c $(CFLAGS) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
+	$(Q)$(CC) -c $(CFLAGS) $(CFLAGS_$@) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
 	$(do-compile-post)
 # run lint if enabled
 	$(run_pclint)
