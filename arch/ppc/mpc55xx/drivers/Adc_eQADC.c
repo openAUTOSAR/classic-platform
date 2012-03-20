@@ -34,8 +34,6 @@
 	#error Adc is configured to use Dma but the module is not enabled.
 #endif
 
-#define ADC_GROUP0		0
-
 typedef union
 {
   vuint32_t R;

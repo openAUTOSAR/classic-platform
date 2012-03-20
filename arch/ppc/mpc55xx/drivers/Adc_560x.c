@@ -40,8 +40,6 @@
 	#error Adc is configured to use Dma but the module is not enabled.
 #endif
 
-#define ADC_GROUP0		0
-
 /* Function prototypes. */
 static void Adc_ConfigureADC (const Adc_ConfigType *ConfigPtr);
 static void Adc_ConfigureADCInterrupts (void);
