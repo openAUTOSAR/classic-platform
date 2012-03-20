@@ -25,7 +25,7 @@
 #define IOHWAB_MODULE_ID		0xAB
 #define IOHWAB_VENDOR_ID		1
 
-#if defined(IOHWAB_USE_RTE)
+#if defined(CFG_IOHWAB_USE_RTE)
 #include "Rte_Type.h"
 #endif
 
@@ -36,7 +36,7 @@
 #include "IoHwAb_Pwm.h"
 
 #include "Pwm.h"
-#include "IoHwAb_Cbk.h"
+//#include "IoHwAb_Cbk.h"
 
 
 #define IOHWAB_UNLOCKED		0

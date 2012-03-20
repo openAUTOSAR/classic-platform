@@ -19,7 +19,6 @@
 #define IOHWAB_TYPES_H_
 
 #include <Std_Types.h>
-#include "IoHwAb_Types.h"
 
 /* Digital levels */
 typedef uint8  IoHwAb_LevelType;
@@ -29,7 +28,7 @@ typedef sint32 IoHwAb_AnalogValueType;
 
 //typedef sint32 IoHwAb_ChannelType;
 
-#if !defined(IOHWAB_USE_RTE)
+#if !defined(CFG_IOHWAB_USE_RTE)
 typedef sint32 IoHwAb_SignalType;
 #endif
 
