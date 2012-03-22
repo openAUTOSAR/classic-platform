@@ -27,6 +27,14 @@
 #include "Std_Types.h"
 #include <Os.h>
 
+#if defined(RTE_TYPE_H) && defined(__GNUC__)
+//#warning RTE_TYPE included before EcuM_Types.h
+#endif
+
+#if (ECUM_USE_SERVICE_PORTS == STD_ON)
+#include "Rte_Type.h"
+#endif
+
 #if !defined(_DEFINED_TYPEDEF_FOR_EcuM_StateType_)
 /** Possible states */
 typedef enum {

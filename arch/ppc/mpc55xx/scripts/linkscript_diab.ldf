@@ -1,3 +1,4 @@
+
 MEMORY
 {
 	#include "memory.ldf"
@@ -58,6 +59,8 @@ SECTIONS
 
 		.ramlog (DATA) : { *(.ramlog) }
 		/* Any remaining space will be used as a heap.		    */
+
+		.calibration : {}  
 
 		/* TODO: Flash driver in RAM */
 		FLASHDRV (DATA) : { 
