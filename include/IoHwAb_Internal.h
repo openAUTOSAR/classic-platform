@@ -18,5 +18,8 @@
 #define IOHWAB_INTERNAL_H_
 
 #include "Cpu.h"
+#if defined(USE_DEM)
+#include "Dem.h"
+#endif
 
 #endif /* IOHWAB_INTERNAL_H_ */

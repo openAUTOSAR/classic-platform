@@ -36,7 +36,8 @@ endif
 obj-$(USE_ECUM) += EcuM.o
 obj-$(USE_ECUM) += EcuM_Main.o
 obj-$(USE_ECUM) += EcuM_Cfg.o
-obj-$(USE_ECUM) += EcuM_Callout_template.o
+obj-$(USE_ECUM) += EcuM_Callout_Stubs.o
+#obj-$(USE_ECUM) += EcuM_Callout_template.o
 inc-$(USE_ECUM) += $(ROOTDIR)/system/EcuM
 vpath-$(USE_ECUM) += $(ROOTDIR)/system/EcuM
 
@@ -242,7 +243,12 @@ inc-$(USE_COM) += $(ROOTDIR)/communication/PduR
 vpath-$(USE_PDUR) += $(ROOTDIR)/communication/PduR
 
 # IO Hardware Abstraction
-obj-$(USE_IOHWAB) += IoHwAb.o
+#obj-$(USE_IOHWAB) += IoHwAb.o
+obj-$(USE_IOHWAB) += IoHwAb_Digital.o
+obj-$(USE_IOHWAB) += IoHwAb_Analog.o
+obj-$(USE_IOHWAB) += IoHwAb_Pwm.o
+obj-$(USE_IOHWAB)-$(CFG_IOHWAB_USE_RTE) += IoHwAb_If.o
+obj-$(USE_IOHWAB) += IoHwAb_Impl.o
 
 #Dem
 obj-$(USE_DEM) += Dem.o
