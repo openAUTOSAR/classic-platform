@@ -37,7 +37,7 @@ obj-$(USE_ECUM) += EcuM.o
 obj-$(USE_ECUM) += EcuM_Main.o
 obj-$(USE_ECUM) += EcuM_Cfg.o
 obj-$(USE_ECUM) += EcuM_Callout_Stubs.o
-#obj-$(USE_ECUM) += EcuM_Callout_template.o
+obj-$(USE_ECUM) += EcuM_ServicePort.o
 inc-$(USE_ECUM) += $(ROOTDIR)/system/EcuM
 vpath-$(USE_ECUM) += $(ROOTDIR)/system/EcuM
 
