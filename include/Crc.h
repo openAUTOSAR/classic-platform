@@ -20,7 +20,7 @@
 #include "Std_Types.h"
 /** req 3.1.5|CRC022 */
 #include "Crc_Cfg.h"
-#include "Memmap.h"
+#include "MemMap.h"
 
 #define CRC_VENDOR_ID			    1
 #define CRC_MODULE_ID			    MODULE_ID_CRC
