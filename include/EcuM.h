@@ -36,6 +36,7 @@
 #define ECUM_AR_MINOR_VERSION	2
 #define ECUM_AR_PATCH_VERSION	2
 
+#include "EcuM_Types.h"
 #include "EcuM_Cfg.h"
 
 #if defined(USE_COM)
@@ -44,7 +45,6 @@
 #if (ECUM_USE_SERVICE_PORTS == STD_ON) && defined(USE_RTE)
 #include "Rte_Type.h"
 #endif
-#include "EcuM_Types.h"
 
 
 

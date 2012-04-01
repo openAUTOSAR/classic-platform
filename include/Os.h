@@ -354,11 +354,10 @@ TickType GetOsTick( void );
 #define OSTICKDURATION_US		(OSTICKDURATION/1000UL)
 
 /* Have special macros to always get the OsTick */
-#define OS_TICKS2SEC_OsTick(_ticks)		( (OSTICKDURATION_US * (_ticks))/1000000UL )
-#define OS_TICKS2MS_OsTick(_ticks)		( (OSTICKDURATION_US * (_ticks))/1000UL )
-#define OS_TICKS2US_OsTick(_ticks)		(OSTICKDURATION_US * (_ticks))
-#define OS_TICKS2NS_OsTick(_ticks)		(OSTICKDURATION * (_ticks))
-
+#define OS_TICKS2SEC_OS_TICK(_ticks)		( (OSTICKDURATION_US * (_ticks))/1000000UL )
+#define OS_TICKS2MS_OS_TICK(_ticks)		( (OSTICKDURATION_US * (_ticks))/1000UL )
+#define OS_TICKS2US_OS_TICK(_ticks)		(OSTICKDURATION_US * (_ticks))
+#define OS_TICKS2NS_OS_TICK(_ticks)		(OSTICKDURATION * (_ticks))
 
 /*-------------------------------------------------------------------
  * Kernel extra
