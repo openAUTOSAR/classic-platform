@@ -35,7 +35,7 @@ endif
 #Ecu
 obj-$(USE_ECUM) += EcuM.o
 obj-$(USE_ECUM) += EcuM_Main.o
-obj-$(USE_ECUM) += EcuM_Cfg.o
+obj-$(USE_ECUM) += EcuM_PBCfg.o
 obj-$(USE_ECUM) += EcuM_Callout_Stubs.o
 obj-$(USE_ECUM)-$(CFG_ECUM_USE_RTE) += EcuM_ServicePort.o
 inc-$(USE_ECUM) += $(ROOTDIR)/system/EcuM
