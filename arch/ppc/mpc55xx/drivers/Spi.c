@@ -1332,9 +1332,9 @@ void Spi_Init(const Spi_ConfigType *ConfigPtr) {
 		uPtr->hwUnit = ctrlNr;
 		Spi_InitController(uPtr);
 		Spi_SetHWUnitStatus(uPtr, SPI_IDLE);
+#if (SPI_IMPLEMENTATION == SPI_DMA )
 		unitNr = Spi_CtrlToUnit[ctrlNr];
 
-#if (SPI_IMPLEMENTATION == SPI_DMA )
 		// DMA init...
 		//
 		unitNr = Spi_CtrlToUnit[ctrlNr];

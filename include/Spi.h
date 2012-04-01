@@ -362,7 +362,7 @@ typedef struct Spi_HwConfig
   uint8 Activated;
 
   /* Receive DMA channel. */
-#ifdef USE_DMA
+#if (SPI_IMPLEMENTATION==SPI_DMA)
   Dma_ChannelType RxDmaChannel;
 
   /* Transmit DMA channel. */
