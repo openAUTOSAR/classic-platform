@@ -1175,6 +1175,7 @@ void NvM_GetErrorStatus(NvM_BlockIdType blockId, uint8 *requestResultPtr)
 		*requestResultPtr = AdminMultiBlock.ErrorStatus;
 	} else if (blockId == 1) {
 		/* TODO */
+	  *requestResultPtr = NVM_REQ_OK;
 	} else {
 		*requestResultPtr = AdminBlock[blockId-1].ErrorStatus;
 	}

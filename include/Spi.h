@@ -236,6 +236,10 @@ typedef enum {
 
 #include "Spi_Cfg.h"
 
+#if (SPI_IMPLEMENTATION==SPI_DMA)
+#include "dma.h"
+#endif
+
 // All data needed to configure one SPI-channel
 typedef struct Spi_ChannelConfig
 {
@@ -361,11 +365,13 @@ typedef struct Spi_HwConfig
   /* This channel is to be activated for use. */
   uint8 Activated;
 
+#if (SPI_IMPLEMENTATION==SPI_DMA)
   /* Receive DMA channel. */
   Dma_ChannelType RxDmaChannel;
 
   /* Transmit DMA channel. */
   Dma_ChannelType TxDmaChannel;
+#endif
 
   /* Peripheral clock source. */
 //  McuE_PeriperalClock_t PeripheralClock;

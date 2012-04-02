@@ -27,6 +27,9 @@
 #define NVM_TYPES_H_
 
 #include "Std_Types.h"
+#if (NVM_USE_SERVICE_PORTS==STD_ON)
+#include "Rte_NvM.h"
+#endif
 
 #if !defined(_DEFINED_TYPEDEF_FOR_NvM_RequestResultType_)
 typedef uint8 NvM_RequestResultType;	/** @req NVM470 */

@@ -412,7 +412,9 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     FMPLL.ESYNCR1.B.EPREDIV = clockSettingsPtr->Pll1;
     FMPLL.ESYNCR1.B.EMFD    = clockSettingsPtr->Pll2;
 
+#if !defined(CFG_SIMULATOR)
     while(FMPLL.SYNSR.B.LOCK != 1) {};
+#endif
 
     FMPLL.ESYNCR2.B.ERFD    = clockSettingsPtr->Pll3;
     // Connect SYSCLK to FMPLL
