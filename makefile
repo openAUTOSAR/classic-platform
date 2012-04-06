@@ -126,7 +126,7 @@ help:
 	@echo "  BDIR          = ${BDIR}"
 	@echo "  BOARDDIR      = $(BOARDDIR)"
 	@echo "  CROSS_COMPILE = $(CROSS_COMPILE)"
-	@echo "  CURDIR        = $(CURDIR)"
+	@echo "  CURDIR        = $(CURDIR)"	
 	@echo ""
 
 
@@ -136,10 +136,12 @@ test:
 show_build:
 	@echo ""
 	@echo "==========[ BUILD INFO ]==========="
-	@echo "  BDIR:          $(BDIR) [$(origin BDIR)]"
-	@echo "  BOARDDIR:      $(BOARDDIR) [$(origin BOARDDIR)]"
-	@echo "  CROSS_COMPILE: $(CROSS_COMPILE) [$(origin CROSS_COMPILE)]"
-	@echo "  CURDIR:        $(CURDIR)"
+	@echo "  BDIR:           $(BDIR) [$(origin BDIR)]"
+	@echo "  BOARDDIR:       $(BOARDDIR) [$(origin BOARDDIR)]"
+	@echo "  CROSS_COMPILE:  $(CROSS_COMPILE) [$(origin CROSS_COMPILE)]"
+	@echo "  CURDIR:         $(CURDIR)"
+	@echo "  SELECT_CONSOLE: $(SELECT_CONSOLE) [$(origin SELECT_CONSOLE)]"
+	
 	
 	
 $(dir_cmd_goals) :: show_build FORCE 	
@@ -171,8 +173,8 @@ clean: $(dir_cmd_goals)
 	@echo
 	@echo "  >> Cleaning $(CURDIR)"
 #	$(Q)find . -type d -name $(objdir) | xargs rm -rf
-	$(Q)find . -type f -name *.a| xargs rm -rf
-	$(Q)rm   -rf libs/*
+#	$(Q)find . -type f -name *.a | xargs rm -rf
+#	$(Q)rm   -rf libs/*
 	@echo
 	@echo "  >>>>>>>>>  DONE  <<<<<<<<<"
 	@echo

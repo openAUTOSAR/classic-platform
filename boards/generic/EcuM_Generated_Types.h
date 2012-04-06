@@ -85,7 +85,7 @@
 #include "LinSM.h"
 #endif
 
-typedef struct
+typedef struct EcuM_Config
 {
 	EcuM_StateType EcuMDefaultShutdownTarget;
 	uint8 EcuMDefaultSleepMode;

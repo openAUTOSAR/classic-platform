@@ -72,9 +72,6 @@ typedef enum {
 
 /** @req CANSM037 */
 
-/** This service initializes the CanSM module */
-/** @req CANSM023 */
-void CanSM_Init( const CanSM_ConfigType* ConfigPtr );
 
 /** This service puts out the version information of this module */
 /** @req CANSM024  @req CANSM180 */

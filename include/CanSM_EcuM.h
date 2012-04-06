@@ -17,5 +17,10 @@
 #ifndef CANSM_ECUM_H_
 #define CANSM_ECUM_H_
 
+#include "CanSM.h"
+
+/** This service initializes the CanSM module */
+/** @req CANSM023 */
+void CanSM_Init( const CanSM_ConfigType* ConfigPtr );
 
 #endif /* CANSM_ECUM_H_ */

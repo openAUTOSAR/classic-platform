@@ -20,6 +20,42 @@
  * API and type definitions for ECU State Manager.
  */
 
+/*
+ * Include structure:
+ *
+ *
+ *
+ *   Rte_Type.h -->  Std_Types.h
+ *       ^              ^
+ *       |              |
+ *   Rte_EcuM.h <--  EcuM_Types.h*
+ *       ^              ^
+ *       |              |    /-----> EcuM_Cfg.h
+ *       |              |   /------> EcuM_Generated_Types.h
+ *       |              |  /-------> EcuM_Cbk.h
+ *       |              | /
+ *       |              |/
+ *       |            EcuM.h  <----- EcuM_Callout_Stubs.c
+ *       |              ^       \--- EcuM_PBCfg.c
+ *       |              |
+ *       |              |
+ *       `---------- EcuM_xxx.c ---> Memmap.h
+ *                               \-> Det.h, Dem.h
+ *
+ * *) Only if (ECUM_USE_SERVICE_PORTS == STD_ON)
+ *
+ * Problems:
+ * - Can_Cfg.h can include just "EcuM_Cbk.h"...
+ *   .. it will need at EcuM.h.. problem is that EcuM.h includes EcuM_Cbk.h
+ * - Most BSW modules uses DEM that in Dem_Types.h will include "Rte_Type.h"
+ *   (if enabled by CFG_DEM_USE_RTE)
+ *
+ * - EcuM_Generated_Types.h is quite crappy since it includes the
+ *
+ *
+ */
+
+
 #ifndef ECUM_H_
 #define ECUM_H_
 
@@ -37,7 +73,16 @@
 #define ECUM_AR_PATCH_VERSION	2
 
 #include "EcuM_Types.h"
+struct EcuM_Config;
+typedef struct EcuM_Config EcuM_ConfigType;
+
+/* Holds EcuM_ConfigType */
+/* TODO: forward declare all config types here ? */
+/* TODO: EcuM_Generated_Types must have types from Ecu_Types.h */
+#include "EcuM_Types.h"
+#include "EcuM_Generated_Types.h"
 #include "EcuM_Cfg.h"
+#include "EcuM_Cbk.h"
 
 #if defined(USE_COM)
 #include "ComStack_Types.h"

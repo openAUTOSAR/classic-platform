@@ -13,7 +13,12 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+#if 0
+#include "Rte_EcuM.h"
+#else
 #include "EcuM.h"
+#include "EcuM_Internals.h"
+#endif
 
 Std_ReturnType EcuM_ShutdownTarget_GetLastShutdownTarget(EcuM_StateType* target, UInt8* mode) {
 	return E_NOT_OK;

@@ -13,17 +13,27 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-
-
-
+/*
+ * Callback used by
+ *
+ *
+ */
 
 
 #ifndef ECUM_CBK_H_
 #define ECUM_CBK_H_
 
+
 #include "EcuM.h"
+
+#if !defined(_ECUM_GENERATED_TYPES_H_)
+#error NOOOOOOO
+#endif
+
+
+//#if !defined(I_HAVE_DEFINED)
+//#error NOOOOOOO2
+//#endif
 
 //void EcuM_CB_NfyNvMJobEnd(uint8 ServiceId, NvM_RequestResultType JobResult);
 

@@ -36,6 +36,11 @@
 #if defined(USE_RTE)
 #include "Rte_Main.h"
 #endif
+#if defined(USE_SCHM)
+#include "SchM.h"
+#endif
+
+
 
 EcuM_GlobalType internal_data;
 
@@ -114,7 +119,9 @@ void EcuM_StartupTwo(void)
 #endif
 
 	// Initialize the BSW scheduler
-	// TODO SchM_Init();
+#if defined(USE_SCHM)
+	SchM_Init();
+#endif
 
 	// Initialize drivers that don't need NVRAM data
 	EcuM_AL_DriverInitTwo(internal_data.config);
