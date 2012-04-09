@@ -30,10 +30,11 @@
  *       |              |
  *   Rte_EcuM.h <--  EcuM_Types.h*
  *       ^              ^
- *       |              |    /-----> EcuM_Cfg.h
- *       |              |   /------> EcuM_Generated_Types.h
+ *       |              |     /-----> EcuM_Cfg.h
+ *       |              |    /------> EcuM_Generated_Types.h
+ *       |              |   /         (Holds EcuM_ConfigType and includes all BSW modules )
  *       |              |  /-------> EcuM_Cbk.h
- *       |              | /
+ *       |              | /           (want types EcuM_WakeupSourceType, EcuM_ConfigType *, EcuM_WakeupSourceType , EcuM_WakeupReactionType )
  *       |              |/
  *       |            EcuM.h  <----- EcuM_Callout_Stubs.c
  *       |              ^       \--- EcuM_PBCfg.c
@@ -51,6 +52,13 @@
  *   (if enabled by CFG_DEM_USE_RTE)
  *
  * - EcuM_Generated_Types.h is quite crappy since it includes the
+ *
+ * Changes:
+ *   - EcuM_Cfg.h , must not include ANY include files.
+ *   - EcuM_Pbcfg.c must include "EcuM_Generated_Types.h"
+ *   - EcuM.c, etc must include "EcuM_Generated_Types.h"
+ *   --> The GOOD, we keep circular include from EcuM_Generated_Types.h
+ *
  *
  *
  */
@@ -72,24 +80,24 @@
 #define ECUM_AR_MINOR_VERSION	2
 #define ECUM_AR_PATCH_VERSION	2
 
-#include "EcuM_Types.h"
-struct EcuM_Config;
-typedef struct EcuM_Config EcuM_ConfigType;
+//#include "EcuM_Types.h"
+//struct EcuM_Config;
+//typedef struct EcuM_Config EcuM_ConfigType;
 
 /* Holds EcuM_ConfigType */
 /* TODO: forward declare all config types here ? */
 /* TODO: EcuM_Generated_Types must have types from Ecu_Types.h */
 #include "EcuM_Types.h"
-#include "EcuM_Generated_Types.h"
 #include "EcuM_Cfg.h"
 #include "EcuM_Cbk.h"
 
 #if defined(USE_COM)
 #include "ComStack_Types.h"
 #endif
-#if (ECUM_USE_SERVICE_PORTS == STD_ON) && defined(USE_RTE)
-#include "Rte_Type.h"
-#endif
+
+//#if (ECUM_USE_SERVICE_PORTS == STD_ON) && defined(USE_RTE)
+//#include "Rte_Type.h"
+//#endif
 
 
 
@@ -137,7 +145,7 @@ typedef struct EcuM_Config EcuM_ConfigType;
 #define ECUM_AR_MINOR_VERSION	2
 #define ECUM_AR_PATCH_VERSION	2
 
-#include "EcuM_Cfg.h"
+//#include "EcuM_Cfg.h"
 
 #if ( ECUM_VERSION_INFO_API == STD_ON)
 #define EcuM_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,ECUM)

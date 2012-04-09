@@ -14,12 +14,6 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-#error NOOOOOOOOOOOOOOOOOOO
-
-
-
-
 #ifndef CANIF_H_
 #define CANIF_H_
 
