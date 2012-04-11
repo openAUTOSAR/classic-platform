@@ -90,8 +90,10 @@ Std_ReturnType Pwm_ValidateChannel(Pwm_ChannelType Channel,Pwm_APIServiceIDType 
     return result;
 }
 
-void inline Pwm_InitChannel(Pwm_ChannelType Channel);
-void inline Pwm_DeInitChannel(Pwm_ChannelType Channel);
+void Pwm_InitChannel(Pwm_ChannelType Channel);
+#if PWM_DE_INIT_API==STD_ON
+void Pwm_DeInitChannel(Pwm_ChannelType Channel);
+#endif
 
 #if PWM_NOTIFICATION_SUPPORTED==STD_ON
 static void Pwm_Isr(void);

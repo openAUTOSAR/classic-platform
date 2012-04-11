@@ -34,6 +34,19 @@
 	#error Adc is configured to use Dma but the module is not enabled.
 #endif
 
+#define CCM_EOQ(x)        ((x)<<31)
+#define CCM_PAUSE(x)      ((x)<<30)
+#define CCM_BN(x)       ((x)<<25)
+#define CCM_CAL(x)        ((x)<<24)
+#define CCM_MESSAGE_TAG(x)    ((x)<<20)
+#define CCM_LST(x)        ((x)<<18)
+#define CCM_TSR(x)        ((x)<<17)
+#define CCM_FMT(x)        ((x)<<16)
+#define CCM_CHANNEL_NUMBER(x) ((x)<<8)
+
+#define CAL_CH(ch)  CCM_EOQ(0) | CCM_PAUSE(0) | CCM_BN(0) | CCM_CAL(0) | CCM_MESSAGE_TAG(0) | CCM_LST(ADC_CONVERSION_TIME_128_CLOCKS) | \
+          CCM_TSR(0) | CCM_FMT(0) | CCM_CHANNEL_NUMBER(ch)
+
 typedef union
 {
   vuint32_t R;
@@ -99,37 +112,29 @@ const Adc_CommandType AdcCalibrationCommandQueue [] =
 {
   /* Four samples of 25 % of (VRh - VRl). */
   {
-	.B.EOQ = 0, .B.PAUSE = 0, .B.BN = 0, .B.CAL = 0, .B.MESSAGE_TAG = 0, .B.LST = ADC_CONVERSION_TIME_128_CLOCKS, .B.TSR = 0, .B.FMT = 0,
-	.B.CHANNEL_NUMBER = 44
+  .R = CAL_CH(44),
   },
   {
-    .B.EOQ = 0, .B.PAUSE = 0, .B.BN = 0, .B.CAL = 0, .B.MESSAGE_TAG = 0, .B.LST = ADC_CONVERSION_TIME_128_CLOCKS, .B.TSR = 0, .B.FMT = 0,
-    .B.CHANNEL_NUMBER = 44
+  .R = CAL_CH(44),
   },
   {
-    .B.EOQ = 0, .B.PAUSE = 0, .B.BN = 0, .B.CAL = 0, .B.MESSAGE_TAG = 0, .B.LST = ADC_CONVERSION_TIME_128_CLOCKS, .B.TSR = 0, .B.FMT = 0,
-    .B.CHANNEL_NUMBER = 44
+  .R = CAL_CH(44),
   },
   {
-    .B.EOQ = 0, .B.PAUSE = 0, .B.BN = 0, .B.CAL = 0, .B.MESSAGE_TAG = 0, .B.LST = ADC_CONVERSION_TIME_128_CLOCKS, .B.TSR = 0, .B.FMT = 0,
-    .B.CHANNEL_NUMBER = 44
+  .R = CAL_CH(44),
   },
   /* Four samples of 75 % of (VRh - VRl). */
   {
-    .B.EOQ = 0, .B.PAUSE = 0, .B.BN = 0, .B.CAL = 0, .B.MESSAGE_TAG = 0, .B.LST = ADC_CONVERSION_TIME_128_CLOCKS, .B.TSR = 0, .B.FMT = 0,
-    .B.CHANNEL_NUMBER = 43
+    .R = CAL_CH(43),
   },
   {
-    .B.EOQ = 0, .B.PAUSE = 0, .B.BN = 0, .B.CAL = 0, .B.MESSAGE_TAG = 0, .B.LST = ADC_CONVERSION_TIME_128_CLOCKS, .B.TSR = 0, .B.FMT = 0,
-    .B.CHANNEL_NUMBER = 43
+  .R = CAL_CH(43),
   },
   {
-    .B.EOQ = 0, .B.PAUSE = 0, .B.BN = 0, .B.CAL = 0, .B.MESSAGE_TAG = 0, .B.LST = ADC_CONVERSION_TIME_128_CLOCKS, .B.TSR = 0, .B.FMT = 0,
-    .B.CHANNEL_NUMBER = 43
+  .R = CAL_CH(43),
   },
   {
-    .B.EOQ = 1, .B.PAUSE = 0, .B.BN = 0, .B.CAL = 0, .B.MESSAGE_TAG = 0, .B.LST = ADC_CONVERSION_TIME_128_CLOCKS, .B.TSR = 0, .B.FMT = 0,
-    .B.CHANNEL_NUMBER = 43
+  .R = CAL_CH(43),
   }
 };
 
@@ -142,9 +147,9 @@ const Dma_TcdType AdcCalibrationDMACommandConfig =
   .DMOD = 0,
   .DSIZE = DMA_TRANSFER_SIZE_32BITS,
   .SOFF = sizeof(Adc_CommandType),
-  .NBYTESu.B.NBYTES = sizeof(Adc_CommandType),
+  .NBYTESu.R = sizeof(Adc_CommandType),
   .SLAST = 0,
-  .DADDR = (vint32_t)&EQADC.CFPR[0].R,
+  .DADDR = (vuint32_t)&EQADC.CFPR[0].R,
   .CITERE_LINK = 0,
   .CITER = 0,
   .DOFF = 0,
@@ -165,13 +170,13 @@ const Dma_TcdType AdcCalibrationDMACommandConfig =
 
 const Dma_TcdType AdcCalibrationDMAResultConfig =
 {
-  .SADDR = (vint32_t)&EQADC.RFPR[0].R + 2,
+  .SADDR = (vuint32_t)&EQADC.RFPR[0].R + 2,
   .SMOD = 0,
   .SSIZE = DMA_TRANSFER_SIZE_16BITS,
   .DMOD = 0,
   .DSIZE = DMA_TRANSFER_SIZE_16BITS,
   .SOFF = 0,
-  .NBYTESu.B.NBYTES = sizeof(Adc_ValueGroupType),
+  .NBYTESu.R = sizeof(Adc_ValueGroupType),
   .SLAST = 0,
   .DADDR = 0, /* Dynamic address, written later. */
   .CITERE_LINK = 0,
@@ -706,6 +711,7 @@ static void Adc_WriteEQADCRegister (Adc_EQADCRegisterType reg, Adc_EQADCRegister
 
   /* Flush result buffer. */
   temp = EQADC.RFPR[ADC_EQADC_QUEUE_0].R;
+  (void)temp;
   EQADC.FISR[ADC_EQADC_QUEUE_0].B.EOQF = 1;
 
   EQADC.CFCR[ADC_EQADC_QUEUE_0].B.MODE = oldMode;
