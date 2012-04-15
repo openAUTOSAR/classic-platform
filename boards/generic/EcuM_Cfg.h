@@ -40,7 +40,7 @@ typedef enum {
 } EcuM_UserList;
 
 
-extern EcuM_ConfigType EcuMConfig;
+//extern EcuM_ConfigType EcuMConfig;
 
 #endif /*ECUM_CFG_H_*/
 

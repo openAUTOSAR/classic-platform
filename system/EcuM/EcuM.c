@@ -20,6 +20,7 @@
 #include "Modules.h"
 #include <string.h>
 #include <Os.h>
+#include "EcuM_Generated_Types.h"
 #include "EcuM_Internals.h"
 #include "EcuM_Cbk.h"
 #include "SchM_EcuM.h"

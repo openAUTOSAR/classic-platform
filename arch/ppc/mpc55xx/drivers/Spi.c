@@ -1165,7 +1165,7 @@ static void Spi_SetupCTAR(	Spi_HWUnitType unit,
 	spiHw->CTAR[ctar_unit].B.FMSZ = width - 1;
 	spiHw->CTAR[ctar_unit].B.CPHA = (extDev->SpiDataShiftEdge
 			== SPI_EDGE_LEADING) ? 0 : 1;
-	spiHw->CTAR[ctar_unit].B.CPOL = (extDev->SpiCsPolarity == STD_LOW) ? 0 : 1;
+	spiHw->CTAR[ctar_unit].B.CPOL = (extDev->SpiShiftClockIdleLevel == STD_LOW) ? 0 : 1;
 
 	// This the ACTIVE polarity. Freescale have inactive polarity
 	if (extDev->SpiCsPolarity == STD_HIGH) {

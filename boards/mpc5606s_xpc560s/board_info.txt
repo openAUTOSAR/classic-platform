@@ -74,9 +74,10 @@ SPI MEMORY
 ---------------------------------- NOTE ----------------------------------  
     
 SPI_0
- PORT J will have the following layout 
+ PJ1 Connector will have the following layout 
  (With ArcCore internal harness and SO/SI as seen from memory):
 
+                 PJ1 
                1-X  X-2
                3-X  X-4 
                5-X  X-6
@@ -86,6 +87,13 @@ SPI_0
               13-X  X-14
               15-X  X-16  
     Gnd/Black 17-X  X-18 VCC/Red   
+       
+  
+ If software CS is used Connector PJ2 and PJ[0] is used for that
+                 PJ2    
+  CS and PJ[0] 1-X  X-2
+               3-X  X-4 
+                 ... 
 
 
 SPI_1
