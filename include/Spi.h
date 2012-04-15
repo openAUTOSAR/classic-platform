@@ -235,6 +235,9 @@ typedef enum {
 
 
 #include "Spi_Cfg.h"
+#if (SPI_IMPLEMENTATION==SPI_DMA)
+#include "Dma.h"
+#endif
 
 // All data needed to configure one SPI-channel
 typedef struct Spi_ChannelConfig
