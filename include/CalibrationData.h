@@ -10,5 +10,6 @@ extern char __CALIB_RAM_END;
 extern char __CALIB_ROM_START;
 #endif /* CALIBRATION_ENABLED */
 #define ARC_DECLARE_CALIB(type, name) type __attribute__((section (".calibration"))) name
+#define ARC_DECLARE_CALIB_EXTERN(type, name) extern type name
 
 #endif /* CALIBRATIONDATA_H_ */
