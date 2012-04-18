@@ -4,7 +4,7 @@
 * Created by:              
 * Copyright:               
 *
-* Configured for (MCU):    MPC551x
+* Configured for (MCU):    MPC5567
 *
 * Module vendor:           ArcCore
 * Generator version:       2.0.2
@@ -14,7 +14,7 @@
 
 
 #include "EcuM.h"
-#include "EcuM_Cbk.h"
+#include "EcuM_Generated_Types.h"
 #include "Det.h"
 #if defined(USE_DEM)
 #include "Dem.h"
@@ -100,6 +100,8 @@ void EcuM_AL_DriverInitZero(void)
 	Det_Init();/** @req EcuM2783 */
     Det_Start();/** @req EcuM2634 */
 }
+
+extern EcuM_ConfigType EcuMConfig;
 
 EcuM_ConfigType* EcuM_DeterminePbConfiguration(void)
 {
