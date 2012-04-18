@@ -40,11 +40,11 @@ Std_ReturnType EcuM_StateRequest_ReleaseRUN(EcuM_UserType user) {
 	return EcuM_ReleaseRUN(user);
 }
 
-Std_ReturnType EcuM_StateRequest_RequestPOST_RUN(EcuM_UserType user) {
+Std_ReturnType EcuM_StateRequest_RequestPOSTRUN(EcuM_UserType user) {
 	return EcuM_RequestPOST_RUN(user);
 }
 
-Std_ReturnType EcuM_StateRequest_ReleasePOST_RUN(EcuM_UserType user) {
+Std_ReturnType EcuM_StateRequest_ReleasePOSTRUN(EcuM_UserType user) {
 	return EcuM_ReleasePOST_RUN(user);
 }
 
