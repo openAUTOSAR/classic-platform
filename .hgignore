@@ -19,3 +19,5 @@ syntax: regexp
 ^.settings$
 syntax: glob
 binaries/*
+syntax: regexp
+^\.cproject$
