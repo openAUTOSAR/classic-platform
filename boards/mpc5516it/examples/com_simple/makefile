@@ -2,6 +2,8 @@
 # Project name, used for output files et.c.
 PROJECTNAME = com_simple_mpc5516it
 
+ROOTDIR?=../../../..
+
 # Default settings
 include $(ROOTDIR)/scripts/project_defaults.mk
 
