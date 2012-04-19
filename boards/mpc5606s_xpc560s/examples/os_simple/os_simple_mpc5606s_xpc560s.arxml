@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<AUTOSAR xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://autosar.org/3.1.5" xsi:schemaLocation="http://autosar.org/3.1.5 autosar_3-1-5.xsd"><TOP-LEVEL-PACKAGES>
+<AUTOSAR xmlns="http://autosar.org/3.1.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/3.1.5 autosar_3-1-5.xsd">
+  <TOP-LEVEL-PACKAGES>
     <AR-PACKAGE>
       <SHORT-NAME>os_simple_mpc5606s_xpc560s</SHORT-NAME>
       <ELEMENTS>
@@ -7,12 +8,12 @@
           <SHORT-NAME>os_simple_mpc5606s_xpc560s</SHORT-NAME>
           <ADMIN-DATA>
             <DOC-REVISIONS>
-              <DOC-REVISION/>
+              <DOC-REVISION />
             </DOC-REVISIONS>
             <SDGS>
               <SDG GID="Arccore::EcuOptions">
                 <SD GID="MCU">MPC560x</SD>
-                <SD GID="GENDIR">${RESOURCE_LOC}/config</SD>
+                <SD GID="GENDIR">/arc/boards/mpc5606s_xpc560s/examples/os_simple/config</SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>
@@ -20,6 +21,7 @@
           <MODULE-REFS>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_mpc5606s_xpc560s/Os</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_mpc5606s_xpc560s/EcuM</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_mpc5606s_xpc560s/Mcu</MODULE-REF>
           </MODULE-REFS>
         </ECU-CONFIGURATION>
         <ECU-SW-COMPOSITION UUID="8faadc86-f4b0-4ea7-bc7f-17e18f5c4081">
@@ -29,7 +31,7 @@
           <SHORT-NAME>Os</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG/>
+              <SDG />
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.22</SD>
@@ -144,7 +146,7 @@
               <SHORT-NAME>Alarm1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm</DEFINITION-REF>
@@ -213,7 +215,7 @@
               <SHORT-NAME>bTask3</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
@@ -244,7 +246,7 @@
               <SHORT-NAME>eTask1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
@@ -287,7 +289,7 @@
               <SHORT-NAME>eTask2</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
@@ -330,7 +332,7 @@
               <SHORT-NAME>Event1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsEvent</DEFINITION-REF>
@@ -353,7 +355,7 @@
               <SHORT-NAME>Event2</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsEvent</DEFINITION-REF>
@@ -376,7 +378,7 @@
               <SHORT-NAME>OsApplication1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsApplication</DEFINITION-REF>
@@ -437,7 +439,7 @@
               <SHORT-NAME>Counter1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsCounter</DEFINITION-REF>
@@ -466,7 +468,7 @@
           <SHORT-NAME>EcuM</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG/>
+              <SDG />
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.2</SD>
@@ -523,6 +525,114 @@
             </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
+        <MODULE-CONFIGURATION UUID="7082fa10-dc97-4589-8b88-3b4731e5dc35">
+          <SHORT-NAME>Mcu</SHORT-NAME>
+          <ADMIN-DATA>
+            <SDGS>
+              <SDG />
+              <SDG GID="Arccore::ModuleOptions">
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.0.3</SD>
+              </SDG>
+            </SDGS>
+          </ADMIN-DATA>
+          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Mcu</DEFINITION-REF>
+          <CONTAINERS>
+            <CONTAINER UUID="9ba67196-0c89-4417-907c-0973ed10776d">
+              <SHORT-NAME>McuGeneralConfiguration</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuGeneralConfiguration</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Mcu/McuGeneralConfiguration/McuDevErrorDetect</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Mcu/McuGeneralConfiguration/McuPerformResetApi</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Mcu/McuGeneralConfiguration/McuVersionInfoApi</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="ece9fa95-a839-45dc-b4f2-3b79bcc3f402">
+              <SHORT-NAME>McuModuleConfiguration</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSrcFailureNotification</DEFINITION-REF>
+                  <VALUE>DISABLED</VALUE>
+                </ENUMERATION-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="DERIVED-INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuNumberOfMcuModes</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="DERIVED-INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuRamSectors</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuResetSetting</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+              </PARAMETER-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="441cbfe6-45cf-45fb-945d-cc2c514a2493">
+                  <SHORT-NAME>McuClockSettingConfig</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig</DEFINITION-REF>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuDefaultClockReference</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606s_xpc560s/Mcu/McuModuleConfiguration/McuClockSettingConfig/Clock</VALUE-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                  <SUB-CONTAINERS>
+                    <CONTAINER UUID="f5ad08a7-b8f2-4a5f-a547-37ace7807989">
+                      <SHORT-NAME>Clock</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <FLOAT-VALUE>
+                          <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointFrequency</DEFINITION-REF>
+                          <VALUE>8000000.0</VALUE>
+                        </FLOAT-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointPllEprediv</DEFINITION-REF>
+                          <VALUE>0</VALUE>
+                        </INTEGER-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointPllEmfd</DEFINITION-REF>
+                          <VALUE>64</VALUE>
+                        </INTEGER-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointPllErfd</DEFINITION-REF>
+                          <VALUE>2</VALUE>
+                        </INTEGER-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                  </SUB-CONTAINERS>
+                </CONTAINER>
+                <CONTAINER UUID="0cef449c-7063-4004-8fc9-5bb74239ba7b">
+                  <SHORT-NAME>McuModeSettingConf</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf/McuMode</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+          </CONTAINERS>
+        </MODULE-CONFIGURATION>
       </ELEMENTS>
     </AR-PACKAGE>
-  </TOP-LEVEL-PACKAGES></AUTOSAR>
+  </TOP-LEVEL-PACKAGES>
+</AUTOSAR>
+
