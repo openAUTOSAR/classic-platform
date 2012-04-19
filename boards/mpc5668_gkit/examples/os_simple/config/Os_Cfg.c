@@ -29,7 +29,7 @@ OsTickType OsTickFreq = 1000;
 
 
 // ###############################    DEBUG OUTPUT     #############################
-uint32 os_dbg_mask = D_RESOURCE |D_SCHTBL |D_EVENT |D_TASK |D_ALARM;
+uint32 os_dbg_mask = 0;
  
 // ###############################    APPLICATIONS     #############################
 GEN_APPLICATION_HEAD = {
@@ -132,7 +132,7 @@ GEN_TASK_HEAD = {
 		/* name        		*/"eTask2",
 		/* priority    		*/1,
 		/* schedule 	   	*/FULL,
-		/* name        		*/FALSE,
+		/* name        		*/TRUE,
 		/* resource_int_p   */NULL,
 		/* resource mask	*/0,
 		/* event mask		*/1,
