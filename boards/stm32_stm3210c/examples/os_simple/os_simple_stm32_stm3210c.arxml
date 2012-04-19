@@ -21,6 +21,7 @@
           <MODULE-REFS>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_stm32_stm3210c/Mcu</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_stm32_stm3210c/Os</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_stm32_stm3210c/EcuM</MODULE-REF>
           </MODULE-REFS>
         </ECU-CONFIGURATION>
         <ECU-SW-COMPOSITION UUID="a91fd3fa-db09-43b5-818d-1b3d02627733">
@@ -618,6 +619,67 @@
                       <VALUE>false</VALUE>
                     </BOOLEAN-VALUE>
                   </PARAMETER-VALUES>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+          </CONTAINERS>
+        </MODULE-CONFIGURATION>
+        <MODULE-CONFIGURATION UUID="3b77849b-96fb-4b1f-9d38-4146015167ab">
+          <SHORT-NAME>EcuM</SHORT-NAME>
+          <ADMIN-DATA>
+            <SDGS>
+              <SDG />
+              <SDG GID="Arccore::ModuleOptions">
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.0.2</SD>
+              </SDG>
+            </SDGS>
+          </ADMIN-DATA>
+          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/EcuM</DEFINITION-REF>
+          <CONTAINERS>
+            <CONTAINER UUID="bafaa8fe-9522-4479-b2a7-47d7c3e83321">
+              <SHORT-NAME>EcuMGeneral</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMGeneral</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/EcuM/EcuMGeneral/EcuMDevErrorDetect</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/EcuM/EcuMGeneral/EcuMIncludeNvramMgr</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/EcuM/EcuMGeneral/EcuMVersionInfoApi</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <FLOAT-VALUE>
+                  <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/EcuM/EcuMGeneral/EcuMMainFunctionPeriod</DEFINITION-REF>
+                  <VALUE>0.2</VALUE>
+                </FLOAT-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="1bb0d0ec-697f-43ac-9f1a-2d36915986a5">
+              <SHORT-NAME>EcuMConfiguration</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <FLOAT-VALUE>
+                  <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMNvramReadallTimeout</DEFINITION-REF>
+                  <VALUE>10.0</VALUE>
+                </FLOAT-VALUE>
+                <FLOAT-VALUE>
+                  <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMRunMinimumDuration</DEFINITION-REF>
+                  <VALUE>10.0</VALUE>
+                </FLOAT-VALUE>
+                <FLOAT-VALUE>
+                  <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMNvramWriteallTimeout</DEFINITION-REF>
+                  <VALUE>10.0</VALUE>
+                </FLOAT-VALUE>
+              </PARAMETER-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="e95c54fc-3ac5-4f8c-9715-2340ba608bb8">
+                  <SHORT-NAME>User_1</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMUserConfig</DEFINITION-REF>
                 </CONTAINER>
               </SUB-CONTAINERS>
             </CONTAINER>

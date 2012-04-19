@@ -13,7 +13,7 @@
             <SDGS>
               <SDG GID="Arccore::EcuOptions">
                 <SD GID="MCU">STM32_F107</SD>
-                <SD GID="GENDIR">${PROJECT_LOC}/config</SD>
+                <SD GID="GENDIR">${fileDir}/config</SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>
