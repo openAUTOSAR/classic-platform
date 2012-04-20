@@ -43,7 +43,7 @@
  *       `---------- EcuM_xxx.c ---> Memmap.h
  *                               \-> Det.h, Dem.h
  *
- * *) Only ifdef ECUM_USE_SERVICE_COMPONENT
+ * *) Only ifdef CFG_ECUM_USE_SERVICE_COMPONENT
  *
  * Problems:
  * - Can_Cfg.h can include just "EcuM_Cbk.h"...
