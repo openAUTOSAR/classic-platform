@@ -21,6 +21,12 @@
 #ifndef _ECUM_GENERATED_TYPES_H_
 #define _ECUM_GENERATED_TYPES_H_
 
+#if (ECUM_USE_SERVICE_PORTS == STD_ON) && defined(USE_RTE)
+#include "Rte_EcuM.h"
+#endif
+
+#include "EcuM_Types.h"
+
 #if defined(USE_MCU)
 #include "Mcu.h"
 #endif
