@@ -143,8 +143,8 @@ SECTIONS
     /* BANK_A MODULES */
     Os_Cfg.o(.text)
     EcuM.o(.text)
-    EcuM_Cfg.o(.text)
-    EcuM_Callout_template.o(.text)
+    EcuM_PBcfg.o(.text)
+    EcuM_Callout_Stubs.o(.text)
     Mcu.o(.text)
     event.o(.text)
     arch.o(.text)

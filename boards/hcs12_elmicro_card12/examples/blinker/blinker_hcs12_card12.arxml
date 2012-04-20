@@ -899,6 +899,10 @@
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Com/ComGeneral/ComConfigurationUseDet</DEFINITION-REF>
                   <VALUE>false</VALUE>
                 </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Com/ComGeneral/ArcComBitPositionVersionAutosar4</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
           </CONTAINERS>

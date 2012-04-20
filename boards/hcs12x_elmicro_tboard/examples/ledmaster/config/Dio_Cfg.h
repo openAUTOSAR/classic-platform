@@ -24,7 +24,7 @@
 #define DIO_VERSION_INFO_API    STD_OFF
 #define DIO_DEV_ERROR_DETECT    STD_OFF
 
-#define DIO_END_OF_LIST  -1
+#define DIO_END_OF_LIST  (-1u)
 
 // Physical ports
 typedef enum
