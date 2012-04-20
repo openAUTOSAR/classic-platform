@@ -13,7 +13,7 @@
             <SDGS>
               <SDG GID="Arccore::EcuOptions">
                 <SD GID="MCU">MPC5567</SD>
-                <SD GID="GENDIR">${PROJECT_LOC}/config</SD>
+                <SD GID="GENDIR">${fileDir}/config</SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>
@@ -22,7 +22,6 @@
             <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_mpc5567qrtech/Os</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_mpc5567qrtech/Dio</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_mpc5567qrtech/Mcu</MODULE-REF>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_mpc5567qrtech/Port</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_mpc5567qrtech/Det</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_mpc5567qrtech/EcuM</MODULE-REF>
           </MODULE-REFS>
@@ -620,97 +619,6 @@
                   </PARAMETER-VALUES>
                 </CONTAINER>
               </SUB-CONTAINERS>
-            </CONTAINER>
-          </CONTAINERS>
-        </MODULE-CONFIGURATION>
-        <MODULE-CONFIGURATION UUID="8254a509-e508-4280-8ec0-0817ef68495b">
-          <SHORT-NAME>Port</SHORT-NAME>
-          <ADMIN-DATA>
-            <SDGS>
-              <SDG />
-              <SDG GID="Arccore::ModuleOptions">
-                <SD GID="ARCCORE_EDITOR_VERSION">2.0.2</SD>
-                <SD GID="GENERATE_AND_VALIDATE">true</SD>
-              </SDG>
-            </SDGS>
-          </ADMIN-DATA>
-          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Port</DEFINITION-REF>
-          <CONTAINERS>
-            <CONTAINER UUID="496e8330-5da6-48f8-9e21-f6d4fed81187">
-              <SHORT-NAME>PortConfigSet</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet</DEFINITION-REF>
-              <SUB-CONTAINERS>
-                <CONTAINER UUID="0f17c271-bfae-4d07-8283-9ce8a8118f1b">
-                  <SHORT-NAME>PortContainer_1</SHORT-NAME>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer</DEFINITION-REF>
-                  <SUB-CONTAINERS>
-                    <CONTAINER UUID="0c45b12c-496e-4f6a-9949-5e224a9adf33">
-                      <SHORT-NAME>GPIO[125]</SHORT-NAME>
-                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
-                      <PARAMETER-VALUES>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
-                          <VALUE>PULL_NONE</VALUE>
-                        </ENUMERATION-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
-                          <VALUE>PORT_PIN_OUT</VALUE>
-                        </ENUMERATION-VALUE>
-                        <BOOLEAN-VALUE>
-                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
-                          <VALUE>false</VALUE>
-                        </BOOLEAN-VALUE>
-                        <BOOLEAN-VALUE>
-                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
-                          <VALUE>false</VALUE>
-                        </BOOLEAN-VALUE>
-                        <BOOLEAN-VALUE>
-                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
-                          <VALUE>false</VALUE>
-                        </BOOLEAN-VALUE>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
-                          <VALUE>125</VALUE>
-                        </INTEGER-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
-                          <VALUE>SLEW_RATE_MIN</VALUE>
-                        </ENUMERATION-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
-                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
-                        </ENUMERATION-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
-                          <VALUE>PORT_PIN_MODE_DIO</VALUE>
-                        </ENUMERATION-VALUE>
-                      </PARAMETER-VALUES>
-                    </CONTAINER>
-                  </SUB-CONTAINERS>
-                </CONTAINER>
-              </SUB-CONTAINERS>
-            </CONTAINER>
-            <CONTAINER UUID="105ccb0c-0a5c-4930-a423-09e2b0730514">
-              <SHORT-NAME>PortGeneral</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortGeneral</DEFINITION-REF>
-              <PARAMETER-VALUES>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortGeneral/PortDevErrorDetect</DEFINITION-REF>
-                  <VALUE>true</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortGeneral/PortSetPinDirectionApi</DEFINITION-REF>
-                  <VALUE>true</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortGeneral/PortSetPinModeApi</DEFINITION-REF>
-                  <VALUE>true</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortGeneral/PortVersionInfoApi</DEFINITION-REF>
-                  <VALUE>true</VALUE>
-                </BOOLEAN-VALUE>
-              </PARAMETER-VALUES>
             </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
