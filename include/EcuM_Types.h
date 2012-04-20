@@ -31,7 +31,7 @@
 //#warning RTE_TYPE included before EcuM_Types.h
 #endif
 
-#ifdef ECUM_USE_SERVICE_COMPONENT
+#ifdef CFG_ECUM_USE_SERVICE_COMPONENT
 #include "Rte_Type.h"
 #endif
 
