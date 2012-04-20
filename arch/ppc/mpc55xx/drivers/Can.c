@@ -644,7 +644,7 @@ static void Can_Isr_Rx(Can_UnitType *uPtr)
 
 static void Can_Isr(int controller )
 {
-    Can_UnitType *uPtr = &CanUnit[controller];
+    Can_UnitType *uPtr = CTRL_TO_UNIT_PTR(controller);
 
     if(uPtr->cfgCtrlPtr->Can_Arc_Flags & CAN_CTRL_TX_PROCESSING_INTERRUPT ){
         Can_Isr_Tx(uPtr);
@@ -894,7 +894,6 @@ void Can_InitController(uint8 controller,
     uint8_t tq2;
     uint32_t clock;
     Can_UnitType *canUnit;
-    uint8 cId = controller;
     const Can_ControllerConfigType *cfgCtrlPtr;
     const Can_HardwareObjectType *hohPtr;
     uint8_t fifoNr;
@@ -1044,10 +1043,10 @@ Can_ReturnType Can_SetControllerMode(uint8 controller,
 
     /** @req 3.1.5/CAN198 */
     VALIDATE( (Can_Global.initRun == CAN_READY), CAN_SETCONTROLLERMODE_SERVICE_ID, CAN_E_UNINIT );
-    Can_UnitType *canUnit = CTRL_TO_UNIT_PTR(controller);
-    VALIDATE( (canUnit->state!=CANIF_CS_UNINIT), CAN_SETCONTROLLERMODE_SERVICE_ID, CAN_E_UNINIT );
     /** @req 3.1.5/CAN199 */
     VALIDATE( VALID_CONTROLLER(controller), CAN_SETCONTROLLERMODE_SERVICE_ID, CAN_E_PARAM_CONTROLLER );
+    Can_UnitType *canUnit = CTRL_TO_UNIT_PTR(controller);
+    VALIDATE( (canUnit->state!=CANIF_CS_UNINIT), CAN_SETCONTROLLERMODE_SERVICE_ID, CAN_E_UNINIT );
 
     canHw = canUnit->hwPtr;
 
@@ -1091,6 +1090,8 @@ void Can_DisableControllerInterrupts(uint8 controller)
     /** !req 3.1.5/CAN292 */
 
 	VALIDATE_NO_RV( (Can_Global.initRun == CAN_READY), CAN_DISABLECONTROLLERINTERRUPTS_SERVICE_ID, CAN_E_UNINIT );
+    /** @req 3.1.5/CAN206 */
+    VALIDATE_NO_RV( VALID_CONTROLLER(controller) , CAN_DISABLECONTROLLERINTERRUPTS_SERVICE_ID, CAN_E_PARAM_CONTROLLER );
     Can_UnitType *canUnit = CTRL_TO_UNIT_PTR(controller);
     flexcan_t *canHw;
     imask_t state;
@@ -1098,8 +1099,6 @@ void Can_DisableControllerInterrupts(uint8 controller)
     /** @req 3.1.5/CAN205 */
     VALIDATE_NO_RV( (canUnit->state!=CANIF_CS_UNINIT), CAN_DISABLECONTROLLERINTERRUPTS_SERVICE_ID, CAN_E_UNINIT );
 
-    /** @req 3.1.5/CAN206 */
-    VALIDATE_NO_RV( VALID_CONTROLLER(controller) , CAN_DISABLECONTROLLERINTERRUPTS_SERVICE_ID, CAN_E_PARAM_CONTROLLER );
 
 
     Irq_Save(state);
@@ -1140,11 +1139,10 @@ void Can_EnableControllerInterrupts(uint8 controller)
 
     /** @req 3.1.5/CAN209 */
 	VALIDATE_NO_RV( (Can_Global.initRun == CAN_READY), CAN_ENABLECONTROLLERINTERRUPTS_SERVICE_ID, CAN_E_UNINIT );
-    canUnit = CTRL_TO_UNIT_PTR(controller);
-    VALIDATE_NO_RV( (canUnit->state!=CANIF_CS_UNINIT), CAN_ENABLECONTROLLERINTERRUPTS_SERVICE_ID, CAN_E_UNINIT );
-
     /** @req 3.1.5/CAN210 */
     VALIDATE_NO_RV( VALID_CONTROLLER(controller), CAN_ENABLECONTROLLERINTERRUPTS_SERVICE_ID, CAN_E_PARAM_CONTROLLER );
+    canUnit = CTRL_TO_UNIT_PTR(controller);
+    VALIDATE_NO_RV( (canUnit->state!=CANIF_CS_UNINIT), CAN_ENABLECONTROLLERINTERRUPTS_SERVICE_ID, CAN_E_UNINIT );
 
     Irq_Save(state);
     if (canUnit->lock_cnt > 1) {
