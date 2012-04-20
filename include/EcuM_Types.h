@@ -31,7 +31,7 @@
 //#warning RTE_TYPE included before EcuM_Types.h
 #endif
 
-#if (ECUM_USE_SERVICE_PORTS == STD_ON)
+#ifdef ECUM_USE_SERVICE_COMPONENT
 #include "Rte_Type.h"
 #endif
 
