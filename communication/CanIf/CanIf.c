@@ -920,6 +920,8 @@ void CanIf_ControllerBusOff(uint8 Controller)
 {
   CanIf_Arc_ChannelIdType channel = 0xff;
 
+  VALIDATE_NO_RV( CanIf_Global.initRun, CANIF_CONTROLLER_BUSOFF_ID, CANIF_E_UNINIT );
+
   for(int i = 0; i < CANIF_CHANNEL_CNT; i++)
   {
 	  if(CanIf_ConfigPtr->Arc_ChannelToControllerMap[i] == Controller)
@@ -928,7 +930,6 @@ void CanIf_ControllerBusOff(uint8 Controller)
 	  }
   }
 
-  VALIDATE_NO_RV( CanIf_Global.initRun, CANIF_CONTROLLER_BUSOFF_ID, CANIF_E_UNINIT );
   VALIDATE_NO_RV( Controller < CANIF_CHANNEL_CNT, CANIF_CONTROLLER_BUSOFF_ID, CANIF_E_PARAM_CONTROLLER );
 
   // According to figure 35 in canif spec this should be done in
@@ -945,6 +946,8 @@ void CanIf_SetWakeupEvent(uint8 Controller)
 {
 	CanIf_Arc_ChannelIdType channel = 0xff;
 
+	VALIDATE_NO_RV( CanIf_Global.initRun, CANIF_SETWAKEUPEVENT_ID, CANIF_E_UNINIT );
+
 	for(int i = 0; i < CANIF_CHANNEL_CNT; i++)
 	{
 	  if(CanIf_ConfigPtr->Arc_ChannelToControllerMap[i] == Controller)
@@ -954,7 +957,6 @@ void CanIf_SetWakeupEvent(uint8 Controller)
 	}
 
 	VALIDATE_NO_RV(FALSE, CANIF_SETWAKEUPEVENT_ID, CANIF_E_NOK_NOSUPPORT);
-	VALIDATE_NO_RV( CanIf_Global.initRun, CANIF_SETWAKEUPEVENT_ID, CANIF_E_UNINIT );
 	VALIDATE_NO_RV( channel < CANIF_CHANNEL_CNT, CANIF_SETWAKEUPEVENT_ID, CANIF_E_PARAM_CONTROLLER );
 
 	// Not supported
@@ -964,6 +966,8 @@ void CanIf_Arc_Error(uint8 Controller, Can_Arc_ErrorType Error)
 {
   CanIf_Arc_ChannelIdType channel = 0xff;
 
+  VALIDATE_NO_RV( CanIf_Global.initRun, CANIF_ARCERROR_ID, CANIF_E_UNINIT );
+
   for(int i = 0; i < CANIF_CHANNEL_CNT; i++)
   {
 	  if(CanIf_ConfigPtr->Arc_ChannelToControllerMap[i] == Controller)
@@ -972,7 +976,6 @@ void CanIf_Arc_Error(uint8 Controller, Can_Arc_ErrorType Error)
 	  }
   }
 
-  VALIDATE_NO_RV( CanIf_Global.initRun, CANIF_ARCERROR_ID, CANIF_E_UNINIT );
   VALIDATE_NO_RV( channel < CANIF_CHANNEL_CNT, CANIF_ARCERROR_ID, CANIF_E_PARAM_CONTROLLER );
 
   /* Same handling for Arc error as for BUS_OFF even if not in AR req.
