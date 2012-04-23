@@ -37,7 +37,7 @@ obj-$(USE_ECUM) += EcuM.o
 obj-$(USE_ECUM) += EcuM_Main.o
 obj-$(USE_ECUM) += EcuM_PBcfg.o
 obj-$(USE_ECUM) += EcuM_Callout_Stubs.o
-obj-$(USE_ECUM)-$(CFG_ECUM_USE_RTE) += EcuM_ServicePort.o
+obj-$(USE_ECUM)-$(CFG_ECUM_USE_SERVICE_COMPONENT) += EcuM_ServiceComponent.o
 inc-$(USE_ECUM) += $(ROOTDIR)/system/EcuM
 vpath-$(USE_ECUM) += $(ROOTDIR)/system/EcuM
 
@@ -128,6 +128,7 @@ obj-$(USE_SPI) += Spi_Lcfg.o
 # NvM
 obj-$(USE_NVM) += NvM.o
 obj-$(USE_NVM) += NvM_Cfg.o
+obj-$(USE_NVM)-$(CFG_NVM_USE_SERVICE_COMPONENT) += NvmM_ServiceComponent.o
 inc-$(USE_NVM) += $(ROOTDIR)/memory/NvM
 vpath-$(USE_NVM) += $(ROOTDIR)/memory/NvM
 
@@ -153,6 +154,7 @@ obj-$(USE_WDG) += Wdg_Lcfg.o
 #WdgIf
 obj-$(USE_WDGIF) += WdgIf.o
 obj-$(USE_WDGIF) += WdgIf_Cfg.o
+obj-$(USE_WDGM)-$(CFG_WDGM_USE_SERVICE_COMPONENT) += WdgM_ServiceComponent.o
 inc-y += $(ROOTDIR)/system/WdgIf
 vpath-y += $(ROOTDIR)/system/WdgIf
 
