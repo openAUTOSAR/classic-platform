@@ -978,12 +978,6 @@ void CanIf_Arc_Error(uint8 Controller, Can_Arc_ErrorType Error)
 
   VALIDATE_NO_RV( channel < CANIF_CHANNEL_CNT, CANIF_ARCERROR_ID, CANIF_E_PARAM_CONTROLLER );
 
-  /* Same handling for Arc error as for BUS_OFF even if not in AR req.
-   * This because we do want same handling for upper layer for restart of channel
-   * According to figure 35 in canif spec this should be done in
-   * Can driver but it is better to do it here */
-  CanIf_SetControllerMode(channel, CANIF_CS_STOPPED);
-
   if (CanIf_ConfigPtr->DispatchConfig->CanIfErrorNotificaton != NULL)
   {
     CanIf_ConfigPtr->DispatchConfig->CanIfErrorNotificaton(Controller, Error);

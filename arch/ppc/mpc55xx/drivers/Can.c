@@ -394,13 +394,7 @@ static void Can_Err(int unit)
         GET_CALLBACKS()->Arc_Error(unit, err);
     }
 
-    /* TODO: To avoid flooding the CPU with errors some intelligent
-     * decisions have to be made here. CanSM should handle this.
-     * (not implemented)
-     *
-     * So, turn the interrupts OFF.
-     */
-    canHw->CR.B.ERRMSK = 0;
+    Can_SetControllerMode(unit, CAN_T_STOP); // CANIF272 Same handling as for busoff
 
     // Clear ERRINT
     canHw->ESR.R = esrWrite.R;
@@ -414,39 +408,35 @@ static void Can_Err(int unit)
 // Uses 25.4.5.1 Transmission Abort Mechanism
 static void Can_AbortTx(flexcan_t *canHw, Can_UnitType *canUnit)
 {
-    uint32 mbMask;
+ uint64_t mbMask;
     uint8 mbNr;
-
     // Find our Tx boxes.
     mbMask = canUnit->Can_Arc_TxMbMask;
-
     // Loop over the Mb's set to abort
-    for (; mbMask; mbMask &= ~(1 << mbNr)) {
-        mbNr = ilog2(mbMask);
-
+    for (; mbMask; mbMask &= ~(1ull << mbNr)) {
+        mbNr = ilog2_64(mbMask);
         canHw->BUF[mbNr].CS.B.CODE = MB_ABORT;
-
         // Did it take
         if (canHw->BUF[mbNr].CS.B.CODE != MB_ABORT) {
             // nope..
-
             /* it's not sent... or being sent.
              * Just wait for it
-             *
-             * TODO: Add 64 box support
              */
             int i = 0;
-            while (canHw->IFRL.R == (1 << mbNr)) {
+            while (*(uint64_t *) (&canHw->IFRH.R) & (1ull << mbNr)) {
                 i++;
-                if (i > 1000)
+                if (i > 1000) {
                     break;
+                }
             }
         }
-    }
 
-    // Ack tx interrupts, TODO: Add 64bit support
-    canHw->IFRL.R = canUnit->Can_Arc_TxMbMask;
+        // Clear interrupt
+        clearMbFlag(canHw,mbNr);
+        canUnit->mbTxFree |= (1ull << mbNr);
+    }
 }
+
 
 
 /**
@@ -474,12 +464,6 @@ static void Can_BusOff(int unit)
         canHw->ESR.B.RWRNINT = 1;
     }
 #endif
-
-    if (err.R != 0) {
-        if (GET_CALLBACKS()->Arc_Error != NULL) {
-            GET_CALLBACKS()->Arc_Error(unit, err);
-        }
-    }
 
     if (canHw->ESR.B.BOFFINT) {
 #if (USE_CAN_STATISTICS == STD_ON)
@@ -1179,8 +1163,11 @@ void Can_EnableControllerInterrupts(uint8 controller)
 
         canHw->CR.B.ERRMSK = 1; /* Enable error interrupt */
         canHw->CR.B.BOFFMSK = 1; /* Enable bus-off interrupt */
+
+#if (USE_CAN_STATISTICS == STD_ON)
         canHw->CR.B.TWRNMSK = 1; /* Enable Tx warning */
         canHw->CR.B.RWRNMSK = 1; /* Enable Rx warning */
+#endif
     }
 
     return;
