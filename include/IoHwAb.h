@@ -25,7 +25,7 @@
 #define IOHWAB_MODULE_ID		0xAB
 #define IOHWAB_VENDOR_ID		1
 
-#if defined(CFG_IOHWAB_USE_RTE)
+#if defined(CFG_IOHWAB_USE_SERVICE_COMPONENT)
 #include "Rte_Type.h"
 #endif
 

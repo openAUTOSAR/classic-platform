@@ -28,7 +28,7 @@ typedef sint32 IoHwAb_AnalogValueType;
 
 //typedef sint32 IoHwAb_ChannelType;
 
-#if !defined(CFG_IOHWAB_USE_RTE)
+#if !defined(CFG_IOHWAB_USE_SERVICE_COMPONENT)
 typedef sint32 IoHwAb_SignalType;
 #endif
 

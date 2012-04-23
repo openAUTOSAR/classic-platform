@@ -249,7 +249,7 @@ vpath-$(USE_PDUR) += $(ROOTDIR)/communication/PduR
 obj-$(USE_IOHWAB) += IoHwAb_Digital.o
 obj-$(USE_IOHWAB) += IoHwAb_Analog.o
 obj-$(USE_IOHWAB) += IoHwAb_Pwm.o
-obj-$(USE_IOHWAB)-$(CFG_IOHWAB_USE_RTE) += IoHwAb_If.o
+obj-$(USE_IOHWAB)-$(CFG_IOHWAB_USE_SERVICE_COMPONENT) += IoHwAb_ServiceComponent.o
 obj-$(USE_IOHWAB) += IoHwAb_Impl.o
 
 #Dem
