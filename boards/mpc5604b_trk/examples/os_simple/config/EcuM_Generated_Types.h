@@ -21,7 +21,7 @@
 #ifndef _ECUM_GENERATED_TYPES_H_
 #define _ECUM_GENERATED_TYPES_H_
 
-#if (ECUM_USE_SERVICE_PORTS == STD_ON) && defined(USE_RTE)
+#ifdef CFG_ECUM_USE_SERVICE_COMPONENT
 #include "Rte_EcuM.h"
 #endif
 
