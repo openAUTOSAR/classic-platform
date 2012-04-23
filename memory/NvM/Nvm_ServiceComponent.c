@@ -116,4 +116,4 @@ Std_ReturnType NvMAdministration_SetBlockProtection(Nvm_BlockIdType BlockId, Boo
 
 #endif
 
-#endif /* NVM_USE_SERVICE_PORT == STD_ON */
+#endif /* CFG_NVM_USE_SERVICE_COMPONENT */

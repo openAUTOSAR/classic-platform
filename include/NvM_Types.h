@@ -27,7 +27,7 @@
 #define NVM_TYPES_H_
 
 #include "Std_Types.h"
-#if (NVM_USE_SERVICE_PORTS==STD_ON)
+#if defined(CFG_NVM_USE_SERVICE_COMPONENT)
 #include "Rte_NvM.h"
 #endif
 
