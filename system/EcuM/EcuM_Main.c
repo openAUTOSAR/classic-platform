@@ -33,7 +33,7 @@ static uint32 internal_data_go_off_one_state_timeout = 0;
 static NvM_RequestResultType writeAllResult;
 #endif
 
-#if (ECUM_USE_SERVICE_PORTS == STD_ON)
+#ifdef CFG_ECUM_USE_SERVICE_COMPONENT
 /** @req EcuM2749 */
 static Rte_ModeType_EcuM_Mode currentMode;
 

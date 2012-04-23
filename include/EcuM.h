@@ -43,7 +43,7 @@
  *       `---------- EcuM_xxx.c ---> Memmap.h
  *                               \-> Det.h, Dem.h
  *
- * *) Only if (ECUM_USE_SERVICE_PORTS == STD_ON)
+ * *) Only ifdef CFG_ECUM_USE_SERVICE_COMPONENT
  *
  * Problems:
  * - Can_Cfg.h can include just "EcuM_Cbk.h"...
@@ -94,10 +94,6 @@
 #if defined(USE_COM)
 #include "ComStack_Types.h"
 #endif
-
-//#if (ECUM_USE_SERVICE_PORTS == STD_ON) && defined(USE_RTE)
-//#include "Rte_Type.h"
-//#endif
 
 
 

@@ -73,7 +73,7 @@ extern EcuM_GlobalType internal_data;
 
 void EcuM_enter_run_mode(void);
 
-#if (ECUM_USE_SERVICE_PORTS == STD_ON)
+#ifdef CFG_ECUM_USE_SERVICE_COMPONENT
 void set_current_state(EcuM_StateType state);
 #else
 #define set_current_state(state) internal_data.current_state = (state)
