@@ -314,7 +314,7 @@
 #define DET_REPORTERROR(_module,_instance,_api,_err)
 #endif
 
-#define BLOCK_BASE_AND_SET_TO_BLOCKNR(_blockbase, _set)	((uint16)(_blockbase << NVM_DATASET_SELECTION_BITS) | _set)
+#define BLOCK_BASE_AND_SET_TO_BLOCKNR(_blockbase, _set)	((uint16)(_blockbase) | _set)
 
 #if defined(USE_DEM)
 #define DEM_REPORTERRORSTATUS(_err,_ev ) Dem_ReportErrorStatus(_err, DEM_EVENT_STATUS_FAILED);
@@ -343,6 +343,7 @@ typedef enum {
   NVM_RESTORE_BLOCK_DEFAULTS,
   NVM_SETDATAINDEX,
   NVM_GETDATAINDEX,
+  NVM_SETRAMBLOCKSTATUS,
 } NvmStateType;
 
 char *StateToStr[20] = {
@@ -355,7 +356,7 @@ char *StateToStr[20] = {
 	CREATE_ENTRY(NVM_RESTORE_BLOCK_DEFAULTS),
 	CREATE_ENTRY(NVM_SETDATAINDEX),
 	CREATE_ENTRY(NVM_GETDATAINDEX),
-
+	CREATE_ENTRY(NVM_SETRAMBLOCKSTATUS),
  };
 
 
@@ -429,6 +430,7 @@ typedef struct {
 	NvM_BlockIdType blockId;
 	uint8 *			dataPtr;	/* Src or Dest ptr */
 	uint8 		dataIndex;
+	boolean		blockChanged;
 } Nvm_QueueType;
 
 
@@ -467,6 +469,11 @@ static void WriteBlock(	const NvM_BlockDescriptorType *blockDescriptor,
 						AdministrativeBlockType *adminBlock,
 						uint8 setNumber,
 						uint8 *sourceAddress);
+
+static void setRamBlockStatus( const NvM_BlockDescriptorType	*bPtr,
+								AdministrativeBlockType *admPtr,
+								boolean blockChanged );
+
 
 /* ----------------------------[public functions]----------------------------*/
 
@@ -1121,11 +1128,12 @@ static void WriteBlock(	const NvM_BlockDescriptorType *blockDescriptor,
 /*
  * Initiate the write all job
  */
-static void WriteAllInit(void)
+static boolean WriteAllInit(void)
 {
 	const NvM_BlockDescriptorType	*BlockDescriptorList = NvM_Config.BlockDescriptor;
 	AdministrativeBlockType *AdminBlockTable = AdminBlock;
 	uint16 i;
+	boolean needsProcessing = FALSE;
 
 //	nvmState = NVM_WRITE_ALL_PROCESSING;
 	AdminMultiReq.PendingErrorStatus = NVM_REQ_OK;
@@ -1147,6 +1155,7 @@ static void WriteAllInit(void)
 				AdminBlockTable->BlockState = BLOCK_STATE_MEMIF_REQ;
 				AdminBlockTable->NumberOfWriteFailed = 0;
 			}
+			needsProcessing = TRUE;
 		} else {
 			AdminBlockTable->ErrorStatus = NVM_REQ_BLOCK_SKIPPED;	/** @req NVM298 */
 		}
@@ -1154,6 +1163,7 @@ static void WriteAllInit(void)
 		AdminBlockTable++;
 		BlockDescriptorList++;
 	}
+	return needsProcessing;
 }
 
 
@@ -1239,7 +1249,7 @@ void NvM_Init(void)
 	uint16 i;
 
 
-	CirqBuff_Init(&nvmQueue,nvmQueueData,sizeof(nvmQueueData),sizeof(Nvm_QueueType));
+	CirqBuff_Init(&nvmQueue,nvmQueueData,sizeof(nvmQueueData)/sizeof(Nvm_QueueType),sizeof(Nvm_QueueType));
 
 	// Initiate the administration blocks
 	for (i = 0; i< NVM_NUM_OF_NVRAM_BLOCKS; i++) {
@@ -1333,27 +1343,45 @@ void NvM_GetErrorStatus(NvM_BlockIdType blockId, uint8 *requestResultPtr)
  */
 void NvM_SetRamBlockStatus(NvM_BlockIdType blockId, boolean blockChanged)
 {
-	const NvM_BlockDescriptorType	*BlockDescriptorList = NvM_Config.BlockDescriptor;
+	const NvM_BlockDescriptorType *	bPtr;
+	AdministrativeBlockType * 		admPtr;
+	Nvm_QueueType qEntry;
+	int rv;
+
+	VALIDATE_NO_RV(blockId < NVM_NUM_OF_NVRAM_BLOCKS+1, NVM_SET_RAM_BLOCK_STATUS_ID, NVM_E_PARAM_BLOCK_ID);
+
+	bPtr = &NvM_Config.BlockDescriptor[blockId-1];
+	admPtr = &AdminBlock[blockId-1];
 
 	VALIDATE_NO_RV(nvmState != NVM_UNINITIALIZED, NVM_SET_RAM_BLOCK_STATUS_ID, NVM_E_NOT_INITIALIZED);	/** @req NVM497 */
-	VALIDATE_NO_RV(blockId < NVM_NUM_OF_NVRAM_BLOCKS+1, NVM_SET_RAM_BLOCK_STATUS_ID, NVM_E_PARAM_BLOCK_ID);
 	VALIDATE_NO_RV(blockId > 1, NVM_SET_RAM_BLOCK_STATUS_ID, NVM_E_PARAM_BLOCK_ID);
 
-	if (BlockDescriptorList[blockId-1].RamBlockDataAddress != NULL) {	/** @req NVM240 */
-		if (blockChanged) {
-			AdminBlock[blockId-1].BlockChanged = TRUE;	/** @req NVM406 */
-			AdminBlock[blockId-1].BlockValid = TRUE;	/** @req NVM241 */
-			if (BlockDescriptorList[blockId-1].BlockUseCrc) {
-				AdminBlock[blockId-1].BlockState = BLOCK_STATE_CALC_CRC;	/** @req NVM121 */
-			}
-		} else {
-			AdminBlock[blockId-1].BlockChanged = FALSE;	/** @req NVM405 */
-			AdminBlock[blockId-1].BlockValid = FALSE;
-		} // else blockChanged
-	} // if permanent block
+	qEntry.blockId = blockId;
+	qEntry.op = NVM_SETRAMBLOCKSTATUS;
+	qEntry.blockChanged = blockChanged;
+	rv = CirqBuffPush(&nvmQueue,&qEntry);
+	NVM_ASSERT(rv == 0 );
+
+	/* req 3.1.5/NVM185 */
+	admPtr->ErrorStatus = NVM_REQ_PENDING;
 }
 #endif
 
+static void setRamBlockStatus( const NvM_BlockDescriptorType	*bPtr, AdministrativeBlockType *admPtr, boolean blockChanged ) {
+
+	if (bPtr->RamBlockDataAddress != NULL) {	/** @req NVM240 */
+		if (blockChanged) {
+			admPtr->BlockChanged = TRUE;	/** @req NVM406 */
+			admPtr->BlockValid = TRUE;	/** @req NVM241 */
+//	TODO?	if (bPtr->BlockUseCrc) {
+//				admPtr->BlockState = BLOCK_STATE_CALC_CRC;	/** @req NVM121 */
+//			}
+		} else {
+			admPtr->BlockChanged = FALSE;	/** @req NVM405 */
+			admPtr->BlockValid = FALSE;
+		} // else blockChanged
+	} // if permanent block
+}
 
 void NvM_SetBlockLockStatus( NvM_BlockIdType blockId, boolean blockLocked ) {
 	(void)blockId;
@@ -1591,7 +1619,7 @@ void NvM_SetDataIndex( NvM_BlockIdType blockId, uint8 dataIndex ) {
 	VALIDATE_NO_RV(nvmState != NVM_UNINITIALIZED, NVM_SET_DATA_INDEX_ID, NVM_E_NOT_INITIALIZED);
 	VALIDATE_NO_RV(blockId < NVM_NUM_OF_NVRAM_BLOCKS+1, NVM_SET_DATA_INDEX_ID, NVM_E_PARAM_BLOCK_ID);
 	VALIDATE_NO_RV(bPtr->BlockManagementType != NVM_BLOCK_NATIVE ,  NVM_SET_DATA_INDEX_ID, NVM_E_PARAM_BLOCK_TYPE );
-	VALIDATE_NO_RV(dataIndex <= bPtr->NvBlockNum + bPtr->RomBlockNum , NVM_SET_DATA_INDEX_ID, NVM_E_PARAM_BLOCK_DATA_IDX );
+	VALIDATE_NO_RV(dataIndex < bPtr->NvBlockNum + bPtr->RomBlockNum , NVM_SET_DATA_INDEX_ID, NVM_E_PARAM_BLOCK_DATA_IDX );
 	VALIDATE_NO_RV( (admPtr->ErrorStatus != NVM_REQ_PENDING), NVM_SET_DATA_INDEX_ID, NVM_E_BLOCK_PENDING );
 
 	qEntry.blockId = blockId;
@@ -1631,7 +1659,7 @@ void NvM_MainFunction(void)
 			admBlock = &AdminBlock[qEntry.blockId-1];
 			nvmSubState = 0;
 			admBlock->ErrorStatus = NVM_REQ_PENDING;
-			DEBUG_PRINTF("### Popped Single FIFO \n");
+			DEBUG_PRINTF("### Popped Single FIFO : %s\n",StateToStr[qEntry.op]);
 			DEBUG_PRINTF("### CRC On:%d Ram:%d Type:%d\n",nvmBlock->BlockUseCrc, nvmBlock->CalcRamBlockCrc, nvmBlock->BlockCRCType );
 			DEBUG_PRINTF("### RAM:%x ROM:%x\n", nvmBlock->RamBlockDataAddress, nvmBlock->RomBlockDataAdress );
 		} else {
@@ -1663,6 +1691,11 @@ void NvM_MainFunction(void)
 		if( NS_INIT == nvmSubState ) {
 			if( ReadAllInit() ) {
 				nvmSubState = NS_PROSSING;
+			} else {
+				/* Nothing to do, everything is OK */
+				AdminMultiBlock.ErrorStatus = NVM_REQ_OK;
+				nvmState = NVM_IDLE;
+				nvmSubState = 0;
 			}
 		} else if( NS_PROSSING == nvmSubState ) {
 			ReadAllMain();
@@ -1683,18 +1716,35 @@ void NvM_MainFunction(void)
 
 	case NVM_WRITE_ALL:
 		if( NS_INIT == nvmSubState ) {
-			WriteAllInit();
-			nvmSubState = NS_PROSSING;
+			if( WriteAllInit() ) {
+				nvmSubState = NS_PROSSING;
+			} else {
+				/* Nothing to do, everything is OK */
+				AdminMultiBlock.ErrorStatus = NVM_REQ_OK;
+				nvmState = NVM_IDLE;
+				nvmSubState = 0;
+			}
 		} else if( NS_PROSSING == nvmSubState ) {
 			WriteAllMain();
 		}
 		break;
 	case NVM_SETDATAINDEX:
-		NVM_ASSERT(0);
 		admBlock->DataIndex = qEntry.dataIndex;
+		nvmState = NVM_IDLE;
+		nvmSubState = 0;
+		admBlock->ErrorStatus = NVM_REQ_OK;
 		break;
 	case NVM_GETDATAINDEX:
 		NVM_ASSERT(0);
+		nvmState = NVM_IDLE;
+		nvmSubState = 0;
+		admBlock->ErrorStatus = NVM_REQ_OK;
+		break;
+	case NVM_SETRAMBLOCKSTATUS:
+		setRamBlockStatus(nvmBlock,admBlock,qEntry.blockChanged );
+		nvmState = NVM_IDLE;
+		nvmSubState = 0;
+		admBlock->ErrorStatus = NVM_REQ_OK;
 		break;
 	default:
 		DET_REPORTERROR(MODULE_ID_NVM, 0, NVM_MAIN_FUNCTION_ID, NVM_UNEXPECTED_STATE);
