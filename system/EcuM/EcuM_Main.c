@@ -38,6 +38,9 @@ static NvM_RequestResultType writeAllResult;
 static Rte_ModeType_EcuM_Mode currentMode;
 
 void set_current_state(EcuM_StateType state) {
+	/* Update the state */
+	internal_data.current_state = state;
+
 	Rte_ModeType_EcuM_Mode newMode = currentMode;
 	switch( state ) {
 	case ECUM_STATE_WAKEUP:
