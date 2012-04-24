@@ -13,6 +13,63 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+
+/*
+ * Author: Peter+mahi
+ *
+ * Part of Release:
+ *   3.1.5
+ *
+ * Description:
+ *   Implements the NVRAM Manager module.
+ *
+ * Support:
+ *   General                  Have Support
+ *   -------------------------------------------
+ *   NVM_API_CONFIG_CLASS           Y NVM_API_CONFIG_CLASS_1 and NVM_API_CONFIG_CLASS_2
+ *   NVM_COMPILED_CONFIG_ID			N
+ *   NVM_CRC_NUM_OF_BYTES   		N
+ *   NVM_DATASET_SELECTION_BITS     Y
+ *   NVM_DEV_ERROR_DETECT           Y
+ *   NVM_DRV_MODE_SWITCH            N
+ *   NVM_DYNAMIC_CONFIGURATION      N
+ *   NVM_JOB_PRIORITIZATION         N
+ *   NVM_MULTI_BLOCK_CALLBACK       Y
+ *   NVM_POLLING_MODE               N
+ *   NVM_SET_RAM_BLOCK_STATUS_API   Y
+ *   NVM_SIZE_IMMEDIATE_JOB_QUEUE   N
+ *   NVM_SIZE_STANDARD_JOB_QUEUE    Y
+ *   NVM_VERSION_INFO_API           Y
+ *
+ *   NvmBlockDescriptor        Have Support
+ *   -------------------------------------------
+ *   NvmBlockCRCType            	Y
+ *   NvmBlockJobPriority			N
+ *   NvmBlockManagementType 		Y, All blocks supported
+ *   NvmBlockUseCrc 				Y
+ *   NvmBlockWriteProt				N
+ *   NvmCalcRamBlockCrc				Y
+ *   NvmInitBlockCallback 			Y
+ *   NvmNvBlockBaseNumber			Y
+ *   NvmNvBlockLength				Y
+ *   NvmNvBlockNum 					Y
+ *   NvmNvramBlockIdentifier		Y
+ *   NvmNvramDeviceId 				N (always device Id 0)
+ *   NvmResistantToChangedSw		N
+ *   NvmRomBlockDataAddress			Y
+ *   NvmRomBlockNum					Y
+ *   NvmSelectBlockForReadall 		Y
+ *   NvmSingleBlockCallback 		Y
+ *   NvmWriteBlockOnce 				N
+ *
+ *  Implementation notes:
+ *   - The Configuration ID NV Block is generated to the configuration but can't be configured.
+ *     The Editor should really force you to pick a block in Ea/Fee that should hold the configuration
+ *     ID. The NVM_COMPILED_CONFIG_ID is always generated as 0 now.
+ *   - You can ONLY configure one block type for the entire NvM since NvmNvramDeviceId is not supported.
+ *     ie "Target Block" must all be eihter FEE or EA blocks.
+ */
+
 /*
  * RamBlockDataAddress
  *   NULL is no permanent RAM block. Otherwise allocate the number of bytes in space (like the stack)
@@ -40,8 +97,11 @@
  *      3                   2				8, R9,(10,11)  ****)
  *      4                   3				12, D13,D14,D15 ****)
  *
+ *  Should
+ *
+ *
  *  *) Type used in the API.
- *  **)   Reserved ID's
+ *  **)   Reserved ID's ( 0 - multiblock, 1 - redundant NVRAM block which hold configuration ID)
  *  ***)  Reserved ID
  *  ****) FEE/EA_BLOCK_NUMBER = NvBlockBaseNumber << NvmDatasetSelectionBits = NvBlockBaseNumber * 4
  *        () - Cannot be accesses due to NvBlockNum
@@ -173,7 +233,9 @@
 #include <assert.h>
 #include "NvM.h"
 #include "NvM_Cbk.h"
+#if defined(CFG_NVM_USE_SERVICE_PORTS)
 #include "Rte.h" // ???
+#endif
 #if defined(USE_DEM)
 #include "Dem.h"
 #endif
@@ -279,6 +341,8 @@ typedef enum {
   NVM_READ_BLOCK,
   NVM_WRITE_BLOCK,
   NVM_RESTORE_BLOCK_DEFAULTS,
+  NVM_SETDATAINDEX,
+  NVM_GETDATAINDEX,
 } NvmStateType;
 
 char *StateToStr[20] = {
@@ -288,6 +352,10 @@ char *StateToStr[20] = {
 	CREATE_ENTRY(NVM_WRITE_ALL),
 	CREATE_ENTRY(NVM_READ_BLOCK),
 	CREATE_ENTRY(NVM_WRITE_BLOCK),
+	CREATE_ENTRY(NVM_RESTORE_BLOCK_DEFAULTS),
+	CREATE_ENTRY(NVM_SETDATAINDEX),
+	CREATE_ENTRY(NVM_GETDATAINDEX),
+
  };
 
 
@@ -340,7 +408,7 @@ typedef struct {
 	union Nvm_CRC			NvCrc;					// The CRC of this block, read from NV
 	void *					savedDataPtr;			//
 	uint8 					crcLen;
-
+	uint8					flags;					// Used for all sorts of things.
 } AdministrativeBlockType;
 
 /*
@@ -360,6 +428,7 @@ typedef struct {
 	NvmStateType		op;
 	NvM_BlockIdType blockId;
 	uint8 *			dataPtr;	/* Src or Dest ptr */
+	uint8 		dataIndex;
 } Nvm_QueueType;
 
 
@@ -539,7 +608,7 @@ static Std_ReturnType ReadBlock(const NvM_BlockDescriptorType *blockDescriptor,
 /*
  * Initiate the read all job
  */
-static void ReadAllInit(void)
+static boolean ReadAllInit(void)
 {
 	/*
 	 * Initiate the read all job
@@ -547,6 +616,7 @@ static void ReadAllInit(void)
 	const NvM_BlockDescriptorType	*BlockDescriptorList = NvM_Config.BlockDescriptor;
 	AdministrativeBlockType *AdminBlockTable = AdminBlock;
 	uint16 i;
+	boolean needsProcessing = FALSE;
 
 	// Set status to pending in the administration blocks
 	AdminMultiBlock.ErrorStatus = NVM_REQ_PENDING; /** @req 3.1.5/NVM304 */
@@ -560,11 +630,15 @@ static void ReadAllInit(void)
 				|| (!AdminBlockTable->BlockChanged))		// TODO: Check if this is to be done like this
 #endif
 				) {
-			VALIDATE_NO_RV(BlockDescriptorList->RamBlockDataAddress != NULL, NVM_READ_ALL_ID, NVM_E_WRONG_CONFIG);
-			VALIDATE_NO_RV(BlockDescriptorList->BlockManagementType != NVM_BLOCK_DATASET, NVM_READ_ALL_ID, NVM_E_WRONG_CONFIG);
+			NVM_ASSERT(BlockDescriptorList->RamBlockDataAddress != NULL);
+			VALIDATE_RV(BlockDescriptorList->RamBlockDataAddress != NULL, NVM_READ_ALL_ID, NVM_E_WRONG_CONFIG, FALSE );
+			/* 3.1.5/NVM245 */
+			NVM_ASSERT(BlockDescriptorList->BlockManagementType != NVM_BLOCK_DATASET);
+			VALIDATE_RV(BlockDescriptorList->BlockManagementType != NVM_BLOCK_DATASET, NVM_READ_ALL_ID, NVM_E_WRONG_CONFIG, FALSE );
 
 			AdminBlockTable->ErrorStatus = NVM_REQ_PENDING;
 			AdminBlockTable->BlockState = BLOCK_STATE_MEMIF_REQ;
+			needsProcessing = TRUE;
 		} else {
 			AdminBlockTable->ErrorStatus = NVM_REQ_BLOCK_SKIPPED;	/* @req	3.1.5/NVM287 */
 		}
@@ -572,6 +646,8 @@ static void ReadAllInit(void)
 		AdminBlockTable++;
 		BlockDescriptorList++;
 	}
+
+	return needsProcessing;
 }
 
 
@@ -605,10 +681,9 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 {
 	bool blockDone = 0;
 
+	DEBUG_BLOCK_STATE("DriveBlock", BLOCK_NR_FROM_PTR(bPtr), admPtr->BlockState );
 
 	NVM_ASSERT( admPtr->ErrorStatus == NVM_REQ_PENDING);
-
-	DEBUG_BLOCK_STATE("DriveBlock", BLOCK_NR_FROM_PTR(bPtr), admPtr->BlockState );
 
 	switch (admPtr->BlockState) {
 	case BLOCK_STATE_MEMIF_REQ:
@@ -643,7 +718,7 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 				break;		/* Do NOT advance to next state */
 			} else {
 
-				if( ReadBlock(bPtr, admPtr, 0, 0, Nvm_WorkBuffer, bPtr->NvBlockLength+crcLen) != E_OK ) {
+				if( ReadBlock(bPtr, admPtr, admPtr->DataIndex, 0, Nvm_WorkBuffer, bPtr->NvBlockLength+crcLen) != E_OK ) {
 					/* Fail the job */
 					admPtr->ErrorStatus = NVM_REQ_NOT_OK;
 					blockDone = 1;
@@ -860,6 +935,30 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 				 * 3. None of the above. Catastrophic failure. (NVM203)
 				 */
 
+				if( (admPtr->flags != 2) && bPtr->BlockManagementType == NVM_BLOCK_REDUNDANT ) {
+					/* According to 3.1.5/NVM137 we have 2 NV Blocks and 0..1 ROM Blocks */
+					/* Req 3.1.5/NVM199 , 3.1.5/NVM279 , 3.1.5/NVM317
+					 * 3.1.5/NVM288, 3.1.5/NVM315
+					 * */
+					NVM_ASSERT(bPtr->NvBlockNum == 2);		/* Configuration error */
+					if( admPtr->DataIndex == 0) {
+						admPtr->DataIndex = 1;
+					} else {
+						admPtr->DataIndex = 0;
+					}
+					admPtr->flags++;
+					if( admPtr->flags == 2 ) {
+						/* We have failed both NV Blocks */
+						DEBUG_PRINTF(" # Both redundant NV blocks failed\n");
+						admPtr->flags = 0;
+					} else {
+						/* Start over again with the other NV block */
+						DEBUG_PRINTF(" # First redundant NV block failed\n");
+						admPtr->BlockState = BLOCK_STATE_MEMIF_REQ;
+						break;	/* Break from BLOCK_SUBSTATE_0 */
+					}
+				}
+
 				if( bPtr->RomBlockDataAdress != NULL ) {
 					DEBUG_PRINTF("Copying ROM data to block\n");
 					memcpy(bPtr->RamBlockDataAddress, bPtr->RomBlockDataAdress,bPtr->NvBlockLength);
@@ -883,6 +982,9 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 						 * */
 
 					} else {
+
+						DEBUG_PRINTF("### Block FAILED with NVM_REQ_INTEGRITY_FAILED\n");
+
 
 						/* @req 3.1.5/NVM203 */
 						DEM_REPORTERRORSTATUS(NVM_E_INTEGRITY_FAILED,DEM_EVENT_STATUS_FAILED);
@@ -1459,13 +1561,50 @@ Std_ReturnType NvM_WriteBlock( NvM_BlockIdType blockId, const uint8* NvM_SrcPtr 
 
 /* Missing from Class 2
  * - NvM_CancelWriteAll
- * - NvM_SetDataIndex
- * - NvM_GetDataIndex
  * */
 
+//#if (NVM_API_CONFIG_CLASS > NVM_API_CONFIG_CLASS_1)
 
+/*
+ * Note!
+ * This function returns void in 3.1.5 and in 4.0 it returns Std_ReturnType.
+ *
+ *
+ * return
+ *   x NVM_E_NOT_INITIALIZED
+ *   x NVM_E_BLOCK_PENDING
+ *   NVM_E_PARAM_BLOCK_DATA_IDX
+ *   NVM_E_PARAM_BLOCK_TYPE
+ *   x NVM_E_PARAM_BLOCK_ID
+ *
+ */
+void NvM_SetDataIndex( NvM_BlockIdType blockId, uint8 dataIndex ) {
+#if  ( NVM_DEV_ERROR_DETECT == STD_ON )
+	const NvM_BlockDescriptorType *	bPtr = &NvM_Config.BlockDescriptor[blockId-1];
+	AdministrativeBlockType * 		admPtr = &AdminBlock[blockId-1];
+#endif
+	Nvm_QueueType qEntry;
+	int rv;
 
+	NVM_ASSERT( blockId >= 2 );	/* No support for lower numbers, yet */
 
+	VALIDATE_NO_RV(nvmState != NVM_UNINITIALIZED, NVM_SET_DATA_INDEX_ID, NVM_E_NOT_INITIALIZED);
+	VALIDATE_NO_RV(blockId < NVM_NUM_OF_NVRAM_BLOCKS+1, NVM_SET_DATA_INDEX_ID, NVM_E_PARAM_BLOCK_ID);
+	VALIDATE_NO_RV(bPtr->BlockManagementType != NVM_BLOCK_NATIVE ,  NVM_SET_DATA_INDEX_ID, NVM_E_PARAM_BLOCK_TYPE );
+	VALIDATE_NO_RV(dataIndex <= bPtr->NvBlockNum + bPtr->RomBlockNum , NVM_SET_DATA_INDEX_ID, NVM_E_PARAM_BLOCK_DATA_IDX );
+	VALIDATE_NO_RV( (admPtr->ErrorStatus != NVM_REQ_PENDING), NVM_SET_DATA_INDEX_ID, NVM_E_BLOCK_PENDING );
+
+	qEntry.blockId = blockId;
+	qEntry.op = NVM_SETDATAINDEX;
+	qEntry.blockId = blockId;
+	qEntry.dataIndex = dataIndex;
+	rv = CirqBuffPush(&nvmQueue,&qEntry);
+	NVM_ASSERT(rv == 0 );
+
+	/* req 3.1.5/NVM185 */
+	admPtr->ErrorStatus = NVM_REQ_PENDING;
+}
+//#endif
 
 const NvM_BlockDescriptorType *	nvmBlock;
 AdministrativeBlockType *admBlock;
@@ -1522,8 +1661,9 @@ void NvM_MainFunction(void)
 	}
 	case NVM_READ_ALL:
 		if( NS_INIT == nvmSubState ) {
-			ReadAllInit();
-			nvmSubState = NS_PROSSING;
+			if( ReadAllInit() ) {
+				nvmSubState = NS_PROSSING;
+			}
 		} else if( NS_PROSSING == nvmSubState ) {
 			ReadAllMain();
 		}
@@ -1549,7 +1689,13 @@ void NvM_MainFunction(void)
 			WriteAllMain();
 		}
 		break;
-
+	case NVM_SETDATAINDEX:
+		NVM_ASSERT(0);
+		admBlock->DataIndex = qEntry.dataIndex;
+		break;
+	case NVM_GETDATAINDEX:
+		NVM_ASSERT(0);
+		break;
 	default:
 		DET_REPORTERROR(MODULE_ID_NVM, 0, NVM_MAIN_FUNCTION_ID, NVM_UNEXPECTED_STATE);
 		break;

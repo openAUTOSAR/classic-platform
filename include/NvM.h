@@ -64,6 +64,7 @@
 #define NVM_E_UNEXPECTED_EXECUTION			0xfe
 #define NVM_E_NOT_IMPLEMENTED_YET			0xff
 
+#endif
 // Service ID in this module
 #define NVM_INIT_ID								0x00
 #define NVM_SET_DATA_INDEX_ID					0x01
@@ -85,8 +86,6 @@
 #define NVM_LOC_READ_BLOCK_ID					0x40
 #define NVM_LOC_WRITE_BLOCK_ID					0x41
 #define NVM_GLOBAL_ID							0xff
-
-#endif
 
 
 
@@ -112,7 +111,7 @@ void NvM_SetDataIndex( NvM_BlockIdType blockId, uint8 dataIndex );	/** @req NVM4
 void NvM_GetDataIndex( NvM_BlockIdType blockId, uint8 *dataIndexPtr );	/** @req NVM449 */
 Std_ReturnType NvM_ReadBlock( NvM_BlockIdType blockId, uint8 *dstPtr );	/** @req NVM454 */
 Std_ReturnType NvM_WriteBlock( NvM_BlockIdType blockId, const uint8 *srcPtr );	/** @req NVM455 */
-void Nvm_RestoreBlockDefaults( NvM_BlockIdType blockId, uint8 *dstPtr );	/** @req NVM456 */
+Std_ReturnType NvM_RestoreBlockDefaults( NvM_BlockIdType blockId, uint8 *dstPtr );	/** @req NVM456 */
 #endif
 
 #if (NVM_API_CONFIG_CLASS > NVM_API_CONFIG_CLASS_2)
