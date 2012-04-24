@@ -95,6 +95,13 @@ typedef struct {
 } Can_Arc_StatisticsType;
 
 
+#if defined(CFG_CAN_TEST)
+typedef struct {
+	uint64_t mbMaskTx;
+	uint64_t mbMaskRx;
+} Can_TestType;
+#endif
+
 // uint16: if only Standard IDs are used
 // uint32: if also Extended IDs are used
 typedef uint32 Can_IdType;
@@ -319,5 +326,9 @@ void Can_MainFunction_BusOff( void );
 void Can_MainFunction_Wakeup( void );
 
 void Can_Arc_GetStatistics( uint8 controller, Can_Arc_StatisticsType * stat);
+#if defined(CFG_CAN_TEST)
+Can_TestType *Can_Arc_GetTestInfo( void  );
+#endif
+
 
 #endif /*CAN_H_*/

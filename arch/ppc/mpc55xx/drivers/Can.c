@@ -228,6 +228,10 @@
 
 typedef struct FLEXCAN_tag flexcan_t;
 
+#if defined(CFG_CAN_TEST)
+Can_TestType Can_Test;
+#endif
+
 typedef enum {
     CAN_UNINIT = 0, CAN_READY
 } Can_DriverStateType;
@@ -372,6 +376,11 @@ void Can_F_BusOff( void ) {Can_BusOff(CAN_CTRL_F);}
 #endif
 //-------------------------------------------------------------------
 
+#if defined(CFG_CAN_TEST)
+Can_TestType * Can_Arc_GetTestInfo( void ) {
+	return &Can_Test;
+}
+#endif
 
 /**
  * Hardware error ISR for CAN
@@ -497,6 +506,11 @@ static void Can_Isr_Tx(Can_UnitType *uPtr)
     /*
      * Tx
      */
+#if defined(CFG_CAN_TEST)
+    Can_Test.mbMaskTx |= mbMask;
+#endif
+
+
     for (; mbMask; mbMask &= ~(1ull << mbNr)) {
         mbNr = ilog2_64(mbMask);
 
@@ -524,6 +538,10 @@ static void Can_Isr_Rx(Can_UnitType *uPtr)
     canHw = uPtr->hwPtr;
 
     uint64_t iFlag = *(uint64_t*) (&canHw->IFRH.R);
+
+#if defined(CFG_CAN_TEST)
+    Can_Test.mbMaskRx |= iFlag & uPtr->Can_Arc_RxMbMask;
+#endif
 
     while (iFlag & uPtr->Can_Arc_RxMbMask) {
 
