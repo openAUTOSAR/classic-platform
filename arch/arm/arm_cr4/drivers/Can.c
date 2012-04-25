@@ -542,6 +542,13 @@ void Can_Init(const Can_ConfigType *Config)
 
 }
 
+// Unitialize the module
+void Can_DeInit()
+{
+
+  return;
+}
+
 
 
 void Can_InitController(uint8 Controller, const Can_ControllerConfigType* Config)

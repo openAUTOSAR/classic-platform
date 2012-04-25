@@ -74,6 +74,7 @@ inc-$(CFG_MPC55XX) +=  $(ROOTDIR)/$(ARCH_PATH-y)/delivery/mpc5500_h7f/include
 obj-$(USE_CAN) += Can.o
 obj-$(USE_CAN)-$(CFG_PPC) += Can_PBcfg.o
 obj-$(USE_CAN)-$(CFG_ARM_CM3) += Can_Lcfg.o
+obj-$(USE_CAN)-$(CFG_ARM_CR4) += Can_Lcfg.o
 obj-$(USE_CAN)-$(CFG_HC1X) += Can_Lcfg.o
 
 # CanIf
