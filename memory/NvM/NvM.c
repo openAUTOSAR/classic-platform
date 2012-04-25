@@ -453,7 +453,7 @@ static AdministrativeMultiBlockType AdminMultiBlock;
 //static Nvm_QueueType  nvmQueueImmData[NVM_SIZE_IMMEDIATE_JOB_QUEUE];
 static Nvm_QueueType  nvmQueueData[NVM_SIZE_STANDARD_JOB_QUEUE];
 
-uint8 Nvm_WorkBuffer[200];		/* TODO */
+uint8 Nvm_WorkBuffer[NVM_MAX_BLOCK_LENGTH+4]; /* +4 to make place for max crc length */
 
 #if (NVM_SIZE_STANDARD_JOB_QUEUE == 0)
 #error NVM_SIZE_STANDARD_JOB_QUEUE have size 0
