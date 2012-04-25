@@ -17,13 +17,13 @@
 
 #if defined(CFG_NVM_USE_SERVICE_COMPONENT)
 
-Std_ReturnType NvMService_GetErrorStatus(Nvm_BlockIdType BlockId, NvM_RequestResultType* RequestResultPtr) {
+Std_ReturnType NvMService_GetErrorStatus(NvM_BlockIdType BlockId, NvM_RequestResultType* RequestResultPtr) {
 	NvM_GetErrorStatus( BlockId, (uint8*)RequestResultPtr );
 	return E_OK;
 }
 
 #if (NVM_SET_RAM_BLOCK_STATUS_API == STD_ON )
-Std_ReturnType NvMService_SetRamBlockStatus(Nvm_BlockIdType BlockId, Boolean BlockChanged) {
+Std_ReturnType NvMService_SetRamBlockStatus(NvM_BlockIdType BlockId, Boolean BlockChanged) {
 	Nvm_SetRamBlockStatus( BlockId, (boolean)BlockChanged );
 	return E_OK;
 }
@@ -31,51 +31,51 @@ Std_ReturnType NvMService_SetRamBlockStatus(Nvm_BlockIdType BlockId, Boolean Blo
 
 #if (NVM_API_CONFIG_CLASS > NVM_API_CONFIG_CLASS_1)
 
-Std_ReturnType NvMService_SetDataIndex(Nvm_BlockIdType BlockId, UInt8 DataIndex) {
+Std_ReturnType NvMService_SetDataIndex(NvM_BlockIdType BlockId, UInt8 DataIndex) {
 	NvM_SetDataIndex( BlockId, (uint8)DataIndex );
 	return E_OK;
 }
 
-Std_ReturnType NvMService_GetDataIndex(Nvm_BlockIdType BlockId, UInt8* DataIndexPtr) {
+Std_ReturnType NvMService_GetDataIndex(NvM_BlockIdType BlockId, UInt8* DataIndexPtr) {
 	NvM_GetDataIndex( BlockId, (uint8*)DataIndexPtr );
 	return E_OK;
 }
 
-Std_ReturnType NvMService_ReadBlock(Nvm_BlockIdType BlockId, const DstPtrType DstPtr) {
+Std_ReturnType NvMService_ReadBlock(NvM_BlockIdType BlockId, const DstPtrType DstPtr) {
 	return NvMService_ReadBlock(BlockId, (uint8*)DstPtr), E_OK;
 }
 
-Std_ReturnType NvMService_WriteBlock(Nvm_BlockIdType BlockId, const DstPtrType SrcPtr) {
+Std_ReturnType NvMService_WriteBlock(NvM_BlockIdType BlockId, const DstPtrType SrcPtr) {
 	return NvM_WriteBlock( BlockId, (uint8*)(SrcPtr) ), E_OK;
 }
 
-Std_ReturnType NvMService_RestoreBlockDefaults(Nvm_BlockIdType BlockId, const DstPtrType DstPtr) {
+Std_ReturnType NvMService_RestoreBlockDefaults(NvM_BlockIdType BlockId, const DstPtrType DstPtr) {
 	return Nvm_RestoreBlockDefaults( BlockId, (uint8*)DstPtr ), E_OK;
 }
 
 #else
 
-Std_ReturnType NvMService_SetDataIndex(Nvm_BlockIdType BlockId, UInt8 DataIndex) {
+Std_ReturnType NvMService_SetDataIndex(NvM_BlockIdType BlockId, UInt8 DataIndex) {
 	/* Dummy */
 	return E_OK;
 }
 
-Std_ReturnType NvMService_GetDataIndex(Nvm_BlockIdType BlockId, UInt8* DataIndexPtr) {
+Std_ReturnType NvMService_GetDataIndex(NvM_BlockIdType BlockId, UInt8* DataIndexPtr) {
 	/* Dummy */
 	return E_OK;
 }
 
-Std_ReturnType NvMService_ReadBlock(Nvm_BlockIdType BlockId, const DstPtrType DstPtr) {
+Std_ReturnType NvMService_ReadBlock(NvM_BlockIdType BlockId, const DstPtrType DstPtr) {
 	/* Dummy */
 	return E_OK;
 }
 
-Std_ReturnType NvMService_WriteBlock(Nvm_BlockIdType BlockId, const DstPtrType SrcPtr) {
+Std_ReturnType NvMService_WriteBlock(NvM_BlockIdType BlockId, const DstPtrType SrcPtr) {
 	/* Dummy */
-	return E_OK;
+	NvM_WriteBlock(BlockId, (const uint8*) SrcPtr);
 }
 
-Std_ReturnType NvMService_RestoreBlockDefaults(Nvm_BlockIdType BlockId, const DstPtrType DstPtr) {
+Std_ReturnType NvMService_RestoreBlockDefaults(NvM_BlockIdType BlockId, const DstPtrType DstPtr) {
 	/* Dummy */
 	return E_OK;
 }
@@ -84,32 +84,32 @@ Std_ReturnType NvMService_RestoreBlockDefaults(Nvm_BlockIdType BlockId, const Ds
 
 #if (NVM_API_CONFIG_CLASS > NVM_API_CONFIG_CLASS_2)
 
-Std_ReturnType NvMService_EraseBlock(Nvm_BlockIdType BlockId) {
+Std_ReturnType NvMService_EraseBlock(NvM_BlockIdType BlockId) {
 	return NvM_EraseNvBlock( BlockId );
 }
 
-Std_ReturnType NvMService_InvalidateNvBlock(Nvm_BlockIdType BlockId) {
+Std_ReturnType NvMService_InvalidateNvBlock(NvM_BlockIdType BlockId) {
 	return NvM_InvalidateNvBlock( BlockId );
 }
 
-Std_ReturnType NvMAdministration_SetBlockProtection(Nvm_BlockIdType BlockId, Boolean ProtectionEnabled) {
+Std_ReturnType NvMAdministration_SetBlockProtection(NvM_BlockIdType BlockId, Boolean ProtectionEnabled) {
 	NvM_SetBlockProtection( BlockId, (boolean)(ProtectionEnabled) );
 	return E_OK;
 }
 
 #else
 
-Std_ReturnType NvMService_EraseBlock(Nvm_BlockIdType BlockId) {
+Std_ReturnType NvMService_EraseBlock(NvM_BlockIdType BlockId) {
 	/* Dummy */
 	return E_OK;
 }
 
-Std_ReturnType NvMService_InvalidateNvBlock(Nvm_BlockIdType BlockId) {
+Std_ReturnType NvMService_InvalidateNvBlock(NvM_BlockIdType BlockId) {
 	/* Dummy */
 	return E_OK;
 }
 
-Std_ReturnType NvMAdministration_SetBlockProtection(Nvm_BlockIdType BlockId, Boolean ProtectionEnabled) {
+Std_ReturnType NvMAdministration_SetBlockProtection(NvM_BlockIdType BlockId, Boolean ProtectionEnabled) {
 	/* Dummy */
 	return E_OK;
 }
