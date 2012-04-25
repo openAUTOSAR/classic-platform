@@ -1609,8 +1609,8 @@ Std_ReturnType NvM_WriteBlock( NvM_BlockIdType blockId, const uint8* NvM_SrcPtr 
 void NvM_SetDataIndex( NvM_BlockIdType blockId, uint8 dataIndex ) {
 #if  ( NVM_DEV_ERROR_DETECT == STD_ON )
 	const NvM_BlockDescriptorType *	bPtr = &NvM_Config.BlockDescriptor[blockId-1];
-	AdministrativeBlockType * 		admPtr = &AdminBlock[blockId-1];
 #endif
+	AdministrativeBlockType * 		admPtr = &AdminBlock[blockId-1];
 	Nvm_QueueType qEntry;
 	int rv;
 
