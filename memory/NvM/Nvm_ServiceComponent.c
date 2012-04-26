@@ -42,7 +42,7 @@ Std_ReturnType NvMService_GetDataIndex(NvM_BlockIdType BlockId, UInt8* DataIndex
 }
 
 Std_ReturnType NvMService_ReadBlock(NvM_BlockIdType BlockId, const DstPtrType DstPtr) {
-	return NvMService_ReadBlock(BlockId, (uint8*)DstPtr), E_OK;
+	return NvM_ReadBlock(BlockId, (uint8*)DstPtr), E_OK;
 }
 
 Std_ReturnType NvMService_WriteBlock(NvM_BlockIdType BlockId, const DstPtrType SrcPtr) {
