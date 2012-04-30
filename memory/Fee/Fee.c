@@ -13,11 +13,43 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/** @reqSettings DEFAULT_SPECIFICATION_REVISION=3.1.5 */
 
 
-
-
-
+/*
+ * Author: pete
+ *
+ * Part of Release:
+ *   3.1.5
+ *
+ * Description:
+ *   Implements the Fee module
+ *
+ * Support:
+ *   General                  Have Support
+ *   -------------------------------------------
+ *   FEE_DEV_ERROR_DETECT            Y
+ *   FeeIndex    					 N (always 0)
+ *   FEE_NVM_JOB_END_NOTIFICATION    Y (Under ArcCore FEE_USE_JOB_NOTIFICATIONS is used)
+ *   FEE_NVM_JOB_ERROR_NOTIFICATION  Y (Under ArcCore FEE_USE_JOB_NOTIFICATIONS is used)
+ *   FEE_POLLING_MODE    			 Y
+ *   FEE_VERSION_INFO_API            Y
+ *   FEE_VIRTUAL_PAGE_SIZE           Y
+ *
+ *   Block                    Have Support
+ *   -------------------------------------------
+ *   FeeBlockNumber           		Y
+ *   FeeBlockSize               	Y
+ *   FeeImmediateData               N
+ *   FeeNumberOfWriteCycles         N
+ *   FeeDeviceIndex         		N
+ *
+ *   Published Information       Have Support
+ *   -------------------------------------------
+ *   FEE_BLOCK_OVERHEAD           	N
+ *   FEE_MAXIMUM_BLOCKING_TIME		N
+ *   FEE_PAGE_OVERHEAD				N
+ */
 
 
 //lint -emacro(904,VALIDATE_RV,VALIDATE_NO_RV) //904 PC-Lint exception to MISRA 14.7 (validate macros).
