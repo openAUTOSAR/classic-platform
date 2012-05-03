@@ -17,6 +17,7 @@
 #include "Rte_EcuM.h"
 #else
 #include "EcuM.h"
+#include "EcuM_Generated_Types.h"
 #include "EcuM_Internals.h"
 #endif
 

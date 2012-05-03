@@ -1376,14 +1376,12 @@ Std_ReturnType NvM_GetErrorStatus(NvM_BlockIdType blockId, uint8 *requestResultP
  */
 Std_ReturnType NvM_SetRamBlockStatus(NvM_BlockIdType blockId, boolean blockChanged)
 {
-	const NvM_BlockDescriptorType *	bPtr;
 	AdministrativeBlockType * 		admPtr;
 	Nvm_QueueType qEntry;
 	int rv;
 
 	VALIDATE_RV(blockId < NVM_NUM_OF_NVRAM_BLOCKS+1, NVM_SET_RAM_BLOCK_STATUS_ID, NVM_E_PARAM_BLOCK_ID, E_NOT_OK);
 
-	bPtr = &NvM_Config.BlockDescriptor[blockId-1];
 	admPtr = &AdminBlock[blockId-1];
 
 	VALIDATE_RV(nvmState != NVM_UNINITIALIZED, NVM_SET_RAM_BLOCK_STATUS_ID, NVM_E_NOT_INITIALIZED, E_NOT_OK);	/** @req NVM497 */
