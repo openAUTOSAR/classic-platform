@@ -162,7 +162,7 @@ const Dma_TcdType AdcCalibrationDMACommandConfig =
   .ACTIVE = 0,
   .MAJORE_LINK = 0,
   .E_SG = 0,
-  .D_REQ = 0,
+  .D_REQ = 1,
   .INT_HALF = 0,
   .INT_MAJ = 0,
   .START = 0,
@@ -191,7 +191,7 @@ const Dma_TcdType AdcCalibrationDMAResultConfig =
   .ACTIVE = 0,
   .MAJORE_LINK = 0,
   .E_SG = 0,
-  .D_REQ = 0,
+  .D_REQ = 1,
   .INT_HALF = 0,
   .INT_MAJ = 0,
   .START = 0
@@ -509,6 +509,10 @@ void Adc_GroupConversionComplete (Adc_GroupType group)
   if(ADC_ACCESS_MODE_SINGLE == adcGroup->accessMode )
   {
 	  adcGroup->status->groupStatus = ADC_STREAM_COMPLETED;
+
+    /* Disable trigger. */
+    EQADC.CFCR[group].B.MODE = 0;
+
 	  /* Call notification if enabled. */
 	#if (ADC_GRP_NOTIF_CAPABILITY == STD_ON)
 	  if (adcGroup->status->notifictionEnable && adcGroup->groupCallback != NULL)
@@ -516,8 +520,6 @@ void Adc_GroupConversionComplete (Adc_GroupType group)
 		  adcGroup->groupCallback();
 	  }
 	#endif
-		  /* Disable trigger. */
-		  EQADC.CFCR[group].B.MODE = 0;
   }
   else
   {
@@ -542,14 +544,15 @@ void Adc_GroupConversionComplete (Adc_GroupType group)
 		  /* All sample completed. */
 		  adcGroup->status->groupStatus = ADC_STREAM_COMPLETED;
 
+      /* Disable trigger. */
+      EQADC.CFCR[group].B.MODE = 0;
+
 		  /* Call notification if enabled. */
 		#if (ADC_GRP_NOTIF_CAPABILITY == STD_ON)
 		  if (adcGroup->status->notifictionEnable && adcGroup->groupCallback != NULL){
 			adcGroup->groupCallback();
 		  }
 		#endif
-		  /* Disable trigger. */
-		  EQADC.CFCR[group].B.MODE = 0;
 		}
 	}
 	else if(ADC_STREAM_BUFFER_CIRCULAR == adcGroup->streamBufferMode)
@@ -570,8 +573,10 @@ void Adc_GroupConversionComplete (Adc_GroupType group)
 		else
 		{
 		  /* Sample completed. */
+
 		  /* Disable trigger. */
 		  EQADC.CFCR[group].B.MODE = 0;
+
 		  adcGroup->status->groupStatus = ADC_STREAM_COMPLETED;
 		  /* Call notification if enabled. */
 		#if (ADC_GRP_NOTIF_CAPABILITY == STD_ON)
@@ -933,6 +938,9 @@ static void Adc_EQADCCalibrationSequence (void)
 		                           DMA_ADC_GROUP0_RESULT_CHANNEL);
   Dma_ConfigureChannelDestinationCorr (-sizeof(calibrationResult), DMA_ADC_GROUP0_RESULT_CHANNEL);
   Dma_ConfigureDestinationAddress ((uint32_t)calibrationResult, DMA_ADC_GROUP0_RESULT_CHANNEL);
+
+  EDMA.TCD[DMA_ADC_GROUP0_COMMAND_CHANNEL].D_REQ = 1;
+  EDMA.TCD[DMA_ADC_GROUP0_RESULT_CHANNEL].D_REQ = 1;
 
   /* Invalidate queues. */
   EQADC.CFCR[ADC_EQADC_QUEUE_0].B.CFINV = 1;
