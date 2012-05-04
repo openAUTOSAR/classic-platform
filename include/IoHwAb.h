@@ -31,11 +31,17 @@
 
 #include "IoHwAb_Cfg.h"
 #include "IoHwAb_Types.h"
+#if defined(USE_ADC)
 #include "IoHwAb_Analog.h"
+#endif
+#if defined(USE_DIO)
 #include "IoHwAb_Digital.h"
+#endif
+#if defined(USE_PWM)
 #include "IoHwAb_Pwm.h"
-
 #include "Pwm.h"
+#endif
+
 //#include "IoHwAb_Cbk.h"
 
 
