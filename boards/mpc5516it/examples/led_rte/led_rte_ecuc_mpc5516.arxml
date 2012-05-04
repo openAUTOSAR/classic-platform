@@ -3,6 +3,11 @@
   <TOP-LEVEL-PACKAGES>
     <AR-PACKAGE>
       <SHORT-NAME>led_rte_ecuc_mpc5516</SHORT-NAME>
+      <ADMIN-DATA>
+        <SDGS>
+          <SDG GID="Arccore::IdentifiableOptions" />
+        </SDGS>
+      </ADMIN-DATA>
       <ELEMENTS>
         <ECU-CONFIGURATION UUID="920d672e-9ea3-4e64-ad8b-7a078467f3b2">
           <SHORT-NAME>led_rte_ecuc_mpc5516</SHORT-NAME>
@@ -106,6 +111,59 @@
             </SDGS>
           </ADMIN-DATA>
           <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/IoHwAb</DEFINITION-REF>
+          <CONTAINERS>
+            <CONTAINER UUID="2586ccde-a6f3-434e-809c-ca45a4191bef">
+              <SHORT-NAME>IoHwAbGeneral</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/IoHwAb/IoHwAbGeneral</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/IoHwAb/IoHwAbGeneral/IoHwAbDevErrorDetect</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/IoHwAb/IoHwAbGeneral/IoHwAbUseRte</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <FLOAT-VALUE>
+                  <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/IoHwAb/IoHwAbGeneral/IoHwAbAnalogMaxVoltage</DEFINITION-REF>
+                  <VALUE>5.0</VALUE>
+                </FLOAT-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="abdd31da-11c4-4850-9138-020bbb05ffbf">
+              <SHORT-NAME>DigitalSignal_Led4</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                </SDGS>
+              </ADMIN-DATA>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/IoHwAb/IoHwAbDigitalSignal</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/IoHwAb/IoHwAbDigitalSignal/IoHwAbDigitalMethod</DEFINITION-REF>
+                  <VALUE>IOHWAB_DIGITAL_WRITE</VALUE>
+                </ENUMERATION-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/IoHwAb/IoHwAbDigitalSignal/IoHwAbDigitalInverted</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/IoHwAb/IoHwAbDigitalSignal/IoHwAbDigitalDefaultValue</DEFINITION-REF>
+                  <VALUE>IOHWAB_LOW</VALUE>
+                </ENUMERATION-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/IoHwAb/IoHwAbDigitalSignal/IoHwAbDigitalType</DEFINITION-REF>
+                  <VALUE>IOHWAB_DIO</VALUE>
+                </ENUMERATION-VALUE>
+              </PARAMETER-VALUES>
+              <REFERENCE-VALUES>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/IoHwAb/IoHwAbDigitalSignal/IoHwAbDioChannelRef</DEFINITION-REF>
+                  <VALUE-REF DEST="CONTAINER">/led_rte_ecuc_mpc5516/Dio/LED_PORT/LEDS_LED4</VALUE-REF>
+                </REFERENCE-VALUE>
+              </REFERENCE-VALUES>
+            </CONTAINER>
+          </CONTAINERS>
         </MODULE-CONFIGURATION>
         <MODULE-CONFIGURATION UUID="928e469b-aa7e-4d5d-9ad2-323b9f10df92">
           <SHORT-NAME>Os</SHORT-NAME>
@@ -825,7 +883,7 @@
                 </ENUMERATION-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Rte/RteGeneration/ArcGenerateWeakRunnableStubs</DEFINITION-REF>
-                  <VALUE>true</VALUE>
+                  <VALUE>false</VALUE>
                 </BOOLEAN-VALUE>
                 <INTEGER-VALUE>
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Rte/RteGeneration/ArcCalibrationFlashStartAddress</DEFINITION-REF>
@@ -910,8 +968,8 @@
                 </CONTAINER>
               </SUB-CONTAINERS>
             </CONTAINER>
-            <CONTAINER UUID="cdbaa64b-29b2-49ec-bf46-e2419b07e62e">
-              <SHORT-NAME>led_rte_ecuc_mpc5516_IoHwAbComponentType_prototypeInstance</SHORT-NAME>
+            <CONTAINER UUID="bf499db3-71fa-4f77-8a2e-50be9935e404">
+              <SHORT-NAME>EcuAbstraction_prototypeInstance</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Rte/SwComponentInstance</DEFINITION-REF>
               <PARAMETER-VALUES>
                 <BOOLEAN-VALUE>
@@ -922,23 +980,18 @@
               <REFERENCE-VALUES>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="FOREIGN-REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/ImplementationRef</DEFINITION-REF>
-                  <VALUE-REF DEST="SWC-IMPLEMENTATION">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/led_rte_ecuc_mpc5516_IoHwAbImplementation</VALUE-REF>
+                  <VALUE-REF DEST="SWC-IMPLEMENTATION">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/EcuAbstractionImplementation</VALUE-REF>
                 </REFERENCE-VALUE>
                 <INSTANCE-REFERENCE-VALUE>
                   <DEFINITION-REF DEST="INSTANCE-REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/SoftwareComponentInstanceRef</DEFINITION-REF>
                   <VALUE-IREF>
-                    <VALUE-REF DEST="COMPONENT-PROTOTYPE">/led_rte_extract/led_rte_extract_toplevelcomposition/led_rte_ecuc_mpc5516_IoHwAbComponentType_prototype</VALUE-REF>
+                    <VALUE-REF DEST="COMPONENT-PROTOTYPE">/led_rte_extract/led_rte_extract_toplevelcomposition/EcuAbstraction_prototype</VALUE-REF>
                   </VALUE-IREF>
                 </INSTANCE-REFERENCE-VALUE>
               </REFERENCE-VALUES>
               <SUB-CONTAINERS>
-                <CONTAINER UUID="3c7cbc58-2245-446c-b835-975081576150">
-                  <SHORT-NAME>IoHwAb_Write_LEDS_LED4_RunnableMapping</SHORT-NAME>
-                  <ADMIN-DATA>
-                    <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
-                    </SDGS>
-                  </ADMIN-DATA>
+                <CONTAINER UUID="883fc1b2-f84d-43df-bacd-5700b3cd8fe0">
+                  <SHORT-NAME>DigitalOutput_Set_RunnableMapping</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping</DEFINITION-REF>
                   <PARAMETER-VALUES>
                     <FLOAT-VALUE>
@@ -953,17 +1006,12 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="FOREIGN-REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/RTEEventRef</DEFINITION-REF>
-                      <VALUE-REF DEST="OPERATION-INVOKED-EVENT">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/led_rte_ecuc_mpc5516_IoHwAbBehavior/IoHwAbOpEvent_LEDS_LED4_Write</VALUE-REF>
+                      <VALUE-REF DEST="OPERATION-INVOKED-EVENT">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/EcuAbstractionBehaviour/DigitalSignal_Led4_Set_oie</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
-                <CONTAINER UUID="891eb6b7-2ed9-42f5-bfa8-3407c9ee8e05">
-                  <SHORT-NAME>IoHwAb_Read_LEDS_LED4_RunnableMapping</SHORT-NAME>
-                  <ADMIN-DATA>
-                    <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
-                    </SDGS>
-                  </ADMIN-DATA>
+                <CONTAINER UUID="ecc1a49a-f6a8-4c15-a083-6822f29df795">
+                  <SHORT-NAME>DigitalOutput_ReadBack_RunnableMapping</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping</DEFINITION-REF>
                   <PARAMETER-VALUES>
                     <FLOAT-VALUE>
@@ -978,57 +1026,7 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="FOREIGN-REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/RTEEventRef</DEFINITION-REF>
-                      <VALUE-REF DEST="OPERATION-INVOKED-EVENT">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/led_rte_ecuc_mpc5516_IoHwAbBehavior/IoHwAbOpEvent_LEDS_LED4_Read</VALUE-REF>
-                    </REFERENCE-VALUE>
-                  </REFERENCE-VALUES>
-                </CONTAINER>
-                <CONTAINER UUID="4653296c-ca58-4900-ae57-3efff6517fbc">
-                  <SHORT-NAME>IoHwAb_Write_LEDS_LED5_RunnableMapping</SHORT-NAME>
-                  <ADMIN-DATA>
-                    <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
-                    </SDGS>
-                  </ADMIN-DATA>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping</DEFINITION-REF>
-                  <PARAMETER-VALUES>
-                    <FLOAT-VALUE>
-                      <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/ActivationOffset</DEFINITION-REF>
-                      <VALUE>0.0</VALUE>
-                    </FLOAT-VALUE>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/PositionInTask</DEFINITION-REF>
-                      <VALUE>0</VALUE>
-                    </INTEGER-VALUE>
-                  </PARAMETER-VALUES>
-                  <REFERENCE-VALUES>
-                    <REFERENCE-VALUE>
-                      <DEFINITION-REF DEST="FOREIGN-REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/RTEEventRef</DEFINITION-REF>
-                      <VALUE-REF DEST="OPERATION-INVOKED-EVENT">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/led_rte_ecuc_mpc5516_IoHwAbBehavior/IoHwAbOpEvent_LEDS_LED5_Write</VALUE-REF>
-                    </REFERENCE-VALUE>
-                  </REFERENCE-VALUES>
-                </CONTAINER>
-                <CONTAINER UUID="26a94e3e-4763-480e-821e-72ead62d556e">
-                  <SHORT-NAME>IoHwAb_Read_LEDS_LED5_RunnableMapping</SHORT-NAME>
-                  <ADMIN-DATA>
-                    <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
-                    </SDGS>
-                  </ADMIN-DATA>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping</DEFINITION-REF>
-                  <PARAMETER-VALUES>
-                    <FLOAT-VALUE>
-                      <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/ActivationOffset</DEFINITION-REF>
-                      <VALUE>0.0</VALUE>
-                    </FLOAT-VALUE>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/PositionInTask</DEFINITION-REF>
-                      <VALUE>0</VALUE>
-                    </INTEGER-VALUE>
-                  </PARAMETER-VALUES>
-                  <REFERENCE-VALUES>
-                    <REFERENCE-VALUE>
-                      <DEFINITION-REF DEST="FOREIGN-REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/RTEEventRef</DEFINITION-REF>
-                      <VALUE-REF DEST="OPERATION-INVOKED-EVENT">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/led_rte_ecuc_mpc5516_IoHwAbBehavior/IoHwAbOpEvent_LEDS_LED5_Read</VALUE-REF>
+                      <VALUE-REF DEST="OPERATION-INVOKED-EVENT">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/EcuAbstractionBehaviour/DigitalSignal_Led4_ReadBack_oie</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
@@ -1042,125 +1040,71 @@
           <SHORT-NAME>GeneratedIoHardwareAbstraction</SHORT-NAME>
           <ELEMENTS>
             <ECU-ABSTRACTION-COMPONENT-TYPE>
-              <SHORT-NAME>led_rte_ecuc_mpc5516_IoHwAbComponentType</SHORT-NAME>
+              <SHORT-NAME>EcuAbstraction</SHORT-NAME>
               <PORTS>
                 <P-PORT-PROTOTYPE>
-                  <SHORT-NAME>LEDS_LED4</SHORT-NAME>
-                  <PROVIDED-INTERFACE-TREF DEST="CLIENT-SERVER-INTERFACE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/Interfaces/DigitalInterface</PROVIDED-INTERFACE-TREF>
-                </P-PORT-PROTOTYPE>
-                <P-PORT-PROTOTYPE>
-                  <SHORT-NAME>LEDS_LED5</SHORT-NAME>
-                  <PROVIDED-INTERFACE-TREF DEST="CLIENT-SERVER-INTERFACE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/Interfaces/DigitalInterface</PROVIDED-INTERFACE-TREF>
+                  <SHORT-NAME>DigitalSignal_Led4</SHORT-NAME>
+                  <PROVIDED-INTERFACE-TREF DEST="CLIENT-SERVER-INTERFACE">/ArcCore/Services/IoHwAb/Interfaces/DigitalOutput</PROVIDED-INTERFACE-TREF>
                 </P-PORT-PROTOTYPE>
               </PORTS>
             </ECU-ABSTRACTION-COMPONENT-TYPE>
             <INTERNAL-BEHAVIOR>
-              <SHORT-NAME>led_rte_ecuc_mpc5516_IoHwAbBehavior</SHORT-NAME>
-              <COMPONENT-REF DEST="ECU-ABSTRACTION-COMPONENT-TYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/led_rte_ecuc_mpc5516_IoHwAbComponentType</COMPONENT-REF>
+              <SHORT-NAME>EcuAbstractionBehaviour</SHORT-NAME>
+              <COMPONENT-REF DEST="ECU-ABSTRACTION-COMPONENT-TYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/EcuAbstraction</COMPONENT-REF>
               <EVENTS>
                 <OPERATION-INVOKED-EVENT>
-                  <SHORT-NAME>IoHwAbOpEvent_LEDS_LED4_Write</SHORT-NAME>
-                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/led_rte_ecuc_mpc5516_IoHwAbBehavior/IoHwAb_Write_LEDS_LED4</START-ON-EVENT-REF>
+                  <SHORT-NAME>DigitalSignal_Led4_Set_oie</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/EcuAbstractionBehaviour/DigitalOutput_Set</START-ON-EVENT-REF>
                   <OPERATION-IREF>
-                    <P-PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/led_rte_ecuc_mpc5516_IoHwAbComponentType/LEDS_LED4</P-PORT-PROTOTYPE-REF>
-                    <OPERATION-PROTOTYPE-REF DEST="OPERATION-PROTOTYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/Interfaces/DigitalInterface/Write</OPERATION-PROTOTYPE-REF>
+                    <P-PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/EcuAbstraction/DigitalSignal_Led4</P-PORT-PROTOTYPE-REF>
+                    <OPERATION-PROTOTYPE-REF DEST="OPERATION-PROTOTYPE">/ArcCore/Services/IoHwAb/Interfaces/DigitalOutput/Set</OPERATION-PROTOTYPE-REF>
                   </OPERATION-IREF>
                 </OPERATION-INVOKED-EVENT>
                 <OPERATION-INVOKED-EVENT>
-                  <SHORT-NAME>IoHwAbOpEvent_LEDS_LED4_Read</SHORT-NAME>
-                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/led_rte_ecuc_mpc5516_IoHwAbBehavior/IoHwAb_Read_LEDS_LED4</START-ON-EVENT-REF>
+                  <SHORT-NAME>DigitalSignal_Led4_ReadBack_oie</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/EcuAbstractionBehaviour/DigitalOutput_ReadBack</START-ON-EVENT-REF>
                   <OPERATION-IREF>
-                    <P-PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/led_rte_ecuc_mpc5516_IoHwAbComponentType/LEDS_LED4</P-PORT-PROTOTYPE-REF>
-                    <OPERATION-PROTOTYPE-REF DEST="OPERATION-PROTOTYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/Interfaces/DigitalInterface/Read</OPERATION-PROTOTYPE-REF>
-                  </OPERATION-IREF>
-                </OPERATION-INVOKED-EVENT>
-                <OPERATION-INVOKED-EVENT>
-                  <SHORT-NAME>IoHwAbOpEvent_LEDS_LED5_Write</SHORT-NAME>
-                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/led_rte_ecuc_mpc5516_IoHwAbBehavior/IoHwAb_Write_LEDS_LED5</START-ON-EVENT-REF>
-                  <OPERATION-IREF>
-                    <P-PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/led_rte_ecuc_mpc5516_IoHwAbComponentType/LEDS_LED5</P-PORT-PROTOTYPE-REF>
-                    <OPERATION-PROTOTYPE-REF DEST="OPERATION-PROTOTYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/Interfaces/DigitalInterface/Write</OPERATION-PROTOTYPE-REF>
-                  </OPERATION-IREF>
-                </OPERATION-INVOKED-EVENT>
-                <OPERATION-INVOKED-EVENT>
-                  <SHORT-NAME>IoHwAbOpEvent_LEDS_LED5_Read</SHORT-NAME>
-                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/led_rte_ecuc_mpc5516_IoHwAbBehavior/IoHwAb_Read_LEDS_LED5</START-ON-EVENT-REF>
-                  <OPERATION-IREF>
-                    <P-PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/led_rte_ecuc_mpc5516_IoHwAbComponentType/LEDS_LED5</P-PORT-PROTOTYPE-REF>
-                    <OPERATION-PROTOTYPE-REF DEST="OPERATION-PROTOTYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/Interfaces/DigitalInterface/Read</OPERATION-PROTOTYPE-REF>
+                    <P-PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/EcuAbstraction/DigitalSignal_Led4</P-PORT-PROTOTYPE-REF>
+                    <OPERATION-PROTOTYPE-REF DEST="OPERATION-PROTOTYPE">/ArcCore/Services/IoHwAb/Interfaces/DigitalOutput/ReadBack</OPERATION-PROTOTYPE-REF>
                   </OPERATION-IREF>
                 </OPERATION-INVOKED-EVENT>
               </EVENTS>
+              <PORT-API-OPTIONS>
+                <PORT-API-OPTION>
+                  <PORT-ARG-VALUES>
+                    <INTEGER-LITERAL UUID="539c59c3-b4e9-49a3-a1fb-63aa6de3f5ac">
+                      <SHORT-NAME>SignalId</SHORT-NAME>
+                      <TYPE-TREF DEST="INTEGER-TYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/IoHwAb_SignalType</TYPE-TREF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-LITERAL>
+                  </PORT-ARG-VALUES>
+                  <PORT-REF DEST="P-PORT-PROTOTYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/EcuAbstraction/DigitalSignal_Led4</PORT-REF>
+                </PORT-API-OPTION>
+              </PORT-API-OPTIONS>
               <RUNNABLES>
                 <RUNNABLE-ENTITY>
-                  <SHORT-NAME>IoHwAb_Write_LEDS_LED4</SHORT-NAME>
+                  <SHORT-NAME>DigitalOutput_Set</SHORT-NAME>
                   <CAN-BE-INVOKED-CONCURRENTLY>true</CAN-BE-INVOKED-CONCURRENTLY>
-                  <SYMBOL>IoHwAb_Write_LEDS_LED4</SYMBOL>
+                  <SYMBOL>DigitalOutput_Set</SYMBOL>
                 </RUNNABLE-ENTITY>
                 <RUNNABLE-ENTITY>
-                  <SHORT-NAME>IoHwAb_Read_LEDS_LED4</SHORT-NAME>
+                  <SHORT-NAME>DigitalOutput_ReadBack</SHORT-NAME>
                   <CAN-BE-INVOKED-CONCURRENTLY>true</CAN-BE-INVOKED-CONCURRENTLY>
-                  <SYMBOL>IoHwAb_Read_LEDS_LED4</SYMBOL>
-                </RUNNABLE-ENTITY>
-                <RUNNABLE-ENTITY>
-                  <SHORT-NAME>IoHwAb_Write_LEDS_LED5</SHORT-NAME>
-                  <CAN-BE-INVOKED-CONCURRENTLY>true</CAN-BE-INVOKED-CONCURRENTLY>
-                  <SYMBOL>IoHwAb_Write_LEDS_LED5</SYMBOL>
-                </RUNNABLE-ENTITY>
-                <RUNNABLE-ENTITY>
-                  <SHORT-NAME>IoHwAb_Read_LEDS_LED5</SHORT-NAME>
-                  <CAN-BE-INVOKED-CONCURRENTLY>true</CAN-BE-INVOKED-CONCURRENTLY>
-                  <SYMBOL>IoHwAb_Read_LEDS_LED5</SYMBOL>
+                  <SYMBOL>DigitalOutput_ReadBack</SYMBOL>
                 </RUNNABLE-ENTITY>
               </RUNNABLES>
-              <SUPPORTS-MULTIPLE-INSTANTIATION>false</SUPPORTS-MULTIPLE-INSTANTIATION>
             </INTERNAL-BEHAVIOR>
             <SWC-IMPLEMENTATION>
-              <SHORT-NAME>led_rte_ecuc_mpc5516_IoHwAbImplementation</SHORT-NAME>
-              <BEHAVIOR-REF DEST="INTERNAL-BEHAVIOR">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/led_rte_ecuc_mpc5516_IoHwAbBehavior</BEHAVIOR-REF>
+              <SHORT-NAME>EcuAbstractionImplementation</SHORT-NAME>
+              <PROGRAMMING-LANGUAGE>C</PROGRAMMING-LANGUAGE>
+              <BEHAVIOR-REF DEST="INTERNAL-BEHAVIOR">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/EcuAbstractionBehaviour</BEHAVIOR-REF>
             </SWC-IMPLEMENTATION>
+            <INTEGER-TYPE>
+              <SHORT-NAME>IoHwAb_SignalType</SHORT-NAME>
+              <LOWER-LIMIT INTERVAL-TYPE="CLOSED">0</LOWER-LIMIT>
+              <UPPER-LIMIT INTERVAL-TYPE="CLOSED">65535</UPPER-LIMIT>
+            </INTEGER-TYPE>
           </ELEMENTS>
-          <SUB-PACKAGES>
-            <AR-PACKAGE>
-              <SHORT-NAME>DataTypes</SHORT-NAME>
-              <ELEMENTS>
-                <BOOLEAN-TYPE>
-                  <SHORT-NAME>BooleanType</SHORT-NAME>
-                </BOOLEAN-TYPE>
-              </ELEMENTS>
-            </AR-PACKAGE>
-            <AR-PACKAGE>
-              <SHORT-NAME>Interfaces</SHORT-NAME>
-              <ELEMENTS>
-                <CLIENT-SERVER-INTERFACE>
-                  <SHORT-NAME>DigitalInterface</SHORT-NAME>
-                  <IS-SERVICE>false</IS-SERVICE>
-                  <OPERATIONS>
-                    <OPERATION-PROTOTYPE UUID="cac347c6-66df-49a2-bc29-fdecadb340a4">
-                      <SHORT-NAME>Write</SHORT-NAME>
-                      <ARGUMENTS>
-                        <ARGUMENT-PROTOTYPE UUID="f1d32af1-f53d-4db4-a62a-68ac43571cdb">
-                          <SHORT-NAME>Value</SHORT-NAME>
-                          <TYPE-TREF DEST="BOOLEAN-TYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/DataTypes/BooleanType</TYPE-TREF>
-                          <DIRECTION>IN</DIRECTION>
-                        </ARGUMENT-PROTOTYPE>
-                      </ARGUMENTS>
-                    </OPERATION-PROTOTYPE>
-                    <OPERATION-PROTOTYPE UUID="8b396701-0320-4d5d-8dae-83da985fc79d">
-                      <SHORT-NAME>Read</SHORT-NAME>
-                      <ARGUMENTS>
-                        <ARGUMENT-PROTOTYPE UUID="4fd43cd9-b431-433b-bd97-da9421bc5318">
-                          <SHORT-NAME>Value</SHORT-NAME>
-                          <TYPE-TREF DEST="BOOLEAN-TYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/DataTypes/BooleanType</TYPE-TREF>
-                          <DIRECTION>OUT</DIRECTION>
-                        </ARGUMENT-PROTOTYPE>
-                      </ARGUMENTS>
-                    </OPERATION-PROTOTYPE>
-                  </OPERATIONS>
-                </CLIENT-SERVER-INTERFACE>
-              </ELEMENTS>
-            </AR-PACKAGE>
-          </SUB-PACKAGES>
         </AR-PACKAGE>
       </SUB-PACKAGES>
     </AR-PACKAGE>

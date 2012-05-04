@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<AUTOSAR xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://autosar.org/3.1.5" xsi:schemaLocation="http://autosar.org/3.1.5 autosar_3-1-5.xsd"><ADMIN-DATA>
+<AUTOSAR xmlns="http://autosar.org/3.1.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/3.1.5 autosar_3-1-5.xsd">
+  <ADMIN-DATA>
     <SDGS>
       <SDG GID="Arccore::AutosarOptions">
         <SD GID="GENDIR">/com_example/config</SD>
       </SDG>
     </SDGS>
-  </ADMIN-DATA><TOP-LEVEL-PACKAGES>
+  </ADMIN-DATA>
+  <TOP-LEVEL-PACKAGES>
     <AR-PACKAGE>
       <SHORT-NAME>led_rte_system</SHORT-NAME>
       <ADMIN-DATA>
         <SDGS>
-          <SDG GID="Arccore::IdentifiableOptions"/>
+          <SDG GID="Arccore::IdentifiableOptions" />
         </SDGS>
       </ADMIN-DATA>
       <SUB-PACKAGES>
@@ -18,7 +20,7 @@
           <SHORT-NAME>BlinkerKit</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG GID="Arccore::IdentifiableOptions"/>
+              <SDG GID="Arccore::IdentifiableOptions" />
             </SDGS>
           </ADMIN-DATA>
           <ELEMENTS>
@@ -26,7 +28,7 @@
               <SHORT-NAME>Blinker</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <PORTS>
@@ -34,10 +36,10 @@
                   <SHORT-NAME>LED_Port</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions"/>
+                      <SDG GID="Arccore::IdentifiableOptions" />
                     </SDGS>
                   </ADMIN-DATA>
-                  <REQUIRED-INTERFACE-TREF DEST="CLIENT-SERVER-INTERFACE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/Interfaces/DigitalInterface</REQUIRED-INTERFACE-TREF>
+                  <REQUIRED-INTERFACE-TREF DEST="CLIENT-SERVER-INTERFACE">/ArcCore/Services/IoHwAb/Interfaces/DigitalOutput</REQUIRED-INTERFACE-TREF>
                 </R-PORT-PROTOTYPE>
               </PORTS>
             </APPLICATION-SOFTWARE-COMPONENT-TYPE>
@@ -45,7 +47,7 @@
               <SHORT-NAME>BlinkerBehavior</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <COMPONENT-REF DEST="APPLICATION-SOFTWARE-COMPONENT-TYPE">/led_rte_system/BlinkerKit/Blinker</COMPONENT-REF>
@@ -54,7 +56,7 @@
                   <SHORT-NAME>Blinker_timingEvent</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions"/>
+                      <SDG GID="Arccore::IdentifiableOptions" />
                     </SDGS>
                   </ADMIN-DATA>
                   <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/led_rte_system/BlinkerKit/BlinkerBehavior/BlinkerRunnable</START-ON-EVENT-REF>
@@ -66,22 +68,22 @@
                   <SHORT-NAME>BlinkerRunnable</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions"/>
+                      <SDG GID="Arccore::IdentifiableOptions" />
                     </SDGS>
                   </ADMIN-DATA>
                   <CAN-BE-INVOKED-CONCURRENTLY>true</CAN-BE-INVOKED-CONCURRENTLY>
                   <SERVER-CALL-POINTS>
-                    <SYNCHRONOUS-SERVER-CALL-POINT UUID="cb3bbce1-1ca5-48c0-9bcf-3df185de06f2">
-                      <SHORT-NAME>LED_Port_CallPoint</SHORT-NAME>
+                    <SYNCHRONOUS-SERVER-CALL-POINT UUID="2b9712e7-0625-4559-b223-1dc9f521b5d5">
+                      <SHORT-NAME>syncCallPoint_1</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions"/>
+                          <SDG GID="Arccore::IdentifiableOptions" />
                         </SDGS>
                       </ADMIN-DATA>
                       <OPERATION-IREFS>
                         <OPERATION-IREF>
                           <R-PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/led_rte_system/BlinkerKit/Blinker/LED_Port</R-PORT-PROTOTYPE-REF>
-                          <OPERATION-PROTOTYPE-REF DEST="OPERATION-PROTOTYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/Interfaces/DigitalInterface/Write</OPERATION-PROTOTYPE-REF>
+                          <OPERATION-PROTOTYPE-REF DEST="OPERATION-PROTOTYPE">/ArcCore/Services/IoHwAb/Interfaces/DigitalOutput/Set</OPERATION-PROTOTYPE-REF>
                         </OPERATION-IREF>
                       </OPERATION-IREFS>
                     </SYNCHRONOUS-SERVER-CALL-POINT>
@@ -94,7 +96,7 @@
               <SHORT-NAME>BlinkerImplementation</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions"/>
+                  <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
               <BEHAVIOR-REF DEST="INTERNAL-BEHAVIOR">/led_rte_system/BlinkerKit/BlinkerBehavior</BEHAVIOR-REF>
@@ -103,4 +105,6 @@
         </AR-PACKAGE>
       </SUB-PACKAGES>
     </AR-PACKAGE>
-  </TOP-LEVEL-PACKAGES></AUTOSAR>
+  </TOP-LEVEL-PACKAGES>
+</AUTOSAR>
+
