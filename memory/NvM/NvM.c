@@ -1651,6 +1651,35 @@ Std_ReturnType NvM_SetDataIndex( NvM_BlockIdType blockId, uint8 dataIndex ) {
 	admPtr->ErrorStatus = NVM_REQ_PENDING;
 	return E_OK;
 }
+
+
+Std_ReturnType NvM_GetDataIndex( NvM_BlockIdType blockId, uint8 *dataIndexPtr ) {
+#if  ( NVM_DEV_ERROR_DETECT == STD_ON )
+	const NvM_BlockDescriptorType *	bPtr = &NvM_Config.BlockDescriptor[blockId-1];
+	AdministrativeBlockType * 		admPtr = &AdminBlock[blockId-1];
+#endif
+	Nvm_QueueType qEntry;
+	int rv;
+
+	NVM_ASSERT( blockId >= 2 );	/* No support for lower numbers, yet */
+
+	VALIDATE_RV(nvmState != NVM_UNINITIALIZED, NVM_GET_DATA_INDEX_ID, NVM_E_NOT_INITIALIZED, E_NOT_OK);
+	VALIDATE_RV(blockId < NVM_NUM_OF_NVRAM_BLOCKS+1, NVM_GET_DATA_INDEX_ID, NVM_E_PARAM_BLOCK_ID, E_NOT_OK);
+	VALIDATE_RV(bPtr->BlockManagementType != NVM_BLOCK_NATIVE ,  NVM_GET_DATA_INDEX_ID, NVM_E_PARAM_BLOCK_TYPE , E_NOT_OK);
+	VALIDATE_RV( (dataIndexPtr != NULL) , NVM_GET_DATA_INDEX_ID, NVM_E_PARAM_DATA  ,E_NOT_OK);
+	VALIDATE_RV( (admPtr->ErrorStatus != NVM_REQ_PENDING), NVM_GET_DATA_INDEX_ID, NVM_E_BLOCK_PENDING , E_NOT_OK);
+
+	qEntry.blockId = blockId;
+	qEntry.op = NVM_GETDATAINDEX;
+	qEntry.blockId = blockId;
+	qEntry.dataPtr = dataIndexPtr;
+	rv = CirqBuffPush(&nvmQueue,&qEntry);
+	NVM_ASSERT(rv == 0 );
+
+	/* req 3.1.5/NVM185 */
+	admPtr->ErrorStatus = NVM_REQ_PENDING;
+	return E_OK;
+}
 //#endif
 
 const NvM_BlockDescriptorType *	nvmBlock;
@@ -1754,7 +1783,7 @@ void NvM_MainFunction(void)
 		admBlock->ErrorStatus = NVM_REQ_OK;
 		break;
 	case NVM_GETDATAINDEX:
-		NVM_ASSERT(0);
+		*qEntry.dataPtr = admBlock->DataIndex;
 		nvmState = NVM_IDLE;
 		nvmSubState = 0;
 		admBlock->ErrorStatus = NVM_REQ_OK;
