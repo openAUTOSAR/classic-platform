@@ -80,13 +80,6 @@
 #define ECUM_AR_MINOR_VERSION	2
 #define ECUM_AR_PATCH_VERSION	2
 
-//#include "EcuM_Types.h"
-//struct EcuM_Config;
-//typedef struct EcuM_Config EcuM_ConfigType;
-
-/* Holds EcuM_ConfigType */
-/* TODO: forward declare all config types here ? */
-/* TODO: EcuM_Generated_Types must have types from Ecu_Types.h */
 #include "EcuM_Types.h"
 #include "EcuM_Cfg.h"
 #include "EcuM_Cbk.h"
@@ -95,6 +88,9 @@
 #include "ComStack_Types.h"
 #endif
 
+#if defined(USE_COMM)
+#include "ComM.h"
+#endif
 
 
 /** @name Error Codes */
