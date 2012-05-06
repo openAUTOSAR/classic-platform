@@ -844,8 +844,8 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 			break;
 		} else {
 			/* Something failed */
+			DEBUG_PRINTF(">> Read/Write FAILED\n");
 			if( write ) {
-				DEBUG_PRINTF(">> Write FAILED\n");
 				admPtr->NumberOfWriteFailed++;
 				if( admPtr->NumberOfWriteFailed > NVM_MAX_NUMBER_OF_WRITE_RETRIES ) {
 					DEBUG_PRINTF(">> Write FAILED COMPLETELY (all retries)\n");
@@ -1107,22 +1107,19 @@ static void ReadAllMain(void)
 	 */
 
 	/* Skip blocks that are skipped */
+	while (	(AdminMultiReq.currBlockIndex < NVM_NUM_OF_NVRAM_BLOCKS) ) {
 
-	while (	(AdminBlock[AdminMultiReq.currBlockIndex].ErrorStatus == NVM_REQ_BLOCK_SKIPPED) ) {
-		if( (AdminMultiReq.currBlockIndex < NVM_NUM_OF_NVRAM_BLOCKS) ) {
-			AdminMultiReq.currBlockIndex++;
-		} else {
-			return;
+		if( AdminBlock[AdminMultiReq.currBlockIndex].ErrorStatus != NVM_REQ_BLOCK_SKIPPED) {
+			DriveBlock(	&NvM_Config.BlockDescriptor[AdminMultiReq.currBlockIndex],
+							&AdminBlock[AdminMultiReq.currBlockIndex],
+							NULL,
+							false,
+							true, false);
+			break;
 		}
+		AdminMultiReq.currBlockIndex++;
 	}
-
-	DriveBlock(	&NvM_Config.BlockDescriptor[AdminMultiReq.currBlockIndex],
-					&AdminBlock[AdminMultiReq.currBlockIndex],
-					NULL,
-					false,
-					true, false);
 }
-
 
 /*
  * Request writing of a block to MemIf
@@ -1198,21 +1195,18 @@ static boolean WriteAllInit(void)
  */
 static void WriteAllMain(void)
 {
+	while (	(AdminMultiReq.currBlockIndex < NVM_NUM_OF_NVRAM_BLOCKS) ) {
 
-	while (	(AdminBlock[AdminMultiReq.currBlockIndex].ErrorStatus == NVM_REQ_BLOCK_SKIPPED) ) {
-		if( (AdminMultiReq.currBlockIndex < NVM_NUM_OF_NVRAM_BLOCKS) ) {
-			AdminMultiReq.currBlockIndex++;
-		} else {
-			return;
+		if( AdminBlock[AdminMultiReq.currBlockIndex].ErrorStatus != NVM_REQ_BLOCK_SKIPPED) {
+			DriveBlock(	&NvM_Config.BlockDescriptor[AdminMultiReq.currBlockIndex],
+							&AdminBlock[AdminMultiReq.currBlockIndex],
+							NULL,
+							true,
+							true, false );
+			break;
 		}
+		AdminMultiReq.currBlockIndex++;
 	}
-
-	DriveBlock(	&NvM_Config.BlockDescriptor[AdminMultiReq.currBlockIndex],
-					&AdminBlock[AdminMultiReq.currBlockIndex],
-					NULL,
-					true,
-					true, false );
-
 }
 
 
