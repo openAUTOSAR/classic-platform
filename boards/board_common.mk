@@ -246,11 +246,10 @@ inc-$(USE_COM) += $(ROOTDIR)/communication/PduR
 vpath-$(USE_PDUR) += $(ROOTDIR)/communication/PduR
 
 # IO Hardware Abstraction
-obj-$(USE_IOHWAB) += IoHwAb.o
 obj-$(USE_IOHWAB) += IoHwAb_Digital.o
 obj-$(USE_IOHWAB) += IoHwAb_Analog.o
 obj-$(USE_IOHWAB) += IoHwAb_Pwm.o
-obj-$(USE_IOHWAB)-$(CFG_IOHWAB_USE_SERVICE_COMPONENT) += IoHwAb_ServiceComponent.o
+
 
 #Dem
 obj-$(USE_DEM) += Dem.o

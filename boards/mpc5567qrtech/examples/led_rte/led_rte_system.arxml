@@ -39,7 +39,7 @@
                       <SDG GID="Arccore::IdentifiableOptions" />
                     </SDGS>
                   </ADMIN-DATA>
-                  <REQUIRED-INTERFACE-TREF DEST="CLIENT-SERVER-INTERFACE">/led_rte_ecuc_mpc5567/GeneratedIoHardwareAbstraction/Interfaces/DigitalInterface</REQUIRED-INTERFACE-TREF>
+                  <REQUIRED-INTERFACE-TREF DEST="CLIENT-SERVER-INTERFACE">/ArcCore/Services/IoHwAb/Interfaces/DigitalOutput</REQUIRED-INTERFACE-TREF>
                 </R-PORT-PROTOTYPE>
               </PORTS>
             </APPLICATION-SOFTWARE-COMPONENT-TYPE>
@@ -83,7 +83,7 @@
                       <OPERATION-IREFS>
                         <OPERATION-IREF>
                           <R-PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/led_rte_mpc5567_system/BlinkerKit/Blinker/LED_Port</R-PORT-PROTOTYPE-REF>
-                          <OPERATION-PROTOTYPE-REF DEST="OPERATION-PROTOTYPE">/led_rte_ecuc_mpc5567/GeneratedIoHardwareAbstraction/Interfaces/DigitalInterface/Write</OPERATION-PROTOTYPE-REF>
+                          <OPERATION-PROTOTYPE-REF DEST="OPERATION-PROTOTYPE">/ArcCore/Services/IoHwAb/Interfaces/DigitalOutput/Set</OPERATION-PROTOTYPE-REF>
                         </OPERATION-IREF>
                       </OPERATION-IREFS>
                     </SYNCHRONOUS-SERVER-CALL-POINT>

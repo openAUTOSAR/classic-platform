@@ -27,14 +27,14 @@
                   </COMPONENT-IREF>
                 </COMPONENT-IREFS>
               </SWC-TO-IMPL-MAPPING>
-              <SWC-TO-IMPL-MAPPING UUID="91b97568-b23e-4f62-974c-7359d948feeb">
-                <SHORT-NAME>led_rte_ecuc_mpc5516_IoHwAbComponentType_prototypeImplMapping</SHORT-NAME>
-                <COMPONENT-IMPLEMENTATION-REF DEST="SWC-IMPLEMENTATION">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/led_rte_ecuc_mpc5516_IoHwAbImplementation</COMPONENT-IMPLEMENTATION-REF>
+              <SWC-TO-IMPL-MAPPING UUID="9f9fcb8b-ed38-443c-9f0a-ead5597dbff6">
+                <SHORT-NAME>EcuAbstraction_prototypeImplMapping</SHORT-NAME>
+                <COMPONENT-IMPLEMENTATION-REF DEST="SWC-IMPLEMENTATION">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/EcuAbstractionImplementation</COMPONENT-IMPLEMENTATION-REF>
                 <COMPONENT-IREFS>
                   <COMPONENT-IREF>
                     <SOFTWARE-COMPOSITION-REF DEST="SOFTWARE-COMPOSITION">/led_rte_extract/led_rte_extract/led_rte_extract_softwareComposition</SOFTWARE-COMPOSITION-REF>
-                    <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/led_rte_extract/led_rte_extract_toplevelcomposition/led_rte_ecuc_mpc5516_IoHwAbComponentType_prototype</COMPONENT-PROTOTYPE-REF>
-                    <TARGET-COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/led_rte_extract/led_rte_extract_toplevelcomposition/led_rte_ecuc_mpc5516_IoHwAbComponentType_prototype</TARGET-COMPONENT-PROTOTYPE-REF>
+                    <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/led_rte_extract/led_rte_extract_toplevelcomposition/EcuAbstraction_prototype</COMPONENT-PROTOTYPE-REF>
+                    <TARGET-COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/led_rte_extract/led_rte_extract_toplevelcomposition/EcuAbstraction_prototype</TARGET-COMPONENT-PROTOTYPE-REF>
                   </COMPONENT-IREF>
                 </COMPONENT-IREFS>
               </SWC-TO-IMPL-MAPPING>
@@ -52,13 +52,13 @@
               <SHORT-NAME>Blinker_prototype</SHORT-NAME>
               <TYPE-TREF DEST="APPLICATION-SOFTWARE-COMPONENT-TYPE">/led_rte_system/BlinkerKit/Blinker</TYPE-TREF>
             </COMPONENT-PROTOTYPE>
-            <COMPONENT-PROTOTYPE UUID="489273d9-670f-4198-ba01-f2d6fa084750">
-              <SHORT-NAME>led_rte_ecuc_mpc5516_IoHwAbComponentType_prototype</SHORT-NAME>
-              <TYPE-TREF DEST="ECU-ABSTRACTION-COMPONENT-TYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/led_rte_ecuc_mpc5516_IoHwAbComponentType</TYPE-TREF>
+            <COMPONENT-PROTOTYPE UUID="922b50ee-d822-4173-8f34-875e5fac669b">
+              <SHORT-NAME>EcuAbstraction_prototype</SHORT-NAME>
+              <TYPE-TREF DEST="ECU-ABSTRACTION-COMPONENT-TYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/EcuAbstraction</TYPE-TREF>
             </COMPONENT-PROTOTYPE>
           </COMPONENTS>
           <CONNECTORS>
-            <ASSEMBLY-CONNECTOR-PROTOTYPE UUID="1733539e-e033-48b8-8fae-de781d4b50e5">
+            <ASSEMBLY-CONNECTOR-PROTOTYPE UUID="30c13411-b98f-4544-a082-03b70f09d4fa">
               <SHORT-NAME>LED_Port_connector</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
@@ -69,8 +69,8 @@
                 </SDGS>
               </ADMIN-DATA>
               <PROVIDER-IREF>
-                <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/led_rte_extract/led_rte_extract_toplevelcomposition/led_rte_ecuc_mpc5516_IoHwAbComponentType_prototype</COMPONENT-PROTOTYPE-REF>
-                <P-PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/led_rte_ecuc_mpc5516_IoHwAbComponentType/LEDS_LED5</P-PORT-PROTOTYPE-REF>
+                <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/led_rte_extract/led_rte_extract_toplevelcomposition/EcuAbstraction_prototype</COMPONENT-PROTOTYPE-REF>
+                <P-PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/EcuAbstraction/DigitalSignal_Led4</P-PORT-PROTOTYPE-REF>
               </PROVIDER-IREF>
               <REQUESTER-IREF>
                 <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/led_rte_extract/led_rte_extract_toplevelcomposition/Blinker_prototype</COMPONENT-PROTOTYPE-REF>
