@@ -8,12 +8,12 @@
 #import "Rte_Blinker.h"
 
 
-BooleanType Value = FALSE;
+DigitalLevel Value = FALSE;
 
 void BlinkerRunnable() {
 
 	Value = !Value;
 
-	Rte_Call_Blinker_LED_Port_Write(Value);
+	Rte_Call_Blinker_LED_Port_Set(Value);
 
 }

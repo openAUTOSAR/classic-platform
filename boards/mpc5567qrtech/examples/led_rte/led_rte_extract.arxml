@@ -27,14 +27,14 @@
                   </COMPONENT-IREF>
                 </COMPONENT-IREFS>
               </SWC-TO-IMPL-MAPPING>
-              <SWC-TO-IMPL-MAPPING UUID="80a59bb0-68e1-4c9b-9d96-ec73ccfc0901">
-                <SHORT-NAME>led_rte_ecuc_mpc5567_IoHwAbComponentType_prototypeImplMapping</SHORT-NAME>
-                <COMPONENT-IMPLEMENTATION-REF DEST="SWC-IMPLEMENTATION">/led_rte_ecuc_mpc5567/GeneratedIoHardwareAbstraction/led_rte_ecuc_mpc5567_IoHwAbImplementation</COMPONENT-IMPLEMENTATION-REF>
+              <SWC-TO-IMPL-MAPPING UUID="7d5ef227-bfa6-46c6-97e7-16d8d6b82d5b">
+                <SHORT-NAME>EcuAbstraction_prototypeImplMapping</SHORT-NAME>
+                <COMPONENT-IMPLEMENTATION-REF DEST="SWC-IMPLEMENTATION">/led_rte_ecuc_mpc5567/GeneratedIoHardwareAbstraction/EcuAbstractionImplementation</COMPONENT-IMPLEMENTATION-REF>
                 <COMPONENT-IREFS>
                   <COMPONENT-IREF>
                     <SOFTWARE-COMPOSITION-REF DEST="SOFTWARE-COMPOSITION">/led_rte_mpc5567_extract/led_rte_mpc5567_extract/led_rte_mpc5567_extract_softwareComposition</SOFTWARE-COMPOSITION-REF>
-                    <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/led_rte_mpc5567_extract/led_rte_mpc5567_extract_toplevelcomposition/led_rte_ecuc_mpc5567_IoHwAbComponentType_prototype</COMPONENT-PROTOTYPE-REF>
-                    <TARGET-COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/led_rte_mpc5567_extract/led_rte_mpc5567_extract_toplevelcomposition/led_rte_ecuc_mpc5567_IoHwAbComponentType_prototype</TARGET-COMPONENT-PROTOTYPE-REF>
+                    <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/led_rte_mpc5567_extract/led_rte_mpc5567_extract_toplevelcomposition/EcuAbstraction_prototype</COMPONENT-PROTOTYPE-REF>
+                    <TARGET-COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/led_rte_mpc5567_extract/led_rte_mpc5567_extract_toplevelcomposition/EcuAbstraction_prototype</TARGET-COMPONENT-PROTOTYPE-REF>
                   </COMPONENT-IREF>
                 </COMPONENT-IREFS>
               </SWC-TO-IMPL-MAPPING>
@@ -52,13 +52,13 @@
               <SHORT-NAME>Blinker_prototype</SHORT-NAME>
               <TYPE-TREF DEST="APPLICATION-SOFTWARE-COMPONENT-TYPE">/led_rte_mpc5567_system/BlinkerKit/Blinker</TYPE-TREF>
             </COMPONENT-PROTOTYPE>
-            <COMPONENT-PROTOTYPE UUID="cda2a549-dae1-45da-8023-88ab85bc51f2">
-              <SHORT-NAME>led_rte_ecuc_mpc5567_IoHwAbComponentType_prototype</SHORT-NAME>
-              <TYPE-TREF DEST="ECU-ABSTRACTION-COMPONENT-TYPE">/led_rte_ecuc_mpc5567/GeneratedIoHardwareAbstraction/led_rte_ecuc_mpc5567_IoHwAbComponentType</TYPE-TREF>
+            <COMPONENT-PROTOTYPE UUID="697964e0-c09c-477d-b30d-0ae3f2e6eb59">
+              <SHORT-NAME>EcuAbstraction_prototype</SHORT-NAME>
+              <TYPE-TREF DEST="ECU-ABSTRACTION-COMPONENT-TYPE">/led_rte_ecuc_mpc5567/GeneratedIoHardwareAbstraction/EcuAbstraction</TYPE-TREF>
             </COMPONENT-PROTOTYPE>
           </COMPONENTS>
           <CONNECTORS>
-            <ASSEMBLY-CONNECTOR-PROTOTYPE UUID="7aaffc0d-9ce3-4529-928d-fec26c1bbc11">
+            <ASSEMBLY-CONNECTOR-PROTOTYPE UUID="8233e8b7-4c88-485f-b06a-04031d9ef70c">
               <SHORT-NAME>LED_Port_connector</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
@@ -69,8 +69,8 @@
                 </SDGS>
               </ADMIN-DATA>
               <PROVIDER-IREF>
-                <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/led_rte_mpc5567_extract/led_rte_mpc5567_extract_toplevelcomposition/led_rte_ecuc_mpc5567_IoHwAbComponentType_prototype</COMPONENT-PROTOTYPE-REF>
-                <P-PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/led_rte_ecuc_mpc5567/GeneratedIoHardwareAbstraction/led_rte_ecuc_mpc5567_IoHwAbComponentType/RED_LED</P-PORT-PROTOTYPE-REF>
+                <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/led_rte_mpc5567_extract/led_rte_mpc5567_extract_toplevelcomposition/EcuAbstraction_prototype</COMPONENT-PROTOTYPE-REF>
+                <P-PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/led_rte_ecuc_mpc5567/GeneratedIoHardwareAbstraction/EcuAbstraction/DigitalSignal_Red_Led</P-PORT-PROTOTYPE-REF>
               </PROVIDER-IREF>
               <REQUESTER-IREF>
                 <COMPONENT-PROTOTYPE-REF DEST="COMPONENT-PROTOTYPE">/led_rte_mpc5567_extract/led_rte_mpc5567_extract_toplevelcomposition/Blinker_prototype</COMPONENT-PROTOTYPE-REF>
