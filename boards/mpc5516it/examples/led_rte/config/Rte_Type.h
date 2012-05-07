@@ -27,17 +27,17 @@ typedef sint32 SInt32;
 
 #define _DEFINED_TYPEDEF_FOR_SInt32_ 
 
-typedef uint32 UInt32;
-#define UInt32_LowerLimit 0
-#define UInt32_UpperLimit 4294967295
-
-#define _DEFINED_TYPEDEF_FOR_UInt32_ 
-
 typedef uint8 UInt8;
 #define UInt8_LowerLimit 0
 #define UInt8_UpperLimit 255
 
 #define _DEFINED_TYPEDEF_FOR_UInt8_ 
+
+typedef uint32 UInt32;
+#define UInt32_LowerLimit 0
+#define UInt32_UpperLimit 4294967295
+
+#define _DEFINED_TYPEDEF_FOR_UInt32_ 
 
 typedef sint32 MilliOhm;
 #define MilliOhm_LowerLimit -2147483647
@@ -85,12 +85,6 @@ typedef sint32 MilliVolt;
 
 #define _DEFINED_TYPEDEF_FOR_MilliVolt_ 
 
-typedef sint32 Hertz;
-#define Hertz_LowerLimit -2147483647
-#define Hertz_UpperLimit 2147483647
-
-#define _DEFINED_TYPEDEF_FOR_Hertz_ 
-
 typedef uint8 SignalQuality;
 #ifndef SignalQuality_InitialValue
 #define SignalQuality_InitialValue ((SignalQuality)0)
@@ -108,6 +102,12 @@ typedef uint8 SignalQuality;
 #define SignalQuality_UpperLimit 3
 
 #define _DEFINED_TYPEDEF_FOR_SignalQuality_ 
+
+typedef sint32 Hertz;
+#define Hertz_LowerLimit -2147483647
+#define Hertz_UpperLimit 2147483647
+
+#define _DEFINED_TYPEDEF_FOR_Hertz_ 
 
 typedef sint32 Percent;
 #define Percent_LowerLimit -2147483647
@@ -132,12 +132,12 @@ typedef struct {
 } Rte_DE_SInt32;
 
 typedef struct {
-	UInt32 value;
-} Rte_DE_UInt32;
-
-typedef struct {
 	UInt8 value;
 } Rte_DE_UInt8;
+
+typedef struct {
+	UInt32 value;
+} Rte_DE_UInt32;
 
 typedef struct {
 	MilliOhm value;
@@ -168,12 +168,12 @@ typedef struct {
 } Rte_DE_MilliVolt;
 
 typedef struct {
-	Hertz value;
-} Rte_DE_Hertz;
-
-typedef struct {
 	SignalQuality value;
 } Rte_DE_SignalQuality;
+
+typedef struct {
+	Hertz value;
+} Rte_DE_Hertz;
 
 typedef struct {
 	Percent value;

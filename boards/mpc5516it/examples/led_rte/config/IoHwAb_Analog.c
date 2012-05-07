@@ -13,19 +13,9 @@
 */
 
 /******************************************** Includes ********************************************/
-#if defined(USE_ADC)
+
 #include "IoHwAb.h"
 #include "IoHwAb_Internal.h"
-#include "Adc.h"
-#if defined(USE_DET)
-	#include "Det.h"
-#endif
-
-/******************************************* Externals ********************************************/
-
-Adc_ValueGroupType	IoHwAb_Adc_ReadSignal	( Adc_GroupType group, Adc_ChannelType channel, IoHwAb_StatusType * status );
-void				IoHwAb_Adc_Notification	( Adc_GroupType group );
-
 /***************************************** Private macros *****************************************/
 
 #define IOHWAB_ADC_MAX_MILLIVOLTS		( 5000 )
@@ -41,4 +31,3 @@ void				IoHwAb_Adc_Notification	( Adc_GroupType group );
 
 /************************************** Adc group callbacks ***************************************/
 
-#endif

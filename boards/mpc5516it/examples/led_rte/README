@@ -1,0 +1,5 @@
+If you want to use BSW Builder to regenerate code, follow the steps:
+1. Copy the contents of led_rte to a new project
+2. Make sure BOARDDIR is set to mpc5516it (right click on your project select properties->C/C++ Build->Environment)
+3. Load the interface definitions needed by IoHwAb (right click on your project select properties ->Arccore Tools->BSW Service components->IoHwAb select load)
+4. Now you can regenerate code from BSW Builder
