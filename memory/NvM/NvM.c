@@ -443,6 +443,7 @@ typedef struct {
 	uint8 *			dataPtr;	/* Src or Dest ptr */
 	uint8 		dataIndex;
 	boolean		blockChanged;
+	uint8	    serviceId;
 } Nvm_QueueType;
 
 
@@ -457,6 +458,7 @@ static NvmStateType 				nvmState = NVM_UNINITIALIZED;
 #define RB_CALC_CHECKSUM	2
 
 static int 							nvmSubState = 0;
+static uint8 						serviceId = NVM_INIT_ID;
 //static int nvmSetNr;
 static AdministrativeBlockType 		AdminBlock[NVM_NUM_OF_NVRAM_BLOCKS];
 static AdministrativeMultiBlockType AdminMultiBlock;
@@ -525,6 +527,7 @@ typedef struct {
 	NvmStateType			state;
 	uint16					currBlockIndex;		// Keeps track of next unfinished block
 	NvM_RequestResultType	PendingErrorStatus;	// Status from multi block requests i.e. Read/Write/CancelWrite-all
+	uint8					serviceId;
 } AdminMultiReqType;
 
 static AdminMultiReqType AdminMultiReq;
@@ -1065,7 +1068,7 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 
 		/*  @req 3.1.5/NVM281 */
 		if( bPtr->SingleBlockCallback != NULL ) {
-			bPtr->SingleBlockCallback(NVM_READ_ALL_ID, admPtr->ErrorStatus);
+			bPtr->SingleBlockCallback(serviceId, admPtr->ErrorStatus);
 		}
 
 		if( multiBlock ) {
@@ -1081,6 +1084,11 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 				}
 				nvmState = NVM_IDLE;
 				nvmSubState = 0;
+
+				/*  @req 3.1.5/NVM468 */
+				if( NvM_Config.Common.MultiBlockCallback != NULL ) {
+					NvM_Config.Common.MultiBlockCallback(serviceId, AdminMultiBlock.ErrorStatus);
+				}
 			}
 		} else {
 			nvmState = NVM_IDLE;
@@ -1308,6 +1316,7 @@ void NvM_ReadAll(void)
 	Irq_Save(state);
 	AdminMultiReq.state = NVM_READ_ALL;
 	AdminMultiBlock.ErrorStatus = NVM_REQ_PENDING;
+	AdminMultiReq.serviceId = NVM_READ_ALL_ID;
 	Irq_Restore(state);
 }
 
@@ -1327,6 +1336,7 @@ void NvM_WriteAll(void)
 	Irq_Save(state);
 	AdminMultiReq.state = NVM_WRITE_ALL;
 	AdminMultiBlock.ErrorStatus = NVM_REQ_PENDING;
+	AdminMultiReq.serviceId = NVM_WRITE_ALL_ID;
 	Irq_Restore(state);
 }
 
@@ -1385,6 +1395,7 @@ Std_ReturnType NvM_SetRamBlockStatus(NvM_BlockIdType blockId, boolean blockChang
 	qEntry.blockId = blockId;
 	qEntry.op = NVM_SETRAMBLOCKSTATUS;
 	qEntry.blockChanged = blockChanged;
+	qEntry.serviceId = NVM_SET_RAM_BLOCK_STATUS_ID;
 	rv = CirqBuffPush(&nvmQueue,&qEntry);
 	NVM_ASSERT(rv == 0 );
 
@@ -1456,6 +1467,7 @@ Std_ReturnType NvM_RestoreBlockDefaults( NvM_BlockIdType blockId, uint8* NvM_Des
 	qEntry.op = NVM_RESTORE_BLOCK_DEFAULTS;
 	qEntry.blockId = blockId;
 	qEntry.dataPtr = (uint8_t *)NvM_DestPtr;
+	qEntry.serviceId = NVM_RESTORE_BLOCK_DEFAULTS_ID;
 	rv = CirqBuffPush(&nvmQueue,&qEntry);
 	NVM_ASSERT(rv == 0 );
 
@@ -1545,6 +1557,7 @@ Std_ReturnType NvM_ReadBlock( NvM_BlockIdType blockId, uint8* NvM_DstPtr )
 	qEntry.op = NVM_READ_BLOCK;
 	qEntry.blockId = blockId;
 	qEntry.dataPtr = NvM_DstPtr;
+	qEntry.serviceId = NVM_READ_BLOCK_ID;
 	rv = CirqBuffPush(&nvmQueue,&qEntry);
 	NVM_ASSERT(rv == 0 );
 
@@ -1589,6 +1602,7 @@ Std_ReturnType NvM_WriteBlock( NvM_BlockIdType blockId, const uint8* NvM_SrcPtr 
 	qEntry.op = NVM_WRITE_BLOCK;
 	qEntry.blockId = blockId;
 	qEntry.dataPtr = (uint8_t *)NvM_SrcPtr;
+	qEntry.serviceId = NVM_WRITE_BLOCK_ID;
 	rv = CirqBuffPush(&nvmQueue,&qEntry);
 	NVM_ASSERT(rv == 0 );
 
@@ -1627,8 +1641,9 @@ Std_ReturnType NvM_WriteBlock( NvM_BlockIdType blockId, const uint8* NvM_SrcPtr 
 Std_ReturnType NvM_SetDataIndex( NvM_BlockIdType blockId, uint8 dataIndex ) {
 #if  ( NVM_DEV_ERROR_DETECT == STD_ON )
 	const NvM_BlockDescriptorType *	bPtr = &NvM_Config.BlockDescriptor[blockId-1];
-	AdministrativeBlockType * 		admPtr = &AdminBlock[blockId-1];
 #endif
+	AdministrativeBlockType * 		admPtr = &AdminBlock[blockId-1];
+
 	Nvm_QueueType qEntry;
 	int rv;
 
@@ -1644,6 +1659,7 @@ Std_ReturnType NvM_SetDataIndex( NvM_BlockIdType blockId, uint8 dataIndex ) {
 	qEntry.op = NVM_SETDATAINDEX;
 	qEntry.blockId = blockId;
 	qEntry.dataIndex = dataIndex;
+	qEntry.serviceId = NVM_SET_DATA_INDEX_ID;
 	rv = CirqBuffPush(&nvmQueue,&qEntry);
 	NVM_ASSERT(rv == 0 );
 
@@ -1656,8 +1672,8 @@ Std_ReturnType NvM_SetDataIndex( NvM_BlockIdType blockId, uint8 dataIndex ) {
 Std_ReturnType NvM_GetDataIndex( NvM_BlockIdType blockId, uint8 *dataIndexPtr ) {
 #if  ( NVM_DEV_ERROR_DETECT == STD_ON )
 	const NvM_BlockDescriptorType *	bPtr = &NvM_Config.BlockDescriptor[blockId-1];
-	AdministrativeBlockType * 		admPtr = &AdminBlock[blockId-1];
 #endif
+	AdministrativeBlockType * 		admPtr = &AdminBlock[blockId-1];
 	Nvm_QueueType qEntry;
 	int rv;
 
@@ -1673,6 +1689,7 @@ Std_ReturnType NvM_GetDataIndex( NvM_BlockIdType blockId, uint8 *dataIndexPtr ) 
 	qEntry.op = NVM_GETDATAINDEX;
 	qEntry.blockId = blockId;
 	qEntry.dataPtr = dataIndexPtr;
+	qEntry.serviceId = NVM_GET_DATA_INDEX_ID;
 	rv = CirqBuffPush(&nvmQueue,&qEntry);
 	NVM_ASSERT(rv == 0 );
 
@@ -1707,6 +1724,7 @@ void NvM_MainFunction(void)
 			admBlock = &AdminBlock[qEntry.blockId-1];
 			nvmSubState = 0;
 			admBlock->ErrorStatus = NVM_REQ_PENDING;
+			serviceId = qEntry.serviceId;
 			DEBUG_PRINTF("### Popped Single FIFO : %s\n",StateToStr[qEntry.op]);
 			DEBUG_PRINTF("### CRC On:%d Ram:%d Type:%d\n",nvmBlock->BlockUseCrc, nvmBlock->CalcRamBlockCrc, nvmBlock->BlockCRCType );
 			DEBUG_PRINTF("### RAM:%x ROM:%x\n", nvmBlock->RamBlockDataAddress, nvmBlock->RomBlockDataAdress );
@@ -1717,6 +1735,7 @@ void NvM_MainFunction(void)
 				nvmSubState = 0;
 				nvmBlock = 0;
 				admBlock = 0;
+				serviceId = AdminMultiReq.serviceId;
 				AdminMultiReq.state = NVM_UNINITIALIZED;
 
 				DEBUG_PRINTF("### Popped MULTI\n");
