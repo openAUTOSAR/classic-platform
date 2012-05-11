@@ -284,7 +284,8 @@ vpath-$(USE_TCF) += $(ROOTDIR)/common/tcf
 #SLEEP
 obj-$(USE_SLEEP) += sleep.o
 
-
+# Circular Buffer (always)
+obj-y += cirq_buffer.o
 
 ifeq ($(COMPILER),cw)
 SELECT_CLIB?=CLIB_CW
