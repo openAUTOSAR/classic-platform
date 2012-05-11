@@ -1,6 +1,12 @@
 
 _BOARD_COMMON_MK:=y  # Include guard for backwards compatability
 
+# Always add CRC modules
+#vpath-y += $(ROOTDIR)/system/Crc
+#obj-y += Crc_16.o
+#obj-y += Crc_32.o
+
+
 obj-$(CFG_PPC) += crt0.o
 obj-$(CFG_HC1X) += crt0.o
 vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
@@ -106,10 +112,10 @@ obj-$(USE_ADC) += Adc_Internal.o
 vpath-y += $(ROOTDIR)/drivers
 inc-y += $(ROOTDIR)/drivers
 
-# Crc
-vpath-$(USE_CRC32) += $(ROOTDIR)/system/Crc
-obj-$(USE_CRC32) += Crc_32.o
-obj-$(USE_CRC16) += Crc_16.o
+# Crc (Always include)
+vpath-y += $(ROOTDIR)/system/Crc
+obj-y += Crc_32.o
+obj-y += Crc_16.o
 
 # J1939Tp
 obj-$(USE_J1939TP) += J1939Tp.o
