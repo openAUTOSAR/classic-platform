@@ -116,9 +116,7 @@
 /*
  * Block numbering recalculation macros
  */
-#define GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(_blocknr)	(((_blocknr) >> NVM_DATASET_SELECTION_BITS) - 1u)
 #define GET_DATASET_FROM_BLOCK_NUMBER(_blocknr)	((_blocknr) & ((uint16)((uint16)1u << NVM_DATASET_SELECTION_BITS) - 1u))
-#define BLOCK_INDEX_AND_SET_TO_BLOCKNR(_blocknr, _set)	((uint16)((_blocknr + 1u) << NVM_DATASET_SELECTION_BITS) | _set)
 
 /*
  * Page alignment macros
@@ -335,6 +333,23 @@ static CurrentJobType CurrentJob = {
 /***************************************
  *           Local functions           *
  ***************************************/
+uint16 GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(uint16 blockNumber) {
+	const Fee_BlockConfigType *FeeBlockCon;
+	uint16 BlockIndex = FEE_NUM_OF_BLOCKS + 1; // An invalid block
+
+	FeeBlockCon = Fee_Config.BlockConfig;
+	for (uint16 i = 0; i < FEE_NUM_OF_BLOCKS; i++)
+	{
+		if (FeeBlockCon[i].BlockNumber == blockNumber)
+		{
+			BlockIndex = i;
+			break;
+		}
+	}
+
+	return BlockIndex;
+}
+
 
 #if (FEE_POLLING_MODE == STD_ON)
 #define SetFlsJobBusy()			/* Nothing needs to be done here */
@@ -543,6 +558,7 @@ static void StartupReadBlockAdmin(void)
 						}
 					}
 				}
+				// TODO Check wrap around here
 				CurrentJob.Op.Startup.BlockAdminAddress -= BLOCK_CTRL_PAGE_SIZE;
 				AdminFls.NewBlockAdminAddress = CurrentJob.Op.Startup.BlockAdminAddress;
 			}
@@ -831,7 +847,7 @@ static void GarbageCollectStartJob(void)
 						if ((AdminFls.BlockDescrTbl[blockIndex][set].BlockAdminAddress >= BankProp[sourceBank].Start) && (AdminFls.BlockDescrTbl[blockIndex][set].BlockAdminAddress < (BankProp[sourceBank].End))) {
 							CurrentJob.AdminFlsBlockPtr = &AdminFls.BlockDescrTbl[blockIndex][set];
 							CurrentJob.BlockConfigPtr = &Fee_Config.BlockConfig[blockIndex];
-							CurrentJob.BlockNumber = BLOCK_INDEX_AND_SET_TO_BLOCKNR(blockIndex, set);
+							CurrentJob.BlockNumber = Fee_Config.BlockConfig[blockIndex].BlockNumber;
 							if (AdminFls.BlockDescrTbl[blockIndex][set].Status == BLOCK_STATUS_INVALIDATED) {
 								CurrentJob.Length = 0;
 							} else {
@@ -1190,7 +1206,6 @@ Std_ReturnType Fee_Read(uint16 blockNumber, uint16 blockOffset, uint8* dataBuffe
 	VALIDATE_RV(ModuleStatus != MEMIF_UNINIT, FEE_READ_ID, FEE_E_UNINIT, E_NOT_OK);
 	VALIDATE_RV(ModuleStatus == MEMIF_IDLE, FEE_READ_ID, FEE_E_BUSY, E_NOT_OK);
 
-	VALIDATE_RV(blockNumber >= MIN_BLOCKNR, FEE_READ_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
 	blockIndex = GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(blockNumber);
 	VALIDATE_RV(blockIndex < FEE_NUM_OF_BLOCKS, FEE_READ_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
 	VALIDATE_RV(dataBufferPtr != NULL, FEE_READ_ID, FEE_E_INVALID_DATA_PTR, E_NOT_OK);
@@ -1229,7 +1244,6 @@ Std_ReturnType Fee_Write(uint16 blockNumber, uint8* dataBufferPtr)
 	VALIDATE_RV(ModuleStatus != MEMIF_UNINIT, FEE_WRITE_ID, FEE_E_UNINIT, E_NOT_OK);
 	VALIDATE_RV(ModuleStatus == MEMIF_IDLE, FEE_WRITE_ID, FEE_E_BUSY, E_NOT_OK);
 
-	VALIDATE_RV(blockNumber >= MIN_BLOCKNR, FEE_WRITE_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
 	blockIndex = GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(blockNumber);
 	VALIDATE_RV(blockIndex < FEE_NUM_OF_BLOCKS, FEE_WRITE_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
 	VALIDATE_RV(dataBufferPtr != NULL, FEE_WRITE_ID, FEE_E_INVALID_DATA_PTR, E_NOT_OK);
@@ -1295,7 +1309,6 @@ Std_ReturnType Fee_InvalidateBlock(uint16 blockNumber)
 	VALIDATE_RV(ModuleStatus != MEMIF_UNINIT, FEE_INVALIDATE_BLOCK_ID, FEE_E_UNINIT, E_NOT_OK);
 	VALIDATE_RV(ModuleStatus == MEMIF_IDLE, FEE_INVALIDATE_BLOCK_ID, FEE_E_BUSY, E_NOT_OK);
 
-	VALIDATE_RV(blockNumber >= MIN_BLOCKNR, FEE_INVALIDATE_BLOCK_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
 	blockIndex = GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(blockNumber);
 	VALIDATE_RV(blockIndex < FEE_NUM_OF_BLOCKS, FEE_INVALIDATE_BLOCK_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
 
