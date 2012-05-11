@@ -87,6 +87,9 @@ Std_ReturnType CanSM_RequestComMode( NetworkHandleType NetworkHandle, ComM_ModeT
 /** @req CANSM063 */
 Std_ReturnType CanSM_GetCurrentComMode( NetworkHandleType NetworkHandle, ComM_ModeType* ComM_ModePtr );
 
+/** Init function for CanSM */
+/** @req CANSM023 */
+void CanSM_Init( const CanSM_ConfigType* ConfigPtr );
 
 /** Scheduled function of the CanSM */
 /** @req CANSM065 */

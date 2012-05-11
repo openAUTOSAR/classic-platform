@@ -800,7 +800,7 @@ void Can_Init(const Can_ConfigType *config)
         ISR_INSTALL_ISR2( "Can", Can_F_Isr, FLEXCAN_5_BUF_32_63, 2, 0 );
         break;
 	#endif
-#elif defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567)
+#elif defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567) || defined(CFG_MPC5668)
         case CAN_CTRL_A:
         ISR_INSTALL_ISR2( "Can", Can_A_BusOff, FLEXCAN_A_ESR_BOFF_INT, 2, 0);
         ISR_INSTALL_ISR2( "Can", Can_A_Err, FLEXCAN_A_ESR_ERR_INT, 2, 0 );
@@ -836,7 +836,7 @@ void Can_Init(const Can_ConfigType *config)
         ISR_INSTALL_ISR2( "Can", Can_E_Isr, FLEXCAN_E_IFLAG1_BUF31_16I, 2, 0 );
         ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_E_IFLAG1_BUF63_32I, 2, 0 );
         break;
-	#if defined(CFG_MPC5516) || defined(CFG_MPC5517)
+	#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5668)
         case CAN_CTRL_F:
         ISR_INSTALL_ISR2( "Can", Can_F_BusOff, FLEXCAN_F_ESR_BOFF_INT, 2, 0 );
         ISR_INSTALL_ISR2( "Can", Can_F_Err, FLEXCAN_F_ESR_ERR_INT, 2, 0 );
@@ -1258,7 +1258,7 @@ Can_ReturnType Can_Write(Can_Arc_HTHType hth, Can_PduType *pduInfo)
             canHw->BUF[mbNr].ID.B.STD_ID = pduInfo->id;
         }
 
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S) || defined(CFG_MPC5604B)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S) || defined(CFG_MPC5604B) || defined(CFG_MPC5668)
         canHw->BUF[mbNr].ID.B.PRIO = 1; // Set Local Priority
 #endif
 
