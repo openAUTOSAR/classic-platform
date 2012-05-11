@@ -107,10 +107,10 @@ obj-$(USE_ADC) += Adc_Internal.o
 vpath-y += $(ROOTDIR)/drivers
 inc-y += $(ROOTDIR)/drivers
 
-# Crc (Always include)
-vpath-y += $(ROOTDIR)/system/Crc
-obj-y += Crc_32.o
-obj-y += Crc_16.o
+# Crc (Include when using NvM)
+vpath-$(USE_NVM) += $(ROOTDIR)/system/Crc
+obj-$(USE_NVM) += Crc_32.o
+obj-$(USE_NVM) += Crc_16.o
 
 # J1939Tp
 obj-$(USE_J1939TP) += J1939Tp.o
