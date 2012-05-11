@@ -170,7 +170,6 @@ SECTIONS
     Det.o(.text)
     xtoa.o(.text)
     newlib_port.o(.text)
-    cirq_buffer.o(.text)
 
     . = ALIGN(2);
   } > bank_B AT>bank_B_lma =0xff
@@ -224,6 +223,7 @@ SECTIONS
     Can*.o(.text)
     Pdu*.o(.text)
     Dio*.o(.text)
+    cirq_buffer.o(.text)
 
     . = ALIGN(2);
   } > bank_D AT>bank_D_lma  =0xff
