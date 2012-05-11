@@ -1,11 +1,6 @@
 
 _BOARD_COMMON_MK:=y  # Include guard for backwards compatability
 
-# Always add CRC modules
-#vpath-y += $(ROOTDIR)/system/Crc
-#obj-y += Crc_16.o
-#obj-y += Crc_32.o
-
 
 obj-$(CFG_PPC) += crt0.o
 obj-$(CFG_HC1X) += crt0.o
