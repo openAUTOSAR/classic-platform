@@ -580,7 +580,7 @@ typedef enum
 	EQADC_FISR5_RFDF5,		// 130, 112
 #endif
 
-#if defined(CFG_MPC5516)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 	/* SCI */
 	SCI_A_COMB,				// 16-113
 	SCI_B_COMB,
