@@ -32,6 +32,9 @@ SPI
   - M95256 ,     E2, SPI_B , CS2 (from 0)
   - S25FL016, Flash, SPI_A , CS0 (from 0)
 
+Testing during MCAL test:
+   SPI_A, M95256 using PCS_A[2]
+
 CPU  PAD        Func     Schema     
   --- HOLD PINS --- (pull HIGH)
  37  102(PG6)			 SPI_B_WP  (E2) 
