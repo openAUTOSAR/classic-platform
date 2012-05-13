@@ -497,6 +497,8 @@ static void Can_Isr_Tx(Can_UnitType *uPtr)
 {
     uint8 mbNr;
     flexcan_t *canHw;
+    PduIdType pduId;
+
 
     canHw = uPtr->hwPtr;
 
@@ -514,6 +516,7 @@ static void Can_Isr_Tx(Can_UnitType *uPtr)
     for (; mbMask; mbMask &= ~(1ull << mbNr)) {
         mbNr = ilog2_64(mbMask);
 
+        pduId = uPtr->cfgCtrlPtr->Can_Arc_TxPduHandles[mbNr-uPtr->cfgCtrlPtr->Can_Arc_TxMailboxStart];
         uPtr->cfgCtrlPtr->Can_Arc_TxPduHandles[mbNr-uPtr->cfgCtrlPtr->Can_Arc_TxMailboxStart] = 0;
 
         // Clear interrupt and mark txBox as Free
@@ -521,7 +524,7 @@ static void Can_Isr_Tx(Can_UnitType *uPtr)
         uPtr->mbTxFree |= (1ull << mbNr);
 
         if (GET_CALLBACKS()->TxConfirmation != NULL) {
-            GET_CALLBACKS()->TxConfirmation(uPtr->cfgCtrlPtr->Can_Arc_TxPduHandles[mbNr-uPtr->cfgCtrlPtr->Can_Arc_TxMailboxStart]);
+            GET_CALLBACKS()->TxConfirmation(pduId);
         }
     }
 }
