@@ -578,11 +578,6 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
   tq2 = config->CanControllerSeg2 + 1;
   tq = tqSync + tq1 + tq2;
 
-  // Check TQ limitations..
-  VALIDATE_DEM_NO_RV(( (tq1>=1) && (tq1<=16)), CAN_E_TIMEOUT );
-  VALIDATE_DEM_NO_RV(( (tq2>=1) && (tq2<=8)), CAN_E_TIMEOUT );
-  VALIDATE_DEM_NO_RV(( (tq>=1) && (tq<5 )), CAN_E_TIMEOUT );
-
   CAN_InitTypeDef        CAN_InitStructure;
   CAN_StructInit(&CAN_InitStructure);
 
