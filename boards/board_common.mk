@@ -130,7 +130,7 @@ obj-$(USE_SPI) += Spi_Lcfg.o
 # NvM
 obj-$(USE_NVM) += NvM.o
 obj-$(USE_NVM) += NvM_Cfg.o
-obj-$(USE_NVM)-$(CFG_NVM_USE_SERVICE_COMPONENT) += NvmM_ServiceComponent.o
+obj-$(USE_NVM)-$(CFG_NVM_USE_SERVICE_COMPONENT) += NvM_ServiceComponent.o
 inc-$(USE_NVM) += $(ROOTDIR)/memory/NvM
 vpath-$(USE_NVM) += $(ROOTDIR)/memory/NvM
 
