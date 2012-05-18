@@ -14,11 +14,31 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
+/*
+ * Freescale uses two flavors for DMA.
+ * 1. eDMA
+ * 2. eDMA + DMA_MUX
+ *
+ * 1. eDMA only (MPC5557, etc)
+ *   The "DMA Request Assignments" are used and configured in Dma_Cfg.h using Dma_ChannelType.
+ *
+ * 2. eDMA + DMA_MUX  (MPC551x , MPC5668, etc )
+ *   The eDMA + DMA_MUX the "DMA Request Assignments" are just mappings from the DMA_MUX.
+ *   The file Dma.h contains the Dma_MuxChannels
+ *
+ *
+ *  eDMA+DMA_MUX
+ *    MPC551x
+ *    MPC5668
+ *    MPC5605B,MPC5606B,MPC5607B
+ *
+ *  eDMA
+ *    MPC5567
+ *
+ *  NO DMA
+ *    MPC5604B
+ *
+ */
 
 #ifndef DMA_H_
 #define DMA_H_
@@ -28,6 +48,13 @@
 #include "Dma_Cfg.h"
 #include "mpc55xx.h"
 
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || (CFG_MPC5606S) || defined(CFG_MPC5668)
+#if !defined(CFG_DMA_MUX)
+#define CFG_DMA_MUX
+#endif
+#endif
+
+#if defined(CFG_DMA_MUX)
 
 #if defined(CFG_MPC5606S)
 typedef enum
@@ -109,7 +136,90 @@ typedef enum
   DMA_ALWAYS_REQUESTORS8
 }Dma_MuxChannels;
 
-#else
+#elif defined(CFG_MPC5668)
+
+/* Table 22-4. DMA Source Configuration */
+
+typedef enum
+{
+	DMA_CHANNEL_DISABLED,	/* 0 */
+	DMA_CHANNEL_RESERVED,
+	DMA_SCI_A_COMBTX,
+	DMA_SCI_A_COMBRX,
+	DMA_SCI_B_COMBTX,
+	DMA_SCI_B_COMBRX,
+	DMA_SCI_C_COMBTX,
+	DMA_SCI_C_COMBRX,
+	DMA_SCI_D_COMBTX,
+	DMA_SCI_D_COMBRX,
+	DMA_SCI_E_COMBTX,
+	DMA_SCI_E_COMBRX,
+	DMA_SCI_F_COMBTX,
+	DMA_SCI_F_COMBRX,
+	DMA_SCI_G_COMBTX,
+	DMA_SCI_G_COMBRX,
+	DMA_SCI_H_COMBTX,
+	DMA_SCI_H_COMBRX,
+
+	DMA_DSPI_A_SR_TFFF,  /* 0x12 */
+	DMA_DSPI_A_SR_RFRD,
+	DMA_DSPI_B_SR_TFFF,
+	DMA_DSPI_B_SR_RFRD,
+	DMA_DSPI_E_SR_TFFF,
+	DMA_DSPI_E_SR_RFRD,
+	DMA_DSPI_F_SR_TFFF,
+	DMA_DSPI_F_SR_RFRD,
+
+	DMA_EMIOS200_FLAG_F0, /* 0x1a */
+	DMA_EMIOS200_FLAG_F1,
+	DMA_EMIOS200_FLAG_F2,
+	DMA_EMIOS200_FLAG_F3,
+	DMA_EMIOS200_FLAG_F4,
+	DMA_EMIOS200_FLAG_F5,
+	DMA_EMIOS200_FLAG_F6,
+	DMA_EMIOS200_FLAG_F7,
+	DMA_EMIOS200_FLAG_F8,
+	DMA_EMIOS200_FLAG_F9,
+	DMA_EMIOS200_FLAG_F10,
+	DMA_EMIOS200_FLAG_F11,
+	DMA_EMIOS200_FLAG_F12,
+	DMA_EMIOS200_FLAG_F13,
+	DMA_EMIOS200_FLAG_F14,
+	DMA_EMIOS200_FLAG_F15,
+
+	DMA_IIC_A_TX,  /* 0x2a */
+	DMA_IIC_A_RX,
+	DMA_IIC_B_TX,
+	DMA_IIC_B_RX,
+
+	DMA_SIU_EISR_EIF0, /* 0x2e */
+	DMA_SIU_EISR_EIF1,
+
+	DMA_IIC_C_TX, /* 0x30 */
+	DMA_IIC_C_RX,
+
+	DMA_ADC_A,
+
+	DMA_IIC_D_TX, /* 0x33 */
+	DMA_IIC_D_RX,
+
+	DMA_SCI_J_COMBTX, /* 0x35 */
+	DMA_SCI_J_COMBRX,
+	DMA_SCI_K_COMBTX,
+	DMA_SCI_K_COMBRX,
+	DMA_SCI_L_COMBTX,
+	DMA_SCI_L_COMBRX,
+	DMA_SCI_M_COMBTX,
+	DMA_SCI_M_COMBRX,
+
+	DMA_ALWAYS_ENABLED_0, /* 0x3d */
+	DMA_ALWAYS_ENABLED_1,
+	DMA_ALWAYS_ENABLED_2,
+} Dma_MuxChannels;
+
+#elif  defined(CFG_MPC5516) || defined(CFG_MPC5517)
+/* MPC551x "Table 13-4. DMA Source Configuration" */
+
 typedef enum
 {
   DMA_CHANNEL_DISABLED,
@@ -188,13 +298,17 @@ typedef enum
 }Dma_MuxChannels;
 
 #endif
+#endif
 
+
+#if defined(CFG_DMA_MUX)
 typedef struct
 {
   vuint8_t DMA_CHANNEL_ENABLE;
   vuint8_t DMA_CHANNEL_TRIG_ENABLE;
   Dma_MuxChannels DMA_CHANNEL_SOURCE;
 } Dma_MuxConfigType;
+#endif
 
 typedef struct
 {
@@ -221,7 +335,7 @@ typedef enum
 typedef struct
 {
 	// 5567 has no Dma Mux, but maybe this should be left in anyway?
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || (CFG_MPC5606S)
+#if defined(CFG_DMA_MUX)
   const Dma_MuxConfigType          *dmaMuxConfigPtr;
 #endif
   const Dma_ChannelConfigType      *dmaChannelConfigPtr;

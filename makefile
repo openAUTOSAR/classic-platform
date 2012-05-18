@@ -138,7 +138,12 @@ show_build:
 	@echo "==========[ BUILD INFO ]==========="
 	@echo "  BDIR:           $(BDIR) [$(origin BDIR)]"
 	@echo "  BOARDDIR:       $(BOARDDIR) [$(origin BOARDDIR)]"
+	@echo "  COMPILER:       $(COMPILER) [$(origin COMPILER)]"	
+ifeq ($(COMPILER),cw)	
+	@echo "  CW_COMPILE:     $(CW_COMPILE) [$(origin CW_COMPILE)]"
+else 
 	@echo "  CROSS_COMPILE:  $(CROSS_COMPILE) [$(origin CROSS_COMPILE)]"
+endif
 	@echo "  CURDIR:         $(CURDIR)"
 	@echo "  SELECT_CONSOLE: $(SELECT_CONSOLE) [$(origin SELECT_CONSOLE)]"
 	
