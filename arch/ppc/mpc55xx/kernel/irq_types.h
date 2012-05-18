@@ -438,8 +438,8 @@ typedef enum
 	PIN_WAKEUP,
 	CRP_INTERRUPT,			// API/RTC interrupt
 	LVI_INTERRUPT,
-	I2C_A,
-	I2C_B,
+	IRQ_I2C_A,
+	IRQ_I2C_B,
 #endif
 	PLL_SYNSR_LOCF,			// 54-43,  16-50
 	PLL_SYNSR_LOLF,			// 54-44,  16-51

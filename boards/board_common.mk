@@ -98,6 +98,7 @@ obj-$(USE_PORT) += Port.o
 obj-$(USE_PORT) += Port_Cfg.o
 
 obj-$(USE_ADC)-$(CFG_MPC560X) += Adc_560x.o
+obj-$(USE_ADC)-$(CFG_MPC5668) += Adc_560x.o
 obj-$(USE_ADC)-$(CFG_HC1X) += Adc.o
 obj-$(USE_ADC)-$(CFG_ARM_CM3) += Adc.o
 obj-$(USE_ADC)-$(CFG_MPC5516) += Adc_eQADC.o
