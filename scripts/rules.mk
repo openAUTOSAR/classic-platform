@@ -218,11 +218,13 @@ FORCE:
 $(ROOTDIR)/binaries/$(BOARDDIR):
 	@mkdir -p $@
 
-.PHONY all:
-all: module_config $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $(ROOTDIR)/binaries/$(BOARDDIR)
-	$(Q)cp -v $(build-lib-y) $(build-exe-y) $(build-hex-y) $(build-bin-y) $(ROOTDIR)/binaries/$(BOARDDIR)
-	
+all-mod += $(build-hex-y) $(build-exe-y) $(build-srec-y) 
+all-mod += $(build-lib-y) $(build-bin-y)
 
+.PHONY all:
+all: | module_config $(ROOTDIR)/binaries/$(BOARDDIR) $(all-mod) $(all-mod-post)
+all: module_config $(all-mod) $(all-mod-post) $(ROOTDIR)/binaries/$(BOARDDIR) 
+	@cp -v $(all-mod) $(all-mod-post) $(ROOTDIR)/binaries/$(BOARDDIR)
 
 .SUFFIXES:
 
