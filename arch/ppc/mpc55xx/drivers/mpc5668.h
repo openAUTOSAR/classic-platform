@@ -19,6 +19,7 @@
 #ifndef _MPC5668_H_
 #define _MPC5668_H_
 
+#include "Compiler.h"
 #include "typedefs.h"
 
 #ifdef  __cplusplus
