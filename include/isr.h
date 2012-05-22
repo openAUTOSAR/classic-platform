@@ -100,7 +100,7 @@
 	do { \
 	  static const OsIsrConstType _entry ## _unique = { \
 			.vector = _vector,   \
-			.type = ISR_TYPE_2, \
+			.type = ISR_TYPE_1, \
 			.priority = _priority,      \
 			.entry = _entry,      \
 			.name = _name,      \
