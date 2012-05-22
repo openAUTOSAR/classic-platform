@@ -22,7 +22,7 @@
               </SDG>
             </SDGS>
           </ADMIN-DATA>
-          <ECU-EXTRACT-REF DEST="SYSTEM">/led_rte_extract/led_rte_extract</ECU-EXTRACT-REF>
+          <ECU-EXTRACT-REF DEST="SYSTEM">/led_rte_extract_mpc5516it/led_rte_extract</ECU-EXTRACT-REF>
           <ECU-SW-COMPOSITION-REF DEST="ECU-SW-COMPOSITION">/led_rte_ecuc_mpc5516/SwComposition_led_rte_ecuc_mpc5516</ECU-SW-COMPOSITION-REF>
           <MODULE-REFS>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/led_rte_ecuc_mpc5516/EcuM</MODULE-REF>
@@ -36,7 +36,7 @@
         </ECU-CONFIGURATION>
         <ECU-SW-COMPOSITION UUID="d91200bc-0faa-4d43-8b36-2683c07c9853">
           <SHORT-NAME>SwComposition_led_rte_ecuc_mpc5516</SHORT-NAME>
-          <ECU-EXTRACT-REF DEST="SYSTEM">/led_rte_extract/led_rte_extract</ECU-EXTRACT-REF>
+          <ECU-EXTRACT-REF DEST="SYSTEM">/led_rte_extract_mpc5516it/led_rte_extract</ECU-EXTRACT-REF>
         </ECU-SW-COMPOSITION>
         <MODULE-CONFIGURATION UUID="693bf95b-d6bb-41e2-bdf0-57478c47b383">
           <SHORT-NAME>EcuM</SHORT-NAME>
@@ -923,12 +923,12 @@
               <REFERENCE-VALUES>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="FOREIGN-REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/ImplementationRef</DEFINITION-REF>
-                  <VALUE-REF DEST="SWC-IMPLEMENTATION">/led_rte_system/BlinkerKit/BlinkerImplementation</VALUE-REF>
+                  <VALUE-REF DEST="SWC-IMPLEMENTATION">/led_rte_system_mpc5516it/BlinkerKit/BlinkerImplementation</VALUE-REF>
                 </REFERENCE-VALUE>
                 <INSTANCE-REFERENCE-VALUE>
                   <DEFINITION-REF DEST="INSTANCE-REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/SoftwareComponentInstanceRef</DEFINITION-REF>
                   <VALUE-IREF>
-                    <VALUE-REF DEST="COMPONENT-PROTOTYPE">/led_rte_extract/led_rte_extract_toplevelcomposition/Blinker_prototype</VALUE-REF>
+                    <VALUE-REF DEST="COMPONENT-PROTOTYPE">/led_rte_extract_mpc5516it/led_rte_extract_toplevelcomposition/Blinker_prototype</VALUE-REF>
                   </VALUE-IREF>
                 </INSTANCE-REFERENCE-VALUE>
               </REFERENCE-VALUES>
@@ -954,7 +954,7 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="FOREIGN-REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/RTEEventRef</DEFINITION-REF>
-                      <VALUE-REF DEST="TIMING-EVENT">/led_rte_system/BlinkerKit/BlinkerBehavior/Blinker_timingEvent</VALUE-REF>
+                      <VALUE-REF DEST="TIMING-EVENT">/led_rte_system_mpc5516it/BlinkerKit/BlinkerBehavior/Blinker_timingEvent</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/MappedToTaskRef</DEFINITION-REF>
@@ -985,7 +985,7 @@
                 <INSTANCE-REFERENCE-VALUE>
                   <DEFINITION-REF DEST="INSTANCE-REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/SoftwareComponentInstanceRef</DEFINITION-REF>
                   <VALUE-IREF>
-                    <VALUE-REF DEST="COMPONENT-PROTOTYPE">/led_rte_extract/led_rte_extract_toplevelcomposition/EcuAbstraction_prototype</VALUE-REF>
+                    <VALUE-REF DEST="COMPONENT-PROTOTYPE">/led_rte_extract_mpc5516it/led_rte_extract_toplevelcomposition/EcuAbstraction_prototype</VALUE-REF>
                   </VALUE-IREF>
                 </INSTANCE-REFERENCE-VALUE>
               </REFERENCE-VALUES>

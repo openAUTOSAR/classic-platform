@@ -21,6 +21,10 @@
 
 typedef void * Rte_Instance;
 
+typedef float Float;
+
+#define _DEFINED_TYPEDEF_FOR_Float_ 
+
 typedef sint32 SInt32;
 #define SInt32_LowerLimit -2147483648
 #define SInt32_UpperLimit 2147483647
@@ -126,6 +130,10 @@ typedef uint16 UInt16;
 #define UInt16_UpperLimit 65535
 
 #define _DEFINED_TYPEDEF_FOR_UInt16_ 
+
+typedef struct {
+	Float value;
+} Rte_DE_Float;
 
 typedef struct {
 	SInt32 value;

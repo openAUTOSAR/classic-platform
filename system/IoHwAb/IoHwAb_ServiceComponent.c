@@ -16,6 +16,7 @@
 #include "Rte_Type.h"
 #include "IoHwAb.h"
 
+#if defined(IOHWAB_SIGNAL_COUNT_ANALOG_VOLT)
 Std_ReturnType VoltageInput_Get(IoHwAb_SignalType signalId,
 		MilliVolt* value, SignalQuality* quality)
 {
@@ -26,7 +27,9 @@ Std_ReturnType VoltageInput_Get(IoHwAb_SignalType signalId,
 	*quality = (SignalQuality)s.quality;
    return rv;
 }
+#endif
 
+#if defined(IOHWAB_SIGNAL_COUNT_ANALOG_AMPERE)
 Std_ReturnType CurrentInput_Get(IoHwAb_SignalType signalId,
 		MilliAmpere* value, SignalQuality* quality)
 {
@@ -37,7 +40,9 @@ Std_ReturnType CurrentInput_Get(IoHwAb_SignalType signalId,
 	*quality = (SignalQuality)s.quality;
    return rv;
 }
+#endif
 
+#if defined(IOHWAB_SIGNAL_COUNT_ANALOG_OHM)
 Std_ReturnType ResistanceInput_Get(IoHwAb_SignalType signalId,
 		MilliOhm* value, SignalQuality* quality)
 {
@@ -48,7 +53,7 @@ Std_ReturnType ResistanceInput_Get(IoHwAb_SignalType signalId,
 	*quality = (SignalQuality)s.quality;
    return rv;
 }
-
+#endif
 
 Std_ReturnType DigitalInput_Get(IoHwAb_SignalType signalId,
 		DigitalLevel* value, SignalQuality* quality)

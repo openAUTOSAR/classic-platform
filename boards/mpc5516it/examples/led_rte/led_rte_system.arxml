@@ -9,7 +9,7 @@
   </ADMIN-DATA>
   <TOP-LEVEL-PACKAGES>
     <AR-PACKAGE>
-      <SHORT-NAME>led_rte_system</SHORT-NAME>
+      <SHORT-NAME>led_rte_system_mpc5516it</SHORT-NAME>
       <ADMIN-DATA>
         <SDGS>
           <SDG GID="Arccore::IdentifiableOptions" />
@@ -50,7 +50,7 @@
                   <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
-              <COMPONENT-REF DEST="APPLICATION-SOFTWARE-COMPONENT-TYPE">/led_rte_system/BlinkerKit/Blinker</COMPONENT-REF>
+              <COMPONENT-REF DEST="APPLICATION-SOFTWARE-COMPONENT-TYPE">/led_rte_system_mpc5516it/BlinkerKit/Blinker</COMPONENT-REF>
               <EVENTS>
                 <TIMING-EVENT UUID="e190db44-2abd-4c5d-b23e-2536bda41688">
                   <SHORT-NAME>Blinker_timingEvent</SHORT-NAME>
@@ -59,7 +59,7 @@
                       <SDG GID="Arccore::IdentifiableOptions" />
                     </SDGS>
                   </ADMIN-DATA>
-                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/led_rte_system/BlinkerKit/BlinkerBehavior/BlinkerRunnable</START-ON-EVENT-REF>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/led_rte_system_mpc5516it/BlinkerKit/BlinkerBehavior/BlinkerRunnable</START-ON-EVENT-REF>
                   <PERIOD>0.5</PERIOD>
                 </TIMING-EVENT>
               </EVENTS>
@@ -82,7 +82,7 @@
                       </ADMIN-DATA>
                       <OPERATION-IREFS>
                         <OPERATION-IREF>
-                          <R-PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/led_rte_system/BlinkerKit/Blinker/LED_Port</R-PORT-PROTOTYPE-REF>
+                          <R-PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/led_rte_system_mpc5516it/BlinkerKit/Blinker/LED_Port</R-PORT-PROTOTYPE-REF>
                           <OPERATION-PROTOTYPE-REF DEST="OPERATION-PROTOTYPE">/ArcCore/Services/IoHwAb/Interfaces/DigitalOutput/Set</OPERATION-PROTOTYPE-REF>
                         </OPERATION-IREF>
                       </OPERATION-IREFS>
@@ -99,7 +99,7 @@
                   <SDG GID="Arccore::IdentifiableOptions" />
                 </SDGS>
               </ADMIN-DATA>
-              <BEHAVIOR-REF DEST="INTERNAL-BEHAVIOR">/led_rte_system/BlinkerKit/BlinkerBehavior</BEHAVIOR-REF>
+              <BEHAVIOR-REF DEST="INTERNAL-BEHAVIOR">/led_rte_system_mpc5516it/BlinkerKit/BlinkerBehavior</BEHAVIOR-REF>
             </SWC-IMPLEMENTATION>
           </ELEMENTS>
         </AR-PACKAGE>
