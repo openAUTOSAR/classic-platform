@@ -22,4 +22,8 @@
 #include "Dem.h"
 #endif
 
+#if defined(USE_DET)
+#include "Det.h"
+#endif
+
 #endif /* IOHWAB_INTERNAL_H_ */
