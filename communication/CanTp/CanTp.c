@@ -160,7 +160,7 @@ typedef enum {
 	TX_WAIT_CAN_TP_TRANSMIT_CAN_TP_PROVIDE_TX_BUFFER, /** @req CANTP226 */
 	TX_WAIT_CAN_TP_TRANSMIT_PENDING, /* CanTP_Transmit was called but no buffer was received (BUSY). */
 	TX_WAIT_SEND_CONSECUTIVE_FRAME, TX_WAIT_FLOW_CONTROL,
-	TX_WAIT_TX_CONFIRMATION
+	TX_WAIT_TX_CONFIRMATION, TX_WAIT_TX_CONFIRMATION_CF
 } ISO15765TransferStateTypes;
 
 typedef enum {
@@ -754,12 +754,12 @@ static INLINE void handleConsecutiveFrameSent(
 		} else {
 			// Send next consecutive frame!
 			txRuntime->iso15765.stateTimeoutCount = CANTP_CONVERT_MS_TO_MAIN_CYCLES(txRuntime->iso15765.STmin);
-			txRuntime->iso15765.state = TX_WAIT_SEND_CONSECUTIVE_FRAME;
+			txRuntime->iso15765.state = TX_WAIT_TX_CONFIRMATION_CF;
 		}
 	} else {
 		// Send next consecutive frame!
 		txRuntime->iso15765.stateTimeoutCount = CANTP_CONVERT_MS_TO_MAIN_CYCLES(txRuntime->iso15765.STmin);
-		txRuntime->iso15765.state = TX_WAIT_SEND_CONSECUTIVE_FRAME;
+		txRuntime->iso15765.state = TX_WAIT_TX_CONFIRMATION_CF;
 	}
 }
 
@@ -1458,15 +1458,22 @@ void CanTp_MainFunction(void)
 					txRuntimeListItem->mode = CANTP_TX_WAIT;
 				}
 				break;
-#if (CANTP_IMMEDIATE_TX_CONFIRMATION == STD_OFF)
+			case TX_WAIT_TX_CONFIRMATION_CF:
+				if 	(txRuntimeListItem->iso15765.txConfirmed) {
+					txRuntimeListItem->iso15765.state = TX_WAIT_SEND_CONSECUTIVE_FRAME;
+				} else {
+					checkNasNarTimeout( txRuntimeListItem );
+				}
+				break;
 			case TX_WAIT_TX_CONFIRMATION:
 				if 	(txRuntimeListItem->iso15765.txConfirmed) {
 					PduR_CanTpTxConfirmation(txConfigListItem->PduR_PduId, NTFRSLT_OK); /** @req CANTP074 *//** @req CANTP09 *//** @req CANTP204 */
 					txRuntimeListItem->iso15765.state = IDLE;
 					txRuntimeListItem->mode = CANTP_TX_WAIT;
+				} else {
+					checkNasNarTimeout( txRuntimeListItem );
 				}
 				break;
-#endif
 			default:
 				break;
 			}
