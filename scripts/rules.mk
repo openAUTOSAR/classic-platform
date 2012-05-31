@@ -293,10 +293,10 @@ $(build-hex-y): $(build-exe-y)
 	$(Q)$(CROSS_COMPILE)objcopy -O ihex $< $@
 	
 # bin output
-$(build-bin-y): $(build-exe-y)
-	@echo
-	@echo "  >> OBJCOPY $@"   
-	$(Q)$(CROSS_COMPILE)objcopy -O binary $< $@	
+#$(build-bin-y): $(build-exe-y)
+#	@echo
+#	@echo "  >> OBJCOPY $@"   
+#	$(Q)$(CROSS_COMPILE)objcopy -O binary $< $@	
 
 # Linker
 $(build-exe-y): $(dep-y) $(obj-y) $(sim-y) $(libitem-y) $(ldcmdfile-y)

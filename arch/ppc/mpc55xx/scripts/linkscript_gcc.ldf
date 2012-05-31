@@ -93,8 +93,9 @@ __FLS_PROG_START__ = 0x20000;	/* Must be aligned to a sector start. */
 __FLS_PROG_START__ = 0;	/* Must be aligned to a sector start. */
 #endif
 
+#if !defined(CFG_BOOT)
 	.rcw __FLS_PROG_START__ : { *(.rcw) } > flash
-
+#endif
 
     .text :
 	{
@@ -120,7 +121,10 @@ __FLS_PROG_START__ = 0;	/* Must be aligned to a sector start. */
     } > flash
 
 	/* Read-only data section. */
-	.rodata :	{ *(.rodata .rodata.* .gnu.linkonce.r.*) } > flash
+	.rodata :	{ 
+		*(.rodata .rodata.* .gnu.linkonce.r.*);
+		*(.got.plt) *(.got) 
+	} > flash
 
 	/* initialized read-only small data section. */
 	.sdata2 :	{
@@ -162,33 +166,19 @@ __FLS_PROG_START__ = 0;	/* Must be aligned to a sector start. */
 		_end = .;
 	} > ram
 
-    .got2 ALIGN(0x10): 
-    {
-    	. = . + ALIGN(16);
-    	*(.got2);	
-    	. = . + ALIGN(8); 
-    } > ram
-    .fixup : 
-    { 
-    	. = . + ALIGN(16);
-    	*(.fixup);
-    	. = . + ALIGN(8); 
-    } 		> ram
 	.t32_outport ALIGN(0x10): 
 	{ 
 		*(.t32_outport); 
 	} 			> ram
-	
-	.got : AT(ALIGN(LOADADDR(.sdata)+SIZEOF(.sdata),4)) 
-	{ 
-		*(.got.plt) *(.got) 
-	} > ram
-	
-	.bss : AT(ADDR(.bss)) 
-	{ 
+		
+	.bss (NOLOAD) :  
+	{
+		*(.got2);
+		*(.fixup);
 		*(.bss .bss.* COMMON .gnu.linkonce.b.*);
 		__BSS_END 	= .; 
 	} 	> ram
+	
 	.init_stack ALIGN(16) (NOLOAD) : 
 	{	
 		__SP_END	= .;
@@ -206,7 +196,7 @@ __FLS_PROG_START__ = 0;	/* Must be aligned to a sector start. */
     KEEP (*(SORT(.ctors.*)))
   }
 
-.uninit ALIGN(0x10): { *(.winidea_port .ramlog .dem_eventmemory_pri) ; } 			> ram
+.uninit ALIGN(0x10) (NOLOAD) : { *(.winidea_port .ramlog .dem_eventmemory_pri) ; } 			> ram
 
 	/* Always place last in RAM */
 	.heap ALIGN(0x4): {
@@ -271,12 +261,12 @@ __BSS_START 		= ADDR(.sbss);
 /* __SBSS_END__ 		= ADDR(.sbss) + SIZEOF(.sbss); */
  __SDATA2_START__	= ADDR(.sdata2);
  __SBSS2_END__		= ADDR(.sbss2) + SIZEOF(.sbss2);
-__GOT_START__		= ADDR(.got);
-__GOT_END__			= ADDR(.got) + SIZEOF(.got);
-__GOT2_START__		= ADDR(.got2);
-__GOT2_END__		= ADDR(.got2) + SIZEOF(.got2);
-__FIXUP_START__		= ADDR(.fixup);
-__FIXUP_END__		= ADDR(.fixup) + SIZEOF(.fixup);
+//__GOT_START__		= ADDR(.got);
+//__GOT_END__			= ADDR(.got) + SIZEOF(.got);
+//__GOT2_START__		= ADDR(.got2);
+//__GOT2_END__		= ADDR(.got2) + SIZEOF(.got2);
+//__FIXUP_START__		= ADDR(.fixup);
+//__FIXUP_END__		= ADDR(.fixup) + SIZEOF(.fixup);
 
 __EXCEPT_START__	= 0x0;
 __EXCEPT_END__		= 0x0;
