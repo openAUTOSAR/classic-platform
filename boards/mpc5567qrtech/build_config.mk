@@ -7,8 +7,6 @@ ARCH_MCU=mpc5567
 # CFG (y/n) macros
 CFG=PPC BOOKE E200Z6 MPC55XX MPC5567 BRD_MPC5567QRTECH SPE
 
-CFG+=BOOT
-
 # What buildable modules does this board have, 
 # default or private
 

@@ -1,6 +1,6 @@
 /* MPC55xx Reset Control Word(RCW) */
 #if defined(CFG_BOOT)
-flash(R) : ORIGIN = 0x0001c028, LENGTH = 2M
+flash(R) : ORIGIN = 0x0001c100, LENGTH = 2M
 #else 
 flash(R) : ORIGIN = 0x00000000, LENGTH = 2M
 #endif

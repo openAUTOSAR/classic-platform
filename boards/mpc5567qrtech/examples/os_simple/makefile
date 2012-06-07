@@ -63,7 +63,7 @@ $(build-bin-y) : $(build-srec-y)
 # Should extract the start address with "objdump -f"
 $(build-bin-image-y): $(build-bin-y)
 	@echo ">> Adding header" 
-	$(mkimage) -o $@ -l 0x1c028 -s 0x1c600 -m "APP" -v $<
+	$(mkimage) -o $@ -l 0x1c100 -s 0x1c6d0 -m "APP" -v $<
 
 endif
 
