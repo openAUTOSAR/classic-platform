@@ -508,15 +508,9 @@ static void Spi_SetJobResult(Spi_JobType Job, Spi_JobResultType result) {
 	Spi_JobUnit[Job].jobResult = result;
 }
 
-#if 1
 static void Spi_SetHWUnitStatus( Spi_UnitType *uPtr, Spi_StatusType status) {
 	uPtr->status = status;
 }
-#else
-static void Spi_SetHWUnitStatus(Spi_HWUnitType HWUnit, Spi_StatusType status) {
-	Spi_Unit[Spi_CtrlToUnit[HWUnit]].status = status;
-}
-#endif
 
 /**
  * Get external Ptr to device from index
@@ -549,14 +543,6 @@ static const Spi_SequenceConfigType *Spi_GetSeqPtrFromIndex(
 	return &Spi_Global.configPtr->SpiSequenceConfig[SeqIndex];
 }
 
-/**
- * Get unit ptr from unit index
- * @param unit the unit
- * @return Ptr to the SPI unit
- */
-static Spi_UnitType *Spi_GetUnitPtrFromIndex(uint32 unit) {
-	return &Spi_Unit[Spi_CtrlToUnit[unit]];
-}
 
 /**
  * Function to see if two sequences share jobs
@@ -1325,8 +1311,10 @@ void Spi_Init(const Spi_ConfigType *ConfigPtr) {
 
 	confMask = Spi_Global.spiHwConfigured;
 
-	for (; confMask; confMask &= ~(1 << ctrlNr)) {
+	for (int i=0; confMask; confMask &= ~(1 << ctrlNr),i++) {
 		ctrlNr = ilog2(confMask);
+    Spi_CtrlToUnit[ctrlNr] = i;
+
 		DEBUG(DEBUG_LOW,"%s:Configured HW controller %d\n",MODULE_NAME,ctrlNr);
 		uPtr = GET_SPI_UNIT_PTR(ctrlNr);
 		uPtr->hwPtr = GET_SPI_HW_PTR(ctrlNr);
@@ -1334,8 +1322,6 @@ void Spi_Init(const Spi_ConfigType *ConfigPtr) {
 		Spi_InitController(uPtr);
 		Spi_SetHWUnitStatus(uPtr, SPI_IDLE);
 #if (SPI_IMPLEMENTATION == SPI_DMA )
-		unitNr = Spi_CtrlToUnit[ctrlNr];
-
 		// DMA init...
 		//
 		unitNr = Spi_CtrlToUnit[ctrlNr];
@@ -1827,7 +1813,7 @@ static void Spi_SeqWrite(Spi_SequenceType seqIndex, Spi_CallTypeType sync) {
 	jobIndex = seqConfig->JobAssignment[0];
 	jobConfig = Spi_GetJobPtrFromIndex(jobIndex);
 
-	uPtr = Spi_GetUnitPtrFromIndex(jobConfig->SpiHwUnit);
+	uPtr = GET_SPI_UNIT_PTR(jobConfig->SpiHwUnit);
 
 	/* Fill in the required fields for job and sequence.. */
 	uPtr->currJobIndexPtr = &seqConfig->JobAssignment[0];
@@ -2033,7 +2019,7 @@ Spi_SeqResultType Spi_GetSequenceResult(Spi_SequenceType Sequence) {
 Spi_StatusType Spi_GetHWUnitStatus(Spi_HWUnitType HWUnit) {
 	VALIDATE_W_RV( ( TRUE == Spi_Global.initRun ), SPI_GETHWUNITSTATUS_SERVICE_ID, SPI_E_UNINIT, SPI_UNINIT );
 
-	return Spi_Unit[Spi_CtrlToUnit[HWUnit]].status;
+	return (GET_SPI_UNIT_PTR(HWUnit))->status;
 }
 
 //-------------------------------------------------------------------
