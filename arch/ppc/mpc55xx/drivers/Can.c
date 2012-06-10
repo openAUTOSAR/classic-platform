@@ -1035,17 +1035,26 @@ void Can_InitController(uint8 controller,
             canHw->RXIMR[fifoNr].R = *hohPtr->CanFilterMaskRef;
             fifoNr++;
         } else {
-            canHw->BUF[mbNr].CS.B.CODE  = MB_RX;
-            canHw->RXIMR[mbNr].R        = *hohPtr->CanFilterMaskRef;
+        	/* loop for multiplexed mailboxes, set as same as first */
+        	uint64  mbMask = hohPtr->ArcMailboxMask;
+        	uint8   mbTmp;
 
-            if (hohPtr->CanIdType == CAN_ID_TYPE_EXTENDED) {
-                canHw->BUF[mbNr].CS.B.IDE    = 1;
-                canHw->BUF[mbNr].ID.R        = hohPtr->CanIdValue;
-            } else {
-                canHw->BUF[mbNr].CS.B.IDE    = 0;
-                canHw->BUF[mbNr].ID.B.STD_ID = hohPtr->CanIdValue;
+            for (; mbMask; mbMask &= ~(1ull << mbTmp)) {
+            	mbTmp = ilog2_64(mbMask);
+
+				canHw->BUF[mbTmp].CS.B.CODE  = MB_RX;
+				canHw->RXIMR[mbTmp].R        = *hohPtr->CanFilterMaskRef;
+
+				if (hohPtr->CanIdType == CAN_ID_TYPE_EXTENDED) {
+					canHw->BUF[mbTmp].CS.B.IDE    = 1;
+					canHw->BUF[mbTmp].ID.R        = hohPtr->CanIdValue;
+				} else {
+					canHw->BUF[mbTmp].CS.B.IDE    = 0;
+					canHw->BUF[mbTmp].ID.B.STD_ID = hohPtr->CanIdValue;
+				}
+
+				mbNr++;
             }
-            mbNr++;
         }
     }
 
