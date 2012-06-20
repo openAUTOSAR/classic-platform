@@ -476,7 +476,11 @@ void Adc_StartGroupConversion (Adc_GroupType group)
 
 		for(uint8 i =0; i < groupPtr->numberOfChannels; i++)
 		{
+#if defined(CFG_MPC5668)
+			if(groupPtr->channelList[i] <= 31){
+#else
 			if(groupPtr->channelList[i] <= 15){
+#endif
 				groupChannelIdMask[0] |= (1 << groupPtr->channelList[i]);
 			}else if((groupPtr->channelList[i] >= 32) && (groupPtr->channelList[i] <=47)){
 				groupChannelIdMask[1] |= (1 << (groupPtr->channelList[i] - 32));
