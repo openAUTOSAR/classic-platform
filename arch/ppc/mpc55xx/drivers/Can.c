@@ -400,15 +400,17 @@ static void Can_Err(int unit)
 
     /* Clear bits 16-23 by read */
     esr.R = canHw->ESR.R;
+    if(esr.B.ERRINT == 1)
+    {
+		if (GET_CALLBACKS()->Arc_Error != NULL) {
+			GET_CALLBACKS()->Arc_Error(unit, err);
+		}
 
-    if (GET_CALLBACKS()->Arc_Error != NULL) {
-        GET_CALLBACKS()->Arc_Error(unit, err);
+		Can_SetControllerMode(unit, CAN_T_STOP); // CANIF272 Same handling as for busoff
+
+		// Clear ERRINT
+		canHw->ESR.R = esrWrite.R;
     }
-
-    Can_SetControllerMode(unit, CAN_T_STOP); // CANIF272 Same handling as for busoff
-
-    // Clear ERRINT
-    canHw->ESR.R = esrWrite.R;
 }
 
 /**
@@ -741,8 +743,6 @@ static void Can_BuildMaps(Can_UnitType *uPtr)
 #endif
 }
 
-
-
 // This initiates ALL can controllers
 void Can_Init(const Can_ConfigType *config)
 {
@@ -782,92 +782,164 @@ void Can_Init(const Can_ConfigType *config)
         switch (cfgCtrlPtr->CanControllerId) {
 #if defined(CFG_MPC560X)
         case CAN_CTRL_A:
-        ISR_INSTALL_ISR2( "Can", Can_A_BusOff, FLEXCAN_0_ESR_BOFF_INT, 2, 0);
-        ISR_INSTALL_ISR2( "Can", Can_A_Err, FLEXCAN_0_ESR_ERR_INT, 2, 0 );
-        INSTALL_HANDLER4( "Can", Can_A_Isr, FLEXCAN_0_BUF_00_03, 2, 0 ); /* 0-3, 4-7, 8-11, 12-15 */
-        ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_0_BUF_16_31, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_0_BUF_32_63, 2, 0 );
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_BUSOFF_PROCESSING_INTERRUPT){
+			ISR_INSTALL_ISR2( "Can", Can_A_BusOff, FLEXCAN_0_ESR_BOFF_INT, 2, 0);
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_ERROR_PROCESSING_INTERRUPT){
+			ISR_INSTALL_ISR2( "Can", Can_A_Err, FLEXCAN_0_ESR_ERR_INT, 2, 0 );
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  (CAN_CTRL_TX_PROCESSING_INTERRUPT | CAN_CTRL_RX_PROCESSING_INTERRUPT)){
+			INSTALL_HANDLER4( "Can", Can_A_Isr, FLEXCAN_0_BUF_00_03, 2, 0 ); /* 0-3, 4-7, 8-11, 12-15 */
+			ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_0_BUF_16_31, 2, 0 );
+			ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_0_BUF_32_63, 2, 0 );
+		}
         break;
         case CAN_CTRL_B:
-        ISR_INSTALL_ISR2( "Can", Can_B_BusOff, FLEXCAN_1_ESR_BOFF_INT, 2, 0);
-        ISR_INSTALL_ISR2( "Can", Can_B_Err, FLEXCAN_1_ESR_ERR_INT, 2, 0 );
-        INSTALL_HANDLER4( "Can", Can_B_Isr, FLEXCAN_1_BUF_00_03, 2, 0 ); /* 0-3, 4-7, 8-11, 12-15 */
-        ISR_INSTALL_ISR2( "Can", Can_B_Isr, FLEXCAN_1_BUF_16_31, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_B_Isr, FLEXCAN_1_BUF_32_63, 2, 0 );
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_BUSOFF_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_B_BusOff, FLEXCAN_1_ESR_BOFF_INT, 2, 0);
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_ERROR_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_B_Err, FLEXCAN_1_ESR_ERR_INT, 2, 0 );
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  (CAN_CTRL_TX_PROCESSING_INTERRUPT | CAN_CTRL_RX_PROCESSING_INTERRUPT)){
+			INSTALL_HANDLER4( "Can", Can_B_Isr, FLEXCAN_1_BUF_00_03, 2, 0 ); /* 0-3, 4-7, 8-11, 12-15 */
+			ISR_INSTALL_ISR2( "Can", Can_B_Isr, FLEXCAN_1_BUF_16_31, 2, 0 );
+			ISR_INSTALL_ISR2( "Can", Can_B_Isr, FLEXCAN_1_BUF_32_63, 2, 0 );
+		}
         break;
 	#if defined(CFG_MPC5604B)
         case CAN_CTRL_C:
-        ISR_INSTALL_ISR2( "Can", Can_C_BusOff, FLEXCAN_2_ESR_BOFF_INT, 2, 0);
-        ISR_INSTALL_ISR2( "Can", Can_C_Err, FLEXCAN_2_ESR_ERR_INT, 2, 0 );
-        INSTALL_HANDLER4( "Can", Can_C_Isr, FLEXCAN_2_BUF_00_03, 2, 0 ); /* 0-3, 4-7, 8-11, 12-15 */
-        ISR_INSTALL_ISR2( "Can", Can_C_Isr, FLEXCAN_2_BUF_16_31, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_C_Isr, FLEXCAN_2_BUF_32_63, 2, 0 );
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_BUSOFF_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_C_BusOff, FLEXCAN_2_ESR_BOFF_INT, 2, 0);
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_ERROR_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_C_Err, FLEXCAN_2_ESR_ERR_INT, 2, 0 );
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  (CAN_CTRL_TX_PROCESSING_INTERRUPT | CAN_CTRL_RX_PROCESSING_INTERRUPT)){
+	        INSTALL_HANDLER4( "Can", Can_C_Isr, FLEXCAN_2_BUF_00_03, 2, 0 ); /* 0-3, 4-7, 8-11, 12-15 */
+	        ISR_INSTALL_ISR2( "Can", Can_C_Isr, FLEXCAN_2_BUF_16_31, 2, 0 );
+	        ISR_INSTALL_ISR2( "Can", Can_C_Isr, FLEXCAN_2_BUF_32_63, 2, 0 );
+		}
         break;
         case CAN_CTRL_D:
-        ISR_INSTALL_ISR2( "Can", Can_D_BusOff, FLEXCAN_3_ESR_BOFF_INT, 2, 0);
-        ISR_INSTALL_ISR2( "Can", Can_D_Err, FLEXCAN_3_ESR_ERR_INT, 2, 0 );
-        INSTALL_HANDLER4( "Can", Can_D_Isr, FLEXCAN_3_BUF_00_03, 2, 0 ); /* 0-3, 4-7, 8-11, 12-15 */
-        ISR_INSTALL_ISR2( "Can", Can_D_Isr, FLEXCAN_3_BUF_16_31, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_D_Isr, FLEXCAN_3_BUF_32_63, 2, 0 );
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_BUSOFF_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_D_BusOff, FLEXCAN_3_ESR_BOFF_INT, 2, 0);
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_ERROR_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_D_Err, FLEXCAN_3_ESR_ERR_INT, 2, 0 );
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  (CAN_CTRL_TX_PROCESSING_INTERRUPT | CAN_CTRL_RX_PROCESSING_INTERRUPT)){
+	        INSTALL_HANDLER4( "Can", Can_D_Isr, FLEXCAN_3_BUF_00_03, 2, 0 ); /* 0-3, 4-7, 8-11, 12-15 */
+	        ISR_INSTALL_ISR2( "Can", Can_D_Isr, FLEXCAN_3_BUF_16_31, 2, 0 );
+	        ISR_INSTALL_ISR2( "Can", Can_D_Isr, FLEXCAN_3_BUF_32_63, 2, 0 );
+		}
         break;
         case CAN_CTRL_E:
-        ISR_INSTALL_ISR2( "Can", Can_E_BusOff, FLEXCAN_4_ESR_BOFF_INT, 2, 0);
-        ISR_INSTALL_ISR2( "Can", Can_E_Err, FLEXCAN_4_ESR_ERR_INT, 2, 0 );
-        INSTALL_HANDLER4( "Can", Can_E_Isr, FLEXCAN_4_BUF_00_03, 2, 0 ); /* 0-3, 4-7, 8-11, 12-15 */
-        ISR_INSTALL_ISR2( "Can", Can_E_Isr, FLEXCAN_4_BUF_16_31, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_E_Isr, FLEXCAN_4_BUF_32_63, 2, 0 );
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_BUSOFF_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_E_BusOff, FLEXCAN_4_ESR_BOFF_INT, 2, 0);
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_ERROR_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_E_Err, FLEXCAN_4_ESR_ERR_INT, 2, 0 );
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  (CAN_CTRL_TX_PROCESSING_INTERRUPT | CAN_CTRL_RX_PROCESSING_INTERRUPT)){
+	        INSTALL_HANDLER4( "Can", Can_E_Isr, FLEXCAN_4_BUF_00_03, 2, 0 ); /* 0-3, 4-7, 8-11, 12-15 */
+	        ISR_INSTALL_ISR2( "Can", Can_E_Isr, FLEXCAN_4_BUF_16_31, 2, 0 );
+	        ISR_INSTALL_ISR2( "Can", Can_E_Isr, FLEXCAN_4_BUF_32_63, 2, 0 );
+		}
         break;
         case CAN_CTRL_F:
-        ISR_INSTALL_ISR2( "Can", Can_F_BusOff, FLEXCAN_5_ESR_BOFF_INT, 2, 0);
-        ISR_INSTALL_ISR2( "Can", Can_F_Err, FLEXCAN_5_ESR_ERR_INT, 2, 0 );
-        INSTALL_HANDLER4( "Can", Can_F_Isr, FLEXCAN_5_BUF_00_03, 2, 0 ); /* 0-3, 4-7, 8-11, 12-15 */
-        ISR_INSTALL_ISR2( "Can", Can_F_Isr, FLEXCAN_5_BUF_16_31, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_F_Isr, FLEXCAN_5_BUF_32_63, 2, 0 );
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_BUSOFF_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_F_BusOff, FLEXCAN_5_ESR_BOFF_INT, 2, 0);
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_ERROR_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_F_Err, FLEXCAN_5_ESR_ERR_INT, 2, 0 );
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  (CAN_CTRL_TX_PROCESSING_INTERRUPT | CAN_CTRL_RX_PROCESSING_INTERRUPT)){
+	        INSTALL_HANDLER4( "Can", Can_F_Isr, FLEXCAN_5_BUF_00_03, 2, 0 ); /* 0-3, 4-7, 8-11, 12-15 */
+	        ISR_INSTALL_ISR2( "Can", Can_F_Isr, FLEXCAN_5_BUF_16_31, 2, 0 );
+	        ISR_INSTALL_ISR2( "Can", Can_F_Isr, FLEXCAN_5_BUF_32_63, 2, 0 );
+		}
         break;
 	#endif
 #elif defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567) || defined(CFG_MPC5668)
         case CAN_CTRL_A:
-        ISR_INSTALL_ISR2( "Can", Can_A_BusOff, FLEXCAN_A_ESR_BOFF_INT, 2, 0);
-        ISR_INSTALL_ISR2( "Can", Can_A_Err, FLEXCAN_A_ESR_ERR_INT, 2, 0 );
-        INSTALL_HANDLER16( "Can", Can_A_Isr, FLEXCAN_A_IFLAG1_BUF0I, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_A_IFLAG1_BUF31_16I, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_A_IFLAG1_BUF63_32I, 2, 0 );
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_BUSOFF_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_A_BusOff, FLEXCAN_A_ESR_BOFF_INT, 2, 0);
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_ERROR_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_A_Err, FLEXCAN_A_ESR_ERR_INT, 2, 0 );
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  (CAN_CTRL_TX_PROCESSING_INTERRUPT | CAN_CTRL_RX_PROCESSING_INTERRUPT)){
+	        INSTALL_HANDLER16( "Can", Can_A_Isr, FLEXCAN_A_IFLAG1_BUF0I, 2, 0 );
+	        ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_A_IFLAG1_BUF31_16I, 2, 0 );
+	        ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_A_IFLAG1_BUF63_32I, 2, 0 );
+		}
         break;
         case CAN_CTRL_B:
-        ISR_INSTALL_ISR2( "Can", Can_B_BusOff, FLEXCAN_B_ESR_BOFF_INT, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_B_Err, FLEXCAN_B_ESR_ERR_INT, 2, 0 );
-        INSTALL_HANDLER16( "Can", Can_B_Isr, FLEXCAN_B_IFLAG1_BUF0I, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_B_Isr, FLEXCAN_B_IFLAG1_BUF31_16I, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_B_IFLAG1_BUF63_32I, 2, 0 );
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_BUSOFF_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_B_BusOff, FLEXCAN_B_ESR_BOFF_INT, 2, 0 );
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_ERROR_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_B_Err, FLEXCAN_B_ESR_ERR_INT, 2, 0 );
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  (CAN_CTRL_TX_PROCESSING_INTERRUPT | CAN_CTRL_RX_PROCESSING_INTERRUPT)){
+	        INSTALL_HANDLER16( "Can", Can_B_Isr, FLEXCAN_B_IFLAG1_BUF0I, 2, 0 );
+	        ISR_INSTALL_ISR2( "Can", Can_B_Isr, FLEXCAN_B_IFLAG1_BUF31_16I, 2, 0 );
+	        ISR_INSTALL_ISR2( "Can", Can_B_Isr, FLEXCAN_B_IFLAG1_BUF63_32I, 2, 0 );
+		}
         break;
         case CAN_CTRL_C:
-        ISR_INSTALL_ISR2( "Can", Can_C_BusOff, FLEXCAN_C_ESR_BOFF_INT, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_C_Err, FLEXCAN_C_ESR_ERR_INT, 2, 0 );
-        INSTALL_HANDLER16( "Can", Can_C_Isr, FLEXCAN_C_IFLAG1_BUF0I, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_C_Isr, FLEXCAN_C_IFLAG1_BUF31_16I, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_C_IFLAG1_BUF63_32I, 2, 0 );
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_BUSOFF_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_C_BusOff, FLEXCAN_C_ESR_BOFF_INT, 2, 0 );
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_ERROR_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_C_Err, FLEXCAN_C_ESR_ERR_INT, 2, 0 );
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  (CAN_CTRL_TX_PROCESSING_INTERRUPT | CAN_CTRL_RX_PROCESSING_INTERRUPT)){
+	        INSTALL_HANDLER16( "Can", Can_C_Isr, FLEXCAN_C_IFLAG1_BUF0I, 2, 0 );
+	        ISR_INSTALL_ISR2( "Can", Can_C_Isr, FLEXCAN_C_IFLAG1_BUF31_16I, 2, 0 );
+	        ISR_INSTALL_ISR2( "Can", Can_C_Isr, FLEXCAN_C_IFLAG1_BUF63_32I, 2, 0 );
+		}
         break;
         case CAN_CTRL_D:
-        ISR_INSTALL_ISR2( "Can", Can_D_BusOff, FLEXCAN_D_ESR_BOFF_INT, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_D_Err, FLEXCAN_D_ESR_ERR_INT, 2, 0 );
-        INSTALL_HANDLER16( "Can", Can_D_Isr, FLEXCAN_D_IFLAG1_BUF0I, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_D_Isr, FLEXCAN_D_IFLAG1_BUF31_16I, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_D_IFLAG1_BUF63_32I, 2, 0 );
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_BUSOFF_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_D_BusOff, FLEXCAN_D_ESR_BOFF_INT, 2, 0 );
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_ERROR_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_D_Err, FLEXCAN_D_ESR_ERR_INT, 2, 0 );
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  (CAN_CTRL_TX_PROCESSING_INTERRUPT | CAN_CTRL_RX_PROCESSING_INTERRUPT)){
+	        INSTALL_HANDLER16( "Can", Can_D_Isr, FLEXCAN_D_IFLAG1_BUF0I, 2, 0 );
+	        ISR_INSTALL_ISR2( "Can", Can_D_Isr, FLEXCAN_D_IFLAG1_BUF31_16I, 2, 0 );
+	        ISR_INSTALL_ISR2( "Can", Can_D_Isr, FLEXCAN_D_IFLAG1_BUF63_32I, 2, 0 );
+		}
         break;
         case CAN_CTRL_E:
-        ISR_INSTALL_ISR2( "Can", Can_E_BusOff, FLEXCAN_E_ESR_BOFF_INT, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_E_Err, FLEXCAN_E_ESR_ERR_INT, 2, 0 );
-        INSTALL_HANDLER16( "Can", Can_E_Isr, FLEXCAN_E_IFLAG1_BUF0I, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_E_Isr, FLEXCAN_E_IFLAG1_BUF31_16I, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_E_IFLAG1_BUF63_32I, 2, 0 );
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_BUSOFF_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_E_BusOff, FLEXCAN_E_ESR_BOFF_INT, 2, 0 );
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_ERROR_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_E_Err, FLEXCAN_E_ESR_ERR_INT, 2, 0 );
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  (CAN_CTRL_TX_PROCESSING_INTERRUPT | CAN_CTRL_RX_PROCESSING_INTERRUPT)){
+	        INSTALL_HANDLER16( "Can", Can_E_Isr, FLEXCAN_E_IFLAG1_BUF0I, 2, 0 );
+	        ISR_INSTALL_ISR2( "Can", Can_E_Isr, FLEXCAN_E_IFLAG1_BUF31_16I, 2, 0 );
+	        ISR_INSTALL_ISR2( "Can", Can_E_Isr, FLEXCAN_E_IFLAG1_BUF63_32I, 2, 0 );
+		}
         break;
 	#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5668)
         case CAN_CTRL_F:
-        ISR_INSTALL_ISR2( "Can", Can_F_BusOff, FLEXCAN_F_ESR_BOFF_INT, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_F_Err, FLEXCAN_F_ESR_ERR_INT, 2, 0 );
-        INSTALL_HANDLER16( "Can", Can_F_Isr, FLEXCAN_F_IFLAG1_BUF0I, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_F_Isr, FLEXCAN_F_IFLAG1_BUF31_16I, 2, 0 );
-        ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_F_IFLAG1_BUF63_32I, 2, 0 );
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_BUSOFF_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_F_BusOff, FLEXCAN_F_ESR_BOFF_INT, 2, 0 );
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_ERROR_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_F_Err, FLEXCAN_F_ESR_ERR_INT, 2, 0 );
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  (CAN_CTRL_TX_PROCESSING_INTERRUPT | CAN_CTRL_RX_PROCESSING_INTERRUPT)){
+	        INSTALL_HANDLER16( "Can", Can_F_Isr, FLEXCAN_F_IFLAG1_BUF0I, 2, 0 );
+	        ISR_INSTALL_ISR2( "Can", Can_F_Isr, FLEXCAN_F_IFLAG1_BUF31_16I, 2, 0 );
+	        ISR_INSTALL_ISR2( "Can", Can_F_Isr, FLEXCAN_F_IFLAG1_BUF63_32I, 2, 0 );
+		}
         break;
 	#endif
 #endif
@@ -1210,17 +1282,20 @@ void Can_EnableControllerInterrupts(uint8 controller)
         canHw->IMRH.R |= (uint32_t)(canUnit->Can_Arc_TxMbMask>>32);
     }
 
-    // BusOff here represents all errors and warnings
+    // BusOff and warnings
     if (canUnit->cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_BUSOFF_PROCESSING_INTERRUPT) {
         canHw->MCR.B.WRNEN = 1; /* Turn On warning int */
-
-        canHw->CR.B.ERRMSK = 1; /* Enable error interrupt */
         canHw->CR.B.BOFFMSK = 1; /* Enable bus-off interrupt */
 
 #if (USE_CAN_STATISTICS == STD_ON)
         canHw->CR.B.TWRNMSK = 1; /* Enable Tx warning */
         canHw->CR.B.RWRNMSK = 1; /* Enable Rx warning */
 #endif
+    }
+
+    // errors
+    if (canUnit->cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_ERROR_PROCESSING_INTERRUPT) {
+        canHw->CR.B.ERRMSK = 1; /* Enable error interrupt */
     }
 
     return;

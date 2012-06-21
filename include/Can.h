@@ -76,6 +76,9 @@
 #define CAN_CTRL_LOOPBACK                       (1UL<<5)
 #define CAN_CTRL_FIFO                           (1UL<<6)
 
+#define CAN_CTRL_ERROR_PROCESSING_INTERRUPT    (1UL<<7)
+#define CAN_CTRL_ERRO_PROCESSING_POLLING      0
+
 #endif
 
 #include "Std_Types.h"
