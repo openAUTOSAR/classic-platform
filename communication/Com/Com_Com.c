@@ -356,7 +356,6 @@ Std_ReturnType Com_SendSignalGroup(Com_SignalGroupIdType SignalGroupId) {
 
 
 Std_ReturnType Com_ReceiveSignalGroup(Com_SignalGroupIdType SignalGroupId) {
-//#warning Com_ReceiveSignalGroup should be performed atomically. Should we disable interrupts here?
 	const ComSignal_type * Signal = GET_Signal(SignalGroupId);
 	const ComIPdu_type *IPdu = GET_IPdu(Signal->ComIPduHandleId);
 
@@ -364,16 +363,7 @@ Std_ReturnType Com_ReceiveSignalGroup(Com_SignalGroupIdType SignalGroupId) {
 		return COM_BUSY;
 	}
 	// Copy Ipdu data buffer to shadow buffer.
-	const ComGroupSignal_type *groupSignal;
-	imask_t irq_state;
-
-	Irq_Save(irq_state);
-	for (uint8 i = 0; Signal->ComGroupSignal[i] != NULL; i++) {
-		groupSignal = Signal->ComGroupSignal[i];
-
-		Com_ReadSignalDataFromPdu(groupSignal->ComHandleId, (void *)Signal->Com_Arc_ShadowBuffer);
-	}
-	Irq_Restore(irq_state);
+	Com_CopySignalGroupDataFromShadowBuffer(SignalGroupId);
 
 	return E_OK;
 }

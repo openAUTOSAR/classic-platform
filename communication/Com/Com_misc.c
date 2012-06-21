@@ -32,37 +32,27 @@ static void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByte
 static void Com_WriteDataSegment(uint8 *pdu, uint8 *pduSignalMask, const uint8 *signalDataPtr, uint8 destByteLength,
 		Com_BitPositionType segmentStartBitOffset, uint8 segmentBitLength);
 
-void Com_ReadSignalDataFromPdu(
-			const Com_SignalIdType signalId,
-			void *signalData) {
+void Com_CopySignalGroupDataFromShadowBuffer(const Com_SignalIdType signalGroupId) {
 
 	// Get PDU
-	const ComSignal_type * Signal = GET_Signal(signalId);
-	uint8 pduSize = GET_IPdu(Signal->ComIPduHandleId)->ComIPduSize;
-	// Get data
-	Com_ReadSignalDataFromPduBuffer(
-			signalId,
-			FALSE,
-			signalData,
-			GET_IPdu(Signal->ComIPduHandleId)->ComIPduDataPtr,
-			pduSize);
-}
+	const ComSignal_type * Signal = GET_Signal(signalGroupId);
+	const ComIPdu_type *IPdu = GET_IPdu(Signal->ComIPduHandleId);
+	uint8 pduSize = IPdu->ComIPduSize;
 
-void Com_ReadGroupSignalDataFromPdu(
-		const Com_SignalIdType parentSignalId,
-		const Com_SignalIdType groupSignalId,
-		void *signalData) {
+	const void* pduDataPtr = 0;
+	if (IPdu->ComIPduSignalProcessing == DEFERRED && IPdu->ComIPduDirection == RECEIVE) {
+		pduDataPtr = IPdu->ComIPduDeferredDataPtr;
+	} else {
+		pduDataPtr = IPdu->ComIPduDataPtr;
+	}
 
-	// Get PDU
-	const ComSignal_type * Signal = GET_Signal(parentSignalId);
-	uint8 pduSize = GET_IPdu(Signal->ComIPduHandleId)->ComIPduSize;
-	// Get data
-	Com_ReadSignalDataFromPduBuffer(
-			groupSignalId,
-			TRUE,
-			signalData,
-			GET_IPdu(Signal->ComIPduHandleId)->ComIPduDataPtr,
-			pduSize);
+	imask_t state;
+	Irq_Save(state);
+
+	// Get data, Aligned opaque data -> straight copy
+	memcpy((void *)Signal->Com_Arc_ShadowBuffer, pduDataPtr, pduSize);
+
+	Irq_Restore(state);
 }
 
 void Com_ReadSignalDataFromPduBuffer(

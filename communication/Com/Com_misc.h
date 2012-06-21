@@ -24,18 +24,11 @@
 #ifndef COM_MISC_H_
 #define COM_MISC_H_
 
-
+// Copy Signal group data from PDU to shadowbuffer
+void Com_CopySignalGroupDataFromShadowBuffer(
+		const Com_SignalIdType signalGroupId);
 
 // Read data from PDU
-void Com_ReadSignalDataFromPdu(
-		const Com_SignalIdType signalId,
-		void *signalData);
-
-void Com_ReadGroupSignalDataFromPdu(
-		const Com_SignalIdType parentSignalId,
-		const Com_SignalIdType groupSignalId,
-		void *signalData);
-
 void Com_ReadSignalDataFromPduBuffer(
 		const uint16 signalId,
 		const boolean isGroupSignal,
