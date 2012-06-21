@@ -285,6 +285,7 @@ void Com_TpRxIndication(PduIdType PduId, NotifResultType Result) {
 
 	// If Ipdu is stopped
 	if (!Arc_IPdu->Com_Arc_IpduStarted) {
+		UnlockTpBuffer(getPduId(IPdu));
 		Irq_Restore(state);
 		return;
 	}
