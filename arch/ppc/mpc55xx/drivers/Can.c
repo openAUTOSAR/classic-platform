@@ -1446,7 +1446,31 @@ void Can_MainFunction_BusOff(void)
     /** !req 3.1.5/CAN183 */
     /** !req 3.1.5/CAN184 */
     /* Bus-off polling events */
+    Can_UnitType *uPtr;
 
+    for(int i=0;i<CAN_ARC_CTRL_CONFIG_CNT; i++ ) {
+        uPtr = &CanUnit[i];
+        if( (uPtr->cfgCtrlPtr->Can_Arc_Flags & CAN_CTRL_BUSOFF_PROCESSING_INTERRUPT) == 0 ) {
+        	Can_BusOff(uPtr->controllerId);
+        }
+    }
+}
+
+void Can_MainFunction_Error(void)
+{
+    /** !req 3.1.5/CAN227 */
+    /** !req 3.1.5/CAN109 */
+    /** !req 3.1.5/CAN183 */
+    /** !req 3.1.5/CAN184 */
+    /* Error polling events */
+    Can_UnitType *uPtr;
+
+    for(int i=0;i<CAN_ARC_CTRL_CONFIG_CNT; i++ ) {
+        uPtr = &CanUnit[i];
+        if( (uPtr->cfgCtrlPtr->Can_Arc_Flags & CAN_CTRL_ERROR_PROCESSING_INTERRUPT) == 0 ) {
+        	Can_Err(uPtr->controllerId);
+        }
+    }
 }
 
 void Can_MainFunction_Wakeup(void)

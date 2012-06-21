@@ -326,6 +326,7 @@ void Can_Cbk_CheckWakeup( uint8 controller );
 void Can_MainFunction_Write( void );
 void Can_MainFunction_Read( void );
 void Can_MainFunction_BusOff( void );
+void Can_MainFunction_Error( void );
 void Can_MainFunction_Wakeup( void );
 
 void Can_Arc_GetStatistics( uint8 controller, Can_Arc_StatisticsType * stat);
