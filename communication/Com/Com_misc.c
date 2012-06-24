@@ -152,13 +152,20 @@ void Com_WriteSignalDataToPdu(
 	// Get PDU
 	const ComSignal_type *Signal     = GET_Signal(signalId);
 	const ComIPdu_type   *IPdu       = GET_IPdu(Signal->ComIPduHandleId);
+	const void* pduDataPtr = 0;
+
+	if (IPdu->ComIPduSignalProcessing == DEFERRED && IPdu->ComIPduDirection == RECEIVE) {
+		pduDataPtr = IPdu->ComIPduDeferredDataPtr;
+	} else {
+		pduDataPtr = IPdu->ComIPduDataPtr;
+	}
 
 	// Get data
 	Com_WriteSignalDataToPduBuffer(
 			signalId,
 			FALSE,
 			signalData,
-			(void *)IPdu->ComIPduDataPtr,
+			pduDataPtr,
 			IPdu->ComIPduSize);
 }
 
