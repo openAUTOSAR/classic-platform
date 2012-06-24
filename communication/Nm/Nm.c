@@ -13,7 +13,10 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+
+#if defined(USE_CANNM)
 #include "CanNm.h"
+#endif
 #include "Nm.h"
 #include "Nm_Internal.h"
 

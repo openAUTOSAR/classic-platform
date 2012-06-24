@@ -54,7 +54,13 @@
 #include "ComM_Internal.h"
 
 /** @req COMM506  @req COMM353 */
+#if defined(USE_CANSM)
 #include "CanSM.h"
+#endif
+
+#if defined(USE_LINSM)
+#include "LinSM.h"
+#endif
 
 /** @req COMM347 */
 #if defined(USE_NM) || defined(COMM_TESTS)
@@ -470,9 +476,16 @@ static Std_ReturnType ComM_Internal_PropagateGetCurrentComMode( ComM_UserHandleT
 		Std_ReturnType status = E_OK;
 		ComM_ModeType mode = COMM_FULL_COMMUNICATION;
 		switch (Channel->BusType) {
+#if defined(USE_CANSM) || defined(COMM_TESTS)
 			case COMM_BUS_TYPE_CAN:
 				status = CanSM_GetCurrentComMode(Channel->BusSMNetworkHandle, &mode);
 				break;
+#endif
+#if defined(USE_LINSM)
+		case COMM_BUS_TYPE_LIN:
+			status = LinSM_GetCurrentComMode(Channel->BusSMNetworkHandle, &mode);
+			break;
+#endif
 			default:
 				status = E_NOT_OK;
 				break;
