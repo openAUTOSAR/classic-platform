@@ -54,6 +54,7 @@ void Com_MainFunctionRx(void) {
 				if (Arc_Signal->Com_Arc_DeadlineCounter == 0) {
 					if (signal->ComRxDataTimeoutAction == COM_TIMEOUT_DATA_ACTION_REPLACE) {
 						// Replace signal data.
+						Arc_Signal->ComSignalUpdated = true;
 						Com_WriteSignalDataToPdu(signal->ComHandleId, signal->ComSignalInitValue);
 
 					}
