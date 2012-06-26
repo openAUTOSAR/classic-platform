@@ -992,6 +992,11 @@
               <SUB-CONTAINERS>
                 <CONTAINER UUID="883fc1b2-f84d-43df-bacd-5700b3cd8fe0">
                   <SHORT-NAME>DigitalOutput_Set_RunnableMapping</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping</DEFINITION-REF>
                   <PARAMETER-VALUES>
                     <FLOAT-VALUE>
@@ -1072,7 +1077,7 @@
               <PORT-API-OPTIONS>
                 <PORT-API-OPTION>
                   <PORT-ARG-VALUES>
-                    <INTEGER-LITERAL UUID="539c59c3-b4e9-49a3-a1fb-63aa6de3f5ac">
+                    <INTEGER-LITERAL UUID="6d0d0a3b-f64e-4b57-ab29-ebfe17738b08">
                       <SHORT-NAME>SignalId</SHORT-NAME>
                       <TYPE-TREF DEST="INTEGER-TYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/IoHwAb_SignalType</TYPE-TREF>
                       <VALUE>0</VALUE>

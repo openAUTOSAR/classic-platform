@@ -275,6 +275,10 @@
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
                       <VALUE>PENDING</VALUE>
                     </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
+                    </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
                 <CONTAINER UUID="381116f2-5052-42bc-a6ab-3283f8a89509">
@@ -333,6 +337,10 @@
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
                       <VALUE>PENDING</VALUE>
+                    </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
                     </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
@@ -393,6 +401,10 @@
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
                       <VALUE>PENDING</VALUE>
                     </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
+                    </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
                 <CONTAINER UUID="4439880e-a276-4809-8cce-a953166c42f3">
@@ -451,6 +463,10 @@
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
                       <VALUE>PENDING</VALUE>
+                    </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
                     </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
@@ -614,6 +630,10 @@
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
                       <VALUE>TRIGGERED</VALUE>
                     </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
+                    </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
                 <CONTAINER UUID="d421f698-19e9-477f-b654-a42279ebe440">
@@ -672,6 +692,10 @@
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
                       <VALUE>TRIGGERED</VALUE>
+                    </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
                     </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
@@ -732,6 +756,10 @@
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
                       <VALUE>TRIGGERED</VALUE>
                     </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
+                    </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
                 <CONTAINER UUID="ee48a66b-41a6-4ff4-8705-f316e33baa1c">
@@ -790,6 +818,10 @@
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
                       <VALUE>TRIGGERED</VALUE>
+                    </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
                     </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
@@ -1138,6 +1170,10 @@
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanWakeupProcessing</DEFINITION-REF>
                       <VALUE>INTERRUPT</VALUE>
                     </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanErrorProcessing</DEFINITION-REF>
+                      <VALUE>INTERRUPT</VALUE>
+                    </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                   <SUB-CONTAINERS>
                     <CONTAINER UUID="62d10669-d968-42e6-9a7f-bb4964b0b5f8">
@@ -1269,6 +1305,10 @@
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanGeneral/CanVersionInfoApi</DEFINITION-REF>
                   <VALUE>false</VALUE>
                 </BOOLEAN-VALUE>
+                <STRING-VALUE>
+                  <DEFINITION-REF DEST="STRING-PARAM-DEF">/ArcCore/Can/CanGeneral/CanErrorCbk</DEFINITION-REF>
+                  <VALUE>CanIf_Arc_Error</VALUE>
+                </STRING-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
           </CONTAINERS>
