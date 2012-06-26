@@ -21,33 +21,9 @@
 
 typedef void * Rte_Instance;
 
-typedef float Float;
+typedef boolean Boolean;
 
-#define _DEFINED_TYPEDEF_FOR_Float_ 
-
-typedef sint32 SInt32;
-#define SInt32_LowerLimit -2147483648
-#define SInt32_UpperLimit 2147483647
-
-#define _DEFINED_TYPEDEF_FOR_SInt32_ 
-
-typedef uint8 UInt8;
-#define UInt8_LowerLimit 0
-#define UInt8_UpperLimit 255
-
-#define _DEFINED_TYPEDEF_FOR_UInt8_ 
-
-typedef uint32 UInt32;
-#define UInt32_LowerLimit 0
-#define UInt32_UpperLimit 4294967295
-
-#define _DEFINED_TYPEDEF_FOR_UInt32_ 
-
-typedef sint32 MilliOhm;
-#define MilliOhm_LowerLimit -2147483647
-#define MilliOhm_UpperLimit 2147483647
-
-#define _DEFINED_TYPEDEF_FOR_MilliOhm_ 
+#define _DEFINED_TYPEDEF_FOR_Boolean_ 
 
 typedef uint8 DigitalLevel;
 #ifndef Low
@@ -61,15 +37,15 @@ typedef uint8 DigitalLevel;
 
 #define _DEFINED_TYPEDEF_FOR_DigitalLevel_ 
 
-typedef boolean Boolean;
+typedef float Float;
 
-#define _DEFINED_TYPEDEF_FOR_Boolean_ 
+#define _DEFINED_TYPEDEF_FOR_Float_ 
 
-typedef sint32 MilliAmpere;
-#define MilliAmpere_LowerLimit -2147483647
-#define MilliAmpere_UpperLimit 2147483647
+typedef sint32 Hertz;
+#define Hertz_LowerLimit -2147483647
+#define Hertz_UpperLimit 2147483647
 
-#define _DEFINED_TYPEDEF_FOR_MilliAmpere_ 
+#define _DEFINED_TYPEDEF_FOR_Hertz_ 
 
 typedef uint16 IoHwAb_SignalType;
 #define IoHwAb_SignalType_LowerLimit 0
@@ -77,17 +53,69 @@ typedef uint16 IoHwAb_SignalType;
 
 #define _DEFINED_TYPEDEF_FOR_IoHwAb_SignalType_ 
 
-typedef sint8 SInt8;
-#define SInt8_LowerLimit -128
-#define SInt8_UpperLimit 127
+typedef sint32 MilliAmpere;
+#define MilliAmpere_LowerLimit -2147483647
+#define MilliAmpere_UpperLimit 2147483647
 
-#define _DEFINED_TYPEDEF_FOR_SInt8_ 
+#define _DEFINED_TYPEDEF_FOR_MilliAmpere_ 
+
+typedef sint32 MilliOhm;
+#define MilliOhm_LowerLimit -2147483647
+#define MilliOhm_UpperLimit 2147483647
+
+#define _DEFINED_TYPEDEF_FOR_MilliOhm_ 
 
 typedef sint32 MilliVolt;
 #define MilliVolt_LowerLimit -2147483647
 #define MilliVolt_UpperLimit 2147483647
 
 #define _DEFINED_TYPEDEF_FOR_MilliVolt_ 
+
+typedef uint8 NvM_RequestResultType;
+#ifndef NVM_REQ_OK
+#define NVM_REQ_OK ((NvM_RequestResultType)0)
+#endif /*NVM_REQ_OK*/
+#ifndef NVM_REQ_NOT_OK
+#define NVM_REQ_NOT_OK ((NvM_RequestResultType)1)
+#endif /*NVM_REQ_NOT_OK*/
+#ifndef NVM_REQ_PENDING
+#define NVM_REQ_PENDING ((NvM_RequestResultType)2)
+#endif /*NVM_REQ_PENDING*/
+#ifndef NVM_REQ_INTEGRITY_FAILED
+#define NVM_REQ_INTEGRITY_FAILED ((NvM_RequestResultType)3)
+#endif /*NVM_REQ_INTEGRITY_FAILED*/
+#ifndef NVM_REQ_BLOCK_SKIPPED
+#define NVM_REQ_BLOCK_SKIPPED ((NvM_RequestResultType)4)
+#endif /*NVM_REQ_BLOCK_SKIPPED*/
+#ifndef NVM_REQ_NV_INVALIDATED
+#define NVM_REQ_NV_INVALIDATED ((NvM_RequestResultType)5)
+#endif /*NVM_REQ_NV_INVALIDATED*/
+
+#define _DEFINED_TYPEDEF_FOR_NvM_RequestResultType_ 
+
+typedef sint32 Percent;
+#define Percent_LowerLimit -2147483647
+#define Percent_UpperLimit 2147483647
+
+#define _DEFINED_TYPEDEF_FOR_Percent_ 
+
+typedef sint16 SInt16;
+#define SInt16_LowerLimit -32768
+#define SInt16_UpperLimit 32767
+
+#define _DEFINED_TYPEDEF_FOR_SInt16_ 
+
+typedef sint32 SInt32;
+#define SInt32_LowerLimit -2147483648
+#define SInt32_UpperLimit 2147483647
+
+#define _DEFINED_TYPEDEF_FOR_SInt32_ 
+
+typedef sint8 SInt8;
+#define SInt8_LowerLimit -128
+#define SInt8_UpperLimit 127
+
+#define _DEFINED_TYPEDEF_FOR_SInt8_ 
 
 typedef uint8 SignalQuality;
 #ifndef SignalQuality_InitialValue
@@ -107,93 +135,35 @@ typedef uint8 SignalQuality;
 
 #define _DEFINED_TYPEDEF_FOR_SignalQuality_ 
 
-typedef sint32 Hertz;
-#define Hertz_LowerLimit -2147483647
-#define Hertz_UpperLimit 2147483647
-
-#define _DEFINED_TYPEDEF_FOR_Hertz_ 
-
-typedef sint32 Percent;
-#define Percent_LowerLimit -2147483647
-#define Percent_UpperLimit 2147483647
-
-#define _DEFINED_TYPEDEF_FOR_Percent_ 
-
-typedef sint16 SInt16;
-#define SInt16_LowerLimit -32768
-#define SInt16_UpperLimit 32767
-
-#define _DEFINED_TYPEDEF_FOR_SInt16_ 
-
 typedef uint16 UInt16;
 #define UInt16_LowerLimit 0
 #define UInt16_UpperLimit 65535
 
 #define _DEFINED_TYPEDEF_FOR_UInt16_ 
 
-typedef struct {
-	Float value;
-} Rte_DE_Float;
+typedef uint32 UInt32;
+#define UInt32_LowerLimit 0
+#define UInt32_UpperLimit 4294967295
 
-typedef struct {
-	SInt32 value;
-} Rte_DE_SInt32;
+#define _DEFINED_TYPEDEF_FOR_UInt32_ 
 
-typedef struct {
-	UInt8 value;
-} Rte_DE_UInt8;
+typedef uint8 UInt8;
+#define UInt8_LowerLimit 0
+#define UInt8_UpperLimit 255
 
-typedef struct {
-	UInt32 value;
-} Rte_DE_UInt32;
+#define _DEFINED_TYPEDEF_FOR_UInt8_ 
 
-typedef struct {
-	MilliOhm value;
-} Rte_DE_MilliOhm;
+typedef UInt8 DstPtrType[1024];
 
-typedef struct {
-	DigitalLevel value;
-} Rte_DE_DigitalLevel;
+#define _DEFINED_TYPEDEF_FOR_DstPtrType_ 
 
-typedef struct {
-	Boolean value;
-} Rte_DE_Boolean;
-
-typedef struct {
-	MilliAmpere value;
-} Rte_DE_MilliAmpere;
-
-typedef struct {
-	IoHwAb_SignalType value;
-} Rte_DE_IoHwAb_SignalType;
-
-typedef struct {
-	SInt8 value;
-} Rte_DE_SInt8;
-
-typedef struct {
-	MilliVolt value;
-} Rte_DE_MilliVolt;
-
-typedef struct {
-	SignalQuality value;
-} Rte_DE_SignalQuality;
-
-typedef struct {
-	Hertz value;
-} Rte_DE_Hertz;
-
-typedef struct {
-	Percent value;
-} Rte_DE_Percent;
-
-typedef struct {
-	SInt16 value;
-} Rte_DE_SInt16;
-
-typedef struct {
-	UInt16 value;
-} Rte_DE_UInt16;
+typedef uint8 Rte_ModeType_WdgMMode;
+#define RTE_TRANSITION_WdgMMode ((Rte_ModeType_WdgMMode)5)
+#define RTE_MODE_WdgMMode_ALIVE_OK ((Rte_ModeType_WdgMMode)3)
+#define RTE_MODE_WdgMMode_ALIVE_FAILED ((Rte_ModeType_WdgMMode)2)
+#define RTE_MODE_WdgMMode_ALIVE_EXPIRED ((Rte_ModeType_WdgMMode)1)
+#define RTE_MODE_WdgMMode_ALIVE_STOPPED ((Rte_ModeType_WdgMMode)4)
+#define RTE_MODE_WdgMMode_ALIVE_DEACTIVATED ((Rte_ModeType_WdgMMode)0)
 
 typedef struct {
 } Rte_PDS_Blinker_DigitalOutput_P;
