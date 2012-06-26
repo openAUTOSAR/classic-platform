@@ -576,6 +576,10 @@
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
                       <VALUE>PENDING</VALUE>
                     </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
+                    </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
                 <CONTAINER UUID="381116f2-5052-42bc-a6ab-3283f8a89509">
@@ -634,6 +638,10 @@
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
                       <VALUE>PENDING</VALUE>
+                    </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
                     </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
@@ -694,6 +702,10 @@
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
                       <VALUE>PENDING</VALUE>
                     </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
+                    </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
                 <CONTAINER UUID="4439880e-a276-4809-8cce-a953166c42f3">
@@ -752,6 +764,10 @@
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
                       <VALUE>PENDING</VALUE>
+                    </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
                     </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
@@ -915,6 +931,10 @@
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
                       <VALUE>TRIGGERED</VALUE>
                     </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
+                    </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
                 <CONTAINER UUID="d421f698-19e9-477f-b654-a42279ebe440">
@@ -973,6 +993,10 @@
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
                       <VALUE>TRIGGERED</VALUE>
+                    </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
                     </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
@@ -1033,6 +1057,10 @@
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
                       <VALUE>TRIGGERED</VALUE>
                     </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
+                    </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
                 <CONTAINER UUID="ee48a66b-41a6-4ff4-8705-f316e33baa1c">
@@ -1091,6 +1119,10 @@
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
                       <VALUE>TRIGGERED</VALUE>
+                    </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
                     </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
