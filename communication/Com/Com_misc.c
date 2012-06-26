@@ -158,7 +158,7 @@ void Com_WriteSignalDataToPdu(
 			signalId,
 			FALSE,
 			signalData,
-			(const void*) IPdu->ComIPduDataPtr,
+			IPdu->ComIPduDataPtr,
 			IPdu->ComIPduSize);
 }
 
