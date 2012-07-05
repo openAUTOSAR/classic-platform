@@ -490,6 +490,11 @@ static void Can_BusOff(int unit)
         canHw->ESR.B.BOFFINT = 1;
 
         Can_AbortTx(canHw, canUnit); // CANIF273
+
+        if (canHw->CR.B.BOFFREC) {
+        	canHw->CR.B.BOFFREC = 0;
+        	canHw->CR.B.BOFFREC = 1;
+        }
     }
 }
 
