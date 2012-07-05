@@ -101,6 +101,7 @@ __FLS_PROG_START__ = 0;	/* Must be aligned to a sector start. */
 #endif
     .text :
 	{
+	    crt0.o(.text);
     	*(.text .text.* .init .fini* .eini* .gnu.linkonce* .gnu.warning);
     	PROVIDE( btask_sup_matrix = .);
     	SORT(*)(.test_btask);

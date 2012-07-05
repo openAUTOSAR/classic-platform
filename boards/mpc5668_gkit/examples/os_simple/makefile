@@ -39,7 +39,7 @@ SREC_INFO=$(Q)$(SRECORD_PATH)/srec_info.exe
 # * linkfile  (linkscript_cw.ldf)
 # * cc_cw.mk  (romaddr, etc) 
 
-LOAD_ADDR=0x1c000
+LOAD_ADDR=0x20000
 
 # To srecord again to load in tool
 $(build-srec-image-y): $(build-bin-image-y)
@@ -63,7 +63,7 @@ $(build-bin-y) : $(build-srec-y)
 # Should extract the start address with "objdump -f"
 $(build-bin-image-y): $(build-bin-y)
 	@echo ">> Adding header" 
-	$(mkimage) -o $@ -l 0x1c028 -s 0x1c600 -m "APP" -v $<
+	$(mkimage) -o $@ -l 0x20100 -s 0x20100 -m "APP" -v $<
 
 endif
 
