@@ -596,38 +596,6 @@ static boolean CheckJobFailed( void ) {
 #endif
 
 /*
- * Request a read of a block from MemIf
- */
-static Std_ReturnType ReadBlock(const NvM_BlockDescriptorType *blockDescriptor,
-							AdministrativeBlockType *adminBlock,
-							uint8 setNumber,
-							uint16 blockOffset,
-							uint8 *destAddress,
-							uint16 length )
-{
-	Std_ReturnType returnCode;
-
-	if (setNumber < blockDescriptor->NvBlockNum) {
-		SetMemifJobBusy();
-		MemIfJobAdmin.BlockAdmin = adminBlock;
-		MemIfJobAdmin.BlockDescriptor = blockDescriptor;
-		returnCode = MemIf_Read(blockDescriptor->NvramDeviceId, BLOCK_BASE_AND_SET_TO_BLOCKNR(blockDescriptor->NvBlockBaseNumber, setNumber), blockOffset, destAddress, length );
-		if (returnCode != E_OK) {
-			AbortMemIfJob(MEMIF_JOB_FAILED);
-		}
-	} else if (setNumber < blockDescriptor->NvBlockNum + blockDescriptor->RomBlockNum) {
-		// TODO: Read from ROM
-	} else {
-		// Error: setNumber out of range
-		returnCode = E_NOT_OK;
-		DET_REPORTERROR(MODULE_ID_NVM, 0, NVM_LOC_READ_BLOCK_ID, NVM_PARAM_OUT_OF_RANGE);
-	}
-
-	return returnCode;
-}
-
-
-/*
  * Initiate the read all job
  */
 static boolean ReadAllInit(void)
@@ -766,8 +734,56 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 				blockDone = 1;
 				break;		/* Do NOT advance to next state */
 			} else {
+				uint8 setNumber = admPtr->DataIndex;
+				uint16 length = bPtr->NvBlockLength+crcLen;
+				Std_ReturnType rv;
+				boolean fail = FALSE;
 
-				if( ReadBlock(bPtr, admPtr, admPtr->DataIndex, 0, Nvm_WorkBuffer, bPtr->NvBlockLength+crcLen) != E_OK ) {
+				/*
+				 * Read the Block
+				 */
+
+				if (setNumber < bPtr->NvBlockNum) {
+					SetMemifJobBusy();
+					MemIfJobAdmin.BlockAdmin = admPtr;
+					MemIfJobAdmin.BlockDescriptor = bPtr;
+					imask_t state;
+
+					/* First reading the MemIf block and then checking MemIf_GetStatus() to determine
+					 * if the device BUSY in anyway...is not threadsafe. The way Autosar have defined
+					 * it you would have to lock over the MemIf_Read() to be sure.
+					 */
+					Irq_Save(state);
+
+					/* We want to read from MemIf, but the device may be busy.
+					 */
+					rv = MemIf_Read(bPtr->NvramDeviceId,
+											BLOCK_BASE_AND_SET_TO_BLOCKNR(bPtr->NvBlockBaseNumber, setNumber),
+											0,
+											Nvm_WorkBuffer,
+											length );
+					if (rv != E_OK) {
+						if ( MemIf_GetStatus(FIXME) == MEMIF_IDLE ) {
+							AbortMemIfJob(MEMIF_JOB_FAILED);
+							fail = TRUE;
+						} else {
+							/* Do nothing. For MEMIF_UNINIT, MEMIF_BUSY and MEMIF_BUSY_INTERNAL we just stay in the
+							 * same state. Better in the next run */
+							Irq_Restore(state);
+							break; /* Do NOT advance to next state */
+						}
+					}
+					Irq_Restore(state);
+
+				} else if (setNumber < bPtr->NvBlockNum + bPtr->RomBlockNum) {
+					// TODO: Read from ROM
+				} else {
+					// Error: setNumber out of range
+					DET_REPORTERROR(MODULE_ID_NVM, 0, NVM_LOC_READ_BLOCK_ID, NVM_PARAM_OUT_OF_RANGE);
+					fail = TRUE;
+				}
+
+				if( fail ) {
 					/* Fail the job */
 					admPtr->ErrorStatus = NVM_REQ_NOT_OK;
 					blockDone = 1;
@@ -789,34 +805,10 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 			/* Keep on waiting */
 		} else if( MEMIF_JOB_OK == jobResult ) {
 			/* We are done */
-
-#if 0
-			if( BLOCK_STATE_MEMIF_CRC_PROCESS == admPtr->BlockState ) {
-				/* @req 3.1.5/NVM362 NvM_ReadAll*/
-				DEBUG_CHECKSUM("RAM CRC", (bPtr->BlockCRCType == NVM_CRC16) ?  admPtr->RamCrc.crc16 : admPtr->RamCrc.crc32);
-				admPtr->BlockState = BLOCK_STATE_CALC_CRC_READ;
-				break;
-			}
-#endif
-
 			if( write ) {
 				admPtr->BlockState = BLOCK_STATE_MEMIF_REQ;
 				admPtr->ErrorStatus = NVM_REQ_OK;
 				blockDone = 1;
-
-#if 0
-				if( bPtr->BlockUseCrc ) {
-					/* Explicit CRC calc (not dependent on NvmCalcRamBlockCrc) */
-					/* @req 3.1.5/NVM212 NvM_WriteBlock */
-					/* @req 3.1.5/NVM253 NvM_WriteAll   */
-					admPtr->BlockState = BLOCK_STATE_CALC_CRC_WRITE;
-				} else {
-					/* Done */
-					admPtr->BlockState = BLOCK_STATE_MEMIF_REQ;
-					admPtr->ErrorStatus = NVM_REQ_OK;
-					blockDone = 1;
-				}
-#endif
 			} else {
 				/* read */
 				uint8 crcLen = 0;
@@ -1406,7 +1398,7 @@ void NvM_CancelWriteAll(void)
  * Procedure:	NvM_GetErrorStatus
  * Reentrant:	Yes
  */
-Std_ReturnType NvM_GetErrorStatus(NvM_BlockIdType blockId, uint8 *requestResultPtr)
+Std_ReturnType NvM_GetErrorStatus(NvM_BlockIdType blockId, NvM_RequestResultType *requestResultPtr)
 {
 	VALIDATE_RV(nvmState != NVM_UNINITIALIZED, NVM_GET_ERROR_STATUS_ID, NVM_E_NOT_INITIALIZED, E_NOT_OK );
 	VALIDATE_RV(blockId < NVM_NUM_OF_NVRAM_BLOCKS+1, NVM_GET_ERROR_STATUS_ID, NVM_E_PARAM_BLOCK_ID, E_NOT_OK );
