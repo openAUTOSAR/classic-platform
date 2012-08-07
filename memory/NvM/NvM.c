@@ -1760,7 +1760,7 @@ AdministrativeBlockType *admBlock;
 void NvM_MainFunction(void)
 {
 	int 			rv;
-	Nvm_QueueType 	qEntry;
+	static Nvm_QueueType 	qEntry;
 	const NvM_BlockDescriptorType *	bList = NvM_Config.BlockDescriptor;
 //	const NvM_BlockDescriptorType *	currBlock;
 //	static uint32 crc32;

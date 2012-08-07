@@ -75,6 +75,16 @@
 //#include "SchM_NvM.h"
 #include "MemMap.h"
 
+#include <stdio.h>
+//#define DEBUG_FEE	1
+#if defined(DEBUG_FEE)
+#define DEBUG_PRINTF(format,...) 					printf(format,## __VA_ARGS__ );
+#else
+#define DEBUG_PRINTF(format,...)
+#endif
+
+
+
 /*
  * Local definitions
  */
@@ -746,6 +756,8 @@ static void WriteDataRequested(void)
 	if (Fls_GetStatus() == MEMIF_IDLE) {
 		CurrentJob.State = FEE_WRITE_DATA;
 		/* Write the actual data */
+		DEBUG_PRINTF("WriteDataRequested: 0x%x 0x%x %d  ",CurrentJob.Op.Write.WriteDataAddress, CurrentJob.Op.Write.RamPtr, CurrentJob.Length );
+
 		if (Fls_Write(CurrentJob.Op.Write.WriteDataAddress, CurrentJob.Op.Write.RamPtr, CurrentJob.Length) == E_OK) {
 			SetFlsJobBusy();
 		} else {
