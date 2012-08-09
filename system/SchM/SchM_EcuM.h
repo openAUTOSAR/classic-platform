@@ -14,9 +14,36 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-#ifndef SCHM_CFG_H_
-#define SCHM_CFG_H_
+#ifndef SCHM_ECUM_H_
+#define SCHM_ECUM_H_
 
-#define SCHM_MAINFUNCTION_PERIOD_MS		5
+/*
+ * "Prototypes"
+ */
+#define SchM_Enter_EcuM(_area) CONCAT_(SchM_Enter_EcuM_,_area)
+#define SchM_Exit_EcuM(_area) CONCAT_(SchM_Exit_EcuM_,_area)
 
-#endif /*SCHM_CFG_H_*/
+/*
+ * Exclusive Areas
+ */
+
+/* Lock interrupts */
+#define EXCLUSIVE_AREA_0	0
+
+#define SchM_Enter_EcuM_0 DisableAllInterrupts
+#define SchM_Exit_EcuM_0  ResumeAllInterrupts
+
+/*
+ * MainFunction Scheduling
+ */
+#define SCHM_TIMER_WRAP_EcuM  ( ECUM_MAIN_FUNCTION_PERIOD / SCHM_MAINFUNCTION_PERIOD_MS )
+
+/* Skip "instance", req INTEGR058 */
+#if 0
+#define SchM_Enter_EcuM(uint8 exclusiveArea )
+#define SchM_Exit_EcuM(uint8 exclusiveArea )
+#define SchM_ActMainFunction_EcuM(uint8 exclusiveArea )
+#define SchM_CancelMainFunction_EcuM( uint8 exclusiveArea )
+#endif
+
+#endif /* SCHM_ECUM_H_ */

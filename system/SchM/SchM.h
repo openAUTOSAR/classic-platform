@@ -29,4 +29,15 @@ void SchM_Init( void );
 void SchM_Deinit( void );
 void SchM_GetVersionInfo( Std_VersionInfoType *versionInfo );
 
+#define SchM_Enter( _module, _exc_area ) \
+    SchM_Enter_EcuM ## _module ##  _exc_area
+
+#define SchM_Exit( _module, _exc_area ) \
+    SchM_Enter_EcuM ## _module ##  _exc_area
+
+
+#define CONCAT_(_x,_y)	_x##_y
+
+
+
 #endif /*SCHM_H_*/
