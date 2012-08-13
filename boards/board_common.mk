@@ -113,9 +113,10 @@ vpath-$(USE_NVM) += $(ROOTDIR)/system/Crc
 obj-$(USE_NVM) += Crc_32.o
 obj-$(USE_NVM) += Crc_16.o
 
-# Crc (Include when using NvM)
+# SchM
 inc-$(USE_SCHM) += $(ROOTDIR)/system/SchM
-
+vpath-$(USE_SCHM) += $(ROOTDIR)/system/SchM
+obj-$(USE_SCHM) += SchM.o
 
 # J1939Tp
 obj-$(USE_J1939TP) += J1939Tp.o

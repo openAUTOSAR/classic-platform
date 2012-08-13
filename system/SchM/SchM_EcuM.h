@@ -36,7 +36,7 @@
 /*
  * MainFunction Scheduling
  */
-#define SCHM_TIMER_WRAP_EcuM  ( ECUM_MAIN_FUNCTION_PERIOD / SCHM_MAINFUNCTION_PERIOD_MS )
+#define SCHM_MAINFUNCTION_PERIOD_ECUM    SCHM_MAINFUNCTION_PERIOD_MS
 
 /* Skip "instance", req INTEGR058 */
 #if 0

@@ -100,8 +100,9 @@
  * * Support in specification is limited
  * * Support in studio is limited
  *
- *   It's probably best to write scheduling information directly in the SchM_<mod>.h files.
- *   Since the SchM_<mod>.h files is included in the implementation file, do runtime checks
+ *  Write scheduling information directly in the SchM_<mod>.h files.
+ *  OR
+ *  Write scheduling information in SchM_cfg.h....better (keeps information in one place)
  *
  *     #if defined(USE_SCHM)
  *     assert( SCHM_TIMER(x) == <period> )
@@ -116,27 +117,10 @@
 #include "SchM_EcuM.h"
 #endif
 
-
-
-typedef struct  {
-	uint32 timer;
-} SchM_InfoType;
-
-#define SCHM_INFO(_mod)	\
-		SchM_InfoType SchM_Info_ ## _mod
-
-#define SCHM_MAINFUNCTION(_mod,_func) \
-		if( SchM_Info_ ## _mod.timer++ > SCHM_TIMER_WRAP_ ## _mod ) { \
-			_func; \
-			SchM_Info_ ## _mod.timer = 0; \
-		}
-
-SCHM_INFO(EcuM);
-SCHM_INFO(NvM);
-SCHM_INFO(Fee);
-SCHM_INFO(Fee);
-
-
+SCHM_DECLARE(ECUM);
+SCHM_DECLARE(NVM);
+SCHM_DECLARE(FEE);
+SCHM_DECLARE(EA);
 
 void SchM_Init( void ) {
 
@@ -152,11 +136,14 @@ void SchM_GetVersionInfo( Std_VersionInfoType *versionInfo ) {
 
 void SchM_MainFunction( void ) {
 
+#if 0
 #define EXCLUSIVE_AREA_0	0
 	SchM_Enter_EcuM(EXCLUSIVE_AREA_0);
 	SchM_Exit_EcuM(EXCLUSIVE_AREA_0);
+#endif
 
-	SCHM_MAINFUNCTION(EcuM,EcuM_MainFunction);
+	SCHM_MAINFUNCTION(ECUM,EcuM_MainFunction());
+	SCHM_MAINFUNCTION(EA,Ea_MainFunction());
 }
 
 /*
