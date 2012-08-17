@@ -57,6 +57,11 @@ Std_ReturnType PduR_ARC_RouteTransmit(const PduRDestPdu_type * destination, cons
 		retVal = CanIf_Transmit(destination->DestPduId, pduInfo);
 #endif
 		break;
+	case ARC_PDUR_COM:
+#if PDUR_COM_SUPPORT == STD_ON
+		Com_RxIndication(destination->DestPduId, pduInfo);
+#endif
+		break;
 	case ARC_PDUR_LINIF:
 #if PDUR_LINIF_SUPPORT == STD_ON
 		retVal = LinIf_Transmit(destination->DestPduId, pduInfo);
