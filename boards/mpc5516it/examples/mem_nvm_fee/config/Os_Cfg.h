@@ -27,7 +27,6 @@
 
 // Alarm Id's
 #define ALARM_ID_Alarm_BswService	0
-#define ALARM_ID_Alarm_BswServiceMem	1
 
 // Counter Id's
 #define COUNTER_ID_Counter1	0
@@ -64,14 +63,12 @@
 
 #define TASK_ID_Task_Application	1
 #define TASK_ID_Task_BswService	2
-#define TASK_ID_Task_BswServiceMem	3
-#define TASK_ID_Task_Startup	4
+#define TASK_ID_Task_Startup	3
 
 // Task entry points
 void OsIdle( void );
 void Task_Application( void );
 void Task_BswService( void );
-void Task_BswServiceMem( void );
 void Task_Startup( void );
 
 // Schedule table id's
@@ -80,8 +77,8 @@ void Task_Startup( void );
 #define OS_INTERRUPT_STACK_SIZE	2048
 #define OS_OSIDLE_STACK_SIZE 512
 
-#define OS_ALARM_CNT			2 
-#define OS_TASK_CNT				5
+#define OS_ALARM_CNT			1 
+#define OS_TASK_CNT				4
 #define OS_SCHTBL_CNT			0
 #define OS_COUNTER_CNT			1
 #define OS_EVENTS_CNT			0

@@ -76,17 +76,6 @@ GEN_ALARM_HEAD = {
 				APPLICATION_ID_OsApplication1,	/* Application owner */
 				1	/* Accessing application mask */
 			),
-	GEN_ALARM(	ALARM_ID_Alarm_BswServiceMem,
-				"Alarm_BswService",
-				COUNTER_ID_Counter1,
-				NULL,
-				ALARM_ACTION_ACTIVATETASK,
-				TASK_ID_Task_BswServiceMem,
-				0,
-				0,
-				APPLICATION_ID_OsApplication1,	/* Application owner */
-				1	/* Accessing application mask */
-			),
 };
 
 // ################################    RESOURCES     ###############################
@@ -97,7 +86,6 @@ DECLARE_STACK(OsIdle,OS_OSIDLE_STACK_SIZE);
 
 DECLARE_STACK(Task_Application,2048);
 DECLARE_STACK(Task_BswService,2048);
-DECLARE_STACK(Task_BswServiceMem,2048);
 DECLARE_STACK(Task_Startup,2048);
 
 // ##################################    TASKS     #################################
@@ -134,18 +122,6 @@ GEN_TASK_HEAD = {
 		/* resource_int_p   */NULL,
 		/* resource mask	*/0,
 		/* activation lim. 	*/1,
-		/* App owner    	*/APPLICATION_ID_OsApplication1,
-		/* Accessing apps   */1
-	),			
-	GEN_BTASK(
-		/* 	        		*/Task_BswServiceMem,
-		/* name        		*/"Task_BswServiceMem",
-		/* priority    		*/4,
-		/* schedule    		*/FULL,
-		/* autostart   		*/FALSE,
-		/* resource_int_p   */NULL,
-		/* resource mask	*/0,
-		/* activation lim. 	*/10,
 		/* App owner    	*/APPLICATION_ID_OsApplication1,
 		/* Accessing apps   */1
 	),			

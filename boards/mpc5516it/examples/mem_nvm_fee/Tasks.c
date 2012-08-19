@@ -41,7 +41,7 @@ void Task_Startup( void ) {
 
 	//.....
 	/* Set events on TASK_ID_BswService_Mem */
-	SetRelAlarm(ALARM_ID_Alarm_BswServiceMem, 10, 2);
+//	SetRelAlarm(ALARM_ID_Alarm_BswServiceMem, 10, 2);
 
 	/*
 	 * Call EcuM_StartupTwo that do:

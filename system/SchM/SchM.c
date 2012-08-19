@@ -65,7 +65,7 @@
  *  Can     CanMainFunctionReadPerdiod             No      No
  *          CanMainFunctionWritePerdiod
  *          ..
- *  CanIf   Have mainf. but no period              No
+ *  CanIf   Have No mainf                          N/A
  *  CanNm   CanNmMainFunctionPeriod                Yes     Accessible in struct.. not as define
  *  CanSm   Have mainf. but no period              Yes*2   Nothing is generated
  *  CanTp   CanTpMainFunctionPeriod                Yes     CANTP_MAIN_FUNCTION_PERIOD_TIME_MS
@@ -108,13 +108,195 @@
  *     assert( SCHM_TIMER(x) == <period> )
  *     #endif
  *
+ *  It seems it's mandatory to include SchM_<mod>.h for each BSW module.
+ *  So,
+ *  - <mod>.c ALWAYS include SchM_<mod.h>
+ *  - SchM.c have condidional include on SchM_<mod>.h, e.g must define it's MainFunctions.
+ *
+ *
+ *
  */
 
 #include "SchM.h"
 #include "SchM_cfg.h"
+
+
+#if defined(USE_MCU)
+#include "Mcu.h"
+#endif
+#if defined(USE_GPT)
+#include "Gpt.h"
+#endif
+
+#if defined(USE_CAN)
+#include "Can.h"
+#include "SchM_Can.h"
+#else
+#define	SCHM_MAINFUNCTION_CAN_WRITE()
+#define	SCHM_MAINFUNCTION_CAN_READ()
+#define	SCHM_MAINFUNCTION_CAN_BUSOFF()
+#define	SCHM_MAINFUNCTION_CAN_ERROR()
+#define	SCHM_MAINFUNCTION_CAN_WAKEUP()
+#endif
+
+#if defined(USE_CANIF)
+#include "CanIf.h"
+#include "SchM_CanIf.h"
+#endif
+
+#if defined(USE_PDUR)
+#include "PduR.h"
+#include "SchM_PduR.h"
+#else
+#define SCHM_MAINFUNCTION_PDUR()
+#endif
+
+#if defined(USE_COM)
+#include "Com.h"
+#include "SchM_Com.h"
+#else
+#define SCHM_MAINFUNCTION_COMRX()
+#define SCHM_MAINFUNCTION_COMTX()
+#endif
+
+#if defined(USE_CANTP)
+#include "CanTp.h"
+#include "SchM_CanTp.h"
+#else
+#define SCHM_MAINFUNCTION_CANTP()
+#endif
+
+#if defined(USE_J1939TP)
+#include "J1939Tp.h"
+#include "SchM_J1939TP.h"
+#else
+#define SCHM_MAINFUNCTION_J1939TP()
+#endif
+
+
+#if defined(USE_DCM)
+#include "Dcm.h"
+#include "SchM_Dcm.h"
+#else
+#define SCHM_MAINFUNCTION_DCM()
+#endif
+
+#if defined(USE_DEM)
+#include "Dem.h"
+#include "SchM_Dem.h"
+#else
+#define SCHM_MAINFUNCTION_DEM()
+#endif
+
+#if defined(USE_PWM)
+#include "Pwm.h"
+#include "SchM_Pwm.h"
+#else
+#define SCHM_MAINFUNCTION_PWM()
+#endif
+
+
+#if defined(USE_IOHWAB)
+#include "IoHwAb.h"
+#include "SchM_IoHwAb.h"
+#else
+#define SCHM_MAINFUNCTION_IOWHAB()
+#endif
+
+#if defined(USE_FLS)
+#include "Fls.h"
+#include "SchM_Fls.h"
+#else
+#define SCHM_MAINFUNCTION_FLS()
+#endif
+
 #if defined(USE_ECUM)
 #include "EcuM.h"
 #include "SchM_EcuM.h"
+#else
+#define SCHM_MAINFUNCTION_ECUM()
+#endif
+
+#if defined(USE_EEP)
+#include "Eep.h"
+#include "SchM_Fls.h"
+#else
+#define SCHM_MAINFUNCTION_EEP()
+#endif
+
+#if defined(USE_FEE)
+#include "Fee.h"
+#include "SchM_Fee.h"
+#else
+#define SCHM_MAINFUNCTION_FEE()
+#endif
+
+#if defined(USE_EA)
+#include "Ea.h"
+#include "SchM_Ea.h"
+#else
+#define SCHM_MAINFUNCTION_EA()
+#endif
+
+#if defined(USE_NVM)
+#include "NvM.h"
+#include "SchM_NvM.h"
+#else
+#define SCHM_MAINFUNCTION_NVM()
+#endif
+
+#if defined(USE_COMM)
+#include "ComM.h"
+#include "SchM_ComM.h"
+#else
+#define SCHM_MAINFUNCTION_COMM()
+#endif
+
+#if defined(USE_NM)
+#include "Nm.h"
+#include "SchM_Nm.h"
+#else
+#define SCHM_MAINFUNCTION_NM()
+#endif
+
+#if defined(USE_CANNM)
+#include "CanNm.h"
+#include "SchM_CanNm.h"
+#else
+#define SCHM_MAINFUNCTION_CANNM()
+#endif
+
+#if defined(USE_CANSM)
+#include "CanSM.h"
+#include "SchM_CanSM.h"
+#else
+#define SCHM_MAINFUNCTION_CANSM()
+#endif
+
+#if defined(USE_UDPNM)
+#include "UdpNm.h"
+#endif
+
+#if defined(USE_LINSM)
+#include "LinSM.h"
+#endif
+
+#if defined(USE_SPI)
+#include "Spi.h"
+#include "SchM_Spi.h"
+#else
+#define SCHM_MAINFUNCTION_SPI()
+#endif
+
+#if defined(USE_WDG)
+#include "Wdg.h"
+#endif
+
+#if defined(USE_WDGM)
+#include "WdgM.h"
+#include "SchM_WdgM.h"
+#else
+#define SCHM_MAINFUNCTION_WDMG()
 #endif
 
 SCHM_DECLARE(ECUM);
@@ -134,34 +316,98 @@ void SchM_GetVersionInfo( Std_VersionInfoType *versionInfo ) {
 
 }
 
-void SchM_MainFunction( void ) {
 
-#if 0
-#define EXCLUSIVE_AREA_0	0
-	SchM_Enter_EcuM(EXCLUSIVE_AREA_0);
-	SchM_Exit_EcuM(EXCLUSIVE_AREA_0);
-#endif
-
-	SCHM_MAINFUNCTION(ECUM,EcuM_MainFunction());
-	SCHM_MAINFUNCTION(EA,Ea_MainFunction());
+static void runMemory( void ) {
+	SCHM_MAINFUNCTION_NVM();
+	SCHM_MAINFUNCTION_EA();
+	SCHM_MAINFUNCTION_FEE();
+	SCHM_MAINFUNCTION_EEP();
+	SCHM_MAINFUNCTION_FLS();
+	SCHM_MAINFUNCTION_SPI();
 }
 
-/*
- * Implement
+/**
+ * Startup task.
  */
-// Critical sections
-// void SchM_Enter_<ModulePrefix>( uint8 instance, uint8 exclusiveArea )
-// void SchM_Exit_<ModulePrefix>( uint8 instance, uint8 exclusiveArea )
+void Task_SchM_Startup( void ) {
 
-// Triggers
-// SchM_ReturnType SchM_ActMainFunction_<ModulePrefix>( uint8 instance, uint8 activationPoint );
-// SchM_ReturnType SchM_CancelMainFunction_<ModulePrefix>( uint8 instance, uint8 activationPoint );
+	/* At this point EcuM ==  ECUM_STATE_STARTUP_ONE */
 
-/*
- * Callable functions in the <ModulePrefix>
- */
-// <ModulePrefix>_MainFunction_<name>()
-// <ModulePrefix>_MainFunction_<name>()
+	/* Schedule memory task more often that usaul so that EcuM_StartupTwo() may return quicker */
+	ActivateTask(TASK_ID_Task_BswService);
+	/* Set events on TASK_ID_BswService_Mem */
+	SetRelAlarm(ALARM_ID_Alarm_BswService, 10, 2);
+
+	/*
+	 * Call EcuM_StartupTwo that do:
+	 * - Startup RTE,
+	 * - Wait for Nvm to complete
+	 * - Call EcuM_AL_DriverInitThree() to initiate Nvm dependent modules.
+	 */
+	EcuM_StartupTwo();
+
+	/* Start to schedule BSW parts */
+	SetRelAlarm(ALARM_ID_Alarm_BswService, 10, 5);
+
+
+	//....
+
+	TerminateTask();
+
+}
+
+void Task_SchM_BswBase( void ) {
+	EcuM_StateType  state;
+
+	EcuM_GetState(&state);
+
+	switch( state ) {
+	case ECUM_STATE_STARTUP_ONE:
+		/* Nothing to schedule */
+		break;
+	case ECUM_STATE_STARTUP_TWO:
+		runMemory();
+		break;
+	default:
+		runMemory();
+
+		SCHM_MAINFUNCTION_ECUM();
+
+		SCHM_MAINFUNCTION_CAN_WRITE();
+		SCHM_MAINFUNCTION_CAN_READ();
+		SCHM_MAINFUNCTION_CAN_BUSOFF();
+		SCHM_MAINFUNCTION_CAN_ERROR();
+		SCHM_MAINFUNCTION_CAN_WAKEUP();
+
+		SCHM_MAINFUNCTION_PDUR();
+
+		SCHM_MAINFUNCTION_COMRX();
+		SCHM_MAINFUNCTION_COMTX();
+
+		SCHM_MAINFUNCTION_CANTP();
+		SCHM_MAINFUNCTION_J1939TP();
+		SCHM_MAINFUNCTION_DCM();
+		SCHM_MAINFUNCTION_DEM();
+		SCHM_MAINFUNCTION_PWM();
+		SCHM_MAINFUNCTION_IOWHAB();
+		SCHM_MAINFUNCTION_COMM();
+		SCHM_MAINFUNCTION_NM();
+		SCHM_MAINFUNCTION_CANNM();
+		SCHM_MAINFUNCTION_CANSM();
+		SCHM_MAINFUNCTION_WDMG();
+		break;
+	}
+
+	TerminateTask();
+}
+
+void Task_SchM_BswMem( void ) {
+	SCHM_MAINFUNCTION_NVM();
+}
+
+void SchM_MainFunction( void ) {
+
+}
 
 
 
