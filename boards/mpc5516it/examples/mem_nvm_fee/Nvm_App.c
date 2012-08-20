@@ -48,8 +48,8 @@
 
 #define BUSY_WAIT(_block,_var)	\
 	do { \
-		NvM_GetErrorStatus(_block, &_var); \
-	} while( _var != NVM_REQ_OK );
+		NvM_GetErrorStatus(_block, &(_var)); \
+	} while( (_var) != NVM_REQ_OK );
 
 
 /* ----------------------------[private typedef]-----------------------------*/
@@ -154,11 +154,11 @@ static void nvmApplication(void) {
 	 */
 	PATTERN_FILL(TEST_RamBlock_Dataset_0,0);
 	NvM_WriteBlock(currBlock,TEST_RamBlock_Dataset_0);
-	BUSY_WAIT(currBlock,&errorStatus);
+	BUSY_WAIT(currBlock,errorStatus);
 
 	memset(TEST_RamBlock_Dataset_0,0,sizeof(TEST_RamBlock_Dataset_0));
 	NvM_ReadBlock(currBlock,TEST_RamBlock_Dataset_0);
-	BUSY_WAIT(currBlock,&errorStatus);
+	BUSY_WAIT(currBlock,errorStatus);
 
 	rv = PATTERN_VERIFY(TEST_RamBlock_Dataset_0,0);
 	assert(rv == 0);
@@ -168,15 +168,15 @@ static void nvmApplication(void) {
 	 */
 	rv = NvM_SetDataIndex(currBlock,1);
 	assert( rv == E_OK );
-	BUSY_WAIT(currBlock,&errorStatus);
+	BUSY_WAIT(currBlock,errorStatus);
 
 	PATTERN_FILL(TEST_RamBlock_Dataset_0,5);
 	NvM_WriteBlock(currBlock,TEST_RamBlock_Dataset_0);
-	BUSY_WAIT(currBlock,&errorStatus);
+	BUSY_WAIT(currBlock,errorStatus);
 
 	memset(TEST_RamBlock_Dataset_0,0,sizeof(TEST_RamBlock_Dataset_0));
 	NvM_ReadBlock(currBlock,TEST_RamBlock_Dataset_0);
-	BUSY_WAIT(currBlock,&errorStatus);
+	BUSY_WAIT(currBlock,errorStatus);
 
 	rv = PATTERN_VERIFY(TEST_RamBlock_Dataset_0,5);
 	assert(rv == 0);
@@ -187,10 +187,10 @@ static void nvmApplication(void) {
 	 */
 	NvM_SetDataIndex(currBlock,0);
 	assert( rv == E_OK );
-	BUSY_WAIT(currBlock,&errorStatus);
+	BUSY_WAIT(currBlock,errorStatus);
 
 	NvM_ReadBlock(currBlock,TEST_RamBlock_Dataset_0);
-	BUSY_WAIT(currBlock,&errorStatus);
+	BUSY_WAIT(currBlock,errorStatus);
 
 	rv = PATTERN_VERIFY(TEST_RamBlock_Dataset_0,0);
 	assert(rv == 0);

@@ -41,7 +41,7 @@ typedef struct  {
 		SchM_InfoType SchM_Info_ ## _mod
 
 #define SCHM_MAINFUNCTION(_mod,_func) \
-		if( SchM_Info_ ## _mod.timer++ > SCHM_MAINFUNCTION_PERIOD_ ## _mod ) { \
+		if( ++SchM_Info_ ## _mod.timer ==  SCHM_MAINFUNCTION_CYCLE_ ## _mod ) { \
 			_func; \
 			SchM_Info_ ## _mod.timer = 0; \
 		}

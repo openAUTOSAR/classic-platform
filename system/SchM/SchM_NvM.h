@@ -17,6 +17,6 @@
 #ifndef SCHM_NVM_H_
 #define SCHM_NVM_H_
 
-#define SCHM_MAINFUNCTION_NVM() 	NvM_MainFunction()
+#define SCHM_MAINFUNCTION_NVM() 	SCHM_MAINFUNCTION(NVM,NvM_MainFunction())
 
 #endif /* SCHM_NVM_H_ */
