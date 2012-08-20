@@ -23,7 +23,7 @@
 /*
  * Scheduling BSW
  */
-#define SCHM_CYCLE_MAIN				(5-1)
+#define SCHM_CYCLE_MAIN				(5)
 
 #define SCHM_MAINFUNCTION_CYCLE_ADC     SCHM_CYCLE_MAIN
 #define SCHM_MAINFUNCTION_CYCLE_CAN     SCHM_CYCLE_MAIN
