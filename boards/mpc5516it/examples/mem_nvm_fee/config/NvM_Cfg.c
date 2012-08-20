@@ -15,28 +15,41 @@
 
 #include "NvM.h"
 
+/* Ram block for Block_2_Native */
+extern uint8 Block_2_RamBlock[];
+/* InitBlockCallbackFunction block for Block_2_Native */
+extern Std_ReturnType Block_2_InitCallback(void);
 
 // Single block callbacks
+extern Std_ReturnType Block_Dataset_SingleCallback(uint8 ServiceId, NvM_RequestResultType JobResult);
 
 
 // Multi block callback
-extern void TEST_MultiBlockCallback(uint8 ServiceId, NvM_RequestResultType JobResult);
+extern void MultiBlock_Callback(uint8 ServiceId, NvM_RequestResultType JobResult);
 
 #ifdef CFG_NVM_USE_SERVICE_COMPONENT
-Std_ReturnType block_1_dataset_JobFinished(UInt8 ServiceId, NvM_RequestResultType JobResult) {
-	return Rte_Call_block_1_dataset_NvMNotifyJobFinished_JobFinished(ServiceId, JobResult);
+Std_ReturnType Block_1_Dataset_JobFinished(UInt8 ServiceId, NvM_RequestResultType JobResult) {
+	return Rte_Call_Block_1_Dataset_NvMNotifyJobFinished_JobFinished(ServiceId, JobResult);
+}
+Std_ReturnType Block_2_Native_JobFinished(UInt8 ServiceId, NvM_RequestResultType JobResult) {
+	return Rte_Call_Block_2_Native_NvMNotifyJobFinished_JobFinished(ServiceId, JobResult);
 }
 
-Std_ReturnType block_1_dataset_InitBlock(UInt8 ServiceId, NvM_RequestResultType JobResult) {
-	return Rte_Call_block_1_dataset_NvMNotifyInitBlock_InitBlock(ServiceId, JobResult);
+Std_ReturnType Block_1_Dataset_InitBlock(UInt8 ServiceId, NvM_RequestResultType JobResult) {
+	return Rte_Call_Block_1_Dataset_NvMNotifyInitBlock_InitBlock(ServiceId, JobResult);
+}
+Std_ReturnType Block_2_Native_InitBlock(UInt8 ServiceId, NvM_RequestResultType JobResult) {
+	return Rte_Call_Block_2_Native_NvMNotifyInitBlock_InitBlock(ServiceId, JobResult);
 }
 
-const blockNotifyJobFinishedFunc_t blockNotifyJobFinished[1] = {
-	block_1_dataset_JobFinished,
+const blockNotifyJobFinishedFunc_t blockNotifyJobFinished[2] = {
+	Block_1_Dataset_JobFinished,
+	Block_2_Native_JobFinished,
 };
 
-const blockNotifyInitBlockFunc_t blockNotifyInitBlock[1] = {
-	block_1_dataset_InitBlock,
+const blockNotifyInitBlockFunc_t blockNotifyInitBlock[2] = {
+	Block_1_Dataset_InitBlock,
+	Block_2_Native_InitBlock,
 };
 #endif
 
@@ -68,7 +81,7 @@ const NvM_BlockDescriptorType BlockDescriptorList[] = {
 		.BlockWriteProt = STD_OFF,
 		.WriteBlockOnce = STD_OFF,		/* Value is not configurable */
 		.SelectBlockForReadall = STD_OFF,
-		.SingleBlockCallback = NULL,
+		.SingleBlockCallback = Block_Dataset_SingleCallback,
 		.NvBlockLength = 20,
 		.RamBlockDataAddress = NULL,
 		.NvBlockNum = 2,
@@ -83,11 +96,32 @@ const NvM_BlockDescriptorType BlockDescriptorList[] = {
 		.RomBlockDataAdress = NULL,
 		.InitBlockCallback = NULL,
 	},
+	{
+		.NvramBlockIdentifier = 3,
+		.BlockManagementType = NVM_BLOCK_NATIVE,
+		.BlockWriteProt = STD_OFF,
+		.WriteBlockOnce = STD_OFF,		/* Value is not configurable */
+		.SelectBlockForReadall = STD_ON,
+		.SingleBlockCallback = NULL,
+		.NvBlockLength = 10,
+		.RamBlockDataAddress = Block_2_RamBlock,
+		.NvBlockNum = 1,
+		.NvramDeviceId = 1, 			/* Value is not configurable */		
+		.NvBlockBaseNumber = 4,
+		.BlockUseCrc = true,
+		.CalcRamBlockCrc = false,
+		.BlockJobPriority = 0,			/* Value is not configurable */
+		.ResistantToChangesSw = FALSE,	/* Value is not configurable */
+		.BlockCRCType = NVM_CRC32,
+		.RomBlockNum = 0,
+		.RomBlockDataAdress = NULL,
+		.InitBlockCallback = Block_2_InitCallback,
+	},
 };
 
 const NvM_ConfigType NvM_Config = {
 		.Common = {
-				.MultiBlockCallback = TEST_MultiBlockCallback,
+				.MultiBlockCallback = MultiBlock_Callback,
 		},
 		.BlockDescriptor = BlockDescriptorList,		
 };

@@ -46,7 +46,7 @@
           <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/NvM</DEFINITION-REF>
           <CONTAINERS>
             <CONTAINER UUID="f2439634-d30c-4441-b20c-0352011f425e">
-              <SHORT-NAME>block_1_dataset</SHORT-NAME>
+              <SHORT-NAME>Block_1_Dataset</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
                   <SDG GID="Arccore::IdentifiableOptions" />
@@ -124,7 +124,7 @@
                 </BOOLEAN-VALUE>
                 <FUNCTION-NAME-VALUE>
                   <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmSingleBlockCallback</DEFINITION-REF>
-                  <VALUE />
+                  <VALUE>Block_Dataset_SingleCallback</VALUE>
                 </FUNCTION-NAME-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmWriteBlockOnce</DEFINITION-REF>
@@ -142,7 +142,7 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmTargetBlockReference/NvmFeeRef/NvmNameOfFeeBlock</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/nvm_05_fls_mpc5516it/Fee/Fee_Block_1</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/nvm_05_fls_mpc5516it/Fee/Fee_Block_Dataset_0</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
@@ -195,7 +195,7 @@
                 </INTEGER-VALUE>
                 <FUNCTION-NAME-VALUE>
                   <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/NvM/NvmCommon/NvmMultiBlockCallback</DEFINITION-REF>
-                  <VALUE>TEST_MultiBlockCallback</VALUE>
+                  <VALUE>MultiBlock_Callback</VALUE>
                 </FUNCTION-NAME-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/NvM/NvmCommon/NvmPollingMode</DEFINITION-REF>
@@ -219,6 +219,109 @@
                 </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
+            <CONTAINER UUID="1348e625-fe60-402e-9e16-52113eb7dfd8">
+              <SHORT-NAME>Block_2_Native</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                </SDGS>
+              </ADMIN-DATA>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/NvM/NvmBlockDescriptor</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmBlockCRCType</DEFINITION-REF>
+                  <VALUE>NVM_CRC32</VALUE>
+                </ENUMERATION-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmBlockJobPriority</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmBlockManagementType</DEFINITION-REF>
+                  <VALUE>NVM_BLOCK_NATIVE</VALUE>
+                </ENUMERATION-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmBlockUseCrc</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmBlockWriteProt</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmCalcRamBlockCrc</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <FUNCTION-NAME-VALUE>
+                  <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmInitBlockCallback</DEFINITION-REF>
+                  <VALUE>Block_2_InitCallback</VALUE>
+                </FUNCTION-NAME-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="DERIVED-INTEGER-PARAM-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmNvBlockBaseNumber</DEFINITION-REF>
+                  <VALUE>4</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmNvBlockLength</DEFINITION-REF>
+                  <VALUE>10</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmNvBlockNum</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmNvramBlockIdentifier</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="DERIVED-INTEGER-PARAM-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmNvramDeviceId</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <STRING-VALUE>
+                  <DEFINITION-REF DEST="STRING-PARAM-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmRamBlockDataAddress</DEFINITION-REF>
+                  <VALUE>Block_2_RamBlock</VALUE>
+                </STRING-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmResistantToChangedSw</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <STRING-VALUE>
+                  <DEFINITION-REF DEST="STRING-PARAM-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmRomBlockDataAddress</DEFINITION-REF>
+                  <VALUE />
+                </STRING-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmRomBlockNum</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmSelectBlockForReadall</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <FUNCTION-NAME-VALUE>
+                  <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmSingleBlockCallback</DEFINITION-REF>
+                  <VALUE />
+                </FUNCTION-NAME-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmWriteBlockOnce</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmBlockCbkUsePort</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+              </PARAMETER-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="f577c043-d9aa-410f-8fda-71baab64104c">
+                  <SHORT-NAME>NvmFeeRef</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmTargetBlockReference/NvmFeeRef</DEFINITION-REF>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/NvM/NvmBlockDescriptor/NvmTargetBlockReference/NvmFeeRef/NvmNameOfFeeBlock</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/nvm_05_fls_mpc5516it/Fee/Fee_Block_Native</VALUE-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
         <MODULE-CONFIGURATION UUID="6b94ef7e-3c42-48fa-bcd0-a71f3681b630">
@@ -235,7 +338,7 @@
           <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Fee</DEFINITION-REF>
           <CONTAINERS>
             <CONTAINER UUID="787e69b8-436e-428e-8667-b932e28154f4">
-              <SHORT-NAME>Fee_Block_1</SHORT-NAME>
+              <SHORT-NAME>Fee_Block_Dataset_0</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
                   <SDG GID="Arccore::IdentifiableOptions" />
@@ -326,7 +429,34 @@
               </PARAMETER-VALUES>
             </CONTAINER>
             <CONTAINER UUID="04933477-a39d-4b35-acf1-c6743d73d075">
-              <SHORT-NAME>Fee_Block_2</SHORT-NAME>
+              <SHORT-NAME>Fee_Block_Native</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                </SDGS>
+              </ADMIN-DATA>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Fee/FeeBlockConfiguration</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Fee/FeeBlockConfiguration/FeeBlockNumber</DEFINITION-REF>
+                  <VALUE>4</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Fee/FeeBlockConfiguration/FeeBlockSize</DEFINITION-REF>
+                  <VALUE>14</VALUE>
+                </INTEGER-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Fee/FeeBlockConfiguration/FeeImmediateData</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Fee/FeeBlockConfiguration/FeeNumberOfWriteCycles</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="23cefe56-b33f-456e-ab3f-ea4d133b7e85">
+              <SHORT-NAME>Fee_Block_Dataset_1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
                   <SDG GID="Arccore::IdentifiableOptions" />

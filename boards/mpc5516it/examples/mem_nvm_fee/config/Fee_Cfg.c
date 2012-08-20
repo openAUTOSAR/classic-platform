@@ -24,6 +24,12 @@ const Fee_BlockConfigType BlockConfigList[] = {
 		.NumberOfWriteCycles = 0
 	},	
 	{
+		.BlockNumber = 4,		
+		.BlockSize = 14,
+		.ImmediateData = FALSE,
+		.NumberOfWriteCycles = 0
+	},	
+	{
 		.BlockNumber = 3,		
 		.BlockSize = 22,
 		.ImmediateData = FALSE,

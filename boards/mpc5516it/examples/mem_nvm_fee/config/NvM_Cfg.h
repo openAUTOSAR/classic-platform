@@ -40,11 +40,12 @@
 #define NVM_SIZE_IMMEDIATE_JOB_QUEUE	0						// 1..255
 #define NVM_SIZE_STANDARD_JOB_QUEUE		4						// 1..255
 
-#define NVM_block_1_dataset_HANDLE 2
+#define NVM_Block_1_Dataset_HANDLE 2
+#define NVM_Block_2_Native_HANDLE 3
 
 #define NVM_MAX_BLOCK_LENGTH			20
 
-#define NVM_NUM_OF_NVRAM_BLOCKS			2
+#define NVM_NUM_OF_NVRAM_BLOCKS			3
 
 #ifdef CFG_NVM_USE_SERVICE_COMPONENT
 typedef Std_ReturnType (*blockNotifyJobFinishedFunc_t)(UInt8, NvM_RequestResultType);

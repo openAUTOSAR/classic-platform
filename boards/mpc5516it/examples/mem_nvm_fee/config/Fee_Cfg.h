@@ -32,6 +32,6 @@
 #define FEE_INDEX						0
 #define FEE_VIRTUAL_PAGE_SIZE		    16
 
-#define FEE_NUM_OF_BLOCKS				2
+#define FEE_NUM_OF_BLOCKS				3
 #define FEE_MAX_NUM_SETS				2 // 2^NvmDatasetSelectionBits 
 #endif /*FEE_CFG_H_*/
