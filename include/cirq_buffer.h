@@ -17,6 +17,7 @@
 #define CIRQ_BUFFER_H_
 
 #include <stddef.h>
+#include "Platform_Types.h"
 
 typedef struct {
 	/* The max number of elements in the list */

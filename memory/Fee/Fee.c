@@ -52,7 +52,7 @@
  */
 
 
-//lint -emacro(904,VALIDATE_RV,VALIDATE_NO_RV) //904 PC-Lint exception to MISRA 14.7 (validate macros).
+//lint -emacro(904,DET_VALIDATE_RV,DET_VALIDATE_NO_RV) //904 PC-Lint exception to MISRA 14.7 (validate macros).
 
 // Exception made as a result of that NVM_DATASET_SELECTION_BITS can be zero
 //lint -emacro(835, MIN_BLOCKNR) // 835 PC-lint: A zero has been given as right argument to operator '<<' or '>>'
@@ -75,6 +75,16 @@
 //#include "SchM_NvM.h"
 #include "MemMap.h"
 
+#include <stdio.h>
+//#define DEBUG_FEE	1
+#if defined(DEBUG_FEE)
+#define DEBUG_PRINTF(format,...) 					printf(format,## __VA_ARGS__ );
+#else
+#define DEBUG_PRINTF(format,...)
+#endif
+
+
+
 /*
  * Local definitions
  */
@@ -84,18 +94,18 @@
  */
 #if  ( FEE_DEV_ERROR_DETECT == STD_ON )
 #include "Det.h"
-#define VALIDATE(_exp,_api,_err ) \
+#define DET_VALIDATE(_exp,_api,_err ) \
         if( !(_exp) ) { \
           Det_ReportError(MODULE_ID_FEE, 0, _api, _err); \
         }
 
-#define VALIDATE_RV(_exp,_api,_err,_rv ) \
+#define DET_VALIDATE_RV(_exp,_api,_err,_rv ) \
         if( !(_exp) ) { \
           Det_ReportError(MODULE_ID_FEE, 0, _api, _err); \
           return _rv; \
         }
 
-#define VALIDATE_NO_RV(_exp,_api,_err ) \
+#define DET_VALIDATE_NO_RV(_exp,_api,_err ) \
   if( !(_exp) ) { \
           Det_ReportError(MODULE_ID_FEE, 0, _api, _err); \
           return; \
@@ -106,9 +116,9 @@
 #define MIN_BLOCKNR		((uint16)((uint16)1 << NVM_DATASET_SELECTION_BITS))
 
 #else
-#define VALIDATE(_exp,_api,_err )
-#define VALIDATE_RV(_exp,_api,_err,_rv )
-#define VALIDATE_NO_RV(_exp,_api,_err )
+#define DET_VALIDATE(_exp,_api,_err )
+#define DET_VALIDATE_RV(_exp,_api,_err,_rv )
+#define DET_VALIDATE_NO_RV(_exp,_api,_err )
 #define DET_REPORTERROR(_module,_instance,_api,_err)
 #endif
 
@@ -531,7 +541,7 @@ static void StartupReadBlockAdmin(void)
 	if (CheckFlsJobFinnished()) {
 		if (Fls_GetJobResult() == MEMIF_JOB_OK) {
 			if (RWBuffer.BlockCtrl.DataPage.Data.Status == BLOCK_STATUS_EMPTY) {
-				VALIDATE(CurrentJob.Op.Startup.NrOfBanks != 0, FEE_STARTUP_ID, FEE_FLASH_CORRUPT);
+				DET_VALIDATE(CurrentJob.Op.Startup.NrOfBanks != 0, FEE_STARTUP_ID, FEE_FLASH_CORRUPT);
 				CurrentJob.Op.Startup.NrOfBanks--;
 				CurrentJob.Op.Startup.BankNumber = (CurrentJob.Op.Startup.BankNumber + 1) % 2;
 				CurrentJob.Op.Startup.BlockAdminAddress = BankProp[CurrentJob.Op.Startup.BankNumber].End - (BLOCK_CTRL_PAGE_SIZE + BANK_CTRL_PAGE_SIZE);
@@ -746,6 +756,8 @@ static void WriteDataRequested(void)
 	if (Fls_GetStatus() == MEMIF_IDLE) {
 		CurrentJob.State = FEE_WRITE_DATA;
 		/* Write the actual data */
+		DEBUG_PRINTF("WriteDataRequested: 0x%x 0x%x %d  ",CurrentJob.Op.Write.WriteDataAddress, CurrentJob.Op.Write.RamPtr, CurrentJob.Length );
+
 		if (Fls_Write(CurrentJob.Op.Write.WriteDataAddress, CurrentJob.Op.Write.RamPtr, CurrentJob.Length) == E_OK) {
 			SetFlsJobBusy();
 		} else {
@@ -895,7 +907,7 @@ static void GarbageCollectWriteHeader(void)
 				CurrentJob.State = FEE_GARBAGE_COLLECT_DATA_READ_REQUESTED;
 			} else {
 				/* Yes, we are finished */
-				VALIDATE_NO_RV(CurrentJob.AdminFlsBlockPtr->Status == BLOCK_STATUS_INVALIDATED, FEE_GARBAGE_WRITE_HEADER_ID, FEE_UNEXPECTED_STATUS);
+				DET_VALIDATE_NO_RV(CurrentJob.AdminFlsBlockPtr->Status == BLOCK_STATUS_INVALIDATED, FEE_GARBAGE_WRITE_HEADER_ID, FEE_UNEXPECTED_STATUS);
 				CurrentJob.State = FEE_GARBAGE_COLLECT_MAGIC_WRITE_REQUESTED;
 			}
 		} else {
@@ -1203,17 +1215,21 @@ Std_ReturnType Fee_Read(uint16 blockNumber, uint16 blockOffset, uint8* dataBuffe
 	uint16 blockIndex;
 	uint16 dataset;
 
-	VALIDATE_RV(ModuleStatus != MEMIF_UNINIT, FEE_READ_ID, FEE_E_UNINIT, E_NOT_OK);
-	VALIDATE_RV(ModuleStatus == MEMIF_IDLE, FEE_READ_ID, FEE_E_BUSY, E_NOT_OK);
+	DET_VALIDATE_RV(ModuleStatus != MEMIF_UNINIT, FEE_READ_ID, FEE_E_UNINIT, E_NOT_OK);
+
+	if( !(ModuleStatus == MEMIF_IDLE) ) {
+		DET_REPORTERROR(MODULE_ID_FEE, FEE_READ_ID, FEE_E_BUSY, E_NOT_OK);
+		return E_NOT_OK;
+	}
 
 	blockIndex = GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(blockNumber);
-	VALIDATE_RV(blockIndex < FEE_NUM_OF_BLOCKS, FEE_READ_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
-	VALIDATE_RV(dataBufferPtr != NULL, FEE_READ_ID, FEE_E_INVALID_DATA_PTR, E_NOT_OK);
-	VALIDATE_RV(blockOffset < Fee_Config.BlockConfig[blockIndex].BlockSize, FEE_READ_ID, FEE_E_INVALID_BLOCK_OFS, E_NOT_OK);
-	VALIDATE_RV(blockOffset + length <= Fee_Config.BlockConfig[blockIndex].BlockSize, FEE_READ_ID, FEE_E_INVALID_BLOCK_LEN, E_NOT_OK);
+	DET_VALIDATE_RV(blockIndex < FEE_NUM_OF_BLOCKS, FEE_READ_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
+	DET_VALIDATE_RV(dataBufferPtr != NULL, FEE_READ_ID, FEE_E_INVALID_DATA_PTR, E_NOT_OK);
+	DET_VALIDATE_RV(blockOffset < Fee_Config.BlockConfig[blockIndex].BlockSize, FEE_READ_ID, FEE_E_INVALID_BLOCK_OFS, E_NOT_OK);
+	DET_VALIDATE_RV(blockOffset + length <= Fee_Config.BlockConfig[blockIndex].BlockSize, FEE_READ_ID, FEE_E_INVALID_BLOCK_LEN, E_NOT_OK);
 
 	dataset = GET_DATASET_FROM_BLOCK_NUMBER(blockNumber);
-	VALIDATE_RV(dataset < FEE_MAX_NUM_SETS, FEE_READ_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
+	DET_VALIDATE_RV(dataset < FEE_MAX_NUM_SETS, FEE_READ_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
 
 
 	/** @req FEE022 */
@@ -1241,15 +1257,19 @@ Std_ReturnType Fee_Write(uint16 blockNumber, uint8* dataBufferPtr)
 	uint16 blockIndex;
 	uint16 dataset;
 
-	VALIDATE_RV(ModuleStatus != MEMIF_UNINIT, FEE_WRITE_ID, FEE_E_UNINIT, E_NOT_OK);
-	VALIDATE_RV(ModuleStatus == MEMIF_IDLE, FEE_WRITE_ID, FEE_E_BUSY, E_NOT_OK);
+	DET_VALIDATE_RV(ModuleStatus != MEMIF_UNINIT, FEE_WRITE_ID, FEE_E_UNINIT, E_NOT_OK);
+
+	if( !(ModuleStatus == MEMIF_IDLE) ) {
+		DET_REPORTERROR(MODULE_ID_FEE, FEE_READ_ID, FEE_E_BUSY, E_NOT_OK);
+		return E_NOT_OK;
+	}
 
 	blockIndex = GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(blockNumber);
-	VALIDATE_RV(blockIndex < FEE_NUM_OF_BLOCKS, FEE_WRITE_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
-	VALIDATE_RV(dataBufferPtr != NULL, FEE_WRITE_ID, FEE_E_INVALID_DATA_PTR, E_NOT_OK);
+	DET_VALIDATE_RV(blockIndex < FEE_NUM_OF_BLOCKS, FEE_WRITE_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
+	DET_VALIDATE_RV(dataBufferPtr != NULL, FEE_WRITE_ID, FEE_E_INVALID_DATA_PTR, E_NOT_OK);
 
 	dataset = GET_DATASET_FROM_BLOCK_NUMBER(blockNumber);
-	VALIDATE_RV(dataset < FEE_MAX_NUM_SETS, FEE_WRITE_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
+	DET_VALIDATE_RV(dataset < FEE_MAX_NUM_SETS, FEE_WRITE_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
 
 
 	/** @req FEE025 */
@@ -1306,14 +1326,17 @@ Std_ReturnType Fee_InvalidateBlock(uint16 blockNumber)
 	uint16 blockIndex;
 	uint16 dataset;
 
-	VALIDATE_RV(ModuleStatus != MEMIF_UNINIT, FEE_INVALIDATE_BLOCK_ID, FEE_E_UNINIT, E_NOT_OK);
-	VALIDATE_RV(ModuleStatus == MEMIF_IDLE, FEE_INVALIDATE_BLOCK_ID, FEE_E_BUSY, E_NOT_OK);
+	DET_VALIDATE_RV(ModuleStatus != MEMIF_UNINIT, FEE_INVALIDATE_BLOCK_ID, FEE_E_UNINIT, E_NOT_OK);
+	if( !(ModuleStatus == MEMIF_IDLE) ) {
+		DET_REPORTERROR(MODULE_ID_FEE, FEE_READ_ID, FEE_E_BUSY, E_NOT_OK);
+		return E_NOT_OK;
+	}
 
 	blockIndex = GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(blockNumber);
-	VALIDATE_RV(blockIndex < FEE_NUM_OF_BLOCKS, FEE_INVALIDATE_BLOCK_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
+	DET_VALIDATE_RV(blockIndex < FEE_NUM_OF_BLOCKS, FEE_INVALIDATE_BLOCK_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
 
 	dataset = GET_DATASET_FROM_BLOCK_NUMBER(blockNumber);
-	VALIDATE_RV(dataset < FEE_MAX_NUM_SETS, FEE_INVALIDATE_BLOCK_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
+	DET_VALIDATE_RV(dataset < FEE_MAX_NUM_SETS, FEE_INVALIDATE_BLOCK_ID, FEE_E_INVALID_BLOCK_NO, E_NOT_OK);
 
 
 	ModuleStatus = MEMIF_BUSY;
