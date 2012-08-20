@@ -527,27 +527,19 @@
                 </REFERENCE-VALUE>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppTaskRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/nvm_05_fls_mpc5516it/Os/Task_Startup</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/nvm_05_fls_mpc5516it/Os/SchM_Startup</VALUE-REF>
                 </REFERENCE-VALUE>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppTaskRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/nvm_05_fls_mpc5516it/Os/Task_BswService</VALUE-REF>
-                </REFERENCE-VALUE>
-                <REFERENCE-VALUE>
-                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppTaskRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/nvm_05_fls_mpc5516it/Os/Task_BswServiceMem</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/nvm_05_fls_mpc5516it/Os/SchM_BswService</VALUE-REF>
                 </REFERENCE-VALUE>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppAlarmRef</DEFINITION-REF>
                   <VALUE-REF DEST="CONTAINER">/nvm_05_fls_mpc5516it/Os/Alarm_BswService</VALUE-REF>
                 </REFERENCE-VALUE>
                 <REFERENCE-VALUE>
-                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppAlarmRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/nvm_05_fls_mpc5516it/Os/Alarm_BswServiceMem</VALUE-REF>
-                </REFERENCE-VALUE>
-                <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppTaskRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/nvm_05_fls_mpc5516it/Os/Task_Application</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/nvm_05_fls_mpc5516it/Os/Application</VALUE-REF>
                 </REFERENCE-VALUE>
               </REFERENCE-VALUES>
               <SUB-CONTAINERS>
@@ -572,7 +564,7 @@
               </SUB-CONTAINERS>
             </CONTAINER>
             <CONTAINER UUID="39c9c303-d3b5-4876-9d72-41bdb748a4f5">
-              <SHORT-NAME>Task_Startup</SHORT-NAME>
+              <SHORT-NAME>SchM_Startup</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
                   <SDG GID="Arccore::IdentifiableOptions" />
@@ -635,39 +627,8 @@
                 </ENUMERATION-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
-            <CONTAINER UUID="4da58442-8df1-4a89-9773-a8e8ec6d3379">
-              <SHORT-NAME>Task_BswServiceMem</SHORT-NAME>
-              <ADMIN-DATA>
-                <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
-                </SDGS>
-              </ADMIN-DATA>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
-              <PARAMETER-VALUES>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskActivation</DEFINITION-REF>
-                  <VALUE>10</VALUE>
-                </INTEGER-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskPriority</DEFINITION-REF>
-                  <VALUE>4</VALUE>
-                </INTEGER-VALUE>
-                <ENUMERATION-VALUE>
-                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskProcessType</DEFINITION-REF>
-                  <VALUE>BASIC</VALUE>
-                </ENUMERATION-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/ArcCoreOsTaskStackSize</DEFINITION-REF>
-                  <VALUE>2048</VALUE>
-                </INTEGER-VALUE>
-                <ENUMERATION-VALUE>
-                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskSchedule</DEFINITION-REF>
-                  <VALUE>FULL</VALUE>
-                </ENUMERATION-VALUE>
-              </PARAMETER-VALUES>
-            </CONTAINER>
             <CONTAINER UUID="4fdeee39-d008-4434-b1c4-1ba8a803a001">
-              <SHORT-NAME>Task_BswService</SHORT-NAME>
+              <SHORT-NAME>SchM_BswService</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
                   <SDG GID="Arccore::IdentifiableOptions" />
@@ -718,41 +679,14 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask/OsAlarmActivateTaskRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/nvm_05_fls_mpc5516it/Os/Task_BswService</VALUE-REF>
-                    </REFERENCE-VALUE>
-                  </REFERENCE-VALUES>
-                </CONTAINER>
-              </SUB-CONTAINERS>
-            </CONTAINER>
-            <CONTAINER UUID="9afa49d4-a792-481a-9fa8-b69e372f6287">
-              <SHORT-NAME>Alarm_BswServiceMem</SHORT-NAME>
-              <ADMIN-DATA>
-                <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
-                </SDGS>
-              </ADMIN-DATA>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm</DEFINITION-REF>
-              <REFERENCE-VALUES>
-                <REFERENCE-VALUE>
-                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmCounterRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/nvm_05_fls_mpc5516it/Os/Counter1</VALUE-REF>
-                </REFERENCE-VALUE>
-              </REFERENCE-VALUES>
-              <SUB-CONTAINERS>
-                <CONTAINER UUID="d6ee7130-88f5-453a-8fcd-1fc9b5101db9">
-                  <SHORT-NAME>OsAlarmActivateTask</SHORT-NAME>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask</DEFINITION-REF>
-                  <REFERENCE-VALUES>
-                    <REFERENCE-VALUE>
-                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask/OsAlarmActivateTaskRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/nvm_05_fls_mpc5516it/Os/Task_BswServiceMem</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/nvm_05_fls_mpc5516it/Os/SchM_BswService</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
               </SUB-CONTAINERS>
             </CONTAINER>
             <CONTAINER UUID="1789e8bc-2b04-4ec6-bce9-a5578ce6714c">
-              <SHORT-NAME>Task_Application</SHORT-NAME>
+              <SHORT-NAME>Application</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
                   <SDG GID="Arccore::IdentifiableOptions" />

@@ -61,15 +61,15 @@
 // Task Id's
 #define TASK_ID_OsIdle	0
 
-#define TASK_ID_Task_Application	1
-#define TASK_ID_Task_BswService	2
-#define TASK_ID_Task_Startup	3
+#define TASK_ID_Application	1
+#define TASK_ID_SchM_BswService	2
+#define TASK_ID_SchM_Startup	3
 
 // Task entry points
 void OsIdle( void );
-void Task_Application( void );
-void Task_BswService( void );
-void Task_Startup( void );
+void Application( void );
+void SchM_BswService( void );
+void SchM_Startup( void );
 
 // Schedule table id's
 

@@ -1,5 +1,6 @@
 /* ----------------------------[includes]------------------------------------*/
 #include "Std_Types.h"
+#include "Os.h"
 #include "Det.h"
 #include "stdio.h"
 #include "NvM.h"
@@ -21,12 +22,13 @@ uint8 TEST_RamBlock_Dataset_1[2];
 uint8 TEST_tmpRam[100];
 
 
+
 /* ----------------------------[private functions]---------------------------*/
+
+static void nvmApplication(void);
+
 /* ----------------------------[public functions]----------------------------*/
 
-// ============================================
-// ====  Stubs for SWC callback emulation  ====
-// ============================================
 
 Std_ReturnType TEST_SingleBlockFunctionCallbackBlock3(uint8 ServiceId, NvM_RequestResultType JobResult)
 {
@@ -66,12 +68,19 @@ void TEST_MultiBlockCallback( void ) {
 
 }
 
+TASK(Application) {
+	for(;;) {
+		nvmApplication();
+	}
+}
+
+
 
 /* NvM_ReadAll()
  *
  * Read all blocks just to see that everything is as it should.
  * */
-void Application(void) {
+static void nvmApplication(void) {
 	NvM_RequestResultType errorStatus;
 	Std_ReturnType rv;
 	int currBlock;
@@ -102,4 +111,10 @@ void Application(void) {
 
 //	TEST_ASSERT( 0 == PATTERN_VERIFY(TEST_RamBlock_Dataset_0));
 }
+
+
+void Task_Application(void) {
+
+}
+
 

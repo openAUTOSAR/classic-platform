@@ -70,7 +70,7 @@ GEN_ALARM_HEAD = {
 				COUNTER_ID_Counter1,
 				NULL,
 				ALARM_ACTION_ACTIVATETASK,
-				TASK_ID_Task_BswService,
+				TASK_ID_SchM_BswService,
 				0,
 				0,
 				APPLICATION_ID_OsApplication1,	/* Application owner */
@@ -84,9 +84,9 @@ GEN_ALARM_HEAD = {
 
 DECLARE_STACK(OsIdle,OS_OSIDLE_STACK_SIZE);
 
-DECLARE_STACK(Task_Application,2048);
-DECLARE_STACK(Task_BswService,2048);
-DECLARE_STACK(Task_Startup,2048);
+DECLARE_STACK(Application,2048);
+DECLARE_STACK(SchM_BswService,2048);
+DECLARE_STACK(SchM_Startup,2048);
 
 // ##################################    TASKS     #################################
 GEN_TASK_HEAD = {
@@ -102,8 +102,8 @@ GEN_TASK_HEAD = {
 				/* Accessing apps   */1 
 	),
 	GEN_ETASK(
-		/* 	        		*/Task_Application,
-		/* name        		*/"Task_Application",
+		/* 	        		*/Application,
+		/* name        		*/"Application",
 		/* priority    		*/1,
 		/* schedule 	   	*/FULL,
 		/* name        		*/FALSE,
@@ -114,8 +114,8 @@ GEN_TASK_HEAD = {
 		/* Accessing apps   */1
 	),			
 	GEN_BTASK(
-		/* 	        		*/Task_BswService,
-		/* name        		*/"Task_BswService",
+		/* 	        		*/SchM_BswService,
+		/* name        		*/"SchM_BswService",
 		/* priority    		*/4,
 		/* schedule    		*/FULL,
 		/* autostart   		*/FALSE,
@@ -126,8 +126,8 @@ GEN_TASK_HEAD = {
 		/* Accessing apps   */1
 	),			
 	GEN_ETASK(
-		/* 	        		*/Task_Startup,
-		/* name        		*/"Task_Startup",
+		/* 	        		*/SchM_Startup,
+		/* name        		*/"SchM_Startup",
 		/* priority    		*/3,
 		/* schedule 	   	*/FULL,
 		/* name        		*/TRUE,

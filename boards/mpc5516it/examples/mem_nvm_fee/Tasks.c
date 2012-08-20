@@ -22,13 +22,10 @@
 #include "debug.h"
 
 
+#if 0
 void Task_BswService( void ) {
 	EcuM_MainFunction();
-//	NvM_MainFunction();
-	TerminateTask();
-}
 
-void Task_BswServiceMem( void ) {
 	NvM_MainFunction();
 	Fee_MainFunction();
 	Fls_MainFunction();
@@ -42,7 +39,7 @@ void Task_Startup( void ) {
 	//.....
 	/* Set events on TASK_ID_BswService_Mem */
 //	SetRelAlarm(ALARM_ID_Alarm_BswServiceMem, 10, 2);
-
+	SetRelAlarm(ALARM_ID_Alarm_BswService, 10, 5);
 	/*
 	 * Call EcuM_StartupTwo that do:
 	 * - Startup RTE,
@@ -52,7 +49,6 @@ void Task_Startup( void ) {
 	EcuM_StartupTwo();
 
 	/* Start to schedule BSW parts */
-	SetRelAlarm(ALARM_ID_Alarm_BswService, 10, 5);
 
 	/* Relax scheduling on memory BSW */
 //	CancelAlarm(ALARM_ID_Alarm_BswServiceMem);
@@ -62,12 +58,20 @@ void Task_Startup( void ) {
 
 	EcuM_RequestRUN(ECUM_USER_User_1);
 
+	ActivateTask(TASK_ID_Task_Application);
+
 	TerminateTask();
 }
 
-void Task_Application( void ) {
+extern void Application(void);
 
+void Task_Application( void ) {
+	for(;;) {
+		Application();
+	}
 }
+#endif
+
 
 void OsIdle( void ) {
 	while(1);

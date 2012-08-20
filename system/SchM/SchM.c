@@ -329,12 +329,12 @@ static void runMemory( void ) {
 /**
  * Startup task.
  */
-void Task_SchM_Startup( void ) {
+TASK(SchM_Startup){
 
 	/* At this point EcuM ==  ECUM_STATE_STARTUP_ONE */
 
 	/* Schedule memory task more often that usaul so that EcuM_StartupTwo() may return quicker */
-	ActivateTask(TASK_ID_Task_BswService);
+	ActivateTask(TASK_ID_SchM_BswService);
 	/* Set events on TASK_ID_BswService_Mem */
 	SetRelAlarm(ALARM_ID_Alarm_BswService, 10, 2);
 
@@ -349,14 +349,16 @@ void Task_SchM_Startup( void ) {
 	/* Start to schedule BSW parts */
 	SetRelAlarm(ALARM_ID_Alarm_BswService, 10, 5);
 
+	EcuM_RequestRUN(ECUM_USER_User_1);
 
-	//....
+	ActivateTask(TASK_ID_Application);
 
 	TerminateTask();
 
 }
 
-void Task_SchM_BswBase( void ) {
+
+TASK(SchM_BswService) {
 	EcuM_StateType  state;
 
 	EcuM_GetState(&state);
@@ -399,10 +401,6 @@ void Task_SchM_BswBase( void ) {
 	}
 
 	TerminateTask();
-}
-
-void Task_SchM_BswMem( void ) {
-	SCHM_MAINFUNCTION_NVM();
 }
 
 void SchM_MainFunction( void ) {
