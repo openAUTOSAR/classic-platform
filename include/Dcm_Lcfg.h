@@ -34,6 +34,8 @@ typedef uint8 Dcm_ProtocolAddrTypeType;
 #define DCM_PROTOCOL_FUNCTIONAL_ADDR_TYPE	1
 #define DCM_PROTOCOL_PHYSICAL_ADDR_TYPE		2
 
+#define DCM_PROTOCAL_TP_MAX_LENGTH 0x1000
+
 /*
  * Callback function prototypes
  */
@@ -129,10 +131,10 @@ typedef struct {
 typedef struct {
 	const Dcm_DspSessionRowType				**DspDidControlSessionRef;			// (1..*)	/** @req DCM621 */
 	const Dcm_DspSecurityRowType			**DspDidControlSecurityLevelRef;	// (1..*)	/** @req DCM620 */
-	const Dcm_DspDidControlRecordSizesType	*DspDidFreezeCurrentState;			// (0..1)	/** @req DCM624 */
-	const Dcm_DspDidControlRecordSizesType	*DspDidResetToDefault;				// (0..1)	/** @req DCM623 */
-	const Dcm_DspDidControlRecordSizesType	*DspDidReturnControlToEcu;			// (0..1)	/** @req DCM622 */
-	const Dcm_DspDidControlRecordSizesType	*DspDidShortTermAdjustment;			// (0..1)	/** @req DCM625 */
+	const boolean	DspDidFreezeCurrentState;			// (0..1)	/** @req DCM624 */
+	const boolean	DspDidResetToDefault;				// (0..1)	/** @req DCM623 */
+	const boolean	DspDidReturnControlToEcu;			// (0..1)	/** @req DCM622 */
+	const boolean	DspDidShortTermAdjustment;			// (0..1)	/** @req DCM625 */
 } Dcm_DspDidControlType; /** @req DCM619 */
 
 // 10.2.27
@@ -304,6 +306,28 @@ typedef struct {
 
 // 10.2.21
 typedef struct {
+	uint32 MemoryAddressHigh;
+	uint32 MemoryAddressLow;
+	/*DcmDspMemoryRangeRuleRef * pRule;*/
+	const Dcm_DspSecurityRowType **pSecurityLevel;
+} Dcm_DspMemoryRangeInfo;
+
+typedef struct {
+      uint8 MemoryIdValue;
+     const Dcm_DspMemoryRangeInfo *pReadMemoryInfo;
+     const Dcm_DspMemoryRangeInfo *pWriteMemoryInfo;
+     boolean										Arc_EOL;
+} Dcm_DspMemoryIdInfo;
+
+
+typedef struct {
+	boolean								DcmDspUseMemoryId;
+	const Dcm_DspMemoryIdInfo			*DspMemoryIdInfo;
+	
+}Dcm_DspMemoryType;
+
+// 10.2.21
+typedef struct {
 	uint8								DspMaxDidToRead; // (0..1)	/** @req DCM638 */
 	// Containers
 	const Dcm_DspDidType				*DspDid;	// (0..*)
@@ -318,6 +342,7 @@ typedef struct {
 	const Dcm_DspSessionType			*DspSession;			// (1)
 	const Dcm_DspTestResultByObdmidType	*DspTestResultByObdmid;	// (0..*)
 	const Dcm_DspVehInfoType			*DspVehInfo;
+	const Dcm_DspMemoryType             *DspMemory;
 } Dcm_DspType;
 
 /*******
@@ -530,6 +555,7 @@ typedef struct {
 	uint8					responsePendingCount;
 	Dcm_SecLevelType		securityLevel;
 	Dcm_SesCtrlType			sessionControl;
+	Dcm_DslLocalBufferType      PeriodicTxBuffer;
 } Dcm_DslRunTimeProtocolParametersType;
 
 // 10.2.10
@@ -595,6 +621,9 @@ typedef struct {
 /*
  * Make the DCM_Config visible for others.
  */
+
+
 extern const Dcm_ConfigType DCM_Config;
+
 
 #endif /*DCM_LCFG_H_*/

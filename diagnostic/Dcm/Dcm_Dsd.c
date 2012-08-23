@@ -107,7 +107,15 @@ static void selectServiceFunction(uint8 sid)
 	case SID_READ_DATA_BY_IDENTIFIER:
 		DspUdsReadDataByIdentifier(msgData.pduRxData, msgData.pduTxData);
 		break;
-
+		
+	case SID_READ_MEMORY_BY_ADDRESS:
+		DspUdsReadMemoryByAddress(msgData.pduRxData, msgData.pduTxData);
+		break;
+		
+	case SID_WRITE_MEMORY_BY_ADDRESS:
+		DspUdsWriteMemoryByAddress(msgData.pduRxData, msgData.pduTxData);
+		break;
+		
 	case SID_READ_SCALING_DATA_BY_IDENTIFIER:
 		DspUdsReadScalingDataByIdentifier(msgData.pduRxData, msgData.pduTxData);
 		break;
@@ -133,8 +141,17 @@ static void selectServiceFunction(uint8 sid)
 		break;
 
 	case SID_READ_DATA_BY_PERIODIC_IDENTIFIER:
+		DspReadDataByPeriodicIdentifier(msgData.pduRxData, msgData.pduTxData);
+		break;
+		
 	case SID_DYNAMICALLY_DEFINE_DATA_IDENTIFIER:
+		DspDynamicallyDefineDataIdentifier(msgData.pduRxData, msgData.pduTxData);
+		break;
+		
 	case SID_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER:
+		DspIOControlByDataIdentifier(msgData.pduRxData, msgData.pduTxData);
+		break;
+		
 	default:
 		/* Non implemented service */
 		createAndSendNcr(DCM_E_SERVICENOTSUPPORTED);

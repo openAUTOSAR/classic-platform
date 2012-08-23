@@ -44,6 +44,9 @@
 #include "PduR_Dcm.h"
 #include "ComStack_Types.h"
 
+#define USE_DEBUG_PRINTF
+
+#include"debug.h"
 // State variable
 typedef enum
 {
