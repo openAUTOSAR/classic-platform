@@ -285,8 +285,5 @@ typedef struct {
  * Make the DEM_Config visible for others.
  */
 extern const Dem_ConfigType DEM_Config;
-/* block in NVRam, use for freezeframe */
-extern const Dem_NvramBlockIdType FreezeFrameBlockId[DEM_MAX_NUMBER_FF_DATA_PRI_MEM];
-/* block in NVRam, use for aging */
-extern const Dem_NvramBlockIdType AgingBlockId;
+
 #endif /*DEM_LCFG_H_*/

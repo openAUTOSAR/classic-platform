@@ -206,7 +206,7 @@ static FreezeFrameRecType	priMemFreezeFrameBuffer[DEM_MAX_NUMBER_FF_DATA_PRI_MEM
 extern FreezeFrameRecType*  FreezeFrameMirrorBuffer[];
 static ExtDataRecType		priMemExtDataBuffer[DEM_MAX_NUMBER_EXT_DATA_PRI_MEM] __attribute__ ((section (".dem_eventmemory_pri")));
 AgingRecType         		priMemAgingBuffer[DEM_MAX_NUMBER_AGING_PRI_MEM] __attribute__ ((section (".dem_eventmemory_pri")));
-AgingRecType   		        AgingMirrorBuffer[DEM_MAX_NUMBER_AGING_PRI_MEM] __attribute__ ((section (".")));
+extern AgingRecType   		HealingMirrorBuffer[DEM_MAX_NUMBER_AGING_PRI_MEM];
 
 /* block in NVRam, use for freezeframe */
 extern const NvM_BlockIdType FreezeFrameBlockId[DEM_MAX_NUMBER_FF_DATA_PRI_MEM];
@@ -1501,8 +1501,8 @@ static void storeAgingRecPerMem(const NvM_BlockIdType AgingBlockId)
 		NvM_GetErrorStatus(AgingBlockId, &requestResult);
 		/* if writing is not busy,copy priMemFreezeFrameBuffer to NVRam permanent RAM*/
 		if (requestResult != NVM_REQ_PENDING){
-			memcpy(AgingMirrorBuffer, priMemAgingBuffer, sizeof(priMemAgingBuffer));
-			(void)NvM_WriteBlock(AgingBlockId, (const uint8 *)AgingMirrorBuffer);
+			memcpy(HealingMirrorBuffer, priMemAgingBuffer, sizeof(priMemAgingBuffer));
+			(void)NvM_WriteBlock(AgingBlockId, (const uint8 *)HealingMirrorBuffer);
 			AgingIsModified = FALSE;		
 		}
 		else{
@@ -2394,7 +2394,7 @@ void Dem_Init(void)
 				//judge whether NVM is busy
 				if(!(requestResult & NVM_REQ_PENDING)){
 					//copy the permanent RAM to priMemAgingBuffer
-					memcpy(priMemAgingBuffer, AgingMirrorBuffer, sizeof(priMemAgingBuffer));
+					memcpy(priMemAgingBuffer, HealingMirrorBuffer, sizeof(priMemAgingBuffer));
 				}
 				else{
 
