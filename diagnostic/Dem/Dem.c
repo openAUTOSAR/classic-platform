@@ -2123,8 +2123,8 @@ static Std_ReturnType handleAging(Dem_OperationCycleIdType operationCycleId, Dem
 				if(eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL){
 					if(eventStatusBuffer[i].eventParamRef != NULL){
 						if(eventStatusBuffer[i].eventParamRef->EventClass != NULL){
-							if((eventStatusBuffer[i].eventParamRef->EventClass->AgingAllowed == TRUE)\
-								&& (eventStatusBuffer[i].eventParamRef->EventClass->AgingCycleRef == operationCycleId)){					
+							if((eventStatusBuffer[i].eventParamRef->EventClass->HealingAllowed == TRUE)\
+								&& (eventStatusBuffer[i].eventParamRef->EventClass->HealingCycleRef == operationCycleId)){
 								if((eventStatusBuffer[i].eventStatusExtended & DEM_CONFIRMED_DTC)\
 									&& (!(eventStatusBuffer[i].eventStatusExtended & DEM_TEST_FAILED))\
 									&& (!(eventStatusBuffer[i].eventStatusExtended & DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE))){
@@ -2132,7 +2132,7 @@ static Std_ReturnType handleAging(Dem_OperationCycleIdType operationCycleId, Dem
 									if(agingRecFound){
 										agingRecLocal->agingCounter++;/** @req Dem489 */
 										agingRecLocal->checksum = calcChecksum(agingRecLocal,sizeof(AgingRecType) - sizeof(ChecksumType));
-										if(agingRecLocal->agingCounter > eventStatusBuffer[i].eventParamRef->EventClass->AgingCounterThreshold){
+										if(agingRecLocal->agingCounter > eventStatusBuffer[i].eventParamRef->EventClass->HealingCycleCounter){
 											//deleteEventMemory(eventStatusBuffer[i].eventParamRef); /** @req Dem497 */
 
 											deleteAgingRecPriMem(eventStatusBuffer[i].eventParamRef);

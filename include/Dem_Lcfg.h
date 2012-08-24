@@ -220,13 +220,10 @@ typedef struct {
 	uint8						EventPriority;										// (1)
 	boolean						FFPrestorageSupported;								// (1)
 	boolean						HealingAllowed;										// (1)
-	Dem_OperationCycleIdType		OperationCycleRef;									// (1)	
-	boolean						AgingAllowed;										// (1)/** @req Dem622_Conf  AutoSAR 4.2.0*/
-	uint8						AgingCounterThreshold;								// (1)/** @req Dem623_Conf  AutoSAR 4.2.0*/
-	Dem_OperationCycleIdType		AgingCycleRef;										// (1)/** @req Dem624_Conf  AutoSAR 4.2.0*/
-//	uint8						HealingCycleCounter;									// (0..1) Optional
+	Dem_OperationCycleIdType	OperationCycleRef;									// (1)
+	Dem_OperationCycleIdType	HealingCycleRef;									// (1)
+	uint8						HealingCycleCounter;									// (0..1) Optional
 //	const Dem_EnableConditionType	*EnableConditionRef;							// (0..*) Optional
-//	const Dem_OperationCycleTgtType *HealingCycleRef;								// (0..1) Optional
 	const Dem_PreDebounceAlgorithmClassType	*PreDebounceAlgorithmClass;				// (0..255) (Only 0..1 supported)
 	const Dem_IndicatorAttributeType		*IndicatorAttribute;					// (0..255)
 //	Dem_OEMSPecific
