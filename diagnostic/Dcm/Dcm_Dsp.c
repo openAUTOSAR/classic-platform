@@ -190,6 +190,8 @@ void DspMemoryMainFunction(void)
 void DspPeriodicDIDMainFunction()
 {
 	uint8 i;
+	boolean sentResponseThisLoop = FALSE;
+
 	for(i = 0;i < dspPDidRef.PDidNr; i++)
 	{
 		if(dspPDidRef.dspPDid[i].PDidTxCounterNumber > dspPDidRef.dspPDid[i].PDidTxCounter)
@@ -198,9 +200,15 @@ void DspPeriodicDIDMainFunction()
 		}
 		else
 		{
-			dspPDidRef.dspPDid[i].PDidTxCounter = 0;
-			/*AutoSar  DCM  8.10.5 */
-			DslInternal_ResponseOnOneDataByPeriodicId(dspPDidRef.dspPDid[i].PeriodicDid);
+			if( sentResponseThisLoop  == FALSE ) {
+				dspPDidRef.dspPDid[i].PDidTxCounter = 0;
+				/*AutoSar  DCM  8.10.5 */
+				DslInternal_ResponseOnOneDataByPeriodicId(dspPDidRef.dspPDid[i].PeriodicDid);
+				sentResponseThisLoop = TRUE;
+			}
+			else {
+				/* Don't do anything - PDid will be sent next loop */
+			}
 		}	
 	}
 }
@@ -1591,7 +1599,6 @@ void DspDcmConfirmation(PduIdType confirmPduId)
 }
 
 
-/* REVIEW JB 2012-06-05: Removed iSoft function header - please don't add iSoft specific headers in the future */
 static boolean CheckReadMemoryByAddress( boolean useId,uint32 memoryAddress,
 										uint8 memoryAddressFormat,
 										uint32 memorySize,
@@ -1795,7 +1802,6 @@ static boolean checkWriteMemoryByAddress(boolean useId,uint32 memoryAddress,
 	else
 	{
 		MemoryId = (uint8)(memoryAddress >> ((memoryAddressFormat - 1)*8));
-		/* REVIEW JB 2012-06-05: See comment for corresponding read function */
 		memoryAddress = memoryAddress & DCM_MEMORY_ADDRESS_MASK;
 
 		if((MemoryId == dspMemory->MemoryIdValue) &&
@@ -1978,7 +1984,6 @@ static boolean checkPeriodicIdentifierBuffer(uint8 PeriodicDid,uint8 Length,uint
 	return ret;
 }
 
-/* REVIEW JB 2012-06-05: Please describe the buffer algorithm because it is not obvious when looking at this function. */
 static void ClearPeriodicIdentifierBuffer(uint8 BufferEnd,uint8 postion)
 {
 	dspPDidRef.dspPDid[postion].PeriodicDid = dspPDidRef.dspPDid[BufferEnd ].PeriodicDid;
@@ -2106,9 +2111,7 @@ static Dcm_NegativeResponseCodeType DspSavePeriodicData(uint16 didNr, uint32 per
 	if(responseCode == DCM_E_POSITIVERESPONSE)
 	{
 		dspPDidRef.dspPDid[PdidBufferNr].PeriodicDid = (uint8)didNr & DCM_DID_LOW_MASK;
-			/* REVIEW JB 2012-06-05: Why is TxCounter set to PdidBufferNr - it seems wrong. */
-		dspPDidRef.dspPDid[PdidBufferNr].PDidTxCounter = PdidBufferNr*3;
-
+		dspPDidRef.dspPDid[PdidBufferNr].PDidTxCounter = 0;
 		dspPDidRef.dspPDid[PdidBufferNr].PDidTxCounterNumber = periodicTransmitCounter;
 	}
 	return responseCode;
@@ -2450,7 +2453,6 @@ static Dcm_NegativeResponseCodeType dynamicallyDefineDataIdentifierbyAddress(uin
 		{
 			if((Length != 0)&&( Length * (AddressFormat + MemorySizeFormat) == (pduRxData->SduLength - 5) ))
 			{
-				/* REVIEW JB 2012-06-05: Use better names than i and j to increase readability */
 				for(LengthCount = 0; (LengthCount < Length) && (responseCode == DCM_E_POSITIVERESPONSE); LengthCount++)
 				{
 					MemoryAddress = 0;
@@ -2589,7 +2591,7 @@ void DspDynamicallyDefineDataIdentifier(const PduInfoType *pduRxData,PduInfoType
 	uint16 DDIdentifier = ((((uint16)pduRxData->SduDataPtr[2]) << 8) & DCM_DID_HIGH_MASK) + (pduRxData->SduDataPtr[3] & DCM_DID_LOW_MASK);
 	if(pduRxData->SduLength > 2)
 	{
-		/* REVIEW JB 2012-06-05: Clarify that F2 and F3 is included by comment */
+		/* Check if DDID equals 0xF2 or 0xF3 */
 		if((pduRxData->SduDataPtr[2] & 0xF2) == 0xF2)
 		{
 			switch(pduRxData->SduDataPtr[1])	/*UDS_REQ_0x2C_2,DCM 646*/
