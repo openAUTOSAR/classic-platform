@@ -137,7 +137,7 @@ typedef struct {
 	Dem_EventIdType		eventId;
 	uint8				agingCounter;/** @req Dem019 */
 	ChecksumType		checksum;
-} AgingRecType;
+} HealingRecType;
 
 // Types for storing different event data on event memory
 typedef struct {
@@ -205,8 +205,8 @@ static FreezeFrameRecType	priMemFreezeFrameBuffer[DEM_MAX_NUMBER_FF_DATA_PRI_MEM
 //FreezeFrameRecType        FreezeFrameMirrorBuffer[DEM_MAX_NUMBER_FF_DATA_PRI_MEM] __attribute__ ((section (".dem_eventmemory_pri")));
 extern FreezeFrameRecType*  FreezeFrameMirrorBuffer[];
 static ExtDataRecType		priMemExtDataBuffer[DEM_MAX_NUMBER_EXT_DATA_PRI_MEM] __attribute__ ((section (".dem_eventmemory_pri")));
-AgingRecType         		priMemAgingBuffer[DEM_MAX_NUMBER_AGING_PRI_MEM] __attribute__ ((section (".dem_eventmemory_pri")));
-extern AgingRecType   		HealingMirrorBuffer[DEM_MAX_NUMBER_AGING_PRI_MEM];
+HealingRecType         		priMemAgingBuffer[DEM_MAX_NUMBER_AGING_PRI_MEM] __attribute__ ((section (".dem_eventmemory_pri")));
+extern HealingRecType   		HealingMirrorBuffer[DEM_MAX_NUMBER_AGING_PRI_MEM];
 
 /* block in NVRam, use for freezeframe */
 extern const NvM_BlockIdType FreezeFrameBlockId[DEM_MAX_NUMBER_FF_DATA_PRI_MEM];
@@ -1544,7 +1544,7 @@ static void deleteAgingRecPriMem(const Dem_EventParameterType *eventParam)
 
 	for (i = 0; i<DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++){
 		if (priMemAgingBuffer[i].eventId == eventParam->EventID){
-			memset(&priMemAgingBuffer[i], 0, sizeof(AgingRecType));
+			memset(&priMemAgingBuffer[i], 0, sizeof(HealingRecType));
 		}
 	}
 
@@ -2039,7 +2039,7 @@ static void deleteEventMemory(const Dem_EventParameterType *eventParam)
  * Description:	Returns the pointer to event id parameters of "eventId" in "*priMemAgingBuffer",
  * 				if not found NULL is returned.
  */
-static boolean lookupAgingRecPriMem(Dem_EventIdType eventId, const AgingRecType **agingRec)
+static boolean lookupAgingRecPriMem(Dem_EventIdType eventId, const HealingRecType **agingRec)
 {
 	uint16 i;
 	boolean agingRecFound = FALSE;
@@ -2072,7 +2072,7 @@ static Std_ReturnType handleAging(Dem_OperationCycleIdType operationCycleId, Dem
 {
 	uint16 i;
 	Std_ReturnType returnCode = E_OK;
-	AgingRecType *agingRecLocal = NULL;
+	HealingRecType *agingRecLocal = NULL;
 	boolean agingRecFound = FALSE;
 
 	if (operationCycleId < DEM_OPERATION_CYCLE_ID_ENDMARK) {
@@ -2091,10 +2091,10 @@ static Std_ReturnType handleAging(Dem_OperationCycleIdType operationCycleId, Dem
 								if((eventStatusBuffer[i].eventStatusExtended & DEM_CONFIRMED_DTC)\
 									&& (!(eventStatusBuffer[i].eventStatusExtended & DEM_TEST_FAILED))\
 									&& (!(eventStatusBuffer[i].eventStatusExtended & DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE))){
-									agingRecFound = lookupAgingRecPriMem(eventStatusBuffer[i].eventId, (const AgingRecType **)(&agingRecLocal));
+									agingRecFound = lookupAgingRecPriMem(eventStatusBuffer[i].eventId, (const HealingRecType **)(&agingRecLocal));
 									if(agingRecFound){
 										agingRecLocal->agingCounter++;/** @req Dem489 */
-										agingRecLocal->checksum = calcChecksum(agingRecLocal,sizeof(AgingRecType) - sizeof(ChecksumType));
+										agingRecLocal->checksum = calcChecksum(agingRecLocal,sizeof(HealingRecType) - sizeof(ChecksumType));
 										if(agingRecLocal->agingCounter > eventStatusBuffer[i].eventParamRef->EventClass->HealingCycleCounter){
 											//deleteEventMemory(eventStatusBuffer[i].eventParamRef); /** @req Dem497 */
 
@@ -2109,11 +2109,11 @@ static Std_ReturnType handleAging(Dem_OperationCycleIdType operationCycleId, Dem
 									}
 									else{
 										/* If it does exist,establish a new record for the corresponding event */
-										agingRecFound = lookupAgingRecPriMem(DEM_EVENT_ID_NULL, (const AgingRecType **)(&agingRecLocal));
+										agingRecFound = lookupAgingRecPriMem(DEM_EVENT_ID_NULL, (const HealingRecType **)(&agingRecLocal));
 										if(agingRecFound){
 											agingRecLocal->eventId = eventStatusBuffer[i].eventId;
 											agingRecLocal->agingCounter++;
-											agingRecLocal->checksum = calcChecksum(agingRecLocal,sizeof(AgingRecType) - sizeof(ChecksumType));
+											agingRecLocal->checksum = calcChecksum(agingRecLocal,sizeof(HealingRecType) - sizeof(ChecksumType));
 											AgingIsModified = TRUE;
 										}
 										else{
@@ -2124,11 +2124,11 @@ static Std_ReturnType handleAging(Dem_OperationCycleIdType operationCycleId, Dem
 								else{
 									/* If the status bit testFailed (bit 0) is set during the operation cycle, the counter shall be reset. */
 									if(eventStatusBuffer[i].eventStatusExtended & DEM_TEST_FAILED){
-										agingRecFound = lookupAgingRecPriMem(eventStatusBuffer[i].eventId, (const AgingRecType **)(&agingRecLocal));
+										agingRecFound = lookupAgingRecPriMem(eventStatusBuffer[i].eventId, (const HealingRecType **)(&agingRecLocal));
 										if(agingRecFound){
 											if(agingRecLocal->agingCounter){
 												agingRecLocal->agingCounter = 0;
-												agingRecLocal->checksum = calcChecksum(agingRecLocal,sizeof(AgingRecType) - sizeof(ChecksumType));
+												agingRecLocal->checksum = calcChecksum(agingRecLocal,sizeof(HealingRecType) - sizeof(ChecksumType));
 												AgingIsModified = TRUE;
 											}
 										}
@@ -2340,10 +2340,10 @@ void Dem_Init(void)
 
 		// Validate aging records stored in primary memory
 		for (i = 0; i < DEM_MAX_NUMBER_AGING_PRI_MEM; i++){
-			cSum = calcChecksum(&priMemAgingBuffer[i], sizeof(AgingRecType) - sizeof(ChecksumType));
+			cSum = calcChecksum(&priMemAgingBuffer[i], sizeof(HealingRecType) - sizeof(ChecksumType));
 			if ((cSum != priMemAgingBuffer[i].checksum) || (priMemAgingBuffer[i].eventId == DEM_EVENT_ID_NULL)) {
 				// Unlegal record, clear the record
-				memset(&priMemAgingBuffer[i], 0, sizeof(AgingRecType));
+				memset(&priMemAgingBuffer[i], 0, sizeof(HealingRecType));
 				AgingIsModified = TRUE;
 			}
 		}
@@ -3345,7 +3345,7 @@ void getPriMemEventRecBufPtr(EventStatusRecType **buf)
 	return;
 }
 
-void getPriMemAgingBufPtr(AgingRecType **buf)
+void getPriMemAgingBufPtr(HealingRecType **buf)
 {
 	*buf = &priMemAgingBuffer[0];
 	return;
