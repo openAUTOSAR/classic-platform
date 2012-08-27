@@ -420,7 +420,6 @@ void DslInit(void) {
 void DslInternal_ResponseOnOneDataByPeriodicId(uint8 PericodID)
 {
 	const Dcm_DslProtocolRowType *protocolRowEntry;
-	const Dcm_DslProtocolTimingRowType *timeParams = NULL;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
     PduInfoType  *pPeriodData;
 	protocolRowEntry = DCM_Config.Dsl->DslProtocol->DslProtocolRowList;
@@ -429,7 +428,7 @@ void DslInternal_ResponseOnOneDataByPeriodicId(uint8 PericodID)
     	runtime = protocolRowEntry->DslRunTimeProtocolParameters;
         if(runtime != NULL)	// find the runtime
         {
-        	DslProvideRxBufferToPdur(runtime->diagReqestRxPduId, 3, &pPeriodData);
+        	DslProvideRxBufferToPdur(runtime->diagReqestRxPduId, 3, (const PduInfoType **)&pPeriodData);
             pPeriodData->SduDataPtr[0] = 0x2a;
             pPeriodData->SduDataPtr[1] = 0;
             pPeriodData->SduDataPtr[2] = PericodID;

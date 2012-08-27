@@ -482,7 +482,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15(c
 		uint8					SID;
 		uint8					reportType;
 		uint8 					dtcStatusAvailabilityMask;
-		dtcAndStatusRecordType	*dtcAndStatusRecord;
+		dtcAndStatusRecordType	dtcAndStatusRecord[];
 	} TxDataType;
 
 	// Setup the DTC filter
@@ -1059,7 +1059,7 @@ void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTx
 				responseCode = readDidData(didPtr, pduTxData, &txPos);
 			}
 
-			else if(LookupDDD(didNr,&DDidPtr) == TRUE)
+			else if(LookupDDD(didNr,(const Dcm_DspDDDType **)&DDidPtr) == TRUE)
 			{
 				/*DCM 651,DCM 652*/
 				pduTxData->SduDataPtr[txPos] = (DDidPtr->DynamicallyDid>>8) & 0xFF;
@@ -1651,7 +1651,7 @@ static boolean lookupReadMemory(uint32 memoryAddress,
 		}
 		else
 		{
-			(Dcm_DspMemoryIdInfo *)dspMemoryInfo++;
+			dspMemoryInfo++;
 		}
 	}
 	if (memoryFound == TRUE)
@@ -2100,7 +2100,7 @@ static Dcm_NegativeResponseCodeType DspSavePeriodicData(uint16 didNr, uint32 per
 			responseCode = DCM_E_REQUESTOUTOFRANGE;
 		}
 	}
-	else if(LookupDDD(didNr,&DDidPtr) == TRUE)
+	else if(LookupDDD(didNr, (const Dcm_DspDDDType **)&DDidPtr) == TRUE)
 	{
 		responseCode = DCM_E_POSITIVERESPONSE;
 	}
@@ -2120,7 +2120,6 @@ static void ClearPeriodicIdentifier(const PduInfoType *pduRxData,PduInfoType *pd
 {
 	uint16 PdidNumber;
 	uint8 PDidLowByte;
-	uint8 PdidBufferNr;
 	uint8 PdidPostion;
 	uint8 i;
 	if( pduRxData->SduDataPtr[1] == DCM_PERIODICTRANSMIT_STOPSENDING_MODE )
@@ -2197,7 +2196,7 @@ void DspReadDataByPeriodicIdentifier(const PduInfoType *pduRxData,PduInfoType *p
 							responseCode = readPeriodDidData(PDidPtr,&pduTxData->SduDataPtr[2],&DataLength);
 							pduTxData->SduLength = DataLength + 2;
 						}
-						else if(TRUE == LookupDDD((0xF200 + (uint16)PDidLowByte),&DDidPtr))
+						else if(TRUE == LookupDDD((0xF200 + (uint16)PDidLowByte), (const Dcm_DspDDDType **)&DDidPtr))
 						{
 							pduTxData->SduDataPtr[1] = PDidLowByte;
 							responseCode = readDDDData(DDidPtr,&pduTxData->SduDataPtr[2],&DataLength);
@@ -2280,7 +2279,7 @@ static Dcm_NegativeResponseCodeType dynamicallyDefineDataIdentifierbyDid(uint16 
 	uint8 Num = 0;
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 
-	if(FALSE == LookupDDD(DDIdentifier, &DDid))
+	if(FALSE == LookupDDD(DDIdentifier, (const Dcm_DspDDDType **)&DDid))
 	{
 		while((Num < DCM_MAX_DDD_NUMBER) && (dspDDD[Num].DynamicallyDid != 0 ))
 		{
@@ -2415,7 +2414,7 @@ static Dcm_NegativeResponseCodeType dynamicallyDefineDataIdentifierbyAddress(uin
 	uint8 Num = 0;
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 	
-	if(FALSE == LookupDDD(DDIdentifier,&DDid))
+	if(FALSE == LookupDDD(DDIdentifier, (const Dcm_DspDDDType **)&DDid))
 	{
 		while((Num < DCM_MAX_DDD_NUMBER) && (dspDDD[Num].DynamicallyDid != 0 ))
 		{
@@ -2534,7 +2533,7 @@ static Dcm_NegativeResponseCodeType CleardynamicallyDid(uint16 DDIdentifier,cons
 	
 	if(pduRxData->SduLength == 4)
 	{
-		if(TRUE == LookupDDD(DDIdentifier,&DDid))
+		if(TRUE == LookupDDD(DDIdentifier, (const Dcm_DspDDDType **)&DDid))
 		{
 			
 			if((checkPeriodicIdentifierBuffer(pduRxData->SduDataPtr[3], dspPDidRef.PDidNr, &position) == TRUE)&&(pduRxData->SduDataPtr[2] == 0xF2))
