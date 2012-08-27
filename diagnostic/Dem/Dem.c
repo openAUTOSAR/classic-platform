@@ -641,26 +641,6 @@ static void mergeEventStatusRec(const EventRecType *eventRec)
     Irq_Restore(state);
 }
 
-
-/*
- * Procedure:	deleteEventStatusRec
- * Description:	Delete the status record of "eventParam->eventId" from "eventStatusBuffer".
- */
-static void deleteEventStatusRec(const Dem_EventParameterType *eventParam)
-{
-	EventStatusRecType *eventStatusRecPtr;
-	imask_t state;
-    Irq_Save(state);
-
-	lookupEventStatusRec(eventParam->EventID, &eventStatusRecPtr);
-
-	if (eventStatusRecPtr != NULL) {
-		memset(eventStatusRecPtr, 0, sizeof(EventStatusRecType));
-	}
-
-    Irq_Restore(state);
-}
-
 /*
  * Procedure:	resetEventStatusRec
  * Description:	Reset the status record of "eventParam->eventId" from "eventStatusBuffer".
@@ -1486,32 +1466,67 @@ static boolean lookupExtendedDataPriMem(Dem_EventIdType eventId, ExtDataRecType 
 	return eventIdFound;
 }
 /*
+ * Procedure:	copyNvmMirror
+ * Description: Copies Nvram to buffer
+ */
+
+Std_ReturnType copyNvmMirror(const NvM_BlockIdType BlockId, uint8 *dstPtr, const uint8 *srcPtr, uint8 len)
+{
+
+#if (DEM_USE_NVM == STD_ON)
+	Std_ReturnType blockReadStatus = E_NOT_OK;
+	NvM_RequestResultType requestResult;
+
+    if( BlockId != 0 ) {
+		NvM_GetErrorStatus(BlockId, &requestResult);
+		if(requestResult != NVM_REQ_PENDING ) {
+			memcpy(dstPtr, srcPtr, len);
+			blockReadStatus = E_OK;
+		}
+    }
+
+    return blockReadStatus;
+#else
+    return E_OK;
+#endif
+}
+/*
+ * Procedure:	writeNvmMirror
+ * Description: store data in NVRam
+ */
+Std_ReturnType writeNvmMirror(const NvM_BlockIdType BlockId, uint8 *dstPtr, const uint8 *srcPtr, uint8 len)
+{
+#if (DEM_USE_NVM == STD_ON)
+	Std_ReturnType blockWriteStatus = E_NOT_OK;
+	NvM_RequestResultType requestResult;
+
+    if( BlockId != 0 ) {
+    	NvM_GetErrorStatus(BlockId, &requestResult);
+		if(requestResult != NVM_REQ_PENDING ) {
+			memcpy(dstPtr, srcPtr, len);
+			(void)NvM_WriteBlock(BlockId, (const uint8*)dstPtr);
+			blockWriteStatus = E_OK;
+		}
+    }
+
+    return blockWriteStatus;
+#else
+    return E_OK;
+#endif
+}
+
+/*
  * Procedure:	storeAgingRecPerMem
  * Description: store aging records in NVRam
  */
 static void storeAgingRecPerMem(const NvM_BlockIdType AgingBlockId)
 {
-	NvM_RequestResultType requestResult = NVM_REQ_OK;
 	imask_t state;
 
 	Irq_Save(state);
 
-	if (AgingBlockId != 0){
-		/* check the status,whether it's busy or not? */
-		NvM_GetErrorStatus(AgingBlockId, &requestResult);
-		/* if writing is not busy,copy priMemFreezeFrameBuffer to NVRam permanent RAM*/
-		if (requestResult != NVM_REQ_PENDING){
-			memcpy(HealingMirrorBuffer, priMemAgingBuffer, sizeof(priMemAgingBuffer));
-			(void)NvM_WriteBlock(AgingBlockId, (const uint8 *)HealingMirrorBuffer);
-			AgingIsModified = FALSE;		
-		}
-		else{
-			AgingIsModified = TRUE;
-		}
-	}
-	else{
-		//TODO:report error or doing nothing,assume that doing nothing
-
+	if( E_NOT_OK == writeNvmMirror(AgingBlockId, (uint8 *)HealingMirrorBuffer, (const uint8 *)priMemAgingBuffer, sizeof(priMemAgingBuffer)) ){
+		AgingIsModified = TRUE;
 	}
 
 	Irq_Restore(state);
@@ -1586,31 +1601,14 @@ static void storeFreezeFrameDataPriMem(const Dem_EventParameterType *eventParam,
  */
 static void storeFreezeFrameDataPerMem()
 {
-	NvM_RequestResultType requestResult = NVM_REQ_OK;
-	uint16 i = 0;
-	boolean FFIsModifiedLocal = FALSE;
 	imask_t state;
 
 	Irq_Save(state);
 
-	for(i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++){
+	for(uint16 i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++){
 		if(memcmp(&priMemFreezeFrameBuffer[i], FreezeFrameMirrorBuffer[i], sizeof(FreezeFrameRecType))){
-			if(FreezeFrameBlockId[i] != 0){
-				NvM_GetErrorStatus(FreezeFrameBlockId[i], &requestResult);
-
-				if(requestResult != NVM_REQ_PENDING ){
-					memcpy(FreezeFrameMirrorBuffer[i], &priMemFreezeFrameBuffer[i], sizeof(FreezeFrameRecType));
-					(void)NvM_WriteBlock(FreezeFrameBlockId[i], (const uint8 *)(FreezeFrameMirrorBuffer[i]));
-					FFIsModifiedLocal = FALSE;
-				}
-				else{
-					FFIsModifiedLocal = TRUE;
-				}
-
-				FFIsModified |= FFIsModifiedLocal;
-			}
-			else{
-				//TODO:report error or doing nothing,assume that doing nothing
+			if( E_NOT_OK == writeNvmMirror(FreezeFrameBlockId[i], (uint8 *)FreezeFrameMirrorBuffer[i], (const uint8 *)&priMemFreezeFrameBuffer[i], sizeof(FreezeFrameRecType)) ) {
+				FFIsModified = TRUE;
 			}
 		}
 	}
@@ -1636,46 +1634,6 @@ static void deleteFreezeFrameDataPriMem(const Dem_EventParameterType *eventParam
 
 	Irq_Restore(state);
 }
-
-/*
- * Procedure:	deleteFreezeFrameDataPerMem
- * Description:	delete the freeze frame data in event memory according to
- * 				"FFBlockId" destination option,it must be used after deleteFreezeFrameDataPriMem()
- */
-static void deleteFreezeFrameDataPerMem()
-{
-	NvM_RequestResultType requestResult = NVM_REQ_OK;
-	uint16 i = 0;
-	boolean FFIsModifiedLocal = FALSE;
-	imask_t state;
-
-	Irq_Save(state);
-
-	for(i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++){
-		if(memcmp(&priMemFreezeFrameBuffer[i], FreezeFrameMirrorBuffer[i], sizeof(FreezeFrameRecType))){
-			if(FreezeFrameBlockId[i] != 0){
-				NvM_GetErrorStatus(FreezeFrameBlockId[i], &requestResult);
-				if(requestResult != NVM_REQ_PENDING){
-					memcpy(FreezeFrameMirrorBuffer[i], &priMemFreezeFrameBuffer[i], sizeof(FreezeFrameRecType));
-					(void)NvM_WriteBlock(FreezeFrameBlockId[i], (const uint8 *)(FreezeFrameMirrorBuffer[i]));
-					FFIsModifiedLocal = FALSE;
-				}
-				else{
-					FFIsModifiedLocal = TRUE;
-				}
-				FFIsModified |= FFIsModifiedLocal;
-
-			}
-			else{
-				//TODO:report error or doing nothing,assume that doing nothing
-			}
-		}
-
-	}
-
-	Irq_Restore(state);
-}
-
 
 /*
  * Procedure:	storeFreezeFrameDataEvtMem
@@ -1866,8 +1824,8 @@ static Std_ReturnType handleEvent(Dem_EventIdType eventId, Dem_EventStatusType e
 							}
 						}
 
-						if (eventStatusTemp == DEM_EVENT_STATUS_PREFAILED
-								|| eventStatusLocal.eventStatusExtended & DEM_TEST_FAILED){
+						if ((eventStatusTemp == DEM_EVENT_STATUS_PREFAILED)
+								|| (eventStatusLocal.eventStatusExtended & DEM_TEST_FAILED)){
 							getFreezeFrameData(eventParam, &freezeFrameLocal,eventStatus,&eventStatusLocal);
 							if (freezeFrameLocal.eventId != DEM_EVENT_ID_NULL) {
 								storeFreezeFrameDataEvtMem(eventParam, &freezeFrameLocal); /** @req DEM190 */
@@ -2055,7 +2013,7 @@ static void deleteEventMemory(const Dem_EventParameterType *eventParam)
 			deleteEventPriMem(eventParam);
 			deleteFreezeFrameDataPriMem(eventParam);
 			deleteExtendedDataPriMem(eventParam);
-			deleteFreezeFrameDataPerMem();
+			storeFreezeFrameDataPerMem();
 			break;
 
 		case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
@@ -2358,7 +2316,7 @@ void Dem_Init(void)
 	uint16 i;
 	ChecksumType cSum;
 	const Dem_EventParameterType *eventParam;
-	NvM_RequestResultType requestResult = NVM_REQ_OK;
+
 	if(DEM_PREINITIALIZED != demState){
 		/*
 		 * Dem_PreInit was has not been called since last time Dem_Shutdown was called.
@@ -2371,37 +2329,15 @@ void Dem_Init(void)
 	} else {
 
 		for(i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++){
-			if(FreezeFrameBlockId[i] != 0){
-				NvM_GetErrorStatus(FreezeFrameBlockId[i], &requestResult);
-				if(requestResult != NVM_REQ_PENDING){
-					memcpy(&priMemFreezeFrameBuffer[i], FreezeFrameMirrorBuffer[i], sizeof(FreezeFrameRecType));
-				}
-				else{
-					//TODO:NVM is busy,report error or what?
-				}
+			if( E_NOT_OK == copyNvmMirror(FreezeFrameBlockId[i], (uint8 *)&priMemFreezeFrameBuffer[i], (const uint8 *)&FreezeFrameMirrorBuffer[i], sizeof(FreezeFrameRecType)) ){
+				//TODO:NVM is busy or block id is 0,report error or what?
 			}
 		}
 		//recover Aging from NVRam to RAM
-		if(AgingBlockId != 0)
-		{
-			//check the status
-			NvM_GetErrorStatus(AgingBlockId,&requestResult);
+		if(E_OK == copyNvmMirror(AgingBlockId, (uint8*)priMemAgingBuffer, (const uint8*)HealingMirrorBuffer, sizeof(priMemAgingBuffer)) ){
 
-			//recover Aging from NVRam to RAM
-			if(AgingBlockId != 0){//check the status
-				NvM_GetErrorStatus(AgingBlockId, &requestResult);
-
-				//judge whether NVM is busy
-				if(!(requestResult & NVM_REQ_PENDING)){
-					//copy the permanent RAM to priMemAgingBuffer
-					memcpy(priMemAgingBuffer, HealingMirrorBuffer, sizeof(priMemAgingBuffer));
-				}
-				else{
-
-				}
-
-			}
 		}
+
 		// Validate aging records stored in primary memory
 		for (i = 0; i < DEM_MAX_NUMBER_AGING_PRI_MEM; i++){
 			cSum = calcChecksum(&priMemAgingBuffer[i], sizeof(AgingRecType) - sizeof(ChecksumType));
@@ -2983,7 +2919,7 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
 										deleteFreezeFrameDataPriMem(eventParam);
 										deleteExtendedDataPriMem(eventParam);
 										resetEventStatusRec(eventParam);
-										deleteFreezeFrameDataPerMem(FreezeFrameBlockId);
+										storeFreezeFrameDataPerMem();
 										break;
 										
 									case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
