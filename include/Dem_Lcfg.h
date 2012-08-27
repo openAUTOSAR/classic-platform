@@ -119,7 +119,7 @@ typedef struct {
 typedef struct {
 	Dem_FreezeFrameKindType FFKind;			// (1)
 	uint8					FFRecordNumber;	// (1)/** @req DEM040 */
-	Dem_FreezeFrameStorageConditonType FFStorageConditon;/** @req Dem001_private */
+	Dem_FreezeFrameStorageConditonType FFStorageCondition;/** @req Dem001_private */
 	const Dem_PidOrDidType 	*FFIdClassRef; 	// (1..255)/** @req DEM039 */
 } Dem_FreezeFrameClassType; /** @req DEM136 */
 
@@ -279,7 +279,12 @@ typedef struct {
 	ChecksumType		checksum;
 } FreezeFrameRecType;
 
-
+// Types for storing different event aging counter
+typedef struct {
+	Dem_EventIdType		eventId;
+	uint8				agingCounter;/** @req Dem019 */
+	ChecksumType		checksum;
+} HealingRecType;
 
 /*
  * Make the DEM_Config visible for others.

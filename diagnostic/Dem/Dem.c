@@ -132,13 +132,6 @@ typedef struct {
 	boolean						errorStatusChanged;
 } EventStatusRecType;
 
-// Types for storing different event aging counter
-typedef struct {
-	Dem_EventIdType		eventId;
-	uint8				agingCounter;/** @req Dem019 */
-	ChecksumType		checksum;
-} HealingRecType;
-
 // Types for storing different event data on event memory
 typedef struct {
 	Dem_EventIdType				eventId;
@@ -211,7 +204,7 @@ extern HealingRecType   		HealingMirrorBuffer[DEM_MAX_NUMBER_AGING_PRI_MEM];
 /* block in NVRam, use for freezeframe */
 extern const NvM_BlockIdType FreezeFrameBlockId[DEM_MAX_NUMBER_FF_DATA_PRI_MEM];
 /* block in NVRam, use for aging */
-extern const NvM_BlockIdType AgingBlockId;
+extern const NvM_BlockIdType HealingBlockId;
 
 
 /*
@@ -933,7 +926,7 @@ static void getFreezeFrameData(const Dem_EventParameterType *eventParam,
 
 	/* Find out the corresponding FF class */
 	for(i = 0;(i<DEM_MAX_NR_OF_CLASSES_IN_FREEZEFRAME_DATA) && (eventParam->FreezeFrameClassRef[i] != NULL);i++){
-		if(eventParam->FreezeFrameClassRef[i]->FFStorageConditon == prefailedOrFailed){
+		if(eventParam->FreezeFrameClassRef[i]->FFStorageCondition == prefailedOrFailed){
 			FreezeFrameLocal = eventParam->FreezeFrameClassRef[i];
 			break;
 		}
@@ -2334,7 +2327,7 @@ void Dem_Init(void)
 			}
 		}
 		//recover Aging from NVRam to RAM
-		if(E_OK == copyNvmMirror(AgingBlockId, (uint8*)priMemAgingBuffer, (const uint8*)HealingMirrorBuffer, sizeof(priMemAgingBuffer)) ){
+		if(E_OK == copyNvmMirror(HealingBlockId, (uint8*)priMemAgingBuffer, (const uint8*)HealingMirrorBuffer, sizeof(priMemAgingBuffer)) ){
 
 		}
 
@@ -2464,7 +2457,7 @@ void Dem_MainFunction(void)/** @req DEM125 */
 	}
 
 	if (AgingIsModified) {
-		storeAgingRecPerMem(AgingBlockId);
+		storeAgingRecPerMem(HealingBlockId);
 	}
 }
 
