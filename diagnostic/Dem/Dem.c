@@ -560,7 +560,7 @@ static void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_E
 		}
 
 		if (eventStatus == DEM_EVENT_STATUS_PASSED) {
-			if (eventStatusRecPtr->eventStatusExtended & DEM_TEST_FAILED) {
+			if (eventStatusRecPtr->eventStatusExtended & (DEM_TEST_FAILED | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE)) {
 				eventStatusRecPtr->errorStatusChanged = TRUE;
 			}
 			/** @req DEM036 */
