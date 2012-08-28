@@ -400,8 +400,34 @@ static void lookupEventIdParameter(Dem_EventIdType eventId, const Dem_EventParam
 		*eventIdParam = NULL;
 	}
 }
+/*
+ * Procedure:	checkEntryValid
+ * Description:	Returns whether event id "eventId" is a valid entry in primary memory
+ */
+static boolean checkEntryValid(Dem_EventIdType eventId){
+	const Dem_EventParameterType *EventIdParamList = configSet->EventParameter;
+	boolean isValid = FALSE;
+	uint16 i=0;
+	while ((EventIdParamList[i].EventID != eventId) && (!EventIdParamList[i].Arc_EOL)) {
+		i++;
+	}
 
+	if (!EventIdParamList[i].Arc_EOL) {
+		// Event was found
+		uint16 index = 0;
+		for (index = 0; (index < DEM_MAX_NR_OF_EVENT_DESTINATION)
+					 && (EventIdParamList[i].EventClass->EventDestination[index] != DEM_EVENT_DESTINATION_END_OF_LIST); index++) {
+			if( DEM_DTC_ORIGIN_PRIMARY_MEMORY == EventIdParamList[i].EventClass->EventDestination[index]){
+				// Event should be stored in primary memory.
+				isValid = TRUE;
+			}
+		}
 
+	} else {
+		// The event did not exist
+	}
+	return isValid;
+}
 /*
  * Procedure:	preDebounceNone
  * Description:	Returns the result of the debouncing.
@@ -611,24 +637,6 @@ static void mergeEventStatusRec(const EventRecType *eventRec)
 		// DEM_PENDING_DTC and DEM_CONFIRMED_DTC should be set if set in either
 		eventStatusRecPtr->eventStatusExtended |= (Dem_EventStatusExtendedType)(eventRec->eventStatusExtended & (DEM_PENDING_DTC | DEM_CONFIRMED_DTC));
 
-	}
-	else {
-		// Search for free position
-		lookupEventStatusRec(DEM_EVENT_ID_NULL, &eventStatusRecPtr);
-
-		if (eventStatusRecPtr != NULL) {
-			// Create new event, from stored event
-			eventStatusRecPtr->eventId = eventRec->eventId;
-			lookupEventIdParameter(eventRec->eventId, &eventStatusRecPtr->eventParamRef);
-			eventStatusRecPtr->faultDetectionCounter = 0;
-			eventStatusRecPtr->occurrence = eventRec->occurrence;
-			eventStatusRecPtr->eventStatusExtended = DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE | DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR;
-			eventStatusRecPtr->errorStatusChanged = FALSE;
-		}
-		else {
-			// Error: Event status buffer full
-			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_MERGE_EVENT_STATUS_ID, DEM_E_EVENT_STATUS_BUFF_FULL);
-		}
 	}
 
     Irq_Restore(state);
@@ -2308,6 +2316,7 @@ void Dem_Init(void)
 {
 	uint16 i;
 	ChecksumType cSum;
+	boolean entryValid = FALSE;
 	const Dem_EventParameterType *eventParam;
 
 	if(DEM_PREINITIALIZED != demState){
@@ -2333,8 +2342,9 @@ void Dem_Init(void)
 
 		// Validate aging records stored in primary memory
 		for (i = 0; i < DEM_MAX_NUMBER_AGING_PRI_MEM; i++){
+			entryValid = checkEntryValid(priMemAgingBuffer[i].eventId);
 			cSum = calcChecksum(&priMemAgingBuffer[i], sizeof(HealingRecType) - sizeof(ChecksumType));
-			if ((cSum != priMemAgingBuffer[i].checksum) || (priMemAgingBuffer[i].eventId == DEM_EVENT_ID_NULL)) {
+			if ((cSum != priMemAgingBuffer[i].checksum) || (priMemAgingBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
 				// Unlegal record, clear the record
 				memset(&priMemAgingBuffer[i], 0, sizeof(HealingRecType));
 				AgingIsModified = TRUE;
@@ -2343,8 +2353,9 @@ void Dem_Init(void)
 
 		// Validate event records stored in primary memory
 		for (i = 0; i < DEM_MAX_NUMBER_EVENT_PRI_MEM; i++) {
+			entryValid = checkEntryValid(priMemEventBuffer[i].eventId);
 			cSum = calcChecksum(&priMemEventBuffer[i], sizeof(EventRecType)-sizeof(ChecksumType));
-			if ((cSum != priMemEventBuffer[i].checksum) || (priMemEventBuffer[i].eventId == DEM_EVENT_ID_NULL)) {
+			if ((cSum != priMemEventBuffer[i].checksum) || (priMemEventBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
 				// Unlegal record, clear the record
 				memset(&priMemEventBuffer[i], 0, sizeof(EventRecType));
 			}
@@ -2362,8 +2373,9 @@ void Dem_Init(void)
 
 		// Validate extended data records stored in primary memory
 		for (i = 0; i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM; i++) {
+			entryValid = checkEntryValid(priMemExtDataBuffer[i].eventId);
 			cSum = calcChecksum(&priMemExtDataBuffer[i], sizeof(ExtDataRecType)-sizeof(ChecksumType));
-			if ((cSum != priMemExtDataBuffer[i].checksum) || (priMemExtDataBuffer[i].eventId == DEM_EVENT_ID_NULL)) {
+			if ((cSum != priMemExtDataBuffer[i].checksum) || (priMemExtDataBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
 				// Unlegal record, clear the record
 				memset(&priMemExtDataBuffer[i], 0, sizeof(ExtDataRecType));
 			}
@@ -2378,8 +2390,9 @@ void Dem_Init(void)
 		//lint -e681 //PC-Lint exception to MISRA 14.1: Loop is not entered. This only happens when DEM_MAX_NUMBER_FF_DATA_PRE_INIT is zero. Keep as it is for less complex code.
 		// Validate freeze frame records stored in primary memory
 		for (i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++) {
+			entryValid = checkEntryValid(priMemFreezeFrameBuffer[i].eventId);
 			cSum = calcChecksum(&priMemFreezeFrameBuffer[i], sizeof(FreezeFrameRecType)-sizeof(ChecksumType));
-			if ((cSum != priMemFreezeFrameBuffer[i].checksum) || (priMemFreezeFrameBuffer[i].eventId == DEM_EVENT_ID_NULL)) {
+			if ((cSum != priMemFreezeFrameBuffer[i].checksum) || (priMemFreezeFrameBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
 				// Unlegal record, clear the record
 				memset(&priMemFreezeFrameBuffer[i], 0, sizeof(FreezeFrameRecType));
 			}
