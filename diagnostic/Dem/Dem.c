@@ -1808,8 +1808,8 @@ static Std_ReturnType handleEvent(Dem_EventIdType eventId, Dem_EventStatusType e
 				if ((!((disableDtcStorage.storageDisabled) && (checkDtcGroup(disableDtcStorage.dtcGroup, eventParam)) && (checkDtcKind(disableDtcStorage.dtcKind, eventParam)))))  {
 					updateEventStatusRec(eventParam, eventStatus, TRUE, &eventStatusLocal);
 					if (eventStatusLocal.errorStatusChanged) {
+						storeEventEvtMem(eventParam, &eventStatusLocal); /** @req DEM184 */
 						if (eventStatusLocal.eventStatusExtended & DEM_TEST_FAILED) {
-							storeEventEvtMem(eventParam, &eventStatusLocal); /** @req DEM184 */
 							getExtendedData(eventParam, &extendedDataLocal);
 							if (extendedDataLocal.eventId != DEM_EVENT_ID_NULL)
 							{
