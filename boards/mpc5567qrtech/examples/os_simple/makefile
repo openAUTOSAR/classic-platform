@@ -17,27 +17,21 @@ ifneq ($(CFG_BOOT),)
 
 # "downloader" need an srecord file 
 build-srec-image-y = $(PROJECTNAME)_srec_image.srec
-
 build-srec-y = $(PROJECTNAME).srec
 build-bin-image-y = $(PROJECTNAME)_bin_image.bin
+
 # To add a header with mkimage we need a binary file
 build-bin-y = $(PROJECTNAME).bin
 
 all-mod += $(build-srec-image-y)
 all-mod += $(build-srec-y)
 all-mod += $(build-bin-image-y)
-##all-mod += $(build-bin-y)
 
+# Tools Path
 mkimage = /c/Users/mahi/git/bootloader/bin/mkimage
-
 SRECORD_PATH=/c/devtools/srecord
 SREC_CAT=$(Q)$(SRECORD_PATH)/srec_cat.exe
 SREC_INFO=$(Q)$(SRECORD_PATH)/srec_info.exe
-
-# Changes:
-# * Here, 2 places
-# * linkfile  (linkscript_cw.ldf)
-# * cc_cw.mk  (romaddr, etc) 
 
 LOAD_ADDR=0x1c000
 
