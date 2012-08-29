@@ -29,12 +29,14 @@
 
 #ifndef DEM_LCFG_H_
 #define DEM_LCFG_H_
-
 #include "Dem_Types.h"
 #if defined(USE_DCM)
 #include "Dcm_Types.h"	 /** @req DEM176.Dcm */
+#include "Dcm_Lcfg.h"    	 /** @req DEM136.Dcm */
 #endif
-
+//#if defined(USE_NVRam)
+#include "NvM_ConfigTypes.h"	 /** @req Dem147.Nvm */
+//#endif
 
 /*
  * Callback function prototypes
@@ -72,6 +74,11 @@ typedef Std_ReturnType (*Dem_CallbackGetFaultDetectionCounterFncType)(sint8 *Eve
 // GetPIDValue
 typedef Std_ReturnType (*Dem_CallbackGetPIDValueFncType)(uint8 *DataValueBuffer); /** @req DEM326 */
 
+typedef enum{
+	FF_STORAGE_CONDITION_WRONG = 0,	//FF storage condition is wrong
+	PREFAILED = 1,						//store FF when the event status is prefailed
+	FAILED = 2							//store FF when the event status is failed
+}Dem_FreezeFrameStorageConditonType; /** @req Dem001_private */
 /*
  * DemGeneral types
  */
@@ -97,13 +104,13 @@ typedef struct {
 
 // 10.2.8 DemPidOrDid
 typedef struct {
-//	boolean									PidOrDidUsePort;			// (1) Not used in current implementation
-	uint8									PidOrDidSize;				// (1)
-	const uint16							*DidIdentifier;				// (0..1)
-	Dem_CallbackConditionCheckReadFncType	DidConditionCheckReadFnc;	// (0..1)
+	Dem_CallbackConditionCheckReadFncType		DidConditionCheckReadFnc;	// (0..1)
+	const uint16								DidIdentifier;				// (0..1)
 	Dem_CallbackReadDataLength				DidReadDataLengthFnc;		// (0..1)
 	Dem_CallbackReadDataFncType				DidReadFnc;					// (0..1)
-	const uint8								*PidIndentifier;			// (0..1)
+	const uint8								PidIndentifier;				// (0..1)
+	uint8									PidOrDidSize;				// (1)
+	boolean									PidOrDidUsePort;			// (1) Not used in current implementation	
 	Dem_CallbackGetPIDValueFncType			PidReadFnc;					// (0..1)
 	boolean									Arc_EOL;
 } Dem_PidOrDidType; /** @req DEM136 */
@@ -111,9 +118,11 @@ typedef struct {
 // 10.2.18 DemFreezeFrameClass
 typedef struct {
 	Dem_FreezeFrameKindType FFKind;			// (1)
-	uint8					FFRecordNumber;	// (1)
-	const Dem_PidOrDidType 	*FFIdClassRef; 	// (1..255)
+	uint8					FFRecordNumber;	// (1)/** @req DEM040 */
+	Dem_FreezeFrameStorageConditonType FFStorageCondition;/** @req Dem001_private */
+	const Dem_PidOrDidType 	*FFIdClassRef; 	// (1..255)/** @req DEM039 */
 } Dem_FreezeFrameClassType; /** @req DEM136 */
+
 
 // 10.2.4 DemIndicator
 typedef struct {
@@ -122,8 +131,12 @@ typedef struct {
 
 // 10.2.28 DemNvramBlockId
 typedef struct {
-	// TODO: Fill out
-} Dem_NvramBlockIdType;
+
+//#if defined(USE_NVRam)
+	const NvM_BlockDescriptorType *BlockDescriptor;/** @req FIM083 *//** @req Dem697_Conf AutoSAR 4.2.0*/
+//#endif
+
+} Dem_NvramBlockIdType;/** @req Dem147 *//** @req Dem696_Conf AutoSAR 4.2.0*/
 
 /*
  * DemConfigSetType types
@@ -203,14 +216,14 @@ typedef struct {
 // 10.2.14 DemEventClass
 typedef struct {
 	boolean						ConsiderPtoStatus;									// (1)
-	const Dem_DTCOriginType 	EventDestination[DEM_MAX_NR_OF_EVENT_DESTINATION+1];// (0..4)
+	const Dem_DTCOriginType 		EventDestination[DEM_MAX_NR_OF_EVENT_DESTINATION+1];// (0..4)
 	uint8						EventPriority;										// (1)
 	boolean						FFPrestorageSupported;								// (1)
 	boolean						HealingAllowed;										// (1)
 	Dem_OperationCycleIdType	OperationCycleRef;									// (1)
-//	uint8					HealingCycleCounter;									// (0..1) Optional
+	Dem_OperationCycleIdType	HealingCycleRef;									// (1)
+	uint8						HealingCycleCounter;									// (0..1) Optional
 //	const Dem_EnableConditionType	*EnableConditionRef;							// (0..*) Optional
-//	const Dem_OperationCycleTgtType *HealingCycleRef;								// (0..1) Optional
 	const Dem_PreDebounceAlgorithmClassType	*PreDebounceAlgorithmClass;				// (0..255) (Only 0..1 supported)
 	const Dem_IndicatorAttributeType		*IndicatorAttribute;					// (0..255)
 //	Dem_OEMSPecific
@@ -222,12 +235,14 @@ typedef struct {
 	Dem_EventKindType							EventKind;					// (1)
 	const Dem_EventClassType					*EventClass;				// (1)
 	const Dem_ExtendedDataClassType				*ExtendedDataClassRef;		// (0..1)
-	const Dem_FreezeFrameClassType				*FreezeFrameClassRef;		// (0..255) (Only 0..1 supported)
+	const Dem_FreezeFrameClassType				*FreezeFrameClassRef[DEM_MAX_NR_OF_CLASSES_IN_FREEZEFRAME_DATA+1];		// (0..255) (Only 0..1 supported)/** @req DEM021 */
 	const Dem_CallbackInitMforEType				*CallbackInitMforE;			// (0..1)
 	const Dem_CallbackEventStatusChangedType	*CallbackEventStatusChanged;// (0..*)
 	const Dem_DTCClassType						*DTCClassRef;				// (0..1)
 	boolean										Arc_EOL;
 } Dem_EventParameterType; /** @req DEM130 */
+
+
 
 // 10.2.19 DemGroupOfDTC
 typedef struct {
@@ -253,10 +268,27 @@ typedef struct {
 } Dem_ConfigType;
 
 
+typedef uint16 ChecksumType;
+typedef struct {
+	Dem_EventIdType		eventId;
+	uint16				occurrence;
+    uint16				dataSize;
+	uint8               recordNumber;
+    uint32              timeStamp;
+	uint8				data[DEM_MAX_SIZE_FF_DATA];
+	ChecksumType		checksum;
+} FreezeFrameRecType;
+
+// Types for storing different event aging counter
+typedef struct {
+	Dem_EventIdType		eventId;
+	uint8				agingCounter;/** @req Dem019 */
+	ChecksumType		checksum;
+} HealingRecType;
+
 /*
  * Make the DEM_Config visible for others.
  */
 extern const Dem_ConfigType DEM_Config;
-
 
 #endif /*DEM_LCFG_H_*/
