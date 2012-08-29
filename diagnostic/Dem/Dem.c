@@ -54,8 +54,8 @@
 //#include "SchM_Dem.h"
 #include "MemMap.h"
 #include "Cpu.h"
-#include "DEM_Types.h"
-#include "DEM_Lcfg.h"
+#include "Dem_Types.h"
+#include "Dem_Lcfg.h"
 
 #define USE_DEBUG_PRINTF
 #include "debug.h"
