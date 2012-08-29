@@ -2369,7 +2369,7 @@ void Dem_Init(void)
 		}
 
 		//initialize the current timestamp and update the timestamp in pre init
-		initCurrentFreezeFrameTimeStamp(&FF_TimeStamp);//add by i-soft
+		initCurrentFreezeFrameTimeStamp(&FF_TimeStamp);
 
 		// Validate extended data records stored in primary memory
 		for (i = 0; i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM; i++) {
