@@ -13,39 +13,8 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-#ifndef SCHM_H_
-#define SCHM_H_
-
-#include "Std_Types.h"
-
-void SchM_Init( void );
-void SchM_Deinit( void );
-void SchM_GetVersionInfo( Std_VersionInfoType *versionInfo );
-
-#define SchM_Enter( _module, _exc_area ) \
-    SchM_Enter_EcuM ## _module ##  _exc_area
-
-#define SchM_Exit( _module, _exc_area ) \
-    SchM_Enter_EcuM ## _module ##  _exc_area
+#ifndef SCHM_CANIF_H_
+#define SCHM_CANIF_H_
 
 
-#define CONCAT_(_x,_y)	_x##_y
-
-
-typedef struct  {
-	uint32 timer;
-} SchM_InfoType;
-
-#define SCHM_DECLARE(_mod)	\
-		SchM_InfoType SchM_Info_ ## _mod
-
-#define SCHM_MAINFUNCTION(_mod,_func) \
-		if( ++SchM_Info_ ## _mod.timer ==  SCHM_MAINFUNCTION_CYCLE_ ## _mod ) { \
-			_func; \
-			SchM_Info_ ## _mod.timer = 0; \
-		}
-
-
-
-#endif /*SCHM_H_*/
+#endif /* SCHM_CANIF_H_ */

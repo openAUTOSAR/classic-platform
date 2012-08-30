@@ -14,16 +14,9 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
+#ifndef SCHM_NVM_H_
+#define SCHM_NVM_H_
 
-/** @addtogroup SchM
- *  @{ */
+#define SCHM_MAINFUNCTION_NVM() 	SCHM_MAINFUNCTION(NVM,NvM_MainFunction())
 
-/** @file SchM_EcuM.h
- */
-
-
-#ifndef SCHM_ECUM_H_
-#define SCHM_ECUM_H_
-
-
-#endif /* SCHM_ECUM_H_ */
+#endif /* SCHM_NVM_H_ */

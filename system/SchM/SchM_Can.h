@@ -13,18 +13,9 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+#ifndef SCHM_CAN_H_
+#define SCHM_CAN_H_
 
 
-/** @addtogroup TBD
- *  @{ */
 
-/** @file schM_CanTp.h
- * TBD.
- */
-
-
-#ifndef SCHM_CANTP_H_
-#define SCHM_CANTP_H_
-
-
-#endif /* SCHM_CANTP_H_ */
+#endif /* SCHM_CAN_H_ */

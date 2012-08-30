@@ -14,38 +14,34 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-#ifndef SCHM_H_
-#define SCHM_H_
+#ifndef SCHM_ECUM_H_
+#define SCHM_ECUM_H_
 
-#include "Std_Types.h"
+/*
+ * "Prototypes"
+ */
+#define SchM_Enter_EcuM(_area) CONCAT_(SchM_Enter_EcuM_,_area)
+#define SchM_Exit_EcuM(_area) CONCAT_(SchM_Exit_EcuM_,_area)
 
-void SchM_Init( void );
-void SchM_Deinit( void );
-void SchM_GetVersionInfo( Std_VersionInfoType *versionInfo );
+/*
+ * Exclusive Areas
+ */
 
-#define SchM_Enter( _module, _exc_area ) \
-    SchM_Enter_EcuM ## _module ##  _exc_area
+/* Lock interrupts */
+#define EXCLUSIVE_AREA_0	0
 
-#define SchM_Exit( _module, _exc_area ) \
-    SchM_Enter_EcuM ## _module ##  _exc_area
+#define SchM_Enter_EcuM_0 DisableAllInterrupts
+#define SchM_Exit_EcuM_0  ResumeAllInterrupts
 
-
-#define CONCAT_(_x,_y)	_x##_y
-
-
-typedef struct  {
-	uint32 timer;
-} SchM_InfoType;
-
-#define SCHM_DECLARE(_mod)	\
-		SchM_InfoType SchM_Info_ ## _mod
-
-#define SCHM_MAINFUNCTION(_mod,_func) \
-		if( ++SchM_Info_ ## _mod.timer ==  SCHM_MAINFUNCTION_CYCLE_ ## _mod ) { \
-			_func; \
-			SchM_Info_ ## _mod.timer = 0; \
-		}
+#define SCHM_MAINFUNCTION_ECUM() 	EcuM_MainFunction()
 
 
+/* Skip "instance", req INTEGR058 */
+#if 0
+#define SchM_Enter_EcuM(uint8 exclusiveArea )
+#define SchM_Exit_EcuM(uint8 exclusiveArea )
+#define SchM_ActMainFunction_EcuM(uint8 exclusiveArea )
+#define SchM_CancelMainFunction_EcuM( uint8 exclusiveArea )
+#endif
 
-#endif /*SCHM_H_*/
+#endif /* SCHM_ECUM_H_ */
