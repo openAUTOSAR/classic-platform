@@ -13,7 +13,58 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+
+/** @reqSettings DEFAULT_SPECIFICATION_REVISION=3.1.5 */
+
+/* ----------------------------[information]----------------------------------*/
+/*
+ * Author: ?+mahi
+ *
+ * Part of Release:
+ *   3.1.5
+ *
+ * Description:
+ *   Implements the Can Driver module
+ *
+ * Support:
+ *   General                  Have Support
+ *   -------------------------------------------
+ *   ECUM_TTII_ENABLED            		N
+ *   ECUM_DEV_ERROR_DETECT				Y
+ *   ECUM_VERSION_INFO_API				Y
+ *   ECUM_INCLUDE_DEM					N (controlled by USE_x macro's instead)
+ *   ECUM_INCLUDE_NVRAM_MGR				N (controlled by USE_x macro's instead)
+ *   ECUM_INLCUDE_DET					N (controlled by USE_x macro's instead)
+ *   ECUM_MAIN_FUNCTION_PERDIOD			Y
+ *   ECUM_TTII_WKSOURCE					N
+ *
+ *   Configuration            Have Support
+ *   -------------------------------------------
+ *   ECUM_SLEEP_ACTIVITY_PERIOD			?
+ *   ECUM_CONFIGCONSISTENCY_HASH		N
+ *   ECUM_RUN_SELF_REQUEST_PERIOD		?
+ *   ECUM_NVRAM_WRITEALL_TIMEOUT		Y
+ *   ECUM_DEFAULT_APP_MODE				?
+ *
+ *
+ *   DefaultShutdownTarget
+ *   -------------------------------------------
+ *   ECUM_DEFAULT_SHUTDOWN_TARGET		N
+ *
+ *
+ * Things to start with:
+ * - EcuM2181
+ * - EcuM2861 , Watchdog
+ * - ComM_EcuM_RunModeIndication()  not called, See Figure 8 (Seems that the ComM does not do much either)
+ *
+ *
+ *
+ */
+
 //lint -emacro(904,VALIDATE,VALIDATE_RV,VALIDATE_NO_RV) //904 PC-Lint exception to MISRA 14.7 (validate macros).
+
+
+/* ----------------------------[includes]------------------------------------*/
 
 #include "Std_Types.h"
 #include "EcuM.h"
@@ -42,8 +93,16 @@
 #endif
 
 
+/* ----------------------------[private define]------------------------------*/
+/* ----------------------------[private macro]-------------------------------*/
+/* ----------------------------[private typedef]-----------------------------*/
+/* ----------------------------[private function prototypes]-----------------*/
+/* ----------------------------[private variables]---------------------------*/
 
 EcuM_GlobalType internal_data;
+
+/* ----------------------------[private functions]---------------------------*/
+/* ----------------------------[public functions]----------------------------*/
 
 #if !defined(USE_DET) && defined(ECUM_DEV_ERROR_DETECT)
 #error EcuM configuration error. DET is not enabled when ECUM_DEV_ERROR_DETECT is set
