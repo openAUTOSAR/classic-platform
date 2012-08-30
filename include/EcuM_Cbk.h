@@ -35,7 +35,7 @@ void EcuM_ErrorHook(Std_ReturnType reason);
 
 void EcuM_OnRTEStartup(void);
 
-void EcuM_OnEnterRUN(void);
+void EcuM_OnEnterRun(void);
 void EcuM_OnExitRun(void);
 void EcuM_OnExitPostRun(void);
 

@@ -66,12 +66,14 @@ typedef enum {
 
 #endif
 
+
 #if !defined(_DEFINED_TYPEDEF_FOR_EcuM_UserType_)
 typedef uint8 EcuM_UserType;
 
 #define _DEFINED_TYPEDEF_FOR_EcuM_UserType_
 #endif
 
+#if 0
 enum {
 	/** Internal reset of µC (bit 2).
 	 *  The internal reset typically only resets the µC
@@ -102,7 +104,10 @@ enum {
 	ECUM_WKSOURCE_RESET = 0x02
 };
 
+
 typedef uint32 EcuM_WakeupSourceType;
+
+#endif
 
 typedef enum
 {
@@ -118,6 +123,23 @@ typedef enum
 	ECUM_WKACT_TTII = 2,       /**< Execute time triggered increased inoperation protocol and shutdown */
 	ECUM_WKACT_SHUTDOWN = 3   /**< Immediate shutdown */
 } EcuM_WakeupReactionType;
+
+typedef struct EcuM_WdgM
+{
+	WdgM_ModeType EcuMWdgMWakeupMode;
+	WdgM_ModeType EcuMWdgMStartupMode;
+	WdgM_ModeType EcuMWdgMRunMode;
+	WdgM_ModeType EcuMWdgMPostRunMode;
+	WdgM_ModeType EcuMWdgMShutdownMode;
+} EcuM_WdgMType;
+
+typedef struct EcuM_SleepMode
+{
+   uint8 					EcuMSleepModeId;
+   EcuM_WakeupSourceType 	EcuMWakeupSourceMask;
+   Mcu_ModeType  			EcuMSleepModeMcuMode;
+   EcuM_WakeupSourceType 	EcuMSleepModeWdgMMode;
+ } EcuM_SleepModeType;
 
 #if !defined(_DEFINED_TYPEDEF_FOR_EcuM_BootTargetType_)
 typedef enum

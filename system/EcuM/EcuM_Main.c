@@ -89,19 +89,65 @@ void set_current_state(EcuM_StateType state) {
 #endif
 
 
+/**
+ * RUN II entry
+ * - Called from EcuM_StartupTwo()
+ * - Called from
+ *
+ *
+ */
 void EcuM_enter_run_mode(void){
 	set_current_state(ECUM_STATE_APP_RUN);
-	EcuM_OnEnterRUN(); /** @req EcuM2308 */
-	//TODO: Call ComM_EcuM_RunModeIndication(NetworkHandleType Channel) for all channels that have requested run.
+	EcuM_OnEnterRun(); /** @req EcuM2308 */
+
+#if defined(USE_WDGM)
+	/* This seems strange, should be in FW instead */
+	WdgM_SetMode(TODO_MODE);
+#endif
+
+#if defined(USE_COMM)
+	/*
+	 * Loop over all channels that have requested run,
+	 * ie EcuM_ComM_RequestRUN()
+	 */
+	{
+		uint32 cMask = internal_data.run_comm_requests;
+		uint8  channel;
+
+		for (; cMask; cMask &= ~(1ul << channel)) {
+			channel = ilog2(cMask);
+			ComM_EcuM_RunModeIndication(channel);
+		}
+	}
+#endif
+
+	/* We have a configurable minimum time (EcuMRunMinimumDuration)
+	 * we have to stay in RUN state  */
 	internal_data_run_state_timeout = internal_data.config->EcuMRunMinimumDuration / ECUM_MAIN_FUNCTION_PERIOD; /** @req EcuM2310 */
 }
 
 
 //--------- Local functions ------------------------------------------------------------------------------------------------
 
+
+
+/**
+ * GO SLEEP state ( in state ECUM_STATE_GO_SLEEP)
+ */
 static inline void enter_go_sleep_mode(void){
+	EcuM_WakeupSourceType wakeupSource;
 	set_current_state(ECUM_STATE_GO_SLEEP);
 	EcuM_OnGoSleep();
+
+#if defined(USE_NVM)
+	NvM_WriteAll();
+	wakeupSource = EcuM_GetPendingWakeupEvents();
+#else
+	wakeupSource = EcuM_GetPendingWakeupEvents();
+#endif
+
+
+
 }
 
 static inline void enter_go_off_one_mode(void){
@@ -137,7 +183,10 @@ static inline boolean hasPostRunRequests(void){
 }
 
 
-
+/**
+ * RUN II Loop (in state ECUM_STATE_APP_RUN)
+ * - The entry to RUN II is done in
+ */
 static inline void in_state_appRun(void){
 	if (internal_data_run_state_timeout){
 		internal_data_run_state_timeout--;
@@ -145,29 +194,49 @@ static inline void in_state_appRun(void){
 
 	if ((!hasRunRequests()) && (internal_data_run_state_timeout == 0)){
 		EcuM_OnExitRun();	/** @req EcuM2865 */
+
+#if defined(USE_WDGM)
+		WdgM_SetMode(FIXME_MODE);
+#endif
+
+#if defined(USE_RTE) && defined(CFG_ECUM_USE_SERVICE_COMPONENT)
+		Rte_Switch_currentMode_currentMode(RTE_MODE_EcuM_Mode_POSTRUN);
+#endif
+
 		set_current_state(ECUM_STATE_APP_POST_RUN);/** @req EcuM2865 */
 	}
 }
 
 
+/**
+ * RUN III states (in state ECUM_STATE_APP_POST_RUN)
+ */
 static inline void in_state_appPostRun(void){
+
+	/* @req 3.1.5/ECUM2866 */
 	if (hasRunRequests()){
-		set_current_state(ECUM_STATE_APP_RUN);/** @req EcuM2866 */ /** @req EcuM2308 */
-		EcuM_OnEnterRUN(); /** @req EcuM2308 */
-		//TODO: Call ComM_EcuM_RunModeIndication(NetworkHandleType Channel) for all channels that have requested run.
-		internal_data_run_state_timeout = internal_data.config->EcuMRunMinimumDuration / ECUM_MAIN_FUNCTION_PERIOD; /** @req EcuM2310 */
+		/* We have run requests, return to RUN II */
+		EcuM_enter_run_mode();
 
 	} else if (!hasPostRunRequests()){
 		EcuM_OnExitPostRun(); /** @req EcuM2761 */
 		set_current_state(ECUM_STATE_PREP_SHUTDOWN);/** @req EcuM2761 */
-
-		EcuM_OnPrepShutdown();
 	} else {
-		// TODO: Do something?
+		/* TODO: We have postrun requests */
 	}
 }
 
+
+/**
+ * PREP SHUTDOWN state (in state ECUM_STATE_PREP_SHUTDOWN)
+ */
 static inline void in_state_prepShutdown(void){
+
+	// TODO: The specification does not state what events to clear
+	EcuM_ClearWakeupEvent(ECUM_WKSTATUS_NONE);
+
+	EcuM_OnPrepShutdown();
+
 #if defined(USE_DEM)
 	// DEM shutdown
 	Dem_Shutdown();
@@ -212,9 +281,11 @@ void EcuM_MainFunction(void){
 	switch(internal_data.current_state){
 
 		case ECUM_STATE_APP_RUN:
+			/* RUN II state */
 			in_state_appRun();
 			break;
 		case ECUM_STATE_APP_POST_RUN:
+			/* RUN III state */
 			in_state_appPostRun();
 			break;
 		case ECUM_STATE_PREP_SHUTDOWN:

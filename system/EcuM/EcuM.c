@@ -125,6 +125,7 @@ void EcuM_Init( void )
 	// Determine PostBuild configuration
 	internal_data.config = EcuM_DeterminePbConfiguration();
 
+
 	// TODO: Check consistency of PB configuration
 
 	// Initialize drivers needed before the OS-starts
@@ -417,5 +418,25 @@ Std_ReturnType EcuM_ReleasePOST_RUN(EcuM_UserType user)
 	internal_data.postrun_requests &= ~((uint32)1 << user);
 
 	return E_OK;
+}
+
+/*
+ * Don't yet understand the use
+ */
+void EcuM_ClearWakeupEvent( EcuM_WakeupStatusType source )
+{
+	switch(source) {
+	case ECUM_WKSTATUS_NONE:
+		/* Seems quite pointless */
+		break;
+	case ECUM_WKSTATUS_PENDING:
+		break;
+	case ECUM_WKSTATUS_VALIDATED:
+		break;
+	case ECUM_WKSTATUS_EXPIRED:
+		break;
+	default:
+		break;
+	}
 }
 

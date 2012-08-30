@@ -183,5 +183,9 @@ void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources);
 
 void EcuM_MainFunction(void);
 
+void EcuM_ClearWakeupEvent( EcuM_WakeupStatusType source );
+
+
+
 #endif /*ECUM_H_*/
 /** @} */

@@ -291,7 +291,7 @@ void EcuM_AL_DriverInitThree(const EcuM_ConfigType* ConfigPtr)
 #endif
 }
 
-void EcuM_OnEnterRUN(void)
+void EcuM_OnEnterRun(void)
 {
 
 }
