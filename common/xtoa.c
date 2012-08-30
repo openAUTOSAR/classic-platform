@@ -102,7 +102,8 @@ void ultoa(unsigned long value, char* str, int base) {
  * @param str   Pointer to the string to write to
  * @param base  The base
  */
-void itoa(int value, char* str, int base) {
+char * itoa(int value, char* str, int base) {
 	xtoa(value, str, base, (value < 0));
+	return str;
 }
 

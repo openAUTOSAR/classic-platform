@@ -20,7 +20,7 @@ void xtoa(unsigned long val, char* str, int base,int negative);
 // unsigned long to string
 void ultoa(unsigned long value, char* str, int base);
 // int to string
-void itoa(int value, char* str, int base);
+char * itoa(int value, char* str, int base);
 
 
 #endif /* XTOA_H_ */
