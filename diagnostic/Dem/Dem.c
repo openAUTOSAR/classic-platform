@@ -103,6 +103,10 @@
 /*
  * Local types
  */
+#if !defined(USE_DCM)
+typedef uint8 Dcm_NegativeResponseCodeType;
+#define DCM_E_POSITIVERESPONSE ((Dcm_NegativeResponseCodeType)0x00)
+#endif
 
 // DtcFilterType
 typedef struct {
