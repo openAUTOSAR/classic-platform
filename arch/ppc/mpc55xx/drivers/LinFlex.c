@@ -167,7 +167,7 @@ static void LinInterruptRxB(){LinInterruptRx(LIN_CTRL_B);}
 static void LinInterruptTxB(){LinInterruptTx(LIN_CTRL_B);}
 static void LinInterruptErrB(){LinInterruptErr(LIN_CTRL_B);}
 
-#if defined (CFG_MPC5604B)
+#if defined (CFG_MPC560XB)
 static void LinInterruptRxC(){LinInterruptRx(LIN_CTRL_C);}
 static void LinInterruptTxC(){LinInterruptTx(LIN_CTRL_C);}
 static void LinInterruptErrC(){LinInterruptErr(LIN_CTRL_C);}
@@ -231,7 +231,7 @@ void Lin_InitChannel(  uint8 Channel,   const Lin_ChannelConfigType* Config )
 		ISR_INSTALL_ISR2("LinIsrTxB", LinInterruptTxB, (IrqType)(LINFLEX_1_TXI),LIN_PRIO, 0);
 		ISR_INSTALL_ISR2("LinIsrErrB", LinInterruptErrB, (IrqType)(LINFLEX_1_ERR),LIN_PRIO, 0);
 		break;
-#if defined (CFG_MPC5604B)
+#if defined (CFG_MPC560XB)
 	case 2:
 		ISR_INSTALL_ISR2("LinIsrRxC", LinInterruptRxC, (IrqType)(LINFLEX_2_RXI),LIN_PRIO, 0);
 		ISR_INSTALL_ISR2("LinIsrTxC", LinInterruptTxC, (IrqType)(LINFLEX_2_TXI),LIN_PRIO, 0);

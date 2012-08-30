@@ -172,6 +172,11 @@ const cpu_info_t cpu_info_list[] = {
     	.name = "MPC5604B",
     	.pvr = CORE_PVR_E200Z0H,
     },
+#elif defined(CFG_MPC5606B)
+    {
+    	.name = "MPC5606B",
+    	.pvr = CORE_PVR_E200Z0H,
+    },
 #elif defined(CFG_MPC5606S)
     {
     	.name = "MPC5606S",
@@ -212,6 +217,11 @@ const core_info_t core_info_list[] = {
 #elif defined(CFG_MPC5604B)
     {
     	.name = "MPC5604B",
+    	.pvr = CORE_PVR_E200Z0H,
+    },
+#elif defined(CFG_MPC5606B)
+    {
+    	.name = "MPC5606B",
     	.pvr = CORE_PVR_E200Z0H,
     },
 #elif defined(CFG_MPC5606S)
@@ -427,7 +437,7 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     FMPLL.ESYNCR2.B.ERFD    = clockSettingsPtr->Pll3;
     // Connect SYSCLK to FMPLL
     SIU.SYSCLK.B.SYSCLKSEL = SYSCLOCK_SELECT_PLL;
-#elif defined(CFG_MPC5604B)
+#elif defined(CFG_MPC5604B) || defined(CFG_MPC5606B)
     // Write pll parameters.
     CGM.FMPLL_CR.B.IDF = clockSettingsPtr->Pll1;
     CGM.FMPLL_CR.B.NDIV = clockSettingsPtr->Pll2;
@@ -448,6 +458,9 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     ME.PCTL[4].R = 0x01;  /* MPC56xxB/P/S DSPI0  */
     ME.PCTL[5].R = 0x01;  /* MPC56xxB/P/S DSPI1:  */
     ME.PCTL[32].R = 0x01; //ADC0 control
+#if defined(CFG_MPC5606B)
+    ME.PCTL[33].R = 0x01; //ADC1 control
+#endif
     ME.PCTL[23].R = 0x01; //DMAMUX control
     ME.PCTL[48].R = 0x01; /* MPC56xxB/P/S LINFlex  */
     ME.PCTL[49].R = 0x01; /* MPC56xxB/P/S LINFlex  */
@@ -463,8 +476,8 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     while(ME.GS.B.S_CURRENTMODE != 4) {}
 
     CGM.SC_DC[0].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
-    CGM.SC_DC[1].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
-    CGM.SC_DC[2].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
+    CGM.SC_DC[1].R = 0x80; /* MPC56xxB/S: Enable peri set 2 sysclk divided by 1 */
+    CGM.SC_DC[2].R = 0x80; /* MPC56xxB/S: Enable peri set 3 sysclk divided by 1 */
 
     SIU.PSMI[0].R = 0x01; /* CAN1RX on PCR43 */
     SIU.PSMI[6].R = 0x01; /* CS0/DSPI_0 on PCR15 */
@@ -505,8 +518,8 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     while(ME.GS.B.S_CURRENTMODE != 4) {}
 
     CGM.SC_DC[0].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
-    CGM.SC_DC[1].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
-    CGM.SC_DC[2].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
+    CGM.SC_DC[1].R = 0x80; /* MPC56xxB/S: Enable peri set 2 sysclk divided by 1 */
+    CGM.SC_DC[2].R = 0x80; /* MPC56xxB/S: Enable peri set 3 sysclk divided by 1 */
 
  #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
     // Partially following the steps in MPC5567 RM..
@@ -532,7 +545,7 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
 void Mcu_DistributePllClock(void)
 {
     VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_DISTRIBUTEPLLCLOCK_SERVICE_ID, MCU_E_UNINIT );
-#if defined(CFG_MPC5604B)
+#if defined(CFG_MPC560XB)
     VALIDATE( ( CGM.FMPLL_CR.B.S_LOCK == 1 ), MCU_DISTRIBUTEPLLCLOCK_SERVICE_ID, MCU_E_PLL_NOT_LOCKED );
 #elif defined(CFG_MPC5606S)
     VALIDATE( ( CGM.FMPLL[0].CR.B.S_LOCK == 1 ), MCU_DISTRIBUTEPLLCLOCK_SERVICE_ID, MCU_E_PLL_NOT_LOCKED );
@@ -552,7 +565,7 @@ Mcu_PllStatusType Mcu_GetPllStatus(void)
 
     if( !SIMULATOR() )
     {
-#if defined(CFG_MPC5604B)
+#if defined(CFG_MPC560XB)
     	if ( !CGM.FMPLL_CR.B.S_LOCK )
     	{
     		rv = MCU_PLL_UNLOCKED;
@@ -697,7 +710,7 @@ uint32_t McuE_GetSystemClock(void)
 	uint32_t eprediv = FMPLL.SYNCR.B.PREDIV;
 	uint32_t emfd = FMPLL.SYNCR.B.MFD;
 	uint32_t erfd = FMPLL.SYNCR.B.RFD;
-#elif defined(CFG_MPC5604B)
+#elif defined(CFG_MPC560XB)
     uint32_t eprediv = CGM.FMPLL_CR.B.IDF;
     uint32_t emfd = CGM.FMPLL_CR.B.NDIV;
     uint32_t erfd = CGM.FMPLL_CR.B.ODF;
@@ -830,7 +843,7 @@ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 #if defined(CFG_MPC560X)
 		case PERIPHERAL_CLOCK_LIN_A:
 		case PERIPHERAL_CLOCK_LIN_B:
-#if defined(CFG_MPC5604B)
+#if defined(CFG_MPC560XB)
 		case PERIPHERAL_CLOCK_LIN_C:
 		case PERIPHERAL_CLOCK_LIN_D:
 #endif

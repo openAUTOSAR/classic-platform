@@ -18,8 +18,6 @@
 
 #include "Adc.h"
 
-#define ADC_GROUP0		0
-
 typedef enum
 {
   ADC_UNINIT,

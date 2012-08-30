@@ -114,9 +114,9 @@ typedef enum
     PIT_INT1,               // 5606-60
     PIT_INT2,               // 5606-61
 
-    ADC_EOC_INT,            // 5606-62
-    ADC_ER_INT,             // 5606-63
-    ADC_WD_INT,             // 5606-64
+    ADC0_EOC_INT,            // 5606-62
+    ADC0_ER_INT,             // 5606-63
+    ADC0_WD_INT,             // 5606-64
 
     FLEXCAN_0_ESR_ERR_INT,  // 5606-65
     FLEXCAN_0_ESR_BOFF_INT, // 5606-66
@@ -140,9 +140,9 @@ typedef enum
     LINFLEX_0_TXI,          // 5606-80
     LINFLEX_0_ERR,          // 5606-81
 
-    RESERVED14,             // 5606-82
-    RESERVED15,             // 5606-83
-    RESERVED16,             // 5606-84
+    ADC1_EOC_INT,            // 5606-82
+    ADC1_ER_INT,             // 5606-83
+    ADC1_WD_INT,             // 5606-84
 
     FLEXCAN_1_ESR_ERR_INT,  // 5606-85
     FLEXCAN_1_ESR_BOFF_INT, // 5606-86
@@ -210,7 +210,7 @@ typedef enum
     RESERVED51,             // 5606-138
     RESERVED52,             // 5606-139
     RESERVED53,             // 5606-140
-#if defined (CFG_MPC5604B)
+#if defined (CFG_MPC560XB)
     EMIOS_0_GFR_F0_F1,      // 5606-141
     EMIOS_0_GFR_F2_F3,      // 5606-142
     EMIOS_0_GFR_F4_F5,      // 5606-143

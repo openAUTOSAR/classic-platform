@@ -273,7 +273,7 @@ void Adc_DeInit ()
     }
 
     /* Stop all DMA channels connected to EQADC. */
-    for (group = ADC_GROUP0; group < AdcConfigPtr->nbrOfGroups; group++)
+    for (group = 0; group < AdcConfigPtr->nbrOfGroups; group++)
     {
       Dma_StopChannel (AdcConfigPtr->groupConfigPtr [group].dmaCommandChannel);
       Dma_StopChannel (AdcConfigPtr->groupConfigPtr [group].dmaResultChannel);
@@ -306,7 +306,7 @@ void Adc_Init (const Adc_ConfigType *ConfigPtr)
     AdcConfigPtr = ConfigPtr;
 
     /* Start configuring the eQADC queues. */
-    for (group = ADC_GROUP0; group < ConfigPtr->nbrOfGroups; group++)
+    for (group = 0; group < ConfigPtr->nbrOfGroups; group++)
     {
       /* Loop through all channels and make the command queue. */
       for (channel = 0; channel < ConfigPtr->groupConfigPtr[group].numberOfChannels; channel++)
@@ -346,7 +346,7 @@ void Adc_Init (const Adc_ConfigType *ConfigPtr)
     Adc_EQADCCalibrationSequence ();
 
     /* Configure DMA channels. */
-    for (group = ADC_GROUP0; group < ConfigPtr->nbrOfGroups; group++)
+    for (group = 0; group < ConfigPtr->nbrOfGroups; group++)
     {
       /* ADC307. */
       ConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_IDLE;
@@ -356,7 +356,7 @@ void Adc_Init (const Adc_ConfigType *ConfigPtr)
     }
 
     /* Start DMA channels. */
-    for (group = ADC_GROUP0; group < ConfigPtr->nbrOfGroups; group++)
+    for (group = 0; group < ConfigPtr->nbrOfGroups; group++)
     {
       /* Invalidate queues. */
       EQADC.CFCR[group].B.CFINV = 1;
@@ -796,7 +796,7 @@ static void  Adc_ConfigureEQADC (const Adc_ConfigType *ConfigPtr)
   /* Disable time stamp timer. */
   Adc_WriteEQADCRegister (ADC0_TSCR, 0);
 
-  for (group = ADC_GROUP0; group < ConfigPtr->nbrOfGroups; group++)
+  for (group = 0; group < ConfigPtr->nbrOfGroups; group++)
   {
     /* Enable eDMA requests for commands and results. */
     EQADC.IDCR[group].B.CFFS = 1;
@@ -815,7 +815,7 @@ void Adc_ConfigureEQADCInterrupts (void)
 {
   Adc_GroupType group;
   ISR_INSTALL_ISR2( "Adc_Err", Adc_EQADCError, EQADC_FISR_OVER,     2, 0);
-  for (group = ADC_GROUP0; group < AdcConfigPtr->nbrOfGroups; group++)
+  for (group = 0; group < AdcConfigPtr->nbrOfGroups; group++)
   {
     /* Enable end of queue, queue overflow/underflow interrupts. Clear corresponding flags. */
     EQADC.FISR[group].B.RFOF = 1;

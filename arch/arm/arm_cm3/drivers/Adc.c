@@ -102,7 +102,7 @@ void Adc_Init (const Adc_ConfigType *ConfigPtr)
     ADC_InitStructure.ADC_NbrOfChannel = ConfigPtr->groupConfigPtr->numberOfChannels;
     ADC_Init(ADC1, &ADC_InitStructure);
 
-    for (group = ADC_GROUP0; group < ConfigPtr->nbrOfGroups; group++)
+    for (group = 0; group < ConfigPtr->nbrOfGroups; group++)
     {
       /* ADC307. */
       ConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_IDLE;
