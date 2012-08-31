@@ -33,8 +33,11 @@
 #include "arc.h"
 #endif
 
-#if defined(CFG_MPC560XB)
+#if defined(CFG_MPC5604B)
 	#define PWM_RUNTIME_CHANNEL_COUNT	56
+    #define CHANNELS_OK (Channel <= PWM_MAX_CHANNEL-1)
+#elif defined(CFG_MPC5606B)
+	#define PWM_RUNTIME_CHANNEL_COUNT	64
     #define CHANNELS_OK (Channel <= PWM_MAX_CHANNEL-1)
 #elif defined(CFG_MPC5606S)
 	#define PWM_RUNTIME_CHANNEL_COUNT	48

@@ -164,7 +164,9 @@
 
 #if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5668) || defined(CFG_MPC5567)
 #define SPI_CONTROLLER_TOTAL_CNT 		4
-#elif defined(CFG_MPC560XB)
+#elif defined(CFG_MPC5606B)
+#define SPI_CONTROLLER_TOTAL_CNT 		6
+#elif defined(CFG_MPC5604B)
 #define SPI_CONTROLLER_TOTAL_CNT 		3
 #elif defined(CFG_MPC560X)
 #define SPI_CONTROLLER_TOTAL_CNT 		2
@@ -175,6 +177,11 @@
 #define DSPI_B_ISR_EOQF DSPI_1_ISR_EOQF
 #if defined(CFG_MPC560XB)
 #define DSPI_C_ISR_EOQF DSPI_2_ISR_EOQF
+#endif
+#if defined(CFG_MPC5606B)
+#define DSPI_D_ISR_EOQF DSPI_3_ISR_EOQF
+#define DSPI_E_ISR_EOQF DSPI_4_ISR_EOQF
+#define DSPI_F_ISR_EOQF DSPI_5_ISR_EOQF
 #endif
 #endif
 
@@ -1033,6 +1040,17 @@ static void Spi_SetupCTAR(	Spi_HWUnitType unit,
 		perClock = PERIPHERAL_CLOCK_DSPI_D;
 		break;
 #endif
+#if (SPI_CONTROLLER_TOTAL_CNT>4)
+	case 4:
+		perClock = PERIPHERAL_CLOCK_DSPI_E;
+		break;
+#endif
+#if (SPI_CONTROLLER_TOTAL_CNT>5)
+	case 5:
+		perClock = PERIPHERAL_CLOCK_DSPI_F;
+		break;
+#endif
+
 	default:
 		assert(0);
 		break;
@@ -1249,6 +1267,16 @@ static void Spi_InitController(Spi_UnitType *uPtr ) {
 #if (SPI_CONTROLLER_TOTAL_CNT > 3)
 	case 3:
 	ISR_INSTALL_ISR2("SPI_D",Spi_Isr_D, DSPI_D_ISR_EOQF, 15, 0);
+	break;
+#endif
+#if (SPI_CONTROLLER_TOTAL_CNT > 4)
+	case 3:
+	ISR_INSTALL_ISR2("SPI_E",Spi_Isr_E, DSPI_E_ISR_EOQF, 15, 0);
+	break;
+#endif
+#if (SPI_CONTROLLER_TOTAL_CNT > 5)
+	case 3:
+	ISR_INSTALL_ISR2("SPI_F",Spi_Isr_F, DSPI_F_ISR_EOQF, 15, 0);
 	break;
 #endif
 	}

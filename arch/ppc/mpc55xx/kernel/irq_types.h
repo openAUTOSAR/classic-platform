@@ -261,9 +261,9 @@ typedef enum
     RESERVED61,             // 5606-184
     RESERVED62,             // 5606-185
     RESERVED63,             // 5606-186
-    RESERVED64,             // 5606-187
-    RESERVED65,             // 5606-188
-    RESERVED66,             // 5606-189
+    LINFLEX_4_RXI,          // 5606-187
+    LINFLEX_4_TXI,          // 5606-188
+    LINFLEX_4_ERR,          // 5606-189
     FLEXCAN_4_ESR_ERR_INT,  // 5606-190
     FLEXCAN_4_ESR_BOFF_INT, // 5606-191
 
@@ -275,9 +275,9 @@ typedef enum
 	FLEXCAN_4_BUF_12_15,    // 5606-196
 	FLEXCAN_4_BUF_16_31,    // 5606-197
 	FLEXCAN_4_BUF_32_63,    // 5606-198
-    RESERVED68,             // 5606-199
-    RESERVED69,             // 5606-200
-    RESERVED70,             // 5606-201
+    LINFLEX_5_RXI,          // 5606-199
+    LINFLEX_5_TXI,          // 5606-200
+    LINFLEX_5_ERR,          // 5606-201
     FLEXCAN_5_ESR_ERR_INT,  // 5606-202
     FLEXCAN_5_ESR_BOFF_INT, // 5606-203
 	RESERVED71,             // 5606-204
@@ -292,7 +292,24 @@ typedef enum
     RESERVED74,             // 5606-213
     RESERVED75,             // 5606-214
     RESERVED76,             // 5606-215
-    RESERVED77,             // 5606-216
+    LINFLEX_6_RXI,          // 5606-216
+    LINFLEX_6_TXI,          // 5606-217
+    LINFLEX_6_ERR,          // 5606-218
+    RESERVED77,             // 5606-219
+    RESERVED78,             // 5606-220
+    RESERVED79,             // 5606-221
+    RESERVED80,             // 5606-222
+    RESERVED81,             // 5606-223
+    LINFLEX_7_RXI,          // 5606-224
+    LINFLEX_7_TXI,          // 5606-225
+    LINFLEX_7_ERR,          // 5606-226
+    LINFLEX_8_RXI,          // 5606-227
+    LINFLEX_8_TXI,          // 5606-228
+    LINFLEX_8_ERR,          // 5606-229
+    LINFLEX_9_RXI,          // 5606-230
+    LINFLEX_9_TXI,          // 5606-231
+    LINFLEX_9_ERR,          // 5606-232
+
 #elif defined (CFG_MPC5606S)
     EMIOS_0_GFR_F8_F9,      // 5606-141
     EMIOS_0_GFR_F10_F11,    // 5606-142

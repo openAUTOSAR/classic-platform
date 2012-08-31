@@ -177,6 +177,24 @@ static void LinInterruptTxD(){LinInterruptTx(LIN_CTRL_D);}
 static void LinInterruptErrD(){LinInterruptErr(LIN_CTRL_D);}
 #endif
 
+#if defined (CFG_MPC5606B)
+static void LinInterruptRxE(){LinInterruptRx(LIN_CTRL_E);}
+static void LinInterruptTxE(){LinInterruptTx(LIN_CTRL_E);}
+static void LinInterruptErrE(){LinInterruptErr(LIN_CTRL_E);}
+
+static void LinInterruptRxF(){LinInterruptRx(LIN_CTRL_F);}
+static void LinInterruptTxF(){LinInterruptTx(LIN_CTRL_F);}
+static void LinInterruptErrF(){LinInterruptErr(LIN_CTRL_F);}
+
+static void LinInterruptRxG(){LinInterruptRx(LIN_CTRL_G);}
+static void LinInterruptTxG(){LinInterruptTx(LIN_CTRL_G);}
+static void LinInterruptErrG(){LinInterruptErr(LIN_CTRL_G);}
+
+static void LinInterruptRxH(){LinInterruptRx(LIN_CTRL_H);}
+static void LinInterruptTxH(){LinInterruptTx(LIN_CTRL_H);}
+static void LinInterruptErrH(){LinInterruptErr(LIN_CTRL_H);}
+#endif
+
 void Lin_Init( const Lin_ConfigType* Config )
 {
 	(void)Config;
@@ -243,6 +261,29 @@ void Lin_InitChannel(  uint8 Channel,   const Lin_ChannelConfigType* Config )
 		ISR_INSTALL_ISR2("LinIsrErrD", LinInterruptErrD, (IrqType)(LINFLEX_3_ERR),LIN_PRIO, 0);
 		break;
 #endif
+#if defined (CFG_MPC5606B)
+	case 4:
+		ISR_INSTALL_ISR2("LinIsrRxE", LinInterruptRxE, (IrqType)(LINFLEX_4_RXI),LIN_PRIO, 0);
+		ISR_INSTALL_ISR2("LinIsrTxE", LinInterruptTxE, (IrqType)(LINFLEX_4_TXI),LIN_PRIO, 0);
+		ISR_INSTALL_ISR2("LinIsrErrE", LinInterruptErrE, (IrqType)(LINFLEX_4_ERR),LIN_PRIO, 0);
+		break;
+	case 5:
+		ISR_INSTALL_ISR2("LinIsrRxF", LinInterruptRxF, (IrqType)(LINFLEX_5_RXI),LIN_PRIO, 0);
+		ISR_INSTALL_ISR2("LinIsrTxF", LinInterruptTxF, (IrqType)(LINFLEX_5_TXI),LIN_PRIO, 0);
+		ISR_INSTALL_ISR2("LinIsrErrF", LinInterruptErrF, (IrqType)(LINFLEX_5_ERR),LIN_PRIO, 0);
+		break;
+	case 6:
+		ISR_INSTALL_ISR2("LinIsrRxG", LinInterruptRxG, (IrqType)(LINFLEX_6_RXI),LIN_PRIO, 0);
+		ISR_INSTALL_ISR2("LinIsrTxG", LinInterruptTxG, (IrqType)(LINFLEX_6_TXI),LIN_PRIO, 0);
+		ISR_INSTALL_ISR2("LinIsrErrG", LinInterruptErrG, (IrqType)(LINFLEX_6_ERR),LIN_PRIO, 0);
+		break;
+	case 7:
+		ISR_INSTALL_ISR2("LinIsrRxH", LinInterruptRxH, (IrqType)(LINFLEX_7_RXI),LIN_PRIO, 0);
+		ISR_INSTALL_ISR2("LinIsrTxH", LinInterruptTxH, (IrqType)(LINFLEX_7_TXI),LIN_PRIO, 0);
+		ISR_INSTALL_ISR2("LinIsrErrH", LinInterruptErrH, (IrqType)(LINFLEX_7_ERR),LIN_PRIO, 0);
+		break;
+#endif
+
 	default:
 		break;
 	}
