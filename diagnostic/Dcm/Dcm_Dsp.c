@@ -2198,9 +2198,7 @@ static Dcm_NegativeResponseCodeType DspSavePeriodicData(uint16 didNr, uint32 per
 	if(responseCode == DCM_E_POSITIVERESPONSE)
 	{
 		dspPDidRef.dspPDid[PdidBufferNr].PeriodicDid = (uint8)didNr & DCM_DID_LOW_MASK;
-			/* REVIEW JB 2012-06-05: Why is TxCounter set to PdidBufferNr - it seems wrong. */
-		dspPDidRef.dspPDid[PdidBufferNr].PDidTxCounter = PdidBufferNr*3;
-
+		dspPDidRef.dspPDid[PdidBufferNr].PDidTxCounter = 0;
 		dspPDidRef.dspPDid[PdidBufferNr].PDidTxCounterNumber = periodicTransmitCounter;
 	}
 	return responseCode;

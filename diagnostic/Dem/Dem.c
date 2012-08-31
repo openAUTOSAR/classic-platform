@@ -2368,8 +2368,6 @@ void Dem_Init(void)
 			}
 		}
 
-		//initialize the current timestamp and update the timestamp in pre init
-		//initCurrentFreezeFrameTimeStamp(&FF_TimeStamp);
 
 		// Validate extended data records stored in primary memory
 		for (i = 0; i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM; i++) {
@@ -3327,7 +3325,7 @@ Dem_ReturnGetSizeOfFreezeFrameType Dem_GetSizeOfFreezeFrame(uint32  dtc,Dem_DTCK
 
 }
 
-
+#define DEM_UNIT_TEST
 #ifdef DEM_UNIT_TEST
 void getFFDataPreInit(FreezeFrameRecType **buf)
 {
@@ -3365,34 +3363,3 @@ void getPriMemAgingBufPtr(HealingRecType **buf)
 /***********************************
  * OBD-specific Interfaces (8.3.6) *
  ***********************************/
-#define DEM_UNIT_TEST
-#ifdef DEM_UNIT_TEST
-void getFFDataPreInit(FreezeFrameRecType **buf)
-{
-	*buf = &preInitFreezeFrameBuffer[0];
-	return;
-}
-void getPriMemFFBufPtr(FreezeFrameRecType **buf)
-{
-	*buf = &priMemFreezeFrameBuffer[0];
-	return;
-}
-
-uint32 getCurTimeStamp()
-{
-	return FF_TimeStamp;
-}
-
-void getPriMemEventRecBufPtr(EventStatusRecType **buf)
-{
-	*buf = &eventStatusBuffer[0];
-	return;
-}
-
-void getPriMemAgingBufPtr(HealingRecType **buf)
-{
-	*buf = &priMemAgingBuffer[0];
-	return;
-}
-#endif
-
