@@ -201,10 +201,11 @@ void DspPeriodicDIDMainFunction()
 		else
 		{
 			if( sentResponseThisLoop  == FALSE ) {
-				dspPDidRef.dspPDid[i].PDidTxCounter = 0;
-				/*AutoSar  DCM  8.10.5 */
-				DslInternal_ResponseOnOneDataByPeriodicId(dspPDidRef.dspPDid[i].PeriodicDid);
-				sentResponseThisLoop = TRUE;
+				if (E_OK == DslInternal_ResponseOnOneDataByPeriodicId(dspPDidRef.dspPDid[i].PeriodicDid)){
+					dspPDidRef.dspPDid[i].PDidTxCounter = 0;
+					/*AutoSar  DCM  8.10.5 */
+					sentResponseThisLoop = TRUE;
+				}
 			}
 			else {
 				/* Don't do anything - PDid will be sent next loop */
@@ -688,11 +689,97 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x03(const PduInfoType *pd
 //lint -e{715, 838, 818}		Symbol not referenced, responseCode not used, txData should be const
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x04(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
+	// 1. Only consider Negative Response 0x10
+
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+	Dem_DTCKindType	DtcType = 0;
+	Dem_DTCOriginType  DtcOrigin = 0;
+	uint32 DtcNumber = 0;
+	uint8 RecordNumber = 0;
+	uint8 SizeOfTxBuf = pduTxData->SduLength;
+	uint8 AvailableBufSize = 0;
+	uint8 RecNumOffset = 0;
+	uint16 index = 0;
+	uint16 EventIndex =0;
+	uint16 FFIdNumber = 0;
+	Dem_ReturnGetFreezeFrameDataByDTCType GetFFbyDtcReturnCode = DEM_GET_FFDATABYDTC_OK;
+	Dem_ReturnGetStatusOfDTCType GetStatusOfDtc = DEM_STATUS_OK;
+	Dem_EventStatusExtendedType DtcStatus = 0;
+	Dem_EventParameterType *pEventParaTemp = NULL;
 
-	// TODO: Not supported yet
-	responseCode = DCM_E_REQUESTOUTOFRANGE;
+	// Now let's assume DTC has 3 bytes.
+	DtcNumber = (((uint32)pduRxData->SduDataPtr[2])<<16) +
+				(((uint32)pduRxData->SduDataPtr[3])<<8) +
+				((uint32)pduRxData->SduDataPtr[4]);
 
+	RecordNumber = pduRxData->SduDataPtr[5];
+
+	for (EventIndex = 0; DEM_Config.ConfigSet->EventParameter[EventIndex].Arc_EOL != TRUE; EventIndex++){
+		// search each event linked to this DTC
+		if (DEM_Config.ConfigSet->EventParameter[EventIndex].DTCClassRef->DTC == DtcNumber){
+			pEventParaTemp = (Dem_EventParameterType *)(&DEM_Config.ConfigSet->EventParameter[EventIndex]);
+		}
+		else {
+			pEventParaTemp = NULL;
+		}
+
+		if (pEventParaTemp != NULL) {
+			DtcType = pEventParaTemp->DTCClassRef->DTCKind;
+			//DtcOrigin = pEventParaTemp->EventClass->EventDestination[?];
+			// now use DEM_DTC_ORIGIN_PRIMARY_MEMORY as default.
+			DtcOrigin = DEM_DTC_ORIGIN_PRIMARY_MEMORY;
+			pduTxData->SduDataPtr[6 + RecNumOffset] = RecordNumber;
+
+			// get Dids' number
+			for (index = 0; pEventParaTemp->FreezeFrameClassRef[index] != NULL; index++){
+				if (pEventParaTemp->FreezeFrameClassRef[index]->FFRecordNumber == RecordNumber) {
+					// Calculate the Number of Dids in FF
+					for (FFIdNumber = 0; pEventParaTemp->FreezeFrameClassRef[index]->FFIdClassRef[FFIdNumber].Arc_EOL != FALSE; FFIdNumber++) {
+						;
+					}
+				}
+			}
+			pduTxData->SduDataPtr[7 + RecNumOffset] = FFIdNumber;
+
+			// get FF data
+			AvailableBufSize = SizeOfTxBuf - 7 - RecNumOffset;
+			GetFFbyDtcReturnCode = Dem_GetFreezeFrameDataByDTC(DtcNumber, DtcType, DtcOrigin,
+					RecordNumber, &pduTxData->SduDataPtr[8 + RecNumOffset], &AvailableBufSize);
+			if (GetFFbyDtcReturnCode != DEM_GET_FFDATABYDTC_OK){
+				break;
+			}
+			RecNumOffset = RecNumOffset + AvailableBufSize;
+			pduTxData->SduLength = 8 + RecNumOffset;
+		}
+	}
+
+	// Negative response
+	switch (GetFFbyDtcReturnCode) {
+		case DEM_GET_FFDATABYDTC_OK:
+			break;
+		default:
+			responseCode = DCM_E_GENERALREJECT;
+			return responseCode;
+	}
+
+	GetStatusOfDtc = Dem_GetStatusOfDTC(DtcNumber, DtcType, DtcOrigin, &DtcStatus); /** @req DEM212 */
+	switch (GetStatusOfDtc) {
+		case DEM_STATUS_OK:
+			break;
+		default:
+			responseCode = DCM_E_GENERALREJECT;
+			return responseCode;
+	}
+
+
+	// Positive response
+	// See ISO 14229(2006) Table 254
+	pduTxData->SduDataPtr[0] = 0x59;	// positive response
+	pduTxData->SduDataPtr[1] = 0x04;	// subid
+	pduTxData->SduDataPtr[2] = pduRxData->SduDataPtr[2];	// DTC
+	pduTxData->SduDataPtr[3] = pduRxData->SduDataPtr[3];
+	pduTxData->SduDataPtr[4] = pduRxData->SduDataPtr[4];
+	pduTxData->SduDataPtr[5] = (uint8)DtcStatus;	//status
 	return responseCode;
 }
 
@@ -2111,7 +2198,9 @@ static Dcm_NegativeResponseCodeType DspSavePeriodicData(uint16 didNr, uint32 per
 	if(responseCode == DCM_E_POSITIVERESPONSE)
 	{
 		dspPDidRef.dspPDid[PdidBufferNr].PeriodicDid = (uint8)didNr & DCM_DID_LOW_MASK;
-		dspPDidRef.dspPDid[PdidBufferNr].PDidTxCounter = 0;
+			/* REVIEW JB 2012-06-05: Why is TxCounter set to PdidBufferNr - it seems wrong. */
+		dspPDidRef.dspPDid[PdidBufferNr].PDidTxCounter = PdidBufferNr*3;
+
 		dspPDidRef.dspPDid[PdidBufferNr].PDidTxCounterNumber = periodicTransmitCounter;
 	}
 	return responseCode;
@@ -2180,7 +2269,7 @@ void DspReadDataByPeriodicIdentifier(const PduInfoType *pduRxData,PduInfoType *p
 				responseCode = DCM_E_REQUESTOUTOFRANGE;
 				break;
 		}
-		if(pduRxData->SduDataPtr[1] != DCM_PERIODICTRANSMIT_STOPSENDING_MODE)
+		if((pduRxData->SduDataPtr[1] != DCM_PERIODICTRANSMIT_STOPSENDING_MODE) && responseCode == DCM_E_POSITIVERESPONSE)
 		{
 			PdidNumber = pduRxData->SduLength - 2;
 			if(1 == PdidNumber)
@@ -2225,7 +2314,7 @@ void DspReadDataByPeriodicIdentifier(const PduInfoType *pduRxData,PduInfoType *p
 					pduTxData->SduLength = 1;
 				}
 			}
-			else if((PdidNumber + PdidBufferNr) <= DCM_LIMITNUMBER_PERIODDATA)	/*UDS_REQ_0x2A_6*/
+			else if(((PdidNumber + PdidBufferNr) <= DCM_LIMITNUMBER_PERIODDATA) && (responseCode == DCM_E_POSITIVERESPONSE))	/*UDS_REQ_0x2A_6*/
 			{	
 				for(i = 0;(i < PdidNumber)&&(responseCode == DCM_E_POSITIVERESPONSE);i++)
 				{
@@ -2524,7 +2613,7 @@ static Dcm_NegativeResponseCodeType dynamicallyDefineDataIdentifierbyAddress(uin
 static Dcm_NegativeResponseCodeType CleardynamicallyDid(uint16 DDIdentifier,const PduInfoType *pduRxData, PduInfoType * pduTxData)
 {
 	/*UDS_REQ_0x2C_5*/
-	uint8 i;
+	sint8 i, j;
 	uint8 ClearCount;
 	uint8 position;
 	uint8 ClearNum = 0;
@@ -2543,29 +2632,32 @@ static Dcm_NegativeResponseCodeType CleardynamicallyDid(uint16 DDIdentifier,cons
 			}
 			else
 			{
-				for(i = 1;i < DCM_MAX_DDD_NUMBER;i++)
-				{
-					if(0 == dspDDD[i].DynamicallyDid)
-					{
-						ClearNum = i - 1;
-						DDid->DynamicallyDid = dspDDD[ClearNum].DynamicallyDid;
-						dspDDD[ClearNum].DynamicallyDid = 0;
-						for(ClearCount = 0;ClearCount < DCM_MAX_DDDSOURCE_NUMBER;ClearCount++)
-						{
-							/*DCM647*/
-							DDid->DDDSource[ClearCount].DDDTpyeID = dspDDD[ClearNum].DDDSource[ClearCount].DDDTpyeID;
-							DDid->DDDSource[ClearCount].formatOrPosition = dspDDD[ClearNum].DDDSource[ClearCount].formatOrPosition;
-							DDid->DDDSource[ClearCount].SourceAddressOrDid = dspDDD[ClearNum].DDDSource[ClearCount].SourceAddressOrDid;
-							DDid->DDDSource[ClearCount].Size = dspDDD[ClearNum].DDDSource[ClearCount].Size;
-							dspDDD[ClearNum].DDDSource[ClearCount].DDDTpyeID = 0;
-							dspDDD[ClearNum].DDDSource[ClearCount].formatOrPosition = 0;
-							dspDDD[ClearNum].DDDSource[ClearCount].SourceAddressOrDid = 0;
-							dspDDD[ClearNum].DDDSource[ClearCount].Size = 0;
-						}	
-					}	
+				memset(DDid, 0, sizeof(Dcm_DspDDDType));
+				for(i = DCM_MAX_DDD_NUMBER - 1;i >= 0 ;i--) {	/* find the first DDDid from bottom */
+					if (0 != dspDDD[i].DynamicallyDid) {
+						for (j = 0; j <DCM_MAX_DDD_NUMBER; j++) { /* find the first empty slot from top */
+							if (j >= i) {
+								/* Rearrange finished */
+								pduTxData->SduDataPtr[1] = DCM_DDD_SUBFUNCTION_CLEAR;
+								pduTxData->SduLength = 2;
+								return responseCode;
+							}
+							else if (0 == dspDDD[j].DynamicallyDid) {	/* find, exchange */
+								memcpy(&dspDDD[j], &dspDDD[i], sizeof(Dcm_DspDDDType));
+								memset(&dspDDD[i], 0, sizeof(Dcm_DspDDDType));
+							}
+						}
+					}
 				}
 			}
-		}		
+		}
+		else{
+			responseCode = DCM_E_REQUESTOUTOFRANGE;	/* DDDid not found */
+		}
+	}
+	else if (pduRxData->SduDataPtr[1] == 0x03 && pduRxData->SduLength == 2){
+		/* clear all */
+		memset(dspDDD, 0, (sizeof(Dcm_DspDDDType) * DCM_MAX_DDD_NUMBER));
 	}
 	else
 	{

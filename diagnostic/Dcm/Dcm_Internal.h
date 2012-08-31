@@ -149,7 +149,7 @@ void DslSetSesCtrlType(Dcm_SesCtrlType sesCtrl);
 Std_ReturnType DslGetSesCtrlType(Dcm_SesCtrlType *sesCtrlType);
 BufReq_ReturnType DslProvideTxBuffer(PduIdType dcmTxPduId, const PduInfoType **pduInfoPtr, PduLengthType length);
 void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result);
-void DslInternal_ResponseOnOneDataByPeriodicId(uint8 PericodID);
+Std_ReturnType DslInternal_ResponseOnOneDataByPeriodicId(uint8 PericodID);
 void DslResetSessionTimeoutTimer(void);
 
 
