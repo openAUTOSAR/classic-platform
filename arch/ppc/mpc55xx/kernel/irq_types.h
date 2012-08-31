@@ -256,11 +256,11 @@ typedef enum
 	FLEXCAN_3_BUF_12_15,    // 5606-179
 	FLEXCAN_3_BUF_16_31,    // 5606-180
 	FLEXCAN_3_BUF_32_63,    // 5606-181
-    RESERVED59,             // 5606-182
-    RESERVED60,             // 5606-183
-    RESERVED61,             // 5606-184
-    RESERVED62,             // 5606-185
-    RESERVED63,             // 5606-186
+    DSPI_2_ISR_TFUF_RFOF,   // 5606-182
+    DSPI_2_ISR_EOQF,        // 5606-183
+    DSPI_2_ISR_TFFF,        // 5606-184
+    DSPI_2_ISR_TCF,         // 5606-185
+    DSPI_2_ISR_RFDF,        // 5606-186
     LINFLEX_4_RXI,          // 5606-187
     LINFLEX_4_TXI,          // 5606-188
     LINFLEX_4_ERR,          // 5606-189
@@ -287,19 +287,19 @@ typedef enum
 	FLEXCAN_5_BUF_12_15,    // 5606-208
 	FLEXCAN_5_BUF_16_31,    // 5606-209
 	FLEXCAN_5_BUF_32_63,    // 5606-210
-    RESERVED72,             // 5606-211
-    RESERVED73,             // 5606-212
-    RESERVED74,             // 5606-213
-    RESERVED75,             // 5606-214
-    RESERVED76,             // 5606-215
+    DSPI_4_ISR_TFUF_RFOF,   // 5606-211
+    DSPI_4_ISR_EOQF,        // 5606-212
+    DSPI_4_ISR_TFFF,        // 5606-213
+    DSPI_4_ISR_TCF,         // 5606-214
+    DSPI_4_ISR_RFDF,        // 5606-215
     LINFLEX_6_RXI,          // 5606-216
     LINFLEX_6_TXI,          // 5606-217
     LINFLEX_6_ERR,          // 5606-218
-    RESERVED77,             // 5606-219
-    RESERVED78,             // 5606-220
-    RESERVED79,             // 5606-221
-    RESERVED80,             // 5606-222
-    RESERVED81,             // 5606-223
+    DSPI_5_ISR_TFUF_RFOF,   // 5606-219
+    DSPI_5_ISR_EOQF,        // 5606-220
+    DSPI_5_ISR_TFFF,        // 5606-221
+    DSPI_5_ISR_TCF,         // 5606-222
+    DSPI_5_ISR_RFDF,        // 5606-223
     LINFLEX_7_RXI,          // 5606-224
     LINFLEX_7_TXI,          // 5606-225
     LINFLEX_7_ERR,          // 5606-226
