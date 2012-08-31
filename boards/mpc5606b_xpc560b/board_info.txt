@@ -1,19 +1,11 @@
 
 
 
-The Freescale MPC5606S is an PowerPC process with a e200Z0h core, VLE only  
+The Freescale MPC5606B is an PowerPC process with a e200Z0h core, VLE only  
 	
 Datasheets:
-  Eval board:
-      http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=XPC560SKIT  
-      http://cache.freescale.com/files/microcontrollers/hardware_tools/schematics/XPC560SADPT176SSCH.pdf?fpsp=1
-      http://cache.freescale.com/files/32bit/doc/user_guide/XPC560SEVBUM.pdf?fpsp=1
-     Mainboard schematic
-      http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC560xB_EVB&parentCode=XPC56xxMB&fpsp=1&nodeId=01624606C1427E
-     
-  MPC560x
-    http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC560xS&fsrch=1&sr=1
-
+	See http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC560xB&webpageId=121120349534072559427E&nodeId=01624606C1427E&fromPage=tax
+ 
 Board:
   8Mhz external crystal
 
@@ -21,19 +13,17 @@ Supported compilers:
   Code Warrior
  
 Info:	
-  MPC5606S
+  MPC5606B
   CPU:		 e200z0h (VLE only)
   Freq:		 64 Mhz
   Flash: 	 1.0 MB, primary
              64K, data flash
-  RAM:       48K, ECC
-             160K, Graphics RAM (not ECC)
+  RAM:       80K, ECC RAM
   
 Memory Map:
  0x0000_0000 -> 0x000f_ffff   Flash
  0x0080_0000 -> 0x0080_ffff   Data Flash
- 0x4000_0000 -> 0x4000_bfff   SRAM
- 0x6000_0000 -> 0x6002_7fff   Graphics SRAM
+ 0x4000_0000 -> 0x4001_3fff   SRAM
  
  
 

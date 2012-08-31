@@ -256,11 +256,11 @@ typedef enum
 	FLEXCAN_3_BUF_12_15,    // 5606-179
 	FLEXCAN_3_BUF_16_31,    // 5606-180
 	FLEXCAN_3_BUF_32_63,    // 5606-181
-    DSPI_2_ISR_TFUF_RFOF,   // 5606-182
-    DSPI_2_ISR_EOQF,        // 5606-183
-    DSPI_2_ISR_TFFF,        // 5606-184
-    DSPI_2_ISR_TCF,         // 5606-185
-    DSPI_2_ISR_RFDF,        // 5606-186
+    DSPI_3_ISR_TFUF_RFOF,   // 5606-182
+    DSPI_3_ISR_EOQF,        // 5606-183
+    DSPI_3_ISR_TFFF,        // 5606-184
+    DSPI_3_ISR_TCF,         // 5606-185
+    DSPI_3_ISR_RFDF,        // 5606-186
     LINFLEX_4_RXI,          // 5606-187
     LINFLEX_4_TXI,          // 5606-188
     LINFLEX_4_ERR,          // 5606-189
