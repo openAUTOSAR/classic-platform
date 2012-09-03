@@ -122,6 +122,11 @@ ifndef _BOARD_COMMON_MK
 include $(ROOTDIR)/boards/board_common.mk
 endif
 
+# Misc tools
+ifneq ($(CFG_BOOT),)
+include $(ROOTDIR)/boards/$(BOARDDIR)/boot_info.mk
+include $(ROOTDIR)/scripts/bootloader_image.mk
+endif  
 
 ##### For backwards compatability with older project makefiles:
 
