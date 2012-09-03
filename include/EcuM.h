@@ -80,8 +80,8 @@
 #define ECUM_AR_MINOR_VERSION	2
 #define ECUM_AR_PATCH_VERSION	2
 
-#include "EcuM_Types.h"
 #include "EcuM_Cfg.h"
+#include "EcuM_Types.h"
 #include "EcuM_Cbk.h"
 
 #if defined(USE_COM)
@@ -91,7 +91,6 @@
 #if defined(USE_COMM)
 #include "ComM.h"
 #endif
-
 
 /** @name Error Codes */
 //@{
@@ -168,7 +167,7 @@ Std_ReturnType EcuM_GetShutdownTarget(EcuM_StateType* shutdownTarget, uint8* sle
 Std_ReturnType EcuM_GetLastShutdownTarget(EcuM_StateType* shutdownTarget, uint8* sleepMode);
 
 EcuM_WakeupSourceType EcuM_GetPendingWakeupEvents(void);
-void EcuM_ClearWakeupEvent(EcuM_WakeupSourceType sources);
+void EcuM_ClearWakeupEvent(EcuM_WakeupSourceType source );
 EcuM_WakeupSourceType EcuM_GetValidatedWakeupEvents(void);
 EcuM_WakeupSourceType EcuM_GetExpiredWakeupEvents(void);
 EcuM_WakeupStatusType EcuM_GetStatusOfWakeupSource(EcuM_WakeupSourceType sources);
@@ -182,9 +181,6 @@ Std_ReturnType EcuM_GetBootTarget(EcuM_BootTargetType* target);
 void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources);
 
 void EcuM_MainFunction(void);
-
-void EcuM_ClearWakeupEvent( EcuM_WakeupStatusType source );
-
 
 
 #endif /*ECUM_H_*/

@@ -421,9 +421,9 @@ Std_ReturnType EcuM_ReleasePOST_RUN(EcuM_UserType user)
 }
 
 /*
- * Don't yet understand the use
+ * TODO: Don't yet understand the use
  */
-void EcuM_ClearWakeupEvent( EcuM_WakeupStatusType source )
+void EcuM_ClearWakeupEvent( EcuM_WakeupSourceType source )
 {
 	switch(source) {
 	case ECUM_WKSTATUS_NONE:
@@ -438,5 +438,16 @@ void EcuM_ClearWakeupEvent( EcuM_WakeupStatusType source )
 	default:
 		break;
 	}
+}
+
+/**
+ * TODO:
+ * @return
+ */
+EcuM_WakeupSourceType EcuM_GetPendingWakeupEvents( void ) {
+
+	// TODO:
+	return ECUM_WKSOURCE_INTERNAL_RESET;
+
 }
 

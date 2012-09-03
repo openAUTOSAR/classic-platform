@@ -1,0 +1,120 @@
+#define _ASSEMBLER_
+#include "asm_ppc.h"
+
+
+#if defined(__CWCC__) && defined(CFG_VLE)
+.section .text_vle,text_vle
+#elif defined(__DCC__)
+	// Must be indented (diab)
+	.section .text_vle,x
+#elif defined(__GNUC__)
+.section .text
+#endif
+
+
+#define CRP_RECPTR 		0xfffe0058
+
+	.global McuE_EnterLowPower
+	
+McuE_EnterLowPower:
+	subi	r1, r1, 0x94	// Allocate space on stack 0x94 = 148 r2--r31 + 7 SPRs
+	stmw	r2, 0(r1) 		// Save registers r2-r31 to stack
+	mfSRR1	r25
+	mfSRR0	r26
+	mfLR	r27
+	mfmsr	r28
+	mfCR	r29
+	mfXER	r30
+	mfCTR	r31
+	stmw	r25, 0x78(r1)	#-- Store SPR data to stack
+	
+	LOAD_ADDR_32(r4,CRP_RECPTR)
+	stw		r1,0x0(r4)	//  Save stack pointer to CRP to be preserved during LPM
+	.long	0x7C00007C	//  Wait instruction
+	
+	
+	blr
+
+
+/*
+ * Low Power Vector...needs to be on 4K + 0xffc
+ * We only have 1 instruction before we are outside TLB0 so just jump
+ */
+#if defined(__GNUC__)	
+.section ".lowpower_vector","ax"
+#elif defined(__CWCC__)
+#if defined(CFG_VLE)
+.section .lowpower_vector,text_vle
+#else
+.section .lowpower_vector,4,"rw"
+#endif
+#elif defined(__DCC__)
+	.section .text_vle,x
+#endif
+
+	.global McuE_LowPowerVector
+
+McuE_LowPowerVector:
+	b	McuE_LowPowerRecoverFlash
+	
+
+#if defined(__GNUC__)	
+.section ".lowpower_text","ax"
+#elif defined(__CWCC__)
+#if defined(CFG_VLE)
+.section .lowpower_text,text_vle
+#else
+.section .lowpower_text,4,"rw"
+#endif
+#elif defined(__DCC__)
+	.section .text_vle,x
+#endif
+	.global McuE_LowPowerRecoverFlash
+
+/*
+ * When we come back here only TLB0 is setup.
+ * - Map up the entire flash 
+ */	
+McuE_LowPowerRecoverFlash:
+	LOAD_ADDR_32(5,0x10030000)
+    mtspr SPR_MAS0,r5     
+    LOAD_ADDR_32(5,0xC0000500)
+    mtspr SPR_MAS1,r5     
+    LOAD_ADDR_32(5,0x40000008)
+    mtspr SPR_MAS2,r5     
+    LOAD_ADDR_32(5,0x4000003F)
+    mtspr SPR_MAS3,r5
+    tlbwe
+
+    LOAD_ADDR_32(r3,0xfffe8600+52)
+	stb		1,0(r3)	
+    
+    // Release PAD keepers
+    LOAD_ADDR_32(r3,0xfffec060)
+    LOAD_ADDR_32(r4,0x1000)
+    stw	 r4,0(r3)
+	    
+apa:    
+    b 	apa
+    
+/* Recover the stack */
+    lis	r4,0xFFFE
+	ori	r4,r4,0xC058	#-- CRP.RECPRTR address
+	lwz	r1,0x0(r4)	#-- Restore stack pointer from CRP
+	lmw	r25,0x78(r1)	#-- Load SPR values back into GPRs
+	mtSRR1	r25
+	mtSRR0	r26
+	mtLR	r27
+	mtmsr	r28
+	mtCR	r29
+	mtXER	r30
+	mtCTR	r31		#-- Load SPRs with GPR values
+	lmw	r2, 0(r1)	#-- Restore GPRs from stack
+	addi	r1,r1,0x94	#-- Deallocate space on stack
+	blr			#-- Branch back to calling function
+    
+    /* branch back to Mcu_SetMode().. */
+    blr
+ 
+
+

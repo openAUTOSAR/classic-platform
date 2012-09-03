@@ -33,6 +33,8 @@ static uint32 internal_data_go_off_one_state_timeout = 0;
 static NvM_RequestResultType writeAllResult;
 #endif
 
+static uint32 internal_data_go_sleep_state_timeout = 0;
+
 #ifdef CFG_ECUM_USE_SERVICE_COMPONENT
 /** @req EcuM2749 */
 static Rte_ModeType_EcuM_Mode currentMode;
@@ -132,22 +134,81 @@ void EcuM_enter_run_mode(void){
 
 
 /**
- * GO SLEEP state ( in state ECUM_STATE_GO_SLEEP)
+ * Enter GO SLEEP state ( soon in state ECUM_STATE_GO_SLEEP)
  */
 static inline void enter_go_sleep_mode(void){
 	EcuM_WakeupSourceType wakeupSource;
 	set_current_state(ECUM_STATE_GO_SLEEP);
+
 	EcuM_OnGoSleep();
 
 #if defined(USE_NVM)
 	NvM_WriteAll();
+
+	/* Start timer */
+	internal_data_go_sleep_state_timeout = internal_data.config->EcuMNvramWriteAllTimeout / ECUM_MAIN_FUNCTION_PERIOD;
+
 	wakeupSource = EcuM_GetPendingWakeupEvents();
 #else
 	wakeupSource = EcuM_GetPendingWakeupEvents();
 #endif
+}
+
+/**
+  In GO SLEEP state (in state ECUM_STATE_GO_SLEEP)
+ */
+static void in_state_goSleep( void ) {
+
+	/* We only wait for NvM_WriteAll() for so long */
+	if (internal_data_go_sleep_state_timeout){
+		internal_data_go_sleep_state_timeout--;
+	}
+
+	if( (internal_data_go_sleep_state_timeout == 0) ) {
+		/*
+		 * We should go to sleep , enable source that should wake us
+		 * */
+		uint32 cMask;
+		uint8  source;
+		const EcuM_SleepModeType *sleepModePtr;
+
+		/* Get the current sleep mode */
+
+		sleepModePtr = &internal_data.config->EcuMSleepModeConfig[internal_data.sleep_mode];
+
+		cMask = sleepModePtr->EcuMWakeupSourceMask;
+
+		/* Loop over the WKSOURCE for this sleep mode */
+		for (; cMask; cMask &= ~(1ul << source)) {
+			source = ilog2(cMask);
+			/* @req 3.1.5/ECUM2389 */
+			EcuM_EnableWakeupSources( 1<< source );
+
+#if defined(WDGM)
+			WdgM_SetMode(sleepModePtr->EcuMSleepModeWdgMMode);
+#endif
+
+			/* Let no one else run */
+			GetResource(RES_SCHEDULER);
+		}
+
+	} else if( EcuM_GetPendingWakeupEvents() != 0 ) {
+		/* We have pending wakeup events, need to startup again */
+#if defined(USE_NVM)
+		NvM_CancelWriteAll();
+#endif
+	}
+}
 
 
+/**
+ * In "Sleep Sequence I"  (in state ECUM_STATE_SLEEP)
+ */
+static void in_state_sleep ( void ) {
+	const EcuM_SleepModeType *sleepModePtr;
+	sleepModePtr = &internal_data.config->EcuMSleepModeConfig[internal_data.sleep_mode];
 
+	Mcu_SetMode(sleepModePtr->EcuMSleepModeMcuMode);
 }
 
 static inline void enter_go_off_one_mode(void){
@@ -295,8 +356,12 @@ void EcuM_MainFunction(void){
 			in_state_goOffOne();
 			break;
 		case ECUM_STATE_GO_SLEEP:
-			// TODO: Fill out
+			in_state_goSleep();
 			break;
+		case ECUM_STATE_SLEEP:
+			in_state_sleep();
+			break;
+
 		default:
 			//TODO: Report error.
 			break;

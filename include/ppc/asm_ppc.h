@@ -60,6 +60,14 @@
 #define SPR_SPEFSCR		512
 #define SPR_MCSR		572
 
+#define SPR_MAS0      624
+#define SPR_MAS1      625
+#define SPR_MAS2      626
+#define SPR_MAS3      627
+#define SPR_MAS4      628
+#define SPR_MAS6      630
+
+
 #define ESR_PTR		(1<<(38-32))
 
 #define SPR_XER		1
