@@ -114,7 +114,7 @@ obj-$(USE_NVM) += Crc_32.o
 obj-$(USE_NVM) += Crc_16.o
 
 # SchM
-inc-$(USE_SCHM) += $(ROOTDIR)/system/SchM
+inc-y += $(ROOTDIR)/system/SchM
 vpath-$(USE_SCHM) += $(ROOTDIR)/system/SchM
 obj-$(USE_SCHM) += SchM.o
 
