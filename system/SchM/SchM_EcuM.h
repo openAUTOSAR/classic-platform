@@ -14,16 +14,34 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-/** @addtogroup SchM
- *  @{ */
-
-/** @file SchM_EcuM.h
- */
-
-
 #ifndef SCHM_ECUM_H_
 #define SCHM_ECUM_H_
 
+/*
+ * "Prototypes"
+ */
+#define SchM_Enter_EcuM(_area) CONCAT_(SchM_Enter_EcuM_,_area)
+#define SchM_Exit_EcuM(_area) CONCAT_(SchM_Exit_EcuM_,_area)
+
+/*
+ * Exclusive Areas
+ */
+
+/* Lock interrupts */
+#define EXCLUSIVE_AREA_0	0
+
+#define SchM_Enter_EcuM_0 DisableAllInterrupts
+#define SchM_Exit_EcuM_0  ResumeAllInterrupts
+
+#define SCHM_MAINFUNCTION_ECUM() 	SCHM_MAINFUNCTION(ECUM,EcuM_MainFunction())
+
+
+/* Skip "instance", req INTEGR058 */
+#if 0
+#define SchM_Enter_EcuM(uint8 exclusiveArea )
+#define SchM_Exit_EcuM(uint8 exclusiveArea )
+#define SchM_ActMainFunction_EcuM(uint8 exclusiveArea )
+#define SchM_CancelMainFunction_EcuM( uint8 exclusiveArea )
+#endif
 
 #endif /* SCHM_ECUM_H_ */

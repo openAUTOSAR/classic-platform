@@ -88,6 +88,9 @@ typedef TaskStateType *TaskStateRefType;
 
 #define INVALID_OSAPPLICATION (-1)
 
+#define TASK(_task)		void _task( void )
+
+
 /* TODO, I have no idea what this should be*/
 #if (OS_USE_APPLICATIONS == STD_ON)
 typedef sint32 ApplicationType;

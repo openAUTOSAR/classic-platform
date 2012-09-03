@@ -15,16 +15,9 @@
 
 
 
-/** @addtogroup TBD
- *  @{ */
+#ifndef SCHM_FEE_H_
+#define SCHM_FEE_H_
 
-/** @file schM_CanTp.h
- * TBD.
- */
+#define SCHM_MAINFUNCTION_FEE() 	SCHM_MAINFUNCTION(FEE,Fee_MainFunction())
 
-
-#ifndef SCHM_CANTP_H_
-#define SCHM_CANTP_H_
-
-
-#endif /* SCHM_CANTP_H_ */
+#endif /* SCHM_FEE_H_ */
