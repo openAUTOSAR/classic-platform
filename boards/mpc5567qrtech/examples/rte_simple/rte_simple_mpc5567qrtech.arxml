@@ -2,203 +2,42 @@
 <AUTOSAR xmlns="http://autosar.org/3.1.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/3.1.5 autosar_3-1-5.xsd">
   <TOP-LEVEL-PACKAGES>
     <AR-PACKAGE>
-      <SHORT-NAME>rte_simple_ti_tms570ls</SHORT-NAME>
+      <SHORT-NAME>rte_simple_mpc5567qrtech</SHORT-NAME>
       <ELEMENTS>
-        <ECU-CONFIGURATION UUID="1776c745-a15d-47db-bf04-90702b10be2c">
-          <SHORT-NAME>rte_simple_ti_tms570ls</SHORT-NAME>
+        <ECU-CONFIGURATION UUID="e933134b-ab53-4c9b-8075-815097cbc4a5">
+          <SHORT-NAME>rte_simple_mpc5567qrtech</SHORT-NAME>
           <ADMIN-DATA>
             <DOC-REVISIONS>
               <DOC-REVISION />
             </DOC-REVISIONS>
             <SDGS>
               <SDG GID="Arccore::EcuOptions">
-                <SD GID="MCU">TMS570</SD>
-                <SD GID="GENDIR">${fileDir}/config</SD>
+                <SD GID="MCU">MPC5567</SD>
+                <SD GID="GENDIR">${PROJECT_LOC}/config</SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>
           <ECU-EXTRACT-REF DEST="SYSTEM">/rte_simple_extract/rte_simple_extract</ECU-EXTRACT-REF>
-          <ECU-SW-COMPOSITION-REF DEST="ECU-SW-COMPOSITION">/rte_simple_ti_tms570ls/SwComposition_rte_simple_ti_tms570ls</ECU-SW-COMPOSITION-REF>
+          <ECU-SW-COMPOSITION-REF DEST="ECU-SW-COMPOSITION">/rte_simple_mpc5567qrtech/SwComposition_rte_simple_mpc5567qrtech</ECU-SW-COMPOSITION-REF>
           <MODULE-REFS>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_ti_tms570ls/Can</MODULE-REF>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_ti_tms570ls/CanIf</MODULE-REF>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_ti_tms570ls/Com</MODULE-REF>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_ti_tms570ls/Det</MODULE-REF>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_ti_tms570ls/EcuM</MODULE-REF>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_ti_tms570ls/Mcu</MODULE-REF>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_ti_tms570ls/Os</MODULE-REF>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_ti_tms570ls/PduR</MODULE-REF>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_ti_tms570ls/Port</MODULE-REF>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_ti_tms570ls/Rte</MODULE-REF>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_ti_tms570ls/EcuC</MODULE-REF>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_ti_tms570ls/Dio</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_mpc5567qrtech/CanIf</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_mpc5567qrtech/Com</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_mpc5567qrtech/Det</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_mpc5567qrtech/EcuM</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_mpc5567qrtech/Os</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_mpc5567qrtech/PduR</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_mpc5567qrtech/Rte</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_mpc5567qrtech/EcuC</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_mpc5567qrtech/Can</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_mpc5567qrtech/Mcu</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_mpc5567qrtech/Dio</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/rte_simple_mpc5567qrtech/Port</MODULE-REF>
           </MODULE-REFS>
         </ECU-CONFIGURATION>
-        <ECU-SW-COMPOSITION UUID="4cc23621-6242-4dd2-9fb9-e6be02999a7b">
-          <SHORT-NAME>SwComposition_rte_simple_ti_tms570ls</SHORT-NAME>
+        <ECU-SW-COMPOSITION UUID="b12f61f3-06aa-4f92-9b39-45f70fffdf3e">
+          <SHORT-NAME>SwComposition_rte_simple_mpc5567qrtech</SHORT-NAME>
           <ECU-EXTRACT-REF DEST="SYSTEM">/rte_simple_extract/rte_simple_extract</ECU-EXTRACT-REF>
         </ECU-SW-COMPOSITION>
-        <MODULE-CONFIGURATION UUID="8bd0ed42-91bd-4be0-900c-218501484772">
-          <SHORT-NAME>Can</SHORT-NAME>
-          <ADMIN-DATA>
-            <SDGS>
-              <SDG />
-              <SDG GID="Arccore::ModuleOptions">
-                <SD GID="GENERATE_AND_VALIDATE">true</SD>
-                <SD GID="ARCCORE_EDITOR_VERSION">2.0.1</SD>
-              </SDG>
-            </SDGS>
-          </ADMIN-DATA>
-          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Can</DEFINITION-REF>
-          <CONTAINERS>
-            <CONTAINER UUID="e1f76736-4684-4452-8c03-c666ba52b191">
-              <SHORT-NAME>CanConfigSet</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet</DEFINITION-REF>
-              <SUB-CONTAINERS>
-                <CONTAINER UUID="ebe9ddb0-3d52-49dd-bb4a-3380b1c0e583">
-                  <SHORT-NAME>Controller_1</SHORT-NAME>
-                  <ADMIN-DATA>
-                    <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
-                    </SDGS>
-                  </ADMIN-DATA>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet/CanController</DEFINITION-REF>
-                  <PARAMETER-VALUES>
-                    <BOOLEAN-VALUE>
-                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerActivation</DEFINITION-REF>
-                      <VALUE>true</VALUE>
-                    </BOOLEAN-VALUE>
-                    <BOOLEAN-VALUE>
-                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerLoopback</DEFINITION-REF>
-                      <VALUE>false</VALUE>
-                    </BOOLEAN-VALUE>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerBaudRate</DEFINITION-REF>
-                      <VALUE>125</VALUE>
-                    </INTEGER-VALUE>
-                    <ENUMERATION-VALUE>
-                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanHWControllerId</DEFINITION-REF>
-                      <VALUE>DCAN1</VALUE>
-                    </ENUMERATION-VALUE>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerPropSeg</DEFINITION-REF>
-                      <VALUE>5</VALUE>
-                    </INTEGER-VALUE>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerSeg1</DEFINITION-REF>
-                      <VALUE>6</VALUE>
-                    </INTEGER-VALUE>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerSeg2</DEFINITION-REF>
-                      <VALUE>5</VALUE>
-                    </INTEGER-VALUE>
-                  </PARAMETER-VALUES>
-                  <SUB-CONTAINERS>
-                    <CONTAINER UUID="ff18d2b6-e1fd-4801-9a83-427c78a5d928">
-                      <SHORT-NAME>Mask_1</SHORT-NAME>
-                      <ADMIN-DATA>
-                        <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
-                        </SDGS>
-                      </ADMIN-DATA>
-                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet/CanController/CanFilterMask</DEFINITION-REF>
-                      <PARAMETER-VALUES>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanFilterMask/CanFilterMaskValue</DEFINITION-REF>
-                          <VALUE>0</VALUE>
-                        </INTEGER-VALUE>
-                      </PARAMETER-VALUES>
-                    </CONTAINER>
-                  </SUB-CONTAINERS>
-                </CONTAINER>
-                <CONTAINER UUID="78f34be5-294a-422b-a5e3-fbdefdeefa71">
-                  <SHORT-NAME>HWObj_1</SHORT-NAME>
-                  <ADMIN-DATA>
-                    <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
-                    </SDGS>
-                  </ADMIN-DATA>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject</DEFINITION-REF>
-                  <PARAMETER-VALUES>
-                    <ENUMERATION-VALUE>
-                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanIdType</DEFINITION-REF>
-                      <VALUE>STANDARD</VALUE>
-                    </ENUMERATION-VALUE>
-                    <ENUMERATION-VALUE>
-                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanObjectType</DEFINITION-REF>
-                      <VALUE>RECEIVE</VALUE>
-                    </ENUMERATION-VALUE>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanMBMask</DEFINITION-REF>
-                      <VALUE>1</VALUE>
-                    </INTEGER-VALUE>
-                  </PARAMETER-VALUES>
-                  <REFERENCE-VALUES>
-                    <REFERENCE-VALUE>
-                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanControllerRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Can/CanConfigSet/Controller_1</VALUE-REF>
-                    </REFERENCE-VALUE>
-                    <REFERENCE-VALUE>
-                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanFilterMaskRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Can/CanConfigSet/Controller_1/Mask_1</VALUE-REF>
-                    </REFERENCE-VALUE>
-                  </REFERENCE-VALUES>
-                </CONTAINER>
-                <CONTAINER UUID="2082b136-b58d-45f7-b373-6d9f4f357f78">
-                  <SHORT-NAME>HWObj_2</SHORT-NAME>
-                  <ADMIN-DATA>
-                    <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
-                    </SDGS>
-                  </ADMIN-DATA>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject</DEFINITION-REF>
-                  <PARAMETER-VALUES>
-                    <ENUMERATION-VALUE>
-                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanIdType</DEFINITION-REF>
-                      <VALUE>STANDARD</VALUE>
-                    </ENUMERATION-VALUE>
-                    <ENUMERATION-VALUE>
-                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanObjectType</DEFINITION-REF>
-                      <VALUE>TRANSMIT</VALUE>
-                    </ENUMERATION-VALUE>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanMBMask</DEFINITION-REF>
-                      <VALUE>2</VALUE>
-                    </INTEGER-VALUE>
-                  </PARAMETER-VALUES>
-                  <REFERENCE-VALUES>
-                    <REFERENCE-VALUE>
-                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanControllerRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Can/CanConfigSet/Controller_1</VALUE-REF>
-                    </REFERENCE-VALUE>
-                    <REFERENCE-VALUE>
-                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanFilterMaskRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Can/CanConfigSet/Controller_1/Mask_1</VALUE-REF>
-                    </REFERENCE-VALUE>
-                  </REFERENCE-VALUES>
-                </CONTAINER>
-              </SUB-CONTAINERS>
-            </CONTAINER>
-            <CONTAINER UUID="ff38b922-3fdd-4e8a-8f76-647b834606b9">
-              <SHORT-NAME>CanGeneral</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanGeneral</DEFINITION-REF>
-              <PARAMETER-VALUES>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanGeneral/CanDevErrorDetection</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanGeneral/CanMultiplexedTransmission</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanGeneral/CanVersionInfoApi</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-              </PARAMETER-VALUES>
-            </CONTAINER>
-          </CONTAINERS>
-        </MODULE-CONFIGURATION>
         <MODULE-CONFIGURATION UUID="4d83e597-90c1-4d3f-a705-7fc429969c15">
           <SHORT-NAME>CanIf</SHORT-NAME>
           <ADMIN-DATA>
@@ -312,11 +151,11 @@
                       <REFERENCE-VALUES>
                         <REFERENCE-VALUE>
                           <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfInitHohConfig/CanIfHrhConfig/CanIfCanControllerHrhIdRef</DEFINITION-REF>
-                          <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/CanIf/Channel_1</VALUE-REF>
+                          <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/CanIf/Channel_1</VALUE-REF>
                         </REFERENCE-VALUE>
                         <REFERENCE-VALUE>
                           <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfInitHohConfig/CanIfHrhConfig/CanIfHrhIdSymRef</DEFINITION-REF>
-                          <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Can/CanConfigSet/HWObj_1</VALUE-REF>
+                          <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Can/CanConfigSet/HWObj_1</VALUE-REF>
                         </REFERENCE-VALUE>
                       </REFERENCE-VALUES>
                     </CONTAINER>
@@ -337,11 +176,11 @@
                       <REFERENCE-VALUES>
                         <REFERENCE-VALUE>
                           <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfInitHohConfig/CanIfHthConfig/CanIfCanControllerIdRef</DEFINITION-REF>
-                          <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/CanIf/Channel_1</VALUE-REF>
+                          <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/CanIf/Channel_1</VALUE-REF>
                         </REFERENCE-VALUE>
                         <REFERENCE-VALUE>
                           <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfInitHohConfig/CanIfHthConfig/CanIfHthIdSymRef</DEFINITION-REF>
-                          <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Can/CanConfigSet/HWObj_2</VALUE-REF>
+                          <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Can/CanConfigSet/HWObj_2</VALUE-REF>
                         </REFERENCE-VALUE>
                       </REFERENCE-VALUES>
                     </CONTAINER>
@@ -392,11 +231,11 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfRxPduConfig/CanIfCanRxPduHrhRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/CanIf/CanIfInitConfiguration/Hoh_1/Hrh_1</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/CanIf/CanIfInitConfiguration/Hoh_1/Hrh_1</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfRxPduConfig/PduIdRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/EcuC/PduCollection/RX_PDU</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/EcuC/PduCollection/RX_PDU</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
@@ -445,11 +284,11 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfTxPduConfig/CanIfCanTxPduHthRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/CanIf/CanIfInitConfiguration/Hoh_1/Hth_1</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/CanIf/CanIfInitConfiguration/Hoh_1/Hth_1</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfTxPduConfig/PduIdRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/EcuC/PduCollection/TX_PDU</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/EcuC/PduCollection/TX_PDU</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
@@ -498,11 +337,11 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfRxPduConfig/CanIfCanRxPduHrhRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/CanIf/CanIfInitConfiguration/Hoh_1/Hrh_1</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/CanIf/CanIfInitConfiguration/Hoh_1/Hrh_1</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfRxPduConfig/PduIdRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/EcuC/PduCollection/FreqReq</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/EcuC/PduCollection/FreqReq</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
@@ -551,11 +390,11 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfTxPduConfig/CanIfCanTxPduHthRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/CanIf/CanIfInitConfiguration/Hoh_1/Hth_1</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/CanIf/CanIfInitConfiguration/Hoh_1/Hth_1</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfTxPduConfig/PduIdRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/EcuC/PduCollection/FreqInd</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/EcuC/PduCollection/FreqInd</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
@@ -642,7 +481,7 @@
               <REFERENCE-VALUES>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/CanIf/CanIfControllerConfig/CanIfControllerIdRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Can/CanConfigSet/Controller_1</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Can/CanConfigSet/Controller_1</VALUE-REF>
                 </REFERENCE-VALUE>
               </REFERENCE-VALUES>
             </CONTAINER>
@@ -710,19 +549,19 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduGroupRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Com/ComConfig/ComPduGroup</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Com/ComConfig/ComPduGroup</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/PduIdRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/EcuC/PduCollection/RX_PDU</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/EcuC/PduCollection/RX_PDU</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduSignalRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Com/ComConfig/Arg1</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Com/ComConfig/Arg1</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduSignalRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Com/ComConfig/Arg2</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Com/ComConfig/Arg2</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                   <SUB-CONTAINERS>
@@ -805,15 +644,15 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduGroupRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Com/ComConfig/ComPduGroup</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Com/ComConfig/ComPduGroup</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/PduIdRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/EcuC/PduCollection/TX_PDU</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/EcuC/PduCollection/TX_PDU</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduSignalRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Com/ComConfig/ResultSig</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Com/ComConfig/ResultSig</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                   <SUB-CONTAINERS>
@@ -1085,15 +924,15 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduGroupRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Com/ComConfig/ComPduGroup</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Com/ComConfig/ComPduGroup</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/PduIdRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/EcuC/PduCollection/FreqReq</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/EcuC/PduCollection/FreqReq</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduSignalRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Com/ComConfig/FreqReqSig</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Com/ComConfig/FreqReqSig</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                   <SUB-CONTAINERS>
@@ -1176,15 +1015,15 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduGroupRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Com/ComConfig/ComPduGroup</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Com/ComConfig/ComPduGroup</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/PduIdRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/EcuC/PduCollection/FreqInd</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/EcuC/PduCollection/FreqInd</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduSignalRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Com/ComConfig/FreqIndSig</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Com/ComConfig/FreqIndSig</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                   <SUB-CONTAINERS>
@@ -1496,111 +1335,6 @@
             </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
-        <MODULE-CONFIGURATION UUID="10cd3e1e-3bd9-4da1-a6e3-f0b551d0c385">
-          <SHORT-NAME>Mcu</SHORT-NAME>
-          <ADMIN-DATA>
-            <SDGS>
-              <SDG />
-              <SDG GID="Arccore::ModuleOptions">
-                <SD GID="GENERATE_AND_VALIDATE">true</SD>
-                <SD GID="ARCCORE_EDITOR_VERSION">2.0.2</SD>
-              </SDG>
-            </SDGS>
-          </ADMIN-DATA>
-          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Mcu</DEFINITION-REF>
-          <CONTAINERS>
-            <CONTAINER UUID="1ef2cc6e-dcd6-404a-a21f-766c422f7325">
-              <SHORT-NAME>McuGeneralConfiguration</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuGeneralConfiguration</DEFINITION-REF>
-              <PARAMETER-VALUES>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Mcu/McuGeneralConfiguration/McuDevErrorDetect</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Mcu/McuGeneralConfiguration/McuPerformResetApi</DEFINITION-REF>
-                  <VALUE>true</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Mcu/McuGeneralConfiguration/McuVersionInfoApi</DEFINITION-REF>
-                  <VALUE>true</VALUE>
-                </BOOLEAN-VALUE>
-              </PARAMETER-VALUES>
-            </CONTAINER>
-            <CONTAINER UUID="630e7fa3-7d03-4377-8672-e251a0ce43da">
-              <SHORT-NAME>McuModuleConfiguration</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration</DEFINITION-REF>
-              <PARAMETER-VALUES>
-                <ENUMERATION-VALUE>
-                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSrcFailureNotification</DEFINITION-REF>
-                  <VALUE>DISABLED</VALUE>
-                </ENUMERATION-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="DERIVED-INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuNumberOfMcuModes</DEFINITION-REF>
-                  <VALUE>0</VALUE>
-                </INTEGER-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="DERIVED-INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuRamSectors</DEFINITION-REF>
-                  <VALUE>1</VALUE>
-                </INTEGER-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuResetSetting</DEFINITION-REF>
-                  <VALUE>0</VALUE>
-                </INTEGER-VALUE>
-              </PARAMETER-VALUES>
-              <SUB-CONTAINERS>
-                <CONTAINER UUID="5367e408-0b85-4de1-9bf9-8c2bd0d8f0bc">
-                  <SHORT-NAME>McuClockSettingConfig</SHORT-NAME>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig</DEFINITION-REF>
-                  <REFERENCE-VALUES>
-                    <REFERENCE-VALUE>
-                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuDefaultClockReference</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Mcu/McuModuleConfiguration/McuClockSettingConfig/Clock</VALUE-REF>
-                    </REFERENCE-VALUE>
-                  </REFERENCE-VALUES>
-                  <SUB-CONTAINERS>
-                    <CONTAINER UUID="85141e23-0af3-41f1-9e08-d802a55e31ed">
-                      <SHORT-NAME>Clock</SHORT-NAME>
-                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint</DEFINITION-REF>
-                      <PARAMETER-VALUES>
-                        <FLOAT-VALUE>
-                          <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointFrequency</DEFINITION-REF>
-                          <VALUE>1.6E7</VALUE>
-                        </FLOAT-VALUE>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointRefClkDiv</DEFINITION-REF>
-                          <VALUE>4</VALUE>
-                        </INTEGER-VALUE>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointPllMult</DEFINITION-REF>
-                          <VALUE>100</VALUE>
-                        </INTEGER-VALUE>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointOdPll</DEFINITION-REF>
-                          <VALUE>2</VALUE>
-                        </INTEGER-VALUE>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointPllDiv</DEFINITION-REF>
-                          <VALUE>2</VALUE>
-                        </INTEGER-VALUE>
-                      </PARAMETER-VALUES>
-                    </CONTAINER>
-                  </SUB-CONTAINERS>
-                </CONTAINER>
-                <CONTAINER UUID="7a3c04bd-b3d8-46c0-b996-bd1016788bdf">
-                  <SHORT-NAME>McuModeSettingConf</SHORT-NAME>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf</DEFINITION-REF>
-                  <PARAMETER-VALUES>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf/McuMode</DEFINITION-REF>
-                      <VALUE>0</VALUE>
-                    </INTEGER-VALUE>
-                  </PARAMETER-VALUES>
-                </CONTAINER>
-              </SUB-CONTAINERS>
-            </CONTAINER>
-          </CONTAINERS>
-        </MODULE-CONFIGURATION>
         <MODULE-CONFIGURATION UUID="11291481-dd5f-4a4a-aa43-f93b48fed3e6">
           <SHORT-NAME>Os</SHORT-NAME>
           <ADMIN-DATA>
@@ -1786,7 +1520,7 @@
               <REFERENCE-VALUES>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskEventRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/StepEvent</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/StepEvent</VALUE-REF>
                 </REFERENCE-VALUE>
               </REFERENCE-VALUES>
               <SUB-CONTAINERS>
@@ -1807,7 +1541,7 @@
               <REFERENCE-VALUES>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmCounterRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/Counter1</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/Counter1</VALUE-REF>
                 </REFERENCE-VALUE>
               </REFERENCE-VALUES>
               <SUB-CONTAINERS>
@@ -1835,11 +1569,11 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/StepEvent</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/StepEvent</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventTaskRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/StepTask</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/StepTask</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
@@ -1893,35 +1627,35 @@
               <REFERENCE-VALUES>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppAlarmRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/StepAlarm</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/StepAlarm</VALUE-REF>
                 </REFERENCE-VALUE>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppCounterRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/Counter1</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/Counter1</VALUE-REF>
                 </REFERENCE-VALUE>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppTaskRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/StartupTask</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/StartupTask</VALUE-REF>
                 </REFERENCE-VALUE>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppTaskRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/StepTask</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/StepTask</VALUE-REF>
                 </REFERENCE-VALUE>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppAlarmRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/MainFunctionAlarm</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/MainFunctionAlarm</VALUE-REF>
                 </REFERENCE-VALUE>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppTaskRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/MainFunctionTask</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/MainFunctionTask</VALUE-REF>
                 </REFERENCE-VALUE>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppAlarmRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/BlinkerAlarm</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/BlinkerAlarm</VALUE-REF>
                 </REFERENCE-VALUE>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppTaskRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/BlinkerTask</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/BlinkerTask</VALUE-REF>
                 </REFERENCE-VALUE>
               </REFERENCE-VALUES>
               <SUB-CONTAINERS>
@@ -2006,7 +1740,7 @@
               <REFERENCE-VALUES>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmCounterRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/Counter1</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/Counter1</VALUE-REF>
                 </REFERENCE-VALUE>
               </REFERENCE-VALUES>
               <SUB-CONTAINERS>
@@ -2034,7 +1768,7 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask/OsAlarmActivateTaskRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/MainFunctionTask</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/MainFunctionTask</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
@@ -2082,7 +1816,7 @@
               <REFERENCE-VALUES>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmCounterRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/Counter1</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/Counter1</VALUE-REF>
                 </REFERENCE-VALUE>
               </REFERENCE-VALUES>
               <SUB-CONTAINERS>
@@ -2110,7 +1844,7 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmActivateTask/OsAlarmActivateTaskRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/BlinkerTask</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/BlinkerTask</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
@@ -2293,7 +2027,7 @@
                           <REFERENCE-VALUES>
                             <REFERENCE-VALUE>
                               <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRDestPdu/DestPduRef</DEFINITION-REF>
-                              <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/EcuC/PduCollection/RX_PDU</VALUE-REF>
+                              <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/EcuC/PduCollection/RX_PDU</VALUE-REF>
                             </REFERENCE-VALUE>
                           </REFERENCE-VALUES>
                         </CONTAINER>
@@ -2309,7 +2043,7 @@
                           <REFERENCE-VALUES>
                             <REFERENCE-VALUE>
                               <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRSrcPdu/SrcPduRef</DEFINITION-REF>
-                              <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/EcuC/PduCollection/RX_PDU</VALUE-REF>
+                              <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/EcuC/PduCollection/RX_PDU</VALUE-REF>
                             </REFERENCE-VALUE>
                           </REFERENCE-VALUES>
                         </CONTAINER>
@@ -2345,7 +2079,7 @@
                           <REFERENCE-VALUES>
                             <REFERENCE-VALUE>
                               <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRDestPdu/DestPduRef</DEFINITION-REF>
-                              <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/EcuC/PduCollection/TX_PDU</VALUE-REF>
+                              <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/EcuC/PduCollection/FreqInd</VALUE-REF>
                             </REFERENCE-VALUE>
                           </REFERENCE-VALUES>
                         </CONTAINER>
@@ -2361,7 +2095,7 @@
                           <REFERENCE-VALUES>
                             <REFERENCE-VALUE>
                               <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRSrcPdu/SrcPduRef</DEFINITION-REF>
-                              <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/EcuC/PduCollection/TX_PDU</VALUE-REF>
+                              <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/EcuC/PduCollection/FreqInd</VALUE-REF>
                             </REFERENCE-VALUE>
                           </REFERENCE-VALUES>
                         </CONTAINER>
@@ -2369,6 +2103,11 @@
                     </CONTAINER>
                     <CONTAINER UUID="83753290-0c53-4f31-a48f-afca605f7af7">
                       <SHORT-NAME>FreqReq</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath</DEFINITION-REF>
                       <PARAMETER-VALUES>
                         <INTEGER-VALUE>
@@ -2392,7 +2131,7 @@
                           <REFERENCE-VALUES>
                             <REFERENCE-VALUE>
                               <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRDestPdu/DestPduRef</DEFINITION-REF>
-                              <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/EcuC/PduCollection/FreqReq</VALUE-REF>
+                              <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/EcuC/PduCollection/FreqReq</VALUE-REF>
                             </REFERENCE-VALUE>
                           </REFERENCE-VALUES>
                         </CONTAINER>
@@ -2408,7 +2147,7 @@
                           <REFERENCE-VALUES>
                             <REFERENCE-VALUE>
                               <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRSrcPdu/SrcPduRef</DEFINITION-REF>
-                              <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/EcuC/PduCollection/FreqReq</VALUE-REF>
+                              <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/EcuC/PduCollection/FreqReq</VALUE-REF>
                             </REFERENCE-VALUE>
                           </REFERENCE-VALUES>
                         </CONTAINER>
@@ -2444,7 +2183,7 @@
                           <REFERENCE-VALUES>
                             <REFERENCE-VALUE>
                               <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRDestPdu/DestPduRef</DEFINITION-REF>
-                              <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/EcuC/PduCollection/FreqInd</VALUE-REF>
+                              <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/EcuC/PduCollection/TX_PDU</VALUE-REF>
                             </REFERENCE-VALUE>
                           </REFERENCE-VALUES>
                         </CONTAINER>
@@ -2460,7 +2199,7 @@
                           <REFERENCE-VALUES>
                             <REFERENCE-VALUE>
                               <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRSrcPdu/SrcPduRef</DEFINITION-REF>
-                              <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/EcuC/PduCollection/FreqInd</VALUE-REF>
+                              <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/EcuC/PduCollection/TX_PDU</VALUE-REF>
                             </REFERENCE-VALUE>
                           </REFERENCE-VALUES>
                         </CONTAINER>
@@ -2479,212 +2218,6 @@
                   </PARAMETER-VALUES>
                 </CONTAINER>
               </SUB-CONTAINERS>
-            </CONTAINER>
-          </CONTAINERS>
-        </MODULE-CONFIGURATION>
-        <MODULE-CONFIGURATION UUID="b1d98deb-a2d2-4bc5-8e2b-f4fa2dc9af07">
-          <SHORT-NAME>Port</SHORT-NAME>
-          <ADMIN-DATA>
-            <SDGS>
-              <SDG />
-              <SDG GID="Arccore::ModuleOptions">
-                <SD GID="ARCCORE_EDITOR_VERSION">2.0.2</SD>
-                <SD GID="GENERATE_AND_VALIDATE">true</SD>
-              </SDG>
-            </SDGS>
-          </ADMIN-DATA>
-          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Port</DEFINITION-REF>
-          <CONTAINERS>
-            <CONTAINER UUID="fd6bd784-9b66-4ba8-8cc9-b7c58084117a">
-              <SHORT-NAME>PortConfigSet</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet</DEFINITION-REF>
-              <SUB-CONTAINERS>
-                <CONTAINER UUID="dcb99435-1cec-4582-bab3-2ab23f8b457a">
-                  <SHORT-NAME>CanPorts</SHORT-NAME>
-                  <ADMIN-DATA>
-                    <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
-                    </SDGS>
-                  </ADMIN-DATA>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer</DEFINITION-REF>
-                  <SUB-CONTAINERS>
-                    <CONTAINER UUID="c774319d-ac5e-4e60-9f47-9a2a83c0af49">
-                      <SHORT-NAME>DCAN1_TX</SHORT-NAME>
-                      <ADMIN-DATA>
-                        <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
-                        </SDGS>
-                      </ADMIN-DATA>
-                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
-                      <PARAMETER-VALUES>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
-                          <VALUE>PULL_NONE</VALUE>
-                        </ENUMERATION-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
-                          <VALUE>PORT_PIN_OUT</VALUE>
-                        </ENUMERATION-VALUE>
-                        <BOOLEAN-VALUE>
-                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
-                          <VALUE>false</VALUE>
-                        </BOOLEAN-VALUE>
-                        <BOOLEAN-VALUE>
-                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
-                          <VALUE>false</VALUE>
-                        </BOOLEAN-VALUE>
-                        <BOOLEAN-VALUE>
-                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
-                          <VALUE>false</VALUE>
-                        </BOOLEAN-VALUE>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
-                          <VALUE>106</VALUE>
-                        </INTEGER-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
-                          <VALUE>SLEW_RATE_MIN</VALUE>
-                        </ENUMERATION-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
-                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
-                        </ENUMERATION-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
-                          <VALUE>PORT_PIN_MODE_CAN</VALUE>
-                        </ENUMERATION-VALUE>
-                      </PARAMETER-VALUES>
-                    </CONTAINER>
-                    <CONTAINER UUID="23956352-e36f-4ba8-82a3-ddfed1d97675">
-                      <SHORT-NAME>DCAN1_RX</SHORT-NAME>
-                      <ADMIN-DATA>
-                        <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
-                        </SDGS>
-                      </ADMIN-DATA>
-                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
-                      <PARAMETER-VALUES>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
-                          <VALUE>PULL_NONE</VALUE>
-                        </ENUMERATION-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
-                          <VALUE>PORT_PIN_IN</VALUE>
-                        </ENUMERATION-VALUE>
-                        <BOOLEAN-VALUE>
-                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
-                          <VALUE>false</VALUE>
-                        </BOOLEAN-VALUE>
-                        <BOOLEAN-VALUE>
-                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
-                          <VALUE>false</VALUE>
-                        </BOOLEAN-VALUE>
-                        <BOOLEAN-VALUE>
-                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
-                          <VALUE>false</VALUE>
-                        </BOOLEAN-VALUE>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
-                          <VALUE>107</VALUE>
-                        </INTEGER-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
-                          <VALUE>SLEW_RATE_MIN</VALUE>
-                        </ENUMERATION-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
-                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
-                        </ENUMERATION-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
-                          <VALUE>PORT_PIN_MODE_CAN</VALUE>
-                        </ENUMERATION-VALUE>
-                      </PARAMETER-VALUES>
-                    </CONTAINER>
-                  </SUB-CONTAINERS>
-                </CONTAINER>
-                <CONTAINER UUID="fe9fa215-de6b-4856-b6f5-5ef119acddac">
-                  <SHORT-NAME>DioPorts</SHORT-NAME>
-                  <ADMIN-DATA>
-                    <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
-                    </SDGS>
-                  </ADMIN-DATA>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer</DEFINITION-REF>
-                  <SUB-CONTAINERS>
-                    <CONTAINER UUID="37d1f272-bd39-44d5-bfd4-fdc2abacb101">
-                      <SHORT-NAME>GIOA[3]</SHORT-NAME>
-                      <ADMIN-DATA>
-                        <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
-                        </SDGS>
-                      </ADMIN-DATA>
-                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
-                      <PARAMETER-VALUES>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
-                          <VALUE>PULL_NONE</VALUE>
-                        </ENUMERATION-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
-                          <VALUE>PORT_PIN_OUT</VALUE>
-                        </ENUMERATION-VALUE>
-                        <BOOLEAN-VALUE>
-                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
-                          <VALUE>false</VALUE>
-                        </BOOLEAN-VALUE>
-                        <BOOLEAN-VALUE>
-                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
-                          <VALUE>false</VALUE>
-                        </BOOLEAN-VALUE>
-                        <BOOLEAN-VALUE>
-                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
-                          <VALUE>false</VALUE>
-                        </BOOLEAN-VALUE>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
-                          <VALUE>3</VALUE>
-                        </INTEGER-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
-                          <VALUE>SLEW_RATE_MIN</VALUE>
-                        </ENUMERATION-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
-                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
-                        </ENUMERATION-VALUE>
-                        <ENUMERATION-VALUE>
-                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
-                          <VALUE>PORT_PIN_MODE_DIO</VALUE>
-                        </ENUMERATION-VALUE>
-                      </PARAMETER-VALUES>
-                    </CONTAINER>
-                  </SUB-CONTAINERS>
-                </CONTAINER>
-              </SUB-CONTAINERS>
-            </CONTAINER>
-            <CONTAINER UUID="a09cbf3a-de2a-4152-8b86-2a62e8777a3f">
-              <SHORT-NAME>PortGeneral</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortGeneral</DEFINITION-REF>
-              <PARAMETER-VALUES>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortGeneral/PortDevErrorDetect</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortGeneral/PortSetPinDirectionApi</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortGeneral/PortSetPinModeApi</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortGeneral/PortVersionInfoApi</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-              </PARAMETER-VALUES>
             </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
@@ -2835,11 +2368,11 @@
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/MappedToTaskRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/StepTask</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/StepTask</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/UsedOsEventRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/StepEvent</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/StepEvent</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
@@ -2917,11 +2450,11 @@
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/MappedToTaskRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/StepTask</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/StepTask</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/UsedOsEventRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/StepEvent</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/StepEvent</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
@@ -2974,11 +2507,11 @@
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/MappedToTaskRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/StepTask</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/StepTask</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping/UsedOsEventRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Os/StepEvent</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Os/StepEvent</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
@@ -3067,7 +2600,318 @@
             </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
-        <MODULE-CONFIGURATION UUID="397101ac-c65b-452f-bc0b-ca3aed0dd477">
+        <MODULE-CONFIGURATION UUID="0a846f2a-3ae4-493b-8994-8951ca29090d">
+          <SHORT-NAME>Can</SHORT-NAME>
+          <ADMIN-DATA>
+            <SDGS>
+              <SDG />
+              <SDG GID="Arccore::ModuleOptions">
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.0.2</SD>
+              </SDG>
+            </SDGS>
+          </ADMIN-DATA>
+          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Can</DEFINITION-REF>
+          <CONTAINERS>
+            <CONTAINER UUID="abb6d7c5-c8a9-40e1-b6b1-c51c226272aa">
+              <SHORT-NAME>CanConfigSet</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet</DEFINITION-REF>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="a6db33eb-3669-4ded-873a-c2f18fe7f115">
+                  <SHORT-NAME>Controller_1</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet/CanController</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanBusoffProcessing</DEFINITION-REF>
+                      <VALUE>INTERRUPT</VALUE>
+                    </ENUMERATION-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerActivation</DEFINITION-REF>
+                      <VALUE>true</VALUE>
+                    </BOOLEAN-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerLoopback</DEFINITION-REF>
+                      <VALUE>false</VALUE>
+                    </BOOLEAN-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerBaudRate</DEFINITION-REF>
+                      <VALUE>125</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanHWControllerId</DEFINITION-REF>
+                      <VALUE>FLEXCAN_A</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerPropSeg</DEFINITION-REF>
+                      <VALUE>4</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerSeg1</DEFINITION-REF>
+                      <VALUE>4</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanControllerSeg2</DEFINITION-REF>
+                      <VALUE>4</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanRxProcessing</DEFINITION-REF>
+                      <VALUE>INTERRUPT</VALUE>
+                    </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanTxProcessing</DEFINITION-REF>
+                      <VALUE>INTERRUPT</VALUE>
+                    </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanWakeupProcessing</DEFINITION-REF>
+                      <VALUE>INTERRUPT</VALUE>
+                    </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanErrorProcessing</DEFINITION-REF>
+                      <VALUE>INTERRUPT</VALUE>
+                    </ENUMERATION-VALUE>
+                  </PARAMETER-VALUES>
+                  <SUB-CONTAINERS>
+                    <CONTAINER UUID="cbd0de80-1099-4673-9f5b-6549c765b358">
+                      <SHORT-NAME>Mask_1</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet/CanController/CanFilterMask</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanController/CanFilterMask/CanFilterMaskValue</DEFINITION-REF>
+                          <VALUE>0</VALUE>
+                        </INTEGER-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                  </SUB-CONTAINERS>
+                </CONTAINER>
+                <CONTAINER UUID="65fe95e8-4bb8-4842-b956-be3a1fa58237">
+                  <SHORT-NAME>HWObj_1</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanHandleType</DEFINITION-REF>
+                      <VALUE>BASIC</VALUE>
+                    </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanIdType</DEFINITION-REF>
+                      <VALUE>STANDARD</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanIdValue</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanObjectType</DEFINITION-REF>
+                      <VALUE>RECEIVE</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/ArcCanNumMailboxes</DEFINITION-REF>
+                      <VALUE>1</VALUE>
+                    </INTEGER-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/ArcCanFIFO</DEFINITION-REF>
+                      <VALUE>false</VALUE>
+                    </BOOLEAN-VALUE>
+                  </PARAMETER-VALUES>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanControllerRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Can/CanConfigSet/Controller_1</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanFilterMaskRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Can/CanConfigSet/Controller_1/Mask_1</VALUE-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="167fd448-f14a-4732-a146-2f520578d037">
+                  <SHORT-NAME>HWObj_2</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanHandleType</DEFINITION-REF>
+                      <VALUE>BASIC</VALUE>
+                    </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanIdType</DEFINITION-REF>
+                      <VALUE>STANDARD</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanIdValue</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanObjectType</DEFINITION-REF>
+                      <VALUE>TRANSMIT</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/ArcCanNumMailboxes</DEFINITION-REF>
+                      <VALUE>1</VALUE>
+                    </INTEGER-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/ArcCanFIFO</DEFINITION-REF>
+                      <VALUE>false</VALUE>
+                    </BOOLEAN-VALUE>
+                  </PARAMETER-VALUES>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject/CanControllerRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Can/CanConfigSet/Controller_1</VALUE-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+            <CONTAINER UUID="7b2e3d7a-d0cb-4acd-8732-2ad2c3a050c3">
+              <SHORT-NAME>CanGeneral</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanGeneral</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanGeneral/CanDevErrorDetection</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanGeneral/CanMultiplexedTransmission</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Can/CanGeneral/CanVersionInfoApi</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <STRING-VALUE>
+                  <DEFINITION-REF DEST="STRING-PARAM-DEF">/ArcCore/Can/CanGeneral/CanErrorCbk</DEFINITION-REF>
+                  <VALUE>CanIf_Arc_Error</VALUE>
+                </STRING-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+          </CONTAINERS>
+        </MODULE-CONFIGURATION>
+        <MODULE-CONFIGURATION UUID="19115ed0-f3f0-4a6a-9d51-183494e82d84">
+          <SHORT-NAME>Mcu</SHORT-NAME>
+          <ADMIN-DATA>
+            <SDGS>
+              <SDG />
+              <SDG GID="Arccore::ModuleOptions">
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.0.3</SD>
+              </SDG>
+            </SDGS>
+          </ADMIN-DATA>
+          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Mcu</DEFINITION-REF>
+          <CONTAINERS>
+            <CONTAINER UUID="ef6aa42e-f2d9-45a7-8a26-7e3d1507e36a">
+              <SHORT-NAME>McuGeneralConfiguration</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuGeneralConfiguration</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Mcu/McuGeneralConfiguration/McuDevErrorDetect</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Mcu/McuGeneralConfiguration/McuPerformResetApi</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Mcu/McuGeneralConfiguration/McuVersionInfoApi</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="5c87b4e7-63a5-465d-aa15-f7fc64037013">
+              <SHORT-NAME>McuModuleConfiguration</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSrcFailureNotification</DEFINITION-REF>
+                  <VALUE>DISABLED</VALUE>
+                </ENUMERATION-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="DERIVED-INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuNumberOfMcuModes</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="DERIVED-INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuRamSectors</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuResetSetting</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+              </PARAMETER-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="995355ae-8c54-474a-b7c6-8ca237e89af2">
+                  <SHORT-NAME>McuClockSettingConfig</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig</DEFINITION-REF>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuDefaultClockReference</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_mpc5567qrtech/Mcu/McuModuleConfiguration/McuClockSettingConfig/Clock</VALUE-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                  <SUB-CONTAINERS>
+                    <CONTAINER UUID="8beda446-deaa-4522-8337-3a3e94e1c5f1">
+                      <SHORT-NAME>Clock</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <FLOAT-VALUE>
+                          <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointFrequency</DEFINITION-REF>
+                          <VALUE>0.0</VALUE>
+                        </FLOAT-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointPllEprediv</DEFINITION-REF>
+                          <VALUE>0</VALUE>
+                        </INTEGER-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointPllEmfd</DEFINITION-REF>
+                          <VALUE>0</VALUE>
+                        </INTEGER-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointPllErfd</DEFINITION-REF>
+                          <VALUE>0</VALUE>
+                        </INTEGER-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                  </SUB-CONTAINERS>
+                </CONTAINER>
+                <CONTAINER UUID="abbec6bd-bfe2-4c2f-8949-e8793a33138b">
+                  <SHORT-NAME>McuModeSettingConf</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf/McuMode</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+          </CONTAINERS>
+        </MODULE-CONFIGURATION>
+        <MODULE-CONFIGURATION UUID="5f5f54b8-b64f-488d-b8ab-dc9e8831fd27">
           <SHORT-NAME>Dio</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
@@ -3080,7 +2924,7 @@
           </ADMIN-DATA>
           <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Dio</DEFINITION-REF>
           <CONTAINERS>
-            <CONTAINER UUID="510bda5e-33db-41d6-b4ac-1300a313580c">
+            <CONTAINER UUID="2d532b1a-3c04-42d9-bbcb-2925b38b6be0">
               <SHORT-NAME>DioGeneral</SHORT-NAME>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Dio/DioGeneral</DEFINITION-REF>
               <PARAMETER-VALUES>
@@ -3094,7 +2938,7 @@
                 </BOOLEAN-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
-            <CONTAINER UUID="fca4fd0c-40f8-47af-b749-2f4f39090c89">
+            <CONTAINER UUID="1f3dd181-fe91-4d89-87fe-42fd6ce7bf5f">
               <SHORT-NAME>LED_PORT</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
@@ -3109,11 +2953,11 @@
                 </INTEGER-VALUE>
                 <STRING-VALUE>
                   <DEFINITION-REF DEST="STRING-PARAM-DEF">/ArcCore/Dio/DioPort/ArcCoreDioPhysicalPort</DEFINITION-REF>
-                  <VALUE>DIO_PORT_A</VALUE>
+                  <VALUE>DIO_MPC5567_GENERIC_PORT</VALUE>
                 </STRING-VALUE>
               </PARAMETER-VALUES>
               <SUB-CONTAINERS>
-                <CONTAINER UUID="7db79dd3-9f88-43d2-bc9a-5f4f9f06fe93">
+                <CONTAINER UUID="c7540d44-ea56-4042-8a0a-097029c36fa3">
                   <SHORT-NAME>LED_CHANNEL</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
@@ -3124,11 +2968,196 @@
                   <PARAMETER-VALUES>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Dio/DioPort/DioChannel/DioChannelId</DEFINITION-REF>
-                      <VALUE>3</VALUE>
+                      <VALUE>0</VALUE>
                     </INTEGER-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
               </SUB-CONTAINERS>
+            </CONTAINER>
+          </CONTAINERS>
+        </MODULE-CONFIGURATION>
+        <MODULE-CONFIGURATION UUID="bfa628e5-168f-4481-8599-75fcd648f78a">
+          <SHORT-NAME>Port</SHORT-NAME>
+          <ADMIN-DATA>
+            <SDGS>
+              <SDG />
+              <SDG GID="Arccore::ModuleOptions">
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.0.2</SD>
+              </SDG>
+            </SDGS>
+          </ADMIN-DATA>
+          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Port</DEFINITION-REF>
+          <CONTAINERS>
+            <CONTAINER UUID="52510056-3b2a-4757-9543-c23b404adae2">
+              <SHORT-NAME>PortConfigSet</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet</DEFINITION-REF>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="645b91a2-820a-4f7b-81b8-4bb8187f8b81">
+                  <SHORT-NAME>PortContainer_1</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer</DEFINITION-REF>
+                  <SUB-CONTAINERS>
+                    <CONTAINER UUID="92d1d78f-265b-4189-b17d-384b8a2164e7">
+                      <SHORT-NAME>CNTXA</SHORT-NAME>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_OUT</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>83</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_CAN</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                    <CONTAINER UUID="c0ffa3e0-0d86-4f20-803b-bbafab48da72">
+                      <SHORT-NAME>CNRXA</SHORT-NAME>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_IN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>84</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_CAN</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                    <CONTAINER UUID="3b730a79-e042-4c6b-86ec-337bec214ec3">
+                      <SHORT-NAME>GPIO[0]</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_OUT</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>0</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_DIO</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                  </SUB-CONTAINERS>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+            <CONTAINER UUID="7bc7ecbd-e09c-4122-94de-432c6f87d9bb">
+              <SHORT-NAME>PortGeneral</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortGeneral</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortGeneral/PortDevErrorDetect</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortGeneral/PortSetPinDirectionApi</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortGeneral/PortSetPinModeApi</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortGeneral/PortVersionInfoApi</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+              </PARAMETER-VALUES>
             </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>

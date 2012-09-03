@@ -22,7 +22,7 @@
                   <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Arguments</PORT-PROTOTYPE-REF>
                   <DATA-ELEMENT-REF DEST="DATA-ELEMENT-PROTOTYPE">/rte_simple_lib/Interfaces/ArgumentIf/arg1</DATA-ELEMENT-REF>
                 </DATA-ELEMENT-IREF>
-                <SIGNAL-REF DEST="SYSTEM-SIGNAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Arg1</SIGNAL-REF>
+                <SIGNAL-REF DEST="SYSTEM-SIGNAL">/rte_simple_lib/SystemSignals/Arg1</SIGNAL-REF>
               </SENDER-RECEIVER-TO-SIGNAL-MAPPING>
               <SENDER-RECEIVER-TO-SIGNAL-MAPPING>
                 <DATA-ELEMENT-IREF>
@@ -30,7 +30,7 @@
                   <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Arguments</PORT-PROTOTYPE-REF>
                   <DATA-ELEMENT-REF DEST="DATA-ELEMENT-PROTOTYPE">/rte_simple_lib/Interfaces/ArgumentIf/arg2</DATA-ELEMENT-REF>
                 </DATA-ELEMENT-IREF>
-                <SIGNAL-REF DEST="SYSTEM-SIGNAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Arg2</SIGNAL-REF>
+                <SIGNAL-REF DEST="SYSTEM-SIGNAL">/rte_simple_lib/SystemSignals/Arg2</SIGNAL-REF>
               </SENDER-RECEIVER-TO-SIGNAL-MAPPING>
               <SENDER-RECEIVER-TO-SIGNAL-MAPPING>
                 <DATA-ELEMENT-IREF>
@@ -38,7 +38,7 @@
                   <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/Result</PORT-PROTOTYPE-REF>
                   <DATA-ELEMENT-REF DEST="DATA-ELEMENT-PROTOTYPE">/rte_simple_lib/Interfaces/ResultIf/result</DATA-ELEMENT-REF>
                 </DATA-ELEMENT-IREF>
-                <SIGNAL-REF DEST="SYSTEM-SIGNAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/ResultSig</SIGNAL-REF>
+                <SIGNAL-REF DEST="SYSTEM-SIGNAL">/rte_simple_lib/SystemSignals/ResultSig</SIGNAL-REF>
               </SENDER-RECEIVER-TO-SIGNAL-MAPPING>
               <SENDER-RECEIVER-TO-SIGNAL-MAPPING>
                 <DATA-ELEMENT-IREF>
@@ -46,7 +46,7 @@
                   <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/FreqReq</PORT-PROTOTYPE-REF>
                   <DATA-ELEMENT-REF DEST="DATA-ELEMENT-PROTOTYPE">/rte_simple_lib/Interfaces/FreqReqIf/freq</DATA-ELEMENT-REF>
                 </DATA-ELEMENT-IREF>
-                <SIGNAL-REF DEST="SYSTEM-SIGNAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/FreqReqSig</SIGNAL-REF>
+                <SIGNAL-REF DEST="SYSTEM-SIGNAL">/rte_simple_lib/SystemSignals/FreqReqSig</SIGNAL-REF>
               </SENDER-RECEIVER-TO-SIGNAL-MAPPING>
               <SENDER-RECEIVER-TO-SIGNAL-MAPPING>
                 <DATA-ELEMENT-IREF>
@@ -54,7 +54,7 @@
                   <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/rte_simple_extract/rte_simple_extract_toplevelcomposition/FreqReqInd</PORT-PROTOTYPE-REF>
                   <DATA-ELEMENT-REF DEST="DATA-ELEMENT-PROTOTYPE">/rte_simple_lib/Interfaces/FreqReqIf/freq</DATA-ELEMENT-REF>
                 </DATA-ELEMENT-IREF>
-                <SIGNAL-REF DEST="SYSTEM-SIGNAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/FreqIndSig</SIGNAL-REF>
+                <SIGNAL-REF DEST="SYSTEM-SIGNAL">/rte_simple_lib/SystemSignals/FreqIndSig</SIGNAL-REF>
               </SENDER-RECEIVER-TO-SIGNAL-MAPPING>
             </DATA-MAPPINGS>
             <SW-IMPL-MAPPINGS>
