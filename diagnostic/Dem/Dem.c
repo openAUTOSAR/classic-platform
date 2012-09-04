@@ -1526,8 +1526,10 @@ static void storeAgingRecPerMem(const NvM_BlockIdType AgingBlockId)
 
 	Irq_Save(state);
 
-	if( E_NOT_OK != writeNvmMirror(AgingBlockId, (uint8 *)HealingMirrorBuffer, (const uint8 *)priMemAgingBuffer, sizeof(priMemAgingBuffer)) ){
+	if( E_OK == writeNvmMirror(AgingBlockId, (uint8 *)HealingMirrorBuffer, (const uint8 *)priMemAgingBuffer, sizeof(priMemAgingBuffer)) ){
 		AgingIsModified = FALSE;
+	} else {
+		AgingIsModified = TRUE;
 	}
 
 	Irq_Restore(state);
