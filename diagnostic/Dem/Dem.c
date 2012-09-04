@@ -193,12 +193,12 @@ static ExtDataRecType		preInitExtDataBuffer[DEM_MAX_NUMBER_EXT_DATA_PRE_INIT];
  * Allocation of primary event memory ramlog (after init) in uninitialized memory
  */
 /** @req DEM162 */
-EventRecType 		        priMemEventBuffer[DEM_MAX_NUMBER_EVENT_PRI_MEM] __attribute__ ((section (".dem_eventmemory_pri")));
-static FreezeFrameRecType	priMemFreezeFrameBuffer[DEM_MAX_NUMBER_FF_DATA_PRI_MEM] __attribute__ ((section (".dem_eventmemory_pri")));
-//FreezeFrameRecType        FreezeFrameMirrorBuffer[DEM_MAX_NUMBER_FF_DATA_PRI_MEM] __attribute__ ((section (".dem_eventmemory_pri")));
+EventRecType 		        priMemEventBuffer[DEM_MAX_NUMBER_EVENT_PRI_MEM];
+static FreezeFrameRecType	priMemFreezeFrameBuffer[DEM_MAX_NUMBER_FF_DATA_PRI_MEM];
+//FreezeFrameRecType        FreezeFrameMirrorBuffer[DEM_MAX_NUMBER_FF_DATA_PRI_MEM];
 extern FreezeFrameRecType*  FreezeFrameMirrorBuffer[];
-static ExtDataRecType		priMemExtDataBuffer[DEM_MAX_NUMBER_EXT_DATA_PRI_MEM] __attribute__ ((section (".dem_eventmemory_pri")));
-HealingRecType         		priMemAgingBuffer[DEM_MAX_NUMBER_AGING_PRI_MEM] __attribute__ ((section (".dem_eventmemory_pri")));
+static ExtDataRecType		priMemExtDataBuffer[DEM_MAX_NUMBER_EXT_DATA_PRI_MEM];
+HealingRecType         		priMemAgingBuffer[DEM_MAX_NUMBER_AGING_PRI_MEM];
 extern HealingRecType   		HealingMirrorBuffer[DEM_MAX_NUMBER_AGING_PRI_MEM];
 
 /* block in NVRam, use for freezeframe */
@@ -1526,8 +1526,8 @@ static void storeAgingRecPerMem(const NvM_BlockIdType AgingBlockId)
 
 	Irq_Save(state);
 
-	if( E_NOT_OK == writeNvmMirror(AgingBlockId, (uint8 *)HealingMirrorBuffer, (const uint8 *)priMemAgingBuffer, sizeof(priMemAgingBuffer)) ){
-		AgingIsModified = TRUE;
+	if( E_NOT_OK != writeNvmMirror(AgingBlockId, (uint8 *)HealingMirrorBuffer, (const uint8 *)priMemAgingBuffer, sizeof(priMemAgingBuffer)) ){
+		AgingIsModified = FALSE;
 	}
 
 	Irq_Restore(state);
@@ -2315,7 +2315,7 @@ void Dem_PreInit(void)
 void Dem_Init(void)
 {
 	uint16 i;
-	ChecksumType cSum;
+//	ChecksumType cSum;
 	boolean entryValid = FALSE;
 	const Dem_EventParameterType *eventParam;
 
@@ -2331,7 +2331,7 @@ void Dem_Init(void)
 	} else {
 
 		for(i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++){
-			if( E_NOT_OK == copyNvmMirror(FreezeFrameBlockId[i], (uint8 *)&priMemFreezeFrameBuffer[i], (const uint8 *)&FreezeFrameMirrorBuffer[i], sizeof(FreezeFrameRecType)) ){
+			if( E_NOT_OK == copyNvmMirror(FreezeFrameBlockId[i], (uint8 *)&priMemFreezeFrameBuffer[i], (const uint8 *)FreezeFrameMirrorBuffer[i], sizeof(FreezeFrameRecType)) ){
 				//TODO:NVM is busy or block id is 0,report error or what?
 			}
 		}
@@ -2343,8 +2343,8 @@ void Dem_Init(void)
 		// Validate aging records stored in primary memory
 		for (i = 0; i < DEM_MAX_NUMBER_AGING_PRI_MEM; i++){
 			entryValid = checkEntryValid(priMemAgingBuffer[i].eventId);
-			cSum = calcChecksum(&priMemAgingBuffer[i], sizeof(HealingRecType) - sizeof(ChecksumType));
-			if ((cSum != priMemAgingBuffer[i].checksum) || (priMemAgingBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
+//			cSum = calcChecksum(&priMemAgingBuffer[i], sizeof(HealingRecType) - sizeof(ChecksumType));
+			if ((priMemAgingBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
 				// Unlegal record, clear the record
 				memset(&priMemAgingBuffer[i], 0, sizeof(HealingRecType));
 				AgingIsModified = TRUE;
@@ -2354,8 +2354,8 @@ void Dem_Init(void)
 		// Validate event records stored in primary memory
 		for (i = 0; i < DEM_MAX_NUMBER_EVENT_PRI_MEM; i++) {
 			entryValid = checkEntryValid(priMemEventBuffer[i].eventId);
-			cSum = calcChecksum(&priMemEventBuffer[i], sizeof(EventRecType)-sizeof(ChecksumType));
-			if ((cSum != priMemEventBuffer[i].checksum) || (priMemEventBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
+//			cSum = calcChecksum(&priMemEventBuffer[i], sizeof(EventRecType)-sizeof(ChecksumType));
+			if ((priMemEventBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
 				// Unlegal record, clear the record
 				memset(&priMemEventBuffer[i], 0, sizeof(EventRecType));
 			}
@@ -2372,8 +2372,8 @@ void Dem_Init(void)
 		// Validate extended data records stored in primary memory
 		for (i = 0; i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM; i++) {
 			entryValid = checkEntryValid(priMemExtDataBuffer[i].eventId);
-			cSum = calcChecksum(&priMemExtDataBuffer[i], sizeof(ExtDataRecType)-sizeof(ChecksumType));
-			if ((cSum != priMemExtDataBuffer[i].checksum) || (priMemExtDataBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
+//			cSum = calcChecksum(&priMemExtDataBuffer[i], sizeof(ExtDataRecType)-sizeof(ChecksumType));
+			if ((priMemExtDataBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
 				// Unlegal record, clear the record
 				memset(&priMemExtDataBuffer[i], 0, sizeof(ExtDataRecType));
 			}
@@ -2389,8 +2389,8 @@ void Dem_Init(void)
 		// Validate freeze frame records stored in primary memory
 		for (i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++) {
 			entryValid = checkEntryValid(priMemFreezeFrameBuffer[i].eventId);
-			cSum = calcChecksum(&priMemFreezeFrameBuffer[i], sizeof(FreezeFrameRecType)-sizeof(ChecksumType));
-			if ((cSum != priMemFreezeFrameBuffer[i].checksum) || (priMemFreezeFrameBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
+//			cSum = calcChecksum(&priMemFreezeFrameBuffer[i], sizeof(FreezeFrameRecType)-sizeof(ChecksumType));
+			if ((priMemFreezeFrameBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
 				// Unlegal record, clear the record
 				memset(&priMemFreezeFrameBuffer[i], 0, sizeof(FreezeFrameRecType));
 			}
