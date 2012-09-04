@@ -12,7 +12,7 @@
 #endif
 
 
-#define CRP_RECPTR 		0xfffe0058
+#define CRP_RECPTR 		0xfffec058
 
 	.global McuE_EnterLowPower
 	
@@ -27,7 +27,7 @@ McuE_EnterLowPower:
 	mfXER	r30
 	mfCTR	r31
 	stmw	r25, 0x78(r1)	#-- Store SPR data to stack
-	
+		
 	LOAD_ADDR_32(r4,CRP_RECPTR)
 	stw		r1,0x0(r4)	//  Save stack pointer to CRP to be preserved during LPM
 	.long	0x7C00007C	//  Wait instruction
@@ -72,34 +72,30 @@ McuE_LowPowerVector:
 	.global McuE_LowPowerRecoverFlash
 
 /*
- * When we come back here only TLB0 is setup.
- * - Map up the entire flash 
+ * When we come back here only TLB0 is setup for flash and then only 4K
  */	
 McuE_LowPowerRecoverFlash:
-	LOAD_ADDR_32(5,0x10030000)
-    mtspr SPR_MAS0,r5     
-    LOAD_ADDR_32(5,0xC0000500)
-    mtspr SPR_MAS1,r5     
-    LOAD_ADDR_32(5,0x40000008)
-    mtspr SPR_MAS2,r5     
-    LOAD_ADDR_32(5,0x4000003F)
-    mtspr SPR_MAS3,r5
-    tlbwe
-
-    LOAD_ADDR_32(r3,0xfffe8600+52)
-	stb		1,0(r3)	
     
+    bl cfg_MMU
+ 
+ 
+#if 0 
+ 	// Setup the SIU again.
+	li	 r4,0x0202
+    LOAD_ADDR_32(r3,0xfffe8040+(52*2))		// PD4, SIU_PCR 
+	sth  r4,0(r3)
+	
+	LOAD_ADDR_32(r3,0xfffe8600+52)		// PD4, SIU_GPDO
+	stb		1,0(r3)	
+
     // Release PAD keepers
-    LOAD_ADDR_32(r3,0xfffec060)
+    LOAD_ADDR_32(r3,0xfffec060)   // CRP_PSCR
     LOAD_ADDR_32(r4,0x1000)
     stw	 r4,0(r3)
-	    
-apa:    
-    b 	apa
+#endif    
     
 /* Recover the stack */
-    lis	r4,0xFFFE
-	ori	r4,r4,0xC058	#-- CRP.RECPRTR address
+	LOAD_ADDR_32(r4,CRP_RECPTR)
 	lwz	r1,0x0(r4)	#-- Restore stack pointer from CRP
 	lmw	r25,0x78(r1)	#-- Load SPR values back into GPRs
 	mtSRR1	r25
@@ -115,6 +111,72 @@ apa:
     
     /* branch back to Mcu_SetMode().. */
     blr
+ 
+ 
+ #if defined(CFG_VLE)
+ #define VLE_VAL		MAS2_VLE
+ #else
+ #define VLE_VAL		0
+ #endif
+
+#define SRAM_START			0x40000000
+#define FLASH_START			0x00000000
+#define PERIPHERAL_START	0xfff00000
+
+ 
+ cfg_MMU:
+
+#***************************************************/
+#     setup MMU                                    */
+#***************************************************/
+
+#TLB Entry 0 =  1M Internal flash 
+	LOAD_ADDR_32(5, 0x10000000 + (0<<16))
+    mtspr SPR_MAS0,r5     
+    LOAD_ADDR_32(5, 0xC0000000 + MAS1_TSIZE_4M )
+    mtspr SPR_MAS1,r5     
+    LOAD_ADDR_32(5, FLASH_START + VLE_VAL )
+    mtspr SPR_MAS2,r5     
+    LOAD_ADDR_32(5, FLASH_START + MAS3_FULL_ACCESS )
+    mtspr SPR_MAS3,r5
+    msync
+    isync
+	tlbwe
+	isync
+
+
+#TLB Entry 1 =  Peripheral bridge and BAM
+	LOAD_ADDR_32(5, 0x10000000 + (1<<16))
+    mtspr SPR_MAS0,r5     
+    LOAD_ADDR_32(5, 0xC0000000 + MAS1_TSIZE_1M)
+    mtspr SPR_MAS1,r5
+    LOAD_ADDR_32(5, PERIPHERAL_START + VLE_VAL +  MAS2_I)
+    mtspr SPR_MAS2,r5     
+    LOAD_ADDR_32(5, PERIPHERAL_START + MAS3_FULL_ACCESS )
+    mtspr SPR_MAS3,r5
+    msync
+    isync
+	tlbwe
+	isync
+
+
+#TLB Entry 2 =  External RAM. Skip this. 
+
+#TLB Entry 3 =  Internal SRAM
+	LOAD_ADDR_32(5, 0x10000000+(3<<16))
+    mtspr SPR_MAS0,r5     
+    LOAD_ADDR_32(5, 0xC0000000 + MAS1_TSIZE_256K )
+    mtspr SPR_MAS1,r5     
+    LOAD_ADDR_32(5, SRAM_START + VLE_VAL )
+    mtspr SPR_MAS2,r5     
+    LOAD_ADDR_32(5, SRAM_START + MAS3_FULL_ACCESS )
+    mtspr SPR_MAS3,r5
+    msync
+    isync
+	tlbwe
+	isync
+   	blr
+   	
  
 
 

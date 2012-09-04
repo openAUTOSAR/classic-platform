@@ -666,7 +666,10 @@ void Mcu_PerformReset(void)
 
 /**
  *
- *
+ * Application Notes!
+ * - AN3584, "MPC5510 Family Low Power Features"
+ *   Since it's not complete also check MPC5668
+ * - AN4150 , "Using Sleep Mode on the MPC5668x" and it's code
  *
  *
  * @param LPM
@@ -710,6 +713,9 @@ static void enterLowPower (Mcu_ModeType mcuMode )
 	 *   although the code does not take that much space.
 	 * */
 	McuE_EnterLowPower(mcuMode);
+
+    /* Clear sleep flags to allow pads to operate */
+    CRP.PSCR.B.SLEEPF = 0x1;
 }
 
 
