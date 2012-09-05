@@ -1264,10 +1264,7 @@ static Dcm_NegativeResponseCodeType writeDidData(const Dcm_DspDidType *didPtr, c
 
 					if (result == E_OK) {
 						if (didLen == writeDidLen) {	/** @req DCM473 */
-							result = didPtr->DspDidWriteDataFnc(&pduRxData->SduDataPtr[3], (uint8)didLen, &errorCode);	/** @req DCM395 */
-							if ((result != E_OK) && (errorCode == DCM_E_POSITIVERESPONSE)) {
-								responseCode = DCM_E_CONDITIONSNOTCORRECT;
-							}
+							result = didPtr->DspDidWriteDataFnc(&pduRxData->SduDataPtr[3], (uint8)didLen, &responseCode);	/** @req DCM395 */
 						}
 						else {
 							responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
