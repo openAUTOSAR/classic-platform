@@ -2829,7 +2829,7 @@ struct LINFLEX_tag {
             vuint32_t AWUM:1;
             vuint32_t MBL:4;
             vuint32_t BF:1;
-            vuint32_t SFTM:1;
+            vuint32_t SLFM:1;
             vuint32_t LBKM:1;
             vuint32_t MME:1;
             vuint32_t SBDT:1;
@@ -4850,7 +4850,7 @@ struct EMIOS_tag{
             vuint32_t MDIS:1;
             vuint32_t FRZ:1;
         } B;
-    } PITMCR;
+    } MCR;
 
     vuint8_t PIT_reserved0[252]; /* Reserved 252 Bytes (Base+0x0004-0x00FF) */
 
@@ -5529,6 +5529,13 @@ struct INTC_tag {
         } PSR[234]; 
 
 }; /* end of INTC_tag */
+
+/****************************************************************************/
+/*                          MODULE : DSPI                                   */
+/****************************************************************************/
+#include "ip_dspi.h"
+
+#if 0
 /****************************************************************************/
 /*                          MODULE : DSPI    								*/
 /* Base Addresses: 															*/
@@ -5686,6 +5693,14 @@ struct DSPI_tag{
         } B;
     } RXFR[4];
  };                          /* end of DSPI_tag */
+#endif
+
+/****************************************************************************/
+/*                          MODULE : FlexCAN                                */
+/****************************************************************************/
+#include "ip_flexcan.h"
+
+#if 0
  /****************************************************************************/
 /*                          MODULE : FlexCAN                                */
 /* Base Addresses:															*/
@@ -6067,6 +6082,9 @@ struct FLEXCAN_tag{
     } RXIMR[64];
 
 }; /* end of FLEXCAN_tag */
+
+#endif
+
 /****************************************************************************/
 /*            MODULE : DMAMUX (base address - 0xFFFD_C000)                  */
 /****************************************************************************/

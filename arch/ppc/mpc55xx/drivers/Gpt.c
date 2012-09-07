@@ -204,6 +204,7 @@ GPT_ISR( 7 )
 GPT_ISR( 8 )
 #endif
 #endif
+#endif
 
 #if defined(CFG_MPC560X)
 	#if defined(CFG_MPC5606S)

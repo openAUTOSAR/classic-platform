@@ -104,6 +104,7 @@ static const Adc_ConfigType * Adc_GetControllerConfigPtrFromGroupId(Adc_GroupTyp
 void Adc_DeInit ()
 {
   volatile struct ADC_tag *hwPtr;
+  boolean okToClear = TRUE;
 
   for (int configId = 0; configId < ADC_ARC_CTRL_CONFIG_CNT; configId++) {
 	  hwPtr = GET_HW_CONTROLLER(AdcGlobalConfigPtr[configId].hwConfigPtr->hwUnitId);
@@ -114,7 +115,7 @@ void Adc_DeInit ()
 		for(Adc_GroupType group = (Adc_GroupType)0; group < AdcConfigPtr->nbrOfGroups; group++)
 		{
 		  /* Set group status to idle. */
-		  AdcConfigPtr->groupConfigPtr[group/NOF_GROUP_PER_CONTROLLER/NOF_GROUP_PER_CONTROLLER].status->groupStatus = ADC_IDLE;
+		  AdcConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_IDLE;
 		}
 
 		/* Disable DMA transfer*/
@@ -127,10 +128,19 @@ void Adc_DeInit ()
 		/* Disable all interrupt*/
 		hwPtr->IMR.R = 0;
 	  }
+	  else
+	  {
+		/* Not ok to change adcState if any unit is running */
+	    okToClear = FALSE;
+	  }
 	}
-	/* Clean internal status. */
-    AdcGlobalConfigPtr = (Adc_ConfigType *)NULL;
-	adcState = ADC_UNINIT;
+
+    if(okToClear)
+    {
+    	/* Clean internal status. */
+    	AdcGlobalConfigPtr = (Adc_ConfigType *)NULL;
+    	adcState = ADC_UNINIT;
+    }
 }
 #endif
 
@@ -165,7 +175,7 @@ Std_ReturnType Adc_SetupResultBuffer (Adc_GroupType group, Adc_ValueGroupType *b
   /* Check for development errors. */
   if (E_OK == Adc_CheckSetupResultBuffer (adcState, AdcConfigPtr, group))
   {
-    AdcConfigPtr->groupConfigPtr[group/NOF_GROUP_PER_CONTROLLER/NOF_GROUP_PER_CONTROLLER].status->resultBufferPtr = bufferPtr;
+    AdcConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].status->resultBufferPtr = bufferPtr;
     
     returnValue = E_OK;
   }
@@ -395,17 +405,17 @@ void Adc_Group0ConversionComplete (int unit)
 	// Check which group is busy, only one is allowed to be busy at a time in a hw unit
 	for (int group = 0; group < ADC_NBR_OF_GROUPS; group++)
 	{
-	  if((AdcConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].status->groupStatus == ADC_BUSY) ||
-       (AdcConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].status->groupStatus == ADC_COMPLETED))
+	  if((AdcConfigPtr->groupConfigPtr[group].status->groupStatus == ADC_BUSY) ||
+       (AdcConfigPtr->groupConfigPtr[group].status->groupStatus == ADC_COMPLETED))
 	  {
 #if !defined (ADC_USES_DMA)
 		/* Copy to result buffer */
-		for(uint8 index=0; index < AdcConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].numberOfChannels; index++)
+		for(uint8 index=0; index < AdcConfigPtr->groupConfigPtr[group].numberOfChannels; index++)
 		{
 #if defined(CFG_MPC5606S)
-			AdcConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].status->currResultBufPtr[index] = hwPtr->CDR[32+AdcConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].channelList[index]].B.CDATA;
+			AdcConfigPtr->groupConfigPtr[group].status->currResultBufPtr[index] = hwPtr->CDR[32+AdcConfigPtr->groupConfigPtr[group].channelList[index]].B.CDATA;
 #else
-			AdcConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].status->currResultBufPtr[index] = hwPtr->CDR[AdcConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].channelList[index]].B.CDATA;
+			AdcConfigPtr->groupConfigPtr[group].status->currResultBufPtr[index] = hwPtr->CDR[AdcConfigPtr->groupConfigPtr[group].channelList[index]].B.CDATA;
 #endif
 		}
 #endif

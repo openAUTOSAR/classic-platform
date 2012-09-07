@@ -199,8 +199,8 @@ typedef enum
 
     PIT_INT4,               // 5606-128
     PIT_INT5,               // 5606-129
-    RESERVED43,             // 5606-130
-    RESERVED44,             // 5606-131
+    PIT_INT6,             // 5606-130
+    PIT_INT7,             // 5606-131
     RESERVED45,             // 5606-132
     RESERVED46,             // 5606-133
     RESERVED47,             // 5606-134
@@ -1003,6 +1003,8 @@ typedef enum
 	PERIPHERAL_CLOCK_DSPI_B,
 	PERIPHERAL_CLOCK_DSPI_C,
 	PERIPHERAL_CLOCK_DSPI_D,
+	PERIPHERAL_CLOCK_DSPI_E,
+	PERIPHERAL_CLOCK_DSPI_F,
 #if defined(CFG_MPC560X)
 	PERIPHERAL_CLOCK_EMIOS_0,
 	PERIPHERAL_CLOCK_EMIOS_1,

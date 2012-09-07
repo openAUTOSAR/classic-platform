@@ -823,6 +823,8 @@ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 		case PERIPHERAL_CLOCK_DSPI_B:
 		case PERIPHERAL_CLOCK_DSPI_C:
 		case PERIPHERAL_CLOCK_DSPI_D:
+		case PERIPHERAL_CLOCK_DSPI_E:
+		case PERIPHERAL_CLOCK_DSPI_F:
 #if defined(CFG_MPC5516)
 		prescaler = SIU.SYSCLK.B.LPCLKDIV3;
 			break;

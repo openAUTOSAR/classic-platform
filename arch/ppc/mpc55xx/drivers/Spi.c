@@ -495,6 +495,12 @@ static void Spi_Isr_C(void) {
 static void Spi_Isr_D(void) {
 	Spi_Isr(GET_SPI_UNIT_PTR(DSPI_CTRL_D));
 }
+static void Spi_Isr_E(void) {
+	Spi_Isr(GET_SPI_UNIT_PTR(DSPI_CTRL_E));
+}
+static void Spi_Isr_F(void) {
+	Spi_Isr(GET_SPI_UNIT_PTR(DSPI_CTRL_F));
+}
 /* ----------------------------[public functions]----------------------------*/
 
 uint32 Spi_GetJobCnt(void);
@@ -1270,12 +1276,12 @@ static void Spi_InitController(Spi_UnitType *uPtr ) {
 	break;
 #endif
 #if (SPI_CONTROLLER_TOTAL_CNT > 4)
-	case 3:
+	case 4:
 	ISR_INSTALL_ISR2("SPI_E",Spi_Isr_E, DSPI_E_ISR_EOQF, 15, 0);
 	break;
 #endif
 #if (SPI_CONTROLLER_TOTAL_CNT > 5)
-	case 3:
+	case 5:
 	ISR_INSTALL_ISR2("SPI_F",Spi_Isr_F, DSPI_F_ISR_EOQF, 15, 0);
 	break;
 #endif
