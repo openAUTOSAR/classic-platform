@@ -61,8 +61,9 @@ all:
 	$(Q)$(MAKE) -C $(ROOTDIR) BOARDDIR=$(boarddir) BDIR=$(CURDIR) all
 	
 clean:	
-	@echo Cleaning dir $(boarddir) 
-	$(Q)rm -rf obj_$(boarddir)
+	@echo Removing dir $(boarddir) 
+	rm -rfv obj_$(boarddir)
+	rm -rfv $(ROOTDIR)/binaries/$(boarddir)/$(PROJECTNAME)*
 	@echo done!
 
 endif

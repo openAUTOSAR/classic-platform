@@ -176,7 +176,7 @@ config: $(dir_cmd_goals)
 .PHONY clean:	
 clean: $(dir_cmd_goals)
 	@echo
-	@echo "  >> Cleaning $(CURDIR)"
+	@echo "  >> Cleaning MAIN $(CURDIR)"
 #	$(Q)find . -type d -name $(objdir) | xargs rm -rf
 #	$(Q)find . -type f -name *.a | xargs rm -rf
 #	$(Q)rm   -rf libs/*
