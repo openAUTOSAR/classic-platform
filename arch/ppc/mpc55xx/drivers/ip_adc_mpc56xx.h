@@ -369,8 +369,13 @@
                 vuint32_t VALID:1;
                 vuint32_t OVERW:1;
                 vuint32_t RESULT:2;
+#ifdef CFG_MPC5606B
+                vuint32_t:4;
+                vuint32_t CDATA:12;
+#else
                   vuint32_t:6;
                 vuint32_t CDATA:10;
+#endif
             } B;
         } CDR[96];                     /* Channel 0-95 Data REGISTER - 0-31, 48-63, 72-95 not supported */
 
