@@ -161,16 +161,12 @@
 #include "Det.h"
 #include "isr.h"
 /* ----------------------------[private define]------------------------------*/
-
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5668) || defined(CFG_MPC5567)
-#define SPI_CONTROLLER_TOTAL_CNT 		4
-#elif defined(CFG_MPC5606B)
-#define SPI_CONTROLLER_TOTAL_CNT 		6
-#elif defined(CFG_MPC5604B)
-#define SPI_CONTROLLER_TOTAL_CNT 		3
-#elif defined(CFG_MPC560X)
-#define SPI_CONTROLLER_TOTAL_CNT 		2
-#endif
+#define DSPI_CTRL_A	0
+#define DSPI_CTRL_B	1
+#define DSPI_CTRL_C	2
+#define DSPI_CTRL_D	3
+#define DSPI_CTRL_E	4
+#define DSPI_CTRL_F	5
 
 #if defined(CFG_MPC560X)
 #define DSPI_A_ISR_EOQF DSPI_0_ISR_EOQF
@@ -439,6 +435,18 @@ Spi_DmaConfigType  Spi_DmaConfig[SPI_CONTROLLER_CNT] = {
 	    .TxDmaChannel = DMA_DSPI_D_COMMAND_CHANNEL,
 	}
 #endif
+#if (SPI_USE_HW_UNIT_4 == STD_ON )
+	{
+	    .RxDmaChannel = DMA_DSPI_E_RESULT_CHANNEL,
+	    .TxDmaChannel = DMA_DSPI_E_COMMAND_CHANNEL,
+	}
+#endif
+#if (SPI_USE_HW_UNIT_5 == STD_ON )
+	{
+	    .RxDmaChannel = DMA_DSPI_F_RESULT_CHANNEL,
+	    .TxDmaChannel = DMA_DSPI_F_COMMAND_CHANNEL,
+	}
+#endif
 };
 #endif
 
@@ -483,24 +491,36 @@ static const Spi_DataType *spiGetTxBuf(Spi_ChannelType ch, Spi_NumberOfDataType 
 
 static void Spi_Isr(Spi_UnitType *uPtr );
 
+#if (SPI_USE_HW_UNIT_0 == STD_ON )
 static void Spi_Isr_A(void) {
 	Spi_Isr(GET_SPI_UNIT_PTR(DSPI_CTRL_A));
 }
+#endif
+#if (SPI_USE_HW_UNIT_1 == STD_ON )
 static void Spi_Isr_B(void) {
 	Spi_Isr(GET_SPI_UNIT_PTR(DSPI_CTRL_B));
 }
+#endif
+#if (SPI_USE_HW_UNIT_2 == STD_ON )
 static void Spi_Isr_C(void) {
 	Spi_Isr(GET_SPI_UNIT_PTR(DSPI_CTRL_C));
 }
+#endif
+#if (SPI_USE_HW_UNIT_3 == STD_ON )
 static void Spi_Isr_D(void) {
 	Spi_Isr(GET_SPI_UNIT_PTR(DSPI_CTRL_D));
 }
+#endif
+#if (SPI_USE_HW_UNIT_4 == STD_ON )
 static void Spi_Isr_E(void) {
 	Spi_Isr(GET_SPI_UNIT_PTR(DSPI_CTRL_E));
 }
+#endif
+#if (SPI_USE_HW_UNIT_5 == STD_ON )
 static void Spi_Isr_F(void) {
 	Spi_Isr(GET_SPI_UNIT_PTR(DSPI_CTRL_F));
 }
+#endif
 /* ----------------------------[public functions]----------------------------*/
 
 uint32 Spi_GetJobCnt(void);
@@ -1030,28 +1050,32 @@ static void Spi_SetupCTAR(	Spi_HWUnitType unit,
 	 */
 
 	switch(unit) {
+#if (SPI_USE_HW_UNIT_0 == STD_ON )
 	case 0:
 		perClock = PERIPHERAL_CLOCK_DSPI_A;
 		break;
+#endif
+#if (SPI_USE_HW_UNIT_1 == STD_ON )
 	case 1:
 		perClock = PERIPHERAL_CLOCK_DSPI_B;
 		break;
-#if (SPI_CONTROLLER_TOTAL_CNT>2)
+#endif
+#if (SPI_USE_HW_UNIT_2 == STD_ON )
 	case 2:
 		perClock = PERIPHERAL_CLOCK_DSPI_C;
 		break;
 #endif
-#if (SPI_CONTROLLER_TOTAL_CNT>3)
+#if (SPI_USE_HW_UNIT_3 == STD_ON )
 	case 3:
 		perClock = PERIPHERAL_CLOCK_DSPI_D;
 		break;
 #endif
-#if (SPI_CONTROLLER_TOTAL_CNT>4)
+#if (SPI_USE_HW_UNIT_4 == STD_ON )
 	case 4:
 		perClock = PERIPHERAL_CLOCK_DSPI_E;
 		break;
 #endif
-#if (SPI_CONTROLLER_TOTAL_CNT>5)
+#if (SPI_USE_HW_UNIT_5 == STD_ON )
 	case 5:
 		perClock = PERIPHERAL_CLOCK_DSPI_F;
 		break;
@@ -1259,28 +1283,32 @@ static void Spi_InitController(Spi_UnitType *uPtr ) {
 
 	// Install EOFQ int..
 	switch (uPtr->hwUnit) {
+#if (SPI_USE_HW_UNIT_0 == STD_ON )
 	case 0:
 	ISR_INSTALL_ISR2("SPI_A",Spi_Isr_A, DSPI_A_ISR_EOQF, 15, 0);
 	break;
+#endif
+#if (SPI_USE_HW_UNIT_1 == STD_ON )
 	case 1:
 	ISR_INSTALL_ISR2("SPI_B",Spi_Isr_B, DSPI_B_ISR_EOQF, 15, 0);
 	break;
-#if (SPI_CONTROLLER_TOTAL_CNT > 2)
+#endif
+#if (SPI_USE_HW_UNIT_2 == STD_ON )
 	case 2:
 	ISR_INSTALL_ISR2("SPI_C",Spi_Isr_C, DSPI_C_ISR_EOQF, 15, 0);
 	break;
 #endif
-#if (SPI_CONTROLLER_TOTAL_CNT > 3)
+#if (SPI_USE_HW_UNIT_3 == STD_ON )
 	case 3:
 	ISR_INSTALL_ISR2("SPI_D",Spi_Isr_D, DSPI_D_ISR_EOQF, 15, 0);
 	break;
 #endif
-#if (SPI_CONTROLLER_TOTAL_CNT > 4)
+#if (SPI_USE_HW_UNIT_4 == STD_ON )
 	case 4:
 	ISR_INSTALL_ISR2("SPI_E",Spi_Isr_E, DSPI_E_ISR_EOQF, 15, 0);
 	break;
 #endif
-#if (SPI_CONTROLLER_TOTAL_CNT > 5)
+#if (SPI_USE_HW_UNIT_5 == STD_ON )
 	case 5:
 	ISR_INSTALL_ISR2("SPI_F",Spi_Isr_F, DSPI_F_ISR_EOQF, 15, 0);
 	break;

@@ -4130,6 +4130,7 @@ extern "C" {
 
 /* Define memories */
 
+#if 0
 #define SRAM_START  0x40000000
 #define SRAM_SIZE      0x14000
 #define SRAM_END    0x40013FFF
@@ -4137,6 +4138,7 @@ extern "C" {
 #define FLASH_START         0x0
 #define FLASH_SIZE      0x200000
 #define FLASH_END       0x1FFFFF
+#endif
 
 /* Define instances of modules */
 #define PBRIDGE_A (*( volatile struct PBRIDGE_A_tag *) 0xC3F00000)
