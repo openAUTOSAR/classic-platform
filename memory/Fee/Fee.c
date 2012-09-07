@@ -299,7 +299,6 @@ typedef enum {
 
 typedef struct {
 	CurrentJobStateType			State;
-	uint16						InStateCounter;
 	uint16						BlockNumber;
 	uint16						Length;
 	const Fee_BlockConfigType	*BlockConfigPtr;
@@ -335,15 +334,12 @@ typedef struct {
 
 static CurrentJobType CurrentJob = {
 		.State = FEE_IDLE,
-		.InStateCounter = 0
 		//lint -e{785}		PC-Lint (785) - rest of structure members is initialized when used.
 };
 
 /*
  * Misc definitions
  */
-#define STATE_COUNTER_MAX				0xffff
-#define GARBAGE_COLLECTION_DELAY		10
 #define MAX_NOF_FAILED_GC_ATTEMPTS		5
 /***************************************
  *           Local functions           *
@@ -1195,7 +1191,6 @@ void Fee_Init(void)
 
 	/* State of device */
 	CurrentJob.State = FEE_STARTUP_REQUESTED;
-	CurrentJob.InStateCounter = 0;
 #if (FEE_POLLING_MODE == STD_OFF)
 	FlsJobReady = TRUE;
 #endif
@@ -1414,16 +1409,6 @@ Std_ReturnType Fee_EraseImmediateBlock(uint16 blockNumber)
  */
 void Fee_MainFunction(void)
 {
-	static CurrentJobStateType LastState = FEE_UNINITIALIZED;
-
-	if (CurrentJob.State == LastState) {
-		if (CurrentJob.InStateCounter < STATE_COUNTER_MAX) {
-			CurrentJob.InStateCounter++;
-		}
-	} else {
-		LastState = CurrentJob.State;
-		CurrentJob.InStateCounter = 0;
-	}
 
 	switch (CurrentJob.State) {
 	case FEE_UNINITIALIZED:
