@@ -403,7 +403,7 @@ void Adc_Group0ConversionComplete (int unit)
 	hwPtr->IMR.B.MSKECH = 0;
 
 	// Check which group is busy, only one is allowed to be busy at a time in a hw unit
-	for (int group = 0; group < ADC_NBR_OF_GROUPS; group++)
+	for (int group = 0; group < AdcConfigPtr->nbrOfGroups; group++)
 	{
 	  if((AdcConfigPtr->groupConfigPtr[group].status->groupStatus == ADC_BUSY) ||
        (AdcConfigPtr->groupConfigPtr[group].status->groupStatus == ADC_COMPLETED))
