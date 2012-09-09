@@ -202,9 +202,9 @@ endif
 .PHONY clean: 
 clean: FORCE
 	@echo
-	@echo "  >> Cleaning $(CURDIR)"
-	$(Q)-rm -f *.o *.d *.h *.elf *.a *.ldp *.lcf *.tmp *.s *.c *.map *.out *.bin *.srec
-	@echo
+	@echo "  >> Rules Clean $(CURDIR)"
+	$(Q)-rm -v *
+	$(Q)-rm -v $(ROOTDIR)/binaries/$(BOARDDIR)/*
 	
 .PHONY : config 
 config: FORCE

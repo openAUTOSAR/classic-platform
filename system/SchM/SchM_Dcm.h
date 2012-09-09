@@ -13,9 +13,10 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-#ifndef SCHM_CANTP_H_
-#define SCHM_CANTP_H_
 
-#define SCHM_MAINFUNCTION_CANTP() 	SCHM_MAINFUNCTION(CANTP,CanTp_MainFunction())
+#ifndef SCHM_DCM_H_
+#define SCHM_DCM_H_
 
-#endif /* SCHM_CANTP_H_ */
+#define SCHM_MAINFUNCTION_DCM() 	SCHM_MAINFUNCTION(DCM,Dcm_MainFunction())
+
+#endif /* SCHM_DCM_H_ */
