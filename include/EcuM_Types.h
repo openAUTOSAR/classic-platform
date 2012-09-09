@@ -148,7 +148,7 @@ typedef enum
 
 typedef enum
 {
-	ECUM_WWKACT_RUN = 0,       /**< Initialization into RUN state */
+	ECUM_WKACT_RUN = 0,       /**< Initialization into RUN state */
 	ECUM_WKACT_TTII = 2,       /**< Execute time triggered increased inoperation protocol and shutdown */
 	ECUM_WKACT_SHUTDOWN = 3   /**< Immediate shutdown */
 } EcuM_WakeupReactionType;

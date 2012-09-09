@@ -716,6 +716,8 @@ static void enterLowPower (Mcu_ModeType mcuMode )
 
     /* Clear sleep flags to allow pads to operate */
     CRP.PSCR.B.SLEEPF = 0x1;
+
+
 }
 
 

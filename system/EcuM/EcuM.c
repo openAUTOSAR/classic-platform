@@ -102,6 +102,8 @@
 EcuM_GlobalType internal_data;
 
 /* ----------------------------[private functions]---------------------------*/
+
+
 /* ----------------------------[public functions]----------------------------*/
 
 #if !defined(USE_DET) && defined(ECUM_DEV_ERROR_DETECT)
@@ -362,12 +364,45 @@ Std_ReturnType EcuM_ReleaseRUN(EcuM_UserType user)
 	return E_OK;
 }
 
+/**
+ *
+ */
 void EcuM_KillAllRUNRequests( void ) {
 	/* NOT IMPLEMENTED */
 }
 
+
+/**
+ *
+ * @param sources
+ */
 void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources) {
-	/* NOT IMPLEMENTED */
+	/* @req 3.1.5/EcuM2826 The function exists */
+	/* @req 3.1.5/EcuM2171 */
+
+	/* @req 3.1.5/EcuM2867 */
+#if  ( ECUM_DEV_ERROR_DETECT == STD_ON )
+	{
+		EcuM_WakeupSourceType wkSource;
+		const EcuM_SleepModeType *sleepModePtr;
+
+		sleepModePtr = &internal_data.config->EcuMSleepModeConfig[internal_data.sleep_mode];
+	 	wkSource =  sleepModePtr->EcuMWakeupSourceMask;
+
+		if( !((sources | wkSource) ==  wkSource)) {
+			Det_ReportError(MODULE_ID_ECUM, 0, ECUM_VALIDATE_WAKEUP_EVENT_ID, ECUM_E_UNKNOWN_WAKEUP_SOURCE );
+			return;
+		}
+	}
+#endif
+
+
+	/* @req 3.1.5/EcuM1117 */
+	internal_data.wakeupEvents |= sources;
+
+	/* @req 3.1.5/EcuM2707 @req 3.1.5/EcuM2709*/
+	internal_data.wakeupTimer = ECUM_VALIDATION_TIMEOUT;
+
 }
 
 #if defined(USE_COMM) || defined(USE_ECUM_COMM)
@@ -441,13 +476,32 @@ void EcuM_ClearWakeupEvent( EcuM_WakeupSourceType source )
 }
 
 /**
- * TODO:
+ * Get the pending wakeup events.
+ *
  * @return
  */
 EcuM_WakeupSourceType EcuM_GetPendingWakeupEvents( void ) {
+	/* @req 3.1.5/EcuM2827 API
+	 * @req 3.1.5/EcuM2172 Callable from interrupt context
+	 * */
 
-	// TODO:
-	return ECUM_WKSOURCE_INTERNAL_RESET;
+	/* @req 3.1.5/EcuM1156 */
+	return internal_data.wakeupEvents;
 
 }
+
+
+void EcuM_CheckValidation(EcuM_WakeupSourceType wakeupSource) {
+	/* Used only if CanIf is used ? CanIf_Checkvalidation(wakeupSource) */
+}
+
+
+EcuM_WakeupSourceType EcuM_GetValidatedWakeupEvents( void ) {
+	// TODO:
+}
+
+EcuM_WakeupStatusType EcuM_GetStatusOfWakeupSource( EcuM_WakeupSourceType sources ) {
+
+}
+
 

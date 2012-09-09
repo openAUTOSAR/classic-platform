@@ -209,6 +209,16 @@ static void in_state_sleep ( void ) {
 	sleepModePtr = &internal_data.config->EcuMSleepModeConfig[internal_data.sleep_mode];
 
 	Mcu_SetMode(sleepModePtr->EcuMSleepModeMcuMode);
+
+	/* @req 3.1.5/ECUM2863 */
+	if( EcuM_CheckRamHash() == 0) {
+#if defined(USE_DEM)
+		//
+		EcuM_ErrorHook(ECUM_E_RAM_CHECK_FAILED);
+#endif
+	}
+
+	set_current_state(ECUM_STATE_WAKEUP_ONE);
 }
 
 static inline void enter_go_off_one_mode(void){
@@ -337,6 +347,8 @@ static inline void in_state_goOffOne(void){
 
 //----- MAIN -----------------------------------------------------------------------------------------------------------------
 void EcuM_MainFunction(void){
+	EcuM_WakeupSourceType wMask;
+
 	VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_NOT_INITIATED);
 
 	switch(internal_data.current_state){
@@ -360,6 +372,73 @@ void EcuM_MainFunction(void){
 			break;
 		case ECUM_STATE_SLEEP:
 			in_state_sleep();
+			break;
+		case ECUM_STATE_WAKEUP_ONE:
+		{
+			/* TODO: we must have a normal RUN mode.. can't find any
+			 * in the A3.1.5 spec. */
+			Mcu_SetMode(MCU_MODE_NORMAL);
+
+#if defined(USE_WDGM)
+			WdgM_SetMode(FIXME_MODE);
+#endif
+
+			wMask = EcuM_GetPendingWakeupEvents();
+
+			EcuM_DisableWakeupSources(wMask);
+
+			EcuM_AL_DriverRestart();
+
+			ReleaseResource(RES_SCHEDULER);
+
+			set_current_state(ECUM_STATE_WAKEUP_VALIDATION);
+
+			break;
+		}
+
+		case ECUM_STATE_WAKEUP_VALIDATION:
+		{
+			wMask = EcuM_GetPendingWakeupEvents();
+
+			EcuM_StartWakeupSources(wMask);
+
+			EcuM_CheckValidation( wMask );
+
+			// TODO:
+			// ComM_EcuM_WakeupIndication( network handle )
+
+			set_current_state(ECUM_STATE_WAKEUP_REACTION);
+			break;
+		}
+
+		case ECUM_STATE_WAKEUP_REACTION:
+		{
+			/*
+			 * At this stage we want to know how to react to the wakeup, e.g. go
+			 * back to RUN or SHUTDOWN, etc.
+			 */
+			EcuM_WakeupReactionType wReaction;
+
+			wMask = EcuM_GetValidatedWakeupEvents();
+
+			/* TODO: We have skipped the TTII timer here */
+			wReaction = ( 0 == wMask ) ? ECUM_WKACT_SHUTDOWN : ECUM_WKACT_RUN
+			wReaction = EcuM_OnWakeupReaction(wReaction);
+
+			if( wReaction == ECUM_WKACT_RUN) {
+
+				set_current_state(ECUM_STATE_WAKEUP_TWO);
+			} else {
+				/* Shutdown, again */
+				/* TODO:
+				set_current_state(ECUM_STATE_WAKEUP_TWO);
+			}
+			break;
+		}
+
+		case ECUM_STATE_WAKEUP_TWO:
+			Dem_Init();
+
 			break;
 
 		default:

@@ -26,10 +26,13 @@ McuE_EnterLowPower:
 	mfCR	r29
 	mfXER	r30
 	mfCTR	r31
-	stmw	r25, 0x78(r1)	#-- Store SPR data to stack
+	stmw	r25, 0x78(r1)	// Store SPR data to stack
 		
 	LOAD_ADDR_32(r4,CRP_RECPTR)
 	stw		r1,0x0(r4)	//  Save stack pointer to CRP to be preserved during LPM
+	
+/* Note! You cannot step over the wait instruction with the debugger */	
+	
 	.long	0x7C00007C	//  Wait instruction
 	
 	
@@ -69,46 +72,46 @@ McuE_LowPowerVector:
 #elif defined(__DCC__)
 	.section .text_vle,x
 #endif
+
+	.extern EcuM_CheckWakeup
 	.global McuE_LowPowerRecoverFlash
 
 /*
- * When we come back here only TLB0 is setup for flash and then only 4K
+ * When we come back here only TLB0 is setup for flash and then only 4K.
+ *
+ * Debuggers:
+ * - WinIDEA : Hardware->Emulation Options->CPU Setup->MPC55xx->Low Power Debug
+ *             This will make the debugger stop on the function below.
+ * - UDE:      No support for this yet. It just runs through the "wait" instruction.       
  */	
 McuE_LowPowerRecoverFlash:
     
     bl cfg_MMU
- 
- 
-#if 0 
- 	// Setup the SIU again.
-	li	 r4,0x0202
-    LOAD_ADDR_32(r3,0xfffe8040+(52*2))		// PD4, SIU_PCR 
-	sth  r4,0(r3)
-	
-	LOAD_ADDR_32(r3,0xfffe8600+52)		// PD4, SIU_GPDO
-	stb		1,0(r3)	
-
-    // Release PAD keepers
-    LOAD_ADDR_32(r3,0xfffec060)   // CRP_PSCR
-    LOAD_ADDR_32(r4,0x1000)
-    stw	 r4,0(r3)
-#endif    
-    
+     
 /* Recover the stack */
 	LOAD_ADDR_32(r4,CRP_RECPTR)
-	lwz	r1,0x0(r4)	#-- Restore stack pointer from CRP
-	lmw	r25,0x78(r1)	#-- Load SPR values back into GPRs
+	lwz	r1,0x0(r4)	    // Restore stack pointer from CRP
+	lmw	r25,0x78(r1)	// Load SPR values back into GPRs
 	mtSRR1	r25
 	mtSRR0	r26
 	mtLR	r27
 	mtmsr	r28
 	mtCR	r29
 	mtXER	r30
-	mtCTR	r31		#-- Load SPRs with GPR values
-	lmw	r2, 0(r1)	#-- Restore GPRs from stack
-	addi	r1,r1,0x94	#-- Deallocate space on stack
-	blr			#-- Branch back to calling function
-    
+	mtCTR	r31		    // Load SPRs with GPR values
+	lmw	r2, 0(r1) 	    // Restore GPRs from stack
+	addi	r1,r1,0x94	// Deallocate space on stack
+
+#if defined(USE_ECUM)
+
+	/* We have no idea what made us wakeup, pass all */
+	LOAD_ADDR_32(r3,0x3fffffff);		// EcuM_WakeupSourceType
+	bl EcuM_CheckWakeup
+
+#endif
+
+
+
     /* branch back to Mcu_SetMode().. */
     blr
  
@@ -119,9 +122,13 @@ McuE_LowPowerRecoverFlash:
  #define VLE_VAL		0
  #endif
 
+#if defined(CFG_MPC5516)
 #define SRAM_START			0x40000000
 #define FLASH_START			0x00000000
 #define PERIPHERAL_START	0xfff00000
+#else
+#error No support for this MCU
+#endif
 
  
  cfg_MMU:
