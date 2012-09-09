@@ -208,6 +208,8 @@ static void in_state_sleep ( void ) {
 	const EcuM_SleepModeType *sleepModePtr;
 	sleepModePtr = &internal_data.config->EcuMSleepModeConfig[internal_data.sleep_mode];
 
+	EcuM_GenerateRamHash();
+
 	Mcu_SetMode(sleepModePtr->EcuMSleepModeMcuMode);
 
 	/* @req 3.1.5/ECUM2863 */
@@ -422,23 +424,27 @@ void EcuM_MainFunction(void){
 			wMask = EcuM_GetValidatedWakeupEvents();
 
 			/* TODO: We have skipped the TTII timer here */
-			wReaction = ( 0 == wMask ) ? ECUM_WKACT_SHUTDOWN : ECUM_WKACT_RUN
+
+			/* If the wakeup mask here is != 0 we have a validated wakeup event ->
+			 * go back to RUN */
+			wReaction = ( 0 == wMask ) ? ECUM_WKACT_SHUTDOWN : ECUM_WKACT_RUN;
 			wReaction = EcuM_OnWakeupReaction(wReaction);
 
 			if( wReaction == ECUM_WKACT_RUN) {
-
 				set_current_state(ECUM_STATE_WAKEUP_TWO);
 			} else {
-				/* Shutdown, again */
-				/* TODO:
-				set_current_state(ECUM_STATE_WAKEUP_TWO);
+				/* From figure 28 it seems that we should go to SHUTDOWN/GO SLEEP) again from wakeup
+				 * not going up to RUN/RUN II state again. */
+				set_current_state(ECUM_STATE_GO_SLEEP);
 			}
 			break;
 		}
 
 		case ECUM_STATE_WAKEUP_TWO:
+#if defined(USE_DEM)
 			Dem_Init();
-
+#endif
+			set_current_state(ECUM_STATE_RUN);
 			break;
 
 		default:
