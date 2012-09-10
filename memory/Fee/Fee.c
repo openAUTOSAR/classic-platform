@@ -235,7 +235,7 @@ typedef struct {
 
 typedef struct {
 	uint8				BankNumber;
-	uint8				ForceGarbageCollect;
+	boolean				ForceGarbageCollect;
 	uint8				NofFailedGarbageCollect;
 	Fls_AddressType		NewBlockAdminAddress;
 	Fls_AddressType		NewBlockDataAddress;
@@ -421,7 +421,7 @@ static void AbortJob(MemIf_JobResultType result)
 {
 	if(AdminFls.NofFailedGarbageCollect >= MAX_NOF_FAILED_GC_ATTEMPTS){
 		DET_REPORTERROR(MODULE_ID_FEE, 0, FEE_GLOBAL_ID, FEE_FLASH_CORRUPT);
-		AdminFls.ForceGarbageCollect = 0;
+		AdminFls.ForceGarbageCollect = FALSE;
 		CurrentJob.State = FEE_CORRUPTED;
 	} else {
 		CurrentJob.State = FEE_IDLE;
@@ -649,7 +649,7 @@ static void Reading(void)
 static void BankHeaderOldWrite(uint8 bank)
 {
 	/* Need to collect garbage */
-	AdminFls.ForceGarbageCollect = 1;
+	AdminFls.ForceGarbageCollect = TRUE;
 	/* Mark the bank as old */
 	memset(RWBuffer.BankCtrl.Data, 0xff, BANK_CTRL_PAGE_SIZE);
 	RWBuffer.BankCtrl.BankStatus = BANK_STATUS_OLD;
@@ -1029,6 +1029,9 @@ static void GarbageCollectWriteMagicRequested(void)
 			AdminFls.NofFailedGarbageCollect++;
 			AbortJob(Fls_GetJobResult());
 		}
+	} else {
+		AdminFls.NofFailedGarbageCollect++;
+		AbortJob(Fls_GetJobResult());
 	}
 }
 
@@ -1059,7 +1062,7 @@ static void GarbageCollectErase(void)
 	if (CheckFlsJobFinnished()) {
 		if (Fls_GetJobResult() == MEMIF_JOB_OK) {
 			AdminFls.BankStatus[CurrentJob.Op.GarbageCollect.BankNumber] = BANK_STATUS_NEW;
-			AdminFls.ForceGarbageCollect = 0;
+			AdminFls.ForceGarbageCollect = FALSE;
 			AdminFls.NofFailedGarbageCollect = 0;
 			FinnishJob();
 		} else {
@@ -1196,7 +1199,7 @@ void Fee_Init(void)
 #endif
 
 	AdminFls.BankNumber = 0;
-	AdminFls.ForceGarbageCollect = 0;
+	AdminFls.ForceGarbageCollect = FALSE;
 	AdminFls.NofFailedGarbageCollect = 0;
 	AdminFls.NewBlockDataAddress = BankProp[AdminFls.BankNumber].Start;
 	AdminFls.NewBlockAdminAddress = BankProp[AdminFls.BankNumber].End - (BLOCK_CTRL_PAGE_SIZE + BANK_CTRL_PAGE_SIZE);
