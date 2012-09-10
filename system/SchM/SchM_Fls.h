@@ -18,6 +18,6 @@
 #ifndef SCHM_FLS_H_
 #define SCHM_FLS_H_
 
-#define SCHM_MAINFUNCTION_FLS() 	Fls_MainFunction()
+#define SCHM_MAINFUNCTION_FLS() 	SCHM_MAINFUNCTION(FLS,Fls_MainFunction())
 
 #endif /* SCHM_FLS_H_ */

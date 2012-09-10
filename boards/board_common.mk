@@ -275,6 +275,7 @@ obj-$(USE_DCM) += Dcm_Dsp.o
 obj-$(USE_DCM) += Dcm_Dsd.o
 obj-$(USE_DCM) += Dcm_Dsl.o
 obj-$(USE_DCM) += Dcm_LCfg.o
+obj-$(USE_DCM) += Dcm_Callout_Stubs.o
 inc-$(USE_DCM) += $(ROOTDIR)/diagnostic/Dcm
 vpath-$(USE_DCM) += $(ROOTDIR)/diagnostic/Dcm
 

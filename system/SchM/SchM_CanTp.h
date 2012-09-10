@@ -16,5 +16,6 @@
 #ifndef SCHM_CANTP_H_
 #define SCHM_CANTP_H_
 
+#define SCHM_MAINFUNCTION_CANTP() 	SCHM_MAINFUNCTION(CANTP,CanTp_MainFunction())
 
 #endif /* SCHM_CANTP_H_ */

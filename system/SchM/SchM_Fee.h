@@ -18,6 +18,6 @@
 #ifndef SCHM_FEE_H_
 #define SCHM_FEE_H_
 
-#define SCHM_MAINFUNCTION_FEE() 	Fee_MainFunction()
+#define SCHM_MAINFUNCTION_FEE() 	SCHM_MAINFUNCTION(FEE,Fee_MainFunction())
 
 #endif /* SCHM_FEE_H_ */

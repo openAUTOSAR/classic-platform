@@ -334,12 +334,12 @@ void Can_B_Isr(void)
 {
     Can_Isr(CAN_CTRL_B);
 }
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567) || defined(CFG_MPC5668) || defined(CFG_MPC5604B)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567) || defined(CFG_MPC5668) || defined(CFG_MPC560XB)
 void Can_C_Isr( void ) {Can_Isr(CAN_CTRL_C);}
 void Can_D_Isr( void ) {Can_Isr(CAN_CTRL_D);}
 void Can_E_Isr( void ) {Can_Isr(CAN_CTRL_E);}
 #endif
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5668) || defined(CFG_MPC5604B)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5668) || defined(CFG_MPC560XB)
 void Can_F_Isr( void ) {Can_Isr(CAN_CTRL_F);}
 #endif
 
@@ -351,12 +351,12 @@ void Can_B_Err(void)
 {
     Can_Err(CAN_CTRL_B);
 }
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567) || defined(CFG_MPC5668) || defined(CFG_MPC5604B)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567) || defined(CFG_MPC5668) || defined(CFG_MPC560XB)
 void Can_C_Err( void ) {Can_Err(CAN_CTRL_C);}
 void Can_D_Err( void ) {Can_Err(CAN_CTRL_D);}
 void Can_E_Err( void ) {Can_Err(CAN_CTRL_E);}
 #endif
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5668) || defined(CFG_MPC5604B)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5668) || defined(CFG_MPC560XB)
 void Can_F_Err( void ) {Can_Err(CAN_CTRL_F);}
 #endif
 
@@ -368,12 +368,12 @@ void Can_B_BusOff(void)
 {
     Can_BusOff(CAN_CTRL_B);
 }
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567) || defined(CFG_MPC5668) || defined(CFG_MPC5604B)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567) || defined(CFG_MPC5668) || defined(CFG_MPC560XB)
 void Can_C_BusOff( void ) {Can_BusOff(CAN_CTRL_C);}
 void Can_D_BusOff( void ) {Can_BusOff(CAN_CTRL_D);}
 void Can_E_BusOff( void ) {Can_BusOff(CAN_CTRL_E);}
 #endif
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5668) || defined(CFG_MPC5604B)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5668) || defined(CFG_MPC560XB)
 void Can_F_BusOff( void ) {Can_BusOff(CAN_CTRL_F);}
 #endif
 //-------------------------------------------------------------------
@@ -812,7 +812,7 @@ void Can_Init(const Can_ConfigType *config)
 			ISR_INSTALL_ISR2( "Can", Can_B_Isr, FLEXCAN_1_BUF_32_63, 2, 0 );
 		}
         break;
-	#if defined(CFG_MPC5604B)
+	#if defined(CFG_MPC560XB)
         case CAN_CTRL_C:
 		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_BUSOFF_PROCESSING_INTERRUPT){
 	        ISR_INSTALL_ISR2( "Can", Can_C_BusOff, FLEXCAN_2_ESR_BOFF_INT, 2, 0);
@@ -1373,7 +1373,7 @@ Can_ReturnType Can_Write(Can_Arc_HTHType hth, Can_PduType *pduInfo)
             canHw->BUF[mbNr].ID.B.STD_ID = pduInfo->id;
         }
 
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S) || defined(CFG_MPC5604B) || defined(CFG_MPC5668)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S) || defined(CFG_MPC560XB) || defined(CFG_MPC5668)
         canHw->BUF[mbNr].ID.B.PRIO = 1; // Set Local Priority
 #endif
 

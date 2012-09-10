@@ -103,7 +103,7 @@ void Port_Init(const Port_ConfigType *configType)
 		SIU.PCR[i].R = configType->padConfig[i];
     	++i;
 
-#if defined(CFG_MPC5604B)
+#if defined(CFG_MPC560XB)
     	if(32 == i || 33 == i) i=34;
     	if(121 == i || 122 == i) i=123;
 #elif defined(CFG_MPC5606S)
@@ -174,7 +174,7 @@ void Port_RefreshPortDirection( void )
     Irq_Restore(state); // Restore interrupts
     pcrPtr++;
     padCfgPtr++;
-#if defined(CFG_MPC5604B)
+#if defined(CFG_MPC560XB)
     if(32 == i)
     {
     	i=34;

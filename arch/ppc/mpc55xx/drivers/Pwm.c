@@ -36,6 +36,9 @@
 #if defined(CFG_MPC5604B)
 	#define PWM_RUNTIME_CHANNEL_COUNT	56
     #define CHANNELS_OK (Channel <= PWM_MAX_CHANNEL-1)
+#elif defined(CFG_MPC5606B)
+	#define PWM_RUNTIME_CHANNEL_COUNT	64
+    #define CHANNELS_OK (Channel <= PWM_MAX_CHANNEL-1)
 #elif defined(CFG_MPC5606S)
 	#define PWM_RUNTIME_CHANNEL_COUNT	48
     #define CHANNELS_OK (((Channel <= PWM_MAX_CHANNEL-1) && (Channel >= 40)) || ((Channel <= 23) && (Channel >= 16)))
@@ -207,7 +210,7 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
     	return;
     }
 
-    #if defined(CFG_MPC5606S) && !defined(CFG_MPC5604B)
+    #if defined(CFG_MPC5606S) && !defined(CFG_MPC560XB)
 		CGM.AC1_SC.R = 0x03000000; /* MPC56xxS: Select aux. set 1 clock to be FMPLL0 */
 		CGM.AC2_SC.R = 0x03000000; /* MPC56xxS: Select aux. set 2 clock to be FMPLL0 */
 	#endif
@@ -279,7 +282,7 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
                 // Pwm_DisableNotification(channel);
 
                 // Install ISR
-			#if defined(CFG_MPC5604B)
+			#if defined(CFG_MPC560XB)
 				switch(channel)
 				{
 				case 0:

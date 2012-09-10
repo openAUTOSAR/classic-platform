@@ -39,6 +39,7 @@
 #include "Dem_Lcfg.h"
 #include "Dem_IntErrId.h" /** @req DEM115 */
 #include "Dem_IntEvtId.h"
+#include <limits.h>
 /** @req DEM153 */ /** @req DEM154 */ /* Realized in Dem_IntErrId.h and Dem_IntEvtId.h */
 // #include "Rte_Dem.h"
 
@@ -60,8 +61,13 @@
 #define DEM_E_PRI_MEM_EVENT_BUFF_FULL		0x44
 #define DEM_E_PRI_MEM_EXT_DATA_BUFF_FULL	0x45
 
+#define DEM_E_FF_TOO_BIG				0x46
+#define DEM_E_PRE_INIT_FF_DATA_BUFF_FULL	0x47
+#define DEM_E_PRI_MEM_FF_DATA_BUFF_FULL	0x48
+
 #define DEM_E_UNEXPECTED_EXECUTION			0xfe
 #define DEM_E_NOT_IMPLEMENTED_YET			0xff
+
 
 // Service ID in this module
 #define DEM_PREINIT_ID							0x01
@@ -85,6 +91,10 @@
 #define DEM_CLEARDTC_ID							0x22
 #define DEM_DISABLEDTCSTORAGE_ID				0x24
 #define DEM_ENABLEDTCSTORAGE_ID					0x25
+
+#define DEM_GETFREEZEFRAMEDATARECORDBYDTC_ID		0x26
+#define DEM_GETFREEZEFRAMEDATAIDENTIFIERBYDTC_ID		0x26
+
 #define DEM_GETTRANSLATIONTYPE_ID				0x3c
 #define DEM_GETFAULTDETECTIONCOUNTER_ID 		0x3E
 #define DEM_MAINFUNCTION_ID						0x55
@@ -97,11 +107,17 @@
 #define DEM_STORE_EXT_DATA_PRI_MEM_ID			0x85
 #define DEM_PREDEBOUNCE_NONE_ID					0x86
 #define DEM_PREDEBOUNCE_COUNTER_BASED_ID		0x87
+#define DEM_GET_FREEZEFRAME_ID					0x88
+#define DEM_STORE_FF_DATA_PRE_INIT_ID			0x89
+#define DEM_STORE_FF_DATA_PRI_MEM_ID			0x90
+
+#define DEM_DSP_DID_USE_PORT_IS_TRUE            0x91
+#define DEM_READ_DATA_LENGTH_FAILED				0x92
 #define DEM_GLOBAL_ID							0xff
 
 #endif
 
-
+#define DEM_MAX_TIMESTAMP_FOR_REARRANGEMENT     ULONG_MAX //when timestamp up to the max value,rearrangement starts.
 /*
  * Interface for upper layer modules (8.3.1)
  */
@@ -156,7 +172,14 @@ Dem_ReturnControlDTCStorageType Dem_DisableDTCStorage(Dem_DTCGroupType dtcGroup,
 Dem_ReturnControlDTCStorageType Dem_EnableDTCStorage(Dem_DTCGroupType dtcGroup, Dem_DTCKindType dtcKind); /** @req DEM243 */
 Dem_ReturnGetExtendedDataRecordByDTCType Dem_GetExtendedDataRecordByDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin, uint8 extendedDataNumber, uint8 *destBuffer, uint16 *bufSize); /** @req DEM239 */
 Dem_ReturnGetSizeOfExtendedDataRecordByDTCType Dem_GetSizeOfExtendedDataRecordByDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTCOriginType dtcOrigin, uint8 extendedDataNumber, uint16 *sizeOfExtendedDataRecord); /** @req DEM240 */
-
+Dem_ReturnGetFreezeFrameDataByDTCType Dem_GetFreezeFrameDataByDTC(uint32  dtc,Dem_DTCKindType  dtcKind,Dem_DTCOriginType  dtcOrigin,uint8  recordNumber,uint8*  destBuffer,uint8*  bufSize);
+Dem_GetFreezeFameDataIdentifierByDTCType Dem_GetFreezeFrameDataIdentifierByDTC(uint32  dtc,
+																						Dem_DTCKindType  dtcKind,
+																						Dem_DTCOriginType  dtcOrigin,
+																						uint8  recordNumber,
+																						uint8*  arraySize,
+																						const  uint16** dataId );
+Dem_ReturnGetSizeOfFreezeFrameType Dem_GetSizeOfFreezeFrame(uint32  dtc,Dem_DTCKindType  dtcKind,Dem_DTCOriginType  dtcOrigin,uint8  recordNumber,uint16*  sizeOfFreezeFrame);
 
 
 /*

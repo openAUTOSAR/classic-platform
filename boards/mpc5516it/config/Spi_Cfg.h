@@ -22,11 +22,6 @@
 #include "mpc55xx.h"
 #include "Mcu.h"
 
-#define DSPI_CTRL_A	0
-#define DSPI_CTRL_B	1
-#define DSPI_CTRL_C	2
-#define DSPI_CTRL_D	3
-
 /*
  * General configuration
  */

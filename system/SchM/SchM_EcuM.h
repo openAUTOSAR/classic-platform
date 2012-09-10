@@ -33,7 +33,7 @@
 #define SchM_Enter_EcuM_0 DisableAllInterrupts
 #define SchM_Exit_EcuM_0  ResumeAllInterrupts
 
-#define SCHM_MAINFUNCTION_ECUM() 	EcuM_MainFunction()
+#define SCHM_MAINFUNCTION_ECUM() 	SCHM_MAINFUNCTION(ECUM,EcuM_MainFunction())
 
 
 /* Skip "instance", req INTEGR058 */
