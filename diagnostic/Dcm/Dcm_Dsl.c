@@ -107,6 +107,7 @@ static void changeDiagnosticSession(Dcm_DslRunTimeProtocolParametersType *runtim
 
 	default:
 		DET_REPORTERROR(MODULE_ID_DCM, 0, DCM_CHANGE_DIAGNOSTIC_SESSION_ID, DCM_E_PARAM);
+		/* REVIEW JB 6 sep 2012: Please remove comments from ALL debug statements */
 		//DEBUG(DEBUG_MEDIUM, "Old session invalid");
 		break;
 	}
@@ -422,20 +423,25 @@ Std_ReturnType DslInternal_ResponseOnOneDataByPeriodicId(uint8 PericodID)
 	Std_ReturnType ret = E_NOT_OK;
 	const Dcm_DslProtocolRowType *protocolRowEntry;
 	BufReq_ReturnType BufReqResult = 0;
+	/* REVIEW JB 6 sep 2012: Remove unused code */
 	// unused: const Dcm_DslProtocolTimingRowType *timeParams = NULL;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
     PduInfoType  *pPeriodData;
 	protocolRowEntry = DCM_Config.Dsl->DslProtocol->DslProtocolRowList;
+	/* REVIEW JB 6 sep 2012: Use active protocol instead (see DslGetActiveProtocol) */
 	while (protocolRowEntry->Arc_EOL == FALSE) 
 	{
     	runtime = protocolRowEntry->DslRunTimeProtocolParameters;
         if(runtime != NULL)	// find the runtime
         {
         	if( BUFREQ_OK == DslProvideRxBufferToPdur(runtime->diagReqestRxPduId, 3, (const PduInfoType **)&pPeriodData)){
-                pPeriodData->SduDataPtr[0] = 0x2a;
+                /* REVIEW JB 6 sep 2012: Don't use magic number */
+        		pPeriodData->SduDataPtr[0] = 0x2a;
+                /* REVIEW JB 6 sep 2012: Need to explain what is the meaning of 0 - don't use magic number */
                 pPeriodData->SduDataPtr[1] = 0;
                 pPeriodData->SduDataPtr[2] = PericodID;
                 pPeriodData->SduLength = 3;
+                /* REVIEW JB 6 sep 2012: Don't use 0 for PduId - runtime->diagReqestRxPduId should be used (was already pointed out) */
                 DslRxIndicationFromPduR(0, NTFRSLT_OK);
                 ret = E_OK;
     			break;
