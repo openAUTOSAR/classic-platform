@@ -401,7 +401,7 @@ void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources) {
 	internal_data.wakeupEvents |= sources;
 
 	/* @req 3.1.5/EcuM2707 @req 3.1.5/EcuM2709*/
-	internal_data.wakeupTimer = ECUM_VALIDATION_TIMEOUT;
+//	internal_data.wakeupTimer = ECUM_VALIDATION_TIMEOUT;
 
 }
 

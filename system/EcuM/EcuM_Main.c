@@ -104,7 +104,7 @@ void EcuM_enter_run_mode(void){
 
 #if defined(USE_WDGM)
 	/* This seems strange, should be in FW instead */
-	WdgM_SetMode(TODO_MODE);
+	WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMRunMode);
 #endif
 
 #if defined(USE_COMM)
@@ -269,7 +269,7 @@ static inline void in_state_appRun(void){
 		EcuM_OnExitRun();	/** @req EcuM2865 */
 
 #if defined(USE_WDGM)
-		WdgM_SetMode(FIXME_MODE);
+		// This is APPRUN not RUN.. so WdgM_SetMode() should not be called?
 #endif
 
 #if defined(USE_RTE) && defined(CFG_ECUM_USE_SERVICE_COMPONENT)
@@ -382,7 +382,7 @@ void EcuM_MainFunction(void){
 			Mcu_SetMode(MCU_MODE_NORMAL);
 
 #if defined(USE_WDGM)
-			WdgM_SetMode(FIXME_MODE);
+			WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMWakeupMode);
 #endif
 
 			wMask = EcuM_GetPendingWakeupEvents();

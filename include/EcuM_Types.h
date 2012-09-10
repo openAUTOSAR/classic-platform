@@ -45,6 +45,7 @@
 #if defined(USE_WDGM)
 typedef struct EcuM_WdgM
 {
+	WdgM_SupervisedEntityIdType EcuMSupervisedEntity;
 	WdgM_ModeType EcuMWdgMWakeupMode;
 	WdgM_ModeType EcuMWdgMStartupMode;
 	WdgM_ModeType EcuMWdgMRunMode;
@@ -52,6 +53,14 @@ typedef struct EcuM_WdgM
 	WdgM_ModeType EcuMWdgMShutdownMode;
 } EcuM_WdgMType;
 #endif
+
+typedef struct EcuM_WakeupSourceConfig {
+	EcuM_WakeupSourceType 	EcuMWakeupSourceId;
+	uint32 					EcuMValidationTimeout;
+	Mcu_ResetType 			EcuMResetReason;
+	boolean 				EcuMWakeupSourcePolling;
+	uint8 					EcuMComMChannel;
+} EcuM_WakeupSourceConfigType;
 
 typedef struct EcuM_SleepMode
 {
