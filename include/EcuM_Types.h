@@ -41,8 +41,7 @@
 
 #include "Mcu.h"
 
-
-#if defined(USE_WDGM)
+#if 0
 typedef struct EcuM_WdgM
 {
 	WdgM_SupervisedEntityIdType EcuMSupervisedEntity;
@@ -51,6 +50,22 @@ typedef struct EcuM_WdgM
 	WdgM_ModeType EcuMWdgMRunMode;
 	WdgM_ModeType EcuMWdgMPostRunMode;
 	WdgM_ModeType EcuMWdgMShutdownMode;
+} EcuM_WdgMType;
+#endif
+
+typedef uint8 WdgM_SupervisedEntityIdType_;
+typedef uint8 WdgM_ModeType_;
+
+
+#if defined(USE_WDGM)
+typedef struct EcuM_WdgM
+{
+	WdgM_SupervisedEntityIdType_ EcuMSupervisedEntity;
+	WdgM_ModeType_ EcuMWdgMWakeupMode;
+	WdgM_ModeType_ EcuMWdgMStartupMode;
+	WdgM_ModeType_ EcuMWdgMRunMode;
+	WdgM_ModeType_ EcuMWdgMPostRunMode;
+	WdgM_ModeType_ EcuMWdgMShutdownMode;
 } EcuM_WdgMType;
 #endif
 
@@ -68,7 +83,7 @@ typedef struct EcuM_SleepMode
    EcuM_WakeupSourceType 	EcuMWakeupSourceMask;
    Mcu_ModeType  			EcuMSleepModeMcuMode;
 #if defined(USE_WDGM)
-   WdgM_ModeType 			EcuMSleepModeWdgMMode;
+   WdgM_ModeType_ 			EcuMSleepModeWdgMMode;
 #endif
  } EcuM_SleepModeType;
 

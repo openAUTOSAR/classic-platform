@@ -24,7 +24,12 @@
 #define GPT_H_
 
 #include "Std_Types.h"
-//#include "EcuM.h"  mahi: What for ???
+
+/* "forward" declare types due to circular dependency chain */
+/** Channel id type */
+typedef uint8_t Gpt_ChannelType;
+
+#include "EcuM.h"
 
 /** @name Error Codes */
 //@{
@@ -53,9 +58,6 @@
 #define GPT_ENABLEWAKEUP_SERVICE_ID         0x0b
 #define GPT_CBK_CHECKWAKEUP_SERVICE_ID      0x0c
 //@}
-
-/** Channel id type */
-typedef uint8_t Gpt_ChannelType;
 
 /** Channel time value type */
 typedef uint32_t Gpt_ValueType;
