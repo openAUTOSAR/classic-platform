@@ -2743,23 +2743,16 @@ void DspDynamicallyDefineDataIdentifier(const PduInfoType *pduRxData,PduInfoType
 static Dcm_NegativeResponseCodeType DspIOControlReturnControlToECU(const Dcm_DspDidType *DidPtr,const PduInfoType *pduRxData,PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
-	if(DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidReturnControlToEcu == TRUE)
+	if(pduRxData->SduLength > 4)
 	{
-		if(pduRxData->SduLength > 4)
+		if(DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl != NULL)
 		{
-			if(DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl != NULL)
+			if(((DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidReturnControlToEcu->DspDidControlOptionRecordSize + 7) >> 3) == (pduRxData->SduLength - 4))
 			{
-				if(((DidPtr->DspDidControlRecordSize->DspDidControlRecordSize + 7) >> 3) == (pduRxData->SduLength - 4))
+				if(DidPtr->DspDidReturnControlToEcuFnc != NULL)
 				{
-					if(DidPtr->DspDidReturnControlToEcuFnc != NULL)
-					{
-						DidPtr->DspDidReturnControlToEcuFnc(NULL,&pduRxData->SduDataPtr[4],&pduTxData->SduDataPtr[4],&responseCode);
-						
-					}
-					else
-					{
-						responseCode = DCM_E_REQUESTOUTOFRANGE;
-					}
+					DidPtr->DspDidReturnControlToEcuFnc(NULL,&pduRxData->SduDataPtr[4],&pduTxData->SduDataPtr[4],&responseCode);
+
 				}
 				else
 				{
@@ -2773,32 +2766,32 @@ static Dcm_NegativeResponseCodeType DspIOControlReturnControlToECU(const Dcm_Dsp
 		}
 		else
 		{
-			if(DidPtr->DspDidReturnControlToEcuFnc != NULL)
-			{
+			responseCode = DCM_E_REQUESTOUTOFRANGE;
+		}
+	}
+	else
+	{
+		if(DidPtr->DspDidReturnControlToEcuFnc != NULL)
+		{
 
-				if(DidPtr->DspDidControlRecordSize != NULL)
-				{
-					DidPtr->DspDidReturnControlToEcuFnc(NULL,NULL,&pduTxData->SduDataPtr[4],&responseCode);
-					pduTxData->SduLength = DidPtr->DspDidControlRecordSize->DspDidControlStatusRecordSize + 4;
-				}
-				else
-				{
-					responseCode = DCM_E_REQUESTOUTOFRANGE;
-				}
+			if(DidPtr->DspDidControlRecordSize != NULL)
+			{
+				DidPtr->DspDidReturnControlToEcuFnc(NULL,NULL,&pduTxData->SduDataPtr[4],&responseCode);
+				pduTxData->SduLength = DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidReturnControlToEcu->DspDidControlStatusRecordSize + 4;
 			}
 			else
 			{
 				responseCode = DCM_E_REQUESTOUTOFRANGE;
 			}
 		}
-	}
-	else
-	{
-		responseCode = DCM_E_REQUESTOUTOFRANGE;
+		else
+		{
+			responseCode = DCM_E_REQUESTOUTOFRANGE;
+		}
 	}
 	if(responseCode == DCM_E_POSITIVERESPONSE)
 	{
-		pduTxData->SduLength = DidPtr->DspDidControlRecordSize->DspDidControlStatusRecordSize + 4;
+		pduTxData->SduLength = DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidReturnControlToEcu->DspDidControlStatusRecordSize + 4;
 		pduTxData->SduDataPtr[3] = DCM_RETURN_CONTROL_TO_ECU;
 	}
 	
@@ -2808,22 +2801,15 @@ static Dcm_NegativeResponseCodeType DspIOControlReturnControlToECU(const Dcm_Dsp
 static Dcm_NegativeResponseCodeType DspIOControlResetToDefault(const Dcm_DspDidType *DidPtr,const PduInfoType *pduRxData,PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
-	if(DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidResetToDefault == TRUE)
+	if(pduRxData->SduLength > 4)
 	{
-		if(pduRxData->SduLength > 4)
+		if(DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl != NULL)
 		{
-			if(DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl != NULL)
+			if(((DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidResetToDefault->DspDidControlOptionRecordSize + 7) >> 3) == (pduRxData->SduLength - 4))
 			{
-				if(((DidPtr->DspDidControlRecordSize->DspDidControlRecordSize + 7) >> 3) == (pduRxData->SduLength - 4))
+				if(DidPtr->DspDidReturnControlToEcuFnc != NULL)
 				{
-					if(DidPtr->DspDidReturnControlToEcuFnc != NULL)
-					{
-						DidPtr->DspDidResetToDeaultFnc(NULL,&pduRxData->SduDataPtr[4],&pduTxData->SduDataPtr[4],&responseCode);
-					}
-					else
-					{
-						responseCode = DCM_E_REQUESTOUTOFRANGE;
-					}
+					DidPtr->DspDidResetToDeaultFnc(NULL,&pduRxData->SduDataPtr[4],&pduTxData->SduDataPtr[4],&responseCode);
 				}
 				else
 				{
@@ -2837,32 +2823,32 @@ static Dcm_NegativeResponseCodeType DspIOControlResetToDefault(const Dcm_DspDidT
 		}
 		else
 		{
-			if(DidPtr->DspDidResetToDeaultFnc != NULL)
-			{
+			responseCode = DCM_E_REQUESTOUTOFRANGE;
+		}
+	}
+	else
+	{
+		if(DidPtr->DspDidResetToDeaultFnc != NULL)
+		{
 
-				if(DidPtr->DspDidControlRecordSize != NULL)
-				{
-					DidPtr->DspDidResetToDeaultFnc(NULL,NULL,&pduTxData->SduDataPtr[4],&responseCode);
-					pduTxData->SduLength = DidPtr->DspDidControlRecordSize->DspDidControlStatusRecordSize + 4;
-				}
-				else
-				{
-					responseCode = DCM_E_REQUESTOUTOFRANGE;
-				}
+			if(DidPtr->DspDidControlRecordSize != NULL)
+			{
+				DidPtr->DspDidResetToDeaultFnc(NULL,NULL,&pduTxData->SduDataPtr[4],&responseCode);
+				pduTxData->SduLength = DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidResetToDefault->DspDidControlStatusRecordSize + 4;
 			}
 			else
 			{
 				responseCode = DCM_E_REQUESTOUTOFRANGE;
 			}
 		}
-	}
-	else
-	{
-		responseCode = DCM_E_REQUESTOUTOFRANGE;
+		else
+		{
+			responseCode = DCM_E_REQUESTOUTOFRANGE;
+		}
 	}
 	if(responseCode == DCM_E_POSITIVERESPONSE)
 	{
-		pduTxData->SduLength = DidPtr->DspDidControlRecordSize->DspDidControlStatusRecordSize+4;
+		pduTxData->SduLength = DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidResetToDefault->DspDidControlStatusRecordSize+4;
 		pduTxData->SduDataPtr[3] = DCM_RESET_TO_DEFAULT;
 	}
 	return responseCode;
@@ -2874,22 +2860,15 @@ static Dcm_NegativeResponseCodeType DspIOControlResetToDefault(const Dcm_DspDidT
 static Dcm_NegativeResponseCodeType DspIOControlFreezeCurrentState(const Dcm_DspDidType *DidPtr,const PduInfoType *pduRxData,PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
-	if(DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidFreezeCurrentState == TRUE)
+	if(pduRxData->SduLength > 4)
 	{
-		if(pduRxData->SduLength > 4)
+		if(DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl != NULL)
 		{
-			if(DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl != NULL)
+			if(((DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidFreezeCurrentState->DspDidControlOptionRecordSize + 7) >> 3) == (pduRxData->SduLength - 4))
 			{
-				if(((DidPtr->DspDidControlRecordSize->DspDidControlRecordSize + 7) >> 3) == (pduRxData->SduLength - 4))
+				if(DidPtr->DspDidFreezeCurrentStateFnc != NULL)
 				{
-					if(DidPtr->DspDidFreezeCurrentStateFnc != NULL)
-					{
-						DidPtr->DspDidFreezeCurrentStateFnc(NULL,&pduRxData->SduDataPtr[4],&pduTxData->SduDataPtr[4],&responseCode);
-					}
-					else
-					{
-						responseCode = DCM_E_REQUESTOUTOFRANGE;
-					}
+					DidPtr->DspDidFreezeCurrentStateFnc(NULL,&pduRxData->SduDataPtr[4],&pduTxData->SduDataPtr[4],&responseCode);
 				}
 				else
 				{
@@ -2903,32 +2882,32 @@ static Dcm_NegativeResponseCodeType DspIOControlFreezeCurrentState(const Dcm_Dsp
 		}
 		else
 		{
-			if(DidPtr->DspDidFreezeCurrentStateFnc != NULL)
-			{
+			responseCode = DCM_E_REQUESTOUTOFRANGE;
+		}
+	}
+	else
+	{
+		if(DidPtr->DspDidFreezeCurrentStateFnc != NULL)
+		{
 
-				if(DidPtr->DspDidControlRecordSize != 0)
-				{
-					DidPtr->DspDidFreezeCurrentStateFnc(NULL,NULL,&pduTxData->SduDataPtr[4],&responseCode);
-					pduTxData->SduLength = DidPtr->DspDidControlRecordSize->DspDidControlStatusRecordSize + 4;
-				}
-				else
-				{
-					responseCode = DCM_E_REQUESTOUTOFRANGE;
-				}
+			if(DidPtr->DspDidControlRecordSize != 0)
+			{
+				DidPtr->DspDidFreezeCurrentStateFnc(NULL,NULL,&pduTxData->SduDataPtr[4],&responseCode);
+				pduTxData->SduLength = DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidFreezeCurrentState->DspDidControlStatusRecordSize + 4;
 			}
 			else
 			{
 				responseCode = DCM_E_REQUESTOUTOFRANGE;
 			}
 		}
-	}
-	else
-	{
-		responseCode = DCM_E_REQUESTOUTOFRANGE;
+		else
+		{
+			responseCode = DCM_E_REQUESTOUTOFRANGE;
+		}
 	}
 	if(responseCode == DCM_E_POSITIVERESPONSE)
 	{
-		pduTxData->SduLength = DidPtr->DspDidControlRecordSize->DspDidControlStatusRecordSize + 4;
+		pduTxData->SduLength = DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidFreezeCurrentState->DspDidControlStatusRecordSize + 4;
 		pduTxData->SduDataPtr[3] = DCM_FREEZE_CURRENT_STATE;
 	}
 	
@@ -2938,41 +2917,34 @@ static Dcm_NegativeResponseCodeType DspIOControlFreezeCurrentState(const Dcm_Dsp
 static Dcm_NegativeResponseCodeType DspIOControlShortTeamAdjustment(const Dcm_DspDidType *DidPtr,const PduInfoType *pduRxData,PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
-	uint8 didControlOptionRecordSize = DidPtr->DspDidControlRecordSize->DspDidControlOptionRecordSize;
-	if(DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidShortTermAdjustment == TRUE)
+	uint8 didControlOptionRecordSize = DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidShortTermAdjustment->DspDidControlOptionRecordSize;
+	if(pduRxData->SduLength > 4)
 	{
-		if(pduRxData->SduLength > 4)
+		if(DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl != NULL)
 		{
-			if(DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl != NULL)
+			if(((((DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidShortTermAdjustment->DspDidControlRecordSize + 7)) >> 3) + (didControlOptionRecordSize)) == (pduRxData->SduLength - 4))
 			{
-				if(((((DidPtr->DspDidControlRecordSize->DspDidControlRecordSize + 7)) >> 3) + (didControlOptionRecordSize)) == (pduRxData->SduLength - 4))
+				if(DidPtr->DspDidShortTermAdjustmentFnc != NULL)
 				{
-					if(DidPtr->DspDidShortTermAdjustmentFnc != NULL)
-					{
-						DidPtr->DspDidShortTermAdjustmentFnc(&pduRxData->SduDataPtr[4],&pduRxData->SduDataPtr[4 + didControlOptionRecordSize],&pduTxData->SduDataPtr[4],&responseCode);
-					}
-					else
-					{
-						responseCode = DCM_E_REQUESTOUTOFRANGE;
-					}
-				}
-				else if((didControlOptionRecordSize) == (pduRxData->SduLength - 4))
-				{
-					if(DidPtr->DspDidShortTermAdjustmentFnc != NULL)
-					{
-						DidPtr->DspDidShortTermAdjustmentFnc(&pduRxData->SduDataPtr[4],NULL,&pduTxData->SduDataPtr[4],&responseCode);
-					}
-					else
-					{
-						responseCode = DCM_E_REQUESTOUTOFRANGE;
-					}
+					DidPtr->DspDidShortTermAdjustmentFnc(&pduRxData->SduDataPtr[4],&pduRxData->SduDataPtr[4 + didControlOptionRecordSize],&pduTxData->SduDataPtr[4],&responseCode);
 				}
 				else
 				{
 					responseCode = DCM_E_REQUESTOUTOFRANGE;
 				}
 			}
-			else 
+			else if((didControlOptionRecordSize) == (pduRxData->SduLength - 4))
+			{
+				if(DidPtr->DspDidShortTermAdjustmentFnc != NULL)
+				{
+					DidPtr->DspDidShortTermAdjustmentFnc(&pduRxData->SduDataPtr[4],NULL,&pduTxData->SduDataPtr[4],&responseCode);
+				}
+				else
+				{
+					responseCode = DCM_E_REQUESTOUTOFRANGE;
+				}
+			}
+			else
 			{
 				responseCode = DCM_E_REQUESTOUTOFRANGE;
 			}
@@ -2988,7 +2960,7 @@ static Dcm_NegativeResponseCodeType DspIOControlShortTeamAdjustment(const Dcm_Ds
 	}
 	if(responseCode == DCM_E_POSITIVERESPONSE)
 	{
-		pduTxData->SduLength = DidPtr->DspDidControlRecordSize->DspDidControlStatusRecordSize + 4;
+		pduTxData->SduLength = DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidShortTermAdjustment->DspDidControlStatusRecordSize + 4;
 		pduTxData->SduDataPtr[3] = DCM_SHORT_TERM_ADJUSTMENT;
 	}
 	
