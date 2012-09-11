@@ -35,58 +35,6 @@
 #include "Rte_Type.h"
 #endif
 
-#if defined(USE_WDGM)
-#include "WdgM.h"
-#endif
-
-#include "Mcu.h"
-
-#if 0
-typedef struct EcuM_WdgM
-{
-	WdgM_SupervisedEntityIdType EcuMSupervisedEntity;
-	WdgM_ModeType EcuMWdgMWakeupMode;
-	WdgM_ModeType EcuMWdgMStartupMode;
-	WdgM_ModeType EcuMWdgMRunMode;
-	WdgM_ModeType EcuMWdgMPostRunMode;
-	WdgM_ModeType EcuMWdgMShutdownMode;
-} EcuM_WdgMType;
-#endif
-
-typedef uint8 WdgM_SupervisedEntityIdType_;
-typedef uint8 WdgM_ModeType_;
-
-
-#if defined(USE_WDGM)
-typedef struct EcuM_WdgM
-{
-	WdgM_SupervisedEntityIdType_ EcuMSupervisedEntity;
-	WdgM_ModeType_ EcuMWdgMWakeupMode;
-	WdgM_ModeType_ EcuMWdgMStartupMode;
-	WdgM_ModeType_ EcuMWdgMRunMode;
-	WdgM_ModeType_ EcuMWdgMPostRunMode;
-	WdgM_ModeType_ EcuMWdgMShutdownMode;
-} EcuM_WdgMType;
-#endif
-
-typedef struct EcuM_WakeupSourceConfig {
-	EcuM_WakeupSourceType 	EcuMWakeupSourceId;
-	uint32 					EcuMValidationTimeout;
-	Mcu_ResetType 			EcuMResetReason;
-	boolean 				EcuMWakeupSourcePolling;
-	uint8 					EcuMComMChannel;
-} EcuM_WakeupSourceConfigType;
-
-typedef struct EcuM_SleepMode
-{
-   uint8 					EcuMSleepModeId;
-   EcuM_WakeupSourceType 	EcuMWakeupSourceMask;
-   Mcu_ModeType  			EcuMSleepModeMcuMode;
-#if defined(USE_WDGM)
-   WdgM_ModeType_ 			EcuMSleepModeWdgMMode;
-#endif
- } EcuM_SleepModeType;
-
 
 #if !defined(_DEFINED_TYPEDEF_FOR_EcuM_StateType_)
 /** Possible states */
@@ -186,6 +134,43 @@ typedef enum
 } EcuM_BootTargetType;
 #define _DEFINED_TYPEDEF_FOR_EcuM_BootTargetType_
 #endif
+
+
+#if defined(USE_WDGM)
+#include "WdgM.h"
+#endif
+
+#include "Mcu.h"
+
+typedef struct EcuM_WdgM
+{
+	WdgM_SupervisedEntityIdType EcuMSupervisedEntity;
+	WdgM_ModeType EcuMWdgMWakeupMode;
+	WdgM_ModeType EcuMWdgMStartupMode;
+	WdgM_ModeType EcuMWdgMRunMode;
+	WdgM_ModeType EcuMWdgMPostRunMode;
+	WdgM_ModeType EcuMWdgMShutdownMode;
+} EcuM_WdgMType;
+
+typedef struct EcuM_WakeupSourceConfig {
+	EcuM_WakeupSourceType 	EcuMWakeupSourceId;
+	uint32 					EcuMValidationTimeout;
+	Mcu_ResetType 			EcuMResetReason;
+	boolean 				EcuMWakeupSourcePolling;
+	uint8 					EcuMComMChannel;
+} EcuM_WakeupSourceConfigType;
+
+typedef struct EcuM_SleepMode
+{
+   uint8 					EcuMSleepModeId;
+   EcuM_WakeupSourceType 	EcuMWakeupSourceMask;
+   Mcu_ModeType  			EcuMSleepModeMcuMode;
+#if defined(USE_WDGM)
+   WdgM_ModeType 			EcuMSleepModeWdgMMode;
+#endif
+ } EcuM_SleepModeType;
+
+
 
 #endif /* ECUM_TYPES_H_ */
 /** @} */

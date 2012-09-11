@@ -25,11 +25,12 @@
 #define WDGM_SW_MINOR_VERSION	0
 #define WDGM_SW_PATCH_VERSION	0
 
+#include "Std_Types.h"
 /* "forward" declare types due to circular dependency chain */
 typedef uint8 WdgM_SupervisedEntityIdType;
 typedef uint8 WdgM_ModeType;
 
-#include "Std_Types.h"
+
 #include "WdgM_Cfg.h"
 
 // API Service ID's
