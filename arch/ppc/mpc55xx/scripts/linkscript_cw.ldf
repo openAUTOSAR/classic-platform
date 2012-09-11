@@ -1,7 +1,7 @@
 
 MEMORY
 {
-#if defined(CFG_MPC5604B)
+#if defined(CFG_MPC5604B) || defined(CFG_MPC5604P)
     flash: org = 0x00000000,   len = 0x00080000 
 #elif defined(CFG_MPC5607B)
     flash: org = 0x00000000,   len = 0x00180000 
@@ -12,6 +12,8 @@ MEMORY
     sram:  org = 0x40000000,   len = 0x00014000 
 #elif defined(CFG_MPC5607B)    
     sram:  org = 0x40000000,   len = 0x00018000 
+#elif defined(CFG_MPC5604P)    
+    sram:  org = 0x40000000,   len = 0x0000a000 
 #else
     sram:  org = 0x40000000,   len = 0x0000c000 
 #endif

@@ -327,6 +327,11 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
 #if defined(CFG_MPC560X)
     /* Enable DRUN, RUN0, SAFE, RESET modes */
     ME.MER.R = 0x0000001D;
+	/*	MPC5604P: CMU_0 must be initialized differently from the default value
+                in case of 8 MHz crystal. */
+#if defined (CFG_MPC5604P)
+	CGM.CMU_CSR.R = 0x00000004;
+#endif
 #endif
 
     Mcu_Global.initRun = 1;
