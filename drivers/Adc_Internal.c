@@ -20,6 +20,10 @@
 #include "arc.h"
 #include "Adc_Internal.h"
 
+#ifndef CFG_MPC560X
+#define NOF_GROUP_PER_CONTROLLER 100
+#endif
+
 /* Validate functions used for development error check */
 #if ( ADC_DEV_ERROR_DETECT == STD_ON )
 Std_ReturnType ValidateInit(Adc_StateType adcState, Adc_APIServiceIDType api)

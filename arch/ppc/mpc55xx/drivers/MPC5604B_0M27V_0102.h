@@ -2909,7 +2909,7 @@ extern "C" {
         union {
             vuint16_t R;
             struct {
-                vuint16_t SRAM_SIZE:5;
+                vuint16_t SRAM_SISE:5;
                 vuint16_t PRSZ:5;
                 vuint16_t PVLB:1;
                 vuint16_t DTSZ:4;
