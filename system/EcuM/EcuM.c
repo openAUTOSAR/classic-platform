@@ -497,15 +497,17 @@ EcuM_WakeupSourceType EcuM_GetPendingWakeupEvents( void ) {
 
 void EcuM_CheckValidation(EcuM_WakeupSourceType wakeupSource) {
 	/* Used only if CanIf is used ? CanIf_Checkvalidation(wakeupSource) */
+	(void)wakeupSource;
 }
 
 
 EcuM_WakeupSourceType EcuM_GetValidatedWakeupEvents( void ) {
 	// TODO:
+	return 0;
 }
 
 EcuM_WakeupStatusType EcuM_GetStatusOfWakeupSource( EcuM_WakeupSourceType sources ) {
-
+	return 0;
 }
 
 

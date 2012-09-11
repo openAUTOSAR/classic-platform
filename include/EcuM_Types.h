@@ -142,6 +142,7 @@ typedef enum
 
 #include "Mcu.h"
 
+#if defined(USE_WDGM)
 typedef struct EcuM_WdgM
 {
 	WdgM_SupervisedEntityIdType EcuMSupervisedEntity;
@@ -151,6 +152,7 @@ typedef struct EcuM_WdgM
 	WdgM_ModeType EcuMWdgMPostRunMode;
 	WdgM_ModeType EcuMWdgMShutdownMode;
 } EcuM_WdgMType;
+#endif
 
 typedef struct EcuM_WakeupSourceConfig {
 	EcuM_WakeupSourceType 	EcuMWakeupSourceId;

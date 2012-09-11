@@ -348,8 +348,6 @@ TASK(SchM_Startup){
 
 	/* At this point EcuM ==  ECUM_STATE_STARTUP_ONE */
 
-	/* Schedule memory task more often that usaul so that EcuM_StartupTwo() may return quicker */
-	ActivateTask(TASK_ID_SchM_BswService);
 	/* Set events on TASK_ID_BswService_Mem */
 	SetRelAlarm(ALARM_ID_Alarm_BswService, 10, 2);
 
@@ -362,6 +360,7 @@ TASK(SchM_Startup){
 	EcuM_StartupTwo();
 
 	/* Start to schedule BSW parts */
+	CancelAlarm(ALARM_ID_Alarm_BswService);
 	SetRelAlarm(ALARM_ID_Alarm_BswService, 10, 5);
 
 	EcuM_RequestRUN(ECUM_USER_User_1);
