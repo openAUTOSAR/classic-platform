@@ -49,14 +49,14 @@
 	#error Adc is configured to use Dma but the module is not enabled.
 #endif
 
-#if defined(CFG_MPC5668)
-#define ADC_0				ADC
-#endif
 
 #if defined(CFG_MPC5668)
-#define ADC_EOC_INT 	ADC_A_EOC
-#define ADC_ER_INT 		ADC_A_ERR
-#define	ADC_WD_INT		ADC_A_WD
+#define ADC0_EOC_INT 	ADC_A_EOC
+#define ADC0_ER_INT 		ADC_A_ERR
+#define	ADC0_WD_INT		ADC_A_WD
+#define ADC1_EOC_INT 	ADC_B_EOC
+#define ADC1_ER_INT 		ADC_B_ERR
+#define	ADC1_WD_INT		ADC_B_WD
 #endif
 
 #define GET_HW_CONTROLLER(_controller) 	\
