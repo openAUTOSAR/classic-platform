@@ -55,7 +55,11 @@ void Os_SysTickInit( void ) {
  */
 void Os_SysTickStart(TickType period_ticks) {
 #if defined(CFG_MPC560X)
+#if defined(CFG_MPC5604P)
+	CGM.LPOSC_CTL.B.OSCON = 1;	// enable the osc for RTC
+#else
 	CGM.SXOSC_CTL.B.OSCON = 1;	// enable the osc for RTC
+#endif
 
 
 	RTC.RTCC.R= 0;		// disable RTC counter

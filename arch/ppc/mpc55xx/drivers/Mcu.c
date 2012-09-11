@@ -172,6 +172,11 @@ const cpu_info_t cpu_info_list[] = {
     	.name = "MPC5604B",
     	.pvr = CORE_PVR_E200Z0H,
     },
+#elif defined(CFG_MPC5604P)
+    {
+    	.name = "MPC5604P",
+    	.pvr = CORE_PVR_E200Z0H,
+    },
 #elif defined(CFG_MPC5606B)
     {
     	.name = "MPC5606B",
@@ -217,6 +222,11 @@ const core_info_t core_info_list[] = {
 #elif defined(CFG_MPC5604B)
     {
     	.name = "MPC5604B",
+    	.pvr = CORE_PVR_E200Z0H,
+    },
+#elif defined(CFG_MPC5604P)
+    {
+    	.name = "MPC5604P",
     	.pvr = CORE_PVR_E200Z0H,
     },
 #elif defined(CFG_MPC5606B)
@@ -330,7 +340,7 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
 	/*	MPC5604P: CMU_0 must be initialized differently from the default value
                 in case of 8 MHz crystal. */
 #if defined (CFG_MPC5604P)
-	CGM.CMU_CSR.R = 0x00000004;
+	CGM.CMU_0_CSR.R = 0x00000004;
 #endif
 #endif
 
@@ -487,7 +497,7 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     SIU.PSMI[0].R = 0x01; /* CAN1RX on PCR43 */
     SIU.PSMI[6].R = 0x01; /* CS0/DSPI_0 on PCR15 */
 
-#elif defined(CFG_MPC5606S)
+#elif defined(CFG_MPC5606S) || defined(CFG_MPC5604P)
     // Write pll parameters.
     CGM.FMPLL[0].CR.B.IDF = clockSettingsPtr->Pll1;
     CGM.FMPLL[0].CR.B.NDIV = clockSettingsPtr->Pll2;
@@ -552,7 +562,7 @@ void Mcu_DistributePllClock(void)
     VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_DISTRIBUTEPLLCLOCK_SERVICE_ID, MCU_E_UNINIT );
 #if defined(CFG_MPC560XB)
     VALIDATE( ( CGM.FMPLL_CR.B.S_LOCK == 1 ), MCU_DISTRIBUTEPLLCLOCK_SERVICE_ID, MCU_E_PLL_NOT_LOCKED );
-#elif defined(CFG_MPC5606S)
+#elif defined(CFG_MPC5606S) || defined(CFG_MPC5604P)
     VALIDATE( ( CGM.FMPLL[0].CR.B.S_LOCK == 1 ), MCU_DISTRIBUTEPLLCLOCK_SERVICE_ID, MCU_E_PLL_NOT_LOCKED );
 #else
     VALIDATE( ( FMPLL.SYNSR.B.LOCK == 1 ), MCU_DISTRIBUTEPLLCLOCK_SERVICE_ID, MCU_E_PLL_NOT_LOCKED );
@@ -578,7 +588,7 @@ Mcu_PllStatusType Mcu_GetPllStatus(void)
     	{
     		rv = MCU_PLL_LOCKED;
     	}
-#elif defined(CFG_MPC5606S)
+#elif defined(CFG_MPC5606S) || defined(CFG_MPC5604P)
     	if ( !CGM.FMPLL[0].CR.B.S_LOCK )
     	{
     		rv = MCU_PLL_UNLOCKED;
@@ -719,7 +729,7 @@ uint32_t McuE_GetSystemClock(void)
     uint32_t eprediv = CGM.FMPLL_CR.B.IDF;
     uint32_t emfd = CGM.FMPLL_CR.B.NDIV;
     uint32_t erfd = CGM.FMPLL_CR.B.ODF;
-#elif defined(CFG_MPC5606S)
+#elif defined(CFG_MPC5606S) || defined(CFG_MPC5604P)
     uint32_t eprediv = CGM.FMPLL[0].CR.B.IDF;
     uint32_t emfd = CGM.FMPLL[0].CR.B.NDIV;
     uint32_t erfd = CGM.FMPLL[0].CR.B.ODF;
@@ -850,7 +860,7 @@ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 #if defined(CFG_MPC560X)
 		case PERIPHERAL_CLOCK_LIN_A:
 		case PERIPHERAL_CLOCK_LIN_B:
-#if defined(CFG_MPC560XB)
+#if defined(CFG_MPC560XB) || defined(CFG_MPC5604P)
 		case PERIPHERAL_CLOCK_LIN_C:
 		case PERIPHERAL_CLOCK_LIN_D:
 #endif

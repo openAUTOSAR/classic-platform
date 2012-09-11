@@ -144,17 +144,29 @@ typedef enum
     ADC1_ER_INT,             // 5606-83
     ADC1_WD_INT,             // 5606-84
 
+#if defined (CFG_MPC5604P)
+    FLEXCAN_X_ESR_ERR_INT,  // 5606-85
+    FLEXCAN_X_ESR_BOFF_INT, // 5606-86
+
+	RESERVED17,             // 5606-87
+	FLEXCAN_X_BUF_00_03,    // 5606-88
+	FLEXCAN_X_BUF_04_07,    // 5606-89
+	FLEXCAN_X_BUF_08_11,    // 5606-90
+	FLEXCAN_X_BUF_12_15,    // 5606-91
+	FLEXCAN_X_BUF_16_31,    // 5606-92
+	FLEXCAN_X_BUF_32_63,    // 5606-93
+#else
     FLEXCAN_1_ESR_ERR_INT,  // 5606-85
     FLEXCAN_1_ESR_BOFF_INT, // 5606-86
 
 	RESERVED17,             // 5606-87
-
 	FLEXCAN_1_BUF_00_03,    // 5606-88
 	FLEXCAN_1_BUF_04_07,    // 5606-89
 	FLEXCAN_1_BUF_08_11,    // 5606-90
 	FLEXCAN_1_BUF_12_15,    // 5606-91
 	FLEXCAN_1_BUF_16_31,    // 5606-92
 	FLEXCAN_1_BUF_32_63,    // 5606-93
+#endif
 
     DSPI_1_ISR_TFUF_RFOF,   // 5606-94
     DSPI_1_ISR_EOQF,        // 5606-95
@@ -388,7 +400,96 @@ typedef enum
 	QSPI0_TCF,              // 5606-204
 	QSPI0_RFDF,             // 5606-205
 	QSPI0_IPAEF,            // 5606-206
-#endif
+#elif defined (CFG_MPC5604P)
+	RESERVED54,    // 5606-141
+	RESERVED55,    // 5606-142
+	RESERVED56,    // 5606-143
+	RESERVED57,    // 5606-144
+	RESERVED58,    // 5606-145
+	RESERVED59,    // 5606-146
+	RESERVED60,    // 5606-147
+	RESERVED61,    // 5606-148
+
+    RESERVED62,             // 5606-149
+    RESERVED63,             // 5606-150
+    RESERVED64,             // 5606-151
+    RESERVED65,             // 5606-152
+    RESERVED66,             // 5606-153
+    RESERVED67,             // 5606-154
+    RESERVED68,             // 5606-155
+    RESERVED69,             // 5606-156
+
+    RESERVED70,    // 5606-157
+    RESERVED71,    // 5606-158
+    RESERVED72,    // 5606-159
+    RESERVED73,    // 5606-160
+
+    RESERVED74,             // 5606-161
+    RESERVED75,             // 5606-162
+    RESERVED76,             // 5606-163
+    RESERVED77,             // 5606-164
+    RESERVED78,             // 5606-165
+    RESERVED79,             // 5606-166
+    RESERVED80,             // 5606-167
+    RESERVED81,             // 5606-168
+    RESERVED82,             // 5606-169
+    RESERVED83,             // 5606-170
+    RESERVED84,             // 5606-171
+    RESERVED85,             // 5606-172
+
+    RESERVED86,              // 5606-173
+    RESERVED87,              // 5606-174
+
+    RESERVED88,             // 5606-175
+    RESERVED89,             // 5606-176
+    RESERVED90,             // 5606-177
+    RESERVED91,             // 5606-178
+    RESERVED92,             // 5606-179
+    RESERVED93,             // 5606-180
+    RESERVED94,             // 5606-181
+    RESERVED95,             // 5606-182
+    RESERVED96,             // 5606-183
+    RESERVED97,             // 5606-184
+    RESERVED98,             // 5606-185
+    RESERVED99,             // 5606-186
+    RESERVED100,             // 5606-187
+    RESERVED101,             // 5606-188
+    RESERVED102,             // 5606-189
+    RESERVED103,             // 5606-190
+    RESERVED104,             // 5606-191
+    RESERVED105,             // 5606-192
+    RESERVED106,             // 5606-193
+    RESERVED107,             // 5606-194
+    RESERVED108,             // 5606-195
+    RESERVED109,             // 5606-196
+    RESERVED110,             // 5606-197
+    RESERVED111,             // 5606-198
+    RESERVED112,             // 5606-199
+    RESERVED113,             // 5606-200
+    RESERVED114,             // 5606-201
+    RESERVED115,             // 5606-202
+    RESERVED116,             // 5606-203
+    RESERVED117,             // 5606-204
+    RESERVED118,             // 5606-205
+    RESERVED119,             // 5606-206
+    RESERVED120,             // 5606-207
+    FLEXCAN_1_ESR_ERR_INT,  // 5606-208
+    FLEXCAN_1_ESR_BOFF_INT, // 5606-209
+
+    FLEXCAN_1_ESR_WAK,      // 5606-210
+
+	FLEXCAN_1_BUF_00_03,    // 5606-211
+	FLEXCAN_1_BUF_04_07,    // 5606-212
+	FLEXCAN_1_BUF_08_11,    // 5606-213
+	FLEXCAN_1_BUF_12_15,    // 5606-214
+	FLEXCAN_1_BUF_16_31,    // 5606-215
+    RESERVED121,             // 5606-216
+    DSPI_3_ISR_TFUF_RFOF,   // 5606-217
+    DSPI_3_ISR_EOQF,        // 5606-218
+    DSPI_3_ISR_TFFF,        // 5606-219
+    DSPI_3_ISR_TCF,         // 5606-220
+    DSPI_3_ISR_RFDF,        // 5606-221
+ #endif
 
 	INTC_NUMBER_OF_INTERRUPTS,
 #else

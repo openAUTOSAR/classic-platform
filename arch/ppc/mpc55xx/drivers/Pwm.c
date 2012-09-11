@@ -282,7 +282,7 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
                 // Pwm_DisableNotification(channel);
 
                 // Install ISR
-			#if defined(CFG_MPC560XB)
+			#if defined(CFG_MPC560XB) || defined(CFG_MPC5604P)
 				switch(channel)
 				{
 				case 0:

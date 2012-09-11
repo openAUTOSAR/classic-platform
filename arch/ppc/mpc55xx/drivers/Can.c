@@ -796,7 +796,9 @@ void Can_Init(const Can_ConfigType *config)
 		if(cfgCtrlPtr->Can_Arc_Flags &  (CAN_CTRL_TX_PROCESSING_INTERRUPT | CAN_CTRL_RX_PROCESSING_INTERRUPT)){
 			INSTALL_HANDLER4( "Can", Can_A_Isr, FLEXCAN_0_BUF_00_03, 2, 0 ); /* 0-3, 4-7, 8-11, 12-15 */
 			ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_0_BUF_16_31, 2, 0 );
+#if !defined (CFG_MPC5604P)
 			ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_0_BUF_32_63, 2, 0 );
+#endif
 		}
         break;
         case CAN_CTRL_B:
@@ -809,7 +811,9 @@ void Can_Init(const Can_ConfigType *config)
 		if(cfgCtrlPtr->Can_Arc_Flags &  (CAN_CTRL_TX_PROCESSING_INTERRUPT | CAN_CTRL_RX_PROCESSING_INTERRUPT)){
 			INSTALL_HANDLER4( "Can", Can_B_Isr, FLEXCAN_1_BUF_00_03, 2, 0 ); /* 0-3, 4-7, 8-11, 12-15 */
 			ISR_INSTALL_ISR2( "Can", Can_B_Isr, FLEXCAN_1_BUF_16_31, 2, 0 );
+#if !defined (CFG_MPC5604P)
 			ISR_INSTALL_ISR2( "Can", Can_B_Isr, FLEXCAN_1_BUF_32_63, 2, 0 );
+#endif
 		}
         break;
 	#if defined(CFG_MPC560XB)

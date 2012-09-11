@@ -63,7 +63,7 @@
 #define FLS_WRITE_TIME				0				/* NO SUPPORT */
 
 /* MCU Specific */
-#if defined(CFG_MPC5604B)
+#if defined(CFG_MPC5604P)
 
 #define FLASH_BANK_CNT 				2
 #define FLASH_PAGE_SIZE				8
