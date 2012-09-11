@@ -20,7 +20,7 @@
 #include "arc.h"
 #include "Adc_Internal.h"
 
-#ifndef NOF_GROUP_PER_CONTROLLER
+#ifndef CFG_MPC560X
 #define NOF_GROUP_PER_CONTROLLER 100
 #endif
 
