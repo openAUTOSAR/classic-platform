@@ -84,10 +84,12 @@ static const Adc_ConfigType * Adc_GetControllerConfigPtrFromHwUnitId(int unit)
 {
 	const Adc_ConfigType *AdcConfigPtr = NULL;
 
-	for (int configId = 0; configId < ADC_ARC_CTRL_CONFIG_CNT; configId++) {
-		if(unit == AdcGlobalConfigPtr[configId].hwConfigPtr->hwUnitId){
-			AdcConfigPtr = &AdcGlobalConfigPtr[configId];
-      break;
+	if(adcState == ADC_INIT){
+		for (int configId = 0; configId < ADC_ARC_CTRL_CONFIG_CNT; configId++) {
+			if(unit == AdcGlobalConfigPtr[configId].hwConfigPtr->hwUnitId){
+				AdcConfigPtr = &AdcGlobalConfigPtr[configId];
+				break;
+			}
 		}
 	}
 
@@ -107,11 +109,11 @@ void Adc_DeInit ()
   boolean okToClear = TRUE;
 
   for (int configId = 0; configId < ADC_ARC_CTRL_CONFIG_CNT; configId++) {
-	  hwPtr = GET_HW_CONTROLLER(AdcGlobalConfigPtr[configId].hwConfigPtr->hwUnitId);
 	  const Adc_ConfigType *AdcConfigPtr = &AdcGlobalConfigPtr[configId];
 
 	  if (E_OK == Adc_CheckDeInit(adcState, AdcConfigPtr))
 	  {
+		hwPtr = GET_HW_CONTROLLER(AdcGlobalConfigPtr[configId].hwConfigPtr->hwUnitId);
 		for(Adc_GroupType group = (Adc_GroupType)0; group < AdcConfigPtr->nbrOfGroups; group++)
 		{
 		  /* Set group status to idle. */
@@ -186,49 +188,56 @@ Std_ReturnType Adc_SetupResultBuffer (Adc_GroupType group, Adc_ValueGroupType *b
 Adc_StreamNumSampleType Adc_GetStreamLastPointer(Adc_GroupType group, Adc_ValueGroupType** PtrToSamplePtr)
 {
 	const Adc_ConfigType *AdcConfigPtr = Adc_GetControllerConfigPtrFromGroupId(group);
-
 	Adc_StreamNumSampleType nofSample = 0;
-	Adc_GroupDefType *groupPtr = (Adc_GroupDefType *)&AdcConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER];
 	
 	/** @req ADC216 */
 	/* Check for development errors. */
-	if ( (E_OK == Adc_CheckGetStreamLastPointer (adcState, AdcConfigPtr, group)) &&
-		 (groupPtr->status->groupStatus != ADC_BUSY) )
+	if (E_OK == Adc_CheckGetStreamLastPointer (adcState, AdcConfigPtr, group))
 	{
-	    /* Set resultPtr to application buffer. */
-		if(groupPtr->status->currSampleCount > 0){
-			*PtrToSamplePtr = &groupPtr->status->resultBufferPtr[groupPtr->status->currSampleCount-1];
-		}
+		Adc_GroupDefType *groupPtr = (Adc_GroupDefType *)&AdcConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER];
 
-	    if ((ADC_CONV_MODE_ONESHOT == groupPtr->conversionMode) &&
-	        (ADC_STREAM_COMPLETED  == groupPtr->status->groupStatus))
+		if (groupPtr->status->groupStatus != ADC_BUSY)
 	    {
-			/** @req ADC327. */
-			groupPtr->status->groupStatus = ADC_IDLE;
+			/* Set resultPtr to application buffer. */
+			if(groupPtr->status->currSampleCount > 0){
+				*PtrToSamplePtr = &groupPtr->status->resultBufferPtr[groupPtr->status->currSampleCount-1];
+			}
+
+			if ((ADC_CONV_MODE_ONESHOT == groupPtr->conversionMode) &&
+				(ADC_STREAM_COMPLETED  == groupPtr->status->groupStatus))
+			{
+				/** @req ADC327. */
+				groupPtr->status->groupStatus = ADC_IDLE;
+			}
+			else if ((ADC_CONV_MODE_CONTINOUS == groupPtr->conversionMode) &&
+					 (ADC_ACCESS_MODE_STREAMING == groupPtr->accessMode) &&
+					 (ADC_STREAM_BUFFER_LINEAR == groupPtr->streamBufferMode) &&
+					 (ADC_STREAM_COMPLETED    == groupPtr->status->groupStatus))
+			{
+				/** @req ADC327. */
+				groupPtr->status->groupStatus = ADC_IDLE;
+			}
+			else if ( (ADC_CONV_MODE_CONTINOUS == groupPtr->conversionMode) &&
+					  ((ADC_STREAM_COMPLETED    == groupPtr->status->groupStatus) ||
+					   (ADC_COMPLETED           == groupPtr->status->groupStatus)) )
+			{
+				/* Restart continous mode, and reset result buffer */
+				if ((ADC_CONV_MODE_CONTINOUS == groupPtr->conversionMode) &&
+					(ADC_STREAM_COMPLETED    == groupPtr->status->groupStatus))
+				{
+				  /* Start continous conversion again */
+					Adc_StartGroupConversion(group);
+				}
+				/** @req ADC326 */
+				/** @req ADC328 */
+			}
+			else{/* Keep status. */}
 	    }
-	    else if ((ADC_CONV_MODE_CONTINOUS == groupPtr->conversionMode) &&
-	             (ADC_ACCESS_MODE_STREAMING == groupPtr->accessMode) &&
-	             (ADC_STREAM_BUFFER_LINEAR == groupPtr->streamBufferMode) &&
-	             (ADC_STREAM_COMPLETED    == groupPtr->status->groupStatus))
-	    {
-			/** @req ADC327. */
-			groupPtr->status->groupStatus = ADC_IDLE;
-	    }
-	    else if ( (ADC_CONV_MODE_CONTINOUS == groupPtr->conversionMode) &&
-	              ((ADC_STREAM_COMPLETED    == groupPtr->status->groupStatus) ||
-	               (ADC_COMPLETED           == groupPtr->status->groupStatus)) )
-	    {
-	        /* Restart continous mode, and reset result buffer */
-	        if ((ADC_CONV_MODE_CONTINOUS == groupPtr->conversionMode) &&
-	            (ADC_STREAM_COMPLETED    == groupPtr->status->groupStatus))
-	        {
-	  		  /* Start continous conversion again */
-	        	Adc_StartGroupConversion(group);
-	        }
-			/** @req ADC326 */
-			/** @req ADC328 */
-	    }
-	    else{/* Keep status. */}
+		else
+		{
+			/* Some condition not met */
+			*PtrToSamplePtr = NULL;
+		}
 	}
 	else
 	{
@@ -246,10 +255,11 @@ Std_ReturnType Adc_ReadGroup (Adc_GroupType group, Adc_ValueGroupType *dataBuffe
   Std_ReturnType returnValue = E_OK;
   uint8_t channel;
   const Adc_ConfigType *AdcConfigPtr = Adc_GetControllerConfigPtrFromGroupId(group);
-  Adc_GroupDefType *groupPtr = (Adc_GroupDefType *)&AdcConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER];
 
   if (E_OK == Adc_CheckReadGroup (adcState, AdcConfigPtr, group))
   {
+	Adc_GroupDefType *groupPtr = (Adc_GroupDefType *)&AdcConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER];
+
     /* Copy the result to application buffer. */
     for (channel = 0; channel < groupPtr->numberOfChannels; channel++)
 	{
@@ -481,13 +491,14 @@ void Adc_ConfigureADCInterrupts (const Adc_ConfigType *AdcConfigPtr)
 void Adc_StartGroupConversion (Adc_GroupType group)
 {
 	const Adc_ConfigType *AdcConfigPtr = Adc_GetControllerConfigPtrFromGroupId(group);
-	volatile struct ADC_tag *hwPtr = GET_HW_CONTROLLER(AdcConfigPtr->hwConfigPtr->hwUnitId);
-
-	Adc_GroupDefType *groupPtr = (Adc_GroupDefType *)&AdcConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER];
 
 	/* Run development error check. */
 	if (E_OK == Adc_CheckStartGroupConversion (adcState, AdcConfigPtr, group))
 	{
+		volatile struct ADC_tag *hwPtr = GET_HW_CONTROLLER(AdcConfigPtr->hwConfigPtr->hwUnitId);
+
+		Adc_GroupDefType *groupPtr = (Adc_GroupDefType *)&AdcConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER];
+
 		/* Disable trigger normal conversions for ADC0 */
 		hwPtr->MCR.B.NSTART = 0;
 
@@ -597,10 +608,11 @@ void Adc_StartGroupConversion (Adc_GroupType group)
 void Adc_StopGroupConversion (Adc_GroupType group)
 {
   const Adc_ConfigType *AdcConfigPtr = Adc_GetControllerConfigPtrFromGroupId(group);
-  volatile struct ADC_tag *hwPtr = GET_HW_CONTROLLER(AdcConfigPtr->hwConfigPtr->hwUnitId);
 
   if (E_OK == Adc_CheckStopGroupConversion (adcState, AdcConfigPtr, group))
   {
+	volatile struct ADC_tag *hwPtr = GET_HW_CONTROLLER(AdcConfigPtr->hwConfigPtr->hwUnitId);
+
 	/* Disable trigger normal conversions for ADC0 */
 	hwPtr->MCR.B.NSTART = 0;
 
