@@ -581,82 +581,82 @@ void Gpt_DisableNotification(Gpt_ChannelType channel)
 
 #if ( GPT_WAKEUP_FUNCTIONALITY_API == STD_ON )
 
-	void Gpt_SetMode(Gpt_ModeType mode)
-	{
-		int i;
+void Gpt_SetMode(Gpt_ModeType mode)
+{
+	int i;
 
-		VALIDATE( (Gpt_Global.initRun == STD_ON), GPT_SETMODE_SERVIVCE_ID, GPT_E_UNINIT );
-		VALIDATE( ( mode <= GPT_MODE_SLEEP ), GPT_SETMODE_SERVIVCE_ID, GPT_E_PARAM_MODE );
+	VALIDATE( (Gpt_Global.initRun == STD_ON), GPT_SETMODE_SERVIVCE_ID, GPT_E_UNINIT );
+	VALIDATE( ( mode <= GPT_MODE_SLEEP ), GPT_SETMODE_SERVIVCE_ID, GPT_E_PARAM_MODE );
 
 #if defined(CFG_MPC560X)
-		if (mode == GPT_MODE_NORMAL)
+	if (mode == GPT_MODE_NORMAL)
+	{
+		PIT.PITMCR.B.MDIS = 0;
+		// Do NOT restart channels
+	}
+	else if (mode == GPT_MODE_SLEEP)
+	{
+		PIT.PITMCR.B.MDIS = 0;
+		// Disable all but RTI
+		for (i= 0; i <= GPT_CHANNEL_PIT_LAST; i++)
 		{
-			PIT.PITMCR.B.MDIS = 0;
-			// Do NOT restart channels
+			Gpt_StopTimer(i);
 		}
-		else if (mode == GPT_MODE_SLEEP)
-		{
-			PIT.PITMCR.B.MDIS = 0;
-			// Disable all but RTI
-			for (i= 0; i <= GPT_CHANNEL_PIT_LAST; i++)
-			{
-				Gpt_StopTimer(i);
-			}
-		}
+	}
 #else
-		if (mode == GPT_MODE_NORMAL)
-		{
-			PIT.CTRL.B.MDIS = 0;
-			// Do NOT restart channels
-		}
-		else if (mode == GPT_MODE_SLEEP)
-		{
+	if (mode == GPT_MODE_NORMAL)
+	{
+		PIT.CTRL.B.MDIS = 0;
+		// Do NOT restart channels
+	}
+	else if (mode == GPT_MODE_SLEEP)
+	{
 
-			PIT.CTRL.B.MDIS = 1;
-			// Disable all but RTI
-			for (i= 0; i <= GPT_CHANNEL_PIT_LAST; i++)
-			{
-				Gpt_StopTimer(i);
-			}
+		PIT.CTRL.B.MDIS = 1;
+		// Disable all but RTI
+		for (i= 0; i <= GPT_CHANNEL_PIT_LAST; i++)
+		{
+			Gpt_StopTimer(i);
 		}
+	}
 #endif
-	}
+}
 
-	void Gpt_DisableWakeup(Gpt_ChannelType channel)
+void Gpt_DisableWakeup(Gpt_ChannelType channel)
+{
+	VALIDATE( (Gpt_Global.initRun == STD_ON), GPT_DISABLEWAKEUP_SERVICE_ID, GPT_E_UNINIT );
+	VALIDATE( VALID_CHANNEL(channel), GPT_DISABLEWAKEUP_SERVICE_ID, GPT_E_PARAM_CHANNEL );
+	// Only RTI have system wakeup
+	if (channel == GPT_CHANNEL_RTI)
 	{
-		VALIDATE( (Gpt_Global.initRun == STD_ON), GPT_DISABLEWAKEUP_SERVICE_ID, GPT_E_UNINIT );
-		VALIDATE( VALID_CHANNEL(channel), GPT_DISABLEWAKEUP_SERVICE_ID, GPT_E_PARAM_CHANNEL );
-		// Only RTI have system wakeup
-		if (channel == GPT_CHANNEL_RTI)
-		{
-			Gpt_Global.wakeupEnabled = STD_OFF;
-		}
-		else
-		{
-			// TODO:
-			//assert(0);
-		}
+		Gpt_Global.wakeupEnabled = STD_OFF;
 	}
-
-	void Gpt_EnableWakeup(Gpt_ChannelType channel)
+	else
 	{
-		VALIDATE( (Gpt_Global.initRun == STD_ON), GPT_ENABLEWAKEUP_SERVICE_ID, GPT_E_UNINIT );
-		VALIDATE( VALID_CHANNEL(channel),GPT_ENABLEWAKEUP_SERVICE_ID, GPT_E_PARAM_CHANNEL );
-		if (channel == GPT_CHANNEL_RTI)
-		{
-			Gpt_Global.wakeupEnabled = STD_ON;
-		}
-		else
-		{
-			// TODO:
-			//assert(0);
-		}
+		// TODO:
+		//assert(0);
 	}
+}
 
-	void Gpt_Cbk_CheckWakeup(EcuM_WakeupSourceType wakeupSource)
+void Gpt_EnableWakeup(Gpt_ChannelType channel)
+{
+	VALIDATE( (Gpt_Global.initRun == STD_ON), GPT_ENABLEWAKEUP_SERVICE_ID, GPT_E_UNINIT );
+	VALIDATE( VALID_CHANNEL(channel),GPT_ENABLEWAKEUP_SERVICE_ID, GPT_E_PARAM_CHANNEL );
+	if (channel == GPT_CHANNEL_RTI)
 	{
-
+		Gpt_Global.wakeupEnabled = STD_ON;
 	}
+	else
+	{
+		// TODO:
+		//assert(0);
+	}
+}
+
+void Gpt_Cbk_CheckWakeup(EcuM_WakeupSourceType wakeupSource)
+{
+
+}
 
 #endif
 

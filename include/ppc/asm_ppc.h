@@ -60,12 +60,48 @@
 #define SPR_SPEFSCR		512
 #define SPR_MCSR		572
 
+#define SPR_MAS0      624
+#define SPR_MAS1      625
+#define SPR_MAS2      626
+#define SPR_MAS3      627
+#define SPR_MAS4      628
+#define SPR_MAS6      630
+
+
 #define ESR_PTR		(1<<(38-32))
 
 #define SPR_XER		1
 #define SPR_CTR		9
 
 #define INTC_SSCIR7 0xFFF48027
+
+/* MAS bits */
+#define MAS1_TSIZE_4K			(1<<8)
+#define MAS1_TSIZE_16K			(2<<8)
+#define MAS1_TSIZE_64K			(3<<8)
+#define MAS1_TSIZE_256K			(4<<8)
+#define MAS1_TSIZE_1M			(5<<8)
+#define MAS1_TSIZE_4M			(6<<8)
+#define MAS1_TSIZE_16M			(7<<8)
+#define MAS1_TSIZE_64M			(8<<8)
+#define MAS1_TSIZE_256M			(8<<9)
+
+#define MAS2_VLE	(1<<5)
+#define MAS2_W		(1<<4)
+#define MAS2_I		(1<<3)
+#define MAS2_M		(1<<2)
+#define MAS2_G		(1<<1)
+#define MAS2_E		(1<<0)
+
+#define MAS3_UX		(1<<5)
+#define MAS3_SX		(1<<4)
+#define MAS3_UW		(1<<3)
+#define MAS3_SW		(1<<2)
+#define MAS3_UR		(1<<1)
+#define MAS3_SR		(1<<0)
+
+#define MAS3_FULL_ACCESS (MAS3_UX+MAS3_UW+MAS3_UR+MAS3_SX+MAS3_SW+MAS3_SR)
+
 
 #if defined(_ASSEMBLER_)
 /*
