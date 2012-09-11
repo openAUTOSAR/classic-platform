@@ -186,6 +186,10 @@ void EcuM_StartupTwo(void)
 	SchM_Init();
 #endif
 
+#if defined(USE_WDGM)
+	WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMStartupMode);
+#endif
+
 	// Initialize drivers that don't need NVRAM data
 	EcuM_AL_DriverInitTwo(internal_data.config);
 

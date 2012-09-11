@@ -269,7 +269,7 @@ static inline void in_state_appRun(void){
 		EcuM_OnExitRun();	/** @req EcuM2865 */
 
 #if defined(USE_WDGM)
-		// This is APPRUN not RUN.. so WdgM_SetMode() should not be called?
+		WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMPostRunMode);
 #endif
 
 #if defined(USE_RTE) && defined(CFG_ECUM_USE_SERVICE_COMPONENT)
@@ -339,9 +339,17 @@ static inline void in_state_goOffOne(void){
 		// Wait for the NVM job (NvmWriteAll) to terminate
 		NvM_GetErrorStatus(0, &writeAllResult);
 		if ((writeAllResult != NVM_REQ_PENDING) || (internal_data_go_off_one_state_timeout == 0)){
+
+#if defined(USE_WDGM)
+			WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMShutdownMode);
+#endif
 			ShutdownOS(E_OK);
 		}
 #else
+
+#if defined(USE_WDGM)
+		WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMShutdownMode);
+#endif
 		ShutdownOS(E_OK);
 #endif
 }
