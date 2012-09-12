@@ -13,20 +13,40 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-#ifndef GPT_CONFIGTYPES_H
-#define GPT_CONFIGTYPES_H
+#include "Wdg.h"
 
-typedef struct  {
-	uint32 GptChannelClkSrc;
-	Gpt_ChannelType GptChannelId;
-	Gpt_ChannelMode GptChannelMode;
-	void (*GptNotification)();
-	uint8 GptNotificationPriority;
-	uint32 GptChannelPrescale;
-	boolean GptEnableWakeup;		// ?
-#if (GPT_REPORT_WAKEUP_SOURCE == STD_ON)
-	EcuM_WakeupSourceType GptWakeupSource;
-#endif
-} Gpt_ConfigType;
+const Wdg_ModeConfigType WdgModeConfig =
+{
+	.Wdg_DefaultMode = WDGIF_OFF_MODE,
+	.WdgSettingsFast =
+	{
+		.ReloadValue = 0x200,
+		.ActivationBit = 1,
+	},
+	.WdgSettingsSlow =
+	{
+		.ReloadValue = 0x7D00,
+		.ActivationBit = 1,
+	},
+	.WdgSettingsOff =
+	{
+		.ReloadValue = 0x7D00,
+		.ActivationBit = 0,
+	},
+};
 
-#endif /* GPT_CONFIGTYPES_H */
+const Wdg_GeneralType WdgGeneral =
+{
+	.Wdg_Index = 1,
+	.Wdg_TriggerLocationPtr = Wdg_Trigger,
+	.Wdg_SetModeLocationPtr = Wdg_SetMode,
+};
+
+
+const Wdg_ConfigType WdgConfig =
+{
+  .Wdg_General = &WdgGeneral,
+  .Wdg_ModeConfig = &WdgModeConfig,
+};
+
+

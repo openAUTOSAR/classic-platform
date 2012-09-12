@@ -35,7 +35,7 @@ void EcuM_ErrorHook(Std_ReturnType reason);
 
 void EcuM_OnRTEStartup(void);
 
-void EcuM_OnEnterRUN(void);
+void EcuM_OnEnterRun(void);
 void EcuM_OnExitRun(void);
 void EcuM_OnExitPostRun(void);
 
@@ -45,13 +45,13 @@ void EcuM_OnGoOffOne(void);
 void EcuM_OnGoOffTwo(void);
 
 void EcuM_EnableWakeupSources(EcuM_WakeupSourceType wakeupSource);
-void Ecum_DisableWakeupSources(EcuM_WakeupSourceType wakeupSource);
+void EcuM_DisableWakeupSources(EcuM_WakeupSourceType wakeupSource);
 
 void EcuM_GenerateRamHash(void);
 uint8 EcuM_CheckRamHash(void);
 
 void EcuM_AL_SwitchOff(void);
-void Ecum_AL_DriverRestart(void);
+void EcuM_AL_DriverRestart(void);
 
 void EcuM_StartWakeupSources(EcuM_WakeupSourceType wakeupSource);
 void EcuM_CheckValidation(EcuM_WakeupSourceType wakeupSource);

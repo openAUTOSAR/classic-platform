@@ -37,7 +37,9 @@ endif
 obj-$(USE_ECUM) += EcuM.o
 obj-$(USE_ECUM) += EcuM_Main.o
 obj-$(USE_ECUM) += EcuM_PBcfg.o
+ifneq ($(filter EcuM_Callout_Stubs.o,$(obj-y)),)
 obj-$(USE_ECUM) += EcuM_Callout_Stubs.o
+endif
 obj-$(USE_ECUM)-$(CFG_ECUM_USE_SERVICE_COMPONENT) += EcuM_ServiceComponent.o
 inc-$(USE_ECUM) += $(ROOTDIR)/system/EcuM
 vpath-$(USE_ECUM) += $(ROOTDIR)/system/EcuM
@@ -59,6 +61,7 @@ inc-$(USE_DMA) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers
 # Mcu
 obj-$(USE_MCU) += Mcu.o
 obj-$(USE_MCU) += Mcu_Cfg.o
+obj-$(USE_MCU) += Mcu_Sleep.o
 #obj-$(CFG_MPC55XX)-$(USE_MCU) += Mcu_Exceptions.o
 
 # Flash
@@ -113,7 +116,7 @@ vpath-$(USE_NVM) += $(ROOTDIR)/system/Crc
 obj-$(USE_NVM) += Crc_32.o
 obj-$(USE_NVM) += Crc_16.o
 
-# SchM
+# SchM, always find the include files.
 inc-y += $(ROOTDIR)/system/SchM
 vpath-$(USE_SCHM) += $(ROOTDIR)/system/SchM
 obj-$(USE_SCHM) += SchM.o

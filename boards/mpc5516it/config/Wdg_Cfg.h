@@ -13,20 +13,33 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-#ifndef GPT_CONFIGTYPES_H
-#define GPT_CONFIGTYPES_H
+#ifndef WDG_CFG_H_
+#define WDG_CFG_H_
 
-typedef struct  {
-	uint32 GptChannelClkSrc;
-	Gpt_ChannelType GptChannelId;
-	Gpt_ChannelMode GptChannelMode;
-	void (*GptNotification)();
-	uint8 GptNotificationPriority;
-	uint32 GptChannelPrescale;
-	boolean GptEnableWakeup;		// ?
-#if (GPT_REPORT_WAKEUP_SOURCE == STD_ON)
-	EcuM_WakeupSourceType GptWakeupSource;
-#endif
-} Gpt_ConfigType;
+#include "Std_Types.h"
+#include "WdgIf_Types.h"
 
-#endif /* GPT_CONFIGTYPES_H */
+typedef struct
+{
+   uint32 ReloadValue;
+   uint8 ActivationBit;
+}Wdg_SettingsType;
+
+typedef struct
+{
+	WdgIf_ModeType Wdg_DefaultMode;
+	Wdg_SettingsType WdgSettingsFast;
+	Wdg_SettingsType WdgSettingsSlow;
+	Wdg_SettingsType WdgSettingsOff;
+}Wdg_ModeConfigType;
+
+typedef struct
+{
+	const Wdg_GeneralType    *Wdg_General;
+	const Wdg_ModeConfigType *Wdg_ModeConfig;
+}Wdg_ConfigType;
+
+ extern const Wdg_GeneralType WdgGeneral;
+ extern const Wdg_ConfigType WdgConfig;
+
+#endif /* WDG_CFG_H_ */
