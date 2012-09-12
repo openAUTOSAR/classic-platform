@@ -2809,7 +2809,7 @@ static Dcm_NegativeResponseCodeType DspIOControlResetToDefault(const Dcm_DspDidT
 			{
 				if(DidPtr->DspDidReturnControlToEcuFnc != NULL)
 				{
-					DidPtr->DspDidResetToDeaultFnc(NULL,&pduRxData->SduDataPtr[4],&pduTxData->SduDataPtr[4],&responseCode);
+					DidPtr->DspDidResetToDefaultFnc(NULL,&pduRxData->SduDataPtr[4],&pduTxData->SduDataPtr[4],&responseCode);
 				}
 				else
 				{
@@ -2828,12 +2828,12 @@ static Dcm_NegativeResponseCodeType DspIOControlResetToDefault(const Dcm_DspDidT
 	}
 	else
 	{
-		if(DidPtr->DspDidResetToDeaultFnc != NULL)
+		if(DidPtr->DspDidResetToDefaultFnc != NULL)
 		{
 
 			if(DidPtr->DspDidControlRecordSize != NULL)
 			{
-				DidPtr->DspDidResetToDeaultFnc(NULL,NULL,&pduTxData->SduDataPtr[4],&responseCode);
+				DidPtr->DspDidResetToDefaultFnc(NULL,NULL,&pduTxData->SduDataPtr[4],&responseCode);
 				pduTxData->SduLength = DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidResetToDefault->DspDidControlStatusRecordSize + 4;
 			}
 			else
@@ -2922,7 +2922,7 @@ static Dcm_NegativeResponseCodeType DspIOControlShortTeamAdjustment(const Dcm_Ds
 	{
 		if(DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl != NULL)
 		{
-			if(((((DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidShortTermAdjustment->DspDidControlRecordSize + 7)) >> 3) + (didControlOptionRecordSize)) == (pduRxData->SduLength - 4))
+			if(((((DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidShortTermAdjustment->DspDidControlEnableMaskRecordSize + 7)) >> 3) + (didControlOptionRecordSize)) == (pduRxData->SduLength - 4))
 			{
 				if(DidPtr->DspDidShortTermAdjustmentFnc != NULL)
 				{
