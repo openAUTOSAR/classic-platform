@@ -310,6 +310,7 @@ typedef struct {
 	uint32 MemoryAddressLow;
 	/*DcmDspMemoryRangeRuleRef * pRule;*/
 	const Dcm_DspSecurityRowType **pSecurityLevel;
+	boolean Arc_EOL;
 } Dcm_DspMemoryRangeInfo;
 
 typedef struct {
