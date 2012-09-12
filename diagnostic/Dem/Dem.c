@@ -2684,7 +2684,7 @@ Std_ReturnType Dem_GetDTCOfEvent(Dem_EventIdType eventId, Dem_DTCKindType dtcKin
  * Procedure:	Dem_ReportErrorStatus
  * Reentrant:	Yes
  */
-void Dem_ReportErrorStatus( Dem_EventIdType eventId, Dem_EventStatusType eventStatus ) /** @req DEM107 *//** @req DEM206 */
+void Dem_ReportErrorStatus( Dem_EventIdType eventId, Dem_EventStatusType eventStatus ) /** @req DEM206 */
 {
 
 	switch (demState) {
@@ -2933,11 +2933,8 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
 										storeFreezeFrameDataPerMem();
 										break;
 
-									case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
-
-										break;
-
 									case DEM_DTC_ORIGIN_SECONDARY_MEMORY:
+									case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
 									case DEM_DTC_ORIGIN_MIRROR_MEMORY:
 										// Not yet supported
 										returnCode = DEM_CLEAR_WRONG_DTCORIGIN;
@@ -3147,39 +3144,35 @@ Dem_ReturnGetFreezeFrameDataByDTCType Dem_GetFreezeFrameDataByDTC(uint32  dtc,De
 			if (checkDtcKind(dtcKind, eventRec->eventParamRef)) {
 				if (checkDtcOrigin(dtcOrigin, eventRec->eventParamRef)) {
 					if (lookupFreezeFrameDataRecNumParam(recordNumber, eventRec->eventParamRef, &FFDataRecordClass)) {
-						if(lookupFreezeFrameDataSize(recordNumber, &FFDataRecordClass, &FFDataSize)){
-							if (*bufSize >= FFDataSize) {
-								switch (dtcOrigin)
-								{
-								case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
-									if (lookupFreezeFrameDataPriMem(eventRec->eventId,recordNumber, &freezeframe)) {
-										memcpy(destBuffer, freezeframe->data, FFDataSize); /** @req DEM071 */
-										*bufSize = FFDataSize;
-										returnCode = DEM_GET_FFDATABYDTC_OK;
-									}
-									else {
-										*bufSize = 0;
-										returnCode = DEM_GET_FFDATABYDTC_OK;
-									}
-									break;
-
-								case DEM_DTC_ORIGIN_SECONDARY_MEMORY:
-								case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
-								case DEM_DTC_ORIGIN_MIRROR_MEMORY:
-									// Not yet supported
-									returnCode = DEM_GET_FFDATABYDTC_WRONG_DTCORIGIN;
-									DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETFREEZEFRAMEDATARECORDBYDTC_ID, DEM_E_NOT_IMPLEMENTED_YET);
-									break;
-								default:
-									returnCode = DEM_GET_FFDATABYDTC_WRONG_DTCORIGIN;
-									break;
+						lookupFreezeFrameDataSize(recordNumber, &FFDataRecordClass, &FFDataSize);
+						if (*bufSize >= FFDataSize) {
+							switch (dtcOrigin)
+							{
+							case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
+								if (lookupFreezeFrameDataPriMem(eventRec->eventId,recordNumber, &freezeframe)) {
+									memcpy(destBuffer, freezeframe->data, FFDataSize); /** @req DEM071 */
+									*bufSize = FFDataSize;
+									returnCode = DEM_GET_FFDATABYDTC_OK;
 								}
-							}
-							else{
-								returnCode = DEM_GET_FFDATABYDTC_BUFFERSIZE;
+								else {
+									*bufSize = 0;
+									returnCode = DEM_GET_FFDATABYDTC_OK;
+								}
+								break;
+
+							case DEM_DTC_ORIGIN_SECONDARY_MEMORY:
+							case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
+							case DEM_DTC_ORIGIN_MIRROR_MEMORY:
+								// Not yet supported
+								returnCode = DEM_GET_FFDATABYDTC_WRONG_DTCORIGIN;
+								DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETFREEZEFRAMEDATARECORDBYDTC_ID, DEM_E_NOT_IMPLEMENTED_YET);
+								break;
+							default:
+								returnCode = DEM_GET_FFDATABYDTC_WRONG_DTCORIGIN;
+								break;
 							}
 						}
-						else {
+						else{
 							returnCode = DEM_GET_FFDATABYDTC_BUFFERSIZE;
 						}
 					}
@@ -3232,17 +3225,16 @@ Dem_GetFreezeFameDataIdentifierByDTCType Dem_GetFreezeFrameDataIdentifierByDTC(u
 					if (lookupFreezeFrameDataRecNumParam(recordNumber, eventRec->eventParamRef, &FFDataRecordClass)) {
 						if(FFDataRecordClass->FFIdClassRef != NULL){
 							for(i=0; (i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && (!(FFDataRecordClass->FFIdClassRef[i].Arc_EOL)); i++){
-								if(didNum < *arraySize){
-									dataId[didNum] = &FFDataRecordClass->FFIdClassRef[i].DidIdentifier;/** @req DEM073 */
-									didNum++;
-									returnCode = DEM_GET_ID_OK;
-								}else{
-									returnCode = DEM_GET_ID_WRONG_FF_TYPE;
-								}
+								dataId[didNum] = &FFDataRecordClass->FFIdClassRef[i].DidIdentifier;/** @req DEM073 */
+								didNum++;
+								returnCode = DEM_GET_ID_OK;
+
 							}
 							*arraySize = didNum;
 						}
-
+						else {
+							returnCode = DEM_GET_ID_WRONG_FF_TYPE;
+						}
 					}
 					else{
 						returnCode = DEM_GET_ID_WRONG_FF_TYPE;
@@ -3289,6 +3281,7 @@ Dem_ReturnGetSizeOfFreezeFrameType Dem_GetSizeOfFreezeFrame(uint32  dtc,Dem_DTCK
 				if (checkDtcOrigin(dtcOrigin, eventRec->eventParamRef)) {
 					if (lookupFreezeFrameDataRecNumParam(recordNumber, eventRec->eventParamRef, &FFDataRecordClass)) {
 						if(FFDataRecordClass->FFIdClassRef != NULL){
+							/* Note - there is a function called lookupFreezeFrameDataSize that can be used here */
 							for(i = 0; (i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && (!(FFDataRecordClass->FFIdClassRef[i].Arc_EOL)); i++){
 								/* read out the did size */
 								if(FFDataRecordClass->FFIdClassRef[i].DidReadDataLengthFnc != NULL){
@@ -3303,6 +3296,9 @@ Dem_ReturnGetSizeOfFreezeFrameType Dem_GetSizeOfFreezeFrame(uint32  dtc,Dem_DTCK
 								*sizeOfFreezeFrame += dataSize+DEM_DID_IDENTIFIER_SIZE_OF_BYTES;/** @req DEM074 */
 								returnCode = DEM_GET_SIZEOFFF_OK;
 							}
+						}
+						else {
+							returnCode = DEM_GET_SIZEOFFF_WRONG_RNUM;
 						}
 					}
 					else{
