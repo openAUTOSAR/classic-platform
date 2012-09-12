@@ -122,7 +122,7 @@ typedef struct {
 
 // 10.2.23
 typedef struct {
-	uint8 DspDidControlRecordSize;			// (1)
+	uint8 DspDidControlEnableMaskRecordSize;			// (1)
 	uint8 DspDidControlOptionRecordSize;	// (1)
 	uint8 DspDidControlStatusRecordSize;	// (1)
 } Dcm_DspDidControlRecordSizesType;
@@ -131,10 +131,10 @@ typedef struct {
 typedef struct {
 	const Dcm_DspSessionRowType				**DspDidControlSessionRef;			// (1..*)	/** @req DCM621 */
 	const Dcm_DspSecurityRowType			**DspDidControlSecurityLevelRef;	// (1..*)	/** @req DCM620 */
-	const boolean	DspDidFreezeCurrentState;			// (0..1)	/** @req DCM624 */
-	const boolean	DspDidResetToDefault;				// (0..1)	/** @req DCM623 */
-	const boolean	DspDidReturnControlToEcu;			// (0..1)	/** @req DCM622 */
-	const boolean	DspDidShortTermAdjustment;			// (0..1)	/** @req DCM625 */
+	const Dcm_DspDidControlRecordSizesType	*DspDidFreezeCurrentState;			// (0..1)	/** @req DCM624 */
+	const Dcm_DspDidControlRecordSizesType	*DspDidResetToDefault;				// (0..1)	/** @req DCM623 */
+	const Dcm_DspDidControlRecordSizesType	*DspDidReturnControlToEcu;			// (0..1)	/** @req DCM622 */
+	const Dcm_DspDidControlRecordSizesType	*DspDidShortTermAdjustment;			// (0..1)	/** @req DCM625 */
 } Dcm_DspDidControlType; /** @req DCM619 */
 
 // 10.2.27
@@ -180,7 +180,7 @@ typedef struct Dcm_DspDidType {
 	Dcm_CallbackWriteDataFncType				DspDidWriteDataFnc;				// (0..1)	/** @req DCM670 */
 	Dcm_CallbackGetScalingInformationFncType	DspDidGetScalingInfoFnc;		// (0..1)	/** @req DCM676 */
 	Dcm_CallbackFreezeCurrentStateFncType		DspDidFreezeCurrentStateFnc;	// (0..1)	/** @req DCM674 */
-	Dcm_CallbackResetToDefaultFncType			DspDidResetToDeaultFnc;			// (0..1)	/** @req DCM673 */
+	Dcm_CallbackResetToDefaultFncType			DspDidResetToDefaultFnc;			// (0..1)	/** @req DCM673 */
 	Dcm_CallbackReturnControlToECUFncType		DspDidReturnControlToEcuFnc;	// (0..1)	/** @req DCM672 */
 	Dcm_CallbackShortTermAdjustmentFncType		DspDidShortTermAdjustmentFnc;	// (0..1)	/** @req DCM675 */
 	// Containers
