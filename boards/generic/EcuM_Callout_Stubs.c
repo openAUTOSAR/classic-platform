@@ -95,6 +95,14 @@
 #include "WdgM.h"
 #endif
 
+#define VALIDATE_STATE(_state) \
+	do { \
+		EcuM_StateType ecuMState;  \
+		EcuM_GetState(&ecuMState); \
+		assert(ecuMState == (_state) ); \
+	} while(0)
+
+
 void EcuM_AL_DriverInitZero(void)
 {
 	Det_Init();/** @req EcuM2783 */
@@ -330,3 +338,71 @@ void EcuM_AL_SwitchOff(void)
 {
 
 }
+
+void EcuM_CheckWakeup(EcuM_WakeupSourceType source) {
+}
+
+void EcuM_EnableWakeupSources( EcuM_WakeupSourceType source ) {
+}
+
+void EcuM_DisableWakeupSources(EcuM_WakeupSourceType wakeupSource) {
+}
+
+
+/**
+ *
+ *
+ *
+ * @param wakeupSource
+ */
+void EcuM_StartWakeupSources(EcuM_WakeupSourceType wakeupSource) {
+	VALIDATE_STATE( ECUM_STATE_WAKEUP_VALIDATION );
+
+}
+
+
+/**
+ * Restart drivers..
+ */
+void EcuM_AL_DriverRestart( void ) {
+
+	VALIDATE_STATE( ECUM_STATE_WAKEUP_VALIDATION );
+
+}
+
+
+/**
+ *
+ * @param wact
+ * @return
+ */
+EcuM_WakeupReactionType EcuM_OnWakeupReaction( EcuM_WakeupReactionType wact ) {
+
+	VALIDATE_STATE( ECUM_STATE_WAKEUP_REACTION );
+
+	return wact;
+}
+
+/**
+ * Generate RAM hash.
+ * We are in ECUM_STATE_SLEEP here.
+ *
+ */
+void EcuM_GenerateRamHash( void ) {
+	VALIDATE_STATE( ECUM_STATE_SLEEP );
+}
+
+/**
+ * Check RAM hash.
+ * We are still in ECUM_STATE_SLEEP here.
+ *
+ * @return
+ */
+uint8 EcuM_CheckRamHash( void ) {
+	VALIDATE_STATE( ECUM_STATE_SLEEP );
+
+	return 0;
+}
+
+
+

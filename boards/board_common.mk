@@ -37,7 +37,7 @@ endif
 obj-$(USE_ECUM) += EcuM.o
 obj-$(USE_ECUM) += EcuM_Main.o
 obj-$(USE_ECUM) += EcuM_PBcfg.o
-ifneq ($(filter EcuM_Callout_Stubs.o,$(obj-y)),)
+ifeq ($(filter EcuM_Callout_Stubs.o,$(obj-y)),)
 obj-$(USE_ECUM) += EcuM_Callout_Stubs.o
 endif
 obj-$(USE_ECUM)-$(CFG_ECUM_USE_SERVICE_COMPONENT) += EcuM_ServiceComponent.o
@@ -61,7 +61,7 @@ inc-$(USE_DMA) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers
 # Mcu
 obj-$(USE_MCU) += Mcu.o
 obj-$(USE_MCU) += Mcu_Cfg.o
-obj-$(USE_MCU) += Mcu_Sleep.o
+obj-$(USE_MCU)-$(CFG_PPC) += Mcu_Sleep.o
 #obj-$(CFG_MPC55XX)-$(USE_MCU) += Mcu_Exceptions.o
 
 # Flash

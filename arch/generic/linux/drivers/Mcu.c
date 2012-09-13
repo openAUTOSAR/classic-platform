@@ -36,6 +36,9 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
 
 }
 
+void Mcu_SetMode( Mcu_ModeType McuMode ) {
+	(void)McuMode;
+}
 
 /**
  * Get the system clock in Hz. It calculates the clock from the

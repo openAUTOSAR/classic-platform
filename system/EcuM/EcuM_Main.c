@@ -27,6 +27,7 @@
 #include "NvM.h"
 #endif
 
+
 static uint32 internal_data_run_state_timeout = 0;
 #if defined(USE_NVM)
 static uint32 internal_data_go_off_one_state_timeout = 0;
