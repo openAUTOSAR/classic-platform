@@ -689,6 +689,48 @@ void Mcu_PerformReset(void)
  */
 static void enterLowPower (Mcu_ModeType mcuMode )
 {
+#if defined(CFG_MPC5668)
+	uint32 timeout;
+	/* Set the sleep bit; following a WAIT instruction, the device will go to sleep */
+	CRP.PSCR.B.SLEEP = 1;
+
+	/* 0x1 32k, 0x2 64k, 0x3 128k -- RAMs maintain power */
+	CRP.PSCR.B.RAMSEL = 0x3;		// Keep all 128K
+
+	CRP.Z6VEC.R = (uint32)&McuE_LowPowerRecoverFlash;
+#if defined(CFG_VLE)
+	CRP.Z6VEC.VLE = 1;
+#endif
+
+	/* If we "Mcu_Wakeup()" is located in RAM, set FASTREC */
+	CRP.RECPTR.B.FASTREC = 0;
+
+	/* Halt everything */
+    SIU.HLT0.R = 0x037FFF3D;
+    SIU.HLT1.R = 0x18000F3C;
+    while((SIU.HLTACK0.R != 0x037FFF3D) && (SIU.HLTACK1.R != 0x18000F3C) && (timeout<3000)){}
+
+	/* put Z0 in reset if not used for wakeup */
+	CRP.Z0VEC.B.Z0RST = 1;
+
+	// TODO: Enable_all_internal_pull_devices (PULL_DOWN);
+
+	/* Save context and execute wait instruction.
+	 *
+	 * Things that matter here are
+	 * - Z1VEC, determines where TLB0 will point. TLB0 is written with a
+	 *   value at startup that 4K aligned to this address.
+	 * - LowPower_Sleep() will save a interrupt context so we will return
+	 *   intact.
+	 * - For devices with little RAM we don't want to impose the alignment
+	 *   requirements there. Almost as we have to occupy a 4K block for this..
+	 *   although the code does not take that much space.
+	 * */
+	McuE_EnterLowPower(mcuMode);
+
+    /* Clear sleep flags to allow pads to operate */
+	CRP.PSCR.B.SLEEPF = 0x1;
+#else
 	uint32 timeout;
 	/* Set the sleep bit; following a WAIT instruction, the device will go to sleep */
 	CRP.PSCR.B.SLEEP = 1;
@@ -730,7 +772,7 @@ static void enterLowPower (Mcu_ModeType mcuMode )
     /* Clear sleep flags to allow pads to operate */
     CRP.PSCR.B.SLEEPF = 0x1;
 
-
+#endif
 }
 
 
@@ -740,7 +782,7 @@ void Mcu_SetMode( Mcu_ModeType mcuMode)
 	// VALIDATE( ( McuMode <= Mcu_Global.config->McuNumberOfMcuModes ), MCU_SETMODE_SERVICE_ID, MCU_E_PARAM_MODE );
 
 
-#if defined(CFG_MPC5516)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 	if( MCU_MODE_RUN == mcuMode ) {
 
 	} else if( MCU_MODE_SLEEP == mcuMode ) {

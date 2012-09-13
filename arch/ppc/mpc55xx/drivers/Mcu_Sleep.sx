@@ -11,8 +11,11 @@
 .section .text
 #endif
 
-
+#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 #define CRP_RECPTR 		0xfffec058
+#else
+#error
+#endif
 
 	.global McuE_EnterLowPower
 	
@@ -122,7 +125,7 @@ McuE_LowPowerRecoverFlash:
  #define VLE_VAL		0
  #endif
 
-#if defined(CFG_MPC5516)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 #define SRAM_START			0x40000000
 #define FLASH_START			0x00000000
 #define PERIPHERAL_START	0xfff00000
