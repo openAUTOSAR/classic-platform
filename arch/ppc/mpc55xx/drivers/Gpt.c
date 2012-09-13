@@ -307,9 +307,7 @@ void Gpt_Init(const Gpt_ConfigType *config) {
 	{
 		PIT.CH[i].TCTRL.B.TIE = 0;
 	}
-#ifndef CFG_MPC5604P
 	PIT.MCR.B.MDIS = 0;
-#endif
 	PIT.MCR.B.FRZ = 1;
 #else
 	/* @req 3.1.5|GPT258 */

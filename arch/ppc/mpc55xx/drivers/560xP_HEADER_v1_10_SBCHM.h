@@ -4891,7 +4891,8 @@ extern "C" {
         union {
             vuint32_t R;
             struct {
-                vuint32_t:31;
+                vuint32_t:30;
+                vuint32_t MDIS:1;
                 vuint32_t FRZ:1;
             } B;
         } MCR;

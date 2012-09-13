@@ -535,6 +535,7 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     CGM.SC_DC[0].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
     CGM.SC_DC[1].R = 0x80; /* MPC56xxB/S: Enable peri set 2 sysclk divided by 1 */
     CGM.SC_DC[2].R = 0x80; /* MPC56xxB/S: Enable peri set 3 sysclk divided by 1 */
+    CGM.SC_DC[3].R = 0x80; /* MPC56xxB/S: Enable peri set 3 sysclk divided by 1 */
 
  #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
     // Partially following the steps in MPC5567 RM..
