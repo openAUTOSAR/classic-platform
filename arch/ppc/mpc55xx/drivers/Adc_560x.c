@@ -562,9 +562,9 @@ void Adc_StartGroupConversion (Adc_GroupType group)
 		hwPtr->CTR[1].B.INPLATCH = groupPtr->adcChannelConvTime.INPLATCH;
 		hwPtr->CTR[1].B.INPCMP = groupPtr->adcChannelConvTime.INPCMP;
 		hwPtr->CTR[1].B.INPSAMP = groupPtr->adcChannelConvTime.INPSAMP;
-//		hwPtr->CTR[2].B.INPLATCH = groupPtr->adcChannelConvTime.INPLATCH;
-//		hwPtr->CTR[2].B.INPCMP = groupPtr->adcChannelConvTime.INPCMP;
-//		hwPtr->CTR[2].B.INPSAMP = groupPtr->adcChannelConvTime.INPSAMP;
+		hwPtr->CTR[2].B.INPLATCH = groupPtr->adcChannelConvTime.INPLATCH;
+		hwPtr->CTR[2].B.INPCMP = groupPtr->adcChannelConvTime.INPCMP;
+		hwPtr->CTR[2].B.INPSAMP = groupPtr->adcChannelConvTime.INPSAMP;
 
 		for(uint8 i =0; i < groupPtr->numberOfChannels; i++)
 		{
@@ -584,12 +584,12 @@ void Adc_StartGroupConversion (Adc_GroupType group)
 		/* Enable Normal conversion */
 		hwPtr->NCMR[0].R = groupChannelIdMask[0];
 		hwPtr->NCMR[1].R = groupChannelIdMask[1];
-//		hwPtr->NCMR[2].R = groupChannelIdMask[2];
+		hwPtr->NCMR[2].R = groupChannelIdMask[2];
 
 		/* Enable Channel Interrupt */
 		hwPtr->CIMR[0].R = groupChannelIdMask[0];
 		hwPtr->CIMR[1].R = groupChannelIdMask[1];
-//		hwPtr->CIMR[2].R = groupChannelIdMask[2];
+		hwPtr->CIMR[2].R = groupChannelIdMask[2];
 #endif
 		/* Clear interrupts */
 		hwPtr->ISR.B.ECH = 1;
