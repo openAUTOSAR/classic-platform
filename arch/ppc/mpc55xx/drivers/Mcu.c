@@ -522,6 +522,9 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     ME.PCTL[4].R = 0x01;  /* MPC56xxB/P/S DSPI0  */
     ME.PCTL[5].R = 0x01;  /* MPC56xxB/P/S DSPI1:  */
     ME.PCTL[32].R = 0x01; //ADC0 control
+#if defined(CFG_MPC5604P)
+    ME.PCTL[33].R = 0x01; //ADC1 control
+#endif
     ME.PCTL[23].R = 0x01; //DMAMUX control
     ME.PCTL[48].R = 0x01; /* MPC56xxB/P/S LINFlex  */
     ME.PCTL[49].R = 0x01; /* MPC56xxB/P/S LINFlex  */
