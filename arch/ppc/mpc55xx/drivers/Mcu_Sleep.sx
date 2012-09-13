@@ -14,7 +14,7 @@
 #if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 #define CRP_RECPTR 		0xfffec058
 #else
-#error
+#error No support for this MCU
 #endif
 
 	.global McuE_EnterLowPower

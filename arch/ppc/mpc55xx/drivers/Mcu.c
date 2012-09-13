@@ -730,7 +730,8 @@ static void enterLowPower (Mcu_ModeType mcuMode )
 
     /* Clear sleep flags to allow pads to operate */
 	CRP.PSCR.B.SLEEPF = 0x1;
-#else
+
+#elif defined(CFG_MPC5516)
 	uint32 timeout;
 	/* Set the sleep bit; following a WAIT instruction, the device will go to sleep */
 	CRP.PSCR.B.SLEEP = 1;
@@ -771,7 +772,9 @@ static void enterLowPower (Mcu_ModeType mcuMode )
 
     /* Clear sleep flags to allow pads to operate */
     CRP.PSCR.B.SLEEPF = 0x1;
-
+#else
+	/* NOT SUPPORTED */
+	(void) McuMode;
 #endif
 }
 
