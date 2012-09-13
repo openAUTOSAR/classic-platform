@@ -26,10 +26,12 @@
 #define WDGM_SW_PATCH_VERSION	0
 
 #include "Std_Types.h"
-/* "forward" declare types due to circular dependency chain */
-typedef uint8 WdgM_SupervisedEntityIdType;
-typedef uint8 WdgM_ModeType;
 
+/* "forward" declare types due to circular dependency chain */
+#ifndef CFG_WDGM_USE_SERVICE_COMPONENT
+typedef uint8 WdgM_SupervisedEntityIdType;
+#endif
+typedef uint8 WdgM_ModeType;
 
 #include "WdgM_Cfg.h"
 
