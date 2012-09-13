@@ -97,9 +97,9 @@ typedef uint8_t Gpt_ChannelType;
 #define GPT_AR_MINOR_VERSION     2
 #define GPT_AR_PATCH_VERSION     1
 
-//#if (GPT_REPORT_WAKEUP_SOURCE==STD_ON)
+#if (GPT_REPORT_WAKEUP_SOURCE==STD_ON)
 #include "EcuM_Cbk.h"		/* @req 4.0.3/GPT271 */
-//#endif
+#endif
 
 /* Needs Gpt_ConfigType */
 #include "Gpt_Cfg.h"		/* @req 4.0.3/GPT259 */
