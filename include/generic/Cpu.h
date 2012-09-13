@@ -33,4 +33,6 @@ typedef uint32_t imask_t;
 #define Irq_SuspendOs() 	Irq_Disable()
 #define Irq_ResumeOs() 		Irq_Enable()
 
+#define ilog2(_x)			__builtin_ffs(_x)
+
 #endif /* CPU_H */
