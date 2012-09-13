@@ -318,7 +318,11 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
  	SWT.SR.R = 0x0000d928;
  	SWT.CR.R = 0x8000010A;     /* Disable watchdog */
 #if defined(USE_WDG)
-	SWT.TO.R = 0xfa00;         	/* set the timout to 500ms */
+#if !defined(CFG_MPC5604P)
+	SWT.TO.R = 0xfa00;         	/* set the timout to 500ms, 128khz clock */
+#else
+	SWT.TO.R = 0x7d000;         	/* set the timout to 500ms, , 16khz clock */
+#endif
 	SWT.CR.R = 0x8000011B;      /* enable watchdog */
 #endif
 #endif

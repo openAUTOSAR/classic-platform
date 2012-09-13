@@ -62,6 +62,7 @@
 #ifndef _JDP_H_
 #define _JDP_H_
 
+#include "Compiler.h"
 #include "typedefs.h"
 
 #ifdef  __cplusplus
