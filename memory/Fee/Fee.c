@@ -235,6 +235,8 @@ typedef struct {
 
 typedef struct {
 	uint8				BankNumber;
+	boolean				ForceGarbageCollect;
+	uint8				NofFailedGarbageCollect;
 	Fls_AddressType		NewBlockAdminAddress;
 	Fls_AddressType		NewBlockDataAddress;
 	FlsBankStatusType	BankStatus[NUM_OF_BANKS];
@@ -289,12 +291,14 @@ typedef enum {
   FEE_GARBAGE_COLLECT_DATA_WRITE,
   FEE_GARBAGE_COLLECT_MAGIC_WRITE_REQUESTED,
   FEE_GARBAGE_COLLECT_MAGIC_WRITE,
-  FEE_GARBAGE_COLLECT_ERASE
+  FEE_GARBAGE_COLLECT_ERASE,
+
+  FEE_CORRUPTED
+
 } CurrentJobStateType;
 
 typedef struct {
 	CurrentJobStateType			State;
-	uint16						InStateCounter;
 	uint16						BlockNumber;
 	uint16						Length;
 	const Fee_BlockConfigType	*BlockConfigPtr;
@@ -330,16 +334,13 @@ typedef struct {
 
 static CurrentJobType CurrentJob = {
 		.State = FEE_IDLE,
-		.InStateCounter = 0
 		//lint -e{785}		PC-Lint (785) - rest of structure members is initialized when used.
 };
 
 /*
  * Misc definitions
  */
-#define STATE_COUNTER_MAX				0xffff
-#define GARBAGE_COLLECTION_DELAY		10
-
+#define MAX_NOF_FAILED_GC_ATTEMPTS		5
 /***************************************
  *           Local functions           *
  ***************************************/
@@ -408,16 +409,23 @@ static void FinnishJob(void)
 	CurrentJob.State = FEE_IDLE;
 	ModuleStatus = MEMIF_IDLE;
 	JobResult = MEMIF_JOB_OK;
-
-	if (Fee_Config.General.NvmJobEndCallbackNotificationCallback != NULL) {
-		Fee_Config.General.NvmJobEndCallbackNotificationCallback();
+	if(!AdminFls.ForceGarbageCollect){
+		if (Fee_Config.General.NvmJobEndCallbackNotificationCallback != NULL) {
+			Fee_Config.General.NvmJobEndCallbackNotificationCallback();
+		}
 	}
 }
 
 
 static void AbortJob(MemIf_JobResultType result)
 {
-	CurrentJob.State = FEE_IDLE;
+	if(AdminFls.NofFailedGarbageCollect >= MAX_NOF_FAILED_GC_ATTEMPTS){
+		DET_REPORTERROR(MODULE_ID_FEE, 0, FEE_GLOBAL_ID, FEE_FLASH_CORRUPT);
+		AdminFls.ForceGarbageCollect = FALSE;
+		CurrentJob.State = FEE_CORRUPTED;
+	} else {
+		CurrentJob.State = FEE_IDLE;
+	}
 	ModuleStatus = MEMIF_IDLE;
 	JobResult = result;
 
@@ -640,6 +648,8 @@ static void Reading(void)
  */
 static void BankHeaderOldWrite(uint8 bank)
 {
+	/* Need to collect garbage */
+	AdminFls.ForceGarbageCollect = TRUE;
 	/* Mark the bank as old */
 	memset(RWBuffer.BankCtrl.Data, 0xff, BANK_CTRL_PAGE_SIZE);
 	RWBuffer.BankCtrl.BankStatus = BANK_STATUS_OLD;
@@ -881,11 +891,12 @@ static void GarbageCollectStartJob(void)
 			} else {
 				if (Fls_Erase(BankProp[sourceBank].Start, BankProp[sourceBank].End - BankProp[sourceBank].Start) == E_OK) {
 					SetFlsJobBusy();
+					CurrentJob.Op.GarbageCollect.BankNumber = sourceBank;
+					CurrentJob.State = FEE_GARBAGE_COLLECT_ERASE;
 				} else {
+					AdminFls.NofFailedGarbageCollect++;
 					AbortJob(Fls_GetJobResult());
 				}
-				CurrentJob.Op.GarbageCollect.BankNumber = sourceBank;
-				CurrentJob.State = FEE_GARBAGE_COLLECT_ERASE;
 			}
 		} else {
 			CurrentJob.State = FEE_IDLE;
@@ -911,6 +922,7 @@ static void GarbageCollectWriteHeader(void)
 				CurrentJob.State = FEE_GARBAGE_COLLECT_MAGIC_WRITE_REQUESTED;
 			}
 		} else {
+			AdminFls.NofFailedGarbageCollect++;
 			AbortJob(Fls_GetJobResult());
 		}
 	}
@@ -933,6 +945,7 @@ static void GarbageCollectReadDataRequested(void)
 		if (Fls_Read(CurrentJob.AdminFlsBlockPtr->BlockDataAddress + CurrentJob.Op.GarbageCollect.DataOffset, RWBuffer.Byte, CurrentJob.Length) == E_OK) {
 			SetFlsJobBusy();
 		} else {
+			AdminFls.NofFailedGarbageCollect++;
 			AbortJob(Fls_GetJobResult());
 		}
 	}
@@ -948,6 +961,7 @@ static void GarbageCollectReadData(void)
 		if (Fls_GetJobResult() == MEMIF_JOB_OK) {
 			CurrentJob.State = FEE_GARBAGE_COLLECT_DATA_WRITE_REQUESTED;
 		} else {
+			AdminFls.NofFailedGarbageCollect++;
 			AbortJob(Fls_GetJobResult());
 		}
 	}
@@ -965,9 +979,11 @@ static void GarbageCollectWriteDataRequested(void)
 		if (Fls_Write(CurrentJob.Op.GarbageCollect.WriteDataAddress + CurrentJob.Op.GarbageCollect.DataOffset, RWBuffer.Byte, CurrentJob.Length) == E_OK) {
 			SetFlsJobBusy();
 		} else {
+			AdminFls.NofFailedGarbageCollect++;
 			AbortJob(Fls_GetJobResult());
 		}
 	} else {
+		AdminFls.NofFailedGarbageCollect++;
 		AbortJob(Fls_GetJobResult());
 	}
 }
@@ -991,6 +1007,7 @@ static void GarbageCollectWriteData(void)
 				CurrentJob.State = FEE_GARBAGE_COLLECT_DATA_READ_REQUESTED;
 			}
 		} else {
+			AdminFls.NofFailedGarbageCollect++;
 			AbortJob(Fls_GetJobResult());
 		}
 	}
@@ -1009,8 +1026,12 @@ static void GarbageCollectWriteMagicRequested(void)
 		if (Fls_Write(CurrentJob.Op.GarbageCollect.WriteAdminAddress + BLOCK_CTRL_MAGIC_POS_OFFSET, RWBuffer.BlockCtrl.MagicPage.Byte, BLOCK_CTRL_MAGIC_PAGE_SIZE) == E_OK) {
 			SetFlsJobBusy();
 		} else {
+			AdminFls.NofFailedGarbageCollect++;
 			AbortJob(Fls_GetJobResult());
 		}
+	} else {
+		AdminFls.NofFailedGarbageCollect++;
+		AbortJob(Fls_GetJobResult());
 	}
 }
 
@@ -1024,8 +1045,9 @@ static void GarbageCollectWriteMagic(void)
 		if (Fls_GetJobResult() == MEMIF_JOB_OK) {
 			CurrentJob.AdminFlsBlockPtr->BlockAdminAddress = CurrentJob.Op.GarbageCollect.WriteAdminAddress;
 			CurrentJob.AdminFlsBlockPtr->BlockDataAddress = CurrentJob.Op.GarbageCollect.WriteDataAddress;
-			FinnishJob();
+			CurrentJob.State = FEE_GARBAGE_COLLECT_REQUESTED;
 		} else {
+			AdminFls.NofFailedGarbageCollect++;
 			AbortJob(Fls_GetJobResult());
 		}
 	}
@@ -1040,8 +1062,11 @@ static void GarbageCollectErase(void)
 	if (CheckFlsJobFinnished()) {
 		if (Fls_GetJobResult() == MEMIF_JOB_OK) {
 			AdminFls.BankStatus[CurrentJob.Op.GarbageCollect.BankNumber] = BANK_STATUS_NEW;
+			AdminFls.ForceGarbageCollect = FALSE;
+			AdminFls.NofFailedGarbageCollect = 0;
 			FinnishJob();
 		} else {
+			AdminFls.NofFailedGarbageCollect++;
 			AbortJob(Fls_GetJobResult());
 		}
 	}
@@ -1169,12 +1194,13 @@ void Fee_Init(void)
 
 	/* State of device */
 	CurrentJob.State = FEE_STARTUP_REQUESTED;
-	CurrentJob.InStateCounter = 0;
 #if (FEE_POLLING_MODE == STD_OFF)
 	FlsJobReady = TRUE;
 #endif
 
 	AdminFls.BankNumber = 0;
+	AdminFls.ForceGarbageCollect = FALSE;
+	AdminFls.NofFailedGarbageCollect = 0;
 	AdminFls.NewBlockDataAddress = BankProp[AdminFls.BankNumber].Start;
 	AdminFls.NewBlockAdminAddress = BankProp[AdminFls.BankNumber].End - (BLOCK_CTRL_PAGE_SIZE + BANK_CTRL_PAGE_SIZE);
 
@@ -1216,7 +1242,9 @@ Std_ReturnType Fee_Read(uint16 blockNumber, uint16 blockOffset, uint8* dataBuffe
 	uint16 dataset;
 
 	DET_VALIDATE_RV(ModuleStatus != MEMIF_UNINIT, FEE_READ_ID, FEE_E_UNINIT, E_NOT_OK);
-
+	if(AdminFls.ForceGarbageCollect || (FEE_CORRUPTED == CurrentJob.State)){
+		return E_NOT_OK;
+	}
 	if( !(ModuleStatus == MEMIF_IDLE) ) {
 		DET_REPORTERROR(MODULE_ID_FEE, FEE_READ_ID, FEE_E_BUSY, E_NOT_OK);
 		return E_NOT_OK;
@@ -1258,7 +1286,9 @@ Std_ReturnType Fee_Write(uint16 blockNumber, uint8* dataBufferPtr)
 	uint16 dataset;
 
 	DET_VALIDATE_RV(ModuleStatus != MEMIF_UNINIT, FEE_WRITE_ID, FEE_E_UNINIT, E_NOT_OK);
-
+	if(AdminFls.ForceGarbageCollect || (FEE_CORRUPTED == CurrentJob.State)){
+		return E_NOT_OK;
+	}
 	if( !(ModuleStatus == MEMIF_IDLE) ) {
 		DET_REPORTERROR(MODULE_ID_FEE, FEE_READ_ID, FEE_E_BUSY, E_NOT_OK);
 		return E_NOT_OK;
@@ -1303,7 +1333,11 @@ void Fee_Cancel(void)
  */
 MemIf_StatusType Fee_GetStatus(void)
 {
-	return ModuleStatus;
+	if(AdminFls.ForceGarbageCollect && (FEE_IDLE == CurrentJob.State)){
+		return MEMIF_BUSY_INTERNAL;
+	} else {
+		return ModuleStatus;
+	}
 }
 
 
@@ -1327,6 +1361,9 @@ Std_ReturnType Fee_InvalidateBlock(uint16 blockNumber)
 	uint16 dataset;
 
 	DET_VALIDATE_RV(ModuleStatus != MEMIF_UNINIT, FEE_INVALIDATE_BLOCK_ID, FEE_E_UNINIT, E_NOT_OK);
+	if(AdminFls.ForceGarbageCollect || (FEE_CORRUPTED == CurrentJob.State)){
+		return E_NOT_OK;
+	}
 	if( !(ModuleStatus == MEMIF_IDLE) ) {
 		DET_REPORTERROR(MODULE_ID_FEE, FEE_READ_ID, FEE_E_BUSY, E_NOT_OK);
 		return E_NOT_OK;
@@ -1375,23 +1412,13 @@ Std_ReturnType Fee_EraseImmediateBlock(uint16 blockNumber)
  */
 void Fee_MainFunction(void)
 {
-	static CurrentJobStateType LastState = FEE_UNINITIALIZED;
-
-	if (CurrentJob.State == LastState) {
-		if (CurrentJob.InStateCounter < STATE_COUNTER_MAX) {
-			CurrentJob.InStateCounter++;
-		}
-	} else {
-		LastState = CurrentJob.State;
-		CurrentJob.InStateCounter = 0;
-	}
 
 	switch (CurrentJob.State) {
 	case FEE_UNINITIALIZED:
 		break;
 
 	case FEE_IDLE:
-		if (CurrentJob.InStateCounter > GARBAGE_COLLECTION_DELAY) {
+		if (AdminFls.ForceGarbageCollect) {
 			CheckIfGarbageCollectionNeeded();
 		}
 		break;
@@ -1527,6 +1554,11 @@ void Fee_MainFunction(void)
 		InvalidateWriteInvalidateHeader();
 		break;
 
+	/*
+	 * Corrupted state
+	 */
+	case FEE_CORRUPTED:
+		break;
 
 	/*
 	 * Other

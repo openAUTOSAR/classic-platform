@@ -142,6 +142,15 @@ __FLS_PROG_START__ = 0;	/* Must be aligned to a sector start. */
 		*(.sbss2 .sbss2.* .gnu.linkonce.sb2.*);
 		__TEXT_END = .;
 	} > flash
+
+#if defined(CFG_MPC5516)
+	.McuE_LowPowerRecoverFlash 0x000ff000: {
+	    *(.lowpower_text);
+	}
+	.lowpower_vector 0x000ffffc: {
+	    *(.lowpower_vector);
+	}
+#endif	
 	
 
 	.data : {

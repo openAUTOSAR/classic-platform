@@ -60,9 +60,9 @@
 #endif
 
 #define GET_HW_CONTROLLER(_controller) 	\
-        					((struct ADC_tag *)(0xFFE00000 + 0x4000*(_controller)))
+        					((struct ADC_tag *)(ADC_BASE_ADDRESS + 0x4000*(_controller)))
 
-#define GET_HWUNITID_FROM_GROUP(_group) (_group / NOF_GROUP_PER_CONTROLLER)
+#define GET_HWUNITID_FROM_GROUP(_group) (_group / ADC_NOF_GROUP_PER_CONTROLLER)
 
 /* ----------------------------[private macro]-------------------------------*/
 /* ----------------------------[private typedef]-----------------------------*/
@@ -177,7 +177,7 @@ Std_ReturnType Adc_SetupResultBuffer (Adc_GroupType group, Adc_ValueGroupType *b
   /* Check for development errors. */
   if (E_OK == Adc_CheckSetupResultBuffer (adcState, AdcConfigPtr, group))
   {
-    AdcConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].status->resultBufferPtr = bufferPtr;
+    AdcConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER].status->resultBufferPtr = bufferPtr;
     
     returnValue = E_OK;
   }
@@ -194,7 +194,7 @@ Adc_StreamNumSampleType Adc_GetStreamLastPointer(Adc_GroupType group, Adc_ValueG
 	/* Check for development errors. */
 	if (E_OK == Adc_CheckGetStreamLastPointer (adcState, AdcConfigPtr, group))
 	{
-		Adc_GroupDefType *groupPtr = (Adc_GroupDefType *)&AdcConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER];
+		Adc_GroupDefType *groupPtr = (Adc_GroupDefType *)&AdcConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER];
 
 		if (groupPtr->status->groupStatus != ADC_BUSY)
 	    {
@@ -258,7 +258,7 @@ Std_ReturnType Adc_ReadGroup (Adc_GroupType group, Adc_ValueGroupType *dataBuffe
 
   if (E_OK == Adc_CheckReadGroup (adcState, AdcConfigPtr, group))
   {
-	Adc_GroupDefType *groupPtr = (Adc_GroupDefType *)&AdcConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER];
+	Adc_GroupDefType *groupPtr = (Adc_GroupDefType *)&AdcConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER];
 
     /* Copy the result to application buffer. */
     for (channel = 0; channel < groupPtr->numberOfChannels; channel++)
@@ -313,7 +313,7 @@ Std_ReturnType Adc_ReadGroup (Adc_GroupType group, Adc_ValueGroupType *dataBuffe
 
 void Adc_GroupConversionComplete (Adc_GroupType group, const Adc_ConfigType *AdcConfigPtr, volatile struct ADC_tag *hwPtr)
 {
-  Adc_GroupDefType *adcGroup = (Adc_GroupDefType *)&AdcConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER];
+  Adc_GroupDefType *adcGroup = (Adc_GroupDefType *)&AdcConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER];
 
   if(ADC_ACCESS_MODE_SINGLE == adcGroup->accessMode )
   {
@@ -497,7 +497,7 @@ void Adc_StartGroupConversion (Adc_GroupType group)
 	{
 		volatile struct ADC_tag *hwPtr = GET_HW_CONTROLLER(AdcConfigPtr->hwConfigPtr->hwUnitId);
 
-		Adc_GroupDefType *groupPtr = (Adc_GroupDefType *)&AdcConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER];
+		Adc_GroupDefType *groupPtr = (Adc_GroupDefType *)&AdcConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER];
 
 		/* Disable trigger normal conversions for ADC0 */
 		hwPtr->MCR.B.NSTART = 0;
@@ -617,10 +617,10 @@ void Adc_StopGroupConversion (Adc_GroupType group)
 	hwPtr->MCR.B.NSTART = 0;
 
 	/* Set group state to IDLE. */
-	AdcConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].status->groupStatus = ADC_IDLE;
+	AdcConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER].status->groupStatus = ADC_IDLE;
 
 	/* Disable group notification if enabled. */
-    if(1 == AdcConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].status->notifictionEnable){
+    if(1 == AdcConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER].status->notifictionEnable){
     	Adc_DisableGroupNotification (group);
     }
   }

@@ -12,10 +12,6 @@
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
  * -------------------------------- Arctic Core ------------------------------
- * Wdg.h
- *
- *  Created on: 27 maj 2010
- *      Author: Fredrik
  */
 
 #ifndef WDG_H_
@@ -23,6 +19,7 @@
 
 #include "Wdg_Cfg.h"
 
+#if defined(CFG_ARM_CM3)
 void Wdg_IWDG_Init (const Wdg_IWDG_ConfigType* ConfigPtr);
 void Wdg_IWDG_Trigger (void);
 Std_ReturnType Wdg_IWDG_SetMode (WdgIf_ModeType Mode);
@@ -32,7 +29,15 @@ void Wdg_WWDG_Init (const Wdg_WWDG_ConfigType* ConfigPtr);
 void Wdg_WWDG_Trigger (void);
 Std_ReturnType Wdg_WWDG_SetMode (WdgIf_ModeType Mode);
 void Wdg_WWDG_GetVersionInfo (void /* TODO Std_VersionInfoType* versioninfo*/);
+#endif
 
 void Wdg_Init (const Wdg_ConfigType* ConfigPtr);
+void Wdg_Trigger (void);
+Std_ReturnType Wdg_SetMode (WdgIf_ModeType Mode);
+
+#if (WDG_VERSION_INFO_API == STD_ON)
+void Wdg_GetVersionInfo( Std_VersionInfoType *versionInfo );
+#define Wdg_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,WDG)
+#endif
 
 #endif /* WDG_H_ */

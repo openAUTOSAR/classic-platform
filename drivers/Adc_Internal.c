@@ -21,7 +21,7 @@
 #include "Adc_Internal.h"
 
 #ifndef CFG_MPC560X
-#define NOF_GROUP_PER_CONTROLLER 100
+#define ADC_NOF_GROUP_PER_CONTROLLER 100
 #endif
 
 /* Validate functions used for development error check */
@@ -38,7 +38,7 @@ Std_ReturnType ValidateInit(Adc_StateType adcState, Adc_APIServiceIDType api)
 Std_ReturnType ValidateGroup(const Adc_ConfigType *ConfigPtr, Adc_GroupType group,Adc_APIServiceIDType api)
 {
 	Std_ReturnType res = E_OK;
-	if(!(((group % NOF_GROUP_PER_CONTROLLER) >= 0) && ((group % NOF_GROUP_PER_CONTROLLER) < ConfigPtr->nbrOfGroups))) {
+	if(!(((group % ADC_NOF_GROUP_PER_CONTROLLER) >= 0) && ((group % ADC_NOF_GROUP_PER_CONTROLLER) < ConfigPtr->nbrOfGroups))) {
 		Det_ReportError(MODULE_ID_ADC,0,api,ADC_E_PARAM_GROUP );
 		res = E_NOT_OK;
 	}
@@ -59,10 +59,10 @@ Adc_StatusType Adc_InternalGetGroupStatus (Adc_StateType adcState, const Adc_Con
 	}
 	else
 	{
-		returnValue = ConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].status->groupStatus;
+		returnValue = ConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER].status->groupStatus;
 	}
 #else
-  returnValue = ConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].status->groupStatus;
+  returnValue = ConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER].status->groupStatus;
 #endif
   return (returnValue);
 }
@@ -78,7 +78,7 @@ void Adc_EnableInternalGroupNotification (Adc_StateType adcState, const Adc_Conf
 	{
 		res = E_NOT_OK;
 	}
-	else if (ConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].groupCallback == NULL)
+	else if (ConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER].groupCallback == NULL)
 	{
 		res = E_NOT_OK;
 		Det_ReportError(MODULE_ID_ADC,0,ADC_ENABLEGROUPNOTIFICATION_ID ,ADC_E_NOTIF_CAPABILITY );
@@ -92,7 +92,7 @@ void Adc_EnableInternalGroupNotification (Adc_StateType adcState, const Adc_Conf
 	res = E_OK;
 #endif
 	if (E_OK == res){
-		ConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].status->notifictionEnable = 1;
+		ConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER].status->notifictionEnable = 1;
 	}
 }
 
@@ -106,7 +106,7 @@ void Adc_InternalDisableGroupNotification (Adc_StateType adcState, const Adc_Con
 	{
 		res = E_NOT_OK;
 	}
-	else if (ConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].groupCallback == NULL)
+	else if (ConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER].groupCallback == NULL)
 	{
 		res = E_NOT_OK;
 		Det_ReportError(MODULE_ID_ADC,0,ADC_DISABLEGROUPNOTIFICATION_ID ,ADC_E_NOTIF_CAPABILITY );
@@ -120,7 +120,7 @@ void Adc_InternalDisableGroupNotification (Adc_StateType adcState, const Adc_Con
 	res = E_OK;
 #endif
 	if (E_OK == res){
-		ConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].status->notifictionEnable = 0;
+		ConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER].status->notifictionEnable = 0;
 	}
 }
 #endif
@@ -140,7 +140,7 @@ Std_ReturnType Adc_CheckReadGroup (Adc_StateType adcState, const Adc_ConfigType 
   {
 	  returnValue = E_NOT_OK;
   }
-  else if (ADC_IDLE == ConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].status->groupStatus)
+  else if (ADC_IDLE == ConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER].status->groupStatus)
   {
     /* ADC388. */
     returnValue = E_NOT_OK;
@@ -168,20 +168,20 @@ Std_ReturnType Adc_CheckStartGroupConversion (Adc_StateType adcState, const Adc_
   {
 	  returnValue = E_NOT_OK;
   }
-  else if ( NULL == ConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].status->resultBufferPtr )
+  else if ( NULL == ConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER].status->resultBufferPtr )
   {
       /* ResultBuffer not set, ADC424 */
 	  Det_ReportError(MODULE_ID_ADC,0,ADC_STARTGROUPCONVERSION_ID, ADC_E_BUFFER_UNINIT );
 	  returnValue = E_NOT_OK;
   }
-  else if (!(ADC_TRIGG_SRC_SW == ConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].triggerSrc))
+  else if (!(ADC_TRIGG_SRC_SW == ConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER].triggerSrc))
   {
     /* Wrong trig source, ADC133. */
     Det_ReportError(MODULE_ID_ADC,0,ADC_STARTGROUPCONVERSION_ID, ADC_E_WRONG_TRIGG_SRC);
     returnValue = E_NOT_OK;
   }
-  else if (!((ADC_IDLE             == ConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].status->groupStatus) ||
-             (ADC_STREAM_COMPLETED == ConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].status->groupStatus)))
+  else if (!((ADC_IDLE             == ConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER].status->groupStatus) ||
+             (ADC_STREAM_COMPLETED == ConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER].status->groupStatus)))
   {
     /* Group status not OK, ADC351, ADC428 */
     Det_ReportError(MODULE_ID_ADC,0,ADC_STARTGROUPCONVERSION_ID, ADC_E_BUSY );
@@ -208,13 +208,13 @@ Std_ReturnType Adc_CheckStopGroupConversion (Adc_StateType adcState, const Adc_C
   {
 	  returnValue = E_NOT_OK;
   }
-  else if (!(ADC_TRIGG_SRC_SW == ConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].triggerSrc))
+  else if (!(ADC_TRIGG_SRC_SW == ConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER].triggerSrc))
   {
 	/* Wrong trig source, ADC164. */
 	Det_ReportError(MODULE_ID_ADC,0,ADC_STOPGROUPCONVERSION_ID, ADC_E_WRONG_TRIGG_SRC);
 	returnValue = E_NOT_OK;
   }
-  else if (ADC_IDLE == ConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].status->groupStatus)
+  else if (ADC_IDLE == ConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER].status->groupStatus)
   {
 	/* Group status not OK, ADC241 */
 	Det_ReportError(MODULE_ID_ADC,0,ADC_STOPGROUPCONVERSION_ID, ADC_E_IDLE );
@@ -267,7 +267,7 @@ Std_ReturnType Adc_CheckDeInit (Adc_StateType adcState, const Adc_ConfigType *Co
 		for (Adc_GroupType group = (Adc_GroupType)0; group < ConfigPtr->nbrOfGroups; group++)
 		{
 			/*  Check ADC is IDLE or COMPLETE*/
-			if((ConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].status->groupStatus != ADC_IDLE) && (ConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].status->groupStatus != ADC_STREAM_COMPLETED))
+			if((ConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER].status->groupStatus != ADC_IDLE) && (ConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER].status->groupStatus != ADC_STREAM_COMPLETED))
 			{
 				Det_ReportError(MODULE_ID_ADC,0,ADC_DEINIT_ID, ADC_E_BUSY );
 				returnValue = E_NOT_OK;
@@ -307,7 +307,7 @@ Std_ReturnType Adc_CheckGetStreamLastPointer (Adc_StateType adcState, const Adc_
   {
 	  returnValue = E_NOT_OK;
   }
-  else if(ConfigPtr->groupConfigPtr[group%NOF_GROUP_PER_CONTROLLER].status->groupStatus == ADC_IDLE)
+  else if(ConfigPtr->groupConfigPtr[group%ADC_NOF_GROUP_PER_CONTROLLER].status->groupStatus == ADC_IDLE)
   { /** @req ADC215 Check ADC is not in IDLE */
 	Det_ReportError(MODULE_ID_ADC,0,ADC_GETSTREAMLASTPOINTER_ID, ADC_E_IDLE );
 	returnValue = E_NOT_OK;

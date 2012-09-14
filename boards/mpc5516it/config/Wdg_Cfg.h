@@ -13,26 +13,33 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-
-
-#ifndef CPU_H
-#define CPU_H
+#ifndef WDG_CFG_H_
+#define WDG_CFG_H_
 
 #include "Std_Types.h"
-typedef uint32_t imask_t;
+#include "WdgIf_Types.h"
 
-#define Irq_Save(flags)		((flags) = 0)		// Dummy assignment to avoid compiler warnings
-#define Irq_Restore(flags)	(void)(flags)
+typedef struct
+{
+   uint32 ReloadValue;
+   uint8 ActivationBit;
+}Wdg_SettingsType;
 
-#define Irq_Disable()
-#define Irq_Enable()
+typedef struct
+{
+	WdgIf_ModeType Wdg_DefaultMode;
+	Wdg_SettingsType WdgSettingsFast;
+	Wdg_SettingsType WdgSettingsSlow;
+	Wdg_SettingsType WdgSettingsOff;
+}Wdg_ModeConfigType;
 
-#define Irq_SuspendAll() 	Irq_Disable()
-#define Irq_ResumeAll() 	Irq_Enable()
+typedef struct
+{
+	const Wdg_GeneralType    *Wdg_General;
+	const Wdg_ModeConfigType *Wdg_ModeConfig;
+}Wdg_ConfigType;
 
-#define Irq_SuspendOs() 	Irq_Disable()
-#define Irq_ResumeOs() 		Irq_Enable()
+ extern const Wdg_GeneralType WdgGeneral;
+ extern const Wdg_ConfigType WdgConfig;
 
-#define ilog2(_x)			__builtin_ffs(_x)
-
-#endif /* CPU_H */
+#endif /* WDG_CFG_H_ */

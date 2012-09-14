@@ -100,17 +100,21 @@ typedef struct
 	const float32                    WdgM_TriggerCycle;
 }WdgM_ActivationSchMType;
 
+#if (WDGM_GPT_USED == STD_ON)
 typedef struct
 {
 	const uint32                     WdgM_GptCycle;
 	const Gpt_ChannelType            WdgM_GptChannelRef;
 }WdgM_ActivationGPTType;
+#endif
 
 typedef struct
 {
 	const boolean                    WdgM_IsGPTActivated;
 	const WdgM_ActivationSchMType    WdgM_ActivationSchM;
+#if (WDGM_GPT_USED == STD_ON)
 	const WdgM_ActivationGPTType     WdgM_ActivationGPT;
+#endif
 }WdgM_ActivationType;
 
 typedef struct

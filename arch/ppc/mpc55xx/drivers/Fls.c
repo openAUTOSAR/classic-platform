@@ -548,6 +548,7 @@ void Fls_MainFunction(void) {
 			// ( we are reading directly from flash so it makes no sense )
 			memcpy( (void *)Fls_Global.ramAddr, (void *) Fls_Global.flashAddr,
 					Fls_Global.length);
+
 			Fls_Global.jobResultType = MEMIF_JOB_OK;
 			Fls_Global.status = MEMIF_IDLE;
 			Fls_Global.jobType = FLS_JOB_NONE;

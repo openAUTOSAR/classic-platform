@@ -23,7 +23,10 @@ typedef struct  {
 	void (*GptNotification)();
 	uint8 GptNotificationPriority;
 	uint32 GptChannelPrescale;
-	boolean GptEnableWakeup;
+	boolean GptEnableWakeup;		// ?
+#if (GPT_REPORT_WAKEUP_SOURCE == STD_ON)
+	EcuM_WakeupSourceType GptWakeupSource;
+#endif
 } Gpt_ConfigType;
 
 #endif /* GPT_CONFIGTYPES_H */

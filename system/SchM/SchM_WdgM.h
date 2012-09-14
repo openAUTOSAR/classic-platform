@@ -11,21 +11,15 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
- * -------------------------------- Arctic Core ------------------------------
- */
+ * -------------------------------- Arctic Core ------------------------------*/
 
-#ifndef WDG_H_
-#define WDG_H_
 
-#include "Wdg_Cfg.h"
+#ifndef SCHM_WDGM_H_
+#define SCHM_WDGM_H_
 
-void Wdg_Init (const Wdg_ConfigType* ConfigPtr);
-void Wdg_Trigger (void);
-Std_ReturnType Wdg_SetMode (WdgIf_ModeType Mode);
+#define SCHM_MAINFUNCTION_WDGM_TRIGGER() 			SCHM_MAINFUNCTION(WDGM_TRIGGER,WdgM_MainFunction_Trigger())
+#define SCHM_MAINFUNCTION_WDGM_ALIVESUPERVISION() 	SCHM_MAINFUNCTION(WDGM_ALIVESUPERVISION,WdgM_MainFunction_AliveSupervision())
 
-#if (WDG_VERSION_INFO_API == STD_ON)
-void Wdg_GetVersionInfo( Std_VersionInfoType *versionInfo );
-#define Wdg_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,WDG)
-#endif
+#define SCHM_MAINFUNCTION_WDGM() 	SCHM_MAINFUNCTION(WDGM,Dcm_MainFunction())
 
-#endif /* WDG_H_ */
+#endif /* SCHM_WDGM_H_ */

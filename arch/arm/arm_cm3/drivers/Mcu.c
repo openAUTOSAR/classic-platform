@@ -497,7 +497,6 @@ void Mcu_SetMode(const Mcu_ModeType McuMode)
   //VALIDATE( ( McuMode <= Mcu_Global.config->McuNumberOfMcuModes ), MCU_SETMODE_SERVICE_ID, MCU_E_PARAM_MODE );
   (void) McuMode;
 
-  /* NOT SUPPORTED */
 }
 
 //-------------------------------------------------------------------

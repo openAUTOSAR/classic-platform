@@ -13,26 +13,40 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+#include "Wdg.h"
+
+const Wdg_ModeConfigType WdgModeConfig =
+{
+	.Wdg_DefaultMode = WDGIF_OFF_MODE,
+	.WdgSettingsFast =
+	{
+		.ReloadValue = 0x200,
+		.ActivationBit = 1,
+	},
+	.WdgSettingsSlow =
+	{
+		.ReloadValue = 0x7D00,
+		.ActivationBit = 1,
+	},
+	.WdgSettingsOff =
+	{
+		.ReloadValue = 0x7D00,
+		.ActivationBit = 0,
+	},
+};
+
+const Wdg_GeneralType WdgGeneral =
+{
+	.Wdg_Index = 1,
+	.Wdg_TriggerLocationPtr = Wdg_Trigger,
+	.Wdg_SetModeLocationPtr = Wdg_SetMode,
+};
 
 
-#ifndef CPU_H
-#define CPU_H
+const Wdg_ConfigType WdgConfig =
+{
+  .Wdg_General = &WdgGeneral,
+  .Wdg_ModeConfig = &WdgModeConfig,
+};
 
-#include "Std_Types.h"
-typedef uint32_t imask_t;
 
-#define Irq_Save(flags)		((flags) = 0)		// Dummy assignment to avoid compiler warnings
-#define Irq_Restore(flags)	(void)(flags)
-
-#define Irq_Disable()
-#define Irq_Enable()
-
-#define Irq_SuspendAll() 	Irq_Disable()
-#define Irq_ResumeAll() 	Irq_Enable()
-
-#define Irq_SuspendOs() 	Irq_Disable()
-#define Irq_ResumeOs() 		Irq_Enable()
-
-#define ilog2(_x)			__builtin_ffs(_x)
-
-#endif /* CPU_H */

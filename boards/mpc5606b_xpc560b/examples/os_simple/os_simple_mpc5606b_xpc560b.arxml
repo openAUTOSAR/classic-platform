@@ -1,32 +1,138 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<AUTOSAR xmlns="http://autosar.org/3.1.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/3.1.5 autosar_3-1-5.xsd">
+<AUTOSAR xmlns="http://autosar.org/3.2.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/3.2.1 autosar_3-2-1.xsd">
   <TOP-LEVEL-PACKAGES>
     <AR-PACKAGE>
-      <SHORT-NAME>os_simple_mpc5606s_xpc560s</SHORT-NAME>
+      <SHORT-NAME>os_simple_mpc5606b_xpc560b</SHORT-NAME>
       <ELEMENTS>
-        <ECU-CONFIGURATION UUID="cf26f160-a06d-4c0a-a242-817113173070">
-          <SHORT-NAME>os_simple_mpc5606s_xpc560s</SHORT-NAME>
+        <ECU-CONFIGURATION UUID="31dd91d4-1bd2-4138-8280-61c1fa6885aa">
+          <SHORT-NAME>os_simple_mpc5606b_xpc560b</SHORT-NAME>
           <ADMIN-DATA>
             <DOC-REVISIONS>
               <DOC-REVISION />
             </DOC-REVISIONS>
             <SDGS>
               <SDG GID="Arccore::EcuOptions">
-                <SD GID="MCU">MPC560x</SD>
+                <SD GID="MCU">MPC5606B</SD>
                 <SD GID="GENDIR">${RESOURCE_LOC}/config</SD>
               </SDG>
             </SDGS>
           </ADMIN-DATA>
-          <ECU-SW-COMPOSITION-REF DEST="ECU-SW-COMPOSITION">/os_simple_mpc5606s_xpc560s/SwComposition_os_simple_mpc5606s_xpc560s</ECU-SW-COMPOSITION-REF>
+          <ECU-SW-COMPOSITION-REF DEST="ECU-SW-COMPOSITION">/os_simple_mpc5606b_xpc560b/SwComposition_os_simple_mpc5606b_xpc560b</ECU-SW-COMPOSITION-REF>
           <MODULE-REFS>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_mpc5606s_xpc560s/Os</MODULE-REF>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_mpc5606s_xpc560s/EcuM</MODULE-REF>
-            <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_mpc5606s_xpc560s/Mcu</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_mpc5606b_xpc560b/Mcu</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_mpc5606b_xpc560b/Os</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_mpc5606b_xpc560b/EcuM</MODULE-REF>
           </MODULE-REFS>
         </ECU-CONFIGURATION>
-        <ECU-SW-COMPOSITION UUID="8faadc86-f4b0-4ea7-bc7f-17e18f5c4081">
-          <SHORT-NAME>SwComposition_os_simple_mpc5606s_xpc560s</SHORT-NAME>
+        <ECU-SW-COMPOSITION UUID="abbc1d25-3315-4599-a8db-194f8715b367">
+          <SHORT-NAME>SwComposition_os_simple_mpc5606b_xpc560b</SHORT-NAME>
         </ECU-SW-COMPOSITION>
+        <MODULE-CONFIGURATION UUID="45241495-6a31-45b0-b9cd-a62cbcdd311f">
+          <SHORT-NAME>Mcu</SHORT-NAME>
+          <ADMIN-DATA>
+            <SDGS>
+              <SDG />
+              <SDG GID="Arccore::ModuleOptions">
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.0.3</SD>
+              </SDG>
+            </SDGS>
+          </ADMIN-DATA>
+          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Mcu</DEFINITION-REF>
+          <CONTAINERS>
+            <CONTAINER UUID="2d3ff5de-6be9-4a10-895b-fef0a5c6c9cd">
+              <SHORT-NAME>McuGeneralConfiguration</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuGeneralConfiguration</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Mcu/McuGeneralConfiguration/McuDevErrorDetect</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Mcu/McuGeneralConfiguration/McuPerformResetApi</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Mcu/McuGeneralConfiguration/McuVersionInfoApi</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="ebbd066b-f085-41cc-b622-836446a57488">
+              <SHORT-NAME>McuModuleConfiguration</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSrcFailureNotification</DEFINITION-REF>
+                  <VALUE>DISABLED</VALUE>
+                </ENUMERATION-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="DERIVED-INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuNumberOfMcuModes</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="DERIVED-INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuRamSectors</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuResetSetting</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+              </PARAMETER-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="ccc563c9-1d57-45a1-87cd-2f999bba8c96">
+                  <SHORT-NAME>McuClockSettingConfig</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig</DEFINITION-REF>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuDefaultClockReference</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606b_xpc560b/Mcu/McuModuleConfiguration/McuClockSettingConfig/Clock</VALUE-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                  <SUB-CONTAINERS>
+                    <CONTAINER UUID="30318428-ed61-4d8a-9f41-113eb6587820">
+                      <SHORT-NAME>Clock</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <FLOAT-VALUE>
+                          <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointFrequency</DEFINITION-REF>
+                          <VALUE>8000000.0</VALUE>
+                        </FLOAT-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointPllEprediv</DEFINITION-REF>
+                          <VALUE>0</VALUE>
+                        </INTEGER-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointPllEmfd</DEFINITION-REF>
+                          <VALUE>64</VALUE>
+                        </INTEGER-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointPllErfd</DEFINITION-REF>
+                          <VALUE>2</VALUE>
+                        </INTEGER-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                  </SUB-CONTAINERS>
+                </CONTAINER>
+                <CONTAINER UUID="c99887cb-fa12-4e59-90d4-b19669bf9491">
+                  <SHORT-NAME>McuModeSettingConf</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf/McuMode</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+          </CONTAINERS>
+        </MODULE-CONFIGURATION>
         <MODULE-CONFIGURATION UUID="cf6eedc8-cbe2-4faa-8a6e-b8308eaabda2">
           <SHORT-NAME>Os</SHORT-NAME>
           <ADMIN-DATA>
@@ -153,7 +259,7 @@
               <REFERENCE-VALUES>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmCounterRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606s_xpc560s/Os/Counter1</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606b_xpc560b/Os/Counter1</VALUE-REF>
                 </REFERENCE-VALUE>
               </REFERENCE-VALUES>
               <SUB-CONTAINERS>
@@ -167,11 +273,11 @@
                       <REFERENCE-VALUES>
                         <REFERENCE-VALUE>
                           <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventRef</DEFINITION-REF>
-                          <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606s_xpc560s/Os/Event1</VALUE-REF>
+                          <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606b_xpc560b/Os/Event1</VALUE-REF>
                         </REFERENCE-VALUE>
                         <REFERENCE-VALUE>
                           <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventTaskRef</DEFINITION-REF>
-                          <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606s_xpc560s/Os/eTask2</VALUE-REF>
+                          <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606b_xpc560b/Os/eTask2</VALUE-REF>
                         </REFERENCE-VALUE>
                       </REFERENCE-VALUES>
                     </CONTAINER>
@@ -201,11 +307,11 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606s_xpc560s/Os/Event1</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606b_xpc560b/Os/Event1</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventTaskRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606s_xpc560s/Os/eTask1</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606b_xpc560b/Os/eTask1</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
@@ -275,7 +381,7 @@
               <REFERENCE-VALUES>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskEventRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606s_xpc560s/Os/Event1</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606b_xpc560b/Os/Event1</VALUE-REF>
                 </REFERENCE-VALUE>
               </REFERENCE-VALUES>
               <SUB-CONTAINERS>
@@ -318,7 +424,7 @@
               <REFERENCE-VALUES>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskEventRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606s_xpc560s/Os/Event2</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606b_xpc560b/Os/Event2</VALUE-REF>
                 </REFERENCE-VALUE>
               </REFERENCE-VALUES>
               <SUB-CONTAINERS>
@@ -395,23 +501,23 @@
               <REFERENCE-VALUES>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppAlarmRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606s_xpc560s/Os/Alarm1</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606b_xpc560b/Os/Alarm1</VALUE-REF>
                 </REFERENCE-VALUE>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppTaskRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606s_xpc560s/Os/bTask3</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606b_xpc560b/Os/bTask3</VALUE-REF>
                 </REFERENCE-VALUE>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppTaskRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606s_xpc560s/Os/eTask1</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606b_xpc560b/Os/eTask1</VALUE-REF>
                 </REFERENCE-VALUE>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppTaskRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606s_xpc560s/Os/eTask2</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606b_xpc560b/Os/eTask2</VALUE-REF>
                 </REFERENCE-VALUE>
                 <REFERENCE-VALUE>
                   <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppCounterRef</DEFINITION-REF>
-                  <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606s_xpc560s/Os/Counter1</VALUE-REF>
+                  <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606b_xpc560b/Os/Counter1</VALUE-REF>
                 </REFERENCE-VALUE>
               </REFERENCE-VALUES>
               <SUB-CONTAINERS>
@@ -557,11 +663,11 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMSleepModeMcuModeRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606s_xpc560s/Mcu/McuModuleConfiguration/McuModeSettingConf</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606b_xpc560b/Mcu/McuModuleConfiguration/McuModeSettingConf</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMWakeupSourceMask</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606s_xpc560s/EcuM/EcuMConfiguration/EcuMWakeupSource</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606b_xpc560b/EcuM/EcuMConfiguration/EcuMWakeupSource</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>
@@ -590,112 +696,6 @@
                       <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMWakeupSource/EcuMWakeupSourcePolling</DEFINITION-REF>
                       <VALUE>false</VALUE>
                     </BOOLEAN-VALUE>
-                  </PARAMETER-VALUES>
-                </CONTAINER>
-              </SUB-CONTAINERS>
-            </CONTAINER>
-          </CONTAINERS>
-        </MODULE-CONFIGURATION>
-        <MODULE-CONFIGURATION UUID="7082fa10-dc97-4589-8b88-3b4731e5dc35">
-          <SHORT-NAME>Mcu</SHORT-NAME>
-          <ADMIN-DATA>
-            <SDGS>
-              <SDG />
-              <SDG GID="Arccore::ModuleOptions">
-                <SD GID="GENERATE_AND_VALIDATE">true</SD>
-                <SD GID="ARCCORE_EDITOR_VERSION">2.0.3</SD>
-              </SDG>
-            </SDGS>
-          </ADMIN-DATA>
-          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Mcu</DEFINITION-REF>
-          <CONTAINERS>
-            <CONTAINER UUID="9ba67196-0c89-4417-907c-0973ed10776d">
-              <SHORT-NAME>McuGeneralConfiguration</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuGeneralConfiguration</DEFINITION-REF>
-              <PARAMETER-VALUES>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Mcu/McuGeneralConfiguration/McuDevErrorDetect</DEFINITION-REF>
-                  <VALUE>false</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Mcu/McuGeneralConfiguration/McuPerformResetApi</DEFINITION-REF>
-                  <VALUE>true</VALUE>
-                </BOOLEAN-VALUE>
-                <BOOLEAN-VALUE>
-                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Mcu/McuGeneralConfiguration/McuVersionInfoApi</DEFINITION-REF>
-                  <VALUE>true</VALUE>
-                </BOOLEAN-VALUE>
-              </PARAMETER-VALUES>
-            </CONTAINER>
-            <CONTAINER UUID="ece9fa95-a839-45dc-b4f2-3b79bcc3f402">
-              <SHORT-NAME>McuModuleConfiguration</SHORT-NAME>
-              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration</DEFINITION-REF>
-              <PARAMETER-VALUES>
-                <ENUMERATION-VALUE>
-                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSrcFailureNotification</DEFINITION-REF>
-                  <VALUE>DISABLED</VALUE>
-                </ENUMERATION-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="DERIVED-INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuNumberOfMcuModes</DEFINITION-REF>
-                  <VALUE>0</VALUE>
-                </INTEGER-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="DERIVED-INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuRamSectors</DEFINITION-REF>
-                  <VALUE>1</VALUE>
-                </INTEGER-VALUE>
-                <INTEGER-VALUE>
-                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuResetSetting</DEFINITION-REF>
-                  <VALUE>0</VALUE>
-                </INTEGER-VALUE>
-              </PARAMETER-VALUES>
-              <SUB-CONTAINERS>
-                <CONTAINER UUID="441cbfe6-45cf-45fb-945d-cc2c514a2493">
-                  <SHORT-NAME>McuClockSettingConfig</SHORT-NAME>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig</DEFINITION-REF>
-                  <REFERENCE-VALUES>
-                    <REFERENCE-VALUE>
-                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuDefaultClockReference</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606s_xpc560s/Mcu/McuModuleConfiguration/McuClockSettingConfig/Clock</VALUE-REF>
-                    </REFERENCE-VALUE>
-                  </REFERENCE-VALUES>
-                  <SUB-CONTAINERS>
-                    <CONTAINER UUID="f5ad08a7-b8f2-4a5f-a547-37ace7807989">
-                      <SHORT-NAME>Clock</SHORT-NAME>
-                      <ADMIN-DATA>
-                        <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
-                        </SDGS>
-                      </ADMIN-DATA>
-                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint</DEFINITION-REF>
-                      <PARAMETER-VALUES>
-                        <FLOAT-VALUE>
-                          <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointFrequency</DEFINITION-REF>
-                          <VALUE>8000000.0</VALUE>
-                        </FLOAT-VALUE>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointPllEprediv</DEFINITION-REF>
-                          <VALUE>0</VALUE>
-                        </INTEGER-VALUE>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointPllEmfd</DEFINITION-REF>
-                          <VALUE>64</VALUE>
-                        </INTEGER-VALUE>
-                        <INTEGER-VALUE>
-                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointPllErfd</DEFINITION-REF>
-                          <VALUE>2</VALUE>
-                        </INTEGER-VALUE>
-                      </PARAMETER-VALUES>
-                    </CONTAINER>
-                  </SUB-CONTAINERS>
-                </CONTAINER>
-                <CONTAINER UUID="0cef449c-7063-4004-8fc9-5bb74239ba7b">
-                  <SHORT-NAME>McuModeSettingConf</SHORT-NAME>
-                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf</DEFINITION-REF>
-                  <PARAMETER-VALUES>
-                    <INTEGER-VALUE>
-                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf/McuMode</DEFINITION-REF>
-                      <VALUE>0</VALUE>
-                    </INTEGER-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
               </SUB-CONTAINERS>
