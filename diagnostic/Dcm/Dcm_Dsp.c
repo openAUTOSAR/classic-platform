@@ -945,7 +945,7 @@ static boolean lookupDid(uint16 didNr, const Dcm_DspDidType **didPtr)
 		dspDid++;
 	}
 
-	if (!dspDid->Arc_EOL) {
+	if (!dspDid->Arc_EOL && (!dspDid->DspDidInfoRef->DspDidDynamicllyDefined)) {
 		didFound = TRUE;
 		*didPtr = dspDid;
 	}
