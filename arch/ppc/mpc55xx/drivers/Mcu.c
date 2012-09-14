@@ -31,6 +31,11 @@
 //#define USE_LDEBUG_PRINTF 1
 #include "debug.h"
 
+#if defined(CFG_MPC5668) || defined(CFG_MPC5516)
+#define CFG_MCU_SUPPORT_SLEEP_MODE
+#endif
+
+
 #define SYSCLOCK_SELECT_PLL	0x2
 
 #if defined(CFG_MPC5567)
@@ -689,6 +694,8 @@ void Mcu_PerformReset(void)
  */
 static void enterLowPower (Mcu_ModeType mcuMode )
 {
+#if defined(CFG_MCU_SUPPORT_SLEEP_MODE)
+
 #if defined(CFG_MPC5668)
 	uint32 timeout;
 	/* Set the sleep bit; following a WAIT instruction, the device will go to sleep */
@@ -776,14 +783,17 @@ static void enterLowPower (Mcu_ModeType mcuMode )
 	/* NOT SUPPORTED */
 	(void) McuMode;
 #endif
+#endif
 }
+
 
 
 void Mcu_SetMode( Mcu_ModeType mcuMode)
 {
+
 	VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_SETMODE_SERVICE_ID, MCU_E_UNINIT );
 	// VALIDATE( ( McuMode <= Mcu_Global.config->McuNumberOfMcuModes ), MCU_SETMODE_SERVICE_ID, MCU_E_PARAM_MODE );
-
+#if defined(CFG_MCU_SUPPORT_SLEEP_MODE)
 
 #if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 	if( MCU_MODE_RUN == mcuMode ) {
@@ -816,6 +826,7 @@ void Mcu_SetMode( Mcu_ModeType mcuMode)
 #else
 	/* NOT SUPPORTED */
 	(void) McuMode;
+#endif
 #endif
 }
 
