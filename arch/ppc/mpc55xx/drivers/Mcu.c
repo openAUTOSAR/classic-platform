@@ -774,7 +774,7 @@ static void enterLowPower (Mcu_ModeType mcuMode )
     CRP.PSCR.B.SLEEPF = 0x1;
 #else
 	/* NOT SUPPORTED */
-	(void) McuMode;
+	(void) mcuMode;
 #endif
 }
 
@@ -815,7 +815,7 @@ void Mcu_SetMode( Mcu_ModeType mcuMode)
 	}
 #else
 	/* NOT SUPPORTED */
-	(void) McuMode;
+	(void) mcuMode;
 #endif
 }
 
