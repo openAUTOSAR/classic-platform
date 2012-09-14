@@ -31,11 +31,6 @@
 //#define USE_LDEBUG_PRINTF 1
 #include "debug.h"
 
-#if defined(CFG_MPC5668) || defined(CFG_MPC5516)
-#define CFG_MCU_SUPPORT_SLEEP_MODE
-#endif
-
-
 #define SYSCLOCK_SELECT_PLL	0x2
 
 #if defined(CFG_MPC5567)
@@ -388,7 +383,9 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
 
     // TODO: find out if the 5554 really works like the 5516 here
     // All three (16, 54, 67) used to run the same code here though, so i'm sticking it with 5516
-#if defined(CFG_MPC5516) || defined(CFG_MPC5554) || defined(CFG_MPC5668)
+#if defined(CFG_SIMULATOR)
+    return E_OK;
+#elif defined(CFG_MPC5516) || defined(CFG_MPC5554) || defined(CFG_MPC5668)
     /* 5516clock info:
      * Fsys - System frequency ( CPU + all periperals? )
      *
@@ -694,8 +691,6 @@ void Mcu_PerformReset(void)
  */
 static void enterLowPower (Mcu_ModeType mcuMode )
 {
-#if defined(CFG_MCU_SUPPORT_SLEEP_MODE)
-
 #if defined(CFG_MPC5668)
 	uint32 timeout;
 	/* Set the sleep bit; following a WAIT instruction, the device will go to sleep */
@@ -781,19 +776,16 @@ static void enterLowPower (Mcu_ModeType mcuMode )
     CRP.PSCR.B.SLEEPF = 0x1;
 #else
 	/* NOT SUPPORTED */
-	(void) McuMode;
-#endif
+	(void) mcuMode;
 #endif
 }
 
 
-
 void Mcu_SetMode( Mcu_ModeType mcuMode)
 {
-
 	VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_SETMODE_SERVICE_ID, MCU_E_UNINIT );
 	// VALIDATE( ( McuMode <= Mcu_Global.config->McuNumberOfMcuModes ), MCU_SETMODE_SERVICE_ID, MCU_E_PARAM_MODE );
-#if defined(CFG_MCU_SUPPORT_SLEEP_MODE)
+
 
 #if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 	if( MCU_MODE_RUN == mcuMode ) {
@@ -825,8 +817,7 @@ void Mcu_SetMode( Mcu_ModeType mcuMode)
 	}
 #else
 	/* NOT SUPPORTED */
-	(void) McuMode;
-#endif
+	(void) mcuMode;
 #endif
 }
 

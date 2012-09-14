@@ -48,4 +48,5 @@ static inline void _Irq_Disable_restore(unsigned long flags)
    asm volatile ("tfr %0, CCR" : : "r" (flags) );
 }
 
+#define ilog2(x) __builtin_ffs(x)
 #endif /* CPU_H_ */
