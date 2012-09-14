@@ -38,7 +38,8 @@ Std_ReturnType ValidateInit(Adc_StateType adcState, Adc_APIServiceIDType api)
 Std_ReturnType ValidateGroup(const Adc_ConfigType *ConfigPtr, Adc_GroupType group,Adc_APIServiceIDType api)
 {
 	Std_ReturnType res = E_OK;
-	if(!(((group % ADC_NOF_GROUP_PER_CONTROLLER) >= 0) && ((group % ADC_NOF_GROUP_PER_CONTROLLER) < ConfigPtr->nbrOfGroups))) {
+	if(!(((group % ADC_NOF_GROUP_PER_CONTROLLER) >= 0) && ((group % ADC_NOF_GROUP_PER_CONTROLLER) < ConfigPtr->nbrOfGroups))
+     || ConfigPtr == 0) {
 		Det_ReportError(MODULE_ID_ADC,0,api,ADC_E_PARAM_GROUP );
 		res = E_NOT_OK;
 	}
