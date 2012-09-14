@@ -59,8 +59,14 @@
 #define	ADC1_WD_INT		ADC_B_WD
 #endif
 
+#if defined(CFG_MPC5668)
+#define ADC_BASE_ADDRESS 0xFFF80000
+#else
+#define ADC_BASE_ADDRESS 0xFFE00000
+#endif
+
 #define GET_HW_CONTROLLER(_controller) 	\
-        					((struct ADC_tag *)(0xFFE00000 + 0x4000*(_controller)))
+        					((struct ADC_tag *)(ADC_BASE_ADDRESS + 0x4000*(_controller)))
 
 #define GET_HWUNITID_FROM_GROUP(_group) (_group / ADC_NOF_GROUP_PER_CONTROLLER)
 
