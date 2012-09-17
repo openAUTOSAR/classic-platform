@@ -185,13 +185,16 @@ static void in_state_goSleep( void ) {
 			/* @req 3.1.5/ECUM2389 */
 			EcuM_EnableWakeupSources( 1<< source );
 
+		}
+
 #if defined(WDGM)
-			WdgM_SetMode(sleepModePtr->EcuMSleepModeWdgMMode);
+		WdgM_SetMode(sleepModePtr->EcuMSleepModeWdgMMode);
 #endif
 
-			/* Let no one else run */
-			GetResource(RES_SCHEDULER);
-		}
+		/* Let no one else run */
+		GetResource(RES_SCHEDULER);
+
+		set_current_state(ECUM_STATE_SLEEP);
 
 	} else if( EcuM_GetPendingWakeupEvents() != 0 ) {
 		/* We have pending wakeup events, need to startup again */
@@ -383,7 +386,7 @@ void EcuM_MainFunction(void){
 			break;
 		case ECUM_STATE_SLEEP:
 			in_state_sleep();
-			break;
+			/* Flow Through */
 		case ECUM_STATE_WAKEUP_ONE:
 		{
 			/* TODO: we must have a normal RUN mode.. can't find any
