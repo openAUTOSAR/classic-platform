@@ -937,19 +937,22 @@ static void getFreezeFrameData(const Dem_EventParameterType *eventParam,
 	}
 
 	/* Find out the corresponding FF class */
-	for(i = 0;(i<DEM_MAX_NR_OF_CLASSES_IN_FREEZEFRAME_DATA) && (eventParam->FreezeFrameClassRef[i] != NULL);i++){
-		if(eventParam->FreezeFrameClassRef[i]->FFStorageCondition == prefailedOrFailed){
-			FreezeFrameLocal = eventParam->FreezeFrameClassRef[i];
-			break;
+	if( eventParam->FreezeFrameClassRef != NULL ) {
+		for(i = 0;(i<DEM_MAX_NR_OF_CLASSES_IN_FREEZEFRAME_DATA) && (eventParam->FreezeFrameClassRef[i] != NULL);i++){
+			if(eventParam->FreezeFrameClassRef[i]->FFStorageCondition == prefailedOrFailed){
+				FreezeFrameLocal = eventParam->FreezeFrameClassRef[i];
+				break;
+			}
 		}
 	}
+
 	/* get the dids */
 	if(FreezeFrameLocal != NULL){
 		if(FreezeFrameLocal->FFIdClassRef != NULL){
-			for (i = 0; (i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && (!(FreezeFrameLocal->FFIdClassRef[i].Arc_EOL)); i++) {
-				if(FreezeFrameLocal->FFIdClassRef[i].PidOrDidUsePort == FALSE){
-					if(FreezeFrameLocal->FFIdClassRef[i].DidReadDataLengthFnc != NULL){
-						callbackReturnCode = FreezeFrameLocal->FFIdClassRef[i].DidReadDataLengthFnc(&recordSize);
+			for (i = 0; (i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && (!(FreezeFrameLocal->FFIdClassRef[i]->Arc_EOL)); i++) {
+				if(FreezeFrameLocal->FFIdClassRef[i]->PidOrDidUsePort == FALSE){
+					if(FreezeFrameLocal->FFIdClassRef[i]->DidReadDataLengthFnc != NULL){
+						callbackReturnCode = FreezeFrameLocal->FFIdClassRef[i]->DidReadDataLengthFnc(&recordSize);
 						if(callbackReturnCode != E_OK){
 							//if fail to read data length,discard the storage of FF
 							freezeFrame->eventId = DEM_EVENT_ID_NULL;
@@ -959,21 +962,21 @@ static void getFreezeFrameData(const Dem_EventParameterType *eventParam,
 					}
 					/* if no readDidDataLengthFunction, then try the PidOrDidSize. */
 					else{
-						recordSize = FreezeFrameLocal->FFIdClassRef[i].PidOrDidSize;
+						recordSize = FreezeFrameLocal->FFIdClassRef[i]->PidOrDidSize;
 					}
 					/* read out the did data */
 					if ((storeIndex + recordSize + DEM_DID_IDENTIFIER_SIZE_OF_BYTES) <= DEM_MAX_SIZE_FF_DATA) {
 						/* store DID */
-						freezeFrame->data[storeIndex] = (FreezeFrameLocal->FFIdClassRef[i].DidIdentifier>> 8) & 0xFFu;
+						freezeFrame->data[storeIndex] = (FreezeFrameLocal->FFIdClassRef[i]->DidIdentifier>> 8) & 0xFFu;
 						storeIndex++;
-						freezeFrame->data[storeIndex] = FreezeFrameLocal->FFIdClassRef[i].DidIdentifier & 0xFFu;
+						freezeFrame->data[storeIndex] = FreezeFrameLocal->FFIdClassRef[i]->DidIdentifier & 0xFFu;
 						storeIndex++;
 						/* store data */
-						if(FreezeFrameLocal->FFIdClassRef[i].DidConditionCheckReadFnc != NULL){
-							callbackReturnCode = FreezeFrameLocal->FFIdClassRef[i].DidConditionCheckReadFnc(&errorCode);
+						if(FreezeFrameLocal->FFIdClassRef[i]->DidConditionCheckReadFnc != NULL){
+							callbackReturnCode = FreezeFrameLocal->FFIdClassRef[i]->DidConditionCheckReadFnc(&errorCode);
 							if ((callbackReturnCode == E_OK) && (errorCode == DCM_E_POSITIVERESPONSE)) {
-								if(FreezeFrameLocal->FFIdClassRef[i].DidReadFnc!= NULL){
-									callbackReturnCode = FreezeFrameLocal->FFIdClassRef[i].DidReadFnc(&freezeFrame->data[storeIndex]);
+								if(FreezeFrameLocal->FFIdClassRef[i]->DidReadFnc!= NULL){
+									callbackReturnCode = FreezeFrameLocal->FFIdClassRef[i]->DidReadFnc(&freezeFrame->data[storeIndex]);
 									if (callbackReturnCode != E_OK) {
 										memset(&freezeFrame->data[storeIndex], DEM_FREEZEFRAME_DEFAULT_VALUE, recordSize);
 									}
@@ -1707,15 +1710,15 @@ static boolean lookupFreezeFrameDataSize(uint8 recordNumber, Dem_FreezeFrameClas
 	uint16 i;
 
 	if (*freezeFrameClassPtr != NULL) {
-		for (i = 0; (i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && ((*freezeFrameClassPtr)->FFIdClassRef[i].Arc_EOL != TRUE); i++) {
-			if((*freezeFrameClassPtr)->FFIdClassRef[i].DidReadDataLengthFnc != NULL){
-				callbackReturnCode = (*freezeFrameClassPtr)->FFIdClassRef[i].DidReadDataLengthFnc(&dataSizeLocal);
+		for (i = 0; (i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && ((*freezeFrameClassPtr)->FFIdClassRef[i]->Arc_EOL != TRUE); i++) {
+			if((*freezeFrameClassPtr)->FFIdClassRef[i]->DidReadDataLengthFnc != NULL){
+				callbackReturnCode = (*freezeFrameClassPtr)->FFIdClassRef[i]->DidReadDataLengthFnc(&dataSizeLocal);
 				if(callbackReturnCode != E_OK){
 					return (dataSizeFound = FALSE);
 				}
 			}
 			else{
-				dataSizeLocal = (*freezeFrameClassPtr)->FFIdClassRef[i].PidOrDidSize;
+				dataSizeLocal = (*freezeFrameClassPtr)->FFIdClassRef[i]->PidOrDidSize;
 			}
 
 			*dataSize += dataSizeLocal + DEM_DID_IDENTIFIER_SIZE_OF_BYTES;
@@ -3224,8 +3227,8 @@ Dem_GetFreezeFameDataIdentifierByDTCType Dem_GetFreezeFrameDataIdentifierByDTC(u
 				if (checkDtcOrigin(dtcOrigin, eventRec->eventParamRef)) {
 					if (lookupFreezeFrameDataRecNumParam(recordNumber, eventRec->eventParamRef, &FFDataRecordClass)) {
 						if(FFDataRecordClass->FFIdClassRef != NULL){
-							for(i=0; (i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && (!(FFDataRecordClass->FFIdClassRef[i].Arc_EOL)); i++){
-								dataId[didNum] = &FFDataRecordClass->FFIdClassRef[i].DidIdentifier;/** @req DEM073 */
+							for(i=0; (i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && (!(FFDataRecordClass->FFIdClassRef[i]->Arc_EOL)); i++){
+								dataId[didNum] = &FFDataRecordClass->FFIdClassRef[i]->DidIdentifier;/** @req DEM073 */
 								didNum++;
 								returnCode = DEM_GET_ID_OK;
 
@@ -3282,16 +3285,16 @@ Dem_ReturnGetSizeOfFreezeFrameType Dem_GetSizeOfFreezeFrame(uint32  dtc,Dem_DTCK
 					if (lookupFreezeFrameDataRecNumParam(recordNumber, eventRec->eventParamRef, &FFDataRecordClass)) {
 						if(FFDataRecordClass->FFIdClassRef != NULL){
 							/* Note - there is a function called lookupFreezeFrameDataSize that can be used here */
-							for(i = 0; (i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && (!(FFDataRecordClass->FFIdClassRef[i].Arc_EOL)); i++){
+							for(i = 0; (i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && (!(FFDataRecordClass->FFIdClassRef[i]->Arc_EOL)); i++){
 								/* read out the did size */
-								if(FFDataRecordClass->FFIdClassRef[i].DidReadDataLengthFnc != NULL){
-									callbackReturnCode = FFDataRecordClass->FFIdClassRef[i].DidReadDataLengthFnc(&dataSize);
+								if(FFDataRecordClass->FFIdClassRef[i]->DidReadDataLengthFnc != NULL){
+									callbackReturnCode = FFDataRecordClass->FFIdClassRef[i]->DidReadDataLengthFnc(&dataSize);
 									if(callbackReturnCode != E_OK){
 										return (returnCode = DEM_GET_SIZEOFFF_PENDING);
 									}
 								}
 								else{
-									dataSize = FFDataRecordClass->FFIdClassRef[i].PidOrDidSize;
+									dataSize = FFDataRecordClass->FFIdClassRef[i]->PidOrDidSize;
 								}
 								*sizeOfFreezeFrame += dataSize+DEM_DID_IDENTIFIER_SIZE_OF_BYTES;/** @req DEM074 */
 								returnCode = DEM_GET_SIZEOFFF_OK;
