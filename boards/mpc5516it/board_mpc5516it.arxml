@@ -432,8 +432,28 @@
                     </CONTAINER>
                   </SUB-CONTAINERS>
                 </CONTAINER>
-                <CONTAINER UUID="edd643af-7788-4a0c-bf48-bf4b686db735">
-                  <SHORT-NAME>McuModeSettingConf</SHORT-NAME>
+                <CONTAINER UUID="fa8110f8-e82b-45f8-9d88-174fbe014406">
+                  <SHORT-NAME>RUN</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf/McuMode</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="f9e3a1b1-c3e7-4bdb-93a9-00ad8a6254e4">
+                  <SHORT-NAME>SLEEP</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf</DEFINITION-REF>
                   <PARAMETER-VALUES>
                     <INTEGER-VALUE>
@@ -1721,6 +1741,72 @@
                 <CONTAINER UUID="8ade5dca-9412-4f57-a6bb-4d9a4c21951b">
                   <SHORT-NAME>User_1</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMUserConfig</DEFINITION-REF>
+                </CONTAINER>
+                <CONTAINER UUID="a74e951e-f2bb-40c8-8164-14692f2bbe14">
+                  <SHORT-NAME>EcuMDefaultShutdownTarget</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMDefaultShutdownTarget</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMDefaultShutdownTarget/EcuMDefaultState</DEFINITION-REF>
+                      <VALUE>EcuMStateReset</VALUE>
+                    </ENUMERATION-VALUE>
+                  </PARAMETER-VALUES>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMDefaultShutdownTarget/EcuMDefaultSleepModeRef</DEFINITION-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="aa62333b-67af-4c63-a427-f7ef9b4aa51c">
+                  <SHORT-NAME>EcuMSleepMode</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMSleepModeId</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMSleepModeSuspend</DEFINITION-REF>
+                      <VALUE>false</VALUE>
+                    </BOOLEAN-VALUE>
+                  </PARAMETER-VALUES>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMSleepModeMcuModeRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/board_mpc5516it/Mcu/McuModuleConfiguration/SLEEP</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMWakeupSourceMask</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/board_mpc5516it/EcuM/EcuMConfiguration/EcuMWakeupSource</VALUE-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="2b207b30-650a-4d9c-b42a-84d7769ff4b9">
+                  <SHORT-NAME>EcuMWakeupSource</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMWakeupSource</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMWakeupSource/EcuMResetReason</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <FLOAT-VALUE>
+                      <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMWakeupSource/EcuMValidationTimeout</DEFINITION-REF>
+                      <VALUE>0.0</VALUE>
+                    </FLOAT-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMWakeupSource/EcuMWakeupSourceId</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMWakeupSource/EcuMWakeupSourcePolling</DEFINITION-REF>
+                      <VALUE>false</VALUE>
+                    </BOOLEAN-VALUE>
+                  </PARAMETER-VALUES>
                 </CONTAINER>
               </SUB-CONTAINERS>
             </CONTAINER>
