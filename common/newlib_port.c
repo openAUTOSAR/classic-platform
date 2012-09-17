@@ -107,10 +107,10 @@ volatile char g_TConn __attribute__ ((section (".winidea_port")));
 
 
 static unsigned char parmbuf[8];
-#define BUFSIZ 512
-#define CC_BUFFER_SIZE ((BUFSIZ)+32)
+#define CC_BUFSIZ 512
+#define CC_BUFFER_SIZE ((CC_BUFSIZ)+32)
 volatile unsigned int _CIOBUF_[CC_BUFFER_SIZE] __attribute__ ((section (".cio")));
-static unsigned char CIOTMPBUF[BUFSIZ];
+static unsigned char CIOTMPBUF[CC_BUFSIZ];
 static uint16 cio_tmp_buf_index = 0;
 
 /***************************************************************************/
@@ -184,9 +184,9 @@ int HOSTwrite(int dev_fd, const char *buf, unsigned count)
    // WARNING. Can only handle count == 1!
    if (count != 1) _exit(1);
 
-   if (count > BUFSIZ) count = BUFSIZ;
+   if (count > CC_BUFSIZ) count = CC_BUFSIZ;
 
-   if (cio_tmp_buf_index < BUFSIZ) {
+   if (cio_tmp_buf_index < CC_BUFSIZ) {
 	   CIOTMPBUF[cio_tmp_buf_index++] = *buf;
 
 	   if (*buf != 0xA) { // Only flush if newline
