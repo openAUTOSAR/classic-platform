@@ -48,6 +48,15 @@ void Dma_Init (const Dma_ConfigType *ConfigPtr)
   EDMA.CR.B.ERCA = ConfigPtr->dmaChannelArbitration;
 }
 
+void Dma_DeInit( void ) {
+	Dma_ChannelType channel;
+	for (channel = (Dma_ChannelType)0; channel < DMA_NUMBER_OF_CHANNELS; channel++)
+	{
+		Dma_StopChannel(channel);
+	}
+}
+
+
 void Dma_ConfigureChannel (Dma_TcdType *tcd, Dma_ChannelType channel)
 {
   /* Copy transfer configuration to correct channel. */

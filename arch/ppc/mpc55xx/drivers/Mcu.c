@@ -105,7 +105,7 @@ typedef void (*vfunc_t)();
 #if defined(CFG_MPC5516)
 static uint32 Mcu_SavedHaltFlags;
 #else
-#error Implement halt flags
+static uint32 Mcu_SavedHaltFlags[2];
 #endif
 
 
@@ -775,10 +775,8 @@ static void enterLowPower (Mcu_ModeType mcuMode )
 	/* Set Recover Vector */
 #if defined(CFG_MPC5516)
 
-
-
 	WRITE32(CRP_Z1VEC, ((uint32)&McuE_LowPowerRecoverFlash) | VLE_VAL );
-	READWRITE32(CRP_RECPTR,RECPTR_FASTREC,0 );
+	READWRITE32( CRP_RECPTR, RECPTR_FASTREC, 0 );
 
 	Mcu_SavedHaltFlags = SIU.HLT.R;
 	/* Halt everything */
@@ -792,6 +790,9 @@ static void enterLowPower (Mcu_ModeType mcuMode )
 
 	WRITE32(CRP_Z6VEC, ((uint32)&McuE_LowPowerRecoverFlash) | VLE_VAL );
 	READWRITE32(CRP_RECPTR,RECPTR_FASTREC,0 );
+
+	Mcu_SavedHaltFlags[0] = SIU.HLT0.R;
+	Mcu_SavedHaltFlags[1] = SIU.HLT1.R;
 	/* Halt everything */
     SIU.HLT0.R = 0x037FFF3D;
     SIU.HLT1.R = 0x18000F3C;
@@ -830,9 +831,14 @@ void Mcu_SetMode( Mcu_ModeType mcuMode)
 
 #if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 	if( MCU_MODE_RUN == mcuMode ) {
-		/* Get Most back to "normal" halt flags */
-		SIU.HLT.R = Mcu_SavedHaltFlags;
 
+		/* Get back to "normal" halt flags */
+#if defined(CFG_MPC5516)
+		SIU.HLT.R = Mcu_SavedHaltFlags;
+#elif defined(CFG_MPC5668)
+		SIU.HLT0.R = Mcu_SavedHaltFlags[0];
+		SIU.HLT1.R = Mcu_SavedHaltFlags[1];
+#endif
 
 	} else if( MCU_MODE_SLEEP == mcuMode ) {
 		/*
@@ -840,7 +846,7 @@ void Mcu_SetMode( Mcu_ModeType mcuMode)
 		 *
 		 */
 #if defined(USE_DMA)
-		Dma_StopAll();
+		Dma_DeInit();
 #endif
 
 

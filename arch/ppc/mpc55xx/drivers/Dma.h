@@ -346,6 +346,7 @@ extern const Dma_ConfigType DmaConfig [];
 
 
 void Dma_Init (const Dma_ConfigType *ConfigPtr);
+void Dma_DeInit (void );
 void Dma_ConfigureChannel (Dma_TcdType *tcd, Dma_ChannelType channel);
 void Dma_ConfigureChannelTranferSize (uint32_t nbrOfIterations, Dma_ChannelType channel);
 void Dma_ConfigureChannelSourceCorr (uint32_t sourceCorrection, Dma_ChannelType channel);
