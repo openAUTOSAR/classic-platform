@@ -43,4 +43,6 @@ typedef uint32_t imask_t;
 
 #define CallService(index,param)
 
+#define ilog2(x) __builtin_ffs(x)
+
 #endif /* CPU_H_ */

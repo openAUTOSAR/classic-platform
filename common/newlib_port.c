@@ -107,9 +107,11 @@ volatile char g_TConn __attribute__ ((section (".winidea_port")));
 
 
 static unsigned char parmbuf[8];
-#define BUFSIZ 512
-#define CC_BUFFER_SIZE ((BUFSIZ)+32)
+#define CC_BUFSIZ 512
+#define CC_BUFFER_SIZE ((CC_BUFSIZ)+32)
 volatile unsigned int _CIOBUF_[CC_BUFFER_SIZE] __attribute__ ((section (".cio")));
+static unsigned char CIOTMPBUF[CC_BUFSIZ];
+static uint16 cio_tmp_buf_index = 0;
 
 /***************************************************************************/
 /*                                                                         */
@@ -179,14 +181,28 @@ int HOSTwrite(int dev_fd, const char *buf, unsigned count)
 {
    int result;
 
-   if (count > BUFSIZ) count = BUFSIZ;
+   // WARNING. Can only handle count == 1!
+   if (count != 1) _exit(1);
+
+   if (count > CC_BUFSIZ) count = CC_BUFSIZ;
+
+   if (cio_tmp_buf_index < CC_BUFSIZ) {
+	   CIOTMPBUF[cio_tmp_buf_index++] = *buf;
+
+	   if (*buf != 0xA) { // Only flush if newline
+		   return 0;
+	   }
+   }
+
 
    LOADSHORT(parmbuf,dev_fd,0);
-   LOADSHORT(parmbuf,count,2);
-   writemsg(_DTWRITE,parmbuf,(char *)buf,count);
+   LOADSHORT(parmbuf,cio_tmp_buf_index,2);
+   writemsg(_DTWRITE,parmbuf,(char *)CIOTMPBUF,cio_tmp_buf_index);
    readmsg(parmbuf,NULL);
 
    result = UNLOADSHORT(parmbuf,0);
+
+   cio_tmp_buf_index = 0;
 
    return result;
 }
