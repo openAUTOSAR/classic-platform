@@ -80,6 +80,7 @@
 #define ECUM_AR_MINOR_VERSION	2
 #define ECUM_AR_PATCH_VERSION	2
 
+
 #include "EcuM_Cfg.h"
 #include "EcuM_Types.h"
 #include "EcuM_Cbk.h"
@@ -91,6 +92,7 @@
 #if defined(USE_COMM)
 #include "ComM.h"
 #endif
+
 
 /** @name Error Codes */
 //@{

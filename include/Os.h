@@ -345,6 +345,8 @@ StatusType GetElapsedCounterValue( CounterType, TickRefType val, TickRefType ela
  * System timer
  *-----------------------------------------------------------------*/
 typedef const uint32 OsTickType;
+
+extern OsTickType OsTickFreq;
 void Os_SysTickInit( void );
 void Os_SysTickStart(TickType period_ticks);
 TickType Os_SysTickGetValue( void );

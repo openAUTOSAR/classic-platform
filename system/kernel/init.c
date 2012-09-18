@@ -67,7 +67,6 @@ static void Os_CfgValidate(void ) {
 /* ----------------------------[public functions]----------------------------*/
 
 extern uint32_t McuE_GetSystemClock( void );
-extern OsTickType OsTickFreq;
 
 
 /**
