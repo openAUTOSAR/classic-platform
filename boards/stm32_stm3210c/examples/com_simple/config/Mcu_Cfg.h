@@ -28,6 +28,14 @@
 #define MCU_PERFORM_RESET_API 	STD_ON
 #define MCU_VERSION_INFO_API 	STD_ON
 
+
+typedef enum {
+	MCU_MODE_RUN = 0,
+	MCU_MODE_SLEEP = 1,
+	MCU_MODE_NORMAL = 2 // Here for backwards compatibility reasons. Not used anymore.
+} Mcu_ModeType;
+
+
 typedef enum {
 	MCU_CLOCKTYPE_EXT_REF_25MHZ = 0,
   MCU_NBR_OF_CLOCKS,
