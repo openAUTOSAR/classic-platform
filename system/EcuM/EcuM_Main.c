@@ -180,6 +180,8 @@ static void in_state_goSleep( void ) {
 		cMask = sleepModePtr->EcuMWakeupSourceMask;
 
 		/* Loop over the WKSOURCE for this sleep mode */
+#if defined(PPC)
+
 		for (; cMask; cMask &= ~(1ul << source)) {
 			source = ilog2(cMask);
 			/* @req 3.1.5/ECUM2389 */
@@ -192,7 +194,21 @@ static void in_state_goSleep( void ) {
 			/* Let no one else run */
 			GetResource(RES_SCHEDULER);
 		}
+#else
+		for (source = 0; cMask; source++) {
+			if(cMask & (1ul << source)){
+			/* @req 3.1.5/ECUM2389 */
+				EcuM_EnableWakeupSources( 1 << source );
+				cMask &= ~(1ul << source);
+#if defined(WDGM)
+				WdgM_SetMode(sleepModePtr->EcuMSleepModeWdgMMode);
+#endif
 
+			/* Let no one else run */
+				GetResource(RES_SCHEDULER);
+			}
+		}
+#endif
 	} else if( EcuM_GetPendingWakeupEvents() != 0 ) {
 		/* We have pending wakeup events, need to startup again */
 #if defined(USE_NVM)
