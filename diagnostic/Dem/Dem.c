@@ -1481,7 +1481,7 @@ static boolean lookupExtendedDataPriMem(Dem_EventIdType eventId, ExtDataRecType 
 Std_ReturnType copyNvmMirror(const NvM_BlockIdType BlockId, uint8 *dstPtr, const uint8 *srcPtr, uint8 len)
 {
 
-#if (DEM_USE_NVM == STD_ON)
+#if (DEM_USE_NVM == STD_ON  && DEM_UNIT_TEST == STD_OFF)
 	Std_ReturnType blockReadStatus = E_NOT_OK;
 	NvM_RequestResultType requestResult;
 
@@ -1504,7 +1504,7 @@ Std_ReturnType copyNvmMirror(const NvM_BlockIdType BlockId, uint8 *dstPtr, const
  */
 Std_ReturnType writeNvmMirror(const NvM_BlockIdType BlockId, uint8 *dstPtr, const uint8 *srcPtr, uint8 len)
 {
-#if (DEM_USE_NVM == STD_ON)
+#if (DEM_USE_NVM == STD_ON && DEM_UNIT_TEST == STD_OFF)
 	Std_ReturnType blockWriteStatus = E_NOT_OK;
 	NvM_RequestResultType requestResult;
 
@@ -3331,8 +3331,7 @@ Dem_ReturnGetSizeOfFreezeFrameType Dem_GetSizeOfFreezeFrame(uint32  dtc,Dem_DTCK
 
 }
 
-#define DEM_UNIT_TEST
-#ifdef DEM_UNIT_TEST
+#if (DEM_UNIT_TEST == STD_ON)
 void getFFDataPreInit(FreezeFrameRecType **buf)
 {
 	*buf = &preInitFreezeFrameBuffer[0];
