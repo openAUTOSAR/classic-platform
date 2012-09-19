@@ -37,6 +37,7 @@
 
 #define SYSCLOCK_SELECT_PLL	0x2
 
+#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 
 #if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 #define CRP_BASE 			(0xFFFEC000ul)
@@ -76,6 +77,8 @@
 #define RAMSEL_VAL		0x3
 #else
 #error  Please define RAMSEL_VAL
+#endif
+
 #endif
 
 
