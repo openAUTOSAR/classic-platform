@@ -1617,7 +1617,11 @@ static void storeFreezeFrameDataPerMem()
 
 	for(uint16 i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++){
 		if(memcmp(&priMemFreezeFrameBuffer[i], FreezeFrameMirrorBuffer[i], sizeof(FreezeFrameRecType))){
-			if( E_NOT_OK == writeNvmMirror(FreezeFrameBlockId[i], (uint8 *)FreezeFrameMirrorBuffer[i], (const uint8 *)&priMemFreezeFrameBuffer[i], sizeof(FreezeFrameRecType)) ) {
+			if( E_OK == writeNvmMirror(FreezeFrameBlockId[i], (uint8 *)FreezeFrameMirrorBuffer[i], (const uint8 *)&priMemFreezeFrameBuffer[i], sizeof(FreezeFrameRecType)) ) {
+				FFIsModified = FALSE;
+			}
+			else
+			{
 				FFIsModified = TRUE;
 			}
 		}
