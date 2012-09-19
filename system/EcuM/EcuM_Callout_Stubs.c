@@ -360,6 +360,12 @@ void EcuM_StartWakeupSources(EcuM_WakeupSourceType wakeupSource) {
 
 }
 
+void EcuM_CheckValidation(EcuM_WakeupSourceType wakeupSource) {
+
+	VALIDATE_STATE( ECUM_STATE_WAKEUP_VALIDATION);
+
+	(void) wakeupSource;
+}
 
 /**
  * Restart drivers..
