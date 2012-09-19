@@ -48,11 +48,31 @@
 #define SID_AND_ALFID_LEN6   0x6
 #define SID_AND_ALFID_LEN7   0x7
 
+/* == Parser macros == */
+/* General */
+#define SID_INDEX 0
+#define SID_LEN 1
+#define SF_INDEX 1
+#define SF_LEN 1
+/* Read/WriteMemeoryByAddress */
+#define ALFID_INDEX 1
+#define ALFID_LEN 1
+#define ADDR_START_INDEX 2
+/* DynamicallyDefineDataByIdentifier */
+#define DDDDI_INDEX 2
+#define DDDDI_LEN 2
+#define DYNDEF_ALFID_INDEX 4
+#define DYNDEF_ADDRESS_START_INDEX 5
+
 #define BYTES_TO_DTC(hb, mb, lb)	(((uint32)(hb) << 16) | ((uint32)(mb) << 8) | (uint32)(lb))
 #define DTC_HIGH_BYTE(dtc)			(((uint32)(dtc) >> 16) & 0xFFu)
 #define DTC_MID_BYTE(dtc)			(((uint32)(dtc) >> 8) & 0xFFu)
 #define DTC_LOW_BYTE(dtc)			((uint32)(dtc) & 0xFFu)
 
+typedef enum {
+	DCM_READ_MEMORY = 0,
+	DCM_WRITE_MEMORY,
+} DspMemoryServiceType;
 
 typedef struct {
 	boolean resetPending;
@@ -99,6 +119,7 @@ Dsp_pDidRefType dspPDidRef;
 
 typedef struct{
 	uint8   formatOrPosition;						/*note the formate of address and size*/
+	uint8	memoryIdentifier;
 	uint32 SourceAddressOrDid;								/*note the memory address */
 	uint16 Size;										/*note the memory size */
 	Dcm_DspDDDTpyeID DDDTpyeID;
@@ -117,19 +138,10 @@ Dcm_DspDDDType dspDDD[DCM_MAX_DDD_NUMBER];
  * * static Function
  */
 
-static boolean lookupReadMemory(uint32 memoryAddress,
-								uint8  memoryAddressFormat,
-								uint32 memorySize,
-								const Dcm_DspMemoryIdInfo **MemoryPtr);
-
 static boolean LookupDDD(uint16 didNr, const Dcm_DspDDDType **DDid);
-
-static boolean checkWriteMemoryByAddress(boolean useId,
-		                                 uint32 memoryAddress,
-										 uint8 memoryAddressFormat,
-										 uint32 memorySize,
-										 const Dcm_DspMemoryIdInfo *dspMemory);
-
+static Dcm_NegativeResponseCodeType checkAddressRange(DspMemoryServiceType serviceType, uint8 memoryIdentifier, uint32 memoryAddress, uint32 length);
+static const Dcm_DspMemoryRangeInfo* findRange(const Dcm_DspMemoryRangeInfo *memoryRangePtr, uint32 memoryAddress, uint32 length);
+static Dcm_NegativeResponseCodeType writeMemoryData(Dcm_OpStatusType* OpStatus, uint8 memoryIdentifier, uint32 MemoryAddress, uint32 MemorySize, uint8 *SourceData);
 
 /*
 *   end  
@@ -145,7 +157,7 @@ void DspInit(void)
 	/* clear periodic send buffer */
 	memset(&dspPDidRef,0,sizeof(dspPDidRef));
 	/* clear dynamically Did buffer */
-	memset(&dspDDD[0],0,sizeof(dspDDD)); 
+	memset(&dspDDD[0],0,sizeof(dspDDD));
 }
 
 void DspMemoryMainFunction(void)
@@ -1033,9 +1045,7 @@ static Dcm_NegativeResponseCodeType readDDDData( Dcm_DspDDDType *PDidPtr, uint8 
 {
 	uint8 i;
 	uint8 dataCount;
-	uint8 AddressFormat;
 	uint16 SourceDataLength = 0;
-	const Dcm_DspMemoryIdInfo *SourceMemoryInfoptr = NULL;
 	const Dcm_DspDidType *SourceDidPtr = NULL;
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 	*Length = 0;
@@ -1045,23 +1055,9 @@ static Dcm_NegativeResponseCodeType readDDDData( Dcm_DspDDDType *PDidPtr, uint8 
 	{
 		if(PDidPtr->DDDSource[i].DDDTpyeID == DCM_DDD_SOURCE_ADDRESS)
 		{
-
-			AddressFormat = PDidPtr->DDDSource[i].formatOrPosition&DCM_FORMAT_HIGH_MASK >> 4;
-			if(TRUE == lookupReadMemory(PDidPtr->DDDSource[i].SourceAddressOrDid,AddressFormat,
-				PDidPtr->DDDSource[i].Size, &SourceMemoryInfoptr))
-			{
-				if(DspCheckSecurityLevel(SourceMemoryInfoptr->pReadMemoryInfo->pSecurityLevel) != TRUE)
-				{
-					responseCode = DCM_E_SECUTITYACCESSDENIED;
-				}
-			}
-			else
-			{
-				responseCode = DCM_E_REQUESTOUTOFRANGE;
-			}
-			if(responseCode == DCM_E_POSITIVERESPONSE)
-			{
-				Dcm_ReadMemory(DCM_INITIAL,SourceMemoryInfoptr->MemoryIdValue,
+			responseCode = checkAddressRange(DCM_READ_MEMORY, PDidPtr->DDDSource[i].memoryIdentifier, PDidPtr->DDDSource[i].SourceAddressOrDid, PDidPtr->DDDSource[i].Size);
+			if( responseCode == DCM_E_POSITIVERESPONSE ) {
+				Dcm_ReadMemory(DCM_INITIAL,PDidPtr->DDDSource[i].memoryIdentifier,
 										PDidPtr->DDDSource[i].SourceAddressOrDid,
 										PDidPtr->DDDSource[i].Size,
 										(Data + *Length));
@@ -1685,79 +1681,15 @@ void DspDcmConfirmation(PduIdType confirmPduId)
 	}
 }
 
-
-static boolean CheckReadMemoryByAddress( boolean useId,uint32 memoryAddress,
-										uint8 memoryAddressFormat,
-										uint32 memorySize,
-										const Dcm_DspMemoryIdInfo  *dspMemory)
-{
-	boolean ret = FALSE;
-	uint8 MemoryId;
-
-	if(useId == FALSE)
-	{
-		/*@req DCM493*/
-		if((memoryAddress >= dspMemory->pReadMemoryInfo->MemoryAddressLow)
-			&& (memoryAddress <= dspMemory->pReadMemoryInfo->MemoryAddressHigh)
-			&& (memoryAddress + memorySize - 1 <= dspMemory->pReadMemoryInfo->MemoryAddressHigh))
-		{
-			ret = TRUE;
-		}
-	}
-	else
-	{
-		MemoryId = (uint8)(memoryAddress >> ((memoryAddressFormat - 1)*8));
-		memoryAddress = (uint32)(memoryAddress & DCM_MEMORY_ADDRESS_MASK);
-
-		if((MemoryId == dspMemory->MemoryIdValue)&&
-			(memoryAddress >= dspMemory->pReadMemoryInfo->MemoryAddressLow)
-			&& (memoryAddress <= dspMemory->pReadMemoryInfo->MemoryAddressHigh)
-			&& (memoryAddress + memorySize - 1 <= dspMemory->pReadMemoryInfo->MemoryAddressHigh))
-		{
-			ret = TRUE;
-		}
-	}
-	
-	return ret;
-}
-
-static boolean lookupReadMemory(uint32 memoryAddress,
-								uint8  memoryAddressFormat,
-								uint32 memorySize,
-								const Dcm_DspMemoryIdInfo  **MemoryInfoPtr)
-{
-	uint8 i;
-	boolean memoryFound = FALSE;
-	const Dcm_DspMemoryIdInfo *dspMemoryInfo = DCM_Config.Dsp->DspMemory->DspMemoryIdInfo;
-
-	for(i = 0; (dspMemoryInfo->Arc_EOL == FALSE) && (memoryFound == FALSE); i++)
-	{
-		if(TRUE == CheckReadMemoryByAddress(DCM_Config.Dsp->DspMemory->DcmDspUseMemoryId,memoryAddress,memoryAddressFormat,memorySize,dspMemoryInfo))
-		{
-			memoryFound = TRUE;
-		}
-		else
-		{
-			dspMemoryInfo++;
-		}
-	}
-	if (memoryFound == TRUE)
-	{
-		*MemoryInfoPtr = dspMemoryInfo;
-	}
-	
-	return memoryFound;
-}
-
 static Dcm_NegativeResponseCodeType readMemoryData( Dcm_OpStatusType *OpStatus,
-													const Dcm_DspMemoryIdInfo *MemoryPtr,
+													uint8 memoryIdentifier,
 													uint32 MemoryAddress,
 													uint32 MemorySize,
 													PduInfoType *pduTxData)
 {
 	Dcm_ReturnReadMemoryType ReadRet;
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
-	ReadRet = Dcm_ReadMemory(*OpStatus,MemoryPtr->MemoryIdValue,
+	ReadRet = Dcm_ReadMemory(*OpStatus,memoryIdentifier,
 									MemoryAddress,
 									MemorySize,
 									&pduTxData->SduDataPtr[1]);
@@ -1772,88 +1704,237 @@ static Dcm_NegativeResponseCodeType readMemoryData( Dcm_OpStatusType *OpStatus,
 	return responseCode;
 }
 
-/*@req Dcm442,DCM492*/
-void DspUdsReadMemoryByAddress(const PduInfoType *pduRxData, PduInfoType *pduTxData)
-{
-	typedef struct{
-		uint32 MemoryAddressStart;					/*  low  address of a  memory block to read or write*/
-		uint32 MemoryIdValue;						/*  memory ID  to read or write uint used by parameter */
-		const Dcm_DspMemoryIdInfo *MemoryIdConfigPtr;		
-		Dcm_NegativeResponseCodeType ResponseCode; 
-		uint8 MemorySizeFormat;
-		uint8 MemoryAddressFormat;
-		uint32 MemorySize;
-		uint16 MessageLength;
-	}DspUdsReadMemoryByAddressType;	/*the typed used for  SID read memory by address*/
-	uint8 i;
-	DspUdsReadMemoryByAddressType dspReadMemoryByAddress;
-	Dcm_OpStatusType OpStatus = 0;
-	dspReadMemoryByAddress.MemoryAddressStart = 0;
-	dspReadMemoryByAddress.MemorySize = 0;
-	dspReadMemoryByAddress.MemoryIdConfigPtr = NULL;
-	dspReadMemoryByAddress.ResponseCode = DCM_E_POSITIVERESPONSE;
-	dspReadMemoryByAddress.MemorySizeFormat = ((uint8)(pduRxData->SduDataPtr[1] & DCM_FORMAT_HIGH_MASK)) >> 4;	/*@req UDS_REQ_0x23_1 & UDS_REQ_0x23_5*/
-	dspReadMemoryByAddress.MemoryAddressFormat = ((uint8)(pduRxData->SduDataPtr[1])) & 0x0Fu;   /*@req UDS_REQ_0x23_1 & UDS_REQ_0x23_5*/
+static Dcm_NegativeResponseCodeType checkAddressRange(DspMemoryServiceType serviceType, uint8 memoryIdentifier, uint32 memoryAddress, uint32 length) {
+	const Dcm_DspMemoryIdInfo *dspMemoryInfo = DCM_Config.Dsp->DspMemory->DspMemoryIdInfo;
+	const Dcm_DspMemoryRangeInfo *memoryRangeInfo = NULL;
+	Dcm_NegativeResponseCodeType diagResponseCode = DCM_E_REQUESTOUTOFRANGE;
 
-	if((dspReadMemoryByAddress.MemoryAddressFormat == 0)||(dspReadMemoryByAddress.MemorySizeFormat == 0))
+	for( ; (dspMemoryInfo->Arc_EOL == FALSE) && (memoryRangeInfo == NULL); dspMemoryInfo++ )
 	{
-		dspReadMemoryByAddress.ResponseCode = DCM_E_REQUESTOUTOFRANGE;  /*UDS_REQ_0x23_10*/
-	}
-	else
-	{
-		dspReadMemoryByAddress.MessageLength = (uint16)(dspReadMemoryByAddress.MemoryAddressFormat + dspReadMemoryByAddress.MemorySizeFormat + SID_AND_ALFID_LEN2);
-		if(dspReadMemoryByAddress.MessageLength == (uint16)(pduRxData->SduLength))
+		if( ((TRUE == DCM_Config.Dsp->DspMemory->DcmDspUseMemoryId) && (dspMemoryInfo->MemoryIdValue == memoryIdentifier))
+			|| (FALSE == DCM_Config.Dsp->DspMemory->DcmDspUseMemoryId) )
 		{
-			/*take start address out */
-			for(i = 0; i < dspReadMemoryByAddress.MemoryAddressFormat; i++)
+			if( DCM_READ_MEMORY == serviceType )
 			{
-				dspReadMemoryByAddress.MemoryAddressStart <<= 8;
-				dspReadMemoryByAddress.MemoryAddressStart += (uint32)(pduRxData->SduDataPtr[SID_AND_ALFID_LEN2 + i]);
+				memoryRangeInfo = findRange( dspMemoryInfo->pReadMemoryInfo, memoryAddress, length );
+			}
+			else
+			{
+				memoryRangeInfo = findRange( dspMemoryInfo->pWriteMemoryInfo, memoryAddress, length );
 			}
 
-			/*take value of MemorySize out */
-			for(i = 0; i < dspReadMemoryByAddress.MemorySizeFormat; i++)
+			if( NULL != memoryRangeInfo )
 			{
-				dspReadMemoryByAddress.MemorySize <<= 8;
-				dspReadMemoryByAddress.MemorySize += (uint32)(pduRxData->SduDataPtr[2 + i + dspReadMemoryByAddress.MemoryAddressFormat]);
-			}
-			if(dspReadMemoryByAddress.MemorySize < DCM_PROTOCAL_TP_MAX_LENGTH)
-			{
-				if(TRUE == lookupReadMemory(dspReadMemoryByAddress.MemoryAddressStart,
-											dspReadMemoryByAddress.MemoryAddressFormat,
-											dspReadMemoryByAddress.MemorySize,
-											&dspReadMemoryByAddress.MemoryIdConfigPtr))
+				if( DspCheckSecurityLevel(memoryRangeInfo->pSecurityLevel) )
 				{
-					if (DspCheckSecurityLevel(dspReadMemoryByAddress.MemoryIdConfigPtr->pReadMemoryInfo->pSecurityLevel) == TRUE)
-					{
-						dspReadMemoryByAddress.ResponseCode = readMemoryData(&OpStatus,dspReadMemoryByAddress.MemoryIdConfigPtr,
-																			dspReadMemoryByAddress.MemoryAddressStart,
-																			dspReadMemoryByAddress.MemorySize,pduTxData);/*@req UDS_REQ_0x23_9*/
-					
-					}
-					else
-					{
-						dspReadMemoryByAddress.ResponseCode = DCM_E_SECUTITYACCESSDENIED;/*@req UDS_REQ_0x23_11,@req DCM494*/
-					}
+					/* Range is ok */
+					diagResponseCode = DCM_E_POSITIVERESPONSE;
 				}
 				else
 				{
-					dspReadMemoryByAddress.ResponseCode = DCM_E_REQUESTOUTOFRANGE;      /*@req UDS_REQ_0x23_7,UDS_REQ_0x23_8*/
+					diagResponseCode = DCM_E_SECUTITYACCESSDENIED;
+				}
+			}
+			else {
+				/* Range was not configured for read/write */
+				diagResponseCode = DCM_E_REQUESTOUTOFRANGE;
+			}
+		}
+		else {
+			/* No memory with this id found */
+			diagResponseCode = DCM_E_REQUESTOUTOFRANGE;
+		}
+	}
+	return diagResponseCode;
+}
+
+static const Dcm_DspMemoryRangeInfo* findRange(const Dcm_DspMemoryRangeInfo *memoryRangePtr, uint32 memoryAddress, uint32 length)
+{
+	const Dcm_DspMemoryRangeInfo *memoryRange = NULL;
+
+	for( ; (memoryRangePtr->Arc_EOL == FALSE) && (memoryRange == NULL); memoryRangePtr++ )
+	{
+		/*@req DCM493*/
+		if((memoryAddress >= memoryRangePtr->MemoryAddressLow)
+			&& (memoryAddress <= memoryRangePtr->MemoryAddressHigh)
+			&& (memoryAddress + length - 1 <= memoryRangePtr->MemoryAddressHigh))
+		{
+			memoryRange = memoryRangePtr;
+		}
+	}
+
+	return memoryRange;
+}
+
+void DspUdsWriteMemoryByAddress(const PduInfoType *pduRxData, PduInfoType *pduTxData)
+{
+	Dcm_NegativeResponseCodeType diagResponseCode;
+	uint8 sizeFormat;
+	uint8 addressFormat;
+	uint32 memoryAddress = 0;
+	uint32 length = 0;
+	uint8 i;
+	uint8 memoryIdentifier = 0; /* Should be 0 if DcmDspUseMemoryId == FALSE */
+	Dcm_OpStatusType OpStatus;
+	uint8 addressOffset;
+
+	if( pduRxData->SduLength > ALFID_INDEX )
+	{
+		sizeFormat = ((uint8)(pduRxData->SduDataPtr[ALFID_INDEX] & DCM_FORMAT_HIGH_MASK)) >> 4;	/*@req UDS_REQ_0x23_1 & UDS_REQ_0x23_5*/;
+		addressFormat = ((uint8)(pduRxData->SduDataPtr[ALFID_INDEX])) & DCM_FORMAT_LOW_MASK;   /*@req UDS_REQ_0x23_1 & UDS_REQ_0x23_5*/;
+		if((addressFormat != 0) && (sizeFormat != 0))
+		{
+			if(addressFormat + sizeFormat + SID_LEN + ALFID_LEN <= pduRxData->SduLength)
+			{
+				if( TRUE == DCM_Config.Dsp->DspMemory->DcmDspUseMemoryId ) {
+					memoryIdentifier = pduRxData->SduDataPtr[ADDR_START_INDEX];
+					addressOffset = 1;
+				}
+				else {
+					addressOffset = 0;
+				}
+
+				/* Parse address */
+				for(i = addressOffset; i < addressFormat; i++)
+				{
+					memoryAddress <<= 8;
+					memoryAddress += (uint32)(pduRxData->SduDataPtr[ADDR_START_INDEX + i]);
+				}
+
+				/* Parse size */
+				for(i = 0; i < sizeFormat; i++)
+				{
+					length <<= 8;
+					length += (uint32)(pduRxData->SduDataPtr[ADDR_START_INDEX + addressFormat + i]);
+				}
+
+				if( addressFormat + sizeFormat + SID_LEN + ALFID_LEN + length == pduRxData->SduLength )
+				{
+
+					diagResponseCode = checkAddressRange(DCM_WRITE_MEMORY, memoryIdentifier, memoryAddress, length);
+					if( DCM_E_POSITIVERESPONSE == diagResponseCode )
+					{
+						diagResponseCode = writeMemoryData(&OpStatus, memoryIdentifier, memoryAddress, length,
+													&pduRxData->SduDataPtr[SID_LEN + ALFID_LEN + addressFormat + sizeFormat]);
+					}
+
+				}
+				else
+				{
+					diagResponseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
 				}
 			}
 			else
 			{
-				dspReadMemoryByAddress.ResponseCode = DCM_E_REQUESTOUTOFRANGE;
+				diagResponseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
 			}
 		}
 		else
 		{
-			dspReadMemoryByAddress.ResponseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT; /*@req UDS_REQ_0x23_6*/
+			diagResponseCode = DCM_E_REQUESTOUTOFRANGE;  /*UDS_REQ_0x23_10*/
 		}
 	}
-	if(DCM_E_POSITIVERESPONSE == dspReadMemoryByAddress.ResponseCode)
+	else
 	{
-		pduTxData->SduLength = 1 + dspReadMemoryByAddress.MemorySize;
+		diagResponseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+	}
+
+	if(DCM_E_POSITIVERESPONSE == diagResponseCode)
+	{
+		pduTxData->SduLength = SID_LEN + ALFID_LEN + addressFormat + sizeFormat;
+		pduTxData->SduDataPtr[ALFID_INDEX] = pduRxData->SduDataPtr[ALFID_INDEX];
+		for(i = 0; i < addressFormat + sizeFormat; i++)
+		{
+			pduTxData->SduDataPtr[ADDR_START_INDEX + i] = pduRxData->SduDataPtr[ADDR_START_INDEX + i];
+			if(OpStatus != DCM_WRITE_PENDING)
+			{
+				DsdDspProcessingDone(diagResponseCode);
+			}
+			else
+			{
+        		dspMemoryState=DCM_MEMORY_WRITE;
+			}
+		}
+	}
+	else
+	{
+		DsdDspProcessingDone(diagResponseCode);
+	}
+}
+
+/*@req Dcm442,DCM492*/
+void DspUdsReadMemoryByAddress(const PduInfoType *pduRxData, PduInfoType *pduTxData)
+{
+	Dcm_NegativeResponseCodeType diagResponseCode;
+	uint8 sizeFormat;
+	uint8 addressFormat;
+	uint32 memoryAddress = 0;
+	uint32 length = 0;
+	uint8 i;
+	uint8 memoryIdentifier = 0; /* Should be 0 if DcmDspUseMemoryId == FALSE */
+	Dcm_OpStatusType OpStatus;
+	uint8 addressOffset;
+
+	if( pduRxData->SduLength > ALFID_INDEX )
+	{
+		sizeFormat = ((uint8)(pduRxData->SduDataPtr[ALFID_INDEX] & DCM_FORMAT_HIGH_MASK)) >> 4;	/*@req UDS_REQ_0x23_1 & UDS_REQ_0x23_5*/;
+		addressFormat = ((uint8)(pduRxData->SduDataPtr[ALFID_INDEX])) & DCM_FORMAT_LOW_MASK;   /*@req UDS_REQ_0x23_1 & UDS_REQ_0x23_5*/;
+		if((addressFormat != 0) && (sizeFormat != 0))
+		{
+			if(addressFormat + sizeFormat + SID_LEN + ALFID_LEN == pduRxData->SduLength)
+			{
+				if( TRUE == DCM_Config.Dsp->DspMemory->DcmDspUseMemoryId ) {
+					memoryIdentifier = pduRxData->SduDataPtr[ADDR_START_INDEX];
+					addressOffset = 1;
+				}
+				else {
+					addressOffset = 0;
+				}
+
+				/* Parse address */
+				for(i = addressOffset; i < addressFormat; i++)
+				{
+					memoryAddress <<= 8;
+					memoryAddress += (uint32)(pduRxData->SduDataPtr[ADDR_START_INDEX + i]);
+				}
+
+				/* Parse size */
+				for(i = 0; i < sizeFormat; i++)
+				{
+					length <<= 8;
+					length += (uint32)(pduRxData->SduDataPtr[ADDR_START_INDEX + addressFormat + i]);
+				}
+
+				if(length <= (DCM_PROTOCAL_TP_MAX_LENGTH - SID_LEN) )
+				{
+					diagResponseCode = checkAddressRange(DCM_READ_MEMORY, memoryIdentifier, memoryAddress, length);
+					if( DCM_E_POSITIVERESPONSE == diagResponseCode )
+					{
+						diagResponseCode = readMemoryData(&OpStatus, memoryIdentifier, memoryAddress, length, pduTxData);
+					}
+				}
+				else {
+					diagResponseCode = DCM_E_REQUESTOUTOFRANGE;
+				}
+			}
+			else
+			{
+				diagResponseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+			}
+		}
+		else
+		{
+			diagResponseCode = DCM_E_REQUESTOUTOFRANGE;  /*UDS_REQ_0x23_10*/
+		}
+	}
+	else
+	{
+		diagResponseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+	}
+
+	if(DCM_E_POSITIVERESPONSE == diagResponseCode)
+	{
+		pduTxData->SduLength = SID_LEN + length;
 		if(OpStatus == DCM_READ_PENDING)
 		{
 			dspMemoryState = DCM_MEMORY_READ;
@@ -1865,75 +1946,12 @@ void DspUdsReadMemoryByAddress(const PduInfoType *pduRxData, PduInfoType *pduTxD
 	}
 	else
 	{
-		DsdDspProcessingDone(dspReadMemoryByAddress.ResponseCode);
+		DsdDspProcessingDone(diagResponseCode);
 	}
-}
-
-static boolean checkWriteMemoryByAddress(boolean useId,uint32 memoryAddress,
-										uint8 memoryAddressFormat,
-										uint32 memorySize,
-										const Dcm_DspMemoryIdInfo *dspMemory)
-{
-	boolean ret = FALSE;
-	uint8 MemoryId;
-	
-	if(useId == FALSE)
-	{
-		if((memoryAddress >= dspMemory->pWriteMemoryInfo->MemoryAddressLow)
-			&& (memoryAddress <= dspMemory->pWriteMemoryInfo->MemoryAddressHigh)
-			&& (memoryAddress + memorySize - 1 <= dspMemory->pWriteMemoryInfo->MemoryAddressHigh))
-		{
-			ret = TRUE;
-		}
-	}
-	else
-	{
-		MemoryId = (uint8)(memoryAddress >> ((memoryAddressFormat - 1)*8));
-		memoryAddress = memoryAddress & DCM_MEMORY_ADDRESS_MASK;
-
-		if((MemoryId == dspMemory->MemoryIdValue) &&
-			(memoryAddress >= dspMemory->pWriteMemoryInfo->MemoryAddressLow)
-			&& (memoryAddress <= dspMemory->pWriteMemoryInfo->MemoryAddressHigh)
-			&& (memoryAddress + memorySize -1 <= dspMemory->pWriteMemoryInfo->MemoryAddressHigh))
-		{
-			ret = TRUE;
-		}
-
-	}
-	
-	return ret;
-}
-
-static boolean lookupWriteMemory(uint32 memoryAddress,
-								uint8 memoryAddressFormat,
-								uint32 memorySize,
-								const Dcm_DspMemoryIdInfo **MemoryIdConfigPtr)
-{
-	uint8 i;
-	const Dcm_DspMemoryIdInfo *dspMemoryInfo = DCM_Config.Dsp->DspMemory->DspMemoryIdInfo;
-	boolean memoryFound = FALSE;
-
-	for(i = 0;(dspMemoryInfo->Arc_EOL == FALSE) && (memoryFound == FALSE);i++)
-	{
-		if(TRUE == checkWriteMemoryByAddress(DCM_Config.Dsp->DspMemory->DcmDspUseMemoryId, memoryAddress,memoryAddressFormat,memorySize,dspMemoryInfo))
-		{
-			memoryFound = TRUE;
-		}
-		else
-		{
-			dspMemoryInfo++;
-		}
-	}
-	if (memoryFound == TRUE)
-	{
-		*MemoryIdConfigPtr = dspMemoryInfo;
-	}
-	
-	return memoryFound;
 }
 
 static Dcm_NegativeResponseCodeType writeMemoryData(Dcm_OpStatusType* OpStatus,
-												const Dcm_DspMemoryIdInfo *MemoryIdConfigPtr,
+												uint8 memoryIdentifier,
 												uint32 MemoryAddress,
 												uint32 MemorySize,
 												uint8 *SourceData)
@@ -1941,7 +1959,7 @@ static Dcm_NegativeResponseCodeType writeMemoryData(Dcm_OpStatusType* OpStatus,
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 	Dcm_ReturnWriteMemoryType writeRet;
 	writeRet = Dcm_WriteMemory(*OpStatus,
-								MemoryIdConfigPtr->MemoryIdValue,
+								memoryIdentifier,
 								MemoryAddress,
 								MemorySize,
 								SourceData);
@@ -1959,100 +1977,6 @@ static Dcm_NegativeResponseCodeType writeMemoryData(Dcm_OpStatusType* OpStatus,
 	}
 	
 	return responseCode;
-}
-
-void DspUdsWriteMemoryByAddress(const PduInfoType* pduRxData, PduInfoType* pduTxData)
-{
-	  typedef struct{
-	  	uint32 MemoryAddressStart;
-	  	uint32 MemoryIdValue;
-	  	const Dcm_DspMemoryIdInfo *MemoryIdConfigPtr;
-	  	Dcm_NegativeResponseCodeType ResponseCode;
-	  	uint8 MemorySizeFormat;
-	  	uint8 MemoryAddressFormat;
-	  	uint32 MemorySize ;
-	  	uint16 MessageLength;
-	  }DspUdsWriteMemoryType;
-	uint8 i;
-	DspUdsWriteMemoryType dspUdsWriteMemory;
-	Dcm_OpStatusType OpStatus = DCM_INITIAL;
-	dspUdsWriteMemory.MemoryAddressStart = 0;
-	dspUdsWriteMemory.MemoryIdConfigPtr = NULL;
-	dspUdsWriteMemory.ResponseCode = DCM_E_POSITIVERESPONSE;
-	dspUdsWriteMemory.MemorySizeFormat = ((uint8)(pduRxData->SduDataPtr[1] & DCM_FORMAT_HIGH_MASK)) >> 4;	/*@req UDS_REQ_0x3D_3 & UDS_REQ_0x3D_5*/
-	dspUdsWriteMemory.MemoryAddressFormat = ((uint8)pduRxData->SduDataPtr[1]) & DCM_FORMAT_LOW_MASK;	        /*@req UDS_REQ_0x3D_3& UDS_REQ_0x3D_4*/
-	dspUdsWriteMemory.MemorySize = 0;
-
-	if((dspUdsWriteMemory.MemoryAddressFormat == 0) || (dspUdsWriteMemory.MemorySizeFormat == 0))  /*@req UDS_REQ_0x3D_14*/
-	{
-		dspUdsWriteMemory.ResponseCode = DCM_E_REQUESTOUTOFRANGE;
-	}
-	else
-	{
-		/*take value of MemorySize out */
-		for(i = 0; i < dspUdsWriteMemory.MemorySizeFormat; i++)
-		{
-			dspUdsWriteMemory.MemorySize <<= 8;
-			dspUdsWriteMemory.MemorySize += (uint32)(pduRxData->SduDataPtr[2 + i +dspUdsWriteMemory.MemoryAddressFormat]);
-		}
-		dspUdsWriteMemory.MessageLength = (uint16)(2 + dspUdsWriteMemory.MemoryAddressFormat + dspUdsWriteMemory.MemorySizeFormat + dspUdsWriteMemory.MemorySize);
-		if(dspUdsWriteMemory.MessageLength == pduRxData->SduLength)
-		{
-			/*take Start Address out */
-			for(i = 0; i < dspUdsWriteMemory.MemoryAddressFormat; i++)
-			{
-				dspUdsWriteMemory.MemoryAddressStart <<= 8;
-				dspUdsWriteMemory.MemoryAddressStart += (uint32)(pduRxData->SduDataPtr[2 + i]);
-			}
-			if(TRUE == lookupWriteMemory(dspUdsWriteMemory.MemoryAddressStart,
-										dspUdsWriteMemory.MemoryAddressFormat,
-										dspUdsWriteMemory.MemorySize,
-										&dspUdsWriteMemory.MemoryIdConfigPtr))
-			{
-				if (DspCheckSecurityLevel(dspUdsWriteMemory.MemoryIdConfigPtr->pReadMemoryInfo->pSecurityLevel) == TRUE)
-				{
-					dspUdsWriteMemory.ResponseCode = writeMemoryData(&OpStatus,
-																	dspUdsWriteMemory.MemoryIdConfigPtr, 
-																	dspUdsWriteMemory.MemoryAddressStart,
-																	dspUdsWriteMemory.MemorySize,
-																	&pduRxData->SduDataPtr[2 + dspUdsWriteMemory.MemoryAddressFormat + dspUdsWriteMemory.MemorySizeFormat]);
-				}
-				else
-				{
-					dspUdsWriteMemory.ResponseCode = DCM_E_SECUTITYACCESSDENIED;	/*@req UDS_REQ_0X3D_15,Dcm490*/
-				}
-			}
-			else
-			{
-				dspUdsWriteMemory.ResponseCode = DCM_E_REQUESTOUTOFRANGE;		 /*@req UDS_REQ_0x3D_11,UDS_REQ_0x3D_12,Dcm489*/
-			}
-		}
-		else
-		{
-			dspUdsWriteMemory.ResponseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;/*@req UDS_REQ_0x3D_9*/
-		}	
-	}
-	if(DCM_E_POSITIVERESPONSE == dspUdsWriteMemory.ResponseCode)
-	{
-		pduTxData->SduLength = 2 + dspUdsWriteMemory.MemorySizeFormat + dspUdsWriteMemory.MemoryAddressFormat;
-		pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];
-		for(i = 0; i < dspUdsWriteMemory.MemorySizeFormat + dspUdsWriteMemory.MemoryAddressFormat; i++)
-		{
-			pduTxData->SduDataPtr[2 + i] = pduRxData->SduDataPtr[2 + i];
-			if(OpStatus != DCM_PENDING)
-			{
-				DsdDspProcessingDone(dspUdsWriteMemory.ResponseCode);
-			}
-			else
-			{
-        		dspMemoryState=DCM_MEMORY_WRITE;
-			}
-		}
-	}
-	else
-	{
-		DsdDspProcessingDone(dspUdsWriteMemory.ResponseCode);
-	}
 }
 
 static boolean checkPeriodicIdentifierBuffer(uint8 PeriodicDid,uint8 Length,uint8 *postion)
@@ -2488,18 +2412,19 @@ static Dcm_NegativeResponseCodeType dynamicallyDefineDataIdentifierbyDid(uint16 
 
 static Dcm_NegativeResponseCodeType dynamicallyDefineDataIdentifierbyAddress(uint16 DDIdentifier,const PduInfoType *pduRxData,PduInfoType *pduTxData)
 {
-	uint8 LengthCount;
-	uint8 SourceCount;
-	uint16 Length;
-	uint8 AddressFormat;
-	uint8 MemorySizeFormat;
-	uint32 MemoryAddress = 0;
-	uint16 MemorySize = 0;
-	uint16 SourceLength = 0;
+	uint16 numNewDefinitions;
+	uint16 numEarlierDefinitions = 0;
 	Dcm_DspDDDType *DDid = NULL;
-	const Dcm_DspMemoryIdInfo *SourceMemoryInfo = NULL;
 	uint8 Num = 0;
-	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+	uint8 definitionIndex;
+	Dcm_NegativeResponseCodeType diagResponseCode = DCM_E_POSITIVERESPONSE;
+	uint8 sizeFormat;
+	uint8 addressFormat;
+	uint32 memoryAddress = 0;
+	uint32 length = 0;
+	uint8 i;
+	uint8 memoryIdentifier = 0; /* Should be 0 if DcmDspUseMemoryId == FALSE */
+	uint8 addressOffset;
 	
 	if(FALSE == LookupDDD(DDIdentifier, (const Dcm_DspDDDType **)&DDid))
 	{
@@ -2509,7 +2434,7 @@ static Dcm_NegativeResponseCodeType dynamicallyDefineDataIdentifierbyAddress(uin
 		}
 		if(Num >= DCM_MAX_DDD_NUMBER)
 		{
-			responseCode = DCM_E_REQUESTOUTOFRANGE;
+			diagResponseCode = DCM_E_REQUESTOUTOFRANGE;
 		}
 		else
 		{
@@ -2518,89 +2443,111 @@ static Dcm_NegativeResponseCodeType dynamicallyDefineDataIdentifierbyAddress(uin
 	}
 	else
 	{
-		while((SourceLength < DCM_MAX_DDDSOURCE_NUMBER) && (DDid->DDDSource[SourceLength].formatOrPosition != 0 ))
+		while((numEarlierDefinitions < DCM_MAX_DDDSOURCE_NUMBER) && (DDid->DDDSource[numEarlierDefinitions].formatOrPosition != 0 ))
 		{
-			SourceLength++;
+			numEarlierDefinitions++;
 		}
-		if(SourceLength >= DCM_MAX_DDDSOURCE_NUMBER)
+		if(numEarlierDefinitions >= DCM_MAX_DDDSOURCE_NUMBER)
 		{
-			responseCode = DCM_E_REQUESTOUTOFRANGE;
+			diagResponseCode = DCM_E_REQUESTOUTOFRANGE;
 		}
 	}
-	if(responseCode == DCM_E_POSITIVERESPONSE)
-	{
-		AddressFormat = (uint8)pduRxData->SduDataPtr[4] & DCM_FORMAT_LOW_MASK;
-		MemorySizeFormat = (uint8)(pduRxData->SduDataPtr[4] >> 4) & DCM_FORMAT_LOW_MASK;
-		if((AddressFormat+MemorySizeFormat) != 0)
-		{
-			Length = (pduRxData->SduLength - SID_AND_ALFID_LEN5) / (AddressFormat + MemorySizeFormat);
-		}
-		if((AddressFormat != 0) && (MemorySizeFormat != 0) && ((SourceLength+Length) <= DCM_MAX_DDDSOURCE_NUMBER))
-		{
-			if((Length != 0)&&( Length * (AddressFormat + MemorySizeFormat) == (pduRxData->SduLength - 5) ))
-			{
-				for(LengthCount = 0; (LengthCount < Length) && (responseCode == DCM_E_POSITIVERESPONSE); LengthCount++)
-				{
-					MemoryAddress = 0;
-					for(SourceCount = 0; SourceCount < AddressFormat; SourceCount++)
-					{
-						MemoryAddress = MemoryAddress << 8;
-						MemoryAddress += (uint32)(pduRxData->SduDataPtr[5 + SourceCount + LengthCount * (AddressFormat + MemorySizeFormat)]);
-					}
 
-					/*take value of MemorySize out */
-					MemorySize = 0;
-					for(SourceCount = 0; SourceCount < MemorySizeFormat; SourceCount++)
+	if( diagResponseCode == DCM_E_POSITIVERESPONSE )
+	{
+		if( pduRxData->SduLength > DYNDEF_ALFID_INDEX )
+		{
+			sizeFormat = ((uint8)(pduRxData->SduDataPtr[DYNDEF_ALFID_INDEX] & DCM_FORMAT_HIGH_MASK)) >> 4;	/*@req UDS_REQ_0x23_1 & UDS_REQ_0x23_5*/;
+			addressFormat = ((uint8)(pduRxData->SduDataPtr[DYNDEF_ALFID_INDEX])) & DCM_FORMAT_LOW_MASK;   /*@req UDS_REQ_0x23_1 & UDS_REQ_0x23_5*/;
+			if((addressFormat != 0) && (sizeFormat != 0))
+			{
+				numNewDefinitions = (pduRxData->SduLength - (SID_LEN + SF_LEN + DDDDI_LEN + ALFID_LEN) ) / (sizeFormat + addressFormat);
+				if( (numNewDefinitions != 0) &&
+					((SID_LEN + SF_LEN + DDDDI_LEN + ALFID_LEN + numNewDefinitions * (sizeFormat + addressFormat)) == pduRxData->SduLength) )
+				{
+					if( (numEarlierDefinitions+numNewDefinitions) <= DCM_MAX_DDDSOURCE_NUMBER )
 					{
-						MemorySize = MemorySize << 8;
-						MemorySize += (uint32)(pduRxData->SduDataPtr[5 + SourceCount + AddressFormat + LengthCount * (AddressFormat + MemorySizeFormat)]);
-					}
-					if(TRUE == lookupReadMemory(MemoryAddress, AddressFormat,MemorySize,&SourceMemoryInfo))
-					{
-						if(DspCheckSecurityLevel(SourceMemoryInfo->pReadMemoryInfo->pSecurityLevel) == TRUE)
+						for( definitionIndex = 0; (definitionIndex < numNewDefinitions) && (diagResponseCode == DCM_E_POSITIVERESPONSE); definitionIndex++ )
 						{
-							DDid->DDDSource[LengthCount + SourceLength].formatOrPosition = pduRxData->SduDataPtr[4];
-							DDid->DDDSource[LengthCount + SourceLength].SourceAddressOrDid = MemoryAddress;
-							DDid->DDDSource[LengthCount + SourceLength].Size = MemorySize;
-							DDid->DDDSource[LengthCount + SourceLength].DDDTpyeID = DCM_DDD_SOURCE_ADDRESS;
-							/*UDS_REQ_0x2C_6*/
+
+							if( TRUE == DCM_Config.Dsp->DspMemory->DcmDspUseMemoryId ) {
+								memoryIdentifier = pduRxData->SduDataPtr[DYNDEF_ADDRESS_START_INDEX + definitionIndex * (sizeFormat + addressFormat)];
+								addressOffset = 1;
+							}
+							else {
+								addressOffset = 0;
+							}
+
+							/* Parse address */
+							memoryAddress = 0;
+							for(i = addressOffset; i < addressFormat; i++)
+							{
+								memoryAddress <<= 8;
+								memoryAddress += (uint32)(pduRxData->SduDataPtr[DYNDEF_ADDRESS_START_INDEX + definitionIndex * (sizeFormat + addressFormat) + i]);
+							}
+
+							/* Parse size */
+							length = 0;
+							for(i = 0; i < sizeFormat; i++)
+							{
+								length <<= 8;
+								length += (uint32)(pduRxData->SduDataPtr[DYNDEF_ADDRESS_START_INDEX + definitionIndex * (sizeFormat + addressFormat) + addressFormat + i]);
+							}
+
+							diagResponseCode = checkAddressRange(DCM_READ_MEMORY, memoryIdentifier, memoryAddress, length);
+							if( DCM_E_POSITIVERESPONSE == diagResponseCode )
+							{
+								DDid->DDDSource[definitionIndex + numEarlierDefinitions].formatOrPosition = pduRxData->SduDataPtr[DYNDEF_ALFID_INDEX];
+								DDid->DDDSource[definitionIndex + numEarlierDefinitions].memoryIdentifier = memoryIdentifier;
+								DDid->DDDSource[definitionIndex + numEarlierDefinitions].SourceAddressOrDid = memoryAddress;
+								DDid->DDDSource[definitionIndex + numEarlierDefinitions].Size = length;
+								DDid->DDDSource[definitionIndex + numEarlierDefinitions].DDDTpyeID = DCM_DDD_SOURCE_ADDRESS;
+							}
+						}
+						if(diagResponseCode == DCM_E_POSITIVERESPONSE)
+						{
+							DDid->DynamicallyDid = DDIdentifier;
 						}
 						else
 						{
-							/*UDS_REQ_0x2C_19,DCM726*/
-							responseCode = DCM_E_SECUTITYACCESSDENIED;
+							for( definitionIndex = 0; (definitionIndex < numNewDefinitions); definitionIndex++ )
+							{
+								DDid->DDDSource[definitionIndex + numEarlierDefinitions].formatOrPosition = 0x00;
+								DDid->DDDSource[definitionIndex + numEarlierDefinitions].memoryIdentifier = 0x00;
+								DDid->DDDSource[definitionIndex + numEarlierDefinitions].SourceAddressOrDid = 0x00000000;
+								DDid->DDDSource[definitionIndex + numEarlierDefinitions].Size = 0x0000;
+								DDid->DDDSource[definitionIndex + numEarlierDefinitions].DDDTpyeID = DCM_DDD_SOURCE_DEFAULT;
+							}
 						}
 					}
 					else
 					{
-						/*UDS_REQ_0x2C_15,UDS_REQ_0x2C_16*/
-						responseCode = DCM_E_REQUESTOUTOFRANGE;
+						diagResponseCode = DCM_E_REQUESTOUTOFRANGE;
 					}
 				}
-				if(responseCode == DCM_E_POSITIVERESPONSE)
+				else
 				{
-					DDid->DynamicallyDid = DDIdentifier;
+					diagResponseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
 				}
 			}
 			else
 			{
-				/*UDS_REQ_0x2C_11*/
-				responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+				diagResponseCode = DCM_E_REQUESTOUTOFRANGE;  /*UDS_REQ_0x23_10*/
 			}
 		}
 		else
 		{
-			/*UDS_REQ_0x2C_17, UDS_REQ_0x2C_18*/
-			responseCode = DCM_E_REQUESTOUTOFRANGE;
+			diagResponseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
 		}
-
 	}
-	if(responseCode == DCM_E_POSITIVERESPONSE)
+
+
+	if(diagResponseCode == DCM_E_POSITIVERESPONSE)
 	{
-		pduTxData->SduDataPtr[1] = DCM_DDD_SUBFUNCTION_DEFINEBYADDRESS;
+		pduTxData->SduDataPtr[SF_INDEX] = DCM_DDD_SUBFUNCTION_DEFINEBYADDRESS;
 	}
 	
-	return responseCode;
+	return diagResponseCode;
 }
 
 
@@ -2612,9 +2559,7 @@ static Dcm_NegativeResponseCodeType CleardynamicallyDid(uint16 DDIdentifier,cons
 {
 	/*UDS_REQ_0x2C_5*/
 	sint8 i, j;
-	uint8 ClearCount;
 	uint8 position;
-	uint8 ClearNum = 0;
 	Dcm_DspDDDType *DDid = NULL;
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 	
