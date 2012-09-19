@@ -37,90 +37,6 @@ typedef uint8 DigitalLevel;
 
 #define _DEFINED_TYPEDEF_FOR_DigitalLevel_ 
 
-typedef uint8 EcuM_BootTargetType;
-#ifndef ECUM_BOOT_TARGET_APP
-#define ECUM_BOOT_TARGET_APP ((EcuM_BootTargetType)0)
-#endif /*ECUM_BOOT_TARGET_APP*/
-#ifndef ECUM_BOOT_TARGET_OEM_BOOTLOADER
-#define ECUM_BOOT_TARGET_OEM_BOOTLOADER ((EcuM_BootTargetType)1)
-#endif /*ECUM_BOOT_TARGET_OEM_BOOTLOADER*/
-#ifndef ECUM_BOOT_TARGET_SYS_BOOTLOADER
-#define ECUM_BOOT_TARGET_SYS_BOOTLOADER ((EcuM_BootTargetType)2)
-#endif /*ECUM_BOOT_TARGET_SYS_BOOTLOADER*/
-#define EcuM_BootTargetType_LowerLimit 0
-#define EcuM_BootTargetType_UpperLimit 1
-
-#define _DEFINED_TYPEDEF_FOR_EcuM_BootTargetType_ 
-
-typedef uint8 EcuM_StateType;
-#ifndef ECUM_STATE_STARTUP
-#define ECUM_STATE_STARTUP ((EcuM_StateType)16)
-#endif /*ECUM_STATE_STARTUP*/
-#ifndef ECUM_STATE_STARTUP_ONE
-#define ECUM_STATE_STARTUP_ONE ((EcuM_StateType)17)
-#endif /*ECUM_STATE_STARTUP_ONE*/
-#ifndef ECUM_STATE_STARTUP_TWO
-#define ECUM_STATE_STARTUP_TWO ((EcuM_StateType)18)
-#endif /*ECUM_STATE_STARTUP_TWO*/
-#ifndef ECUM_STATE_WAKEUP
-#define ECUM_STATE_WAKEUP ((EcuM_StateType)32)
-#endif /*ECUM_STATE_WAKEUP*/
-#ifndef ECUM_STATE_WAKEUP_ONE
-#define ECUM_STATE_WAKEUP_ONE ((EcuM_StateType)33)
-#endif /*ECUM_STATE_WAKEUP_ONE*/
-#ifndef ECUM_STATE_WAKEUP_VALIDATION
-#define ECUM_STATE_WAKEUP_VALIDATION ((EcuM_StateType)34)
-#endif /*ECUM_STATE_WAKEUP_VALIDATION*/
-#ifndef ECUM_STATE_WAKEUP_REACTION
-#define ECUM_STATE_WAKEUP_REACTION ((EcuM_StateType)35)
-#endif /*ECUM_STATE_WAKEUP_REACTION*/
-#ifndef ECUM_STATE_WAKEUP_TWO
-#define ECUM_STATE_WAKEUP_TWO ((EcuM_StateType)36)
-#endif /*ECUM_STATE_WAKEUP_TWO*/
-#ifndef ECUM_STATE_WAKEUP_WAKESLEEP
-#define ECUM_STATE_WAKEUP_WAKESLEEP ((EcuM_StateType)37)
-#endif /*ECUM_STATE_WAKEUP_WAKESLEEP*/
-#ifndef ECUM_STATE_WAKEUP_TTII
-#define ECUM_STATE_WAKEUP_TTII ((EcuM_StateType)38)
-#endif /*ECUM_STATE_WAKEUP_TTII*/
-#ifndef ECUM_STATE_RUN
-#define ECUM_STATE_RUN ((EcuM_StateType)48)
-#endif /*ECUM_STATE_RUN*/
-#ifndef ECUM_STATE_APP_RUN
-#define ECUM_STATE_APP_RUN ((EcuM_StateType)50)
-#endif /*ECUM_STATE_APP_RUN*/
-#ifndef ECUM_STATE_APP_POST_RUN
-#define ECUM_STATE_APP_POST_RUN ((EcuM_StateType)51)
-#endif /*ECUM_STATE_APP_POST_RUN*/
-#ifndef ECUM_STATE_SHUTDOWN
-#define ECUM_STATE_SHUTDOWN ((EcuM_StateType)64)
-#endif /*ECUM_STATE_SHUTDOWN*/
-#ifndef ECUM_STATE_PREP_SHUTDOWN
-#define ECUM_STATE_PREP_SHUTDOWN ((EcuM_StateType)68)
-#endif /*ECUM_STATE_PREP_SHUTDOWN*/
-#ifndef ECUM_STATE_GO_SLEEP
-#define ECUM_STATE_GO_SLEEP ((EcuM_StateType)73)
-#endif /*ECUM_STATE_GO_SLEEP*/
-#ifndef ECUM_STATE_GO_OFF_ONE
-#define ECUM_STATE_GO_OFF_ONE ((EcuM_StateType)77)
-#endif /*ECUM_STATE_GO_OFF_ONE*/
-#ifndef ECUM_STATE_GO_OFF_TWO
-#define ECUM_STATE_GO_OFF_TWO ((EcuM_StateType)78)
-#endif /*ECUM_STATE_GO_OFF_TWO*/
-#ifndef ECUM_STATE_SLEEP
-#define ECUM_STATE_SLEEP ((EcuM_StateType)80)
-#endif /*ECUM_STATE_SLEEP*/
-#ifndef ECUM_STATE_OFF
-#define ECUM_STATE_OFF ((EcuM_StateType)128)
-#endif /*ECUM_STATE_OFF*/
-#ifndef ECUM_STATE_RESET
-#define ECUM_STATE_RESET ((EcuM_StateType)144)
-#endif /*ECUM_STATE_RESET*/
-#define EcuM_StateType_LowerLimit 0x10
-#define EcuM_StateType_UpperLimit 0x90
-
-#define _DEFINED_TYPEDEF_FOR_EcuM_StateType_ 
-
 typedef float Float;
 
 #define _DEFINED_TYPEDEF_FOR_Float_ 
@@ -240,15 +156,6 @@ typedef uint8 UInt8;
 typedef UInt8 DstPtrType[1024];
 
 #define _DEFINED_TYPEDEF_FOR_DstPtrType_ 
-
-typedef uint8 Rte_ModeType_EcuM_Mode;
-#define RTE_TRANSITION_EcuM_Mode ((Rte_ModeType_EcuM_Mode)6)
-#define RTE_MODE_EcuM_Mode_STARTUP ((Rte_ModeType_EcuM_Mode)4)
-#define RTE_MODE_EcuM_Mode_RUN ((Rte_ModeType_EcuM_Mode)1)
-#define RTE_MODE_EcuM_Mode_POST_RUN ((Rte_ModeType_EcuM_Mode)0)
-#define RTE_MODE_EcuM_Mode_SLEEP ((Rte_ModeType_EcuM_Mode)3)
-#define RTE_MODE_EcuM_Mode_WAKE_SLEEP ((Rte_ModeType_EcuM_Mode)5)
-#define RTE_MODE_EcuM_Mode_SHUTDOWN ((Rte_ModeType_EcuM_Mode)2)
 
 typedef uint8 Rte_ModeType_WdgMMode;
 #define RTE_TRANSITION_WdgMMode ((Rte_ModeType_WdgMMode)5)

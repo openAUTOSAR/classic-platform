@@ -269,6 +269,14 @@ typedef struct {
 	UInt16 value;
 } Rte_DE_Read_Logger2Runnable_ReadResult;
 
+typedef uint8 Rte_ModeType_WdgMMode;
+#define RTE_TRANSITION_WdgMMode ((Rte_ModeType_WdgMMode)5)
+#define RTE_MODE_WdgMMode_ALIVE_OK ((Rte_ModeType_WdgMMode)3)
+#define RTE_MODE_WdgMMode_ALIVE_FAILED ((Rte_ModeType_WdgMMode)2)
+#define RTE_MODE_WdgMMode_ALIVE_EXPIRED ((Rte_ModeType_WdgMMode)1)
+#define RTE_MODE_WdgMMode_ALIVE_STOPPED ((Rte_ModeType_WdgMMode)4)
+#define RTE_MODE_WdgMMode_ALIVE_DEACTIVATED ((Rte_ModeType_WdgMMode)0)
+
 typedef uint8 Rte_ModeType_EcuM_Mode;
 #define RTE_TRANSITION_EcuM_Mode ((Rte_ModeType_EcuM_Mode)6)
 #define RTE_MODE_EcuM_Mode_STARTUP ((Rte_ModeType_EcuM_Mode)4)
@@ -277,14 +285,6 @@ typedef uint8 Rte_ModeType_EcuM_Mode;
 #define RTE_MODE_EcuM_Mode_SLEEP ((Rte_ModeType_EcuM_Mode)3)
 #define RTE_MODE_EcuM_Mode_WAKE_SLEEP ((Rte_ModeType_EcuM_Mode)5)
 #define RTE_MODE_EcuM_Mode_SHUTDOWN ((Rte_ModeType_EcuM_Mode)2)
-
-typedef uint8 Rte_ModeType_WdgMMode;
-#define RTE_TRANSITION_WdgMMode ((Rte_ModeType_WdgMMode)5)
-#define RTE_MODE_WdgMMode_ALIVE_OK ((Rte_ModeType_WdgMMode)3)
-#define RTE_MODE_WdgMMode_ALIVE_FAILED ((Rte_ModeType_WdgMMode)2)
-#define RTE_MODE_WdgMMode_ALIVE_EXPIRED ((Rte_ModeType_WdgMMode)1)
-#define RTE_MODE_WdgMMode_ALIVE_STOPPED ((Rte_ModeType_WdgMMode)4)
-#define RTE_MODE_WdgMMode_ALIVE_DEACTIVATED ((Rte_ModeType_WdgMMode)0)
 
 typedef struct {
 } Rte_PDS_Calculator_CalculatorOperations_P;

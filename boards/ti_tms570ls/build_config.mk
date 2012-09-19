@@ -42,3 +42,6 @@ MOD_USE += MCU KERNEL ECUM DET
 # Extra defines 
 #
 
+# Default cross compiler
+DEFAULT_CROSS_COMPILE = /opt/arm-none-eabi/bin/arm-none-eabi-
+

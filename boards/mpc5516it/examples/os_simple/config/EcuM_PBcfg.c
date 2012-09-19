@@ -39,11 +39,11 @@ extern const J1939Tp_ConfigType J1939Tp_Config;
 #if defined(USE_WDGM)
 const EcuM_WdgMType EcuM_WdgMConfig = {
   .EcuMSupervisedEntity = NULL,
-  .EcuMWdgMWakeupMode  = NULL,
-  .EcuMWdgMStartupMode  = NULL,
-  .EcuMWdgMRunMode = NULL,
-  .EcuMWdgMPostRunMode  = NULL,
-  .EcuMWdgMShutdownMode = NULL,
+  .EcuMWdgMWakeupMode  = ECUM_SLEEP_MODE_WDGM_MODE_ILL,
+  .EcuMWdgMStartupMode  = ECUM_SLEEP_MODE_WDGM_MODE_ILL,
+  .EcuMWdgMRunMode = ECUM_SLEEP_MODE_WDGM_MODE_ILL,
+  .EcuMWdgMPostRunMode  = ECUM_SLEEP_MODE_WDGM_MODE_ILL,
+  .EcuMWdgMShutdownMode = ECUM_SLEEP_MODE_WDGM_MODE_ILL,
 };
 #endif
 
@@ -53,7 +53,7 @@ const EcuM_SleepModeType EcuM_SleepModeConfig[] = {
 		.EcuMWakeupSourceMask = ECUM_WKSOURCE_ECUMWAKEUPSOURCE,
 		.EcuMSleepModeMcuMode = MCU_MODE_SLEEP,
 #if defined(USE_WDGM)
-		.EcuMSleepModeWdgMMode = NULL,
+		.EcuMSleepModeWdgMMode = ECUM_SLEEP_MODE_WDGM_MODE_ILL,
 #endif
 	}
 };
@@ -64,7 +64,7 @@ const EcuM_WakeupSourceConfigType EcuM_WakeupSourceConfig[] = {
 		.EcuMWakeupSourcePolling = false,
 		.EcuMValidationTimeout = 0,
 #if defined(USE_COMM)
-		.EcuMComMChannel = NULL,
+		.EcuMComMChannel = ECUM_COMM_CHANNEL_ILL,
 #endif
 	}
 };
@@ -81,7 +81,7 @@ EcuM_ConfigType EcuMConfig =
 #if defined(USE_WDGM)
 	.EcuMWdgMConfig = &EcuM_WdgMConfig,
 #endif
-  	.EcuMSleepModeConfig = &EcuM_SleepModeConfig,
+  	.EcuMSleepModeConfig = EcuM_SleepModeConfig,
 
 #if defined(USE_MCU)
 	.McuConfig = McuConfigData,
