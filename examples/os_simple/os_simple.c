@@ -18,7 +18,7 @@
 #include "Mcu.h"
 #include "arc.h"
 
-//#define USE_LDEBUG_PRINTF // Uncomment this to turn debug statements on.
+#define USE_LDEBUG_PRINTF // Uncomment this to turn debug statements on.
 #include "debug.h"
 
 // How many errors to keep in error log.

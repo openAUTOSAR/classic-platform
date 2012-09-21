@@ -114,9 +114,9 @@ typedef enum
     PIT_INT1,               // 5606-60
     PIT_INT2,               // 5606-61
 
-    ADC_EOC_INT,            // 5606-62
-    ADC_ER_INT,             // 5606-63
-    ADC_WD_INT,             // 5606-64
+    ADC0_EOC_INT,            // 5606-62
+    ADC0_ER_INT,             // 5606-63
+    ADC0_WD_INT,             // 5606-64
 
     FLEXCAN_0_ESR_ERR_INT,  // 5606-65
     FLEXCAN_0_ESR_BOFF_INT, // 5606-66
@@ -140,9 +140,9 @@ typedef enum
     LINFLEX_0_TXI,          // 5606-80
     LINFLEX_0_ERR,          // 5606-81
 
-    RESERVED14,             // 5606-82
-    RESERVED15,             // 5606-83
-    RESERVED16,             // 5606-84
+    ADC1_EOC_INT,            // 5606-82
+    ADC1_ER_INT,             // 5606-83
+    ADC1_WD_INT,             // 5606-84
 
     FLEXCAN_1_ESR_ERR_INT,  // 5606-85
     FLEXCAN_1_ESR_BOFF_INT, // 5606-86
@@ -199,8 +199,8 @@ typedef enum
 
     PIT_INT4,               // 5606-128
     PIT_INT5,               // 5606-129
-    RESERVED43,             // 5606-130
-    RESERVED44,             // 5606-131
+    PIT_INT6,             // 5606-130
+    PIT_INT7,             // 5606-131
     RESERVED45,             // 5606-132
     RESERVED46,             // 5606-133
     RESERVED47,             // 5606-134
@@ -210,7 +210,7 @@ typedef enum
     RESERVED51,             // 5606-138
     RESERVED52,             // 5606-139
     RESERVED53,             // 5606-140
-#if defined (CFG_MPC5604B)
+#if defined (CFG_MPC560XB)
     EMIOS_0_GFR_F0_F1,      // 5606-141
     EMIOS_0_GFR_F2_F3,      // 5606-142
     EMIOS_0_GFR_F4_F5,      // 5606-143
@@ -256,14 +256,14 @@ typedef enum
 	FLEXCAN_3_BUF_12_15,    // 5606-179
 	FLEXCAN_3_BUF_16_31,    // 5606-180
 	FLEXCAN_3_BUF_32_63,    // 5606-181
-    RESERVED59,             // 5606-182
-    RESERVED60,             // 5606-183
-    RESERVED61,             // 5606-184
-    RESERVED62,             // 5606-185
-    RESERVED63,             // 5606-186
-    RESERVED64,             // 5606-187
-    RESERVED65,             // 5606-188
-    RESERVED66,             // 5606-189
+    DSPI_3_ISR_TFUF_RFOF,   // 5606-182
+    DSPI_3_ISR_EOQF,        // 5606-183
+    DSPI_3_ISR_TFFF,        // 5606-184
+    DSPI_3_ISR_TCF,         // 5606-185
+    DSPI_3_ISR_RFDF,        // 5606-186
+    LINFLEX_4_RXI,          // 5606-187
+    LINFLEX_4_TXI,          // 5606-188
+    LINFLEX_4_ERR,          // 5606-189
     FLEXCAN_4_ESR_ERR_INT,  // 5606-190
     FLEXCAN_4_ESR_BOFF_INT, // 5606-191
 
@@ -275,9 +275,9 @@ typedef enum
 	FLEXCAN_4_BUF_12_15,    // 5606-196
 	FLEXCAN_4_BUF_16_31,    // 5606-197
 	FLEXCAN_4_BUF_32_63,    // 5606-198
-    RESERVED68,             // 5606-199
-    RESERVED69,             // 5606-200
-    RESERVED70,             // 5606-201
+    LINFLEX_5_RXI,          // 5606-199
+    LINFLEX_5_TXI,          // 5606-200
+    LINFLEX_5_ERR,          // 5606-201
     FLEXCAN_5_ESR_ERR_INT,  // 5606-202
     FLEXCAN_5_ESR_BOFF_INT, // 5606-203
 	RESERVED71,             // 5606-204
@@ -287,12 +287,29 @@ typedef enum
 	FLEXCAN_5_BUF_12_15,    // 5606-208
 	FLEXCAN_5_BUF_16_31,    // 5606-209
 	FLEXCAN_5_BUF_32_63,    // 5606-210
-    RESERVED72,             // 5606-211
-    RESERVED73,             // 5606-212
-    RESERVED74,             // 5606-213
-    RESERVED75,             // 5606-214
-    RESERVED76,             // 5606-215
-    RESERVED77,             // 5606-216
+    DSPI_4_ISR_TFUF_RFOF,   // 5606-211
+    DSPI_4_ISR_EOQF,        // 5606-212
+    DSPI_4_ISR_TFFF,        // 5606-213
+    DSPI_4_ISR_TCF,         // 5606-214
+    DSPI_4_ISR_RFDF,        // 5606-215
+    LINFLEX_6_RXI,          // 5606-216
+    LINFLEX_6_TXI,          // 5606-217
+    LINFLEX_6_ERR,          // 5606-218
+    DSPI_5_ISR_TFUF_RFOF,   // 5606-219
+    DSPI_5_ISR_EOQF,        // 5606-220
+    DSPI_5_ISR_TFFF,        // 5606-221
+    DSPI_5_ISR_TCF,         // 5606-222
+    DSPI_5_ISR_RFDF,        // 5606-223
+    LINFLEX_7_RXI,          // 5606-224
+    LINFLEX_7_TXI,          // 5606-225
+    LINFLEX_7_ERR,          // 5606-226
+    LINFLEX_8_RXI,          // 5606-227
+    LINFLEX_8_TXI,          // 5606-228
+    LINFLEX_8_ERR,          // 5606-229
+    LINFLEX_9_RXI,          // 5606-230
+    LINFLEX_9_TXI,          // 5606-231
+    LINFLEX_9_ERR,          // 5606-232
+
 #elif defined (CFG_MPC5606S)
     EMIOS_0_GFR_F8_F9,      // 5606-141
     EMIOS_0_GFR_F10_F11,    // 5606-142
@@ -986,6 +1003,8 @@ typedef enum
 	PERIPHERAL_CLOCK_DSPI_B,
 	PERIPHERAL_CLOCK_DSPI_C,
 	PERIPHERAL_CLOCK_DSPI_D,
+	PERIPHERAL_CLOCK_DSPI_E,
+	PERIPHERAL_CLOCK_DSPI_F,
 #if defined(CFG_MPC560X)
 	PERIPHERAL_CLOCK_EMIOS_0,
 	PERIPHERAL_CLOCK_EMIOS_1,

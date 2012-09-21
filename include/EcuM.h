@@ -80,8 +80,9 @@
 #define ECUM_AR_MINOR_VERSION	2
 #define ECUM_AR_PATCH_VERSION	2
 
-#include "EcuM_Types.h"
+
 #include "EcuM_Cfg.h"
+#include "EcuM_Types.h"
 #include "EcuM_Cbk.h"
 
 #if defined(USE_COM)
@@ -121,6 +122,7 @@
 #define ECUM_GETAPPMODE_ID (0x11)
 #define ECUM_SELECT_BOOTARGET_ID (0x12)
 #define ECUM_GET_BOOTARGET_ID (0x13)
+#define ECUM_VALIDATE_WAKEUP_EVENT_ID 0x14
 #define ECUM_MAINFUNCTION_ID (0x18)
 #define ECUM_COMM_HASREQUESTEDRUN_ID (0x1b)
 #define ECUM_ARC_STARTUPTWO_ID (0x20)
@@ -168,7 +170,7 @@ Std_ReturnType EcuM_GetShutdownTarget(EcuM_StateType* shutdownTarget, uint8* sle
 Std_ReturnType EcuM_GetLastShutdownTarget(EcuM_StateType* shutdownTarget, uint8* sleepMode);
 
 EcuM_WakeupSourceType EcuM_GetPendingWakeupEvents(void);
-void EcuM_ClearWakeupEvent(EcuM_WakeupSourceType sources);
+void EcuM_ClearWakeupEvent(EcuM_WakeupSourceType source );
 EcuM_WakeupSourceType EcuM_GetValidatedWakeupEvents(void);
 EcuM_WakeupSourceType EcuM_GetExpiredWakeupEvents(void);
 EcuM_WakeupStatusType EcuM_GetStatusOfWakeupSource(EcuM_WakeupSourceType sources);
@@ -182,6 +184,7 @@ Std_ReturnType EcuM_GetBootTarget(EcuM_BootTargetType* target);
 void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources);
 
 void EcuM_MainFunction(void);
+
 
 #endif /*ECUM_H_*/
 /** @} */

@@ -176,7 +176,7 @@
                           <SDG GID="Arccore::IdentifiableOptions" />
                         </SDGS>
                       </ADMIN-DATA>
-                      <TYPE-TREF DEST="INTEGER-TYPE">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Data/UInt8</TYPE-TREF>
+                      <TYPE-TREF DEST="INTEGER-TYPE">/rte_simple_lib/DatatypeKit/UInt8</TYPE-TREF>
                       <DIRECTION>IN</DIRECTION>
                     </ARGUMENT-PROTOTYPE>
                     <ARGUMENT-PROTOTYPE UUID="b48f4f2b-f9e6-444c-b978-efe7411ad553">
@@ -186,7 +186,7 @@
                           <SDG GID="Arccore::IdentifiableOptions" />
                         </SDGS>
                       </ADMIN-DATA>
-                      <TYPE-TREF DEST="INTEGER-TYPE">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Data/UInt8</TYPE-TREF>
+                      <TYPE-TREF DEST="INTEGER-TYPE">/rte_simple_lib/DatatypeKit/UInt8</TYPE-TREF>
                       <DIRECTION>IN</DIRECTION>
                     </ARGUMENT-PROTOTYPE>
                     <ARGUMENT-PROTOTYPE UUID="7021e210-7039-45cf-aa05-4f56012ce341">
@@ -196,7 +196,7 @@
                           <SDG GID="Arccore::IdentifiableOptions" />
                         </SDGS>
                       </ADMIN-DATA>
-                      <TYPE-TREF DEST="INTEGER-TYPE">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Data/UInt16</TYPE-TREF>
+                      <TYPE-TREF DEST="INTEGER-TYPE">/rte_simple_lib/DatatypeKit/UInt16</TYPE-TREF>
                       <DIRECTION>OUT</DIRECTION>
                     </ARGUMENT-PROTOTYPE>
                   </ARGUMENTS>
@@ -218,7 +218,7 @@
                       <SDG GID="Arccore::IdentifiableOptions" />
                     </SDGS>
                   </ADMIN-DATA>
-                  <TYPE-TREF DEST="INTEGER-TYPE">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Data/UInt8</TYPE-TREF>
+                  <TYPE-TREF DEST="INTEGER-TYPE">/rte_simple_lib/DatatypeKit/UInt8</TYPE-TREF>
                 </DATA-ELEMENT-PROTOTYPE>
                 <DATA-ELEMENT-PROTOTYPE UUID="7433b2c7-347a-4278-ac96-1db4b4451cde">
                   <SHORT-NAME>arg2</SHORT-NAME>
@@ -227,7 +227,7 @@
                       <SDG GID="Arccore::IdentifiableOptions" />
                     </SDGS>
                   </ADMIN-DATA>
-                  <TYPE-TREF DEST="INTEGER-TYPE">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Data/UInt8</TYPE-TREF>
+                  <TYPE-TREF DEST="INTEGER-TYPE">/rte_simple_lib/DatatypeKit/UInt8</TYPE-TREF>
                 </DATA-ELEMENT-PROTOTYPE>
               </DATA-ELEMENTS>
             </SENDER-RECEIVER-INTERFACE>
@@ -246,7 +246,7 @@
                       <SDG GID="Arccore::IdentifiableOptions" />
                     </SDGS>
                   </ADMIN-DATA>
-                  <TYPE-TREF DEST="INTEGER-TYPE">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Data/UInt16</TYPE-TREF>
+                  <TYPE-TREF DEST="INTEGER-TYPE">/rte_simple_lib/DatatypeKit/UInt16</TYPE-TREF>
                 </DATA-ELEMENT-PROTOTYPE>
               </DATA-ELEMENTS>
             </SENDER-RECEIVER-INTERFACE>
@@ -265,7 +265,7 @@
                       <SDG GID="Arccore::IdentifiableOptions" />
                     </SDGS>
                   </ADMIN-DATA>
-                  <TYPE-TREF DEST="INTEGER-TYPE">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Data/UInt32</TYPE-TREF>
+                  <TYPE-TREF DEST="INTEGER-TYPE">/rte_simple_lib/DatatypeKit/UInt32</TYPE-TREF>
                 </DATA-ELEMENT-PROTOTYPE>
               </DATA-ELEMENTS>
             </SENDER-RECEIVER-INTERFACE>
@@ -643,6 +643,66 @@
               <SHORT-NAME>Logger2Implementation</SHORT-NAME>
               <BEHAVIOR-REF DEST="INTERNAL-BEHAVIOR">/rte_simple_lib/Logger2Kit/Logger2Behavior</BEHAVIOR-REF>
             </SWC-IMPLEMENTATION>
+          </ELEMENTS>
+        </AR-PACKAGE>
+        <AR-PACKAGE UUID="3e16e6a8-c2ff-4266-8f2c-276afa37dc50">
+          <SHORT-NAME>SystemSignals</SHORT-NAME>
+          <ADMIN-DATA>
+            <SDGS>
+              <SDG GID="Arccore::IdentifiableOptions" />
+            </SDGS>
+          </ADMIN-DATA>
+          <ELEMENTS>
+            <SYSTEM-SIGNAL UUID="5db60ee9-e91b-454b-81bb-24f0c3011885">
+              <SHORT-NAME>Arg1</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                </SDGS>
+              </ADMIN-DATA>
+              <DATA-TYPE-REF DEST="INTEGER-TYPE">/rte_simple_lib/DatatypeKit/UInt8</DATA-TYPE-REF>
+              <LENGTH>8</LENGTH>
+            </SYSTEM-SIGNAL>
+            <SYSTEM-SIGNAL UUID="81fc2d93-168d-4a1c-bf18-dcf6557f898a">
+              <SHORT-NAME>Arg2</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                </SDGS>
+              </ADMIN-DATA>
+              <DATA-TYPE-REF DEST="INTEGER-TYPE">/rte_simple_lib/DatatypeKit/UInt8</DATA-TYPE-REF>
+              <LENGTH>8</LENGTH>
+            </SYSTEM-SIGNAL>
+            <SYSTEM-SIGNAL UUID="d2012f74-c313-446e-8ab4-7abcc9e08d6e">
+              <SHORT-NAME>ResultSig</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                </SDGS>
+              </ADMIN-DATA>
+              <DATA-TYPE-REF DEST="INTEGER-TYPE">/rte_simple_lib/DatatypeKit/UInt16</DATA-TYPE-REF>
+              <LENGTH>16</LENGTH>
+            </SYSTEM-SIGNAL>
+            <SYSTEM-SIGNAL UUID="55fa62b0-1724-438b-858e-977f952b2c63">
+              <SHORT-NAME>FreqIndSig</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                </SDGS>
+              </ADMIN-DATA>
+              <DATA-TYPE-REF DEST="INTEGER-TYPE">/rte_simple_lib/DatatypeKit/UInt32</DATA-TYPE-REF>
+              <LENGTH>32</LENGTH>
+            </SYSTEM-SIGNAL>
+            <SYSTEM-SIGNAL UUID="dc34757f-b33e-4d1b-ade6-ef1f797e3af0">
+              <SHORT-NAME>FreqReqSig</SHORT-NAME>
+              <ADMIN-DATA>
+                <SDGS>
+                  <SDG GID="Arccore::IdentifiableOptions" />
+                </SDGS>
+              </ADMIN-DATA>
+              <DATA-TYPE-REF DEST="INTEGER-TYPE">/rte_simple_lib/DatatypeKit/UInt32</DATA-TYPE-REF>
+              <LENGTH>32</LENGTH>
+            </SYSTEM-SIGNAL>
           </ELEMENTS>
         </AR-PACKAGE>
       </SUB-PACKAGES>

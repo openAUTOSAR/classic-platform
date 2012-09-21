@@ -16,7 +16,6 @@
 /* Ecum Callout Stubs - generic version */
 
 #include "Dem.h"
-
 Dcm_ReturnWriteMemoryType Dcm_WriteMemory(Dcm_OpStatusType OpStatus,
 											   uint8 MemoryIdentifier,
 											   uint32 MemoryAddress,

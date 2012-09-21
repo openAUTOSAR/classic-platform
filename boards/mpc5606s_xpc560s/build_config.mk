@@ -27,3 +27,6 @@ MOD_USE += MCU KERNEL ECUM DET
 COMPILER?=cw
 DEFAULT_CROSS_COMPILE = /opt/powerpc-eabispe/bin/powerpc-eabispe-
 DEFAULT_CW_COMPILE= /opt/cw
+
+# Defines
+def-y += SRAM_SIZE=0xc000

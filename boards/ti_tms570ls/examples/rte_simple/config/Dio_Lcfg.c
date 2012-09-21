@@ -30,8 +30,8 @@ const Dio_PortType DioPortConfigData[] = {
 const Dio_ChannelGroupType DioConfigData[] = {
 	{ 
 	  .port = DIO_END_OF_LIST, 
-	  .offset = DIO_END_OF_LIST, 
-	  .mask = DIO_END_OF_LIST, 
+	  .offset = 0, 
+	  .mask = 0, 
 	}
 };
 

@@ -417,8 +417,9 @@ void DslInit(void) {
 //	Implements 'void DslInternal_ResponseOnOneDataByPeriodicId(uint8 PericodID)' for simulator a periodic did data.
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-void DslInternal_ResponseOnOneDataByPeriodicId(uint8 PericodID)
+Std_ReturnType DslInternal_ResponseOnOneDataByPeriodicId(uint8 PericodID)
 {
+	Std_ReturnType ret = E_NOT_OK;
 	const Dcm_DslProtocolRowType *protocolRowEntry;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
     PduInfoType  *pPeriodData;
@@ -428,16 +429,24 @@ void DslInternal_ResponseOnOneDataByPeriodicId(uint8 PericodID)
     	runtime = protocolRowEntry->DslRunTimeProtocolParameters;
         if(runtime != NULL)	// find the runtime
         {
-        	DslProvideRxBufferToPdur(runtime->diagReqestRxPduId, 3, (const PduInfoType **)&pPeriodData);
-            pPeriodData->SduDataPtr[0] = 0x2a;
-            pPeriodData->SduDataPtr[1] = 0;
-            pPeriodData->SduDataPtr[2] = PericodID;
-            pPeriodData->SduLength = 3;
-            DslRxIndicationFromPduR(0, NTFRSLT_OK);
-			break;
+        	if( BUFREQ_OK == DslProvideRxBufferToPdur(runtime->diagReqestRxPduId, 3, (const PduInfoType **)&pPeriodData)){
+                pPeriodData->SduDataPtr[0] = 0x2a;
+                pPeriodData->SduDataPtr[1] = 0;
+                pPeriodData->SduDataPtr[2] = PericodID;
+                pPeriodData->SduLength = 3;
+                DslRxIndicationFromPduR(0, NTFRSLT_OK);
+                ret = E_OK;
+    			break;
+        	}
+        	else {
+        		ret = E_NOT_OK;
+        	}
+
 		}
     	protocolRowEntry++;
 	}
+
+	return ret;
 }
 
 

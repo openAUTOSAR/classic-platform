@@ -7,6 +7,8 @@ ARCH_MCU=mpc5567
 # CFG (y/n) macros
 CFG=PPC BOOKE E200Z6 MPC55XX MPC5567 BRD_MPC5567QRTECH SPE
 
+#CFG+=BOOT
+
 # What buildable modules does this board have, 
 # default or private
 
@@ -26,4 +28,7 @@ MOD_USE += MCU KERNEL ECUM DET
 
 # Default cross compiler
 DEFAULT_CROSS_COMPILE = /opt/powerpc-eabispe/bin/powerpc-eabispe-
+
+# Defines
+def-y += SRAM_SIZE=0x14000
 

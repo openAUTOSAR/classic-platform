@@ -27,8 +27,8 @@ endif
 ifeq (${COMPILER},cw)
 ifneq (${CW_COMPILE},${DEFAULT_CW_COMPILE})
 ${warning Not using default cross compiler for architecture.}
-${warning CROSS_COMPILE:         ${CW_COMPILE} [${origin CW_COMPILE}]}
-${warning DEFAULT_CROSS_COMPILE: ${DEFAULT_CW_COMPILE} [${origin DEFAULT_CW_COMPILE}]}
+${warning CW_COMPILE:            ${CW_COMPILE} [${origin CW_COMPILE}]}
+${warning DEFAULT_CW_COMPILE:    ${DEFAULT_CW_COMPILE} [${origin DEFAULT_CW_COMPILE}]}
 endif
 else
 ifneq (${DEFAULT_CROSS_COMPILE},)
@@ -122,6 +122,11 @@ ifndef _BOARD_COMMON_MK
 include $(ROOTDIR)/boards/board_common.mk
 endif
 
+# Misc tools
+ifneq ($(CFG_BOOT),)
+include $(ROOTDIR)/boards/$(BOARDDIR)/boot_info.mk
+include $(ROOTDIR)/scripts/bootloader_image.mk
+endif  
 
 ##### For backwards compatability with older project makefiles:
 
@@ -197,9 +202,9 @@ endif
 .PHONY clean: 
 clean: FORCE
 	@echo
-	@echo "  >> Cleaning $(CURDIR)"
-	$(Q)-rm -f *.o *.d *.h *.elf *.a *.ldp *.lcf *.tmp *.s *.c *.map *.out *.bin *.srec
-	@echo
+	@echo "  >> Rules Clean $(CURDIR)"
+	$(Q)-rm -v *
+	$(Q)-rm -v $(ROOTDIR)/binaries/$(BOARDDIR)/*
 	
 .PHONY : config 
 config: FORCE
@@ -293,10 +298,10 @@ $(build-hex-y): $(build-exe-y)
 	$(Q)$(CROSS_COMPILE)objcopy -O ihex $< $@
 	
 # bin output
-$(build-bin-y): $(build-exe-y)
-	@echo
-	@echo "  >> OBJCOPY $@"   
-	$(Q)$(CROSS_COMPILE)objcopy -O binary $< $@	
+#$(build-bin-y): $(build-exe-y)
+#	@echo
+#	@echo "  >> OBJCOPY $@"   
+#	$(Q)$(CROSS_COMPILE)objcopy -O binary $< $@	
 
 # Linker
 $(build-exe-y): $(dep-y) $(obj-y) $(sim-y) $(libitem-y) $(ldcmdfile-y)

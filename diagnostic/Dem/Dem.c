@@ -103,6 +103,10 @@
 /*
  * Local types
  */
+#if !defined(USE_DCM)
+typedef uint8 Dcm_NegativeResponseCodeType;
+#define DCM_E_POSITIVERESPONSE ((Dcm_NegativeResponseCodeType)0x00)
+#endif
 
 // DtcFilterType
 typedef struct {
@@ -193,12 +197,12 @@ static ExtDataRecType		preInitExtDataBuffer[DEM_MAX_NUMBER_EXT_DATA_PRE_INIT];
  * Allocation of primary event memory ramlog (after init) in uninitialized memory
  */
 /** @req DEM162 */
-EventRecType 		        priMemEventBuffer[DEM_MAX_NUMBER_EVENT_PRI_MEM] __attribute__ ((section (".dem_eventmemory_pri")));
-static FreezeFrameRecType	priMemFreezeFrameBuffer[DEM_MAX_NUMBER_FF_DATA_PRI_MEM] __attribute__ ((section (".dem_eventmemory_pri")));
-//FreezeFrameRecType        FreezeFrameMirrorBuffer[DEM_MAX_NUMBER_FF_DATA_PRI_MEM] __attribute__ ((section (".dem_eventmemory_pri")));
+EventRecType 		        priMemEventBuffer[DEM_MAX_NUMBER_EVENT_PRI_MEM];
+static FreezeFrameRecType	priMemFreezeFrameBuffer[DEM_MAX_NUMBER_FF_DATA_PRI_MEM];
+//FreezeFrameRecType        FreezeFrameMirrorBuffer[DEM_MAX_NUMBER_FF_DATA_PRI_MEM];
 extern FreezeFrameRecType*  FreezeFrameMirrorBuffer[];
-static ExtDataRecType		priMemExtDataBuffer[DEM_MAX_NUMBER_EXT_DATA_PRI_MEM] __attribute__ ((section (".dem_eventmemory_pri")));
-HealingRecType         		priMemAgingBuffer[DEM_MAX_NUMBER_AGING_PRI_MEM] __attribute__ ((section (".dem_eventmemory_pri")));
+static ExtDataRecType		priMemExtDataBuffer[DEM_MAX_NUMBER_EXT_DATA_PRI_MEM];
+HealingRecType         		priMemAgingBuffer[DEM_MAX_NUMBER_AGING_PRI_MEM];
 extern HealingRecType   		HealingMirrorBuffer[DEM_MAX_NUMBER_AGING_PRI_MEM];
 
 /* block in NVRam, use for freezeframe */
@@ -572,7 +576,7 @@ static void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_E
 			}
 		}
 		faultCounterAfterDebounce = eventStatusRecPtr->faultDetectionCounter;
-		
+
 		eventStatusRecPtr->errorStatusChanged = FALSE;
 
 		if (eventStatus == DEM_EVENT_STATUS_FAILED) {
@@ -769,7 +773,7 @@ static void bubbleSort(FreezeFrameRecType *freezeFrameBuf, uint16 length)
 				//exchange buffer data
 				memcpy(&temp,&freezeFrameBuf[i],sizeof(FreezeFrameRecType));
 				memcpy(&freezeFrameBuf[i],&freezeFrameBuf[j],sizeof(FreezeFrameRecType));
-				memcpy(&freezeFrameBuf[j],&temp,sizeof(FreezeFrameRecType));		
+				memcpy(&freezeFrameBuf[j],&temp,sizeof(FreezeFrameRecType));
 			}
 		}
 	}
@@ -780,9 +784,9 @@ static void bubbleSort(FreezeFrameRecType *freezeFrameBuf, uint16 length)
  * Procedure:	retrieveEventStatusBit
  * Description:	retrieve Event Status Bit
  */
-static boolean retrieveEventStatusBit(FreezeFrameRecType *freezeFrameBuf, 
-											uint16 length , 
-											Dem_EventStatusExtendedType nBit, 
+static boolean retrieveEventStatusBit(FreezeFrameRecType *freezeFrameBuf,
+											uint16 length ,
+											Dem_EventStatusExtendedType nBit,
 											FreezeFrameRecType **freezeFrame)
 {
 	boolean freezeFrameFound = FALSE;
@@ -796,7 +800,7 @@ static boolean retrieveEventStatusBit(FreezeFrameRecType *freezeFrameBuf,
 			if(freezeFrameFound == TRUE){
 				*freezeFrame = &freezeFrameBuf[i];
 			}
-		}		
+		}
 	}
 
 	return freezeFrameFound;
@@ -812,7 +816,7 @@ static boolean retrieveEventStatusBit(FreezeFrameRecType *freezeFrameBuf,
 static boolean lookupFreezeFrameForDisplacementPreInit(FreezeFrameRecType **freezeFrame)
 {
 	boolean freezeFrameFound = FALSE;
-		
+
 	/* Bubble sort:rearrange priMemFreezeFrameBuffer from little to big */
 	bubbleSort(preInitFreezeFrameBuffer, DEM_MAX_NUMBER_FF_DATA_PRE_INIT);
 
@@ -823,12 +827,12 @@ static boolean lookupFreezeFrameForDisplacementPreInit(FreezeFrameRecType **free
 	if(freezeFrameFound == FALSE){
 		freezeFrameFound = retrieveEventStatusBit(preInitFreezeFrameBuffer, DEM_MAX_NUMBER_FF_DATA_PRE_INIT, DEM_TEST_FAILED, freezeFrame);
 	}
-	
+
 	/* if all confirmed,lookup the oldest active dtc */
 	if(freezeFrameFound == FALSE){
 		*freezeFrame = &preInitFreezeFrameBuffer[0];
 		freezeFrameFound = TRUE;
-	}			
+	}
 
 	return freezeFrameFound;
 }
@@ -842,7 +846,7 @@ static boolean lookupFreezeFrameForDisplacementPreInit(FreezeFrameRecType **free
 static boolean lookupFreezeFrameForDisplacement(FreezeFrameRecType **freezeFrame)
 {
 	boolean freezeFrameFound = FALSE;
-	
+
 	bubbleSort(priMemFreezeFrameBuffer, DEM_MAX_NUMBER_FF_DATA_PRI_MEM);
 
 	/* Find out the oldest not confirmed dtc */
@@ -854,9 +858,9 @@ static boolean lookupFreezeFrameForDisplacement(FreezeFrameRecType **freezeFrame
 	}
 
 	/* If all confirmed,lookup the oldest active dtc */
-	if(freezeFrameFound == FALSE){	
+	if(freezeFrameFound == FALSE){
 		*freezeFrame = &priMemFreezeFrameBuffer[0];
-		freezeFrameFound = TRUE;	
+		freezeFrameFound = TRUE;
 	}
 
 	return freezeFrameFound;
@@ -871,7 +875,7 @@ static void rearrangeFreezeFrameTimeStamp(uint32 *timeStamp)
 	uint32 i = 0;
 	uint32 j = 0;
 	uint32 k = 0;
-	
+
 	/* Bubble sort:rearrange priMemFreezeFrameBuffer from little to big */
 	for(i=0;i<DEM_MAX_NUMBER_FF_DATA_PRI_MEM;i++){
 		if(priMemFreezeFrameBuffer[i].eventId != DEM_EVENT_ID_NULL){
@@ -881,15 +885,15 @@ static void rearrangeFreezeFrameTimeStamp(uint32 *timeStamp)
 						//exchange buffer data
 						memcpy(&temp,&priMemFreezeFrameBuffer[i],sizeof(FreezeFrameRecType));
 						memcpy(&priMemFreezeFrameBuffer[i],&priMemFreezeFrameBuffer[j],sizeof(FreezeFrameRecType));
-						memcpy(&priMemFreezeFrameBuffer[j],&temp,sizeof(FreezeFrameRecType));		
+						memcpy(&priMemFreezeFrameBuffer[j],&temp,sizeof(FreezeFrameRecType));
 					}
 
 				}
-				
+
 			}
 			priMemFreezeFrameBuffer[i].timeStamp = k++;
 		}
-		
+
 	}
 	/* update the current timeStamp */
 	*timeStamp = k;
@@ -899,7 +903,7 @@ static void rearrangeFreezeFrameTimeStamp(uint32 *timeStamp)
  * Procedure:	getFreezeFrameData
  * Description:	get FF data according configuration			
  */
-static void getFreezeFrameData(const Dem_EventParameterType *eventParam, 
+static void getFreezeFrameData(const Dem_EventParameterType *eventParam,
                                FreezeFrameRecType *freezeFrame,
                                Dem_EventStatusType eventStatus,
                                EventStatusRecType *eventStatusRec)
@@ -933,19 +937,22 @@ static void getFreezeFrameData(const Dem_EventParameterType *eventParam,
 	}
 
 	/* Find out the corresponding FF class */
-	for(i = 0;(i<DEM_MAX_NR_OF_CLASSES_IN_FREEZEFRAME_DATA) && (eventParam->FreezeFrameClassRef[i] != NULL);i++){
-		if(eventParam->FreezeFrameClassRef[i]->FFStorageCondition == prefailedOrFailed){
-			FreezeFrameLocal = eventParam->FreezeFrameClassRef[i];
-			break;
+	if( eventParam->FreezeFrameClassRef != NULL ) {
+		for(i = 0;(i<DEM_MAX_NR_OF_CLASSES_IN_FREEZEFRAME_DATA) && (eventParam->FreezeFrameClassRef[i] != NULL);i++){
+			if(eventParam->FreezeFrameClassRef[i]->FFStorageCondition == prefailedOrFailed){
+				FreezeFrameLocal = eventParam->FreezeFrameClassRef[i];
+				break;
+			}
 		}
 	}
+
 	/* get the dids */
 	if(FreezeFrameLocal != NULL){
 		if(FreezeFrameLocal->FFIdClassRef != NULL){
-			for (i = 0; (i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && (!(FreezeFrameLocal->FFIdClassRef[i].Arc_EOL)); i++) {
-				if(FreezeFrameLocal->FFIdClassRef[i].PidOrDidUsePort == FALSE){
-					if(FreezeFrameLocal->FFIdClassRef[i].DidReadDataLengthFnc != NULL){
-						callbackReturnCode = FreezeFrameLocal->FFIdClassRef[i].DidReadDataLengthFnc(&recordSize);
+			for (i = 0; (i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && (!(FreezeFrameLocal->FFIdClassRef[i]->Arc_EOL)); i++) {
+				if(FreezeFrameLocal->FFIdClassRef[i]->PidOrDidUsePort == FALSE){
+					if(FreezeFrameLocal->FFIdClassRef[i]->DidReadDataLengthFnc != NULL){
+						callbackReturnCode = FreezeFrameLocal->FFIdClassRef[i]->DidReadDataLengthFnc(&recordSize);
 						if(callbackReturnCode != E_OK){
 							//if fail to read data length,discard the storage of FF
 							freezeFrame->eventId = DEM_EVENT_ID_NULL;
@@ -955,21 +962,21 @@ static void getFreezeFrameData(const Dem_EventParameterType *eventParam,
 					}
 					/* if no readDidDataLengthFunction, then try the PidOrDidSize. */
 					else{
-						recordSize = FreezeFrameLocal->FFIdClassRef[i].PidOrDidSize;
+						recordSize = FreezeFrameLocal->FFIdClassRef[i]->PidOrDidSize;
 					}
 					/* read out the did data */
 					if ((storeIndex + recordSize + DEM_DID_IDENTIFIER_SIZE_OF_BYTES) <= DEM_MAX_SIZE_FF_DATA) {
 						/* store DID */
-						freezeFrame->data[storeIndex] = (FreezeFrameLocal->FFIdClassRef[i].DidIdentifier>> 8) & 0xFFu;
+						freezeFrame->data[storeIndex] = (FreezeFrameLocal->FFIdClassRef[i]->DidIdentifier>> 8) & 0xFFu;
 						storeIndex++;
-						freezeFrame->data[storeIndex] = FreezeFrameLocal->FFIdClassRef[i].DidIdentifier & 0xFFu;
+						freezeFrame->data[storeIndex] = FreezeFrameLocal->FFIdClassRef[i]->DidIdentifier & 0xFFu;
 						storeIndex++;
 						/* store data */
-						if(FreezeFrameLocal->FFIdClassRef[i].DidConditionCheckReadFnc != NULL){
-							callbackReturnCode = FreezeFrameLocal->FFIdClassRef[i].DidConditionCheckReadFnc(&errorCode);
+						if(FreezeFrameLocal->FFIdClassRef[i]->DidConditionCheckReadFnc != NULL){
+							callbackReturnCode = FreezeFrameLocal->FFIdClassRef[i]->DidConditionCheckReadFnc(&errorCode);
 							if ((callbackReturnCode == E_OK) && (errorCode == DCM_E_POSITIVERESPONSE)) {
-								if(FreezeFrameLocal->FFIdClassRef[i].DidReadFnc!= NULL){
-									callbackReturnCode = FreezeFrameLocal->FFIdClassRef[i].DidReadFnc(&freezeFrame->data[storeIndex]);
+								if(FreezeFrameLocal->FFIdClassRef[i]->DidReadFnc!= NULL){
+									callbackReturnCode = FreezeFrameLocal->FFIdClassRef[i]->DidReadFnc(&freezeFrame->data[storeIndex]);
 									if (callbackReturnCode != E_OK) {
 										memset(&freezeFrame->data[storeIndex], DEM_FREEZEFRAME_DEFAULT_VALUE, recordSize);
 									}
@@ -996,13 +1003,13 @@ static void getFreezeFrameData(const Dem_EventParameterType *eventParam,
 					else{
 						DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GET_FREEZEFRAME_ID, DEM_E_FF_TOO_BIG);
 						break;
-					}	
+					}
 				}
 				else{
 					//TODO:RTE should provide the port
 					DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GET_FREEZEFRAME_ID, DEM_DSP_DID_USE_PORT_IS_TRUE);
 				}
-			}	
+			}
 		}
 
 	}
@@ -1022,7 +1029,7 @@ static void getFreezeFrameData(const Dem_EventParameterType *eventParam,
 		if(FF_TimeStamp > DEM_MAX_TIMESTAMP_FOR_REARRANGEMENT){
 			rearrangeFreezeFrameTimeStamp(&FF_TimeStamp);
 		}
-		
+
 		freezeFrame->timeStamp = FF_TimeStamp;
 
 		FF_TimeStamp++;
@@ -1035,7 +1042,7 @@ static void getFreezeFrameData(const Dem_EventParameterType *eventParam,
 		freezeFrame->eventId = DEM_EVENT_ID_NULL;
 		freezeFrame->dataSize = storeIndex;
 		freezeFrame->checksum = 0;
-	}	
+	}
 }
 
 
@@ -1073,7 +1080,7 @@ static void storeFreezeFrameDataPreInit(const Dem_EventParameterType *eventParam
 		if (eventIdFreePositionFound) {
 			memcpy(&preInitFreezeFrameBuffer[i-1], freezeFrame, sizeof(FreezeFrameRecType));
 		}
-		else {			
+		else {
 			/* do displacement */
 			if(lookupFreezeFrameForDisplacementPreInit(&freezeFrameLocal)){
 				memcpy(freezeFrameLocal, freezeFrame, sizeof(FreezeFrameRecType));
@@ -1101,7 +1108,7 @@ static void updateFreezeFrameOccurrencePreInit(const EventRecType *EventBuffer)
 			preInitFreezeFrameBuffer[i].occurrence += EventBuffer->occurrence;
 		}
 	}
-	
+
 }
 /*
  * Procedure:	initCurrentFreezeFrameTimeStamp
@@ -1117,7 +1124,7 @@ static void initCurrentFreezeFrameTimeStamp(uint32 *timeStampPtr)
 
 	/* Find out the biggest timestamp in the last power on */
 	for (i = 0; i<DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++){
-		if((priMemFreezeFrameBuffer[i].eventId != DEM_EVENT_ID_NULL) && 
+		if((priMemFreezeFrameBuffer[i].eventId != DEM_EVENT_ID_NULL) &&
 		  (priMemFreezeFrameBuffer[i].timeStamp > temp)){
 			temp = priMemFreezeFrameBuffer[i].timeStamp;
 		}
@@ -1128,7 +1135,7 @@ static void initCurrentFreezeFrameTimeStamp(uint32 *timeStampPtr)
 			preInitFreezeFrameBuffer[i].timeStamp += temp;
 		}
 	}
-	*timeStampPtr += temp;	
+	*timeStampPtr += temp;
 	Irq_Restore(state);
 }
 
@@ -1474,7 +1481,7 @@ static boolean lookupExtendedDataPriMem(Dem_EventIdType eventId, ExtDataRecType 
 Std_ReturnType copyNvmMirror(const NvM_BlockIdType BlockId, uint8 *dstPtr, const uint8 *srcPtr, uint8 len)
 {
 
-#if (DEM_USE_NVM == STD_ON)
+#if (DEM_USE_NVM == STD_ON  && DEM_UNIT_TEST == STD_OFF)
 	Std_ReturnType blockReadStatus = E_NOT_OK;
 	NvM_RequestResultType requestResult;
 
@@ -1497,7 +1504,7 @@ Std_ReturnType copyNvmMirror(const NvM_BlockIdType BlockId, uint8 *dstPtr, const
  */
 Std_ReturnType writeNvmMirror(const NvM_BlockIdType BlockId, uint8 *dstPtr, const uint8 *srcPtr, uint8 len)
 {
-#if (DEM_USE_NVM == STD_ON)
+#if (DEM_USE_NVM == STD_ON && DEM_UNIT_TEST == STD_OFF)
 	Std_ReturnType blockWriteStatus = E_NOT_OK;
 	NvM_RequestResultType requestResult;
 
@@ -1526,7 +1533,9 @@ static void storeAgingRecPerMem(const NvM_BlockIdType AgingBlockId)
 
 	Irq_Save(state);
 
-	if( E_NOT_OK == writeNvmMirror(AgingBlockId, (uint8 *)HealingMirrorBuffer, (const uint8 *)priMemAgingBuffer, sizeof(priMemAgingBuffer)) ){
+	if( E_OK == writeNvmMirror(AgingBlockId, (uint8 *)HealingMirrorBuffer, (const uint8 *)priMemAgingBuffer, sizeof(priMemAgingBuffer)) ){
+		AgingIsModified = FALSE;
+	} else {
 		AgingIsModified = TRUE;
 	}
 
@@ -1589,7 +1598,7 @@ static void storeFreezeFrameDataPriMem(const Dem_EventParameterType *eventParam,
 			}
 			else{
 				DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_STORE_FF_DATA_PRI_MEM_ID, DEM_E_PRI_MEM_FF_DATA_BUFF_FULL);
-			}			
+			}
 		}
 	}
 
@@ -1608,7 +1617,11 @@ static void storeFreezeFrameDataPerMem()
 
 	for(uint16 i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++){
 		if(memcmp(&priMemFreezeFrameBuffer[i], FreezeFrameMirrorBuffer[i], sizeof(FreezeFrameRecType))){
-			if( E_NOT_OK == writeNvmMirror(FreezeFrameBlockId[i], (uint8 *)FreezeFrameMirrorBuffer[i], (const uint8 *)&priMemFreezeFrameBuffer[i], sizeof(FreezeFrameRecType)) ) {
+			if( E_OK == writeNvmMirror(FreezeFrameBlockId[i], (uint8 *)FreezeFrameMirrorBuffer[i], (const uint8 *)&priMemFreezeFrameBuffer[i], sizeof(FreezeFrameRecType)) ) {
+				FFIsModified = FALSE;
+			}
+			else
+			{
 				FFIsModified = TRUE;
 			}
 		}
@@ -1701,17 +1714,17 @@ static boolean lookupFreezeFrameDataSize(uint8 recordNumber, Dem_FreezeFrameClas
 	uint16 i;
 
 	if (*freezeFrameClassPtr != NULL) {
-		for (i = 0; (i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && ((*freezeFrameClassPtr)->FFIdClassRef[i].Arc_EOL != TRUE); i++) { 
-			if((*freezeFrameClassPtr)->FFIdClassRef[i].DidReadDataLengthFnc != NULL){
-				callbackReturnCode = (*freezeFrameClassPtr)->FFIdClassRef[i].DidReadDataLengthFnc(&dataSizeLocal);
+		for (i = 0; (i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && ((*freezeFrameClassPtr)->FFIdClassRef[i]->Arc_EOL != TRUE); i++) {
+			if((*freezeFrameClassPtr)->FFIdClassRef[i]->DidReadDataLengthFnc != NULL){
+				callbackReturnCode = (*freezeFrameClassPtr)->FFIdClassRef[i]->DidReadDataLengthFnc(&dataSizeLocal);
 				if(callbackReturnCode != E_OK){
-					return (dataSizeFound = FALSE);	
+					return (dataSizeFound = FALSE);
 				}
 			}
 			else{
-				dataSizeLocal = (*freezeFrameClassPtr)->FFIdClassRef[i].PidOrDidSize;
+				dataSizeLocal = (*freezeFrameClassPtr)->FFIdClassRef[i]->PidOrDidSize;
 			}
-			
+
 			*dataSize += dataSizeLocal + DEM_DID_IDENTIFIER_SIZE_OF_BYTES;
 		}
 
@@ -1776,7 +1789,7 @@ static void handlePreInitEvent(Dem_EventIdType eventId, Dem_EventStatusType even
 					}
 				}
 
-				
+
 			}
 			else {
 				// Operation cycle not started
@@ -1835,7 +1848,7 @@ static Std_ReturnType handleEvent(Dem_EventIdType eventId, Dem_EventStatusType e
 						else{
 							// do nothing
 						}
-					}					
+					}
 				}
 			}
 			else {
@@ -2044,7 +2057,7 @@ static boolean lookupAgingRecPriMem(Dem_EventIdType eventId, const HealingRecTyp
 {
 	uint16 i;
 	boolean agingRecFound = FALSE;
-	
+
 	for (i = 0; i < DEM_MAX_NUMBER_AGING_PRI_MEM && (!agingRecFound); i++) {
 		if(priMemAgingBuffer[i].eventId == eventId){
 			agingRecFound = TRUE;
@@ -2315,7 +2328,7 @@ void Dem_PreInit(void)
 void Dem_Init(void)
 {
 	uint16 i;
-	ChecksumType cSum;
+//	ChecksumType cSum;
 	boolean entryValid = FALSE;
 	const Dem_EventParameterType *eventParam;
 
@@ -2331,7 +2344,7 @@ void Dem_Init(void)
 	} else {
 
 		for(i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++){
-			if( E_NOT_OK == copyNvmMirror(FreezeFrameBlockId[i], (uint8 *)&priMemFreezeFrameBuffer[i], (const uint8 *)&FreezeFrameMirrorBuffer[i], sizeof(FreezeFrameRecType)) ){
+			if( E_NOT_OK == copyNvmMirror(FreezeFrameBlockId[i], (uint8 *)&priMemFreezeFrameBuffer[i], (const uint8 *)FreezeFrameMirrorBuffer[i], sizeof(FreezeFrameRecType)) ){
 				//TODO:NVM is busy or block id is 0,report error or what?
 			}
 		}
@@ -2343,8 +2356,8 @@ void Dem_Init(void)
 		// Validate aging records stored in primary memory
 		for (i = 0; i < DEM_MAX_NUMBER_AGING_PRI_MEM; i++){
 			entryValid = checkEntryValid(priMemAgingBuffer[i].eventId);
-			cSum = calcChecksum(&priMemAgingBuffer[i], sizeof(HealingRecType) - sizeof(ChecksumType));
-			if ((cSum != priMemAgingBuffer[i].checksum) || (priMemAgingBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
+//			cSum = calcChecksum(&priMemAgingBuffer[i], sizeof(HealingRecType) - sizeof(ChecksumType));
+			if ((priMemAgingBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
 				// Unlegal record, clear the record
 				memset(&priMemAgingBuffer[i], 0, sizeof(HealingRecType));
 				AgingIsModified = TRUE;
@@ -2354,8 +2367,8 @@ void Dem_Init(void)
 		// Validate event records stored in primary memory
 		for (i = 0; i < DEM_MAX_NUMBER_EVENT_PRI_MEM; i++) {
 			entryValid = checkEntryValid(priMemEventBuffer[i].eventId);
-			cSum = calcChecksum(&priMemEventBuffer[i], sizeof(EventRecType)-sizeof(ChecksumType));
-			if ((cSum != priMemEventBuffer[i].checksum) || (priMemEventBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
+//			cSum = calcChecksum(&priMemEventBuffer[i], sizeof(EventRecType)-sizeof(ChecksumType));
+			if ((priMemEventBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
 				// Unlegal record, clear the record
 				memset(&priMemEventBuffer[i], 0, sizeof(EventRecType));
 			}
@@ -2368,14 +2381,13 @@ void Dem_Init(void)
 			}
 		}
 
-		//initialize the current timestamp and update the timestamp in pre init
-		initCurrentFreezeFrameTimeStamp(&FF_TimeStamp);
+
 
 		// Validate extended data records stored in primary memory
 		for (i = 0; i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM; i++) {
 			entryValid = checkEntryValid(priMemExtDataBuffer[i].eventId);
-			cSum = calcChecksum(&priMemExtDataBuffer[i], sizeof(ExtDataRecType)-sizeof(ChecksumType));
-			if ((cSum != priMemExtDataBuffer[i].checksum) || (priMemExtDataBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
+//			cSum = calcChecksum(&priMemExtDataBuffer[i], sizeof(ExtDataRecType)-sizeof(ChecksumType));
+			if ((priMemExtDataBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
 				// Unlegal record, clear the record
 				memset(&priMemExtDataBuffer[i], 0, sizeof(ExtDataRecType));
 			}
@@ -2391,8 +2403,8 @@ void Dem_Init(void)
 		// Validate freeze frame records stored in primary memory
 		for (i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++) {
 			entryValid = checkEntryValid(priMemFreezeFrameBuffer[i].eventId);
-			cSum = calcChecksum(&priMemFreezeFrameBuffer[i], sizeof(FreezeFrameRecType)-sizeof(ChecksumType));
-			if ((cSum != priMemFreezeFrameBuffer[i].checksum) || (priMemFreezeFrameBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
+//			cSum = calcChecksum(&priMemFreezeFrameBuffer[i], sizeof(FreezeFrameRecType)-sizeof(ChecksumType));
+			if ((priMemFreezeFrameBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
 				// Unlegal record, clear the record
 				memset(&priMemFreezeFrameBuffer[i], 0, sizeof(FreezeFrameRecType));
 			}
@@ -2464,7 +2476,7 @@ void Dem_Shutdown(void)
  * Interface for basic software scheduler
  */
 void Dem_MainFunction(void)/** @req DEM125 */
-{	
+{
 	if (FFIsModified) {
 		storeFreezeFrameDataPerMem(FreezeFrameBlockId);
 	}
@@ -2679,7 +2691,7 @@ Std_ReturnType Dem_GetDTCOfEvent(Dem_EventIdType eventId, Dem_DTCKindType dtcKin
  * Procedure:	Dem_ReportErrorStatus
  * Reentrant:	Yes
  */
-void Dem_ReportErrorStatus( Dem_EventIdType eventId, Dem_EventStatusType eventStatus ) /** @req DEM107 *//** @req DEM206 */
+void Dem_ReportErrorStatus( Dem_EventIdType eventId, Dem_EventStatusType eventStatus ) /** @req DEM206 */
 {
 
 	switch (demState) {
@@ -2927,12 +2939,9 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
 										resetEventStatusRec(eventParam);
 										storeFreezeFrameDataPerMem();
 										break;
-										
+
+									case DEM_DTC_ORIGIN_SECONDARY_MEMORY:
 									case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
-										
-										break;
-										
-									case DEM_DTC_ORIGIN_SECONDARY_MEMORY:									
 									case DEM_DTC_ORIGIN_MIRROR_MEMORY:
 										// Not yet supported
 										returnCode = DEM_CLEAR_WRONG_DTCORIGIN;
@@ -3128,7 +3137,7 @@ Dem_ReturnGetSizeOfExtendedDataRecordByDTCType Dem_GetSizeOfExtendedDataRecordBy
  * Procedure:	Dem_GetFreezeFrameDataByDTC
  * Reentrant:	No
  */
-/** @req DEM236 */ 
+/** @req DEM236 */
 Dem_ReturnGetFreezeFrameDataByDTCType Dem_GetFreezeFrameDataByDTC(uint32  dtc,Dem_DTCKindType  dtcKind,Dem_DTCOriginType  dtcOrigin,uint8  recordNumber,uint8*  destBuffer,uint8*  bufSize)
 {
 	Dem_ReturnGetFreezeFrameDataByDTCType returnCode = DEM_GET_FFDATABYDTC_WRONG_DTC;
@@ -3142,39 +3151,35 @@ Dem_ReturnGetFreezeFrameDataByDTCType Dem_GetFreezeFrameDataByDTC(uint32  dtc,De
 			if (checkDtcKind(dtcKind, eventRec->eventParamRef)) {
 				if (checkDtcOrigin(dtcOrigin, eventRec->eventParamRef)) {
 					if (lookupFreezeFrameDataRecNumParam(recordNumber, eventRec->eventParamRef, &FFDataRecordClass)) {
-						if(lookupFreezeFrameDataSize(recordNumber, &FFDataRecordClass, &FFDataSize)){
-							if (*bufSize >= FFDataSize) {
-								switch (dtcOrigin)
-								{
-								case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
-									if (lookupFreezeFrameDataPriMem(eventRec->eventId,recordNumber, &freezeframe)) {
-										memcpy(destBuffer, freezeframe->data, FFDataSize); /** @req DEM071 */
-										*bufSize = FFDataSize;
-										returnCode = DEM_GET_FFDATABYDTC_OK;
-									}
-									else {
-										*bufSize = 0;
-										returnCode = DEM_GET_FFDATABYDTC_OK;
-									}
-									break;
-
-								case DEM_DTC_ORIGIN_SECONDARY_MEMORY:
-								case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
-								case DEM_DTC_ORIGIN_MIRROR_MEMORY:
-									// Not yet supported
-									returnCode = DEM_GET_FFDATABYDTC_WRONG_DTCORIGIN;
-									DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETFREEZEFRAMEDATARECORDBYDTC_ID, DEM_E_NOT_IMPLEMENTED_YET);
-									break;
-								default:
-									returnCode = DEM_GET_FFDATABYDTC_WRONG_DTCORIGIN;
-									break;
+						lookupFreezeFrameDataSize(recordNumber, &FFDataRecordClass, &FFDataSize);
+						if (*bufSize >= FFDataSize) {
+							switch (dtcOrigin)
+							{
+							case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
+								if (lookupFreezeFrameDataPriMem(eventRec->eventId,recordNumber, &freezeframe)) {
+									memcpy(destBuffer, freezeframe->data, FFDataSize); /** @req DEM071 */
+									*bufSize = FFDataSize;
+									returnCode = DEM_GET_FFDATABYDTC_OK;
 								}
-							}
-							else{
-								returnCode = DEM_GET_FFDATABYDTC_BUFFERSIZE;
+								else {
+									*bufSize = 0;
+									returnCode = DEM_GET_FFDATABYDTC_OK;
+								}
+								break;
+
+							case DEM_DTC_ORIGIN_SECONDARY_MEMORY:
+							case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
+							case DEM_DTC_ORIGIN_MIRROR_MEMORY:
+								// Not yet supported
+								returnCode = DEM_GET_FFDATABYDTC_WRONG_DTCORIGIN;
+								DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETFREEZEFRAMEDATARECORDBYDTC_ID, DEM_E_NOT_IMPLEMENTED_YET);
+								break;
+							default:
+								returnCode = DEM_GET_FFDATABYDTC_WRONG_DTCORIGIN;
+								break;
 							}
 						}
-						else {
+						else{
 							returnCode = DEM_GET_FFDATABYDTC_BUFFERSIZE;
 						}
 					}
@@ -3226,18 +3231,17 @@ Dem_GetFreezeFameDataIdentifierByDTCType Dem_GetFreezeFrameDataIdentifierByDTC(u
 				if (checkDtcOrigin(dtcOrigin, eventRec->eventParamRef)) {
 					if (lookupFreezeFrameDataRecNumParam(recordNumber, eventRec->eventParamRef, &FFDataRecordClass)) {
 						if(FFDataRecordClass->FFIdClassRef != NULL){
-							for(i=0; (i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && (!(FFDataRecordClass->FFIdClassRef[i].Arc_EOL)); i++){
-								if(didNum < *arraySize){
-									dataId[didNum] = &FFDataRecordClass->FFIdClassRef[i].DidIdentifier;/** @req DEM073 */
-									didNum++;
-									returnCode = DEM_GET_ID_OK;
-								}else{
-									returnCode = DEM_GET_ID_WRONG_FF_TYPE;
-								}
+							for(i=0; (i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && (!(FFDataRecordClass->FFIdClassRef[i]->Arc_EOL)); i++){
+								dataId[didNum] = &FFDataRecordClass->FFIdClassRef[i]->DidIdentifier;/** @req DEM073 */
+								didNum++;
+								returnCode = DEM_GET_ID_OK;
+
 							}
 							*arraySize = didNum;
 						}
-						
+						else {
+							returnCode = DEM_GET_ID_WRONG_FF_TYPE;
+						}
 					}
 					else{
 						returnCode = DEM_GET_ID_WRONG_FF_TYPE;
@@ -3254,8 +3258,8 @@ Dem_GetFreezeFameDataIdentifierByDTCType Dem_GetFreezeFrameDataIdentifierByDTC(u
 		else{
 			returnCode = DEM_GET_ID_WRONG_DTC;
 		}
-		
-	} 
+
+	}
 	else{
 		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETFREEZEFRAMEDATAIDENTIFIERBYDTC_ID, DEM_E_UNINIT);
 	}
@@ -3269,7 +3273,7 @@ Dem_GetFreezeFameDataIdentifierByDTCType Dem_GetFreezeFrameDataIdentifierByDTC(u
  * Reentrant:	No
  */
  /** @req DEM238 */
-Dem_ReturnGetSizeOfFreezeFrameType Dem_GetSizeOfFreezeFrame(uint32  dtc,Dem_DTCKindType  dtcKind,Dem_DTCOriginType  dtcOrigin,uint8  recordNumber,uint16*  sizeOfFreezeFrame)  
+Dem_ReturnGetSizeOfFreezeFrameType Dem_GetSizeOfFreezeFrame(uint32  dtc,Dem_DTCKindType  dtcKind,Dem_DTCOriginType  dtcOrigin,uint8  recordNumber,uint16*  sizeOfFreezeFrame)
 {
 	Dem_ReturnGetSizeOfFreezeFrameType returnCode = DEM_GET_SIZEOFFF_PENDING;
 	Dem_FreezeFrameClassType const *FFDataRecordClass = NULL;
@@ -3277,27 +3281,31 @@ Dem_ReturnGetSizeOfFreezeFrameType Dem_GetSizeOfFreezeFrame(uint32  dtc,Dem_DTCK
 	EventStatusRecType *eventRec;
 	uint16 dataSize = 0;
 	uint16 i = 0;
-	
+
 	if (demState == DEM_INITIALIZED) {
 		if (lookupDtcEvent(dtc, &eventRec)) {
 			if (checkDtcKind(dtcKind, eventRec->eventParamRef)) {
 				if (checkDtcOrigin(dtcOrigin, eventRec->eventParamRef)) {
 					if (lookupFreezeFrameDataRecNumParam(recordNumber, eventRec->eventParamRef, &FFDataRecordClass)) {
 						if(FFDataRecordClass->FFIdClassRef != NULL){
-							for(i = 0; (i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && (!(FFDataRecordClass->FFIdClassRef[i].Arc_EOL)); i++){
+							/* Note - there is a function called lookupFreezeFrameDataSize that can be used here */
+							for(i = 0; (i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && (!(FFDataRecordClass->FFIdClassRef[i]->Arc_EOL)); i++){
 								/* read out the did size */
-								if(FFDataRecordClass->FFIdClassRef[i].DidReadDataLengthFnc != NULL){
-									callbackReturnCode = FFDataRecordClass->FFIdClassRef[i].DidReadDataLengthFnc(&dataSize);
+								if(FFDataRecordClass->FFIdClassRef[i]->DidReadDataLengthFnc != NULL){
+									callbackReturnCode = FFDataRecordClass->FFIdClassRef[i]->DidReadDataLengthFnc(&dataSize);
 									if(callbackReturnCode != E_OK){
 										return (returnCode = DEM_GET_SIZEOFFF_PENDING);
 									}
 								}
 								else{
-									dataSize = FFDataRecordClass->FFIdClassRef[i].PidOrDidSize;
+									dataSize = FFDataRecordClass->FFIdClassRef[i]->PidOrDidSize;
 								}
 								*sizeOfFreezeFrame += dataSize+DEM_DID_IDENTIFIER_SIZE_OF_BYTES;/** @req DEM074 */
-								returnCode = DEM_GET_SIZEOFFF_OK;		
-							}				
+								returnCode = DEM_GET_SIZEOFFF_OK;
+							}
+						}
+						else {
+							returnCode = DEM_GET_SIZEOFFF_WRONG_RNUM;
 						}
 					}
 					else{
@@ -3315,8 +3323,8 @@ Dem_ReturnGetSizeOfFreezeFrameType Dem_GetSizeOfFreezeFrame(uint32  dtc,Dem_DTCK
 		else{
 			returnCode = DEM_GET_SIZEOFFF_WRONG_DTC;
 		}
-		
-	} 
+
+	}
 	else{
 			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETFREEZEFRAMEDATAIDENTIFIERBYDTC_ID, DEM_E_UNINIT);
 			returnCode = DEM_GET_SIZEOFFF_PENDING;
@@ -3327,8 +3335,7 @@ Dem_ReturnGetSizeOfFreezeFrameType Dem_GetSizeOfFreezeFrame(uint32  dtc,Dem_DTCK
 
 }
 
-
-#ifdef DEM_UNIT_TEST
+#if (DEM_UNIT_TEST == STD_ON)
 void getFFDataPreInit(FreezeFrameRecType **buf)
 {
 	*buf = &preInitFreezeFrameBuffer[0];

@@ -14,12 +14,6 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
-
 #ifndef SCHM_H_
 #define SCHM_H_
 
@@ -28,5 +22,30 @@
 void SchM_Init( void );
 void SchM_Deinit( void );
 void SchM_GetVersionInfo( Std_VersionInfoType *versionInfo );
+
+#define SchM_Enter( _module, _exc_area ) \
+    SchM_Enter_EcuM ## _module ##  _exc_area
+
+#define SchM_Exit( _module, _exc_area ) \
+    SchM_Enter_EcuM ## _module ##  _exc_area
+
+
+#define CONCAT_(_x,_y)	_x##_y
+
+
+typedef struct  {
+	uint32 timer;
+} SchM_InfoType;
+
+#define SCHM_DECLARE(_mod)	\
+		SchM_InfoType SchM_Info_ ## _mod
+
+#define SCHM_MAINFUNCTION(_mod,_func) \
+		if( (++SchM_Info_ ## _mod.timer % SCHM_MAINFUNCTION_CYCLE_ ## _mod )== 0 ) { \
+			_func; \
+			SchM_Info_ ## _mod.timer = 0; \
+		}
+
+
 
 #endif /*SCHM_H_*/

@@ -68,7 +68,6 @@
 #define DEM_E_UNEXPECTED_EXECUTION			0xfe
 #define DEM_E_NOT_IMPLEMENTED_YET			0xff
 
-#define DEM_MAX_TIMESTAMP_FOR_REARRANGEMENT     ULONG_MAX //when timestamp up to the max value,rearrangement starts.
 
 // Service ID in this module
 #define DEM_PREINIT_ID							0x01
@@ -94,7 +93,7 @@
 #define DEM_ENABLEDTCSTORAGE_ID					0x25
 
 #define DEM_GETFREEZEFRAMEDATARECORDBYDTC_ID		0x26
-#define DEM_GETFREEZEFRAMEDATAIDENTIFIERBYDTC_ID		0x26
+#define DEM_GETFREEZEFRAMEDATAIDENTIFIERBYDTC_ID		0x27
 
 #define DEM_GETTRANSLATIONTYPE_ID				0x3c
 #define DEM_GETFAULTDETECTIONCOUNTER_ID 		0x3E
@@ -118,7 +117,7 @@
 
 #endif
 
-
+#define DEM_MAX_TIMESTAMP_FOR_REARRANGEMENT     ULONG_MAX //when timestamp up to the max value,rearrangement starts.
 /*
  * Interface for upper layer modules (8.3.1)
  */

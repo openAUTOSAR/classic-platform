@@ -924,6 +924,10 @@
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
                       <VALUE>PENDING</VALUE>
                     </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
+                    </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
                 <CONTAINER UUID="7dd06b07-796d-4fc1-ba0b-4f5181b6c9c8">
@@ -983,6 +987,10 @@
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
                       <VALUE>TRIGGERED</VALUE>
                     </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
+                    </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
                 <CONTAINER UUID="ae24e011-a990-4da9-b31a-922f4e9db3c8">
@@ -1041,6 +1049,10 @@
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
                       <VALUE>PENDING</VALUE>
+                    </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
                     </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
@@ -1283,6 +1295,10 @@
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
                       <VALUE>TRIGGERED</VALUE>
                     </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
+                    </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
                 <CONTAINER UUID="f51bb691-2289-4f69-9f43-e54fe0a555fb">
@@ -1341,6 +1357,10 @@
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
                       <VALUE>PENDING</VALUE>
+                    </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
                     </ENUMERATION-VALUE>
                   </PARAMETER-VALUES>
                 </CONTAINER>
@@ -1471,6 +1491,72 @@
                 <CONTAINER UUID="a8c969eb-1f1c-4af0-bddc-5217e8e04a0e">
                   <SHORT-NAME>User_1</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMUserConfig</DEFINITION-REF>
+                </CONTAINER>
+                <CONTAINER UUID="0bea3fcd-eb0e-40e4-9f00-cfd01c979c4e">
+                  <SHORT-NAME>EcuMDefaultShutdownTarget</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMDefaultShutdownTarget</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMDefaultShutdownTarget/EcuMDefaultState</DEFINITION-REF>
+                      <VALUE>EcuMStateReset</VALUE>
+                    </ENUMERATION-VALUE>
+                  </PARAMETER-VALUES>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMDefaultShutdownTarget/EcuMDefaultSleepModeRef</DEFINITION-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="52ea1f6f-dbd6-4a28-9519-94cc02d63a59">
+                  <SHORT-NAME>EcuMSleepMode</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMSleepModeId</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMSleepModeSuspend</DEFINITION-REF>
+                      <VALUE>false</VALUE>
+                    </BOOLEAN-VALUE>
+                  </PARAMETER-VALUES>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMSleepModeMcuModeRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/Mcu/McuModuleConfiguration/McuModeSettingConf</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMWakeupSourceMask</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/rte_simple_ti_tms570ls/EcuM/EcuMConfiguration/EcuMWakeupSource</VALUE-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="c29222b7-7622-43c4-a670-eb2a43d2f413">
+                  <SHORT-NAME>EcuMWakeupSource</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMWakeupSource</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMWakeupSource/EcuMResetReason</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <FLOAT-VALUE>
+                      <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMWakeupSource/EcuMValidationTimeout</DEFINITION-REF>
+                      <VALUE>0.0</VALUE>
+                    </FLOAT-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMWakeupSource/EcuMWakeupSourceId</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMWakeupSource/EcuMWakeupSourcePolling</DEFINITION-REF>
+                      <VALUE>false</VALUE>
+                    </BOOLEAN-VALUE>
+                  </PARAMETER-VALUES>
                 </CONTAINER>
               </SUB-CONTAINERS>
             </CONTAINER>
@@ -3113,133 +3199,6 @@
           </CONTAINERS>
         </MODULE-CONFIGURATION>
       </ELEMENTS>
-      <SUB-PACKAGES>
-        <AR-PACKAGE UUID="d6752ac1-8921-416a-b21a-90618507b8ec">
-          <SHORT-NAME>GeneratedSystemSignals</SHORT-NAME>
-          <ELEMENTS>
-            <SYSTEM-SIGNAL UUID="621d2baf-b15a-4762-bdce-b3c4041fefd0">
-              <SHORT-NAME>Arg1</SHORT-NAME>
-              <INIT-VALUE-REF DEST="INTEGER-LITERAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Data/IntegerLiterals/Arg1InitValue/Arg1InitValueLiteral</INIT-VALUE-REF>
-              <LENGTH>8</LENGTH>
-            </SYSTEM-SIGNAL>
-            <SYSTEM-SIGNAL UUID="2e984323-7a3d-4dcc-a8e4-b96b83ede7ff">
-              <SHORT-NAME>ResultSig</SHORT-NAME>
-              <INIT-VALUE-REF DEST="INTEGER-LITERAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Data/IntegerLiterals/ResultSigInitValue/ResultSigInitValueLiteral</INIT-VALUE-REF>
-              <LENGTH>8</LENGTH>
-            </SYSTEM-SIGNAL>
-            <SYSTEM-SIGNAL UUID="cd67d3b0-05a7-4484-8a09-720f56e57b43">
-              <SHORT-NAME>Arg2</SHORT-NAME>
-              <INIT-VALUE-REF DEST="INTEGER-LITERAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Data/IntegerLiterals/Arg2InitValue/Arg2InitValueLiteral</INIT-VALUE-REF>
-              <LENGTH>8</LENGTH>
-            </SYSTEM-SIGNAL>
-            <SYSTEM-SIGNAL UUID="f6e1d366-e5a5-4a15-b271-7d1ede75ff76">
-              <SHORT-NAME>FreqIndSig</SHORT-NAME>
-              <INIT-VALUE-REF DEST="INTEGER-LITERAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Data/IntegerLiterals/FreqIndSigInitValue/FreqIndSigInitValueLiteral</INIT-VALUE-REF>
-              <LENGTH>32</LENGTH>
-            </SYSTEM-SIGNAL>
-            <SYSTEM-SIGNAL UUID="edbd6fdf-d43b-45f8-9416-a267a595460e">
-              <SHORT-NAME>FreqReqSig</SHORT-NAME>
-              <INIT-VALUE-REF DEST="INTEGER-LITERAL">/rte_simple_ti_tms570ls/GeneratedSystemSignals/Data/IntegerLiterals/FreqReqSigInitValue/FreqReqSigInitValueLiteral</INIT-VALUE-REF>
-              <LENGTH>32</LENGTH>
-            </SYSTEM-SIGNAL>
-          </ELEMENTS>
-          <SUB-PACKAGES>
-            <AR-PACKAGE>
-              <SHORT-NAME>Data</SHORT-NAME>
-              <ELEMENTS>
-                <INTEGER-TYPE>
-                  <SHORT-NAME>UInt8</SHORT-NAME>
-                  <SW-DATA-DEF-PROPS />
-                  <LOWER-LIMIT INTERVAL-TYPE="CLOSED">0</LOWER-LIMIT>
-                  <UPPER-LIMIT INTERVAL-TYPE="CLOSED">255</UPPER-LIMIT>
-                </INTEGER-TYPE>
-                <INTEGER-TYPE>
-                  <SHORT-NAME>UInt16</SHORT-NAME>
-                  <SW-DATA-DEF-PROPS />
-                  <LOWER-LIMIT INTERVAL-TYPE="CLOSED">0</LOWER-LIMIT>
-                  <UPPER-LIMIT INTERVAL-TYPE="CLOSED">65535</UPPER-LIMIT>
-                </INTEGER-TYPE>
-                <INTEGER-TYPE>
-                  <SHORT-NAME>UInt32</SHORT-NAME>
-                  <SW-DATA-DEF-PROPS />
-                  <LOWER-LIMIT INTERVAL-TYPE="CLOSED">0</LOWER-LIMIT>
-                  <UPPER-LIMIT INTERVAL-TYPE="CLOSED">4294967295</UPPER-LIMIT>
-                </INTEGER-TYPE>
-                <INTEGER-TYPE>
-                  <SHORT-NAME>SInt8</SHORT-NAME>
-                  <SW-DATA-DEF-PROPS />
-                  <LOWER-LIMIT INTERVAL-TYPE="CLOSED">-128</LOWER-LIMIT>
-                  <UPPER-LIMIT INTERVAL-TYPE="CLOSED">127</UPPER-LIMIT>
-                </INTEGER-TYPE>
-                <INTEGER-TYPE>
-                  <SHORT-NAME>SInt16</SHORT-NAME>
-                  <SW-DATA-DEF-PROPS />
-                  <LOWER-LIMIT INTERVAL-TYPE="CLOSED">-32768</LOWER-LIMIT>
-                  <UPPER-LIMIT INTERVAL-TYPE="CLOSED">32767</UPPER-LIMIT>
-                </INTEGER-TYPE>
-                <INTEGER-TYPE>
-                  <SHORT-NAME>SInt32</SHORT-NAME>
-                  <SW-DATA-DEF-PROPS />
-                  <LOWER-LIMIT INTERVAL-TYPE="CLOSED">-2147483648</LOWER-LIMIT>
-                  <UPPER-LIMIT INTERVAL-TYPE="CLOSED">2147483647</UPPER-LIMIT>
-                </INTEGER-TYPE>
-              </ELEMENTS>
-              <SUB-PACKAGES>
-                <AR-PACKAGE>
-                  <SHORT-NAME>IntegerLiterals</SHORT-NAME>
-                  <ELEMENTS>
-                    <CONSTANT-SPECIFICATION>
-                      <SHORT-NAME>Arg1InitValue</SHORT-NAME>
-                      <VALUE>
-                        <INTEGER-LITERAL UUID="080df379-fc64-4efd-bbc9-d32088afb7cc">
-                          <SHORT-NAME>Arg1InitValueLiteral</SHORT-NAME>
-                          <VALUE>5</VALUE>
-                        </INTEGER-LITERAL>
-                      </VALUE>
-                    </CONSTANT-SPECIFICATION>
-                    <CONSTANT-SPECIFICATION>
-                      <SHORT-NAME>ResultSigInitValue</SHORT-NAME>
-                      <VALUE>
-                        <INTEGER-LITERAL UUID="d1928d1c-e6e5-460f-9dbd-7ae73ed5ee8b">
-                          <SHORT-NAME>ResultSigInitValueLiteral</SHORT-NAME>
-                          <VALUE>0</VALUE>
-                        </INTEGER-LITERAL>
-                      </VALUE>
-                    </CONSTANT-SPECIFICATION>
-                    <CONSTANT-SPECIFICATION>
-                      <SHORT-NAME>Arg2InitValue</SHORT-NAME>
-                      <VALUE>
-                        <INTEGER-LITERAL UUID="a958db62-4b46-4945-bf1e-361f33bac22a">
-                          <SHORT-NAME>Arg2InitValueLiteral</SHORT-NAME>
-                          <VALUE>3</VALUE>
-                        </INTEGER-LITERAL>
-                      </VALUE>
-                    </CONSTANT-SPECIFICATION>
-                    <CONSTANT-SPECIFICATION>
-                      <SHORT-NAME>FreqIndSigInitValue</SHORT-NAME>
-                      <VALUE>
-                        <INTEGER-LITERAL UUID="2336cf72-d52c-411b-b500-8853d0f429e0">
-                          <SHORT-NAME>FreqIndSigInitValueLiteral</SHORT-NAME>
-                          <VALUE>0</VALUE>
-                        </INTEGER-LITERAL>
-                      </VALUE>
-                    </CONSTANT-SPECIFICATION>
-                    <CONSTANT-SPECIFICATION>
-                      <SHORT-NAME>FreqReqSigInitValue</SHORT-NAME>
-                      <VALUE>
-                        <INTEGER-LITERAL UUID="51e36755-d899-4001-be53-0ac283f450b6">
-                          <SHORT-NAME>FreqReqSigInitValueLiteral</SHORT-NAME>
-                          <VALUE>1000</VALUE>
-                        </INTEGER-LITERAL>
-                      </VALUE>
-                    </CONSTANT-SPECIFICATION>
-                  </ELEMENTS>
-                </AR-PACKAGE>
-              </SUB-PACKAGES>
-            </AR-PACKAGE>
-          </SUB-PACKAGES>
-        </AR-PACKAGE>
-      </SUB-PACKAGES>
     </AR-PACKAGE>
   </TOP-LEVEL-PACKAGES>
 </AUTOSAR>

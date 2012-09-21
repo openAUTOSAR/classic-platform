@@ -95,13 +95,11 @@ _start:
 	/*  Clear all SRAM */
 init_RAM:
 	LOAD_ADDR_32(11,0x40000000)
-#if (CFG_MPC560X)
-	li r12,384 # loop counter to get all of SRAM;
-	/* 48k/4 bytes/32 GPRs = 384, only 48k ram for MPC5606s */
-#else
-	li r12,640 # loop counter to get all of SRAM;
-	/* 80k/4 bytes/32 GPRs = 640 */
+#if !defined(SRAM_SIZE)
+#error SRAM_SIZE not defined. Add it to board/<board>/build_config.mk
 #endif
+
+	LOAD_ADDR_32(r12,SRAM_SIZE/(32*4))
 	mtctr r12
 
 init_ram_loop:

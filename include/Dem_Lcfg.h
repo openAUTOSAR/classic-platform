@@ -120,7 +120,7 @@ typedef struct {
 	Dem_FreezeFrameKindType FFKind;			// (1)
 	uint8					FFRecordNumber;	// (1)/** @req DEM040 */
 	Dem_FreezeFrameStorageConditonType FFStorageCondition;/** @req Dem001_private */
-	const Dem_PidOrDidType 	*FFIdClassRef; 	// (1..255)/** @req DEM039 */
+	const Dem_PidOrDidType 	**FFIdClassRef; 	// (1..255)/** @req DEM039 */
 } Dem_FreezeFrameClassType; /** @req DEM136 */
 
 
@@ -235,7 +235,7 @@ typedef struct {
 	Dem_EventKindType							EventKind;					// (1)
 	const Dem_EventClassType					*EventClass;				// (1)
 	const Dem_ExtendedDataClassType				*ExtendedDataClassRef;		// (0..1)
-	const Dem_FreezeFrameClassType				*FreezeFrameClassRef[DEM_MAX_NR_OF_CLASSES_IN_FREEZEFRAME_DATA+1];		// (0..255) (Only 0..1 supported)/** @req DEM021 */
+	const Dem_FreezeFrameClassType				**FreezeFrameClassRef; //[DEM_MAX_NR_OF_CLASSES_IN_FREEZEFRAME_DATA+1];		// (0..255) (Only 0..1 supported)/** @req DEM021 */
 	const Dem_CallbackInitMforEType				*CallbackInitMforE;			// (0..1)
 	const Dem_CallbackEventStatusChangedType	*CallbackEventStatusChanged;// (0..*)
 	const Dem_DTCClassType						*DTCClassRef;				// (0..1)

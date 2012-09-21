@@ -13,7 +13,58 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+
+/** @reqSettings DEFAULT_SPECIFICATION_REVISION=3.1.5 */
+
+/* ----------------------------[information]----------------------------------*/
+/*
+ * Author: ?+mahi
+ *
+ * Part of Release:
+ *   3.1.5
+ *
+ * Description:
+ *   Implements the Can Driver module
+ *
+ * Support:
+ *   General                  Have Support
+ *   -------------------------------------------
+ *   ECUM_TTII_ENABLED            		N
+ *   ECUM_DEV_ERROR_DETECT				Y
+ *   ECUM_VERSION_INFO_API				Y
+ *   ECUM_INCLUDE_DEM					N (controlled by USE_x macro's instead)
+ *   ECUM_INCLUDE_NVRAM_MGR				N (controlled by USE_x macro's instead)
+ *   ECUM_INLCUDE_DET					N (controlled by USE_x macro's instead)
+ *   ECUM_MAIN_FUNCTION_PERDIOD			Y
+ *   ECUM_TTII_WKSOURCE					N
+ *
+ *   Configuration            Have Support
+ *   -------------------------------------------
+ *   ECUM_SLEEP_ACTIVITY_PERIOD			?
+ *   ECUM_CONFIGCONSISTENCY_HASH		N
+ *   ECUM_RUN_SELF_REQUEST_PERIOD		?
+ *   ECUM_NVRAM_WRITEALL_TIMEOUT		Y
+ *   ECUM_DEFAULT_APP_MODE				?
+ *
+ *
+ *   DefaultShutdownTarget
+ *   -------------------------------------------
+ *   ECUM_DEFAULT_SHUTDOWN_TARGET		N
+ *
+ *
+ * Things to start with:
+ * - EcuM2181
+ * - EcuM2861 , Watchdog
+ * - ComM_EcuM_RunModeIndication()  not called, See Figure 8 (Seems that the ComM does not do much either)
+ *
+ *
+ *
+ */
+
 //lint -emacro(904,VALIDATE,VALIDATE_RV,VALIDATE_NO_RV) //904 PC-Lint exception to MISRA 14.7 (validate macros).
+
+
+/* ----------------------------[includes]------------------------------------*/
 
 #include "Std_Types.h"
 #include "EcuM.h"
@@ -42,8 +93,18 @@
 #endif
 
 
+/* ----------------------------[private define]------------------------------*/
+/* ----------------------------[private macro]-------------------------------*/
+/* ----------------------------[private typedef]-----------------------------*/
+/* ----------------------------[private function prototypes]-----------------*/
+/* ----------------------------[private variables]---------------------------*/
 
 EcuM_GlobalType internal_data;
+
+/* ----------------------------[private functions]---------------------------*/
+
+
+/* ----------------------------[public functions]----------------------------*/
 
 #if !defined(USE_DET) && defined(ECUM_DEV_ERROR_DETECT)
 #error EcuM configuration error. DET is not enabled when ECUM_DEV_ERROR_DETECT is set
@@ -65,6 +126,7 @@ void EcuM_Init( void )
 
 	// Determine PostBuild configuration
 	internal_data.config = EcuM_DeterminePbConfiguration();
+
 
 	// TODO: Check consistency of PB configuration
 
@@ -122,6 +184,10 @@ void EcuM_StartupTwo(void)
 	// Initialize the BSW scheduler
 #if defined(USE_SCHM)
 	SchM_Init();
+#endif
+
+#if defined(USE_WDGM)
+	WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMStartupMode);
 #endif
 
 	// Initialize drivers that don't need NVRAM data
@@ -302,12 +368,45 @@ Std_ReturnType EcuM_ReleaseRUN(EcuM_UserType user)
 	return E_OK;
 }
 
+/**
+ *
+ */
 void EcuM_KillAllRUNRequests( void ) {
 	/* NOT IMPLEMENTED */
 }
 
+
+/**
+ *
+ * @param sources
+ */
 void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources) {
-	/* NOT IMPLEMENTED */
+	/* @req 3.1.5/EcuM2826 The function exists */
+	/* @req 3.1.5/EcuM2171 */
+
+	/* @req 3.1.5/EcuM2867 */
+#if  ( ECUM_DEV_ERROR_DETECT == STD_ON )
+	{
+		EcuM_WakeupSourceType wkSource;
+		const EcuM_SleepModeType *sleepModePtr;
+
+		sleepModePtr = &internal_data.config->EcuMSleepModeConfig[internal_data.sleep_mode];
+	 	wkSource =  sleepModePtr->EcuMWakeupSourceMask;
+
+		if( !((sources | wkSource) ==  wkSource)) {
+			Det_ReportError(MODULE_ID_ECUM, 0, ECUM_VALIDATE_WAKEUP_EVENT_ID, ECUM_E_UNKNOWN_WAKEUP_SOURCE );
+			return;
+		}
+	}
+#endif
+
+
+	/* @req 3.1.5/EcuM1117 */
+	internal_data.wakeupEvents |= sources;
+
+	/* @req 3.1.5/EcuM2707 @req 3.1.5/EcuM2709*/
+//	internal_data.wakeupTimer = ECUM_VALIDATION_TIMEOUT;
+
 }
 
 #if defined(USE_COMM) || defined(USE_ECUM_COMM)
@@ -359,4 +458,73 @@ Std_ReturnType EcuM_ReleasePOST_RUN(EcuM_UserType user)
 
 	return E_OK;
 }
+
+/*
+ * TODO: Don't yet understand the use
+ */
+void EcuM_ClearWakeupEvent( EcuM_WakeupSourceType source )
+{
+	switch(source) {
+	case ECUM_WKSTATUS_NONE:
+		/* Seems quite pointless */
+		break;
+	case ECUM_WKSTATUS_PENDING:
+		break;
+	case ECUM_WKSTATUS_VALIDATED:
+		break;
+	case ECUM_WKSTATUS_EXPIRED:
+		break;
+	default:
+		break;
+	}
+}
+
+/**
+ * Get the pending wakeup events.
+ *
+ * @return
+ */
+EcuM_WakeupSourceType EcuM_GetPendingWakeupEvents( void ) {
+	/* @req 3.1.5/EcuM2827 API
+	 * @req 3.1.5/EcuM2172 Callable from interrupt context
+	 * */
+
+	/* @req 3.1.5/EcuM1156 */
+	return internal_data.wakeupEvents;
+
+}
+
+
+EcuM_WakeupSourceType EcuM_GetValidatedWakeupEvents( void ) {
+	// TODO:
+	return 0;
+}
+
+EcuM_WakeupStatusType EcuM_GetStatusOfWakeupSource( EcuM_WakeupSourceType sources ) {
+	return 0;
+}
+
+/**
+ *
+ * @param sources
+ */
+void EcuM_ValidateWakeupEvent(EcuM_WakeupSourceType sources) {
+
+	/* !req 3.1.5/EcuM2344 */
+	/* !req 3.1.5/EcuM2645 */
+	/* !req 3.1.5/EcuM2868 */
+	/* !req 3.1.5/EcuM2345 */
+
+/*
+#if defined(USE_COMM)
+	if( internal_data.config->)
+	ComM_EcuM_WakeUpIndication()
+#endif
+*/
+	/* !req 3.1.5/EcuM2790 */
+	/* !req 3.1.5/EcuM2791 */
+
+}
+
+
 

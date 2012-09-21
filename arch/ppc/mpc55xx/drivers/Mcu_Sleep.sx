@@ -1,0 +1,192 @@
+#define _ASSEMBLER_
+#include "asm_ppc.h"
+
+
+#if defined(__CWCC__) && defined(CFG_VLE)
+.section .text_vle,text_vle
+#elif defined(__DCC__)
+	// Must be indented (diab)
+	.section .text_vle,x
+#elif defined(__GNUC__)
+.section .text
+#endif
+
+#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
+#define CRP_RECPTR 		0xfffec058
+#else
+#error No support for this MCU
+#endif
+
+	.global McuE_EnterLowPower
+	
+McuE_EnterLowPower:
+	subi	r1, r1, 0x94	// Allocate space on stack 0x94 = 148 r2--r31 + 7 SPRs
+	stmw	r2, 0(r1) 		// Save registers r2-r31 to stack
+	mfSRR1	r25
+	mfSRR0	r26
+	mfLR	r27
+	mfmsr	r28
+	mfCR	r29
+	mfXER	r30
+	mfCTR	r31
+	stmw	r25, 0x78(r1)	// Store SPR data to stack
+		
+	LOAD_ADDR_32(r4,CRP_RECPTR)
+	stw		r1,0x0(r4)	//  Save stack pointer to CRP to be preserved during LPM
+	
+/* Note! You cannot step over the wait instruction with the debugger */	
+	
+	.long	0x7C00007C	//  Wait instruction
+	
+	
+	blr
+
+
+/*
+ * Low Power Vector...needs to be on 4K + 0xffc
+ * We only have 1 instruction before we are outside TLB0 so just jump
+ */
+#if defined(__GNUC__)	
+.section ".lowpower_vector","ax"
+#elif defined(__CWCC__)
+#if defined(CFG_VLE)
+.section .lowpower_vector,text_vle
+#else
+.section .lowpower_vector,4,"rw"
+#endif
+#elif defined(__DCC__)
+	.section .text_vle,x
+#endif
+
+	.global McuE_LowPowerVector
+
+McuE_LowPowerVector:
+	b	McuE_LowPowerRecoverFlash
+	
+
+#if defined(__GNUC__)	
+.section ".lowpower_text","ax"
+#elif defined(__CWCC__)
+#if defined(CFG_VLE)
+.section .lowpower_text,text_vle
+#else
+.section .lowpower_text,4,"rw"
+#endif
+#elif defined(__DCC__)
+	.section .text_vle,x
+#endif
+
+	.extern EcuM_CheckWakeup
+	.global McuE_LowPowerRecoverFlash
+
+/*
+ * When we come back here only TLB0 is setup for flash and then only 4K.
+ *
+ * Debuggers:
+ * - WinIDEA : Hardware->Emulation Options->CPU Setup->MPC55xx->Low Power Debug
+ *             This will make the debugger stop on the function below.
+ * - UDE:      No support for this yet. It just runs through the "wait" instruction.       
+ */	
+McuE_LowPowerRecoverFlash:
+    
+    bl cfg_MMU
+     
+/* Recover the stack */
+	LOAD_ADDR_32(r4,CRP_RECPTR)
+	lwz	r1,0x0(r4)	    // Restore stack pointer from CRP
+	lmw	r25,0x78(r1)	// Load SPR values back into GPRs
+	mtSRR1	r25
+	mtSRR0	r26
+	mtLR	r27
+	mtmsr	r28
+	mtCR	r29
+	mtXER	r30
+	mtCTR	r31		    // Load SPRs with GPR values
+
+#if defined(USE_ECUM)
+
+	/* We have no idea what made us wakeup, pass all */
+	LOAD_ADDR_32(r3,0x3fffffff);		// EcuM_WakeupSourceType
+	bl EcuM_CheckWakeup
+
+#endif
+	mtLR	r27
+
+	lmw	r2, 0(r1) 	    // Restore GPRs from stack
+	addi	r1,r1,0x94	// Deallocate space on stack
+
+    /* branch back to Mcu_SetMode().. */
+    blr
+ 
+ 
+ #if defined(CFG_VLE)
+ #define VLE_VAL		MAS2_VLE
+ #else
+ #define VLE_VAL		0
+ #endif
+
+#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
+#define SRAM_START			0x40000000
+#define FLASH_START			0x00000000
+#define PERIPHERAL_START	0xfff00000
+#else
+#error No support for this MCU
+#endif
+
+ 
+ cfg_MMU:
+
+#***************************************************/
+#     setup MMU                                    */
+#***************************************************/
+
+#TLB Entry 0 =  1M Internal flash 
+	LOAD_ADDR_32(5, 0x10000000 + (0<<16))
+    mtspr SPR_MAS0,r5     
+    LOAD_ADDR_32(5, 0xC0000000 + MAS1_TSIZE_4M )
+    mtspr SPR_MAS1,r5     
+    LOAD_ADDR_32(5, FLASH_START + VLE_VAL )
+    mtspr SPR_MAS2,r5     
+    LOAD_ADDR_32(5, FLASH_START + MAS3_FULL_ACCESS )
+    mtspr SPR_MAS3,r5
+    msync
+    isync
+	tlbwe
+	isync
+
+
+#TLB Entry 1 =  Peripheral bridge and BAM
+	LOAD_ADDR_32(5, 0x10000000 + (1<<16))
+    mtspr SPR_MAS0,r5     
+    LOAD_ADDR_32(5, 0xC0000000 + MAS1_TSIZE_1M)
+    mtspr SPR_MAS1,r5
+    LOAD_ADDR_32(5, PERIPHERAL_START + VLE_VAL +  MAS2_I)
+    mtspr SPR_MAS2,r5     
+    LOAD_ADDR_32(5, PERIPHERAL_START + MAS3_FULL_ACCESS )
+    mtspr SPR_MAS3,r5
+    msync
+    isync
+	tlbwe
+	isync
+
+
+#TLB Entry 2 =  External RAM. Skip this. 
+
+#TLB Entry 3 =  Internal SRAM
+	LOAD_ADDR_32(5, 0x10000000+(3<<16))
+    mtspr SPR_MAS0,r5     
+    LOAD_ADDR_32(5, 0xC0000000 + MAS1_TSIZE_256K )
+    mtspr SPR_MAS1,r5     
+    LOAD_ADDR_32(5, SRAM_START + VLE_VAL )
+    mtspr SPR_MAS2,r5     
+    LOAD_ADDR_32(5, SRAM_START + MAS3_FULL_ACCESS )
+    mtspr SPR_MAS3,r5
+    msync
+    isync
+	tlbwe
+	isync
+   	blr
+   	
+ 
+
+

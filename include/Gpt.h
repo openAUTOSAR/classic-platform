@@ -13,6 +13,19 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+
+/*
+ * Include structure:
+ *
+ *
+ *                    Gpt.h
+ *                      ^
+ *                      |
+ *       `---------- Gpt_xxx.c ---> Memmap.h
+ *
+ *
+ */
+
 /** @addtogroup Gpt GPT Driver
  *  @{ */
 
@@ -24,7 +37,7 @@
 #define GPT_H_
 
 #include "Std_Types.h"
-//#include "EcuM.h"  mahi: What for ???
+
 
 /** @name Error Codes */
 //@{
@@ -54,9 +67,6 @@
 #define GPT_CBK_CHECKWAKEUP_SERVICE_ID      0x0c
 //@}
 
-/** Channel id type */
-typedef uint8_t Gpt_ChannelType;
-
 /** Channel time value type */
 typedef uint32_t Gpt_ValueType;
 
@@ -73,6 +83,8 @@ typedef enum
   GPT_MODE_SLEEP
 } Gpt_ModeType;
 
+/** Channel id type */
+typedef uint8_t Gpt_ChannelType;
 
 #define GPT_VENDOR_ID             1
 #define GPT_MODULE_ID         		 1
@@ -85,7 +97,10 @@ typedef enum
 #define GPT_AR_MINOR_VERSION     2
 #define GPT_AR_PATCH_VERSION     1
 
-#include "Gpt_Cfg.h"
+/* Needs Gpt_ConfigType */
+#include "Gpt_Cfg.h"		/* @req 4.0.3/GPT259 */
+
+/* The config needs EcuM_WakeupSourceType from EcuM */
 
 #if (GPT_VERSION_INFO_API == STD_ON)
 #define Gpt_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,GPT)

@@ -76,10 +76,6 @@ typedef enum {
 } Mcu_PllStatusType;
 
 
-typedef enum {
-	MCU_MODE_NORMAL=0
-} Mcu_ModeType;
-
 //TODO
 typedef uint8_t Mcu_RamSectionType;
 
@@ -194,6 +190,9 @@ uint32_t McuE_GetSystemClock( void );
 #if defined(CFG_MPC55XX) || defined(CFG_ARM_CR4)
 uint32_t McuE_GetPeripheralClock( McuE_PeriperalClock_t type );
 #endif
+
+void McuE_EnterLowPower( int mode );
+void McuE_LowPowerRecoverFlash( void );
 
 #endif /*MCU_H_*/
 /** @} */

@@ -21,11 +21,13 @@
 static const Wdg_ConfigType *configWdgPtr;
 static const Wdg_SettingsType *modeWdgConfig;
 
+
+
 void StartWatchdog(void)
 {
 #if defined(CFG_MPC5567)
 	ECSM.SWTCR.R =  0x00D8;;
-#elif defined(CFG_MPC560X)
+#elif defined(CFG_MPC560X) || defined(CFG_MPC5668)
 	SWT.CR.R = 0x8000011B;
 #else
 	MCM.SWTCR.R = 0x00D8;
@@ -37,7 +39,7 @@ void StartWatchdog(void)
  {
  #if defined(CFG_MPC5567)
  	ECSM.SWTCR.R =  0x0059;;
- #elif defined(CFG_MPC560X)
+ #elif defined(CFG_MPC560X) || defined(CFG_MPC5668)
  	SWT.SR.R = 0x0000c520;     /* Write keys to clear soft lock bit */
  	SWT.SR.R = 0x0000d928;
  	SWT.CR.R = 0x8000010A;

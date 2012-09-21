@@ -88,6 +88,9 @@ typedef TaskStateType *TaskStateRefType;
 
 #define INVALID_OSAPPLICATION (-1)
 
+#define TASK(_task)		void _task( void )
+
+
 /* TODO, I have no idea what this should be*/
 #if (OS_USE_APPLICATIONS == STD_ON)
 typedef sint32 ApplicationType;
@@ -342,6 +345,8 @@ StatusType GetElapsedCounterValue( CounterType, TickRefType val, TickRefType ela
  * System timer
  *-----------------------------------------------------------------*/
 typedef const uint32 OsTickType;
+
+extern OsTickType OsTickFreq;
 void Os_SysTickInit( void );
 void Os_SysTickStart(TickType period_ticks);
 TickType Os_SysTickGetValue( void );
