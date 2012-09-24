@@ -109,7 +109,9 @@ typedef struct
 #if defined(USE_WDGM)
 	const EcuM_WdgMType *EcuMWdgMConfig;
 #endif   
-  	const EcuM_SleepModeType *EcuMSleepModeConfig;  
+  const EcuM_SleepModeType *EcuMSleepModeConfig;
+
+  const EcuM_WakeupSourceConfigType *EcuMWakeupSourceConfig;
 
 #if defined(USE_MCU)
         const Mcu_ConfigType* McuConfig;

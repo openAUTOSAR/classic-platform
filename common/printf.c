@@ -374,6 +374,11 @@ int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap)
 				width = 0;
 			}
 
+			/* Length, "eat" length for now  */
+			if( (ch == 'h') || (ch == 'l') || (ch == 'L') ) {
+				ch = *format++;
+			}
+
 			/* Find type */
 			if (ch =='c')
 			{

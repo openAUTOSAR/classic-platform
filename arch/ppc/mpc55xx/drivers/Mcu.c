@@ -30,6 +30,10 @@
 #include "isr.h"
 #include "io.h"
 
+#if defined(USE_DMA)
+#include "Dma.h"
+#endif
+
 //#define USE_LDEBUG_PRINTF 1
 #include "debug.h"
 
@@ -765,7 +769,7 @@ static void enterLowPower (Mcu_ModeType mcuMode )
 {
 
 
-	uint32 timeout;
+	uint32 timeout = 0;
 	/* - Set the sleep bit; following a WAIT instruction, the device will go to sleep
 	 * - enable the 1.2V internal regulator when in sleep mode only
 	 * - MPC5516
@@ -784,7 +788,7 @@ static void enterLowPower (Mcu_ModeType mcuMode )
 	Mcu_SavedHaltFlags = SIU.HLT.R;
 	/* Halt everything */
 	SIU.HLT.R = 0x3FFFFFFF;
-	while((SIU.HLTACK.R != 0x3FFFFFFF) && (timeout<3000)) {}
+	while((SIU.HLTACK.R != 0x3FFFFFFF) && (timeout++<3000)) {}
 
 	/* put Z0 in reset if not used for wakeup */
 	CRP.Z0VEC.B.Z0RST = 1;
