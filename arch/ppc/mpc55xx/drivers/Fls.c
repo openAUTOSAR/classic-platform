@@ -123,12 +123,15 @@
 #endif
 #include "Cpu.h"
 #include "mpc55xx.h"
-
+#include "task_i.h"
+#include "arch.h"
 #if (FLS_BASE_ADDRESS != 0)
 #error Virtual addresses not supported
 #endif
 
 /* ----------------------------[private define]------------------------------*/
+
+#define FLS_NON_CORRECTABLE_ERROR 0x1
 /* ----------------------------[private macro]-------------------------------*/
 
 
@@ -305,7 +308,16 @@ static void fls_WriteFail( void ) {
 	FEE_JOB_ERROR_NOTIFICATION();
 
 }
+static void fls_ReadFail( void ) {
+	Fls_Global.jobResultType = MEMIF_BLOCK_INCONSISTENT;
+	Fls_Global.jobType = FLS_JOB_NONE;
+	Fls_Global.status = MEMIF_IDLE;
+#if defined(USE_DEM)
+	Dem_ReportErrorStatus(FLS_E_READ_FAILED, DEM_EVENT_STATUS_FAILED);
+#endif
+	FEE_JOB_ERROR_NOTIFICATION();
 
+}
 /* ----------------------------[public functions]----------------------------*/
 
 /**
@@ -498,7 +510,7 @@ void Fls_MainFunction(void) {
 
 	uint32 flashStatus;
 	int result;
-
+	uint32 eccErrReg = 0;
 	/** @req FLS117 */
 	VALIDATE_NO_RV(Fls_Global.status != MEMIF_UNINIT,FLS_MAIN_FUNCTION_ID, FLS_E_UNINIT );
 
@@ -546,13 +558,19 @@ void Fls_MainFunction(void) {
 
 			// NOT implemented. Hardware error = FLS_E_READ_FAILED
 			// ( we are reading directly from flash so it makes no sense )
+			// Read ECC-error to clear it
+			Os_ArchGetECCError(&eccErrReg);
 			memcpy( (void *)Fls_Global.ramAddr, (void *) Fls_Global.flashAddr,
 					Fls_Global.length);
-
-			Fls_Global.jobResultType = MEMIF_JOB_OK;
-			Fls_Global.status = MEMIF_IDLE;
-			Fls_Global.jobType = FLS_JOB_NONE;
-			FEE_JOB_END_NOTIFICATION();
+			Os_ArchGetECCError(&eccErrReg);
+			if( eccErrReg & FLS_NON_CORRECTABLE_ERROR ){
+				fls_ReadFail();
+			} else {
+				Fls_Global.jobResultType = MEMIF_JOB_OK;
+				Fls_Global.status = MEMIF_IDLE;
+				Fls_Global.jobType = FLS_JOB_NONE;
+				FEE_JOB_END_NOTIFICATION();
+			}
 			break;
 
 		case FLS_JOB_WRITE:
