@@ -182,6 +182,7 @@ Std_ReturnType EcuM_SelectBootTarget(EcuM_BootTargetType target);
 Std_ReturnType EcuM_GetBootTarget(EcuM_BootTargetType* target);
 
 void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources);
+void EcuM_ValidateWakeupEvent(EcuM_WakeupSourceType sources);
 
 void EcuM_MainFunction(void);
 #if defined(USE_NVM)

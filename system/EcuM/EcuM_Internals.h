@@ -67,9 +67,13 @@ typedef struct
 #endif
 	uint32 run_requests;
 	uint32 postrun_requests;
+	/* Events set by EcuM_SetWakeupEvent */
 	EcuM_WakeupSourceType wakeupEvents;
 	uint32 wakeupTimer;
+
 	uint32 validationTimer;
+	/* Events set by EcuM_ValidateWakeupEvent */
+	uint32 validEvents;
 } EcuM_GlobalType;
 
 extern EcuM_GlobalType internal_data;

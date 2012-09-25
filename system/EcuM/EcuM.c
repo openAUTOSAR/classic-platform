@@ -510,7 +510,7 @@ EcuM_WakeupSourceType EcuM_GetPendingWakeupEvents( void ) {
 
 EcuM_WakeupSourceType EcuM_GetValidatedWakeupEvents( void ) {
 	// TODO:
-	return 0;
+return internal_data.validEvents;
 }
 
 EcuM_WakeupStatusType EcuM_GetStatusOfWakeupSource( EcuM_WakeupSourceType sources ) {
@@ -528,6 +528,7 @@ void EcuM_ValidateWakeupEvent(EcuM_WakeupSourceType sources) {
 	/* !req 3.1.5/EcuM2868 */
 	/* !req 3.1.5/EcuM2345 */
 
+	internal_data.validEvents |= sources;
 /*
 #if defined(USE_COMM)
 	if( internal_data.config->)

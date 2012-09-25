@@ -545,6 +545,7 @@ void EcuM_MainFunction(void) {
 				//internal_data.validationTimer = validationMaxTime;
 			} else {
 				LDEBUG_PRINTF("No Validation for event:0x%lx\n",(uint32)wkupCfgPtr->EcuMWakeupSourceId);
+				EcuM_ValidateWakeupEvent(wkupCfgPtr->EcuMWakeupSourceId);
 			}
 		}
 		break;
@@ -625,7 +626,8 @@ void EcuM_MainFunction(void) {
 #if defined(USE_DEM)
 		Dem_Init();
 #endif
-		set_current_state(ECUM_STATE_RUN);
+		EcuM_enter_run_mode();
+//		set_current_state(ECUM_STATE_APP_RUN);
 		break;
 
 	default:
