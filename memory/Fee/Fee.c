@@ -74,7 +74,7 @@
 #endif
 //#include "SchM_NvM.h"
 #include "MemMap.h"
-
+#include "Mcu.h"
 #include <stdio.h>
 //#define DEBUG_FEE	1
 #if defined(DEBUG_FEE)
@@ -237,6 +237,7 @@ typedef struct {
 	uint8				BankNumber;
 	boolean				ForceGarbageCollect;
 	uint8				NofFailedGarbageCollect;
+	uint8				NofFailedEraseAll;
 	Fls_AddressType		NewBlockAdminAddress;
 	Fls_AddressType		NewBlockDataAddress;
 	FlsBankStatusType	BankStatus[NUM_OF_BANKS];
@@ -293,6 +294,11 @@ typedef enum {
   FEE_GARBAGE_COLLECT_MAGIC_WRITE,
   FEE_GARBAGE_COLLECT_ERASE,
 
+  FEE_FAILURE_ERASE_ALL_REQUESTED,
+  FEE_FAILURE_ERASE_BANK1,
+  FEE_FAILURE_ERASE_BANK2,
+  FEE_FAILURE_ERASE_ALL_FINISH,
+
   FEE_CORRUPTED
 
 } CurrentJobStateType;
@@ -341,6 +347,7 @@ static CurrentJobType CurrentJob = {
  * Misc definitions
  */
 #define MAX_NOF_FAILED_GC_ATTEMPTS		5
+#define MAX_NOF_FAILED_ERASE_ALL		5
 /***************************************
  *           Local functions           *
  ***************************************/
@@ -361,6 +368,23 @@ uint16 GET_BLOCK_INDEX_FROM_BLOCK_NUMBER(uint16 blockNumber) {
 	return BlockIndex;
 }
 
+static boolean CheckIfReadState(CurrentJobStateType state)
+{
+	boolean isReadState = FALSE;
+	switch(state){
+	case FEE_STARTUP_READ_BANK1_STATUS:
+	case FEE_STARTUP_READ_BANK2_STATUS:
+	case FEE_STARTUP_READ_BLOCK_ADMIN:
+	case FEE_READ:
+	case FEE_GARBAGE_COLLECT_DATA_READ:
+		isReadState = TRUE;
+		break;
+	default:
+		break;
+	}
+
+	return isReadState;
+}
 
 #if (FEE_POLLING_MODE == STD_ON)
 #define SetFlsJobBusy()			/* Nothing needs to be done here */
@@ -398,8 +422,13 @@ static void FinnishStartup(void)
 
 static void AbortStartup(MemIf_JobResultType result)
 {
-	CurrentJob.State = FEE_IDLE;
-	ModuleStatus = MEMIF_IDLE;
+	if( (MEMIF_BLOCK_INCONSISTENT == result) && (TRUE == CheckIfReadState(CurrentJob.State)) ){
+		CurrentJob.State = FEE_FAILURE_ERASE_ALL_REQUESTED;
+		ModuleStatus = MEMIF_BUSY_INTERNAL;
+	} else {
+		CurrentJob.State = FEE_IDLE;
+		ModuleStatus = MEMIF_IDLE;
+	}
 	JobResult = result;
 }
 
@@ -419,32 +448,47 @@ static void FinnishJob(void)
 
 static void AbortJob(MemIf_JobResultType result)
 {
-	if(AdminFls.NofFailedGarbageCollect >= MAX_NOF_FAILED_GC_ATTEMPTS){
-		DET_REPORTERROR(MODULE_ID_FEE, 0, FEE_GLOBAL_ID, FEE_FLASH_CORRUPT);
+	if( (MEMIF_BLOCK_INCONSISTENT == result) && (TRUE == CheckIfReadState(CurrentJob.State))) {
 		AdminFls.ForceGarbageCollect = FALSE;
-		CurrentJob.State = FEE_CORRUPTED;
+		CurrentJob.State = FEE_FAILURE_ERASE_ALL_REQUESTED;
+		ModuleStatus = MEMIF_BUSY_INTERNAL;
 	} else {
-		CurrentJob.State = FEE_IDLE;
+		if(AdminFls.NofFailedGarbageCollect >= MAX_NOF_FAILED_GC_ATTEMPTS){
+			DET_REPORTERROR(MODULE_ID_FEE, 0, FEE_GLOBAL_ID, FEE_FLASH_CORRUPT);
+			AdminFls.ForceGarbageCollect = FALSE;
+			CurrentJob.State = FEE_CORRUPTED;
+		} else {
+			CurrentJob.State = FEE_IDLE;
+		}
+		ModuleStatus = MEMIF_IDLE;
 	}
-	ModuleStatus = MEMIF_IDLE;
 	JobResult = result;
-
 	if (Fee_Config.General.NvmJobErrorCallbackNotificationCallback != NULL) {
 		Fee_Config.General.NvmJobErrorCallbackNotificationCallback();
 	}
 }
 
-
+static void AbortEraseAll(MemIf_JobResultType result)
+{
+	AdminFls.NofFailedEraseAll++;
+	if(AdminFls.NofFailedEraseAll > MAX_NOF_FAILED_ERASE_ALL) {
+		CurrentJob.State = FEE_FAILURE_ERASE_ALL_FINISH;
+	} else {
+		CurrentJob.State = FEE_FAILURE_ERASE_ALL_REQUESTED;
+	}
+	ModuleStatus = MEMIF_BUSY_INTERNAL;
+	JobResult = result;
+}
 /*
  * Start of bank status 1 read
  */
 static void StartupStartJob(void)
 {
 	if (Fls_GetStatus() == MEMIF_IDLE) {
-		CurrentJob.State = FEE_STARTUP_READ_BANK1_STATUS;
 		/* Read bank status of bank 1 */
 		// PC-Lint exception (MISRA 11.4) - Pointer to pointer conversion ok by AUTOSAR
 		if (Fls_Read(BankProp[0].End - BANK_CTRL_PAGE_SIZE, /*lint -e(926)*/(uint8*)&AdminFls.BankStatus[0], sizeof(FlsBankStatusType)) == E_OK) {
+			CurrentJob.State = FEE_STARTUP_READ_BANK1_STATUS;
 			SetFlsJobBusy();
 		} else {
 			AbortStartup(Fls_GetJobResult());
@@ -475,9 +519,9 @@ static void StartupReadBank2StatusRequested(void)
 {
 	if (Fls_GetStatus() == MEMIF_IDLE) {
 		/* Read bank status of bank 2 */
-		CurrentJob.State = FEE_STARTUP_READ_BANK2_STATUS;
 		// PC-Lint exception (MISRA 11.4) - Pointer to pointer conversion ok by AUTOSAR
 		if (Fls_Read(BankProp[1].End - BANK_CTRL_PAGE_SIZE, /*lint -e(926)*/(uint8*)&AdminFls.BankStatus[1], sizeof(FlsBankStatusType)) == E_OK) {
+			CurrentJob.State = FEE_STARTUP_READ_BANK2_STATUS;
 			SetFlsJobBusy();
 		} else {
 			AbortStartup(Fls_GetJobResult());
@@ -530,8 +574,8 @@ static void StartupReadBlockAdminRequested(void)
 {
 	if (Fls_GetStatus() == MEMIF_IDLE) {
 		/* Start reading the banks */
-		CurrentJob.State = FEE_STARTUP_READ_BLOCK_ADMIN;
 		if (Fls_Read(CurrentJob.Op.Startup.BlockAdminAddress, RWBuffer.Byte, BLOCK_CTRL_PAGE_SIZE) == E_OK) {
+			CurrentJob.State = FEE_STARTUP_READ_BLOCK_ADMIN;
 			SetFlsJobBusy();
 		} else {
 			AbortStartup(Fls_GetJobResult());
@@ -610,9 +654,9 @@ static void ReadStartJob(void)
 	if (Fls_GetStatus() == MEMIF_IDLE) {
 		if (CurrentJob.AdminFlsBlockPtr->Status != BLOCK_STATUS_EMPTY) {
 			if (CurrentJob.AdminFlsBlockPtr->Status != BLOCK_STATUS_INVALIDATED) {
-				CurrentJob.State = FEE_READ;
 				/* Read the actual data */
 				if (Fls_Read(CurrentJob.AdminFlsBlockPtr->BlockDataAddress + CurrentJob.Op.Read.Offset, CurrentJob.Op.Read.RamPtr, CurrentJob.Length) == E_OK) {
+					CurrentJob.State = FEE_READ;
 					SetFlsJobBusy();
 				} else {
 					AbortJob(Fls_GetJobResult());
@@ -936,13 +980,13 @@ static void GarbageCollectWriteHeader(void)
 static void GarbageCollectReadDataRequested(void)
 {
 	if (Fls_GetStatus() == MEMIF_IDLE) {
-		CurrentJob.State = FEE_GARBAGE_COLLECT_DATA_READ;
 		if (CurrentJob.Op.GarbageCollect.BytesLeft <= RWBUFFER_SIZE) {
 			CurrentJob.Length = CurrentJob.Op.GarbageCollect.BytesLeft;
 		} else {
 			CurrentJob.Length = RWBUFFER_SIZE;
 		}
 		if (Fls_Read(CurrentJob.AdminFlsBlockPtr->BlockDataAddress + CurrentJob.Op.GarbageCollect.DataOffset, RWBuffer.Byte, CurrentJob.Length) == E_OK) {
+			CurrentJob.State = FEE_GARBAGE_COLLECT_DATA_READ;
 			SetFlsJobBusy();
 		} else {
 			AdminFls.NofFailedGarbageCollect++;
@@ -1176,7 +1220,56 @@ static void InvalidateWriteInvalidateHeader(void)
 	}
 }
 
+/*
+ * Start erasing bank 0
+ */
+static void FailureEraseAllStartJob(void) {
+	uint8 sourceBank = 0;
+	if (Fls_GetStatus() == MEMIF_IDLE) {
+		if (Fls_Erase(BankProp[sourceBank].Start, BankProp[sourceBank].End - BankProp[sourceBank].Start) == E_OK) {
+			SetFlsJobBusy();
+			CurrentJob.State = FEE_FAILURE_ERASE_BANK1;
+		} else {
+			AbortEraseAll(Fls_GetJobResult());
+		}
+	}
+}
 
+/*
+ * Check job result, if OK start erasing bank 1
+ */
+static void FailureEraseBank1() {
+	if (CheckFlsJobFinnished()) {
+		uint8 sourceBank = 1;
+		if (Fls_GetStatus() == MEMIF_IDLE) {
+			if (Fls_Erase(BankProp[sourceBank].Start, BankProp[sourceBank].End - BankProp[sourceBank].Start) == E_OK) {
+				SetFlsJobBusy();
+				CurrentJob.State = FEE_FAILURE_ERASE_BANK2;
+			} else {
+				AbortEraseAll(Fls_GetJobResult());
+			}
+		}
+	}
+}
+
+/*
+ * Check job result, finish the erase
+ */
+static void FailureEraseBank2() {
+	if (CheckFlsJobFinnished()) {
+		if (Fls_GetJobResult() == MEMIF_JOB_OK) {
+			CurrentJob.State = FEE_FAILURE_ERASE_ALL_FINISH;
+		} else {
+			AbortEraseAll(Fls_GetJobResult());
+		}
+	}
+}
+
+
+static void FailureEraseAllFinish() {
+	/* Perform reset? */
+	Mcu_PerformReset();
+}
 /***************************************
  *    External accessible functions    *
  ***************************************/
@@ -1201,6 +1294,7 @@ void Fee_Init(void)
 	AdminFls.BankNumber = 0;
 	AdminFls.ForceGarbageCollect = FALSE;
 	AdminFls.NofFailedGarbageCollect = 0;
+	AdminFls.NofFailedEraseAll = 0;
 	AdminFls.NewBlockDataAddress = BankProp[AdminFls.BankNumber].Start;
 	AdminFls.NewBlockAdminAddress = BankProp[AdminFls.BankNumber].End - (BLOCK_CTRL_PAGE_SIZE + BANK_CTRL_PAGE_SIZE);
 
@@ -1554,6 +1648,24 @@ void Fee_MainFunction(void)
 		InvalidateWriteInvalidateHeader();
 		break;
 
+	/*
+	 * Failure states
+	 * */
+	case FEE_FAILURE_ERASE_ALL_REQUESTED:
+		FailureEraseAllStartJob();
+		break;
+
+	case FEE_FAILURE_ERASE_BANK1:
+		FailureEraseBank1();
+		break;
+
+	case FEE_FAILURE_ERASE_BANK2:
+		FailureEraseBank2();
+		break;
+
+	case FEE_FAILURE_ERASE_ALL_FINISH:
+		FailureEraseAllFinish();
+		break;
 	/*
 	 * Corrupted state
 	 */
