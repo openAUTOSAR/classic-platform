@@ -441,7 +441,14 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
     	FMPLL.SYNCR.B.LOCIRQ = 1;
 #endif
 #endif
+
     }
+#if defined(CFG_MPC5668)
+    /* Enable ecc error reporting */
+    ECSM.ECR.B.EPFNCR = 1;
+#else
+    /* TODO: add support */
+#endif
 }
 
 //-------------------------------------------------------------------
