@@ -790,9 +790,6 @@ static void enterLowPower (Mcu_ModeType mcuMode )
 	SIU.HLT.R = 0x3FFFFFFF;
 	while((SIU.HLTACK.R != 0x3FFFFFFF) && (timeout++<3000)) {}
 
-	/* put Z0 in reset if not used for wakeup */
-	CRP.Z0VEC.B.Z0RST = 1;
-
 #elif defined(CFG_MPC5668)
 
 	WRITE32(CRP_Z6VEC, ((uint32)&McuE_LowPowerRecoverFlash) | VLE_VAL );

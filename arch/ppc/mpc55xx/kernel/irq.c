@@ -63,10 +63,6 @@ void Irq_Init( void ) {
 	  assert(((uint32)exception_tbl & 0xfff)==0);
 	  set_spr(SPR_IVPR,(uint32)exception_tbl);
 
-	  ramlog_str("Test\n");
-	  ramlog_hex(0x10);
-	  ramlog_dec(20);
-
 	  // TODO: The 5516 simulator still thinks it's a 5554 so setup the rest
 #if (defined(CFG_SIMULATOR) && defined(CFG_MPC5516)) || defined(CFG_MPC5567) || defined(CFG_MPC5554)  || defined(CFG_MPC5668)
 	    set_spr(SPR_IVOR0,((uint32_t)&exception_tbl+0x0) );
