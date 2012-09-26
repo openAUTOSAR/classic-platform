@@ -1,0 +1,512 @@
+/* -------------------------------- Arctic Core ------------------------------
+ * Arctic Core - the open source AUTOSAR platform http://arccore.com
+ *
+ * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
+ *
+ * This source code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ * -------------------------------- Arctic Core ------------------------------*/
+
+/* NOTES
+ * The PWMX is bound with submodule period. The PWM signals are generated in the following manner.
+- The INIT and VAL1 registers define the PWM modulo/period. So the PWM counter counts from INIT to VAL1 and then reinit to INIT again etc.
+- The VAL2 resp. VAL3 define the compare value when PWMA goes High resp. Low.
+- The VAL4 resp. VAL5 define the compare value when PWMB goes High resp. Low.
+- The VAL0 defines half cycle reload point and also define the time when PWMX signal is set and the local sync signal is reset.
+- The VAL1 also causes PWMX reseting and asserting local sync.
+So the usage of PMWA and PWMB signals is easy. The PWMX, if not use as input (for capture feature etc), can generate also the PWM signal but you have to take into account that it represents the local sync signal, which is usually selected as sync source by INIT_SEL bits of CTRL2.
+ *
+ */
+
+
+#include <assert.h>
+#include <string.h>
+
+#include "Pwm.h"
+#include "MemMap.h"
+#include "Det.h"
+
+#include "mpc55xx.h"
+
+#include "Os.h"
+#include "Mcu.h"
+#if PWM_NOTIFICATION_SUPPORTED==STD_ON
+#include "isr.h"
+#include "irq.h"
+#include "arc.h"
+#endif
+
+#define PWM_RUNTIME_CHANNEL_COUNT	12
+#define CHANNELS_OK (Channel < 12)
+
+#define FLEXPWM_SUB_MODULE_DIVIDER 3
+
+const Pwm_ConfigType* PwmConfigPtr = NULL;
+
+typedef enum {
+	PWM_STATE_UNINITIALIZED, PWM_STATE_INITIALIZED
+} Pwm_ModuleStateType;
+
+static Pwm_ModuleStateType Pwm_ModuleState = PWM_STATE_UNINITIALIZED;
+
+// Run-time variables
+typedef struct {
+	#if PWM_NOTIFICATION_SUPPORTED==STD_ON
+		Pwm_EdgeNotificationType NotificationState;
+	#endif
+} Pwm_ChannelStructType;
+
+// We use Pwm_ChannelType as index here
+Pwm_ChannelStructType ChannelRuntimeStruct[PWM_RUNTIME_CHANNEL_COUNT];
+
+
+/* Local functions */
+Std_ReturnType Pwm_ValidateInitialized(Pwm_APIServiceIDType apiId)
+{
+	Std_ReturnType result = E_OK;
+    if( Pwm_ModuleState == PWM_STATE_UNINITIALIZED )
+    {
+#if PWM_DEV_ERROR_DETECT==STD_ON
+    	Det_ReportError(PWM_MODULE_ID,0, apiId,PWM_E_UNINIT);
+    	result = E_NOT_OK;
+#endif
+    }
+    return result;
+}
+
+Std_ReturnType Pwm_ValidateChannel(Pwm_ChannelType Channel,Pwm_APIServiceIDType apiId)
+{
+	Std_ReturnType result = E_OK;
+    if( !CHANNELS_OK  )
+    {
+#if PWM_DEV_ERROR_DETECT==STD_ON
+    	Det_ReportError(PWM_MODULE_ID,0, apiId,PWM_E_PARAM_CHANNEL);
+    	result = E_NOT_OK;
+#endif
+    }
+    return result;
+}
+
+void Pwm_InitChannel(Pwm_ChannelType Channel);
+#if PWM_DE_INIT_API==STD_ON
+void Pwm_DeInitChannel(Pwm_ChannelType Channel);
+#endif
+
+#if PWM_NOTIFICATION_SUPPORTED==STD_ON
+static void Pwm_Isr(void);
+#endif
+
+static void calcPeriodTicksAndPrescaler(
+				const Pwm_ChannelConfigurationType* channelConfig,
+				uint16_t* ticks, Pwm_ChannelPrescalerType* prescaler) {
+
+	uint32_t f_in = 0;
+
+	f_in = McuE_GetPeripheralClock( PERIPHERAL_CLOCK_FLEXPWM_0 );
+
+	uint32_t f_target = channelConfig->frequency;
+
+	Pwm_ChannelPrescalerType pre;
+	uint32_t ticks_temp;
+
+	if (channelConfig->prescaler == PWM_CHANNEL_PRESCALER_AUTO) {
+		// Go from lowest to highest prescaler
+		for (pre = PWM_CHANNEL_PRESCALER_0; pre < PWM_CHANNEL_PRESCALER_7; ++pre) {
+		  ticks_temp = f_in / (f_target * (1 << pre)); // Calc ticks
+		  if (ticks_temp > 0xffff) {
+			ticks_temp = 0xffff;  // Prescaler too low
+		  } else {
+			break;                // Prescaler ok
+		  }
+		}
+	} else {
+		pre = channelConfig->prescaler; // Use config setting
+		ticks_temp = f_in / (f_target * (1 << pre)); // Calc ticks
+		if (ticks_temp > 0xffff) {
+		  ticks_temp = 0xffff;  // Prescaler too low
+		}
+	}
+
+	(*ticks) = (uint16_t) ticks_temp;
+	(*prescaler) = pre;
+}
+
+
+static void configureChannel(const Pwm_ChannelConfigurationType* channelConfig){
+
+	Pwm_ChannelType channel = channelConfig->channel;
+	volatile struct FLEXPWM_tag *flexHw;
+
+	flexHw = &FLEXPWM_0;
+
+	Pwm_ChannelPrescalerType prescaler;  uint16_t period_ticks;
+	calcPeriodTicksAndPrescaler( channelConfig, &period_ticks, &prescaler );
+
+	// Edge-aligned PWM-output
+	flexHw->SUB[3].INIT.R =   0xFF00; /* INIT value */
+	flexHw->SUB[3].VAL[0].R = 0x0000; /* 0 mid-cycle reload point */
+	flexHw->SUB[3].VAL[1].R = 0x0100; /* modulo count value (maximum count) *//* PWMA 50% duty cycle */
+	flexHw->SUB[3].VAL[2].R = 0xFF00; /* PWMA rising edge */
+	flexHw->SUB[3].VAL[3].R = 0xFF80; /* PWMA falling edge */
+	flexHw->SUB[3].VAL[4].R = 0xFF00; /* PWMB rising edge */
+	flexHw->SUB[3].VAL[5].R = 0xFF20; /* PWMB falling edge */
+
+	/* Run as independent channels */
+	flexHw->SUB[3].CTRL2.B.INDEP = 1;
+	/* Prescaler */
+	flexHw->SUB[3].CTRL.B.PRSC = prescaler;
+
+	flexHw->SUB[channel].OCTRL.B.POLA = (channelConfig->polarity == PWM_LOW) ? 1 : 0;
+
+
+}
+
+void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
+    Pwm_ChannelType channel_iterator;
+
+    /** @req PWM118 */
+    /** @req PWM121 */
+    if( Pwm_ModuleState == PWM_STATE_INITIALIZED ) {
+#if PWM_DEV_ERROR_DETECT==STD_ON
+    	Det_ReportError(PWM_MODULE_ID,0,PWM_INIT_ID,PWM_E_ALREADY_INITIALIZED);
+#endif
+    	return;
+    }
+	
+    #if PWM_DEV_ERROR_DETECT==STD_ON
+        /*
+         * PWM046: If development error detection is enabled for the Pwm module,
+         * the function Pwm_Init shall raise development error PWM_E_PARAM_CONFIG
+         * if ConfigPtr is a null pointer.
+         *
+         * PWM120: For pre-compile and link-time configuration variants, a NULL
+         * pointer shall be passed to the initialization routine. In this case the
+         * check for this NULL pointer has to be omitted.
+         */
+        #if PWM_STATICALLY_CONFIGURED==STD_OFF
+            if (ConfigPtr == NULL) {
+                Det_ReportError(PWM_MODULE_ID,0,PWM_INIT_ID,PWM_E_PARAM_CONFIG);
+                return;
+            }
+        #endif
+    #endif
+
+    PwmConfigPtr = ConfigPtr;
+
+    Pwm_ModuleState = PWM_STATE_INITIALIZED;
+
+    for (channel_iterator = 0; channel_iterator < PWM_NUMBER_OF_CHANNELS; channel_iterator++) {
+    	const Pwm_ChannelConfigurationType* channelConfig = &ConfigPtr->Channels[channel_iterator];
+    	Pwm_ChannelType channel = channelConfig->channel;
+
+    	configureChannel( channelConfig );
+
+        #if PWM_NOTIFICATION_SUPPORTED==STD_ON
+                /*
+                 * PWM052: The function Pwm_Init shall disable all notifications.
+                 *
+                 * This is now implemented in the configuration macro.
+                 */
+                // Pwm_DisableNotification(channel);
+
+                // Install ISR
+				switch(channel)
+				{
+				case 0:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F0),PWM_ISR_PRIORITY, 0);
+					break;
+				case 1:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F1),PWM_ISR_PRIORITY, 0);
+					break;
+				case 2:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F2),PWM_ISR_PRIORITY, 0);
+					break;
+				case 3:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F3),PWM_ISR_PRIORITY, 0);
+					break;
+				case 4:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F4),PWM_ISR_PRIORITY, 0);
+					break;
+				case 5:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F5),PWM_ISR_PRIORITY, 0);
+					break;
+				case 6:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F6),PWM_ISR_PRIORITY, 0);
+					break;
+				case 7:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F7),PWM_ISR_PRIORITY, 0);
+					break;
+				case 8:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F8),PWM_ISR_PRIORITY, 0);
+					break;
+				case 9:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F9),PWM_ISR_PRIORITY, 0);
+					break;
+				case 10:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F10),PWM_ISR_PRIORITY, 0);
+					break;
+				case 11:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F11),PWM_ISR_PRIORITY, 0);
+					break;
+				case 12:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F12),PWM_ISR_PRIORITY, 0);
+					break;
+				case 13:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F13),PWM_ISR_PRIORITY, 0);
+					break;
+				case 14:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F14),PWM_ISR_PRIORITY, 0);
+					break;
+				case 15:
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F15),PWM_ISR_PRIORITY, 0);
+					break;
+				default:
+					break;
+			    }
+
+		#endif
+    }
+
+	flexHw->OUTEN.B.PWMA_EN = PWM_USED_SUB_MASK;
+	flexHw->OUTEN.B.PWMB_EN = PWM_USED_SUB_MASK;
+	flexHw->MCTRL.B.LDOK = PWM_USED_SUB_MASK;
+	flexHw->MCTRL.B.RUN = PWM_USED_SUB_MASK;
+}
+
+#if PWM_DE_INIT_API==STD_ON
+
+void inline Pwm_DeInitChannel(Pwm_ChannelType Channel) {
+    Pwm_SetOutputToIdle(Channel);
+
+    /*
+     * PWM052: The function Pwm_DeInit shall disable all notifications.
+     */
+    #if PWM_NOTIFICATION_SUPPORTED==STD_ON
+        Pwm_DisableNotification(Channel);
+    #endif
+}
+
+void Pwm_DeInit() {
+	Pwm_ChannelType channel_iterator;
+	volatile struct FLEXPWM_tag *flexHw = &FLEXPWM_0;
+
+	if(E_OK != Pwm_ValidateInitialized(PWM_DEINIT_ID))
+	{
+		return;
+	}
+
+	for (channel_iterator = 0; channel_iterator < PWM_NUMBER_OF_CHANNELS; channel_iterator++) {
+		Pwm_ChannelType channel = PwmConfigPtr->Channels[channel_iterator].channel;
+		Pwm_DeInitChannel(channel);
+	}
+
+	// Disable module
+	flexHw->OUTEN.B.PWMA_EN = 0b0000;
+	flexHw->OUTEN.B.PWMB_EN = 0b0000;
+	flexHw->MCTRL.B.LDOK = 0b0000;
+	flexHw->MCTRL.B.RUN = 0b0000;
+
+	Pwm_ModuleState = PWM_STATE_UNINITIALIZED;
+}
+#endif
+
+
+/*
+ * PWM083: The function Pwm_SetPeriodAndDuty shall be pre compile time
+ * changeable ON/OFF by the configuration parameter PwmSetPeriodAndDuty.
+ */
+#if PWM_SET_PERIOD_AND_DUTY_API==STD_ON
+	void Pwm_SetPeriodAndDuty(Pwm_ChannelType Channel, Pwm_PeriodType Period,
+			Pwm_DutyCycleType DutyCycle) {
+
+		if ((E_OK != Pwm_ValidateInitialized(PWM_SETPERIODANDDUTY_ID)) ||
+			(E_OK != Pwm_ValidateChannel(Channel, PWM_SETPERIODANDDUTY_ID)))
+		{
+			return;
+		}
+
+		for (Pwm_ChannelType channel_iterator = 0; channel_iterator < PWM_NUMBER_OF_CHANNELS; channel_iterator++)
+		{
+			if(Channel == PwmConfigPtr->Channels[channel_iterator].channel){
+				if(PwmConfigPtr->ChannelClass[channel_iterator] != PWM_VARIABLE_PERIOD){
+		#if PWM_DEV_ERROR_DETECT==STD_ON
+					Det_ReportError(PWM_MODULE_ID,0, PWM_SETPERIODANDDUTY_ID, PWM_E_PERIOD_UNCHANGEABLE);
+		#endif
+					return;
+				}
+				break;
+			}
+		}
+
+		volatile struct FLEXPWM_tag *flexHw;
+		flexHw = &FLEXPWM_0;
+
+		uint16 leading_edge_position = (uint16) (((uint32) Period * (uint32) DutyCycle) >> 15);
+
+		/* Timer instant for leading edge */
+		flexHw->SUB[Channel].CADR.R = leading_edge_position;
+
+		/* Timer instant for the period to restart */
+		flexHw->SUB[Channel].CBDR.R = Period;
+	}
+#endif
+
+
+/**
+ * PWM013: The function Pwm_SetDutyCycle shall set the duty cycle of the PWM
+ * channel.
+ *
+ * @param Channel PWM channel to use. 0 <= Channel < PWM_NUMBER_OF_CHANNELS <= 16
+ * @param DutyCycle 0 <= DutyCycle <= 0x8000
+ */
+#if PWM_SET_DUTY_CYCLE_API==STD_ON
+void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
+{
+	if ((E_OK != Pwm_ValidateInitialized(PWM_SETDUTYCYCLE_ID)) ||
+		(E_OK != Pwm_ValidateChannel(Channel, PWM_SETDUTYCYCLE_ID)))
+	{
+		return;
+	}
+	volatile struct FLEXPWM_tag *flexHw;
+	flexHw = &FLEXPWM_0;
+
+	uint16 leading_edge_position = (uint16) ((flexHw->SUB[Channel].CBDR.R
+				* (uint32) DutyCycle) >> 15);
+
+	/* Timer instant for leading edge */
+
+	/*
+	 * PWM017: The function Pwm_SetDutyCycle shall update the duty cycle at
+	 * the end of the period if supported by the implementation and configured
+	 * with PwmDutycycleUpdatedEndperiod. [ This is achieved in hardware since
+	 * the A and B registers are double buffered ]
+	 *
+	 * PWM014: The function Pwm_SetDutyCycle shall set the output state according
+	 * to the configured polarity parameter [which is already set from
+	 * Pwm_InitChannel], when the duty parameter is 0% [=0] or 100% [=0x8000].
+	 */
+	flexHw->SUB[Channel].CADR.R = leading_edge_position;
+}
+#endif
+
+#if  PWM_SET_OUTPUT_TO_IDLE_API == STD_ON
+	void Pwm_SetOutputToIdle(Pwm_ChannelType Channel)
+	{
+		if ((E_OK != Pwm_ValidateInitialized(PWM_SETOUTPUTTOIDLE_ID)) ||
+			(E_OK != Pwm_ValidateChannel(Channel, PWM_SETOUTPUTTOIDLE_ID)))
+		{
+			return;
+		}
+		volatile struct FLEXPWM_tag *flexHw;
+		flexHw = &FLEXPWM_0;
+
+		// Set correct VAL to INIT
+    }
+#endif
+/*
+ * PWM085: The function Pwm_GetOutputState shall be pre compile configurable
+ * ON/OFF by the configuration parameter PwmGetOutputState
+ */
+#if PWM_GET_OUTPUT_STATE_API==STD_ON
+	/*
+	 * PWM022: The function Pwm_GetOutputState shall read the internal state
+	 * of the PWM output signal and return it.
+	 */
+	Pwm_OutputStateType Pwm_GetOutputState(Pwm_ChannelType Channel)
+	{
+		Pwm_OutputStateType res = PWM_LOW;
+
+		if ((E_OK == Pwm_ValidateInitialized(PWM_GETOUTPUTSTATE_ID)) &&
+			(E_OK == Pwm_ValidateChannel(Channel, PWM_GETOUTPUTSTATE_ID)))
+		{
+			volatile struct FLEXPWM_tag *flexHw = &FLEXPWM_0;
+
+			switch(Channel % FLEXPWM_SUB_MODULE_DIVIDER)
+			{
+			case 0:
+				res = (Pwm_OutputStateType)flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].OCTRL.B.PWMA_IN;
+				break;
+			case 1:
+				res = (Pwm_OutputStateType)flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].OCTRL.B.PWMB_IN;
+				break;
+			case 2:
+				res = (Pwm_OutputStateType)flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].OCTRL.B.PWMX_IN;
+				break;
+			}
+		}
+
+		return res;
+	}
+#endif
+
+#if PWM_NOTIFICATION_SUPPORTED==STD_ON
+
+	void Pwm_DisableNotification(Pwm_ChannelType Channel)
+	{
+		if ((E_OK != Pwm_ValidateInitialized(PWM_DISABLENOTIFICATION_ID)) ||
+			(E_OK != Pwm_ValidateChannel(Channel, PWM_DISABLENOTIFICATION_ID)))
+		{
+			return;
+		}
+
+		volatile struct FLEXPWM_tag *flexHw;
+		flexHw = &FLEXPWM_0;
+
+		// Disable flags on this channel
+		flexHw->SUB[Channel].CCR.B.FEN = 0;
+	}
+
+	void Pwm_EnableNotification(Pwm_ChannelType Channel,Pwm_EdgeNotificationType Notification)
+	{
+		if ((E_OK != Pwm_ValidateInitialized(PWM_ENABLENOTIFICATION_ID)) ||
+			(E_OK != Pwm_ValidateChannel(Channel, PWM_ENABLENOTIFICATION_ID)))
+		{
+			return;
+		}
+
+		volatile struct FLEXPWM_tag *flexHw;
+		flexHw = &FLEXPWM_0;
+
+		ChannelRuntimeStruct[Channel].NotificationState = Notification;
+
+		flexHw->SUB[Channel].CCR.B.FEN = 1;
+	}
+
+	static void Pwm_Isr(void)
+	{
+		// Find out which channel that triggered the interrupt
+			uint32_t flagmask = FLEXPWM_0.GFLAG.R;
+
+ 			// There are 24 channels specified in the global flag register, but
+			// we only listen to the first 16 as only these support OPWfM
+			for (Pwm_ChannelType channel_iterator = 0; channel_iterator < PWM_NUMBER_OF_CHANNELS; channel_iterator++)
+			{
+				Pwm_ChannelType flexpwm_ch = PwmConfigPtr->Channels[channel_iterator].channel;
+
+				if (flagmask & (1 << flexpwm_ch))
+				{
+					if (PwmConfigPtr->NotificationHandlers[channel_iterator] != NULL && FLEXPWM_0.SUB[flexpwm_ch].CCR.B.FEN)
+					{
+						Pwm_EdgeNotificationType notification = ChannelRuntimeStruct[flexpwm_ch].NotificationState;
+						if (notification == PWM_BOTH_EDGES ||
+
+								notification == FLEXPWM_0.SUB[flexpwm_ch].CSR.B.UCOUT)
+						{
+							PwmConfigPtr->NotificationHandlers[channel_iterator]();
+						}
+					}
+
+					// Clear interrupt
+					FLEXPWM_0.SUB[flexpwm_ch].CSR.B.FLAG = 1;
+				}
+			}
+
+	}
+
+#endif /* PWM_NOTIFICATION_SUPPORED == STD_ON */

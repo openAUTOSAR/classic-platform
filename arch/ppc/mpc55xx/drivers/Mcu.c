@@ -503,7 +503,7 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     SIU.PSMI[0].R = 0x01; /* CAN1RX on PCR43 */
     SIU.PSMI[6].R = 0x01; /* CS0/DSPI_0 on PCR15 */
 
-#elif defined(CFG_MPC5606S) || defined(CFG_MPC5604P)
+#elif defined(CFG_MPC5606S)
     // Write pll parameters.
     CGM.FMPLL[0].CR.B.IDF = clockSettingsPtr->Pll1;
     CGM.FMPLL[0].CR.B.NDIV = clockSettingsPtr->Pll2;
@@ -524,9 +524,6 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     ME.PCTL[4].R = 0x01;  /* MPC56xxB/P/S DSPI0  */
     ME.PCTL[5].R = 0x01;  /* MPC56xxB/P/S DSPI1:  */
     ME.PCTL[32].R = 0x01; //ADC0 control
-#if defined(CFG_MPC5604P)
-    ME.PCTL[33].R = 0x01; //ADC1 control
-#endif
     ME.PCTL[23].R = 0x01; //DMAMUX control
     ME.PCTL[48].R = 0x01; /* MPC56xxB/P/S LINFlex  */
     ME.PCTL[49].R = 0x01; /* MPC56xxB/P/S LINFlex  */
@@ -544,7 +541,54 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     CGM.SC_DC[0].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
     CGM.SC_DC[1].R = 0x80; /* MPC56xxB/S: Enable peri set 2 sysclk divided by 1 */
     CGM.SC_DC[2].R = 0x80; /* MPC56xxB/S: Enable peri set 3 sysclk divided by 1 */
-    CGM.SC_DC[3].R = 0x80; /* MPC56xxB/S: Enable peri set 3 sysclk divided by 1 */
+
+#elif defined(CFG_MPC5604P)
+    // Write pll parameters.
+    CGM.FMPLL[0].CR.B.IDF = clockSettingsPtr->Pll1;
+    CGM.FMPLL[0].CR.B.NDIV = clockSettingsPtr->Pll2;
+    CGM.FMPLL[0].CR.B.ODF = clockSettingsPtr->Pll3;
+    // PLL1 must be higher than 120MHz for PWM to work */
+    CGM.FMPLL[1].CR.B.IDF = clockSettingsPtr->Pll1_1;
+    CGM.FMPLL[1].CR.B.NDIV = clockSettingsPtr->Pll2_1;
+    CGM.FMPLL[1].CR.B.ODF = clockSettingsPtr->Pll3_1;
+
+    /* RUN0 cfg: 16MHzIRCON,OSC0ON,PLL0ON,syclk=PLL0 */
+    ME.RUN[0].R = 0x001F0074;
+    /* Peri. Cfg. 1 settings: only run in RUN0 mode */
+    ME.RUNPC[1].R = 0x00000010;
+    /* MPC56xxB/S: select ME.RUNPC[1] */
+    ME.PCTL[68].R = 0x01; //SIUL control
+    ME.PCTL[91].R = 0x01; //RTC/API control
+    ME.PCTL[92].R = 0x01; //PIT_RTI control
+    ME.PCTL[41].R = 0x01; //flexpwm0 control
+    ME.PCTL[16].R = 0x01; //FlexCAN0 control
+    ME.PCTL[26].R = 0x01; //FlexCAN1 control
+    ME.PCTL[4].R = 0x01;  /* MPC56xxB/P/S DSPI0  */
+    ME.PCTL[5].R = 0x01;  /* MPC56xxB/P/S DSPI1:  */
+    ME.PCTL[6].R = 0x01;  /* MPC56xxB/P/S DSPI2  */
+    ME.PCTL[7].R = 0x01;  /* MPC56xxB/P/S DSPI3:  */
+    ME.PCTL[32].R = 0x01; //ADC0 control
+    ME.PCTL[33].R = 0x01; //ADC1 control
+    ME.PCTL[48].R = 0x01; /* MPC56xxB/P/S LINFlex  */
+    ME.PCTL[49].R = 0x01; /* MPC56xxB/P/S LINFlex  */
+    /* Mode Transition to enter RUN0 mode: */
+    /* Enter RUN0 Mode & Key */
+    ME.MCTL.R = 0x40005AF0;
+    /* Enter RUN0 Mode & Inverted Key */
+    ME.MCTL.R = 0x4000A50F;
+
+    /* Wait for mode transition to complete */
+    while (ME.GS.B.S_MTRANS) {}
+    /* Verify RUN0 is the current mode */
+    while(ME.GS.B.S_CURRENTMODE != 4) {}
+
+    /* Pwm, adc, etimer clock */
+    CGM.AC0SC.R = 0x05000000;  /* MPC56xxP: Select FMPLL1 for aux clk 0  */
+    CGM.AC_DC[0].R = 0x80000000;  /* MPC56xxP: Enable aux clk 0 div by 1 */
+
+    /* Safety port clock */
+    CGM.AC2SC.R = 0x04000000;  /* MPC56xxP: Select FMPLL0 for aux clk 2  */
+    CGM.AC_DC[0].R = 0x80000000;  /* MPC56xxP: Enable aux clk 2 div by 1 */
 
  #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
     // Partially following the steps in MPC5567 RM..
@@ -930,6 +974,64 @@ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type) {
 
 }
 
+#elif defined (CFG_MPC5604P)
+
+ /**
+  * Get the peripheral clock in Hz for a specific device
+  */
+ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
+ {
+ 	uint32_t sysClock = McuE_GetSystemClock();
+	vuint32_t prescaler;
+
+   // See table 3.1, section 3.4.5 Peripheral Clock dividers
+	switch (type)
+	{
+		//case PERIPHERAL_CLOCK_ADC_0:
+		//case PERIPHERAL_CLOCK_ADC_1:
+		//case PERIPHERAL_CLOCK_ETIMER_0:
+		//case PERIPHERAL_CLOCK_ETIMER_1:
+	    case PERIPHERAL_CLOCK_FLEXPWM_0:
+			/* FMPLL1 */
+			 uint32_t eprediv = CGM.FMPLL[1].CR.B.IDF;
+			 uint32_t emfd = CGM.FMPLL[1].CR.B.NDIV;
+			 uint32_t erfd = CGM.FMPLL[1].CR.B.ODF;
+
+			 uint32_t f_sys;
+			 uint32  extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePointFrequency;
+			 f_sys = CALC_SYSTEM_CLOCK(extal,emfd,eprediv,erfd);
+
+			 prescaler = CGM.AC_DC[0].B.DIV;
+			 return f_sys/(1<<prescaler);
+	     break;
+
+        case PERIPHERAL_CLOCK_FLEXCAN_A:
+		case PERIPHERAL_CLOCK_FLEXCAN_B:
+		case PERIPHERAL_CLOCK_FLEXCAN_C:
+		case PERIPHERAL_CLOCK_FLEXCAN_D:
+		case PERIPHERAL_CLOCK_FLEXCAN_E:
+		case PERIPHERAL_CLOCK_FLEXCAN_F:
+		case PERIPHERAL_CLOCK_DSPI_A:
+ 		case PERIPHERAL_CLOCK_DSPI_B:
+		case PERIPHERAL_CLOCK_DSPI_C:
+		case PERIPHERAL_CLOCK_DSPI_D:
+		case PERIPHERAL_CLOCK_DSPI_E:
+		case PERIPHERAL_CLOCK_DSPI_F:
+		case PERIPHERAL_CLOCK_PIT:
+		case PERIPHERAL_CLOCK_LIN_A:
+		case PERIPHERAL_CLOCK_LIN_B:
+ 		case PERIPHERAL_CLOCK_LIN_C:
+		case PERIPHERAL_CLOCK_LIN_D:
+			prescaler = 1;
+			break;
+
+		default:
+			assert(0);
+			break;
+	}
+
+	return sysClock/(1<<prescaler);
+}
 #else
 
 /**

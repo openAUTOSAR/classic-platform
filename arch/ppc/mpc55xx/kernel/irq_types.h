@@ -444,11 +444,20 @@ typedef enum
     RESERVED89,             // 5606-176
     RESERVED90,             // 5606-177
     RESERVED91,             // 5606-178
-    RESERVED92,             // 5606-179
-    RESERVED93,             // 5606-180
-    RESERVED94,             // 5606-181
-    RESERVED95,             // 5606-182
-    RESERVED96,             // 5606-183
+    PWM0_RF0,             // 5606-179
+    PWM0_COF0,             // 5606-180
+    PWM0_CAF0,             // 5606-181
+    PWM0_RF1,             // 5606-182
+    PWM0_COF1,             // 5606-183
+    PWM0_CAF1,             // 5606-184
+    PWM0_RF2,             // 5606-185
+    PWM0_COF2,             // 5606-186
+    PWM0_CAF2,             // 5606-187
+    PWM0_RF3,             // 5606-188
+    PWM0_COF3,             // 5606-189
+    PWM0_CAF3,             // 5606-190
+    PWM0_FFLAG,             // 5606-191
+    PWM0_REF,             // 5606-192
     RESERVED97,             // 5606-184
     RESERVED98,             // 5606-185
     RESERVED99,             // 5606-186
@@ -1120,16 +1129,15 @@ typedef enum
 	PERIPHERAL_CLOCK_ESCI_F,
 	PERIPHERAL_CLOCK_ESCI_G,
 	PERIPHERAL_CLOCK_ESCI_H,
-#if defined(CFG_MPC560X)
 	PERIPHERAL_CLOCK_LIN_A,
 	PERIPHERAL_CLOCK_LIN_B,
 	PERIPHERAL_CLOCK_LIN_C,
 	PERIPHERAL_CLOCK_LIN_D,
-#endif
 	PERIPHERAL_CLOCK_IIC_A,
 	PERIPHERAL_CLOCK_IIC_B,
 	PERIPHERAL_CLOCK_MLB,
 	PERIPHERAL_CLOCK_ADC_A,
+	PERIPHERAL_CLOCK_FLEXPWM_0,
 } McuE_PeriperalClock_t;
 
 

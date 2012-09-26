@@ -100,6 +100,9 @@ typedef struct {
 	uint8 Pll1; // PLL setting 1
 	uint8 Pll2; // PLL setting 2
 	uint8 Pll3; // PLL setting 3
+	uint8 Pll1_1; // PLL setting 1
+	uint8 Pll2_1; // PLL setting 2
+	uint8 Pll3_1; // PLL setting 3
 	uint8 Pll4; // PLL setting 4
 
 } Mcu_ClockSettingConfigType;
