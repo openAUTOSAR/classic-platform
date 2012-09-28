@@ -63,6 +63,12 @@
 #define DDDDI_LEN 2
 #define DYNDEF_ALFID_INDEX 4
 #define DYNDEF_ADDRESS_START_INDEX 5
+/* InputOutputControlByIdentifier */
+#define IOI_INDEX 1
+#define IOI_LEN 2
+#define IOCP_INDEX 3
+#define IOCP_LEN 1
+#define COR_INDEX 4
 
 #define BYTES_TO_DTC(hb, mb, lb)	(((uint32)(hb) << 16) | ((uint32)(mb) << 8) | (uint32)(lb))
 #define DTC_HIGH_BYTE(dtc)			(((uint32)(dtc) >> 16) & 0xFFu)
@@ -2685,6 +2691,23 @@ void DspDynamicallyDefineDataIdentifier(const PduInfoType *pduRxData,PduInfoType
 	DsdDspProcessingDone(responseCode);
 }
 
+static const Dcm_DspDidControlRecordSizesType* getControlRecordSizesForControlParameter(uint8 controlParam, const Dcm_DspDidControlType *DidControl)
+{
+	switch( controlParam )
+	{
+	case DCM_RETURN_CONTROL_TO_ECU:
+		return DidControl->DspDidReturnControlToEcu;
+	case DCM_RESET_TO_DEFAULT:
+		return DidControl->DspDidResetToDefault;
+	case DCM_FREEZE_CURRENT_STATE:
+		return DidControl->DspDidFreezeCurrentState;
+	case DCM_SHORT_TERM_ADJUSTMENT:
+		return DidControl->DspDidShortTermAdjustment;
+	default:
+		return NULL;
+	}
+}
+
 static Dcm_NegativeResponseCodeType DspIOControlReturnControlToECU(const Dcm_DspDidType *DidPtr,const PduInfoType *pduRxData,PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -2916,48 +2939,83 @@ void DspIOControlByDataIdentifier(const PduInfoType *pduRxData,PduInfoType *pduT
 {
 	uint16 didNr;
 	const Dcm_DspDidType *DidPtr = NULL;
-	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
-	didNr = (pduRxData->SduDataPtr[1] << 8 & DCM_DID_HIGH_MASK) + (pduRxData->SduDataPtr[2] & DCM_DID_LOW_MASK);
-	if(pduRxData->SduLength > 3)
+	const Dcm_DspDidControlType *DidControl = NULL;
+	const Dcm_DspDidControlRecordSizesType* controlRecordSizes = NULL;
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_REQUESTOUTOFRANGE;
+
+	if(pduRxData->SduLength > SID_LEN + IOI_LEN + IOCP_LEN)
 	{
+		didNr = (pduRxData->SduDataPtr[IOI_INDEX] << 8 & DCM_DID_HIGH_MASK) + (pduRxData->SduDataPtr[IOI_INDEX+1] & DCM_DID_LOW_MASK);
 		if(TRUE == lookupDid(didNr, &DidPtr))
 		{
-			if(FALSE == DidPtr->DspDidUsePort)
+			DidControl = DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl;
+			if(NULL != DidControl)
 			{
-				if(NULL != DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl)
+				if(TRUE == DspCheckSessionLevel(DidControl->DspDidControlSessionRef))
 				{
-					if(TRUE == DspCheckSessionLevel(DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidControlSessionRef))
+					if(TRUE == DspCheckSecurityLevel(DidControl->DspDidControlSecurityLevelRef))
 					{
-						if(TRUE == DspCheckSecurityLevel(DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidControlSecurityLevelRef))
+						controlRecordSizes = getControlRecordSizesForControlParameter(pduRxData->SduDataPtr[IOCP_INDEX], DidControl);
+						if( controlRecordSizes != NULL )
 						{
-							switch(pduRxData->SduDataPtr[3])
+
+							if( pduRxData->SduLength == SID_LEN + IOI_LEN + IOCP_LEN + controlRecordSizes->DspDidControlOptionRecordSize + controlRecordSizes->DspDidControlEnableMaskRecordSize )
 							{
+								responseCode = DCM_E_REQUESTOUTOFRANGE; // Value to use if no callback found
+
+								uint8* controlOptionRecord = &pduRxData->SduDataPtr[COR_INDEX];
+								uint8* controlEnableMaskRecord = &pduRxData->SduDataPtr[COR_INDEX + controlRecordSizes->DspDidControlOptionRecordSize];
+
+								switch(pduRxData->SduDataPtr[IOCP_INDEX])
+								{
 								case DCM_RETURN_CONTROL_TO_ECU:
-									responseCode = DspIOControlReturnControlToECU(DidPtr,pduRxData,pduTxData);
+									if(DidPtr->DspDidReturnControlToEcuFnc != NULL)
+									{
+										DidPtr->DspDidReturnControlToEcuFnc(controlOptionRecord,controlEnableMaskRecord,
+																			&pduTxData->SduDataPtr[SID_LEN+IOI_LEN+IOCP_LEN],&responseCode);
+									}
 									break;
 								case DCM_RESET_TO_DEFAULT:
-									responseCode = DspIOControlResetToDefault(DidPtr,pduRxData,pduTxData);								
+									if(DidPtr->DspDidResetToDefaultFnc != NULL)
+									{
+										DidPtr->DspDidResetToDefaultFnc(controlOptionRecord,controlEnableMaskRecord,
+																			&pduTxData->SduDataPtr[SID_LEN+IOI_LEN+IOCP_LEN],&responseCode);
+									}
 									break;
 								case DCM_FREEZE_CURRENT_STATE:
-									responseCode = DspIOControlFreezeCurrentState(DidPtr,pduRxData,pduTxData);
+									if(DidPtr->DspDidFreezeCurrentStateFnc != NULL)
+									{
+										DidPtr->DspDidFreezeCurrentStateFnc(controlOptionRecord,controlEnableMaskRecord,
+																			&pduTxData->SduDataPtr[SID_LEN+IOI_LEN+IOCP_LEN],&responseCode);
+									}
 									break;
 								case DCM_SHORT_TERM_ADJUSTMENT:
-									responseCode = DspIOControlShortTeamAdjustment(DidPtr,pduRxData,pduTxData);
+									if(DidPtr->DspDidShortTermAdjustmentFnc != NULL)
+									{
+										DidPtr->DspDidShortTermAdjustmentFnc(controlOptionRecord,controlEnableMaskRecord,
+																			&pduTxData->SduDataPtr[SID_LEN+IOI_LEN+IOCP_LEN],&responseCode);
+									}
 									break;
 								default:
 									responseCode = DCM_E_REQUESTOUTOFRANGE;
 									break;
-								
+
+								}
+
+							}
+							else
+							{
+								responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
 							}
 						}
 						else
 						{
-							responseCode = DCM_E_SECUTITYACCESSDENIED;
+							responseCode = DCM_E_REQUESTOUTOFRANGE;
 						}
 					}
 					else
 					{
-						responseCode = DCM_E_REQUESTOUTOFRANGE;
+						responseCode = DCM_E_SECUTITYACCESSDENIED;
 					}
 				}
 				else
@@ -2967,8 +3025,7 @@ void DspIOControlByDataIdentifier(const PduInfoType *pduRxData,PduInfoType *pduT
 			}
 			else
 			{
-				/* if UsePort == True, NRC 0x10 */
-				responseCode = DCM_E_GENERALREJECT;
+				responseCode = DCM_E_REQUESTOUTOFRANGE;
 			}
 		}
 		else
@@ -2982,8 +3039,10 @@ void DspIOControlByDataIdentifier(const PduInfoType *pduRxData,PduInfoType *pduT
 	}
 	if(responseCode == DCM_E_POSITIVERESPONSE)
 	{
+		pduTxData->SduLength = SID_LEN + IOI_LEN + IOCP_LEN + controlRecordSizes->DspDidControlStatusRecordSize;
 		pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];
 		pduTxData->SduDataPtr[2] = pduRxData->SduDataPtr[2];
+		pduTxData->SduDataPtr[3] = pduRxData->SduDataPtr[3];
 	}
 	DsdDspProcessingDone(responseCode);
 }
