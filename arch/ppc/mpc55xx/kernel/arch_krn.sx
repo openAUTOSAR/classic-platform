@@ -61,10 +61,6 @@
 #if defined (CFG_MPC5668)
 #define ECSM_BASE 	0xfff40000
 #define ECSM_ESR    0x47
-#define ESR_R1BC	0x20
-#define ESR_RNCE	0x02
-#define ESR_F1BC	0x10
-#define ESR_FNCE	0x01
 #endif
 /* ----------------------------[private macro]-------------------------------*/
 
