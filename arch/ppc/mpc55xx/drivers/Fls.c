@@ -131,7 +131,7 @@
 
 /* ----------------------------[private define]------------------------------*/
 
-#define FLS_NON_CORRECTABLE_ERROR 0x1
+#define FLASH_NON_CORRECTABLE_ERROR 0x1
 /* ----------------------------[private macro]-------------------------------*/
 
 
@@ -563,7 +563,7 @@ void Fls_MainFunction(void) {
 			memcpy( (void *)Fls_Global.ramAddr, (void *) Fls_Global.flashAddr,
 					Fls_Global.length);
 			Os_ArchGetECCError(&eccErrReg);
-			if( eccErrReg & FLS_NON_CORRECTABLE_ERROR ){
+			if( eccErrReg & FLASH_NON_CORRECTABLE_ERROR ){
 				fls_ReadFail();
 			} else {
 				Fls_Global.jobResultType = MEMIF_JOB_OK;
