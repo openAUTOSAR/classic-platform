@@ -38,7 +38,7 @@
 #define ZERO_SUB_FUNCTION				0x00
 #define DCM_FORMAT_LOW_MASK			0x0F
 #define DCM_FORMAT_HIGH_MASK			0xF0
-#define DCM_MEMORY_ADDRESS_MASK		0xFFFFFF
+#define DCM_MEMORY_ADDRESS_MASK		0xFFFFFF /* REVIEW JB 6 sep 2012: Change to 0x00FFFFFF to make it clear that MSB is masked out */
 #define DCM_DID_HIGH_MASK 				0xFF00			
 #define DCM_DID_LOW_MASK				0xFF
 #define DCM_PERODICDID_HIHG_MASK		0xF200
@@ -86,6 +86,7 @@ typedef struct {
 } DspUdsEcuResetDataType;
 
 static DspUdsEcuResetDataType dspUdsEcuResetData;
+/* REVIEW JB 6 sep 2012: dspWritePending is not used - please remove */
 static boolean dspWritePending;
 
 typedef struct {
@@ -102,13 +103,14 @@ typedef enum{
 	DCM_MEMORY_WRITE,
 	DCM_MEMORY_FAILED	
 }Dcm_DspMemoryStateType;
+/* REVIEW JB 6 sep 2012: Is this really needed globally - otherwise please use static */
 Dcm_DspMemoryStateType dspMemoryState;
 
 typedef enum{
 	DCM_DDD_SOURCE_DEFAULT,
 	DCM_DDD_SOURCE_DID,
 	DCM_DDD_SOURCE_ADDRESS
-}Dcm_DspDDDTpyeID;
+}Dcm_DspDDDTpyeID; /* REVIEW JB 6 sep 2012: Bad name - should be Dcm_DspDDDSourceKindType */
 
 typedef struct{
 	uint32 PDidTxCounter;
@@ -121,6 +123,7 @@ typedef struct{
 	uint8 PDidNr;										/* note the number of periodic DID is used */
 }Dsp_pDidRefType;
 
+/* REVIEW JB 6 sep 2012: Is this really needed globally - otherwise please use static */
 Dsp_pDidRefType dspPDidRef; 
 
 typedef struct{
@@ -137,6 +140,7 @@ typedef struct{
 }
 Dcm_DspDDDType;
 
+/* REVIEW JB 6 sep 2012: Is this really needed globally - otherwise please use static */
 Dcm_DspDDDType dspDDD[DCM_MAX_DDD_NUMBER];
 
 
@@ -199,6 +203,7 @@ void DspMemoryMainFunction(void)
 			}
 			break;
 		case DCM_MEMORY_FAILED:
+			/* REVIEW JB 6 sep 2012: Please send failed resp directly in DCM_MEMORY_READ/DCM_MEMORY_WRITE */
 			DsdDspProcessingDone(DCM_E_GENERALPROGRAMMINGFAILURE);
 			dspMemoryState = DCM_MEMORY_UNUSED;
 			break;
@@ -212,6 +217,7 @@ void DspPeriodicDIDMainFunction()
 
 	for(i = 0;i < dspPDidRef.PDidNr; i++)
 	{
+		/* REVIEW JB 6 sep 2012: Please change the name of PDidTxCounterNumber because it is very confusing (PDidTxCounterLimit) */
 		if(dspPDidRef.dspPDid[i].PDidTxCounterNumber > dspPDidRef.dspPDid[i].PDidTxCounter)
 		{
 			dspPDidRef.dspPDid[i].PDidTxCounter++;
@@ -1047,6 +1053,7 @@ static Dcm_NegativeResponseCodeType readDidData(const Dcm_DspDidType *didPtr, Pd
 /**
 **		This Function for read Dynamically Did data buffer Sourced by Memory address using a didNr
 **/
+/* REVIEW JB 6 sep 2012: Rename PDidPtr -> DDidPtr */
 static Dcm_NegativeResponseCodeType readDDDData( Dcm_DspDDDType *PDidPtr, uint8 *Data,uint16 *Length)
 {
 	uint8 i;
@@ -1056,6 +1063,7 @@ static Dcm_NegativeResponseCodeType readDDDData( Dcm_DspDDDType *PDidPtr, uint8 
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 	*Length = 0;
 
+	/* REVIEW JB 6 sep 2012: What does 0 mean for formatOrPosition - don't use magic number */
 	for(i = 0;(i < DCM_MAX_DDDSOURCE_NUMBER) && (PDidPtr->DDDSource[i].formatOrPosition != 0)
 		&&(responseCode == DCM_E_POSITIVERESPONSE);i++)
 	{
@@ -1077,6 +1085,7 @@ static Dcm_NegativeResponseCodeType readDDDData( Dcm_DspDDDType *PDidPtr, uint8 
 			{
 				if(DspCheckSecurityLevel(SourceDidPtr->DspDidInfoRef->DspDidAccess.DspDidRead->DspDidReadSecurityLevelRef) != TRUE)
 				{
+					/* REVIEW JB 6 sep 2012: If security access denied - nothing else needs to be done (make sure also DCM_E_SECUTITYACCESSDENIED is not overwritten  - as is the case today) */
 					responseCode = DCM_E_SECUTITYACCESSDENIED;
 				}
 				if(SourceDidPtr->DspDidInfoRef->DspDidFixedLength == TRUE)
@@ -1098,6 +1107,7 @@ static Dcm_NegativeResponseCodeType readDDDData( Dcm_DspDDDType *PDidPtr, uint8 
 					{
 						if(dataCount < PDidPtr->DDDSource[i].Size)
 						{
+							/* REVIEW JB 6 sep 2012: This was pointed out already in previous review. Should be made easier to read. For example use one pointer for the dest and add offset for the source */
 							*(Data + *Length + dataCount) = *(Data + *Length + dataCount + PDidPtr->DDDSource[i].formatOrPosition - 1);
 						}
 						else
@@ -1151,6 +1161,7 @@ void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTx
 			else if(LookupDDD(didNr,(const Dcm_DspDDDType **)&DDidPtr) == TRUE)
 			{
 				/*DCM 651,DCM 652*/
+				/* REVIEW JB 6 sep 2012: Cast to uint8 on both places or none of them */
 				pduTxData->SduDataPtr[txPos] = (DDidPtr->DynamicallyDid>>8) & 0xFF;
 				txPos++;
 				pduTxData->SduDataPtr[txPos] = (uint8)(DDidPtr->DynamicallyDid & 0xFF);
@@ -1969,6 +1980,7 @@ static Dcm_NegativeResponseCodeType writeMemoryData(Dcm_OpStatusType* OpStatus,
 								MemoryAddress,
 								MemorySize,
 								SourceData);
+	/* REVIEW JB 6 sep 2012: Should be DCM_WRITE_FAILED */
 	if(DCM_READ_FAILED == writeRet)
 	{
 		responseCode = DCM_E_GENERALPROGRAMMINGFAILURE;   /*@req UDS_REQ_0X3D_16,DCM643*/
@@ -2144,6 +2156,8 @@ static void ClearPeriodicIdentifier(const PduInfoType *pduRxData,PduInfoType *pd
 		PdidNumber = pduRxData->SduLength - 2;
 		for(i = 0;i < PdidNumber;i++)
 		{
+			/* REVIEW JB 6 sep 2012: The comment below was removed but the bug was not fixed */
+			/* REVIEW JB 2012-06-05: Bug - always reads byte 2 */
 			PDidLowByte = pduRxData->SduDataPtr[2];
 			if(checkPeriodicIdentifierBuffer(PDidLowByte,dspPDidRef.PDidNr,&PdidPostion) == TRUE)
 			{
@@ -2237,6 +2251,7 @@ void DspReadDataByPeriodicIdentifier(const PduInfoType *pduRxData,PduInfoType *p
 				}
 				else
 				{	
+					/* REVIEW JB 6 sep 2012: Spelling error HIHG -> HIGH*/
 					responseCode = DspSavePeriodicData((DCM_PERODICDID_HIHG_MASK + (uint16)PDidLowByte),periodicTransmitCounter,PdidBufferNr);
 					PdidBufferNr++;
 					pduTxData->SduLength = 1;
@@ -2313,10 +2328,12 @@ static Dcm_NegativeResponseCodeType dynamicallyDefineDataIdentifierbyDid(uint16 
 	}
 	else
 	{
+		/* REVIEW JB 6 sep 2012: format and position 0 - no magic number ... please */
 		while((SourceLength < DCM_MAX_DDDSOURCE_NUMBER) && (DDid->DDDSource[SourceLength].formatOrPosition != 0 ))
 		{
 			SourceLength++;
 		}
+		/* REVIEW JB 6 sep 2012: This check is not neccesary. It is also wrong because it cannot happen SourceLenth will not be this big in the loop */
 		if(SourceLength > DCM_MAX_DDDSOURCE_NUMBER)
 		{
 			responseCode = DCM_E_REQUESTOUTOFRANGE;
@@ -2324,6 +2341,7 @@ static Dcm_NegativeResponseCodeType dynamicallyDefineDataIdentifierbyDid(uint16 
 	}
 	if(responseCode == DCM_E_POSITIVERESPONSE)
 	{
+		/* REVIEW JB 6 sep 2012: Macro should not be called SID_AND_ALFID, maybe SID_AND_DDDDI - other ALFID is SDI_PISDR_MS - check mnemonics in 14229 */
 		Length = (pduRxData->SduLength - SID_AND_ALFID_LEN4) /SID_AND_ALFID_LEN4;
 		if(((Length*SID_AND_ALFID_LEN4) == (pduRxData->SduLength - SID_AND_ALFID_LEN4)) && (Length != 0))
 		{
@@ -2348,6 +2366,7 @@ static Dcm_NegativeResponseCodeType dynamicallyDefineDataIdentifierbyDid(uint16 
 									{
 										SourceDid->DspDidReadDataLengthFnc(&DidLength);
 									}
+									/* REVIEW JB 6 sep 2012: Else the DataLenFunction did not exist either - set DidLength = 0 */
 								}
 								if(DidLength != 0)
 								{
@@ -2573,7 +2592,7 @@ static Dcm_NegativeResponseCodeType CleardynamicallyDid(uint16 DDIdentifier,cons
 	{
 		if(TRUE == LookupDDD(DDIdentifier, (const Dcm_DspDDDType **)&DDid))
 		{
-			
+			/* REVIEW JB 6 sep 2012: Why is the global dspPDidRef sent as a parameter? */
 			if((checkPeriodicIdentifierBuffer(pduRxData->SduDataPtr[3], dspPDidRef.PDidNr, &position) == TRUE)&&(pduRxData->SduDataPtr[2] == 0xF2))
 			{
 				/*UDS_REQ_0x2C_9*/
@@ -2604,6 +2623,7 @@ static Dcm_NegativeResponseCodeType CleardynamicallyDid(uint16 DDIdentifier,cons
 			responseCode = DCM_E_REQUESTOUTOFRANGE;	/* DDDid not found */
 		}
 	}
+	/* REVIEW JB 6 sep 2012: This will nevere ever happen bacause this function is only called for SduLength > 2 */
 	else if (pduRxData->SduDataPtr[1] == 0x03 && pduRxData->SduLength == 2){
 		/* clear all */
 		memset(dspDDD, 0, (sizeof(Dcm_DspDDDType) * DCM_MAX_DDD_NUMBER));
@@ -2628,10 +2648,12 @@ void DspDynamicallyDefineDataIdentifier(const PduInfoType *pduRxData,PduInfoType
 	uint8 Position;
 	boolean PeriodicdUse = FALSE;
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+	/* REVIEW JB 2012-06-05: Need to check min length first (this was already pointed out) */
 	uint16 DDIdentifier = ((((uint16)pduRxData->SduDataPtr[2]) << 8) & DCM_DID_HIGH_MASK) + (pduRxData->SduDataPtr[3] & DCM_DID_LOW_MASK);
 	if(pduRxData->SduLength > 2)
 	{
 		/* Check if DDID equals 0xF2 or 0xF3 */
+		/* REVIEW JB 6 sep 2012: Check also matches 0xFF etc */
 		if((pduRxData->SduDataPtr[2] & 0xF2) == 0xF2)
 		{
 			switch(pduRxData->SduDataPtr[1])	/*UDS_REQ_0x2C_2,DCM 646*/
@@ -2680,6 +2702,7 @@ void DspDynamicallyDefineDataIdentifier(const PduInfoType *pduRxData,PduInfoType
 		}
 		else
 		{
+			/* REVIEW JB 2012-06-05: I think the responsecode should be 0x22 CNC in this case. (this was already pointed out)*/
 			responseCode = DCM_E_REQUESTOUTOFRANGE;
 		}
 	}
