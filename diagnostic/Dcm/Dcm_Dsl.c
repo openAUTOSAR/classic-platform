@@ -421,8 +421,6 @@ Std_ReturnType DslInternal_ResponseOnOneDataByPeriodicId(uint8 PericodID)
 {
 	Std_ReturnType ret = E_NOT_OK;
 	const Dcm_DslProtocolRowType *protocolRowEntry;
-	BufReq_ReturnType BufReqResult = 0;
-	// unused: const Dcm_DslProtocolTimingRowType *timeParams = NULL;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
     PduInfoType  *pPeriodData;
 	protocolRowEntry = DCM_Config.Dsl->DslProtocol->DslProtocolRowList;

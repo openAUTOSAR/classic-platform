@@ -102,8 +102,6 @@ McuE_LowPowerRecoverFlash:
 	mtCR	r29
 	mtXER	r30
 	mtCTR	r31		    // Load SPRs with GPR values
-	lmw	r2, 0(r1) 	    // Restore GPRs from stack
-	addi	r1,r1,0x94	// Deallocate space on stack
 
 #if defined(USE_ECUM)
 
@@ -112,8 +110,10 @@ McuE_LowPowerRecoverFlash:
 	bl EcuM_CheckWakeup
 
 #endif
+	mtLR	r27
 
-
+	lmw	r2, 0(r1) 	    // Restore GPRs from stack
+	addi	r1,r1,0x94	// Deallocate space on stack
 
     /* branch back to Mcu_SetMode().. */
     blr

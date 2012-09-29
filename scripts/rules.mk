@@ -27,8 +27,8 @@ endif
 ifeq (${COMPILER},cw)
 ifneq (${CW_COMPILE},${DEFAULT_CW_COMPILE})
 ${warning Not using default cross compiler for architecture.}
-${warning CROSS_COMPILE:         ${CW_COMPILE} [${origin CW_COMPILE}]}
-${warning DEFAULT_CROSS_COMPILE: ${DEFAULT_CW_COMPILE} [${origin DEFAULT_CW_COMPILE}]}
+${warning CW_COMPILE:            ${CW_COMPILE} [${origin CW_COMPILE}]}
+${warning DEFAULT_CW_COMPILE:    ${DEFAULT_CW_COMPILE} [${origin DEFAULT_CW_COMPILE}]}
 endif
 else
 ifneq (${DEFAULT_CROSS_COMPILE},)

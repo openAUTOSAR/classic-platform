@@ -37,6 +37,11 @@
 #define READ16_NA(address )			( (((uint16_t)(((uint8_t *)address)[0]))<<8) +	\
 									  (((uint16_t)(((uint8_t *)address)[1]))) )
 
+#define READWRITE32(address,mask,val)  WRITE32(address,(READ32(address)&~(mask))|val)
+
+
+
+/* NA - Not Aligned */
 #define WRITE32_NA(address, value ) \
 	do { \
     	((uint8_t *)address)[0] = ((value>>24)&0xff); \

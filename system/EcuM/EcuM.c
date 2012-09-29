@@ -495,12 +495,6 @@ EcuM_WakeupSourceType EcuM_GetPendingWakeupEvents( void ) {
 }
 
 
-void EcuM_CheckValidation(EcuM_WakeupSourceType wakeupSource) {
-	/* Used only if CanIf is used ? CanIf_Checkvalidation(wakeupSource) */
-	(void)wakeupSource;
-}
-
-
 EcuM_WakeupSourceType EcuM_GetValidatedWakeupEvents( void ) {
 	// TODO:
 	return 0;
@@ -509,5 +503,28 @@ EcuM_WakeupSourceType EcuM_GetValidatedWakeupEvents( void ) {
 EcuM_WakeupStatusType EcuM_GetStatusOfWakeupSource( EcuM_WakeupSourceType sources ) {
 	return 0;
 }
+
+/**
+ *
+ * @param sources
+ */
+void EcuM_ValidateWakeupEvent(EcuM_WakeupSourceType sources) {
+
+	/* !req 3.1.5/EcuM2344 */
+	/* !req 3.1.5/EcuM2645 */
+	/* !req 3.1.5/EcuM2868 */
+	/* !req 3.1.5/EcuM2345 */
+
+/*
+#if defined(USE_COMM)
+	if( internal_data.config->)
+	ComM_EcuM_WakeUpIndication()
+#endif
+*/
+	/* !req 3.1.5/EcuM2790 */
+	/* !req 3.1.5/EcuM2791 */
+
+}
+
 
 

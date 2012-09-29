@@ -110,7 +110,7 @@ void StepTask( void );
 #define OS_ISR2_CNT 		0
 #define OS_ISR1_CNT			0
 
-#define OS_ISR_MAX_CNT		10
+#define OS_ISR_MAX_CNT		30
 
 #define OS_NUM_CORES		1
 

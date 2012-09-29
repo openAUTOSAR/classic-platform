@@ -14,6 +14,7 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
+/* ----------------------------[includes]------------------------------------*/
 #include <assert.h>
 #include <string.h>
 #include "Std_Types.h"
@@ -27,11 +28,62 @@
 #include "Ramlog.h"
 #include "Os.h"
 #include "isr.h"
+#include "io.h"
 
 //#define USE_LDEBUG_PRINTF 1
 #include "debug.h"
 
+/* ----------------------------[private define]------------------------------*/
+
 #define SYSCLOCK_SELECT_PLL	0x2
+
+#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
+
+#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
+#define CRP_BASE 			(0xFFFEC000ul)
+#else
+#error Please define CRP_BASE
+#endif
+
+#define CRP_CLKSRC			(CRP_BASE+0x0)
+#define CRP_RTCSC			(CRP_BASE+0x10)
+#define CRP_RTCCNT			(CRP_BASE+0x14)
+/* 40--4F differs ALOT */
+#define CRP_Z1VEC			(CRP_BASE+0x50)
+#define CRP_Z6VEC			(CRP_BASE+0x50)
+#define CRP_Z0VEC			(CRP_BASE+0x54)
+#define CRP_RECPTR			(CRP_BASE+0x58)
+#define CRP_PSCR			(CRP_BASE+0x60)
+
+#define xVEC_xVEC(_x)
+#define PSCR_SLEEP			0x00008000ul
+#define PSCR_SLP12EN 		0x00000800ul
+#define PCSR_RAMSEL(_x)		((_x)<<8)
+#define xVEC_VLE			0x00000001ul
+#define xVEC_xRST			0x00000002ul
+
+#define RECPTR_FASTREC		0x00000002ul
+
+
+#if defined(CFG_VLE)
+#define VLE_VAL		xVEC_VLE
+#else
+#define VLE_VAL		0
+#endif
+
+#if defined(CFG_MPC5516 )
+#define RAMSEL_VAL		0x7
+#elif defined(CFG_MPC5668)
+#define RAMSEL_VAL		0x3
+#else
+#error  Please define RAMSEL_VAL
+#endif
+
+#endif
+
+
+/* ----------------------------[private macro]-------------------------------*/
+
 
 #if defined(CFG_MPC5567)
 #define CALC_SYSTEM_CLOCK(_extal,_emfd,_eprediv,_erfd)  \
@@ -44,7 +96,25 @@
             ( (_extal) * ((_emfd)+16) / (((_eprediv)+1)*((_erfd)+1)) )
 #endif
 
+/* ----------------------------[private typedef]-----------------------------*/
+
+
 typedef void (*vfunc_t)();
+
+
+/* ----------------------------[private function prototypes]-----------------*/
+/* ----------------------------[private variables]---------------------------*/
+
+#if defined(CFG_MPC5516)
+static uint32 Mcu_SavedHaltFlags;
+#else
+static uint32 Mcu_SavedHaltFlags[2];
+#endif
+
+
+
+/* ----------------------------[private functions]---------------------------*/
+/* ----------------------------[public functions]----------------------------*/
 
 /* Function declarations. */
 static void Mcu_ConfigureFlash(void);
@@ -747,6 +817,8 @@ void Mcu_PerformReset(void)
 
 //-------------------------------------------------------------------
 
+#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
+
 /**
  *
  * Application Notes!
@@ -759,65 +831,25 @@ void Mcu_PerformReset(void)
  */
 static void enterLowPower (Mcu_ModeType mcuMode )
 {
-#if defined(CFG_MPC5668)
+
+
 	uint32 timeout;
-	/* Set the sleep bit; following a WAIT instruction, the device will go to sleep */
-	CRP.PSCR.B.SLEEP = 1;
+	/* - Set the sleep bit; following a WAIT instruction, the device will go to sleep
+	 * - enable the 1.2V internal regulator when in sleep mode only
+	 * - MPC5516
+	 *   - 0x1 8k, 0x2 16k, 0x3 32k, 0x6 64k -- RAMs maintain power
+	 * - MPC5668
+	 *   - 0x1 32k, 0x2 64k, 0x3 128k
+	 */
+	WRITE32(CRP_PSCR, PSCR_SLEEP | PSCR_SLP12EN | PCSR_RAMSEL(RAMSEL_VAL));
 
-	/* 0x1 32k, 0x2 64k, 0x3 128k -- RAMs maintain power */
-	CRP.PSCR.B.RAMSEL = 0x3;		// Keep all 128K
+	/* Set Recover Vector */
+#if defined(CFG_MPC5516)
 
-	CRP.Z6VEC.R = (uint32)&McuE_LowPowerRecoverFlash;
-#if defined(CFG_VLE)
-	CRP.Z6VEC.VLE = 1;
-#endif
+	WRITE32(CRP_Z1VEC, ((uint32)&McuE_LowPowerRecoverFlash) | VLE_VAL );
+	READWRITE32( CRP_RECPTR, RECPTR_FASTREC, 0 );
 
-	/* If we "Mcu_Wakeup()" is located in RAM, set FASTREC */
-	CRP.RECPTR.B.FASTREC = 0;
-
-	/* Halt everything */
-    SIU.HLT0.R = 0x037FFF3D;
-    SIU.HLT1.R = 0x18000F3C;
-    while((SIU.HLTACK0.R != 0x037FFF3D) && (SIU.HLTACK1.R != 0x18000F3C) && (timeout<3000)){}
-
-	/* put Z0 in reset if not used for wakeup */
-	CRP.Z0VEC.B.Z0RST = 1;
-
-	// TODO: Enable_all_internal_pull_devices (PULL_DOWN);
-
-	/* Save context and execute wait instruction.
-	 *
-	 * Things that matter here are
-	 * - Z1VEC, determines where TLB0 will point. TLB0 is written with a
-	 *   value at startup that 4K aligned to this address.
-	 * - LowPower_Sleep() will save a interrupt context so we will return
-	 *   intact.
-	 * - For devices with little RAM we don't want to impose the alignment
-	 *   requirements there. Almost as we have to occupy a 4K block for this..
-	 *   although the code does not take that much space.
-	 * */
-	McuE_EnterLowPower(mcuMode);
-
-    /* Clear sleep flags to allow pads to operate */
-	CRP.PSCR.B.SLEEPF = 0x1;
-
-#elif defined(CFG_MPC5516)
-	uint32 timeout;
-	/* Set the sleep bit; following a WAIT instruction, the device will go to sleep */
-	CRP.PSCR.B.SLEEP = 1;
-	/* enable the 1.2V internal regulator when in sleep mode only */
-	CRP.PSCR.B.STOP12EN = 1;
-	/* 0x1 8k, 0x2 16k, 0x3 32k, 0x6 64k -- RAMs maintain power */
-	CRP.PSCR.B.RAMSEL = 0x7;		// Keep all 80K
-
-	CRP.Z1VEC.R = (uint32)&McuE_LowPowerRecoverFlash;
-#if defined(CFG_VLE)
-	CRP.VLE = 1;
-#endif
-
-	/* If we "Mcu_Wakeup()" is located in RAM, set FASTREC */
-	CRP.RECPRTR.B.FASTREC = 0;
-
+	Mcu_SavedHaltFlags = SIU.HLT.R;
 	/* Halt everything */
 	SIU.HLT.R = 0x3FFFFFFF;
 	while((SIU.HLTACK.R != 0x3FFFFFFF) && (timeout<3000)) {}
@@ -825,9 +857,25 @@ static void enterLowPower (Mcu_ModeType mcuMode )
 	/* put Z0 in reset if not used for wakeup */
 	CRP.Z0VEC.B.Z0RST = 1;
 
-	// TODO: Enable_all_internal_pull_devices (PULL_DOWN);
+#elif defined(CFG_MPC5668)
 
-	/* Save context and execute wait instruction.
+	WRITE32(CRP_Z6VEC, ((uint32)&McuE_LowPowerRecoverFlash) | VLE_VAL );
+	READWRITE32(CRP_RECPTR,RECPTR_FASTREC,0 );
+
+	Mcu_SavedHaltFlags[0] = SIU.HLT0.R;
+	Mcu_SavedHaltFlags[1] = SIU.HLT1.R;
+	/* Halt everything */
+    SIU.HLT0.R = 0x037FFF3D;
+    SIU.HLT1.R = 0x18000F3C;
+    while((SIU.HLTACK0.R != 0x037FFF3D) && (SIU.HLTACK1.R != 0x18000F3C) && (timeout<3000)){}
+#else
+#error CPU not defined
+#endif
+
+	/* put Z0 in reset if not used for wakeup */
+	CRP.Z0VEC.B.Z0RST = 1;
+
+    /* Save context and execute wait instruction.
 	 *
 	 * Things that matter here are
 	 * - Z1VEC, determines where TLB0 will point. TLB0 is written with a
@@ -842,12 +890,9 @@ static void enterLowPower (Mcu_ModeType mcuMode )
 
     /* Clear sleep flags to allow pads to operate */
     CRP.PSCR.B.SLEEPF = 0x1;
-#else
-	/* NOT SUPPORTED */
-	(void) mcuMode;
-#endif
 }
 
+#endif
 
 void Mcu_SetMode( Mcu_ModeType mcuMode)
 {
@@ -858,13 +903,21 @@ void Mcu_SetMode( Mcu_ModeType mcuMode)
 #if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 	if( MCU_MODE_RUN == mcuMode ) {
 
+		/* Get back to "normal" halt flags */
+#if defined(CFG_MPC5516)
+		SIU.HLT.R = Mcu_SavedHaltFlags;
+#elif defined(CFG_MPC5668)
+		SIU.HLT0.R = Mcu_SavedHaltFlags[0];
+		SIU.HLT1.R = Mcu_SavedHaltFlags[1];
+#endif
+
 	} else if( MCU_MODE_SLEEP == mcuMode ) {
 		/*
 		 * Follows the AN3548 from Freescale
 		 *
 		 */
 #if defined(USE_DMA)
-		Dma_StopAll();
+		Dma_DeInit();
 #endif
 
 
