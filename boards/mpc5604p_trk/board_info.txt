@@ -15,7 +15,10 @@ Board:
 
 Supported compilers:
   Code Warrior
- 
+  
+SystemTick:
+  PIT no3 is used for generating system clock
+  
 Info:	
   MPC5604B
   CPU:		 e200z0h (VLE only)
