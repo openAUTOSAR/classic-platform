@@ -64,7 +64,7 @@ const Dma_ChannelConfigType DmaChannelConfig [DMA_NUMBER_OF_CHANNELS] =
 const Dma_ConfigType DmaConfig []=
 {
   {
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S) || (CFG_MPC5606B) || (CFG_MPC5604P)
     DmaMuxConfig,
 #endif
   	DmaChannelConfig,
