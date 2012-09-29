@@ -571,6 +571,72 @@
                   <SHORT-NAME>EcuMUserConfig</SHORT-NAME>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMUserConfig</DEFINITION-REF>
                 </CONTAINER>
+                <CONTAINER UUID="2b9f843d-9ae2-46d0-a37c-aab97b3edf49">
+                  <SHORT-NAME>EcuMDefaultShutdownTarget</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMDefaultShutdownTarget</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMDefaultShutdownTarget/EcuMDefaultState</DEFINITION-REF>
+                      <VALUE>EcuMStateReset</VALUE>
+                    </ENUMERATION-VALUE>
+                  </PARAMETER-VALUES>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMDefaultShutdownTarget/EcuMDefaultSleepModeRef</DEFINITION-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="96a2da2b-4a12-4eb5-9714-02f22ff10dfe">
+                  <SHORT-NAME>EcuMSleepMode</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMSleepModeId</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMSleepModeSuspend</DEFINITION-REF>
+                      <VALUE>false</VALUE>
+                    </BOOLEAN-VALUE>
+                  </PARAMETER-VALUES>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMSleepModeMcuModeRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/os_simple_mpc5668_gkit/Mcu/McuModuleConfiguration/SLEEP</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMWakeupSourceMask</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/os_simple_mpc5668_gkit/EcuM/EcuMConfiguration/EcuMWakeupSource</VALUE-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="452b79fc-3a23-4615-bf27-9b336892e6eb">
+                  <SHORT-NAME>EcuMWakeupSource</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMWakeupSource</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMWakeupSource/EcuMResetReason</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <FLOAT-VALUE>
+                      <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMWakeupSource/EcuMValidationTimeout</DEFINITION-REF>
+                      <VALUE>0.0</VALUE>
+                    </FLOAT-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMWakeupSource/EcuMWakeupSourceId</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMWakeupSource/EcuMWakeupSourcePolling</DEFINITION-REF>
+                      <VALUE>false</VALUE>
+                    </BOOLEAN-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
               </SUB-CONTAINERS>
             </CONTAINER>
           </CONTAINERS>
@@ -669,8 +735,28 @@
                     </CONTAINER>
                   </SUB-CONTAINERS>
                 </CONTAINER>
-                <CONTAINER UUID="981c619f-8c0e-448e-8ec9-c269a1cad94f">
-                  <SHORT-NAME>McuModeSettingConf</SHORT-NAME>
+                <CONTAINER UUID="1ea8d5da-1890-4d22-9d85-bedf041a1874">
+                  <SHORT-NAME>RUN</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf/McuMode</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="e6435b61-a599-4555-ad6f-9b21f2dafb63">
+                  <SHORT-NAME>SLEEP</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf</DEFINITION-REF>
                   <PARAMETER-VALUES>
                     <INTEGER-VALUE>
