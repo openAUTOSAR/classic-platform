@@ -99,7 +99,11 @@ void Pwm_DeInitChannel(Pwm_ChannelType Channel);
 #endif
 
 #if PWM_NOTIFICATION_SUPPORTED==STD_ON
-static void Pwm_Isr(void);
+static void Pwm_Isr(uint8 sub);
+static void Pwm_Isr_0(void){Pwm_Isr(0);}
+static void Pwm_Isr_1(void){Pwm_Isr(1);}
+static void Pwm_Isr_2(void){Pwm_Isr(2);}
+static void Pwm_Isr_3(void){Pwm_Isr(3);}
 #endif
 
 static void calcPeriodTicksAndPrescaler(
@@ -142,7 +146,6 @@ static void configureChannel(const Pwm_ChannelConfigurationType* channelConfig){
 
 	Pwm_ChannelType channel = channelConfig->channel;
 	volatile struct FLEXPWM_tag *flexHw;
-
 	flexHw = &FLEXPWM_0;
 
 	Pwm_ChannelPrescalerType prescaler;  uint16_t period_ticks;
@@ -169,6 +172,20 @@ static void configureChannel(const Pwm_ChannelConfigurationType* channelConfig){
 
 void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
     Pwm_ChannelType channel_iterator;
+	volatile struct FLEXPWM_tag *flexHw;
+	flexHw = &FLEXPWM_0;
+    union out_t{
+        vuint16_t R;
+        struct {
+            vuint16_t:4;
+            vuint16_t PWMA_EN:4;
+            vuint16_t PWMB_EN:4;
+            vuint16_t PWMX_EN:4;
+        } B;
+    };
+    union out_t mask;
+
+    mask.R = 0;
 
     /** @req PWM118 */
     /** @req PWM121 */
@@ -219,52 +236,52 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
 				switch(channel)
 				{
 				case 0:
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F0),PWM_ISR_PRIORITY, 0);
+					mask.B.PWMA_EN |= 0b0001;
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_0, (IrqType)(PWM0_RF0),PWM_ISR_PRIORITY, 0);
 					break;
 				case 1:
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F1),PWM_ISR_PRIORITY, 0);
+					mask.B.PWMB_EN |= 0b0001;
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_0, (IrqType)(PWM0_RF0),PWM_ISR_PRIORITY, 0);
 					break;
 				case 2:
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F2),PWM_ISR_PRIORITY, 0);
+					mask.B.PWMX_EN |= 0b0001;
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_0, (IrqType)(PWM0_RF0),PWM_ISR_PRIORITY, 0);
 					break;
 				case 3:
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F3),PWM_ISR_PRIORITY, 0);
+					mask.B.PWMA_EN |= 0b0010;
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_1, (IrqType)(PWM0_RF1),PWM_ISR_PRIORITY, 0);
 					break;
 				case 4:
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F4),PWM_ISR_PRIORITY, 0);
+					mask.B.PWMX_EN |= 0b0010;
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_1, (IrqType)(PWM0_RF1),PWM_ISR_PRIORITY, 0);
 					break;
 				case 5:
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F5),PWM_ISR_PRIORITY, 0);
+					mask.B.PWMB_EN |= 0b0010;
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_1, (IrqType)(PWM0_RF1),PWM_ISR_PRIORITY, 0);
 					break;
 				case 6:
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F6),PWM_ISR_PRIORITY, 0);
+					mask.B.PWMA_EN |= 0b0100;
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_2, (IrqType)(PWM0_RF2),PWM_ISR_PRIORITY, 0);
 					break;
 				case 7:
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F7),PWM_ISR_PRIORITY, 0);
+					mask.B.PWMB_EN |= 0b0100;
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_2, (IrqType)(PWM0_RF2),PWM_ISR_PRIORITY, 0);
 					break;
 				case 8:
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F8),PWM_ISR_PRIORITY, 0);
+					mask.B.PWMX_EN |= 0b0100;
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_2, (IrqType)(PWM0_RF2),PWM_ISR_PRIORITY, 0);
 					break;
 				case 9:
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F9),PWM_ISR_PRIORITY, 0);
+					mask.B.PWMA_EN |= 0b1000;
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_3, (IrqType)(PWM0_RF3),PWM_ISR_PRIORITY, 0);
 					break;
 				case 10:
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F10),PWM_ISR_PRIORITY, 0);
+					mask.B.PWMB_EN |= 0b1000;
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_3, (IrqType)(PWM0_RF3),PWM_ISR_PRIORITY, 0);
 					break;
 				case 11:
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F11),PWM_ISR_PRIORITY, 0);
-					break;
-				case 12:
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F12),PWM_ISR_PRIORITY, 0);
-					break;
-				case 13:
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F13),PWM_ISR_PRIORITY, 0);
-					break;
-				case 14:
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F14),PWM_ISR_PRIORITY, 0);
-					break;
-				case 15:
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr, (IrqType)(EMISOS200_FLAG_F15),PWM_ISR_PRIORITY, 0);
+					mask.B.PWMX_EN |= 0b1000;
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_3, (IrqType)(PWM0_RF3),PWM_ISR_PRIORITY, 0);
 					break;
 				default:
 					break;
@@ -273,10 +290,11 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
 		#endif
     }
 
-	flexHw->OUTEN.B.PWMA_EN = PWM_USED_SUB_MASK;
-	flexHw->OUTEN.B.PWMB_EN = PWM_USED_SUB_MASK;
-	flexHw->MCTRL.B.LDOK = PWM_USED_SUB_MASK;
-	flexHw->MCTRL.B.RUN = PWM_USED_SUB_MASK;
+	flexHw->OUTEN.B.PWMA_EN = mask.B.PWMA_EN;
+	flexHw->OUTEN.B.PWMB_EN = mask.B.PWMB_EN;
+	flexHw->OUTEN.B.PWMX_EN = mask.B.PWMX_EN;
+	flexHw->MCTRL.B.LDOK = mask.B.PWMA_EN;
+	flexHw->MCTRL.B.RUN = mask.B.PWMA_EN;
 }
 
 #if PWM_DE_INIT_API==STD_ON
@@ -294,7 +312,8 @@ void inline Pwm_DeInitChannel(Pwm_ChannelType Channel) {
 
 void Pwm_DeInit() {
 	Pwm_ChannelType channel_iterator;
-	volatile struct FLEXPWM_tag *flexHw = &FLEXPWM_0;
+	volatile struct FLEXPWM_tag *flexHw;
+	flexHw = &FLEXPWM_0;
 
 	if(E_OK != Pwm_ValidateInitialized(PWM_DEINIT_ID))
 	{
@@ -350,10 +369,10 @@ void Pwm_DeInit() {
 		uint16 leading_edge_position = (uint16) (((uint32) Period * (uint32) DutyCycle) >> 15);
 
 		/* Timer instant for leading edge */
-		flexHw->SUB[Channel].CADR.R = leading_edge_position;
+		flexHw->SUB[Channel].VAL[3].R = leading_edge_position;
 
 		/* Timer instant for the period to restart */
-		flexHw->SUB[Channel].CBDR.R = Period;
+		flexHw->SUB[Channel].VAL[2].R = Period;
 	}
 #endif
 
@@ -376,7 +395,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 	volatile struct FLEXPWM_tag *flexHw;
 	flexHw = &FLEXPWM_0;
 
-	uint16 leading_edge_position = (uint16) ((flexHw->SUB[Channel].CBDR.R
+	uint16 leading_edge_position = (uint16) ((flexHw->SUB[Channel].VAL[3].R
 				* (uint32) DutyCycle) >> 15);
 
 	/* Timer instant for leading edge */
@@ -391,7 +410,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 	 * to the configured polarity parameter [which is already set from
 	 * Pwm_InitChannel], when the duty parameter is 0% [=0] or 100% [=0x8000].
 	 */
-	flexHw->SUB[Channel].CADR.R = leading_edge_position;
+	flexHw->SUB[Channel].VAL[3].R = leading_edge_position;
 }
 #endif
 
@@ -425,7 +444,8 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 		if ((E_OK == Pwm_ValidateInitialized(PWM_GETOUTPUTSTATE_ID)) &&
 			(E_OK == Pwm_ValidateChannel(Channel, PWM_GETOUTPUTSTATE_ID)))
 		{
-			volatile struct FLEXPWM_tag *flexHw = &FLEXPWM_0;
+			volatile struct FLEXPWM_tag *flexHw;
+			flexHw = &FLEXPWM_0;
 
 			switch(Channel % FLEXPWM_SUB_MODULE_DIVIDER)
 			{
@@ -459,7 +479,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 		flexHw = &FLEXPWM_0;
 
 		// Disable flags on this channel
-		flexHw->SUB[Channel].CCR.B.FEN = 0;
+		flexHw->SUB[Channel].INTEN.B.RIE = 0;
 	}
 
 	void Pwm_EnableNotification(Pwm_ChannelType Channel,Pwm_EdgeNotificationType Notification)
@@ -475,38 +495,37 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 
 		ChannelRuntimeStruct[Channel].NotificationState = Notification;
 
-		flexHw->SUB[Channel].CCR.B.FEN = 1;
+		flexHw->SUB[Channel].INTEN.B.RIE = 0;
 	}
 
-	static void Pwm_Isr(void)
+	static void Pwm_Isr(uint8 sub)
 	{
 		// Find out which channel that triggered the interrupt
-			uint32_t flagmask = FLEXPWM_0.GFLAG.R;
+		volatile struct FLEXPWM_tag *flexHw;
+		flexHw = &FLEXPWM_0;
+		uint32_t flagmask = flexHw->SUB[sub].STS.R;
 
- 			// There are 24 channels specified in the global flag register, but
-			// we only listen to the first 16 as only these support OPWfM
-			for (Pwm_ChannelType channel_iterator = 0; channel_iterator < PWM_NUMBER_OF_CHANNELS; channel_iterator++)
+		// There are 24 channels specified in the global flag register, but
+		// we only listen to the first 16 as only these support OPWfM
+		for (Pwm_ChannelType channel_iterator = 0; channel_iterator < PWM_NUMBER_OF_CHANNELS; channel_iterator++)
+		{
+			Pwm_ChannelType flexpwm_ch = PwmConfigPtr->Channels[channel_iterator].channel;
+
+			if (flagmask & (1 << flexpwm_ch))
 			{
-				Pwm_ChannelType flexpwm_ch = PwmConfigPtr->Channels[channel_iterator].channel;
-
-				if (flagmask & (1 << flexpwm_ch))
+				if (PwmConfigPtr->NotificationHandlers[channel_iterator] != NULL)
 				{
-					if (PwmConfigPtr->NotificationHandlers[channel_iterator] != NULL && FLEXPWM_0.SUB[flexpwm_ch].CCR.B.FEN)
+					Pwm_EdgeNotificationType notification = ChannelRuntimeStruct[flexpwm_ch].NotificationState;
+					if (notification == PWM_BOTH_EDGES)
 					{
-						Pwm_EdgeNotificationType notification = ChannelRuntimeStruct[flexpwm_ch].NotificationState;
-						if (notification == PWM_BOTH_EDGES ||
-
-								notification == FLEXPWM_0.SUB[flexpwm_ch].CSR.B.UCOUT)
-						{
-							PwmConfigPtr->NotificationHandlers[channel_iterator]();
-						}
+						PwmConfigPtr->NotificationHandlers[channel_iterator]();
 					}
-
-					// Clear interrupt
-					FLEXPWM_0.SUB[flexpwm_ch].CSR.B.FLAG = 1;
 				}
-			}
 
+			}
+		}
+		// Clear interrupt
+		flexHw->SUB[sub].STS.R = 0xffff;
 	}
 
 #endif /* PWM_NOTIFICATION_SUPPORED == STD_ON */

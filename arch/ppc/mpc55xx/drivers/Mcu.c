@@ -552,10 +552,11 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     CGM.FMPLL[1].CR.B.NDIV = clockSettingsPtr->Pll2_1;
     CGM.FMPLL[1].CR.B.ODF = clockSettingsPtr->Pll3_1;
 
-    /* RUN0 cfg: 16MHzIRCON,OSC0ON,PLL0ON,syclk=PLL0 */
-    ME.RUN[0].R = 0x001F0074;
+    /* RUN0 cfg: 16MHzIRCON,OSC0ON,PLL0ON, PLL1ON,syclk=PLL0 */
+  	ME.RUN[0].R = 0x001F00F4;       
     /* Peri. Cfg. 1 settings: only run in RUN0 mode */
     ME.RUNPC[1].R = 0x00000010;
+
     /* MPC56xxB/S: select ME.RUNPC[1] */
     ME.PCTL[68].R = 0x01; //SIUL control
     ME.PCTL[91].R = 0x01; //RTC/API control
@@ -584,11 +585,11 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
 
     /* Pwm, adc, etimer clock */
     CGM.AC0SC.R = 0x05000000;  /* MPC56xxP: Select FMPLL1 for aux clk 0  */
-    CGM.AC_DC[0].R = 0x80000000;  /* MPC56xxP: Enable aux clk 0 div by 1 */
+    CGM.AC0DC.R = 0x80000000;  /* MPC56xxP: Enable aux clk 0 div by 1 */
 
     /* Safety port clock */
     CGM.AC2SC.R = 0x04000000;  /* MPC56xxP: Select FMPLL0 for aux clk 2  */
-    CGM.AC_DC[0].R = 0x80000000;  /* MPC56xxP: Enable aux clk 2 div by 1 */
+    CGM.AC2DC.R = 0x80000000;  /* MPC56xxP: Enable aux clk 2 div by 1 */
 
  #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
     // Partially following the steps in MPC5567 RM..
@@ -1001,7 +1002,7 @@ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type) {
 			 uint32  extal = Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePointFrequency;
 			 f_sys = CALC_SYSTEM_CLOCK(extal,emfd,eprediv,erfd);
 
-			 prescaler = CGM.AC_DC[0].B.DIV;
+			 prescaler = CGM.AC0DC.B.DIV0;
 			 return f_sys/(1<<prescaler);
 	     break;
 

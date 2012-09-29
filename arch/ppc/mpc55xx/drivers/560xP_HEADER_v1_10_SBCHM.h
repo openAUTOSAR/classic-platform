@@ -2457,15 +2457,6 @@ extern "C" {
         } AC0SC;                /* Aux Clock 0 Select Control */
 
         union {
-            vuint8_t R;
-            struct {
-                vuint8_t DE:1;
-                  vuint8_t:3;
-                vuint8_t DIV:4;
-            } B;
-        } AC_DC[4];             /* Aux Clock 0 Divider Configuration 0->3 */
-#if 0
-        union {
             vuint32_t R;
             struct {
                 vuint32_t DE0:1;
@@ -2482,7 +2473,6 @@ extern "C" {
                 vuint32_t DIV3:4;
             } B;
         } AC0DC;                /* Aux Clock 0 Divider Configuration 0->3 */
-#endif
 
         union {
             vuint32_t R;
