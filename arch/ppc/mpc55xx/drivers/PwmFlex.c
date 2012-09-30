@@ -152,13 +152,14 @@ static void configureChannel(const Pwm_ChannelConfigurationType* channelConfig){
 	calcPeriodTicksAndPrescaler( channelConfig, &period_ticks, &prescaler );
 
 	// Edge-aligned PWM-output
-	flexHw->SUB[3].INIT.R =   0xFF00; /* INIT value */
-	flexHw->SUB[3].VAL[0].R = 0x0000; /* 0 mid-cycle reload point */
-	flexHw->SUB[3].VAL[1].R = 0x0100; /* modulo count value (maximum count) *//* PWMA 50% duty cycle */
-	flexHw->SUB[3].VAL[2].R = 0xFF00; /* PWMA rising edge */
-	flexHw->SUB[3].VAL[3].R = 0xFF80; /* PWMA falling edge */
-	flexHw->SUB[3].VAL[4].R = 0xFF00; /* PWMB rising edge */
-	flexHw->SUB[3].VAL[5].R = 0xFF20; /* PWMB falling edge */
+	flexHw->SUB[3].INIT.R =   0x0000; /* INIT value */
+	flexHw->SUB[3].VAL[0].R = 0x0000; /* 0 mid-cycle reload point *//* PWMX Rising edge */
+	flexHw->SUB[3].VAL[1].R = 0x4000; /* modulo count value (maximum count) */
+	flexHw->SUB[3].VAL[2].R = 0x0; /* PWMA rising edge */
+	flexHw->SUB[3].VAL[3].R = 0x4000; /* PWMA falling edge */
+	flexHw->SUB[3].VAL[4].R = 0x0000; /* PWMB rising edge */
+	flexHw->SUB[3].VAL[5].R = 0x4000; /* PWMB falling edge */
+	flexHw->SUB[3].DISMAP.R   = 0x0000;	// disable fault pin condition
 
 	/* Run as independent channels */
 	flexHw->SUB[3].CTRL2.B.INDEP = 1;
@@ -293,8 +294,8 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
 	flexHw->OUTEN.B.PWMA_EN = mask.B.PWMA_EN;
 	flexHw->OUTEN.B.PWMB_EN = mask.B.PWMB_EN;
 	flexHw->OUTEN.B.PWMX_EN = mask.B.PWMX_EN;
-	flexHw->MCTRL.B.LDOK = mask.B.PWMA_EN;
-	flexHw->MCTRL.B.RUN = mask.B.PWMA_EN;
+	flexHw->MCTRL.B.LDOK = mask.B.PWMA_EN | mask.B.PWMB_EN | mask.B.PWMX_EN;
+	flexHw->MCTRL.B.RUN = mask.B.PWMA_EN | mask.B.PWMB_EN | mask.B.PWMX_EN;
 }
 
 #if PWM_DE_INIT_API==STD_ON
@@ -366,13 +367,26 @@ void Pwm_DeInit() {
 		volatile struct FLEXPWM_tag *flexHw;
 		flexHw = &FLEXPWM_0;
 
+		/* Changing period of a channel means changing for whole submodule */
+
 		uint16 leading_edge_position = (uint16) (((uint32) Period * (uint32) DutyCycle) >> 15);
+		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[2].R = Period/2;
 
-		/* Timer instant for leading edge */
-		flexHw->SUB[Channel].VAL[3].R = leading_edge_position;
-
-		/* Timer instant for the period to restart */
-		flexHw->SUB[Channel].VAL[2].R = Period;
+		switch(Channel % FLEXPWM_SUB_MODULE_DIVIDER)
+		{
+		case 0: /* PWMA */
+			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[3].R = leading_edge_position/2;
+			break;
+		case 1: /* PWMB */
+			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[5].R = leading_edge_position/2;
+			break;
+		case 2: /* PWMX */
+			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[1].R = leading_edge_position/2;
+			break;
+		default:
+			break;
+		}
+		flexHw->MCTRL.B.LDOK = 1 << Channel / FLEXPWM_SUB_MODULE_DIVIDER;
 	}
 #endif
 
@@ -395,8 +409,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 	volatile struct FLEXPWM_tag *flexHw;
 	flexHw = &FLEXPWM_0;
 
-	uint16 leading_edge_position = (uint16) ((flexHw->SUB[Channel].VAL[3].R
-				* (uint32) DutyCycle) >> 15);
+	uint16 leading_edge_position;
 
 	/* Timer instant for leading edge */
 
@@ -410,7 +423,27 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 	 * to the configured polarity parameter [which is already set from
 	 * Pwm_InitChannel], when the duty parameter is 0% [=0] or 100% [=0x8000].
 	 */
-	flexHw->SUB[Channel].VAL[3].R = leading_edge_position;
+	switch(Channel % FLEXPWM_SUB_MODULE_DIVIDER)
+	{
+	case 0: /* PWMA */
+		leading_edge_position = (uint16) ((flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[3].R
+					* (uint32) DutyCycle) >> 15);
+		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[2].R = leading_edge_position/2;
+		break;
+	case 1: /* PWMB */
+		leading_edge_position = (uint16) ((flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[5].R
+					* (uint32) DutyCycle) >> 15);
+		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[4].R = leading_edge_position/2;
+		break;
+	case 2: /* PWMX */
+		leading_edge_position = (uint16) ((flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[1].R
+					* (uint32) DutyCycle) >> 15);
+		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[0].R = leading_edge_position/2;
+		break;
+	default:
+		break;
+	}
+	flexHw->MCTRL.B.LDOK = 1 << Channel / FLEXPWM_SUB_MODULE_DIVIDER;
 }
 #endif
 
@@ -425,7 +458,21 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 		volatile struct FLEXPWM_tag *flexHw;
 		flexHw = &FLEXPWM_0;
 
-		// Set correct VAL to INIT
+		switch(Channel % FLEXPWM_SUB_MODULE_DIVIDER)
+		{
+		case 0: /* PWMA */
+			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[2].R = 0x0000;
+			break;
+		case 1: /* PWMB */
+			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[4].R = 0x0000;
+			break;
+		case 2: /* PWMX */
+			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[0].R = 0x0000;
+			break;
+		default:
+			break;
+		}
+		flexHw->MCTRL.B.LDOK = 1 << Channel / FLEXPWM_SUB_MODULE_DIVIDER;
     }
 #endif
 /*
@@ -457,6 +504,8 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 				break;
 			case 2:
 				res = (Pwm_OutputStateType)flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].OCTRL.B.PWMX_IN;
+				break;
+			default:
 				break;
 			}
 		}
