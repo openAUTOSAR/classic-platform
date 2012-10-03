@@ -129,7 +129,10 @@ Std_ReturnType CanSM_Internal_RequestComMode( NetworkHandleType NetworkHandle, C
 	if (status > overallStatus) {
 		overallStatus = status;
 	}
-
+	status = CanSM_Internal_RequestCanIfPduMode(NetworkHandle, ComM_Mode);
+	if (status > overallStatus) {
+		overallStatus = status;
+	}
 	if (overallStatus == E_OK) {
 		ComM_BusSM_ModeIndication(NetworkHandle, ComM_Mode);                 /**< @req CANSM089 */
 		CanSM_Internal.Networks[NetworkHandle].requestedMode = ComM_Mode;
@@ -174,6 +177,51 @@ Std_ReturnType CanSM_Internal_RequestCanIfMode( NetworkHandleType NetworkHandle,
 		}
 	}
 	return totalStatus;
+}
+
+Std_ReturnType CanSM_Internal_SetCanIfPduMode( NetworkHandleType NetworkHandle, CanIf_ChannelSetModeType ChannelMode ) {
+	const CanSM_NetworkType* Network = &CanSM_Config->Networks[NetworkHandle];
+	Std_ReturnType totalStatus = E_OK;
+
+	for (uint8 i = 0; i < Network->ControllerCount; ++i) {
+		const CanSM_ControllerType* Controller = &Network->Controllers[i];
+		Std_ReturnType status =
+				CanIf_SetPduMode(Controller->CanIfControllerId, ChannelMode);
+		if (status > totalStatus) {
+			totalStatus = status;
+		}
+	}
+
+	return totalStatus;
+}
+/** @req CANSM083 */
+Std_ReturnType CanSM_Internal_RequestCanIfPduMode( NetworkHandleType NetworkHandle, ComM_ModeType ComM_Mode ) {
+	CanIf_ChannelSetModeType channelMode = CANIF_SET_OFFLINE;
+	Std_ReturnType status = E_OK;
+	boolean updatePduMode = FALSE;
+
+	switch (ComM_Mode) {
+		case COMM_NO_COMMUNICATION:
+			/* No action */
+			break;
+		case COMM_SILENT_COMMUNICATION:
+			/* Should actually only be done on transition from FULL_COMMUNICATION */
+			channelMode = CANIF_SET_TX_OFFLINE;
+			updatePduMode = TRUE;
+			break;
+		case COMM_FULL_COMMUNICATION:
+			/* Should actually only be done on transition from SILENT_COMMUNICATION */
+			channelMode = CANIF_SET_TX_ONLINE;
+			updatePduMode = TRUE;
+			break;
+		default:
+			status = E_NOT_OK;
+			break;
+	}
+	if (updatePduMode) {
+		status = CanSM_Internal_SetCanIfPduMode(NetworkHandle, channelMode);
+	}
+	return status;
 }
 
 /** @req CANSM173 */
@@ -247,10 +295,10 @@ static void CanSM_Internal_CANSM_BOR_CHECK(NetworkHandleType NetworkHandle)
 		Network->timer = 0;
 		Network->BusOffRecoveryState = CANSM_BOR_TXOFF_L1;
 
-		// Tx offline
-		CanSM_Internal_RequestComGroupMode(NetworkHandle, COMM_SILENT_COMMUNICATION);
 		// Restart CAN
 		CanSM_Internal_RequestCanIfMode(NetworkHandle, COMM_FULL_COMMUNICATION);
+		// Tx offline
+		CanSM_Internal_SetCanIfPduMode(NetworkHandle, CANIF_SET_TX_OFFLINE);
 	}
 	else if(Network->timer >= CanSM_Config->Networks[NetworkHandle].CanSMBorTimeTxEnsured){
 #if defined(USE_DEM)
@@ -269,10 +317,10 @@ static void CanSM_Internal_CANSM_BOR_NO_BUS_OFF(NetworkHandleType NetworkHandle)
 		Network->timer = 0;
 		Network->BusOffRecoveryState = CANSM_BOR_TXOFF_L1;
 
-		// Tx offline
-		CanSM_Internal_RequestComGroupMode(NetworkHandle, COMM_SILENT_COMMUNICATION);
 		// Restart CAN
 		CanSM_Internal_RequestCanIfMode(NetworkHandle, COMM_FULL_COMMUNICATION);
+		// Tx offline
+		CanSM_Internal_SetCanIfPduMode(NetworkHandle, CANIF_SET_TX_OFFLINE);
 	}
 }
 
@@ -287,7 +335,7 @@ static void CanSM_Internal_CANSM_BOR_TXOFF_L1(NetworkHandleType NetworkHandle)
 		// inc busoff counter
 		Network->counter++;
     	// Try starting Tx again
-		CanSM_Internal_RequestComGroupMode(NetworkHandle, COMM_FULL_COMMUNICATION);
+		CanSM_Internal_SetCanIfPduMode(NetworkHandle, CANIF_SET_TX_ONLINE);
 	}
 }
 
@@ -304,10 +352,11 @@ static void CanSM_Internal_CANSM_BOR_CHECK_L1(NetworkHandleType NetworkHandle)
 		}else{
 			Network->BusOffRecoveryState = CANSM_BOR_TXOFF_L1;
 		}
-		// Tx offline
-		CanSM_Internal_RequestComGroupMode(NetworkHandle, COMM_SILENT_COMMUNICATION);
+
 		// Restart CAN
 		CanSM_Internal_RequestCanIfMode(NetworkHandle, COMM_FULL_COMMUNICATION);
+		// Tx offline
+		CanSM_Internal_SetCanIfPduMode(NetworkHandle, CANIF_SET_TX_OFFLINE);
 	}
 	else if(Network->timer >= CanSM_Config->Networks[NetworkHandle].CanSMBorTimeTxEnsured){
 		// clear busoff counter
@@ -331,7 +380,7 @@ static void CanSM_Internal_CANSM_BOR_TXOFF_L2(NetworkHandleType NetworkHandle)
 		// inc busoff counter
 		Network->counter++;
     	// Try starting Tx again
-		CanSM_Internal_RequestComGroupMode(NetworkHandle, COMM_FULL_COMMUNICATION);
+		CanSM_Internal_SetCanIfPduMode(NetworkHandle, CANIF_SET_TX_ONLINE);
 	}
 }
 
@@ -353,10 +402,11 @@ static void CanSM_Internal_CANSM_BOR_CHECK_L2(NetworkHandleType NetworkHandle)
 			/* TODO: Should we really go to CANSM_BOR_TXOFF_L1 here? */
 			Network->BusOffRecoveryState = CANSM_BOR_TXOFF_L1;
 		}
-		// Tx offline
-		CanSM_Internal_RequestComGroupMode(NetworkHandle, COMM_SILENT_COMMUNICATION);
+
 		// Restart CAN
 		CanSM_Internal_RequestCanIfMode(NetworkHandle, COMM_FULL_COMMUNICATION);
+		// Tx offline
+		CanSM_Internal_SetCanIfPduMode(NetworkHandle, CANIF_SET_TX_OFFLINE);
 	}
 	else if(Network->timer >= CanSM_Config->Networks[NetworkHandle].CanSMBorTimeTxEnsured){
 		// clear busoff counter

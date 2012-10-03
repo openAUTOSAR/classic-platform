@@ -1208,8 +1208,11 @@ void CanTp_RxIndication(PduIdType CanTpRxPduId, /** @req CANTP078 */ /** @req CA
 		const PduInfoType *CanTpRxPduPtr)
 {
 	CanTpFifoQueueItem item;
-	VALIDATE_NO_RV( CanTpRunTimeData.internalState == CANTP_ON,
-			SERVICE_ID_CANTP_RX_INDICATION, CANTP_E_UNINIT ); /** @req CANTP238 */ /** @req CANTP031 */
+
+	if( CanTpRunTimeData.internalState != CANTP_ON ) {
+		DET_REPORTERROR(MODULE_ID_CANTP, 0, SERVICE_ID_CANTP_RX_INDICATION, CANTP_E_UNINIT );  /** @req CANTP238 */ /** @req CANTP031 */
+		return;
+	}
 
 	item.PduId = CanTpRxPduId;
 	item.SduLength = CanTpRxPduPtr->SduLength;
@@ -1394,8 +1397,10 @@ void CanTp_MainFunction(void)
 	const CanTp_TxNSduType *txConfigListItem = NULL;
 	const CanTp_RxNSduType *rxConfigListItem = NULL;
 
-	VALIDATE_NO_RV( CanTpRunTimeData.internalState == CANTP_ON,
-			SERVICE_ID_CANTP_MAIN_FUNCTION, CANTP_E_UNINIT ); /** @req CANTP031 */
+	if( CanTpRunTimeData.internalState != CANTP_ON ) {
+		DET_REPORTERROR(MODULE_ID_CANTP, 0, SERVICE_ID_CANTP_MAIN_FUNCTION, CANTP_E_UNINIT ); /** @req CANTP031 */
+		return;
+	}
 
 	// Dispatch the messages that resides in the FIFO to CanTp_RxIndication_Main.
 	while ( fifoQueueRead( &CanTpRunTimeData.fifo, &item ) == TRUE  ) {
