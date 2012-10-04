@@ -206,11 +206,12 @@ GPT_ISR( 8 )
 #endif
 #endif
 #endif
+#endif
 
 #if defined(CFG_MPC560X)
 	#if defined(CFG_MPC5606S)
 		#define GPT_CHANNEL_PIT_LAST GPT_CHANNEL_PIT_3
-	#if defined(CFG_MPC5604P)
+	#elif defined(CFG_MPC5604P)
 		#define GPT_CHANNEL_PIT_LAST GPT_CHANNEL_PIT_2
     #elif defined(CFG_MPC5604B)
 	    #define GPT_CHANNEL_PIT_LAST GPT_CHANNEL_PIT_5
@@ -286,6 +287,7 @@ void Gpt_Init(const Gpt_ConfigType *config) {
 					case 7: ISR_INSTALL_ISR2( "Gpt_7", Gpt_Isr_Channel7, PIT_INT7, 2, 0 ); break;
 #if !defined(CFG_MPC5606B)
 					case 8: ISR_INSTALL_ISR2( "Gpt_8", Gpt_Isr_Channel8, PIT_PITFLG_PIT8, 2, 0 );break;
+#endif
 #endif
 #endif
 #endif

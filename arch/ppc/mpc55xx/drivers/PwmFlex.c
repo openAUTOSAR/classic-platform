@@ -123,8 +123,8 @@ static void calcPeriodTicksAndPrescaler(
 		// Go from lowest to highest prescaler
 		for (pre = PWM_CHANNEL_PRESCALER_DIV_1; pre <= PWM_CHANNEL_PRESCALER_DIV_128; ++pre) {
 		  ticks_temp = f_in / (f_target * (1 << pre)); // Calc ticks
-		  if (ticks_temp > 0xffff) {
-			ticks_temp = 0xffff;  // Prescaler too low
+		  if (ticks_temp > 0x7fff) {
+			ticks_temp = 0x7fff;  // Prescaler too low
 		  } else {
 			break;                // Prescaler ok
 		  }
@@ -132,8 +132,8 @@ static void calcPeriodTicksAndPrescaler(
 	} else {
 		pre = channelConfig->prescaler; // Use config setting
 		ticks_temp = f_in / (f_target * (1 << pre)); // Calc ticks
-		if (ticks_temp > 0xffff) {
-		  ticks_temp = 0xffff;  // Prescaler too low
+		if (ticks_temp > 0x7fff) {
+		  ticks_temp = 0x7fff;  // Prescaler too low
 		}
 	}
 
@@ -146,29 +146,46 @@ static void configureChannel(const Pwm_ChannelConfigurationType* channelConfig){
 
 	Pwm_ChannelType channel = channelConfig->channel;
 	volatile struct FLEXPWM_tag *flexHw;
+	Pwm_ChannelPrescalerType prescaler;
+	uint16_t period_ticks;
+
 	flexHw = &FLEXPWM_0;
 
-	Pwm_ChannelPrescalerType prescaler;  uint16_t period_ticks;
+	/*  Remove submodule unique so that it is not configured for all channels */
+
+	/* All channels on same submodule must have same period. Should be checked by validation */
 	calcPeriodTicksAndPrescaler( channelConfig, &period_ticks, &prescaler );
 
-	// Edge-aligned PWM-output
-	flexHw->SUB[3].INIT.R =   0x0000; /* INIT value */
-	flexHw->SUB[3].VAL[0].R = 0x0000; /* 0 mid-cycle reload point *//* PWMX Rising edge */
-	flexHw->SUB[3].VAL[1].R = 0x4000; /* modulo count value (maximum count) */
-	flexHw->SUB[3].VAL[2].R = 0x0; /* PWMA rising edge */
-	flexHw->SUB[3].VAL[3].R = 0x4000; /* PWMA falling edge */
-	flexHw->SUB[3].VAL[4].R = 0x0000; /* PWMB rising edge */
-	flexHw->SUB[3].VAL[5].R = 0x4000; /* PWMB falling edge */
-	flexHw->SUB[3].DISMAP.R   = 0x0000;	// disable fault pin condition
-
-	/* Run as independent channels */
-	flexHw->SUB[3].CTRL2.B.INDEP = 1;
 	/* Prescaler */
-	flexHw->SUB[3].CTRL.B.PRSC = prescaler;
+	flexHw->SUB[channel / FLEXPWM_SUB_MODULE_DIVIDER].CTRL.B.PRSC = prescaler;
 
-	flexHw->SUB[channel].OCTRL.B.POLA = (channelConfig->polarity == PWM_LOW) ? 1 : 0;
+	/* Edge aligned output, modulo count */
+	flexHw->SUB[channel / FLEXPWM_SUB_MODULE_DIVIDER].INIT.R =   0x0000; /* INIT value */
+	flexHw->SUB[channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[1].R = period_ticks; /* maximum count i.e. period NOTE! Valid for whole subgroup */
 
+	flexHw->SUB[channel / FLEXPWM_SUB_MODULE_DIVIDER].DISMAP.R   = 0x0000;	/* disable fault pin condition */
+	flexHw->SUB[channel / FLEXPWM_SUB_MODULE_DIVIDER].CTRL2.B.INDEP = 1; /* Run as independent channels */
 
+	/* Polarity */
+	switch(channel % FLEXPWM_SUB_MODULE_DIVIDER)
+	{
+	case 0: /* PWMA */
+		flexHw->SUB[channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[2].R = 0x0000; /* PWMA rising edge */
+		flexHw->SUB[channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[3].R = period_ticks; /* PWMA falling edge */
+		flexHw->SUB[channel / FLEXPWM_SUB_MODULE_DIVIDER].OCTRL.B.POLA = (channelConfig->polarity == PWM_LOW) ? 1 : 0;
+		break;
+	case 1: /* PWMB */
+		flexHw->SUB[channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[4].R = 0x0000; /* PWMB rising edge */
+		flexHw->SUB[channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[5].R = period_ticks; /* PWMB falling edge */
+		flexHw->SUB[channel / FLEXPWM_SUB_MODULE_DIVIDER].OCTRL.B.POLB = (channelConfig->polarity == PWM_LOW) ? 1 : 0;
+		break;
+	case 2: /* PWMX */
+		flexHw->SUB[channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[0].R = 0x0000; /* PWMX rising edge */
+		flexHw->SUB[channel / FLEXPWM_SUB_MODULE_DIVIDER].OCTRL.B.POLX = (channelConfig->polarity == PWM_LOW) ? 1 : 0;
+		break;
+	default:
+		break;
+	}
 }
 
 void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
@@ -329,6 +346,7 @@ void Pwm_DeInit() {
 	// Disable module
 	flexHw->OUTEN.B.PWMA_EN = 0b0000;
 	flexHw->OUTEN.B.PWMB_EN = 0b0000;
+	flexHw->OUTEN.B.PWMX_EN = 0b0000;
 	flexHw->MCTRL.B.LDOK = 0b0000;
 	flexHw->MCTRL.B.RUN = 0b0000;
 
@@ -367,7 +385,7 @@ void Pwm_DeInit() {
 		volatile struct FLEXPWM_tag *flexHw;
 		flexHw = &FLEXPWM_0;
 
-		/* Changing period of a channel means changing for whole submodule */
+		/* Note! Changing period of a channel means changing for whole submodule since period is controll */
 
 		uint16 leading_edge_position = (uint16) (((uint32) Period * (uint32) DutyCycle) >> 15);
 		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[2].R = Period/2;
@@ -428,17 +446,17 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 	case 0: /* PWMA */
 		leading_edge_position = (uint16) ((flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[3].R
 					* (uint32) DutyCycle) >> 15);
-		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[2].R = leading_edge_position/2;
+		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[2].R = leading_edge_position;
 		break;
 	case 1: /* PWMB */
 		leading_edge_position = (uint16) ((flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[5].R
 					* (uint32) DutyCycle) >> 15);
-		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[4].R = leading_edge_position/2;
+		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[4].R = leading_edge_position;
 		break;
 	case 2: /* PWMX */
 		leading_edge_position = (uint16) ((flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[1].R
 					* (uint32) DutyCycle) >> 15);
-		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[0].R = leading_edge_position/2;
+		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[0].R = leading_edge_position;
 		break;
 	default:
 		break;
@@ -461,13 +479,13 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 		switch(Channel % FLEXPWM_SUB_MODULE_DIVIDER)
 		{
 		case 0: /* PWMA */
-			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[2].R = 0x0000;
+			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[2].R = 0;
 			break;
 		case 1: /* PWMB */
-			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[4].R = 0x0000;
+			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[4].R = 0;
 			break;
 		case 2: /* PWMX */
-			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[0].R = 0x0000;
+			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[0].R = 0;
 			break;
 		default:
 			break;
