@@ -37,3 +37,8 @@ Dcm_ReturnReadMemoryType Dcm_ReadMemory(Dcm_OpStatusType OpStatus,
 
 	return DCM_READ_FAILED;
 }
+
+void Dcm_EcuReset(Dcm_EcuResetType resetType)
+{
+
+}

@@ -35,6 +35,14 @@ typedef uint8 Dcm_SecLevelType;
 /*
  * Dcm_SesCtrlType
  */
+typedef uint8 Dcm_EcuResetType;
+#define DCM_HARD_RESET							((Dcm_EcuResetType)0x01)
+#define DCM_KEY_OFF_ON_RESET					((Dcm_EcuResetType)0x02)
+#define DCM_SOFT_RESET							((Dcm_EcuResetType)0x03)
+
+/*
+ * Dcm_SesCtrlType
+ */
 typedef uint8 Dcm_SesCtrlType;
 #define DCM_DEFAULT_SESSION						((Dcm_SesCtrlType)0x01)
 #define DCM_PROGRAMMING_SESSION					((Dcm_SesCtrlType)0x02)
