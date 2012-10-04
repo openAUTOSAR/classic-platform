@@ -85,7 +85,14 @@ typedef struct {
 	PduIdType resetPduId;
 } DspUdsEcuResetDataType;
 
+typedef struct {
+	boolean sessionPending;
+	PduIdType sessionPduId;
+	Dcm_SesCtrlType session;
+} DspUdsSessionControlDataType;
+
 static DspUdsEcuResetDataType dspUdsEcuResetData;
+static DspUdsSessionControlDataType dspUdsSessionControlData;
 static boolean dspWritePending;
 
 typedef struct {
@@ -157,6 +164,7 @@ void DspInit(void)
 {
 	dspUdsSecurityAccesData.reqInProgress = FALSE;
 	dspUdsEcuResetData.resetPending = FALSE;
+	dspUdsSessionControlData.sessionPending = FALSE;
 
 	dspWritePending = FALSE;
 	dspMemoryState=DCM_MEMORY_UNUSED;
@@ -305,7 +313,7 @@ static Std_ReturnType askApplicationForSessionPermission(Dcm_SesCtrlType newSess
 }
 
 
-void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduInfoType *pduTxData)
+void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduIdType txPduId, PduInfoType *pduTxData)
 {
 	/** @req DCM250 */
 	const Dcm_DspSessionRowType *sessionRow = DCM_Config.Dsp->DspSession->DspSessionRow;
@@ -323,6 +331,11 @@ void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduInfoType *p
 			result = askApplicationForSessionPermission(reqSessionType);
 			if (result == E_OK) {
 				DslSetSesCtrlType(reqSessionType);		/** @req DCM311 */
+
+				dspUdsSessionControlData.sessionPending = TRUE;
+				dspUdsSessionControlData.session = reqSessionType;
+				dspUdsSessionControlData.sessionPduId = txPduId;
+
 				// Create positive response
 				pduTxData->SduDataPtr[1] = reqSessionType;
 				pduTxData->SduLength = 2;
@@ -1683,6 +1696,13 @@ void DspDcmConfirmation(PduIdType confirmPduId)
 #else
 			DET_REPORTERROR(MODULE_ID_DCM, 0, DCM_UDS_RESET_ID, DCM_E_NOT_SUPPORTED);
 #endif
+		}
+	}
+
+	if (dspUdsSessionControlData.sessionPending) {
+		if (confirmPduId == dspUdsSessionControlData.sessionPduId) {
+			dspUdsSessionControlData.sessionPending = FALSE;
+			Dcm_DiagnosticSessionControl(dspUdsSessionControlData.session);
 		}
 	}
 }
