@@ -924,15 +924,17 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 				/* All write have failed or we are reading? */
 				if( 0 == handleRedundantBlock(bPtr,admPtr) ) {
 					/* block is NOT redundant or both blocks have failed */
-					if( bPtr->RomBlockDataAdress != NULL ) {
-						DEBUG_PRINTF("Copying ROM data to block\n");
-						memcpy(bPtr->RamBlockDataAddress, bPtr->RomBlockDataAdress,bPtr->NvBlockLength);
-						admPtr->ErrorStatus = NVM_REQ_OK;
-					} else if( bPtr->InitBlockCallback != NULL ) {
-						/* @req 3.1.5/NVM469 */
-						DEBUG_PRINTF("Filling block with default data\n");
-						bPtr->InitBlockCallback();
-						admPtr->ErrorStatus = NVM_REQ_OK;
+					if( ( FALSE == write ) && ( bPtr->RomBlockDataAdress != NULL ||bPtr->InitBlockCallback != NULL ) ){
+						if( bPtr->RomBlockDataAdress != NULL ) {
+							DEBUG_PRINTF("Copying ROM data to block\n");
+							memcpy(bPtr->RamBlockDataAddress, bPtr->RomBlockDataAdress,bPtr->NvBlockLength);
+							admPtr->ErrorStatus = NVM_REQ_OK;
+						} else if( bPtr->InitBlockCallback != NULL ) {
+							/* @req 3.1.5/NVM469 */
+							DEBUG_PRINTF("Filling block with default data\n");
+							bPtr->InitBlockCallback();
+							admPtr->ErrorStatus = NVM_REQ_OK;
+						}
 					} else {
 
 						/*
@@ -1266,6 +1268,23 @@ static void WriteAllMain(void)
 			break;
 		}
 		AdminMultiReq.currBlockIndex++;
+	}
+	if( AdminMultiReq.currBlockIndex >= NVM_NUM_OF_NVRAM_BLOCKS ) {
+		AdminMultiReq.currBlockIndex = 0;
+
+		/* @req 3.1.5/NVM301 */
+		if( NVM_REQ_NOT_OK == AdminMultiReq.PendingErrorStatus ) {
+			AdminMultiBlock.ErrorStatus = NVM_REQ_NOT_OK;
+		} else {
+			AdminMultiBlock.ErrorStatus = NVM_REQ_OK;
+		}
+		nvmState = NVM_IDLE;
+		nvmSubState = 0;
+
+		/*  @req 3.1.5/NVM468 */
+		if( NvM_Config.Common.MultiBlockCallback != NULL ) {
+			NvM_Config.Common.MultiBlockCallback(serviceId, AdminMultiBlock.ErrorStatus);
+		}
 	}
 }
 

@@ -68,5 +68,6 @@ typedef struct {
 Std_ReturnType CanSM_Internal_RequestComMode( NetworkHandleType NetworkHandle, ComM_ModeType ComM_Mode );
 Std_ReturnType CanSM_Internal_RequestCanIfMode( NetworkHandleType NetworkHandle, ComM_ModeType ComM_Mode );
 Std_ReturnType CanSM_Internal_RequestComGroupMode( NetworkHandleType NetworkHandle, ComM_ModeType ComM_Mode );
+Std_ReturnType CanSM_Internal_RequestCanIfPduMode( NetworkHandleType NetworkHandle, ComM_ModeType ComM_Mode );
 
 #endif /* CANSM_INTERNAL_H */

@@ -841,10 +841,10 @@ static void enterLowPower (Mcu_ModeType mcuMode )
 	 * - MPC5668
 	 *   - 0x1 32k, 0x2 64k, 0x3 128k
 	 */
-	WRITE32(CRP_PSCR, PSCR_SLEEP | PSCR_SLP12EN | PCSR_RAMSEL(RAMSEL_VAL));
 
 	/* Set Recover Vector */
 #if defined(CFG_MPC5516)
+	WRITE32(CRP_PSCR, PSCR_SLEEP | PSCR_SLP12EN | PCSR_RAMSEL(RAMSEL_VAL));
 
 	WRITE32(CRP_Z1VEC, ((uint32)&McuE_LowPowerRecoverFlash) | VLE_VAL );
 	READWRITE32( CRP_RECPTR, RECPTR_FASTREC, 0 );
@@ -858,7 +858,7 @@ static void enterLowPower (Mcu_ModeType mcuMode )
 	CRP.Z0VEC.B.Z0RST = 1;
 
 #elif defined(CFG_MPC5668)
-
+	READWRITE32(CRP_PSCR, (PSCR_SLEEP | PSCR_SLP12EN | PCSR_RAMSEL(0x7)), (PSCR_SLEEP | PSCR_SLP12EN | PCSR_RAMSEL(RAMSEL_VAL)));
 	WRITE32(CRP_Z6VEC, ((uint32)&McuE_LowPowerRecoverFlash) | VLE_VAL );
 	READWRITE32(CRP_RECPTR,RECPTR_FASTREC,0 );
 
