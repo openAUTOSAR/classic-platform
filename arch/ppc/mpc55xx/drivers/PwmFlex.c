@@ -83,7 +83,7 @@ Std_ReturnType Pwm_ValidateInitialized(Pwm_APIServiceIDType apiId)
 Std_ReturnType Pwm_ValidateChannel(Pwm_ChannelType Channel,Pwm_APIServiceIDType apiId)
 {
 	Std_ReturnType result = E_OK;
-    if( !CHANNELS_OK  )
+    if( !CHANNELS_OK  || (Pwm_ArcChToIndex[Channel] == 0xff))
     {
 #if PWM_DEV_ERROR_DETECT==STD_ON
     	Det_ReportError(PWM_MODULE_ID,0, apiId,PWM_E_PARAM_CHANNEL);
@@ -255,51 +255,51 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
 				{
 				case 0:
 					mask.B.PWMA_EN |= 0b0001;
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_0, (IrqType)(PWM0_RF0),PWM_ISR_PRIORITY, 0);
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_0, (IrqType)(PWM0_COF0),PWM_ISR_PRIORITY, 0);
 					break;
 				case 1:
 					mask.B.PWMB_EN |= 0b0001;
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_0, (IrqType)(PWM0_RF0),PWM_ISR_PRIORITY, 0);
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_0, (IrqType)(PWM0_COF0),PWM_ISR_PRIORITY, 0);
 					break;
 				case 2:
 					mask.B.PWMX_EN |= 0b0001;
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_0, (IrqType)(PWM0_RF0),PWM_ISR_PRIORITY, 0);
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_0, (IrqType)(PWM0_COF0),PWM_ISR_PRIORITY, 0);
 					break;
 				case 3:
 					mask.B.PWMA_EN |= 0b0010;
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_1, (IrqType)(PWM0_RF1),PWM_ISR_PRIORITY, 0);
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_1, (IrqType)(PWM0_COF1),PWM_ISR_PRIORITY, 0);
 					break;
 				case 4:
 					mask.B.PWMX_EN |= 0b0010;
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_1, (IrqType)(PWM0_RF1),PWM_ISR_PRIORITY, 0);
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_1, (IrqType)(PWM0_COF1),PWM_ISR_PRIORITY, 0);
 					break;
 				case 5:
 					mask.B.PWMB_EN |= 0b0010;
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_1, (IrqType)(PWM0_RF1),PWM_ISR_PRIORITY, 0);
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_1, (IrqType)(PWM0_COF1),PWM_ISR_PRIORITY, 0);
 					break;
 				case 6:
 					mask.B.PWMA_EN |= 0b0100;
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_2, (IrqType)(PWM0_RF2),PWM_ISR_PRIORITY, 0);
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_2, (IrqType)(PWM0_COF2),PWM_ISR_PRIORITY, 0);
 					break;
 				case 7:
 					mask.B.PWMB_EN |= 0b0100;
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_2, (IrqType)(PWM0_RF2),PWM_ISR_PRIORITY, 0);
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_2, (IrqType)(PWM0_COF2),PWM_ISR_PRIORITY, 0);
 					break;
 				case 8:
 					mask.B.PWMX_EN |= 0b0100;
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_2, (IrqType)(PWM0_RF2),PWM_ISR_PRIORITY, 0);
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_2, (IrqType)(PWM0_COF2),PWM_ISR_PRIORITY, 0);
 					break;
 				case 9:
 					mask.B.PWMA_EN |= 0b1000;
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_3, (IrqType)(PWM0_RF3),PWM_ISR_PRIORITY, 0);
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_3, (IrqType)(PWM0_COF3),PWM_ISR_PRIORITY, 0);
 					break;
 				case 10:
 					mask.B.PWMB_EN |= 0b1000;
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_3, (IrqType)(PWM0_RF3),PWM_ISR_PRIORITY, 0);
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_3, (IrqType)(PWM0_COF3),PWM_ISR_PRIORITY, 0);
 					break;
 				case 11:
 					mask.B.PWMX_EN |= 0b1000;
-	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_3, (IrqType)(PWM0_RF3),PWM_ISR_PRIORITY, 0);
+	            	ISR_INSTALL_ISR2("PwmIsr", Pwm_Isr_3, (IrqType)(PWM0_COF3),PWM_ISR_PRIORITY, 0);
 					break;
 				default:
 					break;
@@ -369,42 +369,23 @@ void Pwm_DeInit() {
 			return;
 		}
 
-		for (Pwm_ChannelType channel_iterator = 0; channel_iterator < PWM_NUMBER_OF_CHANNELS; channel_iterator++)
-		{
-			if(Channel == PwmConfigPtr->Channels[channel_iterator].channel){
-				if(PwmConfigPtr->ChannelClass[channel_iterator] != PWM_VARIABLE_PERIOD){
-		#if PWM_DEV_ERROR_DETECT==STD_ON
-					Det_ReportError(PWM_MODULE_ID,0, PWM_SETPERIODANDDUTY_ID, PWM_E_PERIOD_UNCHANGEABLE);
-		#endif
-					return;
-				}
-				break;
-			}
+		if(PwmConfigPtr->ChannelClass[Pwm_ArcChToIndex[Channel]] != PWM_VARIABLE_PERIOD){
+#if PWM_DEV_ERROR_DETECT==STD_ON
+			Det_ReportError(PWM_MODULE_ID,0, PWM_SETPERIODANDDUTY_ID, PWM_E_PERIOD_UNCHANGEABLE);
+#endif
+			return;
 		}
 
 		volatile struct FLEXPWM_tag *flexHw;
 		flexHw = &FLEXPWM_0;
 
-		/* Note! Changing period of a channel means changing for whole submodule since period is controll */
+		/* Note! Changing period of a channel means changing for whole submodule  */
 
-		uint16 leading_edge_position = (uint16) (((uint32) Period * (uint32) DutyCycle) >> 15);
-		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[2].R = Period/2;
+		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[1].R = Period;
+		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[3].R = Period;
+		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[5].R = Period;
 
-		switch(Channel % FLEXPWM_SUB_MODULE_DIVIDER)
-		{
-		case 0: /* PWMA */
-			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[3].R = leading_edge_position/2;
-			break;
-		case 1: /* PWMB */
-			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[5].R = leading_edge_position/2;
-			break;
-		case 2: /* PWMX */
-			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[1].R = leading_edge_position/2;
-			break;
-		default:
-			break;
-		}
-		flexHw->MCTRL.B.LDOK = 1 << Channel / FLEXPWM_SUB_MODULE_DIVIDER;
+		Pwm_SetDutyCycle(Channel, DutyCycle);
 	}
 #endif
 
@@ -545,8 +526,8 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 		volatile struct FLEXPWM_tag *flexHw;
 		flexHw = &FLEXPWM_0;
 
-		// Disable flags on this channel
-		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].INTEN.B.RIE = 0;
+		// Disable flags on this submodule
+		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].INTEN.B.CMPIE = 0;
 	}
 
 	void Pwm_EnableNotification(Pwm_ChannelType Channel,Pwm_EdgeNotificationType Notification)
@@ -562,7 +543,8 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 
 		ChannelRuntimeStruct[Channel].NotificationState = Notification;
 
-		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].INTEN.B.RIE = 0;
+		/* Enable flags on this submodule */
+		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].INTEN.B.CMPIE = 1;
 	}
 
 	static void Pwm_Isr(uint8 sub)
@@ -570,29 +552,34 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 		// Find out which channel that triggered the interrupt
 		volatile struct FLEXPWM_tag *flexHw;
 		flexHw = &FLEXPWM_0;
-		uint32_t flagmask = flexHw->SUB[sub].STS.R;
+		uint8_t cmpflags = flexHw->SUB[sub].STS.B.CMPF;
 
-		// There are 24 channels specified in the global flag register, but
-		// we only listen to the first 16 as only these support OPWfM
-		for (Pwm_ChannelType channel_iterator = 0; channel_iterator < PWM_NUMBER_OF_CHANNELS; channel_iterator++)
+		for(int i = 0; i < 6; i++)
 		{
-			Pwm_ChannelType flexpwm_ch = PwmConfigPtr->Channels[channel_iterator].channel;
-
-			if (flagmask & (1 << flexpwm_ch))
-			{
-				if (PwmConfigPtr->NotificationHandlers[channel_iterator] != NULL)
+			uint8_t val = 1 << i;
+			if(cmpflags & val){
+				/* val[0] and val[1] is PWMX -> index = 2, val[2] and val[3] is PWMA -> index = 0,
+				 * val[2] and val[3] is PWMB -> index = 1*/
+				int index = 1;
+				if(i < 2){
+					index = 2;
+				}else if(i < 4){
+					index = 0;
+				}
+				Pwm_ChannelType channel_iterator = Pwm_ArcChToIndex[(sub*FLEXPWM_SUB_MODULE_DIVIDER)+index];
+				if (PwmConfigPtr->NotificationHandlers[channel_iterator] != NULL && channel_iterator != 0xff)
 				{
-					Pwm_EdgeNotificationType notification = ChannelRuntimeStruct[flexpwm_ch].NotificationState;
-					if (notification == PWM_BOTH_EDGES)
+					Pwm_EdgeNotificationType notification = ChannelRuntimeStruct[(sub*FLEXPWM_SUB_MODULE_DIVIDER)+index].NotificationState;
+					if ((notification == PWM_BOTH_EDGES) || (notification != i%2)) /* Falling edge = 0 */
 					{
 						PwmConfigPtr->NotificationHandlers[channel_iterator]();
 					}
 				}
-
 			}
 		}
+
 		// Clear interrupt
-		flexHw->SUB[sub].STS.R = 0xffff;
+		flexHw->SUB[sub].STS.B.CMPF = 0x3f;
 	}
 
 #endif /* PWM_NOTIFICATION_SUPPORED == STD_ON */
