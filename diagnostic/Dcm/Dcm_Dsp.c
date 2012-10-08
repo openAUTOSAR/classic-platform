@@ -83,6 +83,7 @@ typedef enum {
 typedef struct {
 	boolean resetPending;
 	PduIdType resetPduId;
+	Dcm_EcuResetType resetType;
 } DspUdsEcuResetDataType;
 
 static DspUdsEcuResetDataType dspUdsEcuResetData;
@@ -354,12 +355,15 @@ void DspUdsEcuReset(const PduInfoType *pduRxData, PduIdType txPduId, PduInfoType
 
 		switch (reqResetType)
 		{
-		case 0x01:	// Hard reset
+		case DCM_HARD_RESET:
+		case DCM_KEY_OFF_ON_RESET:
+		case DCM_SOFT_RESET:
 			// TODO: Ask application for permission (Dcm373) (Dcm375) (Dcm377)
 
 			// Schedule the reset
 			dspUdsEcuResetData.resetPending = TRUE;
 			dspUdsEcuResetData.resetPduId = txPduId;
+			dspUdsEcuResetData.resetType = reqResetType;
 
 			// Create positive response
 			pduTxData->SduDataPtr[1] = reqResetType;
@@ -1678,11 +1682,14 @@ void DspDcmConfirmation(PduIdType confirmPduId)
 	if (dspUdsEcuResetData.resetPending) {
 		if (confirmPduId == dspUdsEcuResetData.resetPduId) {
 			dspUdsEcuResetData.resetPending = FALSE;
+			Dcm_EcuReset(dspUdsEcuResetData.resetType);
+			if(DCM_HARD_RESET == dspUdsEcuResetData.resetType) {
 #if defined(USE_MCU) && ( MCU_PERFORM_RESET_API == STD_ON )
-			Mcu_PerformReset();
+				Mcu_PerformReset();
 #else
-			DET_REPORTERROR(MODULE_ID_DCM, 0, DCM_UDS_RESET_ID, DCM_E_NOT_SUPPORTED);
+				DET_REPORTERROR(MODULE_ID_DCM, 0, DCM_UDS_RESET_ID, DCM_E_NOT_SUPPORTED);
 #endif
+			}
 		}
 	}
 }
