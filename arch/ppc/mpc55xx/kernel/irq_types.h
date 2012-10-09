@@ -458,15 +458,6 @@ typedef enum
     PWM0_CAF3,             // 5606-190
     PWM0_FFLAG,             // 5606-191
     PWM0_REF,             // 5606-192
-    RESERVED97,             // 5606-184
-    RESERVED98,             // 5606-185
-    RESERVED99,             // 5606-186
-    RESERVED100,             // 5606-187
-    RESERVED101,             // 5606-188
-    RESERVED102,             // 5606-189
-    RESERVED103,             // 5606-190
-    RESERVED104,             // 5606-191
-    RESERVED105,             // 5606-192
     RESERVED106,             // 5606-193
     RESERVED107,             // 5606-194
     RESERVED108,             // 5606-195
