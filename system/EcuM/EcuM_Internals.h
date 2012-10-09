@@ -69,6 +69,7 @@ typedef struct
 	uint32 postrun_requests;
 	EcuM_WakeupSourceType wakeupEvents;
 	uint32 wakeupTimer;
+	uint32 validationTimer;
 } EcuM_GlobalType;
 
 extern EcuM_GlobalType internal_data;
@@ -86,6 +87,17 @@ EcuM_ConfigType* EcuM_DeterminePbConfiguration(void);
 void EcuM_AL_DriverInitOne(const EcuM_ConfigType* ConfigPtr);
 void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr);
 void EcuM_AL_DriverInitThree(const EcuM_ConfigType* ConfigPtr);
+
+
+#if defined(USE_LDEBUG_PRINTF)
+char *GetMainStateAsString( EcuM_StateType state );
+#endif
+
+
+#define DEBUG_ECUM_STATE(_state)						LDEBUG_PRINTF("STATE: %s\n",GetMainStateAsString(_state))
+#define DEBUG_ECUM_CALLOUT(_call)    					LDEBUG_FPUTS( "  CALLOUT->: " _call "\n");
+#define DEBUG_ECUM_CALLOUT_W_ARG(_call,_farg0,_arg0)    LDEBUG_PRINTF("  CALLOUT->: " _call " "_farg0 "\n",_arg0)
+#define DEBUG_ECUM_CALLIN_W_ARG(_call,_farg0,_arg0)     LDEBUG_PRINTF("  <-CALLIN : " _call " "_farg0 "\n",_arg0)
 
 
 #endif /*_ECUM_INTERNALS_H_*/

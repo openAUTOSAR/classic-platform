@@ -30,6 +30,10 @@
 #include "isr.h"
 #include "io.h"
 
+#if defined(USE_DMA)
+#include "Dma.h"
+#endif
+
 //#define USE_LDEBUG_PRINTF 1
 #include "debug.h"
 
@@ -633,7 +637,7 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     ME.PCTL[92].R = 0x01; //PIT_RTI control
     ME.PCTL[41].R = 0x01; //flexpwm0 control
     ME.PCTL[16].R = 0x01; //FlexCAN0 control
-    ME.PCTL[26].R = 0x01; //FlexCAN1 control
+    ME.PCTL[26].R = 0x01; //FlexCAN1(SafetyPort) control
     ME.PCTL[4].R = 0x01;  /* MPC56xxB/P/S DSPI0  */
     ME.PCTL[5].R = 0x01;  /* MPC56xxB/P/S DSPI1:  */
     ME.PCTL[6].R = 0x01;  /* MPC56xxB/P/S DSPI2  */
@@ -833,7 +837,7 @@ static void enterLowPower (Mcu_ModeType mcuMode )
 {
 
 
-	uint32 timeout;
+	uint32 timeout = 0;
 	/* - Set the sleep bit; following a WAIT instruction, the device will go to sleep
 	 * - enable the 1.2V internal regulator when in sleep mode only
 	 * - MPC5516
@@ -852,7 +856,7 @@ static void enterLowPower (Mcu_ModeType mcuMode )
 	Mcu_SavedHaltFlags = SIU.HLT.R;
 	/* Halt everything */
 	SIU.HLT.R = 0x3FFFFFFF;
-	while((SIU.HLTACK.R != 0x3FFFFFFF) && (timeout<3000)) {}
+	while((SIU.HLTACK.R != 0x3FFFFFFF) && (timeout++<3000)) {}
 
 	/* put Z0 in reset if not used for wakeup */
 	CRP.Z0VEC.B.Z0RST = 1;

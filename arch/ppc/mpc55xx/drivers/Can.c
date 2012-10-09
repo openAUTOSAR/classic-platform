@@ -173,8 +173,13 @@
 #define CTRL_TO_UNIT_PTR(_controller)   &CanUnit[Can_Global.config->CanConfigSet->ArcCtrlToUnit[_controller]]
 #define VALID_CONTROLLER(_ctrl)         (Can_Global.configuredMask & (1<<(_ctrl)))
 #define GET_CALLBACKS()                 (Can_Global.config->CanConfigSet->CanCallbacks)
+#if defined(CFG_MPC5604P)
+#define GET_CONTROLLER(_controller) 	\
+        					((struct FLEXCAN_tag *)(0xFFFC0000 + 0x28000*(_controller)))
+#else
 #define GET_CONTROLLER(_controller) 	\
         					((struct FLEXCAN_tag *)(0xFFFC0000 + 0x4000*(_controller)))
+#endif
 
 #define INSTALL_HANDLER4(_name, _can_entry, _vector, _priority, _app)\
 	do { \

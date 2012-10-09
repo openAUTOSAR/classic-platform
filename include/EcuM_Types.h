@@ -175,6 +175,7 @@ typedef struct EcuM_SleepMode
  /* Defines for illegal modes/channels */
 #define ECUM_SLEEP_MODE_WDGM_MODE_ILL		0xff
 #define ECUM_COMM_CHANNEL_ILL				0xff
+#define ECUM_VALIDATION_TIMEOUT_ILL   0xfffffffful
 
 #endif /* ECUM_TYPES_H_ */
 /** @} */
