@@ -502,11 +502,11 @@ void EcuM_MainFunction(void) {
 
 	case ECUM_STATE_GO_SLEEP:
 		in_state_goSleep();
-		break;
+		/* Flow Through, Scheduler is Locked */
 
 	case ECUM_STATE_SLEEP:
 		in_state_sleep();
-		/* Flow Through */
+		/* Flow Through, Scheduler is Locked */
 
 	case ECUM_STATE_WAKEUP_ONE: {
 		DEBUG_ECUM_STATE(internal_data.current_state);
@@ -514,7 +514,6 @@ void EcuM_MainFunction(void) {
 		/* TODO: we must have a normal RUN mode.. can't find any
 		 * in the A3.1.5 spec. */
 		Mcu_SetMode(MCU_MODE_NORMAL);
-
 #if defined(USE_WDGM)
 		if( internal_data.config->EcuMWdgMConfig != NULL ) {
 			WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMWakeupMode);
@@ -545,6 +544,9 @@ void EcuM_MainFunction(void) {
 				//internal_data.validationTimer = validationMaxTime;
 			} else {
 				LDEBUG_PRINTF("No Validation for event:0x%lx\n",(uint32)wkupCfgPtr->EcuMWakeupSourceId);
+				
+				/* Validate right away */
+				EcuM_ValidateWakeupEvent(wkupCfgPtr->EcuMWakeupSourceId);
 			}
 		}
 		break;
@@ -556,11 +558,14 @@ void EcuM_MainFunction(void) {
 		uint32 pendingWkupMask;
 
 		if( validationMask == 0 ) {
+			pendingWkupMask = EcuM_GetPendingWakeupEvents();
 			// TODO: We can skip callout's here?
 
 			// TODO:
 			// ComM_EcuM_WakeupIndication( network handle )
 
+			DEBUG_ECUM_CALLOUT_W_ARG("EcuM_StartWakeupSources","0x%lx",(uint32)pendingWkupMask);
+			EcuM_StartWakeupSources(pendingWkupMask);
 			set_current_state(ECUM_STATE_WAKEUP_REACTION);
 
 		} else {
@@ -576,9 +581,9 @@ void EcuM_MainFunction(void) {
 
 			if( pendingWkupMask == validationMask ) {
 				/* Match beetween the events that need validation -> done validating */
-				set_current_state(ECUM_STATE_WAKEUP_REACTION);
 				DEBUG_ECUM_CALLOUT_W_ARG("EcuM_StartWakeupSources","0x%lx",(uint32)wMask);
 				EcuM_StartWakeupSources(wMask);
+				set_current_state(ECUM_STATE_WAKEUP_REACTION);
 			} else {
 				if (internal_data.validationTimer == 0) {
 					// EcuM_StopWakeupSources(0);    // TODO
@@ -625,7 +630,8 @@ void EcuM_MainFunction(void) {
 #if defined(USE_DEM)
 		Dem_Init();
 #endif
-		set_current_state(ECUM_STATE_RUN);
+		EcuM_enter_run_mode();
+//		set_current_state(ECUM_STATE_APP_RUN);
 		break;
 
 	default:
