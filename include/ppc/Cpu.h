@@ -215,6 +215,18 @@ asm volatile unsigned int cntlzw(unsigned int val)
   cntlzw r3, val
 }
 #else
+
+/**
+ * Return number of leading zero's
+ *
+ * Examples:
+ *  cntlzw(0x8000_0000) = 0
+ *  cntlzw(0x0000_0000) = 32
+ *  cntlzw(0x0100_0000) = 7
+ *
+ * @param val
+ * @return
+ */
 static inline unsigned int cntlzw(unsigned int val)
 {
    unsigned int result;
@@ -223,8 +235,18 @@ static inline unsigned int cntlzw(unsigned int val)
 }
 #endif
 
-/* Something like the ilogb() functions in newlib but without math.h
- * ( and with base 2 ) */
+/**
+ * Integer log2
+ *
+ * Examples:
+ * - ilog2(0x0) = -1
+ * - ilog2(0x1) = 0
+ * - ilog2(0x2) = 1
+ * - ilog2(0x8000_0000)=31
+ *
+ * @param val
+ * @return
+ */
 static inline int ilog2( int val ) {
 	return 31 - cntlzw(val);
 }
