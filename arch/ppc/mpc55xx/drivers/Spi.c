@@ -171,7 +171,7 @@
 #if defined(CFG_MPC560X)
 #define DSPI_A_ISR_EOQF DSPI_0_ISR_EOQF
 #define DSPI_B_ISR_EOQF DSPI_1_ISR_EOQF
-#if defined(CFG_MPC560XB)
+#if defined(CFG_MPC560XB) || defined(CFG_MPC5604P)
 #define DSPI_C_ISR_EOQF DSPI_2_ISR_EOQF
 #endif
 #if defined(CFG_MPC5606B)
@@ -185,7 +185,7 @@
 #define SPIE_OK				0
 #define SPIE_JOB_NOT_DONE   1
 
-#if defined(CFG_MPC560XB)
+#if defined(CFG_MPC560XB) || defined(CFG_MPC5604P)
 #define CTAR_CNT    6
 #else
 #define CTAR_CNT    8

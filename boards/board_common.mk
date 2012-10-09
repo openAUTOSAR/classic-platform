@@ -176,8 +176,15 @@ inc-y += $(ROOTDIR)/system/WdgM
 vpath-y += $(ROOTDIR)/system/WdgM
 
 #Pwm
-obj-$(USE_PWM) += Pwm.o
 obj-$(USE_PWM) += Pwm_Cfg.o
+obj-$(USE_PWM)-$(CFG_MPC5604P) += PwmFlex.o
+obj-$(USE_PWM)-$(CFG_MPC560XB) += Pwm.o
+obj-$(USE_PWM)-$(CFG_MPC5606S) += Pwm.o
+obj-$(USE_PWM)-$(CFG_MPC5668) += Pwm.o
+obj-$(USE_PWM)-$(CFG_HC1X) += Pwm.o
+obj-$(USE_PWM)-$(CFG_ARM_CM3) += Pwm.o
+obj-$(USE_PWM)-$(CFG_MPC5516) += Pwm.o
+obj-$(USE_PWM)-$(CFG_MPC5567) += Pwm.o
 
 # Misc
 obj-$(USE_DET) += Det.o
