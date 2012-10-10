@@ -54,12 +54,12 @@ SECTIONS
 #if defined(CALIBRATION_INITIALIZED_RAM)
 /* when calibration is active a flash and ram area is needed. the rte will copy the calibration area from flash to ram. */
 	.calibration : AT(CALIBRATION_FLS_START) {	
-			*(.calibration)
+			*(.calibration .calib_component .calib_shared)
 	} > ram		
 #else /* CALIBRATION_INITIALIZED_RAM */
 /* when calibration isnt active only a flash area is needed. */		
 	.calibration CALIBRATION_FLS_START : {
-			*(.calibration)
+			*(.calibration .calib_component .calib_shared)
 	} > flash	
 #endif
 
@@ -69,7 +69,7 @@ __CALIB_ROM_START	= LOADADDR(.calibration);
 #else
 	/* failsafe to avoid trouble with defined calib variables if CALIBRATION_ENABLED is not set */
 	.calibration : {
-			*(.calibration)
+			*(.calibration .calib_component .calib_shared)
 	} > flash
 	ASSERT(SIZEOF(.calibration) == 0, ".calibration section used but CALIBRATION_ENABLED is undefined")
 #endif /* CALIBRATION_ENABLED */
