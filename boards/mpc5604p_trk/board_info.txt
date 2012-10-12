@@ -20,9 +20,9 @@ SystemTick:
   PIT no3 is used for generating system clock
   
 Info:	
-  MPC5604B
+  MPC5604P
   CPU:		 e200z0h (VLE only)
-  Freq:		 64 Mhz
+  Freq:		 64 Mhz PLL0 and 120Mhz PLL1
   Flash: 	 512KB, primary
              64K, data flash
   RAM:       40K, ECC
@@ -32,13 +32,15 @@ Memory Map:
  0x0080_0000 -> 0x0080_ffff   Data Flash
  0x4000_0000 -> 0x4000_9fff   SRAM
  
+CAN and LIN: In order to use CAN or LIN the MC33905 circuit need to be initialized accordingly using DSPI. 
+             Contact Freescale support for source code.
  
 SPI_0
-  PA[12] - SIN_0   - S_OUT/BROWN
-  PA[13] - SOUT_0  - S_IN/ORANGE 
-  PA[14] - SCK_9   - S_CLK/BLUE
+  PC[7] - SIN_0   - S_OUT/BROWN
+  PC[6] - SOUT_0  - S_IN/ORANGE 
+  PC[5] - SCK_9   - S_CLK/BLUE
   
-  PB[12] - CS1_0   - CS/GREEN  (both for software and hardware CS *)
+  PC[3] - CS1_0   - CS/GREEN  (both for software and hardware CS *)
                                
 *) Depends on setting in port.
 
