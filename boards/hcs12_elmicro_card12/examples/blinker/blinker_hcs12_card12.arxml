@@ -989,6 +989,11 @@
                 </CONTAINER>
                 <CONTAINER UUID="c3b48061-67f3-4988-849d-e81351406aa1">
                   <SHORT-NAME>EcuMSleepMode</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode</DEFINITION-REF>
                   <PARAMETER-VALUES>
                     <INTEGER-VALUE>
@@ -1003,9 +1008,11 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMSleepModeMcuModeRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/blinker_hcs12_card12/Mcu/McuModuleConfiguration/McuModeSettingConf</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMWakeupSourceMask</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/blinker_hcs12_card12/EcuM/EcuMConfiguration/EcuMWakeupSource</VALUE-REF>
                     </REFERENCE-VALUE>
                   </REFERENCE-VALUES>
                 </CONTAINER>

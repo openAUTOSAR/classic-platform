@@ -29,7 +29,8 @@
 
 typedef enum {
 	MCU_MODE_RUN = 0,
-	MCU_MODE_NORMAL = 1 // Here for backwards compatibility reasons. Not used anymore.
+	MCU_MODE_SLEEP = 1,
+	MCU_MODE_NORMAL = 2 // Here for backwards compatibility reasons. Not used anymore.
 } Mcu_ModeType;
 
 
