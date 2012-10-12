@@ -633,7 +633,6 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
 
     /* MPC56xxB/S: select ME.RUNPC[1] */
     ME.PCTL[68].R = 0x01; //SIUL control
-    ME.PCTL[91].R = 0x01; //RTC/API control
     ME.PCTL[92].R = 0x01; //PIT_RTI control
     ME.PCTL[41].R = 0x01; //flexpwm0 control
     ME.PCTL[16].R = 0x01; //FlexCAN0 control
@@ -1080,7 +1079,7 @@ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type) {
 		case PERIPHERAL_CLOCK_LIN_B:
  		case PERIPHERAL_CLOCK_LIN_C:
 		case PERIPHERAL_CLOCK_LIN_D:
-			prescaler = 1;
+			prescaler = 0;
 			break;
 
 		default:
