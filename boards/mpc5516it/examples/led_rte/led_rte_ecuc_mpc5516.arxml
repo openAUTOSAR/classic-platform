@@ -1163,7 +1163,7 @@
               <PORT-API-OPTIONS>
                 <PORT-API-OPTION>
                   <PORT-ARG-VALUES>
-                    <INTEGER-LITERAL UUID="6d0d0a3b-f64e-4b57-ab29-ebfe17738b08">
+                    <INTEGER-LITERAL UUID="e2a35197-78ec-4793-b828-925ec27faba1">
                       <SHORT-NAME>SignalId</SHORT-NAME>
                       <TYPE-TREF DEST="INTEGER-TYPE">/led_rte_ecuc_mpc5516/GeneratedIoHardwareAbstraction/IoHwAb_SignalType</TYPE-TREF>
                       <VALUE>0</VALUE>
