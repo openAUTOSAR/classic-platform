@@ -104,7 +104,7 @@ void StopWatchdog(void)
  	SWT.SR.R = 0x0000d928;
  	SWT.CR.R = 0x8000010A;
 #elif defined(CFG_MPC5516)
- 	MCM.SWTCR.B.SWE = 0x0;	  /* Disable the watchdog */
+ 	MCM.SWTCR.R = 0x0;	  /* Disable the watchdog */
 #else
 	MCM.SWTCR.R = 0x0059;
 #endif
