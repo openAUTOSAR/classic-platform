@@ -71,28 +71,6 @@ typedef sint32 MilliVolt;
 
 #define _DEFINED_TYPEDEF_FOR_MilliVolt_ 
 
-typedef uint8 NvM_RequestResultType;
-#ifndef NVM_REQ_OK
-#define NVM_REQ_OK ((NvM_RequestResultType)0)
-#endif /*NVM_REQ_OK*/
-#ifndef NVM_REQ_NOT_OK
-#define NVM_REQ_NOT_OK ((NvM_RequestResultType)1)
-#endif /*NVM_REQ_NOT_OK*/
-#ifndef NVM_REQ_PENDING
-#define NVM_REQ_PENDING ((NvM_RequestResultType)2)
-#endif /*NVM_REQ_PENDING*/
-#ifndef NVM_REQ_INTEGRITY_FAILED
-#define NVM_REQ_INTEGRITY_FAILED ((NvM_RequestResultType)3)
-#endif /*NVM_REQ_INTEGRITY_FAILED*/
-#ifndef NVM_REQ_BLOCK_SKIPPED
-#define NVM_REQ_BLOCK_SKIPPED ((NvM_RequestResultType)4)
-#endif /*NVM_REQ_BLOCK_SKIPPED*/
-#ifndef NVM_REQ_NV_INVALIDATED
-#define NVM_REQ_NV_INVALIDATED ((NvM_RequestResultType)5)
-#endif /*NVM_REQ_NV_INVALIDATED*/
-
-#define _DEFINED_TYPEDEF_FOR_NvM_RequestResultType_ 
-
 typedef sint32 Percent;
 #define Percent_LowerLimit -2147483647
 #define Percent_UpperLimit 2147483647
@@ -152,18 +130,6 @@ typedef uint8 UInt8;
 #define UInt8_UpperLimit 255
 
 #define _DEFINED_TYPEDEF_FOR_UInt8_ 
-
-typedef UInt8 DstPtrType[1024];
-
-#define _DEFINED_TYPEDEF_FOR_DstPtrType_ 
-
-typedef uint8 Rte_ModeType_WdgMMode;
-#define RTE_TRANSITION_WdgMMode ((Rte_ModeType_WdgMMode)5)
-#define RTE_MODE_WdgMMode_ALIVE_OK ((Rte_ModeType_WdgMMode)3)
-#define RTE_MODE_WdgMMode_ALIVE_FAILED ((Rte_ModeType_WdgMMode)2)
-#define RTE_MODE_WdgMMode_ALIVE_EXPIRED ((Rte_ModeType_WdgMMode)1)
-#define RTE_MODE_WdgMMode_ALIVE_STOPPED ((Rte_ModeType_WdgMMode)4)
-#define RTE_MODE_WdgMMode_ALIVE_DEACTIVATED ((Rte_ModeType_WdgMMode)0)
 
 typedef struct {
 } Rte_PDS_Blinker_DigitalOutput_P;
