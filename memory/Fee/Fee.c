@@ -660,15 +660,8 @@ static void StartupReadBlockAdmin(void)
 {
 	if (CheckFlsJobFinnished()) {
 		if (Fls_GetJobResult() == MEMIF_JOB_OK) {
-			if (RWBuffer.BlockCtrl.DataPage.Data.Status == BLOCK_STATUS_EMPTY) {
-				DET_VALIDATE(CurrentJob.Op.Startup.NrOfBanks != 0, FEE_STARTUP_ID, FEE_FLASH_CORRUPT);
-				CurrentJob.Op.Startup.NrOfBanks--;
-				if(0 != CurrentJob.Op.Startup.NrOfBanks) {
-					// Want to remember the last read bank
-					CurrentJob.Op.Startup.BankNumber = (CurrentJob.Op.Startup.BankNumber + 1) % 2;
-					CurrentJob.Op.Startup.BlockAdminAddress = BankProp[CurrentJob.Op.Startup.BankNumber].End - (BLOCK_CTRL_PAGE_SIZE + BANK_CTRL_PAGE_SIZE);
-				}
-			} else { /* Block not empty */
+			if (RWBuffer.BlockCtrl.DataPage.Data.Status != BLOCK_STATUS_EMPTY) {
+				/* Block not empty */
 				if ((memcmp(RWBuffer.BlockCtrl.MagicPage.Magic, BlockMagicMaster, BLOCK_MAGIC_LEN) == 0) &&
 						((RWBuffer.BlockCtrl.DataPage.Data.Status == BLOCK_STATUS_INUSE) || (RWBuffer.BlockCtrl.DataPage.Data.Status == BLOCK_STATUS_INVALIDATED))) {
 					/* This is a valid admin block */
@@ -691,9 +684,19 @@ static void StartupReadBlockAdmin(void)
 						}
 					}
 				}
-				// TODO Check wrap around here
 				CurrentJob.Op.Startup.BlockAdminAddress -= BLOCK_CTRL_PAGE_SIZE;
 				AdminFls.NewBlockAdminAddress = CurrentJob.Op.Startup.BlockAdminAddress;
+			}
+			if( (RWBuffer.BlockCtrl.DataPage.Data.Status == BLOCK_STATUS_EMPTY) ||
+					(AdminFls.NewBlockAdminAddress < AdminFls.NewBlockDataAddress) ) {
+				/* Block empty or about to read admin data in a data block */
+				DET_VALIDATE(CurrentJob.Op.Startup.NrOfBanks != 0, FEE_STARTUP_ID, FEE_FLASH_CORRUPT);
+				CurrentJob.Op.Startup.NrOfBanks--;
+				if(0 != CurrentJob.Op.Startup.NrOfBanks) {
+					// Want to remember the last read bank
+					CurrentJob.Op.Startup.BankNumber = (CurrentJob.Op.Startup.BankNumber + 1) % 2;
+					CurrentJob.Op.Startup.BlockAdminAddress = BankProp[CurrentJob.Op.Startup.BankNumber].End - (BLOCK_CTRL_PAGE_SIZE + BANK_CTRL_PAGE_SIZE);
+				}
 			}
 
 			if (CurrentJob.Op.Startup.NrOfBanks == 0) {
