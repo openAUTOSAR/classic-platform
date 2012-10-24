@@ -34,6 +34,8 @@
 #include "mpc5606s.h"
 #elif defined(CFG_MPC5668)
 #include "mpc5668.h"
+#elif defined(CFG_MPC5604P)
+#include "560xP_HEADER_v1_10_SBCHM.h"
 #else
 #error NO MCU SELECTED!!!!
 #endif

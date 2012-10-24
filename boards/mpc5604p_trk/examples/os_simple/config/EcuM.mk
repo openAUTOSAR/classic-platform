@@ -1,0 +1,3 @@
+
+MOD_USE += KERNEL MCU ECUM 
+

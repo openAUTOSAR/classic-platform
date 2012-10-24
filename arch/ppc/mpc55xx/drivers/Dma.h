@@ -48,7 +48,7 @@
 #include "Dma_Cfg.h"
 #include "mpc55xx.h"
 
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || (CFG_MPC5606S) || defined(CFG_MPC5668)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || (CFG_MPC5606S) || defined(CFG_MPC5668) || (CFG_MPC5606B) || (CFG_MPC5604P)
 #if !defined(CFG_DMA_MUX)
 #define CFG_DMA_MUX
 #endif
@@ -56,7 +56,7 @@
 
 #if defined(CFG_DMA_MUX)
 
-#if defined(CFG_MPC5606S)
+#if defined(CFG_MPC5606S) || (CFG_MPC5606B) || (CFG_MPC5604P)
 typedef enum
 {
   DMA_CHANNEL_DISABLED,

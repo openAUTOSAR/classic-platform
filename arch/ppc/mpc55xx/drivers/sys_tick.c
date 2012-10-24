@@ -38,8 +38,19 @@ void Os_SysTick_MPC560x( void ) {
 }
 #endif
 
+#if defined(CFG_MPC5604P)
+void Os_SysTick_MPC5604P( void ) {
+    /* Clear interrupt. */
+    PIT.CH[3].TFLG.B.TIF = 1;
+
+	OsTick();
+}
+#endif
+
 void Os_SysTickInit( void ) {
-#if defined(CFG_MPC560X)
+#if defined(CFG_MPC5604P)
+	ISR_INSTALL_ISR2("OsTick",Os_SysTick_MPC5604P,PIT_INT3,6,0);
+#elif defined(CFG_MPC560X)
 	ISR_INSTALL_ISR2("OsTick",Os_SysTick_MPC560x,API_INT,6,0);
 #else
 	ISR_INSTALL_ISR2("OsTick",OsTick,INTC_SSCIR0_CLR7,6,0);
@@ -54,9 +65,21 @@ void Os_SysTickInit( void ) {
  *
  */
 void Os_SysTickStart(TickType period_ticks) {
-#if defined(CFG_MPC560X)
-	CGM.SXOSC_CTL.B.OSCON = 1;	// enable the osc for RTC
+#if defined(CFG_MPC5604P)
+	PIT.MCR.B.MDIS = 0;
+	PIT.MCR.B.FRZ = 1;
 
+	PIT.CH[3].LDVAL.R = period_ticks; /* period_ticks = sys_freq/OsTickFreq; Timeout= 64000 sysclks x 1sec/64M sysclks = 1 ms */
+
+	// Make sure that no interrupt is pending.
+	PIT.CH[3].TFLG.B.TIF = 1;
+	// enable int
+	PIT.CH[3].TCTRL.B.TIE = 1;
+	// Enable timer
+	PIT.CH[3].TCTRL.B.TEN = 1;
+
+#elif defined(CFG_MPC560X)
+	CGM.SXOSC_CTL.B.OSCON = 1;	// enable the osc for RTC
 
 	RTC.RTCC.R= 0;		// disable RTC counter
 //	RTC.RTCC.B.CNTEN = 0;		// disable RTC counter

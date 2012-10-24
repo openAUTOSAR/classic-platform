@@ -89,7 +89,7 @@ static void selectServiceFunction(uint8 sid)
 	switch (sid)	 /** @req DCM221 */
 	{
 	case SID_DIAGNOSTIC_SESSION_CONTROL:
-		DspUdsDiagnosticSessionControl(msgData.pduRxData, msgData.pduTxData);
+		DspUdsDiagnosticSessionControl(msgData.pduRxData, msgData.txPduId, msgData.pduTxData);
 		break;
 
 	case SID_ECU_RESET:

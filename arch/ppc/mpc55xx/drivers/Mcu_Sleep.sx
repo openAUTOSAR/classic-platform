@@ -136,18 +136,17 @@ McuE_LowPowerRecoverFlash:
  
  cfg_MMU:
 
-#***************************************************/
-#     setup MMU                                    */
-#***************************************************/
-
-#TLB Entry 0 =  1M Internal flash 
-	LOAD_ADDR_32(5, 0x10000000 + (0<<16))
+/*
+ * Setup MMU
+ */
+// TLB Entry 0 =  1M Internal flash 
+	LOAD_ADDR_32(5, (0x10000000 + (0<<16)))
     mtspr SPR_MAS0,r5     
-    LOAD_ADDR_32(5, 0xC0000000 + MAS1_TSIZE_4M )
+    LOAD_ADDR_32(5, (0xC0000000 + MAS1_TSIZE_4M))
     mtspr SPR_MAS1,r5     
-    LOAD_ADDR_32(5, FLASH_START + VLE_VAL )
+    LOAD_ADDR_32(5, (FLASH_START + VLE_VAL))
     mtspr SPR_MAS2,r5     
-    LOAD_ADDR_32(5, FLASH_START + MAS3_FULL_ACCESS )
+    LOAD_ADDR_32(5, (FLASH_START + MAS3_FULL_ACCESS))
     mtspr SPR_MAS3,r5
     msync
     isync
@@ -155,14 +154,14 @@ McuE_LowPowerRecoverFlash:
 	isync
 
 
-#TLB Entry 1 =  Peripheral bridge and BAM
-	LOAD_ADDR_32(5, 0x10000000 + (1<<16))
+// TLB Entry 1 =  Peripheral bridge and BAM
+	LOAD_ADDR_32(5, (0x10000000 + (1<<16)))
     mtspr SPR_MAS0,r5     
-    LOAD_ADDR_32(5, 0xC0000000 + MAS1_TSIZE_1M)
+    LOAD_ADDR_32(5, (0xC0000000 + MAS1_TSIZE_1M))
     mtspr SPR_MAS1,r5
-    LOAD_ADDR_32(5, PERIPHERAL_START + VLE_VAL +  MAS2_I)
+    LOAD_ADDR_32(5, (PERIPHERAL_START + VLE_VAL +  MAS2_I))
     mtspr SPR_MAS2,r5     
-    LOAD_ADDR_32(5, PERIPHERAL_START + MAS3_FULL_ACCESS )
+    LOAD_ADDR_32(5, (PERIPHERAL_START + MAS3_FULL_ACCESS) )
     mtspr SPR_MAS3,r5
     msync
     isync
@@ -170,16 +169,16 @@ McuE_LowPowerRecoverFlash:
 	isync
 
 
-#TLB Entry 2 =  External RAM. Skip this. 
+// TLB Entry 2 =  External RAM. Skip this. 
 
-#TLB Entry 3 =  Internal SRAM
-	LOAD_ADDR_32(5, 0x10000000+(3<<16))
+// TLB Entry 3 =  Internal SRAM
+	LOAD_ADDR_32(5, (0x10000000+(3<<16)))
     mtspr SPR_MAS0,r5     
-    LOAD_ADDR_32(5, 0xC0000000 + MAS1_TSIZE_256K )
+    LOAD_ADDR_32(5, (0xC0000000 + MAS1_TSIZE_256K) )
     mtspr SPR_MAS1,r5     
-    LOAD_ADDR_32(5, SRAM_START + VLE_VAL )
+    LOAD_ADDR_32(5, (SRAM_START + VLE_VAL + MAS2_I))
     mtspr SPR_MAS2,r5     
-    LOAD_ADDR_32(5, SRAM_START + MAS3_FULL_ACCESS )
+    LOAD_ADDR_32(5, (SRAM_START + MAS3_FULL_ACCESS))
     mtspr SPR_MAS3,r5
     msync
     isync

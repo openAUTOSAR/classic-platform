@@ -29,8 +29,6 @@
 
 //void EcuM_CB_NfyNvMJobEnd(uint8 ServiceId, NvM_RequestResultType JobResult);
 
-void EcuM_ValidateWakeupEvent(EcuM_WakeupSourceType sources);
-
 void EcuM_ErrorHook(Std_ReturnType reason);
 
 void EcuM_OnRTEStartup(void);

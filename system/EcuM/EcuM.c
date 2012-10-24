@@ -92,6 +92,9 @@
 #include "SchM.h"
 #endif
 
+//#define USE_LDEBUG_PRINTF
+#include "debug.h"
+
 
 /* ----------------------------[private define]------------------------------*/
 /* ----------------------------[private macro]-------------------------------*/
@@ -140,6 +143,7 @@ void EcuM_Init( void )
 	internal_data.initiated = TRUE;
 
 	// Set default shutdown target
+
 	status = EcuM_SelectShutdownTarget(internal_data.config->EcuMDefaultShutdownTarget,internal_data.config->EcuMDefaultSleepMode);/** @req EcuM2181 */
 	if(status!=E_OK){
 		//TODO: Report error.
@@ -187,7 +191,9 @@ void EcuM_StartupTwo(void)
 #endif
 
 #if defined(USE_WDGM)
-	WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMStartupMode);
+	if( internal_data.config->EcuMWdgMConfig != NULL ) {
+	  WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMStartupMode);
+	}
 #endif
 
 	// Initialize drivers that don't need NVRAM data
@@ -328,6 +334,10 @@ Std_ReturnType EcuM_SelectShutdownTarget(EcuM_StateType shutdownTarget, uint8 sl
 	VALIDATE_RV(internal_data.initiated, ECUM_SELECTSHUTDOWNTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
 	VALIDATE_RV((shutdownTarget == ECUM_STATE_OFF) || (shutdownTarget == ECUM_STATE_RESET) || (shutdownTarget == ECUM_STATE_SLEEP), ECUM_SELECTSHUTDOWNTARGET_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
 
+	LDEBUG_PRINTF("EcuM_SelectShutdownTarget(): shutdownTarget=%s, sleepMode=%d\n",
+			GetMainStateAsString(shutdownTarget),
+			sleepMode);
+
 	internal_data.shutdown_target = shutdownTarget;
 	internal_data.sleep_mode = sleepMode;
 
@@ -353,6 +363,7 @@ Std_ReturnType EcuM_RequestRUN(EcuM_UserType user)
 	VALIDATE_RV(internal_data.initiated, ECUM_REQUESTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
 	VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_REQUESTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
 
+	LDEBUG_PRINTF("EcuM_RequestRUN(): User %d\n",user);
 	internal_data.run_requests |= (uint32)1 << user;
 
 	return E_OK;
@@ -363,6 +374,7 @@ Std_ReturnType EcuM_ReleaseRUN(EcuM_UserType user)
 	VALIDATE_RV(internal_data.initiated, ECUM_RELEASERUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
 	VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_RELEASERUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
 
+	LDEBUG_PRINTF("EcuM_ReleaseRUN(): User %d\n",user);
 	internal_data.run_requests &= ~((uint32)1 << user);
 
 	return E_OK;
@@ -399,13 +411,14 @@ void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources) {
 		}
 	}
 #endif
+	DEBUG_ECUM_CALLIN_W_ARG("EcuM_SetWakeupEvent","0x%lx",(uint32)sources);
 
 
 	/* @req 3.1.5/EcuM1117 */
 	internal_data.wakeupEvents |= sources;
 
 	/* @req 3.1.5/EcuM2707 @req 3.1.5/EcuM2709*/
-//	internal_data.wakeupTimer = ECUM_VALIDATION_TIMEOUT;
+	internal_data.validationTimer = ECUM_VALIDATION_TIMEOUT/ECUM_MAIN_FUNCTION_PERIOD;
 
 }
 
@@ -497,7 +510,7 @@ EcuM_WakeupSourceType EcuM_GetPendingWakeupEvents( void ) {
 
 EcuM_WakeupSourceType EcuM_GetValidatedWakeupEvents( void ) {
 	// TODO:
-	return 0;
+	return internal_data.validEvents;
 }
 
 EcuM_WakeupStatusType EcuM_GetStatusOfWakeupSource( EcuM_WakeupSourceType sources ) {
@@ -515,6 +528,7 @@ void EcuM_ValidateWakeupEvent(EcuM_WakeupSourceType sources) {
 	/* !req 3.1.5/EcuM2868 */
 	/* !req 3.1.5/EcuM2345 */
 
+    internal_data.validEvents |= sources;
 /*
 #if defined(USE_COMM)
 	if( internal_data.config->)
@@ -526,5 +540,10 @@ void EcuM_ValidateWakeupEvent(EcuM_WakeupSourceType sources) {
 
 }
 
+#if defined(USE_NVM)
+void EcuM_CB_NfyNvMJobEnd(uint8 ServiceId, NvM_RequestResultType JobResult) {
+
+}
+#endif
 
 

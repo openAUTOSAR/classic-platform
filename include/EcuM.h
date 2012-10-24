@@ -93,6 +93,10 @@
 #include "ComM.h"
 #endif
 
+#if defined(USE_NVM)
+#include "NvM.h"
+#endif
+
 
 /** @name Error Codes */
 //@{
@@ -182,8 +186,12 @@ Std_ReturnType EcuM_SelectBootTarget(EcuM_BootTargetType target);
 Std_ReturnType EcuM_GetBootTarget(EcuM_BootTargetType* target);
 
 void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources);
+void EcuM_ValidateWakeupEvent(EcuM_WakeupSourceType sources);
 
 void EcuM_MainFunction(void);
+#if defined(USE_NVM)
+void EcuM_CB_NfyNvMJobEnd(uint8 ServiceId, NvM_RequestResultType JobResult);
+#endif
 
 
 #endif /*ECUM_H_*/

@@ -94,12 +94,13 @@ Dcm_ReturnReadMemoryType Dcm_ReadMemory(Dcm_OpStatusType OpStatus,
 											   uint32 MemoryAddress,
 											   uint32 MemorySize,
 											   uint8* MemoryData);
+void Dcm_DiagnosticSessionControl(Dcm_SesCtrlType session);
 /*
  * DSP
  */
 void DspInit(void);
 void DspMain(void);
-void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduInfoType *pduTxData);
+void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduIdType txPduId, PduInfoType *pduTxData);
 void DspUdsEcuReset(const PduInfoType *pduRxData, PduIdType txPduId, PduInfoType *pduTxData);
 void DspUdsClearDiagnosticInformation(const PduInfoType *pduRxData, PduInfoType *pduTxData);
 void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData);

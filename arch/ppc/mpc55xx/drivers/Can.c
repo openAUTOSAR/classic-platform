@@ -173,8 +173,13 @@
 #define CTRL_TO_UNIT_PTR(_controller)   &CanUnit[Can_Global.config->CanConfigSet->ArcCtrlToUnit[_controller]]
 #define VALID_CONTROLLER(_ctrl)         (Can_Global.configuredMask & (1<<(_ctrl)))
 #define GET_CALLBACKS()                 (Can_Global.config->CanConfigSet->CanCallbacks)
+#if defined(CFG_MPC5604P)
+#define GET_CONTROLLER(_controller) 	\
+        					((struct FLEXCAN_tag *)(0xFFFC0000 + 0x28000*(_controller)))
+#else
 #define GET_CONTROLLER(_controller) 	\
         					((struct FLEXCAN_tag *)(0xFFFC0000 + 0x4000*(_controller)))
+#endif
 
 #define INSTALL_HANDLER4(_name, _can_entry, _vector, _priority, _app)\
 	do { \
@@ -796,7 +801,9 @@ void Can_Init(const Can_ConfigType *config)
 		if(cfgCtrlPtr->Can_Arc_Flags &  (CAN_CTRL_TX_PROCESSING_INTERRUPT | CAN_CTRL_RX_PROCESSING_INTERRUPT)){
 			INSTALL_HANDLER4( "Can", Can_A_Isr, FLEXCAN_0_BUF_00_03, 2, 0 ); /* 0-3, 4-7, 8-11, 12-15 */
 			ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_0_BUF_16_31, 2, 0 );
+#if !defined (CFG_MPC5604P)
 			ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_0_BUF_32_63, 2, 0 );
+#endif
 		}
         break;
         case CAN_CTRL_B:
@@ -809,7 +816,9 @@ void Can_Init(const Can_ConfigType *config)
 		if(cfgCtrlPtr->Can_Arc_Flags &  (CAN_CTRL_TX_PROCESSING_INTERRUPT | CAN_CTRL_RX_PROCESSING_INTERRUPT)){
 			INSTALL_HANDLER4( "Can", Can_B_Isr, FLEXCAN_1_BUF_00_03, 2, 0 ); /* 0-3, 4-7, 8-11, 12-15 */
 			ISR_INSTALL_ISR2( "Can", Can_B_Isr, FLEXCAN_1_BUF_16_31, 2, 0 );
+#if !defined (CFG_MPC5604P)
 			ISR_INSTALL_ISR2( "Can", Can_B_Isr, FLEXCAN_1_BUF_32_63, 2, 0 );
+#endif
 		}
         break;
 	#if defined(CFG_MPC560XB)
@@ -1373,7 +1382,7 @@ Can_ReturnType Can_Write(Can_Arc_HTHType hth, Can_PduType *pduInfo)
             canHw->BUF[mbNr].ID.B.STD_ID = pduInfo->id;
         }
 
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S) || defined(CFG_MPC560XB) || defined(CFG_MPC5668)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S) || defined(CFG_MPC560XB) || defined(CFG_MPC5668) || defined(CFG_MPC5604P)
         canHw->BUF[mbNr].ID.B.PRIO = 1; // Set Local Priority
 #endif
 

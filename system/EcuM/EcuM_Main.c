@@ -28,6 +28,98 @@
 #endif
 
 
+//#define USE_LDEBUG_PRINTF
+#include "debug.h"
+
+#if defined(USE_LDEBUG_PRINTF)
+char *GetMainStateAsString( EcuM_StateType state ) {
+	char *str = NULL;
+
+	switch(state) {
+	case ECUM_STATE_APP_RUN:
+		str = "ECUM_STATE_APP_RUN";
+		break;
+	case ECUM_STATE_SHUTDOWN:
+		str = "ECUM_STATE_SHUTDOWN";
+		break;
+	case ECUM_STATE_WAKEUP:
+		str = "ECUM_STATE_WAKEUP";
+		break;
+	case ECUM_SUBSTATE_MASK:
+		str = "ECUM_SUBSTATE_MASK";
+		break;
+	case ECUM_STATE_WAKEUP_WAKESLEEP:
+		str = "ECUM_STATE_WAKEUP_WAKESLEEP";
+		break;
+	case ECUM_STATE_WAKEUP_ONE:
+		str = "ECUM_STATE_WAKEUP_ONE";
+		break;
+	case ECUM_STATE_OFF:
+		str = "ECUM_STATE_OFF";
+		break;
+	case ECUM_STATE_STARTUP:
+		str = "ECUM_STATE_STARTUP";
+		break;
+	case ECUM_STATE_PREP_SHUTDOWN:
+		str = "ECUM_STATE_PREP_SHUTDOWN";
+		break;
+	case ECUM_STATE_RUN:
+		str = "ECUM_STATE_RUN";
+		break;
+	case ECUM_STATE_STARTUP_TWO:
+		str = "ECUM_STATE_STARTUP_TWO";
+		break;
+	case ECUM_STATE_WAKEUP_TTII:
+		str = "ECUM_STATE_WAKEUP_TTII";
+		break;
+	case ECUM_STATE_WAKEUP_VALIDATION:
+		str = "ECUM_STATE_WAKEUP_VALIDATION";
+		break;
+	case ECUM_STATE_GO_SLEEP:
+		str = "ECUM_STATE_GO_SLEEP";
+		break;
+	case ECUM_STATE_STARTUP_ONE:
+		str = "ECUM_STATE_STARTUP_ONE";
+		break;
+	case ECUM_STATE_WAKEUP_TWO:
+		str = "ECUM_STATE_WAKEUP_TWO";
+		break;
+	case ECUM_STATE_SLEEP:
+		str = "ECUM_STATE_SLEEP";
+		break;
+	case ECUM_STATE_WAKEUP_REACTION:
+		str = "ECUM_STATE_WAKEUP_REACTION";
+		break;
+	case ECUM_STATE_APP_POST_RUN:
+		str = "ECUM_STATE_APP_POST_RUN";
+		break;
+	case ECUM_STATE_GO_OFF_TWO:
+		str = "ECUM_STATE_GO_OFF_TWO";
+		break;
+	case ECUM_STATE_RESET:
+		str = "ECUM_STATE_RESET";
+		break;
+	case ECUM_STATE_GO_OFF_ONE:
+		str = "ECUM_STATE_GO_OFF_ONE";
+		break;
+	default:
+		assert(0);
+	}
+	return str;
+}
+
+const char *GetWakeupReactionAsString( EcuM_WakeupReactionType reaction ) {
+	const char *WakeupReactionAsString[] = {
+			"ECUM_WKACT_RUN",
+			"??????",
+			"ECUM_WKACT_TTII",
+			"ECUM_WKACT_SHUTDOWN",
+	};
+	return  WakeupReactionAsString[reaction];
+}
+
+#endif
+
 static uint32 internal_data_run_state_timeout = 0;
 #if defined(USE_NVM)
 static uint32 internal_data_go_off_one_state_timeout = 0;
@@ -105,7 +197,9 @@ void EcuM_enter_run_mode(void){
 
 #if defined(USE_WDGM)
 	/* This seems strange, should be in FW instead */
-	WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMRunMode);
+	if( internal_data.config->EcuMWdgMConfig != NULL ) {
+		WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMRunMode);
+	}
 #endif
 
 #if defined(USE_COMM)
@@ -119,6 +213,7 @@ void EcuM_enter_run_mode(void){
 
 		for (; cMask; cMask &= ~(1ul << channel)) {
 			channel = ilog2(cMask);
+			DEBUG_ECUM_CALLOUT_W_ARG("ComM_EcuM_RunModeIndication","%ld",(uint32)channel);
 			ComM_EcuM_RunModeIndication(channel);
 		}
 	}
@@ -141,6 +236,7 @@ static inline void enter_go_sleep_mode(void){
 	EcuM_WakeupSourceType wakeupSource;
 	set_current_state(ECUM_STATE_GO_SLEEP);
 
+	DEBUG_ECUM_CALLOUT("EcuM_OnGoSleep");
 	EcuM_OnGoSleep();
 
 #if defined(USE_NVM)
@@ -183,12 +279,16 @@ static void in_state_goSleep( void ) {
 		for (; cMask; cMask &= ~(1ul << source)) {
 			source = ilog2(cMask);
 			/* @req 3.1.5/ECUM2389 */
+			DEBUG_ECUM_CALLOUT_W_ARG("EcuM_EnableWakeupSources","0x%lx",(1ul<< source));
 			EcuM_EnableWakeupSources( 1<< source );
 
 		}
 
 #if defined(WDGM)
-		WdgM_SetMode(sleepModePtr->EcuMSleepModeWdgMMode);
+		if( internal_data.config->EcuMWdgMConfig != NULL ) {
+			DEBUG_ECUM_CALLOUT_W_ARG("WdgM_SetMode","%d",sleepModePtr->EcuMSleepModeWdgMMode);
+			WdgM_SetMode(sleepModePtr->EcuMSleepModeWdgMMode);
+		}
 #endif
 
 		/* Let no one else run */
@@ -212,8 +312,10 @@ static void in_state_sleep ( void ) {
 	const EcuM_SleepModeType *sleepModePtr;
 	sleepModePtr = &internal_data.config->EcuMSleepModeConfig[internal_data.sleep_mode];
 
+	DEBUG_ECUM_CALLOUT("EcuM_GenerateRamHash");
 	EcuM_GenerateRamHash();
 
+	DEBUG_ECUM_CALLOUT_W_ARG("Mcu_SetMode","%d",sleepModePtr->EcuMSleepModeMcuMode);
 	Mcu_SetMode(sleepModePtr->EcuMSleepModeMcuMode);
 
 	/* @req 3.1.5/ECUM2863 */
@@ -267,17 +369,17 @@ static inline boolean hasPostRunRequests(void){
 static inline void in_state_appRun(void){
 	if (internal_data_run_state_timeout){
 		internal_data_run_state_timeout--;
+		LDEBUG_PRINTF("RUN Timeout=%ld\n",internal_data_run_state_timeout);
 	}
 
 	if ((!hasRunRequests()) && (internal_data_run_state_timeout == 0)){
+		DEBUG_ECUM_CALLOUT("EcuM_OnExitRun");
 		EcuM_OnExitRun();	/** @req EcuM2865 */
 
 #if defined(USE_WDGM)
-		WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMPostRunMode);
-#endif
-
-#if defined(USE_RTE) && defined(CFG_ECUM_USE_SERVICE_COMPONENT)
-		Rte_Switch_currentMode_currentMode(RTE_MODE_EcuM_Mode_POSTRUN);
+		if( internal_data.config->EcuMWdgMConfig != NULL ) {
+			WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMPostRunMode);
+		}
 #endif
 
 		set_current_state(ECUM_STATE_APP_POST_RUN);/** @req EcuM2865 */
@@ -293,9 +395,11 @@ static inline void in_state_appPostRun(void){
 	/* @req 3.1.5/ECUM2866 */
 	if (hasRunRequests()){
 		/* We have run requests, return to RUN II */
+		DEBUG_ECUM_CALLOUT("EcuM_enter_run_mode");
 		EcuM_enter_run_mode();
 
 	} else if (!hasPostRunRequests()){
+		DEBUG_ECUM_CALLOUT("EcuM_OnExitPostRun");
 		EcuM_OnExitPostRun(); /** @req EcuM2761 */
 		set_current_state(ECUM_STATE_PREP_SHUTDOWN);/** @req EcuM2761 */
 	} else {
@@ -312,6 +416,7 @@ static inline void in_state_prepShutdown(void){
 	// TODO: The specification does not state what events to clear
 	EcuM_ClearWakeupEvent(ECUM_WKSTATUS_NONE);
 
+	DEBUG_ECUM_CALLOUT("EcuM_OnPrepShutdown");
 	EcuM_OnPrepShutdown();
 
 #if defined(USE_DEM)
@@ -345,14 +450,20 @@ static inline void in_state_goOffOne(void){
 		if ((writeAllResult != NVM_REQ_PENDING) || (internal_data_go_off_one_state_timeout == 0)){
 
 #if defined(USE_WDGM)
-			WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMShutdownMode);
+			if( internal_data.config->EcuMWdgMConfig != NULL ) {
+				DEBUG_ECUM_CALLOUT(WdgM_SetMode);
+				WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMShutdownMode);
+			}
 #endif
 			ShutdownOS(E_OK);
 		}
 #else
 
 #if defined(USE_WDGM)
-		WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMShutdownMode);
+		if( internal_data.config->EcuMWdgMConfig != NULL ) {
+			DEBUG_ECUM_CALLOUT("WdgM_SetMode");
+			WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMShutdownMode);
+		}
 #endif
 		ShutdownOS(E_OK);
 #endif
@@ -360,107 +471,171 @@ static inline void in_state_goOffOne(void){
 
 
 //----- MAIN -----------------------------------------------------------------------------------------------------------------
-void EcuM_MainFunction(void){
+void EcuM_MainFunction(void) {
 	EcuM_WakeupSourceType wMask;
+	static uint32 validationMask;
+	static uint32 validationMaxTime;
 
-	VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_NOT_INITIATED);
+	VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID,
+			ECUM_E_NOT_INITIATED);
 
-	switch(internal_data.current_state){
+	DEBUG_ECUM_STATE(internal_data.current_state);
 
-		case ECUM_STATE_APP_RUN:
-			/* RUN II state */
-			in_state_appRun();
-			break;
-		case ECUM_STATE_APP_POST_RUN:
-			/* RUN III state */
-			in_state_appPostRun();
-			break;
-		case ECUM_STATE_PREP_SHUTDOWN:
-			in_state_prepShutdown();
-			break;
-		case ECUM_STATE_GO_OFF_ONE:
-			in_state_goOffOne();
-			break;
-		case ECUM_STATE_GO_SLEEP:
-			in_state_goSleep();
-			break;
-		case ECUM_STATE_SLEEP:
-			in_state_sleep();
-			/* Flow Through */
-		case ECUM_STATE_WAKEUP_ONE:
-		{
-			/* TODO: we must have a normal RUN mode.. can't find any
-			 * in the A3.1.5 spec. */
-			Mcu_SetMode(MCU_MODE_NORMAL);
+	switch (internal_data.current_state) {
 
+	case ECUM_STATE_APP_RUN:
+		/* RUN II state */
+		in_state_appRun();
+		break;
+
+	case ECUM_STATE_APP_POST_RUN:
+		/* RUN III state */
+		in_state_appPostRun();
+		break;
+	case ECUM_STATE_PREP_SHUTDOWN:
+		in_state_prepShutdown();
+		break;
+
+	case ECUM_STATE_GO_OFF_ONE:
+		in_state_goOffOne();
+		break;
+
+	case ECUM_STATE_GO_SLEEP:
+		in_state_goSleep();
+		/* Flow Through, Scheduler is Locked */
+
+	case ECUM_STATE_SLEEP:
+		in_state_sleep();
+		/* Flow Through, Scheduler is Locked */
+
+	case ECUM_STATE_WAKEUP_ONE: {
+		DEBUG_ECUM_STATE(internal_data.current_state);
+
+		/* TODO: we must have a normal RUN mode.. can't find any
+		 * in the A3.1.5 spec. */
+		Mcu_SetMode(MCU_MODE_NORMAL);
 #if defined(USE_WDGM)
+		if( internal_data.config->EcuMWdgMConfig != NULL ) {
 			WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMWakeupMode);
+		}
 #endif
 
-			wMask = EcuM_GetPendingWakeupEvents();
+		wMask = EcuM_GetPendingWakeupEvents();
 
-			EcuM_DisableWakeupSources(wMask);
+		DEBUG_ECUM_CALLOUT_W_ARG("EcuM_DisableWakeupSources","0x%lx", (uint32)wMask);
+		EcuM_DisableWakeupSources(wMask);
 
-			EcuM_AL_DriverRestart();
+		EcuM_AL_DriverRestart();
 
-			ReleaseResource(RES_SCHEDULER);
+		ReleaseResource(RES_SCHEDULER);
 
-			set_current_state(ECUM_STATE_WAKEUP_VALIDATION);
+		validationMask = 0;
+		validationMaxTime = 0;
+		const EcuM_WakeupSourceConfigType *wkupCfgPtr;
 
-			break;
+		set_current_state(ECUM_STATE_WAKEUP_VALIDATION);
+
+		/* Calculate the validation timing , if any*/
+		for(int i=0;i<ECUM_WKSOURCE_USER_CNT;i++) {
+			wkupCfgPtr = &internal_data.config->EcuMWakeupSourceConfig[i];
+			if (wkupCfgPtr->EcuMValidationTimeout != ECUM_VALIDATION_TIMEOUT_ILL) {
+				validationMask |= wkupCfgPtr->EcuMWakeupSourceId;
+				validationMaxTime = MAX(wkupCfgPtr->EcuMValidationTimeout/ECUM_MAIN_FUNCTION_PERIOD,validationMaxTime);
+				//internal_data.validationTimer = validationMaxTime;
+			} else {
+				LDEBUG_PRINTF("No Validation for event:0x%lx\n",(uint32)wkupCfgPtr->EcuMWakeupSourceId);
+				
+				/* Validate right away */
+				EcuM_ValidateWakeupEvent(wkupCfgPtr->EcuMWakeupSourceId);
+			}
 		}
+		break;
+	}
 
-		case ECUM_STATE_WAKEUP_VALIDATION:
-		{
-			wMask = EcuM_GetPendingWakeupEvents();
+	case ECUM_STATE_WAKEUP_VALIDATION: {
+		/* !req 3.1.5/EcuM2566 */
 
-			EcuM_StartWakeupSources(wMask);
+		uint32 pendingWkupMask;
 
-			EcuM_CheckValidation( wMask );
+		if( validationMask == 0 ) {
+			pendingWkupMask = EcuM_GetPendingWakeupEvents();
+			// TODO: We can skip callout's here?
 
 			// TODO:
 			// ComM_EcuM_WakeupIndication( network handle )
 
+			DEBUG_ECUM_CALLOUT_W_ARG("EcuM_StartWakeupSources","0x%lx",(uint32)pendingWkupMask);
+			EcuM_StartWakeupSources(pendingWkupMask);
 			set_current_state(ECUM_STATE_WAKEUP_REACTION);
-			break;
-		}
 
-		case ECUM_STATE_WAKEUP_REACTION:
-		{
-			/*
-			 * At this stage we want to know how to react to the wakeup, e.g. go
-			 * back to RUN or SHUTDOWN, etc.
-			 */
-			EcuM_WakeupReactionType wReaction;
+		} else {
+			DEBUG_ECUM_CALLOUT("EcuM_GetPendingWakeupEvents");
+			pendingWkupMask = EcuM_GetPendingWakeupEvents();
 
-			wMask = EcuM_GetValidatedWakeupEvents();
+//			LDEBUG_PRINTF("Pending Wakeup: 0x%lx\n",pendingWkupMask);
 
-			/* TODO: We have skipped the TTII timer here */
-
-			/* If the wakeup mask here is != 0 we have a validated wakeup event ->
-			 * go back to RUN */
-			wReaction = ( 0 == wMask ) ? ECUM_WKACT_SHUTDOWN : ECUM_WKACT_RUN;
-			wReaction = EcuM_OnWakeupReaction(wReaction);
-
-			if( wReaction == ECUM_WKACT_RUN) {
-				set_current_state(ECUM_STATE_WAKEUP_TWO);
-			} else {
-				/* From figure 28 it seems that we should go to SHUTDOWN/GO SLEEP) again from wakeup
-				 * not going up to RUN/RUN II state again. */
-				set_current_state(ECUM_STATE_GO_SLEEP);
+			/* @req 3.1.5/EcuM2710 */
+			if (internal_data.validationTimer) {
+				internal_data.validationTimer--;
 			}
-			break;
+
+			if( pendingWkupMask == validationMask ) {
+				/* Match beetween the events that need validation -> done validating */
+				DEBUG_ECUM_CALLOUT_W_ARG("EcuM_StartWakeupSources","0x%lx",(uint32)wMask);
+				EcuM_StartWakeupSources(wMask);
+				set_current_state(ECUM_STATE_WAKEUP_REACTION);
+			} else {
+				if (internal_data.validationTimer == 0) {
+					// EcuM_StopWakeupSources(0);    // TODO
+					set_current_state(ECUM_STATE_WAKEUP_REACTION);
+				} else {
+					LDEBUG_PRINTF("  Awaiting validation for mask: pending=%lx, expected=%lx\n",pendingWkupMask, validationMask);
+					LDEBUG_PRINTF("  Validation Timer            : %lu\n",internal_data.validationTimer);
+				}
+			}
 		}
+		break;
+	}
 
-		case ECUM_STATE_WAKEUP_TWO:
+	case ECUM_STATE_WAKEUP_REACTION: {
+		/*
+		 * At this stage we want to know how to react to the wakeup, e.g. go
+		 * back to RUN or SHUTDOWN, etc.
+		 */
+		EcuM_WakeupReactionType wReaction;
+
+		wMask = EcuM_GetValidatedWakeupEvents();
+		LDEBUG_PRINTF("EcuM_GetValidatedWakeupEvents() : %x\n", wMask);
+
+		/* TODO: We have skipped the TTII timer here */
+
+		/* If the wakeup mask here is != 0 we have a validated wakeup event ->
+		 * go back to RUN */
+		wReaction = (0 == wMask) ? ECUM_WKACT_SHUTDOWN : ECUM_WKACT_RUN;
+		wReaction = EcuM_OnWakeupReaction(wReaction);
+
+		LDEBUG_PRINTF("Wakeup Reaction: %s\n",
+				GetWakeupReactionAsString(wReaction));
+		if (wReaction == ECUM_WKACT_RUN) {
+			set_current_state(ECUM_STATE_WAKEUP_TWO);
+		} else {
+			/* From figure 28 it seems that we should go to SHUTDOWN/GO SLEEP) again from wakeup
+			 * not going up to RUN/RUN II state again. */
+			set_current_state(ECUM_STATE_GO_SLEEP);
+		}
+		break;
+	}
+
+	case ECUM_STATE_WAKEUP_TWO:
 #if defined(USE_DEM)
-			Dem_Init();
+		Dem_Init();
 #endif
-			set_current_state(ECUM_STATE_RUN);
-			break;
+		EcuM_enter_run_mode();
+//		set_current_state(ECUM_STATE_APP_RUN);
+		break;
 
-		default:
-			//TODO: Report error.
-			break;
+	default:
+		//TODO: Report error.
+		break;
 	}
 }

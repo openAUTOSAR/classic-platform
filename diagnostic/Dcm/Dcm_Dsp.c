@@ -83,9 +83,17 @@ typedef enum {
 typedef struct {
 	boolean resetPending;
 	PduIdType resetPduId;
+	Dcm_EcuResetType resetType;
 } DspUdsEcuResetDataType;
 
+typedef struct {
+	boolean sessionPending;
+	PduIdType sessionPduId;
+	Dcm_SesCtrlType session;
+} DspUdsSessionControlDataType;
+
 static DspUdsEcuResetDataType dspUdsEcuResetData;
+static DspUdsSessionControlDataType dspUdsSessionControlData;
 static boolean dspWritePending;
 
 typedef struct {
@@ -157,6 +165,7 @@ void DspInit(void)
 {
 	dspUdsSecurityAccesData.reqInProgress = FALSE;
 	dspUdsEcuResetData.resetPending = FALSE;
+	dspUdsSessionControlData.sessionPending = FALSE;
 
 	dspWritePending = FALSE;
 	dspMemoryState=DCM_MEMORY_UNUSED;
@@ -305,7 +314,7 @@ static Std_ReturnType askApplicationForSessionPermission(Dcm_SesCtrlType newSess
 }
 
 
-void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduInfoType *pduTxData)
+void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduIdType txPduId, PduInfoType *pduTxData)
 {
 	/** @req DCM250 */
 	const Dcm_DspSessionRowType *sessionRow = DCM_Config.Dsp->DspSession->DspSessionRow;
@@ -323,6 +332,11 @@ void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduInfoType *p
 			result = askApplicationForSessionPermission(reqSessionType);
 			if (result == E_OK) {
 				DslSetSesCtrlType(reqSessionType);		/** @req DCM311 */
+
+				dspUdsSessionControlData.sessionPending = TRUE;
+				dspUdsSessionControlData.session = reqSessionType;
+				dspUdsSessionControlData.sessionPduId = txPduId;
+
 				// Create positive response
 				pduTxData->SduDataPtr[1] = reqSessionType;
 				pduTxData->SduLength = 2;
@@ -354,12 +368,15 @@ void DspUdsEcuReset(const PduInfoType *pduRxData, PduIdType txPduId, PduInfoType
 
 		switch (reqResetType)
 		{
-		case 0x01:	// Hard reset
+		case DCM_HARD_RESET:
+		case DCM_KEY_OFF_ON_RESET:
+		case DCM_SOFT_RESET:
 			// TODO: Ask application for permission (Dcm373) (Dcm375) (Dcm377)
 
 			// Schedule the reset
 			dspUdsEcuResetData.resetPending = TRUE;
 			dspUdsEcuResetData.resetPduId = txPduId;
+			dspUdsEcuResetData.resetType = reqResetType;
 
 			// Create positive response
 			pduTxData->SduDataPtr[1] = reqResetType;
@@ -1678,11 +1695,21 @@ void DspDcmConfirmation(PduIdType confirmPduId)
 	if (dspUdsEcuResetData.resetPending) {
 		if (confirmPduId == dspUdsEcuResetData.resetPduId) {
 			dspUdsEcuResetData.resetPending = FALSE;
+			Dcm_EcuReset(dspUdsEcuResetData.resetType);
+			if(DCM_HARD_RESET == dspUdsEcuResetData.resetType) {
 #if defined(USE_MCU) && ( MCU_PERFORM_RESET_API == STD_ON )
-			Mcu_PerformReset();
+				Mcu_PerformReset();
 #else
-			DET_REPORTERROR(MODULE_ID_DCM, 0, DCM_UDS_RESET_ID, DCM_E_NOT_SUPPORTED);
+				DET_REPORTERROR(MODULE_ID_DCM, 0, DCM_UDS_RESET_ID, DCM_E_NOT_SUPPORTED);
 #endif
+			}
+		}
+	}
+
+	if (dspUdsSessionControlData.sessionPending) {
+		if (confirmPduId == dspUdsSessionControlData.sessionPduId) {
+			dspUdsSessionControlData.sessionPending = FALSE;
+			Dcm_DiagnosticSessionControl(dspUdsSessionControlData.session);
 		}
 	}
 }

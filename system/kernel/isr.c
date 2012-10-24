@@ -76,6 +76,7 @@ void Os_IsrInit( void ) {
 
 	Irq_Init();
 
+	Os_Sys.isrCnt = OS_ISR_CNT;
 	/* Probably something smarter, but I cant figure out what */
 	memset(&Os_VectorToIsr[OS_ISR_CNT],ILL_VECTOR,NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS-OS_ISR_CNT);
 
