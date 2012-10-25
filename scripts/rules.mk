@@ -247,7 +247,7 @@ all: module_config $(all-mod) $(all-mod-post) $(ROOTDIR)/binaries/$(BOARDDIR)
 %.o: %.c
 	@echo
 	@echo "  >> CC $(notdir $<)"
-	$(Q)$(CC) -c $(CFLAGS) $(CFLAGS_$@) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
+	$(Q)$(CC) $(CFLAGS) $(CFLAGS_$@) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
 	$(do-compile-post)
 # run lint if enabled
 	$(run_pclint)

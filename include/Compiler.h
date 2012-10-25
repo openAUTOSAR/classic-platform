@@ -45,9 +45,17 @@
 #define SECTION_BALIGN(_align )  __attribute__ ((aligned (_align)))
 #elif defined(__DCC__)
 #define SECTION_BALIGN(_align )  __attribute__ ((aligned (_align)))
+#elif defined(__ICCHCS12__)
+#define SECTION_BALIGN(_align ) _Pragma("data_alignment=_align")
+#else
+#error Compiler not defined.
 #endif
 
 #define DECLARE_WEAK			__attribute__ ((weak))
+
+#if defined(__ICCHCS12__)
+#define restrict
+#endif
 
 /* Does this really work on all compilers.... */
 #define INLINE __inline__

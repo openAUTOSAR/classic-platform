@@ -18,9 +18,11 @@
 
 #include "Mcu.h"
 
+#if 0
 
 Mcu_RamSectorSettingConfigType Mcu_RamSectorSettingConfigData[] = {
 };
+#endif
 
 Mcu_ClockSettingConfigType Mcu_ClockSettingConfigData[] =
 {
@@ -39,7 +41,7 @@ const Mcu_ConfigType McuConfigData[] = {
 	.McuClockSettings = 1,
 	.McuDefaultClockSettings = 0,
 	.McuClockSettingConfig = &Mcu_ClockSettingConfigData[0],
-	.McuRamSectorSettingConfig = &Mcu_RamSectorSettingConfigData[0],
+	.McuRamSectorSettingConfig = NULL,
   }
 };
 

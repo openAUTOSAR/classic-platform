@@ -3,7 +3,7 @@ _BOARD_COMMON_MK:=y  # Include guard for backwards compatability
 
 
 obj-$(CFG_PPC) += crt0.o
-obj-$(CFG_HC1X) += crt0.o
+obj-$(CFG_HC1X)-$(COMPILER) += crt0.o
 vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
 vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32F10x_StdPeriph_Driver/src
 vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32_ETH_Driver/src
@@ -327,18 +327,22 @@ else
   # Newlib
   def-y += USE_NEWLIB
   obj-y += xtoa.o
-  obj-y += newlib_port.o
+ # obj-y += newlib_port.o
   # If we have configured console output we include printf. 
   # Overridden to use lib implementation with CFG_NEWLIB_PRINTF
   ifneq ($(CFG_NEWLIB_PRINTF),y)
     ifneq (,$(SELECT_CONSOLE) $(SELECT_OS_CONSOLE))
-      obj-y += printf.o
+ #     obj-y += printf.o
     endif # SELECT_CONSOLE
   endif # CFG_NEWLIB_PRINTF
 endif # SELECT_CLIB 
 
 
 obj-y += $(obj-y-y)
+obj-y += $(obj-y-gcc)
+obj-y += $(obj-y-iar)
+obj-y += $(obj-y-cw)
+
 
 vpath-y += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
 vpath-y += $(ROOTDIR)/$(ARCH_PATH-y)/drivers

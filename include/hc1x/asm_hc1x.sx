@@ -17,7 +17,11 @@
 /*
  * General purpose macros for hc1x
  */
- 
+
+
+#if defined(__ICCHCS12__)
+#define MOVE_ARG(_arg_nr,_to_reg)
+#else 
 
 // Move C call arguments
 
@@ -42,3 +46,4 @@ if \arg_nr == 0
 .endif
 .endm
 
+#endif

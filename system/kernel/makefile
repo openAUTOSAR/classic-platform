@@ -4,7 +4,7 @@
 vpath-y += $(ARCH_PATH-y)/kernel
 #obj-y += asm_sample.o
 #CFLAGS_asm_sample.o += -O3
-obj-y += arch_krn.o
+#obj-y += arch_krn.o
 obj-$(CFG_HC1X) += arch_irq.o
 #obj-y += stm32f10x_it.o
 
@@ -19,7 +19,7 @@ obj-y += resource.o
 #obj-y += swap.o
 obj-y += alarm.o
 obj-y += sched_table.o
-obj-y += counter.o
+#obj-y += counter.o
 #obj-y += com_internal.o
 #obj-y += create.o
 obj-y += sys_tick.o
@@ -33,7 +33,7 @@ obj-$(USE_KERNEL_EXTRA) += semaphore.o
 
 # These are VERY cpu dependent.. remove
 #obj-y += int_ctrl.o
-obj-y += irq.o
+#obj-y += irq.o
 
 # We are compiling the kernel
 dep-$(CFG_PPC) += arch_offset.h
@@ -57,6 +57,25 @@ asm_offset.h: asm_offset.c
 	@$(SED) -e "/#define/!d" -e "s/#//2g" $(<:.c=.s) > $@	
 	@rm 	$(<:.c=.s)
 endif
+
+# sed -n '/apa.*/ {h;n;s/q://;x;s/^/#define /;s/$//;x;p}' bepa.c
+# gawk '/apa/ { var=$0;getline tjo;print "#define " var tjo}' bepa.c
+# $ gawk '/^arc_dummy/ { va=gensub(/arc_dummy_(.*):.*/,"\\1",$0);getline;printf "
+#define %-30s %s\n",va,$2 }' asm_offset.h
+
+
+ifeq ($(COMPILER),iar)
+%_offset.h: %_offset.c
+	@echo "  >> generating $@ from $<"
+	$(CC) -lB $@_ $(CFLAGS) $(addprefix -I,$(inc-y)) $< -o $@__ 
+	$(Q)gawk '/^arc_dummy/ { va=gensub(/arc_dummy_(.*):.*/,"\\1",$$0);getline;printf "#define %-30s %s\n",va,$$2 }' $@_ > $@
+	$(Q)rm $@_ $@__ #$(subst .h,.r12,$@) 
+	
+#	$ sed -n "/arc_dummy/ {n;s/q://p}" bepa.c
+#	exit 0  
+endif
+
+#--preprocess=c
 
 ifeq ($(COMPILER),diab)
 # assembler generates this:
