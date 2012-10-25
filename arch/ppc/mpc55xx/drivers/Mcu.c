@@ -1259,3 +1259,20 @@ static void Mcu_ConfigureFlash(void)
 #endif
 }
 
+uint32 EccErrReg = 0;
+
+void McuE_GetECCError( uint32 *err ) {
+
+	/* Clear interrupt flag */
+#if defined(CFG_MPC5668)
+	if(ECSM.ESR.B.PFNCE){
+		ECSM.ESR.B.PFNCE = 1;
+	}
+	*err = EccErrReg;
+#else
+	*err = 0;
+#endif
+
+	/* Clear stored  */
+	EccErrReg = 0;
+}

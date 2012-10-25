@@ -123,8 +123,7 @@
 #endif
 #include "Cpu.h"
 #include "mpc55xx.h"
-#include "task_i.h"
-#include "arch.h"
+#include "Mcu.h"
 #if (FLS_BASE_ADDRESS != 0)
 #error Virtual addresses not supported
 #endif
@@ -559,10 +558,10 @@ void Fls_MainFunction(void) {
 			// NOT implemented. Hardware error = FLS_E_READ_FAILED
 			// ( we are reading directly from flash so it makes no sense )
 			// Read ECC-error to clear it
-			Os_ArchGetECCError(&eccErrReg);
+			McuE_GetECCError(&eccErrReg);
 			memcpy( (void *)Fls_Global.ramAddr, (void *) Fls_Global.flashAddr,
 					Fls_Global.length);
-			Os_ArchGetECCError(&eccErrReg);
+			McuE_GetECCError(&eccErrReg);
 			if( eccErrReg & FLASH_NON_CORRECTABLE_ERROR ){
 				fls_ReadFail();
 			} else {
