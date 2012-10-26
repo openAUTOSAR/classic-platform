@@ -439,10 +439,12 @@ static void AbortStartup(MemIf_JobResultType result)
 	if(AdminFls.NofFailedStartups >= MAX_NOF_FAILED_STARTUP_ATTEMPTS) {
 		DET_REPORTERROR(MODULE_ID_FEE, 0, FEE_STARTUP_ID, FEE_FLASH_CORRUPT);
 		CurrentJob.State = FEE_CORRUPTED;
+		ModuleStatus = MEMIF_IDLE;
 	} else {
 		CurrentJob.State = FEE_STARTUP_REQUESTED;
+		ModuleStatus = MEMIF_BUSY_INTERNAL;
 	}
-	ModuleStatus = MEMIF_IDLE;
+
 	JobResult = result;
 }
 
