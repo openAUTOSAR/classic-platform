@@ -488,6 +488,13 @@ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 	return 0;
 }
 
+/**
+ * Get frequency of the oscillator
+ */
+uint32_t McuE_GetClockReferencePointFrequency()
+{
+	return Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePointFrequency;
+}
 
 /**
  * Function to setup the internal flash for optimal performance
