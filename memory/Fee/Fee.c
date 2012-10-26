@@ -1497,11 +1497,10 @@ Std_ReturnType Fee_Read(uint16 blockNumber, uint16 blockOffset, uint8* dataBuffe
 	uint16 dataset;
 
 	DET_VALIDATE_RV(ModuleStatus != MEMIF_UNINIT, FEE_READ_ID, FEE_E_UNINIT, E_NOT_OK);
-	if(AdminFls.ForceGarbageCollect || (FEE_CORRUPTED == CurrentJob.State)){
+	if(AdminFls.ForceGarbageCollect || AdminFls.StartupForceGarbageCollect || (FEE_CORRUPTED == CurrentJob.State)){
 		return E_NOT_OK;
 	}
 	if( !(ModuleStatus == MEMIF_IDLE) ) {
-		DET_REPORTERROR(MODULE_ID_FEE, FEE_READ_ID, FEE_E_BUSY, E_NOT_OK);
 		return E_NOT_OK;
 	}
 
@@ -1545,7 +1544,6 @@ Std_ReturnType Fee_Write(uint16 blockNumber, uint8* dataBufferPtr)
 		return E_NOT_OK;
 	}
 	if( !(ModuleStatus == MEMIF_IDLE) ) {
-		DET_REPORTERROR(MODULE_ID_FEE, FEE_READ_ID, FEE_E_BUSY, E_NOT_OK);
 		return E_NOT_OK;
 	}
 
@@ -1588,7 +1586,7 @@ void Fee_Cancel(void)
  */
 MemIf_StatusType Fee_GetStatus(void)
 {
-	if(AdminFls.ForceGarbageCollect && (FEE_IDLE == CurrentJob.State)){
+	if((AdminFls.ForceGarbageCollect || AdminFls.StartupForceGarbageCollect) && (FEE_IDLE == CurrentJob.State)){
 		return MEMIF_BUSY_INTERNAL;
 	} else {
 		return ModuleStatus;
