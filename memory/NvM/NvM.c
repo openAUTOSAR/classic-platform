@@ -1468,8 +1468,8 @@ Std_ReturnType NvM_SetRamBlockStatus(NvM_BlockIdType blockId, boolean blockChang
 	qEntry.blockChanged = blockChanged;
 	qEntry.serviceId = NVM_SET_RAM_BLOCK_STATUS_ID;
 	rv = CirqBuffPush(&nvmQueue,&qEntry);
-	NVM_ASSERT(rv == 0 );
 
+	DET_VALIDATE_RV((rv == 0),NVM_SET_RAM_BLOCK_STATUS_ID, NVM_E_LIST_OVERFLOW , E_NOT_OK);
 	/* req 3.1.5/NVM185 */
 	admPtr->ErrorStatus = NVM_REQ_PENDING;
 
@@ -1540,7 +1540,8 @@ Std_ReturnType NvM_RestoreBlockDefaults( NvM_BlockIdType blockId, uint8* NvM_Des
 	qEntry.dataPtr = (uint8_t *)NvM_DestPtr;
 	qEntry.serviceId = NVM_RESTORE_BLOCK_DEFAULTS_ID;
 	rv = CirqBuffPush(&nvmQueue,&qEntry);
-	NVM_ASSERT(rv == 0 );
+
+	DET_VALIDATE_RV((rv == 0),NVM_RESTORE_BLOCK_DEFAULTS_ID, NVM_E_LIST_OVERFLOW , E_NOT_OK);
 
 	/* req 3.1.5/NVM185 */
 	admPtr->ErrorStatus = NVM_REQ_PENDING;
@@ -1630,8 +1631,8 @@ Std_ReturnType NvM_ReadBlock( NvM_BlockIdType blockId, uint8* NvM_DstPtr )
 	qEntry.dataPtr = NvM_DstPtr;
 	qEntry.serviceId = NVM_READ_BLOCK_ID;
 	rv = CirqBuffPush(&nvmQueue,&qEntry);
-	NVM_ASSERT(rv == 0 );
 
+	DET_VALIDATE_RV((rv == 0),NVM_READ_BLOCK_ID, NVM_E_LIST_OVERFLOW , E_NOT_OK);
 
 	/* req 3.1.5/NVM185 */
 	AdminBlock[blockId-1].ErrorStatus = NVM_REQ_PENDING;
@@ -1675,7 +1676,8 @@ Std_ReturnType NvM_WriteBlock( NvM_BlockIdType blockId, const uint8* NvM_SrcPtr 
 	qEntry.dataPtr = (uint8_t *)NvM_SrcPtr;
 	qEntry.serviceId = NVM_WRITE_BLOCK_ID;
 	rv = CirqBuffPush(&nvmQueue,&qEntry);
-	NVM_ASSERT(rv == 0 );
+
+	DET_VALIDATE_RV((rv == 0),NVM_WRITE_BLOCK_ID, NVM_E_LIST_OVERFLOW , E_NOT_OK);
 
 	/* req 3.1.5/NVM185 */
 	admPtr->ErrorStatus = NVM_REQ_PENDING;
@@ -1732,7 +1734,7 @@ Std_ReturnType NvM_SetDataIndex( NvM_BlockIdType blockId, uint8 dataIndex ) {
 	qEntry.dataIndex = dataIndex;
 	qEntry.serviceId = NVM_SET_DATA_INDEX_ID;
 	rv = CirqBuffPush(&nvmQueue,&qEntry);
-	NVM_ASSERT(rv == 0 );
+	DET_VALIDATE_RV((rv == 0),NVM_SET_DATA_INDEX_ID, NVM_E_LIST_OVERFLOW , E_NOT_OK);
 
 	/* req 3.1.5/NVM185 */
 	admPtr->ErrorStatus = NVM_REQ_PENDING;
@@ -1762,7 +1764,8 @@ Std_ReturnType NvM_GetDataIndex( NvM_BlockIdType blockId, uint8 *dataIndexPtr ) 
 	qEntry.dataPtr = dataIndexPtr;
 	qEntry.serviceId = NVM_GET_DATA_INDEX_ID;
 	rv = CirqBuffPush(&nvmQueue,&qEntry);
-	NVM_ASSERT(rv == 0 );
+
+	DET_VALIDATE_RV((rv == 0),NVM_GET_DATA_INDEX_ID, NVM_E_LIST_OVERFLOW , E_NOT_OK);
 
 	/* req 3.1.5/NVM185 */
 	admPtr->ErrorStatus = NVM_REQ_PENDING;
