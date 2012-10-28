@@ -22,6 +22,9 @@ endif
 ifeq (${COMPILER},cw)
 CW_COMPILE?=${DEFAULT_CW_COMPILE}
 endif
+ifeq (${COMPILER},iar)
+IAR_COMPILE?=${DEFAULT_IAR_COMPILE}
+endif
 
 # Check cross compiler setting against default from board config
 ifeq (${COMPILER},cw)
@@ -29,6 +32,12 @@ ifneq (${CW_COMPILE},${DEFAULT_CW_COMPILE})
 ${warning Not using default cross compiler for architecture.}
 ${warning CW_COMPILE:            ${CW_COMPILE} [${origin CW_COMPILE}]}
 ${warning DEFAULT_CW_COMPILE:    ${DEFAULT_CW_COMPILE} [${origin DEFAULT_CW_COMPILE}]}
+endif
+else ifeq (${COMPILER},iar)
+ifneq (${IAR_COMPILE},${DEFAULT_IAR_COMPILE})
+${warning Not using default cross compiler for architecture.}
+${warning IAR_COMPILE:            ${IAR_COMPILE} [${origin IAR_COMPILE}]}
+${warning DEFAULT_IAR_COMPILE:    ${DEFAULT_IAR_COMPILE} [${origin DEFAULT_IAR_COMPILE}]}
 endif
 else
 ifneq (${DEFAULT_CROSS_COMPILE},)

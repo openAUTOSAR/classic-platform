@@ -8,7 +8,7 @@
 #  __IAR_SYSTEMS_ASM__  - asm 
 
 
-IAR_COMPILE=/c/devtools/IAR_5.6/hcs12
+#IAR_COMPILE=/c/devtools/IAR_5.6/hcs12
 IAR_BIN=$(IAR_COMPILE)/bin
 IAR_LIB=$(IAR_COMPILE)/lib/dlib
 
@@ -107,7 +107,7 @@ libitem-y += $(libitem-yy)
 
 AS	= 	$(IAR_BIN)/ahcs12.exe
 
-asflags-y += --error_limit=10
+#asflags-y += --error_limit=10
 #asflags-y += -proc e500 -gdwarf-2
 #asflags-$(CFG_VLE) += -vle
 ASFLAGS += $(asflags-y)
