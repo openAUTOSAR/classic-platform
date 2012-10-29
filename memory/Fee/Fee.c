@@ -513,15 +513,17 @@ static void BankHeaderOldWrite(uint8 bank)
 /*
  * Write bank header magic
  */
-static void BankHeaderMagicWrite(uint8 bank)
+static Std_ReturnType BankHeaderMagicWrite(uint8 bank)
 {
+	Std_ReturnType ret = E_OK;
 	memset(RWBuffer.BankCtrl.MagicPage.Byte, 0xff, BANK_CTRL_MAGIC_PAGE_SIZE);
 	memcpy(RWBuffer.BankCtrl.MagicPage.Magic, BankMagicMaster, BANK_MAGIC_LEN);
 	if (Fls_Write(BankProp[bank].End - BANK_CTRL_MAGIC_PAGE_SIZE, RWBuffer.BankCtrl.MagicPage.Byte, BANK_CTRL_MAGIC_PAGE_SIZE) == E_OK) {
 		SetFlsJobBusy();
 	} else {
-		AbortJob(Fls_GetJobResult());
+		ret = E_NOT_OK;
 	}
+	return ret;
 }
 
 /*
@@ -638,10 +640,11 @@ static void StartupReadBank2Header(void)
 				} else {
 					/* One bank old and one new. Start with the old one */
 					CurrentJob.Op.Startup.NrOfBanks = 2;
-					CurrentJob.Op.Startup.BankNumber = 1;
 
 					if (AdminFls.BankStatus[0] == BANK_STATUS_OLD) {
 						CurrentJob.Op.Startup.BankNumber = 0;
+					} else {
+						CurrentJob.Op.Startup.BankNumber = 1;
 					}
 					/* Trigger garbage collect when we are done */
 					AdminFls.StartupForceGarbageCollect = TRUE;
@@ -779,6 +782,8 @@ static void StartupEraseInvalidBankRequested(void)
 			/* At least one bank should be erased */
 			if(BANK_HEADER_INVALID == AdminFls.StartupBankHeaderStatus[1]) {
 				bankNbr = 1;
+			} else {
+				bankNbr = 0;
 			}
 			CurrentJob.Op.Startup.BankNumber = bankNbr;
 			if (Fls_Erase(BankProp[bankNbr].Start, BankProp[bankNbr].End - BankProp[bankNbr].Start) == E_OK) {
@@ -793,7 +798,9 @@ static void StartupEraseInvalidBankRequested(void)
 				/* No valid header has been found. Both banks should be erased.
 				 * Add header magic to bank 0 and start using this bank. */
 				CurrentJob.State = FEE_STARTUP_WRITE_BANK_MAGIC;
-				BankHeaderMagicWrite(0);
+				if (E_OK != BankHeaderMagicWrite(0)) {
+					AbortStartup(Fls_GetJobResult());
+				}
 				AdminFls.BankNumber = 0;
 				AdminFls.NewBlockAdminAddress = BankProp[0].End - (BLOCK_CTRL_PAGE_SIZE + BANK_CTRL_PAGE_SIZE);
 				AdminFls.NewBlockDataAddress = BankProp[0].Start;
@@ -803,7 +810,9 @@ static void StartupEraseInvalidBankRequested(void)
 				 * This bank should be erased
 				 *  */
 				CurrentJob.State = FEE_STARTUP_WRITE_BANK_MAGIC;
-				BankHeaderMagicWrite(AdminFls.BankNumber);
+				if (E_OK != BankHeaderMagicWrite(AdminFls.BankNumber)) {
+					AbortStartup(Fls_GetJobResult());
+				}
 			} else {
 				/* Done! */
 				FinnishStartup();
@@ -949,7 +958,9 @@ static void WriteMarkBankOldState(void)
 			CurrentJob.Op.Write.WriteAdminAddress = AdminFls.NewBlockAdminAddress;
 
 			CurrentJob.State = FEE_WRITE_BANK_MAGIC;
-			BankHeaderMagicWrite(AdminFls.BankNumber);
+			if (E_OK != BankHeaderMagicWrite(AdminFls.BankNumber)) {
+				AbortJob(Fls_GetJobResult());
+			}
 		} else {
 			AbortJob(Fls_GetJobResult());
 		}
@@ -1374,7 +1385,9 @@ static void InvalidateMarkBankOld(void)
 
 			// Write bank header magic
 			CurrentJob.State = FEE_INVALIDATE_WRITE_BANK_MAGIC;
-			BankHeaderMagicWrite(AdminFls.BankNumber);
+			if (E_OK != BankHeaderMagicWrite(AdminFls.BankNumber)) {
+				AbortJob(Fls_GetJobResult());
+			}
 		} else {
 			AbortJob(Fls_GetJobResult());
 		}
