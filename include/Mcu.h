@@ -197,7 +197,7 @@ uint32_t McuE_GetPeripheralClock( McuE_PeriperalClock_t type );
 void McuE_EnterLowPower( int mode );
 void McuE_LowPowerRecoverFlash( void );
 
-#if defined(CFG_MPC55XX)
+#if defined(CFG_PPC)
 void McuE_GetECCError( uint32 *err );
 #endif
 #endif /*MCU_H_*/
