@@ -1042,7 +1042,7 @@ void Can_InitController(uint8 controller,
     canHw->MCR.B.BCC = 1;           /* Enable all nice features */
 
     /* Use Fsys derivate */
-#ifdef USE_CAN_WITHFMPLL
+#ifdef CFG_CAN_OSCILLATOR_CLOCK
     canHw->CR.B.CLKSRC = 0;
 #else
     canHw->CR.B.CLKSRC = 1;

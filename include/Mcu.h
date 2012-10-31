@@ -192,7 +192,7 @@ uint8_t Irq_GetCurrentPriority( Cpu_t cpu);
 uint32_t McuE_GetSystemClock( void );
 #if defined(CFG_MPC55XX) || defined(CFG_ARM_CR4)
 uint32_t McuE_GetPeripheralClock( McuE_PeriperalClock_t type );
-uint32_t McuE_GetClockReferencePointFrequency();
+uint32_t McuE_GetClockReferencePointFrequency(void);
 #endif
 
 void McuE_EnterLowPower( int mode );

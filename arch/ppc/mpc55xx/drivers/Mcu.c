@@ -1201,7 +1201,7 @@ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 /**
  * Get frequency of the oscillator
  */
-uint32_t McuE_GetClockReferencePointFrequency()
+uint32_t McuE_GetClockReferencePointFrequency(void)
 {
 	return Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePointFrequency;
 }
