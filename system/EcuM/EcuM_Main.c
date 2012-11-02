@@ -503,7 +503,7 @@ void EcuM_MainFunction(void) {
 	case ECUM_STATE_GO_SLEEP:
 		in_state_goSleep();
 		/* Flow Through, Scheduler is Locked */
-
+		break;
 	case ECUM_STATE_SLEEP:
 		in_state_sleep();
 		/* Flow Through, Scheduler is Locked */
