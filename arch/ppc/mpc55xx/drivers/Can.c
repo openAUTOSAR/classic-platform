@@ -1042,7 +1042,11 @@ void Can_InitController(uint8 controller,
     canHw->MCR.B.BCC = 1;           /* Enable all nice features */
 
     /* Use Fsys derivate */
+#ifdef CFG_CAN_OSCILLATOR_CLOCK
+    canHw->CR.B.CLKSRC = 0;
+#else
     canHw->CR.B.CLKSRC = 1;
+#endif
     canHw->MCR.B.MAXMB = cfgCtrlPtr->Can_Arc_MailboxMax - 1;
 
 
@@ -1072,7 +1076,11 @@ void Can_InitController(uint8 controller,
     VALIDATE_DEM_NO_RV(( (tq>8) && (tq<25 )), CAN_E_TIMEOUT );
 
     // Assume we're using the peripheral clock instead of the crystal.
-    clock = McuE_GetPeripheralClock((McuE_PeriperalClock_t) config->CanCpuClockRef);
+    if (canHw->CR.B.CLKSRC == 1) {
+    	clock = McuE_GetPeripheralClock((McuE_PeriperalClock_t) config->CanCpuClockRef);
+    } else {
+    	clock = McuE_GetClockReferencePointFrequency();
+    }
 
     canHw->CR.B.PRESDIV = clock / (config->CanControllerBaudRate * 1000 * tq) - 1;
     canHw->CR.B.PROPSEG = config->CanControllerPropSeg;
