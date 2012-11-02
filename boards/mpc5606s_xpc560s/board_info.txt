@@ -35,7 +35,9 @@ Memory Map:
  0x4000_0000 -> 0x4000_bfff   SRAM
  0x6000_0000 -> 0x6002_7fff   Graphics SRAM
  
- 
+NOTE! In Mcu.c only board specific clocks and pin muxing are setup and there is no config tool support. 
+So, in order to use for instance FlexCan 3 you need to iniatilize FlexCan3 power control register i.e. ME.PCTL[19].R = 0x01;
+in EcuM callout or modify an own version of Mcu.c. See Mcu_InitClock in Mcu.c for further info. 
 
 == SPI == 
 
