@@ -286,7 +286,11 @@ inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
 %.lcf %.ldp: %.ldf
 	@echo
 	@echo "  >> CPP $(notdir $<)"
+ifeq ($(CROSS_COMPILE)$(COMPILER),iar)
+	$(Q)$(CPP) $(CPP_ASM_FLAGS) $(CPPOUT) $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
+else
 	$(Q)$(CPP) -P $(CPP_ASM_FLAGS) $(CPPOUT) $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
+endif
 
 .PHONY $(ROOTDIR)/libs:
 $(ROOTDIR)/libs:
@@ -316,8 +320,8 @@ $(build-hex-y): $(build-exe-y)
 $(build-exe-y): $(dep-y) $(obj-y) $(sim-y) $(libitem-y) $(ldcmdfile-y)
 	@echo
 	@echo "  >> LD $@"
-ifeq ($(CROSS_COMPILE)$(COMPILER),gcc)
-	$(Q)$(CC) $(LDFLAGS) -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	
+ifeq ($(COMPILER),iar)
+	$(Q)$(LD) $(obj-y) $(LDFLAGS) -o $@ -I$(libpath-y) $(lib-y) $(libitem-y)	
 else
 	$(Q)$(LD) $(LDFLAGS) $(LD_FILE) $(ldcmdfile-y) -o $@ $(libpath-y) $(LD_START_GRP) $(obj-y) $(lib-y) $(libitem-y) $(LD_END_GRP) $(LDMAPFILE)
 	$(do-memory-footprint)

@@ -184,7 +184,11 @@ StatusType GetElapsedCounterValue( CounterType counter_id, TickRefType val, Tick
 #if defined(__DCC__)
 #pragma weak Os_Arc_OsTickCounter
 #endif
+#if defined(__ICCHCS12__)
+CounterType Os_Arc_OsTickCounter = -1;
+#else
 CounterType Os_Arc_OsTickCounter __attribute__((weak)) = -1;
+#endif
 
 void OsTick( void ) {
 	// if not used, os_tick_counter < 0

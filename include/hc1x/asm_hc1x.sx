@@ -20,7 +20,9 @@
 
 
 #if defined(__ICCHCS12__)
-#define MOVE_ARG(_arg_nr,_to_reg)
+MOVE_ARG	MACRO
+	nop
+	ENDM
 #else 
 
 // Move C call arguments

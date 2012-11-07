@@ -19,11 +19,12 @@ IAR_LIB=$(IAR_COMPILE)/lib/dlib
 
 CC	= 	$(IAR_BIN)/icchcs12.exe 
 
-cflags-y        += --dlib_config $(IAR_LIB)/dlhcs12bdf.h 
+cflags-y        += --dlib_config $(IAR_LIB)/dlhcs12bff.h 
 cflags-y 		+= -e
 cflags-y 		+= --no_wrap_diagnostics
 cflags-y 		+= --error_limit=10
 cflags-y 		+= --silent
+cflags-y 		+= --code_model=banked
 
 # z is the size options
 cflags-$(CFG_OPT_RELEASE)        += -s9
@@ -54,18 +55,12 @@ empty =
 space = $(empty) $(empty)
 
 
-#cw_lib_path += -L$(CW_COMPILE)/PowerPC_EABI_Support/Runtime/Lib
-#cw_lib_path += -L$(CW_COMPILE)/PowerPC_EABI_Support/MSL/MSL_C/PPC_EABI/Lib
 cc_inc_path += $(IAR_COMPILE)/inc/dlib
-#cc_inc_path += $(CW_COMPILE)/PowerPC_EABI_Support/MSL/MSL_C/PPC_EABI/Include
+cc_inc_path += $(IAR_COMPILE)/inc/
 inc-y += $(cc_inc_path)
-#libpath-y += $(cw_lib_path)
+libpath-y += $(IAR_COMPILE)/lib/dlib
 
-# nothing really matches.......
-#lib-y += -lRuntime.PPCEABI.S.a 
-#lib-y += -lMSL_C.PPCEABI.bare.SZ.S.a
-
-#C_TO_ASM = -P
+lib-y += dlhcs12bff.r12
 
 # ---------------------------------------------------------------------------
 # Linker
@@ -81,18 +76,13 @@ inc-y += $(cc_inc_path)
 
 LD = $(IAR_BIN)/xlink.exe
 
-#LDSCRIPT = -lcf
-
-# To make "rom" images (make LOAD() work)
-#ldflags-y += -romaddr 0x0 
-#ldflags-y += -rambuffer 0x0
-#ldflags-y += -nodefaults
-#ldflags-y += -gdwarf-2
-#ldflags-y += -m _start
+ldflags-y += -s __program_start
+ldflags-y += -Felf -xms
+ldflags-y += -f linkscript_iar.lcf
 TE = elf
-#ldflags-y += -map $(subst .$(TE),.map, $@)
+ldflags-y += -l$(subst .$(TE),.map, $@)
 
-#LDFLAGS += $(ldflags-y) 
+LDFLAGS += $(ldflags-y) 
 #LDOUT 		= -o $@
 
 #LD_FILE = -lcf

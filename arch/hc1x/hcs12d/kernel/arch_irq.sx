@@ -18,9 +18,7 @@
 #include "asm_offset.h"
 #include "asm_hc1x.sx"
 
-//#include "context.sx"
-#define SAVE_CONTEXT_FROM_INTERRUPT
-#define RESTORE_CONTEXT_FOR_INTERRUPT
+#include "context.sx"
 #include "context.h"
 #include "irq_defines.h"
 

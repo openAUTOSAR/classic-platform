@@ -4,7 +4,7 @@
 vpath-y += $(ARCH_PATH-y)/kernel
 #obj-y += asm_sample.o
 #CFLAGS_asm_sample.o += -O3
-#obj-y += arch_krn.o
+obj-y += arch_krn.o
 obj-$(CFG_HC1X) += arch_irq.o
 #obj-y += stm32f10x_it.o
 
@@ -19,7 +19,7 @@ obj-y += resource.o
 #obj-y += swap.o
 obj-y += alarm.o
 obj-y += sched_table.o
-#obj-y += counter.o
+obj-y += counter.o
 #obj-y += com_internal.o
 #obj-y += create.o
 obj-y += sys_tick.o
@@ -33,7 +33,7 @@ obj-$(USE_KERNEL_EXTRA) += semaphore.o
 
 # These are VERY cpu dependent.. remove
 #obj-y += int_ctrl.o
-#obj-y += irq.o
+obj-y += irq.o
 
 # We are compiling the kernel
 dep-$(CFG_PPC) += arch_offset.h

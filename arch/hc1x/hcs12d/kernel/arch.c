@@ -30,6 +30,17 @@ void Os_ArchFirstCall( void )
 	Os_Sys.currTaskPtr->constPtr->entry();
 }
 
+#if defined(__IAR_SYSTEMS_ICC__)
+//FIXME
+void *Os_ArchGetStackPtr( void ) {
+  void* val;
+
+  //asm("sts _.tmp");
+  //asm volatile("movw _.tmp, %0":"=m" (val));
+
+  return val;
+}
+#else
 void *Os_ArchGetStackPtr( void ) {
   void* val;
 
@@ -38,6 +49,8 @@ void *Os_ArchGetStackPtr( void ) {
 
   return val;
 }
+#endif
+
 
 unsigned int Os_ArchGetScSize( void ) {
 	return CONTEXT_SIZE_W;

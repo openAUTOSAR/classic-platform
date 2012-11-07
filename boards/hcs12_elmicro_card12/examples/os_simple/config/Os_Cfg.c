@@ -59,7 +59,7 @@ GEN_COUNTER_HEAD = {
 				),
 };
 
-	CounterType Os_Arc_OsTickCounter = COUNTER_ID_Counter1;
+	//CounterType Os_Arc_OsTickCounter = COUNTER_ID_Counter1;
 
 
 // ##################################    ALARMS     ################################

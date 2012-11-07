@@ -71,7 +71,8 @@ void Irq_GenerateSoftInt( IrqType vector ) {
 
 	if (vector == IRQ_TYPE_ILLEGAL)
 	{
-            asm(".short 0x1830"); // Trap instruction
+		//FIXME
+            asm("NOP"); // Trap instruction
 	}
 }
 
@@ -95,6 +96,10 @@ void Irq_EnableVector( int16_t vector, int priority, int core ) {
 // #####################  INTERRUPT TRANSLATE TABLE #######################
 #define IRQ_MAP(x) irq_##x
 
+#if defined(__ICCHCS12__)
+//FIXME
+const struct interrupt_vectors vectors;
+#else
 const struct interrupt_vectors __attribute__((section(".vectors"))) vectors =
     {
 	  pwm_shutdown_handler:
@@ -224,3 +229,4 @@ const struct interrupt_vectors __attribute__((section(".vectors"))) vectors =
   reset_handler:
       _start,
     };
+#endif
