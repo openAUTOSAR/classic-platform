@@ -441,7 +441,14 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
     	FMPLL.SYNCR.B.LOCIRQ = 1;
 #endif
 #endif
+
     }
+#if defined(CFG_MPC5668)
+    /* Enable ecc error reporting */
+    ECSM.ECR.B.EPFNCR = 1;
+#else
+    /* TODO: add support */
+#endif
 }
 
 //-------------------------------------------------------------------
@@ -1199,6 +1206,14 @@ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 #endif
 
 /**
+ * Get frequency of the oscillator
+ */
+uint32_t McuE_GetClockReferencePointFrequency(void)
+{
+	return Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting].McuClockReferencePointFrequency;
+}
+
+/**
  * Function to setup the internal flash for optimal performance
  */
 
@@ -1252,3 +1267,20 @@ static void Mcu_ConfigureFlash(void)
 #endif
 }
 
+uint32 EccErrReg = 0;
+
+void McuE_GetECCError( uint32 *err ) {
+
+	/* Clear interrupt flag */
+#if defined(CFG_MPC5668)
+	if(ECSM.ESR.B.PFNCE){
+		ECSM.ESR.B.PFNCE = 1;
+	}
+	*err = EccErrReg;
+#else
+	*err = 0;
+#endif
+
+	/* Clear stored  */
+	EccErrReg = 0;
+}

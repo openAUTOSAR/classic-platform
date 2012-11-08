@@ -57,6 +57,11 @@
 #define INTC_EOIR			0xfff48018
 #define INTC_SSCIR0			0xfff48020
 
+/* ECC */
+#if defined (CFG_MPC5668)
+#define ECSM_BASE 	0xfff40000
+#define ECSM_ESR    0x47
+#endif
 /* ----------------------------[private macro]-------------------------------*/
 
 #define	LOCK()			wrteei	0
@@ -249,6 +254,22 @@ restoreFuncContext:
 /**
  * External input exception handlers 
  */ 
+ #if defined(CFG_MPC5668)
+ 		.global exception_IVOR2
+		.balign 16
+exception_IVOR2:
+	/* Check for ECC problems */
+	//Store err reg
+	LOAD_ADDR_32(r8,ECSM_BASE)
+	lbz  r9,ECSM_ESR(r8)
+	LOAD_ADDR_32(r8,EccErrReg)
+	stw		r9,0(r8)
+	// Jump to next instruction
+	mfspr 	r9,srr0
+	addi  	r9,r9,4
+	mtspr	srr0,r9
+	rfi	
+#endif
 		.global exception_IVOR4
 		.global restoreIsrContext
 		.balign 16
@@ -567,7 +588,12 @@ handleException:
 exception_tbl:
 	EXC_TABLE_CODE(0)
 	EXC_TABLE_CODE(1)
-	EXC_TABLE_CODE(2)
+#if defined(CFG_MPC5668)
+	.balign 16
+    b      exception_IVOR2
+#else
+    EXC_TABLE_CODE(2)
+#endif
 	EXC_TABLE_CODE(3)
     .balign 16
     b      exception_IVOR4
