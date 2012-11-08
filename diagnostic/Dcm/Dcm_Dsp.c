@@ -1722,6 +1722,7 @@ static Dcm_NegativeResponseCodeType readMemoryData( Dcm_OpStatusType *OpStatus,
 {
 	Dcm_ReturnReadMemoryType ReadRet;
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+	*OpStatus = DCM_INITIAL;
 	ReadRet = Dcm_ReadMemory(*OpStatus,memoryIdentifier,
 									MemoryAddress,
 									MemorySize,
@@ -1991,12 +1992,13 @@ static Dcm_NegativeResponseCodeType writeMemoryData(Dcm_OpStatusType* OpStatus,
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 	Dcm_ReturnWriteMemoryType writeRet;
+	*OpStatus = DCM_INITIAL;
 	writeRet = Dcm_WriteMemory(*OpStatus,
 								memoryIdentifier,
 								MemoryAddress,
 								MemorySize,
 								SourceData);
-	if(DCM_READ_FAILED == writeRet)
+	if(DCM_WRITE_FAILED == writeRet)
 	{
 		responseCode = DCM_E_GENERALPROGRAMMINGFAILURE;   /*@req UDS_REQ_0X3D_16,DCM643*/
 	}
