@@ -92,6 +92,9 @@ postload_CortexM3:
   r.s MSP 0x20005000
   RETURN
 
+postload_MPC5606S:
+  RETURN
+
 postload_MPC5516:
 postload_MPC5554:
 postload_mpc5633M:
@@ -117,6 +120,7 @@ path:
   y.spath + &cfg_project_path_g/system/kernel
   y.spath.SETRECURSEDIR &cfg_project_path_g
   RETURN
+
 
 
 
