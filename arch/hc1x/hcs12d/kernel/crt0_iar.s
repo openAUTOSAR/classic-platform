@@ -11,7 +11,7 @@
 ;		If possible, perform the initialization in the
 ;		__low_level_init() function at the end instead.
 ;
-; Entries:      __program_start   Entry point
+; Entries:      _start   Entry point
 ;
 ;----------------------------------------------------------------------
 
@@ -19,7 +19,7 @@
 ; ----------------------------------------------------------------------
 ;
 ; The starting point.  The CSTARTUP module defines the default
-; entry symbol __program_start which is the starting point of program
+; entry symbol _start which is the starting point of program
 ; execution and the segment part that will require everything
 ; that is needed.
 ;
@@ -48,10 +48,123 @@
 ; The reset vector
 ;
 ; ----------------------------------------------------------------------
+	extern	irq_pwm_shutdown
+	extern	irq_ptpif
+	extern	irq_can4_tx
+	extern	irq_can4_rx
+	extern	irq_can4_err
+	extern	irq_can4_wake
+	extern	irq_can3_tx
+	extern	irq_can3_rx
+	extern	irq_can3_err
+	extern	irq_can3_wake
+	extern	irq_can2_tx
+	extern	irq_can2_rx
+	extern	irq_can2_err
+	extern	irq_can2_wake
+	extern	irq_can1_tx
+	extern	irq_can1_rx
+	extern	irq_can1_err
+	extern	irq_can1_wake
+	extern	irq_can0_tx
+	extern	irq_can0_rx
+	extern	irq_can0_err
+	extern	irq_can0_wake
+	extern	irq_flash
+	extern	irq_eeprom
+	extern	irq_spi2
+	extern	irq_spi1
+	extern	irq_iic
+	extern	irq_bdlc
+	extern	irq_selfclk_mode
+	extern	irq_pll_lock
+	extern	irq_accb_overflow
+	extern	irq_mccnt_underflow
+	extern	irq_pthif
+	extern	irq_ptjif
+	extern	irq_atd1
+	extern	irq_atd0
+	extern	irq_sci1
+	extern	irq_sci0
+	extern	irq_spi0
+	extern	irq_acca_input
+	extern	irq_acca_overflow
+	extern	irq_timer_overflow
+	extern	irq_tc7
+	extern	irq_tc6
+	extern	irq_tc5
+	extern	irq_tc4
+	extern	irq_tc3
+	extern	irq_tc2
+	extern	irq_tc1
+	extern	irq_tc0
+	extern	irq_rtii
+	extern	irq_irq
+	extern	irq_xirq
+	extern	irq_swi
+	extern	irq_illegal
+	extern	irq_cop_clock
 
-	asegn	INTVEC:CONST:ROOT,0fffeH
-?reset
-        dc16    __program_start
+	asegn	INTVEC:CONST:ROOT,0ff8cH
+?vectors
+	dc16	irq_pwm_shutdown
+	dc16	irq_ptpif
+	dc16	irq_can4_tx
+	dc16	irq_can4_rx
+	dc16	irq_can4_err
+	dc16	irq_can4_wake
+	dc16	irq_can3_tx
+	dc16	irq_can3_rx
+	dc16	irq_can3_err
+	dc16	irq_can3_wake
+	dc16	irq_can2_tx
+	dc16	irq_can2_rx
+	dc16	irq_can2_err
+	dc16	irq_can2_wake
+	dc16	irq_can1_tx
+	dc16	irq_can1_rx
+	dc16	irq_can1_err
+	dc16	irq_can1_wake
+	dc16	irq_can0_tx
+	dc16	irq_can0_rx
+	dc16	irq_can0_err
+	dc16	irq_can0_wake
+	dc16	irq_flash
+	dc16	irq_eeprom
+	dc16	irq_spi2
+	dc16	irq_spi1
+	dc16	irq_iic
+	dc16	irq_bdlc
+	dc16	irq_selfclk_mode
+	dc16	irq_pll_lock
+	dc16	irq_accb_overflow
+	dc16	irq_mccnt_underflow
+	dc16	irq_pthif
+	dc16	irq_ptjif
+	dc16	irq_atd1
+	dc16	irq_atd0
+	dc16	irq_sci1
+	dc16	irq_sci0
+	dc16	irq_spi0
+	dc16	irq_acca_input
+	dc16	irq_acca_overflow
+	dc16	irq_timer_overflow
+	dc16	irq_tc7
+	dc16	irq_tc6
+	dc16	irq_tc5
+	dc16	irq_tc4
+	dc16	irq_tc3
+	dc16	irq_tc2
+	dc16	irq_tc1
+	dc16	irq_tc0
+	dc16	irq_rtii
+	dc16	irq_irq
+	dc16	irq_xirq
+	dc16	irq_swi
+	dc16	irq_illegal
+	dc16	_start
+	dc16	irq_cop_clock
+	dc16	_start
 
 
 ;----------------------------------------------------------------------
@@ -61,12 +174,11 @@
 ;----------------------------------------------------------------------
 
         rseg	CODE:REORDER:NOROOT(0)
-	public	__program_start
+	public	_start
 
-	require	?reset		; Require the reset vector
         extern  ?cmain
 
-__program_start: 
+_start:
 ;;
 ;; At this step, the stack is not initialized and interrupts are masked.
 ;; Applications only have 64 cycles to initialize some registers.
@@ -98,7 +210,7 @@ __program_start:
 ;----------------------------------------------------------------------
 
 	jmp	?cmain
-        end	__program_start
+        end	_start
 
 
 ;----------------------------------------------------------------------
@@ -113,7 +225,7 @@ __program_start:
 ;		should not be modified by the end user, do that in
 ;		cstartup.s12 instead.
 ;
-; Entries:      __program_start   Entry point
+; Entries:      _start   Entry point
 ;
 ; Defines:      __BANKED_MODEL__  Define it if you are using a banked system
 ;

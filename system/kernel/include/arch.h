@@ -38,7 +38,6 @@
  *
  */
 #if defined(__ICCHCS12__)
-extern
 __simple void Os_ArchSetSpAndCall(void *sp, void (*f)(void) );
 #else
 void Os_ArchSetSpAndCall(void *sp, void (*f)(void) );
@@ -52,7 +51,6 @@ void Os_ArchSetSpAndCall(void *sp, void (*f)(void) );
  * @return
  */
 #if defined(__ICCHCS12__)
-extern
 __simple void Os_ArchSwapContext(void *old,void *new);
 #else
 void Os_ArchSwapContext(void *old,void *new);
@@ -66,7 +64,6 @@ void Os_ArchSwapContext(void *old,void *new);
  *   Os_TaskSwapContextTo(NULL,<pcb>);
  */
 #if defined(__ICCHCS12__)
-extern
 __simple void Os_ArchSwapContextTo(void *old,void *new);
 #else
 void Os_ArchSwapContextTo(void *old,void *new);
@@ -92,7 +89,6 @@ void Os_ArchSetupContext( OsTaskVarType *pcb );
  * @return current stack pointer
  */
 #if defined(__ICCHCS12__)
-extern
 __simple void *Os_ArchGetStackPtr( void );
 #else
 void *Os_ArchGetStackPtr( void );

@@ -21,6 +21,11 @@
 	module	?arch_krn
 	RSEG   CODE:CODE
 
+/* void *Os_ArchGetStackPtr( void )  */
+Os_ArchGetStackPtr:
+		tfr sp,d//return reg should be D in simple call convention
+		rtc
+
 #else
 .extern Os_Sys
 .extern os_proc_start_extended
@@ -29,6 +34,7 @@
 .global Os_ArchSwapContextTo
 .global Os_ArchSwapContext
 .global Os_ArchSetSpAndCall
+.global Os_ArchGetStackPtr
 
 .section .text
 #endif

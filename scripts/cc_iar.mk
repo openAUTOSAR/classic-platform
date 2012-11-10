@@ -78,7 +78,7 @@ lib-y += dlhcs12bff.r12
 
 LD = $(IAR_BIN)/xlink.exe
 
-ldflags-y += -s __program_start
+ldflags-y += -s _start
 ldflags-y += -Felf -xms
 ldflags-y += -f linkscript_iar.lcf
 TE = elf

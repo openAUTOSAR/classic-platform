@@ -29,20 +29,20 @@ DECLARE_IRQ_MAP_GLOBAL	MACRO	//  name
  
 DECLARE_IRQ_MAP	MACRO	//name, nr
 irq_\1:
-	movb	#\2,-10,sp      // save irq nr. above context space
+	movb	#\2,-5,sp      // save irq nr. above context space
 	call	.LWRD.(Irq_PreEntry),.BYT3.(Irq_PreEntry)
 	ENDM
 
 DECLARE_IRQ_TIMER_MAP	MACRO	//name, nr, intflag
 irq_\1:
-	movb	#\2,-10,sp	// save irq nr. above context space
+	movb	#\2,-5,sp	// save irq nr. above context space
 	bset	TFLG1,#\3	// clear timer interrupt flag
 	call	.LWRD.(Irq_PreEntry),.BYT3.(Irq_PreEntry)
 	ENDM
 
 DECLARE_IRQ_MODULUS_COUNTER_MAP MACRO
 irq_mccnt_underflow:
-	movb	#IRQ_NR_MCCNT_UNDERFLOW, -10, sp	// save irq nr. above context space
+	movb	#IRQ_NR_MCCNT_UNDERFLOW, -5, sp	// save irq nr. above context space
 	bset	MCFLG, #0x80						// clear interrupt flag
 	call	.LWRD.(Irq_PreEntry),.BYT3.(Irq_PreEntry)
 	ENDM
