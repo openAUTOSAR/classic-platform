@@ -206,7 +206,7 @@ BufReq_ReturnType Com_CopyTxData(PduIdType PduId, PduInfoType* PduInfoPtr, Retry
 	Com_BufferPduState[PduId].locked = true;
 	if (dirOk && sizeOk) {
 		void* source = (void *)IPdu->ComIPduDataPtr;
-		memcpy(PduInfoPtr->SduDataPtr,source + Com_BufferPduState[PduId].currentPosition, PduInfoPtr->SduLength);
+		memcpy(PduInfoPtr->SduDataPtr,(uint8 *)source + Com_BufferPduState[PduId].currentPosition, PduInfoPtr->SduLength);
 		Com_BufferPduState[PduId].currentPosition += PduInfoPtr->SduLength;
 		*TxDataCntPtr = IPdu->ComIPduSize - Com_BufferPduState[PduId].currentPosition;
 	} else {
@@ -230,7 +230,7 @@ BufReq_ReturnType Com_CopyRxData(PduIdType PduId, const PduInfoType* PduInfoPtr,
     dirOk = GET_IPdu(PduId)->ComIPduDirection == RECEIVE;
 	lockOk = isPduBufferLocked(PduId);
 	if (dirOk && lockOk && sizeOk) {
-		memcpy((void *)(GET_IPdu(PduId)->ComIPduDataPtr+Com_BufferPduState[PduId].currentPosition), PduInfoPtr->SduDataPtr, PduInfoPtr->SduLength);
+		memcpy((void *)((uint8 *)GET_IPdu(PduId)->ComIPduDataPtr+Com_BufferPduState[PduId].currentPosition), PduInfoPtr->SduDataPtr, PduInfoPtr->SduLength);
 		Com_BufferPduState[PduId].currentPosition += PduInfoPtr->SduLength;
 		*RxBufferSizePtr = GET_IPdu(PduId)->ComIPduSize - Com_BufferPduState[PduId].currentPosition;
 	} else {

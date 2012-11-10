@@ -24,11 +24,13 @@ cflags-y 		+= -e
 cflags-y 		+= --no_wrap_diagnostics
 cflags-y 		+= --error_limit=10
 cflags-y 		+= --silent
-cflags-y 		+= --code_model=banked
+cflags-y 		+= --debug
+cflags-y 		+= --code_model=banked 
+cflags-y 		+= -lA $@.lst #Get a list file for each file
 
 # z is the size options
-cflags-$(CFG_OPT_RELEASE)        += -s9
-cflags-$(CFG_OPT_DEBUG)        += -On  #s2
+cflags-$(CFG_OPT_RELEASE)        += -Ohz
+cflags-$(CFG_OPT_DEBUG)        += -On
 
 # Generate dependencies, 
 #cflags-y 		+= --dependencies $*.d 
@@ -97,11 +99,9 @@ libitem-y += $(libitem-yy)
 
 AS	= 	$(IAR_BIN)/ahcs12.exe
 
-#asflags-y += --error_limit=10
-#asflags-y += -proc e500 -gdwarf-2
-#asflags-$(CFG_VLE) += -vle
+asflags-y += -r
 ASFLAGS += $(asflags-y)
-#ASOUT = -o $@
+
 
 # Memory footprint
 #define do-memory-footprint 

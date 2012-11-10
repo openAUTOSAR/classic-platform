@@ -16,15 +16,10 @@
 #define TFLG1_0   0x01
 
 #include "asm_offset.h"
-#include "asm_hc1x.sx"
 
 #include "context.sx"
 #include "context.h"
 #include "irq_defines.h"
-
-//.extern Os_Sys
-
-
 
 #if defined(__IAR_SYSTEMS_ICC__)
 

@@ -31,15 +31,8 @@ void Os_ArchFirstCall( void )
 }
 
 #if defined(__IAR_SYSTEMS_ICC__)
-//FIXME
-void *Os_ArchGetStackPtr( void ) {
-  void* val;
+// in arch_krn.sx
 
-  //asm("sts _.tmp");
-  //asm volatile("movw _.tmp, %0":"=m" (val));
-
-  return val;
-}
 #else
 void *Os_ArchGetStackPtr( void ) {
   void* val;

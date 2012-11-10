@@ -64,7 +64,7 @@
 	public	__program_start
 
 	require	?reset		; Require the reset vector
-        extern  main
+        extern  ?cmain
 
 __program_start: 
 ;;
@@ -97,8 +97,146 @@ __program_start:
 ;
 ;----------------------------------------------------------------------
 
-	jmp	main
+	jmp	?cmain
         end	__program_start
+
+
+;----------------------------------------------------------------------
+;
+; File:         cmain.s12
+;
+; Archive:      $Id: cmain.s12 1831 2008-04-08 17:34:04Z svn $
+;
+; Created:      10/Jun/2004 IHAT
+;
+; Description:  This module contains the M68HCS12 startup routines that
+;		should not be modified by the end user, do that in
+;		cstartup.s12 instead.
+;
+; Entries:      __program_start   Entry point
+;
+; Defines:      __BANKED_MODEL__  Define it if you are using a banked system
+;
+;----------------------------------------------------------------------
+
+; Macro for selecting jsr or call
+
+xcall	macro	destination
+#ifdef __BANKED_MODEL__
+	call	.lwrd.(destination),.byt3.(destination)
+#else
+	jsr	destination
+#endif
+	endm
+
+#define segment_code rseg CODE:CODE:NOROOT(0)
+
+
+        module ?cmain
+
+        extern  __low_level_init ; Initialize your hardware here
+        extern  main             ; Where to begin execution
+        extern  exit             ; Where to go when done
+
+
+;----------------------------------------------------------------------
+;
+; Catch jump from cstartup.s12
+;
+;----------------------------------------------------------------------
+
+	segment_code
+	public	?cmain
+	require	?call_main
+?cmain
+
+;----------------------------------------------------------------------
+;
+; Call __low_level_init to perform initialization before initializing
+; segments and calling main. If the function returns 0 no segment
+; initialization should take place. Note that low_level_init is
+; assumed to be non-banked below.
+;
+; Link with your own version of __low_level_init to override the
+; default action: to do nothing but return 1.
+;
+;----------------------------------------------------------------------
+
+	segment_code
+	public	?cstart_call_low_level_init
+
+?cstart_call_low_level_init:
+	xcall	__low_level_init
+        tstb
+        beq     ?skip_segment_init
+
+
+;----------------------------------------------------------------------
+;
+; Segment initialization by copying initialized ROM:ed bytes to
+; shadow RAM and clear uninitialized variables.
+;
+;----------------------------------------------------------------------
+
+	segment_code
+	public	?cstart_init_zero
+	public	?cstart_init_copy
+	extern	__segment_init
+
+?cstart_init_zero
+?cstart_init_copy
+	xcall	__segment_init
+
+	segment_code
+?skip_segment_init
+
+
+;----------------------------------------------------------------------
+;
+; Initialize global EC++/C++ objects
+;
+; ----------------------------------------------------------------------
+
+	rseg	DIFUNCT:CONST		; forward declaration of segment
+	segment_code
+	public	?cstart_call_ctors
+	extern	__call_ctors
+
+?cstart_call_ctors
+	ldy	#sfb(DIFUNCT)
+	ldd	#sfe(DIFUNCT)
+	xcall	__call_ctors
+
+
+;----------------------------------------------------------------------
+;
+; Call main() with no arguments, use different calling conventions
+; depending on the chosen memory model. Special treatment if you are
+; using a banked system.
+;
+;----------------------------------------------------------------------
+
+	segment_code
+	public	?call_main
+?call_main
+	xcall	main
+
+;----------------------------------------------------------------------
+;
+; Now when we are ready with our C program we must perform a system-
+; dependent action. In this simple case we jump to exit
+;
+;----------------------------------------------------------------------
+
+        xcall   exit
+
+#ifndef _CLIB_BUILD
+; Go to _exit in case exit returns (which it should not)
+	extern	_exit
+	jmp	_exit
+#endif
+
+        end
 
 
 /**************************************************
