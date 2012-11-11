@@ -11,7 +11,7 @@ Methods called by MW MSL libraries to perform console IO:
 
 #include "Os.h"
 #include "Ramlog.h"
-#include "UART.h"
+#include "../../MSL_Common_Embedded/Include/UART.h"
 #include <stddef.h>
 #include <stdlib.h>
 

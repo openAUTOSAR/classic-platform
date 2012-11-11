@@ -74,7 +74,6 @@ cw_lib_path += -L$(CW_COMPILE)/PowerPC_EABI_Support/Runtime/Lib
 cw_lib_path += -L$(CW_COMPILE)/PowerPC_EABI_Support/MSL/MSL_C/PPC_EABI/Lib
 cc_inc_path += $(CW_COMPILE)/PowerPC_EABI_Support/MSL/MSL_C/MSL_Common/Include
 cc_inc_path += $(CW_COMPILE)/PowerPC_EABI_Support/MSL/MSL_C/PPC_EABI/Include
-cc_inc_path += $(CW_COMPILE)/PowerPC_EABI_Support/MSL/MSL_C/MSL_Common_Embedded/Include
 
 inc-y += $(cc_inc_path)
 libpath-y += $(cw_lib_path)
