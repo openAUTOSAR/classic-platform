@@ -44,11 +44,6 @@
 #include "PduR_Dcm.h"
 #include "ComStack_Types.h"
 
-/* REVIEW NOK JB 7 sep 2012: Please remove */
-#define USE_DEBUG_PRINTF
-
-/* REVIEW NOK JB 7 sep 2012: Please remove*/
-#include"debug.h"
 
 // State variable
 typedef enum

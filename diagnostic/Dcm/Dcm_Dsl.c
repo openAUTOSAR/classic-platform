@@ -421,35 +421,23 @@ Std_ReturnType DslInternal_ResponseOnOneDataByPeriodicId(uint8 PericodID)
 {
 	Std_ReturnType ret = E_NOT_OK;
 	const Dcm_DslProtocolRowType *protocolRowEntry;
-    Dcm_ProtocolType dslActiveProtoclId;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
 	PduInfoType  *pPeriodData;
 	protocolRowEntry = DCM_Config.Dsl->DslProtocol->DslProtocolRowList;
-	/* TODO: Fix for real */
-	/* REVIEW NOK JB 6 sep 2012: Use active protocol instead (see DslGetActiveProtocol) */
-	if(E_OK == DslGetActiveProtocol(&dslActiveProtoclId))
-	{
-		while ((protocolRowEntry->Arc_EOL == FALSE) && (ret != E_OK))
-		{
-    		runtime = protocolRowEntry->DslRunTimeProtocolParameters;
-	 	if(runtime != NULL)	// find the runtime
-		{
-        	if( BUFREQ_OK == DslProvideRxBufferToPdur(runtime->diagReqestRxPduId, 3, (const PduInfoType **)&pPeriodData)){
-                pPeriodData->SduDataPtr[0] = SID_READ_DATA_BY_PERIODIC_IDENTIFIER;
-                pPeriodData->SduDataPtr[1] = DCM_PERIODICTRANSMIT_DEFAULT_MODE;
-                pPeriodData->SduDataPtr[2] = PericodID;
-                pPeriodData->SduLength = 3;
-                DslRxIndicationFromPduR(runtime->diagReqestRxPduId, NTFRSLT_OK);
-                ret = E_OK;
-    			break;
-        	}
-        	else {
-        		ret = E_NOT_OK;
-        	}
 
+	if( NULL != DcmDslRunTimeData.activeProtocol ) {
+		runtime =  DcmDslRunTimeData.activeProtocol->DslRunTimeProtocolParameters;
+		if(runtime != NULL)	// find the runtime
+		{
+			if( BUFREQ_OK == DslProvideRxBufferToPdur(runtime->diagReqestRxPduId, 3, (const PduInfoType **)&pPeriodData)){
+				pPeriodData->SduDataPtr[0] = SID_READ_DATA_BY_PERIODIC_IDENTIFIER;
+				pPeriodData->SduDataPtr[1] = DCM_PERIODICTRANSMIT_DEFAULT_MODE;
+				pPeriodData->SduDataPtr[2] = PericodID;
+				pPeriodData->SduLength = 3;
+				DslRxIndicationFromPduR(runtime->diagReqestRxPduId, NTFRSLT_OK);
+				ret = E_OK;
+			}
 		}
-    	protocolRowEntry++;
-	}
 	}
 
 	return ret;

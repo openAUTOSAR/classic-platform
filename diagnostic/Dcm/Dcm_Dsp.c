@@ -1046,7 +1046,7 @@ static Dcm_NegativeResponseCodeType readDidData(const Dcm_DspDidType *didPtr, Pd
 /**
 **		This Function for read Dynamically Did data buffer Sourced by Memory address using a didNr
 **/
-static Dcm_NegativeResponseCodeType readDDDData( Dcm_DspDDDType *DDidPtr, uint8 *Data,uint16 *Length)
+static Dcm_NegativeResponseCodeType readDDDData(Dcm_DspDDDType *DDidPtr, uint8 *Data, uint16 *Length)
 {
 	uint8 i;
 	uint8 dataCount;
@@ -1054,8 +1054,8 @@ static Dcm_NegativeResponseCodeType readDDDData( Dcm_DspDDDType *DDidPtr, uint8 
 	const Dcm_DspDidType *SourceDidPtr = NULL;
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 	*Length = 0;
+	uint8_t* nextDataSlot = Data;
 
-	/* REVIEW NOK JB 6 sep 2012: What does 0 mean for formatOrPosition - don't use magic number */
 	for(i = 0;(i < DCM_MAX_DDDSOURCE_NUMBER) && (DDidPtr->DDDSource[i].formatOrPosition != 0)
 		&&(responseCode == DCM_E_POSITIVERESPONSE);i++)
 	{
@@ -1094,23 +1094,13 @@ static Dcm_NegativeResponseCodeType readDDDData( Dcm_DspDDDType *DDidPtr, uint8 
 					}
 					if((SourceDidPtr->DspDidReadDataFnc != NULL) && (SourceDataLength != 0) && (DCM_E_POSITIVERESPONSE == responseCode))
 					{
-				
-						SourceDidPtr->DspDidReadDataFnc((Data + *Length));
-						for(dataCount = 0;dataCount < SourceDataLength;dataCount++)
+						SourceDidPtr->DspDidReadDataFnc(nextDataSlot);
+						for(dataCount = 0; dataCount < DDidPtr->DDDSource[i].Size; dataCount++)
 						{
-							uint16 offset = *Length + dataCount;
-							if(dataCount < DDidPtr->DDDSource[i].Size)
-							{
-								/* TODO: Fix */
-								/* REVIEW NOK JB 6 sep 2012: This was pointed out already in previous review. Should be made easier to read. For example use one pointer for the dest and add offset for the source */
-								*(Data + offset) = *(Data + offset + DDidPtr->DDDSource[i].formatOrPosition - 1);
-							}
-							else
-							{
-								*(Data + offset) = 0;	
-							}
+							/* Shifting the data left by position (position 1 means index 0) */
+							nextDataSlot[dataCount] = nextDataSlot[dataCount + DDidPtr->DDDSource[i].formatOrPosition - 1];
 						}
-						*Length = *Length + DDidPtr->DDDSource[i].Size;
+						nextDataSlot += DDidPtr->DDDSource[i].Size;
 					}
 					else
 					{
@@ -2580,10 +2570,6 @@ static Dcm_NegativeResponseCodeType CleardynamicallyDid(uint16 DDIdentifier,cons
 	{
 		if(TRUE == LookupDDD(DDIdentifier, (const Dcm_DspDDDType **)&DDid))
 		{
-			/* REVIEW NOK (Can close) JB 6 sep 2012: Why is the global dspPDidRef sent as a parameter? */
-			/* iSOFT 2012.10.12: dspPDidRef is a buffer for all the currently active PDids' information.
-			                     It is staticly defined at line 127 
-								 The number of the currently active PDids is needed for checking*/
 			if((checkPeriodicIdentifierBuffer(pduRxData->SduDataPtr[3], dspPDidRef.PDidNr, &position) == TRUE)&&(pduRxData->SduDataPtr[2] == 0xF2))
 			{
 				/*UDS_REQ_0x2C_9*/
