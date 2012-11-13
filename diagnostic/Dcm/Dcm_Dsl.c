@@ -107,8 +107,7 @@ static void changeDiagnosticSession(Dcm_DslRunTimeProtocolParametersType *runtim
 
 	default:
 		DET_REPORTERROR(MODULE_ID_DCM, 0, DCM_CHANGE_DIAGNOSTIC_SESSION_ID, DCM_E_PARAM);
-		/* REVIEW JB 6 sep 2012: Please remove comments from ALL debug statements */
-		//DEBUG(DEBUG_MEDIUM, "Old session invalid");
+		DEBUG(DEBUG_MEDIUM, "Old session invalid");
 		break;
 	}
 
@@ -123,7 +122,7 @@ static void changeDiagnosticSession(Dcm_DslRunTimeProtocolParametersType *runtim
 
 	default:
 		DET_REPORTERROR(MODULE_ID_DCM, 0, DCM_CHANGE_DIAGNOSTIC_SESSION_ID, DCM_E_PARAM);
-		//DEBUG(DEBUG_MEDIUM, "New session invalid");
+		DEBUG(DEBUG_MEDIUM, "New session invalid");
 		break;
 	}
 }
@@ -305,7 +304,7 @@ void DslDsdProcessingDone(PduIdType rxPduIdRef, DsdProcessingDoneResultType resp
 	const Dcm_DslProtocolRowType *protocolRow = NULL;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
 
-//	DEBUG( DEBUG_MEDIUM, "DslDsdProcessingDone rxPduIdRef=%d\n", rxPduIdRef);
+	DEBUG( DEBUG_MEDIUM, "DslDsdProcessingDone rxPduIdRef=%d\n", rxPduIdRef);
 
 	if (findRxPduIdParentConfigurationLeafs(rxPduIdRef, &protocolRx, &mainConnection, &connection, &protocolRow, &runtime)) {
 	    imask_t state;
@@ -315,11 +314,11 @@ void DslDsdProcessingDone(PduIdType rxPduIdRef, DsdProcessingDoneResultType resp
 			runtime->externalTxBufferStatus = DSD_PENDING_RESPONSE_SIGNALED; /** @req DCM114 */
 			break;
 		case DSD_TX_RESPONSE_SUPPRESSED: /** @req DCM238 */
-			//DEBUG( DEBUG_MEDIUM, "DslDsdProcessingDone called with DSD_TX_RESPONSE_SUPPRESSED.\n");
+			DEBUG( DEBUG_MEDIUM, "DslDsdProcessingDone called with DSD_TX_RESPONSE_SUPPRESSED.\n");
 			releaseExternalRxTxBuffersHelper(rxPduIdRef);
 			break;
 		default:
-			//DEBUG( DEBUG_MEDIUM, "Unknown response result from DslDsdProcessingDone!\n");
+			DEBUG( DEBUG_MEDIUM, "Unknown response result from DslDsdProcessingDone!\n");
 			break;
 		}
 	    Irq_Restore(state);
@@ -422,24 +421,25 @@ Std_ReturnType DslInternal_ResponseOnOneDataByPeriodicId(uint8 PericodID)
 {
 	Std_ReturnType ret = E_NOT_OK;
 	const Dcm_DslProtocolRowType *protocolRowEntry;
+    Dcm_ProtocolType dslActiveProtoclId;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
-    PduInfoType  *pPeriodData;
+	PduInfoType  *pPeriodData;
 	protocolRowEntry = DCM_Config.Dsl->DslProtocol->DslProtocolRowList;
-	/* REVIEW JB 6 sep 2012: Use active protocol instead (see DslGetActiveProtocol) */
-	while (protocolRowEntry->Arc_EOL == FALSE) 
+	/* TODO: Fix for real */
+	/* REVIEW NOK JB 6 sep 2012: Use active protocol instead (see DslGetActiveProtocol) */
+	if(E_OK == DslGetActiveProtocol(&dslActiveProtoclId))
 	{
-    	runtime = protocolRowEntry->DslRunTimeProtocolParameters;
-        if(runtime != NULL)	// find the runtime
-        {
+		while ((protocolRowEntry->Arc_EOL == FALSE) && (ret != E_OK))
+		{
+    		runtime = protocolRowEntry->DslRunTimeProtocolParameters;
+	 	if(runtime != NULL)	// find the runtime
+		{
         	if( BUFREQ_OK == DslProvideRxBufferToPdur(runtime->diagReqestRxPduId, 3, (const PduInfoType **)&pPeriodData)){
-                /* REVIEW JB 6 sep 2012: Don't use magic number */
-        		pPeriodData->SduDataPtr[0] = 0x2a;
-                /* REVIEW JB 6 sep 2012: Need to explain what is the meaning of 0 - don't use magic number */
-                pPeriodData->SduDataPtr[1] = 0;
+                pPeriodData->SduDataPtr[0] = SID_READ_DATA_BY_PERIODIC_IDENTIFIER;
+                pPeriodData->SduDataPtr[1] = DCM_PERIODICTRANSMIT_DEFAULT_MODE;
                 pPeriodData->SduDataPtr[2] = PericodID;
                 pPeriodData->SduLength = 3;
-                /* REVIEW JB 6 sep 2012: Don't use 0 for PduId - runtime->diagReqestRxPduId should be used (was already pointed out) */
-                DslRxIndicationFromPduR(0, NTFRSLT_OK);
+                DslRxIndicationFromPduR(runtime->diagReqestRxPduId, NTFRSLT_OK);
                 ret = E_OK;
     			break;
         	}
@@ -449,6 +449,7 @@ Std_ReturnType DslInternal_ResponseOnOneDataByPeriodicId(uint8 PericodID)
 
 		}
     	protocolRowEntry++;
+	}
 	}
 
 	return ret;
@@ -476,7 +477,7 @@ void DslMain(void) {
 			}
 			switch (runtime->externalTxBufferStatus) { // #### TX buffer state. ####
 			case NOT_IN_USE:
-				//DEBUG( DEBUG_MEDIUM, "state NOT_IN_USE!\n");
+				DEBUG( DEBUG_MEDIUM, "state NOT_IN_USE!\n");
 				break;
 			case PROVIDED_TO_DSD: {
 				DECREMENT(runtime->stateTimeoutCount);
@@ -493,7 +494,7 @@ void DslMain(void) {
 								releaseExternalRxTxBuffers(protocolRowEntry, runtime);
 							}
 						} else {
-				//			DEBUG( DEBUG_MEDIUM, "Not configured to send response pending, now sending general reject!\n");
+							DEBUG( DEBUG_MEDIUM, "Not configured to send response pending, now sending general reject!\n");
 							sendResponse(protocolRowEntry, DCM_E_GENERALREJECT);
 							releaseExternalRxTxBuffers(protocolRowEntry, runtime);
 						}
@@ -506,7 +507,7 @@ void DslMain(void) {
 				// Make sure that response pending or general reject have not been issued,
 				// if so we can not transmit to PduR because we would not know from where
 				// the Tx confirmation resides later.
-			//	DEBUG( DEBUG_MEDIUM, "state DSD_PENDING_RESPONSE_SIGNALED!\n");
+				DEBUG( DEBUG_MEDIUM, "state DSD_PENDING_RESPONSE_SIGNALED!\n");
 				if (runtime->localTxBuffer.status == NOT_IN_USE) { // Make sure that no TxConfirm could be sent by the local buffer and mixed up with this transmission.
 					const Dcm_DslProtocolRxType *protocolRx = NULL;
 					const Dcm_DslMainConnectionType *mainConnection = NULL;
@@ -516,18 +517,18 @@ void DslMain(void) {
 
 					if (findRxPduIdParentConfigurationLeafs(runtime->diagReqestRxPduId, &protocolRx, &mainConnection, &connection, &protocolRow, &runtime)) {
 						const PduIdType txPduId = mainConnection->DslProtocolTx->DcmDslProtocolTxPduId;
-					//	DEBUG( DEBUG_MEDIUM, "runtime->externalTxBufferStatus enter state DCM_TRANSMIT_SIGNALED.\n" );
+						DEBUG( DEBUG_MEDIUM, "runtime->externalTxBufferStatus enter state DCM_TRANSMIT_SIGNALED.\n" );
 						runtime->externalTxBufferStatus = DCM_TRANSMIT_SIGNALED;
 						transmitResult = PduR_DcmTransmit(txPduId, &runtime->diagnosticResponseFromDsd); /** @req DCM237 *//* Will trigger PduR (CanTP) to call DslProvideTxBuffer(). */
 						if (transmitResult != E_OK) {
 							// TODO: What to do here?
 						}
 					} else {
-					//	DEBUG( DEBUG_MEDIUM, "***** WARNING, THIS IS UNEXPECTED !!! ********.\n" );
+						DEBUG( DEBUG_MEDIUM, "***** WARNING, THIS IS UNEXPECTED !!! ********.\n" );
 						const PduIdType txPduId = protocolRowEntry->DslConnection->DslMainConnection->DslProtocolTx->DcmDslProtocolTxPduId;
-					//	DEBUG( DEBUG_MEDIUM, "runtime->externalTxBufferStatus enter state DSD_PENDING_RESPONSE_SIGNALED.\n", txPduId);
+						DEBUG( DEBUG_MEDIUM, "runtime->externalTxBufferStatus enter state DSD_PENDING_RESPONSE_SIGNALED.\n", txPduId);
 						runtime->externalTxBufferStatus = DCM_TRANSMIT_SIGNALED;
-					//	DEBUG( DEBUG_MEDIUM, "Calling PduR_DcmTransmit with txPduId = %d from DslMain\n", txPduId);
+						DEBUG( DEBUG_MEDIUM, "Calling PduR_DcmTransmit with txPduId = %d from DslMain\n", txPduId);
 						transmitResult = PduR_DcmTransmit(txPduId, &runtime->diagnosticResponseFromDsd); /** @req DCM237 *//* Will trigger PduR (CanTP) to call DslProvideTxBuffer(). */
 						if (transmitResult != E_OK) {
 							// TODO: What to do here?
@@ -536,10 +537,10 @@ void DslMain(void) {
 				}
 				break;
 			case DCM_TRANSMIT_SIGNALED:
-				//DEBUG( DEBUG_MEDIUM, "state DSD_PENDING_RESPONSE_SIGNALED!\n");
+				DEBUG( DEBUG_MEDIUM, "state DSD_PENDING_RESPONSE_SIGNALED!\n");
 				break;
 			case PROVIDED_TO_PDUR: // The valid data is being transmitted by TP-layer.
-				//DEBUG( DEBUG_MEDIUM, "state DSD_PENDING_RESPONSE_SIGNALED!\n");
+				DEBUG( DEBUG_MEDIUM, "state DSD_PENDING_RESPONSE_SIGNALED!\n");
 				break;
 			default:
 				break;
@@ -565,13 +566,13 @@ BufReq_ReturnType DslProvideRxBufferToPdur(PduIdType dcmRxPduId, PduLengthType t
 	const Dcm_DslProtocolRowType *protocolRow = NULL;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
     imask_t state;
-//	DEBUG( DEBUG_MEDIUM, "DslProvideRxBufferToPdur(dcmRxPduId=%d) called!\n", dcmRxPduId);	
+	DEBUG( DEBUG_MEDIUM, "DslProvideRxBufferToPdur(dcmRxPduId=%d) called!\n", dcmRxPduId);	
     Irq_Save(state);
 	if (findRxPduIdParentConfigurationLeafs(dcmRxPduId, &protocolRx, &mainConnection, &connection, &protocolRow, &runtime)) {
 		const Dcm_DslBufferType *externalRxBuffer = protocolRow->DslProtocolRxBufferID;
 		if (externalRxBuffer->pduInfo.SduLength >= tpSduLength) { /** @req DCM443 */
 			if ((runtime->externalRxBufferStatus == NOT_IN_USE) && (externalRxBuffer->externalBufferRuntimeData->status == BUFFER_AVAILABLE)) {
-			//	DEBUG( DEBUG_MEDIUM, "External buffer available!\n");
+				DEBUG( DEBUG_MEDIUM, "External buffer available!\n");
 				// ### EXTERNAL BUFFER IS AVAILABLE; GRAB IT AND REMEBER THAT WE OWN IT! ###
 				externalRxBuffer->externalBufferRuntimeData->status = BUFFER_BUSY;
 				runtime->diagnosticRequestFromTester.SduDataPtr = externalRxBuffer->pduInfo.SduDataPtr;
@@ -661,17 +662,17 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {
 						runtime->stateTimeoutCount = DCM_CONVERT_MS_TO_MAIN_CYCLES(timeParams->TimStrP2ServerMax); /* See 9.2.2. */
 						runtime->externalRxBufferStatus = PROVIDED_TO_DSD; /** @req DCM241 */
 						if (runtime->externalTxBufferStatus == NOT_IN_USE) {
-						//	DEBUG( DEBUG_MEDIUM, "External Tx buffer available, we can pass it to DSD.\n");
+							DEBUG( DEBUG_MEDIUM, "External Tx buffer available, we can pass it to DSD.\n");
 						} else {
-							//DEBUG( DEBUG_MEDIUM, "External buffer not available, a response is being transmitted?\n");
+							DEBUG( DEBUG_MEDIUM, "External buffer not available, a response is being transmitted?\n");
 						}
 						runtime->externalTxBufferStatus = PROVIDED_TO_DSD; /** @req DCM241 */
 						runtime->responsePendingCount = DCM_Config.Dsl->DslDiagResp->DslDiagRespMaxNumRespPend;
 						runtime->diagnosticResponseFromDsd.SduDataPtr = protocolRow->DslProtocolTxBufferID->pduInfo.SduDataPtr;
 						runtime->diagnosticResponseFromDsd.SduLength = protocolRow->DslProtocolTxBufferID->pduInfo.SduLength;
-					//	DEBUG( DEBUG_MEDIUM, "DsdDslDataIndication(DcmDslProtocolTxPduId=%d, dcmRxPduId=%d)\n", mainConnection->DslProtocolTx->DcmDslProtocolTxPduId, dcmRxPduId);
+						DEBUG( DEBUG_MEDIUM, "DsdDslDataIndication(DcmDslProtocolTxPduId=%d, dcmRxPduId=%d)\n", mainConnection->DslProtocolTx->DcmDslProtocolTxPduId, dcmRxPduId);
 						runtime->diagReqestRxPduId = dcmRxPduId;
-					//	DEBUG(DEBUG_MEDIUM,"\n\n runtime->diagnosticRequestFromTester.SduDataPtr[2]  %x\n\n ",runtime->diagnosticRequestFromTester.SduDataPtr[2]);
+						DEBUG(DEBUG_MEDIUM,"\n\n runtime->diagnosticRequestFromTester.SduDataPtr[2]  %x\n\n ",runtime->diagnosticRequestFromTester.SduDataPtr[2]);
 						DsdDslDataIndication(  // qqq: We are inside a critical section.
 								&(runtime->diagnosticRequestFromTester),
 								protocolRow->DslProtocolSIDTable,	/** @req DCM035 */
@@ -722,7 +723,7 @@ BufReq_ReturnType DslProvideTxBuffer(PduIdType dcmTxPduId, const PduInfoType **p
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
 
 	(void)length;		// Currently not used, this is only to remove compilation warnings
-//	DEBUG( DEBUG_MEDIUM, "DslProvideTxBuffer=%d\n", dcmTxPduId);
+	DEBUG( DEBUG_MEDIUM, "DslProvideTxBuffer=%d\n", dcmTxPduId);
 	if (findTxPduIdParentConfigurationLeafs(dcmTxPduId, &protocolTx, &mainConnection, &connection, &protocolRow, &runtime)) {
 		switch (runtime->externalTxBufferStatus) { // ### EXTERNAL TX BUFFER ###
 		case DCM_TRANSMIT_SIGNALED: {
@@ -733,7 +734,7 @@ BufReq_ReturnType DslProvideTxBuffer(PduIdType dcmTxPduId, const PduInfoType **p
 			break;
 		}
 		default:
-			//DEBUG( DEBUG_MEDIUM, "DCM_TRANSMIT_SIGNALED was not signaled in the external buffer\n");
+			DEBUG( DEBUG_MEDIUM, "DCM_TRANSMIT_SIGNALED was not signaled in the external buffer\n");
 			ret = BUFREQ_NOT_OK;
 			break;
 		}
@@ -748,7 +749,7 @@ BufReq_ReturnType DslProvideTxBuffer(PduIdType dcmTxPduId, const PduInfoType **p
 				break;
 			}
 			default:
-				//DEBUG( DEBUG_MEDIUM, "DCM_TRANSMIT_SIGNALED was not signaled for the local buffer either\n");
+				DEBUG( DEBUG_MEDIUM, "DCM_TRANSMIT_SIGNALED was not signaled for the local buffer either\n");
 				ret = BUFREQ_NOT_OK;
 				break;
 			}
@@ -772,7 +773,7 @@ void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result) {
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
 	imask_t state;
 
-//	DEBUG( DEBUG_MEDIUM, "DslTxConfirmation=%d, result=%d\n", dcmTxPduId, result);
+	DEBUG( DEBUG_MEDIUM, "DslTxConfirmation=%d, result=%d\n", dcmTxPduId, result);
 	if (findTxPduIdParentConfigurationLeafs(dcmTxPduId, &protocolTx, &mainConnection, &connection, &protocolRow, &runtime)) {
 		boolean externalBufferReleased = FALSE;
 
@@ -796,11 +797,11 @@ void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result) {
 		if (!externalBufferReleased) {
 			switch (runtime->localTxBuffer.status) { // ### LOCAL TX BUFFER ###
 			case PROVIDED_TO_PDUR:
-			//	DEBUG( DEBUG_MEDIUM, "Released local buffer buffer OK!\n");
+				DEBUG( DEBUG_MEDIUM, "Released local buffer buffer OK!\n");
 				runtime->localTxBuffer.status = DCM_IDLE;
 				break;
 			default:
-			//	DEBUG( DEBUG_MEDIUM, "WARNING! DslTxConfirmation could not release external or local buffer!\n");
+				DEBUG( DEBUG_MEDIUM, "WARNING! DslTxConfirmation could not release external or local buffer!\n");
 				break;
 			}
 		}
