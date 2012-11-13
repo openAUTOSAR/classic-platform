@@ -38,15 +38,15 @@
 #define ZERO_SUB_FUNCTION				0x00
 #define DCM_FORMAT_LOW_MASK			0x0F
 #define DCM_FORMAT_HIGH_MASK			0xF0
-#define DCM_MEMORY_ADDRESS_MASK		0xFFFFFF
+#define DCM_MEMORY_ADDRESS_MASK		0x00FFFFFF
 #define DCM_DID_HIGH_MASK 				0xFF00			
 #define DCM_DID_LOW_MASK				0xFF
-#define DCM_PERODICDID_HIHG_MASK		0xF200
-#define SID_AND_ALFID_LEN2   0x2
-#define SID_AND_ALFID_LEN4   0x4
-#define SID_AND_ALFID_LEN5	0x5
-#define SID_AND_ALFID_LEN6   0x6
-#define SID_AND_ALFID_LEN7   0x7
+#define DCM_PERODICDID_HIGH_MASK		0xF200
+#define SID_AND_DDDID_LEN   0x4
+#define SDI_AND_MS_LEN   0x4
+
+#define SID_AND_SDI_LEN   0x6
+#define SID_AND_PISDR_LEN   0x7
 
 /* == Parser macros == */
 /* General */
@@ -110,17 +110,17 @@ typedef enum{
 	DCM_MEMORY_WRITE,
 	DCM_MEMORY_FAILED	
 }Dcm_DspMemoryStateType;
-Dcm_DspMemoryStateType dspMemoryState;
+static Dcm_DspMemoryStateType dspMemoryState;
 
 typedef enum{
 	DCM_DDD_SOURCE_DEFAULT,
 	DCM_DDD_SOURCE_DID,
 	DCM_DDD_SOURCE_ADDRESS
-}Dcm_DspDDDTpyeID;
+}Dcm_DspDDDSourceKindType;
 
 typedef struct{
 	uint32 PDidTxCounter;
-	uint32 PDidTxCounterNumber;
+	uint32 PDidTxCounterLimit;
 	uint8  PeriodicDid;
 }Dcm_pDidType;/* a type to save  the periodic DID and cycle */
 
@@ -129,14 +129,14 @@ typedef struct{
 	uint8 PDidNr;										/* note the number of periodic DID is used */
 }Dsp_pDidRefType;
 
-Dsp_pDidRefType dspPDidRef; 
+static Dsp_pDidRefType dspPDidRef;
 
 typedef struct{
 	uint8   formatOrPosition;						/*note the formate of address and size*/
 	uint8	memoryIdentifier;
 	uint32 SourceAddressOrDid;								/*note the memory address */
 	uint16 Size;										/*note the memory size */
-	Dcm_DspDDDTpyeID DDDTpyeID;
+	Dcm_DspDDDSourceKindType DDDTpyeID;
 }Dcm_DspDDDSourceType;
 
 typedef struct{
@@ -145,7 +145,7 @@ typedef struct{
 }
 Dcm_DspDDDType;
 
-Dcm_DspDDDType dspDDD[DCM_MAX_DDD_NUMBER];
+static Dcm_DspDDDType dspDDD[DCM_MAX_DDD_NUMBER];
 
 
 /*
@@ -192,7 +192,8 @@ void DspMemoryMainFunction(void)
 			}
 			if(ReadRet == DCM_READ_FAILED)
 			{
-				dspMemoryState = DCM_MEMORY_FAILED;
+				DsdDspProcessingDone(DCM_E_GENERALPROGRAMMINGFAILURE);
+				dspMemoryState = DCM_MEMORY_UNUSED;
 			}
 			break;
 		case DCM_MEMORY_WRITE:
@@ -204,12 +205,12 @@ void DspMemoryMainFunction(void)
 			}
 			if(WriteRet == DCM_WRITE_FAILED)
 			{
-				dspMemoryState = DCM_MEMORY_FAILED;
+				DsdDspProcessingDone(DCM_E_GENERALPROGRAMMINGFAILURE);
+				dspMemoryState = DCM_MEMORY_UNUSED;
 			}
 			break;
-		case DCM_MEMORY_FAILED:
-			DsdDspProcessingDone(DCM_E_GENERALPROGRAMMINGFAILURE);
-			dspMemoryState = DCM_MEMORY_UNUSED;
+
+			default:
 			break;
 			
 	}
@@ -221,7 +222,7 @@ void DspPeriodicDIDMainFunction()
 
 	for(i = 0;i < dspPDidRef.PDidNr; i++)
 	{
-		if(dspPDidRef.dspPDid[i].PDidTxCounterNumber > dspPDidRef.dspPDid[i].PDidTxCounter)
+		if(dspPDidRef.dspPDid[i].PDidTxCounterLimit > dspPDidRef.dspPDid[i].PDidTxCounter)
 		{
 			dspPDidRef.dspPDid[i].PDidTxCounter++;
 		}
@@ -1064,7 +1065,7 @@ static Dcm_NegativeResponseCodeType readDidData(const Dcm_DspDidType *didPtr, Pd
 /**
 **		This Function for read Dynamically Did data buffer Sourced by Memory address using a didNr
 **/
-static Dcm_NegativeResponseCodeType readDDDData( Dcm_DspDDDType *PDidPtr, uint8 *Data,uint16 *Length)
+static Dcm_NegativeResponseCodeType readDDDData(Dcm_DspDDDType *DDidPtr, uint8 *Data, uint16 *Length)
 {
 	uint8 i;
 	uint8 dataCount;
@@ -1072,61 +1073,58 @@ static Dcm_NegativeResponseCodeType readDDDData( Dcm_DspDDDType *PDidPtr, uint8 
 	const Dcm_DspDidType *SourceDidPtr = NULL;
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 	*Length = 0;
+	uint8_t* nextDataSlot = Data;
 
-	for(i = 0;(i < DCM_MAX_DDDSOURCE_NUMBER) && (PDidPtr->DDDSource[i].formatOrPosition != 0)
+	for(i = 0;(i < DCM_MAX_DDDSOURCE_NUMBER) && (DDidPtr->DDDSource[i].formatOrPosition != 0)
 		&&(responseCode == DCM_E_POSITIVERESPONSE);i++)
 	{
-		if(PDidPtr->DDDSource[i].DDDTpyeID == DCM_DDD_SOURCE_ADDRESS)
+		if(DDidPtr->DDDSource[i].DDDTpyeID == DCM_DDD_SOURCE_ADDRESS)
 		{
-			responseCode = checkAddressRange(DCM_READ_MEMORY, PDidPtr->DDDSource[i].memoryIdentifier, PDidPtr->DDDSource[i].SourceAddressOrDid, PDidPtr->DDDSource[i].Size);
+			responseCode = checkAddressRange(DCM_READ_MEMORY, DDidPtr->DDDSource[i].memoryIdentifier, DDidPtr->DDDSource[i].SourceAddressOrDid, DDidPtr->DDDSource[i].Size);
 			if( responseCode == DCM_E_POSITIVERESPONSE ) {
-				Dcm_ReadMemory(DCM_INITIAL,PDidPtr->DDDSource[i].memoryIdentifier,
-										PDidPtr->DDDSource[i].SourceAddressOrDid,
-										PDidPtr->DDDSource[i].Size,
+				Dcm_ReadMemory(DCM_INITIAL,DDidPtr->DDDSource[i].memoryIdentifier,
+										DDidPtr->DDDSource[i].SourceAddressOrDid,
+										DDidPtr->DDDSource[i].Size,
 										(Data + *Length));
-				*Length = *Length + PDidPtr->DDDSource[i].Size;
+				*Length = *Length + DDidPtr->DDDSource[i].Size;
 			}
 		}
-		else if(PDidPtr->DDDSource[i].DDDTpyeID == DCM_DDD_SOURCE_DID)
+		else if(DDidPtr->DDDSource[i].DDDTpyeID == DCM_DDD_SOURCE_DID)
 		{
 			
-			if(lookupDid(PDidPtr->DDDSource[i].SourceAddressOrDid,&SourceDidPtr) == TRUE)
+			if(lookupDid(DDidPtr->DDDSource[i].SourceAddressOrDid,&SourceDidPtr) == TRUE)
 			{
 				if(DspCheckSecurityLevel(SourceDidPtr->DspDidInfoRef->DspDidAccess.DspDidRead->DspDidReadSecurityLevelRef) != TRUE)
 				{
 					responseCode = DCM_E_SECUTITYACCESSDENIED;
 				}
-				if(SourceDidPtr->DspDidInfoRef->DspDidFixedLength == TRUE)
-				{
-					SourceDataLength = SourceDidPtr->DspDidSize;
-				}
 				else
 				{
-					if(SourceDidPtr->DspDidReadDataLengthFnc != NULL)
+					if(SourceDidPtr->DspDidInfoRef->DspDidFixedLength == TRUE)
 					{
-						SourceDidPtr->DspDidReadDataLengthFnc(&SourceDataLength);
+						SourceDataLength = SourceDidPtr->DspDidSize;
 					}
-				}
-				if((SourceDidPtr->DspDidReadDataFnc != NULL) && (SourceDataLength != 0) && (DCM_E_POSITIVERESPONSE == responseCode))
-				{
-				
-					SourceDidPtr->DspDidReadDataFnc((Data + *Length));
-					for(dataCount = 0;dataCount < SourceDataLength;dataCount++)
+					else
 					{
-						if(dataCount < PDidPtr->DDDSource[i].Size)
+						if(SourceDidPtr->DspDidReadDataLengthFnc != NULL)
 						{
-							*(Data + *Length + dataCount) = *(Data + *Length + dataCount + PDidPtr->DDDSource[i].formatOrPosition - 1);
-						}
-						else
-						{
-							*(Data + *Length + dataCount) = 0;	
+							SourceDidPtr->DspDidReadDataLengthFnc(&SourceDataLength);
 						}
 					}
-					*Length = *Length + PDidPtr->DDDSource[i].Size;
-				}
-				else
-				{
-					responseCode = DCM_E_REQUESTOUTOFRANGE;
+					if((SourceDidPtr->DspDidReadDataFnc != NULL) && (SourceDataLength != 0) && (DCM_E_POSITIVERESPONSE == responseCode))
+					{
+						SourceDidPtr->DspDidReadDataFnc(nextDataSlot);
+						for(dataCount = 0; dataCount < DDidPtr->DDDSource[i].Size; dataCount++)
+						{
+							/* Shifting the data left by position (position 1 means index 0) */
+							nextDataSlot[dataCount] = nextDataSlot[dataCount + DDidPtr->DDDSource[i].formatOrPosition - 1];
+						}
+						nextDataSlot += DDidPtr->DDDSource[i].Size;
+					}
+					else
+					{
+						responseCode = DCM_E_REQUESTOUTOFRANGE;
+					}
 				}
 			}
 			else
@@ -1168,7 +1166,7 @@ void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTx
 			else if(LookupDDD(didNr,(const Dcm_DspDDDType **)&DDidPtr) == TRUE)
 			{
 				/*DCM 651,DCM 652*/
-				pduTxData->SduDataPtr[txPos] = (DDidPtr->DynamicallyDid>>8) & 0xFF;
+				pduTxData->SduDataPtr[txPos] = (uint8)((DDidPtr->DynamicallyDid>>8) & 0xFF);
 				txPos++;
 				pduTxData->SduDataPtr[txPos] = (uint8)(DDidPtr->DynamicallyDid & 0xFF);
 				txPos++;
@@ -2034,10 +2032,10 @@ static void ClearPeriodicIdentifierBuffer(uint8 BufferEnd,uint8 postion)
 {
 	dspPDidRef.dspPDid[postion].PeriodicDid = dspPDidRef.dspPDid[BufferEnd ].PeriodicDid;
 	dspPDidRef.dspPDid[postion].PDidTxCounter = dspPDidRef.dspPDid[BufferEnd].PDidTxCounter;
-	dspPDidRef.dspPDid[postion].PDidTxCounterNumber = dspPDidRef.dspPDid[BufferEnd].PDidTxCounterNumber;
+	dspPDidRef.dspPDid[postion].PDidTxCounterLimit = dspPDidRef.dspPDid[BufferEnd].PDidTxCounterLimit;
 	dspPDidRef.dspPDid[BufferEnd].PeriodicDid = 0;
 	dspPDidRef.dspPDid[BufferEnd].PDidTxCounter = 0;
-	dspPDidRef.dspPDid[BufferEnd ].PDidTxCounterNumber = 0;
+	dspPDidRef.dspPDid[BufferEnd ].PDidTxCounterLimit = 0;
 }
 
 static Dcm_NegativeResponseCodeType readPeriodDidData(const Dcm_DspDidType *PDidPtr, uint8 *Data,uint16 *Length)
@@ -2158,7 +2156,7 @@ static Dcm_NegativeResponseCodeType DspSavePeriodicData(uint16 didNr, uint32 per
 	{
 		dspPDidRef.dspPDid[PdidBufferNr].PeriodicDid = (uint8)didNr & DCM_DID_LOW_MASK;
 		dspPDidRef.dspPDid[PdidBufferNr].PDidTxCounter = 0;
-		dspPDidRef.dspPDid[PdidBufferNr].PDidTxCounterNumber = periodicTransmitCounter;
+		dspPDidRef.dspPDid[PdidBufferNr].PDidTxCounterLimit = periodicTransmitCounter;
 	}
 	return responseCode;
 }
@@ -2173,7 +2171,7 @@ static void ClearPeriodicIdentifier(const PduInfoType *pduRxData,PduInfoType *pd
 		PdidNumber = pduRxData->SduLength - 2;
 		for(i = 0;i < PdidNumber;i++)
 		{
-			PDidLowByte = pduRxData->SduDataPtr[2];
+			PDidLowByte = pduRxData->SduDataPtr[2 + i];
 			if(checkPeriodicIdentifierBuffer(PDidLowByte,dspPDidRef.PDidNr,&PdidPostion) == TRUE)
 			{
 				dspPDidRef.PDidNr--;
@@ -2260,13 +2258,13 @@ void DspReadDataByPeriodicIdentifier(const PduInfoType *pduRxData,PduInfoType *p
 					}
 					else
 					{
-						dspPDidRef.dspPDid[PdidPostion].PDidTxCounterNumber = periodicTransmitCounter;
+						dspPDidRef.dspPDid[PdidPostion].PDidTxCounterLimit = periodicTransmitCounter;
 	  					pduTxData->SduLength = 1;
 					}
 				}
 				else
 				{	
-					responseCode = DspSavePeriodicData((DCM_PERODICDID_HIHG_MASK + (uint16)PDidLowByte),periodicTransmitCounter,PdidBufferNr);
+					responseCode = DspSavePeriodicData((DCM_PERODICDID_HIGH_MASK + (uint16)PDidLowByte),periodicTransmitCounter,PdidBufferNr);
 					PdidBufferNr++;
 					pduTxData->SduLength = 1;
 				}
@@ -2278,9 +2276,9 @@ void DspReadDataByPeriodicIdentifier(const PduInfoType *pduRxData,PduInfoType *p
 					PDidLowByte = pduRxData->SduDataPtr[2 + i];
 					if(checkPeriodicIdentifierBuffer(PDidLowByte,PdidBufferNr,&PdidPostion) == TRUE)
 					{
-						if(dspPDidRef.dspPDid[PdidPostion].PDidTxCounterNumber != periodicTransmitCounter)
+						if(dspPDidRef.dspPDid[PdidPostion].PDidTxCounterLimit != periodicTransmitCounter)
 						{
-							dspPDidRef.dspPDid[PdidPostion].PDidTxCounterNumber = periodicTransmitCounter;
+							dspPDidRef.dspPDid[PdidPostion].PDidTxCounterLimit = periodicTransmitCounter;
 						}
 					}
 					else
@@ -2342,25 +2340,22 @@ static Dcm_NegativeResponseCodeType dynamicallyDefineDataIdentifierbyDid(uint16 
 	}
 	else
 	{
-		while((SourceLength < DCM_MAX_DDDSOURCE_NUMBER) && (DDid->DDDSource[SourceLength].formatOrPosition != 0 ))
+		while((SourceLength < DCM_MAX_DDDSOURCE_NUMBER) && (DDid->DDDSource[SourceLength].formatOrPosition != NULL ))
 		{
 			SourceLength++;
 		}
-		if(SourceLength > DCM_MAX_DDDSOURCE_NUMBER)
-		{
-			responseCode = DCM_E_REQUESTOUTOFRANGE;
-		}
+		
 	}
 	if(responseCode == DCM_E_POSITIVERESPONSE)
 	{
-		Length = (pduRxData->SduLength - SID_AND_ALFID_LEN4) /SID_AND_ALFID_LEN4;
-		if(((Length*SID_AND_ALFID_LEN4) == (pduRxData->SduLength - SID_AND_ALFID_LEN4)) && (Length != 0))
+		Length = (pduRxData->SduLength - SID_AND_DDDID_LEN) /SDI_AND_MS_LEN;
+		if(((Length*SDI_AND_MS_LEN) == (pduRxData->SduLength - SID_AND_DDDID_LEN)) && (Length != 0))
 		{
 			if((Length + SourceLength) <= DCM_MAX_DDDSOURCE_NUMBER)
 			{
 				for(i = 0;(i < Length) && (responseCode == DCM_E_POSITIVERESPONSE);i++)
 				{
-					SourceDidNr = (((uint16)pduRxData->SduDataPtr[SID_AND_ALFID_LEN4 + i*SID_AND_ALFID_LEN4] << 8) & DCM_DID_HIGH_MASK) + (((uint16)pduRxData->SduDataPtr[(5 + i*SID_AND_ALFID_LEN4)]) & DCM_DID_LOW_MASK);
+					SourceDidNr = (((uint16)pduRxData->SduDataPtr[SID_AND_DDDID_LEN + i*SDI_AND_MS_LEN] << 8) & DCM_DID_HIGH_MASK) + (((uint16)pduRxData->SduDataPtr[(5 + i*SDI_AND_MS_LEN)]) & DCM_DID_LOW_MASK);
 					if(TRUE == lookupDid(SourceDidNr, &SourceDid))/*UDS_REQ_0x2C_4*/
 					{	
 						if(DspCheckSessionLevel(SourceDid->DspDidInfoRef->DspDidAccess.DspDidRead->DspDidReadSessionRef))
@@ -2377,15 +2372,19 @@ static Dcm_NegativeResponseCodeType dynamicallyDefineDataIdentifierbyDid(uint16 
 									{
 										SourceDid->DspDidReadDataLengthFnc(&DidLength);
 									}
+									else
+									{
+										DidLength = 0;	
+									}
 								}
 								if(DidLength != 0)
 								{
-									if((pduRxData->SduDataPtr[SID_AND_ALFID_LEN6 + i*SID_AND_ALFID_LEN4] != 0) &&
-										(pduRxData->SduDataPtr[SID_AND_ALFID_LEN7 + i*SID_AND_ALFID_LEN4] != 0) &&
-										(((uint16)pduRxData->SduDataPtr[SID_AND_ALFID_LEN6 + i*SID_AND_ALFID_LEN4] + (uint16)pduRxData->SduDataPtr[SID_AND_ALFID_LEN7 + i*SID_AND_ALFID_LEN4] - 1) <= DidLength))
+									if((pduRxData->SduDataPtr[SID_AND_SDI_LEN + i*SDI_AND_MS_LEN] != 0) &&
+										(pduRxData->SduDataPtr[SID_AND_PISDR_LEN + i*SDI_AND_MS_LEN] != 0) &&
+										(((uint16)pduRxData->SduDataPtr[SID_AND_SDI_LEN + i*SDI_AND_MS_LEN] + (uint16)pduRxData->SduDataPtr[SID_AND_PISDR_LEN + i*SID_AND_DDDID_LEN] - 1) <= DidLength))
 									{
-										DDid->DDDSource[i + SourceLength].formatOrPosition = pduRxData->SduDataPtr[SID_AND_ALFID_LEN6 + i*SID_AND_ALFID_LEN4];
-										DDid->DDDSource[i + SourceLength].Size = pduRxData->SduDataPtr[SID_AND_ALFID_LEN7 + i*SID_AND_ALFID_LEN4];
+										DDid->DDDSource[i + SourceLength].formatOrPosition = pduRxData->SduDataPtr[SID_AND_SDI_LEN + i*SDI_AND_MS_LEN];
+										DDid->DDDSource[i + SourceLength].Size = pduRxData->SduDataPtr[SID_AND_PISDR_LEN + i*SDI_AND_MS_LEN];
 										DDid->DDDSource[i + SourceLength].SourceAddressOrDid = SourceDid->DspDidIdentifier;
 										DDid->DDDSource[i + SourceLength].DDDTpyeID = DCM_DDD_SOURCE_DID;
 									}
@@ -2602,7 +2601,6 @@ static Dcm_NegativeResponseCodeType CleardynamicallyDid(uint16 DDIdentifier,cons
 	{
 		if(TRUE == LookupDDD(DDIdentifier, (const Dcm_DspDDDType **)&DDid))
 		{
-			
 			if((checkPeriodicIdentifierBuffer(pduRxData->SduDataPtr[3], dspPDidRef.PDidNr, &position) == TRUE)&&(pduRxData->SduDataPtr[2] == 0xF2))
 			{
 				/*UDS_REQ_0x2C_9*/
@@ -2633,10 +2631,7 @@ static Dcm_NegativeResponseCodeType CleardynamicallyDid(uint16 DDIdentifier,cons
 			responseCode = DCM_E_REQUESTOUTOFRANGE;	/* DDDid not found */
 		}
 	}
-	else if (pduRxData->SduDataPtr[1] == 0x03 && pduRxData->SduLength == 2){
-		/* clear all */
-		memset(dspDDD, 0, (sizeof(Dcm_DspDDDType) * DCM_MAX_DDD_NUMBER));
-	}
+
 	else
 	{
 		responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
@@ -2655,13 +2650,15 @@ void DspDynamicallyDefineDataIdentifier(const PduInfoType *pduRxData,PduInfoType
 	/*UDS_REQ_0x2C_1,DCM 259*/
 	uint16 i;
 	uint8 Position;
-	boolean PeriodicdUse = FALSE;
+	uint16 DDIdentifier;
+	boolean PeriodicUse = FALSE;
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
-	uint16 DDIdentifier = ((((uint16)pduRxData->SduDataPtr[2]) << 8) & DCM_DID_HIGH_MASK) + (pduRxData->SduDataPtr[3] & DCM_DID_LOW_MASK);
+
 	if(pduRxData->SduLength > 2)
 	{
 		/* Check if DDID equals 0xF2 or 0xF3 */
-		if((pduRxData->SduDataPtr[2] & 0xF2) == 0xF2)
+		DDIdentifier = ((((uint16)pduRxData->SduDataPtr[2]) << 8) & DCM_DID_HIGH_MASK) + (pduRxData->SduDataPtr[3] & DCM_DID_LOW_MASK);
+		if((pduRxData->SduDataPtr[2] == 0xF2) || (pduRxData->SduDataPtr[2] == 0xF3))
 		{
 			switch(pduRxData->SduDataPtr[1])	/*UDS_REQ_0x2C_2,DCM 646*/
 			{
@@ -2698,10 +2695,10 @@ void DspDynamicallyDefineDataIdentifier(const PduInfoType *pduRxData,PduInfoType
 		{
 			if(checkPeriodicIdentifierBuffer((uint8)(dspDDD[i].DynamicallyDid & DCM_DID_LOW_MASK),dspPDidRef.PDidNr,&Position) == TRUE)
 			{
-				PeriodicdUse = TRUE;
+				PeriodicUse = TRUE;
 			}
 		}
-		if(PeriodicdUse == FALSE)
+		if(PeriodicUse == FALSE)
 		{
 			memset(dspDDD,0,sizeof(dspDDD));
 			pduTxData->SduDataPtr[1] = DCM_DDD_SUBFUNCTION_CLEAR;
@@ -2709,7 +2706,7 @@ void DspDynamicallyDefineDataIdentifier(const PduInfoType *pduRxData,PduInfoType
 		}
 		else
 		{
-			responseCode = DCM_E_REQUESTOUTOFRANGE;
+			responseCode = DCM_E_CONDITIONSNOTCORRECT;
 		}
 	}
 	else
