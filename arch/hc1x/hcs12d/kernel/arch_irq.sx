@@ -21,63 +21,50 @@
 #include "context.h"
 #include "irq_defines.h"
 
-#if defined(__IAR_SYSTEMS_ICC__)
-
 DECLARE_IRQ_MAP_GLOBAL	MACRO	//  name
 	PUBLIC irq_\1
 	ENDM
  
 DECLARE_IRQ_MAP	MACRO	//name, nr
 irq_\1:
-	movb	#\2,-5,sp      // save irq nr. above context space
-	call	.LWRD.(Irq_PreEntry),.BYT3.(Irq_PreEntry)
+	movb	#\2,-2,sp      // save irq nr. above context space
+	SAVE_CONTEXT_FROM_INTERRUPT
+	ldaa	#0						// load irq nr. as arg 0..
+	ldab	-1,sp					// ..from above context space
+	tfr		sp,y					// put SP as arg 1
+	call	.LWRD.(Irq_Entry),.BYT3.(Irq_Entry)
+	tfr		y,sp					// load stack_p returned from Irq_Entry
+	RESTORE_CONTEXT_FOR_INTERRUPT
+	rti
 	ENDM
 
 DECLARE_IRQ_TIMER_MAP	MACRO	//name, nr, intflag
 irq_\1:
-	movb	#\2,-5,sp	// save irq nr. above context space
+	movb	#\2,-2,sp	// save irq nr. above context space
 	bset	TFLG1,#\3	// clear timer interrupt flag
-	call	.LWRD.(Irq_PreEntry),.BYT3.(Irq_PreEntry)
+	SAVE_CONTEXT_FROM_INTERRUPT
+	ldaa	#0						// load irq nr. as arg 0..
+	ldab	-1,sp					// ..from above context space
+	tfr		sp,y					// put SP as arg 1
+	call	.LWRD.(Irq_Entry),.BYT3.(Irq_Entry)
+	tfr		y,sp					// load stack_p returned from Irq_Entry
+	RESTORE_CONTEXT_FOR_INTERRUPT
+	rti
 	ENDM
 
 DECLARE_IRQ_MODULUS_COUNTER_MAP MACRO
 irq_mccnt_underflow:
-	movb	#IRQ_NR_MCCNT_UNDERFLOW, -5, sp	// save irq nr. above context space
+	movb	#IRQ_NR_MCCNT_UNDERFLOW, -2, sp	// save irq nr. above context space
 	bset	MCFLG, #0x80						// clear interrupt flag
-	call	.LWRD.(Irq_PreEntry),.BYT3.(Irq_PreEntry)
+	SAVE_CONTEXT_FROM_INTERRUPT
+	ldaa	#0						// load irq nr. as arg 0..
+	ldab	-1,sp					// ..from above context space
+	tfr		sp,y					// put SP as arg 1
+	call	.LWRD.(Irq_Entry),.BYT3.(Irq_Entry)
+	tfr		y,sp					// load stack_p returned from Irq_Entry
+	RESTORE_CONTEXT_FOR_INTERRUPT
+	rti
 	ENDM
-
-#else
-/* 
- * Macros used to create the IRQ mapping table
- */
-
-.macro DECLARE_IRQ_MAP_GLOBAL name
-.global irq_\name
-.endm
- 
-.macro DECLARE_IRQ_MAP name nr
-irq_\name:
-	movb	#\nr, -10, sp      // save irq nr. above context space
-	bra		Irq_PreEntry
-.endm
-
-.macro DECLARE_IRQ_TIMER_MAP name, nr, intflag
-irq_\name:
-	movb	#\nr, -10, sp      // save irq nr. above context space
-	bset	TFLG1, #\intflag   // clear timer interrupt flag
-	bra		Irq_PreEntry
-.endm
-
-.macro DECLARE_IRQ_MODULUS_COUNTER_MAP
-irq_mccnt_underflow:
-	movb	#IRQ_NR_MCCNT_UNDERFLOW, -10, sp	// save irq nr. above context space
-	bset	MCFLG, #0x80						// clear interrupt flag
-	bra		Irq_PreEntry
-.endm
-#endif
-
-
 
 /*
  * Make all isr-map entries global
@@ -147,30 +134,11 @@ irq_mccnt_underflow:
 	DECLARE_IRQ_MAP_GLOBAL cop_fail
 	DECLARE_IRQ_MAP_GLOBAL cop_clock
 
-#if defined(__IAR_SYSTEMS_ICC__)
 	module	?arch_irq
 	RSEG   CODE:CODE
-#else
-.section .text
-#endif
 
-/*
- * Save context, prepare args, call Irq_Entry, restore context (if we are returning to same task)
- */
 	EXTERN Irq_Entry
-
-	PUBLIC Irq_PreEntry
-Irq_PreEntry:
-	SAVE_CONTEXT_FROM_INTERRUPT
-	ldaa	#0						// load irq nr. as arg 0..
-	ldab	-1,sp					// ..from above context space
-	sts		2,-sp					// put SP as arg 1
-	call	.LWRD.(Irq_Entry),.BYT3.(Irq_Entry)
-	tfr		d,sp					// load stack_p returned from Irq_Entry
-	RESTORE_CONTEXT_FOR_INTERRUPT
-	rti
 	
-
 /*
  * Irq map stubs. Used for catching irq number and resetting interrupt flag
  */
@@ -244,6 +212,4 @@ Irq_PreEntry:
 	DECLARE_IRQ_MAP cop_fail, IRQ_NR_COP_FAIL
 	DECLARE_IRQ_MAP cop_clock, IRQ_NR_COP_CLOCK
 
-#if defined(__IAR_SYSTEMS_ICC__)
 	END
-#endif
