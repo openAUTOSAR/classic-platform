@@ -1692,6 +1692,7 @@ void DspUdsControlDtcSetting(const PduInfoType *pduRxData, PduInfoType *pduTxDat
 
 void DspDcmConfirmation(PduIdType confirmPduId)
 {
+	DslResetSessionTimeoutTimer(); /** @req DCM141 */
 	if (dspUdsEcuResetData.resetPending) {
 		if (confirmPduId == dspUdsEcuResetData.resetPduId) {
 			dspUdsEcuResetData.resetPending = FALSE;
@@ -2971,7 +2972,7 @@ void DspIOControlByDataIdentifier(const PduInfoType *pduRxData,PduInfoType *pduT
 	const Dcm_DspDidControlRecordSizesType* controlRecordSizes = NULL;
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_REQUESTOUTOFRANGE;
 
-	if(pduRxData->SduLength > SID_LEN + IOI_LEN + IOCP_LEN)
+	if(pduRxData->SduLength >= SID_LEN + IOI_LEN + IOCP_LEN)
 	{
 		didNr = (pduRxData->SduDataPtr[IOI_INDEX] << 8 & DCM_DID_HIGH_MASK) + (pduRxData->SduDataPtr[IOI_INDEX+1] & DCM_DID_LOW_MASK);
 		if(TRUE == lookupDid(didNr, &DidPtr))

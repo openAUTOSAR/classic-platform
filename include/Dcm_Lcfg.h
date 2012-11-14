@@ -553,6 +553,7 @@ typedef struct {
 	Dcm_DslLocalBufferType	localTxBuffer;
 	boolean					diagnosticActiveComM; //
 	uint16					S3ServerTimeoutCount;
+	boolean					S3ServerStarted;
 	uint8					responsePendingCount;
 	Dcm_SecLevelType		securityLevel;
 	Dcm_SesCtrlType			sessionControl;
