@@ -675,7 +675,7 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {
 				}
 			} else { /** @req DCM344 */
 				// The indication was not equal to NTFRSLT_OK, release the resources and no forward to DSD.
-				DslResetSessionTimeoutTimer();
+				DslResetSessionTimeoutTimer(); /** @req DCM141 */
 				runtime->externalRxBufferStatus = NOT_IN_USE;
 				protocolRow->DslProtocolRxBufferID->externalBufferRuntimeData->status = BUFFER_AVAILABLE;
 			}
@@ -690,7 +690,7 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {
 					}
 				}
 				else {
-					DslResetSessionTimeoutTimer();
+					DslResetSessionTimeoutTimer(); /** @req DCM141 */
 				}
 				runtime->localRxBuffer.status = NOT_IN_USE;
 			}

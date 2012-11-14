@@ -1692,7 +1692,7 @@ void DspUdsControlDtcSetting(const PduInfoType *pduRxData, PduInfoType *pduTxDat
 
 void DspDcmConfirmation(PduIdType confirmPduId)
 {
-	DslResetSessionTimeoutTimer();
+	DslResetSessionTimeoutTimer(); /** @req DCM141 */
 	if (dspUdsEcuResetData.resetPending) {
 		if (confirmPduId == dspUdsEcuResetData.resetPduId) {
 			dspUdsEcuResetData.resetPending = FALSE;
