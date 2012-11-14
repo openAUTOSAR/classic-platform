@@ -1066,8 +1066,9 @@ static Dcm_NegativeResponseCodeType readDDDData(Dcm_DspDDDType *DDidPtr, uint8 *
 				Dcm_ReadMemory(DCM_INITIAL,DDidPtr->DDDSource[i].memoryIdentifier,
 										DDidPtr->DDDSource[i].SourceAddressOrDid,
 										DDidPtr->DDDSource[i].Size,
-										(Data + *Length));
-				*Length = *Length + DDidPtr->DDDSource[i].Size;
+										nextDataSlot);
+				nextDataSlot += DDidPtr->DDDSource[i].Size;
+				*Length += DDidPtr->DDDSource[i].Size;
 			}
 		}
 		else if(DDidPtr->DDDSource[i].DDDTpyeID == DCM_DDD_SOURCE_DID)
@@ -1101,6 +1102,7 @@ static Dcm_NegativeResponseCodeType readDDDData(Dcm_DspDDDType *DDidPtr, uint8 *
 							nextDataSlot[dataCount] = nextDataSlot[dataCount + DDidPtr->DDDSource[i].formatOrPosition - 1];
 						}
 						nextDataSlot += DDidPtr->DDDSource[i].Size;
+						*Length += DDidPtr->DDDSource[i].Size;
 					}
 					else
 					{
