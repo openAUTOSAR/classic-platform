@@ -70,6 +70,7 @@ static inline void startS3SessionTimer(Dcm_DslRunTimeProtocolParametersType *run
 	const Dcm_DslProtocolTimingRowType *timeParams;
 	timeParams = protocolRow->DslProtocolTimeLimit;
 	runtime->S3ServerTimeoutCount = DCM_CONVERT_MS_TO_MAIN_CYCLES(timeParams->TimStrS3Server);
+	runtime->S3ServerStarted = TRUE;
 }
 
 // - - - - - - - - - - -
@@ -79,7 +80,7 @@ static inline void startS3SessionTimer(Dcm_DslRunTimeProtocolParametersType *run
 // DCM141 when that action should be taken.
 //
 static inline void stopS3SessionTimer(Dcm_DslRunTimeProtocolParametersType *runtime) {
-	runtime->S3ServerTimeoutCount = 0;
+	runtime->S3ServerStarted = FALSE;
 }
 
 // - - - - - - - - - - -
@@ -458,7 +459,9 @@ void DslMain(void) {
 		if (runtime != NULL) {
 			// #### HANDLE THE TESTER PRESENT PRESENCE ####
 			if (runtime->sessionControl != DCM_DEFAULT_SESSION) { // Timeout if tester present is lost.
-				DECREMENT(runtime->S3ServerTimeoutCount);
+				if( TRUE == runtime->S3ServerStarted ) {
+					DECREMENT(runtime->S3ServerTimeoutCount);
+				}
 				if (runtime->S3ServerTimeoutCount == 0) {
 					changeDiagnosticSession(runtime, DCM_DEFAULT_SESSION); /** @req DCM140 */
 				}
@@ -672,6 +675,7 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {
 				}
 			} else { /** @req DCM344 */
 				// The indication was not equal to NTFRSLT_OK, release the resources and no forward to DSD.
+				DslResetSessionTimeoutTimer();
 				runtime->externalRxBufferStatus = NOT_IN_USE;
 				protocolRow->DslProtocolRxBufferID->externalBufferRuntimeData->status = BUFFER_AVAILABLE;
 			}
@@ -684,6 +688,9 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {
 					if (isTesterPresentCommand(&(runtime->localRxBuffer.PduInfo))) {
 						startS3SessionTimer(runtime, protocolRow); /** @req DCM141 *//** @req DCM112 *//** @req DCM113 */
 					}
+				}
+				else {
+					DslResetSessionTimeoutTimer();
 				}
 				runtime->localRxBuffer.status = NOT_IN_USE;
 			}
@@ -796,4 +803,3 @@ void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result) {
 	    Irq_Restore(state);
 	}
 }
-
