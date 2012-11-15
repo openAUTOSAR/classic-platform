@@ -268,7 +268,7 @@ volatile const int test_sdata2 = TEST_SDATA2;
 
 #define BAD_LINK_FILE() 	while(1) {}
 
-extern void EcuM_Init();
+extern void EcuM_Init(void);
 int main( void )
 {
 	/* Check link file */

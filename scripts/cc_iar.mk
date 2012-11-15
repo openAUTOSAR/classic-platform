@@ -27,6 +27,7 @@ cflags-y 		+= --silent
 cflags-y 		+= --debug
 cflags-y 		+= --code_model=banked 
 cflags-y 		+= -lA $@.lst #Get a list file for each file
+cflags-y 		+= --diag_suppress=Pa050,Pe550,Pe188
 
 # z is the size options
 cflags-$(CFG_OPT_RELEASE)        += -Ohz
