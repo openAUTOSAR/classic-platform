@@ -93,6 +93,7 @@ void Os_ArchSetTaskEntry(OsTaskVarType *pcbPtr ) {
 		context_bytes[HIGH_BYTE_RETURN_ADRESS] = temp >> 8;
 		context_bytes[LOW_BYTE_RETURN_ADRESS] = temp & 0xFF;
 	}
+}
 #endif
 
 void Os_ArchInit( void ) {

@@ -334,12 +334,12 @@ else
   # Newlib
   def-y += USE_NEWLIB
   obj-y += xtoa.o
- # obj-y += newlib_port.o
+  obj-y += newlib_port.o
   # If we have configured console output we include printf. 
   # Overridden to use lib implementation with CFG_NEWLIB_PRINTF
   ifneq ($(CFG_NEWLIB_PRINTF),y)
     ifneq (,$(SELECT_CONSOLE) $(SELECT_OS_CONSOLE))
- #     obj-y += printf.o
+      obj-y += printf.o
     endif # SELECT_CONSOLE
   endif # CFG_NEWLIB_PRINTF
 endif # SELECT_CLIB 
