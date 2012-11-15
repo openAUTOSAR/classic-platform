@@ -321,6 +321,7 @@ void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduIdType txPd
 	const Dcm_DspSessionRowType *sessionRow = DCM_Config.Dsp->DspSession->DspSessionRow;
 	Dcm_SesCtrlType reqSessionType;
 	Std_ReturnType result;
+	Dcm_ProtocolType activeProtocolID;
 
 	if (pduRxData->SduLength == 2) {
 		reqSessionType = pduRxData->SduDataPtr[1];
@@ -338,9 +339,25 @@ void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduIdType txPd
 				dspUdsSessionControlData.session = reqSessionType;
 				dspUdsSessionControlData.sessionPduId = txPduId;
 
-				// Create positive response
 				pduTxData->SduDataPtr[1] = reqSessionType;
-				pduTxData->SduLength = 2;
+
+				if( E_OK == DslGetActiveProtocol(&activeProtocolID) ) {
+					// Create positive response
+					if( DCM_UDS_ON_CAN == activeProtocolID ) {
+						pduTxData->SduDataPtr[2] = sessionRow->DspSessionP2ServerMax >> 8;
+						pduTxData->SduDataPtr[3] = sessionRow->DspSessionP2ServerMax;
+						uint16_t p2ServerStarMax10ms = sessionRow->DspSessionP2StarServerMax / 10;
+						pduTxData->SduDataPtr[4] = p2ServerStarMax10ms >> 8;
+						pduTxData->SduDataPtr[5] = p2ServerStarMax10ms;
+						pduTxData->SduLength = 6;
+					}
+					else {
+						pduTxData->SduLength = 2;
+					}
+				}
+				else {
+					pduTxData->SduLength = 2;
+				}
 				DsdDspProcessingDone(DCM_E_POSITIVERESPONSE);
 			}
 			else {
