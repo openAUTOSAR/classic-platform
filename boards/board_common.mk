@@ -324,7 +324,11 @@ ifeq ($(SELECT_CLIB),CLIB_NATIVE)
   # Just use native clib 
   
 else ifeq ($(SELECT_CLIB),CLIB_IAR)
-  # Just use native clib 
+  # This is not good, but don't know what to do right now....
+  obj-y += iar_port.o
+  obj-y += xtoa.o
+  obj-y += printf.o
+  def-y += USE_CLIB_IAR
 else ifeq ($(SELECT_CLIB),CLIB_CW)
   # This is not good, but don't know what to do right now....
   obj-y += xtoa.o

@@ -55,7 +55,11 @@
  *
  */
 
+#if defined(__IAR_SYSTEMS_ICC__)
+#define STDOUT_FILENO	1
+#else
 #include <unistd.h>
+#endif
 #include <stdio.h>
 #include <stdarg.h>
 #include <assert.h>
@@ -64,6 +68,9 @@
 #include "reent.h"
 #endif
 //#define HOST_TEST	1
+
+#if defined(__IAR_SYSTEMS_ICC__)
+#endif
 
 int arc_putchar(int fd, int c);
 int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap);
@@ -146,13 +153,15 @@ int vsnprintf(char *buffer, size_t n, const char *format, va_list ap) {
 /*
  * The integer only counterpart
  */
+#if !defined(__IAR_SYSTEMS_ICC__)
 int iprintf(const char *format, ...) __attribute__ ((alias("printf")));
 int fiprintf(FILE *file, const char *format, ...) __attribute__ ((alias("fprintf")));
 int siprintf(char *buffer, const char *format, ...) __attribute__ ((alias("sprintf")));
 int sniprintf(char *buffer, size_t n, const char *format, ...) __attribute__ ((alias("snprintf")));
 int viprintf(const char *format, va_list ap) __attribute__ ((alias("vprintf")));
 int vsiprintf(char *buffer, const char *format, va_list ap) __attribute__ ((alias("vsprintf")));
-int vfiprintf(FILE *file, const char *format, va_list ap) __attribute__ ((alias("vfprintf")));
+int vfiprintf(FILE *file, const char *format, va_list ap) __attribute__ ((alias("vfprintf")));	
+#endif
 
 /**
  *
@@ -180,7 +189,11 @@ static inline int emitChar( FILE *file, char **buf, char c, int *left ) {
 #endif
 #endif
 		if( (unsigned )file > 10UL ) {
+#if defined(__IAR_SYSTEMS_ICC__)
+			arc_putchar((int)(file->_Handle), c);
+#else
 			arc_putchar((int)(file->_file), c);
+#endif
 		} else {
 			arc_putchar((int)(file), c);
 		}

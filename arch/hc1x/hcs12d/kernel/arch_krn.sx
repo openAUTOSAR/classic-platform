@@ -17,6 +17,7 @@
 	PUBLIC Os_ArchSwapContextTo
 	PUBLIC Os_ArchSwapContext
 	PUBLIC Os_ArchSetSpAndCall
+	PUBLIC Os_ArchGetStackPtr
 	
 	module	?arch_krn
 	RSEG   CODE:CODE

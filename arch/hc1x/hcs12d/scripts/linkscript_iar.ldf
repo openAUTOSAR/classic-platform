@@ -30,7 +30,7 @@
 
 // Size of the heap
 // Uncomment for command line use
--D_HEAP_SIZE=0
+-D_HEAP_SIZE=HEAPSIZE
 
 //================================================================
 // Memory Definitions
