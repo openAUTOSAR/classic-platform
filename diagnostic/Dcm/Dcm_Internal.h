@@ -82,20 +82,6 @@ typedef enum {
 } DsdProcessingDoneResultType;
 
 /*
- * DCM CALLOUT
- */
-Dcm_ReturnWriteMemoryType Dcm_WriteMemory(Dcm_OpStatusType OpStatus,
-											   uint8 MemoryIdentifier,
-											   uint32 MemoryAddress,
-											   uint32 MemorySize,
-											   uint8* MemoryData);
-Dcm_ReturnReadMemoryType Dcm_ReadMemory(Dcm_OpStatusType OpStatus,
-											   uint8 MemoryIdentifier,
-											   uint32 MemoryAddress,
-											   uint32 MemorySize,
-											   uint8* MemoryData);
-void Dcm_DiagnosticSessionControl(Dcm_SesCtrlType session);
-/*
  * DSP
  */
 void DspInit(void);
