@@ -1,7 +1,7 @@
 /* The board Elmicro Card12 comes with MC912D60A, MC9S12DP512 or MC912DG128A.*/
 
-#define CFG_MC912DG128
-// #define CFG_MC9S12DP512
+// #define CFG_MC912DG128
+#define CFG_MC9S12DP512
 
 /* MC9S12DP512 */
 #if defined(CFG_MC9S12DP512)
