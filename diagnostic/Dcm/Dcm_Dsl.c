@@ -349,7 +349,7 @@ static void sendResponse(const Dcm_DslProtocolRowType *protocol,
 		if (runtime->localTxBuffer.status == NOT_IN_USE) {
 			runtime->localTxBuffer.status = PROVIDED_TO_DSD;
 			runtime->localTxBuffer.buffer[0] = SID_NEGATIVE_RESPONSE;
-			runtime->localTxBuffer.buffer[1] = protocol->DslProtocolRxBufferID->pduInfo.SduDataPtr[2];
+			runtime->localTxBuffer.buffer[1] = protocol->DslProtocolRxBufferID->pduInfo.SduDataPtr[0];
 			runtime->localTxBuffer.buffer[2] = responseCode;
 			runtime->localTxBuffer.PduInfo.SduDataPtr = runtime->localTxBuffer.buffer;
 			runtime->localTxBuffer.PduInfo.SduLength = 3;
