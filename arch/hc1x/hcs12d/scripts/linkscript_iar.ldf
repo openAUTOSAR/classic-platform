@@ -30,24 +30,15 @@
 
 // Size of the heap
 // Uncomment for command line use
--D_HEAP_SIZE=HEAPSIZE
+-D_HEAP_SIZE=0
 
 //================================================================
 // Memory Definitions
 //================================================================
 
 // Memory areas available for the application
--D_RAM_BEGIN=01000
--D_RAM_END=03FFF
--D_EEPROM_BEGIN=00400
--D_EEPROM_END=00FFF
+#include "memory_iar.ldf"
 
--D_FLASH16MID_BEGIN=04000
--D_FLASH16MID_END=07FFF
--D_FLASH16HI_BEGIN=0C000
--D_FLASH16HI_END=0FFFF
--D_FLASH16PAGE_BEGIN=208000
--D_FLASH16PAGE_END=20BFFF
 
 
 //========================================================================
@@ -128,7 +119,6 @@
 -Z(CODE)DIFUNCT
 -P(CODE)DATA16_C,CODE,CHECKSUM
 
--D_PAGES=32
 
 -P(CODE)BANKED_CODE,BANKED_CODE_SEGMENT_INIT=[_FLASH16PAGE_BEGIN-_FLASH16PAGE_END]*_PAGES+10000   // Place banked code into logical pages 
   
