@@ -80,9 +80,16 @@ typedef enum {
 	DCM_WRITE_MEMORY,
 } DspMemoryServiceType;
 
+typedef enum {
+	DCM_DSP_RESET_NO_RESET,
+	DCM_DSP_RESET_PENDING,
+	DCM_DSP_RESET_WAIT_TX_CONF,
+} DcmDspResetStateType;
+
 typedef struct {
-	boolean resetPending;
+	DcmDspResetStateType resetPending;
 	PduIdType resetPduId;
+	PduInfoType *pduTxData;
 	Dcm_EcuResetType resetType;
 } DspUdsEcuResetDataType;
 
@@ -164,7 +171,7 @@ static Dcm_NegativeResponseCodeType writeMemoryData(Dcm_OpStatusType* OpStatus, 
 void DspInit(void)
 {
 	dspUdsSecurityAccesData.reqInProgress = FALSE;
-	dspUdsEcuResetData.resetPending = FALSE;
+	dspUdsEcuResetData.resetPending = DCM_DSP_RESET_NO_RESET;
 	dspUdsSessionControlData.sessionPending = FALSE;
 
 	dspWritePending = FALSE;
@@ -173,6 +180,31 @@ void DspInit(void)
 	memset(&dspPDidRef,0,sizeof(dspPDidRef));
 	/* clear dynamically Did buffer */
 	memset(&dspDDD[0],0,sizeof(dspDDD));
+}
+
+void DspResetMainFunction(void)
+{
+	if( DCM_DSP_RESET_PENDING == dspUdsEcuResetData.resetPending )
+	{
+		switch( Dcm_EcuReset(dspUdsEcuResetData.resetType) )
+		{
+		case E_OK:
+			dspUdsEcuResetData.resetPending = DCM_DSP_RESET_WAIT_TX_CONF;
+			// Create positive response
+			dspUdsEcuResetData.pduTxData->SduDataPtr[1] = dspUdsEcuResetData.resetType;
+			dspUdsEcuResetData.pduTxData->SduLength = 2;
+			DsdDspProcessingDone(DCM_E_POSITIVERESPONSE);
+			break;
+		case E_PENDING:
+			dspUdsEcuResetData.resetPending = DCM_DSP_RESET_PENDING;
+			break;
+		case E_NOT_OK:
+		default:
+			dspUdsEcuResetData.resetPending = DCM_DSP_RESET_NO_RESET;
+			DsdDspProcessingDone(DCM_E_CONDITIONSNOTCORRECT);
+			break;
+		}
+	}
 }
 
 void DspMemoryMainFunction(void)
@@ -243,6 +275,7 @@ void DspPeriodicDIDMainFunction()
 }
 void DspMain(void)
 {
+	DspResetMainFunction();
 	DspMemoryMainFunction();
 	DspPeriodicDIDMainFunction();
 }
@@ -391,15 +424,28 @@ void DspUdsEcuReset(const PduInfoType *pduRxData, PduIdType txPduId, PduInfoType
 		case DCM_SOFT_RESET:
 			// TODO: Ask application for permission (Dcm373) (Dcm375) (Dcm377)
 
-			// Schedule the reset
-			dspUdsEcuResetData.resetPending = TRUE;
 			dspUdsEcuResetData.resetPduId = txPduId;
+			dspUdsEcuResetData.pduTxData = pduTxData;
 			dspUdsEcuResetData.resetType = reqResetType;
 
-			// Create positive response
-			pduTxData->SduDataPtr[1] = reqResetType;
-			pduTxData->SduLength = 2;
-			DsdDspProcessingDone(DCM_E_POSITIVERESPONSE);
+			switch( Dcm_EcuReset(dspUdsEcuResetData.resetType) )
+			{
+			case E_OK:
+				dspUdsEcuResetData.resetPending = DCM_DSP_RESET_WAIT_TX_CONF;
+				// Create positive response
+				pduTxData->SduDataPtr[1] = reqResetType;
+				pduTxData->SduLength = 2;
+				DsdDspProcessingDone(DCM_E_POSITIVERESPONSE);
+				break;
+			case E_PENDING:
+				dspUdsEcuResetData.resetPending = DCM_DSP_RESET_PENDING;
+				break;
+			case E_NOT_OK:
+			default:
+				dspUdsEcuResetData.resetPending = DCM_DSP_RESET_NO_RESET;
+				DsdDspProcessingDone(DCM_E_CONDITIONSNOTCORRECT);
+				break;
+			}
 			break;
 
 		default:
@@ -1710,10 +1756,10 @@ void DspUdsControlDtcSetting(const PduInfoType *pduRxData, PduInfoType *pduTxDat
 void DspDcmConfirmation(PduIdType confirmPduId)
 {
 	DslResetSessionTimeoutTimer(); /** @req DCM141 */
-	if (dspUdsEcuResetData.resetPending) {
+	if ( DCM_DSP_RESET_WAIT_TX_CONF == dspUdsEcuResetData.resetPending ) {
 		if (confirmPduId == dspUdsEcuResetData.resetPduId) {
-			dspUdsEcuResetData.resetPending = FALSE;
-			Dcm_EcuReset(dspUdsEcuResetData.resetType);
+			dspUdsEcuResetData.resetPending = DCM_DSP_RESET_NO_RESET;
+			Dcm_EcuPerformReset(dspUdsEcuResetData.resetType);
 			if(DCM_HARD_RESET == dspUdsEcuResetData.resetType) {
 #if defined(USE_MCU) && ( MCU_PERFORM_RESET_API == STD_ON )
 				Mcu_PerformReset();

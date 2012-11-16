@@ -98,5 +98,7 @@ Std_ReturnType Dcm_GetActiveProtocol(Dcm_ProtocolType *activeProtocol); /** @req
  */
 void Dcm_MainFunction( void ); /** @req DCM053 */
 
+Std_ReturnType Dcm_EcuReset(Dcm_EcuResetType resetType);
+void Dcm_EcuPerformReset(Dcm_EcuResetType resetType);
 
 #endif /*DCM_H_*/
