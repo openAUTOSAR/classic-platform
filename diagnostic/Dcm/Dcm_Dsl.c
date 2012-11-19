@@ -481,11 +481,13 @@ void DslMain(void) {
 								sendResponse(protocolRowEntry, DCM_E_RESPONSEPENDING);  /** @req DCM024 */
 								DECREMENT( runtime->responsePendingCount );
 							} else {
+								DspCancelPendingRequests();
 								sendResponse(protocolRowEntry, DCM_E_GENERALREJECT); /** @req DCM120 */
 								releaseExternalRxTxBuffers(protocolRowEntry, runtime);
 							}
 						} else {
 							DEBUG( DEBUG_MEDIUM, "Not configured to send response pending, now sending general reject!\n");
+							DspCancelPendingRequests();
 							sendResponse(protocolRowEntry, DCM_E_GENERALREJECT);
 							releaseExternalRxTxBuffers(protocolRowEntry, runtime);
 						}
