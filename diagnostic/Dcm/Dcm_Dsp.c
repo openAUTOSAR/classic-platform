@@ -100,20 +100,21 @@ typedef struct {
 } DspUdsSessionControlDataType;
 
 typedef enum {
-	DCM_READ_DID_IDLE,
-	DCM_READ_DID_PENDING,
+	DCM_DID_IDLE,
+	DCM_DID_PENDING,
 } ReadDidPendingStateType;
 
 typedef struct {
 	ReadDidPendingStateType state;
 	PduInfoType* pduRxData;
 	PduInfoType* pduTxData;
-} DspUdsReadDidPendingType;
+} DspUdsDidPendingType;
 
 static DspUdsEcuResetDataType dspUdsEcuResetData;
 static DspUdsSessionControlDataType dspUdsSessionControlData;
 static boolean dspWritePending;
-static DspUdsReadDidPendingType dspUdsReadDidPending;
+static DspUdsDidPendingType dspUdsReadDidPending;
+static DspUdsDidPendingType dspUdsWriteDidPending;
 
 typedef struct {
 	boolean 						reqInProgress;
@@ -287,8 +288,11 @@ void DspPeriodicDIDMainFunction()
 }
 
 void DspReadDidMainFunction(void) {
-	if( DCM_READ_DID_PENDING == dspUdsReadDidPending.state ) {
+	if( DCM_DID_PENDING == dspUdsReadDidPending.state ) {
 		DspUdsReadDataByIdentifier(dspUdsReadDidPending.pduRxData, dspUdsReadDidPending.pduTxData);
+	}
+	if( DCM_DID_PENDING == dspUdsWriteDidPending.state ) {
+		DspUdsWriteDataByIdentifier(dspUdsWriteDidPending.pduRxData, dspUdsWriteDidPending.pduTxData);
 	}
 }
 
@@ -304,7 +308,7 @@ void DspCancelPendingRequests(void)
 {
 	dspMemoryState = DCM_MEMORY_UNUSED;
 	dspUdsEcuResetData.resetPending = DCM_DSP_RESET_NO_RESET;
-	dspUdsReadDidPending.state = DCM_READ_DID_IDLE;
+	dspUdsReadDidPending.state = DCM_DID_IDLE;
 }
 
 boolean DspCheckSessionLevel(Dcm_DspSessionRowType const* const* sessionLevelRefTable)
@@ -1297,12 +1301,12 @@ void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTx
 	}
 
 	if( DCM_E_RESPONSEPENDING == responseCode) {
-		dspUdsReadDidPending.state = DCM_READ_DID_PENDING;
+		dspUdsReadDidPending.state = DCM_DID_PENDING;
 		dspUdsReadDidPending.pduRxData = (PduInfoType*)pduRxData;
 		dspUdsReadDidPending.pduTxData = pduTxData;
 	}
 	else {
-		dspUdsReadDidPending.state = DCM_READ_DID_IDLE;
+		dspUdsReadDidPending.state = DCM_DID_IDLE;
 		DsdDspProcessingDone(responseCode);
 	}
 }
@@ -1401,6 +1405,9 @@ static Dcm_NegativeResponseCodeType writeDidData(const Dcm_DspDidType *didPtr, c
 							if( result != E_OK && responseCode == DCM_E_POSITIVERESPONSE ) {
 								responseCode = DCM_E_CONDITIONSNOTCORRECT;
 							}
+							else if( DCM_E_RESPONSEPENDING == responseCode || E_PENDING == result ) {
+								responseCode = DCM_E_RESPONSEPENDING;
+							}
 						}
 						else {
 							responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
@@ -1447,13 +1454,21 @@ void DspUdsWriteDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduT
 		responseCode = DCM_E_REQUESTOUTOFRANGE;
 	}
 
-	if (responseCode == DCM_E_POSITIVERESPONSE) {
-		pduTxData->SduLength = 3;
-		pduTxData->SduDataPtr[1] = (didNr >> 8) & 0xFFu;
-		pduTxData->SduDataPtr[2] = didNr & 0xFFu;
-	}
+	if( DCM_E_RESPONSEPENDING != responseCode ) {
+		if (responseCode == DCM_E_POSITIVERESPONSE) {
+			pduTxData->SduLength = 3;
+			pduTxData->SduDataPtr[1] = (didNr >> 8) & 0xFFu;
+			pduTxData->SduDataPtr[2] = didNr & 0xFFu;
+		}
 
-	DsdDspProcessingDone(responseCode);
+		dspUdsWriteDidPending.state = DCM_DID_IDLE;
+		DsdDspProcessingDone(responseCode);
+	}
+	else {
+		dspUdsWriteDidPending.state = DCM_DID_PENDING;
+		dspUdsWriteDidPending.pduRxData = pduRxData;
+		dspUdsWriteDidPending.pduTxData = pduTxData;
+	}
 }
 
 
