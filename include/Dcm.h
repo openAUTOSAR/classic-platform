@@ -104,7 +104,7 @@ void Dcm_MainFunction( void ); /** @req DCM053 */
 Dcm_ReturnWriteMemoryType Dcm_WriteMemory(Dcm_OpStatusType OpStatus, uint8 MemoryIdentifier, uint32 MemoryAddress, uint32 MemorySize, uint8* MemoryData);
 Dcm_ReturnReadMemoryType Dcm_ReadMemory(Dcm_OpStatusType OpStatus, uint8 MemoryIdentifier, uint32 MemoryAddress, uint32 MemorySize, uint8* MemoryData);
 void Dcm_DiagnosticSessionControl(Dcm_SesCtrlType session);
-Std_ReturnType Dcm_EcuReset(Dcm_EcuResetType resetType);
-void Dcm_EcuPerformReset(Dcm_EcuResetType resetType);
+Std_ReturnType DcmE_EcuReset(Dcm_EcuResetType resetType);
+void DcmE_EcuPerformReset(Dcm_EcuResetType resetType);
 
 #endif /*DCM_H_*/

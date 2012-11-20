@@ -186,7 +186,7 @@ void DspResetMainFunction(void)
 {
 	if( DCM_DSP_RESET_PENDING == dspUdsEcuResetData.resetPending )
 	{
-		switch( Dcm_EcuReset(dspUdsEcuResetData.resetType) )
+		switch( DcmE_EcuReset(dspUdsEcuResetData.resetType) )
 		{
 		case E_OK:
 			dspUdsEcuResetData.resetPending = DCM_DSP_RESET_WAIT_TX_CONF;
@@ -428,7 +428,7 @@ void DspUdsEcuReset(const PduInfoType *pduRxData, PduIdType txPduId, PduInfoType
 			dspUdsEcuResetData.pduTxData = pduTxData;
 			dspUdsEcuResetData.resetType = reqResetType;
 
-			switch( Dcm_EcuReset(dspUdsEcuResetData.resetType) )
+			switch( DcmE_EcuReset(dspUdsEcuResetData.resetType) )
 			{
 			case E_OK:
 				dspUdsEcuResetData.resetPending = DCM_DSP_RESET_WAIT_TX_CONF;
@@ -1759,7 +1759,7 @@ void DspDcmConfirmation(PduIdType confirmPduId)
 	if ( DCM_DSP_RESET_WAIT_TX_CONF == dspUdsEcuResetData.resetPending ) {
 		if (confirmPduId == dspUdsEcuResetData.resetPduId) {
 			dspUdsEcuResetData.resetPending = DCM_DSP_RESET_NO_RESET;
-			Dcm_EcuPerformReset(dspUdsEcuResetData.resetType);
+			DcmE_EcuPerformReset(dspUdsEcuResetData.resetType);
 			if(DCM_HARD_RESET == dspUdsEcuResetData.resetType) {
 #if defined(USE_MCU) && ( MCU_PERFORM_RESET_API == STD_ON )
 				Mcu_PerformReset();
