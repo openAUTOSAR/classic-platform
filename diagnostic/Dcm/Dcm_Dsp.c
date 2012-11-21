@@ -99,9 +99,22 @@ typedef struct {
 	Dcm_SesCtrlType session;
 } DspUdsSessionControlDataType;
 
+typedef enum {
+	DCM_DID_IDLE,
+	DCM_DID_PENDING,
+} ReadDidPendingStateType;
+
+typedef struct {
+	ReadDidPendingStateType state;
+	PduInfoType* pduRxData;
+	PduInfoType* pduTxData;
+} DspUdsDidPendingType;
+
 static DspUdsEcuResetDataType dspUdsEcuResetData;
 static DspUdsSessionControlDataType dspUdsSessionControlData;
 static boolean dspWritePending;
+static DspUdsDidPendingType dspUdsReadDidPending;
+static DspUdsDidPendingType dspUdsWriteDidPending;
 
 typedef struct {
 	boolean 						reqInProgress;
@@ -273,13 +286,31 @@ void DspPeriodicDIDMainFunction()
 		}	
 	}
 }
+
+void DspReadDidMainFunction(void) {
+	if( DCM_DID_PENDING == dspUdsReadDidPending.state ) {
+		DspUdsReadDataByIdentifier(dspUdsReadDidPending.pduRxData, dspUdsReadDidPending.pduTxData);
+	}
+	if( DCM_DID_PENDING == dspUdsWriteDidPending.state ) {
+		DspUdsWriteDataByIdentifier(dspUdsWriteDidPending.pduRxData, dspUdsWriteDidPending.pduTxData);
+	}
+}
+
 void DspMain(void)
 {
 	DspResetMainFunction();
 	DspMemoryMainFunction();
 	DspPeriodicDIDMainFunction();
+	DspReadDidMainFunction();
 }
 
+void DspCancelPendingRequests(void)
+{
+	dspMemoryState = DCM_MEMORY_UNUSED;
+	dspUdsEcuResetData.resetPending = DCM_DSP_RESET_NO_RESET;
+	dspUdsReadDidPending.state = DCM_DID_IDLE;
+	dspUdsWriteDidPending.state = DCM_DID_IDLE;
+}
 
 boolean DspCheckSessionLevel(Dcm_DspSessionRowType const* const* sessionLevelRefTable)
 {
@@ -1056,6 +1087,7 @@ static boolean lookupDid(uint16 didNr, const Dcm_DspDidType **didPtr)
 static Dcm_NegativeResponseCodeType readDidData(const Dcm_DspDidType *didPtr, PduInfoType *pduTxData, uint16 *txPos)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+	Dcm_NegativeResponseCodeType responseCodeRefDids = DCM_E_POSITIVERESPONSE;
 
 	if ((didPtr->DspDidInfoRef->DspDidAccess.DspDidRead != NULL) && (didPtr->DspDidConditionCheckReadFnc != NULL) && (didPtr->DspDidReadDataFnc != NULL)) {	/** @req DCM433 */
 		if (DspCheckSessionLevel(didPtr->DspDidInfoRef->DspDidAccess.DspDidRead->DspDidReadSessionRef)) { /** @req DCM434 */
@@ -1086,7 +1118,10 @@ static Dcm_NegativeResponseCodeType readDidData(const Dcm_DspDidType *didPtr, Pd
 							result = didPtr->DspDidReadDataFnc(&pduTxData->SduDataPtr[*txPos]);	/** @req DCM437 */
 							*txPos += didLen;
 
-							if (result != E_OK) {
+							if( E_PENDING == result ) {
+								responseCode = DCM_E_RESPONSEPENDING;
+							}
+							else if (result != E_OK) {
 								responseCode = DCM_E_CONDITIONSNOTCORRECT;
 							}
 						}
@@ -1114,11 +1149,15 @@ static Dcm_NegativeResponseCodeType readDidData(const Dcm_DspDidType *didPtr, Pd
 		responseCode = DCM_E_REQUESTOUTOFRANGE;
 	}
 
-	if (responseCode == DCM_E_POSITIVERESPONSE) {
+	if (DCM_E_POSITIVERESPONSE == responseCode || DCM_E_RESPONSEPENDING == responseCode) {
 		// Recurse trough the rest of the dids. 	/** @req DCM440 */
 		uint16 i;
-		for (i=0; (!didPtr->DspDidRef[i]->Arc_EOL) && (responseCode == DCM_E_POSITIVERESPONSE); i++) {
-			responseCode = readDidData(didPtr->DspDidRef[i], pduTxData, txPos);
+		for (i=0; (!didPtr->DspDidRef[i]->Arc_EOL) && (DCM_E_POSITIVERESPONSE == responseCode || DCM_E_RESPONSEPENDING == responseCode); i++) {
+			responseCodeRefDids = readDidData(didPtr->DspDidRef[i], pduTxData, txPos);
+			if( DCM_E_POSITIVERESPONSE != responseCodeRefDids ) {
+				/* Override on NRC (including pending) */
+				responseCode = responseCodeRefDids;
+			}
 		}
 	}
 
@@ -1210,6 +1249,7 @@ void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTx
 {
 	/** @req DCM253 */
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+	Dcm_NegativeResponseCodeType responseCodeOneDid;
 	uint16 nrOfDids;
 	uint16 didNr;
 	const Dcm_DspDidType *didPtr = NULL;
@@ -1221,11 +1261,19 @@ void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTx
 	if ( ((pduRxData->SduLength - 1) % 2) == 0 ) {
 		nrOfDids = (pduRxData->SduLength - 1) / 2;
 
-		for (i = 0; (i < nrOfDids) && (responseCode == DCM_E_POSITIVERESPONSE); i++) 
+		for (i = 0; (i < nrOfDids) && (responseCode == DCM_E_POSITIVERESPONSE || responseCode == DCM_E_RESPONSEPENDING); i++)
 			{
 			didNr = (uint16)((uint16)pduRxData->SduDataPtr[1 + (i * 2)] << 8) + pduRxData->SduDataPtr[2 + (i * 2)];
 			if (lookupDid(didNr, &didPtr)) {	/** @req DCM438 */
-				responseCode = readDidData(didPtr, pduTxData, &txPos);
+				responseCodeOneDid = readDidData(didPtr, pduTxData, &txPos);
+				if( DCM_E_POSITIVERESPONSE != responseCodeOneDid ) {
+					/* Only update if response i negative */
+					if( (DCM_E_RESPONSEPENDING != responseCodeOneDid) || (DCM_E_POSITIVERESPONSE == responseCode) )
+					{
+						/* Only update with pending if all previous resp was positive */
+						responseCode = responseCodeOneDid;
+					}
+				}
 			}
 
 			else if(LookupDDD(didNr,(const Dcm_DspDDDType **)&DDidPtr) == TRUE)
@@ -1249,11 +1297,19 @@ void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTx
 		responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
 	}
 
-	if (responseCode == DCM_E_POSITIVERESPONSE) {
+	if (DCM_E_POSITIVERESPONSE == responseCode) {
 		pduTxData->SduLength = txPos;
 	}
 
-	DsdDspProcessingDone(responseCode);
+	if( DCM_E_RESPONSEPENDING == responseCode) {
+		dspUdsReadDidPending.state = DCM_DID_PENDING;
+		dspUdsReadDidPending.pduRxData = (PduInfoType*)pduRxData;
+		dspUdsReadDidPending.pduTxData = pduTxData;
+	}
+	else {
+		dspUdsReadDidPending.state = DCM_DID_IDLE;
+		DsdDspProcessingDone(responseCode);
+	}
 }
 
 
@@ -1350,6 +1406,9 @@ static Dcm_NegativeResponseCodeType writeDidData(const Dcm_DspDidType *didPtr, c
 							if( result != E_OK && responseCode == DCM_E_POSITIVERESPONSE ) {
 								responseCode = DCM_E_CONDITIONSNOTCORRECT;
 							}
+							else if( DCM_E_RESPONSEPENDING == responseCode || E_PENDING == result ) {
+								responseCode = DCM_E_RESPONSEPENDING;
+							}
 						}
 						else {
 							responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
@@ -1396,13 +1455,21 @@ void DspUdsWriteDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduT
 		responseCode = DCM_E_REQUESTOUTOFRANGE;
 	}
 
-	if (responseCode == DCM_E_POSITIVERESPONSE) {
-		pduTxData->SduLength = 3;
-		pduTxData->SduDataPtr[1] = (didNr >> 8) & 0xFFu;
-		pduTxData->SduDataPtr[2] = didNr & 0xFFu;
-	}
+	if( DCM_E_RESPONSEPENDING != responseCode ) {
+		if (responseCode == DCM_E_POSITIVERESPONSE) {
+			pduTxData->SduLength = 3;
+			pduTxData->SduDataPtr[1] = (didNr >> 8) & 0xFFu;
+			pduTxData->SduDataPtr[2] = didNr & 0xFFu;
+		}
 
-	DsdDspProcessingDone(responseCode);
+		dspUdsWriteDidPending.state = DCM_DID_IDLE;
+		DsdDspProcessingDone(responseCode);
+	}
+	else {
+		dspUdsWriteDidPending.state = DCM_DID_PENDING;
+		dspUdsWriteDidPending.pduRxData = pduRxData;
+		dspUdsWriteDidPending.pduTxData = pduTxData;
+	}
 }
 
 
