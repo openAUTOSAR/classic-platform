@@ -17,18 +17,21 @@
 #ifndef EA_H_
 #define EA_H_
 
-#define EA_MODULE_ID			MODULE_ID_EA
-#define EA_VENDOR_ID			1
-
-#define EA_SW_MAJOR_VERSION	1
-#define EA_SW_MINOR_VERSION	0
-#define EA_SW_PATCH_VERSION	0
-#define EA_AR_MAJOR_VERSION	4   // Implemented after the 4.0.2 specification due to the poor quality of 3.1 specification
-#define EA_AR_MINOR_VERSION	0
-#define EA_AR_PATCH_VERSION	2
+#define EA_SW_MAJOR_VERSION     1
+#define EA_SW_MINOR_VERSION     0
+#define EA_SW_PATCH_VERSION     0
+#define EA_AR_MAJOR_VERSION     4   // Implemented after the 4.0.2 specification due to the poor quality of 3.1 specification
+#define EA_AR_MINOR_VERSION     0
+#define EA_AR_PATCH_VERSION     2
 
 #include "Eep.h"
 #include "Ea_Cfg.h"
+#include "Modules.h"
+
+#define EA_MODULE_ID            MODULE_ID_EA
+#define EA_VENDOR_ID            1
+
+
 
 /*
  *  API parameter checking
