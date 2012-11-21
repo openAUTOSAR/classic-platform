@@ -309,6 +309,7 @@ void DspCancelPendingRequests(void)
 	dspMemoryState = DCM_MEMORY_UNUSED;
 	dspUdsEcuResetData.resetPending = DCM_DSP_RESET_NO_RESET;
 	dspUdsReadDidPending.state = DCM_DID_IDLE;
+	dspUdsWriteDidPending.state = DCM_DID_IDLE;
 }
 
 boolean DspCheckSessionLevel(Dcm_DspSessionRowType const* const* sessionLevelRefTable)
@@ -1151,7 +1152,7 @@ static Dcm_NegativeResponseCodeType readDidData(const Dcm_DspDidType *didPtr, Pd
 	if (DCM_E_POSITIVERESPONSE == responseCode || DCM_E_RESPONSEPENDING == responseCode) {
 		// Recurse trough the rest of the dids. 	/** @req DCM440 */
 		uint16 i;
-		for (i=0; (!didPtr->DspDidRef[i]->Arc_EOL) && (responseCode == DCM_E_POSITIVERESPONSE); i++) {
+		for (i=0; (!didPtr->DspDidRef[i]->Arc_EOL) && (DCM_E_POSITIVERESPONSE == responseCode || DCM_E_RESPONSEPENDING == responseCode); i++) {
 			responseCodeRefDids = readDidData(didPtr->DspDidRef[i], pduTxData, txPos);
 			if( DCM_E_POSITIVERESPONSE != responseCodeRefDids ) {
 				/* Override on NRC (including pending) */
