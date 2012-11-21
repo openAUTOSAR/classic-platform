@@ -2934,7 +2934,7 @@ static Dcm_NegativeResponseCodeType DspIOControlResetToDefault(const Dcm_DspDidT
 		{
 			if(((DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl->DspDidResetToDefault->DspDidControlOptionRecordSize + 7) >> 3) == (pduRxData->SduLength - 4))
 			{
-				if(DidPtr->DspDidReturnControlToEcuFnc != NULL)
+				if(DidPtr->DspDidResetToDefaultFnc != NULL)
 				{
 					DidPtr->DspDidResetToDefaultFnc(NULL,&pduRxData->SduDataPtr[4],&pduTxData->SduDataPtr[4],&responseCode);
 				}
