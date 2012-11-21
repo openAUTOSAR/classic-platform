@@ -44,12 +44,12 @@ void Dcm_DiagnosticSessionControl(Dcm_SesCtrlType session)
 
 }
 
-Std_ReturnType Dcm_EcuReset(Dcm_EcuResetType resetType)
+Std_ReturnType DcmE_EcuReset(Dcm_EcuResetType resetType)
 {
 	return E_OK;
 }
 
-void Dcm_EcuPerformReset(Dcm_EcuResetType resetType)
+void DcmE_EcuPerformReset(Dcm_EcuResetType resetType)
 {
 #if defined(USE_MCU) && ( MCU_PERFORM_RESET_API == STD_ON )
 	Mcu_PerformReset();

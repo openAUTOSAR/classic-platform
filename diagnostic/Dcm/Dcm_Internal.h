@@ -105,7 +105,7 @@ void DspDynamicallyDefineDataIdentifier(const PduInfoType *pduRxData,PduInfoType
 void DspIOControlByDataIdentifier(const PduInfoType *pduRxData,PduInfoType *pduTxData);
 boolean DspCheckSessionLevel(Dcm_DspSessionRowType const* const* sessionLevelRefTable);
 boolean DspCheckSecurityLevel(Dcm_DspSecurityRowType const* const* securityLevelRefTable);
-
+void DspCancelPendingRequests(void);
 
 /*
  * DSD
