@@ -1,0 +1,27 @@
+
+
+
+The Freescale MPC5606S is an PowerPC process with a e200Z0h core, VLE only.
+
+NOTE! Simulator board!
+
+NOTE! Timer interrupts not work (The T32 environment does not support yet support it.  
+	
+Datasheets:
+  MPC560x
+    http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC560xS&fsrch=1&sr=1
+
+Supported compilers:
+  Code Warrior
+ 
+Info:	
+  MPC5606S
+  CPU:		 e200z0h (VLE only)
+  
+
+
+
+  
+  
+  
+

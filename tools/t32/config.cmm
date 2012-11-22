@@ -125,7 +125,7 @@ dialog_project:
         pos 1. 1. 14.
         text "CPU:"
         pos 1. 2. 10.
-CPU:   PULLDOWN "MPC5516,MPC5554,MPC5633M,CortexM3,CortexR4F,HC12DG128A"
+CPU:   PULLDOWN "MPC5516,MPC5554,MPC5606S,MPC5633M,CortexM3,CortexR4F,HC12DG128A"
         (
         )
         HEADER "Project config"
@@ -157,6 +157,7 @@ win_close:
 //
 
   enddo
+
 
 
 
