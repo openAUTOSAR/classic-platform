@@ -81,9 +81,9 @@ static const ComM_ConfigType * ComM_Config;
 
 
 void ComM_Init(const ComM_ConfigType * Config ){
-	COMM_VALIDATE_PARAMETER( (Config != NULL), COMM_SERVICEID_INIT);
-	COMM_VALIDATE_PARAMETER( (Config->Channels != NULL), COMM_SERVICEID_INIT);
-	COMM_VALIDATE_PARAMETER( (Config->Users != NULL), COMM_SERVICEID_INIT);
+	COMM_VALIDATE_PARAMETER_NORV( (Config != NULL), COMM_SERVICEID_INIT);
+	COMM_VALIDATE_PARAMETER_NORV( (Config->Channels != NULL), COMM_SERVICEID_INIT);
+	COMM_VALIDATE_PARAMETER_NORV( (Config->Users != NULL), COMM_SERVICEID_INIT);
 
 	ComM_Config = Config;
 
@@ -105,20 +105,20 @@ void ComM_Init(const ComM_ConfigType * Config ){
 }
 
 void ComM_DeInit(){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_DEINIT);
+	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_DEINIT);
 
 	ComM_Internal.InitStatus = COMM_UNINIT;
 }
 
 Std_ReturnType ComM_GetStatus( ComM_InitStatusType* Status ){
-	COMM_VALIDATE_PARAMETER( (Status != NULL), COMM_SERVICEID_GETSTATUS, E_NOT_OK);
+	COMM_VALIDATE_PARAMETER( (Status != NULL), COMM_SERVICEID_GETSTATUS);
 
 	*Status = ComM_Internal.InitStatus;
 	return E_OK;
 }
 
 Std_ReturnType ComM_GetInhibitionStatus( NetworkHandleType Channel, ComM_InhibitionStatusType* Status ){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_GETINHIBITIONSTATUS, COMM_E_UNINIT);
+	COMM_VALIDATE_INIT(COMM_SERVICEID_GETINHIBITIONSTATUS);
 
 	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
 	*Status = ChannelInternal->InhibitionStatus;
@@ -127,10 +127,10 @@ Std_ReturnType ComM_GetInhibitionStatus( NetworkHandleType Channel, ComM_Inhibit
 
 
 Std_ReturnType ComM_RequestComMode( ComM_UserHandleType User, ComM_ModeType ComMode ){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_REQUESTCOMMODE, COMM_E_UNINIT);
-	COMM_VALIDATE_USER(User, COMM_SERVICEID_REQUESTCOMMODE, E_NOT_OK);
+	COMM_VALIDATE_INIT(COMM_SERVICEID_REQUESTCOMMODE);
+	COMM_VALIDATE_USER(User, COMM_SERVICEID_REQUESTCOMMODE);
 	/** @req COMM151 */
-	COMM_VALIDATE_PARAMETER((ComMode != COMM_SILENT_COMMUNICATION), COMM_SERVICEID_REQUESTCOMMODE, E_NOT_OK);
+	COMM_VALIDATE_PARAMETER((ComMode != COMM_SILENT_COMMUNICATION), COMM_SERVICEID_REQUESTCOMMODE);
 
 	return ComM_Internal_RequestComMode(User, ComMode);
 }
@@ -173,8 +173,8 @@ static Std_ReturnType ComM_Internal_RequestComMode(
 }
 
 Std_ReturnType ComM_GetMaxComMode( ComM_UserHandleType User, ComM_ModeType* ComMode ){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_GETMAXCOMMODE, COMM_E_UNINIT);
-	COMM_VALIDATE_USER(User, COMM_SERVICEID_GETMAXCOMMODE, E_NOT_OK);
+	COMM_VALIDATE_INIT(COMM_SERVICEID_GETMAXCOMMODE);
+	COMM_VALIDATE_USER(User, COMM_SERVICEID_GETMAXCOMMODE);
 	// Not implemented
 	(void)ComMode;
 	return E_NOT_OK;
@@ -182,8 +182,8 @@ Std_ReturnType ComM_GetMaxComMode( ComM_UserHandleType User, ComM_ModeType* ComM
 
 /** @req COMM80 */
 Std_ReturnType ComM_GetRequestedComMode( ComM_UserHandleType User, ComM_ModeType* ComMode ){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_GETREQUESTEDCOMMODE, COMM_E_UNINIT);
-	COMM_VALIDATE_USER(User, COMM_SERVICEID_GETREQUESTEDCOMMODE, E_NOT_OK);
+	COMM_VALIDATE_INIT(COMM_SERVICEID_GETREQUESTEDCOMMODE);
+	COMM_VALIDATE_USER(User, COMM_SERVICEID_GETREQUESTEDCOMMODE);
 
 	ComM_Internal_UserType* UserInternal = &ComM_Internal.Users[User];
 	*ComMode = UserInternal->RequestedMode;
@@ -192,15 +192,15 @@ Std_ReturnType ComM_GetRequestedComMode( ComM_UserHandleType User, ComM_ModeType
 
 /** @req COMM84 */
 Std_ReturnType ComM_GetCurrentComMode( ComM_UserHandleType User, ComM_ModeType* ComMode ){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_GETCURRENTCOMMODE, COMM_E_UNINIT);
-	COMM_VALIDATE_USER(User, COMM_SERVICEID_GETCURRENTCOMMODE, E_NOT_OK);
+	COMM_VALIDATE_INIT(COMM_SERVICEID_GETCURRENTCOMMODE);
+	COMM_VALIDATE_USER(User, COMM_SERVICEID_GETCURRENTCOMMODE);
 
 	return ComM_Internal_PropagateGetCurrentComMode(User, ComMode);
 }
 
 Std_ReturnType ComM_PreventWakeUp( NetworkHandleType Channel, boolean Status ){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_PREVENTWAKEUP, COMM_E_UNINIT);
-	COMM_VALIDATE_CHANNEL(Channel, COMM_SERVICEID_PREVENTWAKEUP, E_NOT_OK);
+	COMM_VALIDATE_INIT(COMM_SERVICEID_PREVENTWAKEUP);
+	COMM_VALIDATE_CHANNEL(Channel, COMM_SERVICEID_PREVENTWAKEUP);
 #if (COMM_MODE_LIMITATION_ENABLED == STD_ON)
 	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
 	if (Status) {
@@ -216,8 +216,8 @@ Std_ReturnType ComM_PreventWakeUp( NetworkHandleType Channel, boolean Status ){
 
 /** @req COMM361  @req COMM105.1  @req COMM800 */
 Std_ReturnType ComM_LimitChannelToNoComMode( NetworkHandleType Channel, boolean Status ){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_LIMITCHANNELTONOCOMMODE, COMM_E_UNINIT);
-	COMM_VALIDATE_CHANNEL(Channel, COMM_SERVICEID_LIMITCHANNELTONOCOMMODE, E_NOT_OK);
+	COMM_VALIDATE_INIT(COMM_SERVICEID_LIMITCHANNELTONOCOMMODE);
+	COMM_VALIDATE_CHANNEL(Channel, COMM_SERVICEID_LIMITCHANNELTONOCOMMODE);
 #if (COMM_MODE_LIMITATION_ENABLED == STD_ON)
 	const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
 	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
@@ -234,7 +234,7 @@ Std_ReturnType ComM_LimitChannelToNoComMode( NetworkHandleType Channel, boolean 
 
 /** @req COMM105.2  @req COMM801.partially */
 Std_ReturnType ComM_LimitECUToNoComMode( boolean Status ){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_LIMITECUTONOCOMMODE, COMM_E_UNINIT);
+	COMM_VALIDATE_INIT(COMM_SERVICEID_LIMITECUTONOCOMMODE);
 #if (COMM_MODE_LIMITATION_ENABLED == STD_ON)
 	ComM_Internal.NoCommunication = Status;
 	uint8 Channel;
@@ -254,7 +254,7 @@ Std_ReturnType ComM_LimitECUToNoComMode( boolean Status ){
 
 /** @req COMM143  @req COMM802 */
 Std_ReturnType ComM_ReadInhibitCounter( uint16* CounterValue ){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_READINHIBITCOUNTER, COMM_E_UNINIT);
+	COMM_VALIDATE_INIT(COMM_SERVICEID_READINHIBITCOUNTER);
 #if (COMM_MODE_LIMITATION_ENABLED == STD_ON)
 	*CounterValue = ComM_Internal.InhibitCounter;
 	return E_OK;
@@ -265,7 +265,7 @@ Std_ReturnType ComM_ReadInhibitCounter( uint16* CounterValue ){
 
 /** @req COMM803 */
 Std_ReturnType ComM_ResetInhibitCounter(){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_RESETINHIBITCOUNTER, COMM_E_UNINIT);
+	COMM_VALIDATE_INIT(COMM_SERVICEID_RESETINHIBITCOUNTER);
 #if (COMM_MODE_LIMITATION_ENABLED == STD_ON)
 	ComM_Internal.InhibitCounter = 0;
 	return E_OK;
@@ -275,7 +275,7 @@ Std_ReturnType ComM_ResetInhibitCounter(){
 }
 
 Std_ReturnType ComM_SetECUGroupClassification( ComM_InhibitionStatusType Status ){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_SETECUGROUPCLASSIFICATION, COMM_E_UNINIT);
+	COMM_VALIDATE_INIT(COMM_SERVICEID_SETECUGROUPCLASSIFICATION);
 	// Not implemented
 	(void)Status;
 	return E_NOT_OK;
@@ -286,8 +286,8 @@ Std_ReturnType ComM_SetECUGroupClassification( ComM_InhibitionStatusType Status 
 // --------------------------------------
 /** @req COMM804 */
 void ComM_Nm_NetworkStartIndication( NetworkHandleType Channel ){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_NM_NETWORKSTARTINDICATION);
-	COMM_VALIDATE_CHANNEL(Channel, COMM_SERVICEID_NM_NETWORKSTARTINDICATION);
+	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_NM_NETWORKSTARTINDICATION);
+	COMM_VALIDATE_CHANNEL_NORV(Channel, COMM_SERVICEID_NM_NETWORKSTARTINDICATION);
 	const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
 	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
 
@@ -301,8 +301,8 @@ void ComM_Nm_NetworkStartIndication( NetworkHandleType Channel ){
 
 /** @req COMM807 */
 void ComM_Nm_NetworkMode( NetworkHandleType Channel ){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_NM_NETWORKMODE);
-	COMM_VALIDATE_CHANNEL(Channel, COMM_SERVICEID_NM_NETWORKMODE);
+	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_NM_NETWORKMODE);
+	COMM_VALIDATE_CHANNEL_NORV(Channel, COMM_SERVICEID_NM_NETWORKMODE);
 	const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
 	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
 
@@ -315,8 +315,8 @@ void ComM_Nm_NetworkMode( NetworkHandleType Channel ){
 
 /** @req COMM809 */
 void ComM_Nm_PrepareBusSleepMode( NetworkHandleType Channel ){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_NM_PREPAREBUSSLEEPMODE);
-	COMM_VALIDATE_CHANNEL(Channel, COMM_SERVICEID_NM_PREPAREBUSSLEEPMODE);
+	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_NM_PREPAREBUSSLEEPMODE);
+	COMM_VALIDATE_CHANNEL_NORV(Channel, COMM_SERVICEID_NM_PREPAREBUSSLEEPMODE);
 	const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
 	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
 
@@ -329,8 +329,8 @@ void ComM_Nm_PrepareBusSleepMode( NetworkHandleType Channel ){
 
 /** @req COMM811 */
 void ComM_Nm_BusSleepMode( NetworkHandleType Channel ){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_NM_BUSSLEEPMODE);
-	COMM_VALIDATE_CHANNEL(Channel, COMM_SERVICEID_NM_BUSSLEEPMODE);
+	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_NM_BUSSLEEPMODE);
+	COMM_VALIDATE_CHANNEL_NORV(Channel, COMM_SERVICEID_NM_BUSSLEEPMODE);
 	const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
 	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
 
@@ -343,8 +343,8 @@ void ComM_Nm_BusSleepMode( NetworkHandleType Channel ){
 
 /** @req COMM813 */
 void ComM_Nm_RestartIndication( NetworkHandleType Channel ){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_NM_RESTARTINDICATION);
-	COMM_VALIDATE_CHANNEL(Channel, COMM_SERVICEID_NM_RESTARTINDICATION);
+	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_NM_RESTARTINDICATION);
+	COMM_VALIDATE_CHANNEL_NORV(Channel, COMM_SERVICEID_NM_RESTARTINDICATION);
 	const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
 	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
 
@@ -361,13 +361,13 @@ void ComM_Nm_RestartIndication( NetworkHandleType Channel ){
 // ---------------------------
 
 void ComM_EcuM_RunModeIndication( NetworkHandleType Channel ){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_ECUM_RUNMODEINDICATION);
-	COMM_VALIDATE_CHANNEL(Channel, COMM_SERVICEID_ECUM_RUNMODEINDICATION);
+	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_ECUM_RUNMODEINDICATION);
+	COMM_VALIDATE_CHANNEL_NORV(Channel, COMM_SERVICEID_ECUM_RUNMODEINDICATION);
 }
 
 void ComM_EcuM_WakeUpIndication( NetworkHandleType Channel ){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_ECUM_WAKEUPINDICATION);
-	COMM_VALIDATE_CHANNEL(Channel, COMM_SERVICEID_ECUM_WAKEUPINDICATION);
+	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_ECUM_WAKEUPINDICATION);
+	COMM_VALIDATE_CHANNEL_NORV(Channel, COMM_SERVICEID_ECUM_WAKEUPINDICATION);
 }
 
 
@@ -375,11 +375,11 @@ void ComM_EcuM_WakeUpIndication( NetworkHandleType Channel ){
 // ------------------------------------------
 
 void ComM_DCM_ActiveDiagnostic(void){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_DCM_ACTIVEDIAGNOSTIC);
+	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_DCM_ACTIVEDIAGNOSTIC);
 }
 
 void ComM_DCM_InactiveDiagnostic(void){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_DCM_INACTIVEDIAGNOSTIC);
+	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_DCM_INACTIVEDIAGNOSTIC);
 }
 
 
@@ -387,8 +387,8 @@ void ComM_DCM_InactiveDiagnostic(void){
 // ---------------------------
 
 void ComM_BusSM_ModeIndication( NetworkHandleType Channel, ComM_ModeType ComMode ){
-	COMM_VALIDATE_INIT(COMM_SERVICEID_BUSSM_MODEINDICATION);
-	COMM_VALIDATE_CHANNEL(Channel, COMM_SERVICEID_BUSSM_MODEINDICATION);
+	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_BUSSM_MODEINDICATION);
+	COMM_VALIDATE_CHANNEL_NORV(Channel, COMM_SERVICEID_BUSSM_MODEINDICATION);
 	// Not implemented
 	(void)ComMode;
 }

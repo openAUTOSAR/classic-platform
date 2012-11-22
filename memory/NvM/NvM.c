@@ -262,11 +262,13 @@
 #define DEBUG_STATE(_state,_substate)				printf("MAIN_STATE:%s/%d\n",StateToStr[_state],_substate); fflush(stdout);
 #define DEBUG_PRINTF(format,...) 					printf(format,## __VA_ARGS__ ); fflush(stdout);
 #define DEBUG_CHECKSUM(_str,_crc)					printf("%s crc=%x\n",_str,_crc);
+#define DEBUG_FPUTS(_str) 							fputs((_str),stdout); fflush(stdout);
 #else
 #define DEBUG_BLOCK_STATE(_str,_block,_state)
 #define DEBUG_STATE(_state,_substate)
 #define DEBUG_PRINTF(format,...)
 #define DEBUG_CHECKSUM(_str,_crc)
+#define DEBUG_FPUTS(_str)
 #endif
 
 
@@ -668,10 +670,10 @@ static boolean handleRedundantBlock(const NvM_BlockDescriptorType *bPtr,
 			NVM_ASSERT(bPtr->NvBlockNum == 2);		/* Configuration error */
 			admPtr->DataIndex = ((admPtr->DataIndex) ? 0 : 1);
 			admPtr->BlockState = BLOCK_STATE_MEMIF_REQ;
-			DEBUG_PRINTF(" # First redundant NV block failed\n");
+			DEBUG_FPUTS(" # First redundant NV block failed\n");
 			cont = 1;
 		} else {
-			DEBUG_PRINTF(" # Both redundant NV blocks failed\n");
+			DEBUG_FPUTS(" # Both redundant NV blocks failed\n");
 		}
 		admPtr->flags++;
 	}
@@ -887,7 +889,7 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 					}
 
 				} else {
-					DEBUG_PRINTF(">> Block have NO CRC\n");
+					DEBUG_FPUTS(">> Block have NO CRC\n");
 
 					memcpy(admPtr->savedDataPtr, Nvm_WorkBuffer, bPtr->NvBlockLength  + crcLen );
 					/* Done */
@@ -902,11 +904,11 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 			break;
 		} else {
 			/* Something failed */
-			DEBUG_PRINTF(">> Read/Write FAILED\n");
+			DEBUG_FPUTS(">> Read/Write FAILED\n");
 			if( write ) {
 				admPtr->NumberOfWriteFailed++;
 				if( admPtr->NumberOfWriteFailed > NVM_MAX_NUMBER_OF_WRITE_RETRIES ) {
-					DEBUG_PRINTF(">> Write FAILED COMPLETELY (all retries)\n");
+					DEBUG_FPUTS(">> Write FAILED COMPLETELY (all retries)\n");
 					blockDone = 1;
 					admPtr->NumberOfWriteFailed = 0;
 				}
@@ -926,12 +928,12 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 					/* block is NOT redundant or both blocks have failed */
 					if( ( FALSE == write ) && ( bPtr->RomBlockDataAdress != NULL ||bPtr->InitBlockCallback != NULL ) ){
 						if( bPtr->RomBlockDataAdress != NULL ) {
-							DEBUG_PRINTF("Copying ROM data to block\n");
+							DEBUG_FPUTS("Copying ROM data to block\n");
 							memcpy(bPtr->RamBlockDataAddress, bPtr->RomBlockDataAdress,bPtr->NvBlockLength);
 							admPtr->ErrorStatus = NVM_REQ_OK;
 						} else if( bPtr->InitBlockCallback != NULL ) {
 							/* @req 3.1.5/NVM469 */
-							DEBUG_PRINTF("Filling block with default data\n");
+							DEBUG_FPUTS("Filling block with default data\n");
 							bPtr->InitBlockCallback();
 							admPtr->ErrorStatus = NVM_REQ_OK;
 						}
@@ -1072,7 +1074,7 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 				if( 0 == handleRedundantBlock(bPtr,admPtr) ) {
 					/* block is NOT redundant or both blocks have failed */
 					if( bPtr->RomBlockDataAdress != NULL ) {
-						DEBUG_PRINTF("Copying ROM data to block\n");
+						DEBUG_FPUTS("Copying ROM data to block\n");
 						memcpy(bPtr->RamBlockDataAddress, bPtr->RomBlockDataAdress,bPtr->NvBlockLength);
 						admPtr->BlockSubState = BLOCK_SUBSTATE_1;
 					} else {
@@ -1080,7 +1082,7 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 						/* @req 3.1.5/NVM469 */
 						if( bPtr->InitBlockCallback != NULL ) {
 
-							DEBUG_PRINTF("Filling block with default data\n");
+							DEBUG_FPUTS("Filling block with default data\n");
 							bPtr->InitBlockCallback();
 							admPtr->BlockSubState = BLOCK_SUBSTATE_1;
 
@@ -1096,7 +1098,7 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 						} else {
 
 							/* We have CRC mismatch -> FAIL */
-							DEBUG_PRINTF("### Block FAILED with NVM_REQ_INTEGRITY_FAILED\n");
+							DEBUG_FPUTS("### Block FAILED with NVM_REQ_INTEGRITY_FAILED\n");
 
 
 							/* @req 3.1.5/NVM203 */
@@ -1137,7 +1139,7 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 
 	if( blockDone  ) {
 
-		DEBUG_PRINTF("# Block Done\n");
+		DEBUG_FPUTS("# Block Done\n");
 
 		if( admPtr->ErrorStatus == NVM_REQ_OK ) {
 			admPtr->BlockChanged = FALSE;
@@ -1831,7 +1833,7 @@ void NvM_MainFunction(void)
 				serviceId = AdminMultiReq.serviceId;
 				AdminMultiReq.state = NVM_UNINITIALIZED;
 
-				DEBUG_PRINTF("### Popped MULTI\n");
+				DEBUG_FPUTS("### Popped MULTI\n");
 			}
 		}
 	}

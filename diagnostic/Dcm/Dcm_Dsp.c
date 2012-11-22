@@ -106,7 +106,7 @@ typedef enum {
 
 typedef struct {
 	ReadDidPendingStateType state;
-	PduInfoType* pduRxData;
+	const PduInfoType* pduRxData;
 	PduInfoType* pduTxData;
 } DspUdsDidPendingType;
 

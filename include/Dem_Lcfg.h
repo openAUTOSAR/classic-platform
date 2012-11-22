@@ -193,14 +193,16 @@ typedef struct {
 } Dem_PreDebounceCounterBasedType; /** @req DEM144 */
 
 // 10.2.22 DemPreDebounceFrequencyBased
-typedef struct {
-	// TODO: Fill out
-} Dem_PreDebounceFrequencyBasedType;
+//typedef struct {
+//	// TODO: Fill out
+//} Dem_PreDebounceFrequencyBasedType;
+typedef uint8 Dem_PreDebounceFrequencyBasedType;
 
 // 10.2.24 DemPreDebounceTimeBased
-typedef struct {
-	// TODO: Fill out
-} Dem_PreDebounceTimeBasedType;
+//typedef struct {
+//	// TODO: Fill out
+//} Dem_PreDebounceTimeBasedType;
+typedef uint8 Dem_PreDebounceTimeBasedType;
 
 // 10.2.20
 typedef struct {
@@ -245,9 +247,10 @@ typedef struct {
 
 
 // 10.2.19 DemGroupOfDTC
-typedef struct {
-	// TODO: Fill out
-} Dem_GroupOfDtcType;
+//typedef struct {
+//	// TODO: Fill out
+//} Dem_GroupOfDtcType;
+typedef uint8 Dem_GroupOfDtcType;
 
 // 10.2.10 DemOemIdClass
 typedef struct {

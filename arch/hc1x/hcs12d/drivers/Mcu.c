@@ -188,7 +188,7 @@ Std_ReturnType Mcu_InitRamSection(const Mcu_RamSectionType RamSection)
 
 Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
 {
-  Mcu_ClockSettingConfigType *clockSettingsPtr;
+  const Mcu_ClockSettingConfigType *clockSettingsPtr;
   VALIDATE_W_RV( ( 1 == Mcu_Global.initRun ), MCU_INITCLOCK_SERVICE_ID, MCU_E_UNINIT, E_NOT_OK );
   VALIDATE_W_RV( ( ClockSetting < Mcu_Global.config->McuClockSettings ), MCU_INITCLOCK_SERVICE_ID, MCU_E_PARAM_CLOCK, E_NOT_OK );
 
@@ -238,7 +238,7 @@ Mcu_PllStatusType Mcu_GetPllStatus(void)
 
 Mcu_ResetType Mcu_GetResetReason(void)
 {
-	Mcu_ResetType rv;
+	Mcu_ResetType rv = MCU_RESET_UNDEFINED;
 
   VALIDATE_W_RV( ( 1 == Mcu_Global.initRun ), MCU_GETRESETREASON_SERVICE_ID, MCU_E_UNINIT, MCU_RESET_UNDEFINED );
 

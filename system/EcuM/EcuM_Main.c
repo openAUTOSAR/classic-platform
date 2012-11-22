@@ -26,7 +26,9 @@
 #if defined(USE_NVM)
 #include "NvM.h"
 #endif
-
+#if defined(USE_COMM)
+#include "ComM_EcuM.h"
+#endif
 
 //#define USE_LDEBUG_PRINTF
 #include "debug.h"

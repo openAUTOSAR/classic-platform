@@ -24,28 +24,45 @@
 #define COMM_DET_REPORTERROR(serviceId, errorId)			\
 	Det_ReportError(MODULE_ID_COMM, 0, serviceId, errorId)
 
-#define COMM_VALIDATE(expression, serviceId, errorId, ...)	\
+#define COMM_VALIDATE(expression, serviceId, errorId, ret)	\
 	if (!(expression)) {									\
 		COMM_DET_REPORTERROR(serviceId, errorId);			\
-		return __VA_ARGS__;									\
+		return ret;									\
 	}
+
+#define COMM_VALIDATE_NORV(expression, serviceId, errorId)	\
+	if (!(expression)) {									\
+		COMM_DET_REPORTERROR(serviceId, errorId);			\
+		return;									\
+	}
+
 
 #else
 #define COMM_DET_REPORTERROR(...)
 #define COMM_VALIDATE(...)
+#define COMM_VALIDATE_NORV(...)
 #endif
 
-#define COMM_VALIDATE_INIT(serviceID, ...)					\
-		COMM_VALIDATE((ComM_Internal.InitStatus == COMM_INIT), serviceID, COMM_E_NOT_INITED, __VA_ARGS__)
+#define COMM_VALIDATE_INIT(serviceID)					\
+		COMM_VALIDATE((ComM_Internal.InitStatus == COMM_INIT), serviceID, COMM_E_NOT_INITED, COMM_E_UNINIT)
 
-#define COMM_VALIDATE_PARAMETER(expression, serviceID, ...)					\
-		COMM_VALIDATE(expression, serviceID, COMM_E_WRONG_PARAMETERS, __VA_ARGS__)
+#define COMM_VALIDATE_INIT_NORV(serviceID)					\
+		COMM_VALIDATE_NORV((ComM_Internal.InitStatus == COMM_INIT), serviceID, COMM_E_NOT_INITED)
 
-#define COMM_VALIDATE_CHANNEL(channel, serviceID, ...)					\
-		COMM_VALIDATE_PARAMETER( (channel < COMM_CHANNEL_COUNT), serviceID, __VA_ARGS__)
+#define COMM_VALIDATE_PARAMETER(expression, serviceID)					\
+		COMM_VALIDATE(expression, serviceID, COMM_E_WRONG_PARAMETERS, E_NOT_OK)
 
-#define COMM_VALIDATE_USER(user, serviceID, ...)					\
-		COMM_VALIDATE_PARAMETER( (user < COMM_USER_COUNT), serviceID, __VA_ARGS__)
+#define COMM_VALIDATE_PARAMETER_NORV(expression, serviceID)					\
+		COMM_VALIDATE_NORV(expression, serviceID, COMM_E_WRONG_PARAMETERS)
+
+#define COMM_VALIDATE_CHANNEL(channel, serviceID)					\
+		COMM_VALIDATE_PARAMETER( (channel < COMM_CHANNEL_COUNT), serviceID)
+
+#define COMM_VALIDATE_CHANNEL_NORV(channel, serviceID)					\
+		COMM_VALIDATE_PARAMETER_NORV( (channel < COMM_CHANNEL_COUNT), serviceID)
+
+#define COMM_VALIDATE_USER(user, serviceID)					\
+		COMM_VALIDATE_PARAMETER( (user < COMM_USER_COUNT), serviceID )
 
 
 typedef enum {
