@@ -88,69 +88,101 @@ static void selectServiceFunction(uint8 sid)
 	/** @req DCM442.Partially */
 	switch (sid)	 /** @req DCM221 */
 	{
+#ifdef DCM_USE_SERVICE_DIAGNOSTICSESSIONCONTROL
 	case SID_DIAGNOSTIC_SESSION_CONTROL:
 		DspUdsDiagnosticSessionControl(msgData.pduRxData, msgData.txPduId, msgData.pduTxData);
 		break;
+#endif
 
+#ifdef DCM_USE_SERVICE_ECURESET
 	case SID_ECU_RESET:
 		DspUdsEcuReset(msgData.pduRxData, msgData.txPduId, msgData.pduTxData);
 		break;
+#endif
 
+#ifdef DCM_USE_SERVICE_CLEARDIAGNOSTICINFORMATION
 	case SID_CLEAR_DIAGNOSTIC_INFORMATION:
 		DspUdsClearDiagnosticInformation(msgData.pduRxData, msgData.pduTxData);
 		break;
+#endif
 
+#ifdef DCM_USE_SERVICE_READDTCINFORMATION
 	case SID_READ_DTC_INFORMATION:
 		DspUdsReadDtcInformation(msgData.pduRxData, msgData.pduTxData);
 		break;
+#endif
 
+#ifdef DCM_USE_SERVICE_READDATABYIDENTIFIER
 	case SID_READ_DATA_BY_IDENTIFIER:
 		DspUdsReadDataByIdentifier(msgData.pduRxData, msgData.pduTxData);
 		break;
+#endif
 		
+#ifdef DCM_USE_SERVICE_READMEMORYBYADDRESS
 	case SID_READ_MEMORY_BY_ADDRESS:
 		DspUdsReadMemoryByAddress(msgData.pduRxData, msgData.pduTxData);
 		break;
+#endif
 		
+#ifdef DCM_USE_SERVICE_WRITEMEMORYBYADDRESS
 	case SID_WRITE_MEMORY_BY_ADDRESS:
 		DspUdsWriteMemoryByAddress(msgData.pduRxData, msgData.pduTxData);
 		break;
-		
+#endif
+
+#ifdef DCM_USE_SERVICE_READSCALINGDATABYIDENTIFIER
 	case SID_READ_SCALING_DATA_BY_IDENTIFIER:
 		DspUdsReadScalingDataByIdentifier(msgData.pduRxData, msgData.pduTxData);
 		break;
+#endif
 
+#ifdef DCM_USE_SERVICE_SECURITYACCESS
 	case SID_SECURITY_ACCESS:
 		DspUdsSecurityAccess(msgData.pduRxData, msgData.pduTxData);
 		break;
+#endif
 
+#ifdef DCM_USE_SERVICE_WRITEDATABYIDENTIFIER
 	case SID_WRITE_DATA_BY_IDENTIFIER:
 		DspUdsWriteDataByIdentifier(msgData.pduRxData, msgData.pduTxData);
 		break;
+#endif
 
+#ifdef DCM_USE_SERVICE_ROUTINECONTROL
 	case SID_ROUTINE_CONTROL:
 		DspUdsRoutineControl(msgData.pduRxData, msgData.pduTxData);
 		break;
+#endif
 
+#ifdef DCM_USE_SERVICE_TESTERPRESENT
 	case SID_TESTER_PRESENT:
 		DspUdsTesterPresent(msgData.pduRxData, msgData.pduTxData);
 		break;
+#endif
 
+#ifdef DCM_USE_SERVICE_CONTROLDTCSETTING
 	case SID_CONTROL_DTC_SETTING:
 		DspUdsControlDtcSetting(msgData.pduRxData, msgData.pduTxData);
 		break;
+#endif
 
+#ifdef DCM_USE_SERVICE_READDATABYPERIODICIDENTIFIER
 	case SID_READ_DATA_BY_PERIODIC_IDENTIFIER:
 		DspReadDataByPeriodicIdentifier(msgData.pduRxData, msgData.pduTxData);
 		break;
+#endif
 		
+#ifdef DCM_USE_SERVICE_DYNAMICALLYDEFINEDATAIDENTIFIER
 	case SID_DYNAMICALLY_DEFINE_DATA_IDENTIFIER:
 		DspDynamicallyDefineDataIdentifier(msgData.pduRxData, msgData.pduTxData);
 		break;
+#endif
 		
+#ifdef DCM_USE_SERVICE_INPUTOUTPUTCONTROLBYIDENTIFIER
 	case SID_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER:
 		DspIOControlByDataIdentifier(msgData.pduRxData, msgData.pduTxData);
 		break;
+#endif
 		
 	default:
 		/* Non implemented service */
