@@ -52,10 +52,12 @@
 #error Compiler not defined.
 #endif
 
-#define DECLARE_WEAK			__attribute__ ((weak))
 
 #if defined(__ICCHCS12__)
 #define restrict
+#define DECLARE_WEAK
+#else
+#define DECLARE_WEAK			__attribute__ ((weak))
 #endif
 
 /* Does this really work on all compilers.... */

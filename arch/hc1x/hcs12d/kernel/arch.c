@@ -67,6 +67,7 @@ void Os_ArchSetTaskEntry(OsTaskVarType *pcbPtr ) {
 	/* Set Return to start function */
 	if( pcbPtr->constPtr->proc_type == PROC_EXTENDED ) {
 		temp = (uint32_t)Os_TaskStartExtended;
+	  context_bytes[0] = temp >> 16;
 		context_bytes[HIGH_BYTE_RETURN_ADRESS] = temp >> 8;
 		context_bytes[LOW_BYTE_RETURN_ADRESS] = temp & 0xFF;
 	} else if( pcbPtr->constPtr->proc_type == PROC_BASIC ) {
