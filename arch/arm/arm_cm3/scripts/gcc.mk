@@ -5,6 +5,8 @@ CC_VERSION=4.1.2
 cflags-y 	+= -mthumb -mcpu=cortex-m3 -mfix-cortex-m3-ldrd
 cflags-y 	+= -ggdb
 
+cflags-y += -ffunction-sections
+
 LDFLAGS += --gc-section
 
 lib-y   	+= -lgcc -lc
