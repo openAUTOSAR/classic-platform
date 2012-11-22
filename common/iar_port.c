@@ -27,17 +27,15 @@ Methods called by IAR libraries to perform console IO:
 #define TWBUFF_FULL()	(TWBUFF_TPTR==((TWBUFF_CPTR-1)&(TWBUFF_SIZE-1)))
 
 volatile char g_TConn;
-#pragma data_alignment=0x100
-volatile unsigned char g_TWBuffer[TWBUFF_LEN]; // Transmit to WinIDEA terminal
-#pragma data_alignment=0x100
-volatile unsigned char g_TRBuffer[TRBUFF_LEN];
+SECTION_BALIGN(0x100) volatile unsigned char g_TWBuffer[TWBUFF_LEN]; // Transmit to WinIDEA terminal
+SECTION_BALIGN(0x100) volatile unsigned char g_TRBuffer[TRBUFF_LEN];
 
 #endif
 
 #ifdef USE_TTY_NOICE
 volatile unsigned char START_VUART = 0;
 
-#pragma location=0x1000
+_Pragma("location=0x1000")
 __no_init static volatile char VUART_TX;
 __no_init static volatile char VUART_RX;
 
