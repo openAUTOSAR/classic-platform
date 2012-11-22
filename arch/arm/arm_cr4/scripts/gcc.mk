@@ -8,4 +8,5 @@ cflags-y 	+= -ggdb
 lib-y   	+= -lgcc -lc
 ASFLAGS 	+= -mthumb -mcpu=cortex-r4 -mbig-endian
 
+LDFLAGS += --gc-section
 LDFLAGS     += 

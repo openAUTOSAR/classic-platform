@@ -32,6 +32,7 @@ cflags-$(CFG_MPC55XX) += $(ppc_common-y)
 
 lib-y   	+= -lgcc -lc 
 #LDFLAGS += -te500v1
+LDFLAGS += --gc-section
 
 asflags-$(CFG_BOOKE) += -me500
 asflags-$(CFG_SPE) += -mspe

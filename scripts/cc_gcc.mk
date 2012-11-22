@@ -116,7 +116,7 @@ libitem-y += $(libitem-yy)
 LD_START_GRP = --start-group
 LD_END_GRP = --end-group
 
-LDFLAGS += --gc-section
+#LDFLAGS += --gc-section
 
 # ---------------------------------------------------------------------------
 # Assembler
