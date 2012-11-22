@@ -17,9 +17,6 @@
  *   MemoryMapping.pdf
  *
  * DESCRIPTION
- *
- *
- *
  */
 
 #if defined(__GNUC__) || defined(__DCC__)
@@ -46,6 +43,9 @@
    #pragma section RW ".ramlog_data" ".ramlog_bss"
    #define SECTION_RAMLOG	__declspec(section ".ramlog_data")
 
-
+#elif defined(__ICCHCS12__)
+   #define SECTION_RAMLOG   __no_init
+#else
+#error Compiler not set
 #endif
 

@@ -17,14 +17,36 @@
 /*
  * General purpose macros for hc1x
  */
- 
+
+#if defined(__ICCHCS12__)
+MOVE_ARG	MACRO //arg_nr to_reg
+	IF \1 == 0
+	// arg 0 is in D
+		IFC "\2","d"
+		// arg 0 is already in D
+		ELSE
+		// D --> to_reg
+		tfr		d, \2
+		ENDIF
+	ELSE
+	// arg 1,2,... are on the stack:
+	//  |  P  |  Ah  |  Al  | arg0h | arg0l | arg1h | ...
+STACK_OFFSET SET 3+(\1-1)*2
+		IFC "\2","sp"
+			lds			STACK_OFFSET, sp
+		ELSE
+			ld\2	STACK_OFFSET, sp
+		ENDIF
+	ENDIF
+	ENDM
+#else 
 
 // Move C call arguments
 
 .macro MOVE_ARG arg_nr to_reg
 if \arg_nr == 0
 	// arg 0 is in D
-.ifc \to_reg,"d"
+.ifc #\to_reg,"d"
 		// arg 0 is already in D
 .else
 		// D --> to_reg
@@ -34,7 +56,7 @@ if \arg_nr == 0
 	// arg 1,2,... are on the stack:
 	//  |  P  |  Ah  |  Al  | arg0h | arg0l | arg1h | ...
 .set STACK_OFFSET, 3 + (\arg_nr - 1) * 2
-.ifc \to_reg,"sp"
+.ifc #\to_reg,"sp"
 		lds			STACK_OFFSET, sp
 .else
 		ld\to_reg	STACK_OFFSET, sp
@@ -42,3 +64,4 @@ if \arg_nr == 0
 .endif
 .endm
 
+#endif

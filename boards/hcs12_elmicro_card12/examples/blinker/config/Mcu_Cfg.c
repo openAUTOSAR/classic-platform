@@ -20,6 +20,7 @@
 
 
 Mcu_RamSectorSettingConfigType Mcu_RamSectorSettingConfigData[] = {
+		0,
 };
 
 Mcu_ClockSettingConfigType Mcu_ClockSettingConfigData[] =

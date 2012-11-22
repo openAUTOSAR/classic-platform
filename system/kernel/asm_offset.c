@@ -21,6 +21,7 @@
  * extract the "#defines" with some tool e.g. "sed -n '/#define/p' <asm_file>"
  */
 
+#define restrict
 #include <stddef.h>
 #include "task_i.h"
 #include "sys.h"
@@ -39,14 +40,18 @@ void  asm_foo(void) {
 #elif (defined(__DCC__))
 #define DECLARE(_sym,_val) \
 	const int arc_dummy_ ## _sym = _val
+#else
+//#define DECLARE(_sym,_val) const char arc_dummy_ ## _sym = _val
+#define DECLARE(_sym,_val) const int arc_dummy_ ## _sym = _val
 #endif
 	DECLARE(PCB_STACK_CURR_P,	offsetof(OsTaskVarType, stack));
 	DECLARE(PCB_CONST_P,		offsetof(OsTaskVarType, constPtr));
-//	DECLARE(PCB_ENTRY_P,		offsetof(OsTaskVarType, entry));
+////	DECLARE(PCB_ENTRY_P,		offsetof(OsTaskVarType, entry));
 	DECLARE(SYS_CURR_PCB_P,		offsetof(Os_SysType, currTaskPtr));
 	DECLARE(SYS_INT_NEST_CNT, offsetof(Os_SysType, intNestCnt));
 	DECLARE(SYS_INT_STACK, offsetof(Os_SysType, intStack));
 #if defined(__GNUC__)
 }
 #endif
+
 

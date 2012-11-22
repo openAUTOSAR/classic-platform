@@ -19,8 +19,14 @@
 #include "Std_Types.h"
 typedef uint32_t imask_t;
 
+#if defined(__IAR_SYSTEMS_ICC__)
+#include <../intrinsics.h>
+#define Irq_Disable()		__disable_interrupt();
+#define Irq_Enable()		__enable_interrupt();
+#else
 #define Irq_Disable()		asm volatile (" sei");
 #define Irq_Enable()		asm volatile (" cli");
+#endif
 
 #define Irq_SuspendAll() 	Irq_Disable()
 #define Irq_ResumeAll() 	Irq_Enable()
@@ -30,6 +36,22 @@ typedef uint32_t imask_t;
 
 #define Irq_Save(flags)    flags = _Irq_Disable_save()
 #define Irq_Restore(flags) _Irq_Disable_restore(flags)
+
+
+#if defined(__IAR_SYSTEMS_ICC__)
+static inline unsigned long _Irq_Disable_save(void)
+{
+	  __istate_t old;
+	  old = __get_interrupt_state();
+	  __disable_interrupt();
+	  return old;
+}
+
+static inline void _Irq_Disable_restore(unsigned long flags) {
+	__set_interrupt_state(flags);
+}
+
+#elif defined(__GNUC__)
 
 /*-----------------------------------------------------------------*/
 
@@ -49,4 +71,10 @@ static inline void _Irq_Disable_restore(unsigned long flags)
 }
 
 #define ilog2(x) __builtin_ffs(x)
+#else
+#error Compiler not defined
+
+#endif
+
+
 #endif /* CPU_H_ */

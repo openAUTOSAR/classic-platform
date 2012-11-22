@@ -58,6 +58,25 @@ asm_offset.h: asm_offset.c
 	@rm 	$(<:.c=.s)
 endif
 
+# sed -n '/apa.*/ {h;n;s/q://;x;s/^/#define /;s/$//;x;p}' bepa.c
+# gawk '/apa/ { var=$0;getline tjo;print "#define " var tjo}' bepa.c
+# $ gawk '/^arc_dummy/ { va=gensub(/arc_dummy_(.*):.*/,"\\1",$0);getline;printf "
+#define %-30s %s\n",va,$2 }' asm_offset.h
+
+
+ifeq ($(COMPILER),iar)
+%_offset.h: %_offset.c
+	@echo "  >> generating $@ from $<"
+	$(CC) -lB $@_ $(CFLAGS) $(addprefix -I,$(inc-y)) $< -o $@__ 
+	$(Q)gawk '/^arc_dummy/ { va=gensub(/arc_dummy_(.*):.*/,"\\1",$$0);getline;printf "#define %-30s %s\n",va,$$2 }' $@_ > $@
+	$(Q)rm $@_ $@__ #$(subst .h,.r12,$@) 
+	
+#	$ sed -n "/arc_dummy/ {n;s/q://p}" bepa.c
+#	exit 0  
+endif
+
+#--preprocess=c
+
 ifeq ($(COMPILER),diab)
 # assembler generates this:
 # arc_dummy_EXC_FRM_SRR1:

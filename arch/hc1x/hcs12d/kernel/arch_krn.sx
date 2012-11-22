@@ -6,19 +6,40 @@
 #include "asm_hc1x.sx"
 #include "context.sx"
 
-.extern Os_Sys
-.extern os_proc_start_extended
-
 #define IRQ_ENABLE() 		cpsie 	i
 #define IRQ_DISABLE()		cpsid 	i
 
+#if defined(__IAR_SYSTEMS_ICC__)
+	EXTERN	Os_Sys
+	EXTERN	os_proc_start_extended
+
+	PUBLIC Os_ArchSwapContextToW
+	PUBLIC Os_ArchSwapContextTo
+	PUBLIC Os_ArchSwapContext
+	PUBLIC Os_ArchSetSpAndCall
+	PUBLIC Os_ArchGetStackPtr
+	
+	module	?arch_krn
+	RSEG   CODE:CODE
+
+/* void *Os_ArchGetStackPtr( void )  */
+Os_ArchGetStackPtr:
+		tfr sp,d//return reg should be D in simple call convention
+		rtc
+
+#else
+.extern Os_Sys
+.extern os_proc_start_extended
 
 .global Os_ArchSwapContextToW
 .global Os_ArchSwapContextTo
 .global Os_ArchSwapContext
 .global Os_ArchSetSpAndCall
+.global Os_ArchGetStackPtr
 
 .section .text
+#endif
+
 
 /* void Os_ArchSetSpAndCall(void *sp, void (*f)(void) ); */
 Os_ArchSetSpAndCall:
@@ -61,3 +82,4 @@ Os_ArchSwapContextTo_do:
 		
 		rtc
 
+	END

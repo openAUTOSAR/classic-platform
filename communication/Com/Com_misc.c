@@ -175,7 +175,7 @@ void Com_WriteGroupSignalDataToPdu(
 	Com_WriteSignalDataToPduBuffer(
 			groupSignalId,
 			TRUE,
-			signalData + (GET_GroupSignal(groupSignalId)->ComBitPosition / 8), // TODO, can we make sure group signals is on byte boundary
+			(uint8 *)signalData + (GET_GroupSignal(groupSignalId)->ComBitPosition / 8), // TODO, can we make sure group signals is on byte boundary
 			(void *)IPdu->ComIPduDataPtr,
 			IPdu->ComIPduSize);
 }
