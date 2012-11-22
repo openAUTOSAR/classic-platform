@@ -286,8 +286,9 @@ void WdgM_Init(const WdgM_ConfigType *ConfigPtr)
   /** @req WDGM018 **/
   for (SEid = 0; SEid < WDGM_NBR_OF_ALIVE_SIGNALS; SEid++)
   {
-	entityStatePtr = GET_ENTITY_STATE_PTR(SEid);
-	if (wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[initialMode].WdgM_AliveSupervisionPtr[SEid].WdgM_ActivationActivated)
+	const WdgM_AliveSupervisionType* aliveSupervisionPtr = &(modeConfigPtr->WdgM_AliveSupervisionPtr[SEid]);
+	entityStatePtr = GET_ENTITY_STATE_PTR(aliveSupervisionPtr->WdgM_AliveSupervisionConfigID);
+	if (aliveSupervisionPtr->WdgM_ActivationActivated)
 	{
 		entityStatePtr->SupervisionStatus = WDGM_ALIVE_OK;
 	}
@@ -327,8 +328,8 @@ static void wdgm_Check_AliveSupervision (void)
 
   for (SEid = 0; SEid < wdgMInternalState.WdgM_ConfigPtr->WdgM_General->WdgM_NumberOfSupervisedEntities; SEid++)
   {
-	entityStatePtr = GET_ENTITY_STATE_PTR(SEid);
     entityPtr      = &(wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode].WdgM_AliveSupervisionPtr)[SEid];
+    entityStatePtr = GET_ENTITY_STATE_PTR(entityPtr->WdgM_AliveSupervisionConfigID);
 
     /** @req WDGM083 **/
     if (WDGM_ALIVE_DEACTIVATED != entityStatePtr->SupervisionStatus)

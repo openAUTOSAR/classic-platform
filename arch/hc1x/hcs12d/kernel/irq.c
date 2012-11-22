@@ -71,8 +71,11 @@ void Irq_GenerateSoftInt( IrqType vector ) {
 
 	if (vector == IRQ_TYPE_ILLEGAL)
 	{
-		//FIXME
-            asm("NOP"); // Trap instruction
+#if defined(__ICCHCS12__)
+            asm("TRAP 0x30"); // Trap instruction
+#else
+            asm(".short 0x1830"); // Trap instruction
+#endif
 	}
 }
 
