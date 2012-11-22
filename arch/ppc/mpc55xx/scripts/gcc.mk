@@ -30,8 +30,11 @@ ppc_common-y   += -D_PPC
 cflags-$(CFG_MPC55XX) 	+= -B$(prefix)/libexec/gcc:/opt
 cflags-$(CFG_MPC55XX) += $(ppc_common-y)
 
+cflags-y += -ffunction-sections
+
 lib-y   	+= -lgcc -lc 
 #LDFLAGS += -te500v1
+LDFLAGS += --gc-section
 
 asflags-$(CFG_BOOKE) += -me500
 asflags-$(CFG_SPE) += -mspe

@@ -24,7 +24,7 @@ cflags-$(CFG_OPT_RELEASE) += -O3
 cflags-$(CFG_OPT_DEBUG) += -g -O0
 
 # Remove sections if needed.. may be problems with other compilers here.
-cflags-y += -ffunction-sections
+#cflags-y += -ffunction-sections
 
 ifneq ($(filter -O2 -O3 -O1,$(cflags-y)),) 
 	cflags-y += -fno-schedule-insns -fno-schedule-insns2
@@ -116,7 +116,7 @@ libitem-y += $(libitem-yy)
 LD_START_GRP = --start-group
 LD_END_GRP = --end-group
 
-LDFLAGS += --gc-section
+#LDFLAGS += --gc-section
 
 # ---------------------------------------------------------------------------
 # Assembler
