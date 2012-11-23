@@ -66,7 +66,7 @@
 #define _MemIf_Cancel(_deviceIndex)	Fee_Cancel()
 #define _MemIf_GetStatus(_deviceIndex)	Fee_GetStatus()
 #define _MemIf_GetJobResult(_deviceIndex)	Fee_GetJobResult()
-#define _MemIf_InvalidateBlock(_deviceIndex,_blockNumber)	Fee_InvalidateBlock(blockNumber)
+#define _MemIf_InvalidateBlock(_deviceIndex,_blockNumber)	Fee_InvalidateBlock(_blockNumber)
 #define _MemIf_EraseImmediateBlock(_deviceIndex,_blockNumber)	Fee_EraseImmediateBlock(_blockNumber)
 
 #elif (MEMIF_DEVICE_TO_USE == EEP_DRIVER_INDEX)

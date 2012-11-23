@@ -28,20 +28,33 @@
 		return __VA_ARGS__;									\
 	}
 
+#define CANNM_VALIDATE_NORV(expression, serviceId, errorId, instanceId)	\
+	if (!(expression)) {									\
+		CANNM_DET_REPORTERROR(serviceId, errorId, instanceId);			\
+		return;									\
+	}
+
 #else
 #define CANNM_DET_REPORTERROR(...)
 #define CANNM_VALIDATE(...)
+#define CANNM_VALIDATE_NORV(...)
 #endif
 
-#define CANNM_VALIDATE_INIT(serviceID, ...)					\
-		CANNM_VALIDATE((CanNm_Internal.InitStatus == CANNM_INIT), serviceID, CANNM_E_NO_INIT, 0, __VA_ARGS__)
+#define CANNM_VALIDATE_INIT(serviceID)					\
+		CANNM_VALIDATE((CanNm_Internal.InitStatus == CANNM_INIT), serviceID, CANNM_E_NO_INIT, 0, NM_E_NOT_OK)
+
+#define CANNM_VALIDATE_INIT_NORV(serviceID)					\
+		CANNM_VALIDATE_NORV((CanNm_Internal.InitStatus == CANNM_INIT), serviceID, CANNM_E_NO_INIT, 0)
 
 /** @req CANNM192 */
-#define CANNM_VALIDATE_CHANNEL(channel, serviceID, ...)					\
-		CANNM_VALIDATE( (channel < CANNM_CHANNEL_COUNT), serviceID, CANNM_E_INVALID_CHANNEL, channel, __VA_ARGS__)
+#define CANNM_VALIDATE_CHANNEL(channel, serviceID)					\
+		CANNM_VALIDATE( (channel < CANNM_CHANNEL_COUNT), serviceID, CANNM_E_INVALID_CHANNEL, channel, NM_E_NOT_OK)
 
-#define CANNM_VALIDATE_NOTNULL(ptr, serviceID, ...)	\
-		CANNM_VALIDATE( (ptr != NULL), serviceID, NM_E_NULL_POINTER, 0, __VA_ARGS__)
+#define CANNM_VALIDATE_CHANNEL_NORV(channel, serviceID)					\
+		CANNM_VALIDATE_NORV( (channel < CANNM_CHANNEL_COUNT), serviceID, CANNM_E_INVALID_CHANNEL, channel)
+
+#define CANNM_VALIDATE_NOTNULL(ptr, serviceID)	\
+		CANNM_VALIDATE_NORV( (ptr != NULL), serviceID, NM_E_NULL_POINTER, 0)
 
 typedef enum {
 	CANNM_INIT,

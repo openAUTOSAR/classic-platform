@@ -53,7 +53,7 @@ static const CanSM_ConfigType* CanSM_Config;
 
 /** @req CANSM217.exceptTranceiver */
 void CanSM_Init( const CanSM_ConfigType* ConfigPtr ) {
-	CANSM_VALIDATE_POINTER(ConfigPtr, CANSM_SERVICEID_INIT);  /**< @req CANSM179 */
+	CANSM_VALIDATE_POINTER_NORV(ConfigPtr, CANSM_SERVICEID_INIT);  /**< @req CANSM179 */
 
 	CanSM_Config = ConfigPtr;
 	Std_ReturnType status = E_OK;
@@ -80,7 +80,7 @@ void CanSM_Init( const CanSM_ConfigType* ConfigPtr ) {
 /** @req CANSM235 */
 void CanSM_ControllerBusOff(uint8 Controller)
 {
-	CANSM_VALIDATE_INIT(CANSM_SERVICEID_CONTROLLERBUSOFF);
+	CANSM_VALIDATE_INIT_NORV(CANSM_SERVICEID_CONTROLLERBUSOFF);
 	Std_ReturnType status = E_NOT_OK;
 
 	// Find which network has this controller
@@ -403,7 +403,7 @@ static void CanSM_Internal_CANSM_BOR_CHECK_L2(NetworkHandleType NetworkHandle)
 }
 
 void CanSM_MainFunction() {
-	CANSM_VALIDATE_INIT(CANSM_SERVICEID_MAINFUNCTION);
+	CANSM_VALIDATE_INIT_NORV(CANSM_SERVICEID_MAINFUNCTION);
 
 	for (uint8 i = 0; i < CANSM_NETWORK_COUNT; ++i) {
 		CanSM_Internal_NetworkType *Network = &CanSM_Internal.Networks[i];
