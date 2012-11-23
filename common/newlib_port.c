@@ -35,6 +35,17 @@
 #endif
 
 
+/* Errno is made reentrant by using malloc and we don't want this. This is usually fixed
+ * by undef errno and declaring it as extern int. It does not work when using GCC for
+ * HC1X and this ifdef takes care of that.
+ */
+#undef errno
+#if  defined(__GNUC__) && defined(CFG_HC1X)
+int errno;
+#else
+extern int errno;
+#endif
+
 #if defined(CFG_ARM)
 #define open	_open
 #define exit	_exit
@@ -254,9 +265,6 @@ char *__env[1] = { 0 };
 char **environ = __env;
 
 
-#include <errno.h>
-#undef errno
-extern int errno;
 
 
 int execve(const char *path, char * const argv[], char * const envp[] ) {
@@ -540,9 +548,7 @@ pid_t getpid() {
   return 1;
 }
 
-#include <errno.h>
-#undef errno
-extern int errno;
+
 int kill(int pid, int sig){
 	(void)pid;
 	(void)sig;
