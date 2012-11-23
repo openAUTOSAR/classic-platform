@@ -7,8 +7,6 @@ cflags-y 	+= -ggdb
 
 cflags-y += -ffunction-sections
 
-LDFLAGS += --gc-section
-
 lib-y   	+= -lgcc -lc
 ASFLAGS 	+= -mcpu=cortex-m3 -mthumb
 
