@@ -18,7 +18,6 @@
 #include "CanNm.h"
 #endif
 #include "Nm.h"
-#include "Nm_Internal.h"
 
 /* Globally fulfilled requirements */
 /** @req NM006 */
@@ -175,21 +174,36 @@ Nm_ReturnType Nm_SetUserData( const NetworkHandleType NetworkHandle, const uint8
 #if (NM_USER_DATA_ENABLED == STD_ON)
 Nm_ReturnType Nm_GetUserData( const NetworkHandleType NetworkHandle, uint8 * const nmUserDataPtr, uint8 * const nmNodeIdPtr ){
 	/* For some reason the signature of this service differs from its busNm equivalents... */
+	Nm_ReturnType userDataRet = NM_E_NOT_OK;
+	Nm_ReturnType nodeIdRet = NM_E_NOT_OK;
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
 	switch(ChannelConf->BusType) {
 #if defined(USE_CANNM)
 	case NM_BUSNM_CANNM:
-		NM_BUSNM_GET_USERDATA_AND_NODEID( CanNm, ChannelConf, nmUserDataPtr, nmNodeIdPtr )
+		userDataRet = CanNm_GetUserData(ChannelConf->BusNmNetworkHandle, nmUserDataPtr);
+		nodeIdRet = CanNm_GetNodeIdentifier(ChannelConf->BusNmNetworkHandle, nmNodeIdPtr);
+		break;
 #endif
 #if defined(USE_FRNM)
 	case NM_BUSNM_FRNM:
-		NM_BUSNM_GET_USERDATA_AND_NODEID( FrNm, ChannelConf, nmUserDataPtr, nmNodeIdPtr )
+		userDataRet = FrNm_GetUserData(ChannelConf->BusNmNetworkHandle, nmUserDataPtr);
+		nodeIdRet = FrNm_GetNodeIdentifier(ChannelConf->BusNmNetworkHandle, nmNodeIdPtr);
+		break;
 #endif
 #if defined(USE_LINNM)
 	case NM_BUSNM_LINNM:
-		NM_BUSNM_GET_USERDATA_AND_NODEID( LinNm, ChannelConf, nmUserDataPtr, nmNodeIdPtr )
+		userDataRet = LinNm_GetUserData(ChannelConf->BusNmNetworkHandle, nmUserDataPtr);
+		nodeIdRet = LinNm_GetNodeIdentifier(ChannelConf->BusNmNetworkHandle, nmNodeIdPtr);
+		break;
 #endif
-	default: return NM_E_NOT_OK;
+	default:
+		break;
+	}
+
+	if( (NM_E_OK != userDataRet) || ( NM_E_OK != nodeIdRet )) {
+		return NM_E_NOT_OK;
+	} else {
+		return NM_E_OK;
 	}
 }
 #endif
