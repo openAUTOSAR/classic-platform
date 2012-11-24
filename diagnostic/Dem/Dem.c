@@ -2478,7 +2478,7 @@ void Dem_Shutdown(void)
 void Dem_MainFunction(void)/** @req DEM125 */
 {
 	if (FFIsModified) {
-		storeFreezeFrameDataPerMem(FreezeFrameBlockId);
+		storeFreezeFrameDataPerMem();
 	}
 
 	if (AgingIsModified) {

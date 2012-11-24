@@ -106,8 +106,6 @@ void PduR_CanTpTxConfirmation(PduIdType CanTpTxPduId, NotifResultType Result) {
 
 #endif
 
-//#define INLINE
-#define INLINE inline
 
 #define TIMER_DECREMENT(timer) \
 	if (timer > 0) { \
@@ -246,14 +244,14 @@ typedef struct {
 CanTp_RunTimeDataType CanTpRunTimeData = { .initRun = FALSE,
 		.internalState = CANTP_OFF }; /** @req CANTP168 */
 
-static INLINE void fifoQueueInit( CanTpFifo *fifoQueue ) {
+static inline void fifoQueueInit( CanTpFifo *fifoQueue ) {
 	fifoQueue->fifoQueueReadIndex = 0;
 	fifoQueue->fifoQueueWriteIndex = 0;
 }
 
 // - - - - - - - - - - - - - -
 
-static INLINE boolean fifoQueueRead( CanTpFifo *fifoQueue, CanTpFifoQueueItem *item ) {
+static inline boolean fifoQueueRead( CanTpFifo *fifoQueue, CanTpFifoQueueItem *item ) {
 	boolean ret = FALSE;
 	int readIndex = 0;
 	readIndex = fifoQueue->fifoQueueReadIndex;
@@ -277,7 +275,7 @@ static INLINE boolean fifoQueueRead( CanTpFifo *fifoQueue, CanTpFifoQueueItem *i
 
 // - - - - - - - - - - - - - -
 
-static INLINE boolean fifoQueueWrite( CanTpFifo *fifoQueue, CanTpFifoQueueItem *item ) {
+static inline boolean fifoQueueWrite( CanTpFifo *fifoQueue, CanTpFifoQueueItem *item ) {
 	boolean ret = FALSE;
 	int writeIndex;
 	writeIndex = fifoQueue->fifoQueueWriteIndex;
@@ -413,7 +411,7 @@ static void initTx15765RuntimeData(const CanTp_TxNSduType *txConfigParams,
 
 // - - - - - - - - - - - - - -
 
-static INLINE BufReq_ReturnType copySegmentToPduRRxBuffer(const CanTp_RxNSduType *rxConfig,
+static inline BufReq_ReturnType copySegmentToPduRRxBuffer(const CanTp_RxNSduType *rxConfig,
 		CanTp_ChannelPrivateType *rxRuntime, uint8 *segment,
 		PduLengthType segmentSize, PduLengthType *bytesWrittenSuccessfully) {
 
@@ -453,7 +451,7 @@ static INLINE BufReq_ReturnType copySegmentToPduRRxBuffer(const CanTp_RxNSduType
 
 // - - - - - - - - - - - - - -
 
-static INLINE boolean copySegmentToLocalRxBuffer /*writeDataSegmentToLocalBuffer*/(
+static inline boolean copySegmentToLocalRxBuffer /*writeDataSegmentToLocalBuffer*/(
 		CanTp_ChannelPrivateType *rxRuntime, uint8 *segment,
 		PduLengthType segmentSize) {
 	boolean ret = FALSE;
@@ -470,7 +468,7 @@ static INLINE boolean copySegmentToLocalRxBuffer /*writeDataSegmentToLocalBuffer
 
 // - - - - - - - - - - - - - -
 
-static INLINE Std_ReturnType canReceivePaddingHelper(
+static inline Std_ReturnType canReceivePaddingHelper(
 		const CanTp_RxNSduType *rxConfig, CanTp_ChannelPrivateType *rxRuntime,
 		PduInfoType *PduInfoPtr) {
 	if (rxConfig->CanTpRxPaddingActivation == CANTP_ON) {
@@ -486,7 +484,7 @@ static INLINE Std_ReturnType canReceivePaddingHelper(
 
 // - - - - - - - - - - - - - -
 
-static INLINE Std_ReturnType canTansmitPaddingHelper(
+static inline Std_ReturnType canTansmitPaddingHelper(
 		const CanTp_TxNSduType *txConfig, CanTp_ChannelPrivateType *txRuntime,
 		PduInfoType *PduInfoPtr) {
 
@@ -512,7 +510,7 @@ static INLINE Std_ReturnType canTansmitPaddingHelper(
 
 // - - - - - - - - - - - - - -
 
-static INLINE void sendFlowControlFrame(const CanTp_RxNSduType *rxConfig, CanTp_ChannelPrivateType *rxRuntime, BufReq_ReturnType flowStatus) {
+static inline void sendFlowControlFrame(const CanTp_RxNSduType *rxConfig, CanTp_ChannelPrivateType *rxRuntime, BufReq_ReturnType flowStatus) {
 	uint8 indexCount = 0;
 	Std_ReturnType ret = E_NOT_OK;
 	PduInfoType pduInfo;
@@ -569,7 +567,7 @@ static INLINE void sendFlowControlFrame(const CanTp_RxNSduType *rxConfig, CanTp_
 // - - - - - - - - - - - - - -
 
 
-static INLINE void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
+static inline void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
 		CanTp_ChannelPrivateType *rxRuntime, const PduInfoType *rxPduData) {
 	uint8 indexCount = 0;
 	uint8 segmentNumber = 0;
@@ -661,7 +659,7 @@ static INLINE void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
 
 // - - - - - - - - - - - - - -
 
-static INLINE Std_ReturnType sendConsecutiveFrame(
+static inline Std_ReturnType sendConsecutiveFrame(
 		const CanTp_TxNSduType *txConfig, CanTp_ChannelPrivateType *txRuntime) {
 	BufReq_ReturnType ret = BUFREQ_NOT_OK;
 	uint8 sduData[CANIF_PDU_MAX_LENGTH];
@@ -734,7 +732,7 @@ static INLINE Std_ReturnType sendConsecutiveFrame(
 
 // - - - - - - - - - - - - - -
 
-static INLINE void handleConsecutiveFrameSent(
+static inline void handleConsecutiveFrameSent(
 		const CanTp_TxNSduType *txConfig, CanTp_ChannelPrivateType *txRuntime) {
 
 	if (txRuntime->transferTotal <= txRuntime->transferCount) {
@@ -765,7 +763,7 @@ static INLINE void handleConsecutiveFrameSent(
 
 // - - - - - - - - - - - - - -
 
-static INLINE void handleFlowControlFrame(const CanTp_TxNSduType *txConfig,
+static inline void handleFlowControlFrame(const CanTp_TxNSduType *txConfig,
 		CanTp_ChannelPrivateType *txRuntime, const PduInfoType *txPduData) {
 	int indexCount = 0;
 	uint8 extendedAddress = 0;
@@ -818,7 +816,7 @@ static INLINE void handleFlowControlFrame(const CanTp_TxNSduType *txConfig,
 
 // - - - - - - - - - - - - - -
 
-static INLINE void handleSingleFrame(const CanTp_RxNSduType *rxConfig,
+static inline void handleSingleFrame(const CanTp_RxNSduType *rxConfig,
 		CanTp_ChannelPrivateType *rxRuntime, const PduInfoType *rxPduData) {
 	BufReq_ReturnType ret;
 	PduLengthType pduLength;
@@ -873,7 +871,7 @@ static INLINE void handleSingleFrame(const CanTp_RxNSduType *rxConfig,
 // - - - - - - - - - - - - - -
 
 
-static INLINE void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
+static inline void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 		CanTp_ChannelPrivateType *rxRuntime, const PduInfoType *rxPduData) {
 	BufReq_ReturnType ret;
 	PduLengthType pduLength = 0;
@@ -949,7 +947,7 @@ static INLINE void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 
 // - - - - - - - - - - - - - -
 
-static INLINE ISO15765FrameType calcRequiredProtocolFrameType(
+static inline ISO15765FrameType calcRequiredProtocolFrameType(
 		const CanTp_TxNSduType *txConfig, CanTp_ChannelPrivateType *txRuntime) {
 
 	ISO15765FrameType ret = INVALID_FRAME;
@@ -981,7 +979,7 @@ static INLINE ISO15765FrameType calcRequiredProtocolFrameType(
 // - - - - - - - - - - - - - -
 
 
-static INLINE Std_ReturnType sendSingleFrame(const CanTp_TxNSduType *txConfig,
+static inline Std_ReturnType sendSingleFrame(const CanTp_TxNSduType *txConfig,
 		CanTp_ChannelPrivateType *txRuntime) {
 	Std_ReturnType ret;
 	uint16 indexCount = 0;
@@ -1005,7 +1003,7 @@ static INLINE Std_ReturnType sendSingleFrame(const CanTp_TxNSduType *txConfig,
 
 // - - - - - - - - - - - - - -
 
-static INLINE Std_ReturnType sendFirstFrame(const CanTp_TxNSduType *txConfig,
+static inline Std_ReturnType sendFirstFrame(const CanTp_TxNSduType *txConfig,
 		CanTp_ChannelPrivateType *txRuntime) {
 	Std_ReturnType ret;
 	uint8 indexCount = 0;
@@ -1037,7 +1035,7 @@ static INLINE Std_ReturnType sendFirstFrame(const CanTp_TxNSduType *txConfig,
 
 // - - - - - - - - - - - - - -
 
-static INLINE BufReq_ReturnType canTpTransmitHelper(const CanTp_TxNSduType *txConfig,
+static inline BufReq_ReturnType canTpTransmitHelper(const CanTp_TxNSduType *txConfig,
 		CanTp_ChannelPrivateType *txRuntime) {
 
 	BufReq_ReturnType pdurResp = BUFREQ_NOT_OK;
