@@ -38,6 +38,7 @@ cflags-y 		+= -gccdepends -MD
 
 # Warnings
 cflags-y          += -W=most
+#cflags-y          += -requireprotos
 
 # Conformance
 cflags-y          += -abi=eabi
@@ -46,12 +47,8 @@ cflags-$(CFG_VLE) += -vle  # Convert ppc to vle ppc
 cflags-y          += -abi=eabi
 cflags-y          += -proc=5565
 cflags-y          += -fp=soft
-cflags-y          += -use_isel=on
-#cflags-y          += -sdata=0xFFFF -sdata2=16
-cflags-y          += -sdata=0 -sdata2=0
-
-#cflags-y          += -fno-strict-aliasing
-#cflags-y          += -fno-builtin
+#cflags-y          += -use_isel=on
+cflags-y          += -sdata=8 -sdata2=8
 
 # Get machine cflags
 #cflags-y		+= $(cflags-$(CFG_ARCH))
@@ -77,8 +74,16 @@ cw_lib_path += -L$(CW_COMPILE)/PowerPC_EABI_Support/Runtime/Lib
 cw_lib_path += -L$(CW_COMPILE)/PowerPC_EABI_Support/MSL/MSL_C/PPC_EABI/Lib
 cc_inc_path += $(CW_COMPILE)/PowerPC_EABI_Support/MSL/MSL_C/MSL_Common/Include
 cc_inc_path += $(CW_COMPILE)/PowerPC_EABI_Support/MSL/MSL_C/PPC_EABI/Include
+
 inc-y += $(cc_inc_path)
 libpath-y += $(cw_lib_path)
+
+
+# MSL library magic:
+
+# MSL_C.PPCEABI.bare.SZ.VS.a
+# - Softfloat, sdata=8
+# - 
 
 
 # libnames .bare - No operating system
