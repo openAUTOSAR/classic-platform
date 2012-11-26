@@ -17,7 +17,8 @@ endif
 
 # Find version
 gcc_version = $(shell ${CROSS_COMPILE}gcc --version | gawk -v VER=$(1) '{ if( VER >= strtonum(gensub(/\./,"","g",$$3)) ) print "y";exit  }' )
-GCC_V430 = $(call gcc_version,430) 
+GCC_V430 = $(call gcc_version,430)
+GCC_V340 = $(call gcc_version,340)  
 
 # ---------------------------------------------------------------------------
 # Compiler
@@ -44,7 +45,7 @@ cflags-y 		+= -MMD
 
 # Warnings
 cflags-y          += -Wall
-cflags-y          += -Wextra
+cflags-$(GCC_V340)+= -Wextra
 cflags-$(GCC_V430)+= -Wconversion
 #cflags-y          += -pedantic
 
