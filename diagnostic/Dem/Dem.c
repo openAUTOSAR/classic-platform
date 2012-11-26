@@ -2478,7 +2478,7 @@ void Dem_Shutdown(void)
 void Dem_MainFunction(void)/** @req DEM125 */
 {
 	if (FFIsModified) {
-		storeFreezeFrameDataPerMem(FreezeFrameBlockId);
+		storeFreezeFrameDataPerMem();
 	}
 
 	if (AgingIsModified) {
@@ -2752,6 +2752,8 @@ Dem_ReturnSetDTCFilterType Dem_SetDTCFilter(uint8 dtcStatusMask,
 		Dem_FilterForFDCType filterForFaultDetectionCounter)
 {
 	Dem_ReturnSetDTCFilterType returnCode = DEM_FILTER_ACCEPTED;
+	uint8 dtcStatusAvailabilityMask;
+	Dem_GetDTCStatusAvailabilityMask(&dtcStatusAvailabilityMask);
 
 	if (demState == DEM_INITIALIZED) {
 		// Check dtcKind parameter
@@ -2770,7 +2772,7 @@ Dem_ReturnSetDTCFilterType Dem_SetDTCFilter(uint8 dtcStatusMask,
 		VALIDATE_RV((filterForFaultDetectionCounter == DEM_FILTER_FOR_FDC_YES) || (filterForFaultDetectionCounter ==  DEM_FILTER_FOR_FDC_NO), DEM_SETDTCFILTER_ID, DEM_E_PARAM_DATA, DEM_WRONG_FILTER);
 
 		// Yes all parameters correct, set the new filters.  /** @req DEM057 */
-		dtcFilter.dtcStatusMask = dtcStatusMask;
+		dtcFilter.dtcStatusMask = dtcStatusMask & dtcStatusAvailabilityMask;
 		dtcFilter.dtcKind = dtcKind;
 		dtcFilter.dtcOrigin = dtcOrigin;
 		dtcFilter.filterWithSeverity = filterWithSeverity;

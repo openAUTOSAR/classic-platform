@@ -658,20 +658,18 @@ void CanIf_SetDynamicTxId(PduIdType CanTxPduId, Can_IdType CanId)
   }
 
   // Check that this is a dymanic PDU
-  if (txEntry->CanIfCanTxPduType != ARC_PDU_TYPE_DYNAMIC)
+  if (txEntry->CanIfCanTxPduType != CANIF_PDU_TYPE_DYNAMIC)
   {
     VALIDATE_NO_RV(FALSE, CANIF_SETDYNAMICTX_ID, CANIF_E_INVALID_TXPDUID);
     return;
   }
 
   // Check that this is an extended or standard id
-  if (((CanId & U0x80000000) && (txEntry->CanIfTxPduIdCanIdType == ARC_CAN_ID_TYPE_29)) ||
-      (((CanId & U0x80000000) == 0) && (txEntry->CanIfTxPduIdCanIdType == ARC_CAN_ID_TYPE_11)))
+  if (((CanId & 0x80000000U) && (txEntry->CanIfTxPduIdCanIdType == CANIF_CAN_ID_TYPE_29)) ||
+      (((CanId & 0x80000000U) == 0) && (txEntry->CanIfTxPduIdCanIdType == CANIF_CAN_ID_TYPE_11)))
   {
     // Update the CanID
-    //txEntry->CanIfCanTxPduIdCanId = CanId;  // TODO How do we fix this from a const pointer
-
-    // NOT SUPPORTED
+    txEntry->CanIfCanTxPduIdCanId = CanId & 0x7FFFFFFFU;
   }
   else
   {

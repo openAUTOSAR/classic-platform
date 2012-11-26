@@ -369,7 +369,11 @@ typedef struct {
 	const CanIf_RxPduConfigType *CanIfRxPduConfigPtr;
 
   /** Tx PDU's list */
+#if (CANIF_ARC_RUNTIME_PDU_CONFIGURATION == STD_OFF)
 	const CanIf_TxPduConfigType *CanIfTxPduConfigPtr;
+#else
+	CanIf_TxPduConfigType *CanIfTxPduConfigPtr;
+#endif
 
 } CanIf_InitConfigType;
 

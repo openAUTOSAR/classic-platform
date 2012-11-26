@@ -18,7 +18,6 @@
 #include "CanNm.h"
 #endif
 #include "Nm.h"
-#include "Nm_Internal.h"
 
 /* Globally fulfilled requirements */
 /** @req NM006 */
@@ -38,35 +37,110 @@ void Nm_GetVersionInfo( Std_VersionInfoType* nmVerInfoPtr ){}
   * (e.g. CanNm_PassiveStartUp function is called if channel is configured as CAN). */
 Nm_ReturnType Nm_PassiveStartUp( const NetworkHandleType NetworkHandle ){
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
-	NM_CALL_BUSNM(PassiveStartUp, ChannelConf);
+
+	switch(ChannelConf->BusType) {
+#if defined(USE_CANNM)
+		case NM_BUSNM_CANNM:
+			return CanNm_PassiveStartUp(ChannelConf->BusNmNetworkHandle);
+#endif
+#if defined(USE_FRNM)
+		case NM_BUSNM_FRNM:							\
+			return FrNm_PassiveStartUp(Channelconf->BusNmNetworkHandle);
+#endif
+#if defined(USE_LINNM)
+		case NM_BUSNM_LINNM:							\
+			return LinNm_PassiveStartUp(Channelconf->BusNmNetworkHandle);
+#endif
+		default: return NM_E_NOT_OK;
+	}
 }
 
 /** This function calls the <BusNm>_NetworkRequest
   * (e.g. CanNm_NetworkRequest function is called if channel is configured as CAN). */
 Nm_ReturnType Nm_NetworkRequest( const NetworkHandleType NetworkHandle ){
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
-	NM_CALL_BUSNM(NetworkRequest, ChannelConf)
+
+	switch(ChannelConf->BusType) {
+#if defined(USE_CANNM)
+		case NM_BUSNM_CANNM:
+			return CanNm_NetworkRequest(ChannelConf->BusNmNetworkHandle);
+#endif
+#if defined(USE_FRNM)
+		case NM_BUSNM_FRNM:
+			return FrNm_NetworkRequest(Channelconf->BusNmNetworkHandle);
+#endif
+#if defined(USE_LINNM)
+		case NM_BUSNM_LINNM:
+			return LinNm_NetworkRequest(Channelconf->BusNmNetworkHandle);
+#endif
+		default: return NM_E_NOT_OK;
+	}
 }
 
 /** This function calls the <BusNm>_NetworkRelease bus specific function
   * (e.g. CanNm_NetworkRelease function is called if channel is configured as CAN). */
 Nm_ReturnType Nm_NetworkRelease( const NetworkHandleType NetworkHandle ){
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
-	NM_CALL_BUSNM(NetworkRelease, ChannelConf)
+
+	switch(ChannelConf->BusType) {
+#if defined(USE_CANNM)
+		case NM_BUSNM_CANNM:
+			return CanNm_NetworkRelease(ChannelConf->BusNmNetworkHandle);
+#endif
+#if defined(USE_FRNM)
+		case NM_BUSNM_FRNM:
+			return FrNm_NetworkRelease(Channelconf->BusNmNetworkHandle);
+#endif
+#if defined(USE_LINNM)
+		case NM_BUSNM_LINNM:
+			return LinNm_NetworkRelease(Channelconf->BusNmNetworkHandle);
+#endif
+		default: return NM_E_NOT_OK;
+	}
 }
 
 /** This function calls the CanNm_NetworkRelease bus specific function, to disable
   * the NM PDU transmission ability due to a ISO14229 Communication Control (28hex) service */
 Nm_ReturnType Nm_DisableCommunication( const NetworkHandleType NetworkHandle ){
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
-	NM_CALL_BUSNM(DisableCommunication, ChannelConf)
+
+	switch(ChannelConf->BusType) {
+#if defined(USE_CANNM)
+		case NM_BUSNM_CANNM:
+			return CanNm_DisableCommunication(ChannelConf->BusNmNetworkHandle);
+#endif
+#if defined(USE_FRNM)
+		case NM_BUSNM_FRNM:
+			return FrNm_DisableCommunication(Channelconf->BusNmNetworkHandle);
+#endif
+#if defined(USE_LINNM)
+		case NM_BUSNM_LINNM:
+			return LinNm_DisableCommunication(Channelconf->BusNmNetworkHandle);
+#endif
+		default: return NM_E_NOT_OK;
+	}
 }
 
 /** This function calls the CanNm_NetworkRequest bus specific function, to enable
   * the NM PDU transmission ability due to a ISO14229 Communication Control (28hex) service */
 Nm_ReturnType Nm_EnableCommunication( const NetworkHandleType NetworkHandle ){
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
-	NM_CALL_BUSNM(EnableCommunication, ChannelConf)
+
+	switch(ChannelConf->BusType) {
+#if defined(USE_CANNM)
+		case NM_BUSNM_CANNM:
+			return CanNm_EnableCommunication(ChannelConf->BusNmNetworkHandle);
+#endif
+#if defined(USE_FRNM)
+		case NM_BUSNM_FRNM:
+			return FrNm_EnableCommunication(Channelconf->BusNmNetworkHandle);
+#endif
+#if defined(USE_LINNM)
+		case NM_BUSNM_LINNM:
+			return LinNm_EnableCommunication(Channelconf->BusNmNetworkHandle);
+#endif
+		default: return NM_E_NOT_OK;
+	}
 }
 
 /** Set user data for NM messages transmitted next on the bus.
@@ -75,7 +149,22 @@ Nm_ReturnType Nm_EnableCommunication( const NetworkHandleType NetworkHandle ){
 #if (NM_USER_DATA_ENABLED == STD_ON)
 Nm_ReturnType Nm_SetUserData( const NetworkHandleType NetworkHandle, const uint8 * const nmUserDataPtr ){
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
-	NM_CALL_BUSNM(SetUserData, ChannelConf, nmUserDataPtr)
+
+	switch(ChannelConf->BusType) {
+#if defined(USE_CANNM)
+		case NM_BUSNM_CANNM:
+			return CanNm_SetUserData(ChannelConf->BusNmNetworkHandle, nmUserDataPtr);
+#endif
+#if defined(USE_FRNM)
+		case NM_BUSNM_FRNM:
+			return FrNm_SetUserData(Channelconf->BusNmNetworkHandle, nmUserDataPtr);
+#endif
+#if defined(USE_LINNM)
+		case NM_BUSNM_LINNM:
+			return LinNm_SetUserData(Channelconf->BusNmNetworkHandle, nmUserDataPtr);
+#endif
+		default: return NM_E_NOT_OK;
+	}
 }
 #endif
 
@@ -85,21 +174,36 @@ Nm_ReturnType Nm_SetUserData( const NetworkHandleType NetworkHandle, const uint8
 #if (NM_USER_DATA_ENABLED == STD_ON)
 Nm_ReturnType Nm_GetUserData( const NetworkHandleType NetworkHandle, uint8 * const nmUserDataPtr, uint8 * const nmNodeIdPtr ){
 	/* For some reason the signature of this service differs from its busNm equivalents... */
+	Nm_ReturnType userDataRet = NM_E_NOT_OK;
+	Nm_ReturnType nodeIdRet = NM_E_NOT_OK;
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
 	switch(ChannelConf->BusType) {
 #if defined(USE_CANNM)
 	case NM_BUSNM_CANNM:
-		NM_BUSNM_GET_USERDATA_AND_NODEID( CanNm, ChannelConf, nmUserDataPtr, nmNodeIdPtr )
+		userDataRet = CanNm_GetUserData(ChannelConf->BusNmNetworkHandle, nmUserDataPtr);
+		nodeIdRet = CanNm_GetNodeIdentifier(ChannelConf->BusNmNetworkHandle, nmNodeIdPtr);
+		break;
 #endif
 #if defined(USE_FRNM)
 	case NM_BUSNM_FRNM:
-		NM_BUSNM_GET_USERDATA_AND_NODEID( FrNm, ChannelConf, nmUserDataPtr, nmNodeIdPtr )
+		userDataRet = FrNm_GetUserData(ChannelConf->BusNmNetworkHandle, nmUserDataPtr);
+		nodeIdRet = FrNm_GetNodeIdentifier(ChannelConf->BusNmNetworkHandle, nmNodeIdPtr);
+		break;
 #endif
 #if defined(USE_LINNM)
 	case NM_BUSNM_LINNM:
-		NM_BUSNM_GET_USERDATA_AND_NODEID( LinNm, ChannelConf, nmUserDataPtr, nmNodeIdPtr )
+		userDataRet = LinNm_GetUserData(ChannelConf->BusNmNetworkHandle, nmUserDataPtr);
+		nodeIdRet = LinNm_GetNodeIdentifier(ChannelConf->BusNmNetworkHandle, nmNodeIdPtr);
+		break;
 #endif
-	default: return NM_E_NOT_OK;
+	default:
+		break;
+	}
+
+	if( (NM_E_OK != userDataRet) || ( NM_E_OK != nodeIdRet )) {
+		return NM_E_NOT_OK;
+	} else {
+		return NM_E_OK;
 	}
 }
 #endif
@@ -109,7 +213,22 @@ Nm_ReturnType Nm_GetUserData( const NetworkHandleType NetworkHandle, uint8 * con
 #if ((NM_NODE_ID_ENABLED == STD_ON) || (NM_NODE_DETECTION_ENABLED == STD_ON) || (NM_USER_DATA_ENABLED == STD_ON))
 Nm_ReturnType Nm_GetPduData( const NetworkHandleType NetworkHandle, uint8 * const nmPduData ){
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
-	NM_CALL_BUSNM(GetPduData, ChannelConf, nmPduData)
+
+	switch(ChannelConf->BusType) {
+#if defined(USE_CANNM)
+		case NM_BUSNM_CANNM:
+			return CanNm_GetPduData(ChannelConf->BusNmNetworkHandle, nmPduData);
+#endif
+#if defined(USE_FRNM)
+		case NM_BUSNM_FRNM:
+			return FrNm_GetPduData(Channelconf->BusNmNetworkHandle, nmPduData);
+#endif
+#if defined(USE_LINNM)
+		case NM_BUSNM_LINNM:
+			return LinNm_GetPduData(Channelconf->BusNmNetworkHandle, nmPduData);
+#endif
+		default: return NM_E_NOT_OK;
+	}
 }
 #endif
 
@@ -119,7 +238,22 @@ Nm_ReturnType Nm_GetPduData( const NetworkHandleType NetworkHandle, uint8 * cons
 #if (NM_NODE_DETECTION_ENABLED == STD_ON)
 Nm_ReturnType Nm_RepeatMessageRequest( const NetworkHandleType NetworkHandle ){
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
-	NM_CALL_BUSNM(RepeatMessageRequest, ChannelConf)
+
+	switch(ChannelConf->BusType) {
+#if defined(USE_CANNM)
+		case NM_BUSNM_CANNM:
+			return CanNm_RepeatMessageRequest(ChannelConf->BusNmNetworkHandle);
+#endif
+#if defined(USE_FRNM)
+		case NM_BUSNM_FRNM:
+			return FrNm_RepeatMessageRequest(Channelconf->BusNmNetworkHandle);
+#endif
+#if defined(USE_LINNM)
+		case NM_BUSNM_LINNM:
+			return LinNm_RepeatMessageRequest(Channelconf->BusNmNetworkHandle);
+#endif
+		default: return NM_E_NOT_OK;
+	}
 }
 #endif
 
@@ -128,7 +262,22 @@ Nm_ReturnType Nm_RepeatMessageRequest( const NetworkHandleType NetworkHandle ){
 #if (NM_NODE_ID_ENABLED == STD_ON)
 Nm_ReturnType Nm_GetNodeIdentifier( const NetworkHandleType NetworkHandle, uint8 * const nmNodeIdPtr ){
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
-	NM_CALL_BUSNM(GetNodeIdentifier, ChannelConf, nmNodeIdPtr)
+
+	switch(ChannelConf->BusType) {
+#if defined(USE_CANNM)
+		case NM_BUSNM_CANNM:
+			return CanNm_GetNodeIdentifier(ChannelConf->BusNmNetworkHandle, nmNodeIdPtr);
+#endif
+#if defined(USE_FRNM)
+		case NM_BUSNM_FRNM:
+			return FrNm_GetNodeIdentifier(Channelconf->BusNmNetworkHandle, nmNodeIdPtr);
+#endif
+#if defined(USE_LINNM)
+		case NM_BUSNM_LINNM:
+			return LinNm_GetNodeIdentifier(Channelconf->BusNmNetworkHandle, nmNodeIdPtr);
+#endif
+		default: return NM_E_NOT_OK;
+	}
 }
 
 /** Get node identifier configured for the local node.
@@ -136,7 +285,22 @@ Nm_ReturnType Nm_GetNodeIdentifier( const NetworkHandleType NetworkHandle, uint8
   * (e.g. CanNm_GetLocalNodeIdentifier function is called if channel is configured as CAN). */
 Nm_ReturnType Nm_GetLocalNodeIdentifier( const NetworkHandleType NetworkHandle, uint8 * const nmNodeIdPtr ){
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
-	NM_CALL_BUSNM(GetLocalNodeIdentifier, ChannelConf, nmNodeIdPtr)
+ 
+	switch(ChannelConf->BusType) {
+#if defined(USE_CANNM)
+		case NM_BUSNM_CANNM:
+			return CanNm_GetLocalNodeIdentifier(ChannelConf->BusNmNetworkHandle, nmNodeIdPtr);
+#endif
+#if defined(USE_FRNM)
+		case NM_BUSNM_FRNM:
+			return FrNm_GetLocalNodeIdentifier(Channelconf->BusNmNetworkHandle, nmNodeIdPtr);
+#endif
+#if defined(USE_LINNM)
+		case NM_BUSNM_LINNM:
+			return LinNm_GetLocalNodeIdentifier(Channelconf->BusNmNetworkHandle, nmNodeIdPtr);
+#endif
+		default: return NM_E_NOT_OK;
+	}
 }
 #endif
 
@@ -151,7 +315,22 @@ Nm_ReturnType Nm_CheckRemoteSleepIndication( const NetworkHandleType NetworkHand
   * <BusNm>_GetState function (e.g. CanNm_GetState function is called if channel is configured as CAN). */
 Nm_ReturnType Nm_GetState( const NetworkHandleType NetworkHandle, Nm_StateType* const nmStatePtr, Nm_ModeType* const nmModePtr ){
 	const Nm_ChannelType* ChannelConf = &Nm_ConfigPtr->Channels[NetworkHandle];
-	NM_CALL_BUSNM(GetState, ChannelConf, nmStatePtr, nmModePtr)
+
+	switch(ChannelConf->BusType) {
+#if defined(USE_CANNM)
+		case NM_BUSNM_CANNM:
+			return CanNm_GetState(ChannelConf->BusNmNetworkHandle, nmStatePtr, nmModePtr);
+#endif
+#if defined(USE_FRNM)
+		case NM_BUSNM_FRNM:
+			return FrNm_GetState(Channelconf->BusNmNetworkHandle, nmStatePtr, nmModePtr);
+#endif
+#if defined(USE_LINNM)
+		case NM_BUSNM_LINNM:
+			return LinNm_GetState(Channelconf->BusNmNetworkHandle, nmStatePtr, nmModePtr);
+#endif
+		default: return NM_E_NOT_OK;
+	}
 }
 
 /** Notification that a NM-message has been received in the Bus-Sleep Mode, what

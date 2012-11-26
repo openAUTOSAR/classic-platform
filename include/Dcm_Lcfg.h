@@ -436,14 +436,16 @@ typedef struct {
 } Dcm_DslProtocolTimingType; /** @req DCM031 */
 
 // 10.2.15
-typedef struct {
-// TODO: Add this? (only needed for type2 periodic transmission configuration)
-} Dcm_DslPeriodicTransmissionType;
+//typedef struct {
+//// TODO: Add this? (only needed for type2 periodic transmission configuration)
+//} Dcm_DslPeriodicTransmissionType;
+typedef uint8 Dcm_DslPeriodicTransmissionType;
 
 // 10.2.16
-typedef struct {
-// TODO: Add this? (only needed for type2 periodic transmission configuration)
-} Dcm_DslResponseOnEventType;
+//typedef struct {
+//// TODO: Add this? (only needed for type2 periodic transmission configuration)
+//} Dcm_DslResponseOnEventType;
+typedef uint8 Dcm_DslResponseOnEventType;
 
 /* Makes it possible to cross-reference structures. */
 typedef struct Dcm_DslMainConnectionType_t Dcm_DslMainConnectionType;
@@ -553,6 +555,7 @@ typedef struct {
 	Dcm_DslLocalBufferType	localTxBuffer;
 	boolean					diagnosticActiveComM; //
 	uint16					S3ServerTimeoutCount;
+	boolean					S3ServerStarted;
 	uint8					responsePendingCount;
 	Dcm_SecLevelType		securityLevel;
 	Dcm_SesCtrlType			sessionControl;

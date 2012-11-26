@@ -69,8 +69,7 @@ void Os_SysTickStart(uint32_t period_ticks) {
 /** @req OS383 */
 uint32_t Os_SysTickGetValue( void )
 {
-#if 0
-	uint32_t timer = get_spr(SPR_DECAR) - get_spr(SPR_DEC);
+	// TODO implement
+	uint32_t timer = 0;
 	return (timer);
-#endif
 }

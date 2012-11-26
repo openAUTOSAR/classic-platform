@@ -121,7 +121,7 @@ uint8 Com_ReceiveDynSignal(Com_SignalIdType SignalId, void* SignalDataPtr, uint1
 		}
 		pduDataPtr = IPdu->ComIPduDataPtr;
 	}
-	memcpy(SignalDataPtr, pduDataPtr + startFromPduByte, *Length);
+	memcpy(SignalDataPtr, (uint8 *)pduDataPtr + startFromPduByte, *Length);
 
     Irq_Restore(state);
 
@@ -149,7 +149,7 @@ uint8 Com_SendDynSignal(Com_SignalIdType SignalId, const void* SignalDataPtr, ui
 	uint8 startFromPduByte = bitPosition / 8;
 
 	Irq_Save(state);
-	memcpy((void *)(IPdu->ComIPduDataPtr + startFromPduByte), SignalDataPtr, Length);
+	memcpy((void *)((uint8 *)IPdu->ComIPduDataPtr + startFromPduByte), SignalDataPtr, Length);
 	Arc_IPdu->Com_Arc_DynSignalLength = Length;
 	// If the signal has an update bit. Set it!
 	if (Signal->ComSignalArcUseUpdateBit) {
@@ -190,7 +190,7 @@ Std_ReturnType Com_TriggerTransmit(PduIdType ComTxPduId, PduInfoType *PduInfoPtr
 
 //lint -esym(904, Com_TriggerIPduSend) //PC-Lint Exception of rule 14.7
 void Com_TriggerIPduSend(PduIdType ComTxPduId) {
-	PDU_ID_CHECK(ComTxPduId, 0x17);
+	PDU_ID_CHECK(ComTxPduId, 0x17, E_NOT_OK);
 
 	const ComIPdu_type *IPdu = GET_IPdu(ComTxPduId);
 	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(ComTxPduId);
@@ -241,7 +241,7 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
 
 //lint -esym(904, Com_RxIndication) //PC-Lint Exception of rule 14.7
 void Com_RxIndication(PduIdType ComRxPduId, const PduInfoType* PduInfoPtr) {
-	PDU_ID_CHECK(ComRxPduId, 0x14);
+	PDU_ID_CHECK(ComRxPduId, 0x14, E_NOT_OK);
 
 	const ComIPdu_type *IPdu = GET_IPdu(ComRxPduId);
 	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(ComRxPduId);
@@ -275,7 +275,7 @@ void Com_RxIndication(PduIdType ComRxPduId, const PduInfoType* PduInfoPtr) {
 }
 
 void Com_TpRxIndication(PduIdType PduId, NotifResultType Result) {
-	PDU_ID_CHECK(PduId, 0x14);
+	PDU_ID_CHECK(PduId, 0x14, E_NOT_OK);
 
 	const ComIPdu_type *IPdu = GET_IPdu(PduId);
 	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(PduId);
@@ -305,7 +305,7 @@ void Com_TpRxIndication(PduIdType PduId, NotifResultType Result) {
 }
 
 void Com_TpTxConfirmation(PduIdType PduId, NotifResultType Result) {
-	PDU_ID_CHECK(PduId, 0x15);
+	PDU_ID_CHECK(PduId, 0x15, E_NOT_OK);
 	(void)Result; // touch
 
 	imask_t state;
@@ -314,7 +314,7 @@ void Com_TpTxConfirmation(PduIdType PduId, NotifResultType Result) {
 	Irq_Restore(state);
 }
 void Com_TxConfirmation(PduIdType ComTxPduId) {
-	PDU_ID_CHECK(ComTxPduId, 0x15);
+	PDU_ID_CHECK(ComTxPduId, 0x15, E_NOT_OK);
 
 	(void)ComTxPduId; // Nothing to be done. This is just to avoid Lint warning.
 }

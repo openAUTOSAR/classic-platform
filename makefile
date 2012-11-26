@@ -141,6 +141,8 @@ show_build:
 	@echo "  COMPILER:       $(COMPILER) [$(origin COMPILER)]"	
 ifeq ($(COMPILER),cw)	
 	@echo "  CW_COMPILE:     $(CW_COMPILE) [$(origin CW_COMPILE)]"
+else ifeq ($(COMPILER),iar)	
+	@echo "  IAR_COMPILE:     $(IAR_COMPILE) [$(origin IAR_COMPILE)]"
 else 
 	@echo "  CROSS_COMPILE:  $(CROSS_COMPILE) [$(origin CROSS_COMPILE)]"
 endif

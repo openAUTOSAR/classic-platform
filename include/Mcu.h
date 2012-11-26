@@ -149,7 +149,7 @@ typedef struct {
 	//	This container contains the configuration (parameters) for the
 	//	Clock settings of the MCU. Please see MCU031 for more in-
 	//	formation on the MCU clock settings.
-	Mcu_ClockSettingConfigType * McuClockSettingConfig;
+	const Mcu_ClockSettingConfigType * McuClockSettingConfig;
 
 	//	This container contains the configuration (parameters) for the
 	//	Mode setting of the MCU. Please see MCU035 for more information
@@ -159,7 +159,7 @@ typedef struct {
 	//	This container contains the configuration (parameters) for the
 	//	RAM Sector setting. Please see MCU030 for more information
 	//	on RAM sec-tor settings.
-	Mcu_RamSectorSettingConfigType *McuRamSectorSettingConfig;
+	const Mcu_RamSectorSettingConfigType *McuRamSectorSettingConfig;
 
 } Mcu_ConfigType;
 

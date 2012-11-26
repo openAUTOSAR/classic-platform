@@ -39,6 +39,7 @@ void StartTask()
 
 	// Makes the inital value on the bus be correct
 	SetEvent(TASK_ID_ComReceiveTask, EVENT_MASK_FreqReciveEvent);
+    TerminateTask();
 }
 
 // Task that changes the frequency of the LED when a new

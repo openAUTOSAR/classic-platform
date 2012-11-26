@@ -16,6 +16,7 @@
 /* Ecum Callout Stubs - generic version */
 
 #include "Dcm.h"
+#include "Mcu.h"
 Dcm_ReturnWriteMemoryType Dcm_WriteMemory(Dcm_OpStatusType OpStatus,
 											   uint8 MemoryIdentifier,
 											   uint32 MemoryAddress,
@@ -43,7 +44,14 @@ void Dcm_DiagnosticSessionControl(Dcm_SesCtrlType session)
 
 }
 
-void Dcm_EcuReset(Dcm_EcuResetType resetType)
+Std_ReturnType DcmE_EcuReset(Dcm_EcuResetType resetType)
 {
+	return E_OK;
+}
 
+void DcmE_EcuPerformReset(Dcm_EcuResetType resetType)
+{
+#if defined(USE_MCU) && ( MCU_PERFORM_RESET_API == STD_ON )
+	Mcu_PerformReset();
+#endif
 }

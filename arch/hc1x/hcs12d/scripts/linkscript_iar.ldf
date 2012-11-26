@@ -1,0 +1,193 @@
+//************************************************************************ 
+//* 
+//* IAR XLINK command file for the IAR HCS12 C/C++ Compiler
+//*
+//* This is an example XLINK command file for use with the
+//* MC9S12DP512 derivative. 
+//* 
+//* Usage: xlink <your_file(s)> -f <this_file>
+//*
+//* This template file is a general file for banked memory model and 
+//* double precision doubles.
+//* 
+//* $Revision: 2080 $ 
+//*************************************************************************
+
+//************************************************************************
+//  Inform the linker about the CPU family used
+//************************************************************************
+
+-chcs12
+
+//================================================================
+// USER DEFINITIONS
+// Please customize according to your preferences.
+//================================================================
+
+// Size of the user stack 
+// Uncomment for command line use
+-D_STACK_SIZE=100
+
+// Size of the heap
+// Uncomment for command line use
+-D_HEAP_SIZE=HEAPSIZE
+
+//================================================================
+// Memory Definitions
+//================================================================
+
+// Memory areas available for the application
+#include "memory_iar.ldf"
+
+
+
+//========================================================================
+// Tell the linker that the following addresses point to same memory area.
+//========================================================================
+-U_FLASH16MID_BEGIN-_FLASH16MID_END=3E8000-3EBFFF
+-U_FLASH16HI_BEGIN-_FLASH16HI_END=3F8000-3FBFFF
+ 
+
+//*************************************************************************
+//	Segment placement - General information
+//
+// All numbers in the segment placement command lines below are interpreted
+// as hexadecimal unless they are immediately preceded by a '.', which
+// denotes decimal notation. 
+//
+// When specifying the segment placement using the -P instead of the -Z
+// option, the linker is free to split each segment into its segment parts
+// and randomly place these parts within the given ranges in order to
+// achieve a more efficient memory usage. 
+//
+// One disadvantage, however, is that it is not possible to find the start 
+// or end address (using the assembler operators .sfb./.sfe.)or the size 
+// (assembler operator .SIZEOF.) of a segment which has been split and
+// reformed. 
+//
+// When generating an output file which is to be used for programming
+// external ROM/Flash devices, the -M linker option is very useful 
+// (see xman.txt for details).
+//
+//*************************************************************************
+
+//*************************************************************************
+// The interrrupt vectors are assumed to start at 0xFF80, see also
+// CSTARTUP.S12.
+//
+//*************************************************************************
+
+-Z(CODE)INTVEC=FF80-FFFF
+
+//*************************************************************************
+//	Direct addressing segments
+//
+//    The segments DATA8_I, DATA8_Z and DATA8_C contains variables that are
+//    accessed with direct addressing, the following row lets XLINK check 
+//    that the segmnents really are within the zero page.
+//    
+//    Do NOT use direct accessing variables if your on-chip registers (a.k.a.
+//    SFRs) are mapped here.
+//
+//    Direct accessing variables are created by using the __data8 type
+//    modifier.
+//
+//*************************************************************************
+
+//-Z(DATA)DATA8_I,DATA8_Z,DATA8_N=00-FF
+
+// DATA8_C can be used if you map a ROM of some kind to the 00-FF
+// address range.
+// -Z(DATA)DATA8_C
+
+
+//*************************************************************************
+//    In this example, it is assumed that 128 kB external memory is 
+//    accessible through 8 equally sized (16 kB) memory banks at logical 
+//    addresses 0x8000-0xBFFF (bank 0), 0x18000-0x1BFFF (bank 1), ..., and
+//    0x78000-0x7BFFF (bank 7).
+//    
+//    The last page, number 7 in this example, is always accessible as
+//    non-banked memory at addresses 0xC000-0xFFFF as well as through the
+//    bank window. Here, it is used for non-banked segments.  
+//
+//*************************************************************************
+
+//-Z(CODE)DATA8_ID,DATA16_ID,INITTAB=_EEPROM_BEGIN-_EEPROM_END   // Place code in EEPROM
+
+-Z(CODE)DATA8_ID,DATA16_ID,INITTAB=_FLASH16MID_BEGIN-_FLASH16MID_END,_FLASH16HI_BEGIN-_FLASH16HI_END
+-Z(CODE)DIFUNCT
+-P(CODE)DATA16_C,CODE,CHECKSUM
+
+
+-P(CODE)BANKED_CODE,BANKED_CODE_SEGMENT_INIT=[_FLASH16PAGE_BEGIN-_FLASH16PAGE_END]*_PAGES+10000   // Place banked code into logical pages 
+  
+//*************************************************************************
+//    If the code is to be placed in an external memory, e.g. Flash or ROM,
+//    by programming the memory device from a Motorola S-record output file
+//    (or similar) the following address translation technique can be used.
+//
+//    In this example, the goal is to place all code in a single consecutive
+//    memory range at physical addresses 0x00000-0x1FFFF.
+//
+//    However, in order to get an S-record output file without overlapping
+//    segments, the banks are here temporarily remapped to physical addresses
+//    0x10000-0x2FFFF. When programming the external memory device in a later
+//    stage, this offset can easily be adjusted for.
+//
+//    Address translation only works for some output formats, primarily
+//    the simple formats without debug information (see xman.txt for
+//    details).  
+//
+//    Remap bank pages into physical memory at addresses 0x10000-0x2BFFF  
+//    -M(CODE)[8000-BFFF]*7+10000=10000-2BFFF  
+//
+//    Remap the root bank and interrupt vectors into physical memory at
+//    0x2C000-0x2FFFF
+//    -M(CODE)[C000-FFFF]=2C000-2FFFF  
+// 
+//*************************************************************************
+
+
+//*************************************************************************
+//    	Allocation of the writeable segments
+// 
+//    Allocation of the writeable segments which must be mapped to a RAM area:
+//	
+//    Note: Stack size is set to 256 (0x100) bytes with 'CSTACK+100'  
+//    Note: DBG_CODE is a segment that contains C-SPY debugger specific
+//          code. By placing it in RAM C-SPY can save a hardware breakpoint  
+//	    for the BDM-debugger.   	
+//   	
+//*************************************************************************
+
+-Z(DATA)DATA16_I,DATA16_Z,DATA16_N,HEAP+_HEAP_SIZE=_RAM_BEGIN-_RAM_END
+-Z(CODE)DBG_CODE
+-Z(DATA)CSTACK+_STACK_SIZE#
+//*************************************************************************
+// Select optimal printf/sprintf and scanf/sscanf formatters.
+//
+// By selecting a smaller and more optimal formatter, the library size will
+// be reduced considerably. Please see the configuration section of the
+// compiler manual for details. 
+//*************************************************************************
+
+//**************************************************
+// Three formatters are available for printf/sprintf
+//     _formatted_write   fully ANSI-C compliant
+//     _medium_write      lacks FP support
+//     _small_write       further reduced
+//**************************************************
+
+//-e_small_write=_formatted_write
+
+//**************************************************
+// Two formatters are available for scanf/sscanf
+//     _formatted_read   fully ANSI-C compliant
+//     _medium_read      lacks FP support
+//**************************************************
+
+//-e_medium_read=_formatted_read
+
+
+

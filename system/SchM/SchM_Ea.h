@@ -13,14 +13,9 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+#ifndef SCHM_EA_H
+#define SCHM_EA_H_
 
+#define SCHM_MAINFUNCTION_EA()     SCHM_MAINFUNCTION(EA,Ea_MainFunction())
 
-
-
-
-
-
-#ifndef COMM_CFG_H_
-#define COMM_CFG_H_
-
-#endif /*COMM_CFG_H_*/
+#endif /* SCHM_EA_H_ */

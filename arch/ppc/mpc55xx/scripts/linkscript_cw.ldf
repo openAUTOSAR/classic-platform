@@ -1,3 +1,31 @@
+/*
+ * Elf Information
+ *
+ * Small data sections
+ *  There are 3 small data sections addressed from different 
+ *  offsets, address 0x0000_0000 , r2 or r13 
+ *
+ * 
+ * Register       Symbol          Sections          Size 
+ *---------------------------------------------------------  
+ *   r2           _SDA2_BASE_     .sdata2,  sbss2   64K 
+ *   r13          _SDA_BASE_      .sdata, . sbss    64K
+ *  addr 0x0       N/A            .sdata0, .sbss0   64K
+ * 
+ *
+ * SHT_PROGBITS - initialized read/write data
+ * SHT_NOBITS  - Zero initialized data. 
+ *
+ *
+ * .sdata2  - SHT_PROGBITS 
+ * .sbss2   - SHT_NOBITS + SHF_WRITE
+ * .sdata   - SHT_PROGBITS + SHF_WRITE
+ * .sbss    - SHT_NOBITS + SHF_WRITE
+ *
+ * Since .sdata2 and .sbss2 must be grouped together. .sbss2 must be able to write data
+ * and .sdata2 is read only. That leaves us with a copy from ROM to RAM.
+ */ 
+
 
 MEMORY
 {
@@ -58,15 +86,16 @@ SECTIONS
 #endif
 	    extab      : {}  
 	    extabindex : {}
-        .sdata2     : {}   /* SHF_ALLOC + possibly SHF_WRITE (prob. ReadOnly)*/
-        .sbss2      : {}   /* SHF_ALLOC +  SHF_WRITE , e.g const int apa = 0;*/
-	    . = ALIGN(0x10);   /* Section alignment is 0x10 */ 	
+
+	    . = ALIGN(0x10);   	
 	    __DATA_ROM = .;
 	    .=.+SIZEOF(.data);
-	    . = ALIGN(0x10);  /* Section alignment is 0x10 */
 	    __SDATA = .;
 	    .=.+SIZEOF(.sdata);
-	    . = ALIGN(0x10);  /* Section alignment is 0x10 */
+	    __SBSS = .;
+	    .=.+SIZEOF(.sbss);
+	    .sdata2 : {}
+	    .sbss2 : {}
 	    __SDATA0 = .;
 	    .=.+SIZEOF(.PPC.EMB.sdata0);
 	    __rom_end = .;
@@ -74,23 +103,21 @@ SECTIONS
 
 	GROUP : {
 		__ram_start=.;
-		__DATA_RAM = .;	
-		.data (DATA) LOAD(ADDR(__DATA_ROM)) :  {}
-		.sdata (DATA) LOAD(ADDR(__SDATA)): {}    /* .sdata - Initialized small data */
-	    __DATA_END = . ;
-	} > sram
+		__DATA_RAM = .;
+		.data (DATA) LOAD(ROMADDR(__DATA_ROM)) :  {}
+		.sdata (DATA) LOAD(ROMADDR(__SDATA)): {}
+		__DATA_END = . ;
 	
-	GROUP : {
-	  __BSS_START = .;
-	  .sbss    : {}  	/* sbss - un-initialized small data */									
-	  .bss    : {}  
-	  __BSS_END = .;
-      .PPC.EMB.sdata0 LOAD(ADDR(__SDATA0)) : {}	/* Small data with offset to 0 */	    
-      .PPC.EMB.sbss0  : {}
-      .ramlog : { *(.ramlog_data) *(.ramlog_bss) }
-      .dem : { *(.dem_eventmemory_pri) }
-	  _heap_addr = .; 
-	  __ram_end = .;
+		__BSS_START = .;
+		.sbss (DATA) : {}
+		.bss    : {}  
+		__BSS_END = .;
+		.PPC.EMB.sdata0 LOAD(ADDR(__SDATA0)) : {}	/* Small data with offset to 0 */	    
+		.PPC.EMB.sbss0  : {}
+		.ramlog : { *(.ramlog_data) *(.ramlog_bss) }
+		.dem : { *(.dem_eventmemory_pri) }
+		_heap_addr = .; 
+		__ram_end = .;
 	} > sram
 }   
 

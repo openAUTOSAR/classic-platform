@@ -124,8 +124,8 @@ void CanNm_Init( const CanNm_ConfigType * const cannmConfigPtr ){
   * This service has no effect if the current state is not equal to Bus-Sleep Mode. In
   * that case NM_E_NOT_EXECUTED is returned. */
 Nm_ReturnType CanNm_PassiveStartUp( const NetworkHandleType nmChannelHandle ){
-	CANNM_VALIDATE_INIT(CANNM_SERVICEID_PASSIVESTARTUP, NM_E_NOT_OK);
-	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_PASSIVESTARTUP, NM_E_NOT_OK);
+	CANNM_VALIDATE_INIT(CANNM_SERVICEID_PASSIVESTARTUP);
+	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_PASSIVESTARTUP);
 
 	const CanNm_ChannelType* ChannelConf = &CanNm_ConfigPtr->Channels[nmChannelHandle];
 	CanNm_Internal_ChannelType* ChannelInternal = &CanNm_Internal.Channels[nmChannelHandle];
@@ -143,8 +143,8 @@ Nm_ReturnType CanNm_PassiveStartUp( const NetworkHandleType nmChannelHandle ){
 /** Request the network, since ECU needs to communicate on the bus. Network
   * state shall be changed to ‘requested’ */
 Nm_ReturnType CanNm_NetworkRequest( const NetworkHandleType nmChannelHandle ){
-	CANNM_VALIDATE_INIT(CANNM_SERVICEID_NETWORKREQUEST, NM_E_NOT_OK);
-	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_NETWORKREQUEST, NM_E_NOT_OK);
+	CANNM_VALIDATE_INIT(CANNM_SERVICEID_NETWORKREQUEST);
+	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_NETWORKREQUEST);
 
 	const CanNm_ChannelType* ChannelConf = &CanNm_ConfigPtr->Channels[nmChannelHandle];
 	CanNm_Internal_ChannelType* ChannelInternal = &CanNm_Internal.Channels[nmChannelHandle];
@@ -168,8 +168,8 @@ Nm_ReturnType CanNm_NetworkRequest( const NetworkHandleType nmChannelHandle ){
 /** Release the network, since ECU doesn’t have to communicate on the bus. Network
   * state shall be changed to ‘released’. */
 Nm_ReturnType CanNm_NetworkRelease( const NetworkHandleType nmChannelHandle ){
-	CANNM_VALIDATE_INIT(CANNM_SERVICEID_NETWORKRELEASE, NM_E_NOT_OK);
-	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_NETWORKRELEASE, NM_E_NOT_OK);
+	CANNM_VALIDATE_INIT(CANNM_SERVICEID_NETWORKRELEASE);
+	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_NETWORKRELEASE);
 	const CanNm_ChannelType* ChannelConf = &CanNm_ConfigPtr->Channels[nmChannelHandle];
 	CanNm_Internal_ChannelType* ChannelInternal = &CanNm_Internal.Channels[nmChannelHandle];
 
@@ -186,16 +186,16 @@ Nm_ReturnType CanNm_NetworkRelease( const NetworkHandleType nmChannelHandle ){
 /** Disable the NM PDU transmission ability due to a ISO14229 Communication
   * Control (28hex) service */
 Nm_ReturnType CanNm_DisableCommunication( const NetworkHandleType nmChannelHandle ){
-	CANNM_VALIDATE_INIT(CANNM_SERVICEID_DISABLECOMMUNICATION, NM_E_NOT_OK);
-	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_DISABLECOMMUNICATION, NM_E_NOT_OK);
+	CANNM_VALIDATE_INIT(CANNM_SERVICEID_DISABLECOMMUNICATION);
+	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_DISABLECOMMUNICATION);
 	return NM_E_NOT_OK;
 }
 
 /** Enable the NM PDU transmission ability due to a ISO14229 Communication
   * Control (28hex) service */
 Nm_ReturnType CanNm_EnableCommunication( const NetworkHandleType nmChannelHandle ){
-	CANNM_VALIDATE_INIT(CANNM_SERVICEID_ENABLECOMMUNICATION, NM_E_NOT_OK);
-	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_ENABLECOMMUNICATION, NM_E_NOT_OK);
+	CANNM_VALIDATE_INIT(CANNM_SERVICEID_ENABLECOMMUNICATION);
+	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_ENABLECOMMUNICATION);
 	return NM_E_NOT_OK;
 }
 
@@ -203,8 +203,8 @@ Nm_ReturnType CanNm_EnableCommunication( const NetworkHandleType nmChannelHandle
 /** Set user data for NM messages transmitted next on the bus. */
 /** @req CANNM159  @req CANNM015 */
 Nm_ReturnType CanNm_SetUserData( const NetworkHandleType nmChannelHandle, const uint8* const nmUserDataPtr ){
-	CANNM_VALIDATE_INIT(CANNM_SERVICEID_SETUSERDATA, NM_E_NOT_OK);
-	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_SETUSERDATA, NM_E_NOT_OK);
+	CANNM_VALIDATE_INIT(CANNM_SERVICEID_SETUSERDATA);
+	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_SETUSERDATA);
 
 	const CanNm_ChannelType* ChannelConf = &CanNm_ConfigPtr->Channels[nmChannelHandle];
 	CanNm_Internal_ChannelType* ChannelInternal = &CanNm_Internal.Channels[nmChannelHandle];
@@ -221,8 +221,8 @@ Nm_ReturnType CanNm_SetUserData( const NetworkHandleType nmChannelHandle, const 
 /** Get user data out of the most recently received NM message. */
 /** @req CANNM160  @req CANNM031 */
 Nm_ReturnType CanNm_GetUserData( const NetworkHandleType nmChannelHandle, uint8* const nmUserDataPtr ){
-	CANNM_VALIDATE_INIT(CANNM_SERVICEID_GETUSERDATA, NM_E_NOT_OK);
-	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_GETUSERDATA, NM_E_NOT_OK);
+	CANNM_VALIDATE_INIT(CANNM_SERVICEID_GETUSERDATA);
+	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_GETUSERDATA);
 
 	const CanNm_ChannelType* ChannelConf = &CanNm_ConfigPtr->Channels[nmChannelHandle];
 	CanNm_Internal_ChannelType* ChannelInternal = &CanNm_Internal.Channels[nmChannelHandle];
@@ -239,8 +239,8 @@ Nm_ReturnType CanNm_GetUserData( const NetworkHandleType nmChannelHandle, uint8*
 /** Get node identifier out of the most recently received NM PDU. */
 /** @req CANNM132 */
 Nm_ReturnType CanNm_GetNodeIdentifier( const NetworkHandleType nmChannelHandle, uint8 * const nmNodeIdPtr ){
-	CANNM_VALIDATE_INIT(CANNM_SERVICEID_GETNODEIDENTIFIER, NM_E_NOT_OK);
-	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_GETNODEIDENTIFIER, NM_E_NOT_OK);
+	CANNM_VALIDATE_INIT(CANNM_SERVICEID_GETNODEIDENTIFIER);
+	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_GETNODEIDENTIFIER);
 
 	const CanNm_ChannelType* ChannelConf = &CanNm_ConfigPtr->Channels[nmChannelHandle];
 	CanNm_Internal_ChannelType* ChannelInternal = &CanNm_Internal.Channels[nmChannelHandle];
@@ -258,8 +258,8 @@ Nm_ReturnType CanNm_GetNodeIdentifier( const NetworkHandleType nmChannelHandle, 
 /** Get node identifier configured for the local node. */
 /** @req CANNM133 */
 Nm_ReturnType CanNm_GetLocalNodeIdentifier( const NetworkHandleType nmChannelHandle, uint8 * const nmNodeIdPtr ){
-	CANNM_VALIDATE_INIT(CANNM_SERVICEID_GETLOCALNODEIDENTIFIER, NM_E_NOT_OK);
-	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_GETLOCALNODEIDENTIFIER, NM_E_NOT_OK);
+	CANNM_VALIDATE_INIT(CANNM_SERVICEID_GETLOCALNODEIDENTIFIER);
+	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_GETLOCALNODEIDENTIFIER);
 
 	const CanNm_ChannelType* ChannelConf = &CanNm_ConfigPtr->Channels[nmChannelHandle];
 	*nmNodeIdPtr = ChannelConf->NodeId;
@@ -272,8 +272,8 @@ Nm_ReturnType CanNm_GetLocalNodeIdentifier( const NetworkHandleType nmChannelHan
 /** Set Repeat Message Request Bit for NM messages transmitted next on the bus. */
 /** @req CANNM135  @req CANNM136 */
 Nm_ReturnType CanNm_RepeatMessageRequest( const NetworkHandleType nmChannelHandle ){
-	CANNM_VALIDATE_INIT(CANNM_SERVICEID_REPEATMESSAGEREQUEST, NM_E_NOT_OK);
-	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_REPEATMESSAGEREQUEST, NM_E_NOT_OK);
+	CANNM_VALIDATE_INIT(CANNM_SERVICEID_REPEATMESSAGEREQUEST);
+	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_REPEATMESSAGEREQUEST);
 
 	const CanNm_ChannelType* ChannelConf = &CanNm_ConfigPtr->Channels[nmChannelHandle];
 	CanNm_Internal_ChannelType* ChannelInternal = &CanNm_Internal.Channels[nmChannelHandle];
@@ -300,8 +300,8 @@ Nm_ReturnType CanNm_RepeatMessageRequest( const NetworkHandleType nmChannelHandl
 /** Get the whole PDU data out of the most recently received NM message. */
 /** @req CANNM138  @req CANNM139 */
 Nm_ReturnType CanNm_GetPduData( const NetworkHandleType nmChannelHandle, uint8 * const nmPduDataPtr ){
-	CANNM_VALIDATE_INIT(CANNM_SERVICEID_GETPDUDATA, NM_E_NOT_OK);
-	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_GETPDUDATA, NM_E_NOT_OK);
+	CANNM_VALIDATE_INIT(CANNM_SERVICEID_GETPDUDATA);
+	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_GETPDUDATA);
 
 	const CanNm_ChannelType* ChannelConf = &CanNm_ConfigPtr->Channels[nmChannelHandle];
 	CanNm_Internal_ChannelType* ChannelInternal = &CanNm_Internal.Channels[nmChannelHandle];
@@ -315,8 +315,8 @@ Nm_ReturnType CanNm_GetPduData( const NetworkHandleType nmChannelHandle, uint8 *
 /** Returns the state and the mode of the network management. */
 /** @req CANNM091 */
 Nm_ReturnType CanNm_GetState( const NetworkHandleType nmChannelHandle, Nm_StateType * const nmStatePtr, Nm_ModeType * const nmModePtr ){
-	CANNM_VALIDATE_INIT(CANNM_SERVICEID_GETSTATE, NM_E_NOT_OK);
-	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_GETSTATE, NM_E_NOT_OK);
+	CANNM_VALIDATE_INIT(CANNM_SERVICEID_GETSTATE);
+	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_GETSTATE);
 
 	CanNm_Internal_ChannelType* ChannelInternal = &CanNm_Internal.Channels[nmChannelHandle];
 	*nmStatePtr = ChannelInternal->State;
@@ -327,16 +327,16 @@ Nm_ReturnType CanNm_GetState( const NetworkHandleType nmChannelHandle, Nm_StateT
 
 /** Request bus synchronization. */
 Nm_ReturnType CanNm_RequestBusSynchronization( const NetworkHandleType nmChannelHandle ){
-	CANNM_VALIDATE_INIT(CANNM_SERVICEID_REQUESTBUSSYNCHRONIZATION, NM_E_NOT_OK);
-	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_REQUESTBUSSYNCHRONIZATION, NM_E_NOT_OK);
+	CANNM_VALIDATE_INIT(CANNM_SERVICEID_REQUESTBUSSYNCHRONIZATION);
+	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_REQUESTBUSSYNCHRONIZATION);
 	// Not implemented
 	return NM_E_NOT_OK;
 }
 
 /** Check if remote sleep indication takes place or not. */
 Nm_ReturnType CanNm_CheckRemoteSleepIndication( const NetworkHandleType nmChannelHandle, boolean * const nmRemoteSleepIndPtr ){
-	CANNM_VALIDATE_INIT(CANNM_SERVICEID_CHECKREMOTESLEEPINDICATION, NM_E_NOT_OK);
-	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_CHECKREMOTESLEEPINDICATION, NM_E_NOT_OK);
+	CANNM_VALIDATE_INIT(CANNM_SERVICEID_CHECKREMOTESLEEPINDICATION);
+	CANNM_VALIDATE_CHANNEL(nmChannelHandle, CANNM_SERVICEID_CHECKREMOTESLEEPINDICATION);
 	(void)nmRemoteSleepIndPtr;
 	// Not implemented
 	return NM_E_NOT_OK;
@@ -350,8 +350,8 @@ Nm_ReturnType CanNm_CheckRemoteSleepIndication( const NetworkHandleType nmChanne
   * This callback service is called by the CanIf and implemented by the CanNm. */
 /** @req CANNM034.deferred */
 void CanNm_TxConfirmation( PduIdType canNmTxPduId ){
-	CANNM_VALIDATE_INIT(CANNM_SERVICEID_TXCONFIRMATION);
-	CANNM_VALIDATE_CHANNEL(canNmTxPduId, CANNM_SERVICEID_TXCONFIRMATION);
+	CANNM_VALIDATE_INIT_NORV(CANNM_SERVICEID_TXCONFIRMATION);
+	CANNM_VALIDATE_CHANNEL_NORV(canNmTxPduId, CANNM_SERVICEID_TXCONFIRMATION);
 
 	const CanNm_ChannelType* ChannelConf = &CanNm_ConfigPtr->Channels[canNmTxPduId];
 	CanNm_Internal_ChannelType* ChannelInternal = &CanNm_Internal.Channels[canNmTxPduId];
@@ -365,8 +365,8 @@ void CanNm_TxConfirmation( PduIdType canNmTxPduId ){
   * CanNm after passing all filters and validation checks.
   * This callback service is called by the CAN Interface and implemented by the CanNm. */
 void CanNm_RxIndication( PduIdType canNmRxPduId, const uint8 *canSduPtr ){
-	CANNM_VALIDATE_INIT(CANNM_SERVICEID_RXINDICATION);
-	CANNM_VALIDATE_CHANNEL(canNmRxPduId, CANNM_SERVICEID_RXINDICATION);
+	CANNM_VALIDATE_INIT_NORV(CANNM_SERVICEID_RXINDICATION);
+	CANNM_VALIDATE_CHANNEL_NORV(canNmRxPduId, CANNM_SERVICEID_RXINDICATION);
 
 	const CanNm_ChannelType* ChannelConf = &CanNm_ConfigPtr->Channels[canNmRxPduId];
 	CanNm_Internal_ChannelType* ChannelInternal = &CanNm_Internal.Channels[canNmRxPduId];
@@ -412,7 +412,7 @@ void CanNm_RxIndication( PduIdType canNmRxPduId, const uint8 *canSduPtr ){
 void CanNm_MainFunction(NetworkHandleType nmChannelHandle);
 
 void CanNm_MainFunction( NetworkHandleType nmChannelHandle ) {
-	CANNM_VALIDATE_INIT(CANNM_SERVICEID_ARC_MAINFUNCTION);
+	CANNM_VALIDATE_INIT_NORV(CANNM_SERVICEID_ARC_MAINFUNCTION);
 
 	/** @req CANNM108 */
 

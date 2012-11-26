@@ -71,7 +71,11 @@ void Irq_GenerateSoftInt( IrqType vector ) {
 
 	if (vector == IRQ_TYPE_ILLEGAL)
 	{
+#if defined(__ICCHCS12__)
+            asm("TRAP 0x30"); // Trap instruction
+#else
             asm(".short 0x1830"); // Trap instruction
+#endif
 	}
 }
 
@@ -89,12 +93,15 @@ uint8_t Irq_GetCurrentPriority( Cpu_t cpu) {
 }
 
 void Irq_EnableVector( int16_t vector, int priority, int core ) {
-	// TODO Check manual here
 }
+
 
 // #####################  INTERRUPT TRANSLATE TABLE #######################
 #define IRQ_MAP(x) irq_##x
 
+#if defined(__ICCHCS12__)
+/* MOVED TO crt0_iar.s instead */
+#else
 const struct interrupt_vectors __attribute__((section(".vectors"))) vectors =
     {
 	  pwm_shutdown_handler:
@@ -224,3 +231,4 @@ const struct interrupt_vectors __attribute__((section(".vectors"))) vectors =
   reset_handler:
       _start,
     };
+#endif

@@ -15,6 +15,11 @@ cygpath:= $(shell cygpath -m $(shell which cygpath))
 export CYGPATH=$(cygpath)
 endif
 
+# Find version
+gcc_version = $(shell ${CROSS_COMPILE}gcc --version | gawk -v VER=$(1) '{ if( VER >= strtonum(gensub(/\./,"","g",$$3)) ) print "y";exit  }' )
+GCC_V430 = $(call gcc_version,430)
+GCC_V340 = $(call gcc_version,340)  
+
 # ---------------------------------------------------------------------------
 # Compiler
 # CCFLAGS - compile flags
@@ -22,6 +27,8 @@ endif
 CC	= 	$(CROSS_COMPILE)gcc
 cflags-$(CFG_OPT_RELEASE) += -O3
 cflags-$(CFG_OPT_DEBUG) += -g -O0
+cflags-$(CFG_OPT_SIZE) += -g -Os
+
 
 # Remove sections if needed.. may be problems with other compilers here.
 #cflags-y += -ffunction-sections
@@ -30,7 +37,6 @@ ifneq ($(filter -O2 -O3 -O1,$(cflags-y)),)
 	cflags-y += -fno-schedule-insns -fno-schedule-insns2
 endif
 
-#cflags-y 		+= -c 
 #cflags-y 		+= -fno-common
 cflags-y 		+= -std=gnu99
 
@@ -39,12 +45,17 @@ cflags-y 		+= -MMD
 
 # Warnings
 cflags-y          += -Wall
-#cflags-y          += -Winline	# warn if inline failed
+cflags-$(GCC_V340)+= -Wextra
+cflags-$(GCC_V430)+= -Wconversion
 #cflags-y          += -pedantic
 
 # Conformance
 cflags-y          += -fno-strict-aliasing	# Use restict keyword instead.
 cflags-y          += -fno-builtin
+
+# gcov
+cflags-$(CFG_GCOV) += -fprofile-arcs
+cflags-$(CFG_GCOV) += -ftest-coverage
 
 # Get machine cflags
 #cflags-y		+= $(cflags-$(ARCH))
@@ -109,7 +120,7 @@ ifneq ($(CROSS_COMPILE),)
 LDFLAGS += -Map $(subst .$(TE),.map, $@) 
 endif
 
-
+lib-$(CFG_GCOV) += -lgcov 
 
 libitem-y += $(libitem-yy)
 

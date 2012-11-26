@@ -3,7 +3,9 @@ _BOARD_COMMON_MK:=y  # Include guard for backwards compatability
 
 
 obj-$(CFG_PPC) += crt0.o
-obj-$(CFG_HC1X) += crt0.o
+obj-$(CFG_HC1X)-$(COMPILER) += crt0_$(COMPILER).o
+
+
 vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
 vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32F10x_StdPeriph_Driver/src
 vpath-$(CFG_ARM_CM3) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers/STM32_ETH_Driver/src
@@ -312,12 +314,21 @@ obj-y += cirq_buffer.o
 ifeq ($(COMPILER),cw)
 SELECT_CLIB?=CLIB_CW
 endif
+ifeq ($(COMPILER),iar)
+SELECT_CLIB?=CLIB_IAR
+endif
 
 SELECT_CLIB?=CLIB_NEWLIB
 
 ifeq ($(SELECT_CLIB),CLIB_NATIVE)
   # Just use native clib 
   
+else ifeq ($(SELECT_CLIB),CLIB_IAR)
+  # This is not good, but don't know what to do right now....
+  obj-y += iar_port.o
+  obj-y += xtoa.o
+  obj-y += printf.o
+  def-y += USE_CLIB_IAR
 else ifeq ($(SELECT_CLIB),CLIB_CW)
   # This is not good, but don't know what to do right now....
   obj-y += xtoa.o
@@ -339,6 +350,10 @@ endif # SELECT_CLIB
 
 
 obj-y += $(obj-y-y)
+obj-y += $(obj-y-gcc)
+obj-y += $(obj-y-iar)
+obj-y += $(obj-y-cw)
+
 
 vpath-y += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
 vpath-y += $(ROOTDIR)/$(ARCH_PATH-y)/drivers

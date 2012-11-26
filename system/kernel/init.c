@@ -250,8 +250,13 @@ static void os_start( void ) {
 #define TEST_SDATA2	0x3344
 volatile uint32_t test_data = TEST_DATA;
 volatile uint32_t test_bss = 0;
+volatile uint32_t test_bss_array[3];
+volatile uint32_t test_data_array[3] = {TEST_DATA,TEST_DATA,TEST_DATA};
+
 /* Define if compiler is set to use small data section */
 /* #define CC_USE_SMALL_DATA */
+
+//#define CC_USE_SMALL_DATA 1
 
 #if defined(CFG_PPC) && defined(__CWCC__)
 /* Note! It does not matter if the data is initialized to 0,
@@ -268,27 +273,44 @@ volatile const int test_sdata2 = TEST_SDATA2;
 
 #define BAD_LINK_FILE() 	while(1) {}
 
-extern void EcuM_Init();
+extern void EcuM_Init(void);
 int main( void )
 {
 	/* Check link file */
+
+	/* .data */
+	for(int i=0;i<3;i++ ) {
+		if( test_data_array[i] != TEST_DATA) {
+			BAD_LINK_FILE();
+		}
+	}
+
+	/* .sdata */
 	if (TEST_DATA != test_data) {
 		BAD_LINK_FILE();
 	}
 
+	/* .bss */
+	for(int i=0;i<3;i++ ) {
+		if( test_bss_array[i] != 0) {
+			BAD_LINK_FILE();
+		}
+	}
+
+	/* .sbss */
 	if (test_bss != 0) {
 		BAD_LINK_FILE();
 	}
 
 #if defined(CFG_PPC) && defined(__CWCC__)
-	/* check sdata2 */
+	/* check .sdata2 */
 	if (test_sdata2 != TEST_SDATA2) {
 		BAD_LINK_FILE();
 	}
 #endif
 
 #if defined(CC_USE_SMALL_DATA) && defined(CFG_PPC) && defined(__CWCC__)
-	/* check sdata2 */
+	/* check .sbss */
 	if (test_sbss2 != 0) {
 		BAD_LINK_FILE();
 	}

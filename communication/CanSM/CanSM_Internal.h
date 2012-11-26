@@ -30,16 +30,26 @@
 		return __VA_ARGS__;									\
 	}
 
+#define CANSM_VALIDATE_NORV(expression, serviceId, errorId)	\
+	if (!(expression)) {									\
+		CANSM_DET_REPORTERROR(serviceId, errorId);			\
+		return;									\
+	}
+
 #else
 #define CANSM_DET_REPORTERROR(...)
 #define CANSM_VALIDATE(...)
+#define CANSM_VALIDATE_NORV(...)
 #endif
 
 #define CANSM_VALIDATE_INIT(serviceID, ...)					\
 		CANSM_VALIDATE((CanSM_Internal.InitStatus == CANSM_STATUS_INIT), serviceID, CANSM_E_UNINIT, __VA_ARGS__)
 
-#define CANSM_VALIDATE_POINTER(pointer, serviceID, ...)					\
-		CANSM_VALIDATE( (pointer != NULL), serviceID, CANSM_E_PARAM_POINTER, __VA_ARGS__)
+#define CANSM_VALIDATE_INIT_NORV(serviceID)					\
+		CANSM_VALIDATE_NORV((CanSM_Internal.InitStatus == CANSM_STATUS_INIT), serviceID, CANSM_E_UNINIT)
+
+#define CANSM_VALIDATE_POINTER_NORV(pointer, serviceID)					\
+		CANSM_VALIDATE_NORV( (pointer != NULL), serviceID, CANSM_E_PARAM_POINTER)
 
 #define CANSM_VALIDATE_NETWORK(net, serviceID, ...)					\
 		CANSM_VALIDATE( (net < CANSM_NETWORK_COUNT), serviceID, CANSM_E_INVALID_NETWORK_HANDLE, __VA_ARGS__)

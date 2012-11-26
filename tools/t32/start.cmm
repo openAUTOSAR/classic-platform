@@ -48,6 +48,9 @@ IF SIMULATOR()
   IF CPU()!="CortexM3"
   (
     do sim_mpc55xx
+    
+    IF CPU()=="MPC5606S"
+      sys.option DISMODE VLE
   )
 )
 ELSE
@@ -81,6 +84,7 @@ print "## Welcome to ArcCore simulator environment for T32   ##"
 print ""
 
 enddo
+
 
 
 

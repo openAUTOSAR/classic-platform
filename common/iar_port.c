@@ -1,19 +1,17 @@
 /*
- * msl_port.c
+ * iar_port.c
  *
- *  Created on: 14 feb 2011
- *      Author: mahi
+ *  Created on: 16 nov 2011
+ *      Author: jcar
  */
 
 /*
-Methods called by MW MSL libraries to perform console IO:
+Methods called by IAR libraries to perform console IO:
 */
 
 #include "Os.h"
 #include "Ramlog.h"
-#include "../../MSL_Common_Embedded/Include/UART.h"
-#include <stddef.h>
-#include <stdlib.h>
+#include "stddef.h"
 
 #ifdef USE_TTY_WINIDEA
 
@@ -29,36 +27,48 @@ Methods called by MW MSL libraries to perform console IO:
 #define TWBUFF_FULL()	(TWBUFF_TPTR==((TWBUFF_CPTR-1)&(TWBUFF_SIZE-1)))
 
 volatile char g_TConn;
-volatile unsigned char g_TWBuffer[TWBUFF_LEN] __attribute__ ((aligned (0x100))); // Transmit to WinIDEA terminal
-volatile unsigned char g_TRBuffer[TRBUFF_LEN] __attribute__ ((aligned (0x100)));
-
+SECTION_BALIGN(0x100) volatile unsigned char g_TWBuffer[TWBUFF_LEN]; // Transmit to WinIDEA terminal
+SECTION_BALIGN(0x100) volatile unsigned char g_TRBuffer[TRBUFF_LEN];
 
 #endif
 
-UARTError InitializeUART(UARTBaudRate baudRate)
-{
-	(void)baudRate;
-	return 0;
-}
+#ifdef USE_TTY_NOICE
+volatile unsigned char START_VUART = 0;
 
-UARTError ReadUARTN(void* bytes, unsigned long length)
+_Pragma("location=0x1000")
+__no_init static volatile char VUART_TX;
+__no_init static volatile char VUART_RX;
+
+#endif
+
+
+size_t __write(int handle, const unsigned char *buf, size_t cnt)
 {
+#ifdef USE_TTY_NOICE
+	char *buf1 = (char *)buf;
+	if (START_VUART)
+	{
+   	   for (int i = 0; i < cnt; i++) {
+   		   char c = buf1[i];
+   		   if (c == '\n')
+   		   {
+   	   		   while (VUART_TX != 0)
+   	   		   {
+   	   		   }
+
+   	   		   VUART_TX = '\r';
+   		   }
+
+   		   while (VUART_TX != 0)
+   		   {
+   		   }
+
+   		   VUART_TX = c;
+   	   }
+	}
+#endif
 #ifdef USE_TTY_WINIDEA
 	(void)g_TRBuffer[0];
-#endif
-	(void)bytes;
-	(void)length;
-	return 0; // No error
-}
-
-UARTError ReadUART1(char* c) {
-	return ReadUARTN( c, 1 );
-}
-
-UARTError WriteUARTN(const void* buf, unsigned long cnt)
-{
-#ifdef USE_TTY_WINIDEA
-	if (g_TConn)
 	{
 		unsigned char nCnt,nLen;
 		for(nCnt = 0; nCnt < cnt; nCnt++)
@@ -73,7 +83,7 @@ UARTError WriteUARTN(const void* buf, unsigned long cnt)
 #endif
 #if defined(USE_RAMLOG)
 		{
-			char *pbuf = buf;
+			const unsigned char *pbuf = buf;
 			for (int i = 0; i < cnt; i++) {
 				ramlog_chr (*(pbuf + i));
 			}
@@ -86,30 +96,12 @@ UARTError WriteUARTN(const void* buf, unsigned long cnt)
 	return 0; // No error
 }
 
-UARTError WriteUART1(char c) {
-	return WriteUARTN( &c, 1 );
+int arc_putchar(int fd, int c) {
+	char cc = c;
+	__write( fd,(const unsigned char *)&cc,1);
+
+	return 0;
 }
-
-
-#if 0
-void __init_hardware(void)
-{
-}
-
-
-void __flush_cache(register void *address, register unsigned int size)
-{
-	(void)address;
-	(void)size;
-
-}
-
-void __init_user(void)
-{
-
-}
-#endif
-
 
 void exit(int exit ) {
 	(void)exit;

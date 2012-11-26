@@ -22,6 +22,9 @@ endif
 ifeq (${COMPILER},cw)
 CW_COMPILE?=${DEFAULT_CW_COMPILE}
 endif
+ifeq (${COMPILER},iar)
+IAR_COMPILE?=${DEFAULT_IAR_COMPILE}
+endif
 
 # Check cross compiler setting against default from board config
 ifeq (${COMPILER},cw)
@@ -29,6 +32,12 @@ ifneq (${CW_COMPILE},${DEFAULT_CW_COMPILE})
 ${warning Not using default cross compiler for architecture.}
 ${warning CW_COMPILE:            ${CW_COMPILE} [${origin CW_COMPILE}]}
 ${warning DEFAULT_CW_COMPILE:    ${DEFAULT_CW_COMPILE} [${origin DEFAULT_CW_COMPILE}]}
+endif
+else ifeq (${COMPILER},iar)
+ifneq (${IAR_COMPILE},${DEFAULT_IAR_COMPILE})
+${warning Not using default cross compiler for architecture.}
+${warning IAR_COMPILE:            ${IAR_COMPILE} [${origin IAR_COMPILE}]}
+${warning DEFAULT_IAR_COMPILE:    ${DEFAULT_IAR_COMPILE} [${origin DEFAULT_IAR_COMPILE}]}
 endif
 else
 ifneq (${DEFAULT_CROSS_COMPILE},)
@@ -247,7 +256,11 @@ all: module_config $(all-mod) $(all-mod-post) $(ROOTDIR)/binaries/$(BOARDDIR)
 %.o: %.c
 	@echo
 	@echo "  >> CC $(notdir $<)"
+ifeq (${COMPILER},iar)
+	$(Q)$(CC) $(CFLAGS) $(CFLAGS_$@) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
+else
 	$(Q)$(CC) -c $(CFLAGS) $(CFLAGS_$@) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
+endif
 	$(do-compile-post)
 # run lint if enabled
 	$(run_pclint)
@@ -277,7 +290,11 @@ inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
 %.lcf %.ldp: %.ldf
 	@echo
 	@echo "  >> CPP $(notdir $<)"
+ifeq ($(COMPILER),iar)
+	$(Q)$(CPP) $(CPP_ASM_FLAGS) $(CPPOUT) $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
+else
 	$(Q)$(CPP) -P $(CPP_ASM_FLAGS) $(CPPOUT) $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
+endif
 
 .PHONY $(ROOTDIR)/libs:
 $(ROOTDIR)/libs:
@@ -307,7 +324,9 @@ $(build-hex-y): $(build-exe-y)
 $(build-exe-y): $(dep-y) $(obj-y) $(sim-y) $(libitem-y) $(ldcmdfile-y)
 	@echo
 	@echo "  >> LD $@"
-ifeq ($(CROSS_COMPILE)$(COMPILER),gcc)
+ifeq ($(COMPILER),iar)
+	$(Q)$(LD) $(obj-y) $(LDFLAGS) -o $@ -I$(libpath-y) $(lib-y) $(libitem-y)	
+else ifeq ($(CROSS_COMPILE)$(COMPILER),gcc)
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	
 else
 	$(Q)$(LD) $(LDFLAGS) $(LD_FILE) $(ldcmdfile-y) -o $@ $(libpath-y) $(LD_START_GRP) $(obj-y) $(lib-y) $(libitem-y) $(LD_END_GRP) $(LDMAPFILE)

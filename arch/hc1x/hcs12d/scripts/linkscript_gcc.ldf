@@ -7,7 +7,7 @@ ENTRY(_start)
 
 MEMORY
 {
-#include "memory.ldf"
+#include "memory_gcc.ldf"
 }
 
 /* Setup the stack on the top of the data memory bank.  */
