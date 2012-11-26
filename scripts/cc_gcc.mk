@@ -46,7 +46,7 @@ cflags-y 		+= -MMD
 # Warnings
 cflags-y          += -Wall
 cflags-$(GCC_V340)+= -Wextra
-cflags-$(GCC_V430)+= -Wconversion
+#cflags-$(GCC_V430)+= -Wconversion
 #cflags-y          += -pedantic
 
 # Conformance
