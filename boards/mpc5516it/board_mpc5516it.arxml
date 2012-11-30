@@ -8,7 +8,7 @@
           <SHORT-NAME>board_mpc5516it</SHORT-NAME>
           <ADMIN-DATA>
             <DOC-REVISIONS>
-              <DOC-REVISION />
+              <DOC-REVISION/>
             </DOC-REVISIONS>
             <SDGS>
               <SDG GID="Arccore::EcuOptions">
@@ -32,7 +32,7 @@
           <SHORT-NAME>Dio</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG />
+              <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.0</SD>
@@ -59,7 +59,7 @@
               <SHORT-NAME>LED_PORT</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Dio/DioPort</DEFINITION-REF>
@@ -78,7 +78,7 @@
                   <SHORT-NAME>LEDS_LED4</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Dio/DioPort/DioChannel</DEFINITION-REF>
@@ -93,7 +93,7 @@
                   <SHORT-NAME>LEDS_LED5</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Dio/DioPort/DioChannel</DEFINITION-REF>
@@ -108,7 +108,7 @@
                   <SHORT-NAME>LED_GRP_PTR</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Dio/DioPort/DioChannelGroup</DEFINITION-REF>
@@ -129,7 +129,7 @@
               <SHORT-NAME>SPI_HOLD</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Dio/DioPort</DEFINITION-REF>
@@ -148,7 +148,7 @@
                   <SHORT-NAME>SPI_A_HOLD_M95256</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Dio/DioPort/DioChannel</DEFINITION-REF>
@@ -163,7 +163,7 @@
                   <SHORT-NAME>SPI_B_HOLD_M95256</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Dio/DioPort/DioChannel</DEFINITION-REF>
@@ -178,7 +178,7 @@
                   <SHORT-NAME>SPI_A_HOLD_S25FL016</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Dio/DioPort/DioChannel</DEFINITION-REF>
@@ -195,7 +195,7 @@
               <SHORT-NAME>MISC_PORT</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Dio/DioPort</DEFINITION-REF>
@@ -233,7 +233,7 @@
               <SHORT-NAME>PLAY</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Dio/DioPort</DEFINITION-REF>
@@ -290,7 +290,7 @@
           <SHORT-NAME>Mcu</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG />
+              <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.0</SD>
@@ -353,7 +353,7 @@
                       <SHORT-NAME>EXT_REF_80MHZ</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint</DEFINITION-REF>
@@ -380,7 +380,7 @@
                       <SHORT-NAME>EXT_REF_66MHZ</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint</DEFINITION-REF>
@@ -407,7 +407,7 @@
                       <SHORT-NAME>XOSC_CAN</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint</DEFINITION-REF>
@@ -436,7 +436,7 @@
                   <SHORT-NAME>RUN</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf</DEFINITION-REF>
@@ -451,7 +451,7 @@
                   <SHORT-NAME>SLEEP</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf</DEFINITION-REF>
@@ -470,7 +470,7 @@
           <SHORT-NAME>Port</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG />
+              <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.0</SD>
@@ -487,7 +487,7 @@
                   <SHORT-NAME>Misc</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer</DEFINITION-REF>
@@ -496,7 +496,7 @@
                       <SHORT-NAME>BOOTCFG</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
@@ -592,7 +592,7 @@
                       <SHORT-NAME>PF[0]</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
@@ -652,7 +652,7 @@
                       <SHORT-NAME>SIN_A</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
@@ -699,7 +699,7 @@
                       <SHORT-NAME>SOUT_A</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
@@ -746,7 +746,7 @@
                       <SHORT-NAME>SCK_A</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
@@ -991,7 +991,7 @@
                   <SHORT-NAME>SPI_B</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer</DEFINITION-REF>
@@ -1000,7 +1000,7 @@
                       <SHORT-NAME>SIN_B</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
@@ -1047,7 +1047,7 @@
                       <SHORT-NAME>SOUT_B</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
@@ -1094,7 +1094,7 @@
                       <SHORT-NAME>SCK_B</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
@@ -1141,7 +1141,7 @@
                       <SHORT-NAME>PCS_B[0]</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
@@ -1239,7 +1239,7 @@
                   <SHORT-NAME>LIN_B</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer</DEFINITION-REF>
@@ -1248,7 +1248,7 @@
                       <SHORT-NAME>TXD_B</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
@@ -1295,7 +1295,7 @@
                       <SHORT-NAME>RXD_B</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
@@ -1355,7 +1355,7 @@
                       <SHORT-NAME>PD[4]</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
@@ -1402,7 +1402,7 @@
                       <SHORT-NAME>PD[5]</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
@@ -1462,7 +1462,7 @@
                       <SHORT-NAME>CNTX_A</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
@@ -1509,7 +1509,7 @@
                       <SHORT-NAME>CNRX_A</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
@@ -1558,7 +1558,7 @@
                   <SHORT-NAME>SerialPort</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer</DEFINITION-REF>
@@ -1567,7 +1567,7 @@
                       <SHORT-NAME>RXD_D</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
@@ -1614,7 +1614,7 @@
                       <SHORT-NAME>TXD_D</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
@@ -1689,7 +1689,7 @@
           <SHORT-NAME>EcuM</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG />
+              <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.2</SD>
@@ -1761,7 +1761,7 @@
                   <SHORT-NAME>EcuMSleepMode</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode</DEFINITION-REF>
@@ -1816,4 +1816,3 @@
     </AR-PACKAGE>
   </TOP-LEVEL-PACKAGES>
 </AUTOSAR>
-

@@ -121,7 +121,7 @@ static void calcPeriodTicksAndPrescaler(
 
 	if (channelConfig->prescaler == PWM_CHANNEL_PRESCALER_AUTO) {
 		// Go from lowest to highest prescaler
-		for (pre = PWM_CHANNEL_PRESCALER_DIV_1; pre <= PWM_CHANNEL_PRESCALER_DIV_128; ++pre) {
+		for (pre = PWM_CHANNEL_PRESCALER_DIV_1; pre <= PWM_CHANNEL_PRESCALER_DIV_128; pre++) {
 		  ticks_temp = f_in / (f_target * (1 << pre)); // Calc ticks
 		  if (ticks_temp > 0x7fff) {
 			ticks_temp = 0x7fff;  // Prescaler too low

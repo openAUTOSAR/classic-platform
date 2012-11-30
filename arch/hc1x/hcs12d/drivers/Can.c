@@ -514,7 +514,7 @@ static void Can_RxIsr(int unit) {
         {
           GET_CALLBACKS()->RxIndication(hohObj->CanObjectId,
                                         id,
-                                        canHw->RXFG.dlr,
+                                        canHw->RXFG.dlr & 0x0f,
                                         (uint8 *)&canHw->RXFG.ds0 ); // Next layer will copy
         }
         // Increment statistics

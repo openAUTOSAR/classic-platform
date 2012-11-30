@@ -311,6 +311,7 @@ const uint8_t PortOutConfigData[] = {
 	PORT_GPDO_RESET,			/* GPDO	140 */
 	PORT_GPDO_RESET,			/* GPDO	141 */
 	PORT_GPDO_RESET,			/* GPDO	142 */
+	PORT_GPDO_RESET,			/* GPDO	143 */
 };
 
 const Port_ConfigType PortConfigData =

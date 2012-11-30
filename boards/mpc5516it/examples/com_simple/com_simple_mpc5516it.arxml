@@ -8,7 +8,7 @@
           <SHORT-NAME>com_simple_mpc5516it</SHORT-NAME>
           <ADMIN-DATA>
             <DOC-REVISIONS>
-              <DOC-REVISION />
+              <DOC-REVISION/>
             </DOC-REVISIONS>
             <SDGS>
               <SDG GID="Arccore::EcuOptions">
@@ -119,14 +119,14 @@
                   <SHORT-NAME>CanDB_Message_1</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPdu</DEFINITION-REF>
                   <PARAMETER-VALUES>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduCallout</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE></VALUE>
                     </FUNCTION-NAME-VALUE>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduRxHandleId</DEFINITION-REF>
@@ -222,7 +222,7 @@
                   <SHORT-NAME>CanDB_Signal_32_21_BE_Tester</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComSignal</DEFINITION-REF>
@@ -245,7 +245,7 @@
                     </INTEGER-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComNotification</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE></VALUE>
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalEndianess</DEFINITION-REF>
@@ -269,7 +269,7 @@
                     </INTEGER-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutNotification</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE></VALUE>
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
@@ -285,7 +285,7 @@
                   <SHORT-NAME>CanDB_Signal_1_4_LE_Tester</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComSignal</DEFINITION-REF>
@@ -308,7 +308,7 @@
                     </INTEGER-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComNotification</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE></VALUE>
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalEndianess</DEFINITION-REF>
@@ -332,7 +332,7 @@
                     </INTEGER-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutNotification</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE></VALUE>
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
@@ -348,7 +348,7 @@
                   <SHORT-NAME>CanDB_Signal_45_12_LE_Tester</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComSignal</DEFINITION-REF>
@@ -371,7 +371,7 @@
                     </INTEGER-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComNotification</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE></VALUE>
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalEndianess</DEFINITION-REF>
@@ -395,7 +395,7 @@
                     </INTEGER-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutNotification</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE></VALUE>
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
@@ -411,7 +411,7 @@
                   <SHORT-NAME>CanDB_Signal_29_12_BE_Tester</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComSignal</DEFINITION-REF>
@@ -434,7 +434,7 @@
                     </INTEGER-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComNotification</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE></VALUE>
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalEndianess</DEFINITION-REF>
@@ -458,7 +458,7 @@
                     </INTEGER-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutNotification</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE></VALUE>
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
@@ -474,14 +474,14 @@
                   <SHORT-NAME>CanDB_Message_2</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPdu</DEFINITION-REF>
                   <PARAMETER-VALUES>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduCallout</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE></VALUE>
                     </FUNCTION-NAME-VALUE>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduRxHandleId</DEFINITION-REF>
@@ -577,7 +577,7 @@
                   <SHORT-NAME>CanDB_Signal_32_21_BE</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComSignal</DEFINITION-REF>
@@ -600,7 +600,7 @@
                     </INTEGER-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComNotification</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE></VALUE>
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalEndianess</DEFINITION-REF>
@@ -624,7 +624,7 @@
                     </INTEGER-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutNotification</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE></VALUE>
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
@@ -640,7 +640,7 @@
                   <SHORT-NAME>CanDB_Signal_1_4_LE</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComSignal</DEFINITION-REF>
@@ -663,7 +663,7 @@
                     </INTEGER-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComNotification</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE></VALUE>
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalEndianess</DEFINITION-REF>
@@ -687,7 +687,7 @@
                     </INTEGER-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutNotification</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE></VALUE>
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
@@ -703,7 +703,7 @@
                   <SHORT-NAME>CanDB_Signal_45_12_LE</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComSignal</DEFINITION-REF>
@@ -726,7 +726,7 @@
                     </INTEGER-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComNotification</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE></VALUE>
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalEndianess</DEFINITION-REF>
@@ -750,7 +750,7 @@
                     </INTEGER-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutNotification</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE></VALUE>
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
@@ -766,7 +766,7 @@
                   <SHORT-NAME>CanDB_Signal_29_12_BE</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComSignal</DEFINITION-REF>
@@ -789,7 +789,7 @@
                     </INTEGER-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComNotification</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE></VALUE>
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalEndianess</DEFINITION-REF>
@@ -813,7 +813,7 @@
                     </INTEGER-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutNotification</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE></VALUE>
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
@@ -920,7 +920,7 @@
                 </INTEGER-VALUE>
                 <ENUMERATION-VALUE>
                   <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMinimumRoutingLoModule</DEFINITION-REF>
-                  <VALUE />
+                  <VALUE></VALUE>
                 </ENUMERATION-VALUE>
                 <INTEGER-VALUE>
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMinimumRoutingLoRxPduId</DEFINITION-REF>
@@ -932,7 +932,7 @@
                 </INTEGER-VALUE>
                 <ENUMERATION-VALUE>
                   <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMinimumRoutingUpModule</DEFINITION-REF>
-                  <VALUE />
+                  <VALUE></VALUE>
                 </ENUMERATION-VALUE>
                 <INTEGER-VALUE>
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMinimumRoutingUpRxPduId</DEFINITION-REF>
@@ -1121,7 +1121,7 @@
                   <SHORT-NAME>Controller_A</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet/CanController</DEFINITION-REF>
@@ -1180,7 +1180,7 @@
                       <SHORT-NAME>FilterMask</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet/CanController/CanFilterMask</DEFINITION-REF>
@@ -1197,7 +1197,7 @@
                   <SHORT-NAME>TxHWObject</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject</DEFINITION-REF>
@@ -1242,7 +1242,7 @@
                   <SHORT-NAME>RxHWObject</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Can/CanConfigSet/CanHardwareObject</DEFINITION-REF>
@@ -1330,19 +1330,19 @@
               <PARAMETER-VALUES>
                 <FUNCTION-NAME-VALUE>
                   <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/CanIf/CanIfDispatchConfig/CanIfBusOffNotification</DEFINITION-REF>
-                  <VALUE />
+                  <VALUE></VALUE>
                 </FUNCTION-NAME-VALUE>
                 <FUNCTION-NAME-VALUE>
                   <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/CanIf/CanIfDispatchConfig/CanIfErrorNotificaton</DEFINITION-REF>
-                  <VALUE />
+                  <VALUE></VALUE>
                 </FUNCTION-NAME-VALUE>
                 <FUNCTION-NAME-VALUE>
                   <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/CanIf/CanIfDispatchConfig/CanIfWakeupNotification</DEFINITION-REF>
-                  <VALUE />
+                  <VALUE></VALUE>
                 </FUNCTION-NAME-VALUE>
                 <FUNCTION-NAME-VALUE>
                   <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/CanIf/CanIfDispatchConfig/CanIfWakeupValidNotification</DEFINITION-REF>
-                  <VALUE />
+                  <VALUE></VALUE>
                 </FUNCTION-NAME-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
@@ -1378,7 +1378,7 @@
               <PARAMETER-VALUES>
                 <STRING-VALUE>
                   <DEFINITION-REF DEST="STRING-PARAM-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfConfigSet</DEFINITION-REF>
-                  <VALUE />
+                  <VALUE></VALUE>
                 </STRING-VALUE>
                 <INTEGER-VALUE>
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfNumberOfCanRxPduIds</DEFINITION-REF>
@@ -1398,7 +1398,7 @@
                   <SHORT-NAME>Hoh</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfInitHohConfig</DEFINITION-REF>
@@ -1407,7 +1407,7 @@
                       <SHORT-NAME>Hrh</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfInitHohConfig/CanIfHrhConfig</DEFINITION-REF>
@@ -1436,7 +1436,7 @@
                       <SHORT-NAME>Hth</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfInitHohConfig/CanIfHthConfig</DEFINITION-REF>
@@ -1463,7 +1463,7 @@
                   <SHORT-NAME>CanDB_Message_1</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfRxPduConfig</DEFINITION-REF>
@@ -1498,7 +1498,7 @@
                     </ENUMERATION-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfRxPduConfig/CanIfUserRxIndication</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE></VALUE>
                     </FUNCTION-NAME-VALUE>
                   </PARAMETER-VALUES>
                   <REFERENCE-VALUES>
@@ -1516,7 +1516,7 @@
                   <SHORT-NAME>CanDB_Message_2</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfTxPduConfig</DEFINITION-REF>
@@ -1551,7 +1551,7 @@
                     </ENUMERATION-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/CanIf/CanIfInitConfiguration/CanIfTxPduConfig/CanIfUserTxConfirmation</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE></VALUE>
                     </FUNCTION-NAME-VALUE>
                   </PARAMETER-VALUES>
                   <REFERENCE-VALUES>
@@ -1581,7 +1581,7 @@
                 </INTEGER-VALUE>
                 <ENUMERATION-VALUE>
                   <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/CanIf/CanIfPrivateConfiguration/CanIfSoftwareFilterType</DEFINITION-REF>
-                  <VALUE />
+                  <VALUE></VALUE>
                 </ENUMERATION-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
@@ -1635,7 +1635,7 @@
               <SHORT-NAME>Controller_A</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/CanIf/CanIfControllerConfig</DEFINITION-REF>
@@ -1658,7 +1658,7 @@
           <SHORT-NAME>Os</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG />
+              <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.34</SD>
@@ -1773,7 +1773,7 @@
               <SHORT-NAME>OsApplication1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsApplication</DEFINITION-REF>
@@ -1830,7 +1830,7 @@
               <SHORT-NAME>Alarm1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm</DEFINITION-REF>
@@ -1875,7 +1875,7 @@
               <SHORT-NAME>Counter1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsCounter</DEFINITION-REF>
@@ -1902,7 +1902,7 @@
               <SHORT-NAME>Task1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
@@ -1939,7 +1939,7 @@
               <SHORT-NAME>Task2</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
@@ -1972,7 +1972,7 @@
           <SHORT-NAME>Mcu</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG />
+              <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.0</SD>
@@ -2081,7 +2081,7 @@
                   <SHORT-NAME>RUN</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf</DEFINITION-REF>
@@ -2096,7 +2096,7 @@
                   <SHORT-NAME>SLEEP</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf</DEFINITION-REF>
@@ -2115,7 +2115,7 @@
           <SHORT-NAME>EcuM</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG />
+              <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.2</SD>
@@ -2187,7 +2187,7 @@
                   <SHORT-NAME>EcuMSleepMode</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode</DEFINITION-REF>
@@ -2242,7 +2242,7 @@
           <SHORT-NAME>Port</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG />
+              <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.2</SD>
@@ -2259,7 +2259,7 @@
                   <SHORT-NAME>PortContainer_1</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer</DEFINITION-REF>
@@ -2380,7 +2380,7 @@
           <SHORT-NAME>Det</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG />
+              <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.1</SD>
@@ -2533,37 +2533,37 @@
               <ELEMENTS>
                 <INTEGER-TYPE>
                   <SHORT-NAME>UInt8</SHORT-NAME>
-                  <SW-DATA-DEF-PROPS />
+                  <SW-DATA-DEF-PROPS/>
                   <LOWER-LIMIT INTERVAL-TYPE="CLOSED">0</LOWER-LIMIT>
                   <UPPER-LIMIT INTERVAL-TYPE="CLOSED">255</UPPER-LIMIT>
                 </INTEGER-TYPE>
                 <INTEGER-TYPE>
                   <SHORT-NAME>UInt16</SHORT-NAME>
-                  <SW-DATA-DEF-PROPS />
+                  <SW-DATA-DEF-PROPS/>
                   <LOWER-LIMIT INTERVAL-TYPE="CLOSED">0</LOWER-LIMIT>
                   <UPPER-LIMIT INTERVAL-TYPE="CLOSED">65535</UPPER-LIMIT>
                 </INTEGER-TYPE>
                 <INTEGER-TYPE>
                   <SHORT-NAME>UInt32</SHORT-NAME>
-                  <SW-DATA-DEF-PROPS />
+                  <SW-DATA-DEF-PROPS/>
                   <LOWER-LIMIT INTERVAL-TYPE="CLOSED">0</LOWER-LIMIT>
                   <UPPER-LIMIT INTERVAL-TYPE="CLOSED">4294967295</UPPER-LIMIT>
                 </INTEGER-TYPE>
                 <INTEGER-TYPE>
                   <SHORT-NAME>SInt8</SHORT-NAME>
-                  <SW-DATA-DEF-PROPS />
+                  <SW-DATA-DEF-PROPS/>
                   <LOWER-LIMIT INTERVAL-TYPE="CLOSED">-128</LOWER-LIMIT>
                   <UPPER-LIMIT INTERVAL-TYPE="CLOSED">127</UPPER-LIMIT>
                 </INTEGER-TYPE>
                 <INTEGER-TYPE>
                   <SHORT-NAME>SInt16</SHORT-NAME>
-                  <SW-DATA-DEF-PROPS />
+                  <SW-DATA-DEF-PROPS/>
                   <LOWER-LIMIT INTERVAL-TYPE="CLOSED">-32768</LOWER-LIMIT>
                   <UPPER-LIMIT INTERVAL-TYPE="CLOSED">32767</UPPER-LIMIT>
                 </INTEGER-TYPE>
                 <INTEGER-TYPE>
                   <SHORT-NAME>SInt32</SHORT-NAME>
-                  <SW-DATA-DEF-PROPS />
+                  <SW-DATA-DEF-PROPS/>
                   <LOWER-LIMIT INTERVAL-TYPE="CLOSED">-2147483648</LOWER-LIMIT>
                   <UPPER-LIMIT INTERVAL-TYPE="CLOSED">2147483647</UPPER-LIMIT>
                 </INTEGER-TYPE>
@@ -2654,4 +2654,3 @@
     </AR-PACKAGE>
   </TOP-LEVEL-PACKAGES>
 </AUTOSAR>
-
