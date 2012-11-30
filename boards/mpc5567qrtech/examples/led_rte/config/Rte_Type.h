@@ -37,10 +37,6 @@ typedef uint8 DigitalLevel;
 
 #define _DEFINED_TYPEDEF_FOR_DigitalLevel_ 
 
-typedef float Float;
-
-#define _DEFINED_TYPEDEF_FOR_Float_ 
-
 typedef sint32 Hertz;
 #define Hertz_LowerLimit -2147483647
 #define Hertz_UpperLimit 2147483647

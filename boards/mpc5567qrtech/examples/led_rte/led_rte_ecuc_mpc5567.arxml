@@ -8,7 +8,7 @@
           <SHORT-NAME>led_rte_ecuc_mpc5567</SHORT-NAME>
           <ADMIN-DATA>
             <DOC-REVISIONS>
-              <DOC-REVISION />
+              <DOC-REVISION/>
             </DOC-REVISIONS>
             <SDGS>
               <SDG GID="Arccore::EcuOptions">
@@ -37,7 +37,7 @@
           <SHORT-NAME>EcuM</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG />
+              <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.2</SD>
@@ -109,7 +109,7 @@
                   <SHORT-NAME>EcuMSleepMode</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode</DEFINITION-REF>
@@ -164,7 +164,7 @@
           <SHORT-NAME>Os</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG />
+              <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.34</SD>
@@ -279,7 +279,7 @@
               <SHORT-NAME>Startup</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
@@ -316,7 +316,7 @@
               <SHORT-NAME>Scheduled</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
@@ -359,7 +359,7 @@
               <SHORT-NAME>OsTick</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsCounter</DEFINITION-REF>
@@ -386,7 +386,7 @@
               <SHORT-NAME>OsApplication1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsApplication</DEFINITION-REF>
@@ -443,7 +443,7 @@
               <SHORT-NAME>Alarm1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm</DEFINITION-REF>
@@ -492,7 +492,7 @@
               <SHORT-NAME>ScheduleEvent</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsEvent</DEFINITION-REF>
@@ -513,7 +513,7 @@
           <SHORT-NAME>Port</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG />
+              <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.2</SD>
@@ -530,7 +530,7 @@
                   <SHORT-NAME>PortContainer_1</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer</DEFINITION-REF>
@@ -539,7 +539,7 @@
                       <SHORT-NAME>GPIO[125]</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
@@ -614,7 +614,7 @@
           <SHORT-NAME>Mcu</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG />
+              <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.3</SD>
@@ -677,7 +677,7 @@
                       <SHORT-NAME>Clock</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint</DEFINITION-REF>
@@ -706,7 +706,7 @@
                   <SHORT-NAME>RUN</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf</DEFINITION-REF>
@@ -721,7 +721,7 @@
                   <SHORT-NAME>SLEEP</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf</DEFINITION-REF>
@@ -740,7 +740,7 @@
           <SHORT-NAME>Dio</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG />
+              <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.0</SD>
@@ -767,7 +767,7 @@
               <SHORT-NAME>Generic</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Dio/DioPort</DEFINITION-REF>
@@ -786,7 +786,7 @@
                   <SHORT-NAME>RED_LED</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Dio/DioPort/DioChannel</DEFINITION-REF>
@@ -805,7 +805,7 @@
           <SHORT-NAME>IoHwAb</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG />
+              <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.1</SD>
@@ -836,7 +836,7 @@
               <SHORT-NAME>DigitalSignal_Red_Led</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/IoHwAb/IoHwAbDigitalSignal</DEFINITION-REF>
@@ -871,7 +871,7 @@
           <SHORT-NAME>Rte</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG />
+              <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">0.0.9</SD>
@@ -898,7 +898,7 @@
                 </INTEGER-VALUE>
                 <ENUMERATION-VALUE>
                   <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Rte/RteGeneration/RteGenerationMode</DEFINITION-REF>
-                  <VALUE />
+                  <VALUE></VALUE>
                 </ENUMERATION-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Rte/RteGeneration/RteMeasurementSupport</DEFINITION-REF>
@@ -906,7 +906,7 @@
                 </BOOLEAN-VALUE>
                 <ENUMERATION-VALUE>
                   <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Rte/RteGeneration/RteOptimizationMode</DEFINITION-REF>
-                  <VALUE />
+                  <VALUE></VALUE>
                 </ENUMERATION-VALUE>
                 <INTEGER-VALUE>
                   <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Rte/RteGeneration/RteVfbTrace</DEFINITION-REF>
@@ -914,7 +914,7 @@
                 </INTEGER-VALUE>
                 <FUNCTION-NAME-VALUE>
                   <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Rte/RteGeneration/RteVfbTraceFunction</DEFINITION-REF>
-                  <VALUE />
+                  <VALUE></VALUE>
                 </FUNCTION-NAME-VALUE>
               </PARAMETER-VALUES>
             </CONTAINER>
@@ -944,7 +944,7 @@
                   <SHORT-NAME>BlinkerRunnable_RunnableMapping</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Rte/SwComponentInstance/RunnableEntityMapping</DEFINITION-REF>
@@ -1117,4 +1117,3 @@
     </AR-PACKAGE>
   </TOP-LEVEL-PACKAGES>
 </AUTOSAR>
-
