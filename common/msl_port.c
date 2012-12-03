@@ -58,16 +58,19 @@ UARTError ReadUART1(char* c) {
 UARTError WriteUARTN(const void* buf, unsigned long cnt)
 {
 #ifdef USE_TTY_WINIDEA
-	if (g_TConn)
 	{
-		unsigned char nCnt,nLen;
-		for(nCnt = 0; nCnt < cnt; nCnt++)
+		char *pbuf = buf;
+		if (g_TConn)
 		{
-			while( TWBUFF_FULL() ) {}
-			nLen = TWBUFF_TPTR;
-			g_TWBuffer[nLen] = buf[nCnt];
-			nLen = TWBUFF_INC(nLen);
-			TWBUFF_TPTR = nLen;
+			unsigned char nCnt,nLen;
+			for(nCnt = 0; nCnt < cnt; nCnt++)
+			{
+				while( TWBUFF_FULL() ) {}
+				nLen = TWBUFF_TPTR;
+				g_TWBuffer[nLen] = pbuf[nCnt];
+				nLen = TWBUFF_INC(nLen);
+				TWBUFF_TPTR = nLen;
+			}
 		}
 	}
 #endif
