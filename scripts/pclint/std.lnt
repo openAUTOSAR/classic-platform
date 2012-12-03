@@ -17,7 +17,8 @@ lnt\co-gcc.lnt
 -zero //always return exit code 0 (avoiding makefile interruption)
 
 // SET WARNING LEVEL:
--w3 //-wlib(0)// 1:only errors, 2: +warnings 3: + infos
+-w3 //
+-wlib(1) // 1:only errors, 2: +warnings 3: + infos
 
 //Reset which files are viewed library-files to only treat the ones in msys library as such
 +libclass()
