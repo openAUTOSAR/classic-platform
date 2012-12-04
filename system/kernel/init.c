@@ -262,7 +262,7 @@ volatile uint32_t test_data_array[3] = {TEST_DATA,TEST_DATA,TEST_DATA};
 /* Note! It does not matter if the data is initialized to 0,
  * it still sbss2.
  */
-#if defined(CC_USE_SMALL_DATA)
+#if defined(CFG_PPC) && defined(__CWCC__)
 volatile const int test_sbss2;
 #endif
 /* Initialized small data */
@@ -274,8 +274,23 @@ volatile const int test_sdata2 = TEST_SDATA2;
 #define BAD_LINK_FILE() 	while(1) {}
 
 extern void EcuM_Init(void);
+
+#if defined(__CWCC__)
+extern char __SDATA2[];
+extern char __SDATA2_RAM[];
+extern char __SDATA2_END[];
+extern char __SBSS2_START[];
+extern char __SBSS2_END[];
+#endif
+
 int main( void )
 {
+	/* TODO: Move to arch specific part */
+#if defined(CFG_PPC) && defined(__CWCC__)
+	memcpy(__SDATA2_RAM, __SDATA2, __SDATA2_END - __SDATA2_RAM );
+	memset(__SBSS2_START,0,  __SBSS2_END -__SBSS2_START );
+#endif
+
 	/* Check link file */
 
 	/* .data */
@@ -309,7 +324,7 @@ int main( void )
 	}
 #endif
 
-#if defined(CC_USE_SMALL_DATA) && defined(CFG_PPC) && defined(__CWCC__)
+#if defined(CFG_PPC) && defined(__CWCC__)
 	/* check .sbss */
 	if (test_sbss2 != 0) {
 		BAD_LINK_FILE();

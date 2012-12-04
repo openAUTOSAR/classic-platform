@@ -92,10 +92,10 @@ SECTIONS
 	    .=.+SIZEOF(.data);
 	    __SDATA = .;
 	    .=.+SIZEOF(.sdata);
+	    __SDATA2 = .;
+	    .=.+SIZEOF(.sdata2);
 	    __SBSS = .;
 	    .=.+SIZEOF(.sbss);
-	    .sdata2 : {}
-	    .sbss2 : {}
 	    __SDATA0 = .;
 	    .=.+SIZEOF(.PPC.EMB.sdata0);
 	    __rom_end = .;
@@ -103,6 +103,7 @@ SECTIONS
 
 	GROUP : {
 		__ram_start=.;
+	
 		__DATA_RAM = .;
 		.data (DATA) LOAD(ROMADDR(__DATA_ROM)) :  {}
 		.sdata (DATA) LOAD(ROMADDR(__SDATA)): {}
@@ -112,6 +113,17 @@ SECTIONS
 		.sbss (DATA) : {}
 		.bss    : {}  
 		__BSS_END = .;
+		
+		. = ALIGN(0x10);
+		__SDATA2_RAM = .;		
+		.sdata2 LOAD(ROMADDR(__SDATA2)) : {}		
+		__SDATA2_END = .;
+		
+		. = ALIGN(0x10);
+		__SBSS2_START = .;
+	    .sbss2 : {}    /* writable, init to 0 */
+	    __SBSS2_END = .; 
+		
 		.PPC.EMB.sdata0 LOAD(ADDR(__SDATA0)) : {}	/* Small data with offset to 0 */	    
 		.PPC.EMB.sbss0  : {}
 		.ramlog : { *(.ramlog_data) *(.ramlog_bss) }
