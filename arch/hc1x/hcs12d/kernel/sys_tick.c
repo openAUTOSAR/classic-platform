@@ -20,12 +20,16 @@
 #include "regs.h"
 #include "Mcu.h"
 
-extern OsTickType OsTickFreq;
+void Os_SysTickInit( void ) {
+	ISR_INSTALL_ISR2("OsTick",OsTick,IRQ_TYPE_MCCNT_UNDERFLOW,6,0);
+}
 
 /**
- * Init of free running timer.
+ * @param period_ticks How long the period in timer ticks should be. The timer
+ *                     on PowerPC often driver by the CPU clock or some platform clock.
+ *
  */
-void Os_SysTickInit( void ) {
+void Os_SysTickStart(uint32_t period_ticks) {
 	// Set timer 0 as output compare. Timer 0 is reserved for the OS.
 
 	// TEN, timer enable
@@ -33,8 +37,6 @@ void Os_SysTickInit( void ) {
 	TSCR1 = TEN | TSFRZ;
 
 	ICSYS = 0;
-
-	ISR_INSTALL_ISR2("OsTick",OsTick,IRQ_TYPE_MCCNT_UNDERFLOW,6,0);
 
 	// Modulus counter
 	// MCZI, enable interrupt, MCEN enable modulus counter
@@ -45,31 +47,5 @@ void Os_SysTickInit( void ) {
 	MCCTL |= MODMC;
 
 	// time = (count * prescaler)/(bus frequency)
-	MCCNT = (McuE_GetSystemClock() / 2) / (4 * OsTickFreq);
-}
-
-/**
- *
- *
- * @param period_ticks How long the period in timer ticks should be. The timer
- *                     on PowerPC often driver by the CPU clock or some platform clock.
- *
- */
-void Os_SysTickStart(uint32_t period_ticks) {
-
-}
-
-/**
- * ???
- * TODO: This function just subtract the max value?! ok??
- *
- * @return
- */
-
-/** @req OS383 */
-uint32_t Os_SysTickGetValue( void )
-{
-	// TODO implement
-	uint32_t timer = 0;
-	return (timer);
+	MCCNT = period_ticks / 8;
 }
