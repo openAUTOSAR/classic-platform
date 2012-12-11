@@ -131,6 +131,7 @@ typedef struct {
 	Dem_EventIdType				eventId;
 	const Dem_EventParameterType *eventParamRef;
 	sint8						faultDetectionCounter;
+	sint8						maxFaultDetectionCounter;
 	uint16						occurrence;				/** @req DEM011 */
 	Dem_EventStatusExtendedType	eventStatusExtended;	/** @req DEM006 */
 	boolean						errorStatusChanged;
@@ -382,7 +383,6 @@ static void lookupEventStatusRec(Dem_EventIdType eventId, EventStatusRecType **c
 	}
 }
 
-
 /*
  * Procedure:	lookupEventIdParameter
  * Description:	Returns the pointer to event id parameters of "eventId" in "*eventIdParam",
@@ -522,6 +522,7 @@ static Dem_EventStatusType preDebounceCounterBased(Dem_EventStatusType reportedS
 		break;
 	}
 
+	statusRecord->maxFaultDetectionCounter = MAX(statusRecord->maxFaultDetectionCounter, statusRecord->faultDetectionCounter);
 	return returnCode;
 }
 
@@ -547,6 +548,7 @@ static void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_E
 			eventStatusRecPtr->eventId = eventParam->EventID;
 			eventStatusRecPtr->eventParamRef = eventParam;
 			eventStatusRecPtr->faultDetectionCounter = 0;
+			eventStatusRecPtr->maxFaultDetectionCounter = 0;
 			eventStatusRecPtr->occurrence = 0;
 			eventStatusRecPtr->eventStatusExtended = DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE;
 			eventStatusRecPtr->errorStatusChanged = FALSE;
@@ -603,11 +605,13 @@ static void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_E
 			eventStatusRecPtr->errorStatusChanged = TRUE;
 		}
 
+		eventStatusRec->maxFaultDetectionCounter = MAX(eventStatusRec->maxFaultDetectionCounter, eventStatusRec->faultDetectionCounter);
 		memcpy(eventStatusRec, eventStatusRecPtr, sizeof(EventStatusRecType));
 	}
 	else {
 		eventStatusRec->eventId = DEM_EVENT_ID_NULL;
 		eventStatusRec->faultDetectionCounter = 0;
+		eventStatusRec->maxFaultDetectionCounter = 0;
 		eventStatusRec->occurrence = 0;
 		eventStatusRec->eventStatusExtended = DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE | DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR;
 		eventStatusRec->errorStatusChanged = FALSE;
@@ -662,6 +666,7 @@ static void resetEventStatusRec(const Dem_EventParameterType *eventParam)
 	if (eventStatusRecPtr != NULL) {
 		// Reset event record
 		eventStatusRecPtr->faultDetectionCounter = 0;
+		eventStatusRecPtr->maxFaultDetectionCounter = 0;
 		eventStatusRecPtr->eventStatusExtended = (DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE | DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR);
 		eventStatusRecPtr->errorStatusChanged = FALSE;
 		eventStatusRecPtr->occurrence = 0;
@@ -690,6 +695,25 @@ static void getEventStatusRec(Dem_EventIdType eventId, EventStatusRecType *event
 	}
 }
 
+static void getInternalElement( const Dem_EventParameterType *eventParameter, Dem_InternalDataElementType elementType, uint8_t* buf )
+{
+	EventStatusRecType eventStatusRec;
+
+	getEventStatusRec(eventParameter->EventID, &eventStatusRec);
+
+	if( DEM_EVENT_ID_NULL != eventStatusRec.eventId ) {
+		if( DEM_OCCCTR == elementType ) {
+			buf[0] = eventStatusRec.occurrence >> 8;
+			buf[1] = eventStatusRec.occurrence;
+		}
+		else if( DEM_FAULTDETCTR == elementType ) {
+			buf[0] = eventStatusRec.faultDetectionCounter;
+		}
+		else if( DEM_MAXFAULTDETCTR == elementType ) {
+			buf[0] = eventStatusRec.maxFaultDetectionCounter;
+		}
+	}
+}
 
 /*
  * Procedure:	lookupDtcEvent
@@ -1144,91 +1168,102 @@ static void initCurrentFreezeFrameTimeStamp(uint32 *timeStampPtr)
  * Description:	Collects the extended data according to "eventParam" and return it in "extData",
  * 				if not found eventId is set to DEM_EVENT_ID_NULL.
  */
-static void getExtendedData(const Dem_EventParameterType *eventParam, ExtDataRecType *extData)
+static void storeExtendedData(const Dem_EventParameterType *eventParam, boolean firstFail)
 {
 	Std_ReturnType callbackReturnCode;
 	uint16 i;
 	uint16 storeIndex = 0;
 	uint16 recordSize;
+	const Dem_ExtendedDataRecordClassType *extendedDataRecord;
+	ExtDataRecType *extData;
+	boolean eventIdFound = FALSE;
+	boolean bStorePrimaryMem = FALSE;
+	boolean bStoredData = FALSE;
+	ExtDataRecType *extDataMem;
 
-	// Clear ext data record
-	memset(extData, 0, sizeof(ExtDataRecType));
+	if( DEM_PREINITIALIZED == demState ) {
+		extDataMem = preInitExtDataBuffer;
+	} else {
+		extDataMem = priMemExtDataBuffer;
+	}
 
-	// Check if any pointer to extended data class
-	if (eventParam->ExtendedDataClassRef != NULL) {
-		// Request extended data and copy it to the buffer
-		for (i = 0; (i < DEM_MAX_NR_OF_RECORDS_IN_EXTENDED_DATA) && (eventParam->ExtendedDataClassRef->ExtendedDataRecordClassRef[i] != NULL); i++) {
-			recordSize = eventParam->ExtendedDataClassRef->ExtendedDataRecordClassRef[i]->DataSize;
-			if ((storeIndex + recordSize) <= DEM_MAX_SIZE_EXT_DATA) {
-				callbackReturnCode = eventParam->ExtendedDataClassRef->ExtendedDataRecordClassRef[i]->CallbackGetExtDataRecord(&extData->data[storeIndex]); /** @req DEM282 */
-				if (callbackReturnCode != E_OK) {
-					// Callback data currently not available, clear space.
-					memset(&extData->data[storeIndex], 0xFF, recordSize);
+	for (i = 0; (i < DEM_MAX_NR_OF_EVENT_DESTINATION) && (eventParam->EventClass->EventDestination[i] != DEM_EVENT_DESTINATION_END_OF_LIST); i++) {
+		if (eventParam->EventClass->EventDestination[i] == DEM_DTC_ORIGIN_PRIMARY_MEMORY) {
+			bStorePrimaryMem = TRUE;
+		}
+	}
+
+	if( TRUE == bStorePrimaryMem ) {
+
+		// Check if already stored
+		for (i = 0; (i<DEM_MAX_NUMBER_EXT_DATA_PRI_MEM) && (!eventIdFound); i++){
+			eventIdFound = (extDataMem[i].eventId == eventParam->EventID);
+			extData = &extDataMem[i];
+		}
+		if( FALSE == eventIdFound ) {
+			extData = NULL;
+			for (i = 0; (i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM); i++){
+				if( extDataMem[i].eventId == DEM_EVENT_ID_NULL ) {
+					extData = &extDataMem[i];
+					break;
 				}
-				storeIndex += recordSize;
+			}
+			if( NULL != extData ) {
+				extData->eventId = eventParam->EventID;
+				extData->dataSize = 0;
+				extData->checksum = 0;
 			}
 			else {
-				// Error: Size of extended data record is bigger than reserved space.
-				DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GET_EXTENDED_DATA_ID, DEM_E_EXT_DATA_TOO_BIG);
-				break;	// Break the loop
-			}
-		}
-	}
 
-	// Check if any data has been stored
-	if (storeIndex != 0) {
-		extData->eventId = eventParam->EventID;
-		extData->dataSize = storeIndex;
-		extData->checksum = calcChecksum(extData, sizeof(ExtDataRecType)-sizeof(ChecksumType));
-	}
-	else {
-		extData->eventId = DEM_EVENT_ID_NULL;
-		extData->dataSize = storeIndex;
-		extData->checksum = 0;
-	}
-}
-
-
-/*
- * Procedure:	storeExtendedDataPreInit
- * Description:	Store the extended data pointed by "extendedData" to the "preInitExtDataBuffer",
- * 				if non existent a new entry is created.
- */
-static void storeExtendedDataPreInit(const Dem_EventParameterType *eventParam, const ExtDataRecType *extendedData)
-{
-	boolean eventIdFound = FALSE;
-	boolean eventIdFreePositionFound=FALSE;
-	uint16 i;
-	imask_t state;
-    Irq_Save(state);
-
-	// Check if already stored
-	for (i = 0; (i<DEM_MAX_NUMBER_EXT_DATA_PRE_INIT) && (!eventIdFound); i++){
-		eventIdFound = (preInitExtDataBuffer[i].eventId == eventParam->EventID);
-	}
-
-	if(eventIdFound){
-		// Yes, overwrite existing
-		memcpy(&preInitExtDataBuffer[i-1], extendedData, sizeof(ExtDataRecType));
-	}
-	else{
-		// No, lookup first free position
-		for (i = 0; (i<DEM_MAX_NUMBER_EXT_DATA_PRE_INIT) && (!eventIdFreePositionFound); i++){
-			if(preInitExtDataBuffer[i].eventId ==0){
-				eventIdFreePositionFound=TRUE;
+				// Error: Pri mem extended data buffer full
+				DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_STORE_EXT_DATA_PRI_MEM_ID, DEM_E_PRI_MEM_EXT_DATA_BUFF_FULL);
+				return;
 			}
 		}
 
-		if (eventIdFreePositionFound) {
-			memcpy(&preInitExtDataBuffer[i-1], extendedData, sizeof(ExtDataRecType));
+		// Check if any pointer to extended data class
+		if (eventParam->ExtendedDataClassRef != NULL) {
+			// Request extended data and copy it to the buffer
+			for (i = 0; (i < DEM_MAX_NR_OF_RECORDS_IN_EXTENDED_DATA) && (eventParam->ExtendedDataClassRef->ExtendedDataRecordClassRef[i] != NULL); i++) {
+				extendedDataRecord = eventParam->ExtendedDataClassRef->ExtendedDataRecordClassRef[i];
+				if( DEM_UPDATE_RECORD_VOLATILE != extendedDataRecord->UpdateRule )
+				{
+					recordSize = extendedDataRecord->DataSize;
+					if ((storeIndex + recordSize) <= DEM_MAX_SIZE_EXT_DATA) {
+						if( DEM_UPDATE_RECORD_YES == extendedDataRecord->UpdateRule ||
+								(DEM_UPDATE_RECORD_NO == extendedDataRecord->UpdateRule && TRUE == firstFail) )
+						{
+							if( NULL != extendedDataRecord->CallbackGetExtDataRecord ) {
+
+								callbackReturnCode = extendedDataRecord->CallbackGetExtDataRecord(&extData->data[storeIndex]); /** @req DEM282 */
+								if (callbackReturnCode != E_OK) {
+									// Callback data currently not available, clear space.
+									memset(&extData->data[storeIndex], 0xFF, recordSize);
+								}
+								bStoredData = TRUE;
+							} else if( DEM_NO_ELEMENT != extendedDataRecord->InternalDataElement ) {
+								getInternalElement( eventParam, extendedDataRecord->InternalDataElement, &extData->data[storeIndex] );
+								bStoredData = TRUE;
+							}
+						}
+						storeIndex += recordSize;
+					}
+					else {
+						// Error: Size of extended data record is bigger than reserved space.
+						DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GET_EXTENDED_DATA_ID, DEM_E_EXT_DATA_TOO_BIG);
+						break;	// Break the loop
+					}
+				}
+			}
 		}
-		else {
-			// Error: Pre init extended data buffer full
-			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_STORE_EXT_DATA_PRE_INIT_ID, DEM_E_PRE_INIT_EXT_DATA_BUFF_FULL);
+
+		// Check if any data has been stored
+		if (TRUE == bStoredData) {
+			extData->eventId = eventParam->EventID;
+			extData->dataSize = storeIndex;
+			extData->checksum = calcChecksum(extData, sizeof(ExtDataRecType)-sizeof(ChecksumType));
 		}
 	}
-
-    Irq_Restore(state);
 }
 
 /*
@@ -1444,7 +1479,9 @@ static boolean lookupExtendedDataRecNumParam(uint8 extendedDataNumber, const Dem
 				*posInExtData = byteCnt;
 				recNumFound = TRUE;
 			}
-			byteCnt += eventParam->ExtendedDataClassRef->ExtendedDataRecordClassRef[i]->DataSize;
+			if(DEM_UPDATE_RECORD_VOLATILE != eventParam->ExtendedDataClassRef->ExtendedDataRecordClassRef[i]->UpdateRule) {
+				byteCnt += eventParam->ExtendedDataClassRef->ExtendedDataRecordClassRef[i]->DataSize;
+			}
 		}
 	}
 
@@ -1764,11 +1801,13 @@ static void handlePreInitEvent(Dem_EventIdType eventId, Dem_EventStatusType even
 	EventStatusRecType eventStatusLocal;
 	FreezeFrameRecType freezeFrameLocal;
 	ExtDataRecType extendedDataLocal;
+	boolean bPrevFailedSinceLastClear;
 
 	lookupEventIdParameter(eventId, &eventParam);
 	if (eventParam != NULL) {
 		if (eventParam->EventClass->OperationCycleRef < DEM_OPERATION_CYCLE_ID_ENDMARK) {
 			if (operationCycleStateList[eventParam->EventClass->OperationCycleRef] == DEM_CYCLE_STATE_START) {
+				bPrevFailedSinceLastClear = (eventStatusLocal.eventStatusExtended & DEM_TEST_FAILED_SINCE_LAST_CLEAR);
 				if (eventStatus == DEM_EVENT_STATUS_FAILED) {
 					updateEventStatusRec(eventParam, eventStatus, TRUE, &eventStatusLocal);
 				}
@@ -1778,10 +1817,7 @@ static void handlePreInitEvent(Dem_EventIdType eventId, Dem_EventStatusType even
 
 				if (eventStatusLocal.errorStatusChanged) {
 					if (eventStatusLocal.eventStatusExtended & DEM_TEST_FAILED) {
-						getExtendedData(eventParam, &extendedDataLocal);
-						if (extendedDataLocal.eventId != DEM_EVENT_ID_NULL) {
-							storeExtendedDataPreInit(eventParam, &extendedDataLocal);
-						}
+						storeExtendedData(eventParam, bPrevFailedSinceLastClear);
 						getFreezeFrameData(eventParam, &freezeFrameLocal,eventStatus,&eventStatusLocal);
 						if (freezeFrameLocal.eventId != DEM_EVENT_ID_NULL) {
 							storeFreezeFrameDataPreInit(eventParam, &freezeFrameLocal);
@@ -1819,23 +1855,20 @@ static Std_ReturnType handleEvent(Dem_EventIdType eventId, Dem_EventStatusType e
 	const Dem_EventParameterType *eventParam;
 	EventStatusRecType eventStatusLocal;
 	FreezeFrameRecType freezeFrameLocal;
-	ExtDataRecType extendedDataLocal;
 	Dem_EventStatusType eventStatusTemp = eventStatus;
+	boolean bPrevFailedSinceLastClear;
 
 	lookupEventIdParameter(eventId, &eventParam);
 	if (eventParam != NULL) {
 		if (eventParam->EventClass->OperationCycleRef < DEM_OPERATION_CYCLE_ID_ENDMARK) {
 			if (operationCycleStateList[eventParam->EventClass->OperationCycleRef] == DEM_CYCLE_STATE_START) {
 				if ((!((disableDtcStorage.storageDisabled) && (checkDtcGroup(disableDtcStorage.dtcGroup, eventParam)) && (checkDtcKind(disableDtcStorage.dtcKind, eventParam)))))  {
+					bPrevFailedSinceLastClear = (eventStatusLocal.eventStatusExtended & DEM_TEST_FAILED_SINCE_LAST_CLEAR);
 					updateEventStatusRec(eventParam, eventStatus, TRUE, &eventStatusLocal);
 					if (eventStatusLocal.errorStatusChanged) {
 						storeEventEvtMem(eventParam, &eventStatusLocal); /** @req DEM184 */
 						if (eventStatusLocal.eventStatusExtended & DEM_TEST_FAILED) {
-							getExtendedData(eventParam, &extendedDataLocal);
-							if (extendedDataLocal.eventId != DEM_EVENT_ID_NULL)
-							{
-								storeExtendedDataEvtMem(eventParam, &extendedDataLocal);
-							}
+							storeExtendedData(eventParam, FALSE == bPrevFailedSinceLastClear);
 						}
 
 						if ((eventStatusTemp == DEM_EVENT_STATUS_PREFAILED)
@@ -2220,7 +2253,6 @@ static Std_ReturnType setOperationCycleState(Dem_OperationCycleIdType operationC
 	return returnCode;
 }
 
-
 //==============================================================================//
 //																				//
 //					  E X T E R N A L   F U N C T I O N S						//
@@ -2268,6 +2300,7 @@ void Dem_PreInit(void)
 		eventStatusBuffer[i].eventId = DEM_EVENT_ID_NULL;
 		eventStatusBuffer[i].eventParamRef = NULL;
 		eventStatusBuffer[i].faultDetectionCounter = 0;
+		eventStatusBuffer[i].maxFaultDetectionCounter = 0;
 		eventStatusBuffer[i].occurrence = 0;
 		eventStatusBuffer[i].eventStatusExtended = DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE | DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR;
 		eventStatusBuffer[i].errorStatusChanged = FALSE;
@@ -3043,32 +3076,51 @@ Dem_ReturnGetExtendedDataRecordByDTCType Dem_GetExtendedDataRecordByDTC(uint32 d
 				if (checkDtcOrigin(dtcOrigin, eventRec->eventParamRef)) {
 					if (lookupExtendedDataRecNumParam(extendedDataNumber, eventRec->eventParamRef, &extendedDataRecordClass, &posInExtData)) {
 						if (*bufSize >= extendedDataRecordClass->DataSize) {
-							switch (dtcOrigin)
+							if( extendedDataRecordClass->UpdateRule != DEM_UPDATE_RECORD_VOLATILE )
 							{
-							case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
-								if (lookupExtendedDataPriMem(eventRec->eventId, &extData)) {
-									// Yes all conditions met, copy the extended data record to destination buffer.
-									memcpy(destBuffer, &extData->data[posInExtData], extendedDataRecordClass->DataSize); /** @req DEM075 */
+								switch (dtcOrigin)
+								{
+								case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
+									if (lookupExtendedDataPriMem(eventRec->eventId, &extData)) {
+										// Yes all conditions met, copy the extended data record to destination buffer.
+										memcpy(destBuffer, &extData->data[posInExtData], extendedDataRecordClass->DataSize); /** @req DEM075 */
+										*bufSize = extendedDataRecordClass->DataSize;
+										returnCode = DEM_RECORD_OK;
+									}
+									else {
+										// The record number is legal but no record was found for the DTC
+										*bufSize = 0;
+										returnCode = DEM_RECORD_OK;
+									}
+									break;
+
+								case DEM_DTC_ORIGIN_SECONDARY_MEMORY:
+								case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
+								case DEM_DTC_ORIGIN_MIRROR_MEMORY:
+									// Not yet supported
+									returnCode = DEM_RECORD_WRONG_DTCORIGIN;
+									DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETEXTENDEDDATARECORDBYDTC_ID, DEM_E_NOT_IMPLEMENTED_YET);
+									break;
+								default:
+									returnCode = DEM_RECORD_WRONG_DTCORIGIN;
+									break;
+								}
+							}
+							else {
+								if( NULL != extendedDataRecordClass->CallbackGetExtDataRecord ) {
+									extendedDataRecordClass->CallbackGetExtDataRecord(destBuffer);
+									*bufSize = extendedDataRecordClass->DataSize;
+									returnCode = DEM_RECORD_OK;
+								}
+								else if (DEM_NO_ELEMENT != extendedDataRecordClass->InternalDataElement ) {
+									getInternalElement( eventRec->eventParamRef, extendedDataRecordClass->InternalDataElement, destBuffer );
 									*bufSize = extendedDataRecordClass->DataSize;
 									returnCode = DEM_RECORD_OK;
 								}
 								else {
-									// The record number is legal but no record was found for the DTC
-									*bufSize = 0;
-									returnCode = DEM_RECORD_OK;
+									returnCode = DEM_RECORD_WRONG_DTC;
 								}
-								break;
 
-							case DEM_DTC_ORIGIN_SECONDARY_MEMORY:
-							case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
-							case DEM_DTC_ORIGIN_MIRROR_MEMORY:
-								// Not yet supported
-								returnCode = DEM_RECORD_WRONG_DTCORIGIN;
-								DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETEXTENDEDDATARECORDBYDTC_ID, DEM_E_NOT_IMPLEMENTED_YET);
-								break;
-							default:
-								returnCode = DEM_RECORD_WRONG_DTCORIGIN;
-								break;
 							}
 						}
 						else {
