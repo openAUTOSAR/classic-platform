@@ -94,7 +94,7 @@ ifneq ($(cmd_cmd_goals),)
 
 # Check that the board actually exist
 ifdef BOARDDIR
-  all_boards := $(subst boards/,,$(shell $(FIND) boards/ -maxdepth 1 -type d))
+  all_boards := $(subst /,,$(subst boards/,,$(shell $(FIND) boards/ -maxdepth 1 -type d)))
   all_boards_print := $(subst $(space),$(comma)$(space),$(strip $(all_boards)))
   ifeq ($(filter $(BOARDDIR),$(all_boards)),)
   	$(error no such board: $(BOARDDIR), valid boards are: $(all_boards_print))
