@@ -147,7 +147,6 @@ typedef struct {
 
 typedef struct {
 	Dem_EventIdType		eventId;
-	uint16				dataSize;
 	uint8				data[DEM_MAX_SIZE_EXT_DATA];
 	ChecksumType		checksum;
 } ExtDataRecType;
@@ -1208,13 +1207,7 @@ static void storeExtendedData(const Dem_EventParameterType *eventParam, boolean 
 					break;
 				}
 			}
-			if( NULL != extData ) {
-				extData->eventId = eventParam->EventID;
-				extData->dataSize = 0;
-				extData->checksum = 0;
-			}
-			else {
-
+			if( NULL == extData ) {
 				// Error: Pri mem extended data buffer full
 				DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_STORE_EXT_DATA_PRI_MEM_ID, DEM_E_PRI_MEM_EXT_DATA_BUFF_FULL);
 				return;
@@ -1260,7 +1253,6 @@ static void storeExtendedData(const Dem_EventParameterType *eventParam, boolean 
 		// Check if any data has been stored
 		if (TRUE == bStoredData) {
 			extData->eventId = eventParam->EventID;
-			extData->dataSize = storeIndex;
 			extData->checksum = calcChecksum(extData, sizeof(ExtDataRecType)-sizeof(ChecksumType));
 		}
 	}
@@ -1367,42 +1359,36 @@ static void storeEventEvtMem(const Dem_EventParameterType *eventParam, const Eve
 
 
 /*
- * Procedure:	storeExtendedDataPriMem
- * Description:	Store the extended data pointed by "extendedData" to the "priMemExtDataBuffer",
- * 				if non existent a new entry is created.
+ * Procedure:	getExtendedDataPriMem
+ * Description:	Get record from buffer if it exists, or pick next free if it doesn't
  */
-static void storeExtendedDataPriMem(const Dem_EventParameterType *eventParam, const ExtDataRecType *extendedData) /** @req DEM041 */
+static void getExtendedDataPriMem(const Dem_EventParameterType *eventParam, ExtDataRecType ** const extendedData) /** @req DEM041 */
 {
 	boolean eventIdFound = FALSE;
 	boolean eventIdFreePositionFound=FALSE;
 	uint16 i;
-	imask_t state;
-    Irq_Save(state);
 
 	// Check if already stored
 	for (i = 0; (i<DEM_MAX_NUMBER_EXT_DATA_PRI_MEM) && (!eventIdFound); i++){
-		eventIdFound = (priMemExtDataBuffer[i].eventId == eventParam->EventID);
+		if( priMemExtDataBuffer[i].eventId == eventParam->EventID ) {
+			*extendedData = &priMemExtDataBuffer[i];
+			eventIdFound = TRUE;
+		}
 	}
 
-	if (eventIdFound) {
-		// Yes, overwrite existing
-		memcpy(&priMemExtDataBuffer[i-1], extendedData, sizeof(ExtDataRecType));
-	}
-	else {
+	if (!eventIdFound) {
 		// No, lookup first free position
 		for (i = 0; (i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM) && (!eventIdFreePositionFound); i++){
 			eventIdFreePositionFound =  (priMemExtDataBuffer[i].eventId == DEM_EVENT_ID_NULL);
 		}
 		if (eventIdFreePositionFound) {
-			memcpy(&priMemExtDataBuffer[i-1], extendedData, sizeof(ExtDataRecType));
+			*extendedData = &priMemExtDataBuffer[i-1];
 		}
 		else {
 			// Error: Pri mem extended data buffer full
 			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_STORE_EXT_DATA_PRI_MEM_ID, DEM_E_PRI_MEM_EXT_DATA_BUFF_FULL);
 		}
 	}
-
-    Irq_Restore(state);
 }
 
 /*
@@ -1434,26 +1420,68 @@ static void deleteExtendedDataPriMem(const Dem_EventParameterType *eventParam)
  * Description:	Store the extended data in event memory according to
  * 				"eventParam" destination option
  */
-static void storeExtendedDataEvtMem(const Dem_EventParameterType *eventParam, const ExtDataRecType *extendedData)
+static void mergeExtendedDataEvtMem(const Dem_EventParameterType *eventParam, const ExtDataRecType *extendedData)
 {
 	uint16 i;
+	imask_t state;
+	EventRecType *priMemEventRec = NULL;
+	const Dem_ExtendedDataRecordClassType *extendedDataRecordClass;
+	ExtDataRecType *priMemExtDataRec = NULL;
+	uint16 storeIndex = 0;
+	boolean bCopiedData = FALSE;
+	boolean bStorePrimarMem = FALSE;
 
 	for (i = 0; (i < DEM_MAX_NR_OF_EVENT_DESTINATION) && (eventParam->EventClass->EventDestination[i] != DEM_EVENT_DESTINATION_END_OF_LIST); i++) {
-		switch (eventParam->EventClass->EventDestination[i])
-		{
-		case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
-			storeExtendedDataPriMem(eventParam, extendedData);
-			break;
+		if (eventParam->EventClass->EventDestination[i] ==  DEM_DTC_ORIGIN_PRIMARY_MEMORY ) {
+			bStorePrimarMem = TRUE;
+		}
+	}
 
-		case DEM_DTC_ORIGIN_SECONDARY_MEMORY:
-		case DEM_DTC_ORIGIN_PERMANENT_MEMORY:
-		case DEM_DTC_ORIGIN_MIRROR_MEMORY:
-			// Not yet supported
-			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GLOBAL_ID, DEM_E_NOT_IMPLEMENTED_YET);
-			break;
+	if( bStorePrimarMem ) {
+		/* Management is only relevant for events stored in primary mem (i.e. nvram) */
 
-		default:
-			break;
+		getExtendedDataPriMem(eventParam, &priMemExtDataRec);
+
+		if( NULL != priMemExtDataRec ) {
+			/* We found an old record or could allocate a new slot */
+
+			for( i = 0; i < DEM_MAX_NUMBER_EVENT_PRI_MEM; i++ ) {
+				if( priMemEventBuffer[i].eventId == eventParam->EventID ) {
+					priMemEventRec = &priMemEventBuffer[i];
+				}
+			}
+
+			/* Only copy extended data related to event set during pre-init */
+			Irq_Save(state);
+			for(i = 0; (i < DEM_MAX_NR_OF_RECORDS_IN_EXTENDED_DATA) && (eventParam->ExtendedDataClassRef->ExtendedDataRecordClassRef[i] != NULL); i++) {
+				extendedDataRecordClass = eventParam->ExtendedDataClassRef->ExtendedDataRecordClassRef[i];
+				if( DEM_UPDATE_RECORD_VOLATILE != extendedDataRecordClass->UpdateRule ) {
+					if( DEM_UPDATE_RECORD_YES == extendedDataRecordClass->UpdateRule ) {
+						/* Copy records that failed during pre init */
+						memcpy(&priMemExtDataRec->data[storeIndex], &extendedData->data[storeIndex],extendedDataRecordClass->DataSize);
+						bCopiedData = TRUE;
+					}
+					else if( DEM_UPDATE_RECORD_NO == extendedDataRecordClass->UpdateRule ) {
+						if( (NULL == priMemEventRec) || !(priMemEventRec->eventStatusExtended && DEM_TEST_FAILED_SINCE_LAST_CLEAR) ) {
+							/* Copy only records that was not already failed */
+							memcpy(&priMemExtDataRec->data[storeIndex], &extendedData->data[storeIndex],extendedDataRecordClass->DataSize);
+							bCopiedData = TRUE;
+						}
+					}
+					else {
+						/* DET FEL */
+					}
+					storeIndex += extendedDataRecordClass->DataSize;
+				}
+			}
+			if( TRUE == bCopiedData ) {
+				priMemExtDataRec->eventId = extendedData->eventId;
+				priMemExtDataRec->checksum = extendedData->checksum;
+			}
+			Irq_Restore(state);
+		}
+		else {
+			/* DET FEL */
 		}
 	}
 }
@@ -1798,16 +1826,17 @@ static boolean lookupFreezeFrameDataPriMem(Dem_EventIdType eventId,uint8 recordN
 static void handlePreInitEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus)
 {
 	const Dem_EventParameterType *eventParam;
+	EventStatusRecType *eventStatusBeforeUpdate;
 	EventStatusRecType eventStatusLocal;
 	FreezeFrameRecType freezeFrameLocal;
-	ExtDataRecType extendedDataLocal;
-	boolean bPrevFailedSinceLastClear;
+	boolean bFirstFail;
 
 	lookupEventIdParameter(eventId, &eventParam);
 	if (eventParam != NULL) {
 		if (eventParam->EventClass->OperationCycleRef < DEM_OPERATION_CYCLE_ID_ENDMARK) {
 			if (operationCycleStateList[eventParam->EventClass->OperationCycleRef] == DEM_CYCLE_STATE_START) {
-				bPrevFailedSinceLastClear = (eventStatusLocal.eventStatusExtended & DEM_TEST_FAILED_SINCE_LAST_CLEAR);
+				lookupEventStatusRec(eventParam->EventID, &eventStatusBeforeUpdate);
+				bFirstFail = (NULL == eventStatusBeforeUpdate) || !(eventStatusBeforeUpdate->eventStatusExtended & DEM_TEST_FAILED_SINCE_LAST_CLEAR);
 				if (eventStatus == DEM_EVENT_STATUS_FAILED) {
 					updateEventStatusRec(eventParam, eventStatus, TRUE, &eventStatusLocal);
 				}
@@ -1817,7 +1846,7 @@ static void handlePreInitEvent(Dem_EventIdType eventId, Dem_EventStatusType even
 
 				if (eventStatusLocal.errorStatusChanged) {
 					if (eventStatusLocal.eventStatusExtended & DEM_TEST_FAILED) {
-						storeExtendedData(eventParam, bPrevFailedSinceLastClear);
+						storeExtendedData(eventParam, bFirstFail);
 						getFreezeFrameData(eventParam, &freezeFrameLocal,eventStatus,&eventStatusLocal);
 						if (freezeFrameLocal.eventId != DEM_EVENT_ID_NULL) {
 							storeFreezeFrameDataPreInit(eventParam, &freezeFrameLocal);
@@ -1853,22 +1882,24 @@ static Std_ReturnType handleEvent(Dem_EventIdType eventId, Dem_EventStatusType e
 {
 	Std_ReturnType returnCode = E_OK;
 	const Dem_EventParameterType *eventParam;
+	EventStatusRecType *eventStatusBeforeUpdate;
 	EventStatusRecType eventStatusLocal;
 	FreezeFrameRecType freezeFrameLocal;
 	Dem_EventStatusType eventStatusTemp = eventStatus;
-	boolean bPrevFailedSinceLastClear;
+	boolean bFirstFail;
 
 	lookupEventIdParameter(eventId, &eventParam);
 	if (eventParam != NULL) {
 		if (eventParam->EventClass->OperationCycleRef < DEM_OPERATION_CYCLE_ID_ENDMARK) {
 			if (operationCycleStateList[eventParam->EventClass->OperationCycleRef] == DEM_CYCLE_STATE_START) {
 				if ((!((disableDtcStorage.storageDisabled) && (checkDtcGroup(disableDtcStorage.dtcGroup, eventParam)) && (checkDtcKind(disableDtcStorage.dtcKind, eventParam)))))  {
-					bPrevFailedSinceLastClear = (eventStatusLocal.eventStatusExtended & DEM_TEST_FAILED_SINCE_LAST_CLEAR);
+					lookupEventStatusRec(eventParam->EventID, &eventStatusBeforeUpdate);
+					bFirstFail = (NULL == eventStatusBeforeUpdate) || !(eventStatusBeforeUpdate->eventStatusExtended & DEM_TEST_FAILED_SINCE_LAST_CLEAR);
 					updateEventStatusRec(eventParam, eventStatus, TRUE, &eventStatusLocal);
 					if (eventStatusLocal.errorStatusChanged) {
 						storeEventEvtMem(eventParam, &eventStatusLocal); /** @req DEM184 */
 						if (eventStatusLocal.eventStatusExtended & DEM_TEST_FAILED) {
-							storeExtendedData(eventParam, FALSE == bPrevFailedSinceLastClear);
+							storeExtendedData(eventParam, bFirstFail);
 						}
 
 						if ((eventStatusTemp == DEM_EVENT_STATUS_PREFAILED)
@@ -2340,7 +2371,6 @@ void Dem_PreInit(void)
 	for (i = 0; i < DEM_MAX_NUMBER_EXT_DATA_PRE_INIT; i++) {
 		preInitExtDataBuffer[i].checksum = 0;
 		preInitExtDataBuffer[i].eventId = DEM_EVENT_ID_NULL;
-		preInitExtDataBuffer[i].dataSize = 0;
 		for (j = 0; j < DEM_MAX_SIZE_EXT_DATA;j++){
 			preInitExtDataBuffer[i].data[j] = 0;
 		}
@@ -2397,6 +2427,24 @@ void Dem_Init(void)
 			}
 		}
 
+		// Validate extended data records stored in primary memory
+		for (i = 0; i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM; i++) {
+			entryValid = checkEntryValid(priMemExtDataBuffer[i].eventId);
+//			cSum = calcChecksum(&priMemExtDataBuffer[i], sizeof(ExtDataRecType)-sizeof(ChecksumType));
+			if ((priMemExtDataBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
+				// Unlegal record, clear the record
+				memset(&priMemExtDataBuffer[i], 0, sizeof(ExtDataRecType));
+			}
+		}
+
+		/* Transfer extended data to event memory if necessary */
+		for (i = 0; i < DEM_MAX_NUMBER_EXT_DATA_PRE_INIT; i++) {
+			if (preInitExtDataBuffer[i].eventId !=  DEM_EVENT_ID_NULL) {
+				lookupEventIdParameter(preInitExtDataBuffer[i].eventId, &eventParam);
+				mergeExtendedDataEvtMem(eventParam, &preInitExtDataBuffer[i]);
+			}
+		}
+
 		// Validate event records stored in primary memory
 		for (i = 0; i < DEM_MAX_NUMBER_EVENT_PRI_MEM; i++) {
 			entryValid = checkEntryValid(priMemEventBuffer[i].eventId);
@@ -2411,18 +2459,6 @@ void Dem_Init(void)
 
 				// Update occurrence counter on pre init stored freeze frames
 				updateFreezeFrameOccurrencePreInit(&priMemEventBuffer[i]);
-			}
-		}
-
-
-
-		// Validate extended data records stored in primary memory
-		for (i = 0; i < DEM_MAX_NUMBER_EXT_DATA_PRI_MEM; i++) {
-			entryValid = checkEntryValid(priMemExtDataBuffer[i].eventId);
-//			cSum = calcChecksum(&priMemExtDataBuffer[i], sizeof(ExtDataRecType)-sizeof(ChecksumType));
-			if ((priMemExtDataBuffer[i].eventId == DEM_EVENT_ID_NULL) || (FALSE == entryValid)) {
-				// Unlegal record, clear the record
-				memset(&priMemExtDataBuffer[i], 0, sizeof(ExtDataRecType));
 			}
 		}
 
@@ -2449,14 +2485,6 @@ void Dem_Init(void)
 			if (eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) {
 				lookupEventIdParameter(eventStatusBuffer[i].eventId, &eventParam);
 				storeEventEvtMem(eventParam, &eventStatusBuffer[i]);
-			}
-		}
-
-		/* Transfer extended data to event memory if necessary */
-		for (i = 0; i < DEM_MAX_NUMBER_EXT_DATA_PRE_INIT; i++) {
-			if (preInitExtDataBuffer[i].eventId !=  DEM_EVENT_ID_NULL) {
-				lookupEventIdParameter(preInitExtDataBuffer[i].eventId, &eventParam);
-				storeExtendedDataEvtMem(eventParam, &preInitExtDataBuffer[i]);
 			}
 		}
 
