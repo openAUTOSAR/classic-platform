@@ -969,7 +969,7 @@ Can_ReturnType Can_Write( Can_Arc_HTHType hth, Can_PduType *pduInfo ) {
     if( (canHwConfig->CanTxProcessing == CAN_ARC_PROCESS_TYPE_INTERRUPT) &&
         (canUnit->lock_cnt == 0) ) {
   	  /* Turn on the tx interrupt mailboxes */
-      canHw->TIER |= BM_TX0; // We only use TX0
+      canHw->TIER = BM_TX0; // We only use TX0
     }
 
     // Increment statistics
