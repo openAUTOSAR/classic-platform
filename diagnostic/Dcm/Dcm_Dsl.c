@@ -223,6 +223,21 @@ Std_ReturnType DslGetSesCtrlType(Dcm_SesCtrlType *sesCtrlType) { /** @req DCM022
 	return ret;
 }
 
+const Dcm_DspSessionRowType *getActiveSessionRow(Dcm_DslRunTimeProtocolParametersType *runtime) {
+	 const Dcm_DspSessionRowType *sessionRow = DCM_Config.Dsp->DspSession->DspSessionRow;
+
+	while ((sessionRow->DspSessionLevel != runtime->sessionControl) && (!sessionRow->Arc_EOL) ) {
+		sessionRow++;
+	}
+	if( TRUE == sessionRow->Arc_EOL ) {
+		/* Since we are in a session with no configuration - take any session configuration and report error */
+		DET_REPORTERROR(MODULE_ID_DCM, 0, DCM_CHANGE_DIAGNOSTIC_SESSION_ID, DCM_E_CONFIG_INVALID);
+		sessionRow = DCM_Config.Dsp->DspSession->DspSessionRow;
+	}
+
+	return sessionRow;
+}
+
 // - - - - - - - - - - -
 
 static boolean findRxPduIdParentConfigurationLeafs(PduIdType dcmRxPduId,
@@ -450,7 +465,7 @@ Std_ReturnType DslInternal_ResponseOnOneDataByPeriodicId(uint8 PericodID)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void DslMain(void) {
 	const Dcm_DslProtocolRowType *protocolRowEntry;
-	const Dcm_DslProtocolTimingRowType *timeParams = NULL;
+	const Dcm_DspSessionRowType *sessionRow = NULL;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
 
 	protocolRowEntry = DCM_Config.Dsl->DslProtocol->DslProtocolRowList;
@@ -473,8 +488,8 @@ void DslMain(void) {
 			case PROVIDED_TO_DSD: {
 				DECREMENT(runtime->stateTimeoutCount);
 				if (runtime->stateTimeoutCount == 0) {
-					timeParams = protocolRowEntry->DslProtocolTimeLimit;
-					runtime->stateTimeoutCount = DCM_CONVERT_MS_TO_MAIN_CYCLES(timeParams->TimStrP2ServerMax); /* Reinitiate timer, see 9.2.2. */
+					sessionRow = getActiveSessionRow(runtime);
+					runtime->stateTimeoutCount = DCM_CONVERT_MS_TO_MAIN_CYCLES(sessionRow->DspSessionP2StarServerMax); /* Reinitiate timer, see 9.2.2. */
 					if (DCM_Config.Dsl->DslDiagResp != NULL) {
 						if (DCM_Config.Dsl->DslDiagResp->DslDiagRespForceRespPendEn == TRUE) {
 							if (runtime->responsePendingCount != 0) {
@@ -617,7 +632,7 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {
 	const Dcm_DslMainConnectionType *mainConnection = NULL;
 	const Dcm_DslConnectionType *connection = NULL;
 	const Dcm_DslProtocolRowType *protocolRow = NULL;
-	const Dcm_DslProtocolTimingRowType *timeParams = NULL;
+	const Dcm_DspSessionRowType *sessionRow = NULL;
 	Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
 	Std_ReturnType higherLayerResp;
 	imask_t state;
@@ -625,7 +640,6 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {
 	/** @req DCM345, this needs to be verified when connection to CanIf works. */
 
 	if (findRxPduIdParentConfigurationLeafs(dcmRxPduId, &protocolRx, &mainConnection, &connection, &protocolRow, &runtime)) {
-		timeParams = protocolRow->DslProtocolTimeLimit;
 		// We need to find out in what buffer we can find our Rx data (it can
 		// be either in the normal RX-buffer or the 'extra' buffer for implementing
 		// the Concurrent "Test Present" functionality.
@@ -651,8 +665,8 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {
 #endif
 							runtime->diagnosticActiveComM = TRUE;
 						}
-						timeParams = protocolRow->DslProtocolTimeLimit;
-						runtime->stateTimeoutCount = DCM_CONVERT_MS_TO_MAIN_CYCLES(timeParams->TimStrP2ServerMax); /* See 9.2.2. */
+						sessionRow = getActiveSessionRow(runtime);
+						runtime->stateTimeoutCount = DCM_CONVERT_MS_TO_MAIN_CYCLES(sessionRow->DspSessionP2ServerMax); /* See 9.2.2. */
 						runtime->externalRxBufferStatus = PROVIDED_TO_DSD; /** @req DCM241 */
 						if (runtime->externalTxBufferStatus == NOT_IN_USE) {
 							DEBUG( DEBUG_MEDIUM, "External Tx buffer available, we can pass it to DSD.\n");
