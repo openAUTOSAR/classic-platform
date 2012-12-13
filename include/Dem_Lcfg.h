@@ -79,6 +79,19 @@ typedef enum{
 	PREFAILED = 1,						//store FF when the event status is prefailed
 	FAILED = 2							//store FF when the event status is failed
 }Dem_FreezeFrameStorageConditonType; /** @req Dem001_private */
+
+typedef enum {
+	DEM_NO_ELEMENT,
+	DEM_OCCCTR,
+	DEM_FAULTDETCTR,
+	DEM_MAXFAULTDETCTR,
+} Dem_InternalDataElementType;
+
+typedef enum {
+	DEM_UPDATE_RECORD_NO,
+	DEM_UPDATE_RECORD_YES,
+	DEM_UPDATE_RECORD_VOLATILE,
+} Dem_UpdateRuleType;
 /*
  * DemGeneral types
  */
@@ -94,7 +107,9 @@ typedef struct {
 typedef struct {
 	uint16	RecordNumber;						// (1)
 	uint16	DataSize;							// (1)
+	Dem_UpdateRuleType UpdateRule;
 	Dem_CallbackGetExtDataRecordFncType	CallbackGetExtDataRecord;// (1)  /** @req DEM139 */
+	Dem_InternalDataElementType InternalDataElement;
 } Dem_ExtendedDataRecordClassType; /** @req DEM135 */
 
 // 10.2.13 DemExtendedDataClass
