@@ -38,6 +38,20 @@
  *   FLS_USE_INTERRUPTS			 N, no hardware support
  *   FLS_VERSION_INFO_API		 Y
  *
+ *   FlsConfigSet			  Have Support
+ *   -------------------------------------------
+ *   FLS_AC_ERASE				 N
+ *   FLS_AC_WRITE			 	 N
+ *   FLS_CALL_CYCLE				 N
+ *   FLS_JOB_END_NOTIFICATION	 Y
+ *   FLS_JOB_ERROR_NOTIFICATION  Y
+ *   FLS_MAX_READ_FAST_MODE      N
+ *   FLS_MAX_READ_NORMAL_MODE    N
+ *   FLS_MAX_WRITE_FAST_MODE	 N
+ *   FLS_MAX_WRITE_NORMAL_MODE	 N
+ *   FLS_PROTECTION				 N
+ *
+ *
  *   Device
  *   - MPC5668  , No support for shadow flash
  *   - MPC5606S , Support for dataflash only
@@ -190,6 +204,7 @@ typedef struct {
 
     uint32_t pDest;
     uint32_t pLeft;
+    uint32_t chunkSize;
 } Fls_ProgInfoType;
 
 
@@ -203,6 +218,8 @@ typedef struct {
 	Fls_LengthType 		length;
 	Fls_ProgInfoType 	flashWriteInfo;
 	bool				mustCheck;
+	MemIf_ModeType		mode;
+	uint32_t 			readChunkSize;
 } Fls_GlobalType;
 
 Fls_GlobalType Fls_Global = {
@@ -210,6 +227,7 @@ Fls_GlobalType Fls_Global = {
 	.jobResultType = MEMIF_JOB_OK,
 	.jobType = FLS_JOB_NONE,
 	.mustCheck = 0,
+	.mode = MEMIF_MODE_SLOW
 };
 
 
@@ -445,6 +463,9 @@ Std_ReturnType Fls_Write(Fls_AddressType TargetAddress,
 	Fls_Global.flashWriteInfo.dest = TargetAddress;
 	Fls_Global.flashWriteInfo.left = Length;
 
+	// TODO: Support FAST mode
+	Fls_Global.flashWriteInfo.chunkSize = FLS_MAX_READ_NORMAL_MODE;
+
 
 	// unlock flash for the entire range.
 	Flash_Lock(Fls_Global.config->FlsInfo,FLASH_OP_UNLOCK, TargetAddress, Length );
@@ -510,6 +531,9 @@ void Fls_MainFunction(void) {
 	uint32 flashStatus;
 	int result;
 	uint32 eccErrReg = 0;
+
+	uint32 chunkSize;
+
 	/** @req FLS117 */
 	VALIDATE_NO_RV(Fls_Global.status != MEMIF_UNINIT,FLS_MAIN_FUNCTION_ID, FLS_E_UNINIT );
 
@@ -522,16 +546,32 @@ void Fls_MainFunction(void) {
 			// NOT implemented. Hardware error = FLS_E_COMPARE_FAILED
 			// ( we are reading directly from flash so it makes no sense )
 
+			chunkSize = MIN( Fls_Global.length, Fls_Global.readChunkSize );
+
 		    /** @req FLS244 */
 			result = memcmp((void *)Fls_Global.ramAddr,
-					        (void *)Fls_Global.flashAddr, Fls_Global.length);
-			if (result == 0) {
-				Fls_Global.jobResultType = MEMIF_JOB_OK;
+					        (void *)Fls_Global.flashAddr, chunkSize );
+
+			Fls_Global.ramAddr += chunkSize;
+			Fls_Global.flashAddr += chunkSize;
+			Fls_Global.length -= chunkSize;
+
+			McuE_GetECCError(&eccErrReg);
+			if( eccErrReg & FLASH_NON_CORRECTABLE_ERROR ){
+				fls_ReadFail();
 			} else {
-				Fls_Global.jobResultType = MEMIF_BLOCK_INCONSISTENT;
+				if( 0 != Fls_Global.length ) {
+					if (result == 0) {
+						Fls_Global.jobResultType = MEMIF_JOB_OK;
+					} else {
+						Fls_Global.jobResultType = MEMIF_BLOCK_INCONSISTENT;
+					}
+					Fls_Global.status = MEMIF_IDLE;
+					Fls_Global.jobType = FLS_JOB_NONE;
+				} else {
+					/* Do nothing, wait for next loop */
+				}
 			}
-			Fls_Global.status = MEMIF_IDLE;
-			Fls_Global.jobType = FLS_JOB_NONE;
 
 			break;
 		case FLS_JOB_ERASE: {
@@ -559,60 +599,96 @@ void Fls_MainFunction(void) {
 			// ( we are reading directly from flash so it makes no sense )
 			// Read ECC-error to clear it
 			McuE_GetECCError(&eccErrReg);
-			memcpy( (void *)Fls_Global.ramAddr, (void *) Fls_Global.flashAddr,
-					Fls_Global.length);
+
+
+			chunkSize = MIN( Fls_Global.length, Fls_Global.readChunkSize );
+
+			memcpy( (void *)Fls_Global.ramAddr, (void *) Fls_Global.flashAddr, chunkSize );
+
+			Fls_Global.ramAddr += chunkSize;
+			Fls_Global.flashAddr += chunkSize;
+			Fls_Global.length -= chunkSize;
+
 			McuE_GetECCError(&eccErrReg);
 			if( eccErrReg & FLASH_NON_CORRECTABLE_ERROR ){
 				fls_ReadFail();
 			} else {
-				Fls_Global.jobResultType = MEMIF_JOB_OK;
-				Fls_Global.status = MEMIF_IDLE;
-				Fls_Global.jobType = FLS_JOB_NONE;
-				FEE_JOB_END_NOTIFICATION();
+				if( 0 != Fls_Global.length ) {
+					Fls_Global.jobResultType = MEMIF_JOB_OK;
+					Fls_Global.status = MEMIF_IDLE;
+					Fls_Global.jobType = FLS_JOB_NONE;
+					FEE_JOB_END_NOTIFICATION();
+				}
 			}
 			break;
 
 		case FLS_JOB_WRITE:
 		{
+			/* We are writing in chunks. If we want to write 6 chunks in total but
+			 * only 2 at a time:
+			 *
+			 * Call
+			 *  #1   The Fls_Write
+			 *  #2   Wait for Flash_CheckStatus(), Flash_ProgramPageStart().. function return
+			 *      -> 1 verified write, 1 pending
+			 *  #3  Wait for Flash_CheckStatus(), Flash_ProgramPageStart()
+			 *      Wait for Flash_CheckStatus(), Flash_ProgramPageStart() .. function return
+			 *      -> 3 verified writes, 1 pending
+			 *  #4  Wait for Flash_CheckStatus(), Flash_ProgramPageStart()
+			 *      Wait for Flash_CheckStatus(), Flash_ProgramPageStart() .. function return
+			 *      -> 5 verified writes, 1 pending
+			 *  #5  Wait for Flash_CheckStatus(), ...function return
+			 *      -> 6 verified writes,
+			 */
+
+
+
+			int32_t chunkSize = MIN(Fls_Global.flashWriteInfo.chunkSize, Fls_Global.flashWriteInfo.left);
 
 		    do {
-				flashStatus = Flash_CheckStatus(Fls_Global.config->FlsInfo,
-				                                (uint32_t *)Fls_Global.flashWriteInfo.pDest,
-				                                Fls_Global.flashWriteInfo.left -Fls_Global.flashWriteInfo.pLeft);
+				flashStatus = Flash_CheckStatus(
+										Fls_Global.config->FlsInfo,
+										(uint32_t *) Fls_Global.flashWriteInfo.pDest,
+										Fls_Global.flashWriteInfo.pLeft - Fls_Global.flashWriteInfo.left);
 
-				if (flashStatus == EE_OK ) {
 
-					if( Fls_Global.flashWriteInfo.left == 0 ) {
-						Fls_Global.mustCheck = 0;
+				if (flashStatus == EE_OK) {
+
+					if (Fls_Global.flashWriteInfo.left == 0) {
 						/* Done! */
-      			Fls_Global.jobResultType = MEMIF_JOB_OK;
-      			Fls_Global.status = MEMIF_IDLE;
-      			Fls_Global.jobType = FLS_JOB_NONE;
-      			FEE_JOB_END_NOTIFICATION();
+						Fls_Global.jobResultType = MEMIF_JOB_OK;
+						Fls_Global.status = MEMIF_IDLE;
+						Fls_Global.jobType = FLS_JOB_NONE;
+						FEE_JOB_END_NOTIFICATION();
 						break;
 					}
-				    Fls_Global.flashWriteInfo.pDest = Fls_Global.flashWriteInfo.dest;
-				    Fls_Global.flashWriteInfo.pLeft = Fls_Global.flashWriteInfo.left;
 
-					flashStatus = Flash_ProgramPageStart(Fls_Global.config->FlsInfo,
+					/* Write more */
+					Fls_Global.flashWriteInfo.pDest = Fls_Global.flashWriteInfo.dest;
+					Fls_Global.flashWriteInfo.pLeft = Fls_Global.flashWriteInfo.left;
+
+					/* Double word programming */
+					flashStatus = Flash_ProgramPageStart(
+											Fls_Global.config->FlsInfo,
 											&Fls_Global.flashWriteInfo.dest,
 											&Fls_Global.flashWriteInfo.source,
-											&Fls_Global.flashWriteInfo.left,
-											NULL);
-					Fls_Global.mustCheck = 1;
-					if( flashStatus != EE_OK ) {
-						Fls_Global.mustCheck = 0;
+											&Fls_Global.flashWriteInfo.left, NULL);
+					if (flashStatus != EE_OK) {
 						fls_WriteFail();
 						break;
 					}
-				} else if( flashStatus == EE_INFO_HVOP_INPROGRESS ) {
+
+					chunkSize = chunkSize - (int32_t)(Fls_Global.flashWriteInfo.pLeft - Fls_Global.flashWriteInfo.left);
+
+				} else if (flashStatus == EE_INFO_HVOP_INPROGRESS) {
 					/* Wait for it */
 				} else {
 					fls_WriteFail();
 					/* Nothing to do, quit loop */
 					break;
 				}
-			} while(Fls_Global.flashWriteInfo.left && Fls_Global.mustCheck );
+
+			} while (chunkSize > 0 );
 
 			break;
 		}
@@ -669,6 +745,7 @@ Std_ReturnType Fls_Read(	Fls_AddressType SourceAddress,
 	Fls_Global.flashAddr = SourceAddress;
 	Fls_Global.ramAddr = TargetAddressPtr;
 	Fls_Global.length = Length;
+	Fls_Global.readChunkSize = FLS_MAX_READ_NORMAL_MODE;
 
 	return E_OK;
 }
