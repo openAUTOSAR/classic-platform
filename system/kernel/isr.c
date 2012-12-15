@@ -294,6 +294,7 @@ void *Os_Isr( void *stack, int16_t vector ) {
 
 	OsIsrVarType *isrPtr =  &Os_IsrVarList[Os_VectorToIsr[vector]];
 	OsTaskVarType *taskPtr = NULL;
+	OsIsrVarType *oldIsrPtr;
 
 	assert( isrPtr != NULL );
 
@@ -316,14 +317,24 @@ void *Os_Isr( void *stack, int16_t vector ) {
 
 		Os_StackPerformCheck(taskPtr);
 	} else {
-		/* We interrupted an ISR */
+		/* We interrupted an ISR, save it */
+		oldIsrPtr = Os_Sys.currIsrPtr;
+#if defined(CFG_OS_ISR_HOOKS)
+	Os_PostIsrHook(isrPtr->id);
+#endif
 	}
 
 	Os_Sys.intNestCnt++;
 
 	isrPtr->state = ST_ISR_RUNNING;
+	Os_Sys.currIsrPtr = isrPtr;
 
 	Irq_SOI();
+
+#if defined(CFG_OS_ISR_HOOKS)
+	Os_PreIsrHook(isrPtr->id);
+#endif
+
 
 #if defined(CFG_HCS12D)
 	isrPtr->constPtr->entry();
@@ -332,6 +343,11 @@ void *Os_Isr( void *stack, int16_t vector ) {
 	isrPtr->constPtr->entry();
 	Irq_Disable();
 #endif
+
+#if defined(CFG_OS_ISR_HOOKS)
+	Os_PostIsrHook(isrPtr->id);
+#endif
+
 
 	/* Check so that ISR2 haven't disabled the interrupts */
 	/** @req OS368 */
@@ -376,7 +392,10 @@ void *Os_Isr( void *stack, int16_t vector ) {
 			Os_TaskSwapContextTo(NULL,new_pcb);
 		}
 	} else {
-		/* We have a nested interrupt, do nothing */
+		/* We have a nested interrupt */
+
+		/* Restore current running ISR from stack */
+		Os_Sys.currIsrPtr = oldIsrPtr;
 	}
 #endif
 
