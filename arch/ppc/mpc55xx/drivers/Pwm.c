@@ -21,8 +21,9 @@
 
 #include "Pwm.h"
 #include "MemMap.h"
+#if defined(USE_DET)
 #include "Det.h"
-
+#endif
 #include "mpc55xx.h"
 
 #include "Os.h"

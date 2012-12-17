@@ -16,7 +16,9 @@
 
 #include "Std_Types.h"
 #include "Port.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "Cpu.h"
 #include <string.h>
 

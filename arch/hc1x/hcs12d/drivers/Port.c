@@ -16,7 +16,9 @@
 #include "Std_Types.h"
 #include "Port.h" /** @req PORT131 */
 #include "regs.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include <string.h>
 
 /* SHORT ON HW

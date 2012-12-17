@@ -28,7 +28,9 @@
 // Only if external flash device
 //#include "Spi.h"
 #include "Std_Types.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "Fls.h"
 
 // SW ans Autosar spec versions

@@ -42,7 +42,9 @@
 #include "ComM_Dcm.h"
 #include "ComM_EcuM.h"
 #if (COMM_DEV_ERROR_DETECT == STD_ON)
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #endif
 
 /** @req COMM507  @req COMM508 */

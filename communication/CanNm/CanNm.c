@@ -62,7 +62,9 @@
 #include <string.h>
 
 #if (CANNM_DEV_ERROR_DETECT == STD_ON)
+#if defined(USE_DET)
 #include "Det.h"				/** @req CANNM082 */
+#endif
 #endif
 #if defined(USE_DEM)
 #include "Dem.h"				/** @req CANNM082 */

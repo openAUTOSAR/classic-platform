@@ -117,7 +117,9 @@
 #include <string.h>
 #include "Fls.h"
 #include "flash.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #if defined(USE_DEM)
 #include "Dem.h"
 #endif

@@ -18,7 +18,9 @@
 #include <string.h>
 #include "Std_Types.h"
 #include "Mcu.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #if defined(USE_DEM)
 #include "Dem.h"
 #endif

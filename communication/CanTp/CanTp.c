@@ -47,7 +47,9 @@
 
 #include "CanTp.h" /** @req CANTP219 */
 #include "CanTp_Cbk.h" /** @req CANTP233 */
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "CanIf.h"
 #include "SchM_CanTp.h"
 #include "PduR_CanTp.h"

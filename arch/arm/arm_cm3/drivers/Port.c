@@ -16,7 +16,9 @@
 
 #include "Port.h" /** @req PORT131 */
 #include "stm32f10x.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "string.h"
 #include "stm32f10x_gpio.h"
 

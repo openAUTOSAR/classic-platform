@@ -19,8 +19,9 @@
 
 
 
-
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "CanIf.h"
 
 #include "Can.h"
