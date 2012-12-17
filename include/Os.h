@@ -191,6 +191,7 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask );
 StatusType ClearEvent( EventMaskType Mask);
 StatusType GetEvent( TaskType TaskId, EventMaskRefType Mask);
 
+
 void InitOS( void );
 void StartOS( AppModeType Mode );
 
@@ -384,6 +385,12 @@ void SignalSemaphore( OsSemaphoreType *semPtr );
 StatusType WaitMutex( OsMutexType *mutexPtr );
 StatusType ReleaseMutex( OsMutexType *mutexPtr );
 #endif
+
+#if defined(CFG_OS_ISR_HOOKS)
+void Os_PreIsrHook(ISRType);
+void Os_PostIsrHook(ISRType);
+#endif
+
 
 
 /*-------------------------------------------------------------------

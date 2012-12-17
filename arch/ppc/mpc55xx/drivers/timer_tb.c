@@ -23,6 +23,7 @@
 #include "Os.h"
 #include "timer.h"
 #include "cpu.h"
+#include "Mcu.h"
 
 /* ----------------------------[private define]------------------------------*/
 /* ----------------------------[private macro]-------------------------------*/
@@ -31,6 +32,9 @@
 /* ----------------------------[private variables]---------------------------*/
 /* ----------------------------[private functions]---------------------------*/
 /* ----------------------------[public functions]----------------------------*/
+
+
+uint32_t Timer_Freq;
 
 /**
  * Initialize the TB
@@ -46,6 +50,8 @@ void Timer_Init( void ) {
 	tmp = get_spr(SPR_HID0);
 	tmp |= HID0_TBEN;
 	set_spr(SPR_HID0, tmp);
+
+	Timer_Freq = McuE_GetSystemClock();
 }
 
 TickType Timer_GetTicks( void ) {

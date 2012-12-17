@@ -19,6 +19,8 @@
 
 #include <stdint.h>
 
+extern uint32_t Timer_Freq;
+
 void Timer_Init( void );
 
 /**
@@ -35,7 +37,7 @@ TickType Timer_GetTicks( void );
 
 void Timer_uDelay(uint32_t useconds );
 
-#define TIMER_TICK2US( _x )		((_x) / (TIMER_FREQ/1000000))
+#define TIMER_TICK2US( _x )		((_x) / (Timer_Freq/1000000))
 
 
 

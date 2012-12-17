@@ -320,6 +320,8 @@ endif
 
 SELECT_CLIB?=CLIB_NEWLIB
 
+obj-$(CFG_TIMER)-$(CFG_PPC)+=timer_tb.o
+
 ifeq ($(SELECT_CLIB),CLIB_NATIVE)
   # Just use native clib 
   
