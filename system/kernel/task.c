@@ -652,7 +652,7 @@ ISRType GetISRID( void ) {
 	}
 
 	/** @req OS263 */
-	return (ISRType)Os_SysTaskGetCurr()->constPtr->pid;
+	return (ISRType)Os_SysIsrGetCurr()->id;
 }
 
 static inline void Os_Arc_SetCleanContext( OsTaskVarType *pcb ) {
