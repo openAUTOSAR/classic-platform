@@ -63,6 +63,11 @@ ifneq ($(filter clean_all,$(MAKECMDGOALS)),clean_all)
   endif
 endif
 
+# Convert Path if on windows.
+ifeq ($(OS),Windows_NT)  
+    BDIR:=/$(subst :/,/,$(subst \,/,$(BDIR)))
+endif
+
 USE_T32_SIM?=n
 export USE_T32_SIM
 
