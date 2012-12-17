@@ -1,4 +1,3 @@
-CFG_GCOV = y
 
 # Arch specific settings
 ifneq ($(ARCH),)
