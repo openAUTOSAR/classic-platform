@@ -106,28 +106,3 @@ void Os_SysTickStart(uint32_t period_ticks) {
 	rtiREG1->SETINT = 0x1;
 
 }
-
-/**
- * @return
- */
-
-uint32_t Os_SysTickGetValue( void )
-{
-	//return (SysTick->LOAD) - (SysTick->VAL);
-	return 0;
-}
-
-
-TickType Os_SysTickGetElapsedValue( uint32_t preValue ) {
-	uint32_t curr;
-	uint32_t max;
-
-	/*
-	curr = (SysTick->VAL);
-	max  = (SysTick->LOAD);
-	*/
-	curr = 0;
-	max = 0;
-	return Os_CounterDiff((max - curr),preValue,max);
-}
-

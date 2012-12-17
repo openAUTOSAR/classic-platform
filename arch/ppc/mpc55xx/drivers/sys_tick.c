@@ -120,27 +120,3 @@ void Os_SysTickStart(TickType period_ticks) {
         set_spr(SPR_TCR, tmp );
 #endif
 }
-
-/**
- * ???
- * TODO: This function just subtract the max value?! ok??
- *
- * @return
- */
-
-/** @req OS383 */
-TickType Os_SysTickGetValue( void )
-{
-	uint32_t timer = get_spr(SPR_DECAR) - get_spr(SPR_DEC);
-	return (timer);
-}
-
-TickType Os_SysTickGetElapsedValue( TickType preValue ) {
-	uint32_t curr;
-	uint32_t max;
-
-	curr = get_spr(SPR_DEC);
-	max  = get_spr(SPR_DECAR);
-	return Os_CounterDiff((max - curr),preValue,max);
-}
-

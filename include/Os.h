@@ -349,8 +349,6 @@ typedef const uint32 OsTickType;
 extern OsTickType OsTickFreq;
 void Os_SysTickInit( void );
 void Os_SysTickStart(TickType period_ticks);
-TickType Os_SysTickGetValue( void );
-TickType Os_SysTickGetElapsedValue( TickType preValue );
 
 /* Return a value that is always a free running timer */
 TickType GetOsTick( void );
