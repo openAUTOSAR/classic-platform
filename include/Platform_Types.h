@@ -47,12 +47,22 @@ typedef int32_t         	sint32;
 typedef uint32_t       		uint32;
 typedef int64_t  			sint64;
 typedef uint64_t  			uint64;
+#if defined(CFG_HC1X) && defined (__GNUC__)
+/* stdint.h for the HC12 compiler ancient */
+typedef uint8_t       		uint8_least;
+typedef uint16_t      		uint16_least;
+typedef uint32_t      		uint32_least;
+typedef int8_t        		sint8_least;
+typedef int16_t       		sint16_least;
+typedef int32_t       		sint32_least;
+#else
 typedef uint_least8_t       uint8_least;
 typedef uint_least16_t      uint16_least;
 typedef uint_least32_t      uint32_least;
 typedef int_least8_t        sint8_least;
 typedef int_least16_t       sint16_least;
 typedef int_least32_t       sint32_least;
+#endif
 typedef float               float32; 
 typedef double              float64;  
 
