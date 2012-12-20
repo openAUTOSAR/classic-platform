@@ -59,6 +59,9 @@
 #ifndef _TYPEDEFS_H_
 #define _TYPEDEFS_H_
 
+#include "Platform_Types.h"
+
+#if 0
 #if defined(__MWERKS__)     //Metrowerk CodeWarrior
     #include <stdint.h>
 
@@ -120,6 +123,7 @@
     typedef volatile signed long long vint64_t;
     typedef volatile unsigned long long vuint64_t;
 
+#endif
 #endif
 #endif
 #endif

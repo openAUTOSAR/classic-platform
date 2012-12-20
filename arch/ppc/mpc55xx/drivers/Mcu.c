@@ -483,9 +483,7 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
 
     // TODO: find out if the 5554 really works like the 5516 here
     // All three (16, 54, 67) used to run the same code here though, so i'm sticking it with 5516
-#if defined(CFG_SIMULATOR)
-    return E_OK;
-#elif defined(CFG_MPC5516) || defined(CFG_MPC5554) || defined(CFG_MPC5668)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5554) || defined(CFG_MPC5668)
     /* 5516clock info:
      * Fsys - System frequency ( CPU + all periperals? )
      *
@@ -533,6 +531,10 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     // Write pll parameters.
     FMPLL.ESYNCR1.B.EPREDIV = clockSettingsPtr->Pll1;
     FMPLL.ESYNCR1.B.EMFD    = clockSettingsPtr->Pll2;
+
+#if defined(CFG_SIMULATOR)
+    FMPLL.SYNSR.B.LOCK = 1;
+#endif
 
     while(FMPLL.SYNSR.B.LOCK != 1) {};
 
