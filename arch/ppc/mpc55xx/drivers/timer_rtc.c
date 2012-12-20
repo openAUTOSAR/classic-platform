@@ -20,8 +20,12 @@
 
 
 /* ----------------------------[includes]------------------------------------*/
-#include "common.h"
-#include "mpc5xxx.h"
+
+#include "Os.h"
+#include "timer.h"
+#include "cpu.h"
+#include "Mcu.h"
+
 
 /* ----------------------------[private define]------------------------------*/
 
@@ -41,6 +45,7 @@
 /* ----------------------------[private functions]---------------------------*/
 /* ----------------------------[public functions]----------------------------*/
 
+uint32_t Timer_Freq;
 
 /**
  * Initialize the TB
@@ -51,18 +56,11 @@ void Timer_Init( void ) {
 	RTC.RTCC.R = 0;
 	/* FIRC=16Mhz */
 	RTC.RTCC.R =  RTCC_CNTEN | RTCC_FRZEN | RTCC_CLKSEL_FIRC;
+
+	Timer_Freq = McuE_GetSystemClock();
 }
 
 TickType Timer_GetTicks( void ) {
 	return RTC.RTCCNT.R;
 }
-
-
-#if 0
-void Timer_uDelay( uint32_t delay ) {
-	uint32_t stop = Timer_Ticks2uSeconds()GetuSeconds() + delay;
-
-	while( Timer_GetuSeconds() < stop ) {};
-}
-#endif
 
