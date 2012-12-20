@@ -613,7 +613,7 @@ void Fls_MainFunction(void) {
 			if( eccErrReg & FLASH_NON_CORRECTABLE_ERROR ){
 				fls_ReadFail();
 			} else {
-				if( 0 != Fls_Global.length ) {
+				if( 0 == Fls_Global.length ) {
 					Fls_Global.jobResultType = MEMIF_JOB_OK;
 					Fls_Global.status = MEMIF_IDLE;
 					Fls_Global.jobType = FLS_JOB_NONE;

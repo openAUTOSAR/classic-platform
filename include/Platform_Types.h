@@ -21,6 +21,7 @@
  */
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifndef PLATFORM_TYPES_H
 #define PLATFORM_TYPES_H
