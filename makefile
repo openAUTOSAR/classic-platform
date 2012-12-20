@@ -65,7 +65,7 @@ endif
 
 # C:/apa -> /c/apa
 # ../tjo -> ../tjo
-to_msyspath = $(shell echo "$(1)" | sed -e 's,\\,\/,;s,\([a-zA-Z]\):,/\1,')
+to_msyspath = $(shell echo "$(1)" | sed -e 's,\\,\/,g;s,\([a-zA-Z]\):,/\1,')
 
 # Convert Path if on windows.
 ifeq ($(OS),Windows_NT)
