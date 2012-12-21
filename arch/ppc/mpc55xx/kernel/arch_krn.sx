@@ -258,6 +258,10 @@ restoreFuncContext:
  		.global exception_IVOR2
 		.balign 16
 exception_IVOR2:
+	/* Push register r8 and r9 on stack */
+    stwu  	r8,-8(sp)
+    stw   	r9,4(sp)
+    
 	/* Check for ECC problems */
 	//Store err reg
 	LOAD_ADDR_32(r8,ECSM_BASE)
@@ -268,6 +272,12 @@ exception_IVOR2:
 	mfspr 	r9,srr0
 	addi  	r9,r9,4
 	mtspr	srr0,r9
+	
+	/* Pop r8 and r9 */
+	lwz     r8,0(sp)
+    lwz     r9,4(sp)
+    addi  	sp,sp,8
+    
 	rfi	
 #endif
 		.global exception_IVOR4
