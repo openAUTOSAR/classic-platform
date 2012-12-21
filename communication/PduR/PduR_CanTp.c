@@ -26,11 +26,7 @@ BufReq_ReturnType PduR_CanTpProvideRxBuffer(PduIdType CanTpRxPduId, PduLengthTyp
 
 
 void PduR_CanTpRxIndication(PduIdType CanTpRxPduId, NotifResultType Result) {
-	PduInfoType PduInfo = {
-		.SduDataPtr = &Result,
-		.SduLength = 0 // To fix PC-Lint 785
-	};
-	PduR_ARC_RxIndication(CanTpRxPduId, &PduInfo, 0x04);
+	PduR_ARC_TpRxIndication(CanTpRxPduId, Result, 0x04);
 }
 
 BufReq_ReturnType PduR_CanTpProvideTxBuffer(PduIdType CanTpTxPduId, PduInfoType** PduInfoPtr, uint16 Length) {

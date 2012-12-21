@@ -93,13 +93,16 @@ typedef enum {
 	PDUR_BUFFER_FREE = 0,
 	PDUR_BUFFER_RX_BUSY,
 	PDUR_BUFFER_TX_READY,
-	PDUR_BUFFER_TX_BUSY
+	PDUR_BUFFER_TX_BUSY,
+	PDUR_BUFFER_NOT_ALLOCATED_FROM_UP_MODULE,
+	PDUR_BUFFER_ALLOCATED_FROM_UP_MODULE
 } PduRTpBufferStatus_type;
 
 typedef struct {
 	PduInfoType *pduInfoPtr;
 	PduRTpBufferStatus_type status;
-	const uint16 bufferSize;
+	uint16 bufferSize;
+	uint8 nAcc;
 } PduRTpBufferInfo_type;
 
 typedef struct {
