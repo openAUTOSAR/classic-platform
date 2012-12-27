@@ -38,8 +38,8 @@ void Os_SysTick_MPC560x( void ) {
 }
 #endif
 
-#if defined(CFG_MPC5604P)
-void Os_SysTick_MPC5604P( void ) {
+#if defined(CFG_MPC5604P) || defined(CFG_MPC5634M)
+void Os_SysTick_MPC5xxx_PIT( void ) {
     /* Clear interrupt. */
     PIT.CH[3].TFLG.B.TIF = 1;
 
@@ -48,8 +48,8 @@ void Os_SysTick_MPC5604P( void ) {
 #endif
 
 void Os_SysTickInit( void ) {
-#if defined(CFG_MPC5604P)
-	ISR_INSTALL_ISR2("OsTick",Os_SysTick_MPC5604P,PIT_INT3,6,0);
+#if defined(CFG_MPC5604P) || defined(CFG_MPC5634M)
+	ISR_INSTALL_ISR2("OsTick",Os_SysTick_MPC5xxx_PIT,PIT_INT3,6,0);
 #elif defined(CFG_MPC560X)
 	ISR_INSTALL_ISR2("OsTick",Os_SysTick_MPC560x,API_INT,6,0);
 #else
@@ -65,7 +65,7 @@ void Os_SysTickInit( void ) {
  *
  */
 void Os_SysTickStart(TickType period_ticks) {
-#if defined(CFG_MPC5604P)
+#if defined(CFG_MPC5604P) || defined(CFG_MPC5634M)
 	PIT.MCR.B.MDIS = 0;
 	PIT.MCR.B.FRZ = 1;
 
