@@ -54,6 +54,24 @@ void  oil_foo(void) {
 	DECLARE(EXC_FRM_R3,		offsetof(Os_ExceptionFrameType, r3));
 	DECLARE(EXC_FRM_VECTOR,	offsetof(Os_ExceptionFrameType, vector));
 
+/* Volatile frame */
+	DECLARE(VOLATILE_FRM_SIZE,	sizeof(Os_VolatileFrameType));
+	DECLARE(VOLATILE_FRM_R0,	offsetof(Os_UserExceptionFrameType, r0));
+	DECLARE(VOLATILE_FRM_R3,	offsetof(Os_UserExceptionFrameType, r3));
+	DECLARE(VOLATILE_FRM_R4,	offsetof(Os_UserExceptionFrameType, r4));
+	DECLARE(VOLATILE_FRM_R5,	offsetof(Os_UserExceptionFrameType, r5));
+	DECLARE(VOLATILE_FRM_R6,	offsetof(Os_UserExceptionFrameType, r6));
+	DECLARE(VOLATILE_FRM_R7,	offsetof(Os_UserExceptionFrameType, r7));
+	DECLARE(VOLATILE_FRM_R8,	offsetof(Os_UserExceptionFrameType, r8));
+	DECLARE(VOLATILE_FRM_R9,	offsetof(Os_UserExceptionFrameType, r9));
+	DECLARE(VOLATILE_FRM_R10,	offsetof(Os_UserExceptionFrameType, r10));
+	DECLARE(VOLATILE_FRM_R11,	offsetof(Os_UserExceptionFrameType, r11));
+	DECLARE(VOLATILE_FRM_R12,	offsetof(Os_UserExceptionFrameType, r12));
+	DECLARE(VOLATILE_FRM_LR,		offsetof(Os_UserExceptionFrameType, lr));
+	DECLARE(VOLATILE_FRM_CTR,	offsetof(Os_UserExceptionFrameType, ctr));
+	DECLARE(VOLATILE_FRM_XER,	offsetof(Os_UserExceptionFrameType, xer));
+	DECLARE(VOLATILE_FRM_CR,		offsetof(Os_UserExceptionFrameType, cr));
+
 
 	DECLARE(FUNC_FRM_SIZE,	sizeof(Os_FuncFrameType));
 	DECLARE(FUNC_FRM_CR, offsetof(Os_FuncFrameType,cr));

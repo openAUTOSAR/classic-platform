@@ -2,14 +2,7 @@
 #include "asm_ppc.h"
 
 
-#if defined(__CWCC__) && defined(CFG_VLE)
-.section .text_vle,text_vle
-#elif defined(__DCC__)
-	// Must be indented (diab)
-	.section .text_vle,x
-#elif defined(__GNUC__)
-.section .text
-#endif
+ASM_SECTION_TEXT(.text)
 
 #if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 #define CRP_RECPTR 		0xfffec058
@@ -46,17 +39,7 @@ McuE_EnterLowPower:
  * Low Power Vector...needs to be on 4K + 0xffc
  * We only have 1 instruction before we are outside TLB0 so just jump
  */
-#if defined(__GNUC__)	
-.section ".lowpower_vector","ax"
-#elif defined(__CWCC__)
-#if defined(CFG_VLE)
-.section .lowpower_vector,text_vle
-#else
-.section .lowpower_vector,4,"rw"
-#endif
-#elif defined(__DCC__)
-	.section .text_vle,x
-#endif
+ASM_SECTION_TEXT(.lowpower_vector)
 
 	.global McuE_LowPowerVector
 
@@ -64,17 +47,7 @@ McuE_LowPowerVector:
 	b	McuE_LowPowerRecoverFlash
 	
 
-#if defined(__GNUC__)	
-.section ".lowpower_text","ax"
-#elif defined(__CWCC__)
-#if defined(CFG_VLE)
-.section .lowpower_text,text_vle
-#else
-.section .lowpower_text,4,"rw"
-#endif
-#elif defined(__DCC__)
-	.section .text_vle,x
-#endif
+ASM_SECTION_TEXT(.lowpower_text)
 
 	.extern EcuM_CheckWakeup
 	.global McuE_LowPowerRecoverFlash

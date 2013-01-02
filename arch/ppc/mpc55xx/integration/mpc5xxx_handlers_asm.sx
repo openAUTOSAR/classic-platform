@@ -1,0 +1,182 @@
+/* -------------------------------- Arctic Core ------------------------------
+ * Arctic Core - the open source AUTOSAR platform http://arccore.com
+ *
+ * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
+ *
+ * This source code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ * -------------------------------- Arctic Core ------------------------------*/
+
+/* ----------------------------[includes]------------------------------------*/
+#define _ASSEMBLER_
+#include "asm_ppc.h"
+#include "arch_offset.h"
+#include "asm_offset.h"
+#include "arch_stack.h"
+
+/* ----------------------------[private define]------------------------------*/
+
+#define EXC_TABLE_CODE(_exc_nr) 	\
+ 	.balign 16;                     \
+	stwu	sp,-EXC_FRM_SIZE(sp); 	\
+	stw		r3,EXC_FRM_R3(sp);		\
+	li	    r3,_exc_nr;				\
+	b		handleException			
+
+
+/* ----------------------------[private macro]-------------------------------*/
+/* ----------------------------[private typedef]-----------------------------*/
+/* ----------------------------[private function prototypes]-----------------*/
+.global exception_IVOR0
+.global exception_IVOR1
+.global exception_IVOR2
+.global exception_IVOR3
+.global exception_IVOR4
+.global exception_IVOR5
+.global exception_IVOR6
+.global exception_IVOR7
+.global exception_IVOR8
+.global exception_IVOR9
+.global exception_IVOR10
+.global exception_IVOR11
+.global exception_IVOR12
+.global exception_IVOR13
+.global exception_IVOR14
+
+/* ----------------------------[private variables]---------------------------*/
+/* ----------------------------[private functions]---------------------------*/
+/* ----------------------------[public functions]----------------------------*/
+	
+ASM_SECTION_TEXT(.text)
+
+/* What things are we interrested in here:
+ * ESR  - Exception Syndrome Regiser
+ * MCSR - Machine Check Syndrome Register (Machine Check Only)
+ * DEAR - Data Exception Address
+
+
+/* Critical Input:  CSRR0, CSRR1 */
+exception_IVOR0:
+	/* Volatile frame */
+	stwu	sp,-VOLATILE_FRM_SIZE(sp)
+	
+	stw		r0,  VOLATILE_FRM_R0(sp)
+	stw		r3,  VOLATILE_FRM_R3(sp)
+	stw		r4,  VOLATILE_FRM_R4(sp)
+	stw		r5,  VOLATILE_FRM_R5(sp)
+	stw		r6,  VOLATILE_FRM_R6(sp)
+	stw		r7,  VOLATILE_FRM_R7(sp)
+	stw		r8,  VOLATILE_FRM_R8(sp)
+	stw		r9,  VOLATILE_FRM_R9(sp)
+	stw		r10, VOLATILE_FRM_R10(sp)
+	stw		r11, VOLATILE_FRM_R11(sp)
+	stw		r12, VOLATILE_FRM_R12(sp)
+
+	mfcr 	r3
+	stw 	r3, VOLATILE_FRM_CR(sp)	
+	mfxer 	r3 
+	stw 	r3, VOLATILE_FRM_XER(sp)
+	mfctr 	r3
+	stw 	r3, VOLATILE_FRM_CTR(sp)
+	mflr 	r3
+	stw 	r3, VOLATILE_FRM_LR(sp)	
+	
+	/* Exception frame */
+	stwu	sp,-EXCEPTION_INFO_SIZE(sp)
+	
+	mfcsrr0 	r3
+	stw 	r3, UEXC_FRM_SRR0(sp)
+	mfcsrr1 	r3
+	stw 	r3, UEXC_FRM_SRR1(sp)
+	
+	bl 		UserException_IVOR0
+			
+	mtcsrr0	r3	 
+	
+		
+	lwz 	r3, UEXC_FRM_SRR0(sp)
+	mtsrr0 	r3
+	lwz 	r3, UEXC_FRM_SRR1(sp)
+	mtsrr1 	r3
+	lwz 	r3, UEXC_FRM_R3(sp)
+	addi	sp,sp,EXC_FRM_SIZE
+	
+	
+	
+	
+	lwz		r0, VOLATILE_FRMR0(sp)
+	lwz		r4, VOLATILE_FRM_R4(sp)
+	lwz		r5, VOLATILE_FRM_R5(sp)
+	lwz		r6, VOLATILE_FRM_R6(sp)
+	lwz		r7, VOLATILE_FRM_R7(sp)
+	lwz		r8, VOLATILE_FRM_R8(sp)
+	lwz		r9, VOLATILE_FRM_R9(sp)
+	lwz		r10, VOLATILE_FRM_R10(sp)
+	lwz		r11, VOLATILE_FRM_R11(sp)
+	lwz		r12, VOLATILE_FRM_R12(sp)
+	
+	lwz 	r3, VOLATILE_FRM_LR(sp)
+	mtlr 	r3
+	lwz	 	r3, VOLATILE_FRM_CTR(sp)
+	mtctr 	r3
+	lwz 	r3, VOLATILE_FRM_XER(sp)
+	mtxer 	r3
+	lwz 	r3, VOLATILE_FRM_CR(sp)
+	mtcr	r3
+	
+	rfci 
+
+
+/* Machine Check:   CSRR0, CSRR1, MCSR */
+exception_IVOR1:
+
+/* Data Storage:    SRR0, SRR1, ESR, DEAR */
+exception_IVOR2:
+
+/* Inst. Storage:   SRR0, SRR1, ESR */
+exception_IVOR3:
+
+/* External Input */
+// exception_IVOR4: /* BELONGS TO OS */
+
+/* Alignment:       SRR0, SRR1, ESR, DEAR */
+exception_IVOR5:
+
+/* Program:         SRR0, SRR1, ESR */
+exception_IVOR6:
+
+/* Floating Point:  SRR0, SRR1 */
+exception_IVOR7:
+
+/* System Call:     SRR0, SRR1, ESR */
+exception_IVOR8:
+
+/* Aux:             Not used by e200 */
+exception_IVOR9:
+
+/* Decrementer:     SRR0, SRR1 */
+//exception_IVOR10: /* BELONGS TO OS */
+
+/* FIT:             SRR0, SRR1 */
+exception_IVOR11:
+
+/* Watchdog:        CSRR0, CSRR1 */
+exception_IVOR12:
+
+/* Data TLB:        SRR0, SRR1, ESR, DEAR */
+exception_IVOR13:
+
+/* Intstr TLB:      SRR0, SRR1, ESR */
+exception_IVOR14:
+
+/* Debug:           (C)SRR0, (C)SRR1, DBSR */
+exception_IVOR15:
+	b exception_IVOR15
+	
+	

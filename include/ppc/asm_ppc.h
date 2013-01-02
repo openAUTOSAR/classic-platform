@@ -69,6 +69,7 @@
 
 
 #define ESR_PTR		(1<<(38-32))
+#define ESR_VLEMI   (1<<(26))
 
 #define SPR_XER		1
 #define SPR_CTR		9
@@ -104,6 +105,20 @@
 
 
 #if defined(_ASSEMBLER_)
+
+
+
+#if defined(__GNUC__)
+#  define ASM_SECTION_TEXT(_x) .section #_x,"ax"
+#elif defined(__CWCC__)
+#  if defined(CFG_VLE)
+#    define ASM_SECTION_TEXT(_x) .section _x,text_vle
+#  else
+#    define ASM_SECTION_TEXT(_x) .section _x,4,"rw"
+#elif defined(__DCC__)
+#  define ASM_SECTION_TEXT(_x) .section .text_vle,x
+#endif
+
 /*
  * PPC vs VLE assembler:
  *   Most PPC assembler instructions can be pre-processed to VLE assembler.
