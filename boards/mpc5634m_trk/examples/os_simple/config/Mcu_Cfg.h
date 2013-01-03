@@ -4,7 +4,7 @@
 * Created by:              
 * Copyright:               
 *
-* Configured for (MCU):    MPC5604P
+* Configured for (MCU):    MPC5567
 *
 * Module vendor:           ArcCore
 * Generator version:       2.0.4
@@ -21,6 +21,8 @@
 #ifndef MCU_CFG_H_
 #define MCU_CFG_H_
 
+#include "mpc55xx.h"
+
 
 #define MCU_DEV_ERROR_DETECT 	STD_ON 
 #define MCU_PERFORM_RESET_API 	STD_ON
@@ -28,13 +30,14 @@
 
 
 typedef enum {
-	MCU_MODE_MCUMODESETTINGCONF = 0,
-	MCU_MODE_NORMAL = 1 // Here for backwards compatibility reasons. Not used anymore.
+	MCU_MODE_RUN = 0,
+	MCU_MODE_SLEEP = 1,
+	MCU_MODE_NORMAL = 2 // Here for backwards compatibility reasons. Not used anymore.
 } Mcu_ModeType;
 
 
 typedef enum {
-	MCU_CLOCKTYPE_Clock = 0,
+	MCU_CLOCKTYPE_EXT_REF_64MHZ = 0,
   MCU_NBR_OF_CLOCKS,
 } Mcu_ClockType;
 

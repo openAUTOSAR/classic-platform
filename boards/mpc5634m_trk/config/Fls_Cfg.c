@@ -44,12 +44,11 @@ const FlashType flashInfo[] = {
 	[0].addrSpace[6] = ADDR_SPACE_SET(ADDR_SPACE_LOW) + 6,
 	[0].sectAddr[7] = 0x30000, /* 7, B0F5, LOW */
 	[0].addrSpace[7] = ADDR_SPACE_SET(ADDR_SPACE_LOW) + 7,
-
 	[0].sectAddr[8] = 0x40000, /* 6, B0F6, MID */
 	[0].addrSpace[8] = ADDR_SPACE_SET(ADDR_SPACE_MID) + 0,
 	[0].sectAddr[9] = 0x60000, /* 7, B0F7, MID */
 	[0].addrSpace[9] = ADDR_SPACE_SET(ADDR_SPACE_MID) + 1,
-	[0].sectAddr[10] = 0x80000,	/* End, NOT a sector */
+	[0].sectAddr[10] = 0x80000,
 
 	/* Bank 1, Array 1(HIGH) */
 	[1].sectCnt = 4,
@@ -79,7 +78,6 @@ const FlashType flashInfo[] = {
 	[2].addrSpace[3] = ADDR_SPACE_SET(ADDR_SPACE_HIGH) + 3,
 	[2].sectAddr[4] = 0x180000, /* End, NOT a sector */
 };
-
 #else
 #error CPU NOT supported
 #endif

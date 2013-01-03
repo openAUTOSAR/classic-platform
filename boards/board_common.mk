@@ -108,6 +108,7 @@ obj-$(USE_ADC)-$(CFG_HC1X) += Adc.o
 obj-$(USE_ADC)-$(CFG_ARM_CM3) += Adc.o
 obj-$(USE_ADC)-$(CFG_MPC5516) += Adc_eQADC.o
 obj-$(USE_ADC)-$(CFG_MPC5567) += Adc_eQADC.o
+obj-$(USE_ADC)-$(CFG_MPC563XM) += Adc_eQADC.o
 obj-$(USE_ADC) += Adc_Cfg.o
 obj-$(USE_ADC) += Adc_Internal.o
 vpath-y += $(ROOTDIR)/drivers
@@ -187,6 +188,7 @@ obj-$(USE_PWM)-$(CFG_HC1X) += Pwm.o
 obj-$(USE_PWM)-$(CFG_ARM_CM3) += Pwm.o
 obj-$(USE_PWM)-$(CFG_MPC5516) += Pwm.o
 obj-$(USE_PWM)-$(CFG_MPC5567) += Pwm.o
+obj-$(USE_PWM)-$(CFG_MPC563XM) += Pwm.o
 
 # Misc
 obj-$(USE_DET) += Det.o
@@ -197,6 +199,7 @@ obj-$(USE_LIN) += Lin_Lcfg.o
 obj-$(USE_LIN)-$(CFG_MPC560X) += LinFlex.o
 obj-$(USE_LIN)-$(CFG_MPC5516) += Lin.o
 obj-$(USE_LIN)-$(CFG_MPC5567) += Lin.o
+obj-$(USE_LIN)-$(CFG_MPC563XM) += Lin.o
 
 # LinIf
 obj-$(USE_LINIF) += LinIf_Lcfg.o

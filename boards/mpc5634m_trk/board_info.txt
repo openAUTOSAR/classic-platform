@@ -1,28 +1,28 @@
 
 
 
-The Freescale MPC5634M is an PowerPC process with a e200z335 core, VLE only  
+The Freescale MPC5634M is an PowerPC process with a e200z335 core  
 	
 Datasheets:
   Eval board:
       http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=TRK-MPC5634M
      
-  MPC560xB
+  MPC563XM
     http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC563xM
     
 Board:
-  8Mhz external crystal, for default system tick PIT no3 is used.
+  8Mhz external crystal.
 
 Supported compilers:
-  Code Warrior, Diab
+  gcc, Code Warrior, Diab
   
 SystemTick:
-  PIT no3 is used for generating system clock
+  decrementer is used for generating system clock
   
 Info:	
   MPC5634M
-  CPU:		 e200z335 (VLE only)
-  Freq:		 64 Mhz PLL
+  CPU:		 e200z335
+  Freq:		 64 Mhz PLL, prediv=1, mfd=12, rfd=0
   Flash: 	 1,5MB, flash
   RAM:       94K, ECC
   
@@ -30,12 +30,10 @@ Memory Map:
  0x0000_0000 -> 0x0017_FFFF   Flash
  0x4000_0000 -> 0x4001_77FF   SRAM
  
-NOTE! In Mcu.c only board specific clocks and pin muxing are setup and there is no config tool support. 
-So, in order to use for instance FlexCan 3 you need to iniatilize FlexCan3 power control register i.e. ME.PCTL[19].R = 0x01;
-in EcuM callout or modify an own version of Mcu.c. See Mcu_InitClock in Mcu.c for further info. 
-
 CAN and LIN: In order to use CAN or LIN the MC33905 circuit need to be initialized accordingly using DSPI. 
              Contact Freescale support for source code. Same init as for mpc5604b_trk.
+             
+             CAN C only supports 32 mailboxes although CAN A supports 64...weird...
  
 SPI_0
   PC[7] - SIN_0   - S_OUT/BROWN

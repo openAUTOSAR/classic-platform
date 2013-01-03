@@ -5,7 +5,7 @@ ARCH_FAM=ppc
 ARCH_MCU=mpc5634m
 
 # CFG (y/n) macros
-CFG=PPC E200Z0 MPC55XX MPC560X MPC5634M BRD_MPC5634M_TRK VLE
+CFG=PPC E200Z0 MPC55XX MPC563XM MPC5634M BRD_MPC5634M_TRK VLE
 
 # What buildable modules does this board have, 
 # default or private
@@ -24,12 +24,12 @@ MOD_AVAIL+=CRC32 CRC16
 MOD_USE += MCU KERNEL ECUM DET
 
 # Default cross compiler
-COMPILER?=diab
+COMPILER?=gcc
 DEFAULT_CROSS_COMPILE = /opt/powerpc-eabispe/bin/powerpc-eabispe-
 DEFAULT_CW_COMPILE= /opt/cw
 DEFAULT_DIAB_COMPILE= /opt/diab
 
 # Defines
-def-y += SRAM_SIZE=0x177FF
+def-y += SRAM_SIZE=0x17800
 
 

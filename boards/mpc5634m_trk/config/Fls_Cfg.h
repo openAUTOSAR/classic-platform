@@ -65,13 +65,14 @@
 #define FLS_MAX_READ_NORMAL_MODE	16
 #define FLS_MAX_WRITE_NORMAL_MODE	16
 
-/* MCU Specific */
-#if defined(CFG_MPC5604P)
 
-#define FLASH_BANK_CNT 				2
+/* MCU Specific */
+#if defined(CFG_MPC5634M)
+
+#define FLASH_BANK_CNT 				3
 #define FLASH_PAGE_SIZE				8
-#define FLASH_MAX_SECTORS			12
-#define FLS_TOTAL_SIZE              ((16*4+512)*1024)
+#define FLASH_MAX_SECTORS			11
+#define FLS_TOTAL_SIZE              ((16*4+32*2+64*2+128*10)*1024)
 
 #else
 #error CPU not supported

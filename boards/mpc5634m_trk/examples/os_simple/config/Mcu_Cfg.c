@@ -4,7 +4,7 @@
 * Created by:              
 * Copyright:               
 *
-* Configured for (MCU):    MPC5604P
+* Configured for (MCU):    MPC5567
 *
 * Module vendor:           ArcCore
 * Generator version:       2.0.4
@@ -24,12 +24,9 @@ const Mcu_ClockSettingConfigType Mcu_ClockSettingConfigData[] =
 {
   {
     .McuClockReferencePointFrequency = 8000000UL,
-  	.Pll1    = 0,
-    .Pll2    = 64,
-    .Pll3    = 2, 
-    .Pll1_1  = 0,
-    .Pll2_1  = 60,
-    .Pll3_1  = 1,
+    .Pll1    = 1,
+    .Pll2    = 12,
+    .Pll3    = 0,
   },
 };
 
