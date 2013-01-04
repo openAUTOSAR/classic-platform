@@ -313,7 +313,7 @@ void Port_RefreshPortDirection(void)
 #if ( PORTP_CONFIGURABLE == STD_ON )
     curValue = DDRP & ~(_configPtr->portPMask);
     curValue |= (_configPtr->portPDirection & _configPtr->portPMask);
-    DDRP =
+    DDRP = curValue;
 #endif
 
 #if ( PORTS_CONFIGURABLE == STD_ON )

@@ -30,26 +30,20 @@
 #define  PORTB     PORTIO_8(IO_BASE + 0x01)   /* port B */
 #define  DDRA      PORTIO_8(IO_BASE + 0x02)   /* data direction port A */
 #define  DDRB      PORTIO_8(IO_BASE + 0x03)   /* data direction port B */
+#define  PORTC     PORTIO_8(IO_BASE + 0x04)   /* port C */
+#define  PORTD     PORTIO_8(IO_BASE + 0x05)   /* port D */
+#define  DDRC      PORTIO_8(IO_BASE + 0x06)   /* data direction port C */
+#define  DDRD      PORTIO_8(IO_BASE + 0x07)   /* data direction port D */
 #define  PORTE     PORTIO_8(IO_BASE + 0x08)   /* port E */
 #define  DDRE      PORTIO_8(IO_BASE + 0x09)   /* data direction port E */
-#define  PEAR      PORTIO_8(IO_BASE + 0x0a)   /* port E assignment register */
+#define  MMCCTL0   PORTIO_8(IO_BASE + 0x0a)   /* MMCTL register 0*/
 #define  MODE      PORTIO_8(IO_BASE + 0x0b)   /* mode register */
 #define  PUCR      PORTIO_8(IO_BASE + 0x0c)   /* pull-up control register */
 #define  RDRIV     PORTIO_8(IO_BASE + 0x0d)   /* reduced drive of I/O lines */
-#define  EBICTL    PORTIO_8(IO_BASE + 0x0e)   /* external bus control */
-#define  INITRM    PORTIO_8(IO_BASE + 0x10)   /* RAM mapping register */
-#define  INITRG    PORTIO_8(IO_BASE + 0x11)   /* IO mapping register */
-#define  INITEE    PORTIO_8(IO_BASE + 0x12)   /* EEPROM mapping register */
-#define  MISC      PORTIO_8(IO_BASE + 0x13)   /* mapping control register */
-#define  MTST0     PORTIO_8(IO_BASE + 0x14)   /* mapping test register 0 */
-#define  ITCR      PORTIO_8(IO_BASE + 0x15)   /* interrupt test control reg. */
-#define  ITEST     PORTIO_8(IO_BASE + 0x16)   /* interrupt test register */
-#define  MTST1     PORTIO_8(IO_BASE + 0x17)   /* mapping test register 1 */
-#define  PARTID    PORTIO_16(IO_BASE + 0x1a)  /* part ID register */
-#define  MEMSIZ0   PORTIO_8(IO_BASE + 0x1c)   /* memory size register 0 */
-#define  MEMSIZ1   PORTIO_8(IO_BASE + 0x1d)   /* memory size register 1 */
-#define  INTCR     PORTIO_8(IO_BASE + 0x1e)   /* interrupt control */
-#define  HPRIO     PORTIO_8(IO_BASE + 0x1f)   /* highest priority */
+#define  EBICTL0   PORTIO_8(IO_BASE + 0x0e)   /* external bus control 0 */
+#define  EBICTL1   PORTIO_8(IO_BASE + 0x0f)   /* external bus control 1 */
+#define  MMCCTL1   PORTIO_8(IO_BASE + 0x13)   /* MMCTL register 1*/
+#define  ECLKCTL   PORTIO_8(IO_BASE + 0x1c)   /* ECLKCTL register */
 
 // Bitflags - PEAR
 #define NOACCE 0x80
