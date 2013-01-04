@@ -67,9 +67,17 @@
 #define SPR_MAS4      628
 #define SPR_MAS6      630
 
+#define MSR_ME		(1<<(31-19))
+#define MSR_CE		(1<<(31-14))
 
-#define ESR_PTR		(1<<(38-32))
-#define ESR_VLEMI   (1<<(26))
+#define ESR_PTR		(1<<(31-6))
+#define ESR_ST		(1<<(31-8))
+#define ESR_VLEMI   (1<<(31-26))
+#define ESR_XTE		(1<<(31-31))
+
+#define MCSR_BUS_WRERR	(1<<(31-29))
+#define MCSR_BUS_DRERR	(1<<(31-28))
+
 
 #define SPR_XER		1
 #define SPR_CTR		9
@@ -115,6 +123,7 @@
 #    define ASM_SECTION_TEXT(_x) .section _x,text_vle
 #  else
 #    define ASM_SECTION_TEXT(_x) .section _x,4,"rw"
+#  endif
 #elif defined(__DCC__)
 #  define ASM_SECTION_TEXT(_x) .section .text_vle,x
 #endif

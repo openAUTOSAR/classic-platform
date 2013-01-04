@@ -64,7 +64,11 @@ inc-$(USE_DMA) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers
 obj-$(USE_MCU) += Mcu.o
 obj-$(USE_MCU) += Mcu_Cfg.o
 obj-$(USE_MCU)-$(if $(CFG_MPC5668)$(CFG_MPC5516),y) += Mcu_Sleep.o
-#obj-$(CFG_MPC55XX)-$(USE_MCU) += Mcu_Exceptions.o
+
+# CPU specific
+obj-$(CFG_PPC) += mpc5xxx_handlers.o
+obj-$(CFG_PPC) += mpc5xxx_handlers_asm.o
+vpath-$(CFG_PPC) += $(ROOTDIR)/$(ARCH_PATH-y)/integration
 
 # Flash
 obj-$(USE_FLS) += Fls.o

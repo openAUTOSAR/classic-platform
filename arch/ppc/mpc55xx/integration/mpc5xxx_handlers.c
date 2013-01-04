@@ -15,18 +15,44 @@
 
 
 /* ----------------------------[includes]------------------------------------*/
+#if defined(CFG_MPC5XXX_TEST)
+#include "embUnit/embUnit.h"
+#endif
 #include "mpc55xx.h"
+#include "Mcu.h"
+#include "asm_ppc.h"
+#include "arch_stack.h"
+
 
 /* ----------------------------[private define]------------------------------*/
+#define TODO_NUMBER  0
+
 /* ----------------------------[private macro]-------------------------------*/
 /* ----------------------------[private typedef]-----------------------------*/
 /* ----------------------------[private function prototypes]-----------------*/
 /* ----------------------------[private variables]---------------------------*/
+
+#if defined(CFG_MPC5XXX_TEST)
+uint32_t Mpc5xxx_vectorMask;
+#endif
+
 /* ----------------------------[private functions]---------------------------*/
 /* ----------------------------[public functions]----------------------------*/
 
 
-static void Os_Panic( OS_SP ) {
+static void Os_Panic( uint32_t error ) {
+
+	(void)error;
+#if ( MCU_PERFORM_RESET_API == STD_ON )
+	Mcu_PerformReset();
+#else
+	while(1) {};
+#endif
+
+
+}
+
+static void preHook( void ) {
 
 }
 
@@ -40,7 +66,15 @@ static void Os_Panic( OS_SP ) {
  */
 static uint32_t adjustReturnAddr( uint32_t instrAddr ) {
 
-	/* ESR[VLEMI] - if set indicate VLE instruction */
+	/* ESR[VLEMI] - if set indicate VLE instruction
+	 * Supports
+	 * - Data Storage
+	 * - Data TLB
+	 * - Instruction Storage
+	 * - Alignment
+	 * - Program
+	 * - System Call
+	 * */
 
 	/* VLE supports ONLY big-endian */
 
@@ -57,28 +91,101 @@ static uint32_t adjustReturnAddr( uint32_t instrAddr ) {
 	 * -> first opcode byte > 7 --> 16-bit, ie (opcode&0x80)
 	 *
 	 */
-	uint32_t ra;
 
 	if( (get_spr(SPR_ESR) & ESR_VLEMI) &&
 		(*(uint8_t *)(instrAddr) & 0x80u ) ) {
 		/* Executing VLE and 16-bit instructions */
-		ra += 2;
+		instrAddr += 2;
 	} else {
-		ra += 4;
+		instrAddr += 4;
 	}
-	return ra;
+	return instrAddr;
 }
 
-void Mpc5xxx_Exception_IVOR0( Mpc5xxx_ExceptionFrmType *frmPtr ) {
+/* Critical Input:  CSRR0, CSRR1 */
+void Mpc5xxx_Exception_IVOR0( void  ) {
+	preHook();
 
 }
 
+/* Machine Check:   CSRR0, CSRR1, MCSR */
+uint32_t Mpc5xxx_Exception_IVOR1( void ) {
+	preHook();
 
-uint32_t Mpc5xxx_Exception_IVOR2( Mpc5xxx_ExceptionFrmType *frmPtr ) {
-	(void)frmPtr;
+#if defined(CFG_MPC5XXX_TEST)
+	Mpc5xxx_vectorMask |= (1<<1);
+#else
+	Os_Panic(TODO_NUMBER);
+#endif
+	return adjustReturnAddr(get_spr(SPR_CSRR0));
+}
 
-	Os_Panic(OS_ERR_SPURIOUS_INTERRUPT);
+/* Data Storage:    SRR0, SRR1, ESR, DEAR */
+uint32_t Mpc5xxx_Exception_IVOR2( void ) {
+	preHook();
+#if defined(CFG_MPC5XXX_TEST)
+	Mpc5xxx_vectorMask |= (1<<2);
+#else
+	Os_Panic(TODO_NUMBER);
+#endif
 
-	return adjustReturnAddr(frmPtr->srr0)
+	return adjustReturnAddr(get_spr(SPR_SRR0));
+}
+
+/* Inst. Storage:   SRR0, SRR1, ESR */
+uint32_t Mpc5xxx_Exception_IVOR3( void ) {
+	preHook();
+	return get_spr(SPR_SRR0);
+}
+
+
+/* Alignment:       SRR0, SRR1, ESR, DEAR */
+uint32_t Mpc5xxx_Exception_IVOR5( void ) {
+	preHook();
+
+	return get_spr(SPR_SRR0);
+}
+
+/* Program:         SRR0, SRR1, ESR */
+uint32_t Mpc5xxx_Exception_IVOR6( void ) {
+	preHook();
+
+	return get_spr(SPR_SRR0);
+}
+
+/* Floating Point:  SRR0, SRR1 */
+uint32_t Mpc5xxx_Exception_IVOR7( void ) {
+	preHook();
+	return get_spr(SPR_SRR0);
+}
+
+/* System Call:     SRR0, SRR1, ESR */
+uint32_t Mpc5xxx_Exception_IVOR8( void ) {
+	preHook();
+	return get_spr(SPR_SRR0);
+}
+
+/* FIT:             SRR0, SRR1 */
+uint32_t Mpc5xxx_Exception_IVOR11( void ) {
+	preHook();
+	return get_spr(SPR_SRR0);
+}
+
+/* Watchdog:        CSRR0, CSRR1 */
+uint32_t Mpc5xxx_Exception_IVOR12( void ) {
+	preHook();
+	return get_spr(SPR_CSRR0);
+}
+
+/* Data TLB:        SRR0, SRR1, ESR, DEAR */
+uint32_t Mpc5xxx_Exception_IVOR13( void ) {
+	preHook();
+	return get_spr(SPR_SRR0);
+}
+
+/* Intstr TLB:      SRR0, SRR1, ESR */
+uint32_t Mpc5xxx_Exception_IVOR14( void ) {
+	preHook();
+	return get_spr(SPR_SRR0);
 }
 

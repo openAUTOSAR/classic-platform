@@ -145,7 +145,7 @@ typedef struct {
 	uint32_t mcsr;
 	uint32_t esr;
 	uint32_t dear;
-} Os_ExceptionInfoType;
+} Mpc5xxx_ExceptionInfoType;
 
 
 #if defined(CFG_SPE)
