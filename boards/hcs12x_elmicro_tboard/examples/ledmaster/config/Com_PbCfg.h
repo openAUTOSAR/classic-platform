@@ -42,10 +42,10 @@ extern const Com_ConfigType ComConfiguration;
 
 // Notifications
 
+void IncommingFreqReq(void);
 
 
 // Callouts
-boolean IncommingFreqReq(PduIdType PduId, const uint8 *IPduData); 
 
 
 #endif /* COM_PBCFG_H */
