@@ -37,7 +37,7 @@ static uint32          LinChannelBitTimeInTicks[ LIN_CONTROLLER_CNT ];
 
 #define LIN_MAX_MSG_LENGTH 8
 
-#ifdef CFG_MPC5567
+#if defined(CFG_MPC5567) || defined(CFG_MPC563XM)
 #define ESCI(exp) (volatile struct ESCI_tag *)(0xFFFB0000 + (0x4000 * exp))
 #else
 #define ESCI(exp) (volatile struct ESCI_tag *)(0xFFFA0000 + (0x4000 * exp))
@@ -306,7 +306,7 @@ static void LinInterruptB()
 {
 	LinInterrupt(LIN_CTRL_B);
 }
-#ifndef CFG_MPC5567
+#if !defined(CFG_MPC5567) && !defined(CFG_MPC563XM)
 static void LinInterruptC()
 {
 	LinInterrupt(LIN_CTRL_C);
@@ -446,46 +446,46 @@ void Lin_InitChannel(  uint8 Channel,   const Lin_ChannelConfigType* Config )
 	/* Install the interrupt */
 	switch(Channel){
 	case 0:
-#ifdef CFG_MPC5567
+#if defined(CFG_MPC5567) || defined(CFG_MPC563XM)
 		ISR_INSTALL_ISR2("LinIsr", LinInterruptA, (IrqType)(ESCI_A_COMB0),LIN_PRIO, 0);
 #else
 		ISR_INSTALL_ISR2("LinIsr", LinInterruptA, (IrqType)(SCI_A_COMB),LIN_PRIO, 0);
 #endif
 		break;
 	case 1:
-#ifdef CFG_MPC5567
+#if defined(CFG_MPC5567) || defined(CFG_MPC563XM)
 		ISR_INSTALL_ISR2("LinIsr", LinInterruptB, (IrqType)(ESCI_A_COMB1),LIN_PRIO, 0);
 #else
 		ISR_INSTALL_ISR2("LinIsr", LinInterruptB, (IrqType)(SCI_B_COMB),LIN_PRIO, 0);
 #endif
 		break;
 	case 2:
-#ifndef CFG_MPC5567
+#if !defined(CFG_MPC5567) && !defined(CFG_MPC563XM)
 		ISR_INSTALL_ISR2("LinIsr", LinInterruptC, (IrqType)(SCI_C_COMB),LIN_PRIO, 0);
 #endif
 		break;
 	case 3:
-#ifndef CFG_MPC5567
+#if !defined(CFG_MPC5567) && !defined(CFG_MPC563XM)
 		ISR_INSTALL_ISR2("LinIsr", LinInterruptD, (IrqType)(SCI_D_COMB),LIN_PRIO, 0);
 #endif
 		break;
 	case 4:
-#ifndef CFG_MPC5567
+#if !defined(CFG_MPC5567) && !defined(CFG_MPC563XM)
 		ISR_INSTALL_ISR2("LinIsr", LinInterruptE, (IrqType)(SCI_E_COMB),LIN_PRIO, 0);
 #endif
 		break;
 	case 5:
-#ifndef CFG_MPC5567
+#if !defined(CFG_MPC5567) && !defined(CFG_MPC563XM)
 		ISR_INSTALL_ISR2("LinIsr", LinInterruptF, (IrqType)(SCI_F_COMB),LIN_PRIO, 0);
 #endif
 		break;
 	case 6:
-#ifndef CFG_MPC5567
+#if !defined(CFG_MPC5567) && !defined(CFG_MPC563XM)
 		ISR_INSTALL_ISR2("LinIsr", LinInterruptG, (IrqType)(SCI_G_COMB+2),LIN_PRIO, 0);
 #endif
 		break;
 	case 7:
-#ifndef CFG_MPC5567
+#if !defined(CFG_MPC5567) && !defined(CFG_MPC563XM)
 		ISR_INSTALL_ISR2("LinIsr", LinInterruptH, (IrqType)(SCI_H_COMB+3),LIN_PRIO, 0);
 #endif
 		break;
