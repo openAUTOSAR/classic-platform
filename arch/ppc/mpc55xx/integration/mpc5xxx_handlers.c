@@ -15,6 +15,9 @@
 
 
 /* ----------------------------[includes]------------------------------------*/
+
+#define CFG_MPC5XXX_TEST
+
 #if defined(CFG_MPC5XXX_TEST)
 #include "embUnit/embUnit.h"
 #endif
@@ -91,11 +94,13 @@ static uint32_t handleEcc( uint16_t vector ) {
 	if( esr & (ESR_R1BC+ESR_RNCE) ) {
 		/* ECC RAM problems */
 		Mpc5xxx_Esr = esr;
+		WRITE8(ECSM_BASE+ECSM_ESR,ESR_R1BC+ESR_RNCE);
 		rv = EXC_HANDLED;
 
 	} else if (esr & (ESR_F1BC+ESR_FNCE)) {
 		/* ECC Flash problems */
 		Mpc5xxx_Esr = esr;
+		WRITE8(ECSM_BASE+ECSM_ESR,ESR_F1BC+ESR_FNCE);
 		rv = EXC_HANDLED;
 	} else  {
 		Mpc5xxx_Esr = 0;

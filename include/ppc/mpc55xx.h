@@ -47,7 +47,10 @@ typedef struct EDMA_TCD_STD_tag Dma_TcdType;
  * ECC  module
  */
 #define ECSM_BASE 	0xfff40000
-#define ECSM_ESR    0x47
+#define ECSM_ECR	0x43		/* 8-bit */
+#define ECSM_ESR    0x47		/* 8-bit */
+#define ECSM_EEGR	0x4a		/* 16-bit */
+
 #define ESR_R1BC	0x20
 #define ESR_RNCE	0x02
 #define ESR_F1BC	0x10

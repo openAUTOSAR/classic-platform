@@ -229,6 +229,7 @@
 #define	bl		e_bl
 #define	bc		e_bc
 #define mr		se_mr
+#define rfci	se_rfci
 #endif
 
 #endif /* _ASSEMBLER_ */
