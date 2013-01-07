@@ -22,10 +22,15 @@
 #include "Mcu.h"
 #include "asm_ppc.h"
 #include "arch_stack.h"
+#include "io.h"
 
 
 /* ----------------------------[private define]------------------------------*/
 #define TODO_NUMBER  0
+
+#define EXC_NOT_HANDLED	1
+#define EXC_HANDLED		2
+
 
 /* ----------------------------[private macro]-------------------------------*/
 /* ----------------------------[private typedef]-----------------------------*/
@@ -34,6 +39,8 @@
 
 #if defined(CFG_MPC5XXX_TEST)
 uint32_t Mpc5xxx_vectorMask;
+uint8_t Mpc5xxx_Esr;
+uint8_t Mpc5xxx_Intc_Esr;
 #endif
 
 /* ----------------------------[private functions]---------------------------*/
@@ -59,53 +66,48 @@ static void preHook( void ) {
 
 /*
  * Gets the instruction length of instructions at an address.
- * Supports ONLY load/store instructions.
  *
- * Applies to load/store instructions ONLY
- * - does NOT support SPE instructions
+ * The VLE detection is taken from AN4648 ( VLE 16-bit and 32-bit Instruction
+ * Length Decode Algorithm )
  */
 static uint32_t adjustReturnAddr( uint32_t instrAddr ) {
 
-	/* ESR[VLEMI] - if set indicate VLE instruction
-	 * Supports
-	 * - Data Storage
-	 * - Data TLB
-	 * - Instruction Storage
-	 * - Alignment
-	 * - Program
-	 * - System Call
-	 * */
+	uint32_t vleMode = (get_spr(SPR_ESR) & ESR_VLEMI);
 
-	/* VLE supports ONLY big-endian */
-
-	/* Can't find any way to determine if it's a 32-bit or 16-bit
-	 * instructions that is run.
-	 *
-	 * OP-code encoding. From PowerISA_V2.06B_V2_PUBLIC.pdf Appendix A.
-	 *
-	 * se_lxxx   8,a,c
-	 * e_lxxx    3,1,3,1,5,1,1,5,1
-	 * se_stxx   9,b,d
-	 * e_stxx    3,1,5,1,1,5
-	 *
-	 * -> first opcode byte > 7 --> 16-bit, ie (opcode&0x80)
-	 *
-	 */
-
-	if( (get_spr(SPR_ESR) & ESR_VLEMI) &&
-		(*(uint8_t *)(instrAddr) & 0x80u ) ) {
+	if( (!vleMode) ||
+		(*(uint16_t *)(instrAddr) & 0x9000) == 0x1000 ) {
+		instrAddr += 4;
+	} else {
 		/* Executing VLE and 16-bit instructions */
 		instrAddr += 2;
-	} else {
-		instrAddr += 4;
 	}
 	return instrAddr;
 }
 
+static uint32_t handleEcc( uint16_t vector ) {
+	uint8_t esr = READ8(ECSM_BASE+ECSM_ESR);
+	uint32_t rv  = EXC_NOT_HANDLED;
+
+	if( esr & (ESR_R1BC+ESR_RNCE) ) {
+		/* ECC RAM problems */
+		Mpc5xxx_Esr = esr;
+		rv = EXC_HANDLED;
+
+	} else if (esr & (ESR_F1BC+ESR_FNCE)) {
+		/* ECC Flash problems */
+		Mpc5xxx_Esr = esr;
+		rv = EXC_HANDLED;
+	} else  {
+		Mpc5xxx_Esr = 0;
+	}
+
+	return rv;
+}
+
+
 /* Critical Input:  CSRR0, CSRR1 */
 void Mpc5xxx_Exception_IVOR0( void  ) {
 	preHook();
-
 }
 
 /* Machine Check:   CSRR0, CSRR1, MCSR */
@@ -117,6 +119,11 @@ uint32_t Mpc5xxx_Exception_IVOR1( void ) {
 #else
 	Os_Panic(TODO_NUMBER);
 #endif
+
+	if( handleEcc(1) & EXC_NOT_HANDLED ) {
+		/* Do nothing at this point */
+	}
+
 	return adjustReturnAddr(get_spr(SPR_CSRR0));
 }
 
@@ -128,6 +135,11 @@ uint32_t Mpc5xxx_Exception_IVOR2( void ) {
 #else
 	Os_Panic(TODO_NUMBER);
 #endif
+
+	if( handleEcc(2) & EXC_NOT_HANDLED ) {
+		/* Do nothing at this point */
+	}
+
 
 	return adjustReturnAddr(get_spr(SPR_SRR0));
 }
