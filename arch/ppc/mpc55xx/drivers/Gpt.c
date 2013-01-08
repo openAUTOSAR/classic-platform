@@ -137,7 +137,7 @@ Gpt_GlobalType Gpt_Global;
  */
 #if defined(CFG_MPC560X)
 #define GPT_ISR( _channel )                                \
-	static void Gpt_Isr_Channel##_channel( void )          \
+	void Gpt_Isr_Channel##_channel( void )          \
 	{                                                      \
     	const Gpt_ConfigType *config;                      \
     	int confCh;                                        \
@@ -160,7 +160,7 @@ Gpt_GlobalType Gpt_Global;
 	}
 #else
 #define GPT_ISR( _channel )                            \
-  static void Gpt_Isr_Channel##_channel( void )        \
+  void Gpt_Isr_Channel##_channel( void )        \
   {                                                    \
     const Gpt_ConfigType *config;                      \
     int confCh;                                        \

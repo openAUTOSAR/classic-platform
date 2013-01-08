@@ -21,6 +21,7 @@
  */
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifndef PLATFORM_TYPES_H
 #define PLATFORM_TYPES_H
@@ -36,24 +37,37 @@
 #define TRUE		(boolean)true
 #endif
 
-//typedef unsigned long       boolean;
-typedef _Bool      boolean;
-typedef signed char         sint8;        
-typedef unsigned char       uint8;
+typedef _Bool      			boolean;
+typedef int8_t         		sint8;
+typedef uint8_t       		uint8;
 typedef char				char_t;
-typedef signed short        sint16;       
-typedef unsigned short      uint16;       
-typedef signed long         sint32;       
-typedef unsigned long       uint32;
-typedef unsigned long long  uint64;
-typedef unsigned long       uint8_least;  
-typedef unsigned long       uint16_least; 
-typedef unsigned long       uint32_least; 
-typedef signed long         sint8_least;  
-typedef signed long         sint16_least; 
-typedef signed long         sint32_least; 
+typedef int16_t        		sint16;
+typedef uint16_t      		uint16;
+typedef int32_t         	sint32;
+typedef uint32_t       		uint32;
+typedef int64_t  			sint64;
+typedef uint64_t  			uint64;
+typedef uint_least8_t       uint8_least;
+typedef uint_least16_t      uint16_least;
+typedef uint_least32_t      uint32_least;
+typedef int_least8_t        sint8_least;
+typedef int_least16_t       sint16_least;
+typedef int_least32_t       sint32_least;
 typedef float               float32; 
 typedef double              float64;  
+
+
+typedef volatile int8_t vint8_t;
+typedef volatile uint8_t vuint8_t;
+
+typedef volatile int16_t vint16_t;
+typedef volatile uint16_t vuint16_t;
+
+typedef volatile int32_t vint32_t;
+typedef volatile uint32_t vuint32_t;
+
+typedef volatile int64_t vint64_t;
+typedef volatile uint64_t vuint64_t;
 
 #endif
 /** @} */

@@ -17,6 +17,7 @@
 #ifndef SCHM_CFG_H_
 #define SCHM_CFG_H_
 
+#warning "This default file may only be used as an example!"
 
 #define SCHM_MF_MEM_PERIOD 		20
 

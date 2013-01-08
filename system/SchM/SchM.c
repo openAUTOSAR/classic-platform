@@ -368,8 +368,6 @@ TASK(SchM_Startup){
 
 	EcuM_RequestRUN(ECUM_USER_User_1);
 
-	ActivateTask(TASK_ID_Application);
-
 	TerminateTask();
 
 }

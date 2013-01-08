@@ -14,28 +14,31 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-#include "PduR.h"
-#include "Det.h"
-#include "debug.h"
+#ifndef TIMER_H_
+#define TIMER_H_
 
-#if (PDUR_ZERO_COST_OPERATION == STD_OFF) && (PDUR_CANTP_SUPPORT == STD_ON)
+#include <stdint.h>
 
-BufReq_ReturnType PduR_CanTpProvideRxBuffer(PduIdType CanTpRxPduId, PduLengthType TpSduLength, PduInfoType** PduInfoPtr) {
-	return PduR_ARC_ProvideRxBuffer(CanTpRxPduId, TpSduLength, PduInfoPtr, 0x03);
-}
+extern uint32_t Timer_Freq;
+
+void Timer_Init( void );
+
+/**
+ * Get a 32-bit timer
+ */
+
+TickType Timer_GetTicks( void );
+
+/**
+ * Busy wait for useconds micro seconds.
+ *
+ * @param useconds
+ */
+
+void Timer_uDelay(uint32_t useconds );
+
+#define TIMER_TICK2US( _x )		((_x) / (Timer_Freq/1000000))
 
 
-void PduR_CanTpRxIndication(PduIdType CanTpRxPduId, NotifResultType Result) {
-	PduR_ARC_TpRxIndication(CanTpRxPduId, Result, 0x04);
-}
 
-BufReq_ReturnType PduR_CanTpProvideTxBuffer(PduIdType CanTpTxPduId, PduInfoType** PduInfoPtr, uint16 Length) {
-	return PduR_ARC_ProvideTxBuffer(CanTpTxPduId, PduInfoPtr, Length, 0x03);
-}
-
-
-void PduR_CanTpTxConfirmation(PduIdType CanTpTxPduId, NotifResultType Result) {
-	PduR_ARC_TxConfirmation(CanTpTxPduId, Result, 0x0f);
-}
-
-#endif
+#endif /* TIMER_H_ */
