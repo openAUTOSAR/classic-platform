@@ -18,9 +18,9 @@
 
 #define CFG_MPC5XXX_TEST
 
-#if defined(CFG_MPC5XXX_TEST)
-#include "embUnit/embUnit.h"
-#endif
+//#if defined(CFG_MPC5XXX_TEST)
+//#include "embUnit/embUnit.h"
+//#endif
 #include "mpc55xx.h"
 #include "Mcu.h"
 #include "asm_ppc.h"
@@ -205,4 +205,29 @@ uint32_t Mpc5xxx_Exception_IVOR14( void ) {
 	preHook();
 	return get_spr(SPR_SRR0);
 }
+
+#if defined(CFG_SPE)
+
+/* SPE Unavailable:  SRR0, SRR1, ESR=SPE */
+uint32_t Mpc5xxx_Exception_IVOR32( void ) {
+	preHook();
+	return get_spr(SPR_SRR0);
+}
+
+/* SPE Data:  SRR0, SRR1, ESR=SPE */
+uint32_t Mpc5xxx_Exception_IVOR33( void ) {
+	preHook();
+	return get_spr(SPR_SRR0);
+}
+
+/* SPE round exception: SRR0, SRR1, ESR=SPE */
+uint32_t Mpc5xxx_Exception_IVOR34( void ) {
+	preHook();
+	return get_spr(SPR_SRR0);
+}
+
+#endif
+
+
+
 

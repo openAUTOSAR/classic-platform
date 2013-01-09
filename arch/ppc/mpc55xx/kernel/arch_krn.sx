@@ -259,6 +259,7 @@ restoreFuncContext:
 /**
  * External input exception handlers 
  */ 
+ #if 0
  #if defined(CFG_MPC5668)
  		.global exception_IVOR2
 		.balign 16
@@ -275,6 +276,8 @@ exception_IVOR2:
 	mtspr	srr0,r9
 	rfi	
 #endif
+#endif
+
 		.global exception_IVOR4
 		.global restoreIsrContext
 		.balign 16

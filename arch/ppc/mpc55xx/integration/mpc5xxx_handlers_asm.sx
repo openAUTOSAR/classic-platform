@@ -85,6 +85,9 @@
 .global exception_IVOR12
 .global exception_IVOR13
 .global exception_IVOR14
+.global exception_IVOR32
+.global exception_IVOR33
+.global exception_IVOR34
 
 .extern Mpc5xxx_Exception_IVOR0
 .extern Mpc5xxx_Exception_IVOR1
@@ -101,6 +104,9 @@
 .extern Mpc5xxx_Exception_IVOR12
 .extern Mpc5xxx_Exception_IVOR13
 .extern Mpc5xxx_Exception_IVOR14
+.extern Mpc5xxx_Exception_IVOR32
+.extern Mpc5xxx_Exception_IVOR33
+.extern Mpc5xxx_Exception_IVOR34
 
 
 
@@ -239,4 +245,38 @@ exception_IVOR14:
 exception_IVOR15:
 	b exception_IVOR15
 	
+	
+#if defined(CFG_SPE)
+/* SPE Unavailable:  SRR0, SRR1, ESR=SPE */
+exception_IVOR32:
+	SAVE_VOLATILE()
+	bl 		Mpc5xxx_Exception_IVOR32
+	mtsrr0	r3	 	
+	RESTORE_VOLATILE()
+	rfi
+
+/* SPE Data:  SRR0, SRR1, ESR=SPE */
+exception_IVOR33:
+	SAVE_VOLATILE()
+	bl 		Mpc5xxx_Exception_IVOR33
+	mtsrr0	r3	 	
+	RESTORE_VOLATILE()
+	rfi
+
+/* SPE round exception: SRR0, SRR1, ESR=SPE */
+exception_IVOR34:
+	SAVE_VOLATILE()
+	bl 		Mpc5xxx_Exception_IVOR34
+	mtsrr0	r3	 	
+	RESTORE_VOLATILE()
+	rfi
+	
+#endif
+
+
+
+
+
+
+		
 	
