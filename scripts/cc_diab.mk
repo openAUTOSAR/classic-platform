@@ -1,12 +1,13 @@
 
 # Diab versions and "features"
-# 5.6.0.0->5.9.0.0  
-#  - Can't handle initializtion with a depth more that 2,e.g. .NBYTESu.B.SMLOE = 1;
-#    (in code this works fine)
-#
-#
+# - Can't handle initializtion with a depth more that 2,e.g. .NBYTESu.B.SMLOE = 1;
+# - 5.6.0.0
+#  - Do NOT use. dialect-c99 makes const (.text) end up in .data section
+#    Seems to be no workarounds 
+#  - 5.7.0.0  
+#   
 
-DIAB_COMPILE ?= /c/devtools/WindRiver/diab/5.9.0.0/WIN32
+DIAB_COMPILE ?= /c/devtools/WindRiver/diab/5.7.0.0/WIN32
 DIAB_BIN = $(DIAB_COMPILE)/bin
 
 # ---------------------------------------------------------------------------
@@ -20,35 +21,32 @@ else
 #cflags-y += -Os
 endif
 
-cflags-y += -XO
+ifeq ($(CFG_VLE),y)
+TARGET = -tPPCE200Z1VFN:simple
+else
+TARGET = -tPPCE200Z1NFS:simple
+endif
 
-#TARGET = -tPPCE200Z1VFN:simple
-TARGET = -tPPCVLEFS:simple
-cflags-y += $(TARGET) 
+cflags-y += -c
+cflags-y += -g3
 
-# Treat warning as error
-cflags-y += -Werror
+cflags-y += -Xdialect-c99
+cflags-y += -Xc-new
+cflags-y += -Xlibc-new
 
-#cflags-y 		+= -c 
-#cflags-y 		+= -fno-common
-#cflags-y 		+= -std=gnu99
-cflags-y 		+= -Xc-new		# const const problems
-#cflags-y 		+= -Xdialect-c99
-cflags-y 		+= -Xsuppress-warnings
-cflags-y 		+= -Xkeywords=0x4		# Enable inline keywork
-
-# Generate dependencies
-#cflags-y 		+= -MMD
-
-# Warnings
-cflags-y          += -Wall
-
-# Conformance
-#cflags-y          += -fno-strict-aliasing
-#cflags-y          += -fno-builtin
-
-# Get machine cflags
-#cflags-y		+= $(cflags-$(ARCH))
+cflags-y += -Xsmall-data=0
+cflags-y += -Xsmall-const=0
+cflags-y += -Xno-common
+cflags-y += -Xnested-interrupts
+#cflags-y += -Xstop-on-warning
+cflags-y += -Xsection-split
+cflags-y += -Xforce-prototypes
+cflags-y += -Xforce-declarations
+#cflags-y += -XO
+cflags-y += -Xkeywords=0x4		# Enable inline keywork
+#cflags-y += -Xstmw-slow
+cflags-y += -ei4618
+cflags-y += -Xmake-dependency=6
 
 CFLAGS = $(cflags-y) $(cflags-yy)
 
@@ -121,3 +119,9 @@ AROUT 	= $@
 
 PCLINT_COMPILER_MAKEFILE      = $(PCLINT_FILES_DIR)/co-gcc.mak GCC_BIN=$(CC)
 PCLINT_COMPILER_SETTINGS_FILE = $(PCLINT_FILES_DIR)/co-gcc.lnt
+
+define do-memory-footprint2-$(CFG_MEMORY_FOOTPRINT2)
+	@gawk -f $(ROOTDIR)/scripts/memory_footprint2_$(COMPILER).awk  $(subst .$(TE),.map, $@)
+endef
+
+
