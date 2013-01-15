@@ -190,7 +190,7 @@ Std_ReturnType Com_TriggerTransmit(PduIdType ComTxPduId, PduInfoType *PduInfoPtr
 
 
 //lint -esym(904, Com_TriggerIPduSend) //PC-Lint Exception of rule 14.7
-void Com_TriggerIPduSend(PduIdType ComTxPduId) {
+Std_ReturnType Com_Internal_TriggerIPduSend(PduIdType ComTxPduId) {
 	PDU_ID_CHECK(ComTxPduId, 0x17);
 
 	const ComIPdu_type *IPdu = GET_IPdu(ComTxPduId);
@@ -199,7 +199,7 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
     Irq_Save(state);
 
     if( isPduBufferLocked(ComTxPduId) ) {
-    	return;
+    	return E_NOT_OK;
     }
 
 	// Is the IPdu ready for transmission?
@@ -212,7 +212,7 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
 				// TODO Report error to DET.
 				// Det_ReportError();
 			    Irq_Restore(state);
-				return;
+				return E_NOT_OK;
 			}
 		}
 		PduInfoType PduInfoPackage;
@@ -234,14 +234,21 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
 			}
 		} else {
 			UnlockTpBuffer(getPduId(IPdu));
+			return E_NOT_OK;
 		}
 
 		// Reset miminum delay timer.
 		Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduMinimumDelayTimer = IPdu->ComTxIPdu.ComTxIPduMinimumDelayFactor;
 	} else {
-		//DEBUG(DEBUG_MEDIUM, "failed (MDT)!\n", ComTxPduId);
+		return E_NOT_OK;
 	}
     Irq_Restore(state);
+    return E_OK;
+
+}
+//lint -esym(904, Com_TriggerIPduSend) //PC-Lint Exception of rule 14.7
+void Com_TriggerIPduSend(PduIdType ComTxPduId) {
+	Com_Internal_TriggerIPduSend(ComTxPduId);
 }
 
 //lint -esym(904, Com_RxIndication) //PC-Lint Exception of rule 14.7
