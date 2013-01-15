@@ -141,6 +141,7 @@ uint8 Com_SendDynSignal(Com_SignalIdType SignalId, const void* SignalDataPtr, ui
 	if (isPduBufferLocked(getPduId(IPdu))) {
 		return COM_BUSY;
 	}
+
 	uint8 signalLength = Signal->ComBitSize / 8;
 	Com_BitPositionType bitPosition = Signal->ComBitPosition;
 	if (signalLength < Length) {
@@ -196,6 +197,10 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
 	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(ComTxPduId);
     imask_t state;
     Irq_Save(state);
+
+    if( isPduBufferLocked(ComTxPduId) ) {
+    	return;
+    }
 
 	// Is the IPdu ready for transmission?
 	if (Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduMinimumDelayTimer == 0) {
