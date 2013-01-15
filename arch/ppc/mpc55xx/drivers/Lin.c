@@ -524,8 +524,10 @@ void Lin_InitChannel(  uint8 Channel,   const Lin_ChannelConfigType* Config )
 	esciHw->LCR.B.LDBG = 1; /* Enable LIN debug => Disable automatic reset of the LIN FSM. See [Freescale Device Errata MPC5510ACE, Rev. 10 APR 2009, errata ID: 8632] */
 	esciHw->CR2.B.FBR = 1;  /* Disable Fast Bit Error Detection. See [Freescale Device Errata MPC5510ACE, Rev. 10 APR 2009, errata ID: 8635] */
 #else
+#if !defined(CFG_MPC563XM)
 	esciHw->LCR.B.LDBG = 0; /* Normally, bit errors should cause the LIN FSM to reset, stop driving the bus immediately, and stop
 	                         * further DMA requests until the BERR flag has been cleared. Set ESCIx_LCR[LDBG] = 0,*/
+#endif
 	esciHw->CR2.B.FBR = 1;    /* Fast bit error detection provides superior error checking, so ESCIx_CR2[FBR] should be set; */
 #endif
 	esciHw->LCR.B.STIE = 1; /* Enable some fault irq's */

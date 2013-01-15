@@ -25,7 +25,7 @@
 #elif defined(CFG_MPC5567)
 #include "mpc5567.h"
 #elif defined(CFG_MPC563XM)
-#include "mpc563m.h"
+#include "MPC5634M_MLQB80.h"
 #elif defined(CFG_MPC5604B)
 #include "MPC5604B_0M27V_0102.h"
 #elif defined(CFG_MPC5606B)
