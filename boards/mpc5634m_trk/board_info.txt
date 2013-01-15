@@ -34,23 +34,9 @@ CAN and LIN: In order to use CAN or LIN the MC33905 circuit need to be initializ
              Contact Freescale support for source code. Same init as for mpc5604b_trk.
              
              CAN C only supports 32 mailboxes although CAN A supports 64...weird...
- 
-SPI_0
-  PC[7] - SIN_0   - S_OUT/BROWN
-  PC[6] - SOUT_0  - S_IN/ORANGE 
-  PC[5] - SCK_9   - S_CLK/BLUE
-  
-  PC[3] - CS1_0   - CS/GREEN  (both for software and hardware CS *)
-                               
-*) Depends on setting in port.
 
-SPI_1
-  Never tested
-
-SPI_2
-  Never tested
-
-  
-  
-  
+             CAN C never tested, only run in loopback mode.
+             
+SPI_B: Tested ok with external eeprom.
+SPI_C: Never tested
 
