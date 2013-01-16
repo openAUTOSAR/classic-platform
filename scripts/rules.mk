@@ -192,7 +192,7 @@ define run_pclint
 $(if 
 $(filter $(dir $(abspath $<)),$(LINT_NICE_EXCLUDE_PATHS)),
 $(info $(abspath $<):0:0: Info: Not running lint check on $(abspath $<)),
-$(Q)$(PCLINT) $(lint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y)) $(abspath $<))
+$(Q)$(PCLINT) $(lint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y) $(DEF_$@)) $(abspath $<))
 endef
 endif
 
@@ -201,7 +201,7 @@ define run_splint
 $(if 
 $(filter $(dir $(abspath $<)),$(LINT_NICE_EXCLUDE_PATHS)),
 $(info $(abspath $<):0:0: Info: Not running lint check on $(abspath $<)),
-$(Q)$(SPLINT) $(splint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y)) $(abspath $<))
+$(Q)$(SPLINT) $(splint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y) $(DEF_$@)) $(abspath $<))
 endef
 endif
 
@@ -259,11 +259,7 @@ all: module_config $(all-mod) $(all-mod-post) $(ROOTDIR)/binaries/$(BOARDDIR)
 %.o: %.c
 	@echo
 	@echo "  >> CC $(notdir $<)"
-ifeq (${COMPILER},iar)
-	$(Q)$(CC) $(CFLAGS) $(CFLAGS_$@) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
-else
-	$(Q)$(CC) -c $(CFLAGS) $(CFLAGS_$@) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
-endif
+	$(Q)$(CC) -c $(CFLAGS) $(CFLAGS_$@) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y) $(DEF_$@)) $(abspath $<)
 	$(do-compile-post)
 # run lint if enabled
 	$(run_pclint)
