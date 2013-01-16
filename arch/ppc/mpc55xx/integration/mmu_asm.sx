@@ -1,0 +1,77 @@
+
+
+#define _ASSEMBLER_
+#include "asm_ppc.h"
+#include "Board_Cfg.h"
+
+ASM_SECTION_TEXT(.text)
+
+MMU_Init:
+
+/*
+ * Setup MMU
+ */
+#if defined(TLB0_MAS0) 
+	LOAD_ADDR_32(5, TLB0_MAS0)
+    mtspr SPR_MAS0,r5     
+    LOAD_ADDR_32(5, TLB0_MAS1)
+    mtspr SPR_MAS1,r5     
+    LOAD_ADDR_32(5, TLB0_MAS2)
+    mtspr SPR_MAS2,r5     
+    LOAD_ADDR_32(5, TLB0_MAS3)
+    mtspr SPR_MAS3,r5
+    msync
+    isync
+	tlbwe
+	isync
+#endif
+
+
+#if defined(TLB1_MAS1) 
+	LOAD_ADDR_32(5, TLB1_MAS0)
+    mtspr SPR_MAS0,r5     
+    LOAD_ADDR_32(5, TLB1_MAS1)
+    mtspr SPR_MAS1,r5     
+    LOAD_ADDR_32(5, TLB1_MAS2)
+    mtspr SPR_MAS2,r5     
+    LOAD_ADDR_32(5, TLB1_MAS3)
+    mtspr SPR_MAS3,r5
+    msync
+    isync
+	tlbwe
+	isync
+#endif
+
+#if defined(TLB2_MAS0) 
+	LOAD_ADDR_32(5, TLB2_MAS0)
+    mtspr SPR_MAS0,r5     
+    LOAD_ADDR_32(5, TLB2_MAS1)
+    mtspr SPR_MAS1,r5     
+    LOAD_ADDR_32(5, TLB2_MAS2)
+    mtspr SPR_MAS2,r5     
+    LOAD_ADDR_32(5, TLB2_MAS3)
+    mtspr SPR_MAS3,r5
+    msync
+    isync
+	tlbwe
+	isync
+#endif
+
+#if defined(TLB3_MAS0) 
+	LOAD_ADDR_32(5, TLB3_MAS0)
+    mtspr SPR_MAS0,r5     
+    LOAD_ADDR_32(5, TLB3_MAS1)
+    mtspr SPR_MAS1,r5     
+    LOAD_ADDR_32(5, TLB3_MAS2)
+    mtspr SPR_MAS2,r5     
+    LOAD_ADDR_32(5, TLB3_MAS3)
+    mtspr SPR_MAS3,r5
+    msync
+    isync
+	tlbwe
+	isync
+#endif
+
+
+   	blr
+   	

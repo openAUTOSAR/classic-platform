@@ -75,14 +75,6 @@
 #define VLE_VAL		0
 #endif
 
-#if defined(CFG_MPC5516 )
-#define RAMSEL_VAL		0x7
-#elif defined(CFG_MPC5668)
-#define RAMSEL_VAL		0x3
-#else
-#error  Please define RAMSEL_VAL
-#endif
-
 #endif
 
 
@@ -481,6 +473,8 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     Mcu_Global.clockSetting = ClockSetting;
     clockSettingsPtr = &Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting];
 
+    Mcu_Arc_InitClockPre(ClockSetting);
+
     // TODO: find out if the 5554 really works like the 5516 here
     // All three (16, 54, 67) used to run the same code here though, so i'm sticking it with 5516
 #if defined(CFG_MPC5516) || defined(CFG_MPC5554) || defined(CFG_MPC5668)
@@ -541,137 +535,6 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     FMPLL.ESYNCR2.B.ERFD    = clockSettingsPtr->Pll3;
     // Connect SYSCLK to FMPLL
     SIU.SYSCLK.B.SYSCLKSEL = SYSCLOCK_SELECT_PLL;
-#elif defined(CFG_MPC5604B) || defined(CFG_MPC5606B)
-    // Write pll parameters.
-    CGM.FMPLL_CR.B.IDF = clockSettingsPtr->Pll1;
-    CGM.FMPLL_CR.B.NDIV = clockSettingsPtr->Pll2;
-    CGM.FMPLL_CR.B.ODF = clockSettingsPtr->Pll3;
-
-    /* RUN0 cfg: 16MHzIRCON,OSC0ON,PLL0ON,syclk=PLL0 */
-    ME.RUN[0].R = 0x001F0074;
-    /* Peri. Cfg. 1 settings: only run in RUN0 mode */
-    ME.RUNPC[1].R = 0x00000010;
-    /* MPC56xxB/S: select ME.RUNPC[1] */
-    ME.PCTL[68].R = 0x01; //SIUL control
-    ME.PCTL[91].R = 0x01; //RTC/API control
-    ME.PCTL[92].R = 0x01; //PIT_RTI control
-    ME.PCTL[72].R = 0x01; //eMIOS0 control
-    ME.PCTL[73].R = 0x01; //eMIOS1 control
-    ME.PCTL[16].R = 0x01; //FlexCAN0 control
-    ME.PCTL[17].R = 0x01; //FlexCAN1 control
-    ME.PCTL[4].R = 0x01;  /* MPC56xxB/P/S DSPI0  */
-    ME.PCTL[5].R = 0x01;  /* MPC56xxB/P/S DSPI1:  */
-    ME.PCTL[32].R = 0x01; //ADC0 control
-#if defined(CFG_MPC5606B)
-    ME.PCTL[33].R = 0x01; //ADC1 control
-#endif
-    ME.PCTL[23].R = 0x01; //DMAMUX control
-    ME.PCTL[48].R = 0x01; /* MPC56xxB/P/S LINFlex  */
-    ME.PCTL[49].R = 0x01; /* MPC56xxB/P/S LINFlex  */
-    /* Mode Transition to enter RUN0 mode: */
-    /* Enter RUN0 Mode & Key */
-    ME.MCTL.R = 0x40005AF0;
-    /* Enter RUN0 Mode & Inverted Key */
-    ME.MCTL.R = 0x4000A50F;
-
-    /* Wait for mode transition to complete */
-    while (ME.GS.B.S_MTRANS) {}
-    /* Verify RUN0 is the current mode */
-    while(ME.GS.B.S_CURRENTMODE != 4) {}
-
-    CGM.SC_DC[0].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
-    CGM.SC_DC[1].R = 0x80; /* MPC56xxB/S: Enable peri set 2 sysclk divided by 1 */
-    CGM.SC_DC[2].R = 0x80; /* MPC56xxB/S: Enable peri set 3 sysclk divided by 1 */
-
-    SIU.PSMI[0].R = 0x01; /* CAN1RX on PCR43 */
-    SIU.PSMI[6].R = 0x01; /* CS0/DSPI_0 on PCR15 */
-
-#elif defined(CFG_MPC5606S)
-    // Write pll parameters.
-    CGM.FMPLL[0].CR.B.IDF = clockSettingsPtr->Pll1;
-    CGM.FMPLL[0].CR.B.NDIV = clockSettingsPtr->Pll2;
-    CGM.FMPLL[0].CR.B.ODF = clockSettingsPtr->Pll3;
-
-    /* RUN0 cfg: 16MHzIRCON,OSC0ON,PLL0ON,syclk=PLL0 */
-    ME.RUN[0].R = 0x001F0074;
-    /* Peri. Cfg. 1 settings: only run in RUN0 mode */
-    ME.RUNPC[1].R = 0x00000010;
-    /* MPC56xxB/S: select ME.RUNPC[1] */
-    ME.PCTL[68].R = 0x01; //SIUL control
-    ME.PCTL[91].R = 0x01; //RTC/API control
-    ME.PCTL[92].R = 0x01; //PIT_RTI control
-    ME.PCTL[72].R = 0x01; //eMIOS0 control
-    ME.PCTL[73].R = 0x01; //eMIOS1 control
-    ME.PCTL[16].R = 0x01; //FlexCAN0 control
-    ME.PCTL[17].R = 0x01; //FlexCAN1 control
-    ME.PCTL[4].R = 0x01;  /* MPC56xxB/P/S DSPI0  */
-    ME.PCTL[5].R = 0x01;  /* MPC56xxB/P/S DSPI1:  */
-    ME.PCTL[32].R = 0x01; //ADC0 control
-    ME.PCTL[23].R = 0x01; //DMAMUX control
-    ME.PCTL[48].R = 0x01; /* MPC56xxB/P/S LINFlex  */
-    ME.PCTL[49].R = 0x01; /* MPC56xxB/P/S LINFlex  */
-    /* Mode Transition to enter RUN0 mode: */
-    /* Enter RUN0 Mode & Key */
-    ME.MCTL.R = 0x40005AF0;
-    /* Enter RUN0 Mode & Inverted Key */
-    ME.MCTL.R = 0x4000A50F;
-
-    /* Wait for mode transition to complete */
-    while (ME.GS.B.S_MTRANS) {}
-    /* Verify RUN0 is the current mode */
-    while(ME.GS.B.S_CURRENTMODE != 4) {}
-
-    CGM.SC_DC[0].R = 0x80; /* MPC56xxB/S: Enable peri set 1 sysclk divided by 1 */
-    CGM.SC_DC[1].R = 0x80; /* MPC56xxB/S: Enable peri set 2 sysclk divided by 1 */
-    CGM.SC_DC[2].R = 0x80; /* MPC56xxB/S: Enable peri set 3 sysclk divided by 1 */
-
-#elif defined(CFG_MPC5604P)
-    // Write pll parameters.
-    CGM.FMPLL[0].CR.B.IDF = clockSettingsPtr->Pll1;
-    CGM.FMPLL[0].CR.B.NDIV = clockSettingsPtr->Pll2;
-    CGM.FMPLL[0].CR.B.ODF = clockSettingsPtr->Pll3;
-    // PLL1 must be higher than 120MHz for PWM to work */
-    CGM.FMPLL[1].CR.B.IDF = clockSettingsPtr->Pll1_1;
-    CGM.FMPLL[1].CR.B.NDIV = clockSettingsPtr->Pll2_1;
-    CGM.FMPLL[1].CR.B.ODF = clockSettingsPtr->Pll3_1;
-
-    /* RUN0 cfg: 16MHzIRCON,OSC0ON,PLL0ON, PLL1ON,syclk=PLL0 */
-  	ME.RUN[0].R = 0x001F00F4;       
-    /* Peri. Cfg. 1 settings: only run in RUN0 mode */
-    ME.RUNPC[1].R = 0x00000010;
-
-    /* MPC56xxB/S: select ME.RUNPC[1] */
-    ME.PCTL[68].R = 0x01; //SIUL control
-    ME.PCTL[92].R = 0x01; //PIT_RTI control
-    ME.PCTL[41].R = 0x01; //flexpwm0 control
-    ME.PCTL[16].R = 0x01; //FlexCAN0 control
-    ME.PCTL[26].R = 0x01; //FlexCAN1(SafetyPort) control
-    ME.PCTL[4].R = 0x01;  /* MPC56xxB/P/S DSPI0  */
-    ME.PCTL[5].R = 0x01;  /* MPC56xxB/P/S DSPI1:  */
-    ME.PCTL[6].R = 0x01;  /* MPC56xxB/P/S DSPI2  */
-    ME.PCTL[7].R = 0x01;  /* MPC56xxB/P/S DSPI3:  */
-    ME.PCTL[32].R = 0x01; //ADC0 control
-    ME.PCTL[33].R = 0x01; //ADC1 control
-    ME.PCTL[48].R = 0x01; /* MPC56xxB/P/S LINFlex  */
-    ME.PCTL[49].R = 0x01; /* MPC56xxB/P/S LINFlex  */
-    /* Mode Transition to enter RUN0 mode: */
-    /* Enter RUN0 Mode & Key */
-    ME.MCTL.R = 0x40005AF0;
-    /* Enter RUN0 Mode & Inverted Key */
-    ME.MCTL.R = 0x4000A50F;
-
-    /* Wait for mode transition to complete */
-    while (ME.GS.B.S_MTRANS) {}
-    /* Verify RUN0 is the current mode */
-    while(ME.GS.B.S_CURRENTMODE != 4) {}
-
-    /* Pwm, adc, etimer clock */
-    CGM.AC0SC.R = 0x05000000;  /* MPC56xxP: Select FMPLL1 for aux clk 0  */
-    CGM.AC0DC.R = 0x80000000;  /* MPC56xxP: Enable aux clk 0 div by 1 */
-
-    /* Safety port clock */
-    CGM.AC2SC.R = 0x04000000;  /* MPC56xxP: Select FMPLL0 for aux clk 2  */
-    CGM.AC2DC.R = 0x80000000;  /* MPC56xxP: Enable aux clk 2 div by 1 */
 
  #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
     // Partially following the steps in MPC5567 RM..
@@ -688,6 +551,8 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
 
     FMPLL.SYNCR.B.LOLIRQ	= 1;
 #endif
+
+    Mcu_Arc_InitClockPost(ClockSetting);
 
     return E_OK;
 }
@@ -829,129 +694,13 @@ void Mcu_PerformReset(void)
 
 //-------------------------------------------------------------------
 
-#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
-
-/**
- *
- * Application Notes!
- * - AN3584, "MPC5510 Family Low Power Features"
- *   Since it's not complete also check MPC5668
- * - AN4150 , "Using Sleep Mode on the MPC5668x" and it's code
- *
- *
- * @param LPM
- */
-static void enterLowPower (Mcu_ModeType mcuMode )
-{
-
-
-	uint32 timeout = 0;
-	/* - Set the sleep bit; following a WAIT instruction, the device will go to sleep
-	 * - enable the 1.2V internal regulator when in sleep mode only
-	 * - MPC5516
-	 *   - 0x1 8k, 0x2 16k, 0x3 32k, 0x6 64k -- RAMs maintain power
-	 * - MPC5668
-	 *   - 0x1 32k, 0x2 64k, 0x3 128k
-	 */
-
-	/* Set Recover Vector */
-#if defined(CFG_MPC5516)
-	WRITE32(CRP_PSCR, PSCR_SLEEP | PSCR_SLP12EN | PCSR_RAMSEL(RAMSEL_VAL));
-
-	WRITE32(CRP_Z1VEC, ((uint32)&McuE_LowPowerRecoverFlash) | VLE_VAL );
-	READWRITE32( CRP_RECPTR, RECPTR_FASTREC, 0 );
-
-	Mcu_SavedHaltFlags = SIU.HLT.R;
-	/* Halt everything */
-	SIU.HLT.R = 0x3FFFFFFF;
-	while((SIU.HLTACK.R != 0x3FFFFFFF) && (timeout++<3000)) {}
-
-	/* put Z0 in reset if not used for wakeup */
-	CRP.Z0VEC.B.Z0RST = 1;
-
-#elif defined(CFG_MPC5668)
-	READWRITE32(CRP_PSCR, (PSCR_SLEEP | PSCR_SLP12EN | PCSR_RAMSEL(0x7)), (PSCR_SLEEP | PSCR_SLP12EN | PCSR_RAMSEL(RAMSEL_VAL)));
-	WRITE32(CRP_Z6VEC, ((uint32)&McuE_LowPowerRecoverFlash) | VLE_VAL );
-	READWRITE32(CRP_RECPTR,RECPTR_FASTREC,0 );
-
-	Mcu_SavedHaltFlags[0] = SIU.HLT0.R;
-	Mcu_SavedHaltFlags[1] = SIU.HLT1.R;
-	/* Halt everything */
-    SIU.HLT0.R = 0x037FFF3D;
-    SIU.HLT1.R = 0x18000F3C;
-    while((SIU.HLTACK0.R != 0x037FFF3D) && (SIU.HLTACK1.R != 0x18000F3C) && (timeout<3000)){}
-#else
-#error CPU not defined
-#endif
-
-	/* put Z0 in reset if not used for wakeup */
-	CRP.Z0VEC.B.Z0RST = 1;
-
-    /* Save context and execute wait instruction.
-	 *
-	 * Things that matter here are
-	 * - Z1VEC, determines where TLB0 will point. TLB0 is written with a
-	 *   value at startup that 4K aligned to this address.
-	 * - LowPower_Sleep() will save a interrupt context so we will return
-	 *   intact.
-	 * - For devices with little RAM we don't want to impose the alignment
-	 *   requirements there. Almost as we have to occupy a 4K block for this..
-	 *   although the code does not take that much space.
-	 * */
-	McuE_EnterLowPower(mcuMode);
-
-    /* Clear sleep flags to allow pads to operate */
-    CRP.PSCR.B.SLEEPF = 0x1;
-}
-
-#endif
-
 void Mcu_SetMode( Mcu_ModeType mcuMode)
 {
 	VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_SETMODE_SERVICE_ID, MCU_E_UNINIT );
 	// VALIDATE( ( McuMode <= Mcu_Global.config->McuNumberOfMcuModes ), MCU_SETMODE_SERVICE_ID, MCU_E_PARAM_MODE );
 
-
-#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
-	if( MCU_MODE_RUN == mcuMode ) {
-
-		/* Get back to "normal" halt flags */
-#if defined(CFG_MPC5516)
-		SIU.HLT.R = Mcu_SavedHaltFlags;
-#elif defined(CFG_MPC5668)
-		SIU.HLT0.R = Mcu_SavedHaltFlags[0];
-		SIU.HLT1.R = Mcu_SavedHaltFlags[1];
-#endif
-
-	} else if( MCU_MODE_SLEEP == mcuMode ) {
-		/*
-		 * Follows the AN3548 from Freescale
-		 *
-		 */
-#if defined(USE_DMA)
-		Dma_DeInit();
-#endif
-
-
-		/* Set system clock to 16Mhz IRC */
-		SIU.SYSCLK.B.SYSCLKSEL = 0;
-
-		/* Put flash in low-power mode */
-		// TODO
-
-		/* Put QQADC in low-power mode */
-		// TODO
-
-		/* Set us in SLEEP mode */
-		CRP.PSCR.B.SLEEP = 1;
-
-
-		enterLowPower(mcuMode);
-	}
-#else
-	/* NOT SUPPORTED */
-	(void) mcuMode;
-#endif
+	Mcu_Arc_SetModePre();
+	Mcu_Arc_PostSetModePost();
 }
 
 //-------------------------------------------------------------------
