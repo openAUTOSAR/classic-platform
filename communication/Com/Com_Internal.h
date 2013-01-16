@@ -87,6 +87,6 @@ extern Com_Arc_Config_type Com_Arc_Config;
 #define GET_ArcGroupSignal(GroupSignalId) \
 	(&Com_Arc_Config.ComGroupSignal[GroupSignalId])
 
-
+Std_ReturnType Com_Internal_TriggerIPduSend(PduIdType ComTxPduId);
 
 #endif /* COM_INTERNAL_H_ */
