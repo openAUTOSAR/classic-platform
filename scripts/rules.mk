@@ -25,6 +25,9 @@ endif
 ifeq (${COMPILER},iar)
 IAR_COMPILE?=${DEFAULT_IAR_COMPILE}
 endif
+ifeq (${COMPILER},diab)
+DIAB_COMPILE?=${DEFAULT_DIAB_COMPILE}
+endif
 
 # Check cross compiler setting against default from board config
 ifeq (${COMPILER},cw)
@@ -148,7 +151,7 @@ libitem-y := $(filter-out $(deprecated-libs),$(libitem-y))
 endif
 
 # Automatic preprocessing of std linkscripts
-old-ldcmdfile = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
+old-ldcmdfile = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_$(COMPILER).ldf
 new-ldcmdfile = linkscript_gcc.ldp
 old-ldcmdfile-used = $(filter $(old-ldcmdfile),$(ldcmdfile-y))
 ifneq ($(old-ldcmdfile-used),)

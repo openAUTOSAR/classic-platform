@@ -7,7 +7,7 @@
 #  - 5.7.0.0  
 #   
 
-DIAB_COMPILE ?= /c/devtools/WindRiver/diab/5.7.0.0/WIN32
+DIAB_COMPILE ?= /c/devtools/WindRiver/diab/5.9.0.0/WIN32
 DIAB_BIN = $(DIAB_COMPILE)/bin
 
 # ---------------------------------------------------------------------------
