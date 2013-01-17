@@ -4,7 +4,7 @@
 * Created by:              
 * Copyright:               
 *
-* Configured for (MCU):    MPC5567
+* Configured for (MCU):    MPC5634M
 *
 * Module vendor:           ArcCore
 * Generator version:       2.1.11
@@ -38,10 +38,10 @@ extern const J1939Tp_ConfigType J1939Tp_Config;
 
 
 const EcuM_SleepModeType EcuM_SleepModeConfig[] = {
-	{ // EcuMSleepMode 
-		.EcuMSleepModeId = ECUM_SLEEP_MODE_ECUMSLEEPMODE,
-		.EcuMWakeupSourceMask = ECUM_WKSOURCE_ECUMWAKEUPSOURCE,
-		.EcuMSleepModeMcuMode = MCU_MODE_SLEEP,
+	{ // SleepMode_1 
+		.EcuMSleepModeId = ECUM_SLEEP_MODE_SLEEPMODE_1,
+		.EcuMWakeupSourceMask = ECUM_WKSOURCE_WAKEUPSOURCE_1,
+		.EcuMSleepModeMcuMode = MCU_MODE_RUN,
 #if defined(USE_WDGM)
 		.EcuMSleepModeWdgMMode = ECUM_SLEEP_MODE_WDGM_MODE_ILL,
 #endif
@@ -49,8 +49,8 @@ const EcuM_SleepModeType EcuM_SleepModeConfig[] = {
 };
 
 const EcuM_WakeupSourceConfigType EcuM_WakeupSourceConfig[] = {
-	{ // EcuMWakeupSource 
-		.EcuMWakeupSourceId = ECUM_WKSOURCE_ECUMWAKEUPSOURCE,
+	{ // WakeupSource_1 
+		.EcuMWakeupSourceId = ECUM_WKSOURCE_WAKEUPSOURCE_1,
 		.EcuMWakeupSourcePolling = false,
 		.EcuMValidationTimeout = 0,
 #if defined(USE_COMM)

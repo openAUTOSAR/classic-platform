@@ -4,7 +4,7 @@
 * Created by:              
 * Copyright:               
 *
-* Configured for (MCU):    MPC5604P
+* Configured for (MCU):    MPC5634M
 *
 * Module vendor:           ArcCore
 * Generator version:       2.0.34

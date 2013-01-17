@@ -37,6 +37,12 @@ CAN and LIN: In order to use CAN or LIN the MC33905 circuit need to be initializ
 
              CAN C never tested, only run in loopback mode.
              
+PWM: For channel configuration See chapter 21.1.2.1 Channel descriptions. 
+    NOTE: Not all channels can be used as PWM.
+          Not all channels can use all modes,
+          Not all channels have internal counter
+          
+             
 SPI_B: Tested ok with external eeprom.
 SPI_C: Never tested
 
