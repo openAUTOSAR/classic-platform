@@ -43,7 +43,7 @@ MEMORY
 #elif defined(CFG_MPC5604P)    
     sram:  org = 0x40000000,   len = 0x0000a000 
 #elif defined(CFG_MPC5634M)    
-    sram:  org = 0x40000000,   len = 0x000177FF 
+    sram:  org = 0x40000000,   len = 0x00017800 
 #else
     sram:  org = 0x40000000,   len = 0x0000c000 
 #endif
