@@ -294,7 +294,13 @@ Can_GlobalType  Can_Global = { .initRun = CAN_UNINIT, };
 
 static void clearMbFlag( flexcan_t * hw,  uint8_t mb ) {
     if( mb >= 32) {
+#if defined(CFG_MPC563XM)
+		if(hw==GET_CONTROLLER(FLEXCAN_A)){
+	        hw->IFRH.R = (1<<(mb-32));
+		}
+#else
         hw->IFRH.R = (1<<(mb-32));
+#endif
     } else {
         hw->IFRL.R = (1<<mb);
     }
@@ -309,14 +315,20 @@ static inline uint64_t ilog2_64( uint64_t val ) {
     return ilog2((uint32_t)val);
 }
 
-void Can_A_Isr(void)
-{
-    Can_Isr(CAN_CTRL_A);
-}
-void Can_B_Isr(void)
-{
-    Can_Isr(CAN_CTRL_B);
-}
+
+#if defined(CFG_MPC563XM)
+void Can_A_Isr( void ) {Can_Isr(CAN_CTRL_A);}
+void Can_C_Isr( void ) {Can_Isr(CAN_CTRL_C);}
+void Can_A_Err( void ) {Can_Err(CAN_CTRL_A);}
+void Can_C_Err( void ) {Can_Err(CAN_CTRL_C);}
+void Can_A_BusOff( void ) {Can_BusOff(CAN_CTRL_A);}
+void Can_C_BusOff( void ) {Can_BusOff(CAN_CTRL_C);}
+
+#else
+
+void Can_A_Isr( void ) {Can_Isr(CAN_CTRL_A);}
+void Can_B_Isr( void ) {Can_Isr(CAN_CTRL_B);}
+
 #if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567) || defined(CFG_MPC5668) || defined(CFG_MPC560XB)
 void Can_C_Isr( void ) {Can_Isr(CAN_CTRL_C);}
 void Can_D_Isr( void ) {Can_Isr(CAN_CTRL_D);}
@@ -326,14 +338,8 @@ void Can_E_Isr( void ) {Can_Isr(CAN_CTRL_E);}
 void Can_F_Isr( void ) {Can_Isr(CAN_CTRL_F);}
 #endif
 
-void Can_A_Err(void)
-{
-    Can_Err(CAN_CTRL_A);
-}
-void Can_B_Err(void)
-{
-    Can_Err(CAN_CTRL_B);
-}
+void Can_A_Err( void ) {Can_Err(CAN_CTRL_A);}
+void Can_B_Err( void ) {Can_Err(CAN_CTRL_B);}
 #if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567) || defined(CFG_MPC5668) || defined(CFG_MPC560XB)
 void Can_C_Err( void ) {Can_Err(CAN_CTRL_C);}
 void Can_D_Err( void ) {Can_Err(CAN_CTRL_D);}
@@ -343,14 +349,8 @@ void Can_E_Err( void ) {Can_Err(CAN_CTRL_E);}
 void Can_F_Err( void ) {Can_Err(CAN_CTRL_F);}
 #endif
 
-void Can_A_BusOff(void)
-{
-    Can_BusOff(CAN_CTRL_A);
-}
-void Can_B_BusOff(void)
-{
-    Can_BusOff(CAN_CTRL_B);
-}
+void Can_A_BusOff( void ) {Can_BusOff(CAN_CTRL_A);}
+void Can_B_BusOff( void ) {Can_BusOff(CAN_CTRL_B);}
 #if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567) || defined(CFG_MPC5668) || defined(CFG_MPC560XB)
 void Can_C_BusOff( void ) {Can_BusOff(CAN_CTRL_C);}
 void Can_D_BusOff( void ) {Can_BusOff(CAN_CTRL_D);}
@@ -359,6 +359,9 @@ void Can_E_BusOff( void ) {Can_BusOff(CAN_CTRL_E);}
 #if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5668) || defined(CFG_MPC560XB)
 void Can_F_BusOff( void ) {Can_BusOff(CAN_CTRL_F);}
 #endif
+
+#endif /* defined(CFG_MPC563XM) */
+
 //-------------------------------------------------------------------
 
 #if defined(CFG_CAN_TEST)
@@ -400,6 +403,47 @@ static void Can_Err(int unit)
  * @param canUnit
  */
 // Uses 25.4.5.1 Transmission Abort Mechanism
+#if defined(CFG_MPC563XM)
+
+static void Can_AbortTx(flexcan_t *canHw, Can_UnitType *canUnit)
+{
+    uint64_t mbMask;
+	uint8 mbNr;
+	// Find our Tx boxes.
+	mbMask = canUnit->Can_Arc_TxMbMask;
+	// Loop over the Mb's set to abort
+	for (; mbMask; mbMask &= ~(1ull << mbNr)) {
+		mbNr = ilog2_64(mbMask);
+		canHw->BUF[mbNr].CS.B.CODE = MB_ABORT;
+		// Did it take
+		if (canHw->BUF[mbNr].CS.B.CODE != MB_ABORT) {
+			// nope..
+			/* it's not sent... or being sent.
+			 * Just wait for it
+			 */
+			int i = 0;
+		    vuint64_t iFlag;
+			do{
+			    if(canHw==GET_CONTROLLER(FLEXCAN_A)){
+			    	iFlag = *(uint64_t *)(&canHw->IFRH.R);
+			    }else{
+			    	iFlag = (uint64_t)(*(uint32_t *)(&canHw->IFRL.R));
+			    }
+				i++;
+				if (i > 1000) {
+					break;
+				}
+			} while (iFlag & (1ull << mbNr));
+		}
+
+		// Clear interrupt
+		clearMbFlag(canHw,mbNr);
+		canUnit->mbTxFree |= (1ull << mbNr);
+	}
+}
+
+#else
+
 static void Can_AbortTx(flexcan_t *canHw, Can_UnitType *canUnit)
 {
  uint64_t mbMask;
@@ -430,6 +474,8 @@ static void Can_AbortTx(flexcan_t *canHw, Can_UnitType *canUnit)
         canUnit->mbTxFree |= (1ull << mbNr);
     }
 }
+
+#endif
 
 
 
@@ -492,7 +538,16 @@ static void Can_Isr_Tx(Can_UnitType *uPtr)
 
     canHw = uPtr->hwPtr;
 
+#if defined(CFG_MPC563XM)
+    uint64_t mbMask;
+    if(canHw==GET_CONTROLLER(FLEXCAN_A)){
+    	mbMask = *(uint64_t *)(&canHw->IFRH.R);
+    }else{
+    	mbMask = (uint64_t)(*(uint32_t *)(&canHw->IFRL.R));
+    }
+#else
     uint64_t mbMask = *(uint64_t *) (&canHw->IFRH.R);
+#endif
     mbMask &= uPtr->Can_Arc_TxMbMask;
 
     /*
@@ -531,7 +586,16 @@ static void Can_Isr_Rx(Can_UnitType *uPtr)
 
     canHw = uPtr->hwPtr;
 
+#if defined(CFG_MPC563XM)
+    uint64_t iFlag;
+    if(canHw==GET_CONTROLLER(FLEXCAN_A)){
+    	iFlag = *(uint64_t *)(&canHw->IFRH.R);
+    }else{
+    	iFlag = (uint64_t)(*(uint32_t *)(&canHw->IFRL.R));
+    }
+#else
     uint64_t iFlag = *(uint64_t*) (&canHw->IFRH.R);
+#endif
 
 #if defined(CFG_CAN_TEST)
     Can_Test.mbMaskRx |= iFlag & uPtr->Can_Arc_RxMbMask;
@@ -851,6 +915,33 @@ void Can_Init(const Can_ConfigType *config)
 		}
         break;
 	#endif
+#elif defined(CFG_MPC563XM)
+        case CAN_CTRL_A:
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_BUSOFF_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_A_BusOff, FLEXCAN_A_ESR_BOFF_INT, 2, 0);
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_ERROR_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_A_Err, FLEXCAN_A_ESR_ERR_INT, 2, 0 );
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  (CAN_CTRL_TX_PROCESSING_INTERRUPT | CAN_CTRL_RX_PROCESSING_INTERRUPT)){
+	        INSTALL_HANDLER16( "Can", Can_A_Isr, FLEXCAN_A_IFLAG1_BUF0I, 2, 0 );
+	        ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_A_IFLAG1_BUF31_16I, 2, 0 );
+	        ISR_INSTALL_ISR2( "Can", Can_A_Isr, FLEXCAN_A_IFLAG1_BUF63_32I, 2, 0 );
+		}
+        break;
+        case CAN_CTRL_C:
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_BUSOFF_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_C_BusOff, FLEXCAN_C_ESR_BOFF_INT, 2, 0 );
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_ERROR_PROCESSING_INTERRUPT){
+	        ISR_INSTALL_ISR2( "Can", Can_C_Err, FLEXCAN_C_ESR_ERR_INT, 2, 0 );
+		}
+		if(cfgCtrlPtr->Can_Arc_Flags &  (CAN_CTRL_TX_PROCESSING_INTERRUPT | CAN_CTRL_RX_PROCESSING_INTERRUPT)){
+	        INSTALL_HANDLER16( "Can", Can_C_Isr, FLEXCAN_C_IFLAG1_BUF0I, 2, 0 );
+	        ISR_INSTALL_ISR2( "Can", Can_C_Isr, FLEXCAN_C_IFLAG1_BUF31_16I, 2, 0 );
+	        ISR_INSTALL_ISR2( "Can", Can_C_Isr, FLEXCAN_C_IFLAG1_BUF63_32I, 2, 0 );
+		}
+        break;
 #elif defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5567) || defined(CFG_MPC5668)
         case CAN_CTRL_A:
 		if(cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_BUSOFF_PROCESSING_INTERRUPT){
@@ -1223,8 +1314,15 @@ void Can_DisableControllerInterrupts(uint8 controller)
     canHw = GET_CONTROLLER(controller);
 
     /* Turn off the interrupt mailboxes */
+#if defined(CFG_MPC563XM)
+    if(controller==FLEXCAN_A){
+        canHw->IMRH.R = 0;
+    }
+    canHw->IMRL.R = 0;
+#else
     canHw->IMRH.R = 0;
     canHw->IMRL.R = 0;
+#endif
 
     /* Turn off the bus off/tx warning/rx warning and error */
     canHw->MCR.B.WRNEN = 0; /* Disable warning int */
@@ -1265,19 +1363,40 @@ void Can_EnableControllerInterrupts(uint8 controller)
 
     canHw = canUnit->hwPtr;
 
+#if defined(CFG_MPC563XM)
+    if(controller==FLEXCAN_A){
+        canHw->IMRH.R = 0;
+    }
+    canHw->IMRL.R = 0;
+#else
     canHw->IMRH.R = 0;
     canHw->IMRL.R = 0;
+#endif
 
     if (canUnit->cfgCtrlPtr->Can_Arc_Flags & CAN_CTRL_RX_PROCESSING_INTERRUPT ) {
         /* Turn on the interrupt mailboxes */
+#if defined(CFG_MPC563XM)
+        canHw->IMRL.R = canUnit->Can_Arc_RxMbMask;
+		if(controller==FLEXCAN_A){
+	        canHw->IMRH.R = (uint32_t)(canUnit->Can_Arc_RxMbMask>>32);
+		}
+#else
         canHw->IMRL.R = canUnit->Can_Arc_RxMbMask;
         canHw->IMRH.R = (uint32_t)(canUnit->Can_Arc_RxMbMask>>32);
+#endif
     }
 
     if (canUnit->cfgCtrlPtr->Can_Arc_Flags &  CAN_CTRL_TX_PROCESSING_INTERRUPT) {
         /* Turn on the interrupt mailboxes */
+#if defined(CFG_MPC563XM)
+        canHw->IMRL.R |= canUnit->Can_Arc_TxMbMask;
+		if(controller==FLEXCAN_A){
+	        canHw->IMRH.R |= (uint32_t)(canUnit->Can_Arc_TxMbMask>>32);
+		}
+#else
         canHw->IMRL.R |= canUnit->Can_Arc_TxMbMask;
         canHw->IMRH.R |= (uint32_t)(canUnit->Can_Arc_TxMbMask>>32);
+#endif
     }
 
     // BusOff and warnings
@@ -1332,7 +1451,16 @@ Can_ReturnType Can_Write(Can_Arc_HTHType hth, Can_PduType *pduInfo)
     /* We have the hohObj, we need to know what box we can send on */
     Irq_Save(state);
     /* Get all free TX mboxes */
+#if defined(CFG_MPC563XM)
+    uint64_t iHwFlag;
+    if(canHw==GET_CONTROLLER(FLEXCAN_A)){
+        iHwFlag = *(uint64_t *)(&canHw->IFRH.R);  /* These are occupied */
+    }else{
+        iHwFlag = (uint64_t)(*(uint32_t *)(&canHw->IFRL.R));  /* These are occupied */
+    }
+#else
     uint64_t iHwFlag = *(uint64_t *)(&canHw->IFRH.R);  /* These are occupied */
+#endif
     assert( (canUnit->Can_Arc_TxMbMask & hohObj->ArcMailboxMask) != 0);
     iflag = ~iHwFlag &  canUnit->mbTxFree & hohObj->ArcMailboxMask;
     /* Get the mbox(es) for this HTH */
