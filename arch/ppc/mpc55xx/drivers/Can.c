@@ -168,6 +168,9 @@
 #define MB_ABORT                0x9
 #define MB_RX_OVERRUN           0x6
 
+/* Registers */
+#define ESR_ERRINT		(1<<(31-39))
+
 /* ----------------------------[private macro]-------------------------------*/
 
 #define CTRL_TO_UNIT_PTR(_controller)   &CanUnit[Can_Global.config->CanConfigSet->ArcCtrlToUnit[_controller]]
@@ -242,31 +245,6 @@ Can_TestType Can_Test;
 typedef enum {
     CAN_UNINIT = 0, CAN_READY
 } Can_DriverStateType;
-
-
-typedef union {
-    vuint32_t R;
-    struct {
-        vuint32_t :14;
-        vuint32_t TWRNINT :1;
-        vuint32_t RWRNINT :1;
-        vuint32_t BIT1ERR :1;
-        vuint32_t BIT0ERR :1;
-        vuint32_t ACKERR :1;
-        vuint32_t CRCERR :1;
-        vuint32_t FRMERR :1;
-        vuint32_t STFERR :1;
-        vuint32_t TXWRN :1;
-        vuint32_t RXWRN :1;
-        vuint32_t IDLE :1;
-        vuint32_t TXRX :1;
-        vuint32_t FLTCONF :2;
-        vuint32_t :1;
-        vuint32_t BOFFINT :1;
-        vuint32_t ERRINT :1;
-        vuint32_t WAKINT :1;
-    } B;
-} ESRType; /* Error and Status Register */
 
 
 /* Type for holding global information used by the driver */
@@ -402,13 +380,11 @@ static void Can_Err(int unit)
 {
     flexcan_t *canHw = GET_CONTROLLER(unit);
     Can_Arc_ErrorType err;
-    ESRType esr;
-    const ESRType esrWrite = { .B.ERRINT = 1 };
-    err.R = 0;
+    uint32 esr;
 
     /* Clear bits 16-23 by read */
-    esr.R = canHw->ESR.R;
-    if(esr.B.ERRINT == 1)
+    esr = canHw->ESR.R;
+    if( esr & ESR_ERRINT )
     {
 		if (GET_CALLBACKS()->Arc_Error != NULL) {
 			GET_CALLBACKS()->Arc_Error(unit, err);
@@ -417,7 +393,7 @@ static void Can_Err(int unit)
 		Can_SetControllerMode(unit, CAN_T_STOP); // CANIF272 Same handling as for busoff
 
 		// Clear ERRINT
-		canHw->ESR.R = esrWrite.R;
+		canHw->ESR.R = ESR_ERRINT;
     }
 }
 

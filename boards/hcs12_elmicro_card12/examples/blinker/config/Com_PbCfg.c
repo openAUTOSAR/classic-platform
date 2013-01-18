@@ -70,7 +70,7 @@ const ComSignal_type ComSignal[] = {
 		
 		.ComSignalInitValue = &Com_SignalInitValue_FreqIndSig,
 		
-		.ComBitPosition = 0,
+		.ComBitPosition = 7,
 		.ComBitSize = 32,
 		
 		.ComSignalEndianess = COM_BIG_ENDIAN,
@@ -88,7 +88,7 @@ const ComSignal_type ComSignal[] = {
 		.ComIPduHandleId = 1,
 		.Com_Arc_ShadowBuffer = NULL,
 		.ComFirstTimeoutFactor = 0,
-		.ComNotification = NULL,
+		.ComNotification = IncommingFreqReq,
 		.ComTimeoutFactor = 0,
 		.ComTimeoutNotification = NULL,
 		.ComErrorNotification = NULL,
@@ -100,7 +100,7 @@ const ComSignal_type ComSignal[] = {
 		
 		.ComSignalInitValue = &Com_SignalInitValue_FreqReqSig,
 		
-		.ComBitPosition = 0,
+		.ComBitPosition = 7,
 		.ComBitSize = 32,
 		
 		.ComSignalEndianess = COM_BIG_ENDIAN,
@@ -177,7 +177,7 @@ const ComIPdu_type ComIPdu[] = {
 	},   
 	{ // FreqReq
 		.ArcIPduOutgoingId = PDUR_REVERSE_PDU_ID_FreqReq,
-		.ComIPduCallout = IncommingFreqReq,
+		.ComIPduCallout = NULL,
 		
 		.ComIPduSignalProcessing =  DEFERRED,
 		.ComIPduSize =  8,

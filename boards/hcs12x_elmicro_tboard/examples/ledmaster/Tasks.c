@@ -25,11 +25,9 @@
 #include "debug.h"
 
 // Callback when the FreqReq PDU has arrived on COM
-boolean IncommingFreqReq(PduIdType PduId, const uint8 *IPduData)
+void IncommingFreqReq(void)
 {
 	SetEvent(TASK_ID_ComReceiveTask, EVENT_MASK_FreqReciveEvent);
-
-	return true;
 }
 
 // Tasks
@@ -38,7 +36,7 @@ void DipTask( void ) {
 	Dio_WritePort(DIO_PORT_NAME_LEDBar, value);
 
 	// Read from Adc to set the green red intensity
-	Adc_ReadGroup(ADC_MainGroup, &value);
+	Adc_ReadGroup(ADC_MAINGROUP, &value);
 	value = value*128; // Scale to be between 0 and 32767
 	Pwm_SetDutyCycle(GreenLED, value);
 
@@ -57,7 +55,7 @@ void StartTask()
 	SetEvent(TASK_ID_ComReceiveTask, EVENT_MASK_FreqReciveEvent);
 
 	// Start Group Conversion of ADC
-	Adc_StartGroupConversion(ADC_MainGroup);
+	Adc_StartGroupConversion(ADC_MAINGROUP);
 }
 
 // Task that toggles the LED

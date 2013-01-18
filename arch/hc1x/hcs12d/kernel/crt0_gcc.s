@@ -39,9 +39,9 @@ _start:
 ;; the end of some memory region.  The _stack symbol is defined by
 ;; the linker.
 ;;
-	movb #0x39,0x0010 ; INITRM - map RAM
-	movb #0x00,0x0011 ; INITRG - map regs
-	movb #0x09,0x0012 ; INITEE - map EEPROM
+	;;movb #0x39,0x0010 ; INITRM - map RAM
+	;;movb #0x00,0x0011 ; INITRG - map regs
+	;;movb #0x09,0x0012 ; INITEE - map EEPROM
 
 	lds	#_stack
 	

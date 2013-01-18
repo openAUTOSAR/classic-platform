@@ -14,6 +14,12 @@
 #include "Det.h"
 #endif
 
+#include <assert.h>
+
+//#define J1939_ASSERT( _exp )   if( !(_exp) ) { while (1) {}; }
+#define J1939_ASSERT( _exp )   assert(_exp)
+
+
 /* Globally fulfilled requirements */
 /** @req J1939TP0123 */
 /** @req J1939TP0165 */
@@ -67,6 +73,7 @@ void J1939Tp_Init(const J1939Tp_ConfigType* ConfigPtr) {
 			channelInfos[i].RxState->State = J1939TP_RX_IDLE;
 			rxCount++;
 		} else {
+			J1939_ASSERT( 0 );
 			return; // unexpected
 		}
 	}
@@ -104,6 +111,7 @@ void J1939Tp_RxIndication(PduIdType RxPduId, PduInfoType* PduInfoPtr) {
 						J1939Tp_Internal_RxIndication_Direct(PduInfoPtr,RxPduInfo);
 						break;
 					default:
+						J1939_ASSERT(0);
 						break;
 				}
 				Irq_Restore(state);
@@ -131,11 +139,14 @@ void J1939Tp_MainFunction(void) {
 						case J1939TP_TX_WAITING_FOR_END_OF_MSG_ACK:
 						case J1939TP_TX_WAIT_DT_CANIF_CONFIRM:
 						case J1939TP_TX_WAIT_RTS_CANIF_CONFIRM:
+						case J1939TP_TX_WAIT_BAM_CANIF_CONFIRM:
+						case J1939TP_TX_WAIT_DT_BAM_CANIF_CONFIRM:
 							ChannelInfoPtr->TxState->State = J1939TP_TX_IDLE;
-							if (ChannelInfoPtr->TxState->CurrentPgPtr != 0) {
+							J1939_ASSERT( ChannelInfoPtr->TxState->CurrentPgPtr != 0 );
+//							if (ChannelInfoPtr->TxState->CurrentPgPtr != 0) {
 								J1939Tp_Internal_SendConnectionAbort(Channel->CmNPdu,ChannelInfoPtr->TxState->CurrentPgPtr->Pgn);
 								PduR_J1939TpTxConfirmation(ChannelInfoPtr->TxState->CurrentPgPtr->NSdu,NTFRSLT_E_NOT_OK);
-							}
+//							}
 							break;
 						case J1939TP_TX_WAITING_FOR_BAM_DT_SEND_TIMEOUT:
 							ChannelInfoPtr->TxState->State = J1939TP_TX_WAIT_DT_BAM_CANIF_CONFIRM;
@@ -147,7 +158,11 @@ void J1939Tp_MainFunction(void) {
 								J1939Tp_Internal_SendConnectionAbort(ChannelInfoPtr->ChannelConfPtr->CmNPdu,ChannelInfoPtr->TxState->CurrentPgPtr->Pgn);
 							}
 							break;
+						case J1939TP_TX_IDLE:
+							/* Do nothing */
+							break;
 						default:
+							J1939_ASSERT(0);
 						break;
 					}
 				}
@@ -173,6 +188,8 @@ void J1939Tp_MainFunction(void) {
 					PduR_J1939TpRxIndication(ChannelInfoPtr->RxState->CurrentPgPtr->NSdu,NTFRSLT_E_NOT_OK);
 				}
 				Irq_Restore(state);
+			} else {
+				J1939_ASSERT( 0 );
 			}
 		}
 	}
@@ -209,6 +226,7 @@ void J1939Tp_TxConfirmation(PduIdType RxPdu) {
 						J1939Tp_Internal_TxConfirmation_RxChannel(ChannelInfoPtr, RxPduInfo);
 						break;
 					default:
+						J1939_ASSERT(0);
 						break;
 				}
 			}
@@ -482,6 +500,8 @@ static inline void J1939Tp_Internal_TxConfirmation_TxChannel(J1939Tp_Internal_Ch
 			} else if (State == J1939TP_TX_WAIT_BAM_CANIF_CONFIRM) {
 				ChannelInfoPtr->TxState->State = J1939TP_TX_WAITING_FOR_BAM_DT_SEND_TIMEOUT;
 				J1939Tp_Internal_StartTimer(&(ChannelInfoPtr->TxState->TimerInfo),J1939TP_DT_BROADCAST_MIN_INTERVAL);
+			} else {
+				J1939_ASSERT(0);
 			}
 			break;
 		case J1939TP_DT:
@@ -494,8 +514,10 @@ static inline void J1939Tp_Internal_TxConfirmation_TxChannel(J1939Tp_Internal_Ch
 					J1939Tp_Internal_StartTimer(&(ChannelInfoPtr->TxState->TimerInfo),J1939TP_T3_TIMEOUT_MS);
 					ChannelInfoPtr->TxState->State = J1939TP_TX_WAITING_FOR_CTS;
 				} else {
+					Std_ReturnType rv;
 					J1939Tp_Internal_StartTimer(&(ChannelInfoPtr->TxState->TimerInfo),J1939TP_TX_CONF_TIMEOUT);
-					J1939Tp_Internal_SendDt(ChannelInfoPtr);
+					rv = J1939Tp_Internal_SendDt(ChannelInfoPtr);
+					J1939_ASSERT( rv == E_OK );
 				}
 			}
 			else if (State == J1939TP_TX_WAIT_DT_BAM_CANIF_CONFIRM) {
@@ -507,6 +529,8 @@ static inline void J1939Tp_Internal_TxConfirmation_TxChannel(J1939Tp_Internal_Ch
 					ChannelInfoPtr->TxState->State = J1939TP_TX_WAITING_FOR_BAM_DT_SEND_TIMEOUT;
 					J1939Tp_Internal_StartTimer(&(ChannelInfoPtr->TxState->TimerInfo),J1939TP_DT_BROADCAST_MIN_INTERVAL);
 				}
+			} else {
+				J1939_ASSERT( 0 );
 			}
 			break;
 		case J1939TP_DIRECT:
@@ -516,6 +540,7 @@ static inline void J1939Tp_Internal_TxConfirmation_TxChannel(J1939Tp_Internal_Ch
 			}
 			break;
 		default:
+			J1939_ASSERT( 0 );
 			break;
 	}
 }
@@ -588,6 +613,9 @@ Std_ReturnType J1939Tp_Transmit(PduIdType TxSduId, const PduInfoType* TxInfoPtr)
 							ChannelInfoPtr->TxState->SentDtCount = 0;
 							r = J1939Tp_Internal_SendRts(ChannelInfoPtr,TxInfoPtr);
 							J1939Tp_Internal_StartTimer(&(ChannelInfoPtr->TxState->TimerInfo),J1939TP_TX_CONF_TIMEOUT);
+							break;
+						default:
+							J1939_ASSERT( 0 );
 							break;
 					}
 				}
@@ -698,6 +726,7 @@ static inline uint8 J1939Tp_Internal_GetPf(J1939Tp_PgnType pgn) {
 
 
 static inline Std_ReturnType J1939Tp_Internal_SendDt(J1939Tp_Internal_ChannelInfoType* ChannelInfoPtr) {
+	Std_ReturnType rv;
 	uint8 requestLength = DT_DATA_SIZE;
 	uint8 bytesLeftToSend = ChannelInfoPtr->TxState->TotalMessageSize - ChannelInfoPtr->TxState->SentDtCount * DT_DATA_SIZE;
 	if (bytesLeftToSend < DT_DATA_SIZE){
@@ -718,8 +747,8 @@ static inline Std_ReturnType J1939Tp_Internal_SendDt(J1939Tp_Internal_ChannelInf
 	if (allocateBufferRes == BUFREQ_OK) {
 		dtPduInfoBuffer.SduDataPtr[DT_BYTE_SEQ_NUM] = ChannelInfoPtr->TxState->SentDtCount+1;
 		PduIdType CanIf_NSdu = ChannelInfoPtr->ChannelConfPtr->DtNPdu;
-		CanIf_Transmit(CanIf_NSdu, &dtPduInfoBuffer);
-		return E_OK;
+		rv = CanIf_Transmit(CanIf_NSdu, &dtPduInfoBuffer);
+		return rv;
 	} else {
 		return E_NOT_OK;
 	}
