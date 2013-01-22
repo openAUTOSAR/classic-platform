@@ -47,6 +47,7 @@ cflags-y += -Xkeywords=0x4		# Enable inline keywork
 #cflags-y += -Xstmw-slow
 cflags-y += -ei4618
 cflags-y += -Xmake-dependency=6
+cflags-y += $(TARGET)
 
 CFLAGS = $(cflags-y) $(cflags-yy)
 
@@ -78,11 +79,9 @@ LD = $(DIAB_BIN)/dld.exe
 LDFLAGS += $(TARGET)
 LDFLAGS += -m6
 
-lib-y += -lm
 lib-y += -lc
 lib-y += -limpl
 lib-y += -li
-
 
 LDOUT 		= -o $@
 TE = elf

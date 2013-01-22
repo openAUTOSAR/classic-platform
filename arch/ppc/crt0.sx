@@ -99,7 +99,7 @@ init_RAM:
 #error SRAM_SIZE not defined. Add it to board/<board>/build_config.mk
 #endif
 
-	LOAD_ADDR_32(r12,SRAM_SIZE/(32*4))
+	LOAD_ADDR_32(r12,(SRAM_SIZE/(32*4)))
 	mtctr r12
 
 init_ram_loop:
