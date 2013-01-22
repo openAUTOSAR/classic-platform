@@ -1272,17 +1272,19 @@ static void Mcu_ConfigureFlash(void)
 
 	/* Should probably trim this values */
 	const typeof(FLASH.PFCRP0.B) val = {.M0PFE = 1, .M2PFE=1, .APC=3,
-								 .RWSC=3, .WWSC =1, .DPFEN =1, .IPFEN = 1, .PFLIM =2,
+								 .RWSC=3, .WWSC =1, .DPFEN = 0, .IPFEN = 1, .PFLIM =2,
 								 .BFEN  = 1 };
 	FLASH.PFCRP0.B = val;
 
 	/* Enable pipelined reads again. */
 #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
 	FLASH.BIUCR.R = 0x001029FD; /* MPC5554 config. value for up to 82 MHz, TODO check 5567 */
-#elif defined(CFG_MPC560X)
-	CFLASH.PFCR0.R 0x1084126F /* MPC56xxS flash config value for 64 MHz */
+#elif defined(CFG_MPC5606S)
+	CFLASH0.PFCR0.R = 0x10840B6F; /* Instruction prefetch enabled and other according to cookbook */
 #elif defined(CFG_MPC563XM)
-	CFLASH0.BIUCR.R = 0x00016b57; /* default init */
+	CFLASH0.BIUCR.R = 0x00006b57; /* Prefetch disabled due to flash driver limitations */
+#elif defined(CFG_MPC560X)
+	CFLASH.PFCR0.R =  0x10840B6F; /* Instruction prefetch enabled and other according to cookbook */
 #endif
 }
 
