@@ -781,7 +781,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x06_0x10(const PduInfoTyp
 				recLength = pduTxData->SduLength - (txIndex + 1);	// Calculate what's left in buffer
 				/** @req DCM296 */ /** @req DCM476 */ /** @req DCM382 */
 				getExtendedDataRecordByDtcResult = Dem_GetExtendedDataRecordByDTC(dtc, DEM_DTC_KIND_ALL_DTCS, dtcOrigin, recNum, &pduTxData->SduDataPtr[txIndex+1], &recLength);
-				if (getExtendedDataRecordByDtcResult == DEM_RECORD_OK) {
+				if (getExtendedDataRecordByDtcResult == DEM_RECORD_OK && recLength > 0) {
 					pduTxData->SduDataPtr[txIndex++] = recNum;
 					/* Instead of calling Dem_GetSizeOfExtendedDataRecordByDTC() the result from Dem_GetExtendedDataRecordByDTC() is used */
 					/** @req DCM478 */ /** @req DCM479 */ /** @req DCM480 */
