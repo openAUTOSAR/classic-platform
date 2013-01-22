@@ -61,7 +61,7 @@ _redled:
 
 __start:
 _start:
-#if (CFG_MPC560X)
+#if (CFG_MPC560X) || (CFG_MPC563XM)
 	// For now, close down the watchdog.
 	LOAD_ADDR_32(r8,0xFFF38000)
 	LOAD_ADDR_32(r9,0x0000c520)

@@ -120,7 +120,7 @@
   			    vuint32_t PCS5:1;
 				vuint32_t PCS4:1;
 				vuint32_t PCS3:1;
-#elif defined(CFG_MPC560X)
+#elif defined(CFG_MPC560X) || defined(CFG_MPC563XM)
                   vuint32_t:7;
 #else
 #error CPU run with this header file

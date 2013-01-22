@@ -17,6 +17,6 @@
 #ifndef SCHM_COMM_H_
 #define SCHM_COMM_H_
 
-#define SCHM_MAINFUNCTION_COMM() 	SCHM_MAINFUNCTION(COMM,ComM_MainFunction())
+#define SCHM_MAINFUNCTION_COMM() 	SCHM_MAINFUNCTION(COMM,ComM_MainFunction_All_Channels())
 
 #endif /* SCHM_COMM_H_ */

@@ -34,17 +34,23 @@
 #include "Adc_ConfigTypes.h"
 
 
+
+/* Group definitions. */
+
+/** ID of group */
 typedef enum
 {
-  ADC_MainGroup,
+  ADC_MAINGROUP,
   ADC_NBR_OF_GROUPS
 }Adc_GroupType;
 
-typedef enum
-{
-	ADC_MainGroup_ADC_CH2,
-	ADC_NBR_OF_MAINGROUP_CHANNELS
-}Adc_MainGroupSignalType;
+typedef uint16 Adc_ArcChannelWithinGroupType;
+
+/* Channel indexes in group buffers */
+#define ADC_MAINGROUP_PotChannel	((Adc_ArcChannelWithinGroupType)0)
+#define ADC_NBR_OF_MAINGROUP_CHANNELS	1
+
+
 
 
 #endif /* ADC_CFG_H_ */

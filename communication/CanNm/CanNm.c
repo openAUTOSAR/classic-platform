@@ -439,6 +439,12 @@ void CanNm_MainFunction( NetworkHandleType nmChannelHandle ) {
 	}
 }
 
+void CanNm_MainFunction_All_Channels() {
+	for (uint8 i = 0; i < CANNM_CHANNEL_COUNT; i++) {
+		CanNm_MainFunction(i);
+	}
+}
+
 // Timer helpers
 // -------------
 

@@ -25,6 +25,9 @@ endif
 ifeq (${COMPILER},iar)
 IAR_COMPILE?=${DEFAULT_IAR_COMPILE}
 endif
+ifeq (${COMPILER},diab)
+DIAB_COMPILE?=${DEFAULT_DIAB_COMPILE}
+endif
 
 # Check cross compiler setting against default from board config
 ifeq (${COMPILER},cw)
@@ -148,7 +151,7 @@ libitem-y := $(filter-out $(deprecated-libs),$(libitem-y))
 endif
 
 # Automatic preprocessing of std linkscripts
-old-ldcmdfile = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
+old-ldcmdfile = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_$(COMPILER).ldf
 new-ldcmdfile = linkscript_gcc.ldp
 old-ldcmdfile-used = $(filter $(old-ldcmdfile),$(ldcmdfile-y))
 ifneq ($(old-ldcmdfile-used),)
@@ -189,7 +192,7 @@ define run_pclint
 $(if 
 $(filter $(dir $(abspath $<)),$(LINT_NICE_EXCLUDE_PATHS)),
 $(info $(abspath $<):0:0: Info: Not running lint check on $(abspath $<)),
-$(Q)$(PCLINT) $(lint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y)) $(abspath $<))
+$(Q)$(PCLINT) $(lint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y) $(DEF_$@)) $(abspath $<))
 endef
 endif
 
@@ -198,7 +201,7 @@ define run_splint
 $(if 
 $(filter $(dir $(abspath $<)),$(LINT_NICE_EXCLUDE_PATHS)),
 $(info $(abspath $<):0:0: Info: Not running lint check on $(abspath $<)),
-$(Q)$(SPLINT) $(splint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y)) $(abspath $<))
+$(Q)$(SPLINT) $(splint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y) $(DEF_$@)) $(abspath $<))
 endef
 endif
 
@@ -256,11 +259,7 @@ all: module_config $(all-mod) $(all-mod-post) $(ROOTDIR)/binaries/$(BOARDDIR)
 %.o: %.c
 	@echo
 	@echo "  >> CC $(notdir $<)"
-ifeq (${COMPILER},iar)
-	$(Q)$(CC) $(CFLAGS) $(CFLAGS_$@) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
-else
-	$(Q)$(CC) -c $(CFLAGS) $(CFLAGS_$@) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
-endif
+	$(Q)$(CC) -c $(CFLAGS) $(CFLAGS_$@) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y) $(DEF_$@)) $(abspath $<)
 	$(do-compile-post)
 # run lint if enabled
 	$(run_pclint)

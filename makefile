@@ -63,6 +63,15 @@ ifneq ($(filter clean_all,$(MAKECMDGOALS)),clean_all)
   endif
 endif
 
+# C:/apa -> /c/apa
+# ../tjo -> ../tjo
+to_msyspath = $(shell echo "$(1)" | sed -e 's,\\,\/,g;s,\([a-zA-Z]\):,/\1,')
+
+# Convert Path if on windows.
+ifeq ($(OS),Windows_NT)
+  	BDIR:=$(call to_msyspath,$(BDIR))
+endif
+
 USE_T32_SIM?=n
 export USE_T32_SIM
 
@@ -76,6 +85,7 @@ export CFG_MCU
 export CFG_CPU
 export MCU
 export def-y+=$(CFG_ARCH_$(ARCH)) $(CFG_MCU) $(CFG_CPU)
+
 
 # We descend into the object directories and build the. That way it's easier to build
 # multi-arch support and we don't have to use objdir everywhere.
@@ -94,7 +104,7 @@ ifneq ($(cmd_cmd_goals),)
 
 # Check that the board actually exist
 ifdef BOARDDIR
-  all_boards := $(subst boards/,,$(shell $(FIND) boards/ -maxdepth 1 -type d))
+  all_boards := $(subst /,,$(subst boards/,,$(shell $(FIND) boards/ -maxdepth 1 -type d)))
   all_boards_print := $(subst $(space),$(comma)$(space),$(strip $(all_boards)))
   ifeq ($(filter $(BOARDDIR),$(all_boards)),)
   	$(error no such board: $(BOARDDIR), valid boards are: $(all_boards_print))

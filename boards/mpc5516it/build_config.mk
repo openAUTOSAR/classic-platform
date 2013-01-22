@@ -25,6 +25,8 @@ MOD_USE += MCU KERNEL ECUM
 
 # Default cross compiler
 DEFAULT_CROSS_COMPILE = /opt/powerpc-eabispe/bin/powerpc-eabispe-
+DEFAULT_DIAB_COMPILE = /c/devtools/WindRiver/diab/5.9.0.0/WIN32
+
 
 # Defines
 def-y += SRAM_SIZE=0x14000

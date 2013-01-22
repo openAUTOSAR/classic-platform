@@ -181,13 +181,6 @@ static inline int emitChar( FILE *file, char **buf, char c, int *left ) {
 		fflush(stdout);
 #else
 #if 0
-#if defined(USE_NEWLIB) && defined(__GNUC__)
-		/* We are trying to print with newlib file descriptor.
-		 * That's wrong since we are using the POSIX file numbers here instead
-		 * Check stdout */
-		assert( file != _impure_ptr->_stdout );
-#endif
-#endif
 		if( (unsigned )file > 10UL ) {
 #if defined(__IAR_SYSTEMS_ICC__)
 			arc_putchar((int)(file->_Handle), c);
@@ -197,6 +190,9 @@ static inline int emitChar( FILE *file, char **buf, char c, int *left ) {
 		} else {
 			arc_putchar((int)(file), c);
 		}
+#else
+	arc_putchar((int)(file), c);
+#endif
 
 #endif /* HOST_TEST */
 	} else {

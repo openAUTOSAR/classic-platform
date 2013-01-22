@@ -513,7 +513,7 @@ typedef enum
 	EDMA_INTL_INT13,
 	EDMA_INTL_INT14,
 	EDMA_INTL_INT15,		// 26
-#if defined(CFG_MPC5554)||defined(CFG_MPC5567) ||defined(CFG_MPC5668)
+#if defined(CFG_MPC5554)||defined(CFG_MPC5567) ||defined(CFG_MPC5668) ||defined(CFG_MPC563XM)
 	EDMA_INTL_INT16,
 	EDMA_INTL_INT17,
 	EDMA_INTL_INT18,
@@ -595,7 +595,7 @@ typedef enum
 	EMISOS200_FLAG_F21,
 	EMISOS200_FLAG_F22,
 	EMISOS200_FLAG_F23,		// 16-81
-#elif defined(CFG_MPC5554)||defined(CFG_MPC5567)
+#elif defined(CFG_MPC5554)||defined(CFG_MPC5567) ||defined(CFG_MPC563XM)
 	ETPU_GLOBAL,			// 54-67
 	ETPU_A_CIS_0,
 	ETPU_A_CIS_1,
@@ -715,7 +715,7 @@ typedef enum
 	DSPI_B_ISR_TFFF,
 	DSPI_B_ISR_TCF,
 	DSPI_B_ISR_RFDF,
-#elif defined(CFG_MPC5554)||defined(CFG_MPC5567)
+#elif defined(CFG_MPC5554)||defined(CFG_MPC5567) ||defined(CFG_MPC563XM)
 	DSPI_B_COMB,			// 54-131
 	DSPI_B_ISR_EOQF,
 	DSPI_B_ISR_TFFF,
@@ -741,7 +741,7 @@ typedef enum
 #endif
 
 	/* FlexCAN A */
-#if defined(CFG_MPC5516) || defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC5668)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC5668) ||defined(CFG_MPC563XM)
 	FLEXCAN_A_ESR_BOFF_INT, // 54-152, 16-127
 	FLEXCAN_A_ESR_ERR_INT,
 	RESERVED18,
@@ -960,7 +960,7 @@ typedef enum
 	INTC_NUMBER_OF_INTERRUPTS,
 #endif
 
-#if defined(CFG_MPC5554)||defined(CFG_MPC5567)
+#if defined(CFG_MPC5554)||defined(CFG_MPC5567) ||defined(CFG_MPC563XM)
 	/* FlexCAN C */
 	FLEXCAN_C_ESR_BOFF_INT = 173,
 	FLEXCAN_C_ESR_ERR_INT,
@@ -983,6 +983,14 @@ typedef enum
 	FLEXCAN_C_IFLAG1_BUF15I,
 	FLEXCAN_C_IFLAG1_BUF31_16I,
 	FLEXCAN_C_IFLAG1_BUF63_32I, // 193
+
+#if defined(CFG_MPC563XM)
+	PIT_INT0 = 301,       // 301
+    PIT_INT1,
+    PIT_INT2,
+    PIT_INT3,
+	INTC_NUMBER_OF_INTERRUPTS = 364,
+#else
 
 	// ....
 #if	defined(CFG_MPC5567)
@@ -1069,6 +1077,7 @@ typedef enum
 
 	INTC_NUMBER_OF_INTERRUPTS,
 
+#endif /* defined(CFG_MPC563XM) */
 #endif /* defined(CFG_MPC5554)||defined(CFG_MPC5567) */
 #endif
 	CRITICAL_INPUT_EXCEPTION,

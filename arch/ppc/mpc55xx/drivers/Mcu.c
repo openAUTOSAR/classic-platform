@@ -91,7 +91,7 @@
 /* ----------------------------[private macro]-------------------------------*/
 
 
-#if defined(CFG_MPC5567)
+#if defined(CFG_MPC5567) || defined(CFG_MPC563XM)
 #define CALC_SYSTEM_CLOCK(_extal,_emfd,_eprediv,_erfd)  \
             ( (_extal) * ((_emfd)+4) / (((_eprediv)+1)*(1<<(_erfd))) )
 #elif defined(CFG_MPC560X)
@@ -209,6 +209,7 @@ void Mcu_LossOfClock( void  ){
 #define CORE_PVR_E200Z1   	0x81440000UL
 #define CORE_PVR_E200Z0   	0x81710000UL
 #define CORE_PVR_E200Z3 	0x81120000UL
+#define CORE_PVR_E200Z335 	0x81260000UL
 #define CORE_PVR_E200Z6   	0x81170000UL
 #define CORE_PVR_E200Z65   	0x81150000UL	/* Is actually a 5668 */
 #define CORE_PVR_E200Z0H   	0x817F0000UL
@@ -238,10 +239,10 @@ const cpu_info_t cpu_info_list[] = {
     	.name = "MPC5567",
     	.pvr = CORE_PVR_E200Z6,
     }
-#elif defined(CFG_MPC5633)
+#elif defined(CFG_MPC563XM)
     {
     	.name = "MPC563X",
-    	.pvr = CORE_PVR_E200Z3,
+    	.pvr = CORE_PVR_E200Z335,
     },
 #elif defined(CFG_MPC5604B)
     {
@@ -290,10 +291,10 @@ const core_info_t core_info_list[] = {
     	.name = "CORE_E200Z6",
     	.pvr = CORE_PVR_E200Z6,
     }
-#elif defined(CFG_MPC5633)
+#elif defined(CFG_MPC563XM)
     {
 		.name = "CORE_E200Z3",
-		.pvr = CORE_PVR_E200Z3,
+		.pvr = CORE_PVR_E200Z335,
     },
 #elif defined(CFG_MPC5604B)
     {
@@ -388,16 +389,18 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
 {
 	VALIDATE( ( NULL != configPtr ), MCU_INIT_SERVICE_ID, MCU_E_PARAM_CONFIG );
 
-#if defined(CFG_MPC560X)
+#if defined(CFG_MPC560X) || defined(CFG_MPC563XM)
 	/* Disable watchdog. Watchdog is enabled default after reset.*/
  	SWT.SR.R = 0x0000c520;     /* Write keys to clear soft lock bit */
  	SWT.SR.R = 0x0000d928;
  	SWT.CR.R = 0x8000010A;     /* Disable watchdog */
 #if defined(USE_WDG)
-#if !defined(CFG_MPC5604P)
-	SWT.TO.R = 0xfa00;         	/* set the timout to 500ms, 128khz clock */
+#if defined(CFG_MPC5604P)
+	SWT.TO.R = 0x7d000;         /* set the timout to 500ms, , 16khz clock */
+#elif defined(CFG_MPC563XM)
+	SWT.TO.R = 4000000;         	/* set the timout to 500ms, 8mhz crystal clock */
 #else
-	SWT.TO.R = 0x7d000;         	/* set the timout to 500ms, , 16khz clock */
+	SWT.TO.R = 0xfa00;         	/* set the timout to 500ms, 128khz clock */
 #endif
 	SWT.CR.R = 0x8000011B;      /* enable watchdog */
 #endif
@@ -433,13 +436,13 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
     	ISR_INSTALL_ISR1("LossOfLock", Mcu_LossOfLock, PLL_SYNSR_LOLF, 10 , 0 );
 #if defined(CFG_MPC5516)  || defined(CFG_MPC5668)
     	FMPLL.ESYNCR2.B.LOLIRQ = 1;
-#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
+#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC563XM)
     	FMPLL.SYNCR.B.LOLIRQ = 1;
 #endif
     	ISR_INSTALL_ISR1("LossOfClock", Mcu_LossOfClock, PLL_SYNSR_LOLF, 10 , 0 );
 #if defined(CFG_MPC5516) || defined(CFG_MPC5668)
     	FMPLL.ESYNCR2.B.LOCIRQ = 1;
-#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
+#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC563XM)
     	FMPLL.SYNCR.B.LOCIRQ = 1;
 #endif
 #endif
@@ -485,9 +488,7 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
 
     // TODO: find out if the 5554 really works like the 5516 here
     // All three (16, 54, 67) used to run the same code here though, so i'm sticking it with 5516
-#if defined(CFG_SIMULATOR)
-    return E_OK;
-#elif defined(CFG_MPC5516) || defined(CFG_MPC5554) || defined(CFG_MPC5668)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5554) || defined(CFG_MPC5668)
     /* 5516clock info:
      * Fsys - System frequency ( CPU + all periperals? )
      *
@@ -499,7 +500,7 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
             (clockSettingsPtr->Pll1 != 8) &&
             (clockSettingsPtr->Pll1 < 10) );
     assert( clockSettingsPtr->Pll3 & 1); // Must be odd
-#elif defined(CFG_MPC5567)
+#elif defined(CFG_MPC5567) || defined(CFG_MPC563XM)
     /* 5567 clock info:
      *  Fsys = EXTAL_FREQ *(  (emfd+4) / ( (eprediv+1) * ( 2^erfd )) ) )
      */
@@ -535,6 +536,10 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     // Write pll parameters.
     FMPLL.ESYNCR1.B.EPREDIV = clockSettingsPtr->Pll1;
     FMPLL.ESYNCR1.B.EMFD    = clockSettingsPtr->Pll2;
+
+#if defined(CFG_SIMULATOR)
+    FMPLL.SYNSR.B.LOCK = 1;
+#endif
 
     while(FMPLL.SYNSR.B.LOCK != 1) {};
 
@@ -673,20 +678,30 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     CGM.AC2SC.R = 0x04000000;  /* MPC56xxP: Select FMPLL0 for aux clk 2  */
     CGM.AC2DC.R = 0x80000000;  /* MPC56xxP: Enable aux clk 2 div by 1 */
 
- #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
-    // Partially following the steps in MPC5567 RM..
-    FMPLL.SYNCR.B.DEPTH	= 0;
-    FMPLL.SYNCR.B.LOLRE	= 0;
-    FMPLL.SYNCR.B.LOLIRQ = 0;
+#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
+   // Partially following the steps in MPC5567 RM..
+   FMPLL.SYNCR.B.DEPTH	= 0;
+   FMPLL.SYNCR.B.LOLRE	= 0;
+   FMPLL.SYNCR.B.LOLIRQ = 0;
 
-    FMPLL.SYNCR.B.PREDIV 	= clockSettingsPtr->Pll1;
-    FMPLL.SYNCR.B.MFD		= clockSettingsPtr->Pll2;
-    FMPLL.SYNCR.B.RFD    	= clockSettingsPtr->Pll3;
+   FMPLL.SYNCR.B.PREDIV 	= clockSettingsPtr->Pll1;
+   FMPLL.SYNCR.B.MFD		= clockSettingsPtr->Pll2;
+   FMPLL.SYNCR.B.RFD    	= clockSettingsPtr->Pll3;
 
 	// Wait for PLL to sync.
-    while (Mcu_GetPllStatus() != MCU_PLL_LOCKED) ;
+   while (Mcu_GetPllStatus() != MCU_PLL_LOCKED) ;
 
-    FMPLL.SYNCR.B.LOLIRQ	= 1;
+   FMPLL.SYNCR.B.LOLIRQ	= 1;
+#elif defined(CFG_MPC563XM)
+
+   FMPLL.SYNCR.B.PREDIV 	= clockSettingsPtr->Pll1;
+   FMPLL.SYNCR.B.MFD		= clockSettingsPtr->Pll2;
+   FMPLL.SYNCR.B.RFD    	= clockSettingsPtr->Pll3;
+
+	// Wait for PLL to sync.
+   while (Mcu_GetPllStatus() != MCU_PLL_LOCKED) ;
+
+   FMPLL.SYNCR.B.LOLIRQ	= 1;
 #endif
 
     return E_OK;
@@ -974,7 +989,7 @@ uint32_t McuE_GetSystemClock(void)
 	uint32_t eprediv = FMPLL.ESYNCR1.B.EPREDIV;
 	uint32_t emfd = FMPLL.ESYNCR1.B.EMFD;
 	uint32_t erfd = FMPLL.ESYNCR2.B.ERFD;
-#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC5633)
+#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC563XM)
 	uint32_t eprediv = FMPLL.SYNCR.B.PREDIV;
 	uint32_t emfd = FMPLL.SYNCR.B.MFD;
 	uint32_t erfd = FMPLL.SYNCR.B.RFD;
@@ -1105,7 +1120,7 @@ uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type) {
  */
 uint32_t McuE_GetPeripheralClock(McuE_PeriperalClock_t type)
 {
-#if defined(CFG_MPC5567)
+#if defined(CFG_MPC5567) || defined(CFG_MPC563XM)
 	// No peripheral dividers on 5567.
 	return McuE_GetSystemClock();
 #else
@@ -1265,7 +1280,11 @@ static void Mcu_ConfigureFlash(void)
 
 	/* Enable pipelined reads again. */
 #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
-	//TODO: Lägg till flash för mpc5554 &67
+	FLASH.BIUCR.R = 0x001029FD; /* MPC5554 config. value for up to 82 MHz, TODO check 5567 */
+#elif defined(CFG_MPC560X)
+	CFLASH.PFCR0.R 0x1084126F /* MPC56xxS flash config value for 64 MHz */
+#elif defined(CFG_MPC563XM)
+	CFLASH0.BIUCR.R = 0x00016b57; /* default init */
 #endif
 }
 

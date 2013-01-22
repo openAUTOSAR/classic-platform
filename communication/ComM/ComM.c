@@ -423,6 +423,13 @@ void ComM_MainFunction(NetworkHandleType Channel) {
 
 }
 
+void ComM_MainFunction_All_Channels() {
+	for (uint8 i = 0; i < COMM_CHANNEL_COUNT; i++) {
+		ComM_MainFunction(i);
+	}
+}
+
+
 // ----------------------------------------------------------------------------
 // Internal functions
 // ----------------------------------------------------------------------------
