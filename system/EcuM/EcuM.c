@@ -109,7 +109,7 @@ EcuM_GlobalType internal_data;
 
 /* ----------------------------[public functions]----------------------------*/
 
-#if !defined(USE_DET) && defined(ECUM_DEV_ERROR_DETECT)
+#if !defined(USE_DET) && (ECUM_DEV_ERROR_DETECT == STD_ON)
 #error EcuM configuration error. DET is not enabled when ECUM_DEV_ERROR_DETECT is set
 #endif
 
