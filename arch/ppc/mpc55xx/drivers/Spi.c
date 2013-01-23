@@ -158,7 +158,9 @@
 #if (SPI_IMPLEMENTATION==SPI_DMA)
 #include "Dma.h"
 #endif
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "isr.h"
 /* ----------------------------[private define]------------------------------*/
 #define DSPI_CTRL_A	0
