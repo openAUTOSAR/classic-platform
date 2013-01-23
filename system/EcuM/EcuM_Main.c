@@ -14,6 +14,7 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 //lint -emacro(904,VALIDATE,VALIDATE_RV,VALIDATE_NO_RV) //904 PC-Lint exception to MISRA 14.7 (validate macros).
+#define USE_LDEBUG_PRINTF
 
 #include "Std_Types.h"
 #include "EcuM.h"
@@ -26,12 +27,12 @@
 #if defined(USE_NVM)
 #include "NvM.h"
 #endif
-#if defined(USE_COMM)
-#include "ComM_EcuM.h"
-#endif
+
 
 //#define USE_LDEBUG_PRINTF
 #include "debug.h"
+
+#define ECUM_STR   "ECUM:"
 
 #if defined(USE_LDEBUG_PRINTF)
 char *GetMainStateAsString( EcuM_StateType state ) {
@@ -47,9 +48,9 @@ char *GetMainStateAsString( EcuM_StateType state ) {
 	case ECUM_STATE_WAKEUP:
 		str = "ECUM_STATE_WAKEUP";
 		break;
-	case ECUM_SUBSTATE_MASK:
-		str = "ECUM_SUBSTATE_MASK";
-		break;
+//	case ECUM_SUBSTATE_MASK:
+//		str = "ECUM_SUBSTATE_MASK";
+//		break;
 	case ECUM_STATE_WAKEUP_WAKESLEEP:
 		str = "ECUM_STATE_WAKEUP_WAKESLEEP";
 		break;
@@ -238,7 +239,7 @@ static inline void enter_go_sleep_mode(void){
 	EcuM_WakeupSourceType wakeupSource;
 	set_current_state(ECUM_STATE_GO_SLEEP);
 
-	DEBUG_ECUM_CALLOUT("EcuM_OnGoSleep");
+	DEBUG_ECUM_CALLOUT( ECUM_STR "EcuM_OnGoSleep");
 	EcuM_OnGoSleep();
 
 #if defined(USE_NVM)
@@ -261,6 +262,17 @@ static void in_state_goSleep( void ) {
 	/* We only wait for NvM_WriteAll() for so long */
 	if (internal_data_go_sleep_state_timeout){
 		internal_data_go_sleep_state_timeout--;
+#if defined(USE_NVM)
+		{
+		  NvM_RequestResultType nvmResult;
+		  NvM_GetErrorStatus(0, &nvmResult);
+
+      if( nvmResult != NVM_REQ_PENDING) {
+        /* Done or something is wrong...continue */
+        internal_data_go_sleep_state_timeout = 0;
+      }
+		}
+#endif
 	}
 
 	if( (internal_data_go_sleep_state_timeout == 0) ) {
@@ -281,27 +293,29 @@ static void in_state_goSleep( void ) {
 		for (; cMask; cMask &= ~(1ul << source)) {
 			source = ilog2(cMask);
 			/* @req 3.1.5/ECUM2389 */
-			DEBUG_ECUM_CALLOUT_W_ARG("EcuM_EnableWakeupSources","0x%lx",(1ul<< source));
+//			DEBUG_ECUM_CALLOUT_W_ARG("EcuM_EnableWakeupSources","0x%lx",(1ul<< source));
 			EcuM_EnableWakeupSources( 1<< source );
 
 		}
 
-#if defined(WDGM)
-		if( internal_data.config->EcuMWdgMConfig != NULL ) {
-			DEBUG_ECUM_CALLOUT_W_ARG("WdgM_SetMode","%d",sleepModePtr->EcuMSleepModeWdgMMode);
-			WdgM_SetMode(sleepModePtr->EcuMSleepModeWdgMMode);
+#if defined(USE_WDGM)
+		if( internal_data.config->EcuMWdgMConfig != NULL &&
+		    sleepModePtr->EcuMSleepModeWdgMMode != ECUM_SLEEP_MODE_WDGM_MODE_ILL )
+		{
+        DEBUG_ECUM_CALLOUT_W_ARG("WdgM_SetMode","%d",sleepModePtr->EcuMSleepModeWdgMMode);
+        WdgM_SetMode(sleepModePtr->EcuMSleepModeWdgMMode);
 		}
 #endif
 
 		/* Let no one else run */
 		GetResource(RES_SCHEDULER);
-
 		set_current_state(ECUM_STATE_SLEEP);
 
 	} else if( EcuM_GetPendingWakeupEvents() != 0 ) {
 		/* We have pending wakeup events, need to startup again */
 #if defined(USE_NVM)
 		NvM_CancelWriteAll();
+		set_current_state(ECUM_STATE_SLEEP);
 #endif
 	}
 }
@@ -314,7 +328,7 @@ static void in_state_sleep ( void ) {
 	const EcuM_SleepModeType *sleepModePtr;
 	sleepModePtr = &internal_data.config->EcuMSleepModeConfig[internal_data.sleep_mode];
 
-	DEBUG_ECUM_CALLOUT("EcuM_GenerateRamHash");
+	DEBUG_ECUM_CALLOUT( ECUM_STR "EcuM_GenerateRamHash");
 	EcuM_GenerateRamHash();
 
 	DEBUG_ECUM_CALLOUT_W_ARG("Mcu_SetMode","%d",sleepModePtr->EcuMSleepModeMcuMode);
@@ -371,11 +385,11 @@ static inline boolean hasPostRunRequests(void){
 static inline void in_state_appRun(void){
 	if (internal_data_run_state_timeout){
 		internal_data_run_state_timeout--;
-		LDEBUG_PRINTF("RUN Timeout=%ld\n",internal_data_run_state_timeout);
+		LDEBUG_PRINTF( ECUM_STR "RUN Timeout=%ld\n",internal_data_run_state_timeout);
 	}
 
 	if ((!hasRunRequests()) && (internal_data_run_state_timeout == 0)){
-		DEBUG_ECUM_CALLOUT("EcuM_OnExitRun");
+		DEBUG_ECUM_CALLOUT( ECUM_STR "EcuM_OnExitRun");
 		EcuM_OnExitRun();	/** @req EcuM2865 */
 
 #if defined(USE_WDGM)
@@ -397,11 +411,11 @@ static inline void in_state_appPostRun(void){
 	/* @req 3.1.5/ECUM2866 */
 	if (hasRunRequests()){
 		/* We have run requests, return to RUN II */
-		DEBUG_ECUM_CALLOUT("EcuM_enter_run_mode");
+		DEBUG_ECUM_CALLOUT( ECUM_STR "EcuM_enter_run_mode");
 		EcuM_enter_run_mode();
 
 	} else if (!hasPostRunRequests()){
-		DEBUG_ECUM_CALLOUT("EcuM_OnExitPostRun");
+		DEBUG_ECUM_CALLOUT( ECUM_STR "EcuM_OnExitPostRun");
 		EcuM_OnExitPostRun(); /** @req EcuM2761 */
 		set_current_state(ECUM_STATE_PREP_SHUTDOWN);/** @req EcuM2761 */
 	} else {
@@ -418,7 +432,7 @@ static inline void in_state_prepShutdown(void){
 	// TODO: The specification does not state what events to clear
 	EcuM_ClearWakeupEvent(ECUM_WKSTATUS_NONE);
 
-	DEBUG_ECUM_CALLOUT("EcuM_OnPrepShutdown");
+	DEBUG_ECUM_CALLOUT( ECUM_STR "EcuM_OnPrepShutdown");
 	EcuM_OnPrepShutdown();
 
 #if defined(USE_DEM)
@@ -453,7 +467,7 @@ static inline void in_state_goOffOne(void){
 
 #if defined(USE_WDGM)
 			if( internal_data.config->EcuMWdgMConfig != NULL ) {
-				DEBUG_ECUM_CALLOUT(WdgM_SetMode);
+				DEBUG_ECUM_CALLOUT( ECUM_STR "WdgM_SetMode");
 				WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMShutdownMode);
 			}
 #endif
@@ -463,7 +477,7 @@ static inline void in_state_goOffOne(void){
 
 #if defined(USE_WDGM)
 		if( internal_data.config->EcuMWdgMConfig != NULL ) {
-			DEBUG_ECUM_CALLOUT("WdgM_SetMode");
+			DEBUG_ECUM_CALLOUT( ECUM_STR "WdgM_SetMode");
 			WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMShutdownMode);
 		}
 #endif
@@ -477,13 +491,41 @@ void EcuM_MainFunction(void) {
 	EcuM_WakeupSourceType wMask;
 	static uint32 validationMask;
 	static uint32 validationMaxTime;
+	static uint32 pendingWkupMask = 0;
 
-	VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID,
-			ECUM_E_NOT_INITIATED);
+	VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_NOT_INITIATED);
 
-	DEBUG_ECUM_STATE(internal_data.current_state);
+#if defined(USE_LDEBUG_PRINTF)
+	{
+	  static EcuM_StateType oldEcuMState = 0xff;
+	  if( oldEcuMState != internal_data.current_state) {
+	    DEBUG_ECUM_STATE(internal_data.current_state);
+	    oldEcuMState = internal_data.current_state;
+	  }
+	}
+#endif
 
 	switch (internal_data.current_state) {
+	case ECUM_STATE_STARTUP_TWO:
+	{
+		NvM_RequestResultType readAllResult;
+
+		if( internal_data.nvmReadAllTimer == 0 ) {
+			internal_data.nvmReadAllTimer = internal_data.config->EcuMNvramReadAllTimeout;
+			EcuM_StartupTwo();
+		}
+
+		NvM_GetErrorStatus(0, &readAllResult);
+		if ( readAllResult != NVM_REQ_PENDING ) {
+			/* We are done */
+			EcuM_StartupPost();
+		} else {
+			internal_data.nvmReadAllTimer--;
+			if( internal_data.nvmReadAllTimer == 0 ) {
+				EcuM_StartupPost();
+			}
+		}
+		break;
 
 	case ECUM_STATE_APP_RUN:
 		/* RUN II state */
@@ -503,9 +545,23 @@ void EcuM_MainFunction(void) {
 		break;
 
 	case ECUM_STATE_GO_SLEEP:
-		in_state_goSleep();
-		/* Flow Through, Scheduler is Locked */
+	{
 
+	  /* 4 cases:
+	   * 1. Wait for the NvM_WriteAll() - Stay in state
+	   * 2. Timeout on NvM_WriteAll()   - go to ECUM_STATE_SLEEP (Scheduler is locked)
+	   * 3. NvM_WriteAll() is done      - go to ECUM_STATE_SLEEP (Scheduler is locked)
+	   * 4. Run request                 - Call NvM_CancelAll() and go to ECUM_STATE_WAKEUP_ONE.
+	   */
+
+	  in_state_goSleep();
+
+	  if( internal_data.current_state != ECUM_STATE_SLEEP ) {
+	    break;
+	  }
+
+		/* Flow Through, Scheduler is Locked */
+	}
 	case ECUM_STATE_SLEEP:
 		in_state_sleep();
 		/* Flow Through, Scheduler is Locked */
@@ -524,7 +580,7 @@ void EcuM_MainFunction(void) {
 
 		wMask = EcuM_GetPendingWakeupEvents();
 
-		DEBUG_ECUM_CALLOUT_W_ARG("EcuM_DisableWakeupSources","0x%lx", (uint32)wMask);
+		DEBUG_ECUM_CALLOUT_W_ARG("EcuM_DisableWakeupSources", "0x%lx", (uint32) wMask);
 		EcuM_DisableWakeupSources(wMask);
 
 		EcuM_AL_DriverRestart();
@@ -537,64 +593,125 @@ void EcuM_MainFunction(void) {
 
 		set_current_state(ECUM_STATE_WAKEUP_VALIDATION);
 
+		/*-------------- ECUM_STATE_WAKEUP_VALIDATION -------------------- */
+
+		DEBUG_ECUM_CALLOUT(ECUM_STR "EcuM_GetPendingWakeupEvents");
+		pendingWkupMask = EcuM_GetPendingWakeupEvents();
+
+		DEBUG_ECUM_CALLOUT_W_ARG("EcuM_StartWakeupSources", "0x%lx",
+								(uint32) pendingWkupMask);
+
+		EcuM_StartWakeupSources(pendingWkupMask);
+		internal_data.validationTimer = 0;
+
+#if 0
+		/* Validate Pre-defined events right away */
+		wMask = (pendingWkupMask & (ECUM_WKSOURCE_POWER|ECUM_WKSOURCE_RESET | ECUM_WKSOURCE_INTERNAL_RESET |
+						ECUM_WKSOURCE_INTERNAL_WDG | ECUM_WKSOURCE_EXTERNAL_WDG));
+
+		if( wMask != 0 ) {
+			EcuM_ValidateWakeupEvent(wMask);
+		}
+#endif
+
 		/* Calculate the validation timing , if any*/
-		for(int i=0;i<ECUM_WKSOURCE_USER_CNT;i++) {
+		for (int i = 0; i < ECUM_WKSOURCE_USER_CNT; i++) {
 			wkupCfgPtr = &internal_data.config->EcuMWakeupSourceConfig[i];
-			if (wkupCfgPtr->EcuMValidationTimeout != ECUM_VALIDATION_TIMEOUT_ILL) {
-				validationMask |= wkupCfgPtr->EcuMWakeupSourceId;
-				validationMaxTime = MAX(wkupCfgPtr->EcuMValidationTimeout/ECUM_MAIN_FUNCTION_PERIOD,validationMaxTime);
-				//internal_data.validationTimer = validationMaxTime;
-			} else {
-				LDEBUG_PRINTF("No Validation for event:0x%lx\n",(uint32)wkupCfgPtr->EcuMWakeupSourceId);
-				
-				/* Validate right away */
-				EcuM_ValidateWakeupEvent(wkupCfgPtr->EcuMWakeupSourceId);
+
+			/* Can't validate something that is not pending */
+			if (wMask & wkupCfgPtr->EcuMWakeupSourceId) {
+
+				/* No validation timeout == ECUM_VALIDATION_TIMEOUT_ILL */
+				if ((wkupCfgPtr->EcuMValidationTimeout
+						!= ECUM_VALIDATION_TIMEOUT_ILL)
+						&& (wMask & wkupCfgPtr->EcuMWakeupSourceId)) {
+					/* Build a mask with the sources that need validation */
+					validationMask |= wkupCfgPtr->EcuMWakeupSourceId;
+					/* Use one validation timeout, take the longest */
+					validationMaxTime = MAX(
+							wkupCfgPtr->EcuMValidationTimeout
+									/ ECUM_MAIN_FUNCTION_PERIOD,
+							validationMaxTime);
+					internal_data.validationTimer = validationMaxTime;
+				} else {
+					LDEBUG_PRINTF(ECUM_STR "No Validation for event:0x%lx\n",
+							(uint32) wkupCfgPtr->EcuMWakeupSourceId);
+
+					/* Validate right away */
+					EcuM_ValidateWakeupEvent(wkupCfgPtr->EcuMWakeupSourceId);
+				}
 			}
 		}
+
 		break;
 	}
 
 	case ECUM_STATE_WAKEUP_VALIDATION: {
 		/* !req 3.1.5/EcuM2566 */
+		boolean done = 0;
 
-		uint32 pendingWkupMask;
+		if (internal_data.validationTimer != 0) {
+			/*
+			 * Call EcuM_CheckValidation() while all events have not been validated and
+			 * timeout have not expired. The call to EcuM_CheckValidation(..) triggers a call
+			 * to EcuM_ValidateWakeupEvent(..) from the driver when validated.
+			 */
 
-		if( validationMask == 0 ) {
-			pendingWkupMask = EcuM_GetPendingWakeupEvents();
-			// TODO: We can skip callout's here?
+			/* Check validation for the events that do not match, ie not yet validated */
+			DEBUG_ECUM_CALLOUT_W_ARG(
+					"EcuM_CheckValidation",
+					"0x%lx",
+					(uint32)(
+							EcuM_GetValidatedWakeupEvents() ^ pendingWkupMask));
+			EcuM_CheckValidation(
+					EcuM_GetValidatedWakeupEvents() ^ pendingWkupMask);
 
-			// TODO:
-			// ComM_EcuM_WakeupIndication( network handle )
-
-			DEBUG_ECUM_CALLOUT_W_ARG("EcuM_StartWakeupSources","0x%lx",(uint32)pendingWkupMask);
-			EcuM_StartWakeupSources(pendingWkupMask);
-			set_current_state(ECUM_STATE_WAKEUP_REACTION);
+			if (0 == (EcuM_GetValidatedWakeupEvents() ^ pendingWkupMask)) {
+				/* All events have been validated */
+				done = 1;
+			} else {
+				LDEBUG_PRINTF(
+						ECUM_STR "  Awaiting validation for mask: pending=%lx, expected=%lx\n",
+						pendingWkupMask, validationMask);
+				LDEBUG_PRINTF(ECUM_STR "  Validation Timer            : %lu\n",
+						internal_data.validationTimer);
+			}
 
 		} else {
-			DEBUG_ECUM_CALLOUT("EcuM_GetPendingWakeupEvents");
-			pendingWkupMask = EcuM_GetPendingWakeupEvents();
+			uint32 notValidatedMask = EcuM_GetValidatedWakeupEvents()
+					^ pendingWkupMask;
 
-//			LDEBUG_PRINTF("Pending Wakeup: 0x%lx\n",pendingWkupMask);
-
-			/* @req 3.1.5/EcuM2710 */
-			if (internal_data.validationTimer) {
-				internal_data.validationTimer--;
+			/* Stop wakeupSources that are not validated */
+			if (notValidatedMask) {
+				DEBUG_ECUM_CALLOUT_W_ARG("EcuM_StopWakeupSources", "0x%lx",
+						(uint32) notValidatedMask);
+				EcuM_StopWakeupSources(notValidatedMask);
 			}
+			done = 1;
+		}
 
-			if( pendingWkupMask == validationMask ) {
-				/* Match beetween the events that need validation -> done validating */
-				DEBUG_ECUM_CALLOUT_W_ARG("EcuM_StartWakeupSources","0x%lx",(uint32)wMask);
-				EcuM_StartWakeupSources(wMask);
-				set_current_state(ECUM_STATE_WAKEUP_REACTION);
-			} else {
-				if (internal_data.validationTimer == 0) {
-					// EcuM_StopWakeupSources(0);    // TODO
-					set_current_state(ECUM_STATE_WAKEUP_REACTION);
-				} else {
-					LDEBUG_PRINTF("  Awaiting validation for mask: pending=%lx, expected=%lx\n",pendingWkupMask, validationMask);
-					LDEBUG_PRINTF("  Validation Timer            : %lu\n",internal_data.validationTimer);
+		/* @req 3.1.5/EcuM2710 */
+		if (internal_data.validationTimer) {
+			internal_data.validationTimer--;
+		}
+
+		if (done) {
+#if defined(USE_COMM)
+			const EcuM_WakeupSourceConfigType *wkupCfgPtr;
+			uint32 validated = EcuM_GetValidatedWakeupEvents();
+
+			for(int i=0;i<ECUM_WKSOURCE_USER_CNT;i++) {
+				wkupCfgPtr = &internal_data.config->EcuMWakeupSourceConfig[i];
+
+				/* Call wakeup indication for all validated events with a channel assigned */
+				if ( (wkupCfgPtr->EcuMComMChannel != ECUM_COMM_CHANNEL_ILL) &&
+						wkupCfgPtr->EcuMWakeupSourceId & validated ) {
+					ComM_EcuM_WakeupIndication(wkupCfgPtr->EcuMComMChannel);
 				}
 			}
+#endif
+
+			set_current_state(ECUM_STATE_WAKEUP_REACTION);
 		}
 		break;
 	}
@@ -607,7 +724,7 @@ void EcuM_MainFunction(void) {
 		EcuM_WakeupReactionType wReaction;
 
 		wMask = EcuM_GetValidatedWakeupEvents();
-		LDEBUG_PRINTF("EcuM_GetValidatedWakeupEvents() : %x\n", wMask);
+		LDEBUG_PRINTF(ECUM_STR "EcuM_GetValidatedWakeupEvents() : %x\n", wMask);
 
 		/* TODO: We have skipped the TTII timer here */
 
@@ -616,7 +733,7 @@ void EcuM_MainFunction(void) {
 		wReaction = (0 == wMask) ? ECUM_WKACT_SHUTDOWN : ECUM_WKACT_RUN;
 		wReaction = EcuM_OnWakeupReaction(wReaction);
 
-		LDEBUG_PRINTF("Wakeup Reaction: %s\n",
+		LDEBUG_PRINTF(ECUM_STR "Wakeup Reaction: %s\n",
 				GetWakeupReactionAsString(wReaction));
 		if (wReaction == ECUM_WKACT_RUN) {
 			set_current_state(ECUM_STATE_WAKEUP_TWO);

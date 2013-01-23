@@ -81,6 +81,14 @@
 #define ECUM_AR_PATCH_VERSION	2
 
 
+#define VALIDATE_STATE(_state) \
+	do { \
+		EcuM_StateType ecuMState;  \
+		EcuM_GetState(&ecuMState); \
+		assert(ecuMState == (_state) ); \
+	} while(0)
+
+
 #include "EcuM_Cfg.h"
 #include "EcuM_Types.h"
 #include "EcuM_Cbk.h"
