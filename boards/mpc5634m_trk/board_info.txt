@@ -14,7 +14,13 @@ Board:
   8Mhz external crystal.
 
 Supported compilers:
-  gcc, Code Warrior, Diab
+  gcc, Code Warrior, Diab. GCC does not support VLE so in order to use you must remove 
+  
+  # CFG (y/n) macros
+CFG=PPC E200Z0 MPC55XX MPC563XM MPC5634M BRD_MPC5634M_TRK #VLE
+
+in build_config.mk
+  
   
 SystemTick:
   decrementer is used for generating system clock
