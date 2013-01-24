@@ -292,7 +292,6 @@ void WdgM_Init(const WdgM_ConfigType *ConfigPtr)
 	entityStatePtr = GET_ENTITY_STATE_PTR(aliveSupervisionPtr->WdgM_AliveSupervisionConfigID);
 	if (aliveSupervisionPtr->WdgM_ActivationActivated)
 	{
-		printf("ON for SEid=%04d\n",SEid);
 		entityStatePtr->SupervisionStatus = WDGM_ALIVE_OK;
 	}
 	else
@@ -305,12 +304,12 @@ void WdgM_Init(const WdgM_ConfigType *ConfigPtr)
   }
 
 
-#if 1
+#if defined(CFG_WDGM_TEST)
+  /* WDGM generator validation */
   {
 	  enum WdgM_Mode mode;
 
 //	  printf("Mode  ID   Found\n",SEid,cSID, mode );
-
 	  for( mode = 0; mode < WDGM_NBR_OF_MODES; mode++ ) {
 
 		  /* For each mode verify the configuration */
@@ -321,16 +320,13 @@ void WdgM_Init(const WdgM_ConfigType *ConfigPtr)
 			  const WdgM_AliveSupervisionType* aliveSupervisionPtr = &(modeConfigPtr->WdgM_AliveSupervisionPtr[SEid]);
 			  enum WdgM_SupervisedEntityId cSID = aliveSupervisionPtr->WdgM_SupervisedEntityRef->WdgM_SupervisedEntityID;
 
-
-			  printf("%4d %4d ",mode, SEid  );
+//			  printf("%4d %4d ",mode, SEid  );
 			  if( cSID != SEid ) {
+				  assert(0);
 				  printf("%4d\n",cSID);
 			  } else {
-				  printf("OK\n");
+//				  printf("OK\n");
 			  }
-
-
-//			  assert( modeConfigPtr->WdgM_AliveSupervisionPtr->WdgM_SupervisedEntityRef->WdgM_SupervisedEntityID == SEid);
 		  }
 	  }
   }
@@ -370,7 +366,6 @@ static void wdgm_Check_AliveSupervision (void)
     /** @req WDGM083 **/
     if (WDGM_ALIVE_DEACTIVATED != entityStatePtr->SupervisionStatus)
     {
-    	printf("HEHEHRE %d\n",12);
     	entityStatePtr->SupervisionCycle++;
       /** @req WDGM090 **/
       /* Only perform supervision on the reference cycle. */
