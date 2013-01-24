@@ -27,11 +27,13 @@ MOD_USE += MCU KERNEL ECUM DET
 DEFAULT_CROSS_COMPILE = /opt/powerpc-eabispe/bin/powerpc-eabispe-
 DEFAULT_DIAB_COMPILE = /c/devtools/WindRiver/diab/5.9.0.0/WIN32
 
-ifeq ($(filter $(CFG),VLE))
-DIAB_TARGET?=-tPPCE200Z1VFN:simple
-else 
-DIAB_TARGET?=-tPPCE200Z1NFS:simple
-endif
+vle=$(if $(filter $(CFG),VLE),y)
+novle=$(if $(vle),n,y)
+
+diab-$(vle)=-tPPCE200Z1VFN:simple
+diab-$(novle)=-tPPCE200Z1NFS:simple
+
+DIAB_TARGET?=$(diab-yy)
 
 # Defines
 def-y += SRAM_SIZE=0x14000
