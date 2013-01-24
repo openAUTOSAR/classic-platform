@@ -879,7 +879,13 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x04(const PduInfoType *pd
 				break;
 			}
 			RecNumOffset = RecNumOffset + AvailableBufSize;
-			pduTxData->SduLength = 8 + RecNumOffset;
+
+			if( AvailableBufSize > 0 ) {
+				pduTxData->SduLength = 8 + RecNumOffset;
+			}
+			else {
+				pduTxData->SduLength = 6 + RecNumOffset;
+			}
 		}
 	}
 
@@ -1128,12 +1134,14 @@ static Dcm_NegativeResponseCodeType readDidData(const Dcm_DspDidType *didPtr, Pd
 						else { // tx buffer full
 							responseCode = DCM_E_REQUESTOUTOFRANGE;
 						}
-					}
-					else {	// Not possible to obtain did length
+					} else if( E_PENDING == result ) {
+						responseCode = DCM_E_RESPONSEPENDING;
+					} else {	// Not possible to obtain did length
 						responseCode = DCM_E_CONDITIONSNOTCORRECT;
 					}
-				}
-				else {	// CheckRead failed
+				} else if( E_PENDING == result ) {
+					responseCode = DCM_E_RESPONSEPENDING;
+				} else {	// CheckRead failed
 					responseCode = DCM_E_CONDITIONSNOTCORRECT;
 				}
 			}
