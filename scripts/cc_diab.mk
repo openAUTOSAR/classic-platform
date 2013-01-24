@@ -21,10 +21,8 @@ else
 #cflags-y += -Os
 endif
 
-ifeq ($(CFG_VLE),y)
-TARGET = -tPPCE200Z1VFN:simple
-else
-TARGET = -tPPCE200Z1NFS:simple
+ifeq ($(DIAB_TARGET),)
+$(error DIAB_TARGET is not defined. Check your build_config.mk for it)
 endif
 
 cflags-y += -c
@@ -47,7 +45,7 @@ cflags-y += -Xkeywords=0x4		# Enable inline keywork
 #cflags-y += -Xstmw-slow
 cflags-y += -ei4618
 cflags-y += -Xmake-dependency=6
-cflags-y += $(TARGET)
+cflags-y += $(DIAB_TARGET)
 
 CFLAGS = $(cflags-y) $(cflags-yy)
 
@@ -58,7 +56,7 @@ CCOUT 		= -o $@
 
 CPP = $(CC) -P
 CPPOUT = -o 
-CPP_ASM_FLAGS = $(TARGET)
+CPP_ASM_FLAGS = $(DIAB_TARGET)
 CPP_ASM_FLAGS += -Xpreprocess-assembly
 #CPP_ASM_FLAGS += -Xkeep-assembly-file
 
@@ -76,7 +74,7 @@ CPP_ASM_FLAGS += -Xpreprocess-assembly
 
 LD = $(DIAB_BIN)/dld.exe
 
-LDFLAGS += $(TARGET)
+LDFLAGS += $(DIAB_TARGET)
 LDFLAGS += -m6
 
 lib-y += -lc
@@ -96,7 +94,7 @@ LDFLAGS += $(ldflags-y)
 # ---------------------------------------------------------------------------
 AS	= 	$(DIAB_BIN)/das
 ASFLAGS += -Xsemi-is-newline
-ASFLAGS += $(TARGET) 
+ASFLAGS += $(DIAB_TARGET) 
 ASOUT = -o $@
 
 # ---------------------------------------------------------------------------
