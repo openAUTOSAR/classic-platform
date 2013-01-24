@@ -864,9 +864,10 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x04(const PduInfoType *pd
 			for (index = 0; pEventParaTemp->FreezeFrameClassRef[index] != NULL; index++){
 				if (pEventParaTemp->FreezeFrameClassRef[index]->FFRecordNumber == RecordNumber) {
 					// Calculate the Number of Dids in FF
-					for (FFIdNumber = 0; pEventParaTemp->FreezeFrameClassRef[index]->FFIdClassRef[FFIdNumber]->Arc_EOL != FALSE; FFIdNumber++) {
+					for (FFIdNumber = 0; pEventParaTemp->FreezeFrameClassRef[index]->FFIdClassRef[FFIdNumber]->Arc_EOL == FALSE; FFIdNumber++) {
 						;
 					}
+					break;
 				}
 			}
 			pduTxData->SduDataPtr[7 + RecNumOffset] = FFIdNumber;
@@ -894,8 +895,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x04(const PduInfoType *pd
 		case DEM_GET_FFDATABYDTC_OK:
 			break;
 		default:
-			responseCode = DCM_E_GENERALREJECT;
-			return responseCode;
+			return DCM_E_REQUESTOUTOFRANGE;
 	}
 
 	GetStatusOfDtc = Dem_GetStatusOfDTC(DtcNumber, DtcType, DtcOrigin, &DtcStatus); /** @req DEM212 */
@@ -903,8 +903,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x04(const PduInfoType *pd
 		case DEM_STATUS_OK:
 			break;
 		default:
-			responseCode = DCM_E_GENERALREJECT;
-			return responseCode;
+			return DCM_E_GENERALREJECT;
 	}
 
 
