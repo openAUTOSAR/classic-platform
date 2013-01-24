@@ -201,7 +201,7 @@ Std_ReturnType Com_Internal_TriggerIPduSend(PduIdType ComTxPduId) {
     }
 
 	// Is the IPdu ready for transmission?
-	if (Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduMinimumDelayTimer == 0) {
+	if (Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduMinimumDelayTimer == 0 && Arc_IPdu->Com_Arc_IpduStarted) {
 
         //lint --e(725)	Suppress PC-Lint warning "Expected positive indentation...". What means?
 		// Check callout status
