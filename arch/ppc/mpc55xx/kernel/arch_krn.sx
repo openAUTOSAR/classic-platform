@@ -92,9 +92,11 @@
 .global Os_Test_And_Set
 #if defined(__CWCC__) && defined(CFG_VLE)
 .section .text_vle,text_vle
-#elif defined(__DCC__)
+#elif defined(__DCC__) && defined(CFG_VLE)
 	// Must be indented (diab)
 	.section .text_vle,x
+#elif defined(__DCC__) && !defined(CFG_VLE)
+	.section .text,x
 #elif defined(__GNUC__)
 .section .text
 #endif
@@ -128,24 +130,24 @@ Os_ArchSwapContext:
 	stw		r0,FUNC_FRM_PATTERN(sp)
 
 #if defined(CFG_SPE)
-	stw		r14, FUNC_FRM_R14(sp)
-	stw		r15, FUNC_FRM_R15(sp)
-	stw		r16, FUNC_FRM_R16(sp)
-	stw		r17, FUNC_FRM_R17(sp)
-	stw		r18, FUNC_FRM_R18(sp)
-	stw		r19, FUNC_FRM_R19(sp)
-	stw		r20, FUNC_FRM_R20(sp)
-	stw		r21, FUNC_FRM_R21(sp)
-	stw		r22, FUNC_FRM_R22(sp)
-	stw		r23, FUNC_FRM_R23(sp)
-	stw		r24, FUNC_FRM_R24(sp)
-	stw		r25, FUNC_FRM_R25(sp)
-	stw		r26, FUNC_FRM_R26(sp)
-	stw		r27, FUNC_FRM_R27(sp)
-	stw		r28, FUNC_FRM_R28(sp)
-	stw		r29, FUNC_FRM_R29(sp)
-	stw		r30, FUNC_FRM_R30(sp)
-	stw		r31, FUNC_FRM_R31(sp)
+	evstdd		r14, FUNC_FRM_R14(sp)
+	evstdd		r15, FUNC_FRM_R15(sp)
+	evstdd		r16, FUNC_FRM_R16(sp)
+	evstdd		r17, FUNC_FRM_R17(sp)
+	evstdd		r18, FUNC_FRM_R18(sp)
+	evstdd		r19, FUNC_FRM_R19(sp)
+	evstdd		r20, FUNC_FRM_R20(sp)
+	evstdd		r21, FUNC_FRM_R21(sp)
+	evstdd		r22, FUNC_FRM_R22(sp)
+	evstdd		r23, FUNC_FRM_R23(sp)
+	evstdd		r24, FUNC_FRM_R24(sp)
+	evstdd		r25, FUNC_FRM_R25(sp)
+	evstdd		r26, FUNC_FRM_R26(sp)
+	evstdd		r27, FUNC_FRM_R27(sp)
+	evstdd		r28, FUNC_FRM_R28(sp)
+	evstdd		r29, FUNC_FRM_R29(sp)
+	evstdd		r30, FUNC_FRM_R30(sp)
+	evstdd		r31, FUNC_FRM_R31(sp)
 
 #else
 	/* Save registers preserved by function call */
@@ -577,11 +579,12 @@ handleException:
 #else
 .section .exception_tbl,4,"rw"
 #endif
-#elif defined(__DCC__)
+#elif defined(__DCC__) && defined(CFG_VLE)
 	// Must be indented (diab)
 	.section .text_vle,x
+#elif defined(__DCC__) && !defined(CFG_VLE)
+	.section .text,x
 #endif
-
 	.balign 0x1000
 	.global exception_tbl
 
@@ -612,6 +615,7 @@ exception_tbl:
 	EXC_TABLE_CODE(12)
 	EXC_TABLE_CODE(13)
 	EXC_TABLE_CODE(14)
+	EXC_TABLE_CODE(15)
 #if defined(CFG_SPE)
 	EXC_TABLE_CODE(32)
 	EXC_TABLE_CODE(33)
