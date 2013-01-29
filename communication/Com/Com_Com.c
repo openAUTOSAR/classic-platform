@@ -28,7 +28,9 @@
 #include "Com_misc.h"
 #include "debug.h"
 #include "PduR.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "Cpu.h"
 
 Com_BufferPduStateType Com_BufferPduState[COM_N_IPDUS];

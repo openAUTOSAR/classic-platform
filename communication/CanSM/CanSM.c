@@ -29,7 +29,9 @@
 #include "Com.h"                /**< @req CANSM172 */
 #include "ComM.h"               /**< @req CANSM174 */
 #include "ComM_BusSm.h"         /**< @req CANSM191 */
+#if defined(USE_DET)
 #include "Det.h"                /**< @req CANSM015 */
+#endif
 #if defined(USE_DEM)
 #include "Dem.h"                /**< @req CANSM014 */
 #endif

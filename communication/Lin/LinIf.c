@@ -30,7 +30,9 @@
 #if defined(USE_PDUR)
 #include "PduR_LinIf.h"
 #endif
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #if defined(USE_DEM)
 #include "Dem.h"
 #endif

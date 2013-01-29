@@ -16,7 +16,9 @@
 #include "Lin.h"
 #include "LinIf_Cbk.h"
 #include "mpc55xx.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "Mcu.h"
 #include <stdlib.h>
 #include <string.h>

@@ -21,7 +21,7 @@ MOD_AVAIL+= RAMLOG TTY_T32
 # CRC
 MOD_AVAIL+=CRC32 CRC16
 # Required modules
-MOD_USE += MCU KERNEL ECUM DET
+MOD_USE += MCU KERNEL ECUM
 
 # Default cross compiler
 DEFAULT_CROSS_COMPILE = /opt/powerpc-eabispe/bin/powerpc-eabispe-

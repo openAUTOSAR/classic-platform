@@ -20,7 +20,7 @@ MOD_AVAIL+=COMM NM CANNM CANSM
 MOD_AVAIL+=RAMLOG KERNEL_EXTRA CRC32
 
 # Required modules
-MOD_USE += MCU KERNEL ECUM DET
+MOD_USE += MCU KERNEL ECUM
 
 # Default cross compiler
 DEFAULT_CROSS_COMPILE = /opt/powerpc-eabispe/bin/powerpc-eabispe-

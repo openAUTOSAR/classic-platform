@@ -22,7 +22,9 @@
 #include "Adc.h"
 #include "stm32f10x_adc.h"
 #include "stm32f10x_dma.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #if defined(USE_KERNEL)
 #include "Os.h"
 #include "isr.h"

@@ -20,7 +20,9 @@
 
 #include "WdgM.h"
 #include "WdgIf.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 
 #if (WDGM_DEV_ERROR_DETECT == STD_ON)
 #define WDGM_REPORT_ERROR(_api,_errorcode) \
