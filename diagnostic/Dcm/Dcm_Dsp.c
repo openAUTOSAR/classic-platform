@@ -1488,7 +1488,7 @@ void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 	// Check sub function range (0x01 to 0x42)
 	if ((pduRxData->SduDataPtr[1] >= 0x01) && (pduRxData->SduDataPtr[1] <= 0x42)) {
 		boolean isRequestSeed = pduRxData->SduDataPtr[1] & 0x01u;
-		Dcm_SecLevelType requestedSecurityLevel = (pduRxData->SduDataPtr[1]-1)/2;
+		Dcm_SecLevelType requestedSecurityLevel = (pduRxData->SduDataPtr[1]+1)/2;
 		Dcm_NegativeResponseCodeType getSeedErrorCode;
 
 		if (isRequestSeed) {
