@@ -80,11 +80,12 @@ void Irq_Init( void ) {
 	    set_spr(SPR_IVOR12,((uint32_t)&exception_tbl+0xc0) );
 	    set_spr(SPR_IVOR13,((uint32_t)&exception_tbl+0xd0) );
 	    set_spr(SPR_IVOR14,((uint32_t)&exception_tbl+0xe0) );
+	    set_spr(SPR_IVOR15,((uint32_t)&exception_tbl+0xf0) );
 #if defined(CFG_SPE)
-	    // SPE exceptions...map to dummy
-	    set_spr(SPR_IVOR32,((uint32_t)&exception_tbl+0xf0) );
-	    set_spr(SPR_IVOR33,((uint32_t)&exception_tbl+0xf0) );
-	    set_spr(SPR_IVOR34,((uint32_t)&exception_tbl+0xf0) );
+	    // SPE exceptions
+	    set_spr(SPR_IVOR32,((uint32_t)&exception_tbl+0x100) );
+	    set_spr(SPR_IVOR33,((uint32_t)&exception_tbl+0x110) );
+	    set_spr(SPR_IVOR34,((uint32_t)&exception_tbl+0x120) );
 #endif
 #endif
 

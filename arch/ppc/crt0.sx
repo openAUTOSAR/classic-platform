@@ -35,9 +35,11 @@ _resetconfiguration:
 	
 #if defined(__CWCC__) && defined(CFG_VLE)
 .section .text_vle,text_vle
-#elif defined(__DCC__)
+#elif defined(__DCC__) && defined(CFG_VLE)
 	// Must be indented (diab)
 	.section .text_vle,x
+#elif defined(__DCC__) && !defined(CFG_VLE)
+	.section .text,x
 #elif defined(__GNUC__)
 .section .text
 #endif

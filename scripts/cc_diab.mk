@@ -7,6 +7,20 @@
 #  - 5.7.0.0  
 #   
 
+# Diab SPE
+#  The SPE consist of up to 4 APUs.
+#    1. SPE APU - Vector stuff. 64-bit GPRS
+#    2. Vector Single Prec. FP APU. 64-bit GPRS 
+#    3. Scalar Single Prec. FP APU. 32-bit GPRS
+#    4. Scalar Double Prec. FP APU. 64-bit GPRS
+#     For more information see E500CORERM.pdf chapter 
+#     3.8.1 (SPE and Embedded Floating-Point APUs)
+#    
+#  Most cores with SPE have 1-3 and very few have 4 (e500v2)   
+#
+# What does Diab generate for? 
+#
+ 
 DIAB_COMPILE ?= /c/devtools/WindRiver/diab/5.9.0.0/WIN32
 DIAB_BIN = $(DIAB_COMPILE)/bin
 
@@ -15,18 +29,17 @@ DIAB_BIN = $(DIAB_COMPILE)/bin
 # CCFLAGS - compile flags
 
 CC	= 	$(DIAB_BIN)/dcc	
-ifeq ($(OPT_DEBUG),y)
-cflags-y += -O0
-else
-#cflags-y += -Os
-endif
+
+cflags-$(CFG_OPT_RELEASE)        += -XO -g3
+cflags-$(CFG_OPT_DEBUG)        += -g2
+
 
 ifeq ($(DIAB_TARGET),)
 $(error DIAB_TARGET is not defined. Check your build_config.mk for it)
 endif
 
 cflags-y += -c
-cflags-y += -g3
+cflags-y += -Xoptimized-debug-off
 
 cflags-y += -Xdialect-c99
 cflags-y += -Xc-new
@@ -80,6 +93,7 @@ LDFLAGS += -m6
 lib-y += -lc
 lib-y += -limpl
 lib-y += -li
+lib-y += -lm
 
 LDOUT 		= -o $@
 TE = elf
@@ -93,9 +107,11 @@ LDFLAGS += $(ldflags-y)
 # Assembler
 # ---------------------------------------------------------------------------
 AS	= 	$(DIAB_BIN)/das
+ASFLAGS-$(CFG_OPT_DEBUG) += -g 
 ASFLAGS += -Xsemi-is-newline
 ASFLAGS += $(DIAB_TARGET) 
 ASOUT = -o $@
+
 
 # ---------------------------------------------------------------------------
 
