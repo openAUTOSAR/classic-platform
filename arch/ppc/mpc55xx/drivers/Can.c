@@ -171,7 +171,7 @@
 #define MB_RX_OVERRUN           0x6
 
 /* Registers */
-#define ESR_ERRINT		(1<<(31-39))
+#define ESR_ERRINT		(1<<1)
 
 /* ----------------------------[private macro]-------------------------------*/
 
