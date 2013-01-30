@@ -60,7 +60,32 @@ cflags-y += -ei4618
 cflags-y += -Xmake-dependency=6
 cflags-y += $(DIAB_TARGET)
 
-CFLAGS = $(cflags-y) $(cflags-yy)
+CFLAGS_diab_Adc_Cfg.o += -ei4068  # 4068 should be fixed in generator.
+CFLAGS_diab_Dio.o += -ei4546
+CFLAGS_diab_IoHwAb_Analog.o += -ei4111 -ei4549  
+CFLAGS_diab_IoHwAb_Digital.o += -ei4111
+CFLAGS_diab_init.o += -ei4236
+CFLAGS_diab_task.o += -ei4546 -ei4550
+CFLAGS_diab_counter.o += -ei1573
+CFLAGS_diab_application.o += -ei4186
+CFLAGS_diab_newlib_port.o += -ei4301  # Buggy diab libs
+CFLAGS_diab_IoHwAb_Pwm.o += -ei4186 -ei4111
+CFLAGS_diab_Spi_Lcfg.o += -ei4068
+CFLAGS_diab_NvM.o += -ei4111 -ei4177
+CFLAGS_diab_counter.o += -Xlocal-data-area=0
+CFLAGS_diab_WdgM.o += -ei4186
+CFLAGS_diab_EcuM_Main.o += -ei4550 -ei4188
+CFLAGS_diab_EcuM.o += -ei4188
+CFLAGS_diab_Mcu.o += -ei4177
+CFLAGS_diab_Mcu_Cfg.o += -ei4188
+CFLAGS_diab_Can.o += -ei4550
+CFLAGS_diab_CanIf.o += -ei4550 -ei4188 -ei4111
+CFLAGS_diab_Nm.o += -ei4188
+CFLAGS_diab_arch.o += -ei1639
+CFLAGS_diab_Port.o += -ei4550
+
+
+CFLAGS = $(cflags-y) $(cflags-yy) $(CFLAGS_diab_$@)
 
 CCOUT 		= -o $@ 
 
