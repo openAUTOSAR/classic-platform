@@ -100,6 +100,7 @@
 #define IoHwAb_LockRestore(_x) 	Irq_Restore(_x)
 
 void IoHwAb_Init( void );
+void IoHwAb_MainFunction( void );
 
 
 #endif /* IOHWAB_H_ */
