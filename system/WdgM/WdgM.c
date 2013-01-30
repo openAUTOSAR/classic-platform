@@ -626,7 +626,6 @@ const WdgM_AliveSupervisionType * WdgM_Arc_GetAliveSupervisionPtr( enum WdgM_Mod
 
   return modeConfigPtr->WdgM_AliveSupervisionPtr;
 }
-#endif
 
 WdgM_AliveEntityStateType *WdgM_Arc_GetSupervisionPtr( enum WdgM_SupervisedEntityId supId ) {
 	 return GET_ENTITY_STATE_PTR(supId);
