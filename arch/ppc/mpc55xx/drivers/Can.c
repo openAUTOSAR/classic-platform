@@ -384,6 +384,8 @@ static void Can_Err(int unit)
     Can_Arc_ErrorType err;
     uint32 esr;
 
+	err.R = 0;
+
     /* Clear bits 16-23 by read */
     esr = canHw->ESR.R;
     if( esr & ESR_ERRINT )
