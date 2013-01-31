@@ -122,7 +122,9 @@ obj-$(USE_NVM) += Crc_16.o
 # SchM, always find the include files.
 inc-y += $(ROOTDIR)/system/SchM
 vpath-$(USE_SCHM) += $(ROOTDIR)/system/SchM
+ifeq ($(filter SchM.o,$(obj-y)),)
 obj-$(USE_SCHM) += SchM.o
+endif
 
 # J1939Tp
 obj-$(USE_J1939TP) += J1939Tp.o
