@@ -300,7 +300,7 @@ static void CanSM_Internal_CANSM_BOR_CHECK(NetworkHandleType NetworkHandle)
 	}
 	else if(Network->timer >= CanSM_Config->Networks[NetworkHandle].CanSMBorTimeTxEnsured){
 #if defined(USE_DEM)
-		Dem_SetEventStatus(CanSM_Config->Networks[NetworkHandle].CanSMBusOffDemEvent, DEM_EVENT_STATUS_PASSED);
+		Dem_ReportErrorStatus(CanSM_Config->Networks[NetworkHandle].CanSMBusOffDemEvent, DEM_EVENT_STATUS_PASSED);
 #endif
 		Network->BusOffRecoveryState = CANSM_BOR_NO_BUS_OFF;
 	}
@@ -361,7 +361,7 @@ static void CanSM_Internal_CANSM_BOR_CHECK_L1(NetworkHandleType NetworkHandle)
 		Network->counter = 0;
 
 #if defined(USE_DEM)
-		Dem_SetEventStatus(CanSM_Config->Networks[NetworkHandle].CanSMBusOffDemEvent,  DEM_EVENT_STATUS_PASSED);
+		Dem_ReportErrorStatus(CanSM_Config->Networks[NetworkHandle].CanSMBusOffDemEvent,  DEM_EVENT_STATUS_PASSED);
 #endif
 		Network->BusOffRecoveryState = CANSM_BOR_NO_BUS_OFF;
 	}
@@ -393,7 +393,7 @@ static void CanSM_Internal_CANSM_BOR_CHECK_L2(NetworkHandleType NetworkHandle)
 		if(Network->counter >= CanSM_Config->Networks[NetworkHandle].CanSMBorCounterL2Err){
 			// TBD DEM error
 #if defined(USE_DEM)
-			Dem_SetEventStatus(CanSM_Config->Networks[NetworkHandle].CanSMBusOffDemEvent,  DEM_EVENT_STATUS_FAILED);
+			Dem_ReportErrorStatus(CanSM_Config->Networks[NetworkHandle].CanSMBusOffDemEvent,  DEM_EVENT_STATUS_FAILED);
 #endif
 			Network->BusOffRecoveryState = CANSM_BOR_TXOFF_L2;
 		}else{
@@ -411,7 +411,7 @@ static void CanSM_Internal_CANSM_BOR_CHECK_L2(NetworkHandleType NetworkHandle)
 		Network->counter = 0;
 		// TBD DEM & deadline monitoring
 #if defined(USE_DEM)
-		Dem_SetEventStatus(CanSM_Config->Networks[NetworkHandle].CanSMBusOffDemEvent,  DEM_EVENT_STATUS_PASSED);
+		Dem_ReportErrorStatus(CanSM_Config->Networks[NetworkHandle].CanSMBusOffDemEvent,  DEM_EVENT_STATUS_PASSED);
 #endif
 		Network->BusOffRecoveryState = CANSM_BOR_NO_BUS_OFF;
 	}
