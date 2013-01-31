@@ -91,6 +91,6 @@ extern const Port_ConfigType PortConfigData;
 
 #define PORT_PIN_NAME_CNTXA		83	
 #define PORT_PIN_NAME_CNRXA		84	
-#define PORT_PIN_NAME_GPIO0		0	
+#define PORT_PIN_NAME_GPIO125		125	
 
 #endif /* PORT_CFG_H_ */

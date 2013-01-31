@@ -34,7 +34,7 @@ typedef enum
 
 
 // Channels	
-#define DIO_CHANNEL_NAME_LED_CHANNEL	0
+#define DIO_CHANNEL_NAME_LED_CHANNEL	125
 
 // Channel group
 
