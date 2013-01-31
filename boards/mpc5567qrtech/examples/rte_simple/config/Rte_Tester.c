@@ -22,11 +22,11 @@
 
 extern Rte_CDS_Tester Rte_Inst_Tester;
 
-UInt8 Rte_IRead_TesterRunnable_Arguments_arg1() {
+UInt8 Rte_IRead_TesterRunnable_Arguments_arg1(void) {
 	return Rte_Inst_Tester.TesterRunnable_Arguments_arg1->value;
 }
 
-UInt8 Rte_IRead_TesterRunnable_Arguments_arg2() {
+UInt8 Rte_IRead_TesterRunnable_Arguments_arg2(void) {
 	return Rte_Inst_Tester.TesterRunnable_Arguments_arg2->value;
 }
 
@@ -40,7 +40,7 @@ Std_ReturnType Rte_Call_Tester_Calculator_Multiply(const UInt8 arg1,
 	return Rte_Multiply(arg1, arg2, result);
 }
 
-UInt32 Rte_IRead_FreqReqRunnable_FreqReq_freq() {
+UInt32 Rte_IRead_FreqReqRunnable_FreqReq_freq(void) {
 	return Rte_Inst_Tester.FreqReqRunnable_FreqReq_freq->value;
 }
 

@@ -42,7 +42,6 @@ typedef enum {
 	CAN_CTRL_D = 3,
 	FLEXCAN_E = 4,
 	CAN_CTRL_E = 4,
-	CAN_CONTROLLER_CNT = 5
 }CanControllerIdType;
 
 typedef enum {

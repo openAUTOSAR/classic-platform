@@ -22,7 +22,7 @@
 /**************************************** Digital outputs *****************************************/
 
 #define IOHWAB_SIGNAL_DIGITALSIGNAL_RED_LED	0
-Std_ReturnType IoHwAb_SetDigitalSignal_Red_Led(IoHwAb_LevelType newValue, IoHwAb_StatusType *status);
+Std_ReturnType IoHwAb_Set_Digital_DigitalSignal_Red_Led(IoHwAb_LevelType newValue, IoHwAb_StatusType *status);
 
 /***************************************** Digital inputs *****************************************/
 
