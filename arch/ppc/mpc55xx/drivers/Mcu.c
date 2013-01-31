@@ -1280,7 +1280,7 @@ static void Mcu_ConfigureFlash(void)
 
 	/* Enable pipelined reads again. */
 #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
-	FLASH.BIUCR.R = 0x001029FD; /* MPC5554 config. value for up to 82 MHz, TODO check 5567 */
+	FLASH.BIUCR.R = 0x00104B3D; /* value for up to 128 MHz  */
 #elif defined(CFG_MPC5606S)
 	CFLASH0.PFCR0.R = 0x10840B6F; /* Instruction prefetch enabled and other according to cookbook */
 #elif defined(CFG_MPC563XM)
