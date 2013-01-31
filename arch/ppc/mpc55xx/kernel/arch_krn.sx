@@ -89,6 +89,7 @@
 .global Os_ArchSwapContextTo
 .global Os_ArchSwapContext
 .global Os_ArchSetSpAndCall
+.global Os_ArchGetStackPtr
 .global Os_Test_And_Set
 #if defined(__CWCC__) && defined(CFG_VLE)
 .section .text_vle,text_vle
@@ -102,6 +103,10 @@
 #endif
 
 
+
+Os_ArchGetStackPtr:
+	mr r3,r1
+	blr
 
 
 Os_ArchSetSpAndCall:
