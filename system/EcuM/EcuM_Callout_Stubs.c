@@ -107,8 +107,10 @@
 
 void EcuM_AL_DriverInitZero(void)
 {
+#if defined(USE_DET)
 	Det_Init();/** @req EcuM2783 */
     Det_Start();/** @req EcuM2634 */
+#endif
 }
 
 extern EcuM_ConfigType EcuMConfig;
