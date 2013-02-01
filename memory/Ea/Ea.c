@@ -29,7 +29,9 @@
 /** @req EA011 */
 /** @req EA045 */
 #if (STD_ON == EA_DEV_ERROR_DETECT)
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #endif
 
 

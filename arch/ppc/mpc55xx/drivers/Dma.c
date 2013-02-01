@@ -154,10 +154,6 @@ void Dma_StopChannel (Dma_ChannelType channel)
 
 Std_ReturnType Dma_ChannelDone (Dma_ChannelType channel)
 {
-  Std_ReturnType returnValue;
-
-  returnValue = EDMA.TCD[channel].DONE;
-
-  return (returnValue);
+  return (Std_ReturnType)EDMA.TCD[channel].DONE;
 }
 

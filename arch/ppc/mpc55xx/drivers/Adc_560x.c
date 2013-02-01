@@ -27,7 +27,9 @@
 #include "Modules.h"
 #include "Mcu.h"
 #include "Adc.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "Os.h"
 #include "isr.h"
 #include "irq.h"

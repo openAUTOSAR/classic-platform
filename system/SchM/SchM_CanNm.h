@@ -16,7 +16,7 @@
 #ifndef SCHM_CANNM_H_
 #define SCHM_CANNM_H_
 
-#define SCHM_MAINFUNCTION_CANNM() 	SCHM_MAINFUNCTION(CANNM,CanNm_MainFunction())
+#define SCHM_MAINFUNCTION_CANNM() 	SCHM_MAINFUNCTION(CANNM,CanNm_MainFunction_All_Channels())
 
 
 #endif /* SCHM_CANNM_H_ */

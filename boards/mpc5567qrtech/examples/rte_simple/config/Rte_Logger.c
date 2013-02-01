@@ -21,7 +21,7 @@
 
 extern Rte_CDS_Logger Rte_Inst_Logger;
 
-UInt16 Rte_IRead_LoggerRunnable_Result_result() {
+UInt16 Rte_IRead_LoggerRunnable_Result_result(void) {
 	return Rte_Inst_Logger.LoggerRunnable_Result_result->value;
 }
 

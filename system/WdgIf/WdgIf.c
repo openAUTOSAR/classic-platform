@@ -22,7 +22,9 @@
 //lint -emacro(904,VALIDATE,VALIDATE_NO_RETURNVAL)
 
 #include "WdgIf.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 
 #define VALIDATE(_expr, _api, _errorcode) \
 	if(!_expr) {	\

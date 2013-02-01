@@ -93,7 +93,9 @@
  *  Validation macros
  */
 #if  ( FEE_DEV_ERROR_DETECT == STD_ON )
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #define DET_VALIDATE(_exp,_api,_err ) \
         if( !(_exp) ) { \
           Det_ReportError(MODULE_ID_FEE, 0, _api, _err); \

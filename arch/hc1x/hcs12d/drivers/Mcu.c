@@ -17,7 +17,9 @@
 #include <stdint.h>
 #include "Std_Types.h"
 #include "Mcu.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include <assert.h>
 #include "Cpu.h"
 #include <string.h>

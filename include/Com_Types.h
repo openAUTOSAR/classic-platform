@@ -210,8 +210,9 @@ typedef struct {
 
 	/** The size of the signal in bits.
 	 * Range 0 to 63.
+	 * Range 0 to 4095 for uint8_n signal types
 	 */
-	const uint8 ComBitSize;
+	const uint16 ComBitSize;
 
 	/** Notification function for error notification. */
 	void (*ComErrorNotification) (void);

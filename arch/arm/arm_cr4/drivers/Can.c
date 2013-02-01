@@ -19,7 +19,9 @@
 #if defined(USE_DEM)
 #include "Dem.h"
 #endif
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "CanIf_Cbk.h"
 #include "Os.h"
 #include "isr.h"

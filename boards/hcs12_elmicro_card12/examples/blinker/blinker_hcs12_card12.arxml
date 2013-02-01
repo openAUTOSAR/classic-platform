@@ -596,7 +596,7 @@
                   <PARAMETER-VALUES>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduCallout</DEFINITION-REF>
-                      <VALUE>IncommingFreqReq</VALUE>
+                      <VALUE />
                     </FUNCTION-NAME-VALUE>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduRxHandleId</DEFINITION-REF>
@@ -778,7 +778,7 @@
                   <PARAMETER-VALUES>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitPosition</DEFINITION-REF>
-                      <VALUE>0</VALUE>
+                      <VALUE>7</VALUE>
                     </INTEGER-VALUE>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitSize</DEFINITION-REF>
@@ -841,7 +841,7 @@
                   <PARAMETER-VALUES>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitPosition</DEFINITION-REF>
-                      <VALUE>0</VALUE>
+                      <VALUE>7</VALUE>
                     </INTEGER-VALUE>
                     <INTEGER-VALUE>
                       <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitSize</DEFINITION-REF>
@@ -857,7 +857,7 @@
                     </INTEGER-VALUE>
                     <FUNCTION-NAME-VALUE>
                       <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComNotification</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE>IncommingFreqReq</VALUE>
                     </FUNCTION-NAME-VALUE>
                     <ENUMERATION-VALUE>
                       <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalEndianess</DEFINITION-REF>
@@ -2144,4 +2144,3 @@
     </AR-PACKAGE>
   </TOP-LEVEL-PACKAGES>
 </AUTOSAR>
-

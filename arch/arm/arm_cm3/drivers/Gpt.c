@@ -59,7 +59,9 @@
 #include <assert.h>
 #include <string.h>
 #include "Mcu.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #if defined(USE_KERNEL)
 #include "Os.h"
 #include "isr.h"

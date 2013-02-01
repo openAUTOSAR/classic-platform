@@ -19,6 +19,7 @@ CW_LIB = $(CW_COMPILE)/PowerPC_EABI_Support/Runtime/Lib
 
 CC	= 	$(CW_BIN)/mwcceppc.exe
 
+cflags-y        += -c
 cflags-y 		+= -cpp_exceptions=off
 cflags-y 		+= -readonlystrings
 cflags-y 		+= -RTTI=off
@@ -53,7 +54,29 @@ cflags-y          += -sdata=8 -sdata2=8
 # Get machine cflags
 #cflags-y		+= $(cflags-$(CFG_ARCH))
 
-CFLAGS = $(cflags-y) $(cflags-yy)
+CFLAGS_cw_IoHwAb.o += -W=nounused
+CFLAGS_cw_Dio.o +=  -W=nounused
+CFLAGS_cw_IoHwAb_Analog.o +=  -W=nounused -W=nounusedexpr
+CFLAGS_cw_IoHwAb_Digital.o +=  -W=nounused
+CFLAGS_cw_EcuM_Main.o +=  -W=nounused -W=off
+CFLAGS_cw_EcuM.o +=  -W=nounused -W=off
+CFLAGS_cw_Mcu.o += -W=nounused 
+CFLAGS_cw_Can.o +=  -W=nounused
+CFLAGS_cw_CanIf.o +=  -W=off
+CFLAGS_cw_Nm.o +=  -W=nounused -W=off
+CFLAGS_cw_Mcu_Cfg.o += -W=off
+CFLAGS_cw_ComM.o +=  -W=nounused
+CFLAGS_cw_CanNm.o +=  -W=nounused
+CFLAGS_cw_Pwm.o +=  -W=nounused
+CFLAGS_cw_Adc_eQADC.o += -W=nopossible -W=nounwanted
+CFLAGS_cw_Com_misc.o +=  -W=nounused
+CFLAGS_cw_EcuM_Callout_Stubs.o +=  -W=nounused
+CFLAGS_cw_SchM.o +=  -W=nounused
+
+
+
+
+CFLAGS = $(cflags-y) $(cflags-yy) $(CFLAGS_cw_$@)
 
 CCOUT 		= -o $@ 
 

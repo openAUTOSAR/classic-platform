@@ -153,6 +153,9 @@ void ErrorHook( StatusType error ) {
 
 	ErrorCount++;
 
+	/* Keep compiler silent */
+	(void)LogBad[ErrorCount].param1;
+
 	// Stall if buffer is full.
 	while(ErrorCount >= ERROR_LOG_SIZE);
 }

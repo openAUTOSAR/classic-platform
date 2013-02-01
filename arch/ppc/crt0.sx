@@ -35,9 +35,11 @@ _resetconfiguration:
 	
 #if defined(__CWCC__) && defined(CFG_VLE)
 .section .text_vle,text_vle
-#elif defined(__DCC__)
+#elif defined(__DCC__) && defined(CFG_VLE)
 	// Must be indented (diab)
 	.section .text_vle,x
+#elif defined(__DCC__) && !defined(CFG_VLE)
+	.section .text,x
 #elif defined(__GNUC__)
 .section .text
 #endif
@@ -61,7 +63,7 @@ _redled:
 
 __start:
 _start:
-#if (CFG_MPC560X)
+#if (CFG_MPC560X) || (CFG_MPC563XM)
 	// For now, close down the watchdog.
 	LOAD_ADDR_32(r8,0xFFF38000)
 	LOAD_ADDR_32(r9,0x0000c520)
@@ -99,7 +101,7 @@ init_RAM:
 #error SRAM_SIZE not defined. Add it to board/<board>/build_config.mk
 #endif
 
-	LOAD_ADDR_32(r12,SRAM_SIZE/(32*4))
+	LOAD_ADDR_32(r12,(SRAM_SIZE/(32*4)))
 	mtctr r12
 
 init_ram_loop:

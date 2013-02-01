@@ -11,7 +11,7 @@ Datasheets:
     http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC560xP
     
 Board:
-  8Mhz external crystal
+  8Mhz external crystal, for default system tick PIT no3 is used.
 
 Supported compilers:
   Code Warrior

@@ -20,9 +20,11 @@
  */
 
 #if defined(__GNUC__) || defined(__DCC__)
-
+#if defined(__APPLE__)
+	#define SECTION_RAMLOG	__attribute__ ((section ("0,.ramlog")))
+#else
    #define SECTION_RAMLOG	__attribute__ ((section (".ramlog")))
-
+#endif
 
 #elif defined(__CWCC__)
 

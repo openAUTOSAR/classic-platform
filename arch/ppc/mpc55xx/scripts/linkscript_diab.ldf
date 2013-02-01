@@ -8,6 +8,7 @@ SECTIONS
 {
 	GROUP : {
 		.rcw : {}
+#if defined(CFG_VLE)		
 		.text_vle (TEXT)	: {
 			*(.text_vle)
 			*(.vletext)
@@ -18,6 +19,18 @@ SECTIONS
 			*(.fini)
 			*(.exception_tbl)
 		}
+#else		
+		.text (TEXT)	: {
+			*(.text)
+			*(.rdata)
+			*(.rodata)
+			*(.j_class_table)
+			*(.init)
+			*(.fini)
+			*(.exception_tbl)
+		}
+#endif
+
 		.frame_info(=TEXT) : {}
 		/* constructor and destructor function ptrs                 */
 		.ctors ALIGN(4) : { ctordtor.o(.ctors) *(.ctors) }
@@ -62,12 +75,11 @@ SECTIONS
 
 		.calibration : {}  
 
-		/* TODO: Flash driver in RAM */
-		FLASHDRV (DATA) : { 
-		.=.+0x1000;
-		} 
-
 		.PPC.EMB.sdata0 (DATA) (OPTIONAL) : { }
+		
+		.uninit (=NOLOAD) ALIGN(0x10) : { 
+			*(.winidea_port .ramlog .dem_eventmemory_pri) 
+		}
 		
 		_heap_start = .;
 	} > ram

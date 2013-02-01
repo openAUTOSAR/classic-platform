@@ -21,8 +21,9 @@
 
 #include "Pwm.h"
 #include "MemMap.h"
+#if defined(USE_DET)
 #include "Det.h"
-
+#endif
 #include "mpc55xx.h"
 
 #include "Os.h"
@@ -42,6 +43,9 @@
 #elif defined(CFG_MPC5606S)
 	#define PWM_RUNTIME_CHANNEL_COUNT	48
     #define CHANNELS_OK (((Channel <= PWM_MAX_CHANNEL-1) && (Channel >= 40)) || ((Channel <= 23) && (Channel >= 16)))
+#elif defined(CFG_MPC563XM)
+	#define PWM_RUNTIME_CHANNEL_COUNT	24
+	#define CHANNELS_OK (Channel < 24)
 #else
 	#define PWM_RUNTIME_CHANNEL_COUNT	16
 	#define CHANNELS_OK (Channel < 16)
@@ -168,7 +172,7 @@ static void configureChannel(const Pwm_ChannelConfigurationType* channelConfig){
 	emiosHw = &EMIOS;
 #endif
 
-#if defined (CFG_MPC560X)
+#if defined(CFG_MPC560X) || defined(CFG_MPC563XM)
 	emiosHw->CH[channel].CCR.B.MODE = channelConfig->mode;
 	emiosHw->CH[channel].CCR.B.DMA = 0;
 	emiosHw->CH[channel].CCR.B.BSL = channelConfig->clksrc;
@@ -185,7 +189,7 @@ static void configureChannel(const Pwm_ChannelConfigurationType* channelConfig){
 
 	emiosHw->CH[channel].CBDR.R = period_ticks;
 	emiosHw->CH[channel].CCR.B.UCPRE = prescaler;
-#if defined (CFG_MPC560X)
+#if defined(CFG_MPC560X)
 	emiosHw->CH[channel].CCR.B.UCPEN = 1;
 #else
 	emiosHw->CH[channel].CCR.B.UCPREN = 1;

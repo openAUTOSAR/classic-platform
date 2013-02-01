@@ -38,11 +38,6 @@
 
 
 PduRTpBufferInfo_type PduRTpBuffers[] = {
-	{
-		.pduInfoPtr = NULL,
-		.status = PDUR_BUFFER_FREE,
-		.bufferSize = 0
-	}
 };
 
 PduRTpBufferInfo_type *PduRTpRouteBufferPtrs[] = {

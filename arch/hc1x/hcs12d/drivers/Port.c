@@ -16,7 +16,9 @@
 #include "Std_Types.h"
 #include "Port.h" /** @req PORT131 */
 #include "regs.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include <string.h>
 
 /* SHORT ON HW
@@ -313,7 +315,7 @@ void Port_RefreshPortDirection(void)
 #if ( PORTP_CONFIGURABLE == STD_ON )
     curValue = DDRP & ~(_configPtr->portPMask);
     curValue |= (_configPtr->portPDirection & _configPtr->portPMask);
-    DDRP =
+    DDRP = curValue;
 #endif
 
 #if ( PORTS_CONFIGURABLE == STD_ON )

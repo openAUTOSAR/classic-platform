@@ -23,7 +23,9 @@
 #include "regs.h"
 #include "Mcu.h"
 #include "debug.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "Os.h"
 #include "arc.h"
 #include "isr.h"

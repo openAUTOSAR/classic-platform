@@ -42,7 +42,9 @@
 #include "ComM_Dcm.h"
 #include "ComM_EcuM.h"
 #if (COMM_DEV_ERROR_DETECT == STD_ON)
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #endif
 
 /** @req COMM507  @req COMM508 */
@@ -420,6 +422,13 @@ void ComM_MainFunction(NetworkHandleType Channel) {
 	}
 
 }
+
+void ComM_MainFunction_All_Channels() {
+	for (uint8 i = 0; i < COMM_CHANNEL_COUNT; i++) {
+		ComM_MainFunction(i);
+	}
+}
+
 
 // ----------------------------------------------------------------------------
 // Internal functions

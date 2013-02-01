@@ -20,7 +20,9 @@
 #define PDUR_IF_H_
 
 #include "PduR.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 
 #if PDUR_ZERO_COST_OPERATION == STD_OFF
 
@@ -33,6 +35,7 @@ BufReq_ReturnType PduR_ARC_RouteProvideTxBuffer(const PduRRoutingPath_type *rout
 
 
 Std_ReturnType PduR_ARC_Transmit(PduIdType PduId, const PduInfoType* PduInfo, uint8 serviceId);
+void PduR_ARC_TpRxIndication(PduIdType PduId, NotifResultType Result, uint8 serviceId);
 void PduR_ARC_RxIndication(PduIdType PduId, const PduInfoType* PduInfo, uint8 serviceId);
 void PduR_ARC_TxConfirmation(PduIdType PduId, uint8 result, uint8 serviceId);
 Std_ReturnType PduR_ARC_TriggerTransmit(PduIdType PduId, PduInfoType* PduInfo, uint8 serviceId);

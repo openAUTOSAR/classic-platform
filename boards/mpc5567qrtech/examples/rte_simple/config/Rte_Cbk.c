@@ -16,34 +16,34 @@
 #include "Os.h"
 #include "Rte_Data.h"
 
-void Rte_COMCbk_Arg1() {
+void Rte_COMCbk_Arg1(void) {
 }
 
-void Rte_COMCbkTOut_Arg1() {
+void Rte_COMCbkTOut_Arg1(void) {
 }
 
-void Rte_COMCbk_Arg2() {
+void Rte_COMCbk_Arg2(void) {
 }
 
-void Rte_COMCbkTOut_Arg2() {
+void Rte_COMCbkTOut_Arg2(void) {
 }
 
-void Rte_COMCbk_ResultSig() {
+void Rte_COMCbk_ResultSig(void) {
 }
 
-void Rte_COMCbkTOut_ResultSig() {
+void Rte_COMCbkTOut_ResultSig(void) {
 }
 
-void Rte_COMCbk_FreqReqSig() {
+void Rte_COMCbk_FreqReqSig(void) {
 	Rte_FreqReqRunnable();
 }
 
-void Rte_COMCbkTOut_FreqReqSig() {
+void Rte_COMCbkTOut_FreqReqSig(void) {
 }
 
-void Rte_COMCbk_FreqIndSig() {
+void Rte_COMCbk_FreqIndSig(void) {
 }
 
-void Rte_COMCbkTOut_FreqIndSig() {
+void Rte_COMCbkTOut_FreqIndSig(void) {
 }
 

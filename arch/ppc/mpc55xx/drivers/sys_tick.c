@@ -39,7 +39,7 @@ void Os_SysTick_MPC560x( void ) {
 #endif
 
 #if defined(CFG_MPC5604P)
-void Os_SysTick_MPC5604P( void ) {
+void Os_SysTick_MPC5xxx_PIT( void ) {
     /* Clear interrupt. */
     PIT.CH[3].TFLG.B.TIF = 1;
 
@@ -49,7 +49,7 @@ void Os_SysTick_MPC5604P( void ) {
 
 void Os_SysTickInit( void ) {
 #if defined(CFG_MPC5604P)
-	ISR_INSTALL_ISR2("OsTick",Os_SysTick_MPC5604P,PIT_INT3,6,0);
+	ISR_INSTALL_ISR2("OsTick",Os_SysTick_MPC5xxx_PIT,PIT_INT3,6,0);
 #elif defined(CFG_MPC560X)
 	ISR_INSTALL_ISR2("OsTick",Os_SysTick_MPC560x,API_INT,6,0);
 #else
@@ -100,23 +100,18 @@ void Os_SysTickStart(TickType period_ticks) {
 #else
 		uint32 tmp;
 
-    	// Enable the TB
-    	tmp = get_spr(SPR_HID0);
-    	tmp |= HID0_TBEN;
-    	set_spr(SPR_HID0, tmp);
-
     	/* Initialize the Decrementer */
     	set_spr(SPR_DEC, period_ticks);
     	set_spr(SPR_DECAR, period_ticks);
 
-    	/* Set autoreload */
+    	/* Set autoreload & Enable notification */
     	tmp = get_spr(SPR_TCR);
-    	tmp |= TCR_ARE;
+    	tmp |= TCR_ARE | TCR_DIE;
     	set_spr(SPR_TCR, tmp);
 
-    	/* Enable notification */
-        tmp = get_spr(SPR_TCR);
-        tmp |= TCR_DIE;
-        set_spr(SPR_TCR, tmp );
+    	// Enable the TB
+    	tmp = get_spr(SPR_HID0);
+    	tmp |= HID0_TBEN;
+    	set_spr(SPR_HID0, tmp);
 #endif
 }

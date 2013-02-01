@@ -64,7 +64,7 @@ void Irq_Init( void ) {
 	  set_spr(SPR_IVPR,(uint32)exception_tbl);
 
 	  // TODO: The 5516 simulator still thinks it's a 5554 so setup the rest
-#if (defined(CFG_SIMULATOR) && defined(CFG_MPC5516)) || defined(CFG_MPC5567) || defined(CFG_MPC5554)  || defined(CFG_MPC5668)
+#if (defined(CFG_SIMULATOR) && defined(CFG_MPC5516)) || defined(CFG_MPC5567) || defined(CFG_MPC5554)  || defined(CFG_MPC5668) || defined(CFG_MPC563XM)
 	    set_spr(SPR_IVOR0,((uint32_t)&exception_tbl+0x0) );
 	    set_spr(SPR_IVOR1,((uint32_t)&exception_tbl+0x10) );
 	    set_spr(SPR_IVOR2,((uint32_t)&exception_tbl+0x20) );
@@ -80,11 +80,12 @@ void Irq_Init( void ) {
 	    set_spr(SPR_IVOR12,((uint32_t)&exception_tbl+0xc0) );
 	    set_spr(SPR_IVOR13,((uint32_t)&exception_tbl+0xd0) );
 	    set_spr(SPR_IVOR14,((uint32_t)&exception_tbl+0xe0) );
+	    set_spr(SPR_IVOR15,((uint32_t)&exception_tbl+0xf0) );
 #if defined(CFG_SPE)
-	    // SPE exceptions...map to dummy
-	    set_spr(SPR_IVOR32,((uint32_t)&exception_tbl+0xf0) );
-	    set_spr(SPR_IVOR33,((uint32_t)&exception_tbl+0xf0) );
-	    set_spr(SPR_IVOR34,((uint32_t)&exception_tbl+0xf0) );
+	    // SPE exceptions
+	    set_spr(SPR_IVOR32,((uint32_t)&exception_tbl+0x100) );
+	    set_spr(SPR_IVOR33,((uint32_t)&exception_tbl+0x110) );
+	    set_spr(SPR_IVOR34,((uint32_t)&exception_tbl+0x120) );
 #endif
 #endif
 
@@ -103,7 +104,7 @@ void Irq_Init( void ) {
 	#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 	  INTC.MCR.B.HVEN_PRC0 = 0; // Soft vector mode
 	  INTC.MCR.B.VTES_PRC0 = 0; // 4 byte offset between entries
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC560X)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC560X) || defined(CFG_MPC563XM)
 	  INTC.MCR.B.HVEN = 0; // Soft vector mode
 	  INTC.MCR.B.VTES = 0; // 4 byte offset between entries
 	#endif
@@ -113,7 +114,7 @@ void Irq_Init( void ) {
 	  {
 	#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 	    INTC.EOIR_PRC0.R = 0;
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC560X)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC560X) || defined(CFG_MPC563XM)
 	    INTC.EOIR.R = 0;
 	#endif
 	  }
@@ -121,7 +122,7 @@ void Irq_Init( void ) {
 	  // Accept interrupts
 	#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 	  INTC.CPR_PRC0.B.PRI = 0;
-	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC560X)
+	#elif defined(CFG_MPC5554) || defined(CFG_MPC5567) || defined(CFG_MPC560X) || defined(CFG_MPC563XM)
 	  INTC.CPR.B.PRI = 0;
 	#endif
 }
@@ -130,7 +131,7 @@ void Irq_EOI( void ) {
 #if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 	volatile struct INTC_tag *intc = &INTC;
 	intc->EOIR_PRC0.R = 0;
-#elif defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC560X)
+#elif defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC560X) || defined(CFG_MPC563XM)
 	volatile struct INTC_tag *intc = &INTC;
 	intc->EOIR.R = 0;
 #else
@@ -198,7 +199,7 @@ uint8_t Irq_GetCurrentPriority( Cpu_t cpu) {
 	} else if ( cpu == CPU_CORE1 ) {
 		prio = INTC.CPR_PRC1.B.PRI;
 	 }
-#elif defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC560X)
+#elif defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC560X) || defined(CFG_MPC563XM)
 	(void)cpu;
 	prio = INTC.CPR.B.PRI;
 #else

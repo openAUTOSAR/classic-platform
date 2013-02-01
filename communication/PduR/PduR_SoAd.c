@@ -15,9 +15,9 @@
 
 
 #include "PduR.h"
-
-
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "debug.h"
 
 #if (PDUR_ZERO_COST_OPERATION == STD_OFF) && (PDUR_SOAD_SUPPORT == STD_ON)
@@ -26,12 +26,8 @@ BufReq_ReturnType PduR_SoAdTpProvideRxBuffer(PduIdType dcmRxPduId, PduLengthType
     return PduR_ARC_ProvideRxBuffer(dcmRxPduId, sduLength, pduInfoPtr, 0x03);
 }
 
-void PduR_SoAdTpRxIndication(PduIdType dcmRxPduId, NotifResultType result)
-{
-	PduInfoType PduInfo = {
-		.SduDataPtr = &result
-	};
-	PduR_ARC_RxIndication(dcmRxPduId, &PduInfo, 0x04);
+void PduR_SoAdTpRxIndication(PduIdType dcmRxPduId, NotifResultType result) {
+	PduR_ARC_TpRxIndication(dcmRxPduId, result, 0x04);
 }
 
 BufReq_ReturnType PduR_SoAdTpProvideTxBuffer(PduIdType dcmTxPduId, PduInfoType **pduInfoPtr, PduLengthType length)

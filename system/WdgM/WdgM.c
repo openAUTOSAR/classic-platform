@@ -20,7 +20,17 @@
 
 #include "WdgM.h"
 #include "WdgIf.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
+
+#if defined(CFG_WDGM_TEST)
+#include <assert.h>
+#endif
+
+//#define USE_LDEBUG_PRINTF 1
+#include "debug.h"
+
 
 #if (WDGM_DEV_ERROR_DETECT == STD_ON)
 #define WDGM_REPORT_ERROR(_api,_errorcode) \
@@ -167,87 +177,113 @@ Std_ReturnType WdgM_GetGlobalStatus (WdgM_AliveSupervisionStatusType *Status)
 }
 
 /** @req WDGM154 **/
-Std_ReturnType WdgM_SetMode(WdgM_ModeType Mode)
-{
-  Std_ReturnType ret = E_NOT_OK;
-  /** @req WDGM021 **/
-  VALIDATE((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_SETMODE_ID, WDGM_E_NO_INIT);
-  /** @req WDGM020 **/
-  VALIDATE(((Mode >= 0) && (Mode < WDGM_NBR_OF_MODES)), WDGM_SETMODE_ID, WDGM_E_PARAM_MODE);
+Std_ReturnType WdgM_SetMode(WdgM_ModeType Mode) {
+	Std_ReturnType ret = E_NOT_OK;
+	/** @req WDGM021 **/
+	VALIDATE((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_SETMODE_ID, WDGM_E_NO_INIT);
+	/** @req WDGM020 **/
+	VALIDATE(((Mode >= 0) && (Mode < WDGM_NBR_OF_MODES)), WDGM_SETMODE_ID, WDGM_E_PARAM_MODE);
 
-  const WdgM_ModeConfigType * modeConfigPtr = &wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[Mode];
-  const WdgM_ModeConfigType * oldModeConfigPtr = &wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode];
+	WdgM_AliveSupervisionStatusType maxLocal = WDGM_ALIVE_OK;
+	WdgM_AliveEntityStateType *entityStatePtr;
+
+	const WdgM_ModeConfigType * modeConfigPtr =	&wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[Mode];
+	const WdgM_ModeConfigType * oldModeConfigPtr = &wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode];
 
 #if WDGM_OFF_MODE_ENABLED == STD_OFF
-    /** @req WDGM031 **/
-  VALIDATE((modeConfigPtr->WdgM_Trigger->WdgM_WatchdogMode != WDGIF_OFF_MODE),WDGM_SETMODE_ID, WDGM_E_DISABLE_NOT_ALLOWED);
+	/** @req WDGM031 **/
+	VALIDATE((modeConfigPtr->WdgM_Trigger->WdgM_WatchdogMode != WDGIF_OFF_MODE),WDGM_SETMODE_ID, WDGM_E_DISABLE_NOT_ALLOWED);
 #endif
 
-  WdgIf_ModeType mode;
-  uint8 deviceIndex;
-  uint8 i;
+	WdgIf_ModeType mode;
+	uint8 deviceIndex;
+	uint8 i;
+	boolean newModeActivated;
+	boolean oldModeActivated;
 
-  /** @req WDGM145 **/
-  if (wdgMInternalState.WdgM_GlobalSupervisionStatus == WDGM_ALIVE_OK)
-  {
-	  /* Compare activation type between new and old mode. */
-	  if (oldModeConfigPtr->WdgM_Activation.WdgM_IsGPTActivated != modeConfigPtr->WdgM_Activation.WdgM_IsGPTActivated)
-	  {
-		  /** @req WDGM188 **/
-		  if (modeConfigPtr->WdgM_Activation.WdgM_IsGPTActivated)
-		  {
-			  #if WDGM_GPT_USED == STD_ON
-				  const WdgM_ActivationGPTType * gptConfigPtr = &modeConfigPtr->WdgM_Activation.WdgM_ActivationGPT;
-				  /* New mode is activated from GPT callback. Start GPT. */
-				  Gpt_StartTimer(gptConfigPtr->WdgM_GptChannelRef, gptConfigPtr->WdgM_GptCycle);
-				  Gpt_EnableNotification(gptConfigPtr->WdgM_GptChannelRef);
-			  #else
-				  WDGM_REPORT_ERROR( WDGM_SETMODE_ID, WDGM_E_PARAM_MODE );
-			  #endif
-		  }
-		  /** @req WDGM187 **/
-		  else
-		  {
-			  /* Only if a mode already have been configured. */
-			  if (wdgMInternalState.WdgMModeConfigured)
-			  {
-				  #if WDGM_GPT_USED == STD_ON
-					  /* Old mode was GPT driven, but not new mode. Disable GPT. */
-					  const WdgM_ActivationGPTType * oldGptConfigPtr = &oldModeConfigPtr->WdgM_Activation.WdgM_ActivationGPT;
-					  Gpt_DisableNotification(oldGptConfigPtr->WdgM_GptChannelRef);
-					  Gpt_StopTimer(oldGptConfigPtr->WdgM_GptChannelRef);
-				  #else
-				  	  WDGM_REPORT_ERROR( WDGM_SETMODE_ID, WDGM_E_PARAM_MODE );
-				  #endif
-			  }
-			  else
-			  {
-				  /* Do nothing since no mode have been configured. */
-			  }
-		  }
-	  }
-	  else
-	  {
-		  /* No activation change needed. */
-	  }
-	  /* Write new mode to internal state. */
-	  wdgMInternalState.WdgMActiveMode = Mode;
+	/** @req WDGM145 **/
+	if (wdgMInternalState.WdgM_GlobalSupervisionStatus == WDGM_ALIVE_OK) {
+		/* Compare activation type between new and old mode. */
+		if (oldModeConfigPtr->WdgM_Activation.WdgM_IsGPTActivated
+				!= modeConfigPtr->WdgM_Activation.WdgM_IsGPTActivated) {
+			/** @req WDGM188 **/
+			if (modeConfigPtr->WdgM_Activation.WdgM_IsGPTActivated) {
+#if WDGM_GPT_USED == STD_ON
+				const WdgM_ActivationGPTType * gptConfigPtr = &modeConfigPtr->WdgM_Activation.WdgM_ActivationGPT;
+				/* New mode is activated from GPT callback. Start GPT. */
+				Gpt_StartTimer(gptConfigPtr->WdgM_GptChannelRef, gptConfigPtr->WdgM_GptCycle);
+				Gpt_EnableNotification(gptConfigPtr->WdgM_GptChannelRef);
+#else
+				WDGM_REPORT_ERROR( WDGM_SETMODE_ID, WDGM_E_PARAM_MODE );
+#endif
+			}
+			/** @req WDGM187 **/
+			else {
+				/* Only if a mode already have been configured. */
+				if (wdgMInternalState.WdgMModeConfigured) {
+#if WDGM_GPT_USED == STD_ON
+					/* Old mode was GPT driven, but not new mode. Disable GPT. */
+					const WdgM_ActivationGPTType * oldGptConfigPtr = &oldModeConfigPtr->WdgM_Activation.WdgM_ActivationGPT;
+					Gpt_DisableNotification(oldGptConfigPtr->WdgM_GptChannelRef);
+					Gpt_StopTimer(oldGptConfigPtr->WdgM_GptChannelRef);
+#else
+					WDGM_REPORT_ERROR( WDGM_SETMODE_ID, WDGM_E_PARAM_MODE );
+#endif
+				} else {
+					/* Do nothing since no mode have been configured. */
+				}
+			}
+		} else {
+			/* No activation change needed. */
+		}
 
-	  /* Pass mode to all watchdog instances. */
-	  for (i = 0; i < wdgMInternalState.WdgM_ConfigPtr->WdgM_General->WdgM_NumberOfWatchdogs;i++)
-	  {
-		  mode = wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[Mode].WdgM_Trigger[i].WdgM_WatchdogMode;
-		  deviceIndex = wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[Mode].WdgM_Trigger[i].WdgM_WatchdogRef->WdgM_DeviceRef->WdgIf_DeviceIndex;
-		  /** @req WDGM139 **/
-		  if (E_NOT_OK == WdgIf_SetMode (deviceIndex, mode))
-		  {
-			  wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_STOPPED;
-		  }
-	  }
-	  ret = E_OK;
-  }
-  wdgMInternalState.WdgMModeConfigured = TRUE;
-  return (ret);
+		for ( WdgM_SupervisedEntityIdType SEid = 0; SEid < WDGM_NBR_OF_ALIVE_SIGNALS; SEid++) {
+			/* 4 Cases
+			 *   old new
+			 * 1  0  0  WDGM_ALIVE_DEACTIVATED
+			 * 2  0  1  WDGM_ALIVE_DEACTIVATED
+			 * 3  1  0  WDGM_ALIVE_OK
+			 * 4  1  1  Retain
+			 */
+			entityStatePtr = GET_ENTITY_STATE_PTR(SEid);
+			newModeActivated = modeConfigPtr->WdgM_AliveSupervisionPtr[SEid].WdgM_ActivationActivated;
+			oldModeActivated  = oldModeConfigPtr->WdgM_AliveSupervisionPtr[SEid].WdgM_ActivationActivated;
+			if (!newModeActivated) {
+				/* @req 3.1.5/WDM0183 */ /* If deactivated in new mode set to WDGM_ALIVE_DEACTIVATED */
+				entityStatePtr->SupervisionStatus = WDGM_ALIVE_DEACTIVATED;
+			} else if (!oldModeActivated) {
+				/* !req 3.1.5/WDM0184 */ /* If deactivated in old mode set new to WDGM_ALIVE_OK */
+				entityStatePtr->SupervisionStatus = WDGM_ALIVE_OK;
+			} else if ( newModeActivated && oldModeActivated ) {
+				/* @req 3.1.5/WDM0182 Retain mode */
+				maxLocal = MAX(entityStatePtr->SupervisionStatus,maxLocal);
+			}
+
+			entityStatePtr->AliveCounter = 0;
+			entityStatePtr->SupervisionCycle = 0;
+			entityStatePtr->NbrOfFailedRefCycles = 0;
+		}
+
+		/* @req 3.1.5/WDM0185 Compute new global supervision status*/
+		wdgMInternalState.WdgM_GlobalSupervisionStatus = maxLocal;
+
+		/* Write new mode to internal state. */
+		wdgMInternalState.WdgMActiveMode = Mode;
+
+		/* Pass mode to all watchdog instances. */
+		for (i = 0; i < wdgMInternalState.WdgM_ConfigPtr->WdgM_General->WdgM_NumberOfWatchdogs; i++) {
+			mode = wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[Mode].WdgM_Trigger[i].WdgM_WatchdogMode;
+			deviceIndex = wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[Mode].WdgM_Trigger[i].WdgM_WatchdogRef->WdgM_DeviceRef->WdgIf_DeviceIndex;
+			/** @req WDGM139 **/
+			if (E_NOT_OK == WdgIf_SetMode(deviceIndex, mode)) {
+				wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_STOPPED;
+			}
+		}
+
+		ret = E_OK;
+	}
+	wdgMInternalState.WdgMModeConfigured = TRUE;
+	return (ret);
 }
 
 /** @req WDGM168 **/
@@ -300,6 +336,36 @@ void WdgM_Init(const WdgM_ConfigType *ConfigPtr)
     entityStatePtr->SupervisionCycle     = 0;
     entityStatePtr->NbrOfFailedRefCycles = 0;
   }
+
+
+#if defined(CFG_WDGM_TEST)
+  /* WDGM generator validation */
+  {
+	  enum WdgM_Mode mode;
+
+	  LDEBUG_PRINTF("Mode  ID   Found\n",SEid,cSID, mode );
+	  for( mode = 0; mode < WDGM_NBR_OF_MODES; mode++ ) {
+
+		  /* For each mode verify the configuration */
+		  modeConfigPtr = &wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[mode];
+		  assert( modeConfigPtr->WdgM_ModeId == mode );
+
+		  for (SEid = 0; SEid < WDGM_NBR_OF_ALIVE_SIGNALS; SEid++) {
+			  const WdgM_AliveSupervisionType* aliveSupervisionPtr = &(modeConfigPtr->WdgM_AliveSupervisionPtr[SEid]);
+			  enum WdgM_SupervisedEntityId cSID = aliveSupervisionPtr->WdgM_SupervisedEntityRef->WdgM_SupervisedEntityID;
+
+			  LDEBUG_PRINTF("%4d %4d ",mode, SEid  );
+			  if( cSID != SEid ) {
+				  assert(0);
+				  LDEBUG_PRINTF("%4d\n",cSID);
+			  } else {
+				  LDEBUG_PRINTF("OK\n");
+			  }
+		  }
+	  }
+  }
+#endif
+
 
   /* Start initial mode. Raise error if initial mode was not entered properly. */
   VALIDATE_NO_RETURNVAL((WdgM_SetMode(initialMode) == E_OK),WDGM_INIT_ID, WDGM_E_PARAM_CONFIG);
@@ -552,4 +618,19 @@ void WdgM_Cbk_GptNotification (void)
 		wdgm_Trigger();
 	}
 }
+
+const WdgM_AliveSupervisionType * WdgM_Arc_GetAliveSupervisionPtr( enum WdgM_Mode mode, enum WdgM_SupervisedEntityId supId )
+{
+
+  const WdgM_ModeConfigType * modeConfigPtr = &wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[mode];
+
+  return modeConfigPtr->WdgM_AliveSupervisionPtr;
+}
+
+WdgM_AliveEntityStateType *WdgM_Arc_GetSupervisionPtr( enum WdgM_SupervisedEntityId supId ) {
+	 return GET_ENTITY_STATE_PTR(supId);
+}
+
+
+
 
