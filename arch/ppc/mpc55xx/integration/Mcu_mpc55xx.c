@@ -24,6 +24,58 @@
 /* ----------------------------[private variables]---------------------------*/
 /* ----------------------------[private functions]---------------------------*/
 
+/*
+ * Board_Cfg.c
+ *
+ *  Created on: Feb 1, 2013
+ *      Author: mahi
+ */
+
+struct TlbEntry {
+	uint32 entry;
+	uint32 mas0;
+	uint32 mas1;
+	uint32 mas2;
+	uint32 mas3;
+};
+
+
+struct TlbEntry TlbTable  = {
+	// TLB Entry 0 =  1M Internal flash
+	{
+			0,
+			(0x10000000 + (0<<16)),
+			(0xC0000000 + MAS1_TSIZE_4M),
+			(FLASH_START + VLE_VAL),
+			(FLASH_START + MAS3_FULL_ACCESS),
+	},
+	// TLB Entry 1 =  Peripheral bridge and BAM
+	{
+			1,
+			(0x10000000 + (1<<16)),
+			(0xC0000000 + MAS1_TSIZE_1M),
+			(PERIPHERAL_START + VLE_VAL +  MAS2_I),
+			(PERIPHERAL_START + MAS3_FULL_ACCESS),
+	},
+	// TLB Entry 2 =  External RAM.
+	{
+			2,
+			(0x10000000 + (0<<16)),
+			(0xC0000000 + MAS1_TSIZE_4M),
+			(FLASH_START + VLE_VAL),
+			(FLASH_START + MAS3_FULL_ACCESS),
+	},
+	// TLB Entry 3 =  Internal SRAM
+	{
+			3,
+			(0x10000000+(3<<16)),
+			(0xC0000000 + MAS1_TSIZE_256K),
+			(SRAM_START + VLE_VAL + MAS2_I),
+			(SRAM_START + MAS3_FULL_ACCESS),
+	},
+};
+
+
 
 #if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 
