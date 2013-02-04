@@ -50,7 +50,7 @@ extern Com_Arc_Config_type Com_Arc_Config;
 		return __VA_ARGS__; \
 	} \
 
-#define PDU_ID_CHECK_NO_RETURN(PduId,ApiId,...) \
+#define PDU_ID_CHECK_NO_RETURN(PduId,ApiId) \
 	if (PduId >= COM_N_IPDUS) { \
 		DET_REPORTERROR(COM_MODULE_ID, COM_INSTANCE_ID, ApiId, COM_INVALID_PDU_ID); \
 	} \
