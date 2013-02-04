@@ -490,6 +490,11 @@ static void Can_BusOff(int unit)
         canHw->ESR.B.BOFFINT = 1;
 
         Can_AbortTx(canHw, canUnit); // CANIF273
+
+        if (canHw->CR.B.BOFFREC) {
+              	canHw->CR.B.BOFFREC = 0;
+              	canHw->CR.B.BOFFREC = 1;
+        }
     }
 }
 
@@ -1026,6 +1031,7 @@ void Can_InitController(uint8 controller,
         canHw->MCR.B.IDAM = 0;      /* We want extended id's to match with */
     }
     canHw->MCR.B.BCC = 1;           /* Enable all nice features */
+    canHw->MCR.B.AEN = 1;           /* Enable Abort */
 
     /* Use Fsys derivate */
     canHw->CR.B.CLKSRC = 1;
