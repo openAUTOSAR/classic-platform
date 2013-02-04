@@ -67,6 +67,7 @@ extern Com_Arc_Config_type Com_Arc_Config;
 #define DET_REPORTERROR(_x,_y,_z,_q)
 
 #define PDU_ID_CHECK(PduId,ApiId,...)
+#define PDU_ID_CHECK_NO_RETURN(PduId,ApiId)
 #define VALIDATE_SIGNAL(PduId, ApiId, ...)
 #endif
 
