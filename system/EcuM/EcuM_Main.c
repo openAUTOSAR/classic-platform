@@ -506,27 +506,6 @@ void EcuM_MainFunction(void) {
 #endif
 
 	switch (internal_data.current_state) {
-	case ECUM_STATE_STARTUP_TWO:
-	{
-		NvM_RequestResultType readAllResult;
-
-		if( internal_data.nvmReadAllTimer == 0 ) {
-			internal_data.nvmReadAllTimer = internal_data.config->EcuMNvramReadAllTimeout;
-			EcuM_StartupTwo();
-		}
-
-		NvM_GetErrorStatus(0, &readAllResult);
-		if ( readAllResult != NVM_REQ_PENDING ) {
-			/* We are done */
-			EcuM_StartupPost();
-		} else {
-			internal_data.nvmReadAllTimer--;
-			if( internal_data.nvmReadAllTimer == 0 ) {
-				EcuM_StartupPost();
-			}
-		}
-		break;
-
 	case ECUM_STATE_APP_RUN:
 		/* RUN II state */
 		in_state_appRun();
@@ -706,7 +685,7 @@ void EcuM_MainFunction(void) {
 				/* Call wakeup indication for all validated events with a channel assigned */
 				if ( (wkupCfgPtr->EcuMComMChannel != ECUM_COMM_CHANNEL_ILL) &&
 						wkupCfgPtr->EcuMWakeupSourceId & validated ) {
-					ComM_EcuM_WakeupIndication(wkupCfgPtr->EcuMComMChannel);
+					ComM_EcuM_WakeUpIndication(wkupCfgPtr->EcuMComMChannel);
 				}
 			}
 #endif

@@ -188,28 +188,11 @@ void EcuM_Init(void) {
 }
 
 
-static void EcuM_StartupTwo_Post(void) {
-
-	// Initialize drivers that need NVRAM data
-	EcuM_AL_DriverInitThree(internal_data.config);
-
-	// TODO: Indicate mode change to RTE
-
-	// If coming from startup sequence, enter Run mode
-	//	if (internal_data.current_state == ECUM_STATE_STARTUP_TWO)
-	EcuM_enter_run_mode();
-
-	/* We have NvM timeout */
-	set_current_state(ECUM_STATE_SLEEP);
-}
 /*
- * The order defined here is found in 3.1.5/EcuM2411.
- *
- * Since there this function is blocking the caller MUST be
- * EcuM_MainFunction(). (otherwise it depends on OS timers)
- *
+ * The order defined here is found in 3.1.5/EcuM2411
  */
-void EcuM_StartupTwo(void) {
+void EcuM_StartupTwo(void)
+{
 	//TODO:  Validate that we are in state STARTUP_ONE.
 #if defined(USE_NVM)
 	extern CounterType Os_Arc_OsTickCounter;
@@ -219,17 +202,14 @@ void EcuM_StartupTwo(void) {
 	StatusType tickTimerStatus;
 #endif
 
-	set_current_state(ECUM_STATE_STARTUP_TWO);
-
 	// Initialize the BSW scheduler
 #if defined(USE_SCHM)
 	SchM_Init();
 #endif
 
 #if defined(USE_WDGM)
-	if( internal_data.config->EcuMWdgMConfig != NULL )
-	{
-		WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMStartupMode);
+	if( internal_data.config->EcuMWdgMConfig != NULL ) {
+	  WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMStartupMode);
 	}
 #endif
 
@@ -246,7 +226,50 @@ void EcuM_StartupTwo(void) {
 #if defined(USE_RTE)
 	Rte_Start();
 #endif
+
+	set_current_state(ECUM_STATE_STARTUP_TWO);
+
+#if defined(USE_NVM)
+
+#if 0
+	/* Wait for the NVM job (NvmReadAll) to terminate. This assumes that:
+	 * - A task runs the memory MainFunctions, e.g. Ea_MainFunction(), Eep_MainFunction()
+	 *    Prio: HIGH
+	 * - A task runs the service functions for EcuM, Nvm.
+	 *    Prio: MIDDLE
+	 * - This task:
+	 *    Prio: LOW  (So that the service functions for the other may run)
+	 */
+	do {
+		/* Read the multiblock status */
+		NvM_GetErrorStatus(0, &readAllResult);
+		tickTimerElapsed = OS_TICKS2MS_OsTick(GetOsTick() - tickTimerStart);
+		/* The timeout EcuMNvramReadAllTimeout is in ms */
+	} while( (readAllResult == NVM_REQ_PENDING) && (tickTimerElapsed < internal_data.config->EcuMNvramReadAllTimeout) );
+#else
+	// Wait for the NVM job (NvmReadAll) to terminate
+		do {
+			NvM_GetErrorStatus(0, &readAllResult);	// Read the multiblock status
+			tickTimer = tickTimerStart;	// Save this because the GetElapsedCounterValue() will destroy it.
+			tickTimerStatus =  GetElapsedCounterValue(Os_Arc_OsTickCounter, &tickTimer, &tickTimerElapsed);
+			if (tickTimerStatus != E_OK) {
+				DET_REPORTERROR(MODULE_ID_ECUM, 0, ECUM_ARC_STARTUPTWO_ID, ECUM_E_ARC_TIMERERROR);
+			}
+		} while( (readAllResult == NVM_REQ_PENDING) && (tickTimerElapsed < internal_data.config->EcuMNvramReadAllTimeout) );
+#endif
+#endif
+
+	// Initialize drivers that need NVRAM data
+	EcuM_AL_DriverInitThree(internal_data.config);
+
+	// TODO: Indicate mode change to RTE
+
+	// If coming from startup sequence, enter Run mode
+//	if (internal_data.current_state == ECUM_STATE_STARTUP_TWO)
+		EcuM_enter_run_mode();
+
 }
+
 
 // Typically called from OS shutdown hook
 void EcuM_Shutdown(void) {
