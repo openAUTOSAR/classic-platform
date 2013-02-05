@@ -67,6 +67,7 @@
 #define		PORT_FUNC2			(PORT_BIT4)
 #define		PORT_FUNC3			(PORT_BIT4|PORT_BIT5)
 #define		PORT_FUNC4			(PORT_BIT3)
+#define 	PORT_FUNC5			(PORT_BIT2)
 
 #define		PORT_PCR_RESET		(0)
 #define		PORT_GPDO_RESET		(0)

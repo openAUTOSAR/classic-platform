@@ -66,7 +66,9 @@
 #define DEBOUNCE_FDC_TEST_PASSED -128
 
 #if  ( DEM_DEV_ERROR_DETECT == STD_ON )
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 /** @req DEM117 */
 #define VALIDATE_RV(_exp,_api,_err,_rv ) \
         if( !(_exp) ) { \

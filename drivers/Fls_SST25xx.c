@@ -53,7 +53,9 @@
 #include "Fls.h"
 #include "Fls_SST25xx.h"
 #include "Spi.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #if defined(USE_DEM)
 #include "Dem.h"
 #endif

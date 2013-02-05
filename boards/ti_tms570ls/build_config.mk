@@ -36,7 +36,7 @@ MOD_AVAIL+=RAMLOG
 # CRC
 MOD_AVAIL+=CRC32 CRC16
 # Required modules
-MOD_USE += MCU KERNEL ECUM DET
+MOD_USE += MCU KERNEL ECUM
 
 #
 # Extra defines 

@@ -1,0 +1,54 @@
+
+
+
+The Freescale MPC5634M is an PowerPC process with a e200z335 core  
+	
+Datasheets:
+  Eval board:
+      http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=TRK-MPC5634M
+     
+  MPC563XM
+    http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC563xM
+    
+Board:
+  8Mhz external crystal.
+
+Supported compilers:
+  gcc, Code Warrior, Diab. GCC does not support VLE so in order to use you must remove 
+  
+  # CFG (y/n) macros
+CFG=PPC E200Z0 MPC55XX MPC563XM MPC5634M BRD_MPC5634M_TRK #VLE
+
+in build_config.mk
+  
+  
+SystemTick:
+  decrementer is used for generating system clock
+  
+Info:	
+  MPC5634M
+  CPU:		 e200z335
+  Freq:		 64 Mhz PLL, prediv=1, mfd=12, rfd=0
+  Flash: 	 1,5MB, flash
+  RAM:       94K, ECC
+  
+Memory Map:
+ 0x0000_0000 -> 0x0017_FFFF   Flash
+ 0x4000_0000 -> 0x4001_77FF   SRAM
+ 
+CAN and LIN: In order to use CAN or LIN the MC33905 circuit need to be initialized accordingly using DSPI. 
+             Contact Freescale support for source code. Same init as for mpc5604b_trk.
+             
+             CAN C only supports 32 mailboxes although CAN A supports 64...weird...
+
+             CAN C never tested, only run in loopback mode.
+             
+PWM: For channel configuration See chapter 21.1.2.1 Channel descriptions. 
+    NOTE: Not all channels can be used as PWM.
+          Not all channels can use all modes,
+          Not all channels have internal counter
+          
+             
+SPI_B: Tested ok with external eeprom.
+SPI_C: Never tested
+

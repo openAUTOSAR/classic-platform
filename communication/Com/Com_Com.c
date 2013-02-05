@@ -28,7 +28,9 @@
 #include "Com_misc.h"
 #include "debug.h"
 #include "PduR.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "Cpu.h"
 
 Com_BufferPduStateType Com_BufferPduState[COM_N_IPDUS];
@@ -141,6 +143,7 @@ uint8 Com_SendDynSignal(Com_SignalIdType SignalId, const void* SignalDataPtr, ui
 	if (isPduBufferLocked(getPduId(IPdu))) {
 		return COM_BUSY;
 	}
+
 	uint8 signalLength = Signal->ComBitSize / 8;
 	Com_BitPositionType bitPosition = Signal->ComBitPosition;
 	if (signalLength < Length) {
@@ -187,9 +190,7 @@ Std_ReturnType Com_TriggerTransmit(PduIdType ComTxPduId, PduInfoType *PduInfoPtr
 	return E_OK;
 }
 
-
-//lint -esym(904, Com_TriggerIPduSend) //PC-Lint Exception of rule 14.7
-void Com_TriggerIPduSend(PduIdType ComTxPduId) {
+Std_ReturnType Com_Internal_TriggerIPduSend(PduIdType ComTxPduId) {
 	PDU_ID_CHECK(ComTxPduId, 0x17, E_NOT_OK);
 
 	const ComIPdu_type *IPdu = GET_IPdu(ComTxPduId);
@@ -197,8 +198,12 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
     imask_t state;
     Irq_Save(state);
 
+    if( isPduBufferLocked(ComTxPduId) ) {
+    	return E_NOT_OK;
+    }
+
 	// Is the IPdu ready for transmission?
-	if (Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduMinimumDelayTimer == 0) {
+	if (Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduMinimumDelayTimer == 0 && Arc_IPdu->Com_Arc_IpduStarted) {
 
         //lint --e(725)	Suppress PC-Lint warning "Expected positive indentation...". What means?
 		// Check callout status
@@ -207,7 +212,7 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
 				// TODO Report error to DET.
 				// Det_ReportError();
 			    Irq_Restore(state);
-				return;
+				return E_NOT_OK;
 			}
 		}
 		PduInfoType PduInfoPackage;
@@ -229,14 +234,21 @@ void Com_TriggerIPduSend(PduIdType ComTxPduId) {
 			}
 		} else {
 			UnlockTpBuffer(getPduId(IPdu));
+			return E_NOT_OK;
 		}
 
 		// Reset miminum delay timer.
 		Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduMinimumDelayTimer = IPdu->ComTxIPdu.ComTxIPduMinimumDelayFactor;
 	} else {
-		//DEBUG(DEBUG_MEDIUM, "failed (MDT)!\n", ComTxPduId);
+		return E_NOT_OK;
 	}
     Irq_Restore(state);
+    return E_OK;
+
+}
+//lint -esym(904, Com_TriggerIPduSend) //PC-Lint Exception of rule 14.7
+void Com_TriggerIPduSend(PduIdType ComTxPduId) {
+	Com_Internal_TriggerIPduSend(ComTxPduId);
 }
 
 //lint -esym(904, Com_RxIndication) //PC-Lint Exception of rule 14.7

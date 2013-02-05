@@ -62,7 +62,9 @@
 #include <string.h>
 
 #if (CANNM_DEV_ERROR_DETECT == STD_ON)
+#if defined(USE_DET)
 #include "Det.h"				/** @req CANNM082 */
+#endif
 #endif
 #if defined(USE_DEM)
 #include "Dem.h"				/** @req CANNM082 */
@@ -434,6 +436,12 @@ void CanNm_MainFunction( NetworkHandleType nmChannelHandle ) {
 		CanNm_Internal_TickWaitBusSleepTime(ChannelConf, ChannelInternal);  /**< @req CANNM115.2 */
 	} else {
 		//Nothing to be done
+	}
+}
+
+void CanNm_MainFunction_All_Channels() {
+	for (uint8 i = 0; i < CANNM_CHANNEL_COUNT; i++) {
+		CanNm_MainFunction(i);
 	}
 }
 

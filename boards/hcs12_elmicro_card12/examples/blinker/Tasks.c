@@ -21,8 +21,8 @@
 // #define USE_LDEBUG_PRINTF // Uncomment this to turn debug statements on.
 #include "debug.h"
 
-// Callback when the FreqReq PDU has arrived on COM
-boolean IncommingFreqReq(PduIdType PduId, const uint8 *IPduData)
+// Callback when the FreqReq signal has arrived on COM
+void IncommingFreqReq(void)
 {
 	SetEvent(TASK_ID_ComReceiveTask, EVENT_MASK_FreqReciveEvent);
 

@@ -19,7 +19,9 @@
  *      Author: jonte
  */
 #include "Std_Types.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "Mcu.h"
 #include "Os.h"
 #include "Pwm.h"

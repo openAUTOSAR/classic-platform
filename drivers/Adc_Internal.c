@@ -15,7 +15,9 @@
 
 #include "Modules.h"
 #include "Adc.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "Os.h"
 #include "arc.h"
 #include "Adc_Internal.h"

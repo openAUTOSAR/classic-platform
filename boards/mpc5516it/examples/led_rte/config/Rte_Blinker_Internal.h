@@ -23,6 +23,6 @@
 
 Std_ReturnType Rte_Call_Blinker_LED_Port_Set(const DigitalLevel value);
 
-void BlinkerRunnable();
+void BlinkerRunnable(void);
 
 #endif

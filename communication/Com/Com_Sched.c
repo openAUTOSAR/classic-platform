@@ -29,8 +29,7 @@
 #define timerDec(timer) \
 	if (timer > 0) { \
 		timer = timer - 1; \
-	} \
-
+	}
 
 
 void Com_MainFunctionRx(void) {
@@ -125,23 +124,23 @@ void Com_MainFunctionTx(void) {
 					if ( (Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeRepetitionPeriodTimer == 0)
 						&& (Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduMinimumDelayTimer == 0) ) {
 
-						Com_TriggerIPduSend(i);
+						if (Com_Internal_TriggerIPduSend(i) == E_OK) {
+							// Reset periodic timer
+							Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeRepetitionPeriodTimer = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeRepetitionPeriodFactor;
 
-						// Reset periodic timer
-						Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeRepetitionPeriodTimer = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeRepetitionPeriodFactor;
-
-						// Register this nth-transmission.
-						Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduNumberOfRepetitionsLeft--;
+							// Register this nth-transmission.
+							Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduNumberOfRepetitionsLeft--;
+						}
 					}
 				}
 
 				// Is it time for a cyclic transmission?
 				if ( (Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeTimePeriodTimer == 0) && (Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduMinimumDelayTimer == 0) ) {
 
-					Com_TriggerIPduSend(i);
-
-					// Reset periodic timer.
-					Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeTimePeriodTimer = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeTimePeriodFactor;
+					if (Com_Internal_TriggerIPduSend(i) == E_OK) {
+						// Reset periodic timer.
+						Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeTimePeriodTimer = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeTimePeriodFactor;
+					}
 				}
 
 			// If IPDU has direct transmission mode.
@@ -152,13 +151,13 @@ void Com_MainFunctionTx(void) {
 
 					// Is it time for a transmission?
 					if ( (Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeRepetitionPeriodTimer == 0) && (Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduMinimumDelayTimer == 0) ) {
-						Com_TriggerIPduSend(i);
+						if (Com_Internal_TriggerIPduSend(i) == E_OK) {
+							// Reset periodic timer
+							Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeRepetitionPeriodTimer = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeRepetitionPeriodFactor;
 
-						// Reset periodic timer
-						Arc_IPdu->Com_Arc_TxIPduTimers.ComTxModeRepetitionPeriodTimer = IPdu->ComTxIPdu.ComTxModeTrue.ComTxModeRepetitionPeriodFactor;
-
-						// Register this nth-transmission.
-						Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduNumberOfRepetitionsLeft--;
+							// Register this nth-transmission.
+							Arc_IPdu->Com_Arc_TxIPduTimers.ComTxIPduNumberOfRepetitionsLeft--;
+						}
 					}
 				}
 

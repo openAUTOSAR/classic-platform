@@ -31,7 +31,9 @@
 #include <string.h>
 
 #include "Pwm.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "Os.h"
 #include "Mcu.h"
 #include "regs.h"

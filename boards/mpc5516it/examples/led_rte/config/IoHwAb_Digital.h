@@ -22,7 +22,7 @@
 /**************************************** Digital outputs *****************************************/
 
 #define IOHWAB_SIGNAL_DIGITALSIGNAL_LED4	0
-Std_ReturnType IoHwAb_SetDigitalSignal_Led4(IoHwAb_LevelType newValue, IoHwAb_StatusType *status);
+Std_ReturnType IoHwAb_Set_Digital_DigitalSignal_Led4(IoHwAb_LevelType newValue, IoHwAb_StatusType *status);
 
 /***************************************** Digital inputs *****************************************/
 

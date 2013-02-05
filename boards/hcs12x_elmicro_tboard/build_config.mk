@@ -16,7 +16,7 @@ MOD_AVAIL+=COMM NM CANNM CANSM NVM MEMIF EA FEE
 MOD_AVAIL+=CRC32 CRC16
 # Needed by us (These become USE_XXX=y and def-y += USE_XXX )
 # Required modules
-MOD_USE += MCU KERNEL ECUM DET
+MOD_USE += MCU KERNEL ECUM
 
 
 # Default cross compiler

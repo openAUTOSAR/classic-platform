@@ -19,8 +19,8 @@
 
 #include "Rte_Type.h"
 
-UInt16 Rte_IRead_LoggerRunnable_Result_result();
+UInt16 Rte_IRead_LoggerRunnable_Result_result(void);
 
-void LoggerRunnable();
+void LoggerRunnable(void);
 
 #endif

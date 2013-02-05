@@ -49,7 +49,7 @@ Rte_CDS_Logger2 Rte_Inst_Logger2 =
 	.Logger2Runnable_Result_result = &Rte_Buf_Logger2Runnable_Resultresult_ibuffer,
 };
 
-void Rte_PRE_TesterRunnable() {
+void Rte_PRE_TesterRunnable(void) {
 	GetResource(RES_SCHEDULER);
 
 	uint8 Arg1_buf = 0;
@@ -64,7 +64,7 @@ void Rte_PRE_TesterRunnable() {
 
 }
 
-void Rte_PRE_FreqReqRunnable() {
+void Rte_PRE_FreqReqRunnable(void) {
 	GetResource(RES_SCHEDULER);
 
 	uint32 FreqReqSig_buf = 0;
@@ -76,7 +76,7 @@ void Rte_PRE_FreqReqRunnable() {
 
 }
 
-void Rte_PRE_LoggerRunnable() {
+void Rte_PRE_LoggerRunnable(void) {
 	GetResource(RES_SCHEDULER);
 
 	Rte_Inst_Logger.LoggerRunnable_Result_result->value =
@@ -86,7 +86,7 @@ void Rte_PRE_LoggerRunnable() {
 
 }
 
-void Rte_PRE_Logger2Runnable() {
+void Rte_PRE_Logger2Runnable(void) {
 	GetResource(RES_SCHEDULER);
 
 	Rte_Inst_Logger2.Logger2Runnable_Result_result->value =
@@ -96,7 +96,7 @@ void Rte_PRE_Logger2Runnable() {
 
 }
 
-void Rte_POST_TesterRunnable() {
+void Rte_POST_TesterRunnable(void) {
 	GetResource(RES_SCHEDULER);
 
 	uint8 ResultSig_buf =
@@ -110,7 +110,7 @@ void Rte_POST_TesterRunnable() {
 
 }
 
-void Rte_POST_FreqReqRunnable() {
+void Rte_POST_FreqReqRunnable(void) {
 	GetResource(RES_SCHEDULER);
 
 	uint32 FreqIndSig_buf =
@@ -121,13 +121,13 @@ void Rte_POST_FreqReqRunnable() {
 
 }
 
-void Rte_TesterRunnable() {
+void Rte_TesterRunnable(void) {
 	Rte_PRE_TesterRunnable();
 	TesterRunnable();
 	Rte_POST_TesterRunnable();
 }
 
-void Rte_FreqReqRunnable() {
+void Rte_FreqReqRunnable(void) {
 	Rte_PRE_FreqReqRunnable();
 	FreqReqRunnable();
 	Rte_POST_FreqReqRunnable();
@@ -139,21 +139,21 @@ Std_ReturnType Rte_Multiply(const UInt8 arg1, const UInt8 arg2,
 	return retVal;
 }
 
-void Rte_LoggerRunnable() {
+void Rte_LoggerRunnable(void) {
 	Rte_PRE_LoggerRunnable();
 	LoggerRunnable();
 }
 
-void Rte_Logger2Runnable() {
+void Rte_Logger2Runnable(void) {
 	Rte_PRE_Logger2Runnable();
 	Logger2Runnable();
 }
 
-Std_ReturnType Rte_Start() {
+Std_ReturnType Rte_Start(void) {
 	return RTE_E_OK;
 }
 
-void StepTask() {
+void StepTask(void) {
 	EventMaskType eventMask = 0;
 	while (1) {
 		WaitEvent(EVENT_MASK_StepEvent);

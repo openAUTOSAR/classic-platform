@@ -28,7 +28,9 @@
 
 
 #include "Std_Types.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "Cpu.h"
 #include "MemMap.h" /** @req DET006 */
 

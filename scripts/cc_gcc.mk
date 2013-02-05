@@ -36,6 +36,7 @@ ifneq ($(filter -O2 -O3 -O1,$(cflags-y)),)
 	cflags-y += -fno-schedule-insns -fno-schedule-insns2
 endif
 
+cflags-y += -c
 #cflags-y 		+= -fno-common
 cflags-y 		+= -std=gnu99
 

@@ -144,5 +144,6 @@ void CanNm_TxConfirmation( PduIdType canNmTxPduId );
   * This callback service is called by the CAN Interface and implemented by the CanNm. */
 void CanNm_RxIndication( PduIdType canNmRxPduId, const uint8 *canSduPtr );
 
+void CanNm_MainFunction_All_Channels(void);
 
 #endif /* CANNM_H */

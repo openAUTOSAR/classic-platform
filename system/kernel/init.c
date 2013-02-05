@@ -283,6 +283,10 @@ extern char __SBSS2_START[];
 extern char __SBSS2_END[];
 #endif
 
+#if defined(__DCC__)
+extern void __init( void );
+#endif
+
 int main( void )
 {
 	/* TODO: Move to arch specific part */
@@ -329,6 +333,11 @@ int main( void )
 	if (test_sbss2 != 0) {
 		BAD_LINK_FILE();
 	}
+#endif
+
+#if defined(__DCC__)
+	/* Runtime init */
+	__init();
 #endif
 
 	EcuM_Init();

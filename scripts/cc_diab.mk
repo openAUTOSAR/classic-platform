@@ -1,11 +1,26 @@
 
 # Diab versions and "features"
-# 5.6.0.0->5.9.0.0  
-#  - Can't handle initializtion with a depth more that 2,e.g. .NBYTESu.B.SMLOE = 1;
-#    (in code this works fine)
-#
-#
+# - Can't handle initializtion with a depth more that 2,e.g. .NBYTESu.B.SMLOE = 1;
+# - 5.6.0.0
+#  - Do NOT use. dialect-c99 makes const (.text) end up in .data section
+#    Seems to be no workarounds 
+#  - 5.7.0.0  
+#   
 
+# Diab SPE
+#  The SPE consist of up to 4 APUs.
+#    1. SPE APU - Vector stuff. 64-bit GPRS
+#    2. Vector Single Prec. FP APU. 64-bit GPRS 
+#    3. Scalar Single Prec. FP APU. 32-bit GPRS
+#    4. Scalar Double Prec. FP APU. 64-bit GPRS
+#     For more information see E500CORERM.pdf chapter 
+#     3.8.1 (SPE and Embedded Floating-Point APUs)
+#    
+#  Most cores with SPE have 1-3 and very few have 4 (e500v2)   
+#
+# What does Diab generate for? 
+#
+ 
 DIAB_COMPILE ?= /c/devtools/WindRiver/diab/5.9.0.0/WIN32
 DIAB_BIN = $(DIAB_COMPILE)/bin
 
@@ -14,43 +29,63 @@ DIAB_BIN = $(DIAB_COMPILE)/bin
 # CCFLAGS - compile flags
 
 CC	= 	$(DIAB_BIN)/dcc	
-ifeq ($(OPT_DEBUG),y)
-cflags-y += -O0
-else
-#cflags-y += -Os
+
+cflags-$(CFG_OPT_RELEASE)        += -XO -g3
+cflags-$(CFG_OPT_DEBUG)        += -g2
+
+
+ifeq ($(DIAB_TARGET),)
+$(error DIAB_TARGET is not defined. Check your build_config.mk for it)
 endif
 
-cflags-y += -XO
+cflags-y += -c
+cflags-y += -Xoptimized-debug-off
 
-#TARGET = -tPPCE200Z1VFN:simple
-TARGET = -tPPCVLEFS:simple
-cflags-y += $(TARGET) 
+cflags-y += -Xdialect-c99
+cflags-y += -Xc-new
+cflags-y += -Xlibc-new
 
-# Treat warning as error
-cflags-y += -Werror
+cflags-y += -Xsmall-data=0
+cflags-y += -Xsmall-const=0
+cflags-y += -Xno-common
+cflags-y += -Xnested-interrupts
+#cflags-y += -Xstop-on-warning
+cflags-y += -Xsection-split
+cflags-y += -Xforce-prototypes
+cflags-y += -Xforce-declarations
+#cflags-y += -XO
+cflags-y += -Xkeywords=0x4		# Enable inline keywork
+#cflags-y += -Xstmw-slow
+cflags-y += -ei4618
+cflags-y += -Xmake-dependency=6
+cflags-y += $(DIAB_TARGET)
 
-#cflags-y 		+= -c 
-#cflags-y 		+= -fno-common
-#cflags-y 		+= -std=gnu99
-cflags-y 		+= -Xc-new		# const const problems
-#cflags-y 		+= -Xdialect-c99
-cflags-y 		+= -Xsuppress-warnings
-cflags-y 		+= -Xkeywords=0x4		# Enable inline keywork
+CFLAGS_diab_Adc_Cfg.o += -ei4068  # 4068 should be fixed in generator.
+CFLAGS_diab_Dio.o += -ei4546
+CFLAGS_diab_IoHwAb_Analog.o += -ei4111 -ei4549  
+CFLAGS_diab_IoHwAb_Digital.o += -ei4111
+CFLAGS_diab_init.o += -ei4236
+CFLAGS_diab_task.o += -ei4546 -ei4550
+CFLAGS_diab_counter.o += -ei1573
+CFLAGS_diab_application.o += -ei4186
+CFLAGS_diab_newlib_port.o += -ei4301  # Buggy diab libs
+CFLAGS_diab_IoHwAb_Pwm.o += -ei4186 -ei4111
+CFLAGS_diab_Spi_Lcfg.o += -ei4068
+CFLAGS_diab_NvM.o += -ei4111 -ei4177
+CFLAGS_diab_counter.o += -Xlocal-data-area=0
+CFLAGS_diab_WdgM.o += -ei4186
+CFLAGS_diab_EcuM_Main.o += -ei4550 -ei4188
+CFLAGS_diab_EcuM.o += -ei4188
+CFLAGS_diab_Mcu.o += -ei4177
+CFLAGS_diab_Mcu_Cfg.o += -ei4188
+CFLAGS_diab_Can.o += -ei4550
+CFLAGS_diab_CanIf.o += -ei4550 -ei4188 -ei4111
+CFLAGS_diab_Nm.o += -ei4188
+CFLAGS_diab_arch.o += -ei1639
+CFLAGS_diab_Port.o += -ei4550
 
-# Generate dependencies
-#cflags-y 		+= -MMD
 
-# Warnings
-cflags-y          += -Wall
-
-# Conformance
-#cflags-y          += -fno-strict-aliasing
-#cflags-y          += -fno-builtin
-
-# Get machine cflags
-#cflags-y		+= $(cflags-$(ARCH))
-
-CFLAGS = $(cflags-y) $(cflags-yy)
+CFLAGS = $(cflags-y) $(cflags-yy) $(CFLAGS_diab_$@)
 
 CCOUT 		= -o $@ 
 
@@ -59,7 +94,7 @@ CCOUT 		= -o $@
 
 CPP = $(CC) -P
 CPPOUT = -o 
-CPP_ASM_FLAGS = $(TARGET)
+CPP_ASM_FLAGS = $(DIAB_TARGET)
 CPP_ASM_FLAGS += -Xpreprocess-assembly
 #CPP_ASM_FLAGS += -Xkeep-assembly-file
 
@@ -77,14 +112,13 @@ CPP_ASM_FLAGS += -Xpreprocess-assembly
 
 LD = $(DIAB_BIN)/dld.exe
 
-LDFLAGS += $(TARGET)
+LDFLAGS += $(DIAB_TARGET)
 LDFLAGS += -m6
 
-lib-y += -lm
 lib-y += -lc
 lib-y += -limpl
 lib-y += -li
-
+lib-y += -lm
 
 LDOUT 		= -o $@
 TE = elf
@@ -98,9 +132,11 @@ LDFLAGS += $(ldflags-y)
 # Assembler
 # ---------------------------------------------------------------------------
 AS	= 	$(DIAB_BIN)/das
+ASFLAGS-$(CFG_OPT_DEBUG) += -g 
 ASFLAGS += -Xsemi-is-newline
-ASFLAGS += $(TARGET) 
+ASFLAGS += $(DIAB_TARGET) 
 ASOUT = -o $@
+
 
 # ---------------------------------------------------------------------------
 
@@ -121,3 +157,9 @@ AROUT 	= $@
 
 PCLINT_COMPILER_MAKEFILE      = $(PCLINT_FILES_DIR)/co-gcc.mak GCC_BIN=$(CC)
 PCLINT_COMPILER_SETTINGS_FILE = $(PCLINT_FILES_DIR)/co-gcc.lnt
+
+define do-memory-footprint2-$(CFG_MEMORY_FOOTPRINT2)
+	@gawk -f $(ROOTDIR)/scripts/memory_footprint2_$(COMPILER).awk  $(subst .$(TE),.map, $@)
+endef
+
+

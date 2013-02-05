@@ -16,7 +16,9 @@
 #include "Lin.h"
 #include "LinIf_Cbk.h"
 #include "mpc55xx.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "Mcu.h"
 #include <stdlib.h>
 #include <string.h>
@@ -37,7 +39,7 @@ static uint32          LinChannelBitTimeInTicks[ LIN_CONTROLLER_CNT ];
 
 #define LIN_MAX_MSG_LENGTH 8
 
-#ifdef CFG_MPC5567
+#if defined(CFG_MPC5567) || defined(CFG_MPC563XM)
 #define ESCI(exp) (volatile struct ESCI_tag *)(0xFFFB0000 + (0x4000 * exp))
 #else
 #define ESCI(exp) (volatile struct ESCI_tag *)(0xFFFA0000 + (0x4000 * exp))
@@ -306,7 +308,7 @@ static void LinInterruptB()
 {
 	LinInterrupt(LIN_CTRL_B);
 }
-#ifndef CFG_MPC5567
+#if !defined(CFG_MPC5567) && !defined(CFG_MPC563XM)
 static void LinInterruptC()
 {
 	LinInterrupt(LIN_CTRL_C);
@@ -446,46 +448,46 @@ void Lin_InitChannel(  uint8 Channel,   const Lin_ChannelConfigType* Config )
 	/* Install the interrupt */
 	switch(Channel){
 	case 0:
-#ifdef CFG_MPC5567
+#if defined(CFG_MPC5567) || defined(CFG_MPC563XM)
 		ISR_INSTALL_ISR2("LinIsr", LinInterruptA, (IrqType)(ESCI_A_COMB0),LIN_PRIO, 0);
 #else
 		ISR_INSTALL_ISR2("LinIsr", LinInterruptA, (IrqType)(SCI_A_COMB),LIN_PRIO, 0);
 #endif
 		break;
 	case 1:
-#ifdef CFG_MPC5567
+#if defined(CFG_MPC5567) || defined(CFG_MPC563XM)
 		ISR_INSTALL_ISR2("LinIsr", LinInterruptB, (IrqType)(ESCI_A_COMB1),LIN_PRIO, 0);
 #else
 		ISR_INSTALL_ISR2("LinIsr", LinInterruptB, (IrqType)(SCI_B_COMB),LIN_PRIO, 0);
 #endif
 		break;
 	case 2:
-#ifndef CFG_MPC5567
+#if !defined(CFG_MPC5567) && !defined(CFG_MPC563XM)
 		ISR_INSTALL_ISR2("LinIsr", LinInterruptC, (IrqType)(SCI_C_COMB),LIN_PRIO, 0);
 #endif
 		break;
 	case 3:
-#ifndef CFG_MPC5567
+#if !defined(CFG_MPC5567) && !defined(CFG_MPC563XM)
 		ISR_INSTALL_ISR2("LinIsr", LinInterruptD, (IrqType)(SCI_D_COMB),LIN_PRIO, 0);
 #endif
 		break;
 	case 4:
-#ifndef CFG_MPC5567
+#if !defined(CFG_MPC5567) && !defined(CFG_MPC563XM)
 		ISR_INSTALL_ISR2("LinIsr", LinInterruptE, (IrqType)(SCI_E_COMB),LIN_PRIO, 0);
 #endif
 		break;
 	case 5:
-#ifndef CFG_MPC5567
+#if !defined(CFG_MPC5567) && !defined(CFG_MPC563XM)
 		ISR_INSTALL_ISR2("LinIsr", LinInterruptF, (IrqType)(SCI_F_COMB),LIN_PRIO, 0);
 #endif
 		break;
 	case 6:
-#ifndef CFG_MPC5567
+#if !defined(CFG_MPC5567) && !defined(CFG_MPC563XM)
 		ISR_INSTALL_ISR2("LinIsr", LinInterruptG, (IrqType)(SCI_G_COMB+2),LIN_PRIO, 0);
 #endif
 		break;
 	case 7:
-#ifndef CFG_MPC5567
+#if !defined(CFG_MPC5567) && !defined(CFG_MPC563XM)
 		ISR_INSTALL_ISR2("LinIsr", LinInterruptH, (IrqType)(SCI_H_COMB+3),LIN_PRIO, 0);
 #endif
 		break;
@@ -524,8 +526,10 @@ void Lin_InitChannel(  uint8 Channel,   const Lin_ChannelConfigType* Config )
 	esciHw->LCR.B.LDBG = 1; /* Enable LIN debug => Disable automatic reset of the LIN FSM. See [Freescale Device Errata MPC5510ACE, Rev. 10 APR 2009, errata ID: 8632] */
 	esciHw->CR2.B.FBR = 1;  /* Disable Fast Bit Error Detection. See [Freescale Device Errata MPC5510ACE, Rev. 10 APR 2009, errata ID: 8635] */
 #else
+#if !defined(CFG_MPC563XM)
 	esciHw->LCR.B.LDBG = 0; /* Normally, bit errors should cause the LIN FSM to reset, stop driving the bus immediately, and stop
 	                         * further DMA requests until the BERR flag has been cleared. Set ESCIx_LCR[LDBG] = 0,*/
+#endif
 	esciHw->CR2.B.FBR = 1;    /* Fast bit error detection provides superior error checking, so ESCIx_CR2[FBR] should be set; */
 #endif
 	esciHw->LCR.B.STIE = 1; /* Enable some fault irq's */

@@ -20,7 +20,9 @@
 #define PDUR_IF_H_
 
 #include "PduR.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 
 #if PDUR_ZERO_COST_OPERATION == STD_OFF
 

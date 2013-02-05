@@ -92,27 +92,6 @@ void Os_ArchFirstCall( void )
 }
 
 
-/* TODO: This actually gives the stack ptr here...not the callers stack ptr
- * Should probably be a macro instead..... in some arch part..
- */
-#if defined(__DCC__)
-asm volatile void *_Os_ArchGetStackPtr(void) {
-	mr r3,r1
-}
-
-void *Os_ArchGetStackPtr(void) {
-	return _Os_ArchGetStackPtr();
-}
-#else
-void *Os_ArchGetStackPtr( void ) {
-	void *stackp;
-	// Get stack ptr(r1) from current context
-	asm volatile(" mr %0,1":"=r" (stackp));
-
-	return stackp;
-}
-#endif
-
 unsigned int Os_ArchGetScSize( void ) {
 	return FUNC_FRM_SIZE;
 }

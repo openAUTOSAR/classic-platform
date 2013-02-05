@@ -8,7 +8,7 @@
           <SHORT-NAME>os_simple_mpc5604p_trk</SHORT-NAME>
           <ADMIN-DATA>
             <DOC-REVISIONS>
-              <DOC-REVISION />
+              <DOC-REVISION/>
             </DOC-REVISIONS>
             <SDGS>
               <SDG GID="Arccore::EcuOptions">
@@ -22,6 +22,7 @@
             <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_mpc5604p_trk/Os</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_mpc5604p_trk/Mcu</MODULE-REF>
             <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_mpc5604p_trk/EcuM</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/os_simple_mpc5604p_trk/Det</MODULE-REF>
           </MODULE-REFS>
         </ECU-CONFIGURATION>
         <ECU-SW-COMPOSITION UUID="27f4d56e-4f21-41e1-90fc-2181578f9fc0">
@@ -31,7 +32,7 @@
           <SHORT-NAME>Os</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG />
+              <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.22</SD>
@@ -146,7 +147,7 @@
               <SHORT-NAME>Alarm1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm</DEFINITION-REF>
@@ -215,7 +216,7 @@
               <SHORT-NAME>bTask3</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
@@ -246,7 +247,7 @@
               <SHORT-NAME>eTask1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
@@ -289,7 +290,7 @@
               <SHORT-NAME>eTask2</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
@@ -332,7 +333,7 @@
               <SHORT-NAME>Event1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsEvent</DEFINITION-REF>
@@ -355,7 +356,7 @@
               <SHORT-NAME>Event2</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsEvent</DEFINITION-REF>
@@ -378,7 +379,7 @@
               <SHORT-NAME>OsApplication1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsApplication</DEFINITION-REF>
@@ -439,7 +440,7 @@
               <SHORT-NAME>Counter1</SHORT-NAME>
               <ADMIN-DATA>
                 <SDGS>
-                  <SDG GID="Arccore::IdentifiableOptions" />
+                  <SDG GID="Arccore::IdentifiableOptions"/>
                 </SDGS>
               </ADMIN-DATA>
               <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsCounter</DEFINITION-REF>
@@ -468,7 +469,7 @@
           <SHORT-NAME>Mcu</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG />
+              <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.0.3</SD>
@@ -531,7 +532,7 @@
                       <SHORT-NAME>Clock</SHORT-NAME>
                       <ADMIN-DATA>
                         <SDGS>
-                          <SDG GID="Arccore::IdentifiableOptions" />
+                          <SDG GID="Arccore::IdentifiableOptions"/>
                         </SDGS>
                       </ADMIN-DATA>
                       <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint</DEFINITION-REF>
@@ -584,7 +585,7 @@
                   <SHORT-NAME>McuModeSettingConf</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf</DEFINITION-REF>
@@ -603,7 +604,7 @@
           <SHORT-NAME>EcuM</SHORT-NAME>
           <ADMIN-DATA>
             <SDGS>
-              <SDG />
+              <SDG/>
               <SDG GID="Arccore::ModuleOptions">
                 <SD GID="GENERATE_AND_VALIDATE">true</SD>
                 <SD GID="ARCCORE_EDITOR_VERSION">2.1.11</SD>
@@ -675,7 +676,7 @@
                   <SHORT-NAME>SleepMode_1</SHORT-NAME>
                   <ADMIN-DATA>
                     <SDGS>
-                      <SDG GID="Arccore::IdentifiableOptions" />
+                      <SDG GID="Arccore::IdentifiableOptions"/>
                     </SDGS>
                   </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode</DEFINITION-REF>
@@ -686,7 +687,7 @@
                     </INTEGER-VALUE>
                     <STRING-VALUE>
                       <DEFINITION-REF DEST="STRING-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMSleepModeName</DEFINITION-REF>
-                      <VALUE />
+                      <VALUE></VALUE>
                     </STRING-VALUE>
                     <BOOLEAN-VALUE>
                       <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMSleepModeSuspend</DEFINITION-REF>
@@ -730,8 +731,56 @@
             </CONTAINER>
           </CONTAINERS>
         </MODULE-CONFIGURATION>
+        <MODULE-CONFIGURATION UUID="71eb51e2-56e7-4920-9682-ee6075167b41">
+          <SHORT-NAME>Det</SHORT-NAME>
+          <ADMIN-DATA>
+            <SDGS>
+              <SDG/>
+              <SDG GID="Arccore::ModuleOptions">
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.0.1</SD>
+              </SDG>
+            </SDGS>
+          </ADMIN-DATA>
+          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Det</DEFINITION-REF>
+          <CONTAINERS>
+            <CONTAINER UUID="ac7e5020-72fa-46c1-ab73-211fb7f041df">
+              <SHORT-NAME>DetGeneral</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Det/DetGeneral</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Det/DetGeneral/DetEnableCallbacks</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Det/DetGeneral/DetUseRamlog</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Det/DetGeneral/DetWrapRamlog</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Det/DetGeneral/DetUseStdErr</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Det/DetGeneral/DetDeInitAPI</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Det/DetGeneral/DetNumberOfCallbacks</DEFINITION-REF>
+                  <VALUE>5</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Det/DetGeneral/DetRamlogSize</DEFINITION-REF>
+                  <VALUE>16</VALUE>
+                </INTEGER-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+          </CONTAINERS>
+        </MODULE-CONFIGURATION>
       </ELEMENTS>
     </AR-PACKAGE>
   </TOP-LEVEL-PACKAGES>
 </AUTOSAR>
-

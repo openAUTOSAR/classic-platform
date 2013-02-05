@@ -15,7 +15,9 @@
 
 #include "EcuM.h"
 #include "EcuM_Generated_Types.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #if defined(USE_DEM)
 #include "Dem.h"
 #endif
@@ -105,8 +107,10 @@
 
 void EcuM_AL_DriverInitZero(void)
 {
+#if defined(USE_DET)
 	Det_Init();/** @req EcuM2783 */
     Det_Start();/** @req EcuM2634 */
+#endif
 }
 
 extern EcuM_ConfigType EcuMConfig;

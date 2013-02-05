@@ -15,7 +15,9 @@
 
 
 #include "PduR.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "debug.h"
 
 #if (PDUR_ZERO_COST_OPERATION == STD_OFF) && (PDUR_J1939TP_SUPPORT == STD_ON)
