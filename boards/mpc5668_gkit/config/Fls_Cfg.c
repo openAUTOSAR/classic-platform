@@ -92,5 +92,10 @@ const Fls_ConfigType FlsConfigSet[]=
     .FlsJobEndNotification = NULL,
     .FlsJobErrorNotification = NULL,
     .FlsInfo = flashInfo,
+
+	.FlsMaxReadFastMode = 16,
+	.FlsMaxReadNormalMode = 16,
+	.FlsMaxWriteFastMode = 32,
+	.FlsMaxWriteNormalMode = 32,
   }
 };

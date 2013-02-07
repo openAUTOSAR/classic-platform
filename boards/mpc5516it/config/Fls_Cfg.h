@@ -46,7 +46,7 @@
 #define FLS_DRIVER_INDEX			0				/* NO SUPPORT */
 #define FLS_GET_JOB_RESULT_API		STD_ON
 #define FLS_GET_STATUS_API			STD_ON
-#define FLS_SET_MODE_API			STD_OFF			/* NO SUPPORT */
+#define FLS_SET_MODE_API			STD_ON
 //#define FLS_TOTAL_SIZE
 #define FLS_USE_INTERRUPTS			STD_OFF			/* NO SUPPORT */
 #define FLS_VERSION_INFO_API		STD_ON
@@ -61,9 +61,6 @@
 #define FLS_EXPECTED_HW_ID			0				/* NO SUPPORT */
 #define FLS_SPECIFIED_ERASE_CYCLES	0				/* NO SUPPORT */
 #define FLS_WRITE_TIME				0				/* NO SUPPORT */
-
-#define FLS_MAX_READ_NORMAL_MODE	16
-#define FLS_MAX_WRITE_NORMAL_MODE	16
 
 /* MCU Specific */
 #if defined(CFG_MPC5516)
@@ -107,10 +104,10 @@ typedef struct {
 	// FlsCallCycle N/A in core.
 	void (*FlsJobEndNotification)();
 	void (*FlsJobErrorNotification)();
-	uint32_t FlsMaxReadFastMode;				/* NO SUPPORT */
-	uint32_t FlsMaxReadNormalMode;			/* NO SUPPORT */
-	uint32_t FlsMaxWriteFastMode;				/* NO SUPPORT */
-	uint32_t FlsMaxWriteNormalMode;			/* NO SUPPORT */
+	uint32_t FlsMaxReadFastMode;
+	uint32_t FlsMaxReadNormalMode;
+	uint32_t FlsMaxWriteFastMode;
+	uint32_t FlsMaxWriteNormalMode;
 	uint32_t FlsProtection;					/* NO SUPPORT */
 #if (USE_FLS_INFO==STD_ON)
 	const struct Flash *FlsInfo;

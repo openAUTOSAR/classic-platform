@@ -140,7 +140,7 @@ Std_ReturnType Fls_Compare( Fls_AddressType SourceAddress,
 #endif
 
 #if ( FLS_SET_MODE_API == STD_ON )
-void Fls_SetMode(		Fls_ModeType Mode );
+void Fls_SetMode( MemIf_ModeType Mode );
 #endif
 
 void Fls_GetVersionInfo( Std_VersionInfoType *VersioninfoPtr );
