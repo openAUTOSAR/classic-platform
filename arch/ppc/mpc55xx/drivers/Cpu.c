@@ -40,14 +40,14 @@
 void Cache_Invalidate( void ) {
 
 	/* Wait for it to clear */
-	while( spr_get(SPR_L1CSR0) & L1CSR0_CINV ) {}
+	while( get_spr(SPR_L1CSR0) & L1CSR0_CINV ) {}
 
 	msync();
 	isync();
-	spr_set(SPR_L1CSR0, L1CSR0_CINV );
+	set_spr(SPR_L1CSR0, L1CSR0_CINV );
 
 	/* Wait for it to clear */
-	while( spr_get(SPR_L1CSR0) & L1CSR0_CINV ) {}
+	while( get_spr(SPR_L1CSR0) & L1CSR0_CINV ) {}
 }
 
 /**
@@ -62,7 +62,7 @@ void Cache_EnableU( void ) {
      */
 	Cache_Invalidate();
 
-	l1csr0 = spr_get(SPR_L1CSR0);
+	l1csr0 = get_spr(SPR_L1CSR0);
 	l1csr0 |= L1CSR0_CE;		/* enable cache */
 	msync();
 	isync();
