@@ -197,7 +197,7 @@ uint32_t Flash_Erase( const FlashType *fPtr, uintptr_t dest, uint32_t size, flas
 			continue;
 		}
 
-		rv = FSL_FlashEraseStart(bPtr->regBase, bPtr->sectAddr[0], flashBlocks[0],
+		rv = FSL_FlashEraseStart(bPtr->regBase, dest, flashBlocks[0],
 				flashBlocks[1], flashBlocks[2]);
 
 		if (rv != EE_OK) {

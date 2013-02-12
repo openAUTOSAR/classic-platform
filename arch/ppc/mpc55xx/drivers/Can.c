@@ -1111,6 +1111,7 @@ void Can_InitController(uint8 controller,
         canHw->MCR.B.IDAM = 0;      /* We want extended id's to match with */
     }
     canHw->MCR.B.BCC = 1;           /* Enable all nice features */
+    canHw->MCR.B.AEN = 1;           /* Enable Abort */
 
     /* Use Fsys derivate */
 #ifdef CFG_CAN_OSCILLATOR_CLOCK

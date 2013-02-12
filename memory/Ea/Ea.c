@@ -116,9 +116,9 @@ static uint8 Ea_TempBuffer[EA_MAX_BLOCK_SIZE + sizeof(Ea_AdminBlock)];
 static uint16 EA_GET_BLOCK(uint16 BlockNumber);
 static Eep_AddressType calculateEepAddress(uint16 BlockIndex);
 static uint16 calculateBlockLength(uint16 BlockIndex);
-static void handleLowerLayerRead(void);
-static void handleLowerLayerWrite(void);
-static void handleLowerLayerErase(void);
+static void handleLowerLayerRead(MemIf_JobResultType jobResult);
+static void handleLowerLayerWrite(MemIf_JobResultType jobResult);
+static void handleLowerLayerErase(MemIf_JobResultType jobResult);
 static uint8 verifyChecksum(Ea_AdminBlock* block);
 static void addChecksum(Ea_AdminBlock* block);
 
@@ -605,9 +605,9 @@ void Ea_MainFunction(void)
 /*@req <EA101> */
 void Ea_JobEndNotification(void)
 {
-	Ea_Global.JobResult = Eep_GetJobResult();
+	MemIf_JobResultType jobResult = Eep_GetJobResult();
 
-	if (Ea_Global.JobResult == MEMIF_JOB_CANCELLED)
+	if (MEMIF_JOB_CANCELLED == jobResult)
 	{
 		Ea_Global.JobType = EA_JOB_NONE;
 		Ea_Global.JobResult = MEMIF_JOB_CANCELLED;
@@ -620,18 +620,19 @@ void Ea_JobEndNotification(void)
 		switch(Ea_Global.JobStatus)
 		{
 		case EA_PENDING_READ:
-			handleLowerLayerRead();
+			handleLowerLayerRead(jobResult);
 			break;
 		case EA_PENDING_WRITE:
-			handleLowerLayerWrite();
+			handleLowerLayerWrite(jobResult);
 			break;
 		case EA_PENDING_ERASE:
-			handleLowerLayerErase();
+			handleLowerLayerErase(jobResult);
 			break;
 		case EA_PENDING_ADMIN_WRITE:
 			Ea_Global.JobType = EA_JOB_NONE;
 			Ea_Global.JobStatus = EA_PENDING_NONE;
 			Ea_Global.ModuleStatus = MEMIF_IDLE;
+			Ea_Global.JobResult = jobResult;
 			/*@req <EA141> */
 			/*@req <EA054> */
 			/*@req <EA142> */
@@ -646,7 +647,7 @@ void Ea_JobEndNotification(void)
 	return;
 }
 
-static void handleLowerLayerRead()
+static void handleLowerLayerRead(MemIf_JobResultType jobResult)
 {
 	Ea_AdminBlock* adminBlock;
 
@@ -685,17 +686,18 @@ static void handleLowerLayerRead()
 	Ea_Global.JobType = EA_JOB_NONE;
 	Ea_Global.JobStatus = EA_PENDING_NONE;
 	Ea_Global.ModuleStatus = MEMIF_IDLE;
+	Ea_Global.JobResult = jobResult;
 	/*@req <EA054> */
 	EA_JOB_END_NOTIFICATION();
 }
 
-static void handleLowerLayerWrite()
+static void handleLowerLayerWrite(MemIf_JobResultType jobResult)
 {
 	Ea_AdminBlock* adminBlock;
 	Std_ReturnType result;
 	imask_t state;
 
-	if (Ea_Global.JobResult == MEMIF_JOB_OK)
+	if (jobResult == MEMIF_JOB_OK)
 	{
 		/* Setup the admin block to be consistent again*/
 		/*@req <EA047> */
@@ -738,13 +740,13 @@ static void handleLowerLayerWrite()
 	}
 }
 
-static void handleLowerLayerErase()
+static void handleLowerLayerErase(MemIf_JobResultType jobResult)
 {
 	Ea_AdminBlock* adminBlock;
 	Std_ReturnType result;
 	imask_t state;
 
-	if (Ea_Global.JobResult == MEMIF_JOB_OK)
+	if (jobResult == MEMIF_JOB_OK)
 	{
 		/* Setup the admin block to be consistent again*/
 		/*@req <EA047> */

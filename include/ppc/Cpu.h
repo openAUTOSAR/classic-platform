@@ -81,6 +81,10 @@ typedef uint32 imask_t;
 #define SPR_L1CSR0	1010
 #define SPR_L1CFG0	515
 
+#define L1CSR0_CINV	BIT64TO32(62)
+#define L1CSR0_CE	BIT64TO32(63)
+
+
 #define SPR_SRR0		26
 #define SPR_SRR1		27
 
@@ -437,5 +441,8 @@ static inline unsigned int mode_to_kernel( void ) {
 	return msr;
 }
 #endif
+
+void Cache_Invalidate( void );
+void Cache_EnableU( void );
 
 #endif /* CPU_H */
