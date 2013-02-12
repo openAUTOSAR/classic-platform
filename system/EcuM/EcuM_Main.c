@@ -491,7 +491,6 @@ void EcuM_MainFunction(void) {
 	EcuM_WakeupSourceType wMask;
 	static uint32 validationMask;
 	static uint32 validationMaxTime;
-	static uint32 pendingWkupMask = 0;
 
 	VALIDATE_NO_RV(internal_data.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_NOT_INITIATED);
 
@@ -525,7 +524,6 @@ void EcuM_MainFunction(void) {
 		break;
 
 	case ECUM_STATE_GO_SLEEP:
-	{
 
 	  /* 4 cases:
 	   * 1. Wait for the NvM_WriteAll() - Stay in state
