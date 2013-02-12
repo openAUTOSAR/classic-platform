@@ -33,7 +33,7 @@
  *   FLS_DEV_ERROR_DETECT		 Y
  *   FLS_GET_JOB_RESULT_API		 Y
  *   FLS_GET_STATUS_API			 Y
- *   FLS_SET_MODE_API            N
+ *   FLS_SET_MODE_API            Y
  *   FLS_TOTAL_SIZE				 Y, taken from FlashInfo
  *   FLS_USE_INTERRUPTS			 N, no hardware support
  *   FLS_VERSION_INFO_API		 Y
@@ -143,7 +143,7 @@
 #if (FLS_BASE_ADDRESS != 0)
 #error Virtual addresses not supported
 #endif
-#include "Ramlog.h"
+
 
 
 /* ----------------------------[private define]------------------------------*/
@@ -158,6 +158,7 @@
 //#define CFG_FLS_DEBUG
 
 #if defined(CFG_FLS_DEBUG)
+#include "Ramlog.h"
 #define LOG_HEX1(_str,_arg1) \
 	ramlog_str(_str);ramlog_hex(_arg1);ramlog_str("\n")
 
@@ -176,6 +177,8 @@
 
 
 #if ( FLS_DEV_ERROR_DETECT == STD_ON )
+#define VALIDATE_CONFIG(_x) assert(_x)
+
 #define DET_REPORTERROR(_x,_y,_z,_q) Det_ReportError(MODULE_ID_FLS, _y, _z, _q)
 
 #define FEE_JOB_END_NOTIFICATION() \
@@ -208,6 +211,7 @@
 
 
 #else
+#define VALIDATE_CONFIG(_x)
 #define DET_REPORTERROR(_x,_y,_z,_q)
 #define FEE_JOB_END_NOTIFICATION()
 #define FEE_JOB_ERROR_NOTIFICATION()
@@ -383,6 +387,11 @@ void Fls_Init(const Fls_ConfigType *ConfigPtr) {
 	/** @req FLS268 */
 	VALIDATE_NO_RV(Fls_Global.status!=MEMIF_BUSY,FLS_INIT_ID, FLS_E_BUSY );
 
+	VALIDATE_CONFIG(ConfigPtr->FlsMaxReadFastMode != 0 );
+	VALIDATE_CONFIG(ConfigPtr->FlsMaxReadNormalMode != 0 );
+	VALIDATE_CONFIG(ConfigPtr->FlsMaxWriteFastMode != 0 );
+	VALIDATE_CONFIG(ConfigPtr->FlsMaxWriteNormalMode != 0 );
+
 	Fls_Global.status = MEMIF_UNINIT;
 	Fls_Global.jobResultType = MEMIF_JOB_PENDING;
 	// TODO: FLS_E_PARAM_CONFIG
@@ -492,9 +501,11 @@ Std_ReturnType Fls_Write(Fls_AddressType TargetAddress,
 	Fls_Global.flashWriteInfo.dest = TargetAddress;
 	Fls_Global.flashWriteInfo.left = Length;
 
-	// TODO: Support FAST mode
-	Fls_Global.flashWriteInfo.chunkSize = FLS_MAX_READ_NORMAL_MODE;
-
+	if( Fls_Global.mode == MEMIF_MODE_FAST ) {
+		Fls_Global.flashWriteInfo.chunkSize = Fls_Global.config->FlsMaxWriteFastMode;
+	} else {
+		Fls_Global.flashWriteInfo.chunkSize = Fls_Global.config->FlsMaxWriteNormalMode;
+	}
 
 	// unlock flash for the entire range.
 	Flash_Lock(Fls_Global.config->FlsInfo,FLASH_OP_UNLOCK, TargetAddress, Length );
@@ -792,7 +803,12 @@ Std_ReturnType Fls_Read(	Fls_AddressType SourceAddress,
 	Fls_Global.flashAddr = SourceAddress;
 	Fls_Global.ramAddr = TargetAddressPtr;
 	Fls_Global.length = Length;
-	Fls_Global.readChunkSize = FLS_MAX_READ_NORMAL_MODE;
+
+	if( Fls_Global.mode == MEMIF_MODE_FAST ) {
+		Fls_Global.readChunkSize = Fls_Global.config->FlsMaxReadFastMode;
+	} else {
+		Fls_Global.readChunkSize = Fls_Global.config->FlsMaxReadNormalMode;
+	}
 
 	return E_OK;
 }
@@ -827,6 +843,13 @@ Std_ReturnType Fls_Compare( Fls_AddressType SourceAddress,
 	Fls_Global.status = MEMIF_BUSY;
 	Fls_Global.jobResultType = MEMIF_JOB_PENDING;
 	Fls_Global.jobType = FLS_JOB_COMPARE;
+
+	if( Fls_Global.mode == MEMIF_MODE_FAST ) {
+		Fls_Global.readChunkSize = Fls_Global.config->FlsMaxReadFastMode;
+	} else {
+		Fls_Global.readChunkSize = Fls_Global.config->FlsMaxReadNormalMode;
+	}
+
 	/* @req FLS242 */
 	Fls_Global.flashAddr = SourceAddress;
 	Fls_Global.ramAddr = TargetAddressPtr;
@@ -836,14 +859,17 @@ Std_ReturnType Fls_Compare( Fls_AddressType SourceAddress,
 }
 #endif
 
+/** @req 3.1.5/FLS258 */
+/** @req 3.1.5/FLS187 */
 #if ( FLS_SET_MODE_API == STD_ON )
-void Fls_SetMode( MemIf_ModeType Mode )
-{
-    /** !req FLS258 */
-    /** !req FLS155 */
-    /** !req FLS187 */
+void Fls_SetMode(MemIf_ModeType Mode) {
 
-    /* API NOT SUPPORTED */
+	VALIDATE_NO_RV( ( Fls_Global.status != MEMIF_UNINIT ), FLS_SET_MODE_ID, FLS_E_UNINIT);
+	/** @req 3.1.5/FLS156 */
+	VALIDATE_NO_RV( ( Fls_Global.status != MEMIF_BUSY ), FLS_SET_MODE_ID, FLS_E_BUSY);
+
+	/** @req 3.1.5/FLS155 */
+	Fls_Global.mode = Mode;
 }
 #endif
 

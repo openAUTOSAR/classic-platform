@@ -97,7 +97,6 @@ Std_ReturnType Pwm_ValidateChannel(Pwm_ChannelType Channel,Pwm_APIServiceIDType 
     return result;
 }
 
-void Pwm_InitChannel(Pwm_ChannelType Channel);
 #if PWM_DE_INIT_API==STD_ON
 void Pwm_DeInitChannel(Pwm_ChannelType Channel);
 #endif
@@ -194,6 +193,14 @@ static void configureChannel(const Pwm_ChannelConfigurationType* channelConfig){
 #else
 	emiosHw->CH[channel].CCR.B.UCPREN = 1;
 #endif
+
+	/* PWM009: The function Pwm_Init shall start all PWM channels with the configured
+		default values. If the duty cycle parameter equals:
+		􀂃 0% or 100% : Then the PWM output signal shall be in the state according to
+			the configured polarity parameter
+		􀂃 >0% and <100%: Then the PWM output signal shall be modulated according
+		to parameters period, duty cycle and configured polarity. */
+	emiosHw->CH[channel].CADR.R = (uint16) (((uint32) period_ticks * (uint32) channelConfig->duty) >> 15);
 
 	// 0 A match on comparator A clears the output flip-flop, while a match on comparator B sets it
 	// 1 A match on comparator A sets the output flip-flop, while a match on comparator B clears it
@@ -662,7 +669,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 	 *
 	 * PWM014: The function Pwm_SetDutyCycle shall set the output state according
 	 * to the configured polarity parameter [which is already set from
-	 * Pwm_InitChannel], when the duty parameter is 0% [=0] or 100% [=0x8000].
+	 * Pwm_Init], when the duty parameter is 0% [=0] or 100% [=0x8000].
 	 */
 	emiosHw->CH[Channel].CADR.R = leading_edge_position;
 }

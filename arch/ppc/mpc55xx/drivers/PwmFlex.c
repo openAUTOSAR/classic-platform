@@ -94,7 +94,8 @@ Std_ReturnType Pwm_ValidateChannel(Pwm_ChannelType Channel,Pwm_APIServiceIDType 
     return result;
 }
 
-void Pwm_InitChannel(Pwm_ChannelType Channel);
+static void SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle);
+
 #if PWM_DE_INIT_API==STD_ON
 void Pwm_DeInitChannel(Pwm_ChannelType Channel);
 #endif
@@ -187,6 +188,14 @@ static void configureChannel(const Pwm_ChannelConfigurationType* channelConfig){
 	default:
 		break;
 	}
+
+	/* PWM009: The function Pwm_Init shall start all PWM channels with the configured
+		default values. If the duty cycle parameter equals:
+		􀂃 0% or 100% : Then the PWM output signal shall be in the state according to
+			the configured polarity parameter
+		􀂃 >0% and <100%: Then the PWM output signal shall be modulated according
+		to parameters period, duty cycle and configured polarity. */
+	SetDutyCycle(channel, channelConfig->duty);
 }
 
 void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
@@ -390,22 +399,8 @@ void Pwm_DeInit() {
 	}
 #endif
 
-
-/**
- * PWM013: The function Pwm_SetDutyCycle shall set the duty cycle of the PWM
- * channel.
- *
- * @param Channel PWM channel to use. 0 <= Channel < PWM_NUMBER_OF_CHANNELS <= 16
- * @param DutyCycle 0 <= DutyCycle <= 0x8000
- */
-#if PWM_SET_DUTY_CYCLE_API==STD_ON
-void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
+static void SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 {
-	if ((E_OK != Pwm_ValidateInitialized(PWM_SETDUTYCYCLE_ID)) ||
-		(E_OK != Pwm_ValidateChannel(Channel, PWM_SETDUTYCYCLE_ID)))
-	{
-		return;
-	}
 	volatile struct FLEXPWM_tag *flexHw;
 	flexHw = &FLEXPWM_0;
 
@@ -421,7 +416,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 	 *
 	 * PWM014: The function Pwm_SetDutyCycle shall set the output state according
 	 * to the configured polarity parameter [which is already set from
-	 * Pwm_InitChannel], when the duty parameter is 0% [=0] or 100% [=0x8000].
+	 * Pwm_Init], when the duty parameter is 0% [=0] or 100% [=0x8000].
 	 */
 	switch(Channel % FLEXPWM_SUB_MODULE_DIVIDER)
 	{
@@ -444,6 +439,25 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 		break;
 	}
 	flexHw->MCTRL.B.LDOK = 1 << Channel / FLEXPWM_SUB_MODULE_DIVIDER;
+}
+
+
+/**
+ * PWM013: The function Pwm_SetDutyCycle shall set the duty cycle of the PWM
+ * channel.
+ *
+ * @param Channel PWM channel to use. 0 <= Channel < PWM_NUMBER_OF_CHANNELS <= 16
+ * @param DutyCycle 0 <= DutyCycle <= 0x8000
+ */
+#if PWM_SET_DUTY_CYCLE_API==STD_ON
+void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
+{
+	if ((E_OK != Pwm_ValidateInitialized(PWM_SETDUTYCYCLE_ID)) ||
+		(E_OK != Pwm_ValidateChannel(Channel, PWM_SETDUTYCYCLE_ID)))
+	{
+		return;
+	}
+	SetDutyCycle(Channel, DutyCycle);
 }
 #endif
 
