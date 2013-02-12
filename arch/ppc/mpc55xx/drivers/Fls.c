@@ -143,10 +143,35 @@
 #if (FLS_BASE_ADDRESS != 0)
 #error Virtual addresses not supported
 #endif
+#include "Ramlog.h"
+
 
 /* ----------------------------[private define]------------------------------*/
 
 #define FLASH_NON_CORRECTABLE_ERROR 0x1
+
+/* Enable check:
+ * - Check that the destination is actually 0xff
+ */
+//#define CFG_FLS_EXTRA_CHECKS
+/* Add ramlog prints at each read/write/erase */
+//#define CFG_FLS_DEBUG
+
+#if defined(CFG_FLS_DEBUG)
+#define LOG_HEX1(_str,_arg1) \
+	ramlog_str(_str);ramlog_hex(_arg1);ramlog_str("\n")
+
+#define LOG_HEX2(_str,_arg1,_str2,_arg2) \
+	ramlog_str(_str);ramlog_hex(_arg1);ramlog_str(_str2);ramlog_hex(_arg2);ramlog_str("\n")
+
+#define LOG_STR(_str) 	ramlog_str(_str)
+#else
+#define LOG_HEX1(_str,_arg1)
+#define LOG_HEX2(_str,_arg1,_str2,_arg2)
+#define LOG_STR(_str)
+#endif
+
+
 /* ----------------------------[private macro]-------------------------------*/
 
 
@@ -411,6 +436,8 @@ Std_ReturnType Fls_Erase(Fls_AddressType TargetAddress, Fls_LengthType Length) {
 	Fls_Global.flashAddr = TargetAddress;
 	Fls_Global.length = Length;
 
+	LOG_HEX2("Fls_Erase() ",TargetAddress," ", Length);
+
 	/* Unlock */
 	Flash_Lock(Fls_Global.config->FlsInfo,FLASH_OP_UNLOCK,TargetAddress, Length );
 
@@ -471,6 +498,16 @@ Std_ReturnType Fls_Write(Fls_AddressType TargetAddress,
 
 	// unlock flash for the entire range.
 	Flash_Lock(Fls_Global.config->FlsInfo,FLASH_OP_UNLOCK, TargetAddress, Length );
+
+	LOG_HEX2("Fls_Write() ",Fls_Global.flashWriteInfo.dest," ", Fls_Global.flashWriteInfo.left);
+
+#if defined(CFG_FLS_EXTRA_CHECKS)
+	for( int i=0;i<Fls_Global.flashWriteInfo.left;i++) {
+		if( *((uint8 *)Fls_Global.flashWriteInfo.dest + i) != 0xff ) {
+			while(1) {};
+		}
+	}
+#endif
 
     /* Save to original request */
     Fls_Global.flashWriteInfo.pDest = TargetAddress;
@@ -620,6 +657,7 @@ void Fls_MainFunction(void) {
 					Fls_Global.status = MEMIF_IDLE;
 					Fls_Global.jobType = FLS_JOB_NONE;
 					FEE_JOB_END_NOTIFICATION();
+					LOG_STR("Fls_RP() OK\n");
 				}
 			}
 			break;
@@ -654,7 +692,10 @@ void Fls_MainFunction(void) {
 										Fls_Global.flashWriteInfo.pLeft - Fls_Global.flashWriteInfo.left);
 
 
+
 				if (flashStatus == EE_OK) {
+
+					LOG_HEX1("Fls_CS() OK ",Fls_Global.flashWriteInfo.pDest);
 
 					if (Fls_Global.flashWriteInfo.left == 0) {
 						/* Done! */
@@ -670,6 +711,8 @@ void Fls_MainFunction(void) {
 					Fls_Global.flashWriteInfo.pLeft = Fls_Global.flashWriteInfo.left;
 
 					/* Double word programming */
+					LOG_HEX2("Fls_PP() ",Fls_Global.flashWriteInfo.dest," ", Fls_Global.flashWriteInfo.left);
+
 					flashStatus = Flash_ProgramPageStart(
 											Fls_Global.config->FlsInfo,
 											&Fls_Global.flashWriteInfo.dest,
@@ -742,6 +785,8 @@ Std_ReturnType Fls_Read(	Fls_AddressType SourceAddress,
 	Fls_Global.status = MEMIF_BUSY;
 	Fls_Global.jobResultType = MEMIF_JOB_PENDING;
 	Fls_Global.jobType = FLS_JOB_READ;
+
+	LOG_HEX2("Fls_Read() ",(uint32)TargetAddressPtr," ", Length);
 
 	/** @req FLS237 */
 	Fls_Global.flashAddr = SourceAddress;
