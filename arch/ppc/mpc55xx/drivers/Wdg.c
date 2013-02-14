@@ -86,7 +86,7 @@ void StartWatchdog(uint32 timeout_in_ms)
 	WRITE32(SWT_BASE + SWT_SR, 0x0000d928);
 
 	/* Write TMO */
-	WRITE32(SWT_BASE + SWT_TO, timeout_in_ms * 1600000 );
+	WRITE32(SWT_BASE + SWT_TO, timeout_in_ms * 16000 );
 
 	/* Enable Watchdog */
 	WRITE32(SWT_BASE + SWT_CR,0x80000000UL + CR_RIA + CR_SLK + CR_CSL + CR_FRZ + CR_WEN);
