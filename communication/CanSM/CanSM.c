@@ -62,7 +62,7 @@ void CanSM_Init( const CanSM_ConfigType* ConfigPtr ) {
 	Std_ReturnType totalStatus = E_OK;
 
 	for (uint8 i = 0; i < CANSM_NETWORK_COUNT; ++i) {
-		status = CanSM_Internal_RequestComMode(i, COMM_NO_COMMUNICATION);  /**< @req CANSM211 */
+		status = CanSM_Internal_RequestComMode(i, COMM_NO_COMMUNICATION, true);  /**< @req CANSM211 */
 		if (status > totalStatus) {
 			totalStatus = status;
 		}
@@ -111,27 +111,32 @@ Std_ReturnType CanSM_RequestComMode( NetworkHandleType NetworkHandle, ComM_ModeT
 	CANSM_VALIDATE_NETWORK(NetworkHandle, CANSM_SERVICEID_REQUESTCOMMODE, E_NOT_OK);
 	CANSM_VALIDATE_MODE(ComM_Mode, CANSM_SERVICEID_REQUESTCOMMODE, E_NOT_OK);
 
-	return CanSM_Internal_RequestComMode(NetworkHandle, ComM_Mode);
+	return CanSM_Internal_RequestComMode(NetworkHandle, ComM_Mode, false );
 }
 
 /** @req CANSM032.partially  @req CANSM212  @req CANSM219.exceptTranceiver  @req CANSM218.exceptTranceiver
  *  @req CANSM231  @req CANSM232 */
-Std_ReturnType CanSM_Internal_RequestComMode( NetworkHandleType NetworkHandle, ComM_ModeType ComM_Mode ) {
+Std_ReturnType CanSM_Internal_RequestComMode( NetworkHandleType NetworkHandle, ComM_ModeType ComM_Mode, boolean init ) {
 	Std_ReturnType overallStatus = E_OK;
 	Std_ReturnType status;
 	status = CanSM_Internal_RequestCanIfMode(NetworkHandle, ComM_Mode);      /**< @req CANSM240 */
 	if (status > overallStatus){
 		overallStatus = status;
 	}
-	status = CanSM_Internal_RequestComGroupMode(NetworkHandle, ComM_Mode);   /**< @req CANSM241 */
-	if (status > overallStatus) {
-		overallStatus = status;
+	/* Follow figure 9-1 for init */
+	if( !init ) {
+		status = CanSM_Internal_RequestComGroupMode(NetworkHandle, ComM_Mode);   /**< @req CANSM241 */
+		if (status > overallStatus) {
+			overallStatus = status;
+		}
 	}
 	status = CanSM_Internal_RequestCanIfPduMode(NetworkHandle, ComM_Mode);
 	if (status > overallStatus) {
 		overallStatus = status;
 	}
-	if (overallStatus == E_OK) {
+
+	/* Follow figure 9-1 for init */
+	if ( (overallStatus == E_OK) && !init ) {
 		ComM_BusSM_ModeIndication(NetworkHandle, ComM_Mode);                 /**< @req CANSM089 */
 		CanSM_Internal.Networks[NetworkHandle].requestedMode = ComM_Mode;
 	}
