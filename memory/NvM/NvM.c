@@ -1388,8 +1388,6 @@ void NvM_ReadAll(void)
     imask_t state;
 	DET_VALIDATE_NO_RV(nvmState != NVM_UNINITIALIZED, NVM_READ_ALL_ID, NVM_E_NOT_INITIALIZED);
 
-	NVM_ASSERT(nvmState == NVM_IDLE);
-
 	Irq_Save(state);
 	AdminMultiReq.state = NVM_READ_ALL;
 	AdminMultiBlock.ErrorStatus = NVM_REQ_PENDING;
@@ -1408,7 +1406,6 @@ void NvM_WriteAll(void)
     imask_t state;
 	DET_VALIDATE_NO_RV(nvmState != NVM_UNINITIALIZED, NVM_READ_ALL_ID, NVM_E_NOT_INITIALIZED);
 
-	NVM_ASSERT(nvmState == NVM_IDLE);
 
 	Irq_Save(state);
 	AdminMultiReq.state = NVM_WRITE_ALL;
