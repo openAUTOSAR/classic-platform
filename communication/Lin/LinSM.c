@@ -34,7 +34,9 @@
 #include "ComStack_Types.h"
 #include "Com_Types.h"
 #include "ComM_BusSm.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "Mcu.h"
 #include <stdlib.h>
 #include <string.h>

@@ -20,7 +20,9 @@
 #include "Modules.h"
 #include "Mcu.h"
 #include "Adc.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "Os.h"
 #include "isr.h"
 #include "irq.h"
@@ -273,7 +275,7 @@ void Adc_DeInit ()
     }
 
     /* Stop all DMA channels connected to EQADC. */
-    for (group = 0; group < AdcConfigPtr->nbrOfGroups; group++)
+    for (group = (Adc_GroupType)0; group < AdcConfigPtr->nbrOfGroups; group++)
     {
       Dma_StopChannel (AdcConfigPtr->groupConfigPtr [group].dmaCommandChannel);
       Dma_StopChannel (AdcConfigPtr->groupConfigPtr [group].dmaResultChannel);
@@ -306,7 +308,7 @@ void Adc_Init (const Adc_ConfigType *ConfigPtr)
     AdcConfigPtr = ConfigPtr;
 
     /* Start configuring the eQADC queues. */
-    for (group = 0; group < ConfigPtr->nbrOfGroups; group++)
+    for (group = (Adc_GroupType)0; group < ConfigPtr->nbrOfGroups; group++)
     {
       /* Loop through all channels and make the command queue. */
       for (channel = 0; channel < ConfigPtr->groupConfigPtr[group].numberOfChannels; channel++)
@@ -346,7 +348,7 @@ void Adc_Init (const Adc_ConfigType *ConfigPtr)
     Adc_EQADCCalibrationSequence ();
 
     /* Configure DMA channels. */
-    for (group = 0; group < ConfigPtr->nbrOfGroups; group++)
+    for (group = (Adc_GroupType)0; group < ConfigPtr->nbrOfGroups; group++)
     {
       /* ADC307. */
       ConfigPtr->groupConfigPtr[group].status->groupStatus = ADC_IDLE;
@@ -356,7 +358,7 @@ void Adc_Init (const Adc_ConfigType *ConfigPtr)
     }
 
     /* Start DMA channels. */
-    for (group = 0; group < ConfigPtr->nbrOfGroups; group++)
+    for (group = (Adc_GroupType)0; group < ConfigPtr->nbrOfGroups; group++)
     {
       /* Invalidate queues. */
       EQADC.CFCR[group].B.CFINV = 1;
@@ -598,37 +600,37 @@ void Adc_Group0ConversionComplete (void)
 {
   /* ISR for FIFO 0 end of queue. Clear interrupt flag.  */
   EQADC.FISR[ADC_EQADC_QUEUE_0].B.EOQF = 1;
-  Adc_GroupConversionComplete(0);
+  Adc_GroupConversionComplete((Adc_GroupType)0);
 }
 void Adc_Group1ConversionComplete (void)
 {
   /* ISR for FIFO 0 end of queue. Clear interrupt flag.  */
   EQADC.FISR[ADC_EQADC_QUEUE_1].B.EOQF = 1;
-  Adc_GroupConversionComplete(1);
+  Adc_GroupConversionComplete((Adc_GroupType)1);
 }
 void Adc_Group2ConversionComplete (void)
 {
   /* ISR for FIFO 0 end of queue. Clear interrupt flag.  */
   EQADC.FISR[ADC_EQADC_QUEUE_2].B.EOQF = 1;
-  Adc_GroupConversionComplete(2);
+  Adc_GroupConversionComplete((Adc_GroupType)2);
 }
 void Adc_Group3ConversionComplete (void)
 {
   /* ISR for FIFO 0 end of queue. Clear interrupt flag.  */
   EQADC.FISR[ADC_EQADC_QUEUE_3].B.EOQF = 1;
-  Adc_GroupConversionComplete(3);
+  Adc_GroupConversionComplete((Adc_GroupType)3);
 }
 void Adc_Group4ConversionComplete (void)
 {
   /* ISR for FIFO 0 end of queue. Clear interrupt flag.  */
   EQADC.FISR[ADC_EQADC_QUEUE_4].B.EOQF = 1;
-  Adc_GroupConversionComplete(4);
+  Adc_GroupConversionComplete((Adc_GroupType)4);
 }
 void Adc_Group5ConversionComplete (void)
 {
   /* ISR for FIFO 0 end of queue. Clear interrupt flag.  */
   EQADC.FISR[ADC_EQADC_QUEUE_5].B.EOQF = 1;
-  Adc_GroupConversionComplete(5);
+  Adc_GroupConversionComplete((Adc_GroupType)5);
 }
 
 void Adc_EQADCError (void)
@@ -796,7 +798,7 @@ static void  Adc_ConfigureEQADC (const Adc_ConfigType *ConfigPtr)
   /* Disable time stamp timer. */
   Adc_WriteEQADCRegister (ADC0_TSCR, 0);
 
-  for (group = 0; group < ConfigPtr->nbrOfGroups; group++)
+  for (group = (Adc_GroupType)0; group < ConfigPtr->nbrOfGroups; group++)
   {
     /* Enable eDMA requests for commands and results. */
     EQADC.IDCR[group].B.CFFS = 1;
@@ -815,7 +817,7 @@ void Adc_ConfigureEQADCInterrupts (void)
 {
   Adc_GroupType group;
   ISR_INSTALL_ISR2( "Adc_Err", Adc_EQADCError, EQADC_FISR_OVER,     2, 0);
-  for (group = 0; group < AdcConfigPtr->nbrOfGroups; group++)
+  for (group = (Adc_GroupType)0; group < AdcConfigPtr->nbrOfGroups; group++)
   {
     /* Enable end of queue, queue overflow/underflow interrupts. Clear corresponding flags. */
     EQADC.FISR[group].B.RFOF = 1;

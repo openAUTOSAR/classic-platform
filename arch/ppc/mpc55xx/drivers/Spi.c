@@ -158,7 +158,9 @@
 #if (SPI_IMPLEMENTATION==SPI_DMA)
 #include "Dma.h"
 #endif
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include "isr.h"
 /* ----------------------------[private define]------------------------------*/
 #define DSPI_CTRL_A	0
@@ -801,7 +803,13 @@ static int Spi_Rx_FIFO(Spi_UnitType *spiUnit) {
             for(i=0;i<copyCnt;i++) {
                 popVal = jobUnitPtr->hwPtr->POPR.B.RXDATA;
                 RAMLOG_STR("%");RAMLOG_HEX(popVal);
-                buf[jobUnitPtr->rxChCnt] = (Spi_DataType)popVal;
+                if( bInChar == 2 ) {
+                	buf[jobUnitPtr->rxChCnt] = (Spi_DataType)(popVal>>8);
+                	buf[jobUnitPtr->rxChCnt+1] = (Spi_DataType)popVal;
+                } else {
+                	buf[jobUnitPtr->rxChCnt] = (Spi_DataType)popVal;
+                }
+
                 jobUnitPtr->rxChCnt += bInChar;
             }
         } else {

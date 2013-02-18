@@ -36,7 +36,9 @@ extern Com_Arc_Config_type Com_Arc_Config;
 
 
 #if COM_DEV_ERROR_DETECT == STD_ON
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 
 #define DET_REPORTERROR(_x,_y,_z,_q) Det_ReportError(_x,_y,_z,_q)
 
@@ -87,6 +89,6 @@ extern Com_Arc_Config_type Com_Arc_Config;
 #define GET_ArcGroupSignal(GroupSignalId) \
 	(&Com_Arc_Config.ComGroupSignal[GroupSignalId])
 
-
+Std_ReturnType Com_Internal_TriggerIPduSend(PduIdType ComTxPduId);
 
 #endif /* COM_INTERNAL_H_ */

@@ -19,7 +19,7 @@
 #include <stdlib.h>
 
 const uint16_t PortPadConfigData[] = {
-	( PORT_FUNC0 | PORT_OBE_ENABLE | PORT_SLEW_RATE_MIN | PORT_PULL_NONE ),	/* PCR	0 : PORT_PIN_MODE_DIO */
+	PORT_PCR_RESET,			/* PCR	0 */
 	PORT_PCR_RESET,			/* PCR	1 */
 	PORT_PCR_RESET,			/* PCR	2 */
 	PORT_PCR_RESET,			/* PCR	3 */
@@ -144,7 +144,7 @@ const uint16_t PortPadConfigData[] = {
 	PORT_PCR_RESET,			/* PCR	122 */
 	PORT_PCR_RESET,			/* PCR	123 */
 	PORT_PCR_RESET,			/* PCR	124 */
-	PORT_PCR_RESET,			/* PCR	125 */
+	( PORT_FUNC0 | PORT_OBE_ENABLE | PORT_SLEW_RATE_MIN | PORT_PULL_NONE ),	/* PCR	125 : PORT_PIN_MODE_DIO */
 	PORT_PCR_RESET,			/* PCR	126 */
 	PORT_PCR_RESET,			/* PCR	127 */
 	PORT_PCR_RESET,			/* PCR	128 */

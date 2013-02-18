@@ -91,6 +91,7 @@ typedef uint32 imask_t;
 #define MSR_SPE	BIT64TO32(38)
 #define MSR_DS		BIT64TO32(58)
 #define MSR_IS		BIT64TO32(59)
+#define MSR_SPE     BIT64TO32(38)
 
 //#define ESR_PTR 	BIT64TO32(38)
 

@@ -64,7 +64,11 @@ inc-$(USE_DMA) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers
 obj-$(USE_MCU) += Mcu.o
 obj-$(USE_MCU) += Mcu_Cfg.o
 obj-$(USE_MCU)-$(if $(CFG_MPC5668)$(CFG_MPC5516),y) += Mcu_Sleep.o
-#obj-$(CFG_MPC55XX)-$(USE_MCU) += Mcu_Exceptions.o
+
+# CPU specific
+obj-$(CFG_PPC) += mpc5xxx_handlers.o
+obj-$(CFG_PPC) += mpc5xxx_handlers_asm.o
+vpath-$(CFG_PPC) += $(ROOTDIR)/$(ARCH_PATH-y)/integration
 
 # Flash
 obj-$(USE_FLS) += Fls.o
@@ -108,6 +112,7 @@ obj-$(USE_ADC)-$(CFG_HC1X) += Adc.o
 obj-$(USE_ADC)-$(CFG_ARM_CM3) += Adc.o
 obj-$(USE_ADC)-$(CFG_MPC5516) += Adc_eQADC.o
 obj-$(USE_ADC)-$(CFG_MPC5567) += Adc_eQADC.o
+obj-$(USE_ADC)-$(CFG_MPC563XM) += Adc_eQADC.o
 obj-$(USE_ADC) += Adc_Cfg.o
 obj-$(USE_ADC) += Adc_Internal.o
 vpath-y += $(ROOTDIR)/drivers
@@ -121,7 +126,9 @@ obj-$(USE_NVM) += Crc_16.o
 # SchM, always find the include files.
 inc-y += $(ROOTDIR)/system/SchM
 vpath-$(USE_SCHM) += $(ROOTDIR)/system/SchM
+ifeq ($(filter SchM.o,$(obj-y)),)
 obj-$(USE_SCHM) += SchM.o
+endif
 
 # J1939Tp
 obj-$(USE_J1939TP) += J1939Tp.o
@@ -187,6 +194,7 @@ obj-$(USE_PWM)-$(CFG_HC1X) += Pwm.o
 obj-$(USE_PWM)-$(CFG_ARM_CM3) += Pwm.o
 obj-$(USE_PWM)-$(CFG_MPC5516) += Pwm.o
 obj-$(USE_PWM)-$(CFG_MPC5567) += Pwm.o
+obj-$(USE_PWM)-$(CFG_MPC563XM) += Pwm.o
 
 # Misc
 obj-$(USE_DET) += Det.o
@@ -197,6 +205,7 @@ obj-$(USE_LIN) += Lin_Lcfg.o
 obj-$(USE_LIN)-$(CFG_MPC560X) += LinFlex.o
 obj-$(USE_LIN)-$(CFG_MPC5516) += Lin.o
 obj-$(USE_LIN)-$(CFG_MPC5567) += Lin.o
+obj-$(USE_LIN)-$(CFG_MPC563XM) += Lin.o
 
 # LinIf
 obj-$(USE_LINIF) += LinIf_Lcfg.o

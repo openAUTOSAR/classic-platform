@@ -89,6 +89,7 @@ void ComM_MainFunction_##channel (void) { \
 	ComM_MainFunction(COMM_NETWORK_HANDLE_##channel); \
 }
 
+void ComM_MainFunction_All_Channels(void);
 
 /** Initializes the AUTOSAR Communication Manager and restarts the internal state machines.*/
 void ComM_Init(const ComM_ConfigType* Config);  /**< @req COMM146 */

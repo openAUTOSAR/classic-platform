@@ -21,6 +21,10 @@
 
 #include "Com.h"
 
+#if defined(USE_DEM)
+#include "Dem.h"
+#endif
+
 typedef struct {
 	const uint8						CanIfControllerId;
 } CanSM_ControllerType;
@@ -38,6 +42,9 @@ typedef struct {
 	const uint8                     CanSMBorCounterL2Err;
 	const boolean                   CanSMBorTxConfirmationPolling;
 	const boolean                   CanSMBorDisableRxDlMonitoring;
+#if defined(USE_DEM)
+	const Dem_EventIdType			CanSMBusOffDemEvent;
+#endif
 } CanSM_NetworkType;
 
 typedef struct {

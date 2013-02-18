@@ -18,7 +18,9 @@
 
 #include "EcuM.h"
 #include "EcuM_Generated_Types.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #if defined(USE_DEM)
 #include "Dem.h"
 #endif
@@ -137,6 +139,8 @@ void EcuM_ErrorHook(Std_ReturnType reason) {
 	assert(0);
 #endif
 
+#if defined(USE_DET)
+#endif
 }
 
 extern EcuM_ConfigType EcuMConfig;

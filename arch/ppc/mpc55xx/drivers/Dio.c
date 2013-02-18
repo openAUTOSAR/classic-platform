@@ -27,7 +27,9 @@
 
 #include "Std_Types.h"
 #include "Dio.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include <string.h>
 #include "mpc55xx.h"
 
@@ -142,7 +144,7 @@ Dio_PortLevelType Dio_ReadPort(Dio_PortType portId)
   Dio_LevelType level;
   VALIDATE_PORT(portId, DIO_READPORT_ID);
 
-#if defined(CFG_MPC5554)||defined(CFG_MPC5567)
+#if defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC563XM)
   vuint16_t *ptr = (vuint16_t *)&SIU.GPDI;
 #elif defined(CFG_MPC560X)
   vuint16_t *ptr = (vuint16_t *)&SIU.PGPDI;
@@ -161,7 +163,7 @@ void Dio_WritePort(Dio_PortType portId, Dio_PortLevelType level)
   VALIDATE_PORT(portId, DIO_WRITEPORT_ID);
 
   // find address of first port
-#if defined(CFG_MPC5554)||defined(CFG_MPC5567)
+#if defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC563XM)
   vuint16_t *ptr = (vuint16_t *)&SIU.GPDO;
 #elif defined(CFG_MPC560X)
   vuint16_t *ptr = (vuint16_t *)&SIU.PGPDO;
@@ -182,7 +184,7 @@ Dio_PortLevelType Dio_ReadChannelGroup(
   VALIDATE_CHANNELGROUP(channelGroupIdPtr,DIO_READCHANNELGROUP_ID);
 
   // find address of first port
-#if defined(CFG_MPC5554)||defined(CFG_MPC5567)
+#if defined(CFG_MPC5554)||defined(CFG_MPC5567) || defined(CFG_MPC563XM)
   vuint16_t *ptr = (vuint16_t *)&SIU.GPDI;
 #elif defined(CFG_MPC560X)
   uint32 *ptr = (uint32 *)&SIU.PGPDI;

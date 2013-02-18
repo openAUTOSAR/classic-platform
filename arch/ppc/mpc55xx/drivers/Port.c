@@ -23,7 +23,9 @@
 #include "Std_Types.h"
 #include "Port.h"
 #include "mpc55xx.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #if defined(USE_DEM)
 #include "Dem.h"
 #endif

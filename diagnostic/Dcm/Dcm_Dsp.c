@@ -781,7 +781,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x06_0x10(const PduInfoTyp
 				recLength = pduTxData->SduLength - (txIndex + 1);	// Calculate what's left in buffer
 				/** @req DCM296 */ /** @req DCM476 */ /** @req DCM382 */
 				getExtendedDataRecordByDtcResult = Dem_GetExtendedDataRecordByDTC(dtc, DEM_DTC_KIND_ALL_DTCS, dtcOrigin, recNum, &pduTxData->SduDataPtr[txIndex+1], &recLength);
-				if (getExtendedDataRecordByDtcResult == DEM_RECORD_OK) {
+				if (getExtendedDataRecordByDtcResult == DEM_RECORD_OK && recLength > 0) {
 					pduTxData->SduDataPtr[txIndex++] = recNum;
 					/* Instead of calling Dem_GetSizeOfExtendedDataRecordByDTC() the result from Dem_GetExtendedDataRecordByDTC() is used */
 					/** @req DCM478 */ /** @req DCM479 */ /** @req DCM480 */
@@ -864,9 +864,10 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x04(const PduInfoType *pd
 			for (index = 0; pEventParaTemp->FreezeFrameClassRef[index] != NULL; index++){
 				if (pEventParaTemp->FreezeFrameClassRef[index]->FFRecordNumber == RecordNumber) {
 					// Calculate the Number of Dids in FF
-					for (FFIdNumber = 0; pEventParaTemp->FreezeFrameClassRef[index]->FFIdClassRef[FFIdNumber]->Arc_EOL != FALSE; FFIdNumber++) {
+					for (FFIdNumber = 0; pEventParaTemp->FreezeFrameClassRef[index]->FFIdClassRef[FFIdNumber]->Arc_EOL == FALSE; FFIdNumber++) {
 						;
 					}
+					break;
 				}
 			}
 			pduTxData->SduDataPtr[7 + RecNumOffset] = FFIdNumber;
@@ -879,7 +880,13 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x04(const PduInfoType *pd
 				break;
 			}
 			RecNumOffset = RecNumOffset + AvailableBufSize;
-			pduTxData->SduLength = 8 + RecNumOffset;
+
+			if( AvailableBufSize > 0 ) {
+				pduTxData->SduLength = 8 + RecNumOffset;
+			}
+			else {
+				pduTxData->SduLength = 6 + RecNumOffset;
+			}
 		}
 	}
 
@@ -888,8 +895,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x04(const PduInfoType *pd
 		case DEM_GET_FFDATABYDTC_OK:
 			break;
 		default:
-			responseCode = DCM_E_GENERALREJECT;
-			return responseCode;
+			return DCM_E_REQUESTOUTOFRANGE;
 	}
 
 	GetStatusOfDtc = Dem_GetStatusOfDTC(DtcNumber, DtcType, DtcOrigin, &DtcStatus); /** @req DEM212 */
@@ -897,8 +903,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x04(const PduInfoType *pd
 		case DEM_STATUS_OK:
 			break;
 		default:
-			responseCode = DCM_E_GENERALREJECT;
-			return responseCode;
+			return DCM_E_GENERALREJECT;
 	}
 
 
@@ -1128,12 +1133,14 @@ static Dcm_NegativeResponseCodeType readDidData(const Dcm_DspDidType *didPtr, Pd
 						else { // tx buffer full
 							responseCode = DCM_E_REQUESTOUTOFRANGE;
 						}
-					}
-					else {	// Not possible to obtain did length
+					} else if( E_PENDING == result ) {
+						responseCode = DCM_E_RESPONSEPENDING;
+					} else {	// Not possible to obtain did length
 						responseCode = DCM_E_CONDITIONSNOTCORRECT;
 					}
-				}
-				else {	// CheckRead failed
+				} else if( E_PENDING == result ) {
+					responseCode = DCM_E_RESPONSEPENDING;
+				} else {	// CheckRead failed
 					responseCode = DCM_E_CONDITIONSNOTCORRECT;
 				}
 			}
@@ -1481,7 +1488,7 @@ void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 	// Check sub function range (0x01 to 0x42)
 	if ((pduRxData->SduDataPtr[1] >= 0x01) && (pduRxData->SduDataPtr[1] <= 0x42)) {
 		boolean isRequestSeed = pduRxData->SduDataPtr[1] & 0x01u;
-		Dcm_SecLevelType requestedSecurityLevel = (pduRxData->SduDataPtr[1]-1)/2;
+		Dcm_SecLevelType requestedSecurityLevel = (pduRxData->SduDataPtr[1]+1)/2;
 		Dcm_NegativeResponseCodeType getSeedErrorCode;
 
 		if (isRequestSeed) {

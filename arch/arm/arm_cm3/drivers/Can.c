@@ -21,7 +21,9 @@
 #include "Cpu.h"
 #include "Mcu.h"
 #include "CanIf_Cbk.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #if defined(USE_DEM)
 #include "Dem.h"
 #endif

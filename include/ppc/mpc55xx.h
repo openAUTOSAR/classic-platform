@@ -24,8 +24,8 @@
 #include "mpc5516.h"
 #elif defined(CFG_MPC5567)
 #include "mpc5567.h"
-#elif defined(CFG_MPC5633)
-#include "mpc563m.h"
+#elif defined(CFG_MPC563XM)
+#include "MPC5634M_MLQB80.h"
 #elif defined(CFG_MPC5604B)
 #include "MPC5604B_0M27V_0102.h"
 #elif defined(CFG_MPC5606B)
@@ -42,5 +42,25 @@
 
 /* Harmonization */
 typedef struct EDMA_TCD_STD_tag Dma_TcdType;
+
+/*
+ * ECC  module
+ */
+#define ECSM_BASE 	0xfff40000
+#define ECSM_ECR	0x43		/* 8-bit */
+#define ECSM_ESR    0x47		/* 8-bit */
+#define ECSM_EEGR	0x4a		/* 16-bit */
+
+#define ESR_R1BC	0x20
+#define ESR_RNCE	0x02
+#define ESR_F1BC	0x10
+#define ESR_FNCE	0x01
+
+// MPC5567
+#if defined(CFG_MPC5567) || defined(CFG_MPC5516)
+#define ESR_ERNCR 	0x02 	// Ram non-correctable
+#define ESR_EFNCR 	0x01    // Flash non-correctable
+#endif
+
 
 #endif /* MPC55XX_H_ */

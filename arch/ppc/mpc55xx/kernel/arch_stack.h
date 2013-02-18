@@ -116,6 +116,38 @@ typedef struct {
 	uint32_t pad;
 } Os_ExceptionFrameType;
 
+typedef struct {
+	uint32_t r0;
+	uint32_t r3;
+	uint32_t r4;
+	uint32_t r5;
+
+	uint32_t r6;
+	uint32_t r7;
+	uint32_t r8;
+	uint32_t r9;
+
+	uint32_t r10;
+	uint32_t r11;
+	uint32_t r12;
+	uint32_t lr;
+
+	uint32_t ctr;
+	uint32_t xer;
+	uint32_t cr;
+	uint32_t pad;
+} Os_VolatileFrameType;
+
+
+typedef struct {
+	uint32_t c_srr0;
+	uint32_t c_srr1;
+	uint32_t mcsr;
+	uint32_t esr;
+	uint32_t dear;
+} Mpc5xxx_ExceptionInfoType;
+
+
 #if defined(CFG_SPE)
 typedef struct {
 	uint32_t sp;

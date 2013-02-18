@@ -16,7 +16,9 @@
 
 #include "Std_Types.h"
 #include "Dio.h"
+#if defined(USE_DET)
 #include "Det.h"
+#endif
 #include <string.h>
 #include "stm32f10x_gpio.h"
 

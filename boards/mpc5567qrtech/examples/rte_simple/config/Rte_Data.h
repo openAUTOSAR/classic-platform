@@ -24,14 +24,14 @@ extern UInt16 Rte_Buf_Tester_prototype_Result_result;
 
 void Rte_WriteBuffer_Rte_Buf_Tester_prototype_Result_result(UInt16 Value);
 
-void Rte_TesterRunnable();
+void Rte_TesterRunnable(void);
 
-void Rte_FreqReqRunnable();
+void Rte_FreqReqRunnable(void);
 
 Std_ReturnType Rte_Multiply(const UInt8 arg1, const UInt8 arg2, UInt16* result);
 
-void Rte_LoggerRunnable();
+void Rte_LoggerRunnable(void);
 
-void Rte_Logger2Runnable();
+void Rte_Logger2Runnable(void);
 
 #endif
