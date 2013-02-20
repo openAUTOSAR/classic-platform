@@ -20,11 +20,9 @@
 
 #include "mm.h"
 
-/* Set MCR[STOP] Flash block */
+/* Set MCR[STOP] Flash block
+ * (this assumes that you are running from RAM (NOT SUPPORTED */
 #define SLEEP_FLG_POWERDOWN_FLASH 	(1<<0)
-/* Set MCR[STOP] Flash block */
-#define SLEEP_FLG_POWERDOWN_ADC		(1<<1)
-
 
 
 struct Mcu_Arc_SleepPrivData {

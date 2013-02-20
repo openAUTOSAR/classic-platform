@@ -15,6 +15,23 @@
 #if defined(USE_DMA)
 #include "Dma.h"
 #endif
+#include <assert.h>
+
+#if defined(CFG_MCU_ARC_DEBUG)
+#include "Ramlog.h"
+#define LOG_HEX1(_str,_arg1) \
+	ramlog_str(_str);ramlog_hex(_arg1);ramlog_str("\n")
+
+#define LOG_HEX2(_str,_arg1,_str2,_arg2) \
+	ramlog_str(_str);ramlog_hex(_arg1);ramlog_str(_str2);ramlog_hex(_arg2);ramlog_str("\n")
+
+#define LOG_STR(_str) 	ramlog_str(_str)
+#else
+#define LOG_HEX1(_str,_arg1)
+#define LOG_HEX2(_str,_arg1,_str2,_arg2)
+#define LOG_STR(_str)
+#endif
+
 
 struct TlbEntry TlbTable[]  = {
 	// TLB Entry 0 =  1M Internal flash
@@ -58,18 +75,25 @@ struct TlbEntry TlbTable[]  = {
 /*
  * Configuration only support:
  * - Flash recovery only
- */
+ * - RECPTR is used to hold stack pointer when getting back from sleep
+ *
+ *
+  */
+struct Mcu_Arc_SleepPrivData sleepPrivData;
+
+
 
 const Mcu_Arc_SleepConfigType Mcu_Arc_SleepConfig =  {
 	/* Run all */
 	.hlt0_run   = 0x0UL,
+
 	/* Halt all but reserved bits */
-	.hlt0_sleep = 0x33ffffffUL,
+	.hlt0_sleep = 0x3fffffffUL,
+
 	/* Goto sleep, enable all RAM
 	 *     0x1-8k, 0x2-16k, 0x3-32k, 0x6-64k, 0x7-80K */
 	.crp_pscr = PSCR_SLEEP | PSCR_SLP12EN | PCSR_RAMSEL(7),
-	/* In flash so no fast recovery. recptr not used */
-	.crp_recptr = 0,
+
 	/* Point to recovery routine. If VLE is used this must be indicated */
 #if defined(CFG_VLE)
 	.z1vec = ((uint32)&Mcu_Arc_LowPowerRecoverFlash | 1),
@@ -79,7 +103,8 @@ const Mcu_Arc_SleepConfigType Mcu_Arc_SleepConfig =  {
 	/* Not using Z0 so keep in reset */
 	.z0vec = 2,
 	.sleepSysClk = 0,	/* 0 - 16Mhz IRC , 1 - XOSC , 2 - PLL */
-	.sleepFlags = SLEEP_FLG_POWERDOWN_FLASH,
+	.sleepFlags = 0,
+	.pData = &sleepPrivData,
 };
 
 const struct Mcu_Arc_Config Mcu_Arc_ConfigData = {
@@ -89,7 +114,6 @@ const struct Mcu_Arc_Config Mcu_Arc_ConfigData = {
 
 
 /**
- *
  * @param sleepCfg
  */
 void Mcu_Arc_SetMode2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *sleepCfg ) {
@@ -104,6 +128,8 @@ void Mcu_Arc_SetMode2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *s
 		Dma_DeInit();
 #endif
 
+		LOG_HEX1("CRP Sleep clock ", sleepCfg->sleepSysClk);
+
 		/* Set system clock to 16Mhz IRC */
 		SIU.SYSCLK.B.SYSCLKSEL = sleepCfg->sleepSysClk;
 
@@ -112,20 +138,29 @@ void Mcu_Arc_SetMode2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *s
 			SET32( 0xffff8000UL + 0, (1<<(31-25)) );
 		}
 
-		/* Set us in SLEEP mode */
-		CRP.PSCR.B.SLEEP = 1;
+		LOG_STR("Enable SLEEP");
 
+		Irq_Disable();
+
+		/* Clear FLAGS first */
+		SET32(CRP_PSCR, 0xc7ff0000UL );
+		SET32(CRP_RTCSC, (1<<(31-2)) );	/* Clear RTCF */
+
+		/* Write Sleep config */
 		WRITE32(CRP_PSCR, sleepCfg->crp_pscr);
 
-		WRITE32(CRP_Z0VEC, sleepCfg->z0vec);
+		LOG_HEX1("Z1VEC: ", sleepCfg->z1vec );
 		WRITE32(CRP_Z1VEC, sleepCfg->z1vec);
+		LOG_HEX1("Z0VEC: ", sleepCfg->z0vec );
+		WRITE32(CRP_Z0VEC, sleepCfg->z0vec);
 
-		READWRITE32( CRP_RECPTR, RECPTR_FASTREC, 0 );
+		assert( sleepCfg->pData != NULL );
 
+		LOG_HEX1("HLT: ", sleepCfg->hlt0_sleep );
 		sleepCfg->pData->hlt0 = SIU.HLT.R;
 		SIU.HLT.R = sleepCfg->hlt0_sleep;
 
-		while((SIU.HLTACK.R != sleepCfg->pData->hlt0) && (timeout++<HLT_TIMEOUT)) {}
+		while((SIU.HLTACK.R != sleepCfg->hlt0_sleep) && (timeout++<HLT_TIMEOUT)) {}
 	}
 }
 

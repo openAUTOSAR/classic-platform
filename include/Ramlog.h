@@ -26,6 +26,7 @@
 
 #else
 
+void ramlog_fputs( char *str );
 void ramlog_puts( char *str );
 void ramlog_chr( char c );
 
@@ -33,7 +34,7 @@ void ramlog_chr( char c );
  * Fast ramlog functions
  */
 static inline void ramlog_str( char *str ) {
-  ramlog_puts(str);
+  ramlog_fputs(str);
 }
 
 static inline void ramlog_dec( int val ) {

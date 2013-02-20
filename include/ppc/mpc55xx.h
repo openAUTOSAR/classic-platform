@@ -60,11 +60,17 @@ typedef struct EDMA_TCD_STD_tag Dma_TcdType;
 #define CRP_RTCSC			(CRP_BASE+0x10)
 #define CRP_RTCCNT			(CRP_BASE+0x14)
 /* 40--4F differs ALOT */
+#if (CFG_MPC5516)
+#define CRP_WKSE			(CRP_BASE+0x44)
+#endif
 #define CRP_Z1VEC			(CRP_BASE+0x50)
 #define CRP_Z6VEC			(CRP_BASE+0x50)
 #define CRP_Z0VEC			(CRP_BASE+0x54)
 #define CRP_RECPTR			(CRP_BASE+0x58)
 #define CRP_PSCR			(CRP_BASE+0x60)
+
+
+#define WKSE_WKCLKSEL_16MHZ_IRC		(1<<0)
 
 #define xVEC_xVEC(_x)
 #define PSCR_SLEEP			0x00008000ul

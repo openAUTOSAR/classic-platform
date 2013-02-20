@@ -367,7 +367,9 @@ TASK(SchM_Startup){
 	CancelAlarm(ALARM_ID_Alarm_BswService);
 	SetRelAlarm(ALARM_ID_Alarm_BswService, 10, 5);
 
+#if !defined(CFG_SCHM_DISABLE_ECUM_REQUEST_RUN)
 	EcuM_RequestRUN(ECUM_USER_User_1);
+#endif
 
 	TerminateTask();
 
