@@ -45,6 +45,9 @@
  *
  */
 
+#define BIT(x)	(1<<(x))
+#define PPC_BITS_32(x,offset)		((x)<<(31-(offset)))
+
 #define SPR_SRR0		26
 #define SPR_SRR1		27
 
@@ -110,6 +113,51 @@
 #define MAS3_SR		(1<<0)
 
 #define MAS3_FULL_ACCESS (MAS3_UX+MAS3_UW+MAS3_UR+MAS3_SX+MAS3_SW+MAS3_SR)
+
+#define MM_PSIZE_4K			PPC_BITS_32(1,20)
+#define MM_PSIZE_16K		PPC_BITS_32(2,20)
+#define MM_PSIZE_64K		PPC_BITS_32(3,20)
+#define MM_PSIZE_256K		PPC_BITS_32(4,20)
+#define MM_PSIZE_1M			PPC_BITS_32(5,20)
+#define MM_PSIZE_4M			PPC_BITS_32(6,20)
+#define MM_PSIZE_16M		PPC_BITS_32(7,20)
+#define MM_PSIZE_64M		PPC_BITS_32(8,20)
+#define MM_PSIZE_256M		PPC_BITS_32(9,20)
+
+
+/* Memory and cache attribs
+ * W - Write through, I-cache inhibit,
+ * M -Memory coherent, G-Guarded,
+ * E - Endian(big=0)
+ */
+#define MM_W			BIT(0)
+#define MM_I			BIT(1)
+#define MM_M			BIT(2)
+#define MM_G			BIT(3)
+#define MM_E			BIT(4)
+
+/* memory size */
+#define MM_SIZE_8		BIT(16)
+#define MM_SIZE_16		BIT(17)
+#define MM_SIZE_32		BIT(18)
+
+/* permissions */
+#define MM_SX			BIT(24)
+#define MM_SR			BIT(25)
+#define MM_SW			BIT(26)
+#define MM_UX			BIT(27)
+#define MM_UR			BIT(28)
+#define MM_UW			BIT(29)
+
+#define MM_PERM_STEXT		(MM_SR|MM_X)
+#define MM_PERM_SDATA		(MM_SR|MM_SW)
+
+#if defined(CFG_VLE)
+#define VLE_MAS2_VAL		MAS2_VLE
+#else
+#define VLE_MAS2_VAL		0
+#endif
+
 
 
 #if defined(_ASSEMBLER_)

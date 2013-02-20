@@ -104,6 +104,7 @@ typedef uint32 imask_t;
 
 #define HID0_TBEN	0x4000
 
+
 /*
  * String macros
  */
@@ -125,6 +126,8 @@ typedef uint32 imask_t;
 
 #define Irq_Disable() 	asm volatile (" wrteei 0");
 #define Irq_Enable() 	asm volatile (" wrteei 1");
+#define tlbwe()			asm volatile (" tlbwe");
+
 
 #define Irq_SuspendAll() 	Irq_Disable()
 #define Irq_ResumeAll() 	Irq_Enable()

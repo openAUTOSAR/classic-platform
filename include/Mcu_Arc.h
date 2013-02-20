@@ -13,10 +13,19 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+#ifndef MCU_ARC_H_
+#define MCU_ARC_H_
 
+#include "Mcu_Arc_Cfg.h"
 
+void 	 Mcu_Arc_InitClockPre( const Mcu_ClockType ClockSetting );
+void 	 Mcu_Arc_InitClockPost( const Mcu_ClockType ClockSetting );
+void 	 Mcu_Arc_SetModePre( Mcu_ModeType mcuMode);
+void  	 Mcu_Arc_SetModePost( Mcu_ModeType mcuMode);
+uint32_t Mcu_Arc_ExceptionHook(uint32_t exceptionVector);
 
+void Mcu_Arc_SetMode2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *sleepCfg );
+void Mcu_Arc_LowPowerRecoverFlash( void );
+void Mcu_Arc_InitMM( void );
 
-
-
-
+#endif /* MCU_ARC_H_ */

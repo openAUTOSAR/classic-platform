@@ -12,9 +12,9 @@
 /*-----------------------------[ MEMORY ]-----------------------------------*/
 
 #if defined(CFG_MPC5516) || defined(CFG_MPC5668)
-#define SRAM_START			0x40000000
-#define FLASH_START			0x00000000
-#define PERIPHERAL_START	0xfff00000
+#define CFG_SRAM_START			0x40000000
+#define CFG_FLASH_START			0x00000000
+#define CFG_PERIPHERAL_START	0xfff00000
 #else
 #error No support for this MCU
 #endif
@@ -49,12 +49,6 @@
 #error  Please define RAMSEL_VAL
 #endif
 
-
-#if defined(CFG_VLE)
-#define VLE_VAL		MAS2_VLE
-#else
-#define VLE_VAL		0
-#endif
 
 /*-----------------------------[ MMU ]------------------------------------*/
 

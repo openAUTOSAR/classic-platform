@@ -13,77 +13,152 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+/* ----------------------------[information]----------------------------------*/
+/*
+ * Author: mahi
+ *
+ * Description:
+ *
+ */
+
+
 /* ----------------------------[includes]------------------------------------*/
 /* ----------------------------[private define]------------------------------*/
 
-#include "Mcu_Arc_Cfg.h"
+#include "Std_Types.h"
+#include "Mcu.h"
+#include "io.h"
+#include "mpc55xx.h"
+#include "Mcu_Arc.h"
+#if defined(USE_FEE)
+#include "Fee_Memory_Cfg.h"
+#endif
+#if defined(USE_DMA)
+#include "Dma.h"
+#endif
 
 /* ----------------------------[private macro]-------------------------------*/
+
+#if defined (CFG_MPC5668)
+#define ECSM_BASE 	0xfff40000
+#define ECSM_ESR    0x47
+#endif
+
+
 /* ----------------------------[private typedef]-----------------------------*/
 /* ----------------------------[private function prototypes]-----------------*/
 /* ----------------------------[private variables]---------------------------*/
+
+#if defined(CFG_MPC5XXX_TEST)
+uint32_t Mpc5xxx_vectorMask;
+uint8_t Mpc5xxx_Esr;
+uint8_t Mpc5xxx_Intc_Esr;
+#endif
+
 /* ----------------------------[private functions]---------------------------*/
 
-/*
- * Board_Cfg.c
+
+
+/**
  *
- *  Created on: Feb 1, 2013
- *      Author: mahi
+ * @param error
+ * @param pData
  */
+void Os_Panic( uint32_t error, void *pData ) {
 
-struct TlbEntry {
-	uint32 entry;
-	uint32 mas0;
-	uint32 mas1;
-	uint32 mas2;
-	uint32 mas3;
-};
+	(void)error;
+#if ( MCU_PERFORM_RESET_API == STD_ON )
+	Mcu_PerformReset();
+#else
+	while(1) {};
+#endif
+}
 
 
-struct TlbEntry TlbTable  = {
-	// TLB Entry 0 =  1M Internal flash
+uint32_t Mcu_Arc_ExceptionHook(uint32_t exceptionVector) {
+	uint32_t rv = EXC_NOT_HANDLED;
+
+#if defined(CFG_MPC5XXX_TEST)
+	Mpc5xxx_vectorMask |= (1<<exceptionVector);
+#endif
+
+	switch (exceptionVector) {
+	case 1:
+		/* CSRR0, CSRR1, MCSR */
+		/* ECC: MSR[EE] = 0 */
+
+	case 2:
+		/* SRR0, SRR1, ESR, DEAR */
+		/* ECC: MSR[EE] = 1 */
+	case 3:
 	{
-			0,
-			(0x10000000 + (0<<16)),
-			(0xC0000000 + MAS1_TSIZE_4M),
-			(FLASH_START + VLE_VAL),
-			(FLASH_START + MAS3_FULL_ACCESS),
-	},
-	// TLB Entry 1 =  Peripheral bridge and BAM
-	{
-			1,
-			(0x10000000 + (1<<16)),
-			(0xC0000000 + MAS1_TSIZE_1M),
-			(PERIPHERAL_START + VLE_VAL +  MAS2_I),
-			(PERIPHERAL_START + MAS3_FULL_ACCESS),
-	},
-	// TLB Entry 2 =  External RAM.
-	{
-			2,
-			(0x10000000 + (0<<16)),
-			(0xC0000000 + MAS1_TSIZE_4M),
-			(FLASH_START + VLE_VAL),
-			(FLASH_START + MAS3_FULL_ACCESS),
-	},
-	// TLB Entry 3 =  Internal SRAM
-	{
-			3,
-			(0x10000000+(3<<16)),
-			(0xC0000000 + MAS1_TSIZE_256K),
-			(SRAM_START + VLE_VAL + MAS2_I),
-			(SRAM_START + MAS3_FULL_ACCESS),
-	},
-};
+		/* SRR0, SRR1, ESR */
+
+#if defined(USE_FEE) || defined(CFG_MPC5XXX_TEST)
+		uint8 esr = READ8( ECSM_BASE + ECSM_ESR );
+#endif
+#if defined(USE_FEE)
+		uint32_t excAddr = READ32( ECSM_BASE + ECSM_FEAR );
+
+		/* Find FLS errors */
+
+		if (esr & ESR_FNCE) {
+
+			/* Check if we are in FEE range */
+			if ( ((FEE_BANK1_OFFSET >= excAddr) &&
+				  (FEE_BANK1_OFFSET + FEE_BANK1_LENGTH < excAddr)) ||
+				 ((FEE_BANK2_OFFSET >= excAddr) &&
+				  (FEE_BANK2_OFFSET + FEE_BANK2_LENGTH < excAddr)) )
+			{
+				/* Record that something bad has happend */
+				EccErrReg = READ8( ECSM_BASE + ECSM_ESR );
+				/* Clear the exception */
+				WRITE8(ECSM_BASE+ECSM_ESR,ESR_F1BC+ESR_FNCE);
+				rv = EXC_HANDLED | EXC_ADJUST_ADDR;
+			}
+		}
+#endif
+#if defined(CFG_MPC5XXX_TEST)
+		if( esr & (ESR_R1BC+ESR_RNCE) ) {
+			/* ECC RAM problems */
+			Mpc5xxx_Esr = esr;
+			WRITE8(ECSM_BASE+ECSM_ESR,ESR_R1BC+ESR_RNCE);
+			rv = (EXC_HANDLED | EXC_ADJUST_ADDR);
+		}
+#endif
+		break;
+	}
+
+	default:
+		break;
+	}
+
+	return rv;
+}
+
+void Mcu_Arc_InitMM( void ) {
+	/* User: Enable caches if any */
+
+	/* User: Setup TLBs if needed  */
+	MM_TlbSetup( Mcu_Arc_ConfigData.tblTable );
+}
 
 
+/*
+ * Called at a very early stage...
+ */
+void Mcu_Arc_InitPost( void ) {
+	Mcu_Arc_InitMM();
+}
 
-#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 
 /* ----------------------------[public functions]----------------------------*/
 
 void Mcu_Arc_InitClockPre( const Mcu_ClockType ClockSetting )
 {
 }
+
+
 void Mcu_Arc_InitClockPost( const Mcu_ClockType ClockSetting )
 {
 }
@@ -100,12 +175,11 @@ void Mcu_Arc_InitClockPost( const Mcu_ClockType ClockSetting )
  */
 void Mcu_Arc_SetModePre( Mcu_ModeType mcuMode)
 {
-#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 	if( MCU_MODE_RUN == mcuMode ) {
 
 		/* Get back to "normal" halt flags */
 #if defined(CFG_MPC5516)
-		SIU.HLT.R = Mcu_SavedHaltFlags;
+		Mcu_Arc_SetMode2(mcuMode, Mcu_Arc_ConfigData.sleepConfig );
 #elif defined(CFG_MPC5668)
 		SIU.HLT0.R = Mcu_SavedHaltFlags[0];
 		SIU.HLT1.R = Mcu_SavedHaltFlags[1];
@@ -116,6 +190,11 @@ void Mcu_Arc_SetModePre( Mcu_ModeType mcuMode)
 		 * Follows the AN3548 from Freescale
 		 *
 		 */
+		/* Set Recover Vector */
+	#if defined(CFG_MPC5516)
+		Mcu_Arc_SetMode2(mcuMode, Mcu_Arc_ConfigData.sleepConfig);
+
+	#elif defined(CFG_MPC5668)
 #if defined(USE_DMA)
 		Dma_DeInit();
 #endif
@@ -125,6 +204,8 @@ void Mcu_Arc_SetModePre( Mcu_ModeType mcuMode)
 
 		/* Put flash in low-power mode */
 		// TODO
+
+
 
 		/* Put QQADC in low-power mode */
 		// TODO
@@ -138,22 +219,6 @@ void Mcu_Arc_SetModePre( Mcu_ModeType mcuMode)
 		 * - enable the 1.2V internal regulator when in sleep mode only
 		 */
 
-		/* Set Recover Vector */
-	#if defined(CFG_MPC5516)
-		WRITE32(CRP_PSCR, PSCR_SLEEP | PSCR_SLP12EN | PCSR_RAMSEL(RAMSEL_VAL));
-
-		WRITE32(CRP_Z1VEC, ((uint32)&McuE_LowPowerRecoverFlash) | VLE_VAL );
-		READWRITE32( CRP_RECPTR, RECPTR_FASTREC, 0 );
-
-		Mcu_SavedHaltFlags = SIU.HLT.R;
-		/* Halt everything */
-		SIU.HLT.R = R_HLT0;
-		while((SIU.HLTACK.R != 0x3FFFFFFF) && (timeout++<HLT_TIMEOUT)) {}
-
-		/* put Z0 in reset if not used for wakeup */
-		CRP.Z0VEC.B.Z0RST = 1;
-
-	#elif defined(CFG_MPC5668)
 		READWRITE32(CRP_PSCR, (PSCR_SLEEP | PSCR_SLP12EN | PCSR_RAMSEL(0x7)), (PSCR_SLEEP | PSCR_SLP12EN | PCSR_RAMSEL(RAMSEL_VAL)));
 		WRITE32(CRP_Z6VEC, ((uint32)&McuE_LowPowerRecoverFlash) | VLE_VAL );
 		READWRITE32(CRP_RECPTR,RECPTR_FASTREC,0 );
@@ -187,17 +252,11 @@ void Mcu_Arc_SetModePre( Mcu_ModeType mcuMode)
 	    /* Clear sleep flags to allow pads to operate */
 	    CRP.PSCR.B.SLEEPF = 0x1;
 	}
-#else
-	/* NOT SUPPORTED */
-	(void) mcuMode;
-#endif
 }
 
 void Mcu_Arc_SetModePost( Mcu_ModeType mcuMode)
 {
 
-
-}
 }
 
 
