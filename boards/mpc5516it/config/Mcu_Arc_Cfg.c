@@ -128,7 +128,7 @@ void Mcu_Arc_SetMode2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *s
 		Dma_DeInit();
 #endif
 
-		LOG_HEX1("CRP Sleep clock ", sleepCfg->sleepSysClk);
+		LOG_HEX1("CRP Sleep clock select: ", sleepCfg->sleepSysClk);
 
 		/* Set system clock to 16Mhz IRC */
 		SIU.SYSCLK.B.SYSCLKSEL = sleepCfg->sleepSysClk;
@@ -138,20 +138,19 @@ void Mcu_Arc_SetMode2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *s
 			SET32( 0xffff8000UL + 0, (1<<(31-25)) );
 		}
 
-		LOG_STR("Enable SLEEP");
-
 		Irq_Disable();
 
 		/* Clear FLAGS first */
+		LOG_STR("CRP: Clearing wakeup flags\n");
 		SET32(CRP_PSCR, 0xc7ff0000UL );
 		SET32(CRP_RTCSC, (1<<(31-2)) );	/* Clear RTCF */
 
 		/* Write Sleep config */
 		WRITE32(CRP_PSCR, sleepCfg->crp_pscr);
 
-		LOG_HEX1("Z1VEC: ", sleepCfg->z1vec );
+		LOG_HEX1("CRP: Z1VEC: ", sleepCfg->z1vec );
 		WRITE32(CRP_Z1VEC, sleepCfg->z1vec);
-		LOG_HEX1("Z0VEC: ", sleepCfg->z0vec );
+		LOG_HEX1("CRP: Z0VEC: ", sleepCfg->z0vec );
 		WRITE32(CRP_Z0VEC, sleepCfg->z0vec);
 
 		assert( sleepCfg->pData != NULL );
