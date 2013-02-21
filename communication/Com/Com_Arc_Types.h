@@ -36,6 +36,7 @@ typedef struct {
 
 typedef struct {
 	void *Com_Arc_ShadowBuffer;
+	uint16 Com_Arc_ParentId;
 	uint8 ComSignalUpdated;
 	uint8 Com_Arc_EOL;
 } Com_Arc_GroupSignal_type;

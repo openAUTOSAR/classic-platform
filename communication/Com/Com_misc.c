@@ -32,41 +32,58 @@ static void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByte
 static void Com_WriteDataSegment(uint8 *pdu, uint8 *pduSignalMask, const uint8 *signalDataPtr, uint8 destByteLength,
 		Com_BitPositionType segmentStartBitOffset, uint8 segmentBitLength);
 
-void Com_CopySignalGroupDataFromShadowBuffer(const Com_SignalIdType signalGroupId) {
+void Com_CopySignalGroupDataFromShadowBufferToPdu(const Com_SignalIdType signalGroupId) {
 
 	// Get PDU
 	const ComSignal_type * Signal = GET_Signal(signalGroupId);
 	const ComIPdu_type *IPdu = GET_IPdu(Signal->ComIPduHandleId);
-	uint8 pduSize = IPdu->ComIPduSize;
 
-	const void* pduDataPtr = 0;
+	void *pduDataPtr = 0;
 	if (IPdu->ComIPduSignalProcessing == DEFERRED && IPdu->ComIPduDirection == RECEIVE) {
 		pduDataPtr = IPdu->ComIPduDeferredDataPtr;
 	} else {
 		pduDataPtr = IPdu->ComIPduDataPtr;
 	}
 
-	imask_t state;
-	Irq_Save(state);
+	Com_WriteSignalDataToPduBuffer(
+			signalGroupId,
+			FALSE,
+			(uint8 *)Signal->Com_Arc_ShadowBuffer,
+			pduDataPtr);
+}
 
-	// Get data, Aligned opaque data -> straight copy
-	memcpy((void *)Signal->Com_Arc_ShadowBuffer, pduDataPtr, pduSize);
+void Com_CopySignalGroupDataFromPduToShadowBuffer(const Com_SignalIdType signalGroupId) {
 
-	Irq_Restore(state);
+	// Get PDU
+	const ComSignal_type * Signal = GET_Signal(signalGroupId);
+	const ComIPdu_type *IPdu = GET_IPdu(Signal->ComIPduHandleId);
+
+	const uint8 *pduDataPtr = 0;
+	if (IPdu->ComIPduSignalProcessing == DEFERRED && IPdu->ComIPduDirection == RECEIVE) {
+		pduDataPtr = IPdu->ComIPduDeferredDataPtr;
+	} else {
+		pduDataPtr = IPdu->ComIPduDataPtr;
+	}
+
+	Com_ReadSignalDataFromPduBuffer(
+			signalGroupId,
+			FALSE,
+			(uint8 *)Signal->Com_Arc_ShadowBuffer,
+			pduDataPtr);
 }
 
 void Com_ReadSignalDataFromPduBuffer(
 		const uint16 signalId,
 		const boolean isGroupSignal,
 		void *signalData,
-		const void *pduBuffer,
-		uint8 pduSize) {
+		const void *pduBuffer) {
 
 	Com_SignalType signalType;
 	ComSignalEndianess_type signalEndianess;
 	uint8 signalLength;
 	Com_BitPositionType bitPosition;
 	uint8 bitSize;
+	boolean isSignalGroup = FALSE;;
 
 	if (!isGroupSignal) {
 		const ComSignal_type * Signal =  GET_Signal(signalId);
@@ -75,12 +92,16 @@ void Com_ReadSignalDataFromPduBuffer(
 		signalLength = Signal->ComBitSize / 8;
 		bitPosition = Signal->ComBitPosition;
 		bitSize = Signal->ComBitSize;
+		isSignalGroup = Signal->Com_Arc_IsSignalGroup;
 	} else {
+		/* Groupsignal, we actually read from shadowbuffer */
+		Com_Arc_GroupSignal_type *Arc_GroupSignal = GET_ArcGroupSignal(signalId);
 		const ComGroupSignal_type *GroupSignal = GET_GroupSignal(signalId);
+		const ComSignal_type * SignalGroup =  GET_Signal(Arc_GroupSignal->Com_Arc_ParentId);
 		signalType = GroupSignal->ComSignalType;
 		signalEndianess = GroupSignal->ComSignalEndianess;
 		signalLength = GroupSignal->ComBitSize / 8;
-		bitPosition = GroupSignal->ComBitPosition;
+		bitPosition = GroupSignal->ComBitPosition - SignalGroup->ComBitPosition;
 		bitSize = GroupSignal->ComBitSize;
 	}
 
@@ -94,7 +115,7 @@ void Com_ReadSignalDataFromPduBuffer(
 	imask_t state;
 	Irq_Save(state);
 
-	if (signalEndianess == COM_OPAQUE || signalType == UINT8_N) {
+	if ((signalEndianess == COM_OPAQUE || signalType == UINT8_N) && !isSignalGroup) {
 		// Aligned opaque data -> straight copy
 		memcpy(signalDataBytes, pduBufferBytes, destSize);
 
@@ -158,35 +179,14 @@ void Com_WriteSignalDataToPdu(
 			signalId,
 			FALSE,
 			signalData,
-			IPdu->ComIPduDataPtr,
-			IPdu->ComIPduSize);
+			IPdu->ComIPduDataPtr);
 }
-
-void Com_WriteGroupSignalDataToPdu(
-		const Com_SignalIdType parentSignalId,
-		const Com_SignalIdType groupSignalId,
-		const void *signalData) {
-
-	// Get PDU
-	const ComSignal_type *Signal     = GET_Signal(parentSignalId);
-	const ComIPdu_type   *IPdu       = GET_IPdu(Signal->ComIPduHandleId);
-
-	// Get data
-	Com_WriteSignalDataToPduBuffer(
-			groupSignalId,
-			TRUE,
-			(uint8 *)signalData + (GET_GroupSignal(groupSignalId)->ComBitPosition / 8), // TODO, can we make sure group signals is on byte boundary
-			(void *)IPdu->ComIPduDataPtr,
-			IPdu->ComIPduSize);
-}
-
 
 void Com_WriteSignalDataToPduBuffer(
 			const uint16 signalId,
 			const boolean isGroupSignal,
 			const void *signalData,
-			void *pduBuffer,
-			const uint8 pduSize) {
+			void *pduBuffer) {
 	// TODO: Implement writing little-endian signals
 
 	Com_SignalType signalType;
@@ -194,6 +194,7 @@ void Com_WriteSignalDataToPduBuffer(
 	Com_BitPositionType bitPosition;
 	uint8 bitSize;
 	ComSignalEndianess_type endian;
+	boolean isSignalGroup = FALSE;;
 
 	if (!isGroupSignal) {
 		const ComSignal_type * Signal =  GET_Signal(signalId);
@@ -202,11 +203,15 @@ void Com_WriteSignalDataToPduBuffer(
 		bitPosition = Signal->ComBitPosition;
 		bitSize = Signal->ComBitSize;
 		endian = Signal->ComSignalEndianess;
+		isSignalGroup = Signal->Com_Arc_IsSignalGroup;
 	} else {
+		/* Groupsignal, we actually write to shadowbuffer */
+		Com_Arc_GroupSignal_type *Arc_GroupSignal = GET_ArcGroupSignal(signalId);
 		const ComGroupSignal_type *GroupSignal = GET_GroupSignal(signalId);
+		const ComSignal_type * SignalGroup =  GET_Signal(Arc_GroupSignal->Com_Arc_ParentId);
 		signalType = GroupSignal->ComSignalType;
 		signalLength = GroupSignal->ComBitSize / 8;
-		bitPosition = GroupSignal->ComBitPosition;
+		bitPosition = GroupSignal->ComBitPosition - SignalGroup->ComBitPosition;
 		bitSize = GroupSignal->ComBitSize;
 		endian = GroupSignal->ComSignalEndianess;
 	}
@@ -219,7 +224,7 @@ void Com_WriteSignalDataToPduBuffer(
 	imask_t irq_state;
 
 	Irq_Save(irq_state);
-	if (endian == COM_OPAQUE || signalType == UINT8_N) {
+	if ((endian == COM_OPAQUE || signalType == UINT8_N) && !isSignalGroup) {
 		//assert(bitPosition % 8 == 0);
 		//assert(bitSize % 8 == 0);
 		uint8 *pduBufferBytes = (uint8 *)pduBuffer;
