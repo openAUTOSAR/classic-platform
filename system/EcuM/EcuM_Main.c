@@ -577,8 +577,7 @@ void EcuM_MainFunction(void) {
 		DEBUG_ECUM_CALLOUT(ECUM_STR "EcuM_GetPendingWakeupEvents");
 		pendingWkupMask = EcuM_GetPendingWakeupEvents();
 
-		DEBUG_ECUM_CALLOUT_W_ARG("EcuM_StartWakeupSources", "0x%lx",
-								(uint32) pendingWkupMask);
+		DEBUG_ECUM_CALLOUT_W_ARG("EcuM_StartWakeupSources", "0x%lx",(uint32) pendingWkupMask);
 
 		EcuM_StartWakeupSources(pendingWkupMask);
 		internal_data.validationTimer = 0;
@@ -607,9 +606,8 @@ void EcuM_MainFunction(void) {
 					/* Build a mask with the sources that need validation */
 					validationMask |= wkupCfgPtr->EcuMWakeupSourceId;
 					/* Use one validation timeout, take the longest */
-					validationMaxTime = MAX(
-							wkupCfgPtr->EcuMValidationTimeout
-									/ ECUM_MAIN_FUNCTION_PERIOD,
+					validationMaxTime =
+							MAX( wkupCfgPtr->EcuMValidationTimeout / ECUM_MAIN_FUNCTION_PERIOD,
 							validationMaxTime);
 					internal_data.validationTimer = validationMaxTime;
 				} else {
@@ -640,25 +638,21 @@ void EcuM_MainFunction(void) {
 			DEBUG_ECUM_CALLOUT_W_ARG(
 					"EcuM_CheckValidation",
 					"0x%lx",
-					(uint32)(
-							EcuM_GetValidatedWakeupEvents() ^ pendingWkupMask));
-			EcuM_CheckValidation(
-					EcuM_GetValidatedWakeupEvents() ^ pendingWkupMask);
+					(uint32)(EcuM_GetValidatedWakeupEvents() ^ pendingWkupMask));
+
+			EcuM_CheckValidation( EcuM_GetValidatedWakeupEvents() ^ pendingWkupMask);
 
 			if (0 == (EcuM_GetValidatedWakeupEvents() ^ pendingWkupMask)) {
 				/* All events have been validated */
 				done = 1;
 			} else {
-				LDEBUG_PRINTF(
-						ECUM_STR "  Awaiting validation for mask: pending=%lx, expected=%lx\n",
-						pendingWkupMask, validationMask);
-				LDEBUG_PRINTF(ECUM_STR "  Validation Timer            : %lu\n",
-						internal_data.validationTimer);
+				LDEBUG_PRINTF( ECUM_STR "  Awaiting validation for mask: pending=%lx, expected=%lx\n",
+								pendingWkupMask, validationMask);
+				LDEBUG_PRINTF(ECUM_STR "  Validation Timer            : %lu\n", internal_data.validationTimer);
 			}
 
 		} else {
-			uint32 notValidatedMask = EcuM_GetValidatedWakeupEvents()
-					^ pendingWkupMask;
+			uint32 notValidatedMask = EcuM_GetValidatedWakeupEvents() ^ pendingWkupMask;
 
 			/* Stop wakeupSources that are not validated */
 			if (notValidatedMask) {
