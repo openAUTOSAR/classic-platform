@@ -84,7 +84,6 @@ void Com_ReadSignalDataFromPduBuffer(
 	uint8 signalLength;
 	Com_BitPositionType bitPosition;
 	uint8 bitSize;
-	boolean isSignalGroup = FALSE;;
 
 	if (!isGroupSignal) {
 		const ComSignal_type * Signal =  GET_Signal(signalId);
@@ -93,7 +92,6 @@ void Com_ReadSignalDataFromPduBuffer(
 		signalLength = Signal->ComBitSize / 8;
 		bitPosition = Signal->ComBitPosition;
 		bitSize = Signal->ComBitSize;
-		isSignalGroup = Signal->Com_Arc_IsSignalGroup;
 	} else {
 		/* Groupsignal, we actually read from shadowbuffer */
 		const ComGroupSignal_type *GroupSignal = GET_GroupSignal(signalId);
@@ -193,7 +191,6 @@ void Com_WriteSignalDataToPduBuffer(
 	Com_BitPositionType bitPosition;
 	uint8 bitSize;
 	ComSignalEndianess_type endian;
-	boolean isSignalGroup = FALSE;;
 
 	if (!isGroupSignal) {
 		const ComSignal_type * Signal =  GET_Signal(signalId);
@@ -202,7 +199,6 @@ void Com_WriteSignalDataToPduBuffer(
 		bitPosition = Signal->ComBitPosition;
 		bitSize = Signal->ComBitSize;
 		endian = Signal->ComSignalEndianess;
-		isSignalGroup = Signal->Com_Arc_IsSignalGroup;
 	} else {
 		/* Groupsignal, we actually write to shadowbuffer */
 		const ComGroupSignal_type *GroupSignal = GET_GroupSignal(signalId);
