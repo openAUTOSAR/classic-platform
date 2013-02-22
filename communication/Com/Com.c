@@ -127,7 +127,6 @@ void Com_Init(const Com_ConfigType *config ) {
 					Com_Arc_GroupSignal_type *Arc_GroupSignal = GET_ArcGroupSignal(GroupSignal->ComHandleId);
 					// Set pointer to shadow buffer
 					Arc_GroupSignal->Com_Arc_ShadowBuffer = (void *)Signal->Com_Arc_ShadowBuffer;
-					Arc_GroupSignal->Com_Arc_ParentId = Signal->ComHandleId;
 					// Initialize shadowbuffer.
 					Com_UpdateShadowSignal(GroupSignal->ComHandleId, GroupSignal->ComSignalInitValue);
 				}

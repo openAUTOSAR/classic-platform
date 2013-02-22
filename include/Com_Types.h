@@ -281,6 +281,7 @@ typedef struct {
 
 
 	const void *Com_Arc_ShadowBuffer;
+	const uint8 *Com_Arc_ShadowBuffer_Mask;
 	//void *Com_Arc_IPduDataPtr;
 
 	/* Pointer to the data storage of this signals IPDU.
