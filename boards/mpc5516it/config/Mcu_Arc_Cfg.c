@@ -115,7 +115,7 @@ const struct Mcu_Arc_Config Mcu_Arc_ConfigData = {
 
 /**
  * @param sleepCfg
- */
+ */ 
 void Mcu_Arc_SetMode2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *sleepCfg ) {
 	uint32_t timeout = 0;
 
