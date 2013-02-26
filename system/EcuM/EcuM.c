@@ -89,7 +89,7 @@
 #include "SchM.h"
 #endif
 
-#define USE_LDEBUG_PRINTF
+//#define USE_LDEBUG_PRINTF
 #include "debug.h"
 
 /* ----------------------------[private define]------------------------------*/
@@ -202,6 +202,8 @@ void EcuM_StartupTwo(void)
 	StatusType tickTimerStatus;
 #endif
 
+	set_current_state(ECUM_STATE_STARTUP_TWO);
+
 	// Initialize the BSW scheduler
 #if defined(USE_SCHM)
 	SchM_Init();
@@ -226,8 +228,6 @@ void EcuM_StartupTwo(void)
 #if defined(USE_RTE)
 	Rte_Start();
 #endif
-
-	set_current_state(ECUM_STATE_STARTUP_TWO);
 
 #if defined(USE_NVM)
 

@@ -27,6 +27,7 @@
 
 struct Mcu_Arc_SleepPrivData {
 	uint32_t hlt0;
+	uint32_t swt_cr;
 };
 
 

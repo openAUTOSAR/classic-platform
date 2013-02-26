@@ -14,7 +14,6 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 //lint -emacro(904,VALIDATE,VALIDATE_RV,VALIDATE_NO_RV) //904 PC-Lint exception to MISRA 14.7 (validate macros).
-#define USE_LDEBUG_PRINTF
 
 #include "Std_Types.h"
 #include "EcuM.h"
@@ -550,7 +549,7 @@ void EcuM_MainFunction(void) {
 
 		/* TODO: we must have a normal RUN mode.. can't find any
 		 * in the A3.1.5 spec. */
-		Mcu_SetMode(MCU_MODE_NORMAL);
+		Mcu_SetMode(MCU_MODE_RUN);
 #if defined(USE_WDGM)
 		if( internal_data.config->EcuMWdgMConfig != NULL ) {
 			WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMWakeupMode);

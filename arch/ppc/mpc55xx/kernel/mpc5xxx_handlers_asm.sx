@@ -127,9 +127,9 @@ ASM_SECTION_TEXT(.text)
 #error No support for this MCU
 #endif
 
-	.global McuE_EnterLowPower
+	.global Mcu_Arc_EnterLowPower
 	
-McuE_EnterLowPower:
+Mcu_Arc_EnterLowPower:
 	subi	r1, r1, 0x94	// Allocate space on stack 0x94 = 148 r2--r31 + 7 SPRs
 	stmw	r2, 0(r1) 		// Save registers r2-r31 to stack
 	mfSRR1	r25
@@ -220,7 +220,7 @@ Mcu_Arc_LowPowerRecoverFlash:
 	mtXER	r30
 	mtCTR	r31		    // Load SPRs with GPR values
 
-#if defined(USE_ECUM)
+#if 0 //defined(USE_ECUM)
 
 	/* We have no idea what made us wakeup, pass all */
 	LOAD_ADDR_32(r3,0x3fffffff);		// EcuM_WakeupSourceType

@@ -145,8 +145,7 @@ void EcuM_ErrorHook(Std_ReturnType reason) {
 
 extern EcuM_ConfigType EcuMConfig;
 
-EcuM_ConfigType* EcuM_DeterminePbConfiguration(void)
-{
+EcuM_ConfigType* EcuM_DeterminePbConfiguration(void) {
 	return &EcuMConfig;
 }
 
@@ -160,7 +159,7 @@ EcuM_ConfigType* EcuM_DeterminePbConfiguration(void)
  */
 void EcuM_AL_DriverInitZero(void)
 {
-	VALIDATE_STATE( ECUM_STATE_STARTUP_ONE );
+//	VALIDATE_STATE( ECUM_STATE_STARTUP_ONE );
 
 #if defined(USE_DET)
 	Det_Init();/** @req EcuM2783 */
@@ -177,7 +176,7 @@ void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
 {
 	(void)ConfigPtr;
 
-	VALIDATE_STATE( ECUM_STATE_STARTUP_ONE );
+//	VALIDATE_STATE( ECUM_STATE_STARTUP_ONE );
 
   //lint --e{715}       PC-Lint (715) - ConfigPtr usage depends on configuration of modules
 
@@ -186,12 +185,11 @@ void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
 
 	/* Set up default clock (Mcu_InitClock requires initRun==1) */
 	/* Ignoring return value */
-	(void) Mcu_InitClock( ConfigPtr->McuConfig->McuDefaultClockSettings );
+	(void) Mcu_InitClock(ConfigPtr->McuConfig->McuDefaultClockSettings);
 
 	// Wait for PLL to sync.
-	while (Mcu_GetPllStatus() != MCU_PLL_LOCKED)
-	{
-	  ;
+	while (Mcu_GetPllStatus() != MCU_PLL_LOCKED) {
+		;
 	}
 
 	Mcu_DistributePllClock();
@@ -206,7 +204,6 @@ void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
 	// Setup Port
 	Port_Init(ConfigPtr->PortConfig);
 #endif
-
 
 #if defined(USE_GPT)
 	// Setup the GPT
@@ -256,7 +253,7 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 {
 	(void)ConfigPtr;
   //lint --e{715}       PC-Lint (715) - ConfigPtr usage depends on configuration of modules
-	VALIDATE_STATE(ECUM_STATE_STARTUP_TWO);
+//	VALIDATE_STATE(ECUM_STATE_STARTUP_TWO);
 
 #if defined(USE_SPI)
 	// Setup SPI
@@ -316,7 +313,6 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 	NO_DRIVER(J1939Tp_Init(ConfigPtr->J1939TpConfig));
 #endif
 
-
 	// Setup LIN
 	// TODO
 
@@ -374,8 +370,8 @@ void EcuM_AL_DriverInitThree(const EcuM_ConfigType* ConfigPtr)
 #endif
 
 #if defined(USE_COMM)
-        // Setup Communication Manager
-        ComM_Init(ConfigPtr->ComMConfig);
+	// Setup Communication Manager
+    ComM_Init(ConfigPtr->ComMConfig);
 #endif
 }
 
@@ -414,28 +410,7 @@ void EcuM_OnGoOffTwo(void)
 
 }
 
-/**
- *
- */
-void EcuM_GenerateRamHash(void)
-{
-	/* De-init drivers.
-	 * There is really no suiteable place to do this but here
-	 */
-#if defined(USE_GPT)
-	Gpt_DeInit();
-#endif
-#if defined(USE_ADC)
-	Adc_DeInit();
-#endif
-#if defined(USE_PWM)
-	Pwm_DeInit();
-#endif
-#if defined(USE_SPI)
-	Spi_DeInit();
-#endif
 
-}
 
 /**
  * This function should be the last this called before reset.
@@ -455,6 +430,14 @@ void EcuM_AL_SwitchOff(void)
 	Mcu_PerformReset();
 #endif
 }
+/**
+ *
+ * Called to check other wakeup sources. Assume for example that
+ * we want to check something else than the actual wakeup pin.
+ *
+ * Can be called from interrupt context.
+ * @param wakeupSource
+ */
 
 void EcuM_CheckWakeup(EcuM_WakeupSourceType source) {
 
@@ -522,6 +505,17 @@ void EcuM_StartWakeupSources(EcuM_WakeupSourceType wakeupSource) {
 }
 
 /**
+ * Stop not validated events
+ *
+ * @param wakeupSource
+ */
+void EcuM_StopWakeupSources(EcuM_WakeupSourceType wakeupSource)
+{
+	VALIDATE_STATE( ECUM_STATE_WAKEUP_VALIDATION);
+	(void)wakeupSource;
+}
+
+/**
  *
  * @param wakeupSource
  */
@@ -552,8 +546,6 @@ void EcuM_AL_DriverRestart(void) {
 
 	config = EcuM_DeterminePbConfiguration();
 
-	/* TODO: Watchdog ?*/
-
 	/* Start all drivers for now */
 	EcuM_AL_DriverInitOne(config);
 
@@ -568,7 +560,6 @@ void EcuM_AL_DriverRestart(void) {
 
 	EcuM_AL_DriverInitTwo(config);
 }
-
 
 /**
  * Called once validation is done and a may change the wakeup at a very
@@ -592,15 +583,31 @@ EcuM_WakeupReactionType EcuM_OnWakeupReaction( EcuM_WakeupReactionType wact ) {
 	return wact;
 }
 
+
 /**
  * Generate RAM hash.
  * We are in ECUM_STATE_SLEEP here.
  *
  */
-void EcuM_GenerateRamHash( void ) {
+void EcuM_GenerateRamHash(void)
+{
+	/* De-init drivers.
+	 * There is really no suiteable place to do this but here
+	 */
 	VALIDATE_STATE( ECUM_STATE_SLEEP );
-
-	/* ADD CODE BELOW */
+	 
+#if defined(USE_GPT)
+	Gpt_DeInit();
+#endif
+#if defined(USE_ADC)
+	Adc_DeInit();
+#endif
+#if defined(USE_PWM)
+	Pwm_DeInit();
+#endif
+#if defined(USE_SPI)
+	Spi_DeInit();
+#endif
 }
 
 /**

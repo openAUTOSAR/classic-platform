@@ -58,6 +58,9 @@ typedef uint8 StatusType;
 #define	E_OS_PROTECTION_EXCEPTION (StatusType)18    /**< AUTOSAR, see 7.10 */
 #define	E_OS_PROTECTION_RATE (StatusType)19          /**< AUTOSAR, see 7.10 */
 
+#define E_OS_EXIT_ABORT				(StatusType)30	/* ArcCore */
+#define E_OS_PANIC					(StatusType)31	/* ArcCore */
+
 #define E_COM_ID 255 // TODO: var ska E_COM_ID vara?"
 
 

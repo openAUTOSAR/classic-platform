@@ -116,7 +116,7 @@ const struct Mcu_Arc_Config Mcu_Arc_ConfigData = {
 /**
  * @param sleepCfg
  */ 
-void Mcu_Arc_SetMode2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *sleepCfg ) {
+void Mcu_Arc_SetModePre2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *sleepCfg ) {
 	uint32_t timeout = 0;
 
 
@@ -157,9 +157,39 @@ void Mcu_Arc_SetMode2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *s
 
 		LOG_HEX1("HLT: ", sleepCfg->hlt0_sleep );
 		sleepCfg->pData->hlt0 = SIU.HLT.R;
+		sleepCfg->pData->swt_cr = MCM.SWTCR.R;
 		SIU.HLT.R = sleepCfg->hlt0_sleep;
 
 		while((SIU.HLTACK.R != sleepCfg->hlt0_sleep) && (timeout++<HLT_TIMEOUT)) {}
+
+		Mcu_Arc_EnterLowPower(mcuMode);
+		/* back from sleep */
+
+		/* Setup exceptions and INTC again */
+		Os_IsrInit();
+
+		/* Restore watchdog */
+		MCM.SWTCR.R = sleepCfg->pData->swt_cr;
+
+		/* Clear sleep flags to allow pads to operate */
+	    CRP.PSCR.B.SLEEPF = 0x1;
+
+#if defined(USE_ECUM)
+		EcuM_CheckWakeup( 0x3fffffffUL );
+#endif
+
+	}
+}
+
+
+/**
+ * @param sleepCfg
+ */
+void Mcu_Arc_SetModePost2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *sleepCfg ) {
+
+	if( MCU_MODE_RUN == mcuMode ) {
+
+	} else if( MCU_MODE_SLEEP == mcuMode  ) {
 	}
 }
 

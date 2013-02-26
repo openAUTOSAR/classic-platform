@@ -11,7 +11,7 @@
 
 void MM_TlbSetup( const struct TlbEntry *tblTable  )
 {
-	int32_t i;
+	int32_t i = 0;
 
 	/* Setup the TLBs */
 	while( tblTable[i].entry != (-1UL) ) {

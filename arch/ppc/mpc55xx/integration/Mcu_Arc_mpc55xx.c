@@ -37,6 +37,8 @@
 #include "Dma.h"
 #endif
 
+#include "Os.h"
+
 /* ----------------------------[private macro]-------------------------------*/
 
 #if defined (CFG_MPC5668)
@@ -67,11 +69,10 @@ uint8_t Mpc5xxx_Intc_Esr;
 void Os_Panic( uint32_t error, void *pData ) {
 
 	(void)error;
-#if ( MCU_PERFORM_RESET_API == STD_ON )
-	Mcu_PerformReset();
-#else
-	while(1) {};
-#endif
+	(void)pData;
+
+	ShutdownOS(E_OS_PANIC);
+
 }
 
 
@@ -179,7 +180,7 @@ void Mcu_Arc_SetModePre( Mcu_ModeType mcuMode)
 
 		/* Get back to "normal" halt flags */
 #if defined(CFG_MPC5516)
-		Mcu_Arc_SetMode2(mcuMode, Mcu_Arc_ConfigData.sleepConfig );
+		Mcu_Arc_SetModePre2(mcuMode, Mcu_Arc_ConfigData.sleepConfig );
 #elif defined(CFG_MPC5668)
 		SIU.HLT0.R = Mcu_SavedHaltFlags[0];
 		SIU.HLT1.R = Mcu_SavedHaltFlags[1];
@@ -192,7 +193,7 @@ void Mcu_Arc_SetModePre( Mcu_ModeType mcuMode)
 		 */
 		/* Set Recover Vector */
 	#if defined(CFG_MPC5516)
-		Mcu_Arc_SetMode2(mcuMode, Mcu_Arc_ConfigData.sleepConfig);
+		Mcu_Arc_SetModePre2(mcuMode, Mcu_Arc_ConfigData.sleepConfig);
 
 	#elif defined(CFG_MPC5668)
 #if defined(USE_DMA)
@@ -232,31 +233,45 @@ void Mcu_Arc_SetModePre( Mcu_ModeType mcuMode)
 	#else
 	#error CPU not defined
 	#endif
+//
+//		/* put Z0 in reset if not used for wakeup */
+//		CRP.Z0VEC.B.Z0RST = 1;
+//
+//	    /* Save context and execute wait instruction.
+//		 *
+//		 * Things that matter here are
+//		 * - Z1VEC, determines where TLB0 will point. TLB0 is written with a
+//		 *   value at startup that 4K aligned to this address.
+//		 * - LowPower_Sleep() will save a interrupt context so we will return
+//		 *   intact.
+//		 * - For devices with little RAM we don't want to impose the alignment
+//		 *   requirements there. Almost as we have to occupy a 4K block for this..
+//		 *   although the code does not take that much space.
+//		 * */
+//		Mcu_Arc_EnterLowPower(mcuMode);
+//
+//		/* Back from Sleep */
+//
+//		/* Setup exceptions and INTC again */
+//		Os_IsrInit();
+//
+//		/* Clear sleep flags to allow pads to operate */
+//	    CRP.PSCR.B.SLEEPF = 0x1;
+//
+//#if defined(USE_ECUM)
+//		EcuM_CheckWakeup( 0x3fffffffUL );
+//#endif
 
-		/* put Z0 in reset if not used for wakeup */
-		CRP.Z0VEC.B.Z0RST = 1;
-
-	    /* Save context and execute wait instruction.
-		 *
-		 * Things that matter here are
-		 * - Z1VEC, determines where TLB0 will point. TLB0 is written with a
-		 *   value at startup that 4K aligned to this address.
-		 * - LowPower_Sleep() will save a interrupt context so we will return
-		 *   intact.
-		 * - For devices with little RAM we don't want to impose the alignment
-		 *   requirements there. Almost as we have to occupy a 4K block for this..
-		 *   although the code does not take that much space.
-		 * */
-		McuE_EnterLowPower(mcuMode);
-
-	    /* Clear sleep flags to allow pads to operate */
-	    CRP.PSCR.B.SLEEPF = 0x1;
 	}
 }
 
 void Mcu_Arc_SetModePost( Mcu_ModeType mcuMode)
 {
-
+	if( MCU_MODE_RUN == mcuMode ) {
+		Mcu_Arc_SetModePost2(mcuMode,  Mcu_Arc_ConfigData.sleepConfig);
+	} else if( MCU_MODE_SLEEP == mcuMode ) {
+		Mcu_Arc_SetModePost2(mcuMode,  Mcu_Arc_ConfigData.sleepConfig);
+	}
 }
 
 
