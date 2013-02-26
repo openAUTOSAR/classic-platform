@@ -48,7 +48,10 @@ void Com_CopySignalGroupDataFromShadowBufferToPdu(const Com_SignalIdType signalG
 	// Aligned opaque data -> straight copy with signalgroup mask
 	uint8 *buf = (uint8 *)Signal->Com_Arc_ShadowBuffer;
 	for(int i= 0; i < IPdu->ComIPduSize; i++){
-		*pduDataPtr++= Signal->Com_Arc_ShadowBuffer_Mask[i] & *buf++;
+		*pduDataPtr = (~Signal->Com_Arc_ShadowBuffer_Mask[i] & *pduDataPtr) |
+					  (Signal->Com_Arc_ShadowBuffer_Mask[i] & *buf);
+		buf++;
+		pduDataPtr++;
 	}
 
 }
