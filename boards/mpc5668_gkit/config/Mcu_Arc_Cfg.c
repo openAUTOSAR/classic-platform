@@ -97,19 +97,21 @@ struct Mcu_Arc_SleepPrivData sleepPrivData;
 const Mcu_Arc_SleepConfigType Mcu_Arc_SleepConfig =  {
 	/* Run all */
 	.hlt0_run   = 0x0UL,
+	.hlt1_run   = 0x0UL,
 
 	/* Halt all but reserved bits */
-	.hlt0_sleep = 0x3fffffffUL,
+	.hlt0_sleep = 0x037FFF3DUL,
+	.hlt1_sleep = 0x18000F3CUL,
 
 	/* Goto sleep, enable all RAM
-	 *     0x1-8k, 0x2-16k, 0x3-32k, 0x6-64k, 0x7-80K */
-	.crp_pscr = PSCR_SLEEP | PSCR_SLP12EN | PCSR_RAMSEL(7),
+	 *     0x1 32k, 0x2 64k, 0x3 128k */
+	.crp_pscr = PSCR_SLEEP | PSCR_SLP12EN | PCSR_RAMSEL(0x3),
 
 	/* Point to recovery routine. If VLE is used this must be indicated */
 #if defined(CFG_VLE)
-	.z1vec = ((uint32)&Mcu_Arc_LowPowerRecoverFlash | 1),
+	.z6vec = ((uint32)&Mcu_Arc_LowPowerRecoverFlash | 1),
 #else
-	.z1vec = ((uint32)&Mcu_Arc_LowPowerRecoverFlash ),
+	.z6vec = ((uint32)&Mcu_Arc_LowPowerRecoverFlash ),
 #endif
 	/* Not using Z0 so keep in reset */
 	.z0vec = 2,
@@ -132,7 +134,8 @@ void Mcu_Arc_SetModePre2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig
 
 
 	if( MCU_MODE_RUN == mcuMode ) {
-		SIU.HLT.R = sleepCfg->hlt0_run;
+		SIU.HLT0.R = sleepCfg->hlt0_run;
+		SIU.HLT1.R = sleepCfg->hlt1_run;
 	} else if( MCU_MODE_SLEEP == mcuMode  ) {
 
 #if defined(USE_DMA)
@@ -159,19 +162,23 @@ void Mcu_Arc_SetModePre2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig
 		/* Write Sleep config */
 		WRITE32(CRP_PSCR, sleepCfg->crp_pscr);
 
-		LOG_HEX1("CRP: Z1VEC: ", sleepCfg->z1vec );
-		WRITE32(CRP_Z1VEC, sleepCfg->z1vec);
+		LOG_HEX1("CRP: Z6VEC: ", sleepCfg->z6vec );
+		WRITE32(CRP_Z1VEC, sleepCfg->z6vec);
 		LOG_HEX1("CRP: Z0VEC: ", sleepCfg->z0vec );
 		WRITE32(CRP_Z0VEC, sleepCfg->z0vec);
 
 		assert( sleepCfg->pData != NULL );
 
 		LOG_HEX1("HLT: ", sleepCfg->hlt0_sleep );
-		sleepCfg->pData->hlt0 = SIU.HLT.R;
-		sleepCfg->pData->swt_cr = MCM.SWTCR.R;
-		SIU.HLT.R = sleepCfg->hlt0_sleep;
+		sleepCfg->pData->hlt0 = SIU.HLT0.R;
+		sleepCfg->pData->hlt1 = SIU.HLT1.R;
 
-		while((SIU.HLTACK.R != sleepCfg->hlt0_sleep) && (timeout++<HLT_TIMEOUT)) {}
+		// sleepCfg->pData->swt_cr = MCM.SWTCR.R;
+
+		SIU.HLT0.R = sleepCfg->hlt0_sleep;
+		SIU.HLT1.R = sleepCfg->hlt1_sleep;
+
+		while((SIU.HLTACK0.R != sleepCfg->hlt0_sleep) && (SIU.HLTACK1.R != sleepCfg->hlt1_sleep) && (timeout<HLT_TIMEOUT)){}
 
 		Mcu_Arc_EnterLowPower(mcuMode);
 		/* back from sleep */
@@ -180,7 +187,9 @@ void Mcu_Arc_SetModePre2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig
 		Os_IsrInit();
 
 		/* Restore watchdog */
-		MCM.SWTCR.R = sleepCfg->pData->swt_cr;
+	 	SWT.SR.R = 0x0000c520;     /* Write keys to clear soft lock bit */
+	 	SWT.SR.R = 0x0000d928;
+	 	SWT.CR.R = 0x8000010A;
 
 		/* Clear sleep flags to allow pads to operate */
 	    CRP.PSCR.B.SLEEPF = 0x1;

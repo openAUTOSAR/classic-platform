@@ -178,102 +178,12 @@ void Mcu_Arc_InitClockPost( const Mcu_ClockSettingConfigType *clockSettingsPtr )
  */
 void Mcu_Arc_SetModePre( Mcu_ModeType mcuMode)
 {
-	if( MCU_MODE_RUN == mcuMode ) {
-
-		/* Get back to "normal" halt flags */
-#if defined(CFG_MPC5516)
-		Mcu_Arc_SetModePre2(mcuMode, Mcu_Arc_ConfigData.sleepConfig );
-#elif defined(CFG_MPC5668)
-		SIU.HLT0.R = Mcu_SavedHaltFlags[0];
-		SIU.HLT1.R = Mcu_SavedHaltFlags[1];
-#endif
-
-	} else if( MCU_MODE_SLEEP == mcuMode ) {
-		/*
-		 * Follows the AN3548 from Freescale
-		 *
-		 */
-		/* Set Recover Vector */
-	#if defined(CFG_MPC5516)
-		Mcu_Arc_SetModePre2(mcuMode, Mcu_Arc_ConfigData.sleepConfig);
-
-	#elif defined(CFG_MPC5668)
-#if defined(USE_DMA)
-		Dma_DeInit();
-#endif
-
-		/* Set system clock to 16Mhz IRC */
-		SIU.SYSCLK.B.SYSCLKSEL = R_SYSCLKSEL;
-
-		/* Put flash in low-power mode */
-		// TODO
-
-
-
-		/* Put QQADC in low-power mode */
-		// TODO
-
-		/* Set us in SLEEP mode */
-		CRP.PSCR.B.SLEEP = 1;
-
-
-		uint32 timeout = 0;
-		/* - Set the sleep bit; following a WAIT instruction, the device will go to sleep
-		 * - enable the 1.2V internal regulator when in sleep mode only
-		 */
-
-		READWRITE32(CRP_PSCR, (PSCR_SLEEP | PSCR_SLP12EN | PCSR_RAMSEL(0x7)), (PSCR_SLEEP | PSCR_SLP12EN | PCSR_RAMSEL(RAMSEL_VAL)));
-		WRITE32(CRP_Z6VEC, ((uint32)&McuE_LowPowerRecoverFlash) | VLE_VAL );
-		READWRITE32(CRP_RECPTR,RECPTR_FASTREC,0 );
-
-		Mcu_SavedHaltFlags[0] = SIU.HLT0.R;
-		Mcu_SavedHaltFlags[1] = SIU.HLT1.R;
-		/* Halt everything */
-	    SIU.HLT0.R = R_HLT0;
-	    SIU.HLT1.R = R_HLT1;
-	    while((SIU.HLTACK0.R != R_HLT0) && (SIU.HLTACK1.R != R_HLT1) && (timeout<HLT_TIMEOUT)){}
-	#else
-	#error CPU not defined
-	#endif
-//
-//		/* put Z0 in reset if not used for wakeup */
-//		CRP.Z0VEC.B.Z0RST = 1;
-//
-//	    /* Save context and execute wait instruction.
-//		 *
-//		 * Things that matter here are
-//		 * - Z1VEC, determines where TLB0 will point. TLB0 is written with a
-//		 *   value at startup that 4K aligned to this address.
-//		 * - LowPower_Sleep() will save a interrupt context so we will return
-//		 *   intact.
-//		 * - For devices with little RAM we don't want to impose the alignment
-//		 *   requirements there. Almost as we have to occupy a 4K block for this..
-//		 *   although the code does not take that much space.
-//		 * */
-//		Mcu_Arc_EnterLowPower(mcuMode);
-//
-//		/* Back from Sleep */
-//
-//		/* Setup exceptions and INTC again */
-//		Os_IsrInit();
-//
-//		/* Clear sleep flags to allow pads to operate */
-//	    CRP.PSCR.B.SLEEPF = 0x1;
-//
-//#if defined(USE_ECUM)
-//		EcuM_CheckWakeup( 0x3fffffffUL );
-//#endif
-
-	}
+	Mcu_Arc_SetModePre2(mcuMode, Mcu_Arc_ConfigData.sleepConfig );
 }
 
 void Mcu_Arc_SetModePost( Mcu_ModeType mcuMode)
 {
-	if( MCU_MODE_RUN == mcuMode ) {
-		Mcu_Arc_SetModePost2(mcuMode,  Mcu_Arc_ConfigData.sleepConfig);
-	} else if( MCU_MODE_SLEEP == mcuMode ) {
-		Mcu_Arc_SetModePost2(mcuMode,  Mcu_Arc_ConfigData.sleepConfig);
-	}
+	Mcu_Arc_SetModePost2(mcuMode,  Mcu_Arc_ConfigData.sleepConfig);
 }
 
 

@@ -79,15 +79,6 @@ typedef void (*vfunc_t)();
 
 /* ----------------------------[private function prototypes]-----------------*/
 /* ----------------------------[private variables]---------------------------*/
-
-#if defined(CFG_MPC5516)
-static uint32 Mcu_SavedHaltFlags;
-#else
-static uint32 Mcu_SavedHaltFlags[2];
-#endif
-
-
-
 /* ----------------------------[private functions]---------------------------*/
 /* ----------------------------[public functions]----------------------------*/
 

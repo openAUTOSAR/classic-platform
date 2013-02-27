@@ -145,7 +145,12 @@ void EcuM_ErrorHook(Std_ReturnType reason) {
 
 extern EcuM_ConfigType EcuMConfig;
 
+static void _dummy( void ) {
+
+}
+
 EcuM_ConfigType* EcuM_DeterminePbConfiguration(void) {
+	NO_DRIVER(_dummy());	// Keep compiler silent
 	return &EcuMConfig;
 }
 

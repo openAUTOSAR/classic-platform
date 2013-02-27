@@ -63,8 +63,11 @@ inc-$(USE_DMA) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers
 # Mcu
 obj-$(USE_MCU) += Mcu.o
 obj-$(USE_MCU) += Mcu_Cfg.o
+ # Mcu with workding sleep mode
+ifeq ($(CFG_PPC),y)
 obj-$(USE_MCU)-$(if $(CFG_MPC5668)$(CFG_MPC5516),y) += Mcu_Arc_mpc55xx.o
-obj-$(USE_MCU)-$(CFG_MPC560X) += Mcu_Arc_mpc56xx.o
+obj-$(USE_MCU)-$(if $(CFG_MPC5668)$(CFG_MPC5516),n,y) += Mcu_Arc_mpc56xx.o
+endif
 
 # CPU specific
 obj-$(CFG_PPC) += mpc5xxx_handlers.o

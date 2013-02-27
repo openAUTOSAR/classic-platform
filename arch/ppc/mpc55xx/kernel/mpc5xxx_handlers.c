@@ -74,7 +74,7 @@
 #include "asm_ppc.h"
 #include "arch_stack.h"
 #include "io.h"
-
+#include "Os.h"
 
 /* ----------------------------[private define]------------------------------*/
 #define TODO_NUMBER  0
@@ -146,7 +146,7 @@ static uint32_t handleException( uint32_t exception , uint32_t spr ) {
 
 	rv = Mcu_Arc_ExceptionHook( exception );
 	if( rv & EXC_NOT_HANDLED ) {
-		Os_Panic(exception);
+		Os_Panic(exception,NULL);
 	}
 
 	_spr = (spr==SPR_CSRR0) ? get_spr(SPR_CSRR0) : get_spr(SPR_SRR0);
