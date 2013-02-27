@@ -23,7 +23,7 @@
 
 
 /* ----------------------------[includes]------------------------------------*/
-/* ----------------------------[private define]------------------------------*/
+
 
 #include "Std_Types.h"
 #include "Mcu.h"
@@ -38,6 +38,8 @@
 #endif
 
 #include "Os.h"
+
+/* ----------------------------[private define]------------------------------*/
 
 /* ----------------------------[private macro]-------------------------------*/
 
@@ -155,12 +157,12 @@ void Mcu_Arc_InitPost( void ) {
 
 /* ----------------------------[public functions]----------------------------*/
 
-void Mcu_Arc_InitClockPre( const Mcu_ClockType ClockSetting )
+void Mcu_Arc_InitClockPre( const Mcu_ClockSettingConfigType *clockSettingsPtr )
 {
 }
 
 
-void Mcu_Arc_InitClockPost( const Mcu_ClockType ClockSetting )
+void Mcu_Arc_InitClockPost( const Mcu_ClockSettingConfigType *clockSettingsPtr )
 {
 }
 

@@ -455,7 +455,7 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     Mcu_Global.clockSetting = ClockSetting;
     clockSettingsPtr = &Mcu_Global.config->McuClockSettingConfig[Mcu_Global.clockSetting];
 
-    Mcu_Arc_InitClockPre(ClockSetting);
+    Mcu_Arc_InitClockPre(clockSettingsPtr);
 
     // TODO: find out if the 5554 really works like the 5516 here
     // All three (16, 54, 67) used to run the same code here though, so i'm sticking it with 5516
@@ -544,7 +544,7 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
    FMPLL.SYNCR.B.LOLIRQ	= 1;
 #endif
 
-    Mcu_Arc_InitClockPost(ClockSetting);
+    Mcu_Arc_InitClockPost(clockSettingsPtr);
 
     return E_OK;
 }

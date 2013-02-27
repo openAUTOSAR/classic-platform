@@ -116,8 +116,6 @@ void EcuM_Init(void) {
 	Std_ReturnType status;
 	set_current_state(ECUM_STATE_STARTUP_ONE);
 
-	VALIDATE_STATE( ECUM_STATE_STARTUP_ONE );
-
 	// Initialize drivers that are needed to determine PostBuild configuration
 	EcuM_AL_DriverInitZero();
 
@@ -150,6 +148,7 @@ void EcuM_Init(void) {
 		break;
 	default:
 		assert(0);
+		break;
 	}
 
 	// Moved this here because EcuM_SelectShutdownTarget needs us to be initilized.
@@ -230,33 +229,16 @@ void EcuM_StartupTwo(void)
 #endif
 
 #if defined(USE_NVM)
-
-#if 0
-	/* Wait for the NVM job (NvmReadAll) to terminate. This assumes that:
+	/* Wait for the NVM job (NvM_ReadAll) to terminate. This assumes that:
 	 * - A task runs the memory MainFunctions, e.g. Ea_MainFunction(), Eep_MainFunction()
-	 *    Prio: HIGH
-	 * - A task runs the service functions for EcuM, Nvm.
-	 *    Prio: MIDDLE
-	 * - This task:
-	 *    Prio: LOW  (So that the service functions for the other may run)
+	 *   are run in a higher priority task that the task that executes this code.
 	 */
 	do {
 		/* Read the multiblock status */
 		NvM_GetErrorStatus(0, &readAllResult);
-		tickTimerElapsed = OS_TICKS2MS_OsTick(GetOsTick() - tickTimerStart);
+		tickTimerElapsed = OS_TICKS2MS_OS_TICK(GetOsTick() - tickTimerStart);
 		/* The timeout EcuMNvramReadAllTimeout is in ms */
 	} while( (readAllResult == NVM_REQ_PENDING) && (tickTimerElapsed < internal_data.config->EcuMNvramReadAllTimeout) );
-#else
-	// Wait for the NVM job (NvmReadAll) to terminate
-		do {
-			NvM_GetErrorStatus(0, &readAllResult);	// Read the multiblock status
-			tickTimer = tickTimerStart;	// Save this because the GetElapsedCounterValue() will destroy it.
-			tickTimerStatus =  GetElapsedCounterValue(Os_Arc_OsTickCounter, &tickTimer, &tickTimerElapsed);
-			if (tickTimerStatus != E_OK) {
-				DET_REPORTERROR(MODULE_ID_ECUM, 0, ECUM_ARC_STARTUPTWO_ID, ECUM_E_ARC_TIMERERROR);
-			}
-		} while( (readAllResult == NVM_REQ_PENDING) && (tickTimerElapsed < internal_data.config->EcuMNvramReadAllTimeout) );
-#endif
 #endif
 
 	// Initialize drivers that need NVRAM data
@@ -264,9 +246,7 @@ void EcuM_StartupTwo(void)
 
 	// TODO: Indicate mode change to RTE
 
-	// If coming from startup sequence, enter Run mode
-//	if (internal_data.current_state == ECUM_STATE_STARTUP_TWO)
-		EcuM_enter_run_mode();
+	EcuM_enter_run_mode();
 
 }
 

@@ -41,7 +41,7 @@ const EcuM_SleepModeType EcuM_SleepModeConfig[] = {
 	{ // EcuMSleepMode 
 		.EcuMSleepModeId = ECUM_SLEEP_MODE_ECUMSLEEPMODE,
 		.EcuMWakeupSourceMask = ECUM_WKSOURCE_ECUMWAKEUPSOURCE,
-		.EcuMSleepModeMcuMode = MCU_MODE_MCUMODESETTINGCONF,
+		.EcuMSleepModeMcuMode = MCU_MODE_RUN,
 #if defined(USE_WDGM)
 		.EcuMSleepModeWdgMMode = ECUM_SLEEP_MODE_WDGM_MODE_ILL,
 #endif

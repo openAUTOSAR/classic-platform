@@ -22,13 +22,25 @@ endif
 ifeq (${COMPILER},cw)
 CW_COMPILE?=${DEFAULT_CW_COMPILE}
 endif
+ifeq (${COMPILER},iar)
+IAR_COMPILE?=${DEFAULT_IAR_COMPILE}
+endif
+ifeq (${COMPILER},diab)
+DIAB_COMPILE?=${DEFAULT_DIAB_COMPILE}
+endif
 
 # Check cross compiler setting against default from board config
 ifeq (${COMPILER},cw)
 ifneq (${CW_COMPILE},${DEFAULT_CW_COMPILE})
 ${warning Not using default cross compiler for architecture.}
-${warning CROSS_COMPILE:         ${CW_COMPILE} [${origin CW_COMPILE}]}
-${warning DEFAULT_CROSS_COMPILE: ${DEFAULT_CW_COMPILE} [${origin DEFAULT_CW_COMPILE}]}
+${warning CW_COMPILE:            ${CW_COMPILE} [${origin CW_COMPILE}]}
+${warning DEFAULT_CW_COMPILE:    ${DEFAULT_CW_COMPILE} [${origin DEFAULT_CW_COMPILE}]}
+endif
+else ifeq (${COMPILER},iar)
+ifneq (${IAR_COMPILE},${DEFAULT_IAR_COMPILE})
+${warning Not using default cross compiler for architecture.}
+${warning IAR_COMPILE:            ${IAR_COMPILE} [${origin IAR_COMPILE}]}
+${warning DEFAULT_IAR_COMPILE:    ${DEFAULT_IAR_COMPILE} [${origin DEFAULT_IAR_COMPILE}]}
 endif
 else
 ifneq (${DEFAULT_CROSS_COMPILE},)
@@ -122,6 +134,11 @@ ifndef _BOARD_COMMON_MK
 include $(ROOTDIR)/boards/board_common.mk
 endif
 
+# Misc tools
+ifneq ($(CFG_BOOT),)
+include $(ROOTDIR)/boards/$(BOARDDIR)/boot_info.mk
+include $(ROOTDIR)/scripts/bootloader_image.mk
+endif  
 
 ##### For backwards compatability with older project makefiles:
 
@@ -134,7 +151,7 @@ libitem-y := $(filter-out $(deprecated-libs),$(libitem-y))
 endif
 
 # Automatic preprocessing of std linkscripts
-old-ldcmdfile = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_gcc.ldf
+old-ldcmdfile = $(ROOTDIR)/$(ARCH_PATH-y)/scripts/linkscript_$(COMPILER).ldf
 new-ldcmdfile = linkscript_gcc.ldp
 old-ldcmdfile-used = $(filter $(old-ldcmdfile),$(ldcmdfile-y))
 ifneq ($(old-ldcmdfile-used),)
@@ -175,7 +192,7 @@ define run_pclint
 $(if 
 $(filter $(dir $(abspath $<)),$(LINT_NICE_EXCLUDE_PATHS)),
 $(info $(abspath $<):0:0: Info: Not running lint check on $(abspath $<)),
-$(Q)$(PCLINT) $(lint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y)) $(abspath $<))
+$(Q)$(PCLINT) $(lint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y) $(DEF_$@)) $(abspath $<))
 endef
 endif
 
@@ -184,7 +201,7 @@ define run_splint
 $(if 
 $(filter $(dir $(abspath $<)),$(LINT_NICE_EXCLUDE_PATHS)),
 $(info $(abspath $<):0:0: Info: Not running lint check on $(abspath $<)),
-$(Q)$(SPLINT) $(splint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y)) $(abspath $<))
+$(Q)$(SPLINT) $(splint_extra) $(addprefix $(lintinc_ext),$(inc-y)) $(addprefix $(lintdef_ext),$(def-y) $(DEF_$@)) $(abspath $<))
 endef
 endif
 
@@ -197,9 +214,9 @@ endif
 .PHONY clean: 
 clean: FORCE
 	@echo
-	@echo "  >> Cleaning $(CURDIR)"
-	$(Q)-rm -f *.o *.d *.h *.elf *.a *.ldp *.lcf *.tmp *.s *.c *.map *.out
-	@echo
+	@echo "  >> Rules Clean $(CURDIR)"
+	$(Q)-rm -v *
+	$(Q)-rm -v $(ROOTDIR)/binaries/$(BOARDDIR)/*
 	
 .PHONY : config 
 config: FORCE
@@ -218,11 +235,13 @@ FORCE:
 $(ROOTDIR)/binaries/$(BOARDDIR):
 	@mkdir -p $@
 
-.PHONY all:
-all: module_config $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $(ROOTDIR)/binaries/$(BOARDDIR)
-	$(Q)cp -v $(build-lib-y) $(build-exe-y) $(build-hex-y) $(build-bin-y) $(ROOTDIR)/binaries/$(BOARDDIR)
-	
+all-mod += $(build-hex-y) $(build-exe-y) $(build-srec-y) 
+all-mod += $(build-lib-y) $(build-bin-y)
 
+.PHONY all:
+all: | module_config $(ROOTDIR)/binaries/$(BOARDDIR) $(all-mod) $(all-mod-post)
+all: module_config $(all-mod) $(all-mod-post) $(ROOTDIR)/binaries/$(BOARDDIR) 
+	@cp -v $(all-mod) $(all-mod-post) $(ROOTDIR)/binaries/$(BOARDDIR)
 
 .SUFFIXES:
 
@@ -240,7 +259,7 @@ all: module_config $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $
 %.o: %.c
 	@echo
 	@echo "  >> CC $(notdir $<)"
-	$(Q)$(CC) -c $(CFLAGS) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $(abspath $<)
+	$(Q)$(CC) -c $(CFLAGS) $(CFLAGS_$@) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y) $(DEF_$@)) $(abspath $<)
 	$(do-compile-post)
 # run lint if enabled
 	$(run_pclint)
@@ -259,7 +278,7 @@ all: module_config $(build-exe-y) $(build-hex-y) $(build-lib-y) $(build-bin-y) $
 %.s: %.sx
 	@echo
 	@echo "  >> CPP $(notdir $<)"
-	$(Q)$(CPP) $(CPP_ASM_FLAGS) -o $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
+	$(Q)$(CPP) $(CPP_ASM_FLAGS) $(CPPOUT) $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
 
 # Board linker files are in the board directory 
 inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
@@ -270,7 +289,11 @@ inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
 %.lcf %.ldp: %.ldf
 	@echo
 	@echo "  >> CPP $(notdir $<)"
+ifeq ($(COMPILER),iar)
+	$(Q)$(CPP) $(CPP_ASM_FLAGS) $(CPPOUT) $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
+else
 	$(Q)$(CPP) -P $(CPP_ASM_FLAGS) $(CPPOUT) $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
+endif
 
 .PHONY $(ROOTDIR)/libs:
 $(ROOTDIR)/libs:
@@ -290,17 +313,20 @@ $(build-hex-y): $(build-exe-y)
 	@echo "  >> OBJCOPY $@"   
 	$(Q)$(CROSS_COMPILE)objcopy -O ihex $< $@
 	
+	
 # bin output
-$(build-bin-y): $(build-exe-y)
-	@echo
-	@echo "  >> OBJCOPY $@"   
-	$(Q)$(CROSS_COMPILE)objcopy -O binary $< $@	
+#$(build-bin-y): $(build-exe-y)
+#	@echo
+#	@echo "  >> OBJCOPY $@"   
+#	$(Q)$(CROSS_COMPILE)objcopy -O binary $< $@	
 
 # Linker
 $(build-exe-y): $(dep-y) $(obj-y) $(sim-y) $(libitem-y) $(ldcmdfile-y)
 	@echo
 	@echo "  >> LD $@"
-ifeq ($(CROSS_COMPILE)$(COMPILER),gcc)
+ifeq ($(COMPILER),iar)
+	$(Q)$(LD) $(obj-y) $(LDFLAGS) -o $@ -I$(libpath-y) $(lib-y) $(libitem-y)	
+else ifeq ($(CROSS_COMPILE)$(COMPILER),gcc)
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	
 else
 	$(Q)$(LD) $(LDFLAGS) $(LD_FILE) $(ldcmdfile-y) -o $@ $(libpath-y) $(LD_START_GRP) $(obj-y) $(lib-y) $(libitem-y) $(LD_END_GRP) $(LDMAPFILE)

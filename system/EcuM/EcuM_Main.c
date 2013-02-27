@@ -26,6 +26,13 @@
 #if defined(USE_NVM)
 #include "NvM.h"
 #endif
+#if defined(USE_COMM)
+#include "ComM.h"
+#endif
+#if defined(USE_ECUM_COMM)
+#include "ComM_EcuM.h"
+#endif
+
 
 
 //#define USE_LDEBUG_PRINTF
@@ -204,7 +211,7 @@ void EcuM_enter_run_mode(void){
 	}
 #endif
 
-#if defined(USE_COMM)
+#if defined(USE_ECUM_COMM)
 	/*
 	 * Loop over all channels that have requested run,
 	 * ie EcuM_ComM_RequestRUN()
@@ -668,7 +675,7 @@ void EcuM_MainFunction(void) {
 		}
 
 		if (done) {
-#if defined(USE_COMM)
+#if defined(USE_ECUM_COMM)
 			const EcuM_WakeupSourceConfigType *wkupCfgPtr;
 			uint32 validated = EcuM_GetValidatedWakeupEvents();
 

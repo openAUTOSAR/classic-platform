@@ -64,6 +64,7 @@ inc-$(USE_DMA) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers
 obj-$(USE_MCU) += Mcu.o
 obj-$(USE_MCU) += Mcu_Cfg.o
 obj-$(USE_MCU)-$(if $(CFG_MPC5668)$(CFG_MPC5516),y) += Mcu_Arc_mpc55xx.o
+obj-$(USE_MCU)-$(CFG_MPC560X) += Mcu_Arc_mpc56xx.o
 
 # CPU specific
 obj-$(CFG_PPC) += mpc5xxx_handlers.o
@@ -72,7 +73,6 @@ vpath-$(CFG_PPC) += $(ROOTDIR)/$(ARCH_PATH-y)/integration
 obj-$(CFG_PPC) += Mcu_Arc_Cfg.o
 
 obj-$(CFG_PPC) += mm.o
-obj-$(CFG_PPC) += mm_asm.o
 vpath-$(CFG_PPC) += $(ROOTDIR)/$(ARCH_PATH-y)/mm
 inc-$(CFG_PPC) += $(ROOTDIR)/$(ARCH_PATH-y)/mm
 

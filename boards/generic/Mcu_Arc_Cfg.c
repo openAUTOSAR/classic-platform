@@ -13,20 +13,23 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-#ifndef MCU_ARC_H_
-#define MCU_ARC_H_
+#include "Std_Types.h"
+#include "Mcu.h"
+#include "Mcu_Arc.h"
+#include "asm_ppc.h"
 
-#include "Mcu_Arc_Cfg.h"
+/**
+ * @param sleepCfg
+ */ 
+void Mcu_Arc_SetModePre2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *sleepCfg ) {
+}
 
-void 	 Mcu_Arc_InitClockPre( const Mcu_ClockSettingConfigType *clockSettingsPtr );
-void 	 Mcu_Arc_InitClockPost( const Mcu_ClockSettingConfigType *clockSettingsPtr );
-void 	 Mcu_Arc_SetModePre( Mcu_ModeType mcuMode);
-void  	 Mcu_Arc_SetModePost( Mcu_ModeType mcuMode);
-uint32_t Mcu_Arc_ExceptionHook(uint32_t exceptionVector);
 
-void Mcu_Arc_SetModePre2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *sleepCfg );
-void Mcu_Arc_SetModePost2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *sleepCfg );
-void Mcu_Arc_LowPowerRecoverFlash( void );
-//void Mcu_Arc_InitMM( void );
+/**
+ * @param sleepCfg
+ */
+void Mcu_Arc_SetModePost2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *sleepCfg ) {
+}
 
-#endif /* MCU_ARC_H_ */
+
+

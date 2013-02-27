@@ -12,6 +12,20 @@
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
+ 
+ 
+ /* Sleep handling on MPC56xx - AN4240 
+  *  - 3  low power modes: HALT, STOP and STANDBY.
+  *    - HALT -  Pointless
+  *    - STOP -  middle sleep  
+  *    - STANDBY - Deepest sleep (Suppot this)
+  *  - It seems that after STANDBY is either boots to  
+  *    - Flash (normal reset vector!!!)
+  *    - backup SRAM   
+  *     
+  *     
+  *     
+  * */
 
 /* ----------------------------[includes]------------------------------------*/
 #define _ASSEMBLER_
@@ -70,19 +84,25 @@
 	
 
 /* ----------------------------[private macro]-------------------------------*/
+
+#define EXC_TABLE_CODE(_exc_nr) 	\
+ 	.balign 16;                     \
+	b		exception_IVOR ## _exc_nr 			
+
+
 /* ----------------------------[private typedef]-----------------------------*/
 /* ----------------------------[private function prototypes]-----------------*/
 .global exception_IVOR0
 .global exception_IVOR1
 .global exception_IVOR2
 .global exception_IVOR3
-.global exception_IVOR4
+.extern exception_IVOR4
 .global exception_IVOR5
 .global exception_IVOR6
 .global exception_IVOR7
 .global exception_IVOR8
 .global exception_IVOR9
-.global exception_IVOR10
+.extern exception_IVOR10
 .global exception_IVOR11
 .global exception_IVOR12
 .global exception_IVOR13
@@ -118,6 +138,8 @@
 /* ----------------------------[private variables]---------------------------*/
 /* ----------------------------[private functions]---------------------------*/
 /* ----------------------------[public functions]----------------------------*/
+
+#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 
 ASM_SECTION_TEXT(.text)
 
@@ -220,13 +242,6 @@ Mcu_Arc_LowPowerRecoverFlash:
 	mtXER	r30
 	mtCTR	r31		    // Load SPRs with GPR values
 
-#if 0 //defined(USE_ECUM)
-
-	/* We have no idea what made us wakeup, pass all */
-	LOAD_ADDR_32(r3,0x3fffffff);		// EcuM_WakeupSourceType
-	bl EcuM_CheckWakeup
-
-#endif
 	mtLR	r27
 
 	lmw	r2, 0(r1) 	    // Restore GPRs from stack
@@ -250,6 +265,9 @@ tlbSet:
 	tlbwe
 	isync
 	blr	
+
+#endif /* defined(CFG_MPC5516) || defined(CFG_MPC5668) */
+
 
 ASM_SECTION_TEXT(.text)
 
@@ -409,6 +427,39 @@ exception_IVOR34:
 	rfi
 	
 #endif
+
+handleException:
+	b  handleException		
+
+ASM_SECTION_TEXT(.exception_tbl)
+
+	
+	.balign 0x1000
+	.global exception_tbl
+
+exception_tbl:
+	EXC_TABLE_CODE(0)
+	EXC_TABLE_CODE(1)
+    EXC_TABLE_CODE(2)
+    EXC_TABLE_CODE(3)
+    EXC_TABLE_CODE(4)
+	EXC_TABLE_CODE(5)
+	EXC_TABLE_CODE(6)
+	EXC_TABLE_CODE(7)
+	EXC_TABLE_CODE(8)
+	EXC_TABLE_CODE(9)
+ 	EXC_TABLE_CODE(10)
+	EXC_TABLE_CODE(11)
+	EXC_TABLE_CODE(12)
+	EXC_TABLE_CODE(13)
+	EXC_TABLE_CODE(14)
+	EXC_TABLE_CODE(15)
+#if defined(CFG_SPE)
+	EXC_TABLE_CODE(32)
+	EXC_TABLE_CODE(33)
+	EXC_TABLE_CODE(34)
+#endif
+
 
 
 

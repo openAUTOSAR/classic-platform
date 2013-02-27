@@ -142,23 +142,26 @@ static uint32_t handleEcc( uint16_t vector ) {
 
 static uint32_t handleException( uint32_t exception , uint32_t spr ) {
 	uint32_t rv;
+	uint32_t _spr;
 
 	rv = Mcu_Arc_ExceptionHook( exception );
 	if( rv & EXC_NOT_HANDLED ) {
 		Os_Panic(exception);
 	}
 
+	_spr = (spr==SPR_CSRR0) ? get_spr(SPR_CSRR0) : get_spr(SPR_SRR0);
+
 	if( rv & EXC_ADJUST_ADDR ) {
-		 rv = adjustReturnAddr(get_spr(SPR_SRR0));
+		rv = adjustReturnAddr( _spr );
 	} else {
-		rv = get_spr(SPR_SRR0);
+		rv = _spr;
 	}
 	return rv;
 }
 
 
 /* Critical Input:  CSRR0, CSRR1 */
-void Mpc5xxx_Exception_IVOR0( void  ) {
+uint32_t Mpc5xxx_Exception_IVOR0( void  ) {
 	return handleException(0, SPR_CSRR0 );
 }
 

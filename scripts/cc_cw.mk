@@ -29,6 +29,8 @@ cflags-y 		+= -gdwarf-2
 cflags-y 		+= -gccinc
 cflags-y 		+= -cwd explicit
 cflags-y 		+= -msgstyle gcc
+cflags-y 		+= -maxerrors 10
+cflags-y 		+= -maxwarnings 10
 cflags-$(CFG_OPT_RELEASE)        += -opt level=2
 cflags-$(CFG_OPT_DEBUG)        += -opt off 
 
@@ -165,6 +167,8 @@ AS	= 	$(CW_BIN)/mwasmeppc.exe
 
 asflags-y += -gnu_mode
 asflags-y += -proc e500 -gdwarf-2
+asflags-y += -maxerrors 10
+asflags-y += -maxwarnings 10
 asflags-$(CFG_VLE) += -vle
 ASFLAGS += $(asflags-y)
 ASOUT = -o $@

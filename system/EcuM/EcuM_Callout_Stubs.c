@@ -113,7 +113,7 @@
 /* ----------------------------[private typedef]-----------------------------*/
 /* ----------------------------[private function prototypes]-----------------*/
 /* ----------------------------[private variables]---------------------------*/
-static Boolean EcuM_DriverRestart = FALSE;
+static boolean EcuM_DriverRestart = FALSE;
 /* ----------------------------[private functions]---------------------------*/
 /* ----------------------------[public functions]----------------------------*/
 

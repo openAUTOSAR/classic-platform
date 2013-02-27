@@ -64,11 +64,6 @@
 #endif
 /* ----------------------------[private macro]-------------------------------*/
 
-#define EXC_TABLE_CODE(_exc_nr) 	\
- 	.balign 16;                     \
-	b		exception_IVOR ## _exc_nr 			
-
-
 #define	LOCK()			wrteei	0
 #define	UNLOCK()		wrteei	1
 
@@ -100,6 +95,8 @@
 .extern exception_IVOR13
 .extern exception_IVOR14
 
+.global exception_IVOR4
+.global exception_IVOR10
 .global Os_ArchSwapContextTo
 .global Os_ArchSwapContext
 .global Os_ArchSetSpAndCall
@@ -586,42 +583,6 @@ exception_IVOR10:
     addi  	sp,sp,8
     rfi
 
-
-/* Getting here means that the exception stack is started with:
- * sp - saved
- * r3 - saved and contains the exception number 
- */
-handleException:
-	b  handleException		
-
-ASM_SECTION_TEXT(.exception_tbl)
-
-	
-	.balign 0x1000
-	.global exception_tbl
-
-exception_tbl:
-	EXC_TABLE_CODE(0)
-	EXC_TABLE_CODE(1)
-    EXC_TABLE_CODE(2)
-    EXC_TABLE_CODE(3)
-    EXC_TABLE_CODE(4)
-	EXC_TABLE_CODE(5)
-	EXC_TABLE_CODE(6)
-	EXC_TABLE_CODE(7)
-	EXC_TABLE_CODE(8)
-	EXC_TABLE_CODE(9)
- 	EXC_TABLE_CODE(10)
-	EXC_TABLE_CODE(11)
-	EXC_TABLE_CODE(12)
-	EXC_TABLE_CODE(13)
-	EXC_TABLE_CODE(14)
-	EXC_TABLE_CODE(15)
-#if defined(CFG_SPE)
-	EXC_TABLE_CODE(32)
-	EXC_TABLE_CODE(33)
-	EXC_TABLE_CODE(34)
-#endif
 
 
 
