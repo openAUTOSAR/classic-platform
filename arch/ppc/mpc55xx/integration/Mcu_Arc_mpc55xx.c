@@ -36,7 +36,7 @@
 #if defined(USE_DMA)
 #include "Dma.h"
 #endif
-
+#include "asm_ppc.h"
 #include "Os.h"
 
 /* ----------------------------[private define]------------------------------*/
@@ -78,6 +78,54 @@ void Os_Panic( uint32_t error, void *pData ) {
 }
 
 
+static uint32_t checkEcc(void) {
+	uint32_t rv = EXC_NOT_HANDLED;
+
+#if defined(USE_FEE) || defined(CFG_MPC5XXX_TEST)
+
+	uint8 esr;
+	do {
+		esr = READ8( ECSM_BASE + ECSM_ESR );
+	} while( esr != READ8( ECSM_BASE + ECSM_ESR ) );
+
+#endif
+#if defined(USE_FEE)
+	uint32_t excAddr = READ32( ECSM_BASE + ECSM_FEAR );
+
+	/* Find FLS errors */
+
+	if (esr & ESR_FNCE) {
+
+		/* Check if we are in FEE range */
+		if ( ((FEE_BANK1_OFFSET >= excAddr) &&
+						(FEE_BANK1_OFFSET + FEE_BANK1_LENGTH < excAddr)) ||
+				((FEE_BANK2_OFFSET >= excAddr) &&
+						(FEE_BANK2_OFFSET + FEE_BANK2_LENGTH < excAddr)) )
+		{
+			/* Record that something bad has happened */
+			EccErrReg = READ8( ECSM_BASE + ECSM_ESR );
+			/* Clear the exception */
+			WRITE8(ECSM_BASE+ECSM_ESR,ESR_F1BC+ESR_FNCE);
+			rv = EXC_HANDLED | EXC_ADJUST_ADDR;
+		}
+	}
+#endif
+#if defined(CFG_MPC5XXX_TEST)
+	if( esr & (ESR_R1BC+ESR_RNCE) ) {
+		/* ECC RAM problems */
+		Mpc5xxx_Esr = esr;
+		WRITE8(ECSM_BASE+ECSM_ESR,ESR_R1BC+ESR_RNCE);
+		rv = (EXC_HANDLED | EXC_ADJUST_ADDR);
+	} else if (esr & ESR_FNCE) {
+		Mpc5xxx_Esr = esr;
+		WRITE8(ECSM_BASE+ECSM_ESR,ESR_F1BC+ESR_FNCE);
+		rv = (EXC_HANDLED | EXC_ADJUST_ADDR);
+	}
+#endif
+	return rv;
+}
+
+
 uint32_t Mcu_Arc_ExceptionHook(uint32_t exceptionVector) {
 	uint32_t rv = EXC_NOT_HANDLED;
 
@@ -89,46 +137,31 @@ uint32_t Mcu_Arc_ExceptionHook(uint32_t exceptionVector) {
 	case 1:
 		/* CSRR0, CSRR1, MCSR */
 		/* ECC: MSR[EE] = 0 */
-
+#if defined(CFG_MPC5XXX_TEST)
+		if( get_spr(SPR_MCSR) & ( MCSR_BUS_DRERR | MCSR_BUS_WRERR )) {
+			/* We have a bus error */
+			rv = EXC_HANDLED | EXC_ADJUST_ADDR;
+			break;
+		}
+#endif
+		rv = checkEcc();
+		break;
 	case 2:
 		/* SRR0, SRR1, ESR, DEAR */
 		/* ECC: MSR[EE] = 1 */
+#if defined(CFG_MPC5XXX_TEST)
+		if( get_spr(SPR_ESR) &  ESR_XTE) {
+			/* We have a external termination bus error */
+			rv = EXC_HANDLED | EXC_ADJUST_ADDR;
+			break;
+		}
+#endif
+		rv = checkEcc();
+		break;
 	case 3:
 	{
 		/* SRR0, SRR1, ESR */
-
-#if defined(USE_FEE) || defined(CFG_MPC5XXX_TEST)
-		uint8 esr = READ8( ECSM_BASE + ECSM_ESR );
-#endif
-#if defined(USE_FEE)
-		uint32_t excAddr = READ32( ECSM_BASE + ECSM_FEAR );
-
-		/* Find FLS errors */
-
-		if (esr & ESR_FNCE) {
-
-			/* Check if we are in FEE range */
-			if ( ((FEE_BANK1_OFFSET >= excAddr) &&
-				  (FEE_BANK1_OFFSET + FEE_BANK1_LENGTH < excAddr)) ||
-				 ((FEE_BANK2_OFFSET >= excAddr) &&
-				  (FEE_BANK2_OFFSET + FEE_BANK2_LENGTH < excAddr)) )
-			{
-				/* Record that something bad has happend */
-				EccErrReg = READ8( ECSM_BASE + ECSM_ESR );
-				/* Clear the exception */
-				WRITE8(ECSM_BASE+ECSM_ESR,ESR_F1BC+ESR_FNCE);
-				rv = EXC_HANDLED | EXC_ADJUST_ADDR;
-			}
-		}
-#endif
-#if defined(CFG_MPC5XXX_TEST)
-		if( esr & (ESR_R1BC+ESR_RNCE) ) {
-			/* ECC RAM problems */
-			Mpc5xxx_Esr = esr;
-			WRITE8(ECSM_BASE+ECSM_ESR,ESR_R1BC+ESR_RNCE);
-			rv = (EXC_HANDLED | EXC_ADJUST_ADDR);
-		}
-#endif
+		rv = checkEcc();
 		break;
 	}
 

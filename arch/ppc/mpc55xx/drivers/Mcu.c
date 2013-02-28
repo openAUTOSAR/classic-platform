@@ -957,35 +957,27 @@ static void Mcu_ConfigureFlash(void)
    	   to reset default settings!! */
 
 #if defined(CFG_MPC5516)
+	  /* Have 2 ports, p0 and p1
+	 * - All Z1 instructions go to port 0
+	 * - All Z1 data go to port 1
+	 *
+	 * --> Flash port 0 is ONLY used by Z1 instructions.
+	 */
+
 	/* Disable pipelined reads when flash options are changed. */
 	FLASH.MCR.B.PRD = 1;
-
-	/* Enable master prefetch for e200z1 and eDMA. */
-	FLASH.PFCRP0.B.M0PFE = 1;
-	FLASH.PFCRP0.B.M2PFE = 1;
-
-	/* Address pipelining control. Must be set to the same value as RWSC. */
-	FLASH.PFCRP0.B.APC = 2;
-	FLASH.PFCRP0.B.RWSC = 2;
-
-	/* Write wait states. */
-	FLASH.PFCRP0.B.WWSC = 1;
-
-	/* Enable data prefetch. */
-	FLASH.PFCRP0.B.DPFEN = 1;
-
-	/* Enable instruction prefetch. */
-	FLASH.PFCRP0.B.IPFEN = 1;
-
-	/* Prefetch algorithm. */
-	/* TODO: Ask Freescale about this option. */
-	FLASH.PFCRP0.B.PFLIM = 2;
-
-	/* Enable line read buffers. */
-	FLASH.PFCRP0.B.BFEN = 1;
+	/* Errata e1178 (note that Errata A is the same as Errata B)
+	 * - Disable all prefetch for all masters
+	 * - Fixed Arb mode+ Port 0 highest prio
+	 * - PFCRPn[RWSC] = 0b010; PFCRPn[WWSC] = 0b01 for 80Mhz (MPC5516 data sheeet)
+	 * - APC = RWSC, The settings for APC and RWSC should be the same. ( MPC5516 ref.  manual)
+	 */
+	FLASH.PFCRP0.R = PFCR_LBCFG(0) + PFCR_ARB + PFCR_APC(2) + PFCR_RWSC(2) + PFCR_WWSC(1) + PFCR_BFEN;
+	FLASH.PFCRP1.R = PFCR_LBCFG(3) + PFCR_APC(2) + PFCR_RWSC(2) + PFCR_WWSC(1) + PFCR_BFEN;
 
 	/* Enable pipelined reads again. */
 	FLASH.MCR.B.PRD = 0;
+
 #elif defined(CFG_MPC5668)
 	/* Check values from cookbook and MPC5668x Microcontroller Data Sheet */
 

@@ -95,6 +95,25 @@ typedef struct EDMA_TCD_STD_tag Dma_TcdType;
 #define ESR_F1BC	0x10
 #define ESR_FNCE	0x01
 
+#if defined(CFG_MPC5516)
+#define PFCR_LBCFG(x)   (x<<(31-3))
+#define PFCR_ARB        (1<<(31-4))
+#define PFCR_PRI        (1<<(31-5))
+#define PFCR_M0PFE      (1<<31-15))
+#define PFCR_M1PFE      (1<<31-14))
+#define PFCR_M2PFE      (1<<31-13))
+#define PFCR_M3PFE      (1<<31-12))
+#define PFCR_M4PFE      (1<<31-11))
+#define PFCR_APC(x)	    (x<<(31-18))
+#define PFCR_WWSC(x)    (x<<(31-20))
+#define PFCR_RWSC(x)    (x<<(31-23))
+#define PFCR_DPFEN      (1<<(31-25))
+#define PFCR_IPFEN      (1<<(31-27))
+#define PFCR_PFLIM(x)   (1<<(31-30))
+#define PFCR_BFEN       (1<<(31-31))
+#endif
+
+
 // MPC5567
 #if defined(CFG_MPC5567) || defined(CFG_MPC5516)
 #define ESR_ERNCR 	0x02 	// Ram non-correctable
