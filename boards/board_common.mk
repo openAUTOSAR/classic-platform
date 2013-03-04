@@ -380,9 +380,6 @@ inc-y += $(ROOTDIR)/system/kernel/include
 inc-y += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
 inc-y += $(ROOTDIR)/$(ARCH_PATH-y)/drivers
 inc-y += $(ROOTDIR)/boards/$(BOARDDIR)/config
-inc-y += $(ROOTDIR)/drivers/Dem
-inc-y += $(ROOTDIR)/drivers/Dcm
-inc-y += $(ROOTDIR)/drivers/test
 
 
 #
