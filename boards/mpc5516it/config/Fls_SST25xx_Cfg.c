@@ -14,57 +14,35 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
-
-
-
-
-
-
+#define FLS_INCLUDE_FILE "Fls_SST25xx.h"
 #include "Fls.h"
 #include <stdlib.h>
 
-
 #define KB *1024
 
-
 const Fls_SectorType fls_SST25xx_SectorList[] = {
-    { // L0->L7
-    .FlsSectorStartaddress = (Fls_AddressType)0x00000000, // Start address of this sector
-    .FlsPageSize = (Fls_LengthType)1, // Read page size of 128 bits (4 words), (8 bytes)
-    .FlsSectorSize = (Fls_LengthType)(4 KB), // 16Kbyte
-    // Number of continuous sectors with the above characteristics.
-    .FlsNumberOfSectors = (uint32)512,// L0->L7 , 8 sectors
+    {
+    .FlsSectorStartaddress 	= (Fls_AddressType)0x00000000,
+    .FlsPageSize 			= (Fls_LengthType)1,
+    .FlsSectorSize 			= (Fls_LengthType)(4 KB),
+    .FlsNumberOfSectors 	= (uint32)512,
     },
 };
 
-// Partitions start at 1
-// uint8 Fls_BlockToPartitionMap[] = { 1,1,1,1,2,2,2,2,3,3,4,4,5,5,6,6,7,7,8,8 };
 
 const Fls_ConfigType FlsSST25xxConfigSet[]=
 {
   {
-#if 0
-#if ( FLS_AC_LOAD_ON_JOB_START == STD_ON)
-    .FlsAcWrite = __FLS_ERASE_RAM__,
-    .FlsAcErase = __FLS_WRITE_RAM__,
-#else
-    .FlsAcWrite = NULL,
-    .FlsAcErase = NULL,
-#endif
-#endif
-  	.FlsMaxReadFastMode = 64,
-  	.FlsMaxReadNormalMode = 1,
-  	.FlsMaxWriteFastMode = 1,
-  	.FlsMaxWriteNormalMode = 1,
+  	.FlsMaxReadFastMode 	= 64,
+  	.FlsMaxReadNormalMode 	= 1,
+  	.FlsMaxWriteFastMode 	= 1,
+  	.FlsMaxWriteNormalMode 	= 1,
 
-  	.FlsJobEndNotification = NULL,
+  	.FlsJobEndNotification 	 = NULL,
   	.FlsJobErrorNotification = NULL,
 
-    .FlsSectorList = &fls_SST25xx_SectorList[0],
-    .FlsSectorListSize = sizeof(fls_SST25xx_SectorList)/sizeof(Fls_SectorType),
-#if 0
-    .FlsBlockToPartitionMap = Fls_BlockToPartitionMap,
-#endif
+    .FlsSectorList 		= &fls_SST25xx_SectorList[0],
+    .FlsSectorListSize 	= sizeof(fls_SST25xx_SectorList)/sizeof(Fls_SectorType),
   }
 };
 
