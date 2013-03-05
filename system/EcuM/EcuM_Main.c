@@ -556,7 +556,7 @@ void EcuM_MainFunction(void) {
 
 		/* TODO: we must have a normal RUN mode.. can't find any
 		 * in the A3.1.5 spec. */
-		Mcu_SetMode(MCU_MODE_RUN);
+		Mcu_SetMode(MCU_MODE_NORMAL);
 #if defined(USE_WDGM)
 		if( internal_data.config->EcuMWdgMConfig != NULL ) {
 			WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMWakeupMode);

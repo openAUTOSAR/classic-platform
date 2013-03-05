@@ -132,6 +132,9 @@ const struct Mcu_Arc_Config Mcu_Arc_ConfigData = {
 void Mcu_Arc_SetModePre2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *sleepCfg ) {
 	uint32_t timeout = 0;
 
+	if( mcuMode == MCU_MODE_NORMAL ) {
+		mcuMode = MCU_MODE_RUN;
+	}
 
 	if( MCU_MODE_RUN == mcuMode ) {
 		SIU.HLT0.R = sleepCfg->hlt0_run;
@@ -206,6 +209,10 @@ void Mcu_Arc_SetModePre2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig
  * @param sleepCfg
  */
 void Mcu_Arc_SetModePost2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *sleepCfg ) {
+
+	if( mcuMode == MCU_MODE_NORMAL ) {
+		mcuMode = MCU_MODE_RUN;
+	}
 
 	if( MCU_MODE_RUN == mcuMode ) {
 

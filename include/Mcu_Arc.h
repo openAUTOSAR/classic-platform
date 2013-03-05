@@ -24,9 +24,12 @@ void 	 Mcu_Arc_SetModePre( Mcu_ModeType mcuMode);
 void  	 Mcu_Arc_SetModePost( Mcu_ModeType mcuMode);
 uint32_t Mcu_Arc_ExceptionHook(uint32_t exceptionVector);
 
+#if defined(CFG_MCU_ARC_CONFIG)
 void Mcu_Arc_SetModePre2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *sleepCfg );
 void Mcu_Arc_SetModePost2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *sleepCfg );
 void Mcu_Arc_LowPowerRecoverFlash( void );
+#endif
+
 //void Mcu_Arc_InitMM( void );
 
 #endif /* MCU_ARC_H_ */

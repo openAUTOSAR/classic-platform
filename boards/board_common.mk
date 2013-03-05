@@ -65,8 +65,8 @@ obj-$(USE_MCU) += Mcu.o
 obj-$(USE_MCU) += Mcu_Cfg.o
  # Mcu with workding sleep mode
 ifeq ($(CFG_PPC),y)
-obj-$(USE_MCU)-$(if $(CFG_MPC5668)$(CFG_MPC5516),y) += Mcu_Arc_mpc55xx.o
-obj-$(USE_MCU)-$(if $(CFG_MPC5668)$(CFG_MPC5516),n,y) += Mcu_Arc_mpc56xx.o
+obj-$(USE_MCU)-$(if $(CFG_MPC5516)$(CFG_MPC5668)$(CFG_MPC5567),y) += Mcu_Arc_mpc55xx.o
+obj-$(USE_MCU)-$(if $(CFG_MPC5516)$(CFG_MPC5668)$(CFG_MPC5567),n,y) += Mcu_Arc_mpc56xx.o
 endif
 
 # CPU specific

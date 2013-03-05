@@ -181,19 +181,23 @@ uint32_t Mcu_Arc_ExceptionHook(uint32_t exceptionVector) {
 	return rv;
 }
 
+#if defined(CFG_MCU_ARC_CONFIG)
 void Mcu_Arc_InitMM( void ) {
 	/* User: Enable caches if any */
 
 	/* User: Setup TLBs if needed  */
 	MM_TlbSetup( Mcu_Arc_ConfigData.tblTable );
 }
+#endif
 
 
 /*
  * Called at a very early stage...
  */
 void Mcu_Arc_InitPost( void ) {
+#if defined(CFG_MCU_ARC_CONFIG)
 	Mcu_Arc_InitMM();
+#endif
 }
 
 
@@ -220,12 +224,16 @@ void Mcu_Arc_InitClockPost( const Mcu_ClockSettingConfigType *clockSettingsPtr )
  */
 void Mcu_Arc_SetModePre( Mcu_ModeType mcuMode)
 {
+#if defined(CFG_MCU_ARC_CONFIG)
 	Mcu_Arc_SetModePre2(mcuMode, Mcu_Arc_ConfigData.sleepConfig );
+#endif
 }
 
 void Mcu_Arc_SetModePost( Mcu_ModeType mcuMode)
 {
+#if defined(CFG_MCU_ARC_CONFIG)
 	Mcu_Arc_SetModePost2(mcuMode,  Mcu_Arc_ConfigData.sleepConfig);
+#endif
 }
 
 
