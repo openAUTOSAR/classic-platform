@@ -49,9 +49,8 @@
  */
 
 
-
+#define FLS_INCLUDE_FILE "Fls_SST25xx.h"
 #include "Fls.h"
-#include "Fls_SST25xx.h"
 #include "Spi.h"
 #if defined(USE_DET)
 #include "Det.h"
@@ -67,6 +66,22 @@
 //#define USE_LDEBUG_PRINTF
 #include "debug.h"
 #define MODULE_NAME 	"/driver/Fls_25"
+
+
+/* RDID data for S25FL040A */
+#define DEVICE_RDID		0x010212  /* 0x12 - Uniform, 0x25- Top boot, 0x28-bottom boot */
+
+#define FLASH_READ_25			0x03
+#define FLASH_READ_50			0x0B
+#define FLASH_RDSR				0x05
+#define FLASH_JEDEC_ID			0x9f
+#define FLASH_RDID				0x90
+#define FLASH_BYTE_WRITE 		0x02
+#define FLASH_AI_WORD_WRITE 	0xad
+#define FLASH_WREN				0x06
+#define FLASH_WRDI				0x04
+#define FLASH_WRSR				0x01
+#define FLASH_ERASE_4K			0xd8
 
 
 /* The width in bytes used by this flash */
@@ -283,6 +298,7 @@ typedef struct {
 	Fls_SST25xx_Arc_JobType mainState;
 	Spi_SequenceType currSeq;
 	uint32 chunkSize;
+	boolean initialOp;
 } Fls_SST25xx_JobInfoType;
 
 #define JOB_SET_STATE(_x,_y)		job->state=(_x);job->mainState=(_y)
@@ -403,9 +419,8 @@ void Fls_SST25xx_Init( const Fls_ConfigType* ConfigPtr ){
   Fls_SST25xx_Global.ebCmd = FLASH_JEDEC_ID;
   Spi_SyncTransmit(SPI_SEQ_FLASH_CMD_DATA );
 
-  if( ((jedecId[0]<<16) + (jedecId[1]<<8) + jedecId[2]) != 0xbf2541 ) {
+  if( ((jedecId[0]<<16) + (jedecId[1]<<8) + jedecId[2]) != DEVICE_RDID ) {
    LDEBUG_PRINTF("JEDEC: %02x %02x %02x\n",jedecId[0],jedecId[1],jedecId[2]);
-    assert(0);
   }
 
   /* The flash comes locked from factory so it must be unlocked.
@@ -466,6 +481,8 @@ Std_ReturnType Fls_SST25xx_Read ( Fls_AddressType SourceAddress,
      job->chunkSize = Fls_SST25xx_Global.config->FlsMaxReadNormalMode;
   }
 
+  job->initialOp = true;
+  job->currSeq = SPI_SEQ_FLASH_READ;
   job->flsAddr = SourceAddress;
   job->targetAddr = TargetAddressPtr;
   job->left = Length;
@@ -487,6 +504,9 @@ Std_ReturnType Fls_SST25xx_Erase( Fls_AddressType   TargetAddress, Fls_LengthTyp
   Fls_SST25xx_Global.status = MEMIF_BUSY;
   Fls_SST25xx_Global.jobResultType = MEMIF_JOB_PENDING;
   Fls_SST25xx_Global.jobType = FLS_SST25XX_ERASE;
+
+  job->initialOp = true;
+  job->currSeq = SPI_SEQ_FLASH_WRITE;
 
   job->flsAddr = TargetAddress;
   // Not used, so set to illegal value
@@ -519,6 +539,8 @@ Std_ReturnType Fls_SST25xx_Write( Fls_AddressType TargetAddress, const uint8* So
 		job->chunkSize = Fls_SST25xx_Global.config->FlsMaxWriteNormalMode;
 	}
 
+  job->initialOp = true;
+  job->currSeq = SPI_SEQ_FLASH_WRITE;
   job->flsAddr = TargetAddress;
   job->targetAddr = (uint8 *)SourceAddressPtr;
   job->left = Length;
@@ -578,7 +600,7 @@ void Fls_SST25xx_Cancel( void ){
 #endif
 
 
-#if ( FLS_GET_STATUS_API == STD_ON )
+#if ( FLS_SST25XX_GET_STATUS_API == STD_ON )
 MemIf_StatusType Fls_SST25xx_GetStatus( void ){
   return Fls_SST25xx_Global.status;
 }
@@ -599,13 +621,18 @@ static Spi_SeqResultType Fls_SST25xx_ProcessJob( Fls_SST25xx_JobInfoType *job ) 
   Spi_SeqResultType rv;
   _Bool done = 0;
 
-  /* Check if previous sequence is OK */
-  rv = Spi_GetSequenceResult(job->currSeq);
-  if( rv != SPI_SEQ_OK ) {
-  	return rv;
-  }
+	rv = Spi_GetSequenceResult(job->currSeq);
 
-  rv = SPI_SEQ_PENDING;
+	if( job->initialOp ) {
+		assert( rv != SPI_SEQ_PENDING );
+		assert( job->state == JOB_MAIN );
+		job->initialOp = false;
+	} else {
+		if( rv != SPI_SEQ_OK ) {
+			return rv;
+		}
+	}
+	rv = SPI_SEQ_PENDING;
 
   do {
 		switch(job->state ) {
@@ -641,7 +668,7 @@ static Spi_SeqResultType Fls_SST25xx_ProcessJob( Fls_SST25xx_JobInfoType *job ) 
 				case FLS_SST25XX_ERASE:
 					DEBUG(DEBUG_LOW,"%s: Erase 4K s:%04x\n",MODULE_NAME,job->flsAddr);
 					Fls_SST25xx_Global.ebCmd = FLASH_ERASE_4K;
-					SPI_TRANSMIT_FUNC(SPI_SEQ_FLASH_WRITE,job );
+					SPI_TRANSMIT_FUNC(SPI_SEQ_FLASH_ERASE,job );
 					break;
 
 				case FLS_SST25XX_READ:

@@ -162,6 +162,8 @@
 #include "Det.h"
 #endif
 #include "isr.h"
+#include "cirq_buffer.h"
+
 /* ----------------------------[private define]------------------------------*/
 #define DSPI_CTRL_A	0
 #define DSPI_CTRL_B	1
@@ -374,6 +376,11 @@ typedef struct {
 #endif
 } Spi_GlobalType;
 
+typedef struct Spi_SeqQueue {
+	Spi_SequenceType seq;
+	Spi_CallTypeType callType;
+} Spi_QueueType;
+
 /* ----------------------------[private function prototypes]-----------------*/
 /* ----------------------------[private variables]---------------------------*/
 
@@ -408,6 +415,12 @@ Spi_SeqUnitType Spi_SeqUnit[SPI_MAX_SEQUENCE];
 Spi_JobUnitType Spi_JobUnit[SPI_MAX_JOB];
 Spi_ChannelInfoType Spi_ChannelInfo[SPI_MAX_CHANNEL];
 uint8 Spi_CtrlToUnit[4];
+
+#define SPI_QUEUE_SIZE 		2
+Spi_QueueType spiQueueData[SPI_QUEUE_SIZE];
+static CirqBufferType Spi_Queue;
+
+
 
 
 #if (SPI_IMPLEMENTATION == SPI_DMA)
@@ -453,6 +466,8 @@ Spi_DmaConfigType  Spi_DmaConfig[SPI_CONTROLLER_CNT] = {
 #endif
 
 /* ----------------------------[private functions]---------------------------*/
+
+static void Spi_SeqWrite(Spi_SequenceType seqIndex, Spi_CallTypeType sync);
 
 #if (SPI_IMPLEMENTATION == SPI_FIFO )
 static void Spi_WriteJob_FIFO( Spi_JobType jobIndex );
@@ -975,6 +990,8 @@ static void Spi_Isr( Spi_UnitType *uPtr) {
 			Spi_JobWrite(nextJob);
 			RAMLOG_STR("more_jobs\n");
 		} else {
+			Spi_QueueType qEntry;
+
 			// No more jobs, so set HwUnit and sequence IDLE/OK also.
 			Spi_SetHWUnitStatus(uPtr, SPI_IDLE);
 			Spi_SetSequenceResult(uPtr->currSeqPtr->SpiSequenceId,
@@ -984,12 +1001,16 @@ static void Spi_Isr( Spi_UnitType *uPtr) {
 				uPtr->currSeqPtr->SpiSeqEndNotification();
 			}
 
-			Spi_SetHWUnitStatus(uPtr, SPI_IDLE);
+			rv = CirqBuffPop( &Spi_Queue, &qEntry );
+			if( rv == 0 ) {
+				Spi_SeqWrite(qEntry.seq, qEntry.callType );
+			} else {
+				/* We are now ready for next transfer. */
+				spiHw->MCR.B.HALT = 1;
 
-			/* We are now ready for next transfer. */
-			spiHw->MCR.B.HALT = 1;
+				RAMLOG_STR("NO_more_jobs\n");
 
-			RAMLOG_STR("NO_more_jobs\n");
+			}
 		}
 	}
 
@@ -1368,6 +1389,8 @@ void Spi_Init(const Spi_ConfigType *ConfigPtr) {
 	Spi_Global.extBufPtr = Spi_Eb;
 
 	Spi_Global.asyncMode = SPI_INTERRUPT_MODE;
+
+	Spi_Queue = CirqBuffStatCreate(spiQueueData, SPI_QUEUE_SIZE, sizeof(Spi_QueueType));
 
 	// Set all sequence results to OK
 	for (Spi_SequenceType i = (Spi_SequenceType) 0; i < SPI_MAX_SEQUENCE; i++) {
@@ -1883,14 +1906,34 @@ static void Spi_SeqWrite(Spi_SequenceType seqIndex, Spi_CallTypeType sync) {
 	jobIndex = seqConfig->JobAssignment[0];
 	jobConfig = Spi_GetJobPtrFromIndex(jobIndex);
 
+	Spi_SetSequenceResult(seqIndex, SPI_SEQ_PENDING);
+
+	/* Queue the job */
+	{
+		const Spi_JobType *jobPtr = &seqConfig->JobAssignment[0];
+		/* queue the job */
+		while (*jobPtr != JOB_NOT_VALID) {
+			Spi_SetJobResult(*jobPtr, SPI_JOB_QUEUED);
+			jobPtr++;
+		}
+	}
+
 	uPtr = GET_SPI_UNIT_PTR(jobConfig->SpiHwUnit);
+
+	/* If busy, check later... */
+	if( uPtr->status == SPI_BUSY ) {
+		Spi_QueueType qEntry;
+		qEntry.seq = seqIndex;
+		qEntry.callType = sync;
+		CirqBuffPush(&Spi_Queue,&qEntry);
+		return;
+	}
 
 	/* Fill in the required fields for job and sequence.. */
 	uPtr->currJobIndexPtr = &seqConfig->JobAssignment[0];
 	uPtr->callType = sync;
 	uPtr->currSeqPtr = seqConfig;
 
-	Spi_SetSequenceResult(seqIndex, SPI_SEQ_PENDING);
 
 	// Setup interrupt for end of queue
 	if (	(Spi_Global.asyncMode == SPI_INTERRUPT_MODE) &&
@@ -1911,7 +1954,6 @@ static void Spi_SeqWrite(Spi_SequenceType seqIndex, Spi_CallTypeType sync) {
 			Spi_Isr(uPtr);
 		}
 	}
-
 }
 
 //-------------------------------------------------------------------

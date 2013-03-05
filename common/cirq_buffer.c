@@ -60,7 +60,13 @@ void CirqBuff_Init(CirqBufferType *cirqbuffer, void *buffer, int maxCnt, size_t 
 	cirqbuffer->currCnt = 0;
 }
 
-
+/**
+ *
+ * @param buffer    pointer to a buffer
+ * @param maxCnt    Maximum number of elements of size dataSize
+ * @param dataSize  The size of the data.
+ * @return
+ */
 CirqBufferType CirqBuffStatCreate(void *buffer, int maxCnt, size_t dataSize) {
 	CirqBufferType cirqbuffer;
 	cirqbuffer.bufStart = buffer;
@@ -118,6 +124,14 @@ int CirqBuffPush( CirqBufferType *cPtr, void *dataPtr ) {
 
 
 
+/**
+ * Pop an entry from the buffer.
+ *
+ * @param cPtr    Pointer to the queue created with CirqBuffStatCreate, etc.
+ * @param dataPtr
+ * @return 0 - if successfully popped.
+ *         1- nothing popped (it was empty)
+ */
 int CirqBuffPop(CirqBufferType *cPtr, void *dataPtr ) {
 	uint32_t flags;
 	Irq_Save(flags);

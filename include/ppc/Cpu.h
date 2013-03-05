@@ -157,6 +157,8 @@ asm void set_spr(uint32 spr_nr, uint32 val)
  * Note! Tried lots of other ways to do this but came up empty
  */
 
+//https://community.freescale.com/thread/29234
+
 #if defined(__DCC__)
 asm uint32 get_spr(uint32 spr_nr)
 {
