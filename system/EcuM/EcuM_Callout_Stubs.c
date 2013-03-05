@@ -382,9 +382,9 @@ void EcuM_AL_DriverInitThree(const EcuM_ConfigType* ConfigPtr)
 
 void EcuM_OnEnterRun(void)
 {
-//#if defined(CFG_ECUM_ACTIVATE_TASK)
+#if defined(CFG_ECUM_CS_SETEVENT)
 	SetEvent(EVENT_MASK_EcuMEnterRUN,TASK_ID_Application);
-//#endif
+#endif
 }
 
 void EcuM_OnExitRun(void)

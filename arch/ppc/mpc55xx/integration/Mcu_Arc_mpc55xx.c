@@ -59,6 +59,11 @@ uint8_t Mpc5xxx_Esr;
 uint8_t Mpc5xxx_Intc_Esr;
 #endif
 
+#if defined(USE_FLS)
+extern uint32 EccErrReg;
+#endif
+
+
 /* ----------------------------[private functions]---------------------------*/
 
 
@@ -89,27 +94,31 @@ static uint32_t checkEcc(void) {
 	} while( esr != READ8( ECSM_BASE + ECSM_ESR ) );
 
 #endif
-#if defined(USE_FEE)
+
+#if defined(USE_FLS)
 	uint32_t excAddr = READ32( ECSM_BASE + ECSM_FEAR );
 
 	/* Find FLS errors */
 
 	if (esr & ESR_FNCE) {
 
+		/* Record that something bad has happened */
+		EccErrReg = READ8( ECSM_BASE + ECSM_ESR );
+		/* Clear the exception */
+		WRITE8(ECSM_BASE+ECSM_ESR,ESR_F1BC+ESR_FNCE);
+#if defined(USE_FEE)
 		/* Check if we are in FEE range */
 		if ( ((FEE_BANK1_OFFSET >= excAddr) &&
 						(FEE_BANK1_OFFSET + FEE_BANK1_LENGTH < excAddr)) ||
 				((FEE_BANK2_OFFSET >= excAddr) &&
 						(FEE_BANK2_OFFSET + FEE_BANK2_LENGTH < excAddr)) )
 		{
-			/* Record that something bad has happened */
-			EccErrReg = READ8( ECSM_BASE + ECSM_ESR );
-			/* Clear the exception */
-			WRITE8(ECSM_BASE+ECSM_ESR,ESR_F1BC+ESR_FNCE);
 			rv = EXC_HANDLED | EXC_ADJUST_ADDR;
 		}
-	}
 #endif
+	}
+#endif	 /* USE_FLS */
+
 #if defined(CFG_MPC5XXX_TEST)
 	if( esr & (ESR_R1BC+ESR_RNCE) ) {
 		/* ECC RAM problems */
