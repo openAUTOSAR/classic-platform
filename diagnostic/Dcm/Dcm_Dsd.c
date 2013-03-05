@@ -100,13 +100,13 @@ static void selectServiceFunction(uint8 sid)
 		break;
 #endif
 
-#ifdef DCM_USE_SERVICE_CLEARDIAGNOSTICINFORMATION
+#if defined(USE_DEM) && defined(DCM_USE_SERVICE_CLEARDIAGNOSTICINFORMATION)
 	case SID_CLEAR_DIAGNOSTIC_INFORMATION:
 		DspUdsClearDiagnosticInformation(msgData.pduRxData, msgData.pduTxData);
 		break;
 #endif
 
-#ifdef DCM_USE_SERVICE_READDTCINFORMATION
+#if defined(USE_DEM) && defined(DCM_USE_SERVICE_READDTCINFORMATION)
 	case SID_READ_DTC_INFORMATION:
 		DspUdsReadDtcInformation(msgData.pduRxData, msgData.pduTxData);
 		break;
@@ -160,7 +160,7 @@ static void selectServiceFunction(uint8 sid)
 		break;
 #endif
 
-#ifdef DCM_USE_SERVICE_CONTROLDTCSETTING
+#if defined(USE_DEM) && defined(DCM_USE_SERVICE_CONTROLDTCSETTING)
 	case SID_CONTROL_DTC_SETTING:
 		DspUdsControlDtcSetting(msgData.pduRxData, msgData.pduTxData);
 		break;
