@@ -37,7 +37,21 @@
 #define READ16_NA(address )			( (((uint16_t)(((uint8_t *)address)[0]))<<8) +	\
 									  (((uint16_t)(((uint8_t *)address)[1]))) )
 
+#define SET32(  _addr, _val)		(*(vuint32_t*)(_addr) |= (_val))
+#define CLEAR32(_addr, _val)		(*(vuint32_t*)(_addr) &= ~(_val))
+
+
+/* READWRITE macros
+ * address - The address to read/write from/to
+ * mask    - The value read is inverted and AND:ed with mask
+ * val     - The Value to write.
+ *
+ * READWRITE32(0x120,0x0,0x9) - Read from address 0x120 (contains 0x780), ANDs with
+ *                              0xffff_ffff and ORs in 0x9 -> Write 0x789 to 0x120
+ *
+ */
 #define READWRITE32(address,mask,val)  WRITE32(address,(READ32(address)&~(mask))|val)
+#define READWRITE8(address,mask,val)   WRITE8(address,(READ8(address)&~(mask))|val)
 
 
 

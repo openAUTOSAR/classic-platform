@@ -558,7 +558,7 @@
                   <REFERENCE-VALUES>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMSleepModeMcuModeRef</DEFINITION-REF>
-                      <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606s_xpc560s/Mcu/McuModuleConfiguration/McuModeSettingConf</VALUE-REF>
+                      <VALUE-REF DEST="CONTAINER">/os_simple_mpc5606s_xpc560s/Mcu/McuModuleConfiguration/RUN</VALUE-REF>
                     </REFERENCE-VALUE>
                     <REFERENCE-VALUE>
                       <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMWakeupSourceMask</DEFINITION-REF>
@@ -689,8 +689,13 @@
                     </CONTAINER>
                   </SUB-CONTAINERS>
                 </CONTAINER>
-                <CONTAINER UUID="0cef449c-7063-4004-8fc9-5bb74239ba7b">
-                  <SHORT-NAME>McuModeSettingConf</SHORT-NAME>
+                <CONTAINER UUID="e8b7b15e-d13e-4015-8d00-73701c5cb830">
+                  <SHORT-NAME>RUN</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
                   <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf</DEFINITION-REF>
                   <PARAMETER-VALUES>
                     <INTEGER-VALUE>

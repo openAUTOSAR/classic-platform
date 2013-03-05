@@ -32,6 +32,7 @@ _resetconfiguration:
 	.extern __DATA_ROM
 	.extern exit
 	.extern main
+	.extern ShutdownOS
 	
 #if defined(__CWCC__) && defined(CFG_VLE)
 .section .text_vle,text_vle
@@ -155,7 +156,9 @@ skip_bss:
 
 	.globl	_exit
 _exit:
-	b	_exit
+
+	li 	r3,30 		/* E_OS_EXIT_ABORT */
+	bl	ShutdownOS
 
 
 	.end

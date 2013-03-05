@@ -71,9 +71,6 @@
 #define SET16(address, value)       (*(vuint16_t*)(address) |= (value))
 #define CLEAR16(address, value)     (*(vuint16_t*)(address) &= ~(value))
 
-#define SET32(address, value)       (*(vuint32_t*)(address) |= (value))
-#define CLEAR32(address, value)     (*(vuint32_t*)(address) &= ~(value))
-
 #define SET64(address, value)       (*(vuint64_t*)(address) |= (value))
 #define CLEAR64(address, value)     (*(vuint64_t*)(address) &= ~(value))
 

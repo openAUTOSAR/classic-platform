@@ -14,9 +14,10 @@
  * -------------------------------- Arctic Core ------------------------------*/
 
 
+#ifndef SCHM_SPI_H_
+#define SCHM_SPI_H_
 
+/* TODO */
+#define SCHM_MAINFUNCTION_SPI()
 
-
-
-
-
+#endif /* SCHM_NVM_H_ */

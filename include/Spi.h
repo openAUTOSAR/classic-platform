@@ -171,6 +171,9 @@ typedef enum {
 						// The meaning of this status is equal to SPI_BUSY.
 
 	SPI_JOB_FAILED, 	// The last transmission of the Job has failed.
+
+	SPI_JOB_QUEUED, 	// Job accepted but not started.
+
 } Spi_JobResultType;
 
 typedef enum {

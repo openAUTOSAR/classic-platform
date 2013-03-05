@@ -67,13 +67,6 @@
 #define	LOCK()			wrteei	0
 #define	UNLOCK()		wrteei	1
 
-#define EXC_TABLE_CODE(_exc_nr) 	\
- 	.balign 16;                     \
-	stwu	sp,-EXC_FRM_SIZE(sp); 	\
-	stw		r3,EXC_FRM_R3(sp);		\
-	li	    r3,_exc_nr;				\
-	b		handleException			
-
 #if ISR_FRM_PATTERN!=FUNC_FRM_PATTERN
 #error Context pattern must be in the same place
 #endif
@@ -86,22 +79,31 @@
 
 .extern Os_Isr
 
+.extern exception_IVOR0
+.extern exception_IVOR1
+.extern exception_IVOR2
+.extern exception_IVOR3
+//.extern exception_IVOR4
+.extern exception_IVOR5
+.extern exception_IVOR6
+.extern exception_IVOR7
+.extern exception_IVOR8
+.extern exception_IVOR9
+//.extern exception_IVOR10
+.extern exception_IVOR11
+.extern exception_IVOR12
+.extern exception_IVOR13
+.extern exception_IVOR14
+
+.global exception_IVOR4
+.global exception_IVOR10
 .global Os_ArchSwapContextTo
 .global Os_ArchSwapContext
 .global Os_ArchSetSpAndCall
 .global Os_ArchGetStackPtr
 .global Os_Test_And_Set
-#if defined(__CWCC__) && defined(CFG_VLE)
-.section .text_vle,text_vle
-#elif defined(__DCC__) && defined(CFG_VLE)
-	// Must be indented (diab)
-	.section .text_vle,x
-#elif defined(__DCC__) && !defined(CFG_VLE)
-	.section .text,x
-#elif defined(__GNUC__)
-.section .text
-#endif
 
+ASM_SECTION_TEXT(.text)
 
 
 Os_ArchGetStackPtr:
@@ -261,6 +263,7 @@ restoreFuncContext:
 /**
  * External input exception handlers 
  */ 
+ #if 0
  #if defined(CFG_MPC5668)
  		.global exception_IVOR2
 		.balign 16
@@ -287,6 +290,8 @@ exception_IVOR2:
     
 	rfi	
 #endif
+#endif
+
 		.global exception_IVOR4
 		.global restoreIsrContext
 		.balign 16
@@ -577,66 +582,6 @@ exception_IVOR10:
     lwz     r4,4(sp)
     addi  	sp,sp,8
     rfi
-
-
-/* Getting here means that the exception stack is started with:
- * sp - saved
- * r3 - saved and contains the exception number 
- */
-handleException:
-	b  handleException		
-	
-#if defined(__GNUC__)	
-.section ".exception_tbl","ax"
-#elif defined(__CWCC__)
-#if defined(CFG_VLE)
-.section .exception_tbl,text_vle
-#else
-.section .exception_tbl,4,"rw"
-#endif
-#elif defined(__DCC__) && defined(CFG_VLE)
-	// Must be indented (diab)
-	.section .text_vle,x
-#elif defined(__DCC__) && !defined(CFG_VLE)
-	.section .text,x
-#endif
-	.balign 0x1000
-	.global exception_tbl
-
-exception_tbl:
-	EXC_TABLE_CODE(0)
-	EXC_TABLE_CODE(1)
-#if defined(CFG_MPC5668)
-	.balign 16
-    b      exception_IVOR2
-#else
-    EXC_TABLE_CODE(2)
-#endif
-	EXC_TABLE_CODE(3)
-    .balign 16
-    b      exception_IVOR4
-	EXC_TABLE_CODE(5)
-	EXC_TABLE_CODE(6)
-	EXC_TABLE_CODE(7)
-	EXC_TABLE_CODE(8)
-	EXC_TABLE_CODE(9)
-#if defined(CFG_MPC560X)
- 	EXC_TABLE_CODE(10)
-#else  	 	
-    .balign 16
-    b	   exception_IVOR10
-#endif    
-	EXC_TABLE_CODE(11)
-	EXC_TABLE_CODE(12)
-	EXC_TABLE_CODE(13)
-	EXC_TABLE_CODE(14)
-	EXC_TABLE_CODE(15)
-#if defined(CFG_SPE)
-	EXC_TABLE_CODE(32)
-	EXC_TABLE_CODE(33)
-	EXC_TABLE_CODE(34)
-#endif
-
 
 
 

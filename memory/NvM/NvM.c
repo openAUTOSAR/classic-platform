@@ -289,9 +289,9 @@
 /* ----------------------------[private macro]-------------------------------*/
 
 #if defined(DEBUG_BLOCK)
-#define NVM_ASSERT(_exp)		if( !(_exp) ) { assert(_exp); } //
-#else
 #define NVM_ASSERT(_exp)		if( !(_exp) ) { while(1) {}; } //assert(_exp)
+#else
+#define NVM_ASSERT(_exp)		if( !(_exp) ) { assert(_exp); } //
 #endif
 
 
@@ -1407,8 +1407,6 @@ void NvM_WriteAll(void)
 {
     imask_t state;
 	DET_VALIDATE_NO_RV(nvmState != NVM_UNINITIALIZED, NVM_READ_ALL_ID, NVM_E_NOT_INITIALIZED);
-
-	NVM_ASSERT(nvmState == NVM_IDLE);
 
 	Irq_Save(state);
 	AdminMultiReq.state = NVM_WRITE_ALL;

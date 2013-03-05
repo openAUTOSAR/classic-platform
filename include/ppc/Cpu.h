@@ -91,6 +91,7 @@ typedef uint32 imask_t;
 #define MSR_SPE	BIT64TO32(38)
 #define MSR_DS		BIT64TO32(58)
 #define MSR_IS		BIT64TO32(59)
+#define MSR_SPE     BIT64TO32(38)
 
 //#define ESR_PTR 	BIT64TO32(38)
 
@@ -102,6 +103,7 @@ typedef uint32 imask_t;
 #define TCR_FIE	0x00800000
 
 #define HID0_TBEN	0x4000
+
 
 /*
  * String macros
@@ -124,6 +126,8 @@ typedef uint32 imask_t;
 
 #define Irq_Disable() 	asm volatile (" wrteei 0");
 #define Irq_Enable() 	asm volatile (" wrteei 1");
+#define tlbwe()			asm volatile (" tlbwe");
+
 
 #define Irq_SuspendAll() 	Irq_Disable()
 #define Irq_ResumeAll() 	Irq_Enable()
@@ -152,6 +156,8 @@ asm void set_spr(uint32 spr_nr, uint32 val)
  *
  * Note! Tried lots of other ways to do this but came up empty
  */
+
+//https://community.freescale.com/thread/29234
 
 #if defined(__DCC__)
 asm uint32 get_spr(uint32 spr_nr)

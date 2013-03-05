@@ -74,6 +74,7 @@ typedef struct
 	uint32 wakeupTimer;
 
 	uint32 validationTimer;
+	uint32 nvmReadAllTimer;
 	/* Events set by EcuM_ValidateWakeupEvent */
 	uint32 validEvents;
 } EcuM_GlobalType;
@@ -95,9 +96,9 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr);
 void EcuM_AL_DriverInitThree(const EcuM_ConfigType* ConfigPtr);
 
 
-#if defined(USE_LDEBUG_PRINTF)
+//#if defined(USE_LDEBUG_PRINTF)
 char *GetMainStateAsString( EcuM_StateType state );
-#endif
+//#endif
 
 
 #define DEBUG_ECUM_STATE(_state)						LDEBUG_PRINTF("STATE: %s\n",GetMainStateAsString(_state))

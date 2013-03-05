@@ -77,52 +77,8 @@
 #error CPU not supported
 #endif
 
-#if (USE_FLS_INFO==STD_ON)
+#include "Fls_ConfigTypes.h"
 
-typedef struct Flash {
-    uint32_t size;
-    uint32_t sectCnt;
-    uint32_t bankSize;
-    uint32_t regBase;
-    uint32_t sectAddr[FLASH_MAX_SECTORS+1];
-    uint16_t addrSpace[FLASH_MAX_SECTORS+1];
-} FlashType;
-
-
-#else
-typedef struct {
-  Fls_LengthType FlsNumberOfSectors;
-  Fls_LengthType FlsPageSize;
-  Fls_LengthType FlsSectorSize;
-  Fls_AddressType FlsSectorStartaddress;
-} Fls_SectorType;
-#endif
-
-
-struct Flash;
-
-typedef struct {
-	void (*FlsAcErase)();					/* NO SUPPORT */
-	void (*FlsAcWrite)();					/* NO SUPPORT */
-	// FlsCallCycle N/A in core.
-	void (*FlsJobEndNotification)();
-	void (*FlsJobErrorNotification)();
-	uint32_t FlsMaxReadFastMode;				/* NO SUPPORT */
-	uint32_t FlsMaxReadNormalMode;			/* NO SUPPORT */
-	uint32_t FlsMaxWriteFastMode;				/* NO SUPPORT */
-	uint32_t FlsMaxWriteNormalMode;			/* NO SUPPORT */
-	uint32_t FlsProtection;					/* NO SUPPORT */
-#if (USE_FLS_INFO==STD_ON)
-	const struct Flash *FlsInfo;
-#else
-	const Fls_SectorType *FlsSectorList;
-#endif
-//	const uint32 FlsSectorListSize;			/* NO SUPPORT */
-} Fls_ConfigSetType;
-
-typedef Fls_ConfigSetType Fls_ConfigType;
-
-extern const Fls_ConfigSetType FlsConfigSet[];
 
 #endif /*FLS_CFG_H_*/
 /** @} */

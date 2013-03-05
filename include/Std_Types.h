@@ -28,7 +28,6 @@
 // TODO: we haven't really defined the autosar types yet.
 //       the standard types are uint8, etc.
 
-#include <stdint.h>
 #include "Platform_Types.h" // TODO: move
 #include "Compiler.h"
 

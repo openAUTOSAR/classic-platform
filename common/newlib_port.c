@@ -24,6 +24,7 @@
 #include <stddef.h>
 #include "Std_Types.h"
 #include "Ramlog.h"
+#include "Os.h"
 
 #if defined(CFG_ARM_CM3)
 #include "irq_types.h"
@@ -577,6 +578,9 @@ void _exit( int status ) {
 	__asm("        .global C$$EXIT");
 	__asm("C$$EXIT: nop");
 #endif
+
+	ShutdownOS( E_OS_EXIT_ABORT );
+
 	while(1) ;
 }
 #endif

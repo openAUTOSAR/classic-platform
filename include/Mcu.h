@@ -195,7 +195,7 @@ uint32_t McuE_GetPeripheralClock( McuE_PeriperalClock_t type );
 uint32_t McuE_GetClockReferencePointFrequency(void);
 #endif
 
-void McuE_EnterLowPower( int mode );
+void Mcu_Arc_EnterLowPower( int mode );
 void McuE_LowPowerRecoverFlash( void );
 
 #if defined(CFG_PPC)

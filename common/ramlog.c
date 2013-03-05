@@ -88,16 +88,22 @@ void ramlog_chr( char c ) {
   }
 }
 
+
+void ramlog_fputs(char *str) {
+
+	while (*str != 0) {
+		ramlog_chr(*str++);
+	}
+}
+
 /**
  * Print a string to the ramlog
  * @param str
  */
 void ramlog_puts( char *str ) {
 
-  while(*str!=0) {
-	ramlog_chr(*str++);
-  }
-  ramlog_chr('\n');
+	ramlog_fputs(str);
+	ramlog_chr('\n');
 }
 
 /**

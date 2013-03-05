@@ -13,51 +13,27 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
+#ifndef MCU_ARC_CFG_H_
+#define MCU_ARC_CFG_H_
 
-#include <assert.h>
-#include <string.h>
-#include "Std_Types.h"
-#include "Mcu.h"
-#if defined(USE_DET)
-#include "Det.h"
+#if !defined(_ASSEMBLER_)
+
+struct Mcu_Arc_SleepPrivData {
+	uint32_t dummy;
+};
+
+typedef struct Mcu_Arc_SleepConfig {
+	uint32_t dummy;
+	struct Mcu_Arc_SleepPrivData *pData;
+} Mcu_Arc_SleepConfigType;
+
+typedef struct Mcu_Arc_Config {
+	const struct Mcu_Arc_SleepConfig 	*sleepConfig;
+	const struct TlbEntry 				*tblTable;
+} Mcu_Arc_ConfigType;
+
+
+extern const struct Mcu_Arc_Config Mcu_Arc_ConfigData;
 #endif
-#if defined(USE_DEM)
-#include "Dem.h"
-#endif
-#include "Cpu.h"
-#include "Ramlog.h"
-#include "Os.h"
-#include "isr.h"
 
-//#define USE_LDEBUG_PRINTF 1
-#include "debug.h"
-
-
-void Mcu_Init(const Mcu_ConfigType *configPtr)
-{
-
-}
-
-void Mcu_SetMode( Mcu_ModeType McuMode ) {
-	(void)McuMode;
-}
-
-/**
- * Get the system clock in Hz. It calculates the clock from the
- * different register settings in HW.
- */
-uint32_t McuE_GetSystemClock(void)
-{
-  return 10;
-}
-Std_ReturnType Mcu_InitClock( const Mcu_ClockType ClockSetting ) {
-  return E_OK;
-}
-
-void Mcu_PerformReset( void ) {
-
-}
-
-Mcu_PllStatusType Mcu_GetPllStatus( void ) {
-	return MCU_PLL_LOCKED;
-}
+#endif /* MCU_ARC_CFG_H_ */

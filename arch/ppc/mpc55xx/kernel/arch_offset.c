@@ -54,6 +54,31 @@ void  oil_foo(void) {
 	DECLARE(EXC_FRM_R3,		offsetof(Os_ExceptionFrameType, r3));
 	DECLARE(EXC_FRM_VECTOR,	offsetof(Os_ExceptionFrameType, vector));
 
+/* Volatile frame */
+	DECLARE(VOLATILE_FRM_SIZE,	sizeof(Os_VolatileFrameType)+16);
+	DECLARE(VOLATILE_FRM_R0,	offsetof(Os_VolatileFrameType, r0));
+	DECLARE(VOLATILE_FRM_R3,	offsetof(Os_VolatileFrameType, r3));
+	DECLARE(VOLATILE_FRM_R4,	offsetof(Os_VolatileFrameType, r4));
+	DECLARE(VOLATILE_FRM_R5,	offsetof(Os_VolatileFrameType, r5));
+	DECLARE(VOLATILE_FRM_R6,	offsetof(Os_VolatileFrameType, r6));
+	DECLARE(VOLATILE_FRM_R7,	offsetof(Os_VolatileFrameType, r7));
+	DECLARE(VOLATILE_FRM_R8,	offsetof(Os_VolatileFrameType, r8));
+	DECLARE(VOLATILE_FRM_R9,	offsetof(Os_VolatileFrameType, r9));
+	DECLARE(VOLATILE_FRM_R10,	offsetof(Os_VolatileFrameType, r10));
+	DECLARE(VOLATILE_FRM_R11,	offsetof(Os_VolatileFrameType, r11));
+	DECLARE(VOLATILE_FRM_R12,	offsetof(Os_VolatileFrameType, r12));
+	DECLARE(VOLATILE_FRM_LR,	offsetof(Os_VolatileFrameType, lr));
+	DECLARE(VOLATILE_FRM_CTR,	offsetof(Os_VolatileFrameType, ctr));
+	DECLARE(VOLATILE_FRM_XER,	offsetof(Os_VolatileFrameType, xer));
+	DECLARE(VOLATILE_FRM_CR,	offsetof(Os_VolatileFrameType, cr));
+
+	/* Exception info */
+	DECLARE(MPC5XXX_INFO_SIZE,	sizeof(Mpc5xxx_ExceptionInfoType));
+	DECLARE(MPC5XXX_INFO_C_SRR0,offsetof(Mpc5xxx_ExceptionInfoType, c_srr0));
+	DECLARE(MPC5XXX_INFO_C_SRR1,offsetof(Mpc5xxx_ExceptionInfoType, c_srr1));
+	DECLARE(MPC5XXX_INFO_MCSR,	offsetof(Mpc5xxx_ExceptionInfoType, mcsr));
+	DECLARE(MPC5XXX_INFO_ESR,	offsetof(Mpc5xxx_ExceptionInfoType, esr));
+	DECLARE(MPC5XXX_INFO_DEAR,	offsetof(Mpc5xxx_ExceptionInfoType, dear));
 
 	DECLARE(FUNC_FRM_SIZE,	sizeof(Os_FuncFrameType));
 	DECLARE(FUNC_FRM_CR, offsetof(Os_FuncFrameType,cr));
