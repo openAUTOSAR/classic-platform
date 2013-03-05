@@ -27,8 +27,13 @@
 #include "Dcm.h"
 #include "Dcm_Internal.h"
 #if defined(DCM_USE_SERVICE_CLEARDIAGNOSTICINFORMATION) || defined(DCM_USE_SERVICE_READDTCINFORMATION) || defined(DCM_USE_SERVICE_CONTROLDTCSETTING)
+#if defined(USE_DEM)
 #include "Dem.h"
+#else
+#warning Dcm: UDS services ClearDiagnosticInformation, ReadDTCInformation and/or ControlDTCSetting will not work without Dem.
 #endif
+#endif
+
 #include "MemMap.h"
 #if defined(USE_MCU)
 #include "Mcu.h"
@@ -492,7 +497,7 @@ void DspUdsEcuReset(const PduInfoType *pduRxData, PduIdType txPduId, PduInfoType
 	}
 }
 
-#if defined(DCM_USE_SERVICE_CLEARDIAGNOSTICINFORMATION)
+#if defined(USE_DEM) && defined(DCM_USE_SERVICE_CLEARDIAGNOSTICINFORMATION)
 void DspUdsClearDiagnosticInformation(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	/** @req DCM247 */
@@ -524,7 +529,7 @@ void DspUdsClearDiagnosticInformation(const PduInfoType *pduRxData, PduInfoType 
 }
 #endif
 
-#if defined(DCM_USE_SERVICE_READDTCINFORMATION)
+#if defined(USE_DEM) && defined(DCM_USE_SERVICE_READDTCINFORMATION)
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x01_0x07_0x11_0x12(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	typedef struct {
@@ -1786,7 +1791,7 @@ void DspUdsTesterPresent(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 	}
 }
 
-#if defined(DCM_USE_SERVICE_CONTROLDTCSETTING)
+#if defined(USE_DEM) && defined(DCM_USE_SERVICE_CONTROLDTCSETTING)
 void DspUdsControlDtcSetting(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	/** @req DCM249 */
