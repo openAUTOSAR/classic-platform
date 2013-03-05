@@ -37,7 +37,9 @@
 #include <string.h>
 #include "Dcm.h"
 #include "Dcm_Internal.h"
+#if defined(DCM_USE_SERVICE_CLEARDIAGNOSTICINFORMATION) || defined(DCM_USE_SERVICE_READDTCINFORMATION) || defined(DCM_USE_SERVICE_CONTROLDTCSETTING)
 #include "Dem.h"
+#endif
 #include "MemMap.h"
 //#include "SchM_Dcm.h"
 //#include "ComM_Dcm.h"
