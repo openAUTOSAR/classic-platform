@@ -98,7 +98,7 @@
 /* ----------------------------[private function prototypes]-----------------*/
 /* ----------------------------[private variables]---------------------------*/
 
-EcuM_GlobalType internal_data;
+EcuM_GlobalType EcuM_World;
 
 /* ----------------------------[private functions]---------------------------*/
 
@@ -126,12 +126,12 @@ void EcuM_Init(void) {
 	Os_IsrInit();
 
 	// Determine PostBuild configuration
-	internal_data.config = EcuM_DeterminePbConfiguration();
+	EcuM_World.config = EcuM_DeterminePbConfiguration();
 
 	// TODO: Check consistency of PB configuration
 
 	// Initialize drivers needed before the OS-starts
-	EcuM_AL_DriverInitOne(internal_data.config);
+	EcuM_AL_DriverInitOne(EcuM_World.config);
 
 	// Determine the reset/wakeup reason
 	switch (Mcu_GetResetReason()) {
@@ -152,29 +152,29 @@ void EcuM_Init(void) {
 	}
 
 	// Moved this here because EcuM_SelectShutdownTarget needs us to be initilized.
-	internal_data.initiated = TRUE;
+	EcuM_World.initiated = TRUE;
 
 	// Set default shutdown target
 
 	status = EcuM_SelectShutdownTarget(
-					internal_data.config->EcuMDefaultShutdownTarget,
-					internal_data.config->EcuMDefaultSleepMode);/** @req EcuM2181 */
+					EcuM_World.config->EcuMDefaultShutdownTarget,
+					EcuM_World.config->EcuMDefaultSleepMode);/** @req EcuM2181 */
 	if (status != E_OK) {
 		//TODO: Report error.
 	}
 
 	// Set default application mode
 	status = EcuM_SelectApplicationMode(
-					internal_data.config->EcuMDefaultAppMode);
+					EcuM_World.config->EcuMDefaultAppMode);
 	if (status != E_OK) {
 		//TODO: Report error.
 	}
 
 #if defined(USE_COMM) || defined(USE_ECUM_COMM)
-	internal_data.run_comm_requests = 0;
+	EcuM_World.run_comm_requests = 0;
 #endif
-	internal_data.run_requests = 0;
-	internal_data.postrun_requests = 0;
+	EcuM_World.run_requests = 0;
+	EcuM_World.postrun_requests = 0;
 
 	// Start this baby up
 	AppModeType appMode;
@@ -209,13 +209,13 @@ void EcuM_StartupTwo(void)
 #endif
 
 #if defined(USE_WDGM)
-	if( internal_data.config->EcuMWdgMConfig != NULL ) {
-	  WdgM_SetMode(internal_data.config->EcuMWdgMConfig->EcuMWdgMStartupMode);
+	if( EcuM_World.config->EcuMWdgMConfig != NULL ) {
+	  WdgM_SetMode(EcuM_World.config->EcuMWdgMConfig->EcuMWdgMStartupMode);
 	}
 #endif
 
 	// Initialize drivers that don't need NVRAM data
-	EcuM_AL_DriverInitTwo(internal_data.config);
+	EcuM_AL_DriverInitTwo(EcuM_World.config);
 
 #if defined(USE_NVM)
 	// Start timer to wait for NVM job to complete
@@ -238,11 +238,11 @@ void EcuM_StartupTwo(void)
 		NvM_GetErrorStatus(0, &readAllResult);
 		tickTimerElapsed = OS_TICKS2MS_OS_TICK(GetOsTick() - tickTimerStart);
 		/* The timeout EcuMNvramReadAllTimeout is in ms */
-	} while( (readAllResult == NVM_REQ_PENDING) && (tickTimerElapsed < internal_data.config->EcuMNvramReadAllTimeout) );
+	} while( (readAllResult == NVM_REQ_PENDING) && (tickTimerElapsed < EcuM_World.config->EcuMNvramReadAllTimeout) );
 #endif
 
 	// Initialize drivers that need NVRAM data
-	EcuM_AL_DriverInitThree(internal_data.config);
+	EcuM_AL_DriverInitThree(EcuM_World.config);
 
 	// TODO: Indicate mode change to RTE
 
@@ -258,7 +258,7 @@ void EcuM_Shutdown(void) {
 	// Let the last drivers do a nice shutdown
 	EcuM_OnGoOffTwo();
 
-	if (internal_data.shutdown_target == ECUM_STATE_OFF) {
+	if (EcuM_World.shutdown_target == ECUM_STATE_OFF) {
 		EcuM_AL_SwitchOff();
 	} else {
 #if (MCU_PERFORM_RESET_API == STD_ON)
@@ -273,31 +273,31 @@ void EcuM_Shutdown(void) {
 }
 
 Std_ReturnType EcuM_GetState(EcuM_StateType* state) {
-	VALIDATE_RV(internal_data.initiated, ECUM_GETSTATE_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(state != NULL, ECUM_GETSTATE_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_GETSTATE_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(state != NULL, ECUM_GETSTATE_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
 
-	*state = internal_data.current_state;
+	*state = EcuM_World.current_state;
 
 	return E_OK;
 }
 
 Std_ReturnType EcuM_SelectApplicationMode(AppModeType appMode) {
-	VALIDATE_RV(internal_data.initiated, ECUM_SELECTAPPMODE_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_SELECTAPPMODE_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
 
-	internal_data.app_mode = appMode;
+	EcuM_World.app_mode = appMode;
 
 	return E_OK;
 }
 
 Std_ReturnType EcuM_GetApplicationMode(AppModeType* appMode) {
-	VALIDATE_RV(internal_data.initiated, ECUM_GETAPPMODE_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(appMode != NULL, ECUM_GETAPPMODE_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_GETAPPMODE_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(appMode != NULL, ECUM_GETAPPMODE_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
 
-	*appMode = internal_data.app_mode;
+	*appMode = EcuM_World.app_mode;
 
 	return E_OK;
 }
 
 Std_ReturnType EcuM_SelectBootTarget(EcuM_BootTargetType target) {
-	VALIDATE_RV(internal_data.initiated, ECUM_SELECT_BOOTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_SELECT_BOOTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
 
 	// TODO Do something great here
 	(void) target;
@@ -307,7 +307,7 @@ Std_ReturnType EcuM_SelectBootTarget(EcuM_BootTargetType target) {
 }
 
 Std_ReturnType EcuM_GetBootTarget(EcuM_BootTargetType* target) {
-	VALIDATE_RV(internal_data.initiated, ECUM_GET_BOOTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(target != NULL, ECUM_GET_BOOTARGET_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_GET_BOOTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(target != NULL, ECUM_GET_BOOTARGET_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
 
 	// TODO Return selected boot target here
 	(void) target;
@@ -318,7 +318,7 @@ Std_ReturnType EcuM_GetBootTarget(EcuM_BootTargetType* target) {
 
 Std_ReturnType EcuM_SelectShutdownTarget(EcuM_StateType shutdownTarget,
 				uint8 sleepMode) {
-	VALIDATE_RV(internal_data.initiated, ECUM_SELECTSHUTDOWNTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV((shutdownTarget == ECUM_STATE_OFF) || (shutdownTarget == ECUM_STATE_RESET) || (shutdownTarget == ECUM_STATE_SLEEP), ECUM_SELECTSHUTDOWNTARGET_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_SELECTSHUTDOWNTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV((shutdownTarget == ECUM_STATE_OFF) || (shutdownTarget == ECUM_STATE_RESET) || (shutdownTarget == ECUM_STATE_SLEEP), ECUM_SELECTSHUTDOWNTARGET_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
 
 #if defined(DEBUG_SELECT_SHUTDOWN_TARGET)
 	LDEBUG_PRINTF("EcuM_SelectShutdownTarget(): shutdownTarget=%s, sleepMode=%d\n",
@@ -326,8 +326,8 @@ Std_ReturnType EcuM_SelectShutdownTarget(EcuM_StateType shutdownTarget,
 			sleepMode);
 #endif
 
-	internal_data.shutdown_target = shutdownTarget;
-	internal_data.sleep_mode = sleepMode;
+	EcuM_World.shutdown_target = shutdownTarget;
+	EcuM_World.sleep_mode = sleepMode;
 
 	return E_OK;
 }
@@ -335,40 +335,57 @@ Std_ReturnType EcuM_SelectShutdownTarget(EcuM_StateType shutdownTarget,
 Std_ReturnType EcuM_GetShutdownTarget(EcuM_StateType* shutdownTarget,
 				uint8* sleepMode) /** @req EcuM2824 */
 {
-	VALIDATE_RV(internal_data.initiated, ECUM_GETSHUTDOWNTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(shutdownTarget != NULL, ECUM_GETSHUTDOWNTARGET_ID, ECUM_E_NULL_POINTER, E_NOT_OK);VALIDATE_RV(sleepMode != NULL, ECUM_GETSHUTDOWNTARGET_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_GETSHUTDOWNTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(shutdownTarget != NULL, ECUM_GETSHUTDOWNTARGET_ID, ECUM_E_NULL_POINTER, E_NOT_OK);VALIDATE_RV(sleepMode != NULL, ECUM_GETSHUTDOWNTARGET_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
 
-	*shutdownTarget = internal_data.shutdown_target;
-	*sleepMode = internal_data.sleep_mode;
+	*shutdownTarget = EcuM_World.shutdown_target;
+	*sleepMode = EcuM_World.sleep_mode;
 
 	return E_OK;
 }
 
 Std_ReturnType EcuM_RequestRUN(EcuM_UserType user) {
-	VALIDATE_RV(internal_data.initiated, ECUM_REQUESTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_REQUESTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_REQUESTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_REQUESTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
 
 	//	LDEBUG_PRINTF("EcuM_RequestRUN(): User %d\n",user);
-	internal_data.run_requests |= (uint32) 1 << user;
+	if( !EcuM_World.killAllRequest ) {
+		EcuM_World.run_requests |= (uint32) 1 << user;
+	}
 
 	return E_OK;
 }
 
 Std_ReturnType EcuM_ReleaseRUN(EcuM_UserType user) {
-	VALIDATE_RV(internal_data.initiated, ECUM_RELEASERUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_RELEASERUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_RELEASERUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_RELEASERUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
 
 #if defined(DEBUG_RELEASE_RUN)
 	LDEBUG_PRINTF("EcuM_ReleaseRUN(): User %d\n",user);
 #endif
-	internal_data.run_requests &= ~((uint32) 1 << user);
+	EcuM_World.run_requests &= ~((uint32) 1 << user);
 
 	return E_OK;
 }
 
 /**
+ * Kill all RUN requests and perform shutdown without waiting for application
+ * to finish
+ *
+ * Note that for 4.x this should NOT kill POST_RUN requests
  *
  */
 void EcuM_KillAllRUNRequests(void) {
-	/* NOT IMPLEMENTED */
-	assert(0);
+	/* @req 3.1.5/ECUM2821 */
+
+	EcuM_World.killAllRequest = true;
+
+	/* @req 3.1.5|4.0.3/ECUM2668 */
+	/* @req 3.1.5/ECUM1872 */
+	EcuM_World.run_requests = 0;
+	EcuM_World.postrun_requests = 0;
+
+#if defined(USE_DEM)
+    Dem_ReportErrorStatus(ECUM_E_ALL_RUN_REQUESTS_KILLED, DEM_EVENT_STATUS_FAILED );
+#endif
+
 }
 
 /**
@@ -403,7 +420,7 @@ void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources) {
 	/* @req 3.1.5/EcuM2867 */
 #if  ( ECUM_DEV_ERROR_DETECT == STD_ON )
 	/* Get user defined sources */
-	wkSource = internal_data.config->EcuMSleepModeConfig[internal_data.sleep_mode].EcuMWakeupSourceMask;
+	wkSource = EcuM_World.config->EcuMSleepModeConfig[EcuM_World.sleep_mode].EcuMWakeupSourceMask;
 
 	/* Add always validated sources */
 	wkSource |= (ECUM_WKSOURCE_POWER|ECUM_WKSOURCE_RESET | ECUM_WKSOURCE_INTERNAL_RESET |
@@ -417,10 +434,10 @@ void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources) {
 #endif
 
 	/* @req 3.1.5/EcuM1117 */
-	internal_data.wakeupEvents |= sources;
+	EcuM_World.wakeupEvents |= sources;
 
 	/* @req 3.1.5/EcuM2707 @req 3.1.5/EcuM2709*/
-	internal_data.validationTimer = ECUM_VALIDATION_TIMEOUT
+	EcuM_World.validationTimer = ECUM_VALIDATION_TIMEOUT
 					/ ECUM_MAIN_FUNCTION_PERIOD;
 
 }
@@ -428,45 +445,49 @@ void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources) {
 #if defined(USE_COMM) || defined(USE_ECUM_COMM)
 Std_ReturnType EcuM_ComM_RequestRUN(NetworkHandleType channel)
 {
-	VALIDATE_RV(internal_data.initiated, ECUM_COMM_REQUESTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_COMM_REQUESTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
 	VALIDATE_RV(channel < 32, ECUM_COMM_REQUESTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
 
-	internal_data.run_comm_requests |= (uint32)1 << channel;
+	if( !EcuM_World.killAllRequest ) {
+		EcuM_World.run_comm_requests |= (uint32)1 << channel;
+	}
 
 	return E_OK;
 }
 
 Std_ReturnType EcuM_ComM_ReleaseRUN(NetworkHandleType channel)
 {
-	VALIDATE_RV(internal_data.initiated, ECUM_COMM_RELEASERUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_COMM_RELEASERUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
 	VALIDATE_RV(channel < 32, ECUM_COMM_RELEASERUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
 
-	internal_data.run_comm_requests &= ~((uint32)1 << channel);
+	EcuM_World.run_comm_requests &= ~((uint32)1 << channel);
 
 	return E_OK;
 }
 
 boolean EcuM_ComM_HasRequestedRUN(NetworkHandleType channel)
 {
-	VALIDATE_RV(internal_data.initiated, ECUM_COMM_HASREQUESTEDRUN_ID, ECUM_E_NOT_INITIATED, FALSE);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_COMM_HASREQUESTEDRUN_ID, ECUM_E_NOT_INITIATED, FALSE);
 	VALIDATE_RV(channel < 32, ECUM_COMM_HASREQUESTEDRUN_ID, ECUM_E_INVALID_PAR, FALSE);
 
-	return (internal_data.run_comm_requests &((uint32)1 << channel)) != 0;
+	return (EcuM_World.run_comm_requests &((uint32)1 << channel)) != 0;
 }
 #endif
 
 Std_ReturnType EcuM_RequestPOST_RUN(EcuM_UserType user) {
-	VALIDATE_RV(internal_data.initiated, ECUM_REQUESTPOSTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_REQUESTPOSTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_REQUESTPOSTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_REQUESTPOSTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
 
-	internal_data.postrun_requests |= (uint32) 1 << user;
+	if( !EcuM_World.killAllRequest ) {
+		EcuM_World.postrun_requests |= (uint32) 1 << user;
+	}
 
 	return E_OK;
 }
 
 Std_ReturnType EcuM_ReleasePOST_RUN(EcuM_UserType user) {
-	VALIDATE_RV(internal_data.initiated, ECUM_RELEASEPOSTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_RELEASEPOSTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_RELEASEPOSTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_RELEASEPOSTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
 
-	internal_data.postrun_requests &= ~((uint32) 1 << user);
+	EcuM_World.postrun_requests &= ~((uint32) 1 << user);
 
 	return E_OK;
 }
@@ -480,10 +501,10 @@ void EcuM_ClearWakeupEvent(EcuM_WakeupSourceType source) {
 		/* Seems quite pointless */
 		break;
 	case ECUM_WKSTATUS_PENDING:
-		internal_data.wakeupEvents = 0;
+		EcuM_World.wakeupEvents = 0;
 		break;
 	case ECUM_WKSTATUS_VALIDATED:
-		internal_data.validEvents = 0;
+		EcuM_World.validEvents = 0;
 		break;
 	case ECUM_WKSTATUS_EXPIRED:
 		assert(0);
@@ -505,13 +526,13 @@ EcuM_WakeupSourceType EcuM_GetPendingWakeupEvents(void) {
 	 * */
 
 	/* @req 3.1.5/EcuM1156 */
-	return internal_data.wakeupEvents;
+	return EcuM_World.wakeupEvents;
 
 }
 
 EcuM_WakeupSourceType EcuM_GetValidatedWakeupEvents(void) {
 
-	return internal_data.validEvents;
+	return EcuM_World.validEvents;
 }
 
 EcuM_WakeupStatusType EcuM_GetStatusOfWakeupSource(
@@ -532,10 +553,10 @@ void EcuM_ValidateWakeupEvent(EcuM_WakeupSourceType sources) {
 	/* !req 3.1.5/EcuM2868 */
 	/* !req 3.1.5/EcuM2345 */
 
-	internal_data.validEvents |= sources;
+	EcuM_World.validEvents |= sources;
 	/*
 	#if defined(USE_COMM)
-	if( internal_data.config->)
+	if( EcuM_World.config->)
 	ComM_EcuM_WakeUpIndication()
 	#endif
 	 */
