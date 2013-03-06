@@ -37,6 +37,25 @@
 /** @req COMM549.bswbuilder */
 /** @req COMM464 */
 
+/* EcuM interface & wakeup */
+/** @req COMM239 */
+/** @req COMM660 */
+/** @req COMM275 */
+/** @req COMM814 */
+/** @req COMM815 */
+/** @req COMM406 */
+/** @req COMM647 */
+/** @req COMM648 */
+/** @req COMM651 */
+/** @req COMM316 */
+/** @req COMM33 */
+/** @req COMM317 */
+/** @req COMM453 */
+/** @req COMM454 */
+/** @req COMM455 */
+/** @req COMM344 */
+
+
 #include <string.h>
 #include "ComM.h"
 #include "ComM_Dcm.h"
@@ -378,26 +397,20 @@ void ComM_EcuM_WakeUpIndication( NetworkHandleType Channel ){
 // Diagnostic Communication Manager Callbacks
 // ------------------------------------------
 
-/** @req ComM453 */
-/** @req ComM454 */
-/** @req ComM455 */
-/** @req ComM346 */
 void ComM_DCM_ActiveDiagnostic(void){
 	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_DCM_ACTIVEDIAGNOSTIC);
 
-	/** @req ComM182 : The communication inhibition shall get temporarily inactive during an active diagnostic session */
+	/** !req ComM182 : The communication inhibition shall get temporarily inactive during an active diagnostic session */
 
 	// TODO Activate channels,  we must have a DCM user with channels
-	// ComM_Internal_RequestRUN(Channel);
 }
 
 void ComM_DCM_InactiveDiagnostic(void){
 	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_DCM_INACTIVEDIAGNOSTIC);
 
-	/** @req ComM182 : The communication inhibition shall get temporarily inactive during an active diagnostic session */
+	/** !req ComM182 : The communication inhibition shall get temporarily inactive during an active diagnostic session */
 
 	// TODO DeActivate channels,  we must have a DCM user with channels
-	// ComM_Internal_RequestRUN(Channel);
 }
 
 
