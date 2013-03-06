@@ -69,6 +69,10 @@
 #include "Nm.h"
 #endif
 
+#if defined(USE_ECUM)
+#include "EcuM.h"
+#endif
+
 static ComM_InternalType ComM_Internal = {
 		.InitStatus = COMM_UNINIT,
 		.InhibitCounter = 0,
@@ -160,10 +164,14 @@ static Std_ReturnType ComM_Internal_RequestComMode(
 		// Put user request into mask
 		if (ComMode == COMM_NO_COMMUNICATION) {
 			ChannelInternal->UserRequestMask &= ~(userMask);
+#if defined(USE_ECUM) || defined(COMM_TESTS)
 			ComM_Internal_ReleaseRUN(Channel->Number);
+#endif
 		} else if (ComMode == COMM_FULL_COMMUNICATION) {
 			ChannelInternal->UserRequestMask |= userMask;
+#if defined(USE_ECUM) || defined(COMM_TESTS)
 			ComM_Internal_RequestRUN(Channel->Number);
+#endif
 		} else {
 			//Nothing to be done.
 		}
@@ -358,6 +366,7 @@ void ComM_Nm_RestartIndication( NetworkHandleType Channel ){
 
 }
 
+#if defined(USE_ECUM) || defined(COMM_TESTS)
 static void ComM_Internal_ReleaseRUN(NetworkHandleType Channel)
 {
 	if(TRUE == EcuM_ComM_HasRequestedRUN(Channel))
@@ -377,7 +386,7 @@ static void ComM_Internal_RequestRUN(NetworkHandleType Channel)
 		EcuM_ComM_RequestRUN(Channel);
 	}
 }
-
+#endif
 static boolean ComM_Internal_RunModeIndication( NetworkHandleType Channel )
 {
 	return ComM_Internal.Channels[Channel].RunModeIndication;
@@ -398,8 +407,9 @@ void ComM_EcuM_WakeUpIndication( NetworkHandleType Channel ){
 	COMM_VALIDATE_CHANNEL_NORV(Channel, COMM_SERVICEID_ECUM_WAKEUPINDICATION);
 
 	/* Activate wake-up i.e. start RequestRun and go to full communication */
+#if defined(USE_ECUM) || defined(COMM_TESTS)
 	ComM_Internal_RequestRUN(Channel);
-
+#endif
 	ComM_Internal.Channels[Channel].WakeUp = TRUE;
 }
 
