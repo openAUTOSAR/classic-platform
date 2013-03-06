@@ -1,5 +1,4 @@
 
-
 # Arch specific settings
 ifneq ($(ARCH),)
  include $(ROOTDIR)/$(ARCH_PATH-y)/scripts/gcc.mk

@@ -68,6 +68,9 @@ OsTaskVarType * os_alloc_new_pcb( void ) {
 static void Os_IsrAddWithId( const OsIsrConstType * restrict isrPtr, int id ) {
 	Os_IsrVarList[id].constPtr = isrPtr;
 	Os_IsrVarList[id].id = id;
+#if defined(CFG_OS_ISR_HOOKS)
+	Os_IsrVarList[id].preemtedId = INVALID_ISR;
+#endif
 	Os_VectorToIsr[isrPtr->vector + IRQ_INTERRUPT_OFFSET ] = id;
 	Irq_EnableVector( isrPtr->vector, isrPtr->priority, Os_ApplGetCore(isrPtr->appOwner )  );
 }
@@ -118,6 +121,9 @@ ISRType Os_IsrAdd( const OsIsrConstType * restrict isrPtr ) {
 
 		Os_IsrVarList[id].constPtr = isrPtr;
 		Os_IsrVarList[id].id = id;
+#if defined(CFG_OS_ISR_HOOKS)
+		Os_IsrVarList[id].preemtedId = INVALID_ISR;
+#endif
 		Os_VectorToIsr[isrPtr->vector + IRQ_INTERRUPT_OFFSET ] = id;
 		Irq_EnableVector( isrPtr->vector, isrPtr->priority, Os_ApplGetCore(isrPtr->appOwner )  );
 	}
@@ -320,7 +326,8 @@ void *Os_Isr( void *stack, int16_t vector ) {
 		/* We interrupted an ISR, save it */
 		oldIsrPtr = Os_Sys.currIsrPtr;
 #if defined(CFG_OS_ISR_HOOKS)
-	Os_PostIsrHook(isrPtr->id);
+		isrPtr->preemtedId = oldIsrPtr->id;
+		Os_PostIsrHook(oldIsrPtr->id);
 #endif
 	}
 
@@ -345,7 +352,12 @@ void *Os_Isr( void *stack, int16_t vector ) {
 #endif
 
 #if defined(CFG_OS_ISR_HOOKS)
-	Os_PostIsrHook(isrPtr->id);
+	Os_PostIsrHook(isrPtr->id );
+	if( isrPtr->preemtedId != INVALID_ISR ) {
+		Os_Sys.currIsrPtr = &Os_IsrVarList[isrPtr->preemtedId];
+		Os_PreIsrHook(isrPtr->preemtedId );
+		isrPtr->preemtedId = INVALID_ISR;
+	}
 #endif
 
 

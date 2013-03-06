@@ -192,6 +192,9 @@ typedef struct OsIsrConst {
  */
 typedef struct OsIsrVar{
 	ISRType id;
+#if defined(CFG_OS_ISR_HOOKS)
+	ISRType preemtedId;
+#endif
 //	OsIsrStackType		stack;
 	int					state;
 	const OsIsrConstType *constPtr;

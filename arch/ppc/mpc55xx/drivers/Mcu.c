@@ -509,20 +509,20 @@ Std_ReturnType Mcu_InitClock(const Mcu_ClockType ClockSetting)
     // Connect SYSCLK to FMPLL
     SIU.SYSCLK.B.SYSCLKSEL = SYSCLOCK_SELECT_PLL;
 
-#elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
-   // Partially following the steps in MPC5567 RM..
-   FMPLL.SYNCR.B.DEPTH	= 0;
-   FMPLL.SYNCR.B.LOLRE	= 0;
-   FMPLL.SYNCR.B.LOLIRQ = 0;
+ #elif defined(CFG_MPC5554) || defined(CFG_MPC5567)
+    // Partially following the steps in MPC5567 RM..
+    FMPLL.SYNCR.B.DEPTH	= 0;
+    FMPLL.SYNCR.B.LOLRE	= 0;
+    FMPLL.SYNCR.B.LOLIRQ = 0;
 
-   FMPLL.SYNCR.B.PREDIV 	= clockSettingsPtr->Pll1;
-   FMPLL.SYNCR.B.MFD		= clockSettingsPtr->Pll2;
-   FMPLL.SYNCR.B.RFD    	= clockSettingsPtr->Pll3;
+    FMPLL.SYNCR.B.PREDIV 	= clockSettingsPtr->Pll1;
+    FMPLL.SYNCR.B.MFD		= clockSettingsPtr->Pll2;
+    FMPLL.SYNCR.B.RFD    	= clockSettingsPtr->Pll3;
 
 	// Wait for PLL to sync.
-   while (Mcu_GetPllStatus() != MCU_PLL_LOCKED) ;
+    while (Mcu_GetPllStatus() != MCU_PLL_LOCKED) ;
 
-   FMPLL.SYNCR.B.LOLIRQ	= 1;
+    FMPLL.SYNCR.B.LOLIRQ	= 1;
 #elif defined(CFG_MPC563XM)
 
    FMPLL.SYNCR.B.PREDIV 	= clockSettingsPtr->Pll1;

@@ -62,10 +62,6 @@
 #define FLS_SPECIFIED_ERASE_CYCLES	0				/* NO SUPPORT */
 #define FLS_WRITE_TIME				0				/* NO SUPPORT */
 
-
-#define FLS_MAX_READ_NORMAL_MODE	16
-#define FLS_MAX_WRITE_NORMAL_MODE	16
-
 /* MCU Specific */
 #if defined(CFG_MPC5606B)
 
