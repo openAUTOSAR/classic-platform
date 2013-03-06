@@ -81,7 +81,6 @@ typedef struct {
 	uint8						NmIndicationMask;
 	boolean						RunModeIndication;
 	boolean						WakeUp;
-	boolean						HasRequest;
 } ComM_Internal_ChannelType;
 
 typedef struct {
