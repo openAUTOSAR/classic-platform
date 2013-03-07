@@ -442,7 +442,13 @@ void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources) {
 
 }
 
-#if defined(USE_COMM) || defined(USE_ECUM_COMM)
+/**
+
+ *
+ * @param user
+ * @return
+ */
+#if ECUM_AR_VERSION < 40300
 Std_ReturnType EcuM_ComM_RequestRUN(NetworkHandleType channel)
 {
 	VALIDATE_RV(EcuM_World.initiated, ECUM_COMM_REQUESTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
@@ -454,7 +460,14 @@ Std_ReturnType EcuM_ComM_RequestRUN(NetworkHandleType channel)
 
 	return E_OK;
 }
+#endif
 
+/**
+ *
+ * @param user
+ * @return
+ */
+#if ECUM_AR_VERSION < 40300
 Std_ReturnType EcuM_ComM_ReleaseRUN(NetworkHandleType channel)
 {
 	VALIDATE_RV(EcuM_World.initiated, ECUM_COMM_RELEASERUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
@@ -464,7 +477,10 @@ Std_ReturnType EcuM_ComM_ReleaseRUN(NetworkHandleType channel)
 
 	return E_OK;
 }
+#endif
 
+
+#if ECUM_AR_VERSION < 40300
 boolean EcuM_ComM_HasRequestedRUN(NetworkHandleType channel)
 {
 	VALIDATE_RV(EcuM_World.initiated, ECUM_COMM_HASREQUESTEDRUN_ID, ECUM_E_NOT_INITIATED, FALSE);
@@ -475,7 +491,8 @@ boolean EcuM_ComM_HasRequestedRUN(NetworkHandleType channel)
 #endif
 
 Std_ReturnType EcuM_RequestPOST_RUN(EcuM_UserType user) {
-	VALIDATE_RV(EcuM_World.initiated, ECUM_REQUESTPOSTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_REQUESTPOSTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_REQUESTPOSTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_REQUESTPOSTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
 
 	if( !EcuM_World.killAllRequest ) {
 		EcuM_World.postrun_requests |= (uint32) 1 << user;
@@ -485,7 +502,8 @@ Std_ReturnType EcuM_RequestPOST_RUN(EcuM_UserType user) {
 }
 
 Std_ReturnType EcuM_ReleasePOST_RUN(EcuM_UserType user) {
-	VALIDATE_RV(EcuM_World.initiated, ECUM_RELEASEPOSTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_RELEASEPOSTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_RELEASEPOSTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_RELEASEPOSTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
 
 	EcuM_World.postrun_requests &= ~((uint32) 1 << user);
 
