@@ -477,7 +477,6 @@ Std_ReturnType EcuM_ComM_ReleaseRUN(NetworkHandleType channel)
 }
 
 
-#if ECUM_AR_VERSION < 40300
 boolean EcuM_ComM_HasRequestedRUN(NetworkHandleType channel)
 {
 	VALIDATE_RV(EcuM_World.initiated, ECUM_COMM_HASREQUESTEDRUN_ID, ECUM_E_NOT_INITIATED, FALSE);
