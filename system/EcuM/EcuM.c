@@ -442,13 +442,13 @@ void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources) {
 
 }
 
-/**
+#if defined(USE_COMM) && (ECUM_AR_VERSION < 40300)
 
+/**
  *
  * @param user
  * @return
  */
-#if ECUM_AR_VERSION < 40300
 Std_ReturnType EcuM_ComM_RequestRUN(NetworkHandleType channel)
 {
 	VALIDATE_RV(EcuM_World.initiated, ECUM_COMM_REQUESTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
@@ -460,14 +460,12 @@ Std_ReturnType EcuM_ComM_RequestRUN(NetworkHandleType channel)
 
 	return E_OK;
 }
-#endif
 
 /**
  *
  * @param user
  * @return
  */
-#if ECUM_AR_VERSION < 40300
 Std_ReturnType EcuM_ComM_ReleaseRUN(NetworkHandleType channel)
 {
 	VALIDATE_RV(EcuM_World.initiated, ECUM_COMM_RELEASERUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
@@ -477,7 +475,6 @@ Std_ReturnType EcuM_ComM_ReleaseRUN(NetworkHandleType channel)
 
 	return E_OK;
 }
-#endif
 
 
 #if ECUM_AR_VERSION < 40300
@@ -488,6 +485,7 @@ boolean EcuM_ComM_HasRequestedRUN(NetworkHandleType channel)
 
 	return (EcuM_World.run_comm_requests &((uint32)1 << channel)) != 0;
 }
+
 #endif
 
 Std_ReturnType EcuM_RequestPOST_RUN(EcuM_UserType user) {
