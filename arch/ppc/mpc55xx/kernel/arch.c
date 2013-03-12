@@ -141,11 +141,13 @@ void Os_ArchSetTaskEntry(OsTaskVarType *pcbPtr ) {
 }
 
 void Os_ArchInit( void ) {
-#if defined(CFG_SPE)
 	uint32_t msr = get_msr();
+#if defined(CFG_SPE)
 	msr |= MSR_SPE;
-	set_msr(msr);
 #endif
+	msr |= MSR_ME;	/* We want IVOR1 instead of checkstop */
+	set_msr(msr);
+
 }
 
 
