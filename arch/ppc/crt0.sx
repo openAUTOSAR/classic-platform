@@ -62,6 +62,8 @@ _redled:
 	b _exit
 #endif
 
+
+
 __start:
 _start:
 #if (CFG_MPC560X) || (CFG_MPC563XM)
@@ -85,6 +87,12 @@ _start:
 
 	// r2, base of .sdata2 and .sbss2
 	LOAD_ADDR_32(2,_SDA2_BASE_)
+
+	
+	/* Check for atleast 8 byte alignment of stack*/
+	clrlwi	r3,r1,(32-3)
+	cmpwi	r3,0
+	bne		badAlignment
 
 	// make space for initial backchain..
 	subi    r1,r1,16
@@ -160,5 +168,8 @@ _exit:
 	li 	r3,30 		/* E_OS_EXIT_ABORT */
 	bl	ShutdownOS
 
-
+	.global badAlignment
+badAlignment:
+	b badAlignment
+	
 	.end

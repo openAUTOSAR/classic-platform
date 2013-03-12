@@ -271,6 +271,7 @@
 #define bne		e_bne
 #define bgt		e_bgt
 #define extrwi	e_extrwi
+#define clrlwi  e_clrlwi
 #define blrl	se_blrl
 #define stmw	e_stmw
 #define bdnz	e_bdnz

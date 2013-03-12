@@ -315,17 +315,18 @@ void Mcu_Arc_InitClockPre( const Mcu_ClockSettingConfigType *clockSettingsPtr )
 
 void Mcu_Arc_InitClockPost( const Mcu_ClockSettingConfigType *clockSettingsPtr )
 {
-
+	(void)clockSettingsPtr;
 }
 
 
 void Mcu_Arc_SetModePre( Mcu_ModeType mcuMode)
 {
+	(void)mcuMode;
 }
 
 void Mcu_Arc_SetModePost( Mcu_ModeType mcuMode)
 {
-
+	(void)mcuMode;
 }
 
 
