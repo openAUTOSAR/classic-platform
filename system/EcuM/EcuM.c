@@ -381,6 +381,10 @@ void EcuM_KillAllRUNRequests(void) {
 	/* @req 3.1.5/ECUM1872 */
 	EcuM_World.run_requests = 0;
 	EcuM_World.postrun_requests = 0;
+#if defined(USE_COMM)
+	EcuM_World.run_comm_requests = 0;
+#endif
+
 
 #if defined(USE_DEM)
     Dem_ReportErrorStatus(ECUM_E_ALL_RUN_REQUESTS_KILLED, DEM_EVENT_STATUS_FAILED );
