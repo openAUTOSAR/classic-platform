@@ -183,10 +183,14 @@ uint32_t Mcu_Arc_ExceptionHook(uint32_t exceptionVector) {
 
 #if defined(CFG_MCU_ARC_CONFIG)
 void Mcu_Arc_InitMM( void ) {
-	/* User: Enable caches if any */
-
 	/* User: Setup TLBs if needed  */
 	MM_TlbSetup( Mcu_Arc_ConfigData.tblTable );
+
+	/* User: Enable caches if any */
+#if defined(CFG_MPC5567) || defined(CFG_MPC5668)
+	Cache_EnableU();
+#endif
+
 }
 #endif
 
