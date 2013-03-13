@@ -14,18 +14,33 @@
  * -------------------------------- Arctic Core ------------------------------*/
  
  
- /* Sleep handling on MPC56xx - AN4240 
-  *  - 3  low power modes: HALT, STOP and STANDBY.
-  *    - HALT -  Pointless
-  *    - STOP -  middle sleep  
-  *    - STANDBY - Deepest sleep (Suppot this)
-  *  - It seems that after STANDBY is either boots to  
-  *    - Flash (normal reset vector!!!)
-  *    - backup SRAM   
-  *     
-  *     
-  *     
-  * */
+/* ----------------------------[information]----------------------------------*/
+/*
+ * Author: mahi
+ *
+ * Description:
+ *   Implements exceptions handlers and sleep handling for some MCUs 
+ *   (mpc5516 and mpc5668). 
+ *
+ * Implementaion notes:
+ *   The sleep handling on old MCUs differ a lot from the new generation.
+ *   
+ *   Old:
+ *   - mpc551,  mpc5668 
+ *   - returns to a user defined address in flash or ram with one TLB 4K setup.
+ *   - STOP and SLEEP (SLEEP deeper sleep than STOP)
+ * 
+ *   New:
+ *    - mpc560x series.
+ *    - Resources: AN4240 and "Bolero Low Power Approach"
+ *    - 3  low power modes: HALT, STOP and STANDBY.
+ *      - HALT -  Pointless
+ *      - STOP -  middle sleep  
+ *      - STANDBY - Deepest sleep (Suppot this)
+ *    - It seems that after STANDBY is either boots to  
+ *      - Flash (normal reset vector!!!)
+ *      - backup SRAM   
+ */
 
 /* ----------------------------[includes]------------------------------------*/
 #define _ASSEMBLER_

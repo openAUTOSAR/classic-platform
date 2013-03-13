@@ -978,6 +978,9 @@ static void Mcu_ConfigureFlash(void)
 	/* Enable pipelined reads again. */
 	FLASH.MCR.B.PRD = 0;
 
+	/* Enable error reporting on Flash (FEAR, etc will be updated) */
+	WRITE8(ECSM_BASE+ECSM_ECR,2);
+
 #elif defined(CFG_MPC5668)
 	/* Check values from cookbook and MPC5668x Microcontroller Data Sheet */
 
