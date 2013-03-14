@@ -20,8 +20,18 @@
 
 #include "WdgM.h"
 #include "WdgIf.h"
+
 #if defined(USE_DET)
 #include "Det.h"
+#endif
+
+#if defined(USE_DEM)
+#include "Dem.h"
+#endif
+
+#if defined(HOST_TEST)
+#include "Dem_IntErrId.h"
+#include "Dem_Types.h"
 #endif
 
 #if defined(CFG_WDGM_TEST)
@@ -31,6 +41,13 @@
 //#define USE_LDEBUG_PRINTF 1
 #include "debug.h"
 
+/** @req WDGM022 */
+/** @req WDGM138 */
+#if defined(USE_DEM) || defined(HOST_TEST)
+#define REPORT_TO_DEM( _err ) Dem_ReportErrorStatus(_err, DEM_EVENT_STATUS_FAILED);
+#else
+#define REPORT_TO_DEM( _err )
+#endif
 
 #if (WDGM_DEV_ERROR_DETECT == STD_ON)
 #define WDGM_REPORT_ERROR(_api,_errorcode) \
@@ -178,7 +195,7 @@ Std_ReturnType WdgM_GetGlobalStatus (WdgM_AliveSupervisionStatusType *Status)
 
 /** @req WDGM154 **/
 Std_ReturnType WdgM_SetMode(WdgM_ModeType Mode) {
-	Std_ReturnType ret = E_NOT_OK;
+	Std_ReturnType ret = E_OK;
 	/** @req WDGM021 **/
 	VALIDATE((wdgMInternalState.WdgM_ConfigPtr != 0), WDGM_SETMODE_ID, WDGM_E_NO_INIT);
 	/** @req WDGM020 **/
@@ -215,6 +232,7 @@ Std_ReturnType WdgM_SetMode(WdgM_ModeType Mode) {
 				Gpt_EnableNotification(gptConfigPtr->WdgM_GptChannelRef);
 #else
 				WDGM_REPORT_ERROR( WDGM_SETMODE_ID, WDGM_E_PARAM_MODE );
+				ret = E_NOT_OK;
 #endif
 			}
 			/** @req WDGM187 **/
@@ -228,6 +246,7 @@ Std_ReturnType WdgM_SetMode(WdgM_ModeType Mode) {
 					Gpt_StopTimer(oldGptConfigPtr->WdgM_GptChannelRef);
 #else
 					WDGM_REPORT_ERROR( WDGM_SETMODE_ID, WDGM_E_PARAM_MODE );
+					ret = E_NOT_OK;
 #endif
 				} else {
 					/* Do nothing since no mode have been configured. */
@@ -277,10 +296,13 @@ Std_ReturnType WdgM_SetMode(WdgM_ModeType Mode) {
 			/** @req WDGM139 **/
 			if (E_NOT_OK == WdgIf_SetMode(deviceIndex, mode)) {
 				wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_STOPPED;
+				ret = E_NOT_OK;
 			}
 		}
+	}
 
-		ret = E_OK;
+	if(ret != E_OK){
+		REPORT_TO_DEM(WDGM_E_SET_MODE)
 	}
 	wdgMInternalState.WdgMModeConfigured = TRUE;
 	return (ret);
@@ -484,6 +506,9 @@ static void wdgm_Check_AliveSupervision (void)
     wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode].WdgM_ExpiredSupervisionCycleTol)
             {
               wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_STOPPED;
+#if (WDGM_DEM_ALIVE_SUPERVISION_REPORT == STD_ON)
+            		  REPORT_TO_DEM(WDGM_E_ALIVE_SUPERVISION)
+#endif
             }
           else
             {
@@ -497,6 +522,9 @@ static void wdgm_Check_AliveSupervision (void)
           wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode].WdgM_ExpiredSupervisionCycleTol)
             {
               wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_STOPPED;
+#if (WDGM_DEM_ALIVE_SUPERVISION_REPORT == STD_ON)
+            		  REPORT_TO_DEM(WDGM_E_ALIVE_SUPERVISION)
+#endif
             }
           else
             {
@@ -518,6 +546,9 @@ static void wdgm_Check_AliveSupervision (void)
       wdgMInternalState.WdgM_ConfigPtr->WdgM_ConfigSet->WdgM_Mode[wdgMInternalState.WdgMActiveMode].WdgM_ExpiredSupervisionCycleTol)
         {
           wdgMInternalState.WdgM_GlobalSupervisionStatus = WDGM_ALIVE_STOPPED;
+#if (WDGM_DEM_ALIVE_SUPERVISION_REPORT == STD_ON)
+          REPORT_TO_DEM(WDGM_E_ALIVE_SUPERVISION)
+#endif
         }
       break;
     case WDGM_ALIVE_DEACTIVATED:
