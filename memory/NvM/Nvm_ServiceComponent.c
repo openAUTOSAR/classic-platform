@@ -85,22 +85,7 @@ Std_ReturnType NvMService_RestoreBlockDefaults(NvM_BlockIdType BlockId, const Ds
 #if (NVM_API_CONFIG_CLASS > NVM_API_CONFIG_CLASS_2)
 
 Std_ReturnType NvMService_EraseBlock(NvM_BlockIdType BlockId) {
-	return NvM_EraseNvBlock( BlockId );
-}
-
-Std_ReturnType NvMService_InvalidateNvBlock(NvM_BlockIdType BlockId) {
-	return NvM_InvalidateNvBlock( BlockId );
-}
-
-Std_ReturnType NvMAdmin_SetBlockProtection(NvM_BlockIdType BlockId, Boolean ProtectionEnabled) {
-	NvM_SetBlockProtection( BlockId, (boolean)(ProtectionEnabled) );
-	return E_OK;
-}
-
-#else
-
-Std_ReturnType NvMService_EraseBlock(NvM_BlockIdType BlockId) {
-	/* Dummy */ /* return NvM_EraseNvBlock( BlockId ); */
+	/* NOT SUPPORTED */ /* return NvM_EraseNvBlock( BlockId ); */
 	return E_NOT_OK;
 }
 
@@ -109,7 +94,24 @@ Std_ReturnType NvMService_InvalidateNvBlock(NvM_BlockIdType BlockId) {
 }
 
 Std_ReturnType NvMAdmin_SetBlockProtection(NvM_BlockIdType BlockId, Boolean ProtectionEnabled) {
-	/* Dummy */ /* NvM_SetBlockProtection( BlockId, (boolean)(ProtectionEnabled) ); return E_OK */
+	/* NOT SUPPORTED */ /* NvM_SetBlockProtection( BlockId, (boolean)(ProtectionEnabled); return E_OK; */
+	return E_NOT_OK;
+}
+
+#else
+
+Std_ReturnType NvMService_EraseBlock(NvM_BlockIdType BlockId) {
+	/* Dummy */
+	return E_NOT_OK;
+}
+
+Std_ReturnType NvMService_InvalidateNvBlock(NvM_BlockIdType BlockId) {
+	/* Dummy */
+	return E_NOT_OK;
+}
+
+Std_ReturnType NvMAdmin_SetBlockProtection(NvM_BlockIdType BlockId, Boolean ProtectionEnabled) {
+	/* Dummy */
 	return E_NOT_OK;
 }
 
