@@ -100,17 +100,16 @@ Std_ReturnType NvMAdmin_SetBlockProtection(NvM_BlockIdType BlockId, Boolean Prot
 #else
 
 Std_ReturnType NvMService_EraseBlock(NvM_BlockIdType BlockId) {
-	/* Dummy */
+	/* Dummy */ /* return NvM_EraseNvBlock( BlockId ); */
 	return E_NOT_OK;
 }
 
 Std_ReturnType NvMService_InvalidateNvBlock(NvM_BlockIdType BlockId) {
-	/* Dummy */
-	return E_NOT_OK;
+	return NvM_InvalidateNvBlock( BlockId );
 }
 
 Std_ReturnType NvMAdmin_SetBlockProtection(NvM_BlockIdType BlockId, Boolean ProtectionEnabled) {
-	/* Dummy */
+	/* Dummy */ /* NvM_SetBlockProtection( BlockId, (boolean)(ProtectionEnabled) ); return E_OK */
 	return E_NOT_OK;
 }
 
