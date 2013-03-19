@@ -193,6 +193,9 @@ Std_ReturnType Com_TriggerTransmit(PduIdType ComTxPduId, PduInfoType *PduInfoPtr
 Std_ReturnType Com_Internal_TriggerIPduSend(PduIdType ComTxPduId) {
 	PDU_ID_CHECK(ComTxPduId, 0x17, E_NOT_OK);
 
+#if PDUR_COM_SUPPORT == STD_OFF
+	return E_NOT_OK;
+#else
 	const ComIPdu_type *IPdu = GET_IPdu(ComTxPduId);
 	Com_Arc_IPdu_type *Arc_IPdu = GET_ArcIPdu(ComTxPduId);
     imask_t state;
@@ -244,7 +247,7 @@ Std_ReturnType Com_Internal_TriggerIPduSend(PduIdType ComTxPduId) {
 	}
     Irq_Restore(state);
     return E_OK;
-
+#endif
 }
 //lint -esym(904, Com_TriggerIPduSend) //PC-Lint Exception of rule 14.7
 void Com_TriggerIPduSend(PduIdType ComTxPduId) {
