@@ -291,7 +291,7 @@ ASM_SECTION_TEXT(.text)
  * ESR  - Exception Syndrome Regiser
  * MCSR - Machine Check Syndrome Register (Machine Check Only)
  * DEAR - Data Exception Address
-
+ */
 
 /* Critical Input:  CSRR0, CSRR1 */
 exception_IVOR0:
