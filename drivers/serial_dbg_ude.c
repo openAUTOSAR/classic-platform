@@ -26,6 +26,7 @@
 
 /* ----------------------------[includes]------------------------------------*/
 #include <stdint.h>
+#include <stdlib.h>
 
 /* ----------------------------[private define]------------------------------*/
 
@@ -39,6 +40,11 @@
 #define MPC55XX_SIMIO_HTLEN(dw)   		( ( (dw) & 0x007F0000 ) >> 16 )
 
 /* ----------------------------[private macro]-------------------------------*/
+
+#ifndef MIN
+#define MIN(_x,_y) (((_x) < (_y)) ? (_x) : (_y))
+#endif
+
 /* ----------------------------[private typedef]-----------------------------*/
 
 typedef struct tagSimioAccess
@@ -78,23 +84,25 @@ static void sendBuffer( int len ) {
  * @param count
  * @return
  */
-size_t write(int fd, char *buffer, size_t nbytes) {
-	char *bufPtr;
+size_t UDE_write(int fd, char *buffer, size_t nbytes) {
 	char *ePtr = buffer + nbytes;
-	int index = 0;
+	char *tPtr;
+	int left;
+	int i;
 
 	tPtr = (char*)&g_JtagSimioAccess.adwData[0];
 
-	while( ePtr < buffer ) {
+	while( buffer < ePtr ) {
 		left = MIN(sizeof(g_JtagSimioAccess.adwData),nbytes);
 
-		for (int i = 0; i < left; i++) {
+		for (i = 0; i < left; i++) {
 			if( *buffer == '\r' ) {
 				*tPtr++ = '\n';
 			}
-			*Ptr++ = *buffer++;
+			*tPtr++ = *buffer++;
 		}
 		sendBuffer(i);
 	}
+	return nbytes;
 }
 
