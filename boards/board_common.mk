@@ -361,6 +361,7 @@ else
   def-y += USE_NEWLIB
   obj-y += xtoa.o
   obj-y += newlib_port.o
+  obj-$(USE_TTY_UDE) += serial_dbg_ude.o
   # If we have configured console output we include printf. 
   # Overridden to use lib implementation with CFG_NEWLIB_PRINTF
   ifneq ($(CFG_NEWLIB_PRINTF),y)

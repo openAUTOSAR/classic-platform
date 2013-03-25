@@ -35,6 +35,10 @@
 #include "streams.h"
 #endif
 
+#if defined(USE_TTY_UDE)
+#include "serial_dbg_ude.h"
+#endif
+
 
 /* Errno is made reentrant by using malloc and we don't want this. This is usually fixed
  * by undef errno and declaring it as extern int. It does not work when using GCC for
@@ -440,6 +444,11 @@ int write(  int fd, const void *_buf, size_t nbytes)
 		GLCD_PrintChar((char *)(_buf + i));
 	}
 #endif
+
+#ifdef USE_TTY_UDE
+	UDE_write(fd,_buf,nbytes);
+#endif
+
 
 #if defined(USE_RAMLOG)
 		{
