@@ -90,8 +90,7 @@ uint8 Com_ReceiveSignal(Com_SignalIdType SignalId, void* SignalDataPtr) {
 			SignalId,
 			FALSE,
 			SignalDataPtr,
-			pduDataPtr,
-			IPdu->ComIPduSize);
+			pduDataPtr);
 
 	return r;
 }
@@ -346,15 +345,11 @@ Std_ReturnType Com_SendSignalGroup(Com_SignalGroupIdType SignalGroupId) {
 	}
 
 	// Copy shadow buffer to Ipdu data space
-	const ComGroupSignal_type *groupSignal;
 	imask_t irq_state;
 
 	Irq_Save(irq_state);
-	for (uint8 i = 0; Signal->ComGroupSignal[i] != NULL; i++) {
-		groupSignal = Signal->ComGroupSignal[i];
 
-		Com_WriteGroupSignalDataToPdu(Signal->ComHandleId, groupSignal->ComHandleId, Signal->Com_Arc_ShadowBuffer);
-	}
+	Com_CopySignalGroupDataFromShadowBufferToPdu(SignalGroupId);
 
 	// If the signal has an update bit. Set it!
 	if (Signal->ComSignalArcUseUpdateBit) {
@@ -379,7 +374,7 @@ Std_ReturnType Com_ReceiveSignalGroup(Com_SignalGroupIdType SignalGroupId) {
 		return COM_BUSY;
 	}
 	// Copy Ipdu data buffer to shadow buffer.
-	Com_CopySignalGroupDataFromShadowBuffer(SignalGroupId);
+	Com_CopySignalGroupDataFromPduToShadowBuffer(SignalGroupId);
 
 	return E_OK;
 }
@@ -387,14 +382,13 @@ Std_ReturnType Com_ReceiveSignalGroup(Com_SignalGroupIdType SignalGroupId) {
 void Com_UpdateShadowSignal(Com_SignalIdType SignalId, const void *SignalDataPtr) {
 	Com_Arc_GroupSignal_type *Arc_GroupSignal = GET_ArcGroupSignal(SignalId);
 
-	Com_WriteSignalDataToPduBuffer(SignalId, TRUE, SignalDataPtr, (void *)Arc_GroupSignal->Com_Arc_ShadowBuffer, 8);
+	Com_WriteSignalDataToPduBuffer(SignalId, TRUE, SignalDataPtr, (void *)Arc_GroupSignal->Com_Arc_ShadowBuffer);
 }
 
 void Com_ReceiveShadowSignal(Com_SignalIdType SignalId, void *SignalDataPtr) {
 	Com_Arc_GroupSignal_type *Arc_GroupSignal = GET_ArcGroupSignal(SignalId);
-	uint8 pduSize = GET_IPdu(GET_Signal(SignalId)->ComIPduHandleId)->ComIPduSize;
 
-	Com_ReadSignalDataFromPduBuffer(SignalId, TRUE, SignalDataPtr, (void *)Arc_GroupSignal->Com_Arc_ShadowBuffer,pduSize);
+	Com_ReadSignalDataFromPduBuffer(SignalId, TRUE, SignalDataPtr, (void *)Arc_GroupSignal->Com_Arc_ShadowBuffer);
 }
 
 
