@@ -173,16 +173,16 @@
 
 #define DET_REPORTERROR(_module,_instance,_api,_err) Det_ReportError(_module,_instance,_api,_err)
 
-#define NEXT_BANK_IDX(var)					((var) >= NUM_OF_BANKS -1)? 0 : (var) + 1
-#define NEXT_BANK_COUNTERVAL(var)			((var) == 0xFF)? 1 : (var) + 1
-#define IS_ADDRESS_WITHIN_BANK(addr, bank) 	(addr >= BankProp[bank].Start && addr < BankProp[bank].End)
-
 #else
 #define DET_VALIDATE(_exp,_api,_err )
 #define DET_VALIDATE_RV(_exp,_api,_err,_rv )
 #define DET_VALIDATE_NO_RV(_exp,_api,_err )
 #define DET_REPORTERROR(_module,_instance,_api,_err)
 #endif
+
+#define NEXT_BANK_IDX(var)					((var) >= NUM_OF_BANKS -1)? 0 : (var) + 1
+#define NEXT_BANK_COUNTERVAL(var)			((var) == 0xFF)? 1 : (var) + 1
+#define IS_ADDRESS_WITHIN_BANK(addr, bank) 	(addr >= BankProp[bank].Start && addr < BankProp[bank].End)
 
 /*
  * Page alignment macros

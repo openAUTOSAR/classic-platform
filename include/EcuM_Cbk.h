@@ -24,8 +24,7 @@
 #ifndef ECUM_CBK_H_
 #define ECUM_CBK_H_
 
-#include "Std_Types.h"	/* Std_ReturnType */
-#include "EcuM_Cfg.h"	/* EcuM_WakeupSourceType */
+#include "EcuM.h"
 
 typedef enum
 {
