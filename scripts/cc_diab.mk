@@ -59,7 +59,9 @@ cflags-y += -Xsection-split
 cflags-y += -Xforce-prototypes
 cflags-y += -Xforce-declarations
 #cflags-y += -XO
-cflags-y += -Xkeywords=0x4		# Enable inline keywork
+
+# Enable inline and __ev64_opaque__
+cflags-y += -Xkeywords=0x900004		
 #cflags-y += -Xstmw-slow
 cflags-y += -ei4618
 cflags-y += -Xmake-dependency=6
