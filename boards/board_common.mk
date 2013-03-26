@@ -71,6 +71,7 @@ endif
 # CPU specific
 obj-$(CFG_PPC) += mpc5xxx_handlers.o
 obj-$(CFG_PPC) += mpc5xxx_handlers_asm.o
+obj-$(CFG_PPC) += mpc5xxx_callout_stubs.o
 vpath-$(CFG_PPC) += $(ROOTDIR)/$(ARCH_PATH-y)/integration
 obj-$(CFG_MCU_ARC_CONFIG) += Mcu_Arc_Cfg.o
 obj-$(CFG_PPC) += Cpu.o

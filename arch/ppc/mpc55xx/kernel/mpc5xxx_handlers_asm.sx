@@ -154,7 +154,6 @@
 /* ----------------------------[private functions]---------------------------*/
 /* ----------------------------[public functions]----------------------------*/
 
-//#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
 #if defined(CFG_MCU_ARC_CONFIG)
 
 ASM_SECTION_TEXT(.text)
@@ -282,7 +281,7 @@ tlbSet:
 	isync
 	blr	
 
-#endif /* defined(CFG_MPC5516) || defined(CFG_MPC5668) */
+#endif /* defined(CFG_MCU_ARC_CONFIG)) */
 
 
 ASM_SECTION_TEXT(.text)
