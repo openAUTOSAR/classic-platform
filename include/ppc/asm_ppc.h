@@ -162,18 +162,29 @@
 
 #if defined(_ASSEMBLER_)
 
-
+/* Use as:
+ * ASM_SECTION_TEXT(.text) - For normal .text or .text_vle
+ *
+ *
+ */
 
 #if defined(__GNUC__)
-#  define ASM_SECTION_TEXT(_x) .section #_x,"ax"
+#  define ASM_SECTION_TEXT(_x) 	.section #_x,"ax"
+#  define ASM_SECTION(_x)  		.section #_x,"ax"
 #elif defined(__CWCC__)
 #  if defined(CFG_VLE)
 #    define ASM_SECTION_TEXT(_x) .section _x,text_vle
 #  else
 #    define ASM_SECTION_TEXT(_x) .section _x,4,"rw"
 #  endif
+#  define ASM_SECTION(_x)		.section _x,4,"r"
 #elif defined(__DCC__)
-#  define ASM_SECTION_TEXT(_x) .section .text_vle,x
+#  if defined(CFG_VLE)
+#    define ASM_SECTION_TEXT(_x) .section .text_vle,x
+#  else
+#    define ASM_SECTION_TEXT(_x) .section .text,x
+#  endif
+#  define ASM_SECTION(_x)		.section _x,4,"r"
 #endif
 
 /*

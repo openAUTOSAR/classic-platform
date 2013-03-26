@@ -1,13 +1,7 @@
 #define _ASSEMBLER_
 #include "asm_ppc.h"
 
-#if defined(__GNUC__)
-.section ".rcw","ax"
-.balign  4
-#elif defined(__CWCC__) || defined(__DCC__)
-	.section .rcw,4,"r"
-#endif
-
+ASM_SECTION(.rcw)
 
 	.global _resetconfiguration
 _resetconfiguration:
@@ -34,16 +28,9 @@ _resetconfiguration:
 	.extern main
 	.extern ShutdownOS
 	
-#if defined(__CWCC__) && defined(CFG_VLE)
-.section .text_vle,text_vle
-#elif defined(__DCC__) && defined(CFG_VLE)
-	// Must be indented (diab)
-	.section .text_vle,x
-#elif defined(__DCC__) && !defined(CFG_VLE)
-	.section .text,x
-#elif defined(__GNUC__)
-.section .text
-#endif
+	
+ASM_SECTION_TEXT(.text)	
+
 	.align		4
 
 	.globl	_start
