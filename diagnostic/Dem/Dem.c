@@ -590,6 +590,8 @@ static void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_E
 			/** @req DEM036 */ /** @req DEM379.PendingSet */
 			eventStatusRecPtr->eventStatusExtended |= (DEM_TEST_FAILED | DEM_TEST_FAILED_THIS_OPERATION_CYCLE | DEM_TEST_FAILED_SINCE_LAST_CLEAR | DEM_PENDING_DTC | DEM_CONFIRMED_DTC);
 			eventStatusRecPtr->eventStatusExtended &= (Dem_EventStatusExtendedType)~(DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE);
+			if ((eventParam->DTCClassRef != NULL) && (eventParam->DTCClassRef->DTCKind == DEM_DTC_KIND_EMISSION_REL_DTCS))
+					eventStatusRecPtr->eventStatusExtended |= DEM_WARNING_INDICATOR_REQUESTED;
 		}
 
 		if (eventStatus == DEM_EVENT_STATUS_PASSED) {
@@ -599,6 +601,8 @@ static void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_E
 			/** @req DEM036 */
 			eventStatusRecPtr->eventStatusExtended &= (Dem_EventStatusExtendedType)~DEM_TEST_FAILED;
 			eventStatusRecPtr->eventStatusExtended &= (Dem_EventStatusExtendedType)~(DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE);
+			if ((eventParam->DTCClassRef != NULL) && (eventParam->DTCClassRef->DTCKind == DEM_DTC_KIND_EMISSION_REL_DTCS))
+				eventStatusRecPtr->eventStatusExtended &= (Dem_EventStatusExtendedType)~DEM_WARNING_INDICATOR_REQUESTED;
 		}
 
 		if ((eventStatus == DEM_EVENT_STATUS_PREFAILED)\
@@ -645,7 +649,8 @@ static void mergeEventStatusRec(const EventRecType *eventRec)
 		eventStatusRecPtr->eventStatusExtended |= (Dem_EventStatusExtendedType)(eventRec->eventStatusExtended & eventStatusRecPtr->eventStatusExtended & DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR);
 		// DEM_PENDING_DTC and DEM_CONFIRMED_DTC should be set if set in either
 		eventStatusRecPtr->eventStatusExtended |= (Dem_EventStatusExtendedType)(eventRec->eventStatusExtended & (DEM_PENDING_DTC | DEM_CONFIRMED_DTC));
-
+		// DEM_WARNING_INDICATOR_REQUESTED should be set if set in either
+		eventStatusRecPtr->eventStatusExtended |= (Dem_EventStatusExtendedType)(eventRec->eventStatusExtended & DEM_WARNING_INDICATOR_REQUESTED);
 	}
 
     Irq_Restore(state);
@@ -2796,7 +2801,7 @@ Std_ReturnType Dem_GetDTCStatusAvailabilityMask(uint8 *dtcStatusMask) /** @req D
 						| DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR
 						| DEM_TEST_FAILED_SINCE_LAST_CLEAR
 						| DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE
-//						| DEM_WARNING_INDICATOR_REQUESTED	TODO: Add support for this bit
+						| DEM_WARNING_INDICATOR_REQUESTED
 						;
 
 	return E_OK;
