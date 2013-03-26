@@ -40,6 +40,7 @@
 #include "Os.h"
 
 /* ----------------------------[private define]------------------------------*/
+
 #if defined (CFG_MPC5668)
 #define ECSM_BASE 	0xfff40000
 #define ECSM_ESR    0x47
@@ -52,6 +53,16 @@
 /* ----------------------------[private typedef]-----------------------------*/
 /* ----------------------------[private function prototypes]-----------------*/
 /* ----------------------------[private variables]---------------------------*/
+
+#if defined(CFG_MPC5XXX_TEST)
+uint32_t Mpc5xxx_vectorMask;
+uint8_t Mpc5xxx_Esr;
+uint8_t Mpc5xxx_Intc_Esr;
+#endif
+
+extern uint32 EccErrReg;
+
+/* ----------------------------[private functions]---------------------------*/
 
 
 /**
@@ -68,8 +79,6 @@ void Mpc5xxx_Panic( uint32_t error, void *pData ) {
 
 	ShutdownOS(E_OS_PANIC);
 }
-
-/* ----------------------------[private functions]---------------------------*/
 
 /**
  * Function that checks for ECC errors

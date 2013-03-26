@@ -53,16 +53,9 @@
 /* ----------------------------[private function prototypes]-----------------*/
 /* ----------------------------[private variables]---------------------------*/
 
-#if defined(CFG_MPC5XXX_TEST)
-uint32_t Mpc5xxx_vectorMask;
-uint8_t Mpc5xxx_Esr;
-uint8_t Mpc5xxx_Intc_Esr;
-#endif
-
 #if defined(USE_FLS)
 extern uint32 EccErrReg;
 #endif
-
 
 /* ----------------------------[private functions]---------------------------*/
 
