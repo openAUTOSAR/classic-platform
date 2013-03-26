@@ -75,6 +75,7 @@
 #include "arch_stack.h"
 #include "io.h"
 #include "Os.h"
+#include "Mcu_Arc.h"
 
 /* ----------------------------[private define]------------------------------*/
 #define TODO_NUMBER  0
@@ -86,7 +87,6 @@
 /* ----------------------------[private functions]---------------------------*/
 /* ----------------------------[public functions]----------------------------*/
 
-extern uint32_t Mcu_Arc_ExceptionHook(uint32_t exceptionVector);
 
 
 /*
@@ -109,40 +109,27 @@ static uint32_t adjustReturnAddr( uint32_t instrAddr ) {
 	return instrAddr;
 }
 
-#if 0
-static uint32_t handleEcc( uint16_t vector ) {
-	uint8_t esr = READ8(ECSM_BASE+ECSM_ESR);
-	uint32_t rv  = EXC_NOT_HANDLED;
 
-	if( esr & (ESR_R1BC+ESR_RNCE) ) {
-		/* ECC RAM problems */
-		Mpc5xxx_Esr = esr;
-		WRITE8(ECSM_BASE+ECSM_ESR,ESR_R1BC+ESR_RNCE);
-		rv = EXC_HANDLED;
-
-	} else if (esr & (ESR_F1BC+ESR_FNCE)) {
-		/* ECC Flash problems */
-		Mpc5xxx_Esr = esr;
-		WRITE8(ECSM_BASE+ECSM_ESR,ESR_F1BC+ESR_FNCE);
-		rv = EXC_HANDLED;
-	} else  {
-		Mpc5xxx_Esr = 0;
-	}
-
-	return rv;
-}
-#endif
-
-
+/**
+ * Calls higher level functions to handle the exception.
+ *
+ * @param exception The exceptions number
+ * @param spr       The SPR number
+ * @return
+ */
 static uint32_t handleException( uint32_t exception , uint32_t spr ) {
 	uint32_t rv;
 	uint32_t _spr;
 
-	rv = Mcu_Arc_ExceptionHook( exception );
+	rv = Mpc5xxx_ExceptionHandler( exception );
 	if( rv & EXC_NOT_HANDLED ) {
-		Os_Panic(exception,NULL);
+		/* The exception was not handled */
+		Mpc5xxx_Panic(exception,NULL);
+		/* we don't get back here */
 	}
 
+	/* Note that you cannot use get_spr() here directly since
+	 * it cannot be used that way */
 	_spr = (spr==SPR_CSRR0) ? get_spr(SPR_CSRR0) : get_spr(SPR_SRR0);
 
 	if( rv & EXC_ADJUST_ADDR ) {
@@ -218,19 +205,19 @@ uint32_t Mpc5xxx_Exception_IVOR14( void ) {
 
 /* SPE Unavailable:  SRR0, SRR1, ESR=SPE */
 uint32_t Mpc5xxx_Exception_IVOR32( void ) {
-	Mcu_Arc_ExceptionHook(32);
+	Mpc5xxx_ExceptionHandler(32);
 	return get_spr(SPR_SRR0);
 }
 
 /* SPE Data:  SRR0, SRR1, ESR=SPE */
 uint32_t Mpc5xxx_Exception_IVOR33( void ) {
-	Mcu_Arc_ExceptionHook(33);
+	Mpc5xxx_ExceptionHandler(33);
 	return get_spr(SPR_SRR0);
 }
 
 /* SPE round exception: SRR0, SRR1, ESR=SPE */
 uint32_t Mpc5xxx_Exception_IVOR34( void ) {
-	Mcu_Arc_ExceptionHook(34);
+	Mpc5xxx_ExceptionHandler(34);
 	return get_spr(SPR_SRR0);
 }
 

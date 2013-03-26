@@ -64,13 +64,19 @@ inc-$(USE_DMA) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers
 obj-$(USE_MCU) += Mcu.o
 obj-$(USE_MCU) += Mcu_Cfg.o
 ifeq ($(CFG_PPC),y)
+ifeq ($(filter Mcu_Arc_mpc55xx.o Mcu_Arc_mpc56xx.o,$(obj-y)),)
 obj-$(USE_MCU)-$(if $(CFG_MPC5516)$(CFG_MPC5668)$(CFG_MPC5567),y) += Mcu_Arc_mpc55xx.o
 obj-$(USE_MCU)-$(if $(CFG_MPC5516)$(CFG_MPC5668)$(CFG_MPC5567),n,y) += Mcu_Arc_mpc56xx.o
+endif
 endif
 
 # CPU specific
 obj-$(CFG_PPC) += mpc5xxx_handlers.o
 obj-$(CFG_PPC) += mpc5xxx_handlers_asm.o
+ifeq ($(filter mpc5xxx_callout_stubs,$(obj-y)),)
+obj-$(CFG_PPC) += mpc5xxx_callout_stubs.o
+endif
+
 vpath-$(CFG_PPC) += $(ROOTDIR)/$(ARCH_PATH-y)/integration
 obj-$(CFG_MCU_ARC_CONFIG) += Mcu_Arc_Cfg.o
 obj-$(CFG_PPC) += Cpu.o
