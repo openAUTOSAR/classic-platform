@@ -25,6 +25,16 @@ MOD_USE += MCU KERNEL ECUM
 
 # Default cross compiler
 DEFAULT_CROSS_COMPILE = /opt/powerpc-eabispe/bin/powerpc-eabispe-
+DEFAULT_DIAB_COMPILE = /c/devtools/diab570/diab/5.7.0.0/WIN32
+
+vle=$(if $(filter $(CFG),VLE),y)
+novle=$(if $(vle),n,y)
+
+diab-$(vle)=-tPPCE200Z1VFN:simple
+diab-$(novle)=-tPPCE200Z1NFS:simple
+
+DIAB_TARGET?=$(diab-y)
+
 
 # Defines
 def-y += SRAM_SIZE=0x14000

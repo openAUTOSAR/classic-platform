@@ -370,7 +370,6 @@ TickType GetOsTick( void );
  * Kernel extra
  *-----------------------------------------------------------------*/
 
-void Os_Panic( uint32 error, void *pData );
 
 
 #if defined(USE_KERNEL_EXTRA)

@@ -25,7 +25,11 @@
 #define COM_MISC_H_
 
 // Copy Signal group data from PDU to shadowbuffer
-void Com_CopySignalGroupDataFromShadowBuffer(
+void Com_CopySignalGroupDataFromPduToShadowBuffer(
+		const Com_SignalIdType signalGroupId);
+
+// Copy Signal group data from shadowbuffer to Pdu
+void Com_CopySignalGroupDataFromShadowBufferToPdu(
 		const Com_SignalIdType signalGroupId);
 
 // Read data from PDU
@@ -33,25 +37,18 @@ void Com_ReadSignalDataFromPduBuffer(
 		const uint16 signalId,
 		const boolean isGroupSignal,
 		void *signalData,
-		const void *pduBuffer,
-		uint8 pduSize);
+		const void *pduBuffer);
 
 // write data to PDU
 void Com_WriteSignalDataToPdu(
 		const Com_SignalIdType signalId,
 		const void *signalData);
 
-void Com_WriteGroupSignalDataToPdu(
-		const Com_SignalIdType parentSignalId,
-		const Com_SignalIdType groupSignalId,
-		const void *signalData);
-
 void Com_WriteSignalDataToPduBuffer(
 		const uint16 signalId,
 		const boolean isGroupSignal,
 		const void *signalData,
-		void *pduBuffer,
-		const uint8 pduSize);
+		void *pduBuffer);
 
 /*
  * This function copies numBits bits of data from Source to Destination with the possibility to offset

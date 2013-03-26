@@ -20,14 +20,20 @@
 
 void 	 Mcu_Arc_InitClockPre( const Mcu_ClockSettingConfigType *clockSettingsPtr );
 void 	 Mcu_Arc_InitClockPost( const Mcu_ClockSettingConfigType *clockSettingsPtr );
-void 	 Mcu_Arc_SetModePre( Mcu_ModeType mcuMode);
-void  	 Mcu_Arc_SetModePost( Mcu_ModeType mcuMode);
-uint32_t Mcu_Arc_ExceptionHook(uint32_t exceptionVector);
 
+void  	 Mcu_Arc_SetModePre( Mcu_ModeType mcuMode);
+void  	 Mcu_Arc_SetModePost( Mcu_ModeType mcuMode);
+
+/* Sleep is usually unique for each MCU */
 #if defined(CFG_MCU_ARC_CONFIG)
 void Mcu_Arc_SetModePre2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *sleepCfg );
 void Mcu_Arc_SetModePost2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *sleepCfg );
 void Mcu_Arc_LowPowerRecoverFlash( void );
+#endif
+
+#if defined(CFG_PPC)
+uint32_t Mpc5xxx_ExceptionHandler(uint32_t exceptionVector);
+void 	 Mpc5xxx_Panic( uint32 error, void *pData );
 #endif
 
 //void Mcu_Arc_InitMM( void );

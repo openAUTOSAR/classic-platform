@@ -34,7 +34,7 @@ novle=$(if $(vle),n,y)
 diab-$(vle)=-tPPCE200Z1VFN:simple
 diab-$(novle)=-tPPCE200Z1NFS:simple
 
-DIAB_TARGET?=$(diab-yy)
+DIAB_TARGET?=$(diab-y)
 
 # Defines
 def-y += SRAM_SIZE=0x14000

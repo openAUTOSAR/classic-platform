@@ -78,7 +78,7 @@ SECTIONS
 		.PPC.EMB.sdata0 (DATA) (OPTIONAL) : { }
 		
 		.uninit (=NOLOAD) ALIGN(0x10) : { 
-			*(.winidea_port .ramlog .dem_eventmemory_pri) 
+			*(.t32_outport .winidea_port .ramlog .dem_eventmemory_pri) 
 		}
 		
 		_heap_start = .;
