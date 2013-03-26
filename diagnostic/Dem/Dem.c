@@ -2998,6 +2998,8 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
 									{
 									case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
 										/** @req DEM077 */
+										if ((eventParam->CallbackInitMforE != NULL) && (eventParam->CallbackInitMforE->CallbackInitMForEFnc != NULL))
+											eventParam->CallbackInitMforE->CallbackInitMForEFnc(DEM_INIT_MONITOR_CLEAR);
 										deleteEventPriMem(eventParam);
 										deleteFreezeFrameDataPriMem(eventParam);
 										deleteExtendedDataPriMem(eventParam);
@@ -3075,10 +3077,29 @@ Dem_ReturnControlDTCStorageType Dem_DisableDTCStorage(Dem_DTCGroupType dtcGroup,
 Dem_ReturnControlDTCStorageType Dem_EnableDTCStorage(Dem_DTCGroupType dtcGroup, Dem_DTCKindType dtcKind)
 {
 	Dem_ReturnControlDTCStorageType returnCode = DEM_CONTROL_DTC_STORAGE_OK;
+	const Dem_EventParameterType *eventParam;
+	uint16 i;
 
 	if (demState == DEM_INITIALIZED) {
 		// TODO: Behavior is not defined if group or kind do not match active settings, therefore the filter is just switched off.
 		(void)dtcGroup; (void)dtcKind;	// Just to make get rid of PC-Lint warnings
+
+		for (i = 0; i < DEM_MAX_NUMBER_EVENT; i++) {
+			if (eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) {
+				eventParam = eventStatusBuffer[i].eventParamRef;
+				if (eventParam != NULL) {
+					if ((DEM_CLEAR_ALL_EVENTS == STD_ON) || (eventParam->DTCClassRef != NULL)) {
+						if (checkDtcKind(disableDtcStorage.dtcKind, eventParam)) {
+							if (checkDtcGroup(disableDtcStorage.dtcGroup, eventParam)) {
+								if ((eventParam->CallbackInitMforE != NULL) && (eventParam->CallbackInitMforE->CallbackInitMForEFnc != NULL))
+									eventParam->CallbackInitMforE->CallbackInitMForEFnc(DEM_INIT_MONITOR_RESTART);
+							}
+						}
+					}
+				}
+			}
+		}
+
 		disableDtcStorage.storageDisabled = FALSE; /** @req DEM080 */
 	} else {
 		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_ENABLEDTCSTORAGE_ID, DEM_E_UNINIT);
