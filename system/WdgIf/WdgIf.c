@@ -11,11 +11,14 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
- * -------------------------------- Arctic Core ------------------------------
- * WdgIf.c
+ * -------------------------------- Arctic Core ------------------------------*/
+
+/* ----------------------------[information]----------------------------------*/
+/*
+ * Author: Fredrik
  *
- *  Created on: 22 feb 2010
- *      Author: Fredrik
+ * Part of Release:
+ *   3.1.5
  */
 
 // 904 PC-Lint MISRA 14.7: OK. Allow VALIDATE_ENTITY_ID, VALIDATE and VALIDATE_NO_RETURNVAL to return value.

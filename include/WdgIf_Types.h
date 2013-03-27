@@ -11,11 +11,14 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
- * -------------------------------- Arctic Core ------------------------------
- * WdgIf_Types.h
+ * -------------------------------- Arctic Core ------------------------------*/
+
+/* ----------------------------[information]----------------------------------*/
+/*
+ * Author: Fredrik
  *
- *  Created on: 14 maj 2010
- *      Author: Fredrik
+ * Part of Release:
+ *   3.1.5
  */
 
 #ifndef WDGIF_TYPES_H_
