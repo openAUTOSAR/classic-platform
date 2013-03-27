@@ -446,7 +446,7 @@ int write(  int fd, const void *_buf, size_t nbytes)
 #endif
 
 #ifdef USE_TTY_UDE
-	UDE_write(fd,_buf,nbytes);
+	UDE_write(fd,(char *)_buf,nbytes);
 #endif
 
 
