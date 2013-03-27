@@ -535,7 +535,7 @@ static void FinishJob(MemIf_JobResultType jobResult)
 }
 
 static void AbortWriteJob(void) {
-	if(CurrentJob.Write.DataPtr != INVALIDATED_BLOCK) {
+	if(CurrentJob.Write.DataPtr != (uint8 *)INVALIDATED_BLOCK) {
 		// only update DataPtr if not an invalidate job
 		AdminFls.Write.NewBlockDataAddress += PAGE_ALIGN(Fee_Config.BlockConfig[CurrentJob.Write.BlockIdx].BlockSize);
 	}
@@ -901,7 +901,7 @@ static void WriteAdminData(void) {
 static void WriteStartJob(void)
 {
 	// init the rw buffer
-	if(CurrentJob.Write.DataPtr == INVALIDATED_BLOCK) {
+	if(CurrentJob.Write.DataPtr == (uint8 *)INVALIDATED_BLOCK) {
 		RWBuffer.BlockCtrl.DataPage.Data.BlockDataAddress = INVALIDATED_BLOCK;
 	} else {
 		RWBuffer.BlockCtrl.DataPage.Data.BlockDataAddress = AdminFls.Write.NewBlockDataAddress;
@@ -982,7 +982,7 @@ static void WriteAdminDataWait(void) {
 		writeResult = Fls_GetJobResult();
 		if (MEMIF_JOB_OK == writeResult) {
 			// admin data written, write data
-			if(CurrentJob.Write.DataPtr == INVALIDATED_BLOCK) {
+			if(CurrentJob.Write.DataPtr == (uint8 *)INVALIDATED_BLOCK) {
 				// invalidate data, no data to be written, write admin block id instead
 				// call WriteDataWait since it will setup the write of remaining part of admin block
 				AdminFls.State = FEE_WRITE_DATA_WAIT;
@@ -1006,7 +1006,7 @@ static void WriteAdminIdWait(void) {
 		writeResult = Fls_GetJobResult();
 		// all data written. Update admin data
 		if (MEMIF_JOB_OK == writeResult) {
-			if(CurrentJob.Write.DataPtr == INVALIDATED_BLOCK) {
+			if(CurrentJob.Write.DataPtr == (uint8 *)INVALIDATED_BLOCK) {
 				AdminFls.BlockDescrTbl[CurrentJob.Write.BlockIdx].BlockDataAddress = INVALIDATED_BLOCK;
 			} else {
 				AdminFls.BlockDescrTbl[CurrentJob.Write.BlockIdx].BlockDataAddress = AdminFls.Write.NewBlockDataAddress;
@@ -1019,7 +1019,7 @@ static void WriteAdminIdWait(void) {
 			// increase error counter
 			AdminFls.FailCounter++;
 		}
-		if(CurrentJob.Write.DataPtr != INVALIDATED_BLOCK) {
+		if(CurrentJob.Write.DataPtr != (uint8 *)INVALIDATED_BLOCK) {
 			// update data head ptr if not an invalidate operation
 			AdminFls.Write.NewBlockDataAddress += PAGE_ALIGN(Fee_Config.BlockConfig[CurrentJob.Write.BlockIdx].BlockSize);
 		}
