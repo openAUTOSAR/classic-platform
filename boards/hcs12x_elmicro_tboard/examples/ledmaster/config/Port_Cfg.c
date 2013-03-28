@@ -63,7 +63,7 @@ const Port_ConfigType PortConfigData =
     .portJOutValue = 0xC0,
     .portJMask = 0x40,
     .portJPullEnableRegister = 0x0,
-    .portJPullPolarityRegsiter 0x0,
+    .portJPullPolarityRegsiter = 0x0,
     .portJReducedDriveRegister = 0x0,
       #endif
 

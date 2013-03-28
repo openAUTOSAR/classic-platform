@@ -63,7 +63,7 @@ const Port_ConfigType PortConfigData =
     .portJOutValue = PORT_UNDEFINED,
     .portJMask = PORT_UNDEFINED,
     .portJPullEnableRegister = PORT_UNDEFINED,
-    .portJPullPolarityRegsiter PORT_UNDEFINED,
+    .portJPullPolarityRegsiter = PORT_UNDEFINED,
     .portJReducedDriveRegister = PORT_UNDEFINED,
       #endif
 

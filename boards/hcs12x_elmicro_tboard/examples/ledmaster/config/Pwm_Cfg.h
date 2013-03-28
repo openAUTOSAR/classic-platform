@@ -30,7 +30,7 @@
 // Define what API functions to enable.
 #define PWM_GET_OUTPUT_STATE_API    STD_OFF
 #define PWM_SET_PERIOD_AND_DUTY_API STD_ON
-#define PWM_DE_INIT_API             STD_OFF
+#define PWM_DE_INIT_API             STD_ON
 #define PWM_SET_DUTY_CYCLE_API      STD_ON
 #define PWM_SET_OUTPUT_TO_IDLE_API  STD_OFF
 #define PWM_VERSION_INFO_API        STD_OFF

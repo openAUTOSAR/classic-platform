@@ -256,7 +256,7 @@
               <PARAMETER-VALUES>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Pwm/PwmConfigurationOfOptApiServices/PwmDeInitApi</DEFINITION-REF>
-                  <VALUE>false</VALUE>
+                  <VALUE>true</VALUE>
                 </BOOLEAN-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Pwm/PwmConfigurationOfOptApiServices/PwmGetOutputState</DEFINITION-REF>
@@ -4119,7 +4119,7 @@
               <PARAMETER-VALUES>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Adc/AdcGeneral/AdcDeInitApi</DEFINITION-REF>
-                  <VALUE>false</VALUE>
+                  <VALUE>true</VALUE>
                 </BOOLEAN-VALUE>
                 <BOOLEAN-VALUE>
                   <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Adc/AdcGeneral/AdcDevErrorDetect</DEFINITION-REF>
