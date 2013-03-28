@@ -17,6 +17,7 @@
 #define MCU_ARC_H_
 
 #include "Mcu_Arc_Cfg.h"
+#include "mm.h"
 
 void 	 Mcu_Arc_InitPre( const Mcu_ConfigType *configPtr );
 void 	 Mcu_Arc_InitPost( const Mcu_ConfigType *configPtr );
@@ -33,6 +34,8 @@ void Mcu_Arc_SetModePre2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig
 void Mcu_Arc_SetModePost2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *sleepCfg );
 void Mcu_Arc_LowPowerRecoverFlash( void );
 #endif
+
+void Mcu_Arc_InitMM( struct TlbEntry * );
 
 #if defined(CFG_PPC)
 uint32_t Mpc5xxx_ExceptionHandler(uint32_t exceptionVector);

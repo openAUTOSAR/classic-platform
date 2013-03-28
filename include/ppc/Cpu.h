@@ -126,7 +126,7 @@ typedef uint32 imask_t;
 
 #define isync()  		asm volatile(" isync");
 #define sync()   		asm volatile(" sync");
-#define msync() 		asm volatile(" msync");
+#define msync() 		asm volatile(" isync");
 
 #define Irq_Disable() 	asm volatile (" wrteei 0");
 #define Irq_Enable() 	asm volatile (" wrteei 1");

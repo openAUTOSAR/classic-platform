@@ -84,6 +84,8 @@ void Mcu_Arc_InitPost( const Mcu_ConfigType *configPtr ) {
 	(void)configPtr;
 #if defined(CFG_MCU_ARC_CONFIG)
 	Mcu_Arc_InitMM();
+#elif !defined(CFG_MCU_ARC_CONFIG) && defined(CFG_MPC5567)
+	Cache_EnableU();
 #endif
 }
 
