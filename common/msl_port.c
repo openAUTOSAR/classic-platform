@@ -15,6 +15,10 @@ Methods called by MW MSL libraries to perform console IO:
 #include <stddef.h>
 #include <stdlib.h>
 
+#if defined(USE_TTY_UDE)
+#include "serial_dbg_ude.h"
+#endif
+
 #ifdef USE_TTY_WINIDEA
 
 #define TWBUFF_SIZE 0x100
@@ -74,6 +78,10 @@ UARTError WriteUARTN(const void* buf, unsigned long cnt)
 		}
 	}
 #endif
+#ifdef USE_TTY_UDE
+	UDE_write( 0 ,(char *)buf,cnt);
+#endif
+
 #if defined(USE_RAMLOG)
 		{
 			char *pbuf = buf;

@@ -362,6 +362,7 @@ else ifeq ($(SELECT_CLIB),CLIB_CW)
   obj-y += xtoa.o
   obj-y += msl_port.o
   def-y += USE_CLIB_CW
+  obj-$(USE_TTY_UDE) += serial_dbg_ude.o
 else
   # Newlib
   def-y += USE_NEWLIB
