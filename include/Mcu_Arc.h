@@ -18,6 +18,9 @@
 
 #include "Mcu_Arc_Cfg.h"
 
+void 	 Mcu_Arc_InitPre( const Mcu_ConfigType *configPtr );
+void 	 Mcu_Arc_InitPost( const Mcu_ConfigType *configPtr );
+
 void 	 Mcu_Arc_InitClockPre( const Mcu_ClockSettingConfigType *clockSettingsPtr );
 void 	 Mcu_Arc_InitClockPost( const Mcu_ClockSettingConfigType *clockSettingsPtr );
 

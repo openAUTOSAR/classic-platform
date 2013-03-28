@@ -73,10 +73,15 @@ void Mcu_Arc_InitMM( void ) {
 #endif
 
 
+void Mcu_Arc_InitPre( const Mcu_ConfigType *configPtr ) {
+	(void)configPtr;
+
+}
 /*
  * Called at a very early stage...
  */
-void Mcu_Arc_InitPost( void ) {
+void Mcu_Arc_InitPost( const Mcu_ConfigType *configPtr ) {
+	(void)configPtr;
 #if defined(CFG_MCU_ARC_CONFIG)
 	Mcu_Arc_InitMM();
 #endif

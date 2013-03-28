@@ -64,10 +64,10 @@ struct TlbEntry TlbTable[]  = {
 	// TLB Entry 2 =  External RAM.
 	{
 			2,
-			(0x10000000 + (0<<16)),
+			(0x10000000 + (2<<16)),
 			(0xC0000000 + MAS1_TSIZE_4M),
-			(CFG_FLASH_START + VLE_MAS2_VAL),
-			(CFG_FLASH_START + MAS3_FULL_ACCESS),
+			(CFG_EXT_FLASH_START + VLE_MAS2_VAL),
+			(CFG_EXT_FLASH_START + MAS3_FULL_ACCESS),
 	},
 	// TLB Entry 3 =  Internal SRAM
 	{

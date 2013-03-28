@@ -349,6 +349,9 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
 {
 	VALIDATE( ( NULL != configPtr ), MCU_INIT_SERVICE_ID, MCU_E_PARAM_CONFIG );
 
+	Mcu_Arc_InitPre(configPtr);
+
+
 #if defined(CFG_MPC560X) || defined(CFG_MPC563XM)
 	/* Disable watchdog. Watchdog is enabled default after reset.*/
  	SWT.SR.R = 0x0000c520;     /* Write keys to clear soft lock bit */
@@ -414,6 +417,8 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
 #else
     /* TODO: add support */
 #endif
+    Mcu_Arc_InitPost(configPtr);
+
 }
 
 //-------------------------------------------------------------------

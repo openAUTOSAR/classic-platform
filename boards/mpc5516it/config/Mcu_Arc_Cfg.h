@@ -20,6 +20,7 @@
 #define CFG_SRAM_START			0x40000000
 #define CFG_FLASH_START			0x00000000
 #define CFG_PERIPHERAL_START	0xfff00000
+#define CFG_EXT_FLASH_START		0x20000000
 
 /* Maximum time to wait before timout of HLT */
 #define HLT_TIMEOUT				3000

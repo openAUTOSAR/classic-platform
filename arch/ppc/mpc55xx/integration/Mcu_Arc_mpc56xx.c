@@ -45,14 +45,13 @@ extern uint32 EccErrReg;
 
 
 
-void Mcu_Arc_InitPre( void ) {
-
+void Mcu_Arc_InitPre( const Mcu_ConfigType *configPtr ) {
+	(void)configPtr;
 }
 
-void Mcu_Arc_InitPost( void ) {
-
+void Mcu_Arc_InitPost( const Mcu_ConfigType *configPtr ) {
+	(void)configPtr;
 }
-
 
 void Mcu_Arc_InitClockPre( const Mcu_ClockSettingConfigType *clockSettingsPtr )
 {
