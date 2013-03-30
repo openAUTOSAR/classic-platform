@@ -35,7 +35,7 @@ void Mcu_Arc_SetModePost2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfi
 void Mcu_Arc_LowPowerRecoverFlash( void );
 #endif
 
-void Mcu_Arc_InitMM( struct TlbEntry * );
+void Mcu_Arc_InitMM( void );
 
 #if defined(CFG_PPC)
 uint32_t Mpc5xxx_ExceptionHandler(uint32_t exceptionVector);
