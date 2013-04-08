@@ -90,7 +90,7 @@ int printf(const char *format, ...) {
 	int rv;
 
 	va_start(ap, format);
-	rv = vfprintf((FILE *)STDOUT_FILENO, format, ap);
+	rv = vfprintf(stdout, format, ap);
 	va_end(ap);
 	return rv;
 }
@@ -127,7 +127,7 @@ int snprintf(char *buffer, size_t n, const char *format, ...) {
 }
 
 int vprintf(const char *format, va_list ap) {
-	return vfprintf((FILE *)STDOUT_FILENO, format, ap);
+	return vfprintf(stdout, format, ap);
 }
 
 int vsprintf(char *buffer, const char *format, va_list ap) {
@@ -180,20 +180,7 @@ static inline int emitChar( FILE *file, char **buf, char c, int *left ) {
 		putc(c, stdout);
 		fflush(stdout);
 #else
-#if 0
-		if( (unsigned )file > 10UL ) {
-#if defined(__IAR_SYSTEMS_ICC__)
-			arc_putchar((int)(file->_Handle), c);
-#else
-			arc_putchar((int)(file->_file), c);
-#endif
-		} else {
-			arc_putchar((int)(file), c);
-		}
-#else
-	arc_putchar((int)(file), c);
-#endif
-
+		putc(c,stdout);
 #endif /* HOST_TEST */
 	} else {
 		**buf = c;
