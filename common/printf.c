@@ -72,14 +72,22 @@
 #if defined(__IAR_SYSTEMS_ICC__)
 #endif
 
-int arc_putchar(int fd, int c);
 int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap);
 static inline int emitChar( FILE *file, char **buf, char c, int *left );
 
+
+int fputc( int c, FILE *file) {
+	int fd;
+	char ch=(char)c;
+	fd = fileno(file);
+	write(fd,&ch,1);
+	return c;
+}
+
+
 int fputs( const char *s, FILE *file ) {
-	int left = ~(size_t)0;
 	while(*s) {
-		emitChar(file,NULL,*s++,&left);
+		fputc(*s++,file);
 	}
 	return 0;
 }

@@ -342,7 +342,7 @@ ifeq ($(COMPILER),iar)
 SELECT_CLIB?=CLIB_IAR
 endif
 
-SELECT_CLIB?=CLIB_NEWLIB
+SELECT_CLIB?=CLIB_ARC
 
 obj-$(CFG_TIMER_TB)-$(CFG_PPC)+=timer_tb.o
 obj-$(CFG_TIMER_RTC)-$(CFG_PPC)+=timer_rtc.o
@@ -367,7 +367,12 @@ else
   # Newlib
   def-y += USE_NEWLIB
   obj-y += xtoa.o
-  obj-y += newlib_port.o
+#  obj-y += newlib_port.o
+  obj-y += clib_port.o
+  obj-y += clib.o
+  
+   
+  
   obj-$(USE_TTY_UDE) += serial_dbg_ude.o
   # If we have configured console output we include printf. 
   # Overridden to use lib implementation with CFG_NEWLIB_PRINTF
@@ -376,6 +381,9 @@ else
       obj-y += printf.o
     endif # SELECT_CONSOLE
   endif # CFG_NEWLIB_PRINTF
+  
+  inc-system-y += $(ROOTDIR)/clib
+  vpath-y += $(ROOTDIR)/clib
 endif # SELECT_CLIB 
 
 

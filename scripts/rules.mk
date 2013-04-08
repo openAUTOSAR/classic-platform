@@ -167,6 +167,8 @@ inc-y += $(ROOTDIR)/include
 inc-y += $(ROOTDIR)/include/$(ARCH_FAM)
 inc-y += $(ROOTDIR)/include/$(ARCH_FAM)/$(ARCH)
   
+inc-y :=  $(inc-system-y) $(inc-y) 
+  
 VPATH += $(ROOTDIR)/$(SUBDIR)/src
 VPATH += $(ROOTDIR)/$(SUBDIR)
 

@@ -483,68 +483,6 @@ int arc_putchar(int fd, int c) {
 	return 0;
 }
 
-/* If we use malloc and it runs out of memory it calls sbrk()
- */
-
-#if defined(CFG_PPC)
-
-/* linker symbols */
-extern char _heap_start[];  // incomplete array to ensure not placed in small-data
-extern char _heap_end[];
-
-void * sbrk( ptrdiff_t incr )
-{
-    char *prevEnd;
-    static char *nextAvailMemPtr = _heap_start;
-
-    if( nextAvailMemPtr + incr >  _heap_end) {
-		write( 2, "Heap overflow!\n", 15 );
-		abort();
-	}
-    prevEnd = nextAvailMemPtr;
-    nextAvailMemPtr += incr;
-    return prevEnd;
-}
-#else
-extern char _end[];
-
-//static char *curbrk = _end;
-
-#ifndef HEAPSIZE
-#define HEAPSIZE 16000
-#endif
-
-/*
- * The heap sadly have alignment that depends on the pagesize that
- * you compile malloc newlib with. From what I can tell from the
- * code that is a pagesize of 4096.
- */
-
-unsigned char _heap[HEAPSIZE] __attribute__((aligned (4)));
-//__attribute__((section(".heap")));
-
-void * sbrk( ptrdiff_t incr )
-{
-    static unsigned char *heap_end;
-    unsigned char *prev_heap_end;
-
-/* initialize */
-    if( heap_end == 0 ){
-    	heap_end = _heap;
-    }
-    prev_heap_end = heap_end;
-
-	if( heap_end + incr - _heap > HEAPSIZE ) {
-	/* heap overflow - announce on stderr */
-		write( 2, "Heap overflow!\n", 15 );
-		abort();
-	}
-
-   heap_end += incr;
-
-   return (caddr_t) prev_heap_end;
-}
-#endif
 
 int stat( const char *file, struct stat *st ) {
 //int stat(char *file, struct stat *st) {

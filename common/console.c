@@ -62,6 +62,25 @@
  *  Soo, for CW that means...problems?
  *
  *
+ * Console <-> Vs Serial device.
+ *   If we are on a console we can't hang on fgetc() or simular but we must
+ *   first check for input and then read it with fgetc()/fgets()... so we need
+ *   a system "any key hit" function.
+ *
+ *   This means unless we have an "event" system that can trigger for example fgets()
+ *   to read we need to:
+ *     if( testchar(stdio) ) {
+ *        c = fgetc(..);
+ *     }
+ *
+ *   Implement fgets()... this no idle CPU anymore. Shell to be periodic or event based?+
+ *
+ *
+ *
+ *
+ *
+ *
+ *
  *
  */
 

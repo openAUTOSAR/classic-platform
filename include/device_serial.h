@@ -34,8 +34,13 @@ typedef struct DeviceSerial {
 	uint32_t data;
 	void (*open)( uint32_t data );
 	void (*close)( uint8_t *data, size_t nbytes);
+	/* Reads nbytes from device to data.
+	 * Non-blocking read */
 	int (*read)( uint8_t *data, size_t nbytes);
+	/* Write nbytes from data to device
+	 * Blocks until nbytes have been written */
 	int (*write)( uint8_t *data, size_t nbytes );
+
 	TAILQ_ENTRY(DeviceSerial) nextDevice;
 } DeviceSerialType;
 
