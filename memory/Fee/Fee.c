@@ -173,16 +173,16 @@
 
 #define DET_REPORTERROR(_module,_instance,_api,_err) Det_ReportError(_module,_instance,_api,_err)
 
+#define NEXT_BANK_IDX(var)					((var) >= NUM_OF_BANKS -1)? 0 : (var) + 1
+#define NEXT_BANK_COUNTERVAL(var)			((var) == 0xFE)? 1 : (var) + 1
+#define IS_ADDRESS_WITHIN_BANK(addr, bank) 	(addr >= BankProp[bank].Start && addr < BankProp[bank].End)
+
 #else
 #define DET_VALIDATE(_exp,_api,_err )
 #define DET_VALIDATE_RV(_exp,_api,_err,_rv )
 #define DET_VALIDATE_NO_RV(_exp,_api,_err )
 #define DET_REPORTERROR(_module,_instance,_api,_err)
 #endif
-
-#define NEXT_BANK_IDX(var)					((var) >= NUM_OF_BANKS -1)? 0 : (var) + 1
-#define NEXT_BANK_COUNTERVAL(var)			((var) == 0xFF)? 1 : (var) + 1
-#define IS_ADDRESS_WITHIN_BANK(addr, bank) 	(addr >= BankProp[bank].Start && addr < BankProp[bank].End)
 
 /*
  * Page alignment macros
@@ -358,6 +358,7 @@ typedef union {
 	struct {
 		uint8			*DataPtr; // write ram buffer ptr
 		uint16			BlockIdx; // write block index
+		uint8			Invalidate; // invalidate flag
 	}Write;
 	struct {
 		Fls_AddressType		BlockAdminAddress;
@@ -535,7 +536,7 @@ static void FinishJob(MemIf_JobResultType jobResult)
 }
 
 static void AbortWriteJob(void) {
-	if(CurrentJob.Write.DataPtr != (uint8 *)INVALIDATED_BLOCK) {
+	if(!CurrentJob.Write.Invalidate) {
 		// only update DataPtr if not an invalidate job
 		AdminFls.Write.NewBlockDataAddress += PAGE_ALIGN(Fee_Config.BlockConfig[CurrentJob.Write.BlockIdx].BlockSize);
 	}
@@ -627,7 +628,7 @@ static void StartupReadBankHeaderWait(void) {
 				StartupReadBankHeader();
 			} else {
 				// all read
-				uint8 minIndex = BANK_COUNTER_INVALID;
+				uint8 minIndex = 0;
 				FlsBankCounterType counterVal = 0;
 				int numValid = 0;
 				for(int i = 0; i < NUM_OF_BANKS; i++) {
@@ -712,6 +713,7 @@ static void HandleHeadAdminBlock(void) {
 			AdminFls.GarbageCollect.BlockIdx = 0;
 		}
 		// next bank
+		uint8_t prevBankIdx = CurrentJob.Startup.BankIdx;
 		CurrentJob.Startup.BankIdx = NEXT_BANK_IDX(CurrentJob.Startup.BankIdx);
 		if(CurrentJob.Startup.BankIdx == CurrentJob.Startup.MinBankIdx) {
 			// this was the last bank, startup done
@@ -723,9 +725,9 @@ static void HandleHeadAdminBlock(void) {
 			FinishStartup();
 		} else if(CurrentJob.Startup.BankStatus[CurrentJob.Startup.BankIdx] == BANK_COUNTER_INVALID) {
 			// next bank is invalid, startup done
-			FinishStartup();
-			AdminFls.Erase.NextBankCounter = NEXT_BANK_COUNTERVAL(CurrentJob.Startup.BankStatus[AdminFls.Write.BankIdx]);
+			AdminFls.Erase.NextBankCounter = NEXT_BANK_COUNTERVAL(CurrentJob.Startup.BankStatus[prevBankIdx]);
 			AdminFls.Erase.BankIdx = CurrentJob.Startup.BankIdx;
+			FinishStartup();
 		} else {
 			// read next bank
 			CurrentJob.Startup.BlockAdminAddress = BankProp[CurrentJob.Startup.BankIdx].End - (ADMIN_SIZE + BANK_CTRL_SIZE);
@@ -901,7 +903,7 @@ static void WriteAdminData(void) {
 static void WriteStartJob(void)
 {
 	// init the rw buffer
-	if(CurrentJob.Write.DataPtr == (uint8 *)INVALIDATED_BLOCK) {
+	if(CurrentJob.Write.Invalidate) {
 		RWBuffer.BlockCtrl.DataPage.Data.BlockDataAddress = INVALIDATED_BLOCK;
 	} else {
 		RWBuffer.BlockCtrl.DataPage.Data.BlockDataAddress = AdminFls.Write.NewBlockDataAddress;
@@ -982,7 +984,7 @@ static void WriteAdminDataWait(void) {
 		writeResult = Fls_GetJobResult();
 		if (MEMIF_JOB_OK == writeResult) {
 			// admin data written, write data
-			if(CurrentJob.Write.DataPtr == (uint8 *)INVALIDATED_BLOCK) {
+			if(CurrentJob.Write.Invalidate) {
 				// invalidate data, no data to be written, write admin block id instead
 				// call WriteDataWait since it will setup the write of remaining part of admin block
 				AdminFls.State = FEE_WRITE_DATA_WAIT;
@@ -1006,7 +1008,7 @@ static void WriteAdminIdWait(void) {
 		writeResult = Fls_GetJobResult();
 		// all data written. Update admin data
 		if (MEMIF_JOB_OK == writeResult) {
-			if(CurrentJob.Write.DataPtr == (uint8 *)INVALIDATED_BLOCK) {
+			if(CurrentJob.Write.Invalidate) {
 				AdminFls.BlockDescrTbl[CurrentJob.Write.BlockIdx].BlockDataAddress = INVALIDATED_BLOCK;
 			} else {
 				AdminFls.BlockDescrTbl[CurrentJob.Write.BlockIdx].BlockDataAddress = AdminFls.Write.NewBlockDataAddress;
@@ -1019,7 +1021,7 @@ static void WriteAdminIdWait(void) {
 			// increase error counter
 			AdminFls.FailCounter++;
 		}
-		if(CurrentJob.Write.DataPtr != (uint8 *)INVALIDATED_BLOCK) {
+		if(!CurrentJob.Write.Invalidate) {
 			// update data head ptr if not an invalidate operation
 			AdminFls.Write.NewBlockDataAddress += PAGE_ALIGN(Fee_Config.BlockConfig[CurrentJob.Write.BlockIdx].BlockSize);
 		}
@@ -1472,7 +1474,7 @@ Std_ReturnType Fee_Write(uint16 blockNumber, uint8* dataBufferPtr)
 
 	CurrentJob.Write.BlockIdx = blockIndex;
 	CurrentJob.Write.DataPtr = dataBufferPtr;
-
+	CurrentJob.Write.Invalidate = 0;
 	AdminFls.pendingJob |= PENDING_WRITE_JOB;
 
 	return E_OK;
@@ -1542,7 +1544,7 @@ Std_ReturnType Fee_InvalidateBlock(uint16 blockNumber)
 	SET_FEE_JOBRESULT(MEMIF_JOB_PENDING);
 
 	CurrentJob.Write.BlockIdx = blockIndex;
-	CurrentJob.Write.DataPtr = (uint8 *)INVALIDATED_BLOCK;
+	CurrentJob.Write.Invalidate = 1;
 	AdminFls.pendingJob |= PENDING_WRITE_JOB;
 
 	return E_OK;
