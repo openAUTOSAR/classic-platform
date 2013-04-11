@@ -46,5 +46,8 @@ int fileno( FILE *);
 int	fputc(int, FILE *);
 int	fputs(const char *, FILE *);
 
+int getchar( void )		getc(stdin)
+
+
 
 #endif /* STDIO_H_ */

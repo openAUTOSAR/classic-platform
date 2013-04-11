@@ -53,6 +53,18 @@
  *	  arc_putchar((int)(file->_file), c);
  *	)
  *
+ *
+ *
+ *
+ *	http://ubuntuforums.org/showthread.php?t=936816
+ *
+ *	What we don't want to use:
+ *	- Terminal stuff, tcsetattr(),etc..makes everything very complicated.
+ *	- Use of select() to set to check for keyboard hit, ie
+ *	  select(STDIN_FILENO+1..);
+ *	  Then check FD_ISSET( STDIN_FILENO, .. )
+ *
+ *
  */
 
 #if defined(__IAR_SYSTEMS_ICC__)
@@ -91,6 +103,38 @@ int fputs( const char *s, FILE *file ) {
 	}
 	return 0;
 }
+
+
+/**
+ * Get a character from stream. Assume for now
+ * that it's blocking.
+ *
+ *
+ * @param file
+ * @return
+ */
+int fgetc( FILE *file ) {
+	char c;
+	int rv;
+
+
+	do {
+		rv = read(fd,&c,1);
+	} while( rv == 0 );
+}
+
+
+/**
+ * Read to EOF or newline
+ *
+ * @param file
+ * @return
+ */
+int fgets( FILE *file ) {
+	char c;
+	read(fd,&c,)
+}
+
 
 
 int printf(const char *format, ...) {

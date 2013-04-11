@@ -28,6 +28,7 @@
 /* ----------------------------[private function prototypes]-----------------*/
 static int t32_Write(  uint8_t *data, size_t nbytes);
 static int t32_Read( uint8_t *data, size_t nbytes );
+static int t32_Open( uint32_t flags );
 
 #if defined(__CWCC__)
 #pragma section RW ".nocache" ".nocache_bss"
@@ -42,6 +43,7 @@ DeviceSerialType T32_Device = {
 //	.init = T32_Init,
 	.read = t32_Read,
 	.write = t32_Write,
+	.open = t32_Open,
 };
 
 /* ----------------------------[private functions]---------------------------*/
@@ -101,4 +103,8 @@ static int t32_Read( uint8_t *data, size_t nbytes )
 		nbytes--;
 	}
 	return b;
+}
+
+static int t32_Open( const char *path, int oflag, int mode ) {
+	/* Save O_NONBLOCK to
 }

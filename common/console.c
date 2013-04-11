@@ -77,9 +77,41 @@
  *
  *
  *
+ * fd = open("/serial/serial_t32",O_RDWR);
+ * write(fd, "hejsan", 5);
+ * file = fdopen(fd,"w");
+ * fputs("hello",file);
+ *
+ *
+ * file = fopen("serial_t32","r");
+ * fputs("hello",file);
+ *
+ * !! Somewhere we must map a device with a file descriptor !!
+ *
+ * Use case: Set "global" console
+ *   Console_SetDevice("/serial/serial_t32");
+ *   fputs("hello",stdout);
+ *   Console_SetDevice("/ramlog");
+ *   fputs("hello",stdout);
+ *
+ *
+ * Use case: Set console for a specific thing (for example telnet)
+ *   This should set local configuration ( not global )
+ *     Console_SetDevice("/serial/lwip");
+ *     fputs("hello",stdout);
  *
  *
  *
+ * It seems that we must assume that read() is blocking until all the characters
+ * are read. This means that we must check if a character is present in some way.
+ * There is select() but it's just to much....this leaves us having to have a
+ * kbhit() function that goes all the way to the driver.
+ *
+ *
+ * http://www.kegel.com/dkftpbench/nonblocking.html
+ * http://pubs.opengroup.org/onlinepubs/7908799/xsh/read.html
+ *
+ * Sooo.... read() should always support O_NONBLOCK
  *
  *
  */
@@ -114,11 +146,6 @@ DeviceSerialType deviceList[] = {
 	NULL,
 };
 
-DeviceSerialType *fileList[] = {
-	[0] = &T32_Device,		/* stdin  */
-	[1] = &T32_Device,		/* stdout */
-	[2] = &T32_Device,		/* stderr */
-};
 
 
 

@@ -19,6 +19,9 @@
  *
  * Description:
  *   Implements the glue between different clibs and ArcCore "system"
+ *
+ * Implementation Notes:
+ *   Heavily inspired by http://neptune.billgatliff.com/newlib.html
  */
 
 /* ----------------------------[includes]------------------------------------*/
@@ -33,11 +36,42 @@
 #include <stddef.h>
 #include "Std_Types.h"
 
+#include "device_serial.h"
+
+#if defined(USE_TTY_UDE)
+#include "serial_dbg_ude.h"
+#endif
+
 /* ----------------------------[private define]------------------------------*/
 /* ----------------------------[private macro]-------------------------------*/
 /* ----------------------------[private typedef]-----------------------------*/
 /* ----------------------------[private function prototypes]-----------------*/
 /* ----------------------------[private variables]---------------------------*/
+
+#if defined(USE_TTY_T32)
+extern DeviceSerialType T32_Device;
+#endif
+
+DeviceSerialType *deviceList[] = {
+#if defined(USE_TTY_T32)
+		&T32_Device,
+#endif
+};
+
+
+/* Global file descriptor to device list */
+DeviceSerialType *fileList[] = {
+#if defined(USE_TTY_T32)
+	[0] = &T32_Device,		/* stdin  */
+	[1] = &T32_Device,		/* stdout */
+	[2] = &T32_Device,		/* stderr */
+#elif defined(USE_TTY_UDE)
+	[0] = &T32_Device,		/* stdin  */
+	[1] = &T32_Device,		/* stdout */
+	[2] = &T32_Device,		/* stderr */
+#endif
+};
+
 
 
 /* Errno is made reentrant by using malloc and we don't want this. This is usually fixed
@@ -55,13 +89,36 @@ extern int errno;
 /* ----------------------------[public functions]----------------------------*/
 
 
-
+/**
+ * POSIX open function
+ *
+ * Should probably support some O and S flags here
+ *   See http://pubs.opengroup.org/onlinepubs/009695399/functions/open.html
+ *
+ * @param name  Name of the file to open
+ * @param flags O_xx flags
+ * @param mode  S_xx modes.
+ * @return	The file descriptor or -1 if failed to open.
+ */
 int open(const char *name, int flags, int mode){
-	(void)name;
-	(void)flags;
-	(void)mode;
+	int i;
+	int fd = -1;
 
-    return -1;
+	for( i=0; i<sizeof(fileList)/sizeof(fileList[0]); i++ ) {
+		if( strcmp(name,fileList[i]->name) == 0 ) {
+			fd = i;
+		}
+	}
+
+	if( fd != -1) {
+		if( fileList[fd]->open != NULL ) {
+			fileList[fd]->open(name,flags,mode);
+		}
+	} else {
+		/* TODO: Set errno?! */
+	}
+
+    return fd;
 }
 
 
@@ -168,13 +225,23 @@ void * sbrk( ptrdiff_t incr )
 
 int read( int fd, void *buf, size_t nbytes )
 {
-	(void)fd;
-	(void)buf;
-	(void)nbytes;
+
+	Device_Get(fd)->read(buf,nbytes);
 
 	return 0;
 }
-int write(  int fd, const void *_buf, size_t nbytes) {
+
+/**
+ * Write data to
+ *
+ * @param fd      The file descriptor
+ * @param _buf
+ * @param nbytes
+ * @return
+ */
+int write(  int fd, const void *buf, size_t nbytes) {
+
+	Device_Get(fd)->write(buf,nbytes);
 
 	return (nbytes);
 }

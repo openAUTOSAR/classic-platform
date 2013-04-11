@@ -29,10 +29,12 @@
 
 #define DEVICE_NAME_MAX 	16
 
+/* Device type that maps well to POSIX open/read/write */
+
 typedef struct DeviceSerial {
 	char name[DEVICE_NAME_MAX];
 	uint32_t data;
-	void (*open)( uint32_t data );
+	void (*open)( const char *path, int oflag, int mode );
 	void (*close)( uint8_t *data, size_t nbytes);
 	/* Reads nbytes from device to data.
 	 * Non-blocking read */
