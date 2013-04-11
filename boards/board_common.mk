@@ -370,8 +370,7 @@ else
 #  obj-y += newlib_port.o
   obj-y += clib_port.o
   obj-y += clib.o
-  
-   
+  obj-$(USE_TTY_T32) += serial_dbg_t32.o
   
   obj-$(USE_TTY_UDE) += serial_dbg_ude.o
   # If we have configured console output we include printf. 

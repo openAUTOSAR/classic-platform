@@ -19,7 +19,7 @@
  */
 
 /* ----------------------------[includes]------------------------------------*/
-#include "common.h"
+#include <stdint.h>
 #include "device_serial.h"
 #include "sys/queue.h"
 /* ----------------------------[private define]------------------------------*/
@@ -28,7 +28,7 @@
 /* ----------------------------[private function prototypes]-----------------*/
 static int t32_Write(  uint8_t *data, size_t nbytes);
 static int t32_Read( uint8_t *data, size_t nbytes );
-static int t32_Open( uint32_t flags );
+static int t32_Open( const char *path, int oflag, int mode );
 
 #if defined(__CWCC__)
 #pragma section RW ".nocache" ".nocache_bss"
@@ -106,5 +106,5 @@ static int t32_Read( uint8_t *data, size_t nbytes )
 }
 
 static int t32_Open( const char *path, int oflag, int mode ) {
-	/* Save O_NONBLOCK to
+	return 0;
 }

@@ -115,12 +115,10 @@ int fputs( const char *s, FILE *file ) {
  */
 int fgetc( FILE *file ) {
 	char c;
-	int rv;
+	int fd;
+	fd = fileno(file);
 
-
-	do {
-		rv = read(fd,&c,1);
-	} while( rv == 0 );
+	return read(fd,&c,1);
 }
 
 
@@ -130,9 +128,10 @@ int fgetc( FILE *file ) {
  * @param file
  * @return
  */
-int fgets( FILE *file ) {
-	char c;
-	read(fd,&c,)
+int fgets( char *str, int n, FILE *file ) {
+	int fd;
+	fd = fileno(file);
+	return read(fd,str,n);
 }
 
 

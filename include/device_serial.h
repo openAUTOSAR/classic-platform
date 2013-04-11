@@ -23,7 +23,7 @@
 #ifndef DEVICE_SERIAL_H_
 #define DEVICE_SERIAL_H_
 
-#include "common.h"
+#include <stdint.h>
 #include <stdlib.h>
 #include "sys/queue.h"
 
@@ -34,8 +34,8 @@
 typedef struct DeviceSerial {
 	char name[DEVICE_NAME_MAX];
 	uint32_t data;
-	void (*open)( const char *path, int oflag, int mode );
-	void (*close)( uint8_t *data, size_t nbytes);
+	int (*open)( const char *path, int oflag, int mode );
+	int (*close)( uint8_t *data, size_t nbytes);
 	/* Reads nbytes from device to data.
 	 * Non-blocking read */
 	int (*read)( uint8_t *data, size_t nbytes);

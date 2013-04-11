@@ -226,7 +226,7 @@ void * sbrk( ptrdiff_t incr )
 int read( int fd, void *buf, size_t nbytes )
 {
 
-	Device_Get(fd)->read(buf,nbytes);
+	fileList[fd]->read(buf,nbytes);
 
 	return 0;
 }
@@ -241,7 +241,7 @@ int read( int fd, void *buf, size_t nbytes )
  */
 int write(  int fd, const void *buf, size_t nbytes) {
 
-	Device_Get(fd)->write(buf,nbytes);
+	fileList[fd]->write((void *)buf,nbytes);
 
 	return (nbytes);
 }
