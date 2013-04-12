@@ -606,7 +606,7 @@ void EcuM_GenerateRamHash(void)
 #if defined(USE_GPT)
 	Gpt_DeInit();
 #endif
-#if defined(USE_ADC)
+#if defined(USE_ADC) && (ADC_DEINIT_API == STD_ON)
 	Adc_DeInit();
 #endif
 #if defined(USE_PWM)
