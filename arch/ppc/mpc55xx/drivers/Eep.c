@@ -77,8 +77,8 @@
 #define MODULE_NAME 	"/driver/Eep"
 
 // Define if you to check if the E2 seems sane at init..
-#define CHECK_SANE    1
-//#undef CHECK_SANE
+#define CFG_EEP_CHECK_SANE    1
+
 
 /* The width in bytes used by this eeprom */
 #define ADDR_LENGTH 	2
@@ -214,7 +214,7 @@ static void Spi_ConvertToSpiAddr(Spi_DataType *spiAddr, Eep_AddressType eepAddr)
 	spiAddr[0] = (eepAddr >> 8) & 0xff;
 }
 
-#if defined(CHECK_SANE)
+#if defined(CFG_EEP_CHECK_SANE)
 static void Eep_WREN(void) {
 	Eep_Global.ebCmd = E2_WREN;
 	Spi_SetupEB(CFG_SPI_P()->EepDataChannel, NULL, NULL, 1);
@@ -246,7 +246,7 @@ void Eep_Init(const Eep_ConfigType* ConfigPtr) {
 	Spi_SetupEB(CFG_SPI_P()->EepAddrChannel, Eep_Global.ebE2Addr, NULL, sizeof(Eep_Global.ebE2Addr) / sizeof(Eep_Global.ebE2Addr[0]));
 	Spi_SetupEB(CFG_SPI_P()->EepWrenChannel, NULL, NULL, 1);
 
-#if defined( CHECK_SANE )
+#if defined( CFG_EEP_CHECK_SANE )
 	{
 		uint8 status;
 		// Simple check,
@@ -258,14 +258,10 @@ void Eep_Init(const Eep_ConfigType* ConfigPtr) {
 		Eep_WREN();
 
 		status = Eep_ReadStatusReg();
-		if ((status & 0x2) == 0) {
-			// while(1) {};
-		}
+		assert(!((status & 0x2) == 0));
 		Eep_WRDI();
 		status = Eep_ReadStatusReg();
-		if ((status & 0x2)) {
-			//while(1) {};
-		}
+		assert(!(status & 0x2));
 	}
 #endif
 
