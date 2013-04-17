@@ -100,6 +100,10 @@
 #include "WdgM.h"
 #endif
 
+#if defined(CFG_SHELL)
+#include "shell.h"
+#endif
+
 /* ----------------------------[private define]------------------------------*/
 
 /* Does not run functions that are not drivers */
@@ -241,6 +245,11 @@ void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
 	// Setup PWM
 	Pwm_Init(ConfigPtr->PwmConfig);
 #endif
+
+#if defined(CFG_SHELL)
+	SHELL_Init();
+#endif
+
 }
 
 

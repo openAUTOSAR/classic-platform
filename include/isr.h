@@ -226,7 +226,7 @@ void TailChaining(void *stack);
 #endif
 
 static inline const OsIsrVarType *Os_IsrGet( ISRType id ) {
-#if OS_ISR_CNT != 0
+#if OS_ISR_MAX_CNT != 0
 	return &Os_IsrVarList[id];
 #else
 	(void)id;
@@ -238,7 +238,7 @@ static inline ApplicationType Os_IsrGetApplicationOwner( ISRType id ) {
 	ApplicationType rv = INVALID_OSAPPLICATION;
 
 #if (OS_ISR_CNT!=0)
-	if( id < OS_ISR_CNT ) {
+	if( id < Os_Sys.isrCnt ) {
 		rv = Os_IsrGet(id)->constPtr->appOwner;
 	}
 #else

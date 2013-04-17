@@ -79,6 +79,8 @@
 #if defined(USE_NEWLIB) && defined(__GNUC__)
 #include "reent.h"
 #endif
+#include <ctype.h>
+
 //#define HOST_TEST	1
 
 #if defined(__IAR_SYSTEMS_ICC__)
@@ -118,7 +120,10 @@ int fgetc( FILE *file ) {
 	int fd;
 	fd = fileno(file);
 
-	return read(fd,&c,1);
+	/* Blocking read for now */
+	read(fd,&c,1);
+
+	return c;
 }
 
 
@@ -380,6 +385,7 @@ int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap)
 	char *str;
 	int width;
 	int left = n;
+	char wBuff[4];
 
 	while ( (ch = *format++) ) {
 
@@ -415,8 +421,16 @@ int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap)
 
 			/* Width */
 			if( (ch >= '0')  && (ch <= '9') ) {
-				width = ch -'0';
-				ch = *format++;
+				int a = 1;
+				wBuff[0] = ch;
+
+				while( (*format >= '0')  && (*format <= '9') ) {
+					wBuff[a++] = *format++;
+				}
+				wBuff[a] = '\0';
+     		    width = strtoul(wBuff,NULL,10);
+
+				ch = *format;
 			} else {
 				width = 0;
 			}

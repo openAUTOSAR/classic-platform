@@ -24,6 +24,7 @@
 #include "sys.h"
 #include "arc.h"
 #include "arch.h"
+#include <string.h>
 
 /* ----------------------------[private define]------------------------------*/
 /* ----------------------------[private macro]-------------------------------*/
@@ -571,6 +572,10 @@ void Os_Arc_GetStackInfo( TaskType task, StackInfoType *s) {
 	s->usage 	= (void *)Os_StackGetUsage(pcb);
 }
 
+
+void Os_Arc_GetTaskName(char *str, TaskType taskId) {
+	strncpy(str, Os_TaskGet(taskId)->constPtr->name, TASK_NAME_SIZE);
+}
 
 #define TASK_CHECK_ID(x) 				\
 	if( (x) > OS_TASK_CNT) { \

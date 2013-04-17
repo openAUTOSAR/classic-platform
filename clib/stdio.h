@@ -45,8 +45,14 @@ int fileno( FILE *);
 
 int	fputc(int, FILE *);
 int	fputs(const char *, FILE *);
+int puts(const char *s);
 
+#define puts(_x)	fputs(_x,stdout)
+
+#define getc(_x)		fgetc(_x)
 #define getchar()		getc(stdin)
+
+int fgetc(FILE *file);
 
 
 

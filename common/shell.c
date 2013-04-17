@@ -20,7 +20,6 @@
 
 /* ----------------------------[Includes]------------------------------------*/
 
-#include "stdtypes.h"
 #include <ctype.h>
 #include <stdlib.h>
 #include <sys/queue.h>
@@ -211,7 +210,7 @@ int SHELL_RunCmd(const char *cmdArgs, int *cmdRv ) {
 	*cmdRv = 1;
 
 	/* Remove backspace */
-	cmdArgs = fix((char *)cmdArgs, (char *)cmdArgs);
+//	cmdArgs = fix((char *)cmdArgs, (char *)cmdArgs);
 
 	if (cmdArgs == NULL) {
 		return SHELL_E_CMD_IS_NULL;

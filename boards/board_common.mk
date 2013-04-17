@@ -347,6 +347,12 @@ SELECT_CLIB?=CLIB_ARC
 obj-$(CFG_TIMER_TB)-$(CFG_PPC)+=timer_tb.o
 obj-$(CFG_TIMER_RTC)-$(CFG_PPC)+=timer_rtc.o
 obj-$(CFG_TIMER_DWT)-$(CFG_ARM)+=timer_dwt.o
+obj-$(CFG_SHELL)+=shell.o
+
+# Performance stuff
+obj-$(CFG_OS_PERF)+=perf.o
+def-$(CFG_OS_PERF)+=CFG_OS_ISR_HOOKS
+
 
 ifeq ($(SELECT_CLIB),CLIB_NATIVE)
   # Just use native clib 

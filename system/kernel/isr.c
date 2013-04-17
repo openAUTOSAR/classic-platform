@@ -413,3 +413,14 @@ void *Os_Isr( void *stack, int16_t vector ) {
 
 	return stack;
 }
+
+void Os_Arc_GetIsrName(char *str, ISRType isrId) {
+	const OsIsrVarType *isrPtr = Os_IsrGet(isrId);
+
+	if (isrPtr != NULL) {
+		strncpy(str, Os_IsrGet(isrId)->constPtr->name, 16);
+	}
+}
+
+
+

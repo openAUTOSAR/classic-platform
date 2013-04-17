@@ -45,6 +45,9 @@ void Os_Arc_GetStackInfo( TaskType pid, StackInfoType *s );
 
 TaskType Os_Arc_CreateIsr( void  (*entry)(void), uint8_t prio, const char *name );
 
+void Os_Arc_GetTaskName( char *str, TaskType pid );
+void Os_Arc_GetIsrName( char *str, ISRType isr );
+
 /**
  * Get the task activation limit
  * @param task
