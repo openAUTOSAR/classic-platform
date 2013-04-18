@@ -98,10 +98,34 @@ static int shellCmdTop(int argc, char *argv[] ) {
 	ShellCmdT *iCmd;
 
 	if(argc == 1 ) {
-		puts("Task name       %load max[us] \n");
+		puts("Task name         %load    invCnt max[us] \n");
 		for (int i = 0; i < OS_TASK_CNT; i++) {
-			printf("%16s %3d %8d\n",Perf_TaskTimers[i].name,Perf_TaskTimers[i].load, Perf_TaskTimers[i].timeMax_us );
+			printf("  %-16s %3d %8d %8d\n",Perf_TaskTimers[i].name,
+										Perf_TaskTimers[i].load,
+										Perf_TaskTimers[i].invokedCnt,
+										Perf_TaskTimers[i].timeMax_us );
 		}
+
+		puts("\n");
+		puts("ISR name          %load    invCnt max[us] \n");
+
+		for (int i = 0; i < Os_Arc_GetIsrCount() ; i++) {
+
+			if( Perf_IsrTimers[i].name[0] == '\0' ) {
+				Os_Arc_GetIsrName(Perf_IsrTimers[i].name,i);
+			}
+			printf("  %-16s %3d %8d %8d\n",Perf_IsrTimers[i].name,
+										 Perf_IsrTimers[i].load,
+										 Perf_IsrTimers[i].invokedCnt,
+										 Perf_IsrTimers[i].timeMax_us );
+
+		}
+
+		puts("\nKernel\n");
+		printf( "  %%load  : %-3d\n"
+				"  max[us]: %-8d\n\n",
+				Perf_KernelTimers.load,
+				Perf_KernelTimers.timeMax_us);
 
 	} else {
 	}
@@ -132,7 +156,7 @@ void Perf_Init( void ) {
     Os_Arc_GetTaskName(Perf_TaskTimers[i].name,i);
   }
 
-  for (int i = 0; i < OS_ISR_MAX_CNT; i++) {
+  for (int i = 0; i < Os_Arc_GetIsrCount() ; i++) {
     Os_Arc_GetIsrName(Perf_IsrTimers[i].name,i);
   }
 }
@@ -144,14 +168,11 @@ void Perf_Trigger(void) {
   TickType perfDiff_us;
   static TickType perfTimerLast = 0;
 
-  if( !initCalled ) {
-    Perf_Init();
-  }
-
   if( perfTimerLast == 0 ) {
     perfTimerLast  = Timer_GetTicks();
     return;
   }
+
 
   perfDiff_us  = TIMER_TICK2US(Timer_GetTicks() - perfTimerLast);
   perfTimerLast  = Timer_GetTicks();
@@ -164,7 +185,7 @@ void Perf_Trigger(void) {
     Perf_TaskTimers[i].timePeriodTotal_us = 0;
   }
 
-  for (int i = 0; i < OS_ISR_MAX_CNT; i++) {
+  for (int i = 0; i < Os_Arc_GetIsrCount(); i++) {
 //    LDEBUG_PRINTF("%2u load:%d\n", (unsigned)i, Perf_TaskTimers[i].timePeriodTotal_us * 100 / PERIOD_IN_US );
     /* clear period times */
     Perf_IsrTimers[i].load = Perf_IsrTimers[i].timePeriodTotal_us * 100 / perfDiff_us;

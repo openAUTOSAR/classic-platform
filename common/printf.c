@@ -430,7 +430,7 @@ int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap)
 				wBuff[a] = '\0';
      		    width = strtoul(wBuff,NULL,10);
 
-				ch = *format;
+				ch = *format++;
 			} else {
 				width = 0;
 			}

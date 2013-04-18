@@ -51,10 +51,16 @@
 #if defined(USE_TTY_T32)
 extern DeviceSerialType T32_Device;
 #endif
+#if defined(USE_TTY_UDE)
+extern DeviceSerialType UDE_Device;
+#endif
 
 DeviceSerialType *deviceList[] = {
 #if defined(USE_TTY_T32)
 		&T32_Device,
+#endif
+#if defined(USE_TTY_UDE)
+		&UDE_Device,
 #endif
 };
 
@@ -66,9 +72,9 @@ DeviceSerialType *fileList[] = {
 	[1] = &T32_Device,		/* stdout */
 	[2] = &T32_Device,		/* stderr */
 #elif defined(USE_TTY_UDE)
-	[0] = &T32_Device,		/* stdin  */
-	[1] = &T32_Device,		/* stdout */
-	[2] = &T32_Device,		/* stderr */
+	[0] = &UDE_Device,		/* stdin  */
+	[1] = &UDE_Device,		/* stdout */
+	[2] = &UDE_Device,		/* stderr */
 #endif
 };
 

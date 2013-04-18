@@ -422,5 +422,9 @@ void Os_Arc_GetIsrName(char *str, ISRType isrId) {
 	}
 }
 
+int Os_Arc_GetIsrCount( void ) {
+	return (int)Os_Sys.isrCnt;
+}
+
 
 
