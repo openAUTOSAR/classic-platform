@@ -43,6 +43,11 @@
 #define LOG_STR(_str)
 #endif
 
+#if defined(CFG_VLE)
+#define ADJUST_VECTOR	1
+#else
+#define ADJUST_VECTOR	0
+#endif
 
 struct TlbEntry TlbTable[]  = {
 	// TLB Entry 0 =  1M Internal flash
@@ -106,11 +111,7 @@ const Mcu_Arc_SleepConfigType Mcu_Arc_SleepConfig =  {
 	.crp_pscr = PSCR_SLEEP | PSCR_SLP12EN | PCSR_RAMSEL(7),
 
 	/* Point to recovery routine. If VLE is used this must be indicated */
-#if defined(CFG_VLE)
-	.z1vec = ((uint32)&Mcu_Arc_LowPowerRecoverFlash | 1),
-#else
 	.z1vec = ((uint32)&Mcu_Arc_LowPowerRecoverFlash ),
-#endif
 	/* Not using Z0 so keep in reset */
 	.z0vec = 2,
 	.sleepSysClk = 0,	/* 0 - 16Mhz IRC , 1 - XOSC , 2 - PLL */
@@ -163,9 +164,9 @@ void Mcu_Arc_SetModePre2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig
 		WRITE32(CRP_PSCR, sleepCfg->crp_pscr);
 
 		LOG_HEX1("CRP: Z1VEC: ", sleepCfg->z1vec );
-		WRITE32(CRP_Z1VEC, sleepCfg->z1vec);
+		WRITE32(CRP_Z1VEC, sleepCfg->z1vec | ADJUST_VECTOR);
 		LOG_HEX1("CRP: Z0VEC: ", sleepCfg->z0vec );
-		WRITE32(CRP_Z0VEC, sleepCfg->z0vec);
+		WRITE32(CRP_Z0VEC, sleepCfg->z0vec | ADJUST_VECTOR);
 
 		assert( sleepCfg->pData != NULL );
 
@@ -185,13 +186,11 @@ void Mcu_Arc_SetModePre2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig
 		/* Restore watchdog */
 		MCM.SWTCR.R = sleepCfg->pData->swt_cr;
 
-		/* Clear sleep flags to allow pads to operate */
-	    CRP.PSCR.B.SLEEPF = 0x1;
-
 #if defined(USE_ECUM)
 		EcuM_CheckWakeup( 0x3fffffffUL );
 #endif
-
+		/* Clear sleep flags to allow pads to operate */
+	    CRP.PSCR.B.SLEEPF = 0x1;
 	}
 }
 
