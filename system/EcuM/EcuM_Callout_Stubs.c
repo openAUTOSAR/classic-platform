@@ -603,13 +603,13 @@ void EcuM_GenerateRamHash(void)
 	 */
 	VALIDATE_STATE( ECUM_STATE_SLEEP );
 	 
-#if defined(USE_GPT)
+#if defined(USE_GPT) && (GPT_DEINIT_API == STD_ON)
 	Gpt_DeInit();
 #endif
 #if defined(USE_ADC) && (ADC_DEINIT_API == STD_ON)
 	Adc_DeInit();
 #endif
-#if defined(USE_PWM)
+#if defined(USE_PWM) && (PWM_DE_INIT_API == STD_ON)
 	Pwm_DeInit();
 #endif
 #if defined(USE_SPI)
