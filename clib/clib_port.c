@@ -26,9 +26,11 @@
 
 /* ----------------------------[includes]------------------------------------*/
 
+#if defined(__GNUC__)
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#endif
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -128,17 +130,18 @@ int open(const char *name, int flags, int mode){
 }
 
 
-
-#include <sys/stat.h>
+#if defined(__GNUC__)
 int fstat(int file, struct stat *st) {
 	(void)file;
   	st->st_mode = S_IFCHR;
   	return 0;
 }
 
+
 pid_t getpid() {
   return 1;
 }
+#endif
 
 int kill(int pid, int sig){
 	(void)pid;
@@ -252,6 +255,7 @@ int write(  int fd, const void *buf, size_t nbytes) {
 	return (nbytes);
 }
 
+#if defined(__GNUC__)
 /* reposition read/write file offset
  * We can't seek, return error.*/
 off_t lseek( int fd, off_t offset,int whence)
@@ -263,6 +267,7 @@ off_t lseek( int fd, off_t offset,int whence)
   	errno = ESPIPE;
   	return ((off_t)-1);
 }
+#endif
 
 void __init( void )
 {
@@ -281,4 +286,39 @@ void _exit( int status ) {
 	while(1) ;
 }
 #endif
+
+#if defined(__CWCC__)
+
+#include "../../MSL_Common_Embedded/Include/UART.h"
+
+UARTError InitializeUART(UARTBaudRate baudRate)
+{
+	(void)baudRate;
+	return 0;
+}
+
+UARTError ReadUARTN(void* bytes, unsigned long length) {
+
+}
+
+UARTError WriteUART1(char c) {
+
+}
+
+UARTError WriteUARTN(const void* buf, unsigned long cnt)
+{
+
+}
+
+UARTError ReadUART1(char* c) {
+
+}
+
+void exit(int exit ) {
+	(void)exit;
+}
+
+#endif
+
+
 

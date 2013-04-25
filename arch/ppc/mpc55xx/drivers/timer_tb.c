@@ -22,7 +22,7 @@
 
 #include "Os.h"
 #include "timer.h"
-#include "cpu.h"
+#include "Cpu.h"
 #include "Mcu.h"
 
 /* ----------------------------[private define]------------------------------*/

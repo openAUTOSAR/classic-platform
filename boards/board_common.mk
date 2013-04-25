@@ -354,6 +354,19 @@ obj-$(CFG_OS_PERF)+=perf.o
 def-$(CFG_OS_PERF)+=CFG_OS_ISR_HOOKS
 
 
+obj-$(CFG_ARC_CLIB) += clib_port.o
+obj-$(CFG_ARC_CLIB) += clib.o
+obj-$(USE_TTY_T32) += serial_dbg_t32.o  
+obj-$(USE_TTY_UDE) += serial_dbg_ude.o
+obj-compiler-cw += strtok_r.o
+
+obj-y += $(obj-compiler-$(COMPILER))
+
+
+inc-system-$(CFG_ARC_CLIB) += $(ROOTDIR)/clib
+vpath-$(CFG_ARC_CLIB) += $(ROOTDIR)/clib
+
+
 ifeq ($(SELECT_CLIB),CLIB_NATIVE)
   # Just use native clib 
   
@@ -366,19 +379,13 @@ else ifeq ($(SELECT_CLIB),CLIB_IAR)
 else ifeq ($(SELECT_CLIB),CLIB_CW)
   # This is not good, but don't know what to do right now....
   obj-y += xtoa.o
-  obj-y += msl_port.o
+#  obj-y += msl_port.o
   def-y += USE_CLIB_CW
-  obj-$(USE_TTY_UDE) += serial_dbg_ude.o
 else
   # Newlib
   def-y += USE_NEWLIB
   obj-y += xtoa.o
 #  obj-y += newlib_port.o
-  obj-y += clib_port.o
-  obj-y += clib.o
-  obj-$(USE_TTY_T32) += serial_dbg_t32.o
-  
-  obj-$(USE_TTY_UDE) += serial_dbg_ude.o
   # If we have configured console output we include printf. 
   # Overridden to use lib implementation with CFG_NEWLIB_PRINTF
   ifneq ($(CFG_NEWLIB_PRINTF),y)
@@ -387,8 +394,6 @@ else
     endif # SELECT_CONSOLE
   endif # CFG_NEWLIB_PRINTF
   
-  inc-system-y += $(ROOTDIR)/clib
-  vpath-y += $(ROOTDIR)/clib
 endif # SELECT_CLIB 
 
 

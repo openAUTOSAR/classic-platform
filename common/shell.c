@@ -105,6 +105,7 @@ static char *trim(char *s)
    return(s);
 }
 
+
 /**
  * Split and string into tokens and strip the token from whitespace.
  *
