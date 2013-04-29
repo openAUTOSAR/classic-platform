@@ -69,7 +69,7 @@
 
 #if defined(__IAR_SYSTEMS_ICC__)
 #define STDOUT_FILENO	1
-#else
+#elif defined(__GNUC__) && defined(__DCC__)
 #include <unistd.h>
 #endif
 #include <stdio.h>
@@ -209,7 +209,7 @@ int vsnprintf(char *buffer, size_t n, const char *format, va_list ap) {
 /*
  * The integer only counterpart
  */
-#if !defined(__IAR_SYSTEMS_ICC__)
+#if defined(USE_NEWLIB)
 int iprintf(const char *format, ...) __attribute__ ((alias("printf")));
 int fiprintf(FILE *file, const char *format, ...) __attribute__ ((alias("fprintf")));
 int siprintf(char *buffer, const char *format, ...) __attribute__ ((alias("sprintf")));

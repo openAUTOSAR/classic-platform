@@ -26,7 +26,23 @@
 
 #include <clib.h>
 
-_EnvType __Env;
+_FileType stdFiles[3] = {
+	{
+		.fileNo = 0,
+	},
+	{
+		.fileNo = 1,
+	},
+	{
+		.fileNo = 2,
+	}
+};
+
+_EnvType __Env = {
+	._stdin = &stdFiles[0],
+	._stdout = &stdFiles[1],
+	._stderr = &stdFiles[2],
+};
 
 _EnvType *_EnvPtr = &__Env;
 

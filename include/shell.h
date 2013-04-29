@@ -25,6 +25,7 @@ typedef struct ShellCmd {
 int SHELL_AddCmd(ShellCmdT *shellCmd);
 int SHELL_RunCmd(const char *cmdArgs, int *cmdRv );
 int SHELL_Init( void );
+int SHELL_Mainloop( void );
 
 #define SHELL_E_OK				0
 #define SHELL_E_CMD_TOO_LONG	1

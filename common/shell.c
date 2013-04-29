@@ -33,6 +33,9 @@
 /* The maximum number of arguments when calling a shell function */
 #define MAX_ARGS		10
 
+#define CMDLINE_MAX		40
+
+
 /* ----------------------------[Private macro]-------------------------------*/
 /* ----------------------------[Private typedef]-----------------------------*/
 
@@ -45,6 +48,8 @@ struct shellWord {
 /* ----------------------------[Private function prototypes]-----------------*/
 
 static int shellHelp(int argc, char *argv[] );
+extern char *strtok_r(char *s1, const char *s2, char **s3);
+
 
 /* ----------------------------[Private variables]---------------------------*/
 struct shellWord shellWorld;
@@ -121,7 +126,8 @@ static char *strtokAndTrim(char *s1, const char *s2, char **s3)
 #else
   char *str = strtok_r(s1, s2, s3);
 #endif
-  return trim(str);
+  return str;
+  //return trim(str);
 }
 
 /**
@@ -254,3 +260,46 @@ int SHELL_RunCmd(const char *cmdArgs, int *cmdRv ) {
 	}
 	return SHELL_E_OK;
 }
+
+static void doPrompt( void ) {
+	puts("[ArcCore] $ ");
+}
+
+
+int SHELL_Mainloop( void ) {
+	char c;
+	static char cmdLine[CMDLINE_MAX];
+	int lineIndex = 0;
+	int cmdRv;
+
+	puts("ArcCore Shell version 0.1\n");
+	doPrompt();
+
+	for(;;) {
+		c = fgetc(stdin);
+		//printf("Got %c\n",(char)rv);
+		if( lineIndex >= CMDLINE_MAX ) {
+			lineIndex = 0;
+		}
+
+		if( c == '\b') {
+			lineIndex--;
+			fputc(c,stdout);
+			// fputs("\e\x50",stdout);
+		} else if( c == '\n' || c == '\r' ) {
+			puts("\n");
+			cmdLine[lineIndex++] = '\n';
+			cmdLine[lineIndex] = '\0';
+			//printf("Got Cmd:%s\n",cmdLine);
+			SHELL_RunCmd(cmdLine,&cmdRv);
+			lineIndex = 0;
+			doPrompt();
+		} else {
+			cmdLine[lineIndex++] = c;
+			fputc(c,stdout);
+		}
+
+	}
+}
+
+

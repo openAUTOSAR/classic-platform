@@ -22,7 +22,9 @@
 
 typedef _FileType FILE;
 
+#if !defined(EOF)
 #define EOF		(-1)
+#endif
 
 /* File handles */
 #define stdin		(_EnvPtr->_stdin)

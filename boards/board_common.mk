@@ -356,6 +356,7 @@ def-$(CFG_OS_PERF)+=CFG_OS_ISR_HOOKS
 
 obj-$(CFG_ARC_CLIB) += clib_port.o
 obj-$(CFG_ARC_CLIB) += clib.o
+obj-$(CFG_ARC_CLIB) += printf.o
 obj-$(USE_TTY_T32) += serial_dbg_t32.o  
 obj-$(USE_TTY_UDE) += serial_dbg_ude.o
 obj-compiler-cw += strtok_r.o

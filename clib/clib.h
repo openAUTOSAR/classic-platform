@@ -18,7 +18,7 @@
 
 
 typedef struct _FileS {
-	int a;
+	int fileNo;
 	int b;
 } _FileType;
 

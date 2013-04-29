@@ -98,6 +98,16 @@ extern int errno;
 
 
 /**
+ * Get a file number from a file
+ * @param file
+ * @return
+ */
+int fileno( FILE *file ) {
+	return file->fileNo;
+}
+
+
+/**
  * POSIX open function
  *
  * Should probably support some O and S flags here

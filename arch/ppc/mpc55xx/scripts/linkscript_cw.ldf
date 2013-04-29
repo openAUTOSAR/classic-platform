@@ -101,7 +101,18 @@ SECTIONS
 	    __SDATA0 = .;
 	    .=.+SIZEOF(.PPC.EMB.sdata0);
 	    __rom_end = .;
+#if defined(CFG_MPC5516)	    
+		.lowpower_text BIND(0x000ff000): {
+			*(.lowpower_text)
+		}
+		
+		.lowpower_vector BIND(0x000ffffc): {
+		    *(.lowpower_vector)
+		}
+#endif
+
 	 }	 > flash
+
 
 	GROUP : {
 		__ram_start=.;
