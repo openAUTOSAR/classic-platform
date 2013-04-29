@@ -225,7 +225,11 @@
 #define RAMLOG_HEX(_x)
 #endif
 
+#if defined(USE_LOCAL_RAMLOG)
 #define SPI_ASSERT(_exp)	if( !(_exp) ) while(1) {}
+#else
+#define SPI_ASSERT(_exp)	assert(_exp)
+#endif
 
 /* ----------------------------[private macro]-------------------------------*/
 
