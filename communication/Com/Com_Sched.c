@@ -74,6 +74,10 @@ void Com_MainFunctionRx(void) {
 		}
 		if (pduUpdated && IPdu->ComIPduSignalProcessing == DEFERRED && IPdu->ComIPduDirection == RECEIVE) {
 			UnlockTpBuffer(getPduId(IPdu));
+
+			/* Can only have one dynamic length signal for each PDU so just copy the length */
+			Arc_IPdu->Com_Arc_DeferredDynSignalLength = Arc_IPdu->Com_Arc_DynSignalLength;
+
 			memcpy(IPdu->ComIPduDeferredDataPtr,IPdu->ComIPduDataPtr,IPdu->ComIPduSize);
 			for (uint16 i = 0; (IPdu->ComIPduSignalRef != NULL) && (IPdu->ComIPduSignalRef[i] != NULL); i++) {
 				const ComSignal_type *signal = IPdu->ComIPduSignalRef[i];
