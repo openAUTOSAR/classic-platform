@@ -23,12 +23,15 @@
 #ifndef LINIF_H_
 #define LINIF_H_
 
+#define LINIF_MODULE_ID            MODULE_ID_LINIF
+#define LINIF_VENDOR_ID            VENDOR_ID_ARCCORE
+
 #define LINIF_SW_MAJOR_VERSION    1
 #define LINIF_SW_MINOR_VERSION    0
 #define LINIF_SW_PATCH_VERSION    0
-#define LINIF_AR_MAJOR_VERSION    2
-#define LINIF_AR_MINOR_VERSION    0
-#define LINIF_AR_PATCH_VERSION    1
+#define LINIF_AR_MAJOR_VERSION    3
+#define LINIF_AR_MINOR_VERSION    1
+#define LINIF_AR_PATCH_VERSION    5
 
 #include "Std_Types.h"
 #include "LinIf_Cfg.h"
