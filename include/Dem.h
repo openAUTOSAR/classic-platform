@@ -23,15 +23,17 @@
 #ifndef DEM_H_
 #define DEM_H_
 
+#include "Modules.h"
+
 #define DEM_MODULE_ID			MODULE_ID_DEM
-#define DEM_VENDOR_ID			1
+#define DEM_VENDOR_ID			VENDOR_ID_ARCCORE
 
 #define DEM_SW_MAJOR_VERSION    1
 #define DEM_SW_MINOR_VERSION   	0
 #define DEM_SW_PATCH_VERSION    0
 #define DEM_AR_MAJOR_VERSION    3
-#define DEM_AR_MINOR_VERSION    0
-#define DEM_AR_PATCH_VERSION    1
+#define DEM_AR_MINOR_VERSION    1
+#define DEM_AR_PATCH_VERSION    5
 
 /** @req DCM067.Cfg-files */
 #include "Dem_Types.h"

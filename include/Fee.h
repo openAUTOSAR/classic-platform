@@ -23,16 +23,17 @@
 #ifndef FEE_H_
 #define FEE_H_
 
+#include "Modules.h"
 
 #define FEE_MODULE_ID			MODULE_ID_FEE
-#define FEE_VENDOR_ID			1
+#define FEE_VENDOR_ID			VENDOR_ID_ARCCORE
 
 #define FEE_SW_MAJOR_VERSION	1
 #define FEE_SW_MINOR_VERSION	0
 #define FEE_SW_PATCH_VERSION	0
 #define FEE_AR_MAJOR_VERSION	3
-#define FEE_AR_MINOR_VERSION	0
-#define FEE_AR_PATCH_VERSION	1
+#define FEE_AR_MINOR_VERSION	1
+#define FEE_AR_PATCH_VERSION	5
 
 #include "Std_Types.h"
 #include "Fee_Cfg.h"

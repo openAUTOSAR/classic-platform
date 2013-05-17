@@ -24,12 +24,13 @@
 #define ADC_H_
 
 #include "Std_Types.h"
+#include "Modules.h"
 
-#define ADC_VENDOR_ID			    1
+#define ADC_VENDOR_ID			    VENDOR_ID_ARCCORE
 #define ADC_MODULE_ID			    MODULE_ID_ADC
 #define ADC_AR_MAJOR_VERSION  		3
-#define ADC_AR_MINOR_VERSION 		0
-#define ADC_AR_PATCH_VERSION		3
+#define ADC_AR_MINOR_VERSION 		1
+#define ADC_AR_PATCH_VERSION		5
 
 #define ADC_SW_MAJOR_VERSION  		1
 #define ADC_SW_MINOR_VERSION 		0

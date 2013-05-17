@@ -17,6 +17,7 @@
 #define SPI_H_
 
 #include "Std_Types.h"
+#include "Modules.h"
 
 
 /* STD container : SpiGeneral
@@ -78,15 +79,15 @@
 
 
 /* Standard info */
-#define SPI_VENDOR_ID             1
+#define SPI_VENDOR_ID             VENDOR_ID_ARCCORE
 #define SPI_MODULE_ID         		 MODULE_ID_SPI
 #define SPI_SW_MAJOR_VERSION      1
 #define SPI_SW_MINOR_VERSION      0
 #define SPI_SW_PATCH_VERSION      2
 /* Part of release 3.0 rev 0001 */
 #define SPI_AR_MAJOR_VERSION      3
-#define SPI_AR_MINOR_VERSION      0
-#define SPI_AR_PATCH_VERSION      0
+#define SPI_AR_MINOR_VERSION      1
+#define SPI_AR_PATCH_VERSION      5
 
 
 /* --- Service IDs --- */

@@ -23,9 +23,18 @@
 #ifndef PWM_H_
 #define PWM_H_
 
+#include "Modules.h"
+
 #define PWM_SW_MAJOR_VERSION	1
 #define PWM_SW_MINOR_VERSION	2
 #define PWM_SW_PATCH_VERSION	0
+
+#define PWM_MODULE_ID			MODULE_ID_PWM
+#define PWM_VENDOR_ID			VENDOR_ID_ARCCORE
+
+#define PWM_AR_MAJOR_VERSION	3
+#define PWM_AR_MINOR_VERSION	1
+#define PWM_AR_PATCH_VERSION	5
 
 /*
  * PWM094: Std_VersionInfoType shall be imported from Std_Types.h
@@ -134,13 +143,6 @@ typedef enum
 /*
  * Implemented functions
  ****************************/
-#define PWM_MODULE_ID			MODULE_ID_PWM
-#define PWM_VENDOR_ID			1
-
-#define PWM_AR_MAJOR_VERSION	2
-#define PWM_AR_MINOR_VERSION	2
-#define PWM_AR_PATCH_VERSION	1
-
 
 #if ( PWM_VERSION_INFO_API == STD_ON)
 #define Pwm_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,PWM)

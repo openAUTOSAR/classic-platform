@@ -22,15 +22,18 @@
 
 #ifndef MEMIF_H_
 #define MEMIF_H_
+
+#include "Modules.h"
+
 #define MEMIF_MODULE_ID			MODULE_ID_MEMIF
-#define MEMIF_VENDOR_ID			1
+#define MEMIF_VENDOR_ID			VENDOR_ID_ARCCORE
 
 #define MEMIF_SW_MAJOR_VERSION	1
 #define MEMIF_SW_MINOR_VERSION	0
 #define MEMIF_SW_PATCH_VERSION	0
 #define MEMIF_AR_MAJOR_VERSION	3
-#define MEMIF_AR_MINOR_VERSION	0
-#define MEMIF_AR_PATCH_VERSION	1
+#define MEMIF_AR_MINOR_VERSION	1
+#define MEMIF_AR_PATCH_VERSION	5
 
 #include "Std_Types.h"
 #include "MemIf_Cfg.h"

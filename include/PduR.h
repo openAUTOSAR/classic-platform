@@ -23,10 +23,12 @@
 #ifndef PDUR_H
 #define PDUR_H
 
-#define PDUR_VENDOR_ID		   1
-#define PDUR_AR_MAJOR_VERSION  2
-#define PDUR_AR_MINOR_VERSION  2
-#define PDUR_AR_PATCH_VERSION  2
+#include "Modules.h"
+
+#define PDUR_VENDOR_ID		   VENDOR_ID_ARCCORE
+#define PDUR_AR_MAJOR_VERSION  3
+#define PDUR_AR_MINOR_VERSION  1
+#define PDUR_AR_PATCH_VERSION  5
 #define PDUR_SW_MAJOR_VERSION  2
 #define PDUR_SW_MINOR_VERSION  0
 #define PDUR_SW_PATCH_VERSION  0

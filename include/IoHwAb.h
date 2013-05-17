@@ -18,12 +18,14 @@
 #ifndef IOHWAB_H_
 #define IOHWAB_H_
 
+#include "Modules.h"
+
 #define IOHWAB_SW_MAJOR_VERSION	1
 #define IOHWAB_SW_MINOR_VERSION	0
 #define IOHWAB_SW_PATCH_VERSION	0
 
 #define IOHWAB_MODULE_ID		0xAB
-#define IOHWAB_VENDOR_ID		1
+#define IOHWAB_VENDOR_ID		VENDOR_ID_ARCCORE
 
 #if defined(CFG_IOHWAB_USE_SERVICE_COMPONENT)
 #include "Rte_Type.h"
