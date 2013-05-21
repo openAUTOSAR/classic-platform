@@ -20,32 +20,23 @@ const Wdg_ModeConfigType WdgModeConfig =
 	.Wdg_DefaultMode = WDGIF_OFF_MODE,
 	.WdgSettingsFast =
 	{
-		.ReloadValue = 0x200,
+		.ReloadValue = 200,  // ms
 		.ActivationBit = 1,
 	},
 	.WdgSettingsSlow =
 	{
-		.ReloadValue = 0x7D00,
+		.ReloadValue = 2000,  // ms
 		.ActivationBit = 1,
 	},
 	.WdgSettingsOff =
 	{
-		.ReloadValue = 0x7D00,
+		.ReloadValue = 0,
 		.ActivationBit = 0,
 	},
 };
 
-const Wdg_GeneralType WdgGeneral =
-{
-	.Wdg_Index = 1,
-	.Wdg_TriggerLocationPtr = Wdg_Trigger,
-	.Wdg_SetModeLocationPtr = Wdg_SetMode,
-};
-
-
 const Wdg_ConfigType WdgConfig =
 {
-  .Wdg_General = &WdgGeneral,
   .Wdg_ModeConfig = &WdgModeConfig,
 };
 
