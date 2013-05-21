@@ -96,6 +96,7 @@ typedef uint8 Dcm_OpStatusType;
 /*
  * Dcm_NegativeResponseCodeType
  */
+#if !defined(_DEFINED_TYPEDEF_FOR_NegativeResponseCodeType_)
 typedef uint8 Dcm_NegativeResponseCodeType;
 #define DCM_E_GENERALREJECT								((Dcm_NegativeResponseCodeType)0x10)
 #define DCM_E_BUSYREPEATREQUEST							((Dcm_NegativeResponseCodeType)0x21)
@@ -130,6 +131,7 @@ typedef uint8 Dcm_NegativeResponseCodeType;
 #define DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT		((Dcm_NegativeResponseCodeType)0x13)
 #define DCM_E_RESPONSEPENDING							((Dcm_NegativeResponseCodeType)0x78)
 #define DCM_E_SERVICENOTSUPPORTEDINACTIVESESSION		((Dcm_NegativeResponseCodeType)0x7F)
+#endif
 
 
 typedef uint8 Dcm_StatusType;

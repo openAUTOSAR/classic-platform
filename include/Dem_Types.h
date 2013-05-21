@@ -24,6 +24,7 @@
 #define DEM_TYPES_H_
 #include "Std_Types.h" /** @req DEM176.Std */
 #include "Rte_Dem.h"
+
 #define DEM_EVENT_DESTINATION_END_OF_LIST 0
 
 /*
@@ -73,11 +74,13 @@ typedef uint8 Dem_EventKindType;		// TODO: Check type and values
 /*
  * Dem_EventStatusType
  */
+#if !defined(_DEFINED_TYPEDEF_FOR_Dem_EventStatusType_)
 typedef uint8 Dem_EventStatusType;
 #define DEM_EVENT_STATUS_PASSED		(Dem_EventStatusType)0
 #define DEM_EVENT_STATUS_FAILED		(Dem_EventStatusType)1
 #define DEM_EVENT_STATUS_PREPASSED	(Dem_EventStatusType)2
 #define DEM_EVENT_STATUS_PREFAILED	(Dem_EventStatusType)3
+#endif
 
 /*
  * Dem_PreDebounceNameType
@@ -276,23 +279,31 @@ typedef uint8 Dem_ReturnGetSeverityOfDTCType;
 /*
  * DemDTCKindType definitions
  */
+#if !defined(_DEFINED_TYPEDEF_FOR_Dem_DTCKindType_)
 #define	DEM_DTC_KIND_ALL_DTCS			(Dem_DTCKindType)0x01
 #define	DEM_DTC_KIND_EMISSION_REL_DTCS	(Dem_DTCKindType)0x02
+#endif
 
+#if !defined(_DEFINED_TYPEDEF_FOR_Dem_InitMonitorKindType_)
 /*
  * Dem_InitMonitorKindType definitions
  */
 #define DEM_INIT_MONITOR_CLEAR		(Dem_InitMonitorKindType)1
 #define DEM_INIT_MONITOR_RESTART	(Dem_InitMonitorKindType)2
+#endif
 
 
 /*
  * Dem_IndicatorStatusType definitions
  */
+#if !defined(_DEFINED_TYPEDEF_FOR_Dem_IndicatorStatusType_)
+
 #define DEM_INDICATOR_OFF			(Dem_IndicatorStatusType)0
 #define DEM_INDICATOR_CONTINUOUS	(Dem_IndicatorStatusType)1
 #define DEM_INDICATOR_BLINKING		(Dem_IndicatorStatusType)2
 #define DEM_INDICATOR_BLINK_CONT	(Dem_IndicatorStatusType)3
+#endif
+
 
 /*
  * DemOperationCycleType definitions
@@ -311,9 +322,10 @@ enum {
 /*
  * Dem_OperationCycleStateType definitions
  */
+#if !defined(_DEFINED_TYPEDEF_FOR_Dem_OperationCycleStateType_)
 #define DEM_CYCLE_STATE_START		(Dem_OperationCycleStateType)1
 #define DEM_CYCLE_STATE_END			(Dem_OperationCycleStateType)2
-
+#endif
 
 
 #endif /*DEM_TYPES_H_*/
