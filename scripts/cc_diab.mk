@@ -34,8 +34,9 @@ DIAB_BIN = $(DIAB_COMPILE)/bin
 
 CC	= 	$(DIAB_BIN)/dcc	
 
-cflags-$(CFG_OPT_RELEASE)        += -g3
-cflags-$(CFG_OPT_DEBUG)        += -g2
+cflags-$(CFG_OPT_RELEASE) += -g3
+cflags-$(CFG_OPT_DEBUG)   += -g2
+cflags-$(CFG_OPT_FLAGS)   += $(SELECT_OPT)
 
 
 ifeq ($(DIAB_TARGET),)

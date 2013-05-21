@@ -31,8 +31,9 @@ cflags-y 		+= -cwd explicit
 cflags-y 		+= -msgstyle gcc
 cflags-y 		+= -maxerrors 10
 cflags-y 		+= -maxwarnings 10
-cflags-$(CFG_OPT_RELEASE)        += -opt level=2
-cflags-$(CFG_OPT_DEBUG)        += -opt off 
+cflags-$(CFG_OPT_RELEASE) += -opt level=2
+cflags-$(CFG_OPT_DEBUG)   += -opt off 
+cflags-$(CFG_OPT_FLAGS)   += $(SELECT_OPT)
 
 # Generate dependencies, 
 # Should be -MMD here but it only gives the *.c files (for some reason
