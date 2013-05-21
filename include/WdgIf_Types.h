@@ -31,14 +31,4 @@ typedef enum
 	WDGIF_SLOW_MODE
 }WdgIf_ModeType;
 
-typedef void (*Wdg_TriggerLocationPtrType)(void);
-typedef Std_ReturnType (*Wdg_SetModeLocationPtrType)(WdgIf_ModeType Mode);
-
-typedef struct
-{
-	const uint8 Wdg_Index;
-	Wdg_TriggerLocationPtrType Wdg_TriggerLocationPtr;
-	Wdg_SetModeLocationPtrType Wdg_SetModeLocationPtr;
-}Wdg_GeneralType;
-
 #endif /* WDGIF_TYPES_H_ */
