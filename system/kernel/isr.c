@@ -26,6 +26,7 @@
 #include "sys.h"
 #include "isr.h"
 #include "irq.h"
+#include "arc.h"
 
 #define ILL_VECTOR	0xff
 
@@ -281,6 +282,32 @@ void Os_IsrGetStackInfo( OsIsrStackType *stack ) {
 	stack->size = sizeof(Os_IsrStack);
 }
 
+const OsIsrVarType *Os_IsrGet( ISRType id ) {
+#if OS_ISR_MAX_CNT != 0
+	if( id < Os_Sys.isrCnt ) {
+		return &Os_IsrVarList[id];
+	} else  {
+		return NULL;
+	}
+#else
+	(void)id;
+	return NULL;
+#endif
+}
+
+ApplicationType Os_IsrGetApplicationOwner( ISRType id ) {
+	ApplicationType rv = INVALID_OSAPPLICATION;
+
+#if (OS_ISR_MAX_CNT!=0)
+	if( id < Os_Sys.isrCnt ) {
+		rv = Os_IsrGet(id)->constPtr->appOwner;
+	}
+#else
+	(void)id;
+#endif
+	return rv;
+}
+
 
 #if defined(CFG_ARM_CR4)
 void *Os_Isr_cr4( void *stack, int16_t virtualVector, int16_t vector ) {
@@ -414,17 +441,16 @@ void *Os_Isr( void *stack, int16_t vector ) {
 	return stack;
 }
 
-void Os_Arc_GetIsrName(char *str, ISRType isrId) {
+void Os_Arc_GetIsrInfo( Arc_PcbType *pcbPtr, ISRType isrId ) {
 	const OsIsrVarType *isrPtr = Os_IsrGet(isrId);
 
-	if (isrPtr != NULL) {
-		strncpy(str, Os_IsrGet(isrId)->constPtr->name, 16);
+	if( isrPtr != NULL ) {
+		strncpy(pcbPtr->name,Os_IsrGet(isrId)->constPtr->name,OS_ARC_PCB_NAME_SIZE);
 	}
+
 }
 
 int Os_Arc_GetIsrCount( void ) {
 	return (int)Os_Sys.isrCnt;
 }
-
-
 

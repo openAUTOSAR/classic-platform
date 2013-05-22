@@ -26,15 +26,17 @@
 #ifndef NVM_H_
 #define NVM_H_
 
+#include "Modules.h"
+
 #define NVM_MODULE_ID			MODULE_ID_NVM
-#define NVM_VENDOR_ID			1
+#define NVM_VENDOR_ID			VENDOR_ID_ARCCORE
 
 #define NVM_SW_MAJOR_VERSION	1
 #define NVM_SW_MINOR_VERSION	0
 #define NVM_SW_PATCH_VERSION	0
 #define NVM_AR_MAJOR_VERSION	3
-#define NVM_AR_MINOR_VERSION	0
-#define NVM_AR_PATCH_VERSION	1
+#define NVM_AR_MINOR_VERSION	1
+#define NVM_AR_PATCH_VERSION	5
 
 #include "NvM_Cfg.h"
 /** @req NVM028 */ // NvmCommon configuration block is implemented in the NvM_Cfg.h file

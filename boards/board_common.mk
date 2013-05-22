@@ -335,15 +335,6 @@ obj-$(USE_SLEEP) += sleep.o
 # Circular Buffer (always)
 obj-y += cirq_buffer.o
 
-ifeq ($(COMPILER),cw)
-SELECT_CLIB?=CLIB_CW
-endif
-ifeq ($(COMPILER),iar)
-SELECT_CLIB?=CLIB_IAR
-endif
-
-SELECT_CLIB?=CLIB_ARC
-
 obj-$(CFG_TIMER_TB)-$(CFG_PPC)+=timer_tb.o
 obj-$(CFG_TIMER_RTC)-$(CFG_PPC)+=timer_rtc.o
 obj-$(CFG_TIMER_DWT)-$(CFG_ARM)+=timer_dwt.o
@@ -353,56 +344,28 @@ obj-$(CFG_SHELL)+=shell.o
 obj-$(CFG_OS_PERF)+=perf.o
 def-$(CFG_OS_PERF)+=CFG_OS_ISR_HOOKS
 
-
-obj-$(CFG_ARC_CLIB) += clib_port.o
-obj-$(CFG_ARC_CLIB) += clib.o
-obj-$(CFG_ARC_CLIB) += printf.o
 obj-$(USE_TTY_T32) += serial_dbg_t32.o  
 obj-$(USE_TTY_UDE) += serial_dbg_ude.o
-obj-compiler-cw += strtok_r.o
-
-obj-y += $(obj-compiler-$(COMPILER))
-
-
-inc-system-$(CFG_ARC_CLIB) += $(ROOTDIR)/clib
-vpath-$(CFG_ARC_CLIB) += $(ROOTDIR)/clib
-
 
 ifeq ($(SELECT_CLIB),CLIB_NATIVE)
   # Just use native clib 
   
-else ifeq ($(SELECT_CLIB),CLIB_IAR)
-  # This is not good, but don't know what to do right now....
-  obj-y += iar_port.o
-  obj-y += xtoa.o
-  obj-y += printf.o
-  def-y += USE_CLIB_IAR
-else ifeq ($(SELECT_CLIB),CLIB_CW)
-  # This is not good, but don't know what to do right now....
-  obj-y += xtoa.o
-#  obj-y += msl_port.o
-  def-y += USE_CLIB_CW
 else
-  # Newlib
-  def-y += USE_NEWLIB
+
+  # Override native C-library with ArcCore tweaks.
+  inc-system-y += $(ROOTDIR)/clib
+  vpath-y      += $(ROOTDIR)/clib
+
+  obj-y += clib_port.o
+  obj-y += clib.o
+  obj-y += printf.o
   obj-y += xtoa.o
-#  obj-y += newlib_port.o
-  # If we have configured console output we include printf. 
-  # Overridden to use lib implementation with CFG_NEWLIB_PRINTF
-  ifneq ($(CFG_NEWLIB_PRINTF),y)
-    ifneq (,$(SELECT_CONSOLE) $(SELECT_OS_CONSOLE))
-      obj-y += printf.o
-    endif # SELECT_CONSOLE
-  endif # CFG_NEWLIB_PRINTF
-  
+  obj-y-cw += strtok_r.o
+  obj-y-diab += strtok_r.o  
 endif # SELECT_CLIB 
 
-
 obj-y += $(obj-y-y)
-obj-y += $(obj-y-gcc)
-obj-y += $(obj-y-iar)
-obj-y += $(obj-y-cw)
-
+obj-y += $(obj-y-$(COMPILER))
 
 vpath-y += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
 vpath-y += $(ROOTDIR)/$(ARCH_PATH-y)/drivers

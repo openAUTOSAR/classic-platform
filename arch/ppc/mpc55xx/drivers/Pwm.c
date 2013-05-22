@@ -281,6 +281,23 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
     for (channel_iterator = 0; channel_iterator < PWM_NUMBER_OF_CHANNELS; channel_iterator++) {
     	const Pwm_ChannelConfigurationType* channelConfig = &ConfigPtr->Channels[channel_iterator];
     	Pwm_ChannelType channel = channelConfig->channel;
+    	volatile struct EMIOS_tag *emiosHw;
+
+#if defined(CFG_MPC560X)
+		if(channel <= PWM_NUMBER_OF_EACH_EMIOS-1) {
+			emiosHw = &EMIOS_0;
+		} else {
+			emiosHw = &EMIOS_1;
+			channel -= PWM_NUMBER_OF_EACH_EMIOS;
+		}
+#else
+		emiosHw = &EMIOS;
+#endif
+
+#if !defined(CFG_MPC5567)
+		// Clear the disable bit for this channel
+		emiosHw->UCDIS.R &= ~(1 << channel);
+#endif
 
     	configureChannel( channelConfig );
 
@@ -523,28 +540,37 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
 
 		#endif
     }
+
+	/* Enable module */
+    #if defined(CFG_MPC560X)
+		EMIOS_0.MCR.B.MDIS = 0;
+		EMIOS_1.MCR.B.MDIS = 0;
+	#else
+		EMIOS.MCR.B.MDIS = 0;
+	#endif
 }
 
 #if PWM_DE_INIT_API==STD_ON
 
 void inline Pwm_DeInitChannel(Pwm_ChannelType Channel) {
-    Pwm_SetOutputToIdle(Channel);
+	volatile struct EMIOS_tag *emiosHw;
+#if defined(CFG_MPC560X)
+	if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1) {
+		emiosHw = &EMIOS_0;
+	} else {
+		emiosHw = &EMIOS_1;
+		Channel -= PWM_NUMBER_OF_EACH_EMIOS;
+	}
+#else
+	emiosHw = &EMIOS;
+#endif
 
-	#if defined(CFG_MPC5516)
-        // Set the disable bit for this channel
-    	EMIOS.UCDIS.R |= (1 << (31 - Channel));
-    #elif defined(CFG_MPC560X)
-        // Set the disable bit for this channel
-        if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1)
-        {
-        	EMIOS_0.UCDIS.R |= (1 << (Channel));
-        }
-        else
-        {
-        	EMIOS_1.UCDIS.R |= (1 << (Channel-PWM_NUMBER_OF_EACH_EMIOS));
-        }
-	#endif
+	emiosHw->CH[Channel].CADR.R = 0;
 
+#if !defined(CFG_MPC5567)
+	// Set the disable bit for this channel
+	emiosHw->UCDIS.R |= (1 << Channel);
+#endif
     /*
      * PWM052: The function Pwm_DeInit shall disable all notifications.
      */
@@ -567,11 +593,11 @@ void Pwm_DeInit() {
 	}
 
 	// Disable module
-	#if defined(CFG_MPC5516) || defined(CFG_MPC5567)
-		EMIOS.MCR.B.MDIS = 1;
-    #elif defined(CFG_MPC560X)
+    #if defined(CFG_MPC560X)
 		EMIOS_0.MCR.B.MDIS = 1;
 		EMIOS_1.MCR.B.MDIS = 1;
+	#else
+		EMIOS.MCR.B.MDIS = 1;
 	#endif
 
 	Pwm_ModuleState = PWM_STATE_UNINITIALIZED;

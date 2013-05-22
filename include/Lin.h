@@ -23,13 +23,15 @@
 #ifndef LIN_H_
 #define LIN_H_
 
+#define LIN_MODULE_ID            MODULE_ID_LIN
+#define LIN_VENDOR_ID            VENDOR_ID_ARCCORE
 
 #define LIN_SW_MAJOR_VERSION    1
 #define LIN_SW_MINOR_VERSION   	0
 #define LIN_SW_PATCH_VERSION    0
-#define LIN_AR_MAJOR_VERSION    1
-#define LIN_AR_MINOR_VERSION    2
-#define LIN_AR_PATCH_VERSION    1
+#define LIN_AR_MAJOR_VERSION    3
+#define LIN_AR_MINOR_VERSION    1
+#define LIN_AR_PATCH_VERSION    5
 
 #include "Std_Types.h"
 #include "Lin_Cfg.h"

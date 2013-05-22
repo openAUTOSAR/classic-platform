@@ -180,9 +180,9 @@
 #  define ASM_SECTION(_x)		.section _x,4,"r"
 #elif defined(__DCC__)
 #  if defined(CFG_VLE)
-#    define ASM_SECTION_TEXT(_x) .section .text_vle,x
+#    define ASM_SECTION_TEXT(_x) .section _x,4,"rw"
 #  else
-#    define ASM_SECTION_TEXT(_x) .section .text,x
+#    define ASM_SECTION_TEXT(_x) .section _x,4,"rw"
 #  endif
 #  define ASM_SECTION(_x)		.section _x,4,"r"
 #endif

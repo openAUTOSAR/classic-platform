@@ -23,12 +23,15 @@
 #ifndef LINSM_H_
 #define LINSM_H_
 
+#define LINSM_MODULE_ID            MODULE_ID_LINSM
+#define LINSM_VENDOR_ID            VENDOR_ID_ARCCORE
+
 #define LINSM_SW_MAJOR_VERSION    1
 #define LINSM_SW_MINOR_VERSION    0
 #define LINSM_SW_PATCH_VERSION    0
-#define LINSM_AR_MAJOR_VERSION    1
-#define LINSM_AR_MINOR_VERSION    0
-#define LINSM_AR_PATCH_VERSION    1
+#define LINSM_AR_MAJOR_VERSION    3
+#define LINSM_AR_MINOR_VERSION    1
+#define LINSM_AR_PATCH_VERSION    5
 
 #include "ComStack_Types.h"
 #include "Std_Types.h"

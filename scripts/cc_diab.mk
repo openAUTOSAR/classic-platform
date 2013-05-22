@@ -34,8 +34,9 @@ DIAB_BIN = $(DIAB_COMPILE)/bin
 
 CC	= 	$(DIAB_BIN)/dcc	
 
-cflags-$(CFG_OPT_RELEASE)        += -g3
-cflags-$(CFG_OPT_DEBUG)        += -g2
+cflags-$(CFG_OPT_RELEASE) += -g3
+cflags-$(CFG_OPT_DEBUG)   += -g2
+cflags-$(CFG_OPT_FLAGS)   += $(SELECT_OPT)
 
 
 ifeq ($(DIAB_TARGET),)
@@ -95,6 +96,8 @@ CFLAGS_diab_Port.o += -ei4550
 CFLAGS = $(cflags-y) $(cflags-yy) $(CFLAGS_diab_$@)
 
 CCOUT 		= -o $@ 
+
+SELECT_CLIB=CLIB_DIAB
 
 # ---------------------------------------------------------------------------
 # Preprocessor

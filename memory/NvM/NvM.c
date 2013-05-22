@@ -972,7 +972,7 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 						case MEMIF_BLOCK_INCONSISTENT:
 							/* @req 3.1.5/NVM360 but is overridden by NVM172 (implicit revovery) */
 							admPtr->ErrorStatus = NVM_REQ_INTEGRITY_FAILED;
-							DEM_REPORTERRORSTATUS(NVM_E_REQ_INTEGRITY_FAILED,DEM_EVENT_STATUS_FAILED);
+							DEM_REPORTERRORSTATUS(NVM_E_INTEGRITY_FAILED,DEM_EVENT_STATUS_FAILED);
 							break;
 						case MEMIF_JOB_FAILED:
 							/* @req 3.1.5/NVM361 */
@@ -1000,17 +1000,15 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 	{
 		uint16 crc16;
 		uint32 crc32;
-		void *ramData;
 
-		if( bPtr->RamBlockDataAddress == NULL ) {
-			/* If we have no buffer to work with something is very very wrong */
-			NVM_ASSERT(dataPtr != NULL );
-			ramData = dataPtr;
-		} else {
-			ramData = bPtr->RamBlockDataAddress;
-		}
-
-//		admPtr->savedDataPtr = ramData;
+		/* bPtr->RamBlockDataAddress dataPtr
+		 *        NULL                NULL 		 #BAD
+		 *        NULL 				  data 		 Use dataPtr
+		 *        data				  NULL       Use RamBlockDataAddress
+		 *        data 				  data 		 Use dataPtr
+		 * */
+		void *ramData = ( dataPtr != NULL ) ? dataPtr : bPtr->RamBlockDataAddress;
+		NVM_ASSERT( ramData != NULL  );
 
 		/* Calculate RAM CRC checksum */
 		if( bPtr->BlockCRCType == NVM_CRC16 ) {
@@ -1454,7 +1452,7 @@ Std_ReturnType NvM_InvalidateNvBlock( NvM_BlockIdType blockId  )
     if( admPtr->BlockWriteProtected || admPtr->DataIndex >= bPtr->NvBlockNum) {
         /* If write protected or ROM block in dataset, return E_NOT_OK */
 #if NVM_AR_VERSION >= 40300
-        DEM_REPORTERRORSTATUS(NVM_E_REQ_INTEGRITY_FAILED, DEM_EVENT_STATUS_FAILED);
+        DEM_REPORTERRORSTATUS(NVM_E_INTEGRITY_FAILED, DEM_EVENT_STATUS_FAILED);
 #endif
         /* @req 4.0.3|3.1.5/NVM027 */
         DET_REPORTERROR(MODULE_ID_NVM, NVM_INVALIDATENV_BLOCK_ID,

@@ -31,8 +31,9 @@ cflags-y 		+= -cwd explicit
 cflags-y 		+= -msgstyle gcc
 cflags-y 		+= -maxerrors 10
 cflags-y 		+= -maxwarnings 10
-cflags-$(CFG_OPT_RELEASE)        += -opt level=2
-cflags-$(CFG_OPT_DEBUG)        += -opt off 
+cflags-$(CFG_OPT_RELEASE) += -opt level=2
+cflags-$(CFG_OPT_DEBUG)   += -opt off 
+cflags-$(CFG_OPT_FLAGS)   += $(SELECT_OPT)
 
 # Generate dependencies, 
 # Should be -MMD here but it only gives the *.c files (for some reason
@@ -82,6 +83,8 @@ CFLAGS_cw_SchM.o +=  -W=nounused
 CFLAGS = $(cflags-y) $(cflags-yy) $(CFLAGS_cw_$@)
 
 CCOUT 		= -o $@ 
+
+SELECT_CLIB?=CLIB_CW
 
 # ---------------------------------------------------------------------------
 # Preprocessor
@@ -148,6 +151,8 @@ ldflags-y += -rambuffer 0x0
 #ldflags-y += -nodefaults
 ldflags-y += -gdwarf-2
 ldflags-y += -m _start
+ldflags-y += -nostdlib
+ldflags-y += -code_merging all
 TE = elf
 ldflags-y += -map $(subst .$(TE),.map, $@)
 

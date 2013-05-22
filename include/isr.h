@@ -225,27 +225,9 @@ void Os_Isr_cm3( int16_t vector );
 void TailChaining(void *stack);
 #endif
 
-static inline const OsIsrVarType *Os_IsrGet( ISRType id ) {
-#if OS_ISR_MAX_CNT != 0
-	return &Os_IsrVarList[id];
-#else
-	(void)id;
-	return NULL;
-#endif
-}
+const OsIsrVarType *Os_IsrGet( ISRType id );
+ApplicationType Os_IsrGetApplicationOwner( ISRType id );
 
-static inline ApplicationType Os_IsrGetApplicationOwner( ISRType id ) {
-	ApplicationType rv = INVALID_OSAPPLICATION;
-
-#if (OS_ISR_CNT!=0)
-	if( id < Os_Sys.isrCnt ) {
-		rv = Os_IsrGet(id)->constPtr->appOwner;
-	}
-#else
-	(void)id;
-#endif
-	return rv;
-}
 
 static inline void Os_IsrResourceAdd( OsResourceType *rPtr, OsIsrVarType *isrPtr) {
 	/* Save old task prio in resource and set new task prio */

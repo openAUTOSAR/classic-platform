@@ -139,7 +139,7 @@ static uint32 EcuM_World_go_sleep_state_timeout = 0;
 
 #ifdef CFG_ECUM_USE_SERVICE_COMPONENT
 /** @req EcuM2749 */
-static Rte_ModeType_EcuM_Mode currentMode;
+static Rte_ModeType_EcuM_Mode currentMode = RTE_MODE_EcuM_Mode_STARTUP;
 
 void set_current_state(EcuM_StateType state) {
 	/* Update the state */

@@ -101,11 +101,13 @@ endif
 ###############################################################################
 
 # set debug optimization level as default
-ifeq ($(SELECT_OPT),)
-SELECT_OPT=OPT_DEBUG
-endif
+SELECT_OPT?=OPT_DEBUG
 
-$(eval CFG_$(SELECT_OPT)=y)
+ifeq ($(findstring OPT_,$(SELECT_OPT)),OPT_)
+  $(eval CFG_$(SELECT_OPT)=y)
+else
+  CFG_OPT_FLAGS=y
+endif
 
 ARCH_PATH-y = arch/$(ARCH_FAM)/$(ARCH)
 

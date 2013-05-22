@@ -16,6 +16,7 @@
 /* ----------------------------[includes]------------------------------------*/
 
 #include <stdlib.h>
+#include <string.h>
 #include "Os.h"
 
 #include "application.h"
@@ -25,6 +26,7 @@
 #include "arc.h"
 #include "arch.h"
 #include <string.h>
+
 
 /* ----------------------------[private define]------------------------------*/
 /* ----------------------------[private macro]-------------------------------*/
@@ -952,4 +954,17 @@ StatusType Schedule( void ) {
 
 	OS_STD_END(OSServiceId_Schedule);
 }
+
+
+#if TASK_NAME_SIZE != OS_ARC_PCB_NAME_SIZE
+#error Sized does not match. Correct it
+#endif
+
+void Os_Arc_GetTaskInfo( Arc_PcbType *pcbPtr, TaskType taskId ) {
+	OsTaskVarType *taskPtr = Os_TaskGet(taskId);
+
+	strncpy(pcbPtr->name,taskPtr->constPtr->name,TASK_NAME_SIZE);
+}
+
+
 

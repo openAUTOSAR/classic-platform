@@ -56,6 +56,11 @@ extern DeviceSerialType T32_Device;
 #if defined(USE_TTY_UDE)
 extern DeviceSerialType UDE_Device;
 #endif
+#if defined(USE_RAMLOG)
+extern DeviceSerialType Ramlog_Device;
+#endif
+
+
 
 DeviceSerialType *deviceList[] = {
 #if defined(USE_TTY_T32)
@@ -63,6 +68,9 @@ DeviceSerialType *deviceList[] = {
 #endif
 #if defined(USE_TTY_UDE)
 		&UDE_Device,
+#endif
+#if defined(USE_RAMLOG)
+		&Ramlog_Device,
 #endif
 };
 
@@ -77,6 +85,9 @@ DeviceSerialType *fileList[] = {
 	[0] = &UDE_Device,		/* stdin  */
 	[1] = &UDE_Device,		/* stdout */
 	[2] = &UDE_Device,		/* stderr */
+#endif
+#if defined(USE_RAMLOG)
+	&Ramlog_Device,			/* "stdout" */
 #endif
 };
 
@@ -299,6 +310,13 @@ void _exit( int status ) {
 
 #if defined(__CWCC__)
 
+void exit(int exit ) {
+	(void)exit;
+}
+
+#endif
+#if 0
+
 #include "../../MSL_Common_Embedded/Include/UART.h"
 
 UARTError InitializeUART(UARTBaudRate baudRate)
@@ -308,25 +326,28 @@ UARTError InitializeUART(UARTBaudRate baudRate)
 }
 
 UARTError ReadUARTN(void* bytes, unsigned long length) {
-
+	(void)bytes;
+	(void)length;
+	return 0;
 }
 
 UARTError WriteUART1(char c) {
-
+	(void)c;
+	return 0;
 }
 
 UARTError WriteUARTN(const void* buf, unsigned long cnt)
 {
-
+	(void)buf;
+	(void)cnt;
+	return 0;
 }
 
 UARTError ReadUART1(char* c) {
-
+	(void)c;
+	return 0;
 }
 
-void exit(int exit ) {
-	(void)exit;
-}
 
 #endif
 

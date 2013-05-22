@@ -49,6 +49,8 @@ int	fputc(int, FILE *);
 int	fputs(const char *, FILE *);
 int puts(const char *s);
 
+FILE *fopen(const char *filename, const char *mode);
+
 #define puts(_x)	fputs(_x,stdout)
 
 #define getc(_x)		fgetc(_x)

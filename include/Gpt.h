@@ -37,7 +37,18 @@
 #define GPT_H_
 
 #include "Std_Types.h"
+#include "Modules.h"
 
+#define GPT_VENDOR_ID             VENDOR_ID_ARCCORE
+#define GPT_MODULE_ID         		 1
+
+#define GPT_SW_MAJOR_VERSION	1
+#define GPT_SW_MINOR_VERSION   	0
+#define GPT_SW_PATCH_VERSION	1
+
+#define GPT_AR_MAJOR_VERSION     3
+#define GPT_AR_MINOR_VERSION     1
+#define GPT_AR_PATCH_VERSION     5
 
 /** @name Error Codes */
 //@{
@@ -85,17 +96,6 @@ typedef enum
 
 /** Channel id type */
 typedef uint8_t Gpt_ChannelType;
-
-#define GPT_VENDOR_ID             1
-#define GPT_MODULE_ID         		 1
-
-#define GPT_SW_MAJOR_VERSION	1
-#define GPT_SW_MINOR_VERSION   	0
-#define GPT_SW_PATCH_VERSION	1
-
-#define GPT_AR_MAJOR_VERSION     2
-#define GPT_AR_MINOR_VERSION     2
-#define GPT_AR_PATCH_VERSION     1
 
 /* Needs Gpt_ConfigType */
 #include "Gpt_Cfg.h"		/* @req 4.0.3/GPT259 */

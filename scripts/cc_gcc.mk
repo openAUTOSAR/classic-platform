@@ -24,11 +24,13 @@ GCC_V340 = $(call gcc_version,340)
 # CCFLAGS - compile flags
 
 CC	= 	$(CROSS_COMPILE)gcc
+
 cflags-$(CFG_OPT_RELEASE) += -O3
-cflags-$(CFG_OPT_DEBUG) += -g -O0
-cflags-$(CFG_OPT_SIZE) += -g -Os
+cflags-$(CFG_OPT_DEBUG)   += -g -O0
+cflags-$(CFG_OPT_SIZE)    += -g -Os
+cflags-$(CFG_OPT_FLAGS)   += $(SELECT_OPT)
 
-
+ 
 # Remove sections if needed.. may be problems with other compilers here.
 #cflags-y += -ffunction-sections
 
@@ -94,6 +96,12 @@ text_chunk := $(subst \,/,$(shell touch gcc_path_probe.c; $(CC) -v -c gcc_path_p
 cc_inc_path := $(realpath $(text_chunk))
 libpath-y += -L$(lib_lib_path)
 libpath-y += -L$(gcc_lib_path)
+
+ifeq ($(CC),gcc)
+SELECT_CLIB?=CLIB_NATIVE
+else
+SELECT_CLIB?=CLIB_NEWLIB
+endif
 
 # ---------------------------------------------------------------------------
 # Linker
