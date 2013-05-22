@@ -1000,17 +1000,15 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 	{
 		uint16 crc16;
 		uint32 crc32;
-		void *ramData;
 
-		if( bPtr->RamBlockDataAddress == NULL ) {
-			/* If we have no buffer to work with something is very very wrong */
-			NVM_ASSERT(dataPtr != NULL );
-			ramData = dataPtr;
-		} else {
-			ramData = bPtr->RamBlockDataAddress;
-		}
-
-//		admPtr->savedDataPtr = ramData;
+		/* bPtr->RamBlockDataAddress dataPtr
+		 *        NULL                NULL 		 #BAD
+		 *        NULL 				  data 		 Use dataPtr
+		 *        data				  NULL       Use RamBlockDataAddress
+		 *        data 				  data 		 Use dataPtr
+		 * */
+		void *ramData = ( dataPtr != NULL ) ? dataPtr : bPtr->RamBlockDataAddress;
+		NVM_ASSERT( ramData != NULL  );
 
 		/* Calculate RAM CRC checksum */
 		if( bPtr->BlockCRCType == NVM_CRC16 ) {
