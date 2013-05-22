@@ -300,7 +300,7 @@ Std_ReturnType Eep_Read(Eep_AddressType EepromAddress, uint8 *TargetAddressPtr, 
 
 	job->initialOp = true;
 	job->currSeq = CFG_SPI_P()->EepReadSequence;
-	job->eepAddr = EepromAddress;
+	job->eepAddr = EepromAddress + Eep_Global.config->EepBaseAddress;
 	job->targetAddr = TargetAddressPtr;
 	job->left = Length;
 
@@ -346,7 +346,7 @@ Std_ReturnType Eep_Write(Eep_AddressType EepromAddress, const uint8* DataBufferP
 	job->initialOp = true;
 	job->currSeq = CFG_SPI_P()->EepWriteSequence;
 	job->pageSize = Eep_Global.config->EepPageSize;
-	job->eepAddr = EepromAddress;
+	job->eepAddr = EepromAddress  + Eep_Global.config->EepBaseAddress;
 	job->targetAddr = (uint8 *) DataBufferPtr;
 	job->left = Length;
 
@@ -380,7 +380,7 @@ Std_ReturnType Eep_Compare(Eep_AddressType EepromAddress, uint8 *TargetAddressPt
 	job->initialOp = true;
 	job->currSeq = CFG_SPI_P()->EepReadSequence;
 	job->pageSize = Eep_Global.config->EepPageSize; // Not relevant to compare/read operations, but set anyways.
-	job->eepAddr = EepromAddress;
+	job->eepAddr = EepromAddress  + Eep_Global.config->EepBaseAddress;
 	job->targetAddr = TargetAddressPtr;
 	job->left = Length;
 
