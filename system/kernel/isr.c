@@ -26,6 +26,7 @@
 #include "sys.h"
 #include "isr.h"
 #include "irq.h"
+#include "arc.h"
 
 #define ILL_VECTOR	0xff
 
@@ -439,3 +440,13 @@ void *Os_Isr( void *stack, int16_t vector ) {
 
 	return stack;
 }
+
+void Os_Arc_GetIsrInfo( Arc_PcbType *pcbPtr, ISRType isrId ) {
+	const OsIsrVarType *isrPtr = Os_IsrGet(isrId);
+
+	if( isrPtr != NULL ) {
+		strncpy(pcbPtr->name,Os_IsrGet(isrId)->constPtr->name,OS_ARC_PCB_NAME_SIZE);
+	}
+
+}
+
