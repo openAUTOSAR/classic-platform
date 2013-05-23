@@ -55,8 +55,8 @@ cflags-y 		+= -std=gnu99
 cflags-y 		+= -MMD
 
 # Warnings
-cflags-y          += -Wall
-cflags-y          += -Wextra
+cflags-y           += -Wall
+cflags-$(GCC_V340) += -Wextra
 #cflags-y          += -Wstrict-prototypes
 #cflags-y          += -Wold-style-definition
 #cflags-y          += -Wmissing-prototypes
