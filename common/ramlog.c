@@ -55,7 +55,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include "ramlog.h"
+#include "Ramlog.h"
 #include "MemMap.h"
 
 
