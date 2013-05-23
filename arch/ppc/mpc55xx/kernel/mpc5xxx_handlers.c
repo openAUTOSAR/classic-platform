@@ -140,6 +140,27 @@ static uint32_t handleException( uint32_t exception , uint32_t spr ) {
 	return rv;
 }
 
+uint32_t Mpc5xxx_Exception_IVOR0( void  );
+uint32_t Mpc5xxx_Exception_IVOR1( void  );
+uint32_t Mpc5xxx_Exception_IVOR2( void  );
+uint32_t Mpc5xxx_Exception_IVOR3( void  );
+uint32_t Mpc5xxx_Exception_IVOR4( void  );
+uint32_t Mpc5xxx_Exception_IVOR5( void  );
+uint32_t Mpc5xxx_Exception_IVOR6( void  );
+uint32_t Mpc5xxx_Exception_IVOR7( void  );
+uint32_t Mpc5xxx_Exception_IVOR8( void  );
+uint32_t Mpc5xxx_Exception_IVOR9( void  );
+uint32_t Mpc5xxx_Exception_IVOR10( void  );
+uint32_t Mpc5xxx_Exception_IVOR11( void  );
+uint32_t Mpc5xxx_Exception_IVOR12( void  );
+uint32_t Mpc5xxx_Exception_IVOR13( void  );
+uint32_t Mpc5xxx_Exception_IVOR14( void  );
+#if defined(CFG_SPE)
+uint32_t Mpc5xxx_Exception_IVOR32( void  );
+uint32_t Mpc5xxx_Exception_IVOR33( void  );
+uint32_t Mpc5xxx_Exception_IVOR34( void  );
+#endif
+
 
 /* Critical Input:  CSRR0, CSRR1 */
 uint32_t Mpc5xxx_Exception_IVOR0( void  ) {

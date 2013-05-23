@@ -382,12 +382,6 @@ OsTaskVarType *Os_TaskGetTop( void ){
  *    + No need to remove the running process from ready queue
  */
 
-OsTaskVarType *Os_FindTopPrioTask( void ) {
-
-
-	return NULL;
-}
-
 /**
  * Tries to Dispatch.
  *

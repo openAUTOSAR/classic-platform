@@ -188,7 +188,7 @@ asm volatile unsigned long get_msr()
   mfmsr r3
 }
 #else
-static inline unsigned long get_msr() {
+static inline unsigned long get_msr( void ) {
 	uint32 msr;
 	asm volatile("mfmsr %[msr]":[msr] "=r" (msr ) );
 	return msr;
@@ -450,5 +450,8 @@ static inline unsigned int mode_to_kernel( void ) {
 
 void Cache_Invalidate( void );
 void Cache_EnableU( void );
+void Cache_EnableD( void );
+void Cache_EnableI( void );
+
 
 #endif /* CPU_H */

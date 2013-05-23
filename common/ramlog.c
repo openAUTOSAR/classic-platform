@@ -55,6 +55,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include "ramlog.h"
 #include "MemMap.h"
 
 
@@ -111,7 +112,7 @@ void ramlog_puts( char *str ) {
  *
  * @param format The format string.
  */
-void ramlog_printf( const char *format, ... ) {
+int ramlog_printf( const char *format, ... ) {
 
 	// Fast and ugly ramlog support.
 	volatile int rv;
@@ -120,13 +121,14 @@ void ramlog_printf( const char *format, ... ) {
 
 	rv = vfprintf(RAMLOG_FILENO, format, args);
 	va_end(args);
+	return rv;
 }
 
 
 /**
  * Initialize the ramlog. Must be called before any other ramlog functions.
  */
-void ramlog_init()
+void ramlog_init( void )
 {
 
 #if defined(CFG_RAMLOG_SESSION)

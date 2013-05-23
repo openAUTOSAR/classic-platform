@@ -56,8 +56,10 @@
 #if defined(__ICCHCS12__)
 #define restrict
 #define DECLARE_WEAK
+#define __simple __simple
 #else
 #define DECLARE_WEAK			__attribute__ ((weak))
+#define __simple
 #endif
 
 /* Does this really work on all compilers.... */

@@ -20,6 +20,7 @@
 #include "internal.h"
 #include "task_i.h"
 #include "sys.h"
+#include "arc.h"
 
 int Os_ArcTest_GetTaskActivationLimit( TaskType TaskId ) {
 

@@ -281,7 +281,7 @@ int execve(const char *path, char * const argv[], char * const envp[] ) {
   	return -1;
 }
 
-pid_t fork() {
+pid_t fork( void ) {
   errno=EAGAIN;
   return -1;
 }

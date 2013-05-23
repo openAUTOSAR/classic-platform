@@ -182,7 +182,7 @@ void Os_IsrEnable( ISRType isr) {
  */
 
 
-
+#if 0
 /**
  * Before we have proper editor for ISR2 use this function to add resources
  * to an ISR2
@@ -197,6 +197,7 @@ StatusType Os_IsrAddResource( TaskType isr, ResourceType resource ) {
 
 	return E_OK;
 }
+#endif
 
 #if defined(CFG_ARM_CM3)
 extern void Irq_EOI2( void );

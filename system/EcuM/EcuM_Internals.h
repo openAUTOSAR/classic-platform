@@ -90,12 +90,6 @@ void set_current_state(EcuM_StateType state);
 #define set_current_state(state) EcuM_World.current_state = (state)
 #endif
 
-void EcuM_AL_DriverInitZero(void);
-EcuM_ConfigType* EcuM_DeterminePbConfiguration(void);
-void EcuM_AL_DriverInitOne(const EcuM_ConfigType* ConfigPtr);
-void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr);
-void EcuM_AL_DriverInitThree(const EcuM_ConfigType* ConfigPtr);
-
 
 //#if defined(USE_LDEBUG_PRINTF)
 char *GetMainStateAsString( EcuM_StateType state );

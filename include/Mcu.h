@@ -168,7 +168,7 @@ extern const Mcu_ConfigType McuConfigData[];
 
 
 void Mcu_Init( const Mcu_ConfigType *configPtr );
-void Mcu_DeInit();
+void Mcu_DeInit( void );
 Std_ReturnType Mcu_InitRamSection( const Mcu_RamSectionType RamSection );
 Std_ReturnType Mcu_InitClock( const Mcu_ClockType ClockSetting );
 void Mcu_DistributePllClock( void );
@@ -186,7 +186,7 @@ void Mcu_SetMode( const Mcu_ModeType McuMode );
 
 /* ArcCore extensions */
 
-void Irq_InstallVector(void (*func)(), IrqType vector, uint8_t priority, Cpu_t cpu );
+void Irq_InstallVector(void (*func)(void), IrqType vector, uint8_t priority, Cpu_t cpu );
 void Irq_GenerateSoftInt( IrqType vector );
 uint8_t Irq_GetCurrentPriority( Cpu_t cpu);
 uint32_t McuE_GetSystemClock( void );

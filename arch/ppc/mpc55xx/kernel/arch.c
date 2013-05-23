@@ -23,6 +23,8 @@
 #include "mpc55xx.h"
 #include "arch_stack.h"
 #include "arch_offset.h"
+#include "arch.h"
+
 
 #define USE_LDEBUG_PRINTF
 #include "debug.h"
@@ -44,8 +46,8 @@
  * @param errFramePtr   Pointer to extra information about the error, if any.
  * @param excFramePtr   Pointer to the exception frame, that caused the error.
  */
-void Os_ArchPanic( uint32_t err, void *errFramePtr , Os_ExceptionFrameType *excFramePtr) {
-	(void)excFramePtr;
+void Os_ArchPanic( uint32_t err, void *errFramePtr , void *excFramePtr) {
+	(void)excFramePtr;  // Really of type Os_ExceptionFrameType
 	(void)errFramePtr;
 	switch(err) {
 	case OS_ERR_BAD_CONTEXT:

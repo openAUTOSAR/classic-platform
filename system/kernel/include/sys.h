@@ -132,7 +132,7 @@ typedef struct Os_Sys {
 
 extern Os_SysType Os_Sys;
 
-static inline _Bool Os_SchedulerResourceIsFree() {
+static inline _Bool Os_SchedulerResourceIsFree( void ) {
 	return (Os_Sys.resScheduler.owner == NO_TASK_OWNER );
 }
 

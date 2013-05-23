@@ -39,6 +39,8 @@
 #endif
 
 #if defined(__GNUC__)
+void  oil_foo(void);
+
 void  oil_foo(void) {
 #endif
 

@@ -74,13 +74,16 @@
 /* ----------------------------[private typedef]-----------------------------*/
 
 
-typedef void (*vfunc_t)();
+typedef void (*vfunc_t)(void);
 
 
 /* ----------------------------[private function prototypes]-----------------*/
 /* ----------------------------[private variables]---------------------------*/
 /* ----------------------------[private functions]---------------------------*/
 /* ----------------------------[public functions]----------------------------*/
+void Mcu_LossOfLock( void  );
+void Mcu_LossOfClock( void  );
+
 
 /* Function declarations. */
 static void Mcu_ConfigureFlash(void);
@@ -423,7 +426,7 @@ void Mcu_Init(const Mcu_ConfigType *configPtr)
 
 //-------------------------------------------------------------------
 
-void Mcu_DeInit()
+void Mcu_DeInit( void )
 {
 	Mcu_Global.initRun = FALSE; // Very simple Deinit. Should we do more?
 }

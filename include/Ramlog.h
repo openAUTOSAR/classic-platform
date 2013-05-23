@@ -60,5 +60,7 @@ int ramlog_printf(const char *format, ...);
 #define ramlog_printf(format,...)
 #endif
 
+void ramlog_init( void );
+
 #endif /* RAMLOG_H_ */
 

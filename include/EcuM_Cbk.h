@@ -26,6 +26,8 @@
 
 #include "EcuM.h"
 
+struct EcuM_ConfigS;
+
 typedef enum
 {
 	ECUM_WKACT_RUN = 0,       /**< Initialization into RUN state */
@@ -57,6 +59,13 @@ uint8 EcuM_CheckRamHash(void);
 
 void EcuM_AL_SwitchOff(void);
 void EcuM_AL_DriverRestart(void);
+void EcuM_AL_DriverInitZero(void);
+
+struct EcuM_ConfigS* EcuM_DeterminePbConfiguration(void);
+void EcuM_AL_DriverInitOne(const struct EcuM_ConfigS* ConfigPtr);
+void EcuM_AL_DriverInitTwo(const struct EcuM_ConfigS* ConfigPtr);
+void EcuM_AL_DriverInitThree(const struct EcuM_ConfigS* ConfigPtr);
+
 
 void EcuM_StartWakeupSources(EcuM_WakeupSourceType wakeupSource);
 void EcuM_CheckValidation(EcuM_WakeupSourceType wakeupSource);

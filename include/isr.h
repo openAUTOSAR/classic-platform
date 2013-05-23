@@ -175,7 +175,7 @@ typedef struct OsIsrConst {
 	int16_t			vector;
 	int16_t 		type;
 	int16_t			priority;
-	void 			(*entry)();
+	void 			(*entry)( void );
 	uint32_t		appOwner;
 	/* Mapped against OsIsrResourceRef */
 	uint32_t		resourceMask;
