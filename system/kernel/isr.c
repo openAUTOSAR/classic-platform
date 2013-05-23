@@ -83,7 +83,7 @@ void Os_IsrInit( void ) {
 
 	Os_Sys.isrCnt = OS_ISR_CNT;
 	/* Probably something smarter, but I cant figure out what */
-	memset(&Os_VectorToIsr[OS_ISR_CNT],ILL_VECTOR,NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS-OS_ISR_CNT);
+	memset(Os_VectorToIsr,ILL_VECTOR,NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS);
 
 #if OS_ISR_CNT != 0
 	/* Attach the interrupts */
