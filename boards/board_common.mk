@@ -344,8 +344,9 @@ obj-$(CFG_SHELL)+=shell.o
 obj-$(CFG_OS_PERF)+=perf.o
 def-$(CFG_OS_PERF)+=CFG_OS_ISR_HOOKS
 
-obj-$(USE_TTY_T32) += serial_dbg_t32.o  
-obj-$(USE_TTY_UDE) += serial_dbg_ude.o
+obj-$(USE_TTY_T32)     += serial_dbg_t32.o  
+obj-$(USE_TTY_UDE)     += serial_dbg_ude.o
+obj-$(USE_TTY_WINIDEA) += serial_dbg_winidea.o
 
 ifeq ($(SELECT_CLIB),CLIB_NATIVE)
   # Just use native clib 

@@ -28,6 +28,8 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "Std_Types.h"
+#include "Memmap.h"
 #include "device_serial.h"
 #include "sys/queue.h"
 
@@ -71,7 +73,7 @@ DeviceSerialType UDE_Device = {
 };
 
 
-TJtagSimioAccess g_JtagSimioAccess = { .dwCtrl = MPC55XX_SIMIO_HOSTAVAIL };
+SECTION_RAM_NO_CACHE TJtagSimioAccess g_JtagSimioAccess = { .dwCtrl = MPC55XX_SIMIO_HOSTAVAIL };
 
 /* ----------------------------[private functions]---------------------------*/
 /* ----------------------------[public functions]----------------------------*/
@@ -177,9 +179,14 @@ static int UDE_Read( uint8_t *buffer, size_t nbytes )
 		*buffer++ = cTemp;
 		index++;
 	}
+	return nbytes;
 }
 
 static int UDE_Open( const char *path, int oflag, int mode ) {
+	(void)path;
+	(void)oflag;
+	(void)mode;
+
 	return 0;
 }
 

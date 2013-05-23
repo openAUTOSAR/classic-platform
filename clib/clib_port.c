@@ -56,6 +56,10 @@ extern DeviceSerialType T32_Device;
 #if defined(USE_TTY_UDE)
 extern DeviceSerialType UDE_Device;
 #endif
+#if defined(USE_TTY_WINIDEA)
+extern DeviceSerialType WinIdea_Device;
+#endif
+
 #if defined(USE_RAMLOG)
 extern DeviceSerialType Ramlog_Device;
 #endif
@@ -72,6 +76,9 @@ DeviceSerialType *deviceList[] = {
 #if defined(USE_RAMLOG)
 		&Ramlog_Device,
 #endif
+#if defined(USE_TTY_WINIDEA)
+		&WinIdea_Device,
+#endif
 };
 
 
@@ -85,7 +92,13 @@ DeviceSerialType *fileList[] = {
 	[0] = &UDE_Device,		/* stdin  */
 	[1] = &UDE_Device,		/* stdout */
 	[2] = &UDE_Device,		/* stderr */
+#elif defined(USE_TTY_UDE)
+	[0] = &WinIdea_Device,		/* stdin  */
+	[1] = &WinIdea_Device,		/* stdout */
+	[2] = &WinIdea_Device,		/* stderr */
 #endif
+
+
 #if defined(USE_RAMLOG)
 	&Ramlog_Device,			/* "stdout" */
 #endif

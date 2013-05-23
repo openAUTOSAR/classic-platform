@@ -227,6 +227,8 @@ int vfiprintf(FILE *file, const char *format, va_list ap) __attribute__ ((alias(
  * @return
  */
 static inline int emitChar( FILE *file, char **buf, char c, int *left ) {
+	(void)file;
+
 	if( (*left) == 1 ) {
 		return 1;
 	}

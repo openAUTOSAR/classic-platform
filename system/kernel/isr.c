@@ -39,7 +39,7 @@ extern const OsIsrConstType Os_IsrConstList[OS_ISR_CNT];
 OsIsrVarType Os_IsrVarList[OS_ISR_MAX_CNT];
 #endif
 
-SECTION_BALIGN(0x10) uint8_t Os_IsrStack[OS_INTERRUPT_STACK_SIZE];
+uint8_t Os_IsrStack[OS_INTERRUPT_STACK_SIZE] __balign(0x100);
 
 // TODO: remove. Make soft links or whatever
 #if defined(CFG_ARM_CM3)

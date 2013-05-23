@@ -51,6 +51,13 @@ int puts(const char *s);
 
 FILE *fopen(const char *filename, const char *mode);
 
+/* Low level file I/O */
+int open(const char *name, int flags, int mode);
+int close( int fd );
+int read( int fd, void *buf, size_t nbytes );
+int write(  int fd, const void *buf, size_t nbytes);
+
+
 #define puts(_x)	fputs(_x,stdout)
 
 #define getc(_x)		fgetc(_x)
