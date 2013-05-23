@@ -57,14 +57,14 @@ cflags-y 		+= -MMD
 # Warnings
 cflags-y           += -Wall
 cflags-$(GCC_V340) += -Wextra
-#cflags-y          += -Wstrict-prototypes
-#cflags-y          += -Wold-style-definition
-#cflags-y          += -Wmissing-prototypes
-#cflags-y          += -Wmissing-declarations
-#cflags-y          += -Wredundant-decls
-#cflags-y          += -Wpointer-arith
-#cflags-y          += -Wpadded
-#cflags-y          += -Wconversion
+#cflags-y          += -Wstrict-prototypes      # 3.4.6
+#cflags-y          += -Wold-style-definition   # 3.4.6
+#cflags-y          += -Wmissing-prototypes     # 3.4.6
+#cflags-y          += -Wmissing-declarations   # 3.4.6
+#cflags-y          += -Wredundant-decls        # 3.4.6
+#cflags-y          += -Wpointer-arith		   # 3.4.6	
+#cflags-y          += -Wpadded                 # 3.4.6
+#cflags-y          += -Wconversion             # 3.4.6 but not usable until 4.3.0
 
 #cflags-$(GCC_V340)+= -Wextra
 #cflags-$(GCC_V430)+= -Wconversion
