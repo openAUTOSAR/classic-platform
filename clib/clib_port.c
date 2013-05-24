@@ -303,9 +303,12 @@ off_t lseek( int fd, off_t offset,int whence)
 }
 #endif
 
+
+#if defined(__GNUC__)
 void __init( void )
 {
 }
+#endif
 
 
 #if defined(CFG_ARM)
