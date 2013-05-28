@@ -103,6 +103,10 @@ else
 SELECT_CLIB?=CLIB_NEWLIB
 endif
 
+ifeq ($(SELECT_CLIB),CLIB_NEWLIB)
+CFG_ARC_CLIB?=y
+endif
+
 # ---------------------------------------------------------------------------
 # Linker
 #

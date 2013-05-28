@@ -98,6 +98,7 @@ CFLAGS = $(cflags-y) $(cflags-yy) $(CFLAGS_diab_$@)
 CCOUT 		= -o $@ 
 
 SELECT_CLIB=CLIB_DIAB
+CFG_ARC_CLIB?=y
 
 # ---------------------------------------------------------------------------
 # Preprocessor

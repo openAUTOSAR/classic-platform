@@ -344,18 +344,16 @@ obj-$(CFG_SHELL)+=shell.o
 obj-$(CFG_OS_PERF)+=perf.o
 def-$(CFG_OS_PERF)+=CFG_OS_ISR_HOOKS
 
-obj-$(USE_TTY_T32)     += serial_dbg_t32.o  
-obj-$(USE_TTY_UDE)     += serial_dbg_ude.o
-obj-$(USE_TTY_WINIDEA) += serial_dbg_winidea.o
 
-ifeq ($(SELECT_CLIB),CLIB_NATIVE)
-  # Just use native clib 
-  
-else
-
-  # Override native C-library with ArcCore tweaks.
+ifeq ($(CFG_ARC_CLIB),y)
+  # Just use native clib
+    # Override native C-library with ArcCore tweaks.
   inc-system-y += $(ROOTDIR)/clib
   vpath-y      += $(ROOTDIR)/clib
+
+  obj-$(USE_TTY_T32)     += serial_dbg_t32.o  
+  obj-$(USE_TTY_UDE)     += serial_dbg_ude.o
+  obj-$(USE_TTY_WINIDEA) += serial_dbg_winidea.o
 
   obj-y += clib_port.o
   obj-y += clib.o
@@ -363,6 +361,17 @@ else
   obj-y += xtoa.o
   obj-y-cw += strtok_r.o
   obj-y-diab += strtok_r.o  
+else
+  ifeq ($(SELECT_CLIB),CLIB_IAR)
+    # This is not good, but don't know what to do right now....
+    obj-y += iar_port.o
+    obj-y += xtoa.o
+    obj-y += printf.o
+  else ifeq ($(SELECT_CLIB),CLIB_CW)
+    # This is not good, but don't know what to do right now....
+    obj-y += xtoa.o
+    obj-y += msl_port.o
+  endif    
 endif # SELECT_CLIB 
 
 obj-y += $(obj-y-y)

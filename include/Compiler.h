@@ -56,7 +56,7 @@
 #error Compiler not defined.
 #endif
 
-#define SECTION_ALIGN(x)  __balign(x)
+#define SECTION_BALIGN(x)  __balign(x)
 
 #if defined(__ICCHCS12__)
 #define restrict

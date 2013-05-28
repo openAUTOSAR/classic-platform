@@ -55,9 +55,9 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <assert.h>
 #include "MemMap.h"
 #include "device_serial.h"
-
 
 
 #ifndef CFG_RAMLOG_SIZE
