@@ -26,13 +26,13 @@
  *   The Autosar way to do this is
  *
  *       #define XXX_START_SEC_YYY
- *       #include "Memmap.h"
+ *       #include "MemMap.h"
  *       int hello_1 = 123;
  *       int hello_2 = 345;
  *       #define XXX_STOP_SEC_YYY
  *       #include "MemMap.h"
  *
- *     and in the Memmap.h file you then do
+ *     and in the MemMap.h file you then do
  *       #if defined(XXX_START_SEC_YYY)
  *       #pragma DoStuff
  *       #endif

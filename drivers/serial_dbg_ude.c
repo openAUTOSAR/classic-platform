@@ -29,7 +29,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "Std_Types.h"
-#include "Memmap.h"
+#include "MemMap.h"
 #include "device_serial.h"
 #include "sys/queue.h"
 
