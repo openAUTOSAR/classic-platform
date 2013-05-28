@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include "Std_Types.h"
+#include "Os.h"
 
 #include "device_serial.h"
 
