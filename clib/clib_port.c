@@ -156,7 +156,7 @@ extern int errno;
  * @param file
  * @return
  */
-int _FILENO( FILE *file ) {
+int fileno( FILE *file ) {
 	return file->fileNo;
 }
 
