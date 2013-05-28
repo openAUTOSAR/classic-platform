@@ -51,6 +51,8 @@
 #include "serial_dbg_winidea.h"
 #endif
 
+#include "Ramlog.h"
+
 
 #if defined(CFG_ARM_CM3)
 #include "irq_types.h"
@@ -92,21 +94,6 @@
 /* ----------------------------[private typedef]-----------------------------*/
 /* ----------------------------[private function prototypes]-----------------*/
 /* ----------------------------[private variables]---------------------------*/
-
-#if defined(USE_TTY_T32)
-extern DeviceSerialType T32_Device;
-#endif
-#if defined(USE_TTY_UDE)
-extern DeviceSerialType UDE_Device;
-#endif
-#if defined(USE_TTY_WINIDEA)
-extern DeviceSerialType WinIdea_Device;
-#endif
-
-#if defined(USE_RAMLOG)
-extern DeviceSerialType Ramlog_Device;
-#endif
-
 
 
 DeviceSerialType *deviceList[] = {

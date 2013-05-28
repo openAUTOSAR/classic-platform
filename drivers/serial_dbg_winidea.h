@@ -13,11 +13,11 @@
  * for more details.
  * -------------------------------- Arctic Core ------------------------------*/
 
-#ifndef SERIAL_DBG_UDE_H_
-#define SERIAL_DBG_UDE_H_
+#ifndef SERIAL_DBG_WINIDEA_H_
+#define SERIAL_DBG_WINIDEA_H_
 
 
-extern DeviceSerialType UDE_Device;
+extern DeviceSerialType WinIdea_Device;
 
 
-#endif /* SERIAL_DBG_UDE_H_ */
+#endif /* SERIAL_DBG_WINIDEA_H_ */
