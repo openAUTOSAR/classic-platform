@@ -101,11 +101,13 @@ endif
 ###############################################################################
 
 # set debug optimization level as default
-ifeq ($(SELECT_OPT),)
-SELECT_OPT=OPT_DEBUG
-endif
+SELECT_OPT?=OPT_DEBUG
 
-$(eval CFG_$(SELECT_OPT)=y)
+ifeq ($(findstring OPT_,$(SELECT_OPT)),OPT_)
+  $(eval CFG_$(SELECT_OPT)=y)
+else
+  CFG_OPT_FLAGS=y
+endif
 
 ARCH_PATH-y = arch/$(ARCH_FAM)/$(ARCH)
 
@@ -166,6 +168,8 @@ inc-y += ../include
 inc-y += $(ROOTDIR)/include
 inc-y += $(ROOTDIR)/include/$(ARCH_FAM)
 inc-y += $(ROOTDIR)/include/$(ARCH_FAM)/$(ARCH)
+  
+inc-y :=  $(inc-system-y) $(inc-y) 
   
 VPATH += $(ROOTDIR)/$(SUBDIR)/src
 VPATH += $(ROOTDIR)/$(SUBDIR)
@@ -259,7 +263,7 @@ all: module_config $(all-mod) $(all-mod-post) $(ROOTDIR)/binaries/$(BOARDDIR)
 %.o: %.c
 	@echo
 	@echo "  >> CC $(notdir $<)"
-	$(Q)$(CC) -c $(CFLAGS) $(CFLAGS_$@) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y) $(DEF_$@)) $(abspath $<)
+	$(Q)$(CC) $(CFLAGS) $(CFLAGS_$@) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y) $(DEF_$@)) $(abspath $<)
 	$(do-compile-post)
 # run lint if enabled
 	$(run_pclint)
@@ -312,7 +316,6 @@ $(build-hex-y): $(build-exe-y)
 	@echo
 	@echo "  >> OBJCOPY $@"   
 	$(Q)$(CROSS_COMPILE)objcopy -O ihex $< $@
-	
 	
 # bin output
 #$(build-bin-y): $(build-exe-y)

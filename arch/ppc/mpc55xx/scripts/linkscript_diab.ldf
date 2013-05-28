@@ -44,6 +44,21 @@ SECTIONS
 	    __SDATA0 = .;
 	} > flash
 
+#if defined(CFG_MPC5516)
+	GROUP 0x000ff000 : {
+		.McuE_LowPowerRecoverFlash : {
+		    *(.lowpower_text)
+		}
+	} > flash
+	
+	GROUP 0x000ffffc : {
+		.lowpower_vector : {
+	    	*(.lowpower_vector)
+		}
+	} > flash
+#endif	
+
+
 	GROUP : {
 		/* Take all code from all non-vle objects and libraries. */
 
@@ -77,8 +92,12 @@ SECTIONS
 
 		.PPC.EMB.sdata0 (DATA) (OPTIONAL) : { }
 		
-		.uninit (=NOLOAD) ALIGN(0x10) : { 
-			*(.t32_outport .winidea_port .ramlog .dem_eventmemory_pri) 
+		.ram_no_init (=NOLOAD) ALIGN(0x10) : {
+		    *(.ramlog .dem_eventmemory_pri)
+		}
+		
+		.ram_no_cache (=NOLOAD) ALIGN(0x10) : {
+		    *(.t32_outport .winidea_port)
 		}
 		
 		_heap_start = .;

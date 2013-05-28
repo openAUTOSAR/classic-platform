@@ -25,8 +25,13 @@
  */
 
 /* ----------------------------[includes]------------------------------------*/
+#include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "Std_Types.h"
+#include "Memmap.h"
+#include "device_serial.h"
+#include "sys/queue.h"
 
 /* ----------------------------[private define]------------------------------*/
 
@@ -54,8 +59,21 @@ typedef struct tagSimioAccess
 } TJtagSimioAccess;
 
 /* ----------------------------[private function prototypes]-----------------*/
+static int UDE_Write(  uint8_t *data, size_t nbytes);
+static int UDE_Read( uint8_t *data, size_t nbytes );
+static int UDE_Open( const char *path, int oflag, int mode );
+
 /* ----------------------------[private variables]---------------------------*/
-TJtagSimioAccess g_JtagSimioAccess = { .dwCtrl = MPC55XX_SIMIO_HOSTAVAIL };
+DeviceSerialType UDE_Device = {
+	.name = "serial_ude",
+//	.init = T32_Init,
+	.read = UDE_Read,
+	.write = UDE_Write,
+	.open = UDE_Open,
+};
+
+
+SECTION_RAM_NO_CACHE TJtagSimioAccess g_JtagSimioAccess = { .dwCtrl = MPC55XX_SIMIO_HOSTAVAIL };
 
 /* ----------------------------[private functions]---------------------------*/
 /* ----------------------------[public functions]----------------------------*/
@@ -79,18 +97,17 @@ static void sendBuffer( int len ) {
 
 /**
  *
- * @param fd
  * @param buffer
  * @param count
  * @return
  */
-size_t UDE_write(int fd, char *buffer, size_t nbytes) {
-	char *ePtr = buffer + nbytes;
-	char *tPtr;
+static int UDE_Write( uint8_t *buffer, size_t nbytes) {
+	uint8_t *ePtr = buffer + nbytes;
+	uint8_t *tPtr;
 	int left;
 	int i;
 
-	tPtr = (char*)&g_JtagSimioAccess.adwData[0];
+	tPtr = (uint8_t*)&g_JtagSimioAccess.adwData[0];
 
 	while( buffer < ePtr ) {
 		left = MIN(sizeof(g_JtagSimioAccess.adwData),nbytes);
@@ -104,5 +121,72 @@ size_t UDE_write(int fd, char *buffer, size_t nbytes) {
 		sendBuffer(i);
 	}
 	return nbytes;
+}
+
+
+static int RcveChar( void )
+{
+	uint32_t dwCtrlReg;
+
+	dwCtrlReg = g_JtagSimioAccess.dwCtrl;
+
+	if( MPC55XX_SIMIO_HOSTAVAIL == ( dwCtrlReg & MPC55XX_SIMIO_HOSTAVAILMASK ) )
+	{
+		// set need bit
+		dwCtrlReg &= 0xFF0000FF;
+		dwCtrlReg |= ( MPC55XX_SIMIO_TARGETAVAIL | MPC55XX_SIMIO_HTNEED );
+
+		// write ctrl reg
+		g_JtagSimioAccess.dwCtrl = dwCtrlReg;
+
+	  // wait for remove of need bit
+	  while(  dwCtrlReg & MPC55XX_SIMIO_HTNEED )
+	  {
+			dwCtrlReg = g_JtagSimioAccess.dwCtrl;
+	  }
+		// get len and data
+		return( MPC55XX_SIMIO_HTLEN(dwCtrlReg) );
+	}
+	return( 0 );
+}
+
+
+/**
+ * Read characters from terminal
+ *
+ * @param buffer	  Where to save the data to.
+ * @param nbytes  The maximum bytes to read
+ * @return The number of bytes read.
+ */
+static int UDE_Read( uint8_t *buffer, size_t nbytes )
+{
+	size_t index;
+	int iTempLen, i;
+	char* pcTemp;
+	char cTemp = (char)EOF;
+	index = 0;
+
+	iTempLen = RcveChar();
+	pcTemp = (char*)&g_JtagSimioAccess.adwData[0];
+
+	for (i = 0; (i < iTempLen) && (index < nbytes); i++) {
+		cTemp = *pcTemp++;
+		if (cTemp == '\n')
+			cTemp = EOF;
+		else if (cTemp == '\r') {
+			cTemp = '\n';
+		}
+		*buffer++ = cTemp;
+		index++;
+	}
+	return nbytes;
+}
+
+static int UDE_Open( const char *path, int oflag, int mode ) {
+	(void)path;
+	(void)oflag;
+	(void)mode;
+
+	return 0;
 }
 

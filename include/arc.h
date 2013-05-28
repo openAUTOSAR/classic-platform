@@ -66,6 +66,8 @@ void Os_Arc_GetIsrInfo( Arc_PcbType *pcbPtr, ISRType isrId );
 
 TaskType Os_Arc_CreateIsr( void  (*entry)(void), uint8_t prio, const char *name );
 
+int Os_Arc_GetIsrCount( void );
+
 /**
  * Get the task activation limit
  * @param task

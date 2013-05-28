@@ -84,6 +84,8 @@ CFLAGS = $(cflags-y) $(cflags-yy) $(CFLAGS_cw_$@)
 
 CCOUT 		= -o $@ 
 
+SELECT_CLIB?=CLIB_CW
+
 # ---------------------------------------------------------------------------
 # Preprocessor
 
@@ -149,6 +151,8 @@ ldflags-y += -rambuffer 0x0
 #ldflags-y += -nodefaults
 ldflags-y += -gdwarf-2
 ldflags-y += -m _start
+ldflags-y += -nostdlib
+ldflags-y += -code_merging all
 TE = elf
 ldflags-y += -map $(subst .$(TE),.map, $@)
 

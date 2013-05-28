@@ -55,9 +55,10 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <assert.h>
 #include "Ramlog.h"
 #include "MemMap.h"
-
+#include "device_serial.h"
 
 
 #ifndef CFG_RAMLOG_SIZE
@@ -75,7 +76,9 @@ SECTION_RAMLOG static unsigned ramlog_session;
 static unsigned ramlog_curr = 0;
 #endif
 
-#define RAMLOG_FILENO  (FILE *)3
+static FILE *rFile;
+
+//#define RAMLOG_FILENO  (FILE *)3
 
 
 /**
@@ -119,7 +122,8 @@ int ramlog_printf( const char *format, ... ) {
 	va_list args;
 	va_start(args,format);
 
-	rv = vfprintf(RAMLOG_FILENO, format, args);
+	assert( rFile != NULL );
+	rv = vfprintf(rFile, format, args);
 	va_end(args);
 	return rv;
 }
@@ -130,6 +134,7 @@ int ramlog_printf( const char *format, ... ) {
  */
 void ramlog_init( void )
 {
+	rFile = fopen("ramlog","r");
 
 #if defined(CFG_RAMLOG_SESSION)
 	char buf[32];
@@ -148,3 +153,32 @@ void ramlog_init( void )
 	ramlog_curr = 0;
 #endif
 }
+
+static int Ramlog_Write(  uint8_t *data, size_t nbytes)
+{
+	for (int i = 0; i < nbytes; i++) {
+		ramlog_chr(*data++);
+	}
+	return nbytes;
+}
+
+static int Ramlog_Open( const char *path, int oflag, int mode ) {
+	(void)path;
+	(void)oflag;
+	(void)mode;
+
+	return 0;
+}
+
+
+
+DeviceSerialType Ramlog_Device = {
+	.name = "ramlog",
+	.read = NULL,
+	.write = Ramlog_Write,
+	.open = Ramlog_Open,
+};
+
+
+
+

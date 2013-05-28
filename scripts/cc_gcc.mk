@@ -116,6 +116,16 @@ cc_inc_path := $(realpath $(text_chunk))
 libpath-y += -L$(lib_lib_path)
 libpath-y += -L$(gcc_lib_path)
 
+ifeq ($(CC),gcc)
+SELECT_CLIB?=CLIB_NATIVE
+else
+SELECT_CLIB?=CLIB_NEWLIB
+endif
+
+ifeq ($(SELECT_CLIB),CLIB_NEWLIB)
+CFG_ARC_CLIB?=y
+endif
+
 # ---------------------------------------------------------------------------
 # Linker
 #

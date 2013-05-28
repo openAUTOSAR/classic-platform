@@ -53,11 +53,23 @@
  *	  arc_putchar((int)(file->_file), c);
  *	)
  *
+ *
+ *
+ *
+ *	http://ubuntuforums.org/showthread.php?t=936816
+ *
+ *	What we don't want to use:
+ *	- Terminal stuff, tcsetattr(),etc..makes everything very complicated.
+ *	- Use of select() to set to check for keyboard hit, ie
+ *	  select(STDIN_FILENO+1..);
+ *	  Then check FD_ISSET( STDIN_FILENO, .. )
+ *
+ *
  */
 
 #if defined(__IAR_SYSTEMS_ICC__)
 #define STDOUT_FILENO	1
-#else
+#elif defined(__GNUC__) && defined(__DCC__)
 #include <unistd.h>
 #endif
 #include <stdio.h>
@@ -67,22 +79,66 @@
 #if defined(USE_NEWLIB) && defined(__GNUC__)
 #include "reent.h"
 #endif
+#include <ctype.h>
+
 //#define HOST_TEST	1
 
 #if defined(__IAR_SYSTEMS_ICC__)
 #endif
 
-int arc_putchar(int fd, int c);
 int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap);
 static inline int emitChar( FILE *file, char **buf, char c, int *left );
 
+
+int fputc( int c, FILE *file) {
+	int fd;
+	char ch=(char)c;
+	fd = fileno(file);
+	write(fd,&ch,1);
+	return c;
+}
+
+
 int fputs( const char *s, FILE *file ) {
-	int left = ~(size_t)0;
 	while(*s) {
-		emitChar(file,NULL,*s++,&left);
+		fputc(*s++,file);
 	}
 	return 0;
 }
+
+
+/**
+ * Get a character from stream. Assume for now
+ * that it's blocking.
+ *
+ *
+ * @param file
+ * @return
+ */
+int fgetc( FILE *file ) {
+	char c;
+	int fd;
+	fd = fileno(file);
+
+	/* Blocking read for now */
+	read(fd,&c,1);
+
+	return c;
+}
+
+
+/**
+ * Read to EOF or newline
+ *
+ * @param file
+ * @return
+ */
+int fgets( char *str, int n, FILE *file ) {
+	int fd;
+	fd = fileno(file);
+	return read(fd,str,n);
+}
+
 
 
 int printf(const char *format, ...) {
@@ -90,7 +146,7 @@ int printf(const char *format, ...) {
 	int rv;
 
 	va_start(ap, format);
-	rv = vfprintf((FILE *)STDOUT_FILENO, format, ap);
+	rv = vfprintf(stdout, format, ap);
 	va_end(ap);
 	return rv;
 }
@@ -127,7 +183,7 @@ int snprintf(char *buffer, size_t n, const char *format, ...) {
 }
 
 int vprintf(const char *format, va_list ap) {
-	return vfprintf((FILE *)STDOUT_FILENO, format, ap);
+	return vfprintf(stdout, format, ap);
 }
 
 int vsprintf(char *buffer, const char *format, va_list ap) {
@@ -153,7 +209,7 @@ int vsnprintf(char *buffer, size_t n, const char *format, va_list ap) {
 /*
  * The integer only counterpart
  */
-#if !defined(__IAR_SYSTEMS_ICC__)
+#if defined(USE_NEWLIB)
 int iprintf(const char *format, ...) __attribute__ ((alias("printf")));
 int fiprintf(FILE *file, const char *format, ...) __attribute__ ((alias("fprintf")));
 int siprintf(char *buffer, const char *format, ...) __attribute__ ((alias("sprintf")));
@@ -171,6 +227,8 @@ int vfiprintf(FILE *file, const char *format, va_list ap) __attribute__ ((alias(
  * @return
  */
 static inline int emitChar( FILE *file, char **buf, char c, int *left ) {
+	(void)file;
+
 	if( (*left) == 1 ) {
 		return 1;
 	}
@@ -180,20 +238,7 @@ static inline int emitChar( FILE *file, char **buf, char c, int *left ) {
 		putc(c, stdout);
 		fflush(stdout);
 #else
-#if 0
-		if( (unsigned )file > 10UL ) {
-#if defined(__IAR_SYSTEMS_ICC__)
-			arc_putchar((int)(file->_Handle), c);
-#else
-			arc_putchar((int)(file->_file), c);
-#endif
-		} else {
-			arc_putchar((int)(file), c);
-		}
-#else
-	arc_putchar((int)(file), c);
-#endif
-
+		putc(c,stdout);
 #endif /* HOST_TEST */
 	} else {
 		**buf = c;
@@ -342,6 +387,7 @@ int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap)
 	char *str;
 	int width;
 	int left = n;
+	char wBuff[4];
 
 	while ( (ch = *format++) ) {
 
@@ -377,7 +423,15 @@ int print(FILE *file, char **buffer, size_t n, const char *format, va_list ap)
 
 			/* Width */
 			if( (ch >= '0')  && (ch <= '9') ) {
-				width = ch -'0';
+				int a = 1;
+				wBuff[0] = ch;
+
+				while( (*format >= '0')  && (*format <= '9') ) {
+					wBuff[a++] = *format++;
+				}
+				wBuff[a] = '\0';
+     		    width = strtoul(wBuff,NULL,10);
+
 				ch = *format++;
 			} else {
 				width = 0;

@@ -46,6 +46,8 @@ CFLAGS = $(cflags-y) $(cflags-yy)
 
 CCOUT 		= -o $@ 
 
+SELECT_CLIB?=CLIB_IAR
+
 # ---------------------------------------------------------------------------
 # Preprocessor
 
