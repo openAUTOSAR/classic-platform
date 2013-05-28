@@ -44,8 +44,50 @@
 #if defined(USE_TTY_UDE)
 #include "serial_dbg_ude.h"
 #endif
+#if defined(USE_TTY_T32)
+#include "serial_dbg_t32.h"
+#endif
+#if defined(USE_TTY_WINIDEA)
+#include "serial_dbg_winidea.h"
+#endif
+
+
+#if defined(CFG_ARM_CM3)
+#include "irq_types.h"
+#include "stm32f10x.h"
+#endif
+
 
 /* ----------------------------[private define]------------------------------*/
+
+
+#if defined(CFG_ARM)
+#define _OPEN		_open
+#define _EXIT		_exit
+#define _FSTAT		_fstat
+#define _GETPID		_getpid
+#define _KILL		_kill
+#define _CLOSE		_close
+#define _ISATTY		_isatty
+#define _SBRK		_sbrk
+#define _READ		_read
+#define _WRITE		_write
+#define _LSEEK		_lseek
+#else
+#define _OPEN		open
+#define _EXIT		exit
+#define _FSTAT		fstat
+#define _GETPID		getpid
+#define _KILL		kill
+#define _CLOSE		close
+#define _ISATTY		isatty
+#define _SBRK		sbrk
+#define _READ		read
+#define _WRITE		write
+#define _LSEEK		lseek
+#endif
+
+
 /* ----------------------------[private macro]-------------------------------*/
 /* ----------------------------[private typedef]-----------------------------*/
 /* ----------------------------[private function prototypes]-----------------*/
@@ -127,7 +169,7 @@ extern int errno;
  * @param file
  * @return
  */
-int fileno( FILE *file ) {
+int _FILENO( FILE *file ) {
 	return file->fileNo;
 }
 
@@ -143,7 +185,7 @@ int fileno( FILE *file ) {
  * @param mode  S_xx modes.
  * @return	The file descriptor or -1 if failed to open.
  */
-int open(const char *name, int flags, int mode){
+int _OPEN(const char *name, int flags, int mode){
 	int i;
 	int fd = -1;
 
@@ -166,19 +208,19 @@ int open(const char *name, int flags, int mode){
 
 
 #if defined(__GNUC__)
-int fstat(int file, struct stat *st) {
+int _FSTAT(int file, struct stat *st) {
 	(void)file;
   	st->st_mode = S_IFCHR;
   	return 0;
 }
 
 
-pid_t getpid() {
+pid_t _GETPID() {
   return 1;
 }
 #endif
 
-int kill(int pid, int sig){
+int _KILL(int pid, int sig){
 	(void)pid;
 	(void)sig;
   	errno=EINVAL;
@@ -186,7 +228,7 @@ int kill(int pid, int sig){
 }
 
 /* Do nothing */
-int close( int fd ) {
+int _CLOSE( int fd ) {
 	(void)fd;
   	return (-1);
 }
@@ -196,7 +238,7 @@ int close( int fd ) {
  * @param fd
  * @return 1 if connected to a terminal
  */
-int isatty( int fd )
+int _ISATTY( int fd )
 {
 	(void)fd;
 	return 1;
@@ -211,7 +253,7 @@ int isatty( int fd )
 extern char _heap_start[];  // incomplete array to ensure not placed in small-data
 extern char _heap_end[];
 
-void * sbrk( ptrdiff_t incr )
+void * _SBRK( ptrdiff_t incr )
 {
     char *prevEnd;
     static char *nextAvailMemPtr = _heap_start;
@@ -242,7 +284,7 @@ extern char _end[];
 unsigned char _heap[HEAPSIZE] __attribute__((aligned (4)));
 //__attribute__((section(".heap")));
 
-void * sbrk( ptrdiff_t incr )
+void * _SBRK( ptrdiff_t incr )
 {
     static unsigned char *heap_end;
     unsigned char *prev_heap_end;
@@ -267,7 +309,7 @@ void * sbrk( ptrdiff_t incr )
 
 
 
-int read( int fd, void *buf, size_t nbytes )
+int _READ( int fd, void *buf, size_t nbytes )
 {
 
 	fileList[fd]->read(buf,nbytes);
@@ -283,7 +325,7 @@ int read( int fd, void *buf, size_t nbytes )
  * @param nbytes
  * @return
  */
-int write(  int fd, const void *buf, size_t nbytes) {
+int _WRITE(  int fd, const void *buf, size_t nbytes) {
 
 	fileList[fd]->write((void *)buf,nbytes);
 
@@ -293,7 +335,7 @@ int write(  int fd, const void *buf, size_t nbytes) {
 #if defined(__GNUC__)
 /* reposition read/write file offset
  * We can't seek, return error.*/
-off_t lseek( int fd, off_t offset,int whence)
+off_t _LSEEK( int fd, off_t offset,int whence)
 {
 	(void)fd;
 	(void)offset;

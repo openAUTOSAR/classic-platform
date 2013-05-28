@@ -169,7 +169,7 @@ SECTIONS
     irq.o(.text)
     Det.o(.text)
     xtoa.o(.text)
-    newlib_port.o(.text)
+    clib_port.o(.text)
 
     . = ALIGN(2);
   } > bank_B AT>bank_B_lma =0xff
