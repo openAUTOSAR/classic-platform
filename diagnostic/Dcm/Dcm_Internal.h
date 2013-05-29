@@ -73,6 +73,14 @@
 #define SID_NEGATIVE_RESPONSE					0x7F
 #define SID_CONTROL_DTC_SETTING					0x85
 
+//OBD SID TABLE
+#define SID_REQUEST_CURRENT_POWERTRAIN_DIAGNOSTIC_DATA		0x01
+#define SID_REQUEST_POWERTRAIN_FREEZE_FRAME_DATA			0x02
+#define SID_CLEAR_EMISSION_RELATED_DIAGNOSTIC_INFORMATION	0x04
+#define SID_REQUEST_EMISSION_RELATED_DIAGNOSTIC_TROUBLE_CODES		0x03
+#define SID_REQUEST_EMISSION_RELATED_DIAGNOSTIC_TROUBLE_CODES_DETECTED_DURING_CURRENT_OR_LAST_COMPLETED_DRIVING_CYCLE	0x07
+#define SID_REQUEST_VEHICLE_INFORMATION		0x09
+
 // Misc definitions
 #define SUPPRESS_POS_RESP_BIT		(uint8)0x80
 #define SID_RESPONSE_BIT			(uint8)0x40
@@ -105,6 +113,15 @@ void DspUdsWriteMemoryByAddress(const PduInfoType *pduRxData, PduInfoType *pduTx
 void DspReadDataByPeriodicIdentifier(const PduInfoType *pduRxData,PduInfoType *pduTxData);
 void DspDynamicallyDefineDataIdentifier(const PduInfoType *pduRxData,PduInfoType *pduTxData);
 void DspIOControlByDataIdentifier(const PduInfoType *pduRxData,PduInfoType *pduTxData);
+
+// OBD stack interface
+void DspRequestCurrentPowertrainDiagnosticData(const PduInfoType *pduRxData,PduInfoType *pduTxData);
+void DspRequsetPowertrainFreezeFrameData(const PduInfoType *pduRxData,PduInfoType *pduTxData);
+void DspClearEmissionRelatedDiagnosticData(const PduInfoType *pduRxData,PduInfoType *pduTxData);
+void  RequestEmissionRelatedDiagnosticTroubleCodes(const PduInfoType *pduRxData,PduInfoType *pduTxData);
+void  RequestEmissionRelatedDiagnosticTroubleCodesService07(const PduInfoType *pduRxData,PduInfoType *pduTxData);
+void Requestvehicleinformation(const PduInfoType *pduRxData,PduInfoType *pduTxData);
+
 boolean DspCheckSessionLevel(Dcm_DspSessionRowType const* const* sessionLevelRefTable);
 boolean DspCheckSecurityLevel(Dcm_DspSecurityRowType const* const* securityLevelRefTable);
 void DspCancelPendingRequests(void);

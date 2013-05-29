@@ -48,6 +48,7 @@ typedef uint8 Dcm_SesCtrlType;
 #define DCM_PROGRAMMING_SESSION					((Dcm_SesCtrlType)0x02)
 #define DCM_EXTENDED_DIAGNOSTIC_SESSION			((Dcm_SesCtrlType)0x03)
 #define DCM_SAFTEY_SYSTEM_DIAGNOSTIC_SESSION	((Dcm_SesCtrlType)0x04)
+#define DCM_OBD_SESSION							((Dcm_SesCtrlType)0x05)//only used for OBD diagnostic
 #define DCM_ALL_SESSION_LEVEL					((Dcm_SesCtrlType)0xFF)
 
 typedef uint8 Dcm_ConfirmationStatusType;

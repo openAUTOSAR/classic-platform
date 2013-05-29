@@ -288,13 +288,14 @@ typedef struct {
 
 typedef uint16 ChecksumType;
 typedef struct {
-	Dem_EventIdType		eventId;
-	uint16				occurrence;
-    uint16				dataSize;
-	uint8               recordNumber;
-    uint32              timeStamp;
-	uint8				data[DEM_MAX_SIZE_FF_DATA];
-	ChecksumType		checksum;
+	Dem_EventIdType         eventId;
+	Dem_FreezeFrameKindType kind;
+	uint16                  occurrence;
+	uint16                  dataSize;
+	uint8                   recordNumber;
+	uint32                  timeStamp;
+	uint8                   data[DEM_MAX_SIZE_FF_DATA];
+	ChecksumType            checksum;
 } FreezeFrameRecType;
 
 // Types for storing different event aging counter

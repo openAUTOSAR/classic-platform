@@ -97,6 +97,9 @@
 #define DEM_GETFREEZEFRAMEDATARECORDBYDTC_ID		0x26
 #define DEM_GETFREEZEFRAMEDATAIDENTIFIERBYDTC_ID		0x27
 
+#define DEM_GETDTCOFOBDFREEZEFRAME_ID			0x28
+#define DEM_GETOBDFREEZEFRAMEDATA_ID			0x29
+
 #define DEM_GETTRANSLATIONTYPE_ID				0x3c
 #define DEM_GETFAULTDETECTIONCOUNTER_ID 		0x3E
 #define DEM_MAINFUNCTION_ID						0x55
@@ -187,5 +190,7 @@ Dem_ReturnGetSizeOfFreezeFrameType Dem_GetSizeOfFreezeFrame(uint32  dtc,Dem_DTCK
 /*
  * OBD-specific Interfaces (8.3.6)
  */
+Std_ReturnType Dem_GetDTCOfOBDFreezeFrame(uint8 FrameNumber, uint32* DTC );
+Std_ReturnType Dem_GetOBDFreezeFrameData(uint8 PID, uint8* DestBuffer, uint8* BufSize);
 
 #endif /*DEM_H_*/

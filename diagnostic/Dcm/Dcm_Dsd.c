@@ -183,7 +183,33 @@ static void selectServiceFunction(uint8 sid)
 		DspIOControlByDataIdentifier(msgData.pduRxData, msgData.pduTxData);
 		break;
 #endif
+
+	/* OBD */
+	case SID_REQUEST_CURRENT_POWERTRAIN_DIAGNOSTIC_DATA:
+		DspObdRequestCurrentPowertrainDiagnosticData(msgData.pduRxData, msgData.pduTxData);
+		break;
 		
+	case SID_REQUEST_POWERTRAIN_FREEZE_FRAME_DATA:
+		DspObdRequsetPowertrainFreezeFrameData(msgData.pduRxData, msgData.pduTxData);
+		break;
+		
+	case SID_CLEAR_EMISSION_RELATED_DIAGNOSTIC_INFORMATION:
+		DspObdClearEmissionRelatedDiagnosticData(msgData.pduRxData, msgData.pduTxData);
+		break;
+		
+	case SID_REQUEST_EMISSION_RELATED_DIAGNOSTIC_TROUBLE_CODES:
+		DspObdRequestEmissionRelatedDiagnosticTroubleCodes(msgData.pduRxData, msgData.pduTxData);
+		break;
+
+	case SID_REQUEST_EMISSION_RELATED_DIAGNOSTIC_TROUBLE_CODES_DETECTED_DURING_CURRENT_OR_LAST_COMPLETED_DRIVING_CYCLE:
+		DspObdRequestEmissionRelatedDiagnosticTroubleCodesService07(msgData.pduRxData, msgData.pduTxData);
+		break;
+
+	case SID_REQUEST_VEHICLE_INFORMATION:
+		DspObdRequestvehicleinformation(msgData.pduRxData, msgData.pduTxData);
+		break;
+	/* OBD */
+
 	default:
 		/* Non implemented service */
 		createAndSendNcr(DCM_E_SERVICENOTSUPPORTED);
@@ -333,4 +359,10 @@ void DsdDslDataIndication(const PduInfoType *pduRxData, const Dcm_DsdServiceTabl
 	msgData.serviceTable = protocolSIDTable;
 
 	dsdDslDataIndication = TRUE;
+}
+
+//OBD: called by DSL to get the current Tx PduId
+PduIdType DsdDslGetCurrentTxPduId(void)
+{
+    return msgData.txPduId;
 }
