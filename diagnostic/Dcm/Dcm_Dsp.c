@@ -61,6 +61,8 @@
 #define SID_LEN 1
 #define SF_INDEX 1
 #define SF_LEN 1
+#define PID_BUFFER_SIZE 255 // OBD
+
 /* Read/WriteMemeoryByAddress */
 #define ALFID_INDEX 1
 #define ALFID_LEN 1
@@ -76,6 +78,43 @@
 #define IOCP_INDEX 3
 #define IOCP_LEN 1
 #define COR_INDEX 4
+
+/*OBD RequestCurrentPowertrainDiagnosticData*/
+#define PID_LEN								1
+#define RECORD_NUM 							0
+#define HALF_BYTE 							4
+#define OFFSET_ONE_BYTE						8
+#define OFFSET_TWO_BYTES 					16
+#define OFFSET_THREE_BYTES					24
+#define SUPPRTED_PIDS_DATA_LEN				4
+#define LEAST_BIT_MASK  					((uint8)0x01u)
+#define OBD_DATA_LSB_MASK 					((uint32)0x000000FFu)
+#define OBD_REQ_MESSAGE_LEN_ONE_MIN 		2
+#define OBD_REQ_MESSAGE_LEN_MAX  			7
+#define AVAIL_TO_SUPPORTED_PID_OFFSET_MIN  	0x01
+#define AVAIL_TO_SUPPORTED_PID_OFFSET_MAX  	0x20
+#define AVAIL_TO_SUPPORTED_INFOTYPE_OFFSET_MIN  	0x01
+#define AVAIL_TO_SUPPORTED_INFOTYPE_OFFSET_MAX  	0x20
+#define MAX_REQUEST_PID_NUM 				6
+#define LENGTH_OF_DTC  						2
+
+/*OBD RequestCurrentPowertrainDiagnosticData*/
+#define FF_NUM_LEN							1
+#define OBD_DTC_LEN							2
+#define OBD_SERVICE_TWO 					((uint8)0x02u)
+#define MAX_PID_FFNUM_NUM					3
+#define OBD_REQ_MESSAGE_LEN_TWO_MIN			3
+
+/*OBD RequestEmissionRelatedDiagnosticTroubleCodes service03 07*/
+#define EMISSION_DTCS_HIGH_BYTE(dtc)		(((uint32)(dtc) >> 8) & 0xFFu)
+#define EMISSION_DTCS_LOW_BYTE(dtc)			((uint32)(dtc) & 0xFFu)
+#define OBD_RESPONSE_DTC_MAX_NUMS			126
+
+/*OBD Requestvehicleinformation service09*/
+#define OBD_TX_MAXLEN						0xFF
+#define MAX_REQUEST_VEHINFO_NUM				6
+#define OBD_SERVICE_FOUR 					0x04
+#define OBD_VIN_LENGTH						17
 
 #define BYTES_TO_DTC(hb, mb, lb)	(((uint32)(hb) << 16) | ((uint32)(mb) << 8) | (uint32)(lb))
 #define DTC_HIGH_BYTE(dtc)			(((uint32)(dtc) >> 16) & 0xFFu)
@@ -184,6 +223,15 @@ static Dcm_NegativeResponseCodeType checkAddressRange(DspMemoryServiceType servi
 static const Dcm_DspMemoryRangeInfo* findRange(const Dcm_DspMemoryRangeInfo *memoryRangePtr, uint32 memoryAddress, uint32 length);
 static Dcm_NegativeResponseCodeType writeMemoryData(Dcm_OpStatusType* OpStatus, uint8 memoryIdentifier, uint32 MemoryAddress, uint32 MemorySize, uint8 *SourceData);
 
+/* OBD */
+static boolean lookupInfoType(uint8 InfoType, const Dcm_DspVehInfoType **InfoTypePtr);
+static boolean Dem_SetAvailabilityInfoTypeValue(uint8 InfoType,uint32 *DATABUF);
+static Dcm_NegativeResponseCodeType OBD_Sevice_03_07(PduInfoType *pduTxData,Dem_ReturnSetDTCFilterType setDtcFilterResult);
+
+static boolean lookupPid(uint8 pidId,const Dcm_DspPidType **PidPtr);
+static boolean Dem_SetAvailabilityPidValue(uint8 Pid,uint32 *Data);
+static boolean Dcm_LookupService(uint8 serviceId,const Dcm_DsdServiceType **dsdService);
+/* OBD */
 /*
 *   end  
 */
@@ -3220,4 +3268,819 @@ void DspIOControlByDataIdentifier(const PduInfoType *pduRxData,PduInfoType *pduT
 		pduTxData->SduDataPtr[3] = pduRxData->SduDataPtr[3];
 	}
 	DsdDspProcessingDone(responseCode);
+}
+
+static boolean lookupPid(uint8 pidId,const Dcm_DspPidType **PidPtr)
+{
+	boolean pidFound = FALSE;
+	const Dcm_DspPidType *dspPid = DCM_Config.Dsp->DspPid;
+
+	if(dspPid != NULL)
+	{
+		while ((dspPid->DspPidIdentifier != pidId) && (0 == dspPid->Arc_EOL))
+		{
+			dspPid++;
+		}
+		if (0 == dspPid->Arc_EOL)
+		{
+			pidFound = TRUE;
+			*PidPtr = dspPid;
+		}
+		else
+		{
+			/*do nothing*/
+		}
+	}
+	else
+	{
+		/*do nothing*/
+	}
+
+	return pidFound;
+}
+
+static boolean Dem_SetAvailabilityPidValue(uint8 Pid,uint32 *Data)
+{
+	uint8 shift;
+	uint32 pidData = 0;
+	uint32 temp;
+	boolean setOk = TRUE;
+	const Dcm_DspPidType *dspPid = DCM_Config.Dsp->DspPid;
+
+	if(dspPid != NULL)
+	{
+		while (0 == dspPid->Arc_EOL)
+		{
+			if((dspPid->DspPidIdentifier >= (Pid + AVAIL_TO_SUPPORTED_PID_OFFSET_MIN)) && (dspPid->DspPidIdentifier <= (Pid + AVAIL_TO_SUPPORTED_PID_OFFSET_MAX)))
+			{
+				shift = dspPid->DspPidIdentifier - Pid;
+				temp = (uint32)1 << (AVAIL_TO_SUPPORTED_PID_OFFSET_MAX - shift);
+				pidData |= temp;
+			}
+			else if((dspPid->DspPidIdentifier >= (Pid + AVAIL_TO_SUPPORTED_PID_OFFSET_MIN + AVAIL_TO_SUPPORTED_PID_OFFSET_MAX)) && (dspPid->DspPidIdentifier <= (Pid + AVAIL_TO_SUPPORTED_PID_OFFSET_MAX + AVAIL_TO_SUPPORTED_PID_OFFSET_MAX)))
+			{
+				pidData |= (uint32)1;
+			}
+			else
+			{
+				/*do nothing*/
+			}
+			dspPid++;
+ 	
+		}
+	}
+	else
+	{
+		setOk = FALSE;
+	}
+
+	if(0 == pidData)
+	{
+		setOk = FALSE;
+	}
+	else
+	{
+		/*do nothing*/
+	}
+	(*Data) = pidData;
+	
+	return setOk;
+}
+
+/*@req OBD_DCM_REQ_2*//* @req OBD_REQ_1 */
+void DspObdRequestCurrentPowertrainDiagnosticData(const PduInfoType *pduRxData,PduInfoType *pduTxData)
+{
+	uint16 i ;
+	uint16 flag = 0;
+	uint16 findPid = 0;
+	uint16 txPos = SID_LEN;
+	uint32 DATA = 0;
+	uint8 txBuffer[255] = {0};
+	uint16 txLength = SID_LEN;
+	uint8 requestPid[MAX_REQUEST_PID_NUM];
+	uint16 pidNum = pduRxData->SduLength - SID_LEN;
+	const Dcm_DspPidType *sourcePidPtr = NULL;
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+	/* @req OBD_REQ_3 */
+	if((pduRxData->SduLength >= OBD_REQ_MESSAGE_LEN_ONE_MIN) && (pduRxData->SduLength <= OBD_REQ_MESSAGE_LEN_MAX))
+	{
+		i = pidNum;
+		while(i > 0)
+		{
+			requestPid[i - 1] = pduRxData->SduDataPtr[i];
+			if(((requestPid[i - 1] & DCM_FORMAT_LOW_MASK) == 0) && ((((requestPid[i - 1] & DCM_FORMAT_HIGH_MASK) >> HALF_BYTE) & LEAST_BIT_MASK) == 0))
+			{
+				flag++;													/*used to judge if the message is valid, if flag != 0 or Pidnum, invalid*/
+			}
+			else
+			{
+				/*do nothing*/
+			}
+			i--;
+		}
+		for(i = 0;i < pidNum;i++)                                        /*figure out the txLength to be sent*/
+		{
+			/*situation of supported Pids*/
+			if(TRUE == lookupPid(requestPid[i],&sourcePidPtr))
+			{
+				txLength += PID_LEN + sourcePidPtr->DspPidSize;
+			}
+			/*situation of availability Pids*/
+			else if(((requestPid[i] & DCM_FORMAT_LOW_MASK) == 0) && ((((requestPid[i] & DCM_FORMAT_HIGH_MASK) >> HALF_BYTE) & LEAST_BIT_MASK) == 0))
+			{
+				txLength += PID_LEN + SUPPRTED_PIDS_DATA_LEN;
+			}
+			else 
+			{
+				/*do nothing*/
+			}
+		}
+		/*@req OBD_DCM_REQ_7*/
+		if(txLength <= pduTxData->SduLength)			 	/*if txLength is smaller than the configured length*/
+		{
+			if(pidNum == flag)					/*check if all the request PIDs are the 0x00...0xE0 format*/
+			{
+				for(i = 0;i < pidNum;i++)		/*Check the PID configuration,find which PIDs were configured for 0x00,0x20,0x40 respectively,and fill in the pduTxBuffer,and count the txLength*/
+				{
+					/*@req OBD_DCM_REQ_3,OBD_DCM_REQ_6*/
+					if(TRUE == Dem_SetAvailabilityPidValue(requestPid[i],&DATA))
+					{						
+						pduTxData->SduDataPtr[txPos] = requestPid[i];
+						txPos++;
+						/*take every byte of uint32 DATA,and fill in txbuffer*/
+						pduTxData->SduDataPtr[txPos] = (uint8)(((DATA) & (OBD_DATA_LSB_MASK << OFFSET_THREE_BYTES)) >> OFFSET_THREE_BYTES);
+						txPos++;
+						pduTxData->SduDataPtr[txPos] = (uint8)(((DATA) & (OBD_DATA_LSB_MASK << OFFSET_TWO_BYTES)) >> OFFSET_TWO_BYTES);
+						txPos++;
+						pduTxData->SduDataPtr[txPos] = (uint8)(((DATA) & (OBD_DATA_LSB_MASK << OFFSET_ONE_BYTE)) >> OFFSET_ONE_BYTE);
+						txPos++;
+						pduTxData->SduDataPtr[txPos] = (uint8)((DATA) & OBD_DATA_LSB_MASK);
+						txPos++;
+					}
+					else
+					{
+						findPid++;
+					}
+				}
+			}
+			else if(0 == flag)							/*check if all the request PIDs are the supported PIDs,like 0x01,0x02...*/
+			{
+				for(i = 0;i < pidNum;i++)
+				{
+					if(TRUE == lookupPid(requestPid[i],&sourcePidPtr))
+					{
+						/*@req OBD_DCM_REQ_3,OBD_DCM_REQ_5,OBD_DCM_REQ_8*//* @req OBD_REQ_2 */
+						if(E_OK == sourcePidPtr->DspGetPidValFnc(txBuffer))
+						{
+							pduTxData->SduDataPtr[txPos] = requestPid[i];
+							txPos++;
+							(void)memcpy(&(pduTxData->SduDataPtr[txPos]),txBuffer,sourcePidPtr->DspPidSize);
+							txPos += sourcePidPtr->DspPidSize;
+						}
+						else
+						{
+							responseCode = DCM_E_CONDITIONSNOTCORRECT;
+							break;
+						}
+
+					}
+					else
+					{
+						findPid++;
+					}
+				}
+			}
+			else
+			{
+				responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+			}
+			if(pidNum == findPid)
+			{
+				responseCode = DCM_E_REQUESTOUTOFRANGE;
+			}
+			else
+			{
+				/*do nothing*/
+			}
+		}
+		else
+		{
+			responseCode = DCM_E_REQUESTOUTOFRANGE;
+		}
+	}
+	else
+	{
+		responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+	}
+	if(DCM_E_POSITIVERESPONSE == responseCode)
+	{
+		pduTxData->SduLength = txPos;
+	}
+	else
+	{
+		/*do nothing*/
+	}
+	DsdDspProcessingDone(responseCode);
+
+	return;
+}
+
+/*@req OBD_DCM_REQ_9*/
+void DspObdRequsetPowertrainFreezeFrameData(const PduInfoType *pduRxData,PduInfoType *pduTxData)
+{
+	uint16 i ;
+	uint16 j = 0;
+	uint16 flag = 0;
+	uint16 findPid = 0;
+	uint32 DATA = 0;
+	uint32 dtc = 0;
+	uint16 txPos = SID_LEN;
+	uint16 txLength = SID_LEN;
+	uint8 requestPid[MAX_PID_FFNUM_NUM];
+	uint8 requestFFNum[MAX_PID_FFNUM_NUM];
+	uint16 messageLen = pduRxData->SduLength;
+	const Dcm_DspPidType *sourcePidPtr = NULL;
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+
+	/* @req OBD_REQ_6 */
+	if((messageLen >= OBD_REQ_MESSAGE_LEN_TWO_MIN ) && (messageLen <= OBD_REQ_MESSAGE_LEN_MAX ) && (((messageLen - 1) % 2) == 0))
+	{
+		uint16 pidNum = ((messageLen - 1) >> 1);
+
+		/*find out PID and FFnum*/
+		for(i = 0;i < pidNum;i++)
+		{
+			requestPid[i] = pduRxData->SduDataPtr[j + 1];
+			if(((requestPid[i] & DCM_FORMAT_LOW_MASK) == 0) && ((((requestPid[i] & DCM_FORMAT_HIGH_MASK) >> HALF_BYTE) & LEAST_BIT_MASK) == 0))
+			{
+				flag++;													/*used to judge if the message is valid, if flag != 0 or Pidnum, invalid*/
+			}
+			requestFFNum[i] = pduRxData->SduDataPtr[j + 2];
+			j += 2;
+		}
+		/*count txLength*/
+		for(i = 0;i < pidNum;i++)
+		{
+			if(requestPid[i] == OBD_SERVICE_TWO)
+			{
+				txLength += PID_LEN + FF_NUM_LEN + OBD_DTC_LEN;
+			}
+			else if(((requestPid[i] & DCM_FORMAT_LOW_MASK) == 0) && ((((requestPid[i] & DCM_FORMAT_HIGH_MASK) >> HALF_BYTE) & LEAST_BIT_MASK) == 0))
+			{
+				txLength += PID_LEN + SUPPRTED_PIDS_DATA_LEN;
+			}
+			else if(TRUE == lookupPid(requestPid[i],&sourcePidPtr))
+			{
+				txLength += PID_LEN + FF_NUM_LEN + sourcePidPtr->DspPidSize;
+			}
+			else
+			{
+				/*do nothing*/
+			}
+		}
+		/*@req OBD_DCM_REQ_7*/
+		if(txLength <= (pduTxData->SduLength))
+		{
+			if(pidNum == flag)					/*check if all the request PIDs are the 0x00...0xE0 format*/
+			{
+				for(i = 0;i < pidNum;i++)		/*Check the PID configuration,find which PIDs were configured for 0x00,0x20,0x40 respectively,and fill in the pduTxBuffer,and count the txLength*/
+				{
+					if(requestFFNum[i] == RECORD_NUM)
+					{
+						/*@req OBD_DCM_REQ_3,OBD_DCM_REQ_6*/
+						if(TRUE == Dem_SetAvailabilityPidValue(requestPid[i],&DATA))
+						{
+							pduTxData->SduDataPtr[txPos] = requestPid[i];
+							txPos++;
+
+							pduTxData->SduDataPtr[txPos] = requestFFNum[i];
+							txPos++;
+
+							/*take every byte of uint32 DATA,and fill in txbuffer*/
+							pduTxData->SduDataPtr[txPos] = (uint8)(((DATA) & (OBD_DATA_LSB_MASK << OFFSET_THREE_BYTES)) >> OFFSET_THREE_BYTES);
+							txPos++;
+
+							pduTxData->SduDataPtr[txPos] = (uint8)(((DATA) & (OBD_DATA_LSB_MASK << OFFSET_TWO_BYTES)) >> OFFSET_TWO_BYTES);
+							txPos++;
+
+							pduTxData->SduDataPtr[txPos] = (uint8)(((DATA) & (OBD_DATA_LSB_MASK << OFFSET_ONE_BYTE)) >> OFFSET_ONE_BYTE);
+							txPos++;
+
+							pduTxData->SduDataPtr[txPos] = (uint8)((DATA) & OBD_DATA_LSB_MASK);
+							txPos++;
+
+						}
+						else
+						{
+							findPid++;
+						}
+					}
+					else
+					{
+						/*@req OBD_DCM_REQ_11*/
+						responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+						break;
+					}
+
+				}
+			}
+			else if(0 == flag)							/*check if all the request PIDs are the supported PIDs,like 0x01,0x02...*/
+			{
+				for(i = 0;i < pidNum;i++)
+				{
+					/*@req OBD_DCM_REQ_10*/
+					if(requestFFNum[i] == RECORD_NUM)
+					{
+						uint8 bufSize = 0;
+						if(requestPid[i] == OBD_SERVICE_TWO)
+						{
+							/*@req OBD_DCM_REQ_12,@OBD_DCM_REQ_13,@OBD_DCM_REQ_14*/
+							if(E_OK == Dem_GetDTCOfOBDFreezeFrame(requestFFNum[i],&dtc))
+							{
+								pduTxData->SduDataPtr[txPos] = requestPid[i];
+                                                        txPos++;
+								pduTxData->SduDataPtr[txPos] = requestFFNum[i];
+								txPos++;
+								//pduTxData->SduDataPtr[txPos] = (uint8)(((dtc) & (OBD_DATA_LSB_MASK << OFFSET_TWO_BYTES)) >> OFFSET_TWO_BYTES);
+								pduTxData->SduDataPtr[txPos] = (uint8)(((dtc) & (OBD_DATA_LSB_MASK << OFFSET_ONE_BYTE)) >> OFFSET_ONE_BYTE);
+								txPos++;
+								//pduTxData->SduDataPtr[txPos] = (uint8)(((dtc) & (OBD_DATA_LSB_MASK << OFFSET_ONE_BYTE)) >> OFFSET_ONE_BYTE);
+								pduTxData->SduDataPtr[txPos] = (uint8)((dtc) & OBD_DATA_LSB_MASK);
+								txPos++;
+							}
+							/*if the DTC did not cause the stored FF,DTC of 0x0000 should be returned*/
+							/* @req OBD_REQ_5 */
+							else
+							{
+								pduTxData->SduDataPtr[txPos] = requestPid[i];
+								txPos++;
+								pduTxData->SduDataPtr[txPos] = requestFFNum[i];
+								txPos++;
+								pduTxData->SduDataPtr[txPos] = 0x00;
+								txPos++;
+								pduTxData->SduDataPtr[txPos] = 0x00;
+								txPos++;
+							}
+						}
+						/*req OBD_DCM_REQ_17*/
+						else
+						{
+							/*@req OBD_DCM_REQ_28*/
+							pduTxData->SduDataPtr[txPos] = requestPid[i];
+							txPos++;
+							pduTxData->SduDataPtr[txPos] = requestFFNum[i];
+							txPos++;
+							bufSize = (uint8)(pduTxData->SduLength - txPos);
+							/*@req OBD_DCM_REQ_15,OBD_DCM_REQ_16*//* @req OBD_REQ_4 */
+							if(E_OK == Dem_GetOBDFreezeFrameData(requestPid[i],&(pduTxData->SduDataPtr[txPos]),&bufSize))
+							{
+								txPos += bufSize;
+							}
+							else
+							{
+								txPos -= 2;
+								findPid++;
+							}
+						}
+					}
+					else
+					{
+						/*@req OBD_DCM_REQ_11*/
+						responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+						break;
+					}
+				}
+
+			}
+			else
+			{
+				responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+			}
+			if(pidNum == findPid)
+			{
+				responseCode = DCM_E_REQUESTOUTOFRANGE;
+			}
+			else
+			{
+				/*do nothing*/
+			}
+		}
+		else
+		{
+			responseCode = DCM_E_REQUESTOUTOFRANGE;
+		}
+	}
+	else
+	{
+		responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+	}
+	if(DCM_E_POSITIVERESPONSE == responseCode)
+	{
+		pduTxData->SduLength = txPos;
+	}
+	else
+	{
+		/*do nothing*/
+	}
+	DsdDspProcessingDone(responseCode);
+
+	return;
+}
+
+
+static boolean Dcm_LookupService(uint8 serviceId,const Dcm_DsdServiceType **dsdService)
+{
+	boolean serviceFind = FALSE;
+	const Dcm_DsdServiceTableType *ServiceTable = DCM_Config.Dsd->DsdServiceTable;
+	const Dcm_DsdServiceType *dsdServicePtr = NULL;
+
+	if(ServiceTable != NULL)
+	{
+		while(0 == ServiceTable->Arc_EOL)
+		{
+			if(ServiceTable->DsdService != NULL)
+			{
+				dsdServicePtr = ServiceTable->DsdService;
+				while((serviceId != dsdServicePtr->DsdSidTabServiceId) && (0 == dsdServicePtr->Arc_EOL))
+				{
+					dsdServicePtr++;
+				}
+				if((serviceId == dsdServicePtr->DsdSidTabServiceId) && (0 == dsdServicePtr->Arc_EOL))
+				{
+					*dsdService = dsdServicePtr;
+					serviceFind = TRUE;
+				}
+			}
+
+			ServiceTable++;
+                }
+	}
+
+	return serviceFind;
+}
+
+/*@req OBD_DCM_REQ_19*//* @req OBD_REQ_10 */
+void DspObdClearEmissionRelatedDiagnosticData(const PduInfoType *pduRxData,PduInfoType *pduTxData)
+{
+	uint16 messageLen = pduRxData->SduLength;
+	const Dcm_DsdServiceType *dsdService = NULL;
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+
+	if(messageLen == SID_LEN )
+	{
+		if(TRUE == Dcm_LookupService(OBD_SERVICE_FOUR,&dsdService))
+		{
+			if(dsdService->conditionGet != NULL)
+			{
+				/* @req OBD_REQ_11 */
+				if(E_OK == dsdService->conditionGet())
+				{
+					/*@req OBD_DCM_REQ_1,OBD_DCM_REQ_20,OBD_DCM_REQ_21*/
+					if(DEM_CLEAR_OK == Dem_ClearDTC(DEM_DTC_GROUP_ALL_DTCS,DEM_DTC_KIND_EMISSION_REL_DTCS,DEM_DTC_ORIGIN_PRIMARY_MEMORY))
+					{
+						/*do nothing*/
+					}
+					else
+					{
+						responseCode = DCM_E_CONDITIONSNOTCORRECT;
+					}
+				}
+				else
+				{
+					responseCode = DCM_E_CONDITIONSNOTCORRECT;
+				}
+
+			}
+			if(dsdService->resetPids != NULL)
+			{
+				if(E_OK != dsdService->resetPids())
+				{
+					responseCode = DCM_E_CONDITIONSNOTCORRECT;
+				}
+			}
+		}
+	}
+	else
+	{
+		responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+	}
+
+	/*@req OBD_DCM_REQ_22*/
+	if(DCM_E_POSITIVERESPONSE == responseCode)
+	{
+		pduTxData->SduLength = SID_LEN;
+	}
+	else
+	{
+		/*do nothing*/
+	}
+	DsdDspProcessingDone(responseCode);
+
+	return;
+}
+
+
+
+static Dcm_NegativeResponseCodeType OBD_Sevice_03_07(PduInfoType *pduTxData,Dem_ReturnSetDTCFilterType setDtcFilterResult)
+{
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+
+	if (setDtcFilterResult == DEM_FILTER_ACCEPTED)
+	{
+		uint32 dtc;
+		Dem_EventStatusExtendedType dtcStatus;
+		uint8 nrOfDtcs = 0;
+		uint8 index = 2;
+
+		while ((Dem_GetNextFilteredDTC(&dtc, &dtcStatus)) == DEM_FILTERED_OK)
+		{
+
+			if((index + LENGTH_OF_DTC) >= (pduTxData->SduLength))
+			{
+				responseCode = DCM_E_REQUESTOUTOFRANGE;
+				break;
+			}
+			/* @req OBD_REQ_9 */
+			pduTxData->SduDataPtr[index] = (uint8)EMISSION_DTCS_HIGH_BYTE(dtc);
+            pduTxData->SduDataPtr[1+index] = (uint8)EMISSION_DTCS_LOW_BYTE(dtc);
+            index += LENGTH_OF_DTC;
+			nrOfDtcs++;
+
+		}
+		/* @req OBD_REQ_8 */
+		if(responseCode == DCM_E_POSITIVERESPONSE)
+		{
+			pduTxData->SduLength = (PduLengthType)(index);
+			pduTxData->SduDataPtr[1] = nrOfDtcs;
+		}
+
+	}
+	else
+	{
+		responseCode = DCM_E_CONDITIONSNOTCORRECT;
+	}
+
+	return responseCode;
+
+}
+
+/*@req OBD_DCM_REQ_23*//* @req OBD_REQ_7 */
+void  DspObdRequestEmissionRelatedDiagnosticTroubleCodes(const PduInfoType *pduRxData,PduInfoType *pduTxData)
+{
+	uint16 messageLen = pduRxData->SduLength;
+	Dem_ReturnSetDTCFilterType setDtcFilterResult;
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+
+	if(messageLen == SID_LEN )
+	{
+		/*"confirmed" diagnostic trouble codes*/
+		/*@req OBD_DCM_REQ_1*/	/*@req OBD_DCM_REQ_24*/
+		setDtcFilterResult = Dem_SetDTCFilter(DEM_CONFIRMED_DTC, DEM_DTC_KIND_EMISSION_REL_DTCS,\
+											DEM_DTC_ORIGIN_PRIMARY_MEMORY, DEM_FILTER_WITH_SEVERITY_NO,\
+											VALUE_IS_NOT_USED, DEM_FILTER_FOR_FDC_NO);
+
+		responseCode = OBD_Sevice_03_07(pduTxData,setDtcFilterResult);
+
+	}
+	else
+	{
+		responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+	}
+
+	DsdDspProcessingDone(responseCode);
+
+}
+
+/*@req OBD_DCM_REQ_25*//* @req OBD_REQ_12 */
+void  DspObdRequestEmissionRelatedDiagnosticTroubleCodesService07(const PduInfoType *pduRxData,PduInfoType *pduTxData)
+{
+	uint16 messageLen = pduRxData->SduLength;
+	Dem_ReturnSetDTCFilterType setDtcFilterResult;
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+
+	if(messageLen == SID_LEN )
+	{
+		/*"pending" diagnostic trouble codes*/
+		/*@req OBD_DCM_REQ_1*/	/*@req OBD_DCM_REQ_26*/
+		setDtcFilterResult = Dem_SetDTCFilter(DEM_PENDING_DTC, DEM_DTC_KIND_EMISSION_REL_DTCS, \
+											DEM_DTC_ORIGIN_PRIMARY_MEMORY, DEM_FILTER_WITH_SEVERITY_NO, \
+											VALUE_IS_NOT_USED, DEM_FILTER_FOR_FDC_NO);
+
+		responseCode = OBD_Sevice_03_07(pduTxData,setDtcFilterResult);
+
+	}
+	else
+	{
+		responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+	}
+
+  DsdDspProcessingDone(responseCode);
+  
+  return;
+
+}
+
+
+static boolean lookupInfoType(uint8 InfoType, const Dcm_DspVehInfoType **InfoTypePtr)
+{
+	const Dcm_DspVehInfoType *dspVehInfo = DCM_Config.Dsp->DspVehInfo;
+	boolean InfoTypeFound = FALSE;
+
+	while ((dspVehInfo->DspVehInfoType != InfoType) && ((dspVehInfo->Arc_EOL) == FALSE))
+	{
+		dspVehInfo++;
+	}
+	if ((dspVehInfo->Arc_EOL) == FALSE)
+	{
+		InfoTypeFound = TRUE;
+		*InfoTypePtr = dspVehInfo;
+	}
+
+	return InfoTypeFound;
+}
+
+static boolean Dem_SetAvailabilityInfoTypeValue(uint8 InfoType,uint32 *DATABUF)
+{
+	uint8 shift;
+	uint32 databuf = 0;
+	uint32 temp;
+	boolean setInfoTypeOk = TRUE;
+	const Dcm_DspVehInfoType *dspVehInfo = DCM_Config.Dsp->DspVehInfo;
+
+	if(dspVehInfo != NULL)
+	{
+		while ((dspVehInfo->DspVehInfoType != FALSE) &&  ((dspVehInfo->Arc_EOL) == FALSE))
+		{
+			if((dspVehInfo->DspVehInfoType >= (InfoType + AVAIL_TO_SUPPORTED_INFOTYPE_OFFSET_MIN)) && (dspVehInfo->DspVehInfoType <= (InfoType + AVAIL_TO_SUPPORTED_INFOTYPE_OFFSET_MAX)))
+			{
+				shift = dspVehInfo->DspVehInfoType - InfoType;
+				temp = (uint32)1 << (AVAIL_TO_SUPPORTED_INFOTYPE_OFFSET_MAX - shift);	  		
+				databuf |= temp;									
+			}
+			else if( (dspVehInfo->DspVehInfoType > (InfoType + AVAIL_TO_SUPPORTED_INFOTYPE_OFFSET_MAX)) && (dspVehInfo->DspVehInfoType <= (InfoType + AVAIL_TO_SUPPORTED_INFOTYPE_OFFSET_MAX + AVAIL_TO_SUPPORTED_INFOTYPE_OFFSET_MAX )) )
+			{
+				databuf |= (uint32)0x01;
+			}
+			else
+			{
+				/*do nothing*/
+			}
+			dspVehInfo++;
+                }
+
+		if(databuf == 0)
+		{
+			setInfoTypeOk = FALSE;
+		}
+		else
+		{
+			/*do nothing*/
+		}
+	}
+	else
+	{
+		setInfoTypeOk = FALSE;
+	}
+
+	(*DATABUF) = databuf;
+
+	return setInfoTypeOk;
+
+}
+
+/*@req OBD_DCM_REQ_27*//*@req OBD_REQ_13*/
+void DspObdRequestvehicleinformation(const PduInfoType *pduRxData,PduInfoType *pduTxData)
+{
+	uint8 i ;
+	uint8 flag = 0;
+	uint8 requestInfoType[MAX_REQUEST_VEHINFO_NUM];
+	uint16 txPos = SID_LEN;
+	uint32 DATABUF;
+	uint8 txBuffer[PID_BUFFER_SIZE];
+	uint8 findNum = 0;
+	uint16 InfoTypeNum = pduRxData->SduLength - 1;
+	const Dcm_DspVehInfoType *sourceVehInfoPtr = NULL;
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+
+	/*@req OBD_REQ_14*/
+	if((pduRxData->SduLength >= OBD_REQ_MESSAGE_LEN_ONE_MIN) && (pduRxData->SduLength <= OBD_REQ_MESSAGE_LEN_MAX ))
+	{
+		i = (uint8)InfoTypeNum;
+		while(i > 0)
+		{
+			requestInfoType[i - 1] = pduRxData->SduDataPtr[i];
+			if(((requestInfoType[i - 1] & DCM_FORMAT_LOW_MASK) == 0 )&&((((requestInfoType[i - 1] & DCM_FORMAT_HIGH_MASK) >> HALF_BYTE) & LEAST_BIT_MASK) == 0))
+			{
+				flag++;
+			}
+			else
+			{
+			}
+			i--;
+		 }
+
+		/*@req OBD_DCM_REQ_29*/
+		if(InfoTypeNum == flag)					/*check if all the request PIDs are the 0x00...0xE0 format*/
+		{
+			for(i = 0;i < InfoTypeNum;i++)		/*Check the PID configuration,find which PIDs were configured for 0x00,0x20,0x40 respectively,and fill in the pduTxBuffer,and count the txLength*/
+			{
+				if(TRUE == Dem_SetAvailabilityInfoTypeValue(requestInfoType[i] ,&DATABUF))
+				{
+					pduTxData->SduDataPtr[txPos] = requestInfoType[i];
+					txPos++;
+					/*take every byte of uint32 DTC,and fill in txbuffer*/
+					pduTxData->SduDataPtr[txPos] = (uint8)((DATABUF & (OBD_DATA_LSB_MASK << OFFSET_THREE_BYTES)) >> OFFSET_THREE_BYTES);
+					txPos++;
+					pduTxData->SduDataPtr[txPos] = (uint8)((DATABUF & (OBD_DATA_LSB_MASK << OFFSET_TWO_BYTES)) >> OFFSET_TWO_BYTES);
+					txPos++;
+					pduTxData->SduDataPtr[txPos] = (uint8)((DATABUF & (OBD_DATA_LSB_MASK << OFFSET_ONE_BYTE)) >> OFFSET_ONE_BYTE);
+					txPos++;
+					pduTxData->SduDataPtr[txPos] = (uint8)(DATABUF & OBD_DATA_LSB_MASK);
+					txPos++;
+				}
+				else
+				{
+					findNum++;
+				}
+			}
+		}
+		/*@req OBD_DCM_REQ_28*/
+		else if(flag == 0)             /*check if all the request PIDs are the supported VINs,like 0x01,0x02...*/
+		{
+			/*@req OBD_REQ_15*/
+			if(pduRxData->SduLength == OBD_REQ_MESSAGE_LEN_ONE_MIN)
+			{
+				if(TRUE == lookupInfoType(requestInfoType[i] ,&sourceVehInfoPtr ))
+				{
+
+					if (sourceVehInfoPtr->DspGetVehInfoTypeFnc(txBuffer) != E_OK) 
+					{
+						if( requestInfoType[i] == 0x02 )	/* Special for read VIN fail,  customer's requirement*/
+						{
+							for(uint8 j = 0; j < (OBD_VIN_LENGTH*sourceVehInfoPtr->DspVehInfoNumberOfDataItems);j++)
+							{
+								txBuffer[j] = 0xff;
+							}
+						}
+						else
+						{
+							responseCode = DCM_E_CONDITIONSNOTCORRECT;
+						}
+					}
+
+					pduTxData->SduDataPtr[txPos] = requestInfoType[i];
+
+					txPos++;
+					/*@req OBD_DCM_REQ_30*/
+					pduTxData->SduDataPtr[txPos] = sourceVehInfoPtr->DspVehInfoNumberOfDataItems;
+					txPos++;
+					(void)memcpy(&(pduTxData->SduDataPtr[txPos]),txBuffer,(sourceVehInfoPtr->DspVehInfoSize * (sourceVehInfoPtr->DspVehInfoNumberOfDataItems)));
+
+					txPos += (sourceVehInfoPtr->DspVehInfoSize * (sourceVehInfoPtr->DspVehInfoNumberOfDataItems)) ;
+					if(txPos >= ((pduTxData->SduLength)))
+					{
+						responseCode = DCM_E_REQUESTOUTOFRANGE;
+					}
+				}
+				else
+				{
+					findNum++;
+				}
+			}
+			/*@req OBD_REQ_16*/
+			else
+			{
+				responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+			}
+	 	}
+		else
+		{
+			responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+		}
+
+		if(findNum == InfoTypeNum)
+		{
+			responseCode = DCM_E_REQUESTOUTOFRANGE;
+		}
+		else
+		{
+			/* do nothing */
+		}
+	}
+	else
+	{
+		responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+	}
+
+	if(DCM_E_POSITIVERESPONSE == responseCode)
+	{
+		pduTxData->SduLength = txPos;
+	}
+	else
+	{
+		/* do nothing */
+	}
+
+	DsdDspProcessingDone(responseCode);
+
 }
