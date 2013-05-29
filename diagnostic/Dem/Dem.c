@@ -235,6 +235,11 @@ static boolean FFIsModified = FALSE;
  */
 static boolean AgingIsModified = FALSE;
 
+static void getPidData(const Dem_PidOrDidType ***pidClassPtr, FreezeFrameRecType **freezeFrame, uint16 *storeIndexPtr);
+static void getDidData(const Dem_PidOrDidType ***didClassPtr, FreezeFrameRecType **freezeFrame, uint16 *storeIndexPtr);
+static void storeOBDFreezeFrameDataPreInit(const Dem_EventParameterType * eventParam, const FreezeFrameRecType * freezeFrame);
+static void storeOBDFreezeFrameDataPriMem(const Dem_EventParameterType *eventParam, const FreezeFrameRecType *freezeFrame);
+
 /*
  * Procedure:	zeroPriMemBuffers
  * Description:	Fill the primary buffers with zeroes
