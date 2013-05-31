@@ -22,7 +22,8 @@
 #define assert(_x)
 #else
 #define assert(_x)  if (!(_x)) { \
-	                  printf("%s %s %s\n",#_x,__FILE__,__LINE__); \
+/*	                  printf("%s %s %s\n",#_x,__FILE__,__LINE__); */ \
+	                  abort(); \
                      }
 #endif
 
