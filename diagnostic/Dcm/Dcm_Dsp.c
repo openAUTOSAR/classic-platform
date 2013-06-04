@@ -62,7 +62,8 @@
 #define SF_INDEX 1
 #define SF_LEN 1
 #define PID_BUFFER_SIZE 255 // OBD
-
+#define DTC_LEN 3
+#define FF_REC_NUM_LEN 1
 /* Read/WriteMemeoryByAddress */
 #define ALFID_INDEX 1
 #define ALFID_LEN 1
@@ -864,8 +865,33 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x03(const PduInfoType *pd
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 
-	// TODO: Not supported yet
-	responseCode = DCM_E_REQUESTOUTOFRANGE;
+	uint16 numFilteredRecords = 0;
+	uint32 dtc = 0;
+	uint8 recordNumber = 0;
+	uint16 nofBytesCopied = 0;
+	(void)pduRxData;
+	/* @req DCM298 */
+	if( (DEM_FILTER_ACCEPTED == Dem_SetDTCFilterForRecords(&numFilteredRecords)) &&
+	        ( (SID_LEN + SF_LEN + (DTC_LEN + FF_REC_NUM_LEN)*numFilteredRecords) <= pduTxData->SduLength )) {
+	    for( uint16 i = 0; (i < numFilteredRecords) && (DCM_E_POSITIVERESPONSE == responseCode); i++ ) {
+	    	/* @req DCM299 */
+	        if( DEM_FILTERED_OK == Dem_GetNextFilteredRecord(&dtc, &recordNumber) ) {
+	        	/* @req DCM300 */
+	            pduTxData->SduDataPtr[SID_LEN + SF_LEN + nofBytesCopied++] = DTC_HIGH_BYTE(dtc);
+	            pduTxData->SduDataPtr[SID_LEN + SF_LEN + nofBytesCopied++] = DTC_MID_BYTE(dtc);
+	            pduTxData->SduDataPtr[SID_LEN + SF_LEN + nofBytesCopied++] = DTC_LOW_BYTE(dtc);
+	            pduTxData->SduDataPtr[SID_LEN + SF_LEN + nofBytesCopied++] = recordNumber;
+	        } else {
+	            responseCode = DCM_E_REQUESTOUTOFRANGE;
+	        }
+	    }
+	} else {
+	    responseCode = DCM_E_REQUESTOUTOFRANGE;
+	}
+
+    pduTxData->SduDataPtr[0] = 0x59;    // positive response
+    pduTxData->SduDataPtr[1] = 0x03;    // subid
+    pduTxData->SduLength = SID_LEN + SF_LEN + nofBytesCopied;
 
 	return responseCode;
 }
@@ -1018,7 +1044,7 @@ void DspUdsReadDtcInformation(const PduInfoType *pduRxData, PduInfoType *pduTxDa
 {
 	/** @req DCM248 */
 	// Sub function number         0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F 10 11 12 13 14 15
-	const uint8 sduLength[0x16] = {0, 3, 3, 6, 6, 3, 6, 4, 4, 5, 2, 2, 2, 2, 2, 3, 6, 3, 3, 3, 2, 2};
+	const uint8 sduLength[0x16] = {0, 3, 3, 2, 6, 3, 6, 4, 4, 5, 2, 2, 2, 2, 2, 3, 6, 3, 3, 3, 2, 2};
 
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 

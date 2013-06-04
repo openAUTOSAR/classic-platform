@@ -235,6 +235,10 @@ static boolean FFIsModified = FALSE;
  */
 static boolean AgingIsModified = FALSE;
 
+/* Index for keeping track of ffRecordFilter */
+static uint16 FFRecordFilterIndex;
+
+
 static void getPidData(const Dem_PidOrDidType ***pidClassPtr, FreezeFrameRecType **freezeFrame, uint16 *storeIndexPtr);
 static void getDidData(const Dem_PidOrDidType ***didClassPtr, FreezeFrameRecType **freezeFrame, uint16 *storeIndexPtr);
 static void storeOBDFreezeFrameDataPreInit(const Dem_EventParameterType * eventParam, const FreezeFrameRecType * freezeFrame);
@@ -2496,6 +2500,8 @@ void Dem_Init(void)
 
 	disableDtcStorage.storageDisabled = FALSE;
 
+	FFRecordFilterIndex = DEM_MAX_NUMBER_FF_DATA_PRI_MEM;
+
 	demState = DEM_INITIALIZED;
 }
 
@@ -3418,6 +3424,63 @@ Dem_ReturnGetSizeOfFreezeFrameType Dem_GetSizeOfFreezeFrame(uint32  dtc,Dem_DTCK
 	return returnCode;
 
 
+}
+
+/** @req DEM209 */
+Dem_ReturnSetDTCFilterType Dem_SetDTCFilterForRecords(uint16 *NumberOfFilteredRecords)
+{
+	Dem_ReturnSetDTCFilterType ret = DEM_WRONG_FILTER;
+    if (demState != DEM_INITIALIZED) {
+        DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_SETDTCFILTERFORRECORDS_ID, DEM_E_UNINIT);
+    } else {
+        uint16 nofRecords = 0;
+        for( uint16 i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++ ) {
+        	/* @req DEM210 */ /* We are searching in priMem buffer */
+            if( DEM_EVENT_ID_NULL != priMemFreezeFrameBuffer[i].eventId ) {
+                EventStatusRecType *eventStatusRecPtr = NULL;
+                lookupEventStatusRec(priMemFreezeFrameBuffer[i].eventId, &eventStatusRecPtr);
+                if( (NULL != eventStatusRecPtr) && (NULL != eventStatusRecPtr->eventParamRef->DTCClassRef) ) {
+                    nofRecords++;
+                }
+            }
+        }
+        *NumberOfFilteredRecords = nofRecords;
+        FFRecordFilterIndex = 0;
+        ret = DEM_FILTER_ACCEPTED;
+    }
+    return ret;
+}
+
+/** @req DEM224 */
+Dem_ReturnGetNextFilteredDTCType Dem_GetNextFilteredRecord(uint32 *DTC, uint8 *RecordNumber)
+{
+    Dem_ReturnGetNextFilteredDTCType ret = DEM_FILTERED_NO_MATCHING_DTC;
+
+    EventStatusRecType *eventStatusRecPtr = NULL;
+    if (demState == DEM_INITIALIZED) {
+
+        /* Find the next record which has a DTC */
+        boolean found = FALSE;
+        for( uint16 i = FFRecordFilterIndex; (i < DEM_MAX_NUMBER_FF_DATA_PRI_MEM) && !found; i++  ) {
+            if( DEM_EVENT_ID_NULL != priMemFreezeFrameBuffer[i].eventId ) {
+                lookupEventStatusRec(priMemFreezeFrameBuffer[i].eventId, &eventStatusRecPtr);
+               if( (NULL != eventStatusRecPtr) && (NULL != eventStatusRecPtr->eventParamRef->DTCClassRef)) {
+                   /* Found one! */
+            	   /* @req DEM225 */
+                   *RecordNumber = priMemFreezeFrameBuffer[i].recordNumber;
+                   *DTC = eventStatusRecPtr->eventParamRef->DTCClassRef->DTC;
+                   /* @req DEM226 */
+                   FFRecordFilterIndex = i + 1;
+                   found = TRUE;
+                   ret = DEM_FILTERED_OK;
+               }
+            }
+        }
+    } else {
+        DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETNEXTFILTEREDRECORD_ID, DEM_E_UNINIT);
+    }
+
+    return ret;
 }
 
 #if (DEM_UNIT_TEST == STD_ON)
