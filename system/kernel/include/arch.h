@@ -37,11 +37,7 @@
  * @param f     Pointer to the function to call.
  *
  */
-#if defined(__ICCHCS12__)
 __simple void Os_ArchSetSpAndCall(void *sp, void (*f)(void) );
-#else
-void Os_ArchSetSpAndCall(void *sp, void (*f)(void) );
-#endif
 
 /**
  * Swap context.
@@ -50,11 +46,7 @@ void Os_ArchSetSpAndCall(void *sp, void (*f)(void) );
  * @param old - old ptr to pcb
  * @return
  */
-#if defined(__ICCHCS12__)
 __simple void Os_ArchSwapContext(void *old,void *new);
-#else
-void Os_ArchSwapContext(void *old,void *new);
-#endif
 
 
 /**
@@ -63,11 +55,7 @@ void Os_ArchSwapContext(void *old,void *new);
  * The only way to call this function right now is to:
  *   Os_TaskSwapContextTo(NULL,<pcb>);
  */
-#if defined(__ICCHCS12__)
 __simple void Os_ArchSwapContextTo(void *old,void *new);
-#else
-void Os_ArchSwapContextTo(void *old,void *new);
-#endif
 
 /**
  * Setup a pcb before use.
@@ -87,11 +75,7 @@ void Os_ArchSetupContext( OsTaskVarType *pcb );
  *
  * @return current stack pointer
  */
-#if defined(__ICCHCS12__)
 __simple void *Os_ArchGetStackPtr( void );
-#else
-void *Os_ArchGetStackPtr( void );
-#endif
 
 /**
  * Initialize the hardware.
@@ -135,5 +119,7 @@ void Os_ArchReboot( int type );
 unsigned int Os_ArchGetScSize( void );
 
 void Os_ArchSetTaskEntry(OsTaskVarType *pcbPtr );
+
+void Os_ArchPanic( uint32_t err, void *errFramePtr , void *excFramePtr);
 
 #endif /*ARCH_H_*/

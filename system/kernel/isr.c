@@ -26,6 +26,7 @@
 #include "sys.h"
 #include "isr.h"
 #include "irq.h"
+#include "arc.h"
 
 #define ILL_VECTOR	0xff
 
@@ -38,7 +39,7 @@ extern const OsIsrConstType Os_IsrConstList[OS_ISR_CNT];
 OsIsrVarType Os_IsrVarList[OS_ISR_MAX_CNT];
 #endif
 
-SECTION_BALIGN(0x10) uint8_t Os_IsrStack[OS_INTERRUPT_STACK_SIZE];
+uint8_t Os_IsrStack[OS_INTERRUPT_STACK_SIZE] __balign(0x100);
 
 // TODO: remove. Make soft links or whatever
 #if defined(CFG_ARM_CM3)
@@ -68,6 +69,9 @@ OsTaskVarType * os_alloc_new_pcb( void ) {
 static void Os_IsrAddWithId( const OsIsrConstType * restrict isrPtr, int id ) {
 	Os_IsrVarList[id].constPtr = isrPtr;
 	Os_IsrVarList[id].id = id;
+#if defined(CFG_OS_ISR_HOOKS)
+	Os_IsrVarList[id].preemtedId = INVALID_ISR;
+#endif
 	Os_VectorToIsr[isrPtr->vector + IRQ_INTERRUPT_OFFSET ] = id;
 	Irq_EnableVector( isrPtr->vector, isrPtr->priority, Os_ApplGetCore(isrPtr->appOwner )  );
 }
@@ -79,7 +83,7 @@ void Os_IsrInit( void ) {
 
 	Os_Sys.isrCnt = OS_ISR_CNT;
 	/* Probably something smarter, but I cant figure out what */
-	memset(&Os_VectorToIsr[OS_ISR_CNT],ILL_VECTOR,NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS-OS_ISR_CNT);
+	memset(Os_VectorToIsr,ILL_VECTOR,NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS);
 
 #if OS_ISR_CNT != 0
 	/* Attach the interrupts */
@@ -118,6 +122,9 @@ ISRType Os_IsrAdd( const OsIsrConstType * restrict isrPtr ) {
 
 		Os_IsrVarList[id].constPtr = isrPtr;
 		Os_IsrVarList[id].id = id;
+#if defined(CFG_OS_ISR_HOOKS)
+		Os_IsrVarList[id].preemtedId = INVALID_ISR;
+#endif
 		Os_VectorToIsr[isrPtr->vector + IRQ_INTERRUPT_OFFSET ] = id;
 		Irq_EnableVector( isrPtr->vector, isrPtr->priority, Os_ApplGetCore(isrPtr->appOwner )  );
 	}
@@ -175,7 +182,7 @@ void Os_IsrEnable( ISRType isr) {
  */
 
 
-
+#if 0
 /**
  * Before we have proper editor for ISR2 use this function to add resources
  * to an ISR2
@@ -190,6 +197,7 @@ StatusType Os_IsrAddResource( TaskType isr, ResourceType resource ) {
 
 	return E_OK;
 }
+#endif
 
 #if defined(CFG_ARM_CM3)
 extern void Irq_EOI2( void );
@@ -275,6 +283,32 @@ void Os_IsrGetStackInfo( OsIsrStackType *stack ) {
 	stack->size = sizeof(Os_IsrStack);
 }
 
+const OsIsrVarType *Os_IsrGet( ISRType id ) {
+#if OS_ISR_MAX_CNT != 0
+	if( id < Os_Sys.isrCnt ) {
+		return &Os_IsrVarList[id];
+	} else  {
+		return NULL;
+	}
+#else
+	(void)id;
+	return NULL;
+#endif
+}
+
+ApplicationType Os_IsrGetApplicationOwner( ISRType id ) {
+	ApplicationType rv = INVALID_OSAPPLICATION;
+
+#if (OS_ISR_MAX_CNT!=0)
+	if( id < Os_Sys.isrCnt ) {
+		rv = Os_IsrGet(id)->constPtr->appOwner;
+	}
+#else
+	(void)id;
+#endif
+	return rv;
+}
+
 
 #if defined(CFG_ARM_CR4)
 void *Os_Isr_cr4( void *stack, int16_t virtualVector, int16_t vector ) {
@@ -320,7 +354,8 @@ void *Os_Isr( void *stack, int16_t vector ) {
 		/* We interrupted an ISR, save it */
 		oldIsrPtr = Os_Sys.currIsrPtr;
 #if defined(CFG_OS_ISR_HOOKS)
-	Os_PostIsrHook(isrPtr->id);
+		isrPtr->preemtedId = oldIsrPtr->id;
+		Os_PostIsrHook(oldIsrPtr->id);
 #endif
 	}
 
@@ -345,7 +380,12 @@ void *Os_Isr( void *stack, int16_t vector ) {
 #endif
 
 #if defined(CFG_OS_ISR_HOOKS)
-	Os_PostIsrHook(isrPtr->id);
+	Os_PostIsrHook(isrPtr->id );
+	if( isrPtr->preemtedId != INVALID_ISR ) {
+		Os_Sys.currIsrPtr = &Os_IsrVarList[isrPtr->preemtedId];
+		Os_PreIsrHook(isrPtr->preemtedId );
+		isrPtr->preemtedId = INVALID_ISR;
+	}
 #endif
 
 
@@ -401,3 +441,17 @@ void *Os_Isr( void *stack, int16_t vector ) {
 
 	return stack;
 }
+
+void Os_Arc_GetIsrInfo( Arc_PcbType *pcbPtr, ISRType isrId ) {
+	const OsIsrVarType *isrPtr = Os_IsrGet(isrId);
+
+	if( isrPtr != NULL ) {
+		strncpy(pcbPtr->name,Os_IsrGet(isrId)->constPtr->name,OS_ARC_PCB_NAME_SIZE);
+	}
+
+}
+
+int Os_Arc_GetIsrCount( void ) {
+	return (int)Os_Sys.isrCnt;
+}
+

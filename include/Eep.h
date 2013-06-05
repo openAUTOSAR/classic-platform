@@ -18,16 +18,17 @@
 
 #include "Std_Types.h"
 #include "MemIf_Types.h"
+#include "Modules.h"
 
 /* Standard info */
-#define EEP_VENDOR_ID             1
+#define EEP_VENDOR_ID             VENDOR_ID_ARCCORE
 #define EEP_MODULE_ID						 MODULE_ID_EEP
 #define EEP_SW_MAJOR_VERSION      1
 #define EEP_SW_MINOR_VERSION      0
 #define EEP_SW_PATCH_VERSION      1
-#define EEP_AR_MAJOR_VERSION      2
-#define EEP_AR_MINOR_VERSION      2
-#define EEP_AR_PATCH_VERSION      1
+#define EEP_AR_MAJOR_VERSION      3
+#define EEP_AR_MINOR_VERSION      1
+#define EEP_AR_PATCH_VERSION      5
 
 typedef uint32 Eep_AddressType;
 typedef Eep_AddressType Eep_LengthType;

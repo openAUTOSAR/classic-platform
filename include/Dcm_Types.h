@@ -48,6 +48,7 @@ typedef uint8 Dcm_SesCtrlType;
 #define DCM_PROGRAMMING_SESSION					((Dcm_SesCtrlType)0x02)
 #define DCM_EXTENDED_DIAGNOSTIC_SESSION			((Dcm_SesCtrlType)0x03)
 #define DCM_SAFTEY_SYSTEM_DIAGNOSTIC_SESSION	((Dcm_SesCtrlType)0x04)
+#define DCM_OBD_SESSION							((Dcm_SesCtrlType)0x05)//only used for OBD diagnostic
 #define DCM_ALL_SESSION_LEVEL					((Dcm_SesCtrlType)0xFF)
 
 typedef uint8 Dcm_ConfirmationStatusType;
@@ -96,6 +97,7 @@ typedef uint8 Dcm_OpStatusType;
 /*
  * Dcm_NegativeResponseCodeType
  */
+#if !defined(_DEFINED_TYPEDEF_FOR_NegativeResponseCodeType_)
 typedef uint8 Dcm_NegativeResponseCodeType;
 #define DCM_E_GENERALREJECT								((Dcm_NegativeResponseCodeType)0x10)
 #define DCM_E_BUSYREPEATREQUEST							((Dcm_NegativeResponseCodeType)0x21)
@@ -130,6 +132,7 @@ typedef uint8 Dcm_NegativeResponseCodeType;
 #define DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT		((Dcm_NegativeResponseCodeType)0x13)
 #define DCM_E_RESPONSEPENDING							((Dcm_NegativeResponseCodeType)0x78)
 #define DCM_E_SERVICENOTSUPPORTEDINACTIVESESSION		((Dcm_NegativeResponseCodeType)0x7F)
+#endif
 
 
 typedef uint8 Dcm_StatusType;

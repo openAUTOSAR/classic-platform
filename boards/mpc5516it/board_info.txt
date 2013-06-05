@@ -30,7 +30,7 @@ SPI
  Connect that "SPI TEST" with 1. on board to 1. on EVB. 
   - M95256 ,     E2, SPI_A , CS1 (from 0)   
   - M95256 ,     E2, SPI_B , CS2 (from 0)
-  - S25FL016, Flash, SPI_A , CS0 (from 0)
+  - FL040AIF, Flash, SPI_A , CS0 (from 0)
 
 Testing during MCAL test:
    SPI_A, M95256 using PCS_A[2]

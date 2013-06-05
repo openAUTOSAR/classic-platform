@@ -79,6 +79,8 @@ typedef struct {
 	uint32						FullComMinDurationTimeLeft;
 	uint32						LightTimeoutTimeLeft;
 	uint8						NmIndicationMask;
+	boolean						RunModeIndication;
+	boolean						WakeUp;
 } ComM_Internal_ChannelType;
 
 typedef struct {
@@ -147,5 +149,14 @@ static inline boolean ComM_Internal_FullComMinTime_AllowsExit(const ComM_Channel
 /* Tick 'Light nm' timeout, and update state if needed */
 static inline Std_ReturnType ComM_Internal_TickLightTime(const ComM_ChannelType* ChannelConf,
 		ComM_Internal_ChannelType* ChannelInternal);
+
+/* Perform a Run Request through EcuM */
+static void ComM_Internal_RequestRUN(NetworkHandleType Channel);
+
+/* Perform a Release Request through EcuM */
+static void ComM_Internal_ReleaseRUN(NetworkHandleType Channel);
+
+/* Private function to check if EcuM has indicated Run Mode */
+static boolean ComM_Internal_RunModeIndication( NetworkHandleType Channel );
 
 #endif /* COMM_INTERNAL_H */

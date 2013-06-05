@@ -27,12 +27,12 @@
 #include "Modules.h"
 
 #define COMM_MODULE_ID			MODULE_ID_COMM
-#define COMM_VENDOR_ID			1
+#define COMM_VENDOR_ID			VENDOR_ID_ARCCORE
 
 /** @req COMM469 */
-#define COMM_AR_MAJOR_VERSION	2
-#define COMM_AR_MINOR_VERSION	0
-#define COMM_AR_PATCH_VERSION	1
+#define COMM_AR_MAJOR_VERSION	3
+#define COMM_AR_MINOR_VERSION	1
+#define COMM_AR_PATCH_VERSION	5
 
 #define COMM_SW_MAJOR_VERSION	1
 #define COMM_SW_MINOR_VERSION	0
@@ -89,6 +89,7 @@ void ComM_MainFunction_##channel (void) { \
 	ComM_MainFunction(COMM_NETWORK_HANDLE_##channel); \
 }
 
+void ComM_MainFunction_All_Channels(void);
 
 /** Initializes the AUTOSAR Communication Manager and restarts the internal state machines.*/
 void ComM_Init(const ComM_ConfigType* Config);  /**< @req COMM146 */

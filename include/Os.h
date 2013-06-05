@@ -58,6 +58,9 @@ typedef uint8 StatusType;
 #define	E_OS_PROTECTION_EXCEPTION (StatusType)18    /**< AUTOSAR, see 7.10 */
 #define	E_OS_PROTECTION_RATE (StatusType)19          /**< AUTOSAR, see 7.10 */
 
+#define E_OS_EXIT_ABORT				(StatusType)30	/* ArcCore */
+#define E_OS_PANIC					(StatusType)31	/* ArcCore */
+
 #define E_COM_ID 255 // TODO: var ska E_COM_ID vara?"
 
 
@@ -367,6 +370,8 @@ TickType GetOsTick( void );
  * Kernel extra
  *-----------------------------------------------------------------*/
 
+
+
 #if defined(USE_KERNEL_EXTRA)
 
 #define TICK_MAX 	UINT_MAX
@@ -497,8 +502,6 @@ static inline OsServiceIdType OSErrorGetServiceId(void)  {
 	return os_error.serviceId;
 }
 
-extern OsErrorType os_error;
-
 #define OSError_ActivateTask_TaskID ((TaskType) os_error.param1)
 #define OSError_ChainTask_TaskID ((TaskType) os_error.param1)
 #define OSError_GetTaskID_TaskID ((TaskRefType) os_error.param1)
@@ -566,9 +569,8 @@ StatusType ReceiveMessage( MessageType message_id, ApplicationDataRef dataRef );
 /*
  * ArcCore extensions
  */
-TickType GetOsTick();
 void OsTick(void);
-void OsIdle(void);
+//void OsIdle(void);
 
 #define OS_ISR_TYPE2	0
 #define OS_ISR_TYPE1	1

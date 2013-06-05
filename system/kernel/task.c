@@ -16,6 +16,7 @@
 /* ----------------------------[includes]------------------------------------*/
 
 #include <stdlib.h>
+#include <string.h>
 #include "Os.h"
 
 #include "application.h"
@@ -24,6 +25,8 @@
 #include "sys.h"
 #include "arc.h"
 #include "arch.h"
+#include <string.h>
+
 
 /* ----------------------------[private define]------------------------------*/
 /* ----------------------------[private macro]-------------------------------*/
@@ -380,12 +383,6 @@ OsTaskVarType *Os_TaskGetTop( void ){
  *    + No need to remove the running process from ready queue
  */
 
-OsTaskVarType *Os_FindTopPrioTask( void ) {
-
-
-	return NULL;
-}
-
 /**
  * Tries to Dispatch.
  *
@@ -571,6 +568,10 @@ void Os_Arc_GetStackInfo( TaskType task, StackInfoType *s) {
 	s->usage 	= (void *)Os_StackGetUsage(pcb);
 }
 
+
+void Os_Arc_GetTaskName(char *str, TaskType taskId) {
+	strncpy(str, Os_TaskGet(taskId)->constPtr->name, TASK_NAME_SIZE);
+}
 
 #define TASK_CHECK_ID(x) 				\
 	if( (x) > OS_TASK_CNT) { \
@@ -947,4 +948,17 @@ StatusType Schedule( void ) {
 
 	OS_STD_END(OSServiceId_Schedule);
 }
+
+
+#if TASK_NAME_SIZE != OS_ARC_PCB_NAME_SIZE
+#error Sized does not match. Correct it
+#endif
+
+void Os_Arc_GetTaskInfo( Arc_PcbType *pcbPtr, TaskType taskId ) {
+	OsTaskVarType *taskPtr = Os_TaskGet(taskId);
+
+	strncpy(pcbPtr->name,taskPtr->constPtr->name,TASK_NAME_SIZE);
+}
+
+
 

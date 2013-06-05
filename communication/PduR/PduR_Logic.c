@@ -252,6 +252,11 @@ void PduR_ARC_RxIndication(PduIdType PduId, const PduInfoType* PduInfo, uint8 se
 
 	const PduRRoutingPath_type *route = PduRConfig->RoutingPaths[PduId];
 
+	/* Do not route incoming PDUs out again unless specified */
+    if (route != NULL && !PduR_IsLoModule(route->SrcModule)) {
+    	return;
+    }
+
 	if (HAS_BUFFER_STATUS(PduId, PDUR_BUFFER_ALLOCATED_FROM_UP_MODULE)) {
 		PduR_ARC_RxIndicationWithUpBuffer(PduId, PduInfo, serviceId);
 

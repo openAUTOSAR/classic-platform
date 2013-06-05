@@ -23,7 +23,7 @@
 /**
  * End-Of-Interrupt. Called by the OS it wants to clear the interrupt.
  */
-void Irq_EOI( void );
+//void Irq_EOI( void );
 
 
 typedef enum

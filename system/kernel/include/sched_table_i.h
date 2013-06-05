@@ -207,7 +207,6 @@ typedef struct OsSchTbl {
 */
 
 void Os_SchTblInit( void );
-void Os_SchTblAutostart( void );
 void Os_SchTblCalcExpire( OsSchTblType *stbl );
 void Os_SchTblCheck(OsCounterType *c_p);
 void Os_SchTblAutostart( void );
@@ -251,8 +250,6 @@ static inline ApplicationType Os_SchTblGetApplicationOwner( ScheduleTableType id
 	return rv;
 }
 
-
-void Os_SchTblCheck(OsCounterType *c_p);
 
 /* Accessor functions */
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )

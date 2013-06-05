@@ -36,7 +36,7 @@ lib-y   	+= -lgcc -lc
 #LDFLAGS += -te500v1
 
 asflags-$(CFG_BOOKE) += -me500
-asflags-$(CFG_SPE) += -mspe
+asflags-$(CFG_SPE) += -mspe -me500
 asflags-y += -mregnames
  
 ASFLAGS += $(asflags-y)

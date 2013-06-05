@@ -37,6 +37,25 @@
 /** @req COMM549.bswbuilder */
 /** @req COMM464 */
 
+/* EcuM interface & wakeup */
+/** @req COMM239 */
+/** @req COMM660 */
+/** @req COMM275 */
+/** @req COMM814 */
+/** @req COMM815 */
+/** @req COMM406 */
+/** @req COMM647 */
+/** @req COMM648 */
+/** @req COMM651 */
+/** @req COMM316 */
+/** @req COMM33 */
+/** @req COMM317 */
+/** @req COMM453 */
+/** @req COMM454 */
+/** @req COMM455 */
+/** @req COMM344 */
+
+
 #include <string.h>
 #include "ComM.h"
 #include "ComM_Dcm.h"
@@ -69,6 +88,10 @@
 #include "Nm.h"
 #endif
 
+#if defined(USE_ECUM)
+#include "EcuM.h"
+#endif
+
 static ComM_InternalType ComM_Internal = {
 		.InitStatus = COMM_UNINIT,
 		.InhibitCounter = 0,
@@ -95,6 +118,8 @@ void ComM_Init(const ComM_ConfigType * Config ){
 		ComM_Internal.Channels[i].UserRequestMask = 0;
 		ComM_Internal.Channels[i].InhibitionStatus = COMM_INHIBITION_STATUS_NONE;
 		ComM_Internal.Channels[i].NmIndicationMask = COMM_NM_INDICATION_NONE;
+		ComM_Internal.Channels[i].RunModeIndication = FALSE;
+		ComM_Internal.Channels[i].WakeUp = FALSE;
 	}
 
 	for (uint8 i = 0; i < COMM_USER_COUNT; ++i) {
@@ -157,18 +182,17 @@ static Std_ReturnType ComM_Internal_RequestComMode(
 		// Put user request into mask
 		if (ComMode == COMM_NO_COMMUNICATION) {
 			ChannelInternal->UserRequestMask &= ~(userMask);
+#if defined(USE_ECUM) || defined(COMM_TESTS)
+			ComM_Internal_ReleaseRUN(Channel->Number);
+#endif
 		} else if (ComMode == COMM_FULL_COMMUNICATION) {
 			ChannelInternal->UserRequestMask |= userMask;
+#if defined(USE_ECUM) || defined(COMM_TESTS)
+			ComM_Internal_RequestRUN(Channel->Number);
+#endif
 		} else {
 			//Nothing to be done.
 		}
-
-		// take request -> new state
-		Std_ReturnType status = ComM_Internal_UpdateChannelState(Channel, TRUE);
-		if (status > requestStatus){
-			requestStatus = status;
-		}
-
 	}
 
 	return requestStatus;
@@ -221,14 +245,13 @@ Std_ReturnType ComM_LimitChannelToNoComMode( NetworkHandleType Channel, boolean 
 	COMM_VALIDATE_INIT(COMM_SERVICEID_LIMITCHANNELTONOCOMMODE);
 	COMM_VALIDATE_CHANNEL(Channel, COMM_SERVICEID_LIMITCHANNELTONOCOMMODE);
 #if (COMM_MODE_LIMITATION_ENABLED == STD_ON)
-	const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
 	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
 	if (Status) {
 		ChannelInternal->InhibitionStatus |=  (COMM_INHIBITION_STATUS_NO_COMMUNICATION);
 	} else {
 		ChannelInternal->InhibitionStatus &= ~(COMM_INHIBITION_STATUS_NO_COMMUNICATION);
 	}
-	return ComM_Internal_UpdateChannelState(ChannelConf, FALSE);
+	return E_OK;
 #else
 	return E_NOT_OK;
 #endif
@@ -239,16 +262,7 @@ Std_ReturnType ComM_LimitECUToNoComMode( boolean Status ){
 	COMM_VALIDATE_INIT(COMM_SERVICEID_LIMITECUTONOCOMMODE);
 #if (COMM_MODE_LIMITATION_ENABLED == STD_ON)
 	ComM_Internal.NoCommunication = Status;
-	uint8 Channel;
-	Std_ReturnType totalStatus = E_OK;
-	for (Channel = 0; Channel < COMM_CHANNEL_COUNT; Channel++) {
-		const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
-		Std_ReturnType status = ComM_Internal_UpdateChannelState(ChannelConf, FALSE);
-		if (status > totalStatus) {
-			totalStatus = status;
-		}
-	}
-	return totalStatus;
+	return E_OK;
 #else
 	return E_NOT_OK;
 #endif
@@ -290,74 +304,73 @@ Std_ReturnType ComM_SetECUGroupClassification( ComM_InhibitionStatusType Status 
 void ComM_Nm_NetworkStartIndication( NetworkHandleType Channel ){
 	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_NM_NETWORKSTARTINDICATION);
 	COMM_VALIDATE_CHANNEL_NORV(Channel, COMM_SERVICEID_NM_NETWORKSTARTINDICATION);
-	const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
 	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
 
 	// Used to simulate Wake-up
 	ChannelInternal->NmIndicationMask |= COMM_NM_INDICATION_RESTART;
-	Std_ReturnType status = ComM_Internal_UpdateChannelState(ChannelConf, FALSE);
-	if (status != E_OK) {
-		// TODO: report error?
-	}
 }
 
 /** @req COMM807 */
 void ComM_Nm_NetworkMode( NetworkHandleType Channel ){
 	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_NM_NETWORKMODE);
 	COMM_VALIDATE_CHANNEL_NORV(Channel, COMM_SERVICEID_NM_NETWORKMODE);
-	const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
 	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
 
 	ChannelInternal->NmIndicationMask |= COMM_NM_INDICATION_NETWORK_MODE;
-	Std_ReturnType status = ComM_Internal_UpdateChannelState(ChannelConf, FALSE);
-	if (status != E_OK) {
-		// TODO: report error?
-	}
 }
 
 /** @req COMM809 */
 void ComM_Nm_PrepareBusSleepMode( NetworkHandleType Channel ){
 	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_NM_PREPAREBUSSLEEPMODE);
 	COMM_VALIDATE_CHANNEL_NORV(Channel, COMM_SERVICEID_NM_PREPAREBUSSLEEPMODE);
-	const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
 	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
 
 	ChannelInternal->NmIndicationMask |= COMM_NM_INDICATION_PREPARE_BUS_SLEEP;
-	Std_ReturnType status = ComM_Internal_UpdateChannelState(ChannelConf, FALSE);
-	if (status != E_OK) {
-		// TODO: report error?
-	}
 }
 
 /** @req COMM811 */
 void ComM_Nm_BusSleepMode( NetworkHandleType Channel ){
 	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_NM_BUSSLEEPMODE);
 	COMM_VALIDATE_CHANNEL_NORV(Channel, COMM_SERVICEID_NM_BUSSLEEPMODE);
-	const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
 	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
 
 	ChannelInternal->NmIndicationMask |= COMM_NM_INDICATION_BUS_SLEEP;
-	Std_ReturnType status = ComM_Internal_UpdateChannelState(ChannelConf, FALSE);
-	if (status != E_OK) {
-		// TODO: report error?
-	}
 }
 
 /** @req COMM813 */
 void ComM_Nm_RestartIndication( NetworkHandleType Channel ){
 	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_NM_RESTARTINDICATION);
 	COMM_VALIDATE_CHANNEL_NORV(Channel, COMM_SERVICEID_NM_RESTARTINDICATION);
-	const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
 	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
 
 	ChannelInternal->NmIndicationMask |= COMM_NM_INDICATION_RESTART;
-	Std_ReturnType status = ComM_Internal_UpdateChannelState(ChannelConf, FALSE);
-	if (status != E_OK) {
-		// TODO: report error?
-	}
-
 }
 
+#if defined(USE_ECUM) || defined(COMM_TESTS)
+static void ComM_Internal_ReleaseRUN(NetworkHandleType Channel)
+{
+	if(TRUE == EcuM_ComM_HasRequestedRUN(Channel))
+	{
+		/* Release run request */
+		EcuM_ComM_ReleaseRUN(Channel);
+	}
+	/* Set internal RunModeIndication to false since no callback on release, only on RunIndication */
+	ComM_Internal.Channels[Channel].RunModeIndication = FALSE;
+}
+
+static void ComM_Internal_RequestRUN(NetworkHandleType Channel)
+{
+	if(FALSE == EcuM_ComM_HasRequestedRUN(Channel))
+	{
+		/* Request run and wait for RunModeIndication */
+		EcuM_ComM_RequestRUN(Channel);
+	}
+}
+#endif
+static boolean ComM_Internal_RunModeIndication( NetworkHandleType Channel )
+{
+	return ComM_Internal.Channels[Channel].RunModeIndication;
+}
 
 // ECU State Manager Callbacks
 // ---------------------------
@@ -365,11 +378,19 @@ void ComM_Nm_RestartIndication( NetworkHandleType Channel ){
 void ComM_EcuM_RunModeIndication( NetworkHandleType Channel ){
 	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_ECUM_RUNMODEINDICATION);
 	COMM_VALIDATE_CHANNEL_NORV(Channel, COMM_SERVICEID_ECUM_RUNMODEINDICATION);
+
+	ComM_Internal.Channels[Channel].RunModeIndication = TRUE;
 }
 
 void ComM_EcuM_WakeUpIndication( NetworkHandleType Channel ){
 	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_ECUM_WAKEUPINDICATION);
 	COMM_VALIDATE_CHANNEL_NORV(Channel, COMM_SERVICEID_ECUM_WAKEUPINDICATION);
+
+	/* Activate wake-up i.e. start RequestRun and go to full communication */
+#if defined(USE_ECUM) || defined(COMM_TESTS)
+	ComM_Internal_RequestRUN(Channel);
+#endif
+	ComM_Internal.Channels[Channel].WakeUp = TRUE;
 }
 
 
@@ -378,10 +399,18 @@ void ComM_EcuM_WakeUpIndication( NetworkHandleType Channel ){
 
 void ComM_DCM_ActiveDiagnostic(void){
 	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_DCM_ACTIVEDIAGNOSTIC);
+
+	/** !req ComM182 : The communication inhibition shall get temporarily inactive during an active diagnostic session */
+
+	// TODO Activate channels,  we must have a DCM user with channels
 }
 
 void ComM_DCM_InactiveDiagnostic(void){
 	COMM_VALIDATE_INIT_NORV(COMM_SERVICEID_DCM_INACTIVEDIAGNOSTIC);
+
+	/** !req ComM182 : The communication inhibition shall get temporarily inactive during an active diagnostic session */
+
+	// TODO DeActivate channels,  we must have a DCM user with channels
 }
 
 
@@ -407,20 +436,19 @@ void ComM_MainFunction(NetworkHandleType Channel) {
 	const ComM_ChannelType* ChannelConf = &ComM_Config->Channels[Channel];
 	ComM_Internal_ChannelType* ChannelInternal = &ComM_Internal.Channels[Channel];
 
+	Std_ReturnType status = ComM_Internal_UpdateChannelState(ChannelConf, TRUE);
+
 	if ((ChannelConf->NmVariant == COMM_NM_VARIANT_NONE) ||
 		(ChannelConf->NmVariant == COMM_NM_VARIANT_LIGHT)) {
-		Std_ReturnType status = ComM_Internal_TickFullComMinTime(ChannelConf, ChannelInternal);
-		if (status != E_OK) {
-			// TODO: Report error?
-		}
+		status = ComM_Internal_TickFullComMinTime(ChannelConf, ChannelInternal);
 	}
 	if (ChannelConf->NmVariant == COMM_NM_VARIANT_LIGHT) {
-		Std_ReturnType status = ComM_Internal_TickLightTime(ChannelConf, ChannelInternal);
-		if (status != E_OK) {
-			// TODO: Report error?
-		}
+		status = ComM_Internal_TickLightTime(ChannelConf, ChannelInternal);
 	}
 
+	if (status != E_OK) {
+		// Report error?
+	}
 }
 
 void ComM_MainFunction_All_Channels() {
@@ -604,9 +632,13 @@ static inline Std_ReturnType ComM_Internal_UpdateFromNoCom(const ComM_ChannelTyp
 				ComM_Internal.InhibitCounter++;
 			}
 		} else {
-			if (ChannelInternal->UserRequestMask != 0) {
-				// Channel is requested
-				status = ComM_Internal_Enter_NetworkRequested(ChannelConf, ChannelInternal);  /**< @req COMM784.2 */
+			if ((ChannelInternal->UserRequestMask != 0) || (TRUE == ChannelInternal->WakeUp)) {
+				if(TRUE == ComM_Internal_RunModeIndication(ChannelConf->Number))
+				{
+					// Channel is requested
+					ChannelInternal->WakeUp = FALSE;
+					status = ComM_Internal_Enter_NetworkRequested(ChannelConf, ChannelInternal);  /**< @req COMM784.2 */
+				}
 			} else {
 				// Channel is not requested
 			}

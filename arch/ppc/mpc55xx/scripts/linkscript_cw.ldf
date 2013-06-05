@@ -101,7 +101,18 @@ SECTIONS
 	    __SDATA0 = .;
 	    .=.+SIZEOF(.PPC.EMB.sdata0);
 	    __rom_end = .;
+#if defined(CFG_MPC5516)	    
+		.lowpower_text BIND(0x000ff000): {
+			*(.lowpower_text)
+		}
+		
+		.lowpower_vector BIND(0x000ffffc): {
+		    *(.lowpower_vector)
+		}
+#endif
+
 	 }	 > flash
+
 
 	GROUP : {
 		__ram_start=.;
@@ -128,8 +139,14 @@ SECTIONS
 		
 		.PPC.EMB.sdata0 LOAD(ADDR(__SDATA0)) : {}	/* Small data with offset to 0 */	    
 		.PPC.EMB.sbss0  : {}
-		.ramlog : { *(.ramlog_data) *(.ramlog_bss) }
-		.dem : { *(.dem_eventmemory_pri) }
+		.ram_no_init : {
+			*(.ram_no_init_data) *(.ram_no_init_bss)
+		    *(.ramlog_data) *(.ramlog_bss) *(.dem_eventmemory_pri)
+		}		
+		.ram_no_cache  : { 
+		    *(.ram_no_cache_data) *(.ram_no_cache_bss)
+		}
+
 		_heap_addr = .; 
 		__ram_end = .;
 	} > sram

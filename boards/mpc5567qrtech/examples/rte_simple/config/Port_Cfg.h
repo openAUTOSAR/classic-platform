@@ -67,6 +67,7 @@
 #define		PORT_FUNC2			(PORT_BIT4)
 #define		PORT_FUNC3			(PORT_BIT4|PORT_BIT5)
 #define		PORT_FUNC4			(PORT_BIT3)
+#define 	PORT_FUNC5			(PORT_BIT2)
 
 #define		PORT_PCR_RESET		(0)
 #define		PORT_GPDO_RESET		(0)
@@ -90,6 +91,6 @@ extern const Port_ConfigType PortConfigData;
 
 #define PORT_PIN_NAME_CNTXA		83	
 #define PORT_PIN_NAME_CNRXA		84	
-#define PORT_PIN_NAME_GPIO0		0	
+#define PORT_PIN_NAME_GPIO125		125	
 
 #endif /* PORT_CFG_H_ */

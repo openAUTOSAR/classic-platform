@@ -20,7 +20,7 @@
 #include "Rte_Blinker_Internal.h"
 #include "Rte_EcuAbstraction_Internal.h"
 
-void Rte_BlinkerRunnable() {
+void Rte_BlinkerRunnable(void) {
 	BlinkerRunnable();
 }
 
@@ -30,11 +30,11 @@ Std_ReturnType Rte_DigitalOutput_Set(IoHwAb_SignalType SignalId,
 	return retVal;
 }
 
-Std_ReturnType Rte_Start() {
+Std_ReturnType Rte_Start(void) {
 	return RTE_E_OK;
 }
 
-void Scheduled() {
+void Scheduled(void) {
 	EventMaskType eventMask = 0;
 	while (1) {
 		WaitEvent(EVENT_MASK_ScheduleEvent);

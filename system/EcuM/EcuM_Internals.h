@@ -58,46 +58,42 @@
 
 typedef struct
 {
-	boolean initiated;
-	EcuM_ConfigType* config;
-	EcuM_StateType shutdown_target;
-	uint8 sleep_mode;
-	AppModeType app_mode;
-	EcuM_StateType current_state;
+	boolean 			initiated;
+	EcuM_ConfigType *	config;
+	EcuM_StateType 		shutdown_target;
+	uint8 				sleep_mode;
+	AppModeType 		app_mode;
+	EcuM_StateType 		current_state;
 #if defined(USE_COMM) || (USE_ECUM_COMM)
-	uint32 run_comm_requests;
+	uint32 				run_comm_requests;
 #endif
-	uint32 run_requests;
-	uint32 postrun_requests;
+	uint32 				run_requests;
+	uint32 				postrun_requests;
 	/* Events set by EcuM_SetWakeupEvent */
 	EcuM_WakeupSourceType wakeupEvents;
-	uint32 wakeupTimer;
 
+	uint32 wakeupTimer;
 	uint32 validationTimer;
+	uint32 nvmReadAllTimer;
 	/* Events set by EcuM_ValidateWakeupEvent */
 	uint32 validEvents;
+	boolean killAllRequest;
 } EcuM_GlobalType;
 
-extern EcuM_GlobalType internal_data;
+extern EcuM_GlobalType EcuM_World;
 
 void EcuM_enter_run_mode(void);
 
 #ifdef CFG_ECUM_USE_SERVICE_COMPONENT
 void set_current_state(EcuM_StateType state);
 #else
-#define set_current_state(state) internal_data.current_state = (state)
+#define set_current_state(state) EcuM_World.current_state = (state)
 #endif
 
-void EcuM_AL_DriverInitZero(void);
-EcuM_ConfigType* EcuM_DeterminePbConfiguration(void);
-void EcuM_AL_DriverInitOne(const EcuM_ConfigType* ConfigPtr);
-void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr);
-void EcuM_AL_DriverInitThree(const EcuM_ConfigType* ConfigPtr);
 
-
-#if defined(USE_LDEBUG_PRINTF)
+//#if defined(USE_LDEBUG_PRINTF)
 char *GetMainStateAsString( EcuM_StateType state );
-#endif
+//#endif
 
 
 #define DEBUG_ECUM_STATE(_state)						LDEBUG_PRINTF("STATE: %s\n",GetMainStateAsString(_state))

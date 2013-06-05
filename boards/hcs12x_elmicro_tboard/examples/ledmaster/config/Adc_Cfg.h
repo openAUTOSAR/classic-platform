@@ -21,7 +21,7 @@
 #ifndef ADC_CFG_H_
 #define ADC_CFG_H_
 
-#define ADC_DEINIT_API                    STD_OFF
+#define ADC_DEINIT_API                    STD_ON
 #define ADC_DEV_ERROR_DETECT              STD_OFF
 #define ADC_ENABLE_QUEUING                STD_OFF
 #define ADC_ENABLE_START_STOP_GROUP_API   STD_ON

@@ -23,6 +23,8 @@
 #include "mpc55xx.h"
 #include "arch_stack.h"
 #include "arch_offset.h"
+#include "arch.h"
+
 
 #define USE_LDEBUG_PRINTF
 #include "debug.h"
@@ -44,8 +46,8 @@
  * @param errFramePtr   Pointer to extra information about the error, if any.
  * @param excFramePtr   Pointer to the exception frame, that caused the error.
  */
-void Os_ArchPanic( uint32_t err, void *errFramePtr , Os_ExceptionFrameType *excFramePtr) {
-	(void)excFramePtr;
+void Os_ArchPanic( uint32_t err, void *errFramePtr , void *excFramePtr) {
+	(void)excFramePtr;  // Really of type Os_ExceptionFrameType
 	(void)errFramePtr;
 	switch(err) {
 	case OS_ERR_BAD_CONTEXT:
@@ -91,27 +93,6 @@ void Os_ArchFirstCall( void )
 #endif
 }
 
-
-/* TODO: This actually gives the stack ptr here...not the callers stack ptr
- * Should probably be a macro instead..... in some arch part..
- */
-#if defined(__DCC__)
-asm volatile void *_Os_ArchGetStackPtr(void) {
-	mr r3,r1
-}
-
-void *Os_ArchGetStackPtr(void) {
-	return _Os_ArchGetStackPtr();
-}
-#else
-void *Os_ArchGetStackPtr( void ) {
-	void *stackp;
-	// Get stack ptr(r1) from current context
-	asm volatile(" mr %0,1":"=r" (stackp));
-
-	return stackp;
-}
-#endif
 
 unsigned int Os_ArchGetScSize( void ) {
 	return FUNC_FRM_SIZE;
@@ -162,11 +143,13 @@ void Os_ArchSetTaskEntry(OsTaskVarType *pcbPtr ) {
 }
 
 void Os_ArchInit( void ) {
-#if defined(CFG_SPE)
 	uint32_t msr = get_msr();
+#if defined(CFG_SPE)
 	msr |= MSR_SPE;
-	set_msr(msr);
 #endif
+	msr |= MSR_ME;	/* We want IVOR1 instead of checkstop */
+	set_msr(msr);
+
 }
 
 

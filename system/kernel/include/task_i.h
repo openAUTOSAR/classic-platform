@@ -188,7 +188,7 @@ typedef struct OsTaskConst {
 	OsTaskidType	pid;
 	OsPriorityType	prio;
 //	uint32			app_mask;
-	void 			(*entry)();
+	void 			(*entry)( void );
 	proc_type_t  	proc_type;
 	uint8	 	 	autostart;
 	OsStackType 	stack;
@@ -233,7 +233,6 @@ _Bool os_pcb_pid_valid( OsTaskVarType *restrict pcb );
 void Os_TaskStartExtended( void );
 void Os_TaskStartBasic( void );
 void Os_TaskContextInit( OsTaskVarType *pcb );
-OsTaskVarType *Os_TaskGetTop( void );
 
 // Added by Mattias in order to avoid compiler warning
 TaskType Os_AddTask( OsTaskVarType *pcb );
@@ -302,7 +301,6 @@ static inline void Os_TaskResourceFreeAll( OsTaskVarType *pcbPtr ) {
 void Os_TaskSwapContext(OsTaskVarType *old_pcb, OsTaskVarType *new_pcb );
 void Os_TaskSwapContextTo(OsTaskVarType *old_pcb, OsTaskVarType *new_pcb );
 OsTaskVarType *Os_TaskGetTop( void );
-OsTaskVarType *Os_TaskGet( TaskType tid );
 
 #define STACK_PATTERN	0x42
 
@@ -356,8 +354,6 @@ static inline _Bool Os_TaskOccupiesResources( OsTaskVarType *pcb ) {
 
 void Os_Dispatch( uint32_t op );
 void Os_ContextReInit( OsTaskVarType *pcbPtr );
-void Os_TaskResourceAdd( OsResourceType *rPtr, OsTaskVarType *pcbPtr);
-void Os_TaskResourceRemove( OsResourceType *rPtr , OsTaskVarType *pcbPtr);
 
 void Os_TaskMakeReady( OsTaskVarType *pcb );
 void Os_TaskMakeWaiting( OsTaskVarType *pcb );

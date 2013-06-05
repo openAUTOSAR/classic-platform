@@ -81,6 +81,10 @@ typedef uint32 imask_t;
 #define SPR_L1CSR0	1010
 #define SPR_L1CFG0	515
 
+#define L1CSR0_CINV	BIT64TO32(62)
+#define L1CSR0_CE	BIT64TO32(63)
+
+
 #define SPR_SRR0		26
 #define SPR_SRR1		27
 
@@ -91,6 +95,7 @@ typedef uint32 imask_t;
 #define MSR_SPE	BIT64TO32(38)
 #define MSR_DS		BIT64TO32(58)
 #define MSR_IS		BIT64TO32(59)
+#define MSR_SPE     BIT64TO32(38)
 
 //#define ESR_PTR 	BIT64TO32(38)
 
@@ -102,6 +107,7 @@ typedef uint32 imask_t;
 #define TCR_FIE	0x00800000
 
 #define HID0_TBEN	0x4000
+
 
 /*
  * String macros
@@ -120,10 +126,12 @@ typedef uint32 imask_t;
 
 #define isync()  		asm volatile(" isync");
 #define sync()   		asm volatile(" sync");
-#define msync() 		asm volatile(" msync");
+#define msync() 		asm volatile(" isync");
 
 #define Irq_Disable() 	asm volatile (" wrteei 0");
 #define Irq_Enable() 	asm volatile (" wrteei 1");
+#define tlbwe()			asm volatile (" tlbwe");
+
 
 #define Irq_SuspendAll() 	Irq_Disable()
 #define Irq_ResumeAll() 	Irq_Enable()
@@ -153,6 +161,8 @@ asm void set_spr(uint32 spr_nr, uint32 val)
  * Note! Tried lots of other ways to do this but came up empty
  */
 
+//https://community.freescale.com/thread/29234
+
 #if defined(__DCC__)
 asm uint32 get_spr(uint32 spr_nr)
 {
@@ -178,7 +188,7 @@ asm volatile unsigned long get_msr()
   mfmsr r3
 }
 #else
-static inline unsigned long get_msr() {
+static inline unsigned long get_msr( void ) {
 	uint32 msr;
 	asm volatile("mfmsr %[msr]":[msr] "=r" (msr ) );
 	return msr;
@@ -437,5 +447,11 @@ static inline unsigned int mode_to_kernel( void ) {
 	return msr;
 }
 #endif
+
+void Cache_Invalidate( void );
+void Cache_EnableU( void );
+void Cache_EnableD( void );
+void Cache_EnableI( void );
+
 
 #endif /* CPU_H */

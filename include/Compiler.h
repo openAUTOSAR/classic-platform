@@ -39,25 +39,32 @@
 #define CC_EXTENSION
 #endif
 
+
+
+
+
 #if defined(__GNUC__)
-#define SECTION_BALIGN(_align )  __attribute__ ((aligned (_align)))
+#define __balign(x)       __attribute__ ((aligned (x)))
 #elif defined(__CWCC__)
-#define SECTION_BALIGN(_align )  __attribute__ ((aligned (_align)))
+#define __balign(x)       __attribute__ ((aligned (x)))
 #elif defined(__DCC__)
-#define SECTION_BALIGN(_align )  __attribute__ ((aligned (_align)))
+#define __balign(x)       __attribute__ ((aligned (x)))
 #elif defined(__ICCHCS12__)
 #define Pragma(x) _Pragma(#x)
-#define SECTION_BALIGN(_align ) Pragma(data_alignment=_align)
+#define __balign(x)       Pragma(data_alignment=_align)
 #else
 #error Compiler not defined.
 #endif
 
+#define SECTION_BALIGN(x)  __balign(x)
 
 #if defined(__ICCHCS12__)
 #define restrict
 #define DECLARE_WEAK
+#define __simple __simple
 #else
 #define DECLARE_WEAK			__attribute__ ((weak))
+#define __simple
 #endif
 
 /* Does this really work on all compilers.... */

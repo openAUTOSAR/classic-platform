@@ -6,6 +6,7 @@ ARCH_MCU=mpc5516
 
 # CFG (y/n) macros
 CFG=PPC BOOKE E200Z1 MPC55XX MPC5516 BRD_MPC5516IT
+CFG+=MCU_ARC_CONFIG
 
 # What buildable modules does this board have, 
 # default or private
@@ -17,7 +18,7 @@ MOD_AVAIL+=CANIF CANTP LINIF COM DCM DEM DET ECUM IOHWAB KERNEL PDUR WDGM WDGIF 
 # Network management
 MOD_AVAIL+=COMM NM CANNM CANSM EA LINSM
 # Additional
-MOD_AVAIL+= RAMLOG
+MOD_AVAIL+= RAMLOG FLS_SST25XX
 # CRC
 MOD_AVAIL+=CRC32 CRC16
 # Required modules
@@ -33,7 +34,7 @@ novle=$(if $(vle),n,y)
 diab-$(vle)=-tPPCE200Z1VFN:simple
 diab-$(novle)=-tPPCE200Z1NFS:simple
 
-DIAB_TARGET?=$(diab-yy)
+DIAB_TARGET?=$(diab-y)
 
 # Defines
 def-y += SRAM_SIZE=0x14000

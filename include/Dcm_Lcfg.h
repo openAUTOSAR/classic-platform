@@ -88,6 +88,9 @@ typedef Std_ReturnType (*Dcm_CallbackIndicationFncType)(uint8 *requestData, uint
 // ResetService
 typedef Std_ReturnType (*Dcm_CallbackEcuResetType)(uint8 resetType,	Dcm_NegativeResponseCodeType *errorCode);
 
+//OBD service 0x04 condition check callback
+typedef Std_ReturnType (*Dcm_DsdConditionGetFncType)(void);
+typedef Std_ReturnType (*Dcm_DsdResetPidsFncType)(void);
 
 /*
  * DCM configurations
@@ -200,6 +203,7 @@ typedef struct {
 	uint8							DspPidIdentifier;	// (1)	/** @req DCM627 */
 	uint8							DspPidSize; 		// (1)	/** @req DCM628 */
 	Dcm_CallbackGetPIDValueFncType	DspGetPidValFnc;	// (1)	/** @req DCM629 */
+	boolean							Arc_EOL;
 } Dcm_DspPidType; /** @req DCM626 */
 
 // 10.2.33
@@ -301,7 +305,9 @@ typedef struct {
 	boolean								DspVehInfoUsePort;		// (1)
 	uint8								DspVehInfoType;			// (1)	/** @req DCM631 */
 	uint8								DspVehInfoSize;			// (1)	/** @req DCM632 */
+	uint8								DspVehInfoNumberOfDataItems;
 	Dcm_CallbackGetInfoTypeValueFncType	DspGetVehInfoTypeFnc;	// (1)	/** @req DCM633 */
+	boolean Arc_EOL;
 } Dcm_DspVehInfoType; /** @req DCM630 */
 
 // 10.2.21
@@ -356,6 +362,8 @@ typedef struct {
 	const Dcm_DspSecurityRowType	**DsdSidTabSecurityLevelRef;	// (1..*)
 	const Dcm_DspSessionRowType		**DsdSidTabSessionLevelRef;		// (1..*)
 	// Containers
+	Dcm_DsdConditionGetFncType 		conditionGet;					//non-Autosar
+	Dcm_DsdResetPidsFncType			resetPids;
 	boolean							Arc_EOL;
 } Dcm_DsdServiceType;
 
@@ -392,6 +400,7 @@ typedef enum
 	DSD_PENDING_RESPONSE_SIGNALED, // Signals have been received saying the buffer contain valid data.
 	DCM_TRANSMIT_SIGNALED, // The DCM has been asked to transfer the response, system is now waiting for TP layer to reqest Tx buffer.
 	PROVIDED_TO_DSD,	// The buffer is currently in use by DSD.
+	PREEMPT_TRANSMIT_NRC,//when preemption happens,then sent NRC 0x21 to OBD tester
 	UNDEFINED_USAGE
 }Dcm_DslBufferUserType;
 
@@ -559,7 +568,8 @@ typedef struct {
 	uint8					responsePendingCount;
 	Dcm_SecLevelType		securityLevel;
 	Dcm_SesCtrlType			sessionControl;
-	Dcm_DslLocalBufferType      PeriodicTxBuffer;
+	Dcm_DslLocalBufferType  PeriodicTxBuffer;
+	uint16					preemptTimeoutCount;
 } Dcm_DslRunTimeProtocolParametersType;
 
 // 10.2.10

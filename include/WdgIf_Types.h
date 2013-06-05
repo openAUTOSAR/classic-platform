@@ -11,11 +11,14 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
- * -------------------------------- Arctic Core ------------------------------
- * WdgIf_Types.h
+ * -------------------------------- Arctic Core ------------------------------*/
+
+/* ----------------------------[information]----------------------------------*/
+/*
+ * Author: Fredrik
  *
- *  Created on: 14 maj 2010
- *      Author: Fredrik
+ * Part of Release:
+ *   3.1.5
  */
 
 #ifndef WDGIF_TYPES_H_
@@ -27,15 +30,5 @@ typedef enum
 	WDGIF_OFF_MODE,
 	WDGIF_SLOW_MODE
 }WdgIf_ModeType;
-
-typedef void (*Wdg_TriggerLocationPtrType)(void);
-typedef Std_ReturnType (*Wdg_SetModeLocationPtrType)(WdgIf_ModeType Mode);
-
-typedef struct
-{
-	const uint8 Wdg_Index;
-	Wdg_TriggerLocationPtrType Wdg_TriggerLocationPtr;
-	Wdg_SetModeLocationPtrType Wdg_SetModeLocationPtr;
-}Wdg_GeneralType;
 
 #endif /* WDGIF_TYPES_H_ */

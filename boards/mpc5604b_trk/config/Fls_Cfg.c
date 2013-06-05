@@ -80,6 +80,12 @@ const Fls_ConfigType FlsConfigSet[]=
     .FlsJobEndNotification = NULL,
     .FlsJobErrorNotification = NULL,
     .FlsInfo = flashInfo,
+
+	.FlsMaxReadFastMode = 16,
+	.FlsMaxReadNormalMode = 16,
+	.FlsMaxWriteFastMode = 32,
+	.FlsMaxWriteNormalMode = 32,
+
 //    .FlsSectorList = &fls_evbSectorList[0],
 //    .FlsSectorListSize = sizeof(fls_evbSectorList)/sizeof(Fls_SectorType),
 //    .FlsBlockToPartitionMap = Fls_BlockToPartitionMap,

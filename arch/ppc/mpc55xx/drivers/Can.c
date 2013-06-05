@@ -171,7 +171,7 @@
 #define MB_RX_OVERRUN           0x6
 
 /* Registers */
-#define ESR_ERRINT		(1<<(31-39))
+#define ESR_ERRINT		(1<<1)
 
 /* ----------------------------[private macro]-------------------------------*/
 
@@ -383,6 +383,8 @@ static void Can_Err(int unit)
     flexcan_t *canHw = GET_CONTROLLER(unit);
     Can_Arc_ErrorType err;
     uint32 esr;
+
+	err.R = 0;
 
     /* Clear bits 16-23 by read */
     esr = canHw->ESR.R;
@@ -1109,6 +1111,7 @@ void Can_InitController(uint8 controller,
         canHw->MCR.B.IDAM = 0;      /* We want extended id's to match with */
     }
     canHw->MCR.B.BCC = 1;           /* Enable all nice features */
+    canHw->MCR.B.AEN = 1;           /* Enable Abort */
 
     /* Use Fsys derivate */
 #ifdef CFG_CAN_OSCILLATOR_CLOCK

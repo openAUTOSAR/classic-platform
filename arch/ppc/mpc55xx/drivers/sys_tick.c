@@ -25,8 +25,8 @@
 /**
  * Init of free running timer.
  */
-extern void OsTick( void );
-extern OsTickType OsTickFreq;
+//extern void OsTick( void );
+//extern OsTickType OsTickFreq;
 
 
 #if defined(CFG_MPC560X)

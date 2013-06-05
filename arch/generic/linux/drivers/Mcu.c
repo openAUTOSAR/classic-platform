@@ -59,5 +59,5 @@ void Mcu_PerformReset( void ) {
 }
 
 Mcu_PllStatusType Mcu_GetPllStatus( void ) {
-
+	return MCU_PLL_LOCKED;
 }

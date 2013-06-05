@@ -30,8 +30,9 @@ cflags-y 		+= -lA $@.lst #Get a list file for each file
 cflags-y 		+= --diag_suppress=Pa050,Pe550,Pe188
 
 # z is the size options
-cflags-$(CFG_OPT_RELEASE)        += -Ohz
-cflags-$(CFG_OPT_DEBUG)        += -On
+cflags-$(CFG_OPT_RELEASE) += -Ohz
+cflags-$(CFG_OPT_DEBUG)   += -On
+cflags-$(CFG_OPT_FLAGS)   += $(SELECT_OPT)
 
 # Generate dependencies, 
 #cflags-y 		+= --dependencies $*.d 
@@ -44,6 +45,8 @@ cflags-$(CFG_OPT_DEBUG)        += -On
 CFLAGS = $(cflags-y) $(cflags-yy)
 
 CCOUT 		= -o $@ 
+
+SELECT_CLIB?=CLIB_IAR
 
 # ---------------------------------------------------------------------------
 # Preprocessor

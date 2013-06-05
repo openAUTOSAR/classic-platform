@@ -25,8 +25,6 @@
 void IncommingFreqReq(void)
 {
 	SetEvent(TASK_ID_ComReceiveTask, EVENT_MASK_FreqReciveEvent);
-
-	return true;
 }
 
 // Call second stage of startup.

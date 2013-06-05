@@ -1,13 +1,7 @@
 #define _ASSEMBLER_
 #include "asm_ppc.h"
 
-#if defined(__GNUC__)
-.section ".rcw","ax"
-.balign  4
-#elif defined(__CWCC__) || defined(__DCC__)
-	.section .rcw,4,"r"
-#endif
-
+ASM_SECTION(.rcw)
 
 	.global _resetconfiguration
 _resetconfiguration:
@@ -32,17 +26,11 @@ _resetconfiguration:
 	.extern __DATA_ROM
 	.extern exit
 	.extern main
+	.extern ShutdownOS
 	
-#if defined(__CWCC__) && defined(CFG_VLE)
-.section .text_vle,text_vle
-#elif defined(__DCC__) && defined(CFG_VLE)
-	// Must be indented (diab)
-	.section .text_vle,x
-#elif defined(__DCC__) && !defined(CFG_VLE)
-	.section .text,x
-#elif defined(__GNUC__)
-.section .text
-#endif
+	
+ASM_SECTION_TEXT(.text)	
+
 	.align		4
 
 	.globl	_start
@@ -60,6 +48,8 @@ _redled:
 	stw r0, 8(r3)
 	b _exit
 #endif
+
+
 
 __start:
 _start:
@@ -84,6 +74,12 @@ _start:
 
 	// r2, base of .sdata2 and .sbss2
 	LOAD_ADDR_32(2,_SDA2_BASE_)
+
+	
+	/* Check for atleast 8 byte alignment of stack*/
+	clrlwi	r3,r1,(32-3)
+	cmpwi	r3,0
+	bne		badAlignment
 
 	// make space for initial backchain..
 	subi    r1,r1,16
@@ -155,7 +151,12 @@ skip_bss:
 
 	.globl	_exit
 _exit:
-	b	_exit
 
+	li 	r3,30 		/* E_OS_EXIT_ABORT */
+	bl	ShutdownOS
 
+	.global badAlignment
+badAlignment:
+	b badAlignment
+	
 	.end

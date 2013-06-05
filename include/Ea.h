@@ -29,7 +29,7 @@
 #include "Modules.h"
 
 #define EA_MODULE_ID            MODULE_ID_EA
-#define EA_VENDOR_ID            1
+#define EA_VENDOR_ID            VENDOR_ID_ARCCORE
 
 
 

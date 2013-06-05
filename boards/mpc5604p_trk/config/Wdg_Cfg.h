@@ -19,6 +19,8 @@
 #include "Std_Types.h"
 #include "WdgIf_Types.h"
 
+#define WDG_INDEX		0
+
 typedef struct
 {
    uint32 ReloadValue;
@@ -35,11 +37,9 @@ typedef struct
 
 typedef struct
 {
-	const Wdg_GeneralType    *Wdg_General;
 	const Wdg_ModeConfigType *Wdg_ModeConfig;
 }Wdg_ConfigType;
 
- extern const Wdg_GeneralType WdgGeneral;
  extern const Wdg_ConfigType WdgConfig;
 
 #endif /* WDG_CFG_H_ */

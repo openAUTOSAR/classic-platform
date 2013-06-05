@@ -118,13 +118,6 @@ typedef enum
 	ECUM_WKSTATUS_EXPIRED = 3     /**< The wakeup event has not been validated and has expired therefore */
 } EcuM_WakeupStatusType;
 
-typedef enum
-{
-	ECUM_WKACT_RUN = 0,       /**< Initialization into RUN state */
-	ECUM_WKACT_TTII = 2,       /**< Execute time triggered increased inoperation protocol and shutdown */
-	ECUM_WKACT_SHUTDOWN = 3   /**< Immediate shutdown */
-} EcuM_WakeupReactionType;
-
 
 #if !defined(_DEFINED_TYPEDEF_FOR_EcuM_BootTargetType_)
 typedef enum

@@ -142,11 +142,10 @@ void J1939Tp_MainFunction(void) {
 						case J1939TP_TX_WAIT_BAM_CANIF_CONFIRM:
 						case J1939TP_TX_WAIT_DT_BAM_CANIF_CONFIRM:
 							ChannelInfoPtr->TxState->State = J1939TP_TX_IDLE;
+
 							J1939_ASSERT( ChannelInfoPtr->TxState->CurrentPgPtr != 0 );
-//							if (ChannelInfoPtr->TxState->CurrentPgPtr != 0) {
-								J1939Tp_Internal_SendConnectionAbort(Channel->CmNPdu,ChannelInfoPtr->TxState->CurrentPgPtr->Pgn);
-								PduR_J1939TpTxConfirmation(ChannelInfoPtr->TxState->CurrentPgPtr->NSdu,NTFRSLT_E_NOT_OK);
-//							}
+							J1939Tp_Internal_SendConnectionAbort(Channel->CmNPdu,ChannelInfoPtr->TxState->CurrentPgPtr->Pgn);
+							PduR_J1939TpTxConfirmation(ChannelInfoPtr->TxState->CurrentPgPtr->NSdu,NTFRSLT_E_NOT_OK);
 							break;
 						case J1939TP_TX_WAITING_FOR_BAM_DT_SEND_TIMEOUT:
 							ChannelInfoPtr->TxState->State = J1939TP_TX_WAIT_DT_BAM_CANIF_CONFIRM;
@@ -501,7 +500,8 @@ static inline void J1939Tp_Internal_TxConfirmation_TxChannel(J1939Tp_Internal_Ch
 				ChannelInfoPtr->TxState->State = J1939TP_TX_WAITING_FOR_BAM_DT_SEND_TIMEOUT;
 				J1939Tp_Internal_StartTimer(&(ChannelInfoPtr->TxState->TimerInfo),J1939TP_DT_BROADCAST_MIN_INTERVAL);
 			} else {
-				J1939_ASSERT(0);
+				/* We can actually be in J1939TP_TX_IDLE here if get a TX confirmation
+				 * after the Tx confirmation timeout have happened */
 			}
 			break;
 		case J1939TP_DT:
@@ -530,7 +530,8 @@ static inline void J1939Tp_Internal_TxConfirmation_TxChannel(J1939Tp_Internal_Ch
 					J1939Tp_Internal_StartTimer(&(ChannelInfoPtr->TxState->TimerInfo),J1939TP_DT_BROADCAST_MIN_INTERVAL);
 				}
 			} else {
-				J1939_ASSERT( 0 );
+				/* We can actually be in J1939TP_TX_IDLE here if get a TX confirmation
+				 * after the Tx confirmation timeout have happened */
 			}
 			break;
 		case J1939TP_DIRECT:

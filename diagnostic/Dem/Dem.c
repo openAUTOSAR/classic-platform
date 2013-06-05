@@ -65,6 +65,10 @@
 #define DEBOUNCE_FDC_TEST_FAILED  127
 #define DEBOUNCE_FDC_TEST_PASSED -128
 
+#define DEM_PID_IDENTIFIER_SIZE_OF_BYTES		1 // OBD 
+
+
+
 #if  ( DEM_DEV_ERROR_DETECT == STD_ON )
 #if defined(USE_DET)
 #include "Det.h"
@@ -203,7 +207,7 @@ EventRecType 		        priMemEventBuffer[DEM_MAX_NUMBER_EVENT_PRI_MEM];
 static FreezeFrameRecType	priMemFreezeFrameBuffer[DEM_MAX_NUMBER_FF_DATA_PRI_MEM];
 //FreezeFrameRecType        FreezeFrameMirrorBuffer[DEM_MAX_NUMBER_FF_DATA_PRI_MEM];
 extern FreezeFrameRecType*  FreezeFrameMirrorBuffer[];
-static ExtDataRecType		priMemExtDataBuffer[DEM_MAX_NUMBER_EXT_DATA_PRI_MEM];
+ExtDataRecType		priMemExtDataBuffer[DEM_MAX_NUMBER_EXT_DATA_PRI_MEM];
 HealingRecType         		priMemAgingBuffer[DEM_MAX_NUMBER_AGING_PRI_MEM];
 extern HealingRecType   		HealingMirrorBuffer[DEM_MAX_NUMBER_AGING_PRI_MEM];
 
@@ -230,6 +234,11 @@ static boolean FFIsModified = FALSE;
  * FALSE:	priMemAgingBuffer not changed
  */
 static boolean AgingIsModified = FALSE;
+
+static void getPidData(const Dem_PidOrDidType ***pidClassPtr, FreezeFrameRecType **freezeFrame, uint16 *storeIndexPtr);
+static void getDidData(const Dem_PidOrDidType ***didClassPtr, FreezeFrameRecType **freezeFrame, uint16 *storeIndexPtr);
+static void storeOBDFreezeFrameDataPreInit(const Dem_EventParameterType * eventParam, const FreezeFrameRecType * freezeFrame);
+static void storeOBDFreezeFrameDataPriMem(const Dem_EventParameterType *eventParam, const FreezeFrameRecType *freezeFrame);
 
 /*
  * Procedure:	zeroPriMemBuffers
@@ -590,6 +599,8 @@ static void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_E
 			/** @req DEM036 */ /** @req DEM379.PendingSet */
 			eventStatusRecPtr->eventStatusExtended |= (DEM_TEST_FAILED | DEM_TEST_FAILED_THIS_OPERATION_CYCLE | DEM_TEST_FAILED_SINCE_LAST_CLEAR | DEM_PENDING_DTC | DEM_CONFIRMED_DTC);
 			eventStatusRecPtr->eventStatusExtended &= (Dem_EventStatusExtendedType)~(DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE);
+			if ((eventParam->DTCClassRef != NULL) && (eventParam->DTCClassRef->DTCKind == DEM_DTC_KIND_EMISSION_REL_DTCS))
+					eventStatusRecPtr->eventStatusExtended |= DEM_WARNING_INDICATOR_REQUESTED;
 		}
 
 		if (eventStatus == DEM_EVENT_STATUS_PASSED) {
@@ -599,6 +610,8 @@ static void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_E
 			/** @req DEM036 */
 			eventStatusRecPtr->eventStatusExtended &= (Dem_EventStatusExtendedType)~DEM_TEST_FAILED;
 			eventStatusRecPtr->eventStatusExtended &= (Dem_EventStatusExtendedType)~(DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE);
+			if ((eventParam->DTCClassRef != NULL) && (eventParam->DTCClassRef->DTCKind == DEM_DTC_KIND_EMISSION_REL_DTCS))
+				eventStatusRecPtr->eventStatusExtended &= (Dem_EventStatusExtendedType)~DEM_WARNING_INDICATOR_REQUESTED;
 		}
 
 		if ((eventStatus == DEM_EVENT_STATUS_PREFAILED)\
@@ -645,7 +658,8 @@ static void mergeEventStatusRec(const EventRecType *eventRec)
 		eventStatusRecPtr->eventStatusExtended |= (Dem_EventStatusExtendedType)(eventRec->eventStatusExtended & eventStatusRecPtr->eventStatusExtended & DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR);
 		// DEM_PENDING_DTC and DEM_CONFIRMED_DTC should be set if set in either
 		eventStatusRecPtr->eventStatusExtended |= (Dem_EventStatusExtendedType)(eventRec->eventStatusExtended & (DEM_PENDING_DTC | DEM_CONFIRMED_DTC));
-
+		// DEM_WARNING_INDICATOR_REQUESTED should be set if set in either
+		eventStatusRecPtr->eventStatusExtended |= (Dem_EventStatusExtendedType)(eventRec->eventStatusExtended & DEM_WARNING_INDICATOR_REQUESTED);
 	}
 
     Irq_Restore(state);
@@ -819,11 +833,13 @@ static boolean retrieveEventStatusBit(FreezeFrameRecType *freezeFrameBuf,
 	uint16 j = 0;
 
 	for(i=0;i<length;i++){
-		for(j=0; (j < DEM_MAX_NUMBER_EVENT) && (!freezeFrameFound); j++){
-			freezeFrameFound = (eventStatusBuffer[j].eventId == freezeFrameBuf[i].eventId)\
-			                         && (!(eventStatusBuffer[j].eventStatusExtended & nBit));
-			if(freezeFrameFound == TRUE){
-				*freezeFrame = &freezeFrameBuf[i];
+		if(freezeFrameBuf[i].kind != DEM_FREEZE_FRAME_OBD) {
+			for(j=0; (j < DEM_MAX_NUMBER_EVENT) && (!freezeFrameFound); j++){
+				freezeFrameFound = (eventStatusBuffer[j].eventId == freezeFrameBuf[i].eventId)\
+										 && (!(eventStatusBuffer[j].eventStatusExtended & nBit));
+				if(freezeFrameFound == TRUE){
+					*freezeFrame = &freezeFrameBuf[i];
+				}
 			}
 		}
 	}
@@ -855,8 +871,13 @@ static boolean lookupFreezeFrameForDisplacementPreInit(FreezeFrameRecType **free
 
 	/* if all confirmed,lookup the oldest active dtc */
 	if(freezeFrameFound == FALSE){
-		*freezeFrame = &preInitFreezeFrameBuffer[0];
-		freezeFrameFound = TRUE;
+		for(uint16 i = 0; (i < DEM_MAX_NUMBER_FF_DATA_PRE_INIT) && (freezeFrameFound == FALSE); i++){
+			//prevent the displacement of OBD FF
+			if(preInitFreezeFrameBuffer[i].kind != DEM_FREEZE_FRAME_OBD) {
+				*freezeFrame = &preInitFreezeFrameBuffer[i];
+				freezeFrameFound = TRUE;
+			}
+		}	
 	}
 
 	return freezeFrameFound;
@@ -884,8 +905,13 @@ static boolean lookupFreezeFrameForDisplacement(FreezeFrameRecType **freezeFrame
 
 	/* If all confirmed,lookup the oldest active dtc */
 	if(freezeFrameFound == FALSE){
-		*freezeFrame = &priMemFreezeFrameBuffer[0];
-		freezeFrameFound = TRUE;
+		for(uint16 i = 0; (i < DEM_MAX_NUMBER_FF_DATA_PRI_MEM) && (freezeFrameFound == FALSE); i++){
+			//prevent the displacement of OBD FF
+			if(priMemFreezeFrameBuffer[i].kind != DEM_FREEZE_FRAME_OBD) {
+				*freezeFrame = &priMemFreezeFrameBuffer[i];
+				freezeFrameFound = TRUE;
+			}
+		}		
 	}
 
 	return freezeFrameFound;
@@ -937,7 +963,6 @@ static void getFreezeFrameData(const Dem_EventParameterType *eventParam,
 	Std_ReturnType callbackReturnCode;
 	uint16 i = 0;
 	uint16 storeIndex = 0;
-	uint16 recordSize = 0;
 	imask_t state;
 	const Dem_FreezeFrameClassType *FreezeFrameLocal = NULL;
 	Dcm_NegativeResponseCodeType errorCode;//should include Dcm_Lcfg.h
@@ -974,66 +999,11 @@ static void getFreezeFrameData(const Dem_EventParameterType *eventParam,
 	/* get the dids */
 	if(FreezeFrameLocal != NULL){
 		if(FreezeFrameLocal->FFIdClassRef != NULL){
-			for (i = 0; (i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && (!(FreezeFrameLocal->FFIdClassRef[i]->Arc_EOL)); i++) {
-				if(FreezeFrameLocal->FFIdClassRef[i]->PidOrDidUsePort == FALSE){
-					if(FreezeFrameLocal->FFIdClassRef[i]->DidReadDataLengthFnc != NULL){
-						callbackReturnCode = FreezeFrameLocal->FFIdClassRef[i]->DidReadDataLengthFnc(&recordSize);
-						if(callbackReturnCode != E_OK){
-							//if fail to read data length,discard the storage of FF
-							freezeFrame->eventId = DEM_EVENT_ID_NULL;
-							DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GET_FREEZEFRAME_ID, DEM_READ_DATA_LENGTH_FAILED);
-							return;
-						}
-					}
-					/* if no readDidDataLengthFunction, then try the PidOrDidSize. */
-					else{
-						recordSize = FreezeFrameLocal->FFIdClassRef[i]->PidOrDidSize;
-					}
-					/* read out the did data */
-					if ((storeIndex + recordSize + DEM_DID_IDENTIFIER_SIZE_OF_BYTES) <= DEM_MAX_SIZE_FF_DATA) {
-						/* store DID */
-						freezeFrame->data[storeIndex] = (FreezeFrameLocal->FFIdClassRef[i]->DidIdentifier>> 8) & 0xFFu;
-						storeIndex++;
-						freezeFrame->data[storeIndex] = FreezeFrameLocal->FFIdClassRef[i]->DidIdentifier & 0xFFu;
-						storeIndex++;
-						/* store data */
-						if(FreezeFrameLocal->FFIdClassRef[i]->DidConditionCheckReadFnc != NULL){
-							callbackReturnCode = FreezeFrameLocal->FFIdClassRef[i]->DidConditionCheckReadFnc(&errorCode);
-							if ((callbackReturnCode == E_OK) && (errorCode == DCM_E_POSITIVERESPONSE)) {
-								if(FreezeFrameLocal->FFIdClassRef[i]->DidReadFnc!= NULL){
-									callbackReturnCode = FreezeFrameLocal->FFIdClassRef[i]->DidReadFnc(&freezeFrame->data[storeIndex]);
-									if (callbackReturnCode != E_OK) {
-										memset(&freezeFrame->data[storeIndex], DEM_FREEZEFRAME_DEFAULT_VALUE, recordSize);
-									}
-									storeIndex += recordSize;
-
-					 			}
-								else{
-									memset(&freezeFrame->data[storeIndex], DEM_FREEZEFRAME_DEFAULT_VALUE, recordSize);
-									storeIndex += recordSize;
-								}
-
-							}
-							else{
-								memset(&freezeFrame->data[storeIndex], DEM_FREEZEFRAME_DEFAULT_VALUE, recordSize);
-								storeIndex += recordSize;
-							}
-						}
-						else{
-							memset(&freezeFrame->data[storeIndex], DEM_FREEZEFRAME_DEFAULT_VALUE, recordSize);
-							storeIndex += recordSize;
-						}
-
-					}
-					else{
-						DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GET_FREEZEFRAME_ID, DEM_E_FF_TOO_BIG);
-						break;
-					}
-				}
-				else{
-					//TODO:RTE should provide the port
-					DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GET_FREEZEFRAME_ID, DEM_DSP_DID_USE_PORT_IS_TRUE);
-				}
+			if(DEM_FREEZE_FRAME_NON_OBD == FreezeFrameLocal->FFKind){
+				getDidData(&FreezeFrameLocal->FFIdClassRef, &freezeFrame, &storeIndex);
+			}
+			else if(DEM_FREEZE_FRAME_OBD == FreezeFrameLocal->FFKind){
+				getPidData(&FreezeFrameLocal->FFIdClassRef, &freezeFrame, &storeIndex);
 			}
 		}
 
@@ -1049,6 +1019,7 @@ static void getFreezeFrameData(const Dem_EventParameterType *eventParam,
 		freezeFrame->occurrence = eventStatusRec->occurrence;
 		freezeFrame->dataSize = storeIndex;
 		freezeFrame->recordNumber = FreezeFrameLocal->FFRecordNumber;
+		freezeFrame->kind = FreezeFrameLocal->FFKind;
 		Irq_Save(state);
 
 		if(FF_TimeStamp > DEM_MAX_TIMESTAMP_FOR_REARRANGEMENT){
@@ -1729,7 +1700,13 @@ static void storeFreezeFrameDataEvtMem(const Dem_EventParameterType *eventParam,
 		switch (eventParam->EventClass->EventDestination[i])
 		{
 		case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
-			storeFreezeFrameDataPriMem(eventParam, freezeFrame);
+			if(freezeFrame->kind == DEM_FREEZE_FRAME_OBD){
+				storeOBDFreezeFrameDataPriMem(eventParam, freezeFrame);
+			}
+			else{
+				storeFreezeFrameDataPriMem(eventParam, freezeFrame);
+			}
+			
 			storeFreezeFrameDataPerMem();
 			break;
 
@@ -1851,12 +1828,15 @@ static void handlePreInitEvent(Dem_EventIdType eventId, Dem_EventStatusType even
 						storeExtendedData(eventParam, bFirstFail);
 						getFreezeFrameData(eventParam, &freezeFrameLocal,eventStatus,&eventStatusLocal);
 						if (freezeFrameLocal.eventId != DEM_EVENT_ID_NULL) {
-							storeFreezeFrameDataPreInit(eventParam, &freezeFrameLocal);
+							if(freezeFrameLocal.kind == DEM_FREEZE_FRAME_OBD){
+								storeOBDFreezeFrameDataPreInit(eventParam, &freezeFrameLocal);
+							}
+							else{
+								storeFreezeFrameDataPreInit(eventParam, &freezeFrameLocal);
+							}							
 						}
 					}
 				}
-
-
 			}
 			else {
 				// Operation cycle not started
@@ -2796,7 +2776,7 @@ Std_ReturnType Dem_GetDTCStatusAvailabilityMask(uint8 *dtcStatusMask) /** @req D
 						| DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR
 						| DEM_TEST_FAILED_SINCE_LAST_CLEAR
 						| DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE
-//						| DEM_WARNING_INDICATOR_REQUESTED	TODO: Add support for this bit
+						| DEM_WARNING_INDICATOR_REQUESTED
 						;
 
 	return E_OK;
@@ -2998,6 +2978,8 @@ Dem_ReturnClearDTCType Dem_ClearDTC(uint32 dtc, Dem_DTCKindType dtcKind, Dem_DTC
 									{
 									case DEM_DTC_ORIGIN_PRIMARY_MEMORY:
 										/** @req DEM077 */
+										if ((eventParam->CallbackInitMforE != NULL) && (eventParam->CallbackInitMforE->CallbackInitMForEFnc != NULL))
+											eventParam->CallbackInitMforE->CallbackInitMForEFnc(DEM_INIT_MONITOR_CLEAR);
 										deleteEventPriMem(eventParam);
 										deleteFreezeFrameDataPriMem(eventParam);
 										deleteExtendedDataPriMem(eventParam);
@@ -3075,10 +3057,29 @@ Dem_ReturnControlDTCStorageType Dem_DisableDTCStorage(Dem_DTCGroupType dtcGroup,
 Dem_ReturnControlDTCStorageType Dem_EnableDTCStorage(Dem_DTCGroupType dtcGroup, Dem_DTCKindType dtcKind)
 {
 	Dem_ReturnControlDTCStorageType returnCode = DEM_CONTROL_DTC_STORAGE_OK;
+	const Dem_EventParameterType *eventParam;
+	uint16 i;
 
 	if (demState == DEM_INITIALIZED) {
 		// TODO: Behavior is not defined if group or kind do not match active settings, therefore the filter is just switched off.
 		(void)dtcGroup; (void)dtcKind;	// Just to make get rid of PC-Lint warnings
+
+		for (i = 0; i < DEM_MAX_NUMBER_EVENT; i++) {
+			if (eventStatusBuffer[i].eventId != DEM_EVENT_ID_NULL) {
+				eventParam = eventStatusBuffer[i].eventParamRef;
+				if (eventParam != NULL) {
+					if ((DEM_CLEAR_ALL_EVENTS == STD_ON) || (eventParam->DTCClassRef != NULL)) {
+						if (checkDtcKind(disableDtcStorage.dtcKind, eventParam)) {
+							if (checkDtcGroup(disableDtcStorage.dtcGroup, eventParam)) {
+								if ((eventParam->CallbackInitMforE != NULL) && (eventParam->CallbackInitMforE->CallbackInitMForEFnc != NULL))
+									eventParam->CallbackInitMforE->CallbackInitMForEFnc(DEM_INIT_MONITOR_RESTART);
+							}
+						}
+					}
+				}
+			}
+		}
+
 		disableDtcStorage.storageDisabled = FALSE; /** @req DEM080 */
 	} else {
 		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_ENABLEDTCSTORAGE_ID, DEM_E_UNINIT);
@@ -3453,9 +3454,370 @@ void getPriMemAgingBufPtr(HealingRecType **buf)
 
 
 
-/***********************************
- * OBD-specific Interfaces (8.3.6) *
- ***********************************/
+/****************
+ * OBD-specific *
+ ***************/
+/*
+ * Procedure:	Dem_GetDTCOfOBDFreezeFrame
+ * Reentrant:	No
+ */
+ /* @req OBD_DEM_REQ_3 */
+Std_ReturnType Dem_GetDTCOfOBDFreezeFrame(uint8 FrameNumber, uint32* DTC )
+{
+	FreezeFrameRecType *freezeFrame = NULL;
+	const Dem_EventParameterType *eventParameter = NULL;
+	Std_ReturnType returnCode = E_NOT_OK;
+	uint16 i = 0;
+
+	if (demState == DEM_INITIALIZED){
+		/* find the corresponding FF in FF buffer */
+		/* @req OBD_DEM_REQ_1 */
+		//if(DEM_FREEZEFRAME_RECORD_NUMBER_OBD == FrameNumber){
+			for(i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++){
+				if((priMemFreezeFrameBuffer[i].eventId != DEM_EVENT_ID_NULL) \
+					&& (DEM_FREEZE_FRAME_OBD == priMemFreezeFrameBuffer[i].kind)){
+					freezeFrame = &priMemFreezeFrameBuffer[i];
+					break;
+				}
+			}
+
+		//}
+
+		/*if FF found,find the corresponding eventParameter*/
+		if(freezeFrame != NULL){
+			lookupEventIdParameter(freezeFrame->eventId, &eventParameter);
+			if(eventParameter != NULL){
+				/* if DTCClass configured,get DTC value */
+				if(eventParameter->DTCClassRef != NULL){
+					*DTC = eventParameter->DTCClassRef->DTC;
+					returnCode = E_OK;
+				}
+			}
+
+		}
+
+	}
+	else{
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETDTCOFOBDFREEZEFRAME_ID, DEM_E_UNINIT);
+	}	
+
+	return returnCode;
+	
+}
+
+/*
+ * Procedure:	Dem_GetOBDFreezeFrameData
+ * Reentrant:	No
+ */
+ /* @req OBD_DEM_REQ_2 */
+Std_ReturnType Dem_GetOBDFreezeFrameData(uint8 PID, uint8* DestBuffer, uint8* BufSize)
+{
+	FreezeFrameRecType *freezeFrame = NULL;
+	const Dem_EventParameterType *eventParameter = NULL;
+	const Dem_FreezeFrameClassType *freezeFrameClass = NULL;
+	Std_ReturnType returnCode = E_NOT_OK;
+	boolean recNumFound = FALSE;
+	boolean pidFound = FALSE;
+	uint16 offset = 0;
+	uint8 pidDataSize = 0;
+	uint16 i = 0;
+
+	if (demState == DEM_INITIALIZED){
+		/*find the corresponding FF in FF buffer*/
+		for(i = 0; i < DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++){
+			/* @req OBD_DEM_REQ_1 */
+			if((priMemFreezeFrameBuffer[i].eventId != DEM_EVENT_ID_NULL) \
+				&& (DEM_FREEZE_FRAME_OBD == priMemFreezeFrameBuffer[i].kind)){
+				freezeFrame = &priMemFreezeFrameBuffer[i];
+				break;
+			}
+		}
+
+		/*if FF found,find the corresponding eventParameter*/
+		if(freezeFrame != NULL){
+			lookupEventIdParameter(freezeFrame->eventId, &eventParameter);
+			if(eventParameter != NULL){
+				/*find the corresponding FF class*/
+				recNumFound = lookupFreezeFrameDataRecNumParam(freezeFrame->recordNumber, eventParameter, &freezeFrameClass);
+			}
+
+		}
+
+		/*if FF class found,find the corresponding PID*/
+		if(recNumFound == TRUE){
+			if(freezeFrameClass->FFKind == DEM_FREEZE_FRAME_OBD){
+				if(freezeFrameClass->FFIdClassRef != NULL){
+					for(i = 0; (i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && ((freezeFrameClass->FFIdClassRef[i]->Arc_EOL) == FALSE); i++){
+						offset += DEM_PID_IDENTIFIER_SIZE_OF_BYTES;
+						if(freezeFrameClass->FFIdClassRef[i]->PidIndentifier == PID){
+							pidDataSize = freezeFrameClass->FFIdClassRef[i]->PidOrDidSize;
+							pidFound = TRUE;
+							break;
+						}
+						else{
+							offset += freezeFrameClass->FFIdClassRef[i]->PidOrDidSize;
+						}
+					}
+				}
+				
+			}
+		}
+
+		if(pidFound == TRUE){
+			if(((*BufSize) >= pidDataSize) && (PID == (freezeFrame->data[offset - DEM_PID_IDENTIFIER_SIZE_OF_BYTES])) \
+				&& ((offset + pidDataSize) <= (freezeFrame->dataSize)) && ((offset + pidDataSize) <= DEM_MAX_SIZE_FF_DATA)){
+				(void)memcpy(DestBuffer, freezeFrame->data + offset, pidDataSize);
+				*BufSize = pidDataSize;
+				returnCode = E_OK;
+			}
+
+		}
+	}
+	else{
+		DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GETOBDFREEZEFRAMEDATA_ID, DEM_E_UNINIT);
+	}	
+
+	return returnCode;
+}
+
+
+/*
+ * Procedure:	getPidData
+ * Description:	get OBD FF data,only called by getFreezeFrameData()		
+ */
+static void getPidData(const Dem_PidOrDidType ***pidClassPtr, FreezeFrameRecType **freezeFrame, uint16 *storeIndexPtr)
+{
+	const Dem_PidOrDidType **FFIdClassRef = NULL;
+	Std_ReturnType callbackReturnCode;
+	uint16 i = 0;
+	uint16 storeIndex = 0;
+	uint16 recordSize = 0;	
+	FFIdClassRef = *pidClassPtr;
+	//get all pids
+	for (i = 0; ((i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && (!FFIdClassRef[i]->Arc_EOL)); i++) {
+		if(FFIdClassRef[i]->PidOrDidUsePort == FALSE){
+			//get pid length
+			recordSize = FFIdClassRef[i]->PidOrDidSize;			
+			/* read out the pid data */
+			if ((storeIndex + recordSize + DEM_PID_IDENTIFIER_SIZE_OF_BYTES) <= DEM_MAX_SIZE_FF_DATA) {
+				/* store PID */
+				(*freezeFrame)->data[storeIndex] = FFIdClassRef[i]->PidIndentifier;
+				storeIndex++;
+				/* store data */
+				if(FFIdClassRef[i]->PidReadFnc != NULL){
+					callbackReturnCode = FFIdClassRef[i]->PidReadFnc(&(*freezeFrame)->data[storeIndex]);
+					if (callbackReturnCode != E_OK) {
+						memset(&(*freezeFrame)->data[storeIndex], DEM_FREEZEFRAME_DEFAULT_VALUE, recordSize);
+					}
+					storeIndex += recordSize;
+
+	 			}
+				else{
+					memset(&(*freezeFrame)->data[storeIndex], DEM_FREEZEFRAME_DEFAULT_VALUE, recordSize);
+					storeIndex += recordSize;
+				}						
+
+			}
+			else{
+				DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GET_FREEZEFRAME_ID, DEM_E_FF_TOO_BIG);
+				break;
+			}
+		}
+		else{
+			//TODO:RTE should provide the port
+			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GET_FREEZEFRAME_ID, DEM_DSP_DID_USE_PORT_IS_TRUE);
+			break;
+		}
+	}
+	//store storeIndex,it will be used for judge whether FF contains valid data.
+	*storeIndexPtr = storeIndex;
+
+}
+/*
+ * Procedure:	getDidData
+ * Description:	get UDS FF data,only called by getFreezeFrameData()		
+ */
+ static void getDidData(const Dem_PidOrDidType ***didClassPtr, FreezeFrameRecType **freezeFrame, uint16 *storeIndexPtr)
+{
+	const Dem_PidOrDidType **FFIdClassRef = NULL;
+	Std_ReturnType callbackReturnCode;
+	uint16 i = 0;
+	uint16 storeIndex = 0;
+	uint16 recordSize = 0;
+	Dcm_NegativeResponseCodeType errorCode;//should include Dcm_Lcfg.h
+	
+	FFIdClassRef = *didClassPtr;
+	//get all dids
+	for (i = 0; ((i < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA) && (!FFIdClassRef[i]->Arc_EOL)); i++) {
+		if(FFIdClassRef[i]->PidOrDidUsePort == FALSE){
+			if(FFIdClassRef[i]->DidReadDataLengthFnc != NULL){
+				callbackReturnCode = FFIdClassRef[i]->DidReadDataLengthFnc(&recordSize);
+				if(callbackReturnCode != E_OK){
+					//if fail to read data length,discard the storage of FF
+					(*freezeFrame)->eventId = DEM_EVENT_ID_NULL;
+					DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GET_FREEZEFRAME_ID, DEM_READ_DATA_LENGTH_FAILED);
+					return;
+				}
+			}
+			/* if no readDidDataLengthFunction, then try the PidOrDidSize. */
+			else{
+				recordSize = FFIdClassRef[i]->PidOrDidSize;
+			}
+			/* read out the did data */
+			if ((storeIndex + recordSize + DEM_DID_IDENTIFIER_SIZE_OF_BYTES) <= DEM_MAX_SIZE_FF_DATA) {
+				/* store DID */
+				(*freezeFrame)->data[storeIndex] = (FFIdClassRef[i]->DidIdentifier>> 8) & 0xFFu;
+				storeIndex++;
+				(*freezeFrame)->data[storeIndex] = FFIdClassRef[i]->DidIdentifier & 0xFFu;
+				storeIndex++;
+				/* store data */
+				if(FFIdClassRef[i]->DidConditionCheckReadFnc != NULL){
+					callbackReturnCode = FFIdClassRef[i]->DidConditionCheckReadFnc(&errorCode);
+					if ((callbackReturnCode == E_OK) && (errorCode == DCM_E_POSITIVERESPONSE)) {
+						if(FFIdClassRef[i]->DidReadFnc!= NULL){
+							callbackReturnCode = FFIdClassRef[i]->DidReadFnc(&(*freezeFrame)->data[storeIndex]);
+							if (callbackReturnCode != E_OK) {
+								memset(&(*freezeFrame)->data[storeIndex], DEM_FREEZEFRAME_DEFAULT_VALUE, recordSize);
+							}
+							storeIndex += recordSize;
+
+			 			}
+						else{
+							memset(&(*freezeFrame)->data[storeIndex], DEM_FREEZEFRAME_DEFAULT_VALUE, recordSize);
+							storeIndex += recordSize;
+						}
+
+					}
+					else{
+						memset(&(*freezeFrame)->data[storeIndex], DEM_FREEZEFRAME_DEFAULT_VALUE, recordSize);
+						storeIndex += recordSize;
+					}
+				}
+				else{
+					memset(&(*freezeFrame)->data[storeIndex], DEM_FREEZEFRAME_DEFAULT_VALUE, recordSize);
+					storeIndex += recordSize;
+				}
+
+			}
+			else{
+				DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GET_FREEZEFRAME_ID, DEM_E_FF_TOO_BIG);
+				break;
+			}
+		}
+		else{
+			//TODO:RTE should provide the port
+			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_GET_FREEZEFRAME_ID, DEM_DSP_DID_USE_PORT_IS_TRUE);
+			break;
+		}
+	}
+
+	//store storeIndex,it will be used for judge whether FF contains valid data.
+	*storeIndexPtr = storeIndex;
+}
+
+
+/*
+ * Procedure:	storeOBDFreezeFrameDataPreInit
+ * Description:	store FF in before  preInitFreezeFrameBuffer DEM's full initialization				
+ */
+static void storeOBDFreezeFrameDataPreInit(const Dem_EventParameterType * eventParam, 
+											     const FreezeFrameRecType * freezeFrame)
+{
+	boolean eventIdFound = FALSE;
+	boolean eventIdFreePositionFound=FALSE;
+	FreezeFrameRecType *freezeFrameLocal = NULL;
+	uint16 i;
+	imask_t state;
+
+	Irq_Save(state);
+
+	/* Check if already stored */
+	for (i = 0; (i<DEM_MAX_NUMBER_FF_DATA_PRE_INIT) && (!eventIdFound); i++){
+		eventIdFound = ((preInitFreezeFrameBuffer[i].eventId != DEM_EVENT_ID_NULL) \
+			&& (preInitFreezeFrameBuffer[i].kind == DEM_FREEZE_FRAME_OBD));
+	}
+
+	if(eventIdFound == FALSE){
+		/* lookup first free position */
+		for (i = 0; (i<DEM_MAX_NUMBER_FF_DATA_PRE_INIT) && (!eventIdFreePositionFound); i++){
+			if(preInitFreezeFrameBuffer[i].eventId == DEM_EVENT_ID_NULL){
+				eventIdFreePositionFound=TRUE;
+			}
+		}
+
+		if (eventIdFreePositionFound) {
+			memcpy(&preInitFreezeFrameBuffer[i-1], freezeFrame, sizeof(FreezeFrameRecType));
+		}
+		else {
+			/* do displacement */
+			if(lookupFreezeFrameForDisplacementPreInit(&freezeFrameLocal)){
+				if(freezeFrameLocal != NULL){
+					memcpy(freezeFrameLocal, freezeFrame, sizeof(FreezeFrameRecType));
+				}				
+			}
+			else{
+				DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_STORE_FF_DATA_PRE_INIT_ID, DEM_E_PRE_INIT_FF_DATA_BUFF_FULL);
+			}
+		}
+		
+	}
+
+	Irq_Restore(state);
+}
+
+/*
+ * Procedure:	storeOBDFreezeFrameDataPriMem
+ * Description: store OBD FreezeFrame data record in primary memory
+ */
+static void storeOBDFreezeFrameDataPriMem(const Dem_EventParameterType *eventParam, const FreezeFrameRecType *freezeFrame)
+{
+	boolean eventIdFound = FALSE;
+	boolean eventIdFreePositionFound=FALSE;
+	boolean displacementPositionFound=FALSE;
+	FreezeFrameRecType *freezeFrameLocal = NULL;
+	uint16 i;
+	imask_t state;
+
+	Irq_Save(state);
+
+	/* Check if already stored */
+	for (i = 0; (i<DEM_MAX_NUMBER_FF_DATA_PRI_MEM) && (!eventIdFound); i++){
+		eventIdFound = ((priMemFreezeFrameBuffer[i].eventId != DEM_EVENT_ID_NULL) \
+			&& (priMemFreezeFrameBuffer[i].kind == DEM_FREEZE_FRAME_OBD));
+	}
+
+	if (eventIdFound == FALSE) {
+		/* find the first free position */
+		for (i = 0; (i < DEM_MAX_NUMBER_FF_DATA_PRI_MEM) && (!eventIdFreePositionFound); i++){
+			eventIdFreePositionFound =  (priMemFreezeFrameBuffer[i].eventId == DEM_EVENT_ID_NULL);
+		}
+		/* if found,copy it to this position */
+		if (eventIdFreePositionFound) {
+			memcpy(&priMemFreezeFrameBuffer[i-1], freezeFrame, sizeof(FreezeFrameRecType));
+		}
+		else {
+			/* if not found,do displacement */
+			displacementPositionFound = lookupFreezeFrameForDisplacement(&freezeFrameLocal);
+			if(displacementPositionFound == TRUE){
+				if(freezeFrameLocal != NULL){
+					memcpy(freezeFrameLocal, freezeFrame, sizeof(FreezeFrameRecType));
+				}				
+			}
+			else{
+				DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_STORE_FF_DATA_PRI_MEM_ID, DEM_E_PRI_MEM_FF_DATA_BUFF_FULL);
+			}
+		}
+	}
+
+	Irq_Restore(state);
+}
+
+
+
+
+
+
+
 
 
 

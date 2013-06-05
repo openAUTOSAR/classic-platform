@@ -24,12 +24,12 @@
 #include "CanNm_Cbk.h"
 
 /** @req CANNM021 */
-#define CANNM_VENDOR_ID  1
+#define CANNM_VENDOR_ID  VENDOR_ID_ARCCORE
 #define CANNM_MODULE_ID  MODULE_ID_CANNM
 
 #define CANNM_AR_MAJOR_VERSION	3
-#define CANNM_AR_MINOR_VERSION	0
-#define CANNM_AR_PATCH_VERSION	1
+#define CANNM_AR_MINOR_VERSION	1
+#define CANNM_AR_PATCH_VERSION	5
 
 #define CANNM_SW_MAJOR_VERSION	1
 #define CANNM_SW_MINOR_VERSION	0
@@ -144,5 +144,6 @@ void CanNm_TxConfirmation( PduIdType canNmTxPduId );
   * This callback service is called by the CAN Interface and implemented by the CanNm. */
 void CanNm_RxIndication( PduIdType canNmRxPduId, const uint8 *canSduPtr );
 
+void CanNm_MainFunction_All_Channels(void);
 
 #endif /* CANNM_H */

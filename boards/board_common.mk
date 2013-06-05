@@ -63,8 +63,27 @@ inc-$(USE_DMA) += $(ROOTDIR)/$(ARCH_PATH-y)/drivers
 # Mcu
 obj-$(USE_MCU) += Mcu.o
 obj-$(USE_MCU) += Mcu_Cfg.o
-obj-$(USE_MCU)-$(if $(CFG_MPC5668)$(CFG_MPC5516),y) += Mcu_Sleep.o
-#obj-$(CFG_MPC55XX)-$(USE_MCU) += Mcu_Exceptions.o
+ifeq ($(CFG_PPC),y)
+ifeq ($(filter Mcu_Arc_mpc55xx.o Mcu_Arc_mpc56xx.o,$(obj-y)),)
+obj-$(USE_MCU)-$(if $(CFG_MPC5516)$(CFG_MPC5668)$(CFG_MPC5567),y) += Mcu_Arc_mpc55xx.o
+obj-$(USE_MCU)-$(if $(CFG_MPC5516)$(CFG_MPC5668)$(CFG_MPC5567),n,y) += Mcu_Arc_mpc56xx.o
+endif
+endif
+
+# CPU specific
+obj-$(CFG_PPC) += mpc5xxx_handlers.o
+obj-$(CFG_PPC) += mpc5xxx_handlers_asm.o
+ifeq ($(filter mpc5xxx_callout_stubs,$(obj-y)),)
+obj-$(CFG_PPC) += mpc5xxx_callout_stubs.o
+endif
+
+vpath-$(CFG_PPC) += $(ROOTDIR)/$(ARCH_PATH-y)/integration
+obj-$(CFG_MCU_ARC_CONFIG) += Mcu_Arc_Cfg.o
+obj-$(CFG_PPC) += Cpu.o
+
+obj-$(CFG_PPC) += mm.o
+vpath-$(CFG_PPC) += $(ROOTDIR)/$(ARCH_PATH-y)/mm
+inc-$(CFG_PPC) += $(ROOTDIR)/$(ARCH_PATH-y)/mm
 
 # Flash
 obj-$(USE_FLS) += Fls.o
@@ -122,7 +141,9 @@ obj-$(USE_NVM) += Crc_16.o
 # SchM, always find the include files.
 inc-y += $(ROOTDIR)/system/SchM
 vpath-$(USE_SCHM) += $(ROOTDIR)/system/SchM
+ifeq ($(filter SchM.o,$(obj-y)),)
 obj-$(USE_SCHM) += SchM.o
+endif
 
 # J1939Tp
 obj-$(USE_J1939TP) += J1939Tp.o
@@ -314,53 +335,47 @@ obj-$(USE_SLEEP) += sleep.o
 # Circular Buffer (always)
 obj-y += cirq_buffer.o
 
-ifeq ($(COMPILER),cw)
-SELECT_CLIB?=CLIB_CW
-endif
-ifeq ($(COMPILER),iar)
-SELECT_CLIB?=CLIB_IAR
-endif
-
-SELECT_CLIB?=CLIB_NEWLIB
-
 obj-$(CFG_TIMER_TB)-$(CFG_PPC)+=timer_tb.o
 obj-$(CFG_TIMER_RTC)-$(CFG_PPC)+=timer_rtc.o
 obj-$(CFG_TIMER_DWT)-$(CFG_ARM)+=timer_dwt.o
+obj-$(CFG_SHELL)+=shell.o
 
-ifeq ($(SELECT_CLIB),CLIB_NATIVE)
-  # Just use native clib 
-  
-else ifeq ($(SELECT_CLIB),CLIB_IAR)
-  # This is not good, but don't know what to do right now....
-  obj-y += iar_port.o
-  obj-y += xtoa.o
+# Performance stuff
+obj-$(CFG_OS_PERF)+=perf.o
+def-$(CFG_OS_PERF)+=CFG_OS_ISR_HOOKS
+
+
+ifeq ($(CFG_ARC_CLIB),y)
+  # Just use native clib
+    # Override native C-library with ArcCore tweaks.
+  inc-system-y += $(ROOTDIR)/clib
+  vpath-y      += $(ROOTDIR)/clib
+
+  obj-$(USE_TTY_T32)     += serial_dbg_t32.o  
+  obj-$(USE_TTY_UDE)     += serial_dbg_ude.o
+  obj-$(USE_TTY_WINIDEA) += serial_dbg_winidea.o
+
+  obj-y += clib_port.o
+  obj-y += clib.o
   obj-y += printf.o
-  def-y += USE_CLIB_IAR
-else ifeq ($(SELECT_CLIB),CLIB_CW)
-  # This is not good, but don't know what to do right now....
   obj-y += xtoa.o
-  obj-y += msl_port.o
-  def-y += USE_CLIB_CW
+  obj-y-cw += strtok_r.o
+  obj-y-diab += strtok_r.o  
 else
-  # Newlib
-  def-y += USE_NEWLIB
-  obj-y += xtoa.o
-  obj-y += newlib_port.o
-  # If we have configured console output we include printf. 
-  # Overridden to use lib implementation with CFG_NEWLIB_PRINTF
-  ifneq ($(CFG_NEWLIB_PRINTF),y)
-    ifneq (,$(SELECT_CONSOLE) $(SELECT_OS_CONSOLE))
-      obj-y += printf.o
-    endif # SELECT_CONSOLE
-  endif # CFG_NEWLIB_PRINTF
+  ifeq ($(SELECT_CLIB),CLIB_IAR)
+    # This is not good, but don't know what to do right now....
+    obj-y += iar_port.o
+    obj-y += xtoa.o
+    obj-y += printf.o
+  else ifeq ($(SELECT_CLIB),CLIB_CW)
+    # This is not good, but don't know what to do right now....
+    obj-y += xtoa.o
+    obj-y += msl_port.o
+  endif    
 endif # SELECT_CLIB 
 
-
 obj-y += $(obj-y-y)
-obj-y += $(obj-y-gcc)
-obj-y += $(obj-y-iar)
-obj-y += $(obj-y-cw)
-
+obj-y += $(obj-y-$(COMPILER))
 
 vpath-y += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
 vpath-y += $(ROOTDIR)/$(ARCH_PATH-y)/drivers
@@ -378,9 +393,6 @@ inc-y += $(ROOTDIR)/system/kernel/include
 inc-y += $(ROOTDIR)/$(ARCH_PATH-y)/kernel
 inc-y += $(ROOTDIR)/$(ARCH_PATH-y)/drivers
 inc-y += $(ROOTDIR)/boards/$(BOARDDIR)/config
-inc-y += $(ROOTDIR)/drivers/Dem
-inc-y += $(ROOTDIR)/drivers/Dcm
-inc-y += $(ROOTDIR)/drivers/test
 
 
 #

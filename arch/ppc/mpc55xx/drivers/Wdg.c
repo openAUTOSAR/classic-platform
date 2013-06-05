@@ -44,6 +44,20 @@
 #include "mpc55xx.h"
 #include "Wdg.h"
 #include "Mcu.h"
+#include "io.h"
+
+#if defined(CFG_MPC5668)
+#define SWT_BASE			0xFFF38000
+#define SWT_CR				0x0
+#define SWT_TO				0x8
+#define SWT_SR				0x10
+
+#define CR_RIA				0x100
+#define CR_SLK				0x10
+#define CR_CSL				0x8
+#define CR_FRZ				0x2
+#define CR_WEN				0x1
+#endif
 
 
 static const Wdg_ConfigType *configWdgPtr;
@@ -61,9 +75,22 @@ void StartWatchdog(uint32 timeout_in_ms)
 #if defined(CFG_MPC5567)
 	(void)timeout_in_ms;
 	ECSM.SWTCR.R =  0x00D8;
-#elif defined(CFG_MPC560X) || defined(CFG_MPC5668) || defined(CFG_MPC563XM)
+#elif defined(CFG_MPC560X)|| defined(CFG_MPC563XM)
 	(void)timeout_in_ms;
 	SWT.CR.R = 0x8000011B;
+#elif defined(CFG_MPC5668)
+	/* Clocked by 16 MHz IRC clock */
+
+	/* Clear softlock */
+	WRITE32(SWT_BASE + SWT_SR, 0x0000c520);
+	WRITE32(SWT_BASE + SWT_SR, 0x0000d928);
+
+	/* Write TMO */
+	WRITE32(SWT_BASE + SWT_TO, timeout_in_ms * 16000 );
+
+	/* Enable Watchdog */
+	WRITE32(SWT_BASE + SWT_CR,0x80000000UL + CR_RIA + CR_SLK + CR_CSL + CR_FRZ + CR_WEN);
+
 #elif defined(CFG_MPC5516)
 	/* We running on system clock, ie SIU_SYSCLK.SWTCLKSEL,  so get the value */
 
@@ -173,7 +200,7 @@ void Wdg_Trigger (void)
 #if defined(CFG_MPC5567)
 	ECSM.SWTSR.R = 0x55;
 	ECSM.SWTSR.R = 0xAA;
-#elif defined(CFG_MPC560X) || defined(CFG_MPC563XM)
+#elif defined(CFG_MPC560X) || defined(CFG_MPC563XM) || defined(CFG_MPC5668)
 	SWT.SR.R = 0x0000A602;
 	SWT.SR.R = 0x0000B480;
 #elif defined(CFG_MPC5516)

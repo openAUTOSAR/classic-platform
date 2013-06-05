@@ -27,6 +27,7 @@
 /* ----------------------------[includes]------------------------------------*/
 
 #include "internal.h"
+#include "irq.h"
 #include "irq_types.h"
 #include "mpc55xx.h"
 //#include "pcb.h"

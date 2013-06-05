@@ -1,5 +1,4 @@
 
-
 # Arch specific settings
 ifneq ($(ARCH),)
  include $(ROOTDIR)/$(ARCH_PATH-y)/scripts/gcc.mk
@@ -24,12 +23,23 @@ GCC_V340 = $(call gcc_version,340)
 # Compiler
 # CCFLAGS - compile flags
 
+ifeq ($(CLANG_COMPILE),)
 CC	= 	$(CROSS_COMPILE)gcc
+else 
+CC	= 	$(CROSS_COMPILE)$(CLANG_COMPILE)/clang
+CFG_CLANG=y
+endif
+
 cflags-$(CFG_OPT_RELEASE) += -O3
-cflags-$(CFG_OPT_DEBUG) += -g -O0
-cflags-$(CFG_OPT_SIZE) += -g -Os
+cflags-$(CFG_OPT_DEBUG)   += -g -O0
+cflags-$(CFG_OPT_SIZE)    += -g -Os
+cflags-$(CFG_OPT_FLAGS)   += $(SELECT_OPT)
 
 
+
+#cflags-$(CFG_CLANG)   += -Weverything
+
+ 
 # Remove sections if needed.. may be problems with other compilers here.
 #cflags-y += -ffunction-sections
 
@@ -45,8 +55,18 @@ cflags-y 		+= -std=gnu99
 cflags-y 		+= -MMD
 
 # Warnings
-cflags-y          += -Wall
-cflags-$(GCC_V340)+= -Wextra
+cflags-y           += -Wall
+cflags-$(GCC_V340) += -Wextra
+#cflags-y          += -Wstrict-prototypes      # 3.4.6
+#cflags-y          += -Wold-style-definition   # 3.4.6
+#cflags-y          += -Wmissing-prototypes     # 3.4.6
+#cflags-y          += -Wmissing-declarations   # 3.4.6
+#cflags-y          += -Wredundant-decls        # 3.4.6
+#cflags-y          += -Wpointer-arith		   # 3.4.6	
+#cflags-y          += -Wpadded                 # 3.4.6
+#cflags-y          += -Wconversion             # 3.4.6 but not usable until 4.3.0
+
+#cflags-$(GCC_V340)+= -Wextra
 #cflags-$(GCC_V430)+= -Wconversion
 #cflags-y          += -pedantic
 
@@ -91,10 +111,20 @@ gcc_lib_path := "$(subst /libgcc.a,,$(shell $(CC) $(CFLAGS) --print-libgcc-file-
 gcc_lib_path := $(subst \libgcc.a,,$(gcc_lib_path)) 
 lib_lib_path := "$(subst /libc.a,,$(shell $(CC) $(CFLAGS) --print-file-name=libc.a))"
 lib_lib_path := $(subst \libc.a,,$(lib_lib_path))
-text_chunk := $(subst \,/,$(shell touch gcc_path_probe.c; $(CC) -v -c gcc_path_probe.c &> gcc_path_probe.tmp;gawk -f $(TOPDIR)/scripts/gcc_getinclude.awk gcc_path_probe.tmp))
+text_chunk := $(subst \,/,$(shell touch gcc_path_probe.c; $(CC) -v -c gcc_path_probe.c 2> gcc_path_probe.tmp;gawk -f $(TOPDIR)/scripts/gcc_getinclude.awk gcc_path_probe.tmp))
 cc_inc_path := $(realpath $(text_chunk))
 libpath-y += -L$(lib_lib_path)
 libpath-y += -L$(gcc_lib_path)
+
+ifeq ($(CC),gcc)
+SELECT_CLIB?=CLIB_NATIVE
+else
+SELECT_CLIB?=CLIB_NEWLIB
+endif
+
+ifeq ($(SELECT_CLIB),CLIB_NEWLIB)
+CFG_ARC_CLIB?=y
+endif
 
 # ---------------------------------------------------------------------------
 # Linker
@@ -116,10 +146,19 @@ LD_FILE = -T
 LDOUT 		= -o $@
 TE = elf
 
+
+#LDFLAGS += --gc-section
+#LDFLAGS += -use-gold-plugin
+#LDFLAGS += -flto
+
+ldflags-$(CFG_CLANG_SAFECODE) += -fmemsafety
+ldflags-$(CFG_CLANG_SAFECODE) += -L$(CLANG_COMPILE)/../lib
+ 
 # Don't use a map file if we are compiling for native target.
 ifneq ($(CROSS_COMPILE),) 
 LDFLAGS += -Map $(subst .$(TE),.map, $@) 
 endif
+LDFLAGS += $(ldflags-y)
 
 lib-$(CFG_GCOV) += -lgcov 
 
@@ -166,6 +205,7 @@ define do-memory-footprint
 	@gawk --non-decimal-data -f $(ROOTDIR)/scripts/memory_footprint_gcc.awk $(subst .elf,.map,$@)
 endef
 endif	
+
 
 
 

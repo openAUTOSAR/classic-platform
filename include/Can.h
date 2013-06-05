@@ -17,12 +17,13 @@
 #ifndef CAN_H_
 #define CAN_H_
 
+#include "Modules.h"
 
-#define CAN_VENDOR_ID			    1
+#define CAN_VENDOR_ID			    VENDOR_ID_ARCCORE
 #define CAN_MODULE_ID			    MODULE_ID_CAN
-#define CAN_AR_MAJOR_VERSION  2
-#define CAN_AR_MINOR_VERSION 	2
-#define CAN_AR_PATCH_VERSION	2
+#define CAN_AR_MAJOR_VERSION	3
+#define CAN_AR_MINOR_VERSION	1
+#define CAN_AR_PATCH_VERSION	5
 
 #define CAN_SW_MAJOR_VERSION	1
 #define CAN_SW_MINOR_VERSION 	0

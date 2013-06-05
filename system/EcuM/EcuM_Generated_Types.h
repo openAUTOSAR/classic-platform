@@ -98,7 +98,7 @@
 #endif
 
 
-typedef struct
+typedef struct EcuM_ConfigS
 {
 	EcuM_StateType EcuMDefaultShutdownTarget;
 	uint8 EcuMDefaultSleepMode;

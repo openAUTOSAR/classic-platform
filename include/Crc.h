@@ -21,8 +21,9 @@
 /** req 3.1.5|CRC022 */
 #include "Crc_Cfg.h"
 #include "MemMap.h"
+#include "Modules.h"
 
-#define CRC_VENDOR_ID			    1
+#define CRC_VENDOR_ID			    VENDOR_ID_ARCCORE
 #define CRC_MODULE_ID			    MODULE_ID_CRC
 #define CRC_AR_MAJOR_VERSION  		3
 #define CRC_AR_MINOR_VERSION 		1

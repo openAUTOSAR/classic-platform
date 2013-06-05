@@ -97,7 +97,6 @@ Std_ReturnType Pwm_ValidateChannel(Pwm_ChannelType Channel,Pwm_APIServiceIDType 
     return result;
 }
 
-void Pwm_InitChannel(Pwm_ChannelType Channel);
 #if PWM_DE_INIT_API==STD_ON
 void Pwm_DeInitChannel(Pwm_ChannelType Channel);
 #endif
@@ -195,6 +194,14 @@ static void configureChannel(const Pwm_ChannelConfigurationType* channelConfig){
 	emiosHw->CH[channel].CCR.B.UCPREN = 1;
 #endif
 
+	/* PWM009: The function Pwm_Init shall start all PWM channels with the configured
+		default values. If the duty cycle parameter equals:
+		􀂃 0% or 100% : Then the PWM output signal shall be in the state according to
+			the configured polarity parameter
+		􀂃 >0% and <100%: Then the PWM output signal shall be modulated according
+		to parameters period, duty cycle and configured polarity. */
+	emiosHw->CH[channel].CADR.R = (uint16) (((uint32) period_ticks * (uint32) channelConfig->duty) >> 15);
+
 	// 0 A match on comparator A clears the output flip-flop, while a match on comparator B sets it
 	// 1 A match on comparator A sets the output flip-flop, while a match on comparator B clears it
 	// A duty cycle of X % should give a signal with state 'channelConfig->polarity' during
@@ -274,6 +281,23 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
     for (channel_iterator = 0; channel_iterator < PWM_NUMBER_OF_CHANNELS; channel_iterator++) {
     	const Pwm_ChannelConfigurationType* channelConfig = &ConfigPtr->Channels[channel_iterator];
     	Pwm_ChannelType channel = channelConfig->channel;
+    	volatile struct EMIOS_tag *emiosHw;
+
+#if defined(CFG_MPC560X)
+		if(channel <= PWM_NUMBER_OF_EACH_EMIOS-1) {
+			emiosHw = &EMIOS_0;
+		} else {
+			emiosHw = &EMIOS_1;
+			channel -= PWM_NUMBER_OF_EACH_EMIOS;
+		}
+#else
+		emiosHw = &EMIOS;
+#endif
+
+#if !defined(CFG_MPC5567)
+		// Clear the disable bit for this channel
+		emiosHw->UCDIS.R &= ~(1 << channel);
+#endif
 
     	configureChannel( channelConfig );
 
@@ -516,28 +540,37 @@ void Pwm_Init(const Pwm_ConfigType* ConfigPtr) {
 
 		#endif
     }
+
+	/* Enable module */
+    #if defined(CFG_MPC560X)
+		EMIOS_0.MCR.B.MDIS = 0;
+		EMIOS_1.MCR.B.MDIS = 0;
+	#else
+		EMIOS.MCR.B.MDIS = 0;
+	#endif
 }
 
 #if PWM_DE_INIT_API==STD_ON
 
 void inline Pwm_DeInitChannel(Pwm_ChannelType Channel) {
-    Pwm_SetOutputToIdle(Channel);
+	volatile struct EMIOS_tag *emiosHw;
+#if defined(CFG_MPC560X)
+	if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1) {
+		emiosHw = &EMIOS_0;
+	} else {
+		emiosHw = &EMIOS_1;
+		Channel -= PWM_NUMBER_OF_EACH_EMIOS;
+	}
+#else
+	emiosHw = &EMIOS;
+#endif
 
-	#if defined(CFG_MPC5516)
-        // Set the disable bit for this channel
-    	EMIOS.UCDIS.R |= (1 << (31 - Channel));
-    #elif defined(CFG_MPC560X)
-        // Set the disable bit for this channel
-        if(Channel <= PWM_NUMBER_OF_EACH_EMIOS-1)
-        {
-        	EMIOS_0.UCDIS.R |= (1 << (Channel));
-        }
-        else
-        {
-        	EMIOS_1.UCDIS.R |= (1 << (Channel-PWM_NUMBER_OF_EACH_EMIOS));
-        }
-	#endif
+	emiosHw->CH[Channel].CADR.R = 0;
 
+#if !defined(CFG_MPC5567)
+	// Set the disable bit for this channel
+	emiosHw->UCDIS.R |= (1 << Channel);
+#endif
     /*
      * PWM052: The function Pwm_DeInit shall disable all notifications.
      */
@@ -560,11 +593,11 @@ void Pwm_DeInit() {
 	}
 
 	// Disable module
-	#if defined(CFG_MPC5516) || defined(CFG_MPC5567)
-		EMIOS.MCR.B.MDIS = 1;
-    #elif defined(CFG_MPC560X)
+    #if defined(CFG_MPC560X)
 		EMIOS_0.MCR.B.MDIS = 1;
 		EMIOS_1.MCR.B.MDIS = 1;
+	#else
+		EMIOS.MCR.B.MDIS = 1;
 	#endif
 
 	Pwm_ModuleState = PWM_STATE_UNINITIALIZED;
@@ -662,7 +695,7 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 	 *
 	 * PWM014: The function Pwm_SetDutyCycle shall set the output state according
 	 * to the configured polarity parameter [which is already set from
-	 * Pwm_InitChannel], when the duty parameter is 0% [=0] or 100% [=0x8000].
+	 * Pwm_Init], when the duty parameter is 0% [=0] or 100% [=0x8000].
 	 */
 	emiosHw->CH[Channel].CADR.R = leading_edge_position;
 }

@@ -122,7 +122,7 @@ Std_ReturnType Fls_SST25xx_Compare( Fls_AddressType SourceAddress,
 #endif
 
 #if ( FLS_SET_MODE_API == STD_ON )
-void Fls_SST25xx_SetMode(		Fls_ModeType Mode );
+void Fls_SST25xx_SetMode( MemIf_ModeType Mode );
 #endif
 
 void Fls_SST25xx_GetVersionInfo( Std_VersionInfoType *VersioninfoPtr );

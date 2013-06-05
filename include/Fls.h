@@ -80,6 +80,7 @@ typedef uint32 Fls_AddressType;
 // flash device.
 typedef uint32 Fls_LengthType;
 
+#if !defined(FLS_INCLUDE_FILE)
 #include "Fls_Cfg.h"
 
 /**
@@ -140,11 +141,15 @@ Std_ReturnType Fls_Compare( Fls_AddressType SourceAddress,
 #endif
 
 #if ( FLS_SET_MODE_API == STD_ON )
-void Fls_SetMode(		Fls_ModeType Mode );
+void Fls_SetMode( MemIf_ModeType Mode );
 #endif
 
 void Fls_GetVersionInfo( Std_VersionInfoType *VersioninfoPtr );
 
 void Fls_Check( uint32 flsBaseAddress, uint32 flsTotalSize );
+
+#else
+#include FLS_INCLUDE_FILE
+#endif
 
 #endif /*FLS_H_*/
