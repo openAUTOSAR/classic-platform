@@ -149,7 +149,7 @@ Std_ReturnType Dcm_GetSecurityLevel(Dcm_SecLevelType *secLevel)
 	VALIDATE_RV(dcmState == DCM_INITIALIZED, DCM_GET_SECURITY_LEVEL_ID, DCM_E_UNINIT, E_NOT_OK);
 	/* According to 3.1.5 spec. E_OK should always be returned.
 	 * So if we cannot get the current security level using DslGetSecurityLevel,
-	 * and this probably due to that these is no active protocol,
+	 * and this probably due to that there is no active protocol,
 	 * we report the default security level according to DCM033 */
 	if( E_OK != DslGetSecurityLevel(secLevel) ) {
 		*secLevel = DCM_SEC_LEV_LOCKED;
@@ -163,7 +163,7 @@ Std_ReturnType Dcm_GetSesCtrlType(Dcm_SesCtrlType *sesCtrlType)
 	VALIDATE_RV(dcmState == DCM_INITIALIZED, DCM_GET_SES_CTRL_TYPE_ID, DCM_E_UNINIT, E_NOT_OK);
 	/* According to 3.1.5 spec. E_OK should always be returned.
 	 * So if we cannot get the current session using DslGetSesCtrlType,
-	 * and this probably due to that these is no active protocol,
+	 * and this probably due to that there is no active protocol,
 	 * we report the default session according to  DCM034 */
 	if( E_OK !=  DslGetSesCtrlType(sesCtrlType) ) {
 		*sesCtrlType = DCM_DEFAULT_SESSION;
