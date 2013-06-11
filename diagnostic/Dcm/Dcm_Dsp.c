@@ -1460,13 +1460,12 @@ static Dcm_NegativeResponseCodeType writeDidData(const Dcm_DspDidType *didPtr, c
 						result = E_OK;
 					}
 					else {
-						if (didPtr->DspDidReadDataLengthFnc != NULL) {
-							result = didPtr->DspDidReadDataLengthFnc(&didLen);
-						}					}
+						result = E_OK; /* Always allow writing of variable length */
+					}
 
 					if (result == E_OK) {
-						if (didLen == writeDidLen) {	/** @req DCM473 */
-							result = didPtr->DspDidWriteDataFnc(&pduRxData->SduDataPtr[3], (uint8)didLen, &responseCode);	/** @req DCM395 */
+						if (didLen == writeDidLen || !didPtr->DspDidInfoRef->DspDidFixedLength) {	/** @req DCM473 */
+							result = didPtr->DspDidWriteDataFnc(&pduRxData->SduDataPtr[3], (uint8)writeDidLen, &responseCode);	/** @req DCM395 */
 							if( result != E_OK && responseCode == DCM_E_POSITIVERESPONSE ) {
 								responseCode = DCM_E_CONDITIONSNOTCORRECT;
 							}
@@ -1883,6 +1882,7 @@ void DspUdsControlDtcSetting(const PduInfoType *pduRxData, PduInfoType *pduTxDat
 	}
 }
 #endif
+
 
 void DspDcmConfirmation(PduIdType confirmPduId)
 {
