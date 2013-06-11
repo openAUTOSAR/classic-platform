@@ -136,6 +136,8 @@ Std_ReturnType Dcm_GetActiveProtocol(Dcm_ProtocolType *activeProtocol)
 
 	VALIDATE_RV(dcmState == DCM_INITIALIZED, DCM_GET_ACTIVE_PROTOCOL_ID, DCM_E_UNINIT, E_NOT_OK);
 
+	/* According to 3.1.5 spec. E_OK should always be returned.
+	 * But if there is no active protocol? */
 	returnCode = DslGetActiveProtocol(activeProtocol);
 
 	return returnCode;
@@ -144,25 +146,29 @@ Std_ReturnType Dcm_GetActiveProtocol(Dcm_ProtocolType *activeProtocol)
 
 Std_ReturnType Dcm_GetSecurityLevel(Dcm_SecLevelType *secLevel)
 {
-	Std_ReturnType returnCode;
-
 	VALIDATE_RV(dcmState == DCM_INITIALIZED, DCM_GET_SECURITY_LEVEL_ID, DCM_E_UNINIT, E_NOT_OK);
-
-	returnCode = DslGetSecurityLevel(secLevel);
-
-	return returnCode;
+	/* According to 3.1.5 spec. E_OK should always be returned.
+	 * So if we cannot get the current security level using DslGetSecurityLevel,
+	 * and this probably due to that there is no active protocol,
+	 * we report the default security level according to DCM033 */
+	if( E_OK != DslGetSecurityLevel(secLevel) ) {
+		*secLevel = DCM_SEC_LEV_LOCKED;
+	}
+	return E_OK;
 }
 
 
 Std_ReturnType Dcm_GetSesCtrlType(Dcm_SesCtrlType *sesCtrlType)
 {
-	Std_ReturnType returnCode;
-
 	VALIDATE_RV(dcmState == DCM_INITIALIZED, DCM_GET_SES_CTRL_TYPE_ID, DCM_E_UNINIT, E_NOT_OK);
-
-	returnCode = DslGetSesCtrlType(sesCtrlType);
-
-	return returnCode;
+	/* According to 3.1.5 spec. E_OK should always be returned.
+	 * So if we cannot get the current session using DslGetSesCtrlType,
+	 * and this probably due to that there is no active protocol,
+	 * we report the default session according to  DCM034 */
+	if( E_OK !=  DslGetSesCtrlType(sesCtrlType) ) {
+		*sesCtrlType = DCM_DEFAULT_SESSION;
+	}
+	return E_OK;
 }
 
 BufReq_ReturnType Dcm_ProvideTxBuffer(PduIdType dcmTxPduId, PduInfoType **pduInfoPtr, PduLengthType length)
