@@ -100,8 +100,10 @@
 #define DEM_GETDTCOFOBDFREEZEFRAME_ID			0x28
 #define DEM_GETOBDFREEZEFRAMEDATA_ID			0x29
 
+#define DEM_GETNEXTFILTEREDRECORD_ID			0x3a
 #define DEM_GETTRANSLATIONTYPE_ID				0x3c
 #define DEM_GETFAULTDETECTIONCOUNTER_ID 		0x3E
+#define DEM_SETDTCFILTERFORRECORDS_ID 			0x3f
 #define DEM_MAINFUNCTION_ID						0x55
 
 #define DEM_UPDATE_EVENT_STATUS_ID				0x80
@@ -185,7 +187,8 @@ Dem_GetFreezeFameDataIdentifierByDTCType Dem_GetFreezeFrameDataIdentifierByDTC(u
 																						uint8*  arraySize,
 																						const  uint16** dataId );
 Dem_ReturnGetSizeOfFreezeFrameType Dem_GetSizeOfFreezeFrame(uint32  dtc,Dem_DTCKindType  dtcKind,Dem_DTCOriginType  dtcOrigin,uint8  recordNumber,uint16*  sizeOfFreezeFrame);
-
+Dem_ReturnSetDTCFilterType Dem_SetDTCFilterForRecords(uint16 *NumberOfFilteredRecords); /** @req DEM209 */
+Dem_ReturnGetNextFilteredDTCType Dem_GetNextFilteredRecord(uint32 *DTC, uint8 *RecordNumber); /** @req DEM224 */
 
 /*
  * OBD-specific Interfaces (8.3.6)
