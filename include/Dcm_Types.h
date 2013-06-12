@@ -176,4 +176,10 @@ typedef uint8 Dcm_IOControlParameterType;
 #define DCM_FREEZE_CURRENT_STATE						(Dcm_IOControlParameterType)0x02
 #define DCM_SHORT_TERM_ADJUSTMENT						(Dcm_IOControlParameterType)0x03
 
+typedef uint8 Dcm_CommunicationControlType;
+#define DCM_ENABLE_RX_AND_TX							(Dcm_CommunicationControlType)0x00
+#define DCM_ENABLE_RX_AND_DISABLE_TX					(Dcm_CommunicationControlType)0x01
+#define DCM_DISABLE_RX_AND_ENABLE_TX					(Dcm_CommunicationControlType)0x02
+#define DCM_DISABLE_RX_AND_TX							(Dcm_CommunicationControlType)0x03
+
 #endif /*DCM_TYPES_H_*/

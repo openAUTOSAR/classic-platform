@@ -3271,6 +3271,57 @@ void DspIOControlByDataIdentifier(const PduInfoType *pduRxData,PduInfoType *pduT
 	DsdDspProcessingDone(responseCode);
 }
 
+#ifdef DCM_USE_SERVICE_COMMUNICATIONCONTROL
+void DspCommunicationControl(const PduInfoType *pduRxData,PduInfoType *pduTxData)
+{
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_REQUESTOUTOFRANGE;
+	Dcm_NegativeResponseCodeType calloutResponseCode = DCM_E_POSITIVERESPONSE;
+	if(pduRxData->SduLength == 3) {
+		switch(pduRxData->SduDataPtr[SF_INDEX])
+		{
+		case DCM_ENABLE_RX_AND_TX:
+			Dcm_E_EnableRxAndTx(pduRxData->SduDataPtr[2], &calloutResponseCode);
+			break;
+		case DCM_ENABLE_RX_AND_DISABLE_TX:
+			Dcm_E_EnableRxAndDisableTx(pduRxData->SduDataPtr[2], &calloutResponseCode);
+			break;
+		case DCM_DISABLE_RX_AND_ENABLE_TX:
+			Dcm_E_DisableRxAndEnableTx(pduRxData->SduDataPtr[2], &calloutResponseCode);
+			break;
+		case DCM_DISABLE_RX_AND_TX:
+			Dcm_E_DisableRxAndTx(pduRxData->SduDataPtr[2], &calloutResponseCode);
+			break;
+		default:
+			responseCode = DCM_E_SUBFUNCTIONNOTSUPPORTED;
+			break;
+		}
+		if(DCM_E_SUBFUNCTIONNOTSUPPORTED != responseCode) {
+			/* Callout was called. Check the response from the callout.
+			 * The callout is only allowed to return positiveResponse, conditionsNotCorrect
+			 * or requestOutOfRange */
+			if( !((DCM_E_POSITIVERESPONSE == calloutResponseCode) ||
+					(DCM_E_REQUESTOUTOFRANGE == calloutResponseCode) ||
+					(DCM_E_CONDITIONSNOTCORRECT == calloutResponseCode)) ) {
+				/* Response from callout invalid. Override it. */
+				responseCode = DCM_E_REQUESTOUTOFRANGE;
+
+			} else {
+				/* Valid response from callout. */
+				responseCode = calloutResponseCode;
+			}
+		}
+	} else {
+		responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+	}
+	if(responseCode == DCM_E_POSITIVERESPONSE)
+	{
+		pduTxData->SduLength = SID_LEN + SF_LEN;
+		pduTxData->SduDataPtr[SF_INDEX] = pduRxData->SduDataPtr[SF_INDEX];
+	}
+	DsdDspProcessingDone(responseCode);
+}
+#endif
+
 static boolean lookupPid(uint8 pidId,const Dcm_DspPidType **PidPtr)
 {
 	boolean pidFound = FALSE;

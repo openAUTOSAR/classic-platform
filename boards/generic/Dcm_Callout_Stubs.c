@@ -55,3 +55,28 @@ void DcmE_EcuPerformReset(Dcm_EcuResetType resetType)
 	Mcu_PerformReset();
 #endif
 }
+
+void Dcm_E_EnableRxAndTx(uint8 communicationType, Dcm_NegativeResponseCodeType *responseCode )
+{
+	(void)communicationType;
+	(void)responseCode;
+}
+
+void Dcm_E_EnableRxAndDisableTx(uint8 communicationType, Dcm_NegativeResponseCodeType *responseCode )
+{
+	(void)communicationType;
+	(void)responseCode;
+}
+
+void Dcm_E_DisableRxAndEnableTx(uint8 communicationType, Dcm_NegativeResponseCodeType *responseCode )
+{
+	(void)communicationType;
+	(void)responseCode;
+}
+
+void Dcm_E_DisableRxAndTx(uint8 communicationType, Dcm_NegativeResponseCodeType *responseCode )
+{
+	(void)communicationType;
+	(void)responseCode;
+}
+
