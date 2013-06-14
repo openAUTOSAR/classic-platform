@@ -109,9 +109,6 @@ void Dcm_DiagnosticSessionControl(Dcm_SesCtrlType session);
 Std_ReturnType DcmE_EcuReset(Dcm_EcuResetType resetType);
 void DcmE_EcuPerformReset(Dcm_EcuResetType resetType);
 
-void Dcm_E_EnableRxAndTx(uint8 communicationType, Dcm_NegativeResponseCodeType *responseCode );
-void Dcm_E_EnableRxAndDisableTx(uint8 communicationType, Dcm_NegativeResponseCodeType *responseCode );
-void Dcm_E_DisableRxAndEnableTx(uint8 communicationType, Dcm_NegativeResponseCodeType *responseCode );
-void Dcm_E_DisableRxAndTx(uint8 communicationType, Dcm_NegativeResponseCodeType *responseCode );
+void Dcm_E_CommunicationControl(uint8 subFunction, uint8 communicationType, Dcm_NegativeResponseCodeType *responseCode );
 
 #endif /*DCM_H_*/

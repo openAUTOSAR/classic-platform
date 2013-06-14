@@ -78,6 +78,13 @@
 #define IOCP_INDEX 3
 #define IOCP_LEN 1
 #define COR_INDEX 4
+/* CommunicationControl */
+#define CC_CTP_INDEX 2
+#define COMM_CTRL_ISO_RES_SF_LOW 	0x04
+#define COMM_CTRL_ISO_RES_SF_HIGH 	0x3F
+#define COMM_CTRL_ISO_RES_SF		0x7F
+#define IS_IN_ISO_RESERVED_RANGE(_x)	((_x >= COMM_CTRL_ISO_RES_SF_LOW) && (_x <= COMM_CTRL_ISO_RES_SF_HIGH))
+#define IS_ISO_RESERVED(_x) (IS_IN_ISO_RESERVED_RANGE(_x) || (COMM_CTRL_ISO_RES_SF == _x))
 
 /*OBD RequestCurrentPowertrainDiagnosticData*/
 #define PID_LEN								1
@@ -3275,42 +3282,31 @@ void DspIOControlByDataIdentifier(const PduInfoType *pduRxData,PduInfoType *pduT
 void DspCommunicationControl(const PduInfoType *pduRxData,PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_REQUESTOUTOFRANGE;
-	Dcm_NegativeResponseCodeType calloutResponseCode = DCM_E_POSITIVERESPONSE;
+	uint8 subFunction = pduRxData->SduDataPtr[SF_INDEX];
 	if(pduRxData->SduLength == 3) {
-		switch(pduRxData->SduDataPtr[SF_INDEX])
-		{
-		case DCM_ENABLE_RX_AND_TX:
-			Dcm_E_EnableRxAndTx(pduRxData->SduDataPtr[2], &calloutResponseCode);
-			break;
-		case DCM_ENABLE_RX_AND_DISABLE_TX:
-			Dcm_E_EnableRxAndDisableTx(pduRxData->SduDataPtr[2], &calloutResponseCode);
-			break;
-		case DCM_DISABLE_RX_AND_ENABLE_TX:
-			Dcm_E_DisableRxAndEnableTx(pduRxData->SduDataPtr[2], &calloutResponseCode);
-			break;
-		case DCM_DISABLE_RX_AND_TX:
-			Dcm_E_DisableRxAndTx(pduRxData->SduDataPtr[2], &calloutResponseCode);
-			break;
-		default:
-			responseCode = DCM_E_SUBFUNCTIONNOTSUPPORTED;
-			break;
-		}
-		if(DCM_E_SUBFUNCTIONNOTSUPPORTED != responseCode) {
-			/* Callout was called. Check the response from the callout.
-			 * The callout is only allowed to return positiveResponse, conditionsNotCorrect
-			 * or requestOutOfRange */
-			if( !((DCM_E_POSITIVERESPONSE == calloutResponseCode) ||
-					(DCM_E_REQUESTOUTOFRANGE == calloutResponseCode) ||
-					(DCM_E_CONDITIONSNOTCORRECT == calloutResponseCode)) ) {
-				/* Response from callout invalid. Override it. */
+		if( !IS_ISO_RESERVED(subFunction) ) {
+			Dcm_E_CommunicationControl(subFunction, pduRxData->SduDataPtr[CC_CTP_INDEX], &responseCode);
+			/* Check the response code to make sure that the callout did not set it
+			 * to something invalid.
+			 * Valid response codes positiveResponse, conditionsNotCorrect
+			 * subFunctionNotSupported and requestOutOfRange */
+			if( !((DCM_E_POSITIVERESPONSE == responseCode) ||
+					(DCM_E_REQUESTOUTOFRANGE == responseCode) ||
+					(DCM_E_CONDITIONSNOTCORRECT == responseCode) ||
+					(DCM_E_SUBFUNCTIONNOTSUPPORTED == responseCode)) ) {
+				/* Response invalid. Override it.
+				 * TODO: Det-error?
+				 * */
 				responseCode = DCM_E_REQUESTOUTOFRANGE;
-
 			} else {
-				/* Valid response from callout. */
-				responseCode = calloutResponseCode;
+				/* Valid response. */
 			}
+		} else {
+			/* ISO reserved for future definition */
+			responseCode = DCM_E_SUBFUNCTIONNOTSUPPORTED;
 		}
 	} else {
+		/* Length not correct */
 		responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
 	}
 	if(responseCode == DCM_E_POSITIVERESPONSE)
