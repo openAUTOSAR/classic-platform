@@ -578,6 +578,26 @@ void DspUdsClearDiagnosticInformation(const PduInfoType *pduRxData, PduInfoType 
 #endif
 
 #if defined(USE_DEM) && defined(DCM_USE_SERVICE_READDTCINFORMATION)
+
+static void udsReportDtc(uint32 dtc, uint8 *buffer)
+{
+	switch( DEM_TYPE_OF_DTC_SUPPORTED )
+	{
+	case DEM_ISO14229_1: // UDS
+		buffer[0] = DTC_HIGH_BYTE(dtc);
+		buffer[1] = DTC_MID_BYTE(dtc);
+		buffer[2] = DTC_LOW_BYTE(dtc);
+		break;
+	case DEM_ISO15031_6: // OBD
+		buffer[0] = DTC_MID_BYTE(dtc);
+		buffer[1] = DTC_LOW_BYTE(dtc);
+		buffer[2] = 0x00;
+		break;
+	default:
+		break;
+	}
+}
+
 static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x01_0x07_0x11_0x12(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
 	typedef struct {
@@ -724,9 +744,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x02_0x0A_0x0F_0x13_0x15(c
 		if (dtcStatusMask != 0x00) {	/** @req DCM008 */
 			getNextFilteredDtcResult = Dem_GetNextFilteredDTC(&dtc, &dtcStatus);
 			while (getNextFilteredDtcResult == DEM_FILTERED_OK) {
-				txData->dtcAndStatusRecord[nrOfDtcs].dtcHighByte = DTC_HIGH_BYTE(dtc);
-				txData->dtcAndStatusRecord[nrOfDtcs].dtcMiddleByte = DTC_MID_BYTE(dtc);
-				txData->dtcAndStatusRecord[nrOfDtcs].dtcLowByte = DTC_LOW_BYTE(dtc);
+				udsReportDtc(dtc, (uint8*)&txData->dtcAndStatusRecord[nrOfDtcs]);
 				txData->dtcAndStatusRecord[nrOfDtcs].statusOfDtc = dtcStatus;
 				nrOfDtcs++;
 				getNextFilteredDtcResult = Dem_GetNextFilteredDTC(&dtc, &dtcStatus);
@@ -829,9 +847,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x06_0x10(const PduInfoTyp
 
 			/** @req DCM297 */ /** @req DCM474 */ /** @req DCM386 */
 			pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];			// Sub function
-			pduTxData->SduDataPtr[2] = DTC_HIGH_BYTE(dtc);					// DTC high byte
-			pduTxData->SduDataPtr[3] = DTC_MID_BYTE(dtc);					// DTC mid byte
-			pduTxData->SduDataPtr[4] = DTC_LOW_BYTE(dtc);					// DTC low byte
+			udsReportDtc(dtc, &pduTxData->SduDataPtr[2]);
 			pduTxData->SduDataPtr[5] = statusOfDtc;							// DTC status
 			for (recNum = startRecNum; recNum <= endRecNum; recNum++) {
 				recLength = pduTxData->SduLength - (txIndex + 1);	// Calculate what's left in buffer
