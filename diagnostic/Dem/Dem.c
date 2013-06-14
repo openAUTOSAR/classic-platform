@@ -101,8 +101,8 @@
 #error "DEM_PTO_SUPPORT is set to STD_ON, this is not supported by the code."
 #endif
 
-#if (DEM_TYPE_OF_DTC_SUPPORTED != 0x01)
-#error "DEM_TYPE_OF_DTC_SUPPORTED is not set to 1 (ISO14229-1), only ISO14229-1 is currently supported by the code."
+#if !(DEM_TYPE_OF_DTC_SUPPORTED == DEM_ISO15031_6 || DEM_TYPE_OF_DTC_SUPPORTED == DEM_ISO14229_1)
+#error "DEM_TYPE_OF_DTC_SUPPORTED is not set to ISO15031-6 or ISO14229-1. Only these are supported by the code."
 #endif
 
 
