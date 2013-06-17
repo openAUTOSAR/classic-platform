@@ -63,6 +63,7 @@
 #define SID_READ_MEMORY_BY_ADDRESS				0x23
 #define SID_READ_SCALING_DATA_BY_IDENTIFIER		0x24
 #define SID_SECURITY_ACCESS						0x27
+#define SID_COMMUNICATION_CONTROL				0x28
 #define SID_READ_DATA_BY_PERIODIC_IDENTIFIER	0x2A
 #define SID_DYNAMICALLY_DEFINE_DATA_IDENTIFIER	0x2C
 #define SID_WRITE_DATA_BY_IDENTIFIER			0x2E
@@ -113,6 +114,7 @@ void DspUdsWriteMemoryByAddress(const PduInfoType *pduRxData, PduInfoType *pduTx
 void DspReadDataByPeriodicIdentifier(const PduInfoType *pduRxData,PduInfoType *pduTxData);
 void DspDynamicallyDefineDataIdentifier(const PduInfoType *pduRxData,PduInfoType *pduTxData);
 void DspIOControlByDataIdentifier(const PduInfoType *pduRxData,PduInfoType *pduTxData);
+void DspCommunicationControl(const PduInfoType *pduRxData,PduInfoType *pduTxData);
 
 // OBD stack interface
 void DspRequestCurrentPowertrainDiagnosticData(const PduInfoType *pduRxData,PduInfoType *pduTxData);

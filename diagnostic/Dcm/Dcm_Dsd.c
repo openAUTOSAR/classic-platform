@@ -184,6 +184,11 @@ static void selectServiceFunction(uint8 sid)
 		break;
 #endif
 
+#ifdef DCM_USE_SERVICE_COMMUNICATIONCONTROL
+	case SID_COMMUNICATION_CONTROL:
+		DspCommunicationControl(msgData.pduRxData, msgData.pduTxData);
+		break;
+#endif
 	/* OBD */
 	case SID_REQUEST_CURRENT_POWERTRAIN_DIAGNOSTIC_DATA:
 		DspObdRequestCurrentPowertrainDiagnosticData(msgData.pduRxData, msgData.pduTxData);
