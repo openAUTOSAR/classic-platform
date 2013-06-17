@@ -55,3 +55,10 @@ void DcmE_EcuPerformReset(Dcm_EcuResetType resetType)
 	Mcu_PerformReset();
 #endif
 }
+
+void Dcm_E_CommunicationControl(uint8 subFunction, uint8 communicationType, Dcm_NegativeResponseCodeType *responseCode )
+{
+	(void)subFunction;
+	(void)communicationType;
+	(void)responseCode;
+}

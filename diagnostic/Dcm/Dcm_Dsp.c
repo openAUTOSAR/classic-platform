@@ -79,6 +79,13 @@
 #define IOCP_INDEX 3
 #define IOCP_LEN 1
 #define COR_INDEX 4
+/* CommunicationControl */
+#define CC_CTP_INDEX 2
+#define COMM_CTRL_ISO_RES_SF_LOW 	0x04
+#define COMM_CTRL_ISO_RES_SF_HIGH 	0x3F
+#define COMM_CTRL_ISO_RES_SF		0x7F
+#define IS_IN_ISO_RESERVED_RANGE(_x)	((_x >= COMM_CTRL_ISO_RES_SF_LOW) && (_x <= COMM_CTRL_ISO_RES_SF_HIGH))
+#define IS_ISO_RESERVED(_x) (IS_IN_ISO_RESERVED_RANGE(_x) || (COMM_CTRL_ISO_RES_SF == _x))
 
 /*OBD RequestCurrentPowertrainDiagnosticData*/
 #define PIDZERO								0
@@ -3315,6 +3322,46 @@ void DspIOControlByDataIdentifier(const PduInfoType *pduRxData,PduInfoType *pduT
 	}
 	DsdDspProcessingDone(responseCode);
 }
+
+#ifdef DCM_USE_SERVICE_COMMUNICATIONCONTROL
+void DspCommunicationControl(const PduInfoType *pduRxData,PduInfoType *pduTxData)
+{
+	Dcm_NegativeResponseCodeType responseCode = DCM_E_REQUESTOUTOFRANGE;
+	uint8 subFunction = pduRxData->SduDataPtr[SF_INDEX];
+	if(pduRxData->SduLength == 3) {
+		if( !IS_ISO_RESERVED(subFunction) ) {
+			Dcm_E_CommunicationControl(subFunction, pduRxData->SduDataPtr[CC_CTP_INDEX], &responseCode);
+			/* Check the response code to make sure that the callout did not set it
+			 * to something invalid.
+			 * Valid response codes positiveResponse, conditionsNotCorrect
+			 * subFunctionNotSupported and requestOutOfRange */
+			if( !((DCM_E_POSITIVERESPONSE == responseCode) ||
+					(DCM_E_REQUESTOUTOFRANGE == responseCode) ||
+					(DCM_E_CONDITIONSNOTCORRECT == responseCode) ||
+					(DCM_E_SUBFUNCTIONNOTSUPPORTED == responseCode)) ) {
+				/* Response invalid. Override it.
+				 * TODO: Det-error?
+				 * */
+				responseCode = DCM_E_REQUESTOUTOFRANGE;
+			} else {
+				/* Valid response. */
+			}
+		} else {
+			/* ISO reserved for future definition */
+			responseCode = DCM_E_SUBFUNCTIONNOTSUPPORTED;
+		}
+	} else {
+		/* Length not correct */
+		responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+	}
+	if(responseCode == DCM_E_POSITIVERESPONSE)
+	{
+		pduTxData->SduLength = SID_LEN + SF_LEN;
+		pduTxData->SduDataPtr[SF_INDEX] = pduRxData->SduDataPtr[SF_INDEX];
+	}
+	DsdDspProcessingDone(responseCode);
+}
+#endif
 
 static boolean lookupPid(uint8 pidId,const Dcm_DspPidType **PidPtr)
 {
