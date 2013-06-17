@@ -116,6 +116,12 @@
 #define MAX_PID_FFNUM_NUM					3
 #define OBD_REQ_MESSAGE_LEN_TWO_MIN			3
 
+#if defined(DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA)
+#define DCM_MAX_PID_NUM_IN_FF				DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA
+#else
+#define DCM_MAX_PID_NUM_IN_FF				0
+#endif
+
 /*OBD RequestEmissionRelatedDiagnosticTroubleCodes service03 07*/
 #define EMISSION_DTCS_HIGH_BYTE(dtc)		(((uint32)(dtc) >> 8) & 0xFFu)
 #define EMISSION_DTCS_LOW_BYTE(dtc)			((uint32)(dtc) & 0xFFu)
