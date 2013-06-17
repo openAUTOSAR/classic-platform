@@ -3875,12 +3875,72 @@ static void storeOBDFreezeFrameDataPriMem(const Dem_EventParameterType *eventPar
 	Irq_Restore(state);
 }
 
+/*
+ * Procedure:	Dem_GetFreezeFramePids
+ * Reentrant:	No
+ */
+Std_ReturnType Dem_GetFreezeFramePids(uint8* array, uint8* arraySize)
+{
+	uint16 index = 0;
+	Std_ReturnType ret = E_NOT_OK;
+	boolean arrayFull = FALSE;
+	FreezeFrameRecType *freezeFrame = NULL;
+	const Dem_EventParameterType *eventParameter = NULL;
+	const Dem_FreezeFrameClassType *freezeFrameClass = NULL;
 
+	if ((demState == DEM_INITIALIZED) && (NULL != array) && (NULL != arraySize))
+	{
+		/*find the corresponding FF in FF buffer*/
+		for(index = 0; (index < DEM_MAX_NUMBER_FF_DATA_PRI_MEM) && (NULL == freezeFrame); index++)
+		{
+			if((priMemFreezeFrameBuffer[index].eventId != DEM_EVENT_ID_NULL)
+				&& (0 == priMemFreezeFrameBuffer[index].recordNumber))
+			{
+				freezeFrame = &priMemFreezeFrameBuffer[index];
+			}
+		}
 
+		/*if FF found,find the corresponding eventParameter*/
+		if(freezeFrame != NULL)
+		{
+			lookupEventIdParameter(freezeFrame->eventId, &eventParameter);
+			if((eventParameter != NULL)
+				&& (TRUE == lookupFreezeFrameDataRecNumParam(0, eventParameter, &freezeFrameClass))
+				&& (NULL != freezeFrameClass->FFIdClassRef))
+			{
+				for(index = 0; (index < DEM_MAX_NR_OF_RECORDS_IN_FREEZEFRAME_DATA)
+				&& ((freezeFrameClass->FFIdClassRef[index]->Arc_EOL) == FALSE) && (FALSE == arrayFull); index++)
+				{
+					if(*arraySize > index)
+					{
+						/* save PIDs to array. */
+						array[index] = freezeFrameClass->FFIdClassRef[index]->PidIndentifier;
+					}
+					else
+					{
+						/* array is full. */
+						arrayFull = TRUE;
+					}
+				}
+				/* if successful to get PIDs,set arraySize with actual size and set E_Ok. */
+				if((FALSE == arrayFull) && (index > 0))
+				{
+					*arraySize = index - 1;
+					ret = E_OK;
+				}
+			}
 
+		}
+		else
+		{
+			/* if no found, set arraySize zero and return E_OK. */
+			*arraySize = 0;
+			ret = E_OK;
+		}
 
+	}
 
+	return ret;
 
-
-
+}
 

@@ -81,6 +81,9 @@
 #define COR_INDEX 4
 
 /*OBD RequestCurrentPowertrainDiagnosticData*/
+#define PIDZERO								0
+#define DATAZERO							0
+#define INFOTYPE_ZERO						0
 #define PID_LEN								1
 #define RECORD_NUM 							0
 #define HALF_BYTE 							4
@@ -230,7 +233,7 @@ static boolean Dem_SetAvailabilityInfoTypeValue(uint8 InfoType,uint32 *DATABUF);
 static Dcm_NegativeResponseCodeType OBD_Sevice_03_07(PduInfoType *pduTxData,Dem_ReturnSetDTCFilterType setDtcFilterResult);
 
 static boolean lookupPid(uint8 pidId,const Dcm_DspPidType **PidPtr);
-static boolean Dem_SetAvailabilityPidValue(uint8 Pid,uint32 *Data);
+static boolean Dcm_SetAvailabilityPidValue(uint8 Pid,uint32 *Data);
 static boolean Dcm_LookupService(uint8 serviceId,const Dcm_DsdServiceType **dsdService);
 /* OBD */
 /*
@@ -1363,25 +1366,27 @@ void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTx
 	uint16 txPos = 1;
 	uint16 i;
 	uint16 Length;
-	boolean noRequestedDidSupported = TRUE;
 
 	if ( ((pduRxData->SduLength - 1) % 2) == 0 ) {
 		nrOfDids = (pduRxData->SduLength - 1) / 2;
 
-		for (i = 0; (i < nrOfDids) && (responseCode == DCM_E_POSITIVERESPONSE || responseCode == DCM_E_RESPONSEPENDING); i++) {
+		for (i = 0; (i < nrOfDids) && (responseCode == DCM_E_POSITIVERESPONSE || responseCode == DCM_E_RESPONSEPENDING); i++)
+			{
 			didNr = (uint16)((uint16)pduRxData->SduDataPtr[1 + (i * 2)] << 8) + pduRxData->SduDataPtr[2 + (i * 2)];
-			if (lookupDid(didNr, &didPtr)) {
-				noRequestedDidSupported = FALSE;
+			if (lookupDid(didNr, &didPtr)) {	/** @req DCM438 */
 				responseCodeOneDid = readDidData(didPtr, pduTxData, &txPos);
 				if( DCM_E_POSITIVERESPONSE != responseCodeOneDid ) {
 					/* Only update if response i negative */
-					if( (DCM_E_RESPONSEPENDING != responseCodeOneDid) || (DCM_E_POSITIVERESPONSE == responseCode) ) {
+					if( (DCM_E_RESPONSEPENDING != responseCodeOneDid) || (DCM_E_POSITIVERESPONSE == responseCode) )
+					{
 						/* Only update with pending if all previous resp was positive */
 						responseCode = responseCodeOneDid;
 					}
 				}
-			} else if(LookupDDD(didNr,(const Dcm_DspDDDType **)&DDidPtr) == TRUE) {
-				noRequestedDidSupported = FALSE;
+			}
+
+			else if(LookupDDD(didNr,(const Dcm_DspDDDType **)&DDidPtr) == TRUE)
+			{
 				/*DCM 651,DCM 652*/
 				pduTxData->SduDataPtr[txPos] = (uint8)((DDidPtr->DynamicallyDid>>8) & 0xFF);
 				txPos++;
@@ -1389,22 +1394,18 @@ void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTx
 				txPos++;
 				responseCode = readDDDData(DDidPtr,&(pduTxData->SduDataPtr[txPos]), &Length);
 				txPos = txPos + Length;
-			} else {
-				/** !req DCM438 */
-				/* DID not found. Continue with next Did in request (if any).
-				 * This is a deviation from ASR 3.1.5. This says that NRC 0x31 should be reported
-				 * if one did is not supported. ISO14229 and ASR 4.0.3 says that NRC 0x31 should
-				 * be reported if none is supported.
-				 *  */
+			}
+
+			else
+			{ // DID not found
+				responseCode = DCM_E_REQUESTOUTOFRANGE;
 			}
 		}
-	} else {
+	}
+	else {
 		responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
 	}
-	if( noRequestedDidSupported ) {
-		/* None of the Dids in the request found. */
-		responseCode = DCM_E_REQUESTOUTOFRANGE;
-	}
+
 	if (DCM_E_POSITIVERESPONSE == responseCode) {
 		pduTxData->SduLength = txPos;
 	}
@@ -1413,7 +1414,8 @@ void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTx
 		dspUdsReadDidPending.state = DCM_DID_PENDING;
 		dspUdsReadDidPending.pduRxData = (PduInfoType*)pduRxData;
 		dspUdsReadDidPending.pduTxData = pduTxData;
-	} else {
+	}
+	else {
 		dspUdsReadDidPending.state = DCM_DID_IDLE;
 		DsdDspProcessingDone(responseCode);
 	}
@@ -1503,12 +1505,13 @@ static Dcm_NegativeResponseCodeType writeDidData(const Dcm_DspDidType *didPtr, c
 						result = E_OK;
 					}
 					else {
-						result = E_OK; /* Always allow writing of variable length */
-					}
+						if (didPtr->DspDidReadDataLengthFnc != NULL) {
+							result = didPtr->DspDidReadDataLengthFnc(&didLen);
+						}					}
 
 					if (result == E_OK) {
-						if (didLen == writeDidLen || !didPtr->DspDidInfoRef->DspDidFixedLength) {	/** @req DCM473 */
-							result = didPtr->DspDidWriteDataFnc(&pduRxData->SduDataPtr[3], (uint8)writeDidLen, &responseCode);	/** @req DCM395 */
+						if (didLen == writeDidLen) {	/** @req DCM473 */
+							result = didPtr->DspDidWriteDataFnc(&pduRxData->SduDataPtr[3], (uint8)didLen, &responseCode);	/** @req DCM395 */
 							if( result != E_OK && responseCode == DCM_E_POSITIVERESPONSE ) {
 								responseCode = DCM_E_CONDITIONSNOTCORRECT;
 							}
@@ -3342,7 +3345,7 @@ static boolean lookupPid(uint8 pidId,const Dcm_DspPidType **PidPtr)
 	return pidFound;
 }
 
-static boolean Dem_SetAvailabilityPidValue(uint8 Pid,uint32 *Data)
+static boolean Dcm_SetAvailabilityPidValue(uint8 Pid,uint32 *Data)
 {
 	uint8 shift;
 	uint32 pidData = 0;
@@ -3360,7 +3363,8 @@ static boolean Dem_SetAvailabilityPidValue(uint8 Pid,uint32 *Data)
 				temp = (uint32)1 << (AVAIL_TO_SUPPORTED_PID_OFFSET_MAX - shift);
 				pidData |= temp;
 			}
-			else if((dspPid->DspPidIdentifier >= (Pid + AVAIL_TO_SUPPORTED_PID_OFFSET_MIN + AVAIL_TO_SUPPORTED_PID_OFFSET_MAX)) && (dspPid->DspPidIdentifier <= (Pid + AVAIL_TO_SUPPORTED_PID_OFFSET_MAX + AVAIL_TO_SUPPORTED_PID_OFFSET_MAX)))
+/*			else if((dspPid->DspPidIdentifier >= (Pid + AVAIL_TO_SUPPORTED_PID_OFFSET_MIN + AVAIL_TO_SUPPORTED_PID_OFFSET_MAX)) && (dspPid->DspPidIdentifier <= (Pid + AVAIL_TO_SUPPORTED_PID_OFFSET_MAX + AVAIL_TO_SUPPORTED_PID_OFFSET_MAX)))*/
+			else if(dspPid->DspPidIdentifier > (Pid + AVAIL_TO_SUPPORTED_PID_OFFSET_MAX))
 			{
 				pidData |= (uint32)1;
 			}
@@ -3369,7 +3373,6 @@ static boolean Dem_SetAvailabilityPidValue(uint8 Pid,uint32 *Data)
 				/*do nothing*/
 			}
 			dspPid++;
- 	
 		}
 	}
 	else
@@ -3445,8 +3448,8 @@ void DspObdRequestCurrentPowertrainDiagnosticData(const PduInfoType *pduRxData,P
 			{
 				for(i = 0;i < pidNum;i++)		/*Check the PID configuration,find which PIDs were configured for 0x00,0x20,0x40 respectively,and fill in the pduTxBuffer,and count the txLength*/
 				{
-					/*@req OBD_DCM_REQ_3,OBD_DCM_REQ_6*/
-					if(TRUE == Dem_SetAvailabilityPidValue(requestPid[i],&DATA))
+					/*@OBD_DCM_REQ_3,@OBD_DCM_REQ_6*/
+					if(TRUE == Dcm_SetAvailabilityPidValue(requestPid[i],&DATA))
 					{						
 						pduTxData->SduDataPtr[txPos] = requestPid[i];
 						txPos++;
@@ -3459,6 +3462,18 @@ void DspObdRequestCurrentPowertrainDiagnosticData(const PduInfoType *pduRxData,P
 						txPos++;
 						pduTxData->SduDataPtr[txPos] = (uint8)((DATA) & OBD_DATA_LSB_MASK);
 						txPos++;
+					}
+					else if(PIDZERO == requestPid[i])
+					{
+						pduTxData->SduDataPtr[txPos] = requestPid[i];
+						txPos++;
+						pduTxData->SduDataPtr[txPos] = DATAZERO;
+						txPos++;
+						pduTxData->SduDataPtr[txPos] = DATAZERO;
+						txPos++;
+						pduTxData->SduDataPtr[txPos] = DATAZERO;
+						txPos++;
+						pduTxData->SduDataPtr[txPos] = DATAZERO;
 					}
 					else
 					{
@@ -3532,6 +3547,7 @@ void DspObdRequestCurrentPowertrainDiagnosticData(const PduInfoType *pduRxData,P
 void DspObdRequsetPowertrainFreezeFrameData(const PduInfoType *pduRxData,PduInfoType *pduTxData)
 {
 	uint16 i ;
+	uint8 size;
 	uint16 j = 0;
 	uint16 flag = 0;
 	uint16 findPid = 0;
@@ -3539,8 +3555,9 @@ void DspObdRequsetPowertrainFreezeFrameData(const PduInfoType *pduRxData,PduInfo
 	uint32 dtc = 0;
 	uint16 txPos = SID_LEN;
 	uint16 txLength = SID_LEN;
-	uint8 requestPid[MAX_PID_FFNUM_NUM];
-	uint8 requestFFNum[MAX_PID_FFNUM_NUM];
+	uint8 PidArray[DCM_MAX_PID_NUM_IN_FF];
+	uint8 requestPid[DCM_MAX_PID_NUM_IN_FF];
+	uint8 requestFFNum[DCM_MAX_PID_NUM_IN_FF];
 	uint16 messageLen = pduRxData->SduLength;
 	const Dcm_DspPidType *sourcePidPtr = NULL;
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -3588,34 +3605,75 @@ void DspObdRequsetPowertrainFreezeFrameData(const PduInfoType *pduRxData,PduInfo
 			{
 				for(i = 0;i < pidNum;i++)		/*Check the PID configuration,find which PIDs were configured for 0x00,0x20,0x40 respectively,and fill in the pduTxBuffer,and count the txLength*/
 				{
+					size = DCM_MAX_PID_NUM_IN_FF;
 					if(requestFFNum[i] == RECORD_NUM)
 					{
-						/*@req OBD_DCM_REQ_3,OBD_DCM_REQ_6*/
-						if(TRUE == Dem_SetAvailabilityPidValue(requestPid[i],&DATA))
+						if(E_NOT_OK == Dem_GetFreezeFramePids(PidArray,&size))
 						{
-							pduTxData->SduDataPtr[txPos] = requestPid[i];
-							txPos++;
-
-							pduTxData->SduDataPtr[txPos] = requestFFNum[i];
-							txPos++;
-
-							/*take every byte of uint32 DATA,and fill in txbuffer*/
-							pduTxData->SduDataPtr[txPos] = (uint8)(((DATA) & (OBD_DATA_LSB_MASK << OFFSET_THREE_BYTES)) >> OFFSET_THREE_BYTES);
-							txPos++;
-
-							pduTxData->SduDataPtr[txPos] = (uint8)(((DATA) & (OBD_DATA_LSB_MASK << OFFSET_TWO_BYTES)) >> OFFSET_TWO_BYTES);
-							txPos++;
-
-							pduTxData->SduDataPtr[txPos] = (uint8)(((DATA) & (OBD_DATA_LSB_MASK << OFFSET_ONE_BYTE)) >> OFFSET_ONE_BYTE);
-							txPos++;
-
-							pduTxData->SduDataPtr[txPos] = (uint8)((DATA) & OBD_DATA_LSB_MASK);
-							txPos++;
-
+							responseCode = DCM_E_CONDITIONSNOTCORRECT;
 						}
 						else
 						{
-							findPid++;
+							if(DATAZERO == size)
+							{
+								if (PIDZERO == requestPid[i])
+								{
+									pduTxData->SduDataPtr[txPos] = requestPid[i];
+									txPos++;
+									pduTxData->SduDataPtr[txPos] = DATAZERO;
+									txPos++;
+									pduTxData->SduDataPtr[txPos] = DATAZERO;
+									txPos++;
+									pduTxData->SduDataPtr[txPos] = DATAZERO;
+									txPos++;
+									pduTxData->SduDataPtr[txPos] = DATAZERO;
+									/*break;*/
+								}
+								else
+								{
+									responseCode = DCM_E_REQUESTOUTOFRANGE;
+								}
+							}
+							else
+							{
+								uint8 shift = 0u;
+								uint32 pidData = 0u;
+								uint32 temp = 0u;
+								for(j = 0;j < size;j++)
+								{
+									if((PidArray[j] >= (requestPid[i] + AVAIL_TO_SUPPORTED_PID_OFFSET_MIN)) && (PidArray[j] <= (requestPid[i] + AVAIL_TO_SUPPORTED_PID_OFFSET_MAX)))
+									{
+										shift = PidArray[j] - requestPid[i];
+										temp = (uint32)1 << (AVAIL_TO_SUPPORTED_PID_OFFSET_MAX - shift);
+										pidData |= temp;
+									}
+									else if(PidArray[j] > (requestPid[i] + AVAIL_TO_SUPPORTED_PID_OFFSET_MAX))
+									{
+										pidData |= (uint32)1;
+									}
+								}
+								if(pidData != 0u)
+								{
+									pduTxData->SduDataPtr[txPos] = requestPid[i];
+									txPos++;
+									pduTxData->SduDataPtr[txPos] = requestFFNum[i];
+									txPos++;
+									/*take every byte of uint32 DATA,and fill in txbuffer*/
+									pduTxData->SduDataPtr[txPos] = (uint8)(((pidData) & (OBD_DATA_LSB_MASK << OFFSET_THREE_BYTES)) >> OFFSET_THREE_BYTES);
+									txPos++;
+									pduTxData->SduDataPtr[txPos] = (uint8)(((pidData) & (OBD_DATA_LSB_MASK << OFFSET_TWO_BYTES)) >> OFFSET_TWO_BYTES);
+									txPos++;
+									pduTxData->SduDataPtr[txPos] = (uint8)(((pidData) & (OBD_DATA_LSB_MASK << OFFSET_ONE_BYTE)) >> OFFSET_ONE_BYTE);
+									txPos++;
+									pduTxData->SduDataPtr[txPos] = (uint8)((pidData) & OBD_DATA_LSB_MASK);
+									txPos++;
+								}
+								else
+								{
+									findPid++;
+								}
+							}
+
 						}
 					}
 					else
@@ -3641,7 +3699,7 @@ void DspObdRequsetPowertrainFreezeFrameData(const PduInfoType *pduRxData,PduInfo
 							if(E_OK == Dem_GetDTCOfOBDFreezeFrame(requestFFNum[i],&dtc))
 							{
 								pduTxData->SduDataPtr[txPos] = requestPid[i];
-                                                        txPos++;
+								txPos++;
 								pduTxData->SduDataPtr[txPos] = requestFFNum[i];
 								txPos++;
 								//pduTxData->SduDataPtr[txPos] = (uint8)(((dtc) & (OBD_DATA_LSB_MASK << OFFSET_TWO_BYTES)) >> OFFSET_TWO_BYTES);
@@ -3960,7 +4018,7 @@ static boolean Dem_SetAvailabilityInfoTypeValue(uint8 InfoType,uint32 *DATABUF)
 				temp = (uint32)1 << (AVAIL_TO_SUPPORTED_INFOTYPE_OFFSET_MAX - shift);	  		
 				databuf |= temp;									
 			}
-			else if( (dspVehInfo->DspVehInfoType > (InfoType + AVAIL_TO_SUPPORTED_INFOTYPE_OFFSET_MAX)) && (dspVehInfo->DspVehInfoType <= (InfoType + AVAIL_TO_SUPPORTED_INFOTYPE_OFFSET_MAX + AVAIL_TO_SUPPORTED_INFOTYPE_OFFSET_MAX )) )
+			else if( dspVehInfo->DspVehInfoType > (InfoType + AVAIL_TO_SUPPORTED_INFOTYPE_OFFSET_MAX))
 			{
 				databuf |= (uint32)0x01;
 			}
@@ -4040,6 +4098,18 @@ void DspObdRequestvehicleinformation(const PduInfoType *pduRxData,PduInfoType *p
 					txPos++;
 					pduTxData->SduDataPtr[txPos] = (uint8)(DATABUF & OBD_DATA_LSB_MASK);
 					txPos++;
+				}
+				else if(INFOTYPE_ZERO == requestInfoType[i])
+				{
+					pduTxData->SduDataPtr[txPos] = requestInfoType[i];
+					txPos++;
+					pduTxData->SduDataPtr[txPos] = DATAZERO;
+					txPos++;
+					pduTxData->SduDataPtr[txPos] = DATAZERO;
+					txPos++;
+					pduTxData->SduDataPtr[txPos] = DATAZERO;
+					txPos++;
+					pduTxData->SduDataPtr[txPos] = DATAZERO;
 				}
 				else
 				{

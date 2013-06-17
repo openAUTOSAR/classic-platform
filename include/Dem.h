@@ -195,5 +195,6 @@ Dem_ReturnGetNextFilteredDTCType Dem_GetNextFilteredRecord(uint32 *DTC, uint8 *R
  */
 Std_ReturnType Dem_GetDTCOfOBDFreezeFrame(uint8 FrameNumber, uint32* DTC );
 Std_ReturnType Dem_GetOBDFreezeFrameData(uint8 PID, uint8* DestBuffer, uint8* BufSize);
+Std_ReturnType Dem_GetFreezeFramePids(uint8* array, uint8* arraySize);
 
 #endif /*DEM_H_*/
