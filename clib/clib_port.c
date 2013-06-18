@@ -122,7 +122,7 @@ DeviceSerialType *fileList[] = {
 	[0] = &UDE_Device,		/* stdin  */
 	[1] = &UDE_Device,		/* stdout */
 	[2] = &UDE_Device,		/* stderr */
-#elif defined(USE_TTY_UDE)
+#elif defined(USE_TTY_WINIDEA)
 	[0] = &WinIdea_Device,		/* stdin  */
 	[1] = &WinIdea_Device,		/* stdout */
 	[2] = &WinIdea_Device,		/* stderr */
@@ -130,6 +130,8 @@ DeviceSerialType *fileList[] = {
 
 
 #if defined(USE_RAMLOG)
+	&Ramlog_Device,			/* "stdout" */
+	&Ramlog_Device,			/* "stdout" */
 	&Ramlog_Device,			/* "stdout" */
 #endif
 };
