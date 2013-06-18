@@ -51,7 +51,7 @@
 #define __balign(x)       __attribute__ ((aligned (x)))
 #elif defined(__ICCHCS12__)
 #define Pragma(x) _Pragma(#x)
-#define __balign(x)       Pragma(data_alignment=_align)
+#define __balign(x)       Pragma(data_alignment=x)
 #else
 #error Compiler not defined.
 #endif

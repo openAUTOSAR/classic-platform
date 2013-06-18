@@ -354,6 +354,7 @@ ifeq ($(CFG_ARC_CLIB),y)
   obj-$(USE_TTY_T32)     += serial_dbg_t32.o  
   obj-$(USE_TTY_UDE)     += serial_dbg_ude.o
   obj-$(USE_TTY_WINIDEA) += serial_dbg_winidea.o
+  obj-$(USE_TTY_NOICE) += serial_dbg_noice.o
 
   obj-y += clib_port.o
   obj-y += clib.o

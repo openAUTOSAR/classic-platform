@@ -50,6 +50,9 @@
 #if defined(USE_TTY_WINIDEA)
 #include "serial_dbg_winidea.h"
 #endif
+#if defined(USE_TTY_NOICE)
+#include "serial_dbg_noice.h"
+#endif
 
 #include "Ramlog.h"
 
@@ -109,6 +112,9 @@ DeviceSerialType *deviceList[] = {
 #if defined(USE_TTY_WINIDEA)
 		&WinIdea_Device,
 #endif
+#if defined(USE_TTY_NOICE)
+		&NoICE_Device,
+#endif
 };
 
 
@@ -126,6 +132,10 @@ DeviceSerialType *fileList[] = {
 	[0] = &WinIdea_Device,		/* stdin  */
 	[1] = &WinIdea_Device,		/* stdout */
 	[2] = &WinIdea_Device,		/* stderr */
+#elif defined(USE_TTY_NOICE)
+	[0] = &NoICE_Device,		/* stdin  */
+	[1] = &NoICE_Device,		/* stdout */
+	[2] = &NoICE_Device,		/* stderr */
 #endif
 
 
