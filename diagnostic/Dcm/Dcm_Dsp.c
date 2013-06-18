@@ -1379,27 +1379,25 @@ void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTx
 	uint16 txPos = 1;
 	uint16 i;
 	uint16 Length;
+	boolean noRequestedDidSupported = TRUE;
 
 	if ( ((pduRxData->SduLength - 1) % 2) == 0 ) {
 		nrOfDids = (pduRxData->SduLength - 1) / 2;
 
-		for (i = 0; (i < nrOfDids) && (responseCode == DCM_E_POSITIVERESPONSE || responseCode == DCM_E_RESPONSEPENDING); i++)
-			{
+		for (i = 0; (i < nrOfDids) && (responseCode == DCM_E_POSITIVERESPONSE || responseCode == DCM_E_RESPONSEPENDING); i++) {
 			didNr = (uint16)((uint16)pduRxData->SduDataPtr[1 + (i * 2)] << 8) + pduRxData->SduDataPtr[2 + (i * 2)];
-			if (lookupDid(didNr, &didPtr)) {	/** @req DCM438 */
+			if (lookupDid(didNr, &didPtr)) {
+				noRequestedDidSupported = FALSE;
 				responseCodeOneDid = readDidData(didPtr, pduTxData, &txPos);
 				if( DCM_E_POSITIVERESPONSE != responseCodeOneDid ) {
 					/* Only update if response i negative */
-					if( (DCM_E_RESPONSEPENDING != responseCodeOneDid) || (DCM_E_POSITIVERESPONSE == responseCode) )
-					{
+					if( (DCM_E_RESPONSEPENDING != responseCodeOneDid) || (DCM_E_POSITIVERESPONSE == responseCode) ) {
 						/* Only update with pending if all previous resp was positive */
 						responseCode = responseCodeOneDid;
 					}
 				}
-			}
-
-			else if(LookupDDD(didNr,(const Dcm_DspDDDType **)&DDidPtr) == TRUE)
-			{
+			} else if(LookupDDD(didNr,(const Dcm_DspDDDType **)&DDidPtr) == TRUE) {
+				noRequestedDidSupported = FALSE;
 				/*DCM 651,DCM 652*/
 				pduTxData->SduDataPtr[txPos] = (uint8)((DDidPtr->DynamicallyDid>>8) & 0xFF);
 				txPos++;
@@ -1407,18 +1405,22 @@ void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTx
 				txPos++;
 				responseCode = readDDDData(DDidPtr,&(pduTxData->SduDataPtr[txPos]), &Length);
 				txPos = txPos + Length;
-			}
-
-			else
-			{ // DID not found
-				responseCode = DCM_E_REQUESTOUTOFRANGE;
+			} else {
+				/** !req DCM438 */
+				/* DID not found. Continue with next Did in request (if any).
+				 * This is a deviation from ASR 3.1.5. This says that NRC 0x31 should be reported
+				 * if one did is not supported. ISO14229 and ASR 4.0.3 says that NRC 0x31 should
+				 * be reported if none is supported.
+				 *  */
 			}
 		}
-	}
-	else {
+	} else {
 		responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
 	}
-
+	if( noRequestedDidSupported ) {
+		/* None of the Dids in the request found. */
+		responseCode = DCM_E_REQUESTOUTOFRANGE;
+	}
 	if (DCM_E_POSITIVERESPONSE == responseCode) {
 		pduTxData->SduLength = txPos;
 	}
@@ -1427,8 +1429,7 @@ void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTx
 		dspUdsReadDidPending.state = DCM_DID_PENDING;
 		dspUdsReadDidPending.pduRxData = (PduInfoType*)pduRxData;
 		dspUdsReadDidPending.pduTxData = pduTxData;
-	}
-	else {
+	} else {
 		dspUdsReadDidPending.state = DCM_DID_IDLE;
 		DsdDspProcessingDone(responseCode);
 	}
@@ -1518,13 +1519,12 @@ static Dcm_NegativeResponseCodeType writeDidData(const Dcm_DspDidType *didPtr, c
 						result = E_OK;
 					}
 					else {
-						if (didPtr->DspDidReadDataLengthFnc != NULL) {
-							result = didPtr->DspDidReadDataLengthFnc(&didLen);
-						}					}
+						result = E_OK; /* Always allow writing of variable length */
+					}
 
 					if (result == E_OK) {
-						if (didLen == writeDidLen) {	/** @req DCM473 */
-							result = didPtr->DspDidWriteDataFnc(&pduRxData->SduDataPtr[3], (uint8)didLen, &responseCode);	/** @req DCM395 */
+						if (didLen == writeDidLen || !didPtr->DspDidInfoRef->DspDidFixedLength) {	/** @req DCM473 */
+							result = didPtr->DspDidWriteDataFnc(&pduRxData->SduDataPtr[3], (uint8)writeDidLen, &responseCode);	/** @req DCM395 */
 							if( result != E_OK && responseCode == DCM_E_POSITIVERESPONSE ) {
 								responseCode = DCM_E_CONDITIONSNOTCORRECT;
 							}
