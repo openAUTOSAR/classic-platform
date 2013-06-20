@@ -50,5 +50,16 @@ PWM: For channel configuration See chapter 21.1.2.1 Channel descriptions.
           
              
 SPI_B: Tested ok with external eeprom.
+
+ P7 Connector will have the following layout 
+ (With ArcCore internal harness and SO/SI as seen from memory):
+                  P7 
+               1-X  X-2  CS/Green
+               3-X  X-4 
+               5-X  X-6
+    SO/Brown   7-X  X-8  SI/Orange
+    SCK/Blue   9-X  X-10 
+    			 DSPI 
+
 SPI_C: Never tested
 

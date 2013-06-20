@@ -91,9 +91,13 @@ SPI_0
     Gnd/Black 17-X  X-18 VCC/Red   
        
   
- If software CS is used Connector PJ2 and PJ[0] is used for that
+ If software CS is used Connector PJ10 and PG[9] is used for that
                  PJ2    
-  CS and PJ[0] 1-X  X-2
+  			   1-X  X-2
+               3-X  X-4 
+               5-X  X-6
+               7-X  X-8 
+            CS 9-X  X-10
                3-X  X-4 
                  ... 
 
