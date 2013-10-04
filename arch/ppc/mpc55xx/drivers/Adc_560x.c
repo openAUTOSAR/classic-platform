@@ -129,7 +129,7 @@ void Adc_DeInit ()
 		}
 
 		/* Disable DMA transfer*/
-	#ifndef CFG_MPC5604B
+	#if !(defined(CFG_MPC5604B) || defined(CFG_MPC5602B))
 		hwPtr->DMAE.B.DMAEN = 0;
 	#endif
 		/* Power down ADC */

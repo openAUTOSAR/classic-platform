@@ -212,6 +212,11 @@ const cpu_info_t cpu_info_list[] = {
     	.name = "MPC5604B",
     	.pvr = CORE_PVR_E200Z0H,
     },
+#elif defined (CFG_MPC5602B)
+    {
+    	.name = "MPC5602B",
+    	.pvr = CORE_PVR_E200Z0H,
+    },
 #elif defined(CFG_MPC5604P)
     {
     	.name = "MPC5604P",
@@ -262,6 +267,11 @@ const core_info_t core_info_list[] = {
 #elif defined(CFG_MPC5604B)
     {
     	.name = "MPC5604B",
+    	.pvr = CORE_PVR_E200Z0H,
+    },
+#elif defined(CFG_MPC5602B)
+    {
+    	.name = "MPC5602B",
     	.pvr = CORE_PVR_E200Z0H,
     },
 #elif defined(CFG_MPC5604P)
