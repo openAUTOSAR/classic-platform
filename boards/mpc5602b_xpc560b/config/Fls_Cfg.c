@@ -25,8 +25,8 @@ const FlashType flashInfo[] = {
 	/* NO RWW */
 
 	/* Bank 0, Array 0 (LOW) */
-	[0].sectCnt = 8,
-	[0].bankSize = 0x80000,
+	[0].sectCnt = 6,
+	[0].bankSize = 0x40000,
 //	[0].bankRange = BANK_RANGE_CODE_LOW,
 	[0].regBase = 0xC3F88000UL,
 	[0].sectAddr[0] = 0, 	   /* 0, B0F0, LOW  */
@@ -41,11 +41,7 @@ const FlashType flashInfo[] = {
 	[0].addrSpace[4] = ADDR_SPACE_SET(ADDR_SPACE_LOW) + 4,
 	[0].sectAddr[5] = 0x20000, /* 5, B0F5, LOW */
 	[0].addrSpace[5] = ADDR_SPACE_SET(ADDR_SPACE_LOW) + 5,
-	[0].sectAddr[6] = 0x40000, /* 6, B0F6, MID */
-	[0].addrSpace[6] = ADDR_SPACE_SET(ADDR_SPACE_MID) + 0,
-	[0].sectAddr[7] = 0x60000, /* 7, B0F7, MID */
-	[0].addrSpace[7] = ADDR_SPACE_SET(ADDR_SPACE_MID) + 1,
-	[0].sectAddr[8] = 0x80000,	/* End, NOT a sector */
+	[0].sectAddr[6] = 0x40000, /* End, NOT a sector */
 
 	/* Bank 1, Data */
 	[1].sectCnt = 4,

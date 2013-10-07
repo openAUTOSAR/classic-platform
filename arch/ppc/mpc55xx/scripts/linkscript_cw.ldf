@@ -32,7 +32,7 @@ MEMORY
 #if defined(CFG_MPC5604B) || defined(CFG_MPC5604P)
     flash: org = 0x00000000,   len = 0x00080000 
 #elif defined (CFG_MPC5602B)
-	flash: org = 0x00000000,   len = 0x00090000 
+	flash: org = 0x00000000,   len = 0x00040000 
 #elif defined(CFG_MPC5607B) || defined(CFG_MPC5634M)
     flash: org = 0x00000000,   len = 0x00180000 
 #else

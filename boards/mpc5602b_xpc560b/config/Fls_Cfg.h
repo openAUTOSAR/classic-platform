@@ -68,7 +68,7 @@
 #define FLASH_BANK_CNT 				2
 #define FLASH_PAGE_SIZE				8
 #define FLASH_MAX_SECTORS			12
-#define FLS_TOTAL_SIZE              ((16*4+512)*1024)
+#define FLS_TOTAL_SIZE              ((16*4+256)*1024)
 
 #else
 #error CPU not supported
