@@ -210,7 +210,7 @@ typedef enum
     RESERVED51,             // 5606-138
     RESERVED52,             // 5606-139
     RESERVED53,             // 5606-140
-#if defined (CFG_MPC5604B)
+#if defined (CFG_MPC5604B) || defined (CFG_MPC5602B)
     EMIOS_0_GFR_F0_F1,      // 5606-141
     EMIOS_0_GFR_F2_F3,      // 5606-142
     EMIOS_0_GFR_F4_F5,      // 5606-143

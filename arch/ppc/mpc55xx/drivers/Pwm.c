@@ -34,7 +34,7 @@
 #include "arc.h"
 #endif
 
-#if defined(CFG_MPC5604B)
+#if defined(CFG_MPC5604B) || defined (CFG_MPC5602B)
 	#define PWM_RUNTIME_CHANNEL_COUNT	56
     #define CHANNELS_OK (Channel <= PWM_MAX_CHANNEL-1)
 #elif defined(CFG_MPC5606B)

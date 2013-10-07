@@ -55,7 +55,7 @@ void Mcu_Arc_InitPost( const Mcu_ConfigType *configPtr ) {
 
 void Mcu_Arc_InitClockPre( const Mcu_ClockSettingConfigType *clockSettingsPtr )
 {
-#if defined(CFG_MPC5604B) || defined(CFG_MPC5606B)
+#if defined(CFG_MPC5604B) || defined(CFG_MPC5606B) || defined (CFG_MPC5602B)
     // Write pll parameters.
     CGM.FMPLL_CR.B.IDF = clockSettingsPtr->Pll1;
     CGM.FMPLL_CR.B.NDIV = clockSettingsPtr->Pll2;

@@ -200,7 +200,7 @@ GPT_ISR( 3 )
 #if !defined(CFG_MPC5606S) && !defined(CFG_MPC563XM)
 GPT_ISR( 4 )
 GPT_ISR( 5 )
-#if !defined(CFG_MPC5604B)
+#if ! (defined(CFG_MPC5604B) || defined (CFG_MPC5602B))
 GPT_ISR( 6 )
 GPT_ISR( 7 )
 #if !defined(CFG_MPC5606B)
@@ -215,7 +215,7 @@ GPT_ISR( 8 )
 		#define GPT_CHANNEL_PIT_LAST GPT_CHANNEL_PIT_3
 	#elif defined(CFG_MPC5604P)
 		#define GPT_CHANNEL_PIT_LAST GPT_CHANNEL_PIT_2
-    #elif defined(CFG_MPC5604B)
+    #elif defined(CFG_MPC5604B) || defined (CFG_MPC5602B)
 	    #define GPT_CHANNEL_PIT_LAST GPT_CHANNEL_PIT_5
     #elif defined(CFG_MPC5606B)
 	    #define GPT_CHANNEL_PIT_LAST GPT_CHANNEL_PIT_7
@@ -284,7 +284,7 @@ void Gpt_Init(const Gpt_ConfigType *config) {
 #if !defined(CFG_MPC5606S) && !defined(CFG_MPC5634M)
 					case 4: ISR_INSTALL_ISR2( "Gpt_4", Gpt_Isr_Channel4, PIT_INT4, 2, 0 ); break;
 					case 5: ISR_INSTALL_ISR2( "Gpt_5", Gpt_Isr_Channel5, PIT_INT5, 2, 0 ); break;
-#if !defined(CFG_MPC5604B)
+#if ! (defined(CFG_MPC5604B) || defined (CFG_MPC5602B))
 					case 6: ISR_INSTALL_ISR2( "Gpt_6", Gpt_Isr_Channel6, PIT_INT6, 2, 0 ); break;
 					case 7: ISR_INSTALL_ISR2( "Gpt_7", Gpt_Isr_Channel7, PIT_INT7, 2, 0 ); break;
 #if !defined(CFG_MPC5606B)
