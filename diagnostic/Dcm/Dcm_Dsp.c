@@ -26,11 +26,14 @@
 #include <string.h>
 #include "Dcm.h"
 #include "Dcm_Internal.h"
-#if defined(DCM_USE_SERVICE_CLEARDIAGNOSTICINFORMATION) || defined(DCM_USE_SERVICE_READDTCINFORMATION) || defined(DCM_USE_SERVICE_CONTROLDTCSETTING)
+#if defined (DCM_USE_SERVICE_CLEARDIAGNOSTICINFORMATION)|| defined(DCM_USE_SERVICE_READDTCINFORMATION)	|| defined(DCM_USE_SERVICE_CONTROLDTCSETTING) \
+		|| defined (DCM_USE_SERVICE_REQUESTPOWERTRAINFREEZEFRAMEDATA) || defined(DCM_USE_SERVICE_CLEAREMISSIONRELATEDDIAGNOSTICDATA) \
+		|| defined(DCM_USE_SERVICE_REQUESTEMISSIONRELATEDDTCS) || defined(DCM_USE_SERVICE_REQUESTEMISSIONRELATEDDTCSDETECTEDDURINGCURRENTORLASCOMPLETEDDRIVINGCYCLE)
 #if defined(USE_DEM)
 #include "Dem.h"
 #else
-#warning Dcm: UDS services ClearDiagnosticInformation, ReadDTCInformation and/or ControlDTCSetting will not work without Dem.
+#warning Dcm: UDS services ClearDiagnosticInformation, ReadDTCInformation, ControlDTCSetting, RequestPowertrainFreezeFrameData, ClearEmissionRelatedDiagnosticData,\
+        RequestEmissionRelatedDTCs and/or RequestEmissionRelatedDTCsDetectedDuringCurrentOrLasCompletedDrivingCycle will not work without Dem.
 #endif
 #endif
 
@@ -243,11 +246,17 @@ static Dcm_NegativeResponseCodeType writeMemoryData(Dcm_OpStatusType* OpStatus, 
 /* OBD */
 static boolean lookupInfoType(uint8 InfoType, const Dcm_DspVehInfoType **InfoTypePtr);
 static boolean Dem_SetAvailabilityInfoTypeValue(uint8 InfoType,uint32 *DATABUF);
+#if defined(USE_DEM)
+#if defined(DCM_USE_SERVICE_REQUESTEMISSIONRELATEDDTCS) || defined(DCM_USE_SERVICE_REQUESTEMISSIONRELATEDDTCSDETECTEDDURINGCURRENTORLASCOMPLETEDDRIVINGCYCLE)
 static Dcm_NegativeResponseCodeType OBD_Sevice_03_07(PduInfoType *pduTxData,Dem_ReturnSetDTCFilterType setDtcFilterResult);
-
+#endif
+#if defined(DCM_USE_SERVICE_CLEAREMISSIONRELATEDDIAGNOSTICDATA)
+static boolean Dcm_LookupService(uint8 serviceId,const Dcm_DsdServiceType **dsdService);
+#endif
+#endif
 static boolean lookupPid(uint8 pidId,const Dcm_DspPidType **PidPtr);
 static boolean Dcm_SetAvailabilityPidValue(uint8 Pid,uint32 *Data);
-static boolean Dcm_LookupService(uint8 serviceId,const Dcm_DsdServiceType **dsdService);
+
 /* OBD */
 /*
 *   end  
