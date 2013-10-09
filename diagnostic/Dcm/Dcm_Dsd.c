@@ -190,29 +190,41 @@ static void selectServiceFunction(uint8 sid)
 		break;
 #endif
 	/* OBD */
+#ifdef DCM_USE_SERVICE_REQUESTCURRENTPOWERTRAINDIAGDATA
 	case SID_REQUEST_CURRENT_POWERTRAIN_DIAGNOSTIC_DATA:
 		DspObdRequestCurrentPowertrainDiagnosticData(msgData.pduRxData, msgData.pduTxData);
 		break;
+#endif
 		
+#if defined(USE_DEM) && defined(DCM_USE_SERVICE_REQUESTPOWERTRAINFREEZEFRAMEDATA)
 	case SID_REQUEST_POWERTRAIN_FREEZE_FRAME_DATA:
 		DspObdRequsetPowertrainFreezeFrameData(msgData.pduRxData, msgData.pduTxData);
 		break;
+#endif
 		
+#if defined(USE_DEM) && defined(DCM_USE_SERVICE_CLEAREMISSIONRELATEDDIAGNOSTICDATA)
 	case SID_CLEAR_EMISSION_RELATED_DIAGNOSTIC_INFORMATION:
 		DspObdClearEmissionRelatedDiagnosticData(msgData.pduRxData, msgData.pduTxData);
 		break;
+#endif
 		
+#if defined(USE_DEM) && defined(DCM_USE_SERVICE_REQUESTEMISSIONRELATEDDTCS)
 	case SID_REQUEST_EMISSION_RELATED_DIAGNOSTIC_TROUBLE_CODES:
 		DspObdRequestEmissionRelatedDiagnosticTroubleCodes(msgData.pduRxData, msgData.pduTxData);
 		break;
+#endif
 
+#if defined(USE_DEM) && defined(DCM_USE_SERVICE_REQUESTEMISSIONRELATEDDTCSDETECTEDDURINGCURRENTORLASCOMPLETEDDRIVINGCYCLE)
 	case SID_REQUEST_EMISSION_RELATED_DIAGNOSTIC_TROUBLE_CODES_DETECTED_DURING_CURRENT_OR_LAST_COMPLETED_DRIVING_CYCLE:
 		DspObdRequestEmissionRelatedDiagnosticTroubleCodesService07(msgData.pduRxData, msgData.pduTxData);
 		break;
+#endif
 
+#ifdef DCM_USE_SERVICE_REQUESTVEHICLEINFORMATION
 	case SID_REQUEST_VEHICLE_INFORMATION:
 		DspObdRequestvehicleinformation(msgData.pduRxData, msgData.pduTxData);
 		break;
+#endif
 	/* OBD */
 
 	default:
