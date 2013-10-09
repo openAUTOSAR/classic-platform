@@ -244,8 +244,14 @@ static const Dcm_DspMemoryRangeInfo* findRange(const Dcm_DspMemoryRangeInfo *mem
 static Dcm_NegativeResponseCodeType writeMemoryData(Dcm_OpStatusType* OpStatus, uint8 memoryIdentifier, uint32 MemoryAddress, uint32 MemorySize, uint8 *SourceData);
 
 /* OBD */
+#ifdef DCM_USE_SERVICE_REQUESTVEHICLEINFORMATION
 static boolean lookupInfoType(uint8 InfoType, const Dcm_DspVehInfoType **InfoTypePtr);
 static boolean Dem_SetAvailabilityInfoTypeValue(uint8 InfoType,uint32 *DATABUF);
+#endif
+#ifdef DCM_USE_SERVICE_REQUESTCURRENTPOWERTRAINDIAGDATA
+static boolean Dcm_SetAvailabilityPidValue(uint8 Pid,uint32 *Data);
+#endif
+
 #if defined(USE_DEM)
 #if defined(DCM_USE_SERVICE_REQUESTEMISSIONRELATEDDTCS) || defined(DCM_USE_SERVICE_REQUESTEMISSIONRELATEDDTCSDETECTEDDURINGCURRENTORLASCOMPLETEDDRIVINGCYCLE)
 static Dcm_NegativeResponseCodeType OBD_Sevice_03_07(PduInfoType *pduTxData,Dem_ReturnSetDTCFilterType setDtcFilterResult);
@@ -254,9 +260,9 @@ static Dcm_NegativeResponseCodeType OBD_Sevice_03_07(PduInfoType *pduTxData,Dem_
 static boolean Dcm_LookupService(uint8 serviceId,const Dcm_DsdServiceType **dsdService);
 #endif
 #endif
+#if defined(DCM_USE_SERVICE_REQUESTCURRENTPOWERTRAINDIAGDATA) || defined(DCM_USE_SERVICE_REQUESTPOWERTRAINFREEZEFRAMEDATA)
 static boolean lookupPid(uint8 pidId,const Dcm_DspPidType **PidPtr);
-static boolean Dcm_SetAvailabilityPidValue(uint8 Pid,uint32 *Data);
-
+#endif
 /* OBD */
 /*
 *   end  
