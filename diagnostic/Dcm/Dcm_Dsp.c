@@ -1645,7 +1645,7 @@ void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 							if (securityRow->GetSeed != NULL) {
 								Std_ReturnType getSeedResult;
 								getSeedResult = securityRow->GetSeed(&pduRxData->SduDataPtr[2], &pduTxData->SduDataPtr[2], &getSeedErrorCode); /** @req DCM324.RequestSeed */
-								if ((getSeedResult == E_OK) && (getSeedErrorCode == E_OK)) {
+								if ((getSeedResult == E_OK) && (getSeedErrorCode == DCM_E_POSITIVERESPONSE)) {
 									// Everything ok add sub function to tx message and send it.
 									pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];
 									pduTxData->SduLength = 2 + securityRow->DspSecuritySeedSize;
@@ -1656,10 +1656,15 @@ void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 								}
 								else {
 									// GetSeed returned not ok
-									responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+									if(getSeedErrorCode != DCM_E_POSITIVERESPONSE) {
+										responseCode = getSeedErrorCode;
+									} else {
+										responseCode = DCM_E_CONDITIONSNOTCORRECT;
+									}
 								}
 							} else {
-								responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+								/* GetSeed not configured */
+								responseCode = DCM_E_SUBFUNCTIONNOTSUPPORTED;
 							}
 						}
 					} else {
@@ -1675,7 +1680,7 @@ void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 			}
 			else {
 				// Requested security level not configured
-				responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
+				responseCode = DCM_E_SUBFUNCTIONNOTSUPPORTED;/* DCM321 */
 			}
 		}
 		else {
@@ -1695,7 +1700,8 @@ void DspUdsSecurityAccess(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 								pduTxData->SduLength = 2;
 							}
 							else {
-								responseCode = DCM_E_CONDITIONSNOTCORRECT;
+								/* CompareKey did not return E_OK */
+								responseCode = DCM_E_INVALIDKEY;
 							}
 						} else {
 							responseCode = DCM_E_CONDITIONSNOTCORRECT;
@@ -2611,7 +2617,7 @@ static Dcm_NegativeResponseCodeType dynamicallyDefineDataIdentifierbyDid(uint16 
 	}
 	else
 	{
-		while((SourceLength < DCM_MAX_DDDSOURCE_NUMBER) && (DDid->DDDSource[SourceLength].formatOrPosition != NULL ))
+		while((SourceLength < DCM_MAX_DDDSOURCE_NUMBER) && (DDid->DDDSource[SourceLength].formatOrPosition != 0 ))
 		{
 			SourceLength++;
 		}
@@ -3004,7 +3010,7 @@ static const Dcm_DspDidControlRecordSizesType* getControlRecordSizesForControlPa
 		return NULL;
 	}
 }
-
+#if 0
 static Dcm_NegativeResponseCodeType DspIOControlReturnControlToECU(const Dcm_DspDidType *DidPtr,const PduInfoType *pduRxData,PduInfoType *pduTxData)
 {
 	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
@@ -3231,7 +3237,7 @@ static Dcm_NegativeResponseCodeType DspIOControlShortTeamAdjustment(const Dcm_Ds
 	
 	return responseCode;
 }
-
+#endif
 void DspIOControlByDataIdentifier(const PduInfoType *pduRxData,PduInfoType *pduTxData)
 {
 	uint16 didNr;
@@ -3624,7 +3630,6 @@ void DspObdRequsetPowertrainFreezeFrameData(const PduInfoType *pduRxData,PduInfo
 	uint16 j = 0;
 	uint16 flag = 0;
 	uint16 findPid = 0;
-	uint32 DATA = 0;
 	uint32 dtc = 0;
 	uint16 txPos = SID_LEN;
 	uint16 txLength = SID_LEN;
