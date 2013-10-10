@@ -961,7 +961,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x04(const PduInfoType *pd
 	uint16 index = 0;
 	uint16 EventIndex =0;
 	uint16 FFIdNumber = 0;
-	Dem_ReturnGetFreezeFrameDataByDTCType GetFFbyDtcReturnCode = DEM_GET_FFDATABYDTC_OK;
+	Dem_ReturnGetFreezeFrameDataByDTCType GetFFbyDtcReturnCode = DEM_GET_FFDATABYDTC_WRONG_DTC;
 	Dem_ReturnGetStatusOfDTCType GetStatusOfDtc = DEM_STATUS_OK;
 	Dem_EventStatusExtendedType DtcStatus = 0;
 	Dem_EventParameterType *pEventParaTemp = NULL;
@@ -975,14 +975,15 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x04(const PduInfoType *pd
 
 	for (EventIndex = 0; DEM_Config.ConfigSet->EventParameter[EventIndex].Arc_EOL != TRUE; EventIndex++){
 		// search each event linked to this DTC
-		if (DEM_Config.ConfigSet->EventParameter[EventIndex].DTCClassRef->DTC == DtcNumber){
+		if( (NULL != DEM_Config.ConfigSet->EventParameter[EventIndex].DTCClassRef) &&
+			(DEM_Config.ConfigSet->EventParameter[EventIndex].DTCClassRef->DTC == DtcNumber)){
 			pEventParaTemp = (Dem_EventParameterType *)(&DEM_Config.ConfigSet->EventParameter[EventIndex]);
 		}
 		else {
 			pEventParaTemp = NULL;
 		}
 
-		if (pEventParaTemp != NULL) {
+		if ((pEventParaTemp != NULL) && (NULL != pEventParaTemp->FreezeFrameClassRef)) {
 			DtcType = pEventParaTemp->DTCClassRef->DTCKind;
 			//DtcOrigin = pEventParaTemp->EventClass->EventDestination[?];
 			// now use DEM_DTC_ORIGIN_PRIMARY_MEMORY as default.
