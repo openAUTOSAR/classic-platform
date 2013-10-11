@@ -923,6 +923,7 @@ Std_ReturnType CanTp_Transmit(PduIdType CanTpTxSduId,
 				txRuntime->canFrameBuffer.data[txRuntime->canFrameBuffer.byteCount++] =
 						ISO15765_TPCI_SF | (uint8)(txRuntime->transferTotal);
 				ret = E_OK;
+				txRuntime->iso15765.state = TX_WAIT_TRANSMIT;
 				break;
 			case FIRST_FRAME:
 				txRuntime->canFrameBuffer.data[txRuntime->canFrameBuffer.byteCount++] =
@@ -933,11 +934,11 @@ Std_ReturnType CanTp_Transmit(PduIdType CanTpTxSduId,
 				txRuntime->iso15765.nextFlowControlCount = 1;
 				txRuntime->iso15765.BS = 1;
 				ret = E_OK;
+				txRuntime->iso15765.state = TX_WAIT_TRANSMIT;
 				break;
 			default:
 				ret = E_NOT_OK;
 			}
-			txRuntime->iso15765.state = TX_WAIT_TRANSMIT;
 		} else {
 			DEBUG( DEBUG_MEDIUM, "CanTp can't transmit, it is already occupied!\n", CanTpTxSduId);
 			ret = E_NOT_OK;  /** @req CANTP123 *//** @req CANTP206 */
