@@ -240,6 +240,7 @@ typedef struct {
 	Dem_OperationCycleIdType	OperationCycleRef;									// (1)
 	Dem_OperationCycleIdType	HealingCycleRef;									// (1)
 	uint8						HealingCycleCounter;									// (0..1) Optional
+	uint8						ConfirmationCycleCounterThreshold;
 //	const Dem_EnableConditionType	*EnableConditionRef;							// (0..*) Optional
 	const Dem_PreDebounceAlgorithmClassType	*PreDebounceAlgorithmClass;				// (0..255) (Only 0..1 supported)
 	const Dem_IndicatorAttributeType		*IndicatorAttribute;					// (0..255)
