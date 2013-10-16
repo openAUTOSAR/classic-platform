@@ -541,7 +541,7 @@ static Dem_EventStatusType preDebounceCounterBased(Dem_EventStatusType reportedS
 	statusRecord->maxFaultDetectionCounter = MAX(statusRecord->maxFaultDetectionCounter, statusRecord->faultDetectionCounter);
 	return returnCode;
 }
-static boolean faulConfirmationCriteriaFulfilled(const Dem_EventParameterType *eventParam, EventStatusRecType *eventStatusRecPtr)
+static boolean faultConfirmationCriteriaFulfilled(const Dem_EventParameterType *eventParam, const EventStatusRecType *eventStatusRecPtr)
 {
 	if( eventStatusRecPtr->confirmationCounter >= eventParam->EventClass->ConfirmationCycleCounterThreshold ) {
 		return TRUE;
@@ -554,7 +554,7 @@ static void handleFaultConfirmation(const Dem_EventParameterType *eventParam, Ev
 	if( eventStatusRecPtr->confirmationCounter < DEM_CONFIRMATION_CNTR_MAX ) {
 		eventStatusRecPtr->confirmationCounter++;
 	}
-	if( faulConfirmationCriteriaFulfilled(eventParam, eventStatusRecPtr) ) {
+	if( faultConfirmationCriteriaFulfilled(eventParam, eventStatusRecPtr) ) {
 		eventStatusRecPtr->eventStatusExtended |= DEM_CONFIRMED_DTC;
 	}
 }
@@ -695,7 +695,7 @@ static void mergeEventStatusRec(const EventRecType *eventRec)
         } else {
             eventStatusRecPtr->confirmationCounter += eventRec->confirmationCounter;
         }
-        if( (NULL != eventParam) && faulConfirmationCriteriaFulfilled(eventParam, eventStatusRecPtr) ) {
+        if( (NULL != eventParam) && faultConfirmationCriteriaFulfilled(eventParam, eventStatusRecPtr) ) {
         	eventStatusRecPtr->eventStatusExtended |= (Dem_EventStatusExtendedType)DEM_CONFIRMED_DTC;
         }
 	}
@@ -2188,7 +2188,7 @@ static Std_ReturnType handleAging(Dem_OperationCycleIdType operationCycleId, Dem
 							if((eventStatusBuffer[i].eventParamRef->EventClass->HealingAllowed == TRUE)\
 								&& (eventStatusBuffer[i].eventParamRef->EventClass->HealingCycleRef == operationCycleId)){
 								if((eventStatusBuffer[i].eventStatusExtended & DEM_CONFIRMED_DTC)\
-									&& (!(eventStatusBuffer[i].eventStatusExtended & DEM_TEST_FAILED))\
+									&& (!(eventStatusBuffer[i].eventStatusExtended & DEM_TEST_FAILED_THIS_OPERATION_CYCLE))\
 									&& (!(eventStatusBuffer[i].eventStatusExtended & DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE))){
 									agingRecFound = lookupAgingRecPriMem(eventStatusBuffer[i].eventId, (const HealingRecType **)(&agingRecLocal));
 									if(agingRecFound){
@@ -2203,6 +2203,7 @@ static Std_ReturnType handleAging(Dem_OperationCycleIdType operationCycleId, Dem
 											eventStatusBuffer[i].eventStatusExtended &= (Dem_EventStatusExtendedType)(~DEM_PENDING_DTC);
 											eventStatusBuffer[i].eventStatusExtended &= (Dem_EventStatusExtendedType)(~DEM_WARNING_INDICATOR_REQUESTED);
 											eventStatusBuffer[i].confirmationCounter = 0;
+											storeEventEvtMem(eventStatusBuffer[i].eventParamRef, &eventStatusBuffer[i]);
 										}
 										/* Set the flag,start up the storage of NVRam in main function. */
 										AgingIsModified = TRUE;
