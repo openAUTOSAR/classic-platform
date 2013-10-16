@@ -176,7 +176,7 @@ BufReq_ReturnType Dcm_ProvideTxBuffer(PduIdType dcmTxPduId, PduInfoType **pduInf
 	BufReq_ReturnType returnCode;
 
 	VALIDATE_RV(dcmState == DCM_INITIALIZED, DCM_PROVIDE_TX_BUFFER_ID, DCM_E_UNINIT, BUFREQ_NOT_OK);
-	VALIDATE_RV(dcmTxPduId < DCM_DSL_TX_PDU_ID_LIST_LENGTH, DCM_PROVIDE_TX_BUFFER_ID, DCM_E_PARAM, BUFREQ_NOT_OK);
+	VALIDATE_RV(dcmTxPduId < DCM_DSL_NOF_TX_PDU_ID, DCM_PROVIDE_TX_BUFFER_ID, DCM_E_PARAM, BUFREQ_NOT_OK);
 
 	//lint --e(929)		// PC-Lint exception, MISRA 11.4 Ok by atosar
 	//lint --e(960)		// PC-Lint exception, MISRA 11.5 Ok by atosar
@@ -188,7 +188,7 @@ BufReq_ReturnType Dcm_ProvideTxBuffer(PduIdType dcmTxPduId, PduInfoType **pduInf
 void Dcm_TxConfirmation(PduIdType dcmTxPduId, NotifResultType result)
 {
 	VALIDATE_NO_RV(dcmState == DCM_INITIALIZED, DCM_TX_CONFIRMATION_ID, DCM_E_UNINIT);
-	VALIDATE_NO_RV(dcmTxPduId < DCM_DSL_TX_PDU_ID_LIST_LENGTH, DCM_TX_CONFIRMATION_ID, DCM_E_PARAM);
+	VALIDATE_NO_RV(dcmTxPduId < DCM_DSL_NOF_TX_PDU_ID, DCM_TX_CONFIRMATION_ID, DCM_E_PARAM);
 
 	DslTxConfirmation(dcmTxPduId, result);
 }
