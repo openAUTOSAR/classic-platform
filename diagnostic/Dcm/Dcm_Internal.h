@@ -117,12 +117,12 @@ void DspIOControlByDataIdentifier(const PduInfoType *pduRxData,PduInfoType *pduT
 void DspCommunicationControl(const PduInfoType *pduRxData,PduInfoType *pduTxData);
 
 // OBD stack interface
-void DspRequestCurrentPowertrainDiagnosticData(const PduInfoType *pduRxData,PduInfoType *pduTxData);
-void DspRequsetPowertrainFreezeFrameData(const PduInfoType *pduRxData,PduInfoType *pduTxData);
-void DspClearEmissionRelatedDiagnosticData(const PduInfoType *pduRxData,PduInfoType *pduTxData);
-void  RequestEmissionRelatedDiagnosticTroubleCodes(const PduInfoType *pduRxData,PduInfoType *pduTxData);
-void  RequestEmissionRelatedDiagnosticTroubleCodesService07(const PduInfoType *pduRxData,PduInfoType *pduTxData);
-void Requestvehicleinformation(const PduInfoType *pduRxData,PduInfoType *pduTxData);
+void DspObdRequestCurrentPowertrainDiagnosticData(const PduInfoType *pduRxData,PduInfoType *pduTxData);
+void DspObdRequsetPowertrainFreezeFrameData(const PduInfoType *pduRxData,PduInfoType *pduTxData);
+void DspObdClearEmissionRelatedDiagnosticData(const PduInfoType *pduRxData,PduInfoType *pduTxData);
+void DspObdRequestEmissionRelatedDiagnosticTroubleCodes(const PduInfoType *pduRxData,PduInfoType *pduTxData);
+void DspObdRequestEmissionRelatedDiagnosticTroubleCodesService07(const PduInfoType *pduRxData,PduInfoType *pduTxData);
+void DspObdRequestvehicleinformation(const PduInfoType *pduRxData,PduInfoType *pduTxData);
 
 boolean DspCheckSessionLevel(Dcm_DspSessionRowType const* const* sessionLevelRefTable);
 boolean DspCheckSecurityLevel(Dcm_DspSecurityRowType const* const* securityLevelRefTable);
@@ -159,7 +159,7 @@ BufReq_ReturnType DslProvideTxBuffer(PduIdType dcmTxPduId, const PduInfoType **p
 void DslTxConfirmation(PduIdType dcmTxPduId, NotifResultType result);
 Std_ReturnType DslInternal_ResponseOnOneDataByPeriodicId(uint8 PericodID);
 void DslResetSessionTimeoutTimer(void);
-
+PduIdType DsdDslGetCurrentTxPduId(void);
 
 
 #endif /* DCM_INTERNAL_H_ */
