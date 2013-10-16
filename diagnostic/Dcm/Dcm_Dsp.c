@@ -961,7 +961,7 @@ static Dcm_NegativeResponseCodeType udsReadDtcInfoSub_0x04(const PduInfoType *pd
 	uint16 index = 0;
 	uint16 EventIndex =0;
 	uint16 FFIdNumber = 0;
-	Dem_ReturnGetFreezeFrameDataByDTCType GetFFbyDtcReturnCode = DEM_GET_FFDATABYDTC_OK;
+	Dem_ReturnGetFreezeFrameDataByDTCType GetFFbyDtcReturnCode = DEM_GET_FFDATABYDTC_WRONG_DTC;
 	Dem_ReturnGetStatusOfDTCType GetStatusOfDtc = DEM_STATUS_OK;
 	Dem_EventStatusExtendedType DtcStatus = 0;
 	Dem_EventParameterType *pEventParaTemp = NULL;
