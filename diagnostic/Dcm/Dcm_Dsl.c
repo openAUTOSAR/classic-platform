@@ -285,10 +285,10 @@ static boolean findTxPduIdParentConfigurationLeafs(PduIdType dcmTxPduId,
 
 	boolean found = FALSE;
 	Dcm_ProtocolType activeProtocol;
-
+	uint16 i = 0;
 	if( E_OK == Dcm_GetActiveProtocol(&activeProtocol)) {
 		/* Check if this txPdu belongs to the active protocol */
-		for( uint16 i = 0; (i < DCM_DSL_NOF_TX_PDU_ID) && !found; i++ ) {
+		while(!DCM_Config.Dsl->DslProtocol->DslProtocolTxGlobalList[i].Arc_EOL && !found) {
 			*protocolTx = &DCM_Config.Dsl->DslProtocol->DslProtocolTxGlobalList[i];
 			*mainConnection = (*protocolTx)->DslMainConnectionParent;
 			*connection = (*mainConnection)->DslConnectionParent;
@@ -297,11 +297,13 @@ static boolean findTxPduIdParentConfigurationLeafs(PduIdType dcmTxPduId,
 			if( (dcmTxPduId == (*protocolTx)->DcmDslProtocolDcmTxPduId) && (activeProtocol == (*protocolRow)->DslProtocolID) ) {
 				found = TRUE;
 			}
+			i++;
 		}
 		if(!found && (NULL != DcmDslRunTimeData.preemptingProtocol)) {
 			/* Check if this txPdu belongs to the preempting protocol */
-			for( uint16 j = 0; (j < DCM_DSL_NOF_TX_PDU_ID) && !found; j++ ) {
-				*protocolTx = &DCM_Config.Dsl->DslProtocol->DslProtocolTxGlobalList[j];
+			i = 0;
+			while(!DCM_Config.Dsl->DslProtocol->DslProtocolTxGlobalList[i].Arc_EOL && !found) {
+				*protocolTx = &DCM_Config.Dsl->DslProtocol->DslProtocolTxGlobalList[i];
 				*mainConnection = (*protocolTx)->DslMainConnectionParent;
 				*connection = (*mainConnection)->DslConnectionParent;
 				*protocolRow = (*connection)->DslProtocolRow;
