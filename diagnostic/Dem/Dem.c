@@ -67,7 +67,7 @@
 
 #define DEM_PID_IDENTIFIER_SIZE_OF_BYTES		1 // OBD 
 
-
+#define DEM_CONFIRMATION_CNTR_MAX (uint8)255
 
 #if  ( DEM_DEV_ERROR_DETECT == STD_ON )
 #if defined(USE_DET)
@@ -141,6 +141,7 @@ typedef struct {
 	uint16						occurrence;				/** @req DEM011 */
 	Dem_EventStatusExtendedType	eventStatusExtended;	/** @req DEM006 */
 	boolean						errorStatusChanged;
+	uint8						confirmationCounter;
 } EventStatusRecType;
 
 // Types for storing different event data on event memory
@@ -148,6 +149,7 @@ typedef struct {
 	Dem_EventIdType				eventId;
 	uint16						occurrence;
 	Dem_EventStatusExtendedType eventStatusExtended;
+	uint8						confirmationCounter;
 	ChecksumType				checksum;
 } EventRecType;
 
@@ -239,8 +241,8 @@ static boolean AgingIsModified = FALSE;
 static uint16 FFRecordFilterIndex;
 
 
-static void getPidData(const Dem_PidOrDidType ***pidClassPtr, FreezeFrameRecType **freezeFrame, uint16 *storeIndexPtr);
-static void getDidData(const Dem_PidOrDidType ***didClassPtr, FreezeFrameRecType **freezeFrame, uint16 *storeIndexPtr);
+static void getPidData(const Dem_PidOrDidType ** const *pidClassPtr, FreezeFrameRecType **freezeFrame, uint16 *storeIndexPtr);
+static void getDidData(const Dem_PidOrDidType ** const *didClassPtr, FreezeFrameRecType **freezeFrame, uint16 *storeIndexPtr);
 static void storeOBDFreezeFrameDataPreInit(const Dem_EventParameterType * eventParam, const FreezeFrameRecType * freezeFrame);
 static void storeOBDFreezeFrameDataPriMem(const Dem_EventParameterType *eventParam, const FreezeFrameRecType *freezeFrame);
 
@@ -539,7 +541,23 @@ static Dem_EventStatusType preDebounceCounterBased(Dem_EventStatusType reportedS
 	statusRecord->maxFaultDetectionCounter = MAX(statusRecord->maxFaultDetectionCounter, statusRecord->faultDetectionCounter);
 	return returnCode;
 }
-
+static boolean faultConfirmationCriteriaFulfilled(const Dem_EventParameterType *eventParam, const EventStatusRecType *eventStatusRecPtr)
+{
+	if( eventStatusRecPtr->confirmationCounter >= eventParam->EventClass->ConfirmationCycleCounterThreshold ) {
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+static void handleFaultConfirmation(const Dem_EventParameterType *eventParam, EventStatusRecType *eventStatusRecPtr)
+{
+	if( eventStatusRecPtr->confirmationCounter < DEM_CONFIRMATION_CNTR_MAX ) {
+		eventStatusRecPtr->confirmationCounter++;
+	}
+	if( faultConfirmationCriteriaFulfilled(eventParam, eventStatusRecPtr) ) {
+		eventStatusRecPtr->eventStatusExtended |= DEM_CONFIRMED_DTC;
+	}
+}
 
 /*
  * Procedure:	updateEventStatusRec
@@ -566,6 +584,7 @@ static void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_E
 			eventStatusRecPtr->occurrence = 0;
 			eventStatusRecPtr->eventStatusExtended = DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE;
 			eventStatusRecPtr->errorStatusChanged = FALSE;
+			eventStatusRecPtr->confirmationCounter = 0;
 		}
 		else {
 			DET_REPORTERROR(MODULE_ID_DEM, 0, DEM_UPDATE_EVENT_STATUS_ID, DEM_E_EVENT_STATUS_BUFF_FULL);
@@ -599,9 +618,13 @@ static void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_E
 			if (!(eventStatusRecPtr->eventStatusExtended & DEM_TEST_FAILED)) {
 				eventStatusRecPtr->occurrence++;
 				eventStatusRecPtr->errorStatusChanged = TRUE;
+				if( !(eventStatusRecPtr->eventStatusExtended & DEM_TEST_FAILED_THIS_OPERATION_CYCLE) ) {
+					/* First fail this operation cycle */
+					handleFaultConfirmation(eventParam, eventStatusRecPtr);
+				}
 			}
 			/** @req DEM036 */ /** @req DEM379.PendingSet */
-			eventStatusRecPtr->eventStatusExtended |= (DEM_TEST_FAILED | DEM_TEST_FAILED_THIS_OPERATION_CYCLE | DEM_TEST_FAILED_SINCE_LAST_CLEAR | DEM_PENDING_DTC | DEM_CONFIRMED_DTC);
+			eventStatusRecPtr->eventStatusExtended |= (DEM_TEST_FAILED | DEM_TEST_FAILED_THIS_OPERATION_CYCLE | DEM_TEST_FAILED_SINCE_LAST_CLEAR | DEM_PENDING_DTC);
 			eventStatusRecPtr->eventStatusExtended &= (Dem_EventStatusExtendedType)~(DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR | DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE);
 			if ((eventParam->DTCClassRef != NULL) && (eventParam->DTCClassRef->DTCKind == DEM_DTC_KIND_EMISSION_REL_DTCS))
 					eventStatusRecPtr->eventStatusExtended |= DEM_WARNING_INDICATOR_REQUESTED;
@@ -633,6 +656,7 @@ static void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_E
 		eventStatusRec->occurrence = 0;
 		eventStatusRec->eventStatusExtended = DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE | DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR;
 		eventStatusRec->errorStatusChanged = FALSE;
+		eventStatusRec->confirmationCounter = 0;
 	}
 
     Irq_Restore(state);
@@ -646,12 +670,13 @@ static void updateEventStatusRec(const Dem_EventParameterType *eventParam, Dem_E
 static void mergeEventStatusRec(const EventRecType *eventRec)
 {
 	EventStatusRecType *eventStatusRecPtr;
+	const Dem_EventParameterType *eventParam;
 	imask_t state;
     Irq_Save(state);
 
 	// Lookup event ID
 	lookupEventStatusRec(eventRec->eventId, &eventStatusRecPtr);
-
+	lookupEventIdParameter(eventRec->eventId, &eventParam);
 	if (eventStatusRecPtr != NULL) {
 		// Update occurrence counter.
 		eventStatusRecPtr->occurrence += eventRec->occurrence;
@@ -664,6 +689,15 @@ static void mergeEventStatusRec(const EventRecType *eventRec)
 		eventStatusRecPtr->eventStatusExtended |= (Dem_EventStatusExtendedType)(eventRec->eventStatusExtended & (DEM_PENDING_DTC | DEM_CONFIRMED_DTC));
 		// DEM_WARNING_INDICATOR_REQUESTED should be set if set in either
 		eventStatusRecPtr->eventStatusExtended |= (Dem_EventStatusExtendedType)(eventRec->eventStatusExtended & DEM_WARNING_INDICATOR_REQUESTED);
+        if( (DEM_CONFIRMATION_CNTR_MAX - eventRec->confirmationCounter) < eventStatusRecPtr->confirmationCounter) {
+            /* Would overflow */
+            eventStatusRecPtr->confirmationCounter = DEM_CONFIRMATION_CNTR_MAX;
+        } else {
+            eventStatusRecPtr->confirmationCounter += eventRec->confirmationCounter;
+        }
+        if( (NULL != eventParam) && faultConfirmationCriteriaFulfilled(eventParam, eventStatusRecPtr) ) {
+        	eventStatusRecPtr->eventStatusExtended |= (Dem_EventStatusExtendedType)DEM_CONFIRMED_DTC;
+        }
 	}
 
     Irq_Restore(state);
@@ -689,6 +723,7 @@ static void resetEventStatusRec(const Dem_EventParameterType *eventParam)
 		eventStatusRecPtr->eventStatusExtended = (DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE | DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR);
 		eventStatusRecPtr->errorStatusChanged = FALSE;
 		eventStatusRecPtr->occurrence = 0;
+		eventStatusRecPtr->confirmationCounter = 0;
 	}
 
 	Irq_Restore(state);
@@ -964,12 +999,10 @@ static void getFreezeFrameData(const Dem_EventParameterType *eventParam,
                                EventStatusRecType *eventStatusRec)
 {
 	Dem_FreezeFrameStorageConditonType prefailedOrFailed;
-	Std_ReturnType callbackReturnCode;
 	uint16 i = 0;
 	uint16 storeIndex = 0;
 	imask_t state;
 	const Dem_FreezeFrameClassType *FreezeFrameLocal = NULL;
-	Dcm_NegativeResponseCodeType errorCode;//should include Dcm_Lcfg.h
 
 	/* clear FF data record */
 	memset(freezeFrame, 0, sizeof(FreezeFrameRecType ));
@@ -1259,6 +1292,7 @@ static void storeEventPriMem(const Dem_EventParameterType *eventParam, const Eve
 		// Update event found
 		priMemEventBuffer[i-1].occurrence = eventStatus->occurrence;
 		priMemEventBuffer[i-1].eventStatusExtended = eventStatus->eventStatusExtended;
+		priMemEventBuffer[i-1].confirmationCounter = eventStatus->confirmationCounter;
 		priMemEventBuffer[i-1].checksum = calcChecksum(&priMemEventBuffer[i-1], sizeof(EventRecType)-sizeof(ChecksumType));
 	}
 	else {
@@ -1272,6 +1306,7 @@ static void storeEventPriMem(const Dem_EventParameterType *eventParam, const Eve
 			priMemEventBuffer[i-1].eventId = eventStatus->eventId;
 			priMemEventBuffer[i-1].occurrence = eventStatus->occurrence;
 			priMemEventBuffer[i-1].eventStatusExtended = eventStatus->eventStatusExtended;
+			priMemEventBuffer[i-1].confirmationCounter = eventStatus->confirmationCounter;
 			priMemEventBuffer[i-1].checksum = calcChecksum(&priMemEventBuffer[i-1], sizeof(EventRecType)-sizeof(ChecksumType));
 		}
 		else {
@@ -2153,7 +2188,7 @@ static Std_ReturnType handleAging(Dem_OperationCycleIdType operationCycleId, Dem
 							if((eventStatusBuffer[i].eventParamRef->EventClass->HealingAllowed == TRUE)\
 								&& (eventStatusBuffer[i].eventParamRef->EventClass->HealingCycleRef == operationCycleId)){
 								if((eventStatusBuffer[i].eventStatusExtended & DEM_CONFIRMED_DTC)\
-									&& (!(eventStatusBuffer[i].eventStatusExtended & DEM_TEST_FAILED))\
+									&& (!(eventStatusBuffer[i].eventStatusExtended & DEM_TEST_FAILED_THIS_OPERATION_CYCLE))\
 									&& (!(eventStatusBuffer[i].eventStatusExtended & DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE))){
 									agingRecFound = lookupAgingRecPriMem(eventStatusBuffer[i].eventId, (const HealingRecType **)(&agingRecLocal));
 									if(agingRecFound){
@@ -2167,6 +2202,8 @@ static Std_ReturnType handleAging(Dem_OperationCycleIdType operationCycleId, Dem
 											eventStatusBuffer[i].eventStatusExtended &= (Dem_EventStatusExtendedType)(~DEM_CONFIRMED_DTC);
 											eventStatusBuffer[i].eventStatusExtended &= (Dem_EventStatusExtendedType)(~DEM_PENDING_DTC);
 											eventStatusBuffer[i].eventStatusExtended &= (Dem_EventStatusExtendedType)(~DEM_WARNING_INDICATOR_REQUESTED);
+											eventStatusBuffer[i].confirmationCounter = 0;
+											storeEventEvtMem(eventStatusBuffer[i].eventParamRef, &eventStatusBuffer[i]);
 										}
 										/* Set the flag,start up the storage of NVRam in main function. */
 										AgingIsModified = TRUE;
@@ -2321,6 +2358,7 @@ void Dem_PreInit(void)
 		eventStatusBuffer[i].occurrence = 0;
 		eventStatusBuffer[i].eventStatusExtended = DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE | DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR;
 		eventStatusBuffer[i].errorStatusChanged = FALSE;
+		eventStatusBuffer[i].confirmationCounter = 0;
 	}
 
 	// Insert all supported events into event status buffer
@@ -3648,7 +3686,7 @@ Std_ReturnType Dem_GetOBDFreezeFrameData(uint8 PID, uint8* DestBuffer, uint8* Bu
  * Procedure:	getPidData
  * Description:	get OBD FF data,only called by getFreezeFrameData()		
  */
-static void getPidData(const Dem_PidOrDidType ***pidClassPtr, FreezeFrameRecType **freezeFrame, uint16 *storeIndexPtr)
+static void getPidData(const Dem_PidOrDidType ** const *pidClassPtr, FreezeFrameRecType **freezeFrame, uint16 *storeIndexPtr)
 {
 	const Dem_PidOrDidType **FFIdClassRef = NULL;
 	Std_ReturnType callbackReturnCode;
@@ -3700,7 +3738,7 @@ static void getPidData(const Dem_PidOrDidType ***pidClassPtr, FreezeFrameRecType
  * Procedure:	getDidData
  * Description:	get UDS FF data,only called by getFreezeFrameData()		
  */
- static void getDidData(const Dem_PidOrDidType ***didClassPtr, FreezeFrameRecType **freezeFrame, uint16 *storeIndexPtr)
+ static void getDidData(const Dem_PidOrDidType ** const* didClassPtr, FreezeFrameRecType **freezeFrame, uint16 *storeIndexPtr)
 {
 	const Dem_PidOrDidType **FFIdClassRef = NULL;
 	Std_ReturnType callbackReturnCode;
