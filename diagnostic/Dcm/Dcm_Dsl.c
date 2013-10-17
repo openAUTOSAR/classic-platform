@@ -535,11 +535,14 @@ void DslMain(void) {
 					DECREMENT(runtime->S3ServerTimeoutCount);
 					if (runtime->S3ServerTimeoutCount == 0) {
 						changeDiagnosticSession(runtime, DCM_DEFAULT_SESSION); /** @req DCM140 */
-						if(DCM_OBD_ON_CAN == protocolRowEntry->DslProtocolID){
-							runtime->protocolStarted = FALSE;
-							if(DCM_OBD_ON_CAN == DcmDslRunTimeData.activeProtocol->DslProtocolID){
-								DcmDslRunTimeData.activeProtocol = NULL;
-							}
+						runtime->protocolStarted = FALSE;
+						if( (NULL != DcmDslRunTimeData.activeProtocol) &&
+								(protocolRowEntry->DslProtocolID == DcmDslRunTimeData.activeProtocol->DslProtocolID) ) {
+							DcmDslRunTimeData.activeProtocol = NULL;
+						}
+						if( (NULL != DcmDslRunTimeData.preemptingProtocol)
+								&& (protocolRowEntry->DslProtocolID == DcmDslRunTimeData.preemptingProtocol->DslProtocolID) ) {
+							DcmDslRunTimeData.preemptingProtocol = NULL;
 						}
 					}
 				}
