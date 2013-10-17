@@ -478,6 +478,7 @@ typedef struct Dcm_DslProtocolTxType_t Dcm_DslProtocolTxType;
 struct Dcm_DslProtocolTxType_t {
 	const Dcm_DslMainConnectionType	*DslMainConnectionParent;	// (1) /* Cross reference. */
 	const PduIdType					DcmDslProtocolTxPduId;		// (1) /* Will be removed (polite), kept for reference. */
+	const PduIdType					DcmDslProtocolDcmTxPduId;
 	const boolean					Arc_EOL;
 };
 

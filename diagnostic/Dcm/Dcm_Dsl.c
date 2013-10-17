@@ -51,20 +51,21 @@ typedef struct {
 	boolean initRun;
 	//boolean diagnosticRequestPending; // This is a "semaphore" because DSD and DCM can handle multiple/parallel request at the moment.
 	const Dcm_DslProtocolRowType *activeProtocol; // Points to the currently active protocol.
-//	const Dcm_DslProtocolRowType *preemptedProtocol; // Points to the currently active protocol - reserved for future use
+	const Dcm_DslProtocolRowType *preemptingProtocol;
 //	Dcm_DslRunTimeProtocolParametersType protocolList[MAX_PARALLEL_PROTOCOLS_ALLOWED];	// Reserved for future use
 } DcmDsl_RunTimeDataType;
 
 static DcmDsl_RunTimeDataType DcmDslRunTimeData = {
 		.initRun = FALSE,
-		.activeProtocol = NULL
-//		.preemptedProtocol = NULL,
+		.activeProtocol = NULL,
+		.preemptingProtocol = NULL
 //		.protocolList = {}
 };
 
 
 // OBD: define the status flag of processing done when preemption happens.
 static boolean PreemptionNotProcessingDone = FALSE;
+static boolean BusyRepeatSent = FALSE;
 
 // ################# HELPER FUNCTIONS START #################
 
@@ -282,16 +283,39 @@ static boolean findTxPduIdParentConfigurationLeafs(PduIdType dcmTxPduId,
 		const Dcm_DslProtocolRowType **protocolRow,
 		Dcm_DslRunTimeProtocolParametersType **runtime) {
 
-	boolean ret = FALSE;
-	if (dcmTxPduId < DCM_DSL_TX_PDU_ID_LIST_LENGTH) {
-		*protocolTx = &DCM_Config.Dsl->DslProtocol->DslProtocolTxGlobalList[dcmTxPduId];
-		*mainConnection = (*protocolTx)->DslMainConnectionParent;
-		*connection = (*mainConnection)->DslConnectionParent;
-		*protocolRow = (*connection)->DslProtocolRow;
-		*runtime = (*protocolRow)->DslRunTimeProtocolParameters;
-		ret = TRUE;
+	boolean found = FALSE;
+	Dcm_ProtocolType activeProtocol;
+	uint16 i = 0;
+	if( E_OK == Dcm_GetActiveProtocol(&activeProtocol)) {
+		/* Check if this txPdu belongs to the active protocol */
+		while(!DCM_Config.Dsl->DslProtocol->DslProtocolTxGlobalList[i].Arc_EOL && !found) {
+			*protocolTx = &DCM_Config.Dsl->DslProtocol->DslProtocolTxGlobalList[i];
+			*mainConnection = (*protocolTx)->DslMainConnectionParent;
+			*connection = (*mainConnection)->DslConnectionParent;
+			*protocolRow = (*connection)->DslProtocolRow;
+			*runtime = (*protocolRow)->DslRunTimeProtocolParameters;
+			if( (dcmTxPduId == (*protocolTx)->DcmDslProtocolDcmTxPduId) && (activeProtocol == (*protocolRow)->DslProtocolID) ) {
+				found = TRUE;
+			}
+			i++;
+		}
+		if(!found && (NULL != DcmDslRunTimeData.preemptingProtocol)) {
+			/* Check if this txPdu belongs to the preempting protocol */
+			i = 0;
+			while(!DCM_Config.Dsl->DslProtocol->DslProtocolTxGlobalList[i].Arc_EOL && !found) {
+				*protocolTx = &DCM_Config.Dsl->DslProtocol->DslProtocolTxGlobalList[i];
+				*mainConnection = (*protocolTx)->DslMainConnectionParent;
+				*connection = (*mainConnection)->DslConnectionParent;
+				*protocolRow = (*connection)->DslProtocolRow;
+				*runtime = (*protocolRow)->DslRunTimeProtocolParameters;
+				if( (dcmTxPduId == (*protocolTx)->DcmDslProtocolDcmTxPduId) && (DcmDslRunTimeData.preemptingProtocol->DslProtocolID == (*protocolRow)->DslProtocolID) ) {
+					found = TRUE;
+				}
+				i++;
+			}
+		}
 	}
-	return ret;
+	return found;
 }
 
 // - - - - - - - - - - -
@@ -386,6 +410,7 @@ static void sendResponse(const Dcm_DslProtocolRowType *protocol,
 			transmitResult = PduR_DcmTransmit(mainConnection->DslProtocolTx->DcmDslProtocolTxPduId, &(runtime->localTxBuffer.PduInfo));/** @req DCM115.Partially */ /* The P2ServerMin has not been implemented. */
 			if (transmitResult != E_OK) {
 				// TODO: What to do here?
+				releaseExternalRxTxBuffers(protocolRow, runtime);
 			}
 		}
 	}
@@ -458,6 +483,7 @@ void DslInit(void) {
 	//DcmDslRunTimeData.diagnosticRequestPending = FALSE;
 	DcmDslRunTimeData.initRun = TRUE;
 	DcmDslRunTimeData.activeProtocol = NULL;// OBD: close the current active protocol
+	DcmDslRunTimeData.preemptingProtocol = NULL;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -507,13 +533,16 @@ void DslMain(void) {
 			if (runtime->sessionControl != DCM_DEFAULT_SESSION) { // Timeout if tester present is lost.
 				if( TRUE == runtime->S3ServerStarted ) {
 					DECREMENT(runtime->S3ServerTimeoutCount);
-				}
-				if (runtime->S3ServerTimeoutCount == 0) {
-					changeDiagnosticSession(runtime, DCM_DEFAULT_SESSION); /** @req DCM140 */
-					if(DCM_OBD_ON_CAN == protocolRowEntry->DslProtocolID){
+					if (runtime->S3ServerTimeoutCount == 0) {
+						changeDiagnosticSession(runtime, DCM_DEFAULT_SESSION); /** @req DCM140 */
 						runtime->protocolStarted = FALSE;
-						if(DCM_OBD_ON_CAN == DcmDslRunTimeData.activeProtocol->DslProtocolID){
+						if( (NULL != DcmDslRunTimeData.activeProtocol) &&
+								(protocolRowEntry->DslProtocolID == DcmDslRunTimeData.activeProtocol->DslProtocolID) ) {
 							DcmDslRunTimeData.activeProtocol = NULL;
+						}
+						if( (NULL != DcmDslRunTimeData.preemptingProtocol)
+								&& (protocolRowEntry->DslProtocolID == DcmDslRunTimeData.preemptingProtocol->DslProtocolID) ) {
+							DcmDslRunTimeData.preemptingProtocol = NULL;
 						}
 					}
 				}
@@ -567,6 +596,7 @@ void DslMain(void) {
 						transmitResult = PduR_DcmTransmit(txPduId, &runtime->diagnosticResponseFromDsd); /** @req DCM237 *//* Will trigger PduR (CanTP) to call DslProvideTxBuffer(). */
 						if (transmitResult != E_OK) {
 							// TODO: What to do here?
+							releaseExternalRxTxBuffers(protocolRow, runtime);
 						}
 					} else {
 						DEBUG( DEBUG_MEDIUM, "***** WARNING, THIS IS UNEXPECTED !!! ********.\n" );
@@ -577,6 +607,7 @@ void DslMain(void) {
 						transmitResult = PduR_DcmTransmit(txPduId, &runtime->diagnosticResponseFromDsd); /** @req DCM237 *//* Will trigger PduR (CanTP) to call DslProvideTxBuffer(). */
 						if (transmitResult != E_OK) {
 							// TODO: What to do here?
+							releaseExternalRxTxBuffers(protocolRow, runtime);
 						}
 					}
 				}
@@ -590,8 +621,11 @@ void DslMain(void) {
 			case PREEMPT_TRANSMIT_NRC: /* preemption has happened,send NRC 0x21 to OBD tester */
 //				DEBUG( DEBUG_MEDIUM, "state PREEMPT_TRANSMIT_NRC!\n");
 				if (TRUE == PreemptionNotProcessingDone){
-					/*sent NRC 0x21 till timeout or processing done*/
-					sendResponse(protocolRowEntry, DCM_E_BUSYREPEATREQUEST);
+					if( !BusyRepeatSent ) {
+						/*sent NRC 0x21 till timeout or processing done*/
+						sendResponse(protocolRowEntry, DCM_E_BUSYREPEATREQUEST);
+						BusyRepeatSent = TRUE;
+					}
 
 					/*decrease preempt timeout count*/					
 					DECREMENT(runtime->preemptTimeoutCount);
@@ -607,6 +641,7 @@ void DslMain(void) {
 						DcmDslRunTimeData.activeProtocol = NULL;
 						/*release current protocol buffer*/
 						releaseExternalRxTxBuffers(protocolRowEntry, runtime);
+						DcmDslRunTimeData.preemptingProtocol = NULL;
 					}
 					else if(runtime->preemptTimeoutCount == 0){
 						/*if preempt timeout,clear the flag*/
@@ -619,6 +654,7 @@ void DslMain(void) {
 						DcmDslRunTimeData.activeProtocol = NULL;
 						/*release the extrnal Rx and Tx buffters of the preempting protocol*/
 						releaseExternalRxTxBuffers(protocolRowEntry, runtime);
+						DcmDslRunTimeData.preemptingProtocol = NULL;
 						/*initialize DSP*/
 						DspInit();
 					}
@@ -766,14 +802,16 @@ void DslRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result) {
 
 										/*set the flag,activate preemption mechanism*/
 										PreemptionNotProcessingDone = TRUE;
+										BusyRepeatSent = FALSE;
 										/*set Tx buffer status PREEMPT_TRANSMIT_NRC*/
 										runtime->externalTxBufferStatus = PREEMPT_TRANSMIT_NRC;
 										runtime->responsePendingCount = DCM_Config.Dsl->DslDiagResp->DslDiagRespMaxNumRespPend;
 										runtime->diagReqestRxPduId = dcmRxPduId;
-									
+										/* Store the preempting protocol */
+										DcmDslRunTimeData.preemptingProtocol = protocolRow;
 //										DEBUG(DEBUG_MEDIUM,"\n runtime->externalTxBufferStatus = %X\n",runtime->externalTxBufferStatus);
 										/*start preemption timer*/
-										startPreemptTimer(runtime, protocolRow);
+										startPreemptTimer(runtime, protocolRow);/* TODO: Is it correct to restart timer on each new request? */
 										/*request PduR to cancel transmit of preempted protocol*/
 										/*@req OBD_DCM_REQ_32*//*@req OBD_DCM_REQ_33*/
 										higherLayerResp = PduR_CancelTransmitRequest(PDU_CNLOR, DsdDslGetCurrentTxPduId());										
