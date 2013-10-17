@@ -311,6 +311,7 @@ static boolean findTxPduIdParentConfigurationLeafs(PduIdType dcmTxPduId,
 				if( (dcmTxPduId == (*protocolTx)->DcmDslProtocolDcmTxPduId) && (DcmDslRunTimeData.preemptingProtocol->DslProtocolID == (*protocolRow)->DslProtocolID) ) {
 					found = TRUE;
 				}
+				i++;
 			}
 		}
 	}
