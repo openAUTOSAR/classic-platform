@@ -257,11 +257,13 @@ void Lin_InitChannel(  uint8 Channel,   const Lin_ChannelConfigType* Config )
 		ISR_INSTALL_ISR2("LinIsrTxC", LinInterruptTxC, (IrqType)(LINFLEX_2_TXI),LIN_PRIO, 0);
 		ISR_INSTALL_ISR2("LinIsrErrC", LinInterruptErrC, (IrqType)(LINFLEX_2_ERR),LIN_PRIO, 0);
 		break;
+#if !defined (CFG_MPC5602B)
 	case 3:
 		ISR_INSTALL_ISR2("LinIsrRxD", LinInterruptRxD, (IrqType)(LINFLEX_3_RXI),LIN_PRIO, 0);
 		ISR_INSTALL_ISR2("LinIsrTxD", LinInterruptTxD, (IrqType)(LINFLEX_3_TXI),LIN_PRIO, 0);
 		ISR_INSTALL_ISR2("LinIsrErrD", LinInterruptErrD, (IrqType)(LINFLEX_3_ERR),LIN_PRIO, 0);
 		break;
+#endif
 #endif
 #if defined (CFG_MPC5606B)
 	case 4:
