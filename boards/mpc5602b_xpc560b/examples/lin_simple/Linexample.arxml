@@ -1,0 +1,2818 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AUTOSAR xmlns="http://autosar.org/3.1.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/3.1.5 autosar_3-1-5.xsd">
+  <TOP-LEVEL-PACKAGES>
+    <AR-PACKAGE>
+      <SHORT-NAME>Linexample</SHORT-NAME>
+      <ELEMENTS>
+        <ECU-CONFIGURATION UUID="5178a927-e0ea-4f00-8c32-91317f383628">
+          <SHORT-NAME>Linexample</SHORT-NAME>
+          <ADMIN-DATA>
+            <DOC-REVISIONS>
+              <DOC-REVISION />
+            </DOC-REVISIONS>
+            <SDGS>
+              <SDG GID="Arccore::EcuOptions">
+                <SD GID="MCU">MPC5602B</SD>
+                <SD GID="GENDIR">${PROJECT_LOC}/config</SD>
+              </SDG>
+            </SDGS>
+          </ADMIN-DATA>
+          <ECU-SW-COMPOSITION-REF DEST="ECU-SW-COMPOSITION">/Linexample/SwComposition_Linexample</ECU-SW-COMPOSITION-REF>
+          <MODULE-REFS>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/Linexample/Det</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/Linexample/EcuM</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/Linexample/Mcu</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/Linexample/Os</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/Linexample/EcuC</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/Linexample/Com</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/Linexample/Port</MODULE-REF>
+            <MODULE-REF DEST="MODULE-CONFIGURATION">/Linexample/PduR</MODULE-REF>
+          </MODULE-REFS>
+        </ECU-CONFIGURATION>
+        <ECU-SW-COMPOSITION UUID="b6afa3bc-750f-40fc-bfab-3860f8a2f4bb">
+          <SHORT-NAME>SwComposition_Linexample</SHORT-NAME>
+        </ECU-SW-COMPOSITION>
+        <MODULE-CONFIGURATION UUID="0ea0ee93-5bad-499c-a3e7-da69101b8da5">
+          <SHORT-NAME>Det</SHORT-NAME>
+          <ADMIN-DATA>
+            <SDGS>
+              <SDG />
+              <SDG GID="Arccore::ModuleOptions">
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.0.1</SD>
+              </SDG>
+            </SDGS>
+          </ADMIN-DATA>
+          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Det</DEFINITION-REF>
+          <CONTAINERS>
+            <CONTAINER UUID="f77d5af7-af9e-4ba3-bda4-f55a038df461">
+              <SHORT-NAME>DetGeneral</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Det/DetGeneral</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Det/DetGeneral/DetEnableCallbacks</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Det/DetGeneral/DetUseRamlog</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Det/DetGeneral/DetWrapRamlog</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Det/DetGeneral/DetUseStdErr</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Det/DetGeneral/DetDeInitAPI</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Det/DetGeneral/DetNumberOfCallbacks</DEFINITION-REF>
+                  <VALUE>5</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Det/DetGeneral/DetRamlogSize</DEFINITION-REF>
+                  <VALUE>16</VALUE>
+                </INTEGER-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+          </CONTAINERS>
+        </MODULE-CONFIGURATION>
+        <MODULE-CONFIGURATION UUID="7aad5d2b-23ac-42d2-aa8d-6cb8aee0f23c">
+          <SHORT-NAME>EcuM</SHORT-NAME>
+          <ADMIN-DATA>
+            <SDGS>
+              <SDG />
+              <SDG GID="Arccore::ModuleOptions">
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.1.11</SD>
+              </SDG>
+            </SDGS>
+          </ADMIN-DATA>
+          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/EcuM</DEFINITION-REF>
+          <CONTAINERS>
+            <CONTAINER UUID="b1f91ed0-f036-40f0-aa3b-77d90a2a2105">
+              <SHORT-NAME>EcuMGeneral</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMGeneral</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/EcuM/EcuMGeneral/EcuMDevErrorDetect</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/EcuM/EcuMGeneral/EcuMIncludeNvramMgr</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/EcuM/EcuMGeneral/EcuMVersionInfoApi</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <FLOAT-VALUE>
+                  <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/EcuM/EcuMGeneral/EcuMMainFunctionPeriod</DEFINITION-REF>
+                  <VALUE>0.2</VALUE>
+                </FLOAT-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="d463ba5b-33cc-4b5a-8f32-95851e77f0cb">
+              <SHORT-NAME>EcuMConfiguration</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <FLOAT-VALUE>
+                  <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMNvramReadallTimeout</DEFINITION-REF>
+                  <VALUE>10.0</VALUE>
+                </FLOAT-VALUE>
+                <FLOAT-VALUE>
+                  <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMRunMinimumDuration</DEFINITION-REF>
+                  <VALUE>10.0</VALUE>
+                </FLOAT-VALUE>
+                <FLOAT-VALUE>
+                  <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMNvramWriteallTimeout</DEFINITION-REF>
+                  <VALUE>10.0</VALUE>
+                </FLOAT-VALUE>
+              </PARAMETER-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="3d4c5295-d026-4a40-8d17-c921213d6aff">
+                  <SHORT-NAME>User_1</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMUserConfig</DEFINITION-REF>
+                </CONTAINER>
+                <CONTAINER UUID="d4c2cc75-4bec-4e60-9678-b306eab0ec36">
+                  <SHORT-NAME>EcuMDefaultShutdownTarget</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMDefaultShutdownTarget</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMDefaultShutdownTarget/EcuMDefaultState</DEFINITION-REF>
+                      <VALUE>EcuMStateReset</VALUE>
+                    </ENUMERATION-VALUE>
+                  </PARAMETER-VALUES>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMDefaultShutdownTarget/EcuMDefaultSleepModeRef</DEFINITION-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="b4d178cf-cfd1-4c76-b28c-c1c776997d76">
+                  <SHORT-NAME>SleepMode_1</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMSleepModeId</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <STRING-VALUE>
+                      <DEFINITION-REF DEST="STRING-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMSleepModeName</DEFINITION-REF>
+                      <VALUE />
+                    </STRING-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMSleepModeSuspend</DEFINITION-REF>
+                      <VALUE>false</VALUE>
+                    </BOOLEAN-VALUE>
+                  </PARAMETER-VALUES>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMSleepModeMcuModeRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/Linexample/Mcu/McuModuleConfiguration/RUN</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="SYMBOLIC-NAME-REFERENCE-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMSleepMode/EcuMWakeupSourceMask</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/Linexample/EcuM/EcuMConfiguration/WakeupSource_1</VALUE-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="cefa33f4-81ac-450c-ab1e-01dee95ab257">
+                  <SHORT-NAME>WakeupSource_1</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMWakeupSource</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMWakeupSource/EcuMResetReason</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <FLOAT-VALUE>
+                      <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMWakeupSource/EcuMValidationTimeout</DEFINITION-REF>
+                      <VALUE>0.0</VALUE>
+                    </FLOAT-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMWakeupSource/EcuMWakeupSourceId</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/EcuM/EcuMConfiguration/EcuMWakeupSource/EcuMWakeupSourcePolling</DEFINITION-REF>
+                      <VALUE>false</VALUE>
+                    </BOOLEAN-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+          </CONTAINERS>
+        </MODULE-CONFIGURATION>
+        <MODULE-CONFIGURATION UUID="8a184897-d775-4b5c-af86-63b4c0c292a2">
+          <SHORT-NAME>Mcu</SHORT-NAME>
+          <ADMIN-DATA>
+            <SDGS>
+              <SDG />
+              <SDG GID="Arccore::ModuleOptions">
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.0.4</SD>
+              </SDG>
+            </SDGS>
+          </ADMIN-DATA>
+          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Mcu</DEFINITION-REF>
+          <CONTAINERS>
+            <CONTAINER UUID="76dea6d9-e140-49d3-8692-c15a5954a695">
+              <SHORT-NAME>McuGeneralConfiguration</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuGeneralConfiguration</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Mcu/McuGeneralConfiguration/McuDevErrorDetect</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Mcu/McuGeneralConfiguration/McuPerformResetApi</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Mcu/McuGeneralConfiguration/McuVersionInfoApi</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="7fa23429-dad9-4493-947d-cce0b8a135fa">
+              <SHORT-NAME>McuModuleConfiguration</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSrcFailureNotification</DEFINITION-REF>
+                  <VALUE>DISABLED</VALUE>
+                </ENUMERATION-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="DERIVED-INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuNumberOfMcuModes</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="DERIVED-INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuRamSectors</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuResetSetting</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+              </PARAMETER-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="44f5f842-98e8-439e-b7aa-c4821de6407c">
+                  <SHORT-NAME>McuClockSettingConfig</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig</DEFINITION-REF>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuDefaultClockReference</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/Linexample/Mcu/McuModuleConfiguration/McuClockSettingConfig/Clock</VALUE-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                  <SUB-CONTAINERS>
+                    <CONTAINER UUID="6432e3e3-14ec-4557-90c9-5a2a208c43ce">
+                      <SHORT-NAME>Clock</SHORT-NAME>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <FLOAT-VALUE>
+                          <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointFrequency</DEFINITION-REF>
+                          <VALUE>8000000.0</VALUE>
+                        </FLOAT-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointPllEprediv</DEFINITION-REF>
+                          <VALUE>0</VALUE>
+                        </INTEGER-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointPllEmfd</DEFINITION-REF>
+                          <VALUE>64</VALUE>
+                        </INTEGER-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuClockSettingConfig/McuClockReferencePoint/McuClockReferencePointPllErfd</DEFINITION-REF>
+                          <VALUE>2</VALUE>
+                        </INTEGER-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                  </SUB-CONTAINERS>
+                </CONTAINER>
+                <CONTAINER UUID="bc24a847-e688-4e1c-9055-ca35de9c6d46">
+                  <SHORT-NAME>RUN</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Mcu/McuModuleConfiguration/McuModeSettingConf/McuMode</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+          </CONTAINERS>
+        </MODULE-CONFIGURATION>
+        <MODULE-CONFIGURATION UUID="4974ca75-a78d-442e-ad22-d6582808abd7">
+          <SHORT-NAME>Os</SHORT-NAME>
+          <ADMIN-DATA>
+            <SDGS>
+              <SDG />
+              <SDG GID="Arccore::ModuleOptions">
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.0.34</SD>
+              </SDG>
+            </SDGS>
+          </ADMIN-DATA>
+          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Os</DEFINITION-REF>
+          <CONTAINERS>
+            <CONTAINER UUID="bfc297c2-0575-44ed-ab6b-318c389b2f06">
+              <SHORT-NAME>OsOS</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsOS</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsStackMonitoring</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsOS/OsStatus</DEFINITION-REF>
+                  <VALUE>EXTENDED</VALUE>
+                </ENUMERATION-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsUseGetServiceId</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsUseParameterAccess</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsUseResScheduler</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsOS/OsTickFrequency</DEFINITION-REF>
+                  <VALUE>1000</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsOS/OsInterruptStackSize</DEFINITION-REF>
+                  <VALUE>2048</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsOS/OsIdleStackSize</DEFINITION-REF>
+                  <VALUE>512</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsOS/OsNumberOfCores</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsOS/ArcOsIsrMaxCount</DEFINITION-REF>
+                  <VALUE>10</VALUE>
+                </INTEGER-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsUseDebug</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsDebugTask</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsDebugAlarm</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsDebugResource</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsDebugScheduleTable</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/ArcCoreOsDebugEvent</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+              </PARAMETER-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="08e7469a-c472-4122-a76f-19036272814e">
+                  <SHORT-NAME>OsHooks</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsOS/OsHooks</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsHooks/OsErrorHook</DEFINITION-REF>
+                      <VALUE>true</VALUE>
+                    </BOOLEAN-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsHooks/OsPostTaskHook</DEFINITION-REF>
+                      <VALUE>true</VALUE>
+                    </BOOLEAN-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsHooks/OsPreTaskHook</DEFINITION-REF>
+                      <VALUE>true</VALUE>
+                    </BOOLEAN-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsHooks/OsProtectionHook</DEFINITION-REF>
+                      <VALUE>false</VALUE>
+                    </BOOLEAN-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsHooks/OsShutdownHook</DEFINITION-REF>
+                      <VALUE>true</VALUE>
+                    </BOOLEAN-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsOS/OsHooks/OsStartupHook</DEFINITION-REF>
+                      <VALUE>true</VALUE>
+                    </BOOLEAN-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+            <CONTAINER UUID="d35aadeb-6783-49c6-bf7c-2a77bef82532">
+              <SHORT-NAME>Task</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskActivation</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskPriority</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskProcessType</DEFINITION-REF>
+                  <VALUE>EXTENDED</VALUE>
+                </ENUMERATION-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/ArcCoreOsTaskStackSize</DEFINITION-REF>
+                  <VALUE>2048</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskSchedule</DEFINITION-REF>
+                  <VALUE>FULL</VALUE>
+                </ENUMERATION-VALUE>
+              </PARAMETER-VALUES>
+              <REFERENCE-VALUES>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskEventRef</DEFINITION-REF>
+                  <VALUE-REF DEST="CONTAINER">/Linexample/Os/Event1</VALUE-REF>
+                </REFERENCE-VALUE>
+              </REFERENCE-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="8997186d-84b8-4067-9a67-6703d960d00f">
+                  <SHORT-NAME>OsTaskAutostart</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask/OsTaskAutostart</DEFINITION-REF>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+            <CONTAINER UUID="20b18c5f-43cc-4021-9f9a-71db51bd2a71">
+              <SHORT-NAME>init</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskActivation</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskPriority</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskProcessType</DEFINITION-REF>
+                  <VALUE>BASIC</VALUE>
+                </ENUMERATION-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsTask/ArcCoreOsTaskStackSize</DEFINITION-REF>
+                  <VALUE>2048</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsTask/OsTaskSchedule</DEFINITION-REF>
+                  <VALUE>FULL</VALUE>
+                </ENUMERATION-VALUE>
+              </PARAMETER-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="65e2a41f-7f2e-44d6-b159-96d43311805e">
+                  <SHORT-NAME>OsTaskAutostart</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsTask/OsTaskAutostart</DEFINITION-REF>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+            <CONTAINER UUID="d5d5c261-5793-436b-8053-cddaf21ba7c3">
+              <SHORT-NAME>Counter1</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsCounter</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterMaxAllowedValue</DEFINITION-REF>
+                  <VALUE>65535</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterMinCycle</DEFINITION-REF>
+                  <VALUE>1</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterTicksPerBase</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsCounter/OsCounterType</DEFINITION-REF>
+                  <VALUE>OS_TICK</VALUE>
+                </ENUMERATION-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="90f1931a-6494-4ed4-964c-b681f2b6bf30">
+              <SHORT-NAME>OsApplication1</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsApplication</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsApplication/ArcOsAppCoreId</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsApplication/OsTrusted</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+              </PARAMETER-VALUES>
+              <REFERENCE-VALUES>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppCounterRef</DEFINITION-REF>
+                  <VALUE-REF DEST="CONTAINER">/Linexample/Os/Counter1</VALUE-REF>
+                </REFERENCE-VALUE>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppTaskRef</DEFINITION-REF>
+                  <VALUE-REF DEST="CONTAINER">/Linexample/Os/init</VALUE-REF>
+                </REFERENCE-VALUE>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppAlarmRef</DEFINITION-REF>
+                  <VALUE-REF DEST="CONTAINER">/Linexample/Os/Alarm1</VALUE-REF>
+                </REFERENCE-VALUE>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsApplication/OsAppTaskRef</DEFINITION-REF>
+                  <VALUE-REF DEST="CONTAINER">/Linexample/Os/Task</VALUE-REF>
+                </REFERENCE-VALUE>
+              </REFERENCE-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="e3843775-f533-4243-8da3-a53c03b89904">
+                  <SHORT-NAME>OsApplicationHooks</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsApplication/OsApplicationHooks</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsApplication/OsApplicationHooks/OsAppErrorHook</DEFINITION-REF>
+                      <VALUE>false</VALUE>
+                    </BOOLEAN-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsApplication/OsApplicationHooks/OsAppShutdownHook</DEFINITION-REF>
+                      <VALUE>false</VALUE>
+                    </BOOLEAN-VALUE>
+                    <BOOLEAN-VALUE>
+                      <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsApplication/OsApplicationHooks/OsAppStartupHook</DEFINITION-REF>
+                      <VALUE>false</VALUE>
+                    </BOOLEAN-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+            <CONTAINER UUID="c1cc2caa-23f0-4818-b0c1-19ae8008eb0d">
+              <SHORT-NAME>Alarm1</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm</DEFINITION-REF>
+              <REFERENCE-VALUES>
+                <REFERENCE-VALUE>
+                  <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmCounterRef</DEFINITION-REF>
+                  <VALUE-REF DEST="CONTAINER">/Linexample/Os/Counter1</VALUE-REF>
+                </REFERENCE-VALUE>
+              </REFERENCE-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="0fe9c4d0-65e0-4791-a73b-9b0c01b4ed5f">
+                  <SHORT-NAME>OsAlarmSetEvent</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent</DEFINITION-REF>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/Linexample/Os/Event1</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAction/OsAlarmSetEvent/OsAlarmSetEventTaskRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/Linexample/Os/Task</VALUE-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="ea1cd24c-1542-4e50-ae07-37ef4e96e2b5">
+                  <SHORT-NAME>OsAlarmAutostart</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmAlarmTime</DEFINITION-REF>
+                      <VALUE>5</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmAutostartType</DEFINITION-REF>
+                      <VALUE>ABSOLUTE</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsAlarm/OsAlarmAutostart/OsAlarmCycleTime</DEFINITION-REF>
+                      <VALUE>5</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+            <CONTAINER UUID="8cce5427-3ec4-4bf8-95ed-d013347015b4">
+              <SHORT-NAME>Event1</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Os/OsEvent</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Os/OsEvent/ArcOsEventId</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Os/OsEvent/ArcOsEventAutoMask</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+          </CONTAINERS>
+        </MODULE-CONFIGURATION>
+        <MODULE-CONFIGURATION UUID="7b789b7f-7c80-4e46-b465-3f11bd4f0b85">
+          <SHORT-NAME>EcuC</SHORT-NAME>
+          <ADMIN-DATA>
+            <SDGS>
+              <SDG />
+              <SDG GID="Arccore::ModuleOptions">
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.0.0</SD>
+              </SDG>
+            </SDGS>
+          </ADMIN-DATA>
+          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/EcuC</DEFINITION-REF>
+          <CONTAINERS>
+            <CONTAINER UUID="8534afa7-b5be-49bc-9ce1-5fe9e9c5cfd6">
+              <SHORT-NAME>PduCollection</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuC/PduCollection</DEFINITION-REF>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="c2d3f32d-1b00-41cd-89a3-183599af9ebc">
+                  <SHORT-NAME>ENG_TX</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuC/PduCollection/Pdu</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/EcuC/PduCollection/Pdu/PduLength</DEFINITION-REF>
+                      <VALUE>64</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="c2fe2dd5-1ede-4231-835c-c9e04e1a7648">
+                  <SHORT-NAME>LAMPS_RX</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuC/PduCollection/Pdu</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/EcuC/PduCollection/Pdu/PduLength</DEFINITION-REF>
+                      <VALUE>32</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="7b73236d-e61e-48bc-8a12-9185b4c14dc6">
+                  <SHORT-NAME>TCM_RX</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/EcuC/PduCollection/Pdu</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/EcuC/PduCollection/Pdu/PduLength</DEFINITION-REF>
+                      <VALUE>64</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+          </CONTAINERS>
+        </MODULE-CONFIGURATION>
+        <MODULE-CONFIGURATION UUID="bf7d1b1e-353e-4ea2-9cdc-dd77487e8931">
+          <SHORT-NAME>Com</SHORT-NAME>
+          <ADMIN-DATA>
+            <SDGS>
+              <SDG />
+              <SDG GID="Arccore::ModuleOptions">
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.1.1</SD>
+              </SDG>
+            </SDGS>
+          </ADMIN-DATA>
+          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Com</DEFINITION-REF>
+          <CONTAINERS>
+            <CONTAINER UUID="a9050ec4-7147-4e28-922b-5c7cfb695880">
+              <SHORT-NAME>ComConfig</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComConfigurationId</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+              </PARAMETER-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="76166ac2-e753-45d4-82d8-c041e52f4f8b">
+                  <SHORT-NAME>ComPduGroup_Tx_0</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPduGroup</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPduGroup/ComIPduGroupHandleId</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="71f4e65b-5228-444b-a3ed-1b016f4b8996">
+                  <SHORT-NAME>FR_TX_01</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPdu</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <FUNCTION-NAME-VALUE>
+                      <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduCallout</DEFINITION-REF>
+                      <VALUE />
+                    </FUNCTION-NAME-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduRxHandleId</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduSignalProcessing</DEFINITION-REF>
+                      <VALUE>DEFERRED</VALUE>
+                    </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduDirection</DEFINITION-REF>
+                      <VALUE>SEND</VALUE>
+                    </ENUMERATION-VALUE>
+                  </PARAMETER-VALUES>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduGroupRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/Linexample/Com/ComConfig/ComPduGroup_Tx_0</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/PduIdRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/Linexample/EcuC/PduCollection/ENG_TX</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduSignalRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/Linexample/Com/ComConfig/Signal_Tx_1</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduSignalRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/Linexample/Com/ComConfig/Signal_Tx_2</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduSignalRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/Linexample/Com/ComConfig/Signal_Tx_3</VALUE-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                  <SUB-CONTAINERS>
+                    <CONTAINER UUID="737ae05a-4da7-4a9b-9488-4dce65ba71f7">
+                      <SHORT-NAME>ComTxIPdu</SHORT-NAME>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxIPduMinimumDelayTimeFactor</DEFINITION-REF>
+                          <VALUE>0</VALUE>
+                        </INTEGER-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxIPduUnusedAreasDefault</DEFINITION-REF>
+                          <VALUE>0</VALUE>
+                        </INTEGER-VALUE>
+                      </PARAMETER-VALUES>
+                      <SUB-CONTAINERS>
+                        <CONTAINER UUID="1e7fefee-e64b-4853-85b2-8b76ff6a9491">
+                          <SHORT-NAME>ComTxModeTrue</SHORT-NAME>
+                          <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue</DEFINITION-REF>
+                          <SUB-CONTAINERS>
+                            <CONTAINER UUID="36493ba5-5331-408a-bd64-48763d08eb28">
+                              <SHORT-NAME>ComTxMode</SHORT-NAME>
+                              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode</DEFINITION-REF>
+                              <PARAMETER-VALUES>
+                                <ENUMERATION-VALUE>
+                                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode/ComTxModeMode</DEFINITION-REF>
+                                  <VALUE>DIRECT</VALUE>
+                                </ENUMERATION-VALUE>
+                                <INTEGER-VALUE>
+                                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode/ComTxModeNumberOfRepetitions</DEFINITION-REF>
+                                  <VALUE>0</VALUE>
+                                </INTEGER-VALUE>
+                                <INTEGER-VALUE>
+                                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode/ComTxModeRepetitionPeriodFactor</DEFINITION-REF>
+                                  <VALUE>0</VALUE>
+                                </INTEGER-VALUE>
+                                <INTEGER-VALUE>
+                                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode/ComTxModeTimeOffsetFactor</DEFINITION-REF>
+                                  <VALUE>0</VALUE>
+                                </INTEGER-VALUE>
+                                <INTEGER-VALUE>
+                                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode/ComTxModeTimePeriodFactor</DEFINITION-REF>
+                                  <VALUE>0</VALUE>
+                                </INTEGER-VALUE>
+                              </PARAMETER-VALUES>
+                            </CONTAINER>
+                          </SUB-CONTAINERS>
+                        </CONTAINER>
+                      </SUB-CONTAINERS>
+                    </CONTAINER>
+                  </SUB-CONTAINERS>
+                </CONTAINER>
+                <CONTAINER UUID="5dd25d83-5520-49f5-b1af-d69682ce35f9">
+                  <SHORT-NAME>FR_RX_01</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPdu</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <FUNCTION-NAME-VALUE>
+                      <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduCallout</DEFINITION-REF>
+                      <VALUE />
+                    </FUNCTION-NAME-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduRxHandleId</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduSignalProcessing</DEFINITION-REF>
+                      <VALUE>IMMEDIATE</VALUE>
+                    </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduDirection</DEFINITION-REF>
+                      <VALUE>RECEIVE</VALUE>
+                    </ENUMERATION-VALUE>
+                  </PARAMETER-VALUES>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduGroupRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/Linexample/Com/ComConfig/ComPduGroup_Rx_0</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/PduIdRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/Linexample/EcuC/PduCollection/LAMPS_RX</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduSignalRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/Linexample/Com/ComConfig/Signal_Rx_1</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduSignalRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/Linexample/Com/ComConfig/Signal_Rx_2</VALUE-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                  <SUB-CONTAINERS>
+                    <CONTAINER UUID="a4c1e560-559b-4f2e-b9a4-5d7f5bc4f6c0">
+                      <SHORT-NAME>ComTxIPdu</SHORT-NAME>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxIPduMinimumDelayTimeFactor</DEFINITION-REF>
+                          <VALUE>0</VALUE>
+                        </INTEGER-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxIPduUnusedAreasDefault</DEFINITION-REF>
+                          <VALUE>0</VALUE>
+                        </INTEGER-VALUE>
+                      </PARAMETER-VALUES>
+                      <SUB-CONTAINERS>
+                        <CONTAINER UUID="55b7a6c0-0b17-4847-b7e2-8d20e91b4edd">
+                          <SHORT-NAME>ComTxModeTrue</SHORT-NAME>
+                          <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue</DEFINITION-REF>
+                          <SUB-CONTAINERS>
+                            <CONTAINER UUID="7156050e-6f33-407d-8a7d-41f1061197b2">
+                              <SHORT-NAME>ComTxMode</SHORT-NAME>
+                              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode</DEFINITION-REF>
+                              <PARAMETER-VALUES>
+                                <ENUMERATION-VALUE>
+                                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode/ComTxModeMode</DEFINITION-REF>
+                                  <VALUE>DIRECT</VALUE>
+                                </ENUMERATION-VALUE>
+                                <INTEGER-VALUE>
+                                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode/ComTxModeNumberOfRepetitions</DEFINITION-REF>
+                                  <VALUE>0</VALUE>
+                                </INTEGER-VALUE>
+                                <INTEGER-VALUE>
+                                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode/ComTxModeRepetitionPeriodFactor</DEFINITION-REF>
+                                  <VALUE>0</VALUE>
+                                </INTEGER-VALUE>
+                                <INTEGER-VALUE>
+                                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode/ComTxModeTimeOffsetFactor</DEFINITION-REF>
+                                  <VALUE>0</VALUE>
+                                </INTEGER-VALUE>
+                                <INTEGER-VALUE>
+                                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode/ComTxModeTimePeriodFactor</DEFINITION-REF>
+                                  <VALUE>0</VALUE>
+                                </INTEGER-VALUE>
+                              </PARAMETER-VALUES>
+                            </CONTAINER>
+                          </SUB-CONTAINERS>
+                        </CONTAINER>
+                      </SUB-CONTAINERS>
+                    </CONTAINER>
+                  </SUB-CONTAINERS>
+                </CONTAINER>
+                <CONTAINER UUID="9d3b0c7e-d01c-47ae-9355-c2c7648c2103">
+                  <SHORT-NAME>Signal_Tx_1</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComSignal</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitPosition</DEFINITION-REF>
+                      <VALUE>7</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitSize</DEFINITION-REF>
+                      <VALUE>8</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComFirstTimeoutFactor</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComHandleId</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <FUNCTION-NAME-VALUE>
+                      <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComNotification</DEFINITION-REF>
+                      <VALUE />
+                    </FUNCTION-NAME-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalEndianess</DEFINITION-REF>
+                      <VALUE>BIG_ENDIAN</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalInitValue</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalLength</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalType</DEFINITION-REF>
+                      <VALUE>UINT8</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutFactor</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <FUNCTION-NAME-VALUE>
+                      <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutNotification</DEFINITION-REF>
+                      <VALUE />
+                    </FUNCTION-NAME-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
+                      <VALUE>PENDING</VALUE>
+                    </ENUMERATION-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="91fee12b-ccfd-4f43-88cc-46a22ed735ab">
+                  <SHORT-NAME>Signal_Tx_2</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComSignal</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitPosition</DEFINITION-REF>
+                      <VALUE>15</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitSize</DEFINITION-REF>
+                      <VALUE>32</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComFirstTimeoutFactor</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComHandleId</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <FUNCTION-NAME-VALUE>
+                      <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComNotification</DEFINITION-REF>
+                      <VALUE />
+                    </FUNCTION-NAME-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalEndianess</DEFINITION-REF>
+                      <VALUE>BIG_ENDIAN</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalInitValue</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalLength</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalType</DEFINITION-REF>
+                      <VALUE>UINT32</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutFactor</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <FUNCTION-NAME-VALUE>
+                      <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutNotification</DEFINITION-REF>
+                      <VALUE />
+                    </FUNCTION-NAME-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
+                      <VALUE>PENDING</VALUE>
+                    </ENUMERATION-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="08ac3d14-73f4-44f7-8def-daf4c927e8d3">
+                  <SHORT-NAME>Signal_Tx_3</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComSignal</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitPosition</DEFINITION-REF>
+                      <VALUE>47</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitSize</DEFINITION-REF>
+                      <VALUE>24</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComFirstTimeoutFactor</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComHandleId</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <FUNCTION-NAME-VALUE>
+                      <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComNotification</DEFINITION-REF>
+                      <VALUE />
+                    </FUNCTION-NAME-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalEndianess</DEFINITION-REF>
+                      <VALUE>BIG_ENDIAN</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalInitValue</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalLength</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalType</DEFINITION-REF>
+                      <VALUE>UINT32</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutFactor</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <FUNCTION-NAME-VALUE>
+                      <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutNotification</DEFINITION-REF>
+                      <VALUE />
+                    </FUNCTION-NAME-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
+                      <VALUE>PENDING</VALUE>
+                    </ENUMERATION-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="cfcd5b60-9606-4dfd-8f3e-7da1b10ed034">
+                  <SHORT-NAME>Signal_Rx_1</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComSignal</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitPosition</DEFINITION-REF>
+                      <VALUE>7</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitSize</DEFINITION-REF>
+                      <VALUE>16</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComFirstTimeoutFactor</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComHandleId</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <FUNCTION-NAME-VALUE>
+                      <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComNotification</DEFINITION-REF>
+                      <VALUE />
+                    </FUNCTION-NAME-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalEndianess</DEFINITION-REF>
+                      <VALUE>BIG_ENDIAN</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalInitValue</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalLength</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalType</DEFINITION-REF>
+                      <VALUE>UINT16</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutFactor</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <FUNCTION-NAME-VALUE>
+                      <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutNotification</DEFINITION-REF>
+                      <VALUE />
+                    </FUNCTION-NAME-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
+                      <VALUE>PENDING</VALUE>
+                    </ENUMERATION-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="701b18a5-1cf4-4062-89ba-8af9d8d5ae37">
+                  <SHORT-NAME>Signal_Rx_2</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComSignal</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitPosition</DEFINITION-REF>
+                      <VALUE>23</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitSize</DEFINITION-REF>
+                      <VALUE>16</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComFirstTimeoutFactor</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComHandleId</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <FUNCTION-NAME-VALUE>
+                      <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComNotification</DEFINITION-REF>
+                      <VALUE />
+                    </FUNCTION-NAME-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalEndianess</DEFINITION-REF>
+                      <VALUE>BIG_ENDIAN</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalInitValue</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalLength</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalType</DEFINITION-REF>
+                      <VALUE>UINT16</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutFactor</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <FUNCTION-NAME-VALUE>
+                      <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutNotification</DEFINITION-REF>
+                      <VALUE />
+                    </FUNCTION-NAME-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
+                      <VALUE>PENDING</VALUE>
+                    </ENUMERATION-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="76500808-3922-42fa-a19c-cbf85770a6c3">
+                  <SHORT-NAME>ComPduGroup_Rx_0</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPduGroup</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPduGroup/ComIPduGroupHandleId</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="0629693a-cadc-4a86-879e-1870b72899b4">
+                  <SHORT-NAME>FR_RX_02</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPdu</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <FUNCTION-NAME-VALUE>
+                      <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduCallout</DEFINITION-REF>
+                      <VALUE />
+                    </FUNCTION-NAME-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduRxHandleId</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduSignalProcessing</DEFINITION-REF>
+                      <VALUE>IMMEDIATE</VALUE>
+                    </ENUMERATION-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduDirection</DEFINITION-REF>
+                      <VALUE>RECEIVE</VALUE>
+                    </ENUMERATION-VALUE>
+                  </PARAMETER-VALUES>
+                  <REFERENCE-VALUES>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduGroupRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/Linexample/Com/ComConfig/ComPduGroup_Rx_0</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/PduIdRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/Linexample/EcuC/PduCollection/TCM_RX</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduSignalRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/Linexample/Com/ComConfig/word_1</VALUE-REF>
+                    </REFERENCE-VALUE>
+                    <REFERENCE-VALUE>
+                      <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComIPduSignalRef</DEFINITION-REF>
+                      <VALUE-REF DEST="CONTAINER">/Linexample/Com/ComConfig/word_2</VALUE-REF>
+                    </REFERENCE-VALUE>
+                  </REFERENCE-VALUES>
+                  <SUB-CONTAINERS>
+                    <CONTAINER UUID="957f029e-5411-474b-ae1e-d8de4ef8f10a">
+                      <SHORT-NAME>ComTxIPdu</SHORT-NAME>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxIPduMinimumDelayTimeFactor</DEFINITION-REF>
+                          <VALUE>0</VALUE>
+                        </INTEGER-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxIPduUnusedAreasDefault</DEFINITION-REF>
+                          <VALUE>0</VALUE>
+                        </INTEGER-VALUE>
+                      </PARAMETER-VALUES>
+                      <SUB-CONTAINERS>
+                        <CONTAINER UUID="793c6229-ff4b-4228-a767-52204407fa22">
+                          <SHORT-NAME>ComTxModeTrue</SHORT-NAME>
+                          <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue</DEFINITION-REF>
+                          <SUB-CONTAINERS>
+                            <CONTAINER UUID="c0254441-101b-48ab-bc78-19eaa26e80e0">
+                              <SHORT-NAME>ComTxMode</SHORT-NAME>
+                              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode</DEFINITION-REF>
+                              <PARAMETER-VALUES>
+                                <ENUMERATION-VALUE>
+                                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode/ComTxModeMode</DEFINITION-REF>
+                                  <VALUE>DIRECT</VALUE>
+                                </ENUMERATION-VALUE>
+                                <INTEGER-VALUE>
+                                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode/ComTxModeNumberOfRepetitions</DEFINITION-REF>
+                                  <VALUE>0</VALUE>
+                                </INTEGER-VALUE>
+                                <INTEGER-VALUE>
+                                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode/ComTxModeRepetitionPeriodFactor</DEFINITION-REF>
+                                  <VALUE>0</VALUE>
+                                </INTEGER-VALUE>
+                                <INTEGER-VALUE>
+                                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode/ComTxModeTimeOffsetFactor</DEFINITION-REF>
+                                  <VALUE>0</VALUE>
+                                </INTEGER-VALUE>
+                                <INTEGER-VALUE>
+                                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComIPdu/ComTxIPdu/ComTxModeTrue/ComTxMode/ComTxModeTimePeriodFactor</DEFINITION-REF>
+                                  <VALUE>0</VALUE>
+                                </INTEGER-VALUE>
+                              </PARAMETER-VALUES>
+                            </CONTAINER>
+                          </SUB-CONTAINERS>
+                        </CONTAINER>
+                      </SUB-CONTAINERS>
+                    </CONTAINER>
+                  </SUB-CONTAINERS>
+                </CONTAINER>
+                <CONTAINER UUID="33a0d702-9b0f-4ac2-8878-dea0e122df9f">
+                  <SHORT-NAME>word_1</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComSignal</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitPosition</DEFINITION-REF>
+                      <VALUE>7</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitSize</DEFINITION-REF>
+                      <VALUE>32</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComFirstTimeoutFactor</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComHandleId</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <FUNCTION-NAME-VALUE>
+                      <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComNotification</DEFINITION-REF>
+                      <VALUE />
+                    </FUNCTION-NAME-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalEndianess</DEFINITION-REF>
+                      <VALUE>BIG_ENDIAN</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalInitValue</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalLength</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalType</DEFINITION-REF>
+                      <VALUE>UINT32</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutFactor</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <FUNCTION-NAME-VALUE>
+                      <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutNotification</DEFINITION-REF>
+                      <VALUE />
+                    </FUNCTION-NAME-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
+                      <VALUE>PENDING</VALUE>
+                    </ENUMERATION-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+                <CONTAINER UUID="064e8c31-ac4b-450a-b36d-af04010db835">
+                  <SHORT-NAME>word_2</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComConfig/ComSignal</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitPosition</DEFINITION-REF>
+                      <VALUE>39</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComRxDataTimeoutAction</DEFINITION-REF>
+                      <VALUE>NONE</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComBitSize</DEFINITION-REF>
+                      <VALUE>32</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComFirstTimeoutFactor</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComHandleId</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <FUNCTION-NAME-VALUE>
+                      <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComNotification</DEFINITION-REF>
+                      <VALUE />
+                    </FUNCTION-NAME-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalEndianess</DEFINITION-REF>
+                      <VALUE>BIG_ENDIAN</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalInitValue</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalLength</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComSignalType</DEFINITION-REF>
+                      <VALUE>UINT32</VALUE>
+                    </ENUMERATION-VALUE>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutFactor</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                    <FUNCTION-NAME-VALUE>
+                      <DEFINITION-REF DEST="FUNCTION-NAME-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTimeoutNotification</DEFINITION-REF>
+                      <VALUE />
+                    </FUNCTION-NAME-VALUE>
+                    <ENUMERATION-VALUE>
+                      <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Com/ComConfig/ComSignal/ComTransferProperty</DEFINITION-REF>
+                      <VALUE>PENDING</VALUE>
+                    </ENUMERATION-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+            <CONTAINER UUID="91cc9774-71f5-44e8-825d-1a43f4055157">
+              <SHORT-NAME>ComGeneral</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Com/ComGeneral</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <FLOAT-VALUE>
+                  <DEFINITION-REF DEST="FLOAT-PARAM-DEF">/ArcCore/Com/ComGeneral/ComConfigurationTimeBase</DEFINITION-REF>
+                  <VALUE>0.0</VALUE>
+                </FLOAT-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Com/ComGeneral/ComConfigurationUseDet</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Com/ComGeneral/ArcComBitPositionVersionAutosar4</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+          </CONTAINERS>
+        </MODULE-CONFIGURATION>
+        <MODULE-CONFIGURATION UUID="fd89363c-06d9-4b67-ab20-752d7393baac">
+          <SHORT-NAME>Port</SHORT-NAME>
+          <ADMIN-DATA>
+            <SDGS>
+              <SDG />
+              <SDG GID="Arccore::ModuleOptions">
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">2.0.2</SD>
+              </SDG>
+            </SDGS>
+          </ADMIN-DATA>
+          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/Port</DEFINITION-REF>
+          <CONTAINERS>
+            <CONTAINER UUID="2ab72934-6f3d-4e12-9eed-5774e6f0c796">
+              <SHORT-NAME>PortConfigSet</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet</DEFINITION-REF>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="845a61ae-005e-4c6a-bb0b-5d1baf745d5f">
+                  <SHORT-NAME>LEDS</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer</DEFINITION-REF>
+                  <SUB-CONTAINERS>
+                    <CONTAINER UUID="7af8b1f6-1080-4c41-9d18-a58b4f648bc0">
+                      <SHORT-NAME>GPIO[68]</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_OUT</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>68</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_DIO</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                    <CONTAINER UUID="8027a0f6-f2a2-45f8-aaf5-e2a10200622e">
+                      <SHORT-NAME>GPIO[69]</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_OUT</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>69</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_DIO</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                    <CONTAINER UUID="bb89cf7b-94a0-4bdf-b1ca-f837bff2e9d4">
+                      <SHORT-NAME>GPIO[70]</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_OUT</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>70</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_DIO</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                    <CONTAINER UUID="2a494cc3-4240-420c-833b-3f353c6d8f6c">
+                      <SHORT-NAME>GPIO[71]</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_OUT</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>71</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_DIO</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                  </SUB-CONTAINERS>
+                </CONTAINER>
+                <CONTAINER UUID="e383a5fc-16e9-46c9-9c74-7aebc9749ab2">
+                  <SHORT-NAME>LIN</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer</DEFINITION-REF>
+                  <SUB-CONTAINERS>
+                    <CONTAINER UUID="30fc67a5-e670-4d25-93cf-4be39e8a6c33">
+                      <SHORT-NAME>LIN0TX</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_OUT</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>18</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_LIN</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                    <CONTAINER UUID="29275cab-7c73-4404-9a15-cf4cfbbcee61">
+                      <SHORT-NAME>LIN0RX</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_UP</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_IN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>19</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_LIN</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                    <CONTAINER UUID="9fddfa0f-db89-4e09-aeae-130ccd119ca4">
+                      <SHORT-NAME>LIN1TX</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_OUT</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>38</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_LIN</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                    <CONTAINER UUID="b0e30254-e500-411d-9430-612730ce8b27">
+                      <SHORT-NAME>LIN1RX</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_IN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>39</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_LIN</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                  </SUB-CONTAINERS>
+                </CONTAINER>
+                <CONTAINER UUID="206a5811-7bcc-43a7-806a-a2bfcbcdb066">
+                  <SHORT-NAME>SPI</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer</DEFINITION-REF>
+                  <SUB-CONTAINERS>
+                    <CONTAINER UUID="7d5b6274-80a8-44eb-9589-245b5122af7e">
+                      <SHORT-NAME>SIN1</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_IN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>112</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_SPI</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                    <CONTAINER UUID="8ffe6b56-4f59-4118-bb26-0275125bab04">
+                      <SHORT-NAME>SOUT1</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_OUT</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>113</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_SPI</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                    <CONTAINER UUID="a636c22b-b156-4648-82a9-87bce5c5359b">
+                      <SHORT-NAME>SCK_1</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_OUT</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>114</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_OTHER0</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                    <CONTAINER UUID="36877725-cfff-4425-b797-9f7143b90e0a">
+                      <SHORT-NAME>CS0_1</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_OUT</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>115</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_SPI</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                    <CONTAINER UUID="47292aba-7f00-431d-9d11-41e3c2e5aa06">
+                      <SHORT-NAME>SIN_0</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_IN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>12</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_SPI</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                    <CONTAINER UUID="984ce973-25cb-4dfd-87e9-647a49a83f8b">
+                      <SHORT-NAME>SOUT_0</SHORT-NAME>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_OUT</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>13</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_SPI</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                    <CONTAINER UUID="79156862-604d-40f2-bc77-1995a33e19e9">
+                      <SHORT-NAME>SCK_0</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_OUT</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>14</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_OTHER</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                    <CONTAINER UUID="b5d7541b-c759-41d6-835c-9b0128b41018">
+                      <SHORT-NAME>CS0_0</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_OUT</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>15</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_SPI</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                    <CONTAINER UUID="56000f7e-95e6-446a-bea7-2c6cf22c7778">
+                      <SHORT-NAME>CS1_0</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_OUT</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>28</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_SPI</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                  </SUB-CONTAINERS>
+                </CONTAINER>
+                <CONTAINER UUID="b9fde4fc-2a38-4c75-b741-fbdd7e1b3bc6">
+                  <SHORT-NAME>CAN</SHORT-NAME>
+                  <ADMIN-DATA>
+                    <SDGS>
+                      <SDG GID="Arccore::IdentifiableOptions" />
+                    </SDGS>
+                  </ADMIN-DATA>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer</DEFINITION-REF>
+                  <SUB-CONTAINERS>
+                    <CONTAINER UUID="176dfc42-2ac5-4ad9-826d-b49104d07d9b">
+                      <SHORT-NAME>CAN0TX</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_OUT</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>16</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_CAN</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                    <CONTAINER UUID="c504a9cb-61dd-4997-8ec4-cf4500633561">
+                      <SHORT-NAME>CAN0RX</SHORT-NAME>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_IN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>17</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_CAN</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                    <CONTAINER UUID="7fd2e982-804c-49f2-9a17-ac492b63f4a7">
+                      <SHORT-NAME>CAN1TX</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_OUT</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>42</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_CAN</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                    <CONTAINER UUID="cf7cdadd-8a67-46ab-ae71-e4f9af4ca6bb">
+                      <SHORT-NAME>CAN1RX</SHORT-NAME>
+                      <ADMIN-DATA>
+                        <SDGS>
+                          <SDG GID="Arccore::IdentifiableOptions" />
+                        </SDGS>
+                      </ADMIN-DATA>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinPullMode</DEFINITION-REF>
+                          <VALUE>PULL_NONE</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirection</DEFINITION-REF>
+                          <VALUE>PORT_PIN_IN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinDirectionChangeable</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinHysteresisEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <BOOLEAN-VALUE>
+                          <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinOpenDrainEnabled</DEFINITION-REF>
+                          <VALUE>false</VALUE>
+                        </BOOLEAN-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinId</DEFINITION-REF>
+                          <VALUE>43</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinSlewRate</DEFINITION-REF>
+                          <VALUE>SLEW_RATE_MIN</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinLevelValue</DEFINITION-REF>
+                          <VALUE>PORT_PIN_LEVEL_LOW</VALUE>
+                        </ENUMERATION-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/Port/PortConfigSet/PortContainer/PortPin/PortPinMode</DEFINITION-REF>
+                          <VALUE>PORT_PIN_MODE_CAN</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                    </CONTAINER>
+                  </SUB-CONTAINERS>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+            <CONTAINER UUID="3fdcc1a2-dc6d-42a7-b155-b359fcfc4621">
+              <SHORT-NAME>PortGeneral</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/Port/PortGeneral</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortGeneral/PortDevErrorDetect</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortGeneral/PortSetPinDirectionApi</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortGeneral/PortSetPinModeApi</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/Port/PortGeneral/PortVersionInfoApi</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+          </CONTAINERS>
+        </MODULE-CONFIGURATION>
+        <MODULE-CONFIGURATION UUID="dabd7fe6-752f-4ef0-ba95-5898a14ab0f5">
+          <SHORT-NAME>PduR</SHORT-NAME>
+          <ADMIN-DATA>
+            <SDGS>
+              <SDG />
+              <SDG GID="Arccore::ModuleOptions">
+                <SD GID="GENERATE_AND_VALIDATE">true</SD>
+                <SD GID="ARCCORE_EDITOR_VERSION">3.1.10</SD>
+              </SDG>
+            </SDGS>
+          </ADMIN-DATA>
+          <DEFINITION-REF DEST="MODULE-DEF">/ArcCore/PduR</DEFINITION-REF>
+          <CONTAINERS>
+            <CONTAINER UUID="3cfce2de-e845-4640-b12d-3f81476d9626">
+              <SHORT-NAME>PduRGeneral</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/PduR/PduRGeneral</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRCanIfSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRCanTpSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRComSupport</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRDcmSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/ArcPduRJ1939TpSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRDevErrorDetect</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRFifoTxBufferSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRFrIfSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRFrTpSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRGatewayOperation</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRIPduMSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRLinIfSupport</DEFINITION-REF>
+                  <VALUE>true</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRLinTpSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMemorySize</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMinimumRoutingLoModule</DEFINITION-REF>
+                  <VALUE />
+                </ENUMERATION-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMinimumRoutingLoRxPduId</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMinimumRoutingLoTxPduId</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <ENUMERATION-VALUE>
+                  <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMinimumRoutingUpModule</DEFINITION-REF>
+                  <VALUE />
+                </ENUMERATION-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMinimumRoutingUpRxPduId</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMinimumRoutingUpTxPduId</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMulticastFromIfSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMulticastFromTpSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMulticastToIfSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRMulticastToTpSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRSbTxBufferSupport</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRVersionInfoApi</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+                <BOOLEAN-VALUE>
+                  <DEFINITION-REF DEST="BOOLEAN-PARAM-DEF">/ArcCore/PduR/PduRGeneral/PduRZeroCostOperation</DEFINITION-REF>
+                  <VALUE>false</VALUE>
+                </BOOLEAN-VALUE>
+              </PARAMETER-VALUES>
+            </CONTAINER>
+            <CONTAINER UUID="b437a595-777b-45f1-a59b-5ae4922f7312">
+              <SHORT-NAME>PduRGlobalConfig</SHORT-NAME>
+              <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/PduR/PduRGlobalConfig</DEFINITION-REF>
+              <PARAMETER-VALUES>
+                <INTEGER-VALUE>
+                  <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRConfigurationId</DEFINITION-REF>
+                  <VALUE>0</VALUE>
+                </INTEGER-VALUE>
+              </PARAMETER-VALUES>
+              <SUB-CONTAINERS>
+                <CONTAINER UUID="f1bbb5c5-8b91-48a3-82e7-7be8e1b2e158">
+                  <SHORT-NAME>PduRRoutingTable</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable</DEFINITION-REF>
+                  <SUB-CONTAINERS>
+                    <CONTAINER UUID="79c74ff0-441b-4537-ab9f-6852b3c92473">
+                      <SHORT-NAME>ENG_TX</SHORT-NAME>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/SduLength</DEFINITION-REF>
+                          <VALUE>64</VALUE>
+                        </INTEGER-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/TpChunkSize</DEFINITION-REF>
+                          <VALUE>0</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/ArcOverriddenSourceModule</DEFINITION-REF>
+                          <VALUE>Com</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                      <SUB-CONTAINERS>
+                        <CONTAINER UUID="4978a0f8-5959-4a9f-a3da-409687a1c0de">
+                          <SHORT-NAME>PduRDestination</SHORT-NAME>
+                          <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRDestPdu</DEFINITION-REF>
+                          <PARAMETER-VALUES>
+                            <ENUMERATION-VALUE>
+                              <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRDestPdu/ArcOverriddenDestinationModule</DEFINITION-REF>
+                              <VALUE>LinIf</VALUE>
+                            </ENUMERATION-VALUE>
+                            <ENUMERATION-VALUE>
+                              <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRDestPdu/DataProvision</DEFINITION-REF>
+                              <VALUE>DIRECT</VALUE>
+                            </ENUMERATION-VALUE>
+                          </PARAMETER-VALUES>
+                          <REFERENCE-VALUES>
+                            <REFERENCE-VALUE>
+                              <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRDestPdu/DestPduRef</DEFINITION-REF>
+                              <VALUE-REF DEST="CONTAINER">/Linexample/EcuC/PduCollection/ENG_TX</VALUE-REF>
+                            </REFERENCE-VALUE>
+                          </REFERENCE-VALUES>
+                        </CONTAINER>
+                        <CONTAINER UUID="a759bc34-4b11-4b6d-a366-be7c47f72fea">
+                          <SHORT-NAME>PduRSrcPdu</SHORT-NAME>
+                          <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRSrcPdu</DEFINITION-REF>
+                          <PARAMETER-VALUES>
+                            <INTEGER-VALUE>
+                              <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRSrcPdu/HandleId</DEFINITION-REF>
+                              <VALUE>0</VALUE>
+                            </INTEGER-VALUE>
+                          </PARAMETER-VALUES>
+                          <REFERENCE-VALUES>
+                            <REFERENCE-VALUE>
+                              <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRSrcPdu/SrcPduRef</DEFINITION-REF>
+                              <VALUE-REF DEST="CONTAINER">/Linexample/EcuC/PduCollection/ENG_TX</VALUE-REF>
+                            </REFERENCE-VALUE>
+                          </REFERENCE-VALUES>
+                        </CONTAINER>
+                      </SUB-CONTAINERS>
+                    </CONTAINER>
+                    <CONTAINER UUID="2c03801a-92fe-4d76-a561-d35e73f8ab47">
+                      <SHORT-NAME>LAMPS_RX</SHORT-NAME>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/SduLength</DEFINITION-REF>
+                          <VALUE>32</VALUE>
+                        </INTEGER-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/TpChunkSize</DEFINITION-REF>
+                          <VALUE>0</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/ArcOverriddenSourceModule</DEFINITION-REF>
+                          <VALUE>LinIf</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                      <SUB-CONTAINERS>
+                        <CONTAINER UUID="86ffe8cb-1f91-46c9-b596-0d341b0a6da3">
+                          <SHORT-NAME>PduRSrcPdu</SHORT-NAME>
+                          <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRSrcPdu</DEFINITION-REF>
+                          <PARAMETER-VALUES>
+                            <INTEGER-VALUE>
+                              <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRSrcPdu/HandleId</DEFINITION-REF>
+                              <VALUE>0</VALUE>
+                            </INTEGER-VALUE>
+                          </PARAMETER-VALUES>
+                          <REFERENCE-VALUES>
+                            <REFERENCE-VALUE>
+                              <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRSrcPdu/SrcPduRef</DEFINITION-REF>
+                              <VALUE-REF DEST="CONTAINER">/Linexample/EcuC/PduCollection/LAMPS_RX</VALUE-REF>
+                            </REFERENCE-VALUE>
+                          </REFERENCE-VALUES>
+                        </CONTAINER>
+                        <CONTAINER UUID="0c2d1648-a452-4701-90b2-cfa45cb8cba3">
+                          <SHORT-NAME>PduRDestination1</SHORT-NAME>
+                          <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRDestPdu</DEFINITION-REF>
+                          <PARAMETER-VALUES>
+                            <ENUMERATION-VALUE>
+                              <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRDestPdu/ArcOverriddenDestinationModule</DEFINITION-REF>
+                              <VALUE>Com</VALUE>
+                            </ENUMERATION-VALUE>
+                            <ENUMERATION-VALUE>
+                              <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRDestPdu/DataProvision</DEFINITION-REF>
+                              <VALUE>DIRECT</VALUE>
+                            </ENUMERATION-VALUE>
+                          </PARAMETER-VALUES>
+                          <REFERENCE-VALUES>
+                            <REFERENCE-VALUE>
+                              <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRDestPdu/DestPduRef</DEFINITION-REF>
+                              <VALUE-REF DEST="CONTAINER">/Linexample/EcuC/PduCollection/LAMPS_RX</VALUE-REF>
+                            </REFERENCE-VALUE>
+                          </REFERENCE-VALUES>
+                        </CONTAINER>
+                      </SUB-CONTAINERS>
+                    </CONTAINER>
+                    <CONTAINER UUID="8ed34c1f-834c-4c6d-9c43-8f2a46c95781">
+                      <SHORT-NAME>TCM_RX</SHORT-NAME>
+                      <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath</DEFINITION-REF>
+                      <PARAMETER-VALUES>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/SduLength</DEFINITION-REF>
+                          <VALUE>64</VALUE>
+                        </INTEGER-VALUE>
+                        <INTEGER-VALUE>
+                          <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/TpChunkSize</DEFINITION-REF>
+                          <VALUE>0</VALUE>
+                        </INTEGER-VALUE>
+                        <ENUMERATION-VALUE>
+                          <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/ArcOverriddenSourceModule</DEFINITION-REF>
+                          <VALUE>LinIf</VALUE>
+                        </ENUMERATION-VALUE>
+                      </PARAMETER-VALUES>
+                      <SUB-CONTAINERS>
+                        <CONTAINER UUID="9edd591b-f2cc-4ea6-8d8a-312b18a320eb">
+                          <SHORT-NAME>PduRDestination</SHORT-NAME>
+                          <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRDestPdu</DEFINITION-REF>
+                          <PARAMETER-VALUES>
+                            <ENUMERATION-VALUE>
+                              <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRDestPdu/DataProvision</DEFINITION-REF>
+                              <VALUE>DIRECT</VALUE>
+                            </ENUMERATION-VALUE>
+                            <ENUMERATION-VALUE>
+                              <DEFINITION-REF DEST="ENUMERATION-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRDestPdu/ArcOverriddenDestinationModule</DEFINITION-REF>
+                              <VALUE>Com</VALUE>
+                            </ENUMERATION-VALUE>
+                          </PARAMETER-VALUES>
+                          <REFERENCE-VALUES>
+                            <REFERENCE-VALUE>
+                              <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRDestPdu/DestPduRef</DEFINITION-REF>
+                              <VALUE-REF DEST="CONTAINER">/Linexample/EcuC/PduCollection/TCM_RX</VALUE-REF>
+                            </REFERENCE-VALUE>
+                          </REFERENCE-VALUES>
+                        </CONTAINER>
+                        <CONTAINER UUID="68cd48c2-ea1b-4e50-a5fe-07672c3ae172">
+                          <SHORT-NAME>PduRSrcPdu</SHORT-NAME>
+                          <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRSrcPdu</DEFINITION-REF>
+                          <PARAMETER-VALUES>
+                            <INTEGER-VALUE>
+                              <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRSrcPdu/HandleId</DEFINITION-REF>
+                              <VALUE>0</VALUE>
+                            </INTEGER-VALUE>
+                          </PARAMETER-VALUES>
+                          <REFERENCE-VALUES>
+                            <REFERENCE-VALUE>
+                              <DEFINITION-REF DEST="REFERENCE-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRRoutingTable/PduRRoutingPath/PduRSrcPdu/SrcPduRef</DEFINITION-REF>
+                              <VALUE-REF DEST="CONTAINER">/Linexample/EcuC/PduCollection/TCM_RX</VALUE-REF>
+                            </REFERENCE-VALUE>
+                          </REFERENCE-VALUES>
+                        </CONTAINER>
+                      </SUB-CONTAINERS>
+                    </CONTAINER>
+                  </SUB-CONTAINERS>
+                </CONTAINER>
+                <CONTAINER UUID="7cea8f80-a90f-4513-8703-50bca66da20b">
+                  <SHORT-NAME>PduRTpBufferTable</SHORT-NAME>
+                  <DEFINITION-REF DEST="PARAM-CONF-CONTAINER-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRTpBufferTable</DEFINITION-REF>
+                  <PARAMETER-VALUES>
+                    <INTEGER-VALUE>
+                      <DEFINITION-REF DEST="INTEGER-PARAM-DEF">/ArcCore/PduR/PduRGlobalConfig/PduRTpBufferTable/PduRMaxTpBufferNumber</DEFINITION-REF>
+                      <VALUE>0</VALUE>
+                    </INTEGER-VALUE>
+                  </PARAMETER-VALUES>
+                </CONTAINER>
+              </SUB-CONTAINERS>
+            </CONTAINER>
+          </CONTAINERS>
+        </MODULE-CONFIGURATION>
+      </ELEMENTS>
+    </AR-PACKAGE>
+  </TOP-LEVEL-PACKAGES>
+</AUTOSAR>

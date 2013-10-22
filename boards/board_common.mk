@@ -226,6 +226,8 @@ obj-$(USE_LIN)-$(CFG_MPC563XM) += Lin.o
 obj-$(USE_LINIF) += LinIf_Lcfg.o
 obj-$(USE_LINIF) += LinIf_PBcfg.o
 obj-$(USE_LINIF) += LinIf.o
+vpath-$(USE_LINIF) += $(ROOTDIR)/communication/LinIf
+inc-$(USE_LINIF) += $(ROOTDIR)/communication/LinIf
 
 # LinSm
 obj-$(USE_LINSM) += LinSM_Lcfg.o
