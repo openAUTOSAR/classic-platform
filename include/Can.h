@@ -248,6 +248,9 @@ typedef union {
      // Specifies phase segment 2 in time quantas.
      uint8 CanControllerSeg2;
 
+     // Specifies Reset Jump Width register value.
+     uint8 CanControllerRJW;
+
      //  Specifies the time quanta for the controller. The calculation of the resulting
      //  prescaler value depending on module clocking and time quanta shall be
      //  done offline Hardware specific.

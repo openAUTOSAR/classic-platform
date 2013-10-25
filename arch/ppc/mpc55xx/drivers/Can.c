@@ -1158,6 +1158,7 @@ void Can_InitController(uint8 controller,
     canHw->CR.B.PROPSEG = config->CanControllerPropSeg;
     canHw->CR.B.PSEG1   = config->CanControllerSeg1;
     canHw->CR.B.PSEG2   = config->CanControllerSeg2;
+    canHw->CR.B.RJW     = config->CanControllerRJW;
     canHw->CR.B.SMP     = 1; // 3 samples better than 1 ??
     canHw->CR.B.LPB     = (config->Can_Arc_Flags & CAN_CTRL_LOOPBACK) ? 1 : 0;
     canHw->CR.B.BOFFREC = 1; // Disable bus off recovery
