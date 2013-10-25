@@ -22,6 +22,7 @@
 
 #include "LinIf_Cfg.h"
 #include "Lin_Cfg.h"
+#include "PduR.h"
 
 extern const Lin_ChannelConfigType LinChannelConfigData[];
 
@@ -33,7 +34,7 @@ const LinIf_FrameType LinIfFrameCfg[] = {
 			.LinIfFrameType = UNCONDITIONAL,
 			.LinIfLength = 8,
 			.LinIfPid = 0xb,
-			.LinIfTxTargetPduId = LINIF_PDU_ID_ENG_TX,
+			.LinIfTxTargetPduId = PDUR_PDU_ID_ENG_TX,
 			.LinIfFixedFrameSdu = 0,
 			.LinIfPduDirection = LinIfTxPdu,
 		},
@@ -43,7 +44,7 @@ const LinIf_FrameType LinIfFrameCfg[] = {
 			.LinIfFrameType = UNCONDITIONAL,
 			.LinIfLength = 4,
 			.LinIfPid = 0xe,
-			.LinIfTxTargetPduId = LINIF_PDU_ID_LAMPS_RX,
+			.LinIfTxTargetPduId = PDUR_PDU_ID_LAMPS_RX,
 			.LinIfFixedFrameSdu = 0,
 			.LinIfPduDirection = LinIfRxPdu,
 		},
@@ -53,7 +54,7 @@ const LinIf_FrameType LinIfFrameCfg[] = {
 			.LinIfFrameType = UNCONDITIONAL,
 			.LinIfLength = 8,
 			.LinIfPid = 0x12,
-			.LinIfTxTargetPduId = LINIF_PDU_ID_TCM_RX,
+			.LinIfTxTargetPduId = PDUR_PDU_ID_TCM_RX,
 			.LinIfFixedFrameSdu = 0,
 			.LinIfPduDirection = LinIfRxPdu,
 		},

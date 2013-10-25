@@ -60,6 +60,7 @@ void init( void ) {
 
 	valuetx1 = valuetx2 = valuetx3 = 0;
 	Lin_Init(NULL);
+	Lin_InitChannel(LIN_CTRL_A, &LinChannelConfigData[0]);
 	LinIf_Init(NULL);
 	PduR_Init(&PduR_Config);
 	LinSM_Init(NULL);

@@ -289,7 +289,8 @@ void LinIf_MainFunction()
 				}
 
 				// Set new delay
-				currentDelayInTicks[chIndex] = ptrEntry->LinIfDelay / LinIfGlobalConfig.LinIfTimeBase - 1;
+				uint16 temp = (ptrEntry->LinIfDelay / LinIfGlobalConfig.LinIfTimeBase) ;
+				currentDelayInTicks[chIndex] = (temp>0) ? (temp - 1):0; //LinIfDelay can be zero for the first frame on the table
 			}
 		}
 	}
