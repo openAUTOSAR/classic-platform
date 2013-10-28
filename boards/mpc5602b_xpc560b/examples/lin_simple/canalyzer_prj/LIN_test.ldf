@@ -1,0 +1,98 @@
+/*************************************************************************************/
+
+//                                                                                     
+
+// Description: LIN Description file created using Vector's DaVinci Network Designer   
+
+// Created:     13 Sep 2007 11:23:31
+
+// Author:      visbr
+
+// Version:     0.1                                                                    
+
+//                                                                                     
+
+/*************************************************************************************/
+
+
+LIN_description_file;
+LIN_protocol_version = "2.0";
+LIN_language_version = "2.0";
+LIN_speed = 19.2 kbps;
+
+Nodes {
+  Master: LINMaster, 5 ms, 0 ms ;
+  Slaves: LinSlave ;
+}
+
+Signals {
+  signal_rx_1: 16, 0, LinSlave, LINMaster  ;
+  signal_rx_2: 16, 0, LinSlave, LINMaster ;
+  word_1: 32, 0,LinSlave, LINMaster ;
+  word_2: 32, 0,LinSlave, LINMaster ;
+  signal_tx_1: 8, 0, LINMaster, LinSlave  ;
+  signal_tx_2: 32, 0, LINMaster, LinSlave ;
+  signal_tx_3: 24, 0, LINMaster, LinSlave ;
+
+}
+
+Diagnostic_signals {
+  MasterReqB0: 8, 0 ;
+  MasterReqB1: 8, 0 ;
+  MasterReqB2: 8, 0 ;
+  MasterReqB3: 8, 0 ;
+  MasterReqB4: 8, 0 ;
+  MasterReqB5: 8, 0 ;
+  MasterReqB6: 8, 0 ;
+  MasterReqB7: 8, 0 ;
+  SlaveRespB0: 8, 0 ;
+  SlaveRespB1: 8, 0 ;
+  SlaveRespB2: 8, 0 ;
+  SlaveRespB3: 8, 0 ;
+  SlaveRespB4: 8, 0 ;
+  SlaveRespB5: 8, 0 ;
+  SlaveRespB6: 8, 0 ;
+  SlaveRespB7: 8, 0 ;
+}
+
+
+Frames {
+//first numeral Id then length
+  LinTx : 11, LINMaster, 8 {
+  signal_tx_1, 0;
+  signal_tx_2, 8;
+  signal_tx_3, 40;}
+  LinRxMsg1: 14, LinSlave, 4 {
+  signal_rx_1, 0;
+  signal_rx_2, 16;}
+  LinRxMsg2: 18, LinSlave, 8 {
+  word_1, 0;
+  word_2, 32;}
+}
+
+Node_attributes {
+  LinSlave{
+    LIN_protocol = "2.0" ;
+    configured_NAD = 0x1 ;
+    initial_NAD = 0x1 ;
+    product_id = 0x1000, 0x4000, 1 ;
+   // response_error = Motor1_Error ;
+    ST_min = 0.1 ms ;
+    N_As_timeout = 1000 ms ;
+    N_Cr_timeout = 1000 ms ;
+    configurable_frames {
+      LinRxMsg2 ;
+      LinRxMsg1 ;
+     }
+  }
+  }
+
+Schedule_tables {
+ Main_table {
+    LinTx delay 10 ms ;
+    LinRxMsg1 delay 15 ms ;
+    LinRxMsg2 delay 25 ms ;
+   
+  }
+}
+

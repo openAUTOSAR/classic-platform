@@ -59,9 +59,12 @@
 #define VALIDATE_W_RV(_exp,_api,_err,_rv )
 #endif
 
+#define INVALID_COM_GROUP 0xFFFF
+
 static uint8 ScheduleRequestTimer[LINIF_CONTROLLER_CNT];
 static uint8 GoToSleepTimer[LINIF_CONTROLLER_CNT];
 static uint8 WakeUpTimer[LINIF_CONTROLLER_CNT];
+static uint32 comRxPduIdGrp[LINIF_CONTROLLER_CNT], comTxPduIdGrp[LINIF_CONTROLLER_CNT];
 
 static LinSM_StatusType LinSMStatus = LINSM_UNINIT;
 static LinSM_StatusType LinSMChannelStatus[LINIF_CONTROLLER_CNT];
@@ -77,6 +80,8 @@ void LinSM_Init(const void* ConfigPtr)
 		ScheduleRequestTimer[i] = 0;
 		GoToSleepTimer[i] = 0;
 		WakeUpTimer[i] = 0;
+		comRxPduIdGrp[i]= INVALID_COM_GROUP;
+		comTxPduIdGrp[i]= INVALID_COM_GROUP;
 	}
 
 	LinIf_Init(0);
@@ -153,13 +158,19 @@ Std_ReturnType LinSM_RequestComMode(NetworkHandleType network,ComM_ModeType mode
 }
 
 void LinSM_ScheduleRequest_Confirmation(NetworkHandleType channel){
-	Com_PduGroupIdType IpduGroupId = 0;
 	VALIDATE( (LinSMStatus != LINSM_UNINIT), LINSM_SCHEDULE_REQUEST_CONF_SERVICE_ID, LINSM_E_UNINIT);
 	VALIDATE( (channel < LINIF_CONTROLLER_CNT), LINSM_SCHEDULE_REQUEST_CONF_SERVICE_ID, LINSM_E_NOXEXISTENT_CHANNEL);
 
 	if(ScheduleRequestTimer[channel]!=0){
-		Com_IpduGroupStop(IpduGroupId);
-		Com_IpduGroupStart(IpduGroupId,FALSE);
+		if (INVALID_COM_GROUP != comRxPduIdGrp[channel]) {
+			Com_IpduGroupStop(comRxPduIdGrp[channel]);
+			Com_IpduGroupStop(comTxPduIdGrp[channel]);
+		}
+		comRxPduIdGrp[channel] = LinSMChannelType[channel].LinSMSchedule->LinSMRxPduGroupRef;
+		Com_IpduGroupStart(comRxPduIdGrp[channel],FALSE);
+		comTxPduIdGrp[channel] = LinSMChannelType[channel].LinSMSchedule->LinSMTxPduGroupRef;
+		Com_IpduGroupStart(comTxPduIdGrp[channel],FALSE);
+
 		ScheduleRequestTimer[channel]=0;
 	}
 }
