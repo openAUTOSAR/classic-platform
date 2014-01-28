@@ -1009,6 +1009,11 @@ void CanTp_RxIndication(PduIdType CanTpRxPduId, /** @req CANTP078 */ /** @req CA
 	ISO15765FrameType frameType;
 	PduIdType CanTpTxNSduId, CanTpRxNSduId;
 
+	//Check if PduId is valid
+	if (CanTpRxPduId >= CANTP_RXID_LIST_SIZE)
+	{
+		return;
+	}
 	if( CanTpRunTimeData.internalState != CANTP_ON ) {
 		DET_REPORTERROR(MODULE_ID_CANTP, 0, SERVICE_ID_CANTP_RX_INDICATION, CANTP_E_UNINIT );  /** @req CANTP238 */ /** @req CANTP031 */
 		return;
