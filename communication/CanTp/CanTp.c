@@ -466,10 +466,12 @@ static void sendFlowControlFrame(const CanTp_RxNSduType *rxConfig, CanTp_Channel
 		break;
 	case BUFREQ_BUSY:
 		sduData[indexCount++] = ISO15765_TPCI_FC | ISO15765_FLOW_CONTROL_STATUS_WAIT;
+		indexCount +=2;
 		pduInfo.SduLength = indexCount;
 		break;
 	case BUFREQ_OVFL: /** @req CANTP081 */
 		sduData[indexCount++] = ISO15765_TPCI_FC | ISO15765_FLOW_CONTROL_STATUS_OVFLW;
+		indexCount +=2;
 		pduInfo.SduLength = indexCount;
 		break;
 	default:
@@ -664,7 +666,15 @@ static void handleNextTxFrameSent(
 		}
 	} else {
 		// Send next consecutive frame after stmin!
-		txRuntime->iso15765.stateTimeoutCount = CANTP_CONVERT_MS_TO_MAIN_CYCLES(txRuntime->iso15765.STmin);
+		//ST MIN error handling ISO 15765-2 sec 7.6
+		if (txRuntime->iso15765.STmin < 0x80) {
+			txRuntime->iso15765.stateTimeoutCount = CANTP_CONVERT_MS_TO_MAIN_CYCLES(txRuntime->iso15765.STmin) + 1;
+		} else if (txRuntime->iso15765.STmin > 0xF0 && txRuntime->iso15765.STmin < 0xFA) {
+			txRuntime->iso15765.stateTimeoutCount = CANTP_CONVERT_MS_TO_MAIN_CYCLES((txRuntime->iso15765.STmin - 0xF0)/10) + 1;
+		}
+		else {
+			txRuntime->iso15765.stateTimeoutCount = CANTP_CONVERT_MS_TO_MAIN_CYCLES(0x7F) + 1;
+		}
 		txRuntime->iso15765.state = TX_WAIT_STMIN;
 	}
 }
@@ -1023,7 +1033,8 @@ void CanTp_RxIndication(PduIdType CanTpRxPduId, /** @req CANTP078 */ /** @req CA
 			runtimeParams = &CanTpRunTimeData.runtimeDataList[txConfigParams->CanTpTxChannel];
 		}
 		else {
-			txConfigParams = NULL;
+			//Invalid FC received
+			return;
 		}
 		rxConfigParams = NULL;
 	}
@@ -1034,7 +1045,8 @@ void CanTp_RxIndication(PduIdType CanTpRxPduId, /** @req CANTP078 */ /** @req CA
 			runtimeParams = &CanTpRunTimeData.runtimeDataList[rxConfigParams->CanTpRxChannel];  /** @req CANTP096 *//** @req CANTP121 *//** @req CANTP122 *//** @req CANTP190 */
 		}
 		else {
-			rxConfigParams = NULL;
+			//Invalid Frame received
+			return;
 		}
 		txConfigParams = NULL;
 	}
