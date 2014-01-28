@@ -104,9 +104,6 @@ void PduR_CanTpTxConfirmation(PduIdType CanTpTxPduId, NotifResultType Result) {
 
 #endif
 
-//#define INLINE
-#define INLINE inline
-
 #define TIMER_DECREMENT(timer) \
 		if (timer > 0) { \
 			timer = timer - 1; \
@@ -221,7 +218,7 @@ CanTp_RunTimeDataType CanTpRunTimeData = { .initRun = FALSE,
 
 // - - - - - - - - - - - - - -
 
-static inline ISO15765FrameType getFrameType(
+static ISO15765FrameType getFrameType(
 		const CanTp_AddressingFormantType *formatType,
 		const PduInfoType *CanTpRxPduPtr) {
 	ISO15765FrameType res = INVALID_FRAME;
@@ -268,7 +265,7 @@ static inline ISO15765FrameType getFrameType(
 
 // - - - - - - - - - - - - - -
 
-static inline PduLengthType getPduLength(
+static PduLengthType getPduLength(
 		const CanTp_AddressingFormantType *formatType,
 		const ISO15765FrameType iso15765Frame, const PduInfoType *CanTpRxPduPtr) {
 	PduLengthType res = 0;
@@ -336,7 +333,7 @@ static void initTx15765RuntimeData(const CanTp_TxNSduType *txConfigParams,
 
 // - - - - - - - - - - - - - -
 
-static INLINE BufReq_ReturnType copySegmentToPduRRxBuffer(const CanTp_RxNSduType *rxConfig,
+static BufReq_ReturnType copySegmentToPduRRxBuffer(const CanTp_RxNSduType *rxConfig,
 		CanTp_ChannelPrivateType *rxRuntime, uint8 *segment,
 		PduLengthType segmentSize, PduLengthType *bytesWrittenSuccessfully) {
 
@@ -376,7 +373,7 @@ static INLINE BufReq_ReturnType copySegmentToPduRRxBuffer(const CanTp_RxNSduType
 
 // - - - - - - - - - - - - - -
 
-static INLINE boolean copySegmentToLocalRxBuffer /*writeDataSegmentToLocalBuffer*/(
+static boolean copySegmentToLocalRxBuffer /*writeDataSegmentToLocalBuffer*/(
 		CanTp_ChannelPrivateType *rxRuntime, uint8 *segment,
 		PduLengthType segmentSize) {
 	boolean ret = FALSE;
@@ -393,7 +390,7 @@ static INLINE boolean copySegmentToLocalRxBuffer /*writeDataSegmentToLocalBuffer
 
 // - - - - - - - - - - - - - -
 
-static INLINE Std_ReturnType canReceivePaddingHelper(
+static Std_ReturnType canReceivePaddingHelper(
 		const CanTp_RxNSduType *rxConfig, CanTp_ChannelPrivateType *rxRuntime,
 		PduInfoType *PduInfoPtr) {
 	if (rxConfig->CanTpRxPaddingActivation == CANTP_ON) {
@@ -409,7 +406,7 @@ static INLINE Std_ReturnType canReceivePaddingHelper(
 
 // - - - - - - - - - - - - - -
 
-static INLINE Std_ReturnType canTansmitPaddingHelper(
+static Std_ReturnType canTansmitPaddingHelper(
 		const CanTp_TxNSduType *txConfig, CanTp_ChannelPrivateType *txRuntime,
 		PduInfoType *PduInfoPtr) {
 
@@ -432,7 +429,7 @@ static INLINE Std_ReturnType canTansmitPaddingHelper(
 
 // - - - - - - - - - - - - - -
 
-static INLINE void sendFlowControlFrame(const CanTp_RxNSduType *rxConfig, CanTp_ChannelPrivateType *rxRuntime, BufReq_ReturnType flowStatus) {
+static void sendFlowControlFrame(const CanTp_RxNSduType *rxConfig, CanTp_ChannelPrivateType *rxRuntime, BufReq_ReturnType flowStatus) {
 	uint8 indexCount = 0;
 	Std_ReturnType ret = E_NOT_OK;
 	PduInfoType pduInfo;
@@ -489,7 +486,7 @@ static INLINE void sendFlowControlFrame(const CanTp_RxNSduType *rxConfig, CanTp_
 // - - - - - - - - - - - - - -
 
 
-static INLINE void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
+static void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
 		CanTp_ChannelPrivateType *rxRuntime, const PduInfoType *rxPduData) {
 	uint8 indexCount = 0;
 	uint8 segmentNumber = 0;
@@ -563,7 +560,7 @@ static INLINE void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
 				if (bytesLeftToTransfer > 0) {
 					rxRuntime->iso15765.framesHandledCount++;
 					COUNT_DECREMENT(rxRuntime->iso15765.nextFlowControlCount);
-					if (rxRuntime->iso15765.nextFlowControlCount == 0) {
+					if (rxRuntime->iso15765.nextFlowControlCount == 0  && rxRuntime->iso15765.BS > 0) {
 						sendFlowControlFrame(rxConfig, rxRuntime, BUFREQ_OK);
 					} else {
 						rxRuntime->iso15765.stateTimeoutCount = CANTP_CONVERT_MS_TO_MAIN_CYCLES(rxConfig->CanTpNcr);  //UH
@@ -581,7 +578,7 @@ static INLINE void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
 
 // - - - - - - - - - - - - - -
 
-static INLINE BufReq_ReturnType sendNextTxFrame(
+static BufReq_ReturnType sendNextTxFrame(
 		const CanTp_TxNSduType *txConfig, CanTp_ChannelPrivateType *txRuntime) {
 	BufReq_ReturnType ret = BUFREQ_OK;
 
@@ -629,7 +626,7 @@ static INLINE BufReq_ReturnType sendNextTxFrame(
 
 // - - - - - - - - - - - - - -
 
-static INLINE void handleNextTxFrameSent(
+static void handleNextTxFrameSent(
 		const CanTp_TxNSduType *txConfig, CanTp_ChannelPrivateType *txRuntime) {
 
 	txRuntime->iso15765.framesHandledCount++;
@@ -674,7 +671,7 @@ static INLINE void handleNextTxFrameSent(
 
 // - - - - - - - - - - - - - -
 
-static INLINE void handleFlowControlFrame(const CanTp_TxNSduType *txConfig,
+static void handleFlowControlFrame(const CanTp_TxNSduType *txConfig,
 		CanTp_ChannelPrivateType *txRuntime, const PduInfoType *txPduData) {
 	int indexCount = 0;
 	uint8 extendedAddress = 0;
@@ -720,7 +717,7 @@ static INLINE void handleFlowControlFrame(const CanTp_TxNSduType *txConfig,
 
 // - - - - - - - - - - - - - -
 
-static INLINE void handleSingleFrame(const CanTp_RxNSduType *rxConfig,
+static void handleSingleFrame(const CanTp_RxNSduType *rxConfig,
 		CanTp_ChannelPrivateType *rxRuntime, const PduInfoType *rxPduData) {
 	BufReq_ReturnType ret;
 	PduLengthType pduLength;
@@ -775,7 +772,7 @@ static INLINE void handleSingleFrame(const CanTp_RxNSduType *rxConfig,
 // - - - - - - - - - - - - - -
 
 
-static INLINE void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
+static void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 		CanTp_ChannelPrivateType *rxRuntime, const PduInfoType *rxPduData) {
 	BufReq_ReturnType ret;
 	PduLengthType pduLength = 0;
@@ -851,7 +848,7 @@ static INLINE void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 
 // - - - - - - - - - - - - - -
 
-static INLINE ISO15765FrameType calcRequiredProtocolFrameType(
+static ISO15765FrameType calcRequiredProtocolFrameType(
 		const CanTp_TxNSduType *txConfig, CanTp_ChannelPrivateType *txRuntime) {
 
 	ISO15765FrameType ret = INVALID_FRAME;
@@ -1138,7 +1135,7 @@ void CanTp_Shutdown(void) /** @req CANTP202 *//** @req CANTP200 *//** @req CANTP
 // - - - - - - - - - - - - - -
 
 
-static inline boolean checkNasNarTimeout(CanTp_ChannelPrivateType *runtimeData) {
+static boolean checkNasNarTimeout(CanTp_ChannelPrivateType *runtimeData) {
 	boolean ret = FALSE;
 	if (runtimeData->iso15765.NasNarPending) {
 		TIMER_DECREMENT(runtimeData->iso15765.NasNarTimeoutCount);
