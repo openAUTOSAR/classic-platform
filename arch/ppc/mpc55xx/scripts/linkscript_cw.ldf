@@ -93,6 +93,11 @@ SECTIONS
 	    extab      : {}  
 	    extabindex : {}
 
+		. = ALIGN(0x10);
+#if defined(CFG_MPC5604B)	
+		__LP_TEXT_ROM = .;
+		.=.+SIZEOF(.lowpower_text);
+#endif		
 	    . = ALIGN(0x10);   	
 	    __DATA_ROM = .;
 	    .=.+SIZEOF(.data);
@@ -120,7 +125,13 @@ SECTIONS
 
 	GROUP : {
 		__ram_start=.;
-	
+		
+#if defined(CFG_MPC5604B)
+		__LP_TEXT_START = .;
+		.lowpower_text (VLECODE) LOAD(ROMADDR(__LP_TEXT_ROM)) :  {}
+		__LP_TEXT_END = .;	    
+#endif				
+		. = ALIGN(0x10);
 		__DATA_RAM = .;
 		.data (DATA) LOAD(ROMADDR(__DATA_ROM)) :  {}
 		.sdata (DATA) LOAD(ROMADDR(__SDATA)): {}
