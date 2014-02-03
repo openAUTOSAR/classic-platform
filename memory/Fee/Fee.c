@@ -588,7 +588,6 @@ static void StartupReadBankHeader(void) {
  */
 void StartupRequested(void) {
 	CurrentJob.Startup.BankIdx = 0;
-	memset(&AdminFls, 0, sizeof(AdminFls));
 	for (uint16 i = 0; i < FEE_NUM_OF_BLOCKS; i++) {
 		AdminFls.BlockDescrTbl[i].BlockDataAddress = BLOCK_CORRUPT;
 	}
@@ -1045,8 +1044,6 @@ static void WriteCheckAdminDataWait(void) {
 
 static void EraseBank(void) {
 	SetFlsJobBusy();
-// varför har du lagt till den här?
-//	ModuleStatus = MEMIF_BUSY_INTERNAL;
 	if (Fls_Erase(BankProp[AdminFls.Erase.BankIdx].Start, BankProp[AdminFls.Erase.BankIdx].End - BankProp[AdminFls.Erase.BankIdx].Start) == E_OK) {
 		AdminFls.State = FEE_ERASE_BANK_WAIT;
 	}
@@ -1104,12 +1101,19 @@ static void WriteBankHeaderWait() {
 			}
 			AdminFls.State = FEE_IDLE;
 		} else {
-			// failed to write, set mode to idle to restart
-			AdminFls.State = FEE_IDLE;
 			// increase error counter
 			AdminFls.FailCounter++;
+			if(AdminFls.FailCounter > MAX_NOF_FAILED_GC_ATTEMPTS) {
+				AdminFls.State = FEE_CORRUPTED;
+				if(ModuleStatus != MEMIF_IDLE) {
+					FinishJob(MEMIF_JOB_FAILED);
+				}
+				} else {
+					// failed to write, set mode to idle to restart
+					AdminFls.State = FEE_ERASE_BANK;
+				}
+			}
 		}
-	}
 }
 
 static void GarbageCollectStartJob(void)
@@ -1193,6 +1197,7 @@ static void GarbageCollectWriteData(void) {
 			AbortGCJob();
 		}
 	}
+    Irq_Restore(state);
 }
 
 static void GarbageCollectReadWait(void)
