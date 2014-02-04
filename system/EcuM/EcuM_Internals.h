@@ -64,7 +64,7 @@ typedef struct
 	uint8 				sleep_mode;
 	AppModeType 		app_mode;
 	EcuM_StateType 		current_state;
-#if defined(USE_COMM) || (USE_ECUM_COMM)
+#if defined(USE_COMM)
 	uint32 				run_comm_requests;
 #endif
 	uint32 				run_requests;

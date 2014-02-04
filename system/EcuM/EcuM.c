@@ -170,7 +170,7 @@ void EcuM_Init(void) {
 		//TODO: Report error.
 	}
 
-#if defined(USE_COMM) || defined(USE_ECUM_COMM)
+#if defined(USE_COMM)
 	EcuM_World.run_comm_requests = 0;
 #endif
 	EcuM_World.run_requests = 0;
@@ -462,6 +462,10 @@ Std_ReturnType EcuM_ComM_RequestRUN(NetworkHandleType channel)
 		EcuM_World.run_comm_requests |= (uint32)1 << channel;
 	}
 
+	/* If we already are in running, call right away */
+	if(  EcuM_World.current_state == ECUM_STATE_APP_RUN ) {
+		ComM_EcuM_RunModeIndication(channel);
+	}
 	return E_OK;
 }
 
