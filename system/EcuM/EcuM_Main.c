@@ -138,6 +138,8 @@ static uint32 EcuM_World_go_sleep_state_timeout = 0;
 static Rte_ModeType_EcuM_Mode currentMode = RTE_MODE_EcuM_Mode_STARTUP;
 
 void set_current_state(EcuM_StateType state) {
+	imask_t irqMask = 0;
+
 	/* Update the state */
 	EcuM_World.current_state = state;
 
@@ -171,7 +173,11 @@ void set_current_state(EcuM_StateType state) {
 		newMode = RTE_MODE_EcuM_Mode_POST_RUN;
 		break;
 	case ECUM_STATE_APP_RUN: /* Assuming this is same as RUN_II */
+		Irq_Save(irqMask);
 		newMode = RTE_MODE_EcuM_Mode_RUN;
+		/* We have a configurable minimum time (EcuMRunMinimumDuration) we have to stay in RUN state  */
+		EcuM_World_run_state_timeout = EcuM_World.config->EcuMRunMinimumDuration / ECUM_MAIN_FUNCTION_PERIOD; /** @req EcuM2310 */
+		Irq_Restore(irqMask);
 		break;
 	case ECUM_STATE_STARTUP_TWO:
 		newMode = RTE_MODE_EcuM_Mode_STARTUP;
@@ -224,9 +230,6 @@ void EcuM_enter_run_mode(void){
 	}
 #endif
 
-	/* We have a configurable minimum time (EcuMRunMinimumDuration)
-	 * we have to stay in RUN state  */
-	EcuM_World_run_state_timeout = EcuM_World.config->EcuMRunMinimumDuration / ECUM_MAIN_FUNCTION_PERIOD; /** @req EcuM2310 */
 }
 
 
