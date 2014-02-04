@@ -670,7 +670,7 @@ static void handleNextTxFrameSent(
 		if (txRuntime->iso15765.STmin < 0x80) {
 			txRuntime->iso15765.stateTimeoutCount = CANTP_CONVERT_MS_TO_MAIN_CYCLES(txRuntime->iso15765.STmin) + 1;
 		} else if (txRuntime->iso15765.STmin > 0xF0 && txRuntime->iso15765.STmin < 0xFA) {
-			txRuntime->iso15765.stateTimeoutCount = CANTP_CONVERT_MS_TO_MAIN_CYCLES((txRuntime->iso15765.STmin - 0xF0)/10) + 1;
+			txRuntime->iso15765.stateTimeoutCount = 1; //0.1 ms resoultion needs a lower task period. So hard coded to 1 main cycle
 		}
 		else {
 			txRuntime->iso15765.stateTimeoutCount = CANTP_CONVERT_MS_TO_MAIN_CYCLES(0x7F) + 1;
