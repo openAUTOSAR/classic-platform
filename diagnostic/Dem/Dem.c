@@ -1629,7 +1629,7 @@ static void deleteAgingRecPriMem(const Dem_EventParameterType *eventParam)
 
 	Irq_Save(state);
 
-	for (i = 0; i<DEM_MAX_NUMBER_FF_DATA_PRI_MEM; i++){
+	for (i = 0; i<DEM_MAX_NUMBER_AGING_PRI_MEM; i++){
 		if (priMemAgingBuffer[i].eventId == eventParam->EventID){
 			memset(&priMemAgingBuffer[i], 0, sizeof(HealingRecType));
 		}
