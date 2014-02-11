@@ -813,7 +813,7 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 				NVM_ASSERT( bPtr->RomBlockDataAdress != NULL );
 
 				uint8 *romAddrs = (bPtr->BlockManagementType == NVM_BLOCK_DATASET)
-						 ? BLOCK_BASE_AND_SET_TO_BLOCKNR(bPtr->NvBlockBaseNumber, setNumber): bPtr->RomBlockDataAdress;
+						 ? bPtr->RomBlockDataAdress + ((setNumber - bPtr->NvBlockNum)*bPtr->NvBlockLength) : bPtr->RomBlockDataAdress;
 
 				/* No CRC on the ROM block */
 				memcpy(ramData,romAddrs,bPtr->NvBlockLength);
@@ -1602,13 +1602,13 @@ Std_ReturnType NvM_RestoreBlockDefaults( NvM_BlockIdType blockId, uint8* NvM_Des
 	bPtr = &NvM_Config.BlockDescriptor[blockId-1];
 	admPtr = &AdminBlock[blockId-1];
 
-	/** req 3.1.5/NVM628 */
+	/** @req 3.1.5/NVM628 */
 	//Check whether a ROM block is configured
 	DET_VALIDATE_RV(!(bPtr->RomBlockNum == 0),NVM_RESTORE_BLOCK_DEFAULTS_ID,NVM_E_BLOCK_CONFIG,E_NOT_OK);
 
 	/** @req 3.1.5/NVM353 */
 	//If block is of type DATASET check whether current index points to a NVM which is not ROM
-	DET_VALIDATE_RV(!((admPtr->DataIndex <= bPtr->NvBlockNum) && (bPtr->BlockManagementType == NVM_BLOCK_DATASET)),NVM_RESTORE_BLOCK_DEFAULTS_ID,NVM_E_BLOCK_CONFIG,E_NOT_OK);
+	DET_VALIDATE_RV(!((admPtr->DataIndex < bPtr->NvBlockNum) && (bPtr->BlockManagementType == NVM_BLOCK_DATASET)),NVM_RESTORE_BLOCK_DEFAULTS_ID,NVM_E_BLOCK_CONFIG,E_NOT_OK);
 
 	/** @req 3.1.5/NVM196 */ /** @req 3.1.5/NVM278 */ /** @req 3.1.5/NVM210 */
 	/* It must be a permanent RAM block but no RamBlockDataAddress -> error */
@@ -1616,7 +1616,7 @@ Std_ReturnType NvM_RestoreBlockDefaults( NvM_BlockIdType blockId, uint8* NvM_Des
 	DET_VALIDATE_RV( !((NvM_DestPtr == NULL) &&  ( bPtr->RamBlockDataAddress == NULL )),
 			NVM_RESTORE_BLOCK_DEFAULTS_ID,NVM_E_PARAM_BLOCK_ID,E_NOT_OK );
 
-	DET_VALIDATE_RV( (admPtr->ErrorStatus != NVM_REQ_PENDING), 0, NVM_E_BLOCK_PENDING , E_NOT_OK );
+	DET_VALIDATE_RV( (admPtr->ErrorStatus != NVM_REQ_PENDING), NVM_RESTORE_BLOCK_DEFAULTS_ID, NVM_E_BLOCK_PENDING , E_NOT_OK );
 
 	/* @req 3.1.5/NVM195 */
 	qEntry.blockId = blockId;
