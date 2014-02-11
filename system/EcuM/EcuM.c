@@ -54,7 +54,7 @@
  * Things to start with:
  * - EcuM2181
  * - EcuM2861 , Watchdog
- * - ComM_EcuM_RunModeIndication()  not called, See Figure 8 (Seems that the ComM does not do much either)
+ *
  *
  *
  *

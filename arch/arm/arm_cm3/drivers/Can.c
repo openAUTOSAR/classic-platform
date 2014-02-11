@@ -596,8 +596,8 @@ void Can_InitController( uint8 controller, const Can_ControllerConfigType *confi
 	  CAN_InitStructure.CAN_Mode=CAN_Mode_Normal;
   }
 
-  CAN_InitStructure.CAN_SJW=config->CanControllerPropSeg;
-  CAN_InitStructure.CAN_BS1=config->CanControllerSeg1;
+  CAN_InitStructure.CAN_SJW=1; //hard coded to value 1 since no configuration is available
+  CAN_InitStructure.CAN_BS1=config->CanControllerPropSeg + config->CanControllerSeg1;
   CAN_InitStructure.CAN_BS2=config->CanControllerSeg2;
   CAN_InitStructure.CAN_Prescaler= clock/(config->CanControllerBaudRate*1000*tq);
 
