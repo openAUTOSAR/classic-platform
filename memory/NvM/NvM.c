@@ -709,6 +709,7 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 	{
 		boolean fail = FALSE;
 		Std_ReturnType rv;
+
 		void *ramData = (dataPtr != NULL) ?  dataPtr : bPtr->RamBlockDataAddress;
 
 		admPtr->savedDataPtr = ramData;
@@ -762,78 +763,82 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 
 		} else {
 			uint8 crcLen = 0;
+			uint16 length;
+			uint8 setNumber = admPtr->DataIndex;
+
 			/* Read to workbuffer */
 			if( bPtr->BlockUseCrc ) {
 				crcLen = (bPtr->BlockCRCType == NVM_CRC16) ? 2: 4;
 			}
 
-			if( restoreFromRom ) {
+			length = bPtr->NvBlockLength+crcLen;
+
+			/*
+			 * Read the Block
+			 */
+			if (setNumber < bPtr->NvBlockNum && !restoreFromRom) {
+				SetMemifJobBusy();
+				MemIfJobAdmin.BlockAdmin = admPtr;
+				MemIfJobAdmin.BlockDescriptor = bPtr;
+				imask_t state;
+
+				/* First reading the MemIf block and then checking MemIf_GetStatus() to determine
+				 * if the device BUSY in anyway...is not threadsafe. The way Autosar have defined
+				 * it you would have to lock over the MemIf_Read() to be sure.
+				 */
+				Irq_Save(state);
+
+				/* We want to read from MemIf, but the device may be busy.
+				 */
+				rv = MemIf_Read(bPtr->NvramDeviceId,
+										BLOCK_BASE_AND_SET_TO_BLOCKNR(bPtr->NvBlockBaseNumber, setNumber),
+										0,
+										Nvm_WorkBuffer,
+										length );
+				if (rv != E_OK) {
+					if ( MemIf_GetStatus(FIXME) == MEMIF_IDLE ) {
+						AbortMemIfJob(MEMIF_JOB_FAILED);
+						fail = TRUE;
+					} else {
+						/* Do nothing. For MEMIF_UNINIT, MEMIF_BUSY and MEMIF_BUSY_INTERNAL we just stay in the
+						 * same state. Better in the next run */
+						Irq_Restore(state);
+						break; /* Do NOT advance to next state */
+					}
+				}
+				Irq_Restore(state);
+			}
+
+			else if( restoreFromRom || (setNumber < bPtr->NvBlockNum + bPtr->RomBlockNum) ) {
 				NVM_ASSERT( bPtr->RomBlockDataAdress != NULL );
+
+				uint8 *romAddrs = (bPtr->BlockManagementType == NVM_BLOCK_DATASET)
+						 ? bPtr->RomBlockDataAdress + ((setNumber - bPtr->NvBlockNum)*bPtr->NvBlockLength) : bPtr->RomBlockDataAdress;
+
 				/* No CRC on the ROM block */
-				memcpy(ramData,bPtr->RomBlockDataAdress,bPtr->NvBlockLength);
+				memcpy(ramData,romAddrs,bPtr->NvBlockLength);
 
 				admPtr->ErrorStatus = NVM_REQ_OK;
 				blockDone = 1;
 				break;		/* Do NOT advance to next state */
-			} else {
-				uint8 setNumber = admPtr->DataIndex;
-				uint16 length = bPtr->NvBlockLength+crcLen;
+			}
+			else {
+				// Error: setNumber out of range
+				DET_REPORTERROR(MODULE_ID_NVM, 0, NVM_LOC_READ_BLOCK_ID, NVM_PARAM_OUT_OF_RANGE);
+				fail = TRUE;
+			}
 
-				/*
-				 * Read the Block
-				 */
-
-				if (setNumber < bPtr->NvBlockNum) {
-					SetMemifJobBusy();
-					MemIfJobAdmin.BlockAdmin = admPtr;
-					MemIfJobAdmin.BlockDescriptor = bPtr;
-					imask_t state;
-
-					/* First reading the MemIf block and then checking MemIf_GetStatus() to determine
-					 * if the device BUSY in anyway...is not threadsafe. The way Autosar have defined
-					 * it you would have to lock over the MemIf_Read() to be sure.
-					 */
-					Irq_Save(state);
-
-					/* We want to read from MemIf, but the device may be busy.
-					 */
-					rv = MemIf_Read(bPtr->NvramDeviceId,
-											BLOCK_BASE_AND_SET_TO_BLOCKNR(bPtr->NvBlockBaseNumber, setNumber),
-											0,
-											Nvm_WorkBuffer,
-											length );
-					if (rv != E_OK) {
-						if ( MemIf_GetStatus(FIXME) == MEMIF_IDLE ) {
-							AbortMemIfJob(MEMIF_JOB_FAILED);
-							fail = TRUE;
-						} else {
-							/* Do nothing. For MEMIF_UNINIT, MEMIF_BUSY and MEMIF_BUSY_INTERNAL we just stay in the
-							 * same state. Better in the next run */
-							Irq_Restore(state);
-							break; /* Do NOT advance to next state */
-						}
-					}
-					Irq_Restore(state);
-
-				} else if (setNumber < bPtr->NvBlockNum + bPtr->RomBlockNum) {
-					// TODO: Read from ROM
-				} else {
-					// Error: setNumber out of range
-					DET_REPORTERROR(MODULE_ID_NVM, 0, NVM_LOC_READ_BLOCK_ID, NVM_PARAM_OUT_OF_RANGE);
-					fail = TRUE;
-				}
-
-				if( fail ) {
-					/* Fail the job */
-					admPtr->ErrorStatus = NVM_REQ_NOT_OK;
-					blockDone = 1;
-					break; /* Do NOT advance to next state */
-				}
+			if( fail ) {
+				/* Fail the job */
+				admPtr->ErrorStatus = NVM_REQ_NOT_OK;
+				blockDone = 1;
+				break; /* Do NOT advance to next state */
 			}
 		}
 
-		admPtr->BlockState = BLOCK_STATE_MEMIF_PROCESS;
-		break;
+
+	admPtr->BlockState = BLOCK_STATE_MEMIF_PROCESS;
+	break;
 	}
 
 	case BLOCK_STATE_MEMIF_PROCESS:
@@ -1580,7 +1585,7 @@ void NvM_SetBlockLockStatus( NvM_BlockIdType blockId, boolean blockLocked ) {
 Std_ReturnType NvM_RestoreBlockDefaults( NvM_BlockIdType blockId, uint8* NvM_DestPtr )
 {
 	/* !req 3.1.5/NVM012 */	/* !req 3.1.5/NVM267 */	/* !req 3.1.5/NVM266 */
-	/* !req 3.1.5/NVM353 */	/* !req 3.1.5/NVM435 */	/* !req 3.1.5/NVM436 */	/* !req 3.1.5/NVM227 */
+	/* !req 3.1.5/NVM435 */	/* !req 3.1.5/NVM436 */	/* !req 3.1.5/NVM227 */
 	/* !req 3.1.5/NVM228 */	/* !req 3.1.5/NVM229 */	/* !req 3.1.5/NVM413 */
 
 	const NvM_BlockDescriptorType *	bPtr;
@@ -1592,17 +1597,26 @@ Std_ReturnType NvM_RestoreBlockDefaults( NvM_BlockIdType blockId, uint8* NvM_Des
 
 	/* @req 3.1.5/NVM618 */
 	DET_VALIDATE_RV( 	blockId <= NVM_NUM_OF_NVRAM_BLOCKS,
-					NVM_WRITE_BLOCK_ID,NVM_E_PARAM_BLOCK_ID,E_NOT_OK );
+			NVM_RESTORE_BLOCK_DEFAULTS_ID,NVM_E_PARAM_BLOCK_ID,E_NOT_OK );
 
 	bPtr = &NvM_Config.BlockDescriptor[blockId-1];
 	admPtr = &AdminBlock[blockId-1];
 
+	/** @req 3.1.5/NVM628 */
+	//Check whether a ROM block is configured
+	DET_VALIDATE_RV(!(bPtr->RomBlockNum == 0),NVM_RESTORE_BLOCK_DEFAULTS_ID,NVM_E_BLOCK_CONFIG,E_NOT_OK);
+
+	/** @req 3.1.5/NVM353 */
+	//If block is of type DATASET check whether current index points to a NVM which is not ROM
+	DET_VALIDATE_RV(!((admPtr->DataIndex < bPtr->NvBlockNum) && (bPtr->BlockManagementType == NVM_BLOCK_DATASET)),NVM_RESTORE_BLOCK_DEFAULTS_ID,NVM_E_BLOCK_CONFIG,E_NOT_OK);
+
 	/** @req 3.1.5/NVM196 */ /** @req 3.1.5/NVM278 */ /** @req 3.1.5/NVM210 */
 	/* It must be a permanent RAM block but no RamBlockDataAddress -> error */
-	DET_VALIDATE_RV( !((NvM_DestPtr == NULL) &&  ( bPtr->RamBlockDataAddress == NULL )),
-						NVM_WRITE_BLOCK_ID,NVM_E_PARAM_BLOCK_ID,E_NOT_OK );
 
-	DET_VALIDATE_RV( (admPtr->ErrorStatus != NVM_REQ_PENDING), 0, NVM_E_BLOCK_PENDING , E_NOT_OK );
+	DET_VALIDATE_RV( !((NvM_DestPtr == NULL) &&  ( bPtr->RamBlockDataAddress == NULL )),
+			NVM_RESTORE_BLOCK_DEFAULTS_ID,NVM_E_PARAM_BLOCK_ID,E_NOT_OK );
+
+	DET_VALIDATE_RV( (admPtr->ErrorStatus != NVM_REQ_PENDING), NVM_RESTORE_BLOCK_DEFAULTS_ID, NVM_E_BLOCK_PENDING , E_NOT_OK );
 
 	/* @req 3.1.5/NVM195 */
 	qEntry.blockId = blockId;
