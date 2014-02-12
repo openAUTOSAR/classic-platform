@@ -84,12 +84,7 @@ extern EcuM_GlobalType EcuM_World;
 
 void EcuM_enter_run_mode(void);
 
-#ifdef CFG_ECUM_USE_SERVICE_COMPONENT
 void set_current_state(EcuM_StateType state);
-#else
-#define set_current_state(state) EcuM_World.current_state = (state)
-#endif
-
 
 //#if defined(USE_LDEBUG_PRINTF)
 char *GetMainStateAsString( EcuM_StateType state );

@@ -136,6 +136,8 @@ static uint32 EcuM_World_go_sleep_state_timeout = 0;
 #ifdef CFG_ECUM_USE_SERVICE_COMPONENT
 /** @req EcuM2749 */
 static Rte_ModeType_EcuM_Mode currentMode = RTE_MODE_EcuM_Mode_STARTUP;
+#endif
+
 
 void set_current_state(EcuM_StateType state) {
 	imask_t irqMask = 0;
@@ -143,6 +145,7 @@ void set_current_state(EcuM_StateType state) {
 	/* Update the state */
 	EcuM_World.current_state = state;
 
+#ifdef CFG_ECUM_USE_SERVICE_COMPONENT
 	Rte_ModeType_EcuM_Mode newMode = currentMode;
 	switch( state ) {
 	case ECUM_STATE_WAKEUP:
@@ -176,6 +179,9 @@ void set_current_state(EcuM_StateType state) {
 		Irq_Save(irqMask);
 		newMode = RTE_MODE_EcuM_Mode_RUN;
 		/* We have a configurable minimum time (EcuMRunMinimumDuration) we have to stay in RUN state  */
+		/* This should not be done in EcuM_enter_run_mode() because RTE_MODE_EcuM_Mode_RUN & EcuM_World_run_state_timeout  are
+		 * not set at the same time and this might lead to immediate timeout
+		 */
 		EcuM_World_run_state_timeout = EcuM_World.config->EcuMRunMinimumDuration / ECUM_MAIN_FUNCTION_PERIOD; /** @req EcuM2310 */
 		Irq_Restore(irqMask);
 		break;
@@ -190,6 +196,14 @@ void set_current_state(EcuM_StateType state) {
 	if( newMode != currentMode ) {
 		currentMode = newMode;
 		Rte_Switch_EcuM_CurrentMode_currentMode(currentMode); /** @req EcuM2750 */
+	}
+}
+#else
+	if (ECUM_STATE_APP_RUN == state) {
+		Irq_Save(irqMask);
+		/* We have a configurable minimum time (EcuMRunMinimumDuration) we have to stay in RUN state  */
+		EcuM_World_run_state_timeout = EcuM_World.config->EcuMRunMinimumDuration / ECUM_MAIN_FUNCTION_PERIOD; /** @req EcuM2310 */
+		Irq_Restore(irqMask);
 	}
 }
 #endif
