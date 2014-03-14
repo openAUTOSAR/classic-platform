@@ -700,8 +700,10 @@ void Mcu_SetMode( Mcu_ModeType mcuMode)
 	VALIDATE( ( 1 == Mcu_Global.initRun ), MCU_SETMODE_SERVICE_ID, MCU_E_UNINIT );
 	// VALIDATE( ( McuMode <= Mcu_Global.config->McuNumberOfMcuModes ), MCU_SETMODE_SERVICE_ID, MCU_E_PARAM_MODE );
 
+#if defined(CFG_MCU_ARC_LP)
 	Mcu_Arc_SetModePre(mcuMode);
 	Mcu_Arc_SetModePost(mcuMode);
+#endif
 }
 
 //-------------------------------------------------------------------

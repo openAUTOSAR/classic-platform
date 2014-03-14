@@ -47,6 +47,8 @@ extern uint32 EccErrReg;
 
 /* ----------------------------[private functions]---------------------------*/
 
+#if defined(CFG_MCU_ARC_LP)
+
 static void enterStandby( void ) {
 
 	/* ME_PCTL_x MUST be off */
@@ -100,6 +102,7 @@ static void enterStandby( void ) {
 
 	/* From "MC_ME Mode Diagram", page 136 in RM,  it seems as e return to DRUN after exit of STANDBY0 */
 }
+#endif
 
 /* ----------------------------[public functions]----------------------------*/
 
@@ -257,6 +260,7 @@ void Mcu_Arc_InitClockPost( const Mcu_ClockSettingConfigType *clockSettingsPtr )
 	(void)clockSettingsPtr;
 }
 
+#if defined(CFG_MCU_ARC_LP)
 
 extern char __LP_TEXT_ROM[];
 extern char __LP_TEXT_START[];
@@ -350,5 +354,6 @@ void Mcu_Arc_SetModePost( Mcu_ModeType mcuMode)
 	Mcu_Arc_SetModePost2(mcuMode,  Mcu_Arc_ConfigData.sleepConfig);
 #endif
 }
+#endif
 
 
