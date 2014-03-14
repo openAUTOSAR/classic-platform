@@ -6,6 +6,7 @@ ARCH_MCU=mpc5604b
 
 # CFG (y/n) macros
 CFG=PPC E200Z0 MPC55XX MPC560X MPC560XB MPC5604B BRD_MPC5604B_TRK VLE
+CFG+=MCU_ARC_LP
 
 # What buildable modules does this board have, 
 # default or private
@@ -26,7 +27,7 @@ MOD_USE += MCU KERNEL ECUM
 # Default cross compiler
 COMPILER?=cw
 DEFAULT_CROSS_COMPILE = /opt/powerpc-eabispe/bin/powerpc-eabispe-
-DEFAULT_CW_COMPILE= /opt/cw
+DEFAULT_CW_COMPILE= /c/devtools/Freescale/cw_mpc5xxx_2.10
 
 # Defines
 def-y += SRAM_SIZE=0xc000

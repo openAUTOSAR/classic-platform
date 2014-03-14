@@ -284,12 +284,14 @@
 #define extrwi	e_extrwi
 #define clrlwi  e_clrlwi
 #define blrl	se_blrl
+#define lmw		e_lmw
 #define stmw	e_stmw
 #define bdnz	e_bdnz
 #define	bl		e_bl
 #define	bc		e_bc
 #define mr		se_mr
 #define rfci	se_rfci
+#define bctrl	se_bctrl
 #endif
 
 #endif /* _ASSEMBLER_ */

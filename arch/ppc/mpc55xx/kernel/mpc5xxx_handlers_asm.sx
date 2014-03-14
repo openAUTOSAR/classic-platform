@@ -154,15 +154,12 @@
 /* ----------------------------[private functions]---------------------------*/
 /* ----------------------------[public functions]----------------------------*/
 
-#if defined(CFG_MCU_ARC_CONFIG)
+#if defined(CFG_MCU_ARC_LP)
 
 ASM_SECTION_TEXT(.text)
 
-#if defined(CFG_MPC5516) || defined(CFG_MPC5668)
+#if defined(CFG_MPC5516) || defined(CFG_MPC5668) 
 #define CRP_RECPTR 		0xfffec058
-#else
-#error No support for this MCU
-#endif
 
 	.global Mcu_Arc_EnterLowPower
 	
@@ -177,17 +174,14 @@ Mcu_Arc_EnterLowPower:
 	mfXER	r30
 	mfCTR	r31
 	stmw	r25, 0x78(r1)	// Store SPR data to stack
-		
+
 	LOAD_ADDR_32(r4,CRP_RECPTR)
 	stw		r1,0x0(r4)	//  Save stack pointer to CRP to be preserved during LPM
 	
-/* Note! You cannot step over the wait instruction with the debugger */	
-	
+/* Note! You cannot step over the wait instruction with the debugger */		
 	.long	0x7C00007C	//  Wait instruction
 	
-	
 	blr
-
 
 /*
  * Low Power Vector...needs to be on 4K + 0xffc
@@ -280,8 +274,64 @@ tlbSet:
 	tlbwe
 	isync
 	blr	
+	
+	
+#elif defined(CFG_MPC5604B)
 
-#endif /* defined(CFG_MCU_ARC_CONFIG)) */
+ASM_SECTION_TEXT(.text)
+
+.global Mcu_Arc_setjmp	
+/* 
+ * context r3 (must have (32+5)*4=148 in space)
+ */	
+Mcu_Arc_setjmp:
+	stmw	r4, 8(r3) 		// Save all regs on stack, 32*4=128=0x80
+	stw		r1,0(r3)
+	stw		r2,4(r3)
+	mfLR	r27
+	mfmsr	r28
+	mfCR	r29
+	mfXER	r30
+	mfCTR	r31
+	stmw	r27, 0x80(r3)	// Store SPR data to stack
+	li 		r3,0
+	blr
+
+ASM_SECTION_TEXT(.lowpower_text)
+
+/* At this point:
+ * - All CPU registers are unknown (we must init again)
+ * - We come from sleep and should be in DRUN mode.
+ * - We run off the FIRC (MC_ME turned off during sleep?)  
+ * - We should be located at 0x4000_0000 (or "backup RAM" as the manual states)
+ */
+ 
+ 	.extern context
+	
+/* Context is saved in context..
+ * should return 1 (ie return value of setjmp())  
+ */	
+Mcu_Arc_BootFromRam:
+	LOAD_ADDR_32(r3,context)
+	lmw		r27,0x80(r3)
+	mtLR	r27
+	mtmsr	r28
+	mtCR	r29
+	mtXER	r30
+	mtCTR	r31
+	lmw	r4, 8(r3)
+	lwz		r1, 0(r3)
+	lwz		r2, 4(r3)
+ 	li		r3,1	/* return 1 to "setjmp" */
+ 	blr
+		
+	
+#else
+#error No support for this MCU
+#endif
+	
+
+#endif /* defined(CFG_MCU_ARC_LP)) */
 
 
 ASM_SECTION_TEXT(.text)
