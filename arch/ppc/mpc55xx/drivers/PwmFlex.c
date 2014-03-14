@@ -158,6 +158,7 @@ static void configureChannel(const Pwm_ChannelConfigurationType* channelConfig){
 	/* All channels on same submodule must have same period. Should be checked by validation */
 	calcPeriodTicksAndPrescaler( channelConfig, &period_ticks, &prescaler );
 
+	flexHw->MCTRL.B.CLDOK = 1 << channel / FLEXPWM_SUB_MODULE_DIVIDER;
 	/* Prescaler */
 	flexHw->SUB[channel / FLEXPWM_SUB_MODULE_DIVIDER].CTRL.B.PRSC = prescaler;
 
@@ -188,6 +189,7 @@ static void configureChannel(const Pwm_ChannelConfigurationType* channelConfig){
 	default:
 		break;
 	}
+	flexHw->MCTRL.B.LDOK = 1 << channel / FLEXPWM_SUB_MODULE_DIVIDER;
 
 	/* PWM009: The function Pwm_Init shall start all PWM channels with the configured
 		default values. If the duty cycle parameter equals:
@@ -391,9 +393,13 @@ void Pwm_DeInit() {
 
 		/* Note! Changing period of a channel means changing for whole submodule  */
 
-		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[1].R = Period;
-		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[3].R = Period;
-		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[5].R = Period;
+		if(flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[1].R != Period) {
+			flexHw->MCTRL.B.CLDOK = 1 << Channel / FLEXPWM_SUB_MODULE_DIVIDER;
+			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[1].R = Period;
+			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[3].R = Period;
+			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[5].R = Period;
+			flexHw->MCTRL.B.LDOK = 1 << Channel / FLEXPWM_SUB_MODULE_DIVIDER;
+		}
 
 		Pwm_SetDutyCycle(Channel, DutyCycle);
 	}
@@ -423,22 +429,33 @@ static void SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 	case 0: /* PWMA */
 		leading_edge_position = (uint16) ((flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[3].R
 					* (uint32) DutyCycle) >> 15);
-		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[2].R = leading_edge_position;
+		if(flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[2].R != leading_edge_position) {
+			flexHw->MCTRL.B.CLDOK = 1 << Channel / FLEXPWM_SUB_MODULE_DIVIDER;
+			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[2].R = leading_edge_position;
+			flexHw->MCTRL.B.LDOK = 1 << Channel / FLEXPWM_SUB_MODULE_DIVIDER;
+		}
 		break;
 	case 1: /* PWMB */
 		leading_edge_position = (uint16) ((flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[5].R
 					* (uint32) DutyCycle) >> 15);
-		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[4].R = leading_edge_position;
+		if(flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[4].R != leading_edge_position) {
+			flexHw->MCTRL.B.CLDOK = 1 << Channel / FLEXPWM_SUB_MODULE_DIVIDER;
+			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[4].R = leading_edge_position;
+			flexHw->MCTRL.B.LDOK = 1 << Channel / FLEXPWM_SUB_MODULE_DIVIDER;
+		}
 		break;
 	case 2: /* PWMX */
 		leading_edge_position = (uint16) ((flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[1].R
 					* (uint32) DutyCycle) >> 15);
-		flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[0].R = leading_edge_position;
+		if(flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[0].R != leading_edge_position) {
+			flexHw->MCTRL.B.CLDOK = 1 << Channel / FLEXPWM_SUB_MODULE_DIVIDER;
+			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[0].R = leading_edge_position;
+			flexHw->MCTRL.B.LDOK = 1 << Channel / FLEXPWM_SUB_MODULE_DIVIDER;
+		}
 		break;
 	default:
 		break;
 	}
-	flexHw->MCTRL.B.LDOK = 1 << Channel / FLEXPWM_SUB_MODULE_DIVIDER;
 }
 
 
@@ -475,18 +492,29 @@ void Pwm_SetDutyCycle(Pwm_ChannelType Channel, Pwm_DutyCycleType DutyCycle)
 		switch(Channel % FLEXPWM_SUB_MODULE_DIVIDER)
 		{
 		case 0: /* PWMA */
-			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[2].R = 0;
+			if(flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[2].R != 0) {
+				flexHw->MCTRL.B.CLDOK = 1 << Channel / FLEXPWM_SUB_MODULE_DIVIDER;
+				flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[2].R = 0;
+				flexHw->MCTRL.B.LDOK = 1 << Channel / FLEXPWM_SUB_MODULE_DIVIDER;
+			}
 			break;
 		case 1: /* PWMB */
-			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[4].R = 0;
+			if(flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[4].R != 0) {
+				flexHw->MCTRL.B.CLDOK = 1 << Channel / FLEXPWM_SUB_MODULE_DIVIDER;
+				flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[4].R = 0;
+				flexHw->MCTRL.B.LDOK = 1 << Channel / FLEXPWM_SUB_MODULE_DIVIDER;
+			}
 			break;
 		case 2: /* PWMX */
-			flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[0].R = 0;
+			if(flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[0].R != 0) {
+				flexHw->MCTRL.B.CLDOK = 1 << Channel / FLEXPWM_SUB_MODULE_DIVIDER;
+				flexHw->SUB[Channel / FLEXPWM_SUB_MODULE_DIVIDER].VAL[0].R = 0;
+				flexHw->MCTRL.B.LDOK = 1 << Channel / FLEXPWM_SUB_MODULE_DIVIDER;
+			}
 			break;
 		default:
 			break;
 		}
-		flexHw->MCTRL.B.LDOK = 1 << Channel / FLEXPWM_SUB_MODULE_DIVIDER;
     }
 #endif
 /*
