@@ -49,6 +49,7 @@
 #define ADJUST_VECTOR	0
 #endif
 
+
 struct TlbEntry TlbTable[]  = {
 	// TLB Entry 0 =  1M Internal flash
 	{
@@ -87,7 +88,7 @@ struct TlbEntry TlbTable[]  = {
 	}
 };
 
-
+#if defined(CFG_MCU_ARC_LP)
 /*
  * Configuration only support:
  * - Flash recovery only
@@ -119,11 +120,16 @@ const Mcu_Arc_SleepConfigType Mcu_Arc_SleepConfig =  {
 	.pData = &sleepPrivData,
 };
 
+#endif
+
 const struct Mcu_Arc_Config Mcu_Arc_ConfigData = {
+#if defined(CFG_MCU_ARC_LP)
 		.sleepConfig = &Mcu_Arc_SleepConfig,
+#endif
 		.tblTable = TlbTable,
 };
 
+#if defined(CFG_MCU_ARC_LP)
 
 /**
  * @param sleepCfg
@@ -212,3 +218,4 @@ void Mcu_Arc_SetModePost2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfi
 
 
 
+#endif
