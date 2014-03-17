@@ -108,7 +108,6 @@ void Mcu_Arc_InitClockPost( const Mcu_ClockSettingConfigType *clockSettingsPtr )
  */
 void Mcu_Arc_SetModePre( Mcu_ModeType mcuMode)
 {
-#error
 #if defined(CFG_MCU_ARC_CONFIG)
 	Mcu_Arc_SetModePre2(mcuMode, Mcu_Arc_ConfigData.sleepConfig );
 #endif
