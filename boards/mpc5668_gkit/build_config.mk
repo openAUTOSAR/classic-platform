@@ -6,6 +6,7 @@ ARCH_MCU=mpc5568
 
 # CFG (y/n) macros
 CFG=PPC BOOKE E200Z1 MPC55XX MPC5668 MPC5668G BRD_MPC5668_GKIT SPE
+CFG+=MCU_ARC_LP
 CFG+=MCU_ARC_CONFIG
 
 # What buildable modules does this board have, 

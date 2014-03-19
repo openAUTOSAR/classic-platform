@@ -101,6 +101,7 @@ void Mcu_Arc_InitClockPost( const Mcu_ClockSettingConfigType *clockSettingsPtr )
 {
 }
 
+#if defined(CFG_MCU_ARC_LP)
 /**
  *
  * @param mcuMode The mcuMode from Mcu_SetMode()
@@ -123,5 +124,5 @@ void Mcu_Arc_SetModePost( Mcu_ModeType mcuMode)
 #endif
 }
 
-
+#endif
 

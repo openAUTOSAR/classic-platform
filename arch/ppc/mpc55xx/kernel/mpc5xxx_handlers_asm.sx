@@ -154,6 +154,12 @@
 /* ----------------------------[private functions]---------------------------*/
 /* ----------------------------[public functions]----------------------------*/
 
+/* Sanity check */
+#if defined(CFG_MCU_ARC_CONFIG) && !defined(CFG_MCU_ARC_LP)
+#error You must define CFG_MCU_ARC_LP if you defined CFG_MCU_ARC_CONFIG
+#endif
+
+
 #if defined(CFG_MCU_ARC_LP)
 
 ASM_SECTION_TEXT(.text)
