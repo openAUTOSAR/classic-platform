@@ -152,14 +152,7 @@ Std_ReturnType CanSM_Internal_RequestCanIfMode( NetworkHandleType NetworkHandle,
 
 	switch (ComM_Mode) {
 		case COMM_NO_COMMUNICATION:
-/* CAN wake-up capability is not implemented so we cannot set
- * controllers into sleep because then we would be unable to
- * wake except on internal requests.
- */
-#if 0
 			CanIf_Mode = CANIF_CS_SLEEP;
-#endif
-			CanIf_Mode = CANIF_CS_STARTED;
 			break;
 		case COMM_FULL_COMMUNICATION:
 			CanIf_Mode = CANIF_CS_STARTED;
