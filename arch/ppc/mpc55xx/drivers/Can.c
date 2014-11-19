@@ -623,8 +623,7 @@ static void Can_Isr_Rx(Can_UnitType *uPtr)
 #if (USE_CAN_STATISTICS == STD_ON)
                 uPtr->stats.fifoOverflow++;
 #endif
-                canHw->IFRL.B.BUF07I = 1;
-
+                clearMbFlag(canHw, 7);
                 DET_REPORTERROR(MODULE_ID_CAN,0,0, CAN_E_DATALOST); /** @req 4.0.3/CAN395 */
             }
 
@@ -632,7 +631,7 @@ static void Can_Isr_Rx(Can_UnitType *uPtr)
             /* Check warning */
             if (iFlag & (1 << 6)) {
                 uPtr->stats.fifoWarning++;
-                canHw->IFRL.B.BUF06I = 1;
+                clearMbFlag(canHw, 6);
             }
 #endif
 
@@ -674,8 +673,7 @@ static void Can_Isr_Rx(Can_UnitType *uPtr)
             }
 
             // Clear the interrupt
-            canHw->IFRL.B.BUF05I = 1;
-
+            clearMbFlag(canHw, 5);
             if( canHw->IFRL.B.BUF05I == 0 ) {
                 iFlag ^= 1ull << mbNr;
             }
