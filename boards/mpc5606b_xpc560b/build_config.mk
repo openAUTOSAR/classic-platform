@@ -26,7 +26,7 @@ MOD_USE += MCU KERNEL ECUM
 # Default cross compiler
 COMPILER?=cw
 DEFAULT_CROSS_COMPILE = /opt/powerpc-eabispe/bin/powerpc-eabispe-
-DEFAULT_CW_COMPILE= /opt/cw
+DEFAULT_CW_COMPILE= /c/devtools/Freescale/cw_mpc5xxx_2.10
 
 # Defines
 def-y += SRAM_SIZE=0x14000

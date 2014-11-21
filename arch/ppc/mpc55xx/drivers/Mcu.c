@@ -998,9 +998,6 @@ static void Mcu_ConfigureFlash(void)
 	/* Enable pipelined reads again. */
 	FLASH.MCR.B.PRD = 0;
 
-	/* Enable error reporting on Flash (FEAR, etc will be updated) */
-	WRITE8(ECSM_BASE+ECSM_ECR,2);
-
 #elif defined(CFG_MPC5668)
 	/* Check values from cookbook and MPC5668x Microcontroller Data Sheet */
 
@@ -1020,22 +1017,16 @@ static void Mcu_ConfigureFlash(void)
 #elif defined(CFG_MPC560X)
 	CFLASH.PFCR0.R =  0x10840B6F; /* Instruction prefetch enabled and other according to cookbook */
 #endif
+
+	/* Enable error reporting on Flash (FEAR, etc will be updated) */
+	WRITE8(ECSM_BASE+ECSM_ECR,ESR_F1BC+ESR_FNCE);
 }
 
 uint32 EccErrReg = 0;
 
 void McuE_GetECCError( uint32 *err ) {
 
-	/* Clear interrupt flag */
-#if defined(CFG_MPC5668)
-	if(ECSM.ESR.B.PFNCE){
-		ECSM.ESR.B.PFNCE = 1;
-	}
 	*err = EccErrReg;
-#else
-	*err = 0;
-#endif
-
 	/* Clear stored  */
 	EccErrReg = 0;
 }
