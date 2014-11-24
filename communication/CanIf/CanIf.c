@@ -286,6 +286,7 @@ Std_ReturnType CanIf_SetControllerMode(uint8 Controller,
       return E_NOT_OK;
     }
     CanIf_Global.channelData[channel].ControllerMode = CANIF_CS_SLEEP;
+    break;
   }
 
   case CANIF_CS_STOPPED:
