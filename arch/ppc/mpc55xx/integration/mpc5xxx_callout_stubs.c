@@ -88,19 +88,23 @@ void Mpc5xxx_Panic( uint32_t error, void *pData ) {
 static uint32_t checkEcc(void) {
 	uint32_t rv = EXC_NOT_HANDLED;
 
-#if defined(USE_FEE)
+	/* cases:
+	 *     FEE    FLS
+	 * 1.   0      0    -> NOT_HANDLED
+	 * 2.   0      1    -> NOT_HANDLED
+	 * 3.   1      0    -> N/A
+	 * 4.   1      1    -> If in FEE range handle it
+	 *
+	 */
+
+#if defined(USE_FEE) && defined(USE_FLS)
 
 	uint8 esr;
 	do {
 		esr = READ8( ECSM_BASE + ECSM_ESR );
 	} while( esr != READ8( ECSM_BASE + ECSM_ESR ) );
 
-#endif
-
-#if defined(USE_FLS)
-#if defined(USE_FEE)
 	uint32_t excAddr = READ32( ECSM_BASE + ECSM_FEAR );
-#endif
 
 	/* Find FLS errors */
 	if (esr & ESR_FNCE) {
@@ -110,14 +114,12 @@ static uint32_t checkEcc(void) {
 		/* Clear the exception */
 		WRITE8(ECSM_BASE+ECSM_ESR,ESR_F1BC+ESR_FNCE);
 
-#if defined(USE_FEE)
 		/* Check if we are in FEE range */
 		if ( ((FEE_BANK1_OFFSET >= excAddr) && ( excAddr < (FEE_BANK1_OFFSET + FEE_BANK1_LENGTH))) ||
 			 ((FEE_BANK2_OFFSET >= excAddr) && ( excAddr < (FEE_BANK2_OFFSET + FEE_BANK2_LENGTH))) )
 		{
 			rv = (EXC_HANDLED | EXC_ADJUST_ADDR);
 		}
-#endif
 	}
 #endif	 /* USE_FLS */
 
