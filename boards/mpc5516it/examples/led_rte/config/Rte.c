@@ -37,8 +37,8 @@ Std_ReturnType Rte_Start(void) {
 void Scheduled(void) {
 	EventMaskType eventMask = 0;
 	while (1) {
-		WaitEvent(EVENT_MASK_ScheduleEvent);
-		GetResource(RES_SCHEDULER);
+		WaitEvent (EVENT_MASK_ScheduleEvent);
+		GetResource (RES_SCHEDULER);
 		GetEvent(TASK_ID_Scheduled, &eventMask);
 		ClearEvent(EVENT_MASK_ScheduleEvent);
 		ReleaseResource(RES_SCHEDULER);
