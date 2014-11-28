@@ -124,8 +124,20 @@ LD = $(DIAB_BIN)/dld.exe
 
 LDFLAGS += $(DIAB_TARGET)
 LDFLAGS += -m6
+LDFLAGS += -Xremove-unused-sections
 
-ifeq ($(DIAB_VERSION),5.7.0.0)
+ifeq ($(DIAB_VERSION),5.9.3.0)
+  # Diab is having problems finding the right libs,
+  # so do it manually
+  lib-y +=-li
+  lib-y +=-lchar
+  lib-y +=-limpl
+  lib-y +=-limpfp
+  lib-y +=-lg
+  lib-y +=-lc
+  lib-y +=-lcfp
+  lib-y +=-lm
+else ifeq ($(DIAB_VERSION),5.7.0.0)
   # Diab is having problems finding the right libs,
   # so do it manually
   lib-y +=-li
