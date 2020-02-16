@@ -1,0 +1,14 @@
+usb_blog.txt
+
+ Created on: 2013-11-6
+     Author: Zhang Shuzhou
+
+1: in function usb_control_msg;
+
+   in usbcore.c/usb_control_msg();/status = req->status;    //pay attention to!!!
+   
+   
+   
+2: today is 2014-04-03, shuzhou zhang try to improve the stability of 
+   Ethernet and usb. 
+   God work together with me everyday. Please, help me!

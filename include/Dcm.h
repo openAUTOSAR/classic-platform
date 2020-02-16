@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 
 
@@ -25,15 +24,20 @@
 
 #include "Modules.h"
 
+#define DCM_AR_RELEASE_MAJOR_VERSION   		4
+#define DCM_AR_RELEASE_MINOR_VERSION   		0
+#define DCM_AR_RELEASE_REVISION_VERSION		3
+
+
 #define DCM_MODULE_ID			MODULE_ID_DCM /** @req DCM052 */
 #define DCM_VENDOR_ID			VENDOR_ID_ARCCORE
 
-#define DCM_SW_MAJOR_VERSION    1
+#define DCM_SW_MAJOR_VERSION    2
 #define DCM_SW_MINOR_VERSION   	0
 #define DCM_SW_PATCH_VERSION    0
-#define DCM_AR_MAJOR_VERSION    3
-#define DCM_AR_MINOR_VERSION    1
-#define DCM_AR_PATCH_VERSION    5
+#define DCM_AR_MAJOR_VERSION    DCM_AR_RELEASE_MAJOR_VERSION
+#define DCM_AR_MINOR_VERSION    DCM_AR_RELEASE_MINOR_VERSION
+#define DCM_AR_PATCH_VERSION    DCM_AR_RELEASE_REVISION_VERSION
 
 #include "Dcm_Types.h"
 #include "Dcm_Cfg.h"
@@ -52,15 +56,19 @@
 
 // Other error codes reported by this module
 #define DCM_E_CONFIG_INVALID				0x40
+#define DCM_E_TP_LENGTH_MISMATCH			0x50
+#define DCM_E_UNEXPECTED_RESPONSE           0x60
+#define DCM_E_UNEXPECTED_EXECUTION          0x61
 #define DCM_E_NOT_SUPPORTED					0xfe
 #define DCM_E_NOT_IMPLEMENTED_YET			0xff
 
 // Service IDs in this module defined by Autosar
+#define DCM_START_OF_RECEPTION_ID			0x00
 #define DCM_INIT_ID							0x01
-#define DCM_PROVIDE_RX_BUFFER_ID			0x02
-#define DCM_RX_INDICATION_ID				0x03
-#define DCM_PROVIDE_TX_BUFFER_ID			0x04
-#define DCM_TX_CONFIRMATION_ID				0x05
+#define DCM_COPY_RX_DATA_ID					0x02
+#define DCM_TP_RX_INDICATION_ID				0x03
+#define DCM_COPY_TX_DATA_ID					0x04
+#define DCM_TP_TX_CONFIRMATION_ID			0x05
 #define DCM_GET_SES_CTRL_TYPE_ID			0x06
 #define DCM_GET_SECURITY_LEVEL_ID			0x0d
 #define DCM_GET_ACTIVE_PROTOCOL_ID			0x0f
@@ -73,6 +81,7 @@
 #define DCM_HANDLE_RESPONSE_TRANSMISSION_ID	0x80
 #define DCM_UDS_READ_DTC_INFO_ID			0x81
 #define DCM_UDS_RESET_ID					0x82
+#define DCM_UDS_COMMUNICATION_CONTROL_ID    0x83
 #define DCM_CHANGE_DIAGNOSTIC_SESSION_ID	0x88
 #define DCM_GLOBAL_ID						0xff
 
@@ -85,7 +94,7 @@
 #define Dcm_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,DCM) /** @req DCM065 */ /** @req DCM335 */ /** @req DCM336 */
 #endif /* DCM_VERSION_INFO_API */
 
-void Dcm_Init( void ); /** @req DCM037 */
+void Dcm_Init( const Dcm_ConfigType *ConfigPtr ); /** @req DCM037 */
 
 
 /*
@@ -108,7 +117,6 @@ Dcm_ReturnReadMemoryType Dcm_ReadMemory(Dcm_OpStatusType OpStatus, uint8 MemoryI
 void Dcm_DiagnosticSessionControl(Dcm_SesCtrlType session);
 Std_ReturnType DcmE_EcuReset(Dcm_EcuResetType resetType);
 void DcmE_EcuPerformReset(Dcm_EcuResetType resetType);
-
 void Dcm_E_CommunicationControl(uint8 subFunction, uint8 communicationType, Dcm_NegativeResponseCodeType *responseCode );
 
 #endif /*DCM_H_*/

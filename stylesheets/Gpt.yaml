@@ -1,0 +1,23 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+# Container GptClockReferencePoint
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: GptClockReference
+  mcals: [ MPC560x, MPC551x, MPC5567, MPC5744P ]
+
+# Container GptChannelConfiguration  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: GptChannelId
+  mcals: [ MPC560x, MPC551x, MPC5567, MPC5744P ]
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: GptChannelTickFrequency
+  mcals: [ MPC560x, MPC551x, MPC5567, MPC5744P ]
+    
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: GptChannelTickValueMax
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: GptChannelClkSrcRef
+  mcals: [ MPC560x, MPC551x, MPC5567, MPC5744P ]

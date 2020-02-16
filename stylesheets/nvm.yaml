@@ -1,0 +1,118 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+########################################################
+# Hidden parameters in NvMCommon 
+########################################################
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMCompiledConfigId
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMBswMMultiBlockJobStatusInformation
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMCrcNumOfBytes
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMDrvModeSwitch
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMDynamicConfiguration
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMJobPrioritization
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMRepeatMirrorOperations 
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMSizeImmediateJobQueue 
+
+########################################################
+# Hidden parameters in NvMBlockDescriptor
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMBlockJobPriority
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMBlockUseSyncMechanism
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMBswMBlockStatusInformation
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMBswMBlockStatusInformation
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMMaxNumOfReadRetries
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMMaxNumOfWriteRetries
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMNvramBlockIdentifier
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMNvramDeviceId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMReadRamBlockFromNvCallback
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMSelectBlockForWriteAll
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMStaticBlockIDCheck
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMWriteBlockOnce
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMWriteRamBlockToNvCallback
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMWriteVerification
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMWriteVerificationDataSize
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMResistantToChangedSw
+  
+  
+########################################################
+# Hidden parameters in NvMEaRef 
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMNameOfEaBlock
+  
+########################################################
+# Hidden parameters in NvMFeeRef  
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NvMNameOfFeeBlock 
+  
+########################################################
+# Hidden parameters in NvmDemEventParameterRefs  
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NVM_E_INTEGRITY_FAILED
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NVM_E_LOSS_OF_REDUNDANCY
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NVM_E_QUEUE_OVERFLOW
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NVM_E_REQ_FAILED
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NVM_E_VERIFY_FAILED
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NVM_E_WRITE_PROTECTED
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NVM_E_WRONG_BLOCK_ID

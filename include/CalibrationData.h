@@ -9,6 +9,13 @@ extern char __CALIB_RAM_START;
 extern char __CALIB_RAM_END;
 extern char __CALIB_ROM_START;
 #endif /* CALIBRATION_ENABLED */
+
+
+#pragma section data_type ".calib_shared"    ".calib_shared"
+#pragma section data_type ".calibration"     ".calibration"
+#pragma section data_type ".calib_component" ".calib_component"
+
+
 #define ARC_DECLARE_CALIB(type, name) type __attribute__((section (".calibration"))) name
 #define ARC_DECLARE_CALIB_SHARED(type, name) type __attribute__((section (".calib_shared"))) name
 #define ARC_DECLARE_CALIB_EXTERN(type, name) extern type name

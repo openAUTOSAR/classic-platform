@@ -192,7 +192,7 @@ __FLS_PROG_START__ = 0;	/* Must be aligned to a sector start. */
 	.init_stack ALIGN(16) (NOLOAD) : 
 	{	
 		__SP_END	= .;
-		. = . + 1000; 	
+		. = . + 1024; 	
 		__SP_INIT 	= .; 
 	} > ram
 	

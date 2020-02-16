@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 #include "Os.h"
 #include "application.h"
@@ -51,7 +50,7 @@ RM:
 5. The  general  restriction  on  some  system  calls  that  they  are  not  to  be  called  with  resources
   occupied (chapter 8.2) does not apply to internal resources, as internal resources are handled
   within  those  calls.  However,  all  standard  resources  have  to  be  released  before  the  internal
-  resource can be released (see chapter 8.2, “LIFO principle”).
+  resource can be released (see chapter 8.2, ï¿½LIFO principleï¿½).
 6. Check LIFO order. Return E_OS_ACCESS if not in LIFO order..
 7. Test Os_IsrAddResource().
 
@@ -155,7 +154,7 @@ StatusType GetResource( ResourceType ResID ) {
 
 	Irq_Save(flags);
 
-	if( Os_Sys.intNestCnt != 0 ) {
+	if( OS_SYS_PTR->intNestCnt != 0 ) {
 
 		/* For interrupts to the scheduler resource seems just dumb to get */
 		OsIsrVarType *isrPtr = Os_SysIsrGetCurr();
@@ -182,7 +181,7 @@ StatusType GetResource( ResourceType ResID ) {
 		OsTaskVarType *taskPtr = Os_SysTaskGetCurr();
 
 		if( ResID == RES_SCHEDULER ) {
-			rPtr = &Os_Sys.resScheduler;
+			rPtr = &OS_SYS_PTR->resScheduler;
 		} else {
 			/* Check we can access it */
 			if( (taskPtr->constPtr->resourceAccess & (1<< ResID)) == 0 ) {
@@ -234,7 +233,7 @@ StatusType ReleaseResource( ResourceType ResID) {
 
 	Irq_Save(flags);
 	if( ResID == RES_SCHEDULER ) {
-		rPtr = &Os_Sys.resScheduler;
+		rPtr = &OS_SYS_PTR->resScheduler;
 	} else {
 		/* Check we can access it */
 		if( (pcbPtr->constPtr->resourceAccess & (1<< ResID)) == 0 ) {
@@ -263,7 +262,7 @@ StatusType ReleaseResource( ResourceType ResID) {
 
 	/* do a rescheduling (in some cases) (see OSEK OS 4.6.1) */
 	if ( (pcbPtr->constPtr->scheduling == FULL) &&
-		 (Os_Sys.intNestCnt == 0) &&
+		 (OS_SYS_PTR->intNestCnt == 0) &&
 		 (Os_SchedulerResourceIsFree()) ) {
 
 		OsTaskVarType* top_pcb = Os_TaskGetTop();
@@ -320,10 +319,10 @@ void Os_ResourceInit( void ) {
 
 
 	/* For now, assign the scheduler resource here */
-	Os_Sys.resScheduler.ceiling_priority = OS_RES_SCHEDULER_PRIO;
-	strcpy(Os_Sys.resScheduler.id,"RES_SCHEDULER");
-	Os_Sys.resScheduler.nr = RES_SCHEDULER;
-	Os_Sys.resScheduler.owner = NO_TASK_OWNER;
+	OS_SYS_PTR->resScheduler.ceiling_priority = OS_RES_SCHEDULER_PRIO;
+	strcpy(OS_SYS_PTR->resScheduler.id,"RES_SCHEDULER");
+	OS_SYS_PTR->resScheduler.nr = RES_SCHEDULER;
+	OS_SYS_PTR->resScheduler.owner = NO_TASK_OWNER;
 
 	/* Calculate ceiling priority
 	 * We make this as simple as possible. The ceiling priority

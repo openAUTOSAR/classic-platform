@@ -1,0 +1,206 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+#########################################################
+# Hidden parameters in ComGeneral
+#########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComEnableMDTForCyclicTransmission
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComRetryFailedTransmitRequests
+
+#########################################################
+# Hidden parameters in ComConfig
+#########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComConfigurationId
+
+#########################################################
+# Hidden parameters in ComTimeBase
+#########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComGwTimeBase
+  
+#########################################################
+# Hidden parameters in ComFilter
+#########################################################
+
+- !!com.arccore.common.yaml.data.styles.DisabledContainer
+  name: ComFilter
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComFilterAlgorithm
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComFilterMask
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComFilterMax
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComFilterMin
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComFilterOffset
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComFilterPeriod
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComFilterX
+  
+#########################################################
+# Hidden parameters in ComIPdu
+#########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComIPduCancellationSupport
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComIPduHandleId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComIPduTriggerTransmitCallout
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComIPduType
+  
+#########################################################
+# Hidden parameters in ComIPduCounter
+#########################################################
+
+- !!com.arccore.common.yaml.data.styles.DisabledContainer
+  name: ComIPduCounter
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComIPduCounterErrorNotification
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComIPduCounterSize
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComIPduCounterStartPosition
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComIPduCounterThreshold
+  
+#########################################################
+# Hidden parameters in ComIPduReplication
+#########################################################
+
+- !!com.arccore.common.yaml.data.styles.DisabledContainer
+  name: ComIPduReplication
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComIPduReplicationQuorum
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComIPduReplicaRef
+  
+#########################################################
+# Hidden parameters in ComTxIPdu
+#########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComTxIPduClearUpdateBit
+
+#########################################################
+# Hidden parameters in ComIPduGroup
+#########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComIPduGroupHandleId
+  
+#########################################################
+# Hidden parameters in ComSignal
+#########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComDataInvalidAction
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComHandleId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComInvalidNotification
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComSignalDataInvalidValue
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComErrorNotification
+
+#########################################################
+# Hidden parameters in ComSignalGroup
+#########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComDataInvalidAction
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComHandleId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComInvalidNotification
+    
+#########################################################
+# Hidden parameters in ComGroupSignal
+#########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComHandleId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComSignalDataInvalidValue
+    
+#########################################################
+# Hidden parameters in ComGwSourceDescription/ComGwDestinationDescription 
+#########################################################
+
+- !!com.arccore.common.yaml.data.styles.DisabledContainer
+  name: ComGwMapping
+
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComGwIPduRef
+  
+#########################################################
+# Hidden parameters in ComGwSignal
+#########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComGwSignalRef
+
+#########################################################
+# IncludedContainer
+#########################################################  
+  
+- !!com.arccore.common.yaml.data.styles.IncludedContainer
+  parent: ComIPdu
+  child: ComTxIPdu
+ 
+- !!com.arccore.common.yaml.data.styles.IncludedContainer
+  parent: ComTxIPdu
+  child: ComTxModeTrue
+ 
+- !!com.arccore.common.yaml.data.styles.IncludedContainer
+  parent: ComTxModeTrue
+  child: ComTxMode
+  
+#########################################################
+# ParameterGroup
+#########################################################
+
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Signals
+  members: [ ComIPduSignalRef, ComIPduSignalGroupRef, ComIPduSignalProcessing ]
+
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Signal Data Settings
+  members: [ ComBitPosition, ComBitSize, ComIPduSignalProcessing, ComSignalLength, ComSignalType, ComSignalInitValue, ComSignalEndianness, ComSignalDataInvalidValue, ComUpdateBitPosition ]
+  
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Signal Actions and Notifications
+  members: [ ComDataInvalidAction, ComRxDataTimeoutAction, ComTimeoutNotification, ComNotification, ComInvalidNotification, ComErrorNotification ]
+  
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Signal Timeout
+  members: [ ComTimeout, ComFirstTimeout]
+
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Maximum Number of Items
+  members: [ ComSupportedGroupSignals, ComSupportedIPduGroups, ComSupportedIPdus, ComSupportedSignals, ComRamBufferSize]
+  

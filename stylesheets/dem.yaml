@@ -1,0 +1,269 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+#########################################################
+# Hidden parameters in DemConfigSet
+#########################################################
+# DemDTCClass 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemDTCFunctionalUnit
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemDTCSeverity 
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemImmediateNvStorage
+
+## DemCallbackInitMForF
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemCallbackInitMForFFnc
+
+# DemEventParameter 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemEventId
+
+## DemEventClass  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemConsiderPtoStatus
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemEventOBDReadinessGroup
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemEventSignificance
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemFFPrestorageSupported
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemStorageConditionGroupRef
+
+### DemDebounceAlgorithmClass  
+#### DemDebounceTimeBase  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemDebounceTimeFailedThreshold
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemDebounceTimePassedThreshold
+
+## DemIndicatorAttribute  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemIndicatorBehaviour
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemIndicatorFailureCycleCounterThreshold
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemIndicatorFailureCycleRef
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemIndicatorFailureCycleSource
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemIndicatorHealingCycleCounterThreshold
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemIndicatorHealingCycleRef
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemIndicatorRef  
+  
+#########################################################
+# Hidden parameters in DemGeneral
+#########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemAgingCycleCounterProcessing
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemClearDTCBehavior
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemDebounceCounterBasedSupport
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemDebounceTimeBasedSupport
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemDTCSuppressionSupport
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemEventCombinationSupport
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemImmediateNvStorageLimit
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemBswErrorBufferSize
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemMaxNumberEventEntryMirror
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemMaxNumberEventEntryPermanent
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemMaxNumberPrestoredFF
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemMILIndicatorRef
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemOBDSupport
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemOccurrenceCounterProcessing
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemOperationCycleProcessing
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemOperationCycleStatusStorage
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemPTOSupport
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemStatusBitHandlingTestFailedSinceLastClear
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemStorageConditionSupport
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemTaskTime
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemTriggerDcmReports
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemTriggerDltReports
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemTriggerFiMReports
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemTriggerMonitorInitBeforeClearOk
+  
+# DemCallbackDTCStatusChanged 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemCallbackDTCStatusChangedFnc
+
+# DemDataElementClass
+## DemExternalCSDataElementClass
+
+## DemExternalSRDataElementClass
+# Want to hide this parameter for DemExternalSRDataElementClass
+#- !!com.arccore.common.yaml.data.styles.HiddenParameter
+#  name: DemDataElementDataSize
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemDataElementInstanceRef
+
+# DemEnableCondition
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemEnableConditionId
+
+# DemGeneralOBD
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemOBDInputAcceleratorPaddleInformation
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemOBDInputAmbientPressure
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemOBDInputAmbientTemperature
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemOBDInputDistanceInformation
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemOBDInputEngineSpeed
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemOBDInputEngineTemperature
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemOBDInputProgrammingEvent
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemOBDInputVehicleSpeed
+
+# DemGroupOfDTC
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemGroupDTCs
+
+# DemIndicator
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemIndicatorID
+
+# DemRatioId
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemDiagnosticEventRef
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemFunctionIdRef
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemIUMPRGroup
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemRatioIdType
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemSecondaryFunctionIdRef
+
+# DemStorageCondition
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemStorageConditionId
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemStorageConditionStatus
+ 
+# DemStorageConditionGroup  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DemStorageConditionRef
+
+#########################################################
+# Parameter groups
+#########################################################
+# DemConfigSet->DemEventParameter
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Freeze Frame Settings
+  members: [ DemFreezeFrameRecNumClassRef, DemFreezeFrameClassRef, DemMaxNumberFreezeFrameRecords ]
+  
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Extended Data Settings
+  members: [ DemExtendedDataClassRef ]    
+
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: DTC Settings
+  members: [ DemDTCClassRef ] 
+  
+# DemConfigSet->DemEventParameter->DemEventClass
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Aging Settings
+  members: [ DemAgingAllowed, DemAgingCycleCounterThreshold, DemAgingCycleRef ]   
+
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Fault Confirmation Settings
+  members: [ DemEventFailureCycleCounterThreshold, DemEventFailureCycleRef ]  
+  
+# DemGeneral  
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Buffer Settings
+  members: [ DemMaxNumberEventEntryPrimary, ArcMaxNumberFreezeFrameEntryPrimary, ArcMaxNumberExtendedDataEntryPrimary, ArcMaxNumberFreezeFrameEntrySecondary, ArcMaxNumberExtendedDataEntrySecondary, DemMaxNumberEventEntrySecondary ] 
+
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: DTC Settings
+  members: [ DemDtcStatusAvailabilityMask, DemTypeOfDTCSupported, DemStatusBitStorageTestFailed ]
+
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Freeze Frame Settings
+  members: [ DemTypeOfFreezeFrameRecordNumeration, DemFreezeFrameCapture ]  
+  
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Extended Data Settings
+  members: [ DemExtendedDataCapture ]         
+  
+- !!com.arccore.common.yaml.data.styles.DisplayName
+  name: DemCallbackInitMForEFnc
+  display: Dem Callback Init Monitor For Event Fnc

@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 /*
  * DESCRIPTION
  *  A circular buffer implementation.
@@ -82,13 +81,17 @@ CirqBufferType CirqBuffStatCreate(void *buffer, int maxCnt, size_t dataSize) {
 
 CirqBufferType *CirqBuffDynCreate( size_t size, size_t dataSize ) {
 	CirqBufferType *cPtr;
+	/*lint -save -e586 */
 	cPtr = malloc(sizeof(CirqBufferType));
+	/*lint -restore */
 	if( cPtr == NULL ) {
 		return NULL;
 	}
 	cPtr->maxCnt = size;
 	cPtr->dataSize = dataSize;
+	/*lint -save -e586 */
 	cPtr->bufStart = malloc(dataSize*size);
+	/*lint -restore */
 	cPtr->bufEnd = (char *)cPtr->bufStart + dataSize*size;
 	cPtr->head = cPtr->bufStart;
 	cPtr->tail = cPtr->bufStart;
@@ -99,8 +102,10 @@ CirqBufferType *CirqBuffDynCreate( size_t size, size_t dataSize ) {
 
 
 int CirqBuffDynDestroy(CirqBufferType *cPtr ) {
+	/*lint -save -e586 */
 	free(cPtr->bufStart);
 	free(cPtr);
+	/*lint -restore */
 	return 0;
 }
 

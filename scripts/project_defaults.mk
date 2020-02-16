@@ -25,14 +25,17 @@ ifneq (${MAKELEVEL},0)
 	inc-y += $(ROOTDIR)/system/kernel/include
 	
 	# The more precise configuration, the higher preceedance.
-	VPATH := ../config/$(BOARDDIR) ../config $(VPATH)
-	inc-y := ../config/$(BOARDDIR) ../config $(inc-y)
+	VPATH := ../config/$(board_name) ../config $(VPATH)
+	inc-y := ../config/$(board_name) ../config $(inc-y)
 
 	ldcmdfile-y = linkscript_$(COMPILER).lcf
 	vpath %.ldf $(ROOTDIR)/$(ARCH_PATH-y)/scripts
+	vpath %.ldf $(board_path)
+	
 
 	# What I want to build
 	build-exe-y = $(PROJECTNAME).elf
+	os-orti-y = $(PROJECTNAME).orti
 
 
 else

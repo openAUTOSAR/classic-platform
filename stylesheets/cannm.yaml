@@ -1,0 +1,104 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+# CanNmGlobalConfig
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmBusLoadReductionEnabled
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmBusSynchronizationEnabled
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmCoordinatorSyncSupport
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmImmediateTxconfEnabled
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmNumberOfChannels
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmPnEiraCalcEnabled
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmPnEiraRxNSduRef
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmPnResetTime
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmRemoteSleepIndEnabled
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmRepeatMsgIndEnabled
+  
+# CanNmChannelConfig
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmAllNmMessagesKeepAwake
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmBusLoadReductionActive
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmCarWakeUpBitPosition
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmCarWakeUpBytePosition
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmCarWakeUpFilterEnabled
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmCarWakeUpFilterNodeId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmCarWakeUpRxEnabled
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmPnEnabled
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmPnEraCalcEnabled
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmPnEraRxNSduRef
+    
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmPnHandleMultipleNetworkRequests
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmRemoteSleepIndTime
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   CanNmMsgReducedTime
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   CanNmImmediateRestartEnabled
+
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Immediate Transmission
+  members: [ CanNmImmediateNmCycleTime, CanNmImmediateNmTransmissions ]
+  
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Frame Content
+  members: [ CanNmPduCbvPosition, CanNmPduNidPosition, CanNmUserDataLength ]
+
+  
+# CanNmRxPdu
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmRxPduId
+
+# CanNmTxPdu
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmTxConfirmationPduId
+
+# CanNmTxUserPdu
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanNmTxUserDataPduId
+
+  

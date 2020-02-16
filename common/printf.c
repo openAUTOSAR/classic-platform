@@ -81,7 +81,12 @@
 #endif
 #include <ctype.h>
 
-//#define HOST_TEST	1
+//TEMP
+#if defined(CFG_ARM_V6)
+#include "Uart.h"
+#endif
+
+//#define PRINTF_HOST_TEST	1
 
 #if defined(__IAR_SYSTEMS_ICC__)
 #endif
@@ -115,7 +120,7 @@ int fputs( const char *s, FILE *file ) {
  * @param file
  * @return
  */
-int fgetc( FILE *file ) {
+int autosar_fgetc( FILE *file ) {
 	char c;
 	int fd;
 	fd = fileno(file);
@@ -133,7 +138,7 @@ int fgetc( FILE *file ) {
  * @param file
  * @return
  */
-int fgets( char *str, int n, FILE *file ) {
+int autosar_fgets( char *str, int n, FILE *file ) {
 	int fd;
 	fd = fileno(file);
 	return read(fd,str,n);
@@ -234,12 +239,17 @@ static inline int emitChar( FILE *file, char **buf, char c, int *left ) {
 	}
 	--(*left);
 	if( buf == NULL ) {
-#if HOST_TEST
+#if PRINTF_HOST_TEST
 		putc(c, stdout);
 		fflush(stdout);
 #else
+//TEMP-#if
+#if defined(CFG_ARM_V6)
+		mini_uart_send(c);
+#else
 		putc(c,stdout);
-#endif /* HOST_TEST */
+		#endif
+#endif /* PRINTF_HOST_TEST */
 	} else {
 		**buf = c;
 		(*buf)++;
@@ -248,7 +258,7 @@ static inline int emitChar( FILE *file, char **buf, char c, int *left ) {
 }
 
 
-#if defined(HOST_TEST)
+#if defined(PRINTF_HOST_TEST)
 /**
  * Convert a number to a string
  *
@@ -536,5 +546,4 @@ int main(void) {
 	return 0;
 }
 #endif
-
 

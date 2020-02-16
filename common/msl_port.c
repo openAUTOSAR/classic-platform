@@ -9,7 +9,7 @@
 Methods called by MW MSL libraries to perform console IO:
 */
 
-#include "Os.h"
+#include "Cpu.h"
 #include "Ramlog.h"
 #include "../../MSL_Common_Embedded/Include/UART.h"
 #include <stddef.h>
@@ -132,7 +132,7 @@ void exit(int exit ) {
 	 *
 	 * TODO: Call reset of card?
 	 * */
-	DisableAllInterrupts();
+	Irq_Disable();
 	while(1){}
 }
 

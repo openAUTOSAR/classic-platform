@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 /* Configure "rules"
  * - Don't pollute the namespace with the generator tools. The tools should
@@ -36,6 +35,10 @@
 // +1 here.. easy to have a reference..
 #define GEN_TRUSTEDFUNCTIONS_LIST trusted_func_t os_cfg_trusted_list[OS_SERVICE_CNT];
 
+/*
+ *---------------------- APPLICATIONS --------------------------------------
+ */
+
 #define GEN_APPLICATION_HEAD const OsAppConstType Os_AppConst[OS_APPLICATION_CNT]
 
 #define GEN_APPLICATION(	_id, _name, _trusted, _core, _startuphook, _shutdownhook, _errorhook, \
@@ -51,9 +54,11 @@
 	.restartTaskId = _restart_task				\
 }
 
+/*
+ *---------------------- TASKS ---------------------------------------------
+ */
+
 #define GEN_TASK_HEAD const OsTaskConstType  Os_TaskConstList[OS_TASK_CNT]
-
-
 
 /**
  * _id
@@ -109,6 +114,10 @@
 	.accessingApplMask = _accessing_appl_mask, \
 }
 
+/*
+ *---------------------- INTERRUPTS ----------------------------------------
+ */
+
 #define GEN_ISR_HEAD const OsIsrConstType Os_IsrConstList[OS_ISR_CNT]
 
 #define GEN_ISR1( _name, _vector, _priority, _entry, _appOwner ) \
@@ -137,8 +146,11 @@
 #define GEN_ISR_MAP uint8_t Os_VectorToIsr[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS]
 
 
-#define GEN_RESOURCE_HEAD OsResourceType resource_list[OS_RESOURCE_CNT]
+/*
+ *---------------------- RESOURCES -----------------------------------------
+ */
 
+#define GEN_RESOURCE_HEAD OsResourceType resource_list[OS_RESOURCE_CNT]
 
 /**
  * _id
@@ -154,6 +166,13 @@
 	.applOwnerId = _appl_owner, 				\
 	.accessingApplMask = _accessing_appl_mask 	\
 }
+
+
+/*
+ *---------------------- COUNTERS ------------------------------------------
+ */
+
+#define GEN_COUNTER_HEAD OsCounterType counter_list[OS_COUNTER_CNT]
 
 /**
  * _id
@@ -180,7 +199,6 @@
  *    NOT USED. Set to 0
  */
 
-#define GEN_COUNTER_HEAD OsCounterType counter_list[OS_COUNTER_CNT]
 #define GEN_COUNTER( _id, _name, _type, _unit, 	\
 					_maxallowedvalue, 			\
 					_ticksperbase, 				\
@@ -197,6 +215,12 @@
 	.applOwnerId = _appl_owner, \
 	.accessingApplMask = _accessing_appl_mask, \
 }
+
+/*
+ *---------------------- ALARMS --------------------------------------------
+ */
+
+#define GEN_ALARM_HEAD OsAlarmType alarm_list[OS_ALARM_CNT]
 
 #define	GEN_ALARM_AUTOSTART_NAME(_id)    &(Os_AlarmAutoStart_ ## _id)
 
@@ -215,8 +239,6 @@
 			.cycleTime = _cycle_time, \
 			.appModeRef = _app_mode \
 		}
-
-#define GEN_ALARM_HEAD OsAlarmType alarm_list[OS_ALARM_CNT]
 
 /**
  * _id
@@ -361,9 +383,32 @@
 	.accessingApplMask = _accessing_appl_mask, \
 }
 
+/*
+ *---------------------- SPINLOCKS -----------------------------------------
+ */
+
+#define GEN_SPINLOCK_HEAD OsSpinlockType spinlock_list[OS_SPINLOCK_CNT]
+
+/**
+ * _id
+ *    Id of the spinlock
+ * _name
+ *    Name of the spinlock, string
+ * _lock
+ *    SPINLOCK_UNLOCKED, SPINLOCK_LOCKED
+ */
+#define GEN_SPINLOCK( _id, _name, _lock, _accessing_appl_mask )	\
+{	                                                          	\
+	.id   = _id,                                            	\
+	.name = _name,                                            	\
+	.lock = _lock,                                            	\
+	.accessingApplMask = _accessing_appl_mask,                	\
+}
+
+
 
 #define GEN_HOOKS( _startup, _protection, _shutdown, _error, _pretask, _posttask ) \
-struct OsHooks os_conf_global_hooks = { \
+const struct OsHooks os_conf_global_hooks = { \
 		.StartupHook = _startup, 		\
 		.ProtectionHook = _protection, 	\
 		.ShutdownHook = _shutdown,		\

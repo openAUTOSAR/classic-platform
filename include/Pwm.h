@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 /** @addtogroup Pwm PWM Driver
  *  @{ */
@@ -26,7 +25,7 @@
 #include "Modules.h"
 
 #define PWM_SW_MAJOR_VERSION	1
-#define PWM_SW_MINOR_VERSION	2
+#define PWM_SW_MINOR_VERSION	0
 #define PWM_SW_PATCH_VERSION	0
 
 #define PWM_MODULE_ID			MODULE_ID_PWM
@@ -40,6 +39,8 @@
  * PWM094: Std_VersionInfoType shall be imported from Std_Types.h
  */
 #include "Std_Types.h"
+
+#include "Dma.h"
 
 /*
  * PWM003: The detection of development errors is configurable (ON/OFF) at pre-
@@ -104,6 +105,15 @@ typedef void (*Pwm_NotificationHandlerType)();
 
 extern const Pwm_ConfigType PwmConfig;
 
+/* PWM channel information and control structures */
+struct PwmChannel {
+	Dma_CBType*  	cb_base; 			// The address of the first DMA control block for this channel
+	uint32*			data_base;			// The address of the first data sample for this channel
+	uint32 			cycle_time_us;		// Cycle time [microsec]
+	uint16 			prev_pulse_start;	// The sample number (relative to cycle start) of the previous pulse start
+	uint16 			prev_pulse_width;	// Number of samples in the previous pulse
+};
+
 /*
  * With MPC551x, only the first 16 eMIOS channels are of the usable class for
  * hardware PWM.
@@ -124,7 +134,7 @@ typedef enum
   PWM_E_PARAM_CHANNEL,
   PWM_E_PERIOD_UNCHANGEABLE,
   PWM_E_ALREADY_INITIALIZED
-}Pwm_DetErrorType;
+} Pwm_DetErrorType;
 
 /** API service ID's */
 typedef enum
@@ -138,43 +148,33 @@ typedef enum
 	  PWM_DISABLENOTIFICATION_ID,
 	  PWM_ENABLENOTIFICATION_ID,
 	  PWM_GETVERSIONINFO_ID,
-}Pwm_APIServiceIDType;
+} Pwm_APIServiceIDType;
 
 /*
  * Implemented functions
  ****************************/
 
-#if ( PWM_VERSION_INFO_API == STD_ON)
-#define Pwm_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,PWM)
-#endif
-
-
+/* [SWS_Pwm_00095] - Service for PWM initialization. */
 void Pwm_Init(const Pwm_ConfigType* ConfigPtr);
-void Pwm_DeInit();
-
-void Pwm_SetPeriodAndDuty(Pwm_ChannelType ChannelNumber, Pwm_PeriodType Period,
-		Pwm_DutyCycleType DutyCycle);
-
-void Pwm_SetDutyCycle(Pwm_ChannelType ChannelNumber, Pwm_DutyCycleType DutyCycle);
-#if ( PWM_SET_OUTPUT_TO_IDLE_API == STD_ON ) || (PWM_DE_INIT_API==STD_ON)
+/* [SWS_Pwm_00096] - Service for PWM De-Initialization. */
+void Pwm_DeInit(void);
+/* [SWS_Pwm_00097] - Service sets the duty cycle of a PWM channel. */
+void Pwm_SetDutyCycle(Pwm_ChannelType ChannelNumber,
+					  Pwm_DutyCycleType DutyCycle);
+/* [SWS_Pwm_00098] - Service sets the period and the duty cycle of a PWM channel. */
+void Pwm_SetPeriodAndDuty(Pwm_ChannelType ChannelNumber,
+						  Pwm_PeriodType Period,
+						  Pwm_DutyCycleType DutyCycle);
+/* [SWS_Pwm_0099] - Service sets the PWM output to the configured Idle state. */
 void Pwm_SetOutputToIdle(Pwm_ChannelType ChannelNumber);
-#endif
-/*
- * PWM085: The function Pwm_GetOutputState shall be pre compile configurable
- * ON/OFF by the configuration parameter PwmGetOutputState
- */
+/* [SWS_Pwm_00100] - Service to read the internal state of the PWM output signal. */
 Pwm_OutputStateType Pwm_GetOutputState(Pwm_ChannelType ChannelNumber);
-
-/*
- * PWM113: The function EnableNotification shall be pre compile configurable
- * ON/OFF by the configuration parameter PwmNotificationSupported
- *
- * PWM112: The function DisableNotification shall be pre compile configurable
- * ON/OFF by the configuration parameter PwmNotificationSupported
- */
+/* [SWS_Pwm_00101] - Service to disable the PWM signal edge notification. */
 void Pwm_DisableNotification(Pwm_ChannelType ChannelNumber);
-void Pwm_EnableNotification(Pwm_ChannelType ChannelNumber,
-		Pwm_EdgeNotificationType Notification);
+/* [SWS_Pwm_00102] - Service to enable the PWM signal edge notification according to notification parameter. */
+void Pwm_EnableNotification(Pwm_ChannelType ChannelNumber, Pwm_EdgeNotificationType Notification);
+/* SWS_Pwm_00103] - Service returns the version information of this module. */
+#define Pwm_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,PWM)
 
 #endif /* PWM_H_ */
 /** @} */

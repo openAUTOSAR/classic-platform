@@ -1,0 +1,6 @@
+
+/* bcm2835
+ * ram
+ */
+ ram(RW)  : ORIGIN = 0x00008000, LENGTH = 0x1F400000 - 0x20
+

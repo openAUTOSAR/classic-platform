@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 #ifndef INTERNAL_H_
 #define INTERNAL_H_
@@ -203,8 +202,8 @@ extern uint32 os_dbg_mask;
  */
 
 #define ERRORHOOK(x) \
-	if( Os_Sys.hooks->ErrorHook != NULL  ) { \
-		Os_Sys.hooks->ErrorHook(x); \
+	if( OS_SYS_PTR->hooks->ErrorHook != NULL  ) { \
+		OS_SYS_PTR->hooks->ErrorHook(x); \
 	} \
 	OS_APP_CALL_ERRORHOOKS(x);
 
@@ -213,8 +212,8 @@ extern uint32 os_dbg_mask;
 #if	(OS_USE_APPLICATIONS == STD_ON)
 #define PROTECTIONHOOK(_x) \
 	do { \
-		if( Os_Sys.hooks->ProtectionHook != NULL ) { \
-			Os_Sys.hooks->ProtectionHook(_x); \
+		if( OS_SYS_PTR->hooks->ProtectionHook != NULL ) { \
+			OS_SYS_PTR->hooks->ProtectionHook(_x); \
 		} \
     } while(0)
 
@@ -222,19 +221,19 @@ extern uint32 os_dbg_mask;
 
 
 #define PRETASKHOOK() \
-	assert( Os_Sys.currTaskPtr->state & ST_RUNNING ); \
-	assert( Os_Sys.currTaskPtr->flags == SYS_FLAG_HOOK_STATE_EXPECTING_PRE );  \
-	Os_Sys.currTaskPtr->flags = SYS_FLAG_HOOK_STATE_EXPECTING_POST;   \
-	if( Os_Sys.hooks->PreTaskHook != NULL ) { \
-		Os_Sys.hooks->PreTaskHook(); \
+	assert( OS_SYS_PTR->currTaskPtr->state & ST_RUNNING ); \
+	assert( OS_SYS_PTR->currTaskPtr->flags == SYS_FLAG_HOOK_STATE_EXPECTING_PRE );  \
+	OS_SYS_PTR->currTaskPtr->flags = SYS_FLAG_HOOK_STATE_EXPECTING_POST;   \
+	if( OS_SYS_PTR->hooks->PreTaskHook != NULL ) { \
+		OS_SYS_PTR->hooks->PreTaskHook(); \
 	}
 
 #define POSTTASKHOOK() \
-	assert( Os_Sys.currTaskPtr->state & ST_RUNNING ); \
-	assert( Os_Sys.currTaskPtr->flags == SYS_FLAG_HOOK_STATE_EXPECTING_POST );  \
-	Os_Sys.currTaskPtr->flags = SYS_FLAG_HOOK_STATE_EXPECTING_PRE;   \
-	if( Os_Sys.hooks->PostTaskHook != NULL ) { 	\
-		Os_Sys.hooks->PostTaskHook();			\
+	assert( OS_SYS_PTR->currTaskPtr->state & ST_RUNNING ); \
+	assert( OS_SYS_PTR->currTaskPtr->flags == SYS_FLAG_HOOK_STATE_EXPECTING_POST );  \
+	OS_SYS_PTR->currTaskPtr->flags = SYS_FLAG_HOOK_STATE_EXPECTING_PRE;   \
+	if( OS_SYS_PTR->hooks->PostTaskHook != NULL ) { 	\
+		OS_SYS_PTR->hooks->PostTaskHook();			\
 	}
 
 #endif /*INTERNAL_H_*/

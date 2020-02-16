@@ -1,43 +1,44 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 
 #include "PduR.h"
-#if defined(USE_DET)
-#include "Det.h"
-#endif
-#include "debug.h"
 
+/* @req PDUR764 */
 #if (PDUR_ZERO_COST_OPERATION == STD_OFF) && (PDUR_CANTP_SUPPORT == STD_ON)
 
-BufReq_ReturnType PduR_CanTpProvideRxBuffer(PduIdType CanTpRxPduId, PduLengthType TpSduLength, PduInfoType** PduInfoPtr) {
-	return PduR_ARC_ProvideRxBuffer(CanTpRxPduId, TpSduLength, PduInfoPtr, 0x03);
+
+// Autosar4 API
+
+BufReq_ReturnType PduR_CanTpCopyRxData(PduIdType id, PduInfoType* info, PduLengthType* bufferSizePtr) {
+    return PduR_LoTpCopyRxData(id, info, bufferSizePtr, 0x04);
 }
 
-
-void PduR_CanTpRxIndication(PduIdType CanTpRxPduId, NotifResultType Result) {
-	PduR_ARC_TpRxIndication(CanTpRxPduId, Result, 0x04);
+void PduR_CanTpRxIndication(PduIdType id, NotifResultType result) {
+    PduR_LoTpRxIndication(id, result, 0x05);
 }
 
-BufReq_ReturnType PduR_CanTpProvideTxBuffer(PduIdType CanTpTxPduId, PduInfoType** PduInfoPtr, uint16 Length) {
-	return PduR_ARC_ProvideTxBuffer(CanTpTxPduId, PduInfoPtr, Length, 0x03);
+BufReq_ReturnType PduR_CanTpStartOfReception(PduIdType id, PduLengthType TpSduLength, PduLengthType* bufferSizePtr) {
+    return PduR_LoTpStartOfReception(id, TpSduLength, bufferSizePtr, 0x06);
 }
 
+BufReq_ReturnType PduR_CanTpCopyTxData(PduIdType id, PduInfoType* info, RetryInfoType* retry, PduLengthType* availableDataPtr ) {
+    return PduR_LoTpCopyTxData(id, info, retry, availableDataPtr, 0x07);
+}
 
-void PduR_CanTpTxConfirmation(PduIdType CanTpTxPduId, NotifResultType Result) {
-	PduR_ARC_TxConfirmation(CanTpTxPduId, Result, 0x0f);
+void PduR_CanTpTxConfirmation(PduIdType id, NotifResultType result) {
+    PduR_LoTpTxConfirmation(id, result, 0x08);
 }
 
 #endif

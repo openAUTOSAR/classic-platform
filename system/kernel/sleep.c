@@ -33,7 +33,7 @@ StatusType Sleep( TickType sleep ) {
 	}
 
 	/* Check that we are not calling from interrupt context */
-	if( Os_Sys.intNestCnt != 0 ) {
+	if( OS_SYS_PTR->intNestCnt != 0 ) {
 		rv =  E_OS_CALLEVEL;
 		goto err;
 	}
@@ -47,16 +47,16 @@ StatusType Sleep( TickType sleep ) {
 
 	if ( Os_SchedulerResourceIsFree() ) {
 		if( sleep != 0 ) {
-			TAILQ_INSERT_TAIL(&Os_Sys.timerHead,pcbPtr,timerEntry);
+			TAILQ_INSERT_TAIL(&OS_SYS_PTR->timerHead,pcbPtr,timerEntry);
 			pcbPtr->timerDec = sleep;
 			Os_Dispatch(OP_SLEEP);
 		} else {
 
 			/* Put us last in the ready list */
-			TAILQ_REMOVE(&Os_Sys.ready_head,pcbPtr,ready_list);
+			TAILQ_REMOVE(&OS_SYS_PTR->ready_head,pcbPtr,ready_list);
 
 			/* Add us again */
-			TAILQ_INSERT_TAIL(& Os_Sys.ready_head,pcbPtr,ready_list);
+			TAILQ_INSERT_TAIL(& OS_SYS_PTR->ready_head,pcbPtr,ready_list);
 
 			OsTaskVarType *topTask = Os_TaskGetTop();
 			if( topTask != pcbPtr ) {

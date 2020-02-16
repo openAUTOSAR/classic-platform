@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 
 
@@ -42,29 +41,80 @@ static MsgDataType msgData;
 static uint8	currentSid;
 static boolean	suppressPosRspMsg;
 
+#if (DCM_MANUFACTURER_NOTIFICATION == STD_ON)
+static uint16   Dcm_Dsd_sourceAddress;
+static Dcm_ProtocolAddrTypeType Dcm_Dsd_requestType;
+#endif
 /*
  * Local functions
  */
 
 
-static Std_ReturnType askApplicationForServicePermission(uint8 *requestData, uint16 dataSize)
+#if (DCM_MANUFACTURER_NOTIFICATION == STD_ON)   /** @req DCM218 */
+static Std_ReturnType ServiceIndication(uint8 sid, uint8 *requestData, uint16 dataSize, Dcm_ProtocolAddrTypeType reqType,
+                                        uint16 sourceAddress, Dcm_NegativeResponseCodeType* errorCode)
 {
-	Std_ReturnType returnCode = E_OK;
-	const Dcm_DslServiceRequestIndicationType *serviceRequestIndication = DCM_Config.Dsl->DslServiceRequestIndication;
-	Std_ReturnType result;
+    Std_ReturnType returnCode = E_OK;
+    const Dcm_DslServiceRequestNotificationType *serviceRequestNotification = Dcm_ConfigPtr->Dsl->DslServiceRequestNotification;
 
-	while ((!serviceRequestIndication->Arc_EOL) && (returnCode != E_REQUEST_NOT_ACCEPTED)) {
-		if (serviceRequestIndication->Indication != NULL) {
-			result = serviceRequestIndication->Indication(requestData, dataSize);
-			if (result != E_OK){
-				returnCode = result;
-			}
-		}
-		serviceRequestIndication++;
-	}
+    /* If any indcation returns E_REQUEST_NOT_ACCEPTED it shall be returned.
+     * If all indcations returns E_OK it shall be returned
+     * Otherwise, E_NOT_OK shall be returned.
+     */
 
-	return returnCode;
+    while ((!serviceRequestNotification->Arc_EOL) && (returnCode != E_REQUEST_NOT_ACCEPTED)) {
+        if (serviceRequestNotification->Indication != NULL) {
+            Std_ReturnType result = serviceRequestNotification->Indication(sid, requestData, dataSize, reqType, sourceAddress, errorCode);
+            if ((result == E_REQUEST_NOT_ACCEPTED) || (result == E_NOT_OK)) {
+                returnCode = result;
+            }
+            else if (result != E_OK) {
+                DET_REPORTERROR(MODULE_ID_DCM, 0, DCM_GLOBAL_ID, DCM_E_UNEXPECTED_RESPONSE);
+            }
+            else {
+                /* E_OK */
+            }
+        }
+        serviceRequestNotification++;
+    }
+
+    return returnCode;
 }
+
+
+static void ServiceConfirmation(uint8 sid, Dcm_ProtocolAddrTypeType reqType, uint16 sourceAddress, NotifResultType result)
+{
+    Std_ReturnType returnCode = E_OK;
+    const Dcm_DslServiceRequestNotificationType *serviceRequestNotification= Dcm_ConfigPtr->Dsl->DslServiceRequestNotification;
+
+    /* The values of Dcm_ConfirmationStatusType are not specified, using the following */
+    Dcm_ConfirmationStatusType status;
+    if (msgData.pduTxData->SduDataPtr[0] == SID_NEGATIVE_RESPONSE) {
+        status = (result == NTFRSLT_OK) ? DCM_RES_NEG_OK: DCM_RES_NEG_NOT_OK;
+    }
+    else {
+        status = (result == NTFRSLT_OK) ? DCM_RES_POS_OK: DCM_RES_POS_NOT_OK;
+    }
+
+    /* If all indcations returns E_OK it shall be returned
+     * Otherwise, E_NOT_OK shall be returned.
+     */
+
+    /* @req DCM770 */ /* @req DCM741 */
+    while ((!serviceRequestNotification->Arc_EOL) && (returnCode != E_NOT_OK)) {
+        if (serviceRequestNotification->Confirmation != NULL) {
+            /* No way to terminate response like since it is already done */
+            (void)serviceRequestNotification->Confirmation(sid, reqType, sourceAddress, status);
+        }
+        serviceRequestNotification++;
+    }
+
+}
+
+#endif
+
+
+
 
 
 static void createAndSendNcr(Dcm_NegativeResponseCodeType responseCode)
@@ -85,153 +135,177 @@ static void createAndSendNcr(Dcm_NegativeResponseCodeType responseCode)
 
 static void selectServiceFunction(uint8 sid)
 {
-	/** @req DCM442.Partially */
-	switch (sid)	 /** @req DCM221 */
-	{
+    /** @req DCM442.Partially */
+    switch (sid)	 /** @req DCM221 */
+    {
 #ifdef DCM_USE_SERVICE_DIAGNOSTICSESSIONCONTROL
-	case SID_DIAGNOSTIC_SESSION_CONTROL:
-		DspUdsDiagnosticSessionControl(msgData.pduRxData, msgData.txPduId, msgData.pduTxData);
-		break;
+    case SID_DIAGNOSTIC_SESSION_CONTROL:
+        DspUdsDiagnosticSessionControl(msgData.pduRxData, msgData.txPduId, msgData.pduTxData);
+        break;
 #endif
 
 #ifdef DCM_USE_SERVICE_ECURESET
-	case SID_ECU_RESET:
-		DspUdsEcuReset(msgData.pduRxData, msgData.txPduId, msgData.pduTxData);
-		break;
+    case SID_ECU_RESET:
+        DspUdsEcuReset(msgData.pduRxData, msgData.txPduId, msgData.pduTxData);
+        break;
 #endif
 
 #if defined(USE_DEM) && defined(DCM_USE_SERVICE_CLEARDIAGNOSTICINFORMATION)
-	case SID_CLEAR_DIAGNOSTIC_INFORMATION:
-		DspUdsClearDiagnosticInformation(msgData.pduRxData, msgData.pduTxData);
-		break;
+    case SID_CLEAR_DIAGNOSTIC_INFORMATION:
+        DspUdsClearDiagnosticInformation(msgData.pduRxData, msgData.pduTxData);
+        break;
 #endif
 
 #if defined(USE_DEM) && defined(DCM_USE_SERVICE_READDTCINFORMATION)
-	case SID_READ_DTC_INFORMATION:
-		DspUdsReadDtcInformation(msgData.pduRxData, msgData.pduTxData);
-		break;
+    case SID_READ_DTC_INFORMATION:
+        DspUdsReadDtcInformation(msgData.pduRxData, msgData.pduTxData);
+        break;
 #endif
 
 #ifdef DCM_USE_SERVICE_READDATABYIDENTIFIER
-	case SID_READ_DATA_BY_IDENTIFIER:
-		DspUdsReadDataByIdentifier(msgData.pduRxData, msgData.pduTxData);
-		break;
+    case SID_READ_DATA_BY_IDENTIFIER:
+        DspUdsReadDataByIdentifier(msgData.pduRxData, msgData.pduTxData);
+        break;
 #endif
-		
+
 #ifdef DCM_USE_SERVICE_READMEMORYBYADDRESS
-	case SID_READ_MEMORY_BY_ADDRESS:
-		DspUdsReadMemoryByAddress(msgData.pduRxData, msgData.pduTxData);
-		break;
+    case SID_READ_MEMORY_BY_ADDRESS:
+        DspUdsReadMemoryByAddress(msgData.pduRxData, msgData.pduTxData);
+        break;
 #endif
-		
+
 #ifdef DCM_USE_SERVICE_WRITEMEMORYBYADDRESS
-	case SID_WRITE_MEMORY_BY_ADDRESS:
-		DspUdsWriteMemoryByAddress(msgData.pduRxData, msgData.pduTxData);
-		break;
+    case SID_WRITE_MEMORY_BY_ADDRESS:
+        DspUdsWriteMemoryByAddress(msgData.pduRxData, msgData.pduTxData);
+        break;
 #endif
 
 #ifdef DCM_USE_SERVICE_READSCALINGDATABYIDENTIFIER
-	case SID_READ_SCALING_DATA_BY_IDENTIFIER:
-		DspUdsReadScalingDataByIdentifier(msgData.pduRxData, msgData.pduTxData);
-		break;
+    case SID_READ_SCALING_DATA_BY_IDENTIFIER:
+        DspUdsReadScalingDataByIdentifier(msgData.pduRxData, msgData.pduTxData);
+        break;
 #endif
 
 #ifdef DCM_USE_SERVICE_SECURITYACCESS
-	case SID_SECURITY_ACCESS:
-		DspUdsSecurityAccess(msgData.pduRxData, msgData.pduTxData);
-		break;
+    case SID_SECURITY_ACCESS:
+        DspUdsSecurityAccess(msgData.pduRxData, msgData.pduTxData);
+        break;
 #endif
 
 #ifdef DCM_USE_SERVICE_WRITEDATABYIDENTIFIER
-	case SID_WRITE_DATA_BY_IDENTIFIER:
-		DspUdsWriteDataByIdentifier(msgData.pduRxData, msgData.pduTxData);
-		break;
+    case SID_WRITE_DATA_BY_IDENTIFIER:
+        DspUdsWriteDataByIdentifier(msgData.pduRxData, msgData.pduTxData);
+        break;
 #endif
 
 #ifdef DCM_USE_SERVICE_ROUTINECONTROL
-	case SID_ROUTINE_CONTROL:
-		DspUdsRoutineControl(msgData.pduRxData, msgData.pduTxData);
-		break;
+    case SID_ROUTINE_CONTROL:
+        DspUdsRoutineControl(msgData.pduRxData, msgData.pduTxData);
+        break;
 #endif
 
 #ifdef DCM_USE_SERVICE_TESTERPRESENT
-	case SID_TESTER_PRESENT:
-		DspUdsTesterPresent(msgData.pduRxData, msgData.pduTxData);
-		break;
+    case SID_TESTER_PRESENT:
+        DspUdsTesterPresent(msgData.pduRxData, msgData.pduTxData);
+        break;
 #endif
 
 #if defined(USE_DEM) && defined(DCM_USE_SERVICE_CONTROLDTCSETTING)
-	case SID_CONTROL_DTC_SETTING:
-		DspUdsControlDtcSetting(msgData.pduRxData, msgData.pduTxData);
-		break;
+    case SID_CONTROL_DTC_SETTING:
+        DspUdsControlDtcSetting(msgData.pduRxData, msgData.pduTxData);
+        break;
 #endif
 
 #ifdef DCM_USE_SERVICE_READDATABYPERIODICIDENTIFIER
-	case SID_READ_DATA_BY_PERIODIC_IDENTIFIER:
-		DspReadDataByPeriodicIdentifier(msgData.pduRxData, msgData.pduTxData);
-		break;
+    case SID_READ_DATA_BY_PERIODIC_IDENTIFIER:
+        DspReadDataByPeriodicIdentifier(msgData.pduRxData, msgData.pduTxData);
+        break;
 #endif
-		
+
 #ifdef DCM_USE_SERVICE_DYNAMICALLYDEFINEDATAIDENTIFIER
-	case SID_DYNAMICALLY_DEFINE_DATA_IDENTIFIER:
-		DspDynamicallyDefineDataIdentifier(msgData.pduRxData, msgData.pduTxData);
-		break;
+    case SID_DYNAMICALLY_DEFINE_DATA_IDENTIFIER:
+        DspDynamicallyDefineDataIdentifier(msgData.pduRxData, msgData.pduTxData);
+        break;
 #endif
-		
+
 #ifdef DCM_USE_SERVICE_INPUTOUTPUTCONTROLBYIDENTIFIER
-	case SID_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER:
-		DspIOControlByDataIdentifier(msgData.pduRxData, msgData.pduTxData);
-		break;
+    case SID_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER:
+        DspIOControlByDataIdentifier(msgData.pduRxData, msgData.pduTxData);
+        break;
 #endif
 
 #ifdef DCM_USE_SERVICE_COMMUNICATIONCONTROL
-	case SID_COMMUNICATION_CONTROL:
-		DspCommunicationControl(msgData.pduRxData, msgData.pduTxData);
-		break;
+    case SID_COMMUNICATION_CONTROL:
+        DspCommunicationControl(msgData.pduRxData, msgData.pduTxData);
+        break;
 #endif
-	/* OBD */
-#ifdef DCM_USE_SERVICE_REQUESTCURRENTPOWERTRAINDIAGDATA
-	case SID_REQUEST_CURRENT_POWERTRAIN_DIAGNOSTIC_DATA:
-		DspObdRequestCurrentPowertrainDiagnosticData(msgData.pduRxData, msgData.pduTxData);
-		break;
-#endif
-		
-#if defined(USE_DEM) && defined(DCM_USE_SERVICE_REQUESTPOWERTRAINFREEZEFRAMEDATA)
-	case SID_REQUEST_POWERTRAIN_FREEZE_FRAME_DATA:
-		DspObdRequsetPowertrainFreezeFrameData(msgData.pduRxData, msgData.pduTxData);
-		break;
-#endif
-		
-#if defined(USE_DEM) && defined(DCM_USE_SERVICE_CLEAREMISSIONRELATEDDIAGNOSTICDATA)
-	case SID_CLEAR_EMISSION_RELATED_DIAGNOSTIC_INFORMATION:
-		DspObdClearEmissionRelatedDiagnosticData(msgData.pduRxData, msgData.pduTxData);
-		break;
-#endif
-		
-#if defined(USE_DEM) && defined(DCM_USE_SERVICE_REQUESTEMISSIONRELATEDDTCS)
-	case SID_REQUEST_EMISSION_RELATED_DIAGNOSTIC_TROUBLE_CODES:
-		DspObdRequestEmissionRelatedDiagnosticTroubleCodes(msgData.pduRxData, msgData.pduTxData);
+#ifdef DCM_USE_SERVICE_REQUESTDOWNLOAD
+	case SID_REQUEST_DOWNLOAD:
+		DspUdsRequestDownload(msgData.pduRxData, msgData.pduTxData);
 		break;
 #endif
 
-#if defined(USE_DEM) && defined(DCM_USE_SERVICE_REQUESTEMISSIONRELATEDDTCSDETECTEDDURINGCURRENTORLASCOMPLETEDDRIVINGCYCLE)
-	case SID_REQUEST_EMISSION_RELATED_DIAGNOSTIC_TROUBLE_CODES_DETECTED_DURING_CURRENT_OR_LAST_COMPLETED_DRIVING_CYCLE:
-		DspObdRequestEmissionRelatedDiagnosticTroubleCodesService07(msgData.pduRxData, msgData.pduTxData);
+#ifdef DCM_USE_SERVICE_REQUESTUPLOAD
+	case SID_REQUEST_UPLOAD:
+		DspUdsRequestUpload(msgData.pduRxData, msgData.pduTxData);
 		break;
+#endif
+
+#ifdef DCM_USE_SERVICE_TRANSFERDATA
+	case SID_TRANSFER_DATA:
+		DspUdsTransferData(msgData.pduRxData, msgData.pduTxData);
+		break;
+#endif
+
+#ifdef DCM_USE_SERVICE_REQUESTTRANSFEREXIT
+	case SID_REQUEST_TRANSFER_EXIT:
+		DspUdsRequestTransferExit(msgData.pduRxData, msgData.pduTxData);
+		break;
+#endif
+
+    /* OBD */
+#ifdef DCM_USE_SERVICE_REQUESTCURRENTPOWERTRAINDIAGNOSTICDATA
+    case SID_REQUEST_CURRENT_POWERTRAIN_DIAGNOSTIC_DATA:
+        DspObdRequestCurrentPowertrainDiagnosticData(msgData.pduRxData, msgData.pduTxData);
+        break;
+#endif
+
+#if defined(USE_DEM) && defined(DCM_USE_SERVICE_REQUESTPOWERTRAINFREEZEFRAMEDATA)
+    case SID_REQUEST_POWERTRAIN_FREEZE_FRAME_DATA:
+        DspObdRequestPowertrainFreezeFrameData(msgData.pduRxData, msgData.pduTxData);
+        break;
+#endif
+
+#if defined(USE_DEM) && defined(DCM_USE_SERVICE_CLEAREMISSIONRELATEDDIAGNOSTICDATA)
+    case SID_CLEAR_EMISSION_RELATED_DIAGNOSTIC_INFORMATION:
+        DspObdClearEmissionRelatedDiagnosticData(msgData.pduRxData, msgData.pduTxData);
+        break;
+#endif
+
+#if defined(USE_DEM) && defined(DCM_USE_SERVICE_REQUESTEMISSIONRELATEDDIAGNOSTICTROUBLECODES)
+    case SID_REQUEST_EMISSION_RELATED_DIAGNOSTIC_TROUBLE_CODES:
+        DspObdRequestEmissionRelatedDiagnosticTroubleCodes(msgData.pduRxData, msgData.pduTxData);
+        break;
+#endif
+
+#if defined(USE_DEM) && defined(DCM_USE_SERVICE_REQUESTEMISSIONRELATEDDTCSDETECTEDDURINGCURRENTORLASTCOMPLETEDDRIVINGCYCLE)
+    case SID_REQUEST_EMISSION_RELATED_DIAGNOSTIC_TROUBLE_CODES_DETECTED_DURING_CURRENT_OR_LAST_COMPLETED_DRIVING_CYCLE:
+        DspObdRequestEmissionRelatedDiagnosticTroubleCodesService07(msgData.pduRxData, msgData.pduTxData);
+        break;
 #endif
 
 #ifdef DCM_USE_SERVICE_REQUESTVEHICLEINFORMATION
-	case SID_REQUEST_VEHICLE_INFORMATION:
-		DspObdRequestvehicleinformation(msgData.pduRxData, msgData.pduTxData);
-		break;
+    case SID_REQUEST_VEHICLE_INFORMATION:
+        DspObdRequestVehicleInformation(msgData.pduRxData, msgData.pduTxData);
+        break;
 #endif
-	/* OBD */
+    /* OBD */
 
-	default:
-		/* Non implemented service */
-		createAndSendNcr(DCM_E_SERVICENOTSUPPORTED);
-		break;
-	}
+    default:
+        /* Non implemented service */
+        createAndSendNcr(DCM_E_SERVICENOTSUPPORTED);
+        break;
+    }
 }
 
 
@@ -275,66 +349,67 @@ void DsdMain(void)
 }
 
 
+
 void DsdHandleRequest(void)
 {
-	Std_ReturnType result;
-	const Dcm_DsdServiceType *sidConfPtr = NULL;
+    Std_ReturnType result = E_OK;
+    const Dcm_DsdServiceType *sidConfPtr = NULL;
+    Dcm_NegativeResponseCodeType errorCode = DCM_E_POSITIVERESPONSE;
 
-	currentSid = msgData.pduRxData->SduDataPtr[0];	/** @req DCM198 */
+    if( msgData.pduRxData->SduLength > 0 ) {
+    currentSid = msgData.pduRxData->SduDataPtr[0];	/** @req DCM198 */
 
-	/** @req DCM178 */
-	//lint --e(506, 774)	PC-Lint exception Misra 13.7, 14.1 Allow configuration variables in boolean expression
-	if ((DCM_RESPOND_ALL_REQUEST == STD_ON) || ((currentSid & 0x7Fu) < 0x40)) {		/** @req DCM084 */
-		if (lookupSid(currentSid, &sidConfPtr)) {		/** @req DCM192 */ /** @req DCM193 */ /** @req DCM196 */
-			// SID found!
-			if (DspCheckSessionLevel(sidConfPtr->DsdSidTabSessionLevelRef)) {		 /** @req DCM211 */
-				if (DspCheckSecurityLevel(sidConfPtr->DsdSidTabSecurityLevelRef)) {	 /** @req DCM217 */
-					//lint --e(506, 774)	PC-Lint exception Misra 13.7, 14.1 Allow configuration variables in boolean expression
-					if (DCM_REQUEST_INDICATION_ENABLED == STD_ON) {	 /** @req DCM218 */
-						 result = askApplicationForServicePermission(msgData.pduRxData->SduDataPtr, msgData.pduRxData->SduLength);
-					} else {
-						result = E_OK;
-					}
-					//lint --e(506, 774)	PC-Lint exception Misra 13.7, 14.1 Allow configuration variables in boolean expression
-					if (result == E_OK) {
-						// Yes! All conditions met!
-						// Check if response shall be suppressed
-						if ( (sidConfPtr->DsdSidTabSubfuncAvail) && (msgData.pduRxData->SduDataPtr[1] & SUPPRESS_POS_RESP_BIT) ) {	/** @req DCM204 */
-							suppressPosRspMsg = TRUE;	/** @req DCM202 */
-							msgData.pduRxData->SduDataPtr[1] &= ~SUPPRESS_POS_RESP_BIT;	/** @req DCM201 */
-						}
-						else
-						{
-							suppressPosRspMsg = FALSE;	/** @req DCM202 */
-						}
-						selectServiceFunction(currentSid);
-					}
-					else {
-						if (result == E_REQUEST_ENV_NOK) {
-							createAndSendNcr(DCM_E_CONDITIONSNOTCORRECT);	/** @req DCM463 */
-						}
-						else {
-							// Do not send any response		/** @req DCM462 */
-							DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_SUPPRESSED);
-						}
-					}
-				}
-				else {
-					createAndSendNcr(DCM_E_SECUTITYACCESSDENIED);	/** @req DCM217 */
-				}
-			}
-			else {
-				createAndSendNcr(DCM_E_SERVICENOTSUPPORTEDINACTIVESESSION);	/** @req DCM211 */
-			}
-		}
-		else {
-			createAndSendNcr(DCM_E_SERVICENOTSUPPORTED);	/** @req DCM197 */
-		}
-	}
-	else {
-		// Inform DSL that message has been discard
-		DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_SUPPRESSED);
-	}
+#if (DCM_MANUFACTURER_NOTIFICATION == STD_ON)  /** @req DCM218 */
+    Arc_DslGetRxConnectionParams(msgData.rxPduId, &Dcm_Dsd_sourceAddress, &Dcm_Dsd_requestType);
+    result = ServiceIndication(currentSid, msgData.pduRxData->SduDataPtr, msgData.pduRxData->SduLength,
+                               Dcm_Dsd_requestType, Dcm_Dsd_sourceAddress, &errorCode);
+#endif
+    }
+
+    if (( 0 == msgData.pduRxData->SduLength) || (E_REQUEST_NOT_ACCEPTED == result)) {
+        /* Special case with sdu length 0, No service id so we cannot send response. */
+        /* @req DCM677 */ /* @req DCM462 */
+        // Do not send any response     /** @req DCM462 */ /* @req DCM677*/
+        DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_SUPPRESSED);
+    }
+    else if (result != E_OK) {
+        /* @req DCM678 */ /* @req DCM463 */
+        createAndSendNcr(errorCode);   /** @req DCM463 */
+    }
+    /** @req DCM178 */
+    //lint --e(506, 774)	PC-Lint exception Misra 13.7, 14.1 Allow configuration variables in boolean expression
+    else if ((DCM_RESPOND_ALL_REQUEST == STD_ON) || ((currentSid & 0x7Fu) < 0x40)) {		/** @req DCM084 */
+        if (lookupSid(currentSid, &sidConfPtr)) {		/** @req DCM192 */ /** @req DCM193 */ /** @req DCM196 */
+            // SID found!
+            if (DspCheckSessionLevel(sidConfPtr->DsdSidTabSessionLevelRef)) {		 /** @req DCM211 */
+                if (DspCheckSecurityLevel(sidConfPtr->DsdSidTabSecurityLevelRef)) {	 /** @req DCM217 */
+                    //lint --e(506, 774)	PC-Lint exception Misra 13.7, 14.1 Allow configuration variables in boolean expression
+                    //lint --e(506, 774)	PC-Lint exception Misra 13.7, 14.1 Allow configuration variables in boolean expression
+                    if ( (sidConfPtr->DsdSidTabSubfuncAvail) && (msgData.pduRxData->SduDataPtr[1] & SUPPRESS_POS_RESP_BIT) ) {	/** @req DCM204 */
+                        suppressPosRspMsg = TRUE;	/** @req DCM202 */
+                        msgData.pduRxData->SduDataPtr[1] &= ~SUPPRESS_POS_RESP_BIT;	/** @req DCM201 */
+                    }
+                    else {
+                        suppressPosRspMsg = FALSE;	/** @req DCM202 */
+                    }
+                    selectServiceFunction(currentSid);
+                }
+                else {
+                    createAndSendNcr(DCM_E_SECURITYACCESSDENIED);	/** @req DCM217 */
+                }
+            }
+            else {
+                createAndSendNcr(DCM_E_SERVICENOTSUPPORTEDINACTIVESESSION);	/** @req DCM211 */
+            }
+        }
+        else {
+            createAndSendNcr(DCM_E_SERVICENOTSUPPORTED);	/** @req DCM197 */
+        }
+    }
+    else {
+        // Inform DSL that message has been discard
+        DslDsdProcessingDone(msgData.rxPduId, DSD_TX_RESPONSE_SUPPRESSED);
+    }
 }
 
 
@@ -361,8 +436,14 @@ void DsdDspProcessingDone(Dcm_NegativeResponseCodeType responseCode)
 
 void DsdDataConfirmation(PduIdType confirmPduId, NotifResultType result)
 {
-	(void)result;	/* Currently not used */
 	DspDcmConfirmation(confirmPduId);	/** @req DCM236 */
+
+#if (DCM_MANUFACTURER_NOTIFICATION == STD_ON)  /** @req DCM742  */
+	ServiceConfirmation(currentSid, Dcm_Dsd_requestType, Dcm_Dsd_sourceAddress, result);
+#else
+	(void)result;
+#endif
+
 }
 
 
@@ -379,6 +460,7 @@ void DsdDslDataIndication(const PduInfoType *pduRxData, const Dcm_DsdServiceTabl
 }
 
 //OBD: called by DSL to get the current Tx PduId
+//TODO: Perhaps remove this?
 PduIdType DsdDslGetCurrentTxPduId(void)
 {
     return msgData.txPduId;

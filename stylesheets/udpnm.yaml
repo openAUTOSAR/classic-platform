@@ -1,0 +1,90 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+########################################################
+# Parameters in UdpNmGlobalConfig
+########################################################
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: UdpNmBusSynchronizationEnabled
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: UdpNmComControl_Enabled
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: UdpNmComUserDataSupport
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: UdpNmCoordinatorEnabled
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: UdpNmCoordinatorId
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: UdpNmCoordinatorSyncSupport
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: UdpNmImmediateRestartEnabled
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: UdpNmRemoteSleepIndEnabled
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: UdpNmRepeatMsgIndEnabled
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: UdpNmStateChangeIndEnabled
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: UdpNmSynchronizationPointEnabled
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: UdpNmNumberOfChannels
+  
+########################################################
+# Parameters in UdpNmChannelConfigs
+########################################################
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: UpdNmRemoteSleepIndTime
+  
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Message Properties
+  members: [ UpdNmMsgCycleOffset, UpdNmMsgCycleTime, UpdNmMsgTimeoutTime]
+  
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Pdu Properties
+  members: [ UdpNmPduCbvPosition, UdpNmPduNidPosition, UdpNmPduLength ]
+  
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: State Properties
+  members: [ UpdNmTimeoutTime, UpdNmWaitBusSleepTime, UpdNmRepeatMessageTime ]
+
+########################################################
+# Parameters in UdpNmRxPdu
+########################################################
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: UdpNmRxPduId
+
+
+########################################################
+# Parameters in UdpNmTxPdu
+########################################################
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: UdpNmTxConfirmationPduId
+
+
+########################################################
+# Parameters in UdpNmUserDataTxPdu
+########################################################
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: UdpNmTxUserDataPduId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: UdpNmTxUserDataPduRef
+
+  
+

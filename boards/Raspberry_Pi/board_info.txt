@@ -1,0 +1,28 @@
+The MCU of the Raspberry PI is BCM2835, which is an ARM 32-bit Microcontroller based on ARMv6 core.
+ 
+Info:	
+  BCM2835
+  ?MHz
+  ?SRAM
+  Timers
+  Interrupt controller
+  GPIO
+  USB
+  PCM / I2S
+  DMA controller
+  I2C master
+  I2C / SPI slave
+  SPI0, SPI1, SPI2
+  PWM
+  UART0, UART1
+  
+Raspberry Pi
+  SD card
+  HDMI
+  USB2.0
+  RCA VEDIO 
+  ETHERNET
+  
+Memory Map:
+ ?  ->    SRAM
+ ?  ->    Internal registers

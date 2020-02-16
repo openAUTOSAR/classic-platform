@@ -1,11 +1,10 @@
 
-
 ###############################################################################
 # BUILD SETTINGS                                                              #
 ###############################################################################
 
 # Board settings
-include $(ROOTDIR)/boards/$(BOARDDIR)/build_config.mk
+include $(board_path)/build_config.mk
 
 # Project settings
 -include ../build_config.mk
@@ -13,44 +12,6 @@ include $(ROOTDIR)/boards/$(BOARDDIR)/build_config.mk
 # Perform build system version check
 include $(ROOTDIR)/scripts/version_check.mk
 
-COMPILER?=gcc
-ifeq (${COMPILER},gcc)
-# Assume that the board have set DEFAULT_CROSS_COMPILE
-CROSS_COMPILE?=${DEFAULT_CROSS_COMPILE}
-endif
-
-ifeq (${COMPILER},cw)
-CW_COMPILE?=${DEFAULT_CW_COMPILE}
-endif
-ifeq (${COMPILER},iar)
-IAR_COMPILE?=${DEFAULT_IAR_COMPILE}
-endif
-ifeq (${COMPILER},diab)
-DIAB_COMPILE?=${DEFAULT_DIAB_COMPILE}
-endif
-
-# Check cross compiler setting against default from board config
-ifeq (${COMPILER},cw)
-ifneq (${CW_COMPILE},${DEFAULT_CW_COMPILE})
-${warning Not using default cross compiler for architecture.}
-${warning CW_COMPILE:            ${CW_COMPILE} [${origin CW_COMPILE}]}
-${warning DEFAULT_CW_COMPILE:    ${DEFAULT_CW_COMPILE} [${origin DEFAULT_CW_COMPILE}]}
-endif
-else ifeq (${COMPILER},iar)
-ifneq (${IAR_COMPILE},${DEFAULT_IAR_COMPILE})
-${warning Not using default cross compiler for architecture.}
-${warning IAR_COMPILE:            ${IAR_COMPILE} [${origin IAR_COMPILE}]}
-${warning DEFAULT_IAR_COMPILE:    ${DEFAULT_IAR_COMPILE} [${origin DEFAULT_IAR_COMPILE}]}
-endif
-else
-ifneq (${DEFAULT_CROSS_COMPILE},)
-ifneq (${CROSS_COMPILE},${DEFAULT_CROSS_COMPILE})
-${warning Not using default cross compiler for architecture.}
-${warning CROSS_COMPILE:         ${CROSS_COMPILE} [${origin CROSS_COMPILE}]}
-${warning DEFAULT_CROSS_COMPILE: ${DEFAULT_CROSS_COMPILE} [${origin DEFAULT_CROSS_COMPILE}]}
-endif
-endif
-endif
 
 ###############################################################################
 # MODULE CONFIGURATION                                                        #
@@ -94,6 +55,55 @@ ifneq ($(not_avail),)
 $(error Trying to build a module that is not available: $(not_avail))
 endif
 
+COMPILER?=gcc
+ifeq (${COMPILER},gcc)
+# Assume that the board have set DEFAULT_CROSS_COMPILE
+CROSS_COMPILE?=${DEFAULT_CROSS_COMPILE}
+endif
+
+ifeq (${COMPILER},cw)
+CW_COMPILE?=${DEFAULT_CW_COMPILE}
+endif
+ifeq (${COMPILER},iar)
+IAR_COMPILE?=${DEFAULT_IAR_COMPILE}
+endif
+ifeq (${COMPILER},diab)
+DIAB_COMPILE?=${DEFAULT_DIAB_COMPILE}
+endif
+
+ifeq (${COMPILER},ghs)
+GHS_COMPILE?=${DEFAULT_GHS_COMPILE}
+endif
+
+# Check cross compiler setting against default from board config
+ifeq (${COMPILER},cw)
+ifneq (${CW_COMPILE},${DEFAULT_CW_COMPILE})
+${warning Not using default cross compiler for architecture.}
+${warning CW_COMPILE:            ${CW_COMPILE} [${origin CW_COMPILE}]}
+${warning DEFAULT_CW_COMPILE:    ${DEFAULT_CW_COMPILE} [${origin DEFAULT_CW_COMPILE}]}
+endif
+else ifeq (${COMPILER},iar)
+ifneq (${IAR_COMPILE},${DEFAULT_IAR_COMPILE})
+${warning Not using default cross compiler for architecture.}
+${warning IAR_COMPILE:            ${IAR_COMPILE} [${origin IAR_COMPILE}]}
+${warning DEFAULT_IAR_COMPILE:    ${DEFAULT_IAR_COMPILE} [${origin DEFAULT_IAR_COMPILE}]}
+endif
+else ifeq (${COMPILER},diab)
+ifneq (${DIAB_COMPILE},${DEFAULT_DIAB_COMPILE})
+${warning Not using default cross compiler for architecture.}
+${warning DIAB_COMPILE:            ${DIAB_COMPILE} [${origin DIAB_COMPILE}]}
+${warning DEFAULT_DIAB_COMPILE:    ${DEFAULT_DIAB_COMPILE} [${origin DEFAULT_DIAB_COMPILE}]}
+endif
+else
+ifneq (${DEFAULT_CROSS_COMPILE},)
+ifneq (${CROSS_COMPILE},${DEFAULT_CROSS_COMPILE})
+#${warning Not using default cross compiler for architecture.}
+#${warning CROSS_COMPILE:         ${CROSS_COMPILE} [${origin CROSS_COMPILE}]}
+#${warning DEFAULT_CROSS_COMPILE: ${DEFAULT_CROSS_COMPILE} [${origin DEFAULT_CROSS_COMPILE}]}
+endif
+endif
+endif
+
 
 
 ###############################################################################
@@ -103,11 +113,14 @@ endif
 # set debug optimization level as default
 SELECT_OPT?=OPT_DEBUG
 
+
 ifeq ($(findstring OPT_,$(SELECT_OPT)),OPT_)
   $(eval CFG_$(SELECT_OPT)=y)
 else
   CFG_OPT_FLAGS=y
 endif
+
+$(info SELECT_OPT=$(SELECT_OPT) $(origin SELECT_OPT))
 
 ARCH_PATH-y = arch/$(ARCH_FAM)/$(ARCH)
 
@@ -131,6 +144,10 @@ endif
 # Include project makefile
 include ../makefile
 
+
+
+
+
 # All module object files (guarded for backwards compatability)
 ifndef _BOARD_COMMON_MK
 include $(ROOTDIR)/boards/board_common.mk
@@ -138,7 +155,7 @@ endif
 
 # Misc tools
 ifneq ($(CFG_BOOT),)
-include $(ROOTDIR)/boards/$(BOARDDIR)/boot_info.mk
+include $(board_path)/boot_info.mk
 include $(ROOTDIR)/scripts/bootloader_image.mk
 endif  
 
@@ -170,10 +187,15 @@ inc-y += $(ROOTDIR)/include/$(ARCH_FAM)
 inc-y += $(ROOTDIR)/include/$(ARCH_FAM)/$(ARCH)
   
 inc-y :=  $(inc-system-y) $(inc-y) 
-  
-VPATH += $(ROOTDIR)/$(SUBDIR)/src
-VPATH += $(ROOTDIR)/$(SUBDIR)
 
+# Find default linker files
+inc-y += $(ROOTDIR)/scripts/linker
+
+###############################################################################
+# POST BUILD                                                                  #
+###############################################################################
+
+def-$(CFG_POSTBUILD) += CFG_POSTBUILD
 
 
 ###############################################################################
@@ -220,7 +242,7 @@ clean: FORCE
 	@echo
 	@echo "  >> Rules Clean $(CURDIR)"
 	$(Q)-rm -v *
-	$(Q)-rm -v $(ROOTDIR)/binaries/$(BOARDDIR)/*
+	$(Q)-rm -v $(ROOTDIR)/binaries/$(board_name)/*
 	
 .PHONY : config 
 config: FORCE
@@ -236,16 +258,16 @@ module_config: FORCE
 
 FORCE:
 
-$(ROOTDIR)/binaries/$(BOARDDIR):
+$(ROOTDIR)/binaries/$(board_name):
 	@mkdir -p $@
 
 all-mod += $(build-hex-y) $(build-exe-y) $(build-srec-y) 
 all-mod += $(build-lib-y) $(build-bin-y)
 
 .PHONY all:
-all: | module_config $(ROOTDIR)/binaries/$(BOARDDIR) $(all-mod) $(all-mod-post)
-all: module_config $(all-mod) $(all-mod-post) $(ROOTDIR)/binaries/$(BOARDDIR) 
-	@cp -v $(all-mod) $(all-mod-post) $(ROOTDIR)/binaries/$(BOARDDIR)
+all: | module_config $(ROOTDIR)/binaries/$(board_name) $(all-mod) $(all-mod-post)
+all: module_config $(all-mod) $(all-mod-post) $(ROOTDIR)/binaries/$(board_name) 
+	@cp -v $(all-mod) $(all-mod-post) $(os-orti-y) $(ROOTDIR)/binaries/$(board_name)
 
 .SUFFIXES:
 
@@ -263,7 +285,7 @@ all: module_config $(all-mod) $(all-mod-post) $(ROOTDIR)/binaries/$(BOARDDIR)
 %.o: %.c
 	@echo
 	@echo "  >> CC $(notdir $<)"
-	$(Q)$(CC) $(CFLAGS) $(CFLAGS_$@) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y) $(DEF_$@)) $(abspath $<)
+	$(Q)$(CC) $(CFLAGS) $(CFLAGS_$@) $(cflags-post-y) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y) $(DEF_$@)) $(abspath $<)
 	$(do-compile-post)
 # run lint if enabled
 	$(run_pclint)
@@ -283,9 +305,12 @@ all: module_config $(all-mod) $(all-mod-post) $(ROOTDIR)/binaries/$(BOARDDIR)
 	@echo
 	@echo "  >> CPP $(notdir $<)"
 	$(Q)$(CPP) $(CPP_ASM_FLAGS) $(CPPOUT) $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
+	$(do-sx-to-s-post)
+
+#	cat $@
 
 # Board linker files are in the board directory 
-inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
+inc-y += $(board_path)
 
 
 # *.ldf (file on disc) -> *.lcf (preprocessed *.ldf file)
@@ -293,11 +318,13 @@ inc-y += $(ROOTDIR)/boards/$(BOARDDIR)
 %.lcf %.ldp: %.ldf
 	@echo
 	@echo "  >> CPP $(notdir $<)"
-ifeq ($(COMPILER),iar)
 	$(Q)$(CPP) $(CPP_ASM_FLAGS) $(CPPOUT) $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
-else
-	$(Q)$(CPP) -P $(CPP_ASM_FLAGS) $(CPPOUT) $@ $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
-endif
+
+#$(error $(os-orti-y))
+
+# ORTI file
+$(os-orti-y): Os.orti
+	@cp $< $@
 
 .PHONY $(ROOTDIR)/libs:
 $(ROOTDIR)/libs:
@@ -318,21 +345,21 @@ $(build-hex-y): $(build-exe-y)
 	$(Q)$(CROSS_COMPILE)objcopy -O ihex $< $@
 	
 # bin output
-#$(build-bin-y): $(build-exe-y)
-#	@echo
-#	@echo "  >> OBJCOPY $@"   
-#	$(Q)$(CROSS_COMPILE)objcopy -O binary $< $@	
+$(build-bin-y): $(build-exe-y)
+	@echo
+	@echo "  >> OBJCOPY $@"   
+	$(Q)$(CROSS_COMPILE)objcopy -O binary $< $@	
 
 # Linker
-$(build-exe-y): $(dep-y) $(obj-y) $(sim-y) $(libitem-y) $(ldcmdfile-y)
+$(build-exe-y): $(dep-y) $(obj-y) $(os-orti-y) $(sim-y) $(libitem-y) $(ldcmdfile-y)
 	@echo
 	@echo "  >> LD $@"
 ifeq ($(COMPILER),iar)
 	$(Q)$(LD) $(obj-y) $(LDFLAGS) -o $@ -I$(libpath-y) $(lib-y) $(libitem-y)	
 else ifeq ($(CROSS_COMPILE)$(COMPILER),gcc)
-	$(Q)$(CC) $(LDFLAGS) -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	
+	$(Q)$(CC) $(LDFLAGS) -Xlinker -Map=$(basename $(@F)).map -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y) 	
 else
-	$(Q)$(LD) $(LDFLAGS) $(LD_FILE) $(ldcmdfile-y) -o $@ $(libpath-y) $(LD_START_GRP) $(obj-y) $(lib-y) $(libitem-y) $(LD_END_GRP) $(LDMAPFILE)
+	$(Q)$(LD) $(LDFLAGS) $(LD_FILE) $(LD_FILE2)$(ldcmdfile-y) -o $@ $(libpath-y) $(LD_START_GRP) $(obj-y) $(lib-y) $(libitem-y) $(LD_END_GRP) $(LDMAPFILE)
 	$(do-memory-footprint)
 	$(do-memory-footprint2-y)
 endif #($(CROSS_COMPILE),)

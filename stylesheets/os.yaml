@@ -1,0 +1,191 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+########################################################
+# Hidden parameters in OsAlarmActivateTask
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsAlarmAppModeRef
+
+########################################################
+# Hidden parameters in OsAlarmCallback
+########################################################  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsAlarmCallbackName
+  
+########################################################
+# Hidden parameters in OsApplication
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsTrusted
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsAppEcucPartitionRef
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsRestartTask
+
+########################################################
+# Hidden parameters in OsApplicationTrustedFunction
+########################################################  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsTrustedFunctionName
+  
+########################################################
+# Hidden parameters in OsCounter
+########################################################  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsSecondsPerTick
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsCounterTicksPerBase
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsGptChannelRef
+  
+########################################################
+# Hidden parameters in OsIsrTimingProtection
+########################################################  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsIsrResourceLockBudget
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsIsrResourceLockResourceRef
+  
+########################################################
+# Hidden parameters in OsIsrTimingProtection
+######################################################## 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsIsrAllInterruptLockBudget
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsIsrExecutionBudget
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsIsrOsInterruptLockBudget
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsIsrTimeFrame
+  
+########################################################
+# Hidden parameters in OsOS
+########################################################  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsUseGetServiceId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsUseParameterAccess
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsUseResScheduler
+  
+########################################################
+# Hidden parameters in OsScheduleTableAutostart
+########################################################  
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsScheduleTableAppModeRef
+  
+########################################################
+# Hidden parameters in OsScheduleTblAdjustableExpPoint
+########################################################  
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsScheduleTableMaxLengthen
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsScheduleTableMaxShorten
+  
+########################################################
+# Hidden parameters in OsScheduleTableSync
+########################################################  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsScheduleTblExplicitPrecision
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsScheduleTblSyncStrategy
+  
+########################################################
+# Hidden parameters in OsSpinlock
+########################################################  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsSpinlockSuccessor
+  
+########################################################
+# Hidden parameters in OsTaskAutostart
+########################################################  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsTaskAppModeRef
+  
+########################################################
+# Hidden parameters in OsTaskResourceLock
+########################################################  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsTaskResourceLockBudget
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsTaskResourceLockResourceRef
+  
+########################################################
+# Hidden parameters in OsTaskTimingProtection
+########################################################  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsTaskAllInterruptLockBudget
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsTaskExecutionBudget
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsTaskOsInterruptLockBudget
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsTaskTimeFrame
+  
+########################################################
+# Hidden parameters in OsTimeConstant
+########################################################  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsTimeValue
+  
+########################################################
+# Hidden parameters in OsIocCommunication
+########################################################  
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsIocBufferLength
+  
+########################################################
+# Hidden parameters in OsIocSenderProperties
+########################################################  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsIocFunctionImplementationKind
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsIocSenderId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsIocSendingOsApplicationRef 
+  
+########################################################
+# Hidden parameters in OsIocReceiverProperties
+########################################################  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsIocFunctionImplementationKind
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsIocReceiverPullCB
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsIocReceivingOsApplicationRef
+  
+########################################################
+# Hidden parameters in OsIocDataProperties
+########################################################  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsIocDataPropertyIndex
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsIocInitValue
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: OsIocDataTypeRef

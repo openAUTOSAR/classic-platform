@@ -1,0 +1,233 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+########################################################
+# Hidden parameters in CanIfCtrlDrvCfg
+########################################################  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfCtrlDrvNameRef
+
+# CanIfCtrlCfg   
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfCtrlId  
+    
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfCtrlWakeupSupport  
+  
+#########################################################  
+# Hidden parameters in CanIfDispatchCfg  
+#########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfDispatchUserCheckTrcvWakeFlagIndicationName
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfDispatchUserCheckTrcvWakeFlagIndicationUL
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfDispatchUserClearTrcvWufFlagIndicationName
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfDispatchUserClearTrcvWufFlagIndicationUL   
+ 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfDispatchUserConfirmPnAvailabilityName
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfDispatchUserConfirmPnAvailabilityUL
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfDispatchUserTrcvModeIndicationName
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfDispatchUserTrcvModeIndicationUL
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfDispatchUserValidateWakeupEventName
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfDispatchUserValidateWakeupEventUL
+
+#########################################################
+# Hidden parameters in CanIfInitCfg
+#########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfInitCfgSet
+
+# CanIfInitHohCfg   
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfInitRefCfgSet 
+  
+# CanIfHrhCfg
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfHrhCanHandleTypeRef
+  
+## Parameters under CanIfHrhCfg->CanIfHrhRangeCfg
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfHrhRangeRxPduLowerCanId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfHrhRangeRxPduRangeCanIdType
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfHrhRangeRxPduUpperCanId
+##     
+             
+# CanIfHthCfg
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfHthCanHandleTypeRef       
+  
+# CanIfRxPduCfg 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfRxPduBswSchExclAreaIdRef         
+  
+##  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfRxPduId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfRxPduReadData
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfRxPduReadNotifyStatus
+  
+## Parameters under CanIfRxPduCfg->CanIfTTRxFrameTriggering  
+
+- !!com.arccore.common.yaml.data.styles.DisabledContainer
+  name: CanIfTTRxFrameTriggering 
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfTTRxHwObjectTriggerIdRef   
+     
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanTTRxJoblistTimeMark 
+##     
+  
+#  CanIfTxPduCfg
+## Parameters under CanIfTxPduCfg->CanIfTTTxFrameTriggering
+- !!com.arccore.common.yaml.data.styles.DisabledContainer
+  name: CanIfTTTxFrameTriggering 
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfTTTxHwObjectTriggerIdRef   
+     
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfTTTxJoblistTimeMark 
+## 
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfTxPduBswSchExclAreaIdRef
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfTxPduId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfTxPduPnFilterPdu
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfTxPduReadNotifyStatus
+  
+#########################################################
+# Hidden parameters in CanIfPrivateCfg
+#########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfPrivateSoftwareFilterType
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfSupportTTCAN
+  
+## Parameters under CanIfTTGeneral
+- !!com.arccore.common.yaml.data.styles.DisabledContainer
+  name: CanIfTTGeneral
+
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfTTJoblist   
+     
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfTTMaxIsrDelay 
+##
+
+#########################################################
+# Hidden parameters in CanIfPublicCfg
+#########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfPublicCancelTransmitSupport
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfPublicCddHeaderFile
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfPublicChangeBaudrateSupport
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfPublicHandleTypeEnum
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfPublicMultipleDrvSupport
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfPublicNumberOfCanHwUnits
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfPublicPnSupport
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfPublicReadRxPduDataApi
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfPublicReadRxPduNotifyStatusApi
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfPublicReadTxPduNotifyStatusApi
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfPublicSetDynamicTxIdApi
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfPublicTxConfirmPollingSupport 
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfPublicWakeupCheckValidByNM 
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfPublicWakeupCheckValidSupport 
+
+#########################################################
+# Hidden parameters in CanIfTrcvDrvCfg
+######################################################### 
+## Parameters under CanIfTrcvCfg
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfTrcvCanTrcvRef   
+     
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfTrcvId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIfTrcvWakeupSupport    
+##      
+
+#########################################################
+# Parameter groups
+#########################################################   
+# CanIfTxPduCfg
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: CAN Properties
+  members: [ CanIfTxPduCanId, CanIfTxPduCanIdType, CanIfTxPduDlc ]
+
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Transmit Confirmation Settings
+  members: [ CanIfTxPduUserTxConfirmationName, CanIfTxPduUserTxConfirmationUL ] 
+  
+# CanIfTxPduCfg
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: CAN Properties
+  members: [ CanIfRxPduCanId, CanIfRxPduCanIdType, CanIfRxPduDlc ]
+
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Receive Indication Settings
+  members: [ CanIfRxPduUserRxIndicationName, CanIfRxPduUserRxIndicationUL ]   
+
+# CanIfPublicCfg  
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Tx Buffering Settings
+  members: [ CanIfPublicTxBuffering, ArcCanIfPublicTxBufferSize, ArcCanIfPublicMaxNumberOfTxBuffers ]        

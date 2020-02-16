@@ -1,0 +1,27 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: WdgMModeId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: WdgMExternalCheckpointFinalRef
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: WdgMExternalCheckpointInitialRef
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: WdgMWatchdogName
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: WdgMCheckpointId
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: WdgMEcucPartitionRef
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: WdgMOsApplicationRef
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: WdgMSupervisedEntityId
+  

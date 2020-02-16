@@ -1,0 +1,95 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+########################################################
+# Hidden parameters in CanGeneral
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanChangeBaudrateApi
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanHardwareCancellation
+  mcals: [STM32F103, STM32F107 MPC5567, MPC551x, MPC5744P]
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIdenticalIdCancellation
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanIndex
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanLPduReceiveCalloutFunction
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanMainFunctionBusoffPeriod
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanMainFunctionModePeriod
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanMainFunctionWakeupPeriod
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanMultiplexedTransmission
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanTimeoutDuration
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanCounterRef
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanSupportTTCANRef
+
+########################################################
+# Hidden parameters in CanController 
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanControllerBaseAddress
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanWakeupSupport
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanCpuClockRef
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanWakeupSourceRef
+  
+########################################################
+# Hidden parameters in CanHardwareObject  
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanObjectId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanMainFunctionRWPeriodRef 
+  
+########################################################
+# Hidden parameters in CanMainFunctionRWPeriods  
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanMainFunctionReadPeriod
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanMainFunctionWritePeriod
+  
+  
+########################################################
+# Hidden parameters in CanMainFunctionRWPeriods  
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanTTHardwareObjectBaseCycle
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanTTHardwareObjectCycleRepetition
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanTTHardwareObjectTimeMark
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanTTHardwareObjectTriggerId
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanTTHardwareObjectTriggerType
+  

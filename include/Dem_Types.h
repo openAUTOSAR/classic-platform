@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 
 
@@ -30,11 +29,11 @@
 /*
  * DTC storage types
  */
-typedef uint8 Dem_ReturnTypeOfDtcSupportedType;
-#define DEM_ISO15031_6		0x00
-#define DEM_ISO14229_1		0x01
-#define DEM_SAEJ1939_73		0x02
-#define DEM_ISO_11992_4		0x03
+typedef uint8 Dem_DTCTranslationFormatType;
+#define DEM_DTC_TRANSLATION_ISO15031_6      0x00
+#define DEM_DTC_TRANSLATION_ISO14229_1      0x01
+#define DEM_DTC_TRANSLATION_SAEJ1939_73     0x02
+#define DEM_DTC_TRANSLATION_ISO11992_4      0x03
 
 /*
  * Dem_DTCGroupType
@@ -49,15 +48,6 @@ typedef uint32 Dem_DTCGroupType;
 
 
 /*
- * DemDTCOriginType
- */
-typedef uint8 Dem_DTCOriginType;
-#define	DEM_DTC_ORIGIN_SECONDARY_MEMORY	(Dem_DTCOriginType)0x01
-#define	DEM_DTC_ORIGIN_PRIMARY_MEMORY	(Dem_DTCOriginType)0x02
-#define	DEM_DTC_ORIGIN_PERMANENT_MEMORY	(Dem_DTCOriginType)0x03
-#define	DEM_DTC_ORIGIN_MIRROR_MEMORY	(Dem_DTCOriginType)0x04
-
-/*
  * Dem_FreezeFrameKindType
  */
 typedef uint8 Dem_FreezeFrameKindType;	// TODO: Check type and values
@@ -70,17 +60,6 @@ typedef uint8 Dem_FreezeFrameKindType;	// TODO: Check type and values
 typedef uint8 Dem_EventKindType;		// TODO: Check type and values
 #define DEM_EVENT_KIND_BSW		(Dem_EventKindType)0x01
 #define DEM_EVENT_KIND_SWC		(Dem_EventKindType)0x02
-
-/*
- * Dem_EventStatusType
- */
-#if !defined(_DEFINED_TYPEDEF_FOR_Dem_EventStatusType_)
-typedef uint8 Dem_EventStatusType;
-#define DEM_EVENT_STATUS_PASSED		(Dem_EventStatusType)0
-#define DEM_EVENT_STATUS_FAILED		(Dem_EventStatusType)1
-#define DEM_EVENT_STATUS_PREPASSED	(Dem_EventStatusType)2
-#define DEM_EVENT_STATUS_PREFAILED	(Dem_EventStatusType)3
-#endif
 
 /*
  * Dem_PreDebounceNameType
@@ -119,9 +98,9 @@ typedef uint8 Dem_DTCSeverityType;
 /*
  * Dem_ReturnSetDTCFilterType
  */
-typedef uint8 Dem_ReturnSetDTCFilterType;
-#define DEM_FILTER_ACCEPTED	(Dem_ReturnSetDTCFilterType)0x00
-#define DEM_WRONG_FILTER	(Dem_ReturnSetDTCFilterType)0x01
+typedef uint8 Dem_ReturnSetFilterType;
+#define DEM_FILTER_ACCEPTED	(Dem_ReturnSetFilterType)0x00
+#define DEM_WRONG_FILTER	(Dem_ReturnSetFilterType)0x01
 
 /*
  * Dem_ReturnGetStatusOfDTCType
@@ -260,22 +239,9 @@ typedef uint8 Dem_ReturnGetSeverityOfDTCType;
 #define DEM_GET_SEVERITYOFDTC_WRONG_ORIGIN	(Dem_ReturnGetSeverityOfDTCType)0x02
 #define DEM_GET_SEVERITYOFDTC_NOSEVERITY	(Dem_ReturnGetSeverityOfDTCType)0x03
 
-
 /*******************************************************
  * Definitions where the type is declared in Rte_Dem.h *
  *******************************************************/
-/*
- * DemEventStatusExtendedType definitions
- */
-#define	DEM_TEST_FAILED 							(Dem_EventStatusExtendedType)0x01
-#define	DEM_TEST_FAILED_THIS_OPERATION_CYCLE 		(Dem_EventStatusExtendedType)0x02
-#define	DEM_PENDING_DTC 							(Dem_EventStatusExtendedType)0x04
-#define	DEM_CONFIRMED_DTC 							(Dem_EventStatusExtendedType)0x08
-#define	DEM_TEST_NOT_COMPLETED_SINCE_LAST_CLEAR 	(Dem_EventStatusExtendedType)0x10
-#define	DEM_TEST_FAILED_SINCE_LAST_CLEAR 			(Dem_EventStatusExtendedType)0x20
-#define	DEM_TEST_NOT_COMPLETED_THIS_OPERATION_CYCLE (Dem_EventStatusExtendedType)0x40
-#define	DEM_WARNING_INDICATOR_REQUESTED 			(Dem_EventStatusExtendedType)0x80
-
 /*
  * DemDTCKindType definitions
  */
@@ -284,12 +250,12 @@ typedef uint8 Dem_ReturnGetSeverityOfDTCType;
 #define	DEM_DTC_KIND_EMISSION_REL_DTCS	(Dem_DTCKindType)0x02
 #endif
 
-#if !defined(_DEFINED_TYPEDEF_FOR_Dem_InitMonitorKindType_)
+#if !defined(_DEFINED_TYPEDEF_FOR_Dem_InitMonitorReasonType_)
 /*
  * Dem_InitMonitorKindType definitions
  */
-#define DEM_INIT_MONITOR_CLEAR		(Dem_InitMonitorKindType)1
-#define DEM_INIT_MONITOR_RESTART	(Dem_InitMonitorKindType)2
+#define DEM_INIT_MONITOR_CLEAR		(Dem_InitMonitorReasonType)1
+#define DEM_INIT_MONITOR_RESTART	(Dem_InitMonitorReasonType)2
 #endif
 
 
@@ -318,14 +284,5 @@ enum {
 
 	DEM_OPERATION_CYCLE_ID_ENDMARK
 }; /** @req DEM142 */
-
-/*
- * Dem_OperationCycleStateType definitions
- */
-#if !defined(_DEFINED_TYPEDEF_FOR_Dem_OperationCycleStateType_)
-#define DEM_CYCLE_STATE_START		(Dem_OperationCycleStateType)1
-#define DEM_CYCLE_STATE_END			(Dem_OperationCycleStateType)2
-#endif
-
 
 #endif /*DEM_TYPES_H_*/

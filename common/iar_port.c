@@ -96,8 +96,9 @@ size_t __write(int handle, const unsigned char *buf, size_t cnt)
 	return 0; // No error
 }
 
-int write(int fd, char* c) {
-	__write( fd, c,1);
+int arc_putchar(int fd, int c) {
+	char cc = c;
+	__write( fd,(const unsigned char *)&cc,1);
 
 	return 0;
 }

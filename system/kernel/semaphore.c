@@ -88,7 +88,7 @@ StatusType WaitSemaphore( OsSemaphoreType *semPtr, TickType tmo ) {
 	--semPtr->val;
 
 	pcbPtr = Os_SysTaskGetCurr();
-	assert(Os_Sys.intNestCnt == 0 );
+	assert(OS_SYS_PTR->intNestCnt == 0 );
 
 	if (pcbPtr->constPtr->proc_type != PROC_EXTENDED) {
 		return E_OS_ACCESS;
@@ -117,7 +117,7 @@ StatusType WaitSemaphore( OsSemaphoreType *semPtr, TickType tmo ) {
 			if ( Os_SchedulerResourceIsFree() ) {
 				/* Set the timeout */
 				if( tmo != TICK_MAX ) {
-					TAILQ_INSERT_TAIL(&Os_Sys.timerHead,pcbPtr,timerEntry);
+					TAILQ_INSERT_TAIL(&OS_SYS_PTR->timerHead,pcbPtr,timerEntry);
 					pcbPtr->timerDec = tmo;
 				}
 

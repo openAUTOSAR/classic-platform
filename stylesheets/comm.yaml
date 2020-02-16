@@ -1,0 +1,97 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+#########################################################
+# Hidden parameters in ComMGeneral
+######################################################### 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMDirectUserMapping  
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMEcuGroupClassification
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMPncGatewayEnabled
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMPncPrepareSleepTimer
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMPncSupport
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMSynchronousWakeUp
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMWakeupInhibitionEnabled
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMGlobalNvMBlockDescriptor
+  
+#########################################################
+# Hidden parameters in ComMConfigSet
+#########################################################   
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMPncEnabled
+  
+#########################################################
+# Hidden parameters in ComMUser
+#########################################################  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMUserIdentifier
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMUserEcucPartitionRef
+  
+#########################################################
+# Hidden parameters in ComMChannel
+#########################################################   
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMChannelId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMFullCommRequestNotificationEnabled
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMGlobalNvmBlockDescriptor
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMNoWakeup
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMPncGatewayType
+  
+# To do hide ComMNoCom. Currently identical parameter under ComMGeneral  
+  
+#########################################################
+# Hidden parameters in ComMNetworkManagement
+#########################################################   
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMPncNmRequest
+  
+#########################################################
+# Hidden parameters in ComMPnc
+#########################################################   
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMPncId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMChannelPerPnc
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMUserPerPnc
+  
+#########################################################
+# Hidden parameters in ComMPncComSignal
+#########################################################   
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMPncComSignalDirection
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMPncComSignalKind
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMPncComSignalChannelRef
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: ComMPncComSignalRef

@@ -1,0 +1,10 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+########################################################
+# Hidden parameters in MemIfGeneral
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: MemIfNumberOfDevices
+  
+  

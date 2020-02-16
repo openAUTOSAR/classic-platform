@@ -1,28 +1,20 @@
 //  Gnu C/C++ (version 2.95.3 or later), -si4 -sp4, 
 //  Standard lint options
 
-//c:\lint\au-misra2.lnt //To check MISRA C rules
-//c:\lint\lnt\co-gcc.lnt
-
-au-misra2.lnt //To check MISRA C rules
-lnt\co-gcc.lnt
 
 //c:\lint\options.lnt  -si4 -sp4
-
 
 // EIJAS STUFF:
 -u //unit-checkout since not checking the test-files. Supresses the inter-module
 	//messages 526,552,628,714.720,755-759,765,768-769,948,974,1526-1527,1711,1714-1715,1755
 
--zero //always return exit code 0 (avoiding makefile interruption)
-
 // SET WARNING LEVEL:
--w3 //
+-w2 //
 -wlib(1) // 1:only errors, 2: +warnings 3: + infos
 
 //Reset which files are viewed library-files to only treat the ones in msys library as such
-+libclass()
-+libdir(*/msys/include*)
+//+libclass()
+//+libdir(*/msys/include*)
 
 //+os(lintOutput.TMP) //append output to file
 //+oe(lintErrorOutput.TMP)//append error output to file
@@ -32,7 +24,6 @@ lnt\co-gcc.lnt
 -width(0) // don't insert line breaks (unlimited output width).
 -hf1 // message height one
 -format=%f:%l:%c:\s%t:\s%n\sPC-lint:\s%m
-
 
 
 
@@ -106,3 +97,6 @@ lnt\co-gcc.lnt
 //-esym(960, 12.5) //Non-primary expression used with logical operator.
 
 //-e785 // Too few initializers for aggregate ...
+
+
+-emacro(506, TEST_ASSERT)

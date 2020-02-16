@@ -1,22 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
-
-
-
-
-
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 
 
@@ -24,6 +18,8 @@
 
 #ifndef _ECUM_INTERNALS_H_
 #define _ECUM_INTERNALS_H_
+
+#include "EcuM_Generated_Types.h"
 
 #if  ( ECUM_DEV_ERROR_DETECT == STD_ON )
 #if defined(USE_DET)
@@ -58,13 +54,16 @@
 
 typedef struct
 {
-	boolean 			initiated;
-	EcuM_ConfigType *	config;
-	EcuM_StateType 		shutdown_target;
-	uint8 				sleep_mode;
-	AppModeType 		app_mode;
-	EcuM_StateType 		current_state;
-#if defined(USE_COMM)
+	boolean                   initiated;
+	EcuM_ConfigType *         config;
+	EcuM_StateType            shutdown_target;
+#if (defined(USE_ECUM_FLEXIBLE))
+	EcuM_ShutdownCauseType    shutdown_cause;
+#endif
+	uint8                     sleep_mode;
+	AppModeType               app_mode;
+	EcuM_StateType            current_state;
+#if (defined(USE_COMM) || (USE_ECUM_COMM) && (ECUM_AR_VERSION < 40000))
 	uint32 				run_comm_requests;
 #endif
 	uint32 				run_requests;
@@ -81,10 +80,33 @@ typedef struct
 } EcuM_GlobalType;
 
 extern EcuM_GlobalType EcuM_World;
+typedef enum
+{
+	ALL,
+	ALL_WO_LIN,
+	ONLY_LIN
+} EcuM_ComMCommunicationGroupsType;
+
 
 void EcuM_enter_run_mode(void);
 
+#ifdef CFG_ECUM_USE_SERVICE_COMPONENT
 void set_current_state(EcuM_StateType state);
+#else
+#define set_current_state(state) EcuM_World.current_state = (state)
+#endif
+
+void SetCurrentState(EcuM_StateType state);
+
+/* @req EcuM2905 */
+
+/* @req EcuM2906 */
+
+/* @req EcuM2907 */
+
+/* @req EcuM2908 */
+
+/* @req EcuM2909 */
 
 //#if defined(USE_LDEBUG_PRINTF)
 char *GetMainStateAsString( EcuM_StateType state );

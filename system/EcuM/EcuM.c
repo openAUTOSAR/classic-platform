@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 /** @reqSettings DEFAULT_SPECIFICATION_REVISION=3.1.5 */
 
@@ -23,7 +22,7 @@
  *   3.1.5
  *
  * Description:
- *   Implements the Can Driver module
+ *   Implements the EcuM (fixed) module
  *
  * Support:
  *   General                  Have Support
@@ -50,18 +49,33 @@
  *   -------------------------------------------
  *   ECUM_DEFAULT_SHUTDOWN_TARGET		N
  *
+ * Implementation Notes:
  *
- * Things to start with:
- * - EcuM2181
- * - EcuM2861 , Watchdog
+ *   3.1.x
+ *    From ComM
+ *      - EcuM_ComM_RequestRUN(channel)
+ *      - EcuM_ComM_ReleaseRUN(channel)
+ *      - EcuM_ComM_HasRequestedRUN(channel)
+ *    From EcuM:
+ *      - ComM_EcuM_RunModeIndication(channel)
+ *      - ComM_EcuM_WakeUpIndication(channel)
  *
+ *   4.x
+ *    From ComM
+ *       None :)
  *
- *
+ *    From EcuM:
+ *      - ComM_CommunicationAllowed(channel)
+ *      - ComM_GetState(channel, &state)
+ *      - ComM_EcuM_WakeUpIndication(channel)
  *
  */
 
 //lint -emacro(904,VALIDATE,VALIDATE_RV,VALIDATE_NO_RV) //904 PC-Lint exception to MISRA 14.7 (validate macros).
 /* ----------------------------[includes]------------------------------------*/
+
+/* @req EcuM2862 */
+/* @req EcuM2810 */
 
 #include "Std_Types.h"
 #include "EcuM.h"
@@ -78,11 +92,15 @@
 #if defined(USE_DET)
 #include "Det.h"
 #endif
+#if defined(USE_DEM)
+#include "Dem.h"                /* @req EcuM2875 */
+#endif
 #include "isr.h"
 #if defined(USE_NVM)
 #include "NvM.h"
 #endif
 #if defined(USE_RTE)
+/* @req EcuMf0001 */
 #include "Rte_Main.h"
 #endif
 #if defined(USE_SCHM)
@@ -102,38 +120,123 @@ EcuM_GlobalType EcuM_World;
 
 /* ----------------------------[private functions]---------------------------*/
 
+#if !defined(USE_BSWM)
+#define BswM_EcuM_CurrentWakeup(source, state)
+#endif
+
+#if  ( ECUM_DEV_ERROR_DETECT == STD_ON )
+boolean CheckWakupSourceValidity(EcuM_WakeupSourceType sources, uint8 FunctionId) {
+	EcuM_WakeupSourceType wkSource;
+	const EcuM_SleepModeType *sleepModePtr;
+
+	sleepModePtr = &EcuM_World.config->EcuMSleepModeConfig[EcuM_World.sleep_mode];
+	wkSource =  sleepModePtr->EcuMWakeupSourceMask;
+
+	/* 4.0.3/EcuM2625 */
+	/* Predefined source does not require validation */
+	if ( sources & (ECUM_WKSOURCE_POWER | ECUM_WKSOURCE_RESET
+					| ECUM_WKSOURCE_INTERNAL_RESET | ECUM_WKSOURCE_INTERNAL_WDG
+					| ECUM_WKSOURCE_EXTERNAL_WDG) ) {
+		return TRUE;
+	}
+
+	if( !((sources | wkSource) ==  wkSource)) {
+		Det_ReportError(MODULE_ID_ECUM, 0, FunctionId, ECUM_E_UNKNOWN_WAKEUP_SOURCE );
+		return FALSE;
+	}
+
+	return TRUE;
+}
+#else
+#define CheckWakupSourceValidity(sources, FunctionId) (FALSE)
+#endif
+
+
+#if defined(CFG_POSTBUILD)
+static boolean ValidatePostBuildConfiguration(const EcuM_ConfigType* config) {
+
+//    boolean status = TRUE;
+
+    /* The hash is calculated both when generating the pre compile configuration
+     * and the postbuild configuration. It is based on all pre compile configuration
+     * parameters.
+     * Generator version and vendor id also needs to be a part of the input to the
+     * hash.
+     */
+
+    /* Chech that the pointer at least isn't NULL */
+    if (config->PostBuildConfig == NULL) {
+        return FALSE;
+    }
+
+    /* Just a basic check that the it seems to be a valid post build area */
+    if (0x5A5A5A5A != config->PostBuildConfig->startPattern) {
+        return FALSE;
+    }
+
+    /* Check the variant  */
+    if (config->EcuMPostBuildVariant != config->PostBuildConfig->postBuildVariant) {
+        return FALSE;
+    }
+
+    /* Check the hash */
+    if ((config->EcuMConfigConsistencyHashLow != config->PostBuildConfig->preCompileHashLow) ||
+        (config->EcuMConfigConsistencyHashHigh != config->PostBuildConfig->preCompileHashHigh)) {
+        return FALSE;
+    }
+
+
+    return TRUE;
+
+}
+
+#endif
+
 /* ----------------------------[public functions]----------------------------*/
 
 #if !defined(USE_DET) && (ECUM_DEV_ERROR_DETECT == STD_ON)
 #error EcuM configuration error. DET is not enabled when ECUM_DEV_ERROR_DETECT is set
 #endif
 
-
+/* @req EcuM2411 */
 /**
  * Initialize EcuM.
  */
 void EcuM_Init(void) {
-	Std_ReturnType status;
-	set_current_state(ECUM_STATE_STARTUP_ONE);
+	if (GetCoreID() == OS_CORE_ID_MASTER) {
+		Std_ReturnType status;
+#if defined(USE_ECUM_FIXED) || defined(USE_ECUM)
+		SetCurrentState(ECUM_STATE_STARTUP_ONE);
+#endif
 
-	// Initialize drivers that are needed to determine PostBuild configuration
-	EcuM_AL_DriverInitZero();
+		// Initialize drivers that are needed to determine PostBuild configuration
+		EcuM_AL_DriverInitZero();
 
-	// Initialize the OS
-	InitOS();
+		// Initialize the OS
+		InitOS();
 
-	// Setup interrupts
-	Os_IsrInit();
+		// Setup interrupts
+		Os_IsrInit();
 
-	// Determine PostBuild configuration
+		// Determine PostBuild configuration
 	EcuM_World.config = EcuM_DeterminePbConfiguration();
 
-	// TODO: Check consistency of PB configuration
 
-	// Initialize drivers needed before the OS-starts
+#if defined(CFG_POSTBUILD)
+    /* @req EcuM2796 @req EcuM2798 */
+    if (!ValidatePostBuildConfiguration(EcuM_World.config)) {
+#if defined(USE_DEM)
+        EcuM_ErrorHook(EcuM_World.config->EcuMDemInconsistencyEventId);
+#endif
+        return;
+    }
+#endif
+
+
+		// Initialize drivers needed before the OS-starts
 	EcuM_AL_DriverInitOne(EcuM_World.config);
 
-	// Determine the reset/wakeup reason
+    // Determine the reset/wakeup reason
 	switch (Mcu_GetResetReason()) {
 	case MCU_POWER_ON_RESET:
 		EcuM_SetWakeupEvent(ECUM_WKSOURCE_POWER);
@@ -151,109 +254,65 @@ void EcuM_Init(void) {
 		break;
 	}
 
-	// Moved this here because EcuM_SelectShutdownTarget needs us to be initilized.
+    // Moved this here because EcuM_SelectShutdownTarget needs us to be initilized.
 	EcuM_World.initiated = TRUE;
 
-	// Set default shutdown target
+    // Set default shutdown target
 
+    /* @req EcuM2181 */
 	status = EcuM_SelectShutdownTarget(
 					EcuM_World.config->EcuMDefaultShutdownTarget,
 					EcuM_World.config->EcuMDefaultSleepMode);/** @req EcuM2181 */
 	if (status != E_OK) {
-		//TODO: Report error.
-	}
+	    return;
+		}
 
 	// Set default application mode
-	status = EcuM_SelectApplicationMode(
-					EcuM_World.config->EcuMDefaultAppMode);
+	status = EcuM_SelectApplicationMode( EcuM_World.config->EcuMDefaultAppMode);
 	if (status != E_OK) {
-		//TODO: Report error.
+		return;
 	}
 
-#if defined(USE_COMM)
+#if defined(USE_COMM) && (ECUM_AR_VERSION < 40000)
 	EcuM_World.run_comm_requests = 0;
 #endif
 	EcuM_World.run_requests = 0;
 	EcuM_World.postrun_requests = 0;
 
-	// Start this baby up
-	AppModeType appMode;
-	status = EcuM_GetApplicationMode(&appMode);
-	if (status != E_OK) {
-		//TODO: Report error.
+#if (ECUM_RESET_LOOP_DETECTION == STD_ON)
+	//TODO: This returns true if a loop is detected. The spec does not say
+	//      what to do if that happens.
+	EcuM_LoopDetection();
+#endif
+
+    // Start this baby up
+    /* @req EcuMf0010 */
+    /* @req EcuM2603 */
+    /* @req EcuM2243 */
+		StatusType coreStatus;
+		if (OS_NUM_CORES > 1) {
+			StartCore(GetCoreID() + 1, &coreStatus);
+		}
+   StartOS(EcuM_World.config->EcuMDefaultAppMode); /** @req EcuM2141 */
+
+	} else {
+#if (OS_NUM_CORES > 1 )
+		StatusType coreStatus;
+#endif
+		InitOS();
+		Os_IsrInit();
+#if (OS_NUM_CORES > 1 )
+		StartCore(GetCoreID() + 1, &coreStatus);
+#endif
+		StartOS(OSDEFAULTAPPMODE);
 	}
-
-	StartOS(appMode); /** @req EcuM2141 */
 }
-
-
-/*
- * The order defined here is found in 3.1.5/EcuM2411
- */
-void EcuM_StartupTwo(void)
-{
-	//TODO:  Validate that we are in state STARTUP_ONE.
-#if defined(USE_NVM)
-	extern CounterType Os_Arc_OsTickCounter;
-	TickType tickTimerStart, tickTimerElapsed;
-	static NvM_RequestResultType readAllResult;
-	TickType tickTimer;
-	StatusType tickTimerStatus;
-#endif
-
-	set_current_state(ECUM_STATE_STARTUP_TWO);
-
-	// Initialize the BSW scheduler
-#if defined(USE_SCHM)
-	SchM_Init();
-#endif
-
-#if defined(USE_WDGM)
-	if( EcuM_World.config->EcuMWdgMConfig != NULL ) {
-	  WdgM_SetMode(EcuM_World.config->EcuMWdgMConfig->EcuMWdgMStartupMode);
-	}
-#endif
-
-	// Initialize drivers that don't need NVRAM data
-	EcuM_AL_DriverInitTwo(EcuM_World.config);
-
-#if defined(USE_NVM)
-	// Start timer to wait for NVM job to complete
-	tickTimerStart = GetOsTick();
-#endif
-
-	// Prepare the system to startup RTE
-	// TODO EcuM_OnRTEStartup();
-#if defined(USE_RTE)
-	Rte_Start();
-#endif
-
-#if defined(USE_NVM)
-	/* Wait for the NVM job (NvM_ReadAll) to terminate. This assumes that:
-	 * - A task runs the memory MainFunctions, e.g. Ea_MainFunction(), Eep_MainFunction()
-	 *   are run in a higher priority task that the task that executes this code.
-	 */
-	do {
-		/* Read the multiblock status */
-		NvM_GetErrorStatus(0, &readAllResult);
-		tickTimerElapsed = OS_TICKS2MS_OS_TICK(GetOsTick() - tickTimerStart);
-		/* The timeout EcuMNvramReadAllTimeout is in ms */
-	} while( (readAllResult == NVM_REQ_PENDING) && (tickTimerElapsed < EcuM_World.config->EcuMNvramReadAllTimeout) );
-#endif
-
-	// Initialize drivers that need NVRAM data
-	EcuM_AL_DriverInitThree(EcuM_World.config);
-
-	// TODO: Indicate mode change to RTE
-
-	EcuM_enter_run_mode();
-
-}
-
 
 // Typically called from OS shutdown hook
 void EcuM_Shutdown(void) {
-	set_current_state(ECUM_STATE_GO_OFF_TWO);
+#if defined(USE_ECUM_FIXED) || defined(USE_ECUM)
+	SetCurrentState(ECUM_STATE_GO_OFF_TWO);
+#endif
 
 	// Let the last drivers do a nice shutdown
 	EcuM_OnGoOffTwo();
@@ -261,27 +320,23 @@ void EcuM_Shutdown(void) {
 	if (EcuM_World.shutdown_target == ECUM_STATE_OFF) {
 		EcuM_AL_SwitchOff();
 	} else {
+#if defined(USE_ECUM_FIXED) || defined(USE_ECUM)
 #if (MCU_PERFORM_RESET_API == STD_ON)
-		Mcu_PerformReset();
+    Mcu_PerformReset();
 #else
-		for(;;)
-		{
-			;
-		}
+    for(;;)
+    {
+        ;
+    }
+#endif
+#elif defined(USE_ECUM_FLEXIBLE)
+    EcuM_AL_Reset(EcuM_World.sleep_mode);
 #endif
 	}
 }
 
-Std_ReturnType EcuM_GetState(EcuM_StateType* state) {
-	VALIDATE_RV(EcuM_World.initiated, ECUM_GETSTATE_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(state != NULL, ECUM_GETSTATE_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
-
-	*state = EcuM_World.current_state;
-
-	return E_OK;
-}
-
 Std_ReturnType EcuM_SelectApplicationMode(AppModeType appMode) {
-	VALIDATE_RV(EcuM_World.initiated, ECUM_SELECTAPPMODE_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_SELECTAPPMODE_ID, ECUM_E_UNINIT, E_NOT_OK);
 
 	EcuM_World.app_mode = appMode;
 
@@ -289,7 +344,7 @@ Std_ReturnType EcuM_SelectApplicationMode(AppModeType appMode) {
 }
 
 Std_ReturnType EcuM_GetApplicationMode(AppModeType* appMode) {
-	VALIDATE_RV(EcuM_World.initiated, ECUM_GETAPPMODE_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(appMode != NULL, ECUM_GETAPPMODE_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_GETAPPMODE_ID, ECUM_E_UNINIT, E_NOT_OK);VALIDATE_RV(appMode != NULL, ECUM_GETAPPMODE_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
 
 	*appMode = EcuM_World.app_mode;
 
@@ -297,7 +352,7 @@ Std_ReturnType EcuM_GetApplicationMode(AppModeType* appMode) {
 }
 
 Std_ReturnType EcuM_SelectBootTarget(EcuM_BootTargetType target) {
-	VALIDATE_RV(EcuM_World.initiated, ECUM_SELECT_BOOTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_SELECT_BOOTARGET_ID, ECUM_E_UNINIT, E_NOT_OK);
 
 	// TODO Do something great here
 	(void) target;
@@ -307,7 +362,7 @@ Std_ReturnType EcuM_SelectBootTarget(EcuM_BootTargetType target) {
 }
 
 Std_ReturnType EcuM_GetBootTarget(EcuM_BootTargetType* target) {
-	VALIDATE_RV(EcuM_World.initiated, ECUM_GET_BOOTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(target != NULL, ECUM_GET_BOOTARGET_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_GET_BOOTARGET_ID, ECUM_E_UNINIT, E_NOT_OK);VALIDATE_RV(target != NULL, ECUM_GET_BOOTARGET_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
 
 	// TODO Return selected boot target here
 	(void) target;
@@ -318,14 +373,18 @@ Std_ReturnType EcuM_GetBootTarget(EcuM_BootTargetType* target) {
 
 Std_ReturnType EcuM_SelectShutdownTarget(EcuM_StateType shutdownTarget,
 				uint8 sleepMode) {
-	VALIDATE_RV(EcuM_World.initiated, ECUM_SELECTSHUTDOWNTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV((shutdownTarget == ECUM_STATE_OFF) || (shutdownTarget == ECUM_STATE_RESET) || (shutdownTarget == ECUM_STATE_SLEEP), ECUM_SELECTSHUTDOWNTARGET_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_SELECTSHUTDOWNTARGET_ID, ECUM_E_UNINIT, E_NOT_OK);
+	VALIDATE_RV((shutdownTarget == ECUM_STATE_OFF) ||
+				(shutdownTarget == ECUM_STATE_RESET) ||
+				(shutdownTarget == ECUM_STATE_SLEEP),
+				ECUM_SELECTSHUTDOWNTARGET_ID, ECUM_E_STATE_PAR_OUT_OF_RANGE, E_NOT_OK);
 
-#if defined(DEBUG_SELECT_SHUTDOWN_TARGET)
 	LDEBUG_PRINTF("EcuM_SelectShutdownTarget(): shutdownTarget=%s, sleepMode=%d\n",
 			GetMainStateAsString(shutdownTarget),
 			sleepMode);
-#endif
 
+        /* @req EcuM2585 */
+	/* @req EcuM2232 */
 	EcuM_World.shutdown_target = shutdownTarget;
 	EcuM_World.sleep_mode = sleepMode;
 
@@ -335,7 +394,8 @@ Std_ReturnType EcuM_SelectShutdownTarget(EcuM_StateType shutdownTarget,
 Std_ReturnType EcuM_GetShutdownTarget(EcuM_StateType* shutdownTarget,
 				uint8* sleepMode) /** @req EcuM2824 */
 {
-	VALIDATE_RV(EcuM_World.initiated, ECUM_GETSHUTDOWNTARGET_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(shutdownTarget != NULL, ECUM_GETSHUTDOWNTARGET_ID, ECUM_E_NULL_POINTER, E_NOT_OK);VALIDATE_RV(sleepMode != NULL, ECUM_GETSHUTDOWNTARGET_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
+         /* @req EcuM2788 */
+	VALIDATE_RV(EcuM_World.initiated, ECUM_GETSHUTDOWNTARGET_ID, ECUM_E_UNINIT, E_NOT_OK);VALIDATE_RV(shutdownTarget != NULL, ECUM_GETSHUTDOWNTARGET_ID, ECUM_E_NULL_POINTER, E_NOT_OK);VALIDATE_RV(sleepMode != NULL, ECUM_GETSHUTDOWNTARGET_ID, ECUM_E_NULL_POINTER, E_NOT_OK);
 
 	*shutdownTarget = EcuM_World.shutdown_target;
 	*sleepMode = EcuM_World.sleep_mode;
@@ -343,54 +403,7 @@ Std_ReturnType EcuM_GetShutdownTarget(EcuM_StateType* shutdownTarget,
 	return E_OK;
 }
 
-Std_ReturnType EcuM_RequestRUN(EcuM_UserType user) {
-	VALIDATE_RV(EcuM_World.initiated, ECUM_REQUESTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_REQUESTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
 
-	//	LDEBUG_PRINTF("EcuM_RequestRUN(): User %d\n",user);
-	if( !EcuM_World.killAllRequest ) {
-		EcuM_World.run_requests |= (uint32) 1 << user;
-	}
-
-	return E_OK;
-}
-
-Std_ReturnType EcuM_ReleaseRUN(EcuM_UserType user) {
-	VALIDATE_RV(EcuM_World.initiated, ECUM_RELEASERUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_RELEASERUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
-
-#if defined(DEBUG_RELEASE_RUN)
-	LDEBUG_PRINTF("EcuM_ReleaseRUN(): User %d\n",user);
-#endif
-	EcuM_World.run_requests &= ~((uint32) 1 << user);
-
-	return E_OK;
-}
-
-/**
- * Kill all RUN requests and perform shutdown without waiting for application
- * to finish
- *
- * Note that for 4.x this should NOT kill POST_RUN requests
- *
- */
-void EcuM_KillAllRUNRequests(void) {
-	/* @req 3.1.5/ECUM2821 */
-
-	EcuM_World.killAllRequest = true;
-
-	/* @req 3.1.5|4.0.3/ECUM2668 */
-	/* @req 3.1.5/ECUM1872 */
-	EcuM_World.run_requests = 0;
-	EcuM_World.postrun_requests = 0;
-#if defined(USE_COMM)
-	EcuM_World.run_comm_requests = 0;
-#endif
-
-
-#if defined(USE_DEM)
-    Dem_ReportErrorStatus(ECUM_E_ALL_RUN_REQUESTS_KILLED, DEM_EVENT_STATUS_FAILED );
-#endif
-
-}
 
 /**
  *
@@ -405,7 +418,7 @@ void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources) {
 	/* @req 3.1.5/EcuM2826 The function exists */
 	/* @req 3.1.5/EcuM2171 */
 
-	/* @req 4.0.3|.1.5/ECUM2565 Validate at once for pre-defined sources */
+	/* @req 4.0.3|3.1.5/ECUM2565 Validate at once for pre-defined sources */
 	wkSource = (ECUM_WKSOURCE_POWER | ECUM_WKSOURCE_RESET
 					| ECUM_WKSOURCE_INTERNAL_RESET | ECUM_WKSOURCE_INTERNAL_WDG
 					| ECUM_WKSOURCE_EXTERNAL_WDG);
@@ -414,39 +427,45 @@ void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources) {
 	wkSource &= sources;
 
 	if (wkSource != 0) {
-		/* Move to validated  */
+		/* Validate pre-defined source at once */
 		EcuM_ValidateWakeupEvent(wkSource);
 	}
 
 	/* Don't add pre-defined source to PENDING */
 	sources ^= wkSource;
 
-	/* @req 3.1.5/EcuM2867 */
+	if (sources != 0 ) {
+		/* @req 3.1.5/EcuM2867 */
 #if  ( ECUM_DEV_ERROR_DETECT == STD_ON )
-	/* Get user defined sources */
-	wkSource = EcuM_World.config->EcuMSleepModeConfig[EcuM_World.sleep_mode].EcuMWakeupSourceMask;
+		/* Get user defined sources */
+		wkSource = EcuM_World.config->EcuMSleepModeConfig[EcuM_World.sleep_mode].EcuMWakeupSourceMask;
 
-	/* Add always validated sources */
-	wkSource |= (ECUM_WKSOURCE_POWER|ECUM_WKSOURCE_RESET | ECUM_WKSOURCE_INTERNAL_RESET |
-			ECUM_WKSOURCE_INTERNAL_WDG | ECUM_WKSOURCE_EXTERNAL_WDG);
+		/* Add always validated sources */
+		wkSource |= (ECUM_WKSOURCE_POWER|ECUM_WKSOURCE_RESET | ECUM_WKSOURCE_INTERNAL_RESET |
+				ECUM_WKSOURCE_INTERNAL_WDG | ECUM_WKSOURCE_EXTERNAL_WDG);
 
-	if( !((sources | wkSource) == wkSource))
-	{
-		Det_ReportError(MODULE_ID_ECUM, 0, ECUM_VALIDATE_WAKEUP_EVENT_ID, ECUM_E_UNKNOWN_WAKEUP_SOURCE );
-		return;
-	}
+		if( !((sources | wkSource) == wkSource))
+		{
+			Det_ReportError(MODULE_ID_ECUM, 0, ECUM_SETWAKEUPEVENT_ID, ECUM_E_UNKNOWN_WAKEUP_SOURCE );
+			return;
+		}
 #endif
 
-	/* @req 3.1.5/EcuM1117 */
-	EcuM_World.wakeupEvents |= sources;
+		/* @req 3.1.5/EcuM1117 */
+		EcuM_World.wakeupEvents |= sources;
 
-	/* @req 3.1.5/EcuM2707 @req 3.1.5/EcuM2709*/
+		BswM_EcuM_CurrentWakeup(sources, ECUM_WKSTATUS_PENDING);
+	}
+	/* @req 3.1.5/EcuM2707 */
+	/* @req 3.1.5/EcuM2709 */
+	/* @req EcuM2714 */
+	/* @req EcuM2565 */
 	EcuM_World.validationTimer = ECUM_VALIDATION_TIMEOUT
 					/ ECUM_MAIN_FUNCTION_PERIOD;
 
 }
 
-#if defined(USE_COMM) && (ECUM_AR_VERSION < 40300)
+#if defined(USE_COMM) && (ECUM_AR_VERSION < 40000)
 
 /**
  *
@@ -455,17 +474,13 @@ void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources) {
  */
 Std_ReturnType EcuM_ComM_RequestRUN(NetworkHandleType channel)
 {
-	VALIDATE_RV(EcuM_World.initiated, ECUM_COMM_REQUESTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_COMM_REQUESTRUN_ID, ECUM_E_UNINIT, E_NOT_OK);
 	VALIDATE_RV(channel < 32, ECUM_COMM_REQUESTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
 
 	if( !EcuM_World.killAllRequest ) {
 		EcuM_World.run_comm_requests |= (uint32)1 << channel;
 	}
 
-	/* If we already are in running, call right away */
-	if(  EcuM_World.current_state == ECUM_STATE_APP_RUN ) {
-		ComM_EcuM_RunModeIndication(channel);
-	}
 	return E_OK;
 }
 
@@ -476,10 +491,14 @@ Std_ReturnType EcuM_ComM_RequestRUN(NetworkHandleType channel)
  */
 Std_ReturnType EcuM_ComM_ReleaseRUN(NetworkHandleType channel)
 {
-	VALIDATE_RV(EcuM_World.initiated, ECUM_COMM_RELEASERUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_COMM_RELEASERUN_ID, ECUM_E_UNINIT, E_NOT_OK);
 	VALIDATE_RV(channel < 32, ECUM_COMM_RELEASERUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
 
 	EcuM_World.run_comm_requests &= ~((uint32)1 << channel);
+	/* @req 3.1.5/EcuM2709 */
+	/* @req EcuM2714 */
+	/* @req EcuM2565 */
+	EcuM_World.validationTimer = ECUM_VALIDATION_TIMEOUT/ECUM_MAIN_FUNCTION_PERIOD;
 
 	return E_OK;
 }
@@ -487,7 +506,7 @@ Std_ReturnType EcuM_ComM_ReleaseRUN(NetworkHandleType channel)
 
 boolean EcuM_ComM_HasRequestedRUN(NetworkHandleType channel)
 {
-	VALIDATE_RV(EcuM_World.initiated, ECUM_COMM_HASREQUESTEDRUN_ID, ECUM_E_NOT_INITIATED, FALSE);
+	VALIDATE_RV(EcuM_World.initiated, ECUM_COMM_HASREQUESTEDRUN_ID, ECUM_E_UNINIT, FALSE);
 	VALIDATE_RV(channel < 32, ECUM_COMM_HASREQUESTEDRUN_ID, ECUM_E_INVALID_PAR, FALSE);
 
 	return (EcuM_World.run_comm_requests &((uint32)1 << channel)) != 0;
@@ -495,29 +514,11 @@ boolean EcuM_ComM_HasRequestedRUN(NetworkHandleType channel)
 
 #endif
 
-Std_ReturnType EcuM_RequestPOST_RUN(EcuM_UserType user) {
-	VALIDATE_RV(EcuM_World.initiated, ECUM_REQUESTPOSTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
-	VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_REQUESTPOSTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
-
-	if( !EcuM_World.killAllRequest ) {
-		EcuM_World.postrun_requests |= (uint32) 1 << user;
-	}
-
-	return E_OK;
-}
-
-Std_ReturnType EcuM_ReleasePOST_RUN(EcuM_UserType user) {
-	VALIDATE_RV(EcuM_World.initiated, ECUM_RELEASEPOSTRUN_ID, ECUM_E_NOT_INITIATED, E_NOT_OK);
-	VALIDATE_RV(user < ECUM_USER_ENDMARK, ECUM_RELEASEPOSTRUN_ID, ECUM_E_INVALID_PAR, E_NOT_OK);
-
-	EcuM_World.postrun_requests &= ~((uint32) 1 << user);
-
-	return E_OK;
-}
 
 /*
  * TODO: Don't yet understand the use
  */
+
 void EcuM_ClearWakeupEvent(EcuM_WakeupSourceType source) {
 	switch (source) {
 	case ECUM_WKSTATUS_NONE:
@@ -553,16 +554,13 @@ EcuM_WakeupSourceType EcuM_GetPendingWakeupEvents(void) {
 
 }
 
+/* @req EcuM2532 */
 EcuM_WakeupSourceType EcuM_GetValidatedWakeupEvents(void) {
-
+	// is not really an enum.
+	/* @req EcuM2496 */
+	/* @req EcuM2533 */
 	return EcuM_World.validEvents;
-}
 
-EcuM_WakeupStatusType EcuM_GetStatusOfWakeupSource(
-				EcuM_WakeupSourceType sources) {
-	assert(0);
-	// NO SUPPORT
-	return 0;
 }
 
 /**
@@ -571,27 +569,36 @@ EcuM_WakeupStatusType EcuM_GetStatusOfWakeupSource(
  */
 void EcuM_ValidateWakeupEvent(EcuM_WakeupSourceType sources) {
 
-	/* !req 3.1.5/EcuM2344 */
-	/* !req 3.1.5/EcuM2645 */
-	/* !req 3.1.5/EcuM2868 */
-	/* !req 3.1.5/EcuM2345 */
+	/* @req EcuM2625 No validation of any source */
 
-	EcuM_World.validEvents |= sources;
-	/*
+	/* @req 3.1.5/EcuM2344 */
+	/* @req 3.1.5/EcuM2868 */
+	/* @req 3.1.5/EcuM2345 */
+
+	(void)CheckWakupSourceValidity(sources, ECUM_VALIDATE_WAKEUP_EVENT_ID);
+
+	/* @req EcuM2496 */
+    EcuM_World.validEvents |= sources;
+
+    /* TODO: Shouldn't the validated event be removed from the pending list? Don't dare to change */
+
+/* TODO:
+ * !req 3.1.5/EcuM2645
 	#if defined(USE_COMM)
 	if( EcuM_World.config->)
 	ComM_EcuM_WakeUpIndication()
 	#endif
 	 */
+
 	/* !req 3.1.5/EcuM2790 */
 	/* !req 3.1.5/EcuM2791 */
+    BswM_EcuM_CurrentWakeup(sources, ECUM_WKSTATUS_VALIDATED);
 
 }
 
 #if defined(USE_NVM)
-void EcuM_CB_NfyNvMJobEnd(uint8 ServiceId, NvM_RequestResultType JobResult)
-{
-
+void EcuM_CB_NfyNvMJobEnd(uint8 ServiceId, NvM_RequestResultType JobResult) {
+	(void)ServiceId;
+	(void)JobResult;
 }
 #endif
-

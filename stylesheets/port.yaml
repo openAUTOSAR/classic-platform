@@ -1,0 +1,20 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+# Container PortPin
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PortPinDirectionChangeable
+  
+# Container PortPin
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PortPinModeChangeable
+  
+# Container PortPin
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PortPinMode
+  
+  # Container PortContainer
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PortNumberOfPortPins
+  
+  

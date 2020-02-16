@@ -1,0 +1,7 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: WdgIfDriverRef
+  
+  

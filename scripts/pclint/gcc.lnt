@@ -1,0 +1,7 @@
+/* This is the lint file to be used together with GCC */
+
+au-misra2.lnt   //To check MISRA C rules
+lnt/co-gcc.lnt      // Gcc options
+std.lnt         // Arccore standard options
+
+

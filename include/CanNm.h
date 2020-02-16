@@ -1,52 +1,58 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
  *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with
+ * the terms contained in the written license agreement between you and ArcCore,
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as
+ * published by the Free Software Foundation and appearing in the file
+ * LICENSE.GPL included in the packaging of this file or here
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 
 #ifndef CANNM_H
 #define CANNM_H
 
-#include "ComStack_Types.h"
-#include "NmStack_Types.h"
-#include "CanNm_ConfigTypes.h"
-#include "Modules.h"
-#include "CanNm_Cbk.h"
-
 /** @req CANNM021 */
 #define CANNM_VENDOR_ID  VENDOR_ID_ARCCORE
 #define CANNM_MODULE_ID  MODULE_ID_CANNM
 
-#define CANNM_AR_MAJOR_VERSION	3
-#define CANNM_AR_MINOR_VERSION	1
-#define CANNM_AR_PATCH_VERSION	5
+#define CANNM_AR_RELEASE_MAJOR_VERSION	4
+#define CANNM_AR_RELEASE_MINOR_VERSION	0
+#define CANNM_AR_RELEASE_PATCH_VERSION	3
+
+#define CANNM_AR_MAJOR_VERSION CANNM_AR_RELEASE_MAJOR_VERSION
+#define CANNM_AR_MINOR_VERSION CANNM_AR_RELEASE_MINOR_VERSION
+#define CANNM_AR_PATCH_VERSION CANNM_AR_RELEASE_PATCH_VERSION
 
 #define CANNM_SW_MAJOR_VERSION	1
 #define CANNM_SW_MINOR_VERSION	0
 #define CANNM_SW_PATCH_VERSION	0
 
-/** @req CANNM200.configFiles */
 #include "CanNm_Cfg.h"
 
-/** @req CANNM018 */
-#define CANNM_E_NO_INIT						0x01u /**< API service used */
-#define CANNM_E_INVALID_CHANNEL				0x02u /**< API service called with wrong channel handle */
+#include "ComStack_Types.h"	/** @req CANNM245 */
+#include "NmStack_Types.h"	/** @req CANNM245 */
+
+#include "CanNm_ConfigTypes.h"
+#include "Modules.h"
+#include "CanNm_Cbk.h"
+
+/** @req CANNM240 */
+#define CANNM_E_NO_INIT						0x01u /** @req CANNM316 */ /**< API service used */
+#define CANNM_E_INVALID_CHANNEL				0x02u /** @req CANNM317 */ /**< API service called with wrong channel handle */
 /** NM-Timeout Timer has abnormally expired outside of the Ready Sleep State;
 it may happen: (1) because of Bus-Off state, (2) if some ECU requests bus communication or node detection shortly
 before the NMTimeout Timer expires so that a NM message can not be transmitted in time;
 this race condition applies to event-triggered systems */
-#define CANNM_E_DEV_NETWORK_TIMEOUT			0x11u
-#define NM_E_NULL_POINTER					0x12u /**< Null pointer has been passed as an argument (Does not apply to function CanNm_Init) */
+#define CANNM_E_INVALID_PDUID 				0x03u /** @req CANNM318 */
+#define CANNM_E_NET_START_IND				0x04u /** @req CANNM337 */
+#define CANNM_E_INIT_FAILED					0x05u /** @req CANNM319 */
+#define CANNM_E_NETWORK_TIMEOUT				0x11u /** @req CANNM321 */
+#define NM_E_NULL_POINTER					0x12u /** @req CANNM322 */ /**< Null pointer has been passed as an argument (Does not apply to function CanNm_Init) */
 
 
 #define CANNM_SERVICEID_INIT								0x00u
@@ -68,82 +74,123 @@ this race condition applies to event-triggered systems */
 #define CANNM_SERVICEID_TXCONFIRMATION						0x0Fu
 #define CANNM_SERVICEID_RXINDICATION						0x10u
 #define CANNM_SERVICEID_ARC_MAINFUNCTION					0x13u
+#define CANNM_SERVICEID_TRANSMIT							0x14u
 
-#define CANNM_CBV_REPEAT_MESSAGE_REQUEST					0x01u  /**< @req CANNM045 */
+#define CANNM_CBV_REPEAT_MESSAGE_REQUEST					0x01u
 
 // Functions called by NM Interface
 // --------------------------------
 
 /** Initialize the complete CanNm module, i.e. all channels which are activated */
+/** @req CANNM208 */
 void CanNm_Init( const CanNm_ConfigType * const cannmConfigPtr );
 
 /** Passive startup of the AUTOSAR CAN NM. It triggers the transition from Bus-
   * Sleep Mode to the Network Mode in Repeat Message State.
   * This service has no effect if the current state is not equal to Bus-Sleep Mode. In
   * that case NM_E_NOT_EXECUTED is returned. */
-Nm_ReturnType CanNm_PassiveStartUp( const NetworkHandleType nmChannelHandle );
+/** @req CANNM211 */
+Std_ReturnType CanNm_PassiveStartUp( const NetworkHandleType nmChannelHandle );
 
 /** Request the network, since ECU needs to communicate on the bus. Network
-  * state shall be changed to ‘requested’ */
-Nm_ReturnType CanNm_NetworkRequest( const NetworkHandleType nmChannelHandle );
+  * state shall be changed to ï¿½requestedï¿½ */
+/** @req CANNM213 */
+Std_ReturnType CanNm_NetworkRequest( const NetworkHandleType nmChannelHandle );
 
-/** Release the network, since ECU doesn’t have to communicate on the bus. Network
-  * state shall be changed to ‘released’. */
-Nm_ReturnType CanNm_NetworkRelease( const NetworkHandleType nmChannelHandle );
+/** Release the network, since ECU doesnï¿½t have to communicate on the bus. Network
+  * state shall be changed to ï¿½releasedï¿½. */
+/** @req CANNM214 */
+Std_ReturnType CanNm_NetworkRelease( const NetworkHandleType nmChannelHandle );
 
 /** Disable the NM PDU transmission ability due to a ISO14229 Communication
   * Control (28hex) service */
-Nm_ReturnType CanNm_DisableCommunication( const NetworkHandleType nmChannelHandle );
+/** @req CANNM215 */
+Std_ReturnType CanNm_DisableCommunication( const NetworkHandleType nmChannelHandle );
 
 /** Enable the NM PDU transmission ability due to a ISO14229 Communication
   * Control (28hex) service */
-Nm_ReturnType CanNm_EnableCommunication( const NetworkHandleType nmChannelHandle );
+/** @req CANNM216 */
+Std_ReturnType CanNm_EnableCommunication( const NetworkHandleType nmChannelHandle );
 
 /** Set user data for NM messages transmitted next on the bus. */
-Nm_ReturnType CanNm_SetUserData( const NetworkHandleType nmChannelHandle, const uint8* const nmUserDataPtr );
+/** @req CANNM217 */
+Std_ReturnType CanNm_SetUserData( const NetworkHandleType nmChannelHandle, const uint8* const nmUserDataPtr );
 
 /** Get user data out of the most recently received NM message. */
-Nm_ReturnType CanNm_GetUserData( const NetworkHandleType nmChannelHandle, uint8* const nmUserDataPtr );
+/** @req CANNM218 */
+Std_ReturnType CanNm_GetUserData( const NetworkHandleType nmChannelHandle, uint8* const nmUserDataPtr );
 
 /** Get node identifier out of the most recently received NM PDU. */
-Nm_ReturnType CanNm_GetNodeIdentifier( const NetworkHandleType nmChannelHandle, uint8 * const nmNodeIdPtr );
+/** @req CANNM219 */
+Std_ReturnType CanNm_GetNodeIdentifier( const NetworkHandleType nmChannelHandle, uint8 * const nmNodeIdPtr );
 
 /** Get node identifier configured for the local node. */
-Nm_ReturnType CanNm_GetLocalNodeIdentifier( const NetworkHandleType nmChannelHandle, uint8 * const nmNodeIdPtr );
+/** @req CANNM220 */
+Std_ReturnType CanNm_GetLocalNodeIdentifier( const NetworkHandleType nmChannelHandle, uint8 * const nmNodeIdPtr );
 
 /** Set Repeat Message Request Bit for NM messages transmitted next on the bus. */
-Nm_ReturnType CanNm_RepeatMessageRequest( const NetworkHandleType nmChannelHandle );
+/** @req CANNM221 */
+Std_ReturnType CanNm_RepeatMessageRequest( const NetworkHandleType nmChannelHandle );
 
 /** Get the whole PDU data out of the most recently received NM message. */
-Nm_ReturnType CanNm_GetPduData( const NetworkHandleType nmChannelHandle, uint8 * const nmPduDataPtr );
+/** @req CANNM222 */
+Std_ReturnType CanNm_GetPduData( const NetworkHandleType nmChannelHandle, uint8 * const nmPduDataPtr );
 
 /** Returns the state and the mode of the network management. */
-Nm_ReturnType CanNm_GetState( const NetworkHandleType nmChannelHandle, Nm_StateType * const nmStatePtr, Nm_ModeType * const nmModePtr );
+/** @req CANNM223 */
+Std_ReturnType CanNm_GetState( const NetworkHandleType nmChannelHandle, Nm_StateType * const nmStatePtr, Nm_ModeType * const nmModePtr );
 
-/** This service returns the version information of this module. */
-#if ( CANNM_VERSION_INFO_API == STD_ON )
-#define CanNm_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,CANNM)
-#endif /* CANNM_VERSION_INFO_API */
 
 /** Request bus synchronization. */
-Nm_ReturnType CanNm_RequestBusSynchronization( const NetworkHandleType nmChannelHandle );
+/** @req CANNM226 */
+Std_ReturnType CanNm_RequestBusSynchronization( const NetworkHandleType nmChannelHandle );
 
 /** Check if remote sleep indication takes place or not. */
-Nm_ReturnType CanNm_CheckRemoteSleepIndication( const NetworkHandleType nmChannelHandle, boolean * const nmRemoteSleepIndPtr );
+/** @req CANNM227 */
+Std_ReturnType CanNm_CheckRemoteSleepIndication( const NetworkHandleType nmChannelHandle, boolean * const nmRemoteSleepIndPtr );
 
+
+/** This service returns the version information of this module. */
+/** @req CANNM224 */
+#if ( CANNM_VERSION_INFO_API == STD_ON ) /** @req CANNM278 */
+#define CanNm_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,CANNM) /** @req CANNM225 */
+#endif /* CANNM_VERSION_INFO_API */
 
 // Functions called by CAN Interface
 // ---------------------------------
 
 /** This service confirms a previous successfully processed CAN transmit request.
   * This callback service is called by the CanIf and implemented by the CanNm. */
+/** @req CANNM228 */
 void CanNm_TxConfirmation( PduIdType canNmTxPduId );
 
 /** This service indicates a successful reception of a received NM message to the
   * CanNm after passing all filters and validation checks.
   * This callback service is called by the CAN Interface and implemented by the CanNm. */
-void CanNm_RxIndication( PduIdType canNmRxPduId, const uint8 *canSduPtr );
 
-void CanNm_MainFunction_All_Channels(void);
+
+/** @req CANNM231 */
+void CanNm_RxIndication( PduIdType RxPduId, PduInfoType *PduInfoPtr );
+
+/**
+ * This function is used by the PduR to trigger a spontaneous transmission of an NM message
+ * with the provided NM User Data
+ */
+/* @req CANNM331 */
+Std_ReturnType CanNm_Transmit( PduIdType CanNmTxPduId, const PduInfoType *PduInfoPtr);
+
+/**
+ * Set the NM Coordinator Sleep Ready bit in the Control Bit Vector
+ * CURRENTLY UNSUPPORTED
+ */
+Std_ReturnType CanNm_SetSleepReadyBit( const NetworkHandleType nmChannelHandle, const boolean nmSleepReadyBit);
+
+
+/** @req 234 **/
+void CanNm_MainFunction(void);
+#ifdef HOST_TEST
+extern void ReportErrorStatus();
+void GetChannelRunTimeData(uint32 channelId, uint32* messageCycleTimeLeft, uint32* timeoutTimeLeft);
+#endif
 
 #endif /* CANNM_H */

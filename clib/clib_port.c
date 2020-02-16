@@ -1,18 +1,17 @@
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
 
 /* ----------------------------[information]----------------------------------
  * Author: mahi
@@ -22,6 +21,18 @@
  *
  * Implementation Notes:
  *   Heavily inspired by http://neptune.billgatliff.com/newlib.html
+ *
+ *   If a module should be used is controlled by USE_TTY_T32, USE_TTY_WINIDEA, etc
+ *   The console is controlled by SELECT_CONSOLE=TTY_T32|TTY_WINIDEA|RAMLOG|....
+ *
+ *   To build the device
+ *
+ *
+ *
+ *
+ *
+ *
+ *
  */
 
 /* ----------------------------[includes]------------------------------------*/
@@ -37,7 +48,9 @@
 #include <stdio.h>
 #include <stddef.h>
 #include "Std_Types.h"
+#if defined(USE_KERNEL)
 #include "Os.h"
+#endif
 
 #include "device_serial.h"
 
@@ -49,9 +62,6 @@
 #endif
 #if defined(USE_TTY_WINIDEA)
 #include "serial_dbg_winidea.h"
-#endif
-#if defined(USE_TTY_NOICE)
-#include "serial_dbg_noice.h"
 #endif
 
 #include "Ramlog.h"
@@ -112,9 +122,6 @@ DeviceSerialType *deviceList[] = {
 #if defined(USE_TTY_WINIDEA)
 		&WinIdea_Device,
 #endif
-#if defined(USE_TTY_NOICE)
-		&NoICE_Device,
-#endif
 };
 
 
@@ -132,17 +139,13 @@ DeviceSerialType *fileList[] = {
 	[0] = &WinIdea_Device,		/* stdin  */
 	[1] = &WinIdea_Device,		/* stdout */
 	[2] = &WinIdea_Device,		/* stderr */
-#elif defined(USE_TTY_NOICE)
-	[0] = &NoICE_Device,		/* stdin  */
-	[1] = &NoICE_Device,		/* stdout */
-	[2] = &NoICE_Device,		/* stderr */
 #endif
 
 
 #if defined(USE_RAMLOG)
-	&Ramlog_Device,			/* "stdout" */
-	&Ramlog_Device,			/* "stdout" */
-	&Ramlog_Device,			/* "stdout" */
+	&Ramlog_Device,		/* stdin  */
+	&Ramlog_Device,		/* stdout */
+	&Ramlog_Device,		/* stderr */
 #endif
 };
 
@@ -168,10 +171,11 @@ extern int errno;
  * @param file
  * @return
  */
+#ifndef SIMPLE_STDIO
 int fileno( FILE *file ) {
 	return file->fileNo;
 }
-
+#endif
 
 /**
  * POSIX open function
@@ -283,6 +287,7 @@ extern char _end[];
 unsigned char _heap[HEAPSIZE] __attribute__((aligned (4)));
 //__attribute__((section(".heap")));
 
+#if !defined(SQUAWK)
 void * _SBRK( ptrdiff_t incr )
 {
     static unsigned char *heap_end;
@@ -304,6 +309,7 @@ void * _SBRK( ptrdiff_t incr )
 
    return (caddr_t) prev_heap_end;
 }
+#endif
 #endif
 
 

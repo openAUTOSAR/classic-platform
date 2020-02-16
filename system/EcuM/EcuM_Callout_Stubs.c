@@ -1,18 +1,17 @@
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
 
 /* ----------------------------[includes]------------------------------------*/
 
@@ -100,6 +99,20 @@
 #include "WdgM.h"
 #endif
 
+#if defined(USE_USB)
+#include "Uart.h"
+#include "usb_memory.h"
+#include "usb_mailbox.h"
+#include "usb_subsystem.h"
+#include "usb_semaphore.h"
+#endif
+
+#if defined(USE_ETH)
+#include "Uart.h"
+#include "usb_memory.h"
+#include "pi_eth.h"
+#endif
+
 #if defined(CFG_SHELL)
 #include "shell.h"
 #endif
@@ -169,6 +182,11 @@ EcuM_ConfigType* EcuM_DeterminePbConfiguration(void) {
 void EcuM_AL_DriverInitZero(void)
 {
 //	VALIDATE_STATE( ECUM_STATE_STARTUP_ONE );
+#if defined(USE_USB)
+    usb_heap_init();
+    mailboxInit();
+    usb_sem_init();
+#endif
 
 #if defined(USE_DET)
 	Det_Init();/** @req EcuM2783 */
@@ -206,7 +224,7 @@ void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
 
 #if defined(USE_DEM)
 	// Preinitialize DEM
-	NO_DRIVER(Dem_PreInit());
+	NO_DRIVER(Dem_PreInit(ConfigPtr->DemConfig));
 #endif
 
 #if defined(USE_PORT)
@@ -239,7 +257,6 @@ void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
 
 	// Setup ICU
 	// TODO
-
 	// Setup PWM
 #if defined(USE_PWM)
 	// Setup PWM
@@ -249,6 +266,7 @@ void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
 #if defined(CFG_SHELL)
 	SHELL_Init();
 #endif
+
 
 }
 
@@ -268,7 +286,17 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 	(void)ConfigPtr;
   //lint --e{715}       PC-Lint (715) - ConfigPtr usage depends on configuration of modules
 //	VALIDATE_STATE(ECUM_STATE_STARTUP_TWO);
-
+#if defined(USE_ETH)
+	buffer_init();
+	Eth_Init();
+#endif
+//#undef USE_USB
+#if defined(USE_USB)
+//    usb_heap_init();
+//    mailboxInit();
+//    usb_sem_init();
+    usbinit();
+#endif
 #if defined(USE_SPI)
 	// Setup SPI
 	Spi_Init(ConfigPtr->SpiConfig);
@@ -300,6 +328,22 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 	NO_DRIVER(NvM_ReadAll());
 #endif
 
+
+#if defined(USE_LIN)
+    // Setup Lin driver
+	Lin_Init(ConfigPtr->LinConfig);
+#endif
+
+#if defined(USE_LINIF)
+    // Setup LinIf
+	LinIf_Init(ConfigPtr->LinIfConfig);
+#endif
+
+#if defined(USE_LINSM)
+    // Setup LinSM
+	LinSM_Init(ConfigPtr->LinSMConfig);
+#endif
+
 	// Setup CAN tranceiver
 	// TODO
 
@@ -310,12 +354,12 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 
 #if defined(USE_CANIF)
 	// Setup CanIf
-	NO_DRIVER(CanIf_Init(ConfigPtr->CanIfConfig));
+	NO_DRIVER(CanIf_Init(ConfigPtr->PostBuildConfig->CanIf_ConfigPtr));
 #endif
 
 #if defined(USE_CANTP)
 	// Setup CAN TP
-	NO_DRIVER(CanTp_Init());
+	NO_DRIVER(CanTp_Init(ConfigPtr->PostBuildConfig->CanTp_ConfigPtr));
 #endif
 
 #if defined(USE_CANSM)
@@ -332,12 +376,12 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 
 #if defined(USE_PDUR)
 	// Setup PDU Router
-	NO_DRIVER(PduR_Init(ConfigPtr->PduRConfig));
+	NO_DRIVER(PduR_Init(ConfigPtr->PostBuildConfig->PduR_ConfigPtr));
 #endif
 
 #if defined(USE_CANNM)
     // Setup Can Network Manager
-	NO_DRIVER(CanNm_Init(ConfigPtr->CanNmConfig));
+	NO_DRIVER(CanNm_Init(ConfigPtr->PostBuildConfig->CanNm_ConfigPtr));
 #endif
 
 #if defined(USE_UDPNM)
@@ -347,17 +391,17 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 
 #if defined(USE_NM)
         // Setup Network Management Interface
-	NO_DRIVER(Nm_Init(ConfigPtr->NmConfig));
+	NO_DRIVER(Nm_Init());
 #endif
 
 #if defined(USE_COM)
 	// Setup COM layer
-	NO_DRIVER(Com_Init(ConfigPtr->ComConfig));
+	NO_DRIVER(Com_Init(ConfigPtr->PostBuildConfig->ComConfigurationPtr));
 #endif
 
 #if defined(USE_DCM)
 	// Setup DCM
-	NO_DRIVER(Dcm_Init());
+	NO_DRIVER(Dcm_Init(ConfigPtr->DcmConfig));
 #endif
 
 #if defined(USE_IOHWAB)
@@ -387,6 +431,12 @@ void EcuM_AL_DriverInitThree(const EcuM_ConfigType* ConfigPtr)
 	// Setup Communication Manager
     ComM_Init(ConfigPtr->ComMConfig);
 #endif
+}
+
+bool EcuM_LoopDetection(void)
+{
+	//TODO: How is reset loop detection implemented?
+	return false;
 }
 
 void EcuM_OnEnterRun(void)
@@ -446,6 +496,22 @@ void EcuM_AL_SwitchOff(void)
 	Mcu_PerformReset();
 #endif
 }
+
+#if (defined(USE_ECUM_FLEXIBLE))
+void EcuM_AL_Reset(EcuM_ResetType reset)
+{
+	//TODO: Perform reset based on the reset parameter
+#if (MCU_PERFORM_RESET_API == STD_ON)
+	Mcu_PerformReset();
+#else
+	for(;;)
+	{
+		;
+	}
+#endif
+}
+#endif
+
 /**
  *
  * Called to check other wakeup sources. Assume for example that
@@ -515,6 +581,7 @@ void EcuM_DisableWakeupSources(EcuM_WakeupSourceType wakeupSource) {
  */
 
 void EcuM_StartWakeupSources(EcuM_WakeupSourceType wakeupSource) {
+	printf("EcuM_StartWakeupSources\r\n");
 	VALIDATE_STATE( ECUM_STATE_WAKEUP_VALIDATION );
 
 	/* ADD CODE BELOW */
@@ -527,6 +594,7 @@ void EcuM_StartWakeupSources(EcuM_WakeupSourceType wakeupSource) {
  */
 void EcuM_StopWakeupSources(EcuM_WakeupSourceType wakeupSource)
 {
+	printf("EcuM_StopWakeupSources\r\n");
 	VALIDATE_STATE( ECUM_STATE_WAKEUP_VALIDATION);
 	(void)wakeupSource;
 }
@@ -536,7 +604,7 @@ void EcuM_StopWakeupSources(EcuM_WakeupSourceType wakeupSource)
  * @param wakeupSource
  */
 void EcuM_CheckValidation(EcuM_WakeupSourceType wakeupSource) {
-
+	printf("EcuM_CheckValidation\r\n");
 	VALIDATE_STATE( ECUM_STATE_WAKEUP_VALIDATION);
 
 	/* ADD CODE BELOW */
@@ -555,7 +623,7 @@ void EcuM_CheckValidation(EcuM_WakeupSourceType wakeupSource) {
  * - EcuM_AL_DriverInitTwo()
  *
  */
-void EcuM_AL_DriverRestart(void) {
+void EcuM_AL_DriverRestart(const struct EcuM_ConfigS* ConfigPtr) {
 	EcuM_ConfigType* config;
 
 	VALIDATE_STATE( ECUM_STATE_WAKEUP_ONE);

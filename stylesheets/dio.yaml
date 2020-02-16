@@ -1,0 +1,18 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+# Container DioChannelGroup
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DioChannelGroupIdentification
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DioPortOffset
+  
+
+# Container DioGeneral
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: DioFlipChannelApi
+
+
+   
+  

@@ -1,0 +1,239 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+########################################################
+# Hidden parameters in LinIfGeneral
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfCancelTransmitSupported
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfMultipleDriversSupported
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfMultipleTrcvDriverSupported
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfNcOptionalRequestSupported
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfPublicCddHeaderFile
+    
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfTpSupported
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfTrcvDriverSupported
+
+
+########################################################
+# Hidden parameters in LinIfEntry
+########################################################
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfCollisionResolvingRef
+
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfJitter
+########################################################
+# Hidden parameters in LinIfScheduleTable
+########################################################
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfResumePosition 
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfRunMode  
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfScheduleMode
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfScheduleTableIndex
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfScheduleTableName
+  
+########################################################
+# Hidden parameters in LinIfMaster
+########################################################
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfClusterTimeBase
+########################################################
+# Hidden parameters in LinIfChannel
+########################################################
+
+# Hide LinIfChannelId because we use the LinIfChannelRef to get a symbolic name
+# of the LinChannel and use it as channel ID
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfChannelId
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfGotoSleepConfirmationUL
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfScheduleRequestConfirmationUL
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfWakeupConfirmationUL
+
+########################################################
+# Hidden parameters in LinIf_Frame
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfFrameType
+  
+########################################################
+# Hidden parameters in LinIfFixedFrameSduByte
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfFixedFrameSduBytePos
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfFixedFrameSduByteVal
+  
+########################################################
+# Hidden parameters in LinIfSubstitutionFrames
+########################################################
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfFramePriority
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfSubstitutionFrameRef
+
+########################################################
+# Hidden parameters in LinIfRxPdu
+########################################################
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfRxIndicationUL
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfUserRxIndicationUL
+  
+########################################################
+# Hidden parameters in LinIfTxPdu
+########################################################
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfTxConfirmationUL
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfTxPduId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfTxTriggerTransmitUL 
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfUserTxUL
+  
+########################################################
+# Hidden parameters in LinIfSlave
+########################################################
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfConfiguredNad
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfFunctionId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfProtocolVersion 
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfSupplierId
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfVariant
+
+########################################################
+# Hidden parameters in LinIfTransceiverDrvConfig
+########################################################
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfTrcvWakeupNotification
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinIfTrcvIdRef
+  
+########################################################
+# Hidden parameters in LinTpGeneral
+########################################################
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinTpVersionInfoApi
+  
+########################################################
+# Hidden parameters in LinTpGlobalConfig
+########################################################
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinTpMaxNumberOfRespPendingFrames
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinTpNumberOfRxNSdu
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinTpNumberOfTxNSdu
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinTpP2Max
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinTpP2Timing
+  
+########################################################
+# Hidden parameters in LinTpChannelConfig
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinTpDropNotRequestedNad
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinTpScheduleChangeDiag
+  
+########################################################
+# Hidden parameters in LinTpRxNSdu
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinTpDl
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinTpNcr
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinTpRxNSduId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinTpRxNSduNad
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinTpRxNSduChannelRef
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinTpRxNSduPduRef
+  
+########################################################
+# Hidden parameters in LinTpTxNSdu
+########################################################
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinTpNas
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinTpNcs
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinTpTxNSduId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinTpTxNSduNad
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinTpTxNSduChannelRef 
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinTpTxNSduPduRef

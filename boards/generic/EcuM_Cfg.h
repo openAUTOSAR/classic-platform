@@ -14,8 +14,8 @@
 
 #warning "This default file may only be used as an example!"
 
-#if !(((ECUM_SW_MAJOR_VERSION == 2) && (ECUM_SW_MINOR_VERSION == 0)) )
-#error EcuM: Configuration file expected BSW module version to be 2.0.*
+#if !(((ECUM_SW_MAJOR_VERSION == 1) && (ECUM_SW_MINOR_VERSION == 0)) )
+#error EcuM: Configuration file expected BSW module version to be 1.0.*
 #endif
 
 

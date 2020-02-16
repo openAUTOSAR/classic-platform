@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 #ifndef TASK_I_H_
 #define TASK_I_H_
@@ -47,10 +46,15 @@ struct OsTaskConst;
 #define ST_SLEEPING			(1<<5)
 #define ST_WAITING_SEM		(1<<6)
 
-#define ST_ISR_RUNNING			1
-#define ST_ISR_NOT_RUNNING 		2
+#define ST_ISR_RUNNING		1
+#define ST_ISR_NOT_RUNNING 	2
 
 #define TASK_NAME_SIZE		16
+
+
+#define STACK_PATTERN		0x42		/* Pattern that the stack that unused stack space is filled with */
+
+#define PRIO_ILLEGAL	-100
 
 
 /* ----------------------------[typedef]-------------------------------------*/
@@ -97,74 +101,54 @@ enum OsTaskSchedule {
 
 typedef uint8_t proc_type_t;
 
-#define PROC_PRIO		0x1
-#define PROC_BASIC		0x1
-#define PROC_EXTENDED	0x3
-
-#if 0
-#define PROC_ISR		0x4
-#define PROC_ISR1		0x4
-#define PROC_ISR2		0xc
-#endif
-
+#define PROC_PRIO				0x1
+#define PROC_BASIC				0x1
+#define PROC_EXTENDED			0x3
 
 typedef struct {
-	void   		*curr;	// Current stack ptr( at swap time )
-	void   		*top;	// Top of the stack( low address )
-	uint32		size;	// The size of the stack
+	void   		*curr;	/* Current stack ptr( at swap time ) */
+	void   		*top;	/* Top of the stack( low address )   */
+	uint32		size;	/* The size of the stack             */
 } OsStackType;
 
 
-#define SYS_FLAG_HOOK_STATE_EXPECTING_PRE	0
-#define SYS_FLAG_HOOK_STATE_EXPECTING_POST   1
+#define SYS_FLAG_HOOK_STATE_EXPECTING_PRE		0
+#define SYS_FLAG_HOOK_STATE_EXPECTING_POST   	1
 
 /* We do ISR and TASK the same struct for now */
 typedef struct OsTaskVar {
-	OsStackType		stack;					// TASK
+	OsStackType		stack;
 
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 	OsTimingProtectionType	*timing_protection;
 #endif
 
-	state_t 		state;					// TASK
-
-	/* Events the task wait for ( what events WaitEvent() was called with) */
-	OsEventType 	ev_wait;
-	/* Events that are set by SetEvent() on the task */
-	OsEventType 	ev_set;
-	/* The events the task may react on */
-	OsEventType     ev_react;
-
+	state_t 		state;
+	OsEventType 	ev_wait;			/* Events the task wait for
+										 * ( what events WaitEvent() was called with) */
+	OsEventType 	ev_set;				/* Events that are set by SetEvent() on the task */
+	OsEventType     ev_react;			/* The events the task may react on */
 	uint32_t 		flags;
 
-	/* Priority of the task, this can be different depening on if the
-	 * task hold resources. Related to priority inversion */
-	OsPriorityType  activePriority;
+	OsPriorityType  activePriority;  	/* Priority of the task, this can be different depening on if the
+									  	 * task hold resources. Related to priority inversion */
+	int8_t 			activations;		/* The number of queued activation of a task */
+	uint32_t 		resourceMaskTaken;	/* What resource that are currently held by this task
+										 * Typically (1<<RES_xxx) | (1<<RES_yyy) */
 
-	// The number of queued activation of a task
-	int8_t activations;
-
-	// What resource that are currently held by this task
-	// Typically (1<<RES_xxx) | (1<<RES_yyy)
-	uint32_t resourceMaskTaken;
-
-	TAILQ_HEAD(head,OsResource) resourceHead; // TASK
+	TAILQ_HEAD(head,OsResource) resourceHead;
+	TAILQ_HEAD(shead,OsSpinlock) spinlockHead;	/* Occupied spinlocks list */
 
 	const struct OsTaskConst *constPtr;
-
-	/* TODO: Arch specific regs .. make space for them later...*/
-	uint32_t	regs[16]; 				// TASK
+	uint32_t	regs[16]; 					/* TODO: Arch specific regs .. make space for them later...*/
 #if defined(USE_KERNEL_EXTRA)
-	TAILQ_ENTRY(OsTaskVar) timerEntry;		// TASK
+	TAILQ_ENTRY(OsTaskVar) timerEntry;
 	int32_t		   timerDec;
 
 	/* Semaphore list */
-	STAILQ_ENTRY(OsTaskVar) semEntry;		// TASK
+	STAILQ_ENTRY(OsTaskVar) semEntry;
 #endif
-	/* List of PCB's */
-//	TAILQ_ENTRY(OsTaskVar) pcb_list;		// TASK
-	/* ready list */
-	TAILQ_ENTRY(OsTaskVar) ready_list;		// TASK
+	TAILQ_ENTRY(OsTaskVar) ready_list;
 } OsTaskVarType;
 
 /*-----------------------------------------------------------------*/
@@ -187,30 +171,22 @@ typedef struct OsTaskVar {
 typedef struct OsTaskConst {
 	OsTaskidType	pid;
 	OsPriorityType	prio;
-//	uint32			app_mask;
 	void 			(*entry)( void );
 	proc_type_t  	proc_type;
 	uint8	 	 	autostart;
 	OsStackType 	stack;
-//	int				vector; 		// ISR
-
 #if	(OS_USE_APPLICATIONS == STD_ON)
-	/* Application that owns this task */
-	ApplicationType applOwnerId;
-	/* Applications that may access task when state is APPLICATION_ACCESSIBLE */
-	uint32			accessingApplMask;
+	ApplicationType applOwnerId;		/* Application that owns this task */
+	uint32			accessingApplMask;	/* Applications that may access task
+										 * when state is APPLICATION_ACCESSIBLE */
 #endif
-
 	char 		 	name[16];
 	enum OsTaskSchedule scheduling;
 	uint32_t 		resourceAccess;
 	uint32_t 		eventMask;
-	// pointer to internal resource
-	// NULL if none
-	OsResourceType	*resourceIntPtr;
+	OsResourceType	*resourceIntPtr;	/* pointer to internal resource, NULL if none */
 	OsTimingProtectionType	*timing_protection;
 	uint8_t          activationLimit;
-//	lockingtime_obj_t
 } OsTaskConstType;
 
 
@@ -218,6 +194,21 @@ typedef struct OsTaskConst {
 
 extern OsTaskVarType Os_TaskVarList[OS_TASK_CNT];
 extern GEN_TASK_HEAD;
+
+void Os_Dispatch( uint32_t op );
+
+void Os_TaskMakeReady( 	OsTaskVarType *pcb );
+void Os_TaskMakeWaiting( OsTaskVarType *pcb );
+
+void Os_TaskSwapContext  ( OsTaskVarType *old_pcb, OsTaskVarType *new_pcb );
+void Os_TaskSwapContextTo( OsTaskVarType *old_pcb, OsTaskVarType *new_pcb );
+
+void Os_TaskStartExtended( void );
+void Os_TaskStartBasic( void );
+void Os_TaskContextInit( OsTaskVarType *pcb );
+TaskType 		Os_AddTask( OsTaskVarType *pcb );
+OsTaskVarType * Os_TaskGetTop( void );
+
 
 
 /**
@@ -229,13 +220,6 @@ static inline void Os_TaskMakeRunning( OsTaskVarType *pcb ) {
 	pcb->state = ST_RUNNING;
 }
 
-_Bool os_pcb_pid_valid( OsTaskVarType *restrict pcb );
-void Os_TaskStartExtended( void );
-void Os_TaskStartBasic( void );
-void Os_TaskContextInit( OsTaskVarType *pcb );
-
-// Added by Mattias in order to avoid compiler warning
-TaskType Os_AddTask( OsTaskVarType *pcb );
 
 #if 0 // Not used any more
 OsTaskVarType  *os_find_higher_priority_task( OsPriorityType prio );
@@ -248,7 +232,7 @@ static inline OsTaskVarType * Os_TaskGet( TaskType pid ) {
 static inline ApplicationType Os_TaskGetApplicationOwner( TaskType id ) {
 	ApplicationType rv;
 	if( id < OS_TASK_CNT ) {
-		rv = Os_TaskGet(id)->constPtr->applOwnerId;
+		rv = Os_TaskConstList[id].applOwnerId;
 	} else {
 		rv = INVALID_OSAPPLICATION;
 	}
@@ -257,7 +241,12 @@ static inline ApplicationType Os_TaskGetApplicationOwner( TaskType id ) {
 
 
 
-
+/**
+ * Add a resource to a list of resources held by pcbPtr
+ *
+ * @param rPtr   Ptr to the resource to add to the task
+ * @param pcbPtr Ptr to the task
+ */
 static inline void Os_TaskResourceAdd( OsResourceType *rPtr, OsTaskVarType *pcbPtr) {
 	/* Save old task prio in resource and set new task prio */
 	rPtr->owner = pcbPtr->constPtr->pid;
@@ -269,6 +258,11 @@ static inline void Os_TaskResourceAdd( OsResourceType *rPtr, OsTaskVarType *pcbP
 	}
 }
 
+/**
+ * Remove a resource from the list of resources held by pcbPtr
+ * @param rPtr   Ptr to the resource to remove from the task
+ * @param pcbPtr Ptr to the task
+ */
 static inline  void Os_TaskResourceRemove( OsResourceType *rPtr , OsTaskVarType *pcbPtr) {
 	assert( rPtr->owner == pcbPtr->constPtr->pid );
 	rPtr->owner = NO_TASK_OWNER;
@@ -286,6 +280,11 @@ static inline  void Os_TaskResourceRemove( OsResourceType *rPtr , OsTaskVarType 
 	}
 }
 
+/**
+ * Free all resource held by a task.
+ *
+ * @param pcbPtr Ptr to the task
+ */
 static inline void Os_TaskResourceFreeAll( OsTaskVarType *pcbPtr ) {
 	OsResourceType *rPtr;
 
@@ -298,11 +297,6 @@ static inline void Os_TaskResourceFreeAll( OsTaskVarType *pcbPtr ) {
 
 #define os_pcb_get_state(pcb) ((pcb)->state)
 
-void Os_TaskSwapContext(OsTaskVarType *old_pcb, OsTaskVarType *new_pcb );
-void Os_TaskSwapContextTo(OsTaskVarType *old_pcb, OsTaskVarType *new_pcb );
-OsTaskVarType *Os_TaskGetTop( void );
-
-#define STACK_PATTERN	0x42
 
 static inline void *Os_StackGetUsage( OsTaskVarType *pcb ) {
 
@@ -351,12 +345,10 @@ static inline _Bool Os_TaskOccupiesResources( OsTaskVarType *pcb ) {
 	return !(TAILQ_EMPTY(&pcb->resourceHead));
 }
 
+static inline _Bool Os_TaskOccupiesSpinlocks( OsTaskVarType *pcb ) {
+	return !(TAILQ_EMPTY(&pcb->spinlockHead));
+}
 
-void Os_Dispatch( uint32_t op );
-void Os_ContextReInit( OsTaskVarType *pcbPtr );
-
-void Os_TaskMakeReady( OsTaskVarType *pcb );
-void Os_TaskMakeWaiting( OsTaskVarType *pcb );
 
 
 #endif /*TASK_I_H_*/

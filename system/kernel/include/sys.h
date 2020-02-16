@@ -1,23 +1,26 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 #ifndef SYS_H_
 #define SYS_H_
 
 #include "task_i.h"
 #include "isr.h"
+
+
+#define OS_SYS_PTR			(&Os_Sys[GetCoreID()])
+
 
 /* STD container : OsOs. OSEK properties
  * Class: ALL
@@ -67,85 +70,69 @@ typedef enum  {
 	OP_SIGNAL_SEMAPHORE = 512
 } OpType ;
 
+typedef struct Os_CoreStatus {
+	boolean activated;
+	boolean os_started;
+	boolean init_os_called;
+} Os_CoreStatusType;
 /*
  * Global system structure
  */
 typedef struct Os_Sys {
-//	OsApplicationType *curr_application;
-	/* Current running task*/
-	OsTaskVarType *currTaskPtr;
 
-	OsIsrVarType *currIsrPtr;
+	OsTaskVarType 	*currTaskPtr;		/* Current running task*/
+	OsIsrVarType 	*currIsrPtr;
+	OsTaskVarType 	*pcb_list;			/* List of all tasks */
 
-	/* List of all tasks */
-	OsTaskVarType *pcb_list;
-
-	OsTaskVarType *chainedPcbPtr;
-	/* Interrupt nested count */
-	uint32 intNestCnt;
-	/* The current operation */
-	uint8_t op;
-	/* Ptr to the interrupt stack */
-	void *intStack;
-	// The os tick
-	TickType tick;
-	// 1-The scheduler is locked (by GetResource() or something else)
-//	int scheduler_lock;
-	/* Hooks */
+	OsTaskVarType 	*chainedPcbPtr;
+	uint32_t 		intNestCnt;			/* Interrupt nested count, 0 if no interrupt active */
+	TickType 		tick;				/* The OS Tick counter */
+	uint8_t 		op;					/* The current operation */
+	void *			intStack;			/* Ptr to the interrupt stack */
 	struct OsHooks *hooks;
 
-	// parameters for functions, used by OSErrorXXX()
+	/* parameters for functions, used by OSErrorXXX() */
 	uint32_t param1;
 	uint32_t param2;
 	uint32_t param3;
 	uint32_t serviceId;
 
-	/* Current Application mode */
-	AppModeType appMode;
+	AppModeType appMode;	/* According to OSEK 8.3 RES_SCHEDULER is accessible to all tasks */
 
 #if	(OS_USE_APPLICATIONS == STD_ON)
 	ApplicationStateType currApplState;
-	ApplicationType currApplId;
+	ApplicationType 	 currApplId;
 #endif
 
 	uint32_t task_cnt;
-
 	uint32_t isrCnt;
-#if defined(USE_KERNEL_EXTRA)
 
-/* List of PCB's to be put in ready list when timeout */
+#if defined(USE_KERNEL_EXTRA)
+	/* List of PCB's to be put in ready list when timeout */
 	TAILQ_HEAD(,OsTaskVar) timerHead;		// TASK
 #endif
 
-	/* List of all pcb's,
-	 * Only needed for non-static configuration of the kernel
-	 */
-//	TAILQ_HEAD(,OsTaskVar) pcb_head;
-	/* Ready queue */
-	TAILQ_HEAD(,OsTaskVar) ready_head;
-
-//	TAILQ_HEAD(,OsIsrVar) isrHead;
-
-	/* According to OSEK 8.3 RES_SCHEDULER is accessible to all tasks */
-	OsResourceType resScheduler;
+	TAILQ_HEAD(,OsTaskVar) ready_head;	/* Ready queue */
+	OsResourceType resScheduler;		/* According to OSEK 8.3 RES_SCHEDULER is accessible to all tasks */
+	Os_CoreStatusType status;
 } Os_SysType;
 
-extern Os_SysType Os_Sys;
+extern Os_SysType Os_Sys[OS_NUM_CORES];
 
 static inline _Bool Os_SchedulerResourceIsFree( void ) {
-	return (Os_Sys.resScheduler.owner == NO_TASK_OWNER );
+	return (OS_SYS_PTR->resScheduler.owner == NO_TASK_OWNER );
 }
 
 static inline void Os_SysTaskSetCurr( OsTaskVarType *pcb ) {
-	Os_Sys.currTaskPtr = pcb;
+	OS_SYS_PTR->currTaskPtr = pcb;
 }
 
 static inline OsTaskVarType *Os_SysTaskGetCurr( void ) {
-	return Os_Sys.currTaskPtr;
+	return OS_SYS_PTR->currTaskPtr;
 }
 
 static inline OsIsrVarType *Os_SysIsrGetCurr( void ) {
-	return Os_Sys.currIsrPtr;
+	return OS_SYS_PTR->currIsrPtr;
 }
 
 /**

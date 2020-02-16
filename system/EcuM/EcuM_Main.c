@@ -1,17 +1,18 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
+
+/* @req EcuM2989 File structure */
 
 //lint -emacro(904,VALIDATE,VALIDATE_RV,VALIDATE_NO_RV) //904 PC-Lint exception to MISRA 14.7 (validate macros).
 
@@ -20,6 +21,8 @@
 #include "EcuM_Generated_Types.h"
 #include "EcuM_Internals.h"
 
+
+/* @req EcuM2875 */
 #if defined(USE_DEM)
 #include "Dem.h"
 #endif
@@ -30,6 +33,8 @@
 #include "ComM.h"
 #include "ComM_EcuM.h"
 #endif
+
+
 
 //#define USE_LDEBUG_PRINTF
 #include "debug.h"
@@ -116,7 +121,7 @@ char *GetMainStateAsString( EcuM_StateType state ) {
 const char *GetWakeupReactionAsString( EcuM_WakeupReactionType reaction ) {
 	const char *WakeupReactionAsString[] = {
 			"ECUM_WKACT_RUN",
-			"??????",
+			"UNKNONW?",
 			"ECUM_WKACT_TTII",
 			"ECUM_WKACT_SHUTDOWN",
 	};
@@ -133,19 +138,21 @@ static NvM_RequestResultType writeAllResult;
 
 static uint32 EcuM_World_go_sleep_state_timeout = 0;
 
+
 #ifdef CFG_ECUM_USE_SERVICE_COMPONENT
 /** @req EcuM2749 */
 static Rte_ModeType_EcuM_Mode currentMode = RTE_MODE_EcuM_Mode_STARTUP;
+
 #endif
 
 
-void set_current_state(EcuM_StateType state) {
-	imask_t irqMask = 0;
+void SetCurrentState(EcuM_StateType state) {
 
 	/* Update the state */
 	EcuM_World.current_state = state;
 
 #ifdef CFG_ECUM_USE_SERVICE_COMPONENT
+
 	Rte_ModeType_EcuM_Mode newMode = currentMode;
 	switch( state ) {
 	case ECUM_STATE_WAKEUP:
@@ -176,14 +183,7 @@ void set_current_state(EcuM_StateType state) {
 		newMode = RTE_MODE_EcuM_Mode_POST_RUN;
 		break;
 	case ECUM_STATE_APP_RUN: /* Assuming this is same as RUN_II */
-		Irq_Save(irqMask);
 		newMode = RTE_MODE_EcuM_Mode_RUN;
-		/* We have a configurable minimum time (EcuMRunMinimumDuration) we have to stay in RUN state  */
-		/* This should not be done in EcuM_enter_run_mode() because RTE_MODE_EcuM_Mode_RUN & EcuM_World_run_state_timeout  are
-		 * not set at the same time and this might lead to immediate timeout
-		 */
-		EcuM_World_run_state_timeout = EcuM_World.config->EcuMRunMinimumDuration / ECUM_MAIN_FUNCTION_PERIOD; /** @req EcuM2310 */
-		Irq_Restore(irqMask);
 		break;
 	case ECUM_STATE_STARTUP_TWO:
 		newMode = RTE_MODE_EcuM_Mode_STARTUP;
@@ -197,16 +197,38 @@ void set_current_state(EcuM_StateType state) {
 		currentMode = newMode;
 		Rte_Switch_EcuM_CurrentMode_currentMode(currentMode); /** @req EcuM2750 */
 	}
-}
-#else
-	if (ECUM_STATE_APP_RUN == state) {
-		Irq_Save(irqMask);
-		/* We have a configurable minimum time (EcuMRunMinimumDuration) we have to stay in RUN state  */
-		EcuM_World_run_state_timeout = EcuM_World.config->EcuMRunMinimumDuration / ECUM_MAIN_FUNCTION_PERIOD; /** @req EcuM2310 */
-		Irq_Restore(irqMask);
-	}
-}
+
+
 #endif
+
+	/* @req EcuMf0014 */
+#if defined(USE_BSWM)
+   BswM_EcuM_CurrentState(state);
+#endif
+
+}
+
+
+static void SetComMCommunicationAllowed(EcuM_ComMCommunicationGroupsType group, boolean Allowed) {
+
+#if defined(USE_COMM)
+		{
+			/* @req EcuMf0008 */
+			uint8 i;
+			for (i=0;i<ECUM_COMM_NETWORKS_CNT;i++) {
+				const EcuM_ComMConfigType* comMConfigPtr = &EcuM_World.config->EcuMComMConfig[i];
+				if ((EcuM_World.config->EcuMComMConfig != 0) &&
+				    ((ALL == group) ||
+				     (ALL_WO_LIN == group && comMConfigPtr->EcuMComBusType != COMM_BUS_TYPE_LIN) ||
+				     (ONLY_LIN == group && comMConfigPtr->EcuMComBusType == COMM_BUS_TYPE_LIN))) {
+					DEBUG_ECUM_CALLOUT_W_ARG("ComM_CommunicationAllowed","%ld",(uint32)comMConfigPtr->EcuMComMNetworkHandle);
+					ComM_CommunicationAllowed(comMConfigPtr->EcuMComMNetworkHandle, Allowed);
+				}
+			}
+		}
+
+#endif
+}
 
 
 /**
@@ -217,20 +239,20 @@ void set_current_state(EcuM_StateType state) {
  *
  */
 void EcuM_enter_run_mode(void){
-	set_current_state(ECUM_STATE_APP_RUN);
 	EcuM_OnEnterRun(); /** @req EcuM2308 */
 
-#if defined(USE_WDGM)
-	/* This seems strange, should be in FW instead */
-	if( EcuM_World.config->EcuMWdgMConfig != NULL ) {
-		WdgM_SetMode(EcuM_World.config->EcuMWdgMConfig->EcuMWdgMRunMode);
-	}
-#endif
+	/* @req EcuMf0019 */
+	/* @req EcuMf0008 */
+	SetComMCommunicationAllowed(ALL, TRUE);
 
-#if defined(USE_COMM)
 	/*
-	 * Loop over all channels that have requested run,
-	 * ie EcuM_ComM_RequestRUN()
+	 * time we could leave the state before it has been completed.
+	 */
+	SetCurrentState(ECUM_STATE_APP_RUN);
+
+#if defined(USE_COMM) && (ECUM_AR_VERSION < 40000)
+	/* !req EcuMf0027
+	 * ECU in RUN state shall also perform wake up validation of sleeping busses
 	 */
 	{
 		uint32 cMask = EcuM_World.run_comm_requests;
@@ -244,6 +266,10 @@ void EcuM_enter_run_mode(void){
 	}
 #endif
 
+	/* We have a configurable minimum time (EcuMRunMinimumDuration)
+	 * we have to stay in RUN state
+	 */
+	EcuM_World_run_state_timeout = EcuM_World.config->EcuMRunMinimumDuration / ECUM_MAIN_FUNCTION_PERIOD;
 }
 
 
@@ -256,7 +282,7 @@ void EcuM_enter_run_mode(void){
  */
 static inline void enter_go_sleep_mode(void){
 	EcuM_WakeupSourceType wakeupSource;
-	set_current_state(ECUM_STATE_GO_SLEEP);
+	SetCurrentState(ECUM_STATE_GO_SLEEP);
 
 	DEBUG_ECUM_CALLOUT( ECUM_STR "EcuM_OnGoSleep");
 	EcuM_OnGoSleep();
@@ -277,6 +303,11 @@ static inline void enter_go_sleep_mode(void){
   In GO SLEEP state (in state ECUM_STATE_GO_SLEEP)
  */
 static void in_state_goSleep( void ) {
+
+	/* !req EcuMf0026:
+	 * The ECU State Manager Fixed module shall put all communication interfaces to standby state and shall arm the
+	 * wake up source before the ECU State Manager Fixed module may put the ECU into SLEEP state.
+	 */
 
 	/* We only wait for NvM_WriteAll() for so long */
 	if (EcuM_World_go_sleep_state_timeout){
@@ -304,11 +335,14 @@ static void in_state_goSleep( void ) {
 
 		/* Get the current sleep mode */
 
+                /* @req EcuM2185 */
 		sleepModePtr = &EcuM_World.config->EcuMSleepModeConfig[EcuM_World.sleep_mode];
 
 		cMask = sleepModePtr->EcuMWakeupSourceMask;
 
 		/* Loop over the WKSOURCE for this sleep mode */
+		/* @req EcuM2389 */
+		/* @req EcuM2546 */
 		for (; cMask; cMask &= ~(1ul << source)) {
 			source = ilog2(cMask);
 			/* @req 3.1.5/ECUM2389 */
@@ -317,20 +351,13 @@ static void in_state_goSleep( void ) {
 
 		}
 
-#if defined(USE_WDGM)
-		if( EcuM_World.config->EcuMWdgMConfig != NULL &&
-		    sleepModePtr->EcuMSleepModeWdgMMode != ECUM_SLEEP_MODE_WDGM_MODE_ILL )
-		{
-        DEBUG_ECUM_CALLOUT_W_ARG("WdgM_SetMode","%d",sleepModePtr->EcuMSleepModeWdgMMode);
-        WdgM_SetMode(sleepModePtr->EcuMSleepModeWdgMMode);
-		}
-#endif
-
 		/* Let no one else run */
 		GetResource(RES_SCHEDULER);
-		set_current_state(ECUM_STATE_SLEEP);
+		SetCurrentState(ECUM_STATE_SLEEP);
 
 	} else if( EcuM_GetPendingWakeupEvents() != 0 ) {
+		/* @req EcuM2188 */
+
 		/* We have pending wakeup events, need to startup again */
 #if defined(USE_NVM)
 		NvM_CancelWriteAll();
@@ -347,6 +374,7 @@ static void in_state_sleep ( void ) {
 	const EcuM_SleepModeType *sleepModePtr;
 	sleepModePtr = &EcuM_World.config->EcuMSleepModeConfig[EcuM_World.sleep_mode];
 
+	/* @req EcuM2863 */
 	DEBUG_ECUM_CALLOUT( ECUM_STR "EcuM_GenerateRamHash");
 	EcuM_GenerateRamHash();
 
@@ -357,19 +385,30 @@ static void in_state_sleep ( void ) {
 	if( EcuM_CheckRamHash() == 0) {
 #if defined(USE_DEM)
 		//
-		EcuM_ErrorHook(ECUM_E_RAM_CHECK_FAILED);
+		EcuM_ErrorHook(EcuM_World.config->EcuMDemRamCheckFailedEventId);
 #endif
 	}
 
-	set_current_state(ECUM_STATE_WAKEUP_ONE);
+	SetCurrentState(ECUM_STATE_WAKEUP_ONE);
 }
 
 static inline void enter_go_off_one_mode(void){
-	set_current_state(ECUM_STATE_GO_OFF_ONE);
+	SetCurrentState(ECUM_STATE_GO_OFF_ONE);
 	EcuM_OnGoOffOne();
+
+	/* @req EcuMf0008 Only set LIN to false when not going to sleep.
+	 *                Kind a strange that COMM is deini on the next line.
+	 */
+	/* @req EcuMf0019 */
+	SetComMCommunicationAllowed(ONLY_LIN, FALSE);
 
 #if defined(USE_COMM)
 	ComM_DeInit();
+#endif
+
+#if defined(USE_BSWM)
+	/* @req EcuMf0017 */
+	BswM_Deinit();
 #endif
 
 #if defined(USE_NVM)
@@ -411,13 +450,12 @@ static inline void in_state_appRun(void){
 		DEBUG_ECUM_CALLOUT( ECUM_STR "EcuM_OnExitRun");
 		EcuM_OnExitRun();	/** @req EcuM2865 */
 
-#if defined(USE_WDGM)
-		if( EcuM_World.config->EcuMWdgMConfig != NULL ) {
-			WdgM_SetMode(EcuM_World.config->EcuMWdgMConfig->EcuMWdgMPostRunMode);
-		}
-#endif
+		/* @req EcuMf0008 */
+		/* @req EcuMf0020 */
+		SetComMCommunicationAllowed(ALL_WO_LIN, FALSE);
 
-		set_current_state(ECUM_STATE_APP_POST_RUN);/** @req EcuM2865 */
+		/* @req EcuM2311 */
+		SetCurrentState(ECUM_STATE_APP_POST_RUN);/** @req EcuM2865 */
 	}
 }
 
@@ -427,16 +465,20 @@ static inline void in_state_appRun(void){
  */
 static inline void in_state_appPostRun(void){
 
-	/* @req 3.1.5/ECUM2866 */
+	/* @req 3.1.5/EcuM2866 */
+	/* @req EcuMf0025 Not enter sleep if we have a run request */
+
 	if (hasRunRequests()){
 		/* We have run requests, return to RUN II */
+		/* @req EcuM2866 */
 		DEBUG_ECUM_CALLOUT( ECUM_STR "EcuM_enter_run_mode");
 		EcuM_enter_run_mode();
 
 	} else if (!hasPostRunRequests()){
 		DEBUG_ECUM_CALLOUT( ECUM_STR "EcuM_OnExitPostRun");
 		EcuM_OnExitPostRun(); /** @req EcuM2761 */
-		set_current_state(ECUM_STATE_PREP_SHUTDOWN);/** @req EcuM2761 */
+
+		SetCurrentState(ECUM_STATE_PREP_SHUTDOWN);/** @req EcuM2761 */
 	} else {
 		/* TODO: We have postrun requests */
 	}
@@ -464,6 +506,7 @@ static inline void in_state_prepShutdown(void){
 		//If in state Off or Reset go into Go_Off_One:
 		case ECUM_STATE_OFF:
 		case ECUM_STATE_RESET:
+			/* @req EcuM2288 */
 			enter_go_off_one_mode();
 			break;
 		case ECUM_STATE_SLEEP:
@@ -476,6 +519,10 @@ static inline void in_state_prepShutdown(void){
 }
 
 static inline void in_state_goOffOne(void){
+
+	/* @req EcuM2328 */
+	/* !req EcuM2756 */
+
 #if defined(USE_NVM)
 		if (EcuM_World_go_off_one_state_timeout){
 			EcuM_World_go_off_one_state_timeout--;
@@ -484,22 +531,10 @@ static inline void in_state_goOffOne(void){
 		NvM_GetErrorStatus(0, &writeAllResult);
 		if ((writeAllResult != NVM_REQ_PENDING) || (EcuM_World_go_off_one_state_timeout == 0)){
 
-#if defined(USE_WDGM)
-			if( EcuM_World.config->EcuMWdgMConfig != NULL ) {
-				DEBUG_ECUM_CALLOUT( ECUM_STR "WdgM_SetMode");
-				WdgM_SetMode(EcuM_World.config->EcuMWdgMConfig->EcuMWdgMShutdownMode);
-			}
-#endif
 			ShutdownOS(E_OK);
 		}
 #else
 
-#if defined(USE_WDGM)
-		if( EcuM_World.config->EcuMWdgMConfig != NULL ) {
-			DEBUG_ECUM_CALLOUT( ECUM_STR "WdgM_SetMode");
-			WdgM_SetMode(EcuM_World.config->EcuMWdgMConfig->EcuMWdgMShutdownMode);
-		}
-#endif
 		ShutdownOS(E_OK);
 #endif
 }
@@ -507,12 +542,19 @@ static inline void in_state_goOffOne(void){
 
 //----- MAIN -----------------------------------------------------------------------------------------------------------------
 void EcuM_MainFunction(void) {
-	EcuM_WakeupSourceType wMask;
+	EcuM_WakeupSourceType wMask=0;
 	static uint32 validationMask;
 	static uint32 validationMaxTime;
 	static uint32 pendingWkupMask = 0;
 
-	VALIDATE_NO_RV(EcuM_World.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_NOT_INITIATED);
+#if (ECUM_AR_VERSION < 40000)
+	VALIDATE_NO_RV(EcuM_World.initiated, ECUM_MAINFUNCTION_ID, ECUM_E_UNINIT);
+#else
+	/* @req EcuMf0029 */
+	if (!EcuM_World.initiated) {
+		return;
+	}
+#endif
 
 #if defined(USE_LDEBUG_PRINTF)
 	{
@@ -567,21 +609,19 @@ void EcuM_MainFunction(void) {
 	case ECUM_STATE_WAKEUP_ONE: {
 		DEBUG_ECUM_STATE(EcuM_World.current_state);
 
+		/*@req EcuMF2975 */
+
 		/* TODO: we must have a normal RUN mode.. can't find any
 		 * in the A3.1.5 spec. */
 		Mcu_SetMode(MCU_MODE_NORMAL);
-#if defined(USE_WDGM)
-		if( EcuM_World.config->EcuMWdgMConfig != NULL ) {
-			WdgM_SetMode(EcuM_World.config->EcuMWdgMConfig->EcuMWdgMWakeupMode);
-		}
-#endif
 
 		wMask = EcuM_GetPendingWakeupEvents();
 
 		DEBUG_ECUM_CALLOUT_W_ARG("EcuM_DisableWakeupSources", "0x%lx", (uint32) wMask);
 		EcuM_DisableWakeupSources(wMask);
 
-		EcuM_AL_DriverRestart();
+		/* @req EcuM2562 */
+		EcuM_AL_DriverRestart(EcuM_World.config);
 
 		EcuM_World.killAllRequest = false;	/* Enable run request again */
 
@@ -591,7 +631,7 @@ void EcuM_MainFunction(void) {
 		validationMaxTime = 0;
 		const EcuM_WakeupSourceConfigType *wkupCfgPtr;
 
-		set_current_state(ECUM_STATE_WAKEUP_VALIDATION);
+		SetCurrentState(ECUM_STATE_WAKEUP_VALIDATION);
 
 		/*-------------- ECUM_STATE_WAKEUP_VALIDATION -------------------- */
 
@@ -614,6 +654,10 @@ void EcuM_MainFunction(void) {
 #endif
 
 		/* Calculate the validation timing , if any*/
+
+		/* @req EcuM2494 */
+		/* @req EcuM2479 */
+
 		for (int i = 0; i < ECUM_WKSOURCE_USER_CNT; i++) {
 			wkupCfgPtr = &EcuM_World.config->EcuMWakeupSourceConfig[i];
 
@@ -636,6 +680,7 @@ void EcuM_MainFunction(void) {
 							(uint32) wkupCfgPtr->EcuMWakeupSourceId);
 
 					/* Validate right away */
+				/* @req EcuM2976 */
 					EcuM_ValidateWakeupEvent(wkupCfgPtr->EcuMWakeupSourceId);
 				}
 			}
@@ -662,6 +707,8 @@ void EcuM_MainFunction(void) {
 					(uint32)(EcuM_GetValidatedWakeupEvents() ^ pendingWkupMask));
 
 			EcuM_CheckValidation( EcuM_GetValidatedWakeupEvents() ^ pendingWkupMask);
+			/* !req EcuM2495*/
+
 
 			if (0 == (EcuM_GetValidatedWakeupEvents() ^ pendingWkupMask)) {
 				/* All events have been validated */
@@ -680,6 +727,10 @@ void EcuM_MainFunction(void) {
 				DEBUG_ECUM_CALLOUT_W_ARG("EcuM_StopWakeupSources", "0x%lx",
 						(uint32) notValidatedMask);
 				EcuM_StopWakeupSources(notValidatedMask);
+
+#if defined(USE_BSWM)
+				BswM_EcuM_CurrentWakeup(notValidatedMask, ECUM_WKSTATUS_EXPIRED);
+#endif
 			}
 			done = 1;
 		}
@@ -726,15 +777,18 @@ void EcuM_MainFunction(void) {
 		 * go back to RUN */
 		wReaction = (0 == wMask) ? ECUM_WKACT_SHUTDOWN : ECUM_WKACT_RUN;
 		wReaction = EcuM_OnWakeupReaction(wReaction);
+		
+		LDEBUG_PRINTF(ECUM_STR "Wakeup Reaction: %s\n", GetWakeupReactionAsString(wReaction));
 
-		LDEBUG_PRINTF(ECUM_STR "Wakeup Reaction: %s\n",
-				GetWakeupReactionAsString(wReaction));
 		if (wReaction == ECUM_WKACT_RUN) {
-			set_current_state(ECUM_STATE_WAKEUP_TWO);
+			/* @req EcuM2568 */
+			SetCurrentState(ECUM_STATE_WAKEUP_TWO);
 		} else {
 			/* From figure 28 it seems that we should go to SHUTDOWN/GO SLEEP) again from wakeup
 			 * not going up to RUN/RUN II state again. */
-			set_current_state(ECUM_STATE_GO_SLEEP);
+			/* @req EcuM2711 */
+			/* @req EcuM2567 */
+			SetCurrentState(ECUM_STATE_GO_SLEEP);
 		}
 		break;
 	}
@@ -744,7 +798,7 @@ void EcuM_MainFunction(void) {
 		Dem_Init();
 #endif
 		EcuM_enter_run_mode();
-//		set_current_state(ECUM_STATE_APP_RUN);
+//		SetCurrentState(ECUM_STATE_APP_RUN);
 		break;
 
 	default:

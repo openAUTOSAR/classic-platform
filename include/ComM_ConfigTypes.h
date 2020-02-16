@@ -1,28 +1,21 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 
 #ifndef COMM_CONFIGTYPES_H_
 #define COMM_CONFIGTYPES_H_
 
-/* Configuration requirements */
-/** @req COMM554.bswbuilder  @req COMM555.bswbuilder  @req COMM563.bswbuilder  @req COMM560.bswbuilder
- *  @req COMM561.bswbuilder  @req COMM557.bswbuilder  @req COMM622.bswbuilder  @req COMM653.bswbuilder
- *  @req COMM654.bswbuilder  @req COMM565.bswbuilder  @req COMM567.bswbuilder  @req COMM635.bswbuilder
- *  @req COMM556.bswbuilder  @req COMM607.bswbuilder  @req COMM606.bswbuilder  @req COMM568.bswbuilder
- *  @req COMM657.bswbuilder  @req COMM658.bswbuilder  @req COMM246.bswbuilder */
 
 typedef enum {
 	COMM_BUS_TYPE_CAN,
@@ -39,7 +32,7 @@ typedef enum {
 } ComM_NmVariantType;
 
 typedef struct {
-	const ComM_BusTypeType			BusType;               /**< @req COMM322 */
+	const ComM_BusTypeType			BusType;
 	const NetworkHandleType			BusSMNetworkHandle;
 	const NetworkHandleType			NmChannelHandle;
 	const ComM_NmVariantType		NmVariant;
@@ -50,7 +43,6 @@ typedef struct {
 
 
 typedef struct {
-	/** @req COMM795  @req COMM796  @req COMM797  @req COMM798  @req COMM327  @req COMM159 */
 	const ComM_ChannelType**		ChannelList;
 	const uint8						ChannelCount;
 } ComM_UserType;

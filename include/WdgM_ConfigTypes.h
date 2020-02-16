@@ -1,142 +1,174 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+#ifndef WDGM_TYPES_H
+#define WDGM_TYPES_H
 
-#ifndef WDGM_CONFIGTYPES_H_
-#define WDGM_CONFIGTYPES_H_
+#include "Std_Types.h"
+/** @req WDGM025 */
+#include "WdgM_Cfg.h"
+#include "WdgIf.h"
+#if defined(USE_DEM)
+#include "Dem.h"
+#endif
+#include "Os.h"
 
+/* TODO: 	datatype depends on the maximal configured amount of supervised entities
+ * 			currently we assume that 16bit are necessary (alternative would be 8)
+ */
+typedef uint16 WdgM_SupervisedEntityIdType;
 
-typedef enum
-{
-  WDGM_ALIVE_OK,
-  WDGM_ALIVE_FAILED,
-  WDGM_ALIVE_EXPIRED,
-  WDGM_ALIVE_STOPPED,
-  WDGM_ALIVE_DEACTIVATED
-}WdgM_AliveSupervisionStatusType;
+/* TODO: 	datatype depends on the maximal configured amount of supervised entities
+ * 			currently we assume that 16bit are necessary (alternative would be 8)
+ */
+typedef uint16 WdgM_CheckpointIdType;
 
+typedef uint8 WdgM_ModeType;
 
+typedef uint8 WdgM_LocalStatusType;
+#define WDGM_LOCAL_STATUS_OK			0x00
+#define WDGM_LOCAL_STATUS_FAILED		0x01
+#define WDGM_LOCAL_STATUS_EXPIRED		0x02
+#define WDGM_LOCAL_STATUS_DEACTIVATED	0x04
 
+typedef uint8 WdgM_GlobalStatusType;
+#define WDGM_GLOBAL_STATUS_OK			0x00
+#define WDGM_GLOBAL_STATUS_FAILED		0x01
+#define WDGM_GLOBAL_STATUS_EXPIRED		0x02
+#define WDGM_GLOBAL_STATUS_STOPPED		0x03
+#define WDGM_GLOBAL_STATUS_DEACTIVATED	0x04
 
-typedef enum
-{
-  WDGM_SUPERVISION_DISABLED,
-  WDGM_SUPERVISION_ENABLED
-}WdgM_ActivationStatusType;
-
-typedef int16_t WdgM_SupervisionCounterType ;
-typedef uint16_t WdgM_TriggerCounterType ;
-
-typedef struct
-{
-  WdgM_SupervisionCounterType     AliveCounter;
-  WdgM_SupervisionCounterType     SupervisionCycle;
-  WdgM_AliveSupervisionStatusType SupervisionStatus;
-  WdgM_SupervisionCounterType     NbrOfFailedRefCycles;
-}WdgM_AliveEntityStateType;
+typedef uint8 WdgM_Substate;
+#define WDGM_SUBSTATE_INCORRECT 			0x00
+#define WDGM_SUBSTATE_CORRECT				0x01
 
 typedef struct
 {
-  /** @req WDGM093 **/
-  const boolean                     WdgM_DeactivationAccessEnabled;
-  const WdgM_SupervisedEntityIdType WdgM_SupervisedEntityID;
-}WdgM_SupervisedEntityType;
+	const uint16			TriggerConditionValue;
+	const WdgIf_ModeType	WatchdogMode;		/** @req WDGM181 */
+	const uint8			WatchdogId;			/** @req WDGM178 */
+} WdgM_Trigger;
 
-/** @req WDGM046 **/
-/** @req WDGM090 **/
-/** @req WDGM091 **/
-/** @req WDGM095 **/
-/** @req WDGM096 **/
-typedef struct
-{
-  const boolean                         WdgM_ActivationActivated;
-  const WdgM_SupervisedEntityIdType     WdgM_AliveSupervisionConfigID;
-  const WdgM_SupervisionCounterType     WdgM_ExpectedAliveIndications;
-  const WdgM_SupervisionCounterType     WdgM_SupervisionReferenceCycle;
-  const WdgM_SupervisionCounterType     WdgM_FailedSupervisionReferenceCycleTolerance;
-  const WdgM_SupervisionCounterType     WdgM_MinMargin;
-  const WdgM_SupervisionCounterType     WdgM_MaxMargin;
-  const WdgM_SupervisedEntityType       *WdgM_SupervisedEntityRef;
-}WdgM_AliveSupervisionType;
 
 typedef struct
 {
-	const char_t           *WdgM_WatchdogName;
-	const WdgIf_DeviceType *WdgM_DeviceRef;
-}WdgM_WatchdogType;
-
-/** @req WDGM002 **/
-/** @req WDGM003 **/
-typedef struct
-{
-	const uint16                     WdgM_NumberOfSupervisedEntities;
-	const uint16                     WdgM_NumberOfWatchdogs;
-	const WdgM_SupervisedEntityType  *WdgM_SupervisedEntityPtr;
-    const WdgM_WatchdogType          *WdgM_Watchdog;
-}WdgM_GeneralType;
-
-/** @req WDGM116 **/
-typedef struct
-{
-	const uint16                     WdgM_TriggerReferenceCycle;
-	const WdgIf_ModeType             WdgM_WatchdogMode;
-	const WdgM_WatchdogType          *WdgM_WatchdogRef;
-}WdgM_TriggerType;
+	const uint16 			CheckpointId;
+	const uint16			ExpectedAliveIndications;
+	const uint8			MinMargin;
+	const uint8			MaxMargin;
+	const uint16			SupervisionReferenceCycle;
+} WdgM_AliveSupervision;
 
 typedef struct
 {
-	const float32                    WdgM_SupervisionCycle;
-	const float32                    WdgM_TriggerCycle;
-}WdgM_ActivationSchMType;
+	const uint16 			CheckpointIdStart;
+	const uint16 			CheckpointIdFinish;
+	const uint32			DeadlineMin;
+	const uint32			DeadlineMax;
+} WdgM_DeadlineSupervision;
 
-#if (WDGM_GPT_USED == STD_ON)
 typedef struct
 {
-	const uint32                     WdgM_GptCycle;
-	const Gpt_ChannelType            WdgM_GptChannelRef;
-}WdgM_ActivationGPTType;
+	const uint16			CheckpointIdSource;
+	const uint16			CheckpointIdDestination;
+} WdgM_InternalTransition;
+
+typedef struct
+{
+	const uint16					Id;
+
+	const uint16					*CheckpointIds;
+	const uint16					Length_CheckpointIds; /* only 65535 possible */
+
+	const WdgM_InternalTransition	*Transitions;
+	const uint16					Length_Transitions; /* only 65535 possible */
+
+	const uint16					*StartCheckpointIds;
+	const uint16					Length_StartCheckpointIds; /* only 65535 possible */
+
+	const uint16					*FinalCheckpointIds;
+	const uint16					Length_FinalCheckpointIds; /* only 65535 possible */
+
+	const boolean					isOsApplicationRefSet;
+	const ApplicationType			OsApplicationRef;
+} WdgM_SupervisedEntity;
+
+
+typedef struct
+{
+	const uint16								SupervisedEntityId;		/** @req WDGM282 */
+
+	const boolean								CheckInternalLogic; 	/** @req WDGM212.partially */ /* is true when either internal logic or external logic shall be checked (only internal is activated when this flag is true and Length_ExternalLogicalSupervisions == 0) */
+
+	const WdgM_AliveSupervision				*AliveSupervisions;
+	const uint16								Length_AliveSupervisions; /* only 65535 possible */
+
+	const WdgM_DeadlineSupervision			*DeadlineSupervisions;
+	const uint16								Length_DeadlineSupervisions; /* only 65535 possible */
+
+	const uint8								FailedAliveSupervisionReferenceCycleTol;
+} WdgM_SupervisedEntityConfiguration;
+
+typedef struct
+{
+	const uint8									Id;
+	const uint16									ExpiredSupervisionCycleTol;
+	const uint32									SupervisionCycle;
+
+	const WdgM_SupervisedEntityConfiguration		*SEConfigurations;		/** @req WDGM283 */ /* only activated SEs are configured */
+	const uint16									Length_SEConfigurations; /* only 65535 possible */
+
+	const WdgM_Trigger							*Triggers;		/** @req WDGM178 */
+	const uint8									Length_Triggers; /* only 255 possible */
+
+} WdgM_Mode;
+
+typedef struct
+{
+	const uint16		*allowedCallerIds;
+	const uint8			Length_allowedCallerIds; /* only 255 possible */
+} WdgM_CallerIds;
+
+typedef struct
+{
+	const uint8		WatchdogId;
+	const uint8		WatchdogDeviceId;
+} WdgM_Watchdog;
+
+#if defined(USE_DEM)
+typedef struct
+{
+	const Dem_EventIdType		ImproperCaller;
+	const Dem_EventIdType		Monitoring;
+	const Dem_EventIdType		SetMode;
+} WdgM_DEMEventIdRefs;
 #endif
 
 typedef struct
 {
-	const boolean                    WdgM_IsGPTActivated;
-	const WdgM_ActivationSchMType    WdgM_ActivationSchM;
-#if (WDGM_GPT_USED == STD_ON)
-	const WdgM_ActivationGPTType     WdgM_ActivationGPT;
+	const WdgM_CallerIds			CallerIds;
+
+	const WdgM_SupervisedEntity	*SupervisedEntities;
+	const uint16					Length_SupervisedEntities; /* only 65535 possible */
+
+	const WdgM_Watchdog			*Watchdogs;
+	const uint8					Length_Watchdogs; /* only 255 possible */
+} WdgM_General;
+
+typedef struct
+{
+#if defined(USE_DEM)
+	const WdgM_DEMEventIdRefs		    DemEventIdRefs;
 #endif
-}WdgM_ActivationType;
+	const uint8							initialModeId;
+	const WdgM_Mode						*Modes;
+	const uint8							Length_Modes; /* only 255 possible */
+} WdgM_ConfigSet;
 
+/** @req WDGM029 */
 typedef struct
 {
-	const WdgM_SupervisionCounterType WdgM_ExpiredSupervisionCycleTol;
-	const WdgM_ModeType               WdgM_ModeId;
-	const WdgM_ActivationType         WdgM_Activation;
-	const WdgM_AliveSupervisionType   *WdgM_AliveSupervisionPtr;
-	const WdgM_TriggerType            WdgM_Trigger[WDGM_NBR_OF_WATCHDOGS];
-}WdgM_ModeConfigType;
+	const WdgM_General	General;
+	const WdgM_ConfigSet	ConfigSet;
+} WdgM_ConfigType;
 
-typedef struct
-{
-	const WdgM_ModeType             WdgM_InitialMode;
-	WdgM_AliveEntityStateType       *WdgM_AliveEntityStatePtr;
-	const WdgM_ModeConfigType       WdgM_Mode[];
-}WdgM_ConfigSetType;
+extern const WdgM_ConfigType WdgMConfig;
 
-/** @req WDGM118 **/
-typedef struct
-{
-  const WdgM_GeneralType   *WdgM_General;
-  const WdgM_ConfigSetType *WdgM_ConfigSet;
-}WdgM_ConfigType;
-#endif /* WDGM_CONFIGTYPES_H_ */
+#endif

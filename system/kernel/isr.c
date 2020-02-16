@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 
 #if defined(__GNUC__)
@@ -26,11 +25,16 @@
 #include "sys.h"
 #include "isr.h"
 #include "irq.h"
+#include "multicore_i.h"
 #include "arc.h"
 
 #define ILL_VECTOR	0xff
 
 extern uint8_t Os_VectorToIsr[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
+/* TODO: Have each Os_Sys struct keep the needed interrupts instead of a
+         global Os_IsrVarList. Get rid of the isrCnt variable below. */
+uint32_t isrCnt = 0;
+
 #if OS_ISR_CNT!=0
 extern const OsIsrConstType Os_IsrConstList[OS_ISR_CNT];
 #endif
@@ -39,7 +43,7 @@ extern const OsIsrConstType Os_IsrConstList[OS_ISR_CNT];
 OsIsrVarType Os_IsrVarList[OS_ISR_MAX_CNT];
 #endif
 
-uint8_t Os_IsrStack[OS_INTERRUPT_STACK_SIZE] __balign(0x100);
+uint8_t Os_IsrStack[OS_NUM_CORES][OS_INTERRUPT_STACK_SIZE] __balign(0x10);
 
 // TODO: remove. Make soft links or whatever
 #if defined(CFG_ARM_CM3)
@@ -81,15 +85,17 @@ void Os_IsrInit( void ) {
 
 	Irq_Init();
 
-	Os_Sys.isrCnt = OS_ISR_CNT;
+	isrCnt = OS_ISR_CNT;
 	/* Probably something smarter, but I cant figure out what */
 	memset(Os_VectorToIsr,ILL_VECTOR,NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS);
 
 #if OS_ISR_CNT != 0
 	/* Attach the interrupts */
-	for (int i = 0; i < Os_Sys.isrCnt; i++) {
+	GetSpinlock(OS_SPINLOCK);
+	for (int i = 0; i < isrCnt; i++) {
 		Os_IsrAddWithId(&Os_IsrConstList[i],i);
 	}
+	ReleaseSpinlock(OS_SPINLOCK);
 #endif
 }
 
@@ -115,7 +121,13 @@ ISRType Os_IsrAdd( const OsIsrConstType * restrict isrPtr ) {
 		id = installedId;
 	} else {
 		/* It a new vector */
-		id = Os_Sys.isrCnt++;
+#if (OS_NUM_CORES > 1)
+		GetSpinlock(OS_RTE_SPINLOCK);
+#endif
+		id = isrCnt++;
+#if (OS_NUM_CORES > 1)
+		ReleaseSpinlock(OS_RTE_SPINLOCK);
+#endif
 		/* Since OS_ISR_MAX_CNT defines the allocation limit for Os_IsrVarList,
 		 * we must not allocate more IDs than that */
 		assert(id<OS_ISR_MAX_CNT);
@@ -221,12 +233,12 @@ void TailChaining(void *stack)
 
 	Os_StackPerformCheck(new_pcb);
 
-	if(     (new_pcb == Os_Sys.currTaskPtr) ||
-			(Os_Sys.currTaskPtr->constPtr->scheduling == NON) ||
+	if(     (new_pcb == OS_SYS_PTR->currTaskPtr) ||
+			(OS_SYS_PTR->currTaskPtr->constPtr->scheduling == NON) ||
 			!Os_SchedulerResourceIsFree() )
 	{
 		/* Just bring the preempted task back to running */
-		Os_TaskSwapContextTo(NULL,Os_Sys.currTaskPtr);
+		Os_TaskSwapContextTo(NULL,OS_SYS_PTR->currTaskPtr);
 	} else {
 		OS_DEBUG(D_TASK,"Found candidate %s\n",new_pcb->name);
 		Os_TaskSwapContextTo(NULL,new_pcb);
@@ -244,7 +256,7 @@ void Os_Isr_cm3( int16_t vector ) {
 		return;
 	}
 
-	Os_Sys.intNestCnt++;
+	OS_SYS_PTR->intNestCnt++;
 	isrPtr->state = ST_ISR_RUNNING;
 
 	Irq_Enable();
@@ -269,7 +281,7 @@ void Os_Isr_cm3( int16_t vector ) {
 
 	Irq_EOI();
 
-	--Os_Sys.intNestCnt;
+	--OS_SYS_PTR->intNestCnt;
 
 	/* Scheduling is done in PendSV handler for ARM CM3 */
 	*((uint32_t volatile *)0xE000ED04) = 0x10000000; // PendSV
@@ -279,13 +291,13 @@ void Os_Isr_cm3( int16_t vector ) {
 /*-----------------------------------------------------------------*/
 
 void Os_IsrGetStackInfo( OsIsrStackType *stack ) {
-	stack->top = Os_IsrStack;
-	stack->size = sizeof(Os_IsrStack);
+	stack->top = Os_IsrStack[GetCoreID()];
+	stack->size = sizeof(Os_IsrStack[GetCoreID()]);
 }
 
 const OsIsrVarType *Os_IsrGet( ISRType id ) {
 #if OS_ISR_MAX_CNT != 0
-	if( id < Os_Sys.isrCnt ) {
+	if( id < isrCnt ) {
 		return &Os_IsrVarList[id];
 	} else  {
 		return NULL;
@@ -300,7 +312,7 @@ ApplicationType Os_IsrGetApplicationOwner( ISRType id ) {
 	ApplicationType rv = INVALID_OSAPPLICATION;
 
 #if (OS_ISR_MAX_CNT!=0)
-	if( id < Os_Sys.isrCnt ) {
+	if( id < isrCnt ) {
 		rv = Os_IsrGet(id)->constPtr->appOwner;
 	}
 #else
@@ -339,7 +351,7 @@ void *Os_Isr( void *stack, int16_t vector ) {
 	}
 
 	/* Check if we interrupted a task or ISR */
-	if( Os_Sys.intNestCnt == 0 ) {
+	if( OS_SYS_PTR->intNestCnt == 0 ) {
 		/* We interrupted a task */
 		POSTTASKHOOK();
 
@@ -352,17 +364,17 @@ void *Os_Isr( void *stack, int16_t vector ) {
 		Os_StackPerformCheck(taskPtr);
 	} else {
 		/* We interrupted an ISR, save it */
-		oldIsrPtr = Os_Sys.currIsrPtr;
+		oldIsrPtr = OS_SYS_PTR->currIsrPtr;
 #if defined(CFG_OS_ISR_HOOKS)
 		isrPtr->preemtedId = oldIsrPtr->id;
 		Os_PostIsrHook(oldIsrPtr->id);
 #endif
 	}
 
-	Os_Sys.intNestCnt++;
+	OS_SYS_PTR->intNestCnt++;
 
 	isrPtr->state = ST_ISR_RUNNING;
-	Os_Sys.currIsrPtr = isrPtr;
+	OS_SYS_PTR->currIsrPtr = isrPtr;
 
 	Irq_SOI();
 
@@ -371,7 +383,7 @@ void *Os_Isr( void *stack, int16_t vector ) {
 #endif
 
 
-#if defined(CFG_HCS12D)
+#if defined(CFG_HCS12D) || defined(CFG_ARM_V6)
 	isrPtr->constPtr->entry();
 #else
 	Irq_Enable();
@@ -404,28 +416,28 @@ void *Os_Isr( void *stack, int16_t vector ) {
 	}
 
 	isrPtr->state = ST_ISR_NOT_RUNNING;
-	Os_Sys.currIsrPtr = isrPtr;
+	OS_SYS_PTR->currIsrPtr = isrPtr;
 
 	Irq_EOI();
 
-	--Os_Sys.intNestCnt;
+	--OS_SYS_PTR->intNestCnt;
 
 #if defined(CFG_ARM_CM3)
 		/* Scheduling is done in PendSV handler for ARM CM3 */
 		*((uint32_t volatile *)0xE000ED04) = 0x10000000; // PendSV
 #else
 	// We have preempted a task
-	if( (Os_Sys.intNestCnt == 0) ) {
+	if( (OS_SYS_PTR->intNestCnt == 0) ) {
 		OsTaskVarType *new_pcb  = Os_TaskGetTop();
 
 		Os_StackPerformCheck(new_pcb);
 
-		if(     (new_pcb == Os_Sys.currTaskPtr) ||
-				(Os_Sys.currTaskPtr->constPtr->scheduling == NON) ||
+		if(     (new_pcb == OS_SYS_PTR->currTaskPtr) ||
+				(OS_SYS_PTR->currTaskPtr->constPtr->scheduling == NON) ||
 				!Os_SchedulerResourceIsFree() )
 		{
 			/* Just bring the preempted task back to running */
-			Os_Sys.currTaskPtr->state = ST_RUNNING;
+			OS_SYS_PTR->currTaskPtr->state = ST_RUNNING;
 			PRETASKHOOK();
 		} else {
 			OS_DEBUG(D_TASK,"Found candidate %s\n",new_pcb->constPtr->name);
@@ -435,7 +447,7 @@ void *Os_Isr( void *stack, int16_t vector ) {
 		/* We have a nested interrupt */
 
 		/* Restore current running ISR from stack */
-		Os_Sys.currIsrPtr = oldIsrPtr;
+		OS_SYS_PTR->currIsrPtr = oldIsrPtr;
 	}
 #endif
 
@@ -452,6 +464,6 @@ void Os_Arc_GetIsrInfo( Arc_PcbType *pcbPtr, ISRType isrId ) {
 }
 
 int Os_Arc_GetIsrCount( void ) {
-	return (int)Os_Sys.isrCnt;
+	return (int)isrCnt;
 }
 

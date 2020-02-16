@@ -1,0 +1,37 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+########################################################
+# Hidden parameters in FeeGeneral
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: FeeNvmJobEndNotification
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: FeeNvmJobErrorNotification
+  
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: FeeSetModeSupported
+  
+  
+########################################################
+# Hidden parameters in FeeBlockConfiguration
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: FeeDeviceIndex
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: FeeImmediateData
+  
+########################################################
+# Hidden parameters in FeePublishedInformation
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: FeeBlockOverhead
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: FeeMaximumBlockingTime
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: FeePageOverhead

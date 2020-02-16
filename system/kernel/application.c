@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 /* ----------------------------[includes]------------------------------------*/
 
@@ -62,9 +61,7 @@ OsAppVarType Os_AppVar[OS_APPLICATION_CNT];
  */
 
 ApplicationType GetApplicationID( void ) {
-
-	/* TODO: Still missing the case when no application is running */
-	return Os_Sys.currApplId;
+	return OS_SYS_PTR->currApplId;
 }
 
 
@@ -331,21 +328,21 @@ StatusType TerminateApplication(  ApplicationType applId, RestartType restartOpt
 
 	/* @req OS508 */
 	if( (Os_ApplGet(applId)->state == APPLICATION_RESTARTING ) &&
-		 ( applId != Os_Sys.currApplId ) ) {
+		 ( applId != OS_SYS_PTR->currApplId ) ) {
 		rv = E_OS_STATE;
 		goto err;
 	}
 
 	/* @req OS508 */
 	if( (Os_ApplGet(applId)->state == APPLICATION_RESTARTING ) &&
-		 ( applId != Os_Sys.currApplId ) ) {
+		 ( applId != OS_SYS_PTR->currApplId ) ) {
 		rv = E_OS_STATE;
 		goto err;
 	}
 
 	/* @req OS548 */
 	if( (Os_ApplGet(applId)->state == APPLICATION_RESTARTING ) &&
-		 ( applId == Os_Sys.currApplId ) &&
+		 ( applId == OS_SYS_PTR->currApplId ) &&
 		 ( restartOption == RESTART ) ) {
 		rv = E_OS_STATE;
 		goto err;
@@ -367,7 +364,7 @@ state
  */
 StatusType AllowAccess( void ) {
 	StatusType rv = E_OK;
-	ApplicationType applId = Os_Sys.currApplId;
+	ApplicationType applId = OS_SYS_PTR->currApplId;
 
 	/* @req OS497 */
 	if( Os_AppVar[applId].state != APPLICATION_RESTARTING ) {
@@ -408,7 +405,7 @@ StatusType GetApplicationState(   ApplicationType applId,  ApplicationStateRefTy
  * @return
  */
 StatusType GetActiveApplicationMode( AppModeType* mode) {
-	 *mode = Os_Sys.appMode;
+	 *mode = OS_SYS_PTR->appMode;
 	 return E_OK;
 }
 

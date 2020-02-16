@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 /** @addtogroup Lin LIN Driver
  *  @{ */
@@ -26,12 +25,12 @@
 #define LIN_MODULE_ID            MODULE_ID_LIN
 #define LIN_VENDOR_ID            VENDOR_ID_ARCCORE
 
-#define LIN_SW_MAJOR_VERSION    1
-#define LIN_SW_MINOR_VERSION   	0
-#define LIN_SW_PATCH_VERSION    0
-#define LIN_AR_MAJOR_VERSION    3
-#define LIN_AR_MINOR_VERSION    1
-#define LIN_AR_PATCH_VERSION    5
+#define LIN_SW_MAJOR_VERSION            2
+#define LIN_SW_MINOR_VERSION   	        0
+#define LIN_SW_PATCH_VERSION            0
+#define LIN_AR_RELEASE_MAJOR_VERSION    4
+#define LIN_AR_RELEASE_MINOR_VERSION    0
+#define LIN_AR_RELEASE_PATCH_VERSION    3
 
 #include "Std_Types.h"
 #include "Lin_Cfg.h"
@@ -47,9 +46,11 @@ void Lin_GetVersionInfo( Std_VersionInfoType *versionInfo );
  * LIN channels. A pointer to such a structure is provided to the LIN driver
  * initialization routine for configuration of the driver and LIN hardware unit. */
 typedef struct {
+    const Lin_ChannelConfigType *LinChannelConfig;
+    const uint8 *Lin_HwId2ChannelMap;
 } Lin_ConfigType;
 
-/** Represents all valid protected Identifier used by Lin_SendHeader(). */
+/** Represents all valid protected Identifier used by Lin_SendFrame(). */
 typedef uint8 Lin_FramePidType;
 
 /** This type is used to specify the Checksum model to be used for the LIN Frame. */
@@ -162,7 +163,7 @@ typedef enum {
 #define LIN_WAKEUPVALIDATION_SERVICE_ID   0x0A
 #define LIN_INIT_CHANNEL_SERVICE_ID       0x02
 #define LIN_DEINIT_CHANNEL_SERVICE_ID     0x03
-#define LIN_SEND_HEADER_SERVICE_ID        0x04
+#define LIN_SEND_FRAME_SERVICE_ID         0x04
 #define LIN_SEND_RESPONSE_SERVICE_ID      0x05
 #define LIN_GO_TO_SLEEP_SERVICE_ID        0x06
 #define LIN_WAKE_UP_SERVICE_ID            0x07
@@ -176,6 +177,7 @@ typedef enum {
 #define LIN_E_CHANNEL_UNINIT			0x01
 #define LIN_E_INVALID_CHANNEL			0x02
 #define LIN_E_INVALID_POINTER			0x03
+#define LIN_E_PARAM_POINTER             0x05
 #define LIN_E_STATE_TRANSITION			0x04
 //@}
 
@@ -185,13 +187,8 @@ void Lin_DeInit();
 
 void Lin_WakeupValidation( void );
 
-void Lin_InitChannel(  uint8 Channel,   const Lin_ChannelConfigType* Config );
 
-void Lin_DeInitChannel( uint8 Channel );
-
-Std_ReturnType Lin_SendHeader(  uint8 Channel,  Lin_PduType* PduInfoPtr );
-
-Std_ReturnType Lin_SendResponse(  uint8 Channel,   Lin_PduType* PduInfoPtr );
+Std_ReturnType Lin_SendFrame(  uint8 Channel,  Lin_PduType* PduInfoPtr );
 
 Std_ReturnType Lin_GoToSleep(  uint8 Channel );
 

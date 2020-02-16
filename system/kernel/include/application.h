@@ -14,10 +14,10 @@
  *  object  that  is  owned  by another OS-Application without state
  *  APPLICATION_ACCESSIBLE, then the Operating System module shall return E_OS_ACCESS.
  *
- *  OS056: If an OS-object identifier is the parameter of an Operating System module’s
+ *  OS056: If an OS-object identifier is the parameter of an Operating System moduleï¿½s
  *  system service, and no sufficient access rights have been assigned to this OS-object
  *  at  configuration  time  (Parameter  Os[...]AccessingApplication)  to  the  calling
- *  Task/Category  2  ISR,  the  Operating  System  module’s  system  service  shall  return
+ *  Task/Category  2  ISR,  the  Operating  System  moduleï¿½s  system  service  shall  return
  *  E_OS_ACCESS.
  *
  *  OS311: If OsScalabilityClass is SC3 or SC4 AND a Task OR Category 2 ISR OR
@@ -93,14 +93,9 @@ typedef struct OsAppHooks {
  * */
 
 typedef struct OsAppVar {
-	/* 0 - Non-trusted application
-	 * 1 - Trusted application */
-	_Bool trusted;
-
-	/* NOTE! Refs here is memory management issue */
-
-	/* The current state of the application */
-	ApplicationStateType state;
+	_Bool trusted;					/* 0 - Non-trusted application
+	 	 	 	 	 	 	 	 	 * 1 - Trusted application */
+	ApplicationStateType state;		/* The current state of the application */
 
 	/* Trusted functions */
 	/* .... */
@@ -111,10 +106,10 @@ typedef struct OsAppVar {
  * Used for ROM based parameters.... TODO
  */
 typedef struct OsApplication {
-	uint32 	appId;
-	char 	name[16];
-	_Bool	trusted;
-	uint8_t core;
+	uint32 	appId;			/* The ID of the application */
+	char 	name[16];		/* Name of the application */
+	_Bool	trusted;		/* Trusted or not, 0 - Non-trusted */
+	uint8_t core;			/* The core number on which this application runs */
 
 	/* hooks, the names are StartupHook_<name>(), etc. */
 	void (*StartupHook)( void );
@@ -130,13 +125,14 @@ typedef void ( * trusted_func_t)( TrustedFunctionIndexType , TrustedFunctionPara
 
 #if OS_APPLICATION_CNT!=0
 extern OsAppVarType Os_AppVar[OS_APPLICATION_CNT];
-#endif
-
-extern GEN_APPLICATION_HEAD;
 
 static inline OsAppVarType *Os_ApplGet(ApplicationType id) {
 	return &Os_AppVar[id];
 }
+#endif
+
+extern GEN_APPLICATION_HEAD;
+
 
 static inline uint8_t Os_ApplGetCore( ApplicationType appl )
 {
@@ -159,7 +155,7 @@ static inline StatusType Os_ApplHaveAccess( uint32_t mask ) {
 	ApplicationStateType state;
 
 	/* @req OS056 */
-	if( (APPL_ID_TO_MASK(Os_Sys.currApplId) & mask) == 0 ) {
+	if( (APPL_ID_TO_MASK(OS_SYS_PTR->currApplId) & mask) == 0 ) {
 		return E_OS_ACCESS;
 	}
 
@@ -170,7 +166,7 @@ static inline StatusType Os_ApplHaveAccess( uint32_t mask ) {
      * */
 
 	/* We are activating a task in another application */
-	GetApplicationState(Os_Sys.currApplId,&state);
+	GetApplicationState(OS_SYS_PTR->currApplId,&state);
 	if( state != APPLICATION_ACCESSIBLE ) {
 		return E_OS_ACCESS;
 	}

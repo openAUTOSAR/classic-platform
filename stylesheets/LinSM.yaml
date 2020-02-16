@@ -1,0 +1,19 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+########################################################
+# Hidden parameters in LinSMChannel
+########################################################
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinSMSleepSupport
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinSMTransceiverPassiveMode
+
+########################################################
+# Hidden parameters in LinSMSchedule
+########################################################
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: LinSMScheduleIndex

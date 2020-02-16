@@ -1,0 +1,26 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+########################################################
+# Hidden parameters in EcucPartition
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcucPartitionBswModuleExecution
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PartitionCanBeRestarted
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcucPartitionSoftwareComponentInstanceRef
+
+########################################################
+# Hidden parameters in EcucVariationResolver
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PredefinedVariantRef
+
+########################################################
+# Hidden parameters in Pdu
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SysTPduToFrameMappingRef

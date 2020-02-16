@@ -10,7 +10,7 @@ obj-$(CFG_HC1X) += arch_irq.o
 
 # object files 
 obj-y += event.o
-obj-y += init.o
+obj-y += os_init.o
 #obj-y += trusted.o
 obj-y += arch.o
 obj-y += task.o
@@ -27,6 +27,8 @@ obj-y += sys_tick.o
 obj-y += isr.o
 obj-y += os_arctest.o
 obj-y += application.o
+obj-$(CFG_MULTICORE) += spinlock.o
+obj-$(CFG_MULTICORE) += multicore.o
 obj-$(USE_KERNEL_EXTRA) += sleep.o
 obj-$(USE_KERNEL_EXTRA) += semaphore.o
 
@@ -57,6 +59,24 @@ asm_offset.h: asm_offset.c
 	@$(SED) -e "/#define/!d" -e "s/#//2g" $(<:.c=.s) > $@	
 	@rm 	$(<:.c=.s)
 endif
+
+ifeq ($(COMPILER),ghs)
+# ARM assembler generates "define STACK_APA $12". The extra '$' we want to go.
+# Assembler offsets
+%_offset.h: %_offset.c
+	@echo "  >> generating $@ from $<"
+	$(Q)$(CC) -S $(filter-out -c -dwarf2,$(CFLAGS)) -o $(@:.h=.s) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
+	$(Q)gawk '/.*define/ { print $$1 " " $$2 " " gensub("#","","g",$$3) }' $(@:.h=.s)  > $@
+
+# Assembler offsets
+asm_offset.h: asm_offset.c
+	@echo "  >> asm offset gen $<"
+	$(Q)$(CC) -S $(filter-out -c -dwarf2,$(CFLAGS)) -o $(<:.c=.s) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y))  $<
+	@$(SED) -e "/#define/!d" -e "s/#//2g" $(<:.c=.s) > $@	
+	@rm 	$(<:.c=.s)
+endif
+
+
 
 # sed -n '/apa.*/ {h;n;s/q://;x;s/^/#define /;s/$//;x;p}' bepa.c
 # gawk '/apa/ { var=$0;getline tjo;print "#define " var tjo}' bepa.c

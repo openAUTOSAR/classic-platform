@@ -29,29 +29,20 @@ typedef enum {
 
 typedef struct OsResource {
 	char id[16];
-	// The running number, starting at RES_SCHEDULER=0
-	int nr;
-	// The calculated ceiling prio
-	uint32 ceiling_priority;
-	// Stored prio of the owner oi the resource
-	uint32 old_task_prio;
 
-	// Owner of the resource...
-	TaskType owner;
+	int 	nr;					/* The running number, starting at RES_SCHEDULER=0 */
+	uint32 	ceiling_priority;	/* The calculated ceiling prio */
+	uint32 	old_task_prio;		/* Stored prio of the owner oi the resource */
+	TaskType owner;				/* Owner of the resource */
 
 	OsResourcePropertyType type;
-	// used only if type is RESOURCE_TYPE_LINKED
-	ResourceType    linked_resource;
 
 #if	(OS_USE_APPLICATIONS == STD_ON)
-	/* Application that owns this task */
-	ApplicationType applOwnerId;
-	/* Applications that may access task when state is APPLICATION_ACCESSIBLE */
-	uint32			accessingApplMask;
+	ApplicationType applOwnerId;		/* Application that owns this task */
+	uint32			accessingApplMask;	/* Applications that may access task
+										 * when state is APPLICATION_ACCESSIBLE */
 #endif
-
-	/* List of resources for each task. */
-	TAILQ_ENTRY(OsResource) listEntry;
+	TAILQ_ENTRY(OsResource) listEntry;	/* List of resources for each task. */
 
 } OsResourceType;
 
@@ -77,14 +68,10 @@ typedef struct OsLockingtime {
 } OsLockingtimeType;
 
 typedef struct OsTimingProtection {
-	// ROM, worst case execution budget in ns
-	uint64	executionBudget;
-	// ROM, the frame in ns that timelimit may execute in.
-	uint64 timeFrame;
-	// ROM, time in ns that the task/isr may with a timeframe.
-	uint64 timeLimit;
-	// ROM, resource/interrupt locktimes
-	OsLockingtimeType *lockingTime;
+	uint64 executionBudget;			/* worst case execution budget in ns */
+	uint64 timeFrame;				/* the frame in ns that timelimit may execute in. */
+	uint64 timeLimit;				/* time in ns that the task/isr may with a timeframe */
+	OsLockingtimeType *lockingTime;	/* ROM, resource/interrupt locktimes */
 } OsTimingProtectionType;
 
 #if OS_RESOURCE_CNT!=0

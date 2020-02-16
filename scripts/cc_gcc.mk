@@ -43,13 +43,14 @@ cflags-$(CFG_OPT_FLAGS)   += $(SELECT_OPT)
 # Remove sections if needed.. may be problems with other compilers here.
 #cflags-y += -ffunction-sections
 
-ifneq ($(filter -O2 -O3 -O1,$(cflags-y)),) 
-	cflags-y += -fno-schedule-insns -fno-schedule-insns2
-endif
+#ifneq ($(filter -O2 -O3 -O1,$(cflags-y)),) 
+#	cflags-y += -fno-schedule-insns -fno-schedule-insns2
+#endif
 
 cflags-y += -c
 #cflags-y 		+= -fno-common
 cflags-y 		+= -std=gnu99
+cflags-$(CFG_CLANG_SAFECODE) += -fmemsafety
 
 # Generate dependencies
 cflags-y 		+= -MMD
@@ -88,7 +89,7 @@ CCOUT 		= -o $@
 # ---------------------------------------------------------------------------
 # Preprocessor
 
-CPP	= 	$(CC) -E
+CPP	= 	$(CC) -E -P
 CPPOUT = -o
 CPP_ASM_FLAGS = -x assembler-with-cpp 
 
@@ -144,7 +145,11 @@ LD = $(CROSS_COMPILE)ld
 LD_FILE = -T
 
 LDOUT 		= -o $@
+ifeq ($(CROSS_COMPILE),)
+TE=out
+else
 TE = elf
+endif
 
 
 #LDFLAGS += --gc-section

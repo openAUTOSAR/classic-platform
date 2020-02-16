@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 
 // 904 PC-Lint: OK. Allow VALIDATE, VALIDATE_RV and VALIDATE_NO_RV to return value.
@@ -60,7 +59,8 @@ typedef enum
 //lint -esym(551,dcmState)	PC-Lint - Turn of warning of dcmState not accessed when having DCM_DEV_ERROR_DETECT to STD_OFF
 static Dcm_StateType dcmState = DCM_UNINITIALIZED;
 
-
+/* Global configuration */
+const Dcm_ConfigType *Dcm_ConfigPtr;
 /*********************************************
  * Interface for upper layer modules (8.3.1) *
  *********************************************/
@@ -76,13 +76,14 @@ static Dcm_StateType dcmState = DCM_UNINITIALIZED;
  * Procedure:	Dcm_Init
  * Reentrant:	No
  */
-void Dcm_Init(void) /** @req DCM037 */
+void Dcm_Init(const Dcm_ConfigType *ConfigPtr) /** @req DCM037 */
 {
-	VALIDATE_NO_RV((DCM_Config.Dsl != NULL) && (DCM_Config.Dsd != NULL) && (DCM_Config.Dsp != NULL), DCM_INIT_ID, DCM_E_CONFIG_INVALID);
+	VALIDATE_NO_RV(((NULL != ConfigPtr) && (NULL != ConfigPtr->Dsl) && (NULL != ConfigPtr->Dsd) && (NULL != ConfigPtr->Dsp)), DCM_INIT_ID, DCM_E_CONFIG_INVALID);
 
+	Dcm_ConfigPtr = ConfigPtr;
 	DslInit();
 	DsdInit();
-	DspInit();
+	DspInit(TRUE);
 
 	dcmState = DCM_INITIALIZED;
 
@@ -106,27 +107,32 @@ void Dcm_MainFunction(void) /** @req DCM362 */
 /***********************************************
  * Interface for BSW modules and SW-Cs (8.3.2) *
  ***********************************************/
-BufReq_ReturnType Dcm_ProvideRxBuffer(PduIdType dcmRxPduId, PduLengthType tpSduLength, PduInfoType **pduInfoPtr)
+BufReq_ReturnType Dcm_StartOfReception(PduIdType dcmRxPduId, PduLengthType tpSduLength, PduLengthType *rxBufferSizePtr)
 {
 	BufReq_ReturnType returnCode;
 
-	VALIDATE_RV(dcmState == DCM_INITIALIZED, DCM_PROVIDE_RX_BUFFER_ID, DCM_E_UNINIT, BUFREQ_NOT_OK);
-	VALIDATE_RV(dcmRxPduId < DCM_DSL_RX_PDU_ID_LIST_LENGTH, DCM_PROVIDE_RX_BUFFER_ID, DCM_E_PARAM, BUFREQ_NOT_OK);
+	VALIDATE_RV(dcmState == DCM_INITIALIZED, DCM_START_OF_RECEPTION_ID, DCM_E_UNINIT, BUFREQ_NOT_OK);
+	VALIDATE_RV(dcmRxPduId < DCM_DSL_RX_PDU_ID_LIST_LENGTH, DCM_START_OF_RECEPTION_ID, DCM_E_PARAM, BUFREQ_NOT_OK);
 
-	//lint --e(929)		// PC-Lint exception, MISRA 11.4 Ok by atosar
-	//lint --e(960)		// PC-Lint exception, MISRA 11.5 Ok by atosar
-	returnCode = DslProvideRxBufferToPdur(dcmRxPduId, tpSduLength, (const PduInfoType**)pduInfoPtr);
+	returnCode = DslStartOfReception(dcmRxPduId, tpSduLength, rxBufferSizePtr);
 
 	return returnCode;
 }
 
-
-void Dcm_RxIndication(PduIdType dcmRxPduId, NotifResultType result)
+BufReq_ReturnType Dcm_CopyRxData(PduIdType dcmRxPduId, PduInfoType *pduInfoPtr, PduLengthType *rxBufferSizePtr)
 {
-	VALIDATE_NO_RV(dcmState == DCM_INITIALIZED, DCM_RX_INDICATION_ID, DCM_E_UNINIT);
-	VALIDATE_NO_RV(dcmRxPduId < DCM_DSL_RX_PDU_ID_LIST_LENGTH, DCM_RX_INDICATION_ID, DCM_E_PARAM);
+	VALIDATE_RV(dcmState == DCM_INITIALIZED, DCM_COPY_RX_DATA_ID, DCM_E_UNINIT, BUFREQ_NOT_OK);
+	VALIDATE_RV(dcmRxPduId < DCM_DSL_RX_PDU_ID_LIST_LENGTH, DCM_COPY_RX_DATA_ID, DCM_E_PARAM, BUFREQ_NOT_OK);
 
-	DslRxIndicationFromPduR(dcmRxPduId, result);
+	return DslCopyDataToRxBuffer(dcmRxPduId, pduInfoPtr, rxBufferSizePtr);
+}
+
+void Dcm_TpRxIndication(PduIdType dcmRxPduId, NotifResultType result)
+{
+	VALIDATE_NO_RV(dcmState == DCM_INITIALIZED, DCM_TP_RX_INDICATION_ID, DCM_E_UNINIT);
+	VALIDATE_NO_RV(dcmRxPduId < DCM_DSL_RX_PDU_ID_LIST_LENGTH, DCM_TP_RX_INDICATION_ID, DCM_E_PARAM);
+
+	DslTpRxIndicationFromPduR(dcmRxPduId, result);
 }
 
 
@@ -136,7 +142,7 @@ Std_ReturnType Dcm_GetActiveProtocol(Dcm_ProtocolType *activeProtocol)
 
 	VALIDATE_RV(dcmState == DCM_INITIALIZED, DCM_GET_ACTIVE_PROTOCOL_ID, DCM_E_UNINIT, E_NOT_OK);
 
-	/* According to 3.1.5 spec. E_OK should always be returned.
+	/* According to 4.0.3 spec. E_OK should always be returned.
 	 * But if there is no active protocol? */
 	returnCode = DslGetActiveProtocol(activeProtocol);
 
@@ -147,7 +153,7 @@ Std_ReturnType Dcm_GetActiveProtocol(Dcm_ProtocolType *activeProtocol)
 Std_ReturnType Dcm_GetSecurityLevel(Dcm_SecLevelType *secLevel)
 {
 	VALIDATE_RV(dcmState == DCM_INITIALIZED, DCM_GET_SECURITY_LEVEL_ID, DCM_E_UNINIT, E_NOT_OK);
-	/* According to 3.1.5 spec. E_OK should always be returned.
+	/* According to 4.0.3 spec. E_OK should always be returned.
 	 * So if we cannot get the current security level using DslGetSecurityLevel,
 	 * and this probably due to that there is no active protocol,
 	 * we report the default security level according to DCM033 */
@@ -161,7 +167,7 @@ Std_ReturnType Dcm_GetSecurityLevel(Dcm_SecLevelType *secLevel)
 Std_ReturnType Dcm_GetSesCtrlType(Dcm_SesCtrlType *sesCtrlType)
 {
 	VALIDATE_RV(dcmState == DCM_INITIALIZED, DCM_GET_SES_CTRL_TYPE_ID, DCM_E_UNINIT, E_NOT_OK);
-	/* According to 3.1.5 spec. E_OK should always be returned.
+	/* According to 4.0.3 spec. E_OK should always be returned.
 	 * So if we cannot get the current session using DslGetSesCtrlType,
 	 * and this probably due to that there is no active protocol,
 	 * we report the default session according to  DCM034 */
@@ -171,25 +177,19 @@ Std_ReturnType Dcm_GetSesCtrlType(Dcm_SesCtrlType *sesCtrlType)
 	return E_OK;
 }
 
-BufReq_ReturnType Dcm_ProvideTxBuffer(PduIdType dcmTxPduId, PduInfoType **pduInfoPtr, PduLengthType length)
+void Dcm_TpTxConfirmation(PduIdType dcmTxPduId, NotifResultType result)
 {
-	BufReq_ReturnType returnCode;
+	VALIDATE_NO_RV(dcmState == DCM_INITIALIZED, DCM_TP_TX_CONFIRMATION_ID, DCM_E_UNINIT);
+	VALIDATE_NO_RV(dcmTxPduId < DCM_DSL_TX_PDU_ID_LIST_LENGTH, DCM_TP_TX_CONFIRMATION_ID, DCM_E_PARAM);
 
-	VALIDATE_RV(dcmState == DCM_INITIALIZED, DCM_PROVIDE_TX_BUFFER_ID, DCM_E_UNINIT, BUFREQ_NOT_OK);
-	VALIDATE_RV(dcmTxPduId < DCM_DSL_NOF_TX_PDU_ID, DCM_PROVIDE_TX_BUFFER_ID, DCM_E_PARAM, BUFREQ_NOT_OK);
-
-	//lint --e(929)		// PC-Lint exception, MISRA 11.4 Ok by atosar
-	//lint --e(960)		// PC-Lint exception, MISRA 11.5 Ok by atosar
-	returnCode = DslProvideTxBuffer(dcmTxPduId, (const PduInfoType**)pduInfoPtr, length);
-
-	return returnCode;
+	DslTpTxConfirmation(dcmTxPduId, result);
 }
 
-void Dcm_TxConfirmation(PduIdType dcmTxPduId, NotifResultType result)
+BufReq_ReturnType Dcm_CopyTxData(PduIdType dcmTxPduId, PduInfoType *pduInfoPtr, RetryInfoType *periodData, PduLengthType *txDataCntPtr)
 {
-	VALIDATE_NO_RV(dcmState == DCM_INITIALIZED, DCM_TX_CONFIRMATION_ID, DCM_E_UNINIT);
-	VALIDATE_NO_RV(dcmTxPduId < DCM_DSL_NOF_TX_PDU_ID, DCM_TX_CONFIRMATION_ID, DCM_E_PARAM);
+	VALIDATE_RV(dcmState == DCM_INITIALIZED, DCM_COPY_TX_DATA_ID, DCM_E_UNINIT, BUFREQ_NOT_OK);
+	VALIDATE_RV(dcmTxPduId < DCM_DSL_TX_PDU_ID_LIST_LENGTH, DCM_COPY_TX_DATA_ID, DCM_E_PARAM, BUFREQ_NOT_OK);
 
-	DslTxConfirmation(dcmTxPduId, result);
+	return DslCopyTxData(dcmTxPduId, pduInfoPtr, periodData, txDataCntPtr);
+
 }
-

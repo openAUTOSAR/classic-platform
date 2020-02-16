@@ -1,0 +1,83 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+########################################################
+# Hidden parameters in NmGlobalConstants
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: NmNumberOfChannels
+  
+########################################################
+# Hidden parameters in NmGlobalProperties
+########################################################  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   NmCycletimeMainFunction
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   NmDevErrorDetect
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   NmVersionInfoApi
+  
+########################################################
+# Hidden parameters in NmGlobalFeatures
+########################################################  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   NmBusSynchronizationEnabled
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   NmCarWakeUpCallback
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   NmCarWakeUpRxEnabled
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   NmComUserDataSupport
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   NmCoordinatorSupportEnabled
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   NmGlobalCoordinatorTime
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   NmRemoteSleepIndEnabled
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   NmRepeatMsgIndEnabled
+  
+########################################################
+# Hidden parameters in NmChannelConfig
+########################################################  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   NmActiveCoordinator
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   NmChannelId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   NmChannelSleepMaster
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   NmCoordClusterIndex
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   NmPassiveModeEnabled
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   NmShutdownDelayTimer
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   NmStateReportEnabled
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   NmSynchronizingNetwork
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   NmStateReportSignalRef 
+  
+########################################################
+# Hidden parameters in NmGenericBusNmConfig
+########################################################  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name:   NmGenericBusNmPrefix

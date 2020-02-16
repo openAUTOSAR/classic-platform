@@ -1,0 +1,171 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+  
+########################################################
+# Hidden parameters in SoAdDemEventParameterRefs
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SOAD_E_INTR
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SOAD_E_IO
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SOAD_E_UPPERBUFF  
+  
+########################################################
+# Hidden parameters in SoAdDoIpConfig
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdDoIpControlTimeout
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdDoIpHostNameOpt
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdDoIpResponseTimeout   
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdDoIpVidAnnounceMinWait     
+########################################################
+# Hidden parameters in SoAdDoIpRoute
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdDoIpSocketConnectionRef
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdDoIpSourceAddress
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdDoIpTargetAddress  
+  
+########################################################
+# Hidden parameters in SoAdGeneral
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdCallbackApi
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdIPv6AddressEnabled
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdSocketCount        
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdUdpNmApiEnabled 
+    
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdXcpApiEnabled  
+  
+########################################################
+# Hidden parameters in SoAdPduRoute
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdDestinationId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdSourcePduId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdTxConfirmationUL      
+    
+########################################################
+# Hidden parameters in SoAdSocketConnection
+######################################################## 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdPduHeaderEnable
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdSocketId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdSocketLocalIpAddress
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdSocketTcpInitiate 
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdSocketTcpNoDelay 
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdSocketUdpListenOnly
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdSocketAutosarApi
+########################################################
+# Hidden parameters in SoAdSocketRoute
+######################################################## 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdRxIndicationUL
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdSourceId
+    
+########################################################
+# Hidden parameters in SoAdDoIpEid
+########################################################      
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdDoIpEidByteIndex
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SoAdDoIpEidByteValue
+
+########################################################
+# Hidden parameters in SoAdDoIpEid
+########################################################      
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SOAD_E_AGAIN
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SOAD_E_CONNABORTED   
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SOAD_E_CONNREFUSED
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SOAD_E_CONNRESET 
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SOAD_E_HOSTDOWN
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SOAD_E_HOSTUNREACH  
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SOAD_E_NETDOWN
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SOAD_E_NETRESET   
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SOAD_E_NETUNREACH
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SOAD_E_NOTCONN 
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SOAD_E_PIPE
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SOAD_E_SDULENGTH   
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SOAD_E_TIMEDOUT                  
+  
+#########################################################
+# Parameter groups
+#########################################################
+# SoAdDoIpConfig
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Vehicle Announcement Settings
+  members: [ ArcSocketAnnouncementRef, SoAdDoIpVidAnnounceInterval, SoAdDoIpVidAnnounceMaxWait, SoAdDoIpVidAnnounceMinWait,SoAdDoIpVidAnnounceNum ]
+  
+# SoAdGeneral
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: TcpIp Settings
+  members: [ SoAdTcpIpMainFunctionPeriod, SoAdTcpIpVersionInfoApi ]
+
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: DoIp Settings
+  members: [ SoAdDoIpActive, SoAdDoIpVersionInfoApi, ArcDoIpPowerModeCallbackFunction ]
+      

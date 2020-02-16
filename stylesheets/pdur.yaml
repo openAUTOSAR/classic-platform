@@ -1,0 +1,101 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+########################################################
+# Hidden parameters in PduRBswModules
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PduRCancelReceive
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PduRCancelTransmit
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PduRChangeParameterRequestApi
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PduRCommunicationInterface
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PduRRetransmission
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PduRTransportProtocol
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PduRTriggertransmit
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PduRTxConfirmation
+    
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PduRUseTag
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PduRBswModuleRef
+
+########################################################
+# Hidden parameters in PduRRoutingPathGroup
+########################################################
+- !!com.arccore.common.yaml.data.styles.DisabledContainer
+  name: PduRRoutingPathGroup
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PduRIsEnabledAtInit
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PduRRoutingPathGroupId
+
+########################################################
+# Hidden parameters in PduRRoutingTable
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PduRIsMinimumRouting
+  
+
+########################################################
+# PduRRoutingTables
+########################################################
+  
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Maximum Number of Items
+  members: [ ArcPduRMaxRouteCount]
+
+
+########################################################
+# Hidden parameters in PduRDestPdu
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PduRDestPduHandleId
+  
+#- !!com.arccore.common.yaml.data.styles.HiddenParameter
+#  name: PduRTpThreshold
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PduRTransmissionConfirmation
+
+########################################################
+# Hidden parameters in PduRSrcPdu
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PduRSourcePduHandleId
+
+########################################################
+# Hidden parameters in PduRTpBufferTable
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PduRMaxTpBufferNumber
+
+########################################################
+# Hidden parameters in PduRTxBufferTable
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PduRMaxTxBufferNumber
+
+########################################################
+# Hidden parameters in PduRTxBuffer
+########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: PduRTxBufferDepth
+
+

@@ -1,0 +1,28 @@
+
+
+/* Harmonize MEMORY 
+ * In linker file use:
+ * ORIGIN and LENGTH
+ * RAM and FLASH
+ * 
+ * E.g.
+ * RAM : ORIGIN = 0, LENGTH = 123
+ */
+
+#if defined(__CWCC__)
+#define ORIGIN	origin
+#define LENGTH	length
+#endif
+/*
+#define RAM	ram
+#define FLASH flash 
+#elif defined(__GNUC__)
+#define RAM ram(RW)
+#define FLASH flash(R)
+#else
+#define FLASH flash
+#define  RAM   ram
+#endif
+*/
+ 
+  

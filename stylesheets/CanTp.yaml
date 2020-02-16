@@ -1,0 +1,56 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+# Container CanTpGeneral
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanTpChangeParameterApi
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanTpReadParameterApi
+  
+# Container CanTpChannel
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanTpChannelMode
+
+# Container CanTpRxNSdu 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanTpRxNSduId
+  
+# Container CanTpRxNPdu  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanTpRxNPduId
+
+# Container CanTpTxFcNPdu  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanTpTxFcNPduConfirmationPduId 
+
+# Container CanTpTxNSdu  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanTpTc
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanTpTxNSduId
+
+# Container  CanTpTxNPdu 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanTpTxNPduConfirmationPduId 
+
+# Container CanTpRxFcNPdu  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanTpRxFcNPduId 
+  
+# Container  CanTpNAe 
+- !!com.arccore.common.yaml.data.styles.DisabledContainer
+  name: CanTpNAe
+
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Timing Parameters
+  members: [ CanTpNar, CanTpNbr, CanTpNcr, CanTpSTmin ]
+
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Timing Parameters
+  members: [ CanTpNas, CanTpNbs, CanTpNcs ]
+
+- !!com.arccore.common.yaml.data.styles.DisplayName
+  name: CanTpMaxSDUs
+  display: Can Tp Max SDUs

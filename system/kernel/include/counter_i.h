@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 #ifndef COUNTER_I_H_
 #define COUNTER_I_H_
@@ -39,27 +38,24 @@
  */
 
 typedef struct OsCounter {
-	char name[16];
-	// hardware or software counter, SWS OS255
-	_Bool type;
-	// Ticks or nano, SWS OS331
-	_Bool unit;
-	// The counter value ( if software counter )
-	uint32_t val;
-	// Application mask, SWS OS317
+	char 	name[16];
+	_Bool 	type;			/* hardware or software counter, SWS OS255 */
+	_Bool 	unit;			/* Ticks or nano, SWS OS331 */
+
+	uint32_t val;			/* The counter value ( if software counter ) */
 #if (OS_USE_APPLICATIONS == STD_ON)
 	ApplicationType applOwnerId;
-	uint32 accessingApplMask;
+	uint32 			accessingApplMask;		/* Application mask, SWS OS317 */
 #endif
-	//  hmm, strange to call it alarm base.... but see spec.
+
 	AlarmBaseType alarm_base;
-	/* Used only if we configure a GPT timer as os timer */
-	OsDriver *driver;
-	/* List of alarms this counter is connected to
-	 * Overkill ??? Could have list of id's here, but easier to debug this way*/
-	SLIST_HEAD(slist,OsAlarm) alarm_head;
-	/* List of scheduletable connected to this counter */
-	SLIST_HEAD(sclist,OsSchTbl) sched_head;
+	OsDriver *	driver;						/* Used only if we configure a GPT timer as os timer */
+
+	SLIST_HEAD(slist,OsAlarm) alarm_head;	/* List of alarms this counter is connected to
+											 * Overkill ??? Could have list of id's here,
+											 * but easier to debug this way */
+
+	SLIST_HEAD(sclist,OsSchTbl) sched_head;	/* List of schedule-table connected to this counter */
 } OsCounterType;
 
 
@@ -99,7 +95,6 @@ static inline ApplicationType Os_CounterGetApplicationOwner( CounterType id ) {
 }
 
 
-
 static inline TickType Os_CounterDiff( TickType curr, TickType old, TickType max ) {
 	/* + 1 here because it do diff one between OSMAXALLOWEDVALUE and 0.
 	 * That is, if curr = 0, max = 9 and old = 0, then the diff should be 1.
@@ -107,7 +102,14 @@ static inline TickType Os_CounterDiff( TickType curr, TickType old, TickType max
 	return (curr >= old ) ? (curr - old) : (curr + (max - old) + 1);
 }
 
-
+/**
+ * Add value to a counter (that have a max value )
+ *
+ * @param curr	The current counter value
+ * @param max	The max value of the counter
+ * @param add	The value do add
+ * @return
+ */
 static inline TickType Os_CounterAdd( TickType curr, TickType max, TickType add ) {
 	TickType diff = max - curr;
 	TickType result;

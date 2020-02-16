@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 
 //lint -esym(960,8.7)	PC-Lint misunderstanding of Misra 8.7 for Com_SystenEndianness and endianess_test
@@ -25,6 +24,9 @@
 #include "Com_misc.h"
 #include "debug.h"
 #include "Cpu.h"
+#include "Uart.h"
+/* Declared in Com_Cfg.c */
+extern const ComNotificationCalloutType ComNotificationCallouts[];
 
 static void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByteLength,
 		Com_BitPositionType segmentStartBitOffset, uint8 segmentBitLength, boolean signedOutput);
@@ -32,29 +34,37 @@ static void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByte
 static void Com_WriteDataSegment(uint8 *pdu, uint8 *pduSignalMask, const uint8 *signalDataPtr, uint8 destByteLength,
 		Com_BitPositionType segmentStartBitOffset, uint8 segmentBitLength);
 
-void Com_CopySignalGroupDataFromShadowBufferToPdu(const Com_SignalIdType signalGroupId) {
+void Com_CopySignalGroupDataFromShadowBufferToPdu(const Com_SignalIdType signalGroupId, boolean deferredBufferDestination, boolean *dataChanged) {
 
 	// Get PDU
 	const ComSignal_type * Signal = GET_Signal(signalGroupId);
 	const ComIPdu_type *IPdu = GET_IPdu(Signal->ComIPduHandleId);
+	Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(Signal->ComHandleId);
 
 	uint8 *pduDataPtr = 0;
-	if (IPdu->ComIPduSignalProcessing == DEFERRED && IPdu->ComIPduDirection == RECEIVE) {
-		pduDataPtr = IPdu->ComIPduDeferredDataPtr;
+	if (deferredBufferDestination) {
+		pduDataPtr = GET_ArcIPdu(Signal->ComIPduHandleId)->ComIPduDeferredDataPtr;
 	} else {
-		pduDataPtr = IPdu->ComIPduDataPtr;
+		pduDataPtr = GET_ArcIPdu(Signal->ComIPduHandleId)->ComIPduDataPtr;
 	}
 
 	// Aligned opaque data -> straight copy with signalgroup mask
-	uint8 *buf = (uint8 *)Signal->Com_Arc_ShadowBuffer;
-	for(int i= 0; i < IPdu->ComIPduSize; i++){
-		*pduDataPtr = (~Signal->Com_Arc_ShadowBuffer_Mask[i] & *pduDataPtr) |
-					  (Signal->Com_Arc_ShadowBuffer_Mask[i] & *buf);
-		buf++;
-		pduDataPtr++;
-	}
+    uint8 *buf = (uint8 *)Arc_Signal->Com_Arc_ShadowBuffer;
+    uint8 data = 0;
+    *dataChanged = FALSE;
+    for(int i= 0; i < IPdu->ComIPduSize; i++){
+        data = (~Signal->Com_Arc_ShadowBuffer_Mask[i] & *pduDataPtr) |
+               (Signal->Com_Arc_ShadowBuffer_Mask[i] & *buf);
+        if(*pduDataPtr != data) {
+            *dataChanged = TRUE;
+        }
+        *pduDataPtr = data;
+        buf++;
+        pduDataPtr++;
+    }
 
 }
+
 
 void Com_CopySignalGroupDataFromPduToShadowBuffer(const Com_SignalIdType signalGroupId) {
 
@@ -64,13 +74,13 @@ void Com_CopySignalGroupDataFromPduToShadowBuffer(const Com_SignalIdType signalG
 
 	const uint8 *pduDataPtr = 0;
 	if (IPdu->ComIPduSignalProcessing == DEFERRED && IPdu->ComIPduDirection == RECEIVE) {
-		pduDataPtr = IPdu->ComIPduDeferredDataPtr;
+		pduDataPtr = GET_ArcIPdu(Signal->ComIPduHandleId)->ComIPduDeferredDataPtr;
 	} else {
-		pduDataPtr = IPdu->ComIPduDataPtr;
+		pduDataPtr = GET_ArcIPdu(Signal->ComIPduHandleId)->ComIPduDataPtr;
 	}
 
 	// Aligned opaque data -> straight copy with signalgroup mask
-	uint8 *buf = (uint8 *)Signal->Com_Arc_ShadowBuffer;
+	uint8 *buf = (uint8 *)GET_ArcSignal(Signal->ComHandleId)->Com_Arc_ShadowBuffer;
 	for(int i= 0; i < IPdu->ComIPduSize; i++){
 		*buf++ = Signal->Com_Arc_ShadowBuffer_Mask[i] & *pduDataPtr++;
 	}
@@ -117,8 +127,8 @@ void Com_ReadSignalDataFromPduBuffer(
 
 	if (signalEndianess == COM_OPAQUE || signalType == UINT8_N) {
 		// Aligned opaque data -> straight copy
+		/* @req COM472 */
 		memcpy(signalDataBytes, pduBufferBytes, destSize);
-
 	} else {
 		// Unaligned data and/or endianness conversion
 
@@ -135,6 +145,7 @@ void Com_ReadSignalDataFromPduBuffer(
 					signalDataBytesArray, pduBufferBytes_swap, destSize,
 					startBitOffset, bitSize,
 					SignalTypeSignedness(signalType));
+
 			//lint -restore
 		} else {
 			startBitOffset = motorolaBitNrToPduOffset(bitPosition%8);
@@ -143,6 +154,8 @@ void Com_ReadSignalDataFromPduBuffer(
 					startBitOffset, bitSize,
 					SignalTypeSignedness(signalType));
 		}
+
+
 
 		if (Com_SystemEndianness == COM_BIG_ENDIAN) {
 			// Straight copy
@@ -161,6 +174,8 @@ void Com_ReadSignalDataFromPduBuffer(
 			//lint --e(506)	PC-Lint exception Misra 13.7, 14.1, Allow boolean to always be false.
 			assert(0);
 		}
+
+
 	}
 	Irq_Restore(state);
 }
@@ -168,33 +183,40 @@ void Com_ReadSignalDataFromPduBuffer(
 
 void Com_WriteSignalDataToPdu(
 			const Com_SignalIdType signalId,
-			const void *signalData) {
+			const void *signalData,
+			boolean * dataChanged) {
 
 	// Get PDU
 	const ComSignal_type *Signal     = GET_Signal(signalId);
-	const ComIPdu_type   *IPdu       = GET_IPdu(Signal->ComIPduHandleId);
+	const Com_Arc_IPdu_type   *Arc_IPdu       = GET_ArcIPdu(Signal->ComIPduHandleId);
+
 
 	// Get data
 	Com_WriteSignalDataToPduBuffer(
 			signalId,
 			FALSE,
 			signalData,
-			IPdu->ComIPduDataPtr);
+			Arc_IPdu->ComIPduDataPtr,
+			dataChanged);
+//	pi_printf("infor: com write Pdu = "); mini_uart_sendDec((int*) Arc_IPdu->ComIPduDataPtr); pi_printf("\r\n");
 }
 
 void Com_WriteSignalDataToPduBuffer(
 			const uint16 signalId,
 			const boolean isGroupSignal,
 			const void *signalData,
-			void *pduBuffer) {
+			void *pduBuffer,
+			boolean *dataChanged) {
 	// TODO: Implement writing little-endian signals
-
+	/* @req COM221 */
+	/* @req COM353 */
 	Com_SignalType signalType;
 	uint8 signalLength;
 	Com_BitPositionType bitPosition;
 	uint8 bitSize;
 	ComSignalEndianess_type endian;
 
+	*dataChanged = FALSE;
 	if (!isGroupSignal) {
 		const ComSignal_type * Signal =  GET_Signal(signalId);
 		signalType = Signal->ComSignalType;
@@ -223,8 +245,12 @@ void Com_WriteSignalDataToPduBuffer(
 	if (endian == COM_OPAQUE || signalType == UINT8_N) {
 		//assert(bitPosition % 8 == 0);
 		//assert(bitSize % 8 == 0);
+		/* @req COM472 */
 		uint8 *pduBufferBytes = (uint8 *)pduBuffer;
 		uint8 startFromPduByte = bitPosition / 8;
+		if( 0 != memcmp(pduBufferBytes + startFromPduByte, signalDataBytes, signalLength) ) {
+		    *dataChanged = TRUE;
+		}
 		memcpy(pduBufferBytes + startFromPduByte, signalDataBytes, signalLength);
 	} else {
 		if (Com_SystemEndianness == COM_BIG_ENDIAN) {
@@ -245,37 +271,43 @@ void Com_WriteSignalDataToPduBuffer(
 			assert(0);
 		}
 
-		if (endian == COM_BIG_ENDIAN) {
-			Com_BitPositionType startBitOffset = motorolaBitNrToPduOffset(bitPosition%8);
-			uint8 pduBufferBytesStraight[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        if (endian == COM_BIG_ENDIAN) {
+            Com_BitPositionType startBitOffset = motorolaBitNrToPduOffset(bitPosition%8);
+            uint8 pduBufferBytesStraight[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 			Com_WriteDataSegment(pduBufferBytesStraight, pduSignalMask,
 					signalDataBytesArray, signalBufferSize, startBitOffset, bitSize);
 
-			// Straight copy into real pdu buffer (with mutex)
-			uint8 *pduBufferBytes = ((uint8 *)pduBuffer)+(bitPosition/8);
-			uint8 i;
-			for (i = 0; i < 8; i++) {
-				pduBufferBytes[ i ]  &=        ~( pduSignalMask[ i ] );
-				pduBufferBytes[ i ]  |=  pduBufferBytesStraight[ i ];
-			}
+            // Straight copy into real pdu buffer (with mutex)
+            uint8 *pduBufferBytes = ((uint8 *)pduBuffer)+(bitPosition/8);
+            uint8 i;
+            for (i = 0; i < 8; i++) {
+                if( pduBufferBytesStraight[i] != (pduBufferBytes[i]  & pduSignalMask[i]) ) {
+                    *dataChanged = TRUE;
+                }
+                pduBufferBytes[ i ]  &=        ~( pduSignalMask[ i ] );
+                pduBufferBytes[ i ]  |=  pduBufferBytesStraight[ i ];
+            }
 
-		} else {
-			uint8 startBitOffset = intelBitNrToPduOffset(bitPosition%8, bitSize, 64);
-			uint8 pduBufferBytesSwapped[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        } else {
+            uint8 startBitOffset = intelBitNrToPduOffset(bitPosition%8, bitSize, 64);
+            uint8 pduBufferBytesSwapped[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-			Com_WriteDataSegment(pduBufferBytesSwapped, pduSignalMask,
-					signalDataBytesArray, signalBufferSize, startBitOffset, bitSize);
+            Com_WriteDataSegment(pduBufferBytesSwapped, pduSignalMask,
+                    signalDataBytesArray, signalBufferSize, startBitOffset, bitSize);
 
-			// Swapped copy into real pdu buffer (with mutex)
-			uint8 *pduBufferBytes = ((uint8 *)pduBuffer)+(bitPosition/8);
-			uint8 i;
-			// actually it is only necessary to iterate through the bytes that are written.
-			for (i = 0; i < 8; i++) {
-				pduBufferBytes[ i ]  &=       ~( pduSignalMask[ (8 - 1) - i ] );
-				pduBufferBytes[ i ]  |=  pduBufferBytesSwapped[ (8 - 1) - i ];
-			}
-		}
+            // Swapped copy into real pdu buffer (with mutex)
+            uint8 *pduBufferBytes = ((uint8 *)pduBuffer)+(bitPosition/8);
+            uint8 i;
+            // actually it is only necessary to iterate through the bytes that are written.
+            for (i = 0; i < 8; i++) {
+                if( pduBufferBytesSwapped[(8 - 1) - i] != (pduBufferBytes[i] & (pduSignalMask[(8 - 1) - i])) ) {
+                    *dataChanged = TRUE;
+                }
+                pduBufferBytes[ i ]  &=       ~( pduSignalMask[ (8 - 1) - i] );
+                pduBufferBytes[ i ]  |=  pduBufferBytesSwapped[ (8 - 1) - i ];
+            }
+        }
 	}
 	Irq_Restore(irq_state);
 }
@@ -324,7 +356,7 @@ static void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByte
 	uint16 shiftReg = 0;
 
 	boolean negative;
-
+	/* @req COM008 */
 	if ( signedOutput && (*(source + sourceStartByte) & (0x80u >> segmentStartBitOffsetInsideByte)) ) {
 		negative = TRUE;
 		sourceStartByteMask = (0xFF00u >> segmentStartBitOffsetInsideByte);
@@ -387,13 +419,15 @@ static void Com_ReadDataSegment(uint8 *dest, const uint8 *source, uint8 destByte
 			destByteNr++;
 		} while (destByteNr < segmentByteLength);
 	}
+
+
 }
 
 /*
  * Copies the <segmentBitLength> least significant bits from <signal> into <pdu>.
  * The bit segment is placed in <pdu> so that the most significant bit ends up
  * at <segmentStartBitOffset> from the msb of <pdu>.
- * <pduSignalMask> is cleared and written to contain a mask with 1´s where the
+ * <pduSignalMask> is cleared and written to contain a mask with 1ï¿½s where the
  * signal is located in the <pdu>.
  */
 void Com_WriteDataSegment(uint8 *pdu, uint8 *pduSignalMask, const uint8 *signalDataPtr, uint8 destByteLength,
@@ -487,30 +521,39 @@ Com_BitPositionType intelBitNrToPduOffset (Com_BitPositionType intelBitNr, Com_B
 }
 
 void Com_RxProcessSignals(const ComIPdu_type *IPdu,Com_Arc_IPdu_type *Arc_IPdu) {
+	/* !req COM053 */
+	/* @req COM055 */
+	/* !req COM396 */ /* Neither invalidation nor filtering supported */
+	/* !req COM352 */
 	const ComSignal_type *comSignal;
 	for (uint8 i = 0; IPdu->ComIPduSignalRef[i] != NULL; i++) {
 		comSignal = IPdu->ComIPduSignalRef[i];
 		Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(comSignal->ComHandleId);
 
 		// If this signal uses an update bit, then it is only considered if this bit is set.
+		/* @req COM324 */
+		/* @req COM067 */
 		if ( (!comSignal->ComSignalArcUseUpdateBit) ||
-			( (comSignal->ComSignalArcUseUpdateBit) && (TESTBIT(IPdu->ComIPduDataPtr, comSignal->ComUpdateBitPosition)) ) ) {
+			( (comSignal->ComSignalArcUseUpdateBit) && (TESTBIT(Arc_IPdu->ComIPduDataPtr, comSignal->ComUpdateBitPosition)) ) ) {
 
 			if (comSignal->ComTimeoutFactor > 0) { // If reception deadline monitoring is used.
 				// Reset the deadline monitoring timer.
+				/* @req COM715 */
 				Arc_Signal->Com_Arc_DeadlineCounter = comSignal->ComTimeoutFactor;
 			}
 
 			// Check the signal processing mode.
 			if (IPdu->ComIPduSignalProcessing == IMMEDIATE) {
 				// If signal processing mode is IMMEDIATE, notify the signal callback.
-				if (IPdu->ComIPduSignalRef[i]->ComNotification != NULL) {
-					IPdu->ComIPduSignalRef[i]->ComNotification();
+				/* @req COM300 */
+				/* @req COM301 */
+				if ((IPdu->ComIPduSignalRef[i]->ComNotification != COM_NO_FUNCTION_CALLOUT) &&
+					(ComNotificationCallouts[IPdu->ComIPduSignalRef[i]->ComNotification] != NULL) ) {
+					ComNotificationCallouts[IPdu->ComIPduSignalRef[i]->ComNotification]();
 				}
-
 			} else {
 				// Signal processing mode is DEFERRED, mark the signal as updated.
-				Arc_Signal->ComSignalUpdated = 1;
+				Arc_Signal->ComSignalUpdated = TRUE;
 			}
 
 		} else {
@@ -537,3 +580,46 @@ boolean isPduBufferLocked(PduIdType id) {
 PduIdType getPduId(const ComIPdu_type* IPdu) {
 	return (PduIdType)(IPdu - (ComConfig->ComIPdu));
 }
+
+void Com_Internal_UpdateShadowSignal(Com_SignalIdType SignalId, const void *SignalDataPtr) {
+	Com_Arc_GroupSignal_type *Arc_GroupSignal = GET_ArcGroupSignal(SignalId);
+	/* @req COM632 */
+	/* @req COM633 */ /* Sign extension? */
+	boolean dataChanged = FALSE;
+	Com_WriteSignalDataToPduBuffer(SignalId, TRUE, SignalDataPtr, (void *)Arc_GroupSignal->Com_Arc_ShadowBuffer, &dataChanged);
+}
+
+/* Helpers for getting and setting that a TX PDU confirmation status
+ * These function uses the ComSignalUpdated for the first signal within the Pdu. The
+ * ComSignalUpdated isn't used for anything else in TxSignals and it is mainly used
+ * in Rx signals.
+ * The reason is to save RAM.
+ */
+
+void SetTxConfirmationStatus(const ComIPdu_type *IPdu, boolean value) {
+
+    const ComSignal_type *signal = IPdu->ComIPduSignalRef[0];
+
+    if (signal != NULL) {
+        Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(signal->ComHandleId);
+        Arc_Signal->ComSignalUpdated = value;
+    }
+}
+
+boolean GetTxConfirmationStatus(const ComIPdu_type *IPdu) {
+
+    if (IPdu == NULL) {
+        return FALSE;
+    }
+
+    const ComSignal_type *signal = IPdu->ComIPduSignalRef[0];
+
+    if (signal == NULL) {
+        return FALSE;
+    }
+
+    Com_Arc_Signal_type * Arc_Signal = GET_ArcSignal(signal->ComHandleId);
+    return Arc_Signal->ComSignalUpdated;
+}
+
+

@@ -28,6 +28,34 @@
 #     $ make BOARDDIR= mpc551xsim BDIR=examples/simple all
 #
 
+# make BOARDDIR=bar
+# make BOARDDIR=foo/bar
+# -> board_name=BOARDDIR
+# -> board_path=foo
+
+
+# Some useful variables..
+comma:= ,
+empty:=
+space:= $(empty) $(empty)
+split = $(subst $(comma), ,$(1))
+
+# C:/apa -> /c/apa
+# ../tjo -> ../tjo
+to_msyspath = $(shell echo "$(1)" | sed -e 's,\\,\/,g;s,\([a-zA-Z]\):,/\1,')
+
+# Convert Path if on windows.
+ifeq ($(OS),Windows_NT)
+  	BDIR:=$(call to_msyspath,$(BDIR))
+endif
+
+USE_T32_SIM?=n
+export USE_T32_SIM
+
+# Tools
+# Ugly thing to make things work under cmd.exe 
+PATH := /usr/bin/:$(PATH) 
+FIND := $(shell which find)
 
 export UNAME:=$(shell uname)
 
@@ -47,11 +75,17 @@ endif
 export TOPDIR = $(CURDIR)
 export PATH
 
+#KVM-build variables
+ifeq ($(KVM), true)
+KVMDIR = ../../../j2me_cldc/build/autosar
+endif
+
+BOARDDIR = Raspberry_Pi
+
 # Select default console
-# RAMLOG | TTY_T32 | TTY_WINIDEA 
+# RAMLOG | TTY_T32 | TTY_WINIDEA
 export SELECT_OS_CONSOLE
 export SELECT_CONSOLE
-export USE_DEBUG_PRINTF
 export SELECT_OPT
 
 ifneq ($(filter clean_all,$(MAKECMDGOALS)),clean_all)
@@ -63,24 +97,40 @@ ifneq ($(filter clean_all,$(MAKECMDGOALS)),clean_all)
   endif
 endif
 
-# C:/apa -> /c/apa
-# ../tjo -> ../tjo
-to_msyspath = $(shell echo "$(1)" | sed -e 's,\\,\/,g;s,\([a-zA-Z]\):,/\1,')
+dir_cmd_goals  := $(call split,$(BDIR))
+cmd_cmd_goals := $(filter all clean config,$(MAKECMDGOALS))
 
-# Convert Path if on windows.
-ifeq ($(OS),Windows_NT)
-  	BDIR:=$(call to_msyspath,$(BDIR))
+# Check for CROSS_COMPILE
+ifneq ($(cmd_cmd_goals),)
+
+ifeq ($(findstring /,$(BOARDDIR)),)
+
+# Check that the board actually exist
+ifdef BOARDDIR
+  all_boards := $(subst /,,$(subst boards/,,$(shell $(FIND) boards/ -maxdepth 1 -type d)))
+  all_boards_print := $(subst $(space),$(comma)$(space),$(strip $(all_boards)))
+  ifeq ($(filter $(BOARDDIR),$(all_boards)),)
+  	$(error no such board: $(BOARDDIR), valid boards are: $(all_boards_print))
+  endif
 endif
 
-USE_T32_SIM?=n
-export USE_T32_SIM
+  export board_name:=$(BOARDDIR)
+  export board_path=$(CURDIR)/boards/$(board_name)
 
-# Tools
-# Ugly thing to make things work under cmd.exe 
-PATH := /usr/bin/:$(PATH) 
-FIND := $(shell which find)
+else
+  # it's a path, split into board_name and board_path (contains board_name)
+  tmp  :=$(subst /,$(space),$(BOARDDIR))
+  board_name:=$(strip $(word $(words $(tmp)),$(tmp)))
+  board_path:=$(BOARDDIR)
+  export board_name
+  export board_path
+endif
 
-export objdir = obj_$(BOARDDIR)
+# Check BDIR
+endif
+
+
+export objdir = obj_$(board_name)
 export CFG_MCU 
 export CFG_CPU
 export MCU
@@ -92,34 +142,13 @@ export def-y+=$(CFG_ARCH_$(ARCH)) $(CFG_MCU) $(CFG_CPU)
 # ROOTDIR - The top-most directory
 # SUBDIR - The current subdirectory it's building.
 
-comma:= ,
-empty:=
-space:= $(empty) $(empty)
-split = $(subst $(comma), ,$(1))
-dir_cmd_goals  := $(call split,$(BDIR))
-cmd_cmd_goals := $(filter all clean config,$(MAKECMDGOALS))
-
-# Check for CROSS_COMPILE
-ifneq ($(cmd_cmd_goals),)
-
-# Check that the board actually exist
-ifdef BOARDDIR
-  all_boards := $(subst /,,$(subst boards/,,$(shell $(FIND) boards/ -maxdepth 1 -type d)))
-  all_boards_print := $(subst $(space),$(comma)$(space),$(strip $(all_boards)))
-  ifeq ($(filter $(BOARDDIR),$(all_boards)),)
-  	$(error no such board: $(BOARDDIR), valid boards are: $(all_boards_print))
-  endif
-endif
-
-# Check BDIR
-endif
 
 libs:
 	mkdir -p $@
 
 .PHONY all:
 
-all: libs $(dir_cmd_goals)
+all: libs kvm $(dir_cmd_goals)
 
 .PHONY: clean
 .PHONY: release
@@ -153,15 +182,23 @@ ifeq ($(COMPILER),cw)
 	@echo "  CW_COMPILE:     $(CW_COMPILE) [$(origin CW_COMPILE)]"
 else ifeq ($(COMPILER),iar)	
 	@echo "  IAR_COMPILE:     $(IAR_COMPILE) [$(origin IAR_COMPILE)]"
+else ifeq ($(COMPILER),ghs)	
+	@echo "  GHS_COMPILE:     $(GHS_COMPILE) [$(origin GHS_COMPILE)]"	
 else 
+ifndef ($(CLANG_COMPILE),)
+	@echo "  CLANG_COMPILE:  $(CLANG_COMPILE) [$(origin CLANG_COMPILE)]"
+	@echo "  CFG_CLANG_SAFECODE:  $(CFG_CLANG_SAFECODE) [$(origin CFG_CLANG_SAFECODE)]"
+endif
 	@echo "  CROSS_COMPILE:  $(CROSS_COMPILE) [$(origin CROSS_COMPILE)]"
 endif
+	@echo "  SELECT_OPT:     $(SELECT_OPT) [$(origin SELECT_OPT)]"
 	@echo "  CURDIR:         $(CURDIR)"
 	@echo "  SELECT_CONSOLE: $(SELECT_CONSOLE) [$(origin SELECT_CONSOLE)]"
 	
 	
 	
-$(dir_cmd_goals) :: show_build FORCE 	
+	
+$(dir_cmd_goals) :: show_build FORCE
 	@echo ""
 	@echo ==========[ ${abspath $@}  ]===========
 	@if [ ! -d $@ ]; then echo "No such directory: \"$@\" quitting"; exit 1; fi
@@ -186,7 +223,7 @@ clean_all:
 config: $(dir_cmd_goals)	
 	
 .PHONY clean:	
-clean: $(dir_cmd_goals)
+clean: clean_kvm $(dir_cmd_goals)
 	@echo
 	@echo "  >> Cleaning MAIN $(CURDIR)"
 #	$(Q)find . -type d -name $(objdir) | xargs rm -rf
@@ -196,7 +233,23 @@ clean: $(dir_cmd_goals)
 	@echo "  >>>>>>>>>  DONE  <<<<<<<<<"
 	@echo
 
-		
+kvm: 
+ifeq ($(KVM), true)
+	@echo "Starting recursive build of KVM..............................................."
+	cd $(KVMDIR); $(MAKE) USE_KNI=true ARM_EABI=true || exit 1; cd $(BUILDDIR);
+	@echo "KVM was successfully built..............................................."
+endif	
+
+clean_kvm: 
+ifeq ($(KVM), true)
+	@echo
+	@echo ">>>>>>>>> Cleaning KVM  <<<<<<<<<"
+	@echo
+	cd $(KVMDIR); $(MAKE) clean || exit 1; cd $(BUILDDIR);
+	@echo
+	@echo ">>>>>>>>>  KVM clean done  <<<<<<<<<"
+	@echo
+endif
 	
 
 

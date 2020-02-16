@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 
 
@@ -30,7 +29,9 @@ void Com_CopySignalGroupDataFromPduToShadowBuffer(
 
 // Copy Signal group data from shadowbuffer to Pdu
 void Com_CopySignalGroupDataFromShadowBufferToPdu(
-		const Com_SignalIdType signalGroupId);
+		const Com_SignalIdType signalGroupId,
+		boolean deferredBufferDestination,
+		boolean *dataChanged);
 
 // Read data from PDU
 void Com_ReadSignalDataFromPduBuffer(
@@ -42,13 +43,17 @@ void Com_ReadSignalDataFromPduBuffer(
 // write data to PDU
 void Com_WriteSignalDataToPdu(
 		const Com_SignalIdType signalId,
-		const void *signalData);
+		const void *signalData,
+		boolean *dataChanged);
 
 void Com_WriteSignalDataToPduBuffer(
 		const uint16 signalId,
 		const boolean isGroupSignal,
 		const void *signalData,
-		void *pduBuffer);
+		void *pduBuffer,
+		boolean *dataChanged);
+
+void Com_Internal_UpdateShadowSignal(Com_SignalIdType SignalId, const void *SignalDataPtr);
 
 /*
  * This function copies numBits bits of data from Source to Destination with the possibility to offset
@@ -67,5 +72,10 @@ PduIdType getPduId(const ComIPdu_type* IPdu);
 
 void UnlockTpBuffer(PduIdType PduId);
 boolean isPduBufferLocked(PduIdType pduId);
+
+
+/* Helpers for getting and setting that a PDU confirmation status */
+void SetTxConfirmationStatus(const ComIPdu_type *IPdu, boolean value);
+boolean GetTxConfirmationStatus(const ComIPdu_type *IPdu);
 
 #endif /* COM_MISC_H_ */

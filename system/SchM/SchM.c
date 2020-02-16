@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 
 /* ----------------------------[information]----------------------------------*/
@@ -120,6 +119,10 @@
 #include "SchM.h"
 #include "SchM_cfg.h"
 
+
+#if defined(USE_KERNEL)
+#include "Os.h"
+#endif
 
 #if defined(USE_MCU)
 #include "Mcu.h"
@@ -273,8 +276,16 @@
 #include "UdpNm.h"
 #endif
 
+#if defined(USE_LINIF)
+#include "LinIf.h"
+#else
+#define SCHM_MAINFUNCTION_LINIF()
+#endif
+
 #if defined(USE_LINSM)
 #include "LinSM.h"
+#else
+#define SCHM_MAINFUNCTION_LINSM()
 #endif
 
 #if defined(USE_SPI)
@@ -302,6 +313,7 @@ SCHM_DECLARE(CAN_READ);
 SCHM_DECLARE(CAN_BUSOFF);
 SCHM_DECLARE(CAN_WAKEUP);
 SCHM_DECLARE(CAN_ERROR);
+SCHM_DECLARE(LINIF);
 SCHM_DECLARE(COMRX);
 SCHM_DECLARE(COMTX);
 SCHM_DECLARE(CANTP);
@@ -312,6 +324,7 @@ SCHM_DECLARE(IOHWAB);
 SCHM_DECLARE(COMM);
 SCHM_DECLARE(NM);
 SCHM_DECLARE(CANSM);
+SCHM_DECLARE(LINSM);
 SCHM_DECLARE(ECUM);
 SCHM_DECLARE(NVM);
 SCHM_DECLARE(FEE);
@@ -413,6 +426,8 @@ TASK(SchM_BswService) {
 		SCHM_MAINFUNCTION_NM();
 		SCHM_MAINFUNCTION_CANNM();
 		SCHM_MAINFUNCTION_CANSM();
+        SCHM_MAINFUNCTION_LINIF();
+		SCHM_MAINFUNCTION_LINSM();
 		SCHM_MAINFUNCTION_WDGM_TRIGGER();
 		SCHM_MAINFUNCTION_WDGM_ALIVESUPERVISION();
 		break;

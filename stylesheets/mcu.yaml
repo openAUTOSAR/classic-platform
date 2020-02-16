@@ -1,0 +1,30 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: McuNumberOfMcuModes
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: McuRamSectors
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: McuMode
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: McuResetSetting
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: McuClockSettingId
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: McuPublishedInformation
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: McuResetReason
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: MCU_E_CLOCK_FAILURE
+  
+- !!com.arccore.common.yaml.data.styles.DisplayName
+  name: McuNoPll
+  display: Mcu No PLL

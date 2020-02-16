@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 
 
@@ -19,9 +18,13 @@
 #ifndef OS_H_
 #define OS_H_
 
-#define OS_SW_MAJOR_VERSION    2
-#define OS_SW_MINOR_VERSION    0
-#define OS_SW_PATCH_VERSION    0
+#define OS_AR_RELEASE_MAJOR_VERSION   		4
+#define OS_AR_RELEASE_MINOR_VERSION   		0
+#define OS_AR_RELEASE_REVISION_VERSION   	3
+
+#define OS_SW_MAJOR_VERSION   1
+#define OS_SW_MINOR_VERSION   0
+#define OS_SW_PATCH_VERSION   0
 
 #include <assert.h>
 #include "Std_Types.h"
@@ -57,9 +60,14 @@ typedef uint8 StatusType;
 #define	E_OS_PROTECTION_LOCKED (StatusType)17       /**< AUTOSAR, see 7.10 */
 #define	E_OS_PROTECTION_EXCEPTION (StatusType)18    /**< AUTOSAR, see 7.10 */
 #define	E_OS_PROTECTION_RATE (StatusType)19          /**< AUTOSAR, see 7.10 */
+#define E_OS_CORE (StatusType)20                    /**< AUTOSAR 4.0.3, see 7.13 */
+#define E_OS_SPINLOCK (StatusType)21                /**< AUTOSAR 4.0.3, see 7.13 */
+#define E_OS_INTERFERENCE_DEADLOCK (StatusType)22   /**< AUTOSAR 4.0.3, see 7.13 */
+#define E_OS_NESTING_DEADLOCK (StatusType)23        /**< AUTOSAR 4.0.3, see 7.13 */
 
 #define E_OS_EXIT_ABORT				(StatusType)30	/* ArcCore */
 #define E_OS_PANIC					(StatusType)31	/* ArcCore */
+#define E_OS_RTE					(StatusType)32	/* ArcCore */
 
 #define E_COM_ID 255 // TODO: var ska E_COM_ID vara?"
 
@@ -92,7 +100,6 @@ typedef TaskStateType *TaskStateRefType;
 #define INVALID_OSAPPLICATION (-1)
 
 #define TASK(_task)		void _task( void )
-
 
 /* TODO, I have no idea what this should be*/
 #if (OS_USE_APPLICATIONS == STD_ON)
@@ -432,6 +439,26 @@ StatusType SetRelAlarm(AlarmType AlarmId, TickType Increment, TickType Cycle);
 StatusType SetAbsAlarm(AlarmType AlarmId, TickType Start, TickType Cycle);
 StatusType CancelAlarm(AlarmType AlarmId);
 
+/*-------------------------------------------------------------------
+ * Spinlocks
+ *-----------------------------------------------------------------*/
+typedef enum {
+	TRYTOGETSPINLOCK_SUCCESS,
+	TRYTOGETSPINLOCK_NOSUCCESS
+} TryToGetSpinlockType;
+
+typedef uint16 SpinlockIdType;
+
+#if (OS_NUM_CORES > 1)
+StatusType GetSpinlock( SpinlockIdType SpinlockId );
+StatusType ReleaseSpinlock( SpinlockIdType SpinlockId );
+StatusType TryToGetSpinlock( SpinlockIdType SpinlockId, TryToGetSpinlockType* Success);
+#else
+#define GetSpinlock( x )
+#define ReleaseSpinlock( x )
+#define TryToGetSpinlock( x,y )
+#endif
+
 
 /*-------------------------------------------------------------------
  * Error's
@@ -565,6 +592,22 @@ typedef void *ApplicationDataRef;
 
 StatusType SendMessage( MessageType message_id, ApplicationDataRef dataRef );
 StatusType ReceiveMessage( MessageType message_id, ApplicationDataRef dataRef );
+
+
+/*-------------------------------------------------------------------
+ * Multicore OS
+ *-----------------------------------------------------------------*/
+#define OS_CORE_ID_INVALID 	65535
+#define OS_CORE_ID_MASTER	0
+
+typedef int CoreIDType;
+
+CoreIDType GetCoreID(void);
+void StartCore(CoreIDType coreId, StatusType* status);
+
+#if !defined(CFG_MPC5516)
+#define GetCoreID() 0
+#endif
 
 /*
  * ArcCore extensions

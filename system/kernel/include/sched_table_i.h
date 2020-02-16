@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 #ifndef SCHED_TABLE_I_H_
 #define SCHED_TABLE_I_H_
@@ -31,22 +30,17 @@ struct OsCounter;
 
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 enum OsScheduleTableSyncStrategy {
-	/* Support for sync, this is same as no OS */
-	NONE,
-	/* synchronize with "external" counter */
-	EXPLICIT,
-	/* sync internal */
-	IMPLICIT,
+
+	NONE,	   	/* Support for sync, this is same as no OS */
+	EXPLICIT,  	/* synchronize with "external" counter */
+	IMPLICIT,  	/* sync internal */
 };
 #endif
 
 enum OsScheduleTableAutostartType {
-	// Start with StartScheduleTableAbs()
-	SCHTBL_AUTOSTART_ABSOLUTE,
-	// Start with StartScheduleTableRel()
-	SCHTBL_AUTOSTART_RELATIVE,
-	// Start with StartScheduleTableSyncon()
-	SCHTBL_AUTOSTART_SYNCHRONE
+	SCHTBL_AUTOSTART_ABSOLUTE,	/* Start with StartScheduleTableAbs() */
+	SCHTBL_AUTOSTART_RELATIVE,	/* Start with StartScheduleTableRel() */
+	SCHTBL_AUTOSTART_SYNCHRONE	/* StartScheduleTableSyncon() */
 };
 
 
@@ -71,41 +65,28 @@ typedef struct OsScheduleTableEventSetting {
 /** @req OS402 */
 /** @req OS403 */
 typedef struct OsScheduleTableExpiryPoint {
-  	/* The expiry point offset, OsScheduleTblExpPointOffset */
 	/** @req OS404 */
-	uint64 			offset;
-   	// delta to next action
-
-	//uint64    		delta;
-
-	/* List of events to activate */
-	const TaskType 		*taskList;
-	uint8_t 		taskListCnt;
-
-	/* List of events to activate */
-	const OsScheduleTableEventSettingType *eventList;
-	uint8_t 		eventListCnt;
+	uint64 			  	offset;
+	const TaskType 	* 	taskList;		/* List of events to activate */
+	uint8_t 		  	taskListCnt;
+	uint8_t 			eventListCnt;
+	const OsScheduleTableEventSettingType *eventList;	/* List of events to activate */
 } OsScheduleTableExpiryPointType;
-
 
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 typedef struct OsScheduleTableSync {
 
 /* SPEC */
 	enum OsScheduleTableSyncStrategy syncStrategy;
-	// from spec. (only if syncStrategy==EXPLICIT )
-	int explicitPrecision;
+	int explicitPrecision;		/* from spec. (only if syncStrategy==EXPLICIT ) */
 
 /* OWN */
-	// This counter is advanced by the driver counter but is synchronized
-	// by SyncScheduleTable()
-	GlobalTimeTickType syncCounter;
+	GlobalTimeTickType syncCounter;	/* This counter is advanced by the driver counter but is
+									 * synchronized by SyncScheduleTable() */
 
-	// This is the deviation from the sync counter to the drive counter.
-	// (set by SyncScheduleTable())
-	// Calculated as 'driver count' - 'global time count from SyncScheduleTable()'
-	int deviation;
-
+	int deviation;					/* This is the deviation from the sync counter to the drive counter.
+	 	 	 	 	 	 	 	 	 * (set by SyncScheduleTable())
+	 	 	 	 	 	 	 	 	 * Calculated as 'driver count' - 'global time count from SyncScheduleTable()' */
 } OsScheduleTableSyncType;
 
 
@@ -141,35 +122,24 @@ struct OsSchTblAutostart {
  */
 
 typedef struct OsSchTbl {
-	/* OsScheduleTableDuration */
-	TickType duration;
-
-	char *name;
-	/* If true, the schedule is periodic, OS009
-	 * OsScheduleTableRepeating , 0 - SINGLE_SHOT */
+	char *	 name;
+	TickType duration;			/* OsScheduleTableDuration */
 	/** @req OS413 */
-	_Bool repeating;
-
+	_Bool repeating;			/* If true, the schedule is periodic, OS009
+	 	 	 	 	 	 	 	 * OsScheduleTableRepeating , 0 - SINGLE_SHOT */
 #if (OS_USE_APPLICATIONS == STD_ON)
 	ApplicationType applOwnerId;
-	uint32 accessingApplMask;
+	uint32 			accessingApplMask;
 #endif
 
-	// pointer to this tables counter
-	// OsScheduleTableCounterRef
 	/** @req OS409 */
-	struct OsCounter *counter;
-
-	/* OsScheduleTableAutostart[C] */
-	const struct OsSchTblAutostart *autostartPtr;
-
-	/* NULL if NONE, and non-NULL if EXPLICIT and IMPLICIT */
-	struct OsScheduleTableSync *sync;
+	struct OsCounter *				 counter;		/* pointer to this tables counter, OsScheduleTableCounterRef */
+	const struct OsSchTblAutostart * autostartPtr;	/* OsScheduleTableAutostart[C] */
+	struct OsScheduleTableSync *	 sync;			/* NULL if NONE, and non-NULL if EXPLICIT and IMPLICIT */
 
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 	struct OsSchTblAdjExpPoint adjExpPoint;
 #endif
-// RAM
 
 	uint32 id;
 
@@ -198,13 +168,6 @@ typedef struct OsSchTbl {
 	SLIST_ENTRY(OsSchTbl) sched_list;
 } OsSchTblType;
 
-/*
-#define os_stbl_get_action(x) 		SA_LIST_GET(&(x)->expirePointList,(x)->expire_curr_index)
-#define os_stbl_get_action_type(x) os_stbl_get_action(x)->type
-#define os_stbl_get_action_offset(x) os_stbl_get_action(x)->offset
-#define os_stbl_get_action_pid(x) os_stbl_get_action(x)->pid
-#define os_stbl_get_action_event(x) os_stbl_get_action(x)->event
-*/
 
 void Os_SchTblInit( void );
 void Os_SchTblCalcExpire( OsSchTblType *stbl );
@@ -255,17 +218,6 @@ static inline ApplicationType Os_SchTblGetApplicationOwner( ScheduleTableType id
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
 static inline OsSchTblAdjExpPointType *getAdjExpPoint( OsSchTblType *stblPtr ) {
 	return &stblPtr->adjExpPoint;
-}
-#endif
-
-
-static inline const struct OsSchTblAutostart *getAutoStart( OsSchTblType *stblPtr ) {
-	return stblPtr->autostartPtr;
-}
-
-#if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
-static inline struct OsScheduleTableSync *getSync( OsSchTblType *stblPtr ) {
-	return &stblPtr->sync;
 }
 #endif
 

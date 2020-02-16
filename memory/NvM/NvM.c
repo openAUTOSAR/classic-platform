@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 
 /*
@@ -231,6 +230,8 @@
 
 // Exception made as a result of that NVM_DATASET_SELECTION_BITS can be zero
 //lint -emacro(835, BLOCK_BASE_AND_SET_TO_BLOCKNR) // 835 PC-lint: A zero has been given as right argument to operator '<<' or '>>'
+
+//lint -emacro(506, NVM_ASSERT) // 506 PC-lint: Ok, to have constant value.
 
 
 /* ----------------------------[includes]------------------------------------*/
@@ -473,7 +474,18 @@ static AdministrativeMultiBlockType AdminMultiBlock;
 //static Nvm_QueueType  nvmQueueImmData[NVM_SIZE_IMMEDIATE_JOB_QUEUE];
 static Nvm_QueueType  nvmQueueData[NVM_SIZE_STANDARD_JOB_QUEUE];
 
-uint8 Nvm_WorkBuffer[NVM_MAX_BLOCK_LENGTH+4]; /* +4 to make place for max crc length */
+#define _ALIGN(_x,_a)	(((_x) + (_a)  - 1) & ~ ((_a) - 1))
+
+/* Assume undefined is 0 (all compilers do?) */
+#if FEE_VIRTUAL_PAGE_SIZE > EA_VIRTUAL_PAGE_SIZE
+#define VIRTUAL_PAGE_SIZE FEE_VIRTUAL_PAGE_SIZE
+#else
+#define VIRTUAL_PAGE_SIZE EA_VIRTUAL_PAGE_SIZE
+#endif
+
+/* Define a work buffer that needs have size aligned to atleast xxx_VIRTUAL_PAGE_SIZE
+ * + 4 is since the buffer may have CRC */
+uint8 Nvm_WorkBuffer[ _ALIGN(NVM_MAX_BLOCK_LENGTH,VIRTUAL_PAGE_SIZE) + 4 ];
 
 #if (NVM_SIZE_STANDARD_JOB_QUEUE == 0)
 #error NVM_SIZE_STANDARD_JOB_QUEUE have size 0
@@ -543,6 +555,9 @@ static void SetMemifJobBusy()
 	MemIfJobAdmin.JobFinished = FALSE;
 }
 
+#if 0
+/* The removed this code since it is not used and causes a compile warning*/
+
 
 #if (NVM_POLLING_MODE == STD_ON)
 /*
@@ -579,7 +594,7 @@ static boolean CheckMemIfJobFinished(void)
 }
 
 #endif
-
+#endif
 
 /*
  * Abort the MemIf job with E_NOT_OK
@@ -691,7 +706,7 @@ static boolean handleRedundantBlock(const NvM_BlockDescriptorType *bPtr,
  *
  */
 
-static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
+static boolean DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 							AdministrativeBlockType *admPtr,
 							void *dataPtr,
 							boolean write,
@@ -709,7 +724,6 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 	{
 		boolean fail = FALSE;
 		Std_ReturnType rv;
-
 		void *ramData = (dataPtr != NULL) ?  dataPtr : bPtr->RamBlockDataAddress;
 
 		admPtr->savedDataPtr = ramData;
@@ -763,82 +777,78 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 
 		} else {
 			uint8 crcLen = 0;
-			uint16 length;
-			uint8 setNumber = admPtr->DataIndex;
-
 			/* Read to workbuffer */
 			if( bPtr->BlockUseCrc ) {
 				crcLen = (bPtr->BlockCRCType == NVM_CRC16) ? 2: 4;
 			}
 
-			length = bPtr->NvBlockLength+crcLen;
-
-			/*
-			 * Read the Block
-			 */
-			if (setNumber < bPtr->NvBlockNum && !restoreFromRom) {
-				SetMemifJobBusy();
-				MemIfJobAdmin.BlockAdmin = admPtr;
-				MemIfJobAdmin.BlockDescriptor = bPtr;
-				imask_t state;
-
-				/* First reading the MemIf block and then checking MemIf_GetStatus() to determine
-				 * if the device BUSY in anyway...is not threadsafe. The way Autosar have defined
-				 * it you would have to lock over the MemIf_Read() to be sure.
-				 */
-				Irq_Save(state);
-
-				/* We want to read from MemIf, but the device may be busy.
-				 */
-				rv = MemIf_Read(bPtr->NvramDeviceId,
-										BLOCK_BASE_AND_SET_TO_BLOCKNR(bPtr->NvBlockBaseNumber, setNumber),
-										0,
-										Nvm_WorkBuffer,
-										length );
-				if (rv != E_OK) {
-					if ( MemIf_GetStatus(FIXME) == MEMIF_IDLE ) {
-						AbortMemIfJob(MEMIF_JOB_FAILED);
-						fail = TRUE;
-					} else {
-						/* Do nothing. For MEMIF_UNINIT, MEMIF_BUSY and MEMIF_BUSY_INTERNAL we just stay in the
-						 * same state. Better in the next run */
-						Irq_Restore(state);
-						break; /* Do NOT advance to next state */
-					}
-				}
-				Irq_Restore(state);
-			}
-
-			else if( restoreFromRom || (setNumber < bPtr->NvBlockNum + bPtr->RomBlockNum) ) {
+			if( restoreFromRom ) {
 				NVM_ASSERT( bPtr->RomBlockDataAdress != NULL );
-
-				uint8 *romAddrs = (bPtr->BlockManagementType == NVM_BLOCK_DATASET)
-						 ? bPtr->RomBlockDataAdress + ((setNumber - bPtr->NvBlockNum)*bPtr->NvBlockLength) : bPtr->RomBlockDataAdress;
-
 				/* No CRC on the ROM block */
-				memcpy(ramData,romAddrs,bPtr->NvBlockLength);
+				memcpy(ramData,bPtr->RomBlockDataAdress,bPtr->NvBlockLength);
 
 				admPtr->ErrorStatus = NVM_REQ_OK;
 				blockDone = 1;
 				break;		/* Do NOT advance to next state */
-			}
-			else {
-				// Error: setNumber out of range
-				DET_REPORTERROR(MODULE_ID_NVM, 0, NVM_LOC_READ_BLOCK_ID, NVM_PARAM_OUT_OF_RANGE);
-				fail = TRUE;
-			}
+			} else {
+				uint8 setNumber = admPtr->DataIndex;
+				uint16 length = bPtr->NvBlockLength+crcLen;
 
-			if( fail ) {
-				/* Fail the job */
-				admPtr->ErrorStatus = NVM_REQ_NOT_OK;
-				blockDone = 1;
-				break; /* Do NOT advance to next state */
+				/*
+				 * Read the Block
+				 */
+
+				if (setNumber < bPtr->NvBlockNum) {
+					SetMemifJobBusy();
+					MemIfJobAdmin.BlockAdmin = admPtr;
+					MemIfJobAdmin.BlockDescriptor = bPtr;
+					imask_t state;
+
+					/* First reading the MemIf block and then checking MemIf_GetStatus() to determine
+					 * if the device BUSY in anyway...is not threadsafe. The way Autosar have defined
+					 * it you would have to lock over the MemIf_Read() to be sure.
+					 */
+					Irq_Save(state);
+
+					/* We want to read from MemIf, but the device may be busy.
+					 */
+					rv = MemIf_Read(bPtr->NvramDeviceId,
+											BLOCK_BASE_AND_SET_TO_BLOCKNR(bPtr->NvBlockBaseNumber, setNumber),
+											0,
+											Nvm_WorkBuffer,
+											length );
+					if (rv != E_OK) {
+						if ( MemIf_GetStatus(FIXME) == MEMIF_IDLE ) {
+							AbortMemIfJob(MEMIF_JOB_FAILED);
+							fail = TRUE;
+						} else {
+							/* Do nothing. For MEMIF_UNINIT, MEMIF_BUSY and MEMIF_BUSY_INTERNAL we just stay in the
+							 * same state. Better in the next run */
+							Irq_Restore(state);
+							break; /* Do NOT advance to next state */
+						}
+					}
+					Irq_Restore(state);
+
+				} else if (setNumber < bPtr->NvBlockNum + bPtr->RomBlockNum) {
+					// TODO: Read from ROM
+				} else {
+					// Error: setNumber out of range
+					DET_REPORTERROR(MODULE_ID_NVM, 0, NVM_LOC_READ_BLOCK_ID, NVM_PARAM_OUT_OF_RANGE);
+					fail = TRUE;
+				}
+
+				if( fail ) {
+					/* Fail the job */
+					admPtr->ErrorStatus = NVM_REQ_NOT_OK;
+					blockDone = 1;
+					break; /* Do NOT advance to next state */
+				}
 			}
 		}
 
-
-	admPtr->BlockState = BLOCK_STATE_MEMIF_PROCESS;
-	break;
+		admPtr->BlockState = BLOCK_STATE_MEMIF_PROCESS;
+		break;
 	}
 
 	case BLOCK_STATE_MEMIF_PROCESS:
@@ -934,7 +944,45 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 			if( blockDone == 1 ) {
 				/* All write have failed or we are reading? */
 				if( 0 == handleRedundantBlock(bPtr,admPtr) ) {
-					/* block is NOT redundant or both blocks have failed */
+				    /* block is NOT redundant or both blocks have failed */
+                    /*
+                     *
+                     * Returned status are:
+                     *
+                     * MEMIF_BLOCK_INVALID
+                     *   The block is currenlty under some strange service (Fee_InvalidateBlock)
+                     *
+                     * MEMIF_BLOCK_INCONSISTENT
+                     *   Ea/Fee have detected that something is strange with the block. This may
+                     *   happen for a virgin unit.
+                     *
+                     * MEMIF_JOB_FAILED
+                     *   We failed for some reason.
+                     *
+                     * At this point a lot of requirements NVM360, NVM342,etc will not be active
+                     * if there is a configured ROM block/InitCallback.
+                     */
+                    switch (jobResult) {
+                    case MEMIF_BLOCK_INVALID:
+                        /* @req 3.1.5/NVM342 */
+                        admPtr->ErrorStatus = NVM_REQ_NV_INVALIDATED;
+                        break;
+                    case MEMIF_BLOCK_INCONSISTENT:
+                        /* @req 3.1.5/NVM360 but is overridden by NVM172 (implicit revovery) */
+                        admPtr->ErrorStatus = NVM_REQ_INTEGRITY_FAILED;
+                        DEM_REPORTERRORSTATUS(NVM_E_INTEGRITY_FAILED,DEM_EVENT_STATUS_FAILED);
+                        break;
+                    case MEMIF_JOB_FAILED:
+                        /* @req 3.1.5/NVM361 */
+                        admPtr->ErrorStatus = NVM_REQ_NOT_OK;
+                        DEM_REPORTERRORSTATUS(NVM_E_REQ_FAILED,DEM_EVENT_STATUS_FAILED);
+                        break;
+                    default:
+                        DEBUG_PRINTF("## Unexpected jobResult:%d\n",jobResult);
+                        NVM_ASSERT(0);
+                        break;
+                    }
+
 					if( ( FALSE == write ) && ( bPtr->RomBlockDataAdress != NULL ||bPtr->InitBlockCallback != NULL ) ){
 						if( bPtr->RomBlockDataAdress != NULL ) {
 							DEBUG_FPUTS("Copying ROM data to block\n");
@@ -947,48 +995,9 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 							admPtr->ErrorStatus = NVM_REQ_OK;
 						}
 					} else {
-
-						/*
-						 *
-						 * Returned status are:
-						 *
-						 * MEMIF_BLOCK_INVALID
-						 *   The block is currenlty under some strange service (Fee_InvalidateBlock)
-						 *
-						 * MEMIF_BLOCK_INCONSISTENT
-						 *   Ea/Fee have detected that something is strange with the block. This may
-						 *   happen for a virgin unit.
-						 *
-						 * MEMIF_JOB_FAILED
-						 *   We failed for some reason.
-						 *
-						 * At this point a lot of requirements NVM360, NVM342,etc will not be active
-						 * if there is a configured ROM block/InitCallback.
-						 */
-
 						admPtr->BlockState = BLOCK_STATE_MEMIF_REQ; /* TODO, this really true for all result below */
 						AdminMultiReq.PendingErrorStatus = NVM_REQ_NOT_OK;
 
-						switch (jobResult) {
-						case MEMIF_BLOCK_INVALID:
-							/* @req 3.1.5/NVM342 */
-							admPtr->ErrorStatus = NVM_REQ_NV_INVALIDATED;
-							break;
-						case MEMIF_BLOCK_INCONSISTENT:
-							/* @req 3.1.5/NVM360 but is overridden by NVM172 (implicit revovery) */
-							admPtr->ErrorStatus = NVM_REQ_INTEGRITY_FAILED;
-							DEM_REPORTERRORSTATUS(NVM_E_INTEGRITY_FAILED,DEM_EVENT_STATUS_FAILED);
-							break;
-						case MEMIF_JOB_FAILED:
-							/* @req 3.1.5/NVM361 */
-							admPtr->ErrorStatus = NVM_REQ_NOT_OK;
-							DEM_REPORTERRORSTATUS(NVM_E_REQ_FAILED,DEM_EVENT_STATUS_FAILED);
-							break;
-						default:
-							DEBUG_PRINTF("## Unexpected jobResult:%d\n",jobResult);
-							NVM_ASSERT(0);
-							break;
-						}
 					}
 				}
 
@@ -1018,7 +1027,7 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 		/* Calculate RAM CRC checksum */
 		if( bPtr->BlockCRCType == NVM_CRC16 ) {
 
-			crc16 = Crc_CalculateCRC16(ramData,bPtr->NvBlockLength,0xffff);
+			crc16 = Crc_CalculateCRC16(ramData,bPtr->NvBlockLength, 0xffff, TRUE);
 			DEBUG_CHECKSUM("RAM",crc16);
 
 			/* Just save the checksum */
@@ -1028,7 +1037,7 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 			admPtr->BlockState = BLOCK_STATE_MEMIF_REQ;
 		} else {
 			/* @req 3.1.5/NVM253 */
-			crc32 = Crc_CalculateCRC32(ramData,bPtr->NvBlockLength,0xffffffffUL);
+			crc32 = Crc_CalculateCRC32(ramData,bPtr->NvBlockLength,0xffffffffUL, TRUE);
 			DEBUG_CHECKSUM("RAM",crc32);
 
 			admPtr->RamCrc.crc32 = crc32;
@@ -1042,8 +1051,8 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 	{
 		//NVM_ASSERT(bPtr->RamBlockDataAddress != NULL );
 		NVM_ASSERT(bPtr->CalcRamBlockCrc == true );
-		uint16 crc16;
-		uint32 crc32;
+		uint16 crc16 = 0;
+		uint32 crc32 = 0;
 		boolean checksumOk;
 
 
@@ -1051,9 +1060,9 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 		/* Calculate CRC on the data we just read to RAM. Compare with CRC that is located in NV block */
 
 		if( bPtr->BlockCRCType == NVM_CRC16 ) {
-			crc16 = Crc_CalculateCRC16(admPtr->savedDataPtr,bPtr->NvBlockLength,0xffff);
+			crc16 = Crc_CalculateCRC16(admPtr->savedDataPtr,bPtr->NvBlockLength,0xffff, TRUE);
 		} else {
-			crc32 = Crc_CalculateCRC32(admPtr->savedDataPtr,bPtr->NvBlockLength,0xffffffffUL);
+			crc32 = Crc_CalculateCRC32(admPtr->savedDataPtr,bPtr->NvBlockLength,0xffffffffUL, TRUE);
 		}
 
 		switch( admPtr->BlockSubState ) {
@@ -1144,8 +1153,7 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 		break;
 	}
 
-	if( blockDone  ) {
-
+	if( blockDone ) {
 		DEBUG_FPUTS("# Block Done\n");
 
 		if( admPtr->ErrorStatus == NVM_REQ_OK ) {
@@ -1159,38 +1167,16 @@ static void DriveBlock( const NvM_BlockDescriptorType	*bPtr,
 			bPtr->SingleBlockCallback(serviceId, admPtr->ErrorStatus);
 		}
 
-		if( multiBlock ) {
-			AdminMultiReq.currBlockIndex++;
-			if( AdminMultiReq.currBlockIndex >= NVM_NUM_OF_NVRAM_BLOCKS ) {
-				AdminMultiReq.currBlockIndex = 0;
-
-				/* @req 3.1.5/NVM301 */
-				if( NVM_REQ_NOT_OK == AdminMultiReq.PendingErrorStatus ) {
-					AdminMultiBlock.ErrorStatus = NVM_REQ_NOT_OK;
-				} else {
-					AdminMultiBlock.ErrorStatus = NVM_REQ_OK;
-				}
-				nvmState = NVM_IDLE;
-				nvmSubState = 0;
-
-				/*  @req 3.1.5/NVM468 */
-				if( NvM_Config.Common.MultiBlockCallback != NULL ) {
-					NvM_Config.Common.MultiBlockCallback(serviceId, AdminMultiBlock.ErrorStatus);
-				}
-			}
-		} else {
+		if( !multiBlock ) {
 			nvmState = NVM_IDLE;
 			nvmSubState = 0;
-
 		}
 	}
+
+	return blockDone;
 }
 
-/*
- * Main function for the read all job
- */
-static void ReadAllMain(void)
-{
+static void MultiblockMain( boolean write ) {
 
 	/* Cases:
 	 * 1. We process each block until it's finished
@@ -1202,18 +1188,38 @@ static void ReadAllMain(void)
 	 *    spent in MainFunction() can be controlled much better.
 	 */
 
-	/* Skip blocks that are skipped */
 	while (	(AdminMultiReq.currBlockIndex < NVM_NUM_OF_NVRAM_BLOCKS) ) {
 
 		if( AdminBlock[AdminMultiReq.currBlockIndex].ErrorStatus != NVM_REQ_BLOCK_SKIPPED) {
-			DriveBlock(	&NvM_Config.BlockDescriptor[AdminMultiReq.currBlockIndex],
-							&AdminBlock[AdminMultiReq.currBlockIndex],
-							NULL,
-							false,
-							true, false);
-			break;
+			if( !DriveBlock(	&NvM_Config.BlockDescriptor[AdminMultiReq.currBlockIndex],
+						&AdminBlock[AdminMultiReq.currBlockIndex],
+						NULL, write, true, false ) )
+			{
+				/* Drive block have more job to do.. wait until next time */
+				break;
+			}
 		}
 		AdminMultiReq.currBlockIndex++;
+	}
+
+	/* Check if we are the last block */
+	if( AdminMultiReq.currBlockIndex >= NVM_NUM_OF_NVRAM_BLOCKS ) {
+		AdminMultiReq.currBlockIndex = 0;
+
+		/* @req 3.1.5/NVM301 */
+		if( NVM_REQ_NOT_OK == AdminMultiReq.PendingErrorStatus ) {
+			AdminMultiBlock.ErrorStatus = NVM_REQ_NOT_OK;
+		} else {
+			AdminMultiBlock.ErrorStatus = NVM_REQ_OK;
+		}
+		/* Reset state machine */
+		nvmState = NVM_IDLE;
+		nvmSubState = 0;
+
+		/*  @req 3.1.5/NVM468 */
+		if( NvM_Config.Common.MultiBlockCallback != NULL ) {
+			NvM_Config.Common.MultiBlockCallback(serviceId, AdminMultiBlock.ErrorStatus);
+		}
 	}
 }
 
@@ -1260,42 +1266,6 @@ static boolean WriteAllInit(void)
 }
 
 
-
-/*
- * Main function for the write all job
- */
-static void WriteAllMain(void)
-{
-	while (	(AdminMultiReq.currBlockIndex < NVM_NUM_OF_NVRAM_BLOCKS) ) {
-
-		if( AdminBlock[AdminMultiReq.currBlockIndex].ErrorStatus != NVM_REQ_BLOCK_SKIPPED) {
-			DriveBlock(	&NvM_Config.BlockDescriptor[AdminMultiReq.currBlockIndex],
-							&AdminBlock[AdminMultiReq.currBlockIndex],
-							NULL,
-							true,
-							true, false );
-			break;
-		}
-		AdminMultiReq.currBlockIndex++;
-	}
-	if( AdminMultiReq.currBlockIndex >= NVM_NUM_OF_NVRAM_BLOCKS ) {
-		AdminMultiReq.currBlockIndex = 0;
-
-		/* @req 3.1.5/NVM301 */
-		if( NVM_REQ_NOT_OK == AdminMultiReq.PendingErrorStatus ) {
-			AdminMultiBlock.ErrorStatus = NVM_REQ_NOT_OK;
-		} else {
-			AdminMultiBlock.ErrorStatus = NVM_REQ_OK;
-		}
-		nvmState = NVM_IDLE;
-		nvmSubState = 0;
-
-		/*  @req 3.1.5/NVM468 */
-		if( NvM_Config.Common.MultiBlockCallback != NULL ) {
-			NvM_Config.Common.MultiBlockCallback(serviceId, AdminMultiBlock.ErrorStatus);
-		}
-	}
-}
 
 
 #if 0
@@ -1585,7 +1555,7 @@ void NvM_SetBlockLockStatus( NvM_BlockIdType blockId, boolean blockLocked ) {
 Std_ReturnType NvM_RestoreBlockDefaults( NvM_BlockIdType blockId, uint8* NvM_DestPtr )
 {
 	/* !req 3.1.5/NVM012 */	/* !req 3.1.5/NVM267 */	/* !req 3.1.5/NVM266 */
-	/* !req 3.1.5/NVM435 */	/* !req 3.1.5/NVM436 */	/* !req 3.1.5/NVM227 */
+	/* !req 3.1.5/NVM353 */	/* !req 3.1.5/NVM435 */	/* !req 3.1.5/NVM436 */	/* !req 3.1.5/NVM227 */
 	/* !req 3.1.5/NVM228 */	/* !req 3.1.5/NVM229 */	/* !req 3.1.5/NVM413 */
 
 	const NvM_BlockDescriptorType *	bPtr;
@@ -1597,26 +1567,17 @@ Std_ReturnType NvM_RestoreBlockDefaults( NvM_BlockIdType blockId, uint8* NvM_Des
 
 	/* @req 3.1.5/NVM618 */
 	DET_VALIDATE_RV( 	blockId <= NVM_NUM_OF_NVRAM_BLOCKS,
-			NVM_RESTORE_BLOCK_DEFAULTS_ID,NVM_E_PARAM_BLOCK_ID,E_NOT_OK );
+					NVM_WRITE_BLOCK_ID,NVM_E_PARAM_BLOCK_ID,E_NOT_OK );
 
 	bPtr = &NvM_Config.BlockDescriptor[blockId-1];
 	admPtr = &AdminBlock[blockId-1];
 
-	/** @req 3.1.5/NVM628 */
-	//Check whether a ROM block is configured
-	DET_VALIDATE_RV(!(bPtr->RomBlockNum == 0),NVM_RESTORE_BLOCK_DEFAULTS_ID,NVM_E_BLOCK_CONFIG,E_NOT_OK);
-
-	/** @req 3.1.5/NVM353 */
-	//If block is of type DATASET check whether current index points to a NVM which is not ROM
-	DET_VALIDATE_RV(!((admPtr->DataIndex < bPtr->NvBlockNum) && (bPtr->BlockManagementType == NVM_BLOCK_DATASET)),NVM_RESTORE_BLOCK_DEFAULTS_ID,NVM_E_BLOCK_CONFIG,E_NOT_OK);
-
 	/** @req 3.1.5/NVM196 */ /** @req 3.1.5/NVM278 */ /** @req 3.1.5/NVM210 */
 	/* It must be a permanent RAM block but no RamBlockDataAddress -> error */
-
 	DET_VALIDATE_RV( !((NvM_DestPtr == NULL) &&  ( bPtr->RamBlockDataAddress == NULL )),
-			NVM_RESTORE_BLOCK_DEFAULTS_ID,NVM_E_PARAM_BLOCK_ID,E_NOT_OK );
+						NVM_WRITE_BLOCK_ID,NVM_E_PARAM_BLOCK_ID,E_NOT_OK );
 
-	DET_VALIDATE_RV( (admPtr->ErrorStatus != NVM_REQ_PENDING), NVM_RESTORE_BLOCK_DEFAULTS_ID, NVM_E_BLOCK_PENDING , E_NOT_OK );
+	DET_VALIDATE_RV( (admPtr->ErrorStatus != NVM_REQ_PENDING), 0, NVM_E_BLOCK_PENDING , E_NOT_OK );
 
 	/* @req 3.1.5/NVM195 */
 	qEntry.blockId = blockId;
@@ -1941,7 +1902,7 @@ void NvM_MainFunction(void)
 				nvmSubState = 0;
 			}
 		} else if( NS_PENDING == nvmSubState ) {
-			ReadAllMain();
+			MultiblockMain( false /* read */ );
 		}
 		break;
 
@@ -1968,7 +1929,7 @@ void NvM_MainFunction(void)
 				nvmSubState = 0;
 			}
 		} else if( NS_PENDING == nvmSubState ) {
-			WriteAllMain();
+			MultiblockMain(true /* write */ );
 		}
 		break;
 	case NVM_SETDATAINDEX:

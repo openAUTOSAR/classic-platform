@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 /** @addtogroup CanIf CAN Interface
  *  @{ */
@@ -28,24 +27,27 @@
 // API service with wrong parameter
 /** @name Error Codes */
 //@{
-#define CANIF_E_PARAM_CANID		      10 
-#define CANIF_E_PARAM_DLC			      11  
-#define CANIF_E_PARAM_HRH			      12 
-#define CANIF_E_PARAM_CHANNEL		    13  
-#define CANIF_E_PARAM_CONTROLLER	  14  
-#define CANIF_E_PARAM_WAKEUPSOURCE	15  
+#define CANIF_E_PARAM_CANID		     	10
+#define CANIF_E_PARAM_DLC			 	11
+#define CANIF_E_PARAM_HRH			  	12
+#define CANIF_E_PARAM_LPDU            	13
+#define CANIF_E_PARAM_CONTROLLER	  	14
+#define CANIF_E_PARAM_CONTROLLERID	  	15
+#define CANIF_E_PARAM_WAKEUPSOURCE		16
+#define CANIF_E_PARAM_TRCV             	17
+#define CANIF_E_PARAM_TRCVMODE          18
+#define CANIF_E_PARAM_TRCVWAKEUPMODE    19
+#define CANIF_E_PARAM_CTRLMODE 			21
 
-#define CANIF_E_PARAM_HTH             17 
-#define CANIF_E_PARAM_LPDU            18
-#define CANIF_E_PARAM_CONTROLLER_MODE 19
+#define CANIF_E_PARAM_POINTER 			20
+#define CANIF_E_UNINIT 				    30
+//#define CANIF_E_NOK_NOSUPPORT			40
+#define CANIF_E_INVALID_TXPDUID		    50
+#define CANIF_E_INVALID_RXPDUID 		60
+#define CANIF_E_INVALID_DLC		 		61
 
-#define CANIF_E_PARAM_POINTER 			  20
-#define CANIF_E_UNINIT 				        30
-#define CANIF_E_NOK_NOSUPPORT			    40
-#define CANIF_TRCV_E_TRCV_NOT_STANDBY	60
-#define CANIF_TRCV_E_TRCV_NOT_NORMAL	70
-#define CANIF_E_INVALID_TXPDUID		    80
-#define CANIF_E_INVALID_RXPDUID 		  90
+#define CANIF_E_STOPPED			 		70
+#define CANIF_E_NOT_SLEEP			 	71
 //@}
 
 typedef enum {
@@ -106,7 +108,7 @@ typedef enum {
 	 *  => notifications are processed but transmit
 	 *  requests are blocked. */
 	CANIF_SET_TX_OFFLINE_ACTIVE
-} CanIf_ChannelSetModeType;
+} CanIf_PduSetModeType;
 
 
 typedef enum {
@@ -129,7 +131,7 @@ typedef enum {
    *  requests are blocked. The receive path is enabled. */
   CANIF_GET_OFFLINE_ACTIVE_RX_ONLINE
 	
-} CanIf_ChannelGetModeType;
+} CanIf_PduGetModeType;
 
 typedef enum {
 	/** No transmit or receive event occurred for
@@ -148,7 +150,7 @@ typedef enum {
   CANIF_TRCV_MODE_STANDBY,
   /** Transceiver mode SLEEP */
   CANIF_TRCV_MODE_SLEEP
-} CanIf_TransceiverModeType;
+} CanIf_TrcvModeType;
 
 typedef enum {
   /** Due to an error wake up reason was not detected.

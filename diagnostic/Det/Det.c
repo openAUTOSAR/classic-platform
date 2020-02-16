@@ -1,42 +1,45 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 /*
  * Development Error Tracer driver
  *
- * Specification: Autosar v2.2.2, Final
+ * Specification: Autosar v3.2.0, Final
  *
  */
-
-/*
- *  General requirements
- */
-/** @req DET001 */
-/** @req DET002 */
-
 
 #include "Std_Types.h"
 #if defined(USE_DET)
 #include "Det.h"
 #endif
 #include "Cpu.h"
-#include "MemMap.h" /** @req DET006 */
+#include "MemMap.h" /* @req 4.0.3/DET006 */
 
 #define DEBUG_LVL 1
 #include "debug.h"
 
+/* @req 4.0.3/DET036 */
+/* ----------------------------[Version check]------------------------------*/
+#if !(((DET_SW_MAJOR_VERSION == 1) && (DET_SW_MINOR_VERSION == 0)) )
+#error Det: Expected BSW module version to be 1.0.*
+#endif
+
+#if !(((DET_AR_MAJOR_VERSION == 4) && (DET_AR_MINOR_VERSION == 0)) )
+#error Det: Expected AUTOSAR version to be 4.0.*
+#endif
+
+/* ----------------------------[private define]------------------------------*/
 typedef enum
 {
     DET_UNINITIALIZED = 0,
@@ -47,7 +50,6 @@ typedef enum
 static Det_StateType detState = DET_UNINITIALIZED;
 
 #if ( DET_USE_RAMLOG == STD_ON )
-
 // Ram log variables in uninitialized memory
 SECTION_RAMLOG uint32 Det_RamlogIndex;
 /*lint -esym(552,Det_RamLog)*/ /* PC-Lint OK. supress lintwarning about Det_Ramlog not being accessed */
@@ -97,7 +99,8 @@ void Det_RemoveCbk(uint8 detCbkIndex)
 }
 #endif
 
-
+/* @req 4.0.3/DET019 */
+/* @req 4.0.3/DET020 */
 void Det_Init(void)
 {
 
@@ -108,7 +111,6 @@ void Det_Init(void)
     }
 #endif
 
-    /** @req DET000 */
 #if ( DET_USE_RAMLOG == STD_ON )
     for(uint32 i=0; i < DET_RAMLOG_SIZE; i++)
     {
@@ -130,28 +132,52 @@ void Det_DeInit( void )
 }
 #endif
 
+/* @req 4.0.3/DET207 */
+/* @req 4.0.3/DET027 */
+/* @req 4.0.3/DET013 */
+/* @req 4.0.3/DET039 */
+/* @req 4.0.3/DET026 */
+/* @req 4.0.3/DET050 */
 void Det_ReportError(uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 ErrorId)
 {
+	/* @req 4.0.3/DET024 */
     if (detState == DET_STARTED) // No action is taken if the module is not started
     {
-#if ( DET_ENABLE_CALLBACKS == STD_ON )
-        uint32 old1; // 586 PC-Lint OK: fattar inte att den används i macrot.
+
+    	// Call static error hooks here
+    	/* @req 4.0.3/DET035 */
+    	/* @req 4.0.3/DET014 */
+#if ( DET_USE_STATIC_CALLBACKS == STD_ON )
+        uint32 old1; // 586 PC-Lint OK: fattar inte att den anvï¿½nds i macrot.
         Irq_Save(old1);
 
-        for (uint32 i=0; i<DET_NUMBER_OF_CALLBACKS; i++)
+        /* @req 4.0.3/DET018 */
+        /* @req 4.0.3/DET017 */
+        for (uint32 i=0; i<DET_NUMBER_OF_STATIC_CALLBACKS; i++)
         {
-            if (NULL!=detCbk_List[i])
-            {
-                (*detCbk_List[i])(ModuleId, InstanceId, ApiId, ErrorId);
-            }
+        	(*DetStaticHooks[i])(ModuleId, InstanceId, ApiId, ErrorId);
         }
         Irq_Restore(old1);
 #endif
 
+        /* @req 4.0.3/DET015 */
+#if ( DET_ENABLE_CALLBACKS == STD_ON )
+        uint32 old2; // 586 PC-Lint OK: fattar inte att den anvï¿½nds i macrot.
+        Irq_Save(old2);
+        for (uint32 i=0; i<DET_NUMBER_OF_CALLBACKS; i++)
+        {
+            if (NULL!=detCbk_List[i])
+            {
+                (void)(*detCbk_List[i])(ModuleId, InstanceId, ApiId, ErrorId); /* Ignoring return value */
+            }
+        }
+        Irq_Restore(old2);
+#endif
+
 
 #if ( DET_USE_RAMLOG == STD_ON )
-        uint32 old2;
-        Irq_Save(old2);
+        uint32 old3;
+        Irq_Save(old3);
         if (Det_RamlogIndex < DET_RAMLOG_SIZE)
         {
             Det_RamLog[Det_RamlogIndex].moduleId = ModuleId;
@@ -165,7 +191,7 @@ void Det_ReportError(uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 Error
             }
 #endif
         }
-        Irq_Restore(old2);
+        Irq_Restore(old3);
 #endif
 
 #if ( DET_USE_STDERR == STD_ON )
@@ -174,7 +200,30 @@ void Det_ReportError(uint16 ModuleId, uint8 InstanceId, uint8 ApiId, uint8 Error
     }
 }
 
+/* @req 4.0.3/DET025 */
 void Det_Start(void)
 {
     detState = DET_STARTED;
 }
+
+/* @req 4.0.3/DET028 */
+#if (DET_VERSIONINFO_API == STD_ON)
+void Det_GetVersionInfo(Std_VersionInfoType* vi)
+{
+	/* @req 4.0.3/DET051 */
+	if(vi != NULL) {
+		vi->vendorID = DET_VENDOR_ID;
+		vi->moduleID = DET_MODULE_ID;
+		vi->sw_major_version = DET_SW_MAJOR_VERSION;
+		vi->sw_minor_version = DET_SW_MINOR_VERSION;
+		vi->sw_patch_version = DET_SW_PATCH_VERSION;
+		vi->ar_major_version = DET_AR_MAJOR_VERSION;
+		vi->ar_minor_version = DET_AR_MINOR_VERSION;
+		vi->ar_patch_version = DET_AR_RELEASE_REVISION_VERSION;
+	} else {
+		/* @req 4.0.3/DET023 */
+		/* @req 4.0.3/DET052 */
+		Det_ReportError(DET_MODULE_ID, 0, DET_GETVERSIONINFO_SERVICE_ID, DET_E_PARAM_POINTER);
+	}
+}
+#endif

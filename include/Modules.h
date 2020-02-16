@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 
 
@@ -33,6 +32,8 @@
 
 #define MODULE_ID_OS       (1) // Os
 
+#define MODULE_ID_RTE      (2) // Runtime Environment
+
 #define MODULE_ID_ECUM    (10) // ECU state manager
 #define MODULE_ID_FIM     (11) // Function Inhibition Manager
 #define MODULE_ID_COMM    (12) // Communication manager
@@ -47,11 +48,13 @@
 
 #define MODULE_ID_CANNM   (31) // Can network management
 #define MODULE_ID_FRNM    (32) // Flexray network management
+#define MODULE_ID_UDPNM   (33)  // UDP network management
 #define MODULE_ID_CANTP   (35) // Can transport layer
 #define MODULE_ID_FRTP    (36) // Flexray transport protocol
 #define MODULE_ID_J1939TP (37) // J1939 Transport protocol (Autosar 4)
 #define MODULE_ID_EA      (40) // EEPROM Abstraction
 
+#define MODULE_ID_BSWM    (42) // BSW Mode Manager
 #define MODULE_ID_WDGIF   (43) // Watchdog interface
 
 #define MODULE_ID_COM     (50) // Autosar COM
@@ -95,6 +98,7 @@
 #define MODULE_ID_FRSM   (142) // Flexray state manager
 
 #define MODULE_ID_CRC    (201) // CRC Routines
+#define MODULE_ID_E2E    (207) // End-to-end protections
 
 #define MODULE_ID_C2CAN  (220) // CAN
 #define MODULE_ID_C2COM  (221) // COM Services

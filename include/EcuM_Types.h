@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 /**
  * @addtogroup EcuM ECU State Manager
@@ -36,6 +35,8 @@
 #endif
 
 
+/* @req EcuM2664 */
+/* @req EcuM507 */
 #if !defined(_DEFINED_TYPEDEF_FOR_EcuM_StateType_)
 /** Possible states */
 typedef enum {
@@ -76,8 +77,8 @@ typedef uint8 EcuM_UserType;
 
 #if 0
 enum {
-	/** Internal reset of µC (bit 2).
-	 *  The internal reset typically only resets the µC
+	/** Internal reset of ï¿½C (bit 2).
+	 *  The internal reset typically only resets the ï¿½C
 	 *  core but not peripherals or memory
 	 *  controllers. The exact behavior is hardware
 	 *  specific.
@@ -94,9 +95,6 @@ enum {
 
 	/** Power cycle (bit 0) */
 	ECUM_WKSOURCE_POWER = 0x01,
-
-	/** ~0 to the power of 29 */
-	ECUM_WKSOURCE_ALL_SOURCES = 0x3FFFFFFF,
 
 	/** Hardware reset (bit 1).
 	 *  If hardware cannot distinguish between a
@@ -115,15 +113,17 @@ typedef enum
 	ECUM_WKSTATUS_NONE = 0,        /**< No pending wakeup event was detected */
 	ECUM_WKSTATUS_PENDING = 1,     /**< The wakeup event was detected but not yet validated */
 	ECUM_WKSTATUS_VALIDATED = 2,   /**< The wakeup event is valid */
-	ECUM_WKSTATUS_EXPIRED = 3     /**< The wakeup event has not been validated and has expired therefore */
+	ECUM_WKSTATUS_EXPIRED = 3,     /**< The wakeup event has not been validated and has expired therefore */
+	ECUM_WKSTATUS_DISABLED = 4     /**< The wakeup source is disabled and does not detect wakeup events. */
 } EcuM_WakeupStatusType;
 
 
 #if !defined(_DEFINED_TYPEDEF_FOR_EcuM_BootTargetType_)
 typedef enum
 {
-	ECUM_BOOT_TARGET_APP = 0,          /**< The Ecu will boot into the application */
-	ECUM_BOOT_TARGET_BOOTLOADER = 1   /**< The Ecu will boot into the bootloader */
+	ECUM_BOOT_TARGET_APP = 0,              /**< The Ecu will boot into the application */
+	ECUM_BOOT_TARGET_OEM_BOOTLOADER = 1,   /**< The ECU will boot into the OEM bootloader */
+	ECUM_BOOT_TARGET_SYS_BOOTLOADER = 2    /**< The ECU will boot into the system supplier bootloader */
 } EcuM_BootTargetType;
 #define _DEFINED_TYPEDEF_FOR_EcuM_BootTargetType_
 #endif
@@ -135,16 +135,8 @@ typedef enum
 
 #include "Mcu.h"
 
-#if defined(USE_WDGM)
-typedef struct EcuM_WdgM
-{
-	WdgM_SupervisedEntityIdType EcuMSupervisedEntity;
-	WdgM_ModeType EcuMWdgMWakeupMode;
-	WdgM_ModeType EcuMWdgMStartupMode;
-	WdgM_ModeType EcuMWdgMRunMode;
-	WdgM_ModeType EcuMWdgMPostRunMode;
-	WdgM_ModeType EcuMWdgMShutdownMode;
-} EcuM_WdgMType;
+#if defined(USE_COMM)
+#include "ComM.h"
 #endif
 
 typedef struct EcuM_WakeupSourceConfig {
@@ -160,10 +152,17 @@ typedef struct EcuM_SleepMode
    uint8 					EcuMSleepModeId;
    EcuM_WakeupSourceType 	EcuMWakeupSourceMask;
    Mcu_ModeType  			EcuMSleepModeMcuMode;
-#if defined(USE_WDGM)
-   WdgM_ModeType 			EcuMSleepModeWdgMMode;
-#endif
  } EcuM_SleepModeType;
+
+#if defined(USE_COMM)
+typedef struct EcuM_ComMConfig {
+	uint8                   EcuMComMNetworkHandle;
+	ComM_BusTypeType        EcuMComBusType;
+} EcuM_ComMConfigType;
+#endif
+
+typedef AppModeType EcuM_AppModeType;
+
 
  /* Defines for illegal modes/channels */
 #define ECUM_SLEEP_MODE_WDGM_MODE_ILL		0xff

@@ -50,7 +50,7 @@ cflags-$(CFG_VLE) += -ppc_asm_to_vle  # Convert ppc to vle ppc
 cflags-$(CFG_VLE) += -vle  # Convert ppc to vle ppc
 cflags-y          += -abi=eabi
 cflags-y          += -proc=5565
-cflags-y          += -fp=soft
+cflags-$(CFG_EFPU)+= -fp=efpu
 #cflags-y          += -use_isel=on
 cflags-y          += -sdata=0 -sdata2=0
 
@@ -89,7 +89,7 @@ SELECT_CLIB?=CLIB_CW
 # ---------------------------------------------------------------------------
 # Preprocessor
 
-CPP	= 	$(CC) -E
+CPP	= 	$(CC) -E -P
 CPPOUT = -precompile
 
 CPP_ASM_FLAGS += -ppopt noline -ppopt nopragma -dialect c
@@ -116,17 +116,27 @@ libpath-y += $(cw_lib_path)
 
 
 # libnames .bare - No operating system
-#          .E    - e500, e200
-#          UC    - Noooooo
+#          V     - VLE
 #          S     - software float
+#          E     - e500, e200
+#          UC    - Noooooo, unsigned char??
+#          SZ    - Size optimized
 # nothing really matches.......
-lib-$(CFG_VLE) += -lRuntime.PPCEABI.VS.a   # is this VLE?
-lib-$(CFG_VLE) += -lMSL_C.PPCEABI.bare.SZ.VS.a
+lib-$(CFG_VLE)-$(CFG_EFPU) += -lRuntime.PPCEABI.V.a
+lib-$(CFG_VLE)-$(CFG_EFPU) += -lMSL_C.PPCEABI.bare.SZ.V.a
 ifneq ($(CFG_VLE),y)
+lib-$(CFG_EFPU) += -lRuntime.PPCEABI.E.a
+lib-$(CFG_EFPU) += -lMSL_C.PPCEABI.bare.SZ.E.a
+ifneq ($(CFG_EFPU),y)
 lib-y += -lRuntime.PPCEABI.S.a 
 lib-y += -lMSL_C.PPCEABI.bare.SZ.S.a
 endif
-
+endif
+ifneq ($(CFG_EFPU),y)
+lib-$(CFG_VLE) += -lRuntime.PPCEABI.VS.a
+lib-$(CFG_VLE) += -lMSL_C.PPCEABI.bare.SZ.VS.a
+endif
+lib-y += $(lib-y-y)
 C_TO_ASM = -P
 
 # ---------------------------------------------------------------------------
@@ -145,9 +155,15 @@ LD = $(CW_BIN)/mwldeppc.exe
 
 LDSCRIPT = -lcf
 
+# allow config to override base address
+CFG_FLASH_ADR ?= 0x0
+CFG_FLASH_LEN ?= 0x0
+def-y += CFG_FLASH_ADR=$(CFG_FLASH_ADR)
+def-y += CFG_FLASH_LEN=$(CFG_FLASH_LEN)
+
 # To make "rom" images (make LOAD() work)
-ldflags-y += -romaddr 0x0 
-ldflags-y += -rambuffer 0x0
+ldflags-y += -romaddr $(CFG_FLASH_ADR) 
+ldflags-y += -rambuffer $(CFG_FLASH_ADR)
 #ldflags-y += -nodefaults
 ldflags-y += -gdwarf-2
 ldflags-y += -m _start
@@ -155,6 +171,7 @@ ldflags-y += -nostdlib
 ldflags-y += -code_merging all
 TE = elf
 ldflags-y += -map $(subst .$(TE),.map, $@)
+ldflags-y += -srec $(subst .$(TE),.s19, $@)
 
 LDFLAGS += $(ldflags-y) 
 LDOUT 		= -o $@
@@ -178,6 +195,8 @@ asflags-y += -maxwarnings 10
 asflags-$(CFG_VLE) += -vle
 ASFLAGS += $(asflags-y)
 ASOUT = -o $@
+
+#$(error x$(CFG_VLE)x)
 
 # Memory footprint
 define do-memory-footprint 

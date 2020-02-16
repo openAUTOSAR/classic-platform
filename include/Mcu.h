@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 /** @addtogroup Mcu MCU Driver
  *  @{ */
@@ -25,19 +24,23 @@
 
 #include "Modules.h"
 
-#define MCU_SW_MAJOR_VERSION    	2
+#define MCU_MODULE_ID		 	    MODULE_ID_MCU
+#define MCU_VENDOR_ID			    60
+
+#define MCU_SW_MAJOR_VERSION    	1
 #define MCU_SW_MINOR_VERSION   	    0
 #define MCU_SW_PATCH_VERSION    	0
 
-#define MCU_AR_MAJOR_VERSION     	2
-#define MCU_AR_MINOR_VERSION     	2
-#define MCU_AR_PATCH_VERSION     	2
+#define MCU_AR_MAJOR_VERSION     	4
+#define MCU_AR_MINOR_VERSION     	0
+#define MCU_AR_PATCH_VERSION     	3
 
+/* @req MCU211 */
 #include "Cpu.h"
 #include "irq_types.h"
 #include "Std_Types.h"
 #include "Mcu_Cfg.h"
-//#include "mpc55xx_aos.h"
+
 
 /** @name Service id's */
 //@{
@@ -54,6 +57,9 @@
 #define MCU_INTCVECTORINSTALL_SERVICE_ID    0x0A // Not in spec but follows pattern
 //@}
 
+
+/* @req MCU012 */
+/* @req MCU112 */
 /** @name Error Codes */
 //@{
 #define MCU_E_PARAM_CONFIG                  0x0A
@@ -62,25 +68,31 @@
 #define MCU_E_PARAM_RAMSECTION              0x0D
 #define MCU_E_PLL_NOT_LOCKED                0x0E
 #define MCU_E_UNINIT                        0x0F
+#define MCU_E_PARAM_POINTER                 0x10
 //@}
 
 /* Specific return values */
-#define MCU_GETRESETRAWVALUE_NORESETREG_RV  0x00 /**< MCU006 */
-#define MCU_GETRESETRAWVALUE_UNINIT_RV      0xffffffff /**< MCU135 */
+#define MCU_GETRESETRAWVALUE_NORESETREG_RV  0x00         /* @req MCU006 */
+#define MCU_GETRESETRAWVALUE_UNINIT_RV      0xffffffffU  /* @req MCU135 */
 
 
+/* @req MCU231 */
 typedef enum {
 	MCU_PLL_LOCKED,
 	MCU_PLL_UNLOCKED,
-	MCU_PLL_STATUS_UNDEFINED,
+	MCU_PLL_STATUS_UNDEFINED
 } Mcu_PllStatusType;
 
 
-//TODO
+/* @req MCU240 */
 typedef uint8_t Mcu_RamSectionType;
 
+/* @req MCU236 */
 typedef uint32_t Mcu_RawResetType;
 
+
+/* @req MCU134 */
+/* @req MCU234 */
 typedef enum {
 	MCU_POWER_ON_RESET,
 	MCU_WATCHDOG_RESET,
@@ -119,10 +131,19 @@ typedef struct {
 
 } Mcu_RamSectorSettingConfigType;
 
+
+#if ( MCU_GET_RAM_STATE == STD_ON )
+typedef enum {
+	MCU_RAMSTATE_INVALID,
+	MCU_RAMSTATE_VALID
+} Mcu_RamStateType;
+#endif
+
+
+/* @req MCU131 */
+/* @req MCU054 */
+/* @req MCU030 */
 typedef struct {
-	//	Enables/Disables clock failure notification. In case this feature is not supported
-	//	by HW the setting should be disabled.
-	uint8	McuClockSrcFailureNotification;
 
 	//	This parameter shall represent the number of Modes available for the
 	//	MCU. calculationFormula = Number of configured McuModeSettingConf
@@ -166,20 +187,59 @@ typedef struct {
 extern const Mcu_ConfigType McuConfigData[];
 
 
-
+/* @req MCU153 */
+/* @req MCU126 */
 void Mcu_Init( const Mcu_ConfigType *configPtr );
-void Mcu_DeInit( void );
-Std_ReturnType Mcu_InitRamSection( const Mcu_RamSectionType RamSection );
-Std_ReturnType Mcu_InitClock( const Mcu_ClockType ClockSetting );
+//void Mcu_DeInit( void );
+/* @req MCU154 */
+Std_ReturnType Mcu_InitRamSection(Mcu_RamSectionType RamSection );
+
+/* @req MCU207 */
+/* @req MCU209 */
+#if ( MCU_GET_RAM_STATE == STD_ON )
+Mcu_RamStateType Mcu_GetRamState( void );
+#endif 
+
+
+/* @req MCU248 */
+/* @req MCU155 */
+/* @req MCU210 */
+#if ( MCU_INIT_CLOCK == STD_ON )
+Std_ReturnType Mcu_InitClock( Mcu_ClockType ClockSetting );
+#endif
+
+/* @req MCU230 */
+/* @req MCU156 */
+/* @req MCU157 */
+/* @req MCU205 */
+/* @req MCU206 */
+#if ( MCU_NO_PLL == STD_OFF )
 void Mcu_DistributePllClock( void );
+#endif
 Mcu_PllStatusType Mcu_GetPllStatus( void );
+
+/* Functions related to reset */
+/* @req MCU052 */
+/* @req MCU055 */
+/* @req MCU146 */
+/* @req MCU158 */
+/* @req MCU159 */
+/* @req MCU160 */
 Mcu_ResetType Mcu_GetResetReason( void );
 Mcu_RawResetType Mcu_GetResetRawValue( void );
 #if ( MCU_PERFORM_RESET_API == STD_ON )
 void Mcu_PerformReset( void );
 #endif
-void Mcu_SetMode( const Mcu_ModeType McuMode );
 
+
+/* @req MCU164 */
+/* @req MCU161 */
+void Mcu_SetMode( Mcu_ModeType McuMode );
+
+/* @req MCU103*/
+/* @req MCU104*/
+/* @req MCU149*/
+/* @req MCU162*/
 #if ( MCU_VERSION_INFO_API == STD_ON )
 #define Mcu_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,MCU)
 #endif
@@ -197,9 +257,10 @@ uint32_t McuE_GetClockReferencePointFrequency(void);
 
 void Mcu_Arc_EnterLowPower( int mode );
 void McuE_LowPowerRecoverFlash( void );
+void McuE_InitZero(void);
 
 #if defined(CFG_PPC)
-void McuE_GetECCError( uint32 *err );
+void McuE_GetECCError( uint8 *err );
 #endif
 #endif /*MCU_H_*/
 /** @} */

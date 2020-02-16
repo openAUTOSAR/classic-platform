@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 #include <assert.h>
 #include <stdlib.h>
@@ -20,6 +19,7 @@
 #include "internal.h"
 #include "alarm_i.h"
 #include "sys.h"
+#include "multicore_i.h"
 
 #if (OS_ALARM_CNT!=0)
 #define COUNTER_MAX(x) 			(x)->counter->alarm_base.maxallowedvalue
@@ -41,7 +41,24 @@
  * @return
  */
 StatusType GetAlarmBase( AlarmType AlarmId, AlarmBaseRefType Info ) {
-    StatusType rv = Os_AlarmGetBase(AlarmId,Info);
+	StatusType rv = E_OK;
+	OsAlarmType *aPtr;
+
+	ALARM_CHECK_ID(AlarmId);
+	aPtr = Os_AlarmGet(AlarmId);
+
+#if	(OS_APPLICATION_CNT > 1) && (OS_NUM_CORES > 1)
+	if (Os_ApplGetCore(aPtr->applOwnerId) != GetCoreID()) {
+		StatusType status = Os_NotifyCore(Os_ApplGetCore(aPtr->applOwnerId),
+		                                  OSServiceId_GetAlarmBase,
+		                                  AlarmId,
+		                                  (uint32_t)Info,
+		                                  0);
+		return status;
+	}
+#endif
+
+    rv = Os_AlarmGetBase(AlarmId,Info);
     if (rv != E_OK) {
         goto err;
     }
@@ -64,6 +81,17 @@ StatusType GetAlarm(AlarmType AlarmId, TickRefType Tick) {
 
     ALARM_CHECK_ID(AlarmId);
     aPtr = Os_AlarmGet(AlarmId);
+
+#if	(OS_APPLICATION_CNT > 1) && (OS_NUM_CORES > 1)
+	if (Os_ApplGetCore(aPtr->applOwnerId) != GetCoreID()) {
+		StatusType status = Os_NotifyCore(Os_ApplGetCore(aPtr->applOwnerId),
+		                                  OSServiceId_GetAlarm,
+		                                  AlarmId,
+		                                  (uint32_t)Tick,
+		                                  0);
+		return status;
+	}
+#endif
 
 	Irq_Save(flags);
 	if( aPtr->active == 0 ) {
@@ -111,12 +139,21 @@ StatusType SetRelAlarm(AlarmType AlarmId, TickType Increment, TickType Cycle){
 					(unsigned)Cycle);
 
 #if	(OS_APPLICATION_CNT > 1)
-
 	rv = Os_ApplHaveAccess( Os_AlarmGet(AlarmId)->accessingApplMask );
 	if( rv != E_OK ) {
 		goto err;
 	}
 
+#if (OS_NUM_CORES > 1)
+	if (Os_ApplGetCore(aPtr->applOwnerId) != GetCoreID()) {
+		StatusType status = Os_NotifyCore(Os_ApplGetCore(aPtr->applOwnerId),
+		                                  OSServiceId_SetRelAlarm,
+		                                  AlarmId,
+		                                  Increment,
+		                                  Cycle);
+		return status;
+	}
+#endif
 #endif
 
 	if( (Increment == 0) || (Increment > COUNTER_MAX(aPtr)) ) {
@@ -200,12 +237,21 @@ StatusType SetAbsAlarm(AlarmType AlarmId, TickType Start, TickType Cycle) {
 	aPtr = Os_AlarmGet(AlarmId);
 
 #if	(OS_APPLICATION_CNT > 1)
-
 	rv = Os_ApplHaveAccess( aPtr->accessingApplMask );
 	if( rv != E_OK ) {
 		goto err;
 	}
 
+#if (OS_NUM_CORES > 1)
+	if (Os_ApplGetCore(aPtr->applOwnerId) != GetCoreID()) {
+		StatusType status = Os_NotifyCore(Os_ApplGetCore(aPtr->applOwnerId),
+		                                  OSServiceId_SetAbsAlarm,
+		                                  AlarmId,
+		                                  Start,
+		                                  Cycle);
+		return status;
+	}
+#endif
 #endif
 
 	if( Start > COUNTER_MAX(aPtr) ) {
@@ -251,6 +297,17 @@ StatusType CancelAlarm(AlarmType AlarmId) {
 	ALARM_CHECK_ID(AlarmId);
 
 	aPtr = Os_AlarmGet(AlarmId);
+
+#if	(OS_APPLICATION_CNT > 1) && (OS_NUM_CORES > 1)
+	if (Os_ApplGetCore(aPtr->applOwnerId) != GetCoreID()) {
+		StatusType status = Os_NotifyCore(Os_ApplGetCore(aPtr->applOwnerId),
+		                                  OSServiceId_CancelAlarm,
+		                                  AlarmId,
+		                                  0,
+		                                  0);
+		return status;
+	}
+#endif
 
 	Irq_Save(flags);
 	if( aPtr->active == 0 ) {
@@ -328,16 +385,18 @@ void Os_AlarmCheck( OsCounterType *c_p ) {
 void Os_AlarmAutostart(void) {
 	int j;
 	for (j = 0; j < OS_ALARM_CNT; j++) {
-		OsAlarmType *alarmPtr;
-		alarmPtr = Os_AlarmGet(j);
-		if (alarmPtr->autostartPtr != NULL) {
-			const OsAlarmAutostartType *autoPtr = alarmPtr->autostartPtr;
+		if (Os_OnRunningCore(OBJECT_ALARM,j)) {
+			OsAlarmType *alarmPtr;
+			alarmPtr = Os_AlarmGet(j);
+			if (alarmPtr->autostartPtr != NULL) {
+				const OsAlarmAutostartType *autoPtr = alarmPtr->autostartPtr;
 
-			if (Os_Sys.appMode & autoPtr->appModeRef) {
-				if (autoPtr->autostartType == ALARM_AUTOSTART_ABSOLUTE) {
-					SetAbsAlarm(j, autoPtr->alarmTime, autoPtr->cycleTime);
-				} else {
-					SetRelAlarm(j, autoPtr->alarmTime, autoPtr->cycleTime);
+				if (OS_SYS_PTR->appMode & autoPtr->appModeRef) {
+					if (autoPtr->autostartType == ALARM_AUTOSTART_ABSOLUTE) {
+						SetAbsAlarm(j, autoPtr->alarmTime, autoPtr->cycleTime);
+					} else {
+						SetRelAlarm(j, autoPtr->alarmTime, autoPtr->cycleTime);
+					}
 				}
 			}
 		}

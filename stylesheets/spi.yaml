@@ -1,0 +1,65 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+# SpiGeneral
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SpiChannelBuffersAllowed
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SpiLevelDelivered
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SpiSupportConcurrentSyncTransmit
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SpiInterruptibleSeqAllowed
+
+
+# SpiDriver
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SpiMaxChannel
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SpiMaxJob
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SpiMaxSequence
+
+# SpiDriver.SpiChannel
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SpiChannelId
+
+# SpiDriver.SpiExternalDevice
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SpiCsSelection
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SpiEnableCs
+
+# SpiDriver.SpiJob
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SpiHwUnitSynchronous
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SpiJobId
+
+
+# SpiDriver.SpiSequence
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SpiSequenceId
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SpiInterruptibleSequence
+
+
+# SpiPublishedInfo
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: SpiMaxHwUnit
+  

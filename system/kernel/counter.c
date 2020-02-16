@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 #include <assert.h>
 #include <stdlib.h>
@@ -23,6 +22,7 @@
 #include "sched_table_i.h"
 #include "application.h"
 #include "arc.h"
+#include "multicore_i.h"
 
 #define COUNTER_STD_END 	\
 		goto ok;		\
@@ -52,6 +52,13 @@ StatusType IncrementCounter( CounterType counter_id ) {
 
 	rv = Os_ApplHaveAccess( cPtr->accessingApplMask );
 	if( rv != E_OK ) {
+		goto err;
+	}
+
+	/* Disallow incrementing a counter that is bound to an application
+	 * running on a different core than the current */
+	if (Os_ApplGetCore(cPtr->applOwnerId) != GetCoreID()) {
+		rv = E_OS_ACCESS; /* ASR spec does not say what error to return */
 		goto err;
 	}
 
@@ -99,6 +106,17 @@ StatusType GetCounterValue( CounterType counter_id , TickRefType tick_ref)
 	OsCounterType *cPtr;
 	cPtr = Os_CounterGet(counter_id);
 
+#if	(OS_APPLICATION_CNT > 1) && (OS_NUM_CORES > 1)
+	if (Os_ApplGetCore(cPtr->applOwnerId) != GetCoreID()) {
+		StatusType status = Os_NotifyCore(Os_ApplGetCore(cPtr->applOwnerId),
+		                                  OSServiceId_GetCounterValue,
+		                                  counter_id,
+		                                  (uint32_t)tick_ref,
+		                                  0);
+		return status;
+	}
+#endif
+
 	/** @req OS376 */
 	if( !IsCounterValid(counter_id) ) {
 		rv = E_OS_ID;
@@ -109,7 +127,7 @@ StatusType GetCounterValue( CounterType counter_id , TickRefType tick_ref)
 	if( cPtr->type == COUNTER_TYPE_HARD ) {
 		if( cPtr->driver == NULL ) {
 			/* It's OSINTERNAL */
-			*tick_ref = Os_Sys.tick;
+			*tick_ref = OS_SYS_PTR->tick;
 		} else {
 #if 0
 		/* We support only GPT for now */
@@ -156,6 +174,17 @@ StatusType GetElapsedCounterValue( CounterType counter_id, TickRefType val, Tick
 		goto err;
 	}
 
+#if	(OS_APPLICATION_CNT > 1) && (OS_NUM_CORES > 1)
+	if (Os_ApplGetCore(cPtr->applOwnerId) != GetCoreID()) {
+		StatusType status = Os_NotifyCore(Os_ApplGetCore(cPtr->applOwnerId),
+		                                  OSServiceId_GetElapsedValue,
+		                                  counter_id,
+		                                  (int32_t)val,
+		                                  (int32_t)elapsed_val);
+		return status;
+	}
+#endif
+
 	GetCounterValue(counter_id,&currTick);
 
 	/** @req OS382 */
@@ -178,6 +207,9 @@ StatusType GetElapsedCounterValue( CounterType counter_id, TickRefType val, Tick
  * Non-Autosar stuff
  */
 
+#if 0
+/* TODO: Fix this once the whole compiler / multicore combo gets figured out */
+
 /* The id of the counter driven by the os tick, or -1 if not used.
  * Using weak linking to set default value -1 if not set by config.
  */
@@ -189,27 +221,30 @@ extern CounterType Os_Arc_OsTickCounter;
 #else
 CounterType Os_Arc_OsTickCounter __attribute__((weak)) = -1;
 #endif
+#endif
+
+extern const CounterType Os_Arc_OsTickCounter[];
 
 void OsTick( void ) {
 	// if not used, os_tick_counter < 0
-	if (Os_Arc_OsTickCounter >= 0) {
+	if (Os_Arc_OsTickCounter[GetCoreID()] >= 0) {
 
-		OsCounterType *cPtr = Os_CounterGet(Os_Arc_OsTickCounter);
+		OsCounterType *cPtr = Os_CounterGet(Os_Arc_OsTickCounter[GetCoreID()]);
 #if defined(USE_KERNEL_EXTRA)
 		OsTaskVarType *pcbPtr;
 #endif
 
-		Os_Sys.tick++;
+		OS_SYS_PTR->tick++;
 
 		cPtr->val = Os_CounterAdd( cPtr->val, Os_CounterGetMaxValue(cPtr), 1 );
 
 #if defined(USE_KERNEL_EXTRA)
 		/* Check tasks in the timer queue (here from Sleep() or WaitSemaphore() ) */
-		TAILQ_FOREACH(pcbPtr, &Os_Sys.timerHead, timerEntry ) {
+		TAILQ_FOREACH(pcbPtr, &OS_SYS_PTR->timerHead, timerEntry ) {
 			--pcbPtr->timerDec;
 			if( pcbPtr->timerDec <= 0 ) {
 				/* Remove from the timer queue */
-				TAILQ_REMOVE(&Os_Sys.timerHead, pcbPtr, timerEntry);
+				TAILQ_REMOVE(&OS_SYS_PTR->timerHead, pcbPtr, timerEntry);
 				/* ... and add to the ready queue */
 				Os_TaskMakeReady(pcbPtr);
 			}
@@ -225,7 +260,7 @@ void OsTick( void ) {
 }
 
 TickType GetOsTick( void ) {
-	return Os_Sys.tick;
+	return OS_SYS_PTR->tick;
 }
 
 

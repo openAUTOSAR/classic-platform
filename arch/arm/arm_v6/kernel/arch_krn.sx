@@ -1,0 +1,201 @@
+#define _ASSEMBLER_
+#include "asm_offset.h"
+/*#include "arch_offset.h"*/
+#include "arch_stack.h"
+
+.extern Os_Sys
+.extern Irq_Entry
+.extern Os_ArchPanic
+.extern Os_ArchTest
+
+#define IRQ_ENABLE() 		cpsie 	i
+#define IRQ_DISABLE()		cpsid 	i
+
+#define REG_SAVE r0-r12
+
+
+.section .text
+.code   32
+.balign 4
+.global IrqHandler
+IrqHandler:
+	/* Setup return address. This requires subtraction from LR.*/
+	sub		lr, lr, #4
+
+	/* Store return stuff on system mode's stack, */
+	/* Decrement address Before each transfer.*/
+	srsdb	 sp!, #31 
+	/*Switch to system mode, disable interrupt*/
+	cpsid 	 if, #31  
+    /*Push registers on stack*/
+	push     {r0-r12,lr}
+	/*allocate stack space*/
+    sub      sp,sp,#C_SIZE
+    mov      r4,#LC_PATTERN
+    
+    /*store value in r4 = 0xad to the address (sp+C_CONTEXT_OFFS)*/
+    str      r4,[sp,#C_CONTEXT_OFFS] 
+    /*Put stack as first arg to Irq_Entry*/
+    mov 	 r0,sp
+	/* When at interrupt nest count = 0, load interrupt stack*/
+	ldr      r4,=Os_Sys
+	ldr      r5,[r4,#SYS_INT_NEST_CNT]
+	cmp      r5, #0
+	bgt      arggg
+	ldr      sp,[r4,#SYS_INT_STACK]
+
+arggg:
+    bl      dmb  /*memory barrier*/
+    bl      Irq_Entry
+    bl      dmb
+    /*pop from returned stack*/
+    mov     sp, r0			
+	/* Do a normal exception return */
+    add   sp,sp,#C_SIZE
+    /*Restore registers*/
+    pop     {r0-r12,lr}
+    /* Return From Exception Increment After */
+	/* Load the original SYS-mode CPSR and PC that were saved on the SYS
+	 * mode stack.  */
+    rfeia	sp!
+         
+/**
+ * Os_ArchSetSpAndCall
+ *
+ * @param sp Pointer to the stack
+ * @param f  Pointer to the function to call
+ */
+    
+ 	.global Os_ArchSetSpAndCall
+ 	.type	Os_ArchSetSpAndCall, %function
+Os_ArchSetSpAndCall:
+    mov	 sp,r0
+	mov	 lr,r1
+	bx	 lr
+
+/**
+ * Os_ArchSwapContext
+ *
+ * @param r0 - pcb for old task
+ * @param r1 - pcb for new task
+ *
+ * -------------- higher addr
+ * r4-r8,etc
+ * -------
+ * 4 - Large or Small context indicator
+ * 0 - ?
+ * ----------
+ *
+ */
+ 	.global Os_ArchSwapContext
+ 	.type	Os_ArchSwapContext, %function
+Os_ArchSwapContext:
+	// Save function call registers
+    push    {r0-r12,lr}
+	// Store the context frame
+    sub     sp,sp,#C_SIZE
+	// Save small-context indicator
+    mov     r4,#SC_PATTERN
+    str     r4,[sp,#C_CONTEXT_OFFS]
+	// store old stack for old task
+    mov 	r4,sp
+    str     r4,[r0,#PCB_STACK_CURR_P]
+    
+	// Flow down
+	// R1 - new PCB
+	.global Os_ArchSwapContextTo
+	.type	Os_ArchSwapContextTo, %function
+Os_ArchSwapContextTo:
+    // Get stack for new task
+    ldr 	r2,[r1,#PCB_STACK_CURR_P]
+    mov 	sp,r2
+    // Set new current pcb
+    ldr     r5,= Os_Sys
+    str     r1,[r5,#SYS_CURR_PCB_P]
+	// Restore C context
+    ldr     r6,[sp,#C_CONTEXT_OFFS]
+    cmp     r6,#SC_PATTERN
+    beq     os_sc_restore
+    cmp     r6,#LC_PATTERN
+    beq     os_lc_restore
+    b       Os_ArchPanic
+
+
+/* Restore the small context. Cases:
+ *  - "Normal" context switch between processes.
+ *  - We are in handler mode (this task preemted another task in interrupt
+ *    context). We need to terminate handler mode ( set to LR=0xffff_fff9 )
+ *    and
+ */
+os_sc_restore:
+    add     sp,sp,#C_SIZE
+    pop     {r0-r12,lr}
+    bx      lr
+
+/* Restore the large context. Cases:
+ *  1. Directly from Irq_Handler()
+ *    (the preempted task got swapped in directly)
+ *  2. The preempted task, got preemted by a task and
+ *    we have already returned from handler mode.
+ *
+ * NOTE ! Only case 2 is covered here, case 1 is handled in Irq_Handler
+ *        prologue
+ */
+ 
+os_lc_restore:
+	/* Do a normal exception return */
+    add    sp,sp,#C_SIZE
+    // Restore registers
+    pop     {r0-r12,lr}
+    /* Enable interrupts */
+    //cpsie	i  		
+	// Return using stuff from stack.
+    rfeia	sp!
+    
+    
+.global dmb
+dmb:
+	.func dmb
+	mov	r12, #0
+	mcr	p15, 0, r12, c7, c10, 5
+	mov 	pc, lr
+	.endfunc
+    
+
+      
+.global disable
+.type disable, %function
+/**
+ * @fn irqmask disable(void)
+ *
+ * Disable interrupts globally and returns the old state.
+ * @return state of interrupts before they were disabled
+ * orr r0, r0, #0x80
+ * msr cpsr_c, r0
+ */
+disable:
+	.func disable
+	mrs r0, cpsr
+	cpsid i
+		
+	mov pc, lr
+	.endfunc
+
+.global restore
+.type restore, %function
+/**
+ * @fn irqmask restore(irqmask)
+ *
+ * Restores the global interrupt mask to a previous state.
+ * @param im
+ *     irqmask of interrupt state to restore
+ * @return state of interrupts when called
+ * bic r0, r0, #0x80
+ */
+restore:
+.func restore
+	msr cpsr_c, r0
+	
+	mov pc, lr
+.endfunc
+

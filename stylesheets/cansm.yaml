@@ -1,0 +1,15 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanSmChangeBaudrateApi
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanSMBorTxConfirmationPolling
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: CanSMTransceiverId
+  
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Bus-off Recovery
+  members: [ CanSMBorCounterL1ToL2, CanSMBorTimeL1, CanSMBorTimeL2, CanSMBorTimeTxEnsured ]

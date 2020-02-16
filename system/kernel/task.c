@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 /* ----------------------------[includes]------------------------------------*/
 
@@ -26,6 +25,7 @@
 #include "arc.h"
 #include "arch.h"
 #include <string.h>
+#include "multicore_i.h"
 
 
 /* ----------------------------[private define]------------------------------*/
@@ -45,23 +45,33 @@ static inline void Os_TaskRunningToReady( OsTaskVarType *pcb ) {
 }
 
 
-// ActivateTask(pid)
-// SetEvent(pid)
+/**
+ * Make a task go the READY state
+ * Used by API: ActivateTask(), SetEvent()
+ *
+ * @param pcb
+ */
 void Os_TaskMakeReady( OsTaskVarType *pcb ) {
 	if( !( pcb->state & ( ST_READY | ST_RUNNING )) ) {
 		pcb->state = ST_READY;
-		TAILQ_INSERT_TAIL(& Os_Sys.ready_head,pcb,ready_list);
+		TAILQ_INSERT_TAIL(& OS_SYS_PTR->ready_head,pcb,ready_list);
 		OS_DEBUG(D_TASK,"Added %s to ready list\n",pcb->constPtr->name);
 	}
 }
 
-// WaitEvent
+/**
+ * Make a task go the the WAITING state
+ * Used by API: WaitEvent
+ *
+ *
+ * @param pcb Ptr to the task
+ */
 void Os_TaskMakeWaiting( OsTaskVarType *pcb )
 {
 	assert( pcb->state & (ST_READY|ST_RUNNING) );
 
 	pcb->state = ST_WAITING;
-	TAILQ_REMOVE(&Os_Sys.ready_head,pcb,ready_list);
+	TAILQ_REMOVE(&OS_SYS_PTR->ready_head,pcb,ready_list);
 	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->constPtr->name);
 }
 
@@ -72,7 +82,7 @@ static inline void Os_TaskMakeSleeping( OsTaskVarType *pcb )
 	assert( pcb->state & (ST_READY|ST_RUNNING) );
 
 	pcb->state = ST_WAITING | ST_SLEEPING;
-	TAILQ_REMOVE(&Os_Sys.ready_head,pcb,ready_list);
+	TAILQ_REMOVE(&OS_SYS_PTR->ready_head,pcb,ready_list);
 	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->constPtr->name);
 }
 
@@ -82,7 +92,7 @@ static inline void Os_TaskMakeWaitingOnSem( OsTaskVarType *pcb )
 	assert( pcb->state & (ST_READY|ST_RUNNING) );
 
 	pcb->state = ST_WAITING_SEM;
-	TAILQ_REMOVE(&Os_Sys.ready_head,pcb,ready_list);
+	TAILQ_REMOVE(&OS_SYS_PTR->ready_head,pcb,ready_list);
 	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->constPtr->name);
 }
 
@@ -94,7 +104,7 @@ static inline void Os_TaskMakeSuspended( OsTaskVarType *pcb )
 	{
 	assert( pcb->state & (ST_READY|ST_RUNNING) );
 	pcb->state = ST_SUSPENDED;
-	TAILQ_REMOVE(&Os_Sys.ready_head,pcb,ready_list);
+	TAILQ_REMOVE(&OS_SYS_PTR->ready_head,pcb,ready_list);
 	OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->constPtr->name);
 }
 
@@ -105,9 +115,6 @@ static inline void Os_TaskMakeSuspended( OsTaskVarType *pcb )
 
 /** @req OS067 */
 
-_Bool os_pcb_pid_valid( OsTaskVarType *restrict pcb ) {
-	return ( pcb->constPtr->pid > OS_TASK_CNT ) ? 0 : 1;
-}
 /**
  * Start an extended task.
  * Tasks done:
@@ -228,21 +235,8 @@ static void Os_StackFill(OsTaskVarType *pcbPtr) {
 
 	assert(pcbPtr->stack.curr > pcbPtr->stack.top);
 
-	while (p > (uint8_t *) pcbPtr->stack.top) {
-		--p;
-		*p = STACK_PATTERN;
+	memset(pcbPtr->stack.top,STACK_PATTERN, p - (uint8_t *)pcbPtr->stack.top );
 	}
-}
-
-#if 0
-/**
- *
- * @param pcbPtr
- */
-static void Os_TaskSetEntry(OsTaskVarType *pcbPtr ) {
-
-}
-#endif
 
 
 /**
@@ -267,57 +261,6 @@ void Os_TaskContextInit( OsTaskVarType *pcb ) {
 	Os_ArchSetupContext(pcb);
 }
 
-/**
- *
- * @param pcb
- */
-void Os_ContextReInit( OsTaskVarType *pcbPtr ) {
-	Os_StackSetup(pcbPtr);
-}
-
-#if 0
-/**
- * Search for a specific task in the pcb list.
- *
- * @param tid The task id to search for
- * @return Ptr to the found pcb or NULL
- */
-OsTaskVarType *Os_TaskGet( TaskType tid ) {
-	OsTaskVarType *i_pcb;
-	TAILQ_FOREACH(i_pcb,& Os_Sys.pcb_head,pcb_list) {
-		if(i_pcb->constPtr->pid == tid ) {
-			return i_pcb;
-		}
-	}
-
-	assert(0);
-	return NULL;
-}
-#endif
-
-#if 0
-/**
- * Adds a pcb to the list of pcb's
- * @param pcb
- */
-TaskType Os_AddTask( OsTaskVarType *pcb ) {
-	long msr;
-
-	Irq_Save(msr);  // Save irq status and disable interrupts
-
-	pcb->pid = Os_Sys.task_cnt;
-	// Add to list of PCB's
-	TAILQ_INSERT_TAIL(& Os_Sys.pcb_head,pcb,pcb_list);
-	Os_Sys.task_cnt++;
-	Os_Sys.isrCnt++;
-
-	Irq_Restore(msr);  // Restore interrupts
-	return pcb->pid;
-}
-#endif
-
-
-#define PRIO_ILLEGAL	-100
 
 /**
  * Find the top priority task. Even the running task is included.
@@ -334,21 +277,23 @@ OsTaskVarType *Os_TaskGetTop( void ){
 
 //	OS_DEBUG(D_TASK,"os_find_top_prio_proc\n");
 
-	TAILQ_FOREACH(i_pcb,& Os_Sys.ready_head,ready_list) {
-		// all ready task are canidates
-		if( i_pcb->state & (ST_READY|ST_RUNNING)) {
-			if( top_prio != PRIO_ILLEGAL ) {
-				if( i_pcb->activePriority > top_prio ) {
+	TAILQ_FOREACH(i_pcb,& OS_SYS_PTR->ready_head,ready_list) {
+		// all ready task on the current core are canidates
+		if (Os_OnRunningCore(OBJECT_TASK,i_pcb->constPtr->pid)) {
+			if( i_pcb->state & (ST_READY|ST_RUNNING)) {
+				if( top_prio != PRIO_ILLEGAL ) {
+					if( i_pcb->activePriority > top_prio ) {
+						top_prio = i_pcb->activePriority;
+						top_prio_pcb = i_pcb;
+					}
+				} else {
 					top_prio = i_pcb->activePriority;
 					top_prio_pcb = i_pcb;
 				}
 			} else {
-				top_prio = i_pcb->activePriority;
-				top_prio_pcb = i_pcb;
+				assert(0);
 			}
-		} else {
-			assert(0);
-		}
+			}
 	}
 
 	assert(top_prio_pcb!=NULL);
@@ -399,7 +344,7 @@ void Os_Dispatch( uint32_t op ) {
 	OsTaskVarType *pcbPtr;
 	OsTaskVarType *currPcbPtr = Os_SysTaskGetCurr();
 
-	assert(Os_Sys.intNestCnt == 0);
+	assert(OS_SYS_PTR->intNestCnt == 0);
 	assert(Os_SchedulerResourceIsFree());
 
 	/* When calling post hook we must still be in ST_RUNNING */
@@ -423,7 +368,7 @@ void Os_Dispatch( uint32_t op ) {
 	} else if( op & OP_ACTIVATE_TASK ) {
 		Os_TaskMakeReady(currPcbPtr);
 	} else if( op & OP_CHAIN_TASK ) {
-		assert( Os_Sys.chainedPcbPtr != NULL );
+		assert( OS_SYS_PTR->chainedPcbPtr != NULL );
 
 		/*  #  from chain  top
 		 * ----------------------------------------------------------
@@ -436,7 +381,7 @@ void Os_Dispatch( uint32_t op ) {
 		 *
 		 *  - Chained task is always READY when coming from ChainTask()
 		 */
-		if( currPcbPtr != Os_Sys.chainedPcbPtr ) {
+		if( currPcbPtr != OS_SYS_PTR->chainedPcbPtr ) {
 			/* #3 and #4 */
 			--currPcbPtr->activations;
 			if( currPcbPtr->activations <= 0 ) {
@@ -447,7 +392,7 @@ void Os_Dispatch( uint32_t op ) {
 			}
 			/* Chained task is already in READY */
 		}
-		Os_Sys.chainedPcbPtr = NULL;
+		OS_SYS_PTR->chainedPcbPtr = NULL;
 
 	} else if( op & OP_TERMINATE_TASK ) {
 		/*@req OSEK TerminateTask
@@ -470,7 +415,7 @@ void Os_Dispatch( uint32_t op ) {
 	/* Swap if we found any process or are forced (multiple activations)*/
 	if( pcbPtr != currPcbPtr ) {
 
-		if( (op & OP_CHAIN_TASK) && ( currPcbPtr == Os_Sys.chainedPcbPtr ) ) {
+		if( (op & OP_CHAIN_TASK) && ( currPcbPtr == OS_SYS_PTR->chainedPcbPtr ) ) {
 			/* #2 */
 			Os_TaskRunningToReady(currPcbPtr);
 		}
@@ -535,7 +480,7 @@ void Os_Dispatch( uint32_t op ) {
 void Os_TaskSwapContext(OsTaskVarType *old_pcb, OsTaskVarType *new_pcb ) {
 	Os_SysTaskSetCurr(new_pcb);
 #if	(OS_USE_APPLICATIONS == STD_ON)
-	Os_Sys.currApplId = new_pcb->constPtr->applOwnerId;
+	OS_SYS_PTR->currApplId = new_pcb->constPtr->applOwnerId;
 #endif
 	Os_ResourceGetInternal();
 	Os_TaskMakeRunning(new_pcb);
@@ -548,7 +493,7 @@ void Os_TaskSwapContext(OsTaskVarType *old_pcb, OsTaskVarType *new_pcb ) {
 void Os_TaskSwapContextTo(OsTaskVarType *old_pcb, OsTaskVarType *new_pcb ) {
 	Os_SysTaskSetCurr(new_pcb);
 #if	(OS_USE_APPLICATIONS == STD_ON)
-	Os_Sys.currApplId = new_pcb->constPtr->applOwnerId;
+	OS_SYS_PTR->currApplId = new_pcb->constPtr->applOwnerId;
 #endif
 	Os_ResourceGetInternal();
 	Os_TaskMakeRunning(new_pcb);
@@ -591,10 +536,22 @@ void Os_Arc_GetTaskName(char *str, TaskType taskId) {
 StatusType GetTaskState(TaskType TaskId, TaskStateRefType State) {
 	state_t curr_state;
 	StatusType rv = E_OK;
+	OsTaskVarType *pcb 	= Os_TaskGet(TaskId);
 
 	TASK_CHECK_ID(TaskId);
 
-	curr_state = os_pcb_get_state(Os_TaskGet(TaskId));
+#if	(OS_APPLICATION_CNT > 1) && ( OS_NUM_CORES > 1)
+	if (Os_ApplGetCore(pcb->constPtr->applOwnerId) != GetCoreID()) {
+		StatusType status = Os_NotifyCore(Os_ApplGetCore(pcb->constPtr->applOwnerId),
+		                                  OSServiceId_GetTaskState,
+		                                  TaskId,
+		                                  (uint32_t)State,
+		                                  (uint32_t)0);
+		return status;
+	}
+#endif
+
+	curr_state = os_pcb_get_state(pcb);
 
 	// TODO: Lazy impl. for now */
 	switch(curr_state) {
@@ -624,9 +581,9 @@ StatusType GetTaskID( TaskRefType TaskID ) {
 
 	/* Test specification say return CALLEVEL if in ISR
 	 * but impl. spec says otherwise */
-	if( Os_Sys.intNestCnt == 0 ) {
-		if( Os_Sys.currTaskPtr->state & ST_RUNNING ) {
-			*TaskID = Os_Sys.currTaskPtr->constPtr->pid;
+	if( OS_SYS_PTR->intNestCnt == 0 ) {
+		if( OS_SYS_PTR->currTaskPtr->state & ST_RUNNING ) {
+			*TaskID = OS_SYS_PTR->currTaskPtr->constPtr->pid;
 		} else {
 			/* This is not a real error since this could
 			 * be the case when called from ErrorHook */
@@ -648,7 +605,7 @@ StatusType GetTaskID( TaskRefType TaskID ) {
 ISRType GetISRID( void ) {
 
 	/** @req OS264 */
-	if(Os_Sys.intNestCnt == 0 ) {
+	if(OS_SYS_PTR->intNestCnt == 0 ) {
 		return INVALID_ISR;
 	}
 
@@ -714,7 +671,17 @@ StatusType ActivateTask( TaskType TaskID ) {
 	if( rv != E_OK ) {
 		goto err;
 	}
+#if (OS_NUM_CORES > 1)
 
+	if (Os_ApplGetCore(pcb->constPtr->applOwnerId) != GetCoreID()) {
+		StatusType status = Os_NotifyCore(Os_ApplGetCore(pcb->constPtr->applOwnerId),
+		                                  OSServiceId_ActivateTask,
+		                                  TaskID,
+		                                  (uint32_t)NULL,
+		                                  (uint32_t)NULL);
+		return status;
+	}	
+#endif
 #endif
 
 	/* @req OS093 ActivateTask */
@@ -743,7 +710,7 @@ StatusType ActivateTask( TaskType TaskID ) {
 
 	/* Preempt only if we are preemptable and target has higher prio than us */
 	if(	(Os_SysTaskGetCurr()->constPtr->scheduling == FULL) &&
-		(Os_Sys.intNestCnt == 0) &&
+		(OS_SYS_PTR->intNestCnt == 0) &&
 		(pcb->activePriority > Os_SysTaskGetCurr()->activePriority) &&
 		(Os_SchedulerResourceIsFree()))
 	{
@@ -786,25 +753,17 @@ StatusType ActivateTask( TaskType TaskID ) {
 
 StatusType TerminateTask( void ) {
 	OsTaskVarType *curr_pcb = Os_SysTaskGetCurr();
-	StatusType rv = E_OK;
-	uint32_t flags;
+	StatusType rv;
 
 	OS_DEBUG(D_TASK,"# TerminateTask %s\n",curr_pcb->constPtr->name);
 
 #if (OS_STATUS_EXTENDED == STD_ON )
 
 
-	if( Os_Sys.intNestCnt != 0 ) {
+	if( OS_SYS_PTR->intNestCnt != 0 ) {
 		rv =  E_OS_CALLEVEL;
 		goto err;
 	}
-
-#if 0
-	if ( Os_SchedulerResourceIsOccupied() ) {
-		rv =  E_OS_RESOURCE;
-		goto err;
-	}
-#endif
 
 	if( Os_TaskOccupiesResources(curr_pcb) ) {
 		/* Note! Do NOT release the resource here */
@@ -812,8 +771,13 @@ StatusType TerminateTask( void ) {
 		goto err;
 	}
 
+	if (Os_TaskOccupiesSpinlocks(curr_pcb) ) {
+		rv =  E_OS_SPINLOCK;
+		goto err;
+	}
+
 #endif
-	Irq_Save(flags);
+	Irq_Disable();
 
 	/* Force the dispatcher to find something, even if its us */
 	Os_Dispatch(OP_TERMINATE_TASK);
@@ -836,7 +800,7 @@ StatusType ChainTask( TaskType TaskId ) {
 	/* extended */
 	TASK_CHECK_ID(TaskId);
 
-	if( Os_Sys.intNestCnt != 0 ) {
+	if( OS_SYS_PTR->intNestCnt != 0 ) {
 		/* extended */
 		rv = E_OS_CALLEVEL;
 		goto err;
@@ -862,7 +826,14 @@ StatusType ChainTask( TaskType TaskId ) {
 		Irq_Restore(flags);
 		goto err;
 	}
+
+	if (Os_TaskOccupiesSpinlocks(curr_pcb) ) {
+		rv =  E_OS_SPINLOCK;
+		Irq_Restore(flags);
+		goto err;
+	}
 #endif
+
 
 //	if( os_pcb_get_state(pcb) != ST_SUSPENDED ) {
 	if (curr_pcb != pcb) {
@@ -884,7 +855,21 @@ StatusType ChainTask( TaskType TaskId ) {
 
 	}
 
-	Os_Sys.chainedPcbPtr = pcb;
+
+	OS_SYS_PTR->chainedPcbPtr = pcb;
+
+
+#if	(OS_APPLICATION_CNT > 1) && (OS_NUM_CORES > 1)
+	if (Os_ApplGetCore(pcb->constPtr->applOwnerId) != GetCoreID()) {
+		StatusType status = Os_NotifyCore(Os_ApplGetCore(pcb->constPtr->applOwnerId),
+		                                  OSServiceId_ChainTask,
+		                                  TaskId,
+		                                  0,
+		                                  0);
+		OS_SYS_PTR->chainedPcbPtr = curr_pcb;
+		(void)status;
+	}
+#endif
 
 	Os_Dispatch(OP_CHAIN_TASK);
 
@@ -913,7 +898,7 @@ StatusType Schedule( void ) {
 	OS_DEBUG(D_TASK,"# Schedule %s\n",curr_pcb->constPtr->name);
 
 	/* Check that we are not calling from interrupt context */
-	if( Os_Sys.intNestCnt != 0 ) {
+	if( OS_SYS_PTR->intNestCnt != 0 ) {
 		rv =  E_OS_CALLEVEL;
 		goto err;
 	}
@@ -934,15 +919,16 @@ StatusType Schedule( void ) {
 	if( Os_SysTaskGetCurr()->constPtr->scheduling != NON ) {
 		return E_OK;
 	}
+	{
+        Irq_Save(flags);
+        OsTaskVarType* top_pcb = Os_TaskGetTop();
+        /* only dispatch if some other ready task has higher prio */
+        if (top_pcb->activePriority > Os_SysTaskGetCurr()->activePriority) {
+            Os_Dispatch(OP_SCHEDULE);
+        }
 
-	Irq_Save(flags);
-	OsTaskVarType* top_pcb = Os_TaskGetTop();
-	/* only dispatch if some other ready task has higher prio */
-	if (top_pcb->activePriority > Os_SysTaskGetCurr()->activePriority) {
-		Os_Dispatch(OP_SCHEDULE);
+        Irq_Restore(flags);
 	}
-
-	Irq_Restore(flags);
 	// Prevent label warning. Remove this when proper error handling is implemented.
 	if (0) goto err;
 

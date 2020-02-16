@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 /** @reqSettings DEFAULT_SPECIFICATION_REVISION=3.1.5 */
 
@@ -251,7 +250,7 @@ typedef struct {
 typedef union {
 	FlsBlockControlType	BlockCtrl;
 	FlsBankControlType 	BankCtrl;
-    uint8 Byte[ADMIN_SIZE];
+	uint8 Byte[1];
 } ReadWriteBufferType;
 
 /*
@@ -501,6 +500,7 @@ static int BlankCheck(uint8 *data, uint8_t val, size_t size) {
 
 static void AbortStartup(MemIf_JobResultType result)
 {
+	(void)result; /* Avoid compiler warning - remove it ?*/
 	AdminFls.FailCounter++;
 	if(AdminFls.FailCounter >= MAX_NOF_FAILED_STARTUP_ATTEMPTS) {
 		DET_REPORTERROR(MODULE_ID_FEE, 0, FEE_STARTUP_ID, FEE_FLASH_CORRUPT);
@@ -770,7 +770,7 @@ static void StartupReadBlockAdminWait(void)
 			   RWBuffer.BlockCtrl.DataPage.Data.BlockDataAddress >= CurrentJob.Startup.BlockDataAddress &&
 			   RWBuffer.BlockCtrl.DataPage.Data.BlockDataAddress < CurrentJob.Startup.BlockAdminAddress &&
 			   RWBuffer.BlockCtrl.DataPage.Data.BlockDataAddress == PAGE_ALIGN(RWBuffer.BlockCtrl.DataPage.Data.BlockDataAddress) &&
-               RWBuffer.BlockCtrl.DataPage.Data.BlockDataLength + RWBuffer.BlockCtrl.DataPage.Data.BlockDataAddress <= CurrentJob.Startup.BlockAdminAddress))) {
+			   RWBuffer.BlockCtrl.DataPage.Data.BlockDataLength + RWBuffer.BlockCtrl.DataPage.Data.BlockDataAddress < CurrentJob.Startup.BlockAdminAddress))) {
 				// invalidated address or DataAddress within bank and has valid alignment, InvBlockDataLength valid, BlockDataLength has a reasonable value, we assume that BlockDataLength is valid
 				uint16 blockIndex = GetBlockIdxFromBlockNumber(RWBuffer.BlockCtrl.IdPage.Data.BlockNo);
 				if(MEMIF_JOB_OK == readResult &&
@@ -789,7 +789,7 @@ static void StartupReadBlockAdminWait(void)
 				// next admin block
 				CurrentJob.Startup.BlockAdminAddress -= ADMIN_SIZE;
 				// check if room for more admin blocks
-                if(CurrentJob.Startup.BlockAdminAddress >= CurrentJob.Startup.BlockDataAddress) {
+				if(CurrentJob.Startup.BlockAdminAddress > CurrentJob.Startup.BlockDataAddress) {
 					// still room for admin blocks, read next admin block
 					AdminFls.State = FEE_STARTUP_READ_BLOCK_ADMIN;
 					StartupReadBlockAdmin();
@@ -806,7 +806,7 @@ static void StartupReadBlockAdminWait(void)
 				// invalid admin block: ignore
 				CurrentJob.Startup.BlockAdminAddress -= ADMIN_SIZE;
 				// check if room for more admin blocks
-                if(CurrentJob.Startup.BlockAdminAddress >= CurrentJob.Startup.BlockDataAddress) {
+				if(CurrentJob.Startup.BlockAdminAddress > CurrentJob.Startup.BlockDataAddress) {
 					// still room for admin blocks, read next admin block
 					AdminFls.State = FEE_STARTUP_READ_BLOCK_ADMIN;
 					StartupReadBlockAdmin();
@@ -845,7 +845,6 @@ static void Reading(void)
 				AdminFls.State = FEE_READ_WAIT;
 			} else {
 				AdminFls.BlockDescrTbl[CurrentJob.Read.BlockIdx].BlockDataAddress = BLOCK_CORRUPT;
-                AdminFls.pendingJob &= ~PENDING_READ_JOB;
 				FinishJob(MEMIF_BLOCK_INCONSISTENT);
 			}
 		}
@@ -882,7 +881,13 @@ static void WriteAdminData(void) {
 		if (ret == E_OK) {
 			AdminFls.State++;
 		} else {
-        	AbortWriteJob();
+			// failed to write: update pointers and set state to idle to restart
+			AdminFls.Write.NewBlockDataAddress += PAGE_ALIGN(RWBuffer.BlockCtrl.DataPage.Data.BlockDataLength); // use length from RWBuffer since function is reused for garbage collect
+			AdminFls.Write.NewBlockAdminAddress -= ADMIN_SIZE;
+			AdminFls.State = FEE_IDLE;
+			// increase error counter
+			AdminFls.FailCounter++;
+			// todo: check max fail counter value
 		}
 	}
 	Irq_Restore(state);
@@ -1038,21 +1043,10 @@ static void WriteCheckAdminDataWait(void) {
 }
 
 static void EraseBank(void) {
-    imask_t state;
-    Irq_Save(state);
-    if(Fls_GetStatus() == MEMIF_IDLE) {
 	SetFlsJobBusy();
-        Std_ReturnType ret = Fls_Erase(BankProp[AdminFls.Erase.BankIdx].Start, BankProp[AdminFls.Erase.BankIdx].End - BankProp[AdminFls.Erase.BankIdx].Start);
-        if (ret == E_OK) {
+	if (Fls_Erase(BankProp[AdminFls.Erase.BankIdx].Start, BankProp[AdminFls.Erase.BankIdx].End - BankProp[AdminFls.Erase.BankIdx].Start) == E_OK) {
 		AdminFls.State = FEE_ERASE_BANK_WAIT;
-        } else {
-            // failed to write, set mode to idle to restart
-            AdminFls.State = FEE_IDLE;
-            // increase error counter
-            AdminFls.FailCounter++;
 	}
-}
-    Irq_Restore(state);
 }
 
 static void WriteBankHeader() {
@@ -1108,28 +1102,24 @@ static void WriteBankHeaderWait() {
 			AdminFls.State = FEE_IDLE;
 		} else {
 			// increase error counter
-			AdminFls.FailCounter++;
-			if(AdminFls.FailCounter > MAX_NOF_FAILED_GC_ATTEMPTS) {
-				AdminFls.State = FEE_CORRUPTED;
-				if(ModuleStatus != MEMIF_IDLE) {
-					FinishJob(MEMIF_JOB_FAILED);
-				}
-				} else {
-					// failed to write, set mode to idle to restart
-					AdminFls.State = FEE_ERASE_BANK;
-				}
-			}
+		    AdminFls.FailCounter++;
+		    if(AdminFls.FailCounter > MAX_NOF_FAILED_GC_ATTEMPTS) {
+		        AdminFls.State = FEE_CORRUPTED;
+		        if(ModuleStatus != MEMIF_IDLE) {
+		            FinishJob(MEMIF_JOB_FAILED);
+		        }
+		    } else {
+                // failed to write, set mode to idle to restart
+                AdminFls.State = FEE_ERASE_BANK;
+		    }
 		}
+	}
 }
 
 static void GarbageCollectStartJob(void)
 {
 	// init the rw buffer
-    if(AdminFls.BlockDescrTbl[AdminFls.GarbageCollect.BlockIdx].BlockDataAddress == INVALIDATED_BLOCK) {
-        RWBuffer.BlockCtrl.DataPage.Data.BlockDataAddress = INVALIDATED_BLOCK;
-    } else {
 	RWBuffer.BlockCtrl.DataPage.Data.BlockDataAddress = AdminFls.Write.NewBlockDataAddress;
-    }
 	RWBuffer.BlockCtrl.DataPage.Data.BlockDataLength = Fee_Config.BlockConfig[AdminFls.GarbageCollect.BlockIdx].BlockSize;
 	RWBuffer.BlockCtrl.DataPage.Data.InvBlockDataLength = ~RWBuffer.BlockCtrl.DataPage.Data.BlockDataLength;
 	// write the data part of the admin block
@@ -1149,8 +1139,8 @@ static void GarbageCollectRead(void)
 		if (ret == E_OK) {
 			AdminFls.State++;
 		} else {
-            // failed to read data, set data to corrupt
-            AdminFls.BlockDescrTbl[AdminFls.GarbageCollect.BlockIdx].BlockDataAddress = BLOCK_CORRUPT;
+			// failed to read data, set data to invalid
+			AdminFls.BlockDescrTbl[AdminFls.GarbageCollect.BlockIdx].BlockDataAddress = 0;
 			AdminFls.GarbageCollect.BlockIdx++;
 			AbortGCJob();
 		}
@@ -1179,19 +1169,10 @@ static void GarbageCollectWriteAdminDataWait(void) {
 	if (CheckFlsJobFinished()) {
 		writeResult = Fls_GetJobResult();
 		if (MEMIF_JOB_OK == writeResult) {
-            if(AdminFls.BlockDescrTbl[AdminFls.GarbageCollect.BlockIdx].BlockDataAddress == INVALIDATED_BLOCK) {
-                // no data to write, write remaining part of admin block
-                RWBuffer.BlockCtrl.IdPage.Data.BlockNo = Fee_Config.BlockConfig[AdminFls.GarbageCollect.BlockIdx].BlockNumber;
-                RWBuffer.BlockCtrl.IdPage.Data.InvBlockNo = ~Fee_Config.BlockConfig[AdminFls.GarbageCollect.BlockIdx].BlockNumber;
-                RWBuffer.BlockCtrl.IdPage.Data.Magic = BlockMagicMaster;
-                AdminFls.State = FEE_GARBAGE_COLLECT_WRITE_ADMIN_ID;
-                WriteAdminId();
-            } else {
 			// admin data written, read data
 			AdminFls.GarbageCollect.Offset = 0;
 			AdminFls.State = FEE_GARBAGE_COLLECT_READ;
 			GarbageCollectRead();
-            }
 		} else {
 			// failed to write, check is anything was written
 			memset(RWBuffer.Byte, ~FLS_ERASED_VALUE, ADMIN_SIZE);
@@ -1216,7 +1197,7 @@ static void GarbageCollectWriteData(void) {
 			AbortGCJob();
 		}
 	}
-    Irq_Restore(state);
+	Irq_Restore(state);
 }
 
 static void GarbageCollectReadWait(void)
@@ -1229,7 +1210,7 @@ static void GarbageCollectReadWait(void)
 			GarbageCollectWriteData();
 		} else {
 			// failed to read data, set data to invalid
-            AdminFls.BlockDescrTbl[AdminFls.GarbageCollect.BlockIdx].BlockDataAddress = BLOCK_CORRUPT;
+			AdminFls.BlockDescrTbl[AdminFls.GarbageCollect.BlockIdx].BlockDataAddress = 0;
 			AdminFls.GarbageCollect.BlockIdx++;
 			AbortGCJob();
 		}
@@ -1267,11 +1248,9 @@ static void GarbageCollectWriteAdminIdWait(void) {
 		readResult = Fls_GetJobResult();
 		if (MEMIF_JOB_OK == readResult) {
 			// garbage collect of block is done
-            if(AdminFls.BlockDescrTbl[AdminFls.GarbageCollect.BlockIdx].BlockDataAddress != INVALIDATED_BLOCK) {
 			AdminFls.BlockDescrTbl[AdminFls.GarbageCollect.BlockIdx].BlockDataAddress = AdminFls.Write.NewBlockDataAddress;
 			// all data written. Update admin data
 			AdminFls.Write.NewBlockDataAddress += PAGE_ALIGN(Fee_Config.BlockConfig[AdminFls.GarbageCollect.BlockIdx].BlockSize);
-            }
 			AdminFls.Write.NewBlockAdminAddress -= ADMIN_SIZE;
 			AdminFls.GarbageCollect.BlockIdx++;
 			// change state to idle to continue with next block
@@ -1305,26 +1284,24 @@ static void Idle(void) {
 		Reading();
 	} else if((AdminFls.pendingJob & PENDING_WRITE_JOB) && (
 				(AdminFls.pendingJob & PENDING_FORCED_GARBAGE_COLLECT_JOB) == 0 ||
-                CurrentJob.Write.Invalidate == 1 ||
 				IS_ADDRESS_WITHIN_BANK(AdminFls.BlockDescrTbl[CurrentJob.Write.BlockIdx].BlockDataAddress, AdminFls.GarbageCollect.BankIdx) )
 			) {
 		// pending write job while not in forced garbage collect or data to write is not gargbage collected
 		uint8 nextBank = NEXT_BANK_IDX(AdminFls.Write.BankIdx);
 		sint32 remainingBytesInBank = AdminFls.Write.NewBlockAdminAddress - AdminFls.Write.NewBlockDataAddress; // This value might be negative: use signed type
-        sint32 bytesToWrite = (CurrentJob.Write.Invalidate == 1)? 0 : Fee_Config.BlockConfig[CurrentJob.Write.BlockIdx].BlockSize;
 		if((AdminFls.pendingJob & PENDING_FORCED_GARBAGE_COLLECT_JOB) == 0 &&
-           remainingBytesInBank < (sint32)(AdminFls.GarbageCollect.TotalFeeSize + bytesToWrite + ADMIN_SIZE + FORCED_GARBAGE_COLLECT_MARGIN) &&
+		   remainingBytesInBank < (sint32)(AdminFls.GarbageCollect.TotalFeeSize + Fee_Config.BlockConfig[CurrentJob.Write.BlockIdx].BlockSize + FORCED_GARBAGE_COLLECT_MARGIN) &&
 		   nextBank == AdminFls.GarbageCollect.BankIdx
 		   ) {
 			// no room for all data when this data written, and all banks written: set forced garbage collect
 			AdminFls.pendingJob |= PENDING_FORCED_GARBAGE_COLLECT_JOB;
 			// stay in idle and perform a new evaluation in next main loop
-        } else if(remainingBytesInBank < bytesToWrite) {
+		} else if(remainingBytesInBank < Fee_Config.BlockConfig[CurrentJob.Write.BlockIdx].BlockSize) {
 			// no room for this block, is it possible to switch bank?
 			if(nextBank == AdminFls.GarbageCollect.BankIdx) {
 				// next bank is garbage collect bank, not possible to switch bank
 				// throw stored data and hope that garbage collect will finish before power is switched off and new data written. set fault code?
-                AdminFls.BlockDescrTbl[CurrentJob.Write.BlockIdx].BlockDataAddress = BLOCK_CORRUPT; // next call to idle will continue with garbage collect of the other blocks, stay in idle
+				AdminFls.BlockDescrTbl[CurrentJob.Write.BlockIdx].BlockDataAddress = 0; // next call to idle will continue with garbage collect of the other blocks, stay in idle
 			} else if (nextBank == AdminFls.Erase.BankIdx) {
 				// next bank isn't erased and not garbage collect bank: erase job pending, erase bank to get room for new data
 				AdminFls.State = FEE_ERASE_BANK;
@@ -1345,11 +1322,8 @@ static void Idle(void) {
 		AdminFls.State = FEE_ERASE_BANK;
 	} else if(AdminFls.pendingJob & PENDING_FORCED_GARBAGE_COLLECT_JOB) {
 		// search for next block to garbage collect
-        while(AdminFls.GarbageCollect.BlockIdx < FEE_NUM_OF_BLOCKS && (
-                AdminFls.BlockDescrTbl[AdminFls.GarbageCollect.BlockIdx].BlockDataAddress == BLOCK_CORRUPT ||
-                (AdminFls.BlockDescrTbl[AdminFls.GarbageCollect.BlockIdx].BlockDataAddress != INVALIDATED_BLOCK &&
-                !IS_ADDRESS_WITHIN_BANK(AdminFls.BlockDescrTbl[AdminFls.GarbageCollect.BlockIdx].BlockDataAddress ,AdminFls.GarbageCollect.BankIdx))
-             )
+		while(AdminFls.GarbageCollect.BlockIdx < FEE_NUM_OF_BLOCKS &&
+			  !IS_ADDRESS_WITHIN_BANK(AdminFls.BlockDescrTbl[AdminFls.GarbageCollect.BlockIdx].BlockDataAddress ,AdminFls.GarbageCollect.BankIdx)
 			) {
 			// block isn't in the bank that currently is garbage collected: try next block
 			AdminFls.GarbageCollect.BlockIdx++;
@@ -1369,10 +1343,9 @@ static void Idle(void) {
 			AdminFls.pendingJob |= PENDING_ERASE_JOB;
 		} else {
 			sint32 remainingBytes = AdminFls.Write.NewBlockAdminAddress - AdminFls.Write.NewBlockDataAddress;
-            sint32 bytesToWrite = (AdminFls.BlockDescrTbl[AdminFls.GarbageCollect.BlockIdx].BlockDataAddress == INVALIDATED_BLOCK)? 0 : Fee_Config.BlockConfig[AdminFls.GarbageCollect.BlockIdx].BlockSize;
-            if (bytesToWrite > remainingBytes) {
+			if ((sint32)Fee_Config.BlockConfig[AdminFls.GarbageCollect.BlockIdx].BlockSize > remainingBytes) {
 				// no room in bank. Throw data, set fault code?
-                AdminFls.BlockDescrTbl[AdminFls.GarbageCollect.BlockIdx].BlockDataAddress = BLOCK_CORRUPT;
+				AdminFls.BlockDescrTbl[AdminFls.GarbageCollect.BlockIdx].BlockDataAddress = 0;
 				AdminFls.GarbageCollect.BlockIdx++;
 			} else {
 				GarbageCollectStartJob();
@@ -1380,26 +1353,12 @@ static void Idle(void) {
 		}
 	} else if(AdminFls.pendingJob & PENDING_GARBAGE_COLLECT_JOB) {
 		// search for next block to garbage collect
-        while(AdminFls.GarbageCollect.BlockIdx < FEE_NUM_OF_BLOCKS) {
-            if(AdminFls.BlockDescrTbl[AdminFls.GarbageCollect.BlockIdx].BlockDataAddress == INVALIDATED_BLOCK) {
-                // block invalidated, invalidate again to garbage collect the invalidation
-                sint32 remainingBytes = AdminFls.Write.NewBlockAdminAddress - AdminFls.Write.NewBlockDataAddress;
-                sint32 bytesToWrite = 0;
-                if (bytesToWrite > remainingBytes) {
-                    // no room in bank. Throw data, set fault code?
-                    AdminFls.GarbageCollect.BlockIdx++;
-                } else {
-                    GarbageCollectStartJob();
-                    break;
-                }
-            } else if(IS_ADDRESS_WITHIN_BANK(AdminFls.BlockDescrTbl[AdminFls.GarbageCollect.BlockIdx].BlockDataAddress ,AdminFls.GarbageCollect.BankIdx)) {
-                // block not garbage collected
-                break;
-            } else {
+		while(AdminFls.GarbageCollect.BlockIdx < FEE_NUM_OF_BLOCKS &&
+			  !IS_ADDRESS_WITHIN_BANK(AdminFls.BlockDescrTbl[AdminFls.GarbageCollect.BlockIdx].BlockDataAddress ,AdminFls.GarbageCollect.BankIdx)
+			) {
 			// block isn't in the bank that currently is garbage collected: try next block
 			AdminFls.GarbageCollect.BlockIdx++;
 		}
-        }
 		if(AdminFls.GarbageCollect.BlockIdx >= FEE_NUM_OF_BLOCKS) {
 			// garbage collect done
 			AdminFls.GarbageCollect.BankIdx = NEXT_BANK_IDX(AdminFls.GarbageCollect.BankIdx);
@@ -1450,6 +1409,7 @@ void Fee_SetMode(MemIf_ModeType mode)
 #if ( FLS_SET_MODE_API == STD_ON )
 	Fls_SetMode(mode);
 #else
+	(void)mode; /* Avoid compiler warning */
 	//lint --e{715}	PC-Lint (715) - variable "mode" not used in this case
 	DET_REPORTERROR(MODULE_ID_FEE, 0, FEE_SET_MODE_ID, FEE_E_NOT_SUPPORTED);
 #endif
@@ -1604,6 +1564,7 @@ Std_ReturnType Fee_EraseImmediateBlock(uint16 blockNumber)
 {
 	//lint --e{715}	PC-Lint (715) - function is not implemented and thus variable "blockNumber" is not used yet
 
+	(void)blockNumber; /* Avoid compiler warning */
 	DET_REPORTERROR(MODULE_ID_FEE, 0, FEE_ERASE_IMMEDIATE_ID, FEE_E_NOT_IMPLEMENTED_YET);
 
 

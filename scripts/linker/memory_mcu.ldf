@@ -1,0 +1,91 @@
+/*
+ * Harmonization of MEMORY section in linkerfiles.
+ *
+ * Description: 
+ *   L_SRAM_0           - Normally the only SRAM
+ *   L_SRAM_1           - Same level as SRAM_0
+ *   L_SRAM_CODE_CORE_0 - Local Code SRAM to core 0
+ *   L_SRAM_DATA_CORE_0 - Local Data SRAM to core 0
+ *   ....
+ *   L_FLASH_CODE_0  - Normally the only code flash
+ *   L_FLASH_DATA_0  - Normally the only data flash
+ *
+ *   Example: MCU with one SRAM and Flash
+ *     L_FLASH_CODE_0 : ORIGIN = 0x0 , LENGTH = 0x10000
+ *     L_FLASH_DATA_0 : ORIGIN = 0xffff0000 LENGTH = 0x1000
+ *     L_SRAM_0       : ORIGIN = 0x40000000 , LENGTH = 0x1000
+ *
+ */
+
+#include "compiler.ldf"
+
+/* Size macros */
+#define L_SIZE_2M			0x00200000
+#define L_SIZE_1M			0x00100000
+#define L_SIZE_512K			0x00080000
+#define L_SIZE_384K			0x00060000	
+#define L_SIZE_256K			0x00040000
+#define L_SIZE_128K			0x00020000
+#define L_SIZE_96K			0x00018000
+#define L_SIZE_80K			0x00014000
+#define L_SIZE_64K			0x00010000
+#define L_SIZE_48K			0x0000c000
+#define L_SIZE_32K			0x00008000
+
+#if defined(CFG_MPC5516)
+	#define L_FLASH_CODE_0_ORIGIN 	0x00000000
+	#define L_FLASH_CODE_0_LENGTH 	L_SIZE_1M
+	/* SRAM  5516S, 48K
+	 *       5517S,5516G,5516E, 64K RAM
+	 *       5517G,E , 80K RAM */
+
+	#define L_SRAM_0_ORIGIN			0x40000000
+	#define L_SRAM_0_LENGTH			SRAM_SIZE
+#elif defined(CFG_MPC5567)
+	#define L_FLASH_CODE_0_ORIGIN 	0x00000000
+	#define L_FLASH_CODE_0_LENGTH 	L_SIZE_2M
+	#define L_SRAM_0_ORIGIN			0x40000000
+	#define L_SRAM_0_LENGTH			L_SIZE_80K
+#elif defined(CFG_MPC5604B)
+	/* xLL,xLQ - 32K SRAM, xMG - 48K, assume xLL */
+	#define L_FLASH_CODE_0_ORIGIN 	0x00000000
+	#define L_FLASH_CODE_0_LENGTH 	L_SIZE_512K
+	#define L_FLASH_DATA_0_ORIGIN	0x00800000
+	#define L_FLASH_DATA_0_LENGTH	L_SIZE_64K
+	#define L_SRAM_0_ORIGIN			0x40000000
+	#define L_SRAM_0_LENGTH			L_SIZE_32K
+#elif defined(CFG_MPC5744P)
+	#define L_FLASH_CODE_0_ORIGIN 		0x00F98000
+	#define L_FLASH_CODE_0_LENGTH 		0x00268000
+	#define L_FLASH_DATA_0_ORIGIN		0x00800000
+	#define L_FLASH_DATA_0_LENGTH		L_SIZE_96K
+	#define L_SRAM_DATA_CORE_0_ORIGIN	0x40000000
+	#define L_SRAM_DATA_CORE_0_LENGTH	L_SIZE_384K
+	#define L_SRAM_0_ORIGIN				0x50800000
+	#define L_SRAM_0_LENGTH				L_SIZE_64K
+#else
+#error CPU not supported in linkscript
+#endif
+
+
+/* Map to linker syntax */
+#if defined(L_FLASH_CODE_0_ORIGIN)
+L_FLASH_CODE_0 : 	ORIGIN = L_FLASH_CODE_0_ORIGIN, LENGTH = L_FLASH_CODE_0_LENGTH
+#endif
+
+#if defined(L_FLASH_DATA_0_ORIGIN)
+L_FLASH_DATA_0 : 	ORIGIN = L_FLASH_DATA_0_ORIGIN, LENGTH = L_FLASH_DATA_0_LENGTH
+#endif
+
+#if defined(L_SRAM_DATA_CORE_0_ORIGIN)
+L_SRAM_DATA_CORE_0 : ORIGIN = L_SRAM_DATA_CORE_0_ORIGIN, LENGTH = L_SRAM_DATA_CORE_0_LENGTH
+#endif
+
+#if defined(L_SRAM_0_ORIGIN)
+L_SRAM_0 :  		ORIGIN = L_SRAM_0_ORIGIN, LENGTH = L_SRAM_0_LENGTH
+#endif
+
+ 
+
+
+

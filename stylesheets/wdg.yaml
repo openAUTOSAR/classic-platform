@@ -1,0 +1,48 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+#########################################################
+# Hidden parameters in WdgDemEventParameterRefs
+######################################################### 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: WDG_E_DISABLE_REJECTED
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: WDG_E_MODE_FAILED
+  
+#########################################################
+# Hidden parameters in WdgGeneral
+######################################################### 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: WdgDevErrorDetect
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: WdgDisableAllowed
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: WdgInitialTimeout
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: WdgMaxTimeout
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: WdgRunArea
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: WdgVersionInfoApi
+
+#########################################################
+# Hidden parameters in WdgPublishedInformation
+#########################################################   
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: WdgTriggerMode
+  
+#########################################################
+# Hidden parameters in WdgSettingsConfig
+#########################################################   
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: WdgDefaultMode
+  
+# WdgExternalConfiguration
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: WdgExternalContainerRef 

@@ -1,0 +1,172 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+#########################################################
+# Hidden parameters in EcuMGeneral
+######################################################### 
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMIncludeDem  
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMIncludeDet
+  
+#########################################################
+# Hidden parameters in EcuMCommonConfiguration
+#########################################################
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMConfigConsistencyHash
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMDefaultAppMode
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMOSResource
+  
+#########################################################
+# Hidden parameters in EcuMDefaultShutdownTarget
+#########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMDefaultResetModeRef
+
+#########################################################
+# Hidden parameters in EcuMDemEventParameterRefs
+#########################################################  
+#- !!com.arccore.common.yaml.data.styles.HiddenParameter
+#  name: ECUM_E_ALL_RUN_REQUESTS_KILLED
+  
+#########################################################
+# Hidden parameters in EcuMDriverInitItem
+######################################################### 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMModuleID 
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMModuleService
+#########################################################
+# Hidden parameters in EcuMSleepMode
+######################################################### 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMSleepModeId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMSleepModeSuspend
+  
+#########################################################
+# Hidden parameters in EcuMWakeupSource
+######################################################### 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMWakeupSourceId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMResetReasonRef
+  
+#########################################################
+# Hidden parameters in EcuMFlexGeneral
+######################################################### 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMAlarmClockPresent
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMAlarmWakeupSource
+  
+#########################################################
+# Hidden parameters in EcuMFlexConfiguration
+######################################################### 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMFlexModuleConfigurationRef
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMNormalMcuModeRef
+  
+#########################################################
+# Hidden parameters in EcuMAlarmClock
+######################################################### 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMAlarmClockId
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMAlarmClockTimeOut
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMAlarmClockUser
+  
+#########################################################
+# Hidden parameters in EcuMFlexUserConfig
+######################################################### 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMFlexEcucPartitionRef
+
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMFlexUser
+
+#########################################################
+# Hidden parameters in EcuMSetClockAllowedUsers
+######################################################### 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMSetClockAllowedUserRef
+  
+#########################################################
+# Hidden parameters in EcuMResetMode
+######################################################### 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMResetModeId
+  
+#########################################################
+# Hidden parameters in EcuMShutdownCause
+######################################################### 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMShutdownCauseId
+  
+#########################################################
+# Hidden parameters in EcuMShutdownTarget
+######################################################### 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMShutdownTargetId
+  
+# Hidden parameters in EcuM Fixed Module Configuration
+#########################################################
+# Hidden parameters in EcuMFixedGeneral
+#########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMIncludeComM
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMIncludeNvM
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMIncludeNvramMgr
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMTTIIEnabled
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMTTIIWakeupSourceRef
+
+#########################################################
+# Hidden parameters in EcuMFixedConfiguration
+#########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMFixedModuleConfigurationRef
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMNormalMcuModeRef
+  
+#########################################################
+# Hidden parameters in EcuMFixedUserConfig
+#########################################################  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMFixedUser
+  
+#########################################################
+# Hidden parameters in EcuMTTII
+#########################################################
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMDivisor
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMSleepModeRef
+  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: EcuMSuccessorRef

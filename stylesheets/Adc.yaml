@@ -1,0 +1,89 @@
+# 1.0
+# com.arccore.bsw.stylesheet
+
+# Container AdcHwUnit
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcClockSource
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcPrescale
+  mcals: [ MPC5567, MPC560x, MPC551x, MPC5744P]
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcHwUnitId
+  mcals: [ MPC5567, MPC551x ]  
+  
+# Container AdcGroup  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcGroupId
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcChannelConvTime
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcChannelHighLimit
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcChannelLimitCheck
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcChannelLowLimit
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcChannelRangeSelect
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcChannelRefVoltsrcHigh
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcChannelRefVoltsrcLow
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcChannelResolution
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcChannelSampTime
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcGroupPriority
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcGroupReplacement
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcHwTrigSignal
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcHwTrigTimer
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcChannelId
+  mcals: [ MPC5567, MPC560x, MPC551x, MPC5744P]
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcGroupTriggSrc
+  mcals: [ MPC5567, MPC560x, MPC551x, MPC5744P]  
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcGroupAccessMode
+  mcals: [ STM32F103, STM32F107]
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcStreamingBufferMode
+  mcals: [ STM32F103, STM32F107]
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcStreamingNumSamples
+  mcals: [ STM32F103, STM32F107]
+    
+# Container AdcGeneral   
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcEnableLimitCheck
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcEnableQueuing
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcHwTriggerApi
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcResultAlignment
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcVersionInfoApi
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcPriorityImplementation
+  mcals: [ STM32F103, STM32F107, MPC5567, MPC551x]
+  
+# Container AdcPublishedInformation 
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcChannelValueSigned
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcGroupFirstChannelFixed
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcMaxChannelResolution
+- !!com.arccore.common.yaml.data.styles.HiddenParameter
+  name: AdcPublishedInformation
+  
+#########################################################
+# Parameter groups
+#########################################################   
+- !!com.arccore.common.yaml.data.styles.ParameterGroup
+  name: Group channels
+  members: [ AdcGroupDefinition ]  
