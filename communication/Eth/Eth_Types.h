@@ -12,11 +12,26 @@
  * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
  *-------------------------------- Arctic Core -----------------------------*/
 
-#ifndef DOIP_TYPES_H_
-#define DOIP_TYPES_H_
+#ifndef ETH_TYPES_H_
+#define ETH_TYPES_H_
 
-#include "ComStack_Types.h"
-#include "DoIP_Cfg.h"
+#include "Eth_GeneralTypes.h"
 
-#endif /* DOIP_TYPES_H_ */
+/* This type defines the controller modes */
+typedef enum{
+	ETH_MODE_DOWN, /* Controller disabled */
+	ETH_MODE_ACTIVE, /* Controller enabled*/
+}Eth_ModeType;
 
+/* Status supervision used for Development Error Detection. The state shall be available for debugging */
+typedef enum{
+	ETH_STATE_UNINIT, /* Driver is not yet configured */
+	ETH_STATE_INIT, /* Driver is configured */
+	ETH_STATE_ACTIVE, /* Driver is active */
+}Eth_StateType;
+
+typedef uint16 Eth_FrameType;
+
+typedef uint32 Eth_DataType;
+
+#endif /* ETH_TYPES_H_ */

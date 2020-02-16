@@ -12,11 +12,21 @@
  * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
  *-------------------------------- Arctic Core -----------------------------*/
 
-#ifndef DOIP_TYPES_H_
-#define DOIP_TYPES_H_
+/** @req XCP506 */ /*Provide XcpOnCan_Cfg.h - can not be tested with conventional module tests*/
+
+#ifndef XCPONCAN_CBK_H_
+#define XCPONCAN_CBK_H_
 
 #include "ComStack_Types.h"
-#include "DoIP_Cfg.h"
+#include "CanIf.h"
 
-#endif /* DOIP_TYPES_H_ */
+void           Xcp_CanIfRxIndication   (PduIdType XcpRxPduId, PduInfoType* XcpRxPduPtr);
+void           Xcp_CanIfTxConfirmation (PduIdType XcpTxPduId);
 
+#if 0
+void           Xcp_CanIfRxSpecial      (uint8 channel, PduIdType XcpRxPduId, const uint8 * data, uint8 len, Can_IdType type);
+Std_ReturnType Xcp_CanIfTriggerTransmit(PduIdType XcpTxPduId, PduInfoType* PduInfoPtr);
+#endif
+
+
+#endif /* XCPONCAN_CBK_H_ */

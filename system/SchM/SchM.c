@@ -272,6 +272,13 @@
 #define SCHM_MAINFUNCTION_CANSM()
 #endif
 
+#if defined(USE_XCP)
+#include "Xcp.h"
+#include "SchM_Xcp.h"
+#else
+#define SCHM_MAINFUNCTION_XCP()
+#endif
+
 #if defined(USE_UDPNM)
 #include "UdpNm.h"
 #endif
@@ -333,7 +340,7 @@ SCHM_DECLARE(EA);
 SCHM_DECLARE(FLS);
 SCHM_DECLARE(WDGM_TRIGGER);
 SCHM_DECLARE(WDGM_ALIVESUPERVISION);
-
+SCHM_DECLARE(XCP);
 
 
 void SchM_Init( void ) {
@@ -345,7 +352,7 @@ void SchM_Deinit( void ) {
 }
 
 void SchM_GetVersionInfo( Std_VersionInfoType *versionInfo ) {
-
+	(void)versionInfo;
 }
 
 
@@ -417,6 +424,7 @@ TASK(SchM_BswService) {
 		SCHM_MAINFUNCTION_COMTX();
 
 		SCHM_MAINFUNCTION_CANTP();
+		SCHM_MAINFUNCTION_XCP();
 		SCHM_MAINFUNCTION_J1939TP();
 		SCHM_MAINFUNCTION_DCM();
 		SCHM_MAINFUNCTION_DEM();

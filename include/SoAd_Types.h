@@ -38,6 +38,13 @@ typedef struct {
 	sint8 			sa_data[16];	// Address value
 } SoAd_SockAddrType;	/** @req SOAD113 */
 
+/* 10.2.16 SoAdRoutingGroup */
+typedef struct{
+	uint16  RoutingGroupId;
+	boolean RoutingGroupIsEnabledAtInit;
+	boolean RoutingGroupTxTriggerable;
+} SoAd_RoutingGroupType;
+
 typedef enum {
 	POLLIN = 0x0001,		// Any readable data available
 	POLLPRI = 0x0002,		// OOB/Urgent readable data
@@ -156,8 +163,8 @@ typedef enum {
 
 #ifndef NO_SOAD_TCPIP_EVENT_TYPE
 typedef enum {
-	RESET = 0x01,		// TCP connection was reset
-	CLOSED = 0x02		// TCP connetion was closed successfully
+	SOAD_RESET = 0x01,		// TCP connection was reset
+	SOAD_CLOSED = 0x02		// TCP connetion was closed successfully
 } SoAd_TcpIpEventType;	/** @req SOAD147 */
 #endif
 

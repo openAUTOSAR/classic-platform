@@ -41,16 +41,7 @@
 #define DOIP_SW_MINOR_VERSION   0
 #define DOIP_SW_PATCH_VERSION   0
 
-#define TCPIP_VENDOR_ID          1
-#define TCPIP_MODULE_ID          MODULE_ID_TCPIP
-#define TCPIP_AR_MAJOR_VERSION   4
-#define TCPIP_AR_MINOR_VERSION   0
-#define TCPIP_AR_PATCH_VERSION   2
-
-#define TCPIP_SW_MAJOR_VERSION   1
-#define TCPIP_SW_MINOR_VERSION   0
-#define TCPIP_SW_PATCH_VERSION   0
-
+#include "TcpIp.h"
 #include "SoAd_Types.h"
 #include "SoAd_Cbk.h"
 #include "SoAd_Cfg.h"
@@ -167,13 +158,7 @@ void SoAd_SocketReset(void);	/** @req SOAD127 */
 Std_ReturnType SoAdIf_Transmit(PduIdType SoAdSrcPduId, const PduInfoType* SoAdSrcPduInfoPtr);	/** @req SOAD091 */
 Std_ReturnType SoAdTp_Transmit(PduIdType SoAdSrcPduId, const PduInfoType* SoAdSrcPduInfoPtr);	/** @req SOAD105 */
 
-void TcpIp_Init(void);	/** @req SOAD193 */
-void TcpIp_Shutdown(void);	/** @req SOAD194 */
-void TcpIp_MainFunctionCyclic(void);	/** @req SOAD143 */
-Std_ReturnType TcpIp_SetDhcpHostNameOption(uint8* HostNameOption, uint8 HostNameLen);	/** @req SOAD196*/
-
 void DoIp_Init();
-
 
 #if ( SOAD_VERSION_INFO_API == STD_ON )
 #define SoAd_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,SOAD)	/** @req SOAD096 */
@@ -183,8 +168,30 @@ void DoIp_Init();
 #define DoIp_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,DOIP)	/** @req SOAD095 */
 #endif
 
-#if ( TCPIP_VERSION_INFO_API == STD_ON )
-#define TcpIp_GetVersionInfo(_vi) STD_GET_VERSION_INFO(_vi,TCPIP)	/** @req SOAD094 */
-#endif
-
+/** @req SWS_SOAD_00510 */
+Std_ReturnType SoAd_OpenSoCon( SoAd_SoConIdType SoConId );
+/** @req SWS_SOAD_00511 */
+Std_ReturnType SoAd_CloseSoCon( SoAd_SoConIdType SoConId, boolean abort );
+/** @req SWS_SOAD_00515 */
+Std_ReturnType SoAd_SetRemoteAddr( SoAd_SoConIdType SoConId, const TcpIp_SockAddrType* RemoteAddrPtr );
+/** @req SWS_SOAD_00091 */
+Std_ReturnType SoAd_IfTransmit( PduIdType SoAdSrcPduId, const PduInfoType* SoAdSrcPduInfoPtr );
+/** @req SWS_SOAD_00655 */
+Std_ReturnType SoAd_GetRemoteAddr( SoAd_SoConIdType SoConId, TcpIp_SockAddrType* IpAddrPtr );
+/** @req SWS_SOAD_00509 */
+Std_ReturnType SoAd_GetSoConId( PduIdType TxPduId, SoAd_SoConIdType* SoConIdPtr );
+/** @req SWS_SOAD_00520 */
+Std_ReturnType SoAd_RequestIpAddrAssignment( SoAd_SoConIdType SoConId, TcpIp_IpAddrAssignmentType Type, const TcpIp_SockAddrType* LocalIpAddrPtr, uint8 Netmask, const TcpIp_SockAddrType* DefaultRouterPtr );
+/** @req SWS_SOAD_00506 */
+Std_ReturnType SoAd_GetLocalAddr( SoAd_SoConIdType SoConId, TcpIp_SockAddrType* LocalAddrPtr, uint8* NetmaskPtr, TcpIp_SockAddrType* DefaultRouterPtr );
+/** @req SWS_SOAD_00516 */
+Std_ReturnType SoAd_EnableRouting( SoAd_RoutingGroupIdType id );
+/** @req SWS_SOAD_00714 */
+Std_ReturnType SoAd_EnableSpecificRouting( SoAd_RoutingGroupIdType id, SoAd_SoConIdType SoConId );
+/** @req SWS_SOAD_00517 */
+Std_ReturnType SoAd_DisableRouting( SoAd_RoutingGroupIdType id );
+/** @req SWS_SOAD_00717 */
+Std_ReturnType SoAd_DisableSpecificRouting( SoAd_RoutingGroupIdType id, SoAd_SoConIdType SoConId );
+/* ArcCore added */
+Std_ReturnType SoAd_Arc_GetSoConIdFromRxPdu( PduIdType RxPduId, SoAd_SoConIdType* SoConIdPtr );
 #endif

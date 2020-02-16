@@ -499,6 +499,7 @@ static void registerSocket(uint16 slotIndex, uint16 sockNr, uint16 activationTyp
 	assert(slotIndex < DOIP_MAX_TESTER_CONNECTIONS);
 
 	connectionStatus[slotIndex].sockNr = sockNr;
+	connectionStatus[slotIndex].activationType = (uint8)activationType;
 	connectionStatus[slotIndex].sa = sa;
 
 	connectionStatus[slotIndex].generalInactivityTimer = 0;

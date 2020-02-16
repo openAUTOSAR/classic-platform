@@ -1,14 +1,14 @@
 /*-------------------------------- Arctic Core ------------------------------
  * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
  * Contact: <contact@arccore.com>
- * 
+ *
  * You may ONLY use this file:
- * 1)if you have a valid commercial ArcCore license and then in accordance with  
- * the terms contained in the written license agreement between you and ArcCore, 
+ * 1)if you have a valid commercial ArcCore license and then in accordance with
+ * the terms contained in the written license agreement between you and ArcCore,
  * or alternatively
- * 2)if you follow the terms found in GNU General Public License version 2 as 
- * published by the Free Software Foundation and appearing in the file 
- * LICENSE.GPL included in the packaging of this file or here 
+ * 2)if you follow the terms found in GNU General Public License version 2 as
+ * published by the Free Software Foundation and appearing in the file
+ * LICENSE.GPL included in the packaging of this file or here
  * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
  *-------------------------------- Arctic Core -----------------------------*/
 
@@ -48,12 +48,12 @@
 
 #define MODULE_ID_CANNM   (31) // Can network management
 #define MODULE_ID_FRNM    (32) // Flexray network management
-#define MODULE_ID_UDPNM   (33)  // UDP network management
+#define MODULE_ID_UDPNM   (33) // UDP network management
 #define MODULE_ID_CANTP   (35) // Can transport layer
 #define MODULE_ID_FRTP    (36) // Flexray transport protocol
 #define MODULE_ID_J1939TP (37) // J1939 Transport protocol (Autosar 4)
-#define MODULE_ID_EA      (40) // EEPROM Abstraction
 
+#define MODULE_ID_EA      (40) // EEPROM Abstraction
 #define MODULE_ID_BSWM    (42) // BSW Mode Manager
 #define MODULE_ID_WDGIF   (43) // Watchdog interface
 
@@ -63,6 +63,7 @@
 #define MODULE_ID_DCM     (53) // Diagnostic Communication Manager
 #define MODULE_ID_DEM     (54) // Diagnostic Event Manager
 #define MODULE_ID_SOAD    (56) // Socket Adaptor
+#define MODULE_ID_TCPIP   (57) // TCP/IP layer
 
 #define MODULE_ID_CANIF   (60) // CAN Interface
 #define MODULE_ID_FRIF    (61) // Flexray interface
@@ -99,6 +100,7 @@
 
 #define MODULE_ID_CRC    (201) // CRC Routines
 #define MODULE_ID_E2E    (207) // End-to-end protections
+#define MODULE_ID_XCP    (210) // Universal Measurement and Calibration Protocol
 
 #define MODULE_ID_C2CAN  (220) // CAN
 #define MODULE_ID_C2COM  (221) // COM Services

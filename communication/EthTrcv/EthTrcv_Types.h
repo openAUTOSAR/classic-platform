@@ -12,11 +12,37 @@
  * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
  *-------------------------------- Arctic Core -----------------------------*/
 
-#ifndef DOIP_TYPES_H_
-#define DOIP_TYPES_H_
+#ifndef ETHTRCV_TYPES_H_
+#define ETHTRCV_TYPES_H_
 
-#include "ComStack_Types.h"
-#include "DoIP_Cfg.h"
+#include "Eth_GeneralTypes.h"
+#include "EthTrcv_Cfg.h"
 
-#endif /* DOIP_TYPES_H_ */
+typedef enum{
+	ETHTRCV_MODE_DOWN,
+	ETHTRCV_MODE_ACTIVE,
+}EthTrcv_ModeType;
+
+typedef enum{
+	ETHTRCV_LINK_STATE_DOWN,
+	ETHTRCV_LINK_STATE_ACTIVE,
+}EthTrcv_LinkStateType;
+
+typedef enum{
+	ETHTRCV_STATE_UNINIT,
+	ETHTRCV_STATE_INIT,
+	ETHTRCV_STATE_ACTIVE,
+}EthTrcv_StateType;
+
+typedef enum{
+	ETHTRCV_BAUD_RATE_10MBIT,
+	ETHTRCV_BAUD_RATE_100MBIT,
+}EthTrcv_BaudRateType;
+
+typedef enum{
+	ETHTRCV_DUPLEX_MODE_HALF,
+	ETHTRCV_DUPLEX_MODE_FULL,
+}EthTrcv_DuplexModeType;
+
+#endif /* ETHTRCV_TYPES_H_ */
 

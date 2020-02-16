@@ -12,11 +12,12 @@
  * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
  *-------------------------------- Arctic Core -----------------------------*/
 
-#ifndef DOIP_TYPES_H_
-#define DOIP_TYPES_H_
+#ifndef XCPONETH_CBK_H_
+#define XCPONETH_CBK_H_
 
 #include "ComStack_Types.h"
-#include "DoIP_Cfg.h"
 
-#endif /* DOIP_TYPES_H_ */
+void           Xcp_SoAdRxIndication   (PduIdType XcpRxPduId, PduInfoType* XcpRxPduPtr);
+void           Xcp_SoAdTxConfirmation (PduIdType XcpTxPduId);
 
+#endif /* XCPONETH_CBK_H_ */

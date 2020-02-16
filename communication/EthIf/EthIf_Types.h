@@ -12,11 +12,14 @@
  * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
  *-------------------------------- Arctic Core -----------------------------*/
 
-#ifndef DOIP_TYPES_H_
-#define DOIP_TYPES_H_
+#ifndef ETHIF_TYPES_H_
+#define ETHIF_TYPES_H_
 
-#include "ComStack_Types.h"
-#include "DoIP_Cfg.h"
+#include "Eth_GeneralTypes.h"
 
-#endif /* DOIP_TYPES_H_ */
+typedef enum {
+	ETHCTRL_STATE_UNINIT,
+	ETHCTRL_STATE_INIT,
+}EthIf_StateType;
 
+#endif /* ETHIF_TYPES_H_ */

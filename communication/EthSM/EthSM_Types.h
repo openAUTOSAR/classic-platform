@@ -12,11 +12,17 @@
  * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
  *-------------------------------- Arctic Core -----------------------------*/
 
-#ifndef DOIP_TYPES_H_
-#define DOIP_TYPES_H_
+#ifndef ETHSM_TYPES_H_
+#define ETHSM_TYPES_H_
 
-#include "ComStack_Types.h"
-#include "DoIP_Cfg.h"
+/** @req ETHSM0006 */
 
-#endif /* DOIP_TYPES_H_ */
+#include "Std_Types.h"
 
+typedef enum{
+	ETHSM_UNINITED,
+	ETHSM_NO_COMMUNICATION,
+	ETHSM_FULL_COMMUNICATION,
+}EthSM_NetworkModeStateType;
+
+#endif /* ETHSM_TYPES_H_ */

@@ -12,11 +12,12 @@
  * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
  *-------------------------------- Arctic Core -----------------------------*/
 
-#ifndef DOIP_TYPES_H_
-#define DOIP_TYPES_H_
+#ifndef ETH_GENERALTYPES_H_
+#define ETH_GENERALTYPES_H_
 
 #include "ComStack_Types.h"
-#include "DoIP_Cfg.h"
+#ifdef USE_ETH
+#include "Eth_Cfg.h"
+#endif
 
-#endif /* DOIP_TYPES_H_ */
-
+#endif /* ETH_GENERALTYPES_H_ */

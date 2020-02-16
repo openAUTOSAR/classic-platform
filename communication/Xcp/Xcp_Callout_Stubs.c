@@ -12,11 +12,28 @@
  * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
  *-------------------------------- Arctic Core -----------------------------*/
 
-#ifndef DOIP_TYPES_H_
-#define DOIP_TYPES_H_
+#include "Xcp_Callout_Stubs.h"
+#include <string.h>
 
-#include "ComStack_Types.h"
-#include "DoIP_Cfg.h"
+#if (XCP_FEATURE_PROTECTION == STD_ON)
 
-#endif /* DOIP_TYPES_H_ */
+uint8 Xcp_Arc_GetSeed(Xcp_ProtectType res, uint8* seed)
+{
+    (void)(res);
+    strcpy((char*)seed, "HELLO_BELLO");
+    return strlen((const char*)seed);
+}
+
+Std_ReturnType Xcp_Arc_Unlock(Xcp_ProtectType res, const uint8* seed, uint8 seed_len, const uint8* key, uint8 key_len)
+{
+    (void)(res);
+    if(seed_len != key_len)
+        return E_NOT_OK;
+    if(memcmp(seed, key, seed_len))
+        return E_NOT_OK;
+    return E_OK;
+}
+
+#endif /* XCP_FEATURE_PROTECTION == STD_ON */
+
 
