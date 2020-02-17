@@ -1,0 +1,12 @@
+This is an example of a very minimal lwIP project. It runs in a single
+thread and runs a single example application - an echo server. The
+echo application is implemented using the raw API. Additionally this
+raw API example hosts the SNMPv1 agent for development purposes.
+
+In order to run the demo without root priviledges, you can create a
+preconfigured tap device in advance and then run the application with the
+interface passed in via an environment variable:
+
+$ sudo ip tuntap add dev tap0 mode tap user YOUR-USER-NAME
+$ sudo ip a a dev tap0 192.168.0.1/24
+$ PRECONFIGURED_TAPIF=tap0 ./echop

@@ -16,6 +16,7 @@
  * Itoa based on K&R itoa
  */
 
+/*lint -w1 Only errors in generic module used during development */
 
 #include <stdlib.h>
 
@@ -30,23 +31,23 @@
  * @param negative	If negative or not.
  */
 void xtoa( unsigned long val, char* str, int base, int negative) {
-	int i;
-	char *oStr = str;
-	char c;
+    int i;
+    char *oStr = str;
+    char c;
 
-	if (negative) {
-		val = -val;
-	}
+    if (negative) {
+        val = -val;
+    }
 
-	if( base < 10 && base > 16 ) {
-		*str = '0';
-		return;
-	}
+    if( base < 10 && base > 16 ) {
+        *str = '0';
+        return;
+    }
     i = 0;
 
     do {
       str[i++] = "0123456789abcdef"[ val % base ];
-	} while ((val /= base) > 0);
+    } while ((val /= base) > 0);
 
 
     if (negative) {
@@ -56,9 +57,9 @@ void xtoa( unsigned long val, char* str, int base, int negative) {
     str[i] = '\0';
     str = &str[i]-1;
     while(str > oStr) {
-    	c = *str;
-    	*str-- = *oStr;
-    	*oStr++=c;
+        c = *str;
+        *str-- = *oStr;
+        *oStr++=c;
     }
 }
 
@@ -66,19 +67,19 @@ void xtoa( unsigned long val, char* str, int base, int negative) {
 #if defined(TEST_XTOA)
 /* Some very limited testing */
 int main( void ) {
-	char str[20];
+    char str[20];
 
-	xtoa(123,str,10,0);
-	printf("%s\n",str);
-	xtoa(-123,str,10,1);
-	printf("%s\n",str);
-	xtoa(0xa123,str,16,0);
-	printf("%s\n",str);
-	xtoa(-0xa123,str,16,1);
-	printf("%s\n",str);
+    xtoa(123,str,10,0);
+    printf("%s\n",str);
+    xtoa(-123,str,10,1);
+    printf("%s\n",str);
+    xtoa(0xa123,str,16,0);
+    printf("%s\n",str);
+    xtoa(-0xa123,str,16,1);
+    printf("%s\n",str);
 
 
-	return 0;
+    return 0;
 }
 #endif
 
@@ -91,7 +92,7 @@ int main( void ) {
  * @param base   The base
  */
 void ultoa(unsigned long value, char* str, int base) {
-	xtoa(value, str, base, 0);
+    xtoa(value, str, base, 0);
 }
 
 /**
@@ -102,7 +103,7 @@ void ultoa(unsigned long value, char* str, int base) {
  * @param base  The base
  */
 char * itoa(int value, char* str, int base) {
-	xtoa(value, str, base, (value < 0));
-	return str;
+    xtoa(value, str, base, (value < 0));
+    return str;
 }
 

@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{e858c3d0-1558-4d47-bc6a-9d4a55ce3d3a}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Source Files\apps">
+      <UniqueIdentifier>{0582eefd-a68e-45f8-b93c-f828c4794f30}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\test.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\apps\chargen\chargen.c">
+      <Filter>Source Files\apps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\apps\httpserver\httpserver-netconn.c">
+      <Filter>Source Files\apps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\apps\netio\netio.c">
+      <Filter>Source Files\apps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\apps\ping\ping.c">
+      <Filter>Source Files\apps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\apps\rtp\rtp.c">
+      <Filter>Source Files\apps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\apps\shell\shell.c">
+      <Filter>Source Files\apps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\apps\smtp\smtp.c">
+      <Filter>Source Files\apps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\apps\socket_examples\socket_examples.c">
+      <Filter>Source Files\apps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\apps\tcpecho\tcpecho.c">
+      <Filter>Source Files\apps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\apps\udpecho\udpecho.c">
+      <Filter>Source Files\apps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\apps\tcpecho_raw\tcpecho_raw.c">
+      <Filter>Source Files\apps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\apps\udpecho_raw\udpecho_raw.c">
+      <Filter>Source Files\apps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\apps\snmp_private_mib\lwip_prvmib.c">
+      <Filter>Source Files\apps</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\apps\chargen\chargen.h">
+      <Filter>Source Files\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\apps\httpserver\httpserver-netconn.h">
+      <Filter>Source Files\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\apps\netio\netio.h">
+      <Filter>Source Files\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\apps\ping\ping.h">
+      <Filter>Source Files\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\apps\rtp\rtp.h">
+      <Filter>Source Files\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\apps\shell\shell.h">
+      <Filter>Source Files\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\apps\smtp\smtp.h">
+      <Filter>Source Files\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\apps\socket_examples\socket_examples.h">
+      <Filter>Source Files\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\apps\tcpecho\tcpecho.h">
+      <Filter>Source Files\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\apps\udpecho\udpecho.h">
+      <Filter>Source Files\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\apps\tcpecho_raw\tcpecho_raw.h">
+      <Filter>Source Files\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\apps\udpecho_raw\udpecho_raw.h">
+      <Filter>Source Files\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\apps\snmp_private_mib\private_mib.h">
+      <Filter>Source Files\apps</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="readme.txt" />
+  </ItemGroup>
+</Project>

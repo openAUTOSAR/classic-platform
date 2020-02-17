@@ -1,0 +1,135 @@
+
+// ===========================
+// Preprocessor Configuration:
++fdi // Start #include search in the directory of the including file.
+
+++fln  // Allow:
+       //   # digit-sequence " [s-char-sequence] " new-line
+       // as a synonym for:
+       //   # line digit-sequence " [s-char-sequence] " new-line
+
+// ===========================================
+// +rw and -d options to cope with GNU syntax:
++ppw(ident)                 // Tolerate #ident
++ppw(warning)
+
+// Tolerate alternative spellings of certain keywords:
+-rw_asgn(__inline,inline)
+-rw_asgn(__inline__,inline)
+-rw_asgn(__signed__,signed)
+-rw_asgn(__signed,signed)
+-rw_asgn( __volatile__, volatile )
+-rw_asgn( __volatile, volatile )
+
+++d__const=const        // gconv.h uses __const rather than const
+++dconst=const          // ensure const expands to const.
+
+// This re-definition of the various spellings of the asm keyword enables
+// Lint to pass gracefully over expression-statements like:
+// __asm __volatile ("fsqrt" : "=t" (__result) : "0" (__x));
+// But it may be necessary to suppress certain error messages that are
+// triggered by tokens that are part of an assembly declaration or
+// statement.  For example:
+
+    -d"__asm__(p...)=/*lint -e{19}*/ __asm__(p)"
+
+// ...causes Lint to be quiet about the semicolon that follows an
+// __asm__() declaration.  Note, the -e{N} form of suppression takes
+// effect only for the forward-declaration, definition or
+// [possibly-compound] statement that immediately follows.  Because a
+// semicolon is seen as a declaration-terminator, Error 19 will be
+// re-enabled immediately after the semicolon in '__asm__(...);'.
+// (The elipsis after the macro parameter p allows zero or more commas to
+// appear in the operand.)
+//
+// If you encounter other diagnostics that appear to need suppression in
+// or near assembly regions, please let us know!
+//
+-esym(123,__asm__)
+
+-rw_asgn(__alignof__,__alignof)
+
+++d__attribute__()=   // ignore this keyword and following parenthetical
+++d__attribute()=     // variant spelling of "__attribute__"
+
+++dva_start()=_to_semi
+++dva_arg(a,b)=((b)1)
+
+++d__builtin_va_list=void*            // used by stdarg.h
+++d__builtin_stdarg_start()=_to_semi  // ditto
+++d__builtin_va_end()=_to_semi        // ditto
+++d"__builtin_va_arg(a,b)=(*( (b *) ( ((a) += sizeof(b)) - sizeof(b) )))"
+++d__null=0
++rw(_to_semi)           // needed for the two macros above.
++rw(__typeof__)         // activate __typeof__ keyword
+-d__typeof=__typeof__   // an alternative to using __typeof__
+
++rw( __restrict )
++rw( __restrict__ )
+-rw(__except)           // This MS reserved word is used as an identifier
++rw( __complex__, __real__, __imag__ )  // reserved words that can be ignored.
+++d__builtin_strchr=(char*)     // permits the inline definition ...
+++d__builtin_strpbrk=(char*)    // of these functions to be linted ...
+++d__builtin_strrchr=(char*)    // without drawing a complaint
+++d__builtin_strstr=(char*)     // about the use of a non-standard name
+++d__PRETTY_FUNCTION__=___function___ // lint defines ___function___ internally
+++d__FUNCTION__=___function___        // lint defines ___function___ internally
+++d__func__=___function___  // Some C++ modes suport the implicit __func__
+                            // identifier.
+
+// =========================================================
+// Other options supporting GNU C/C++ syntax:
++fld // enables the processing of _L_abel _D_esignators E.g.:
+     // union { double d; int i; } u = { d: 3.141  };
+
+// =========================================================
+// Generally useful suppressions:
+-wlib(1)      // sets the warning level within library headers to 1
+              // (no warnings, just syntax errors).  Comment out if you
+              // are actually linting library headers.
+-elib(123)    // 123 is really a warning, but it's in the "Error" range.
+-elib(93)     // allow newlines within quoted string arguments to macros
+-elib(46)     // allow bit fields to have integral types other than
+              // '_Bool' and 'int'.
+-elibsym(628) // Suppress 628 for __builtin symbols.
+
+-esym(528,__huge_val,__nan,__qnan,__qnanf,__snan,__snanf)
+                       // We don't care if we don't reference some GNU functions
+-esym(528,__gnu_malloc,__gnu_calloc)
+
+//  The following functions exhibit variable return modes.
+//  That is, they may equally-usefully be called for a value
+//  as called just for their effects.  Accordingly we inhibit
+//  Warning 534 for these functions.
+//  Feel free to add to or subtract from this list.
+
+-esym(534,close,creat,fclose,fprintf,fputc)
+-esym(534,fputs,fscanf,fseek,fwrite,lseek,memcpy,memmove,memset)
+-esym(534,printf,puts,scanf,sprintf,sscanf,strcat,strcpy)
+-esym(534,strncat,strncpy,unlink,write)
+
+// For non-ANSI compilers we suppress messages 515 and 516
+// for functions known to have variable argument lists.
+// For ANSI compilers, header files should take care of this.
+
+-esym(515,fprintf,printf,sprintf,fscanf,scanf,sscanf)
+-esym(516,fprintf,printf,sprintf,fscanf,scanf,sscanf)
+-esym(1702,*operator<<,*operator>>)
+-esym(534,*operator<<,*operator>>)
+-esym(1055,*__builtin*)
+-esym(718,*__builtin*)   // The compiler does not need these ...
+-esym(746,*__builtin*)   // declared and it knows their prototypes.
+-esym(746,memset,memcpy)
+-esym(731,assert)
+-e934  // Gives a lot of false positives
+
+-d__CHAR_BIT=8
+-d__SHRT_BIT=16
+-d__INT_BIT=32
+-d__LONG_BIT=32
+-d__LLONG_BIT=64
+-d__PTR_BIT=32
+-d__ghs__
+-d__WCHAR_MAX__=2147483647
+-d"__WCHAR_TYPE__=long int"
+-d__PROTOTYPES__

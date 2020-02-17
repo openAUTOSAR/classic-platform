@@ -6,19 +6,26 @@
 //   the "binaries" folder)
 
 // Make the !run() command work
-screen.always
-LOCAL &datafile &file &rfile &data &tmpfile &stop &testfiles
+// 
 
+
+screen.always
+LOCAL &datafile &file &rfile &data &tmpfile &stop &testfiles &board
+
+&board="stm32_stm3210c"
+//&board="mpc5516it"
+//&board="mpc551xsim"
 &stop="no"
 &datafile="va1.txt"
 &rfile="test_result.txt"
 &testfiles=0.
 
-&tdir="&cfg_project_path_g\binaries\mpc551xsim\*osek*.elf"
-os cmd /c dir &tdir/B /O:N > &datafile
-&tdir="&cfg_project_path_g\binaries\mpc551xsim\*os_*.elf"
-os cmd /c dir &tdir/B /O:N >> &datafile
+&tdir="&cfg_project_path_g\core\binaries\&board\*osek*.elf"
+print "&tdir"
 
+os cmd /c dir &tdir/B /O:N > &datafile
+&tdir="&cfg_project_path_g\core\binaries\&board\*os_*.elf"
+os cmd /c dir &tdir/B /O:N >> &datafile
 
 os cmd /c del &rfile
 os cmd /c echo "" > &rfile
@@ -30,7 +37,7 @@ READ #10 &data
 WHILE "&data"!=""
 ( 
 //	&file="&cfg_project_path_g"+"/binaries/system_kernel_testsystem_"+"&data"+".elf"
-	&file="&cfg_project_path_g"+"/binaries/mpc551xsim/"+"&data"
+	&file="&cfg_project_path_g"+"/core/binaries/&board/"+"&data"
 
   IF OS.FILE("&file")
   (
@@ -79,6 +86,7 @@ testrun:
   b.d /all
   term.close
   RETURN
+
 
 
 

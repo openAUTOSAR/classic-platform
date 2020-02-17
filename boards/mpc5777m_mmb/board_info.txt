@@ -1,0 +1,31 @@
+
+MPC5777M
+	
+Datasheets:
+  Most documentation is under NDA.
+
+  Eval board:
+     
+  MPC5777M
+
+Board:
+  40Mhz external crystal
+
+Supported compilers:
+ 
+Info:	
+  MPC5777M
+  CPU:		 
+  Freq:		 
+  Flash: 	 
+  RAM:       
+  ICACHE:	 
+  DCACHE:	 
+
+Flash:
+  
+Memory Map: See memory.ldf
+
+LEDS 
+  PE[1] - LED1
+ 

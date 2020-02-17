@@ -12,22 +12,17 @@
  * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
  *-------------------------------- Arctic Core -----------------------------*/
 
-
-
-
-
-
-
+/** @reqSettings DEFAULT_SPECIFICATION_REVISION=4.1.2 */
+/** @tagSettings DEFAULT_ARCHITECTURE=ZYNQ|PPC|TMS570|MPC5607B|MPC5645S|RH850F1H|MPC5777M|MPC5748G|JACINTO5|JACINTO6|STM32 */
 
 #ifndef COMSTACK_TYPES_H_
 #define COMSTACK_TYPES_H_
 
-#define ECUC_SW_MAJOR_VERSION   1
-#define ECUC_SW_MINOR_VERSION   0
-#define ECUC_SW_PATCH_VERSION   0
+#define ECUC_SW_MAJOR_VERSION   1u
+#define ECUC_SW_MINOR_VERSION   0u
+#define ECUC_SW_PATCH_VERSION   0u
 
-#include "Std_Types.h" /** @req COMM820.partially */
-
+#include "Std_Types.h" /** !req COMM820.partially */
 
 // Zero-based integer number
 // The size of this global type depends on the maximum
@@ -46,8 +41,8 @@
 typedef uint16 PduIdType;
 typedef uint16 PduLengthType;
 typedef struct {
-	uint8 *SduDataPtr;			// payload
-	PduLengthType SduLength;	// length of SDU
+    uint8 *SduDataPtr;			// payload
+    PduLengthType SduLength;	// length of SDU
 } PduInfoType;
 
 typedef enum {
@@ -57,15 +52,15 @@ typedef enum {
 } TPParameterType;
 
 typedef enum {
-	TP_DATACONF,
-	TP_DATARETRY,
-	TP_CONFPENDING,
-	TP_NORETRY,
+    TP_DATACONF,
+    TP_DATARETRY,
+    TP_CONFPENDING,
+    TP_NORETRY,
 } TpDataStateType;
 
 typedef struct {
-	TpDataStateType TpDataState;
-	PduLengthType TxTpDataCnt;
+    TpDataStateType TpDataState;
+    PduLengthType TxTpDataCnt;
 } RetryInfoType;
 
 /*
@@ -75,15 +70,15 @@ typedef struct {
 } PduInfoType;
 */
 
-// TODO: remove all non-E_prefixed error enum values
+// IMPROVEMENT: remove all non-E_prefixed error enum values
 typedef enum {
-	BUFREQ_OK=0,
+    BUFREQ_OK=0,
     BUFREQ_NOT_OK=1,
-    BUFREQ_E_NOT_OK=1,
+    BUFREQ_E_NOT_OK=BUFREQ_NOT_OK,
     BUFREQ_BUSY=2,
-    BUFREQ_E_BUSY=2,
+    BUFREQ_E_BUSY=BUFREQ_BUSY,
     BUFREQ_OVFL=3,
-    BUFREQ_E_OVFL=3,
+    BUFREQ_E_OVFL=BUFREQ_OVFL,
 } BufReq_ReturnType;
 
 // 0x00--0x1e General return types
@@ -91,7 +86,6 @@ typedef enum {
 // 0x3d--0x5a Error notif, LIN
 // more
 typedef uint8 NotifResultType;
-
 #define NTFRSLT_OK				       0x00
 #define NTFRSLT_E_NOT_OK		       0x01
 #define NTFRSLT_E_TIMEOUT_A		       0x02
@@ -110,20 +104,15 @@ typedef uint8 NotifResultType;
 #define NTFRSLT_E_RX_ON                0x0F
 #define NTFRSLT_E_VALUE_NOT_OK         0x10
 
-
-// TODO, more
+#define NTFRSLT_E_FR_ML_MISMATCH       0x5B
+#define NTFRSLT_E_FR_WRONG_BP          0x5C
+#define NTFRSLT_E_FR_TX_ON             0x5D
 
 typedef uint8 BusTrcvErrorType;
-
-
 #define BUSTRCV_NO_ERROR	0x00
 #define BUSBUSTRCV_E_ERROR	0x01
 
-
-#define COMSTACKTYPE_AR_MINOR_VERSION		1
-#define COMSTACKTYPE_AR_MAJOR_VERSION		0
-#define COMSTACKTYPE_AR_PATCH_VERSION		0
-
 typedef uint8 NetworkHandleType;
 
-#endif /*COMSTACK_TYPES_H_*/
+
+#endif /* COMSTACK_TYPES_H_*/

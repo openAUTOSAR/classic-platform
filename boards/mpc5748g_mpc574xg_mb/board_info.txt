@@ -1,0 +1,49 @@
+The MPC574XG-MB is an evaluation system supporting the NXP MPC574xC/G MCU family, which are used in a range of central body control modules, gateway modules and industrial networking and control applications.
+
+MPC574XG-324DS (324 BGA daughterboard) includes:
+  Daughterboard with 324 BGA socket
+  1 sample of the MPC5748G in the 324 BGA package
+
+MPC574xB-C-D-G Family features:
+  2 x Power Architecture e200z4 dual issue 32-bit cores
+    Up to 160 MHz operation
+    Single precision floating point operation
+    8 KB instruction cache and 4 KB data cache
+    Variable length encoding (VLE) for significant code density improvement
+  1 x Power Architecture e200z2 single issue 32-bit core
+    Up to 80 MHz operation
+    Variable length encoding
+    
+  6 MB Flash memory with error correction coding (ECC)
+     Three port Flash controller
+  768 KB of SRAM with ECC
+     Three RAM ports
+
+CPU: MPC5748G                                                                  
+  Cores: 3                                                                     
+    E200Z420 Main Core 0: Max freq. 160MHz, 8KB i-cache, 4KB d-cache           
+    E200Z420 Main Core 1: Max freq. 160MHz, 8KB i-cache, 4KB d-cache           
+    E200Z210 Peripheral Core 2: Max freq: 80Mhz
+
+Documentation:
+  Eval board:
+    http://cache.nxp.com/files/microcontrollers/doc/user_guide/MPC5748GEVBUG.pdf?fpsp=1&WT_TYPE=Users%20Guides&WT_VENDOR=FREESCALE&WT_FILE_FORMAT=pdf&WT_ASSET=Documentation&fileExt=.pdf
+    
+  MPC5748g:
+    http://cache.nxp.com/files/32bit/doc/data_sheet/MPC5748G.pdf?fpsp=1&WT_TYPE=Data%20Sheets&WT_VENDOR=FREESCALE&WT_FILE_FORMAT=pdf&WT_ASSET=Documentation&fileExt=.pdf
+    http://cache.nxp.com/files/32bit/doc/ref_manual/MPC5748GRM.pdf?fpsp=1&WT_TYPE=Reference%20Manuals&WT_VENDOR=FREESCALE&WT_FILE_FORMAT=pdf&WT_ASSET=Documentation&fileExt=.pdf
+      
+Supported compilers:
+  Green hills
+  
+Memory Map: See memory.ldf   
+
+
+ICU
+connect PK8  to PK1
+connect PK13 to PK2
+connect PG5  to PK4
+connect PG6  to PE8 in (P24.72 SAI connector)
+connect PA4  to PJ2 in (P24.23 SAI connector)
+connect PG3  to PK3
+

@@ -1,0 +1,97 @@
+#!/bin/bash
+
+#rm -rf _build_can/html/
+#rm -rf _build_can/latex/
+#rm -rf _build_can/html_mcu_mpc55xx/
+#rm -rf _build_can/html_mcu_tms570/
+#rm -rf _build_can/latex_mcu_mpc55xx/
+#rm -rf _build_can/latex_mcu_tms570/
+
+# 1 - module
+# 2 - mcu
+# 3 - type (um or dd)
+function build_mcal_doc() {
+	# Create conf.py files
+	cat $cdir/conf_main.py > $rdir/mcal/$1/doc/$3/conf.py
+	cat $rdir/mcal/$1/doc/$3/conf_part.py >> $rdir/mcal/$1/doc/$3/conf.py
+	# Generate html 
+	sphinx-build.exe -b html -t $2 $rdir/mcal/$1/doc/$3 $rdir/_build_$3_$1/html_$2/
+	
+	# Generate pdf
+	sphinx-build.exe -b latex -t $2 $rdir/mcal/$1/doc/$3 $rdir/_build_$3_$1/latex_$2/
+	pushd $rdir/_build_$3_$1/latex_$2/
+	pdfLatex can_$3_$2.tex
+	popd			
+}
+
+function build_mcal_dd_doc() {
+	# Create conf.py files
+	cat $cdir/conf_main.py > $rdir/mcal/doc/dd/conf.py
+	cat $rdir/mcal/doc/dd/conf_part.py >> $rdir/mcal/doc/dd/conf.py
+
+	sphinx-build.exe -b html $rdir/mcal/doc/dd $rdir/_build_mcal_dd/html_mcal/
+
+	# Generate pdf
+	sphinx-build.exe -b latex $rdir/mcal/doc/dd $rdir/_build_mcal_dd/latex_mcal/
+	pushd $rdir/_build_mcal_dd/latex_mcal/
+	pdfLatex mcal_dd.tex
+	popd			
+}
+
+
+
+# Get script path
+cdir=$(dirname "$(readlink -f "$0")")
+rdir=$cdir/../..
+
+# export path so extension can be found by sphinx.
+export ARC_DOC_ROOT=$cdir
+
+export PATH=$PATH:/d/tmp/miktex/texmfs/install/miktex/bin
+
+
+#-----------------------------------
+# MCAL
+#-----------------------------------
+
+# MCAL design description
+build_mcal_dd_doc 
+
+# MCAL modules ( um and um_<mcu> )  
+#build_mcal_doc can mcu_mpc5xxx um
+
+# MCAL module design description   
+#build_mcal_doc can mcu_mpc5xxx dd
+
+exit
+
+#sphinx-build.exe -b html -t mcu_tms570 mcal/Can/doc/ _build_can/html_mcu_tms570/
+#sphinx-build.exe -b html -t  mcu_mpc5xxx mcal/Can/doc/ _build_can/html_mcu_all/
+
+#sphinx-build.exe -b latex -t mcu_mpc5xxx mcal/Can/doc _build_can/latex_mcu_mpc5xxx/
+#sphinx-build.exe -b latex -t mcu_tms570 mcal/Can/doc _build_can/latex_mcu_tms570/
+
+pushd _build_can/latex_mcu_mpc5xxx/
+pdfLatex CANUM.tex
+pdfLatex CANUM.tex
+popd
+
+pushd _build_can/latex_mcu_tms570/
+pdfLatex CANUM.tex
+pdfLatex CANUM.tex
+popd
+
+
+#sphinx-build.exe -b html mcal/Dio/doc/ _build_dio/html/
+
+
+#sphinx-build.exe -b html mcal/doc/ _build_mcal/html/
+#sphinx-build.exe -b latex mcal/doc/ _build_mcal/latex/
+#pushd _build_mcal/latex/
+#pdfLatex MCALdocumentation.tex
+#popd
+
+
+
+
+

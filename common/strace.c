@@ -35,23 +35,23 @@
  */
 
 typedef enum {
-	STRACE_CH_ISR = 1,
-	STRACE_CH_TASK = (1<<1),
-	STRACE_CH_KERNEL = (1<<2),
+    STRACE_CH_ISR = 1,
+    STRACE_CH_TASK = (1<<1),
+    STRACE_CH_KERNEL = (1<<2),
 } strace_ch_t;
 
 typedef enum {
-	STRACE_EV_ISR_START,
-	STRACE_EV_ISR_STOP,
-	STRACE_EV_TASK_START,
-	STRACE_EV_TASK_STOP,
+    STRACE_EV_ISR_START,
+    STRACE_EV_ISR_STOP,
+    STRACE_EV_TASK_START,
+    STRACE_EV_TASK_STOP,
 } strace_ev_t;
 
 
 struct strace_attr_s {
-	strace_ch_t
-	/* A timestamp in some unit */
-	uint32_t timestamp;
+    strace_ch_t
+    /* A timestamp in some unit */
+    uint32_t timestamp;
 };
 
 
@@ -60,12 +60,12 @@ struct strace_attr_s {
  * @param ch channel to record
  */
 void strace( strace_ev_t event) {
-	switch( ch ) {
-	case STRACE_CH_ISR:
-		break;
-	case STRACE_CH_TASK:
-		break;
-	}
+    switch( ch ) {
+    case STRACE_CH_ISR:
+        break;
+    case STRACE_CH_TASK:
+        break;
+    }
 }
 
 /**

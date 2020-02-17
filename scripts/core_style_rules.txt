@@ -1,0 +1,127 @@
+- mcal/arch/mpc5xxx/MPC5606B.h
+- mcal/arch/mpc5xxx/spc560b54.h
+- mcal/arch/mpc5xxx/MPC5645S.h
+- mcal/arch/mpc5xxx/mpc5606s.h
+- mcal/arch/mpc5xxx/mpc5744P.h
+- mcal/arch/mpc5xxx/mpc5748g.h
+- mcal/arch/mpc5xxx/MPC5746C.h
+- mcal/arch/mpc5xxx/mpc5567.h
+- mcal/arch/mpc5xxx/mpc5516.h
+- mcal/arch/mpc5xxx/mpc5644A.h
+- mcal/arch/mpc5xxx/MPC5643L.h
+- mcal/arch/mpc5xxx/MPC5607B.h
+- mcal/arch/mpc5xxx/mpc5744P.h
+- mcal/arch/mpc5xxx/mpc5554.h
+- mcal/arch/mpc5xxx/MPC564xBC.h
+- mcal/arch/mpc5xxx/560xP_HEADER_v1_10_SBCHM.h
+- mcal/arch/mpc5xxx/MPC5604B_0M27V_0102
+- mcal/Fls/inc/flash_ll_h7f_c90.h
+- mcal/Fls/src/flash_ll_h7f_c90.c
+- mcal/arch/mpc5xxx/mpc5668.h
+- mcal/arch/mpc5xxx/mpc563m.h
+- mcal/arch/mpc5xxx/SPC56XL70.h
+- mcal/arch/mpc5xxx/MPC5777M.h
+- mcal/arch/mpc5xxx/src/typedefs.h
+- mcal/arch/mpc5xxx/MPC5634M_MLQB80.h
+- mcal/arch/mpc5xxx/MPC5644A.h
+- mcal/arch/mpc5xxx/mpc5500_spr.h
+- mcal/arch/mpc5xxx/mpc563m_vars.h
+- mcal/arch/mpc5xxx/mpc5554_vars.h
+
+- mcal/arch/tcxxx/src/contrib
+
+- mcal/arch/stm32/src/contrib 
+
+
+- system/Os/osal/arm/armv7_m/kernel/stm32f10x.h
+- system/Os/osal/arm/armv7_m/kernel/core_cm3.h
+- system/Os/osal/arm/armv7_m/kernel/core_cm3.c
+- system/Os/osal/arm/armv7_m/kernel/core_cmFunc.h
+- system/Os/osal/arm/armv7_m/kernel/core_cmInstr.h
+- system/Os/osal/arm/armv7_m/kernel/cmsis_armcc_V6.h
+- system/Os/osal/arm/armv7_m/kernel/cmsis_armcc.h
+- system/Os/osal/arm/armv7_m/kernel/core_cm4.h
+- system/Os/osal/arm/armv7_m/kernel/cmsis_gcc.h 
+- system/Os/osal/arm/armv7_m/kernel/cmsis_ghs.h
+- system/Os/osal/arm/armv7_m/kernel/core_cmSimd.h
+- system/Os/osal/arm/armv7_m/kernel/system_stm32f3xx.h
+- system/Os/osal/arm/armv7_m/kernel/stm32f303xc.h
+- system/Os/osal/arm/armv7_m/kernel/s32k144.h
+- mcal/arch/armv7_m/src/integration/rsc_table_vayu_ipu.h
+- mcal/arch/armv7_m/src/integration/rsc_types.h
+
+- arch/arm/arm_cr4/drivers/TMS570LS12x_Pwm_Driver
+- arch/arm/arm_cr4/drivers/F021
+
+
+- mcal/Fls/src/contrib
+- mcal/arch/mpc5xxx/src/contrib
+
+- mcal/arch/rh850_x/src/dr7f701503_irq.h
+- mcal/arch/rh850_x/src/dr7f701503.dvf.h
+- mcal/arch/rh850_x/src/dr7f701013_irq.h
+- mcal/arch/rh850_x/src/dr7f701013.dvf.h
+- mcal/Port/inc/rh850f1l_portdefs.h
+- mcal/Port/src/PortData_rh850f1l.c
+- mcal/Port/inc/PortData_rh850f1l.h
+
+- system/Os/osal/tricore/aurix/ap32201_TC2xx_Source
+- system/Os/osal/tricore/aurix/TC39x_Source
+- system/Os/osal/tricore/aurix/kernel/IfxCpu_cfg.c
+- system/Os/osal/tricore/aurix/kernel/IfxCpu_CStart.h
+- system/Os/osal/tricore/aurix/kernel/IfxCpu_CStart0.c
+- system/Os/osal/tricore/aurix/kernel/IfxCpu_CStart1.c
+- system/Os/osal/tricore/aurix/kernel/IfxCpu_CStart2.c
+- system/Os/osal/tricore/aurix/kernel/IfxCpu.c
+- system/Os/osal/tricore/aurix/kernel/IfxCpu.h
+- system/Os/osal/tricore/aurix/kernel/Ifx_Ssw_Tc0.c
+
+- embUnit
+
+- mcal/Dio/utest
+- mcal/Gpt/utest
+- mcal/Mcu/utest
+- mcal/Port/utest
+- Peripherals/SafeIoHwAb/utest
+
+- datastructures/Queue/utest
+- datastructures/Safety_Queue/utest
+
+- diagnostic/Det/utest
+
+- communication/LinIf/utest
+
+- safety_security/Sm/Htmss/utest
+- safety_security/Sm/Rtm/utest
+
+- safety_security/SafeLib/E2E/utest
+- safety_security/SafeLib/Crc/utest
+- safety_security/SafeLib/Crc/src/Crc_16.
+
+- system/Cpl/crypto
+
+- communication/lwip-2.0.3
+- clib/strtok_r.c
+- include/sys/queue.h
+
+- scripts/pclint/lnt/co-gcc.h
+- scripts/pclint/lnt/lint_cmac.h
+- scripts/misraDeviationReporter/test/test_folder
+
+- drivers/Pwm/epwm/epwm.c
+- drivers/Pwm/epwm/epwm.h
+- mcal/arch/tms570/src/epwm_tms570.h
+
+- system/Os/utest
+- system/EcuM/utest
+- system/SchM/utest
+- safety_security/WdgM/utest
+- safety_security/WdgIf/utest
+
+- boards/tests/mpc5xxx_cc
+- boards/tests/tms570_cc
+
+- testCommon/inc
+
+~ RULE_ArcCore_1_provide_file_dual_license_header
+~ RULE_ArcCore_2_do_not_use_todos

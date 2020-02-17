@@ -1,0 +1,24 @@
+PROJECT_NAME = MandatoryNameUsedToDifferentiateProjects
+$(PROJECT_NAME)_DIR = path/for/generated/files #$(BDIR)/config
+$(PROJECT_NAME)_ECUC = EcucValueCollectionPath # Note Model Path
+
+# Dcm is used as an example here
+# Substitute with you module name i.e. <UPPER>_MODULE_NAME = <Lower>
+DCM_MODULE_NAME = Dcm
+# List all arxml files needed (also referenced modules and moddefs)
+$(PROJECT_NAME)_$(DCM_MODULE_NAME)_ARXML_FILES += path/to/arxml (needed by the Dcm configuration - hint use $(BDIR))
+$(PROJECT_NAME)_$(DCM_MODULE_NAME)_ARXML_FILES += more/arxml/file/path
+# This file will create the dependencies to all generated files (*.c/*.h/*.mk..etc)
+include $(CORE_DIR)/generators/generic/Dcm_gen.mk
+
+# Optional - add custom rules that are run before generating
+$(PROJECT_NAME)_PREGEN_RULES += CustomRuleName
+
+# Optional - add rules to clean any markers created by custom rules
+CLEAN_MARKER_RULES += CustomCleanRulesName
+
+# This creates the rules for the module
+$(eval $(call ADD_MODULE,$(PROJECT_NAME),$(DCM_MODULE_NAME)))
+
+# This adds targets and adds them to all / clean
+$(eval $(call ADD_GEN_RULE,$(PROJECT_NAME)))

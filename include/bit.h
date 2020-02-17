@@ -27,7 +27,7 @@
  * @return
  */
 static inline int Bit_Get(uint8_t *aPtr, int num ) {
-	return (aPtr[num / 8] >> (num % 8)) & 1;
+    return (aPtr[num / 8] >> (num % 8)) & 1;
 }
 
 /**
@@ -37,7 +37,7 @@ static inline int Bit_Get(uint8_t *aPtr, int num ) {
  * @return
  */
 static inline void Bit_Set(uint8_t *aPtr, int num ) {
-	aPtr[num / 8] |=  (1<<(num % 8));
+    aPtr[num / 8] |=  (1<<(num % 8));
 }
 
 /**
@@ -47,7 +47,7 @@ static inline void Bit_Set(uint8_t *aPtr, int num ) {
  * @return
  */
 static inline void Bit_Clear(uint8_t *aPtr, int num ) {
-	aPtr[num / 8] &=  ~(1<<(num % 8));
+    aPtr[num / 8] &=  ~(1<<(num % 8));
 }
 
 

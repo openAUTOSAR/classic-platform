@@ -52,12 +52,14 @@
  *
  */
 
+/*lint -w1 Only errors in generic module used during development */
+
 #include <stdio.h>
 
 /*lint -save -e451 */
 #include <stdarg.h>
 /*lint -restore */
-#include <assert.h>
+#include "arc_assert.h"
 #include "Ramlog.h"
 #include "MemMap.h"
 #include "device_serial.h"
@@ -90,16 +92,16 @@ static FILE *rFile;
 void ramlog_chr( char c ) {
   ramlog[ramlog_curr++] = c;
   if( ramlog_curr >= CFG_RAMLOG_SIZE ) {
-	  ramlog_curr = 0;
+      ramlog_curr = 0;
   }
 }
 
 
 void ramlog_fputs(char *str) {
 
-	while (*str != 0) {
-		ramlog_chr(*str++);
-	}
+    while (*str != 0) {
+        ramlog_chr(*str++);
+    }
 }
 
 /**
@@ -108,8 +110,8 @@ void ramlog_fputs(char *str) {
  */
 void ramlog_puts( char *str ) {
 
-	ramlog_fputs(str);
-	ramlog_chr('\n');
+    ramlog_fputs(str);
+    ramlog_chr('\n');
 }
 
 /**
@@ -118,17 +120,17 @@ void ramlog_puts( char *str ) {
  * @param format The format string.
  */
 int ramlog_printf( const char *format, ... ) {
+    // Fast and ugly ramlog support.
 
-	// Fast and ugly ramlog support.
-    /*lint -save -e451 -e438 -e530 -e550 -e551 */
-	volatile int rv;
-	va_list args;
-	va_start(args,format);
+    volatile int rv;
+    va_list args;
+    va_start(args,format);
 
-	assert( rFile != NULL );
-	rv = vfprintf(rFile, format, args);
-	va_end(args);
-	return rv;
+    ASSERT( rFile != NULL );
+    rv = vfprintf(rFile, format, args);
+    va_end(args);
+
+    return rv;
 }
 
 
@@ -137,50 +139,52 @@ int ramlog_printf( const char *format, ... ) {
  */
 void ramlog_init( void )
 {
-	rFile = fopen("ramlog","r");
+    rFile = (FILE*)fopen("ramlog","r");
 
 #if defined(CFG_RAMLOG_SESSION)
-	char buf[32];
-	/* Check for existing session */
-	if( (ramlog[0] != RAMLOG_MAGIC) || (ramlog[3] != RAMLOG_MAGIC) ) {
-		ramlog_curr = 0;
-		ramlog_session = 0;
-	} else {
-		/*  Search the ramlog */
-	}
+    char buf[32];
+    /* Check for existing session */
+    if( (ramlog[0] != RAMLOG_MAGIC) || (ramlog[3] != RAMLOG_MAGIC) ) {
+        ramlog_curr = 0;
+        ramlog_session = 0;
+    } else {
+        /*  Search the ramlog */
+    }
     ramlog_session++;
     simple_sprintf(buf, "Session (%d)\n", ramlog_session);
     ramlog_puts(buf);
 
 #else
     (void)ramlog[0]; /* To avoid lint warning */
-	ramlog_curr = 0;
+    ramlog_curr = 0;
 #endif
 }
 
 static int Ramlog_Write(  uint8_t *data, size_t nbytes)
 {
-	for (unsigned int i = 0; i < nbytes; i++) {
-		ramlog_chr(*data++);
-	}
-	return nbytes;
+    for (unsigned int i = 0; i < nbytes; i++) {
+        ramlog_chr(*data++);
+    }
+    return nbytes;
 }
 
 static int Ramlog_Open( const char *path, int oflag, int mode ) {
-	(void)path;
-	(void)oflag;
-	(void)mode;
+    (void)path; //lint !e920 MISRA False positive. Allowed to cast pointer to void here.
+    (void)oflag;
+    (void)mode;
 
-	return 0;
+    return 0;
 }
 
 
 
 DeviceSerialType Ramlog_Device = {
-	.name = "ramlog",
-	.read = NULL,
-	.write = Ramlog_Write,
-	.open = Ramlog_Open,
+    .device.type = DEVICE_TYPE_CONSOLE,
+    .device.name = "/dev/ramlog",
+    .name = "ramlog",
+    .read = NULL,
+    .write = Ramlog_Write,
+    .open = Ramlog_Open,
 };
 
 

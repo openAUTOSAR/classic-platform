@@ -16,13 +16,14 @@
 #define ASSERT_H_
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #if defined(NDEBUG)
 #define assert(_x)
 #else
 #define assert(_x)  if (!(_x)) { \
 /*	                  printf("%s %s %s\n",#_x,__FILE__,__LINE__); */ \
-	                  abort(); \
+                      while(1){}; \
                      }
 #endif
 

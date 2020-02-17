@@ -1,0 +1,51 @@
+
+
+
+The Freescale MPC5744P is an PowerPC processor with e200z4251n3 and e200z424 cores, VLE only and lock-step only 
+	
+Datasheets:
+  Eval board:
+  	http://cache.freescale.com/files/32bit/doc/user_guide/MPC5744PEVB144UG.pdf?fpsp=1&WT_TYPE=Users%20Guides&WT_VENDOR=FREESCALE&WT_FILE_FORMAT=pdf&WT_ASSET=Documentation
+  	http://cache.freescale.com/files/microcontrollers/doc/user_guide/MPC5746MEVBPUG.pdf?fpsp=1&WT_TYPE=Users%20Guides&WT_VENDOR=FREESCALE&WT_FILE_FORMAT=pdf&WT_ASSET=Documentation
+     
+  MPC5744P
+  	http://cache.freescale.com/files/32bit/doc/ref_manual/MPC5744PRM.pdf?fpsp=1&WT_TYPE=Reference%20Manuals&WT_VENDOR=FREESCALE&WT_FILE_FORMAT=pdf&WT_ASSET=Documentation
+
+Board:
+  40Mhz external crystal
+
+Supported compilers:
+  Code Warrior
+  Diab
+ 
+Info:	
+  MPC5744P
+  CPU:		 e200z4251n3 and e200z424 cores, VLE only and lock-step only, EFPU without vector instructions, 32bit GPRs, 32bit vector instructions
+  Freq:		 180(200?) Mhz
+  Flash: 	 2.5M, primary
+  RAM:       384k + 64k, ECC
+  ICACHE:	 8k
+  DCACHE:	 4k
+
+Flash:
+	4x 16 KB in partition 0/1 (2x blocks EEPROM emulation enabled)
+	2x 32 KB in partition 2/3 (EEPROM emulation enabled)
+	6x 64 KB in partition 4/5
+	8x 256 KB in partition 6/7
+  
+Memory Map: See memory.ldf
+ 
+ SPI_0
+  PC[7]  - SIN_0   - S_OUT/BROWN
+  PC[6]  - SOUT_0  - S_IN/ORANGE 
+  PC[5]  - SCK_9   - S_CLK/BLUE
+  PC[4] - CS0_0   - CS/GREEN  (both for software and hardware CS *)
+                               
+*) Depends on setting in port.
+
+SPI_1
+  Never tested
+
+SPI_2
+  Never tested
+ 

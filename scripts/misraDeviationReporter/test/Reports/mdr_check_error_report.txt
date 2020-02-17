@@ -1,0 +1,254 @@
+
+
+==============================================
+ERROR: Misra deviation comment form not according to style guide
+==============================================
+File:			test1.h
+Line:			15
+PC_Lint:		[]
+MISRA:			
+Level:			
+Category:		
+Justification:	
+
+Comment: /*lint -w2 Warning level two in test files */
+==============================================
+
+==============================================
+ERROR: Misra deviation comment form not according to style guide
+==============================================
+File:			test1.h
+Line:			16
+PC_Lint:		[]
+MISRA:			
+Level:			
+Category:		
+Justification:	
+
+Comment: /*lint -e632 -e639 -e634 -e638 No strong typing for tests */
+==============================================
+
+==============================================
+ERROR: Misra deviation comment form not according to style guide
+==============================================
+File:			test1.h
+Line:			112
+PC_Lint:		[]
+MISRA:			
+Level:			
+Category:		
+Justification:	
+
+Comment: /*lint -save -e506 */
+==============================================
+
+==============================================
+ERROR: Misra deviation comment form not according to style guide
+==============================================
+File:			test1.h
+Line:			155
+PC_Lint:		[]
+MISRA:			
+Level:			
+Category:		
+Justification:	
+
+Comment: /*lint -save -e506 */
+==============================================
+
+==============================================
+ERROR: Misra deviation comment form not according to style guide
+==============================================
+File:			test1.c
+Line:			15
+PC_Lint:		[]
+MISRA:			
+Level:			
+Category:		
+Justification:	
+
+Comment: /*lint -w2 Warning level two in test files */
+==============================================
+
+==============================================
+ERROR: Misra deviation comment form not according to style guide
+==============================================
+File:			test1.c
+Line:			16
+PC_Lint:		[]
+MISRA:			
+Level:			
+Category:		
+Justification:	
+
+Comment: /*lint -e632 -e639 -e634 -e638 No strong typing for tests */
+==============================================
+
+==============================================
+ERROR: Misra deviation comment form not according to style guide
+==============================================
+File:			test1.c
+Line:			112
+PC_Lint:		[]
+MISRA:			
+Level:			
+Category:		
+Justification:	
+
+Comment: /*lint -save -e506 */
+==============================================
+
+==============================================
+ERROR: Misra deviation comment form not according to style guide
+==============================================
+File:			test1.c
+Line:			155
+PC_Lint:		[]
+MISRA:			
+Level:			
+Category:		
+Justification:	
+
+Comment: /*lint -save -e506 */
+==============================================
+
+==============================================
+ERROR: Misra deviation comment form not according to style guide
+==============================================
+File:			test2.c
+Line:			6
+PC_Lint:		[]
+MISRA:			
+Level:			
+Category:		
+Justification:	
+
+Comment: /*lint -e{533, 578, 715, 745, 832, 936, 939} FALSE_POSITIVE */
+==============================================
+
+==============================================
+ERROR: Misra deviation comment form not according to style guide
+==============================================
+File:			test2.c
+Line:			9
+PC_Lint:		[]
+MISRA:			
+Level:			
+Category:		
+Justification:	
+
+Comment: /*lint -save -e747 STANDARDIZED_API */
+==============================================
+
+==============================================
+ERROR: Misra deviation comment form not according to style guide
+==============================================
+File:			test2.c
+Line:			14
+PC_Lint:		[]
+MISRA:			
+Level:			
+Category:		
+Justification:	
+
+Comment: SYS_CALL_ClearEvent(EVENT_MASK_DetReportError_QM); /*lint !e747 STANDARDIZED_API */
+==============================================
+
+==============================================
+ERROR: Misra deviation comment form not according to style guide
+==============================================
+File:			test2.c
+Line:			16
+PC_Lint:		[]
+MISRA:			
+Level:			
+Category:		
+Justification:	
+
+Comment: } while (SCHM_TASK_EXTENDED_CONDITION != 0);  /*lint !e506 OTHER Required to loop task in order to synchronize partitions */
+==============================================
+
+==============================================
+ERROR: Misra deviation comment form not according to style guide
+==============================================
+File:			test3.c
+Line:			52
+PC_Lint:		[]
+MISRA:			
+Level:			
+Category:		
+Justification:	
+
+Comment: /*lint -e553  STANDARD DEV SELECT. Undefined preprocessor variable, assumed 0
+==============================================
+
+==============================================
+ERROR: Misra deviation comment form not according to style guide
+==============================================
+File:			test3.c
+Line:			61
+PC_Lint:		[]
+MISRA:			
+Level:			
+Category:		
+Justification:	
+
+Comment: /*lint -save -e923 HARDWARE_ACESSS. Cast from unsigned int to pointer [Encompasses MISRA 2004 Rule 11.1, required],
+==============================================
+
+==============================================
+ERROR: Exception category not according to style guide
+==============================================
+File:			test3.c
+Line:			73
+PC_Lint:		[]
+MISRA:			
+Level:			
+Category:		
+Justification:	
+
+Comment: /*lint -e923 MISRA:HARDWARE_ACESSS:Cast from unsigned int to pointer:[MISRA 2012 Rule 11.6, required]
+==============================================
+
+==============================================
+ERROR: The MISRA rule in comment is not according to PC-Lint mapping, e.g.
+ you choose category mandatory, but is is required, compare mdr_analyse_report.txt
+==============================================
+File:			test3.c
+Line:			88
+PC_Lint:		[64]
+MISRA:			MISRA 2012 Rule 1.3
+Level:			mandatory
+Category:		FALSE POSITIVE
+Justification:	Configuration is of same type
+
+Comment: /*lint -e64 MISRA:FALSE POSITIVE:Configuration is of same type:[MISRA 2012 Rule 1.3, mandatory]*/
+==============================================
+
+==============================================
+ERROR: Misra deviation comment form not according to style guide
+==============================================
+File:			test3.c
+Line:			102
+PC_Lint:		[]
+MISRA:			
+Level:			
+Category:		
+Justification:	
+
+Comment: Comment: pvr = get_spr(SPR_PVR);  /*lint !e718 !e746 !e548 !e632 !e732 Defined in Cpu.h */
+==============================================
+
+==============================================
+ERROR: Misra deviation comment form not according to style guide
+==============================================
+File:			test3.c
+Line:			106
+PC_Lint:		[]
+MISRA:			
+Level:			
+Category:		
+Justification:	
+
+Comment: pvr = get_spr(SPR_PVR);  /*lint !e718 !e746 !e548 !e632 !e732 Defined in Cpu.h */
+==============================================

@@ -35,6 +35,8 @@ cflags-$(CFG_OPT_RELEASE) += -opt level=2
 cflags-$(CFG_OPT_DEBUG)   += -opt off 
 cflags-$(CFG_OPT_FLAGS)   += $(SELECT_OPT)
 
+def-y += CFG_SPE_INIT
+
 # Generate dependencies, 
 # Should be -MMD here but it only gives the *.c files (for some reason
 # the compiler thinks all include files are system file, option?)
@@ -51,33 +53,13 @@ cflags-$(CFG_VLE) += -vle  # Convert ppc to vle ppc
 cflags-y          += -abi=eabi
 cflags-y          += -proc=5565
 cflags-$(CFG_EFPU)+= -fp=efpu
+cflags-$(CFG_SPE_FPU_SCALAR_SINGLE) += -fp=spfp			# spfp
+cflags-$(CFG_SPE_FPU_SCALAR_SINGLE) += -spe_vector
 #cflags-y          += -use_isel=on
 cflags-y          += -sdata=0 -sdata2=0
 
 # Get machine cflags
 #cflags-y		+= $(cflags-$(CFG_ARCH))
-
-CFLAGS_cw_IoHwAb.o += -W=nounused
-CFLAGS_cw_Dio.o +=  -W=nounused
-CFLAGS_cw_IoHwAb_Analog.o +=  -W=nounused -W=nounusedexpr
-CFLAGS_cw_IoHwAb_Digital.o +=  -W=nounused
-CFLAGS_cw_EcuM_Main.o +=  -W=nounused -W=off
-CFLAGS_cw_EcuM.o +=  -W=nounused -W=off
-CFLAGS_cw_Mcu.o += -W=nounused 
-CFLAGS_cw_Can.o +=  -W=nounused
-CFLAGS_cw_CanIf.o +=  -W=off
-CFLAGS_cw_init.o +=  -W=off
-CFLAGS_cw_Nm.o +=  -W=nounused -W=off
-CFLAGS_cw_Mcu_Cfg.o += -W=off
-CFLAGS_cw_ComM.o +=  -W=nounused
-CFLAGS_cw_CanNm.o +=  -W=nounused
-CFLAGS_cw_Pwm.o +=  -W=nounused
-CFLAGS_cw_Adc_eQADC.o += -W=nopossible -W=nounwanted
-CFLAGS_cw_Com_misc.o +=  -W=nounused
-CFLAGS_cw_EcuM_Callout_Stubs.o +=  -W=nounused
-CFLAGS_cw_SchM.o +=  -W=nounused
-
-
 
 
 CFLAGS = $(cflags-y) $(cflags-yy) $(CFLAGS_cw_$@)
@@ -166,12 +148,14 @@ ldflags-y += -romaddr $(CFG_FLASH_ADR)
 ldflags-y += -rambuffer $(CFG_FLASH_ADR)
 #ldflags-y += -nodefaults
 ldflags-y += -gdwarf-2
-ldflags-y += -m _start
+
+APP_START_SYMBOL?=_start
+ldflags-y += -m $(APP_START_SYMBOL)
 ldflags-y += -nostdlib
-ldflags-y += -code_merging all
+#ldflags-y += -code_merging all
 TE = elf
 ldflags-y += -map $(subst .$(TE),.map, $@)
-ldflags-y += -srec $(subst .$(TE),.s19, $@)
+ldflags-$(CFG_CREATE_SREC) += -srec $(subst .$(TE),.s3, $@)
 
 LDFLAGS += $(ldflags-y) 
 LDOUT 		= -o $@
@@ -196,8 +180,25 @@ asflags-$(CFG_VLE) += -vle
 ASFLAGS += $(asflags-y)
 ASOUT = -o $@
 
-#$(error x$(CFG_VLE)x)
+# ---------------------------------------------------------------------------
+# Archiver
+#
+# AROUT 		- archiver flags
+AR = $(CW_BIN)/mwldeppc.exe
+ARFLAGS = -library
+AROUT 	= $@
 
+
+# CW license trick (since it does not cache license requests)
+# - if there is license_arccore.dat file copy it to license.dat..remove after link again.
+define do-ld-pre
+	${Q}if [ -f $(CW_COMPILE)/license_arccore.dat ]; then cp -v $(CW_COMPILE)/license_arccore.dat $(CW_COMPILE)/license.dat; fi
+endef
+
+define do-ld-post
+	${Q}if [ -f $(CW_COMPILE)/license_arccore.dat ];then rm -v $(CW_COMPILE)/license.dat; fi	
+endef	
+		
 # Memory footprint
 define do-memory-footprint 
 	@gawk --non-decimal-data -f $(ROOTDIR)/scripts/memory_footprint_$(COMPILER).awk $(subst .elf,.map,$@) 

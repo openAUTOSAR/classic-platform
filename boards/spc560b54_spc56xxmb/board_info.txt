@@ -1,0 +1,62 @@
+
+
+
+The ST SPC560B54 is an PowerPC process with a e200Z0h core, VLE only. 
+	
+Datasheets:
+	See www.st.com/web/en/resource/technical/document/datasheet/CD00215422.pdf
+ 
+Board:
+  8Mhz external crystal
+
+Supported compilers:
+  Diab
+ 
+Info:	
+  SPC560B54
+  CPU:		 e200z0h (VLE only)
+  Freq:		 64 Mhz
+  Flash: 	 768 KB, primary
+             64K, data flash
+  RAM:       64K, ECC RAM
+  
+Memory Map:
+ 0x0000_0000 -> 0x000B_FFFF   Flash
+ 0x0080_0000 -> 0x0080_FFFF   Data Flash
+ 0x4000_0000 -> 0x400F_FFFF   SRAM
+ 
+
+== SPI == 
+
+SPI MEMORY 25LC160B
+    
+SPI_0
+ PJ1 Connector will have the following layout 
+ (With ArcCore internal harness and SO/SI as seen from memory):
+
+                 PJ7 
+               1-X  X-2
+               3-X  X-4 
+               5-X  X-6
+               7-X  X-8  
+               9-X  X-10  
+              11-X  X-12
+     SO/Brown 13-X  X-14 SI/Orange
+     SCK/Blue 15-X  X-16  
+              17-X  X-18    
+       
+CS/Green should be connected to PB12 (CS1_0 according to ref. manual). This is on PJ5.13.
+Connect Vcc (red) to 3.3V.
+Connect GND (black) to PJ2-17.
+
+
+For MCAL DIO test:
+On J8 (LED_EN) connect pin 5 and 7
+
+                  J8 
+               1-X  X-2
+               3-X  X-4 
+              *5-X  X-6
+              *7-X  X-8  
+
+

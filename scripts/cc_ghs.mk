@@ -1,3 +1,4 @@
+
  
 GHS_VERSION=201254
 GHS_COMPILE?=/d/devtools/ghs/comp_201254
@@ -5,17 +6,23 @@ GHS_BIN = $(GHS_COMPILE)
 #GHS_TARGET?=ppc560xc
 GHS_TARGET?=ppc5514
 
+# Arch specific settings
+ifneq ($(ARCH),)
+ include $(ROOTDIR)/$(ARCH_KERNEL_PATH-y)/scripts/ghs.mk
+endif
+
+
 # ---------------------------------------------------------------------------
 # Compiler
 # CCFLAGS - compile flags
 
-CC	= 	$(GHS_BIN)/ccppc
+opt-cflags-$(CFG_OPT_RELEASE) += -Ospeed -OI -OB
+opt-cflags-$(CFG_OPT_DEBUG)   += -g -dwarf2 -Onone
+opt-cflags-$(CFG_OPT_SIZE) +=  -g -dwarf2 -Osize
+opt-cflags-$(CFG_OPT_FLAGS)   += $(SELECT_OPT)
 
-cflags-$(CFG_OPT_RELEASE) += -Ospeed -OI -OB
-cflags-$(CFG_OPT_DEBUG)   += -g -dwarf2 -Onone
-cflags-$(CFG_OPT_SIZE)    += -g -dwarf2 -Osize
-cflags-$(CFG_OPT_FLAGS)   += $(SELECT_OPT)
-
+cflags-y+= -DBUILD_OPT_FLAGS="$(opt-cflags-y)"
+cflags-y += $(opt-cflags-y)
 
 ifeq ($(GHS_TARGET),)
 $(error GHS_TARGET is not defined. Check your build_config.mk for it)
@@ -23,8 +30,6 @@ endif
 
 cflags-y += -c
 cflags-y += -c99
-cflags-y += --gnu_asm
-cflags-$(CFG_VLE) += -vle
 cflags-y += -cpu=$(GHS_TARGET)
 
 # Generate dependencies
@@ -33,12 +38,12 @@ cflags-y 		+= -MMD
 # Diagnostics
 cflags-y += -errmax=10
 cflags-y += --diag_suppress 618
+cflags-y += --no_wrap_diagnostics
 
 CFLAGS = $(cflags-y) $(cflags-yy) $(CFLAGS_GHS_$@)
 
 CCOUT 		= -o $@ 
 
-SELECT_CLIB=CLIB_DIAB
 CFG_ARC_CLIB?=y
 
 # ---------------------------------------------------------------------------
@@ -60,8 +65,6 @@ CPP_ASM_FLAGS = -cpu=$(GHS_TARGET)
 # lib-y			- the libs, without path
 
 
-LD = $(GHS_BIN)/ccppc.exe
-
 LDOUT 		= -o $@
 TE = elf
 LDMAPFILE =-map=$(strip $(subst .elf,.map, $@))
@@ -69,28 +72,33 @@ LDMAPFILE =-map=$(strip $(subst .elf,.map, $@))
 LD_FILE= -T
 
 libitem-y += $(libitem-yy)
-
+ 
 LDFLAGS += --nocpp
 # Use our own startup, not GHS
-LDFLAGS += -nostartfile
+LDFLAGS += -nostartfiles 
 #LDFLAGS += -v
 LDFLAGS += -cpu=$(GHS_TARGET)
 LDFLAGS += $(ldflags-y)
 
+
 # ---------------------------------------------------------------------------
 # Assembler
 # ---------------------------------------------------------------------------
-AS	= 	$(GHS_BIN)/asppc
-#ASFLAGS-$(CFG_OPT_DEBUG) += -g 
+AS ?= $(GHS_BIN)/asppc
+
+ASFLAGS-$(CFG_OPT_DEBUG) += -g 
 #ASFLAGS += -Xsemi-is-newline
-ASFLAGS += -cpu=$(GHS_TARGET) 
+
+
+ASFLAGS += -g
 
 ASOUT = -o $@
 
 
 # ---------------------------------------------------------------------------
 
-OBJCOPY 		= $(tprefix-y)objcopy
+OBJCOPY	= 	$(GHS_BIN)/gsrec
+OBJCOPY_FLAGS += -B -S3
 
 # ---------------------------------------------------------------------------
 NM 		= $(tprefix-y)nm
@@ -108,9 +116,14 @@ AROUT 	= $@
 PCLINT_COMPILER_MAKEFILE      = $(PCLINT_FILES_DIR)/co-gcc.mak GCC_BIN=$(CC)
 PCLINT_COMPILER_SETTINGS_FILE = $(PCLINT_FILES_DIR)/co-gcc.lnt
 
+
+define do-objcopy
+	$(OBJCOPY) $(OBJCOPY_FLAGS) $< -o $@ 
+endef
+
 # GHS does not have multiline assembler sepateted by ";"... do we do it here manually
 define do-sx-to-s-post
-	gawk '{gsub(/;/,"\n")};1' $@ > $@.tmp; cp $@.tmp $@ 
+	$(Q)gawk '{gsub(/;/,"\n")};1' $@ > $@.tmp; cp $@.tmp $@ 
 endef
 
 # Memory footprint

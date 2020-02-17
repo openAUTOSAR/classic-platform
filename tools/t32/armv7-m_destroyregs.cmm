@@ -1,0 +1,21 @@
+LOCAL &val
+r.s r0 0xffffffff
+r.s r1 0x11111111
+//r.s r2 0x22222222
+//r.s r3 0x33333333
+r.s r4 0x44444444
+r.s r5 0x55555555
+r.s r6 0x66666666
+r.s r7 0x77777777
+r.s r8 0x88888888
+r.s r9 0x99999999
+r.s r10 0x10101010
+r.s r11 0x11111111
+r.s r12 0x12121212
+//r.s r13 &val  // sp
+enddo
+
+
+
+
+

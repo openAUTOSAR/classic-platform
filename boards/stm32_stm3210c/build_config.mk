@@ -1,16 +1,20 @@
 
 # ARCH defines
-ARCH=arm_cm3
+ARCH=armv7_m
 ARCH_FAM=arm
-ARCH_MCU=arm_cm3
+ARCH_MCU=stm32
 
 #
 # CFG (y/n) macros
 # 
 
-CFG=ARM ARM_CM3
+CFG=ARM ARMV7_M ARM_CM3 THUMB
+CFG+=STM32 STM32F1X
+
 # Add our board  
 CFG+=BRD_STM32_STM3210C 
+CFG+=TIMER_DWT
+CFG+=CREATE_SREC
 
 # 
 # ST have devided devices into ( See chapter 6 in Ref manual )
@@ -26,17 +30,15 @@ CFG+=STM32_CL
 # default or private
 
 # MCAL
-MOD_AVAIL+=ADC CAN DIO MCU FLS PORT PWM GPT   
-# System + Communication + Diagnostic
-MOD_AVAIL+=CANIF CANTP J1939TP COM DCM DEM DET ECUM IOHWAB KERNEL PDUR WDGM RTE SCHM
-# Network management
-MOD_AVAIL+=COMM NM CANNM CANSM
-# Additional
-MOD_AVAIL+=RAMLOG TCF LWIP SLEEP RTE
-# CRC
-MOD_AVAIL+=CRC32 CRC16
+MOD_AVAIL+=ADC CAN DIO MCU FLS PORT PWM GPT EA
+MOD_AVAIL+=TCF LWIP TCPIP SLEEP SOAD DOIP ETHSM
 # Required modules
-MOD_USE += MCU KERNEL ECUM
+MOD_USE += MCU KERNEL
+
+
+def-y += NON_ASR_ETH_DRIVER
+def-y += USE_NO_ETHIF
+
 
 #
 # Extra defines 
@@ -50,3 +52,4 @@ def-y += STM32F10X_CL
 # Default cross compiler
 DEFAULT_CROSS_COMPILE = /opt/arm-none-eabi/bin/arm-none-eabi-
 
+def-y += L_BOOT_RESERVED_SPACE=0x0

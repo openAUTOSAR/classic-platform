@@ -1,33 +1,48 @@
-
-
-
 The Freescale MPC5510 is an PowerPC process with a e200Z1+e200Z0 core. 
 	
 Datasheets:
   Eval board:
-    http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC5668GKIT&parentCode=MPC5668G&fpsp=1
-    http://cache.freescale.com/files/32bit/doc/user_guide/MPC5668GKITUM.pdf?fpsp=1  
+    http://cache.freescale.com/files/32bit/doc/user_guide/MPC5668GKITUM.pdf 
  
-  MPC5668G
-    http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC5668G&nodeId=01624606C1427E
-    
+  MPC5516/7
+    http://cache.freescale.com/files/32bit/doc/ref_manual/MPC5668xRM.pdf
+
 Board:
-  40Mhz external crystal
+  40MHz Oscillator Crystal
+  8Mhz Oscillator Circuit
+  32Khz Watch Crystal
  
 Info:	
-  e200Z6(SPE) + e200Z0 
-  116 Mhz
-  2 MB Flash 
-  592 KB SRAM 
+  MPC5668G
+  e200Z6 + e200Z0 (VLE only)
+  static, 116Mhz
+  2MB Flash
+  MPC5668G 592KB SRAM (MPC551E 128KB SRAM)
+  .. 
   
-Memory Map:
- 0x0000_0000 ->           Flash
- 0x4000_0000 ->           SRAM
- 
- 
-   
- 
- 
- 
- 
+MEMORY MAP
+  MEMORIES
+    0x0000_0000 ->           Flash
+    0x4000_0000 ->           SRAM
+
+  
+  LAYOUT
+    0x0000_0000--0x0000_7FFF  Bootloader
+    0x0000_8000--0x0000_FFFF  EEPROM emulation(FEE)
+    0x0001_0000->             Application  
+  
+
+SPI
+  - 9526bWP, EEPROM, SPI_A , CS0 (from 0)
+
+Testing during MCAL test:
+   SPI_A, M95256 using PCS_A[2]
+
+CPU  PAD        Func     Schema                    
+  --- SPI_A ---               
+ 80 H2 (PF0) SCK_A 
+ 81 J1 (PF1) SOUT_A
+ 82 J2 (PF2) SIN_A
+ 83 N2 (PF3) PCS_A[0] 
+     
  

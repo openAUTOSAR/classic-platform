@@ -1,0 +1,118 @@
+
+Description
+
+
+	
+Datasheets:
+ 
+Documentation (from 1.1.2 in 7000-TRM)
+  Cortex-A9 MPCore 								ARM r3p0
+  AMBA Level 2 Cache Controller (PL310) 		ARM r3p2-50rel0
+  PrimeCell Static Memory Controller (PL353) 	ARM r2p1
+  PrimeCell DMA Controller (PL330) 				ARM r1p1
+  Generic Interrupt Controller (PL390) 			ARM Arch v1.0, r0p0
+  CoreLink Network Interconnect (NIC-301) 		ARM r2p2
+  DesignWare Cores IntelliDDR Multi Protocol 	Synopsys A07
+  USB 2.0 High Speed Atlantic Controller 		Synopsys 2.20a
+  Watchdog Timer  								Cadence Rev 07
+  Inter Intergrated Circuit 					Cadence r1p10
+  Gigabit Ethernet MAC 							Cadence r1p23
+  Serial Peripheral Interface 					Cadence r1p06
+  Universal Asynchronous Receiver Transmitter 	Cadence r1p08
+  Triple Timer Counter 							Cadence Rev 06
+  SD2.0/SDIO2.0/MMC3.31 AHB Host Controller 	Arasan 	8.9A_apr02nd_2010
+ 
+ 
+ Board Info:
+  - 1 GB DDR3
+  - 128 Mb Quad SPI flash memory
+  - Clock 
+    - Fixed 33.33 Mhz (drives PL_CLK)
+    
+    
+JTAG setup and isystem debugger:
+ - There is a chapter on Xilinx Zynq in the online isystem manual under "OCD Cortex A R"
+ - HW: 
+   - Use the J58 JTAG header
+   - Set JTAG_SEL_1 and JTAG_SEL_2 to "ON"
+   - Set SW16 should all be set to "0" (ie switch "down" towards the text on the switch) 
+   - isystem->emulation options->JTAG
+     - De-select "This is the single..... " 
+     - Set IR Prefix: 6 and DR Prefix: 1
+     
+     
+A9 - 
+  - L1 Cache: 32K instruction and 32K data cache
+  
+  From: 7000-RM 
+    Note: You must invalidate the instruction cache, the data cache, and BTAC before using them. It is 
+    not required to invalidate the main TLB, even though it is recommended for safety reasons. This 
+    ensures compatibility with future revisions of the processor.
+  	
+  - L2 Cache: 
+     See 3.4.10 Programming Model in 7000-RM
+   
+Memory Map:
+  0x0000_0000 -- 0x0002_ffff    OCM (192K of the 256K SRAM available)
+  0x0010_0000 ->                DRAM (after FSBL) 
+  
+  
+  0xFC00_0000 -- 0xFDFF_FFFF    Quad-SPI linear address for linear mode (Need to be setup?)
+  0xFFFF_0000 -- 0xFFFF_FFFF	OCM3.....  
+
+
+
+Bitstream file:
+
+  
+SPI Setup:
+  Verified using a Microchip 25LC160B http://ww1.microchip.com/downloads/en/DeviceDoc/21807D.pdf
+  VCC Range: 2.5 -> 5.5 V
+  
+						         J20
+			                 x  1   2 x   
+		SPI_0_IO0_IO (MOSI)	 x  3   4 x SPI_0_IO1_IO (MISO) 
+		SPI_0_SCK_IO	     x  5   6 x SPI_0_SS_IO  (CS)
+				             x  7   8 x 
+						     x  9  10 x 
+						     x  11 12 x 
+						     x  13 14 x
+						    x  15 16 x
+
+
+ICU test setup:
+	Connect PMOD_2_0 (J62.1) to PMOD_2_1 (J62.2)    
+    (Requires that PL is programmed to connect these pins to EMIOGPIO[0:1].)   
+    
+    
+ADC test setup:
+	A voltage divider using one 10kOhm and one 5kOhm resistor is connected between XADC_VREF (Pin 11 On 
+	the J40 header) and XADS_AGND (Pin 4,5 or 10 on the J40 header). 10kOhm towards VREF and 5kOhm 
+	towards GND gives 5/(10+5)*VREF = 1/3*VREF between the resistors. This voltage is connected to VP 
+	(Pin 2 on the J40 header). VREF is 1.25V so the measured voltage is 0.42V. This translates to a value
+	of 1700 in the ADC.   
+
+Dio test setup:
+	These GPIOs have been configured for the Dio tests:
+	Pin			Port pin/ Dio channel id		Pin out 
+	EMIO4		58								J1.36
+	EMIO5		59								J1.38
+	EMIO6		60								J1.40
+	
+	EMIO6 is configured wrong though and does not work.
+	
+	EMIO4 and EMIO5 work. A cable should connect EMIO4 and EMIO5. 
+	In the Port config, EMIO4 should be an output and EMIO5 an input.
+
+Pwm test setup:
+	The Zynq does not support Pwm_GetOutputState so instead a GPIO is used to read the current state
+	of the signal.
+	
+	The Programmable Logic is set up so that J20.9 is the Pwm output (TTC0, wave 1) and
+	J20.10 is the GPIO input (EMIO2).
+	
+	J20 is located on the expansion card and a cable must connect J20.9 and J20.10. 
+	
+    Pwm output can also be found on the following pins:
+    TTC0_0 - PMOD2.2
+    TTC1_1 - PMOD2_3_LS

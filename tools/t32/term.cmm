@@ -7,18 +7,18 @@ LOCAL &file
 ENtry &file
 winclear my_term
 WinPOS 50% 50% 50% 50% 1. 1. my_term
-term.size 80. 300.
+term.size 200. 1000.
 term.scroll on
 term.mode vt100
 
 IF CPUFAMILY()=="ARM"
 (
-  term.METHOD SE e:address.offset(v.address(t32_outport)) e:0
-  term.view
+  term.METHOD SE 
+  term.view e:address.offset(v.address(t32_outport)) e:address.offset(v.address(t32_inport))
 )
 ELSE
 (
-  term.view e:address.offset(v.address(t32_outport)) e:address.offset(v.address(t32_inport))
+  winsmall.term.view e:address.offset(v.address(t32_outport)) e:address.offset(v.address(t32_inport))
   IF "&file"!=""
     term.write e:address.offset(v.address(t32_outport)) "&file"
 )

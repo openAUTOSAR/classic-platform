@@ -1,0 +1,4 @@
+There is no physical board with TMS570LS11114 available. However the tests can be run on the tmdx570ls12hdk as the devices are very similiar, 
+save some exceptions such as RAM and Flash sizes and some extra GPIOs. These differences will not affect the MCAL tests.
+ 
+

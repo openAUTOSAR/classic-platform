@@ -1,102 +1,182 @@
 //  Gnu C/C++ (version 2.95.3 or later), -si4 -sp4, 
 //  Standard lint options
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// GLOBAL SETTINGS 
+// 
 
-//c:\lint\options.lnt  -si4 -sp4
+// Use C99 standard
+-A(C99)
 
-// EIJAS STUFF:
--u //unit-checkout since not checking the test-files. Supresses the inter-module
-	//messages 526,552,628,714.720,755-759,765,768-769,948,974,1526-1527,1711,1714-1715,1755
 
-// SET WARNING LEVEL:
--w2 //
--wlib(1) // 1:only errors, 2: +warnings 3: + infos
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// OUTPUT FORMAT 
+// 
 
-//Reset which files are viewed library-files to only treat the ones in msys library as such
-//+libclass()
-//+libdir(*/msys/include*)
+//append output to file
+//+os(lintOutput.TMP) 
 
-//+os(lintOutput.TMP) //append output to file
-//+oe(lintErrorOutput.TMP)//append error output to file
+//append error output to file
+//+oe(lintErrorOutput.TMP)
 
-//MESSAGE FORMAT:
+// Message format
 +ffn // force full path names
 -width(0) // don't insert line breaks (unlimited output width).
 -hf1 // message height one
 -format=%f:%l:%c:\s%t:\s%n\sPC-lint:\s%m
 
+// Increase lint line buffer
++linebuf
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// MISRA RULES TURNED OFF 
+// The following rules delibrately turned off
 
+// Lint produces a lot of false positives for the MISRA 2012 essential type checking
+// Strrong type checking is also enables and which does similiar checking
+// Expression assigned to a narrower or different essential type [MISRA 2012 Rule 10.3, required]
+-e9034
+//Mismatched essential type categories for binary operator [MISRA 2012 Rule 10.4, required]
+-e9029
+//Impermissible cast; cannot cast from 'essentially signed' to 'essentially Boolean' [MISRA 2012 Rule 10.5, advisory]
+-e9030
 
--A(C99)//use C99 standard
+// tag 'tag name 'unused outside of typedefs [MISRA 2012 Rule 2.4, advisory]
+// This is widely used in Freescale register files.
+-e9058
 
-+fie // Use to view enums as ints (tar bort tex PC641)
+// Global wrap-up seems buggy
+-e714 
 
+// Allow do ... while(0);
+-e717 
 
-// RULES TO TURN OFF (diskussed and confirmed)
-//-efile(755,*.h)
--e755 //e switch off for header files
--e756 //e switch off for header files
--e757 //e switch off for header files
--e758 //e switch off for header files
--e768 //e switch off for header files
--e769 //e switch off for header files
+// A function should be used in preference to a function style macro MISRA 2004 Rule 19.7, advisory
+-esym(961, 19.7) 
 
--e537 //e switch off (unjustified complain about 19.15)
+// The #  and ## should not be user MISRA 2004 Rule 19.13, advisory, MISRA 2012 rule 20.10, advisory
+-esym(961, 19.13)
+-e9024
 
--esym(961, 19.7) //Advisory Rule that should be switched off
--esym(961, 19.13)//Advisory Rule that should be switched off
-
-
--esym(960, 10.1) //implicit conversion...
--esym(960,18.4) // Unions shall not be used.
--e621 //Complains about identifiers names longer than _ characters. Length set by -idlen(). [1.4, 5.1] OK in autosar.
-
--e766 //Header file not used in module...
+// Unions shall not be used. MISRA 2004 18.4 Rule 18.4, required
+-esym(960, 18.4) 
 
 // Rules ok to remove by autosar:
-// [1.4, 5.1](621), 8.10, 12.10, 11.1-11.5, 14.3(960).
+// Note 960: Violates MISRA 2004 Required Rule 14.3, null statement not in line by itself
 -esym(960,14.3)
 
+// C comment contains C++ comment. MISRA 2012 Rule 3.1, required
+-e9059
 
-// RULES MAYBE TO TURN OFF
-//-e534 //only turned of for OS, printf? kolla hur vanlig...
-//-e757
-//-e526 vad betyder detta fel?
-
-
-// RULES THAT MAY BE SWITCHED OFF LOCALLY
-// * 13.7, 14.1 Constant value boolean 
-// * 14.2 
-
-// RULES TO DISCUSS IF TO SWITCH OFF OR NOT
--esym(961,12.6)//Advisory Rule (Boolean expression required for operator...)
--esym(961,12.13)//Advisory Rule (++, -- not with other operators...)
--esym(961,12.1)
-
--e830 //location cited in prior message
--e831 //reference cited in prior message
-
--e788 // PC-Lint message: Enum constant 'Symbol' not used within defaulted switch
-
--esym(960, 16.9) // Function identifier used without '&'
+// Function-like macro, MISRA 2012 Directive 4.9, advisory
+-e9026
 
 
-// RULES TO TURN OFF FOR OLD MODULES, but think of them when having new modules
--esym(960,17.4) // To many messages to be possible to handle locally!
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// OTHER RULES TO TURNED OFF 
+// The following rules delibrately turned off
+
+// Repeated include files
+-e537 
+
+// Global macro defined in header file but not used
+// May be used in other configurations
+-e755 
+
+// Global typedef defined in header file but not used
+// May be used in other configurations
+-e756
+
+// Global declarator defined in header file but not used
+// May be used in other configurations
+-e757
+
+// Global struct defined in header file but not used
+// May be used in other configurations
+-e758
+
+// Global struct member defined in header file but not used
+// May be used in other configurations
+-e768 
+
+// Global enum constant defined in header file but not used
+// May be used in other configurations
+-e769 
+
+// Header file not used in module...
+-e766 
+
+//  ANSI/ISO limit of 31 'significant characters in an external identifier
+-e793
+-idlen(256)
+
+// Extraneous comma ignored
+-e726
+
+// Enum constant 'Symbol' not used within defaulted switch
+-e788 
+
+// location cited in prior message
+-e830  
+
+// reference cited in prior message
+-e831 
+
+// duplicate initialization, using the .variable in struct initialization
+-e485  
+
+// local macro not referenced
+-e750
+
+// a zero given as argument to an operator
+-e835
+
+// Disabling 9045 for __locale_struct to make it work on linux build server using gcclint
+-esym(9045, *locale_struct)
 
 
-// ERRORS SWITCHED OFF TEMPORARLY
-//-e525
-//-e526
-
-//-esym(960, 10.1) //implicit conversion....
-//-e714 //Symbol not referenced
-//-e715 //Symbol not referenced
-
-//-esym(960, 12.5) //Non-primary expression used with logical operator.
-
-//-e785 // Too few initializers for aggregate ...
-
-
+// Do not check the following symbols-function(__assert,ASSERT)
+-emacro(506, ASSERT)
+-emacro(731, ASSERT)
+-emacro(774, ASSERT)
+-emacro(9027, ASSERT)
+-emacro(9033, ASSERT)
 -emacro(506, TEST_ASSERT)
+-emacro(774, TEST_ASSERT)
+-emacro(9036, TEST_ASSERT)
+-emacro(1776, new_TestFixture)
+-emacro(506, assert)
+-emacro(731, assert)
+-emacro(774, assert)
+-emacro(9027, assert)
+-emacro(9033, assert)
+-emacro(506, TEST_FAIL)
+-emacro(960, ISR_INSTALL_ISR2)
+-emacro(9036, ISR_INSTALL_ISR2)
+-emacro(641, ISR_INSTALL_ISR2)
+
+// Do not check deprecation of the following symbols
+-esym(586, abort)
+
+ // Add use of typeof(..)
+-dtypeof=_to_semi
++rw(_to_semi)
+
+
+// A subset of the -u warnings 
+-e526
+-e552
+-e628
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// STRONG TYPING SETTINGS
+// 
+-fdd
+-strong(AczJc)
+
+// Turn off strong type assignment checking for vuint32_t, which is used in freescale header files for hardware register definitions
+-strong(,vuint32_t)
+
+// The type hierarchy is set in Arc_Types.h. The typedefs in that file overwrites settings here.

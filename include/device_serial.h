@@ -24,6 +24,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include "device.h"
 #include "sys/queue.h"
 
 #define DEVICE_NAME_MAX 	16
@@ -31,18 +32,19 @@
 /* Device type that maps well to POSIX open/read/write */
 
 typedef struct DeviceSerial {
-	char name[DEVICE_NAME_MAX];
-	uint32_t data;
-	int (*open)( const char *path, int oflag, int mode );
-	int (*close)( uint8_t *data, size_t nbytes);
-	/* Reads nbytes from device to data.
-	 * Non-blocking read */
-	int (*read)( uint8_t *data, size_t nbytes);
-	/* Write nbytes from data to device
-	 * Blocks until nbytes have been written */
-	int (*write)( uint8_t *data, size_t nbytes );
+    DeviceType device;
+    char name[DEVICE_NAME_MAX];
+    uint32_t data;
+    int (*open)( const char *path, int oflag, int mode );
+    int (*close)( uint8_t *data, size_t nbytes);
+    /* Reads nbytes from device to data.
+     * Non-blocking read */
+    int (*read)( uint8_t *data, size_t nbytes);
+    /* Write nbytes from data to device
+     * Blocks until nbytes have been written */
+    int (*write)( uint8_t *data, size_t nbytes );
 
-	TAILQ_ENTRY(DeviceSerial) nextDevice;
+    TAILQ_ENTRY(DeviceSerial) nextDevice;
 } DeviceSerialType;
 
 #endif /* SERIAL_H_ */

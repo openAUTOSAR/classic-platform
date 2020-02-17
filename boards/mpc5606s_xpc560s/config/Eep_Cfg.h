@@ -1,17 +1,16 @@
 /* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
  *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 
 #ifndef EEP_CFG_H_
@@ -28,15 +27,15 @@
 #define E2_WREN   0x6		// Write Enable 0000 0110
 #define E2_WRDI   0x4		// Write Disable 0000 0100
 #define E2_RDSR   0x5		// Read Status Register  0000 0101
-													// 1 - Read data
+                                                    // 1 - Read data
 #define E2_WRSR   0x1		// Write Status Register  0000 0001
-													// 1 - Write data
+                                                    // 1 - Write data
 #define E2_READ   0x3		// Read from Memory Array 0000 0011
-													// 1  - Write 16-bit address
-													// n  - 8 -bit read data
+                                                    // 1  - Write 16-bit address
+                                                    // n  - 8 -bit read data
 #define E2_WRITE  0x2		// WRITE  Write to Memory Array  0000 0010
-													// 1  Write 16-bit address
-													// n  - 8-bit reads
+                                                    // 1  Write 16-bit address
+                                                    // n  - 8-bit reads
 
 /* EepGeneral */
 
@@ -102,7 +101,7 @@
 #define EEP_ERASE_TIME				TBD
 
 // Specified maximum number of write cycles under worst case conditions of
-// specific EEPROM hardware (e.g. +90°C)
+// specific EEPROM hardware (e.g. +90ï¿½C)
 #define EEP_ALLOWED_WRITE_CYCLES x
 
 

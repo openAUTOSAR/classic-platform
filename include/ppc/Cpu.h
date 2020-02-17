@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 
 #ifndef CPU_H
@@ -20,13 +19,19 @@
 #include "Std_Types.h"
 typedef uint32 imask_t;
 
+//#if defined(__ghs__)
+//#include <ppc_ghs.h>
+//#endif
 //#if defined(__DCC__)
 //#include <diab/ppcasm.h>
 //#endif
 
+#if defined (CFG_MPC5646B)
+#define	SIMULATOR() (SIU.MIDR1.R==0uL)
+#else
 // Used if we are running a T32 instruction set simulator
-#define SIMULATOR() (SIU.MIDR.R==0)
-
+#define SIMULATOR() (SIU.MIDR.R==0uL)
+#endif
 // 32-bit write to 32 bit register
 #define  BIT32(x)
 // 16 bit write to 16 bit register
@@ -34,7 +39,7 @@ typedef uint32 imask_t;
 
 // Bits EREF and others define as 64 bit regs but in 32 bits regs.
 // E.g. #define MSR_PR		BIT64TO32(49)
-#define  BIT64TO32(x)		(1<<(63-(x)))
+#define  BIT64TO32(x)		(1U<<(63U-(x)))
 
 
 
@@ -67,7 +72,7 @@ typedef uint32 imask_t;
 
 #define SPR_DEC		22
 #define SPR_DECAR	54
-
+#define SPR_USPRG0	256
 #define SPR_TBU_R	269
 #define SPR_TBU_W	285
 #define SPR_TBL_R	268
@@ -79,6 +84,7 @@ typedef uint32 imask_t;
 #define SPR_HID0	1008
 
 #define SPR_L1CSR0	1010
+#define SPR_L1CSR1  1011
 #define SPR_L1CFG0	515
 
 #define L1CSR0_CINV	BIT64TO32(62)
@@ -124,14 +130,33 @@ typedef uint32 imask_t;
  * Common macro's
  */
 
-#define isync()  		asm volatile(" isync");
-#define sync()   		asm volatile(" sync");
-#define msync() 		asm volatile(" isync");
 
-#define Irq_Disable() 	asm volatile (" wrteei 0");
-#define Irq_Enable() 	asm volatile (" wrteei 1");
-#define tlbwe()			asm volatile (" tlbwe");
+// Misra 2004 2.1, 2012 4.3 : Inhibit lint error 586 for assembly
+// language that is encapsulated and isolated in macros
+#if defined(__CWCC__) || defined(__DCC__)
+#define ASM_ARGS_MEMORY
+#define ASM_ARGS_MEMORY_CC
+#else
+#define ASM_ARGS_MEMORY     :::"memory"
+#define ASM_ARGS_MEMORY_CC  ::: "memory","cc"
+#endif
 
+
+
+#if defined(CFG_VLE) && !defined(__CWCC__)
+#define isync() /*lint -save -e586 -restore */ asm volatile(" se_isync" ASM_ARGS_MEMORY)
+#define msync() /*lint -save -e586 -restore */ asm volatile(" se_isync" ASM_ARGS_MEMORY)
+#else
+// CW does not like taking the right instruction, ie se_xxxx
+#define isync() /*lint -save -e586 -restore */ asm volatile(" isync")
+#define msync() /*lint -save -e586 -restore */ asm volatile(" isync")
+#endif
+
+#define sync()          /*lint -save -e586 -restore */ asm volatile(" sync" ASM_ARGS_MEMORY)
+
+#define Irq_Disable()   /*lint -save -e586 -restore */ asm volatile (" wrteei 0" ASM_ARGS_MEMORY_CC)
+#define Irq_Enable()    /*lint -save -e586 -restore */ asm volatile (" wrteei 1" ASM_ARGS_MEMORY_CC)
+#define tlbwe()         /*lint -save -e586 -restore */ asm volatile (" tlbwe" ASM_ARGS_MEMORY )
 
 #define Irq_SuspendAll() 	Irq_Disable()
 #define Irq_ResumeAll() 	Irq_Enable()
@@ -143,8 +168,18 @@ typedef uint32 imask_t;
 /*-----------------------------------------------------------------*/
 
 /**
+ * memset that can be used for ecc mem init
+ * @param msr
+ */
+extern void memset_uint64(unsigned char *to, const uint64 *val, unsigned long size);
+extern void initECC_128bytesAligned(unsigned char *to, unsigned long size);
+
+/*-----------------------------------------------------------------*/
+
+/**
  * Sets a value to a specific SPR register
  */
+/*lint -save -e10 */
 #if defined(__DCC__)
 asm void set_spr(uint32 spr_nr, uint32 val)
 {
@@ -152,9 +187,14 @@ asm void set_spr(uint32 spr_nr, uint32 val)
   mtspr spr_nr, val
 }
 #else
-# define set_spr(spr_nr, val) \
-	asm volatile (" mtspr " STRINGIFY__(spr_nr) ",%[_val]" : : [_val] "r" (val))
+// Misra 2004 2.1, 2012 4.3 : Inhibit lint error 586 for assembly
+// language that is encapsulated and isolated in macros
+// Lint redefinition of set_spr is used to resolve false positive lint warnings caused by
+// lint does not recognize assembly code accessing parameter val
+# define set_spr(spr_nr, val) /*lint -save -e547 +dset_spr(a,b)=((void)b) -e586 -restore */ \
+    asm volatile (" mtspr " STRINGIFY__(spr_nr) ",%[_val]" : : [_val] "r" (val))
 #endif
+/*lint -restore */
 /**
  * Gets the value from a specific SPR register
  *
@@ -162,8 +202,9 @@ asm void set_spr(uint32 spr_nr, uint32 val)
  */
 
 //https://community.freescale.com/thread/29234
-
-#if defined(__DCC__)
+/*lint -save -e10 */
+#if defined(__DCC__) || defined(__ghs__)
+uint32 get_spr(uint32 spr_nr); // MISRA 2004 8.1 and 2012 17.3   Resolved by this function declaration
 asm uint32 get_spr(uint32 spr_nr)
 {
 % con spr_nr
@@ -172,16 +213,57 @@ asm uint32 get_spr(uint32 spr_nr)
 #else
 #define get_spr(spr_nr)	CC_EXTENSION \
 ({\
-	uint32 __val;\
-	asm volatile (" mfspr %0," STRINGIFY__(spr_nr) : "=r"(__val) : );\
-	__val;\
+    uint32 __val;\
+    asm volatile (" mfspr %0," STRINGIFY__(spr_nr) : "=r"(__val) : );\
+    __val;\
 })
 #endif
+/*lint -restore */
 
+/*-----------------------------------------------------------------*/
+
+/**
+ * Sets a value to a specific DCR register
+ */
+/*lint -save -e10 */
+#if defined(__DCC__)
+asm void set_dcr(uint32 dcr_nr, uint32 val)
+{
+%reg val; con dcr_nr
+  mtdcr dcr_nr, val
+}
+#else
+# define set_dcr(dcr_nr, val) \
+    asm volatile (" mtdcr " STRINGIFY__(dcr_nr) ",%[_val]" : : [_val] "r" (val))
+#endif
+/*lint -restore */
+
+/**
+ * Gets the value from a specific DCR register
+ *
+ */
+
+/*lint -save -e10 */
+#if defined(__DCC__) || defined(__ghs__)
+asm uint32 get_dcr(uint32 dcr_nr)
+{
+% con dcr_nr
+  mfdcr r3, dcr_nr
+}
+#else
+#define get_dcr(dcr_nr) CC_EXTENSION \
+({\
+    uint32 __val;\
+    asm volatile (" mfdcr %0," STRINGIFY__(dcr_nr) : "=r"(__val) : );\
+    __val;\
+})
+#endif
+/*lint -restore */
 /**
  * Get current value of the msr register
  * @return
  */
+/*lint -save -e10 */
 #if defined(__DCC__)
 asm volatile unsigned long get_msr()
 {
@@ -189,17 +271,19 @@ asm volatile unsigned long get_msr()
 }
 #else
 static inline unsigned long get_msr( void ) {
-	uint32 msr;
-	asm volatile("mfmsr %[msr]":[msr] "=r" (msr ) );
-	return msr;
+    uint32 msr;
+    asm volatile("mfmsr %[msr]":[msr] "=r" (msr ) );
+    return msr;
 }
 #endif
+/*lint -restore */
 /*-----------------------------------------------------------------*/
 
 /**
  * Set the current msr to msr
  * @param msr
  */
+/*lint -save -e10 */
 #if defined(__DCC__)
 asm volatile void set_msr(unsigned long msr)
 {
@@ -215,9 +299,11 @@ static inline void set_msr(unsigned long msr) {
   isync();
 }
 #endif
+/*lint -restore */
 /*-----------------------------------------------------------------*/
 
 /* Count the number of consecutive zero bits starting at ppc-bit 0 */
+/*lint -save -e10 */
 #if defined(__DCC__)
 asm volatile unsigned int cntlzw(unsigned int val)
 {
@@ -244,6 +330,7 @@ static inline unsigned int cntlzw(unsigned int val)
    return result;
 }
 #endif
+/*lint -restore */
 
 /**
  * Integer log2
@@ -252,21 +339,34 @@ static inline unsigned int cntlzw(unsigned int val)
  * - ilog2(0x0) = -1
  * - ilog2(0x1) = 0
  * - ilog2(0x2) = 1
+ * - ilog2(0x3) = 1
+ * - ilog2(0x4) = 2
  * - ilog2(0x8000_0000)=31
  *
  * @param val
  * @return
  */
-static inline int ilog2( int val ) {
-	return 31 - cntlzw(val);
+static inline uint8 ilog2( uint32 val ) {
+	return (uint8)(31U - cntlzw(val));
 }
 
+#if defined(__ghs__)
+/* already in string.h */
+#elif defined(__GNUC__)
+/* We don't want to use newlib ffs(), use GCC instead */
+#define ffs(_x)  __builtin_ffs(_x)
+#else
+static inline int ffs( uint32 val ) {
+    return 32 - cntlzw(val & (-val));
+}
+#endif
+
 /* Standard newlib ffs() is REALLY slow since ot loops over all over the place
- * TODO: Use _builin_ffs() instead.
+ * IMPROVEMENT: Use _builin_ffs() instead.
  */
 
 /*-----------------------------------------------------------------*/
-static inline unsigned long _Irq_Disable_save(void)
+static inline imask_t _Irq_Disable_save(void)
 {
    unsigned long result = get_msr();
    Irq_Disable();
@@ -274,75 +374,71 @@ static inline unsigned long _Irq_Disable_save(void)
 }
 
 /*-----------------------------------------------------------------*/
-
-static inline void _Irq_Disable_restore(unsigned long flags)
-{
-	set_msr(flags);
-}
-
-#if 0
+/*lint -save -e10 */
 #if defined(__DCC__)
-#define _Irq_Disable_restore(flags)		(set_msr(flags))
-#else
-static inline void _Irq_Disable_restore(unsigned long flags)
+asm volatile void _Irq_Disable_restore(imask_t flags)
 {
-	set_msr(flags);
-   asm volatile ("mtmsr %0" : : "r" (flags) );
+% reg flags
+  wrtee flags
+}
+#else
+static inline void _Irq_Disable_restore(imask_t flags) {
+  asm volatile ("wrtee %0" : : "r" (flags) );
 }
 #endif
-#endif
+/*lint -restore */
+
 /*-----------------------------------------------------------------*/
 #if defined(__DCC__)
 #else
 #define get_lr(var) \
-	do { \
-		unsigned long lr; \
-		asm volatile("mflr %[lr]":[lr] "=r" (lr ) ); \
-		var = lr; \
-	} while(0)
+    do { \
+        unsigned long lr; \
+        asm volatile("mflr %[lr]":[lr] "=r" (lr ) ); \
+        var = lr; \
+    } while(0)
 #endif
 
 /*-----------------------------------------------------------------*/
 
 static inline int in_user_mode( void ) {
-	unsigned long msr;
-	msr = get_msr();
-	// In user mode?
-	return (msr & MSR_PR);
+    unsigned long msr;
+    msr = get_msr();
+    // In user mode?
+    return (msr & MSR_PR);
+}
+
+static inline void Os_EnterUserMode( void ) {
+    unsigned long msr;
+    msr = get_msr();
+    set_msr(msr | MSR_PR);
 }
 
 
 #if 0
 #ifdef USE_T32_SIM
-	#define mode_to_kernel() k_arch_sim_trap()
+    #define mode_to_kernel() k_arch_sim_trap()
 #else
-	#define mode_to_kernel() asm volatile(" sc");
+    #define mode_to_kernel() asm volatile(" sc");
 #endif
 #endif
 
 /*-----------------------------------------------------------------*/
 
-static inline void to_user_mode( void ) {
-	// Just set it back
-	unsigned long msr;
-	msr = get_msr();
-	set_msr(msr & ~MSR_PR);
-}
-
 #if 0
 #define SC_CALL(name,...) \
-	({ \
-		int rv; \
-		unsigned int msr = get_msr(); \
-		if( msr & MSR_PR ) { \
+    ({ \
+        int rv; \
+        unsigned int msr = get_msr(); \
+        if( msr & MSR_PR ) { \
 /*			asm volatile(" sc"); */\
-			rv = _ ## name( __VA_ARGS__ ); \
+            rv = _ ## name( __VA_ARGS__ ); \
 /*			set_msr(msr); */ \
-		} else { \
-			rv = _ ## name( __VA_ARGS__ ); \
-		} \
-		rv; \
-	})
+        } else { \
+            rv = _ ## name( __VA_ARGS__ ); \
+        } \
+        rv; \
+    })
 #endif
 
 /*-----------------------------------------------------------------*/
@@ -365,18 +461,18 @@ extern service_func_t oil_trusted_func_list[];
 
 
 #if defined(USE_MM_USER_MODE)
-/* TODO: Fix this.. */
+/* IMPROVEMENT: Improve it */
 #define CallService(index,param) \
-	({ \
-		register uint32 r3 asm ("r3"); \
-		register void * r4 asm ("r4"); \
-		r3 = index; \
-		r4 = param; \
-		asm volatile( \
-			" sc\r\t" \
-			:  \
-			: "r" (r3),"r" (r4) ); \
-	})
+    ({ \
+        register uint32 r3 asm ("r3"); \
+        register void * r4 asm ("r4"); \
+        r3 = index; \
+        r4 = param; \
+        asm volatile( \
+            " sc\r\t" \
+            :  \
+            : "r" (r3),"r" (r4) ); \
+    })
 #else
 #define CallService(index,param)
 #endif
@@ -406,23 +502,23 @@ extern service_func_t oil_trusted_func_list[];
 
 /*unsigned int t = index; \ */
 
-/* TODO: __VA_ARGS__ is ISO99 and not all compilers may have support for it*/
+/* NOTE: __VA_ARGS__ is ISO99 and not all compilers may have support for it*/
 #if __STDC_VERSION__ < 199901L
 #error Sorry, using macros iso99 VA_ARGS...implement in some other way
 #endif
 
 
 #define SC_CALL(name,index,arg_cnt,...) \
-	({ \
-		void * t = _ ## name; \
-		REG_DEF_ ## arg_cnt \
-		SPLIT_ARGS_ ## arg_cnt(__VA_ARGS__) \
-		asm volatile( \
-			" mr 0,%[t];\r\t" \
-			" sc\r\t" \
-			:  \
-			: [t] "r" (t), REG_IN_ ## arg_cnt ); \
-	})
+    ({ \
+        void * t = _ ## name; \
+        REG_DEF_ ## arg_cnt \
+        SPLIT_ARGS_ ## arg_cnt(__VA_ARGS__) \
+        asm volatile( \
+            " mr 0,%[t];\r\t" \
+            " sc\r\t" \
+            :  \
+            : [t] "r" (t), REG_IN_ ## arg_cnt ); \
+    })
 #endif
 
 /*
@@ -433,18 +529,18 @@ extern service_func_t oil_trusted_func_list[];
 
 #if 0
 static inline unsigned int mode_to_kernel( void ) {
-	unsigned long msr;
-	msr = get_msr();
-	// In user mode?
-	if( msr & MSR_PR ) {
-		// switch to supervisor mode...
+    unsigned long msr;
+    msr = get_msr();
+    // In user mode?
+    if( msr & MSR_PR ) {
+        // switch to supervisor mode...
 #ifdef USE_T32_SIM
-		k_arch_sim_trap();
+        k_arch_sim_trap();
 #else
-		asm volatile(" tw");
+        asm volatile(" tw");
 #endif
-	}
-	return msr;
+    }
+    return msr;
 }
 #endif
 

@@ -15,16 +15,20 @@
 #ifndef GPT_CONFIGTYPES_H
 #define GPT_CONFIGTYPES_H
 
+typedef void (*GptNotificationType)( void );
+
+
 typedef struct  {
-	uint32 GptChannelClkSrc;
-	Gpt_ChannelType GptChannelId;
-	Gpt_ChannelMode GptChannelMode;
-	void (*GptNotification)();
-	uint8 GptNotificationPriority;
-	uint32 GptChannelPrescale;
-	boolean GptEnableWakeup;		// ?
+    Gpt_ChannelType GptChannelId;
+    Gpt_ChannelMode GptChannelMode;
+    GptNotificationType GptNotification;
+    uint8 GptNotificationPriority;
+    uint32 GptChannelPrescale;
+#if defined(CFG_ZYNQ) || defined(CFG_RH850) || defined(CFG_TMS570) || defined(CFG_JAC5) || defined(CFG_JAC5E) || defined(CFG_JAC6)
+    boolean GptEnableWakeup;
+#endif
 #if (GPT_REPORT_WAKEUP_SOURCE == STD_ON)
-	EcuM_WakeupSourceType GptWakeupSource;
+    EcuM_WakeupSourceType GptWakeupSource;
 #endif
 } Gpt_ConfigType;
 

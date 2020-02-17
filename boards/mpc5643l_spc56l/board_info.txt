@@ -1,0 +1,60 @@
+
+
+
+http://www.st.com/web/catalog/sense_power/FM2098/SC963
+
+http://www.st.com/web/catalog/sense_power/FM2098/SC963/SS1534/LN1829/PF255540
+
+
+ST-Microelectronics SPC56EL70L (same as Freescale mpc5643L). The ST-resources lack a lot of information
+so Freescale resources will be used when no ST information could be found
+	
+Datasheets:
+  Eval board:
+   http://www.st.com/st-web-ui/static/active/en/resource/technical/document/data_brief/DM00091892.pdf
+   http://www.st.com/st-web-ui/static/active/en/resource/technical/document/user_manual/DM00089301.pdf
+     
+  MPC563XM
+   Datasheet: 
+     http://www.st.com/st-web-ui/static/active/en/resource/technical/document/datasheet/DM00070691.pdf
+   Rest:        
+     http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC564xL
+    
+Board:
+  40 Mhz external crystal.
+
+Supported compilers:
+  TBD 
+  
+SystemTick:
+  TBD
+  
+Info:	
+  MPC5634M
+  CPU:		 e200z4d 
+  Freq:		 120 Mhz 
+  Flash: 	 1MB, flash ECC
+  RAM:       128K, ECC
+  
+Memory Map:
+ 0x0000_0000 -> 0x001F_FFFF   Flash
+ 0x4000_0000 -> 0x4002_FFFF   SRAM
+
+---------------------------------- NOTE ----------------------------------
+The DB9 CAN connector on the board does not have CANL and CANH on pins
+2 and 7 as manual says. Connect to test points TP11 and TP12 when using CAN.   
+---------------------------------- NOTE ----------------------------------  
+ DSPI_1
+
+  Verified using a Microchip 25LC160B http://ww1.microchip.com/downloads/en/DeviceDoc/21807D.pdf
+  VCC Range: 2.5 -> 5.5 V
+  
+            P2
+  			***************
+  Gnd/Black	*GND	   SCK* SCK/Blue
+  SI/Orange *SOUT	   SIN* SO/Brown
+  			*CS2	   CS0*
+    VCC/Red *3V3		5V*
+  			***************
+  
+  Connect CS to A15(DSPI1_CS0) on header X6

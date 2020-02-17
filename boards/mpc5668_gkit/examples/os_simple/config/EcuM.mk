@@ -1,3 +1,0 @@
-
-MOD_USE += KERNEL DET ECUM MCU 
-

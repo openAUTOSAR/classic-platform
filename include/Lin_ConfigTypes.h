@@ -12,10 +12,14 @@
  * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
  *-------------------------------- Arctic Core -----------------------------*/
 
+/** @reqSettings DEFAULT_SPECIFICATION_REVISION=4.1.2 */
+/** @tagSettings DEFAULT_ARCHITECTURE=ZYNQ|MPC5607B|MPC5645S|PPC|MPC5748G */
+ 
 #ifndef LIN_CONFIGTYPES_H
 #define LIN_CONFIGTYPES_H
 
 #include "Std_Types.h"
+#include "Mcu.h"
 
 /* ERRATA for REV_A of 551x chip. Uncomment to include.
  * Will use a GPT timer for timeout handling */
@@ -56,17 +60,34 @@ typedef struct
      * for this controller as defined in the ECU State Manager.
      * Implementation Type: reference to EcuM_WakeupSourceType */
     uint32  LinChannelEcuMWakeUpSource;
+    boolean LinChannelEcuWakeUpDefined;
 
+#if defined(CFG_PPC)
     /* Reference to the LIN clock source configuration, which is set
      *  in the MCU driver configuration.*/
     uint32  LinClockRef;
+#endif
+#if defined(CFG_JAC6)
+    /* jACINTO6 uses Lin over uart and requiers a Uart Channel */
+    uint8 LinUartChannelId;
+#endif
 
 #ifdef MPC551X_ERRATA_REV_A
     /* Errata forces us to use a Gpt channel for timouts */
     uint8   LinTimeOutGptChannelId;
 #endif
+
 }
 Lin_ChannelConfigType;
 
+/* This is the type of the external data structure containing the overall
+ * initialization data for the LIN driver and SFR settings affecting all
+ * LIN channels. A pointer to such a structure is provided to the LIN driver
+ * initialization routine for configuration of the driver and LIN hardware unit. */
+/* @req SWS_Lin_00227 */
+typedef struct {
+    const Lin_ChannelConfigType *LinChannelConfig;
+    const uint8 *Lin_HwId2ChannelMap;
+} Lin_ConfigType;
 
 #endif

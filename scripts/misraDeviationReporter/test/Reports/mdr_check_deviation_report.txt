@@ -1,0 +1,162 @@
+
+
+==============================================
+Copyright (C) 2013-2017                       
+ArcCore AB, Sweden, www.arccore.com.          
+Contact: <contact@arccore.com>                
+
+MISRA Deviation Report                        
+==============================================
+
+
+==============================================
+File:			test2.c
+Line:			2
+PC_Lint:		[9003]
+MISRA:			MISRA 2012 Rule 8.9
+Level:			advisory
+Category:		OTHER
+Justification:	Readability
+
+Comment: /*lint -esym(9003, Crc_16_Tab) MISRA:OTHER:Readability:[MISRA 2012 Rule 8.9, advisory] */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			2
+PC_Lint:		[920]
+MISRA:			MISRA 2012 Rule 1.3
+Level:			required
+Category:		STANDARDIZED_INTERFACE
+Justification:	<OPTIONAL PUT HERE SOME EXPLANATION>
+
+Comment: (void)ConfigPtr; /*lint !e920 MISRA:STANDARDIZED_INTERFACE:<OPTIONAL PUT HERE SOME EXPLANATION>:[MISRA 2012 Rule 1.3, required] */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			5
+PC_Lint:		[920]
+MISRA:			MISRA 2012 Rule 1.3
+Level:			required
+Category:		STANDARDIZED_INTERFACE
+Justification:	
+
+Comment: /*lint -e{920} MISRA:STANDARDIZED_INTERFACE::[MISRA 2012 Rule 1.3, required] */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			9
+PC_Lint:		[533]
+MISRA:			MISRA 2012 Rule 17.4
+Level:			mandatory
+Category:		FALSE_POSITIVE
+Justification:	PUT HERE SOME GOOD ARGUMENTS TO CONVINCE YOUR SAFETY MANAGER
+
+Comment: /*lint -e{533}  MISRA:FALSE_POSITIVE:PUT HERE SOME GOOD ARGUMENTS TO CONVINCE YOUR SAFETY MANAGER:[MISRA 2012 Rule 17.4, mandatory] */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			34
+PC_Lint:		[9003]
+MISRA:			MISRA 2012 Rule 8.9
+Level:			advisory
+Category:		OTHER
+Justification:	Readability
+
+Comment: /*lint -esym(9003, Crc_32P4_Tab) MISRA:OTHER:Readability:[MISRA 2012 Rule 8.9, advisory] */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			39
+PC_Lint:		[48]
+MISRA:			MISRA 2012 Rule 10.1
+Level:			required
+Category:		FALSE_POSITIVE
+Justification:	bad type
+
+Comment: /*lint -save -esym(48,10.1) MISRA:FALSE_POSITIVE:bad type:[MISRA 2012 Rule 10.1, required] */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			44
+PC_Lint:		[9003]
+MISRA:			MISRA 2012 Rule 8.9
+Level:			advisory
+Category:		OTHER
+Justification:	Since MMU_PageTable is moved to section it can't be in block scope
+
+Comment: /*lint -esym(9003,MMU_PageTable) MISRA:OTHER:Since MMU_PageTable is moved to section it can't be in block scope:[MISRA 2012 Rule 8.9, advisory] */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			58
+PC_Lint:		[553]
+MISRA:			MISRA 2012 Rule 20.9
+Level:			required
+Category:		STANDARDIZED_INTERFACE
+Justification:	Undefined preprocessor variable, assumed 0
+
+Comment: /*lint -e553 MISRA:STANDARDIZED_INTERFACE:Undefined preprocessor variable, assumed 0:[MISRA 2012 Rule 20.9, required]
+==============================================
+
+==============================================
+File:			test3.c
+Line:			70
+PC_Lint:		[923]
+MISRA:			MISRA 2012 Rule 11.6
+Level:			required
+Category:		HARDWARE_ACCESS
+Justification:	Cast from unsigned int to pointer
+
+Comment: /*lint -e923 MISRA:HARDWARE_ACCESS:Cast from unsigned int to pointer:[MISRA 2012 Rule 11.6, required]
+==============================================
+
+==============================================
+File:			test3.c
+Line:			84
+PC_Lint:		[923]
+MISRA:			MISRA 2012 Rule 11.6
+Level:			required
+Category:		HARDWARE ACCESS
+Justification:	
+
+Comment: /*lint --e{923} MISRA :HARDWARE ACCESS::[MISRA 2012 Rule 11.6, required]*/
+==============================================
+
+==============================================
+File:			test3.c
+Line:			109
+PC_Lint:		[718]
+MISRA:			MISRA 2012 Rule 17.3
+Level:			mandatory
+Category:		FALSE POSITIVE
+Justification:	Ask your safety manager
+
+Comment: /*lint -e718 MISRA:FALSE POSITIVE:Ask your safety manager:[MISRA 2012 Rule 17.3, mandatory] */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			114
+PC_Lint:		[533]
+MISRA:			MISRA 2012 Rule 17.4
+Level:			mandatory
+Category:		FALSE_POSITIVE
+Justification:	PUT HERE SOME GOOD ARGUMENTS TO CONVINCE YOUR SAFETY MANAGER
+
+Comment: /*lint -e{533}  MISRA:FALSE_POSITIVE:PUT HERE SOME GOOD ARGUMENTS TO CONVINCE YOUR SAFETY MANAGER:[MISRA 2012 Rule 17.4, mandatory] */
+==============================================
+
+==============================================
+Deviations reported: 12
+Mandatory deviations: 3
+Required deviations: 6
+Advisory deviations: 3
+END OF MISRA deviation report                 
+==============================================

@@ -17,17 +17,15 @@
 #define IRQ_H_
 
 #include <stdint.h>
-#if defined(USE_KERNEL)
+#if defined(USE_KERNEL) || defined(USE_LINUXOS)
 #include "Os.h"
 #else
-typedef int CoreIDType;
+typedef uint32 CoreIDType; /* @req SWS_Os_00790 Type definition */
 #endif
 #include "irq_types.h"
 #include "bit.h"
 
-typedef void ( * func_t)(void);
-
-
+typedef void ( *IrqFuncType)(void);
 
 #if (OS_SC2==STD_ON) || (OS_SC4==STD_ON)
 #define HAVE_SC2_SC4(_value) _value
@@ -36,50 +34,6 @@ typedef void ( * func_t)(void);
 #endif
 
 #define IRQ_NAME(_vector)		IrqVector_ ## _vector
-
-#define IRQ_DECL_ISR2_TIMING_PROT(	\
-				_name, \
-				_max_all_interrupt_lock_time, \
-				_exeution_budget, \
-				_os_interrupt_lock_budget, \
-				_time_frame, \
-				_resource_lock_list )
-
-
-#define IRQ_DECL_ISR1(_name, _vector, _core, _prio, _entry  ) \
-		const OsIsrConstType Irq_VectorConst_ ## _vector = { 	\
-		.name = _name,						\
-		.vector = (_vector),				\
-		.core = (_core),					\
-		.prio = (_prio),					\
-		.entry = (_entry),					\
-		.type = ISR_TYPE_1,					\
-	}
-
-
-#define IRQ_DECL_ISR2(_name,_vector, _core, _prio, _entry, _resource_mask, _timing_prot) \
-		const OsIsrConstType Irq_VectorConst_ ## _vector = { 	\
-		.name = _name,						\
-		.vector = (_vector),				\
-		.core = (_core),					\
-		.prio = (_prio),					\
-		.entry = (_entry),					\
-		.type = ISR_TYPE_2,					\
-		.resourceMask = (_resource_mask),	\
-		.timingProtPtr = (_timing_prot)     \
-	}
-
-
-#define IRQ_ATTACH(_vector)	Irq_Attach(&Irq_VectorConst_ ## _vector)
-
-/* Example:
- * IRQ_DECL_ISR2_RESOURCE(res2, RES_ID_2, 500000U );   			// Max 50us
- * IRQ_DECL_ISR2_TIMING_PROT(timing,0,0,0,0,res2);
- * IRQ_DECL_ISR2("MyIsr",10,10,MyIsr,HAVE_SC2_SC4(RES_ID_1),HAVE_SC2_SC4(timing));
- *
- */
-
-// typedef _Bool IsrType;
 
 /**
  * Init the interrupt controller
@@ -110,11 +64,24 @@ void *Irq_Entry( void *stack_p );
 #endif
 
 struct OsIsrConst;
+
+
 /**
  * Generates a soft interrupt
+ * Used by the test-system
+ *
  * @param vector
  */
 void Irq_GenerateSoftInt( IrqType vector );
+
+/**
+ * Ack a software interrupt.
+ * Used by the test-system
+ *
+ * @param vector
+ */
+void Irq_AckSoftInt( IrqType vector );
+
 /**
  * Get the current priority from the interrupt controller.
  * @param cpu
@@ -125,15 +92,42 @@ uint8_t Irq_GetCurrentPriority( Cpu_t cpu);
 /**
  * Set the priority in the interrupt controller for vector
  */
-void Irq_SetPriority( CoreIDType cpu,  IrqType vector, uint8_t prio );
+void Irq_SetPriority( CoreIDType cpu,  IrqType vector, uint8 prio );
 
-void Irq_EnableVector( int16_t vector, int priority, int core );
+/**
+ * Enable a vector in the interrupt controller
+ *
+ * @param vector
+ * @param priority
+ * @param core
+ */
+void Irq_EnableVector( sint16 vector, uint8 priority, sint32 core );
+
+/**
+ *
+ * @param func
+ * @param vector
+ * @param type
+ * @param priority
+ * @param core
+ */
+void Irq_EnableVector2( IrqFuncType func,  sint16 vector, uint16 type,  uint8 priority, sint32 core );
+
+/**
+ * Disable a vector so that Irq_EnableVector can be used again.
+ * (used by the test-system for some archs)
+ *
+ * @param vector
+ * @param core
+ */
+void Irq_DisableVector( sint16 vector, sint32 core );
 
 #ifndef Irq_EOI
-void Irq_EOI( void );
+void Irq_EOI( sint16 vector );
 #endif
-#ifndef Irq_SOI
-void Irq_SOI(void);
+
+#if defined (CFG_TMS570)
+void Irq_SOI3(uint8 prio);
 #endif
 
 #endif /* IRQ_H_ */

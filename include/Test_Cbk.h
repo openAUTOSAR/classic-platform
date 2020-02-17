@@ -31,15 +31,15 @@
 
 #if defined(USE_TEST_CBK)
 #define CANIF_TXCONFIRMATION_CALL(canTxPduId) \
-	CT_CanIf_TxConfirmation_Called( canTxPduId );
+    CT_CanIf_TxConfirmation_Called( canTxPduId );
 #define CANIF_RXINDICATION_CALL(Hrh,CanId,CanDlc,CanSduPtr) \
-	CT_CanIf_RxIndication_Called( Hrh, CanId, CanDlc, CanSduPtr );
+    CT_CanIf_RxIndication_Called( Hrh, CanId, CanDlc, CanSduPtr );
 #define CANIF_CANCELTXCONFIRMATION_CALL(PduInfoPtr) \
-	CT_CanIf_CancelTxConfirmation_Called( PduInfoPtr );
+    CT_CanIf_CancelTxConfirmation_Called( PduInfoPtr );
 #define CANIF_CONTROLLERBUSOFF_CALL(Controller) \
-	CT_CanIf_ControllerBusOff_Called( Controller );
+    CT_CanIf_ControllerBusOff_Called( Controller );
 #define CANIF_CONTROLLERWAKEUP_CALL(Controller) \
-	CT_CanIf_ControllerWakeup_Called( Controller );
+    CT_CanIf_ControllerWakeup_Called( Controller );
 #else
 #define CANIF_TXCONFIRMATION_CALL(canTxPduId) 
 #define CANIF_RXINDICATION_CALL(Hrh,CanId,CanDlc,CanSduPtr) 

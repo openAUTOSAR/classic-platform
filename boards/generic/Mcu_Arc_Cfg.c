@@ -17,12 +17,14 @@
 #include "Mcu_Arc.h"
 #include "asm_ppc.h"
 
+/* #warning "This default file may only be used as an example!" */
+
 /**
  * @param sleepCfg
  */ 
 void Mcu_Arc_SetModePre2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *sleepCfg ) {
-    (void)mcuMode;
-    (void)sleepCfg;
+    (void)mcuMode; /*lint !e920 Argument not used  */
+    (void)sleepCfg; /*lint !e920 Argument not used  */
 }
 
 
@@ -30,8 +32,8 @@ void Mcu_Arc_SetModePre2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig
  * @param sleepCfg
  */
 void Mcu_Arc_SetModePost2( Mcu_ModeType mcuMode, const struct Mcu_Arc_SleepConfig *sleepCfg ) {
-    (void)mcuMode;
-    (void)sleepCfg;
+    (void)mcuMode; /*lint !e920 Argument not used  */
+    (void)sleepCfg; /*lint !e920 Argument not used  */
 }
 
 

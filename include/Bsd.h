@@ -15,8 +15,12 @@
 #ifndef BSD_H
 #define BSD_H
 
-#include "ipv4/lwip/inet.h"
-#include "lwip_handler.h"
+#if defined(USE_LWIP)
+#include "lwip/inet.h"
 #include "lwip/sockets.h"
+
+#else
+#error "We currently only support LWIP socket implementation"
+#endif
 
 #endif /* BSD_H */

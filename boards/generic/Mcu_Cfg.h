@@ -15,17 +15,23 @@
 #ifndef MCU_CFG_H_
 #define MCU_CFG_H_
 
-/* @req MCU237 */
-typedef enum {
-   MCU_MODE_RUN = 0,
-   MCU_MODE_SLEEP = 1,
-   MCU_MODE_NORMAL = 2
-} Mcu_ModeType;
 
-/* @req MCU232 */
-typedef enum {
-   MCU_CLOCKTYPE_MCUCLOCKSETTINGCONFIG = 0,
-   MCU_NBR_OF_CLOCKS,
-} Mcu_ClockType;
+#define MCU_DEV_ERROR_DETECT               STD_OFF
+#define MCU_PERFORM_RESET_API              STD_OFF
+#define MCU_VERSION_INFO_API               STD_OFF
+#define MCU_NO_PLL                         STD_OFF
+#define MCU_INIT_CLOCK                     STD_OFF
+#define MCU_GET_RAM_STATE                  STD_OFF
+#define MCU_CLOCK_SRC_FAILURE_NOTIFICATION STD_OFF
+
+/* Mcu Modes (Symbolic name) */
+#define McuConf_McuModeSettingConf_RUN (Mcu_ModeType)0u
+#define McuConf_McuModeSettingConf_SLEEP (Mcu_ModeType)1u
+#define McuConf_McuModeSettingConf_NORMAL (Mcu_ModeType)2u
+
+/* Mcu Clock Types (Symbolic name) */
+#define McuConf_McuClockSettingConfig_EXT_REF_66MHZ (Mcu_ClockType)0u
+#define McuConf_McuClockSettingConfig_EXT_REF_80MHZ (Mcu_ClockType)1u
+#define McuConf_McuClockSettingConfig_XOSC_CAN (Mcu_ClockType)2u
 
 #endif /* MCU_CFG_H_ */

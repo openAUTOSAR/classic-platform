@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 
 /* Configured for:
@@ -23,42 +22,50 @@
 #include "Spi.h"
 #include "debug.h"
 
+#if defined(USE_EA)
+extern void Ea_JobErrorNotification(void);
+extern void Ea_JobEndNotification(void);
+#endif
 
-static void _JobEndNotify(){
-	DEBUG(DEBUG_LOW,"EEP JOB END NOTIFICATION\n");
+
+static void _JobEndNotify(void){
+    DEBUG(DEBUG_LOW,"EEP JOB END NOTIFICATION\n");
+#if defined(USE_EA)
+    Ea_JobEndNotification();
+#endif
 }
-static void _JobErrorNotify(){
-	DEBUG(DEBUG_LOW,"EEP JOB ERROR NOTIFICATION\n");
+static void _JobErrorNotify(void){
+    DEBUG(DEBUG_LOW,"EEP JOB ERROR NOTIFICATION\n");
+#if defined(USE_EA)
+    Ea_JobErrorNotification();
+#endif
 }
 
-/*
- * TODO: probably better to
- */
-#define SPI_SEQ_EEP_CMD		SPI_SEQ_CMD
-#define SPI_SEQ_EEP_CMD2	SPI_SEQ_CMD2
-#define SPI_SEQ_EEP_READ	SPI_SEQ_READ
-#define SPI_SEQ_EEP_WRITE	SPI_SEQ_WRITE
+#define SPI_SEQ_EEP_CMD		SpiConf_SpiSequence_SEQ_CMD
+#define SPI_SEQ_EEP_CMD2	SpiConf_SpiSequence_SEQ_CMD2
+#define SPI_SEQ_EEP_READ	SpiConf_SpiSequence_SEQ_READ
+#define SPI_SEQ_EEP_WRITE	SpiConf_SpiSequence_SEQ_WRITE
 
-#define SPI_CH_EEP_CMD		SPI_CH_CMD
-#define SPI_CH_EEP_ADDR		SPI_CH_ADDR
-#define SPI_CH_EEP_WREN		SPI_CH_WREN
-#define SPI_CH_EEP_DATA		SPI_CH_DATA
+#define SPI_CH_EEP_CMD		SpiConf_SpiChannel_CH_CMD
+#define SPI_CH_EEP_ADDR		SpiConf_SpiChannel_CH_ADDR
+#define SPI_CH_EEP_WREN		SpiConf_SpiChannel_CH_WREN
+#define SPI_CH_EEP_DATA		SpiConf_SpiChannel_CH_DATA
 
 
 const Eep_ExternalDriverType EepExternalDriver = {
-	// READ and WRITE sequences and ID's defined in Spi_Cfg.h
-	.EepCmdSequence = 	SPI_SEQ_EEP_CMD,
-	.EepCmd2Sequence = 	SPI_SEQ_EEP_CMD2,
-	.EepReadSequence = 	SPI_SEQ_EEP_READ,
-	.EepWriteSequence = SPI_SEQ_EEP_WRITE,
+    // READ and WRITE sequences and ID's defined in Spi_Cfg.h
+    .EepCmdSequence = 	SPI_SEQ_EEP_CMD,
+    .EepCmd2Sequence = 	SPI_SEQ_EEP_CMD2,
+    .EepReadSequence = 	SPI_SEQ_EEP_READ,
+    .EepWriteSequence = SPI_SEQ_EEP_WRITE,
 
-	// Jobs may be left out..
+    // Jobs may be left out..
 
-	// Channels used
-	.EepCmdChannel	= SPI_CH_EEP_CMD,
-	.EepAddrChannel	= SPI_CH_EEP_ADDR,
-	.EepWrenChannel	= SPI_CH_EEP_WREN,
-	.EepDataChannel	= SPI_CH_EEP_DATA,
+    // Channels used
+    .EepCmdChannel	= SPI_CH_EEP_CMD,
+    .EepAddrChannel	= SPI_CH_EEP_ADDR,
+    .EepWrenChannel	= SPI_CH_EEP_WREN,
+    .EepDataChannel	= SPI_CH_EEP_DATA,
 };
 
 const Eep_ConfigType EepConfigData[] = {
@@ -78,10 +85,10 @@ const Eep_ConfigType EepConfigData[] = {
     .EepFastWriteBlockSize = 64,
 
     // This parameter is a reference to a callback function for positive job result
-    .Eep_JobEndNotification = &_JobEndNotify,
+    .Eep_JobEndNotification = _JobEndNotify,
 
     // This parameter is a reference to a callback function for negative job result
-    .Eep_JobErrorNotification = &_JobErrorNotify,
+    .Eep_JobErrorNotification = _JobErrorNotify,
 
     .EepNormalReadBlockSize = 4,
 
@@ -89,7 +96,7 @@ const Eep_ConfigType EepConfigData[] = {
     .EepNormalWriteBlockSize = 1,
 
     // This parameter is the used size of EEPROM device in bytes.
-    .EepSize = 0x1000,	/* 32K bit for M9525, 16K bit 25LC160B*/
+    .EepSize = 0x1000,	/* 32Kb for M9525, 16Kb 25LC160B*/
 
     .EepPageSize = 64,	/* 64 for M9525, 32 for 25LC160B, 16 for 25LC160A */
 

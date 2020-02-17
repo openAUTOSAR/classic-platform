@@ -21,9 +21,19 @@ Info:
   80KB SRAM   (MPC5516 64KB)
   .. 
   
-Memory Map:
- 0x0000_0000 ->           Flash
- 0x4000_0000 ->           SRAM
+MEMORY MAP
+  MEMORIES
+    0x0000_0000 ->           Flash
+    0x4000_0000 ->           SRAM
+
+  
+  LAYOUT
+    0x0000_0000--0x0000_7FFF  Bootloader
+    0x0000_8000--0x0000_FFFF  EEPROM emulation(FEE)
+    0x0001_0000->             Application  
+  
+
+
 
 SPI
  The "SPI TEST" card have a total of 3 SPI devices.
@@ -31,6 +41,14 @@ SPI
   - M95256 ,     E2, SPI_A , CS1 (from 0)   
   - M95256 ,     E2, SPI_B , CS2 (from 0)
   - FL040AIF, Flash, SPI_A , CS0 (from 0)
+
+
+PWM: 
+  eMIOS[0] and eMIOS[1] is used.
+    eMIOS[0] - PC0 - QFP144[122]
+    eMIOS[1] - PC1 - QFP144[121]
+  
+
 
 Testing during MCAL test:
    SPI_A, M95256 using PCS_A[2]

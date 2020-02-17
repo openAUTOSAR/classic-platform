@@ -1,0 +1,57 @@
+TMS570 (TMS570LC4357) is an ARM board with Cortex-R5F 32-Bit RISC CPU
+
+SPI/EEP
+   To connect an external EEPROM (M95256) 
+
+   DEVICE AND BSW EDITOR (Tested)
+  
+      Signal Name        Port Pin Id   Description               Initial Mode
+      ----------------------------------------------------------------------------------	
+      MIBSPI1NCS[1]      97  (F3/R1*)	Chip Select 1 		    PORT_PIN_MODE_SPI
+      MIBSPI1SIMO[1]     113 (F19)		Slave In, Master Out    PORT_PIN_MODE_SPI
+      MIBSPI1SOMI[1]     131 (G18)		Slave Out, Master In    PORT_PIN_MODE_SPI       
+      MIBSPI1CLK*		 112 (F18)		Clock					PORT_PIN_MODE_SPI
+      
+      * MIBSPI1NCS[1] is F3 according to the datasheet but R1 on the Hercules
+      development board.
+      * MIBSPI1CLK does not need to be set up since it is not multiplexed.
+  
+   EVB   
+     Note! CS1 is used above, not CS0   
+     
+     -- SPI1 ---
+       
+     MIBSPI1CLK     - CLK  - X  X - ENA       
+                      CS0  - X  X - CS1  - MIBSPI1NCS[1]
+                      CS2  - X  X - CS3 
+     MIBSPI1SOMI[1] - SOMI - X  X - SIMO - MIBSPI1SIMO[1] 
+
+ADC:
+
+	The ADC MCAL tests expect certain values on three ADC channels.
+	
+	The Hercules TMS570 boards have a 3.3V pin that is used for this test.
+	The expected Adc values according to the datasheet formula
+	(see chapter 22.1.1.3, tms570lc4357 ref manual, spnu563) are (ADREFHI measured to 5V):
+	3.3V => 675
+	0V => 0 (-0.5)
+	3.3V / 2 (voltage division) => 337
+	If the 3.3V is not 3.3V but for example 3.26V as measured on the board used
+	the expected Adc value is 667 instead of 675. Also a small error in the conversion is tolerated.
+	Let's say 3.25V (result should then be 665) is the minimum expected 3.3V and we tolerate an
+	error in the measurement of 3 then the tolerance is:
+	(675 - 665) + 3 = 13 */
+	
+	Adc unit 1, channel 0: GND
+	Adc unit 1, channel 1: 3.3V
+	Adc unit 1, channel 2: 3.3V / 2
+
+Pwm:
+	The flank counter test has been added.
+	It uses a GPIO to sample the PWM signal since the Pwm_GetOutputState API is not supported.
+	A cable must connect the PWM output and the GPIO input.
+	
+	Setup:
+		Function		Pin				Ball
+		PWM				EPWM1A			B5 (GPIOA5)
+		GPIO IN			GPIOA6			H3 (GPIOA6)

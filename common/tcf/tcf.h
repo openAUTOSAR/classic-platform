@@ -1,9 +1,16 @@
-/*
- * tcf.h
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
  *
- *  Created on: 15 sep 2010
- *      Author: jcar
- */
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with
+ * the terms contained in the written license agreement between you and ArcCore,
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as
+ * published by the Free Software Foundation and appearing in the file
+ * LICENSE.GPL included in the packaging of this file or here
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 #ifndef TCF_H_
 #define TCF_H_
@@ -69,23 +76,23 @@ typedef enum{
 
 
 typedef struct {
-	char* serviceName;
-	char* eventName;
-	char* eventData;
+    char* serviceName;
+    char* eventName;
+    char* eventData;
 } TCF_Event;
 
 typedef struct {
-	char* token;
-	char* serviceName;
-	char* commandName;
-	char* arguments;
-	uint16_t args_len;
+    char* token;
+    char* serviceName;
+    char* commandName;
+    char* arguments;
+    uint16_t args_len;
 } TCF_Command;
 
 typedef struct {
-	char* token;
-	char* error;
-	char* data;
+    char* token;
+    char* error;
+    char* data;
 } TCF_Result;
 
 typedef uint16_t (*TCF_Service_CommandHandler)(TCF_Command* command, char* buf);

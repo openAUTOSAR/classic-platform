@@ -1,0 +1,17 @@
+
+
+task.orti C:/Users/mahi/git/arc-a4/examples/OsOrti/config/Os.orti
+task.stack.pattern 0x42
+menu.rp orti.men
+//menu.rp ortiperf.men
+
+//trace.chart.task
+//trace.chart.taskintr
+//trace.chart.func
+//Trace.STATistic.TASKFunc
+
+enddo
+
+
+
+

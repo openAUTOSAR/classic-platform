@@ -33,6 +33,25 @@ in EcuM callout or modify an own version of Mcu.c. See Mcu_InitClock in Mcu.c fo
 NOTE! It ADC1 is used, this must be powered by connecting AVDDSUPPLY to PD12 (PJ3.13) and 
 AVSSSUPPLY to PB11 (PJ5.12)
 
+In order for the MCAL ADC test to work. Three channels must be connected correctly. One to ground, one to +5V and one to a voltage divider.
+PB4(PCR20) is configured for ADC0_P[0] and should be connected to ground.
+PB5(PCR21) is configured for ADC0_P[1] and should be connected to +5V.
+PB6(PCR22) is configured for ADC0_P[2] and should be connected to a voltag divider.
+
+The connections should be made at the PJ5 connector on the card:
+
+              PJ5 - Port B 
+               1-X  X-2
+               3-X  X-4 
+        PB4    5-X  X-6   PB5
+        PB6    7-X  X-8  
+               9-X  X-10  
+              11-X  X-12
+              13-X  X-14
+              15-X  X-16  
+    Gnd/Black 17-X  X-18 VCC/Red   
+
+
 == SPI == 
 
 Adding a SPI EEPROM (Microship 25LC160B)
@@ -116,7 +135,14 @@ SPI_1
  ...   6 4 2 0
        7 5 3 1
 
-
+ICU test loopback setup:
+    Connect PJ8.2 (PE1) to PJ8.5 (PE4)
+    Connect PJ8.3 (PE2) to PJ8.6 (PE5)
+    Connect PJ7.2 (PA1) to PJ8.13 (PE12)
+    Connect PJ7.3 (PA2) to PJ8.11 (PE10)
+    Connect PJ7.4 (PA3) to PJ8.9 (PE8)
+    Connect PJ7.5 (PA4) to PJ8.10 (PE9)
+	  
 
 
 

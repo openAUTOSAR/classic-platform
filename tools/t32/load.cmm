@@ -1,6 +1,10 @@
+// 
+// load.cmm
+//
 
 LOCAL &cmd &arg1 &arg2
 ENTRY &cmd &arg1 &arg2
+screen.off 
 
 if CPU()=="HC12DG128A"
 (
@@ -12,6 +16,7 @@ ELSE
   gosub &cmd &arg1
 
 
+screen.on
 
 enddo
 
@@ -24,9 +29,25 @@ dialog:
   ENTRY &file
   print "&file"
   RETURN
-
-
   enddo
+
+
+//-------------------------------------------------------------
+orti_load:
+  LOCAL &ofile
+  &ofile=STRING.CUT("&cfg_loadfile_g",-4)
+
+  IF OS.FILE(&ofile.orti)
+  (
+	  task.orti &ofile.orti
+    task.stack.pattern 0x42
+  ) 
+  ELSE
+  (
+    print "No ORTI file found, " "&ofile"
+  )
+  RETURN
+
 
 
 //-------------------------------------------------------------
@@ -42,11 +63,13 @@ load:
     &cfg_loadfile_g="&file"
 
   do config save
-  do flash open
-  data.load.elf &cfg_loadfile_g /CYGDRIVE /GNU
-  do flash close
+  GOSUB preload_&cfg_cpu_g
+  data.load.elf &cfg_loadfile_g /GNU
+  gosub orti_load
+//  do flash close
+  GOSUB postload_all  
+  GOSUB postload_&cfg_cpu_g
   print "&cfg_loadfile_g"
-
   enddo
 
 //-------------------------------------------------------------
@@ -54,12 +77,11 @@ reload:
   print "&cfg_loadfile_g"
   sys.up
   r.reset
-  do flash init
-  do flash open
-  data.load.elf &cfg_loadfile_g /GNU /CYGDRIVE
-// /CYGDRIVE
-  do flash close
-
+  GOSUB preload_&cfg_cpu_g
+  data.load.elf &cfg_loadfile_g /GNU
+  gosub orti_load
+  
+  GOSUB postload_all
   GOSUB postload_&cfg_cpu_g
 
   enddo
@@ -88,23 +110,86 @@ reload_HC12DG128A:
 
 //-------------------------------------------------------------
 
+preload_all:
+  RETURN
+
+preload_CortexM3:
+preload_MPC5606S:
+preload_MPC5516:
+preload_MPC5554:
+preload_mpc5633M:
+preload_SPC56EL70:
+preload_HC12DG128A:
+preload_CortexR4F:
+preload_TC297TE:
+preload_DRA74XIPU1-CORE0:
+  RETURN
+
+postload_all:
+  // If we reload or load, init trace again
+  trace.init
+  RETURN
+
+postload_CortexM3:
+  r.s MSP 0x20005000
+  RETURN
+  
+postlost_all:
+  // If we reload or load, init trace again
+  trace.init
+  RETURN
+
 postload_CortexM3:
   r.s MSP 0x20005000
   RETURN
 
 postload_MPC5606S:
-  RETURN
-
 postload_MPC5516:
 postload_MPC5554:
 postload_mpc5633M:
-  RETURN
-
+postload_SPC56EL70:
 postload_HC12DG128A:
+postload_CortexR4F:
+postload_TC297TE:
   RETURN
 
-postload_CortexR4F:
+preload_STM32F107VC:
+  FLASH.ReProgram ALL  
   RETURN
+
+postload_STM32F107VC:
+  FLASH.ReProgram OFF
+//  screen.off
+  RETURN
+
+preload_ZYNQ-7000:
+
+  do setup setup_ZYNQ-7000 
+
+  RETURN
+
+postload_ZYNQ-7000:
+  ; ETM SETUP
+  IF analyzer()
+  (
+     ETM.PortSize 16       // Set the trace port width to 16
+     ETM.PortMode Wrapped
+     ETM.ON                // Turn ETM on
+
+     Analyzer.TestFocus    // test trace port
+     IF FOUND()            // if trace port test failed...
+     (
+	   PRINT "Performing AutoFocus..."
+	   Analyzer.AutoFocus    // Set threshold and sampling points automatically
+     )
+  )
+  RETURN
+  
+postload_DRA74XIPU1-CORE0:
+  RETURN
+  
+  
+
 
 //-------------------------------------------------------------
 

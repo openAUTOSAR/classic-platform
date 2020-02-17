@@ -1,0 +1,74 @@
+The MPC574XG-MB is an evaluation system supporting the NXP MPC574xC/G MCU family, which are used in a range of central body control modules, gateway modules and industrial networking and control applications.
+
+MPC574XG-100DS (100 BGA daughterboard) includes:
+  Daughterboard with 100 BGA socket
+  1 sample of the MPC5746C in the 100 BGA package
+
+MPC574xB-C-D Family features:
+  1 x Power Architecture e200z4 dual issue 32-bit cores
+    Up to 160 MHz operation
+    Single precision floating point operation
+    8 KB instruction cache and 4 KB data cache
+    Only variable length encoding (VLE) for significant code density improvement
+  1 x Power Architecture e200z2 single issue 32-bit core
+    Up to 80 MHz operation
+    Variable length encoding
+    
+  3 MB Flash memory with flash controller
+     Three port Flash controller
+  512 KB of SRAM
+     Two RAM ports
+
+CPU: MPC5746C                                                                  
+  Cores: 2                                                                     
+    E200Z420 Main Core 0: Max freq. 160MHz, 8KB i-cache, 4KB d-cache                      
+    E200Z210 Peripheral Core 2: Max freq: 80Mhz
+
+Documentation:
+  Eval board:
+    http://cache.nxp.com/files/microcontrollers/doc/user_guide/MPC5748GEVBUG.pdf?fpsp=1&WT_TYPE=Users%20Guides&WT_VENDOR=FREESCALE&WT_FILE_FORMAT=pdf&WT_ASSET=Documentation&fileExt=.pdf
+    
+  MPC5746c:
+    http://cache.nxp.com/files/microcontrollers/doc/data_sheet/MPC5746C.pdf?fpsp=1&WT_TYPE=Data%20Sheets&WT_VENDOR=FREESCALE&WT_FILE_FORMAT=pdf&WT_ASSET=Documentation&fileExt=.pdf
+    http://cache.nxp.com/assets/documents/data/en/reference-manuals/MPC5746CRM.pdf?fsrch=1&sr=1&pageNum=1
+      
+Supported compilers:
+  Green hills
+  
+Memory Map: See memory.ldf
+
+EEPROM
+	PORT			 PIN_MCU_SIDE		PIN_EEP_SIDE	
+1.	A12 (Port, A12): DSPI_0_dSIN_0		Q (Serial data output from EEPROM)
+2.	A13 (Port, A13): DSPI_0_dSOUT_0		D (Serial data input to EEPROM)
+3.	A14 (Port, A14): DSPI_0_dSCLK_0		C (clock)
+4.	A15 (Port, A15): DSPI_0_dCS0_0		S (chip select)
+  Warning!!! DSPI_0_dCS0_0 does currently not work (PUSHR[CONT] problem), use GPIO CS instead  
+5.  PJ0 (P24.41 connector)              "Manual chip select"    
+
+
+ADC
+  Tests ADC0, ADC should be set to 3.3V.
+   ( J3 (on daughter card) connect the jumper between 1 and 2 position (ADC0 connected to 3.3v linear regulator output) )
+
+    CH  ADC_CHNL_NO  PCR ADC_SIGNAL_NAME
+    1.	CHNL_8 		  80  (ADC0_S[8]) 		P24.15(Port F, Pad 0) to  P24.2 (GND) 
+    2.  CHNL_7 		  26  (ADC0_S[2]) 		P24.13 (Port B, Pad 10) to P24.1 (3.3V)
+    3.	CHNL_53 	  61  (ADC0_S[5]) 		PD.13 (Port D, Pad 13) to voltage split from 3.3V P24.1 (3.3V/2)
+		
+PWM
+  EMIOS_UNIT_CHNL
+  1. EMIOS_0_22  P24.9  (Port F, Pad 5)
+  2. EMIOS_0_23  P24.33 (Port E, Pad 9)
+  3. EMIOS_0_2   PA.2   (Port A, Pad 2) (EMIOS0_E0UC_2_G)
+
+Currently not working (replaced with 3 from above) 
+  3. EMIOS_1_2   PF.10  (Port F, Pad 10) - Currently NOT working, Case against NXP on this   
+  
+ ICU
+ connect PG2  to PG7
+ connect PG3  to PG6
+ connect PA1  to PA5 in (P24.47 SAI connector)
+ connect PJ13 to PE8 in (P24.35 SAI connector)
+ connect PJ14 to PJ1 in (P24.39 SAI connector)
+ connect PA4  to PJ2 in (P24.23 SAI connector)

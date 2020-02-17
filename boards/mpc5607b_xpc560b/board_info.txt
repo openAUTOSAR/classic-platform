@@ -1,0 +1,71 @@
+
+
+
+The Freescale MPC5607B is an PowerPC process with a e200Z0h core, VLE only  
+	
+Datasheets:
+	See http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC560xB&webpageId=121120349534072559427E&nodeId=01624606C1427E&fromPage=tax
+ 
+Board:
+  8Mhz external crystal
+
+Supported compilers:
+  Code Warrior
+ 
+Info:	
+  MPC5606B
+  CPU:		 e200z0h (VLE only)
+  Freq:		 64 Mhz
+  Flash: 	 1.5 MB, primary
+             64K, data flash
+  RAM:       96K, ECC RAM
+  
+Memory Map:
+ 0x0000_0000 -> 0x0017_ffff   Flash
+ 0x0080_0000 -> 0x0080_ffff   Data Flash
+ 0x4000_0000 -> 0x4001_7fff   SRAM
+ 
+NOTE! In Mcu.c only board specific clocks and pin muxing are setup and there is no config tool support. 
+So, in order to use for instance FlexCan 3 you need to iniatilize FlexCan3 power control register i.e. ME.PCTL[19].R = 0x01;
+in EcuM callout or modify an own version of Mcu.c. See Mcu_InitClock in Mcu.c for further info.  
+
+== ADC ==
+NOTE! It ADC1 is used, this must be powered by connecting AVDDSUPPLY to PD12 (PJ3.13) and 
+AVSSSUPPLY to PB11 (PJ5.12)
+
+== SPI == 
+
+Adding a SPI EEPROM (Microship 25LC160B)
+
+               PJ7 
+             1-X  X-2
+             3-X  X-4
+             5-X  X-6 
+             7-X  X-8  
+             9-X  X-10  
+            11-X  X-12
+   SO/Brown 13-X  X-14 SI/Orange
+   SCK/Blue 15-X  X-16  
+            17-X  X-18   
+
+               PJ5 
+             1-X  X-2
+             3-X  X-4
+             5-X  X-6 
+             7-X  X-8  
+             9-X  X-10  
+            11-X  X-12
+  CS/Green  13-X  X-14
+            15-X  X-16  
+  Gnd/Black 17-X  X-18 VCC/Red 
+  
+  ICU test loopback setup:
+    Connect PJ8.2 (PE1) to PJ8.5 (PE4)
+    Connect PJ8.3 (PE2) to PJ8.6 (PE5)
+    Connect PJ7.2 (PA1) to PJ8.13 (PE12)
+    Connect PJ7.3 (PA2) to PJ8.11 (PE10)
+    Connect PJ7.4 (PA3) to PJ8.9 (PE8)
+    Connect PJ7.5 (PA4) to PJ8.10 (PE9)
+  
+  
+

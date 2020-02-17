@@ -1,0 +1,18 @@
+// T32_1000001 Fri Feb 19 16:48:24 2016
+
+ B::
+ 
+ TOOLBAR ON
+ STATUSBAR ON
+ FramePOS 270.86 17.0 81. 31.
+ WinPAGE.RESet
+ 
+ WinPAGE.Create P000
+ WinCLEAR
+ 
+ WinPOS 1.7143 0.75 64. 16. 0. 0. W001
+ sys
+ 
+ WinPAGE.select P000
+ 
+ ENDDO

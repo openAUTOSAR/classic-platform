@@ -12,12 +12,16 @@
  * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
  *-------------------------------- Arctic Core -----------------------------*/
 
+/** @reqSettings DEFAULT_SPECIFICATION_REVISION=4.1.3 */
+
+/** @req 4.1.3/SWS_Xcp_00508 */ /*Provide XcpOnEth_Cfg.h - can not be tested with conventional module tests*/
+
 #ifndef XCPONETH_CBK_H_
 #define XCPONETH_CBK_H_
 
 #include "ComStack_Types.h"
 
-void           Xcp_SoAdRxIndication   (PduIdType XcpRxPduId, PduInfoType* XcpRxPduPtr);
-void           Xcp_SoAdTxConfirmation (PduIdType XcpTxPduId);
+void           Xcp_SoAdIfRxIndication   (PduIdType XcpRxPduId, PduInfoType* XcpRxPduPtr);
+void           Xcp_SoAdIfTxConfirmation (PduIdType XcpTxPduId);
 
 #endif /* XCPONETH_CBK_H_ */

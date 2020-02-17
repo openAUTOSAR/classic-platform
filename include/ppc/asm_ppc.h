@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 
 
@@ -48,20 +47,37 @@
 #define BIT(x)	(1<<(x))
 #define PPC_BITS_32(x,offset)		((x)<<(31-(offset)))
 
+#define SPR_DEC     22
+#define SPR_DECAR   54
+
 #define SPR_SRR0		26
 #define SPR_SRR1		27
 
 #define SPR_CSRR0		58
 #define SPR_CSRR1		59
 
+#if defined(CFG_MPC5744P) || defined(CFG_MPC5777M) || defined(CFG_E200Z4) || defined(CFG_E200Z4D)
+#define SPR_MCSRR0      570
+#define SPR_MCSRR1      571
+#else
+#define SPR_MCSRR0      SPR_CSRR0
+#define SPR_MCSRR1      SPR_CSRR1
+#endif
+
 #define SPR_SPRG0_RW_S	272
 #define SPR_SPRG1_RW_S	273
+
+#define SPR_TBU_R   269
+#define SPR_TBU_W   285
+#define SPR_TBL_R   268
+#define SPR_TBL_W   284
 
 #define SPR_DEAR		61
 #define SPR_ESR		62
 #define SPR_TSR		336
 #define SPR_SPEFSCR		512
 #define SPR_MCSR		572
+#define SPR_MCAR        573
 
 #define SPR_MAS0      624
 #define SPR_MAS1      625
@@ -85,9 +101,19 @@
 #define SPR_XER		1
 #define SPR_CTR		9
 
-#define INTC_SSCIR7 0xFFF48027
-
 /* MAS bits */
+#if defined(CFG_E200Z4D)
+#define MAS1_TSIZE_4K           (2<<7)
+#define MAS1_TSIZE_16K          (4<<7)
+#define MAS1_TSIZE_64K          (6<<7)
+#define MAS1_TSIZE_256K         (8<<7)
+#define MAS1_TSIZE_1M           (0xa<<7)
+#define MAS1_TSIZE_4M           (0xc<<7)
+#define MAS1_TSIZE_16M          (0xe<<7)
+#define MAS1_TSIZE_64M          (0x10<<7)
+#define MAS1_TSIZE_256M         (0x12<<7)
+#define MAS1_TSIZE_512M         (0x13<<7)
+#else
 #define MAS1_TSIZE_4K			(1<<8)
 #define MAS1_TSIZE_16K			(2<<8)
 #define MAS1_TSIZE_64K			(3<<8)
@@ -96,7 +122,8 @@
 #define MAS1_TSIZE_4M			(6<<8)
 #define MAS1_TSIZE_16M			(7<<8)
 #define MAS1_TSIZE_64M			(8<<8)
-#define MAS1_TSIZE_256M			(8<<9)
+#define MAS1_TSIZE_256M			(9<<8)
+#endif
 
 #define MAS2_VLE	(1<<5)
 #define MAS2_W		(1<<4)
@@ -168,9 +195,15 @@
  *
  */
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__ghs__)
+#  if defined(__ghs__) && defined(CFG_VLE)
+#    define ASM_SECTION_TEXT(_x) 	.section .vletext,"vax"
+#    define ASM_SECTION(_x)  		.section #_x,"vax"
+#    define ASM_CODE_DIRECTIVE()    .vle
+#  else
 #  define ASM_SECTION_TEXT(_x) 	.section #_x,"ax"
 #  define ASM_SECTION(_x)  		.section #_x,"ax"
+#  endif
 #elif defined(__CWCC__)
 #  if defined(CFG_VLE)
 #    define ASM_SECTION_TEXT(_x) .section _x,text_vle
@@ -180,12 +213,17 @@
 #  define ASM_SECTION(_x)		.section _x,4,"r"
 #elif defined(__DCC__)
 #  if defined(CFG_VLE)
-#    define ASM_SECTION_TEXT(_x) .section _x,4,"rw"
+#    define ASM_SECTION_TEXT(_x) .section _x,4,"x"
 #  else
-#    define ASM_SECTION_TEXT(_x) .section _x,4,"rw"
+#    define ASM_SECTION_TEXT(_x) .section _x,4,"x"
 #  endif
 #  define ASM_SECTION(_x)		.section _x,4,"r"
 #endif
+
+#ifndef ASM_CODE_DIRECTIVE
+#define ASM_CODE_DIRECTIVE()
+#endif
+
 
 /*
  * PPC vs VLE assembler:
@@ -198,12 +236,24 @@
 
 #if defined(CFG_VLE)
 #define LOAD_IND_32( reg, addr) \
-	e_lis    reg, addr@ha;     \
+    e_lis    reg, addr@ha;     \
     e_lwz    reg, addr@l(reg)
 
 #define LOAD_ADDR_32(reg, addr ) \
-    e_lis       reg, addr@ha; \
-    e_add16i    reg, reg, addr@l
+    e_lis       reg, (addr)@ha; \
+    e_add16i    reg, reg, (addr)@l
+
+#define MULLW(reg1,reg2) \
+    se_mullw	reg1,reg2
+
+#define ADD(reg1,reg2) \
+    se_add		reg1, reg2
+#define ADD2IS(reg1,immediate) \
+    e_add2is	reg1, immediate
+#define OR2IS(reg1,immediate) \
+    e_or2is      reg1, immediate
+#define OR2I(reg1,immediate) \
+    e_or2i      reg1, immediate
 
 #else
 #define LOAD_IND_32( reg, addr) \
@@ -214,6 +264,16 @@
         addis   reg, 0, addr@ha; \
         addi    reg, reg, addr@l
 
+#define MULLW(reg1,reg2) \
+    mullw	reg1,reg1,reg2
+#define ADD(reg1,reg2) \
+    add		reg1, reg1, reg2
+#define ADD2IS(reg1,immediate) \
+    addis	reg1,reg1, immediate
+#define OR2IS(reg1,immediate) \
+    oris      reg1, reg1, immediate
+#define OR2I(reg1,immediate) \
+    ori      reg1, reg1, immediate
 #endif
 
 
@@ -267,6 +327,7 @@
 #define stbu	e_stbu
 #define b		e_b
 #define bne		e_bne
+#define blt		e_blt
 //#define addi	e_addi		/* true ?*/
 #define addi	e_add16i		/* true ?*/
 //#define addis	e_add16i
@@ -275,25 +336,37 @@
 #define rfi		se_rfi
 #define stb		e_stb
 #define cmplwi	e_cmpl16i
+#define cmpd    se_cmpl
 #define cmpwi 	se_cmpi
+// #define cmpi    e_cmpi
 #define ori		e_ori
 #define beq		e_beq
+#define bge     e_bge
 //#define bne- 	e_bne-
 #define bne		e_bne
 #define bgt		e_bgt
 #define extrwi	e_extrwi
 #define clrlwi  e_clrlwi
 #define blrl	se_blrl
-#define lmw		e_lmw
 #define stmw	e_stmw
 #define bdnz	e_bdnz
 #define	bl		e_bl
 #define	bc		e_bc
 #define mr		se_mr
+#define msync   se_isync
+#define isync	se_isync
 #define rfci	se_rfci
-#define bctrl	se_bctrl
+#define rfmci    se_rfmci
+#define lmw		e_lmw
+#define srwi	e_srwi
+#define rlwinm  e_rlwinm
+#define sc      se_sc
+#define slwi    e_slwi
+#define extzh	se_extzh
+#define mulli	e_mulli
 #endif
 
 #endif /* _ASSEMBLER_ */
 
 #endif /*PPC_ASM_H_*/
+

@@ -52,14 +52,14 @@
 
 #define	SA_LIST_HEAD(name, type)	\
 struct name {						\
-	int cnt;						\
-	struct type *data;				\
+    int cnt;						\
+    struct type *data;				\
 }
 
 #define SA_LIST_HEAD_INITIALIZER(elem_cnt, data_p ) \
 {													\
-	.cnt = (elem_cnt),								\
-	.data = (data_p)								\
+    .cnt = (elem_cnt),								\
+    .data = (data_p)								\
 }
 
 #define SA_LIST_CNT(head)					(head)->cnt

@@ -1,0 +1,13 @@
+add
+menu
+(
+  popup "ArcCore_ORTI_2_2"
+  (
+    menuitem "Display OS" "TASK.DOS"
+    menuitem "Display Tasks" "TASK.DTASK"
+    menuitem "Display Stacks" "TASK.STACK"
+    menuitem "Display Counters" "TASK.DCOUNTER"
+    menuitem "Display Alarms" "TASK.DALARM"
+    menuitem "Display Resources" "TASK.DRESOURCE"
+   )
+)

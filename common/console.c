@@ -128,11 +128,11 @@
 
 
 typedef struct {
-	uint8_t type;
+    uint8_t type;
 } DeviceType;
 
 typedef struct {
-	uint32_t defaultDevice; /* How do I set this? */
+    uint32_t defaultDevice; /* How do I set this? */
 } ConsoleType;
 
 
@@ -141,31 +141,31 @@ DeviceType *devicePtr;
 
 /* List of devices */
 DeviceSerialType deviceList[] = {
-	&T32_Device,
-	NULL,
+    &T32_Device,
+    NULL,
 };
 
 
 
 
 int Console_SetDevice( const char *device)  {
-	DeviceSerialType *devPtr;
+    DeviceSerialType *devPtr;
 
-	devPtr = Serial_FindDevice( device );
-	if ( devPtr != 0 ) {
-		Sys.ConsoleDevicePtr = devPtr;
-	}
+    devPtr = Serial_FindDevice( device );
+    if ( devPtr != 0 ) {
+        Sys.ConsoleDevicePtr = devPtr;
+    }
 }
 
 int Console_Init( void ) {
-	/* Set default console device */
-	Console_SetDevice("serial_dbg_t32");
+    /* Set default console device */
+    Console_SetDevice("serial_dbg_t32");
 }
 
 
 int getc( FILE *file ) {
-	Sys.ConsoleDevicePtr->read( )
-	return fgetc(file);
+    Sys.ConsoleDevicePtr->read( )
+    return fgetc(file);
 }
 
 int arc_putchar( int c, FILE *file ) {
@@ -180,17 +180,17 @@ int arc_putchar( int c, FILE *file ) {
  * @return
  */
 int fputs ( const char * str, FILE *file ) {
-	int h = (int)file;
-	deviceList[h]->write(str,strlen(str);
+    int h = (int)file;
+    deviceList[h]->write(str,strlen(str);
 }
 
 int fgetc( FILE *file ) {
-	int h = (int)file;
-	uint8_t data;
+    int h = (int)file;
+    uint8_t data;
 
-	/* get character from device */
-	deviceList[h]->read(&data,1);
-	return data;
+    /* get character from device */
+    deviceList[h]->read(&data,1);
+    return data;
 }
 
 int Device_Add( DeviceType *devPtr ) {
@@ -208,29 +208,29 @@ extern DeviceSerialType
  */
 void Serial_Register( void ) {
 
-	Serial
+    Serial
 
-	dev->init(dev->data);
+    dev->init(dev->data);
 }
 
 
 
 
 int usage( void ) {
-	DeviceType dev;
+    DeviceType dev;
 
-	Serial_Init( void );
+    Serial_Init( void );
 
 #if defined(CFG_SERIAL_T32)
-	dev.read = T32_Read;
-	dev.write = T32_Write;
-	Console_SetDevice(dev);
+    dev.read = T32_Read;
+    dev.write = T32_Write;
+    Console_SetDevice(dev);
 #endif
 
 #if defined(USE_SERIAL_SCI)
-	dev.read = Sci_Read;
-	dev.write = T32_Write;
-	Console_SetDevice(dev);
+    dev.read = Sci_Read;
+    dev.write = Sci_Write;
+    Console_SetDevice(dev);
 #endif
 
 

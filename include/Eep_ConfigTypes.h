@@ -1,9 +1,16 @@
-/*
- * Eep_ConfigTypes.h
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
  *
- *  Created on: 1 jun 2011
- *      Author: mahi
- */
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with
+ * the terms contained in the written license agreement between you and ArcCore,
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as
+ * published by the Free Software Foundation and appearing in the file
+ * LICENSE.GPL included in the packaging of this file or here
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 #ifndef EEP_CONFIGTYPES_H_
 #define EEP_CONFIGTYPES_H_
@@ -22,12 +29,12 @@ typedef struct {
    * =======
    *   const Eep_ConfigType EepConfigData =
    *   {
-   *    …
+   *    ï¿½
    *    EepCmdChannel    = EEP_SPI_CH_COMMAND,
    *    EepAdrChannel    = EEP_SPI_CH_ADDRESS,
-   *    …
+   *    ï¿½
    *    EepWriteSequence = EEP_SPI_SEQ_WRITE,
-   *    …
+   *    ï¿½
    *  };
    *
    *
@@ -92,10 +99,10 @@ typedef struct {
   //float	 EepJobCallCycle;
 
   // This parameter is a reference to a callback function for positive job result
-  void (*Eep_JobEndNotification)();
+  void (*Eep_JobEndNotification)(void);
 
   // This parameter is a reference to a callback function for negative job result
-  void (*Eep_JobErrorNotification)();
+  void (*Eep_JobErrorNotification)(void);
 
   // number of bytes read within one job processing cycle in normal mode.
   Eep_LengthType EepNormalReadBlockSize;

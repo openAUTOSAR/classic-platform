@@ -42,45 +42,56 @@
  * #define DEBUG_LVL	DEBUG_HIGH
  * DEBUG(DEBUG_HIGH,"Starting GPT");
  *
- * TRACE
- *   TODO:
  *
  */
 
 #include <stdio.h>
 
-#define DEBUG_LOW		1
-#define DEBUG_MEDIUM	2
-#define DEBUG_HIGH		3
-#define DEBUG_NONE		4
+#define DEBUG_LOW       1u
+#define DEBUG_MEDIUM    2u
+#define DEBUG_HIGH      3u
+#define DEBUG_NONE      4u
 
 #ifndef DEBUG_LVL
-#define DEBUG_LVL		2
+#define DEBUG_LVL       2u
 #endif
 
-#define CH_ISR		0
-#define CH_PROC		1
+#define CH_ISR          0u
+#define CH_PROC         1u
 
+#if defined(DBG)
+#define dbg(...) printf(__VA_ARGS__ )
+#else
+#define dbg(...)
+#endif
+
+#if defined(_DEBUG_)
+#define _debug_(...) printf (__VA_ARGS__);
+#else
+#define _debug_(...)
+#endif
 
 #if defined(USE_DEBUG_PRINTF)
 #define DEBUG(_level,...) \
-	do { \
-		if(_level>=DEBUG_LVL) { \
-			printf (__VA_ARGS__); \
-		}; \
-	} while(0);
+    do { \
+        if(_level>=DEBUG_LVL) { \
+            printf (__VA_ARGS__); \
+        }; \
+    } while(0);
 
 #else
 #define DEBUG(_level,...)
 #endif
 
 #if defined(USE_LDEBUG_PRINTF)
+#define debug(...)                  printf(__VA_ARGS__)
 #define LDEBUG_PRINTF(format,...) 	printf(format,## __VA_ARGS__ )
 #define LDEBUG_FPUTS(_str) 			fputs((_str),stdout)
 #else
 #define LDEBUG_PRINTF(format,...)
 #define LDEBUG_FPUTS(_str)
 #endif
+
 
 
 #endif /*DEBUG_H_*/

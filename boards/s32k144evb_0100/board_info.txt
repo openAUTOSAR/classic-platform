@@ -1,0 +1,20 @@
+The NXP S32K144EVB is an evaluation board from NXP using a S32K144 MCU.
+	
+Datasheets:
+    http://www.nxp.com/assets/documents/data/en/data-sheets/S32K-DS.pdf
+Reference Manual:
+    http://www.nxp.com/assets/documents/data/en/reference-manuals/S32K-RM.pdf
+    
+MCAL used is from NXP
+ 
+Info:	
+S32K144
+ARM® Cortex™-M4F
+up to 112 MHz
+Watchdog
+
+Memory:
+Flash 							512 KB
+System RAM (including FlexRAM)	64 KB
+EEPROM emulated by FlexRAM		4 KB (up to 64 KB D-Flash)
+

@@ -19,11 +19,11 @@
 
 #define SLEEP(_x_) \
 do{ \
-	TaskType task; \
-	GetTaskID(&task); \
-	Sleep(_x_, task, EVENT_MASK_SLEEP_ALARM ); \
-	WaitEvent(EVENT_MASK_SLEEP_ALARM); \
-	ClearEvent(EVENT_MASK_SLEEP_ALARM); \
+    TaskType task; \
+    GetTaskID(&task); \
+    Sleep(_x_, task, EVENT_MASK_SLEEP_ALARM ); \
+    WaitEvent(EVENT_MASK_SLEEP_ALARM); \
+    ClearEvent(EVENT_MASK_SLEEP_ALARM); \
 }while(0);
 
 void Sleep(uint32_t nofTicks, TaskType TaskID, EventMaskType Mask );

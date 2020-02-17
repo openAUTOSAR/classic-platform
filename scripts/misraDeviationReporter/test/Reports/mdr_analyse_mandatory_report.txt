@@ -1,0 +1,90 @@
+
+
+==============================================
+Copyright (C) 2013-2017                       
+ArcCore AB, Sweden, www.arccore.com.          
+Contact: <contact@arccore.com>                
+
+MISRA Deviation Report                        
+==============================================
+
+
+==============================================
+File:			test2.c
+Line:			6
+PC_Lint:		[533]
+MISRA:			2012:Rule:17.4
+Level:			mandatory
+Category:		FALSE_POSITIVE
+Justification:	N/A
+
+Comment: /*lint -e{533, 578, 715, 745, 832, 936, 939} FALSE_POSITIVE */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			9
+PC_Lint:		[533]
+MISRA:			2012:Rule:17.4
+Level:			mandatory
+Category:		FALSE_POSITIVE
+Justification:	N/A
+
+Comment: /*lint -e{533}  MISRA:FALSE_POSITIVE:PUT HERE SOME GOOD ARGUMENTS TO CONVINCE YOUR SAFETY MANAGER:[MISRA 2012 Rule 17.4, mandatory] */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			102
+PC_Lint:		[718]
+MISRA:			2012:Rule:17.3
+Level:			mandatory
+Category:		WARNING: Nothing found
+Justification:	N/A
+
+Comment: Comment: pvr = get_spr(SPR_PVR);  /*lint !e718 !e746 !e548 !e632 !e732 Defined in Cpu.h */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			106
+PC_Lint:		[718]
+MISRA:			2012:Rule:17.3
+Level:			mandatory
+Category:		WARNING: Nothing found
+Justification:	N/A
+
+Comment: pvr = get_spr(SPR_PVR);  /*lint !e718 !e746 !e548 !e632 !e732 Defined in Cpu.h */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			109
+PC_Lint:		[718]
+MISRA:			2012:Rule:17.3
+Level:			mandatory
+Category:		FALSE POSITIVE
+Justification:	N/A
+
+Comment: /*lint -e718 MISRA:FALSE POSITIVE:Ask your safety manager:[MISRA 2012 Rule 17.3, mandatory] */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			114
+PC_Lint:		[533]
+MISRA:			2012:Rule:17.4
+Level:			mandatory
+Category:		FALSE_POSITIVE
+Justification:	N/A
+
+Comment: /*lint -e{533}  MISRA:FALSE_POSITIVE:PUT HERE SOME GOOD ARGUMENTS TO CONVINCE YOUR SAFETY MANAGER:[MISRA 2012 Rule 17.4, mandatory] */
+==============================================
+
+==============================================
+Deviations reported: 6
+Mandatory deviations: 6
+Required deviations: 0
+Advisory deviations: 0
+END OF MISRA deviation report                 
+==============================================

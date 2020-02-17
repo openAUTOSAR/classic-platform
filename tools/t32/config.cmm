@@ -114,6 +114,10 @@ win_close2:
 //--------------------------------------------------------------------
 
 
+no_dialog_project:
+  &cfg_cpu_g=cpu()
+  do config save
+  RETURN
 
 dialog_project:
   LOCAL &path
@@ -124,8 +128,8 @@ dialog_project:
 (&
         pos 1. 1. 14.
         text "CPU:"
-        pos 1. 2. 10.
-CPU:   PULLDOWN "MPC5516,MPC5554,MPC5606S,MPC5633M,CortexM3,CortexR4F,HC12DG128A"
+        pos 1. 2. 20.
+CPU:   PULLDOWN "MPC5516,MPC5554,MPC5606S,MPC5633M,SPC56EL70,STM32F107VC,CortexM3,CortexR4F,HC12DG128A,TC297TE,ZYNQ-7000,TMS570LS1227-ZWT,DRA74XIPU1-CORE0"
         (
         )
         HEADER "Project config"

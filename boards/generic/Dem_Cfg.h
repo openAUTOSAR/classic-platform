@@ -16,9 +16,6 @@
 
 
 
-
-
-
 #warning "This default file may only be used as an example!"
 
 #ifndef DEM_CFG_H_
@@ -63,5 +60,25 @@
 #define DEM_MAX_NUMBER_EVENT_PRI_MEM			(DEM_MAX_NUMBER_EVENT_ENTRY_PRI)	// Max number of events status to store in primary memory
 #define DEM_MAX_NUMBER_FF_DATA_PRI_MEM			5									// Max number of freeze frames to store in primary memory
 #define DEM_MAX_NUMBER_EXT_DATA_PRI_MEM			5									// Max number of extended data to store in primary memory
+#define DEM_MAX_RECORD_NUMBERS_IN_FF_REC_NUM_CLASS 0
+
+typedef struct {
+    uint32  UDSDTC;
+    uint32  OBDDTC;
+    boolean DTCUsed;
+    boolean ImmediateNvStorage;
+} Arc_Dem_DTC;
+
+typedef struct {
+    boolean JumpUp;
+    boolean JumpDown;
+    uint16  IncrementStepSize;
+    uint16  DecrementStepSize;
+    sint16  JumpDownValue;
+    sint16  JumpUpValue;
+    sint16  FailedThreshold;
+    sint16  PassedThreshold;
+} Dem_PreDebounceCounterBasedType;
+
 
 #endif /*DEM_CFG_H_*/

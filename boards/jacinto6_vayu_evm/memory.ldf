@@ -1,0 +1,10 @@
+
+/* IPU1 memory map */ 
+/* carveout: IPU_MEM_TEXT, 1M  */
+boot(R)  : ORIGIN = 0x00000000, LENGTH = 0x400
+boot_c0(R)  : ORIGIN = 0x00000400, LENGTH = 0x400
+boot_c1(R)  : ORIGIN = 0x00000800, LENGTH = 0x400
+code_ram(R) : ORIGIN = 0x1000, LENGTH = 4M
+
+/* carveout: IPU_MEM_DATA, 5M */
+ram(RW)  : ORIGIN = 0x80000000, LENGTH = 5M

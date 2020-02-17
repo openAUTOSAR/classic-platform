@@ -19,17 +19,17 @@
 
 typedef struct
 {
-	CirqBufferType *cirqPtr;
+    CirqBufferType *cirqPtr;
 } Arc_MBoxType;
 
 
 typedef enum {
-	SOME_ERROR,
+    SOME_ERROR,
 } Arc_MBoxErrType;
 
-Arc_MBoxType* Arc_MBoxCreate( size_t size );
+Arc_MBoxType* Arc_MBoxCreate( uint32 size );
 void Arc_MBoxDestroy( Arc_MBoxType *mPtr );
-int Arc_MBoxPost( Arc_MBoxType *mPtr, void *msg );
-int Arc_MBoxFetch(Arc_MBoxType *mPtr, void *msg);
+sint32 Arc_MBoxPost( const Arc_MBoxType *mPtr, void *msg );
+sint32 Arc_MBoxFetch(const Arc_MBoxType *mPtr, void *msg);
 
 #endif /* MBOX_H_ */

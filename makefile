@@ -3,18 +3,18 @@
 #
 # TARGETS
 #   all:   		Target when building
-#   clean:  	Remove generatated files for a board 
+#   clean:  	Remove generatated files for a board
 #   clean_all:  Remove all generated files
 #   help:       Print some help
 #
 # VARIABLES:
-#   BOARDDIR=<board dir> 
-#       Select what board to build for 
-#   BDIR=<dir>[,<dir>] 
+#   BOARDDIR=<board dir>
+#       Select what board to build for
+#   BDIR=<dir>[,<dir>]
 #       Select what directories to build. The kernel is always built.
-#   CROSS_COMPILE
-#       Specify the compiler to use.  
-#   Q=[(@)/empty] 
+#   CROSS_COMPILEf
+#       Specify the compiler to use.
+#   Q=[(@)/empty]
 #  		If Q=@ cmd's will not be echoed.
 #
 # EXAMPLES
@@ -44,17 +44,22 @@ split = $(subst $(comma), ,$(1))
 # ../tjo -> ../tjo
 to_msyspath = $(shell echo "$(1)" | sed -e 's,\\,\/,g;s,\([a-zA-Z]\):,/\1,')
 
+# Get core version
+core_version:=$(shell gawk -v type=_ -f $(CURDIR)/scripts/get_version.awk $(CURDIR)/include/version.h)
+export core_version
+
 # Convert Path if on windows.
 ifeq ($(OS),Windows_NT)
   	BDIR:=$(call to_msyspath,$(BDIR))
+  	BOARDDIR:=$(call to_msyspath,$(BOARDDIR))
 endif
 
 USE_T32_SIM?=n
 export USE_T32_SIM
 
 # Tools
-# Ugly thing to make things work under cmd.exe 
-PATH := /usr/bin/:$(PATH) 
+# Ugly thing to make things work under cmd.exe
+# PATH := usr/bin/:$(PATH)
 FIND := $(shell which find)
 
 export UNAME:=$(shell uname)
@@ -72,21 +77,22 @@ else
 export Q?=@
 endif
 
+# Default distribution directory
+export DISTRONAME ?= distro
+
 export TOPDIR = $(CURDIR)
 export PATH
 
-#KVM-build variables
-ifeq ($(KVM), true)
-KVMDIR = ../../../j2me_cldc/build/autosar
-endif
-
-BOARDDIR = Raspberry_Pi
 
 # Select default console
 # RAMLOG | TTY_T32 | TTY_WINIDEA
 export SELECT_OS_CONSOLE
+ifdef SELECT_CONSOLE
 export SELECT_CONSOLE
+endif
+ifdef SELECT_OPT
 export SELECT_OPT
+endif
 
 ifneq ($(filter clean_all,$(MAKECMDGOALS)),clean_all)
   ifeq ($(BOARDDIR),)
@@ -98,7 +104,10 @@ ifneq ($(filter clean_all,$(MAKECMDGOALS)),clean_all)
 endif
 
 dir_cmd_goals  := $(call split,$(BDIR))
-cmd_cmd_goals := $(filter all clean config,$(MAKECMDGOALS))
+# filter out make targets used in this file only
+cmd_cmd_goals := $(filter-out clean_all help libs test show_build,$(MAKECMDGOALS))
+# filter out nonstd make targets
+user_cmd_cmd_goals := $(filter-out all config clean distro clean_distro, $(cmd_cmd_goals))
 
 # Check for CROSS_COMPILE
 ifneq ($(cmd_cmd_goals),)
@@ -131,11 +140,11 @@ endif
 
 
 export objdir = obj_$(board_name)
-export CFG_MCU 
+export CFG_MCU
 export CFG_CPU
 export MCU
 export def-y+=$(CFG_ARCH_$(ARCH)) $(CFG_MCU) $(CFG_CPU)
-
+export COMMON_BUILD_MAKEPATH?=$(CURDIR)/testCommon
 
 # We descend into the object directories and build the. That way it's easier to build
 # multi-arch support and we don't have to use objdir everywhere.
@@ -146,12 +155,23 @@ export def-y+=$(CFG_ARCH_$(ARCH)) $(CFG_MCU) $(CFG_CPU)
 libs:
 	mkdir -p $@
 
-.PHONY all:
+.PHONY: all
 
-all: libs kvm $(dir_cmd_goals)
+all: libs $(dir_cmd_goals)
+
+ifneq ($(user_cmd_cmd_goals),)
+.PHONY: $(user_cmd_cmd_goals)
+$(user_cmd_cmd_goals): libs $(dir_cmd_goals)
+endif
 
 .PHONY: clean
 .PHONY: release
+
+.PHONY: distro
+distro: $(dir_cmd_goals)
+
+.PHONY: clean_distro
+clean_distro: $(dir_cmd_goals)
 
 .PHONY: help
 help:
@@ -165,47 +185,21 @@ help:
 	@echo "  BDIR          = ${BDIR}"
 	@echo "  BOARDDIR      = $(BOARDDIR)"
 	@echo "  CROSS_COMPILE = $(CROSS_COMPILE)"
-	@echo "  CURDIR        = $(CURDIR)"	
+	@echo "  CURDIR        = $(CURDIR)"
 	@echo ""
 
 
 test:
 	@echo $(all_boards)
 
-show_build:
-	@echo ""
-	@echo "==========[ BUILD INFO ]==========="
-	@echo "  BDIR:           $(BDIR) [$(origin BDIR)]"
-	@echo "  BOARDDIR:       $(BOARDDIR) [$(origin BOARDDIR)]"
-	@echo "  COMPILER:       $(COMPILER) [$(origin COMPILER)]"	
-ifeq ($(COMPILER),cw)	
-	@echo "  CW_COMPILE:     $(CW_COMPILE) [$(origin CW_COMPILE)]"
-else ifeq ($(COMPILER),iar)	
-	@echo "  IAR_COMPILE:     $(IAR_COMPILE) [$(origin IAR_COMPILE)]"
-else ifeq ($(COMPILER),ghs)	
-	@echo "  GHS_COMPILE:     $(GHS_COMPILE) [$(origin GHS_COMPILE)]"	
-else 
-ifndef ($(CLANG_COMPILE),)
-	@echo "  CLANG_COMPILE:  $(CLANG_COMPILE) [$(origin CLANG_COMPILE)]"
-	@echo "  CFG_CLANG_SAFECODE:  $(CFG_CLANG_SAFECODE) [$(origin CFG_CLANG_SAFECODE)]"
-endif
-	@echo "  CROSS_COMPILE:  $(CROSS_COMPILE) [$(origin CROSS_COMPILE)]"
-endif
-	@echo "  SELECT_OPT:     $(SELECT_OPT) [$(origin SELECT_OPT)]"
-	@echo "  CURDIR:         $(CURDIR)"
-	@echo "  SELECT_CONSOLE: $(SELECT_CONSOLE) [$(origin SELECT_CONSOLE)]"
-	
-	
-	
-	
-$(dir_cmd_goals) :: show_build FORCE
+$(dir_cmd_goals) :: FORCE
 	@echo ""
 	@echo ==========[ ${abspath $@}  ]===========
 	@if [ ! -d $@ ]; then echo "No such directory: \"$@\" quitting"; exit 1; fi
 	+@[ -d $@/$(objdir) ] || mkdir -p $@/$(objdir)
 	@chmod 777 $@/$(objdir)
 	$(Q)$(MAKE) -r  -C $@/$(objdir) -f $(CURDIR)/scripts/rules.mk  ROOTDIR=$(CURDIR) SUBDIR=$@ $(cmd_cmd_goals)
-.PHONY: test	
+.PHONY: test
 
 FORCE:
 
@@ -219,11 +213,11 @@ clean_all:
 	@echo
 	@echo "  >>>>>>>>>  DONE  <<<<<<<<<"
 	@echo
-	
-config: $(dir_cmd_goals)	
-	
-.PHONY clean:	
-clean: clean_kvm $(dir_cmd_goals)
+
+config: $(dir_cmd_goals)
+
+.PHONY clean:
+clean: $(dir_cmd_goals)
 	@echo
 	@echo "  >> Cleaning MAIN $(CURDIR)"
 #	$(Q)find . -type d -name $(objdir) | xargs rm -rf
@@ -232,25 +226,3 @@ clean: clean_kvm $(dir_cmd_goals)
 	@echo
 	@echo "  >>>>>>>>>  DONE  <<<<<<<<<"
 	@echo
-
-kvm: 
-ifeq ($(KVM), true)
-	@echo "Starting recursive build of KVM..............................................."
-	cd $(KVMDIR); $(MAKE) USE_KNI=true ARM_EABI=true || exit 1; cd $(BUILDDIR);
-	@echo "KVM was successfully built..............................................."
-endif	
-
-clean_kvm: 
-ifeq ($(KVM), true)
-	@echo
-	@echo ">>>>>>>>> Cleaning KVM  <<<<<<<<<"
-	@echo
-	cd $(KVMDIR); $(MAKE) clean || exit 1; cd $(BUILDDIR);
-	@echo
-	@echo ">>>>>>>>>  KVM clean done  <<<<<<<<<"
-	@echo
-endif
-	
-
-
-

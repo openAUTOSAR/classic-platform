@@ -17,7 +17,7 @@ Supported compilers:
   gcc, Code Warrior, Diab. GCC does not support VLE so in order to use you must remove 
   
   # CFG (y/n) macros
-CFG=PPC E200Z0 MPC55XX MPC563XM MPC5634M BRD_MPC5634M_TRK #VLE
+CFG=PPC E200Z3 MPC55XX MPC563XM MPC5634M BRD_MPC5634M_TRK
 
 in build_config.mk
   
@@ -28,7 +28,7 @@ SystemTick:
 Info:	
   MPC5634M
   CPU:		 e200z335
-  Freq:		 64 Mhz PLL, prediv=1, mfd=12, rfd=0
+  Freq:		 80 Mhz PLL, prediv=1, mfd=16, rfd=0
   Flash: 	 1,5MB, flash
   RAM:       94K, ECC
   

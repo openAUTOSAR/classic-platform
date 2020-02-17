@@ -1,0 +1,75 @@
+//    co-mwPPC.lnt
+//    Compiler Options for Freescale EPPC Compiler
+
+//    This file contains options to allow PC-lint to process source
+//    files for your compiler.  It is used as follows:
+//
+//    lint  co-mwPPC.lnt  source-file(s)
+//
+
+// Inherit from basis hc compiler option file common options
+co-mwe_base.lnt
+
+// NOTE: This configuration is for the default compiler settings
+
+//-cwh        // Allow for @far and @hex-constant
+
+-sc1        // sizeof(char) is 1
+-ss2        // sizeof(short) is 2
+-si4        // sizeof(int) is 4
+-sl4        // sizeof(long) is 4
+-sll8       // sizeof(long long) is 8
+-sf4        // sizeof(float) is 4
+-sd8        // sizeof(double) is 8
+-sld8       // sizeof(long double)  is 8
+
+-spN4       // sizeof(near pointer) is 4
+-spF4       // sizeof(far pointer) is 4
+
+-d__declspec=_to_brackets +rw(_to_brackets)
+
+// Allow wrapping a C/C++ function prototype around assembly language
+// like the following: __asm int a(int n, int m) { NOP }
++rw(_ignore_init) -dasm=_ignore_init
++rw(_ignore_init) -d__asm=_ignore_init
+
++rw(__inline, _inline, inline)	// Enable the (non-standard) _inline keyword by ignoring it
+
+// Handle __option macro in preprocessor
+-d__option()=0
+
+-efile(18,__ppc_eabi_init.c) // Ignore files
+-esym(85, __float_huge,__float_nan,__double_huge,__extended_huge)     // Are declared with no size in cmath
+
+// ## The following defines are defined internally in the compiler.
+// ## You can create the information below with the compiler option -Ldf
+// ## which produces a header file with the needed information.
+// We are an EPPC compiler
+-d__POWERPC__=1
+-d__PPC_EABI__=1
+-d__MWERKS__=1
+-d__VEC__=0
+-d__ide_target()=1
+-d__attribute__()
+-d__CWCC__
+
+++d__FUNCTION__=___function___        // lint defines ___function___ internally
+
+++dassert()=_to_semi    // Remove assert check
+++dASSERT()=_to_semi  
+++dCONFIG_ASSERT()=_to_semi
+++dget_spr=my_get_spr
+++dset_spr=my_set_spr
+-header(lint-cw.h)
+++disync()=_to_semi
+++dmsync()=_to_semi
+++dtlbwe()=_to_semi
+++dIrq_Enable=_to_semi 
+++dIrq_Disable=_to_semi 
+
+
+-esym(950,_to_semi)
+-esym(950,inline)
++rw(_to_semi)           // needed for the macro above.
++rw(_to_brackets)           // needed for the macro above.
+

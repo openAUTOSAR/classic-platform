@@ -20,92 +20,96 @@
  */
 
 //#define _TEST_MBOX_
+/*lint -save -e9045 */ /* non-hidden definition of type  ..inherited from other files */
 
 #include "mbox.h"
 #include <stdlib.h>
 #include <string.h>
-#include <stddef.h>
-#include <stdint.h>
+
 
 
 #ifdef _TEST_MBOX_
 #include <stdio.h>
-#include <assert.h>
+#include "arc_assert.h"
 #endif
 
 
 
-Arc_MBoxType* Arc_MBoxCreate( size_t size ) {
-	Arc_MBoxType *mPtr;
+Arc_MBoxType* Arc_MBoxCreate( uint32 size ) {
+    Arc_MBoxType *mPtr;
 
-	mPtr = malloc(sizeof(Arc_MBoxType));
-	mPtr->cirqPtr = CirqBuffDynCreate(size,sizeof(void *));
+    mPtr = malloc(sizeof(Arc_MBoxType));/*lint !e586  Intended malloc */
+    mPtr->cirqPtr = CirqBuffDynCreate(size,sizeof(void *)); /*lint !e613  Intended pointer usage */
 
-	return mPtr;
+    return mPtr;
 }
 
 
 void Arc_MBoxDestroy( Arc_MBoxType *mPtr ) {
-	CirqBuffDynDestroy(mPtr->cirqPtr);
-	free(mPtr);
+    (void)CirqBuffDynDestroy(mPtr->cirqPtr);
+    free(mPtr); /*lint !e586  Intended free */
 }
 
 /**
  * Post a message to a box, non-blocking.
  *
  */
-int Arc_MBoxPost( Arc_MBoxType *mPtr, void *msg ) {
-	int rv;
-	rv = CirqBuffPush(mPtr->cirqPtr,msg);
-	if( rv != 0) {
-		return 1;
-	}
+sint32 Arc_MBoxPost( const Arc_MBoxType *mPtr, void *msg ) {
+    sint32 rv;
+    sint32 status;
+    status = 0;
+    rv = CirqBuffPush(mPtr->cirqPtr,msg);
+    if( rv != 0) {
+        status = 1;
+    }
 
-	return 0;
+    return status;
 }
 
 /**
  *
  */
-int Arc_MBoxFetch(Arc_MBoxType *mPtr, void *msg)
+sint32 Arc_MBoxFetch(const Arc_MBoxType *mPtr, void *msg)
 {
-	int rv;
-	rv = CirqBuffPop(mPtr->cirqPtr,msg);
-	if(rv != 0) {
-		return 1;
-	}
-	return 0;
+    sint32 rv;
+    sint32 status;
+    status = 0;
+    rv = CirqBuffPop(mPtr->cirqPtr,msg);
+    if(rv != 0) {
+        status = 1;
+    }
+    return status;
 }
 
 #ifdef _TEST_MBOX_
 int main( void ) {
-	Arc_MBoxType *myBoxes[10];
-	uint8_t *dataPtr;
+    Arc_MBoxType *myBoxes[10];
+    uint8_t *dataPtr;
 
-	printf("Hej\n");
+    printf("Hej\n");
 
-	myBoxes[0] = Arc_MBoxCreate(2);
-	myBoxes[1] = Arc_MBoxCreate(4);
+    myBoxes[0] = Arc_MBoxCreate(2);
+    myBoxes[1] = Arc_MBoxCreate(4);
 
-	dataPtr = malloc(10);
-	dataPtr[0] = 1;
-	Arc_MBoxPost(myBoxes[0],&dataPtr);
+    dataPtr = malloc(10);
+    dataPtr[0] = 1;
+    Arc_MBoxPost(myBoxes[0],&dataPtr);
 
-	dataPtr = malloc(20);
-	dataPtr[0] = 2;
-	Arc_MBoxPost(myBoxes[0],&dataPtr);
+    dataPtr = malloc(20);
+    dataPtr[0] = 2;
+    Arc_MBoxPost(myBoxes[0],&dataPtr);
 
-	Arc_MBoxFetch(myBoxes[0],&dataPtr);
-    assert(dataPtr[0] == 1);
-	free(dataPtr);
+    Arc_MBoxFetch(myBoxes[0],&dataPtr);
+    ASSERT(dataPtr[0] == 1);
+    free(dataPtr);
 
-	Arc_MBoxFetch(myBoxes[0],&dataPtr);
-	assert(dataPtr[0] == 2);
-	free(dataPtr);
+    Arc_MBoxFetch(myBoxes[0],&dataPtr);
+    ASSERT(dataPtr[0] == 2);
+    free(dataPtr);
 
-	Arc_MBoxDestroy(myBoxes[0]);
-	Arc_MBoxDestroy(myBoxes[1]);
-	return 0;
+    Arc_MBoxDestroy(myBoxes[0]);
+    Arc_MBoxDestroy(myBoxes[1]);
+    return 0;
 }
 
 #endif

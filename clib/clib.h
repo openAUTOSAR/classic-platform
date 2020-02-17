@@ -15,21 +15,7 @@
 #ifndef CLIB_H_
 #define CLIB_H_
 
-
-typedef struct _FileS {
-	int fileNo;
-	int b;
-} _FileType;
-
-
-typedef struct _EnvS {
-	/* Each "Task" should at least have a set of std file handles */
-	_FileType *_stdin;
-	_FileType *_stdout;
-	_FileType *_stderr;
-} _EnvType;
-
-extern _EnvType *_EnvPtr;
+#include "device.h"
 
 
 #endif /* CLIB_H_ */

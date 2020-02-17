@@ -34,18 +34,18 @@
  * DSP configurations
  */
 const Dcm_DspType Dsp = {
-		.DspDid = NULL,
-		.DspDidInfo = NULL,
-		.DspEcuReset = NULL,
-		.DspPid = NULL,
-		.DspReadDTC = NULL,
-		.DspRequestControl = NULL,
-		.DspRoutine = NULL,
-		.DspRoutineInfo = NULL,
-		.DspSecurity = NULL,
-		.DspSession = NULL,
-		.DspTestResultByObdmid = NULL,
-		.DspVehInfo = NULL,
+        .DspDid = NULL,
+        .DspDidInfo = NULL,
+        .DspEcuReset = NULL,
+        .DspPid = NULL,
+        .DspReadDTC = NULL,
+        .DspRequestControl = NULL,
+        .DspRoutine = NULL,
+        .DspRoutineInfo = NULL,
+        .DspSecurity = NULL,
+        .DspSession = NULL,
+        .DspTestResultByObdmid = NULL,
+        .DspVehInfo = NULL,
 };
 
 
@@ -53,7 +53,7 @@ const Dcm_DspType Dsp = {
  * DSD configurations
  */
 const Dcm_DsdType Dsd = {
-		.DsdServiceTable = NULL
+        .DsdServiceTable = NULL
 };
 
 
@@ -61,20 +61,20 @@ const Dcm_DsdType Dsd = {
  * DSL configurations
  */
 const Dcm_DslType Dsl = {
-		.DslBuffer = NULL,
-		.DslCallbackDCMRequestService = NULL,
-		.DslDiagResp = NULL,
-		.DslProtocol = NULL,
-		.DslProtocolTiming = NULL,
-		.DslServiceRequestIndication = NULL,
-		.DslSessionControl = NULL
+        .DslBuffer = NULL,
+        .DslCallbackDCMRequestService = NULL,
+        .DslDiagResp = NULL,
+        .DslProtocol = NULL,
+        .DslProtocolTiming = NULL,
+        .DslServiceRequestIndication = NULL,
+        .DslSessionControl = NULL
 };
 
 /*
  * DCM configurations
  */
 const Dcm_ConfigType DCM_Config = {
-		.Dsp = &Dsp,
-		.Dsd = &Dsd,
-		.Dsl = &Dsl
+        .Dsp = &Dsp,
+        .Dsd = &Dsd,
+        .Dsl = &Dsl
 };

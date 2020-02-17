@@ -1,0 +1,15 @@
+//y.spath.setrecursedir + C:\Users\mahi\git\mta-j6\ipc\packages\ti
+y.reset
+d.load.elf C:\Users\mahi\git\arc-a4\core\binaries\jacinto6_vayu_evm\MessageQMulti.elf /nocode
+//d.load.elf C:\Users\mahi\git\arc-a4\core\binaries\jacinto6_vayu_evm\MessageQApp.elf /nocode
+
+y.spath + C:\Users\mahi\git\mta-j6\ipc\packages\ti\sdo\ipc
+y.spath + C:\Users\mahi\git\mta-j6\ipc\packages\ti\sdo\ipc\arc
+y.spath + C:\Users\mahi\git\mta-j6\ipc\packages\ti\sdo\ipc\arc
+y.spath + C:\Users\mahi\git\mta-j6\ipc\packages\ti\ipc\transports
+y.spath + C:\Users\mahi\git\mta-j6\ipc\packages\ti\ipc\rpmsg
+y.spath + C:\Users\mahi\git\mta-j6\ipc\packages\ti\ipc\family\vayu_arc
+y.spath + C:\Users\mahi\git\mta-j6\ipc\packages\ti\sdo\ipc\family\vayu_arc
+y.spath + C:\Users\mahi\git\mta-j6\ipc\packages\ti\ipc\remoteproc\
+
+enddo

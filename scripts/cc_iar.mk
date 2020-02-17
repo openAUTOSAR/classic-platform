@@ -1,46 +1,41 @@
-
-# Errors in manual:
-# -s2 is NOT marked as deprecated in manual. Compiler says use -On, that is not in the manual.
-
-# Preprocessor:
-#  __ICCHCS12__ - Identifies the IAR compiler platform (preferreed)
-#  __IAR_SYSTEMS_ICC__ -  Identifies the IAR C/C++ Compiler for HCS12
-#  __IAR_SYSTEMS_ASM__  - asm 
-
-
-#IAR_COMPILE=/c/devtools/IAR_5.6/hcs12
+# ========================================================================= #
+# 						IAR compiler - Generic settings						#
+# ========================================================================= #
+# ---------------------------------------------------------------------------
+# Setting CC <compiler>
+# ---------------------------------------------------------------------------
+IAR_VERSION=8_0
+IAR_COMPILE=/c/devtools/IAR/IAR_Systems/Embedded_Workbench_$(IAR_VERSION)/arm
 IAR_BIN=$(IAR_COMPILE)/bin
 IAR_LIB=$(IAR_COMPILE)/lib/dlib
 
-
 # ---------------------------------------------------------------------------
-# Compiler
-# CCFLAGS - compile flags
+# Arch specific settings
+# Setting CC <compiler>
+# Setting architecture specific cflags <compiler flags>
+# Setting architecture specific asflags <assembler flags>
 
-CC	= 	$(IAR_BIN)/icchcs12.exe 
+ifneq ($(ARCH),)
+ include $(ROOTDIR)/$(ARCH_KERNEL_PATH-y)/scripts/iar.mk
+endif
 
-cflags-y        += --dlib_config $(IAR_LIB)/dlhcs12bff.h 
-cflags-y 		+= -e
-cflags-y 		+= --no_wrap_diagnostics
-cflags-y 		+= --error_limit=10
-cflags-y 		+= --silent
-cflags-y 		+= --debug
-cflags-y 		+= --code_model=banked 
-cflags-y 		+= -lA $@.lst #Get a list file for each file
-cflags-y 		+= --diag_suppress=Pa050,Pe550,Pe188
+cflags-y += -e
+cflags-y += -c
+#cflags-y += --no_clustering
+#cflags-y += --no_mem_idioms
+#cflags-y += --no_explicit_zero_opt
+cflags-y += --thumb
+cflags-y += -DDEBUG_HARDFAULT
+cflags-y += --debug
+cflags-y += --diag_suppress=Pa050,Pe550,Pe301,Pe047
+#cflags-y += --aeabi 
+#cflags-y += --guard_calls
 
 # z is the size options
-cflags-$(CFG_OPT_RELEASE) += -Ohz
+cflags-$(CFG_OPT_RELEASE) += -Ohs
 cflags-$(CFG_OPT_DEBUG)   += -On
+opt-cflags-$(CFG_OPT_SIZE) += -Ohz
 cflags-$(CFG_OPT_FLAGS)   += $(SELECT_OPT)
-
-# Generate dependencies, 
-#cflags-y 		+= --dependencies $*.d 
-
-# Warnings
-#cflags-y          += -W=most
-
-# Conformance
 
 CFLAGS = $(cflags-y) $(cflags-yy)
 
@@ -52,22 +47,14 @@ SELECT_CLIB?=CLIB_IAR
 # Preprocessor
 
 CPP	= 	$(CC) --preprocess=n
-#CPPOUT = -precompile
-
-#CPP_ASM_FLAGS += -ppopt noline -ppopt nopragma -dialect c
 
 comma = ,
 empty = 
 space = $(empty) $(empty)
 
-
-cc_inc_path += $(IAR_COMPILE)/inc/dlib
-cc_inc_path += $(IAR_COMPILE)/inc/
+cc_inc_path += $(IAR_COMPILE)/inc/c
 inc-y += $(cc_inc_path)
-libpath-y += $(IAR_COMPILE)/lib/dlib
-
-lib-y += dlhcs12bff.r12
-
+#libpath-y += $(IAR_COMPILE)/lib/rt7M_tl.a
 # ---------------------------------------------------------------------------
 # Linker
 #
@@ -80,20 +67,21 @@ lib-y += dlhcs12bff.r12
 # lib-y			- the libs, without path
 
 
-LD = $(IAR_BIN)/xlink.exe
+#ldflags-y += --skip_dynamic_initialization
+#ldflags-y += --enable_stack_usage
+ldflags-y += --entry Reset_Handler
+#ldflags-y += --no_library_search
+#ldflags-y += --no_entry
+ldflags-y += --diag_suppress Lp049
 
-ldflags-y += -s _start
-ldflags-y += -Felf -xms
-ldflags-y += -f linkscript_iar.lcf
 TE = elf
-ldflags-y += -l$(subst .$(TE),.map, $@)
+LDMAPFILE = --map $(subst .$(TE),.map, $@)
 
-LDFLAGS += $(ldflags-y) 
-#LDOUT 		= -o $@
-
-#LD_FILE = -lcf
-
+LDFLAGS += $(ldflags-y)
 libitem-y += $(libitem-yy)
+############################################
+#ldflags-y += -s _start
+#ldflags-y += -Felf -xms 
 
 # ---------------------------------------------------------------------------
 # Assembler
@@ -101,16 +89,14 @@ libitem-y += $(libitem-yy)
 # ASFLAGS 		- assembler flags
 # ASOUT 		- how to generate output file
 
-AS	= 	$(IAR_BIN)/ahcs12.exe
-
 asflags-y += -r
 ASFLAGS += $(asflags-y)
 
 
 # Memory footprint
-#define do-memory-footprint 
-#	@gawk --non-decimal-data -f $(ROOTDIR)/scripts/memory_footprint_$(COMPILER).awk $(subst .elf,.map,$@) 
-#endef
+define do-memory-footprint 
+	@gawk --non-decimal-data -f $(ROOTDIR)/scripts/memory_footprint_$(COMPILER).awk $(subst .elf,.map,$@) 
+endef
 
 # Dependency generation
 #define do-compile-post 
@@ -118,9 +104,9 @@ ASFLAGS += $(asflags-y)
 #	@mv $(subst .o,.d,$@)d $(subst .o,.d,$@)
 #endef
 
-#define do-memory-footprint2-$(CFG_MEMORY_FOOTPRINT2)
-#	@gawk -f $(ROOTDIR)/scripts/memory_footprint2_$(COMPILER).awk  $(subst .$(TE),.map, $@)
-#endef
+define do-memory-footprint2-$(CFG_MEMORY_FOOTPRINT2)
+	@gawk -f $(ROOTDIR)/scripts/memory_footprint2_$(COMPILER).awk  $(subst .$(TE),.map, $@)
+endef
 
 
 

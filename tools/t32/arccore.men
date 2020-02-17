@@ -127,6 +127,13 @@ menu
       menuitem "Load breakpoints,ALT+w" "do bp"
       menuitem "Set det,F12" "b.s Det_ReportError"
     )
+    popup "&OS"
+    (
+      menuitem "trace.chart.task" "trace.chart.task"
+      menuitem "trace.chart.taskintr" "trace.chart.taskintr"
+      menuitem "trace.chart.func" "trace.chart.func"
+      menuitem "Trace.STATistic.TASKFunc" "Trace.STATistic.TASKFunc"
+    ) 
     menuitem "Load,ALT+l" "do load load"
     menuitem "Reload,ALT+a" "do load reload"
     menuitem "Restart" "do start"

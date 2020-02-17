@@ -1,51 +1,42 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
  *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with
+ * the terms contained in the written license agreement between you and ArcCore,
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as
+ * published by the Free Software Foundation and appearing in the file
+ * LICENSE.GPL included in the packaging of this file or here
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 #include "Wdg.h"
 
 const Wdg_ModeConfigType WdgModeConfig =
 {
-	.Wdg_DefaultMode = WDGIF_OFF_MODE,
-	.WdgSettingsFast =
-	{
-		.ReloadValue = 0x280,	// 5 ms
-		.ActivationBit = 1,
-	},
-	.WdgSettingsSlow =
-	{
-		.ReloadValue = 0xA00,	// 20 ms
-		.ActivationBit = 1,
-	},
-	.WdgSettingsOff =
-	{
-		.ReloadValue = 0x7D00,
-		.ActivationBit = 0,
-	},
-};
-
-const Wdg_GeneralType WdgGeneral =
-{
-	.Wdg_Index = 1,
-	.Wdg_TriggerLocationPtr = Wdg_Trigger,
-	.Wdg_SetModeLocationPtr = Wdg_SetMode,
+    .Wdg_DefaultMode = WDGIF_OFF_MODE,
+    .WdgSettingsFast =
+    {
+        .ReloadValue = 4u, /* ms */
+        .ActivationBit = 1u,
+    },
+    .WdgSettingsSlow =
+    {
+        .ReloadValue = 250, /* ms */
+        .ActivationBit = 1,
+    },
+    .WdgSettingsOff =
+    {
+        .ReloadValue = 0x7D00, /* not used */
+        .ActivationBit = 0,
+    },
 };
 
 
 const Wdg_ConfigType WdgConfig =
 {
-  .Wdg_General = &WdgGeneral,
   .Wdg_ModeConfig = &WdgModeConfig,
 };
 

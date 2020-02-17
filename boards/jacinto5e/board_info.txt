@@ -1,0 +1,10 @@
+Jacinto5Eco from TI.
+	
+Datasheets:
+ 
+Info:	
+  
+Memory Map:
+ 0x ->           Flash
+ 0x ->           SRAM
+ 0x ->           Internal registers

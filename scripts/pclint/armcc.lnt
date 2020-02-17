@@ -1,0 +1,9 @@
+/* This is the lint file to be used together with ARM CC */
+
+au-misra2.lnt   //To check MISRA 2004 C rules
+au-misra3.lnt   //To check MISRA 2012 C rules
+lnt/co-ARMCC-5.lnt  // ArmCc options
+std.lnt         // Arccore standard options
+
+-esym(129, __value_in_regs)
+-esym(40,  __promise)

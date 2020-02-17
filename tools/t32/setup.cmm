@@ -1,0 +1,238 @@
+//
+// setup.cmm
+//
+
+LOCAL &cmd &arg1 &arg2
+ENTRY &cmd &arg1 &arg2
+
+gosub &cmd &arg1
+
+enddo
+
+
+flash_init:
+  IF "&cfg_flash_file_g"!=""
+  ( 
+    do &cfg_flash_file_g init
+  )   
+  RETURN
+
+flash_open:
+  IF "&cfg_flash_file_g"!=""
+  ( 
+    do &cfg_flash_file_g open
+  )   
+  RETURN
+
+flash_close:
+  IF "&cfg_flash_file_g"!=""
+  ( 
+    do &cfg_flash_file_g close
+  )   
+  RETURN
+
+
+setup_snooper:
+   trace.method SNOOPER 
+   snooper.SEL %LONG Os_Sys
+   snooper.init
+   RETURN
+
+setup_sim:
+	// Set MAX trace.
+  trace.size 16777215.
+
+  IF CPUFAMILY()=="POWERPC"
+  (
+		// PowerPC specifics
+    //   DEC - Decreased every X cycle
+    //   TB  - Increased every cycle
+    //   Instrcution timing - Controlled by vco.frequency
+    // 
+    //   When running "vco.frequency 10Mhz" it seems that the
+    //   decrementer is decreases every 8th cycle (should be same
+    //   as TB)...So we need to set down the decrementer value by 8
+  
+    do sim_mpc55xx
+    
+    IF CPU()=="MPC5606S"||CPU()=="spc56el70"
+      sys.option DISMODE VLE
+
+    IF CPU()=="MPC5516"
+    (
+		  // The rate in which one instruction is executed. This 
+      // is probably on the low side (when running at 80Mhz)
+      vco.frequency 10.0Mhz     
+    )
+
+  )
+  
+  
+  // Set MAX trace.
+   trace.method ANALYZER 
+   trace.size 16777215.
+   trace.init
+   RETURN
+
+setup_MPC5606S:
+setup_MPC5516:
+setup_mpc5633M:
+setup_SPC56EL70:
+setup_DRA74XIPU1-CORE0:
+  // Software breakpoints are buggy, use onchip
+  break.IMPLementation program ONCHIP 
+  RETURN
+  
+setup_STM32F107VC:
+
+//do sta  SYStem.CONFIG.DEBUGPORTTYPE JTAG  
+  DO ~~/demo/arm/flash/stm32f10x.cmm PREPAREONLY
+  
+  RETURN 
+  
+setup_TMS570LS1227-ZWT:
+
+  DO ~~/demo/arm/flash/tms570ls12x.cmm PREPAREONLY
+
+  RETURN  
+  
+setup_CortexM3:
+  sys.bdmclock 10000000.  
+  
+  IF !SIMULATOR()
+  (
+    break.select program onchip
+  )  
+  RETURN
+
+setup_CortexR4F:
+  RETURN
+
+setup_TC297TE:
+  RETURN
+  
+setup_ZYNQ-7000:
+  SYStem.CPU ZYNQ-7000
+
+  // Setup JTAG chain
+  SYStem.CONFIG DAPIRPRE  6.
+  SYStem.CONFIG DAPIRPOST 0.
+  SYStem.CONFIG DAPDRPRE  1.
+  SYStem.CONFIG DAPDRPOST 0.
+
+  SYStem.Option EnReset OFF
+
+  TrOnchip.Set DABORT OFF
+  TrOnchip.Set PABORT OFF
+
+  SYStem.Up
+  
+  ; Make terminal work
+  sys.memaccess DAP
+
+  ; software breakpoints are buggy like hell, switch to onchip
+  break.impl program onchip
+
+  ; set core 1 in a loop
+  CORE.select 1
+  Data.Assemble 0x20000 isb dsb nop nop nop b 0x20000
+  Register.Set PC 0x20000
+  s 10.
+  
+  CORE.select 0
+  
+  Register.Set PC 0xFFFFFE18
+  
+  
+  print "Letting the SDCARD load PL design"
+  go
+  wait 2s
+  break
+
+  do ~~\demo\arm\hardware\zynq-7000\zc702\ps7_init.cmm
+
+  &cfg_flash_file_g=""
+  
+  Data.Set ZSD:0xf8000008 %Long 0xDF0D
+  Data.Set ZSD:0xf8000900 %Long 0x000F
+  Data.Set ZSD:0xf8000004 %Long 0x767B
+
+  RETURN
+	  
+
+
+   
+
+
+//-------------------------------------------------------------
+
+path_fast:
+  y.spath.SETRECURSEDIR &cfg_project_path_g
+  RETURN
+
+//-------------------------------------------------------------
+path:
+  y.spath.reset
+  y.spath + &cfg_project_path_g/arch/arm/arm_cm3/kernel
+  y.spath + &cfg_project_path_g/arch/arm/arm_cm3/drivers
+  y.spath + &cfg_project_path_g/system/kernel
+  y.spath.SETRECURSEDIR &cfg_project_path_g
+  RETURN
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

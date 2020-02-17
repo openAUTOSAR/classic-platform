@@ -1,0 +1,58 @@
+
+INFO
+  RH850/F1H-176 
+
+BOARD
+  - RH850/F1x-176pin, PiggyBack board 
+  - MainOsc: 8 or 16 Mhz external crystal.
+  - SubOsc: NOT MOUNTED
+
+DEVICE
+   R7F7015032AFP  
+   Freq:		 120 Mhz 
+   Code Flash:       6MB
+   CPU1: Local RAM:  192KB
+   CPU2: Local RAM:  192KB
+   Data Flash:       64KB
+   Global RAM:       64KB
+   RRAM:             128KB
+   
+   RBASE: 0x0000_0000 (CPU will read reset vector from address 0x0000_0000)
+   
+LEDS:
+  LED-7    DIGIO3   P8<3>
+  LED-8    DIGIO2   P8<2>
+  LED-9    DIGIO1	P8<1>
+  LED-10   DIGIO0	P8<0>
+   
+RAM: 
+   0xFEDD_0000 - 0xFEE0_7FFF    Some RAM
+   0xFEE0_8000 -                Reserved 
+    
+
+    0xFEDD_8000 - 0xFEE0_7FFF
+
+
+MEMORY MAP
+   
+   0x0000_0000 -> 0x0017_FFFF      Code Flash(bank A)
+   0x0080_0000 -> 0x0097_FFFF      Code Flash(bank B)
+   
+   0xFEDD_0000 - 0xFEE0_0000       Some RAM
+   
+ADC:
+	The ADC MCAL tests expect certain values on three ADC channels.
+	This is accomplished using one of the potentiometers on the board (R60) and
+	 CN64 PIN 1 and 2. The potentiometer should be in "12 O'Clock position". 
+	3.3V should be connected to CN64 PIN 1 and GND to CN64 PIN 2.  
+	
+	
+		Channel		Expected Value		Input Connection
+		---------------------------------------------- 
+		ADCA0I6 	0x700<value<0x900	Potentiometer(R60)
+		ADCA0I0		value>0xDFF			3.3V to PIN 1 on CN64
+		ADCA0I1		value<0x100			GND to PIN 2 on CN64
+		
+	 
+   
+   

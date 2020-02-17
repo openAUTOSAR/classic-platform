@@ -1,0 +1,19 @@
+
+GLOBAL &skip_project_config_g
+
+&skip_project_config_g="y"
+
+SYStem.Down
+SYStem.CPU DRA74XIPU1-CORE0
+SYStem.JC RTCK
+SYStem.MemAccess DAP
+Trace.METHOD Onchip
+
+// Attach A15, it will be running
+intercom 10000 sys.attach
+sys.mode Attach
+
+do start
+
+
+ENDDO

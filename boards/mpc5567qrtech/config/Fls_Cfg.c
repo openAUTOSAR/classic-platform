@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 #include "Fls.h"
 #include "flash.h"
@@ -38,7 +37,7 @@ const FlashType flashInfo[] = {
 [0].addrSpace[1] = ADDR_SPACE(1, ADDR_SPACE_LOW, 1 ),
 [0].sectAddr[2] = 0x00010000,
 [0].addrSpace[2] = ADDR_SPACE(2, ADDR_SPACE_LOW, 1 ),
-[0].sectAddr[3] = 0x00018000,
+[0].sectAddr[3] = 0x0001c000,
 [0].addrSpace[3] = ADDR_SPACE(3, ADDR_SPACE_LOW, 1 ),
 [0].sectAddr[4] = 0x00020000,
 [0].addrSpace[4] = ADDR_SPACE(4, ADDR_SPACE_LOW, 2 ),
@@ -97,10 +96,10 @@ const Fls_ConfigType FlsConfigSet[]=
     .FlsJobErrorNotification = NULL,
     .FlsInfo = flashInfo,
 
-	.FlsMaxReadFastMode = 16,
-	.FlsMaxReadNormalMode = 16,
-	.FlsMaxWriteFastMode = 32,
-	.FlsMaxWriteNormalMode = 32,
+    .FlsMaxReadFastMode = 16,
+    .FlsMaxReadNormalMode = 16,
+    .FlsMaxWriteFastMode = 32,
+    .FlsMaxWriteNormalMode = 32,
 
 //    .FlsSectorList = &fls_evbSectorList[0],
 //    .FlsSectorListSize = sizeof(fls_evbSectorList)/sizeof(Fls_SectorType),

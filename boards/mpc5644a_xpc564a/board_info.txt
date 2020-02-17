@@ -1,0 +1,19 @@
+
+
+Board:
+  8Mhz external crystal.
+
+  
+  
+Adding a SPI EEPROM (Microship 25LC160B)
+
+               PJ1 
+             1-X  X-2
+             3-X  X-4
+             5-X  X-6 
+      SO     7-X  X-8  SI
+      SCK    9-X  X-10 CS
+            11-X  X-12
+            13-X  X-14 
+            15-X  X-16  
+     Gnd    17-X  X-18   VCC

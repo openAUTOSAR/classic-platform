@@ -10,6 +10,8 @@
  *   L_FLASH_CODE_0  - Normally the only code flash
  *   L_FLASH_DATA_0  - Normally the only data flash
  *
+ *   L_DDR_0 		 - Normally the only DDR.
+ *
  *   Example: MCU with one SRAM and Flash
  *     L_FLASH_CODE_0 : ORIGIN = 0x0 , LENGTH = 0x10000
  *     L_FLASH_DATA_0 : ORIGIN = 0xffff0000 LENGTH = 0x1000
@@ -18,22 +20,10 @@
  */
 
 #include "compiler.ldf"
-
-/* Size macros */
-#define L_SIZE_2M			0x00200000
-#define L_SIZE_1M			0x00100000
-#define L_SIZE_512K			0x00080000
-#define L_SIZE_384K			0x00060000	
-#define L_SIZE_256K			0x00040000
-#define L_SIZE_128K			0x00020000
-#define L_SIZE_96K			0x00018000
-#define L_SIZE_80K			0x00014000
-#define L_SIZE_64K			0x00010000
-#define L_SIZE_48K			0x0000c000
-#define L_SIZE_32K			0x00008000
+#include "memory_pre.ldf"
 
 #if defined(CFG_MPC5516)
-	#define L_FLASH_CODE_0_ORIGIN 	0x00000000
+	#define L_FLASH_CODE_0_ORIGIN 	L_FLASH_CODE_0_START
 	#define L_FLASH_CODE_0_LENGTH 	L_SIZE_1M
 	/* SRAM  5516S, 48K
 	 *       5517S,5516G,5516E, 64K RAM
@@ -42,18 +32,82 @@
 	#define L_SRAM_0_ORIGIN			0x40000000
 	#define L_SRAM_0_LENGTH			SRAM_SIZE
 #elif defined(CFG_MPC5567)
-	#define L_FLASH_CODE_0_ORIGIN 	0x00000000
+	#define L_FLASH_CODE_0_ORIGIN 	L_FLASH_CODE_0_START
 	#define L_FLASH_CODE_0_LENGTH 	L_SIZE_2M
 	#define L_SRAM_0_ORIGIN			0x40000000
 	#define L_SRAM_0_LENGTH			L_SIZE_80K
 #elif defined(CFG_MPC5604B)
 	/* xLL,xLQ - 32K SRAM, xMG - 48K, assume xLL */
-	#define L_FLASH_CODE_0_ORIGIN 	0x00000000
+	#define L_FLASH_CODE_0_ORIGIN 	L_FLASH_CODE_0_START
 	#define L_FLASH_CODE_0_LENGTH 	L_SIZE_512K
 	#define L_FLASH_DATA_0_ORIGIN	0x00800000
 	#define L_FLASH_DATA_0_LENGTH	L_SIZE_64K
 	#define L_SRAM_0_ORIGIN			0x40000000
 	#define L_SRAM_0_LENGTH			L_SIZE_32K
+#elif defined(CFG_SPC560B54)
+	/* xLL,xLQ - 64K SRAM, xMG - 48K, assume xLL */
+	#define L_FLASH_CODE_0_ORIGIN 	0x00000000
+	#define L_FLASH_CODE_0_LENGTH 	L_SIZE_768K
+	#define L_FLASH_DATA_0_ORIGIN	0x00800000
+	#define L_FLASH_DATA_0_LENGTH	L_SIZE_64K
+	#define L_SRAM_0_ORIGIN			0x40000000
+	#define L_SRAM_0_LENGTH			L_SIZE_64K
+#elif defined(CFG_MPC5606B)
+	/* xLL,xLQ - 80K SRAM, xMG - 48K, assume xLL */
+	#define L_FLASH_CODE_0_ORIGIN 	0x00000000
+	#define L_FLASH_CODE_0_LENGTH 	L_SIZE_1M
+	#define L_FLASH_DATA_0_ORIGIN	0x00800000
+	#define L_FLASH_DATA_0_LENGTH	L_SIZE_64K
+	#define L_SRAM_0_ORIGIN			0x40000000
+	#define L_SRAM_0_LENGTH			L_SIZE_80K
+#elif defined(CFG_MPC5606S)
+	/* xLQ - 48K SRAM,*/
+	#define L_FLASH_CODE_0_ORIGIN 	0x00000000
+	#define L_FLASH_CODE_0_LENGTH 	L_SIZE_1M
+	#define L_FLASH_DATA_0_ORIGIN	0x00800000
+	#define L_FLASH_DATA_0_LENGTH	L_SIZE_64K
+	#define L_SRAM_0_ORIGIN			0x40000000
+	#define L_SRAM_0_LENGTH			L_SIZE_48K
+#elif defined(CFG_MPC5642A)
+    #define L_FLASH_CODE_0_ORIGIN   0x00000000
+    #define L_FLASH_CODE_0_LENGTH   L_SIZE_2M
+    #define L_SRAM_0_ORIGIN         0x40000000
+    #define L_SRAM_0_LENGTH         L_SIZE_128K	
+#elif defined(CFG_MPC5634M)
+	#define L_FLASH_CODE_0_ORIGIN 	0x00000000
+	#define L_FLASH_CODE_0_LENGTH 	L_SIZE_1M5
+	#define L_SRAM_0_ORIGIN			0x40000000
+	#define L_SRAM_0_LENGTH			L_SIZE_94K
+#elif defined(CFG_MPC5643L)
+	#define L_FLASH_CODE_0_ORIGIN 	0x00000000
+	#define L_FLASH_CODE_0_LENGTH 	L_SIZE_1M
+	#define L_SRAM_0_ORIGIN			0x40000000
+	#define L_SRAM_0_LENGTH			L_SIZE_128K
+#elif defined(CFG_MPC5644A)
+    #define L_FLASH_CODE_0_ORIGIN   0x00000000
+    #define L_FLASH_CODE_0_LENGTH   L_SIZE_4M
+    #define L_SRAM_0_ORIGIN         0x40000000
+    #define L_SRAM_0_LENGTH         L_SIZE_192K
+#elif defined(CFG_MPC5668)
+    #define L_FLASH_CODE_0_ORIGIN   L_FLASH_CODE_0_START
+    #define L_FLASH_CODE_0_LENGTH   L_SIZE_2M
+    #define L_SRAM_0_ORIGIN         0x40000000
+    #define L_SRAM_0_LENGTH         L_SIZE_512K
+#elif defined(CFG_MPC5646B)
+	#define L_FLASH_CODE_0_ORIGIN 	0x00000000
+	#define L_FLASH_CODE_0_LENGTH 	L_SIZE_3M
+	#define L_SRAM_0_ORIGIN			0x40000000
+	#define L_SRAM_0_LENGTH			L_SIZE_192K    
+#elif defined(CFG_SPC56XL70)
+	#define L_FLASH_CODE_0_ORIGIN 	0x00000000
+	#define L_FLASH_CODE_0_LENGTH 	L_SIZE_2M
+	#define L_SRAM_0_ORIGIN			0x40000000
+	#define L_SRAM_0_LENGTH			L_SIZE_192K
+#elif defined(CFG_MPC5645S)
+	#define L_FLASH_CODE_0_ORIGIN 	0x00000000
+	#define L_FLASH_CODE_0_LENGTH 	L_SIZE_2M
+	#define L_SRAM_0_ORIGIN			0x40000000
+	#define L_SRAM_0_LENGTH			L_SIZE_64K
 #elif defined(CFG_MPC5744P)
 	#define L_FLASH_CODE_0_ORIGIN 		0x00F98000
 	#define L_FLASH_CODE_0_LENGTH 		0x00268000
@@ -63,29 +117,173 @@
 	#define L_SRAM_DATA_CORE_0_LENGTH	L_SIZE_384K
 	#define L_SRAM_0_ORIGIN				0x50800000
 	#define L_SRAM_0_LENGTH				L_SIZE_64K
+#elif defined(CFG_MPC5748G)
+    #define L_FLASH_CODE_0_ORIGIN       0x00FD0000
+    #define L_FLASH_CODE_0_LENGTH       L_SIZE_4M - 0x40000
+    #define L_SRAM_0_ORIGIN             0x40000000
+    #define L_SRAM_0_LENGTH             L_SIZE_768K
+#elif defined(CFG_MPC5746C)
+    #define L_FLASH_CODE_0_ORIGIN       0x00FD0000
+    #define L_FLASH_CODE_0_LENGTH       L_SIZE_3M - 0x40000
+    #define L_SRAM_0_ORIGIN             0x40000000
+    #define L_SRAM_0_LENGTH             L_SIZE_384K
+#elif defined(CFG_MPC5747C)
+    #define L_FLASH_CODE_0_ORIGIN       0x00FD0000
+    #define L_FLASH_CODE_0_LENGTH       L_SIZE_4M - 0x40000
+    #define L_SRAM_0_ORIGIN             0x40000000
+    #define L_SRAM_0_LENGTH             L_SIZE_512K
+#elif defined(CFG_MPC5777M)
+	#define L_FLASH_CODE_0_ORIGIN 		0x00FC0000
+	#define L_FLASH_CODE_0_LENGTH 		0x007C0000
+	#define L_FLASH_DATA_0_ORIGIN		0x00800000
+	#define L_FLASH_DATA_0_LENGTH		0x00080000
+	#define L_SRAM_0_ORIGIN				0x40000000
+	#define L_SRAM_0_LENGTH				L_SIZE_384K
+	#define L_SRAM_CODE_CORE_0_ORIGIN	0x50000000
+	#define L_SRAM_CODE_CORE_0_LENGTH	L_SIZE_16K
+	#define L_SRAM_DATA_CORE_0_ORIGIN	0x50800000
+	#define L_SRAM_DATA_CORE_0_LENGTH	L_SIZE_64K
+	#define L_SRAM_CODE_CORE_1_ORIGIN	0x51000000
+	#define L_SRAM_CODE_CORE_1_LENGTH	L_SIZE_16K
+	#define L_SRAM_DATA_CORE_1_ORIGIN	0x51800000
+	#define L_SRAM_DATA_CORE_1_LENGTH	L_SIZE_64K
+	#define L_SRAM_CODE_CORE_2_ORIGIN	0x52000000
+	#define L_SRAM_CODE_CORE_2_LENGTH	L_SIZE_16K
+	#define L_SRAM_DATA_CORE_2_ORIGIN	0x52800000
+	#define L_SRAM_DATA_CORE_2_LENGTH	L_SIZE_64K
+#elif defined(CFG_ZYNQ)
+	/* No flash, map to RAM 
+	 * At FSBL handoff we have (See TRM Figure 6-11, System Memory Map During BootROM Execution) 
+	 */
+	#define L_SRAM_0_ORIGIN				0x0
+	#define L_SRAM_0_LENGTH				L_SIZE_192K
+	#define L_DDR_0_ORIGIN				0x100000
+	#define L_DDR_0_LENGTH				0x40000000	
+#elif defined(CFG_BRD_STM32_STM3210C)
+	#define L_FLASH_CODE_0_ORIGIN 	(0x08000000 + L_BOOT_RESERVED_SPACE)
+	#define L_FLASH_CODE_0_LENGTH 	L_SIZE_192K
+#if defined(CFG_POSTBUILD)
+    /* Only add section for Post buiuld if it is needed */
+	#define L_FLASH_CODE_1_ORIGIN 	(POSTBUILD_ADDRESS)
+	#define L_FLASH_CODE_1_LENGTH 	(POSTBUILD_ADDRESS_END - POSTBUILD_ADDRESS)
+#endif
+	#define L_SRAM_0_ORIGIN			0x20000000
+	#define L_SRAM_0_LENGTH			L_SIZE_64K
+#elif defined(CFG_BRD_STM32F3_DISCOVERY)
+	#define L_FLASH_CODE_0_ORIGIN 	(0x08000000 + L_BOOT_RESERVED_SPACE)
+	#define L_FLASH_CODE_0_LENGTH 	L_SIZE_256K
+	#define L_SRAM_0_ORIGIN			0x20000000
+	#define L_SRAM_0_LENGTH			L_SIZE_64K
+#elif defined(CFG_S32K144EVB_0100)
+	#define L_FLASH_CODE_0_ORIGIN 	0x00000000
+	#define L_FLASH_CODE_0_LENGTH 	L_SIZE_512K
+	#define L_SRAM_0_ORIGIN			0x1FFF8000
+	#define L_SRAM_0_LENGTH			L_SIZE_48K
+#elif defined(CFG_RH850F1H)
+    #define L_FLASH_CODE_0_ORIGIN   0x00000000
+    #define L_FLASH_CODE_0_LENGTH   L_SIZE_4M
+    #define L_FLASH_CODE_1_ORIGIN   0x00800000
+    #define L_FLASH_CODE_1_LENGTH   L_SIZE_2M
+    #define L_FLASH_CODE_2_ORIGIN   0x01000000
+    #define L_FLASH_CODE_2_LENGTH   L_SIZE_32K
+    #define L_SRAM_0_ORIGIN         0xFE9D0000      //Local CPU1 RAM
+    #define L_SRAM_0_LENGTH         L_SIZE_192K
+    #define L_SRAM_1_ORIGIN         0xFEBD0000      //Local CPU2 RAM
+    #define L_SRAM_1_LENGTH         L_SIZE_192K
+    #define L_SRAM_2_ORIGIN         0xFEDD0000      //Local RAM
+    #define L_SRAM_2_LENGTH         L_SIZE_192K
+    #define L_SRAM_3_ORIGIN         0xFEEF8000      //Global RAM 
+    #define L_SRAM_3_LENGTH         L_SIZE_32K
+    #define L_SRAM_4_ORIGIN         0xFEF00000      //Retention RAM 
+    #define L_SRAM_4_LENGTH         L_SIZE_128K
+    #define L_SRAM_5_ORIGIN         0xFEFF8000      //Global RAM 
+    #define L_SRAM_5_LENGTH         L_SIZE_32K   
+    #define L_BOOT_RESERVED_SPACE	0x0  			// The reset vector we need....
+#elif defined(CFG_AURIX)
+
+/* Small shared RAM, LMURAM - 32K
+
+ */
+
+
+    #define L_RESERVED_VIRTUAL_ORIGIN   0x00000000
+    #define L_RESERVED_VIRTUAL_LENGTH   0x4FFFFFFF
+/*    
+	#define L_SRAM_DATA_CORE_2_ORIGIN	0x50000000
+	#define L_SRAM_DATA_CORE_2_LENGTH	0x0003BFFF
+	#define L_SRAM_PSPR_CORE_2_ORIGIN	0x50100000
+	#define L_SRAM_PSPR_CORE_2_LENGTH	0x00007FFF
+	#define L_SRAM_DATA_CORE_1_ORIGIN	0x60000000
+	#define L_SRAM_DATA_CORE_1_LENGTH	0x0003BFFF
+	#define L_SRAM_PSPR_CORE_1_ORIGIN	0x60100000
+	#define L_SRAM_PSPR_CORE_1_LENGTH	0x00007FFF
+*/	
+/*
+	#define L_SRAM_CODE_CORE_0_ORIGIN	0x70000000	
+	#define L_SRAM_CODE_CORE_0_LENGTH	0x0001DFFF
+*/	
+	#define L_SRAM_DATA_CORE_0_ORIGIN	0x70100000
+	#define L_SRAM_DATA_CORE_0_LENGTH	0x00007FFF
+	#define L_FLASH_CODE_0_ORIGIN 		0x80000000
+	#define L_FLASH_CODE_0_LENGTH 		0x007FFFFF
+    #define L_BOOT_RESERVED_SPACE	    0x0
+    #define L_BOOT_RESERVED_LENGTH	    0x0    
+	#define L_SRAM_0_ORIGIN           0x90000000
+	#define L_SRAM_0_LENGTH			0x00007FFF
+#elif defined(CFG_RH850F1L)
+	/* The memory map on the RH850F1x depends on how many pins and the flash size 
+	 * of the device */
+    #define L_FLASH_CODE_0_ORIGIN   0x00000000
+    
+    #if !defined(L_FLASH_CODE_0_LENGTH)
+    #error You must define L_FLASH_CODE_0_LENGTH
+    #endif
+
+    /* Secondary Local */
+    #define L_SRAM_2_ORIGIN         0x0
+    #define L_SRAM_2_LENGTH         0x0    
+    /* Retention RAM  */
+    #define L_SRAM_4_ORIGIN         0xFEE00000 
+    #define L_SRAM_4_LENGTH         L_SIZE_32K    
+        
+    #if (L_FLASH_CODE_0_LENGTH == L_SIZE_265K)
+      /* Primary Local */
+      #define L_SRAM_0_ORIGIN         0x0
+      #define L_SRAM_0_LENGTH         0x0
+    #elif (L_FLASH_CODE_0_LENGTH == L_SIZE_384K)
+      #define L_SRAM_0_ORIGIN         0xFEDFC000
+      #define L_SRAM_0_LENGTH         L_SIZE_16K      
+    #elif (L_FLASH_CODE_0_LENGTH == L_SIZE_512K)
+      #define L_SRAM_0_ORIGIN         0xFEDF8000
+      #define L_SRAM_0_LENGTH         L_SIZE_32K
+    #elif (L_FLASH_CODE_0_LENGTH == L_SIZE_768K)
+      #define L_SRAM_0_ORIGIN         0xFEDF0000
+      #define L_SRAM_0_LENGTH         L_SIZE_64K
+    #elif (L_FLASH_CODE_0_LENGTH == L_SIZE_1M)
+      #define L_SRAM_0_ORIGIN         0xFEDE8000
+      #define L_SRAM_0_LENGTH         L_SIZE_96K
+    #elif (L_FLASH_CODE_0_LENGTH == L_SIZE_1M5)
+      #define L_SRAM_0_ORIGIN         0xFEDE0000
+      #define L_SRAM_0_LENGTH         L_SIZE_128K
+    #elif (L_FLASH_CODE_0_LENGTH == L_SIZE_2M)
+      #define L_SRAM_0_ORIGIN         0xFEDE0000
+      #define L_SRAM_0_LENGTH         L_SIZE_128K
+      /* Note! Have Secondary */
+    #else
+      #error Bad L_FLASH_CODE_0_LENGTH
+    #endif
+    
+    #define L_BOOT_RESERVED_SPACE	0x0  			// The reset vector we need....
+#elif defined(CFG_TMS570LS12X)
+	#define L_FLASH_CODE_0_ORIGIN 	L_FLASH_CODE_0_START
+	#define L_FLASH_CODE_0_LENGTH 	L_SIZE_2M
+	#define L_SRAM_0_ORIGIN			0x08000000
+	#define L_SRAM_0_LENGTH			L_SIZE_192K
 #else
 #error CPU not supported in linkscript
 #endif
 
-
-/* Map to linker syntax */
-#if defined(L_FLASH_CODE_0_ORIGIN)
-L_FLASH_CODE_0 : 	ORIGIN = L_FLASH_CODE_0_ORIGIN, LENGTH = L_FLASH_CODE_0_LENGTH
-#endif
-
-#if defined(L_FLASH_DATA_0_ORIGIN)
-L_FLASH_DATA_0 : 	ORIGIN = L_FLASH_DATA_0_ORIGIN, LENGTH = L_FLASH_DATA_0_LENGTH
-#endif
-
-#if defined(L_SRAM_DATA_CORE_0_ORIGIN)
-L_SRAM_DATA_CORE_0 : ORIGIN = L_SRAM_DATA_CORE_0_ORIGIN, LENGTH = L_SRAM_DATA_CORE_0_LENGTH
-#endif
-
-#if defined(L_SRAM_0_ORIGIN)
-L_SRAM_0 :  		ORIGIN = L_SRAM_0_ORIGIN, LENGTH = L_SRAM_0_LENGTH
-#endif
-
- 
+#include "memory_post.ldf"
 
 
 

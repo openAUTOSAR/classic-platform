@@ -1,0 +1,108 @@
+/* Date Stamp */ -d"_lint_co_ARMCC_5_lnt=co-ARMCC-5.lnt modified 25-Jun-2013"
+/* To document usage use: -message( "Using " _lint_co_ARMCC_5_lnt ) */
+
+
+/***********       Begin Common Extended Keyword Options    ***********/
+
+-rw_asgn(__attribute__,__gcc_attribute__)
+-rw_asgn(__attribute,  __gcc_attribute__)
+-rw_asgn(__asm,__ARM_asm)
+-rw_asgn(asm,__ARM_asm)
+
+// PC-lint will recognize special meanings for the following keywords
+// (which are undocumented):
++rw(__is_union,
+    __is_polymorphic,
+    __is_pod,
+    __is_enum,
+    __is_empty,
+    __is_convertible_to,
+    __is_class,
+    __is_base_of,
+    __is_abstract,
+    __has_virtual_destructor,
+    __has_user_destructor,
+    __has_trivial_destructor,
+    __has_trivial_copy,
+    __has_trivial_constructor,
+    __has_trivial_assign,
+    __has_nothrow_copy,
+    __has_nothrow_constructor,
+    __has_nothrow_assign,
+    __has_copy,
+    __has_assign,
+    __thread,
+    __null,
+    __typeof__,
+    __declspec,
+     _Pragma,
+    )
+
+// -rw_asgn( L, R ) means "activate L as a keyword with the known
+// semantics of R":
+-rw_asgn(__has_destructor,__has_user_destructor)
+-rw_asgn(__asm,asm)
+
+// Other keywords need to be implemented as preprocessor macros:
++d"__assignment_by_bitwise_copy_allowed(t)=(!__is_polymorphic(t) && !__has_assign(t))"
++d"__construction_by_bitwise_copy_allowed(t)=(!__is_polymorphic(t) && !__has_copy(t))"
+
+// Keyword/operator __memory_of:
+-d"__memory_of()="
+   // "Determines the class memory. A class memory determines which memory
+   // a class object can reside in. This symbol can only occur in class
+   // definitions as a class memory."
+
+-d"__is_standard_layout(t)=__is_pod(t)" // Not quite right.
+-d"__is_trivial(t)=__is_pod(t)"  // Not quite right.
+    // Actually, __is_pod(t) is equivalent to (__is_trivial(t) &&
+    // __is_standard_layout(t) && !__is_union(t)), but the first two
+    // traits do not have build-in support in version 9.00i.
+-d"__has_constructor(t)=!__is_pod(t)"
+
++d"__constrange()=" // Determines the allowed range for a parameter to an
+                    // intrinsic function and that the parameter must be of
+                    // type const. (It might be nice for Lint to
+                    // auto-translate these into equivalent -sem() options.)
+//
+/***********       End Common Extended Keywords         ***********/
+
+/***********       Begin Pragma Emulation        ***********/
+//
++pragma( inline, macro )
+-d"pragma_inline()=inline"
+
++pragma( pack, macro )
+-d"pragma_pack()=__packed"
+
++pragma( error, message )
++pragma( message, message )
++pragma( include_alias, include_alias )
+
+// Other pragmas will be ignored.
+//
+/***********       End Pragma Emulation          ***********/
+
+// Common suppressions:
+-wlib(1)    // sets the warning level within library headers to 1
+	    // (no warnings, just syntax errors).  Comment out if you
+	    // are actually linting library headers.  This
+	    // option makes obsolete options of the form -elib(axxx) where
+	    // xxx >= 400 which may be retained for historical reasons.
+-e46 // IAR documents that any integral or enumeration type may be used as
+      // the type of a bitfield.
+-e430 // @ location is common.
+
+//  The following functions exhibit variable return modes.
+//  That is, they may equally-usefully be called for a value
+//  as called just for their effects.  Accordingly we inhibit
+//  Warning 534 for these functions.
+//  Feel free to add to or subtract from this list.
+
+-esym(534,close,creat,fclose,fprintf,fputc)
+-esym(534,fputs,fscanf,fseek,fwrite,lseek,memcpy,memmove,memset)
+-esym(534,printf,puts,scanf,sprintf,sscanf,strcat,strcpy)
+-esym(534,strncat,strncpy,unlink,write)
+
+-d__ARMCC_VERSION
+

@@ -1,0 +1,113 @@
+
+INFO
+  RH850/F1L 
+
+BOARD
+  - RH850/F1x-064pin, PiggyBack board
+  - RH850/F1x-100pin, PiggyBack board
+  - MainOsc: 16 Mhz external crystal.
+  - SubOsc: NOT MOUNTED
+  
+  !! NOTE !! !! NOTE !! !! NOTE !! !! NOTE !! 
+    The development boards have CN1,CN2,CN3 and CN4.
+    However only CN1 and CN2 is mounted.  
+      
+
+DEVICES
+
+  R7F7010132 (64 PIN DEVICE)   
+     Freq:		       80 Mhz 
+     Code Flash:       512K
+     CPU1: Local RAM:  32KB
+     Data Flash:       32KB
+     RRAM:             32KB
+
+  R7F7010243 (100 PIN DEVICE)  
+     Freq:		       80 Mhz 
+     Code Flash:       768K
+     CPU1: Local RAM:  64KB
+     Data Flash:       32KB
+     RRAM:             32KB
+
+   
+   RBASE: 0x0000_0000 (CPU will read reset vector from address 0x0000_0000)
+   
+LEDS:
+  LED-7    DIGIO3   P8<3>
+  LED-8    DIGIO2   P8<2>
+  LED-9    DIGIO1	P8<1>
+  LED-10   DIGIO0	P8<0>
+   
+RAM: 
+   0xFEDD_0000 - 0xFEE0_7FFF    Some RAM
+   0xFEE0_8000 -                Reserved 
+    
+
+    0xFEDD_8000 - 0xFEE0_7FFF
+
+
+MEMORY MAP
+   
+   0x0000_0000 -> 0x0017_FFFF      Code Flash(bank A)
+   0x0080_0000 -> 0x0097_FFFF      Code Flash(bank B)   
+   0xFEDD_0000 - 0xFEE0_0000       Some RAM
+   
+   
+   
+ADC:
+   The ADC MCAL tests expect certain values on three ADC channels.
+   This is accomplished using one of the potentiometers on the board (R60) and
+   CN64 PIN 1 and 2. The potentiometer should be in "12 O'Clock position". 
+   3.3V should be connected to CN64 PIN 1 and GND to CN64 PIN 2.  
+   
+   
+      MB        Channel    Expected Value		    Input Connection
+      ----------------------------------------------
+      CN64,#1   ADCA0I0	   value < 0x100		    GND to PIN 2 on CN64
+      CN64,#2   ADCA0I1	   value > 0xDFF		    3.3V to PIN 1 on CN64
+      R60*1)    ADCA0I6    0x700 < value < 0x900	Potentiometer(R60)
+      
+        *1) R60 is connected directly to ADCA0I6
+
+CAN:
+    CAN_0
+     !! IMPORTANT !! 
+      - Set straps on CN8, CN11 and  CN12
+      - Set SW2 both to ON
+        
+        
+      ArcPin Port  Signal    Verify    Note        
+      ----------------------------------------
+      118    P10_0 CAN0RX        
+      119    P10_1 CAN0TX
+      
+SPI:
+   SPI is verified using a E2.
+   
+   IMPORTANT! Do not have any straps on CAN_1 since this affects SPI (P0_2 and P0_3) 
+        
+      #64  #100  Port  Signal        
+      ---------------------------------------- 
+      5     7    P0_1  CSIH0SC  
+      6     8    P0_2  CSIH0SI 
+      7     9    P0_3  CSIH0SO
+      30   45    P8_4  CSIH0CSS2
+      60   96          EVCC
+      61   97          EGND
+      
+   
+PWM:
+  All the PWM slave outputs (TAUD0Ox where x is odd) is located port P10.
+  
+  
+      #64 #100  Port  Signal    Verify    Note        
+      ----------------------------------------
+                P10_0  TAUD0O1            ( CAN0RX )
+                P10_1  TAUD0O3            ( CAN0TX )
+      64  100   P10_2  TAUD0O5            ( IIC0SDA ) -> NOT connected on MB 
+       1  1     P10_3  TAUD0O7   X        ( IIC0SCL ) -> NOT connected on MB 
+                P10_4  TAUD0O9            ( LIN1RX )
+                P10_5  TAUD011            ( LIN1TX )  
+                P10_6  TAUD013            ( MUX2 )
+      52  81    P10_7  TAUD015   X   
+     

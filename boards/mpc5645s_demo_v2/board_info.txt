@@ -1,0 +1,131 @@
+
+MPC5645S-DEMO-V2
+	
+Datasheets:
+  Eval board:
+   http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC5645S-DEMO-V2
+     
+  MPC563XM
+   Datasheet: 
+     
+   Rest:        
+     
+    
+Board:
+  8 Mhz external crystal.
+
+Supported compilers:
+  GHS 
+  
+  
+Info:	
+  MPC5634M
+  CPU:		 e200z4d 
+  Freq:		 125 Mhz 
+  Flash: 	 2MB, flash ECC
+  RAM:       64K, ECC
+  
+Used Interfaces:
+  FlexCAN0:   
+    PB[0]
+    PB[1]
+   
+  DSPI_1
+    PB[4] SCK_1
+    PB[5] SOUT_1
+    PB[6] SIN_1
+    (PC[11] CS2_1) 
+    (PC[12] CS1_1)
+    PC[13] CS0_1
+   
+  LED:
+    PK[0] - J32 or Red LED
+    PF[0] - J32 or Green LED
+  LIN:
+    PB[12] - LINFlex1 Interface
+    PB[13] - LINFlex1 Interface
+  
+  ADC:
+     J48 is located on the BACK of the board
+     PC[8] - ANS[8]
+     PC[9] - ANS[9]
+      
+		In order for the MCAL ADC test to work. Three channels must be connected correctly. One to ground, one to +5V and one to a voltage divider.
+		PC10(PCR40) is configured for ANS[10] and should be connected to voltage divider.
+		PC11(PCR41) is configured for ANS[11] and should be connected to +5V.
+		PC12(PCR42) is configured for ANS[12] and should be connected to GND.
+		
+		The connections should be made at the P5 and P6 connectors on the card:
+
+              	  P5 
+               1-X  X-2
+               3-X  X-4 
+               5-X  X-6  +5V 
+               7-X  X-8  
+  		 GND   9-X  X-10  
+         PC12 11-X  X-12
+              13-X  X-14  
+
+
+              	  P6 
+         PC10  1-X  X-2
+               3-X  X-4 
+         GND   5-X  X-6   
+               7-X  X-8  
+  		       9-X  X-10 +5V 
+              11-X  X-12
+              13-X  X-14 PC11  
+     
+  PWM    
+    PK[7] -> PK[9] ? We have to skip DIP swtiches....
+    or use 
+    PA[0] and PA[1] , eMIOS18 and eMIOS17
+  
+
+         
+          
+ 
+  
+  
+  
+Memory Map:
+ 0x0000_0000 -> 0x001F_FFFF   Flash
+ 0x4000_0000 -> 0x4000_FFFF   SRAM
+
+
+Voltage:
+  Vdda - Analog ref voltage
+
+ 
+DSPI_1
+
+  Verified using a Microchip 25LC160B http://ww1.microchip.com/downloads/en/DeviceDoc/21807D.pdf
+  VCC Range: 2.5 -> 5.5 V
+  
+						             J5
+						         x  1   2 x   
+						         x  3   4 x PC[13]/CS0_1 <- CS/GREEN
+						         x  5   6 x
+								 x  7   8 x 
+								 x  9  10 x 
+							     x  11 12 x 
+						         x  13 14 x
+						         x  15 16 x
+
+	 
+						             J23
+						         x  1   2 x   
+						         x  3   4 x 
+						         x  5   6 x
+	S_CLK/BLUE ->	SCK_1/PB[4]  x  7   8 x 
+	S_IN/ORANGE->  SOUT_1/PB[5]  x  9  10 x <- VCC/RED
+	S_OUT/BROWN->	SIN_1/PB[6]  x  11 12 x <- GND/BLACK
+						         x  13 14 x
+						         x  15 16 x
+	
+	
+ 
+ 
+ 
+ 
+ 

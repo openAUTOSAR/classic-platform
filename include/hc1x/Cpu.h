@@ -1,17 +1,16 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
- *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
+ * 
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with  
+ * the terms contained in the written license agreement between you and ArcCore, 
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as 
+ * published by the Free Software Foundation and appearing in the file 
+ * LICENSE.GPL included in the packaging of this file or here 
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 #ifndef CPU_H_
 #define CPU_H_
@@ -41,14 +40,14 @@ typedef uint32_t imask_t;
 #if defined(__IAR_SYSTEMS_ICC__)
 static inline unsigned long _Irq_Disable_save(void)
 {
-	  __istate_t old;
-	  old = __get_interrupt_state();
-	  __disable_interrupt();
-	  return old;
+      __istate_t old;
+      old = __get_interrupt_state();
+      __disable_interrupt();
+      return old;
 }
 
 static inline void _Irq_Disable_restore(unsigned long flags) {
-	__set_interrupt_state(flags);
+    __set_interrupt_state(flags);
 }
 
 /*
@@ -61,37 +60,37 @@ static inline void _Irq_Disable_restore(unsigned long flags) {
 // = n where the most significant non-zero bit is the nth bit
 static inline uint32 ilog2(uint32 x) {
 
-	// find out if the non-zero bit is in the first two words
-	uint32 A = !(!(x >> 16));  // should be 1 if the n >= 16
-	uint32 count = 0;
-	uint32 x_copy = x;
+    // find out if the non-zero bit is in the first two words
+    uint32 A = !(!(x >> 16));  // should be 1 if the n >= 16
+    uint32 count = 0;
+    uint32 x_copy = x;
 
-	// if A is 1 add 16 to count
-	count = count + (A<<4);
+    // if A is 1 add 16 to count
+    count = count + (A<<4);
 
-	// if A is 1 return x >> 15, else return x. This is a
-	// modified version of my conditional code
-	x_copy = (((~A + 1) & (x >> 16)) + (~(~A+1) & x));
+    // if A is 1 return x >> 15, else return x. This is a
+    // modified version of my conditional code
+    x_copy = (((~A + 1) & (x >> 16)) + (~(~A+1) & x));
 
-	// repeat the process but rather than operating on the second half,
-	// we can now only worry about the second quarter of the first half.
-	A = !(!(x_copy >> 8));
-	count = count + (A<<3);
-	x_copy = (((~A + 1) & (x_copy >> 8)) + (~(~A+1) & x_copy));
+    // repeat the process but rather than operating on the second half,
+    // we can now only worry about the second quarter of the first half.
+    A = !(!(x_copy >> 8));
+    count = count + (A<<3);
+    x_copy = (((~A + 1) & (x_copy >> 8)) + (~(~A+1) & x_copy));
 
-	// continue this process until we have covered all bits.
-	A = !(!(x_copy >> 4));
-	count = count + (A<<2);
-	x_copy = (((~A + 1) & (x_copy >> 4)) + (~(~A+1) & x_copy));
+    // continue this process until we have covered all bits.
+    A = !(!(x_copy >> 4));
+    count = count + (A<<2);
+    x_copy = (((~A + 1) & (x_copy >> 4)) + (~(~A+1) & x_copy));
 
-	A = !(!(x_copy >> 2));
-	count = count + (A<<1);
-	x_copy = (((~A + 1) & (x_copy >> 2)) + (~(~A+1) & x_copy));
+    A = !(!(x_copy >> 2));
+    count = count + (A<<1);
+    x_copy = (((~A + 1) & (x_copy >> 2)) + (~(~A+1) & x_copy));
 
-	A = !(!(x_copy >> 1));
-	count = count + A;
+    A = !(!(x_copy >> 1));
+    count = count + A;
 
-	return count;
+    return count;
 }
 #elif defined(__GNUC__)
 

@@ -1,0 +1,105 @@
+
+
+
+The Freescale MPC5604B is an PowerPC process with a e200Z0h core, VLE only  
+	
+Datasheets:
+  Eval board:
+      http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=TRK-MPC5604B
+     
+  MPC560xB
+    http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC560xB&webpageId=121120349534072559427E&nodeId=01624606C1427E&fromPage=tax
+
+Board:
+  8Mhz external crystal
+
+Supported compilers:
+  Code Warrior
+ 
+Info:	
+  MPC5604B
+  CPU:		 e200z0h (VLE only)
+  Freq:		 64 Mhz
+  Flash: 	 512KB, primary
+             64K, data flash
+  RAM:       48K, ECC
+  
+Memory Map:
+ 0x0000_0000 -> 0x0007_ffff   Flash
+ 0x0080_0000 -> 0x0080_ffff   Data Flash
+ 0x4000_0000 -> 0x4000_bfff   SRAM
+ 
+NOTE! In Mcu.c only board specific clocks and pin muxing are setup and there is no config tool support. 
+So, in order to use for instance FlexCan 3 you need to iniatilize FlexCan3 power control register i.e. ME.PCTL[19].R = 0x01;
+in EcuM callout or modify an own version of Mcu.c. See Mcu_InitClock in Mcu.c for further info. 
+ 
+CAN and LIN: In order to use CAN or LIN the MC33905 circuit need to be initialized accordingly using DSPI. 
+             Contact Freescale support for source code.
+== ADC ==
+NOTE! It ADC1 is used, this must be powered by connecting AVDDSUPPLY to PD12 (PJ3.13) and 
+AVSSSUPPLY to PB11 (PJ5.12)
+
+== SPI == 
+
+Adding a SPI EEPROM (Microship 25LC160B)
+
+To the left are the pins as they are names in XPC56xxMBSCH (schema for the main board, page 11 of 12) 
+
+<- XPC560S ->#<---------------------- MCU --->
+             #       PAD Func              
+----------------------------------------------
+SINB,PJ1-7   # PB[7]  23  1  SIN_0    
+SOUTB,PJ1-8  # PB[8]  24  1  SOUT_0    
+SCKB,PJ1-9   # PB[9]  25  1  SCK_0      
+PCSB1,PJ1-11 # PB[13] 29  3  PCS1_0    
+
+PCSB2,PJ1-12 # PB[12] 28  3  PCS2_0    NOT USED
+PCSB0,PJ1-10 # PH[4]  103 1  PCS0_0    NOT USED
+
+SPI MEMORY 
+  25LC160B
+    CS    - Connect to PJ1-11
+    /WP   - High
+    /HOLD - Low
+    Rest of the pins are obvious
+ 
+    Connected with 5V logic
+
+---------------------------------- NOTE ----------------------------------
+  The xPC560S EVB v1.0.1 manual is total crap in chapter "3.8 Pin Mapping"
+  Known errors:
+   PJ1
+     PCS0.2, should be PCS1_0     
+   PJ9-Port F
+     As I understand it should map to Port F. However, PCS1_1 is
+     located on PCR[78]=PF[8] on CPU is connected to PF[0] on PJ9!!     
+---------------------------------- NOTE ----------------------------------  
+    
+SPI_0
+ PJ1 Connector will have the following layout 
+ (With ArcCore internal harness and SO/SI as seen from memory):
+
+                 PJ1 
+               1-X  X-2
+               3-X  X-4 
+               5-X  X-6
+    SO/Brown   7-X  X-8  SI/Orange
+    SCK/Blue   9-X  X-10  
+              11-X  X-12
+              13-X  X-14
+              15-X  X-16  
+    Gnd/Black 17-X  X-18 VCC/Red   
+  
+
+                 PJ5 
+               1-X  X-2
+               3-X  X-4 
+               5-X  X-6
+               7-X  X-8  
+               9-X  X-10  
+              11-X  X-12
+    CS/Green  13-X  X-14
+              15-X  X-16  
+              17-X  X-18 
+
+  

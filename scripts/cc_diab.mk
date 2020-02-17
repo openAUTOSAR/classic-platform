@@ -24,7 +24,7 @@
 #
  
  
-DIAB_VERSION=5.9.3.0
+DIAB_VERSION?=5.9.3.0
 DIAB_COMPILE ?= /c/devtools/WindRiver/diab/5.9.3.0/WIN32
 DIAB_BIN = $(DIAB_COMPILE)/bin
 
@@ -34,10 +34,13 @@ DIAB_BIN = $(DIAB_COMPILE)/bin
 
 CC	= 	$(DIAB_BIN)/dcc	
 
-cflags-$(CFG_OPT_RELEASE) += -g3
-cflags-$(CFG_OPT_DEBUG)   += -g2 -Xoptimized-debug-off
-cflags-$(CFG_OPT_FLAGS)   += $(SELECT_OPT)
+opt-cflags-$(CFG_OPT_RELEASE) += -g3 -O
+opt-cflags-$(CFG_OPT_DEBUG)   += -g2 -Xoptimized-debug-off
+opt-cflags-$(CFG_OPT_SIZE) +=  -XO -Xsize-opt -g3
+opt-cflags-$(CFG_OPT_FLAGS)   += $(SELECT_OPT)
 
+cflags-y+= -DBUILD_OPT_FLAGS="$(opt-cflags-y)"
+cflags-y += $(opt-cflags-y)
 
 ifeq ($(DIAB_TARGET),)
 $(error DIAB_TARGET is not defined. Check your build_config.mk for it)
@@ -59,6 +62,7 @@ cflags-y += -Xsection-split
 cflags-y += -Xforce-prototypes
 cflags-y += -Xforce-declarations
 #cflags-y += -XO
+cflags-y += -D__BIG_ENDIAN__
 
 # Enable inline and __ev64_opaque__
 cflags-y += -Xkeywords=0x900004		
@@ -68,30 +72,6 @@ cflags-y += -Xmake-dependency=6
 cflags-y += $(DIAB_TARGET)
 
 cflags-y += -ei5388,5387
-
-#CFLAGS_diab_Adc_Cfg.o += -ei4068  # 4068 should be fixed in generator.
-#CFLAGS_diab_Dio.o += -ei4546
-#CFLAGS_diab_IoHwAb_Analog.o += -ei4111 -ei4549  
-#CFLAGS_diab_IoHwAb_Digital.o += -ei4111
-#CFLAGS_diab_init.o += -ei4236
-#CFLAGS_diab_task.o += -ei4546 -ei4550
-#CFLAGS_diab_counter.o += -ei1573
-#CFLAGS_diab_application.o += -ei4186
-#CFLAGS_diab_IoHwAb_Pwm.o += -ei4186 -ei4111
-#CFLAGS_diab_Spi_Lcfg.o += -ei4068
-#CFLAGS_diab_NvM.o += -ei4111 -ei4177
-#CFLAGS_diab_counter.o += -Xlocal-data-area=0
-#CFLAGS_diab_WdgM.o += -ei4186
-#CFLAGS_diab_EcuM_Main.o += -ei4550 -ei4188
-#CFLAGS_diab_EcuM.o += -ei4188
-#CFLAGS_diab_Mcu.o += -ei4177
-#CFLAGS_diab_Mcu_Cfg.o += -ei4188
-#CFLAGS_diab_Can.o += -ei4550
-#CFLAGS_diab_CanIf.o += -ei4550 -ei4188 -ei4111
-#CFLAGS_diab_Nm.o += -ei4188
-#CFLAGS_diab_arch.o += -ei1639
-#CFLAGS_diab_Port.o += -ei4550
-
 
 CFLAGS = $(cflags-y) $(cflags-yy) $(CFLAGS_diab_$@)
 
@@ -121,7 +101,7 @@ CPP_ASM_FLAGS += -Xpreprocess-assembly
 # lib-y			- the libs, without path
 
 
-LD = $(DIAB_BIN)/dld.exe
+LD = $(DIAB_BIN)/dld
 
 LDFLAGS += $(DIAB_TARGET)
 LDFLAGS += -m6
@@ -136,6 +116,20 @@ ifeq ($(DIAB_VERSION),5.9.3.0)
   lib-y +=-limpfp
   lib-y +=-lg
   lib-y +=-lc
+  lib-y +=-lcfp
+  lib-y +=-lm
+else ifeq ($(DIAB_VERSION),5.9.4.8)
+  # Picking libs manually as in 5.9.3.0
+  lib-y +=-li
+  lib-y +=-lchar
+  lib-y +=-limpl
+  lib-y +=-limpfp
+  lib-y +=-lg
+  lib-y +=-lc
+ifeq ($(CFG),$(filter $(CFG),CFG_EFPU CFG_SPE_FPU_SCALAR_SINGLE CFG_SPE CFG_SPE_INIT))
+  lib-y +=-lcfp
+  lib-y +=-lm
+endif 
 else
   lib-y +=-lc
   lib-y +=-limpl
@@ -163,7 +157,15 @@ ASFLAGS += $(asflags-y)
 
 # ---------------------------------------------------------------------------
 
-OBJCOPY 		= $(tprefix-y)objcopy
+OBJCOPY 		= $(DIAB_BIN)/ddump
+# dump srecord, S3, no .bss  
+OBJCOPY_FLAGS   = -Rv -m3 
+OBJCOPYOUT = -o
+
+define do-objcopy
+	$(OBJCOPY) $(OBJCOPY_FLAGS) $< -o $@ 
+endef
+
 
 # ---------------------------------------------------------------------------
 NM 		= $(tprefix-y)nm

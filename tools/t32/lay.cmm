@@ -1,24 +1,29 @@
-// t32 Sun May 31 11:33:27 2009
+// t32 Fri Mar 21 19:53:07 2014
 
  B::
  
  TOOLBAR ON
  STATUSBAR ON
+ FRAMEPOS 3.5714,25.0,,,Maximized
  WINPAGE.RESET
  
  WINCLEAR
- WINPOS 0% 0% 50% 69%
- d.l
-
- WINPOS 0% 70% 50% 30%
- area
-
- WINPOS 50% 0% 50% 30%
- var.ref
+ WINPOS 0.14286 64.167 111. 16. 0. 0. W001
+ ws.area
  
- do term
-
- WINPAGE.SELECT P000     
+ WINPOS 0.28571 0.33333 110. 68. 13. 1. W000
+ WINTABS 10. 10. 25. 62.
+ ws.d.l
+ 
+ WINPOS 201.0 59.583 77. 20. 0. 0. W004
+ ws.r /spotlight
+ 
+ WINPOS 162.86 37.75 121. 20. 0. 0. W006
+ ws.term.view e:address.offset(v.address(t32_outport)) e:address.offset(v.address(t32_inport)) 
+ 
+ WINPOS 196.14 0.25 80. 18. 0. 0. W002
+ ws.var.ref 
+ 
+ WINPAGE.SELECT P000
  
  ENDDO
-

@@ -1,0 +1,562 @@
+
+
+==============================================
+Copyright (C) 2013-2017                       
+ArcCore AB, Sweden, www.arccore.com.          
+Contact: <contact@arccore.com>                
+
+MISRA Deviation Report                        
+==============================================
+
+
+----------------------------------------------------------
+Checking: test_folder\inctest\test1.h
+
+
+==============================================
+File:			test1.h
+Line:			15
+PC_Lint:		[2]
+MISRA:			2012:Rule:1.3
+Level:			required
+Category:		WARNING: Nothing found
+Justification:	N/A
+
+Comment: /*lint -w2 Warning level two in test files */
+==============================================
+
+==============================================
+File:			test1.h
+Line:			16
+PC_Lint:		[632]
+MISRA:			N/A in MISRA 2012
+Level:			N/A
+Category:		WARNING: Nothing found
+Justification:	seems to be MISRA 2004
+
+Comment: /*lint -e632 -e639 -e634 -e638 No strong typing for tests */
+==============================================
+
+==============================================
+File:			test1.h
+Line:			112
+PC_Lint:		[506]
+MISRA:			2012:Rule:2.1
+Level:			required
+Category:		WARNING: Nothing found
+Justification:	N/A
+
+Comment: /*lint -save -e506 */
+==============================================
+
+==============================================
+File:			test1.h
+Line:			155
+PC_Lint:		[506]
+MISRA:			2012:Rule:2.1
+Level:			required
+Category:		WARNING: Nothing found
+Justification:	N/A
+
+Comment: /*lint -save -e506 */
+==============================================
+
+==============================================
+Deviations reported: 4
+END OF MISRA deviation report for test1.h
+----------------------------------------------------------
+
+
+----------------------------------------------------------
+Checking: test_folder\srctest\test1.c
+
+
+==============================================
+File:			test1.c
+Line:			15
+PC_Lint:		[2]
+MISRA:			2012:Rule:1.3
+Level:			required
+Category:		WARNING: Nothing found
+Justification:	N/A
+
+Comment: /*lint -w2 Warning level two in test files */
+==============================================
+
+==============================================
+File:			test1.c
+Line:			16
+PC_Lint:		[632]
+MISRA:			N/A in MISRA 2012
+Level:			N/A
+Category:		WARNING: Nothing found
+Justification:	seems to be MISRA 2004
+
+Comment: /*lint -e632 -e639 -e634 -e638 No strong typing for tests */
+==============================================
+
+==============================================
+File:			test1.c
+Line:			112
+PC_Lint:		[506]
+MISRA:			2012:Rule:2.1
+Level:			required
+Category:		WARNING: Nothing found
+Justification:	N/A
+
+Comment: /*lint -save -e506 */
+==============================================
+
+==============================================
+File:			test1.c
+Line:			155
+PC_Lint:		[506]
+MISRA:			2012:Rule:2.1
+Level:			required
+Category:		WARNING: Nothing found
+Justification:	N/A
+
+Comment: /*lint -save -e506 */
+==============================================
+
+==============================================
+Deviations reported: 8
+END OF MISRA deviation report for test1.c
+----------------------------------------------------------
+
+
+----------------------------------------------------------
+Checking: test_folder\srctest\test2.c
+
+
+==============================================
+File:			test2.c
+Line:			2
+PC_Lint:		[9003]
+MISRA:			2012:Rule:8.9
+Level:			advisory
+Category:		OTHER
+Justification:	N/A
+
+Comment: /*lint -esym(9003, Crc_16_Tab) MISRA:OTHER:Readability:[MISRA 2012 Rule 8.9, advisory] */
+==============================================
+
+==============================================
+File:			test2.c
+Line:			4
+PC_Lint:		[835]
+MISRA:			N/A in MISRA 2012
+Level:			N/A
+Category:		OTHER
+Justification:	seems to be MISRA 2004
+
+Comment: crc = (TRUE == Crc_IsFirstCall) ? Crc_16_CCITTStartValue : (Crc_StartValue16 ^ Crc_16_CCITTXor); /*lint !e835 LINT:OTHER:Readability */
+==============================================
+
+==============================================
+File:			test2.c
+Line:			6
+PC_Lint:		[533]
+MISRA:			2012:Rule:17.4
+Level:			mandatory
+Category:		FALSE_POSITIVE
+Justification:	N/A
+
+Comment: /*lint -e{533, 578, 715, 745, 832, 936, 939} FALSE_POSITIVE */
+==============================================
+
+==============================================
+File:			test2.c
+Line:			9
+PC_Lint:		[747]
+MISRA:			N/A in MISRA 2012
+Level:			N/A
+Category:		WARNING: Nothing found
+Justification:	seems to be MISRA 2004
+
+Comment: /*lint -save -e747 STANDARDIZED_API */
+==============================================
+
+==============================================
+File:			test2.c
+Line:			14
+PC_Lint:		[747]
+MISRA:			N/A in MISRA 2012
+Level:			N/A
+Category:		WARNING: Nothing found
+Justification:	seems to be MISRA 2004
+
+Comment: SYS_CALL_ClearEvent(EVENT_MASK_DetReportError_QM); /*lint !e747 STANDARDIZED_API */
+==============================================
+
+==============================================
+File:			test2.c
+Line:			16
+PC_Lint:		[506]
+MISRA:			2012:Rule:2.1
+Level:			required
+Category:		OTHER
+Justification:	N/A
+
+Comment: } while (SCHM_TASK_EXTENDED_CONDITION != 0);  /*lint !e506 OTHER Required to loop task in order to synchronize partitions */
+==============================================
+
+==============================================
+Deviations reported: 14
+END OF MISRA deviation report for test2.c
+----------------------------------------------------------
+
+
+----------------------------------------------------------
+Checking: test_folder\srctest\test3.c
+
+
+==============================================
+File:			test3.c
+Line:			2
+PC_Lint:		[920]
+MISRA:			2012:Rule:1.3
+Level:			required
+Category:		STANDARDIZED_INTERFACE
+Justification:	N/A
+
+Comment: (void)ConfigPtr; /*lint !e920 MISRA:STANDARDIZED_INTERFACE:<OPTIONAL PUT HERE SOME EXPLANATION>:[MISRA 2012 Rule 1.3, required] */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			5
+PC_Lint:		[920]
+MISRA:			2012:Rule:1.3
+Level:			required
+Category:		STANDARDIZED_INTERFACE
+Justification:	N/A
+
+Comment: /*lint -e{920} MISRA:STANDARDIZED_INTERFACE::[MISRA 2012 Rule 1.3, required] */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			9
+PC_Lint:		[533]
+MISRA:			2012:Rule:17.4
+Level:			mandatory
+Category:		FALSE_POSITIVE
+Justification:	N/A
+
+Comment: /*lint -e{533}  MISRA:FALSE_POSITIVE:PUT HERE SOME GOOD ARGUMENTS TO CONVINCE YOUR SAFETY MANAGER:[MISRA 2012 Rule 17.4, mandatory] */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			15
+PC_Lint:		[960]
+MISRA:			N/A in MISRA 2012
+Level:			N/A
+Category:		FALSE_POSITIVE
+Justification:	seems to be MISRA 2004
+
+Comment: /*lint -e{960} LINT:FALSE_POSITIVE:<OPTIONAL PUT HERE SOME EXPLANATION> */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			19
+PC_Lint:		[754]
+MISRA:			N/A in MISRA 2012
+Level:			N/A
+Category:		WARNING: Nothing found
+Justification:	seems to be MISRA 2004
+
+Comment: /*lint -e754 LINT:HARDWARE_ACESSS:Something with the HW */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			23
+PC_Lint:		[754]
+MISRA:			N/A in MISRA 2012
+Level:			N/A
+Category:		OTHER
+Justification:	seems to be MISRA 2004
+
+Comment: /*lint --e{754} LINT:OTHER:HARDWARE DEFINITION */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			29
+PC_Lint:		[754]
+MISRA:			N/A in MISRA 2012
+Level:			N/A
+Category:		OTHER
+Justification:	seems to be MISRA 2004
+
+Comment: /*lint -save -e754 LINT:OTHER:The warning is caused by external library */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			34
+PC_Lint:		[9003]
+MISRA:			2012:Rule:8.9
+Level:			advisory
+Category:		OTHER
+Justification:	N/A
+
+Comment: /*lint -esym(9003, Crc_32P4_Tab) MISRA:OTHER:Readability:[MISRA 2012 Rule 8.9, advisory] */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			39
+PC_Lint:		[48]
+MISRA:			2012:Rule:10.1
+Level:			required
+Category:		FALSE_POSITIVE
+Justification:	N/A
+
+Comment: /*lint -save -esym(48,10.1) MISRA:FALSE_POSITIVE:bad type:[MISRA 2012 Rule 10.1, required] */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			44
+PC_Lint:		[9003]
+MISRA:			2012:Rule:8.9
+Level:			advisory
+Category:		OTHER
+Justification:	N/A
+
+Comment: /*lint -esym(9003,MMU_PageTable) MISRA:OTHER:Since MMU_PageTable is moved to section it can't be in block scope:[MISRA 2012 Rule 8.9, advisory] */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			48
+PC_Lint:		[715]
+MISRA:			2012:Rule:2.7
+Level:			advisory
+Category:		OTHER
+Justification:	N/A
+
+Comment: /*lint --e{715} LINT:OTHER:suppress "k not referenced" */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			49
+PC_Lint:		[732]
+MISRA:			N/A in MISRA 2012
+Level:			N/A
+Category:		OTHER
+Justification:	seems to be MISRA 2004
+
+Comment: /*lint --e{732} LINT:OTHER:suppress "loss of sign" */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			52
+PC_Lint:		[553]
+MISRA:			2012:Rule:20.9
+Level:			required
+Category:		WARNING: Nothing found
+Justification:	N/A
+
+Comment: /*lint -e553  STANDARD DEV SELECT. Undefined preprocessor variable, assumed 0
+==============================================
+
+==============================================
+File:			test3.c
+Line:			58
+PC_Lint:		[553]
+MISRA:			2012:Rule:20.9
+Level:			required
+Category:		STANDARDIZED_INTERFACE
+Justification:	N/A
+
+Comment: /*lint -e553 MISRA:STANDARDIZED_INTERFACE:Undefined preprocessor variable, assumed 0:[MISRA 2012 Rule 20.9, required]
+==============================================
+
+==============================================
+File:			test3.c
+Line:			61
+PC_Lint:		[923]
+MISRA:			2012:Rule:11.1,2012:Rule:11.4,2012:Rule:11.6
+Level:			required,advisory,required
+Category:		WARNING: Nothing found
+Justification:	N/A
+
+Comment: /*lint -save -e923 HARDWARE_ACESSS. Cast from unsigned int to pointer [Encompasses MISRA 2004 Rule 11.1, required],
+==============================================
+
+==============================================
+File:			test3.c
+Line:			70
+PC_Lint:		[923]
+MISRA:			2012:Rule:11.1,2012:Rule:11.4,2012:Rule:11.6
+Level:			required,advisory,required
+Category:		HARDWARE_ACCESS
+Justification:	N/A
+
+Comment: /*lint -e923 MISRA:HARDWARE_ACCESS:Cast from unsigned int to pointer:[MISRA 2012 Rule 11.6, required]
+==============================================
+
+==============================================
+File:			test3.c
+Line:			73
+PC_Lint:		[923]
+MISRA:			2012:Rule:11.1,2012:Rule:11.4,2012:Rule:11.6
+Level:			required,advisory,required
+Category:		WARNING: Nothing found
+Justification:	N/A
+
+Comment: /*lint -e923 MISRA:HARDWARE_ACESSS:Cast from unsigned int to pointer:[MISRA 2012 Rule 11.6, required]
+==============================================
+
+==============================================
+File:			test3.c
+Line:			75
+PC_Lint:		[754]
+MISRA:			N/A in MISRA 2012
+Level:			N/A
+Category:		OTHER
+Justification:	seems to be MISRA 2004
+
+Comment: /*lint --e{754} LINT:OTHER:HARDWARE DEFINITION */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			84
+PC_Lint:		[923]
+MISRA:			2012:Rule:11.1,2012:Rule:11.4,2012:Rule:11.6
+Level:			required,advisory,required
+Category:		HARDWARE ACCESS
+Justification:	N/A
+
+Comment: /*lint --e{923} MISRA :HARDWARE ACCESS::[MISRA 2012 Rule 11.6, required]*/
+==============================================
+
+==============================================
+File:			test3.c
+Line:			88
+PC_Lint:		[64]
+MISRA:			2012:Rule:1.3,2012:Rule:8.4
+Level:			required,required
+Category:		FALSE POSITIVE
+Justification:	N/A
+
+Comment: /*lint -e64 MISRA:FALSE POSITIVE:Configuration is of same type:[MISRA 2012 Rule 1.3, mandatory]*/
+==============================================
+
+==============================================
+File:			test3.c
+Line:			102
+PC_Lint:		[718]
+MISRA:			2012:Rule:17.3
+Level:			mandatory
+Category:		WARNING: Nothing found
+Justification:	N/A
+
+Comment: Comment: pvr = get_spr(SPR_PVR);  /*lint !e718 !e746 !e548 !e632 !e732 Defined in Cpu.h */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			106
+PC_Lint:		[718]
+MISRA:			2012:Rule:17.3
+Level:			mandatory
+Category:		WARNING: Nothing found
+Justification:	N/A
+
+Comment: pvr = get_spr(SPR_PVR);  /*lint !e718 !e746 !e548 !e632 !e732 Defined in Cpu.h */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			109
+PC_Lint:		[718]
+MISRA:			2012:Rule:17.3
+Level:			mandatory
+Category:		FALSE POSITIVE
+Justification:	N/A
+
+Comment: /*lint -e718 MISRA:FALSE POSITIVE:Ask your safety manager:[MISRA 2012 Rule 17.3, mandatory] */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			110
+PC_Lint:		[746]
+MISRA:			N/A in MISRA 2012
+Level:			N/A
+Category:		OTHER
+Justification:	seems to be MISRA 2004
+
+Comment: /*lint -e746 LINT:OTHER:Check it out */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			111
+PC_Lint:		[548]
+MISRA:			N/A in MISRA 2012
+Level:			N/A
+Category:		OTHER
+Justification:	seems to be MISRA 2004
+
+Comment: /*lint -e548 LINT:OTHER:Check it out */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			112
+PC_Lint:		[632]
+MISRA:			N/A in MISRA 2012
+Level:			N/A
+Category:		OTHER
+Justification:	seems to be MISRA 2004
+
+Comment: /*lint -e632 LINT:OTHER:Check it out */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			113
+PC_Lint:		[732]
+MISRA:			N/A in MISRA 2012
+Level:			N/A
+Category:		OTHER
+Justification:	seems to be MISRA 2004
+
+Comment: /*lint -e732 LINT:OTHER:Check it out */
+==============================================
+
+==============================================
+File:			test3.c
+Line:			114
+PC_Lint:		[533]
+MISRA:			2012:Rule:17.4
+Level:			mandatory
+Category:		FALSE_POSITIVE
+Justification:	N/A
+
+Comment: /*lint -e{533}  MISRA:FALSE_POSITIVE:PUT HERE SOME GOOD ARGUMENTS TO CONVINCE YOUR SAFETY MANAGER:[MISRA 2012 Rule 17.4, mandatory] */
+==============================================
+
+==============================================
+Deviations reported: 42
+END OF MISRA deviation report for test3.c
+----------------------------------------------------------
+
+
+==============================================
+Deviations reported: 42
+Mandatory deviations: 6
+Required deviations: 17
+Advisory deviations: 4
+END OF MISRA deviation report                 
+==============================================

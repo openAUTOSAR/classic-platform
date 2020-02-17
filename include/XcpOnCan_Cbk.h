@@ -12,7 +12,9 @@
  * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
  *-------------------------------- Arctic Core -----------------------------*/
 
-/** @req XCP506 */ /*Provide XcpOnCan_Cfg.h - can not be tested with conventional module tests*/
+/** @reqSettings DEFAULT_SPECIFICATION_REVISION=4.1.3 */
+
+/** @req 4.1.3/SWS_Xcp_00506 */ /*Provide XcpOnCan_Cfg.h - can not be tested with conventional module tests*/
 
 #ifndef XCPONCAN_CBK_H_
 #define XCPONCAN_CBK_H_

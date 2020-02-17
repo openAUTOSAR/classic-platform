@@ -15,47 +15,56 @@
 #ifndef CIRQ_BUFFER_H_
 #define CIRQ_BUFFER_H_
 
-#include <stddef.h>
 #include "Platform_Types.h"
 
 typedef struct {
-	/* The max number of elements in the list */
-	int maxCnt;
-	int currCnt;
+    /* The max number of elements in the list */
+    uint32 maxCnt;
+    uint32 currCnt;
 
-	/* Size of the elements in the list */
-	size_t dataSize;
-	/* List head and tail */
-	void *head;
-	void *tail;
+    /* Size of the elements in the list */
+    uint32 dataSize;
+    /* List head and tail */
+    void *head;
+    void *tail;
 
-	/* Buffer start/stop */
-	void *bufStart;
-	void *bufEnd;
+    /* Buffer start/stop */
+    void *bufStart;
+    void *bufEnd;
 } CirqBufferType;
 
 /* Dynamic implementation */
-CirqBufferType *CirqBuffDynCreate( size_t size, size_t dataSize );
+CirqBufferType *CirqBuffDynCreate( uint32 size, uint32 dataSize );
 int CirqBuffDynDestroy(CirqBufferType *cPtr );
 
 /* Static implementation */
-CirqBufferType CirqBuffStatCreate(void *buffer, int maxCnt, size_t dataSize);
+CirqBufferType CirqBuffStatCreate(void *buffer, uint32 maxCnt, uint32 dataSize);
 
 int CirqBuffPush( CirqBufferType *cPtr, void *dataPtr );
 int CirqBuffPop(CirqBufferType *cPtr, void *dataPtr );
 void *CirqBuff_PushLock( CirqBufferType *cPtr);
 void *CirqBuff_PopLock(CirqBufferType *cPtr );
-void CirqBuff_Init(CirqBufferType *cirqbuffer, void *buffer, int maxCnt, size_t dataSize);
+void *CirqBuff_Peek( CirqBufferType *cPtr, uint32 index );
+void CirqBuff_Init(CirqBufferType *cirqbuffer, void *buffer, uint32 maxCnt, uint32 dataSize);
 
 static inline boolean CirqBuff_Empty(CirqBufferType *cPtr ) {
-	return (cPtr->currCnt == 0);
+    return (cPtr->currCnt == 0);
 }
+
+static inline boolean CirqBuff_Full(CirqBufferType *cPtr ) {
+    return (cPtr->currCnt == cPtr->maxCnt);
+}
+
+static inline int CirqBuff_Size( CirqBufferType *cPtr ){
+    return cPtr->currCnt;
+}
+
 static inline void CirqBuff_PushRelease( CirqBufferType *cPtr) {
-	++cPtr->currCnt;
+    ++cPtr->currCnt;
 }
 
 static inline void CirqBuff_PopRelease( CirqBufferType *cPtr) {
-	--cPtr->currCnt;
+    --cPtr->currCnt;
 }
 
 

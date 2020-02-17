@@ -1,0 +1,15 @@
+
+WCLEAR
+
+SYStem.Down
+SYStem.CPU DRA75x
+SYStem.JC RTCK
+SYStem.MemAccess DAP
+
+TrOnchip.set undef off            ; ignore undef
+TrOnchip.set pabort off           ; ignore page abort
+TrOnchip.set dabort off           ; ignore data abort
+
+do jac6/layout_A15
+
+ENDDO

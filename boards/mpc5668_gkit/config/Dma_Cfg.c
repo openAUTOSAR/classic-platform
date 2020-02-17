@@ -1,74 +1,81 @@
-/* -------------------------------- Arctic Core ------------------------------
- * Arctic Core - the open source AUTOSAR platform http://arccore.com
+/*-------------------------------- Arctic Core ------------------------------
+ * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
+ * Contact: <contact@arccore.com>
  *
- * Copyright (C) 2009  ArcCore AB <contact@arccore.com>
- *
- * This source code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation; See <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- * -------------------------------- Arctic Core ------------------------------*/
+ * You may ONLY use this file:
+ * 1)if you have a valid commercial ArcCore license and then in accordance with
+ * the terms contained in the written license agreement between you and ArcCore,
+ * or alternatively
+ * 2)if you follow the terms found in GNU General Public License version 2 as
+ * published by the Free Software Foundation and appearing in the file
+ * LICENSE.GPL included in the packaging of this file or here
+ * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+ *-------------------------------- Arctic Core -----------------------------*/
 
 
 
-
-
-
-
+#warning "This default file may only be used as an example!"
 
 #include "Dma.h"
 
-const Dma_MuxConfigType DmaMuxConfig [DMA_NUMBER_OF_CHANNELS] =
-{
-  {
-    .DMA_CHANNEL_ENABLE = 1, .DMA_CHANNEL_TRIG_ENABLE = 0, .DMA_CHANNEL_SOURCE = DMA_DSPI_A_SR_TFFF
-  },
-  {
-    .DMA_CHANNEL_ENABLE = 1, .DMA_CHANNEL_TRIG_ENABLE = 0, .DMA_CHANNEL_SOURCE = DMA_DSPI_A_SR_RFRD
-  },
-  {
-    .DMA_CHANNEL_ENABLE = 1, .DMA_CHANNEL_TRIG_ENABLE = 0, .DMA_CHANNEL_SOURCE = DMA_DSPI_B_SR_TFFF
-  },
-  {
-    .DMA_CHANNEL_ENABLE = 1, .DMA_CHANNEL_TRIG_ENABLE = 0, .DMA_CHANNEL_SOURCE = DMA_DSPI_B_SR_RFRD
-  },
-  {
-    .DMA_CHANNEL_ENABLE = 1, .DMA_CHANNEL_TRIG_ENABLE = 0, .DMA_CHANNEL_SOURCE = DMA_ADC_A
-  }
-};
 
 const Dma_ChannelConfigType DmaChannelConfig [DMA_NUMBER_OF_CHANNELS] =
 {
-  {
-    .DMA_CHANNEL_PRIORITY = DMA_DSPI_A_COMMAND_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1
-  },
-  {
-    .DMA_CHANNEL_PRIORITY = DMA_DSPI_A_RESULT_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1
-  },
-  {
-    .DMA_CHANNEL_PRIORITY = DMA_DSPI_B_COMMAND_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1
-  },
-  {
-    .DMA_CHANNEL_PRIORITY = DMA_DSPI_B_RESULT_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1
-  },
-  {
-    .DMA_CHANNEL_PRIORITY = DMA_ADC_GROUP0_RESULT_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1
-  }
+  { .DMA_CHANNEL_PRIORITY = DMA_ADC_GROUP0_COMMAND_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+  { .DMA_CHANNEL_PRIORITY = DMA_ADC_GROUP0_RESULT_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+
+  { .DMA_CHANNEL_PRIORITY = DMA_ADC_GROUP1_COMMAND_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+  { .DMA_CHANNEL_PRIORITY = DMA_ADC_GROUP1_RESULT_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+
+  { .DMA_CHANNEL_PRIORITY = DMA_ADC_GROUP2_COMMAND_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+  { .DMA_CHANNEL_PRIORITY = DMA_ADC_GROUP2_RESULT_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+
+  { .DMA_CHANNEL_PRIORITY = DMA_ADC_GROUP3_COMMAND_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+  { .DMA_CHANNEL_PRIORITY = DMA_ADC_GROUP3_RESULT_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+
+  { .DMA_CHANNEL_PRIORITY = DMA_ADC_GROUP4_COMMAND_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+  { .DMA_CHANNEL_PRIORITY = DMA_ADC_GROUP4_RESULT_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+
+  { .DMA_CHANNEL_PRIORITY = DMA_ADC_GROUP5_COMMAND_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+  { .DMA_CHANNEL_PRIORITY = DMA_ADC_GROUP5_RESULT_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+
+  { .DMA_CHANNEL_PRIORITY = DMA_DSPI_B_COMMAND_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+  { .DMA_CHANNEL_PRIORITY = DMA_DSPI_B_RESULT_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+
+  { .DMA_CHANNEL_PRIORITY = DMA_DSPI_C_COMMAND_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+  { .DMA_CHANNEL_PRIORITY = DMA_DSPI_C_RESULT_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+
+  { .DMA_CHANNEL_PRIORITY = DECFIL_FILL_BUF_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+  { .DMA_CHANNEL_PRIORITY = DECFIL_DRAIN_BUF_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+
+  { .DMA_CHANNEL_PRIORITY = SCI_A_TDRE_TC_TXRDY_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+  { .DMA_CHANNEL_PRIORITY = SCI_A_RDRF_RXRDY_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+
+  { .DMA_CHANNEL_PRIORITY = DMA_EMIOS_0_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+  { .DMA_CHANNEL_PRIORITY = DMA_EMIOS_1_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+  { .DMA_CHANNEL_PRIORITY = DMA_EMIOS_2_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+  { .DMA_CHANNEL_PRIORITY = DMA_EMIOS_3_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+  { .DMA_CHANNEL_PRIORITY = DMA_EMIOS_4_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+  { .DMA_CHANNEL_PRIORITY = DMA_EMIOS_8_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+  { .DMA_CHANNEL_PRIORITY = DMA_EMIOS_9_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+
+  { .DMA_CHANNEL_PRIORITY = DMA_TPU_0_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+  { .DMA_CHANNEL_PRIORITY = DMA_TPU_1_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+  { .DMA_CHANNEL_PRIORITY = DMA_TPU_2_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+  { .DMA_CHANNEL_PRIORITY = DMA_TPU_14_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+  { .DMA_CHANNEL_PRIORITY = DMA_TPU_15_CHANNEL, .DMA_CHANNEL_PREEMTION_ENABLE = 1 },
+
 };
 
 
 const Dma_ConfigType DmaConfig []=
 {
   {
-#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S)
-    DmaMuxConfig,
+#if defined(CFG_MPC5516) || defined(CFG_MPC5517) || defined(CFG_MPC5606S) ||  defined(CFG_MPC5645S)
+    .dmaMuxConfigPtr = DmaMuxConfig,
 #endif
-  	DmaChannelConfig,
-  	DMA_FIXED_PRIORITY_ARBITRATION
+    .dmaChannelConfigPtr = DmaChannelConfig,
+    .dmaChannelArbitration = DMA_FIXED_PRIORITY_ARBITRATION
   }
 };
 

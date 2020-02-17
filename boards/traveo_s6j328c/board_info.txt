@@ -1,0 +1,25 @@
+
+Documentation is not available from cypress site, yet. 
+
+INFO
+  S6J328CLSF
+  LITTLE ENDIAN
+  FPU: 
+    VFPv3-D16 
+  Interrupt Controller: 
+    
+  
+BOARD
+  S6T3J200281A216A2 (With S6J328CLSF mounted)
+
+  Links:
+     Web:         
+     User Manual:  
+
+MCAL 
+  CYPRESS 
+  
+  
+  
+
+

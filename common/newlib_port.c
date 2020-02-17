@@ -12,6 +12,7 @@
  * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
  *-------------------------------- Arctic Core -----------------------------*/
 
+/*lint -w1 Only errors in generic module used during development */
 
 #include <unistd.h>
 #include <sys/stat.h>
@@ -25,10 +26,10 @@
 #include "Ramlog.h"
 #include "Os.h"
 
-#if defined(CFG_ARM_CM3)
-#include "irq_types.h"
-#include "stm32f10x.h"
-#endif
+//#if defined(CFG_ARM_CM3)
+//#include "irq_types.h"
+////#include "stm32f10x.h"
+//#endif
 
 #ifdef USE_TTY_TCF_STREAMS
 #include "streams.h"
@@ -125,7 +126,7 @@ volatile char g_TConn __attribute__ ((section (".winidea_port")));
                             x[(z)+1] = (unsigned short) (y) >> 8;  }
 
 #define UNLOADSHORT(x,z) ((short) ( (short) x[(z)] +             \
-				   ((short) x[(z)+1] << 8)))
+                   ((short) x[(z)+1] << 8)))
 
 #define PACKCHAR(val, base, byte) ( (base)[(byte)] = (val) )
 
@@ -181,7 +182,7 @@ void writemsg(unsigned char  command,
 /*                                                                         */
 /***************************************************************************/
 void readmsg(register unsigned char *parm,
-	     register char          *data)
+         register char          *data)
 {
    volatile unsigned char *p = (volatile unsigned char *)(_CIOBUF_+1);
    unsigned int   i;
@@ -213,11 +214,11 @@ int HOSTwrite(int dev_fd, const char *buf, unsigned count)
    if (count > CC_BUFSIZ) count = CC_BUFSIZ;
 
    if (cio_tmp_buf_index < CC_BUFSIZ) {
-	   CIOTMPBUF[cio_tmp_buf_index++] = *buf;
+       CIOTMPBUF[cio_tmp_buf_index++] = *buf;
 
-	   if (*buf != 0xA) { // Only flush if newline
-		   return 0;
-	   }
+       if (*buf != 0xA) { // Only flush if newline
+           return 0;
+       }
    }
 
 
@@ -258,12 +259,12 @@ static volatile char t32_outport __attribute__ ((section (".t32_outport")));
 
 void t32_writebyte(char c)
 {
-	/* T32 can hang here for several reasons;
-	 * - term.view e:address.offset(v.address(t32_outport)) e:0
-	 */
+    /* T32 can hang here for several reasons;
+     * - term.view e:address.offset(v.address(t32_outport)) e:0
+     */
 
-	while (t32_outport != 0 ) ; /* wait until port is free */
-	t32_outport = c; /* send character */
+    while (t32_outport != 0 ) ; /* wait until port is free */
+    t32_outport = c; /* send character */
 }
 #endif
 /*
@@ -272,8 +273,8 @@ void t32_writebyte(char c)
 
 /* Do nothing */
 int close( int fd ) {
-	(void)fd;
-  	return (-1);
+    (void)fd;
+      return (-1);
 }
 
 char *__env[1] = { 0 };
@@ -284,11 +285,11 @@ char **environ = __env;
 
 int execve(const char *path, char * const argv[], char * const envp[] ) {
 //int execve(char *name, char **argv, char **env){
-	(void)path;
-	(void)argv;
-	(void)envp;
-  	errno=ENOMEM;
-  	return -1;
+    (void)path;
+    (void)argv;
+    (void)envp;
+      errno=ENOMEM;
+      return -1;
 }
 
 pid_t fork( void ) {
@@ -298,9 +299,9 @@ pid_t fork( void ) {
 
 #include <sys/stat.h>
 int fstat(int file, struct stat *st) {
-	(void)file;
-  	st->st_mode = S_IFCHR;
-  	return 0;
+    (void)file;
+      st->st_mode = S_IFCHR;
+      return 0;
 }
 
 /* Returns 1 if connected to a terminal. T32 can be a terminal
@@ -308,8 +309,8 @@ int fstat(int file, struct stat *st) {
 
 int isatty( int fd )
 {
-	(void)fd;
-	return 1;
+    (void)fd;
+    return 1;
 }
 
 /*
@@ -326,23 +327,23 @@ int fstat( int fd,  struct stat *buf )
  * We can't seek, return error.*/
 off_t lseek( int fd, off_t offset,int whence)
 {
-	(void)fd;
-	(void)offset;
-	(void)whence;
+    (void)fd;
+    (void)offset;
+    (void)whence;
 
-  	errno = ESPIPE;
-  	return ((off_t)-1);
+      errno = ESPIPE;
+      return ((off_t)-1);
 }
 
 int open(const char *name, int flags, int mode){
-	(void)name;
-	(void)flags;
-	(void)mode;
+    (void)name;
+    (void)flags;
+    (void)mode;
 
 #if defined(USE_RAMLOG)
-	if( strcmp(name,"ramlog") == 0 ) {
-		return FILE_RAMLOG;
-	}
+    if( strcmp(name,"ramlog") == 0 ) {
+        return FILE_RAMLOG;
+    }
 #endif
 
     return -1;
@@ -350,15 +351,15 @@ int open(const char *name, int flags, int mode){
 
 int read( int fd, void *buf, size_t nbytes )
 {
-	(void)fd;
-	(void)buf;
-	(void)nbytes;
+    (void)fd;
+    (void)buf;
+    (void)nbytes;
 #ifdef USE_TTY_WINIDEA
-	(void)g_TRBuffer[0];
+    (void)g_TRBuffer[0];
 #endif
 
 #ifdef USE_TTY_NOICE
-	// Not tested at all
+    // Not tested at all
     int retval;
     while (VUART_RX != 0)
     {
@@ -368,137 +369,137 @@ int read( int fd, void *buf, size_t nbytes )
     VUART_RX = 0;
 #endif
 
-	/* Only support write for now, return 0 read */
-	return 0;
+    /* Only support write for now, return 0 read */
+    return 0;
 }
 
 
 int write(  int fd, const void *_buf, size_t nbytes)
 {
-  	//(void)fd;  // Normally 0- ?, 1-stdout, 2-stderr,
-				// Added 3-ramlog,
+      //(void)fd;  // Normally 0- ?, 1-stdout, 2-stderr,
+                // Added 3-ramlog,
 
 
-	if( fd <= STDERR_FILENO ) {
+    if( fd <= STDERR_FILENO ) {
 #ifdef USE_TTY_NOICE
-	char *buf1 = (char *)_buf;
-	if (START_VUART)
-	{
-   	   for (int i = 0; i < nbytes; i++) {
-   		   char c = buf1[i];
-   		   if (c == '\n')
-   		   {
-   	   		   while (VUART_TX != 0)
-   	   		   {
-   	   		   }
+    char *buf1 = (char *)_buf;
+    if (START_VUART)
+    {
+          for (int i = 0; i < nbytes; i++) {
+              char c = buf1[i];
+              if (c == '\n')
+              {
+                     while (VUART_TX != 0)
+                     {
+                     }
 
-   	   		   VUART_TX = '\r';
-   		   }
+                     VUART_TX = '\r';
+              }
 
-   		   while (VUART_TX != 0)
-   		   {
-   		   }
+              while (VUART_TX != 0)
+              {
+              }
 
-   		   VUART_TX = c;
-   	   }
-	}
+              VUART_TX = c;
+          }
+    }
 #endif
 
 #ifdef USE_TTY_WINIDEA
-		if (g_TConn)
-		{
+        if (g_TConn)
+        {
           char *buf = (char *)_buf;
-		  unsigned char nCnt,nLen;
-		  for(nCnt=0; nCnt<nbytes; nCnt++)
-			{
-			while(TWBUFF_FULL()) ;
-			nLen=TWBUFF_TPTR;
-			g_TWBuffer[nLen]=buf[nCnt];
-			nLen=TWBUFF_INC(nLen);
-			TWBUFF_TPTR=nLen;
-			}
-		}
+          unsigned char nCnt,nLen;
+          for(nCnt=0; nCnt<nbytes; nCnt++)
+            {
+            while(TWBUFF_FULL()) ;
+            nLen=TWBUFF_TPTR;
+            g_TWBuffer[nLen]=buf[nCnt];
+            nLen=TWBUFF_INC(nLen);
+            TWBUFF_TPTR=nLen;
+            }
+        }
 #endif
 
 #ifdef USE_TTY_T32
-		char *buf = (char *)_buf;
-		for (int i = 0; i < nbytes; i++) {
-			if (*(buf + i) == '\n') {
-				t32_writebyte ('\r');
+        char *buf = (char *)_buf;
+        for (int i = 0; i < nbytes; i++) {
+            if (*(buf + i) == '\n') {
+                t32_writebyte ('\r');
 //      		t32_writebyte ('\n');
-			}
-			t32_writebyte (*(buf + i));
-		}
+            }
+            t32_writebyte (*(buf + i));
+        }
 #endif
 
 #ifdef USE_TTY_ARM_ITM
-		char *buf = (char *)_buf;
-		for (int i = 0; i < nbytes; i++) {
-			ITM_SendChar(*(buf + i));
-		}
+        char *buf = (char *)_buf;
+        for (int i = 0; i < nbytes; i++) {
+            ITM_SendChar(*(buf + i));
+        }
 #endif
 
 #ifdef USE_TTY_TCF_STREAMS
-		char *buf = (char *)_buf;
-		for (int i = 0; i < nbytes; i++) {
-			TCF_TTY_SendChar(*(buf + i));
-		}
+        char *buf = (char *)_buf;
+        for (int i = 0; i < nbytes; i++) {
+            TCF_TTY_SendChar(*(buf + i));
+        }
 #endif
 
 #ifdef USE_TTY_CODE_COMPOSER
-	HOSTwrite(fd, _buf, nbytes);
+    HOSTwrite(fd, _buf, nbytes);
 #endif
 
 #ifdef USE_TTY_TMS570_KEIL
-	for (int i = 0; i < nbytes; i++) {
-		GLCD_PrintChar((char *)(_buf + i));
-	}
+    for (int i = 0; i < nbytes; i++) {
+        GLCD_PrintChar((char *)(_buf + i));
+    }
 #endif
 
 #ifdef USE_TTY_UDE
-	UDE_write(fd,(char *)_buf,nbytes);
+    UDE_write(fd,(char *)_buf,nbytes);
 #endif
 
 
 #if defined(USE_RAMLOG)
-		{
-			char *buf = (char *)_buf;
-			for (int i = 0; i < nbytes; i++) {
-				ramlog_chr (*(buf + i));
-			}
-		}
+        {
+            char *buf = (char *)_buf;
+            for (int i = 0; i < nbytes; i++) {
+                ramlog_chr (*(buf + i));
+            }
+        }
 #endif
 
-	}
-	else
-	{
+    }
+    else
+    {
 #if defined(USE_RAMLOG)
-		/* RAMLOG support */
-		if(fd == FILE_RAMLOG) {
-			char *buf = (char *)_buf;
-		  	for (int i = 0; i < nbytes; i++) {
-				ramlog_chr (*(buf + i));
-		  	}
-		}
+        /* RAMLOG support */
+        if(fd == FILE_RAMLOG) {
+            char *buf = (char *)_buf;
+              for (int i = 0; i < nbytes; i++) {
+                ramlog_chr (*(buf + i));
+              }
+        }
 #endif
-	}
+    }
 
-	return (nbytes);
+    return (nbytes);
 }
 
 int arc_putchar(int fd, int c) {
-	char cc = c;
-	write( fd,&cc,1);
+    char cc = c;
+    write( fd,&cc,1);
 
-	return 0;
+    return 0;
 }
 
 
 int stat( const char *file, struct stat *st ) {
 //int stat(char *file, struct stat *st) {
-	(void)file;
-  	st->st_mode = S_IFCHR;
-  	return 0;
+    (void)file;
+      st->st_mode = S_IFCHR;
+      return 0;
 }
 
 
@@ -508,10 +509,10 @@ pid_t getpid() {
 
 
 int kill(int pid, int sig){
-	(void)pid;
-	(void)sig;
-  	errno=EINVAL;
-  	return(-1);
+    (void)pid;
+    (void)sig;
+      errno=EINVAL;
+      return(-1);
 }
 
 
@@ -532,13 +533,13 @@ void __init( void )
 #if defined(CFG_ARM)
 void _exit( int status ) {
 #ifdef USE_TTY_CODE_COMPOSER
-	__asm("        .global C$$EXIT");
-	__asm("C$$EXIT: nop");
+    __asm("        .global C$$EXIT");
+    __asm("C$$EXIT: nop");
 #endif
 
-	ShutdownOS( E_OS_EXIT_ABORT );
+    ShutdownOS( E_OS_EXIT_ABORT );
 
-	while(1) ;
+    while(1) ;
 }
 #endif
 

@@ -1,15 +1,17 @@
 LOCAL &exe_dir &cpu &proj_path
-//ENTRY &cpu
 
-//do ~~/t32.cmm
-winclear
+RADIX Hex
+AUTOSTORE , HISTORY BOOKMARK
+
+//winclear
+
+// Turn off screen updates.
+screen.off
 &proj_path=os.pwd()
-do t32.cmm
 
 print "Current project path:" "&proj_path"
 
 do config load
-//do config debug
 
 IF ("&cfg_cpu_g"=="")||(CPUFAMILY()!="&cfg_cpu_family_g")
 (
@@ -22,66 +24,49 @@ IF "&cfg_project_path_g"==""
   do config dialog_project
 )
 
-//do config debug
-
 &cpu="&cfg_cpu_g"
-
-//winpos 0% 70% 50% 30%
-//area
 
 sys.down
 
 ;reset
-//GLOBAL &cfg_project_path_g
-//GLOBAL &cfg_base_load_file_g
 
 &exe_dir=os.ppd()
 cd &exe_dir
 
-//do config load
-//do config dialog
-
-sys.cpu &cpu
-
+;sys.cpu &cpu
+print "Running setup for &cpu"
+do setup setup_&cpu
 IF SIMULATOR()
 (
-  IF CPU()!="CortexM3"
-  (
-    do sim_mpc55xx
-    
-    IF CPU()=="MPC5606S"
-      sys.option DISMODE VLE
-  )
-)
-ELSE
-(
-    sys.bdmclock 10000000.
-)
-
-
+  do setup setup_sim
+)  
 // Setup flash
-SYStem.Up
-do flash init
 
-
-IF !SIMULATOR()
+IF CPUFAMILY()=="POWERPC"
 (
-  break.select program onchip
+  do flash init
 )
+
+// At least cortex-M is buggy when using "auto" here.
+break.implementation program onchip
 
 
 // Setup how to view variables and code
-setup.var %SYMBOL.on %HEX.on %decimal.on %index.on %string.on
-setup.tabsize 2.
+setup.var %SYMBOL.on %HEX.on %decimal.on %index.on %string.on %location.on %spotlight.on %open.1
+setup.tabsize 4.
 
 menu.rp arccore.men
+menu.rp orti.men
 
 winpos 0% 70% 50% 30%
 area
 
 area.select
-print "## Welcome to ArcCore simulator environment for T32   ##"
-print ""
+IF SIMULATOR()
+(
+  print "## Welcome to ArcCore simulator environment for T32   ##"
+  print ""
+)
 
 enddo
 

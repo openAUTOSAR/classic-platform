@@ -57,9 +57,9 @@
  * Event parameter list
  */
 const Dem_EventParameterType EventParameter[] = {
-		{
-				.Arc_EOL  = TRUE
-		}
+        {
+                .Arc_EOL  = TRUE
+        }
 };
 
 
@@ -67,15 +67,12 @@ const Dem_EventParameterType EventParameter[] = {
  * DEM's config set
  */
 const Dem_ConfigSetType DEM_ConfigSet = {
-		.EventParameter = EventParameter,
-//		.DTCClassType = NULL,		TODO: Add later
-//		.GroupOfDtc = NULL,			TODO: Add later
-//		.OemIdClass = NULL			TODO: Add later
+        .EventParameter = EventParameter,
 };
 
 /*
  * DEM's config
  */
 const Dem_ConfigType DEM_Config = {
-	.ConfigSet = &DEM_ConfigSet,
+    .ConfigSet = &DEM_ConfigSet,
 };

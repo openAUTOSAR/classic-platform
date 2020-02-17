@@ -1,0 +1,6 @@
+/* This is the lint file to be used together with Code Warrior */
+
+au-misra2.lnt        //To check MISRA 2004 C rules
+au-misra3.lnt        //To check MISRA 2012 C rules
+lnt/co-ghs.lnt     // GHS options
+std.lnt              // Arccore standard options

@@ -20,18 +20,30 @@
 
 extern uint32_t Timer_Freq;
 
-#define TIMER_TICK2US( _x )		((_x) / (Timer_Freq/1000000))
+#define TIMER_TICK2US( _x )		((_x) / (Timer_Freq/1000000uL))
+#define TIMER_TICK2NS( _x )     (((_x)*1000) / (Timer_Freq/1000000uL))
+#define TIMER_US2TICK( _x )            ((uint32_t)(((uint64_t)Timer_Freq * (_x) )/1000000uLL))
 
 typedef uint32_t TimerTick;
-
+typedef uint64_t TimerTick64;
 
 void Timer_Init( void );
+void Timer_InitIdx( uint8_t timerIdx );
 
 /**
  * Get a 32-bit timer
  */
 
 TimerTick Timer_GetTicks( void );
+TimerTick Timer_GetTicksIdx( uint8_t timerIdx );
+
+/**
+ * Get a 64-bit timer
+ */
+
+uint64_t Timer_GetTicks64( void );
+uint64_t Timer_GetTicks64Idx( uint8_t timerIdx );
+
 
 /**
  * Busy wait for useconds micro seconds.
@@ -40,18 +52,30 @@ TimerTick Timer_GetTicks( void );
  */
 
 static inline void Timer_uDelay(uint32_t uSeconds ) {
-	TimerTick startTick = Timer_GetTicks();
-	TimerTick waitTicks;
+    TimerTick startTick = Timer_GetTicks();
+    TimerTick waitTicks;
 
-	/* Calc the time to wait */
-	waitTicks = (uint32_t)(((uint64_t)Timer_Freq * uSeconds)/1000000);
+    /* Calc the time to wait */
+    waitTicks = (uint32_t)(((uint64_t)Timer_Freq * uSeconds)/1000000uLL);
 
-	/* busy wait */
-	while( (Timer_GetTicks() - startTick)  < waitTicks ) {
-		;
-	}
+    /* busy wait */
+    while( (Timer_GetTicks() - startTick)  < waitTicks ) {
+        ;
+    }
 }
 
+static inline void Timer_uDelay64(uint32_t uSeconds ) {
+    TimerTick64 startTick = Timer_GetTicks64();
+    TimerTick64 waitTicks;
+
+    /* Calc the time to wait */
+    waitTicks = ((uint64_t)Timer_Freq * (uint64_t)uSeconds)/1000000uLL;
+
+    /* busy wait */
+    while( (Timer_GetTicks64() - startTick)  < waitTicks ) {
+        ;
+    }
+}
 
 
 #endif /* TIMER_H_ */
