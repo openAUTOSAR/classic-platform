@@ -24,13 +24,13 @@
 #define PID_IDLE                0U
 
 #define ST_READY                (uint32)1U
-#define ST_WAIT_EVENT           (1U<<(uint32)1U)
-#define ST_SUSPENDED            (1U<<(uint32)2U)
-#define ST_RUNNING              (1U<<(uint32)3U)
-#define ST_NOT_STARTED          (1U<<(uint32)4U)
-#define ST_SLEEPING             (1U<<(uint32)5U)
-#define ST_WAIT_SEM             (1U<<(uint32)6U)
-#define ST_WAIT_MUTEX           (1U<<(uint32)7U)
+#define ST_WAIT_EVENT           ((uint32)1U<<(uint32)1U)
+#define ST_SUSPENDED            ((uint32)1U<<(uint32)2U)
+#define ST_RUNNING              ((uint32)1U<<(uint32)3U)
+#define ST_NOT_STARTED          ((uint32)1U<<(uint32)4U)
+#define ST_SLEEPING             ((uint32)1U<<(uint32)5U)
+#define ST_WAIT_SEM             ((uint32)1U<<(uint32)6U)
+#define ST_WAIT_MUTEX           ((uint32)1U<<(uint32)7U)
 
 #define ST_ISR_RUNNING          (uint32)1U
 #define ST_ISR_NOT_RUNNING      (uint32)2U
@@ -55,25 +55,6 @@ typedef EventMaskType 	OsEventType;
 
 /* Autosar want relative priorities */
 typedef uint32 OsPriorityType;
-
-
-/* STD container : OsHooks
- * OsErrorHooks:			1
- * OsPostTaskHook:			1
- * OsPreTaskHook:			1
- * OsProtectionHook:		0..1 Class 2,3,4 it's 1 instance
- * OsShutdownHook:			1
- * OsStartupkHook:			1
- * */
-
-typedef struct OsHooks {
-    ProtectionHookType 	ProtectionHook;
-    StartupHookType 	StartupHook;
-    ShutdownHookType 	ShutdownHook;
-    ErrorHookType 		ErrorHook;
-    PreTaskHookType 	PreTaskHook;
-    PostTaskHookType 	PostTaskHook;
-} OsHooksType;
 
 /* OsTask/OsTaskSchedule */
 enum OsTaskSchedule {
@@ -289,7 +270,7 @@ static inline void Os_TaskResourceFreeAll( OsTaskVarType *pcbPtr ) {
 
 #define os_pcb_get_state(pcb) ((pcb)->state)
 
-
+#if !(defined(CFG_SAFETY_PLATFORM) || defined(BUILD_OS_SAFETY_PLATFORM))
 static inline void *Os_StackGetUsage( OsTaskVarType *pcb ) {
 
     uint8 *p = pcb->stack.curr;
@@ -300,6 +281,8 @@ static inline void *Os_StackGetUsage( OsTaskVarType *pcb ) {
         }
     return (void *)end;
 }
+#endif
+
 static inline void Os_StackSetStartmark( OsTaskVarType *pcbPtr ) {
 	uint8 *start = (uint8 *)pcbPtr->stack.top + pcbPtr->stack.size;
     /* For Tricore architecture NULL in the start of the stack is used for CSA linked list.
@@ -338,23 +321,8 @@ static inline boolean Os_StackIsStartmarkOk( OsTaskVarType *pcbPtr ) {
     }
     return rv;
 }
-static inline void Os_StackPerformCheck( OsTaskVarType *pcbPtr ) {
-#if (OS_STACK_MONITORING == 1)
-        if( (!Os_StackIsEndmarkOk(pcbPtr)) || (!Os_StackIsStartmarkOk(pcbPtr)) ) {
-#if (OS_SC1 == STD_ON) || (OS_SC2 == STD_ON)
-            /** @req SWS_Os_00068 */
-            ShutdownOS(E_OS_STACKFAULT);
-#elif (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
-            /** @req SWS_Os_00396
-             * If a stack fault is detected by stack monitoring AND the configured scalability
-             * class is 3 or 4, the Operating System module shall call the ProtectionHook() with
-             * the status E_OS_STACKFAULT.
-             * */
-            PROTECTIONHOOK(E_OS_STACKFAULT);
-#endif
-        }
-#endif
-}
+
+void Os_StackPerformCheck( OsTaskVarType *pcbPtr );
 
 static inline _Bool Os_TaskOccupiesResources( OsTaskVarType *pcb ) {
     return !(TAILQ_EMPTY(&pcb->resourceHead));

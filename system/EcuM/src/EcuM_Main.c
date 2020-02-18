@@ -288,6 +288,8 @@ void SetComMCommunicationAllowed(EcuM_ComMCommunicationGroupsType group, boolean
 }
 
 #if (ECUM_ARC_SAFETY_PLATFORM == STD_OFF)
+/** @CODECOV:NOT_SUPPORTED:SafetyPlatform has its own partitioned ECUM main functions **/
+__CODE_COVERAGE_OFF__
 /**
  * RUN II entry
  * - Called from EcuM_StartupTwo()
@@ -821,4 +823,5 @@ void EcuM_MainFunction(void) {
         }
     }
 }
+__CODE_COVERAGE_ON__
 #endif /*!(defined(ECUM_ARC_SAFETY_PLATFORM))*/

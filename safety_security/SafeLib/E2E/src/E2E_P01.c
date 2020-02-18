@@ -346,6 +346,8 @@ static INLINE boolean isCheckOfReceivedDataNotOkP01(const E2E_P01ConfigType* Con
 //      LDEBUG_PRINTF("\n");
         status = TRUE;
     }
+    /* @CODECOV:DEFAULT_CASE:Else statement is required for defensive programming. */
+    __CODE_COVERAGE_IGNORE__
     else {
         /* Do nnothing but needed for MISRA */
     }
@@ -603,6 +605,7 @@ static INLINE E2E_PCheckStatusType doE2E_P01MapStatusToSM_TRUE(E2E_P01CheckStatu
             retValue = E2E_P_WRONGSEQUENCE;
             break;
         /* @CODECOV:DEFAULT_CASE:Default statement is required for defensive programming. If this happens the state will be restored to E2E_P_ERROR */
+        __CODE_COVERAGE_IGNORE__
         default:
             retValue = E2E_P_ERROR;
             break;
@@ -639,6 +642,7 @@ static INLINE E2E_PCheckStatusType doE2E_P01MapStatusToSM_FALSE(E2E_P01CheckStat
             retValue = E2E_P_WRONGSEQUENCE;
             break;
         /* @CODECOV:DEFAULT_CASE:Default statement is required for defensive programming. If this happens the state will be restored to E2E_P_ERROR */
+        __CODE_COVERAGE_IGNORE__
         default:
             retValue = E2E_P_ERROR;
             break;

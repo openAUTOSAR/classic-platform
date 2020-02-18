@@ -162,7 +162,6 @@ uint32 Crc_CalculateCRC32P4(const uint8* Crc_DataPtr, uint32 Crc_Length, uint32 
 
 
 /* @req SWS_CRC_00011 The function Crc_GetVersionInfo shall return the version information of the Crc module */
-/* @req SWS_CRC_00017 The CRC module should realize this function as a macro, defined in the modules header file */
 /* @req SWS_CRC_00021 API for Crc_GetVersionInfo */
 /** @brief Return the version information of Crc module.
  *
@@ -178,6 +177,9 @@ uint32 Crc_CalculateCRC32P4(const uint8* Crc_DataPtr, uint32 Crc_Length, uint32 
  *  @param Std_VersionInfoType The type including Module and Vendor ID for the Crc Module.
  *  @return void.
  */
+
+#if (SAFELIB_VERSIONINFO_API == STD_ON)
 void Crc_GetVersionInfo(Std_VersionInfoType* versioninfo);
+#endif
 
 #endif /* CRC_H_ */

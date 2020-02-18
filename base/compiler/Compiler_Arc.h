@@ -66,11 +66,21 @@
 #endif
 
 #if defined(CFG_BULLSEYE)
-#define __CODE_COVERAGE_ON__ _Pragma("BullseyeCoverage on")
-#define __CODE_COVERAGE_OFF__ _Pragma("BullseyeCoverage off")
+#define __CODE_COVERAGE_ON__        _Pragma("BullseyeCoverage restore")
+#define __CODE_COVERAGE_OFF__       _Pragma("BullseyeCoverage save off")
+#define __CODE_COVERAGE_IGNORE__    _Pragma("BullseyeCoverage ignore")
+#define __CODE_COVERAGE_IGNORE2__    _Pragma("BullseyeCoverage ignore:2")
+#define __CODE_COVERAGE_IGNORE3__    _Pragma("BullseyeCoverage ignore:3")
+
+#pragma BullseyeCoverage ignore:3
+
 #else
 #define __CODE_COVERAGE_ON__
 #define __CODE_COVERAGE_OFF__
+#define __CODE_COVERAGE_IGNORE__
+#define __CODE_COVERAGE_IGNORE1__
+#define __CODE_COVERAGE_IGNORE2__
+#define __CODE_COVERAGE_IGNORE3__
 #endif
 
 #endif /* COMPILER_H */	

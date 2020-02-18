@@ -15,7 +15,6 @@ include $(board_path)/build_config.mk
 # Perform build system version check
 include $(ROOTDIR)/scripts/version_check.mk
 
-
 ###############################################################################
 # MODULE CONFIGURATION                                                        #
 ###############################################################################
@@ -84,42 +83,6 @@ ifeq (${COMPILER},armcc)
 ARMCC_COMPILE?=${DEFAULT_ARMCC_COMPILE}
 endif
 
-
-
-# Check cross compiler setting against default from board config
-ifeq (${COMPILER},cw)
-ifneq (${CW_COMPILE},${DEFAULT_CW_COMPILE})
-${warning Not using default cross compiler for architecture.}
-${warning CW_COMPILE:            ${CW_COMPILE} [${origin CW_COMPILE}]}
-${warning DEFAULT_CW_COMPILE:    ${DEFAULT_CW_COMPILE} [${origin DEFAULT_CW_COMPILE}]}
-endif
-else ifeq (${COMPILER},iar)
-ifneq (${IAR_COMPILE},${DEFAULT_IAR_COMPILE})
-${warning Not using default cross compiler for architecture.}
-${warning IAR_COMPILE:            ${IAR_COMPILE} [${origin IAR_COMPILE}]}
-${warning DEFAULT_IAR_COMPILE:    ${DEFAULT_IAR_COMPILE} [${origin DEFAULT_IAR_COMPILE}]}
-endif
-else ifeq (${COMPILER},diab)
-ifneq (${DIAB_COMPILE},${DEFAULT_DIAB_COMPILE})
-${warning Not using default cross compiler for architecture.}
-${warning DIAB_COMPILE:            ${DIAB_COMPILE} [${origin DIAB_COMPILE}]}
-${warning DEFAULT_DIAB_COMPILE:    ${DEFAULT_DIAB_COMPILE} [${origin DEFAULT_DIAB_COMPILE}]}
-endif
-else ifeq (${COMPILER},ghs)
-ifneq (${GHS_COMPILE},${DEFAULT_GHS_COMPILE})
-${warning Not using default cross compiler for architecture.}
-${warning GHS_COMPILE:            ${GHS_COMPILE} [${origin GHS_COMPILE}]}
-${warning DEFAULT_GHS_COMPILE:    ${DEFAULT_GHS_COMPILE} [${origin DEFAULT_GHS_COMPILE}]}
-endif
-else
-ifneq (${DEFAULT_CROSS_COMPILE},)
-ifneq (${CROSS_COMPILE},${DEFAULT_CROSS_COMPILE})
-${warning Not using default cross compiler for architecture.}
-${warning CROSS_COMPILE:         ${CROSS_COMPILE} [${origin CROSS_COMPILE}]}
-${warning DEFAULT_CROSS_COMPILE: ${DEFAULT_CROSS_COMPILE} [${origin DEFAULT_CROSS_COMPILE}]}
-endif
-endif
-endif
 
 
 DATE=$(shell date +"%F %X")
@@ -520,7 +483,7 @@ $(build-exe-y): $(dep-y) $(obj-y) $(os-orti-y) $(sim-y) $(libitem-y) $(ldcmdfile
 ifeq ($(COMPILER),iar)
 	$(Q)$(LD) $(filter-out $(rm-ldflags),$(LDFLAGS)) --config $(ldcmdfile-y) --map $(basename $(@F)).map $(sort $(obj-y)) $(libpath-y) $(lib-y) $(libitem-y) -o $@
 else ifeq ($(CROSS_COMPILE)$(COMPILER),gcc)
-	$(Q)$(CC) -Xlinker -Map=$(basename $(@F)).map -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	$(filter-out $(rm-ldflags),$(LDFLAGS))
+	$(Q)$(CC_PRE)$(CC) -Xlinker -Map=$(basename $(@F)).map -o $@ $(libpath-y) $(obj-y) $(lib-y) $(libitem-y)	$(filter-out $(rm-ldflags),$(LDFLAGS))
 else
 	$(Q)$(LD) $(filter-out $(rm-ldflags),$(LDFLAGS)) $(LD_FILE) $(LD_FILE2)$(ldcmdfile-y) -o $@ $(libpath-y) $(LD_START_GRP) $(obj-y) $(lib-y) $(libitem-y) $(LD_END_GRP) $(LDMAPFILE)
 	$(do-memory-footprint)

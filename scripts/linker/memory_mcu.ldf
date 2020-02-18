@@ -52,6 +52,14 @@
 	#define L_FLASH_DATA_0_LENGTH	L_SIZE_64K
 	#define L_SRAM_0_ORIGIN			0x40000000
 	#define L_SRAM_0_LENGTH			L_SIZE_64K
+#elif defined(CFG_MPC5607B)
+    /* xLL,xLQ - 96K SRAM, xMG - 48K, assume xLL */
+    #define L_FLASH_CODE_0_ORIGIN   0x00000000
+    #define L_FLASH_CODE_0_LENGTH   L_SIZE_1M
+    #define L_FLASH_DATA_0_ORIGIN   0x00800000
+    #define L_FLASH_DATA_0_LENGTH   L_SIZE_64K
+    #define L_SRAM_0_ORIGIN         0x40000000
+    #define L_SRAM_0_LENGTH         L_SIZE_96K
 #elif defined(CFG_MPC5606B)
 	/* xLL,xLQ - 80K SRAM, xMG - 48K, assume xLL */
 	#define L_FLASH_CODE_0_ORIGIN 	0x00000000

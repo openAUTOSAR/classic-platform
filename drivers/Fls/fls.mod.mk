@@ -36,4 +36,5 @@ vpath-$(USE_FLS) += $(ROOTDIR)/drivers/Fls
 
 vpath-$(USE_FLS) += $(ROOTDIR)/mcal/Fls/src
 inc-$(USE_FLS) += $(ROOTDIR)/mcal/Fls/inc
+inc-$(USE_FLS) += $(ROOTDIR)/mcal/Fls/src
 

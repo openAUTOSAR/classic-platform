@@ -108,7 +108,8 @@
  *  @param Std_VersionInfoType The type including Module and Vendor ID for the E2E Module.
  *  @return void.
  */
+#if (SAFELIB_VERSIONINFO_API == STD_ON)
 void E2E_GetVersionInfo(Std_VersionInfoType* versioninfo);
-
+#endif
 
 #endif /* E2E_H_ */

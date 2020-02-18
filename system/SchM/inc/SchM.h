@@ -34,6 +34,9 @@
 #define SCHM_SW_MINOR_VERSION     0u
 #define SCHM_SW_PATCH_VERSION     0u
 
+#define SCHM_AR_RELEASE_MAJOR_VERSION        4u
+#define SCHM_AR_RELEASE_MINOR_VERSION        0u
+
 void SchM_GetVersionInfo( Std_VersionInfoType *versionInfo );   /* @req ARC_SWS_SchM_00007 */
 
 void SchM_Init( void );

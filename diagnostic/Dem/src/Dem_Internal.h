@@ -63,6 +63,7 @@ typedef struct {
     boolean                     extensionDataChanged:1; /*lint !e46 *//*structure must remain the same,field type should be _Bool, unsigned int or signed int [MISRA 2004 6.4, 2012 6.1]*/
     boolean                     indicatorDataChanged:1; /*lint !e46 *//*structure must remain the same,field type should be _Bool, unsigned int or signed int [MISRA 2004 6.4, 2012 6.1]*/
     boolean                     isAvailable:1; /*lint !e46 *//*structure must remain the same,field type should be _Bool, unsigned int or signed int [MISRA 2004 6.4, 2012 6.1]*/
+    boolean                     isDisabled:1; /*lint !e46 *//*structure must remain the same,field type should be _Bool, unsigned int or signed int [MISRA 2004 6.4, 2012 6.1]*/
 } EventStatusRecType;
 
 // Types for storing different event data on event memory
@@ -71,7 +72,7 @@ typedef struct {
  * ******************************************************************************************************/
 typedef union {
     struct {
-#if (DEM_EVENT_DISPLACEMENT_SUPPORT == STD_ON) && defined(DEM_DISPLACEMENT_PROCESSING_DEM_INTERNAL)
+#if (DEM_USE_TIMESTAMPS == STD_ON)
     uint32                      timeStamp;
 #endif
     Dem_EventIdType             eventId;
@@ -92,7 +93,7 @@ typedef union {
 } EventRecType;
 
 typedef struct {
-#if (DEM_EVENT_DISPLACEMENT_SUPPORT == STD_ON) && defined(DEM_DISPLACEMENT_PROCESSING_DEM_INTERNAL)
+#if (DEM_USE_TIMESTAMPS == STD_ON)
     uint32              timeStamp;
 #endif
     Dem_EventIdType     eventId;
@@ -122,6 +123,11 @@ boolean operationCycleIsStarted(Dem_OperationCycleIdType opCycle);
 void demZeroPriMemBuffers(void);
 void demZeroSecMemBuffers(void);
 void demZeroPermMemBuffers(void);
+void demZeroPreStoreFFMemBuffer(void);
+void demZeroIumprBuffer(void);
+void demSetIgnitionCounterToMax(void);
+void demSetDenominatorToMax(Dem_RatioIdType ratioId);
+void demSetNumeratorToMax(Dem_RatioIdType ratioId);
 #endif
 void lookupEventIdParameter(Dem_EventIdType eventId, const Dem_EventParameterType **const eventIdParam);
 Std_ReturnType handleEvent(Dem_EventIdType eventId, Dem_EventStatusType eventStatus);
@@ -136,6 +142,13 @@ void InitTimeBasedDebounce(void);
 void TimeBasedDebounceMainFunction(void);
 #endif
 
+#if defined(USE_DEM_EXTENSION)
 boolean Dem_LookupEventOfUdsDTC(uint32 dtc, EventStatusRecType **eventStatusRec);
+#endif
+
+#define DEM_TRISTATE int8_t
+#define DEM_T_NULL   -1
+#define DEM_T_FALSE   0
+#define DEM_T_TRUE    1
 
 #endif /* DEM_INTERNAL_H_ */

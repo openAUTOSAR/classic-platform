@@ -324,7 +324,7 @@ vpath-$(CFG_TC2XX) += $(ROOTDIR)/$(ARCH_KERNEL_PATH-y)/integration
 obj-$(CFG_MCU_ARC_LP) += Mcu_Arc_Cfg.o
 obj-$(CFG_PPC) += Cpu.o
 
-obj-$(CFG_PPC) += mm.o
+obj-$(CFG_MPC5516) += mm.o
 vpath-$(CFG_PPC) += $(ROOTDIR)/$(ARCH_KERNEL_PATH-y)/mm
 inc-$(CFG_PPC) += $(ROOTDIR)/$(ARCH_KERNEL_PATH-y)/mm
 

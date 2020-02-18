@@ -165,9 +165,7 @@ typedef struct {
 
 void BswM_Init( const BswM_ConfigType* ConfigPtr );
 void BswM_Deinit( void );
-#if !defined(USE_RTE)
 void BswM_MainFunction( void );
-#endif
 
 
 #if ( BSWM_GENERIC_REQUEST_ENABLED == STD_ON )

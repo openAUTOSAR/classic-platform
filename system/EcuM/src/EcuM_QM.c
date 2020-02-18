@@ -95,8 +95,10 @@ static inline boolean is_currentSyncState(EcuM_SP_SyncStatus syncStatus) {
 }
 /* if the supplied major status is not finished */
 static inline boolean is_exec_required_for_state_partition_QM(EcuM_SP_SyncStatus syncStatus) {
-    return ((is_currentSyncState(syncStatus) == TRUE) && !(((get_sync_status_partition_QM() & (EcuM_SP_SyncStatus)ECUM_MAINSTATE_MASK) == (syncStatus & (EcuM_SP_SyncStatus)ECUM_MAINSTATE_MASK)) &&
-             ((get_sync_status_partition_QM() & (EcuM_SP_SyncStatus)ECUM_SP_PARTITION_FUN_COMPLETED_QM) == ECUM_SP_PARTITION_FUN_COMPLETED_QM)));
+    return ((is_currentSyncState(syncStatus) == TRUE) && !((get_sync_status_partition_QM() & (EcuM_SP_SyncStatus)ECUM_MAINSTATE_MASK) == (syncStatus & (EcuM_SP_SyncStatus)ECUM_MAINSTATE_MASK)
+		/** @CODECOV:PARAMETER_VALIDATION_PRIVATE_FUNCTION:QM status can never not be set as complete when above check is also true*/
+		__CODE_COVERAGE_IGNORE__
+		&& (get_sync_status_partition_QM() & (EcuM_SP_SyncStatus)ECUM_SP_PARTITION_FUN_COMPLETED_QM) == ECUM_SP_PARTITION_FUN_COMPLETED_QM));
 }
 #if defined(USE_BSWM)
 static inline boolean is_state_changed_partition_QM(EcuM_StateType current_state) {

@@ -204,13 +204,6 @@ typedef uint8 RestartType;
 #define RESTART         0
 #define NO_RESTART        1
 
-typedef ProtectionReturnType (*ProtectionHookType)( StatusType);
-typedef void (*StartupHookType)( void );
-typedef void (*ShutdownHookType)( StatusType );
-typedef void (*ErrorHookType)( StatusType );
-typedef void (*PreTaskHookType)( void );
-typedef void (*PostTaskHookType)( void );
-
 #if (OS_SC2 == STD_ON) || (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
 /** @req SWS_Os_00542 */ /* ProtectionHook( ) available in Scalability Classes 2, 3 and 4. */
 /** @req SWS_Os_00538 */
@@ -356,7 +349,6 @@ static inline void ResumeOSInterrupts( void ) {
 
 #if (OS_SC1 == STD_ON) || (OS_SC2 == STD_ON)
 
-#define SYS_CALL_EnterUserMode()
 #define SYS_CALL_EnterSupervisorMode()
 #define SYS_CALL_ResumeAllInterrupts()      ResumeAllInterrupts()
 #define SYS_CALL_SuspendAllInterrupts()     SuspendAllInterrupts()
@@ -421,22 +413,8 @@ StatusType  Os_ModifyPeripheral32(  AreaIdType  Area,  uint32   *Address, uint32
 #define ModifyPeripheral16(_a1,_a2,_a3,_a4) Os_ModifyPeripheral16(_a1, _a2, _a3, _a4 )
 #define ModifyPeripheral32(_a1,_a2,_a3,_a4) Os_ModifyPeripheral32( _a1, _a2, _a3, _a4 )
 
-#if 0
-#define ReadPeripheral8                             Os_ReadPeripheral8
-#define ReadPeripheral16                            Os_ReadPeripheral16
-#define ReadPeripheral32                            Os_ReadPeripheral32
-#define WritePeripheral8                            Os_WritePeripheral8
-#define WritePeripheral16                           Os_WritePeripheral16
-#define WritePeripheral32                           Os_WritePeripheral32
-#define ModifyPeripheral8                           Os_ModifyPeripheral8
-#define ModifyPeripheral16                          Os_ModifyPeripheral16
-#define ModifyPeripheral32                          Os_ModifyPeripheral32
-#endif
-
 #elif (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
 /* The RTE uses SYS_CALL_xxx always, so map them to the OS functions */
-
-#define SYS_CALL_EnterUserMode()     Os_EnterUserMode()
 
 extern StatusType Os_ArchSysCall();
 extern StatusType Os_ArchSysCall_4(uint32 a, uint32 b, uint32 c, uint32 d);
@@ -451,19 +429,25 @@ extern StatusType Os_ArchSysCall_4_S_P_S(uint32 a, uint32 * b, uint32 c, uint32 
 extern StatusType Os_ArchSysCall_4_S_P_S_S(uint32 a, uint32 * b, uint32 c, uint32 d, uint32 e);
 
 extern int Os_ArchSysCall_4_P_S(uint32 *a, uint32 b, uint32 c, uint32 d);
-
-
 #endif
 extern StatusType Os_ArchSysCall_4_S(uint32 a, uint64, uint32 d);
 extern StatusType Os_SysCall_0(uint32 index);
 
+#if defined(CFG_ARM)
+extern StatusType Os_ArchSysCall_8(uint32 a1, uint32 a2, uint32 a3, uint32 a4, uint32 a5, uint32 a6,uint32 a7,uint32 a8 );
+#endif
 
 
 #define SYS_CALL_0(index)                            Os_ArchSysCall_4(0,0,0,index)
-#define SYS_CALL_1(index,_a1)                        Os_ArchSysCall_4((uint32)_a1,0,0,index)
+#define SYS_CALL_1(index,_a1)                        Os_ArchSysCall_4((uint32)(_a1),0,0,index)
 #define SYS_CALL_2(index,_a1,_a2)                    Os_ArchSysCall_4((uint32)_a1,(uint32)_a2,0,index)
 #define SYS_CALL_3(index,_a1,_a2,_a3)                Os_ArchSysCall_4((uint32)_a1,(uint32)_a2,(uint32)_a3,index)
 #define SYS_CALL_4(index,_a1,_a2,_a3,_a4)            Os_ArchSysCall_5((uint32)_a1,(uint32)_a2,(uint32)_a3,(uint32)_a4,index)
+#if defined(CFG_ARM)
+#define SYS_CALL_8(index,_a1,_a2,_a3,_a4,_a5,_a6,_a7 )   \
+            Os_ArchSysCall_8((uint32)_a1,(uint32)_a2,(uint32)_a3,(uint32)_a4,(uint32)_a5,(uint32)_a6,(uint32)_a7,index)
+#endif
+
 #if defined(CFG_TC2XX)
 #define SYS_CALL_1_P1(index,_a1)                     Os_ArchSysCall_4_P1((uint32 *)_a1,0,0,index)
 #define SYS_CALL_2_P2(index,_a1,_a2)                 Os_ArchSysCall_4_P2((uint32)_a1,(uint32 *)_a2,0,index)
@@ -530,13 +514,13 @@ extern StatusType Os_SysCall_0(uint32 index);
 
 #define SYS_CALL_CNT                                 53
 
-#define SYS_CALL_EnterSupervisorMode()              SYS_CALL_0( SYS_CALL_INDEX_EnterSupervisorMode )
-#define SYS_CALL_ResumeAllInterrupts()              SYS_CALL_0( SYS_CALL_INDEX_ResumeAllInterrupts )
-#define SYS_CALL_SuspendAllInterrupts()             SYS_CALL_0( SYS_CALL_INDEX_SuspendAllInterrupts )
-#define SYS_CALL_EnableAllInterrupts()              SYS_CALL_0( SYS_CALL_INDEX_EnableAllInterrupts )
-#define SYS_CALL_DisableAllInterrupts()             SYS_CALL_0( SYS_CALL_INDEX_DisableAllInterrupts )
-#define SYS_CALL_ResumeOSInterrupts()               SYS_CALL_0( SYS_CALL_INDEX_ResumeOSInterrupts )
-#define SYS_CALL_SuspendOSInterrupts()              SYS_CALL_0( SYS_CALL_INDEX_SuspendOSInterrupts )
+#define SYS_CALL_EnterSupervisorMode()              (void)SYS_CALL_0( SYS_CALL_INDEX_EnterSupervisorMode )
+#define SYS_CALL_ResumeAllInterrupts()              (void)SYS_CALL_0( SYS_CALL_INDEX_ResumeAllInterrupts )
+#define SYS_CALL_SuspendAllInterrupts()             (void)SYS_CALL_0( SYS_CALL_INDEX_SuspendAllInterrupts )
+#define SYS_CALL_EnableAllInterrupts()              (void)SYS_CALL_0( SYS_CALL_INDEX_EnableAllInterrupts )
+#define SYS_CALL_DisableAllInterrupts()             (void)SYS_CALL_0( SYS_CALL_INDEX_DisableAllInterrupts )
+#define SYS_CALL_ResumeOSInterrupts()               (void)SYS_CALL_0( SYS_CALL_INDEX_ResumeOSInterrupts )
+#define SYS_CALL_SuspendOSInterrupts()              (void)SYS_CALL_0( SYS_CALL_INDEX_SuspendOSInterrupts )
 
 #define SYS_CALL_ActivateTask(_a1)                  SYS_CALL_1( SYS_CALL_INDEX_ActivateTask,_a1 )
 #define SYS_CALL_TerminateTask()                    SYS_CALL_0( SYS_CALL_INDEX_TerminateTask)
@@ -620,33 +604,9 @@ extern StatusType Os_SysCall_0(uint32 index);
 #endif
 
 #if defined(CFG_ARM)
-/* We want to keep register based calling, so define these here */
-
-
-static inline StatusType  ModifyPeripheral8(  AreaIdType  Area,  uint8   *Address, uint8  ClearMask, uint8 SetMask) {
-    uint8 _val;
-    SYS_CALL_3( SYS_CALL_INDEX_ReadPeripheral8, Area, Address, &_val );
-    _val = ((_val & ClearMask) | SetMask);
-    SYS_CALL_3( SYS_CALL_INDEX_WritePeripheral8, Area, Address, _val );
-    return E_OK;
-}
-
-static inline StatusType  ModifyPeripheral16(  AreaIdType  Area,  uint16   *Address, uint16  ClearMask, uint16 SetMask) {
-    uint16 _val;
-    SYS_CALL_3( SYS_CALL_INDEX_ReadPeripheral16, Area, Address, &_val );
-    _val = ((_val & ClearMask) | SetMask);
-    SYS_CALL_3( SYS_CALL_INDEX_WritePeripheral16, Area, Address, _val );
-    return E_OK;
-}
-
-static inline StatusType  ModifyPeripheral32(  AreaIdType  Area,  uint32   *Address, uint32  ClearMask, uint32 SetMask) {
-    uint32 _val;
-    SYS_CALL_3( SYS_CALL_INDEX_ReadPeripheral32, Area, Address, &_val );
-    _val = ((_val & ClearMask) | SetMask);
-    SYS_CALL_3( SYS_CALL_INDEX_WritePeripheral32, Area, Address, _val );
-    return E_OK;
-}
-
+#define ModifyPeripheral8(_a1,_a2,_a3,_a4)  SYS_CALL_8( SYS_CALL_INDEX_ModifyPeripheral8, _a1, _a2, _a3, _a4, 0u, 0u, 0u)
+#define ModifyPeripheral16(_a1,_a2,_a3,_a4)    SYS_CALL_8( SYS_CALL_INDEX_ModifyPeripheral16, _a1, _a2, _a3, _a4, 0u, 0u, 0u)
+#define ModifyPeripheral32(_a1,_a2,_a3,_a4)    SYS_CALL_8( SYS_CALL_INDEX_ModifyPeripheral32, _a1, _a2, _a3, _a4, 0u, 0u, 0u)
 #elif defined(CFG_TC2XX)
 #define ModifyPeripheral8(_a1,_a2,_a3,_a4)      SYS_CALL_4_S_P_S_S( SYS_CALL_INDEX_ModifyPeripheral8, _a1, _a2, _a3, _a4 )
 #define ModifyPeripheral16(_a1,_a2,_a3,_a4)     SYS_CALL_4_S_P_S_S( SYS_CALL_INDEX_ModifyPeripheral16, _a1, _a2, _a3, _a4 )

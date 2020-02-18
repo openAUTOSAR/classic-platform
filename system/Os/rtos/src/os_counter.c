@@ -30,7 +30,11 @@
 /* ----------------------------[private functions]---------------------------*/
 static inline boolean IsCounterValid(CounterType counterId) {
     /*lint -e685 -e568 MISRA:ARGUMENT_CHECK:check counter id:[MISRA 2012 Rule 14.3, required] */
+#if (OS_COUNTER_CNT != 0 )
     return (boolean)((CounterType)(counterId) < (CounterType)OS_COUNTER_CNT);
+#else
+    return FALSE;
+#endif
 }   
 
 /* ----------------------------[public functions]----------------------------*/
@@ -169,12 +173,8 @@ StatusType GetCounterValue( CounterType counter_id , TickRefType tick_ref)
 
     /** @req SWS_Os_00377 */
     if( cPtr->type == COUNTER_TYPE_HARD ) {
-        if( cPtr->driver == NULL ) {
-            /* It's OSINTERNAL */
-            *tick_ref = OS_SYS_PTR->tick;
-        } else {
-            rv = E_NOT_OK;
-        }
+        /* It's OSINTERNAL */
+        *tick_ref = OS_SYS_PTR->tick;
     } else {
         *tick_ref = cPtr->val;
     }

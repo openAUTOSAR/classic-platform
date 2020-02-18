@@ -68,12 +68,8 @@ StatusType WaitEvent( EventMaskType Mask ) {
 
         curr_pcb->ev_wait = Mask;
 
-        if ( Os_SchedulerResourceIsFree() == TRUE ) {
-            Os_Dispatch(OP_WAIT_EVENT);
-            ASSERT( curr_pcb->state & ST_RUNNING );
-        } else {
-            Os_TaskMakeWaiting(curr_pcb);
-        }
+        Os_Dispatch(OP_WAIT_EVENT);
+        ASSERT( curr_pcb->state & ST_RUNNING );
     }
 
     Irq_Restore(state);
@@ -158,7 +154,8 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 
     if( (Mask & destPcbPtr->ev_wait) != 0) {
         /* We have an event match */
-        if( destPcbPtr->state & ST_WAIT_EVENT) {
+        /*lint -e{9036} MISRA:OTHER: bit level comparison is required:[MISRA 2012 Rule 14.4, required]*/
+        if( destPcbPtr->state & ST_WAIT_EVENT){
 #if defined(CFG_T1_ENABLE)
             Os_ReleaseEventHook(destPcbPtr->constPtr->pid);
 #endif
@@ -166,20 +163,19 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 
             currPcbPtr = Os_SysTaskGetCurr();
             /* Checking "4.6.2  Non preemptive scheduling" it does not dispatch if NON  */
-            /*lint -e{9007} MISRA:FALSE_POSITIVE:No side effects of Os_SchedulerResourceIsFree:[MISRA 2012 Rule 13.5, required]*/
             if( (OS_SYS_PTR->intNestCnt == 0) &&
                 (currPcbPtr->constPtr->scheduling == FULL) &&
                 (destPcbPtr->activePriority > currPcbPtr->activePriority) &&
-                (Os_SysIntAnyDisabled() == FALSE ) &&
-                (Os_SchedulerResourceIsFree() == TRUE) )
+                (Os_SysIntAnyDisabled() == FALSE ) ) /*lint !e9007, OK side effects */
             {
                 Os_Dispatch(OP_SET_EVENT); /* @req  OSEK_SWS_EV_00018 */
             }
-
-		}  else if(destPcbPtr->state & (ST_READY | ST_RUNNING | ST_SLEEPING | ST_WAIT_SEM) ) {
+          /*lint -e{9036} MISRA:OTHER: bit level comparison is required:[MISRA 2012 Rule 14.4, required]*/
+        __CODE_COVERAGE_IGNORE__
+        } else if(destPcbPtr->state & (ST_READY | ST_RUNNING | ST_SLEEPING | ST_WAIT_SEM) ) {
             /* Do nothing */
         } else {
-            /* Faulty states ends up here */
+            /* @CODECOV:DEFAULT_CASE: Default statement is required for defensive programming. See above...*/
             ASSERT( 0 );
         }
     }

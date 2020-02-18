@@ -42,4 +42,6 @@ void *Os_ArchGetStackPtr( void ) {
     return NULL;
 }
 
-
+Std_ReturnType Os_ArchCheckStartStackMarker( void ) {
+    return E_OK;
+}

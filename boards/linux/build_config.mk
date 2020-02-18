@@ -4,7 +4,7 @@ ARCH=linux
 ARCH_FAM=generic
 
 # CFG (y/n) macros
-CFG= BRD_LINUX
+CFG+=BRD_LINUX
 CFG+=SYSTEM_ASSERT
 
 # What buildable modules does this board have, 

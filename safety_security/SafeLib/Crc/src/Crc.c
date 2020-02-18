@@ -37,11 +37,11 @@
 #endif
 
 /* @req SWS_CRC_00011 The function Crc_GetVersionInfo shall return the version information of the Crc module */
-/* @req SWS_CRC_00017 The CRC module should realize this function as a macro, defined in the modules header file */
 /* @req SWS_CRC_00021 API for Crc_GetVersionInfo */
 /* @req SWS_BSW_00064 Get Version Information function shall be executed synchronously to its call and shall be reentrant */
 /* @req SWS_BSW_00052 Get Version Information function shall have only one parameter. */
 /* @req SWS_BSW_00164 Ther should be no restriction to Get Version Information calling context */
+/* @req SWS_BSW_00051*/
 /** @brief Return the version information of Crc module.
  *
  * The function Crc_GetVersionInfo shall return the version
@@ -56,6 +56,7 @@
  *  @param Std_VersionInfoType The type including Module and Vendor ID for the Crc Module.
  *  @return void.
  */
+#if (SAFELIB_VERSIONINFO_API == STD_ON)
 void Crc_GetVersionInfo(Std_VersionInfoType* versioninfo) {
 	
 	/* @req SWS_BSW_00212 NULL pointer checking */
@@ -67,3 +68,4 @@ void Crc_GetVersionInfo(Std_VersionInfoType* versioninfo) {
             versioninfo->sw_patch_version = CRC_SW_PATCH_VERSION;
 	}
 }
+#endif

@@ -3,11 +3,12 @@
 ifeq ($(CFG_PPC),y)
 obj-$(USE_KERNEL) += mpc5xxx_handlers.o
 obj-$(USE_KERNEL) += mpc5xxx_handlers_asm.o
-ifeq ($(filter os_mpu_mpc5516.o os_mpu_mpc5643l.o os_mpu_spc56xl70.o os_mpu_mpc5744p.o,$(obj-y)),)
+ifeq ($(filter os_mpu_mpc5516.o os_mpu_mpc5643l.o os_mpu_spc56xl70.o os_mpu_mpc5744p.o os_mpu_mpc560x.o,$(obj-y)),)
 obj-$(USE_KERNEL)-$(CFG_MPC5516) += os_mpu_mpc5516.o
 obj-$(USE_KERNEL)-$(CFG_MPC5643L) += os_mpu_mpc5643l.o
 obj-$(USE_KERNEL)-$(CFG_SPC56XL70) += os_mpu_spc56xl70.o
 obj-$(USE_KERNEL)-$(CFG_MPC5744P) += os_mpu_mpc5744p.o
+obj-$(USE_KERNEL)-$(CFG_MPC560X) += os_mpu_mpc560x.o
 endif
 ifeq ($(filter mpc5xxx_callout_stubs.o,$(obj-y)),)
 obj-$(USE_KERNEL) += mpc5xxx_callout_stubs.o

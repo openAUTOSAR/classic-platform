@@ -132,7 +132,7 @@ get_l1csr0(void)
 void
 init_mmu(void)
 {
-    uint32_t msr;
+    uint32 msr;
     int n;
 
     /* switch to ts == 1 if ts == 0 else bail*/

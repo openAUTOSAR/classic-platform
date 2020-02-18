@@ -12,37 +12,13 @@
  * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
  *-------------------------------- Arctic Core -----------------------------*/
 
+#ifndef DCM_MEMMAP_H_
+#define DCM_MEMMAP_H_
 
-#include "Os.h"
-#include "os_i.h"
-#include "sys.h"
-void Os_ArchInit(void) {
-}
-void Os_ArchFirstCall( void ) {
-
-}
-uint32 Os_ArchGetScSize( void ) {
-}
-
-void Os_ArchSetupContext( OsTaskVarType *pcb ) {
-
-}
-void Os_ArchSetSpAndCall(void *sp, void (*f)(void) ) {
-
-}
-
-void Os_ArchSwapContext(void *old,void *new) {
-
-}
-void Os_ArchSwapContextTo(void *old,void *new){
-
-}
-void *Os_ArchGetStackPtr( void ) {
-
-}
-
-Std_ReturnType Os_ArchCheckStartStackMarker( void ) {
-    return E_OK;
-}
+#ifdef USE_RTE
+#warning This file should only be used when not using an RTE with Dcm service component.
+#endif
 
 
+
+#endif /* DCM_MEMMAP_H_ */

@@ -1388,7 +1388,6 @@ Std_ReturnType Fr_Internal_GetNewData(  const Fr_ContainerType *Fr_Cfg, uint8 cI
     MB_HEADER_t *hPtr;
     uint16 newIndex;
     uint8 *payloadPtr;
-    uint8 chIdx;
 
     /* The natural way would be to read the header directly, however from the RM
      * regarding shadow buffers:
@@ -1434,8 +1433,11 @@ Std_ReturnType Fr_Internal_GetNewData(  const Fr_ContainerType *Fr_Cfg, uint8 cI
 
             /* -- Do some sanity checks (check valid frame) -- */
 
+#if defined(CFG_FR_CHECK_BAD_SLOT_STATUS)
+            /* This check is NOT verified */
+
             /* get channel assignments, CHA and CHB */
-            chIdx = (((mbPtr->MBCCFR.R & 0x6000u) >> 13u) & 0x3u);
+            uint8 chIdx = (((mbPtr->MBCCFR.R & 0x6000u) >> 13u) & 0x3u);
 
             /* Assign S_STATUS_t values in order:
              * CHA CHB
@@ -1444,13 +1446,15 @@ Std_ReturnType Fr_Internal_GetNewData(  const Fr_ContainerType *Fr_Cfg, uint8 cI
              *  1   0  A
              *  1   1  Both
              */
+
             const uint16 slotStatus[4u] = { 0, 0x8000u, 0x0080u, 0x8080u };
 
-            /* Check valid frame VFB (bit 0) and VFA (bit 8) */
-            /*In future include to check slot status register*/
-//          if ( (hPtr->SLOT_STATUS.R & slotStatus[chIdx]) != slotStatus[chIdx]) {
-//              while(1) {} /* : bad */
-//          }
+            // Check valid frame VFB (bit 0) and VFA (bit 8)
+            // In future include to check slot status register
+            if ( (hPtr->SLOT_STATUS.R & slotStatus[chIdx]) != slotStatus[chIdx]) {
+                while(1) {} /* : bad */
+            }
+#endif
 
             /*Clear Interrupt flag w1c*/
             mbPtr->MBCCSR.B.MBIF = 1u;

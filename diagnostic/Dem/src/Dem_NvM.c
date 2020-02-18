@@ -39,6 +39,8 @@ typedef enum {
     DEM_NVMBLOCK_INDICATORS,
     DEM_NVMBLOCK_STATUSBIT,
     DEM_NVMBLOCK_PERMANENT,
+	DEM_NVMBLOCK_PRESTORED_FF,
+	DEM_NVMBLOCK_IUMPR,
 #if defined(USE_NVM) && (DEM_USE_NVM == STD_ON)
     DEM_NOF_SUPPORTED_NVM_BLOCKS
 #endif
@@ -96,6 +98,12 @@ const DemNvMBlockCfgType DemNvMBlockConfig[DEM_NOF_SUPPORTED_NVM_BLOCKS] = {
     [DEM_NVMBLOCK_PERMANENT] = {
         .BlockId = DEM_PERMANENT_NVM_BLOCK_HANDLE
     },
+    [DEM_NVMBLOCK_PRESTORED_FF] = {
+        .BlockId = DEM_PRESTORE_FF_NVM_BLOCK_HANDLE
+    },
+	[DEM_NVMBLOCK_IUMPR] = {
+		.BlockId = DEM_PERMANENT_NVM_BLOCK_HANDLE
+	}
 };
 /* Local variables */
 static DemNvMBlockStatusType DemNvMBlockStatus[DEM_NOF_SUPPORTED_NVM_BLOCKS];
@@ -162,6 +170,11 @@ void Dem_NvM_SetFreezeFrameBlockChanged(Dem_DTCOriginType Origin, boolean Immedi
     }
 }
 
+void Dem_NvM_SetPreStoreFreezeFrameBlockChanged(boolean ImmediateStorage)
+{
+	setNvMBlockChanged(DEM_NVMBLOCK_PRESTORED_FF, ImmediateStorage);
+}
+
 /**
  *
  * @param Origin
@@ -206,6 +219,15 @@ void Dem_NvM_SetStatusBitSubsetBlockChanged(boolean ImmediateStorage)
 void Dem_NvM_SetPermanentBlockChanged(boolean ImmediateStorage)
 {
     setNvMBlockChanged(DEM_NVMBLOCK_PERMANENT, ImmediateStorage);
+}
+
+/**
+ *
+ * @param ImmediateStorage
+ */
+void Dem_Nvm_SetIumprBlockChanged(boolean ImmediateStorage)
+{
+	setNvMBlockChanged(DEM_NVMBLOCK_IUMPR, ImmediateStorage);
 }
 
 /**

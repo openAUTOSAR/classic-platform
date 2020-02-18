@@ -204,6 +204,7 @@ Std_ReturnType E2E_SMCheck(E2E_PCheckStatusType ProfileStatus, const E2E_SMConfi
                 E2E_SMCheck_INVALID(ConfigPtr, StatePtr);
                 break;
             /* @CODECOV:DEFAULT_CASE:Default statement is required for defensive programming. If this happens the state will be restored to E2E_SM_DEINIT */
+            __CODE_COVERAGE_IGNORE__
             default:
                 /*Do nothing*/
                 break;

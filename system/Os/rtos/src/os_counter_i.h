@@ -85,12 +85,16 @@ static inline OsCounterType *Os_CounterGet(CounterType id) {
 
 static inline ApplicationType Os_CounterGetApplicationOwner( CounterType id ) {
     ApplicationType rv;
+#if  (OS_COUNTER_CNT != 0)
     if( id < OS_COUNTER_CNT ) {
         rv = Os_CounterGet(id)->applOwnerId;
     } else {
         /** @req SWS_Os_00274 */
         rv = INVALID_OSAPPLICATION;
     }
+#else
+    rv = INVALID_OSAPPLICATION;
+#endif
     return rv;
 }
 

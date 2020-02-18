@@ -42,6 +42,7 @@
 
 /* @req SWS_E2E_00032 API: E2E_GetVersionInfo */
 /* @req SWS_E2E_00033 The function E2E_GetVersionInfo shall return the version information of the E2E module */
+/* @req SWS_BSW_00051*/
 /** @brief Return the version information of E2E module.
  *
  * The function E2E_GetVersionInfo shall return the version
@@ -56,6 +57,7 @@
  *  @param Std_VersionInfoType The type including Module and Vendor ID for the E2E Module.
  *  @return void.
  */
+#if (SAFELIB_VERSIONINFO_API == STD_ON)
 void E2E_GetVersionInfo(Std_VersionInfoType* versioninfo) {
 
 	if (versioninfo != NULL_PTR) {
@@ -66,3 +68,4 @@ void E2E_GetVersionInfo(Std_VersionInfoType* versioninfo) {
             versioninfo->sw_patch_version = E2E_SW_PATCH_VERSION;
 	}
 }
+#endif

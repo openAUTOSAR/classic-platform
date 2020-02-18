@@ -12,6 +12,7 @@ inc-$(USE_LINUXOS) += $(ROOTDIR)/system/LinuxOs/src
 inc-$(USE_LINUXOS) += $(ROOTDIR)/system/LinuxOs/pmc_sync_status_reader
 inc-$(USE_LINUXOS) += $(ROOTDIR)/system/StbM
 inc-$(USE_LINUXOS) += $(ROOTDIR)/system/Os/rtos/inc
+inc-$(USE_LINUXOS) += $(ROOTDIR)/system/Os/rtos/integration
 inc-$(USE_LINUXOS) += $(ROOTDIR)/system/Os/rtos/src
 vpath-$(USE_LINUXOS) += $(ROOTDIR)/system/LinuxOs/src
 vpath-$(USE_LINUXOS) += $(ROOTDIR)/system/LinuxOs/pmc_sync_status_reader

@@ -16,6 +16,7 @@
 #define SYS_H_
 
 
+#define SYSTEM_FLAGS_IN_OS      1u
 
 /* STD container : OsOs. OSEK properties
  * Class: ALL
@@ -105,6 +106,7 @@ typedef struct Os_Sys {
     TAILQ_HEAD(,OsTaskVar) 	ready_head;		/* Ready queue */
     struct OsResource 		*resScheduler;	/* According to OSEK 8.3 RES_SCHEDULER is accessible to all tasks */
     Os_CoreStatusType 		status;
+    boolean             osFlags;      /* Indication that the kernel is running */
 } Os_SysType;
 
 /*lint -esym(9003,Os_Sys) MISRA:OTHER:cannot be defined in block scope as it may be configured so several files use it:[MISRA 2012 Rule 8.9, advisory] */

@@ -171,13 +171,13 @@ static void setCurrentMessageContext(boolean isSubFunction)
     uint8 offset = (TRUE == isSubFunction) ? 2u:1u;
     GlobalMessageContext.dcmRxPduId = msgData.rxPduId;
     GlobalMessageContext.idContext = (uint8)msgData.rxPduId;
-    GlobalMessageContext.msgAddInfo.reqType = (msgData.addrType == DCM_PROTOCOL_FUNCTIONAL_ADDR_TYPE);
+    GlobalMessageContext.msgAddInfo.reqType = (msgData.addrType == DCM_PROTOCOL_FUNCTIONAL_ADDR_TYPE)? TRUE: FALSE;
     GlobalMessageContext.msgAddInfo.suppressPosResponse = suppressPosRspMsg;
     GlobalMessageContext.reqData = &msgData.pduRxData->SduDataPtr[offset];
-    GlobalMessageContext.reqDataLen = (Dcm_MsgLenType)msgData.pduRxData->SduLength - offset;
+    GlobalMessageContext.reqDataLen = (Dcm_MsgLenType)(msgData.pduRxData->SduLength - offset);
     GlobalMessageContext.resData = &msgData.pduTxData->SduDataPtr[offset];
     GlobalMessageContext.resDataLen = 0;
-    GlobalMessageContext.resMaxDataLen = (Dcm_MsgLenType)msgData.pduTxData->SduLength - offset;
+    GlobalMessageContext.resMaxDataLen = (Dcm_MsgLenType)(msgData.pduTxData->SduLength - offset);
 }
 
 /**
@@ -420,12 +420,12 @@ static void selectServiceFunction(const Dcm_DsdServiceType *sidConfPtr)
     Dcm_NegativeResponseCodeType respCode;
     if( sidConfPtr->DsdSidTabSubfuncAvail == TRUE ) {
         if( msgData.pduRxData->SduLength > 1 ) { /* @req DCM696 */
-            if( NULL == sidConfPtr->DsdSubServiceList ) {
+            if( NULL_PTR == sidConfPtr->DsdSubServiceList ) {
                 /* This to be backwards compatible. If no sub-function configured,
                  * behave as all are supported. */
             } else if( TRUE == DsdLookupSubService(currentSid, sidConfPtr, msgData.pduRxData->SduDataPtr[1], &subServicePtr, &respCode) ) {
                 if( DCM_E_POSITIVERESPONSE == respCode ) {
-                    if( NULL != subServicePtr->DsdSubServiceFnc ) {
+                    if( NULL_PTR != subServicePtr->DsdSubServiceFnc ) {
                         startExternalSubServiceProcessing(subServicePtr);
                         processService = FALSE;
                     }
@@ -460,10 +460,10 @@ static void selectServiceFunction(const Dcm_DsdServiceType *sidConfPtr)
 static boolean lookupSid(uint8 sid, const Dcm_DsdServiceType **sidPtr)
 {
     boolean returnStatus = FALSE;
-    *sidPtr = NULL;
+    *sidPtr = NULL_PTR;
     const Dcm_DsdServiceType *service;
 
-    if(NULL != msgData.serviceTable) {
+    if(NULL_PTR != msgData.serviceTable) {
         service = msgData.serviceTable->DsdService;
         while ((service->DsdSidTabServiceId != sid) && (FALSE == service->Arc_EOL)) {
             service++;
@@ -486,17 +486,17 @@ static boolean lookupSid(uint8 sid, const Dcm_DsdServiceType **sidPtr)
 static Std_ReturnType DslRunExternalServices(Dcm_OpStatusType opStatus)
 {
     Std_ReturnType ret = E_NOT_OK;
-    const Dcm_DsdServiceType *sidCfgPtr = NULL;
+    const Dcm_DsdServiceType *sidCfgPtr = NULL_PTR;
     if(TRUE == lookupSid(currentSid, &sidCfgPtr)) {
         if( TRUE == ExternalService.isSubFnc ) {
             const Dcm_DsdSubServiceType *subServicePtr;
             Dcm_NegativeResponseCodeType resp;
-            if(( TRUE == DsdLookupSubService(currentSid, sidCfgPtr, ExternalService.subFncId, &subServicePtr, &resp)) && (NULL != subServicePtr->DsdSubServiceFnc)) {
-                ret = subServicePtr->DsdSubServiceFnc(opStatus, NULL);
+            if(( TRUE == DsdLookupSubService(currentSid, sidCfgPtr, ExternalService.subFncId, &subServicePtr, &resp)) && (NULL_PTR != subServicePtr->DsdSubServiceFnc)) {
+                ret = subServicePtr->DsdSubServiceFnc(opStatus, NULL_PTR);
             }
         } else {
-            if( NULL != sidCfgPtr->DspSidTabFnc ) {
-                ret = sidCfgPtr->DspSidTabFnc(opStatus, NULL);
+            if( NULL_PTR != sidCfgPtr->DspSidTabFnc ) {
+                ret = sidCfgPtr->DspSidTabFnc(opStatus, NULL_PTR);
             }
         }
     }
@@ -626,7 +626,7 @@ boolean DsdLookupSubService(uint8 SID, const Dcm_DsdServiceType *sidConfPtr, uin
 {
     boolean found = FALSE;
     *respCode = DCM_E_POSITIVERESPONSE;
-    if( (NULL != sidConfPtr) && (TRUE == sidConfPtr->DsdSidTabSubfuncAvail) && (NULL != sidConfPtr->DsdSubServiceList) ) {
+    if( (NULL_PTR != sidConfPtr) && (TRUE == sidConfPtr->DsdSidTabSubfuncAvail) && (NULL_PTR != sidConfPtr->DsdSubServiceList) ) {
         uint8 indx = 0;
         while( FALSE == sidConfPtr->DsdSubServiceList[indx].Arc_EOL ) {
             if( (subService == sidConfPtr->DsdSubServiceList[indx].DsdSubServiceId) ||
@@ -652,7 +652,7 @@ boolean DsdLookupSubService(uint8 SID, const Dcm_DsdServiceType *sidConfPtr, uin
 void DsdHandleRequest(void)
 {
     Std_ReturnType result = E_OK;
-    const Dcm_DsdServiceType *sidConfPtr = NULL;
+    const Dcm_DsdServiceType *sidConfPtr = NULL_PTR;
     Dcm_NegativeResponseCodeType errorCode ;
     errorCode= DCM_E_POSITIVERESPONSE;
 
@@ -695,7 +695,7 @@ void DsdHandleRequest(void)
             // SID found!
             /* Skip checks if service is supported in current session and security level if it is a startup response request
              * and the request should be handled internally (as the service is performed by bootloader and we should only respond) */
-            boolean skipSesAndSecChecks = msgData.startupResponseRequest && (NULL == sidConfPtr->DspSidTabFnc);
+            boolean skipSesAndSecChecks = (msgData.startupResponseRequest && (NULL_PTR == sidConfPtr->DspSidTabFnc))? TRUE: FALSE;
             if ((TRUE == skipSesAndSecChecks) || (TRUE == DspCheckSessionLevel(sidConfPtr->DsdSidTabSessionLevelRef))) {
                 /* @req DCM211 */
                 if ((TRUE == skipSesAndSecChecks) || (TRUE == DspCheckSecurityLevel(sidConfPtr->DsdSidTabSecurityLevelRef))) {
@@ -712,7 +712,7 @@ void DsdHandleRequest(void)
 #if (DCM_USE_SPLIT_TASK_CONCEPT == STD_ON)
                     DslSetDspProcessingActive(msgData.rxPduId, TRUE);
 #endif
-                    if( NULL != sidConfPtr->DspSidTabFnc ) {
+                    if( NULL_PTR != sidConfPtr->DspSidTabFnc ) {
                         /* @req DCM196 */
                         startExternalServiceProcessing(sidConfPtr);
                     } else {
@@ -790,7 +790,7 @@ uint16 DsdDspGetTesterSourceAddress(void)
  */
 boolean DsdDspGetResponseRequired(void)
 {
-    return (FALSE == suppressPosRspMsg);
+    return (FALSE == suppressPosRspMsg)? TRUE: FALSE;
 }
 #endif
 

@@ -105,6 +105,9 @@
 #if defined(USE_SCHM)
 #include "SchM.h"
 #endif
+#if defined(USE_RTM)
+#include "Smal.h"
+#endif
 #if defined(USE_HTMSS)
 #include "Htmss.h"
 #endif
@@ -270,10 +273,13 @@ void EcuM_Init(void) {
         // Determine PostBuild configuration
         EcuM_World.config = EcuM_DeterminePbConfiguration();
 
+#if defined(USE_RTM)
+        Smal_Init();
+#endif
+
 #if defined(USE_HTMSS)
         // Initialize Safety Monitor
         /* @req ARC_SWS_ECUM_00012 SMAL_Init allowed to run before HTMSS_Init request test configuration */
-        Smal_Init();
         HTMSS_Init(0u); /*lint !e910 MISRA:ARGUMENT CHECK:HTMSS_Init does not have support for using input arguments so the value sent is not relevant:[MISRA 2012 Rule 11.9, required] */
 #endif
 
@@ -591,6 +597,8 @@ void EcuM_ValidateWakeupEvent(EcuM_WakeupSourceType sources) {
     const EcuM_WakeupSourceConfigType *wkupCfgPtr;
     for (uint32 i = 0; i < ECUM_WKSOURCE_USER_CNT; i++) {
         wkupCfgPtr = &EcuM_World.config->EcuMWakeupSourceConfig[i];
+        /** @CODECOV:NOT_SUPPORTED:Sleep not supported in SafetyPlatform */
+        __CODE_COVERAGE_IGNORE__
         if ( ((sources & wkupCfgPtr->EcuMWakeupSourceId) != 0) && (wkupCfgPtr->EcuMComMChannel != ECUM_COMM_CHANNEL_ILL) ) {
             /*@req SWS_EcuM_00480*/
             ComM_EcuM_WakeUpIndication(wkupCfgPtr->EcuMComMChannel);

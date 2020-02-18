@@ -318,6 +318,7 @@ typedef struct {
     uint8							DspPidSize; 		// (1)
     Dcm_PidServiceType				DspPidService;
     Dcm_CallbackGetPIDValueFncType	DspGetPidValFnc;	// (1)
+    const boolean                   *Arc_DcmPidEnabled; // (0..1)
     boolean							Arc_EOL;
 } Dcm_DspPidType;
 

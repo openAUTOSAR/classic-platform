@@ -154,6 +154,18 @@ void init(void) {
     g_TConn = (char)0xff;
 #endif
 
+
+#if defined(CFG_SHARED_BSS_DATA)
+    extern uint8 __OS_START_SEC_shared_bss_shared[];
+    extern uint8 __OS_STOP_SEC_shared_bss_shared[];
+    extern uint8 __OS_START_SEC_shared_data_shared[];
+    extern uint8 __OS_STOP_SEC_shared_data_shared[];
+    extern uint8 __SHARED_DATA_ROM[];
+
+    memcpy(__OS_START_SEC_shared_data_shared, __SHARED_DATA_ROM, __OS_STOP_SEC_shared_data_shared - __OS_START_SEC_shared_data_shared); //lint !e732 Allow loss of sign. Expected positive.
+    memset(__OS_START_SEC_shared_bss_shared, 0, __OS_STOP_SEC_shared_bss_shared - __OS_START_SEC_shared_bss_shared ); //lint !e732 Allow loss of sign. Expected positive.
+#endif
+
     /* Check link file */
 
     /* .data */

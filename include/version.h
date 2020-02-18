@@ -15,7 +15,7 @@
 #ifndef VERSION_H_
 #define VERSION_H_
 
-#define _ARCTIC_CORE_MAJOR_         21
+#define _ARCTIC_CORE_MAJOR_         22
 #define _ARCTIC_CORE_MINOR_         0
 #define _ARCTIC_CORE_PATCHLEVEL_    0
 #define _ARCTIC_CORE_BUILDTYPE_     REL

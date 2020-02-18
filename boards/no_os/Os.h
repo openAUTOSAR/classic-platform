@@ -37,10 +37,10 @@
 #define E_OS_ASSERT                  (StatusType)37    /* ArcCore, call to ASSERT() or CONFIG_ASSERT() */
 
 typedef uint32 ApplicationType;
-uint16 EA_count;
-typedef sint16 CounterType;
+typedef uint32 CounterType;
 typedef uint8 StatusType;
 typedef    sint16 ISRType;
+typedef uint32  AreaIdType;
 
 typedef uint32 *TickRefType;
 typedef uint32 TickType;
@@ -107,5 +107,12 @@ void        ShutdownOS( StatusType );
 #define ISR(_isr)    						 void _isr( void )
 StatusType SetEvent( TaskType TaskID, EventMaskType Mask );
 #define SYS_CALL_AtomicCopy16(to, from) (to) = (from)
+
+static inline StatusType  WritePeripheral32( AreaIdType  Area,  uint32  *Address, uint32 WriteValue) {
+    *Address = WriteValue;
+    return E_OK;
+}
+
+
 
 #endif /* _OS_H_ */

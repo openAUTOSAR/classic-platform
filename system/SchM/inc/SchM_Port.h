@@ -19,8 +19,8 @@
 #include "Os.h"
 
 #if (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
-#define SchM_Enter_Port_EA_0() SYS_CALL_SuspendOSInterrupts()
-#define SchM_Exit_Port_EA_0() SYS_CALL_ResumeOSInterrupts()
+#define SchM_Enter_Port_EA_0() (void)SYS_CALL_SuspendOSInterrupts()
+#define SchM_Exit_Port_EA_0() (void)SYS_CALL_ResumeOSInterrupts()
 #else
 #define SchM_Enter_Port_EA_0() SuspendOSInterrupts()
 #define SchM_Exit_Port_EA_0() ResumeOSInterrupts()

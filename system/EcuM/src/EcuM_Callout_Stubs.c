@@ -364,7 +364,7 @@ void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
     Adc_Init(ConfigPtr->AdcConfigPtr);
 #endif
 
-#if defined(USE_BSWM)
+#if defined(USE_BSWM) && (ECUM_ARC_SAFETY_PLATFORM == STD_ON)
 	// Setup BSWM
     /* @req SWS_EcuMf_00016 */
 	BswM_Init(ConfigPtr->PostBuildConfig->BswMConfigPtr);
@@ -411,6 +411,11 @@ void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
 void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 {
     (void)ConfigPtr; /*lint !e920 MISRA:FALSE_POSITIVE:Allowed to cast pointer to void here:[MISRA 2012 Rule 1.3, required]*/
+#if defined(USE_BSWM) && (ECUM_ARC_SAFETY_PLATFORM == STD_OFF)
+	// Setup BSWM
+    /* @req SWS_EcuMf_00016 */
+	BswM_Init(ConfigPtr->PostBuildConfig->BswMConfigPtr);
+#endif
 #if defined(USE_SPI)
     Spi_Init(ConfigPtr->SpiConfigPtr);  // Setup SPI
 #endif

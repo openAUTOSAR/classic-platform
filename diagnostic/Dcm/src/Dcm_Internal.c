@@ -94,8 +94,8 @@ Dcm_NegativeResponseCodeType readDidData(const Dcm_DspDidType *didPtr, PduInfoTy
 {
     Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 
-    boolean didOnlyRefsDids = ((NULL == didPtr->DspSignalRef));
-    if (didPtr->DspDidInfoRef->DspDidAccess.DspDidRead != NULL) {  /** @req DCM433 */
+    boolean didOnlyRefsDids = (NULL_PTR == didPtr->DspSignalRef)? TRUE: FALSE;
+    if (didPtr->DspDidInfoRef->DspDidAccess.DspDidRead != NULL_PTR) {  /** @req DCM433 */
         if (TRUE == DspCheckSessionLevel(didPtr->DspDidInfoRef->DspDidAccess.DspDidRead->DspDidReadSessionRef)) { /** @req DCM434 */
             if (TRUE == DspCheckSecurityLevel(didPtr->DspDidInfoRef->DspDidAccess.DspDidRead->DspDidReadSecurityLevelRef)) { /** @req DCM435 */
                 if( (FALSE == didOnlyRefsDids) && (*didIndex >= didStartIndex)) {
@@ -196,13 +196,13 @@ Std_ReturnType WriteSRSignal(const Dcm_DspDataType *dataPtr, uint16 bitPosition,
 {
     Std_ReturnType ret = E_OK;
     /* Unaligned data and/or endian-ness conversion*/
-    uint32 pduData = 0ULL;
+    uint32 pduData = 0UL;
     if(dataPtr->DspDataEndianess == DCM_BIG_ENDIAN) {
-        uint32 lsbIndex = ((bitPosition ^ 0x7u) + dataPtr->DspDataBitSize - 1) ^ 7u; /* calculate lsb bit index. This could be moved to generator*/
+        uint32 lsbIndex = (uint32)(((bitPosition ^ 0x7u) + dataPtr->DspDataBitSize - 1) ^ 7u); /* calculate lsb bit index. This could be moved to generator*/
         const uint8 *pduDataPtr = ((&dataBuffer[lsbIndex / 8])-3); /* calculate big endian ptr to data*/
-        uint8 bitShift = lsbIndex % 8;
-        for(uint32 i = 0; i < 4; i++) {
-            pduData = (pduData << 8) | pduDataPtr[i];
+        uint8 bitShift = (uint8)(lsbIndex % 8);
+        for(uint32 i = 0uL; i < 4uL; i++) {
+            pduData = (pduData << 8uL) | pduDataPtr[i];
         }
         pduData >>= bitShift;
         if((32 - bitShift) < dataPtr->DspDataBitSize) {
@@ -210,11 +210,11 @@ Std_ReturnType WriteSRSignal(const Dcm_DspDataType *dataPtr, uint16 bitPosition,
         }
     }
     else if (dataPtr->DspDataEndianess == DCM_LITTLE_ENDIAN) {
-        uint32 lsbIndex = bitPosition;
+        uint32 lsbIndex = (uint32)bitPosition;
         const uint8 *pduDataPtr = &dataBuffer[(bitPosition/8)];
-        uint8 bitShift = lsbIndex % 8;
+        uint8 bitShift = (uint8)(lsbIndex % 8);
         for(sint32 i = 3; i >= 0; i--) {
-            pduData = (pduData << 8) | pduDataPtr[i];
+            pduData = (uint32)((pduData << 8uL) | pduDataPtr[i]);
         }
         pduData >>= bitShift;
         if((32 - bitShift) < dataPtr->DspDataBitSize) {
@@ -250,7 +250,7 @@ Std_ReturnType ReadSRSignal(const Dcm_DspDataType *dataPtr, uint16 bitPosition, 
 {
     Std_ReturnType ret;
     uint8 tempData[4];
-    uint32 dataVal=0;
+    uint32 dataVal=0uL;
     ret = dataPtr->DspDataReadDataFnc.SRDataReadFnc((void *)tempData);
 
     switch(dataPtr->DspDataType) {
@@ -275,17 +275,17 @@ Std_ReturnType ReadSRSignal(const Dcm_DspDataType *dataPtr, uint16 bitPosition, 
             ASSERT(0);
             break;
     }
-    uint32 mask = 0xFFFFFFFFu >> (32u - dataPtr->DspDataBitSize); /* calculate mask for SigVal*/
+    uint32 mask = 0xFFFFFFFFUL >> (32u - dataPtr->DspDataBitSize); /* calculate mask for SigVal*/
     dataVal &= mask; // mask sigVal;
 
     if(dataPtr->DspDataEndianess == DCM_BIG_ENDIAN) {
-        uint32 lsbIndex = ((bitPosition ^ 0x7u) + dataPtr->DspDataBitSize - 1) ^ 7u; /* calculate lsb bit index. This could be moved to generator*/
+        uint32 lsbIndex = (uint32)(((bitPosition ^ 0x7u) + dataPtr->DspDataBitSize - 1) ^ 7u); /* calculate lsb bit index. This could be moved to generator*/
         uint8 *pduDataPtr = ((&dataBuffer [lsbIndex / 8])-3); /* calculate big endian ptr to data*/
-        uint32 pduData = 0;
-        for(uint32 i = 0; i < 4; i++) {
-            pduData = (pduData << 8) | pduDataPtr[i];
+        uint32 pduData = 0uL;
+        for(uint32 i = 0uL; i < 4uL; i++) {
+            pduData = ((pduData << 8) | pduDataPtr[i]);
         }
-        uint8 bitShift = lsbIndex % 8;
+        uint8 bitShift = (uint8)(lsbIndex % 8u);
         uint32 sigLo = dataVal << bitShift;
         uint32 maskLo = ~(mask  << bitShift);
         uint32 newPduData = (pduData & maskLo) | sigLo;
@@ -305,15 +305,15 @@ Std_ReturnType ReadSRSignal(const Dcm_DspDataType *dataPtr, uint16 bitPosition, 
     } else if (dataPtr->DspDataEndianess == DCM_LITTLE_ENDIAN) {
         uint32 lsbIndex = bitPosition; /* calculate lsb bit index.*/
         uint8 *pduDataPtr = (&dataBuffer[lsbIndex / 8]); /* calculate big endian ptr to data*/
-        uint32 pduData = 0;
+        uint32 pduData = 0uL;
         for(sint32 i = 3; i >= 0; i--) {
-            pduData = (pduData << 8) | pduDataPtr[i];
+            pduData = (pduData << 8u) | pduDataPtr[i];
         }
-        uint8 bitShift = lsbIndex % 8;
+        uint8 bitShift = (uint8)(lsbIndex % 8);
         uint32 sigLo = dataVal << bitShift;
         uint32 maskLo = ~(mask  << bitShift);
         uint32 newPduData = (pduData & maskLo) | sigLo;
-        for(uint32 i = 0; i < 4; i++) {
+        for(uint32 i = 0uL; i < 4uL; i++) {
             pduDataPtr[i] = (uint8)newPduData;
             newPduData >>= 8;
         }
@@ -346,15 +346,15 @@ uint16 GetNofAffectedBytes(DcmDspDataEndianessType endianess, uint16 startBitPos
     uint16 affectedBytes = 1u;
     uint8 bitsInFirstByte;
     if( DCM_BIG_ENDIAN == endianess ) {
-        bitsInFirstByte = (startBitPos % 8) + 1;
+        bitsInFirstByte = (uint8)((startBitPos % 8u) + 1u);
     }
     else {
-        bitsInFirstByte = 8u - (startBitPos % 8u);
+        bitsInFirstByte = (uint8)(8u - (startBitPos % 8u));
     }
     if(bitsInFirstByte <= bitLength) {
         /* Data is across byte boundary.
          * Check how many bytes are needed for the rest. */
-        affectedBytes += ((bitLength - bitsInFirstByte) + 7) / 8;
+        affectedBytes += (uint16)(((bitLength - bitsInFirstByte) + 7u) / 8u);
     }
     return affectedBytes;
 }
@@ -393,7 +393,7 @@ Dcm_NegativeResponseCodeType getDidData(const Dcm_DspDidType *didPtr, const PduI
             if( ((DCM_READ_DID_PENDING_COND_CHECK == *pendingState) || (DCM_READ_DID_IDLE == *pendingState)) && (DATA_PORT_ECU_SIGNAL != dataPtr->DspDataUsePort) && (DATA_PORT_SR != dataPtr->DspDataUsePort) ) {
                 /* @req Dcm439 */
                 if((DATA_PORT_ASYNCH == dataPtr->DspDataUsePort) || (DATA_PORT_SYNCH == dataPtr->DspDataUsePort)) {
-                    if( NULL != dataPtr->DspDataConditionCheckReadFnc ) {
+                    if( NULL_PTR != dataPtr->DspDataConditionCheckReadFnc ) {
                         result = dataPtr->DspDataConditionCheckReadFnc(opStatus, &errorCode);
                     } else {
                         result = E_NOT_OK;
@@ -435,11 +435,11 @@ Dcm_NegativeResponseCodeType getDidData(const Dcm_DspDidType *didPtr, const PduI
             }
 
             if ((result == E_OK) && (errorCode == DCM_E_POSITIVERESPONSE)) {    /** @req DCM439 */
-                uint16 dataLen = 0;
+                uint16 dataLen = 0u;
                 if ( (TRUE == dataPtr->DspDataInfoRef->DspDidFixedLength) || (DATA_PORT_SR == dataPtr->DspDataUsePort) ) {  /** @req DCM436 */
                     dataLen = GetNofAffectedBytes(dataPtr->DspDataEndianess, signalPtr->DspSignalBitPosition, dataPtr->DspDataBitSize);
                 } else {
-                    if (dataPtr->DspDataReadDataLengthFnc != NULL) {
+                    if (dataPtr->DspDataReadDataLengthFnc != NULL_PTR) {
                         if( DCM_READ_DID_IDLE == *pendingState ) {
                             /* ReadDataLengthFunction is only allowed to return E_OK  */
                             if(E_OK != dataPtr->DspDataReadDataLengthFnc(&dataLen)) { //lint !e934 Address of auto variable is OK
@@ -458,7 +458,7 @@ Dcm_NegativeResponseCodeType getDidData(const Dcm_DspDidType *didPtr, const PduI
                     if ((*didDataStartPos + signalFirstBytePos + dataLen) <= pduTxData->SduLength) {
                         /** @req DCM437 */
                         if((DATA_PORT_SYNCH == dataPtr->DspDataUsePort ) || (DATA_PORT_ECU_SIGNAL == dataPtr->DspDataUsePort)) {
-                            if( NULL != dataPtr->DspDataReadDataFnc.SynchDataReadFnc ) {
+                            if( NULL_PTR != dataPtr->DspDataReadDataFnc.SynchDataReadFnc ) {
                                 /* Synch read function is only allowed to return E_OK */
                                 if(E_OK != dataPtr->DspDataReadDataFnc.SynchDataReadFnc(&pduTxData->SduDataPtr[(*didDataStartPos) + signalFirstBytePos]) ) {
                                     DCM_DET_REPORTERROR(DCM_GLOBAL_ID, DCM_E_UNEXPECTED_RESPONSE);
@@ -468,7 +468,7 @@ Dcm_NegativeResponseCodeType getDidData(const Dcm_DspDidType *didPtr, const PduI
                                 result = E_NOT_OK;
                             }
                         } else if( DATA_PORT_ASYNCH == dataPtr->DspDataUsePort ) {
-                            if( NULL != dataPtr->DspDataReadDataFnc.AsynchDataReadFnc ) {
+                            if( NULL_PTR != dataPtr->DspDataReadDataFnc.AsynchDataReadFnc ) {
                                 result = dataPtr->DspDataReadDataFnc.AsynchDataReadFnc(opStatus, &pduTxData->SduDataPtr[(*didDataStartPos) + signalFirstBytePos]);
                             } else {
                                 result = E_NOT_OK;
@@ -538,7 +538,7 @@ Dcm_NegativeResponseCodeType getDidData(const Dcm_DspDidType *didPtr, const PduI
 void getDidLength(const Dcm_DspDidType *didPtr, uint16 *length, uint16* nofDatas)
 {
 
-    boolean didOnlyRefsDids = ((NULL == didPtr->DspSignalRef));
+    boolean didOnlyRefsDids = (NULL_PTR == didPtr->DspSignalRef)? TRUE: FALSE;
 
     if( FALSE == didOnlyRefsDids) {
         /* Get the data if available */
@@ -646,7 +646,7 @@ void DcmExecuteStartProtocolRequest(void)
                         (ProtocolRequests[requester].protocolId == ProtocolRequests[decidingRequester].protocolId) ) {
                     started = (E_OK == ret) ? TRUE : FALSE;
                 }
-                if( NULL != DcmRequesterConfig[requester].StartProtNotification ) {
+                if( NULL_PTR != DcmRequesterConfig[requester].StartProtNotification ) {
                     DcmRequesterConfig[requester].StartProtNotification(started);
                 }
             }

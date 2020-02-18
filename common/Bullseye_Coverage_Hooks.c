@@ -33,28 +33,72 @@ int printf(const char *format, ...);
 
 #define DBG
 
+
 static int getpid(void)
 {
 	return 1;
 }
 
+#if defined(CFG_BRD_LINUX)
+/* Host */
+#include <stdio.h>
+#include <stdlib.h>
+
 static int open(const char* path, int oflag, int mode)
 {
-	printf("--- BullseyeCoverage begin file '%s', data begins next line ---\n", path);
-	return 3;
+    int fd = -1;
+    FILE *fh;
+    fh = fopen((char*)path, "w");
+    if (fh != NULL) {
+        fd = (int)fh;
+    }
+
+    return fd;
 }
 
 static int close(int fildes)
 {
-	printf("--- BullseyeCoverage end file ---\n");
-	return 0;
+    return fclose((FILE *)fildes);
 }
 
 static int write(int fildes, const void* buf, unsigned nbyte)
 {
-	printf("%s", (const char*)buf);
-	return (int)nbyte;
+    int n;
+    if( fildes == 2 ) {
+        /* stderr */
+        n = printf("%s", (const char*)buf);
+    } else {
+        n = (int)fwrite((void*)buf, 1, nbyte, (FILE *)fildes);
+        if (n == 0 && nbyte != 0) {
+            n = -1;
+        }
+    }
+
+    return n;
 }
+
+#else
+
+static int open(const char* path, int oflag, int mode)
+{
+    printf("--- BullseyeCoverage begin file '%s', data begins next line ---\n", path);
+    return 3;
+}
+
+static int close(int fildes)
+{
+    printf("--- BullseyeCoverage end file ---\n");
+    return 0;
+}
+
+static int write(int fildes, const void* buf, unsigned nbyte)
+{
+    printf("%s", (const char*)buf);
+    return (int)nbyte;
+}
+
+#endif
+
 
 #include "run/atomic.h"
 #include "run/libcov.h"

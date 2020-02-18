@@ -54,13 +54,13 @@ ifeq ($(COMPILER),gcc)
 # Assembler offsets
 %_offset.h: %_offset.c
 	@echo "  >> generating $@ from $<"
-	$(Q)$(CC) -S $(CFLAGS) -o $(@:.h=.s) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
+	$(Q)$(CC_PRE)$(CC) -S $(CFLAGS) -o $(@:.h=.s) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y)) $<
 	$(Q)gawk '/.*define/ { print $$1 " " $$2 " " gensub("#","","g",$$3) }' $(@:.h=.s)  > $@
 
 # Assembler offsets
 asm_offset.h: asm_offset.c
 	@echo "  >> asm offset gen $<"
-	$(Q)$(CC) -S $(CFLAGS) -o $(@:.h=.s) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y))  $<
+	$(Q)$(CC_PRE)$(CC) -S $(CFLAGS) -o $(@:.h=.s) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y))  $<
 	@$(SED) -e "/#define/!d" -e "s/#//2g" $(@:.h=.s) > $@
 	@rm 	$(@:.h=.s)
 endif

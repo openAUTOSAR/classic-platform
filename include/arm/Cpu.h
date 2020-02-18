@@ -78,6 +78,10 @@ static __INLINE void Cpu_SystemReset(void)
 
 #elif defined(CFG_ARMV7_AR)
 
+void Cpu_EnableEccRam( void );
+void Cpu_DisableEccRam( void );
+
+
 #if defined(__ARMCC_VERSION)
 /* ARMCC have __disable_irq and __enable_irq builtin */
 #else

@@ -13,7 +13,7 @@
  *-------------------------------- Arctic Core -----------------------------*/
 
 /** @tagSettings DEFAULT_ARCHITECTURE=GENERIC */
-/** @reqSettings DEFAULT_SPECIFICATION_REVISION=4.1.2 */
+/** @reqSettings DEFAULT_SPECIFICATION_REVISION=4.1.2|4.3.0*/
 
 
 /** @addtogroup Mcu MCU Driver
@@ -23,7 +23,7 @@
  * API and type definitions for MCU Driver.
  */
 
-/* @req SWS_Mcu_00215 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00215 */
 
 #ifndef MCU_H_
 #define MCU_H_
@@ -39,7 +39,7 @@
 #define MCU_AR_RELEASE_MINOR_VERSION        1
 #define MCU_AR_RELEASE_PATCH_VERSION        2
 
-/* @req SWS_Mcu_00211 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00211 */
 #include "Cpu.h"
 #include "irq_types.h"
 #include "Std_Types.h"
@@ -84,33 +84,33 @@
 #define MCU_GETRESETRAWVALUE_UNINIT_RV      0xffffffffU  /* Not used for PPC. Raw reset value is supported */
 
 
-/* @req SWS_Mcu_00250 */
-/* @req SWS_Mcu_00231 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00250 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00231 */
 typedef enum {
     MCU_PLL_LOCKED,
     MCU_PLL_UNLOCKED,
     MCU_PLL_STATUS_UNDEFINED
 } Mcu_PllStatusType;
 
-/* @req SWS_Mcu_00255 */
-/* @req SWS_Mcu_00240 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00255 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00240 */
 typedef uint8 Mcu_RamSectionType;
 
-/* @req SWS_Mcu_00253 */
-/* @req SWS_Mcu_00236 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00253 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00236 */
 typedef uint32 Mcu_RawResetType;
 
-/* @req SWS_Mcu_00251 */
-/* @req SWS_Mcu_00233 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00251 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00233 */
 typedef uint8 Mcu_ClockType;
 
-/* @req SWS_Mcu_00254 */
-/* @req SWS_Mcu_00238 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00254 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00238 */
 typedef uint8 Mcu_ModeType;
 
-/* @req SWS_Mcu_00252 */
-/* @req SWS_Mcu_00234 */
-/* @req SWS_Mcu_00134 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00252 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00234 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00134 */
 typedef enum {
     MCU_POWER_ON_RESET,
     MCU_WATCHDOG_RESET,
@@ -151,7 +151,7 @@ typedef struct {
 
 
 #if ( MCU_GET_RAM_STATE == STD_ON )
-/* @req SWS_Mcu_00256 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00256 */
 typedef enum {
     MCU_RAMSTATE_INVALID,
     MCU_RAMSTATE_VALID
@@ -159,12 +159,12 @@ typedef enum {
 #endif
 
 
-/* @req SWS_Mcu_00249 */
-/* @req SWS_Mcu_00131 */
-/* @req SWS_Mcu_00054 */
-/* @req SWS_Mcu_00031 */
-/* @req SWS_Mcu_00030 */
-/* @req SWS_Mcu_00035 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00249 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00131 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00054 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00031 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00030 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00035 */
 typedef struct {
 
     //	This parameter shall represent the number of Modes available for the
@@ -214,54 +214,54 @@ typedef struct {
 extern const Mcu_ConfigType McuConfigData[];
 
 
-/* @req SWS_Mcu_153 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00153 */
 void Mcu_Init( const Mcu_ConfigType *ConfigPtr );
 
-/* @req SWS_Mcu_00154 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00154 */
 Std_ReturnType Mcu_InitRamSection(Mcu_RamSectionType RamSection );
 
-/* @req SWS_Mcu_00207 */
-/* @req SWS_Mcu_00209 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00207 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00209 */
 #if ( MCU_GET_RAM_STATE == STD_ON )
 Mcu_RamStateType Mcu_GetRamState( void );
 #endif 
 
-/* @req SWS_Mcu_00248*/
-/* @req SWS_Mcu_00155 */
-/* @req SWS_Mcu_00210 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00248*/
+/* @req 4.1.2|4.3.0/SWS_Mcu_00155 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00210 */
 #if ( MCU_INIT_CLOCK == STD_ON )
 Std_ReturnType Mcu_InitClock( Mcu_ClockType ClockSetting );
 #endif
 
-/* @req SWS_Mcu_00156 */
-/* @req SWS_Mcu_00205 */
-/* @req SWS_Mcu_00230 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00156 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00205 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00230 */
 #if ( MCU_NO_PLL == STD_OFF )
 Std_ReturnType Mcu_DistributePllClock( void );
 #endif
 
-/* @req SWS_Mcu_00157 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00157 */
 Mcu_PllStatusType Mcu_GetPllStatus( void );
 
-/* @req SWS_Mcu_00052*/
-/* @req SWS_Mcu_00158 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00052*/
+/* @req 4.1.2|4.3.0/SWS_Mcu_00158 */
 Mcu_ResetType Mcu_GetResetReason( void );
 
-/* @req SWS_Mcu_00159 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00159 */
 Mcu_RawResetType Mcu_GetResetRawValue( void );
 
-/* @req SWS_Mcu_00055 */
-/* @req SWS_Mcu_00146 */
-/* @req SWS_Mcu_00160 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00055 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00146 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00160 */
 #if ( MCU_PERFORM_RESET_API == STD_ON )
 void Mcu_PerformReset( void );
 #endif
 
-/* @req SWS_Mcu_00164 */
-/* @req SWS_Mcu_00161 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00164 */
+/* @req 4.1.2|4.3.0/SWS_Mcu_00161 */
 void Mcu_SetMode( Mcu_ModeType McuMode );
 
-/* @req SWS_Mcu_00162*/
+/* @req 4.1.2|4.3.0/SWS_Mcu_00162*/
 #if ( MCU_VERSION_INFO_API == STD_ON )
 void Mcu_GetVersionInfo( Std_VersionInfoType* versioninfo);
 #endif

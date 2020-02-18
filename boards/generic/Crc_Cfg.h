@@ -63,6 +63,7 @@
 #define CRC_16_RUNTIME  (0x02)
 #define CRC_16_TABLE    (0x04) /* Default value */
 
+#define SAFELIB_VERSIONINFO_API  STD_OFF // Enable/Diable version info API
 
 #define Crc_16_Mode			CRC_16_TABLE
 

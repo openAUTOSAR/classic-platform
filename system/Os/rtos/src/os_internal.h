@@ -143,37 +143,7 @@ extern uint32 os_dbg_mask;
         return rv // Expecting calling function to provide the ending semicolon
 
 
-#if	(OS_USE_APPLICATIONS == STD_ON)
-/** !req SWS_Os_00553 !req SWS_Os_00554 !req SWS_Os_00555 !req SWS_Os_00475 !req SWS_Os_00243 !req SWS_Os_00244 !req SWS_Os_00557
- * ProtectionHook Return value is not handled */
-#define PROTECTIONHOOK(_x) \
-    do { \
-        if ( (OS_SYS_PTR->hooks != NULL) && (OS_SYS_PTR->hooks->ProtectionHook != NULL) ) { \
-            (void)OS_SYS_PTR->hooks->ProtectionHook(_x); \
-        } else { \
-            /* @req SWS_Os_00068 */  \
-            ShutdownOS(E_OS_STACKFAULT); \
-        } \
-    } while(0)
 
-#endif
-
-
-#define PRETASKHOOK() \
-    ASSERT( OS_SYS_PTR->currTaskPtr->state & ST_RUNNING ); \
-    ASSERT( OS_SYS_PTR->currTaskPtr->flags == SYS_FLAG_HOOK_STATE_EXPECTING_PRE );  \
-    OS_SYS_PTR->currTaskPtr->flags = SYS_FLAG_HOOK_STATE_EXPECTING_POST;   \
-    if( OS_SYS_PTR->hooks->PreTaskHook != NULL ) { \
-        OS_SYS_PTR->hooks->PreTaskHook(); \
-    }
-
-#define POSTTASKHOOK() \
-    ASSERT( OS_SYS_PTR->currTaskPtr->state & ST_RUNNING ); \
-    ASSERT( OS_SYS_PTR->currTaskPtr->flags == SYS_FLAG_HOOK_STATE_EXPECTING_POST );  \
-    OS_SYS_PTR->currTaskPtr->flags = SYS_FLAG_HOOK_STATE_EXPECTING_PRE;   \
-    if( OS_SYS_PTR->hooks->PostTaskHook != NULL ) { 	\
-        OS_SYS_PTR->hooks->PostTaskHook();			\
-    }
 #if (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
  /*lint -emacro(923, OS_VALIDATE_ADDRESS_RANGE) MISRA:FALSE_POSITIVE:Allow any pointer type to integer type conversion used for error handling in this macro:[MISRA 2012 Rule 11.6, required]*/
 #define OS_VALIDATE_ADDRESS_RANGE(_outParam,_size) Os_ValidAddressRange((uint32)_outParam,(uint32)_size)

@@ -50,6 +50,8 @@
 #include "debug.h"
 
 #if (ECUM_ARC_SAFETY_PLATFORM == STD_OFF)
+/** @CODECOV:NOT_SUPPORTED:SafetyPlatform has its own partitioned ECUM main functions **/
+__CODE_COVERAGE_OFF__
 
 /** EcuM_StartupTwo
  * NOTE: This is the normal StartupTwo function for EcuM Fixed. It is not used in safety platform.
@@ -127,6 +129,7 @@ void EcuM_StartupTwo(void) {
 
 }
 #endif /*ECUM_ARC_SAFETY_PLATFORM == STD_OFF*/
+__CODE_COVERAGE_ON__
 
 
 /* Note: This is a generic public function for EcuM used both in normal EcuM Fixed and in Safety platform */

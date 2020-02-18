@@ -26,6 +26,7 @@
 #include "os_trap.h"
 #include <stdio.h>
 #include "os_peripheral_i.h"
+#include "isr.h"
 
 
 #if (OS_SC3 == STD_ON ) || (OS_SC4 == STD_ON )
@@ -39,7 +40,7 @@ extern void Os_ArchToPrivilegedMode(uint32 pcxi);
 /* ----------------------------[private define]------------------------------*/
 
 #ifndef ARRAY_SIZE
-#define ARRAY_SIZE(_x)  sizeof(_x)/sizeof((_x)[0])
+#define ARRAY_SIZE(_x)  (sizeof(_x)/sizeof((_x)[0]))
 #endif
 
 /* ----------------------------[private macro]-------------------------------*/
@@ -47,13 +48,14 @@ extern void Os_ArchToPrivilegedMode(uint32 pcxi);
 
 
 struct ServiceEntry {
+    /*lint -e970 MISRA:OTHER:type int declared outside:[MISRA 2012 Directive 4.6, advisory] */
     int* (*entry)[];
     uint32  cnt;
 };
 
 /* ----------------------------[private function prototypes]-----------------*/
 /* ----------------------------[private variables]---------------------------*/
-
+/*lint -save -e9054 MISRA:FALSE_POSITIVE:Array dimension:[MISRA 2012 Rule 9.5, required] */
 /*lint -e611 MISRA:OTHER:file inclusion:[MISRA 2004 Info, advisory] */
 void * Os_ServiceList[] = {
         /* void and context altering functions */
@@ -139,8 +141,20 @@ const void * Os_TrapList[] = {
 #if defined(CFG_TMS570)
         [3] = (void *)Irq_AckSoftInt,
 #endif
+        [4] = (void *)Os_IsrAdd,
 
 };
+
+/*lint -esym(9003, Os_GblServiceList) MISRA:OTHER:Readability:[MISRA 2012 Rule 8.9, advisory] */
+#if defined(CFG_QTST_TRAP)
+#define QTST_TRAP_IMPL
+#include "qtst_trap.h"
+#endif
+
+#if defined(CFG_SAFETY_PLATFORM) && defined(CFG_TMS570) && defined(USE_FLS)
+#define FLS_TMS570_TRAP_IMPL
+#include "Fls_tms570_trap.h"
+#endif
 
 
 const struct ServiceEntry Os_GblServiceList[] = {
@@ -152,12 +166,25 @@ const struct ServiceEntry Os_GblServiceList[] = {
         (void *)Os_TrapList,
         ARRAY_SIZE(Os_TrapList),
     },
+#if defined(CFG_QTST_TRAP)
+    [ OS_TRAP_QTST_IDX ] = {
+        (void *)QTst_TrapList,
+        ARRAY_SIZE(QTst_TrapList),
+    },
+#endif
+#if defined(CFG_SAFETY_PLATFORM) && defined(CFG_TMS570) && defined(USE_FLS)
+    [ OS_TRAP_FLS_IDX ] = {
+        (void *)Fls_tms570_TrapList,
+        ARRAY_SIZE(Fls_tms570_TrapList),
+    },
+#endif
 };
 
-
+/*lint -restore */
 /* ----------------------------[private functions]---------------------------*/
 /* ----------------------------[public functions]----------------------------*/
 
+#if defined(CFG_TMS570)
 
 void * Os_GetService( uint32 idx ) {
     uint32 tIdx = (idx >> 16u);
@@ -169,6 +196,9 @@ void * Os_GetService( uint32 idx ) {
 
     return(*(se->entry))[sIdx];
 }
+
+#endif
+
 
 #endif /* (OS_SC3 == STD_ON ) || (OS_SC4 == STD_ON ) */
 

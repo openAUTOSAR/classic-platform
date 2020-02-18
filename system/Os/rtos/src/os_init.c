@@ -51,7 +51,6 @@ volatile boolean afterIsrSetup[OS_NUM_CORES] = {FALSE};
 #endif
 
 /* ----------------------------[extern]--------------------------------------*/
-extern struct OsHooks os_conf_global_hooks;
 extern void EcuM_Init(void);
 #if !defined(CFG_OS_SYSTICK2)
 extern uint32 Mcu_Arc_GetSystemClock( void );
@@ -119,6 +118,8 @@ void InitOS( void ) {
     /* Get the numbers defined in the editor */
     OS_SYS_PTR->isrCnt = OS_ISR_CNT;
 
+    OS_SYS_PTR->currApplId = INVALID_OSAPPLICATION;
+
     // Assign pcb list and init ready queue
     OS_SYS_PTR->pcb_list = Os_TaskVarList;
     /*lint -e{9036} MISRA:EXTERNAL_FILE::[MISRA 2012 Rule 14.4, required] */
@@ -137,6 +138,7 @@ void InitOS( void ) {
     /* Set stack pattern */
     stackTop = (uint8 *)intStack.top;
     *stackTop = STACK_PATTERN;
+    /*lint -e{9016} -e{926} MISRA:PERFORMANCE:pointer arithmetic other than array indexing used, working with pointer in a controlled way results more simplified and readable code:[MISRA 2012 Rule 18.4, advisory] [MISRA 2012 Rule 11.5, advisory]*/
     stackBottom = (uint8*) ((uint8 *)intStack.top + intStack.size);
     *(stackBottom - 1UL) = STACK_PATTERN;
 
@@ -182,7 +184,7 @@ void InitOS( void ) {
 
 static void os_start( void ) {
     uint16 i;
-    OsTaskVarType *tmpPcbPtr = NULL_PTR;
+    OsTaskVarType *tmpPcbPtr = NULL_PTR; /*lint -e838, OK redefinition */
 
     /* We will be setting up interrupts, but shall not be triggered until the Os starts */
     Irq_Disable();
@@ -194,11 +196,9 @@ static void os_start( void ) {
 #endif
     /** @req SWS_Os_00236 */ /** @req SWS_Os_00539 */ /* System specific startup hook called before application specific startup hook (see Os_ApplStart()) */
 
-    OS_SYS_PTR->hooks = &os_conf_global_hooks;
-    if( OS_SYS_PTR->hooks->StartupHook != NULL_PTR ) {
-        OS_SYS_PTR->hooks->StartupHook();
-    }
-#if (OS_NUM_CORES > 1)
+    Os_CallStartupHook();
+
+    #if (OS_NUM_CORES > 1)
     syncCores(afterStartHooks);
 #endif
 
@@ -241,16 +241,24 @@ static void os_start( void ) {
     /* Find highest Autostart task */
     {
         OsTaskVarType *iterPcbPtr;
-        OsPriorityType topPrio = 0;
+        OsPriorityType topPrio;
         // NOTE: only the master core has one idle task, we need one for each core
-        for(i=0;i<OS_TASK_CNT;i++) {
+
+        ASSERT(OS_TASK_CNT > 0u);
+        /* Assign Idle task first */
+        tmpPcbPtr = Os_TaskGet(0u);
+        topPrio = tmpPcbPtr->activePriority;
+
+        for(i=1;i<OS_TASK_CNT;i++) {
             iterPcbPtr = Os_TaskGet(i);
 #if (OS_NUM_CORES > 1)
             if (Os_OnRunningCore(OBJECT_TASK,iterPcbPtr->constPtr->pid))
 #endif
             {
                 if(	iterPcbPtr->constPtr->autostart != FALSE ) {
-                    if( (tmpPcbPtr == NULL_PTR) || (iterPcbPtr->activePriority > topPrio) ) {
+                    /* @CODECOV:OTHER_TEST_EXIST: Order is not set in the xml model so this may or may not be taken */
+                    __CODE_COVERAGE_IGNORE__
+                    if( (iterPcbPtr->activePriority > topPrio) ) {
                         tmpPcbPtr = iterPcbPtr;
                         topPrio = iterPcbPtr->activePriority;
                     }
@@ -259,10 +267,8 @@ static void os_start( void ) {
         }
     }
 
-    // Swap in prio proc.
-    ASSERT(tmpPcbPtr != NULL_PTR);
-    // IMPROVEMENT: Do this in a more structured way.. setting OS_SYS_PTR->currTaskPtr manually is not the way to go..
     OS_SYS_PTR->currTaskPtr = tmpPcbPtr;
+
 #if	(OS_USE_APPLICATIONS == STD_ON)
     /* Set current application */
     OS_SYS_PTR->currApplId = tmpPcbPtr->constPtr->applOwnerId;
@@ -273,6 +279,17 @@ static void os_start( void ) {
 
     // register this auto-start activation
     ASSERT(tmpPcbPtr->activations <= tmpPcbPtr->constPtr->activationLimit);
+
+#if (OS_STACK_MONITORING == 1)
+#if (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
+    /* check init stack */
+    /* @CODECOV:OTHER_TEST_EXIST: Tested in SIL */
+    __CODE_COVERAGE_IGNORE__
+    if( Os_ArchCheckStartStackMarker() != E_OK ) {
+        Os_CallProtectionHook(E_OS_STACKFAULT);
+    }
+#endif
+#endif
 
     Os_TaskSwapContextTo(NULL_PTR,tmpPcbPtr);
     // We should not return here
@@ -322,19 +339,19 @@ void StartOS(AppModeType Mode) {
 
 /** @req SWS_Os_00071 */
 /* @req OSEK_SWS_SS_00003 */
+
+/* @CODECOV:OTHER_TEST_EXIST: Tested in SIL */
+__CODE_COVERAGE_IGNORE__
 void ShutdownOS( StatusType Error ) {
 
+    (void)Os_SystemFlagsSave(SYSTEM_FLAGS_IN_OS);
+
 	Irq_Disable();
-    /*lint -e506 MISRA:FALSE_POSITIVE:Configuration check:[MISRA 2012 Rule 2.1, required] */
-	if ((OS_SYS_PTR->hooks != NULL_PTR) && (OS_SYS_PTR->hooks->ShutdownHook != NULL_PTR)) {
-		OS_SYS_PTR->hooks->ShutdownHook(Error);
-	}
+	Os_CallShutdownHook(Error);
 
 	/** @req SWS_Os_00425 */
 	/*lint -e716 MISRA:FALSE_POSITIVE:Infinite loop:[MISRA 2004 Info, advisory] */
     /*lint -e9036 MISRA:FALSE_POSITIVE:Conditional expression not required for this while loop:[MISRA 2012 Rule 14.4, required] */
 	while(TRUE) {	}
-}
-
-
+} /*lint !e715, OK reference */
 

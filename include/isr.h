@@ -17,6 +17,7 @@
 
 #include "Os.h"
 #include "sys/queue.h"
+#include "os_trap.h"
 
 struct OsResource;
 
@@ -70,7 +71,7 @@ struct OsResource;
             .resourceMask = 0,  \
             .appOwner = _app,      \
           };                    \
-      (void)Os_IsrAdd( & _entry ## _unique);   \
+      (void)OS_TRAP_Os_IsrAdd( & _entry ## _unique);   \
     } while(FALSE);
 
 
@@ -103,7 +104,7 @@ struct OsResource;
             .resourceMask = 0,  \
             .appOwner = _app,      \
           };                    \
-     (void) Os_IsrAdd( & _entry ## _unique);   \
+     (void) OS_TRAP_Os_IsrAdd( & _entry ## _unique);   \
     } while(0);
 
 #define _ISR_INSTALL_ISR1(_name,_entry, _unique, _vector,_priority,_app)        \
@@ -133,14 +134,14 @@ typedef struct {
 
 typedef struct OsIsrConst {
     const char 		*name;
-    uint8			core;
-    uint8			priority;
-    sint16			vector;
-    sint16 		type;
-    void 			(*entry)( void );
+    uint8           core;
+    uint8           priority;
+    sint16          vector;
+    sint16          type;
+    void            (*entry)( void );
     ApplicationType	appOwner;
     /* Mapped against OsIsrResourceRef */
-    uint32		resourceMask;
+    uint32          resourceMask;
 } OsIsrConstType;
 
 /*
@@ -168,13 +169,46 @@ typedef struct OsIsrVar{
 extern OsIsrVarType Os_IsrVarList[OS_ISR_MAX_CNT];
 #endif
 
+/**
+ * Init the ISR system
+ */
 void Os_IsrInit( void );
+
+/**
+ * Add and ISR.
+ * @param isrPtr
+ * @return
+ */
 ISRType Os_IsrAdd( const OsIsrConstType * isrPtr );
+
+/**
+ * Add ISR with an id
+ * @param isrPtr    Pointer to ISR information
+ * @param id        The id we want to add it with
+ */
 void Os_IsrAddWithId( const OsIsrConstType * isrPtr, ISRType id );
+
+/**
+ * Remove an installed ISR
+ * @param vector    The vector
+ * @param type      Not used
+ * @param priority  Not used
+ * @param app       Not used.
+  */
 void Os_IsrRemove( sint16 vector, sint16 type, uint8 priority, ApplicationType app );
 
+/**
+ * Get stack information for an ISR.
+ * @param stack In/Out pointer to stack information
+ */
 void Os_IsrGetStackInfo( OsIsrStackType *stack );
 
+/**
+ * Called by all interrupts.
+ *
+ * @param stack             Pointer to current stack
+ * @param isrTableIndex     Table index for vector
+ */
 void *Os_Isr( void *stack, uint16 isrTableIndex);
 
 #if defined(CFG_TMS570)

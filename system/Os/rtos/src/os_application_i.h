@@ -144,11 +144,12 @@ extern OsAppVarType Os_AppVar[OS_APPLICATION_CNT];
 
 extern const OsAppConstType Os_AppConst[OS_APPLICATION_CNT];
 
+#if !(defined(CFG_SAFETY_PLATFORM) || defined(BUILD_OS_SAFETY_PLATFORM))
+
 static inline ApplicationStateType Os_ApplGetState (ApplicationType applId) {
 	return Os_AppVar[applId].state;
 }
 
-#if !defined(CFG_SAFETY_PLATFORM)
 static inline void Os_ApplSetState (ApplicationType applId, ApplicationStateType applState) {
 	Os_AppVar[applId].state = applState;
 }
@@ -221,7 +222,7 @@ static inline StatusType Os_ApplCheckAccess( ApplicationType appId, uint32 mask 
  * Starting Os Applications during Os Init.
  */
 void Os_ApplStart( void );
-#if !defined(CFG_SAFETY_PLATFORM)
+#if !(defined(CFG_SAFETY_PLATFORM) || defined(BUILD_OS_SAFETY_PLATFORM))
 /**
  * Setting Os Application to accessible
  */

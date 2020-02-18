@@ -55,7 +55,6 @@ typedef int (*cmpFunc)(void *, void *, size_t);
 #else
 #include <string.h>
 #define MEMCPY(_x,_y,_z)    memcpy(_x,_y,_z)
-#define MEMCPY
 #endif
 #endif
 

@@ -38,6 +38,7 @@ cflags-y 		+= -MMD
 # Diagnostics
 cflags-y += -errmax=10
 cflags-y += --diag_suppress 618
+cflags-y += --diag_suppress 619
 cflags-y += --no_wrap_diagnostics
 
 CFLAGS = $(cflags-y) $(cflags-yy) $(CFLAGS_GHS_$@)

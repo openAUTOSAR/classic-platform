@@ -279,12 +279,8 @@ StatusType GetAlarmBase( AlarmType AlarmId, AlarmBaseRefType Info ) {
     }
 #endif
     /* @req OSEK_SWS_AL_00003 */
-    rv = Os_AlarmGetBase(AlarmId,Info);
-    if (rv != E_OK) {
-        /* OS_STD_ERR_2: Function will return after calling ErrorHook */
-        /* This is not inline with Table 8, ISO26262-6:2011, Req 1a and 1h */
-    	OS_STD_ERR_2(OSServiceId_GetAlarmBase,AlarmId, Info);
-    }
+    *Info = alarm_list[AlarmId].counter->alarm_base;
+
     return rv;
 }
 
@@ -508,7 +504,9 @@ void Os_AlarmCheck( const OsCounterType *c_p ) {
                 (void)IncrementCounter(aPtr->action.counter_id);
                 AlarmProcess(aPtr);
                 break;
+            __CODE_COVERAGE_IGNORE__
             default:
+                /* @CODECOV:DEFAULT_CASE:Default statement is required for defensive programming. */
                 ASSERT(0);
             }
         }
@@ -533,6 +531,8 @@ void Os_AlarmAutostart(void) {
                 const OsAlarmAutostartType *autoPtr = aPtr->autostartPtr;
 
                 /*lint -e{9036} MISRA:STANDARDIZED_INTERFACE:Type defined by AUTOSAR:[MISRA 2012 Rule 14.4, required] */
+                /* @CODECOV:OTHER_TEST_EXIST: We support only one appmode */
+                __CODE_COVERAGE_IGNORE__
                 if (OS_SYS_PTR->appMode & autoPtr->appModeRef) {
                     if (autoPtr->autostartType == ALARM_AUTOSTART_ABSOLUTE) {
                         (void)Os_internalSetAbsAlarm(j, autoPtr->alarmTime, autoPtr->cycleTime, TRUE);

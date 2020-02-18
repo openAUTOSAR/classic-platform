@@ -126,6 +126,7 @@ static uint32 calculateCRC32(const uint8* message, uint32 nBytes, uint32 start)
 
 	/* @req SWS_BSW_00212 NULL pointer checking */
     /* @CODECOV:PARAMETER_VALIDATION_PRIVATE_FUNCTION:This will always be TRUE due to already validated in public function */
+    __CODE_COVERAGE_IGNORE__
     if (message != NULL_PTR) {
         /* Perform modulo-2 division, a byte at a time. */
         for (uint32 byte = 0; byte < nBytes; byte++) {

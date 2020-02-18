@@ -213,19 +213,12 @@ StatusType ReleaseResource( ResourceType ResID) {
             OS_STD_ERR_1(OSServiceId_ReleaseResource,ResID);
         }
 
-        if( (pcbPtr->activePriority < rPtr->ceiling_priority))
-        {
-            rv = E_OS_ACCESS; /* @req OSEK_SWS_RM_00009 */
-            Irq_Restore(flags);
-            OS_STD_ERR_1(OSServiceId_ReleaseResource,ResID);
-        }
+        ASSERT(pcbPtr->activePriority >= rPtr->ceiling_priority);
 
         Os_TaskResourceRemove(rPtr,pcbPtr);
 
         /* do a rescheduling (in some cases) (see OSEK OS 4.6.1) */
-        /*lint -e{9007} MISRA:FALSE_POSITIVE:No side effects of Os_SchedulerResourceIsFree:[MISRA 2012 Rule 13.5, required]*/
-        if ( (pcbPtr->constPtr->scheduling == FULL) &&
-             (Os_SchedulerResourceIsFree()) ) {
+        if ( (pcbPtr->constPtr->scheduling == FULL) ) {
 
             const OsTaskVarType* top_pcb = Os_TaskGetTop();
 

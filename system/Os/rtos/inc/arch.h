@@ -25,7 +25,11 @@
 #include "Arc_Types.h"
 
 /* Default backchain space */
-#define ARCH_BACKCHAIN_SIZE (16U)
+#define ARCH_BACKCHAIN_SIZE             (16U)
+
+/* Pattern for startup stack */
+#define START_STACK_PATTERN             0x42u
+
 
 /**
  * @brief   Set the stack pointer to sp and call function f.
@@ -159,6 +163,12 @@ uint32 Os_GetCurrentPcxi(void);
 void Os_ArchToPrivilegedMode( uint32 pcxi);
 
 
+
+/**
+ * Check if initial stack
+ * @return
+ */
+Std_ReturnType Os_ArchCheckStartStackMarker( void );
 
 
 

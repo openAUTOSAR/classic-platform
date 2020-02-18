@@ -28,7 +28,7 @@ if __name__ == '__main__':
 	if (userm != ""):
 		module = args.module.upper()
 		doc_name = "%s %s" % (module,userm) 
-		
+				
 		if (args.arch != None ):
 			doc_name = "%s for %s" %(doc_name, args.arch.upper())
 			latex_name="%s_%s_%s.tex" % (args.module,args.type,args.arch)
@@ -40,4 +40,7 @@ if __name__ == '__main__':
 		print ""
 		print "latex_documents = [(master_doc, u\'%s\', u\'%s\',u\'Arccore\', \'manual\'),]" % (latex_name, doc_name) 
 		print ""
+		
+		if (args.arch != None ):
+			print "rst_epilog = \"\"\"\n.. |mcu| replace:: %s\n\"\"\"" % (args.arch)
 		

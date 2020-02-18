@@ -16,9 +16,32 @@ DEVICE
    Code Flash:       1280KB
    Data Flash:       64
    RAM:              192KB
+
+
+UNDERSTANDING PINS
+
+   The EVB itself have ball names (A-W + 1-19, e.g F18) on the top. The bottom view have the signal names.
+   The schematic have both ball and signal names.
+   
+   MIBSPI1CLK - F18 - Blue   - CLK
+   R1  - Green  - CS  
+   MIBSPI1SOMI - G18  - Yellow - MISO
+   MIBSPI1SIMO - F19  - Orange - MOSI
+   
+      
+	                  SL    SU        SU   SL
+	   ---------------------------------------------                   
+	   MIBSPI1NENA    ENA   G19 -X X- F18  CLK    MIBSPI1CLK
+	   MIBSPI1NCS[1]  CS1   R1* -X X- R2   C0     MIBSPI1NCS[0]
+	   MIBSPI1NCS[3]  CS3   J3  -X X- G3   C2    
+	   MIBSPI1SIMO    SIMO  F19 -X X- G18  SOMI   MIBSPI1SOMI
+
+	  *) Wrong on EVB, R1 is NC (No Connect)
+
      
 SPI/EEP
    To connect an external EEPROM (M95256) 
+
 
    DEVICE AND BSW EDITOR (Tested)
   

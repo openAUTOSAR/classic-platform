@@ -567,6 +567,7 @@ Std_ReturnType WdgM_CheckpointReached( WdgM_SupervisedEntityIdType SEID, WdgM_Ch
         const WdgM_runtime_SupervisedEntityConfig *runtime_seConf = NULL_PTR;
 
         /** @CODECOV:SEARCHING_FOR_ELEMENT_IN_ARRAY:The end of the for-loop is not reached as we break once the element is found. **/
+        __CODE_COVERAGE_IGNORE__
         for(i = 0u; i < WdgM_instance.CurrentMode->Length_SEConfigurations; i++)
         {
             if(WdgM_instance.CurrentMode->SEConfigurations[i].SupervisedEntityId == SEID)
@@ -1070,6 +1071,7 @@ static void WdgM_Internal_ReportLocalModeChange(const WdgM_runtime_SupervisedEnt
             (void)modeFunctionSwitchPointer[SEIndex](RTE_MODE_WdgMMode_SUPERVISION_DEACTIVATED);
             break;
         /** @CODECOV:DEFAULT_CASE:Default statement is required for defensive programming.**/
+		__CODE_COVERAGE_IGNORE__
         default:
             break;
     }
@@ -1101,6 +1103,7 @@ static void Wdgm_internal_ReportGlobalModeChange()
             (void)Rte_Switch_globalMode_currentMode(RTE_MODE_WdgMMode_SUPERVISION_DEACTIVATED);
             break;
         /** @CODECOV:DEFAULT_CASE:Default statement is required for defensive programming.**/
+		__CODE_COVERAGE_IGNORE__
         default:
             break;
     }
@@ -1223,6 +1226,7 @@ static void WdgM_internal_CalculateGlobalState()
             /* when stopped then stay in stopped */
             break;
         /** @CODECOV:DEFAULT_CASE:Default statement is required for defensive programming.**/
+		__CODE_COVERAGE_IGNORE__
         default:
             /* Invalid state because it shouldn't be possible with WDGM_GLOBAL_STATUS_DEACTIVATED if WdgM is initialized */
             break;

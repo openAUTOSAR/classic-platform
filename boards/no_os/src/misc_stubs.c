@@ -12,6 +12,9 @@
  * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
  *-------------------------------- Arctic Core -----------------------------*/
 #include "Os.h"
+
+uint16 EA_count;
+
 /*lint -w1*/
 void ShutdownOS( StatusType error )  {
 }

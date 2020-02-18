@@ -31,7 +31,7 @@
 #define DEM_AR_RELEASE_REVISION_VERSION   	3u
 
 #define DEM_SW_MAJOR_VERSION    5u
-#define DEM_SW_MINOR_VERSION   	18u
+#define DEM_SW_MINOR_VERSION   	19u
 #define DEM_SW_PATCH_VERSION    0u
 #define DEM_AR_MAJOR_VERSION    DEM_AR_RELEASE_MAJOR_VERSION
 #define DEM_AR_MINOR_VERSION    DEM_AR_RELEASE_MINOR_VERSION
@@ -44,7 +44,7 @@
 #include "Dem_IntEvtId.h"
 #include "Dem_EnableCondId.h"
 #include <limits.h>
-/** @req DEM153 */ /** @req DEM154 */ /* Realized in Dem_IntErrId.h and Dem_IntEvtId.h */
+/** @req DEM153 */ /** @req DEM154 */ /** @req DEM024 *//* Realized in Dem_IntErrId.h and Dem_IntEvtId.h */
 // #include "Rte_Dem.h"
 
 
@@ -123,7 +123,7 @@
 #define DEM_READDATAOFOBDFREEZEFRAME_ID         0X52u
 #define DEM_GETDTCOFOBDFREEZEFRAME_ID           0x53u
 #define DEM_MAINFUNCTION_ID						0x55u
-
+#define DEM_REPIUMPRFAULTDETECT_ID				0x73u
 #define DEM_UPDATE_EVENT_STATUS_ID				0x80u
 #define DEM_MERGE_EVENT_STATUS_ID				0x81u
 #define DEM_GET_EXTENDED_DATA_ID				0x82u
@@ -135,6 +135,12 @@
 #define DEM_GET_FREEZEFRAME_ID					0x88u
 #define DEM_STORE_FF_DATA_PRE_INIT_ID			0x89u
 #define DEM_STORE_FF_DATA_MEM_ID			    0x90u
+
+#define DEM_PRE_STORE_FF_ID						0x91u
+#define DEM_CLEAR_PRE_STORED_FF_ID  			0x92u
+#define DEM_READ_DATA_LENGTH_FAILED				0x93u
+
+#define DEM_FF_NULLREF 							255u
 
 #define DEM_GETMONITORSTATUS_ID				    0xB5u /* ASR 4.3.0 API */
 
@@ -228,8 +234,21 @@ Dem_ReturnControlDTCStorageType Dem_EnableDTCSetting(Dem_DTCGroupType dtcGroup, 
  */
 Std_ReturnType Dem_ReadDataOfOBDFreezeFrame(uint8 PID, uint8 DataElementIndexOfPid, uint8* DestBuffer, uint8* BufSize);/* @req DEM327 */
 Std_ReturnType Dem_GetDTCOfOBDFreezeFrame(uint8 FrameNumber, uint32* DTC );/* @req DEM624 */
+#if (DEM_OBD_SUPPORT == STD_ON)
+Std_ReturnType Dem_SetEventDisabled(Dem_EventIdType EventId);
 Std_ReturnType Dem_DcmReadDataOfPID01(uint8* PID01value);
 Std_ReturnType Dem_DcmReadDataOfPID41(uint8* PID41value);
+Std_ReturnType Dem_RepIUMPRDenLock(Dem_RatioIdType RatioID);
+Std_ReturnType Dem_RepIUMPRDenRelease(Dem_RatioIdType RatioID);
+Std_ReturnType Dem_RepIUMPRFaultDetect(Dem_RatioIdType RatioID);
+Std_ReturnType Dem_SetIUMPRDenCondition(Dem_IumprDenomCondIdType ConditionId, Dem_IumprDenomCondStatusType ConditionStatus);
+Std_ReturnType Dem_GetIUMPRDenCondition(Dem_IumprDenomCondIdType ConditionId, Dem_IumprDenomCondStatusType* ConditionStatus);
+#if (DEM_OBD_ENGINE_TYPE == DEM_IGNITION_SPARK) /* DEM357 */
+Std_ReturnType Dem_GetInfoTypeValue08(uint8* Iumprdata08);
+#elif (DEM_OBD_ENGINE_TYPE == DEM_IGNITION_COMPR) /* DEM358 */
+Std_ReturnType Dem_GetInfoTypeValue0B(uint8* Iumprdata0B);
+#endif
+#endif
 /*
  * Interface DLT <-> DEM
  */

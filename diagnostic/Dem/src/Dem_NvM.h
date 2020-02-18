@@ -23,6 +23,8 @@ void Dem_NvM_SetExtendedDataBlockChanged(Dem_DTCOriginType Origin, boolean Immed
 void Dem_NvM_SetIndicatorBlockChanged(boolean ImmediateStorage);
 void Dem_NvM_SetStatusBitSubsetBlockChanged(boolean ImmediateStorage);
 void Dem_NvM_SetPermanentBlockChanged(boolean ImmediateStorage);
+void Dem_NvM_SetPreStoreFreezeFrameBlockChanged(boolean ImmediateStorage);
+void Dem_Nvm_SetIumprBlockChanged(boolean ImmediateStorage);
 
 void Dem_NvM_Init(void);
 void Dem_NvM_MainFunction(void);

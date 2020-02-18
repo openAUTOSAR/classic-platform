@@ -80,11 +80,13 @@ typedef enum {
     DEM_UPDATE_RECORD_VOLATILE,
 } Dem_UpdateRuleType;
 
-typedef enum {
-    DEM_NON_EMISSION_RELATED = 0,/* Used for events without DTC and events with non-emission related DTC */
-    DEM_EMISSION_RELATED,
-    DEM_EMISSION_RELATED_MIL_ACTIVATING
-}Dem_Arc_EventDTCKindType;
+
+#define DEM_NON_EMISSION_RELATED            0u/* Used for events without DTC and events with non-emission related DTC */
+#define DEM_EMISSION_RELATED                1u
+#define DEM_EMISSION_RELATED_MIL_ACTIVATING 2u
+
+typedef uint32 Dem_Arc_EventDTCKindType;
+
 /*
  * DemGeneral types
  */
@@ -126,8 +128,9 @@ typedef struct {
 
 // 10.2.18 DemFreezeFrameClass
 typedef struct {
+    const Dem_PidOrDidType  * const * FFIdClassRef;     // (1..255)/** @req DEM039 *//** @req DEM040 */
+    uint16 NofXids;
     Dem_FreezeFrameKindType FFKind;			// (1)
-    const Dem_PidOrDidType 	* const * FFIdClassRef; 	// (1..255)/** @req DEM039 *//** @req DEM040 */
 } Dem_FreezeFrameClassType;
 
 /*
@@ -151,11 +154,9 @@ typedef struct {
 #else
     const Arc_Dem_DTC                       *DTCRef;                    // (1)
 #endif
-#if (DEM_DTC_SUPPRESSION_SUPPORT == STD_ON)
-    uint16                                  DTCIndex;                   // Index of the DTC
     const Dem_EventIdType                   *Events;                    // List of events referencing DTC
+    uint16                                  DTCIndex;                   // Index of the DTC
     uint16                                  NofEvents;                  // Number of events referencing DTC
-#endif
 //	const Dem_CallbackDTCStatusChangedType	*CallbackDTCStatusChanged;	// (0..*)
 //	const Dem_CallbackInitMForFType			*CallbackInitMForF;			// (0..*)
     Dem_DTCSeverityType					    DTCSeverity;				// (0..1)  Optional /* @req DEM033 */
@@ -180,10 +181,11 @@ typedef struct {
     uint8                           IndicatorId;
     Dem_IndicatorStatusType	        IndicatorBehaviour;/* @req DEM511 */
     uint8                           IndicatorFailureCycleThreshold;/* @req DEM500 */
-    Dem_OperationCycleStateType     IndicatorFailureCycle;/* @req DEM504 */
+    Dem_OperationCycleStateType     *IndicatorFailureCycle;/* @req DEM504 */
     uint8                           IndicatorHealingCycleThreshold;
     Dem_OperationCycleStateType     IndicatorHealingCycle;
     DemIndicatorFailureSourceType   IndicatorFailureCycleSource;
+    boolean							*IndicatorValid;
     boolean                         Arc_EOL;
 } Dem_IndicatorAttributeType;
 
@@ -225,14 +227,15 @@ typedef struct {
     const Dem_IndicatorAttributeType        *IndicatorAttribute;                    // (0..255)
     const boolean                           *EventAvailableByCalibration;
     const uint8						        *AgingCycleCounterThresholdPtr;				// (0..1) Optional /* @req DEM493 */
+    const Dem_OperationCycleIdType          *FailureCycleRef;                       // (1) /* @req DEM528 */
     boolean						            ConsiderPtoStatus;						// (1)
     Dem_DTCOriginType 		                EventDestination;                       // (1 Arccore specific)
     uint8						            EventPriority;							// (1) /* @req DEM382 */
-    boolean						            FFPrestorageSupported;					// (1)
+    boolean						            FFPrestorageSupported;					// (1) /* @req DEM002 */
     boolean						            AgingAllowed;							// (1)
     Dem_OperationCycleIdType	            OperationCycleRef;						// (1)
     Dem_OperationCycleIdType	            AgingCycleRef;	    					// (1) /* @req DEM494 */
-    Dem_OperationCycleIdType                FailureCycleRef;                        // (1) /* @req DEM528 */
+    Dem_EventOBDReadinessGroup				OBDReadinessGroup;						// (0..1) Optional
 //	Dem_OEMSPecific
 } Dem_EventClassType;
 
@@ -241,21 +244,44 @@ typedef struct
     uint8	FreezeFrameRecordNumber[DEM_MAX_RECORD_NUMBERS_IN_FF_REC_NUM_CLASS + 1];
 }Dem_FreezeFrameRecNumClass;
 
+typedef uint8 Dem_FreezeFrameClassTypeRefIndex;
+
+#if defined(DEM_EVENT_COMBINATION_DEM_EVCOMB_TYPE1)
+typedef struct {
+    Dem_FreezeFrameClassTypeRefIndex FreezeFrameClassIdx;
+}Dem_CombinedDTCCalibType;
+
+typedef struct {
+    const Dem_FreezeFrameRecNumClass                *FreezeFrameRecNumClassRef;
+    const Dem_ExtendedDataClassType                 *ExtendedDataClassRef;
+    const Dem_CombinedDTCCalibType                  *Calib;
+    const Dem_DTCClassType                          *DTCClassRef;
+    Dem_EventIdType                                 CombinedEventId;
+    uint8                                           MaxNumberFreezeFrameRecords;
+    uint8                                           Priority;
+    Dem_DTCOriginType                               MemoryDestination;
+}Dem_CombinedDTCCfgType;
+#endif
+
 // 10.2.12 DemEventParameter
 typedef struct {
     const Dem_EventClassType					    *EventClass;				    // (1)
     const Dem_ExtendedDataClassType				    *ExtendedDataClassRef;		    // (0..1) /* @req DEM460 */
-    const Dem_FreezeFrameClassType				    *FreezeFrameClassRef; 		    // (0..1) /* @req DEM460 */
+    //const Dem_FreezeFrameClassType				    *FreezeFrameClassRef; 		// (0..1) /* @req DEM460 */
+    const Dem_FreezeFrameClassTypeRefIndex          *FreezeFrameClassRefIdx;        // (0..1) /* @req DEM460 */
     const Dem_CallbackInitMonitorForEventFncType    CallbackInitMforE;			    // (0..1)
     const Dem_CallbackEventStatusChangedType	    *CallbackEventStatusChanged;    // (0..)
     const Dem_CallbackClearEventAllowedFncType      CallbackClearEventAllowed;      // (0..1)
     const Dem_CallbackEventDataChangedType          *CallbackEventDataChanged;      // (0..1)
     const Dem_DTCClassType						    *DTCClassRef;				    // (0..1)
     const Dem_FreezeFrameRecNumClass			    *FreezeFrameRecNumClassRef;     // (1)
+#if defined(DEM_EVENT_COMBINATION_DEM_EVCOMB_TYPE1)
+    uint16                                          CombinedDTCCID;
+#endif
     uint16                                          EventID;                        // (1)
     Dem_EventKindType                               EventKind;                      // (1)
     uint8                                           MaxNumberFreezeFrameRecords;    // (1) /* @req DEM337 *//* @req DEM582 */
-    Dem_Arc_EventDTCKindType                        EventDTCKind;
+    Dem_Arc_EventDTCKindType                        *EventDTCKind;
     boolean										    Arc_EOL;
 } Dem_EventParameterType;
 
@@ -278,7 +304,11 @@ typedef struct {
 	const Dem_GroupOfDtcType		*GroupOfDtc;
     const Dem_EnableConditionType   *EnableCondition;
     const Dem_FreezeFrameClassType  *GlobalOBDFreezeFrameClassRef;/* @req DEM291 */
+    const Dem_FreezeFrameClassType  *GlobalFreezeFrameClassRef;
     const Dem_IndicatorType         *Indicators;
+#if defined(DEM_EVENT_COMBINATION_DEM_EVCOMB_TYPE1)
+    const Dem_CombinedDTCCfgType    *CombinedDTCConfig;
+#endif
 } Dem_ConfigSetType;
 
 // 10.2.2 Dem
@@ -290,7 +320,7 @@ typedef struct {
  * WARNING: DO NOT CHANGE THESE STRUCTURES WITHOUT UPDATED THE DEM GENERATOR!!
  * ******************************************************************************************************/
 typedef struct {
-#if (DEM_EVENT_DISPLACEMENT_SUPPORT == STD_ON) && defined(DEM_DISPLACEMENT_PROCESSING_DEM_INTERNAL)
+#if (DEM_USE_TIMESTAMPS == STD_ON)
     uint32                  timeStamp;
 #endif
     uint16                  dataSize;
@@ -308,6 +338,72 @@ typedef struct {
 /* ******************************************************************************************************
  *
  * ******************************************************************************************************/
+#if (DEM_OBD_SUPPORT == STD_ON)
+typedef struct {
+	Dem_RatioIdType RatioId;
+	Dem_IUMPRGroup IumprGroup;
+	const Dem_EventParameterType *DiagnosticEventRef;
+	Dem_RatioKindType RatioKind;
+} Dem_RatioType;
+
+typedef struct {
+	uint16 value;
+	boolean incrementedThisDrivingCycle;
+} Dem_RatioNumeratorType;
+
+typedef struct {
+	uint16 value;
+	boolean incrementedThisDrivingCycle;
+	boolean isLocked;
+} Dem_RatioDenominatorType;
+
+typedef struct {
+	uint16 value;
+	boolean incrementedThisDrivingCycle;
+} Dem_RatioGeneralDenominatorType;
+
+typedef struct {
+	Dem_RatioNumeratorType numerator;
+	Dem_RatioDenominatorType denominator;
+} Dem_RatioStatusType;
+
+typedef struct {
+	uint16 numerator;
+	uint16 denominator;
+} Dem_RatioStatusNvmType;
+
+#if defined(DEM_USE_IUMPR)
+#ifndef DEM_IUMPR_REGISTERED_COUNT
+#define DEM_IUMPR_REGISTERED_COUNT 0
+#endif
+
+typedef struct {
+	Dem_RatioStatusNvmType ratios[DEM_IUMPR_REGISTERED_COUNT];
+	uint16 generalDenominatorCount;
+	uint16 ignitionCycleCount;
+} Dem_RatiosNvm;
+
+extern const Dem_RatioType Dem_RatiosList[DEM_IUMPR_REGISTERED_COUNT];
+#endif
+typedef uint8 Dem_IumprDenomCondIdType;
+typedef uint8 Dem_IumprDenomCondStatusType;
+
+typedef struct {
+	Dem_IumprDenomCondIdType condition;
+	Dem_IumprDenomCondStatusType status;
+} Dem_IumprDenomCondType;
+
+#define DEM_IUMPR_DEN_COND_COLDSTART             (Dem_IumprDenomCondIdType) 0x02
+#define DEM_IUMPR_DEN_COND_EVAP                  (Dem_IumprDenomCondIdType) 0x03
+#define DEM_IUMPR_DEN_COND_500MI                 (Dem_IumprDenomCondIdType) 0x04
+#define DEM_IUMPR_GENERAL_INDIVIDUAL_DENOMINATOR (Dem_IumprDenomCondIdType) 0x05
+#define DEM_IUMPR_GENERAL_OBDCOND                (Dem_IumprDenomCondIdType) 0x06
+
+#define DEM_IUMPR_DEN_STATUS_NOT_REACHED         (Dem_IumprDenomCondStatusType) 0x00
+#define DEM_IUMPR_DEN_STATUS_REACHED             (Dem_IumprDenomCondStatusType) 0x01
+#define DEM_IUMPR_DEN_STATUS_INHIBITED           (Dem_IumprDenomCondStatusType) 0x02
+#endif
+
 /*
  * Make the DEM_Config visible for others.
  */

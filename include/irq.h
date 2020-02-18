@@ -128,6 +128,7 @@ void Irq_EOI( sint16 vector );
 
 #if defined (CFG_TMS570)
 void Irq_SOI3(uint8 prio);
+void setupPinsForIrq( void );
 #endif
 
 /**

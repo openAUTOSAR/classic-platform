@@ -45,8 +45,11 @@ static Com_StatusType initStatus = COM_UNINIT;
 #define COM_STOP_SEC_VAR_INIT_UNSPECIFIED
 #include "Com_MemMap.h"  /*lint !e9019 OTHER [MISRA 2012 Rule 20.1, advisory] OTHER AUTOSAR specified way of using MemMap*/
 
-
+#define COM_START_SEC_VAR_CLEARED_UNSPECIFIED
+#include "Com_MemMap.h"  /*lint !e9019 OTHER [MISRA 2012 Rule 20.1, advisory] OTHER AUTOSAR specified way of using MemMap*/
 const Com_ConfigType * ComConfig;
+#define COM_STOP_SEC_VAR_CLEARED_UNSPECIFIED
+#include "Com_MemMap.h"  /*lint !e9019 OTHER [MISRA 2012 Rule 20.1, advisory] OTHER AUTOSAR specified way of using MemMap*/
 
 #define COM_START_SEC_VAR_CLEARED_UNSPECIFIED
 #include "Com_MemMap.h"  /*lint !e9019 OTHER [MISRA 2012 Rule 20.1, advisory] OTHER AUTOSAR specified way of using MemMap*/

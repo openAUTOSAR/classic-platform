@@ -105,19 +105,119 @@ struct OsIsrVar;
 #include "os_peripheral_i.h"
 #endif
 
+
+
+/**
+ * Save Os internal mode flags
+ * @return The
+ */
+static inline uint32 Os_SystemFlagsSave( uint32 newFlags ) {
+    uint32 old = OS_SYS_PTR->osFlags;
+    OS_SYS_PTR->osFlags = newFlags;
+    return old;
+}
+
+static inline void Os_SystemFlagsRestore( uint32 oldFlags) {
+    OS_SYS_PTR->osFlags = oldFlags;
+}
+
 /* Called for sequence of error hook calls in case a service
  * does not return with E_OK. Note that in this case the general error hook and the OS-
  * Application specific error hook are called.
  */
 /** @req SWS_Os_00246  @req SWS_Os_00540  Application error hook to be called after system error hook */
 static inline void Os_CallErrorHook(StatusType error) {
-    if( (OS_SYS_PTR->hooks != NULL_PTR) && (OS_SYS_PTR->hooks->ErrorHook != NULL_PTR)  ) {
-        OS_SYS_PTR->hooks->ErrorHook(error);
-    }
+#if (OS_ERROR_HOOK == STD_ON)
+    uint32 flags = Os_SystemFlagsSave(SYSTEM_FLAGS_IN_OS);
+    ErrorHook(error);
+    Os_SystemFlagsRestore(flags);
+#endif
+
     OS_APP_CALL_ERRORHOOKS(error);
 }
 
+#if (OS_STARTUP_HOOK == STD_ON)
+static inline void Os_CallStartupHook( void ) {
+    StartupHook();
+}
+#else
+#define Os_CallStartupHook()
+#endif
+
+#if (OS_SHUTDOWN_HOOK == STD_ON)
+
+/* @CODECOV:OTHER_TEST_EXIST: Tested with SIL */
+__CODE_COVERAGE_IGNORE__
+static inline void Os_CallShutdownHook( StatusType error ) {
+    ShutdownHook( error );
+}
+#else
+#define Os_CallShutdownHook(_x)
+#endif
+
+
+#if (OS_PRE_TASK_HOOK == STD_ON)
+static inline void Os_CallPreTaskHook( void  ) {
+    /* @CODECOV:OPERATING_SYSTEM_ASSERT: check for sane values */
+    __CODE_COVERAGE_OFF__
+    ASSERT( OS_SYS_PTR->currTaskPtr->state & ST_RUNNING );
+    ASSERT( OS_SYS_PTR->currTaskPtr->flags == SYS_FLAG_HOOK_STATE_EXPECTING_PRE );
+    __CODE_COVERAGE_ON__
+    OS_SYS_PTR->currTaskPtr->flags = SYS_FLAG_HOOK_STATE_EXPECTING_POST;
+    PreTaskHook();
+}
+#else
+#define Os_CallPreTaskHook()
+#endif
+
+#if (OS_POST_TASK_HOOK == STD_ON)
+static inline void Os_CallPostTaskHook( void  ) {
+    /* @CODECOV:OPERATING_SYSTEM_ASSERT: check for sane values */
+    __CODE_COVERAGE_OFF__
+    ASSERT( OS_SYS_PTR->currTaskPtr->state & ST_RUNNING );
+    ASSERT( OS_SYS_PTR->currTaskPtr->flags == SYS_FLAG_HOOK_STATE_EXPECTING_POST );
+    __CODE_COVERAGE_ON__
+    OS_SYS_PTR->currTaskPtr->flags = SYS_FLAG_HOOK_STATE_EXPECTING_PRE;
+    PostTaskHook();
+}
+#else
+#define Os_CallPostTaskHook()
+#endif
+
+
+
+/** !req SWS_Os_00553 !req SWS_Os_00554 !req SWS_Os_00555 !req SWS_Os_00475 !req SWS_Os_00243 !req SWS_Os_00244 !req SWS_Os_00557
+ * ProtectionHook Return value is not handled */
+static inline void Os_CallProtectionHook(StatusType error) {
+
+#if (OS_PROTECTION_HOOK == STD_ON) && ((OS_SC3 == STD_ON) || (OS_SC4 == STD_ON))
+    ProtectionReturnType rv = PRO_SHUTDOWN;
+
+    uint32 flags =  Os_SystemFlagsSave(SYSTEM_FLAGS_IN_OS);
+    rv = ProtectionHook(error);
+    Os_SystemFlagsRestore(flags);
+
+    /* @CODECOV:OTHER_TEST_EXIST: Tested in SIL. In testing we want "ignore" the errors to continue testing */
+    __CODE_COVERAGE_IGNORE__
+    if( rv != PRO_IGNORE ) {
+        /* @req SWS_Os_00556 If the  ProtectionHook()  returns  PRO_SHUTDOWN  the  Operating System module shall call the ShutdownOS() */
+        /* @req SWS_Os_00308 If ProtectionHook() returns an invalid value, the Operating System module shall take the same action as
+         *                   if no protection hook is configured.*/
+        ShutdownOS(error);
+    }
+
+#else
+
+    /* @req SWS_Os_00107 If no ProtectionHook() is configured and a protection error occurs, the Operating System module shall
+     *                   call ShutdownOS()*/
+    /* @req SWS_Os_00068  If a stack fault is detected by stack monitoring AND no ProtectionHook() is configured, the Operating
+     *                   System module shall call the ShutdownOS() service with the status E_OS_STACKFAULT.*/
+    ShutdownOS(error);
+#endif
+}
+
 #if (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
+
 // to check the address validity of the out parameter supplied to the Os service
 static inline boolean Os_ValidAddressRange( uint32 addr, uint32 size ) {
     const OsAppConstType *aConstP = Os_ApplGetConst(GetApplicationID());
@@ -127,10 +227,13 @@ static inline boolean Os_ValidAddressRange( uint32 addr, uint32 size ) {
     if( aConstP->trusted == TRUE ) {
         rv = TRUE;
     } else {
+        /* @CODECOV:OTHER_TEST_EXIST: This code is generic but the values that come in here are aligned */
+        __CODE_COVERAGE_OFF__
         if( ((addr >= (uint32)aConstP->dataStart ) && ( (addr+size) < (uint32)aConstP->dataEnd )) ||
             ((addr >= (uint32)aConstP->bssStart ) && ( (addr+size) < (uint32)aConstP->bssEnd ) ) ) {
             rv = TRUE;
         }
+        __CODE_COVERAGE_ON__
     }
     return rv;
 }

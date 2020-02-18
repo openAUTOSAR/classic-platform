@@ -119,10 +119,8 @@ ifeq ($(DIAB_VERSION),5.9.3.0)
   lib-y +=-limpfp
   lib-y +=-lg
   lib-y +=-lc
-ifeq ($(CFG),$(filter $(CFG),CFG_EFPU CFG_SPE_FPU_SCALAR_SINGLE CFG_SPE CFG_SPE_INIT))
   lib-y +=-lcfp
   lib-y +=-lm
- endif 
 else ifeq ($(DIAB_VERSION),5.9.4.8)
   # Picking libs manually as in 5.9.3.0
   lib-y +=-li
@@ -131,10 +129,8 @@ else ifeq ($(DIAB_VERSION),5.9.4.8)
   lib-y +=-limpfp
   lib-y +=-lg
   lib-y +=-lc
-ifeq ($(CFG),$(filter $(CFG),CFG_EFPU CFG_SPE_FPU_SCALAR_SINGLE CFG_SPE CFG_SPE_INIT))
   lib-y +=-lcfp
   lib-y +=-lm
-endif 
 else
   lib-y +=-lc
   lib-y +=-limpl

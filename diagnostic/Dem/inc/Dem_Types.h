@@ -414,4 +414,60 @@ typedef uint8 Dem_MonitorStatusType;
 #define DEM_MONITOR_STATUS_TF 0x01u
 #define DEM_MONITOR_STATUS_TNCTOC 0x02u
 
+/*
+ * DemOBDEngineType
+ */
+#define DEM_IGNITION_COMPR 0x00
+#define DEM_IGNITION_SPARK 0x01
+
+/*
+ * DemEventOBDReadinessGroup
+ */
+/* @req DEM349 */
+typedef uint8 Dem_EventOBDReadinessGroup;
+#define DEM_OBD_RDY_NONE				(Dem_EventOBDReadinessGroup)0x00
+#define DEM_OBD_RDY_AC					(Dem_EventOBDReadinessGroup)0x01
+#define DEM_OBD_RDY_BOOSTPR				(Dem_EventOBDReadinessGroup)0x02
+#define DEM_OBD_RDY_CAT					(Dem_EventOBDReadinessGroup)0x03
+#define DEM_OBD_RDY_CMPRCMPT			(Dem_EventOBDReadinessGroup)0x04
+#define DEM_OBD_RDY_EGSENS				(Dem_EventOBDReadinessGroup)0x05
+#define DEM_OBD_RDY_ERG					(Dem_EventOBDReadinessGroup)0x06
+#define DEM_OBD_RDY_EVAP				(Dem_EventOBDReadinessGroup)0x07
+#define DEM_OBD_RDY_FLSYS				(Dem_EventOBDReadinessGroup)0x08
+#define DEM_OBD_RDY_HCCAT				(Dem_EventOBDReadinessGroup)0x09
+#define DEM_OBD_RDY_HTCAT				(Dem_EventOBDReadinessGroup)0x0A
+#define DEM_OBD_RDY_MISF				(Dem_EventOBDReadinessGroup)0x0B
+#define DEM_OBD_RDY_NOXCAT				(Dem_EventOBDReadinessGroup)0x0C
+#define DEM_OBD_RDY_O2SENS				(Dem_EventOBDReadinessGroup)0x0D
+#define DEM_OBD_RDY_O2SENSHT			(Dem_EventOBDReadinessGroup)0x0E
+#define DEM_OBD_RDY_PMFLT				(Dem_EventOBDReadinessGroup)0x0F
+#define DEM_OBD_RDY_SECAIR				(Dem_EventOBDReadinessGroup)0x10
+
+typedef uint8 Dem_IUMPRGroup;
+#define DEM_IUMPR_AFRI1					(Dem_IUMPRGroup)0x00
+#define DEM_IUMPR_AFRI2					(Dem_IUMPRGroup)0x01
+#define DEM_IUMPR_BOOSTPRS				(Dem_IUMPRGroup)0x02
+#define DEM_IUMPR_CAT1					(Dem_IUMPRGroup)0x03
+#define DEM_IUMPR_CAT2					(Dem_IUMPRGroup)0x04
+#define DEM_IUMPR_EGR					(Dem_IUMPRGroup)0x05
+#define DEM_IUMPR_EGSENSOR				(Dem_IUMPRGroup)0x06
+#define DEM_IUMPR_EVAP					(Dem_IUMPRGroup)0x07
+#define DEM_IUMPR_FLSYS					(Dem_IUMPRGroup)0x08
+#define DEM_IUMPR_NMHCCAT				(Dem_IUMPRGroup)0x09
+#define DEM_IUMPR_NOXADSORB				(Dem_IUMPRGroup)0x0A
+#define DEM_IUMPR_NOXCAT				(Dem_IUMPRGroup)0x0B
+#define DEM_IUMPR_OXS1					(Dem_IUMPRGroup)0x0C
+#define DEM_IUMPR_OXS2					(Dem_IUMPRGroup)0x0D
+#define DEM_IUMPR_PF1					(Dem_IUMPRGroup)0x0E
+#define DEM_IUMPR_PF2					(Dem_IUMPRGroup)0x0F
+#define DEM_IUMPR_PMFILTER				(Dem_IUMPRGroup)0x10
+#define DEM_IUMPR_PRIVATE				(Dem_IUMPRGroup)0x11
+#define DEM_IUMPR_SAIR					(Dem_IUMPRGroup)0x12
+#define DEM_IUMPR_SECOXS1				(Dem_IUMPRGroup)0x13
+#define DEM_IUMPR_SECOXS2				(Dem_IUMPRGroup)0x14
+
+typedef uint8 Dem_RatioKindType;
+#define DEM_RATIO_API					(Dem_RatioKindType) 0x00
+#define DEM_RATIO_OBSERVER				(Dem_RatioKindType) 0x01
+
 #endif /*DEM_TYPES_H_*/

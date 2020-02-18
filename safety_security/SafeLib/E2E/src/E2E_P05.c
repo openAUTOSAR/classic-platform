@@ -459,6 +459,7 @@ E2E_PCheckStatusType E2E_P05MapStatusToSM(Std_ReturnType CheckReturn, E2E_P05Che
                 retValue = E2E_P_WRONGSEQUENCE;
                 break;
             /* @CODECOV:DEFAULT_CASE:Default statement is required for defensive programming. If this happens the state will be restored to E2E_P_ERROR */
+            __CODE_COVERAGE_IGNORE__
             default:
                 retValue = E2E_P_ERROR;
                 break;

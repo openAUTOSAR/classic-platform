@@ -12,6 +12,8 @@
  * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
  *-------------------------------- Arctic Core -----------------------------*/
 
+#ifndef OS_TRAP_H_
+#define OS_TRAP_H_
 
  /**
   * @file    os_trap.h
@@ -48,10 +50,10 @@
  *
  */
 
+#define OS_TRAP_QTST_IDX    2
+#define OS_TRAP_FLS_IDX     3
 
-
-
-#define OS_TRAP_OS_IDX                          1ul
+#define OS_TRAP_OS_IDX                          1u
 
 #define OS_TRAP_OS_IDX_SHIFTED                  (OS_TRAP_OS_IDX << 16u)
 
@@ -60,10 +62,12 @@
 #define OS_TRAP_INDEX_Os_SetPrivilegedMode      (0u + OS_TRAP_OS_IDX_SHIFTED)
 #define OS_TRAP_INDEX_Irq_GenerateSoftInt       (2u + OS_TRAP_OS_IDX_SHIFTED)
 #define OS_TRAP_INDEX_Irq_AckSoftInt            (3u + OS_TRAP_OS_IDX_SHIFTED)
+#define OS_TRAP_INDEX_Os_IsrAdd                 (4u + OS_TRAP_OS_IDX_SHIFTED)
 #else
 #define OS_TRAP_INDEX_Reserved                  (0UL)
 #define OS_TRAP_INDEX_Os_ArchToPrivilegedMode   (-1UL)
 #define OS_TRAP_INDEX_Irq_GenerateSoftInt       (-2UL)
+#define OS_TRAP_INDEX_Os_IsrAdd                 (-3UL)
 #endif
 
 /* ----------------------------[public define]------------------------------*/
@@ -79,10 +83,13 @@
 #define OS_TRAP_Os_ArchToPrivilegedMode(_a1)   SYS_CALL_1( OS_TRAP_INDEX_Os_ArchToPrivilegedMode, _a1)
 #endif
 
+#define OS_TRAP_Os_IsrAdd(_a1)                  SYS_CALL_1( OS_TRAP_INDEX_Os_IsrAdd, _a1)
+
 #else  /* for OS_SC1 or OS_SC2 */
 
 #define OS_TRAP_Irq_GenerateSoftInt            Irq_GenerateSoftInt
 #define OS_TRAP_Irq_AckSoftInt                 Irq_AckSoftInt
+#define OS_TRAP_Os_IsrAdd                      Os_IsrAdd
 
 #if defined(CFG_PPC)
 #define OS_TRAP_Os_SetPrivilegedMode(_a1)
@@ -109,3 +116,5 @@
 /* ----------------------------[private functions]---------------------------*/
 /* ----------------------------[public functions]----------------------------*/
 /** @} */
+
+#endif

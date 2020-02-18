@@ -34,5 +34,6 @@ typedef uint8 Dem_EventStatusExtendedType;
 typedef uint8 Dem_DTCFormatType;
 typedef uint8 Dem_DTCOriginType;
 typedef uint8 Dem_ReturnClearDTCType;
+typedef uint16 Dem_RatioIdType;
 #endif
 #endif /* RTE_DEM_TYPE_H_ */

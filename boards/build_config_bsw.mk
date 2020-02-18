@@ -28,10 +28,18 @@ ifneq ($(SELECT_COV_TOOL),)
   endif
 endif
 
-
 COV_BULLSEYE_PATH?=/c/devtools/BullseyeCoverage
 # We require at least this version...
 COV_BULLSEYE_REQ_VERSION?=81411
+
+ifneq ($(SELECT_TEST_OUTPUT),)
+  ifeq ($(SELECT_TEST_OUTPUT),xml)
+    def-y+= XML_OUTPUTTER_SKIP_HEADER
+	def-y+= XML_OUTPUTTER_HTML_ESCAPE
+	def-y+= EMBUNIT_XML_OUTPUT
+  endif
+endif
+
 
 
 

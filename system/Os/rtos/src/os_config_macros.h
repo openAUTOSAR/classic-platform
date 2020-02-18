@@ -386,17 +386,6 @@
 }
 
 
-
-#define GEN_HOOKS( _startup, _protection, _shutdown, _error, _pretask, _posttask ) \
-const struct OsHooks os_conf_global_hooks = { \
-        .StartupHook = _startup, 		\
-        .ProtectionHook = _protection, 	\
-        .ShutdownHook = _shutdown,		\
-        .ErrorHook = _error,			\
-        .PreTaskHook = _pretask,		\
-        .PostTaskHook = _posttask		\
-}
-
 #define ALIGN_16(x) (((x)>>4)<<4)
 
 #define DECLARE_STACK(_name,_size) \

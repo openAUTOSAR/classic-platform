@@ -80,14 +80,11 @@ Used Interfaces:
     PK[7] -> PK[9] ? We have to skip DIP swtiches....
     or use 
     PA[0] and PA[1] , eMIOS18 and eMIOS17
-  
 
-         
-          
- 
-  
-  
-  
+  ICU
+    J32[1] to J32[9]
+    J32[3] to J32[11]
+
 Memory Map:
  0x0000_0000 -> 0x001F_FFFF   Flash
  0x4000_0000 -> 0x4000_FFFF   SRAM
@@ -102,7 +99,7 @@ DSPI_1
   Verified using a Microchip 25LC160B http://ww1.microchip.com/downloads/en/DeviceDoc/21807D.pdf
   VCC Range: 2.5 -> 5.5 V
   
-						             J5
+						             J17
 						         x  1   2 x   
 						         x  3   4 x PC[13]/CS0_1 <- CS/GREEN
 						         x  5   6 x

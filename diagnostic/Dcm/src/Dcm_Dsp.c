@@ -952,7 +952,7 @@ void DspIOControlMainFunction(void) {
 static void DspCancelPendingIOControlByDataIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTxData )
 {
     Dcm_NegativeResponseCodeType responseCode;
-    const Dcm_DspDidType *didPtr = NULL;
+    const Dcm_DspDidType *didPtr = NULL_PTR;
     uint16 didNr = (pduRxData->SduDataPtr[IOI_INDEX] << 8 & DCM_DID_HIGH_MASK) + (pduRxData->SduDataPtr[IOI_INDEX+1] & DCM_DID_LOW_MASK);
     if( lookupNonDynamicDid(didNr, &didPtr) ) {
         /* First of all return control to ECU on the ones already a activated */
@@ -964,14 +964,14 @@ static void DspCancelPendingIOControlByDataIdentifier(const PduInfoType *pduRxDa
                 if( TRUE == IOControlData.pendingControl ) {
                     /* Pending control */
                     if ( dataPtr->DspDataUsePort == DATA_PORT_ASYNCH) {
-                        (void)FunctionInputOutputControl(dataPtr, pduRxData->SduDataPtr[IOCP_INDEX], DCM_CANCEL, NULL, &responseCode);
+                        (void)FunctionInputOutputControl(dataPtr, pduRxData->SduDataPtr[IOCP_INDEX], DCM_CANCEL, NULL_PTR, &responseCode);
                     }
                 }
                 else {
                     /* It is a pending read. */
-                    if( dataPtr->DspDataReadDataFnc.AsynchDataReadFnc != NULL ) {
+                    if( dataPtr->DspDataReadDataFnc.AsynchDataReadFnc != NULL_PTR ) {
                         if( DATA_PORT_ASYNCH == dataPtr->DspDataUsePort ) {
-                            (void)dataPtr->DspDataReadDataFnc.AsynchDataReadFnc(DCM_CANCEL, NULL);
+                            (void)dataPtr->DspDataReadDataFnc.AsynchDataReadFnc(DCM_CANCEL, NULL_PTR);
                         }
                     }
                 }
@@ -1270,7 +1270,7 @@ boolean DspDslCheckSessionSupported(uint8 session) {
     while ((sessionRow->DspSessionLevel != session) && (!sessionRow->Arc_EOL) ) {
         sessionRow++;
     }
-    return (FALSE == sessionRow->Arc_EOL);
+    return (FALSE == sessionRow->Arc_EOL)? TRUE: FALSE;
 }
 
 /**
@@ -2244,16 +2244,16 @@ static boolean LookupDDD(uint16 didNr,  const Dcm_DspDDDType **DDid )
 
 static void DspCancelPendingDid(uint16 didNr, uint16 signalIndex, ReadDidPendingStateType pendingState, PduInfoType *pduTxData )
 {
-    const Dcm_DspDidType *didPtr = NULL;
+    const Dcm_DspDidType *didPtr = NULL_PTR;
     if( lookupNonDynamicDid(didNr, &didPtr) ) {
         if( signalIndex < didPtr->DspNofSignals ) {
             const Dcm_DspDataType *dataPtr = didPtr->DspSignalRef[signalIndex].DspSignalDataRef;
             if( DCM_READ_DID_PENDING_COND_CHECK == pendingState ) {
-                if( dataPtr->DspDataConditionCheckReadFnc != NULL ) {
+                if( dataPtr->DspDataConditionCheckReadFnc != NULL_PTR ) {
                     (void)dataPtr->DspDataConditionCheckReadFnc (DCM_CANCEL, pduTxData->SduDataPtr);
                 }
             } else if( DCM_READ_DID_PENDING_READ_DATA == pendingState ) {
-                if( dataPtr->DspDataReadDataFnc.AsynchDataReadFnc != NULL ) {
+                if( dataPtr->DspDataReadDataFnc.AsynchDataReadFnc != NULL_PTR ) {
                     if( DATA_PORT_ASYNCH == dataPtr->DspDataUsePort ) {
                         (void)dataPtr->DspDataReadDataFnc.AsynchDataReadFnc(DCM_CANCEL, pduTxData->SduDataPtr);
                     }
@@ -2278,11 +2278,11 @@ static Dcm_NegativeResponseCodeType readDDDData(Dcm_DspDDDType *DDidPtr, uint8 *
 {
     uint8 i;
     uint8 dataCount;
-    uint16 SourceDataLength = 0;
-    const Dcm_DspDidType *SourceDidPtr = NULL;
+    uint16 SourceDataLength = 0u;
+    const Dcm_DspDidType *SourceDidPtr = NULL_PTR;
     const Dcm_DspSignalType *signalPtr;
     Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
-    *Length = 0;
+    *Length = 0u;
     uint8* nextDataSlot = Data;
 
     for(i = 0;(i < DCM_MAX_DDDSOURCE_NUMBER) && (DDidPtr->DDDSource[i].formatOrPosition != 0)
@@ -2306,7 +2306,7 @@ static Dcm_NegativeResponseCodeType readDDDData(Dcm_DspDDDType *DDidPtr, uint8 *
         }
         else if(DDidPtr->DDDSource[i].DDDTpyeID == DCM_DDD_SOURCE_DID) {
             
-            if(lookupNonDynamicDid(DDidPtr->DDDSource[i].SourceAddressOrDid,&SourceDidPtr) && (NULL != SourceDidPtr->DspDidInfoRef->DspDidAccess.DspDidRead) ) {
+            if(lookupNonDynamicDid(DDidPtr->DDDSource[i].SourceAddressOrDid,&SourceDidPtr) && (NULL_PTR != SourceDidPtr->DspDidInfoRef->DspDidAccess.DspDidRead) ) {
                 if(DspCheckSecurityLevel(SourceDidPtr->DspDidInfoRef->DspDidAccess.DspDidRead->DspDidReadSecurityLevelRef) != TRUE) {
                     responseCode = DCM_E_SECURITYACCESSDENIED;
                 } else {
@@ -2315,11 +2315,11 @@ static Dcm_NegativeResponseCodeType readDDDData(Dcm_DspDDDType *DDidPtr, uint8 *
                         signalPtr = &SourceDidPtr->DspSignalRef[signal];
                         if( signalPtr->DspSignalDataRef->DspDataInfoRef->DspDidFixedLength || (DATA_PORT_SR == signalPtr->DspSignalDataRef->DspDataUsePort)) {
                             SourceDataLength = GetNofAffectedBytes(signalPtr->DspSignalDataRef->DspDataEndianess, signalPtr->DspSignalBitPosition, signalPtr->DspSignalDataRef->DspDataBitSize);
-                        } else if( NULL != signalPtr->DspSignalDataRef->DspDataReadDataLengthFnc ) {
+                        } else if( NULL_PTR != signalPtr->DspSignalDataRef->DspDataReadDataLengthFnc ) {
                             (void)signalPtr->DspSignalDataRef->DspDataReadDataLengthFnc(&SourceDataLength);
                         }
                         if( (SourceDidPtr->DspDidDataByteSize + *Length) <= bufSize ) {
-                            if( (NULL != signalPtr->DspSignalDataRef->DspDataReadDataFnc.SynchDataReadFnc) && (SourceDataLength != 0) && (DCM_E_POSITIVERESPONSE == responseCode) ) {
+                            if( (NULL_PTR != signalPtr->DspSignalDataRef->DspDataReadDataFnc.SynchDataReadFnc) && (SourceDataLength != 0) && (DCM_E_POSITIVERESPONSE == responseCode) ) {
                                 if((DATA_PORT_SYNCH == signalPtr->DspSignalDataRef->DspDataUsePort) || (DATA_PORT_ECU_SIGNAL == signalPtr->DspSignalDataRef->DspDataUsePort)) {
                                     (void)signalPtr->DspSignalDataRef->DspDataReadDataFnc.SynchDataReadFnc(didDataStart + (signalPtr->DspSignalBitPosition / 8));
                                 } else if(DATA_PORT_ASYNCH == signalPtr->DspSignalDataRef->DspDataUsePort) {
@@ -2366,18 +2366,18 @@ static Dcm_NegativeResponseCodeType readDDDData(Dcm_DspDDDType *DDidPtr, uint8 *
 #ifdef DCM_USE_SERVICE_READDATABYPERIODICIDENTIFIER
 static Dcm_NegativeResponseCodeType checkDDDConditions(Dcm_DspDDDType *DDidPtr, uint16 *Length)
 {
-    const Dcm_DspDidType *SourceDidPtr = NULL;
+    const Dcm_DspDidType *SourceDidPtr = NULL_PTR;
     Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
-    *Length = 0;
+    *Length = 0u;
 
-    for(uint8 i = 0;(i < DCM_MAX_DDDSOURCE_NUMBER) && (DDidPtr->DDDSource[i].formatOrPosition != 0)
+    for(uint8 i = 0u;(i < DCM_MAX_DDDSOURCE_NUMBER) && (DDidPtr->DDDSource[i].formatOrPosition != 0)
         &&(responseCode == DCM_E_POSITIVERESPONSE);i++)
     {
         *Length += DDidPtr->DDDSource[i].Size;
         if(DDidPtr->DDDSource[i].DDDTpyeID == DCM_DDD_SOURCE_ADDRESS) {
             responseCode = checkAddressRange(DCM_READ_MEMORY, DDidPtr->DDDSource[i].memoryIdentifier, DDidPtr->DDDSource[i].SourceAddressOrDid, DDidPtr->DDDSource[i].Size);
         } else if(DDidPtr->DDDSource[i].DDDTpyeID == DCM_DDD_SOURCE_DID) {
-            if( lookupNonDynamicDid(DDidPtr->DDDSource[i].SourceAddressOrDid,&SourceDidPtr) && (NULL != SourceDidPtr->DspDidInfoRef->DspDidAccess.DspDidRead) ) {
+            if( lookupNonDynamicDid(DDidPtr->DDDSource[i].SourceAddressOrDid,&SourceDidPtr) && (NULL_PTR != SourceDidPtr->DspDidInfoRef->DspDidAccess.DspDidRead) ) {
                 if( DspCheckSessionLevel(SourceDidPtr->DspDidInfoRef->DspDidAccess.DspDidRead->DspDidReadSessionRef) ) {
                     if( !DspCheckSecurityLevel(SourceDidPtr->DspDidInfoRef->DspDidAccess.DspDidRead->DspDidReadSecurityLevelRef) ) {
                         responseCode = DCM_E_SECURITYACCESSDENIED;
@@ -2403,20 +2403,20 @@ void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTx
     Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
     uint16 nrOfDids;
     uint16 didNr;
-    const Dcm_DspDidType *didPtr = NULL;
-    Dcm_DspDDDType *DDidPtr=NULL;
-    uint16 txPos = 1;
+    const Dcm_DspDidType *didPtr = NULL_PTR;
+    Dcm_DspDDDType *DDidPtr = NULL_PTR;
+    uint16 txPos = 1u;
     uint16 i;
-    uint16 Length;
+    uint16 Length = 0u;
     boolean noRequestedDidSupported = TRUE;
     ReadDidPendingStateType pendingState = DCM_READ_DID_IDLE;
-    uint16 nofDidsRead = 0;
-    uint16 reqDidStartIndex = 0;
-    uint16 nofDidsReadInPendingReq = 0;
-    uint16 pendingDid = 0;
-    uint16 pendingDataLen = 0;
-    uint16 pendingSigIndex = 0;
-    uint16 pendingDataStartPos = 0;
+    uint16 nofDidsRead = 0u;
+    uint16 reqDidStartIndex = 0u;
+    uint16 nofDidsReadInPendingReq = 0u;
+    uint16 pendingDid = 0u;
+    uint16 pendingDataLen = 0u;
+    uint16 pendingSigIndex = 0u;
+    uint16 pendingDataStartPos = 0u;
 
     if ( (((pduRxData->SduLength - 1) % 2) == 0) && ( 0 != (pduRxData->SduLength - 1))) {
         nrOfDids = (pduRxData->SduLength - 1) / 2;
@@ -2443,8 +2443,8 @@ void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTx
                     dspUdsReadDidPending.reqDidIndex = i;
                 } else {
                     /* No pending response */
-                    nofDidsReadInPendingReq = 0;
-                    nofDidsRead = 0;
+                    nofDidsReadInPendingReq = 0u;
+                    nofDidsRead = 0u;
                 }
             } else if(LookupDDD(didNr,(const Dcm_DspDDDType **)&DDidPtr) == TRUE) {
                 noRequestedDidSupported = FALSE;
@@ -2454,7 +2454,7 @@ void DspUdsReadDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduTx
                 pduTxData->SduDataPtr[txPos++] = (uint8)((DDidPtr->DynamicallyDid>>8) & 0xFF);
                 pduTxData->SduDataPtr[txPos++] = (uint8)(DDidPtr->DynamicallyDid & 0xFF);
                 responseCode = readDDDData(DDidPtr, &(pduTxData->SduDataPtr[txPos]), pduTxData->SduLength - txPos, &Length);
-                txPos = txPos + Length;
+                txPos += Length;
             } else {
                 /* DID not found. */
             }
@@ -2498,11 +2498,11 @@ static Dcm_NegativeResponseCodeType readDidScalingData(const Dcm_DspDidType *did
         pduTxData->SduDataPtr[(*txPos)++] = (didPtr->DspDidIdentifier >> 8) & 0xFFu;
         pduTxData->SduDataPtr[(*txPos)++] = didPtr->DspDidIdentifier & 0xFFu;
 
-        for( uint16 i = 0; (i < didPtr->DspNofSignals) && (DCM_E_POSITIVERESPONSE == responseCode); i++ ) {
+        for( uint16 i = 0u; (i < didPtr->DspNofSignals) && (DCM_E_POSITIVERESPONSE == responseCode); i++ ) {
             Std_ReturnType result;
             Dcm_NegativeResponseCodeType errorCode;
             dataPtr = didPtr->DspSignalRef[i].DspSignalDataRef;
-            if( NULL != dataPtr->DspDataGetScalingInfoFnc ) {
+            if( NULL_PTR != dataPtr->DspDataGetScalingInfoFnc ) {
                 /* @req DCM394 */
                 result = dataPtr->DspDataGetScalingInfoFnc(DCM_INITIAL, &pduTxData->SduDataPtr[*txPos], &errorCode);
                 *txPos += dataPtr->DspDataInfoRef->DspDidScalingInfoSize;
@@ -2527,7 +2527,7 @@ void DspUdsReadScalingDataByIdentifier(const PduInfoType *pduRxData, PduInfoType
     /* @req DCM258 */
     Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
     uint16 didNr;
-    const Dcm_DspDidType *didPtr = NULL;
+    const Dcm_DspDidType *didPtr = NULL_PTR;
 
     uint16 txPos = 1;
 
@@ -2601,16 +2601,16 @@ static Dcm_NegativeResponseCodeType writeDidData(const Dcm_DspDidType *didPtr, c
 {
     Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
     const Dcm_DspSignalType *signalPtr;
-    if (didPtr->DspDidInfoRef->DspDidAccess.DspDidWrite != NULL ) {	/* @req DCM468 */
+    if (didPtr->DspDidInfoRef->DspDidAccess.DspDidWrite != NULL_PTR ) {	/* @req DCM468 */
         if (DspCheckSessionLevel(didPtr->DspDidInfoRef->DspDidAccess.DspDidWrite->DspDidWriteSessionRef)) { /* @req DCM469 */
             if (DspCheckSecurityLevel(didPtr->DspDidInfoRef->DspDidAccess.DspDidWrite->DspDidWriteSecurityLevelRef)) { /* @req DCM470 */
                 uint16 dataLen = 0;
                 /* Check the size */
                 /* @req DCM473 */
-                if( (NULL != didPtr->DspSignalRef) &&
+                if( (NULL_PTR != didPtr->DspSignalRef) &&
                         ( (didPtr->DspSignalRef[0].DspSignalDataRef->DspDataInfoRef->DspDidFixedLength && (writeDidLen == didPtr->DspDidDataByteSize)) ||
                           (!didPtr->DspSignalRef[0].DspSignalDataRef->DspDataInfoRef->DspDidFixedLength)) ) {
-                    for( uint16 i = 0; i < (didPtr->DspNofSignals) && (DCM_E_POSITIVERESPONSE == responseCode); i++ ) {
+                    for( uint16 i = 0u; i < (didPtr->DspNofSignals) && (DCM_E_POSITIVERESPONSE == responseCode); i++ ) {
                         signalPtr = &didPtr->DspSignalRef[i];
                         if( !signalPtr->DspSignalDataRef->DspDataInfoRef->DspDidFixedLength ) {
                             dataLen = writeDidLen;
@@ -2621,14 +2621,14 @@ static Dcm_NegativeResponseCodeType writeDidData(const Dcm_DspDidType *didPtr, c
                             /* @req DCM541 */
                             responseCode = writeDataToNvMBlock(signalPtr->DspSignalDataRef->DspNvmUseBlockID,
                                                                 &pduRxData->SduDataPtr[3 + (signalPtr->DspSignalBitPosition / 8)],
-                                                                (dspUdsWriteDidPending.state == DCM_GENERAL_PENDING));
+                                                                ((dspUdsWriteDidPending.state == DCM_GENERAL_PENDING)? TRUE: FALSE));
 #endif
                         } else {
                             Dcm_OpStatusType opStatus = (Dcm_OpStatusType)DCM_INITIAL;
                             if(dspUdsWriteDidPending.state == DCM_GENERAL_PENDING){
                                 opStatus = (Dcm_OpStatusType)DCM_PENDING;
                             }
-                            if( NULL != signalPtr->DspSignalDataRef->DspDataWriteDataFnc.FixLenDataWriteFnc ) {
+                            if( NULL_PTR != signalPtr->DspSignalDataRef->DspDataWriteDataFnc.FixLenDataWriteFnc ) {
                                 if(DATA_PORT_SR == signalPtr->DspSignalDataRef->DspDataUsePort) {
                                     result = WriteSRSignal(signalPtr->DspSignalDataRef, signalPtr->DspSignalBitPosition, &pduRxData->SduDataPtr[3]);
                                 }
@@ -2673,7 +2673,7 @@ void DspUdsWriteDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduT
     /* @req DCM255 */
     Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
     uint16 didNr;
-    const Dcm_DspDidType *didPtr = NULL;
+    const Dcm_DspDidType *didPtr = NULL_PTR;
     uint16 didDataLength;
 
     didDataLength = pduRxData->SduLength - 3;
@@ -2688,8 +2688,8 @@ void DspUdsWriteDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduT
     if( DCM_E_RESPONSEPENDING != responseCode ) {
         if (responseCode == DCM_E_POSITIVERESPONSE) {
             pduTxData->SduLength = 3;
-            pduTxData->SduDataPtr[1] = (didNr >> 8) & 0xFFu;
-            pduTxData->SduDataPtr[2] = didNr & 0xFFu;
+            pduTxData->SduDataPtr[1] = (uint8)((didNr >> 8) & 0xFFu);
+            pduTxData->SduDataPtr[2] = (uint8)(didNr & 0xFFu);
         }
 
         dspUdsWriteDidPending.state = DCM_GENERAL_IDLE;
@@ -2711,7 +2711,7 @@ static void DspCancelPendingSecurityAccess(const PduInfoType *pduRxData, PduInfo
 {
     // Check sub function range (0x01 to 0x42)
     if ((pduRxData->SduDataPtr[1] >= 0x01) && (pduRxData->SduDataPtr[1] <= 0x42)) {
-        boolean isRequestSeed = pduRxData->SduDataPtr[1] & 0x01u;
+        boolean isRequestSeed = ((pduRxData->SduDataPtr[1] & 0x01u) == 0x01u)? TRUE: FALSE;
         Dcm_SecLevelType requestedSecurityLevel = (pduRxData->SduDataPtr[1]+1)/2;
 
         if (isRequestSeed) {
@@ -2770,7 +2770,7 @@ static Dcm_NegativeResponseCodeType DspUdsSecurityAccessGetSeedSubFnc (const Pdu
                             pduTxData->SduLength = 2 + securityRow->DspSecuritySeedSize;
                         } else {
                             // New security level ask for seed
-                            if ((securityRow->GetSeed.getSeedWithoutRecord != NULL) || (securityRow->GetSeed.getSeedWithRecord != NULL)) {
+                            if ((securityRow->GetSeed.getSeedWithoutRecord != NULL_PTR) || (securityRow->GetSeed.getSeedWithRecord != NULL_PTR)) {
                                 Std_ReturnType getSeedResult;
                                 if(securityRow->DspSecurityADRSize > 0) {
                                     /* @req DCM324 RequestSeed */
@@ -2848,7 +2848,7 @@ static Dcm_NegativeResponseCodeType DspUdsSecurityAccessCompareKeySubFnc (const 
 #endif
             {
                 if (pduRxData->SduLength == (2 + dspUdsSecurityAccesData.reqSecLevelRef->DspSecurityKeySize)) { /* @req DCM321 SendKey */
-                    if ((dspUdsSecurityAccesData.reqSecLevelRef->CompareKey != NULL)) {
+                    if ((dspUdsSecurityAccesData.reqSecLevelRef->CompareKey != NULL_PTR)) {
                         Std_ReturnType compareKeyResult;
                         compareKeyResult = dspUdsSecurityAccesData.reqSecLevelRef->CompareKey(&pduRxData->SduDataPtr[2], opStatus); /* @req DCM324 SendKey */
                         if( isCancel ) {
@@ -2987,7 +2987,7 @@ static Dcm_NegativeResponseCodeType startRoutine(const Dcm_DspRoutineType *routi
     SetOpStatusDependingOnState(&dspUdsRoutineControlPending,&opStatus, isCancel);
 
     // startRoutine
-    if ((routinePtr->DspStartRoutineFnc != NULL) && (routinePtr->DspRoutineInfoRef->DspStartRoutine != NULL)) {
+    if ((routinePtr->DspStartRoutineFnc != NULL_PTR) && (routinePtr->DspRoutineInfoRef->DspStartRoutine != NULL_PTR)) {
         if ( (routinePtr->DspRoutineInfoRef->DspStartRoutine->DspStartRoutineCtrlOptRecSize + 4) <= pduRxData->SduLength ) {
             if ((routinePtr->DspRoutineInfoRef->DspStartRoutine->DspStartRoutineStsOptRecSize + 4) <= pduTxData->SduLength ) {
                 uint16 currentDataLength = pduRxData->SduLength - 4;
@@ -3034,7 +3034,7 @@ static Dcm_NegativeResponseCodeType stopRoutine(const Dcm_DspRoutineType *routin
     SetOpStatusDependingOnState(&dspUdsRoutineControlPending,&opStatus, isCancel);
 
     // stopRoutine
-    if ((routinePtr->DspStopRoutineFnc != NULL) && (routinePtr->DspRoutineInfoRef->DspRoutineStop != NULL)) {
+    if ((routinePtr->DspStopRoutineFnc != NULL_PTR) && (routinePtr->DspRoutineInfoRef->DspRoutineStop != NULL_PTR)) {
         if ( (routinePtr->DspRoutineInfoRef->DspRoutineStop->DspStopRoutineCtrlOptRecSize + 4) <= pduRxData->SduLength ) {
             if ( (routinePtr->DspRoutineInfoRef->DspRoutineStop->DspStopRoutineStsOptRecSize + 4) <= pduTxData->SduLength ) {
                 uint16 currentDataLength = pduRxData->SduLength - 4;
@@ -3082,9 +3082,9 @@ static Dcm_NegativeResponseCodeType requestRoutineResults(const Dcm_DspRoutineTy
     SetOpStatusDependingOnState(&dspUdsRoutineControlPending,&opStatus, isCancel);
 
     // requestRoutineResults
-    if ((routinePtr->DspRequestResultRoutineFnc != NULL) && (routinePtr->DspRoutineInfoRef->DspRoutineRequestRes != NULL)) {
+    if ((routinePtr->DspRequestResultRoutineFnc != NULL_PTR) && (routinePtr->DspRoutineInfoRef->DspRoutineRequestRes != NULL_PTR)) {
         if ((routinePtr->DspRoutineInfoRef->DspRoutineRequestRes->DspReqResRtnCtrlOptRecSize + 4) <= pduTxData->SduLength) {
-            uint16 currentDataLength = 0;
+            uint16 currentDataLength = 0u;
             /* @req DCM404 */
             /* @req DCM405 */
             routineResult = routinePtr->DspRequestResultRoutineFnc(opStatus, &pduTxData->SduDataPtr[4], &currentDataLength, &responseCode, FALSE);
@@ -3126,7 +3126,7 @@ static void DspCancelPendingRoutine(const PduInfoType *pduRxData, PduInfoType *p
     uint8 subFunctionNumber = pduRxData->SduDataPtr[1];
     uint16 routineId = 0;
     if( (NULL != pduRxData) && (NULL != pduTxData)) {
-        const Dcm_DspRoutineType *routinePtr = NULL;
+        const Dcm_DspRoutineType *routinePtr = NULL_PTR;
         routineId = (uint16)((uint16)pduRxData->SduDataPtr[2] << 8) + pduRxData->SduDataPtr[3];
         if (lookupRoutine(routineId, &routinePtr)) {
             switch (subFunctionNumber) {
@@ -3153,8 +3153,8 @@ void DspUdsRoutineControl(const PduInfoType *pduRxData, PduInfoType *pduTxData)
     /* !req DCM701 */
     Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
     uint8 subFunctionNumber = 0;
-    uint16 routineId = 0;
-    const Dcm_DspRoutineType *routinePtr = NULL;
+    uint16 routineId = 0u;
+    const Dcm_DspRoutineType *routinePtr = NULL_PTR;
 
     if (pduRxData->SduLength >= 4) {
         subFunctionNumber = pduRxData->SduDataPtr[1];
@@ -3269,7 +3269,6 @@ static void DspEnableDTCSetting(void)
 void DspUdsControlDtcSetting(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
     /* @req DCM249 */
-    /* !req DCM784 */
     Dem_ReturnControlDTCStorageType resultCode;
 
     if (pduRxData->SduLength == 2) {
@@ -3296,7 +3295,7 @@ void DspUdsControlDtcSetting(const PduInfoType *pduRxData, PduInfoType *pduTxDat
                     DspDTCSetting.settingDisabled = TRUE;
                     DspDTCSetting.dtcGroup = DEM_DTC_GROUP_ALL_DTCS;
                     DspDTCSetting.dtcKind = DEM_DTC_KIND_ALL_DTCS;
-                    /* @req DCM783 */
+                    /* @req DCM784 */
                     (void)Rte_Switch_DcmControlDTCSetting_DcmControlDTCSetting(RTE_MODE_DcmControlDTCSetting_DISABLEDTCSETTING);
                     DsdDspProcessingDone(DCM_E_POSITIVERESPONSE);
                 } else {
@@ -3517,10 +3516,10 @@ static Dcm_NegativeResponseCodeType readMemoryData( Dcm_OpStatusType *OpStatus,
 
 static Dcm_NegativeResponseCodeType checkAddressRange(DspMemoryServiceType serviceType, uint8 memoryIdentifier, uint32 memoryAddress, uint32 length) {
     const Dcm_DspMemoryIdInfo *dspMemoryInfo = Dcm_ConfigPtr->Dsp->DspMemory->DspMemoryIdInfo;
-    const Dcm_DspMemoryRangeInfo *memoryRangeInfo = NULL;
+    const Dcm_DspMemoryRangeInfo *memoryRangeInfo = NULL_PTR;
     Dcm_NegativeResponseCodeType diagResponseCode = DCM_E_REQUESTOUTOFRANGE;
 
-    for( ; (dspMemoryInfo->Arc_EOL == FALSE) && (memoryRangeInfo == NULL); dspMemoryInfo++ ) {
+    for( ; (dspMemoryInfo->Arc_EOL == FALSE) && (memoryRangeInfo == NULL_PTR); dspMemoryInfo++ ) {
         if( ((TRUE == Dcm_ConfigPtr->Dsp->DspMemory->DcmDspUseMemoryId) && (dspMemoryInfo->MemoryIdValue == memoryIdentifier))
             || (FALSE == Dcm_ConfigPtr->Dsp->DspMemory->DcmDspUseMemoryId) ) {
 
@@ -3533,7 +3532,7 @@ static Dcm_NegativeResponseCodeType checkAddressRange(DspMemoryServiceType servi
                 memoryRangeInfo = findRange( dspMemoryInfo->pWriteMemoryInfo, memoryAddress, length );
             }
 
-            if( NULL != memoryRangeInfo ) {
+            if( NULL_PTR != memoryRangeInfo ) {
                 /* @req DCM490 */
                 /* @req DCM494 */
                 if( DspCheckSecurityLevel(memoryRangeInfo->pSecurityLevel)) {
@@ -3559,9 +3558,9 @@ static Dcm_NegativeResponseCodeType checkAddressRange(DspMemoryServiceType servi
 
 static const Dcm_DspMemoryRangeInfo* findRange(const Dcm_DspMemoryRangeInfo *memoryRangePtr, uint32 memoryAddress, uint32 length)
 {
-    const Dcm_DspMemoryRangeInfo *memoryRange = NULL;
+    const Dcm_DspMemoryRangeInfo *memoryRange = NULL_PTR;
 
-    for( ; (memoryRangePtr->Arc_EOL == FALSE) && (memoryRange == NULL); memoryRangePtr++ ) {
+    for( ; (memoryRangePtr->Arc_EOL == FALSE) && (memoryRange == NULL_PTR); memoryRangePtr++ ) {
         /*@req DCM493*/
         if((memoryAddress >= memoryRangePtr->MemoryAddressLow)
             && (memoryAddress <= memoryRangePtr->MemoryAddressHigh)
@@ -3577,12 +3576,12 @@ void DspUdsWriteMemoryByAddress(const PduInfoType *pduRxData, PduInfoType *pduTx
 {
     /* @req DCM488 */
     Dcm_NegativeResponseCodeType diagResponseCode;
-    uint8 sizeFormat = 0;
-    uint8 addressFormat = 0;
-    uint32 memoryAddress = 0;
-    uint32 length = 0;
-    uint8 i = 0;
-    uint8 memoryIdentifier = 0; /* Should be 0 if DcmDspUseMemoryId == FALSE */
+    uint8 sizeFormat = 0u;
+    uint8 addressFormat = 0u;
+    uint32 memoryAddress = 0u;
+    uint32 length = 0u;
+    uint8 i = 0u;
+    uint8 memoryIdentifier = 0u; /* Should be 0 if DcmDspUseMemoryId == FALSE */
     Dcm_OpStatusType OpStatus = DCM_INITIAL;
     uint8 addressOffset;
 
@@ -3593,10 +3592,10 @@ void DspUdsWriteMemoryByAddress(const PduInfoType *pduRxData, PduInfoType *pduTx
             if(addressFormat + sizeFormat + SID_LEN + ALFID_LEN <= pduRxData->SduLength) {
                 if( TRUE == Dcm_ConfigPtr->Dsp->DspMemory->DcmDspUseMemoryId ) {
                     memoryIdentifier = pduRxData->SduDataPtr[ADDR_START_INDEX];
-                    addressOffset = 1;
+                    addressOffset = 1u;
                 }
                 else {
-                    addressOffset = 0;
+                    addressOffset = 0u;
                 }
 
                 /* Parse address */
@@ -3947,13 +3946,13 @@ static Dcm_NegativeResponseCodeType readPeriodDidData(const Dcm_DspDidType *PDid
 {
     Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
     PduInfoType myPdu;
-    uint16 txPos = 0;
+    uint16 txPos = 0u;
     ReadDidPendingStateType pendingState = DCM_READ_DID_IDLE;
-    uint16 pendingDataLen = 0;
-    uint16 pendingSignalIndex = 0;
-    uint16 didDataStartPos = 0;
-    *Length = 0;
-    if (PDidPtr->DspDidInfoRef->DspDidAccess.DspDidRead != NULL ) {
+    uint16 pendingDataLen = 0u;
+    uint16 pendingSignalIndex = 0u;
+    uint16 didDataStartPos = 0u;
+    *Length = 0u;
+    if (PDidPtr->DspDidInfoRef->DspDidAccess.DspDidRead != NULL_PTR ) {
         myPdu.SduDataPtr = Data;
         myPdu.SduLength = bufSize;
         responseCode = getDidData(PDidPtr, &myPdu, &txPos, &pendingState, &pendingDataLen, &pendingSignalIndex, &didDataStartPos, FALSE);
@@ -3985,7 +3984,7 @@ static void ClearPeriodicIdentifier(const PduInfoType *pduRxData,PduInfoType *pd
     uint8 i;
     if( pduRxData->SduDataPtr[1] == DCM_PERIODICTRANSMIT_STOPSENDING_MODE ) {
         PdidNumber = pduRxData->SduLength - 2;
-        for(i = 0;i < PdidNumber; i++) {
+        for(i = 0u;i < PdidNumber; i++) {
             DspPdidRemove(pduRxData->SduDataPtr[2 + i], rxPduId);
         }
         pduTxData->SduLength = 1;
@@ -3999,7 +3998,7 @@ static void ClearPeriodicIdentifier(const PduInfoType *pduRxData,PduInfoType *pd
  */
 static uint16 DspGetProtocolMaxPDidLength(Dcm_ProtocolTransTypeType txType)
 {
-    uint16 maxLength = 0;
+    uint16 maxLength = 0u;
     Dcm_ProtocolType activeProtocol;
     if(E_OK == DslGetActiveProtocol(&activeProtocol)) {
         switch(activeProtocol) {
@@ -4037,8 +4036,8 @@ static uint16 DspGetProtocolMaxPDidLength(Dcm_ProtocolTransTypeType txType)
  */
 static boolean checkPDidSupported(uint16 pDid, uint16 *didLength, Dcm_NegativeResponseCodeType *responseCode)
 {
-    const Dcm_DspDidType *PDidPtr = NULL;
-    Dcm_DspDDDType *DDidPtr = NULL;
+    const Dcm_DspDidType *PDidPtr = NULL_PTR;
+    Dcm_DspDDDType *DDidPtr = NULL_PTR;
     boolean didSupported = FALSE;
     boolean isDynamicDid = FALSE;
 
@@ -4050,7 +4049,7 @@ static boolean checkPDidSupported(uint16 pDid, uint16 *didLength, Dcm_NegativeRe
     }
 
     *responseCode = DCM_E_REQUESTOUTOFRANGE;
-    if(didSupported && (NULL != PDidPtr) && (NULL != PDidPtr->DspDidInfoRef->DspDidAccess.DspDidRead)) {
+    if(didSupported && (NULL_PTR != PDidPtr) && (NULL_PTR != PDidPtr->DspDidInfoRef->DspDidAccess.DspDidRead)) {
         /* @req DCM721 */
         if(DspCheckSessionLevel(PDidPtr->DspDidInfoRef->DspDidAccess.DspDidRead->DspDidReadSessionRef)) {
             /* @req DCM722 */
@@ -4082,8 +4081,8 @@ static boolean checkPDidSupported(uint16 pDid, uint16 *didLength, Dcm_NegativeRe
 static Dcm_NegativeResponseCodeType getPDidData(uint16 did, uint8 *data, uint16 bufSize, uint16 *dataLength)
 {
     Dcm_NegativeResponseCodeType responseCode;
-    const Dcm_DspDidType *PDidPtr = NULL;
-    Dcm_DspDDDType *DDidPtr = NULL;
+    const Dcm_DspDidType *PDidPtr = NULL_PTR;
+    Dcm_DspDDDType *DDidPtr = NULL_PTR;
     if( lookupNonDynamicDid(did, &PDidPtr) ) {
         responseCode = readPeriodDidData(PDidPtr, data, bufSize, dataLength);
     } else if( LookupDDD(did, (const Dcm_DspDDDType **)&DDidPtr) ) {
@@ -4108,15 +4107,15 @@ void DspReadDataByPeriodicIdentifier(const PduInfoType *pduRxData, PduInfoType *
     /* @req DCM254 */
     uint8 PDidLowByte;
     uint16 PdidNumber;
-    uint32 periodicTransmitCounter = 0;
-    uint16 DataLength = 0;
+    uint32 periodicTransmitCounter = 0u;
+    uint16 DataLength = 0u;
     Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
     boolean secAccOK = FALSE;
     boolean requestOK = FALSE;
     boolean requestHasSupportedDid = FALSE;
-    uint8 nofPdidsAdded = 0;
+    uint8 nofPdidsAdded = 0u;
     uint8 pdidsAdded[DCM_LIMITNUMBER_PERIODDATA];
-    uint16 maxDidLen = 0;
+    uint16 maxDidLen = 0u;
     boolean supressNRC = FALSE;
     memset(pdidsAdded, 0, DCM_LIMITNUMBER_PERIODDATA);
     if(pduRxData->SduLength > 2) {
@@ -4148,9 +4147,9 @@ void DspReadDataByPeriodicIdentifier(const PduInfoType *pduRxData, PduInfoType *
              * If there are more dids in the request than we can handle, we only give negative response code
              * if the number of supported dids in the request are greater than the number of entries left
              * in our buffer. */
-            for( uint8 indx = 0; (indx < PdidNumber) && (DCM_E_POSITIVERESPONSE == responseCode); indx++ ) {
+            for( uint8 indx = 0u; (indx < PdidNumber) && (DCM_E_POSITIVERESPONSE == responseCode); indx++ ) {
                 PDidLowByte = pduRxData->SduDataPtr[2 + indx];
-                uint16 didLength = 0;
+                uint16 didLength = 0u;
                 Dcm_NegativeResponseCodeType resp = DCM_E_POSITIVERESPONSE;
                 if(checkPDidSupported(TO_PERIODIC_DID(PDidLowByte), &didLength, &resp)) {
                     requestHasSupportedDid = TRUE;
@@ -4163,7 +4162,7 @@ void DspReadDataByPeriodicIdentifier(const PduInfoType *pduRxData, PduInfoType *
                         } else if( PDID_BUFFER_FULL == pdidStatus ){
                             /* Would exceed the maximum number of periodic dids.
                              * Clear the ones added now. */
-                            for( uint8 idx = 0; idx < nofPdidsAdded; idx++ ) {
+                            for( uint8 idx = 0u; idx < nofPdidsAdded; idx++ ) {
                                 DspPdidRemove(pdidsAdded[idx], rxPduId);
                             }
                             responseCode = DCM_E_REQUESTOUTOFRANGE;
@@ -4244,12 +4243,12 @@ static Dcm_NegativeResponseCodeType dynamicallyDefineDataIdentifierbyDid(uint16 
 {
     uint8 i;
     uint16 SourceDidNr;
-    const Dcm_DspDidType *SourceDid = NULL;
-    Dcm_DspDDDType *DDid = NULL;
-    uint16 SourceLength = 0;
-    uint16 DidLength = 0;
-    uint16 Length = 0;
-    uint8 Num = 0;
+    const Dcm_DspDidType *SourceDid = NULL_PTR;
+    Dcm_DspDDDType *DDid = NULL_PTR;
+    uint16 SourceLength = 0u;
+    uint16 DidLength = 0u;
+    uint16 Length = 0u;
+    uint8 Num = 0u;
     Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
     const Dcm_DspSignalType *signalPtr;
 
@@ -4273,7 +4272,7 @@ static Dcm_NegativeResponseCodeType dynamicallyDefineDataIdentifierbyDid(uint16 
             if((Length + SourceLength) <= DCM_MAX_DDDSOURCE_NUMBER) {
                 for(i = 0;(i < Length) && (responseCode == DCM_E_POSITIVERESPONSE);i++) {
                     SourceDidNr = (((uint16)pduRxData->SduDataPtr[SID_AND_DDDID_LEN + i*SDI_AND_MS_LEN] << 8) & DCM_DID_HIGH_MASK) + (((uint16)pduRxData->SduDataPtr[(5 + i*SDI_AND_MS_LEN)]) & DCM_DID_LOW_MASK);
-                    if( lookupNonDynamicDid(SourceDidNr, &SourceDid) && (NULL != SourceDid->DspDidInfoRef->DspDidAccess.DspDidRead) ) {/*UDS_REQ_0x2C_4*/
+                    if( lookupNonDynamicDid(SourceDidNr, &SourceDid) && (NULL_PTR != SourceDid->DspDidInfoRef->DspDidAccess.DspDidRead) ) {/*UDS_REQ_0x2C_4*/
                         /* @req DCM725 */
                         if(DspCheckSessionLevel(SourceDid->DspDidInfoRef->DspDidAccess.DspDidRead->DspDidReadSessionRef)) {
                             /* @req DCM726 */
@@ -4285,7 +4284,7 @@ static Dcm_NegativeResponseCodeType dynamicallyDefineDataIdentifierbyDid(uint16 
                                     signalPtr = &SourceDid->DspSignalRef[sigIndex];
                                     if( signalPtr->DspSignalDataRef->DspDataInfoRef->DspDidFixedLength || (DATA_PORT_SR == signalPtr->DspSignalDataRef->DspDataUsePort)) {
                                         tempSize = GetNofAffectedBytes(signalPtr->DspSignalDataRef->DspDataEndianess, signalPtr->DspSignalBitPosition, signalPtr->DspSignalDataRef->DspDataBitSize);
-                                    } else if( NULL != signalPtr->DspSignalDataRef->DspDataReadDataLengthFnc ) {
+                                    } else if( NULL_PTR != signalPtr->DspSignalDataRef->DspDataReadDataLengthFnc ) {
                                         (void)signalPtr->DspSignalDataRef->DspDataReadDataLengthFnc(&tempSize);
                                     }
                                     tempSize += (signalPtr->DspSignalBitPosition / 8);
@@ -4345,17 +4344,17 @@ static Dcm_NegativeResponseCodeType dynamicallyDefineDataIdentifierbyDid(uint16 
 static Dcm_NegativeResponseCodeType dynamicallyDefineDataIdentifierbyAddress(uint16 DDIdentifier,const PduInfoType *pduRxData,PduInfoType *pduTxData)
 {
     uint16 numNewDefinitions;
-    uint16 numEarlierDefinitions = 0;
-    Dcm_DspDDDType *DDid = NULL;
-    uint8 Num = 0;
+    uint16 numEarlierDefinitions = 0u;
+    Dcm_DspDDDType *DDid = NULL_PTR;
+    uint8 Num = 0u;
     uint8 definitionIndex;
     Dcm_NegativeResponseCodeType diagResponseCode = DCM_E_POSITIVERESPONSE;
     uint8 sizeFormat;
     uint8 addressFormat;
-    uint32 memoryAddress = 0;
-    uint32 length = 0;
+    uint32 memoryAddress = 0u;
+    uint32 length = 0u;
     uint8 i;
-    uint8 memoryIdentifier = 0; /* Should be 0 if DcmDspUseMemoryId == FALSE */
+    uint8 memoryIdentifier = 0u; /* Should be 0 if DcmDspUseMemoryId == FALSE */
     uint8 addressOffset;
     
     if(FALSE == LookupDDD(DDIdentifier, (const Dcm_DspDDDType **)&DDid)) {
@@ -4398,7 +4397,7 @@ static Dcm_NegativeResponseCodeType dynamicallyDefineDataIdentifierbyAddress(uin
                             }
 
                             /* Parse address */
-                            memoryAddress = 0;
+                            memoryAddress = 0u;
                             for(i = addressOffset; i < addressFormat; i++) {
                                 memoryAddress <<= 8;
                                 memoryAddress += (uint32)(pduRxData->SduDataPtr[DYNDEF_ADDRESS_START_INDEX + definitionIndex * (sizeFormat + addressFormat) + i]);
@@ -4466,12 +4465,12 @@ static Dcm_NegativeResponseCodeType dynamicallyDefineDataIdentifierbyAddress(uin
 */
 static Dcm_NegativeResponseCodeType ClearDynamicallyDefinedDid(uint16 DDIdentifier,const PduInfoType *pduRxData, PduInfoType * pduTxData)
 {
-	/*UDS_REQ_0x2C_5*/
-	sint8 i;
-	uint8 j;
-	Dcm_DspDDDType *DDid = NULL;
-	Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
-	
+    /*UDS_REQ_0x2C_5*/
+    sint8 i;
+    uint8 j;
+    Dcm_DspDDDType *DDid = NULL_PTR;
+    Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
+
     if(pduRxData->SduLength == 4) {
         if(TRUE == LookupDDD(DDIdentifier, (const Dcm_DspDDDType **)&DDid)) {
     #if defined(DCM_USE_SERVICE_READDATABYPERIODICIDENTIFIER)
@@ -4523,13 +4522,13 @@ void DspDynamicallyDefineDataIdentifier(const PduInfoType *pduRxData,PduInfoType
     uint16 DDIdentifier;
     boolean PeriodicUse = FALSE;
     Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
-    const Dcm_DspDidType *dDidPtr = NULL;
+    const Dcm_DspDidType *dDidPtr = NULL_PTR;
 
     if(pduRxData->SduLength > 2) {
         /* Check if DDID is in the range 0xF200-0xF3FF */
         DDIdentifier = ((((uint16)pduRxData->SduDataPtr[2]) << 8) & DCM_DID_HIGH_MASK) + (pduRxData->SduDataPtr[3] & DCM_DID_LOW_MASK);
         /* @req DCM723 */
-        if( lookupDynamicDid(DDIdentifier, &dDidPtr) && (NULL != dDidPtr) && (NULL != dDidPtr->DspDidInfoRef->DspDidAccess.DspDidWrite) && DspCheckSessionLevel(dDidPtr->DspDidInfoRef->DspDidAccess.DspDidWrite->DspDidWriteSessionRef)) {
+        if( lookupDynamicDid(DDIdentifier, &dDidPtr) && (NULL_PTR != dDidPtr) && (NULL_PTR != dDidPtr->DspDidInfoRef->DspDidAccess.DspDidWrite) && DspCheckSessionLevel(dDidPtr->DspDidInfoRef->DspDidAccess.DspDidWrite->DspDidWriteSessionRef)) {
             /* @req DCM724 */
             if( DspCheckSecurityLevel(dDidPtr->DspDidInfoRef->DspDidAccess.DspDidWrite->DspDidWriteSecurityLevelRef) ) {
                 switch(pduRxData->SduDataPtr[1]) {	/*UDS_REQ_0x2C_2*//* @req DCM646 */
@@ -4589,19 +4588,19 @@ void DspDynamicallyDefineDataIdentifier(const PduInfoType *pduRxData,PduInfoType
  */
 static void DspStopInputOutputControl(boolean checkSessionAndSecLevel)
 {
-    const Dcm_DspDidControlType *DidControl = NULL;
-    const Dcm_DspDidType *DidPtr = NULL;
+    const Dcm_DspDidControlType *DidControl = NULL_PTR;
+    const Dcm_DspDidType *DidPtr = NULL_PTR;
     const Dcm_DspSignalType *signalPtr;
     Dcm_NegativeResponseCodeType responseCode;
     /* @req DCM628 */
     boolean serviceSupported = DsdDspCheckServiceSupportedInActiveSessionAndSecurity(SID_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER);
-    for(uint16 i = 0; i < DCM_NOF_IOCONTROL_DIDS; i++) {
+    for(uint16 i = 0u; i < DCM_NOF_IOCONTROL_DIDS; i++) {
         if( IOControlStateList[i].controlActive ) {
             /* Control not in the hands of the ECU.
              * Return it. */
             if(lookupNonDynamicDid(IOControlStateList[i].did, &DidPtr)) {
                 DidControl = DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl;
-                if(NULL != DidControl) {
+                if(NULL_PTR != DidControl) {
                     boolean returnToECU = TRUE;
                     if(serviceSupported && checkSessionAndSecLevel) {
                         /* Should check if supported in session and security level */
@@ -4616,10 +4615,10 @@ static void DspStopInputOutputControl(boolean checkSessionAndSecLevel)
                         for( uint16 sigIndex = 0; sigIndex < DidPtr->DspNofSignals; sigIndex++ ) {
                             if( IOControlStateList[i].activeSignalBitfield[sigIndex/8] & TO_SIGNAL_BIT(sigIndex) ) {
                                 signalPtr = &DidPtr->DspSignalRef[sigIndex];
-                                if ((signalPtr->DspSignalDataRef->DspDataUsePort == DATA_PORT_ECU_SIGNAL) && (signalPtr->DspSignalDataRef->DspDataReturnControlToEcuFnc.EcuSignalReturnControlToECUFnc != NULL)){
-                                    (void)signalPtr->DspSignalDataRef->DspDataReturnControlToEcuFnc.EcuSignalReturnControlToECUFnc(DCM_RETURN_CONTROL_TO_ECU, NULL);
+                                if ((signalPtr->DspSignalDataRef->DspDataUsePort == DATA_PORT_ECU_SIGNAL) && (signalPtr->DspSignalDataRef->DspDataReturnControlToEcuFnc.EcuSignalReturnControlToECUFnc != NULL_PTR)){
+                                    (void)signalPtr->DspSignalDataRef->DspDataReturnControlToEcuFnc.EcuSignalReturnControlToECUFnc(DCM_RETURN_CONTROL_TO_ECU, NULL_PTR);
                                 }
-                                else if(signalPtr->DspSignalDataRef->DspDataReturnControlToEcuFnc.FuncReturnControlToECUFnc != NULL) {
+                                else if(signalPtr->DspSignalDataRef->DspDataReturnControlToEcuFnc.FuncReturnControlToECUFnc != NULL_PTR) {
                                     (void)signalPtr->DspSignalDataRef->DspDataReturnControlToEcuFnc.FuncReturnControlToECUFnc(DCM_INITIAL, &responseCode);
                                 }
                                 IOControlStateList[i].activeSignalBitfield[sigIndex/8] &= ~(TO_SIGNAL_BIT(sigIndex));
@@ -4654,9 +4653,9 @@ static void DspIOControlSetActive(uint16 didNr, Dcm_DspIOControlVector signalAff
     uint16 unusedIndex = DCM_NOF_IOCONTROL_DIDS;
     uint16 didIndex = DCM_NOF_IOCONTROL_DIDS;
     boolean indexOK = TRUE;
-    uint16 indx = 0;
+    uint16 indx = 0u;
 
-    for(uint16 i = 0; (i < DCM_NOF_IOCONTROL_DIDS) && (DCM_NOF_IOCONTROL_DIDS == didIndex); i++) {
+    for(uint16 i = 0u; (i < DCM_NOF_IOCONTROL_DIDS) && (DCM_NOF_IOCONTROL_DIDS == didIndex); i++) {
         if(didNr == IOControlStateList[i].did) {
             didIndex = i;
         } else if( (DCM_NOF_IOCONTROL_DIDS == unusedIndex) && !IOControlStateList[i].controlActive ) {
@@ -4702,7 +4701,7 @@ static void DspIOControlSetActive(uint16 didNr, Dcm_DspIOControlVector signalAff
  */
 static void DspIOControlStopActivated(uint16 didNr, Dcm_DspIOControlVector signalActivated)
 {
-    const Dcm_DspDidType *DidPtr = NULL;
+    const Dcm_DspDidType *DidPtr = NULL_PTR;
     const Dcm_DspSignalType *signalPtr;
     Dcm_NegativeResponseCodeType responseCode;
     boolean done = FALSE;
@@ -4717,16 +4716,16 @@ static void DspIOControlStopActivated(uint16 didNr, Dcm_DspIOControlVector signa
         }
     }
 
-    if(NULL != DidPtr) {
+    if(NULL_PTR != DidPtr) {
         for( uint16 sigIndex = 0; sigIndex < DidPtr->DspNofSignals; sigIndex++ ) {
             if( (0 != (currentlyActive[sigIndex/8] & TO_SIGNAL_BIT(sigIndex))) &&
                 (0 != (signalActivated[sigIndex/8] & TO_SIGNAL_BIT(sigIndex))) ) {
                 /* Control was activated and was activated again by current request */
                 signalPtr = &DidPtr->DspSignalRef[sigIndex];
-                if ((signalPtr->DspSignalDataRef->DspDataUsePort == DATA_PORT_ECU_SIGNAL) && (signalPtr->DspSignalDataRef->DspDataReturnControlToEcuFnc.EcuSignalReturnControlToECUFnc != NULL)){
-                    (void)signalPtr->DspSignalDataRef->DspDataReturnControlToEcuFnc.EcuSignalReturnControlToECUFnc(DCM_RETURN_CONTROL_TO_ECU, NULL);
+                if ((signalPtr->DspSignalDataRef->DspDataUsePort == DATA_PORT_ECU_SIGNAL) && (signalPtr->DspSignalDataRef->DspDataReturnControlToEcuFnc.EcuSignalReturnControlToECUFnc != NULL_PTR)){
+                    (void)signalPtr->DspSignalDataRef->DspDataReturnControlToEcuFnc.EcuSignalReturnControlToECUFnc(DCM_RETURN_CONTROL_TO_ECU, NULL_PTR);
                 }
-                else if(signalPtr->DspSignalDataRef->DspDataReturnControlToEcuFnc.FuncReturnControlToECUFnc != NULL) {
+                else if(signalPtr->DspSignalDataRef->DspDataReturnControlToEcuFnc.FuncReturnControlToECUFnc != NULL_PTR) {
                     (void)signalPtr->DspSignalDataRef->DspDataReturnControlToEcuFnc.FuncReturnControlToECUFnc(DCM_INITIAL, &responseCode);
                 }
             }
@@ -4742,25 +4741,25 @@ static Std_ReturnType EcuSignalInputOutputControl(const Dcm_DspDataType *DataPtr
     /* @req DCM579 */
     switch(action) {
         case DCM_RETURN_CONTROL_TO_ECU:
-            if (DataPtr->DspDataReturnControlToEcuFnc.EcuSignalReturnControlToECUFnc != NULL) {
+            if (DataPtr->DspDataReturnControlToEcuFnc.EcuSignalReturnControlToECUFnc != NULL_PTR) {
                 *responseCode = DCM_E_POSITIVERESPONSE;
-                retVal = DataPtr->DspDataReturnControlToEcuFnc.EcuSignalReturnControlToECUFnc(DCM_RETURN_CONTROL_TO_ECU, NULL);
+                retVal = DataPtr->DspDataReturnControlToEcuFnc.EcuSignalReturnControlToECUFnc(DCM_RETURN_CONTROL_TO_ECU, NULL_PTR);
             }
             break;
         case DCM_RESET_TO_DEFAULT:
-            if (DataPtr->DspDataResetToDefaultFnc.EcuSignalResetToDefaultFnc != NULL) {
+            if (DataPtr->DspDataResetToDefaultFnc.EcuSignalResetToDefaultFnc != NULL_PTR) {
                 *responseCode = DCM_E_POSITIVERESPONSE;
-                retVal = DataPtr->DspDataResetToDefaultFnc.EcuSignalResetToDefaultFnc(DCM_RESET_TO_DEFAULT, NULL);
+                retVal = DataPtr->DspDataResetToDefaultFnc.EcuSignalResetToDefaultFnc(DCM_RESET_TO_DEFAULT, NULL_PTR);
             }
             break;
         case DCM_FREEZE_CURRENT_STATE:
-            if (DataPtr->DspDataFreezeCurrentStateFnc.EcuSignalFreezeCurrentStateFnc != NULL) {
+            if (DataPtr->DspDataFreezeCurrentStateFnc.EcuSignalFreezeCurrentStateFnc != NULL_PTR) {
                 *responseCode = DCM_E_POSITIVERESPONSE;
-                retVal = DataPtr->DspDataFreezeCurrentStateFnc.EcuSignalFreezeCurrentStateFnc(DCM_FREEZE_CURRENT_STATE, NULL);
+                retVal = DataPtr->DspDataFreezeCurrentStateFnc.EcuSignalFreezeCurrentStateFnc(DCM_FREEZE_CURRENT_STATE, NULL_PTR);
             }
             break;
         case DCM_SHORT_TERM_ADJUSTMENT:
-            if (DataPtr->DspDataShortTermAdjustmentFnc.EcuSignalShortTermAdjustmentFnc != NULL) {
+            if (DataPtr->DspDataShortTermAdjustmentFnc.EcuSignalShortTermAdjustmentFnc != NULL_PTR) {
                 *responseCode = DCM_E_POSITIVERESPONSE;
                 retVal = DataPtr->DspDataShortTermAdjustmentFnc.EcuSignalShortTermAdjustmentFnc(DCM_SHORT_TERM_ADJUSTMENT, controlOptionRecord);
             }
@@ -4780,22 +4779,22 @@ static Std_ReturnType FunctionInputOutputControl(const Dcm_DspDataType *DataPtr,
     /* @req DCM579 */
     switch(action) {
         case DCM_RETURN_CONTROL_TO_ECU:
-            if(DataPtr->DspDataReturnControlToEcuFnc.FuncReturnControlToECUFnc != NULL) {
+            if(DataPtr->DspDataReturnControlToEcuFnc.FuncReturnControlToECUFnc != NULL_PTR) {
                 retVal = DataPtr->DspDataReturnControlToEcuFnc.FuncReturnControlToECUFnc(opStatus ,responseCode);
             }
             break;
         case DCM_RESET_TO_DEFAULT:
-            if(DataPtr->DspDataResetToDefaultFnc.FuncResetToDefaultFnc != NULL) {
+            if(DataPtr->DspDataResetToDefaultFnc.FuncResetToDefaultFnc != NULL_PTR) {
                 retVal = DataPtr->DspDataResetToDefaultFnc.FuncResetToDefaultFnc(opStatus ,responseCode);
             }
             break;
         case DCM_FREEZE_CURRENT_STATE:
-            if(DataPtr->DspDataFreezeCurrentStateFnc.FuncFreezeCurrentStateFnc != NULL) {
+            if(DataPtr->DspDataFreezeCurrentStateFnc.FuncFreezeCurrentStateFnc != NULL_PTR) {
                 retVal = DataPtr->DspDataFreezeCurrentStateFnc.FuncFreezeCurrentStateFnc(opStatus ,responseCode);
             }
             break;
         case DCM_SHORT_TERM_ADJUSTMENT:
-            if(DataPtr->DspDataShortTermAdjustmentFnc.FuncShortTermAdjustmentFnc != NULL) {
+            if(DataPtr->DspDataShortTermAdjustmentFnc.FuncShortTermAdjustmentFnc != NULL_PTR) {
                 retVal = DataPtr->DspDataShortTermAdjustmentFnc.FuncShortTermAdjustmentFnc(controlOptionRecord, opStatus, responseCode);
             }
             break;
@@ -4829,7 +4828,7 @@ static Dcm_NegativeResponseCodeType IOControlExecute(const Dcm_DspDidType *DidPt
     for(uint16 sigIndex = pendingPtr->pendingSignalIndex; (sigIndex < DidPtr->DspNofSignals) && (E_OK == retVal) && (DCM_E_POSITIVERESPONSE == responseCode); sigIndex++) {
         signalPtr = &DidPtr->DspSignalRef[sigIndex];
         /* @req DCM581 */
-        if( (NULL == ctrlEnableMaskPtr) || (ctrlEnableMaskPtr[sigIndex/8] & TO_SIGNAL_BIT(sigIndex)) ) {
+        if( (NULL_PTR == ctrlEnableMaskPtr) || (ctrlEnableMaskPtr[sigIndex/8] & TO_SIGNAL_BIT(sigIndex)) ) {
             /* @req DCM396 */
             /* @req DCM397 */
             /* @req DCM398 */
@@ -4886,7 +4885,7 @@ static Dcm_NegativeResponseCodeType IOControlReadData(const Dcm_DspDidType *DidP
     Std_ReturnType retVal = E_OK;
     for( uint16 sigIndex = pendingPtr->pendingSignalIndex; (sigIndex < DidPtr->DspNofSignals) && (E_OK == retVal); sigIndex++ ) {
         signalPtr = &DidPtr->DspSignalRef[sigIndex];
-        if( signalPtr->DspSignalDataRef->DspDataReadDataFnc.SynchDataReadFnc != NULL ) {
+        if( signalPtr->DspSignalDataRef->DspDataReadDataFnc.SynchDataReadFnc != NULL_PTR ) {
             if( (DATA_PORT_SYNCH == signalPtr->DspSignalDataRef->DspDataUsePort) || (DATA_PORT_ECU_SIGNAL == signalPtr->DspSignalDataRef->DspDataUsePort) ) {
                 if( E_OK != signalPtr->DspSignalDataRef->DspDataReadDataFnc.SynchDataReadFnc(&Data[(signalPtr->DspSignalBitPosition / 8)])) {
                     /* Synch port cannot return E_PENDING */
@@ -4936,11 +4935,11 @@ void DspIOControlByDataIdentifier(const PduInfoType *pduRxData,PduInfoType *pduT
 {
     /* @req DCM256 */
 #ifdef DCM_USE_CONTROL_DIDS
-    uint16 didSize = 0;
-    uint16 didNr = 0;
+    uint16 didSize = 0u;
+    uint16 didNr = 0u;
     boolean didFound;
-    const Dcm_DspDidType *DidPtr = NULL;
-    const Dcm_DspDidControlType *DidControl = NULL;
+    const Dcm_DspDidType *DidPtr = NULL_PTR;
+    const Dcm_DspDidControlType *DidControl = NULL_PTR;
     Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
     Dcm_OpStatusType opStatus = DCM_PENDING;
     if( DCM_GENERAL_IDLE == IOControlData.state ) {
@@ -4965,17 +4964,17 @@ void DspIOControlByDataIdentifier(const PduInfoType *pduRxData,PduInfoType *pduT
             if(TRUE == didFound) {
                 DidControl = DidPtr->DspDidInfoRef->DspDidAccess.DspDidControl;
                 /* @req DCM565 */
-                if((NULL != DidControl) && (DidPtr->DspNofSignals != 0) && IS_VALID_IOCTRL_PARAM(pduRxData->SduDataPtr[IOCP_INDEX]))  {
+                if((NULL_PTR != DidControl) && (DidPtr->DspNofSignals != 0) && IS_VALID_IOCTRL_PARAM(pduRxData->SduDataPtr[IOCP_INDEX]))  {
                     /* @req DCM566 */
                     if(TRUE == DspCheckSessionLevel(DidControl->DspDidControlSessionRef)) {
                         /* @req DCM567 */
                         if(TRUE == DspCheckSecurityLevel(DidControl->DspDidControlSecurityLevelRef))  {
-                            uint8 *maskPtr = NULL;
+                            uint8 *maskPtr = NULL_PTR;
                             boolean requestOk = FALSE;
-                            uint16 controlOptionSize = (DCM_SHORT_TERM_ADJUSTMENT == pduRxData->SduDataPtr[IOCP_INDEX]) ? DidPtr->DspDidDataByteSize : 0;
-                            uint16 controlEnableMaskSize = (DidPtr->DspNofSignals > 1) ? ((DidPtr->DspNofSignals + 7) / 8) : 0;
+                            uint16 controlOptionSize = (DCM_SHORT_TERM_ADJUSTMENT == pduRxData->SduDataPtr[IOCP_INDEX]) ? DidPtr->DspDidDataByteSize : 0u;
+                            uint16 controlEnableMaskSize = (DidPtr->DspNofSignals > 1) ? ((DidPtr->DspNofSignals + 7) / 8) : 0u;
                             requestOk = (pduRxData->SduLength == (SID_LEN + IOI_LEN + IOCP_LEN + controlOptionSize + controlEnableMaskSize));
-                            maskPtr = (DidPtr->DspNofSignals > 1) ? (&pduRxData->SduDataPtr[COR_INDEX + controlOptionSize]) : NULL;
+                            maskPtr = (DidPtr->DspNofSignals > 1) ? (&pduRxData->SduDataPtr[COR_INDEX + controlOptionSize]) : NULL_PTR;
 
                             if( requestOk ) {
                                 if( pduTxData->SduLength >= (SID_LEN + IOI_LEN + IOCP_LEN + didSize) ) {
@@ -5012,7 +5011,7 @@ void DspIOControlByDataIdentifier(const PduInfoType *pduRxData,PduInfoType *pduT
         pduTxData->SduDataPtr[2] = pduRxData->SduDataPtr[2];// did
         pduTxData->SduDataPtr[3] = pduRxData->SduDataPtr[IOCP_INDEX];
         // IMPROVEMENT: rework this totally: use the read did implementation
-        if( NULL != DidPtr ) {
+        if( NULL_PTR != DidPtr ) {
             responseCode = IOControlReadData(DidPtr, &pduTxData->SduDataPtr[4], &IOControlData, opStatus);
         }
     }
@@ -5105,8 +5104,8 @@ static Dcm_NegativeResponseCodeType DspInternalCommunicationControl(uint8 subFun
         if(0xFu == subNet) {
             /* Channel which request was received on */
             /* @req DCM785 */
-            const Dcm_DslProtocolRxType *protocolRx = NULL;
-            if( (E_OK == DsdDspGetCurrentProtocolRx(rxPduId, &protocolRx)) && (NULL != protocolRx) ) {
+            const Dcm_DslProtocolRxType *protocolRx = NULL_PTR;
+            if( (E_OK == DsdDspGetCurrentProtocolRx(rxPduId, &protocolRx)) && (NULL_PTR != protocolRx) ) {
                 if( executeModeSwitch ) {
                     (void)Dcm_ConfigPtr->DcmComMChannelCfg[protocolRx->ComMChannelInternalIndex].ModeSwitchFnc(rteMode);
                     DspChannelComMode[protocolRx->ComMChannelInternalIndex] = dcmMode;
@@ -5117,7 +5116,7 @@ static Dcm_NegativeResponseCodeType DspInternalCommunicationControl(uint8 subFun
                 responseCode = DCM_E_POSITIVERESPONSE;
             }
         } else {
-            if(NULL != Dcm_ConfigPtr->Dsp->DspComControl) {
+            if(NULL_PTR != Dcm_ConfigPtr->Dsp->DspComControl) {
                 if( 0u == subNet ) {
                     /* All channels */
                     /* @req DCM512 */
@@ -5205,27 +5204,26 @@ void DspCommunicationControl(const PduInfoType *pduRxData,PduInfoType *pduTxData
 #if defined(DCM_USE_SERVICE_REQUESTCURRENTPOWERTRAINDIAGNOSTICDATA) || defined(DCM_USE_SERVICE_REQUESTPOWERTRAINFREEZEFRAMEDATA)
 static boolean lookupPid(uint8 pidId, Dcm_PidServiceType service, const Dcm_DspPidType **PidPtr)
 {
+	const Dcm_DspPidType *dspPid = Dcm_ConfigPtr->Dsp->DspPid;
     boolean pidFound = FALSE;
-    const Dcm_DspPidType *dspPid = Dcm_ConfigPtr->Dsp->DspPid;
 
-    if(dspPid != NULL)
-    {
-        while ((dspPid->DspPidIdentifier != pidId) && (!dspPid->Arc_EOL))
-        {
-            dspPid++;
-        }
-        if ((!dspPid->Arc_EOL) && ((DCM_SERVICE_01_02 == dspPid->DspPidService) || (service == dspPid->DspPidService) ))
-        {
-            pidFound = TRUE;
-            *PidPtr = dspPid;
-        }
-        else
-        {
-            /*do nothing*/
+    if(dspPid != NULL_PTR) {
+        for ( ;(!dspPid->Arc_EOL); dspPid++) {
+            if ((dspPid->DspPidIdentifier == pidId) &&
+                    ((DCM_SERVICE_01_02 == dspPid->DspPidService) || (service == dspPid->DspPidService)) &&
+                    (*dspPid->Arc_DcmPidEnabled == TRUE))
+            {
+                pidFound = TRUE;
+                *PidPtr = dspPid;
+                /* terminate the loop using break statement */
+                break;
+            }
+            else {
+                /*do nothing*/
+            }
         }
     }
-    else
-    {
+    else {
         /*do nothing*/
     }
 
@@ -5244,7 +5242,7 @@ static boolean lookupObdmid(uint8 obdmid, const Dcm_DspTestResultObdmidType **ob
 {
     boolean obdidFound = FALSE;
     const Dcm_DspTestResultObdmidType *dspObdmid = Dcm_ConfigPtr->Dsp->DspTestResultByObdmid->DspTestResultObdmidTid;
-    if(dspObdmid != NULL){
+    if(dspObdmid != NULL_PTR){
         do{
             if(dspObdmid->DspTestResultObdmid == obdmid){
                 obdidFound = TRUE;
@@ -5267,12 +5265,12 @@ static boolean lookupObdmid(uint8 obdmid, const Dcm_DspTestResultObdmidType **ob
 static boolean setAvailabilityObdmidValue(uint8 obdmid, uint32 *data)
 {
     uint8 shift;
-    uint32 obdmidData = 0;
+    uint32 obdmidData = 0u;
     uint32 temp;
     boolean setOk = FALSE;
     const Dcm_DspTestResultObdmidType *dspObdmid = Dcm_ConfigPtr->Dsp->DspTestResultByObdmid->DspTestResultObdmidTid;
 
-    if(dspObdmid != NULL) {
+    if(dspObdmid != NULL_PTR) {
         while (0 == dspObdmid->Arc_EOL) {
             if((dspObdmid->DspTestResultObdmid >= (obdmid + AVAIL_TO_SUPPORTED_OBDMID_OFFSET_MIN)) &&
                 /*	ISO 15031-5 says to do <= for the below line, but configurator does not supoort it and hence there is elseif part */
@@ -5300,12 +5298,12 @@ static boolean setAvailabilityObdmidValue(uint8 obdmid, uint32 *data)
 static boolean setAvailabilityPidValue(uint8 Pid, Dcm_PidServiceType service, uint32 *Data)
 {
     uint8 shift;
-    uint32 pidData = 0;
+    uint32 pidData = 0u;
     uint32 temp;
     boolean setOk = TRUE;
     const Dcm_DspPidType *dspPid = Dcm_ConfigPtr->Dsp->DspPid;
 
-    if(dspPid != NULL) {
+    if(dspPid != NULL_PTR) {
         while (0 == dspPid->Arc_EOL) {
             if( (DCM_SERVICE_01_02 == dspPid->DspPidService) || (service == dspPid->DspPidService) ) {
                 if((dspPid->DspPidIdentifier >= (Pid + AVAIL_TO_SUPPORTED_PID_OFFSET_MIN)) && (dspPid->DspPidIdentifier <= (Pid + AVAIL_TO_SUPPORTED_PID_OFFSET_MAX))) {
@@ -5340,17 +5338,17 @@ void DspObdRequestCurrentPowertrainDiagnosticData(const PduInfoType *pduRxData,P
     /* !req DCM243 */
     /* !req DCM621 */
     /* !req DCM622 */
-    uint16 nofAvailabilityPids = 0;
-    uint16 findPid = 0;
+    uint16 nofAvailabilityPids = 0u;
+    uint16 findPid = 0u;
     uint16 txPos = SID_LEN;
-    uint32 DATA = 0;
+    uint32 DATA = 0u;
     uint16 txLength = SID_LEN;
     uint16 pidNum = pduRxData->SduLength - SID_LEN;
-    const Dcm_DspPidType *sourcePidPtr = NULL;
+    const Dcm_DspPidType *sourcePidPtr = NULL_PTR;
     Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
     /* @req OBD_REQ_3 */
     if((pduRxData->SduLength >= OBD_REQ_MESSAGE_LEN_ONE_MIN) && (pduRxData->SduLength <= OBD_REQ_MESSAGE_LEN_MAX)) {
-        for(uint16 i = 0; i < pidNum; i++) { /*figure out the txLength to be sent*/
+        for(uint16 i = 0u; i < pidNum; i++) { /*figure out the txLength to be sent*/
             /*situation of availability Pids*/
             if( IS_AVAILABILITY_PID(pduRxData->SduDataPtr[i + 1]) ) {
                 nofAvailabilityPids++; /*used to judge if the message is valid, if nofAvailabilityPids != 0 or Pidnum, invalid*/
@@ -5391,7 +5389,7 @@ void DspObdRequestCurrentPowertrainDiagnosticData(const PduInfoType *pduRxData,P
                 }
             }
             else if(0 == nofAvailabilityPids) { /*check if all the request PIDs are the supported PIDs,like 0x01,0x02...*/
-                for(uint16 i = 0; i < pidNum; i++) {
+                for(uint16 i = 0u; i < pidNum; i++) {
                     if(TRUE == lookupPid(pduRxData->SduDataPtr[i + 1], DCM_SERVICE_01, &sourcePidPtr)) {
                         /*@req OBD_DCM_REQ_3,OBD_DCM_REQ_5,OBD_DCM_REQ_8*//* @req OBD_REQ_2 */
                         /* !req DCM623 */
@@ -5445,14 +5443,14 @@ void DspObdRequestPowertrainFreezeFrameData(const PduInfoType *pduRxData,PduInfo
 {
     /* !req DCM244 */
     /* @req DCM287 */
-    uint16 nofAvailabilityPids = 0;
-    uint16 findPid = 0;
+    uint16 nofAvailabilityPids = 0u;
+    uint16 findPid = 0u;
     uint32 dtc = 0;
-    uint32 supportBitfield = 0;
+    uint32 supportBitfield = 0u;
     uint16 txPos = SID_LEN;
     uint16 txLength = SID_LEN;
     uint16 messageLen = pduRxData->SduLength;
-    const Dcm_DspPidType *sourcePidPtr = NULL;
+    const Dcm_DspPidType *sourcePidPtr = NULL_PTR;
     Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 
     /* @req OBD_REQ_6 */
@@ -5460,7 +5458,7 @@ void DspObdRequestPowertrainFreezeFrameData(const PduInfoType *pduRxData,PduInfo
         uint16 pidNum = ((messageLen - 1) >> 1);
         const uint8* PIDAndFramePtr = &pduRxData->SduDataPtr[1];
         /*find out PID and FFnum*/
-        for(uint16 i = 0; i < pidNum; i++) {
+        for(uint16 i = 0u; i < pidNum; i++) {
             /* Calulate tx length */
             if(PIDAndFramePtr[OBD_SERVICE_2_PID_INDEX] == OBD_SERVICE_TWO) {
                 txLength += PID_LEN + FF_NUM_LEN + OBD_DTC_LEN;
@@ -5721,23 +5719,23 @@ void  DspObdRequestEmissionRelatedDiagnosticTroubleCodes(const PduInfoType *pduR
  */
 void DspObdRequestOnBoardMonitoringTestResultsService06(const PduInfoType *pduRxData,PduInfoType *pduTxData){
     /* !req DCM414 */
-    uint16 i ;
-    uint16 nofAvailabilityObdmids = 0;
-    uint8  unFoundObdmid = 0;
-    uint16 unFoundTid = 0;
+    uint16 i;
+    uint16 nofAvailabilityObdmids = 0u;
+    uint8  unFoundObdmid = 0u;
+    uint16 unFoundTid = 0u;
     uint16 txPos = SID_LEN;
-    uint32 supportBitfield = 0;
+    uint32 supportBitfield = 0u;
     uint16 txLength = SID_LEN;
     uint16 obdmidNum = pduRxData->SduLength - SID_LEN;
-    const  Dcm_DspTestResultObdmidType *sourceObdmidPtr = NULL;
+    const  Dcm_DspTestResultObdmidType *sourceObdmidPtr = NULL_PTR;
     Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
     Dcm_OpStatusType opStatus = (Dcm_OpStatusType)DCM_INITIAL;
-    uint16 testval = 0;
-    uint16 testMinlimit = 0;
-    uint16 testMaxlimit = 0;
+    uint16 testval = 0u;
+    uint16 testMinlimit = 0u;
+    uint16 testMaxlimit = 0u;
     DTRStatusType dtrStatus = 0;
     if((pduRxData->SduLength >= OBD_REQ_MESSAGE_LEN_ONE_MIN) && (pduRxData->SduLength <= OBD_REQ_MESSAGE_LEN_MAX)) {
-        for(i = 0; i < obdmidNum; i++) {
+        for(i = 0u; i < obdmidNum; i++) {
             /*situation of availability Obdmids*/
             if( IS_AVAILABILITY_OBDMID(pduRxData->SduDataPtr[OBDMID_DATA_START_INDEX + i]) ) {
                 txLength += OBDMID_LEN + SUPPORTED_OBDMIDS_DATA_LEN;
@@ -5775,7 +5773,7 @@ void DspObdRequestOnBoardMonitoringTestResultsService06(const PduInfoType *pduRx
                 }
                 /* @req DCM416 */
                 else {/* Non availabilty OBDMID request*/
-                    if(sourceObdmidPtr != NULL) {
+                    if(sourceObdmidPtr != NULL_PTR) {
                         for(i = 0; i < sourceObdmidPtr->DspTestResultTidSize; i++){
                             if( E_OK == sourceObdmidPtr->DspTestResultObdmidTidRef[i].DspGetDTRValueFnc(opStatus,&testval,&testMinlimit,&testMaxlimit,&dtrStatus)) {
                                 if(DCM_DTRSTATUS_VISIBLE == dtrStatus){
@@ -5872,12 +5870,12 @@ static boolean lookupInfoType(uint8 InfoType, const Dcm_DspVehInfoType **InfoTyp
 static boolean setAvailabilityInfoTypeValue(uint8 InfoType, uint32 *DATABUF)
 {
     uint8 shift;
-    uint32 databuf = 0;
+    uint32 databuf = 0u;
     uint32 temp;
     boolean setInfoTypeOk = TRUE;
     const Dcm_DspVehInfoType *dspVehInfo = Dcm_ConfigPtr->Dsp->DspVehInfo;
 
-    if(dspVehInfo != NULL) {
+    if(dspVehInfo != NULL_PTR) {
         while ((dspVehInfo->DspVehInfoType != FALSE) &&  ((dspVehInfo->Arc_EOL) == FALSE)) {
             if((dspVehInfo->DspVehInfoType >= (InfoType + AVAIL_TO_SUPPORTED_INFOTYPE_OFFSET_MIN)) &&
                     (dspVehInfo->DspVehInfoType <= (InfoType + AVAIL_TO_SUPPORTED_INFOTYPE_OFFSET_MAX))) {
@@ -5921,7 +5919,7 @@ static boolean setAvailabilityInfoTypeValue(uint8 InfoType, uint32 *DATABUF)
 static Std_ReturnType readVITData(const uint8 VIT, uint8 *dataBuffer, const Dcm_DspVehInfoType *sourceVehInfoPtr)
 {
     Std_ReturnType ret = E_OK;
-    uint16 dataPos = 0;
+    uint16 dataPos = 0u;
     const Dcm_DspVehInfoDataType *dataItems = sourceVehInfoPtr->DspVehInfoDataItems;
     for( uint8 dataIdx = 0u; (dataIdx < sourceVehInfoPtr->DspVehInfoNumberOfDataItems) && (E_OK == ret); dataIdx++ ) {
         /* @req DCM423 */
@@ -5942,17 +5940,17 @@ static Std_ReturnType readVITData(const uint8 VIT, uint8 *dataBuffer, const Dcm_
 void DspObdRequestVehicleInformation(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
     /* !req DCM421 */
-    uint8 nofAvailabilityInfoTypes = 0;
+    uint8 nofAvailabilityInfoTypes = 0u;
     uint16 txPos = SID_LEN;
     uint32 DATABUF;
-    uint8 findNum = 0;
-    uint16 InfoTypeNum = pduRxData->SduLength - 1;
-    const Dcm_DspVehInfoType *sourceVehInfoPtr = NULL;
+    uint8 findNum = 0u;
+    uint16 InfoTypeNum = pduRxData->SduLength - 1u;
+    const Dcm_DspVehInfoType *sourceVehInfoPtr = NULL_PTR;
     Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
 
     /*@req OBD_REQ_14*/
     if((pduRxData->SduLength >= OBD_REQ_MESSAGE_LEN_ONE_MIN) && (pduRxData->SduLength <= OBD_REQ_MESSAGE_LEN_MAX )) {
-        for( uint16 i = 0; i < InfoTypeNum; i++ ) {
+        for( uint16 i = 0u; i < InfoTypeNum; i++ ) {
             if( IS_AVAILABILITY_INFO_TYPE(pduRxData->SduDataPtr[i + 1]) ) {
                 nofAvailabilityInfoTypes++;
             }
@@ -5961,7 +5959,7 @@ void DspObdRequestVehicleInformation(const PduInfoType *pduRxData, PduInfoType *
         /*@req OBD_DCM_REQ_29*/
         if(InfoTypeNum == nofAvailabilityInfoTypes) { /*check if all the request PIDs are the 0x00...0xE0 format*/
             /* @req DCM422 */
-            for(uint16 i = 0; i < InfoTypeNum; i++) { /*Check the PID configuration,find which PIDs were configured for 0x00,0x20,0x40 respectively,and fill in the pduTxBuffer,and count the txLength*/
+            for(uint16 i = 0u; i < InfoTypeNum; i++) { /*Check the PID configuration,find which PIDs were configured for 0x00,0x20,0x40 respectively,and fill in the pduTxBuffer,and count the txLength*/
                 if(TRUE == setAvailabilityInfoTypeValue(pduRxData->SduDataPtr[i + 1], &DATABUF)) {
                     pduTxData->SduDataPtr[txPos++] = pduRxData->SduDataPtr[i + 1];
                     /*take every byte of uint32 DTC,and fill in txbuffer*/
@@ -6073,8 +6071,8 @@ void  DspObdRequestEmissionRelatedDiagnosticTroubleCodesWithPermanentStatus(cons
 
 
 uint32 DspRoutineInfoReadUnsigned(uint8 *data, uint16 bitOffset, uint8 size, boolean changeEndian) {
-    uint32 retVal = 0;
-    const uint16 little_endian = 0x1;
+    uint32 retVal = 0u;
+    const uint16 little_endian = 0x1u;
     if(size > 32) {
         DCM_DET_REPORTERROR(DCM_GLOBAL_ID, DCM_E_CONFIG_INVALID);
         return 0;
@@ -6095,7 +6093,7 @@ uint32 DspRoutineInfoReadUnsigned(uint8 *data, uint16 bitOffset, uint8 size, boo
 
 sint32 DspRoutineInfoRead(uint8 *data, uint16 bitOffset, uint8 size, boolean changeEndian) {
     uint32 retVal = DspRoutineInfoReadUnsigned(data, bitOffset, size, changeEndian);
-    uint32 mask = 0xFFFFFFFF << (size - 1);
+    uint32 mask = 0xFFFFFFFFul << (size - 1);
     if(retVal & mask) {
         // result is negative
         retVal &= mask;
@@ -6104,7 +6102,7 @@ sint32 DspRoutineInfoRead(uint8 *data, uint16 bitOffset, uint8 size, boolean cha
 }
 
 void DspRoutineInfoWrite(uint32 val, uint8 *data, uint16 bitOffset, uint8 size, boolean changeEndian) {
-    const uint16 little_endian = 0x1;
+    const uint16 little_endian = 0x1u;
     if((uint8)changeEndian ^ *((uint8*)&little_endian)) {
         // write little endian
         for(int i = 0; i < size / 8; i++) {
@@ -6125,9 +6123,9 @@ void DspUdsRequestDownload(const PduInfoType *pduRxData, PduInfoType *pduTxData)
     /* @req DCM496 */
     Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
     Std_ReturnType ret;
-    uint32 memoryAddress = 0;
-    uint32 memorySize = 0;
-    uint32 blockSize = 0;
+    uint32 memoryAddress = 0u;
+    uint32 memorySize = 0u;
+    uint32 blockSize = 0u;
     Dcm_OpStatusType opStatus = (Dcm_OpStatusType)DCM_INITIAL;
     SetOpStatusDependingOnState(&dspUdsUploadDownloadPending, &opStatus, FALSE);
     if(pduRxData->SduLength >= 5) {
@@ -6215,8 +6213,8 @@ void DspUdsRequestUpload(const PduInfoType *pduRxData, PduInfoType *pduTxData)
     /* @req DCM499 */
     Dcm_NegativeResponseCodeType responseCode = DCM_E_POSITIVERESPONSE;
     Std_ReturnType ret;
-    uint32 memoryAddress = 0;
-    uint32 memorySize = 0;
+    uint32 memoryAddress = 0u;
+    uint32 memorySize = 0u;
     Dcm_OpStatusType opStatus = (Dcm_OpStatusType)DCM_INITIAL;
     uint32 maxNumberOfBlockLength;
     SetOpStatusDependingOnState(&dspUdsUploadDownloadPending, &opStatus, FALSE);

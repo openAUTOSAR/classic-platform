@@ -157,12 +157,7 @@ ObjectAccessType CheckObjectAccess( ApplicationType ApplId,
      * If the OS-Application <ApplID> in a call of CheckObjectAccess() has no
      * access to the queried object, CheckObjectAccess() shall return NO_ACCESS.
      */
-    if (( ApplId < (ApplicationType)OS_APPLICATION_CNT )
-    // Currently only APPLICATION_ACCESSIBLE is supported 
-#if 0
-        && ( Os_AppVar[ApplId].state == APPLICATION_ACCESSIBLE )
-#endif
-        )
+    if (( ApplId < (ApplicationType)OS_APPLICATION_CNT ))
     {
 
 		/*lint -e{685} MISRA:CONFIGURATION:Allow MISRA violations depending on configuration:[MISRA 2012 Rule 14.3, required]*/
@@ -172,9 +167,7 @@ ObjectAccessType CheckObjectAccess( ApplicationType ApplId,
 #if (OS_ALARM_CNT != 0)
 				if (objectId < OS_ALARM_CNT) {
 					const OsAlarmType *lPtr = Os_AlarmGet((AlarmType)objectId);
-					if (lPtr != NULL) {
-						rvMask = lPtr->accessingApplMask & (appMask);
-					}
+                    rvMask = lPtr->accessingApplMask & (appMask);
 				}
 #endif
 				break;
@@ -182,9 +175,7 @@ ObjectAccessType CheckObjectAccess( ApplicationType ApplId,
 #if (OS_COUNTER_CNT != 0)
 				if (objectId < OS_COUNTER_CNT) {
 					const OsCounterType *lPtr = Os_CounterGet((CounterType)objectId);
-					if (lPtr != NULL) {
-						rvMask = lPtr->accessingApplMask & (appMask);
-					}
+                    rvMask = lPtr->accessingApplMask & (appMask);
 				}
 #endif
 			break;
@@ -192,18 +183,14 @@ ObjectAccessType CheckObjectAccess( ApplicationType ApplId,
 			{
 				/* An ISR do not have accessingApplicationMask, just check if owner */
 				const OsIsrVarType *lPtr = Os_IsrGet((ISRType)objectId);
-				if(lPtr != NULL) {
-					rvMask = (lPtr->constPtr->appOwner == ApplId);
-				}
+                rvMask = (lPtr->constPtr->appOwner == ApplId);
 			}
 			break;
 			case OBJECT_RESOURCE:
 #if (OS_RESOURCE_CNT != 0)
 				if (objectId < OS_RESOURCE_CNT) {
 					const OsResourceType *lPtr = Os_ResourceGet((ResourceType)objectId);
-					if(lPtr != NULL) {
-						rvMask = lPtr->accessingApplMask & (appMask);
-					}
+                    rvMask = lPtr->accessingApplMask & (appMask);
 				}
 #endif
 			break;
@@ -211,18 +198,14 @@ ObjectAccessType CheckObjectAccess( ApplicationType ApplId,
 #if (OS_SCHTBL_CNT != 0)
 				if (objectId < OS_SCHTBL_CNT) {
 					const OsSchTblType *lPtr = Os_SchTblGet((ScheduleTableType)objectId);
-					if(lPtr != NULL) {
-						rvMask = lPtr->accessingApplMask & (appMask);
-					}
+                    rvMask = lPtr->accessingApplMask & (appMask);
 				}
 #endif
 			break;
 			case OBJECT_TASK:
 				if (objectId < OS_TASK_CNT) {
 					const OsTaskVarType *lPtr = Os_TaskGet((TaskType)objectId);
-					if(lPtr != NULL) {
-						rvMask = lPtr->constPtr->accessingApplMask & (appMask);
-					}
+					rvMask = lPtr->constPtr->accessingApplMask & (appMask);
 				}
 			break;
 			default:
@@ -247,7 +230,7 @@ ObjectAccessType CheckObjectAccess( ApplicationType ApplId,
     return rv;
 }
 
-#if !defined(CFG_SAFETY_PLATFORM)
+#if !(defined(CFG_SAFETY_PLATFORM) || defined(BUILD_OS_SAFETY_PLATFORM))
 /**
  * This service sets the own state of an OS-Application from
  * APPLICATION_RESTARTING to APPLICATION_ACCESSIBLE.
@@ -278,38 +261,6 @@ StatusType AllowAccess( void ) {
     return rv;
 }
 
-/**
- * This service returns the current state of an OS-Application.
- * SC: SC3 and SC4
- *
- * @param ApplId 		The OS-Application from which the state is requested
- * @param Value 		The current state of the application
- * @return  E_OK: No errors, E_OS_ID: <Application> is not valid
- */
-/**
- * @req SWS_Os_00499
- * This service returns the current state of an OS-Application.
- */
-StatusType GetApplicationState( ApplicationType applId, ApplicationStateRefType value ) {
-    StatusType rv = E_OK;
-
-    /* Validation of parameters, if it fails, function will return */
-    /* This is not inline with Table 8, ISO26262-6:2011, Req 1a and 1h */
-    OS_VALIDATE_STD_2((Os_SysIntAnyDisabled() == FALSE) , E_OS_DISABLEDINT,
-    		          OSServiceId_GetApplicationState,applId,value);    /* @req SWS_Os_00093 */
-	/* @req SWS_Os_00495
-	 * If the <Application> in a call of GetApplicationState() is not valid GetApplicationState() shall return E_OS_ID.
-	 */
-    OS_VALIDATE_STD_2(applId < (ApplicationType)OS_APPLICATION_CNT, E_OS_ID,
-    		          OSServiceId_GetApplicationState,applId,value);
-    /* @req SWS_Os_00496
-     * If the parameters in a call of GetApplicationState() are valid,
-     * GetApplicationState() shall return the state of OS-Application <Application> in <Value>.
-     */
-    *value = Os_ApplGetState(applId);
-
-    return rv;
-}
 #endif //CFG_SAFETY_PLATFORM
 #endif // #if ((OS_SC3 == STD_ON) || (OS_SC4 == STD_ON))
 
@@ -357,7 +308,7 @@ ApplicationType CheckObjectOwnership( ObjectTypeType ObjectType,
     return rv;
 }
 
-#if !defined(CFG_SAFETY_PLATFORM)
+#if !(defined(CFG_SAFETY_PLATFORM) || defined(BUILD_OS_SAFETY_PLATFORM))
 /**
  * IMPROVEMENT: Move somewhere else
  * @param mode
@@ -387,10 +338,15 @@ void Os_ApplStart( void ) {
         Os_AppVar[i].appId = Os_AppConst[i].appId;
 
 #if ((OS_SC3 == STD_ON) || (OS_SC4 == STD_ON))
+
+/* OsApplication startup hook is not allowed in safety platform*/
+#if !(defined(CFG_SAFETY_PLATFORM) || defined(BUILD_OS_SAFETY_PLATFORM))
         if( Os_AppConst[i].StartupHook != NULL ) {
             /** @req SWS_Os_00060 */
             Os_AppConst[i].StartupHook();
         }
+#endif
+
 
         /* Trusted application have no interrupt stack */
         if( Os_AppVar[i].trusted == FALSE ) {
@@ -411,23 +367,23 @@ void Os_ApplStart( void ) {
  */
 void Os_AppIsrStackPerformCheck( ApplicationType id ) {
 #if (OS_STACK_MONITORING == 1)
-        if( (Os_AppIsIsrEndmarkOk(id) == FALSE) || (Os_AppIsIsrStartmarkOk(id) == FALSE)  ) {
-#if (OS_SC1 == STD_ON) || (OS_SC2 == STD_ON)
-            /** @req SWS_Os_00068 */
-            ShutdownOS(E_OS_STACKFAULT);
-#elif (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
-            /** @req SWS_Os_00396
-             * If a stack fault is detected by stack monitoring AND the configured scalability
-             * class is 3 or 4, the Operating System module shall call the ProtectionHook() with
-             * the status E_OS_STACKFAULT.
-             * */
-            PROTECTIONHOOK(E_OS_STACKFAULT);
-#endif
-        }
+    /*lint --e{9036} -e{9007} MISRA:OTHER:Os_AppIsIsrEndmarkOk and Os_AppIsIsrStartmarkOk return boolean value:[MISRA 2012 Rule 14.4, required] [MISRA 2012 Rule 13.5, required]*/
+    if( (Os_AppIsIsrEndmarkOk(id) == FALSE) || (Os_AppIsIsrStartmarkOk(id) == FALSE)  ) {
+        /** @req SWS_Os_00396
+         * If a stack fault is detected by stack monitoring AND the configured scalability
+         * class is 3 or 4, the Operating System module shall call the ProtectionHook() with
+         * the status E_OS_STACKFAULT.
+         * */
+
+        Os_CallProtectionHook(E_OS_STACKFAULT);
+    }
+#else
+    (void)id;
 #endif  /* (OS_STACK_MONITORING == 1) */
 }
 
 
+#if !(defined(CFG_SAFETY_PLATFORM) || defined(BUILD_OS_SAFETY_PLATFORM))
 /**
  * @brief   Function to get stack information
  * @param id       Application Id
@@ -438,6 +394,7 @@ void Os_AppIsrGetStackInfo( ApplicationType id, OsAppStackType *stack ) {
     stack->size = Os_AppConst[id].intStack.size;
 }
 
+#endif
 
 #endif
 

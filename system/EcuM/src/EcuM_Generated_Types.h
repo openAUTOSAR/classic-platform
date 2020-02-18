@@ -123,6 +123,9 @@
 #if defined(USE_FLS)
 #include "Fls.h"
 #endif
+#if defined(USE_FEE)
+#include "Fee.h"
+#endif
 #if defined(USE_EEP)
 #include "Eep.h"
 #endif

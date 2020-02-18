@@ -38,10 +38,6 @@
 #include "PreCompiledDataHash.h"
 #include "MemMap.h"
 
-#if defined(USE_CAN)
-extern const Can_ConfigType CanConfigData;
-#endif
-
 #if defined(USE_CANTP)
 extern const CanTp_ConfigType CanTpConfig;
 #endif

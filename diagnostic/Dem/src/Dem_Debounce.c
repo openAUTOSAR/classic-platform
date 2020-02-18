@@ -341,16 +341,16 @@ Std_ReturnType getFaultDetectionCounter(Dem_EventIdType eventId, sint8 *counter)
 {
     Std_ReturnType returnCode = E_NOT_OK;
     const Dem_EventParameterType *eventParam;
-    EventStatusRecType *eventStatusRec = NULL;
+    EventStatusRecType *eventStatusRec = NULL_PTR;
     lookupEventStatusRec(eventId, &eventStatusRec); /*lint !e934 eventStatusRec only used in this function  */
     lookupEventIdParameter(eventId, &eventParam);  /*lint !e934 eventParam only used in this function  */
-    if ((eventParam != NULL) && (NULL != eventStatusRec) && (TRUE == eventStatusRec->isAvailable)) {
-        if (eventParam->EventClass->PreDebounceAlgorithmClass != NULL) {
+    if ((eventParam != NULL_PTR) && (NULL_PTR != eventStatusRec) && (TRUE == eventStatusRec->isAvailable)) {
+        if (eventParam->EventClass->PreDebounceAlgorithmClass != NULL_PTR) {
             switch (eventParam->EventClass->PreDebounceAlgorithmClass->PreDebounceName)
             {
             case DEM_NO_PRE_DEBOUNCE:
-                if (eventParam->EventClass->PreDebounceAlgorithmClass->PreDebounceAlgorithm.PreDebounceMonitorInternal != NULL) {
-                    if (eventParam->EventClass->PreDebounceAlgorithmClass->PreDebounceAlgorithm.PreDebounceMonitorInternal->CallbackGetFDCntFnc != NULL) {
+                if (eventParam->EventClass->PreDebounceAlgorithmClass->PreDebounceAlgorithm.PreDebounceMonitorInternal != NULL_PTR) {
+                    if (eventParam->EventClass->PreDebounceAlgorithmClass->PreDebounceAlgorithm.PreDebounceMonitorInternal->CallbackGetFDCntFnc != NULL_PTR) {
                         /* @req DEM204 None */
                         /* @req DEM264 */
                         /* @req DEM439 */
@@ -404,10 +404,10 @@ void InitTimeBasedDebounce(void)
 sint8 getDefaultUDSFdc(Dem_EventIdType eventId)
 {
     sint8 udsFdc = 0;
-    const Dem_EventParameterType *eventParam = NULL;
+    const Dem_EventParameterType *eventParam = NULL_PTR;
     lookupEventIdParameter(eventId, &eventParam); /*lint !e934 eventParam only used in this function  */
-    if( NULL != eventParam ) {
-        if (eventParam->EventClass->PreDebounceAlgorithmClass != NULL) {
+    if( NULL_PTR != eventParam ) {
+        if (eventParam->EventClass->PreDebounceAlgorithmClass != NULL_PTR) {
             switch (eventParam->EventClass->PreDebounceAlgorithmClass->PreDebounceName) {
             case DEM_PRE_DEBOUNCE_COUNTER_BASED:
                 udsFdc = fdcInternalToUDSFdc(0, eventParam->EventClass->PreDebounceAlgorithmClass->PreDebounceAlgorithm.PreDebounceCounterBased);
@@ -430,7 +430,7 @@ sint8 getDefaultUDSFdc(Dem_EventIdType eventId)
 Dem_EventStatusType RunPredebounce(Dem_EventStatusType reportedEventStatus, EventStatusRecType *eventStatusRecPtr, const Dem_EventParameterType *eventParam)
 {
     Dem_EventStatusType eventStatus = reportedEventStatus;
-    if (eventParam->EventClass->PreDebounceAlgorithmClass != NULL) {
+    if (eventParam->EventClass->PreDebounceAlgorithmClass != NULL_PTR) {
         switch (eventParam->EventClass->PreDebounceAlgorithmClass->PreDebounceName) {
             case DEM_NO_PRE_DEBOUNCE:
                 eventStatus = preDebounceNone(reportedEventStatus);

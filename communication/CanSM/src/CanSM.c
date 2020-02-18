@@ -59,7 +59,12 @@ CanSM_InternalType CanSM_Internal = {
 #define CANSM_STOP_SEC_VAR_INIT_UNSPECIFIED
 #include "CanSM_MemMap.h"  /*lint !e9019 OTHER [MISRA 2012 Rule 20.1, advisory] OTHER AUTOSAR specified way of using MemMap*/
 
+#define CANSM_START_SEC_VAR_CLEARED_UNSPECIFIED
+#include "CanSM_MemMap.h"  /*lint !e9019 OTHER [MISRA 2012 Rule 20.1, advisory] OTHER AUTOSAR specified way of using MemMap*/
 const CanSM_ConfigType* CanSM_ConfigPtr;
+#define CANSM_STOP_SEC_VAR_CLEARED_UNSPECIFIED
+#include "CanSM_MemMap.h"  /*lint !e9019 OTHER [MISRA 2012 Rule 20.1, advisory] OTHER AUTOSAR specified way of using MemMap*/
+
 
 Std_ReturnType CanSM_Internal_GetCanSMCtrlIdx(const uint8 controller, uint8* indexPtr)
 {

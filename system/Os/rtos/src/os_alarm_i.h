@@ -131,22 +131,6 @@ static inline OsAlarmType *Os_AlarmGet( AlarmType alarm_id ) {
 #endif
 }
 
-
-#if OS_ALARM_CNT!=0
-static inline StatusType Os_AlarmGetBase(AlarmType alarm_id, AlarmBaseRefType info) {
-
-    StatusType rv = E_OK;
-
-    if( alarm_id >= OS_ALARM_CNT ) {
-        rv = E_OS_ID;
-    } else {
-        *info = alarm_list[alarm_id].counter->alarm_base;
-    }
-    return rv;
-}
-#endif
-
-
 static inline ApplicationType Os_AlarmGetApplicationOwner( AlarmType id ) {
     ApplicationType rv;
     /** @req SWS_Os_00274 */

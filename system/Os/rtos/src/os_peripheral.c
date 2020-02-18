@@ -34,14 +34,43 @@
  */
 
 
+/**
+ * Function to check if a region should be checked at all.
+ */
+static boolean shouldCheckRegion( void ) {
+    boolean rv = FALSE;
+
+    ApplicationType currApp = GetApplicationID();
+
+    /* @CODECOV:OTHER_TEST_EXIST: Tested during SIL only  */
+    __CODE_COVERAGE_IGNORE__
+    if( (OS_SYS_PTR->osFlags & SYSTEM_FLAGS_IN_OS) == 0u ) {
+        __CODE_COVERAGE_IGNORE__
+        if( currApp != INVALID_OSAPPLICATION ) {
+            const OsAppConstType *aConstP = Os_ApplGetConst(currApp);
+            if( aConstP->trusted == 0u ) {
+                rv = TRUE;
+            }
+        }
+    }
+
+
+    return rv;
+}
+
+
 /* Keep MISRA happy function */
 static boolean checkRange( AreaIdType  Area, uint32 Address, uint32 ReadValue, uint32 size  ) {
     boolean rv = FALSE;
 
-    if( Os_MMValidPerAddressRange(Area, (uint32)Address, size) == TRUE )  {
-        if( Os_ValidAddressRange((uint32)ReadValue, size ) == TRUE ) {
-            rv = TRUE;
+    if( shouldCheckRegion() == TRUE ) {
+        if( Os_MMValidPerAddressRange(Area, (uint32)Address, size) == TRUE )  {
+            if( Os_ValidAddressRange((uint32)ReadValue, size ) == TRUE ) {
+                rv = TRUE;
+            }
         }
+    } else {
+        rv = TRUE;
     }
     return rv;
 }
@@ -141,9 +170,11 @@ StatusType  Os_WritePeripheral8 ( AreaIdType  Area,  uint8   *Address, uint8  Wr
 #if (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
     StatusType rv = E_OK;
 
-    /*lint -e{923} MISRA:STANDARDIZED_INTERFACE:: cast from pointer to unsigned int [MISRA 2012 Rule 11.4, advisory], [MISRA 2012 Rule 11.6, required] */
-    OS_VALIDATE_STD( (Os_MMValidPerAddressRange( Area,(uint32)Address,(uint32)sizeof(uint8)) == TRUE) ,
-                       E_OS_ILLEGAL_ADDRESS , OSServiceId_WritePeripheral8);
+    if( shouldCheckRegion() == TRUE ) {
+        /*lint -e{923} MISRA:STANDARDIZED_INTERFACE:: cast from pointer to unsigned int [MISRA 2012 Rule 11.4, advisory], [MISRA 2012 Rule 11.6, required] */
+        OS_VALIDATE_STD( (Os_MMValidPerAddressRange( Area,(uint32)Address,(uint32)sizeof(uint8)) == TRUE) ,
+                           E_OS_ILLEGAL_ADDRESS , OSServiceId_WritePeripheral8);
+    }
 #endif
     *Address = WriteValue;
     return E_OK;
@@ -163,9 +194,12 @@ StatusType  Os_WritePeripheral16( AreaIdType  Area,  uint16  *Address, uint16 Wr
 
 #if (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
     StatusType rv = E_OK;
-    /*lint -e{923} MISRA:STANDARDIZED_INTERFACE:: cast from pointer to unsigned int [MISRA 2012 Rule 11.4, advisory], [MISRA 2012 Rule 11.6, required] */
-    OS_VALIDATE_STD( (Os_MMValidPerAddressRange( Area,(uint32)Address,(uint32)sizeof(uint16)) == TRUE) ,
-                       E_OS_ILLEGAL_ADDRESS , OSServiceId_WritePeripheral16);
+
+    if( shouldCheckRegion() == TRUE ) {
+        /*lint -e{923} MISRA:STANDARDIZED_INTERFACE:: cast from pointer to unsigned int [MISRA 2012 Rule 11.4, advisory], [MISRA 2012 Rule 11.6, required] */
+        OS_VALIDATE_STD( (Os_MMValidPerAddressRange( Area,(uint32)Address,(uint32)sizeof(uint16)) == TRUE) ,
+                           E_OS_ILLEGAL_ADDRESS , OSServiceId_WritePeripheral16);
+    }
 #endif
 
     *Address = WriteValue;
@@ -187,9 +221,11 @@ StatusType  Os_WritePeripheral32( AreaIdType  Area,  uint32  *Address, uint32 Wr
 #if (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
     StatusType rv = E_OK;
 
-    /*lint -e{923} MISRA:STANDARDIZED_INTERFACE:: cast from pointer to unsigned int [MISRA 2012 Rule 11.4, advisory], [MISRA 2012 Rule 11.6, required] */
-    OS_VALIDATE_STD( (Os_MMValidPerAddressRange( Area,(uint32)Address,(uint32)sizeof(uint32)) == TRUE) ,
-                       E_OS_ILLEGAL_ADDRESS , OSServiceId_WritePeripheral32);
+    if( shouldCheckRegion() == TRUE ) {
+        /*lint -e{923} MISRA:STANDARDIZED_INTERFACE:: cast from pointer to unsigned int [MISRA 2012 Rule 11.4, advisory], [MISRA 2012 Rule 11.6, required] */
+        OS_VALIDATE_STD( (Os_MMValidPerAddressRange( Area,(uint32)Address,(uint32)sizeof(uint32)) == TRUE) ,
+                           E_OS_ILLEGAL_ADDRESS , OSServiceId_WritePeripheral32);
+    }
 #endif
 
     *Address = WriteValue;
@@ -213,9 +249,11 @@ StatusType  Os_ModifyPeripheral8(  AreaIdType  Area,  uint8   *Address, uint8  C
 #if (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
     StatusType rv = E_OK;
 
-    /*lint -e{923} MISRA:STANDARDIZED_INTERFACE:: cast from pointer to unsigned int [MISRA 2012 Rule 11.4, advisory], [MISRA 2012 Rule 11.6, required] */
-    OS_VALIDATE_STD( (Os_MMValidPerAddressRange( Area,(uint32)Address,(uint32)sizeof(uint8)) == TRUE) ,
-                       E_OS_ILLEGAL_ADDRESS , OSServiceId_ModifyPeripheral8);
+    if( shouldCheckRegion() == TRUE ) {
+        /*lint -e{923} MISRA:STANDARDIZED_INTERFACE:: cast from pointer to unsigned int [MISRA 2012 Rule 11.4, advisory], [MISRA 2012 Rule 11.6, required] */
+        OS_VALIDATE_STD( (Os_MMValidPerAddressRange( Area,(uint32)Address,(uint32)sizeof(uint8)) == TRUE) ,
+                           E_OS_ILLEGAL_ADDRESS , OSServiceId_ModifyPeripheral8);
+    }
 #endif
 
     *Address = ((*Address & ClearMask) | SetMask);
@@ -237,9 +275,11 @@ StatusType  Os_ModifyPeripheral16(  AreaIdType  Area,  uint16   *Address, uint16
 #if (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
     StatusType rv = E_OK;
 
-    /*lint -e{923} MISRA:STANDARDIZED_INTERFACE:: cast from pointer to unsigned int [MISRA 2012 Rule 11.4, advisory], [MISRA 2012 Rule 11.6, required] */
-    OS_VALIDATE_STD( (Os_MMValidPerAddressRange( Area,(uint32)Address,(uint32)sizeof(uint16)) == TRUE) ,
-                       E_OS_ILLEGAL_ADDRESS , OSServiceId_ModifyPeripheral16);
+    if( shouldCheckRegion() == TRUE ) {
+        /*lint -e{923} MISRA:STANDARDIZED_INTERFACE:: cast from pointer to unsigned int [MISRA 2012 Rule 11.4, advisory], [MISRA 2012 Rule 11.6, required] */
+        OS_VALIDATE_STD( (Os_MMValidPerAddressRange( Area,(uint32)Address,(uint32)sizeof(uint16)) == TRUE) ,
+                           E_OS_ILLEGAL_ADDRESS , OSServiceId_ModifyPeripheral16);
+    }
 #endif
     *Address = ((*Address & ClearMask) | SetMask);
     return E_OK;
@@ -261,9 +301,11 @@ StatusType  Os_ModifyPeripheral32(  AreaIdType  Area,  uint32   *Address, uint32
 #if (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
     StatusType rv = E_OK;
 
-    /*lint -e{923} MISRA:STANDARDIZED_INTERFACE:: cast from pointer to unsigned int [MISRA 2012 Rule 11.4, advisory], [MISRA 2012 Rule 11.6, required] */
-    OS_VALIDATE_STD( (Os_MMValidPerAddressRange( Area,(uint32)Address,(uint32)sizeof(uint32)) == TRUE) ,
-                       E_OS_ILLEGAL_ADDRESS , OSServiceId_ModifyPeripheral32);
+    if( shouldCheckRegion() == TRUE ) {
+        /*lint -e{923} MISRA:STANDARDIZED_INTERFACE:: cast from pointer to unsigned int [MISRA 2012 Rule 11.4, advisory], [MISRA 2012 Rule 11.6, required] */
+        OS_VALIDATE_STD( (Os_MMValidPerAddressRange( Area,(uint32)Address,(uint32)sizeof(uint32)) == TRUE) ,
+                           E_OS_ILLEGAL_ADDRESS , OSServiceId_ModifyPeripheral32);
+    }
 #endif
     *Address = ((*Address & ClearMask) | SetMask);
     return E_OK;

@@ -100,26 +100,6 @@ static INLINE Std_ReturnType verifyProtectInputsP04(const E2E_P04ConfigType* Con
     return status;
 }
 
-
-/* Changes the Bit Endianness of a byte value
- */
-static INLINE uint8 changeBitEndiannessP04(uint8 value)
-{
-    uint8 result = 0;
-
-    result |= (value & 0x01u) << 7;
-    result |= (value & 0x02u) << 5;
-    result |= (value & 0x04u) << 3;
-    result |= (value & 0x08u) << 1;
-    result |= (value & 0x10u) >> 1;
-    result |= (value & 0x20u) >> 3;
-    result |= (value & 0x40u) >> 5;
-    result |= (value & 0x80u) >> 7;
-
-    return result;
-}
-
-
 /* @req SWS_E2E_00376 The step “Compute offset” in E2E_P04Protect() and E2E_P04Check() shall
  * have the following behavior: */
 
@@ -138,8 +118,8 @@ static INLINE uint16 computeOffsetP04(const E2E_P04ConfigType* ConfigPtr) {
  */
 static INLINE void writeLengthP04(uint8* DataPtr, uint16 offset, uint16 Length) {
 
-    DataPtr[offset  ] = changeBitEndiannessP04(((Length & 0xFF00u) >> 8) & 0xFFu);
-    DataPtr[offset+1] = changeBitEndiannessP04( (Length & 0x00FFu)       & 0xFFu);
+    DataPtr[offset  ] = ((Length & 0xFF00u) >> 8) & 0xFFu;
+    DataPtr[offset+1] =  (Length & 0x00FFu)       & 0xFFu;
 }
 
 
@@ -150,8 +130,8 @@ static INLINE void writeLengthP04(uint8* DataPtr, uint16 offset, uint16 Length) 
  */
 static INLINE void writeCounterP04(uint8* DataPtr, uint16 offset, const E2E_P04ProtectStateType* StatePtr) {
 
-    DataPtr[offset+2] = changeBitEndiannessP04(((StatePtr->Counter & 0xFF00u) >> 8) & 0xFFu);
-    DataPtr[offset+3] = changeBitEndiannessP04( (StatePtr->Counter & 0x00FFu)       & 0xFFu);
+    DataPtr[offset+2] = ((StatePtr->Counter & 0xFF00u) >> 8) & 0xFFu;
+    DataPtr[offset+3] =  (StatePtr->Counter & 0x00FFu)       & 0xFFu;
 }
 
 
@@ -161,10 +141,10 @@ static INLINE void writeCounterP04(uint8* DataPtr, uint16 offset, const E2E_P04P
  */
 static INLINE void writeDataIDP04(uint8* DataPtr, uint16 offset, const E2E_P04ConfigType* ConfigPtr) {
 
-    DataPtr[offset+4] = changeBitEndiannessP04(((ConfigPtr->DataID & 0xFF000000u) >> 24) & 0xFFu);
-    DataPtr[offset+5] = changeBitEndiannessP04(((ConfigPtr->DataID & 0x00FF0000u) >> 16) & 0xFFu);
-    DataPtr[offset+6] = changeBitEndiannessP04(((ConfigPtr->DataID & 0x0000FF00u) >>  8) & 0xFFu);
-    DataPtr[offset+7] = changeBitEndiannessP04(((ConfigPtr->DataID & 0x000000FFu)      ) & 0xFFu);
+    DataPtr[offset+4] = ((ConfigPtr->DataID & 0xFF000000u) >> 24) & 0xFFu;
+    DataPtr[offset+5] = ((ConfigPtr->DataID & 0x00FF0000u) >> 16) & 0xFFu;
+    DataPtr[offset+6] = ((ConfigPtr->DataID & 0x0000FF00u) >>  8) & 0xFFu;
+    DataPtr[offset+7] = ((ConfigPtr->DataID & 0x000000FFu)      ) & 0xFFu;
 }
 
 
@@ -205,10 +185,10 @@ static INLINE uint32 computeCRCP04(const uint8* DataPtr, uint16 offset, uint16 L
  */
 static INLINE void writeCRCP04(uint8* DataPtr, uint16 offset, uint32 crc) {
 
-    DataPtr[offset+ 8] = changeBitEndiannessP04(((crc & 0xFF000000u) >> 24) & 0xFFu);
-    DataPtr[offset+ 9] = changeBitEndiannessP04(((crc & 0x00FF0000u) >> 16) & 0xFFu);
-    DataPtr[offset+10] = changeBitEndiannessP04(((crc & 0x0000FF00u) >>  8) & 0xFFu);
-    DataPtr[offset+11] = changeBitEndiannessP04(((crc & 0x000000FFu)      ) & 0xFFu);
+    DataPtr[offset+ 8] = ((crc & 0xFF000000u) >> 24) & 0xFFu;
+    DataPtr[offset+ 9] = ((crc & 0x00FF0000u) >> 16) & 0xFFu;
+    DataPtr[offset+10] = ((crc & 0x0000FF00u) >>  8) & 0xFFu;
+    DataPtr[offset+11] = ((crc & 0x000000FFu)      ) & 0xFFu;
 }
 
 
@@ -317,8 +297,8 @@ static INLINE uint16 readLengthP04(const uint8* DataPtr, uint16 offset) {
 
     uint16 receivedLength = 0;
 
-    receivedLength |= (((uint16)changeBitEndiannessP04(DataPtr[offset  ]) << 8) & 0xFF00u);
-    receivedLength |= (((uint16)changeBitEndiannessP04(DataPtr[offset+1])     ) & 0x00FFu);
+    receivedLength |= (((uint16)DataPtr[offset  ]) << 8) & 0xFF00u;
+    receivedLength |= (((uint16)DataPtr[offset+1])     ) & 0x00FFu;
 
     return receivedLength;
 }
@@ -333,8 +313,8 @@ static INLINE uint16 readCounterP04(const uint8* DataPtr, uint16 offset) {
 
     uint16 receivedCounter = 0;
 
-    receivedCounter |= (((uint16)changeBitEndiannessP04(DataPtr[offset+2]) << 8) & 0xFF00u);
-    receivedCounter |= (((uint16)changeBitEndiannessP04(DataPtr[offset+3])     ) & 0x00FFu);
+    receivedCounter |= (((uint16)DataPtr[offset+2]) << 8) & 0xFF00u;
+    receivedCounter |= (((uint16)DataPtr[offset+3])     ) & 0x00FFu;
 
     return receivedCounter;
 }
@@ -349,10 +329,10 @@ static INLINE uint32 readDataIDP04(const uint8* DataPtr, uint16 offset) {
 
     uint32 receivedDataID = 0;
 
-    receivedDataID |= (((uint32)changeBitEndiannessP04(DataPtr[offset+4]) << 24) & 0xFF000000u);
-    receivedDataID |= (((uint32)changeBitEndiannessP04(DataPtr[offset+5]) << 16) & 0x00FF0000u);
-    receivedDataID |= (((uint32)changeBitEndiannessP04(DataPtr[offset+6]) <<  8) & 0x0000FF00u);
-    receivedDataID |= (((uint32)changeBitEndiannessP04(DataPtr[offset+7])      ) & 0x000000FFu);
+    receivedDataID |= (((uint32)DataPtr[offset+4]) << 24) & 0xFF000000u;
+    receivedDataID |= (((uint32)DataPtr[offset+5]) << 16) & 0x00FF0000u;
+    receivedDataID |= (((uint32)DataPtr[offset+6]) <<  8) & 0x0000FF00u;
+    receivedDataID |= (((uint32)DataPtr[offset+7])      ) & 0x000000FFu;
 
     return receivedDataID;
 }
@@ -366,10 +346,10 @@ static INLINE uint32 readCRCP04(const uint8* DataPtr, uint16 offset) {
 
     uint32 receivedCRC = 0;
 
-    receivedCRC |= (((uint32)changeBitEndiannessP04(DataPtr[offset+ 8]) << 24) & 0xFF000000u);
-    receivedCRC |= (((uint32)changeBitEndiannessP04(DataPtr[offset+ 9]) << 16) & 0x00FF0000u);
-    receivedCRC |= (((uint32)changeBitEndiannessP04(DataPtr[offset+10]) <<  8) & 0x0000FF00u);
-    receivedCRC |= (((uint32)changeBitEndiannessP04(DataPtr[offset+11])      ) & 0x000000FFu);
+    receivedCRC |= (((uint32)DataPtr[offset+ 8]) << 24) & 0xFF000000u;
+    receivedCRC |= (((uint32)DataPtr[offset+ 9]) << 16) & 0x00FF0000u;
+    receivedCRC |= (((uint32)DataPtr[offset+10]) <<  8) & 0x0000FF00u;
+    receivedCRC |= (((uint32)DataPtr[offset+11])      ) & 0x000000FFu;
 
     return receivedCRC;
 }
@@ -404,7 +384,10 @@ static INLINE void doChecksP04(E2E_P04CheckStateType* StatePtr, const boolean* N
         StatePtr->Status = E2E_P04STATUS_NONEWDATA;
     }
 
-    else if ( (receivedCRC != computedCRC) || (receivedDataID != ConfigPtr->DataID) || (receivedLength != Length)) {
+    else if ( (receivedCRC != computedCRC) || (receivedDataID != ConfigPtr->DataID)
+    /** @CODECOV PARAMETER_VALIDATION_PRIVATE_FUNCTION:CRC check will always fail if lengths are different, length check will never occur */
+    __CODE_COVERAGE_IGNORE__
+    || (receivedLength != Length)) {
         StatePtr->Status = E2E_P04STATUS_ERROR;
     }
 
@@ -550,6 +533,7 @@ E2E_PCheckStatusType E2E_P04MapStatusToSM(Std_ReturnType CheckReturn, E2E_P04Che
                 retValue = E2E_P_WRONGSEQUENCE;
                 break;
             /* @CODECOV:DEFAULT_CASE:Default statement is required for defensive programming. If this happens the state will be restored to E2E_P_ERROR */
+            __CODE_COVERAGE_IGNORE__
             default:
                 retValue = E2E_P_ERROR;
                 break;
