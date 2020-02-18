@@ -117,6 +117,7 @@
 #define EXTENDED_CANID_MAX 0x1FFFFFFF
 #define STANDARD_CANID_MAX 0x7FF
 #define EXT_ID_BIT_POS 31
+#define CAN_FD_BIT_POS 30 /* @req 4.3.0/CAN416 */
 #define EXT_ID_STD_ID_START_BIT 18
 #define INVALID_CANID 0xFFFFFFFF
 
@@ -137,6 +138,7 @@
 #endif
 
 #define IS_EXTENDED_CAN_ID(_x) (0 != (_x & (1ul<<EXT_ID_BIT_POS)))
+#define IS_CANFD(_x) (0 != (_x & (1ul<<CAN_FD_BIT_POS)))
 
 #define VALIDATE_NO_RV(_exp,_api,_err ) \
   if( !(_exp) ) { \
@@ -201,7 +203,11 @@ typedef struct
 typedef struct  {
     PduIdType pduId;
     Can_IdType canId;
+#if (CANIF_CANFD_SUPPORT == STD_ON)
+    uint8	  data[64];// For flexible datarate data
+#else
     uint8	  data[8];
+#endif
     uint8 	  dlc;
 } CanIf_LPduType;
 
@@ -805,6 +811,13 @@ Std_ReturnType CanIf_Transmit(PduIdType CanTxPduId,
                 if( CANIF_CAN_ID_TYPE_29 == txPduPtr->CanIfTxPduIdCanIdType ) {
                     canPdu.id |= (1ul << EXT_ID_BIT_POS);
                 }
+                else if( CANIF_CAN_FD_ID_TYPE_11 == txPduPtr->CanIfTxPduIdCanIdType ) {
+                    canPdu.id |= (1ul << CAN_FD_BIT_POS); /*setting FD flag*/
+                }
+                else if( CANIF_CAN_FD_ID_TYPE_29 == txPduPtr->CanIfTxPduIdCanIdType ) {
+                    canPdu.id |= (3ul << CAN_FD_BIT_POS); /*setting both IDE and FD flag*/
+                }
+
 
                 /* Dynamic DLC length */
                 if (PduInfoPtr->SduLength < txPduPtr->CanIfCanTxPduIdDlc) {
@@ -946,8 +959,13 @@ static boolean binarySearch(const CanIf_RxPduConfigType *rxPduCfgPtr, uint16 nof
     uint16 currentIndex;
     sint32 lowerIndex = 0;
     sint32 upperIndex = nofEntries - 1;
-    uint32 actualCanId = canId & ~(1ul<<EXT_ID_BIT_POS);
+    uint32 actualCanId;
     boolean isExtendedId = IS_EXTENDED_CAN_ID(canId);
+#if (CANIF_CANFD_SUPPORT == STD_ON)
+    actualCanId = canId & ~(3ul<<CAN_FD_BIT_POS);
+#else
+    actualCanId = canId & ~(1ul<<EXT_ID_BIT_POS);
+#endif
     if(0u != nofEntries) {
         while(!done) {
             currentIndex = (lowerIndex + upperIndex) / 2;
@@ -992,7 +1010,12 @@ static boolean linearSearch(const CanIf_RxPduConfigType *rxPduCfgPtr, uint16 nof
 {
     boolean found = FALSE;
     boolean isExtendedId = IS_EXTENDED_CAN_ID(canId);
-    uint32 actualCanId = canId & ~(1ul<<EXT_ID_BIT_POS);
+    uint32 actualCanId;
+#if (CANIF_CANFD_SUPPORT == STD_ON)
+    actualCanId = canId & ~(3ul<<CAN_FD_BIT_POS);
+#else
+    actualCanId = canId & ~(1ul<<EXT_ID_BIT_POS);
+#endif
     for(uint16 i = 0; (i < nofEntries) && !found; i++ ) {
         /* @req 4.0.3/CANIF645 */
         /* @req 4.0.3/CANIF646 */
@@ -1009,20 +1032,46 @@ static boolean linearSearch(const CanIf_RxPduConfigType *rxPduCfgPtr, uint16 nof
 #endif
 
 
+#if defined(CFG_CANIF_ASR_4_3_1)
 /**
- *
- * @param hrh
- * @param canId
- * @param canDlc
- * @param canSduPtr
- */
+*
+@param Mailbox
+@param PduInfoPtr
+*/
+/* @req 4.3.0/CANIF006 */
+void CanIf_RxIndication (const Can_HwType* Mailbox,
+const PduInfoType* PduInfoPtr) {
+	uint8 *canSduPtr;
+	Can_IdType canId;
+	Can_HwHandleType hrh;
+	uint8 canDlc;
+
+	VALIDATE_NO_RV((NULL != PduInfoPtr), CANIF_RXINDICATION_ID, CANIF_E_PARAM_POINTER);
+	VALIDATE_NO_RV((NULL != Mailbox), CANIF_RXINDICATION_ID, CANIF_E_PARAM_POINTER);
+
+	hrh = Mailbox->Hoh;
+	canId = Mailbox->CanId;
+	canSduPtr = PduInfoPtr->SduDataPtr;
+    canDlc = PduInfoPtr->SduLength;
+
+#else
+/**
+*
+* @param hrh
+* @param canId
+* @param canDlc
+* @param canSduPtr
+*/
 /* @req 4.0.3/CANIF006 */
 void CanIf_RxIndication(Can_HwHandleType hrh, Can_IdType canId, uint8 canDlc,
-              const uint8 *canSduPtr) {
+const uint8 *canSduPtr) {
+#endif
 
     CanIf_PduGetModeType mode;
     PduInfoType pduInfo;
     boolean pduMatch = FALSE;
+    boolean idCndFlag;
+
     /* !req 4.0.3/CANIF389 */ //Software filter if configured and if no match end
 
 #if (CANIF_PUBLIC_READRXPDU_NOTIFY_STATUS_API == STD_ON) && FEATURE_NOT_SUPPORTED
@@ -1049,13 +1098,24 @@ void CanIf_RxIndication(Can_HwHandleType hrh, Can_IdType canId, uint8 canDlc,
     const CanIf_HrhConfigType *hrhConfig = &CanIf_ConfigPtr->InitConfig->CanIfHohConfigPtr->CanIfHrhConfig[CanIf_ConfigPtr->InitConfig->CanIfHohConfigPtr->CanHohToCanIfHrhMap[hrh]];
 
     /* @req 4.0.3/CANIF417 */
-    if( (IS_EXTENDED_CAN_ID(canId) && ((canId & ~(1ul<<EXT_ID_BIT_POS)) > EXTENDED_CANID_MAX)) ||
-            (!IS_EXTENDED_CAN_ID(canId) && (canId > STANDARD_CANID_MAX))) {
+
+    idCndFlag = ( (IS_EXTENDED_CAN_ID(canId) && ((canId & ~(3ul<<CAN_FD_BIT_POS)) > EXTENDED_CANID_MAX)) ||
+            (!IS_EXTENDED_CAN_ID(canId) && ((canId & ~(3ul<<CAN_FD_BIT_POS)) > STANDARD_CANID_MAX)));
+
+#if (CANIF_CANFD_SUPPORT == STD_OFF)
+    if((idCndFlag == TRUE) || IS_CANFD(canId)) {
+#else
+    if( idCndFlag == TRUE) {
+#endif
         DET_REPORT_ERROR(CANIF_RXINDICATION_ID, CANIF_E_PARAM_CANID);
         return;
     }
     /* @req 4.0.3/CANIF418 */
+#if (CANIF_CANFD_SUPPORT == STD_ON)
+    VALIDATE_NO_RV((canDlc <= 64), CANIF_RXINDICATION_ID, CANIF_E_PARAM_DLC);
+#else
     VALIDATE_NO_RV((canDlc <= 8), CANIF_RXINDICATION_ID, CANIF_E_PARAM_DLC);
+#endif
     /* @req 4.0.3/CANIF419 */
     VALIDATE_NO_RV((NULL != canSduPtr), CANIF_RXINDICATION_ID, CANIF_E_PARAM_POINTER);
 
@@ -1171,6 +1231,13 @@ void CanIf_CancelTxConfirmation(PduIdType canTxPduId,  const PduInfoType *pduInf
         if( CANIF_CAN_ID_TYPE_29 == txPduPtr->CanIfTxPduIdCanIdType ) {
             canPdu.id |= (1ul << EXT_ID_BIT_POS);
         }
+        else if( CANIF_CAN_FD_ID_TYPE_11 == txPduPtr->CanIfTxPduIdCanIdType ) {
+            canPdu.id |= (1ul << CAN_FD_BIT_POS); /*setting FD flag*/
+        }
+        else if( CANIF_CAN_FD_ID_TYPE_29 == txPduPtr->CanIfTxPduIdCanIdType ) {
+            canPdu.id |= (3ul << CAN_FD_BIT_POS); /*setting both IDE and FD flag*/
+        }
+
         canPdu.sdu = pduInfoPtr->SduDataPtr;
         canPdu.swPduHandle = canTxPduId;
         /* @req CANIF054 */

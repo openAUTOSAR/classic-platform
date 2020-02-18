@@ -111,6 +111,11 @@ ifeq (USE_SOAD, $(findstring USE_SOAD,$(def-y)))
 inc-y += $(ROOTDIR)/communication/SoAd/inc 
 endif
 
+
+ifeq (USE_DOIP, $(findstring USE_DOIP,$(def-y)))
+inc-y += $(ROOTDIR)/communication/DoIP/inc 
+endif
+
 ifeq (USE_DCM, $(findstring USE_DCM,$(def-y)))
 inc-y += $(ROOTDIR)/diagnostic/Dcm/inc 
 endif

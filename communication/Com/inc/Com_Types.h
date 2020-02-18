@@ -44,6 +44,12 @@ typedef void (*ComNotificationCalloutType) (void);
 
 #define NO_PDU_REFERENCE 0xFFFFu
 
+typedef enum{
+    CONFIRMATION = 0,
+    TRANSMIT,
+    TRIGGERTRANSMIT
+}ComTxIPduClearUpdateBitType;
+
 typedef enum {
     COM_UNINIT = 0,
     COM_INIT
@@ -376,6 +382,9 @@ typedef struct {
 
     /** Minimum delay between successive transmissions of the IPdu. */
     const uint32 ComTxIPduMinimumDelayFactor;
+
+    /** Defines when the I-PDU Tx update bit shall be cleared.*/
+    const ComTxIPduClearUpdateBitType ComTxIPduClearUpdateBit;
 
     /** COM will fill unused areas within an IPdu with this bit patter.
      */

@@ -86,12 +86,21 @@
 #define SPR_MAS4      628
 #define SPR_MAS6      630
 
+#if defined(_ASSEMBLER_)
 #define MSR_ME		(1<<(31-19))
 #define MSR_CE		(1<<(31-14))
+#else
+#define MSR_ME      ((uint32)1u<<(uint32)(31u-19u))
+#define MSR_CE      ((uint32)1u<<(uint32)(31u-14u))
+#endif
 
 #define ESR_PTR		(1<<(31-6))
 #define ESR_ST		(1<<(31-8))
+#if defined(_ASSEMBLER_)
 #define ESR_VLEMI   (1<<(31-26))
+#else
+#define ESR_VLEMI   (1u<<(uint32)(31u-26u))
+#endif
 #define ESR_XTE		(1<<(31-31))
 
 #define MCSR_BUS_WRERR	(1<<(31-29))

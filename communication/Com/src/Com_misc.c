@@ -315,12 +315,20 @@ void Com_Misc_CopySignalGroupDataFromPduToShadowBuffer(const Com_SignalIdType si
         pduDataPtr = GET_ArcIPdu(Signal->ComIPduHandleId)->ComIPduDataPtr;
     }
 
-    /* Aligned opaque data -> straight copy with signalgroup mask*/
-    /*lint -e{9005} Com_Arc_ShadowBuffer value is required to be modified */
-    uint8 *buf = (uint8 *)GET_ArcSignal(Signal->ComHandleId)->Com_Arc_ShadowBuffer;
-    for(uint16 i= 0; i < IPdu->ComIPduSize; i++){
-        /*lint -e{9049} The post increment operation is required*/
-        *buf++ = Signal->Com_Arc_ShadowBuffer_Mask[i] & *pduDataPtr++;
+
+    if ( (FALSE == Signal->ComSignalArcUseUpdateBit) ||
+            /*lint -e{9016} -e{9005} -e{926} Array indexing couldn't be implemented, as parameters are of different data types */
+        ( (TRUE == Signal->ComSignalArcUseUpdateBit) && (TESTBIT(pduDataPtr, Signal->ComUpdateBitPosition) > 0) ) ) {
+
+		/* Aligned opaque data -> straight copy with signalgroup mask*/
+		/*lint -e{9005} Com_Arc_ShadowBuffer value is required to be modified */
+		uint8 *buf = (uint8 *)GET_ArcSignal(Signal->ComHandleId)->Com_Arc_ShadowBuffer;
+		for(uint16 i= 0; i < IPdu->ComIPduSize; i++){
+			/*lint -e{9049} The post increment operation is required*/
+			*buf = (*buf & ~Signal->Com_Arc_ShadowBuffer_Mask[i]) | (Signal->Com_Arc_ShadowBuffer_Mask[i] & *pduDataPtr);
+			pduDataPtr++;
+			buf++;
+		}
     }
 }
 
@@ -936,12 +944,14 @@ ComTxTriggerStatusType Com_Misc_TriggerIPDUSend(PduIdType PduId) {
             /* @req COM138 */
             if (PduR_ComTransmit(IPdu->ArcIPduOutgoingId, &PduInfoPackage) == E_OK) {
                 txTriggerStatus = COM_TX_TRIGGERED;
-                /* Clear all update bits for the contained signals*/
-                /* !req COM577 */
-                for (uint16 i = 0; (IPdu->ComIPduSignalRef != NULL) && (IPdu->ComIPduSignalRef[i] != NULL); i++) {
-                    if (TRUE == IPdu->ComIPduSignalRef[i]->ComSignalArcUseUpdateBit) {
-                        /*lint -e{9016} Array indexing couldn't be implemented, as parameters are of different data types */
-                        CLEARBIT(Arc_IPdu->ComIPduDataPtr, IPdu->ComIPduSignalRef[i]->ComUpdateBitPosition);
+                if (IPdu->ComTxIPdu.ComTxIPduClearUpdateBit == TRANSMIT) {
+                    /* Clear all update bits for the contained signals*/
+                    /* @req COM062 */
+                    for (uint16 i = 0; (IPdu->ComIPduSignalRef != NULL) && (IPdu->ComIPduSignalRef[i] != NULL); i++) {
+                        if (TRUE == IPdu->ComIPduSignalRef[i]->ComSignalArcUseUpdateBit) {
+                            /*lint -e{9016} Array indexing couldn't be implemented, as parameters are of different data types */
+                            CLEARBIT(Arc_IPdu->ComIPduDataPtr, IPdu->ComIPduSignalRef[i]->ComUpdateBitPosition);
+                        }
                     }
                 }
     #if (COM_SIG_GATEWAY_ENABLE == STD_ON)

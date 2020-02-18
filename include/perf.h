@@ -54,4 +54,11 @@ void Perf_PostFunctionHook(uint8 PerfFuncIdx);
  */
 uint8 Perf_ReadCpuLoad();
 
+#if !defined CFG_PERF_FUNC
+#define Perf_InstallFunctionName
+#define Perf_PreFunctionHook
+#define Perf_PostFunctionHook
+#endif
+
+
 #endif /* PERF_H_ */

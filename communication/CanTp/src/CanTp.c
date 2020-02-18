@@ -1,14 +1,14 @@
 /*-------------------------------- Arctic Core ------------------------------
  * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
  * Contact: <contact@arccore.com>
- * 
+ *
  * You may ONLY use this file:
- * 1)if you have a valid commercial ArcCore license and then in accordance with  
- * the terms contained in the written license agreement between you and ArcCore, 
+ * 1)if you have a valid commercial ArcCore license and then in accordance with
+ * the terms contained in the written license agreement between you and ArcCore,
  * or alternatively
- * 2)if you follow the terms found in GNU General Public License version 2 as 
- * published by the Free Software Foundation and appearing in the file 
- * LICENSE.GPL included in the packaging of this file or here 
+ * 2)if you follow the terms found in GNU General Public License version 2 as
+ * published by the Free Software Foundation and appearing in the file
+ * LICENSE.GPL included in the packaging of this file or here
  * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
  *-------------------------------- Arctic Core -----------------------------*/
 
@@ -114,30 +114,38 @@
 #define ISO15765_TPCI_FF        0x10  /* First Frame */
 #define ISO15765_TPCI_CF        0x20  /* Consecutive Frame */
 #define ISO15765_TPCI_FC        0x30  /* Flow Control */
-#define ISO15765_TPCI_DL        0xF   /* Single frame data length mask */
+#define ISO15765_TPCI_DL        0xF
+#define ISO15765_TPCI_DL_FD        0xFF/* Single frame data length mask */
 #define ISO15765_TPCI_FS_MASK   0x0F  /* Flowcontrol status mask */
 
 // - - - - - - - - - - - - - -
 
-#define MAX_PAYLOAD_SF_STD_ADDR		7
-#define MAX_PAYLOAD_SF_EXT_ADDR		6
+#define CANFD_FIRST_BYTE_ZERO       0
+#define MAX_PAYLOAD_SF_STD_ADDR     7
+#define MAX_PAYLOAD_SF_EXT_ADDR     6
 
-#define MAX_PAYLOAD_FF_STD_ADDR		6
-#define MAX_PAYLOAD_FF_EXT_ADDR		5
+#define MAX_PAYLOAD_FF_STD_ADDR     6
+#define MAX_PAYLOAD_FF_EXT_ADDR     5
 
-#define MAX_PAYLOAD_CF_STD_ADDR		7
-#define MAX_PAYLOAD_CF_EXT_ADDR		6
+#define MX_PAYLOAD_FF_STD_ADDR_FD_SUPPORT   62
+#define MX_PAYLOAD_FF_EXT_ADDR_FD_SUPPORT   61
 
-#define SEGMENT_NUMBER_MASK			0x0f
+#define MAX_PAYLOAD_CF_STD_ADDR     7
+#define MAX_PAYLOAD_CF_EXT_ADDR     6
 
-#define MAX_SEGMENT_DATA_SIZE		8 	// Size of a CAN frame data bytes.
+#define SEGMENT_NUMBER_MASK         0x0f
 
-#define CANTP_TX_CHANNEL			0
-#define CANTP_RX_CHANNEL			1
+#define MAX_SEGMENT_DATA_SIZE        8u  // Size of a CAN frame data bytes.
+#define MAX_FD_SEGMENT_DATA_SIZE    64u  //CanFD data bytes
+
+#define CANTP_TX_CHANNEL            0
+#define CANTP_RX_CHANNEL            1
 #define CANTP_NO_SIMPLEX_CHANNEL    2
-#define INVALID_PDU_ID				0xFFFF
+#define INVALID_PDU_ID              0xFFFF
 #define MAX_SF_DL_EXTENDADDR        6 // Maximum number of User bytes in a SF for Extended addressing
 #define MAX_SF_DL_STDADDR           7 // Maximum number of User bytes in a SF for Standard addressing
+#define MAX_SF_DL_STDADDR_FD_SUPPORT        62 // Maximum number of User bytes in a SF for Standard addressing
+#define MAX_SF_DL_EXTENDADDR_FD_SUPPORT     61 // Maximum number of User bytes in a SF for Extended addressing
 
 /*
  *
@@ -165,7 +173,11 @@ typedef enum {
  */
 
 typedef struct {
+#if (CANTP_CANFD_SUPPORT == STD_OFF)
     uint8 data[MAX_SEGMENT_DATA_SIZE];
+#else
+    uint8 data[MAX_FD_SEGMENT_DATA_SIZE];
+#endif
     PduLengthType byteCount;
 } CanIfSduType;
 
@@ -186,7 +198,7 @@ typedef struct {
 } ISO15765TransferControlType;
 
 /*
- *	Container for TX or RX runtime paramters (TX/RX are identical?)
+ *  Container for TX or RX runtime paramters (TX/RX are identical?)
  */
 typedef struct {
     ISO15765TransferControlType iso15765;
@@ -197,6 +209,7 @@ typedef struct {
     CanTp_TransferInstanceMode mode; // CanTp030.
     uint16 CanTpWftMaxCounter;
     PduIdType pduId;
+    boolean CanfdSupport;
 } CanTp_SimplexChannelPrivateType;
 
 typedef struct {
@@ -291,7 +304,7 @@ static PduLengthType getPduLength(
         break;
     case CANTP_EXTENDED:
         tpci_offset = 1;
-        break;
+         break;
     default:
         res = 0;
         status = FALSE;
@@ -301,7 +314,13 @@ static PduLengthType getPduLength(
         switch (iso15765Frame) {
         case SINGLE_FRAME:
             // Parse the data length from the single frame header.
-            res = CanTpRxPduPtr->SduDataPtr[tpci_offset] & ISO15765_TPCI_DL;
+            if(CanTpRxPduPtr->SduLength > MAX_SEGMENT_DATA_SIZE){
+                /*First byte of CAN FD single frame is zero, hence PCI(SF_DL i.e Data length is taken from second byte)*/
+                res = CanTpRxPduPtr->SduDataPtr[tpci_offset+1] & ISO15765_TPCI_DL_FD;
+            }else{
+                res = CanTpRxPduPtr->SduDataPtr[tpci_offset] & ISO15765_TPCI_DL;
+            }
+
             break;
         case FIRST_FRAME:
             // Parse the data length form the first frame.
@@ -406,14 +425,20 @@ static BufReq_ReturnType copySegmentToPduRRxBuffer(const CanTp_RxNSduType *rxCon
 static boolean copySegmentToLocalRxBuffer /*writeDataSegmentToLocalBuffer*/(
         CanTp_SimplexChannelPrivateType *rxRuntime, uint8 *segment,
         PduLengthType segmentSize) {
+    uint8 maxSegSize;
     boolean ret = FALSE;
+    if(rxRuntime->CanfdSupport == TRUE){
+        maxSegSize = MAX_FD_SEGMENT_DATA_SIZE;
+    }else{
+        maxSegSize =  MAX_SEGMENT_DATA_SIZE;
+    }
 
-    if ( segmentSize < MAX_SEGMENT_DATA_SIZE ) {
+    if ( segmentSize < maxSegSize ) {
         for (int i=0; i < segmentSize; i++) {
             rxRuntime->canFrameBuffer.data[i] = segment[i];
+            rxRuntime->canFrameBuffer.byteCount = segmentSize;
+            ret = TRUE;
         }
-        rxRuntime->canFrameBuffer.byteCount = segmentSize;
-        ret = TRUE;
     }
     return ret;
 }
@@ -423,12 +448,14 @@ static boolean copySegmentToLocalRxBuffer /*writeDataSegmentToLocalBuffer*/(
 static Std_ReturnType canReceivePaddingHelper(
         const CanTp_RxNSduType *rxConfig, CanTp_SimplexChannelPrivateType *rxRuntime,
         PduInfoType *PduInfoPtr) {
+
     if (rxConfig->CanTpRxPaddingActivation == CANTP_ON) {
-        for (int i = PduInfoPtr->SduLength; i < MAX_SEGMENT_DATA_SIZE; i++) {
+        for (uint8 i = PduInfoPtr->SduLength; i < MAX_SEGMENT_DATA_SIZE; i++) {
             PduInfoPtr->SduDataPtr[i] = CanTp_ConfigPtr->CanTpGeneral->padding;
         }
-        PduInfoPtr->SduLength = MAX_SEGMENT_DATA_SIZE;
+
     }
+    PduInfoPtr->SduLength = MAX_SEGMENT_DATA_SIZE; //FC length is always expected to be 8B
     rxRuntime->iso15765.NasNarTimeoutCount = rxConfig->CanTpNar; /** @req CANTP075 */
     rxRuntime->iso15765.NasNarPending = TRUE;
     return CanIf_Transmit(rxConfig->CanIf_FcPduId, PduInfoPtr);
@@ -446,11 +473,12 @@ static Std_ReturnType canTansmitPaddingHelper(
     /** @req CANTP116 */
     /** @req CANTP059 */
 
+
     if (txConfig->CanTpTxPaddingActivation == CANTP_ON) { /** @req CANTP225 */
-        for (int i = PduInfoPtr->SduLength; i < MAX_SEGMENT_DATA_SIZE; i++) {
+        for (int i = PduInfoPtr->SduLength; i < txConfig->CanTpNPduLen; i++) {
             PduInfoPtr->SduDataPtr[i] = CanTp_ConfigPtr->CanTpGeneral->padding;
         }
-        PduInfoPtr->SduLength = MAX_SEGMENT_DATA_SIZE;
+        PduInfoPtr->SduLength = txConfig->CanTpNPduLen;
     }
     txRuntime->iso15765.NasNarTimeoutCount = txConfig->CanTpNas; /** @req CANTP075 */
     txRuntime->iso15765.NasNarPending = TRUE;
@@ -476,9 +504,19 @@ static void sendFlowControlFrame(const CanTp_RxNSduType *rxConfig, CanTp_Simplex
     {
         sduData[indexCount++] = ISO15765_TPCI_FC | ISO15765_FLOW_CONTROL_STATUS_CTS;
         if (rxConfig->CanTpAddressingFormant == CANTP_EXTENDED) { /** @req CANTP094 *//** @req CANTP095 */
-            computedBs = (rxRuntime->sizeBuffer / MAX_PAYLOAD_SF_EXT_ADDR) + 1;  // + 1 is for local buffer.
+            if(rxRuntime->CanfdSupport == TRUE){
+                computedBs = (rxRuntime->sizeBuffer / MX_PAYLOAD_FF_EXT_ADDR_FD_SUPPORT) + 1;  // + 1 is for local buffer.
+            }else{
+                computedBs = (rxRuntime->sizeBuffer / MAX_PAYLOAD_SF_EXT_ADDR) + 1;  // + 1 is for local buffer.
+            }
+
         } else {
-            computedBs = (rxRuntime->sizeBuffer / MAX_PAYLOAD_SF_STD_ADDR) + 1;  // + 1 is for local buffer.
+            if(rxRuntime->CanfdSupport == TRUE){
+                computedBs = (rxRuntime->sizeBuffer / MX_PAYLOAD_FF_STD_ADDR_FD_SUPPORT) + 1;  // + 1 is for local buffer.
+            }else{
+                computedBs = (rxRuntime->sizeBuffer / MAX_PAYLOAD_SF_STD_ADDR) + 1;  // + 1 is for local buffer.
+            }
+
         }
         if (computedBs > rxConfig->CanTpBs) { // /** @req CANTP091 *//** @req CANTP084 */
             computedBs = rxConfig->CanTpBs;
@@ -556,7 +594,8 @@ static void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
             rxRuntime->pduId = INVALID_PDU_ID;
             rxRuntime->mode = CANTP_RX_WAIT;
         } else {
-            currentSegmentMaxSize = MAX_SEGMENT_DATA_SIZE - indexCount;
+            currentSegmentMaxSize = rxPduData->SduLength - indexCount;
+
             bytesLeftToCopy = rxRuntime->transferTotal - rxRuntime->transferCount;
             if (bytesLeftToCopy < currentSegmentMaxSize) {
                 currentSegmentSize = bytesLeftToCopy; // 1-5.
@@ -641,7 +680,7 @@ static void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
                     PduR_CanTpRxIndication(rxConfig->PduR_PduId, NTFRSLT_OK); /** @req CANTP084 */
                 }
             } else {
-            	/* Do nothing */
+                /* Do nothing */
             }
 
         }
@@ -656,6 +695,7 @@ static void handleConsecutiveFrame(const CanTp_RxNSduType *rxConfig,
  */
 static BufReq_ReturnType sendNextTxFrame(const CanTp_TxNSduType *txConfig,
                                          CanTp_SimplexChannelPrivateType *txRuntime) {
+    uint8 maxDataSize;
     BufReq_ReturnType ret = BUFREQ_OK;
 
     PduInfoType pduInfo;
@@ -663,8 +703,14 @@ static BufReq_ReturnType sendNextTxFrame(const CanTp_TxNSduType *txConfig,
     uint8 offset = txRuntime->canFrameBuffer.byteCount;
 
     pduInfo.SduDataPtr = &txRuntime->canFrameBuffer.data[offset];
-    if( (txRuntime->transferTotal - txRuntime->transferCount) >  (MAX_SEGMENT_DATA_SIZE - offset) ) {
-        pduInfo.SduLength = MAX_SEGMENT_DATA_SIZE - offset;
+
+    if(txRuntime->CanfdSupport == TRUE){
+        maxDataSize =   txConfig->CanTpNPduLen;
+    }else{
+        maxDataSize =   MAX_SEGMENT_DATA_SIZE;
+    }
+    if( (txRuntime->transferTotal - txRuntime->transferCount) >  (maxDataSize - offset) ) {
+        pduInfo.SduLength = maxDataSize - offset;
     } else {
         pduInfo.SduLength = txRuntime->transferTotal - txRuntime->transferCount;
     }
@@ -679,6 +725,7 @@ static BufReq_ReturnType sendNextTxFrame(const CanTp_TxNSduType *txConfig,
         Std_ReturnType resp;
 
         pduInfo.SduDataPtr = &txRuntime->canFrameBuffer.data[0];
+
         pduInfo.SduLength += offset;
 
         // change state to verify tx confirm within timeout
@@ -703,57 +750,58 @@ static BufReq_ReturnType sendNextTxFrame(const CanTp_TxNSduType *txConfig,
  * @param txRuntime
  */
 static void handleNextTxFrameSent(
-		const CanTp_TxNSduType *txConfig, CanTp_SimplexChannelPrivateType *txRuntime) {
+        const CanTp_TxNSduType *txConfig, CanTp_SimplexChannelPrivateType *txRuntime) {
 
-	txRuntime->iso15765.framesHandledCount++;
-	// prepare tx buffer for next frame
-	txRuntime->canFrameBuffer.byteCount = 1;
-	if (txConfig->CanTpAddressingMode == CANTP_EXTENDED) {
-		txRuntime->canFrameBuffer.byteCount++;
-	}
-	txRuntime->canFrameBuffer.data[txRuntime->canFrameBuffer.byteCount - 1] =
-			(txRuntime->iso15765.framesHandledCount & SEGMENT_NUMBER_MASK) + ISO15765_TPCI_CF;
-	COUNT_DECREMENT(txRuntime->iso15765.nextFlowControlCount);
-	if (txRuntime->transferTotal <= txRuntime->transferCount) {
-		// Transfer finished!
-		PduR_CanTpTxConfirmation(txConfig->PduR_PduId, NTFRSLT_OK); /** @req CANTP090 *//** @req CANTP204 */
-		txRuntime->iso15765.state = IDLE;
-		txRuntime->pduId = INVALID_PDU_ID;
-		txRuntime->mode = CANTP_TX_WAIT;
-	} else if (txRuntime->iso15765.nextFlowControlCount == 0 && txRuntime->iso15765.BS) {
-		// receiver expects flow control.
-		txRuntime->iso15765.stateTimeoutCount = (txConfig->CanTpNbs) + 1; /** @req CANTP315.partially */
-		txRuntime->iso15765.state = TX_WAIT_FLOW_CONTROL;
-	} else if (txRuntime->iso15765.STmin == 0) {
-		// Send next consecutive frame!
-	    BufReq_ReturnType resp;
-		resp = sendNextTxFrame(txConfig, txRuntime);
-		if (resp == BUFREQ_OK ) {
-			// successfully sent frame, wait for tx confirm
-		} else if(BUFREQ_E_BUSY == resp) { /** @req CANTP184 */ /** @req CANTP279 */
-			// change state and setup timeout
-			txRuntime->iso15765.stateTimeoutCount = (txConfig->CanTpNcs) + 1;
-			txRuntime->iso15765.state = TX_WAIT_TRANSMIT;
-		} else {
-			PduR_CanTpTxConfirmation(txConfig->PduR_PduId, NTFRSLT_E_NOT_OK);  /** @req CANTP177 */ /** @req CANTP087 */
-			txRuntime->iso15765.state = IDLE;
-			txRuntime->pduId = INVALID_PDU_ID;
-			txRuntime->mode = CANTP_TX_WAIT;
-		}
-	} else {
-		// Send next consecutive frame after stmin!
-	    //ST MIN error handling ISO 15765-2 sec 7.6
-	    if (txRuntime->iso15765.STmin < 0x80) {
-		txRuntime->iso15765.stateTimeoutCount = ConvertMsToMainCycles(txRuntime->iso15765.STmin) + 1;
-	    } else if (txRuntime->iso15765.STmin > 0xF0 && txRuntime->iso15765.STmin < 0xFA) {
-	        //txRuntime->iso15765.stateTimeoutCount = ConvertMsToMainCycles((txRuntime->iso15765.STmin - 0xF0)/10) + 1;
-	        txRuntime->iso15765.stateTimeoutCount = 1; //This is hard coded to 1 main cycle since achieving 0.1ms task is difficult
-	    }
-	    else {
-	        txRuntime->iso15765.stateTimeoutCount = ConvertMsToMainCycles(0x7F) + 1;
-	    }
-	    txRuntime->iso15765.state = TX_WAIT_STMIN;
-	}
+    txRuntime->iso15765.framesHandledCount++;
+    // prepare tx buffer for next frame
+    txRuntime->canFrameBuffer.byteCount = 1;
+    if (txConfig->CanTpAddressingMode == CANTP_EXTENDED) {
+        txRuntime->canFrameBuffer.byteCount++;
+    }
+    txRuntime->canFrameBuffer.data[txRuntime->canFrameBuffer.byteCount - 1] =
+            (txRuntime->iso15765.framesHandledCount & SEGMENT_NUMBER_MASK) + ISO15765_TPCI_CF;
+
+    COUNT_DECREMENT(txRuntime->iso15765.nextFlowControlCount);
+    if (txRuntime->transferTotal <= txRuntime->transferCount) {
+        // Transfer finished!
+        PduR_CanTpTxConfirmation(txConfig->PduR_PduId, NTFRSLT_OK); /** @req CANTP090 *//** @req CANTP204 */
+        txRuntime->iso15765.state = IDLE;
+        txRuntime->pduId = INVALID_PDU_ID;
+        txRuntime->mode = CANTP_TX_WAIT;
+    } else if (txRuntime->iso15765.nextFlowControlCount == 0 && txRuntime->iso15765.BS) {
+        // receiver expects flow control.
+        txRuntime->iso15765.stateTimeoutCount = (txConfig->CanTpNbs) + 1; /** @req CANTP315.partially */
+        txRuntime->iso15765.state = TX_WAIT_FLOW_CONTROL;
+    } else if (txRuntime->iso15765.STmin == 0) {
+        // Send next consecutive frame!
+        BufReq_ReturnType resp;
+        resp = sendNextTxFrame(txConfig, txRuntime);
+        if (resp == BUFREQ_OK ) {
+            // successfully sent frame, wait for tx confirm
+        } else if(BUFREQ_E_BUSY == resp) { /** @req CANTP184 */ /** @req CANTP279 */
+            // change state and setup timeout
+            txRuntime->iso15765.stateTimeoutCount = (txConfig->CanTpNcs) + 1;
+            txRuntime->iso15765.state = TX_WAIT_TRANSMIT;
+        } else {
+            PduR_CanTpTxConfirmation(txConfig->PduR_PduId, NTFRSLT_E_NOT_OK);  /** @req CANTP177 */ /** @req CANTP087 */
+            txRuntime->iso15765.state = IDLE;
+            txRuntime->pduId = INVALID_PDU_ID;
+            txRuntime->mode = CANTP_TX_WAIT;
+        }
+    } else {
+        // Send next consecutive frame after stmin!
+        //ST MIN error handling ISO 15765-2 sec 7.6
+        if (txRuntime->iso15765.STmin < 0x80) {
+            txRuntime->iso15765.stateTimeoutCount = ConvertMsToMainCycles(txRuntime->iso15765.STmin) + 1;
+        } else if (txRuntime->iso15765.STmin > 0xF0 && txRuntime->iso15765.STmin < 0xFA) {
+            //txRuntime->iso15765.stateTimeoutCount = ConvertMsToMainCycles((txRuntime->iso15765.STmin - 0xF0)/10) + 1;
+            txRuntime->iso15765.stateTimeoutCount = 1; //This is hard coded to 1 main cycle since achieving 0.1ms task is difficult
+        }
+        else {
+            txRuntime->iso15765.stateTimeoutCount = ConvertMsToMainCycles(0x7F) + 1;
+        }
+        txRuntime->iso15765.state = TX_WAIT_STMIN;
+    }
 }
 
 
@@ -783,7 +831,7 @@ static void handleFlowControlFrame(const CanTp_TxNSduType *txConfig,
 
             case ISO15765_FLOW_CONTROL_STATUS_CTS:
     #if 1
-            {	// This construction is added to make the hcs12 compiler happy.
+            {   // This construction is added to make the hcs12 compiler happy.
                 const uint8 bs = txPduData->SduDataPtr[indexCount++];
                 txRuntime->iso15765.BS = bs;
                 txRuntime->iso15765.nextFlowControlCount = bs;
@@ -849,10 +897,16 @@ static void handleSingleFrame(const CanTp_RxNSduType *rxConfig,
         //Verify user DL is less than 7 & not zero
         if ((extendedAddress != rxConfig->CanTpNTa->CanTpNTa)||(pduLength > MAX_SF_DL_EXTENDADDR) || !(pduLength)) {
             status = FALSE;
+            if ((rxRuntime->CanfdSupport == TRUE) && (pduLength <= MAX_SF_DL_EXTENDADDR_FD_SUPPORT)){
+                status = TRUE;
+            }
         }
 
-    } else if ((pduLength > MAX_SF_DL_STDADDR) || !(pduLength)){
-        status = FALSE; //Verify user DL is less than 8 & not zero
+    } else if ((pduLength > MAX_SF_DL_STDADDR) || (!(pduLength))){  //Verify user DL is less than 8 & not zero
+        status = FALSE;
+        if ((rxRuntime->CanfdSupport == TRUE) && (pduLength <= MAX_SF_DL_STDADDR_FD_SUPPORT)){
+            status = TRUE;
+        }
     }
     if (status == TRUE) {
 
@@ -868,10 +922,21 @@ static void handleSingleFrame(const CanTp_RxNSduType *rxConfig,
 
 
         if (rxConfig->CanTpAddressingFormant == CANTP_STANDARD) { /** @req CANTP094 *//** @req CANTP095 */
-            data = &rxPduData->SduDataPtr[1];
+            if(rxRuntime->CanfdSupport == TRUE){
+                /*First byte of CAN FD will be zero and second byte consists of PCI(i.e data length). Actual data contains from third byte*/
+                data = &rxPduData->SduDataPtr[2];
+            }else{
+                data = &rxPduData->SduDataPtr[1];
+            }
         } else {
-            data = &rxPduData->SduDataPtr[2];
+            if(rxRuntime->CanfdSupport == TRUE){
+                /*First byte of CAN FD consists of Target Address(TA),Second byte will be zero and second byte consists of PCI(i.e data length). Actual data contains from third byte*/
+                data = &rxPduData->SduDataPtr[3];
+            }else{
+                data = &rxPduData->SduDataPtr[2];
+            }
         }
+
         rxRuntime->transferTotal = pduLength;
         rxRuntime->iso15765.state = SF_OR_FF_RECEIVED_WAITING_PDUR_BUFFER;
         rxRuntime->mode = CANTP_RX_PROCESSING;
@@ -887,9 +952,19 @@ static void handleSingleFrame(const CanTp_RxNSduType *rxConfig,
             rxRuntime->mode = CANTP_RX_WAIT;
         } else if (ret == BUFREQ_E_BUSY) {
             if (rxConfig->CanTpAddressingFormant == CANTP_STANDARD) {
-                data = &rxPduData->SduDataPtr[1];
+                if(rxRuntime->CanfdSupport == TRUE){
+                    /*First byte of CAN FD will be zero and second byte consists of PCI(i.e data length). Actual data contains from third byte*/
+                    data = &rxPduData->SduDataPtr[2];
+                }else{
+                    data = &rxPduData->SduDataPtr[1];
+                }
             } else {
-                data = &rxPduData->SduDataPtr[2];
+                if(rxRuntime->CanfdSupport == TRUE){
+                    /*First byte of CAN FD consists of Target Address(TA),Second byte will be zero and second byte consists of PCI(i.e data length). Actual data contains from third byte*/
+                    data = &rxPduData->SduDataPtr[3];
+                }else{
+                    data = &rxPduData->SduDataPtr[2];
+                }
             }
             (void)copySegmentToLocalRxBuffer(rxRuntime, data, pduLength );
             rxRuntime->iso15765.state = RX_WAIT_SF_SDU_BUFFER;
@@ -914,6 +989,10 @@ static void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
     PduLengthType pduLength = 0;
     PduLengthType bytesWrittenToSduRBuffer;
     uint8 extendedAddress = 0;
+    uint16 maxSizeStd;
+    uint16 maxSizeExt;
+    maxSizeStd=0;
+    maxSizeExt=0;
 
     if (rxConfig->CanTpAddressingFormant == CANTP_EXTENDED)
     {
@@ -944,10 +1023,16 @@ static void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
     if (rxConfig->CanTpAddressingFormant == CANTP_STANDARD) { /** @req CANTP094 *//** @req CANTP095 */
         if (pduLength <= MAX_PAYLOAD_SF_STD_ADDR){
             status = FALSE;
+            if ((rxRuntime->CanfdSupport == TRUE) && (pduLength <= MAX_SF_DL_STDADDR_FD_SUPPORT)){
+                status = TRUE;
+            }
         }
     } else {
         if (pduLength <= MAX_PAYLOAD_SF_EXT_ADDR){
             status = FALSE;
+            if ((rxRuntime->CanfdSupport == TRUE) && (pduLength <= MAX_SF_DL_EXTENDADDR_FD_SUPPORT)){
+                status = TRUE;
+            }
         }
     }
     if (status == TRUE) {
@@ -961,17 +1046,31 @@ static void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
         rxRuntime->iso15765.state = SF_OR_FF_RECEIVED_WAITING_PDUR_BUFFER;
         rxRuntime->mode = CANTP_RX_PROCESSING;
         rxRuntime->iso15765.stateTimeoutCount = rxConfig->CanTpNbr; /** @req CANTP166 */
+        if(rxConfig->CanTpAddressingFormant == CANTP_STANDARD ){
+            if(rxRuntime->CanfdSupport == TRUE){
+                maxSizeStd = MX_PAYLOAD_FF_STD_ADDR_FD_SUPPORT;
+            }else{
+                maxSizeStd = MAX_PAYLOAD_FF_STD_ADDR;
+            }
+        }else{
+            if(rxRuntime->CanfdSupport == TRUE){
+                maxSizeExt = MX_PAYLOAD_FF_EXT_ADDR_FD_SUPPORT;
+            }else{
+                maxSizeExt = MAX_PAYLOAD_FF_EXT_ADDR;
+            }
+        }
+
 
         if (rxConfig->CanTpAddressingFormant == CANTP_STANDARD) {
             ret = copySegmentToPduRRxBuffer(rxConfig, rxRuntime,
                     &rxPduData->SduDataPtr[2],
-                    MAX_PAYLOAD_FF_STD_ADDR,
+                    maxSizeStd,
                     &bytesWrittenToSduRBuffer);
         } else {
             rxRuntime->iso15765.extendedAddress = rxConfig->CanTpNTa->CanTpNTa;
             ret = copySegmentToPduRRxBuffer(rxConfig, rxRuntime,
                     &rxPduData->SduDataPtr[3],
-                    MAX_PAYLOAD_FF_EXT_ADDR,
+                    maxSizeExt,
                     &bytesWrittenToSduRBuffer);
         }
 
@@ -983,9 +1082,9 @@ static void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
         } else if (ret == BUFREQ_E_BUSY) {
             /** @req CANTP222 */
             if (rxConfig->CanTpAddressingFormant == CANTP_STANDARD) {
-                (void)copySegmentToLocalRxBuffer(rxRuntime, &rxPduData->SduDataPtr[2], MAX_PAYLOAD_FF_STD_ADDR );
+                (void)copySegmentToLocalRxBuffer(rxRuntime, &rxPduData->SduDataPtr[2], maxSizeStd );
             } else {
-                (void)copySegmentToLocalRxBuffer(rxRuntime, &rxPduData->SduDataPtr[3], MAX_PAYLOAD_FF_EXT_ADDR );
+                (void)copySegmentToLocalRxBuffer(rxRuntime, &rxPduData->SduDataPtr[3], maxSizeExt );
             }
             rxRuntime->iso15765.stateTimeoutCount = (rxConfig->CanTpNbr) + 1;
             rxRuntime->iso15765.state = RX_WAIT_CF_SDU_BUFFER;
@@ -1004,7 +1103,7 @@ static void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
             rxRuntime->mode = CANTP_RX_WAIT;
         }
         else {
-        	/* Do nothing */
+            /* Do nothing */
         }
 
     /** @req CANTP081 */
@@ -1016,9 +1115,25 @@ static void handleFirstFrame(const CanTp_RxNSduType *rxConfig,
 static ISO15765FrameType calcRequiredProtocolFrameType(
         const CanTp_TxNSduType *txConfig, CanTp_SimplexChannelPrivateType *txRuntime) {
 
+    uint8 maxPayload;
     ISO15765FrameType ret = INVALID_FRAME;
+
     if (txConfig->CanTpAddressingMode == CANTP_EXTENDED) {
-        if (txRuntime->transferTotal <= MAX_PAYLOAD_CF_EXT_ADDR) {
+        if(txRuntime->CanfdSupport == TRUE){
+            maxPayload = MX_PAYLOAD_FF_EXT_ADDR_FD_SUPPORT;
+        }else{
+            maxPayload = MAX_PAYLOAD_CF_EXT_ADDR;
+        }
+    }else{
+        if(txRuntime->CanfdSupport == TRUE){
+            maxPayload = MX_PAYLOAD_FF_STD_ADDR_FD_SUPPORT;
+        }else{
+            maxPayload = MAX_PAYLOAD_CF_STD_ADDR;
+        }
+    }
+
+    if (txConfig->CanTpAddressingMode == CANTP_EXTENDED) {
+        if (txRuntime->transferTotal <= maxPayload) {
             ret = SINGLE_FRAME;
         } else {
             if (txConfig->CanTpTxTaType == CANTP_PHYSICAL) {
@@ -1027,8 +1142,8 @@ static ISO15765FrameType calcRequiredProtocolFrameType(
                 DET_REPORTERROR(SERVICE_ID_CANTP_TRANSMIT, CANTP_E_INVALID_TATYPE ); /** @req CANTP093 */
             }
         }
-    } else {	// CANTP_STANDARD
-        if (txRuntime->transferTotal <= MAX_PAYLOAD_CF_STD_ADDR) {
+    } else {    // CANTP_STANDARD
+        if (txRuntime->transferTotal <= maxPayload) {
             ret = SINGLE_FRAME;
         } else {
             if (txConfig->CanTpTxTaType == CANTP_PHYSICAL) {
@@ -1075,22 +1190,34 @@ Std_ReturnType CanTp_Transmit(PduIdType CanTpTxSduId,
             txRuntime->iso15765.stateTimeoutCount = (txConfig->CanTpNcs) + 1; /** @req CANTP167 */
             txRuntime->mode = CANTP_TX_PROCESSING;
             txRuntime->pduId = CanTp_InternalTxNSduId;
+            txRuntime->CanfdSupport = CanTp_ConfigPtr->CanTpNSduList[CanTp_InternalTxNSduId].CanTpFDSupport;
             iso15765Frame = calcRequiredProtocolFrameType(txConfig, txRuntime); /** @req CANTP231 */ /** @req CANTP232 */
             if (txConfig->CanTpAddressingMode == CANTP_EXTENDED) { /** @req CANTP094 *//** @req CANTP095 */
                 txRuntime->canFrameBuffer.data[txRuntime->canFrameBuffer.byteCount++] =
-                        (uint8) txConfig->CanTpNTa->CanTpNTa; // Target address.
+                              (uint8) txConfig->CanTpNTa->CanTpNTa; // Target address.
+
             }
             switch(iso15765Frame) {
             case SINGLE_FRAME:
-                txRuntime->canFrameBuffer.data[txRuntime->canFrameBuffer.byteCount++] =
-                        ISO15765_TPCI_SF | (uint8)(txRuntime->transferTotal);
+                if(txRuntime->CanfdSupport == TRUE){
+                    /*First Byte of CanFD is zero. Second Byte contains PCI(SF_DL i.e Complete data length) value*/
+                    txRuntime->canFrameBuffer.data[txRuntime->canFrameBuffer.byteCount++] = CANFD_FIRST_BYTE_ZERO;
+                    txRuntime->canFrameBuffer.data[txRuntime->canFrameBuffer.byteCount++] = ISO15765_TPCI_DL_FD & (uint8)(txRuntime->transferTotal);
+
+                }
+                else{
+                    txRuntime->canFrameBuffer.data[txRuntime->canFrameBuffer.byteCount++] =
+                            ISO15765_TPCI_DL & (uint8)(txRuntime->transferTotal);
+                }
+
                 ret = E_OK;
                 break;
             case FIRST_FRAME:
                 txRuntime->canFrameBuffer.data[txRuntime->canFrameBuffer.byteCount++] =
-                        ISO15765_TPCI_FF | (uint8)((txRuntime->transferTotal & 0xf00) >> 8);
+                         ISO15765_TPCI_FF | (uint8)((txRuntime->transferTotal & 0xf00) >> 8);
                 txRuntime->canFrameBuffer.data[txRuntime->canFrameBuffer.byteCount++] =
-                        (uint8)(txRuntime->transferTotal & 0xff);
+                         (uint8)(txRuntime->transferTotal & 0xff);
+
                 // setup block size so that state machine waits for flow control after first frame
                 txRuntime->iso15765.nextFlowControlCount = 1;
                 txRuntime->iso15765.BS = 1;
@@ -1212,6 +1339,7 @@ void CanTp_RxIndication(PduIdType CanTpRxPduId, /** @req CANTP078 */ /** @req CA
                 else {
                     runtimeParams = &CanTpRunTimeData.runtimeDataList[rxConfigParams->CanTpRxChannel].SimplexChnlList[CANTP_RX_CHANNEL];  /** @req CANTP096 *//** @req CANTP121 *//** @req CANTP122 *//** @req CANTP190 */
                 }
+                runtimeParams->CanfdSupport = CanTp_ConfigPtr->CanTpNSduList[CanTpRxNSduId].CanTpFDSupport;
             }  else {
                 //Invalid Frame received
                 /*lint -e{904} Return statement is necessary to avoid multiple if loops (limit cyclomatic complexity) and hence increase readability*/
@@ -1363,7 +1491,7 @@ void getBuffSingleFrame(const CanTp_RxNSduType *rxConfigListItem, CanTp_SimplexC
     }
     else
     {
-    	/* Do nothing */
+        /* Do nothing */
     }
 
     return;

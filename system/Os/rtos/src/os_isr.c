@@ -275,6 +275,20 @@ ISRType Os_IsrAdd( const OsIsrConstType * isrPtr ) {
     return id;
 }
 
+void Os_IsrRemove( sint16 vector, sint16 type, uint8 priority, ApplicationType app ) {
+#if defined(CFG_TC2XX) || defined(CFG_TC3XX)
+    /* Not suppored yet */
+#else
+    (void)app;
+    (void)type;
+    (void)priority;
+
+    Os_VectorToIsr[vector + IRQ_INTERRUPT_OFFSET ] = VECTOR_ILL;
+#endif
+}
+
+
+
 /*
  * Resources:
  *   Irq_VectorTable[]
@@ -350,8 +364,8 @@ ApplicationType Os_IsrGetApplicationOwner( ISRType id ) {
 static boolean Os_IsIsrStackmarkOk( void  )
 {
     boolean rv = FALSE;
-    uint8 *top = Os_IsrStack[GetCoreID()];
-    uint8 *bottom = top + sizeof(Os_IsrStack[GetCoreID()]);
+    const uint8 *top = Os_IsrStack[GetCoreID()];
+    const uint8 *bottom = top + sizeof(Os_IsrStack[GetCoreID()]);     /*lint !e9016 MISRA:PERFORMANCE:Calculation size:[MISRA 2012 Rule 18.4, advisory] */
 
     if( ( *top == STACK_PATTERN ) && ( *(bottom - 1UL) == STACK_PATTERN ) ) {
         rv = TRUE;
@@ -491,10 +505,13 @@ void *Os_Isr( void *stack, uint16 isrTableIndex)
             }
 
             aP->nestCnt++;
+            OS_SYS_PTR->currApplId = aP->appId;
             Os_ArchCallIsrEntry(aP,isrPtr->constPtr->entry,paP);
             Os_AppIsrStackPerformCheck( isrPtr->constPtr->appOwner );
             aP->nestCnt--;
         } else {
+
+            OS_SYS_PTR->currApplId = aP->appId;
             Irq_Enable();
             isrPtr->constPtr->entry();
             Os_IsrStackPerformCheck();
@@ -555,6 +572,7 @@ void *Os_Isr( void *stack, uint16 isrTableIndex)
         {
             /* Just bring the preempted task back to running */
             OS_SYS_PTR->currTaskPtr->state = ST_RUNNING;
+            OS_SYS_PTR->currApplId = new_pcb->constPtr->applOwnerId;
             PRETASKHOOK();
 #if (OS_SC3==STD_ON) || (OS_SC4==STD_ON)
             // Set MPU memory regions for the resuming application
@@ -584,6 +602,7 @@ void *Os_Isr( void *stack, uint16 isrTableIndex)
 #endif
         /* Restore current running ISR from stack */
         OS_SYS_PTR->currIsrPtr = oldIsrPtr;
+        OS_SYS_PTR->currApplId = oldIsrPtr->constPtr->appOwner;
     }
 
     return stack;

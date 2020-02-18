@@ -36,7 +36,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#if defined(CFG_ZYNQ) || defined(CFG_JAC6)
+#if defined(CFG_ZYNQ) || defined(CFG_JAC6) || defined(CFG_S32K148)
 #define BYTE_ORDER LITTLE_ENDIAN
 #else
 #define BYTE_ORDER BIG_ENDIAN

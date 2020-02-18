@@ -171,8 +171,6 @@ void FrIf_Internal_HandleDecoupledTransmission(uint8 frIfIdx,PduIdType frLPduIdx
                 || (TRUE == pduInFramePtr->FrIf_Pdu->FrIf_PduDirectionPtr->FrIf_TxPduPtr->FrIf_NoneMode));
 
         if (TRUE == resFlag) {
-
-            pduSts = PDU_UPDATED;                 /* mark this Pdu as updated */
             /* Start trigger transmit process */
             if ((txPduCfgPtr->FrIf_UserTriggerTransmitHandle != FRIF_NO_FUNCTION_CALLOUT) &&
                     (NULL_PTR != FrIf_ConfigCachePtr->FrIf_TriggerTransmitFncs[txPduCfgPtr->FrIf_UserTriggerTransmitHandle]))
@@ -193,6 +191,8 @@ void FrIf_Internal_HandleDecoupledTransmission(uint8 frIfIdx,PduIdType frLPduIdx
                     }
                 }
 #endif
+                /* mark this Pdu as updated */
+                pduSts = PDU_UPDATED;
                 /* Set update bit if configured for this PDU */
                 markUB(pduUBOffset, PDU_UPDATED, tempBuffPtr);
             }

@@ -41,11 +41,20 @@ cxxflags-y += -DCXX_INFO=$(CXX_INFO)
 # Compiler
 # CCFLAGS - compile flags
 
+ifeq ($(CFG_BULLSEYE),y)
+# Note!, trailing space after "-i"
+CC_PRE=$(COV_BULLSEYE_PATH)/bin/covc -i 
+# Do sanity check...
+# COV_BULLSEYE_REQ_VERSION
+# $(error $(shell cat $(COV_BULLSEYE_PATH)/include/BullseyeCoverage.h)) 
+# $(error adad)
+endif
+ 
 ifeq ($(CLANG_COMPILE),)
 CC	=	$(CROSS_COMPILE)gcc
 CXX =   $(CROSS_COMPILE)g++
 ifeq ($(CFG_BULLSEYE),y)
-CC	= 	$(DEVTOOLSDIR)$(BULLSEYEPATH)/bin/covc -i $(CROSS_COMPILE)gcc
+CC = $(CROSS_COMPILE)gcc
 endif
 else 
 CC	= 	$(CROSS_COMPILE)$(CLANG_COMPILE)/clang

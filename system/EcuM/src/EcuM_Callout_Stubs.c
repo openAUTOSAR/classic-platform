@@ -73,6 +73,9 @@
 #if defined(USE_SOAD)
 #include "SoAd.h"
 #endif
+#if defined(USE_DOIP)
+#include "DoIP.h"
+#endif
 #if defined(USE_LDCOM)
 #include "LdCom.h"
 #endif
@@ -363,6 +366,7 @@ void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
 
 #if defined(USE_BSWM)
 	// Setup BSWM
+    /* @req SWS_EcuMf_00016 */
 	BswM_Init(ConfigPtr->PostBuildConfig->BswMConfigPtr);
 #endif
 
@@ -489,6 +493,9 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 #endif
 #if defined(USE_SOAD)
     NO_DRIVER(SoAd_Init(ConfigPtr->SoAdConfigPtr)); // Setup Socket Adaptor
+#endif
+#if defined(USE_DOIP)
+    NO_DRIVER(DoIP_Init(ConfigPtr->DoIPConfigPtr)); // Setup DoIP
 #endif
 #if defined(USE_SD)
     NO_DRIVER(Sd_Init(ConfigPtr->SdConfigPtr)); // Setup Service Discovery

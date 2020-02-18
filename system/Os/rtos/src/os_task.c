@@ -186,10 +186,8 @@ void Os_TaskPost( void ) {
 
     /* We must manipulate OS structures so swap to privileged mode for SC3 and SC4 alone*/
 #if ((OS_SC3 == STD_ON) || (OS_SC4 == STD_ON))
-#if defined(CFG_PPC)
+#if defined(CFG_PPC) || defined(CFG_TMS570)
     OS_TRAP_Os_SetPrivilegedMode();
-#elif defined(CFG_PPC)
-    Os_ArchToPrivilegedMode();
 #elif defined(CFG_TC2XX)
     uint32 pcxi = Os_GetCurrentPcxi();
     Os_ArchToPrivilegedMode(pcxi);
@@ -841,7 +839,7 @@ StatusType GetTaskState(TaskType TaskId, TaskStateRefType State) {
     OS_VALIDATE_STD_2( (State != NULL_PTR), E_OS_PARAM_POINTER ,
     		           OSServiceId_GetTaskState,TaskId, State);   /* @req SWS_Os_00566 */
 #if (OS_SC3==STD_ON) || (OS_SC4==STD_ON)
-    OS_VALIDATE_STD_2( (OS_VALIDATE_ADDRESS_RANGE(State) != E_OS_ILLEGAL_ADDRESS) , E_OS_ILLEGAL_ADDRESS ,
+    OS_VALIDATE_STD_2( (OS_VALIDATE_ADDRESS_RANGE(State,sizeof(TaskStateType)) == TRUE ) , E_OS_ILLEGAL_ADDRESS ,
     		           OSServiceId_GetTaskState,TaskId, State);/*@req SWS_Os_00051 */
 #endif
 
@@ -904,7 +902,7 @@ StatusType GetTaskID( TaskRefType TaskID ) {
     OS_VALIDATE_STD_1( (TaskID != NULL_PTR), E_OS_PARAM_POINTER ,
     		           OSServiceId_GetTaskID,TaskID);   /* @req SWS_Os_00566 */
 #if (OS_SC3==STD_ON) || (OS_SC4==STD_ON)
-    OS_VALIDATE_STD_1( (OS_VALIDATE_ADDRESS_RANGE(TaskID) != E_OS_ILLEGAL_ADDRESS) , E_OS_ILLEGAL_ADDRESS ,
+    OS_VALIDATE_STD_1( (OS_VALIDATE_ADDRESS_RANGE(TaskID, sizeof(TaskType)) == TRUE) , E_OS_ILLEGAL_ADDRESS ,
     		           OSServiceId_GetTaskID,TaskID);/*@req SWS_Os_00051 */
 #endif
 

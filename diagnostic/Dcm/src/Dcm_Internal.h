@@ -110,8 +110,6 @@
 #define DCM_E_FORCE_RCRRP ((Dcm_NegativeResponseCodeType)0x01)/* Not an actual response code. Used internally */
 
 #define DID_IS_IN_DYNAMIC_RANGE(_x) (((_x) >= 0xF200) && ((_x) <= 0xF3FF))
-#define DID_IS_IN_ASR_WRITE_RANGE(_x)   (((_x) >= 0x00FF) && ((_x) <= 0xF1FF))
-#define DID_IS_IN_SYS_SUPPLIER_SPECIFIC_RANGE(_x)   (((_x) >= 0xFD00) && ((_x) <= 0xFDFF))
 
 typedef enum {
     DSD_TX_RESPONSE_READY,

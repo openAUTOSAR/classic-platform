@@ -44,6 +44,9 @@
 #if PDUR_SOAD_SUPPORT == STD_ON
 #include "SoAd.h"
 #endif
+#if PDUR_DOIP_SUPPORT == STD_ON
+#include "DoIP.h"
+#endif
 #if PDUR_J1939TP_SUPPORT == STD_ON
 #include "J1939Tp.h"
 #endif
@@ -118,6 +121,16 @@ PduRRouteStatusType PduR_ARC_RouteTransmit(const PduRDestPdu_type * destination,
             case ARC_PDUR_SOADTP:
 #if PDUR_SOAD_SUPPORT == STD_ON
                 retVal = SoAd_TpTransmit(destination->DestPduId, pduInfo);
+#endif
+                break;
+            case ARC_PDUR_DOIPIF:
+#if PDUR_DOIP_SUPPORT == STD_ON
+                retVal = DoIP_IfTransmit(destination->DestPduId, pduInfo);
+#endif
+                break;
+            case ARC_PDUR_DOIPTP:
+#if PDUR_DOIP_SUPPORT == STD_ON
+                retVal = DoIP_TpTransmit(destination->DestPduId, pduInfo);
 #endif
                 break;
             case ARC_PDUR_J1939TP:

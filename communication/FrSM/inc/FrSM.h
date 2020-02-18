@@ -60,6 +60,9 @@
 /* @req FrSm121 */
 #include "FrSM_Cfg.h"
 
+ /* Publish the configuration */
+extern const FrSM_ConfigType FrSMConfigData;
+
 /* @req FrSm120 */
 /** FrSM.h shall export the API of the FrSM module */
 /** Init function for FrSM */

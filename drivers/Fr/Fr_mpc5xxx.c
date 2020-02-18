@@ -26,15 +26,13 @@
 #include "Det.h"
 #endif
 
-//#include "ip_flexray.h"
 #include "mpc55xx.h"
 #include "timer.h"
 #include <assert.h>
 #include <string.h>
-//#include "mpc5744P.h"
 #include "debug.h"
 
-//#define _FR_DEBUG_INIT_
+// #define _FR_DEBUG_INIT_
 
 #if defined(_FR_DEBUG_INIT_)
 #define _debug_init_(...) printf (__VA_ARGS__);
@@ -93,6 +91,9 @@
 #else
 #define DEM_REPORT(_eventId, _status)
 #endif
+
+
+#define ALIGN8(_x)          ((((_x) + 8ul - 1ul) / 8ul) * 8ul)
 
 
 #define _LOW16(_x)   ((_x) & 0xfffful)
@@ -310,7 +311,7 @@ static Std_ReturnType PCRInit( const Fr_ContainerType *Fr_Cfg, struct FR_tag *hw
     DIAG_SET(  hwPtr->PCR10.B.MACRO_PER_CYCLE , cCfg->FrClusterGMacroPerCycle);
     _debug_init_("MACRO_PER_CYCLE=%d\n",hwPtr->PCR10.B.MACRO_PER_CYCLE);
     DIAG_SET(  hwPtr->PCR10.B.SINGLE_SLOT_ENABLED , paramPtr->FrPKeySlotOnlyEnabled);   /* Maps to pSingleSlotEnabled */
-    DIAG_SET(  hwPtr->PCR10.B.WAKEUP_CHANNEL , paramPtr->FrPWakeupChannel);
+    DIAG_SET(  hwPtr->PCR10.B.WAKEUP_CHANNEL , (int)paramPtr->FrPWakeupChannel);
 
     /** PCR[11] */
     DIAG_SET(  hwPtr->PCR11.B.OFFSET_CORRECTION_START , paramPtr->FrPOffsetCorrectionStart);    /* Named gOffsetCorrectionStart in FlexRay 3.0  */
@@ -492,7 +493,7 @@ Std_ReturnType Fr_Internal_SetupRxTxResources(const Fr_ContainerType *Fr_Cfg, ui
 
         /* @req SWS_Fr_00598 */
         if (pcrInitRv == E_OK) {
-            DEM_REPORT(Fr_Cfg->Fr_ConfigPtr->FrCtrlParam[Fr_CtrlIdx].FrDemEventParamRef, DEM_EVENT_STATUS_PASSED);
+            DEM_REPORT(Fr_Cfg->Fr_ConfigPtr->FrCtrlParam[cIdx].FrDemEventParamRef, DEM_EVENT_STATUS_PASSED);
             break;
         } else {
             ccErrCnt++;
@@ -501,7 +502,7 @@ Std_ReturnType Fr_Internal_SetupRxTxResources(const Fr_ContainerType *Fr_Cfg, ui
 
     /* @req SWS_Fr_00147 */
     if (ccErrCnt == FR_CTRL_TEST_COUNT) {
-        DEM_REPORT(Fr_Cfg->Fr_ConfigPtr->FrCtrlParam[Fr_CtrlIdx].FrDemEventParamRef, DEM_EVENT_STATUS_FAILED);
+        DEM_REPORT(Fr_Cfg->Fr_ConfigPtr->FrCtrlParam[cIdx].FrDemEventParamRef, DEM_EVENT_STATUS_FAILED);
         return E_NOT_OK;
     }
 #endif
@@ -539,12 +540,14 @@ Std_ReturnType Fr_Internal_SetupRxTxResources(const Fr_ContainerType *Fr_Cfg, ui
     /* precalc some values */
 
     uint32 baseAddr = ( (((uint32)hwPtr->SYSBADHR.R)<<16) + ((uint32)hwPtr->SYSBADLR.R) );
-    uint32 sAddr =  ((trigCfg->FrNbrTrigConfiged + SHADOW_BUFFER_CNT) * 8u);   /* Total number of headers  */
-    uint32 offsetSeg1 = (clCfg->FrClusterGPayloadLengthStatic * (trigCfg->FrNbrTrigStatic + SHADOW_BUFFER_CNT/2u) * 2u );
+    uint32 hdrSize =  ((trigCfg->FrNbrTrigConfiged + SHADOW_BUFFER_CNT) * 8u);   /* Total number of headers  */
+    uint32 seg1Size = (clCfg->FrClusterGPayloadLengthStatic * (trigCfg->FrNbrTrigStatic) * 2u );
+    uint32 seg2Size = (ALIGN8(paramPtr->FrPPayloadLengthDynMax) * (trigCfg->FrNbrTrigConfiged - trigCfg->FrNbrTrigStatic) * 2u );
 
     _debug_init_("baseaddr  =0x%08x\n",baseAddr);
-    _debug_init_("sAddr     =0x%08x\n",sAddr);
-    _debug_init_("offsetSeg1=0x%08x\n",offsetSeg1);
+    _debug_init_("hdrSize   =0x%08x\n",hdrSize);
+    _debug_init_("seg1Size  =0x%08x\n",seg1Size);
+    _debug_init_("seg2Size  =0x%08x\n",seg2Size);
 
 
     for (n = 0; n < trigCfg->FrNbrTrigConfiged; n++) {
@@ -629,7 +632,7 @@ Std_ReturnType Fr_Internal_SetupRxTxResources(const Fr_ContainerType *Fr_Cfg, ui
         uint32 offset;
 
         /* Calc payload addresses
-         * After the headers (sAddr) we have the payloads. Lets allocate static
+         * After the headers (hdrSize) we have the payloads. Lets allocate static
          * buffers in one segment and dynamic in a section after that.
          *
          *  Headers
@@ -638,14 +641,16 @@ Std_ReturnType Fr_Internal_SetupRxTxResources(const Fr_ContainerType *Fr_Cfg, ui
          *  Dynamic Payloads
          * */
         if (isStatic) {
-            offset = sAddr + (clCfg->FrClusterGPayloadLengthStatic * staticCnt * 2u);
+            /* Static (SEG1) starts after the headers */
+            offset = hdrSize + (clCfg->FrClusterGPayloadLengthStatic * staticCnt * 2u);
             staticCnt++;
 
             _debug_init_("  Static\n");
         } else {
-            offset = sAddr +
-                    offsetSeg1 +
-                    (paramPtr->FrPPayloadLengthDynMax * 2u * dynamicCnt );
+            /* Dynamic (SEG2) starts after SEG1 */
+            offset = hdrSize +
+                    seg1Size +
+                    (ALIGN8(paramPtr->FrPPayloadLengthDynMax) * dynamicCnt  * 2u );
 
             dynamicCnt++;
             _debug_init_("  Dynamic\n");
@@ -665,11 +670,25 @@ Std_ReturnType Fr_Internal_SetupRxTxResources(const Fr_ContainerType *Fr_Cfg, ui
         {
             uint32 crc;
             MB_HEADER_t *hPtr;
+            hPtr = getHeader(hwPtr,n);
 
+            if (trigElem->FrTrigPayloadPreamble == true){
+                hPtr->FRAME_HEADER.B.PPI = 1;
+            }else{
+                hPtr->FRAME_HEADER.B.PPI = 0;
+            }
             if( isStatic ) {
                 /* Calculate header from configuration... not on the header itself */
                 crc = getHeaderCrc(Fr_Cfg,cIdx, n, 0u );    /* Length "0u" is don't care here since it's static */
-                hPtr = getHeader(hwPtr,n);
+
+                hPtr->FRAME_HEADER.B.HDCRC = crc;
+                _debug_init_("  Header: Addr=0x%08x, CRC=0x%08x\n",(uint32)hPtr,crc);
+
+            }
+            else{ /*if dynamic frame*/
+                /* Calculate header from configuration... not on the header itself */
+                crc = getHeaderCrc(Fr_Cfg,cIdx, n, (trigElem->FrTrigLSduLength) );
+
                 hPtr->FRAME_HEADER.B.HDCRC = crc;
                 _debug_init_("  Header: Addr=0x%08x, CRC=0x%08x\n",(uint32)hPtr,crc);
             }
@@ -695,22 +714,39 @@ Std_ReturnType Fr_Internal_SetupRxTxResources(const Fr_ContainerType *Fr_Cfg, ui
     Fr_Info.staticSlots = staticCnt;
     Fr_Info.dynamicSlots= dynamicCnt;
 
-    /* Shadow Buffers */
-    hwPtr->RSBIR.R = (0u << (15u-3u)) | (headerIndex << (15u-3u)) ;/* A, Seg 1 - SEL */
-    hwPtr->MBDOR[headerIndex].B.MBDO = sAddr + (clCfg->FrClusterGPayloadLengthStatic * staticCnt * 2u);
+    /* Shadow Buffers
+     *
+     * Allocate the shadow buffers after headers and SEG1 and SEG2 buffers
+     *
+     * */
+    uint32 sdataBuff  =   hdrSize + seg1Size + seg2Size;
+
+    hwPtr->RSBIR.R = (0u << (15u-3u)) | (headerIndex) ;/* A, Seg 1 - SEL */
+    hwPtr->MBDOR[headerIndex].B.MBDO = sdataBuff;
+    trigCfg->FrMsgBufferCfg[headerIndex].FrDataPartitionAddr = baseAddr + sdataBuff;
+    _debug_init_("Shadow A Seg1  MBDO=0x%08x, Index=%d\n",hwPtr->MBDOR[headerIndex].B.MBDO,headerIndex );
     headerIndex++;
+    sdataBuff += (clCfg->FrClusterGPayloadLengthStatic * 2u);
 
-    hwPtr->RSBIR.R = (1u << (15u-3u)) | (headerIndex << (15u-3u)) ;/* A, Seg 2 - SEL */
-    hwPtr->MBDOR[headerIndex].B.MBDO = sAddr + offsetSeg1 + (paramPtr->FrPPayloadLengthDynMax * 2u * dynamicCnt );
+    hwPtr->RSBIR.R = (2u << (15u-3u)) | (headerIndex) ;/* B, Seg 1 - SEL */
+    hwPtr->MBDOR[headerIndex].B.MBDO = sdataBuff;
+    trigCfg->FrMsgBufferCfg[headerIndex].FrDataPartitionAddr = baseAddr + sdataBuff;
+    _debug_init_("Shadow B Seg1  MBDO=0x%08x, Index=%d\n",hwPtr->MBDOR[headerIndex].B.MBDO,headerIndex );
     headerIndex++;
+    sdataBuff += (clCfg->FrClusterGPayloadLengthStatic * 2u);
 
-    hwPtr->RSBIR.R = (2u << (15u-3u)) | (headerIndex << (15u-3u)) ;/* B, Seg 1 - SEL */
-    hwPtr->MBDOR[headerIndex].B.MBDO = sAddr + (clCfg->FrClusterGPayloadLengthStatic * (staticCnt+1) * 2u);
+
+    hwPtr->RSBIR.R = (1u << (15u-3u)) | (headerIndex) ;/* A, Seg 2 - SEL */
+    hwPtr->MBDOR[headerIndex].B.MBDO = sdataBuff;
+    trigCfg->FrMsgBufferCfg[headerIndex].FrDataPartitionAddr = baseAddr + sdataBuff;
+    _debug_init_("Shadow A Seg2  MBDO=0x%08x, Index=%d\n",hwPtr->MBDOR[headerIndex].B.MBDO,headerIndex );
     headerIndex++;
+    sdataBuff += (ALIGN8(paramPtr->FrPPayloadLengthDynMax) * 2u);
 
-    hwPtr->RSBIR.R = (3u << (15u-3u)) | (headerIndex << (15u-3u)) ;/* B, Seg 2 - SEL */
-    hwPtr->MBDOR[headerIndex].B.MBDO = sAddr + offsetSeg1 + (paramPtr->FrPPayloadLengthDynMax * 2u * (dynamicCnt+1) );
-
+    hwPtr->RSBIR.R = (3u << (15u-3u)) | (headerIndex) ;/* B, Seg 2 - SEL */
+    hwPtr->MBDOR[headerIndex].B.MBDO = sdataBuff;
+    trigCfg->FrMsgBufferCfg[headerIndex].FrDataPartitionAddr = baseAddr + sdataBuff;
+    _debug_init_("Shadow B Seg2  MBDO=0x%08x, Index=%d\n",hwPtr->MBDOR[headerIndex].B.MBDO,headerIndex );
 
 
     /* 2d) FIFO.... we don't use them */
@@ -925,7 +961,7 @@ Std_ReturnType Fr_Internal_SetCtrlChiCmd(const Fr_ContainerType *Fr_Cfg, uint8 c
         /* @req SWS_Fr_00190, Fr_AbortCommunication */
         /* @req SWS_Fr_00195, Fr_SendWUP  */
         /* @req SWS_Fr_00201, Fr_SetWakeupChannel*/
-        DEM_REPORT(Fr_Cfg->Fr_ConfigPtr->FrCtrlParam[Fr_CtrlIdx].FrDemEventParamRef, DEM_EVENT_STATUS_FAILED);
+        DEM_REPORT(Fr_Cfg->Fr_ConfigPtr->FrCtrlParam[cIdx].FrDemEventParamRef, DEM_EVENT_STATUS_FAILED);
         retval = E_NOT_OK;
 
         Fr_HwReg[cIdx]->PIFR1.B.IPCIF = 1u;     /* Clear error */
@@ -1150,7 +1186,7 @@ Std_ReturnType Fr_Internal_GetChiPocState(const Fr_ContainerType *Fr_Cfg, uint8 
     };
 
     if ( slotMode > 2u) {
-        DEM_REPORT(Fr_Cfg->Fr_ConfigPtr->FrCtrlParam[Fr_CtrlIdx].FrDemEventParamRef, DEM_EVENT_STATUS_FAILED);
+        DEM_REPORT(Fr_Cfg->Fr_ConfigPtr->FrCtrlParam[cIdx].FrDemEventParamRef, DEM_EVENT_STATUS_FAILED);
         return E_NOT_OK;
     }
 
@@ -1161,7 +1197,7 @@ Std_ReturnType Fr_Internal_GetChiPocState(const Fr_ContainerType *Fr_Cfg, uint8 
                                               FR_ERRORMODE_COMM_HALT };
 
     if ( errMode > 2u) {
-        DEM_REPORT(Fr_Cfg->Fr_ConfigPtr->FrCtrlParam[Fr_CtrlIdx].FrDemEventParamRef, DEM_EVENT_STATUS_FAILED);
+        DEM_REPORT(Fr_Cfg->Fr_ConfigPtr->FrCtrlParam[cIdx].FrDemEventParamRef, DEM_EVENT_STATUS_FAILED);
         return E_NOT_OK;
     }
 
@@ -1226,6 +1262,8 @@ Std_ReturnType Fr_Internal_SetTxData(const Fr_ContainerType *Fr_Cfg, uint8 cIdx,
     struct FR_tag *hwPtr = Fr_HwReg[cIdx];
     volatile MSG_BUFF_CCS_t *mbPtr = &hwPtr->MBCCS[msgBufIdx];
     uint8 *payloadPtr;
+    uint16 data;
+    Std_ReturnType rv = E_OK;
 
     /*
      * Write header and payload data. This is heavily inspired by Freescale unified driver as
@@ -1233,7 +1271,10 @@ Std_ReturnType Fr_Internal_SetTxData(const Fr_ContainerType *Fr_Cfg, uint8 cIdx,
      */
 
     /* Lock MB */
-    mbPtr->MBCCSR.B.LCKT = 1u;
+    data = mbPtr->MBCCSR.R;
+    data |= (1u<<(15u-6u));       // LCKT = 1
+    data &= ~(1u<<(15u-5u));      // EVB = 0;
+    mbPtr->MBCCSR.R = data;
 
     /* Read and check if we got lock */
     if( mbPtr->MBCCSR.B.LCKS ) {
@@ -1291,10 +1332,10 @@ Std_ReturnType Fr_Internal_SetTxData(const Fr_ContainerType *Fr_Cfg, uint8 cIdx,
 
     } else {
         /* No lock on the buffer */
-        assert(0);
+        rv = E_NOT_OK;
     }
 
-    return E_OK;
+    return rv;
 }
 
 /**
@@ -1336,26 +1377,90 @@ Std_ReturnType Fr_Internal_CheckNewData(const Fr_ContainerType *Fr_Cfg, uint8 cI
  * @param msgBufferIdx
  * @param Fr_LSduLengthPtr
  * @return
+ * See header file.
  */
 Std_ReturnType Fr_Internal_GetNewData(  const Fr_ContainerType *Fr_Cfg, uint8 cIdx, uint32 trigIdx, uint16 msgBufIdx,
                                         uint8* Fr_LSduPtr, uint8* Fr_LSduLengthPtr) {
 
     struct FR_tag *hwPtr = Fr_HwReg[cIdx];
     const Fr_FrIfCCTriggeringType *trigCfg = &Fr_Cfg->Fr_ConfigPtr->FrTrigConfig[cIdx];
-//    volatile MSG_BUFF_CCS_t *mbPtr = &hwPtr->MBCCS[msgBufIdx];
+    volatile MSG_BUFF_CCS_t *mbPtr = &hwPtr->MBCCS[msgBufIdx];
     MB_HEADER_t *hPtr;
+    uint16 newIndex;
     uint8 *payloadPtr;
+    uint8 chIdx;
 
-    hPtr = getHeader(hwPtr,msgBufIdx);
-    *Fr_LSduLengthPtr = (hPtr->FRAME_HEADER.B.PLDLEN<<1u);
+    /* The natural way would be to read the header directly, however from the RM
+     * regarding shadow buffers:
+     *
+     * "This means that the message buffer area in the FlexRay memory area
+     * accessed by the application for reading the received message is different
+     * from the initial setting of the message buffer. Therefore, the application
+     * must not rely on the index information written initially into the Message
+     * Buffer Index Registers (FR_MBIDXRn). Instead, the index of the message
+     * buffer header field must be fetched from the Message Buffer Index
+     * Registers (FR_MBIDXRn)."
+     *
+     * --> Status is held in the HW message boxes, get header and payload from index.
+     */
 
-//    const Fr_FrIfClusterConfigType *clCfg = &Fr_Cfg->Fr_ConfigPtr->FrClusterConfig[cIdx];
+    /* Check that it's updated */
+    if( (mbPtr->MBCCSR.B.DUP == 1u)  && (mbPtr->MBCCSR.B.MBIF == 1u) ) {
 
-    payloadPtr = getPayload(trigCfg,msgBufIdx);
+        /* Lock request */
+        mbPtr->MBCCSR.B.LCKT = 1u;
 
-    /* IMPROVEMENT: lots of checks.... */
+        /* Check that we actually locked it
+         * (Contradictions?!:  "Received Message Access" state that
+         *   receive message buffers must be in state HDis, HDisLck and HLck..
+         *   but on the other hand table "Receive Message Buffer States and Accesses"
+         *   states that is should be read in HLckCCRx )
+         * */
+        if( mbPtr->MBCCSR.B.LCKS == 1u ) {
 
-    memcpy(Fr_LSduPtr, payloadPtr,*Fr_LSduLengthPtr );
+            /*-- Find message header/body  --*/
+
+            /* Get the message box index first */
+            newIndex = mbPtr->MBIDXR.B.MBIDX;
+            /* Get header for that index */
+            hPtr = getHeader(hwPtr,newIndex);
+
+            *Fr_LSduLengthPtr = (hPtr->FRAME_HEADER.B.PLDLEN<<1u);
+
+            payloadPtr = getPayload(trigCfg,newIndex);
+
+            /* Copy SDU */
+            memcpy(Fr_LSduPtr, payloadPtr,*Fr_LSduLengthPtr );
+
+            /* -- Do some sanity checks (check valid frame) -- */
+
+            /* get channel assignments, CHA and CHB */
+            chIdx = (((mbPtr->MBCCFR.R & 0x6000u) >> 13u) & 0x3u);
+
+            /* Assign S_STATUS_t values in order:
+             * CHA CHB
+             *  0   0  Not valid
+             *  0   1  B
+             *  1   0  A
+             *  1   1  Both
+             */
+            const uint16 slotStatus[4u] = { 0, 0x8000u, 0x0080u, 0x8080u };
+
+            /* Check valid frame VFB (bit 0) and VFA (bit 8) */
+            /*In future include to check slot status register*/
+//          if ( (hPtr->SLOT_STATUS.R & slotStatus[chIdx]) != slotStatus[chIdx]) {
+//              while(1) {} /* : bad */
+//          }
+
+            /*Clear Interrupt flag w1c*/
+            mbPtr->MBCCSR.B.MBIF = 1u;
+            /*Unlock buffer*/
+            mbPtr->MBCCSR.B.LCKT = 1u;
+
+        }
+    }
+
+    /* IMPROVEMENT: lots of checks in the code above. */
 
     return E_OK;
 }
@@ -1380,6 +1485,7 @@ Std_ReturnType Fr_Internal_GetTxPending(const Fr_ContainerType *Fr_Cfg, uint8 cI
         *txPending = FALSE;
     }
     return E_OK;
+
 }
 
 /**
@@ -1455,6 +1561,7 @@ Std_ReturnType Fr_Internal_IsSynchronous(const Fr_ContainerType *Fr_Cfg, uint8 c
 
 /**
  * Absolute timer setup
+ *
  * @param Fr_Cfg
  * @param cIdx
  * @param Fr_AbsTimerIdx
@@ -1465,29 +1572,31 @@ Std_ReturnType Fr_Internal_IsSynchronous(const Fr_ContainerType *Fr_Cfg, uint8 c
 void Fr_Internal_SetupAbsTimer(const Fr_ContainerType *Fr_Cfg, uint8 cIdx, uint8 Fr_AbsTimerIdx, uint8 Fr_Cycle, uint16 Fr_Offset) {
     struct FR_tag *hwPtr = Fr_HwReg[cIdx];
 
-    /* We have 2 timers, set them up
-     * The have the mactotick as base */
+    /* We have 2 timers, set them up:
+     *
+     * The HW have more capabilities (CYCMSK and Repeat) than the API in this case
+     * so set the TI1CYCMSK to exact match (0x3f)
+     */
     if( Fr_AbsTimerIdx == 0U) {
         hwPtr->TICCR.B.T1SP = 1u;   /* Stop Timer */
 
-        /* IMPROVEMENT: Fr_Cycle always macrotick? */
         hwPtr->TI1CYSR.B.TI1CYCVAL = Fr_Cycle;
         hwPtr->TI1CYSR.B.TI1CYCMSK = 0x3FU;
 
-        hwPtr->TICCR.B.T1REP = 1u;  /* Set Repeat */
+        hwPtr->T1MTOR.R=Fr_Offset; /*Timer 1 Macrotic Offset*/
+        hwPtr->TICCR.B.T1REP = 0u;  /* Set Repeat */
         hwPtr->TICCR.B.T1TR = 1u;   /* Start Timer */
 
     } else if( Fr_AbsTimerIdx == 1U) {
 
         hwPtr->TICCR.B.T2SP = 1u;   /* Stop Timer */
 
-        /* IMPROVEMENT: Cycle here in what? Mask ok? */
         hwPtr->TI2CR0.B.TI2CYCVAL = Fr_Cycle;
         hwPtr->TI2CR0.B.TI2CYCMSK = 0x3FU;
 
-        hwPtr->TI2CR1.R = 0UL;  /* IMPROVEMENT, some offset not in timer1 ?? */
+        hwPtr->TI2CR1.R = Fr_Offset;  /* IMPROVEMENT, some offset not in timer1 ?? */
 
-        hwPtr->TICCR.B.T2REP = 1u;  /* Set Repeat */
+        hwPtr->TICCR.B.T2REP = 0u;  /* Set Repeat */
         hwPtr->TICCR.B.T2TR = 1u;   /* Start Timer */
     } else {
         assert(0);
@@ -1532,7 +1641,7 @@ boolean Fr_Internal_GetAbsTimerIrqStatus(const Fr_ContainerType *Fr_Cfg, uint8 c
          if( hwPtr->PIFR0.B.TI1IF ) {
              rv = TRUE;
          }
-     } else if (Fr_AbsTimerIdx == 0U) {
+     } else if (Fr_AbsTimerIdx == 1U) {
          if( hwPtr->PIFR0.B.TI2IF  ) {
              rv = TRUE;
          }
@@ -1551,22 +1660,21 @@ boolean Fr_Internal_GetAbsTimerIrqStatus(const Fr_ContainerType *Fr_Cfg, uint8 c
  * @param cIdx
  * @param Fr_AbsTimerIdx
  */
-void Fr_Internal_ResetAbsTimerIsrFlag(const Fr_ContainerType *Fr_Cfg, uint8 cIdx, uint8 Fr_AbsTimerIdx) {
+void Fr_Internal_ResetAbsTimerIsrFlag(const Fr_ContainerType *Fr_Cfg,
+        uint8 cIdx, uint8 Fr_AbsTimerIdx) {
 
     struct FR_tag *hwPtr = Fr_HwReg[cIdx];
 
-    if( Fr_AbsTimerIdx == 0U) {
-         hwPtr->PIFR0.B.TI1IF = 1u;
+    if (Fr_AbsTimerIdx == 0U) {
+        hwPtr->PIFR0.B.TI1IF = 1u;
+        while (hwPtr->PIFR0.B.TI1IF == 1u) {};
 
-         if( hwPtr->PIFR0.B.TI1IF == 1u ) {
-             while( 1 ) {};
-         }
-
-     } else if (Fr_AbsTimerIdx == 0U) {
-         hwPtr->PIFR0.B.TI2IF = 1u;
-     } else {
-         assert(0);
-     }
+    } else if (Fr_AbsTimerIdx == 1U) {
+        hwPtr->PIFR0.B.TI2IF = 1u;
+        while (hwPtr->PIFR0.B.TI2IF == 1u) {};
+    } else {
+        assert(0);
+    }
 }
 
 /**
@@ -1581,7 +1689,7 @@ void Fr_Internal_DisableAbsTimerIrq(const Fr_ContainerType *Fr_Cfg, uint8 cIdx, 
 
     if( Fr_AbsTimerIdx == 0U) {
         hwPtr->PIER0.B.TI1IE = 0u;
-    } else if (Fr_AbsTimerIdx == 0U) {
+    } else if (Fr_AbsTimerIdx == 1U) {
         hwPtr->PIER0.B.TI2IE = 0u;
     } else {
         assert(0);
@@ -1600,7 +1708,7 @@ void Fr_Internal_EnableAbsTimerIrq(const Fr_ContainerType *Fr_Cfg, uint8 cIdx, u
 
     if( Fr_AbsTimerIdx == 0U) {
         hwPtr->PIER0.B.TI1IE = 1u;
-    } else if (Fr_AbsTimerIdx == 0U) {
+    } else if (Fr_AbsTimerIdx == 1U) {
         hwPtr->PIER0.B.TI2IE = 1u;
     } else {
         assert(0);
@@ -1627,29 +1735,6 @@ static inline void Fr_Internal_reportDem(Dem_EventIdType eventId, Dem_EventStatu
 }
 #endif
 
-
-#if defined(CFG_SHELL)
-static int shellCmdTop(int argc, char *argv[] );
-
-static ShellCmdT FrCmdInfo = {
-    shellCmdTop,
-    0,1,
-    "fr_info",
-    "fr_info",
-    "List flexray info\n",
-    {   NULL,NULL}
-};
-
-static int FrCmdInfo(int argc, char *argv[] ) {
-    char *cmd = NULL;
-    ShellCmdT *iCmd;
-
-    Fr_PrintInfo();
-
-    return 0;
-}
-
-#endif
 
 
 

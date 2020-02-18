@@ -32,8 +32,6 @@ ifneq (${MAKELEVEL},0)
 	endif
 	
 	VPATH += ..
-	inc-y += $(ROOTDIR)/system/kernel/$(objdir)
-	inc-y += $(ROOTDIR)/system/kernel/include
 	
 	# The more precise configuration, the higher preceedance.
 	VPATH := ../config/$(board_name) ../config $(VPATH)
@@ -77,7 +75,6 @@ else
       boardpath=$(realpath $(CURDIR)/../..)
       boarddir=$(subst $(realpath $(ROOTDIR)/boards)/,,$(boardpath))
     endif
-
 	
 	# Redirect to normal build
 .PHONY: all clean

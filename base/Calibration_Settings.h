@@ -12,9 +12,13 @@
  * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
  *-------------------------------- Arctic Core -----------------------------*/
 
+#ifndef CALIBRATION_SETTINGS_H_
+#define CALIBRATION_SETTINGS_H_
 
-/* These defines are overriden by rte generated file with the same name */
+/* These defines should be overridden in a project specific file with the same name if calibration data is a wanted feature */
 
 #undef CALIBRATION_INITIALIZED_RAM
 #undef CALIBRATION_ENABLED
 #undef CALIBRATION_FLS_START
+
+#endif /* CALIBRATION_SETTINGS_H_ */

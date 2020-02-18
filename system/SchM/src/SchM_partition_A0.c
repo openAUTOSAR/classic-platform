@@ -100,7 +100,7 @@ void SchM_GetVersionInfo( Std_VersionInfoType *versionInfo ) {
 /* @req ARC_SWS_SchM_00011 The service EcuM mainfunctions shall not be called from tasks which may invoke runnable entities. */
 TASK(SchM_Partition_A0) {
     EcuM_StateType state;
-    EventMaskType Event;
+    EventMaskType Event = (EventMaskType) 255u;
     EcuM_SP_RetStatus retStatus = ECUM_SP_OK;
 
     do {
@@ -108,15 +108,11 @@ TASK(SchM_Partition_A0) {
         SYS_CALL_WaitEvent((EVENT_MASK_Alarm_BswServices_Partition_A0 | EVENT_MASK_DetReportError_QM | EVENT_MASK_SynchPartition_A0));
         SYS_CALL_GetEvent(TASK_ID_SchM_Partition_A0, &Event); /*lint !e923 MISRA:FALSE_POSITIVE:SYS_CALL:[MISRA 2012 Rule 11.1, required]*/
 
-        if ((Event & EVENT_MASK_Alarm_BswServices_Partition_A0) != 0) { /*lint !e530 MISRA:FALSE_POSITIVE:Event is initialized in SYS_CALL:[MISRA 2012 Rule 9.1, mandatory] */
-            SYS_CALL_ClearEvent(EVENT_MASK_Alarm_BswServices_Partition_A0);
-        }
-
         /* @req ARC_SWS_SchM_00005 */
         if ((Event & EVENT_MASK_DetReportError_QM) != 0) {
             SYS_CALL_ClearEvent(EVENT_MASK_DetReportError_QM);
             SCHM_MAINFUNCTION_RTM();
-        }
+        } else { /* do nothing */ }
 
         /* Synchronize with the QM partition */ /* @req ARC_SWS_SchM_00004 */
         if ((Event & EVENT_MASK_SynchPartition_A0) != 0) {
@@ -127,42 +123,45 @@ TASK(SchM_Partition_A0) {
 
             /* Therefore, we can tell EcuM, SchM is ready for next state */
             EcuM_SP_Sync_UpdateStatus(ECUM_SP_PARTITION_FUN_COMPLETED_QM);
-        }
+        } else { /* do nothing */ }
 
-        (void)EcuM_GetState(&state);
+        /* Periodic task trigger from OS Alarm  */
+        if ((Event & EVENT_MASK_Alarm_BswServices_Partition_A0) != 0) {
 
-        /* ARC_SWS_SchM_00006 The BSW scheduler shall schedule BSW modules by calling their MainFunctions */
-        switch (state) {
-            case ECUM_STATE_STARTUP_ONE:
-            case ECUM_STATE_STARTUP_TWO:
+            SYS_CALL_ClearEvent(EVENT_MASK_Alarm_BswServices_Partition_A0);
 
-                SCHM_MAINFUNCTION_ECUM_ASIL(state, retStatus);
+			(void)EcuM_GetState(&state);
 
+			/* ARC_SWS_SchM_00006 The BSW scheduler shall schedule BSW modules by calling their MainFunctions */
+			switch (state) {
+				case ECUM_STATE_STARTUP_ONE:
+				case ECUM_STATE_STARTUP_TWO:
+					SCHM_MAINFUNCTION_ECUM_ASIL(state, retStatus);
+					break;
+				default:
 
-                break;
-            default:
+						SCHM_MAINFUNCTION_ECUM_ASIL(state, retStatus);
 
-                    SCHM_MAINFUNCTION_ECUM_ASIL(state, retStatus);
-
-                    if (retStatus == ECUM_SP_PARTITION_ERR) {
+						if (retStatus == ECUM_SP_PARTITION_ERR) {
 #if defined(USE_RTM)
-                        Rtm_EntryType err;
+							Rtm_EntryType err;
 
-                        err.errorType = RTM_ERRORTYPE_BSW;
-                        err.error.bsw.moduleId = SCHM_MODULE_ID;
-                        err.error.bsw.errorId = SCHM_E_SYNCH;
+							err.errorType = RTM_ERRORTYPE_BSW;
+							err.error.bsw.moduleId = SCHM_MODULE_ID;
+							err.error.bsw.errorId = SCHM_E_SYNCH;
 
-                        Rtm_ReportFailure(&err);
+							Rtm_ReportFailure(&err);
 #endif
-                    } else {
-                        /* Do nothing (Can be used for >2 partitions) */
-                    }
+						} else {
+							/* Do nothing (Can be used for >2 partitions) */
+						}
 
-                    SCHM_MAINFUNCTION_SAFEIOHWAB();
-                    SCHM_MAINFUNCTION_RTM();
-                    SCHM_MAINFUNCTION_WDGM();
+						SCHM_MAINFUNCTION_SAFEIOHWAB();
+						SCHM_MAINFUNCTION_RTM();
+						SCHM_MAINFUNCTION_WDGM();
 
-                break;
-        }
+					break;
+			}
+        } else { /* do nothing */ }
     } while (SCHM_TASK_EXTENDED_CONDITION != 0); /*lint !e506 MISRA:STANDARDIZED_INTERFACE:Extended Task shall never terminate:[MISRA 2012 Rule 2.1, required] */
 }

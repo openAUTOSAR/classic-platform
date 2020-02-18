@@ -322,14 +322,27 @@ Std_ReturnType Com_TriggerTransmit(PduIdType TxPduId, PduInfoType *PduInfoPtr) {
     /* @req COM648 */ /* Interrups disabled */
     memcpy(PduInfoPtr->SduDataPtr, Arc_IPdu->ComIPduDataPtr, IPdu->ComIPduSize);
 
-    SchM_Exit_Com_EA_0();
-
     PduInfoPtr->SduLength = IPdu->ComIPduSize;
     if( FALSE == Arc_IPdu->Com_Arc_IpduStarted ) {
         status = E_NOT_OK;
     } else {
+
+        if (IPdu->ComTxIPdu.ComTxIPduClearUpdateBit == TRIGGERTRANSMIT) {
+            /* Clear all update bits for the contained signals*/
+            /* @req COM578 */
+            for (uint16 i = 0;(IPdu->ComIPduSignalRef != NULL)&& (IPdu->ComIPduSignalRef[i] != NULL); i++) {
+                if (TRUE == IPdu->ComIPduSignalRef[i]->ComSignalArcUseUpdateBit) {
+                    /*lint -e{9016} Array indexing couldn't be implemented, as parameters are of different data types */
+                    CLEARBIT(Arc_IPdu->ComIPduDataPtr,IPdu->ComIPduSignalRef[i]->ComUpdateBitPosition);
+                }
+            }
+        }
+
         status = E_OK;
     }
+
+    SchM_Exit_Com_EA_0();
+
     return status;
 }
 
@@ -509,6 +522,18 @@ void Com_TxConfirmation(PduIdType TxPduId) {
             Com_Misc_TxHandleDM(IPdu,Arc_IPdu);
             /* IMPROVEMENT - handle also in Com_TpTxConfirmation */
         }
+
+        /* Clear all update bits for the contained signals*/
+        /* @req COM577 */
+        if (IPdu->ComTxIPdu.ComTxIPduClearUpdateBit == CONFIRMATION) {
+            for (uint16 i = 0; (IPdu->ComIPduSignalRef != NULL) && (IPdu->ComIPduSignalRef[i] != NULL); i++) {
+                if (TRUE == IPdu->ComIPduSignalRef[i]->ComSignalArcUseUpdateBit) {
+                    /*lint -e{9016} Array indexing couldn't be implemented, as parameters are of different data types */
+                    CLEARBIT(Arc_IPdu->ComIPduDataPtr, IPdu->ComIPduSignalRef[i]->ComUpdateBitPosition);
+                }
+            }
+        }
+
         if (IPdu->ComIPduSignalProcessing == COM_IMMEDIATE) {
         /* If immediate, call the notification functions  */
         for (uint16 i = 0; IPdu->ComIPduSignalRef[i] != NULL; i++) {

@@ -245,7 +245,7 @@ StatusType GetAlarmBase( AlarmType AlarmId, AlarmBaseRefType Info ) {
     OS_VALIDATE_STD_2( (Info != NULL_PTR), E_OS_PARAM_POINTER,
                        OSServiceId_GetAlarmBase,AlarmId, Info);   /* @req SWS_Os_00566 */
 #if (OS_SC3==STD_ON) || (OS_SC4==STD_ON)
-    OS_VALIDATE_STD_2( (OS_VALIDATE_ADDRESS_RANGE(Info) != E_OS_ILLEGAL_ADDRESS) , E_OS_ILLEGAL_ADDRESS ,
+    OS_VALIDATE_STD_2( (OS_VALIDATE_ADDRESS_RANGE(Info,sizeof(AlarmBaseType)) == TRUE ) , E_OS_ILLEGAL_ADDRESS ,
     		            OSServiceId_GetAlarmBase,AlarmId, Info); /*@req SWS_Os_00051 */
 #endif
     OS_VALIDATE_STD_2( (Os_SysIntAnyDisabled() == FALSE) , E_OS_DISABLEDINT,
@@ -307,7 +307,7 @@ StatusType GetAlarm(AlarmType AlarmId, TickRefType Tick) {
     OS_VALIDATE_STD_2( (Tick != NULL_PTR), E_OS_PARAM_POINTER,
     		           OSServiceId_GetAlarm,AlarmId, Tick);   /* @req SWS_Os_00566 */
 #if (OS_SC3==STD_ON) || (OS_SC4==STD_ON)
-    OS_VALIDATE_STD_2( (OS_VALIDATE_ADDRESS_RANGE(Tick) != E_OS_ILLEGAL_ADDRESS) , E_OS_ILLEGAL_ADDRESS ,
+    OS_VALIDATE_STD_2( (OS_VALIDATE_ADDRESS_RANGE(Tick, sizeof(TickType) ) == TRUE ) , E_OS_ILLEGAL_ADDRESS ,
     		           OSServiceId_GetAlarm,AlarmId, Tick);/*@req SWS_Os_00051 */
 #endif
     OS_VALIDATE_STD_2( (Os_SysIntAnyDisabled() == FALSE) , E_OS_DISABLEDINT,

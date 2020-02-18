@@ -36,9 +36,6 @@
 #define D_EVENT						(1<<4)
 #define D_MESSAGE					(1<<5)
 
-
-#define STACK_PATTERN       0x42u        /* Pattern that the stack that unused stack space is filled with */
-
 /*
  * Configuration tree:
  * USE_OS_DEBUG               - Turn on/off all Os_DbgPrintf()
@@ -179,7 +176,7 @@ extern uint32 os_dbg_mask;
     }
 #if (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
  /*lint -emacro(923, OS_VALIDATE_ADDRESS_RANGE) MISRA:FALSE_POSITIVE:Allow any pointer type to integer type conversion used for error handling in this macro:[MISRA 2012 Rule 11.6, required]*/
-#define OS_VALIDATE_ADDRESS_RANGE(_outParam) Os_ValidateAddressRange((uint32)_outParam)
+#define OS_VALIDATE_ADDRESS_RANGE(_outParam,_size) Os_ValidAddressRange((uint32)_outParam,(uint32)_size)
 
 #endif
 #endif /*INTERNAL_H_*/

@@ -2678,11 +2678,10 @@ void DspUdsWriteDataByIdentifier(const PduInfoType *pduRxData, PduInfoType *pduT
 
     didDataLength = pduRxData->SduLength - 3;
     didNr = (uint16)((uint16)pduRxData->SduDataPtr[1] << 8) + pduRxData->SduDataPtr[2];
-    /* Check that did is in ok range. DEVIATION: ASR only allows 0x00FF-0xF1FF. */
-    if ( (DID_IS_IN_ASR_WRITE_RANGE(didNr) || DID_IS_IN_SYS_SUPPLIER_SPECIFIC_RANGE(didNr)) &&
-            lookupNonDynamicDid(didNr, &didPtr)) {	/* @req DCM467 */
+    /* Check that did is supported.*/
+    if (lookupNonDynamicDid(didNr, &didPtr)) {	/* @req DCM467 */
         responseCode = writeDidData(didPtr, pduRxData, didDataLength);/* !req DCM562 */
-    } else { /* DID not found or in invalid range */
+    } else { /* DID not supported */
         responseCode = DCM_E_REQUESTOUTOFRANGE;
     }
 
@@ -2903,8 +2902,12 @@ static Dcm_NegativeResponseCodeType DspUdsSecurityAccessCompareKeySubFnc (const 
         }
     } else {
         // sendKey request without a preceding requestSeed
+#if defined(CFG_DCM_SECURITY_ACCESS_NRC_FIX)
         /* Should this really give subFunctionNotSupported? */
         responseCode = DCM_E_SUBFUNCTIONNOTSUPPORTED;
+#else
+        responseCode = DCM_E_REQUESTSEQUENCEERROR;
+#endif
     }
 
     return responseCode;
@@ -3063,7 +3066,8 @@ static Dcm_NegativeResponseCodeType stopRoutine(const Dcm_DspRoutineType *routin
             responseCode = DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT;
         }
     } else {
-        responseCode = DCM_E_REQUESTOUTOFRANGE;
+        /* @req 4.2.2/SWS_DCM_869 */
+        responseCode = DCM_E_SUBFUNCTIONNOTSUPPORTED;
     }
 
     return responseCode;
@@ -3105,7 +3109,8 @@ static Dcm_NegativeResponseCodeType requestRoutineResults(const Dcm_DspRoutineTy
             responseCode = DCM_E_RESPONSETOOLONG;
         }
     } else {
-        responseCode = DCM_E_REQUESTOUTOFRANGE;
+        /* @req 4.2.2/SWS_DCM_869 */
+        responseCode = DCM_E_SUBFUNCTIONNOTSUPPORTED;
     }
 
     return responseCode;
@@ -3256,6 +3261,7 @@ static void DspEnableDTCSetting(void)
             if( DEM_CONTROL_DTC_STORAGE_OK != Dem_EnableDTCSetting(DspDTCSetting.dtcGroup, DspDTCSetting.dtcKind) ) {
                 DCM_DET_REPORTERROR(DCM_GLOBAL_ID, DCM_E_UNEXPECTED_RESPONSE);
             }
+            (void)Rte_Switch_DcmControlDTCSetting_DcmControlDTCSetting(RTE_MODE_DcmControlDTCSetting_ENABLEDTCSETTING);
             DspDTCSetting.settingDisabled = FALSE;
         }
     }
@@ -3263,7 +3269,6 @@ static void DspEnableDTCSetting(void)
 void DspUdsControlDtcSetting(const PduInfoType *pduRxData, PduInfoType *pduTxData)
 {
     /* @req DCM249 */
-    /* !req DCM783 */
     /* !req DCM784 */
     Dem_ReturnControlDTCStorageType resultCode;
 
@@ -3275,6 +3280,8 @@ void DspUdsControlDtcSetting(const PduInfoType *pduRxData, PduInfoType *pduTxDat
                     pduTxData->SduDataPtr[1] = 0x01;
                     pduTxData->SduLength = 2;
                     DspDTCSetting.settingDisabled = FALSE;
+                    /* @req DCM783 */
+                    (void)Rte_Switch_DcmControlDTCSetting_DcmControlDTCSetting(RTE_MODE_DcmControlDTCSetting_ENABLEDTCSETTING);
                     DsdDspProcessingDone(DCM_E_POSITIVERESPONSE);
                 } else {
                     DsdDspProcessingDone(DCM_E_REQUESTOUTOFRANGE);
@@ -3289,6 +3296,8 @@ void DspUdsControlDtcSetting(const PduInfoType *pduRxData, PduInfoType *pduTxDat
                     DspDTCSetting.settingDisabled = TRUE;
                     DspDTCSetting.dtcGroup = DEM_DTC_GROUP_ALL_DTCS;
                     DspDTCSetting.dtcKind = DEM_DTC_KIND_ALL_DTCS;
+                    /* @req DCM783 */
+                    (void)Rte_Switch_DcmControlDTCSetting_DcmControlDTCSetting(RTE_MODE_DcmControlDTCSetting_DISABLEDTCSETTING);
                     DsdDspProcessingDone(DCM_E_POSITIVERESPONSE);
                 } else {
                     DsdDspProcessingDone(DCM_E_REQUESTOUTOFRANGE);

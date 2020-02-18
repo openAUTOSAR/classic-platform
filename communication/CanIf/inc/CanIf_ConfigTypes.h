@@ -46,7 +46,9 @@ typedef enum {
 /** PDU Can id type */
 typedef enum {
   CANIF_CAN_ID_TYPE_29 = 0,
-  CANIF_CAN_ID_TYPE_11
+  CANIF_CAN_FD_ID_TYPE_29,
+  CANIF_CAN_ID_TYPE_11,
+  CANIF_CAN_FD_ID_TYPE_11
 } CanIf_CanIdTypeType;
 
 /** Defining if the CanIf PDU is referring a basic or full CAN Hardware object */

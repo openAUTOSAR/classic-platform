@@ -36,7 +36,7 @@ void Os_MMInit( void );
  * @brief Set application MPU settings.
  * @param aP
  */
-void Os_MMSetApplUserMode(  OsAppVarType *aP );
+void Os_MMSetApplUserMode(  const OsAppVarType *aP );
 
 
 /**
@@ -44,13 +44,22 @@ void Os_MMSetApplUserMode(  OsAppVarType *aP );
  *
  * @param isrPtr    Pointer to a task
  */
-void Os_MMSetUserModeIsr( OsIsrVarType *isrPtr  );
+void Os_MMSetUserModeIsr( const OsIsrVarType *isrPtr  );
 
 /**
  * @brief Set user mode for a task
  * @param pcbPtr
  */
-void Os_MMSetUserMode( OsTaskVarType *pcbPtr );
+void Os_MMSetUserMode( const OsTaskVarType *pcbPtr );
+
+/**
+ * @brief Check if an address (addr) is in the peripheral address
+ *        range of the application
+ * @param pcbPtr
+ */
+
+boolean Os_MMValidPerAddressRange( AreaIdType area, uint32 addr, uint32 size );
+
 
 #endif /* defined(OS_SC3 == STD_ON) || defined(OS_SC4 == STD_ON) */
 

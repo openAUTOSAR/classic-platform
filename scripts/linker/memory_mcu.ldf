@@ -185,14 +185,12 @@
 	#define L_SRAM_0_ORIGIN			0x1FFF8000 
 	#define L_SRAM_0_LENGTH			L_SIZE_32K
 	#define L_SRAM_1_ORIGIN			0x20000000 
-	#define L_SRAM_1_LENGTH			L_SIZE_28K
+	#define L_SRAM_1_LENGTH			L_SIZE_28K 
 #elif defined(CFG_S32K148)
 	#define L_FLASH_CODE_0_ORIGIN 	0x00000000
 	#define L_FLASH_CODE_0_LENGTH 	L_SIZE_1M5
 	#define L_SRAM_0_ORIGIN			0x1FFE0000 
-	#define L_SRAM_0_LENGTH			L_SIZE_128K
-	#define L_SRAM_1_ORIGIN			0x20000000 
-	#define L_SRAM_1_LENGTH			0x1F000
+	#define L_SRAM_0_LENGTH			0x3F000       /* Includes both SRAM0 and SRAM1 */
 #elif defined(CFG_RH850F1H)
     #define L_FLASH_CODE_0_ORIGIN   0x00000000
     #define L_FLASH_CODE_0_LENGTH   L_SIZE_4M

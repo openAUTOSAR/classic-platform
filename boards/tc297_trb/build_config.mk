@@ -6,7 +6,7 @@ ARCH_FAM=tricore
 #
 # CFG (y/n) macros
 # 
-CFG=TRICORE
+CFG+=TRICORE
 CFG+=AURIX
 CFG+=BRD_TC297_TB
 CFG+=TC29X

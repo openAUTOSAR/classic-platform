@@ -1006,7 +1006,7 @@ static boolean routingReceptionNoHeader(uint16 SoConId, PduInfoType* rxPDU){
                             ret = socketDest->SoAdTpStartofReception(socketDest->RxPduRef ,\
                                          rxPDU,rxPDU->SduLength, &bufferSizePtr);
                             if(ret == BUFREQ_OK){
-                                ret = socketDest->SoAdTpCopyRxData(socketDest->RxPduId,rxPDU,&bufferSizePtr);
+                                ret = socketDest->SoAdTpCopyRxData(socketDest->RxPduRef,rxPDU,&bufferSizePtr);
 
                                 if(ret == BUFREQ_NOT_OK){
                                     socketDest->TpRxIndicationFunction(socketDest->RxPduRef, E_NOT_OK);
@@ -1023,7 +1023,7 @@ static boolean routingReceptionNoHeader(uint16 SoConId, PduInfoType* rxPDU){
                                 SoAdTpReceiveStatus[SoConId].tpRxRequest = TRUE;
 
                                 if(ret == BUFREQ_OK){
-                                    ret = socketDest->SoAdTpCopyRxData(socketDest->RxPduId,rxPDU,&bufferSizePtr);
+                                    ret = socketDest->SoAdTpCopyRxData(socketDest->RxPduRef,rxPDU,&bufferSizePtr);
                                     if(ret == BUFREQ_NOT_OK){
                                         socketDest->TpRxIndicationFunction(socketDest->RxPduRef, E_NOT_OK);
                                         SoAdTpReceiveStatus[SoConId].tpRxRequest = FALSE;
@@ -1034,7 +1034,7 @@ static boolean routingReceptionNoHeader(uint16 SoConId, PduInfoType* rxPDU){
                                     }
                                 }
                             }else {
-                                ret = socketDest->SoAdTpCopyRxData(socketDest->RxPduId,rxPDU,&bufferSizePtr);
+                                ret = socketDest->SoAdTpCopyRxData(socketDest->RxPduRef,rxPDU,&bufferSizePtr);
                                 if(ret == BUFREQ_NOT_OK){
                                     socketDest->TpRxIndicationFunction(socketDest->RxPduRef, E_NOT_OK);
                                     SoAdTpReceiveStatus[SoConId].tpRxRequest = FALSE;
@@ -1046,7 +1046,7 @@ static boolean routingReceptionNoHeader(uint16 SoConId, PduInfoType* rxPDU){
                             }
                         }
                     }else {
-                        SoAdCfgPtr->SocketRoute[SocketRoute].SocketRouteDest->RxIndicationFunction( socketDest->RxPduId ,(PduInfoType*)rxPDU);
+                        SoAdCfgPtr->SocketRoute[SocketRoute].SocketRouteDest->RxIndicationFunction( socketDest->RxPduRef ,(PduInfoType*)rxPDU);
                         retVal = TRUE;
                         break;
                     }
@@ -1339,7 +1339,7 @@ void SoAd_Init( const SoAd_ConfigType* SoAdConfigPtr ){
     for (pduCnt=0; pduCnt < SOAD_NR_OF_PDU_ROUTES; pduCnt++ ){
         SoadTpTransStatus[pduCnt].firstCopyCalled = FALSE;
         SoadTpTransStatus[pduCnt].tpTxRequest = FALSE;
-        SoadTpTransStatus[pduCnt].socketId = 0;
+        SoadTpTransStatus[pduCnt].socketId = TCPIP_SOCKETID_INVALID;
         SoadTpTransStatus[pduCnt].totalLen = 0;
         SoadTpTransStatus[pduCnt].remainingLength = 0;
     }

@@ -24,17 +24,15 @@
 
 /* ----------------------------[includes]------------------------------------*/
 #include "os_trap.h"
+#include <stdio.h>
+#include "os_peripheral_i.h"
 
 
 #if (OS_SC3 == STD_ON ) || (OS_SC4 == STD_ON )
 
-#if defined(CFG_PPC)
+#if defined(CFG_PPC) || defined(CFG_TMS570)
 extern void Os_SetPrivilegedMode( void );
-#endif
-#if defined(CFG_TMS570)
-extern void Os_ArchToPrivilegedMode(void);
-#endif
-#if defined(CFG_TC2XX)
+#elif defined(CFG_TC2XX)
 extern void Os_ArchToPrivilegedMode(uint32 pcxi);
 #endif
 
@@ -46,44 +44,103 @@ extern void Os_ArchToPrivilegedMode(uint32 pcxi);
 
 /* ----------------------------[private macro]-------------------------------*/
 /* ----------------------------[private typedef]-----------------------------*/
+
+
+struct ServiceEntry {
+    int* (*entry)[];
+    uint32  cnt;
+};
+
 /* ----------------------------[private function prototypes]-----------------*/
-
-#if defined(CFG_TMS570) && defined(USE_WDG)
-extern void Wdg_Hw_KickWdg(void);
-extern void Wdg_Hw_SetTriggerCondition(uint16 timeout);
-extern void Mcu_Hw_PerformReset(void);
-#endif
-
-
 /* ----------------------------[private variables]---------------------------*/
+
+/*lint -e611 MISRA:OTHER:file inclusion:[MISRA 2004 Info, advisory] */
+void * Os_ServiceList[] = {
+        /* void and context altering functions */
+        [SYS_CALL_INDEX_EnterSupervisorMode] = (void *)NULL,
+        [SYS_CALL_INDEX_ResumeAllInterrupts] = (void *)ResumeAllInterrupts ,
+        [SYS_CALL_INDEX_SuspendAllInterrupts] = (void *)SuspendAllInterrupts ,
+        [SYS_CALL_INDEX_EnableAllInterrupts] = (void *)EnableAllInterrupts ,
+        [SYS_CALL_INDEX_DisableAllInterrupts] = (void *)DisableAllInterrupts,
+        [SYS_CALL_INDEX_ResumeOSInterrupts] = (void *)ResumeOSInterrupts ,
+        [SYS_CALL_INDEX_SuspendOSInterrupts] = (void *)SuspendOSInterrupts ,
+        /* StatusType returning functions */
+        [SYS_CALL_INDEX_ActivateTask] = (void *)ActivateTask,
+        [SYS_CALL_INDEX_TerminateTask] = (void *)TerminateTask,
+        [SYS_CALL_INDEX_ChainTask] = (void *)ChainTask,
+        [SYS_CALL_INDEX_Schedule] = (void *)Schedule,
+        [SYS_CALL_INDEX_GetTaskID] = (void *)GetTaskID,
+        [SYS_CALL_INDEX_GetResource] = (void *)GetResource,
+        [SYS_CALL_INDEX_ReleaseResource] = (void *)ReleaseResource,
+        [SYS_CALL_INDEX_SetEvent] = (void *)SetEvent,
+        [SYS_CALL_INDEX_ClearEvent] = (void *)ClearEvent,
+        [SYS_CALL_INDEX_GetEvent] = (void *)GetEvent,
+        [SYS_CALL_INDEX_WaitEvent] = (void *)WaitEvent,
+#if (OS_ALARM_CNT != 0)
+        [SYS_CALL_INDEX_GetAlarmBase] = (void *)GetAlarmBase,
+        [SYS_CALL_INDEX_GetAlarm] = (void *)GetAlarm,
+        [SYS_CALL_INDEX_SetRelAlarm] = (void *)SetRelAlarm,
+        [SYS_CALL_INDEX_SetAbsAlarm] = (void *)SetAbsAlarm,
+        [SYS_CALL_INDEX_CancelAlarm] = (void *)CancelAlarm,
+#endif
+        [SYS_CALL_INDEX_StartOS] = (void *)StartOS,
+        [SYS_CALL_INDEX_ShutdownOS] = (void *)ShutdownOS,
+        [SYS_CALL_INDEX_GetTaskState] = (void *)GetTaskState,
+#if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
+        [SYS_CALL_INDEX_GetApplicationID] = (void *)GetApplicationID,
+#endif
+        [SYS_CALL_INDEX_GetISRID] = (void *)GetISRID,
+        [SYS_CALL_INDEX_CheckISRMemoryAccess] = (void *)CheckISRMemoryAccess,
+        [SYS_CALL_INDEX_CheckTaskMemoryAccess] = (void *)CheckTaskMemoryAccess,
+#if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
+        [SYS_CALL_INDEX_CheckObjectAccess] = (void *)CheckObjectAccess,
+#endif
+        [SYS_CALL_INDEX_CheckObjectOwnership] = (void *)CheckObjectOwnership,
+        [SYS_CALL_INDEX_StartScheduleTableRel] = (void *)StartScheduleTableRel,
+        [SYS_CALL_INDEX_StartScheduleTableAbs] = (void *)StartScheduleTableAbs,
+        [SYS_CALL_INDEX_StopScheduleTable] = (void *)StopScheduleTable,
+        [SYS_CALL_INDEX_NextScheduleTable] = (void *)NextScheduleTable,
+#if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
+        [SYS_CALL_INDEX_StartScheduleTableSynchron] = (void *)StartScheduleTableSynchron,
+        [SYS_CALL_INDEX_SyncScheduleTable] = (void *)SyncScheduleTable,
+        [SYS_CALL_INDEX_SetScheduleTableAsync] = (void *)SetScheduleTableAsync,
+#endif
+        [SYS_CALL_INDEX_GetScheduleTableStatus] = (void *)GetScheduleTableStatus,
+        [SYS_CALL_INDEX_IncrementCounter] = (void *)IncrementCounter,
+        [SYS_CALL_INDEX_GetCounterValue] = (void *)GetCounterValue,
+        [SYS_CALL_INDEX_GetElapsedValue] = (void *)GetElapsedValue,
+
+        [SYS_CALL_INDEX_ReadPeripheral8] = (void *)Os_ReadPeripheral8,
+        [SYS_CALL_INDEX_ReadPeripheral16] = (void *)Os_ReadPeripheral16,
+        [SYS_CALL_INDEX_ReadPeripheral32] = (void *)Os_ReadPeripheral32,
+        [SYS_CALL_INDEX_WritePeripheral8] = (void *)Os_WritePeripheral8,
+        [SYS_CALL_INDEX_WritePeripheral16] = (void *)Os_WritePeripheral16,
+        [SYS_CALL_INDEX_WritePeripheral32] = (void *)Os_WritePeripheral32,
+        [SYS_CALL_INDEX_ModifyPeripheral8] = (void *)Os_ModifyPeripheral8,
+        [SYS_CALL_INDEX_ModifyPeripheral16] = (void *)Os_ModifyPeripheral16,
+        [SYS_CALL_INDEX_ModifyPeripheral32] = (void *)Os_ModifyPeripheral32,
+
+        /* Clib functions */
+        [SYS_CALL_INDEX_write] = (void *)write ,
+};
+
+
 /*lint -e611  MISRA:FALSE_POSITIVE:Array dimension:[MISRA 2004 Info, advisory] */
 /*lint -e9054 MISRA:FALSE_POSITIVE:Array dimension:[MISRA 2012 Rule 9.5, required] */
 const void * Os_TrapList[] = {
-#if defined(CFG_PPC)
+#if defined(CFG_PPC) || defined(CFG_TMS570)
         [0] = (void *)Os_SetPrivilegedMode,   /* ASM call */
         [1] = (void *)NULL,
 #else
         [0] = (void *)NULL,   /* ASM call */
         [1] = (void *)Os_ArchToPrivilegedMode,
 #endif
-		[2] = (void *)Irq_GenerateSoftInt,
-
-#if defined(CFG_TMS570) && defined(USE_WDG)
-		[3] = (void *)Wdg_Hw_KickWdg,
-		[4] = (void *)Wdg_Hw_SetTriggerCondition,
-		[5] = (void *)Mcu_Hw_PerformReset,
+        [2] = (void *)Irq_GenerateSoftInt,
+#if defined(CFG_TMS570)
+        [3] = (void *)Irq_AckSoftInt,
 #endif
+
 };
-/* ----------------------------[private functions]---------------------------*/
-/* ----------------------------[public functions]----------------------------*/
-
-
-struct ServiceEntry {
-    void    *entry;
-    uint32  cnt;
-};
-
-extern void * Os_ServiceList[];
 
 
 const struct ServiceEntry Os_GblServiceList[] = {
@@ -96,6 +153,22 @@ const struct ServiceEntry Os_GblServiceList[] = {
         ARRAY_SIZE(Os_TrapList),
     },
 };
+
+
+/* ----------------------------[private functions]---------------------------*/
+/* ----------------------------[public functions]----------------------------*/
+
+
+void * Os_GetService( uint32 idx ) {
+    uint32 tIdx = (idx >> 16u);
+    uint32 sIdx = idx & 0xffffu;
+
+    const struct ServiceEntry *se = &Os_GblServiceList[tIdx];
+
+    ASSERT( (sIdx < se->cnt) && (tIdx < ARRAY_SIZE(Os_GblServiceList)) );
+
+    return(*(se->entry))[sIdx];
+}
 
 #endif /* (OS_SC3 == STD_ON ) || (OS_SC4 == STD_ON ) */
 

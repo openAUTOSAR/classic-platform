@@ -215,7 +215,7 @@ StatusType GetEvent( TaskType TaskId, EventMaskRefType Mask) {
     OS_VALIDATE_STD_2( (Mask != NULL), E_OS_PARAM_POINTER,
     		           OSServiceId_GetEvent,TaskId, Mask);   /* @req SWS_Os_00566 */
 #if (OS_SC3==STD_ON) || (OS_SC4==STD_ON)
-    OS_VALIDATE_STD_2( (OS_VALIDATE_ADDRESS_RANGE(Mask) != E_OS_ILLEGAL_ADDRESS) , E_OS_ILLEGAL_ADDRESS ,
+    OS_VALIDATE_STD_2( (OS_VALIDATE_ADDRESS_RANGE(Mask,sizeof(EventMaskType)) == TRUE ) , E_OS_ILLEGAL_ADDRESS ,
     		           OSServiceId_GetEvent,TaskId, Mask);/*@req SWS_Os_00051 */
 #endif
     OS_VALIDATE_STD_2( (Os_SysIntAnyDisabled() == FALSE) , E_OS_DISABLEDINT,

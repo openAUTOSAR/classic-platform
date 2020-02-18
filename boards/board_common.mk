@@ -5,13 +5,16 @@ ifndef NOKERNEL
 obj-$(CFG_PPC) += crt0.o
 obj-$(CFG_RH850) += crt0.o
 
+# mpc5xxx.h headers 
+inc-$(CFG_PPC) += $(ROOTDIR)/mcal/arch/$(ARCH)
+
+# Coverage
+obj-$(CFG_BULLSEYE)  += Bullseye_Coverage_Hooks.o
+
+inc-last-$(CFG_BULLSEYE) +=  $(COV_BULLSEYE_PATH)
 
 ##PPC##
-inc-$(CFG_PPC) += $(ROOTDIR)/$(ARCH_MCU_DRIVER_PATH-y)
-
-
-##TC2XX##
-#obj-$(CFG_TC2XX) += IfxScuCcu.o
+inc-$(CFG_PPC) += $(ROOTDIR)/$(mcal/arch/$(ARCH_MCU))
 
 ##TC26X##
 vpath-$(CFG_TC26X) += $(ROOTDIR)/mcal/arch/tcxxx/src
@@ -51,6 +54,7 @@ vpath-$(CFG_TC26X) += $(IFXTC26X_BASE_FRAMEWORK)/0_AppSw/Tricore/DemoApp/Start
 ##TC29X##
 vpath-$(CFG_TC29X) += $(ROOTDIR)/mcal/arch/tcxxx/src
 vpath-$(CFG_TC29X) += $(ROOTDIR)/mcal/arch/tcxxx/src/integration
+vpath-$(CFG_TC29X) += $(ROOTDIR)/system/Os/osal/tricore/aurix/kernel
 
 obj-$(CFG_TC29X) += IfxCpu_CStart$(SELECT_CORE).o
 obj-$(CFG_TC29X) += IfxCpu_cfg.o
@@ -58,6 +62,10 @@ obj-$(CFG_TC29X) += IfxCpu.o
 obj-$(CFG_TC29X) += IfxScuWdt.o
 ifeq ($(CFG_TC212),y)
 # Don't add for this one
+ifndef MCAL_PATH
+	obj-y += IfxScuCcu.o
+endif
+
 else
 obj-$(CFG_TC29X) += IfxScuCcu.o
 endif
@@ -123,6 +131,7 @@ vpath-$(CFG_TC39X) += $(IFXTC399_BASE_FRAMEWORK)/BaseSw/iLLD_39A/Tricore/Scu/Std
 vpath-$(CFG_TC39X) += $(IFXTC399_BASE_FRAMEWORK)/BaseSw/iLLD_39A/Tricore/Pms/Std
 vpath-$(CFG_TC39X) += $(IFXTC399_BASE_FRAMEWORK)/BaseSw/iLLD_39A/Tricore/Cpu/Std
 ## Excluding header from Lint ##
+ifeq ($(ARCH_FAM),tricore)
 LINT_EXCLUDE_PATHS +=$(IFXTC399_BASE_FRAMEWORK)/AppSw/Tricore/Cfg_Ssw
 LINT_EXCLUDE_PATHS +=$(IFXTC399_BASE_FRAMEWORK)/BaseSw/StartUp_39A/Tricore
 LINT_EXCLUDE_PATHS +=$(IFXTC399_BASE_FRAMEWORK)/BaseSw/Compilers/Tricore
@@ -130,6 +139,7 @@ LINT_EXCLUDE_PATHS +=$(IFXTC399_BASE_FRAMEWORK)/BaseSw/iLLD_39A/Tricore/_Impl
 LINT_EXCLUDE_PATHS +=$(IFXTC399_BASE_FRAMEWORK)/BaseSw/iLLD_39A/Tricore/Scu/Std
 LINT_EXCLUDE_PATHS +=$(IFXTC399_BASE_FRAMEWORK)/BaseSw/iLLD_39A/Tricore/Pms/Std
 LINT_EXCLUDE_PATHS +=$(IFXTC399_BASE_FRAMEWORK)/BaseSw/iLLD_39A/Tricore/Cpu/Std
+endif
 
 else
 obj-$(CFG_STARTUP) += crt0.o
@@ -152,18 +162,21 @@ vpath-$(CFG_ZYNQ) += $(ROOTDIR)/mcal/arch/zynq/src
 vpath-$(CFG_ZYNQ) += $(ROOTDIR)/mcal/arch/zynq/src/integration
 
 ##STM32##
-vpath-$(CFG_STM32F1X) += $(ROOTDIR)/$(ARCH_MCU_DRIVER_PATH-y)/src/contrib/STM32F10x_StdPeriph_Driver/src
-vpath-$(CFG_STM32F1X) += $(ROOTDIR)/$(ARCH_MCU_DRIVER_PATH-y)/src/contrib/STM32_ETH_Driver/src
-vpath-$(CFG_STM32F1X) += $(ROOTDIR)/$(ARCH_MCU_DRIVER_PATH-y)/src
-inc-$(CFG_STM32F1X) += $(ROOTDIR)/$(ARCH_MCU_DRIVER_PATH-y)/src/contrib/STM32F10x_StdPeriph_Driver/inc
-inc-$(CFG_STM32F1X) += $(ROOTDIR)/$(ARCH_MCU_DRIVER_PATH-y)/src/contrib/STM32_ETH_Driver/inc
-
+vpath-$(CFG_STM32F1X) += $(ROOTDIR)/mcal/arch/$(ARCH_MCU)/src/contrib/STM32F10x_StdPeriph_Driver/src
+vpath-$(CFG_STM32F1X) += $(ROOTDIR)/mcal/arch/$(ARCH_MCU)/src/contrib/STM32_ETH_Driver/src
+vpath-$(CFG_STM32F1X) += $(ROOTDIR)/mcal/arch/$(ARCH_MCU)/src
+inc-$(CFG_STM32F1X) += $(ROOTDIR)/mcal/arch/$(ARCH_MCU)/src/contrib/STM32F10x_StdPeriph_Driver/inc
+inc-$(CFG_STM32F1X) += $(ROOTDIR)/mcal/arch/$(ARCH_MCU)/src/contrib/STM32_ETH_Driver/inc
 
 obj-$(CFG_STM32F1X) += startup_cmx.o
 obj-$(CFG_STM32F3X) += startup_cmx.o
-obj-$(CFG_JACINTO) += startup_jacinto.o
 obj-$(CFG_S32K144) += startup_cmx.o
 obj-$(CFG_S32K148) += startup_cmx.o
+
+obj-$(CFG_JACINTO) += startup_jacinto.o
+
+vpath-$(if $(CFG_STM32F1X)$(CFG_STM32F3X)$(CFG_S32K144)$(CFG_JACINTO),y) += $(ROOTDIR)/system/Os/osal/arm/armv7_m
+
 #stm32 lib files needed by drivers
 obj-$(CFG_STM32F1X) += stm32f10x_rcc.o
 obj-$(CFG_STM32F1X)-$(USE_CAN) += stm32f10x_can.o
@@ -177,6 +190,7 @@ obj-$(CFG_STM32F1X)-$(USE_LWIP) += stm32_eth.o
 obj-$(USE_TTY_TMS570_KEIL) += GLCD.o
 obj-$(USE_TTY_TMS570_KEIL) += emif.o
 
+
 ##JACINTO##
 
 inc-$(CFG_JACINTO) += $(ROOTDIR)/mcal/arch/jacinto/src
@@ -188,12 +202,13 @@ vpath-$(CFG_JACINTO) += $(ROOTDIR)/mcal/arch/jacinto/src
 ##TMS570##
 # Cortex R4
 
-inc-$(CFG_ARMV7_AR) += $(ROOTDIR)/$(ARCH_DRIVER_PATH-y)/drivers
 inc-$(CFG_TMS570) += $(ROOTDIR)/mcal/arch/tms570/src
 vpath-$(CFG_TMS570) += $(ROOTDIR)/mcal/arch/tms570/src/integration
 vpath-$(CFG_TMS570) += $(ROOTDIR)/mcal/arch/tms570/src
 
 obj-$(CFG_ARMV7_AR) += startup_armv7-ar.o
+vpath-$(CFG_ARMV7_AR) += $(ROOTDIR)/system/Os/osal/arm/$(ARCH)
+
 ifeq ($(COMPILER),gcc)
 obj-$(CFG_ARMV7_AR) += crtin.o
 endif
@@ -512,6 +527,10 @@ include $(PDUR-MOD-MK)
 IPDUM-MOD-MK?=$(ROOTDIR)/communication/IpduM/IpduM.mod.mk
 include $(IPDUM-MOD-MK)
 
+# DoIP
+DOIP-MOD-MK?=$(ROOTDIR)/communication/DoIP/DoIP.mod.mk
+include $(DOIP-MOD-MK)
+
 # IO Hardware Abstraction
 IOHWAB-MOD-MK?=$(ROOTDIR)/Peripherals/IoHwAb/IoHwAb.mod.mk
 include $(IOHWAB-MOD-MK)
@@ -532,7 +551,6 @@ include $(DCM-MOD-MK)
 FIM-MOD-MK?=$(ROOTDIR)/diagnostic/FiM/FiM.mod.mk
 include $(FIM-MOD-MK)
 
-
 #RamTst
 RAMTST-MOD-MK?=$(ROOTDIR)/memory/RamTst/RamTst.mod.mk
 include $(RAMTST-MOD-MK)
@@ -551,6 +569,7 @@ include $(SD-MOD-MK)
 # SoAd
 SOAD-MOD-MK?=$(ROOTDIR)/communication/SoAd/SoAd.mod.mk
 include $(SOAD-MOD-MK)
+
 
 # UdpNm
 UDPNM-MOD-MK?=$(ROOTDIR)/communication/UdpNm/UdpNm.mod.mk
@@ -610,6 +629,12 @@ obj-y += version.o
 IPC-MK?=$(ROOTDIR)/mcal/arch/jacinto/ipc.mk
 include $(IPC-MK)
 
+#I2C for mpc
+ifeq ($(USE_I2C_MPC),y) 
+I2C_MPC-MOD-MK?=$(ROOTDIR)/mcal/arch/mpc5xxx/src/contrib/i2c/i2c_MPC.mod.mk
+include $(I2C_MPC-MOD-MK)
+endif  
+
 ifeq ($(CFG_TIMER),y)
 obj-$(CFG_TIMER_TB)-$(CFG_PPC)+=timer_tb.o
 obj-$(CFG_TIMER_RTC)-$(CFG_PPC)+=timer_rtc.o
@@ -621,6 +646,10 @@ obj-$(CFG_TIMER_OSTM)+=timer_ostm.o
 obj-$(CFG_TIMER_AURIX) += timer_aurix.o
 obj-$(CFG_TIMER_TIMERS)-$(CFG_JACINTO) += timer.o
 obj-$(CFG_TIMER_SCTM)-$(CFG_JACINTO) += timer_sctm.o
+
+inc-y += $(ROOTDIR)/mcal/arch/$(ARCH)/src
+vpath-y += $(ROOTDIR)/mcal/arch/$(ARCH)/src
+
 endif
 
 # Shell
@@ -674,7 +703,6 @@ ifeq ($(CFG_ARC_CLIB),y)
   obj-$(USE_TTY_CODE_COMPOSER) += serial_dbg_code_composer.o
   obj-$(CFG_FS_RAM) += fs_ram.o
   obj-$(USE_TTY_SCI)     += serial_sci.o
-  
 
   obj-y += clib_port.o
   obj-y += printf.o
@@ -693,6 +721,12 @@ else
     obj-$(USE_TTY_UDE)     += serial_dbg_ude.o
   endif    
 endif # SELECT_CLIB 
+
+# Path to serial dbg drivers..
+obj-$(CFG_BITDEF) += bitdef.o
+inc-y += $(ROOTDIR)/drivers
+vpath-y += $(ROOTDIR)/drivers
+
 
 # If postbuild mode, just build post-build files.
 ifneq ($(CFG_POSTBUILD_BUILD),y)

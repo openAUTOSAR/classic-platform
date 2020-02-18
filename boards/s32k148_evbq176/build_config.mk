@@ -2,7 +2,7 @@
 # ARCH defines
 ARCH=armv7_m
 ARCH_FAM=arm
-ARCH_MCU=s32k144
+ARCH_MCU=s32k148
 
 #
 # CFG (y/n) macros
@@ -10,6 +10,7 @@ ARCH_MCU=s32k144
 #CFG=ARM ARMV7E_M ARM_CM4 THUMB 
 CFG=ARM ARMV7_M ARM_CM3 THUMB 
 CFG+=S32K148
+
 # Add our board  
 CFG+=BRD_S32K148_EVBQ176
 
@@ -17,7 +18,10 @@ CFG+=BRD_S32K148_EVBQ176
 # default or private
 
 # MCAL (supplied by NXP)
-MOD_AVAIL+=MCU
+
+
+MOD_AVAIL+=MCU CAN DIO PORT LIN SPI GPT ETH MCL ADC LWIP TCPIP
+
 # Required modules
 MOD_USE += KERNEL
 

@@ -44,8 +44,10 @@
 #if !defined LWIP_HDR_OPT_H
 #define LWIP_HDR_OPT_H
 
+#if defined(USE_RTE)
 /* Needed to remove re-define of MEMCPY */
 #include "Rte_Utils.h"
+#endif
 
 /*
  * Include user defined options first. Anything not defined in these files

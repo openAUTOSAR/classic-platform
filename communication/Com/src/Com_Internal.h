@@ -100,7 +100,7 @@ extern const Com_Arc_Config_type Com_Arc_Config;
 
 #define TESTBIT(source,bit)	( *( (uint8 *)source  + (bit / 8) ) &  (uint8)(1u << (bit % 8u)) )
 #define SETBIT(dest,bit)	( *( (uint8 *)dest    + (bit / 8) ) |= (uint8)(1u << (bit % 8u)) )
-#define CLEARBIT(dest,bit)	( *( (uint8 *)dest    + (bit / 8) ) &= (uint8)~(uint8)(1u << (bit % 8u)) )
+#define CLEARBIT(dest,bit)	( *( (uint8 *)dest    + (bit / 8) ) &= ~(uint8)(1u << (bit % 8u)) )
 
 
 #define GET_Signal(SignalId) \

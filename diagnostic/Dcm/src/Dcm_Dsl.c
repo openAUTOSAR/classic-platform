@@ -80,6 +80,7 @@ static DcmComModeType NetWorkComMode[DCM_NOF_COMM_CHANNELS];
 
 // OBD: define the status flag of processing done when preemption happens.
 static boolean PreemptionNotProcessingDone = FALSE;
+static boolean BusySent = FALSE;
 
 static void DslReleaseType2TxPdu(PduIdType txPduId);
 static void DslReleaseAllType2TxPdus(void);
@@ -469,19 +470,15 @@ void DslDsdProcessingDone(PduIdType rxPduIdRef, DsdProcessingDoneResultType resp
 }
 
 // - - - - - - - - - - -
-
-/*
- *  This function preparing transmission of response
- *  pending message to tester.
- */
-static void sendResponse(const Dcm_DslProtocolRowType *protocol,
-                         Dcm_NegativeResponseCodeType responseCode) {
+static Std_ReturnType sendResponseWithStatus(const Dcm_DslProtocolRowType *protocol,
+                         Dcm_NegativeResponseCodeType responseCode)
+{
     const Dcm_DslProtocolRxType *protocolRx = NULL;
     const Dcm_DslMainConnectionType *mainConnection = NULL;
     const Dcm_DslConnectionType *connection = NULL;
     const Dcm_DslProtocolRowType *protocolRow = NULL;
     Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
-    Std_ReturnType transmitResult;
+    Std_ReturnType transmitResult = E_NOT_OK;
     
     SchM_Enter_Dcm_EA_0();
     /* @req DCM119 */
@@ -507,6 +504,32 @@ static void sendResponse(const Dcm_DslProtocolRowType *protocol,
         }
     }
     SchM_Exit_Dcm_EA_0();
+    return transmitResult;
+}
+/*
+ *  This function preparing transmission of response
+ *  pending message to tester.
+ */
+static void sendResponse(const Dcm_DslProtocolRowType *protocol,
+                         Dcm_NegativeResponseCodeType responseCode) {
+    (void)sendResponseWithStatus(protocol, responseCode);
+}
+
+
+
+/**
+ * Adjusts P2 timer value
+ * @param maxValue
+ * @param adjustValue
+ * @return
+ */
+static uint32 AdjustP2Timing(uint32 maxValue, uint32 adjustValue)
+{
+    uint32 result = 0u;
+    if( maxValue > adjustValue ) {
+        result = maxValue - adjustValue;
+    }
+    return result;
 }
 
 void DslDsdSendResponsePending(PduIdType rxPduId)
@@ -520,7 +543,8 @@ void DslDsdSendResponsePending(PduIdType rxPduId)
     if (TRUE == findRxPduIdParentConfigurationLeafs(rxPduId, &protocolRx, &mainConnection, &connection, &protocolRow, &rxRuntime)) {
         sendResponse(protocolRow, DCM_E_RESPONSEPENDING);
         sessionRow = getActiveSessionRow(rxRuntime);
-        rxRuntime->stateTimeoutCount = DCM_CONVERT_MS_TO_MAIN_CYCLES(sessionRow->DspSessionP2StarServerMax); /* Reinitiate timer, see 9.2.2. */
+        /* NOTE: + DCM_MAIN_FUNCTION_PERIOD_TIME_MS is used below due to that timeout is decremented once within the same mainfunction as request is processed.  */
+        rxRuntime->stateTimeoutCount = DCM_CONVERT_MS_TO_MAIN_CYCLES(AdjustP2Timing(sessionRow->DspSessionP2StarServerMax + DCM_MAIN_FUNCTION_PERIOD_TIME_MS, protocolRow->DslProtocolTimeLimit->TimStrP2StarServerAdjust)); /* Reinitiate timer, see 9.2.2. */
         DECREMENT( rxRuntime->responsePendingCount );
     }
 }
@@ -825,7 +849,7 @@ void DslMain(void) {
                 DECREMENT(runtime->stateTimeoutCount);
                 if (runtime->stateTimeoutCount == 0) {
                     sessionRow = getActiveSessionRow(runtime);
-                    runtime->stateTimeoutCount = DCM_CONVERT_MS_TO_MAIN_CYCLES(sessionRow->DspSessionP2StarServerMax); /* Reinitiate timer, see 9.2.2. */
+                    runtime->stateTimeoutCount = DCM_CONVERT_MS_TO_MAIN_CYCLES(AdjustP2Timing(sessionRow->DspSessionP2StarServerMax,protocolRowEntry->DslProtocolTimeLimit->TimStrP2StarServerAdjust)); /* Reinitiate timer, see 9.2.2. */
                     if (Dcm_ConfigPtr->Dsl->DslDiagResp != NULL) {
                         if (Dcm_ConfigPtr->Dsl->DslDiagResp->DslDiagRespForceRespPendEn == TRUE) {
                             if (runtime->responsePendingCount != 0) {
@@ -927,7 +951,14 @@ void DslMain(void) {
             case PREEMPT_TRANSMIT_NRC: /* preemption has happened,send NRC 0x21 to OBD tester */
                 if (TRUE == PreemptionNotProcessingDone){
                     /*sent NRC 0x21 till timeout or processing done*/
-                    sendResponse(protocolRowEntry, DCM_E_BUSYREPEATREQUEST);
+                    if( FALSE == BusySent ) {
+                        if( E_OK == sendResponseWithStatus(protocolRowEntry, DCM_E_BUSYREPEATREQUEST) ) {
+                            BusySent = TRUE;
+                            /* Release the rx buffer. Will allow accepting another request. */
+                            runtime->externalRxBufferStatus = NOT_IN_USE;
+                            protocolRowEntry->DslProtocolRxBufferID->externalBufferRuntimeData->status = BUFFER_AVAILABLE;
+                        }
+                    }
 
                     /*decrease preempt timeout count*/
                     DECREMENT(runtime->preemptTimeoutCount);
@@ -1232,13 +1263,16 @@ void DslTpRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result, boo
                                     } else {
                                         /*set the flag,activate preemption mechanism*/
                                         PreemptionNotProcessingDone = TRUE;
+                                        BusySent = FALSE;
                                         /*set Tx buffer status PREEMPT_TRANSMIT_NRC*/
+                                        if(PREEMPT_TRANSMIT_NRC != rxRuntime->externalTxBufferStatus) {
+                                            /*start preemption timer*/
+                                            startPreemptTimer(rxRuntime, protocolRow);
+                                        }
                                         rxRuntime->externalTxBufferStatus = PREEMPT_TRANSMIT_NRC;
                                         rxRuntime->responsePendingCount = Dcm_ConfigPtr->Dsl->DslDiagResp->DslDiagRespMaxNumRespPend;
                                         rxRuntime->diagReqestRxPduId = dcmRxPduId;
 
-                                        /*start preemption timer*/
-                                        startPreemptTimer(rxRuntime, protocolRow);
                                         /*request PduR to cancel transmit of preempted protocol*/
                                         /*@req OBD_DCM_REQ_32*//*@req OBD_DCM_REQ_33*/
                                         /* @req DCM079 */
@@ -1268,23 +1302,23 @@ void DslTpRxIndicationFromPduR(PduIdType dcmRxPduId, NotifResultType result, boo
                         const Dcm_DslBufferType *txBuffer = NULL;
                         rxRuntime->isType2Tx = type2Tx;
                         Dcm_DslRunTimeProtocolParametersType *txRuntime;
+                        uint32 P2ServerAdjust;
                         if( TRUE == type2Tx ) {
                             /* @req DCM122 */
                             txRuntime = mainConnection->DslPeriodicTransmissionConRef->DslProtocolRow->DslRunTimeProtocolParameters;
                             txBuffer = mainConnection->DslPeriodicTransmissionConRef->DslProtocolRow->DslProtocolTxBufferID;
                             txRuntime->diagResponseTxPduId = type2TxPduId;
                             txRuntime->diagReqestRxPduId = dcmRxPduId;
+                            P2ServerAdjust = 0u;
 
                         } else {
                             txRuntime = rxRuntime;
                             txRuntime->diagResponseTxPduId = mainConnection->DslProtocolTx->DcmDslProtocolTxPduId;
                             txBuffer = protocolRow->DslProtocolTxBufferID;
+                            P2ServerAdjust = protocolRow->DslProtocolTimeLimit->TimStrP2ServerAdjust;
                         }
                         rxRuntime->diagResponseTxPduId = txRuntime->diagResponseTxPduId;
-                        txRuntime->stateTimeoutCount = DCM_CONVERT_MS_TO_MAIN_CYCLES(sessionRow->DspSessionP2ServerMax); /* See 9.2.2. */
-                        if(txRuntime->stateTimeoutCount > 0){
-                            txRuntime->stateTimeoutCount--; /* must be sent cycle before timeout */
-                        }
+                        txRuntime->stateTimeoutCount = DCM_CONVERT_MS_TO_MAIN_CYCLES(AdjustP2Timing(sessionRow->DspSessionP2ServerMax, P2ServerAdjust));
                         if (txRuntime->externalTxBufferStatus == NOT_IN_USE) {
                             DEBUG( DEBUG_MEDIUM, "External Tx buffer available, we can pass it to DSD.\n");
                         } else {
@@ -1473,7 +1507,14 @@ void DslTpTxConfirmation(PduIdType dcmTxPduId, NotifResultType result) {
             // Free the buffer and free the Pdu runtime data buffer.
             SchM_Enter_Dcm_EA_0();
             switch (txRuntime->externalTxBufferStatus) { // ### EXTERNAL TX BUFFER ###
-            case PROVIDED_TO_PDUR: {
+            case DCM_TRANSMIT_SIGNALED:
+            	//Dcm_CopyTxData has not been called
+            	if(result == NTFRSLT_OK){
+            		DCM_DET_REPORTERROR(DCM_TP_TX_CONFIRMATION_ID, DCM_E_UNEXPECTED_EXECUTION);
+                  	result = NTFRSLT_E_NOT_OK;
+            	}
+            	/* no break */
+            case PROVIDED_TO_PDUR:{
                 if( txRuntime->diagnosticResponseFromDsd.SduLength != externalTxBuffer->externalBufferRuntimeData->nofBytesHandled ) {
                     DCM_DET_REPORTERROR(DCM_TP_TX_CONFIRMATION_ID, DCM_E_TP_LENGTH_MISMATCH);
                 }
@@ -1510,6 +1551,13 @@ void DslTpTxConfirmation(PduIdType dcmTxPduId, NotifResultType result) {
             }
             if (FALSE == externalBufferReleased) {
                 switch (txRuntime->localTxBuffer.status) { // ### LOCAL TX BUFFER ###
+                case DCM_TRANSMIT_SIGNALED:
+                	//Dcm_CopyTxData has not been called
+                	if(result == NTFRSLT_OK){
+                		DCM_DET_REPORTERROR(DCM_TP_TX_CONFIRMATION_ID, DCM_E_UNEXPECTED_EXECUTION);
+                      	result = NTFRSLT_E_NOT_OK;
+                	}
+                	/* no break */
                 case PROVIDED_TO_PDUR:
                     if( txRuntime->localTxBuffer.PduInfo.SduLength != txRuntime->localTxBuffer.nofBytesHandled ) {
                         DCM_DET_REPORTERROR(DCM_TP_TX_CONFIRMATION_ID, DCM_E_TP_LENGTH_MISMATCH);

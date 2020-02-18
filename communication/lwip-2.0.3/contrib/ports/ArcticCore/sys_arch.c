@@ -35,7 +35,7 @@
 #include "lwip/def.h"
 #include "lwip/sys.h"
 
-#include "os.h"
+#include "Os.h"
 #include "Std_Types.h"
 #include "arch/sys_arch.h"
 #include "Mcu.h"

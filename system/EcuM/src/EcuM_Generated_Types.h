@@ -111,6 +111,9 @@
 #if defined(USE_SOAD)
 #include "SoAd.h"
 #endif
+#if defined(USE_DOIP)
+#include "DoIP.h"
+#endif
 #if defined(USE_LDCOM)
 #include "LdCom.h"
 #endif
@@ -299,6 +302,9 @@ typedef struct EcuM_ConfigS
 #if defined(USE_SOAD)
     const SoAd_ConfigType* SoAdConfigPtr;
 #endif
+#if defined(USE_DOIP)
+    const DoIP_ConfigType* DoIPConfigPtr;
+#endif
 #if defined(USE_LDCOM)
     const LdCom_ConfigType* LdComConfigPtr;
 #endif
@@ -350,10 +356,7 @@ typedef struct EcuM_ConfigS
 #if defined(USE_IPDUM)
     const IpduM_ConfigType* IpduMConfigPtr;
 #endif
-#if defined (USE_CANTRCV)
-    const CanTrcv_ConfigType* CanTrcvConfigPtr;
-#endif
-#if defined(USE_BSWM) || defined(USE_PDUR) || defined(USE_COM) || defined(USE_CANIF) || defined(USE_CANTP) || defined(USE_CANNM) || defined(USE_BSWM) || defined(USE_CAN) || (defined(USE_FIM) && (FIM_POSTBUILD_MODE == STD_ON))
+#if defined(USE_BSWM) || defined(USE_PDUR) || defined(USE_COM) || defined(USE_CANIF) || defined(USE_CANTP) || defined(USE_CANNM) || defined(USE_BSWM) || defined(USE_CAN) || defined(USE_CANTRCV) || (defined(USE_FIM) && (FIM_POSTBUILD_MODE == STD_ON))
     const PostbuildConfigType* PostBuildConfig;
 #endif
 #if defined(USE_DLT)

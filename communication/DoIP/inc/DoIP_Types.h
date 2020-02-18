@@ -17,93 +17,85 @@
 
 #include "Std_Types.h"
 #include "ComStack_Types.h"
-typedef Std_ReturnType (*DoIPRoutingActivationConfirmationType)( boolean* Confirmed, uint8* ConfirmationReqData, uint8* ConfirmationResData );
-typedef Std_ReturnType (*DoIPRoutingActivationAuthentication)( boolean* Authentified, uint8* AuthenticationReqData, uint8* AuthenticationResData);
+
+#define DOIP_E_PENDING          0x10u  /** @req SWS_DoIP_00272*/ /** @req SWS_DoIP_00273*/  //done
+
+typedef enum {
+    DOIP_TPPDU,
+    DOIP_IFPDU
+} DoIP_PduType;
+
+typedef enum {
+    DOIP_POWER_STATE_NOT_READY,
+    DOIP_POWER_STATE_READY,
+} DoIP_PowerStateType;
+
+typedef Std_ReturnType (*DoIP_RoutActConfFuncType)(boolean* confirmed, uint8* confReqData, uint8* confResData);
+typedef Std_ReturnType (*DoIP_RoutActAuthFuncType)(boolean* authenticated, uint8* authReqData, uint8* authResData);
+typedef uint32 DoIPPayloadType;
+typedef struct{
+    DoIP_RoutActConfFuncType DoIP_RoutActAuthFunc;
+    uint8 DoIP_RoutActAuthReqLen;
+    uint8 DoIP_RoutActAuthResLen;
+}DoIP_RoutActAuthType;
+
+typedef struct{
+    DoIP_RoutActAuthFuncType DoIP_RoutActConfFunc;
+    uint8 DoIP_RoutActConfReqLen;
+    uint8 DoIP_RoutActConfResLen;
+}DoIP_RoutActConfType;
+
 typedef struct {
+    const uint16 *DoIP_TargetRef;
+    const DoIP_RoutActAuthType *DoIP_RoutActAuthRef;
+    const DoIP_RoutActConfType *DoIP_RoutActConfRef;
+    uint8 DoIP_chnlTARef_Size;
+    uint8 DoIP_RoutActNum;
+}DoIP_RoutActType;
+
+typedef struct {
+    const DoIP_RoutActType **DoIP_RoutActRef;
     uint32 DoIP_NumByteDiagAckNack;
     uint16 DoIP_TesterSA;
-    uint8 * DoIP_RoutingActivationRef;
+    uint16 DoIp_RoutRefSize;
 }DoIP_TesterType;
 
-typedef struct {
-    uint8 DoIP_RoutingActivationNum;
-    const DoIP_RoutingActivationAuthType * DoIP_RoutingActivationAuthRef;
-    const DoIP_RoutingActivationCnfrmType *DoIP_RoutingActivationCnfrmRef;
-}DoIP_RoutingActivationType;
+typedef struct{
+    uint16 DoIP_TargetAddrValue;
+}DoIP_TargetAddrType;
 
 typedef struct{
-    DoIPRoutingActivationConfirmationType DoIP_RouteActivationAuthFunc;
-    uint8 DoIP_Route_Activation_Auth_ReqLen;
-    uint8 DoIP_Route_Activation_Auth_ResLen;
-}DoIP_RoutingActivationAuthType;
+  PduIdType DoIP_TxPduRef;
+  DoIP_PduType DoIP_TxPduType;
+}DoIP_PduTransmitType;
 
 typedef struct{
-    DoIPRoutingActivationAuthentication DoIP_Route_Activation_Cnfrm_Func;
-    uint8 DoIP_Route_Activation_Cnfrm_ReqLen;
-    uint8 DoIP_Route_Activation_Cnfrm_ResLen;
-}DoIP_RoutingActivationCnfrmType;
+    PduIdType DoIP_RxPduRef;
+}DoIP_PduReceiveType;
 
 typedef struct{
-  uint8* DoIP_chanlSARef;
-  uint8* DoIP_chnlTARef;
-  const DoIP_PDUReceiveType *DoIP_PDUReceiveRef;
-  const DoIP_PDUTransmitType *DoIP_PDUTransmitRef;
-}DoIPChannelsType;
+  const DoIP_TesterType *DoIP_ChannelSARef;
+  const DoIP_TargetAddrType *DoIP_ChannelTARef;
+  const DoIP_PduReceiveType *DoIP_PduReceiveRef;
+  const DoIP_PduTransmitType *DoIP_PduTransmitRef;
+  PduIdType DoIP_UpperLayerRxPduId;
+  PduIdType DoIP_RxPduId;
+  PduIdType DoIP_UpperLayerTxPduId;
+  PduIdType DoIP_TxPduId;
+}DoIP_ChannelType;
 
 typedef struct{
-  uint16 DoIP_RXPDUID;
-  uint8* DoIP_RXPDURef;
-
-}DoIP_PDUReceiveType;
-
-typedef struct{
-  uint16 DoIP_TXPDUID;
-  uint8* DoIP_TXPDURef;
-  enum EcucEnumerationParamDef {DOIP_TPPDU,DOIP_IFPDUs};
-
-}DoIP_PDUTransmitType;
+ PduIdType DoIP_TcpSoADRxPduRef;
+ PduIdType DoIP_TcpRxPduRef;
+ PduIdType DoIP_TcpSoADTxPduRef;
+ PduIdType DoIP_TcpTxPduRef;
+}DoIP_TcpType;
 
 typedef struct{
-    uint16  DoIPTargetAddressValues;
-}DoIP_TargetAddressType;
+ PduIdType DoIP_UdpSoADRxPduRef;
+ PduIdType DoIP_UdpRxPduRef;
+ PduIdType DoIP_UdpSoADTxPduRef;
+ PduIdType DoIP_UdpTxPduRef;
+}DoIP_UdpType;
 
-typedef struct{
- const DoIP_TCPSoADRxPDUType* DoIP_TCPSoADRxPDURef;
- const DoIP_TCPSoADTxPDUType* DoIP_TCPSoADTxPDURef;
-}DoIPTCPType;
-
-typedef struct{
- uint16 DoIP_SoADRx;
- uint8 *DoIP_SoADRxRef;
-}DoIP_TCPSoADRxPDUType;
-
-typedef struct{
- uint16 DoIP_SoADTx;
- uint8 *DoIP_SoADTxRef;
-}DoIP_TCPSoADTxPDUType;
-
-typedef struct{
- const DoIP_UDPSoADRxPDUType* DoIP_UDPSoADRxPDURef;
- const DoIP_UDPSoADTxPDUType* DoIP_UDPSoADTxPDURef;
-}DoIPUDPType;
-
-typedef struct{
-  uint16 DoIP_SoADRx;
-  uint8 *DoIP_SoADRxRef;
-}DoIP_UDPSoADRxPDUType;
-
-typedef struct{
- uint16 DoIP_SoADTx;
- uint8 *DoIP_SoADTxRef;
-}DoIP_UDPSoADTxPDUType;
-
-typedef struct{
-    const DoIPChannelsType *const DoIPChanl;
-    const DoIPTCPType *const DoIPTCPmsg;
-    const DoIPUDPType *const DoIPUDPmsg;
-    const DoIP_TargetAddressType *const DoIP_TargetAdrss;
-    const DoIP_RoutingActivationType *const DoIP_RouteActivateType;
-    const DoIP_TesterType *const DoIP_TestType;
-}DoIP_configType;
 #endif /* DOIP_TYPES_H_ */
-

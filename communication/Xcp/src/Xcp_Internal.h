@@ -200,7 +200,7 @@
 
 // SET ENDIANNESS
 // BIG ENDIAN
-#ifdef CFG_PPC
+#if defined(CFG_PPC) || defined(CFG_TMS570)
 #define XPC_C32_0 0
 #define XPC_C32_1 1
 #define XPC_C32_2 2

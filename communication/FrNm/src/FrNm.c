@@ -591,7 +591,7 @@ void FrNm_StartupError( const NetworkHandleType NetworkHandle )
                 ChannelInternal->State = NM_STATE_SYNCHRONIZE;
                 FrNm_Internal_Resetvotedata(ChannelInternal);
 #if (FRNM_STATE_CHANGE_INDICATION_ENABLED == STD_ON)/* @req FRNM106 */
-                Nm_StateChangeNotification(ChannelConf->FrNmChannelIdentifiersConfig->FrNmComMNetworkHandleRef,NM_STATE_READY_SLEEP, NM_STATE_SYNCHRONIZE);
+                Nm_StateChangeNotification(FrNmChannelsconf->FrNmChannelIdentifiersConfig->FrNmComMNetworkHandleRef,NM_STATE_READY_SLEEP, NM_STATE_SYNCHRONIZE);
 #endif
 #else
                 ChannelInternal->Mode = NM_MODE_BUS_SLEEP;

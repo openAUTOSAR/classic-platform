@@ -317,11 +317,6 @@ void EcuM_StartupTwo_Partition_QM(void)
 {
     if (EcuM_World.current_state == ECUM_STATE_STARTUP_TWO) {
 
-#if defined(USE_BSWM)
-        /* @req SWS_EcuMf_00016 */
-        BswM_Init(EcuM_World.config->PostBuildConfig->BswMConfigPtr);
-#endif
-
         // Initialize drivers that don't need NVRAM data for QM paritition
         EcuM_AL_DriverInitTwo_Partition_QM(EcuM_World.config);
 

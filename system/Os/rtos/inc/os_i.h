@@ -15,7 +15,9 @@
 #ifndef OS_I_H_
 #define OS_I_H_
 
-#define NO_TASK_OWNER   (TaskType)(~0U)
+#define NO_TASK_OWNER       (TaskType)(~0U)
+#define STACK_PATTERN       0x42u        /* Pattern that the stack that unused stack space is filled with */
+
 
 #include "arc_assert.h"
 #include <stdlib.h>
@@ -117,19 +119,20 @@ static inline void Os_CallErrorHook(StatusType error) {
 
 #if (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
 // to check the address validity of the out parameter supplied to the Os service
-static inline StatusType Os_ValidateAddressRange(uint32 outParam) {
-    StatusType status = E_OK;
+static inline boolean Os_ValidAddressRange( uint32 addr, uint32 size ) {
+    const OsAppConstType *aConstP = Os_ApplGetConst(GetApplicationID());
+    boolean rv = FALSE;
 
-	if (Os_AppConst[OS_SYS_PTR->currApplId].trusted == false) {
-		if (!((((uint32_t)Os_AppConst[OS_SYS_PTR->currApplId].dataStart <= (uint32_t)outParam)
-				&& ((uint32_t)Os_AppConst[OS_SYS_PTR->currApplId].dataEnd > (uint32_t)outParam)) ||
-			 (((uint32_t)Os_AppConst[OS_SYS_PTR->currApplId].bssStart <= (uint32_t)outParam)
- 				&& ((uint32_t)Os_AppConst[OS_SYS_PTR->currApplId].bssEnd > (uint32_t)outParam))))
-		{
-			status = E_OS_ILLEGAL_ADDRESS;
-		}
-	}
-	return status;
+    /* data and bss, check dataAddr */
+    if( aConstP->trusted == TRUE ) {
+        rv = TRUE;
+    } else {
+        if( ((addr >= (uint32)aConstP->dataStart ) && ( (addr+size) < (uint32)aConstP->dataEnd )) ||
+            ((addr >= (uint32)aConstP->bssStart ) && ( (addr+size) < (uint32)aConstP->bssEnd ) ) ) {
+            rv = TRUE;
+        }
+    }
+    return rv;
 }
 
 #endif

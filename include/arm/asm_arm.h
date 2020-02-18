@@ -25,9 +25,9 @@
 #define EXC_SVC_CALL                    4
 
 /* Exception flags  */
-#define EXC_NOT_HANDLED 1
-#define EXC_HANDLED     2
-#define EXC_ADJUST_ADDR 4
+#define EXC_NOT_HANDLED 1UL
+#define EXC_HANDLED     2UL
+#define EXC_ADJUST_ADDR 4UL
 
 #endif
 

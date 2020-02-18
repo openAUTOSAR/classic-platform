@@ -214,7 +214,7 @@ static int newFileNo(void) {
 
 static int validFileNo(int fileno) {
 
-    return (fileno <= MAX_OPEN_FILES) && (openFiles[fileno].fileNo != 0);
+    return (fileno < MAX_OPEN_FILES) && (openFiles[fileno].fileNo != 0);
 }
 
 #if defined(CFG_FS_RAM)

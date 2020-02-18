@@ -31,57 +31,58 @@
 /* ----------------------------[private define]------------------------------*/
 #if (OS_SC3 == STD_ON ) || (OS_SC4 == STD_ON )
 
-#define OS_TRAP_OS_IDX          1ul
+/*
+ * In order to separate the different traps from each other the index is
+ * split into two 16-bits fields:
+ *
+ *   3                    2                   1
+ *  1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
+ * |         Trap Index            |        Service Index          |
+ *
+ *
+ *   Prefix          Trap Index
+ *   -------------------------------------------
+ *   SYS_CALL_          0
+ *   OS_TRAP_           1
+ *
+ *
+ */
 
-#define OS_TRAP_OS_IDX_SHIFTED          (OS_TRAP_OS_IDX << 16u)
+
+
+
+#define OS_TRAP_OS_IDX                          1ul
+
+#define OS_TRAP_OS_IDX_SHIFTED                  (OS_TRAP_OS_IDX << 16u)
 
 /* Index to trap functions */
-#if defined(CFG_PPC)
+#if defined(CFG_PPC) || defined(CFG_TMS570)
 #define OS_TRAP_INDEX_Os_SetPrivilegedMode      (0u + OS_TRAP_OS_IDX_SHIFTED)
 #define OS_TRAP_INDEX_Irq_GenerateSoftInt       (2u + OS_TRAP_OS_IDX_SHIFTED)
+#define OS_TRAP_INDEX_Irq_AckSoftInt            (3u + OS_TRAP_OS_IDX_SHIFTED)
 #else
 #define OS_TRAP_INDEX_Reserved                  (0UL)
 #define OS_TRAP_INDEX_Os_ArchToPrivilegedMode   (-1UL)
 #define OS_TRAP_INDEX_Irq_GenerateSoftInt       (-2UL)
 #endif
 
-#if defined(CFG_TMS570)
-#define OS_ARM_SERVICE_EXCEPTION_MAP            (0x80UL) // Masking variable with 8th bit set to differentiate array index between Os_TrapList and Os_ServiceList
-#if defined(USE_WDG)
-#define OS_TRAPLIST_INDEX_Wdg_Hw_KickWdg                    (0x3UL)  // Array index for Wdg_Hw_KickWdg function in Os_TrapList
-#define OS_TRAPLIST_INDEX_Wdg_Hw_SetTriggerCondition        (0x4UL)
-#define OS_TRAPLIST_INDEX_Mcu_Hw_PerformReset               (0x5UL)
-#define OS_TRAP_INDEX_Wdg_Hw_KickWdg                        (OS_ARM_SERVICE_EXCEPTION_MAP | OS_TRAPLIST_INDEX_Wdg_Hw_KickWdg)
-#define OS_TRAP_INDEX_Wdg_Hw_SetTriggerCondition            (OS_ARM_SERVICE_EXCEPTION_MAP | OS_TRAPLIST_INDEX_Wdg_Hw_SetTriggerCondition)
-#define OS_TRAP_INDEX_Mcu_Hw_PerformReset                   (OS_ARM_SERVICE_EXCEPTION_MAP | OS_TRAPLIST_INDEX_Mcu_Hw_PerformReset)
-#endif
-#endif
 /* ----------------------------[public define]------------------------------*/
 /* OS trap internal functions */
-#define OS_TRAP_Irq_GenerateSoftInt(_a1)       SYS_CALL_1( OS_TRAP_INDEX_Irq_GenerateSoftInt,_a1 )
+#define OS_TRAP_Irq_GenerateSoftInt(_a1)        SYS_CALL_1( OS_TRAP_INDEX_Irq_GenerateSoftInt,_a1 )
+#define OS_TRAP_Irq_AckSoftInt(_a1)             SYS_CALL_1( OS_TRAP_INDEX_Irq_AckSoftInt,_a1 )
+
 
 /* PPC */
-#if defined(CFG_PPC)
+#if defined(CFG_PPC) || defined(CFG_TMS570)
 #define OS_TRAP_Os_SetPrivilegedMode(_a1)      SYS_CALL_0( OS_TRAP_INDEX_Os_SetPrivilegedMode )
-#endif
-
-/* ARM */
-#if defined(CFG_TMS570)
-#define OS_TRAP_Os_ArchToPrivilegedMode()      SYS_CALL_0( OS_TRAP_INDEX_Os_ArchToPrivilegedMode )
-#if defined(USE_WDG)
-#define OS_TRAP_Wdg_Hw_KickWdg()                    SYS_CALL_0( OS_TRAP_INDEX_Wdg_Hw_KickWdg )
-#define OS_TRAP_Wdg_Hw_SetTriggerCondition(_a1)     SYS_CALL_1( OS_TRAP_INDEX_Wdg_Hw_SetTriggerCondition, _a1 )
-#define OS_TRAP_Mcu_Hw_PerformReset()               SYS_CALL_0( OS_TRAP_INDEX_Mcu_Hw_PerformReset )
-#endif // USE_WDG
-#endif // CFG_TMS570
-
-/* AURIX */
-#if defined(CFG_TC2XX)
-#define OS_TRAP_Os_ArchToPrivilegedMode(_a1)      SYS_CALL_1( OS_TRAP_INDEX_Os_ArchToPrivilegedMode, _a1)
+#elif defined(CFG_TC2XX)
+#define OS_TRAP_Os_ArchToPrivilegedMode(_a1)   SYS_CALL_1( OS_TRAP_INDEX_Os_ArchToPrivilegedMode, _a1)
 #endif
 
 #else  /* for OS_SC1 or OS_SC2 */
-#define OS_TRAP_Irq_GenerateSoftInt  	       Irq_GenerateSoftInt
+
+#define OS_TRAP_Irq_GenerateSoftInt            Irq_GenerateSoftInt
+#define OS_TRAP_Irq_AckSoftInt                 Irq_AckSoftInt
 
 #if defined(CFG_PPC)
 #define OS_TRAP_Os_SetPrivilegedMode(_a1)

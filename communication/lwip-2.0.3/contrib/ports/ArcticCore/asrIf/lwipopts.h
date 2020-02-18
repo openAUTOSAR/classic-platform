@@ -17,7 +17,7 @@
 #define LWIP_CHECKSUM_ON_COPY   1
 
 #define TCPIP_MBOX_SIZE        50
-#define MEMP_NUM_NETBUF        10
+#define MEMP_NUM_NETBUF        20
 #define MEMP_NUM_TCPIP_MSG_INPKT 20
 
 /* We want to be notified when the link changes status. */

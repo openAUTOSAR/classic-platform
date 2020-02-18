@@ -94,6 +94,7 @@ typedef struct {
 
 typedef struct OsAppVar {
     _Bool trusted;                  /**< @brief just a copy from const */
+    uint32      appId;              /**< @brief just a copy from const */
     ApplicationStateType state;		/**< @brief The current state of the application */
     uint32  regs[APPL_REGS_CNT];               /**< @brief Precalc register used by the MPU */
 #if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )

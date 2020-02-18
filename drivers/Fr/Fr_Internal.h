@@ -72,6 +72,18 @@ Std_ReturnType Fr_Internal_GetChiPocState(const Fr_ContainerType *Fr_Cfg, uint8 
 Std_ReturnType Fr_Internal_SetTxData(const Fr_ContainerType *Fr_Cfg, uint8 Fr_CtrlIdx, const uint8* Fr_LSduPtr, uint8 Fr_LSduLength, uint16 Fr_MsgBuffrIdx);
 Std_ReturnType Fr_Internal_CheckHeader(const Fr_ContainerType *Fr_Cfg, uint8 Fr_CtrlIdx, uint32 trigIdx);
 Std_ReturnType Fr_Internal_CheckNewData(const Fr_ContainerType *Fr_Cfg, uint8 Fr_CtrlIdx, uint16 msgBufferIdx);
+
+/**
+ * @brief Get new RX data. Received data is copied to Fr_LSduPtr and Fr_LSduLengthPtr is updated
+ *        with the length.
+ * @param Fr_Cfg			Pointer to the flexray configuration.
+ * @param Fr_CtrlIdx		Index of flexray controllers.
+ * @param trigIdx			Index into the trigger configuration.
+ * @param msgBufferIdx      Index into the message buffers.
+ * @param Fr_LSduPtr		Pointer to data to data to receive.
+ * @param Fr_LSduLengthPtr  Pointer to lengh of the data. Will be update by function.
+ * @return
+ */
 Std_ReturnType Fr_Internal_GetNewData(const Fr_ContainerType *Fr_Cfg, uint8 Fr_CtrlIdx, uint32 trigIdx,
                                       uint16 msgBufferIdx, uint8* Fr_LSduPtr, uint8* Fr_LSduLengthPtr);
 

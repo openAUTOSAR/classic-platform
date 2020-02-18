@@ -78,6 +78,12 @@ Std_ReturnType Rte_Switch_DcmEcuReset_DcmEcuReset(uint8 resetMode)
     }
     return E_OK;
 }
+
+Std_ReturnType Rte_Switch_DcmControlDTCSetting_DcmControlDTCSetting(uint8 mode)
+{
+    (void)mode;
+    return E_OK;
+}
 #endif
 
 /* @req DCM754 */

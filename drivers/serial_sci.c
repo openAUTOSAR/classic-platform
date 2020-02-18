@@ -41,8 +41,8 @@
 #define UARTCR_TXEN				(1<<(31-27))
 #define UARTCR_WL_8BIT			(1<<(31-30))
 
-#define SCI_BAUD                57600
-#define SCI_UNIT                0
+#define SCI_BAUD                57600   // 4800 || 9600 || 19200 || 57600 || 115200
+#define SCI_UNIT                0       // 0    || 1    || 2
 
 #if defined(CFG_MPC5645S)
 #define DTFTFF DTF
@@ -52,12 +52,16 @@
 #define LINFLEX LINFLEX_0
 #elif (SCI_UNIT==1)
 #define LINFLEX LINFLEX_1
+#elif (SCI_UNIT==2)
+#define LINFLEX LINFLEX_2
 #endif
 #else
 #if (SCI_UNIT==0)
 #define LINFLEX LINFlexD_0
 #elif (SCI_UNIT==1)
 #define LINFLEX LINFlexD_1
+#elif (SCI_UNIT==2)
+#define LINFLEX LINFlexD_2
 #else
 #error Not a valid unit
 #endif
@@ -68,9 +72,6 @@ uint8 isOpen = 0;
 #define SCI_RX_FIFO     0
 #define SCI_RX_BUFFER   1
 #define SCI_RX_MODE    SCI_FIFO
-
-
-
 
 /* ----------------------------[private macro]-------------------------------*/
 /* ----------------------------[private typedef]-----------------------------*/
@@ -100,31 +101,27 @@ static int SCI_Open(const char *path, int oflag, int mode) {
     LINFLEX.UARTCR.R = (1UL << 0U); /* Enable UART mode */
 
     // 0x0233;* Enable UART mode */
-    LINFLEX.UARTCR.R =
-                            ((rxFifo << (31U - 22U)) | /* 0 - RFBM (RX FIFO mode)*/
-                            (0UL << (31U - 23U)) | /* 0 - TFBM (TX FIFO mode)*/
-                            (0UL << (31U - 24U)) | /* 0 - WL1 (always 8-bits transfers)*/
-                            (0UL << (31U - 25U)) | /* 0 - parity (ignore) */
-                            (1UL << (31U - 26U)) | /* 1 - Receiver enabled */
-                            (1UL << (31U - 27U)) | /* 1 - Transmitter enabled */
-                            (0UL << (31U - 29U)) | /* 0 - Parity disabled */
-                            (1UL << (31U - 30U)) | /* 1 - WL0 (word length = 8) */
-                            (1UL << (31U - 31U))); /* 1 - UART mode */
+    LINFLEX.UARTCR.R = ((rxFifo << (31U - 22U)) | /* 0 - RFBM (RX FIFO mode)*/
+                        (0UL << (31U - 23U)) | /* 0 - TFBM (TX FIFO mode)*/
+                        (0UL << (31U - 24U)) | /* 0 - WL1 (always 8-bits transfers)*/
+                        (0UL << (31U - 25U)) | /* 0 - parity (ignore) */
+                        (1UL << (31U - 26U)) | /* 1 - Receiver enabled */
+                        (1UL << (31U - 27U)) | /* 1 - Transmitter enabled */
+                        (0UL << (31U - 29U)) | /* 0 - Parity disabled */
+                        (1UL << (31U - 30U)) | /* 1 - WL0 (word length = 8) */
+                        (1UL << (31U - 31U))); /* 1 - UART mode */
 
     /**
      * Baud = Fper / ( 16 *LFDIV )
      *
      */
 
-    pClk = Mcu_Arc_GetPeripheralClock(PERIPHERAL_CLOCK_LIN_A);
+    pClk = Mcu_Arc_GetPeripheralClock(PERIPHERAL_CLOCK_LIN_A); // Choose clock based on architecture (irq_mpc*.h)
 
-#if (SCI_BAUD == 57600)
-    // 57600
+#if (SCI_BAUD == 57600) || (SCI_BAUD == 9600) || (SCI_BAUD == 19200) || (SCI_BAUD == 4800)
     LINFLEX.LINIBRR.B.DIV_M = pClk / (16 * SCI_BAUD);
-    LINFLEX.LINFBRR.B.DIV_F = (16 * (pClk % (16 * SCI_BAUD)))
-            / (16 * SCI_BAUD);
+    LINFLEX.LINFBRR.B.DIV_F = (16 * (pClk % (16 * SCI_BAUD))) / (16 * SCI_BAUD);
 #elif (SCI_BAUD == 115200)
-    // 115200
     LINFLEX.LINIBRR.B.DIV_M = pClk / (16 * SCI_BAUD);
     LINFLEX.LINFBRR.B.DIV_F = (16 * (pClk % (16 * SCI_BAUD))) / (16 * SCI_BAUD);
 #else
@@ -144,9 +141,8 @@ static int SCI_Open(const char *path, int oflag, int mode) {
 int SCI_Write(uint8_t *data, size_t nbytes) {
 
     if (isOpen == 0) {
-        SCI_Open(NULL,0,0);
+        SCI_Open(NULL, 0, 0);
     }
-
 
     int i = 0;
 
@@ -166,7 +162,7 @@ int SCI_Write(uint8_t *data, size_t nbytes) {
 
 static int SCI_Read(uint8_t *data, size_t nbytes) {
     if (isOpen == 0) {
-        SCI_Open(NULL,0,0);
+        SCI_Open(NULL, 0, 0);
     }
 
     int i = 0;
@@ -180,7 +176,6 @@ static int SCI_Read(uint8_t *data, size_t nbytes) {
         while (LINFLEX.UARTSR.B.DRFRFE == 1) {}
 #endif
 
-
         data[i] = LINFLEX.BDRM.B.DATA4;
         i++;
 
@@ -190,9 +185,12 @@ static int SCI_Read(uint8_t *data, size_t nbytes) {
     return i;
 }
 
-
-
-DeviceSerialType SCI_Device = { .device.type = DEVICE_TYPE_CONSOLE,
-    .device.name = "serial_sci", .name = "serial_sci", .read = SCI_Read,
-    .write = SCI_Write, .open = SCI_Open, };
+DeviceSerialType SCI_Device = {
+        .device.type = DEVICE_TYPE_CONSOLE,
+        .device.name = "serial_sci",
+        .name = "serial_sci",
+        .read = SCI_Read,
+        .write = SCI_Write,
+        .open = SCI_Open,
+        };
 

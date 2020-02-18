@@ -23,7 +23,12 @@
 /* @req CANIF409 */
 
 void CanIf_TxConfirmation( PduIdType canTxPduId );
+
+#if defined(CFG_CANIF_ASR_4_3_1)
+void CanIf_RxIndication (const Can_HwType* Mailbox, const PduInfoType* PduInfoPtr);
+#else
 void CanIf_RxIndication( Can_HwHandleType Hrh, Can_IdType CanId, uint8 CanDlc, const uint8 *CanSduPtr );
+#endif
 
 void CanIf_CancelTxConfirmation(PduIdType canTxPduId,  const PduInfoType *pduInfoPtr);
 

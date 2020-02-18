@@ -29,7 +29,7 @@ COMPILER_FLAVOR=s32_newlib
 
 # Default cross compiler
 COMPILER_FLAVOR=s32_newlib
-DEFAULT_CROSS_COMPILE = /c/devtools/Freescale/S32DS_Power_v2017.R1/Cross_Tools/powerpc-eabivle-4_9/bin/powerpc-eabivle-
+DEFAULT_CROSS_COMPILE = /c/devtools/Freescale/S32_Power_v1.2/Cross_Tools/powerpc-eabivle-4_9/bin/powerpc-eabivle-
 DEFAULT_CW_COMPILE= /c/devtools/Freescale/cw_mpc5xxx_2.10
 DEFAULT_DIAB_COMPILE = /c/devtools/WindRiver/diab/5.9.4.8/WIN32
 DEFAULT_GHS_COMPILE = /c/devtools/ghs/comp_201314p

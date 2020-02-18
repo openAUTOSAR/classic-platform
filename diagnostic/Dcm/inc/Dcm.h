@@ -31,7 +31,7 @@
 #define DCM_VENDOR_ID                       60u
 
 #define DCM_SW_MAJOR_VERSION    8u
-#define DCM_SW_MINOR_VERSION   	6u
+#define DCM_SW_MINOR_VERSION   	7u
 #define DCM_SW_PATCH_VERSION    0u
 #define DCM_AR_MAJOR_VERSION    DCM_AR_RELEASE_MAJOR_VERSION
 #define DCM_AR_MINOR_VERSION    DCM_AR_RELEASE_MINOR_VERSION
@@ -151,5 +151,6 @@ void Dcm_ExternalProcessingDone(Dcm_MsgContextType* pMsgContext);
 #ifdef DCM_NOT_SERVICE_COMPONENT
 Std_ReturnType Rte_Switch_DcmEcuReset_DcmEcuReset(Dcm_EcuResetType resetType);
 Std_ReturnType Rte_Switch_DcmDiagnosticSessionControl_DcmDiagnosticSessionControl(Dcm_SesCtrlType session);
+Std_ReturnType Rte_Switch_DcmControlDTCSetting_DcmControlDTCSetting(uint8 mode);
 #endif
 #endif /*DCM_H_*/

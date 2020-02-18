@@ -151,8 +151,6 @@ OS_INC=Os/rtos/inc
 OSAL_ARCH=system/Os/osal
 ARCH_KERNEL_PATH-y = $(OSAL_ARCH)/$(ARCH_FAM)/$(ARCH)
 ARCH_DRIVER_PATH-y = mcal/arch/$(ARCH)
-ARCH_MCU_DRIVER_PATH-y = mcal/arch/$(ARCH_MCU)
-
 
 CFG_CC_$(COMPILER)=y
 
@@ -415,7 +413,7 @@ obj-y := $(filter-out $(rm-obj-y),$(obj-y))
 # Compile
 %.o: %.c
 	@echo "  >> CC $(notdir $<)"
-	$(Q)$(CC) $(filter-out $(rm-cflags),$(CFLAGS)) $(CFLAGS_$@) $(cflags-post-y) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y) $(DEF_$@)) $(abspath $<)
+	$(Q)$(CC_PRE)$(CC) $(filter-out $(rm-cflags),$(CFLAGS)) $(CFLAGS_$@) $(cflags-post-y) -o $(goal) $(addprefix -I,$(inc-y)) $(addprefix -D,$(def-y) $(DEF_$@)) $(abspath $<)
 	$(do-compile-post)
 		
 # run lint if enabled

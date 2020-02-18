@@ -384,6 +384,7 @@ void Os_ApplStart( void ) {
         Os_AppVar[i].state = APPLICATION_ACCESSIBLE;
 
         Os_AppVar[i].trusted = Os_AppConst[i].trusted;
+        Os_AppVar[i].appId = Os_AppConst[i].appId;
 
 #if ((OS_SC3 == STD_ON) || (OS_SC4 == STD_ON))
         if( Os_AppConst[i].StartupHook != NULL ) {

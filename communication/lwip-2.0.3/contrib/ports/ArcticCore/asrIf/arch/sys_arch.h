@@ -32,7 +32,7 @@
 #ifndef __SYS_ARCH_H__
 #define __SYS_ARCH_H__
 
-#include "os.h"
+#include "Os.h"
 #include "os_sem.h"
 #include "os_mbox.h"
 #include "Std_Types.h"

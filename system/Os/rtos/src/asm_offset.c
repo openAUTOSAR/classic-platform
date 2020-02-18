@@ -52,9 +52,6 @@ void  asm_foo(void) {
     DECLARE(APP_INT_NEST_CNT,       offsetof(OsAppVarType, nestCnt));
     DECLARE(APP_INT_STACK,          offsetof(OsAppVarType, intStack));
     DECLARE(APP_SAVED_INT_STACK,    offsetof(OsAppVarType, savedIntStack));
-#if defined(CFG_TMS570)
-    DECLARE(OS_ARM_SERVICE_EXCEPTION_MAP_ASM , OS_ARM_SERVICE_EXCEPTION_MAP);
-#endif
 #endif
 #if defined(__GNUC__) || defined(__ghs__)
 }

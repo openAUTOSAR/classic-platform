@@ -17,7 +17,7 @@
 /* ----------------------------[includes]------------------------------------*/
 #include "os_i.h"
 
-#if defined(CFG_LOG) && (LOG_OS_COUNTER)
+#if defined(CFG_LOG) && defined(LOG_OS_COUNTER)
 #define _LOG_NAME_ "os_cnt"
 #endif
 #include "log.h"
@@ -133,7 +133,7 @@ StatusType GetCounterValue( CounterType counter_id , TickRefType tick_ref)
     OS_VALIDATE_STD_2(IsCounterValid(counter_id),E_OS_ID,
     		          OSServiceId_GetCounterValue,counter_id,tick_ref);    /* @req SWS_Os_00376 */
 #if (OS_SC3==STD_ON) || (OS_SC4==STD_ON)
-    OS_VALIDATE_STD_2( (OS_VALIDATE_ADDRESS_RANGE(tick_ref) != E_OS_ILLEGAL_ADDRESS) , E_OS_ILLEGAL_ADDRESS ,
+    OS_VALIDATE_STD_2( (OS_VALIDATE_ADDRESS_RANGE(tick_ref,sizeof(TickType)) ==  TRUE ) , E_OS_ILLEGAL_ADDRESS ,
     		           OSServiceId_GetCounterValue,counter_id,tick_ref);/*@req SWS_Os_00051 */
 #endif
 
@@ -208,9 +208,9 @@ StatusType GetElapsedValue ( CounterType counter_id, TickRefType val, TickRefTyp
     OS_VALIDATE_STD_3( (elapsed_val != NULL), E_OS_PARAM_POINTER,
     		           OSServiceId_GetElapsedValue, counter_id, val,elapsed_val);
 #if (OS_SC3==STD_ON) || (OS_SC4==STD_ON)
-    OS_VALIDATE_STD_3( (OS_VALIDATE_ADDRESS_RANGE(val) != E_OS_ILLEGAL_ADDRESS) , E_OS_ILLEGAL_ADDRESS ,
+    OS_VALIDATE_STD_3( (OS_VALIDATE_ADDRESS_RANGE(val, sizeof(TickType)) == TRUE ) , E_OS_ILLEGAL_ADDRESS ,
     		           OSServiceId_GetElapsedValue, counter_id, val,elapsed_val);/*@req SWS_Os_00051 */
-    OS_VALIDATE_STD_3( (OS_VALIDATE_ADDRESS_RANGE(elapsed_val) != E_OS_ILLEGAL_ADDRESS) , E_OS_ILLEGAL_ADDRESS ,
+    OS_VALIDATE_STD_3( (OS_VALIDATE_ADDRESS_RANGE(elapsed_val, sizeof(TickType)) == TRUE ) , E_OS_ILLEGAL_ADDRESS ,
     		           OSServiceId_GetElapsedValue, counter_id, val,elapsed_val);/*@req SWS_Os_00051 */
 #endif
     OS_VALIDATE_STD_3( (Os_SysIntAnyDisabled() == FALSE) , E_OS_DISABLEDINT,

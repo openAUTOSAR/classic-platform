@@ -186,10 +186,10 @@ typedef enum {
 }Dcm_DspSessionForBootType;
 // 10.2.44
 typedef struct {
+    uint32                      DspSessionP2ServerMax;      // (1)
+    uint32                      DspSessionP2StarServerMax;  // (1)
     Dcm_SesCtrlType             DspSessionLevel;            // (1)
     Dcm_SesCtrlType             ArcDspRteSessionLevelName;
-    uint16			            DspSessionP2ServerMax;		// (1)
-    uint16			            DspSessionP2StarServerMax;	// (1)
     Dcm_DspSessionForBootType   DspSessionForBoot;
     boolean			            Arc_EOL;
 } Dcm_DspSessionRowType;
@@ -588,11 +588,11 @@ typedef struct {
 
 // 10.2.18
 typedef struct {
-    uint16			TimStrP2ServerMax;		// (1)
-    uint16			TimStrP2ServerMin;		// (1)
-    uint16			TimStrP2StarServerMax;	// (1)
-    uint16			TimStrP2StarServerMin;	// (1)
-    uint16 			TimStrS3Server;			// (1)
+//    uint16			TimStrP2ServerMax;		// (1)
+//    uint16			TimStrP2ServerMin;		// (1)
+    uint32			TimStrP2ServerAdjust;	// (1)
+    uint32			TimStrP2StarServerAdjust;	// (1)
+    uint32 			TimStrS3Server;			// (1)
     const boolean	Arc_EOL;
 } Dcm_DslProtocolTimingRowType;
 
@@ -710,13 +710,13 @@ typedef struct {
     Dcm_DslLocalBufferType	localRxBuffer;
     Dcm_DslLocalBufferType	localTxBuffer;
     boolean					diagnosticActiveComM; //
-    uint16					S3ServerTimeoutCount;
+    uint32					S3ServerTimeoutCount;
     boolean					S3ServerStarted;
     uint8					responsePendingCount;
     Dcm_SecLevelType		securityLevel;
     Dcm_SesCtrlType			sessionControl;
     Dcm_DslLocalBufferType  PeriodicTxBuffer;
-    uint16					preemptTimeoutCount;
+    uint32					preemptTimeoutCount;
     PduIdType               diagResponseTxPduId;
     boolean                 isType2Tx;
 } Dcm_DslRunTimeProtocolParametersType;

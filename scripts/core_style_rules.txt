@@ -48,6 +48,7 @@
 - system/Os/osal/arm/armv7_m/kernel/system_stm32f3xx.h
 - system/Os/osal/arm/armv7_m/kernel/stm32f303xc.h
 - system/Os/osal/arm/armv7_m/kernel/s32k144.h
+- system/Os/osal/arm/armv7_m/kernel/S32K148.h
 - mcal/arch/armv7_m/src/integration/rsc_table_vayu_ipu.h
 - mcal/arch/armv7_m/src/integration/rsc_types.h
 

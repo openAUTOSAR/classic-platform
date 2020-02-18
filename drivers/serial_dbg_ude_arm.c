@@ -90,6 +90,7 @@ static int UDE_Open( const char *path, int oflag, int mode );
 
 /* ----------------------------[private variables]---------------------------*/
 DeviceSerialType UDE_Device = {
+    .device.type = DEVICE_TYPE_CONSOLE,
     .name = "serial_ude",
 //	.init = T32_Init,
     .read = UDE_Read,
@@ -103,10 +104,10 @@ DeviceSerialType UDE_Device = {
 void SendChar(int ch)
 {
   asm volatile ("                 \n\
-      SendChar_mk1:             \n\
+      1:             \n\
         MRC   %%p14,0,%%R1,%%c0,%%c1   \n\
         TST      %%R1,#0x20000000               \n\
-        BNE     SendChar_mk1         \n\
+        BNE     1b         \n\
         MCR   %%p14,0,%0,%%c0,%%c5"  : : "r" (ch) : "cc", "1" );
 }
 
@@ -114,14 +115,14 @@ void SIMIO_PutByteToHost (unsigned int Channel, unsigned char Data)
 {
   int ch=Data;
   ch|=ARM_SIMIO_ENCODE_CHANNEL(Channel);
-  SendChar(ch);   // lint !e522 Assembler function, false positive
+  SendChar(ch);   /*lint !e522 MISRA:FALSE_POSITIVE:Assembler function:[MISRA 2012 Rule 2.2, required] */
 }
 
 
 int UDE_Write (  uint8_t *data, size_t nbytes)
 {
     for ( uint32_t index = 0; index < nbytes; index++, data++) {
-        SIMIO_PutByteToHost (DEFAULT_SIMIO_CHANNEL,(unsigned char)*data);
+        SIMIO_PutByteToHost (DEFAULT_SIMIO_CHANNEL,(unsigned char)*data); /*lint !e522 MISRA:FALSE_POSITIVE:Assembler function:[MISRA 2012 Rule 2.2, required] */
     }
     return nbytes;
 }

@@ -440,7 +440,7 @@ Std_ReturnType EthTrcv_TransceiverInit(uint8 CtrlIdx)
 		/* Soft reset */
 		softReset(CtrlIdx, PHY_MMD_PCS);
     }
-
+#if !defined(CFG_S32K148)
 #if	defined(CFG_JAC6) && (ETHTRCV_AUTO_NEGOTIATE == STD_OFF)/*  ETH_NO_AUTO_NEG */
 	/* No link check done via these registers
 	hwPtr->MDIO.MDIO_USERPHYSEL0 |=  GMAC_SW_MDIO_LINKSEL;
@@ -495,7 +495,7 @@ Std_ReturnType EthTrcv_TransceiverInit(uint8 CtrlIdx)
 #endif
 	}
 
-#else //CFG_JAC6(ETH_NO_AUTO_NEG) else
+#else //CFG_JAC6 (ETH_NO_AUTO_NEG) else
 
 	/* Set auto neg advert register */
 	(void)Eth_WriteMii(CtrlIdx,PhyAddress, AUTONEG_ADVERTISE_REGISTER, 0x01e1);
@@ -521,7 +521,7 @@ Std_ReturnType EthTrcv_TransceiverInit(uint8 CtrlIdx)
 		}
 	} while (!(phyStatus & AUTO_NEG_COMPLETE)); // Should be 0x786D
 #endif //CFG_JAC6(ETH_NO_AUTO_NEG) end
-
+#endif
 #ifdef CFG_ETHTRCV_PHYLOOPBACK /* physical line test, set in build_config for use */
 	(void)Eth_ReadMii (CtrlIdx,PhyAddress, BMCR_REGISTER, &regValue);
 	regValue &= ~ENABLE_AUTO_NEGOTIATION; // disable AN

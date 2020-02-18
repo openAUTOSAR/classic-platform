@@ -95,6 +95,9 @@
 #if PDUR_SOAD_SUPPORT == STD_ON
 #include "PduR_SoAd.h"
 #endif
+#if PDUR_DOIP_SUPPORT == STD_ON
+#include "PduR_DoIP.h"
+#endif
 #if PDUR_J1939TP_SUPPORT == STD_ON
 #include "PduR_J1939Tp.h"
 #endif

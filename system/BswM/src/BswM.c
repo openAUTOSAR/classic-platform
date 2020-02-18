@@ -507,13 +507,10 @@ static inline void BswM_Internal_EndRequestProcessing ( void ) {
 /* @req BswM0045 */
 /* @req BswM0088 */
 void BswM_Init(const BswM_ConfigType* ConfigPtr) {
-    BSWM_VALIDATE_CFGPOINTER_NORV(ConfigPtr, BSWM_SERVICEID_INIT);
+    /* Validation of parameter: In the failure case when DET is enabled this function will report DET error and return */
+	BSWM_VALIDATE_CFGPOINTER_NORV(ConfigPtr, BSWM_SERVICEID_INIT);
     BSWM_VALIDATE_CFGPARAMRANGE_NORV((NULL != ConfigPtr->RuleCfg), BSWM_SERVICEID_INIT);
     BSWM_VALIDATE_CFGPARAMRANGE_NORV((BSWM_NUMBER_OF_RULES_MAX >= ConfigPtr->RuleCfg->NumberOfRules), BSWM_SERVICEID_INIT);
-
-    (void) *BswM_RuleConfigPtr;
-    (void) *BswM_ConfigPtr;
-    (void) *BswM_Rules;
 
     BswM_ConfigPtr = ConfigPtr;
     BswM_RuleConfigPtr = ConfigPtr->RuleCfg;

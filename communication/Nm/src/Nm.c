@@ -776,7 +776,7 @@ void Nm_PduRxIndication( const NetworkHandleType NetworkHandle )
 }
 
 #if (NM_STATE_CHANGE_IND_ENABLED == STD_ON)
-/** Notification that the CAN Generic NM state has changed. */
+/** Notification that the CAN or FR Generic NM state has changed. */
 void Nm_StateChangeNotification(const NetworkHandleType nmNetworkHandle, const Nm_StateType nmPreviousState, const Nm_StateType nmCurrentState )
 {
     const Nm_ChannelType* ChannelConf;
@@ -792,6 +792,15 @@ void Nm_StateChangeNotification(const NetworkHandleType nmNetworkHandle, const N
     switch(ChannelConf->BusType) {
 #if defined(USE_CANNM)
         case NM_BUSNM_CANNM:
+#if defined(USE_NM_EXTENSION)
+                Nm_Extension_WriteState(nmNetworkHandle, nmCurrentState);
+#else
+                (void)nmCurrentState;
+#endif
+        break;
+#endif
+#if defined(USE_FRNM)
+        case NM_BUSNM_FRNM:
 #if defined(USE_NM_EXTENSION)
                 Nm_Extension_WriteState(nmNetworkHandle, nmCurrentState);
 #else

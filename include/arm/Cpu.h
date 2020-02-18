@@ -167,18 +167,18 @@ typedef uint32 imask_t;
 #define CallService(index,param)
 
 #if defined(__ARMCC_VERSION)
-#define ilog2(_x)	((uint8)(32 - 1 - __builtin_clz(_x)))
+#define ilog2(_x)	((uint8)((32 - 1) - __builtin_clz(_x)))
 
 static inline int ffs( uint32 val ) {
     return 32 - __builtin_clz(val & (-val));
 }
 
 #elif defined(__ghs__)
-#define ilog2(_x)   ((uint8)(32 - 1 - __CLZ32(_x)))
+#define ilog2(_x)   ((uint8)((32 - 1) - __CLZ32(_x)))
 #elif defined(__IAR_SYSTEMS_ICC__)
-#define ilog2(_x)   ((uint8)(32 - 1 - __CLZ(_x)))
+#define ilog2(_x)   ((uint8)((32 - 1) - __CLZ(_x)))
 #else
-#define ilog2(_x)   ((uint8)(32 - 1 - __builtin_clz(_x)))
+#define ilog2(_x)   ((uint8)((32u - 1u) - __builtin_clz(_x)))
 #endif
 
 #endif /* CPU_H_ */

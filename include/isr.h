@@ -81,7 +81,6 @@ struct OsResource;
 #define ISR_INSTALL_ISR2(_name,_entry, _vector,_priority,_app)        \
         _ISR_INSTALL_ISR2(_name,_entry, __LINE__, _vector,_priority,_app)
 
-
 #define ISR_DECLARE_ISR1(_name, _entry, _unique, _vector,_priority,_app )        \
       static const OsIsrConstType _entry ## _unique = { \
             .vector = _vector,   \
@@ -112,6 +111,7 @@ struct OsResource;
 
 #define ISR_INSTALL_ISR1(_name,_entry, _vector,_priority,_app)        \
         _ISR_INSTALL_ISR1(_name,_entry, __LINE__, _vector,_priority,_app)
+
 
 #endif
 
@@ -171,6 +171,7 @@ extern OsIsrVarType Os_IsrVarList[OS_ISR_MAX_CNT];
 void Os_IsrInit( void );
 ISRType Os_IsrAdd( const OsIsrConstType * isrPtr );
 void Os_IsrAddWithId( const OsIsrConstType * isrPtr, ISRType id );
+void Os_IsrRemove( sint16 vector, sint16 type, uint8 priority, ApplicationType app );
 
 void Os_IsrGetStackInfo( OsIsrStackType *stack );
 

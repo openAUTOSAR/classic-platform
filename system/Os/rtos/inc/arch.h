@@ -24,10 +24,6 @@
 
 #include "Arc_Types.h"
 
-#ifndef STACK_PATTERN
-#define STACK_PATTERN	(0x42U)
-#endif
-
 /* Default backchain space */
 #define ARCH_BACKCHAIN_SIZE (16U)
 

@@ -257,14 +257,19 @@ void disable_gnulinux_pmc_sync_status_reader() {
  * For non Autosar tasks (gnulinux_timer, gnulinux_pmc_sync_status_reader) the behavior is
  * implementation specific.
  * */
-void TaskWrapper(int TaskId) {
+void TaskWrapper(ThreadTaskType *threadtask) {
+    if ( NULL == threadtask ) {
+        logger(LOG_ERR, "Pointer to thread variable is NULL in TaskWrapper, exiting thread.");
+        pthread_exit(NULL);
+    }
+
     while(1) {
-        pthread_mutex_lock(&ThreadTasks[TaskId].mutex_lock);
-        int thread_is_started = (ThreadTasks[TaskId].pthread_status == GNULINUX_PTHREAD_FUNCTION_STARTED);
-        pthread_mutex_unlock(&ThreadTasks[TaskId].mutex_lock);
+        pthread_mutex_lock(&threadtask->mutex_lock);
+        int thread_is_started = (threadtask->pthread_status == GNULINUX_PTHREAD_FUNCTION_STARTED);
+        pthread_mutex_unlock(&threadtask->mutex_lock);
         if (thread_is_started) {
 #ifndef _WIN32
-            ThreadTasks[TaskId].entry(); /* Call the function defined in the task entry */
+        	threadtask->entry(); /* Call the function defined in the task entry */
 #endif
         } else {
             //logger(LOG_INFO, "TaskWrapper waiting to re-activate task");
@@ -282,45 +287,37 @@ void TaskWrapper(int TaskId) {
  *
  * We need to have protection on pthread_status because if this thread is delay
  * and gnulinux_timer thread is started there may be unsynced read/writes to this pthread_status.
- *
- * IMPROVEMENT: for-loop is unnecessary, we can check directly if the
- *              task is Idle task or not.
  * */
 void* StartTask(void *arg) {
 #ifndef _WIN32
-    int i;
-    pthread_t id = pthread_self();
+	ThreadTaskType *threadtask;
 
-    for (i=0; i< (OS_TASK_CNT+GNULINUX_TASK_CNT);i++){
-    /* Normal tasks and special GNULinux tasks. eg. clock/alarm task */
-        if(pthread_equal(id,ThreadTasks[i].tid)){
-            /* General filtering of tasks */
-            switch (i) {
-                case TASK_ID_OsIdle:
-                    logger_mod((LOGGER_MOD_LINOS|LOGGER_SUB_OS_MAIN), LOG_INFO, "NOT Calling %s TaskId(%d)", ThreadTasks[i].name, i);
-                break;
+	if ( NULL == arg ) {
+		logger(LOG_ERR, "Pointer to thread variable is NULL in StartTask, exiting thread.");
+		pthread_exit(NULL);
+	}
 
-                default:
-                    pthread_mutex_lock(&ThreadTasks[i].mutex_lock);
-                    int thread_is_starting = (ThreadTasks[i].pthread_status == GNULINUX_PTHREAD_STARTING);
-                    if (thread_is_starting){
-                    	ThreadTasks[i].pthread_status = GNULINUX_PTHREAD_FUNCTION_STARTED;
-                    }
-                    pthread_mutex_unlock(&ThreadTasks[i].mutex_lock);
+    threadtask = (ThreadTaskType *)arg;
 
-                    if (thread_is_starting)
-                    {
-                        logger_mod((LOGGER_MOD_LINOS|LOGGER_SUB_OS_MAIN), LOG_INFO, "Calling %s TaskId(%d)", ThreadTasks[i].name, i);
-                        TaskWrapper(i); //Will never return
-                    }
-                    else
-                    {
-                    	logger(LOG_ERR, "Task %s TaskId(%d) is NOT in state GNULINUX_PTHREAD_STARTING", ThreadTasks[i].name, i);
-                        pthread_exit(NULL);
-                        return NULL;
-                    }
-                break;
-            }
+    if (&ThreadTasks[TASK_ID_OsIdle] == threadtask) {
+        logger_mod((LOGGER_MOD_LINOS|LOGGER_SUB_OS_MAIN), LOG_INFO, "NOT Calling %s TaskId(%d)", threadtask->name, TASK_ID_OsIdle);
+    }
+    else {
+        pthread_mutex_lock(&threadtask->mutex_lock);
+        int thread_is_starting = (threadtask->pthread_status == GNULINUX_PTHREAD_STARTING);
+        if (thread_is_starting) {
+            threadtask->pthread_status = GNULINUX_PTHREAD_FUNCTION_STARTED;
+        }
+        pthread_mutex_unlock(&threadtask->mutex_lock);
+
+        if (thread_is_starting) {
+            logger_mod((LOGGER_MOD_LINOS|LOGGER_SUB_OS_MAIN), LOG_INFO, "Calling %s", threadtask->name);
+            TaskWrapper(threadtask); //Will never return
+        }
+        else {
+            logger(LOG_ERR, "Task %s is NOT in state GNULINUX_PTHREAD_STARTING", threadtask->name);
+            pthread_exit(NULL);
+            return NULL;
         }
     }
 #endif
@@ -619,7 +616,7 @@ int start_thread( int threadId ) {
 //    sched_setaffinity( etc.
 //
 
-    err = pthread_create((pthread_t * restrict)&(ThreadTasks[threadId].tid), NULL, &StartTask, NULL);
+    err = pthread_create((pthread_t * restrict)&(ThreadTasks[threadId].tid), NULL, &StartTask, &ThreadTasks[threadId]);
 
     if (err != 0) {
         logger(LOG_ERR, "\nFailed to create thread for task (%s), error :[%s]",

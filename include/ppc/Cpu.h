@@ -39,7 +39,7 @@ typedef uint32 imask_t;
 
 // Bits EREF and others define as 64 bit regs but in 32 bits regs.
 // E.g. #define MSR_PR		BIT64TO32(49)
-#define  BIT64TO32(x)		(1U<<(63U-(x)))
+#define  BIT64TO32(x)       ((uint32)1u<<(uint32)(63u-(x)))
 
 
 

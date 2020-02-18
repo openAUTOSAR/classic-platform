@@ -595,5 +595,12 @@ typedef uint8 Dcm_EcuStartModeType;
 #define DCM_DTRSTATUS_INVISIBLE (DTRStatusType)1U
 #endif
 
+#ifndef RTE_MODE_DcmControlDTCSetting_DISABLEDTCSETTING
+#define RTE_MODE_DcmControlDTCSetting_DISABLEDTCSETTING 0U
+#endif
+
+#ifndef RTE_MODE_DcmControlDTCSetting_ENABLEDTCSETTING
+#define RTE_MODE_DcmControlDTCSetting_ENABLEDTCSETTING 1U
+#endif
 
 #endif /*DCM_TYPES_H_*/

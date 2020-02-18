@@ -21,20 +21,19 @@
 /* ----------------------------[define]--------------------------------------*/
 
 
-#define PID_IDLE			0
-#define PRIO_IDLE			0
+#define PID_IDLE                0U
 
-#define ST_READY 			1U
-#define ST_WAIT_EVENT			(1U<<1)
-#define ST_SUSPENDED		(1U<<2)
-#define ST_RUNNING			(1U<<3)
-#define ST_NOT_STARTED  	(1U<<4)
-#define ST_SLEEPING			(1U<<5)
-#define ST_WAIT_SEM		(1U<<6)
-#define ST_WAIT_MUTEX     (1U<<7)
+#define ST_READY                (uint32)1U
+#define ST_WAIT_EVENT           (1U<<(uint32)1U)
+#define ST_SUSPENDED            (1U<<(uint32)2U)
+#define ST_RUNNING              (1U<<(uint32)3U)
+#define ST_NOT_STARTED          (1U<<(uint32)4U)
+#define ST_SLEEPING             (1U<<(uint32)5U)
+#define ST_WAIT_SEM             (1U<<(uint32)6U)
+#define ST_WAIT_MUTEX           (1U<<(uint32)7U)
 
-#define ST_ISR_RUNNING		1
-#define ST_ISR_NOT_RUNNING 	2
+#define ST_ISR_RUNNING          (uint32)1U
+#define ST_ISR_NOT_RUNNING      (uint32)2U
 
 
 

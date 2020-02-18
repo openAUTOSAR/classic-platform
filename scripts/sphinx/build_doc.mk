@@ -24,7 +24,7 @@ export ROOTDIR=$(CURDIR)/../..
 export PYTHON_ROOT=/c/Python27
 
 
-export MIKTEX_ROOT?=/d/tmp/miktex/texmfs/install/miktex/bin
+export MIKTEX_ROOT?=/c/devtools/miktex/texmfs/install/miktex/bin
 export PATH:=$(PATH):$(PYTHON_ROOT):$(MIKTEX_ROOT):$(PYTHON_ROOT)/Scripts
 
 SPHINXBUILD=python -msphinx
