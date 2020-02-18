@@ -207,11 +207,13 @@ inc-y += $(inc-y-y)
 ifeq ($(COMPILER),armcc)
 cflags-y += $(addprefix -J,$(inc-system-y) $(inc-system2-y) )
 else    
-inc-y :=  $(inc-system-y) $(inc-system2-y) $(inc-y)
+inc-y :=  $(inc-system-y) $(inc-system2-y) $(inc-y) $(inc-last-y) 
 endif
 
 # Find default linker files
 inc-y += $(ROOTDIR)/scripts/linker
+
+VPATH := $(vpath-first-y) $(VPATH) $(vpath-last-y)
 
 ###############################################################################
 # POST BUILD                                                                  #

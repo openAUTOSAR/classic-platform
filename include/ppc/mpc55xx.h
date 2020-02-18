@@ -20,6 +20,8 @@
 
 #if defined(CFG_MPC5554)
 #include "mpc5554.h"
+#elif defined(CFG_MPC5777C)
+#include "MPC5777C.h"
 #elif defined(CFG_MPC5516) || defined(CFG_MPC5517)
 #include "mpc5516.h"
 #elif defined(CFG_MPC5567)
@@ -66,9 +68,9 @@
 typedef struct EDMA_TCD_STD_tag Dma_TcdType;
 
 /* Exception flags  */
-#define EXC_NOT_HANDLED	1
-#define EXC_HANDLED		2
-#define EXC_ADJUST_ADDR	4
+#define EXC_NOT_HANDLED	        1UL
+#define EXC_HANDLED		        2UL
+#define EXC_ADJUST_ADDR	        4UL
 
 
 /* CRP */

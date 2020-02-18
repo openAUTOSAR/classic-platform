@@ -19,6 +19,7 @@
 /* @req ARC_SWS_SchM_00009 The Basic Software Scheduler shall provide complementary APIs for other BSW modules to exit exclusive areas */
 
 /* @req SWS_BSW_00020 */
+/* @req ARC_SWS_SchM_00010 The SchM module shall be designed and implemented as a compile and hardware independent module. */
 #ifndef SCHM_H_
 #define SCHM_H_
 

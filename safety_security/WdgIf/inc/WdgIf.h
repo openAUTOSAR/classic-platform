@@ -56,7 +56,6 @@
 #define WDGIF_E_PARAM_DEVICE         0x01u
 #define WDGIF_E_INV_POINTER			 0x02u
 
-/*lint -esym(9003, WdgIfConfig) CONFIGURATION [MISRA 2012 Rule 8.9, advisory] needs to be generated so it cannot be defined in block scope*/
 extern const WdgIf_ConfigType WdgIfConfig;
 
 /** @req SWS_WdgIf_00016 */

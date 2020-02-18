@@ -52,11 +52,11 @@
 
 /* @req SWS_BSW_00006 */
 #define ECUM_START_SEC_VAR_CLEARED_16
-#include "EcuM_BswMemMap.h" /*lint !e9019 suppressed due to EcuM_MemMap.h include is required */
-/*lint -esym(9003,writeAllResult ) MISRA Exception: Readability (MISRA 2012 Rule 8.9, advisory)*/
+#include "EcuM_BswMemMap.h" /*lint !e9019 MISRA:OTHER:suppressed due to EcuM_MemMap.h include is needed:[MISRA 2012 Rule 20.1, advisory] */
+
 uint16 EcuM_World_SP_sync_timeout = 0;
 #define ECUM_STOP_SEC_VAR_CLEARED_16
-#include "EcuM_BswMemMap.h" /*lint !e9019 suppressed due to EcuM_MemMap.h include is required */
+#include "EcuM_BswMemMap.h" /*lint !e9019 MISRA:OTHER:suppressed due to EcuM_MemMap.h include is needed:[MISRA 2012 Rule 20.1, advisory] */
 
 /*
  * Tracking the variable for QM to sync with other partition
@@ -216,47 +216,6 @@ static inline EcuM_SP_RetStatus in_go_off_one_mode_partition_A0(void){
     return rv;
 }
 
-#if defined(USE_HTMSS)
-/*
- * Get test results from Htmss
- */
-Std_ReturnType EcuM_StartHWTests( HTMSS_TestGroupType group ) {
-
-    Std_ReturnType rv = E_OK;
-
-    // As long as return from HTMSS is ok, keep calling
-    while(rv == E_OK) {
-        rv = HTMSS_StartTest(group);
-    }
-
-    // Check if return is because of list end or error
-    if (rv == E_OK_ENDOFLIST) {
-        rv = E_OK;
-    } else {
-        rv = E_NOT_OK;
-    }
-
-    return rv;
-}
-
-/*
- * Get test results from Htmss
- */
-void EcuM_GetHWTestResults( HTMSS_TestGroupType group ) {
-
-    HTMSS_TestStatusType rv;
-
-    while(Htmss_getState() != HTMSS_IDLE) {
-
-        rv = HTMSS_GetTestStatus(group, NULL_PTR);
-
-        if(rv != HTMSS_STATUS_OK) {
-            HTMSS_StartupTestErrorHook();
-        }
-    }
-}
-#endif
-
 /*
  * Main function A0
  */
@@ -301,14 +260,12 @@ EcuM_SP_RetStatus EcuM_MainFunction_Partition_A0(EcuM_StateType current_state) {
 #if defined(USE_RTM)
 
         Rtm_EntryType EntryType;
-        
-        EntryType.moduleId = ECUM_MODULE_ID;
-        EntryType.instanceId = 0u;
-        EntryType.apiId = ECUM_MAINFUNCTION_ID;
-        EntryType.errorId = ECUM_E_ARC_PARTITION_SYNC_TIMEOUT;
-        EntryType.errorType = 0u;
 
-        Rtm_ReportFailure(EntryType);
+        EntryType.errorType = RTM_ERRORTYPE_BSW;
+        EntryType.error.bsw.moduleId = ECUM_MODULE_ID;
+        EntryType.error.bsw.errorId = ECUM_E_ARC_PARTITION_SYNC_TIMEOUT;
+
+        Rtm_ReportFailure(&EntryType);
 #endif
     }
     return rv;

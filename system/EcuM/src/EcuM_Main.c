@@ -48,20 +48,20 @@
 #define ECUM_STR   "ECUM:"
 
 /* ----------------------------[Memory Partition]---------------------------*/
-
+/*lint -save -e9019 MISRA:OTHER:suppressed due to EcuM_MemMap.h include is needed:[MISRA 2012 Rule 20.1, advisory] */
 #if defined(USE_NVM)
 #define ECUM_START_SEC_VAR_NVM_CLEARED_32
-#include "EcuM_BswMemMap.h" /*lint !e9019 suppressed due to EcuM_MemMap.h include is required */
+#include "EcuM_BswMemMap.h"
 uint32 EcuM_World_go_off_one_state_timeout = 0;
 #define ECUM_STOP_SEC_VAR_NVM_CLEARED_32
-#include "EcuM_BswMemMap.h" /*lint !e9019 suppressed due to EcuM_MemMap.h include is required */
+#include "EcuM_BswMemMap.h"
 
 #define ECUM_START_SEC_VAR_NVM_CLEARED_UNSPECIFIED
-#include "EcuM_BswMemMap.h" /*lint !e9019 suppressed due to EcuM_MemMap.h include is required */
-/*lint -esym(9003,writeAllResult ) MISRA Exception: Readability (MISRA 2012 Rule 8.9, advisory)*/
+#include "EcuM_BswMemMap.h"
+/*lint -esym(9003,writeAllResult) MISRA:OTHER:Readability:[MISRA 2012 Rule 8.9, advisory] */
 NvM_RequestResultType writeAllResult;
 #define ECUM_STOP_SEC_VAR_NVM_CLEARED_UNSPECIFIED
-#include "EcuM_BswMemMap.h" /*lint !e9019 suppressed due to EcuM_MemMap.h include is required */
+#include "EcuM_BswMemMap.h"
 #endif
 
 /* MISRA 2012 8.9 (Adv) : An object should be defined at block scope
@@ -69,22 +69,23 @@ NvM_RequestResultType writeAllResult;
  *
  * Depending on configuration it might NOT be possible.
  */
-/*lint -esym(9003, EcuM_World_go_sleep_state_timeout) MISRA Exception: Readability (MISRA 2012 Rule 8.9, advisory) */
+/*lint -esym(9003,EcuM_World_go_sleep_state_timeout) MISRA:OTHER:Readability:[MISRA 2012 Rule 8.9, advisory] */
 #define ECUM_START_SEC_VAR_CLEARED_GLOBALMASTER_UNSPECIFIED
-#include "EcuM_BswMemMap.h" /*lint !e9019 suppressed due to EcuM_MemMap.h include is required */
+#include "EcuM_BswMemMap.h"
 uint32 EcuM_World_go_sleep_state_timeout = 0;
 #define ECUM_STOP_SEC_VAR_CLEARED_GLOBALMASTER_UNSPECIFIED
-#include "EcuM_BswMemMap.h" /*lint !e9019 suppressed due to EcuM_MemMap.h include is required */
+#include "EcuM_BswMemMap.h"
 
 #ifndef ECUM_NOT_SERVICE_COMPONENT
 #define ECUM_START_SEC_VAR_INIT_UNSPECIFIED
-#include "EcuM_BswMemMap.h" /*lint !e9019 suppressed due to EcuM_MemMap.h include is required */
+#include "EcuM_BswMemMap.h"
 /** @req SWS_EcuM_00749 */
 /** @req SWS_EcuMf_00104 */
 static Rte_ModeType_EcuM_Mode currentMode = RTE_MODE_EcuM_Mode_STARTUP;
 #define ECUM_STOP_SEC_VAR_INIT_UNSPECIFIED
-#include "EcuM_BswMemMap.h" /*lint !e9019 suppressed due to EcuM_MemMap.h include is required */
+#include "EcuM_BswMemMap.h"
 #endif
+/*lint -restore */
 /* ----------------------------[End Memory Partition]---------------------------*/
 
 #if defined(USE_LDEBUG_PRINTF)
@@ -243,6 +244,7 @@ void SetCurrentState(EcuM_StateType state) {
 
 #else
     if (ECUM_STATE_APP_RUN == state) {
+        /*lint -e534 MISRA:OTHER:ignoring return value:[MISRA 2004 Info,advisory] */
         SchM_Enter_EcuM_EA_0();
         /* We have a configurable minimum time (EcuMRunMinimumDuration) we have to stay in RUN state  */
         EcuM_World_run_state_timeout = EcuM_World.config->EcuMRunMinimumDuration / ECUM_MAIN_FUNCTION_PERIOD;  /** @req SWS_EcuM_00310 */
@@ -261,7 +263,7 @@ void SetCurrentState(EcuM_StateType state) {
 }
 
 /* Note: QM code - This function is used both by EcuM_Main (non-SP) and EcuM_QM. */
-/*lint -esym(522, SetComMCommunicationAllowed) Ok when not using ComM */
+/*lint -esym(522, SetComMCommunicationAllowed) MISRA:STANDARDIZED_INTERFACE:Ok when not using ComM:[MISRA 2012 Rule 2.2, required] */
 void SetComMCommunicationAllowed(EcuM_ComMCommunicationGroupsType group, boolean Allowed) {
 
 #if defined(USE_COMM)
@@ -280,8 +282,8 @@ void SetComMCommunicationAllowed(EcuM_ComMCommunicationGroupsType group, boolean
             }
         }
 #else
-        (void)group; /*lint !e920 */
-        (void)Allowed; /*lint !e920 */
+        (void)group;  /*lint !e920 MISRA:STANDARDIZED_INTERFACE:Casting from a type to void:[MISRA 2012 Rule 1.3, required] */
+        (void)Allowed; /*lint !e920 MISRA:STANDARDIZED_INTERFACE:Casting from a type to void:[MISRA 2012 Rule 1.3, required] */
 #endif
 }
 
@@ -391,8 +393,8 @@ static void in_state_goSleep( void ) {
 		/* @req SWS_EcuM_02389 */
 		/* @req SWS_EcuM_02546 */
         for (; cMask != 0; cMask &= ~(1UL << source)) {
-            /*lint -e{734} -e{9033} , return value wont exceed more than 32 so its fine */
-            source = (uint8)ilog2(cMask);
+            /*lint -e{734} -e{9033} -e{397} -e{834} MISRA:OTHER:return value wont exceed more than 32 so its fine:[MISRA 2004 Info, advisory] */
+            source = (uint8)(ilog2(cMask));
             //			DEBUG_ECUM_CALLOUT_W_ARG("EcuM_EnableWakeupSources","0x%lx",(1ul<< source));
             EcuM_EnableWakeupSources( 1UL << source );
         }
@@ -467,7 +469,7 @@ static inline void enter_go_off_one_mode(void){
     /* @req SWS_EcuMf_00019 */
     SetComMCommunicationAllowed(ONLY_LIN, FALSE);
 
-    go_off_one_module_deinit(); /*lint !e522 CONFIGURATION [MISRA 2004 Rule 14.2, required], [MISRA 2012 Rule 2.2, required] This function may not have any functionality depending on configuration*/
+    go_off_one_module_deinit(); /*lint !e522 MISRA:CONFIGURATION:This function may not have any functionality depending on configuration:[MISRA 2012 Rule 2.2, required] */
 }
 
 
@@ -640,12 +642,11 @@ void EcuM_MainFunction(void) {
             break;
           }
 
-          /* Flow Through, Scheduler is Locked */
-          //lint -fallthrough MISRA 2004 Rule 15.2
+
+          /*lint -e{825} MISRA:STANDARDIZED_INTERFACE:Flow Through, Scheduler is Locked:[MISRA 2012 Rule 16.3, required]*/
         case ECUM_STATE_SLEEP:
             in_state_sleep();
-            /* Flow Through, Scheduler is Locked */
-            //lint -fallthrough MISRA 2004 Rule 15.2
+          /*lint -e{825} MISRA:STANDARDIZED_INTERFACE:Flow Through, Scheduler is Locked:[MISRA 2012 Rule 16.3, required]*/
         case ECUM_STATE_WAKEUP_ONE: {
             DEBUG_ECUM_STATE(EcuM_World.current_state);
 

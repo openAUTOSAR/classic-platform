@@ -15,10 +15,10 @@
 #ifndef VERSION_H_
 #define VERSION_H_
 
-#define _ARCTIC_CORE_MAJOR_         18
+#define _ARCTIC_CORE_MAJOR_         20
 #define _ARCTIC_CORE_MINOR_         0
 #define _ARCTIC_CORE_PATCHLEVEL_    0
-#define _ARCTIC_CORE_BUILDTYPE_     M2
+#define _ARCTIC_CORE_BUILDTYPE_     REL
 
 #define STR__(x)		#x
 #define STRSTR__(x) 	STR__(x)

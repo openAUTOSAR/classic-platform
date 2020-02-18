@@ -22,12 +22,10 @@
 #include "Rte_FiM_Type.h" /* @req SWS_Fim_00096 */
 #include "Dem_Types.h"
 
-typedef enum {
-    FIM_LAST_FAILED = 0,
-    FIM_NOT_TESTED,
-    FIM_TESTED,
-    FIM_TESTED_AND_FAILED
-}FiM_InhInhibitionMaskType;
+#define FIM_LAST_FAILED 		0u
+#define FIM_NOT_TESTED  		1u
+#define FIM_TESTED				2u
+#define FIM_TESTED_AND_FAILED	3u
 
 typedef struct {
     const uint16 *EventIndexList;
@@ -37,7 +35,7 @@ typedef struct {
 typedef struct {
     const uint16 *EventIndexList;
     const uint16 *InhSumIndexList;
-    const FiM_InhInhibitionMaskType *InhibitionMask;
+    const uint8 *InhibitionMask;
     FiM_FunctionIdType FID;
 }FiM_InhibitionConfigurationType;
 

@@ -14,34 +14,36 @@
 
 /** @reqSettings DEFAULT_SPECIFICATION_REVISION=4.3.0 */
 
-/*lint -e451 AUTOSAR API SWS_MemMap_00003 */
+/*lint -save -e9019 MISRA:OTHER:suppressed to be able to get the memap work:[MISRA 2012 Rule 20.1, advisory] */
+/*lint -save -e9021 MISRA:OTHER:suppressed to be able to get the memap work:[MISRA 2012 Rule 20.5, advisory]*/
 
 #define DET_MEMMAP_ERROR
 
 #ifdef DET_STATE_START_SEC_VAR_CLEARED_UNSPECIFIED
-#include "MemMap.h" /*lint !e9019 suppressed to be able to get the memap work. */
-#undef DET_MEMMAP_ERROR /*lint !e9021 suppressed to be able to get the memap work. */
-#undef DET_STATE_START_SEC_VAR_CLEARED_UNSPECIFIED /*lint !e9021 suppressed to be able to get the memap work. */
+#include "MemMap.h"
+#undef DET_MEMMAP_ERROR
+#undef DET_STATE_START_SEC_VAR_CLEARED_UNSPECIFIED
 #endif
 
 #ifdef DET_STATE_STOP_SEC_VAR_CLEARED_UNSPECIFIED
-#include "MemMap.h" /*lint !e9019 suppressed to be able to get the memmap work. */
-#undef DET_MEMMAP_ERROR /*lint !e9021 suppressed to be able to get the memap work. */
-#undef DET_STATE_STOP_SEC_VAR_CLEARED_UNSPECIFIED /*lint !e9021 suppressed to be able to get the memap work. */
+#include "MemMap.h"
+#undef DET_MEMMAP_ERROR
+#undef DET_STATE_STOP_SEC_VAR_CLEARED_UNSPECIFIED
 #endif
 
 #ifdef DET_MONITOR_START_SEC_VAR_CLEARED_UNSPECIFIED
-#include "MemMap.h" /*lint !e9019 suppressed to be able to get the memmap work. */
-#undef DET_MEMMAP_ERROR /*lint !e9021 suppressed to be able to get the memap work. */
-#undef DET_MONITOR_START_SEC_VAR_CLEARED_UNSPECIFIED /*lint !e9021 suppressed to be able to get the memap work. */
+#include "MemMap.h"
+#undef DET_MEMMAP_ERROR
+#undef DET_MONITOR_START_SEC_VAR_CLEARED_UNSPECIFIED
 #endif
 
 #ifdef DET_MONITOR_STOP_SEC_VAR_CLEARED_UNSPECIFIED
-#include "MemMap.h" /*lint !e9019 suppressed to be able to get the memmap work. */
-#undef DET_MEMMAP_ERROR /*lint !e9021 suppressed to be able to get the memap work. */
-#undef DET_MONITOR_STOP_SEC_VAR_CLEARED_UNSPECIFIED /*lint !e9021 suppressed to be able to get the memap work. */
+#include "MemMap.h"
+#undef DET_MEMMAP_ERROR
+#undef DET_MONITOR_STOP_SEC_VAR_CLEARED_UNSPECIFIED
 #endif
 
 #ifdef DET_MEMMAP_ERROR
 #error "DET error, section not mapped"
 #endif
+/*lint -restore */

@@ -77,17 +77,18 @@ AccessType CheckISRMemoryAccess( ISRType isrId,
         MemoryStartAddressType address,
         MemorySizeType size )
 {
-    //lint -e(923) MISRA 2004 11.3, MISRA 2012 11.4 (adv) Allow pointer to ptrdiff_t cast
+    /*lint -e{923} MISRA:OTHER:Allow pointer to ptrdiff_t cast:[MISRA 2012 Rule 11.4, advisory]*/
+
     ptrdiff_t addr = (ptrdiff_t)address;
     (void)addr;
     (void)size;
 
     if( isrId > (ISRType)OS_ISR_CNT ) {
-        /*lint -e{904} Return statement is necessary to avoid multiple if loops and hence increase readability in case of argument check */
+        /*lint -e{904} MISRA:OTHER:Return statement is necessary to avoid multiple if loops and hence increase readability in case of argument check:[MISRA 2012 Rule 15.5, advisory]*/
         return 0;
     }
 
-    /** !req OS449 */
+    /** !req SWS_Os_00449 */
     return 0;
 }
 /**
@@ -112,13 +113,13 @@ AccessType CheckTaskMemoryAccess( TaskType taskId,
         MemoryStartAddressType address,
         MemorySizeType size )
 {
-    //lint -e(923) MISRA 2004 11.3, MISRA 2012 11.4 (adv) Allow pointer to ptrdiff_t cast
+    /*lint -e{923} MISRA:STANDARDIZED_INTERFACE:Allow pointer to ptrdiff_t cast:[MISRA 2012 Rule 11.6, required]*/
     ptrdiff_t addr = (ptrdiff_t)address;
     (void)addr;
     (void)size;
 
     if( taskId > OS_TASK_CNT ) {
-        /*lint -e{904} Return statement is necessary to avoid multiple if loops and hence increase readability in case of argument check */
+        /*lint -e{904} MISRA:OTHER:Return statement is necessary to avoid multiple if loops and hence increase readability in case of argument check:[MISRA 2012 Rule 15.5, advisory]*/
         return 0;
     }
 
@@ -164,7 +165,8 @@ ObjectAccessType CheckObjectAccess( ApplicationType ApplId,
         )
     {
 
-		//lint -e{685, 568} Allow MISRA violations depending on configuration (if _CNT == 0)
+		/*lint -e{685} MISRA:CONFIGURATION:Allow MISRA violations depending on configuration:[MISRA 2012 Rule 14.3, required]*/
+        /*lint -e{568} MISRA:CONFIGURATION:Allow MISRA violations depending on configuration:[MISRA 2004 Info, advisory]*/
 		switch( ObjectType ) {
 			case OBJECT_ALARM:
 #if (OS_ALARM_CNT != 0)
@@ -393,6 +395,7 @@ void Os_ApplStart( void ) {
         if( Os_AppVar[i].trusted == FALSE ) {
             Os_AppVar[i].intStack = (uint8*)Os_AppConst[i].intStack.bottom - BACKCHAIN_SIZE;
             Os_AppSetIsrEndmark(i);
+            Os_AppSetIsrStartmark(i);
         }
 #endif
     }
@@ -407,7 +410,7 @@ void Os_ApplStart( void ) {
  */
 void Os_AppIsrStackPerformCheck( ApplicationType id ) {
 #if (OS_STACK_MONITORING == 1)
-        if( Os_AppIsIsrEndmarkOk(id) == FALSE ) {
+        if( (Os_AppIsIsrEndmarkOk(id) == FALSE) || (Os_AppIsIsrStartmarkOk(id) == FALSE)  ) {
 #if (OS_SC1 == STD_ON) || (OS_SC2 == STD_ON)
             /** @req SWS_Os_00068 */
             ShutdownOS(E_OS_STACKFAULT);
@@ -422,6 +425,18 @@ void Os_AppIsrStackPerformCheck( ApplicationType id ) {
         }
 #endif  /* (OS_STACK_MONITORING == 1) */
 }
+
+
+/**
+ * @brief   Function to get stack information
+ * @param id       Application Id
+ * @param stack    Pointer to stack information to fill.
+ */
+void Os_AppIsrGetStackInfo( ApplicationType id, OsAppStackType *stack ) {
+    stack->top = Os_AppConst[id].intStack.top;
+    stack->size = Os_AppConst[id].intStack.size;
+}
+
 
 #endif
 

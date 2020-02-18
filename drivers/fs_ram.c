@@ -64,6 +64,7 @@ static int ramfs_open(FSDriverType *dev, FILE *f, const char *pathname) {
 
 
 static int ramfs_close(FSDriverType *dev, FILE *f) {
+    /*lint -e586 MISRA:CONFIGURATION:argument check:[MISRA 2012 Rule 21.6, required] */
     dbg("ramfs_close no=%d\n",f->fileNo,f->filepath);
     /* WINIDEA_BP */
     return 0;

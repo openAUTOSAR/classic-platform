@@ -26,8 +26,13 @@
 
 /* ----------------------------[private define]------------------------------*/
 
-#define VECTOR_ILL		0xff
 #define ACK_INTERRUPT(_x) Irq_EOI(_x);
+
+
+ #if defined(CFG_LOG) && defined(LOG_OS_ISR)
+     #define _LOG_NAME_ "Os_Isr"
+ #endif
+ #include "log.h"
 
 /* ----------------------------[private macro]-------------------------------*/
 /* ----------------------------[private typedef]-----------------------------*/
@@ -41,10 +46,12 @@ static inline void Os_PostIsrHookTerminateI( OsIsrVarType *isrP );
 #endif
 static inline void Os_IsrResourceFreeAll( OsIsrVarType *isrPtr );
 static inline boolean Os_IsrOccupiesResources(const  OsIsrVarType *isrPtr );
+static inline ISRType Os_CheckISRinstalled( const OsIsrConstType * isrPtr );
 
 /* ----------------------------[private variables]---------------------------*/
-
+#if (!defined(CFG_TC2XX) && !defined(CFG_TC3XX))
 extern uint8 Os_VectorToIsr[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS];
+#endif
 
 #if defined(CFG_ARMV7_M)
 extern uint32 Os_ArchNestedIsr;
@@ -122,6 +129,36 @@ static inline boolean Os_IsrOccupiesResources(const  OsIsrVarType *isrPtr ) {
     return (boolean)(!(TAILQ_EMPTY(&isrPtr->resourceHead)));
 }
 
+static inline ISRType Os_CheckISRinstalled( const OsIsrConstType * isrPtr ) {
+	ISRType id;
+#if defined(CFG_TC2XX) || defined(CFG_TC3XX)
+	id = (ISRType)Irq_GetISRinstalledId((uint8) isrPtr->priority);
+#else
+	id = (ISRType)Os_VectorToIsr[isrPtr->vector + IRQ_INTERRUPT_OFFSET ];
+#endif
+	return id;
+}
+
+static inline OsIsrVarType * Os_GetIsrVarType(uint16 isrIndex, uint16 *isrVector ) {
+	OsIsrVarType *isrVPtr = NULL_PTR;
+	/*lint -e578 MISRA:CONFIGURATION:initialising index based on configuration:[MISRA 2012 Rule 5.8, required]*/
+	uint16 index;
+#if defined(CFG_TC2XX) || defined(CFG_TC3XX)
+    index = isrIndex;
+#else
+    index = Os_VectorToIsr[isrIndex];
+    *isrVector = isrIndex;
+#endif
+    if ((index != VECTOR_ILL) && (index < OS_ISR_MAX_CNT)) {
+    	isrVPtr = &Os_IsrVarList[index];
+#if defined(CFG_TC2XX) || defined(CFG_TC3XX)
+    	*isrVector = (uint16)isrVPtr->constPtr->vector;
+#endif
+    }
+
+    return isrVPtr;
+}
+
 /* ----------------------------[public functions]----------------------------*/
 
 void Os_IsrResourceAdd( struct OsResource *rPtr, OsIsrVarType *isrPtr) {
@@ -146,8 +183,8 @@ void Os_IsrResourceRemove( struct OsResource *rPtr , OsIsrVarType *isrPtr) {
         ASSERT( !TAILQ_EMPTY(&isrPtr->resourceHead) );
 
         /* The list should be popped in LIFO order */
-        /*lint -e{929, 740, 826} MISRA:EXTERNAL_FILE::[MISRA 2012 Rule 11.3, required], [MISRA 2012 Rule 11.5, advisory],
-         * 											  [MISRA 2012 Rule 15.6, required], [MISRA 2012 Rule 14.4, required], [MISRA 2012 Rule 1.3, required]*/
+        /*lint -e{929, 740, 826} MISRA:EXTERNAL_FILE::[MISRA 2012 Rule 11.3, required], [MISRA 2012 Rule 11.5, advisory]*/
+
         ASSERT( TAILQ_LAST(&isrPtr->resourceHead, head) == rPtr );
 
         /* Remove the entry */
@@ -162,11 +199,14 @@ void Os_IsrAddWithId( const OsIsrConstType * isrPtr, ISRType id ) {
 #if defined(CFG_OS_ISR_HOOKS)
     Os_IsrVarList[id].preemtedId = INVALID_ISR;
 #endif
+#if (!defined(CFG_TC2XX) && !defined(CFG_TC3XX))
     Os_VectorToIsr[isrPtr->vector + IRQ_INTERRUPT_OFFSET ] = (uint8)id;
+#endif
 #if defined(CFG_TMS570) || defined(CFG_ARMV7_M) || defined(CFG_TRAVEO)
+    /*lint -e732 MISRA:OTHER:loss of sign:[MISRA 2004 Info, advisory] */
     Irq_EnableVector2( isrPtr->entry, isrPtr->vector, isrPtr->type,  isrPtr->priority, Os_ApplGetCore(isrPtr->appOwner) );
 #elif defined(CFG_TC2XX) || defined(CFG_TC3XX)
-    Irq_EnableVector2( isrPtr->entry, isrPtr->vector, isrPtr->type,  isrPtr->priority, (int)IfxCpu_getCoreId() );
+    Irq_EnableVector2( isrPtr->entry, isrPtr->vector, (uint16)id,  isrPtr->priority, (uint8)IfxCpu_getCoreId() );
 #else
     Irq_EnableVector( isrPtr->vector, isrPtr->priority, Os_ApplGetCore(isrPtr->appOwner )  );
 #endif
@@ -179,8 +219,9 @@ void Os_IsrInit( void ) {
 
     isrCnt = OS_ISR_CNT;
     /* May be possible to do this in another way*/
+#if (!defined(CFG_TC2XX) && !defined(CFG_TC3XX))
     memset(Os_VectorToIsr,VECTOR_ILL,(uint32)NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS);
-
+#endif
 #if OS_ISR_CNT != 0
     /* Attach the interrupts */
     GetSpinlock(OS_SPINLOCK);
@@ -209,7 +250,7 @@ ISRType Os_IsrAdd( const OsIsrConstType * isrPtr ) {
     ASSERT( (isrPtr->vector + IRQ_INTERRUPT_OFFSET) < NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS );
 
     /* Check if we already have installed it */
-    installedId = (ISRType)Os_VectorToIsr[isrPtr->vector + IRQ_INTERRUPT_OFFSET ];
+    installedId = Os_CheckISRinstalled( isrPtr );
 
     if( installedId != VECTOR_ILL ) {
         /* The vector is already installed */
@@ -300,14 +341,63 @@ ApplicationType Os_IsrGetApplicationOwner( ISRType id ) {
     return rv;
 }
 
-void *Os_Isr( void *stack, uint16 vector ) {
 
-    OsIsrVarType *isrPtr =  &Os_IsrVarList[Os_VectorToIsr[vector]];
+#if ((OS_SC3 == STD_ON) || (OS_SC4 == STD_ON))
+/**
+   @brief  Check stackmarks for interrupt stack are ok.
+ * @return FALSE if the end-mark is not ok.
+ */
+static boolean Os_IsIsrStackmarkOk( void  )
+{
+    boolean rv = FALSE;
+    uint8 *top = Os_IsrStack[GetCoreID()];
+    uint8 *bottom = top + sizeof(Os_IsrStack[GetCoreID()]);
+
+    if( ( *top == STACK_PATTERN ) && ( *(bottom - 1UL) == STACK_PATTERN ) ) {
+        rv = TRUE;
+    }
+
+    return rv;
+}
+
+
+/**
+ * @brief   Perform stack check on system ISR
+ *
+ * @param id  The ID of the application
+ */
+void Os_IsrStackPerformCheck( void ) {
+#if (OS_STACK_MONITORING == 1)
+        if( Os_IsIsrStackmarkOk() == FALSE ) {
+#if (OS_SC1 == STD_ON) || (OS_SC2 == STD_ON)
+            /** @req SWS_Os_00068 */
+            ShutdownOS(E_OS_STACKFAULT);
+#elif (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
+            /** @req SWS_Os_00396
+             * If a stack fault is detected by stack monitoring AND the configured scalability
+             * class is 3 or 4, the Operating System module shall call the ProtectionHook() with
+             * the status E_OS_STACKFAULT.
+             * */
+            PROTECTIONHOOK(E_OS_STACKFAULT);
+#endif
+        }
+#endif  /* (OS_STACK_MONITORING == 1) */
+}
+
+#endif
+
+void *Os_Isr( void *stack, uint16 isrTableIndex)
+{
+    OsIsrVarType *isrPtr = NULL_PTR;
     OsTaskVarType *taskPtr = NULL_PTR;
     OsIsrVarType *oldIsrPtr = NULL_PTR;
+    uint16 vector = 0;
 #if defined(CFG_TC2XX) || defined(CFG_TC3XX)
     uint32 *CSAPtr = NULL_PTR;
 #endif
+
+    /*lint -e838 MISRA:OTHER:default value:[MISRA 2004 Info, advisory] */
+    isrPtr = Os_GetIsrVarType(isrTableIndex, &vector);
     ASSERT( isrPtr != NULL_PTR );
 
     if( isrPtr->constPtr->type == ISR_TYPE_1) {
@@ -322,7 +412,7 @@ void *Os_Isr( void *stack, uint16 vector ) {
 #if !defined(CFG_TMS570)
         ACK_INTERRUPT(vector);
 #endif
-        return stack; /*lint !e904 OTHER return since the rest of the function is applicable for ISR_TYPE_2*/
+        return stack; /*lint !e904 MISRA:OTHER:return since the rest of the function is applicable for ISR_TYPE_2:[MISRA 2012 Rule 15.5, advisory]*/
     } else {
         ASSERT( isrPtr->constPtr->type == ISR_TYPE_2 );
     }
@@ -378,23 +468,40 @@ void *Os_Isr( void *stack, uint16 vector ) {
     isrPtr->constPtr->entry();
 #else
 #if (OS_SC3==STD_ON) || (OS_SC4==STD_ON)
+    LOG_S_U32("entry: ",vector);
     {
+
         OsAppVarType *aP = Os_ApplGet(isrPtr->constPtr->appOwner);
 
         if( aP->trusted == 0) {
-            /* Os_ArchCallIsrEntry will lock and unlock interrupts (so don't do that here )
-             *
-             */
+            /* Os_ArchCallIsrEntry will lock and unlock interrupts (so don't do that here ) */
+
+            OsAppVarType *paP = NULL_PTR;
+
+            LOG_S_U32("app: ",isrPtr->constPtr->appOwner);
+
+            /* Get preemted application */
+            if( oldIsrPtr != NULL_PTR ) {
+                paP = Os_ApplGet(oldIsrPtr->constPtr->appOwner);
+                LOG_S_U32("papp: ",oldIsrPtr->constPtr->appOwner);
+            } else {
+                ASSERT(taskPtr != NULL_PTR );
+                paP = Os_ApplGet(taskPtr->constPtr->applOwnerId);
+                LOG_S_U32("papp: ",taskPtr->constPtr->applOwnerId);
+            }
+
             aP->nestCnt++;
-            Os_ArchCallIsrEntry(aP,isrPtr->constPtr->entry);
+            Os_ArchCallIsrEntry(aP,isrPtr->constPtr->entry,paP);
             Os_AppIsrStackPerformCheck( isrPtr->constPtr->appOwner );
             aP->nestCnt--;
         } else {
             Irq_Enable();
             isrPtr->constPtr->entry();
+            Os_IsrStackPerformCheck();
             Irq_Disable();
         }
     }
+    LOG_S_U32("exit: ",vector);
 #else
     Irq_Enable();
     isrPtr->constPtr->entry();
@@ -427,7 +534,7 @@ void *Os_Isr( void *stack, uint16 vector ) {
 
     isrPtr->state = ST_ISR_NOT_RUNNING;
     OS_SYS_PTR->currIsrPtr = isrPtr;
-
+    /*lint -e713 MISRA:OTHER:casting unsigned short to short:[MISRA 2004 Info, advisory]*/
     ACK_INTERRUPT(vector);
 
     --OS_SYS_PTR->intNestCnt;
@@ -441,7 +548,7 @@ void *Os_Isr( void *stack, uint16 vector ) {
 
         Os_StackPerformCheck(new_pcb);
 
-        //lint -e{9007} MISRA False positive. No side effects of Os_SchedulerResourceIsFree
+        /*lint -e{9007} MISRA:FALSE_POSITIVE:No side effects of Os_SchedulerResourceIsFree:[MISRA 2012 Rule 13.5, required]*/
         if(     (new_pcb == OS_SYS_PTR->currTaskPtr) ||
                 (OS_SYS_PTR->currTaskPtr->constPtr->scheduling == NON) ||
                 (!Os_SchedulerResourceIsFree()) )
@@ -460,6 +567,10 @@ void *Os_Isr( void *stack, uint16 vector ) {
             OS_DEBUG(D_TASK,"Found candidate %s\n",new_pcb->constPtr->name);
 #if defined(CFG_TC2XX) || defined(CFG_TC3XX)
             /* Mark context with 0, so that we can free it later */
+            /*lint -e{9027} MISRA:FALSE_POSITIVE:ASM and bitwise operations:[MISRA 2012 Rule 10.1, required]*/
+            /*lint -e{9033} MISRA:FALSE_POSITIVE:ASM and bitwise operations:[MISRA 2012 Rule 10.8, required]*/
+            /*lint -e{931} MISRA:FALSE_POSITIVE:ASM and bitwise operations:[MISRA 2012 Rule 13.2, required]*/
+            /*lint -e{923} MISRA:FALSE_POSITIVE:ASM and bitwise operations:[MISRA 2012 Rule 11.6, required]*/
             CSAPtr =  (uint32 *)CSA_TO_ADDRESS(_mfcr(CPU_PCXI));
             CSAPtr[0] = 0;
 #endif
@@ -468,9 +579,9 @@ void *Os_Isr( void *stack, uint16 vector ) {
     } else {
         /* We have a nested interrupt */
 #if (OS_SC3==STD_ON) || (OS_SC4==STD_ON)
-        Os_MMSetUserModeIsr(oldIsrPtr);
+        // Set MPU memory regions for the resuming application
+    	Os_MMSetUserModeIsr(oldIsrPtr);
 #endif
-
         /* Restore current running ISR from stack */
         OS_SYS_PTR->currIsrPtr = oldIsrPtr;
     }

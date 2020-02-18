@@ -71,6 +71,8 @@
 // Function-like macro, MISRA 2012 Directive 4.9, advisory
 -e9026
 
+// non-hidden is full of false positives
+-e9045
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -159,15 +161,27 @@
 // Do not check deprecation of the following symbols
 -esym(586, abort)
 
- // Add use of typeof(..)
+// Add use of typeof(..)
 -dtypeof=_to_semi
 +rw(_to_semi)
+
+// For assembler macros use. 
+//+rw(_up_to_brackets) 
+//-dget_spr=_up_to_brackets
+//-dget_spr=_to_semi
+
+//-emacro( 923 , get_spr, set_spr )
+//-emacro( 950 , get_spr, set_spr )
+//-emacro( 530 , get_spr, set_spr )
 
 
 // A subset of the -u warnings 
 -e526
 -e552
 -e628
+
+/* Note: 9019 PC-lint: declaration of 'XXX' before #include [MISRA 2012 Rule 20.1, advisory] */
+-e9019 
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

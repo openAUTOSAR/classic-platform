@@ -30,11 +30,13 @@
 #include "EcuM.h"
 #include "SchM_EcuM.h"
 /* @req SWS_BSW_00006 include the BSW Memory mapping header */
+/*lint -e451 MISRA:STANDARDIZED_INTERFACE:AUTOSAR need Inclusion:[MISRA 2012 Directive 4.10, required] */
+/*lint -e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR need Inclusion:[MISRA 2012 Rule 20.1, advisory]*/
 #define SCHM_START_SEC_VAR_CLEARED_ASIL_UNSPECIFIED
-#include "SchM_MemMap.h"    /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "SchM_MemMap.h"
 SCHM_DECLARE(ECUM_A0);
 #define SCHM_STOP_SEC_VAR_CLEARED_ASIL_UNSPECIFIED
-#include "SchM_MemMap.h"    /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "SchM_MemMap.h"
 
 #else
 #define SCHM_MAINFUNCTION_ECUM_A0()
@@ -45,10 +47,10 @@ SCHM_DECLARE(ECUM_A0);
 #include "SchM_Rtm.h"
 
 #define SCHM_START_SEC_VAR_CLEARED_ASIL_UNSPECIFIED
-#include "SchM_MemMap.h"    /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "SchM_MemMap.h"
 SCHM_DECLARE(RTM);
 #define SCHM_STOP_SEC_VAR_CLEARED_ASIL_UNSPECIFIED
-#include "SchM_MemMap.h"    /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "SchM_MemMap.h"
 
 #else
 #define SCHM_MAINFUNCTION_RTM()
@@ -59,10 +61,10 @@ SCHM_DECLARE(RTM);
 #include "SchM_WdgM.h"
 
 #define SCHM_START_SEC_VAR_CLEARED_ASIL_UNSPECIFIED
-#include "SchM_MemMap.h"    /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "SchM_MemMap.h"
 SCHM_DECLARE(WDGM);
 #define SCHM_STOP_SEC_VAR_CLEARED_ASIL_UNSPECIFIED
-#include "SchM_MemMap.h"    /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "SchM_MemMap.h"
 
 #else
 #define SCHM_MAINFUNCTION_WDGM()
@@ -73,10 +75,10 @@ SCHM_DECLARE(WDGM);
 #include "SchM_SafeIoHwAb.h"
 
 #define SCHM_START_SEC_VAR_CLEARED_ASIL_UNSPECIFIED
-#include "SchM_MemMap.h"    /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "SchM_MemMap.h"
 SCHM_DECLARE(SAFEIOHWAB);
 #define SCHM_STOP_SEC_VAR_CLEARED_ASIL_UNSPECIFIED
-#include "SchM_MemMap.h"    /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "SchM_MemMap.h"
 
 #else
 #define SCHM_MAINFUNCTION_SAFEIOHWAB()
@@ -95,13 +97,14 @@ void SchM_GetVersionInfo( Std_VersionInfoType *versionInfo ) {
 }
 
 /* @req ARC_SWS_SchM_00003 */
+/* @req ARC_SWS_SchM_00011 The service EcuM mainfunctions shall not be called from tasks which may invoke runnable entities. */
 TASK(SchM_Partition_A0) {
     EcuM_StateType state;
     EventMaskType Event;
     EcuM_SP_RetStatus retStatus = ECUM_SP_OK;
 
     do {
-        /*lint -save -e534 MISRA:HARDWARE_ACCESS::[MISRA 2012 Rule 17.7, required] */
+        /*lint -e534 MISRA:HARDWARE_ACCESS::[MISRA 2012 Rule 17.7, required] */
         SYS_CALL_WaitEvent((EVENT_MASK_Alarm_BswServices_Partition_A0 | EVENT_MASK_DetReportError_QM | EVENT_MASK_SynchPartition_A0));
         SYS_CALL_GetEvent(TASK_ID_SchM_Partition_A0, &Event); /*lint !e923 MISRA:FALSE_POSITIVE:SYS_CALL:[MISRA 2012 Rule 11.1, required]*/
 
@@ -143,15 +146,13 @@ TASK(SchM_Partition_A0) {
 
                     if (retStatus == ECUM_SP_PARTITION_ERR) {
 #if defined(USE_RTM)
-                        Rtm_EntryType error;
+                        Rtm_EntryType err;
 
-                        error.moduleId = SCHM_MODULE_ID;
-                        error.instanceId = 0;
-                        error.apiId = SCHM_SID_A0;
-                        error.errorId = SCHM_E_SYNCH;
-                        error.errorType = RTM_ERRORTYPE_HOOK;
+                        err.errorType = RTM_ERRORTYPE_BSW;
+                        err.error.bsw.moduleId = SCHM_MODULE_ID;
+                        err.error.bsw.errorId = SCHM_E_SYNCH;
 
-                        Rtm_ReportFailure(error);
+                        Rtm_ReportFailure(&err);
 #endif
                     } else {
                         /* Do nothing (Can be used for >2 partitions) */

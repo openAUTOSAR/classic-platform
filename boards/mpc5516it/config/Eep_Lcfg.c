@@ -1,7 +1,7 @@
-/*-------------------------------- Arctic Core ------------------------------
+/* -------------------------------- Arctic Core ------------------------------
  * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
  * Contact: <contact@arccore.com>
- * 
+ *
  * You may ONLY use this file:
  * 1)if you have a valid commercial ArcCore license and then in accordance with  
  * the terms contained in the written license agreement between you and ArcCore, 
@@ -21,6 +21,11 @@
 #include "Eep.h"
 #include "Spi.h"
 #include "debug.h"
+
+#define E2_M9525		1
+#define E2_25LC160B		2
+
+#define E2_CHIP  E2_25LC160B
 
 #if defined(USE_EA)
 extern void Ea_JobErrorNotification(void);
@@ -68,6 +73,8 @@ const Eep_ExternalDriverType EepExternalDriver = {
     .EepDataChannel	= SPI_CH_EEP_DATA,
 };
 
+
+
 const Eep_ConfigType EepConfigData[] = {
     {
     // call cycle of the job processing function during write/erase operations. Unit: [s]
@@ -78,17 +85,21 @@ const Eep_ConfigType EepConfigData[] = {
     // This parameter is the default EEPROM device mode after initialization.
     .EepDefaultMode = MEMIF_MODE_FAST,
 
+#if (E2_CHIP  == E2_25LC160B)
     // This parameter is the number of bytes read within one job processing cycle in fast mode
-    .EepFastReadBlockSize = 64,
-
+    .EepFastReadBlockSize = 32,
     // This parameter is the number of bytes written within one job processing cycle in fast mode
+    .EepFastWriteBlockSize = 32,
+#elif (E2_CHIP  == E2_M9525)
+    .EepFastReadBlockSize = 64,
     .EepFastWriteBlockSize = 64,
-
+#endif
     // This parameter is a reference to a callback function for positive job result
     .Eep_JobEndNotification = _JobEndNotify,
 
     // This parameter is a reference to a callback function for negative job result
     .Eep_JobErrorNotification = _JobErrorNotify,
+
 
     .EepNormalReadBlockSize = 4,
 
@@ -96,9 +107,16 @@ const Eep_ConfigType EepConfigData[] = {
     .EepNormalWriteBlockSize = 1,
 
     // This parameter is the used size of EEPROM device in bytes.
-    .EepSize = 0x1000,	/* 32Kb for M9525, 16Kb 25LC160B*/
-
+#if (E2_CHIP  == E2_25LC160B)
+    .EepSize = 0x800,  /* 16Kb for 25LC160B */
+#elif (E2_CHIP  == E2_M9525)
+    .EepSize = 0x8000,  /* 256Kb for M9525 */
+#endif
+#if (E2_CHIP  == E2_25LC160B)
+    .EepPageSize = 32,	/* 64 for M9525, 32 for 25LC160B, 16 for 25LC160A */
+#elif (E2_CHIP  == E2_M9525)
     .EepPageSize = 64,	/* 64 for M9525, 32 for 25LC160B, 16 for 25LC160A */
+#endif
 
     .externalDriver =  &EepExternalDriver,
     }

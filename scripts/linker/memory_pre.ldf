@@ -2,6 +2,7 @@
 #define L_FLASH_CODE_0_START 0x00000000
 
 /* Size macros */
+#define L_SIZE_8M           0x00800000
 #define L_SIZE_4M           0x00400000
 #define L_SIZE_3M           0x00300000
 #define L_SIZE_2M			0x00200000
@@ -11,6 +12,7 @@
 #define L_SIZE_512K			0x00080000
 #define L_SIZE_384K			0x00060000	
 #define L_SIZE_256K			0x00040000
+#define L_SIZE_248K			0x0003E000
 #define L_SIZE_192K			0x00030000
 #define L_SIZE_160K			0x00028000
 #define L_SIZE_128K			0x00020000
@@ -20,3 +22,4 @@
 #define L_SIZE_64K			0x00010000
 #define L_SIZE_48K			0x0000c000
 #define L_SIZE_32K			0x00008000
+#define L_SIZE_28K			0x00007000

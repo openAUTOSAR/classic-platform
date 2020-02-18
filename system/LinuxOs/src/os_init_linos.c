@@ -51,7 +51,7 @@ void InitOS( void ) {
                 if (Os_OnRunningCore(OBJECT_TASK,i)) {
 #endif
                     copyPcbParts(tmpPcbPtr,&Os_TaskConstList[i]);
-//                    logger(LOG_INFO,"InitOS adding task pid:%d name:%s prio:%d",tmpPcbPtr->constPtr->pid,tmpPcbPtr->constPtr->name,tmpPcbPtr->activePriority);
+                    logger(LOG_INFO,"InitOS adding task pid:%d name:%s prio:%d",tmpPcbPtr->constPtr->pid,tmpPcbPtr->constPtr->name,tmpPcbPtr->activePriority);
 
                     // Fill Simons struct !!
                     ThreadTasks[i].pid = tmpPcbPtr->constPtr->pid;
@@ -77,13 +77,12 @@ void InitOS( void ) {
     ThreadTasks[i].entry = gnulinux_timer;
     ThreadTasks[i].name = "TickDriveTimer";
     ThreadTasks[i].prio = 1;
-//    ThreadTasks[i].autostart = TRUE;
-    ThreadTasks[i].autostart = FALSE;
+    ThreadTasks[i].autostart = TRUE;
 
     i = TASK_ID_GNULINUX_pmc_sync_status_reader;
     //ThreadTasks[i].pid = TASK_ID_GNULINUX_pmc_sync_status_reader;
     ThreadTasks[i].entry = gnulinux_pmc_sync_status_reader;
     ThreadTasks[i].name = "SyncStatusReader";
     ThreadTasks[i].prio = 1;
-    ThreadTasks[i].autostart = FALSE;
+    ThreadTasks[i].autostart = TRUE;
 }

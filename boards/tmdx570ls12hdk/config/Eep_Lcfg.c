@@ -110,7 +110,7 @@ const Eep_ConfigType EepConfigData[] = {
     .EepPageSize = 32u,	/* 32 for 25LC160B, 16 for 25LC160A,  */
 #elif (E2_CHIP == E2_M9525)
 	// This parameter is the used size of EEPROM device in bytes.
-	.EepSize = 0x1000u,	/* 32Kb for M9525 */
+    .EepSize = 0x8000,  /* 256Kb for M9525 */
     .EepPageSize = 64u,	/* 64 for M9525 */
 #elif (E2_CHIP == E2_M95M02_A125)
 	// This parameter is the used size of EEPROM device in bytes.

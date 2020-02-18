@@ -107,7 +107,7 @@ typedef struct Os_Sys {
     Os_CoreStatusType 		status;
 } Os_SysType;
 
-/*lint -esym(9003,Os_Sys) OTHER [MISRA 2012 Rule 8.9, advisory] cannot be defined in block scope as it may be configured so several files use it*/
+/*lint -esym(9003,Os_Sys) MISRA:OTHER:cannot be defined in block scope as it may be configured so several files use it:[MISRA 2012 Rule 8.9, advisory] */
 extern Os_SysType Os_Sys[OS_NUM_CORES];
 
 #if (OS_NUM_CORES > 1)

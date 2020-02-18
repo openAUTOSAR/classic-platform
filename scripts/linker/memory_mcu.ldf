@@ -151,6 +151,11 @@
 	#define L_SRAM_CODE_CORE_2_LENGTH	L_SIZE_16K
 	#define L_SRAM_DATA_CORE_2_ORIGIN	0x52800000
 	#define L_SRAM_DATA_CORE_2_LENGTH	L_SIZE_64K
+#elif defined(CFG_MPC5777C)
+	#define L_FLASH_CODE_0_ORIGIN 		0x00800000 /* The code is placed at Large block 8M area */
+	#define L_FLASH_CODE_0_LENGTH 		L_SIZE_8M
+	#define L_SRAM_0_ORIGIN				0x40000000
+	#define L_SRAM_0_LENGTH				L_SIZE_512K
 #elif defined(CFG_ZYNQ)
 	/* No flash, map to RAM 
 	 * At FSBL handoff we have (See TRM Figure 6-11, System Memory Map During BootROM Execution) 
@@ -177,8 +182,17 @@
 #elif defined(CFG_S32K144EVB_0100)
 	#define L_FLASH_CODE_0_ORIGIN 	0x00000000
 	#define L_FLASH_CODE_0_LENGTH 	L_SIZE_512K
-	#define L_SRAM_0_ORIGIN			0x1FFF8000
-	#define L_SRAM_0_LENGTH			L_SIZE_48K
+	#define L_SRAM_0_ORIGIN			0x1FFF8000 
+	#define L_SRAM_0_LENGTH			L_SIZE_32K
+	#define L_SRAM_1_ORIGIN			0x20000000 
+	#define L_SRAM_1_LENGTH			L_SIZE_28K
+#elif defined(CFG_S32K148)
+	#define L_FLASH_CODE_0_ORIGIN 	0x00000000
+	#define L_FLASH_CODE_0_LENGTH 	L_SIZE_1M5
+	#define L_SRAM_0_ORIGIN			0x1FFE0000 
+	#define L_SRAM_0_LENGTH			L_SIZE_128K
+	#define L_SRAM_1_ORIGIN			0x20000000 
+	#define L_SRAM_1_LENGTH			0x1F000
 #elif defined(CFG_RH850F1H)
     #define L_FLASH_CODE_0_ORIGIN   0x00000000
     #define L_FLASH_CODE_0_LENGTH   L_SIZE_4M
@@ -284,6 +298,3 @@
 #endif
 
 #include "memory_post.ldf"
-
-
-

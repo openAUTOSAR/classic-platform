@@ -15,7 +15,10 @@
 /** @reqSettings DEFAULT_SPECIFICATION_REVISION=4.3.0 */
 
 /* Generic Requirements */
-
+/** @req SWS_BSW_00004 The code file structure shall contain one or more files for the implementation of 
+ * the provided BSW Module functionality: the Implementation source files
+ */
+ 
 /** @req SWS_Os_00328
  * If OsStatus is STANDARD and OsScalabilityClass is SC3 or SC4 the consistency check shall issue an error.
  * Note: This requirement is implemented in Os.chk (as requirement tagging in .chk file is not parsed, tagging is done here) */
@@ -96,13 +99,15 @@ void InitOS( void ) {
     uint32 i;
     OsTaskVarType *tmpPcbPtr;
     OsIsrStackType intStack;
+    uint8 *stackTop;
+    uint8 *stackBottom;
 
     DEBUG(DEBUG_LOW,"os_init");
 
     /* Clear sys */
     memset(OS_SYS_PTR,0,sizeof(Os_SysType));
 
-    OS_SYS_PTR->status.init_os_called = TRUE;
+    OS_SYS_PTR->status.init_os_called = TRUE; /** @req SWS_BSW_00071 */
     OS_SYS_PTR->resScheduler = &resScheduler;
 
     // Initialize suspend and disable count with higher value to avoid irq enable before os_start
@@ -125,9 +130,15 @@ void InitOS( void ) {
     // Calc interrupt stack
     Os_IsrGetStackInfo(&intStack);
     // Calculate interrupt stack, ARCH_BACKCHAIN_SIZE is common for all arch(16byes)
-    /*lint -e{923, 9033} MISRA:FALSE_POSITIVE:Pointer conversion and arithmetic operation for Stack calculation:
-     *[MISRA 2012 Rule 11.1, required], [MISRA 2012 Rule 11.4, advisory], [MISRA 2012 Rule 11.6, required] */
+    /*lint -e{923} MISRA:FALSE_POSITIVE:Pointer conversion and arithmetic operation for Stack calculation:[MISRA 2012 Rule 11.1, required] */
+    /*lint -e{9033} MISRA:FALSE_POSITIVE:Pointer conversion and arithmetic operation for Stack calculation:[MISRA 2012 Rule 10.8, required] */
     OS_SYS_PTR->intStack = (void *)((size_t)intStack.top + (size_t)intStack.size - ARCH_BACKCHAIN_SIZE);
+
+    /* Set stack pattern */
+    stackTop = (uint8 *)intStack.top;
+    *stackTop = STACK_PATTERN;
+    stackBottom = (uint8*) ((uint8 *)intStack.top + intStack.size);
+    *(stackBottom - 1UL) = STACK_PATTERN;
 
     // Init counter.. with alarms and schedule tables
     // Master core will initialize for all cores
@@ -320,7 +331,7 @@ void ShutdownOS( StatusType Error ) {
 	}
 
 	/** @req SWS_Os_00425 */
-	/*lint -e716 LINT:FALSE_POSITIVE:Infinite loop */
+	/*lint -e716 MISRA:FALSE_POSITIVE:Infinite loop:[MISRA 2004 Info, advisory] */
     /*lint -e9036 MISRA:FALSE_POSITIVE:Conditional expression not required for this while loop:[MISRA 2012 Rule 14.4, required] */
 	while(TRUE) {	}
 }

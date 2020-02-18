@@ -223,7 +223,8 @@ typedef enum
 {
   DEM_UNINITIALIZED = 0,
   DEM_PREINITIALIZED,
-  DEM_INITIALIZED
+  DEM_INITIALIZED,
+  DEM_SHUTDOWN
 } Dem_StateType; /** @req DEM169 */
 
 static Dem_StateType demState = DEM_UNINITIALIZED;
@@ -4634,7 +4635,8 @@ static boolean ageEvent(EventStatusRecType* evtStatusRecPtr) {
                 /* Set the flag,start up the storage of NVRam in main function. */
                 updatedMemory = TRUE;
             }
-            if(evtStatusRecPtr->agingCounter >= evtStatusRecPtr->eventParamRef->EventClass->AgingCycleCounterThreshold) { /* @req DEM493 */
+            if((NULL != evtStatusRecPtr->eventParamRef->EventClass->AgingCycleCounterThresholdPtr) &&
+            		(evtStatusRecPtr->agingCounter >= *evtStatusRecPtr->eventParamRef->EventClass->AgingCycleCounterThresholdPtr) ) { /* @req DEM493 */
                 /* @req DEM497 *//* Delete ff and ext data */
                 /* @req DEM161 */
                 evtStatusRecPtr->agingCounter = 0;
@@ -5785,7 +5787,7 @@ void Dem_Shutdown(void)
 #if defined(USE_DEM_EXTENSION)
     Dem_Extension_Shutdown();
 #endif
-    demState = DEM_UNINITIALIZED; /** @req DEM368 */
+    demState = DEM_SHUTDOWN; /** @req DEM368 */
 
     SchM_Exit_Dem_EA_0();
 }
@@ -5874,15 +5876,17 @@ Std_ReturnType Dem_GetIndicatorStatus( uint8 IndicatorId, Dem_IndicatorStatusTyp
 Std_ReturnType Dem_SetEventStatus(Dem_EventIdType eventId, Dem_EventStatusType eventStatus) /** @req DEM330 */
 {
     /* @req DEM330 */
+	Std_ReturnType returnCode = E_NOT_OK;
+	VALIDATE_RV(((DEM_INITIALIZED == demState) || (DEM_SHUTDOWN == demState)), DEM_SETEVENTSTATUS_ID, DEM_E_UNINIT, E_NOT_OK);
+	VALIDATE_RV(IS_VALID_EVENT_STATUS(eventStatus), DEM_SETEVENTSTATUS_ID, DEM_E_PARAM_DATA, E_NOT_OK);
+	// Ignore this API call after Dem_Shutdown()
+	if (DEM_SHUTDOWN != demState) {
+		SchM_Enter_Dem_EA_0();
 
-    VALIDATE_RV(DEM_INITIALIZED == demState, DEM_SETEVENTSTATUS_ID, DEM_E_UNINIT, E_NOT_OK);
-    VALIDATE_RV(IS_VALID_EVENT_STATUS(eventStatus), DEM_SETEVENTSTATUS_ID, DEM_E_PARAM_DATA, E_NOT_OK);
-    SchM_Enter_Dem_EA_0();
+		returnCode = handleEvent(eventId, eventStatus);
 
-    Std_ReturnType returnCode = handleEvent(eventId, eventStatus);
-
-    SchM_Exit_Dem_EA_0();
-
+		SchM_Exit_Dem_EA_0();
+	}
     return returnCode;
 }
 
@@ -6055,7 +6059,7 @@ void Dem_ReportErrorStatus( Dem_EventIdType eventId, Dem_EventStatusType eventSt
 {
     /* @req DEM330 */
     /* @req DEM107 */
-    VALIDATE_NO_RV(DEM_UNINITIALIZED != demState, DEM_REPORTERRORSTATUS_ID, DEM_E_UNINIT);
+    VALIDATE_NO_RV((DEM_UNINITIALIZED != demState), DEM_REPORTERRORSTATUS_ID, DEM_E_UNINIT);
     VALIDATE_NO_RV(IS_VALID_EVENT_STATUS(eventStatus), DEM_REPORTERRORSTATUS_ID, DEM_E_PARAM_DATA);
 
     SchM_Enter_Dem_EA_0();
@@ -6072,9 +6076,9 @@ void Dem_ReportErrorStatus( Dem_EventIdType eventId, Dem_EventStatusType eventSt
             (void)handleEvent(eventId, eventStatus);
             break;
 
-        case DEM_UNINITIALIZED:
+        case DEM_SHUTDOWN:
         default:
-            // Uninitialized can not do anything
+            // Ignore api call
             break;
 
     } // switch (demState)
@@ -7515,7 +7519,7 @@ static boolean EventIsStoredInMemory(Dem_EventIdType EventId)
 Std_ReturnType Dem_SetEventAvailable(Dem_EventIdType EventId, boolean AvailableStatus)
 {
 #if (DEM_SET_EVENT_AVAILABLE_PREINIT == STD_ON)
-    VALIDATE_RV(DEM_UNINITIALIZED != demState, DEM_SETEVENTAVAILABLE_ID, DEM_E_UNINIT, E_NOT_OK);
+    VALIDATE_RV(((DEM_UNINITIALIZED != demState) && (DEM_SHUTDOWN != demState)), DEM_SETEVENTAVAILABLE_ID, DEM_E_UNINIT, E_NOT_OK);
 #else
     VALIDATE_RV(DEM_INITIALIZED == demState, DEM_SETEVENTAVAILABLE_ID, DEM_E_UNINIT, E_NOT_OK);
 #endif

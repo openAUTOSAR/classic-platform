@@ -77,7 +77,8 @@ void Os_CounterInit( void ) {
                         aPtr = Os_AlarmGet(i);
                         cPtr = aPtr->counter;
                         SLIST_INSERT_HEAD(&cPtr->alarm_head, aPtr, alarm_list);
-//            logger(LOG_INFO, "Os_CounterInit adding alarm %d (%s)", i, aPtr->name);
+            logger(LOG_INFO, "Os_CounterInit adding alarm %d (%s)", 
+            i, aPtr->name);
                 }
         }
 #endif

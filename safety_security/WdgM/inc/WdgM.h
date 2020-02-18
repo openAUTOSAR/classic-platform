@@ -153,7 +153,6 @@ void WdgM_MainFunction( void );
  */
 boolean WdgM_internal_isAtLeastOneWdogEnabled(WdgM_ModeType Mode, uint8 SID, uint8 errID);
 #endif
-
+/*lint -e9003 MISRA:OTHER:defining external variable:[MISRA 2012 Rule 8.9, advisory]*/
 extern WdgM_RuntimeData WdgM_runtimeData; /* Declared in config, used in WdgM.c */
-
 #endif

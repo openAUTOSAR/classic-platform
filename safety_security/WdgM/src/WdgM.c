@@ -14,9 +14,6 @@
 
 /** @reqSettings DEFAULT_SPECIFICATION_REVISION=4.3.0 */
 
-
-/*lint -esym(960,17.4) OTHER pointer arithmetics in array needed for WdgM*/
-
 /*Globaly fulfilled requirements*/
 /** @req SWS_WdgM_00011 */ /*Data types used by Watchdog Manager module defined in other modules*/
 /** @req SWS_WdgM_91001 */ /*Port intefaces for module*/
@@ -81,8 +78,9 @@
 #define DEM_EVENT_ID_NULL 0
 #endif
 
-/*lint -emacro(904,WDGM_CHECK_INIT_NO_RV,WDGM_CHECK_DEINIT_NO_RV,WDGM_CHECK_INIT_RV,WDGM_CHECK_NULL_POINTER_NO_RV,WDGM_CHECK_NULL_POINTER_RV,WDGM_CHECK_MODE_RV,WDGM_CHECK_SEID_RV,WDGM_CHECK_CP_RV,WDGM_CHECK_VALID_SEID_POINTER_RV)
- * ARGUMENT_CHECK Macros used for checking arguments before performing any functionality*/
+/*lint -save -e904 MISRA:ARGUMENT_CHECK:argument check:[MISRA 2012 Rule 15.5, advisory]*/
+
+ /* ARGUMENT_CHECK Macros used for checking arguments before performing any functionality*/
 /* @req SWS_BSW_00203 API parameter checking enablement. */
 /* @req SWS_BSW_00042 Detection of DevErrors should only be performed if configuration parameter for Development errors is set. */
 #if (WDGM_DEV_ERROR_DETECT == STD_ON)
@@ -246,7 +244,7 @@
     }
 
 #endif
-
+/*lint -restore */
 
 /** @req SWS_WdgM_00387 */
 #define WDGM_START_SEC_VAR_INIT_UNSPECIFIED
@@ -273,7 +271,7 @@ static void WdgM_internal_CalculateGlobalState(void);
 static void WdgM_internal_ResetSEConfigsForMode(WdgM_runtime_Mode *runtime_Mode);
 static void WdgM_internal_AliveMonitoring(const WdgM_SupervisedEntityConfiguration *seConf, const WdgM_runtime_SupervisedEntityConfig *runtime_seConf, WdgM_CheckpointIdType CPId);
 static WdgM_Substate WdgM_internal_DeadlineMonitoring(const WdgM_SupervisedEntityConfiguration *seConf, const WdgM_runtime_SupervisedEntityConfig *runtime_seConf, WdgM_CheckpointIdType CPId);
-static WdgM_Substate WdgM_internalIsDeadlineHold(const WdgM_DeadlineSupervision *deadlineCP, WdgM_runtime_DeadlineSupervision *runtime_deadlineCP);
+static WdgM_Substate WdgM_internalIsDeadlineHold(const CounterType counter_id, const WdgM_DeadlineSupervision *deadlineCP, WdgM_runtime_DeadlineSupervision *runtime_deadlineCP);
 static WdgM_Substate WdgM_internal_LogicalMonitoring(const WdgM_SupervisedEntity *se, WdgM_runtime_SupervisedEntity *runtime_se, WdgM_CheckpointIdType CPId);
 static Std_ReturnType WdgM_internal_deactivateCurrentTriggers(uint16 errID);
 static Std_ReturnType WdgM_internal_activateTriggers(const WdgM_Mode *Mode, uint16 errID);
@@ -294,6 +292,7 @@ void WdgM_GetVersionInfo( Std_VersionInfoType* VersionInfo )
     /* Validates parameters, and if it fails will immediately leave the function with the specified return code */
     /* This is not inline with Table 8, ISO26262-6:2011, Req 1a and 1h */
     /* @req SWS_BSW_00212 NULL pointer check */
+    /*lint -e904 MISRA:ARGUMENT_CHECK:argument check:[MISRA 2012 Rule 15.5, advisory]*/
     WDGM_CHECK_NULL_POINTER_NO_RV(VersionInfo, WDGM_SID_GETVERSIONINFO);
 
     VersionInfo->vendorID =  WDGM_VENDOR_ID;
@@ -325,16 +324,17 @@ void WdgM_Init(const WdgM_ConfigType *ConfigPtr)
     WDGM_CHECK_DEINIT_NO_RV(WDGM_SID_INIT);
 
     WdgM_instance.ConfigPtr = ConfigPtr;
-    /*lint -esym(9003,WdgM_runtimeData) OTHER [MISRA 2012 Rule 8.9, advisory] WdgM_runtimeData is generated and can therefore not be defined in this static file*/
+
     WdgM_instance.runtimeDataPtr = &WdgM_runtimeData;
     initialMode = &WdgM_instance.ConfigPtr->ConfigSet.Modes[WdgM_instance.ConfigPtr->ConfigSet.initialModeId];
 
 #if (WDGM_OFF_MODE_ENABLED != STD_ON)
     /** @req SWS_WdgM_00030 */
-    status = WdgM_internal_isAtLeastOneWdogEnabled(initialMode->Id, WDGM_SID_INIT, WDGM_E_DISABLE_NOT_ALLOWED); /*lint !e838 OTHER Previously assigned value to variable 'status' is not used when WDGM_OFF_MODE_ENABLED i STD_OFF */
+    /*lint -e838 MISRA:OTHER:Previously assigned value to variable 'status' has not been used:[MISRA 2004 Info, advisory] */
+    status = WdgM_internal_isAtLeastOneWdogEnabled(initialMode->Id, WDGM_SID_INIT, WDGM_E_DISABLE_NOT_ALLOWED);
 #endif
-    /*lint -e{774} CONFIGURATION [MISRA 2004 Rule 13.7, required], [MISRA 2012 Rule 14.3, required] status always evaluates to (boolean)TRUE if WDGM_OFF_MODE_ENABLED == STD_ON */
-    if ((boolean)TRUE == status) {
+
+    if ((boolean)TRUE == status) {/*lint !e774 MISRA:CONFIGURATION:Boolean within 'if' always evaluates to True:[MISRA 2012 Rule 14.3, required] */
          /* cycle through all SEs and deactivate them (afterwards active the ones which are configured for the initMode)
          * also set active-flag to false and reset the internal-previous-cps */
         for (i = 0u; i < WdgM_instance.ConfigPtr->General.Length_SupervisedEntities; i++)
@@ -397,7 +397,7 @@ void WdgM_DeInit( void )
     /** @req SWS_WdgM_00388 */
     /* Validates parameters, and if it fails will immediately leave the function with the specified return code */
     /* This is not inline with Table 8, ISO26262-6:2011, Req 1a and 1h */
-    WDGM_CHECK_INIT_NO_RV(WDGM_SID_DEINIT);
+    WDGM_CHECK_INIT_NO_RV(WDGM_SID_DEINIT);/*lint !e904 MISRA:ARGUMENT_CHECK:argument check:[MISRA 2012 Rule 15.5, advisory]*/
 
     if (WdgM_instance.GlobalState == WDGM_GLOBAL_STATUS_OK)
     {
@@ -435,16 +435,17 @@ Std_ReturnType WdgM_SetMode( WdgM_ModeType Mode)
     /** @req SWS_WdgM_00394 */
     /* Validates parameters, and if it fails will immediately leave the function with the specified return code */
     /* This is not inline with Table 8, ISO26262-6:2011, Req 1a and 1h */
-    WDGM_CHECK_INIT_RV(WDGM_SID_SETMODE);
+    WDGM_CHECK_INIT_RV(WDGM_SID_SETMODE);/*lint !e904 MISRA:ARGUMENT_CHECK:argument check:[MISRA 2012 Rule 15.5, advisory]*/
     /** @req SWS_WdgM_00020 */
-    WDGM_CHECK_MODE_RV(Mode, WDGM_SID_SETMODE, WDGM_E_PARAM_MODE);
+    WDGM_CHECK_MODE_RV(Mode, WDGM_SID_SETMODE, WDGM_E_PARAM_MODE);/*lint !e904 MISRA:ARGUMENT_CHECK:argument check:[MISRA 2012 Rule 15.5, advisory]*/
 
 #if (WDGM_OFF_MODE_ENABLED != STD_ON)
-    /** @req SWS_WdgM_00031 */ /*lint -e{838} previous value of status need not be considered */
+    /** @req SWS_WdgM_00031 */
+    /*lint -e838 MISRA:OTHER:Previously assigned value to variable 'status' has not been used:[MISRA 2004 Info, advisory] */
     status = WdgM_internal_isAtLeastOneWdogEnabled(Mode, WDGM_SID_SETMODE, WDGM_E_DISABLE_NOT_ALLOWED);
 #endif
 
-    if ((boolean)TRUE == status) { /*lint !e774 CONFIGURATION [MISRA 2004 Rule 13.7, required], [MISRA 2012 Rule 14.3, required] status always evaluates to (boolean)TRUE if WDGM_OFF_MODE_ENABLED == STD_ON */
+    if ((boolean)TRUE == status) {/*lint !e774 MISRA:CONFIGURATION:Boolean within 'if' always evaluates to True:[MISRA 2012 Rule 14.3, required] */
         /** @req SWS_WdgM_00316 */
         /** @req SWS_WdgM_00145 */
         if ((WdgM_instance.GlobalState == WDGM_GLOBAL_STATUS_OK) || (WdgM_instance.GlobalState == WDGM_GLOBAL_STATUS_FAILED)) {
@@ -525,10 +526,10 @@ Std_ReturnType WdgM_GetMode( WdgM_ModeType *Mode)
     /** @req SWS_WdgM_00395 */
     /* Validates parameters, and if it fails will immediately leave the function with the specified return code */
     /* This is not inline with Table 8, ISO26262-6:2011, Req 1a and 1h */
-    WDGM_CHECK_INIT_RV(WDGM_SID_GETMODE);
+    WDGM_CHECK_INIT_RV(WDGM_SID_GETMODE);/*lint !e904 MISRA:ARGUMENT_CHECK:argument check:[MISRA 2012 Rule 15.5, advisory]*/
     /* @req SWS_BSW_00212 NULL pointer check */
     /* @req SWS_WdgM_00254 */
-    WDGM_CHECK_NULL_POINTER_RV(Mode, WDGM_SID_GETMODE);
+    WDGM_CHECK_NULL_POINTER_RV(Mode, WDGM_SID_GETMODE);/*lint !e904 MISRA:ARGUMENT_CHECK:argument check:[MISRA 2012 Rule 15.5, advisory]*/
 
     /** @req SWS_WdgM_00170 */ /*WdgM_instance.CurrentMode is set last in SetMode*/
     *Mode = WdgM_instance.CurrentMode->Id;
@@ -544,9 +545,9 @@ Std_ReturnType WdgM_CheckpointReached( WdgM_SupervisedEntityIdType SEID, WdgM_Ch
     /** @req SWS_WdgM_00396 */
     /* Validates parameters, and if it fails will immediately leave the function with the specified return code */
     /* This is not inline with Table 8, ISO26262-6:2011, Req 1a and 1h */
-    WDGM_CHECK_INIT_RV(WDGM_SID_CHECKPOINTREACHED);
+    WDGM_CHECK_INIT_RV(WDGM_SID_CHECKPOINTREACHED);/*lint !e904 MISRA:ARGUMENT_CHECK:argument check:[MISRA 2012 Rule 15.5, advisory]*/
     /** @req SWS_WdgM_00278 */
-    WDGM_CHECK_SEID_RV(SEID, WDGM_SID_CHECKPOINTREACHED, WDGM_E_PARAM_SEID);
+    WDGM_CHECK_SEID_RV(SEID, WDGM_SID_CHECKPOINTREACHED, WDGM_E_PARAM_SEID);/*lint !e904 MISRA:ARGUMENT_CHECK:argument check:[MISRA 2012 Rule 15.5, advisory]*/
 
     Std_ReturnType retVal = E_NOT_OK;
 
@@ -555,7 +556,7 @@ Std_ReturnType WdgM_CheckpointReached( WdgM_SupervisedEntityIdType SEID, WdgM_Ch
     WdgM_runtime_SupervisedEntity *runtime_se = &WdgM_instance.runtimeDataPtr->SEs[SEID];
 
     /** @req SWS_WdgM_00284 */
-    WDGM_CHECK_CP_RV(se, CheckpointID, WDGM_SID_CHECKPOINTREACHED);
+    WDGM_CHECK_CP_RV(se, CheckpointID, WDGM_SID_CHECKPOINTREACHED);/*lint !e904 MISRA:ARGUMENT_CHECK:argument check:[MISRA 2012 Rule 15.5, advisory]*/
 
     /** @req SWS_WdgM_00208 */
     if (runtime_se->LocalState!= WDGM_LOCAL_STATUS_DEACTIVATED)
@@ -576,8 +577,8 @@ Std_ReturnType WdgM_CheckpointReached( WdgM_SupervisedEntityIdType SEID, WdgM_Ch
             }
         }
 
-        WDGM_CHECK_VALID_SEID_POINTER_RV(seConf,WDGM_SID_CHECKPOINTREACHED,WDGM_E_PARAM_SEID);
-        WDGM_CHECK_VALID_SEID_POINTER_RV(runtime_seConf,WDGM_SID_CHECKPOINTREACHED,WDGM_E_PARAM_SEID);
+        WDGM_CHECK_VALID_SEID_POINTER_RV(seConf,WDGM_SID_CHECKPOINTREACHED,WDGM_E_PARAM_SEID);/*lint !e904 MISRA:ARGUMENT_CHECK:argument check:[MISRA 2012 Rule 15.5, advisory]*/
+        WDGM_CHECK_VALID_SEID_POINTER_RV(runtime_seConf,WDGM_SID_CHECKPOINTREACHED,WDGM_E_PARAM_SEID);/*lint !e904 MISRA:ARGUMENT_CHECK:argument check:[MISRA 2012 Rule 15.5, advisory]*/
 
         /* value stays correct */
         WdgM_internal_AliveMonitoring(seConf, runtime_seConf, CheckpointID);
@@ -612,12 +613,12 @@ Std_ReturnType WdgM_GetLocalStatus( WdgM_SupervisedEntityIdType SEID, WdgM_Local
     /** @req SWS_WdgM_00397 */
     /* Validates parameters, and if it fails will immediately leave the function with the specified return code */
     /* This is not inline with Table 8, ISO26262-6:2011, Req 1a and 1h */
-    WDGM_CHECK_INIT_RV(WDGM_SID_GETLOCALSTATUS);
+    WDGM_CHECK_INIT_RV(WDGM_SID_GETLOCALSTATUS);/*lint !e904 MISRA:ARGUMENT_CHECK:argument check:[MISRA 2012 Rule 15.5, advisory]*/
     /** @req SWS_WdgM_00257 */
     /* @req SWS_BSW_00212 NULL pointer check */
-    WDGM_CHECK_NULL_POINTER_RV(Status, WDGM_SID_GETLOCALSTATUS);
+    WDGM_CHECK_NULL_POINTER_RV(Status, WDGM_SID_GETLOCALSTATUS);/*lint !e904 MISRA:ARGUMENT_CHECK:argument check:[MISRA 2012 Rule 15.5, advisory]*/
     /** @req SWS_WdgM_00172 */
-    WDGM_CHECK_SEID_RV(SEID, WDGM_SID_GETLOCALSTATUS, WDGM_E_PARAM_SEID);
+    WDGM_CHECK_SEID_RV(SEID, WDGM_SID_GETLOCALSTATUS, WDGM_E_PARAM_SEID);/*lint !e904 MISRA:ARGUMENT_CHECK:argument check:[MISRA 2012 Rule 15.5, advisory]*/
 
     *Status = WdgM_instance.runtimeDataPtr->SEs[SEID].LocalState;
 
@@ -629,11 +630,11 @@ Std_ReturnType WdgM_GetGlobalStatus( WdgM_GlobalStatusType *Status)
     /** @req SWS_WdgM_00176 */
     /* Validates parameters, and if it fails will immediately leave the function with the specified return code */
     /* This is not inline with Table 8, ISO26262-6:2011, Req 1a and 1h */
-    WDGM_CHECK_INIT_RV(WDGM_SID_GETGLOBALSTATUS);
+    WDGM_CHECK_INIT_RV(WDGM_SID_GETGLOBALSTATUS);/*lint !e904 MISRA:ARGUMENT_CHECK:argument check:[MISRA 2012 Rule 15.5, advisory]*/
     /** @req SWS_WdgM_00344 */
     /** @req SWS_WdgM_00258 */
     /* @req SWS_BSW_00212 NULL pointer check */
-    WDGM_CHECK_NULL_POINTER_RV(Status, WDGM_SID_GETGLOBALSTATUS);
+    WDGM_CHECK_NULL_POINTER_RV(Status, WDGM_SID_GETGLOBALSTATUS);/*lint !e904 MISRA:ARGUMENT_CHECK:argument check:[MISRA 2012 Rule 15.5, advisory]*/
 
     *Status = WdgM_instance.GlobalState;
 
@@ -646,7 +647,7 @@ void WdgM_PerformReset( void )
     /** @req SWS_WdgM_00401 */
     /* Validates parameters, and if it fails will immediately leave the function with the specified return code */
     /* This is not inline with Table 8, ISO26262-6:2011, Req 1a and 1h */
-    WDGM_CHECK_INIT_NO_RV(WDGM_SID_PERFORMRESET);
+    WDGM_CHECK_INIT_NO_RV(WDGM_SID_PERFORMRESET);/*lint !e904 MISRA:ARGUMENT_CHECK:argument check:[MISRA 2012 Rule 15.5, advisory]*/
     if (WdgM_instance.ResetInitiated == (boolean)FALSE)
     {
         /** @req SWS_WdgM_00233 */
@@ -672,7 +673,7 @@ Std_ReturnType WdgM_GetFirstExpiredSEID( WdgM_SupervisedEntityIdType *SEID)
     /* Validates parameters, and if it fails will immediately leave the function with the specified return code */
     /* This is not inline with Table 8, ISO26262-6:2011, Req 1a and 1h */
     /* @req SWS_BSW_00212 NULL pointer check */
-    WDGM_CHECK_NULL_POINTER_RV(SEID, WDGM_SID_GETFIRSTEXPIREDSEID);
+    WDGM_CHECK_NULL_POINTER_RV(SEID, WDGM_SID_GETFIRSTEXPIREDSEID);/*lint !e904 MISRA:ARGUMENT_CHECK:argument check:[MISRA 2012 Rule 15.5, advisory]*/
 
     /** @req SWS_WdgM_00349 */
     uint16 invertedSEID = (~firstExpiredSEID);
@@ -694,7 +695,7 @@ void WdgM_MainFunction( void )
     /** @req SWS_WdgM_00039 */
     /* Validates parameters, and if it fails will immediately leave the function with the specified return code */
     /* This is not inline with Table 8, ISO26262-6:2011, Req 1a and 1h */
-    WDGM_CHECK_INIT_NO_RV(WDGM_SID_MAINFUNCTION);
+    WDGM_CHECK_INIT_NO_RV(WDGM_SID_MAINFUNCTION);/*lint !e904 MISRA:ARGUMENT_CHECK:argument check:[MISRA 2012 Rule 15.5, advisory]*/
 
     uint8 i;
 
@@ -1053,7 +1054,7 @@ static void WdgM_Internal_ReportLocalModeChange(const WdgM_runtime_SupervisedEnt
 {
 
     #if defined(USE_RTE)
-    /*lint -esym(9003,modeFunctionSwitchPointer) OTHER modeFunctionSwitchPointer is generated and can therefore not be defined in this static file*/
+
 
     switch (runtime_se->LocalState) {
         case WDGM_LOCAL_STATUS_OK:
@@ -1295,8 +1296,8 @@ static WdgM_Substate WdgM_internal_DeadlineMonitoring(const WdgM_SupervisedEntit
             TickRefType elapsedTicksPointer;
             elapsedTicksPointer = &elapsedTicks;
             /** @req SWS_WdgM_00228 */
-            TickRefType LastTickPointer = (TickRefType)&(runtime_seConf->DeadlineSupervisions[i].LastTickValue); /*lint !e929 OTHER pointer cast necessary*/
-            (void)GetElapsedValue(WDGM_COUNTER_TYPE, LastTickPointer, elapsedTicksPointer); /*Choosing which counter shall be used is not supported*/
+            TickRefType LastTickPointer = (TickRefType)&(runtime_seConf->DeadlineSupervisions[i].LastTickValue);/*lint !e929 MISRA:CONFIGURATION:cast from one pointer to other:[MISRA 2012 Rule 11.3, required] */
+            (void)GetElapsedValue(seConf->OSCounter, LastTickPointer, elapsedTicksPointer); /*Choosing which counter shall be used is not supported*/
         }
 
         /* if it's a finsih dlcp then do evaluation */
@@ -1304,7 +1305,7 @@ static WdgM_Substate WdgM_internal_DeadlineMonitoring(const WdgM_SupervisedEntit
         {
             /** @req SWS_WdgM_00229 */
             /* measure the time and get calculate result */
-            if (WdgM_internalIsDeadlineHold(&seConf->DeadlineSupervisions[i], &runtime_seConf->DeadlineSupervisions[i]) == WDGM_SUBSTATE_INCORRECT)
+            if (WdgM_internalIsDeadlineHold(seConf->OSCounter, &seConf->DeadlineSupervisions[i], &runtime_seConf->DeadlineSupervisions[i]) == WDGM_SUBSTATE_INCORRECT)
             {
                 result = WDGM_SUBSTATE_INCORRECT;
                 break;
@@ -1320,7 +1321,7 @@ static WdgM_Substate WdgM_internal_DeadlineMonitoring(const WdgM_SupervisedEntit
 
 #define WDGM_OSTICKSPERSECOND (1000000000UL / OSTICKDURATION)
 
-static WdgM_Substate WdgM_internalIsDeadlineHold(const WdgM_DeadlineSupervision *deadlineCP, WdgM_runtime_DeadlineSupervision *runtime_deadlineCP)
+static WdgM_Substate WdgM_internalIsDeadlineHold(const CounterType counter_id, const WdgM_DeadlineSupervision *deadlineCP, WdgM_runtime_DeadlineSupervision *runtime_deadlineCP)
 {
     WdgM_Substate ret;
 
@@ -1329,8 +1330,8 @@ static WdgM_Substate WdgM_internalIsDeadlineHold(const WdgM_DeadlineSupervision 
     elapsedTicksPointer = &elapsedTicks;
     /** @req SWS_WdgM_00373 */
     /** @req SWS_WdgM_00374 */ /*The computation has the same effect as 00374 but does not use that procedure*/
-    TickRefType LastTickPointer = (TickRefType)&(runtime_deadlineCP->LastTickValue); /*lint !e929 OTHER pointer cast necessary*/
-    (void)GetElapsedValue(WDGM_COUNTER_TYPE, LastTickPointer, elapsedTicksPointer); /*Choosing which counter shall be used is not supported*/
+    TickRefType LastTickPointer = (TickRefType)&(runtime_deadlineCP->LastTickValue);/*lint !e929 MISRA:CONFIGURATION:cast from one pointer to other:[MISRA 2012 Rule 11.3, required] */
+    (void)GetElapsedValue(counter_id, LastTickPointer, elapsedTicksPointer); /*Choosing which counter shall be used is not supported*/
     ret = WDGM_SUBSTATE_INCORRECT;
     /** @req SWS_WdgM_00294 */
     if ((elapsedTicks >= (deadlineCP->DeadlineMin * WDGM_OSTICKSPERSECOND)) && (elapsedTicks <= (deadlineCP->DeadlineMax * WDGM_OSTICKSPERSECOND)))
@@ -1396,6 +1397,7 @@ static WdgM_Substate WdgM_internal_LogicalMonitoring_GraphInactive(const WdgM_Su
 
             /** @req SWS_WdgM_00332 */
             /** @req SWS_WdgM_00273 */
+	    /** @req SWS_WdgM_00329 */
             runtime_se->IsInternalGraphActive = (boolean)TRUE;
 
             /** @req SWS_WdgM_00246 */
@@ -1442,5 +1444,3 @@ static void WdgM_internal_DeactivateAndResetSE(uint16 SEIndex)
     runtime_se->SubstateLogical = WDGM_SUBSTATE_CORRECT;
 
 }
-
-/*lint +esym(960,17.4)*/

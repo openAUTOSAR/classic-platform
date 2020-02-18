@@ -44,12 +44,6 @@
 
 #define VAR(vartype,memclass) memclass vartype
 
-#define CRYPTO_VAR
-
-#define CRYIF_VAR
-
-#define CSM_VAR
-
 #include "Compiler_Cfg.h"
 
 #endif /* COMPILER_H */	

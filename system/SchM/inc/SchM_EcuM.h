@@ -26,6 +26,7 @@
 #define SchM_Exit_EcuM_EA_0() ResumeOSInterrupts()
 #endif // (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
 
+
 #if defined(CFG_SAFETY_PLATFORM)
 #define SCHM_MAINFUNCTION_ECUM_ASIL(_state,_rv) SP_SCHM_MAINFUNCTION(_rv,ECUM_A0,EcuM_MainFunction_Partition_A0(_state))
 #define SCHM_MAINFUNCTION_ECUM_QM(_state,_rv)   SP_SCHM_MAINFUNCTION(_rv,ECUM_QM,EcuM_MainFunction_Partition_QM(_state))

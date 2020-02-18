@@ -32,6 +32,7 @@ sys.path.append(os.path.abspath(a))
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 #extensions = ['scope']
 
+
 import sphinx_rtd_theme
 
 # -- General configuration ------------------------------------------------
@@ -44,8 +45,12 @@ import sphinx_rtd_theme
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.intersphinx',
+	'sphinxcontrib.plantuml',
     'sphinx.ext.todo',
-    'sphinx.ext.ifconfig', 'scope']
+    'sphinx.ext.ifconfig' ]
+#    , 'scope']
+
+plantuml = 'C:\\ProgramData\\Oracle\\Java\\javapath\\javaw.exe -Dfile.encoding=UTF-8 -jar C:\\devtools\PlantUml\plantuml.jar'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

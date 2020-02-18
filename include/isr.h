@@ -39,6 +39,7 @@ struct OsResource;
 
 #define ISR_TYPE_1			0
 #define ISR_TYPE_2			1
+#define VECTOR_ILL			0xff
 
 /* ----------------------------[macro]---------------------------------------*/
 
@@ -172,7 +173,9 @@ ISRType Os_IsrAdd( const OsIsrConstType * isrPtr );
 void Os_IsrAddWithId( const OsIsrConstType * isrPtr, ISRType id );
 
 void Os_IsrGetStackInfo( OsIsrStackType *stack );
-void *Os_Isr( void *stack, uint16 vector);
+
+void *Os_Isr( void *stack, uint16 isrTableIndex);
+
 #if defined(CFG_TMS570)
 void *Os_Isr_cr4( void *stack, sint16 virtualVector, sint16 vector );
 #endif

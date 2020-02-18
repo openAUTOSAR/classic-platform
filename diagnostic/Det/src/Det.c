@@ -47,31 +47,35 @@ typedef enum
 } Det_StateType;
 
 #define DET_STATE_START_SEC_VAR_CLEARED_UNSPECIFIED
-#include "Det_BswMemMap.h" /*lint !e9019 suppressed due to Det_BswMemMap.h include is required */
+/*lint -e9019 MISRA:EXTERNAL_FILE:suppressed due to Det_BswMemMap.h include is needed:[MISRA 2012 Rule 20.1, advisory] */
+/*lint -e451 MISRA:CONFIGURATION:suppressed due to Det_BswMemMap.h include is needed:[MISRA 2012 Directive 4.10, required] */
+#include "Det_BswMemMap.h"
 static Det_StateType detState = DET_UNINITIALIZED;
 #define DET_STATE_STOP_SEC_VAR_CLEARED_UNSPECIFIED
-#include "Det_BswMemMap.h" /*lint !e9019 suppressed due to Det_BswMemMap.h include is required */
+#include "Det_BswMemMap.h"
 
 /* @req SWS_BSW_00006 include BSW Memory mapping header*/
 #if (DET_SAFETYMONITOR_API == STD_ON)
 #define DET_SIZEOF_SMQUEUE (32)
 #define DET_MONITOR_START_SEC_VAR_CLEARED_UNSPECIFIED
-#include "Det_BswMemMap.h" /*lint !e9019 suppressed due to Det_BswMemMap.h include is required */
-static Det_EntryType Det_SafetyMonitorBuffer[DET_SIZEOF_SMQUEUE]; /*lint -esym(9003, Det_SafetyMonitorBuffer) FALSE POSITIVE */
+#include "Det_BswMemMap.h"
+/*lint -e9003 MISRA:OTHER:To store error values:[MISRA 2012 Rule 8.9, advisory]*/
+static Det_EntryType Det_SafetyMonitorBuffer[DET_SIZEOF_SMQUEUE];
 #define DET_MONITOR_STOP_SEC_VAR_CLEARED_UNSPECIFIED
-#include "Det_BswMemMap.h" /*lint !e9019 suppressed due to Det_BswMemMap.h include is required */
+#include "Det_BswMemMap.h"
 #define DET_MONITOR_START_SEC_VAR_CLEARED_UNSPECIFIED
-#include "Det_BswMemMap.h" /*lint !e9019 suppressed due to Det_BswMemMap.h include is required */
+#include "Det_BswMemMap.h"
 static Safety_Queue_t Det_SafetyMonitorQueue;
 #define DET_MONITOR_STOP_SEC_VAR_CLEARED_UNSPECIFIED
-#include "Det_BswMemMap.h" /*lint !e9019 suppressed due to Det_BswMemMap.h include is required */
+#include "Det_BswMemMap.h"
+
 // Just a dummy to make the queue happy.
 typedef int local_int;
 static local_int DummyFunc(void *A, void *B, size_t size)
 {
-	(void)A; /*lint !e920 OTHER we don't care in this dummy */
-	(void)B; /*lint !e920 OTHER we don't care in this dummy */
-	(void)size; /*lint !e920 OTHER we don't care in this dummy */
+    (void)A; /*lint !e920 MISRA:STANDARDIZED_INTERFACE:to store dummy values:[MISRA 2012 Rule 1.3, required]*/
+	(void)B;/*lint !e920 MISRA:STANDARDIZED_INTERFACE:to store dummy values:[MISRA 2012 Rule 1.3, required]*/
+	(void)size;
 	return 0;
 }
 #endif
@@ -79,21 +83,22 @@ static local_int DummyFunc(void *A, void *B, size_t size)
 #if ( DET_USE_RAMLOG == STD_ON )
 // Ram log variables in uninitialized memory
 SECTION_RAMLOG uint32 Det_RamlogIndex;
-/*lint -esym(552,Det_RamLog)*/ /* PC-Lint OK. supress lintwarning about Det_Ramlog not being accessed */
 SECTION_RAMLOG Det_EntryType Det_RamLog[DET_RAMLOG_SIZE] ;
 #endif
 
 #if ( DET_USE_STATIC_CALLBACKS == STD_ON )
-/*lint -esym(9003,DetStaticHooks) CONFIGURATION */
+/*lint -e{9003} MISRA:EXTERNAL_FILE:variable declared outside:[MISRA 2012 Rule 8.9, advisory]*/
 extern detCbk_t DetStaticHooks[];
 #endif
 
 #if ( DET_ENABLE_CALLBACKS == STD_ON )
 #define DET_STATE_START_SEC_VAR_CLEARED_UNSPECIFIED
-#include "Det_BswMemMap.h" /*lint !e9019 suppressed due to Det_BswMemMap.h include is required */
+
+#include "Det_BswMemMap.h"
 static detCbk_t detCbk_List[DET_NUMBER_OF_CALLBACKS];
 #define DET_STATE_STOP_SEC_VAR_CLEARED_UNSPECIFIED
-#include "Det_BswMemMap.h" /*lint !e9019 suppressed due to Det_BswMemMap.h include is required */
+#include "Det_BswMemMap.h"
+
 
 uint8 Det_AddCbk(detCbk_t detCbk)
 {
@@ -229,6 +234,7 @@ Std_ReturnType Det_ReportError(uint16 ModuleId, uint8 InstanceId, uint8 ApiId, u
 #endif
 
 #if ( DET_ENABLE_CALLBACKS == STD_ON )
+        /*lint -e534 MISRA:CONFIGURATION:ignoring return value:[MISRA 2012 Rule 17.7, required] */
         SchM_Enter_Det_EA_0();
         for (uint32 i=0; i<DET_NUMBER_OF_CALLBACKS; i++)
         {
@@ -242,6 +248,7 @@ Std_ReturnType Det_ReportError(uint16 ModuleId, uint8 InstanceId, uint8 ApiId, u
 
 
 #if ( DET_USE_RAMLOG == STD_ON )
+        /*lint -e534 MISRA:CONFIGURATION:ignoring return value:[MISRA 2012 Rule 17.7, required] */
         SchM_Enter_Det_EA_0();
         if (Det_RamlogIndex < DET_RAMLOG_SIZE)
         {

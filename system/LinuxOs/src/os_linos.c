@@ -209,7 +209,6 @@ void StartOS( AppModeType Mode ) {
 void ShutdownOS( StatusType Error ) {
 	(void)Error;
 	printf("Shutting down!");
-   fflush(stdout);
 	exit(Error);
 }
 

@@ -8,7 +8,7 @@ obj-$(USE_FLS)-$(CFG_GNULINUX) += Fls_gnulinux.o
 
 
 obj-$(USE_FLS) += Fls_Cfg.o
-ifeq ($(CFG_MPC5744P)$(CFG_MPC5777M)$(CFG_MPC5748G)$(CFG_MPC5746C),y)
+ifeq ($(CFG_MPC5744P)$(CFG_MPC5777M)$(CFG_MPC5777C)$(CFG_MPC5748G)$(CFG_MPC5746C),y)
 obj-$(USE_FLS) += flash_c55.o
 else
 obj-$(CFG_MPC56XX)-$(USE_FLS) += flash_h7f_c90.o

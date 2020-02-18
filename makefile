@@ -3,18 +3,18 @@
 #
 # TARGETS
 #   all:   		Target when building
-#   clean:  	Remove generatated files for a board
+#   clean:  	Remove generatated files for a board 
 #   clean_all:  Remove all generated files
 #   help:       Print some help
 #
 # VARIABLES:
-#   BOARDDIR=<board dir>
-#       Select what board to build for
-#   BDIR=<dir>[,<dir>]
+#   BOARDDIR=<board dir> 
+#       Select what board to build for 
+#   BDIR=<dir>[,<dir>] 
 #       Select what directories to build. The kernel is always built.
 #   CROSS_COMPILEf
-#       Specify the compiler to use.
-#   Q=[(@)/empty]
+#       Specify the compiler to use.  
+#   Q=[(@)/empty] 
 #  		If Q=@ cmd's will not be echoed.
 #
 # EXAMPLES
@@ -58,8 +58,8 @@ USE_T32_SIM?=n
 export USE_T32_SIM
 
 # Tools
-# Ugly thing to make things work under cmd.exe
-# PATH := usr/bin/:$(PATH)
+# Ugly thing to make things work under cmd.exe 
+# PATH := usr/bin/:$(PATH) 
 FIND := $(shell which find)
 
 export UNAME:=$(shell uname)
@@ -140,7 +140,7 @@ endif
 
 
 export objdir = obj_$(board_name)
-export CFG_MCU
+export CFG_MCU 
 export CFG_CPU
 export MCU
 export def-y+=$(CFG_ARCH_$(ARCH)) $(CFG_MCU) $(CFG_CPU)
@@ -185,21 +185,21 @@ help:
 	@echo "  BDIR          = ${BDIR}"
 	@echo "  BOARDDIR      = $(BOARDDIR)"
 	@echo "  CROSS_COMPILE = $(CROSS_COMPILE)"
-	@echo "  CURDIR        = $(CURDIR)"
+	@echo "  CURDIR        = $(CURDIR)"	
 	@echo ""
 
 
 test:
 	@echo $(all_boards)
-
-$(dir_cmd_goals) :: FORCE
+	
+$(dir_cmd_goals) :: FORCE 	
 	@echo ""
 	@echo ==========[ ${abspath $@}  ]===========
 	@if [ ! -d $@ ]; then echo "No such directory: \"$@\" quitting"; exit 1; fi
 	+@[ -d $@/$(objdir) ] || mkdir -p $@/$(objdir)
 	@chmod 777 $@/$(objdir)
 	$(Q)$(MAKE) -r  -C $@/$(objdir) -f $(CURDIR)/scripts/rules.mk  ROOTDIR=$(CURDIR) SUBDIR=$@ $(cmd_cmd_goals)
-.PHONY: test
+.PHONY: test	
 
 FORCE:
 
@@ -213,10 +213,10 @@ clean_all:
 	@echo
 	@echo "  >>>>>>>>>  DONE  <<<<<<<<<"
 	@echo
-
-config: $(dir_cmd_goals)
-
-.PHONY clean:
+	
+config: $(dir_cmd_goals)	
+	
+.PHONY clean:	
 clean: $(dir_cmd_goals)
 	@echo
 	@echo "  >> Cleaning MAIN $(CURDIR)"
@@ -226,3 +226,9 @@ clean: $(dir_cmd_goals)
 	@echo
 	@echo "  >>>>>>>>>  DONE  <<<<<<<<<"
 	@echo
+
+		
+	
+
+
+

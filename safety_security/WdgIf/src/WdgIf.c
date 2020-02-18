@@ -14,9 +14,6 @@
 
 /** @reqSettings DEFAULT_SPECIFICATION_REVISION=4.3.0 */
 
-/*lint -emacro(904,WDGIF_VALIDATE_RV,WDGIF_VALIDATE_NO_RV)  ARGUMENT_CHECK [MISRA 2004 Rule 14.7, required], [MISRA 2012 Rule 15.5, advisory] 
- * Macros used for checking arguments before performing any functionality */
-
 /** @req SWS_WdgIf_00026 */ /*The Watchdog Interface provides uniform access to services of the underlying watchdog drivers*/
 /** @req SWS_WdgIf_00047 */ /* Wdg_SetMode and Wdg_SetTriggerCondition are available*/
 
@@ -36,7 +33,7 @@
 #if (WDGIF_DEV_ERROR_DETECT == STD_ON)
 #include "Det.h"
 #endif
-
+/*lint -e904 MISRA:STANDARDIZED_INTERFACE:argument check:[MISRA 2012 Rule 15.5, advisory]*/
 /** @req SWS_WdgIf_00048 */
 /** @req SWS_BSW_00203 API parameter checking enablement. */
 /** @req SWS_BSW_00042 Detection of DevErrors should only be performed if configuration parameter for Development errors is set. */
@@ -92,10 +89,8 @@ void WdgIf_SetTriggerCondition(uint8 DeviceIndex, uint16 Timeout)
     /* This is not inline with Table 8, ISO26262-6:2011, Req 1a and 1h */
     WDGIF_VALIDATE_NO_RV((DeviceIndex < WdgIfConfig.WdgIf_General->WdgIf_NumberOfDevices), WDGIF_SETTRIGGERCONDITION_ID, WDGIF_E_PARAM_DEVICE);
     /** @req SWS_WdgIf_00045 */
-    /*lint -esym(960,17.4) OTHER pointer arithmetics in array needed for WdgIf*/
     /*Wdg_TriggerLocationPtr points to the Wdg<XXX>_SetTriggerCondition function for the Wdg device with index DeviceIndex*/
     WdgIfConfig.WdgIf_Device[DeviceIndex].WdgRef->Wdg_TriggerLocationPtr(Timeout);
-    /*lint +esym(960,17.4)*/
 }
 
 #endif

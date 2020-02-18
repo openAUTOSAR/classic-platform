@@ -48,10 +48,10 @@
 /* @req SWS_BSW_00006 */
 #if defined(USE_NVM)
 #define ECUM_START_SEC_VAR_NVM_CLEARED_8
-#include "EcuM_BswMemMap.h" /*lint !e9019 suppressed due to EcuM_MemMap.h include is required */
+#include "EcuM_BswMemMap.h" /*lint !e9019 MISRA:OTHER:suppressed due to EcuM_MemMap.h include is needed:[MISRA 2012 Rule 20.1, advisory] */
 static NvM_RequestResultType readAllResult;
 #define ECUM_STOP_SEC_VAR_NVM_CLEARED_8
-#include "EcuM_BswMemMap.h" /*lint !e9019 suppressed due to EcuM_MemMap.h include is required */
+#include "EcuM_BswMemMap.h" /*lint !e9019 MISRA:OTHER:suppressed due to EcuM_MemMap.h include is needed:[MISRA 2012 Rule 20.1, advisory] */
 #endif
 
 #ifndef SYS_CALL_ShutdownOS
@@ -238,7 +238,7 @@ static inline EcuM_SP_RetStatus in_go_off_one_mode_partition_QM(void){
         */
         /* @req SWS_EcuMf_00019 */
         SetComMCommunicationAllowed(ONLY_LIN, FALSE);
-        go_off_one_module_deinit_QM(); /*lint !e522 CONFIGURATION [MISRA 2004 Rule 14.2, required], [MISRA 2012 Rule 2.2, required] This function may not have any functionality depending on configuration*/
+        go_off_one_module_deinit_QM();  /*lint !e522 MISRA:CONFIGURATION: This function may not have any functionality depending on configuration:[MISRA 2012 Rule 2.2, required] */
         rv = update_function_finish_partition_QM();
     }
     else if (is_exec_required_for_state_partition_QM(ECUM_SP_SYNC_INIT_GO_OFF_TWO_START) == TRUE) {

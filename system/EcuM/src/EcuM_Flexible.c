@@ -47,9 +47,9 @@ static void goSleepSequence(void) {
 
     /* Loop over the WKSOURCE for this sleep mode */
     for (;(0 != cMask); cMask &= ~(1uL << source)) {
-        /*lint -e{9033}*/
+        /*lint -e{9033} MISRA:STANDARDIZED_INTERFACE:cast of composite expression Reason:[MISRA 2012 Rule 10.8, required] */
         source = (uint8)(ilog2(cMask));
-        /*lint -e{9031}*/
+        /*lint -e{9031} MISRA:STANDARDIZED_INTERFACE:Composite expression assigned to a wider essential type:[MISRA 2012 Rule 10.6, required] */
         EcuM_EnableWakeupSources(1u << source);
 #if defined(USE_BSWM)
         BswM_EcuM_CurrentWakeup((EcuM_WakeupSourceType)source, ECUM_WKSTATUS_NONE);
@@ -80,8 +80,7 @@ static void wakeupRestartSequence(void) {
     EcuM_WakeupSourceType wMask = 0;
 
     Mcu_SetMode(EcuM_World.config->EcuMNormalMcuMode);
-    /*lint -e{838}*/
-    wMask = EcuM_GetPendingWakeupEvents();
+    wMask = EcuM_GetPendingWakeupEvents();/*lint !e838 MISRA:STANDARDIZED_INTERFACE:Assigning 0 as default value for wMask:[MISRA 2004 Info, required]*/
 
     EcuM_DisableWakeupSources(wMask);
 
@@ -157,7 +156,7 @@ Std_ReturnType EcuM_GoDown(uint16 caller) {
 #else
     (void)caller;
 #endif
-    /*lint -e{774} if also evaluates to false based on ECUM_DEFENSIVE_BEHAVIOR is STD_OFF*/
+    /*lint -e{774} MISRA:FALSE_POSITIVE:if also evaluates to false based on ECUM_DEFENSIVE_BEHAVIOR is STD_OFF:[MISRA 2012 Rule 14.3, required]*/
     if (rv == E_OK ) {
 #if defined(USE_BSWM)
         /* @req SWS_EcuMf_00017 */

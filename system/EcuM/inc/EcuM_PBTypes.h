@@ -56,6 +56,10 @@
 #include "PduR.h"
 #endif
 
+#ifdef CFG_POSTBUILD_PARTNUMBER
+#include "partno.h"
+#endif
+
 #if defined(USE_FIM)
 #include "FiM.h"
 #endif
@@ -64,6 +68,9 @@ typedef struct {
 
     const uint32 startPattern;
     const uint32 postBuildVariant;
+#ifdef CFG_POSTBUILD_PARTNUMBER
+	const PostBuildPartNoType partNumber;
+#endif
     const uint64 preCompileHashLow; /* Lower 8 bytes of the MD5 */
     const uint64 preCompileHashHigh; /* Upper 8 bytes of the MD5 */
 
@@ -106,6 +113,8 @@ typedef struct {
 #if defined(USE_FIM)
     const FiM_ConfigType* const FiMConfigPtr;
 #endif
+
+const uint32 * const endPattern;
 
 } PostbuildConfigType;
 

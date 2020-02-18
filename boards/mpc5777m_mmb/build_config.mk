@@ -8,11 +8,8 @@ CFG=PPC E200Z4 MPC55XX MPC57XX MPC5777M CAN_OSCILLATOR_CLOCK BRD_MPC5777M_MMB
 CFG+=EFPU
 CFG+=MCU_ARC_CONFIG
 CFG+=MCU_CACHE_I
-
-#ifneq ($(COMPILER),gcc)
+CFG+=OS_SYSTICK2
 CFG+=VLE
-#endif
-
 
 # What buildable modules does this board have, 
 # default or private
@@ -20,25 +17,20 @@ CFG+=VLE
 # Memory + Peripherals
 MOD_AVAIL+=OS ADC DIO DMA CAN GPT LIN MCU PORT WDG FLS SPI ETH
 # Additional
-MOD_AVAIL+= LWIP TCPIP SOAD DOIP UDPNM ETHSM
+MOD_AVAIL+= LWIP TCPIP SOAD UDPNM ETHSM
 # Required modules
 MOD_USE += MCU KERNEL
 
 
 # Default cross compiler
 COMPILER?=ghs
-DEFAULT_CROSS_COMPILE = /opt/powerpc-eabispe/bin/powerpc-eabispe-
+
+# Default cross compiler
+COMPILER_FLAVOR=s32_newlib
+DEFAULT_CROSS_COMPILE = /c/devtools/Freescale/S32DS_Power_v2017.R1/Cross_Tools/powerpc-eabivle-4_9/bin/powerpc-eabivle-
 DEFAULT_GHS_COMPILE = /c/devtools/ghs/comp_201314p
 DEFAULT_CW_COMPILE= /c/devtools/Freescale/cw_mpc5xxx_2.10
 DEFAULT_DIAB_COMPILE = /c/devtools/WindRiver/diab/5.9.3.0/WIN32
-
-ifneq ($(filter VLE,$(CFG)),)
-DEFAULT_CROSS_COMPILE = /opt/powerpc-eabispe/bin/powerpc-eabispe-
-else 
-DEFAULT_CROSS_COMPILE = /opt/powerpc-eabivle/bin/powerpc-eabivle-
-#DEFAULT_CROSS_COMPILE = /c/devtools/Freescale/S32_Power_v1.0/Cross_Tools/powerpc-eabivle-4_9/bin/powerpc-eabivle-
-#lib_lib_path= /c/devtools/freescale/s32_power_v1.0/cross_tools/powerpc-eabivle-4_9/powerpc-eabivle/newlib/lib/fp/e200z3
-endif
 
 
 vle=$(if $(filter $(CFG),VLE),y)

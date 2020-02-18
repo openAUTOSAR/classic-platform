@@ -36,9 +36,8 @@ StatusType Os_NotifyCore(CoreIDType coreId, OsServiceIdType op,
                          uint32_t arg1, uint32_t arg2, uint32_t arg3);
 
 #else
-/*lint -emacro(506, Os_OnRunningCore) -emacro(774, Os_OnRunningCore) MISRA:FALSE_POSITIVE:For always evaluating as true:
- *[MISRA 2004 Rule 13.7, required], [MISRA 2012 Rule 14.3, required]
- */
+/*lint -emacro(506, Os_OnRunningCore)  MISRA:FALSE_POSITIVE:For always evaluating as true:[MISRA 2012 Rule 2.1, required]*/
+/*lint -emacro(774, Os_OnRunningCore) MISRA:FALSE_POSITIVE:For always evaluating as true:[MISRA 2012 Rule 14.3, required]*/
 #define Os_OnRunningCore(x,y) true
 #endif
 

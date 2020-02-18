@@ -18,41 +18,139 @@
 
 
 /**
- * @brief
+ * @brief            Function to read peripheral 8-bit address
  * @details
  * @param Area
- * @param Address       The address to read
- * @param ReadValue     Content of the given memory location
- * @return
+ * @param Address    The address to read
+ * @param ReadValue  Content of the given memory location
+ * @retval           E_OK If area is valid
  */
-StatusType  Os_ReadPeripheral8(    AreaIdType  Area,  const  uint8  * Address, uint8  * ReadValue) {
+StatusType  Os_ReadPeripheral8 ( AreaIdType  Area,  const  uint8  * Address, uint8  * ReadValue) {
+    (void)Area;
     *ReadValue = *Address;
     return E_OK;
 }
 
-StatusType  Os_ReadPeripheral16(   AreaIdType  Area,  const  uint16 * Address, uint16 * ReadValue) {
+/**
+ * @brief            Function to read peripheral 16-bit address
+ * @details
+ * @param Area
+ * @param Address    The address to read
+ * @param ReadValue  Content of the given memory location
+ * @retval           E_OK If area is valid
+ */
+
+StatusType  Os_ReadPeripheral16( AreaIdType  Area,  const  uint16 * Address, uint16 * ReadValue) {
+    (void)Area;
     *ReadValue = *Address;
     return E_OK;
 }
-StatusType  Os_ReadPeripheral32(   AreaIdType  Area,  const  uint32 * Address, uint32 * ReadValue) {
+
+
+/**
+ * @brief            Function to read peripheral 32-bit address
+ * @details
+ * @param Area
+ * @param Address    The address to read
+ * @param ReadValue  Content of the given memory location
+ * @retval           E_OK If area is valid
+ */
+
+StatusType  Os_ReadPeripheral32( AreaIdType  Area,  const  uint32 * Address, uint32 * ReadValue) {
+    (void)Area;
     *ReadValue = *Address;
     return E_OK;
 }
 
-StatusType  Os_WritePeripheral8 (  AreaIdType  Area,  uint8   *Address, uint8  WriteValue) {
+/**
+ * @brief            Function to write peripheral 8-bit address
+ * @details
+ * @param Area
+ * @param Address    The address to read
+ * @param ReadValue  Content of the given memory location
+ * @retval           E_OK If area is valid
+ */
+StatusType  Os_WritePeripheral8 ( AreaIdType  Area,  uint8   *Address, uint8  WriteValue) {
+    (void)Area;
     *Address = WriteValue;
     return E_OK;
 }
 
-StatusType  Os_WritePeripheral16(  AreaIdType  Area,  uint16  *Address, uint16 WriteValue) {
+/**
+ * @brief            Function to write peripheral 16-bit address
+ * @details
+ * @param Area
+ * @param Address    The address to read
+ * @param ReadValue  Content of the given memory location
+ * @retval           E_OK If area is valid
+ */
+StatusType  Os_WritePeripheral16( AreaIdType  Area,  uint16  *Address, uint16 WriteValue) {
+    (void)Area;
     *Address = WriteValue;
     return E_OK;
 }
 
-StatusType  Os_WritePeripheral32(  AreaIdType  Area,  uint32  *Address, uint32 WriteValue) {
+/**
+ * @brief            Function to write peripheral 16-bit address
+ * @details
+ * @param Area
+ * @param Address    The address to read
+ * @param ReadValue  Content of the given memory location
+ * @retval           E_OK If area is valid
+ */
+StatusType  Os_WritePeripheral32( AreaIdType  Area,  uint32  *Address, uint32 WriteValue) {
+    (void)Area;
     *Address = WriteValue;
     return E_OK;
 }
+
+
+/**
+ * @brief            Function to modify peripheral 8-bit address
+ * @details
+ * @param Area
+ * @param Address    The address to read
+ * @param ClearMask  Address will be modified with bit-AND
+ * @param SetMask    Address will be modified with bit-OR
+ * @retval           E_OK If area is valid
+ */
+StatusType  Os_ModifyPeripheral8(  AreaIdType  Area,  uint8   *Address, uint8  ClearMask, uint8 SetMask) {
+    (void)Area;
+    *Address = ((*Address & ClearMask) | SetMask);
+    return E_OK;
+}
+
+/**
+ * @brief            Function to modify peripheral 16-bit address
+ * @details
+ * @param Area
+ * @param Address    The address to read
+ * @param ClearMask  Address will be modified with bit-AND
+ * @param SetMask    Address will be modified with bit-OR
+ * @retval           E_OK If area is valid
+ */
+StatusType  Os_ModifyPeripheral16(  AreaIdType  Area,  uint16   *Address, uint16  ClearMask, uint16 SetMask) {
+    (void)Area;
+    *Address = ((*Address & ClearMask) | SetMask);
+    return E_OK;
+}
+
+/**
+ * @brief            Function to modify peripheral 32-bit address
+ * @details
+ * @param Area
+ * @param Address    The address to read
+ * @param ClearMask  Address will be modified with bit-AND
+ * @param SetMask    Address will be modified with bit-OR
+ * @retval           E_OK If area is valid
+ */
+StatusType  Os_ModifyPeripheral32(  AreaIdType  Area,  uint32   *Address, uint32  ClearMask, uint32 SetMask) {
+    (void)Area;
+    *Address = ((*Address & ClearMask) | SetMask);
+    return E_OK;
+}
+
+
 
 
 

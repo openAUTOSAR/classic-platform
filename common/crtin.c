@@ -12,8 +12,7 @@
  * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
  *-------------------------------- Arctic Core -----------------------------*/
 
-
-typedef void (*func_ptr)(void);
+ typedef void (*func_ptr)(void);
 
 extern func_ptr _init_array_start[], _init_array_end[];
 extern func_ptr _fini_array_start[], _fini_array_end[];

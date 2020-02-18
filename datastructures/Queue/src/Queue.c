@@ -27,9 +27,9 @@ Queue_ReturnType Queue_Init(Queue_t *queue, void *buffer, uint8 max_count,
         size_t dataSize, cmpFunc cmp) {
     SYS_CALL_SuspendOSInterrupts();
 
-    /*lint -e904 ARGUMENT CHECK */
     if ((queue == NULL_PTR) || (buffer == NULL_PTR) || (cmp == NULL_PTR)) {
         SYS_CALL_ResumeOSInterrupts();
+        /*lint -e904 MISRA:OTHER:Validation of parameters, if failure, function will return.This is not inline with Table 8, ISO26262-6-2011, Req 1a:[MISRA 2012 Rule 15.5, advisory]*/
         return QUEUE_E_NULL;
     }
 
@@ -37,10 +37,10 @@ Queue_ReturnType Queue_Init(Queue_t *queue, void *buffer, uint8 max_count,
         SYS_CALL_ResumeOSInterrupts();
         return QUEUE_E_ALREADY_INIT;
     }
-    /*lint +e904 */
 
     queue->bufStart = buffer;
-    queue->bufEnd = (char *) buffer + (max_count * dataSize); //lint !e970 !e9016 OTHER correct arithmetic even if Array index is not used
+    /*lint -e970 MISRA:OTHER:argument check:[MISRA 2012 Directive 4.6, advisory]*/
+    queue->bufEnd = (char *) buffer + (max_count * dataSize); /*lint !e9016 MISRA:OTHER:correct arithmetic even if Array index is not used:[MISRA 2012 Rule 18.4, advisory]*/
     queue->head = queue->bufStart;
     queue->tail = queue->bufStart;
     queue->dataSize = dataSize;
@@ -57,9 +57,10 @@ Queue_ReturnType Queue_Init(Queue_t *queue, void *buffer, uint8 max_count,
 Queue_ReturnType Queue_Add(Queue_t *queue, void const *dataPtr) {
     SYS_CALL_SuspendOSInterrupts();
 
-    /*lint -e904 ARGUMENT CHECK */
+
     if ((queue == NULL_PTR) || (dataPtr == NULL_PTR)) {
         SYS_CALL_ResumeOSInterrupts();
+        /*lint -e904 MISRA:OTHER:Validation of parameters, if failure, function will return.This is not inline with Table 8, ISO26262-6-2011, Req 1a:[MISRA 2012 Rule 15.5, advisory]*/
         return QUEUE_E_NULL;
     }
     //Not initialized
@@ -73,10 +74,10 @@ Queue_ReturnType Queue_Add(Queue_t *queue, void const *dataPtr) {
         SYS_CALL_ResumeOSInterrupts();
         return QUEUE_E_FULL; /* No more room */
     }
-    /*lint +e904 */
 
     MEMCPY(queue->head, dataPtr, queue->dataSize);
-    queue->head = (char *) queue->head + queue->dataSize; //lint !e970 !e9016 OTHER correct arithmetic even if Array index is not used
+    /*lint -e970 MISRA:OTHER:argument check:[MISRA 2012 Directive 4.6, advisory]*/
+    queue->head = (char *) queue->head + queue->dataSize; /*lint !e9016 MISRA:OTHER:correct arithmetic even if Array index is not used:[MISRA 2012 Rule 18.4, advisory]*/
 
     //Wrap-around
     if (queue->head == queue->bufEnd) {
@@ -91,9 +92,9 @@ Queue_ReturnType Queue_Add(Queue_t *queue, void const *dataPtr) {
 Queue_ReturnType Queue_Next(Queue_t *queue, void *dataPtr) {
     SYS_CALL_SuspendOSInterrupts();
 
-    /*lint -e904 ARGUMENT CHECK */
     if ((queue == NULL_PTR) || (dataPtr == NULL_PTR)) {
         SYS_CALL_ResumeOSInterrupts();
+        /*lint -e904 MISRA:OTHER:Validation of parameters, if failure, function will return.This is not inline with Table 8, ISO26262-6-2011, Req 1a:[MISRA 2012 Rule 15.5, advisory]*/
         return QUEUE_E_NULL;
     }
 
@@ -108,7 +109,8 @@ Queue_ReturnType Queue_Next(Queue_t *queue, void *dataPtr) {
     }
 
     MEMCPY((void*) dataPtr, queue->tail, queue->dataSize);
-    queue->tail = (char *) queue->tail + queue->dataSize; //lint !e970 !e9016 OTHER correct arithmetic even if Array index is not used
+    /*lint -e970 MISRA:OTHER:argument check:[MISRA 2012 Directive 4.6, advisory]*/
+    queue->tail = (char *) queue->tail + queue->dataSize; /*lint !e9016 MISRA:OTHER:correct arithmetic even if Array index is not used:[MISRA 2012 Rule 18.4, advisory]*/
     if (queue->tail == queue->bufEnd) {
         queue->tail = queue->bufStart;
     }
@@ -119,7 +121,6 @@ Queue_ReturnType Queue_Next(Queue_t *queue, void *dataPtr) {
         SYS_CALL_ResumeOSInterrupts();
         return QUEUE_E_LOST_DATA;
     }
-    /*lint +e904 */
 
     SYS_CALL_ResumeOSInterrupts();
     return QUEUE_E_OK;
@@ -127,9 +128,10 @@ Queue_ReturnType Queue_Next(Queue_t *queue, void *dataPtr) {
 /* @req ARC_SWS_Queue_00006 */
 Queue_ReturnType Queue_Peek(Queue_t const *queue, void *dataPtr) {
     SYS_CALL_SuspendOSInterrupts();
-    /*lint -e904 ARGUMENT CHECK */
+
     if ((queue == NULL_PTR) || (dataPtr == NULL_PTR)) {
         SYS_CALL_ResumeOSInterrupts();
+        /*lint -e904 MISRA:OTHER:Validation of parameters, if failure, function will return.This is not inline with Table 8, ISO26262-6-2011, Req 1a:[MISRA 2012 Rule 15.5, advisory]*/
         return QUEUE_E_NULL;
     }
     if (queue->isInit != TRUE) {
@@ -140,7 +142,6 @@ Queue_ReturnType Queue_Peek(Queue_t const *queue, void *dataPtr) {
         SYS_CALL_ResumeOSInterrupts();
         return QUEUE_E_NO_DATA;
     }
-    /*lint +e904 */
 
     MEMCPY((void*) dataPtr, queue->tail, queue->dataSize);
 
@@ -152,9 +153,10 @@ Queue_ReturnType Queue_Contains(Queue_t const *queue, void const *dataPtr) {
     uint8 i;
 
     SYS_CALL_SuspendOSInterrupts();
-    /*lint -e904 ARGUMENT CHECK */
+
     if ((queue == NULL_PTR) || (dataPtr == NULL_PTR)) {
         SYS_CALL_ResumeOSInterrupts();
+        /*lint -e904 MISRA:OTHER:Validation of parameters, if failure, function will return.This is not inline with Table 8, ISO26262-6-2011, Req 1a:[MISRA 2012 Rule 15.5, advisory]*/
         return QUEUE_E_NULL;
     }
 
@@ -167,16 +169,16 @@ Queue_ReturnType Queue_Contains(Queue_t const *queue, void const *dataPtr) {
         return QUEUE_E_NO_DATA;
     }
 
-    char *iter = queue->tail; //lint !e970 OTHER need char* do to pointer arithmetic
+    /*lint -e970 MISRA:OTHER:argument check:[MISRA 2012 Directive 4.6, advisory]*/
+    char *iter = queue->tail;
     //Loop through queue
     for (i = 0; i < queue->count; i++) {
-        if (queue->compare_func(iter, (void*) dataPtr, queue->dataSize) == 0) { //lint !e9005 OTHER Necessary to cast pointer to match signature
+        if (queue->compare_func(iter, (void*) dataPtr, queue->dataSize) == 0) { /*lint !e9005 MISRA:PERFORMANCE:casting away const is okay:[MISRA 2012 Rule 11.8, required]*/
             SYS_CALL_ResumeOSInterrupts();
             return QUEUE_E_TRUE;
         }
-        iter = iter + queue->dataSize; //lint !e9016 OTHER correct arithmetic even if Array index is not used
+        iter = iter + queue->dataSize; /*lint !e9016 MISRA:OTHER:correct arithmetic even if Array index is not used:[MISRA 2012 Rule 18.4, advisory]*/
     }
-    /*lint +e904 */
 
     SYS_CALL_ResumeOSInterrupts();
     return QUEUE_E_FALSE;

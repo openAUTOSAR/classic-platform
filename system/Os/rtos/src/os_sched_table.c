@@ -14,7 +14,6 @@
 
 /** @reqSettings DEFAULT_SPECIFICATION_REVISION=4.3.0 */
 
-/*lint -w2 Reduced static code analysis since not a part of safety platform */
 /*
  * How Autosar sees the scheduletable
  *
@@ -66,7 +65,8 @@
 /* ----------------------------[private define]------------------------------*/
 /* ----------------------------[private macro]-------------------------------*/
 
-#define SCHED_CHECK_ID(x) 		( (x) < OS_SCHTBL_CNT)
+/* Initial check is to silence some compilers when OS_SCHTBL_CNT == 0 */
+#define SCHED_CHECK_ID(x)       ( (OS_SCHTBL_CNT != 0UL) &&  ((x) < OS_SCHTBL_CNT) )
 
 /* ----------------------------[private typedef]-----------------------------*/
 /* ----------------------------[private function prototypes]-----------------*/
@@ -94,7 +94,7 @@ static void Os_SchTblUpdateState( OsSchTblType *stbl ) {
     TickType initalOffset;
     TickType finalOffset;
     OsSchTblType *nextStblPtr;
-    _Bool handleLast = 0;
+    _Bool handleLast = 0; /*lint !e970 MISRA:OTHER:type _Bool declared outside:[MISRA 2012 Directive 4.6, advisory] */
 
     if( (stbl->expire_curr_index) == (SA_LIST_CNT(&stbl->expirePointList) - 1) ) {
         /* We are at the last expiry point */
@@ -107,7 +107,7 @@ static void Os_SchTblUpdateState( OsSchTblType *stbl ) {
                             finalOffset );
 
             stbl->expire_curr_index++;
-            return;
+            return;/*lint !e904 MISRA:OTHER:Return statement is necessary in case of reporting a DET error:[MISRA 2012 Rule 15.5, advisory]*/
         } else {
             /* Only single shot may have an offset of 0 */
             ASSERT(stbl->repeating == SINGLE_SHOT);
@@ -188,7 +188,8 @@ static void Os_SchTblUpdateState( OsSchTblType *stbl ) {
  * @return
  */
 #if (OS_SCHTBL_CNT != 0)
-static void ScheduleTableConsistenyCheck( OsSchTblType *sTblPtr ) {
+/*lint -e818 MISRA:OTHER:sTblPtr is not pointing to constant:[MISRA 2012 Rule 8.13, advisory] */
+static void ScheduleTableConsistenyCheck( OsSchTblType *sTblPtr ){
 
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )
     /** @req SWS_Os_00440 */
@@ -208,7 +209,7 @@ static void ScheduleTableConsistenyCheck( OsSchTblType *sTblPtr ) {
 
 
     {
-        int iter;
+        int iter;/*lint !e970 MISRA:OTHER:iterator variable :[MISRA 2012 Directive 4.6, advisory] */
         TickType delta = 0;
         TickType minCycle = Os_CounterGetMinCycle(sTblPtr->counter);
         TickType maxValue =  Os_CounterGetMaxValue(sTblPtr->counter);
@@ -229,7 +230,7 @@ static void ScheduleTableConsistenyCheck( OsSchTblType *sTblPtr ) {
         }
 
         /* Final */
-        /** @req SWS_Os_00444 */ /** !req OS427 */
+        /** @req SWS_Os_00444 */ /** !req SWS_Os_00427 */
         delta = sTblPtr->duration - SA_LIST_GET(&sTblPtr->expirePointList,iter-1)->offset;
         ASSERT( delta >=  minCycle );
         ASSERT( delta <=  maxValue );
@@ -255,8 +256,11 @@ StatusType StartScheduleTableRel(ScheduleTableType sid, TickType offset) {
     OS_VALIDATE_STD_2((Os_SysIntAnyDisabled() == FALSE) , E_OS_DISABLEDINT,
     		          OSServiceId_StartScheduleTableRel,sid, offset);   /* @req SWS_Os_00093 */
 
+/** @req SWS_BSW_00029 */
 #if (OS_STATUS_EXTENDED == STD_ON )
     /** @req SWS_Os_00275 */
+    /*lint -e685 MISRA:CONFIGURATION:argument check:[MISRA 2012 Rule 14.3, required] */
+    /*lint -e568 MISRA:CONFIGURATION:argument check:[MISRA 2004 Info, advisory] */
     OS_VALIDATE_STD_2(SCHED_CHECK_ID(sid) , E_OS_ID,
     		          OSServiceId_StartScheduleTableRel,sid, offset);
 #endif
@@ -283,10 +287,12 @@ StatusType StartScheduleTableRel(ScheduleTableType sid, TickType offset) {
 #endif
 
     max_offset = Os_CounterGetMaxValue(sPtr->counter);
+	
+/** @req SWS_BSW_00029 */
 #if (OS_STATUS_EXTENDED == STD_ON )
     /** @req SWS_Os_00276 */
     /** @req SWS_Os_00332 */
-    //lint -e{9007} MISRA False positive. No side effects of Os_SchTblGetInitialOffset
+    /*lint -e{9007} MISRA:FALSE_POSITIVE:No side effects of Os_SchTblGetInitialOffset:[MISRA 2012 Rule 13.5, required]*/
     if( (offset == 0) || ((offset + Os_SchTblGetInitialOffset(sPtr)) > max_offset ) ) {
         rv = E_OS_VALUE;
         OS_STD_ERR_2(OSServiceId_StartScheduleTableRel,sid, offset);
@@ -294,7 +300,8 @@ StatusType StartScheduleTableRel(ScheduleTableType sid, TickType offset) {
 #endif
 
     /** @req SWS_Os_00277 */
-	OS_VALIDATE_STD_2((sPtr->state == SCHEDULETABLE_STOPPED) , E_OS_STATE,
+    /*lint -e539 MISRA:CONFIGURATION:argument check:[MISRA 2004 Info, advisory] */
+    OS_VALIDATE_STD_2((sPtr->state == SCHEDULETABLE_STOPPED) , E_OS_STATE,
 	    		      OSServiceId_StartScheduleTableRel,sid, offset);
     Irq_Save(state);
     /* calculate the expire value.. */
@@ -346,7 +353,7 @@ StatusType StartScheduleTableAbs(ScheduleTableType sid, TickType start ){
     		          OSServiceId_StartScheduleTableAbs,sid, start);
 
     Irq_Save(state);
-    /** !req OS351 (SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS not supported) */
+    /** !req SWS_Os_00351 (SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS not supported) */
     sTblPtr->expire_val = start + Os_SchTblGetInitialOffset(sTblPtr);
     sTblPtr->state = SCHEDULETABLE_RUNNING;
     Irq_Restore(state);
@@ -571,8 +578,9 @@ StatusType SyncScheduleTable( ScheduleTableType ScheduleTableID, TickType Value 
 /** @req SWS_Os_00227 */
 StatusType GetScheduleTableStatus( ScheduleTableType sid, ScheduleTableStatusRefType status ) {
     StatusType rv = E_OK;
+    /*lint -e954 MISRA:OTHER:need not be const pointer:[MISRA 2012 Rule 8.13, advisory] */
     OsSchTblType *s_p;
-    (void)status; //lint !e920 MISRA False positive. Allowed to cast pointer to void here.
+    (void)status; /*lint !e920 MISRA:FALSE_POSITIVE:Allowed to cast pointer to void here:[MISRA 2012 Rule 1.3, required]*/
     imask_t state;
 
     /* Validation of parameters, if failure, function will return */
@@ -638,7 +646,7 @@ StatusType SetScheduleTableAsync( ScheduleTableType sid ) {
 
     Irq_Save(state);
 
-    /** !req OS362 */ /** !req OS323 */ /** !req OS483 */
+    /** !req SWS_Os_00362 */ /** !req SWS_Os_00323 */ /** !req SWS_Os_00483 */
 
     /** OS300 */
     s_p->state = SCHEDULETABLE_RUNNING;
@@ -663,6 +671,7 @@ void Os_SchTblCheck(OsCounterType *c_p) {
     OsSchTblType *sched_obj;
 
     /* Iterate through the schedule tables */
+    /*lint -e9036 -e818 MISRA:PERFORMANCE:this is a continuous loop:[MISRA 2012 Rule 14.4, required] */
     SLIST_FOREACH(sched_obj,&c_p->sched_head,sched_list) {
 
         if( sched_obj->state == SCHEDULETABLE_STOPPED ) {
@@ -731,10 +740,8 @@ void Os_SchTblCheck(OsCounterType *c_p) {
 void Os_SchTblInit( void ) {
 #if (OS_SCHTBL_CNT != 0)
     OsSchTblType *s_p;
-    /*lint -e{681, 685, 568} Allow MISRA violations depending on configuration
-     * MISRA 2004 14.1 (req), MISRA 2012 2.1 (req) unreachable code (if OS_SCHTBL_CNT == 0)
-     * MISRA 2004 13.7 (req), MISRA 2012 2.1 (req) condition always false (if OS_SCHTBL_CNT == 0)
-     */
+    /*lint -e{681, 685, 568} MISRA:CONFIGURATION:Allow MISRA violations depending on configuration:[MISRA 2004 Info,advisory]*/
+
     for( ScheduleTableType i=0; i < OS_SCHTBL_CNT;i++ ) {
         s_p = Os_SchTblGet(i);
 
@@ -745,10 +752,8 @@ void Os_SchTblInit( void ) {
 
 void Os_SchTblAutostart( void ) {
 #if (OS_SCHTBL_CNT != 0)
-    /*lint -e{681, 685, 568} Allow MISRA violations depending on configuration
-     * MISRA 2004 14.1 (req), MISRA 2012 2.1 (req) unreachable code (if OS_SCHTBL_CNT == 0)
-     * MISRA 2004 13.7 (req), MISRA 2012 2.1 (req) condition always false (if OS_SCHTBL_CNT == 0)
-     */
+    /*lint -e{681, 685, 568} MISRA:CONFIGURATION:Allow MISRA violations depending on configuration:[MISRA 2004 Info,advisory]*/
+
     for(ScheduleTableType j=0; j < OS_SCHTBL_CNT; j++ ) {
         OsSchTblType *sPtr;
         sPtr = Os_SchTblGet(j);
@@ -794,6 +799,7 @@ StatusType Os_StartScheduleTableRelStartup(ScheduleTableType sid, TickType offse
 
     /* OS_STD_ERR_2: Function will return after calling ErrorHook */
     /* This is not inline with Table 8, ISO26262-6:2011, Req 1a and 1h */
+/** @req SWS_BSW_00029 */
 #if (OS_STATUS_EXTENDED == STD_ON )
     /** @req SWS_Os_00275 */
     OS_VALIDATE_STD_2(SCHED_CHECK_ID(sid) , E_OS_ID,
@@ -824,10 +830,11 @@ StatusType Os_StartScheduleTableRelStartup(ScheduleTableType sid, TickType offse
 #endif
 
     max_offset = Os_CounterGetMaxValue(sPtr->counter);
+/** @req SWS_BSW_00029 */
 #if (OS_STATUS_EXTENDED == STD_ON )
     /** @req SWS_Os_00276 */
     /** @req SWS_Os_00332 */
-    //lint -e{9007} MISRA False positive. No side effects of Os_SchTblGetInitialOffset
+    /*lint -e{9007} MISRA:FALSE_POSITIVE:No side effects of Os_SchTblGetInitialOffset:[MISRA 2012 Rule 13.5, required]*/
     if( (offset == 0) || ((offset + Os_SchTblGetInitialOffset(sPtr)) > max_offset ) ) {
         rv = E_OS_VALUE;
         OS_STD_ERR_2(OSServiceId_StartScheduleTableRel,sid, offset);
@@ -892,7 +899,7 @@ StatusType Os_StartScheduleTableAbsStartup(ScheduleTableType sid, TickType start
 
 
     Irq_Save(state);
-    /** !req OS351 (SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS not supported) */
+    /** !req SWS_Os_00351 (SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS not supported) */
     sTblPtr->expire_val = start + Os_SchTblGetInitialOffset(sTblPtr);
     sTblPtr->state = SCHEDULETABLE_RUNNING;
     Irq_Restore(state);

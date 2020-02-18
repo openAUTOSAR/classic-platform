@@ -14,7 +14,7 @@ ifeq ($(CFG_STM32F1X),y)
 inc-$(USE_LWIP) += $(ROOTDIR)/communication/lwip-$(LWIP_VERSION)/contrib/port/ArcticCore/arm_cm3
 vpath-$(USE_LWIP) += $(ROOTDIR)/communication/lwip-$(LWIP_VERSION)/contrib/port/ArcticCore/arm_cm3
 obj-$(USE_LWIP) += ethernetif.o
-else ifeq ($(CFG_MPC5748G)$(CFG_MPC5747C)$(CFG_MPC5746C),y)
+else ifeq ($(CFG_MPC5748G)$(CFG_MPC5747C)$(CFG_MPC5746C)$(CFG_MPC5777C),y)
 inc-$(USE_LWIP) += $(ROOTDIR)/communication/lwip-$(LWIP_VERSION)/contrib/port/ArcticCore/asrIf
 vpath-$(USE_LWIP) += $(ROOTDIR)/communication/lwip-$(LWIP_VERSION)/contrib/port/ArcticCore/asrIf
 else ifeq ($(CFG_MPC55XX),y) 
@@ -106,7 +106,7 @@ ifeq ($(CFG_STM32F1X),y)
 inc-$(USE_LWIP) += $(ROOTDIR)/communication/lwip-$(LWIP_VERSION)/contrib/ports/ArcticCore/arm_cm3
 vpath-$(USE_LWIP) += $(ROOTDIR)/communication/lwip-$(LWIP_VERSION)/contrib/ports/ArcticCore/arm_cm3
 obj-$(USE_LWIP) += ethernetif.o
-else ifeq ($(CFG_MPC5748G)$(CFG_MPC5747C)$(CFG_MPC5746C),y)
+else ifeq ($(CFG_MPC5748G)$(CFG_MPC5747C)$(CFG_MPC5746C)$(CFG_MPC5777C),y)
 inc-$(USE_LWIP) += $(ROOTDIR)/communication/lwip-$(LWIP_VERSION)/contrib/ports/ArcticCore/asrIf
 vpath-$(USE_LWIP) += $(ROOTDIR)/communication/lwip-$(LWIP_VERSION)/contrib/ports/ArcticCore/asrIf
 else ifeq ($(CFG_MPC55XX),y) 

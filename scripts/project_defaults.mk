@@ -66,12 +66,11 @@ else
 # In-tree-build (for examples)
 #####################################################################
 
-    ifneq ($(BOARDDIR),)
-    $(warning BOARDDIR defined in an in-tree-build)
-    endif
+#    ifneq ($(BOARDDIR),)
+#    $(warning BOARDDIR defined in an in-tree-build)
+#    endif
 
 	BUILD_IN_TREE=y
-
 
 	# Try to get name of board
 	ifeq ($(boarddir),)

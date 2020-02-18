@@ -68,7 +68,9 @@ typedef uint32 imask_t;
 #define SPR_IVOR32	528
 #define SPR_IVOR33	529
 #define SPR_IVOR34	530
-
+#if defined (CFG_E200Z7)
+#define SPR_IVOR35  531
+#endif
 
 #define SPR_DEC		22
 #define SPR_DECAR	54
@@ -96,23 +98,23 @@ typedef uint32 imask_t;
 
 #define SPR_SPRG1_RW_S	273
 
-#define MSR_PR		BIT64TO32(49)
-#define MSR_EE		BIT64TO32(48)
-#define MSR_SPE	BIT64TO32(38)
-#define MSR_DS		BIT64TO32(58)
-#define MSR_IS		BIT64TO32(59)
-#define MSR_SPE     BIT64TO32(38)
+#define MSR_PR		BIT64TO32(49U)
+#define MSR_EE		BIT64TO32(48U)
+#define MSR_SPE	    BIT64TO32(38U)
+#define MSR_DS		BIT64TO32(58U)
+#define MSR_IS		BIT64TO32(59U)
+#define MSR_SPE     BIT64TO32(38U)
 
 //#define ESR_PTR 	BIT64TO32(38)
 
 
 /* Timer control regs
  */
-#define TCR_DIE 	0x04000000
-#define TCR_ARE	0x00400000
-#define TCR_FIE	0x00800000
+#define TCR_DIE 	0x04000000UL
+#define TCR_ARE	    0x00400000UL
+#define TCR_FIE	    0x00800000UL
 
-#define HID0_TBEN	0x4000
+#define HID0_TBEN	0x4000UL
 
 
 /*
@@ -211,6 +213,7 @@ asm uint32 get_spr(uint32 spr_nr)
   mfspr r3, spr_nr
 }
 #else
+//lint --e{923,950,530,9008} LINT:FALSE_POSITIVE:Lint can't handle compound assembler macros
 #define get_spr(spr_nr)	CC_EXTENSION \
 ({\
     uint32 __val;\

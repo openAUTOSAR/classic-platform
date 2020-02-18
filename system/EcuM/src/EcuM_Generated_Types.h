@@ -54,6 +54,9 @@
 #if defined(USE_LINIF)
 #include "LinIf.h"
 #endif
+#if defined(USE_LINTP)
+#include "LinTp.h"
+#endif
 #if defined(USE_PWM)
 #include "Pwm.h"
 #endif
@@ -108,9 +111,6 @@
 #if defined(USE_SOAD)
 #include "SoAd.h"
 #endif
-#if defined(USE_DOIP)
-#include "DoIP.h"
-#endif
 #if defined(USE_LDCOM)
 #include "LdCom.h"
 #endif
@@ -143,6 +143,9 @@
 #endif
 #if defined(USE_ETHSM)
 #include "EthSM.h"
+#endif
+#if defined(USE_ETHTRCV)
+#include "EthTrcv.h"
 #endif
 #if defined(USE_ETHIF)
 #include "EthIf.h"
@@ -251,6 +254,9 @@ typedef struct EcuM_ConfigS
 #if defined(USE_LINIF)
     const LinIf_ConfigType* LinIfConfigPtr;
 #endif
+#if defined(USE_LINTP)
+    const LinTp_ConfigType* LinTpConfigPtr;
+#endif
 #if defined(USE_LINSM)
     const LinSM_ConfigType* LinSMConfigPtr;
 #endif
@@ -262,6 +268,9 @@ typedef struct EcuM_ConfigS
 #endif
 #if defined(USE_ETHSM)
     const EthSM_ConfigType* EthSMConfigPtr;
+#endif
+#if defined(USE_ETHTRCV)
+    const EthTrcv_ConfigType* EthTrcvConfigPtr;
 #endif
 #if defined(USE_ETHIF)
     const EthIf_ConfigType* EthIfConfigPtr;
@@ -289,9 +298,6 @@ typedef struct EcuM_ConfigS
 #endif
 #if defined(USE_SOAD)
     const SoAd_ConfigType* SoAdConfigPtr;
-#endif
-#if defined(USE_DOIP)
-    const DoIP_ConfigType* DoIPConfigPtr;
 #endif
 #if defined(USE_LDCOM)
     const LdCom_ConfigType* LdComConfigPtr;

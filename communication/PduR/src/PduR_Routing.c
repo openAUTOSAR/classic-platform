@@ -44,9 +44,6 @@
 #if PDUR_SOAD_SUPPORT == STD_ON
 #include "SoAd.h"
 #endif
-#if PDUR_DOIP_SUPPORT == STD_ON
-#include "DoIP.h"
-#endif
 #if PDUR_J1939TP_SUPPORT == STD_ON
 #include "J1939Tp.h"
 #endif
@@ -121,16 +118,6 @@ PduRRouteStatusType PduR_ARC_RouteTransmit(const PduRDestPdu_type * destination,
             case ARC_PDUR_SOADTP:
 #if PDUR_SOAD_SUPPORT == STD_ON
                 retVal = SoAd_TpTransmit(destination->DestPduId, pduInfo);
-#endif
-                break;
-            case ARC_PDUR_DOIPIF:
-#if PDUR_DOIP_SUPPORT == STD_ON
-                retVal = DoIP_IfTransmit(destination->DestPduId, pduInfo);
-#endif
-                break;
-            case ARC_PDUR_DOIPTP:
-#if PDUR_DOIP_SUPPORT == STD_ON
-                retVal = DoIP_TpTransmit(destination->DestPduId, pduInfo);
 #endif
                 break;
             case ARC_PDUR_J1939TP:
@@ -240,11 +227,6 @@ void PduR_ARC_RouteTpRxIndication(const PduRDestPdu_type * destination, Std_Retu
 #if PDUR_CDDPDUR_SUPPORT == STD_ON
     case ARC_PDUR_CDDPDUR:
         CddPduR_TpRxIndication(destination->DestPduId, result );
-        break;
-#endif
-#if PDUR_SECOC_SUPPORT == STD_ON
-    case ARC_PDUR_SECOC:
-        SecOC_TpRxIndication(destination->DestPduId, result);
         break;
 #endif
     default:
@@ -369,8 +351,8 @@ BufReq_ReturnType PduR_ARC_RouteCopyRxData(const PduRDestPdu_type * destination,
 #if PDUR_LDCOM_SUPPORT == STD_ON
         retVal = LdCom_CopyRxData(destination->DestPduId, info, bufferSizePtr);
 #endif
-//#if 0 // Not supported in current SecOC implementation
-        case ARC_PDUR_SECOC:
+#if 0 // Not supported in current SecOC implementation
+        case ARC_PDU_SECOC:
 #if PDUR_SECOC_SUPPORT == STD_ON
             retVal = SecOC_CopyRxData(destination->DestPduId, info, bufferSizePtr);
 #else
@@ -381,7 +363,7 @@ BufReq_ReturnType PduR_ARC_RouteCopyRxData(const PduRDestPdu_type * destination,
             //lint +estring(920,pointer)  /* cast to void */
 #endif
             break;
-//#endif
+#endif
         break;
 #if defined(USE_COM)
     case ARC_PDUR_COM:
@@ -417,8 +399,8 @@ BufReq_ReturnType PduR_ARC_RouteCopyTxData(const PduRRoutingPath_type *route, Pd
 #if PDUR_LDCOM_SUPPORT == STD_ON
         retVal = LdCom_CopyTxData(route->SrcPduId, info, retry, availableDataPtr);
 #endif
-//#if 0 // Not supported in current SecOC implementation
-    case ARC_PDUR_SECOC:
+#if 0 // Not supported in current SecOC implementation
+    case ARC_PDU_SECOC:
 #if PDUR_SECOC_SUPPORT == STD_ON
         retVal = SecOC_CopyTxData(route->SrcPduId, info, retry, availableDataPtr);
 #else
@@ -429,7 +411,7 @@ BufReq_ReturnType PduR_ARC_RouteCopyTxData(const PduRRoutingPath_type *route, Pd
         //lint +estring(920,pointer)  /* cast to void */
 #endif
         break;
-//#endif
+#endif
         break;
 #if defined(USE_COM)
     case ARC_PDUR_COM:
@@ -471,7 +453,8 @@ BufReq_ReturnType PduR_ARC_RouteStartOfReception(const PduRDestPdu_type * destin
 #if PDUR_LDCOM_SUPPORT == STD_ON
         retVal = LdCom_StartOfReception(destination->DestPduId, &pduInfo, TpSduLength, bufferSizePtr);
 #endif
-    case ARC_PDUR_SECOC:
+#if 0 // Not supported in current SecOC implementation
+    case ARC_PDU_SECOC:
 #if PDUR_SECOC_SUPPORT == STD_ON
         retVal = SecOC_StartOfReception(destination->DestPduId, NULL, TpSduLength, bufferSizePtr);
 #else
@@ -479,6 +462,8 @@ BufReq_ReturnType PduR_ARC_RouteStartOfReception(const PduRDestPdu_type * destin
         (void)TpSduLength; /* Remove compiler warning */
         (void)bufferSizePtr; /* Remove compiler warning */
         //lint +estring(920,pointer)  /* cast to void */
+#endif
+            break;
 #endif
         break;
 #if defined(USE_COM)

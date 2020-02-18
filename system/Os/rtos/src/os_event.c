@@ -166,7 +166,7 @@ StatusType SetEvent( TaskType TaskID, EventMaskType Mask ) {
 
             currPcbPtr = Os_SysTaskGetCurr();
             /* Checking "4.6.2  Non preemptive scheduling" it does not dispatch if NON  */
-            //lint -e{9007} MISRA False positive. No side effects of Os_SchedulerResourceIsFree
+            /*lint -e{9007} MISRA:FALSE_POSITIVE:No side effects of Os_SchedulerResourceIsFree:[MISRA 2012 Rule 13.5, required]*/
             if( (OS_SYS_PTR->intNestCnt == 0) &&
                 (currPcbPtr->constPtr->scheduling == FULL) &&
                 (destPcbPtr->activePriority > currPcbPtr->activePriority) &&

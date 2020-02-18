@@ -28,8 +28,8 @@
 #if  ( ECUM_DEV_ERROR_DETECT == STD_ON )
 #include "Det.h"
 
-/*lint -emacro(904,VALIDATE,VALIDATE_RV,VALIDATE_NO_RV) ARGUMENT_CHECK MISRA 14.7 Macros used for checking arguments before performing any functionality*/
-/*lint -emacro(9027,VALIDATE,VALIDATE_RV,VALIDATE_NO_RV) ARGUMENT_CHECK [MISRA 2012 Rule 10.1, required] usage of '!' in macros allowed*/
+/*lint -emacro(904,VALIDATE,VALIDATE_RV,VALIDATE_NO_RV) MISRA:ARGUMENT_CHECK:Macros used for checking arguments before performing any functionality:[MISRA 2012 Rule 15.5, advisory] */
+/*lint -emacro(9027,VALIDATE,VALIDATE_RV,VALIDATE_NO_RV) MISRA:ARGUMENT_CHECK:usage of '!' in macros allowed:[MISRA 2012 Rule 10.1, required] */
 /* @req SWS_BSW_00045 Development errors should be reported to DET module */
 /* @req SWS_BSW_00049 API parameter checking */
 #define VALIDATE(_exp,_api,_err ) \
@@ -106,7 +106,7 @@ typedef struct
 } EcuM_GlobalType_Partition_COMMNVM;
 
 extern EcuM_GlobalType EcuM_World;
-extern EcuM_GlobalType_Partition_COMMNVM EcuM_World_ComM_NVM; /*lint -save -e9003 Blockscope variables definitions warning is neglected*/
+extern EcuM_GlobalType_Partition_COMMNVM EcuM_World_ComM_NVM; /*lint -save -e9003 MISRA:OTHER:Blockscope variables definitions warning is neglected:[MISRA 2012 Rule 8.9, advisory] */
 
 typedef enum
 {
@@ -115,11 +115,6 @@ typedef enum
     ONLY_LIN
 } EcuM_ComMCommunicationGroupsType;
 
-#if defined(USE_HTMSS)
-/* Support for Htmss in EcuM */
-Std_ReturnType EcuM_StartHWTests( HTMSS_TestGroupType group );
-void EcuM_GetHWTestResults( HTMSS_TestGroupType group );
-#endif
 
 void EcuM_enter_run_mode(void);
 

@@ -1,0 +1,19 @@
+The NXP S32K148EVB (Pin package Q176) is an evaluation board from NXP using a S32K148 MCU.
+	
+Datasheets:
+    https://www.nxp.com/docs/en/data-sheet/S32K-DS.pdf
+Reference Manual:
+    https://www.nxp.com/docs/en/reference-manual/S32K-RM.pdf
+    
+MCAL used is from NXP
+ 
+ 
+TBD-----------------------------------------------------------------------
+		Info:	
+		S32K148
+		ARM® Cortex™-M4F
+		up to 112 MHz
+		
+		Memory:
+		Flash 							1,984 KB
+		System RAM (including FlexRAM)	256 KB

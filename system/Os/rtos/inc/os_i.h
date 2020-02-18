@@ -75,7 +75,7 @@ struct OsIsrVar;
 #endif // OS_STATUS_EXTENDED
 
 #include "Std_Types.h"
-#include "Os.h"
+#include "Os.h" /* @req SWS_BSW_00005 */
 #include "os_internal.h"
 #include "os_sys.h"
 #include "debug.h"

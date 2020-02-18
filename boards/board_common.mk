@@ -11,7 +11,42 @@ inc-$(CFG_PPC) += $(ROOTDIR)/$(ARCH_MCU_DRIVER_PATH-y)
 
 
 ##TC2XX##
-obj-$(CFG_TC2XX) += IfxScuCcu.o
+#obj-$(CFG_TC2XX) += IfxScuCcu.o
+
+##TC26X##
+vpath-$(CFG_TC26X) += $(ROOTDIR)/mcal/arch/tcxxx/src
+vpath-$(CFG_TC26X) += $(ROOTDIR)/mcal/arch/tcxxx/src/integration
+
+obj-$(CFG_TC26X) += IfxCpu_CStart$(SELECT_CORE).o
+obj-$(CFG_TC26X) += IfxCpu_cfg.o
+obj-$(CFG_TC26X) += IfxCpu.o
+obj-$(CFG_TC26X) += IfxScuWdt.o
+obj-$(CFG_TC26X) += CompilerGnuc.o
+obj-$(CFG_TC26X) += Ifx_preInitHook.o
+
+IFXTC26X_BASE_FRAMEWORK =  $(ROOTDIR)/mcal/arch/tcxxx/src/contrib/ap32201_TC2xx_Source/0_Src
+
+
+inc-$(CFG_TC26X) += $(IFXTC26X_BASE_FRAMEWORK)/4_McHal/Tricore/_Reg
+inc-$(CFG_TC26X) += $(IFXTC26X_BASE_FRAMEWORK)/4_McHal/Tricore/_Impl
+inc-$(CFG_TC26X) += $(IFXTC26X_BASE_FRAMEWORK)/4_McHal/Tricore/Smu
+
+inc-$(CFG_TC26X) += $(IFXTC26X_BASE_FRAMEWORK)/0_AppSw/Config/Common
+inc-$(CFG_TC26X) += $(IFXTC26X_BASE_FRAMEWORK)/0_AppSw/Config/Tricore/Start
+
+inc-$(CFG_TC26X) += $(IFXTC26X_BASE_FRAMEWORK)/4_McHal/Tricore/Scu/Std
+inc-$(CFG_TC26X) += $(IFXTC26X_BASE_FRAMEWORK)/4_McHal/Tricore/Cpu/Std
+inc-$(CFG_TC26X) += $(IFXTC26X_BASE_FRAMEWORK)/4_McHal/Tricore/Mtu
+
+inc-$(CFG_TC26X) += $(IFXTC26X_BASE_FRAMEWORK)/4_McHal/Tricore
+inc-$(CFG_TC26X) += $(IFXTC26X_BASE_FRAMEWORK)/1_SrvSw
+
+vpath-$(CFG_TC26X) += $(IFXTC26X_BASE_FRAMEWORK)/4_McHal/Tricore/Cpu/CStart
+vpath-$(CFG_TC26X) += $(IFXTC26X_BASE_FRAMEWORK)/4_McHal/Tricore/Scu/Std
+vpath-$(CFG_TC26X) += $(IFXTC26X_BASE_FRAMEWORK)/1_SrvSw/Tricore/Compilers
+
+inc-$(CFG_TC26X) += $(IFXTC26X_BASE_FRAMEWORK)/0_AppSw/Tricore/DemoApp/Start
+vpath-$(CFG_TC26X) += $(IFXTC26X_BASE_FRAMEWORK)/0_AppSw/Tricore/DemoApp/Start
 
 ##TC29X##
 vpath-$(CFG_TC29X) += $(ROOTDIR)/mcal/arch/tcxxx/src
@@ -21,6 +56,12 @@ obj-$(CFG_TC29X) += IfxCpu_CStart$(SELECT_CORE).o
 obj-$(CFG_TC29X) += IfxCpu_cfg.o
 obj-$(CFG_TC29X) += IfxCpu.o
 obj-$(CFG_TC29X) += IfxScuWdt.o
+ifeq ($(CFG_TC212),y)
+# Don't add for this one
+else
+obj-$(CFG_TC29X) += IfxScuCcu.o
+endif
+
 obj-$(CFG_TC29X) += CompilerGnuc.o
 obj-$(CFG_TC29X) += Ifx_preInitHook.o
 
@@ -122,6 +163,7 @@ obj-$(CFG_STM32F1X) += startup_cmx.o
 obj-$(CFG_STM32F3X) += startup_cmx.o
 obj-$(CFG_JACINTO) += startup_jacinto.o
 obj-$(CFG_S32K144) += startup_cmx.o
+obj-$(CFG_S32K148) += startup_cmx.o
 #stm32 lib files needed by drivers
 obj-$(CFG_STM32F1X) += stm32f10x_rcc.o
 obj-$(CFG_STM32F1X)-$(USE_CAN) += stm32f10x_can.o
@@ -183,6 +225,10 @@ include $(ECUM-MOD-MK)
 #Rtm
 RTM-MOD-MK?=$(ROOTDIR)/safety_security/Sm/Rtm/Rtm.mod.mk
 -include $(RTM-MOD-MK)
+
+#Smal
+SMAL-MOD-MK?=$(ROOTDIR)/safety_security/Sm/Smal/Smal.mod.mk
+-include $(SMAL-MOD-MK)
 
 #SecOC
 SECOC-MOD-MK?=$(ROOTDIR)/communication/SecOC/SecOC.mod.mk
@@ -467,12 +513,12 @@ IPDUM-MOD-MK?=$(ROOTDIR)/communication/IpduM/IpduM.mod.mk
 include $(IPDUM-MOD-MK)
 
 # IO Hardware Abstraction
-#IOHWAB-MOD-MK?=$(ROOTDIR)/Peripherals/IoHwAb/IoHwAb.mod.mk
-#include $(IOHWAB-MOD-MK)
+IOHWAB-MOD-MK?=$(ROOTDIR)/Peripherals/IoHwAb/IoHwAb.mod.mk
+include $(IOHWAB-MOD-MK)
 
 # SAFE IO Hardware Abstraction
-#SAFE-IOHWAB-MOD-MK?=$(ROOTDIR)/Peripherals/SafeIoHwAb/SafeIoHwAb.mod.mk
-#include $(SAFE-IOHWAB-MOD-MK)
+SAFE-IOHWAB-MOD-MK?=$(ROOTDIR)/Peripherals/SafeIoHwAb/SafeIoHwAb.mod.mk
+-include $(SAFE-IOHWAB-MOD-MK)
 
 #Dem
 DEM-MOD-MK?=$(ROOTDIR)/diagnostic/Dem/Dem.mod.mk
@@ -486,9 +532,6 @@ include $(DCM-MOD-MK)
 FIM-MOD-MK?=$(ROOTDIR)/diagnostic/FiM/FiM.mod.mk
 include $(FIM-MOD-MK)
 
-# DoIP
-DOIP-MOD-MK?=$(ROOTDIR)/diagnostic/DoIP/DoIP.mod.mk
-include $(DOIP-MOD-MK)
 
 #RamTst
 RAMTST-MOD-MK?=$(ROOTDIR)/memory/RamTst/RamTst.mod.mk

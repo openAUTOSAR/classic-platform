@@ -29,18 +29,19 @@
 /* ----------------------------[private variables]---------------------------*/
 /* ----------------------------[private functions]---------------------------*/
 static inline boolean IsCounterValid(CounterType counterId) {
+    /*lint -e685 -e568 MISRA:ARGUMENT_CHECK:check counter id:[MISRA 2012 Rule 14.3, required] */
     return (boolean)((CounterType)(counterId) < (CounterType)OS_COUNTER_CNT);
 }   
 
 /* ----------------------------[public functions]----------------------------*/
 #ifdef USE_RTE
 Std_ReturnType Os_GetCounterValue(CounterType counterId, TickType * value) {
-    return (Std_ReturnType)GetCounterValue( counterId , (TickRefType)value); /*lint !e929 OTHER pointer cast to correct type */
+    return (Std_ReturnType)GetCounterValue( counterId , (TickRefType)value);  /*lint !e929 MISRA:STANDARDIZED_INTERFACE:pointer cast to correct type:[MISRA 2012 Rule 11.3, required] */
 }
 
 
 Std_ReturnType Os_GetElapsedValue(CounterType counterId, TickType * value, TickType * elapsedValue) {
-    return (Std_ReturnType)GetElapsedValue( counterId , (TickRefType)value, (TickRefType)elapsedValue); /*lint !e929 OTHER pointer cast to correct type */
+    return (Std_ReturnType)GetElapsedValue( counterId , (TickRefType)value, (TickRefType)elapsedValue); /*lint !e929 MISRA:STANDARDIZED_INTERFACE:pointer cast to correct type:[MISRA 2012 Rule 11.3, required] */
 }
 
 #endif
@@ -316,13 +317,13 @@ void Os_CounterInit( void ) {
 
         aPtr = Os_AlarmGet(0);
         cPtr = aPtr->counter;
-        /*lint -e{9036} MISRA EXTERNAL_FILE while(0) allowed to be used in macros [MISRA 2012 Rule 14.4, required] */
+        /*lint -e{9036} MISRA:EXTERNAL_FILE:while(0) allowed to be used in macros:[MISRA 2012 Rule 14.4, required] */
         SLIST_INIT(&cPtr->alarm_head);
         /* Add the alarms to counters */
         for (AlarmType i = 0; i < OS_ALARM_CNT; i++) {
             aPtr = Os_AlarmGet(i);
             cPtr = aPtr->counter;
-            /*lint -e{9036} MISRA EXTERNAL_FILE while(0) allowed to be used in macros [MISRA 2012 Rule 14.4, required] */
+            /*lint -e{9036} MISRA:EXTERNAL_FILE:while(0) allowed to be used in macros:[MISRA 2012 Rule 14.4, required] */
             SLIST_INSERT_HEAD(&cPtr->alarm_head, aPtr, alarm_list);
         }
     }
@@ -336,13 +337,13 @@ void Os_CounterInit( void ) {
         /* Add the schedule tables to counters */
         sPtr = Os_SchTblGet(0);
         cPtr = sPtr->counter;
-        /*lint -e{9036} MISRA EXTERNAL_FILE while(0) allowed to be used in macros [MISRA 2012 Rule 14.4, required] */
+        /*lint -e{9036} MISRA:EXTERNAL_FILE:while(0) allowed to be used in macros:[MISRA 2012 Rule 14.4, required] */
         SLIST_INIT(&cPtr->alarm_head);
         for(ScheduleTableType i = 0; i < OS_SCHTBL_CNT; i++ ) {
 
             sPtr = Os_SchTblGet(i);
             cPtr = sPtr->counter;
-            /*lint -e{9036} MISRA EXTERNAL_FILE while(0) allowed to be used in macros [MISRA 2012 Rule 14.4, required] */
+            /*lint -e{9036} MISRA:EXTERNAL_FILE:while(0) allowed to be used in macros:[MISRA 2012 Rule 14.4, required] */
             SLIST_INSERT_HEAD(&cPtr->sched_head, sPtr, sched_list);
         }
     }

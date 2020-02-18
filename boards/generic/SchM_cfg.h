@@ -20,6 +20,10 @@
 
 #define SCHM_MF_MEM_PERIOD 		20
 
+/* @req SWS_BSW_00236 Configuration parameters to get Version Info */
+/* @req SWS_BSW_00051 */
+#define SCHM_VERSION_INFO_API          STD_ON
+
 /*
  * Scheduling BSW
  */
@@ -48,6 +52,7 @@
 #if defined(CFG_SAFETY_PLATFORM)
 #define SCHM_MAINFUNCTION_CYCLE_ECUM_A0    SCHM_CYCLE_MAIN
 #define SCHM_MAINFUNCTION_CYCLE_ECUM_QM    SCHM_CYCLE_MAIN
+#define SCHM_MAINFUNCTION_CYCLE_SAFEIOHWAB    SCHM_CYCLE_MAIN
 #else
 #define SCHM_MAINFUNCTION_CYCLE_ECUM    SCHM_CYCLE_MAIN
 #endif

@@ -56,8 +56,19 @@ struct LogH {
 
 /* ----------------------------[private function prototypes]-----------------*/
 /* ----------------------------[private variables]---------------------------*/
+
+
+#define LOG_START_SEC_VAR_CLEARED_UNSPECIFIED
+#include "MemMap.h"  /*lint !e9019 OTHER [MISRA 2012 Rule 20.1, advisory] OTHER AUTOSAR specified way of using MemMap*/
 struct LogH Log;
+#define LOG_STOP_SEC_VAR_CLEARED_UNSPECIFIED
+#include "MemMap.h"  /*lint !e9019 OTHER [MISRA 2012 Rule 20.1, advisory] OTHER AUTOSAR specified way of using MemMap*/
+
+#define LOG_START_SEC_VAR_INIT_UNSPECIFIED
+#include "MemMap.h"  /*lint !e9019 OTHER [MISRA 2012 Rule 20.1, advisory] OTHER AUTOSAR specified way of using MemMap*/
 struct LogH *logPtr = &Log;
+#define LOG_STOP_SEC_VAR_INIT_UNSPECIFIED
+#include "MemMap.h"  /*lint !e9019 OTHER [MISRA 2012 Rule 20.1, advisory] OTHER AUTOSAR specified way of using MemMap*/
 
 /* ----------------------------[private functions]---------------------------*/
 /* ----------------------------[public functions]----------------------------*/

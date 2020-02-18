@@ -65,7 +65,6 @@
  *
  */
 
-
 #define APPL_ID_TO_MASK(_x)   (1UL<<(_x))
 #define APPL_REGS_CNT 16 // aligning with task register count
 
@@ -100,6 +99,7 @@ typedef struct OsAppVar {
 #if ( OS_SC3 == STD_ON ) || ( OS_SC4 == STD_ON )
     uint32  nestCnt;                /**< @brief Interrupt nest counter */
     void *  intStack;               /**< @brief Pointer to bottom of Interrupt stack */
+    void *  savedIntStack;          /**< @brief Pointer to current int stack */
 #endif
 } OsAppVarType;
 
@@ -138,7 +138,7 @@ typedef void ( * trusted_func_t)( TrustedFunctionIndexType , TrustedFunctionPara
 
 
 #if OS_APPLICATION_CNT!=0
-//lint -e9003 MISRA 2012 8.9 (adv) Os_AppVar is declared out of scope since it is used in Os_ApplGet
+/*lint -e9003 MISRA:EXTERNAL_FILE:Os_AppVar is declared out of scope since it is used in Os_ApplGet:[MISRA 2012 Rule 8.9, advisory]*/
 extern OsAppVarType Os_AppVar[OS_APPLICATION_CNT];
 
 extern const OsAppConstType Os_AppConst[OS_APPLICATION_CNT];
@@ -199,6 +199,7 @@ static inline StatusType Os_ApplHaveAccess( uint32 mask ) {
 /* Sanity checks */
 static inline StatusType Os_ApplCheckState( ApplicationType appId ) {
     StatusType status = E_OK;
+    (void)appId;    /*lint !e920 MISRA:STANDARDIZED_INTERFACE */
     // Currently only APPLICATION_ACCESSIBLE is supported 
 #if 0
     if( Os_ApplGetState(appId) != APPLICATION_ACCESSIBLE ) {
@@ -244,6 +245,17 @@ static inline void Os_AppSetIsrEndmark( ApplicationType id ) {
 }
 
 /**
+ * @brief     Set startmark for application interrupt stack.
+ * @param aP  Pointer to application
+ */
+static inline void Os_AppSetIsrStartmark( ApplicationType id ) {
+    /* Get high address */
+    uint8 *bottom = Os_AppConst[id].intStack.bottom;
+    *(bottom-1ul) = STACK_PATTERN;
+}
+
+
+/**
    @brief    Check endmark for application interrupt stack.
  * @param aP Pointer to application
  * @return FALSE if the end-mark is not ok.
@@ -259,7 +271,27 @@ static inline boolean Os_AppIsIsrEndmarkOk( ApplicationType id ) {
     return rv;
 }
 
+/**
+   @brief    Check endmark for application interrupt stack.
+ * @param aP Pointer to application
+ * @return FALSE if the end-mark is not ok.
+ */
+static inline boolean Os_AppIsIsrStartmarkOk( ApplicationType id ) {
+    boolean rv = FALSE;
+    uint8 *bottom = Os_AppConst[id].intStack.bottom;
+
+    if( *(bottom-1UL) == STACK_PATTERN ) {
+        rv = TRUE;
+    }
+
+    return rv;
+}
+
+
+
 void Os_AppIsrStackPerformCheck( ApplicationType id );
+
+void Os_AppIsrGetStackInfo( ApplicationType id, OsAppStackType *stack );
 
 #endif  /* (OS_SC3==STD_ON) || (OS_SC4==STD_ON) */
 

@@ -25,7 +25,7 @@
  */
 void Os_Arc_Panic(uint32 exception, void *pData) {
 
-    (void)pData; //lint !e920 MISRA False positive. Allowed to cast pointer to void here.
+    (void)pData; /*lint !e920 MISRA:FALSE_POSITIVE:Allowed to cast pointer to void here:[MISRA 2012 Rule 1.3, required]*/
 	ProtectionReturnType rv = PRO_SHUTDOWN;
 
     if ( (OS_SYS_PTR->hooks != NULL_PTR) && (OS_SYS_PTR->hooks->ProtectionHook != NULL_PTR) ) {

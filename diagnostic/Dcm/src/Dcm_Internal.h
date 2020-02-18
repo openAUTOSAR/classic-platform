@@ -206,7 +206,7 @@ void DsdDspProcessingDone_ReadDataByPeriodicIdentifier(Dcm_NegativeResponseCodeT
 void DsdDataConfirmation(PduIdType confirmPduId, NotifResultType result);
 void DsdDslDataIndication(const PduInfoType *pduRxData, const Dcm_DsdServiceTableType *protocolSIDTable, Dcm_ProtocolAddrTypeType addrType, PduIdType txPduId, PduInfoType *pduTxData, PduIdType rxContextPduId, Dcm_ProtocolTransTypeType txType, boolean internalRequest, boolean sendRespPendOnTransToBoot, boolean startupResponseRequest);
 PduIdType DsdDslGetCurrentTxPduId(void);
-#if defined(DCM_USE_SERVICE_READDATABYPERIODICIDENTIFIER) || (defined(USE_DEM) && defined(DCM_USE_SERVICE_CONTROLDTCSETTING)) || (defined(DCM_USE_SERVICE_INPUTOUTPUTCONTROLBYIDENTIFIER) && defined(DCM_USE_CONTROL_DIDS))
+#if defined(DCM_USE_SERVICE_READDATABYPERIODICIDENTIFIER) || defined(DCM_USE_SERVICE_COMMUNICATIONCONTROL) || (defined(USE_DEM) && defined(DCM_USE_SERVICE_CONTROLDTCSETTING)) || (defined(DCM_USE_SERVICE_INPUTOUTPUTCONTROLBYIDENTIFIER) && defined(DCM_USE_CONTROL_DIDS))
 boolean DsdDspCheckServiceSupportedInActiveSessionAndSecurity(uint8 sid);
 #endif
 void DsdDspForceResponsePending(void);
@@ -225,6 +225,7 @@ void DsdCancelPendingExternalServices(void);
 #ifdef DCM_USE_SERVICE_COMMUNICATIONCONTROL
 Std_ReturnType DsdDspGetCurrentProtocolRx(PduIdType rxPduId, const Dcm_DslProtocolRxType **protocolRx);
 #endif
+void DsdClearSuppressPosRspMsg(void);
 
 /*
  * DSL

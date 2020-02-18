@@ -154,6 +154,26 @@ void Os_TaskMakeWaiting( OsTaskVarType *pcb )
     OS_DEBUG(D_TASK,"Removed %s from ready list\n",pcb->constPtr->name);
 }
 
+/**
+ * Fill the stack with a predefined pattern
+ *
+ * @param pcbPtr Pointer to the pcb to fill with pattern
+ */
+static void Os_StackFill(const OsTaskVarType *pcbPtr) {
+    const uint8 *p = pcbPtr->stack.curr;
+
+    /*lint -e{946}  MISRA:FALSE_POSITIVE:Pointers belong to the same "array":[MISRA 2012 Rule 18.3, required]*/
+    ASSERT(pcbPtr->stack.curr > pcbPtr->stack.top);
+    /*lint -e{9033, 946, 947}  MISRA:FALSE_POSITIVE:Pointers belong to the same "array":
+    *[MISRA 2012 Rule 18.2, required], [MISRA 2012 Rule 18.3, required]
+    */
+    memset(pcbPtr->stack.top,STACK_PATTERN, (size_t)(p - (uint8 *)pcbPtr->stack.top) );
+}
+
+/* ----------------------------[public functions prototype]----------------------------*/
+void Os_TaskPost( void );
+void Os_TaskSetupAndSwap( void );
+/* ----------------------------[public functions definition]----------------------------*/
 
 
 #if defined(CFG_PPC) || defined(CFG_ARMV7_AR) || defined (CFG_ARM_CR4) || defined(CFG_RH850) || defined(CFG_TMS570LC43X) || defined(CFG_TC2XX) || defined(CFG_TC3XX)
@@ -164,10 +184,18 @@ void Os_TaskMakeWaiting( OsTaskVarType *pcb )
 
 void Os_TaskPost( void ) {
 
-#if ((OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)) && (CFG_PPC)
-    /* We must manipulate OS structures so swap to privileged mode */
+    /* We must manipulate OS structures so swap to privileged mode for SC3 and SC4 alone*/
+#if ((OS_SC3 == STD_ON) || (OS_SC4 == STD_ON))
+#if defined(CFG_PPC)
     OS_TRAP_Os_SetPrivilegedMode();
-#endif
+#elif defined(CFG_PPC)
+    Os_ArchToPrivilegedMode();
+#elif defined(CFG_TC2XX)
+    uint32 pcxi = Os_GetCurrentPcxi();
+    Os_ArchToPrivilegedMode(pcxi);
+#endif // arch
+#endif // SC3 || SC4
+
 
     OsTaskVarType *currPcbPtr= OS_SYS_PTR->currTaskPtr;
 
@@ -191,7 +219,7 @@ void Os_TaskPost( void ) {
 
 
 #else // for Cortex M
-/** @req SWS_Os_00067 */
+
 
 /**
  * Start an extended task.
@@ -252,7 +280,7 @@ void Os_TaskStartBasic( void ) {
 
 #endif
 
-
+/** @req SWS_Os_00067 */
 void Os_StackSetup( OsTaskVarType *pcbPtr ) {
     uint8 *bottom;
 
@@ -264,8 +292,7 @@ void Os_StackSetup( OsTaskVarType *pcbPtr ) {
     /*lint -e{9016} MISRA:FALSE_POSITIVE:Allow calculation of address using pointers arithmetic:[MISRA 2012 Rule 18.4, advisory] */
     bottom = (uint8 *)pcbPtr->stack.top + pcbPtr->stack.size;
 
-    /*lint -e{923}  MISRA:FALSE_POSITIVE:Pointer is converted to integer to check the alignment:
-     *[MISRA 2012 Rule 11.1, required], [MISRA 2012 Rule 11.4, advisory], [MISRA 2012 Rule 11.6, required] */
+    /*lint -e{923}  MISRA:FALSE_POSITIVE:Pointer is converted to integer to check the alignment:[MISRA 2012 Rule 11.6, required] */
     ASSERT( ((uint32)bottom & 0x7UL) == 0 );
 
     pcbPtr->stack.curr = bottom;
@@ -277,20 +304,6 @@ void Os_StackSetup( OsTaskVarType *pcbPtr ) {
     pcbPtr->stack.curr = bottom - Os_ArchGetScSize();
 
     Os_StackSetEndmark(pcbPtr);
-}
-
-/**
- * Fill the stack with a predefined pattern
- *
- * @param pcbPtr Pointer to the pcb to fill with pattern
- */
-static void Os_StackFill(OsTaskVarType *pcbPtr) {
-    uint8_t *p = pcbPtr->stack.curr;
-
-    ASSERT(pcbPtr->stack.curr > pcbPtr->stack.top);
-
-    //lint -e{946, 947} MISRA  False positive. Pointers belong to the same "array"
-    memset(pcbPtr->stack.top,STACK_PATTERN, (size_t)(p - (uint8_t *)pcbPtr->stack.top) );
 }
 
 /**
@@ -703,9 +716,9 @@ void Os_Dispatch( OpType op ) {
         /*
          * Swap context
          */
-        ASSERT(pcbPtr!=NULL_PTR);
+      ASSERT(pcbPtr!=NULL_PTR);
 
-        Os_ResourceReleaseInternal();
+      Os_ResourceReleaseInternal();
 
         // Check for stack faults (under/overflow)
         Os_StackPerformCheck(currPcbPtr);
@@ -803,9 +816,8 @@ void Os_Arc_GetStackInfo( TaskType task, StackInfoType *s) {
 		s->size 	= pcb->stack.size;
 		s->usage 	= (void *)Os_StackGetUsage(pcb);
 
-	    /*lint -e{923}  MISRA:FALSE_POSITIVE:Pointer shall not be converted to integer vause because of undefined alignement issue, here the pointer is converted to integer to check the alignment:
-	     *[MISRA 2012 Rule 11.1, required], [MISRA 2012 Rule 11.4, advisory], [MISRA 2012 Rule 11.6, required] */
-		/*lint -e{734} LINT:FALSE_POSITIV:No precision loss due to this typecasting */
+	    /*lint -e{923} MISRA:FALSE_POSITIVE:Pointer shall not be converted to integer vause because of undefined alignement issue, here the pointer is converted to integer to check the alignment:[MISRA 2012 Rule 11.6, required] */
+		/*lint -e{734} MISRA:FALSE_POSITIVE:No precision loss due to this typecasting:[MISRA 2004 Info, advisory] */
 		s->usageInPercent = ((s->size - (uint32)((size_t)s->usage - (size_t)s->top))*100)/s->size;
     }
 }

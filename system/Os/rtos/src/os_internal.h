@@ -37,7 +37,7 @@
 #define D_MESSAGE					(1<<5)
 
 
-#define STACK_PATTERN       0x42        /* Pattern that the stack that unused stack space is filled with */
+#define STACK_PATTERN       0x42u        /* Pattern that the stack that unused stack space is filled with */
 
 /*
  * Configuration tree:
@@ -107,16 +107,11 @@ extern uint32 os_dbg_mask;
  * os_error.param3. Same rule follows for other parameter counts.
  */
 
-/*lint -emacro(506, OS_STD_ERR_1, OS_STD_ERR_2, OS_STD_ERR_3)
- * MISRA:FALSE_POSITIVE:"err:" case is not evaluated at macro "call":Constant value Boolean [MISRA 2012 Rule 2.1, required] */
+/*lint -emacro(506, OS_STD_ERR_1, OS_STD_ERR_2, OS_STD_ERR_3) MISRA:FALSE_POSITIVE:"err" case is not evaluated at macro "call" Constant value Boolean:[MISRA 2012 Rule 2.1, required] */
 
-/*lint -emacro(774, OS_STD_ERR_1, OS_STD_ERR_2, OS_STD_ERR_3)
- * MISRA:FALSE_POSITIVE:"err:" case is not evaluated at macro "call":Constant value Boolean [MISRA 2012 Rule 2.1, required] */
+/*lint -emacro(774, OS_STD_ERR_1, OS_STD_ERR_2, OS_STD_ERR_3) MISRA:FALSE_POSITIVE:"err" case is not evaluated at macro "call" Constant value Boolean:[MISRA 2012 Rule 14.3, required] */
 
-/*lint -emacro(904, OS_STD_ERR, OS_STD_ERR_1, OS_STD_ERR_2, OS_STD_ERR_3)
- * MISRA:FALSE_POSITIVE:Function returns to handle error condition::
- * 						[MISRA 2012 Rule 11.1, required], [MISRA 2012 Rule 11.4, advisory], [MISRA 2012 Rule 11.6, required]
- */
+/*lint -emacro(904, OS_STD_ERR, OS_STD_ERR_1, OS_STD_ERR_2, OS_STD_ERR_3) MISRA:FALSE_POSITIVE:Function returns to handle error condition:[MISRA 2012 Rule 15.5, advisory]*/
 /* Error handling for functions that take no arguments */
 #define OS_STD_ERR(_service_id) \
         os_error.serviceId=_service_id;\
@@ -124,10 +119,7 @@ extern uint32 os_dbg_mask;
         return rv // Expecting calling function to provide the ending semicolon
 
 /* Error handling for functions that take one argument */
-/*lint -emacro(923, OS_STD_ERR_1)
- * MISRA:FALSE_POSITIVE:Allow any pointer type to integer type conversion used for error handling in this macro::
- * 						[MISRA 2012 Rule 14.4, required]
- */
+/*lint -emacro(923, OS_STD_ERR_1) MISRA:FALSE_POSITIVE:Allow any pointer type to integer type conversion used for error handling in this macro:[MISRA 2012 Rule 11.6, required]*/
 #define OS_STD_ERR_1(_service_id, _p1) \
 		os_error.serviceId=_service_id;\
         os_error.param1 = (uint32_t) _p1; \
@@ -135,10 +127,7 @@ extern uint32 os_dbg_mask;
         return rv // Expecting calling function to provide the ending semicolon
 /*lint -e{9036} MISRA:EXTERNAL_FILE::[MISRA 2012 Rule 14.4, required] */
 /* Error handling for functions that take two arguments */
-/*lint -emacro(923, OS_STD_ERR_2)
- * MISRA:FALSE_POSITIVE:Allow any pointer type to integer type conversion used for error handling in this macro::
- * 						[MISRA 2012 Rule 14.4, required]
- */
+/*lint -emacro(923, OS_STD_ERR_2) MISRA:FALSE_POSITIVE:Allow any pointer type to integer type conversion used for error handling in this macro:[MISRA 2012 Rule 11.6, required]*/
 #define OS_STD_ERR_2(_service_id, _p1,_p2) \
         os_error.serviceId=_service_id;\
         os_error.param1 = (uint32_t) _p1; \
@@ -147,10 +136,7 @@ extern uint32 os_dbg_mask;
         return rv // Expecting calling function to provide the ending semicolon
 
 /* Error handling for functions that take three arguments */
-/*lint -emacro(923, OS_STD_ERR_3)
- * MISRA:FALSE_POSITIVE:Allow any pointer type to integer type conversion used for error handling in this macro::
- * 						[MISRA 2012 Rule 14.4, required]
- */
+/*lint -emacro(923, OS_STD_ERR_3) MISRA:FALSE_POSITIVE:Allow any pointer type to integer type conversion used for error handling in this macro:[MISRA 2012 Rule 11.6, required]*/
 #define OS_STD_ERR_3(_service_id,_p1,_p2,_p3) \
         os_error.serviceId=_service_id;\
         os_error.param1 = (uint32_t) _p1; \
@@ -161,12 +147,15 @@ extern uint32 os_dbg_mask;
 
 
 #if	(OS_USE_APPLICATIONS == STD_ON)
-/** !req OS553 !req OS554 !req OS555 !req OS475 !req OS243 !req OS244 !req OS557
+/** !req SWS_Os_00553 !req SWS_Os_00554 !req SWS_Os_00555 !req SWS_Os_00475 !req SWS_Os_00243 !req SWS_Os_00244 !req SWS_Os_00557
  * ProtectionHook Return value is not handled */
 #define PROTECTIONHOOK(_x) \
     do { \
-        if ( (OS_SYS_PTR != NULL) && (OS_SYS_PTR->hooks != NULL) && (OS_SYS_PTR->hooks->ProtectionHook != NULL) ) { \
+        if ( (OS_SYS_PTR->hooks != NULL) && (OS_SYS_PTR->hooks->ProtectionHook != NULL) ) { \
             (void)OS_SYS_PTR->hooks->ProtectionHook(_x); \
+        } else { \
+            /* @req SWS_Os_00068 */  \
+            ShutdownOS(E_OS_STACKFAULT); \
         } \
     } while(0)
 
@@ -189,10 +178,7 @@ extern uint32 os_dbg_mask;
         OS_SYS_PTR->hooks->PostTaskHook();			\
     }
 #if (OS_SC3 == STD_ON) || (OS_SC4 == STD_ON)
- /*lint -emacro(923, OS_VALIDATE_ADDRESS_RANGE)
-  * MISRA:FALSE_POSITIVE:Allow any pointer type to integer type conversion used for error handling in this macro::
-  * 						[MISRA 2012 Rule 14.4, required]
-  */
+ /*lint -emacro(923, OS_VALIDATE_ADDRESS_RANGE) MISRA:FALSE_POSITIVE:Allow any pointer type to integer type conversion used for error handling in this macro:[MISRA 2012 Rule 11.6, required]*/
 #define OS_VALIDATE_ADDRESS_RANGE(_outParam) Os_ValidateAddressRange((uint32)_outParam)
 
 #endif

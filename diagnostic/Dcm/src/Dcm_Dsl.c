@@ -495,7 +495,10 @@ static void sendResponse(const Dcm_DslProtocolRowType *protocol,
             runtime->localTxBuffer.PduInfo.SduDataPtr = runtime->localTxBuffer.buffer;
             runtime->localTxBuffer.PduInfo.SduLength = 3;
             runtime->localTxBuffer.status = DCM_TRANSMIT_SIGNALED; // In the DslProvideTxBuffer 'callback' this state signals it is the local buffer we are interested in sending.
-            
+            if(  DCM_E_RESPONSEPENDING == responseCode) {
+                /* @req DCM203 */
+                DsdClearSuppressPosRspMsg();
+            }
             /* @req DCM115 Partially The P2ServerMin has not been implemented. */
             transmitResult = PduR_DcmTransmit(mainConnection->DslProtocolTx->DcmDslProtocolTxPduId, &(runtime->localTxBuffer.PduInfo));
             if (transmitResult != E_OK) {
@@ -826,7 +829,6 @@ void DslMain(void) {
                     if (Dcm_ConfigPtr->Dsl->DslDiagResp != NULL) {
                         if (Dcm_ConfigPtr->Dsl->DslDiagResp->DslDiagRespForceRespPendEn == TRUE) {
                             if (runtime->responsePendingCount != 0) {
-                                /* !req DCM203 suppressPosRspBit should be cleared */
                                 sendResponse(protocolRowEntry, DCM_E_RESPONSEPENDING);  /* @req DCM024 */
                                 DECREMENT( runtime->responsePendingCount );
                             } else {

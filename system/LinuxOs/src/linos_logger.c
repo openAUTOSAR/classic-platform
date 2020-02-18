@@ -183,7 +183,6 @@ void logger ( int loglevel, char *format, ... ) {
 
     logger_va (loglevel, format, listPointer);
     va_end( listPointer );
-    fflush(stdout);
 #endif
 }
 

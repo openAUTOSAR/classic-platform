@@ -1,8 +1,10 @@
 ifeq ($(BOARDDIR),rh850f1h)
 obj-y += CDD_EthTrcv_NonGeneric.o
+else ifeq ($(BOARDDIR),mpc5748g_mpc574xg_mb)
+obj-y += CDD_EthTrcv_NonGeneric.o
 else ifeq ($(BOARDDIR),mpc5746c_mpc574xg_mb)
 obj-y += CDD_EthTrcv_NonGeneric.o
-else ifeq ($(BOARDDIR),mpc5748g_mpc574xg_mb)
+else ifeq ($(BOARDDIR),mpc5777c_mpc57xx_mb)
 obj-y += CDD_EthTrcv_NonGeneric.o
 else ifeq ($(BOARDDIR),jacinto6)
 obj-y += CDD_EthTrcv_NonGeneric.o

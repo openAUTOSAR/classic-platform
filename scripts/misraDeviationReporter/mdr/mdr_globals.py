@@ -41,7 +41,7 @@ CSV = False
 #----------------------------------------------------------
                 
 #Misra provides Rules and Directives
-MISRA_FORM = ['MISRA 2012 Rule','MISRA 2012 Directive']
+MISRA_FORM = ['MISRA 2012 Rule','MISRA 2012 Directive','MISRA 2004 Info']
 
 #Misra categories
 MISRA_CATEGORIES = ['advisory','required','mandatory']

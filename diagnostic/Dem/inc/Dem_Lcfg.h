@@ -224,6 +224,7 @@ typedef struct {
     const Dem_PreDebounceAlgorithmClassType *PreDebounceAlgorithmClass;             // (0..255) (Only 0..1 supported) /* @req DEM413 */
     const Dem_IndicatorAttributeType        *IndicatorAttribute;                    // (0..255)
     const boolean                           *EventAvailableByCalibration;
+    const uint8						        *AgingCycleCounterThresholdPtr;				// (0..1) Optional /* @req DEM493 */
     boolean						            ConsiderPtoStatus;						// (1)
     Dem_DTCOriginType 		                EventDestination;                       // (1 Arccore specific)
     uint8						            EventPriority;							// (1) /* @req DEM382 */
@@ -232,7 +233,6 @@ typedef struct {
     Dem_OperationCycleIdType	            OperationCycleRef;						// (1)
     Dem_OperationCycleIdType	            AgingCycleRef;	    					// (1) /* @req DEM494 */
     Dem_OperationCycleIdType                FailureCycleRef;                        // (1) /* @req DEM528 */
-    uint8						            AgingCycleCounterThreshold;				// (0..1) Optional /* @req DEM493 */
 //	Dem_OEMSPecific
 } Dem_EventClassType;
 

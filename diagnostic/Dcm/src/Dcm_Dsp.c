@@ -57,6 +57,10 @@
 #include "Rte_Dcm.h"
 #endif
 
+#if defined(USE_BSWM)
+#include "BswM_DCM.h"
+#endif
+
 #if defined(DCM_USE_SERVICE_REQUESTTRANSFEREXIT) || defined(DCM_USE_SERVICE_TRANSFERDATA) || defined(DCM_USE_SERVICE_REQUESTDOWNLOAD) || defined(DCM_USE_SERVICE_REQUESTUPLOAD)
 #define DCM_USE_UPLOAD_DOWNLOAD
 #endif
@@ -235,12 +239,15 @@ typedef enum {
 }DspJumpToBootState;
 
 typedef struct {
-    boolean sessionPending;
+    boolean pendingSessionChange;
     PduIdType sessionPduId;
     Dcm_SesCtrlType session;
     DspJumpToBootState jumpToBootState;
     const PduInfoType* pduRxData;
     PduInfoType* pduTxData;
+    uint16 P2;
+    uint16 P2Star;
+    Dcm_ProtocolType protocolId;
 } DspUdsSessionControlDataType;
 
 typedef struct {
@@ -544,7 +551,7 @@ void DspResetDiagnosticActivityOnSessionChange(Dcm_SesCtrlType newSession)
     DspStopCommunicationControl(TRUE);
 #endif
     dspUdsSessionControlData.jumpToBootState = DCM_JTB_IDLE;
-    dspUdsSessionControlData.sessionPending = FALSE;
+    dspUdsSessionControlData.pendingSessionChange = FALSE;
     ProgConditionStartupResponseState = DCM_GENERAL_IDLE;
 }
 /* Resets active diagnostics on protocol preemtion */
@@ -572,7 +579,7 @@ void DcmDspResetDiagnosticActivity(void)
     DspStopCommunicationControl(FALSE);
 #endif
     dspUdsSessionControlData.jumpToBootState = DCM_JTB_IDLE;
-    dspUdsSessionControlData.sessionPending = FALSE;
+    dspUdsSessionControlData.pendingSessionChange = FALSE;
     ProgConditionStartupResponseState = DCM_GENERAL_IDLE;
 }
 
@@ -621,8 +628,7 @@ static void DspStopCommunicationControl(boolean checkSessionAndSecLevel)
         while( TRUE != comMChannelCfg->Arc_EOL ) {
             if( DCM_ENABLE_RX_TX_NORM_NM != DspChannelComMode[comMChannelCfg->InternalIndex] ) {
                 (void)comMChannelCfg->ModeSwitchFnc(RTE_MODE_DcmCommunicationControl_DCM_ENABLE_RX_TX_NORM_NM);
-#if 0 && defined(USE_BSWM)
-                /* IMRPOVEMENT: Support missing in BswM */
+#if defined(USE_BSWM)
                 BswM_Dcm_CommunicationMode_CurrentState(comMChannelCfg->NetworkHandle, DCM_ENABLE_RX_TX_NORM_NM);
 #endif
                 DspChannelComMode[comMChannelCfg->InternalIndex] = DCM_ENABLE_RX_TX_NORM_NM;
@@ -640,7 +646,7 @@ void DspInit(boolean firstCall)
 {
     dspUdsSecurityAccesData.reqInProgress = FALSE;
     dspUdsEcuResetData.resetPending = DCM_DSP_RESET_NO_RESET;
-    dspUdsSessionControlData.sessionPending = FALSE;
+    dspUdsSessionControlData.pendingSessionChange = FALSE;
 #if defined(DCM_USE_SERVICE_LINKCONTROL)
     dspUdsLinkControlData.jumpToBootState = DCM_JTB_IDLE;
 #endif
@@ -1196,6 +1202,12 @@ void DspCancelPendingRequests(void)
     }
     IOControlData.state = DCM_GENERAL_IDLE;
 #endif
+#if (DCM_USE_JUMP_TO_BOOT == STD_ON)
+    dspUdsSessionControlData.jumpToBootState = DCM_JTB_IDLE;
+#endif
+#if defined(DCM_USE_SERVICE_LINKCONTROL)
+    dspUdsLinkControlData.jumpToBootState  = DCM_JTB_IDLE;
+#endif
 }
 
 boolean DspCheckSessionLevel(Dcm_DspSessionRowType const* const* sessionLevelRefTable)
@@ -1261,6 +1273,26 @@ boolean DspDslCheckSessionSupported(uint8 session) {
     return (FALSE == sessionRow->Arc_EOL);
 }
 
+/**
+ * Sets the timing parameter inresponse to UDS service 0x10
+ * @param SessionData
+ * @param timingData
+ * @return Length of timing parameters
+ */
+static uint8 DspSetSessionControlTiming(const DspUdsSessionControlDataType * SessionData, uint8 *timingData)
+{
+    uint8 timingLen = 0u;
+    if( DCM_UDS_ON_CAN == SessionData->protocolId ) {
+        timingData[0u] = SessionData->P2 >> 8u;
+        timingData[1u] = SessionData->P2;
+        uint16 p2ServerStarMax10ms = SessionData->P2Star / 10u;
+        timingData[2u] = p2ServerStarMax10ms >> 8u;
+        timingData[3u] = p2ServerStarMax10ms;
+        timingLen = 4u;
+    }
+    return timingLen;
+}
+
 void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduIdType txPduId, PduInfoType *pduTxData, boolean respPendOnTransToBoot, boolean internalStartupRequest)
 {
     /* @req DCM250 */
@@ -1268,6 +1300,7 @@ void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduIdType txPd
     Dcm_SesCtrlType reqSessionType;
     Std_ReturnType result = E_OK;
     Dcm_ProtocolType activeProtocolID;
+    uint8 timingParamLen;
     if( DCM_JTB_IDLE == dspUdsSessionControlData.jumpToBootState ) {
 #if defined(DCM_USE_SERVICE_RESPONSEONEVENT) && (DCM_ROE_INIT_ON_DSC == STD_ON)
         /* Stop the response on event service */
@@ -1306,29 +1339,24 @@ void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduIdType txPd
                 }
 #endif
                 if (result == E_OK) {
-                    dspUdsSessionControlData.sessionPending = TRUE;
                     dspUdsSessionControlData.session = reqSessionType;
                     dspUdsSessionControlData.sessionPduId = txPduId;
                     dspUdsSessionControlData.pduRxData = pduRxData;
                     dspUdsSessionControlData.pduTxData = pduTxData;
+                    dspUdsSessionControlData.P2 = sessionRow->DspSessionP2ServerMax;
+                    dspUdsSessionControlData.P2Star = sessionRow->DspSessionP2StarServerMax;
+
                     Std_ReturnType activeProtocolStatus = DslGetActiveProtocol(&activeProtocolID);
+                    if( E_OK == activeProtocolStatus ) {
+                        dspUdsSessionControlData.protocolId = activeProtocolID;
+                    } else {
+                        dspUdsSessionControlData.protocolId = 0xFF;
+                    }
                     if( (DCM_NO_BOOT == sessionRow->DspSessionForBoot) || internalStartupRequest) {
+                        dspUdsSessionControlData.pendingSessionChange = TRUE;
                         pduTxData->SduDataPtr[1] = reqSessionType;
-                        if( E_OK == activeProtocolStatus ) {
-                            // Create positive response
-                            if( DCM_UDS_ON_CAN == activeProtocolID ) {
-                                pduTxData->SduDataPtr[2] = sessionRow->DspSessionP2ServerMax >> 8;
-                                pduTxData->SduDataPtr[3] = sessionRow->DspSessionP2ServerMax;
-                                uint16 p2ServerStarMax10ms = sessionRow->DspSessionP2StarServerMax / 10;
-                                pduTxData->SduDataPtr[4] = p2ServerStarMax10ms >> 8;
-                                pduTxData->SduDataPtr[5] = p2ServerStarMax10ms;
-                                pduTxData->SduLength = 6;
-                            } else {
-                                pduTxData->SduLength = 2;
-                            }
-                        } else {
-                            pduTxData->SduLength = 2;
-                        }
+                        timingParamLen = DspSetSessionControlTiming(&dspUdsSessionControlData, &pduTxData->SduDataPtr[2]);
+                        pduTxData->SduLength = 2u + timingParamLen;
                         DsdDspProcessingDone(DCM_E_POSITIVERESPONSE);
                     } else {
 #if (DCM_USE_JUMP_TO_BOOT == STD_ON)
@@ -1371,7 +1399,8 @@ void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduIdType txPd
                             else if((sessionRow->DspSessionForBoot == DCM_OEM_BOOT_RESPAPP) || (sessionRow->DspSessionForBoot == DCM_SYS_BOOT_RESPAPP)){
                                 dspUdsSessionControlData.jumpToBootState = DCM_JTB_RESAPP_FINAL_RESPONSE_TX_CONFIRM;
                                 pduTxData->SduDataPtr[1] = reqSessionType;
-                                pduTxData->SduLength = 2;
+                                timingParamLen = DspSetSessionControlTiming(&dspUdsSessionControlData, &pduTxData->SduDataPtr[2]);
+                                pduTxData->SduLength = 2u + timingParamLen;
                                 DsdDspProcessingDone(DCM_E_POSITIVERESPONSE);
                             } else {
                                 /* Avoid compiler message */
@@ -1408,7 +1437,8 @@ void DspUdsDiagnosticSessionControl(const PduInfoType *pduRxData, PduIdType txPd
     else if(DCM_JTB_RESAPP_ASSEMBLE_FINAL_RESPONSE == dspUdsSessionControlData.jumpToBootState) {
         dspUdsSessionControlData.jumpToBootState = DCM_JTB_RESAPP_FINAL_RESPONSE_TX_CONFIRM;
         pduTxData->SduDataPtr[1] = pduRxData->SduDataPtr[1];
-        pduTxData->SduLength = 2;
+        timingParamLen = DspSetSessionControlTiming(&dspUdsSessionControlData, &pduTxData->SduDataPtr[2]);
+        pduTxData->SduLength = 2u + timingParamLen;
         DsdDspProcessingDone(DCM_E_POSITIVERESPONSE);
     }
 #else
@@ -1475,15 +1505,18 @@ void DspUdsLinkControl(const PduInfoType *pduRxData, PduIdType txPduId, PduInfoT
                         /* @req DCM720 */
                         if(E_OK == Dcm_SetProgConditions(&GlobalProgConditions)) {
                             dspUdsLinkControlData.jumpToBootState = DCM_JTB_EXECUTE;
-                        } else {
+                        }
+                        else {
                             /* @req DCM715 */
                             DsdDspProcessingDone(DCM_E_CONDITIONSNOTCORRECT);
                         }
                     }
-                }else {
+                }
+                else {
                     DsdDspProcessingDone(DCM_E_CONDITIONSNOTCORRECT);
                 }
-            } else {
+            }
+            else {
                 /* Wrong length */
                 DsdDspProcessingDone(DCM_E_INCORRECTMESSAGELENGTHORINVALIDFORMAT);
             }
@@ -1497,7 +1530,8 @@ void DspUdsLinkControl(const PduInfoType *pduRxData, PduIdType txPduId, PduInfoT
         if(E_OK != Rte_Switch_DcmEcuReset_DcmEcuReset(RTE_MODE_DcmEcuReset_EXECUTE)) {
             DsdDspProcessingDone(DCM_E_CONDITIONSNOTCORRECT);
         }
-        dspUdsLinkControlData.jumpToBootState = DCM_JTB_IDLE;    }
+        dspUdsLinkControlData.jumpToBootState = DCM_JTB_IDLE;
+    }
 
 }
 #endif
@@ -3354,26 +3388,38 @@ void DspDcmConfirmation(PduIdType confirmPduId, NotifResultType result)
             /* @req 4.2.2/SWS_DCM_01179 */
             /* @req 4.2.2/SWS_DCM_01180 */
             /* @req 4.2.2/SWS_DCM_01181 */
-            if(E_OK == Dcm_SetProgConditions(&GlobalProgConditions)) {
-                (void)Rte_Switch_DcmEcuReset_DcmEcuReset(RTE_MODE_DcmEcuReset_EXECUTE);
+
+            if( NTFRSLT_OK == result ) {
+                if(E_OK == Dcm_SetProgConditions(&GlobalProgConditions)) {
+                    (void)Rte_Switch_DcmEcuReset_DcmEcuReset(RTE_MODE_DcmEcuReset_EXECUTE);
+                }
+                else {
+                    /* Final response has already been sent. */
+                    DCM_DET_REPORTERROR(DCM_GLOBAL_ID, DCM_E_INTEGRATION_ERROR);
+                }
             }
-            dspUdsSessionControlData.jumpToBootState = DCM_JTB_IDLE;
         }
+        dspUdsSessionControlData.jumpToBootState = DCM_JTB_IDLE;
     }
 #endif
-    if ( DCM_DSP_RESET_WAIT_TX_CONF == dspUdsEcuResetData.resetPending ) {
-        if (confirmPduId == dspUdsEcuResetData.resetPduId) {
+
+    if (confirmPduId == dspUdsEcuResetData.resetPduId) {
+        if ( DCM_DSP_RESET_WAIT_TX_CONF == dspUdsEcuResetData.resetPending) {
+            if( NTFRSLT_OK == result ) {
+                /* IMPROVEMENT: Should be a call to SchM */
+                (void)Rte_Switch_DcmEcuReset_DcmEcuReset(RTE_MODE_DcmEcuReset_EXECUTE);/* @req DCM594 */
+            }
             dspUdsEcuResetData.resetPending = DCM_DSP_RESET_NO_RESET;
-            /* IMPROVEMENT: Should be a call to SchM */
-            (void)Rte_Switch_DcmEcuReset_DcmEcuReset(RTE_MODE_DcmEcuReset_EXECUTE);/* @req DCM594 */
         }
     }
 
-    if (dspUdsSessionControlData.sessionPending) {
+    if ( TRUE == dspUdsSessionControlData.pendingSessionChange ) {
         if (confirmPduId == dspUdsSessionControlData.sessionPduId) {
-            dspUdsSessionControlData.sessionPending = FALSE;
-            /* @req DCM311 */
-            DslSetSesCtrlType(dspUdsSessionControlData.session);
+            if( NTFRSLT_OK == result ) {
+                /* @req DCM311 */
+                DslSetSesCtrlType(dspUdsSessionControlData.session);
+            }
+            dspUdsSessionControlData.pendingSessionChange = FALSE;
         }
     }
 #ifdef DCM_USE_SERVICE_COMMUNICATIONCONTROL
@@ -3391,7 +3437,7 @@ void DspDcmConfirmation(PduIdType confirmPduId, NotifResultType result)
 #if (DCM_USE_JUMP_TO_BOOT == STD_ON) || defined(DCM_USE_SERVICE_LINKCONTROL)
 void DspResponsePendingConfirmed(PduIdType confirmPduId)
 {
-    if (dspUdsSessionControlData.sessionPending) {
+    if ( (DCM_JTB_WAIT_RESPONSE_PENDING_TX_CONFIRM == dspUdsSessionControlData.jumpToBootState) || (DCM_JTB_RESAPP_WAIT_RESPONSE_PENDING_TX_CONFIRM == dspUdsSessionControlData.jumpToBootState) ) {
         if (confirmPduId == dspUdsSessionControlData.sessionPduId) {
             if( DCM_JTB_WAIT_RESPONSE_PENDING_TX_CONFIRM == dspUdsSessionControlData.jumpToBootState ) {
                 /* @req DCM654 */
@@ -3412,6 +3458,9 @@ void DspResponsePendingConfirmed(PduIdType confirmPduId)
             }
             else if (DCM_JTB_RESAPP_WAIT_RESPONSE_PENDING_TX_CONFIRM == dspUdsSessionControlData.jumpToBootState ){
                 dspUdsSessionControlData.jumpToBootState = DCM_JTB_RESAPP_ASSEMBLE_FINAL_RESPONSE;
+            }
+            else {
+                /* Do nothing */
             }
         }
     }
@@ -5052,11 +5101,10 @@ static Dcm_NegativeResponseCodeType DspInternalCommunicationControl(uint8 subFun
                 if( executeModeSwitch ) {
                     (void)Dcm_ConfigPtr->DcmComMChannelCfg[protocolRx->ComMChannelInternalIndex].ModeSwitchFnc(rteMode);
                     DspChannelComMode[protocolRx->ComMChannelInternalIndex] = dcmMode;
-                }
-#if 0 && defined(USE_BSWM)
-                /* IMRPOVEMENT: Support missing in BswM */
-                BswM_Dcm_CommunicationMode_CurrentState(Dcm_ConfigPtr->DcmComMChannelCfg[protocolRx->ComMChannelInternalIndex].NetworkHandle, dcmMode);
+#if defined(USE_BSWM)
+                    BswM_Dcm_CommunicationMode_CurrentState(Dcm_ConfigPtr->DcmComMChannelCfg[protocolRx->ComMChannelInternalIndex].NetworkHandle, dcmMode);
 #endif
+                }
                 responseCode = DCM_E_POSITIVERESPONSE;
             }
         } else {
@@ -5069,11 +5117,10 @@ static Dcm_NegativeResponseCodeType DspInternalCommunicationControl(uint8 subFun
                         if( executeModeSwitch ) {
                             (void)Dcm_ConfigPtr->DcmComMChannelCfg[AllChannels->ComMChannelIndex].ModeSwitchFnc(rteMode);
                             DspChannelComMode[AllChannels->ComMChannelIndex] = dcmMode;
-                        }
-#if 0 && defined(USE_BSWM)
-                        /* IMRPOVEMENT: Support missing in BswM */
-                        BswM_Dcm_CommunicationMode_CurrentState(AllChannels->NetworkHandle, dcmMode);
+#if defined(USE_BSWM)
+                            BswM_Dcm_CommunicationMode_CurrentState(Dcm_ConfigPtr->DcmComMChannelCfg[AllChannels->ComMChannelIndex].NetworkHandle, dcmMode);
 #endif
+                        }
                         AllChannels++;
                         responseCode = DCM_E_POSITIVERESPONSE;
                     }
@@ -5086,11 +5133,10 @@ static Dcm_NegativeResponseCodeType DspInternalCommunicationControl(uint8 subFun
                             if( executeModeSwitch ) {
                                 (void)Dcm_ConfigPtr->DcmComMChannelCfg[SpecificChannels->ComMChannelIndex].ModeSwitchFnc(rteMode);
                                 DspChannelComMode[SpecificChannels->ComMChannelIndex] = dcmMode;
-                            }
-#if 0 && defined(USE_BSWM)
-                            /* IMRPOVEMENT: Support missing in BswM */
-                            BswM_Dcm_CommunicationMode_CurrentState(SpecificChannels->NetworkHandle, dcmMode);
+#if defined(USE_BSWM)
+                                BswM_Dcm_CommunicationMode_CurrentState(Dcm_ConfigPtr->DcmComMChannelCfg[SpecificChannels->ComMChannelIndex].NetworkHandle, dcmMode);
 #endif
+                            }
                             responseCode = DCM_E_POSITIVERESPONSE;
                         }
                         SpecificChannels++;

@@ -401,6 +401,7 @@ INLINE static void FrSM_Internal_WakeUp_Pattern(uint8 clusterId)
             /* @req FrSm160 trans T31 */
             /* synchronisation has been fail, report to FrNm */
             FrNm_StartupError(clusterCfg->FrSMComMNetworkHandle);
+            UPDATE_TIMER3(clusterId); //Reset t3 timer
             /* @req FrSm046 */
             FRSM_DET_REPORT_WITHOUT_RET(FRSM_SERVICE_ID_MAIN_FUNCTION, FRSM_E_CLUSTER_STARTUP);
             FRSM_DEM_REPORTSTATUS((DEM_EVENT_ID_NULL == clusterCfg->FrSMClusterStartUpDemEventId), clusterCfg->FrSMClusterStartUpDemEventId, DEM_EVENT_STATUS_FAILED);
@@ -785,6 +786,7 @@ static void FrSM_Internal_StartUp_Trans(uint8 clusterId)
             /* @req FrSm161  trans T32 */
             /* synchronisation has been fail, report to FrNm */
             FrNm_StartupError(clusterCfg->FrSMComMNetworkHandle);
+            UPDATE_TIMER3(clusterId); //Reset t3 timer
             /* @req FrSm046 */
             FRSM_DET_REPORT_WITHOUT_RET(FRSM_SERVICE_ID_MAIN_FUNCTION, FRSM_E_CLUSTER_STARTUP);
             FRSM_DEM_REPORTSTATUS((DEM_EVENT_ID_NULL == clusterCfg->FrSMClusterStartUpDemEventId), clusterCfg->FrSMClusterStartUpDemEventId, DEM_EVENT_STATUS_FAILED);
@@ -1102,6 +1104,7 @@ static void FrSM_Internal_Online_Passive_Actions(uint8 clusterId)
             /* @req FrSm173  trans T33 */
             /* synchronisation has been fail, report to FrNm */
             FrNm_StartupError(clusterCfg->FrSMComMNetworkHandle);
+            UPDATE_TIMER3(clusterId); //Reset t3 timer
             /* @req FrSm046 */
             FRSM_DET_REPORT_WITHOUT_RET(FRSM_SERVICE_ID_MAIN_FUNCTION, FRSM_E_CLUSTER_STARTUP);
             /* the timer t3 expires, the FrSM will report the production error */

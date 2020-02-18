@@ -1,0 +1,83 @@
+The mpc57xx-MB is an evaluation system supporting the NXP MPC5777c/m MCU family.
+
+MPC5777C-416DS (416-ball MAPBGA Daughter Card) includes:
+  Daughter card with 416 BGA socket
+  1 sample of the MPC5777C in the 416 BGA package
+
+MPC577xx Family features:
+    Three dual issue, 32-bit CPU core complexes (e200z7), two of which run in lockstep
+    Power Architecture embedded specification compliance
+    Single-precision floating point operations
+    8480 KB on-chip flash memory
+    512 KB on-chip general-purpose SRAM including 64 KB standby RAM
+    Dual core Interrupt Controller (INTC)
+    Two multi-channel direct memory access controllers (eDMA)
+    
+CPU: MPC5777C                                                                  
+  Cores: 3                                                                     
+    E200Z759N3 Main boot computational core 0: Max freq. 264 MHz, 16 KB I-Cache and 16 KB D-Cache                      
+    E200Z759N3 Duplicated computational core 1: Max freq: 264 Mhz, 16 KB I-Cache and 16 KB D-Cache
+    E200Z758 Checker core 2: Operates in delayed lockstep with Core-1
+
+Documentation:
+  Eval board:
+    https://www.nxp.com/docs/en/user-guide/MPC5777CEVBUG.pdf?fsrch=1&sr=2&pageNum=1  
+      
+  MPC5777C:
+    https://www.nxp.com/docs/en/data-sheet/MPC5777C.pdf?fsrch=1&sr=1&pageNum=1
+    https://www.nxp.com/docs/en/reference-manual/MPC5777CRM.pdf?fsrch=1&sr=6&pageNum=2
+      
+Supported compilers:
+  Green hills
+  
+Memory Map: See memory.ldf
+
+EQADC
+
+Potentiometer (RV1) will be operated by connecting J53 (on EVB) and adjustable (0-5V), and connect the jumper J54 between 3 and 4 to get 3.3V linear 
+regulator output in the 57xx mother board. 
+
+EQADC_A
+    CH  ADC_CHNL_NO   PCR  ADC_SIGNAL_NAME
+    1.	CHNL_8 		  172  (ANA8) 		     PQ7 signal on 57xx mother board to potentiometer (Pin 236, PB0) 
+    2.  CHNL_9 		  173  (ANA9) 		     PQ8 signal on 57xx mother board to 3.3V (pin 233, PB2, (3.3V))
+    3.	CHNL_10	      174  (ANA10)           PQ9 signal on 57xx mother board to GND 
+
+EQADC_B
+    CH  ADC_CHNL_NO   PCR  ADC_SIGNAL_NAME
+    1.	CHNL_9 		  225  (ANB9) 		     PW0 signal on 57xx mother board to potentiometer (Pin 236, PB0) 
+    2.  CHNL_10 	  165  (ANB10) 		     PW1 signal on 57xx mother board to 3.3V  (pin 233, PB2, (3.3V))
+    3.	CHNL_11 	  166  (ANB11)           PW2 signal on 57xx mother board to GND 
+
+
+EEPROM
+	PORT			 	PIN_MCU_SIDE		PIN_EEP_SIDE	
+1.	PM15 (Port, PM15): 	DSPI_1_dSIN		Q (Serial data output from EEPROM)
+2.	PO2 (Port, PO2): 	DSPI_1_dSOUT	D (Serial data input to EEPROM)
+3.	PO0 (Port, PO0): 	DSPI_1_dSCLK	C (clock)
+4.	PM10 (Port, PM10): 	DSPI_1_dCS0		S (chip select)
+
+ETHERNET SIMPLE TEST:
+jumper connections for RMII mode
+On Daughter card MPC5777C-416DS connect following pins
+J524 : 1-2 is correct. (wrong information in MPC5777C EVB User Guide Rev 0)
+J510 : 2-3 
+J24  : 1-2
+J25  : 1-2
+
+On Motherboard MPC57XX
+j61 : 2-3
+j64 : open
+J63 : 1K Ohm resistor between pin 2-3
+
+
+Pwm:
+	The flank counter test has been added.
+	A cable must connect PWM output to  GPIO input.
+	*Set EMIOS1 pin as DIO and configure it as SIUA input port in Port configuration .
+	
+	Setup:
+		Function		Pin				       Ball
+		PWM				EMIOS22			       PK5 (110 Pin)
+		GPIO IN			EMIOS1(Set as DIO)	   PI0 (85 Pin)
+

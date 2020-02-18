@@ -1,3 +1,4 @@
+
 /*-------------------------------- Arctic Core ------------------------------
  * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
  * Contact: <contact@arccore.com>
@@ -50,14 +51,11 @@
 
 #include <math.h>
 
-#include <Cpu.h>
-
 #define NSEC_PER_SEC    1000000000
 
 /* Global variables */
 
 int daemonise = 1;
-int runningOsMain = 1;
 
 extern const OsTaskConstType  Os_TaskConstList[OS_TASK_CNT];
 
@@ -143,25 +141,31 @@ struct timespec timesdiff(struct timespec *start, struct timespec *end) {
 
 void gnulinux_timer(void) {
 #ifndef _WIN32
-   int ret = 0;
-   struct timespec t;
-   clock_gettime(CLOCK_MONOTONIC, &t);
+    unsigned int msec = (1000/OsTickFreq); /* How long to wait for every tick */
+    unsigned int usecs = msec * 1000; /* Wait time in microseconds */
 
-   while(1) {
-      t.tv_nsec += 1000000; // wait 1ms
+    struct timespec t;
+    t.tv_sec = 0;
+    t.tv_nsec = (usecs * 1000);
 
-      // account for second overrun
-      if (t.tv_nsec >= 1000000000){
-         ++t.tv_sec;
-         t.tv_nsec -= 1000000000;
-      }
+    struct timespec r;
 
-      do {
-         ret = clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME,  &t, NULL);
-      } while (ret == EINTR);
-
-      IncrementCounter(0);
-   }
+    while(1) {
+        while (clock_nanosleep(CLOCK_MONOTONIC, 0, &t, &r) != 0) {
+            if (errno == EINTR) {
+                t.tv_sec = r.tv_sec;
+                t.tv_nsec = r.tv_nsec;
+            } else {
+                /* Exiting on permanent errors. */
+                logger(LOG_ERR, "vECU exiting on gnulinux_timer permanent sleep error.");
+                // Improvement: do cleanup
+                exit(1);
+            }
+        }
+        IncrementCounter(0);
+        t.tv_sec = 0;
+        t.tv_nsec = (usecs * 1000);
+    }
 #endif
 }
 
@@ -264,7 +268,7 @@ void TaskWrapper(int TaskId) {
 #endif
         } else {
             //logger(LOG_INFO, "TaskWrapper waiting to re-activate task");
-            usleep(500); /* Sleep 1 ms */
+            usleep(1000); /* Sleep 1 ms */
         }
     }
 }
@@ -464,9 +468,6 @@ int settings(int argc, char **argv ) {
 static void close_sigint(int exit_code) {
 
     logger(LOG_INFO, "Shutting down ... ");
-
-    SetEvent(TASK_ID_OsStartupTask, EVENT_MASK_Shutdown);
-    usleep(10000);
     //logger(LOG_INFO, "Killing threads."); // IMPROVEMENT SimonG
     // pthread_cancel
     disable_gnulinux_pmc_sync_status_reader(); // Read Design note inside this method.
@@ -481,12 +482,7 @@ static void close_sigint(int exit_code) {
 #ifdef USE_SYSLOG
     logger_open_close ( 0, progname );
 #endif
-    runningOsMain = 0;
-    fflush(stdout);
-    if (0 != exit_code)
-    {
-       exit(exit_code);
-    }
+    exit(exit_code);
 }
 
 
@@ -527,8 +523,7 @@ void signal_handler(int sig) {
 
         case SIGTERM:
         case SIGINT:
-//            close_sigint(0);
-            runningOsMain=0;
+            close_sigint(0);
             break;
 
         default:
@@ -775,7 +770,7 @@ int demonise(void) {
 
 int main(int argc, char *argv[]) {
     int rc = 0;
-    runningOsMain = 1;
+    int running = 1;
 #ifndef _WIN32
     struct timespec tp;
 #endif
@@ -878,15 +873,13 @@ int main(int argc, char *argv[]) {
 
     /* All this is just for test */
     int sleep_time_s = 1;
-    if (loops != 999){sleep_time_s = 1;}
-    logger(LOG_INFO, "os_main : about to enter main loop...\n");
-    while (runningOsMain) {
+    while (running) {
         if ( loops != 999 ) {
             logger(LOG_INFO, "Loops left %d\n", loops);
             if ( loops > 1 ) {
                 loops--;
             } else {
-                runningOsMain=0;
+                running=0;
             }
         }
 #ifndef _WIN32
@@ -925,11 +918,6 @@ int main(int argc, char *argv[]) {
                         testTime.secondsHi, testTime.seconds, testTime.nanoseconds, flag_timeout, flag_global_time_base);
             }
         }
-    }
-    logger(LOG_INFO, "os_main : left main loop. You are on your own now.\n");
-    fflush(stdout);
-    if (loops == 999){
-       rc = 0;
     }
     close_sigint(rc);
     return rc;

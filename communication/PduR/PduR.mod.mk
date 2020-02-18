@@ -14,7 +14,6 @@ obj-$(USE_PDUR) += PduR_J1939Tp.o
 obj-$(USE_PDUR) += PduR_IpduM.o
 obj-$(USE_PDUR) += PduR_Dcm.o
 obj-$(USE_PDUR) += PduR_SoAd.o
-obj-$(USE_PDUR) += PduR_DoIP.o
 obj-$(USE_PDUR) += PduR_Routing.o
 obj-$(USE_PDUR) += PduR.o
 obj-$(USE_PDUR) += PduR_FrIf.o

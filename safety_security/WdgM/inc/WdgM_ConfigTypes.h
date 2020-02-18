@@ -96,6 +96,8 @@ typedef struct
     const uint16                            Length_DeadlineSupervisions; /* only 65535 possible */
 
     const uint8                             FailedAliveSupervisionReferenceCycleTol;
+
+    const uint8 							OSCounter;
 } WdgM_SupervisedEntityConfiguration;
 
 typedef struct

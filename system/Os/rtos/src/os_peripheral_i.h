@@ -25,4 +25,8 @@ StatusType  Os_WritePeripheral8 (  AreaIdType  Area,  uint8   *Address, uint8  W
 StatusType  Os_WritePeripheral16(  AreaIdType  Area,  uint16  *Address, uint16 WriteValue);
 StatusType  Os_WritePeripheral32(  AreaIdType  Area,  uint32  *Address, uint32 WriteValue);
 
+StatusType  Os_ModifyPeripheral8(  AreaIdType  Area,  uint8   *Address, uint8  ClearMask, uint8 SetMask);
+StatusType  Os_ModifyPeripheral16(  AreaIdType  Area,  uint16   *Address, uint16  ClearMask, uint16 SetMask);
+StatusType  Os_ModifyPeripheral32(  AreaIdType  Area,  uint32   *Address, uint32  ClearMask, uint32 SetMask);
+
 #endif /*OS_PERIPHERAL_I_H_*/

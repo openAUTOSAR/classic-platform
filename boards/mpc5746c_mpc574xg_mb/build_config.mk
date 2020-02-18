@@ -12,6 +12,7 @@ CFG+=VLE
 #CFG+=TIMER
 CFG+=TIMER_STM
 CFG+=MCU_CACHE_I
+CFG+=OS_SYSTICK2
 
 
 # What buildable modules does this board have, 
@@ -25,17 +26,10 @@ MOD_USE += MCU KERNEL
 
 # Default cross compiler
 COMPILER?=ghs
+
+# Default cross compiler
 COMPILER_FLAVOR=s32_newlib
-
-ifneq ($(filter CFG_VLE,$(CFG)),)
-DEFAULT_CROSS_COMPILE = /opt/powerpc-eabispe/bin/powerpc-eabispe-
-else 
-#DEFAULT_CROSS_COMPILE = /opt/powerpc-eabivle/bin/powerpc-eabivle-
-# S32 Tools
-DEFAULT_CROSS_COMPILE = /c/devtools/Freescale/S32_Power_v1.1/Cross_Tools/powerpc-eabivle-4_9/bin/powerpc-eabivle-
-endif
-
-
+DEFAULT_CROSS_COMPILE = /c/devtools/Freescale/S32DS_Power_v2017.R1/Cross_Tools/powerpc-eabivle-4_9/bin/powerpc-eabivle-
 DEFAULT_CW_COMPILE= /c/devtools/Freescale/cw_mpc5xxx_2.10
 DEFAULT_DIAB_COMPILE = /c/devtools/WindRiver/diab/5.9.3.0/WIN32
 DEFAULT_GHS_COMPILE = /c/devtools/ghs/comp_201314p

@@ -130,4 +130,14 @@ void Irq_EOI( sint16 vector );
 void Irq_SOI3(uint8 prio);
 #endif
 
+/**
+ * Function to return the ISR id based on priority, if an ISR is already installed then
+ * Irq_VectorTable[priority] will have its ISR id otherwise VECTOR_ILL.
+ *
+ * @param priority
+ */
+#if defined(CFG_TC2XX) || defined(CFG_TC3XX)
+uint16 Irq_GetISRinstalledId(uint8 priority );
+#endif
+
 #endif /* IRQ_H_ */

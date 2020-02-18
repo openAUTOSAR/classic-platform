@@ -22,8 +22,9 @@
 #if defined(HOST_TEST)
 #include "schm_devtest_stubs.h"
 #endif
-
-/*lint -save -e451 -e553 -e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.9, required] [MISRA 2012 Rule 20.1, advisory] */
+/*lint -save -e451  MISRA:STANDARDIZED_INTERFACE:AUTOSAR need Inclusion:[MISRA 2012 Directive 4.10, required]*/
+/*lint -save -e553  MISRA:STANDARDIZED_INTERFACE:AUTOSAR need Inclusion: [MISRA 2012 Rule 20.9, required]*/
+/*lint -save -e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR need Inclusion:[MISRA 2012 Rule 20.1, advisory] */
 #if defined(USE_KERNEL)
 #include "Os.h"
 #endif
@@ -39,7 +40,7 @@
 #if defined(USE_CAN)
 #include "Can.h"
 #include "SchM_Can.h"
-
+/*lint -restore */
 #define SCHM_START_SEC_VAR_CLEARED_QM_UNSPECIFIED
 #include "SchM_MemMap.h"
 SCHM_DECLARE(CAN_MODE);
@@ -339,6 +340,20 @@ SCHM_DECLARE(CANSM);
 #define SCHM_MAINFUNCTION_CANSM()
 #endif
 
+#if defined(USE_CANTRCV)
+#include "CanTrcv.h"
+#include "SchM_CanTrcv.h"
+
+#define SCHM_START_SEC_VAR_CLEARED_QM_UNSPECIFIED
+#include "SchM_MemMap.h"
+SCHM_DECLARE(CANTRCV);
+#define SCHM_STOP_SEC_VAR_CLEARED_QM_UNSPECIFIED
+#include "SchM_MemMap.h"
+
+#else
+#define SCHM_MAINFUNCTION_CANTRCV()
+#endif
+
 #if defined(USE_UDPNM)
 #include "UdpNm.h"
 #endif
@@ -371,7 +386,20 @@ SCHM_DECLARE(LINSM);
 #define SCHM_MAINFUNCTION_LINSM()
 #endif
 
-#if defined(USE_SPI)
+
+#if defined(USE_CDD_LINSLV)
+#include "CDD_LinSlv.h"
+#include "SchM_LinCdd.h"
+#define SCHM_START_SEC_VAR_CLEARED_QM_UNSPECIFIED
+#include "SchM_MemMap.h"
+SCHM_DECLARE(LINCDD);
+#define SCHM_STOP_SEC_VAR_CLEARED_QM_UNSPECIFIED
+#include "SchM_MemMap.h"
+#else
+#define SCHM_MAINFUNCTION_LINCDD()
+#endif
+
+#if defined(USE_SPI) && !defined(CFG_SPI_ASIL)
 #include "Spi.h"
 #include "SchM_Spi.h"
 #define SCHM_START_SEC_VAR_CLEARED_QM_UNSPECIFIED
@@ -447,6 +475,7 @@ static void runMemory( void ) {
 }
 
 /* @req ARC_SWS_SchM_00003 */
+/* @req ARC_SWS_SchM_00011 The service EcuM mainfunctions shall not be called from tasks which may invoke runnable entities. */
 TASK(SchM_Partition_QM) {
     EcuM_StateType state;
     EcuM_SP_RetStatus retStatus = ECUM_SP_OK;
@@ -475,14 +504,15 @@ TASK(SchM_Partition_QM) {
                 break;
             default: /* Schedule BSW on QM partition */
 
-               runMemory(); /*lint !e522 FALSE_POSITIVE */
+               runMemory(); /*lint !e522 MISRA:FALSE_POSITIVE:Schedule BSW on QM partition:[MISRA 2012 Rule 2.2, required]*/
 
                SCHM_MAINFUNCTION_BSWM();
 
                SCHM_MAINFUNCTION_ECUM_QM(state, retStatus);
 
+               SCHM_MAINFUNCTION_CANTRCV();
                SCHM_MAINFUNCTION_CAN_MODE();
-                    /*lint -save -e553 CONFIGURATION */
+                  /*lint -save -e553 MISRA:CONFIGURATION:CAN polling:[MISRA 2012 Rule 20.9, required]*/
 #if (CAN_USE_WRITE_POLLING == STD_ON)
                SCHM_MAINFUNCTION_CAN_WRITE();
 #endif
@@ -517,6 +547,7 @@ TASK(SchM_Partition_QM) {
                SCHM_MAINFUNCTION_CANSM();
                SCHM_MAINFUNCTION_LINIF();
                SCHM_MAINFUNCTION_LINSM();
+               SCHM_MAINFUNCTION_LINCDD();
 
                 /* Check if QM EcuM is ready with synching */
                if (retStatus == ECUM_SP_RELEASE_SYNC) {
@@ -526,5 +557,6 @@ TASK(SchM_Partition_QM) {
                }
                break;
         }
-    } while (SCHM_TASK_EXTENDED_CONDITION != 0); /*lint !e506 OTHER Required to loop task in order to synchronize partitions */
+    } while (SCHM_TASK_EXTENDED_CONDITION != 0);  /*lint !e506 MISRA:PERFORMANCE:Required to loop task in order to synchronize partitions:[MISRA 2012 Rule 2.1, required]*/
 }
+

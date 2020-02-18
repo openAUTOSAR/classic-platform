@@ -134,8 +134,7 @@ typedef struct OsSchTbl {
     /** @req SWS_Os_00409 */
     struct OsCounter *				 counter;		/* pointer to this tables counter, OsScheduleTableCounterRef */
     const struct OsSchTblAutostart * autostartPtr;	/* OsScheduleTableAutostart[C] */
-                                                    /*lint -esym(123, sync) sync is typically also defined as a macro, but should
-                                                     * give other compiler warnings if usage of them is mixed up */
+    /*lint -esym(123, sync) MISRA:OTHER:sync is typically also defined as a macro, but should give other compiler warnings if usage of them is mixed up:[MISRA 2004 Info, advisory] */
     struct OsScheduleTableSync *	 sync;			/* NULL if NONE, and non-NULL if EXPLICIT and IMPLICIT */
 
 #if ( OS_SC2 == STD_ON ) || ( OS_SC4 == STD_ON )

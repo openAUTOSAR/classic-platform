@@ -374,11 +374,12 @@ SCHM_DECLARE(EA);
 SCHM_DECLARE(FLS);
 SCHM_DECLARE(J1939TP);
 
-
+/* @req SWS_BSW_00071 The state of a BSW Module shall be set accordingly at the end of Initialization function. */
 void SchM_Init( void ) {
 
 }
 
+/* @req SWS_BSW_00072 The state of a BSW Module shall be set accordingly at the beginning of the De-Initialization function */
 void SchM_Deinit( void ) {
 
 }
@@ -386,6 +387,9 @@ void SchM_Deinit( void ) {
 /* @req SWS_BSW_00064 GetVersionInfo shall execute synchronously */
 /* @req SWS_BSW_00052 GetVersion info shall only have one parameter */
 /* @req SWS_BSW_00164 No restriction on calling context */
+/* @req SWS_BSW_00236 Configuration parameters to get Version Info */
+/* @req SWS_BSW_00051 */
+#if ( SCHM_VERSION_INFO_API == STD_ON )
 void SchM_GetVersionInfo( Std_VersionInfoType *versionInfo ) {
 
     if(versionInfo != NULL_PTR) {
@@ -396,6 +400,7 @@ void SchM_GetVersionInfo( Std_VersionInfoType *versionInfo ) {
         versionInfo->sw_patch_version = SCHM_SW_PATCH_VERSION;
     }
 }
+#endif
 
 static void runMemory( void ) {
     SCHM_MAINFUNCTION_NVM();

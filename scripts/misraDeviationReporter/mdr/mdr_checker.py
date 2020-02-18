@@ -85,18 +85,18 @@ def extractReportingInformation(line, lintMisraRule, lintMisraType):
     
     #check if LINT is used, in that case no report required
 	#check if -restore is used, in that case no report required, end of block
-    if ("LINT" in line) or ("-restore" in line):
+    if ("-restore" in line):
         return ["", report, lin, mis, lev, cat, jus]
 		
     #check if /*lint in line, if not, in that case no report required, may only MISRA statement,
 	#but that line will be part of analyser report
-    if ("/*lint" in line):
+    if ("/*lint" in line) or ("//lint" in line):
         pass
     else:
         return ["", report, lin, mis, lev, cat, jus]	
 
     #check if at least 4 elements are available
-    if len(splitLineWithDelimeter) < 4:
+    if not((len(splitLineWithDelimeter) < 5) and (len(splitLineWithDelimeter) > 2)):
         return ["Misra deviation comment form not according to style guide", report, lin, mis, lev, cat, jus]
     
     #check if Exception Category is present
@@ -108,7 +108,7 @@ def extractReportingInformation(line, lintMisraRule, lintMisraType):
                 cat = cat + " : " + elem
 
     if cat == "" or cat != splitLineWithDelimeter[1]:
-        return ["Exception category not according to style guide", report, lin, mis, lev, cat, jus]
+        return ["Exception category should be CONFIGURATION,STANDARDIZED_INTERFACE,HARDWARE_ACCESS,ARGUMENT_CHECK,PERFORMANCE,FALSE_POSITIVE,EXTERNAL_FILE or OTHER. It's neither of mentioned categories and not according to style guide", report, lin, mis, lev, cat, jus]
 
     #check if MISRA Category is present
     for elem in  mdr_globals.MISRA_CATEGORIES:
@@ -119,7 +119,7 @@ def extractReportingInformation(line, lintMisraRule, lintMisraType):
                 lev = lev + " : " + elem
 
     if lev == "":
-        return ["MISRA category not according to style guide", report, lin, mis, lev, cat, jus]
+        return ["MISRA category should be required,advisory or mandatory. It's neither of mentioned category and not according to style guide", report, lin, mis, lev, cat, jus]
         
     #check if mandatory and only FALSE_POSITIVE is combined
     if ('mandatory' in lev):
@@ -130,7 +130,7 @@ def extractReportingInformation(line, lintMisraRule, lintMisraType):
     
     #check if required and OTHER is combined
     if ('required' in lev) and ('OTHER' in cat):
-        return ["MISRA category required can not be used together with 'OTHER' as justification", report, lin, mis, lev, cat, jus]
+        return ["MISRA category 'required' can not be used together with 'OTHER' as justification. 'required' word should not be used in explanation part of comment because even if MISRA Category is advisory or mandatory,it checks for word required", report, lin, mis, lev, cat, jus]
 
     #check if MISRA form is present
     for elem in  mdr_globals.MISRA_FORM:
@@ -139,7 +139,7 @@ def extractReportingInformation(line, lintMisraRule, lintMisraType):
                 mis = mis + elem
             else:
                 mis = mis + " : " + elem
-
+            
     if mis == "":
         return ["Keyword MISRA is missing in deviation comment", report, lin, mis, lev, cat, jus]
 
@@ -235,6 +235,10 @@ def extractReportingInformation(line, lintMisraRule, lintMisraType):
     if mdr_globals.DEBUG:print "Level:\t\t\t", lev
     if mdr_globals.DEBUG:print "Category:\t\t", cat
     if mdr_globals.DEBUG:print "Justification:\t\t", jus
+    
+    #If 2004 Info is used then it should pass
+    if mis == "MISRA 2004 Info":
+        report = True;
     
     if report == False:
         return ["The MISRA rule in comment is not according to PC-Lint mapping, e.g.\n you choose category mandatory, but is is required, compare mdr_analyse_report.txt", report, lin, mis, lev, cat, jus]

@@ -148,8 +148,6 @@ void Dcm_Confirmation(Dcm_IdContextType idContext,PduIdType dcmRxPduId,Dcm_Confi
 void Dcm_ExternalSetNegResponse(Dcm_MsgContextType* pMsgContext, Dcm_NegativeResponseCodeType ErrorCode);
 void Dcm_ExternalProcessingDone(Dcm_MsgContextType* pMsgContext);
 
-extern Std_ReturnType Dcm_GetVin(uint8* Data);
-
 #ifdef DCM_NOT_SERVICE_COMPONENT
 Std_ReturnType Rte_Switch_DcmEcuReset_DcmEcuReset(Dcm_EcuResetType resetType);
 Std_ReturnType Rte_Switch_DcmDiagnosticSessionControl_DcmDiagnosticSessionControl(Dcm_SesCtrlType session);

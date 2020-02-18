@@ -2,6 +2,7 @@
 
 OS_INC=Os/rtos/inc
 OS_SRC=Os/rtos/src
+OS_INTEGRATION=Os/rtos/integration
 
 #vpath-y += $(ARCH_KERNEL_PATH-y)/kernel
 #obj-y += asm_sample.o
@@ -142,6 +143,8 @@ endif
 VPATH += $(ROOTDIR)/system/$(OS_SRC)
 inc-y += $(ROOTDIR)/system/$(OS_INC)
 inc-y += $(ROOTDIR)/system/$(OS_SRC)
+inc-y += $(ROOTDIR)/system/$(OS_INTEGRATION)
+VPATH += $(ROOTDIR)/system/Os/rtos/integration
 VPATH += $(ROOTDIR)/system/Os
 inc-y += $(ROOTDIR)/system/Os/include
 

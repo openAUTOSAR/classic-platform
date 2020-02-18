@@ -85,6 +85,7 @@
 #if defined(USE_BSWM)
 #include "BswM_EcuM.h"
 #endif
+/*lint -e451 MISRA:EXTERNAL_FILE:file inclusion:[MISRA 2012 Directive 4.10, required] */
 #include "MemMap.h"
 #include "Mcu.h"
 #include "ComStack_Types.h"
@@ -104,6 +105,10 @@
 #if defined(USE_SCHM)
 #include "SchM.h"
 #endif
+#if defined(USE_HTMSS)
+#include "Htmss.h"
+#endif
+
 
 //#define USE_LDEBUG_PRINTF
 #include "debug.h"
@@ -113,22 +118,24 @@
  /* @req SWS_EcuM_04035 */
 /* @req SWS_BSW_00006 */
 #define ECUM_START_SEC_VAR_CLEARED_GLOBALMASTER_UNSPECIFIED
-#include "EcuM_BswMemMap.h" /*lint !e9019 suppressed due to EcuM_MemMap.h include is required */
+/*lint -save -e9019 MISRA:OTHER:suppressed due to EcuM_MemMap.h include is needed:[MISRA 2012 Rule 20.1, advisory] */
+#include "EcuM_BswMemMap.h"
 EcuM_GlobalType EcuM_World;
 #define ECUM_STOP_SEC_VAR_CLEARED_GLOBALMASTER_UNSPECIFIED
-#include "EcuM_BswMemMap.h" /*lint !e9019 suppressed due to EcuM_MemMap.h include is required */
+#include "EcuM_BswMemMap.h"
 
 #define ECUM_START_SEC_VAR_CLEARED_GLOBALMASTER_UNSPECIFIED
-#include "EcuM_BswMemMap.h" /*lint !e9019 suppressed due to EcuM_MemMap.h include is required */
+#include "EcuM_BswMemMap.h"
 uint32 EcuM_World_run_state_timeout = 0;
 #define ECUM_STOP_SEC_VAR_CLEARED_GLOBALMASTER_UNSPECIFIED
-#include "EcuM_BswMemMap.h" /*lint !e9019 suppressed due to EcuM_MemMap.h include is required */
+#include "EcuM_BswMemMap.h"
 
 #define ECUM_START_SEC_VAR_CLEARED_COMNVM_UNSPECIFIED
-#include "EcuM_BswMemMap.h" /*lint !e9019 suppressed due to EcuM_MemMap.h include is required */
+#include "EcuM_BswMemMap.h"
 EcuM_GlobalType_Partition_COMMNVM EcuM_World_ComM_NVM;
 #define ECUM_STOP_SEC_VAR_CLEARED_COMNVM_UNSPECIFIED
-#include "EcuM_BswMemMap.h" /*lint !e9019 suppressed due to EcuM_MemMap.h include is required */
+#include "EcuM_BswMemMap.h"
+/*lint -restore */
 
 /* ----------------------------[private define]------------------------------*/
 /* ----------------------------[private macro]-------------------------------*/
@@ -156,13 +163,13 @@ void CheckWakeupSourceValidity(EcuM_WakeupSourceType sources, uint8 FunctionId) 
     /* Predefined source does not require validation */
     if ( ( sources & (ECUM_WKSOURCE_POWER | ECUM_WKSOURCE_RESET
                     | ECUM_WKSOURCE_INTERNAL_RESET | ECUM_WKSOURCE_INTERNAL_WDG
-                    | ECUM_WKSOURCE_EXTERNAL_WDG) ) != 0 ) {
+                    | ECUM_WKSOURCE_EXTERNAL_WDG | ECUM_WKSOURCE_HWTEST_RESET) ) != 0 ) {
         /*Ok*/
     }
 
     else if( !((sources | wkSource) ==  wkSource)) {
         ECUM_DET_REPORT_ERROR(FunctionId, ECUM_E_UNKNOWN_WAKEUP_SOURCE );
-        /*lint -e{904} Return statement is necessary in case of reporting a DET error */
+        /*lint -e{904} MISRA:OTHER:Return statement is necessary in case of reporting a DET error:[MISRA 2012 Rule 15.5, advisory]*/
         return;
     } else {
         /* do nothing */
@@ -214,6 +221,23 @@ static boolean ValidatePostBuildConfiguration(const EcuM_ConfigType* config) {
 
 #endif
 
+#if defined(USE_HTMSS)
+/**
+ * @brief   Get test results from Htmss
+ * @param group
+ */
+static void EcuM_GetHWTestResults( HTMSS_TestGroupType group ) {
+
+    HTMSS_TestStatusType rv;
+
+    rv = HTMSS_GetTestStatus(group, NULL_PTR);
+
+    if(rv != HTMSS_STATUS_OK) {
+        HTMSS_StartupTestErrorHook();
+    }
+}
+#endif
+
 /* ----------------------------[public functions]----------------------------*/
 
 #if !defined(USE_DET) && (ECUM_DEV_ERROR_DETECT == STD_ON)
@@ -250,7 +274,7 @@ void EcuM_Init(void) {
         // Initialize Safety Monitor
         /* @req ARC_SWS_ECUM_00012 SMAL_Init allowed to run before HTMSS_Init request test configuration */
         Smal_Init();
-        HTMSS_Init(0u); /*lint !e910 OTHER HTMSS_Init does not have support for using input arguments so the value sent is not relevant*/
+        HTMSS_Init(0u); /*lint !e910 MISRA:ARGUMENT CHECK:HTMSS_Init does not have support for using input arguments so the value sent is not relevant:[MISRA 2012 Rule 11.9, required] */
 #endif
 
 #if defined(CFG_POSTBUILD)
@@ -263,7 +287,7 @@ void EcuM_Init(void) {
             ret = FALSE;
         }
 #endif
-        /*lint -e774 CONFIGURATION [MISRA 2004 Rule 13.7, required], [MISRA 2012 Rule 14.3, required] This may be FALSE if CFG_POSTBUILD is enabled */
+        /*lint -e{774} MISRA:CONFIGURATION:This may be FALSE if CFG_POSTBUILD is enabled: [MISRA 2012 Rule 14.3,required] */
         if (ret == TRUE) {
             // Initialize drivers needed before the OS-starts
             EcuM_AL_DriverInitOne(EcuM_World.config);
@@ -276,9 +300,8 @@ void EcuM_Init(void) {
                 EcuM_ValidateWakeupEvent(ECUM_WKSOURCE_POWER);
                 break;
             case MCU_SW_RESET:
-                EcuM_ValidateWakeupEvent(ECUM_WKSOURCE_RESET); /* @req SWS_EcuM_02601 */
-                break;
             case MCU_RESET_UNDEFINED:
+                EcuM_ValidateWakeupEvent(ECUM_WKSOURCE_RESET); /* @req SWS_EcuM_02601 ECUM_WKSOURCE_RESET shall be reported if no specific wk source detected  */
                 break;
             case MCU_WATCHDOG_RESET:
                 EcuM_ValidateWakeupEvent(ECUM_WKSOURCE_INTERNAL_WDG);
@@ -286,6 +309,7 @@ void EcuM_Init(void) {
 #if defined(USE_HTMSS)
             case MCU_HWTEST_RESET:
                 EcuM_GetHWTestResults(HTMSS_SHUTDOWN);
+                EcuM_ValidateWakeupEvent(ECUM_WKSOURCE_HWTEST_RESET);
                 break;
 #endif
             default:
@@ -293,7 +317,7 @@ void EcuM_Init(void) {
                 break;
             }
 #if defined(USE_HTMSS)
-            Std_ReturnType testReturn = EcuM_StartHWTests(HTMSS_STARTUP);
+            Std_ReturnType testReturn = HTMSS_StartTest(HTMSS_STARTUP);
 
             if (testReturn == E_OK) {
                 EcuM_GetHWTestResults(HTMSS_STARTUP);
@@ -348,7 +372,7 @@ void EcuM_Shutdown(void) {
     Std_ReturnType testReturn;
 
     if ((EcuM_World.shutdown_target == ECUM_STATE_HWTEST_OFF) || (EcuM_World.shutdown_target == ECUM_STATE_HWTEST_RESET) ) {
-        testReturn = EcuM_StartHWTests(HTMSS_SHUTDOWN);
+        testReturn = HTMSS_StartTest(HTMSS_SHUTDOWN);
 
         if (testReturn == E_NOT_OK) {
             HTMSS_ShutdownTestErrorHook();
@@ -384,12 +408,10 @@ Std_ReturnType EcuM_SelectShutdownTarget(EcuM_StateType shutdownTarget,
                                  (shutdownTarget == ECUM_STATE_HWTEST_RESET) ||
 #endif
                                  (shutdownTarget == ECUM_STATE_SLEEP));
-// u: #endif
+#endif
 
     /* @req SWS_EcuM_00624 */
     VALIDATE_RV(b_shutdownTarget, ECUM_SELECTSHUTDOWNTARGET_ID, ECUM_E_STATE_PAR_OUT_OF_RANGE, E_NOT_OK);
-
-#endif	// u:
 
     LDEBUG_PRINTF("EcuM_SelectShutdownTarget(): shutdownTarget=%s, sleepMode=%d\n",
             GetMainStateAsString(shutdownTarget),
@@ -438,10 +460,12 @@ Std_ReturnType EcuM_GetBootTarget(EcuM_BootTargetType* target) {
 Std_ReturnType EcuM_GetLastShutdownTarget(EcuM_StateType* shutdownTarget, uint8* sleepMode) {
     /* NOT SUPPORTED */
 
-    (void)shutdownTarget; /*lint !e920 */
-    (void)sleepMode; /*lint !e920 */
+    /*lint --e{920} MISRA:STANDARDIZED_INTERFACE:cast is being made from the given type to void:[MISRA 2012 Rule 1.3, required] */
+    (void)shutdownTarget;
+    (void)sleepMode;
 
     return E_NOT_OK;
+
 }
 
 
@@ -490,7 +514,7 @@ void EcuM_SetWakeupEvent(EcuM_WakeupSourceType sources) {
         if( !((sources | wkSource) == wkSource))
         {
             ECUM_DET_REPORT_ERROR(ECUM_SETWAKEUPEVENT_ID, ECUM_E_UNKNOWN_WAKEUP_SOURCE );
-            /*lint -e{904} Return statement is necessary in case of reporting a DET error */
+            /*lint -e{904} MISRA:ARGUMENT_CHECK:Return statement is necessary in case of reporting a DET error:[MISRA 2012 Rule 15.5, advisory] */
             return;
         }
 #endif

@@ -78,7 +78,8 @@ struct OsResource resScheduler;
  * Additionally,  critical  sections  are  to  be  left before completion of
  * an interrupt service routine.
  * Generally speaking, critical sections should be short.
- * The service may be called from an ISR and from task level (see Figure 12-1).
+ * The service may be called from an from task level (see Figure 12-1).
+ * Resource access in ISR is not supported.
  *
  * @param ResID
  * @return
@@ -96,7 +97,7 @@ StatusType GetResource( ResourceType ResID ) {
 
     /* RES_SCHEDULER is assigned OS_RESOURCE_CNT, so OS_RESOURCE_CNT is a valid Id */
     OS_VALIDATE_STD_1((ResID <= OS_RESOURCE_CNT), E_OS_ID,
-    		          OSServiceId_GetResource,ResID);  /* @req OSEK_SWS_RM_00001 */
+    		          OSServiceId_GetResource,ResID);  /* @req OSEK_SWS_RM_00001 */ /*lint !e775 MISRA:CONFIGURATION:argument check:[MISRA 2004 Info, advisory] */
 
 #if	(OS_APPLICATION_CNT > 1)
 
@@ -114,27 +115,12 @@ StatusType GetResource( ResourceType ResID ) {
     Irq_Save(flags);
 
     if( OS_SYS_PTR->intNestCnt != 0 ) {
-        /* Interrupt requesting for resource */
-        OsIsrVarType *isrPtr = Os_SysIsrGetCurr();
-        rPtr = Os_ResourceGet(ResID);
-
-        /* Check we can access it:
-         * 1. we don't have access to the resource
-         * 2. accessing right resource not RES_SCHEDULER
-         * 3. resource already taken
-         */
-        if( ((isrPtr->constPtr->resourceMask & (1UL<< ResID)) == 0) ||  /* 1 */
-            ( ResID == RES_SCHEDULER ) ||                               /* 2 */
-			(rPtr->owner != NO_TASK_OWNER) ) {                          /* 3 */
-            rv = E_OS_ACCESS;
-            Irq_Restore(flags);
-            /* OS_STD_ERR_1: Function will return after calling ErrorHook */
-            /* This is not inline with Table 8, ISO26262-6:2011, Req 1a and 1h */
-            OS_STD_ERR_1(OSServiceId_GetResource,ResID);
-        }
-        /* Add the resource to the list of resources held by this isr */
-        Os_IsrResourceAdd(rPtr,isrPtr);
-
+        /* Interrupt requesting for resource is not supported */
+        rv = E_OS_ISR_RESOURCE;
+        Irq_Restore(flags);
+        /* OS_STD_ERR_1: Function will return after calling ErrorHook */
+        /* This is not inline with Table 8, ISO26262-6:2011, Req 1a and 1h */
+        OS_STD_ERR_1(OSServiceId_GetResource,ResID);
     } else {
         OsTaskVarType *taskPtr = Os_SysTaskGetCurr();
 
@@ -174,8 +160,8 @@ StatusType GetResource( ResourceType ResID ) {
  * the resource referenced by <ResID>.
  *
  * For  information  on  nesting  conditions,  see  particularities  of
- * GetResource. The service may be called from an ISR and from task level (see
- * Figure 12-1).
+ * GetResource. The service may be called from an task level.
+ * resource access from ISR is not supported.
  *
  * @param ResID
  * @return
@@ -194,31 +180,14 @@ StatusType ReleaseResource( ResourceType ResID) {
 
     /* RES_SCHEDULER is assigned OS_RESOURCE_CNT, so OS_RESOURCE_CNT is a valid Id */
     OS_VALIDATE_STD_1((ResID <= OS_RESOURCE_CNT), E_OS_ID,
-    		          OSServiceId_ReleaseResource,ResID); /* @req OSEK_SWS_RM_00005*/
+    		          OSServiceId_ReleaseResource,ResID); /* @req OSEK_SWS_RM_00005*/ /*lint !e775 MISRA:CONFIGURATION:argument check:[MISRA 2004 Info, advisory] */
 
     Irq_Save(flags);
     if( OS_SYS_PTR->intNestCnt != 0 ) {
-    	/* Interrupt's release request for resource */
-        OsIsrVarType *isrPtr = Os_SysIsrGetCurr();
-        rPtr = Os_ResourceGet(ResID);
-        /* OS_STD_ERR_1: Function will return after calling ErrorHook */
-        /* This is not inline with Table 8, ISO26262-6:2011, Req 1a and 1h */
-        /* Check we can access it */
-        if( (isrPtr->constPtr->resourceMask & (1UL<< ResID)) == 0 ) {
-            rv = E_OS_ID;
-            Irq_Restore(flags);
-            OS_STD_ERR_1(OSServiceId_ReleaseResource,ResID);
-        }
-        /* Check for invalid configuration */
-        if( rPtr->owner == NO_TASK_OWNER)
-        {
-            rv = E_OS_NOFUNC; /* @req OSEK_SWS_RM_00008 */
-            Irq_Restore(flags);
-            OS_STD_ERR_1(OSServiceId_ReleaseResource,ResID);
-        }
-        /* Remove the resource to the list of resources held by this isr */
-        Os_IsrResourceRemove(rPtr,isrPtr);
-
+    	/* Interrupt's release request for resource is not supported */
+		rv = E_OS_ISR_RESOURCE;
+		Irq_Restore(flags);
+		OS_STD_ERR_1(OSServiceId_ReleaseResource,ResID);
     }
     else
     {
@@ -239,7 +208,7 @@ StatusType ReleaseResource( ResourceType ResID) {
         /* Check for invalid configuration */
         if( rPtr->owner == NO_TASK_OWNER)
         {
-            rv = E_OS_NOFUNC;
+            rv = E_OS_NOFUNC; /* @req OSEK_SWS_RM_00008 */
             Irq_Restore(flags);
             OS_STD_ERR_1(OSServiceId_ReleaseResource,ResID);
         }
@@ -254,7 +223,7 @@ StatusType ReleaseResource( ResourceType ResID) {
         Os_TaskResourceRemove(rPtr,pcbPtr);
 
         /* do a rescheduling (in some cases) (see OSEK OS 4.6.1) */
-        //lint -e{9007} MISRA False positive. No side effects of Os_SchedulerResourceIsFree
+        /*lint -e{9007} MISRA:FALSE_POSITIVE:No side effects of Os_SchedulerResourceIsFree:[MISRA 2012 Rule 13.5, required]*/
         if ( (pcbPtr->constPtr->scheduling == FULL) &&
              (Os_SchedulerResourceIsFree()) ) {
 

@@ -24,7 +24,9 @@
 
 #include "Arc_Types.h"
 
-#define STACK_PATTERN	0x42
+#ifndef STACK_PATTERN
+#define STACK_PATTERN	(0x42U)
+#endif
 
 /* Default backchain space */
 #define ARCH_BACKCHAIN_SIZE (16U)
@@ -115,8 +117,9 @@ void Os_ArchFirstCall( void  );
  *
  * @param   aP   Pointer to application
  * @param   func Function pointer to the ISR.
+ * @param   paP  Pointer to preemted application
  */
-void Os_ArchCallIsrEntry( OsAppVarType *aP, void (*func)(void));
+void Os_ArchCallIsrEntry( OsAppVarType *aP, void (*func)(void), OsAppVarType *paP);
 
 #endif
 
@@ -143,6 +146,24 @@ boolean Os_StartCore(CoreIDType id);
  * @return
  */
 StatusType Os_ArchGetProtectionType( uint32 exception );
+
+/**
+ * Function to get PCXI. Used only by Tricore
+ * @return PCXI
+ */
+uint32 Os_GetCurrentPcxi(void);
+
+
+
+/**
+ * Function to swap to privileged mode.
+ *
+ * @param pcxi - The value of PCXI
+ */
+void Os_ArchToPrivilegedMode( uint32 pcxi);
+
+
+
 
 
 #endif /*ARCH_H_*/

@@ -49,8 +49,9 @@ void  asm_foo(void) {
     DECLARE(SYS_INT_STACK, offsetof(Os_SysType, intStack));
     DECLARE(SYS_SIZE, sizeof(Os_SysType));
 #if (OS_SC3 == STD_ON ) || (OS_SC4 == STD_ON )
-    DECLARE(APP_INT_NEST_CNT,   offsetof(OsAppVarType, nestCnt));
-    DECLARE(APP_INT_STACK,      offsetof(OsAppVarType, intStack));
+    DECLARE(APP_INT_NEST_CNT,       offsetof(OsAppVarType, nestCnt));
+    DECLARE(APP_INT_STACK,          offsetof(OsAppVarType, intStack));
+    DECLARE(APP_SAVED_INT_STACK,    offsetof(OsAppVarType, savedIntStack));
 #if defined(CFG_TMS570)
     DECLARE(OS_ARM_SERVICE_EXCEPTION_MAP_ASM , OS_ARM_SERVICE_EXCEPTION_MAP);
 #endif

@@ -10,3 +10,5 @@ std.lnt         // Arccore standard options
  */
 -strong()       // No strong type checking 
 
+// False posive on include file
+-efile(451,stdint.h)

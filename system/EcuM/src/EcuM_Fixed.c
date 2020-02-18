@@ -23,6 +23,7 @@
 #include "EcuM_Internals.h"
 #include "EcuM_Cbk.h"
 #include "SchM_EcuM.h"
+/*lint -e451 MISRA:EXTERNAL_FILE:file inclusion:[MISRA 2012 Directive 4.10, required] */
 #include "MemMap.h"
 #include "Mcu.h"
 #include "ComStack_Types.h"

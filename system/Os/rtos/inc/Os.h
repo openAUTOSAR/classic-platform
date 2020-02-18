@@ -15,6 +15,9 @@
 
 /** @reqSettings DEFAULT_SPECIFICATION_REVISION=4.3.0 */
 
+/** @req SWS_BSW_00020 The header file structure shall contain one or more files 
+ * that provide the declaration of functions from the BSW Module API
+ */
 
 #ifndef OS_H_
 #define OS_H_
@@ -81,7 +84,8 @@ typedef uint8 StatusType;
 #define E_OS_BAD_CONTEXT            (StatusType)35  /* ArcCore, called function is NULL */
 #define E_OS_TIMEOUT                (StatusType)36  /* ArcCore, Semaphore have timeout */
 #define E_OS_ASSERT                 (StatusType)37  /* ArcCore, call to ASSERT() or CONFIG_ASSERT() */
-#define E_OS_FULL                   (StatusType)38  /* ArcCore, mbox full */
+#define E_OS_ISR_RESOURCE           (StatusType)38  /* ArcCore, ISR does not support Get/ReleaseResource() */
+#define E_OS_FULL                   (StatusType)39  /* ArcCore, mbox full */
 
 #define E_OS_ILLEGAL                (StatusType)255  /* ArcCore*/
 
@@ -120,7 +124,7 @@ typedef TaskStateType *TaskStateRefType;
 
 #define OSDEFAULTAPPMODE  1
 
-#define INVALID_OSAPPLICATION (-1)
+#define INVALID_OSAPPLICATION (0xFFFFFFFFUL)
 
 #define TASK(_task)		void _task( void )
 
@@ -259,7 +263,7 @@ typedef sint8 Os_IntCounterType;
 
 extern Os_IntCounterType Os_IntDisableAllCnt;
 extern Os_IntCounterType Os_IntSuspendAllCnt;
-/*lint -esym(9003,Os_Arc_OsTickCounter) OTHER [MISRA 2012 Rule 8.9, advisory] variable defined in generated code so it cannot be defined in block scope*/
+/*lint -esym(9003,Os_Arc_OsTickCounter) MISRA:OTHER:variable defined in generated code so it cannot be defined in block scope:[MISRA 2012 Rule 8.9, advisory]*/
 extern CounterType Os_Arc_OsTickCounter; 
 
 /** @req SWS_Os_00299 */
@@ -410,10 +414,12 @@ static inline void ResumeOSInterrupts( void ) {
 
 extern StatusType Os_ArchSysCall();
 extern StatusType Os_ArchSysCall_4(uint32 a, uint32 b, uint32 c, uint32 d);
+extern StatusType Os_ArchSysCall_5(uint32 a, uint32 b, uint32 c, uint32 d, uint32 e);
 #if defined(CFG_TC2XX)
 extern StatusType Os_ArchSysCall_4_P1(uint32 * a, uint32 b, uint32 c, uint32 d);
 extern StatusType Os_ArchSysCall_4_P2(uint32 a, uint32 * b, uint32 c, uint32 d);
 extern StatusType Os_ArchSysCall_4_P2_3(uint32 a, uint32 * b, uint32 * c, uint32 d);
+extern int Os_ArchSysCall_4_P_S(uint32 *a, uint32 b, uint32 c, uint32 d);
 #endif
 extern StatusType Os_ArchSysCall_4_S(uint32 a, uint64, uint32 d);
 extern StatusType Os_SysCall_0(uint32 index);
@@ -546,12 +552,14 @@ StatusType GetElapsedValue( CounterType CounterID, TickRefType Value, TickRefTyp
  *-----------------------------------------------------------------*/
 typedef const uint32 OsTickType;
 
-// MISRA 2012 8.9 : Inhibit lint error 9003 for external object OsTickFreq
-//lint -esym(9003,OsTickFreq)
+/*lint -esym(9003,OsTickFreq) MISRA:EXTERNAL_FILE:Inhibit lint error for external object OsTickFreq:[MISRA 2012 Rule 8.9, advisory]*/
 extern OsTickType OsTickFreq;
 void Os_SysTickInit( void );
-void Os_SysTickStart(TickType period_ticks);
+#if defined(CFG_OS_SYSTICK2)
 void Os_SysTickStart2( uint32 frequency );
+#else
+void Os_SysTickStart(TickType period_ticks);
+#endif
 
 /* Return a value that is always a free running timer */
 TickType GetOsTick( void );
@@ -832,9 +840,7 @@ typedef void *ApplicationDataRef;
 #define OS_CORE_ID_INVALID 	65535
 #define OS_CORE_ID_MASTER	0
 
-/*lint -emacro(506, OS_CORE_IS_ID_MASTER)
- * MISRA 2004 13.7 (req) Exception, single core configuration result is always true
- */
+/*lint -emacro(506, OS_CORE_IS_ID_MASTER) MISRA:OTHER:Exception, single core configuration result is always true:[MISRA 2004 Info,advisory]*/
 #define OS_CORE_IS_ID_MASTER(_id)	(OS_CORE_ID_MASTER == (_id))
 
 typedef uint32 CoreIDType; /* @req SWS_Os_00790 Type definition */
@@ -844,13 +850,14 @@ typedef uint32 CoreIDType; /* @req SWS_Os_00790 Type definition */
 #define MPC5777M_INTC_REG_EOIR EOIR_PRC2
 #define MPC5777M_INTC_REG_IACKR IACKR_PRC2
 /* But we say that we use core0 since os assumes this for singlecore */
-//lint -emacro(506, GetCoreID) MISRA 2004 13.7 (req) Exception, for optimization
+/*lint -emacro(506, GetCoreID) MISRA:OTHER:Exception, for optimization:[MISRA 2004 Info,advisory]*/
+
 #define  GetCoreID()    0
 #else
 #if (OS_NUM_CORES > 1)
 CoreIDType GetCoreID(void);
 #else
-//lint -emacro(506, GetCoreID) MISRA 2004 13.7 (req) Exception, for optimization
+/*lint -emacro(506, GetCoreID) MISRA:OTHER:Exception, for optimization:[MISRA 2004 Info,advisory]*/
 #define  GetCoreID()    0
 #endif
 #endif

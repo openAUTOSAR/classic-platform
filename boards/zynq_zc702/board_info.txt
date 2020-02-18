@@ -35,7 +35,7 @@ JTAG setup and isystem debugger:
  - HW: 
    - Use the J58 JTAG header
    - Set JTAG_SEL_1 and JTAG_SEL_2 to "ON"
-   - Set SW16 should all be set to "0" (ie switch "down" towards the text on the switch) 
+   - Set SW16 should all be set to "0" (ie switch "down" towards the text on the switch), except 3 and 4.
    - isystem->emulation options->JTAG
      - De-select "This is the single..... " 
      - Set IR Prefix: 6 and DR Prefix: 1

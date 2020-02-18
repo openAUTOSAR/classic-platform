@@ -91,7 +91,7 @@ static StatusType Os_internalSetRelAlarm(AlarmType AlarmId, TickType Increment, 
     const OsTaskVarType *currPcbPtr = Os_SysTaskGetCurr();
 
     // Checking state and access of alarm only done when called from API, not startup.
-    if( (boolean)FALSE == isStartup && currPcbPtr->constPtr->applOwnerId != aPtr->applOwnerId ) {
+    if( ((boolean)FALSE == isStartup) && (currPcbPtr->constPtr->applOwnerId != aPtr->applOwnerId) ) {
         ApplicationType appId;
         OS_VALIDATE_STD_3( (Os_ApplCheckState(aPtr->applOwnerId) != E_OS_ACCESS) , E_OS_ACCESS,
                            OSServiceId_SetRelAlarm,AlarmId, Increment, Cycle);
@@ -174,7 +174,7 @@ static StatusType Os_internalSetAbsAlarm(AlarmType AlarmId, TickType Start, Tick
     const OsTaskVarType *currPcbPtr = Os_SysTaskGetCurr();
 
     // Checking state and access of alarm only done when called from API, not startup.
-    if( (boolean)FALSE == isStartup && currPcbPtr->constPtr->applOwnerId != aPtr->applOwnerId ) {
+    if( (((boolean)FALSE == isStartup)) && (currPcbPtr->constPtr->applOwnerId != aPtr->applOwnerId)) {
         ApplicationType appId;
         OS_VALIDATE_STD_3( (Os_ApplCheckState(aPtr->applOwnerId) != E_OS_ACCESS) , E_OS_ACCESS,
                            OSServiceId_SetAbsAlarm,AlarmId, Start, Cycle);

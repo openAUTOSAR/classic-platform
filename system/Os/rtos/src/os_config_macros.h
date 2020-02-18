@@ -119,9 +119,7 @@
         .appOwner = _appOwner,         \
 }
 
-
 #define GEN_ISR_MAP uint8 Os_VectorToIsr[NUMBER_OF_INTERRUPTS_AND_EXCEPTIONS]
-
 
 /*
  *---------------------- RESOURCES -----------------------------------------

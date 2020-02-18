@@ -14,88 +14,91 @@
 
 /** @reqSettings DEFAULT_SPECIFICATION_REVISION=4.3.0 */
 
-/*lint -e451 -e9021 AUTOSAR API SWS_MemMap_00003 */
+/*lint -save -e451 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required]*/
+/*lint -save -e9019 MISRA:OTHER:AUTOSAR Require Inclusion:[MISRA 2012 Rule 20.1, advisory] */
+/*lint -save -e9021 MISRA:OTHER:AUTOSAR Require Inclusion:[MISRA 2012 Rule 20.5, advisory] */
 
 #ifdef ECUM_START_SEC_VAR_CLEARED_GLOBALMASTER_UNSPECIFIED
-#include "MemMap.h" /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "MemMap.h"
 #undef ECUM_MEMMAP_ERROR
 #undef ECUM_START_SEC_VAR_CLEARED_GLOBALMASTER_UNSPECIFIED
 #endif
 
 #ifdef ECUM_STOP_SEC_VAR_CLEARED_GLOBALMASTER_UNSPECIFIED
-#include "MemMap.h" /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "MemMap.h"
 #undef ECUM_MEMMAP_ERROR
 #undef ECUM_STOP_SEC_VAR_CLEARED_GLOBALMASTER_UNSPECIFIED
 #endif
 
 #ifdef ECUM_START_SEC_VAR_INIT_UNSPECIFIED
-#include "MemMap.h" /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "MemMap.h"
 #undef ECUM_MEMMAP_ERROR
 #undef ECUM_START_SEC_VAR_INIT_UNSPECIFIED
 #endif
 
 #ifdef ECUM_STOP_SEC_VAR_CLEARED_UNSPECIFIED
-#include "MemMap.h" /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "MemMap.h"
 #undef ECUM_MEMMAP_ERROR
 #undef ECUM_STOP_SEC_VAR_CLEARED_UNSPECIFIED
 #endif
 
 #ifdef ECUM_START_SEC_VAR_CLEARED_16
-#include "MemMap.h" /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "MemMap.h"
 #undef ECUM_MEMMAP_ERROR
 #undef ECUM_START_SEC_VAR_CLEARED_16
 #endif
 
 #ifdef ECUM_STOP_SEC_VAR_CLEARED_16
-#include "MemMap.h" /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "MemMap.h"
 #undef ECUM_MEMMAP_ERROR
 #undef ECUM_STOP_SEC_VAR_CLEARED_16
 #endif
 
 #ifdef ECUM_START_SEC_VAR_NVM_CLEARED_8
-#include "MemMap.h" /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "MemMap.h"
 #undef ECUM_MEMMAP_ERROR
 #undef ECUM_START_SEC_VAR_NVM_CLEARED_8
 #endif
 
 #ifdef ECUM_STOP_SEC_VAR_NVM_CLEARED_8
-#include "MemMap.h" /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "MemMap.h"
 #undef ECUM_MEMMAP_ERROR
 #undef ECUM_STOP_SEC_VAR_NVM_CLEARED_8
 #endif
 
 #ifdef ECUM_START_SEC_VAR_NVM_CLEARED_32
-#include "MemMap.h" /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "MemMap.h"
 #undef ECUM_MEMMAP_ERROR
 #undef ECUM_START_SEC_VAR_NVM_CLEARED_32
 #endif
 
 #ifdef ECUM_STOP_SEC_VAR_NVM_CLEARED_32
-#include "MemMap.h" /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "MemMap.h"
 #undef ECUM_MEMMAP_ERROR
 #undef ECUM_STOP_SEC_VAR_NVM_CLEARED_32
 #endif
 
 #ifdef ECUM_START_SEC_VAR_NVM_CLEARED_UNSPECIFIED
-#include "MemMap.h" /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "MemMap.h"
 #undef ECUM_MEMMAP_ERROR
 #undef ECUM_START_SEC_VAR_NVM_CLEARED_UNSPECIFIED
 #endif
 
 #ifdef ECUM_STOP_SEC_VAR_NVM_CLEARED_UNSPECIFIED
-#include "MemMap.h" /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "MemMap.h"
 #undef ECUM_MEMMAP_ERROR
 #undef ECUM_STOP_SEC_VAR_NVM_CLEARED_UNSPECIFIED
 #endif
 
 #ifdef ECUM_START_SEC_VAR_CLEARED_COMNVM_UNSPECIFIED
-#include "MemMap.h" /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "MemMap.h"
 #undef ECUM_MEMMAP_ERROR
 #undef ECUM_START_SEC_VAR_CLEARED_COMNVM_UNSPECIFIED
 #endif
 
 #ifdef ECUM_STOP_SEC_VAR_CLEARED_COMNVM_UNSPECIFIED
-#include "MemMap.h" /*lint !e451 !e9019 MISRA:STANDARDIZED_INTERFACE:AUTOSAR Require Inclusion:[MISRA 2012 Directive 4.10, required] [MISRA 2012 Rule 20.1, advisory] */
+#include "MemMap.h"
 #undef ECUM_MEMMAP_ERROR
 #undef ECUM_STOP_SEC_VAR_CLEARED_COMNVM_UNSPECIFIED
 #endif
+/*lint -restore */

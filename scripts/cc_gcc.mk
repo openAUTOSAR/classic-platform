@@ -26,7 +26,9 @@ endif
 # Find version
 gcc_version = $(shell ${CROSS_COMPILE}gcc --version | gawk -v VER=$(1) '{ if( VER >= strtonum(gensub(/\./,"","g",$$3)) ) print "y";exit  }' )
 CC_INFO := "$(shell ${CROSS_COMPILE}gcc --version | sed -n 1p )"
-CXX_INFO := "$(shell ${CROSS_COMPILE}g++ --version | sed -n 1p )"
+ifneq (,$(wildcard ${CROSS_COMPILE}g++))
+  CXX_INFO := "$(shell ${CROSS_COMPILE}g++ --version | sed -n 1p )"
+endif
 GCC_V430 = $(call gcc_version,430)
 GCC_V340 = $(call gcc_version,340)  
 
@@ -251,10 +253,6 @@ ifeq ($(CFG_TCPIP_TEST),y)
 LDFLAGS +=-lpthread
 endif
 endif
-LDFLAGS += -L/usr/lib
-LDFLAGS += -L/usr/lib/gcc/x86_64-linux-gnu/5
-LDFLAGS += -lstdc++ 
-LDFLAGS += -lgcc
 
 # ---------------------------------------------------------------------------
 # Assembler

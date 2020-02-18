@@ -24,6 +24,7 @@
  * - EcuM_WakeupReactionType (non-RTE)
  */
 
+/* @req SWS_BSW_00172 Callback functions should have void as return type. */
 /* @req SWS_BSW_00026 */
 /* @req SWS_EcuM_02994 */ /* @req SWS_EcuM_02994 */
 #ifndef ECUM_CBK_H_

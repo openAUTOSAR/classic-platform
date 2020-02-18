@@ -356,16 +356,3 @@ void Dcm_ExternalProcessingDone(Dcm_MsgContextType* pMsgContext)
     VALIDATE_NO_RV((NULL != pMsgContext), DCM_EXTERNALPROCESSINGDONE_ID, DCM_E_PARAM);
     DsdExternalProcessingDone(pMsgContext);
 }
-
-
-Std_ReturnType Dcm_GetVin(uint8* Data) {
-
-    for (uint8 i = 0u; i < 20; i++) {
-
-        Data[i] = 0x11u;
-
-    }
-
-    return E_OK;
-
-}

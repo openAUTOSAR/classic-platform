@@ -56,7 +56,7 @@
 #define SPR_CSRR0		58
 #define SPR_CSRR1		59
 
-#if defined(CFG_MPC5744P) || defined(CFG_MPC5777M) || defined(CFG_E200Z4) || defined(CFG_E200Z4D)
+#if defined(CFG_MPC5744P) || defined(CFG_MPC5777M) || defined(CFG_E200Z4) || defined(CFG_E200Z4D) ||  defined(CFG_E200Z7)
 #define SPR_MCSRR0      570
 #define SPR_MCSRR1      571
 #else

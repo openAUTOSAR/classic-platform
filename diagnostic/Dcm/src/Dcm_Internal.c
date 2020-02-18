@@ -367,12 +367,13 @@ Dcm_NegativeResponseCodeType getDidData(const Dcm_DspDidType *didPtr, const PduI
     const Dcm_DspSignalType *signalPtr;
     const Dcm_DspDataType *dataPtr;
     uint16 requiredBufSize;
+    boolean inPendingState = (DCM_READ_DID_PENDING_COND_CHECK == *pendingState) || (DCM_READ_DID_PENDING_READ_DATA == *pendingState);
     requiredBufSize = *txPos + didPtr->DspDidDataByteSize;
-    if( TRUE == includeDID ) {
+    if( (TRUE == includeDID) && (FALSE == inPendingState) ) {/* When in pending state size of DID identifier has already been added to txPos (see below) */
         requiredBufSize += 2u;
     }
-    if( requiredBufSize <= pduTxData->SduLength ) {
-        if( (DCM_READ_DID_PENDING_COND_CHECK == *pendingState) || (DCM_READ_DID_PENDING_READ_DATA == *pendingState) ) {
+    if( (TRUE == inPendingState) || (requiredBufSize <= pduTxData->SduLength) ) { /* Skip check when in pending state. It has already been done. */
+        if( TRUE == inPendingState ) {
             opStatus = DCM_PENDING;
         } else {
             if( TRUE == includeDID ) {
@@ -385,7 +386,6 @@ Dcm_NegativeResponseCodeType getDidData(const Dcm_DspDidType *didPtr, const PduI
             memset(&pduTxData->SduDataPtr[*txPos], 0, didPtr->DspDidDataByteSize);
         }
         /* @req Dcm578 Skipping condition check for ECU_SIGNALs */
-
         for(uint16 signalIndex = *pendingSignalIndex; (signalIndex < didPtr->DspNofSignals) && (DCM_E_POSITIVERESPONSE == errorCode); signalIndex++) {
             signalPtr = &didPtr->DspSignalRef[signalIndex];
             dataPtr = signalPtr->DspSignalDataRef;
@@ -496,9 +496,6 @@ Dcm_NegativeResponseCodeType getDidData(const Dcm_DspDidType *didPtr, const PduI
                             DCM_DET_REPORTERROR(DCM_GLOBAL_ID, DCM_E_CONFIG_INVALID);
                             result = E_NOT_OK;
                         }
-                        if( *txPos < ((*didDataStartPos) + signalFirstBytePos + dataLen) ) {
-                            *txPos = ((*didDataStartPos) + signalFirstBytePos + dataLen);
-                        }
 
                         if( E_PENDING == result ) {
                             *pendingState = DCM_READ_DID_PENDING_READ_DATA;
@@ -510,6 +507,10 @@ Dcm_NegativeResponseCodeType getDidData(const Dcm_DspDidType *didPtr, const PduI
                         } else {
                             /* Did successfully read */
                             *pendingState = DCM_READ_DID_IDLE;
+                            /* Increment to highest position written */
+                            if( *txPos < ((*didDataStartPos) + signalFirstBytePos + dataLen) ) {
+                                *txPos = ((*didDataStartPos) + signalFirstBytePos + dataLen);
+                            }
                         }
                     } else { // tx buffer full
                         errorCode = DCM_E_REQUESTOUTOFRANGE;

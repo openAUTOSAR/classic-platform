@@ -120,7 +120,7 @@ static boolean FiMRecalculateInhibitConfig[FIM_NOF_INH_CFGS];
  * @param inhibitionMask
  * @return TRUE: status and mask match, FALSE: status and mask does NOT match
  */
-static boolean compareStatusToMask(Dem_MonitorStatusType monitorStatus, FiM_InhInhibitionMaskType inhibitionMask)
+static boolean compareStatusToMask(Dem_MonitorStatusType monitorStatus, uint8 inhibitionMask)
 {
     boolean match = FALSE;
 

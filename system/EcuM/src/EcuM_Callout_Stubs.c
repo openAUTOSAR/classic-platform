@@ -73,9 +73,6 @@
 #if defined(USE_SOAD)
 #include "SoAd.h"
 #endif
-#if defined(USE_DOIP)
-#include "DoIP.h"
-#endif
 #if defined(USE_LDCOM)
 #include "LdCom.h"
 #endif
@@ -229,8 +226,8 @@
 /* ----------------------------[private typedef]-----------------------------*/
 /* ----------------------------[private function prototypes]-----------------*/
 /* ----------------------------[private variables]---------------------------*/
-/*lint --e{843} this is only info  */
-/*lint -esym(9003,EcuM_DriverRestart) */
+/*lint -esym(9003, EcuM_DriverRestart) MISRA:OTHER:Readability:[MISRA 2012 Rule 8.9, advisory] */
+/*lint -e843 MISRA:OTHER:Readability:[MISRA 2004 Info, advisory] */
 static boolean EcuM_DriverRestart = FALSE;
 /* ----------------------------[private functions]---------------------------*/
 /* ----------------------------[public functions]----------------------------*/
@@ -259,17 +256,19 @@ void EcuM_ErrorHook(uint16 reason) {
 
 }
 
-/*lint -esym(9003,EcuMConfig) OTHER modeFunctionSwitchPointer is generated and can therefore not be defined in this static file*/
+/*lint -esym(9003, EcuMConfig) MISRA:OTHER:modeFunctionSwitchPointer is generated and can therefore not be defined in this static file:[MISRA 2012 Rule 8.9, advisory] */
 extern const EcuM_ConfigType EcuMConfig; 
 
-//lint -esym(522, _dummy) MISRA exception. _dummy is used to prevent other false positive warnings.
+/*lint -esym(522, _dummy) MISRA:FALSE_POSITIVE:dummy is used to prevent other false positive:[MISRA 2012 Rule 2.2, required]*/
 static void _dummy( void ) {
 
 }
 
+/* @req SWS_EcuM_02730 */
 struct EcuM_ConfigS* EcuM_DeterminePbConfiguration(void) {
 	NO_DRIVER(_dummy());	// Keep compiler silent
-	return (EcuM_ConfigType*)&EcuMConfig; /*lint !e9005 !e929*/
+	/*lint -e{929} MISRA:STANDARDIZED_INTERFACE:Casting extern and const variable:[MISRA 2012 Rule 11.3, required] */
+	return (EcuM_ConfigType*)&EcuMConfig; /*lint !e9005 MISRA:STANDARDIZED_INTERFACE:Casting extern and const variable:[MISRA 2012 Rule 11.8, required] */
 }
 #if defined(ECUM_BACKWARD_COMPATIBLE)
 /**
@@ -297,10 +296,11 @@ void EcuM_AL_DriverInitZero(void)
  * Part of STARTUP I
  *
  * @param ConfigPtr
+ * @req SWS_EcuM_02730
  */
 void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
 {
-    (void)ConfigPtr; //lint !e920 MISRA False positive. Allowed to cast pointer to void here.
+    (void)ConfigPtr; /*lint !e920 MISRA:FALSE_POSITIVE:Allowed to cast pointer to void here:[MISRA 2012 Rule 1.3, required]*/
 
 #if defined(USE_MCU)
     Mcu_Init(ConfigPtr->McuConfigPtr);
@@ -403,10 +403,10 @@ void EcuM_AL_DriverInitOne(const EcuM_ConfigType *ConfigPtr)
  *
  * @param ConfigPtr
  */
-//lint -esym(522, EcuM_AL_DriverInitTwo) MISRA exception. Prevent false positive if none of the modules are used
+/*lint -esym(522, EcuM_AL_DriverInitTwo) MISRA:FALSE_POSITIVE:Prevent false positive if none of the modules are used:[MISRA 2012 Rule 2.2, required]*/
 void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 {
-    (void)ConfigPtr; //lint !e920 MISRA False positive. Allowed to cast pointer to void here.
+    (void)ConfigPtr; /*lint !e920 MISRA:FALSE_POSITIVE:Allowed to cast pointer to void here:[MISRA 2012 Rule 1.3, required]*/
 #if defined(USE_SPI)
     Spi_Init(ConfigPtr->SpiConfigPtr);  // Setup SPI
 #endif
@@ -431,6 +431,9 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 #endif
 #if defined(USE_LINIF)
     NO_DRIVER(LinIf_Init(ConfigPtr->LinIfConfigPtr));    // Setup LinIf
+#endif
+#if defined(USE_LINTP)
+    NO_DRIVER(LinTp_Init(ConfigPtr->LinTpConfigPtr));    // Setup LinTp
 #endif
 #if defined(USE_LINSM)
     NO_DRIVER(LinSM_Init(ConfigPtr->LinSMConfigPtr));    // Setup LinSM
@@ -469,11 +472,11 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
     // Setup EthIf before Eth & EthTrcv
     NO_DRIVER(EthIf_Init(ConfigPtr->EthIfConfigPtr));
 #endif
+#if defined(USE_ETHTRCV)
+    NO_DRIVER(EthTrcv_Init(ConfigPtr->EthTrcvConfigPtr));   //  Setup EthTrcv
+#endif
 #if defined(USE_ETH)
     Eth_Init(ConfigPtr->EthConfigPtr);  // Setup Eth
-#endif
-#if defined(USE_ETHIF)
-    NO_DRIVER(EthIf_Init(ConfigPtr->EthIfConfigPtr));   //  Setup Eth If
 #endif
 #if defined(USE_ETHSM)
     NO_DRIVER(EthSM_Init());    //  Setup Eth SM
@@ -486,9 +489,6 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
 #endif
 #if defined(USE_SOAD)
     NO_DRIVER(SoAd_Init(ConfigPtr->SoAdConfigPtr)); // Setup Socket Adaptor
-#endif
-#if defined(USE_DOIP)
-    NO_DRIVER(DoIP_Init(ConfigPtr->DoIPConfigPtr)); // Setup DoIP
 #endif
 #if defined(USE_SD)
     NO_DRIVER(Sd_Init(ConfigPtr->SdConfigPtr)); // Setup Service Discovery
@@ -546,7 +546,7 @@ void EcuM_AL_DriverInitTwo(const EcuM_ConfigType* ConfigPtr)
  */
 void EcuM_AL_DriverInitThree(const EcuM_ConfigType* ConfigPtr)
 {
-    (void)ConfigPtr; //lint !e920 MISRA False positive. Allowed to cast pointer to void here.
+    (void)ConfigPtr; /*lint !e920 MISRA:FALSE_POSITIVE:Allowed to cast pointer to void here:[MISRA 2012 Rule 1.3, required]*/
 
 #if defined(USE_FIM)
     // Setup Function Inhibition Manager
@@ -849,15 +849,20 @@ void EcuM_SleepActivity(void)
 /**
  * This ARC definition is called when mcu definition of enum Mcu_ResetType has additional enum values than standard Autosar definition.
  * Integrator has to map the additional enum value with the appropriate wakeup source and provide code for remembering the reset reason here by calling
- * EcuM_ValidateWakeupEvent(wakeup source) as per requirement EcuMf2623 .
+ * EcuM_ValidateWakeupEvent(wakeup source) as per requirement SWS_EcuM_02623 .
  *
  * @param resetReason
  *
  *  */
 void EcuM_Arc_RememberWakeupEvent(uint32 resetReason)
 {
-    (void)resetReason;
-
+    switch (resetReason) {
+        /*lint -e764 MISRA:PERFORMANCE:omitting any case:[MISRA 2012 Rule 16.6, required] */
+        // Handling of additional user defined wakeup sources can be added here
+        default:
+            EcuM_ValidateWakeupEvent(ECUM_WKSOURCE_RESET); /* @req SWS_EcuM_02601 ECUM_WKSOURCE_RESET shall be reported if no specific wk source detected  */
+            break;
+    }
 }
 
 #if defined(CFG_ARC_ECUM_NVM_READ_INIT)

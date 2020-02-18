@@ -59,7 +59,12 @@ uint8 Com_SendSignal(Com_SignalIdType SignalId, const void *SignalDataPtr) {
 
     /* Store pointer to signal for easier coding.*/
     const ComSignal_type * Signal = GET_Signal(SignalId);
-
+#if defined(USE_LINUXOS)
+    logger(LOG_INFO, "Com_SendSignal SignalDataPtr [%s] ComBitSize [%d]", 
+            logger_format_hex((char*)SignalDataPtr, (Signal->ComBitSize / 8)),
+            Signal->ComBitSize
+    );
+#endif
 
     if (Signal->ComIPduHandleId == NO_PDU_REFERENCE) {
         /* Return error if signal is not connected to an IPdu*/

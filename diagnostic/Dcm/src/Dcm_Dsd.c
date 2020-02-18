@@ -864,7 +864,7 @@ PduIdType DsdDslGetCurrentTxPduId(void)
     return msgData.pdurTxPduId;
 }
 
-#if defined(DCM_USE_SERVICE_READDATABYPERIODICIDENTIFIER) || defined(DCM_USE_CONTROL_DIDS) || (defined(USE_DEM) && defined(DCM_USE_SERVICE_CONTROLDTCSETTING))
+#if defined(DCM_USE_SERVICE_READDATABYPERIODICIDENTIFIER) || defined(DCM_USE_SERVICE_COMMUNICATIONCONTROL) || defined(DCM_USE_CONTROL_DIDS) || (defined(USE_DEM) && defined(DCM_USE_SERVICE_CONTROLDTCSETTING))
 boolean DsdDspCheckServiceSupportedInActiveSessionAndSecurity(uint8 sid)
 {
     boolean ret = FALSE;
@@ -905,3 +905,11 @@ Std_ReturnType DsdDspGetCurrentProtocolRx(PduIdType rxPduId, const Dcm_DslProtoc
     return DslDsdGetProtocolRx(rxPduId, protocolRx);
 }
 #endif
+
+/**
+ * Clears suppress positive message bit
+ */
+void DsdClearSuppressPosRspMsg(void)
+{
+    suppressPosRspMsg = FALSE;
+}

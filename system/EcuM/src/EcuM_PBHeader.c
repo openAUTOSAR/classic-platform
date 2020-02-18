@@ -62,6 +62,8 @@ extern const Com_ConfigType ComConfiguration;
 #include "FiM.h"
 #endif
 
+/*lint -save -e785 MISRA:FALSE_POSITIVE:Partial array initialization is allowed because this can be rewritten in integration:[MISRA 2012 Rule 9.3, required] */
+
 SECTION_POSTBUILD_HEADER const PostbuildConfigType Postbuild_Config = {
     .startPattern = 0x5A5A5A5A,
     .postBuildVariant = 1,
@@ -98,3 +100,4 @@ SECTION_POSTBUILD_HEADER const PostbuildConfigType Postbuild_Config = {
     .FiMConfigPtr = &FiM_Config,
 #endif
 };
+/*lint -restore */

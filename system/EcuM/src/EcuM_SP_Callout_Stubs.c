@@ -66,7 +66,7 @@
  */
 void EcuM_AL_DriverInitTwo_Partition_QM(const EcuM_ConfigType* ConfigPtr)
 {
-    (void)ConfigPtr; //lint !e920 MISRA False positive. Allowed to cast pointer to void here.
+    (void)ConfigPtr; /*lint !e920 MISRA:FALSE_POSITIVE:Allowed to cast pointer to void here:[MISRA 2012 Rule 1.3, required]*/
 #if defined(USE_SPI)
     Spi_Init(ConfigPtr->SpiConfigPtr);  // Setup SPI
 #endif
@@ -98,7 +98,7 @@ void EcuM_AL_DriverInitTwo_Partition_QM(const EcuM_ConfigType* ConfigPtr)
 
 #if defined(USE_CANTRCV)
     // Setup Can transceiver driver
-    CanTrcv_Init(ConfigPtr->CanTrcvConfigPtr);
+    CanTrcv_Init(ConfigPtr->PostBuildConfig->CanTrcvConfigPtr);
 #endif
 
 #if defined(USE_CAN)
@@ -189,7 +189,7 @@ void EcuM_AL_DriverInitTwo_Partition_QM(const EcuM_ConfigType* ConfigPtr)
 #endif
 #if defined(USE_STBM)
     // Setup StbM
-    StbM_Init(ConfigPtr->StbMConfigpPtr);
+    StbM_Init(ConfigPtr->StbMConfigPtr);
 #endif
 }
 
@@ -201,7 +201,7 @@ void EcuM_AL_DriverInitTwo_Partition_QM(const EcuM_ConfigType* ConfigPtr)
  */
 void EcuM_AL_DriverInitThree_Partition_QM(const EcuM_ConfigType* ConfigPtr)
 {
-    (void)ConfigPtr; //lint !e920 MISRA False positive. Allowed to cast pointer to void here.
+    (void)ConfigPtr; /*lint !e920 MISRA:FALSE_POSITIVE:Allowed to cast pointer to void here:[MISRA 2012 Rule 1.3, required]*/
 
 #if defined(USE_FIM)
     // Setup Function Inhibition Manager
@@ -277,7 +277,7 @@ void EcuM_OnGoOffTwo_Partition_QM(void)
  *
  * @param ConfigPtr
  */
-/*lint -save -e715 OTHER Symbol ConfigPtr not referenced. OK, since this file is only an example which shall be extended by implementer */
+/*lint -save -e715 MISRA:OTHER:Symbol ConfigPtr not referenced.since this file is only an example which shall be extended by implementer if needed:[MISRA 2012 Rule 2.7, advisory] */
 void EcuM_AL_DriverInitTwo_Partition_A0(const EcuM_ConfigType* ConfigPtr)
 {
 

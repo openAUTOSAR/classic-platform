@@ -21,6 +21,7 @@
 - mcal/arch/mpc5xxx/mpc563m.h
 - mcal/arch/mpc5xxx/SPC56XL70.h
 - mcal/arch/mpc5xxx/MPC5777M.h
+- mcal/arch/mpc5xxx/MPC5777C.h
 - mcal/arch/mpc5xxx/src/typedefs.h
 - mcal/arch/mpc5xxx/MPC5634M_MLQB80.h
 - mcal/arch/mpc5xxx/MPC5644A.h
@@ -93,6 +94,7 @@
 
 - safety_security/Sm/Htmss/utest
 - safety_security/Sm/Rtm/utest
+- safety_security/Sm/itest
 
 - safety_security/SafeLib/E2E/utest
 - safety_security/SafeLib/Crc/utest
@@ -125,3 +127,4 @@
 
 ~ RULE_ArcCore_1_provide_file_dual_license_header
 ~ RULE_ArcCore_2_do_not_use_todos
+~ RULE_ArcCore_3_do_not_use_more_than_9_paramters_in_function
