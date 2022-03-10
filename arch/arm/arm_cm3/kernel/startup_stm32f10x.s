@@ -91,8 +91,9 @@ Infinite_Loop:
 ******************************************************************************/    
  	.section	.isr_vector,"a",%progbits
 	.type	g_pfnVectors, %object
-	.size	g_pfnVectors, .-g_pfnVectors
-
+	/*** Only needed for COFF format, ignored otherwise, gcc gives error
+	*.size	g_pfnVectors, .-g_pfnVectors
+    ****/
 	.extern Irq_Handler
 	.extern SVC_Handler
 	.extern PendSV_Handler
