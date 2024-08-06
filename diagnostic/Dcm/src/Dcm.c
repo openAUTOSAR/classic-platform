@@ -45,7 +45,7 @@
 /* !req OEM_DCM_10006 RfCs only partly implemented */
 /* !req OEM_DCM_10014 SID 2A Type need work-around */
 /* !req OEM_DCM_10015 SID 2A Type need work-around */
-
+#include<stdio.h>
 #include <string.h>
 #include "Dcm.h"
 #include "Dcm_Internal.h"
