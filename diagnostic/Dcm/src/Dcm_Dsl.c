@@ -1,14 +1,14 @@
 /*-------------------------------- Arctic Core ------------------------------
  * Copyright (C) 2013, ArcCore AB, Sweden, www.arccore.com.
  * Contact: <contact@arccore.com>
- * 
+ *
  * You may ONLY use this file:
- * 1)if you have a valid commercial ArcCore license and then in accordance with  
- * the terms contained in the written license agreement between you and ArcCore, 
+ * 1)if you have a valid commercial ArcCore license and then in accordance with
+ * the terms contained in the written license agreement between you and ArcCore,
  * or alternatively
- * 2)if you follow the terms found in GNU General Public License version 2 as 
- * published by the Free Software Foundation and appearing in the file 
- * LICENSE.GPL included in the packaging of this file or here 
+ * 2)if you follow the terms found in GNU General Public License version 2 as
+ * published by the Free Software Foundation and appearing in the file
+ * LICENSE.GPL included in the packaging of this file or here
  * <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
  *-------------------------------- Arctic Core -----------------------------*/
 
@@ -229,14 +229,16 @@ Std_ReturnType DslGetActiveProtocol(Dcm_ProtocolType *protocolId) {
 
 // - - - - - - - - - - -
 
-void DslInternal_SetSecurityLevel(Dcm_SecLevelType secLevel) { 
+void DslInternal_SetSecurityLevel(Dcm_SecLevelType secLevel) {
     /* @req DCM020 */
     const Dcm_DslProtocolRowType *activeProtocol;
     Dcm_DslRunTimeProtocolParametersType *runtime;
 
     activeProtocol = DcmDslRunTimeData.activeProtocol;
-    runtime = activeProtocol->DslRunTimeProtocolParameters;
-    runtime->securityLevel = secLevel;
+    if (activeProtocol != NULL) {
+        runtime = activeProtocol->DslRunTimeProtocolParameters;
+        runtime->securityLevel = secLevel;
+    }
 }
 
 // - - - - - - - - - - -
@@ -275,7 +277,7 @@ void DslSetSesCtrlType(Dcm_SesCtrlType sesCtrl) {
 // - - - - - - - - - - -
 /* @req DCM022 */
 /* @req DCM339 */
-Std_ReturnType DslGetSesCtrlType(Dcm_SesCtrlType *sesCtrlType) { 
+Std_ReturnType DslGetSesCtrlType(Dcm_SesCtrlType *sesCtrlType) {
     Std_ReturnType ret = E_NOT_OK;
     const Dcm_DslProtocolRowType *activeProtocol;
     const Dcm_DslRunTimeProtocolParametersType *runtime;
@@ -479,7 +481,7 @@ static Std_ReturnType sendResponseWithStatus(const Dcm_DslProtocolRowType *proto
     const Dcm_DslProtocolRowType *protocolRow = NULL;
     Dcm_DslRunTimeProtocolParametersType *runtime = NULL;
     Std_ReturnType transmitResult = E_NOT_OK;
-    
+
     SchM_Enter_Dcm_EA_0();
     /* @req DCM119 */
     if (TRUE == findRxPduIdParentConfigurationLeafs(protocol->DslRunTimeProtocolParameters->diagReqestRxPduId, &protocolRx, &mainConnection, &connection, &protocolRow, &runtime)) {
@@ -963,7 +965,8 @@ void DslMain(void) {
                     /*decrease preempt timeout count*/
                     DECREMENT(runtime->preemptTimeoutCount);
                     /*if processing done is finished,clear the flag*/
-                    if (DcmDslRunTimeData.activeProtocol->DslRunTimeProtocolParameters->externalTxBufferStatus == NOT_IN_USE){
+                    if ((DcmDslRunTimeData.activeProtocol != NULL) &&
+                        (DcmDslRunTimeData.activeProtocol->DslRunTimeProtocolParameters->externalTxBufferStatus == NOT_IN_USE)){
                         /*if processing done is finished,clear the flag*/
                         PreemptionNotProcessingDone = FALSE;
                         /*close the preempted protocol*/
